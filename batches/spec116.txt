@@ -1,0 +1,1 @@
+item_initTextures 4700a0 0 100 0

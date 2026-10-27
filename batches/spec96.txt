@@ -1,0 +1,3 @@
+armc_snapshot 419000 0 300 0
+arena_40b420 40b420 0 300 0
+room_43bcb0 43bcb0 0 300 0

@@ -1,0 +1,13 @@
+text_draw5 403170 0 400 0
+text_draw8 402620 0 400 0
+text_draw16 4028b0 0 400 0
+text_draw32 402c90 0 400 0
+text_draw8b 402740 0 400 0
+text_drawBox16 4029d0 0 400 0
+hud_403210 403210 0 400 0
+hud_402db0 402db0 0 400 0
+menu_drawCursor 429bc0 0 400 0
+text_drawSized 44ad60 0 400 0
+hud_44ae10 44ae10 0 400 0
+hud_4950a0 4950a0 0 400 0
+menu_drawVersion 41f8d0 0 400 0

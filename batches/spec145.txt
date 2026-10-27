@@ -1,0 +1,1 @@
+armc_drawStatsPanel 412650 0 300 0

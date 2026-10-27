@@ -1,0 +1,5 @@
+hud_drawLockOn 491f50 0 400 0
+menu_titleEmblemTransition 429170 0 400 0
+hud_drawFps 495510 0 400 0
+hud_4953d0 4953d0 0 400 0
+replay_drawMessage 495190 0 400 0

@@ -1,0 +1,87 @@
+    5  missionsel_44aa20                  + -   
+    5  FUN_00450bb0                       + -   
+   32  hud_4955a0                         + -   
+   52  menu_447c70                        + -   
+   66  net_454560                         + -   
+   87  FUN_0042eed0*                      + -   
+   94  gfx_fillRect*                      + -   
+   99  Console_ctor                       + -   
+  103  net_startThread                    + -   
+  116  glWindow_restoreDisplayMode        + -   
+  129  Console_deletingDtor               + Console_ctor   operator_delete
+  182  glWindow_setupPixelFormat          + -   
+  182  image_initBy                       + -   fclose fopen fread
+  183  gfx_setProjection2D3D*             + -   
+  212  shapeDat_initBy                    + -   fopen fread operator_new sprintf
+  212  gfx_setProjectionHud*              + -   
+  212  skelDat_initBy                     + -   fopen fread operator_new sprintf
+  235  armc_41b710                        + gfx_setProjection2D3D*   
+  252  hud_4950a0                         + gfx_fillRect*   __ftol
+  253  net_452bd0                         + net_startThread   
+  274  net_452a30                         + net_startThread   
+  280  movie_playEnding                   + -   
+  282  skel_loadFrom_46aa10               + -   fread operator_new
+  285  chat_createEdit                    + -   
+  293  glWindow_setDisplayModeBy          + -   
+  298  skel_loadFrom_46aeb0               + -   operator_new
+  301  space_setBy                        + -   
+  304  menu_drawDimOverlay                + gfx_setProjection2D3D*   
+  308  room_43df00                        + gfx_setProjection2D3D*   
+  316  timer_getGameTime                  + -   
+  317  match_49d150                       + -   
+  319  space_initBy                       + -   operator_new
+  324  map_loadMissionInfoFrom            + -   fclose fopen fread fseek sprintf
+  339  load_471010                        + space_setBy   
+  340  gfx_initGLState                    + -   
+  340  sys_checkClockTampering            + -   
+  359  menu_428890                        + gfx_setProjection2D3D*   
+  363  tex_upload2                        + -   
+  377  armc_461210                        + timer_getGameTime   
+  379  texSmall_initBy                    + -   
+  379  factor_initBy                      + -   operator_new
+  392  glWindow_resize                    + glWindow_setDisplayModeBy   
+  401  shape_initBy                       + -   operator_new
+  403  profile_deleteFiles                + -   _chdir
+  403  tex_upload                         + -   
+  446  catalogue_loadComponents           + -   fclose fopen fread
+  530  reg_writeCharacterSettings         + -   
+  566  ptx_decode                         + -   fread
+  618  ptx_open                           + -   fclose fopen fread
+  694  hud_48f970                         + -   __ftol
+  708  room_433640                        + reg_writeCharacterSettings   
+  714  skel_applyPose                     + -   __ftol
+  723  room_43e610                        + reg_writeCharacterSettings   
+  736  net_connect                        + -   
+  780  shape_read                         + -   fread fseek ftell operator_new
+  806  scene_reset                        + load_471010, space_setBy   
+  841  tex_textureFileExist               + image_initBy   fclose fopen fread fseek sprintf strtok
+  880  armc_buildPartLists*               + -   
+  897  glWindow_init                      + glWindow_setDisplayModeBy, glWindow_resize   
+  967  load_481ae0                        + -   
+  989  image_copyTo                       + -   fread fseek
+ 1007  lobby_openConnection               + net_connect   
+ 1083  tex_initBy                         + -   fopen fread operator_new sprintf
+ 1199  map_loadPlayInfoFrom               + -   _chkstk fclose fopen fread fseek sprintf
+ 1241  light_computeLayerLightBy          + -   __ftol
+ 1272  load_4728e0                        + light_computeLayerLightBy   __ftol
+ 1297  gfx_saveScreenshot                 + image_copyTo   fread fseek sprintf
+ 1325  reg_readCharacterSettings          + -   
+ 1353  menu_drawFrame                     + gfx_setProjection2D3D*   __ftol
+ 1475  render_processRenderingBy          + -   __ftol
+ 1703  lobby_checkReservedName3           + reg_writeCharacterSettings, room_433640   _strncpy
+ 1749  lobby_checkReservedName2           + net_connect   
+ 2088  space_buildPlanes                  + load_481ae0   __ftol
+ 2234  load_482320                        + load_481ae0, space_buildPlanes   __ftol
+ 2354  camera_setupView                   + -   __ftol
+ 3703  skel_loadAseFrom                   + -   FUN_0049fe7a atoi fgets fseek operator_new strtok
+ 3797  shape_getShadingColorBufferBy      + -   __ftol
+ 3875  FUN_00466910                       + shape_getShadingColorBufferBy   __ftol
+ 4163  data_46f7a0                        + shape_getShadingColorBufferBy, FUN_00466910   __ftol
+ 4227  armc_computeTotals                 + -   __ftol _chkstk
+ 4301  hud_46fd20                         + shape_getShadingColorBufferBy, FUN_00466910   __ftol
+ 4420  skel_loadFrom                      + skel_loadAseFrom, skel_loadFrom_46aa10   FUN_0049fe7a atoi fclose fgets fopen fread fseek operator_new strtok tolower
+ 4975  model_loadObjFormatFrom            + -   FUN_0049fe7a atoi fgets fseek operator_delete operator_new strtok
+ 6190  model_loadFrom                     + model_loadObjFormatFrom, shape_read   FUN_0049fe7a atoi fclose fgets fopen fread fseek ftell operator_delete operator_new strtok tolower
+12218  hud_476890                         + -   __ftol
+12284  hud_479af0                         + hud_476890   __ftol
+536 functions not rebuilt, 30 with indirect calls; 86 groups of <= 3 printed

@@ -1,0 +1,6 @@
+armc_4125c0 4125c0 0 300 0
+armc_drawStatLabel 4125f0 0 300 0
+menu_4290d0 4290d0 0 200 0
+menu_428940 428940 0 300 0
+profile_44ce90 44ce90 0 200 0
+mainmenu_442d10 442d10 0 200 0

@@ -1,0 +1,6 @@
+space_initBy 4813e0 0 40 0
+space_setBy 4819b0 0 40 0
+load_471010 471010 0 40 0
+factor_initBy 484050 0 40 0
+texSmall_initBy 4569d0 0 40 0
+skel_loadFrom_46aa10 46aa10 0 40 0

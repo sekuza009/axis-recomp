@@ -1,0 +1,4 @@
+menuState500_missionSelect 44aa40 0 400 0
+main_loop 420280 0 400 0
+hud_drawRanking 494930 0 400 0
+hud_496240 496240 0 400 0

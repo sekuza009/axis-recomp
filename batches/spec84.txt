@@ -1,0 +1,2 @@
+shape_bindTextureBy 466430 0 300 0
+FUN_00466650 466650 0 300 0

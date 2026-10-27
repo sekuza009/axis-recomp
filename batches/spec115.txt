@@ -1,0 +1,1 @@
+console_init 41fd40 0 200 0

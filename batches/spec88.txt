@@ -1,0 +1,1 @@
+map_loadObjectInfoFrom 48b710 0 200 0

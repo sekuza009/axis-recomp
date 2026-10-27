@@ -1,0 +1,6 @@
+armc_40fb20 40fb20 0 300 0
+armc_4101e0 4101e0 0 400 0
+armc_410500 410500 0 400 0
+armc_410810 410810 0 400 0
+armc_onStateEnter 410190 0 200 0
+armc_processInput 410ab0 0 400 0

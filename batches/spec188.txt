@@ -1,0 +1,2 @@
+particle_spawn 479950 0 300 0
+particle_init 475070 0 400 0

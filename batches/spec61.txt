@@ -1,0 +1,5 @@
+match_49d150 49d150 0 40 0
+chat_createEdit 43f460 0 40 0
+reg_readCharacterSettings 42bee0 0 40 0
+gfx_saveScreenshot 4734d0 1 40 0
+catalogue_loadComponents 473780 1 40 0

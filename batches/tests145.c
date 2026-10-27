@@ -1,0 +1,34 @@
+/* batch 144 */
+/* the stats panel: pilotpanel_setup's pilots and texture set, positions, slots -1..6 (mostly 0..5), English or
+   Korean, every float the panel reads below 10000 (its sprintf targets hold 20 bytes), every count below a million,
+   the two string-table indexes in range, every text it draws short (classified from its code: 45 floats, the
+   printed ints, 57 strings) */
+static void statspanel_setup(void)
+{
+	static const DWORD fl[] = { 0x4dbc48, 0x4dbc70, 0x4dbc78, 0x4dc228, 0x4dc22c, 0x4dc230, 0x4dc234, 0x4dc238, 0x4dc23c,
+		0x4dc240, 0x4dc248, 0x4dc2a4, 0x4dc548, 0x4dc78c, 0x4dc88c, 0x4dc894, 0x4dc898, 0x4dcaa0, 0x4dcad0, 0x4dcaec,
+		0x4dcaf0, 0x4dcaf8, 0x4dcafc, 0x4dcb00, 0x4dcb04, 0x4dcb0c, 0x4dcb34, 0x4dcc68, 0x4dcc6c, 0x4dcca0, 0x4dce84,
+		0x4dce88, 0x4dce8c, 0x4dce90, 0x4dce94, 0x4dce98, 0x4dce9c, 0x4dcea0, 0x4dceb0, 0x4dceb4, 0x4dcef8, 0x4dcefc,
+		0x4dcf04, 0x4dcf08, 0x4dcf0c };
+	static const DWORD in[] = { 0x4dbc4c, 0x4dbc50, 0x4dc290, 0x4dc294, 0x4dc298, 0x4dc29c, 0x4dc2a0, 0x4dcaa8,
+		0x4dcab4, 0x4dcab8, 0x4dcabc, 0x4dcac0, 0x4dcac4, 0x4dcac8, 0x4dcacc, 0x4dcf00 };
+	static const DWORD st[] = { 0x7517a4, 0x7568a4, 0x756d24, 0x756da4, 0x760aa4, 0x760b24, 0x760ba4, 0x760c24, 0x760ca4,
+		0x760d24, 0x760fa4, 0x761024, 0x7610a4, 0x7614a4, 0x761524, 0x7615a4, 0x761624, 0x7616a4, 0x761724, 0x7619a4,
+		0x761a24, 0x761aa4, 0x761b24, 0x761ba4, 0x761c24, 0x761ca4, 0x761ea4, 0x761f24, 0x761fa4, 0x762024, 0x7620a4,
+		0x762124, 0x7621a4, 0x762da4, 0x762e24, 0x762ea4, 0x762f24, 0x762fa4, 0x763024, 0x7630a4, 0x763124, 0x7631a4,
+		0x763224, 0x7655a4, 0x765624, 0x7656a4, 0x7657a4, 0x765824, 0x7658a4, 0x765aa4, 0x4dbc08, 0x4dc1e8, 0x4dc250,
+		0x4dce40, 0x4dceb8 };
+	pilotpanel_setup();
+	G32(0x4dcc90) = irnd(-30, 200); G32(0x4dcc94) = irnd(-30, 60); G32(0x4dcc98) = irnd(300, 640); G32(0x4dcc9c) = irnd(300, 480);
+	fill((void *)0x4dbc58, 16); fill((void *)0x4dc1d0, 16);
+	G32(0x4dbc6c) = irnd(0, 9) ? irnd(0, 5) : irnd(-1, 7); G32(0x9dae74) = irnd(0, 2); G32(0x4dbc68) = irnd(0, 1);
+	for (int k = 0; k < (int)(sizeof fl / 4); k++) GF(fl[k]) = (float)irnd(-99999, 99999) / 10.0f;
+	for (int k = 0; k < (int)(sizeof in / 4); k++) G32(in[k]) = irnd(-9999, 999999);
+	G32(0x4dce80) = irnd(0, 3); G32(0x4dceac) = irnd(0, 1);
+	for (int k = 0; k < (int)(sizeof st / 4); k++) fill_str((char *)st[k], 6, 32, 126);
+	for (int k = 0; k < 6; k++) fill_str((char *)0x756aa4 + k * 0x80, 6, 32, 126);
+	for (int k = 0; k < 4; k++) fill_str((char *)0x7623a4 + k * 0x80, 6, 32, 126);
+	for (int k = 0; k < 2; k++) fill_str((char *)0x751924 + k * 0x80, 4, 32, 126);
+	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
+}
+T_PLAIN(armc_drawStatsPanel, 0x412650, statspanel_setup();, 0, 0, 0, 0, 0)

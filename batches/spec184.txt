@@ -1,0 +1,5 @@
+arena_createClick 407410 0 200 0
+lobbyTop_connect 407e40 0 200 0
+arena_loadAndQuit 40d840 0 200 0
+room_43ea10 43ea10 0 200 0
+lobbyJoin_draw 40cfd0 0 200 0

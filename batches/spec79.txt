@@ -1,0 +1,1 @@
+object_setAnimation 490df0 0 300 0

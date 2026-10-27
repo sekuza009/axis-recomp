@@ -1,0 +1,9 @@
+armc_setHeadIndex 4613d0 0 300 0
+armc_setChestIndex 461410 0 300 0
+armc_setArmIndex 461450 0 300 0
+armc_setLegIndex 461490 0 300 0
+armc_setBoosterIndex 4614d0 0 300 0
+armc_461510 461510 0 300 0
+actor_46fed0 46fed0 0 300 0
+match_474210 474210 0 300 0
+load_4742f0 4742f0 0 300 0

@@ -1,0 +1,2 @@
+glWindow_wndProc 4680d0 1 300 0
+glWindow_init 468250 1 300 0

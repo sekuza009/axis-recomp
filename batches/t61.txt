@@ -1,0 +1,972 @@
+recomp finished after ~202 s
+saved C:/Users/Alexander/Desktop/Axis/recomp/match1.png (3840 x 2161 window at 0,-1, scaled 1152 x 648)
+saved C:/Users/Alexander/Desktop/Axis/recomp/match2.png (3840 x 2161 window at 0,-1, scaled 1152 x 648)
+game still running
+installed AxisGL.exe restored (identical)
+saves unchanged
+recomp: comparing 20000 random inputs per function (original vs rebuilt)
+  Vec3_set                  20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec3_normalize            40000 tests,  40000 bit-exact, largest relative difference 0
+  Vec3_cross                20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec3_dot                  20000 tests,  20000 bit-exact, largest relative difference 5.93e-08
+  Vec3_add                  20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec3_sub                  20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec3_scale                20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec4_set                  20000 tests,  20000 bit-exact, largest relative difference 0
+  Vec3_rotateAxis           20000 tests,  20000 bit-exact, largest relative difference 0
+  Mat4_multiply             20000 tests,  20000 bit-exact, largest relative difference 0
+  Mat4_transformPoint       20000 tests,  20000 bit-exact, largest relative difference 0
+  Mat4_minor                20000 tests,  20000 bit-exact, largest relative difference 0
+  Mat4_determinant          20000 tests,  20000 bit-exact, largest relative difference 0
+  Mat4_invert               20000 tests,  20000 bit-exact, largest relative difference 0
+  math_segmentSphere        20000 tests,  20000 bit-exact, largest relative difference 0
+      (4598 of the tests were hits)
+  color_hsvToRgb            20000 tests,  20000 bit-exact, largest relative difference 0
+  actor_levelFromValue      20000 tests,  20000 bit-exact, largest relative difference 0
+  Color4_set                20000 tests,  20000 bit-exact, largest relative difference 0
+  set4ints                  20000 tests,  20000 bit-exact, largest relative difference 0
+  SQRT_wrap_480400          20000 tests,  20000 bit-exact, largest relative difference 0
+recomp: scratch area at 17850000 (scene object at 1765C938)
+recomp: game frozen (19 threads), comparing functions that use game memory (.data 6707856 bytes)
+recomp: harness self-check ok (deliberate mismatches were caught)
+  arena_4033e0               3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_404460               3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_4044a0               3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_4044e0               3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_4045a0               3004 tests,   3004 bit-exact, largest relative difference 0
+  armc_40e450                3004 tests,   3004 bit-exact, largest relative difference 0
+  armc_40e490                3004 tests,   3004 bit-exact, largest relative difference 0
+  armc_40e4d0                3004 tests,   3004 bit-exact, largest relative difference 0
+  setup_420670               3004 tests,   3004 bit-exact, largest relative difference 0
+  setup_4206b0               3004 tests,   3004 bit-exact, largest relative difference 0
+  setup_4206f0               3004 tests,   3004 bit-exact, largest relative difference 0
+  setup_420730               3004 tests,   3004 bit-exact, largest relative difference 0
+  room_4321c0                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_432200                3004 tests,   3004 bit-exact, largest relative difference 0
+      (room_432200 took 516 ms)
+  room_432240                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_432280                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_4322c0                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_432300                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_432340                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_432380                3004 tests,   3004 bit-exact, largest relative difference 0
+  room_4323c0                3004 tests,   3004 bit-exact, largest relative difference 0
+  mainmenu_440b70            3004 tests,   3004 bit-exact, largest relative difference 0
+  skirmish_4438d0            3004 tests,   3004 bit-exact, largest relative difference 0
+  skirmish_443910            3004 tests,   3004 bit-exact, largest relative difference 0
+  missionsel_447710          3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b260             3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b2a0             3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b320             3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b360             3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b3a0             3004 tests,   3004 bit-exact, largest relative difference 0
+  profile_44b3e0             3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_404520               3004 tests,   3004 bit-exact, largest relative difference 0
+  save_cryptRecord            504 tests,    504 bit-exact, largest relative difference 0
+  profile_42b3c0              504 tests,    504 bit-exact, largest relative difference 0
+  data_42b390                2004 tests,   2004 bit-exact, largest relative difference 0
+  profile_4343b0             3004 tests,   3004 bit-exact, largest relative difference 0
+      (profile_4343b0 took 422 ms)
+  room_403560                  60 tests,     60 bit-exact, largest relative difference 0
+  armc_40f830                3004 tests,   3004 bit-exact, largest relative difference 0
+  FUN_0046cbc0               3004 tests,   3004 bit-exact, largest relative difference 0
+  FUN_00454110               2004 tests,   2004 bit-exact, largest relative difference 0
+  FUN_00463710               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_00463710 took 422 ms)
+  FUN_0045dfb0                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_00474390                 30 tests,     30 bit-exact, largest relative difference 0
+  FUN_00469980                504 tests,    504 bit-exact, largest relative difference 0
+  FUN_0046f480                504 tests,    504 bit-exact, largest relative difference 0
+  load_480440                 504 tests,    504 bit-exact, largest relative difference 0
+  armc_40d990                  60 tests,     60 bit-exact, largest relative difference 0
+  FUN_0040ddb0                 30 tests,     30 bit-exact, largest relative difference 0
+  armc_40e670                  20 tests,     20 bit-exact, largest relative difference 0
+  menu_40e6c0                  30 tests,     30 bit-exact, largest relative difference 0
+  armc_40ed20                  60 tests,     60 bit-exact, largest relative difference 0
+  armc_backupColours           20 tests,     20 bit-exact, largest relative difference 0
+  armc_41ced0                  20 tests,     20 bit-exact, largest relative difference 0
+  armc_dragPrimaryHue         100 tests,    100 bit-exact, largest relative difference 0
+  armc_dragPrimaryChroma       60 tests,     60 bit-exact, largest relative difference 0
+  armc_dragPrimaryValue        60 tests,     60 bit-exact, largest relative difference 0
+  armc_dragSecondaryHue       100 tests,    100 bit-exact, largest relative difference 0
+      (armc_dragSecondaryHue took 437 ms)
+  armc_dragSecondaryChroma     60 tests,     60 bit-exact, largest relative difference 0
+  armc_dragSecondaryValue      60 tests,     60 bit-exact, largest relative difference 0
+  app_430390                   20 tests,     20 bit-exact, largest relative difference 0
+  intro_42f8e0                 20 tests,     20 bit-exact, largest relative difference 0
+  intro_430bd0                 20 tests,     20 bit-exact, largest relative difference 0
+  menu_clearInputBuffer        20 tests,     20 bit-exact, largest relative difference 0
+  room_4315c0                  20 tests,     20 bit-exact, largest relative difference 0
+  arena_4065a0               1004 tests,   1004 bit-exact, largest relative difference 0
+  cfg_defaultPlayerName        20 tests,     20 bit-exact, largest relative difference 0
+  lobby_404930                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_0041ee40                 40 tests,     40 bit-exact, largest relative difference 0
+  room_433700                  60 tests,     60 bit-exact, largest relative difference 0
+  profile_445f10              504 tests,    504 bit-exact, largest relative difference 0
+  profile_445f40              504 tests,    504 bit-exact, largest relative difference 0
+  room_434400                3004 tests,   3004 bit-exact, largest relative difference 0
+      (room_434400 took 406 ms)
+  profile_44b7e0             3004 tests,   3004 bit-exact, largest relative difference 0
+      (profile_44b7e0 took 516 ms)
+  room_435970                  40 tests,     40 bit-exact, largest relative difference 0
+  room_4359b0                  40 tests,     40 bit-exact, largest relative difference 0
+  room_4359f0                  30 tests,     30 bit-exact, largest relative difference 0
+  app_setDataPaths             10 tests,     10 bit-exact, largest relative difference 0
+  mainmenu_4417c0              30 tests,     30 bit-exact, largest relative difference 0
+  mainmenu_4417f0              30 tests,     30 bit-exact, largest relative difference 0
+  skirmish_443cd0              40 tests,     40 bit-exact, largest relative difference 0
+  skirmish_443d10              40 tests,     40 bit-exact, largest relative difference 0
+  skirmish_443d50              40 tests,     40 bit-exact, largest relative difference 0
+  FUN_00443d80                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_00443de0                 40 tests,     40 bit-exact, largest relative difference 0
+  menu_445de0                  30 tests,     30 bit-exact, largest relative difference 0
+  mission_447af0               30 tests,     30 bit-exact, largest relative difference 0
+  FUN_004463a0                 60 tests,     60 bit-exact, largest relative difference 0
+  match_4464b0                 20 tests,     20 bit-exact, largest relative difference 0
+  skirmish_447910              20 tests,     20 bit-exact, largest relative difference 0
+  profile_44b2e0             3004 tests,   3004 bit-exact, largest relative difference 0
+  FUN_00451450                 40 tests,     40 bit-exact, largest relative difference 0
+  arena_4514a0                 30 tests,     30 bit-exact, largest relative difference 0
+  arena_4515a0                 20 tests,     20 bit-exact, largest relative difference 0
+  arena_4532b0               3004 tests,   3004 bit-exact, largest relative difference 0
+  arena_453a30               3004 tests,   3004 bit-exact, largest relative difference 0
+  tex_4554c0                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (tex_4554c0 took 422 ms)
+  arena_4045e0                 20 tests,     20 bit-exact, largest relative difference 0
+  FUN_00456820                304 tests,    304 bit-exact, largest relative difference 0
+  tex_recolourMaterial       1004 tests,   1004 bit-exact, largest relative difference 0
+  hud_456b50                  304 tests,    304 bit-exact, largest relative difference 0
+  actor_deactivate            604 tests,    604 bit-exact, largest relative difference 0
+  camera_setTarget            604 tests,    604 bit-exact, largest relative difference 0
+  FUN_0045e070                 64 tests,     64 bit-exact, largest relative difference 0
+  FUN_0045e810                604 tests,    604 bit-exact, largest relative difference 0
+  actor_selectWeapon          604 tests,    604 bit-exact, largest relative difference 0
+  actor_45eab0                204 tests,    204 bit-exact, largest relative difference 0
+  match_45eb20                204 tests,    204 bit-exact, largest relative difference 0
+  match_4616e0                104 tests,    104 bit-exact, largest relative difference 0
+  match_461730                104 tests,    104 bit-exact, largest relative difference 0
+  FUN_004625a0               1004 tests,   1004 bit-exact, largest relative difference 0
+  chat_matchCheatCode        1010 tests,   1010 bit-exact, largest relative difference 0
+  match_4629c0                204 tests,    204 bit-exact, largest relative difference 0
+  match_462ac0               2004 tests,   2004 bit-exact, largest relative difference 0
+  match_463480                204 tests,    204 bit-exact, largest relative difference 0
+  match_4634e0                304 tests,    304 bit-exact, largest relative difference 0
+  match_463530                204 tests,    204 bit-exact, largest relative difference 0
+  match_463550                304 tests,    304 bit-exact, largest relative difference 0
+  match_4635b0                304 tests,    304 bit-exact, largest relative difference 0
+  match_463610                304 tests,    304 bit-exact, largest relative difference 0
+  net_452e60                    4 tests,      4 bit-exact, largest relative difference 0
+  net_452e80                    4 tests,      4 bit-exact, largest relative difference 0
+  net_452ea0                    4 tests,      4 bit-exact, largest relative difference 0
+  match_431590                  4 tests,      4 bit-exact, largest relative difference 0
+  app_401780                    4 tests,      4 bit-exact, largest relative difference 0
+  app_4515d0                    4 tests,      4 bit-exact, largest relative difference 0
+  mainmenu_440df0               4 tests,      4 bit-exact, largest relative difference 0
+  set_4dc798_40f200             4 tests,      4 bit-exact, largest relative difference 0
+  set_4dc798_40f320             4 tests,      4 bit-exact, largest relative difference 0
+  set_a61708_46f090             8 tests,      8 bit-exact, largest relative difference 0
+  menu_445e10                   8 tests,      8 bit-exact, largest relative difference 0
+  room_433610                   8 tests,      8 bit-exact, largest relative difference 0
+  FUN_0046dbf0                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046db30                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046dc20                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046dad0                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046db90                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046db60                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046db00                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046dbc0                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d2d0                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d450                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d390                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d410                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d3d0                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d310                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d490                  4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0046d350                  4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7a8_4678f0             4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7b8_467890             4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7c8_467980             4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7d8_467950             4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7e8_4678c0             4 tests,      4 bit-exact, largest relative difference 0
+  set_a0e7f8_467920             4 tests,      4 bit-exact, largest relative difference 0
+  FUN_0045df90                304 tests,    304 bit-exact, largest relative difference 0
+  match_463670                304 tests,    304 bit-exact, largest relative difference 0
+  match_463690                304 tests,    304 bit-exact, largest relative difference 0
+  match_4636b0                304 tests,    304 bit-exact, largest relative difference 0
+  this_set_4841d0             304 tests,    304 bit-exact, largest relative difference 0
+  load_479a60                 304 tests,    304 bit-exact, largest relative difference 0
+  FUN_0047cfd0                304 tests,    304 bit-exact, largest relative difference 0
+  load_490d10                 304 tests,    304 bit-exact, largest relative difference 0
+      (load_490d10 took 531 ms)
+  match_4722e0               2004 tests,   2004 bit-exact, largest relative difference 0
+  this_set_480210             304 tests,    304 bit-exact, largest relative difference 0
+  collision_480230           2004 tests,   2004 bit-exact, largest relative difference 0
+  load_481730                 304 tests,    304 bit-exact, largest relative difference 0
+  load_481980                 304 tests,    304 bit-exact, largest relative difference 0
+  space_disableUnit           304 tests,    304 bit-exact, largest relative difference 0
+  space_enableUnit            304 tests,    304 bit-exact, largest relative difference 0
+  cfg_44ac50                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (cfg_44ac50 took 515 ms)
+  FUN_0046cba0               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_0046cba0 took 485 ms)
+  FUN_0046cb60               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_0046cb60 took 531 ms)
+  arena_404120                  8 tests,      8 bit-exact, largest relative difference 0
+  room_431db0                   8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b080                8 tests,      8 bit-exact, largest relative difference 0
+  arena_404150                  8 tests,      8 bit-exact, largest relative difference 0
+  room_431aa0                   8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b0b0                8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b100                8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b150                8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b030                8 tests,      8 bit-exact, largest relative difference 0
+  room_431c00                   8 tests,      8 bit-exact, largest relative difference 0
+  arena_403f30                  8 tests,      8 bit-exact, largest relative difference 0
+  text_setColor                 8 tests,      8 bit-exact, largest relative difference 0
+  armc_410160                  10 tests,     10 bit-exact, largest relative difference 0
+  profile_44b7a0                6 tests,      6 bit-exact, largest relative difference 0
+  profile_44b750                6 tests,      6 bit-exact, largest relative difference 0
+  profile_44bc00                6 tests,      6 bit-exact, largest relative difference 0
+  setup_selectGraphicTab        6 tests,      6 bit-exact, largest relative difference 0
+  room_403490                  20 tests,     20 bit-exact, largest relative difference 0
+  menu_443ea0                  40 tests,     40 bit-exact, largest relative difference 0
+  arena_4065e0                 30 tests,     30 bit-exact, largest relative difference 0
+  ptx_46e9b0                   30 tests,     30 bit-exact, largest relative difference 0
+  ptx_46e320                    4 tests,      4 bit-exact, largest relative difference 0
+  ptx_46e7c0                    4 tests,      4 bit-exact, largest relative difference 0
+  ErrorLog_ctor                10 tests,     10 bit-exact, largest relative difference 0
+  arena_451410                 40 tests,     40 bit-exact, largest relative difference 0
+  cfg_44ac70                 1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_00463740               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_00470f80                504 tests,    504 bit-exact, largest relative difference 0
+  match_45e1c0                304 tests,    304 bit-exact, largest relative difference 0
+  match_4636d0                304 tests,    304 bit-exact, largest relative difference 0
+  match_49ca20                304 tests,    304 bit-exact, largest relative difference 0
+  object_activate             604 tests,    604 bit-exact, largest relative difference 0
+  object_deactivate           604 tests,    604 bit-exact, largest relative difference 0
+  FUN_00473470                104 tests,    104 bit-exact, largest relative difference 0
+  script_pushEvent           1004 tests,   1004 bit-exact, largest relative difference 0
+  shape_466560                304 tests,    304 bit-exact, largest relative difference 0
+  collision_4803c0           2004 tests,   2004 bit-exact, largest relative difference 0
+  hud_467700                 2004 tests,   2004 bit-exact, largest relative difference 0
+  load_482a40                2004 tests,   2004 bit-exact, largest relative difference 0
+  setup_420480                  8 tests,      8 bit-exact, largest relative difference 0
+  room_431b70                   8 tests,      8 bit-exact, largest relative difference 0
+  arena_403f80                  8 tests,      8 bit-exact, largest relative difference 0
+  room_431ae0                   8 tests,      8 bit-exact, largest relative difference 0
+  skirmish_4437b0               8 tests,      8 bit-exact, largest relative difference 0
+  room_431c50                   8 tests,      8 bit-exact, largest relative difference 0
+  skirmish_443840               8 tests,      8 bit-exact, largest relative difference 0
+  setup_selectSoundTab          6 tests,      6 bit-exact, largest relative difference 0
+  setup_selectControlTab        6 tests,      6 bit-exact, largest relative difference 0
+  lobby_setSubState0           10 tests,     10 bit-exact, largest relative difference 0
+  room_433980                   6 tests,      6 bit-exact, largest relative difference 0
+  room_433590                   6 tests,      6 bit-exact, largest relative difference 0
+  room_434640                  20 tests,     20 bit-exact, largest relative difference 0
+  arena_4509e0                  4 tests,      4 bit-exact, largest relative difference 0
+  skirmish_443570               4 tests,      4 bit-exact, largest relative difference 0
+  arena_4068d0                200 tests,    200 bit-exact, largest relative difference 0
+      (arena_4068d0 took 781 ms)
+  room_4356f0                 200 tests,    200 bit-exact, largest relative difference 0
+      (room_4356f0 took 797 ms)
+  net_451530                   40 tests,     40 bit-exact, largest relative difference 0
+  ptx_46f230                   60 tests,     60 bit-exact, largest relative difference 0
+  actor_45edb0                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_0041eea0               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_0041eea0 took 484 ms)
+  shape_466ce0               2004 tests,   2004 bit-exact, largest relative difference 0
+  skelDat_46b0c0             2004 tests,   2004 bit-exact, largest relative difference 0
+  load_46cad0                2004 tests,   2004 bit-exact, largest relative difference 0
+  FUN_00402590               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_00402590 took 516 ms)
+  FUN_0047d5a0                304 tests,    304 bit-exact, largest relative difference 0
+  skel_47d830                 304 tests,    304 bit-exact, largest relative difference 0
+  net_4743b0                  104 tests,    104 bit-exact, largest relative difference 0
+  FUN_00461ec0                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_00473a10                604 tests,    604 bit-exact, largest relative difference 0
+      (FUN_00473a10 took 406 ms)
+  player_setTeam              604 tests,    604 bit-exact, largest relative difference 0
+      (player_setTeam took 406 ms)
+  match_4799f0               1004 tests,   1004 bit-exact, largest relative difference 0
+  shape_4675f0                304 tests,    304 bit-exact, largest relative difference 0
+  shape_4665c0                304 tests,    304 bit-exact, largest relative difference 0
+  ViewVolume_reset             54 tests,     54 bit-exact, largest relative difference 0
+  space_resetUnits            504 tests,    504 bit-exact, largest relative difference 0
+  armc_461370                 604 tests,    604 bit-exact, largest relative difference 0
+      (armc_461370 took 438 ms)
+  match_4613a0                604 tests,    604 bit-exact, largest relative difference 0
+      (match_4613a0 took 422 ms)
+  hud_4017d0                   60 tests,     60 bit-exact, largest relative difference 0
+  ptx_internal_46f190         150 tests,    150 bit-exact, largest relative difference 0
+      (ptx_internal_46f190 took 578 ms)
+  ptx_internal_46f2a0         150 tests,    150 bit-exact, largest relative difference 0
+      (ptx_internal_46f2a0 took 594 ms)
+  ptx_internal_46e830         304 tests,    304 bit-exact, largest relative difference 0
+  ptx_initTable_46efd0          4 tests,      4 bit-exact, largest relative difference 0
+  ptx_internal_46ea30         604 tests,    604 bit-exact, largest relative difference 0
+  menuState300_enter            4 tests,      4 bit-exact, largest relative difference 0
+  menu_40e510                   4 tests,      4 bit-exact, largest relative difference 0
+  armc_40dfa0                   4 tests,      4 bit-exact, largest relative difference 0
+  room_4338c0                   4 tests,      4 bit-exact, largest relative difference 0
+  room_433800                   4 tests,      4 bit-exact, largest relative difference 0
+  missionsel_447660             8 tests,      8 bit-exact, largest relative difference 0
+  profile_44b1a0                8 tests,      8 bit-exact, largest relative difference 0
+  actor_resetSlot             304 tests,    304 bit-exact, largest relative difference 0
+  actor_clearTargetRefs      1004 tests,   1004 bit-exact, largest relative difference 0
+  load_474480                  34 tests,     34 bit-exact, largest relative difference 0
+  actor_45e9e0               1004 tests,   1004 bit-exact, largest relative difference 0
+      (actor_45e9e0 took 656 ms)
+  actor_45e910               1004 tests,   1004 bit-exact, largest relative difference 0
+      (actor_45e910 took 672 ms)
+  shape_setTint               304 tests,    304 bit-exact, largest relative difference 0
+  room_431ce0                   8 tests,      8 bit-exact, largest relative difference 0
+  arena_404010                  8 tests,      8 bit-exact, largest relative difference 0
+  profile_44af30                8 tests,      8 bit-exact, largest relative difference 0
+  room_403300                   4 tests,      4 bit-exact, largest relative difference 0
+  lobby_setSubState1            4 tests,      4 bit-exact, largest relative difference 0
+  lobby_ladderGameName         20 tests,     20 bit-exact, largest relative difference 0
+  armc_40de80                   4 tests,      4 bit-exact, largest relative difference 0
+  intro_430ab0                  4 tests,      4 bit-exact, largest relative difference 0
+  profile_44b870               40 tests,     40 bit-exact, largest relative difference 0
+  ptx_internal_46e8e0         304 tests,    304 bit-exact, largest relative difference 0
+  ptx_internal_46f0b0         150 tests,    150 bit-exact, largest relative difference 0
+      (ptx_internal_46f0b0 took 609 ms)
+  ResourceSet_init_463a40     204 tests,    204 bit-exact, largest relative difference 0
+  shape_setTextureDir         304 tests,    304 bit-exact, largest relative difference 0
+  FUN_00464a70               1004 tests,   1004 bit-exact, largest relative difference 0
+  load_48fe10                 104 tests,    104 bit-exact, largest relative difference 0
+  player_setName              604 tests,    604 bit-exact, largest relative difference 0
+      (player_setName took 407 ms)
+  scene_resetActors            24 tests,     24 bit-exact, largest relative difference 0
+  armc_40e1c0                   8 tests,      8 bit-exact, largest relative difference 0
+  armc_40e300                   8 tests,      8 bit-exact, largest relative difference 0
+  armc_40e060                   8 tests,      8 bit-exact, largest relative difference 0
+  mainmenu_440a20               8 tests,      8 bit-exact, largest relative difference 0
+  setup_420510                  8 tests,      8 bit-exact, largest relative difference 0
+  setup_420300                  8 tests,      8 bit-exact, largest relative difference 0
+  room_432040                   8 tests,      8 bit-exact, largest relative difference 0
+  room_403420                  20 tests,     20 bit-exact, largest relative difference 0
+  lobby_drawArenaTitle         40 tests,     40 bit-exact, largest relative difference 0
+  arena_42bc00                  8 tests,      8 bit-exact, largest relative difference 0
+  armc_461320                 404 tests,    404 bit-exact, largest relative difference 0
+  FUN_00466960               1004 tests,   1004 bit-exact, largest relative difference 0
+  match_resetInputState        54 tests,     54 bit-exact, largest relative difference 0
+  match_470cb0                 24 tests,     24 bit-exact, largest relative difference 0
+  color_initDefaultColours      4 tests,      4 bit-exact, largest relative difference 0
+  intro_42f500                  4 tests,      4 bit-exact, largest relative difference 0
+  input_initVkTable             4 tests,      4 bit-exact, largest relative difference 0
+  replay_46d4d0                 4 tests,      4 bit-exact, largest relative difference 0
+  intro_42f2b0                  4 tests,      4 bit-exact, largest relative difference 0
+  intro_42f690                  4 tests,      4 bit-exact, largest relative difference 0
+  input_setDefaultKeyBindings      4 tests,      4 bit-exact, largest relative difference 0
+  room_433790                  20 tests,     20 bit-exact, largest relative difference 0
+  lobby_setSubState2           20 tests,     20 bit-exact, largest relative difference 0
+  armc_433360                   6 tests,      6 bit-exact, largest relative difference 0
+  room_432be0                  20 tests,     20 bit-exact, largest relative difference 0
+  room_434ff0                  60 tests,     60 bit-exact, largest relative difference 0
+  match_42aa30                300 tests,    300 bit-exact, largest relative difference 0
+      (match_42aa30 took 1156 ms)
+  match_42aad0                300 tests,    300 bit-exact, largest relative difference 0
+      (match_42aad0 took 1187 ms)
+  profile_44bc50               60 tests,     60 bit-exact, largest relative difference 0
+  profile_44bd20               60 tests,     60 bit-exact, largest relative difference 0
+  match_496e40               3004 tests,   3004 bit-exact, largest relative difference 0
+      (match_496e40 took 578 ms)
+  text_hangulConvert         5004 tests,   5004 bit-exact, largest relative difference 0
+      (text_hangulConvert took 844 ms)
+  render_depthSort_490f80      60 tests,     60 bit-exact, largest relative difference 0
+  render_depthSort_491190      60 tests,     60 bit-exact, largest relative difference 0
+  input_applyKeyBindings        6 tests,      6 bit-exact, largest relative difference 0
+  setup_controlTabHelper_420c10      6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0047d0b0               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_0047d0b0 took 531 ms)
+  setup_4277c0                 60 tests,     60 bit-exact, largest relative difference 0
+  ptx_46e2b0                   30 tests,     30 bit-exact, largest relative difference 0
+  FUN_004679a0               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_004679a0 took 531 ms)
+  console_41e390              100 tests,    100 bit-exact, largest relative difference 0
+      (console_41e390 took 406 ms)
+  arena_406640                 60 tests,     60 bit-exact, largest relative difference 0
+  ptx_initTables                4 tests,      4 bit-exact, largest relative difference 0
+  tex_454e60                 2004 tests,   2004 bit-exact, largest relative difference 0
+  load_470de0                 304 tests,    304 bit-exact, largest relative difference 0
+  room_431de0                   8 tests,      8 bit-exact, largest relative difference 0
+  load_497a90                 604 tests,    604 bit-exact, largest relative difference 0
+  arena_404190                  8 tests,      8 bit-exact, largest relative difference 0
+  menuState600_enterSetup       8 tests,      8 bit-exact, largest relative difference 0
+  menuState800_enterGameRoom     20 tests,     20 bit-exact, largest relative difference 0
+  armc_41ca50                 100 tests,    100 bit-exact, largest relative difference 0
+  armc_41cca0                 100 tests,    100 bit-exact, largest relative difference 0
+  app_42f940                    4 tests,      4 bit-exact, largest relative difference 0
+  hud_42fb40                    4 tests,      4 bit-exact, largest relative difference 0
+  menuState400_enter           10 tests,     10 bit-exact, largest relative difference 0
+  room_432db0                  30 tests,     30 bit-exact, largest relative difference 0
+  setup_drawKeyBindingRow      40 tests,     40 bit-exact, largest relative difference 0
+  setup_420e50                 60 tests,     60 bit-exact, largest relative difference 0
+  ptx_decodeBlock_46e380     3004 tests,   3004 bit-exact, largest relative difference 0
+      (ptx_decodeBlock_46e380 took 563 ms)
+  FUN_0047d8a0               3004 tests,   3004 bit-exact, largest relative difference 0
+      (FUN_0047d8a0 took 562 ms)
+  skel_ase_47d0f0            3004 tests,   3004 bit-exact, largest relative difference 0
+      (skel_ase_47d0f0 took 547 ms)
+  space_tracePlanes_47fb80   3004 tests,   3004 bit-exact, largest relative difference 0
+      (space_tracePlanes_47fb80 took 594 ms)
+  tex_46def0                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (tex_46def0 took 547 ms)
+  shape_relocate             2004 tests,   2004 bit-exact, largest relative difference 0
+      (shape_relocate took 422 ms)
+  setup_4230e0                200 tests,    200 bit-exact, largest relative difference 0
+      (setup_4230e0 took 781 ms)
+  menu_42ab70                 200 tests,    200 bit-exact, largest relative difference 0
+      (menu_42ab70 took 781 ms)
+  intro_cameraPath            304 tests,    304 bit-exact, largest relative difference 0
+  ViewVolume_add_485120      3004 tests,   3004 bit-exact, largest relative difference 0
+      (ViewVolume_add_485120 took 594 ms)
+  FUN_0047d9a0               2004 tests,   2004 bit-exact, largest relative difference 0
+  tex_tintHsv                3004 tests,   3004 bit-exact, largest relative difference 0
+      (tex_tintHsv took 547 ms)
+  hud_4848e0                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (hud_4848e0 took 625 ms)
+  room_437a10                 250 tests,    250 bit-exact, largest relative difference 0
+      (room_437a10 took 969 ms)
+  arena_408270                250 tests,    250 bit-exact, largest relative difference 0
+      (arena_408270 took 969 ms)
+  skirmish_444130             250 tests,    250 bit-exact, largest relative difference 0
+      (skirmish_444130 took 984 ms)
+  missionsel_447cb0           250 tests,    250 bit-exact, largest relative difference 0
+      (missionsel_447cb0 took 953 ms)
+  hud_47ca70                 1504 tests,   1504 bit-exact, largest relative difference 0
+  hud_484ca0                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (hud_484ca0 took 609 ms)
+  hud_47d060                  604 tests,    604 bit-exact, largest relative difference 0
+  skirmish_4017b0             304 tests,    304 bit-exact, largest relative difference 0
+  skirmish_4017c0             304 tests,    304 bit-exact, largest relative difference 0
+  set_680370_441250           304 tests,    304 bit-exact, largest relative difference 0
+  set_4b42dc_457140           304 tests,    304 bit-exact, largest relative difference 0
+  match_4686e0                304 tests,    304 bit-exact, largest relative difference 0
+  static_initObject_4e1878      4 tests,      4 bit-exact, largest relative difference 0
+  static_initObject_5b1db8      4 tests,      4 bit-exact, largest relative difference 0
+  static_initObject_680cd8      4 tests,      4 bit-exact, largest relative difference 0
+  static_initObject_76d498      4 tests,      4 bit-exact, largest relative difference 0
+  static_initObject_90d1e0      4 tests,      4 bit-exact, largest relative difference 0
+  static_initObject_83a9e0      4 tests,      4 bit-exact, largest relative difference 0
+  arena_4532a0                304 tests,    304 bit-exact, largest relative difference 0
+  gfx_getWidth                304 tests,    304 bit-exact, largest relative difference 0
+  gfx_getHeight               304 tests,    304 bit-exact, largest relative difference 0
+  FUN_004686d0                304 tests,    304 bit-exact, largest relative difference 0
+  match_4686f0                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_00468700                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_004569a0                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_00464bb0                304 tests,    304 bit-exact, largest relative difference 0
+  load_466a20                 304 tests,    304 bit-exact, largest relative difference 0
+  load_46ae70                 304 tests,    304 bit-exact, largest relative difference 0
+  load_47db50                 304 tests,    304 bit-exact, largest relative difference 0
+  load_4804a0                 304 tests,    304 bit-exact, largest relative difference 0
+  load_4813a0                 304 tests,    304 bit-exact, largest relative difference 0
+  load_483fc0                 304 tests,    304 bit-exact, largest relative difference 0
+  load_487480                 304 tests,    304 bit-exact, largest relative difference 0
+  load_480430                 304 tests,    304 bit-exact, largest relative difference 0
+  this_set_483d60             304 tests,    304 bit-exact, largest relative difference 0
+  load_48fc30                 304 tests,    304 bit-exact, largest relative difference 0
+  ErrorLog_dtor               304 tests,    304 bit-exact, largest relative difference 0
+  TimeSync_dtor               304 tests,    304 bit-exact, largest relative difference 0
+  Scene_dtor                  304 tests,    304 bit-exact, largest relative difference 0
+  armc_45dfe0                 304 tests,    304 bit-exact, largest relative difference 0
+  this_get_0x2342381_463780    304 tests,    304 bit-exact, largest relative difference 0
+  match_45fff0                304 tests,    304 bit-exact, largest relative difference 0
+  match_48b440                304 tests,    304 bit-exact, largest relative difference 0
+  match_48b430                  4 tests,      4 bit-exact, largest relative difference 0
+  hud_48b450                    4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_483ce0                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b860                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b880                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b8a0                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b8c0                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b8e0                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b900                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b920                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_46b940                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_487b70                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_487b90                4 tests,      4 bit-exact, largest relative difference 0
+  nullsub_48b420                4 tests,      4 bit-exact, largest relative difference 0
+  Texture_rtti                  4 tests,      4 bit-exact, largest relative difference 0
+  TextureManager_rtti           4 tests,      4 bit-exact, largest relative difference 0
+  Sound_rtti                    4 tests,      4 bit-exact, largest relative difference 0
+  Console_rtti                  4 tests,      4 bit-exact, largest relative difference 0
+  Shape_rtti                    4 tests,      4 bit-exact, largest relative difference 0
+  ShapeManager_rtti             4 tests,      4 bit-exact, largest relative difference 0
+  Skeleton_rtti                 4 tests,      4 bit-exact, largest relative difference 0
+  SkeletonManager_rtti          4 tests,      4 bit-exact, largest relative difference 0
+  BMPRGBFile_rtti               4 tests,      4 bit-exact, largest relative difference 0
+  RealColor_rtti                4 tests,      4 bit-exact, largest relative difference 0
+  PackedColor_rtti              4 tests,      4 bit-exact, largest relative difference 0
+  UnitPartInfo_rtti             4 tests,      4 bit-exact, largest relative difference 0
+  UnitPoseInfo_rtti             4 tests,      4 bit-exact, largest relative difference 0
+  Unit_rtti                     4 tests,      4 bit-exact, largest relative difference 0
+  Stage_rtti                    4 tests,      4 bit-exact, largest relative difference 0
+  CollisionVolume_rtti          4 tests,      4 bit-exact, largest relative difference 0
+  Light_rtti                    4 tests,      4 bit-exact, largest relative difference 0
+  ViewVolume_rtti               4 tests,      4 bit-exact, largest relative difference 0
+  TimeSync_rtti                 4 tests,      4 bit-exact, largest relative difference 0
+  Scene_rtti                    4 tests,      4 bit-exact, largest relative difference 0
+  FUN_00455010                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00456970                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00460550                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00463b60                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_004669f0                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00469960                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046ae40                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046cce0                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046d2a0                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046daa0                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046f390                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046f3f0                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046f450                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0046ff50                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00481370                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00483d30                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00483f90                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_00487410                  6 tests,      6 bit-exact, largest relative difference 0
+  FUN_0048b3f0                  6 tests,      6 bit-exact, largest relative difference 0
+  ErrorLog_dtor_wrap_456cc0      4 tests,      4 bit-exact, largest relative difference 0
+  TimeSync_dtor_wrap_468740      4 tests,      4 bit-exact, largest relative difference 0
+  FUN_004569b0                304 tests,    304 bit-exact, largest relative difference 0
+  TextureManager_ctor           4 tests,      4 bit-exact, largest relative difference 0
+  Light_ctor                  104 tests,    104 bit-exact, largest relative difference 0
+  Model_ctor                  304 tests,    304 bit-exact, largest relative difference 0
+  CollisionVolume_ctor        304 tests,    304 bit-exact, largest relative difference 0
+  Scene_ctor                  304 tests,    304 bit-exact, largest relative difference 0
+  TimeSync_ctor               304 tests,    304 bit-exact, largest relative difference 0
+  Light_dtor                  104 tests,    104 bit-exact, largest relative difference 0
+  load_4723e0                 304 tests,    304 bit-exact, largest relative difference 0
+  ResourceSet_ctor_463850      24 tests,     24 bit-exact, largest relative difference 0
+  space_resetPlanes          1004 tests,   1004 bit-exact, largest relative difference 0
+  space_resetNodes           1004 tests,   1004 bit-exact, largest relative difference 0
+  space_resetBlocks          1004 tests,   1004 bit-exact, largest relative difference 0
+  script_reset                304 tests,    304 bit-exact, largest relative difference 0
+  hud_48fde0                 1004 tests,   1004 bit-exact, largest relative difference 0
+  lobbyTop_draw                40 tests,     40 bit-exact, largest relative difference 0
+  room_43e720                  40 tests,     40 bit-exact, largest relative difference 0
+  arena_406810                 40 tests,     40 bit-exact, largest relative difference 0
+  TextureManager_dtor         304 tests,    304 bit-exact, largest relative difference 0
+  load_487430_wrap_468720       4 tests,      4 bit-exact, largest relative difference 0
+  script_runScpFile          2004 tests,   2004 bit-exact, largest relative difference 0
+  load_47db60                5004 tests,   5004 bit-exact, largest relative difference 0
+      (load_47db60 took 922 ms)
+  TextureManager_dtor_wrap_42b380      4 tests,      4 bit-exact, largest relative difference 0
+  armc_41c510                  60 tests,     60 bit-exact, largest relative difference 0
+  armc_41b750                  60 tests,     60 bit-exact, largest relative difference 0
+  load_47fce0               20004 tests,  20004 bit-exact, largest relative difference 0
+      (load_47fce0 took 3578 ms)
+  ViewVolume_transformObject  20010 tests,  20010 bit-exact, largest relative difference 0
+      (ViewVolume_transformObject took 5937 ms)
+  collision_sphereVsUnit    20010 tests,  20010 bit-exact, largest relative difference 0
+      (collision_sphereVsUnit took 3625 ms)
+  space_collideUnit         20010 tests,  20010 bit-exact, largest relative difference 0
+      (space_collideUnit took 4985 ms)
+  vsprintf_wrap_473450       2004 tests,   2004 bit-exact, largest relative difference 0
+      (vsprintf_wrap_473450 took 546 ms)
+  vsprintf_wrap_463450       2004 tests,   2004 bit-exact, largest relative difference 0
+      (vsprintf_wrap_463450 took 532 ms)
+  msg_4629f0                 2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_4629f0 took 547 ms)
+  actor_46f770               2004 tests,   2004 bit-exact, largest relative difference 0
+      (actor_46f770 took 531 ms)
+  tex_46de20                 3004 tests,   3004 bit-exact, largest relative difference 0
+      (tex_46de20 took 562 ms)
+  arena_4542a0                300 tests,    300 bit-exact, largest relative difference 0
+      (arena_4542a0 took 1141 ms)
+  dplay_formatSessionEntry    300 tests,    300 bit-exact, largest relative difference 0
+      (dplay_formatSessionEntry took 1156 ms)
+  space_walkNodes_482aa0    20010 tests,  20010 bit-exact, largest relative difference 0
+      (space_walkNodes_482aa0 took 5391 ms)
+  setup_drawControlSlider     400 tests,    400 bit-exact, largest relative difference 0
+      (setup_drawControlSlider took 1547 ms)
+  FUN_0046c100               5004 tests,   5004 bit-exact, largest relative difference 0
+      (FUN_0046c100 took 875 ms)
+  FUN_00456de0                300 tests,    300 bit-exact, largest relative difference 0
+      (FUN_00456de0 took 1156 ms)
+  msg_playerLeft             2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_playerLeft took 859 ms)
+  msg_cheatUsed              2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_cheatUsed took 860 ms)
+  msg_playerJoinedTeam       2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_playerJoinedTeam took 859 ms)
+  msg_playerChangedTeam      2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_playerChangedTeam took 891 ms)
+  msg_kill                   2004 tests,   2004 bit-exact, largest relative difference 0
+      (msg_kill took 875 ms)
+  tex_applyTintMask          2004 tests,   2004 bit-exact, largest relative difference 0
+      (tex_applyTintMask took 422 ms)
+  space_testSphere          10010 tests,  10010 bit-exact, largest relative difference 0
+      (space_testSphere took 2718 ms)
+  actor_46c140              10004 tests,  10004 bit-exact, largest relative difference 0
+      (actor_46c140 took 1735 ms)
+  actor_46c1c0              10004 tests,  10004 bit-exact, largest relative difference 0
+      (actor_46c1c0 took 1687 ms)
+  collision_moveActor        8010 tests,   8010 bit-exact, largest relative difference 0
+      (collision_moveActor took 2610 ms)
+  static_registerDtor_42b170      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b1c0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b210      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b260      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b2b0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b300      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_42b370      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_455000      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_456960      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_456cb0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_460540      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_463b50      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_4669e0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_468730      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_469950      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46ae30      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46ccd0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46d290      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46da90      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46f380      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46f3e0      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46f440      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_46ff40      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_481360      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_483d20      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_483f80      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_487400      2 tests,      2 bit-exact, largest relative difference 0
+  static_registerDtor_48b3e0      2 tests,      2 bit-exact, largest relative difference 0
+  TextureManager_deletingDtor    304 tests,    304 bit-exact, largest relative difference 0
+  Light_deletingDtor          304 tests,    304 bit-exact, largest relative difference 0
+  Scene_deletingDtor          304 tests,    304 bit-exact, largest relative difference 0
+  ErrorLog_deletingDtor       304 tests,    304 bit-exact, largest relative difference 0
+  TimeSync_deletingDtor       304 tests,    304 bit-exact, largest relative difference 0
+  FUN_00464bc0                304 tests,    304 bit-exact, largest relative difference 0
+  load_466a30                 304 tests,    304 bit-exact, largest relative difference 0
+  FUN_004699a0                304 tests,    304 bit-exact, largest relative difference 0
+  load_46ae80                 304 tests,    304 bit-exact, largest relative difference 0
+  FUN_0046f4b0                304 tests,    304 bit-exact, largest relative difference 0
+  load_4813b0                 304 tests,    304 bit-exact, largest relative difference 0
+  arena_4519b0                300 tests,    300 bit-exact, largest relative difference 0
+      (arena_4519b0 took 1172 ms)
+  arena_454130                300 tests,    300 bit-exact, largest relative difference 0
+      (arena_454130 took 1110 ms)
+  FUN_004540b0                300 tests,    300 bit-exact, largest relative difference 0
+      (FUN_004540b0 took 1156 ms)
+  FUN_00441190               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_00441120                 30 tests,     30 bit-exact, largest relative difference 0
+  FUN_0042b120                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b190                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b1e0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b230                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b280                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b2d0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0042b320                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00454fd0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00456930                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00456c80                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00460510                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00463b20                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_004669b0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00468710                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00469920                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046ae00                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046cca0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046d260                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046da60                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046f350                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046f3b0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046f410                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0046ff10                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00481330                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00483cf0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_00483f50                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_004873d0                  2 tests,      2 bit-exact, largest relative difference 0
+  FUN_0048b3b0                  2 tests,      2 bit-exact, largest relative difference 0
+  Model_dtor                  304 tests,    304 bit-exact, largest relative difference 0
+  ShapeManager_dtor           304 tests,    304 bit-exact, largest relative difference 0
+  SkeletonManager_dtor        304 tests,    304 bit-exact, largest relative difference 0
+  match_46f470                304 tests,    304 bit-exact, largest relative difference 0
+  CollisionVolume_dtor        304 tests,    304 bit-exact, largest relative difference 0
+  intro_4411e0                 30 tests,     30 bit-exact, largest relative difference 0
+  FUN_00441200                 30 tests,     30 bit-exact, largest relative difference 0
+  FUN_00467520               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_0046b7f0               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_0046ce50                304 tests,    304 bit-exact, largest relative difference 0
+  BMPRGBFile_ctor             304 tests,    304 bit-exact, largest relative difference 0
+  match_487ed0                304 tests,    304 bit-exact, largest relative difference 0
+  chat_loadMacros             304 tests,    304 bit-exact, largest relative difference 0
+  Texture_ctor                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_0046ca70                304 tests,    304 bit-exact, largest relative difference 0
+  FUN_0046cbe0               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_0046cc30               1004 tests,   1004 bit-exact, largest relative difference 0
+  cfg_parsePlayer              60 tests,     60 bit-exact, largest relative difference 0
+  cfg_parseSound               60 tests,     60 bit-exact, largest relative difference 0
+  cfg_keyBindings              60 tests,     60 bit-exact, largest relative difference 0
+  console_loadFile            100 tests,    100 bit-exact, largest relative difference 0
+      (console_loadFile took 406 ms)
+  app_checkLauncherRunning    100 tests,    100 bit-exact, largest relative difference 0
+      (app_checkLauncherRunning took 407 ms)
+  profile_loadList            100 tests,    100 bit-exact, largest relative difference 0
+  profile_delete              100 tests,    100 bit-exact, largest relative difference 0
+  mission_saveAxisMis         100 tests,    100 bit-exact, largest relative difference 0
+      (mission_saveAxisMis took 422 ms)
+  arena_readLaunchFile        100 tests,    100 bit-exact, largest relative difference 0
+      (arena_readLaunchFile took 406 ms)
+  mission_loadAxisMis         100 tests,    100 bit-exact, largest relative difference 0
+      (mission_loadAxisMis took 422 ms)
+  cfg_readLines               150 tests,    150 bit-exact, largest relative difference 0
+      (cfg_readLines took 719 ms)
+  arena_loadSettings          150 tests,    150 bit-exact, largest relative difference 0
+      (arena_loadSettings took 656 ms)
+  match_46cdc0               1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_00467d60                304 tests,    304 bit-exact, largest relative difference 0
+  Texture_deletingDtor        304 tests,    304 bit-exact, largest relative difference 0
+  BMPRGBFile_deletingDtor     304 tests,    304 bit-exact, largest relative difference 0
+  Model_deletingDtor          304 tests,    304 bit-exact, largest relative difference 0
+  ShapeManager_deletingDtor    304 tests,    304 bit-exact, largest relative difference 0
+  CollisionVolume_deletingDtor    304 tests,    304 bit-exact, largest relative difference 0
+  SkeletonManager_deletingDtor    304 tests,    304 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b180     30 tests,     30 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b1d0     30 tests,     30 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b220     30 tests,     30 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b270     30 tests,     30 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b2c0     30 tests,     30 bit-exact, largest relative difference 0
+  Texture_ctor_wrap_42b310     30 tests,     30 bit-exact, largest relative difference 0
+  FUN_00456cd0                 40 tests,     40 bit-exact, largest relative difference 0
+  load_48b460                1004 tests,   1004 bit-exact, largest relative difference 0
+  load_483d70                1004 tests,   1004 bit-exact, largest relative difference 0
+  FUN_0045ff30                304 tests,    304 bit-exact, largest relative difference 0
+  ResourceSet_dtor_463960     104 tests,    104 bit-exact, largest relative difference 0
+  Stage_dtor                   14 tests,     14 bit-exact, largest relative difference 0
+  chat_saveMacros              30 tests,     30 bit-exact, largest relative difference 0
+  chat_macro                 2004 tests,   2004 bit-exact, largest relative difference 0
+      (chat_macro took 469 ms)
+  GetCurrentDirectoryA_wrap_43f580     40 tests,     40 bit-exact, largest relative difference 0
+  gfx_swapBuffers              40 tests,     40 bit-exact, largest relative difference 0
+  arena_4539f0                 40 tests,     40 bit-exact, largest relative difference 0
+  net_454740                   40 tests,     40 bit-exact, largest relative difference 0
+  FUN_0046c580                 40 tests,     40 bit-exact, largest relative difference 0
+  profile_41e7a0               40 tests,     40 bit-exact, largest relative difference 0
+  menu_vertex                  40 tests,     40 bit-exact, largest relative difference 0
+  mci_pause                    40 tests,     40 bit-exact, largest relative difference 0
+  FUN_0043f980                 40 tests,     40 bit-exact, largest relative difference 0
+  sys_messageBox               40 tests,     40 bit-exact, largest relative difference 0
+  ptx_error                    40 tests,     40 bit-exact, largest relative difference 0
+  ptx_crtlError                40 tests,     40 bit-exact, largest relative difference 0
+  reg_writeEndMode             40 tests,     40 bit-exact, largest relative difference 0
+  reg_writeStartMode           40 tests,     40 bit-exact, largest relative difference 0
+  menu_frameBegin              40 tests,     40 bit-exact, largest relative difference 0
+  app_registerWindowClassEx     40 tests,     40 bit-exact, largest relative difference 0
+  net_452de0                   40 tests,     40 bit-exact, largest relative difference 0
+  dplay_454d90                 40 tests,     40 bit-exact, largest relative difference 0
+  app_42ef30                   40 tests,     40 bit-exact, largest relative difference 0
+  gfx_setPixelFormat           40 tests,     40 bit-exact, largest relative difference 0
+  autoplay_listFiles           40 tests,     40 bit-exact, largest relative difference 0
+  data_loadMessages            40 tests,     40 bit-exact, largest relative difference 0
+  profile_create               40 tests,     40 bit-exact, largest relative difference 0
+  data_loadSkirmishInfo        40 tests,     40 bit-exact, largest relative difference 0
+  data_loadMapInfo             40 tests,     40 bit-exact, largest relative difference 0
+  data_loadPilotProfiles       40 tests,     40 bit-exact, largest relative difference 0
+  profile_saveProgress         40 tests,     40 bit-exact, largest relative difference 0
+  profile_load                 40 tests,     40 bit-exact, largest relative difference 0
+  profile_save                 40 tests,     40 bit-exact, largest relative difference 0
+  timer_now                    40 tests,     40 bit-exact, largest relative difference 0
+  Stage_deletingDtor           40 tests,     40 bit-exact, largest relative difference 0
+      (Stage_deletingDtor took 469 ms)
+  dplay_enumSessionsCallback     40 tests,     40 bit-exact, largest relative difference 0
+  profile_44f850               40 tests,     40 bit-exact, largest relative difference 0
+  intro_41e730                 40 tests,     40 bit-exact, largest relative difference 0
+  room_435ab0                  40 tests,     40 bit-exact, largest relative difference 0
+  lobby_406bd0                 40 tests,     40 bit-exact, largest relative difference 0
+  lobby_407270                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_00427a40                 40 tests,     40 bit-exact, largest relative difference 0
+  mainmenu_440d70              40 tests,     40 bit-exact, largest relative difference 0
+  timer_init                   40 tests,     40 bit-exact, largest relative difference 0
+  profile_selectAndLoad        40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawRect                40 tests,     40 bit-exact, largest relative difference 0
+  menuState210_enter           40 tests,     40 bit-exact, largest relative difference 0
+  profile_scanSaves            40 tests,     40 bit-exact, largest relative difference 0
+  autoplay_startRecording      40 tests,     40 bit-exact, largest relative difference 0
+  dplay_enumConnections        40 tests,     40 bit-exact, largest relative difference 0
+  inet_addr_wrap_4547c0        40 tests,     40 bit-exact, largest relative difference 0
+  net_asyncSelect              40 tests,     40 bit-exact, largest relative difference 0
+  net_getLocalAddress          40 tests,     40 bit-exact, largest relative difference 0
+  FUN_004520e0                 40 tests,     40 bit-exact, largest relative difference 0
+  net_resolveHost              40 tests,     40 bit-exact, largest relative difference 0
+  match_48e990                 40 tests,     40 bit-exact, largest relative difference 0
+  net_sendState_48ead0         40 tests,     40 bit-exact, largest relative difference 0
+  match_48e0f0                 40 tests,     40 bit-exact, largest relative difference 0
+  match_48e680                 40 tests,     40 bit-exact, largest relative difference 0
+  match_48e2c0                 40 tests,     40 bit-exact, largest relative difference 0
+  skel_ase_47d260             300 tests,    300 bit-exact, largest relative difference 0
+      (skel_ase_47d260 took 1188 ms)
+  actor_46f8c0                300 tests,    300 bit-exact, largest relative difference 0
+      (actor_46f8c0 took 1265 ms)
+  ViewVolume_projectObject    300 tests,    300 bit-exact, largest relative difference 0
+      (ViewVolume_projectObject took 1157 ms)
+  app_checkFile_profkor        40 tests,     40 bit-exact, largest relative difference 0
+  app_checkFile_skirmish       40 tests,     40 bit-exact, largest relative difference 0
+  app_checkFile_axisgame       40 tests,     40 bit-exact, largest relative difference 0
+  app_checkFile_game           40 tests,     40 bit-exact, largest relative difference 0
+  app_checkFile_profeng        40 tests,     40 bit-exact, largest relative difference 0
+  reg_readStartMode            40 tests,     40 bit-exact, largest relative difference 0
+  skel_ase_47d2f0             300 tests,    300 bit-exact, largest relative difference 0
+      (skel_ase_47d2f0 took 1141 ms)
+  skel_ase_47d320             300 tests,    300 bit-exact, largest relative difference 0
+      (skel_ase_47d320 took 1172 ms)
+  input_setCursorPos           40 tests,     40 bit-exact, largest relative difference 0
+  input_asyncKeyDown           40 tests,     40 bit-exact, largest relative difference 0
+  input_getCursorPos           40 tests,     40 bit-exact, largest relative difference 0
+  net_ping                     40 tests,     40 bit-exact, largest relative difference 0
+  net_454650                   40 tests,     40 bit-exact, largest relative difference 0
+  net_4545b0                   40 tests,     40 bit-exact, largest relative difference 0
+  gfx_setMenuCamera            40 tests,     40 bit-exact, largest relative difference 0
+  armc_41b300                  40 tests,     40 bit-exact, largest relative difference 0
+  app_43f640                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_490b30                  300 tests,    300 bit-exact, largest relative difference 0
+      (hud_490b30 took 1187 ms)
+  hud_490da0                  300 tests,    300 bit-exact, largest relative difference 0
+      (hud_490da0 took 1219 ms)
+  game_setGameTypeFlags        40 tests,     40 bit-exact, largest relative difference 0
+  cfg_parseGraphic             40 tests,     40 bit-exact, largest relative difference 0
+  cfg_parseServer              40 tests,     40 bit-exact, largest relative difference 0
+  cfg_42e080                   40 tests,     40 bit-exact, largest relative difference 0
+  armc_saveSelection           40 tests,     40 bit-exact, largest relative difference 0
+  actor_45ebc0                 40 tests,     40 bit-exact, largest relative difference 0
+  room_435770                  40 tests,     40 bit-exact, largest relative difference 0
+  armc_40f340                  40 tests,     40 bit-exact, largest relative difference 0
+  cd_findDrive                 40 tests,     40 bit-exact, largest relative difference 0
+  cfg_loadAxisCfg              40 tests,     40 bit-exact, largest relative difference 0
+  FUN_004050a0                 40 tests,     40 bit-exact, largest relative difference 0
+  lobby_405140                 40 tests,     40 bit-exact, largest relative difference 0
+  profile_44f6c0               40 tests,     40 bit-exact, largest relative difference 0
+  armc_41dcf0                  40 tests,     40 bit-exact, largest relative difference 0
+  cfg_parseKeyNames            40 tests,     40 bit-exact, largest relative difference 0
+  cfg_videoModeNames           40 tests,     40 bit-exact, largest relative difference 0
+  cfg_gameTypeNames            40 tests,     40 bit-exact, largest relative difference 0
+  net_sendGamePacket          300 tests,    300 bit-exact, largest relative difference 0
+      (net_sendGamePacket took 1187 ms)
+  setup_drawKeyBindingRows     40 tests,     40 bit-exact, largest relative difference 0
+  space_traceUnit_4809f0      600 tests,    600 bit-exact, largest relative difference 0
+      (space_traceUnit_4809f0 took 2407 ms)
+  space_traceNodes            600 tests,    600 bit-exact, largest relative difference 0
+      (space_traceNodes took 2375 ms)
+  collision_rayTrace          600 tests,    600 bit-exact, largest relative difference 0
+      (collision_rayTrace took 2406 ms)
+  cfg_writeDefaultAxisCfg      40 tests,     40 bit-exact, largest relative difference 0
+  actor_checkLineOfSight      400 tests,    400 bit-exact, largest relative difference 0
+      (actor_checkLineOfSight took 1672 ms)
+  armc_41cf20                 300 tests,    300 bit-exact, largest relative difference 0
+      (armc_41cf20 took 1203 ms)
+  armc_41d280                 300 tests,    300 bit-exact, largest relative difference 0
+      (armc_41d280 took 1234 ms)
+  actor_setPartColor          300 tests,    300 bit-exact, largest relative difference 0
+      (actor_setPartColor took 1235 ms)
+  actor_applyRemoteColours    300 tests,    300 bit-exact, largest relative difference 0
+      (actor_applyRemoteColours took 1312 ms)
+  FUN_0041ef20                 40 tests,     40 bit-exact, largest relative difference 0
+  FUN_00470fc0                 40 tests,     40 bit-exact, largest relative difference 0
+  net_454760                   40 tests,     40 bit-exact, largest relative difference 0
+  net_454690                   40 tests,     40 bit-exact, largest relative difference 0
+  net_452d70                   40 tests,     40 bit-exact, largest relative difference 0
+  FUN_0042f0f0                 40 tests,     40 bit-exact, largest relative difference 0
+  input_asyncKeyPressed        40 tests,     40 bit-exact, largest relative difference 0
+  hud_46bd00                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_427c30                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_427e30                   40 tests,     40 bit-exact, largest relative difference 0
+  text_quad8                   40 tests,     40 bit-exact, largest relative difference 0
+  text_quad16                  40 tests,     40 bit-exact, largest relative difference 0
+  text_quad32                  40 tests,     40 bit-exact, largest relative difference 0
+  text_quad5                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_427ce0                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_427ee0                   40 tests,     40 bit-exact, largest relative difference 0
+  profile_4283e0               40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawTexQuad_4284d0      40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawTexQuad_4282f0      40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawTexQuad_4285c0      40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawTexQuad_4286b0      40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawTexQuad_4287a0      40 tests,     40 bit-exact, largest relative difference 0
+  sys_errorMessageNoName       40 tests,     40 bit-exact, largest relative difference 0
+  sys_errorMessage             40 tests,     40 bit-exact, largest relative difference 0
+  sys_errorTerminate           40 tests,     40 bit-exact, largest relative difference 0
+  sys_fatalError               40 tests,     40 bit-exact, largest relative difference 0
+  ViewVolume_captureMatrices     40 tests,     40 bit-exact, largest relative difference 0
+  gfx_initVertexArrayExt       40 tests,     40 bit-exact, largest relative difference 0
+  ViewVolume_dtor              40 tests,     40 bit-exact, largest relative difference 0
+  ViewVolume_deletingDtor      40 tests,     40 bit-exact, largest relative difference 0
+  hud_472900                   40 tests,     40 bit-exact, largest relative difference 0
+  load_401290                  40 tests,     40 bit-exact, largest relative difference 0
+  shape_findDatEntry           40 tests,     40 bit-exact, largest relative difference 0
+  skelDat_getItemFileBy        40 tests,     40 bit-exact, largest relative difference 0
+  app_deleteDataFiles          40 tests,     40 bit-exact, largest relative difference 0
+  net_452af0                   40 tests,     40 bit-exact, largest relative difference 0
+  net_452c80                   40 tests,     40 bit-exact, largest relative difference 0
+  math_makeMathFunctionTableFile     40 tests,     40 bit-exact, largest relative difference 0
+  math_initMathFunction        40 tests,     40 bit-exact, largest relative difference 0
+  glWindow_4684c0              40 tests,     40 bit-exact, largest relative difference 0
+  reg_readServerSettings       40 tests,     40 bit-exact, largest relative difference 0
+  text_ascii5Pass              40 tests,     40 bit-exact, largest relative difference 0
+  text_ascii8Pass              40 tests,     40 bit-exact, largest relative difference 0
+  text_ascii16Pass             40 tests,     40 bit-exact, largest relative difference 0
+  text_ascii32Pass             40 tests,     40 bit-exact, largest relative difference 0
+  text_hanCho                  40 tests,     40 bit-exact, largest relative difference 0
+  text_hanJungJong             40 tests,     40 bit-exact, largest relative difference 0
+  hud_401ce0                   40 tests,     40 bit-exact, largest relative difference 0
+  hud_401e70                   40 tests,     40 bit-exact, largest relative difference 0
+  tex_getItemFileBy            40 tests,     40 bit-exact, largest relative difference 0
+  space_getNextFreePlanePtr     40 tests,     40 bit-exact, largest relative difference 0
+  space_getNextFreeNodePtr     40 tests,     40 bit-exact, largest relative difference 0
+  space_getNextFreeUnitPtr     40 tests,     40 bit-exact, largest relative difference 0
+  space_getNextFreeBlockPtrBy     40 tests,     40 bit-exact, largest relative difference 0
+  map_loadWayPointInfoFrom     40 tests,     40 bit-exact, largest relative difference 0
+  map_loadTriggerInfoFrom      40 tests,     40 bit-exact, largest relative difference 0
+  factor_addFactorBy           40 tests,     40 bit-exact, largest relative difference 0
+  load_483e90                  40 tests,     40 bit-exact, largest relative difference 0
+  load_483ec0                  40 tests,     40 bit-exact, largest relative difference 0
+  match_483f00                 40 tests,     40 bit-exact, largest relative difference 0
+  match_472310                 40 tests,     40 bit-exact, largest relative difference 0
+  net_send                     40 tests,     40 bit-exact, largest relative difference 0
+  room_434d00                  40 tests,     40 bit-exact, largest relative difference 0
+  room_4334c0                  40 tests,     40 bit-exact, largest relative difference 0
+  room_434b90                  40 tests,     40 bit-exact, largest relative difference 0
+  room_434820                  40 tests,     40 bit-exact, largest relative difference 0
+  room_leaveGame               40 tests,     40 bit-exact, largest relative difference 0
+  match_44aee0                 40 tests,     40 bit-exact, largest relative difference 0
+  match_4327f0                 40 tests,     40 bit-exact, largest relative difference 0
+  armc_sendSelectionToNet      40 tests,     40 bit-exact, largest relative difference 0
+  net_disconnect               40 tests,     40 bit-exact, largest relative difference 0
+  net_closeAll                 40 tests,     40 bit-exact, largest relative difference 0
+  armc_41b710                  40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawDimOverlay          40 tests,     40 bit-exact, largest relative difference 0
+  room_43df00                  40 tests,     40 bit-exact, largest relative difference 0
+  menu_428890                  40 tests,     40 bit-exact, largest relative difference 0
+  menu_drawFrame               40 tests,     40 bit-exact, largest relative difference 0
+  glWindow_restoreDisplayMode     40 tests,     40 bit-exact, largest relative difference 0
+  glWindow_setDisplayModeBy     40 tests,     40 bit-exact, largest relative difference 0
+  glWindow_setupPixelFormat     40 tests,     40 bit-exact, largest relative difference 0
+  glWindow_resize              40 tests,     40 bit-exact, largest relative difference 0
+  image_initBy                 40 tests,     40 bit-exact, largest relative difference 0
+  shapeDat_initBy              40 tests,     40 bit-exact, largest relative difference 0
+  skelDat_initBy               40 tests,     40 bit-exact, largest relative difference 0
+  timer_getGameTime            40 tests,     40 bit-exact, largest relative difference 0
+  armc_461210                  40 tests,     40 bit-exact, largest relative difference 0
+  sys_checkClockTampering      40 tests,     40 bit-exact, largest relative difference 0
+  profile_deleteFiles          40 tests,     40 bit-exact, largest relative difference 0
+  reg_writeCharacterSettings     40 tests,     40 bit-exact, largest relative difference 0
+  room_433640                  40 tests,     40 bit-exact, largest relative difference 0
+  room_43e610                  40 tests,     40 bit-exact, largest relative difference 0
+  gfx_initGLState              40 tests,     40 bit-exact, largest relative difference 0
+  tex_upload                   40 tests,     40 bit-exact, largest relative difference 0
+  tex_upload2                  40 tests,     40 bit-exact, largest relative difference 0
+  match_49d150                 40 tests,     40 bit-exact, largest relative difference 0
+  chat_createEdit              40 tests,     40 bit-exact, largest relative difference 0
+  reg_readCharacterSettings     40 tests,     40 bit-exact, largest relative difference 0
+  gfx_saveScreenshot           40 tests,     40 bit-exact, largest relative difference 0
+  catalogue_loadComponents     40 tests,     40 bit-exact, largest relative difference 0
+recomp: state tests took 195031 ms
+      (load_47fce0: the original answered 1 in 2530 tests)
+      (collision_sphereVsUnit: the original reported a contact in 3061 tests)
+      (space_collideUnit: the original reported a hit in 7274 tests)
+      (ray traces: the original hit something in 69 / 60 / 61 tests: node, grid, line of sight)
+      (actor_checkLineOfSight: the original picked a target in 252 tests)
+recomp: switching the game to the rebuilt functions
+recomp: done

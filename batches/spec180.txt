@@ -1,0 +1,2 @@
+msg_newKing 462150 0 300 0
+bullet_playImpactSound 460000 0 400 0

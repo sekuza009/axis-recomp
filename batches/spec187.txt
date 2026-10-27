@@ -1,0 +1,4 @@
+game_processGameModeInit 49df10 0 200 0
+match_escMenu 49ca70 0 200 0
+wnd_setCursor 4314e0 0 200 0
+scene_loadPath 48fd50 0 200 0

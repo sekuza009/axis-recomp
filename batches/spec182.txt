@@ -1,0 +1,6 @@
+menuState300_frame 443530 0 200 0
+menuState600_setup 427920 0 200 0
+menuState900_skirmishSetup 445be0 0 200 0
+menuState210_frame 44f860 0 200 0
+arena_452ec0 452ec0 0 200 0
+skirmish_445bc0 445bc0 0 50 0

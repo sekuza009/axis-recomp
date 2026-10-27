@@ -1,0 +1,4 @@
+match_inputState2 48b200 1 400 0
+menu_frame 41fa40 0 400 0
+game_loadAllData 460570 1 400 0
+hud_pass 4982f0 0 400 0

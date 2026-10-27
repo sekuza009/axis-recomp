@@ -1,0 +1,4 @@
+hud_drawPressFire 495140 0 100 0
+hud_drawReadyStart 496c20 0 300 0
+hud_drawRecordIndicator 496d10 0 300 0
+hud_drawMatchResult 496a30 0 300 0

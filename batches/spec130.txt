@@ -1,0 +1,1 @@
+lobbyTop_drawTitle 408680 0 200 0

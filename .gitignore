@@ -1,0 +1,18 @@
+# build outputs and binaries (rebuilt by the build command in README.txt)
+*.dll
+*.lib
+*.pdb
+*.exe
+build/
+# run outputs
+*.png
+recomp.log
+recomp.progress
+test3.out
+Save.bak/
+# backups made before this repository existed (kept on disk, superseded by git history)
+batches/recomp.c.*
+batches/*.pre*
+batches/*.post*
+# temporary coverage instrumentation (tools/covlift.py)
+lifted/*.cov.bak

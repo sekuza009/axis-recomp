@@ -1,0 +1,5 @@
+image_copyTo 46ce80 0 40 0
+tex_textureFileExist 4557e0 1 40 0
+tex_initBy 455080 0 40 0
+shape_initBy 466a60 0 40 0
+skel_loadFrom_46aeb0 46aeb0 0 40 0

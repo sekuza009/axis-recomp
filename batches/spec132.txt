@@ -1,0 +1,6 @@
+mainmenu_4434f0 4434f0 0 150 0
+lobbyPlayer_draw 40cf80 0 150 0
+setup_427830 427830 0 150 0
+setup_427880 427880 0 150 0
+profile_44f5f0 44f5f0 0 150 0
+profile_44f740 44f740 0 150 0

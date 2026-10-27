@@ -1,0 +1,12 @@
+game_returnToMenus_41ec50 41ec50 0 200 0
+game_returnToMenus_41e8b0 41e8b0 0 200 0
+game_returnToMenus_41e9d0 41e9d0 0 200 0
+game_returnToMenus_41eb00 41eb00 0 200 0
+room_4036c0 4036c0 0 200 0
+menuState900_enterSkirmish 443950 0 200 0
+room_434490 434490 0 200 0
+menuState500_enter 447750 0 200 0
+msg_playerConnected 462b50 0 200 0
+msg_chatLine 462c30 0 300 0
+music_playMatch 462850 0 300 0
+dplay_closeSession 453a10 0 100 0

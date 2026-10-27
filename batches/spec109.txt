@@ -1,0 +1,1 @@
+render_drawObjects 485af0 0 300 0

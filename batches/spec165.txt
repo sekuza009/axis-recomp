@@ -1,0 +1,6 @@
+menu_447c30 447c30 0 300 0
+menu_447b40 447b40 0 400 0
+menu_447c70 447c70 0 300 0
+missionsel_44aa30 44aa30 0 50 0
+skirmish_445bd0 445bd0 0 50 0
+jmp_net_getLocalAddress_4532e0 4532e0 0 50 0

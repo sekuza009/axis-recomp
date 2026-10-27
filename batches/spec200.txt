@@ -1,0 +1,2 @@
+script_processCommandBy 483770 0 600 0
+script_processTriggers 483640 0 400 0

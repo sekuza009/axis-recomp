@@ -1,0 +1,2 @@
+map_loadPlayInfoFrom 4876b0 0 40 0
+map_loadMissionInfoFrom 48b5c0 0 40 0

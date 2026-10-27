@@ -1,0 +1,6 @@
+actor_setActorTypeHeadInfoBy 473b10 1 300 0
+actor_setActorTypeChestInfoBy 473c20 1 300 0
+actor_setActorTypeArmInfoBy 473d30 1 300 0
+actor_setActorTypeLegInfoBy 473e40 1 300 0
+actor_setActorTypeBoosterInfoBy 473f50 1 300 0
+actor_setActorTypeItemInfoBy 474060 0 300 0

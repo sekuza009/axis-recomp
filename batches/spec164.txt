@@ -1,0 +1,8 @@
+setup_drawTab 422b30 0 200 0
+setup_processTabKeys 4230a0 0 200 0
+lobby_processKeys 4081f0 0 300 0
+menu_4378e0 4378e0 0 400 0
+room_processKeys 436800 0 400 0
+profile_44f410 44f410 0 300 0
+room_43ed20 43ed20 0 300 0
+lobbyCreate_draw 40d390 0 300 0

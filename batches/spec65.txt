@@ -1,0 +1,2 @@
+scene_reset 470ad0 0 40 0
+shape_read 466120 0 40 0

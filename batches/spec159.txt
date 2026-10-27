@@ -1,0 +1,7 @@
+sound_init 467a50 0 300 0
+dsbuf_play 467d70 0 200 0
+dsbuf_setVolume 467db0 0 200 0
+sound_467dd0 467dd0 0 300 0
+music_shutdown 457310 0 200 0
+music_4572b0 4572b0 0 200 0
+music_play 457150 0 300 0

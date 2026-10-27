@@ -1,0 +1,2 @@
+tex_allocIdBy 4555b0 1 300 0
+tex_getIdByName 456be0 1 300 0

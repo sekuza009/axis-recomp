@@ -1,0 +1,1 @@
+object_initObjectBy 48fee0 0 300 0

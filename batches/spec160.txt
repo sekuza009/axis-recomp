@@ -1,0 +1,8 @@
+input_initKeyboard 401310 0 300 0
+input_4013a0 4013a0 0 300 0
+input_createDirectInput 401410 0 300 0
+input_reacquireKeyboard 4012c0 0 200 0
+input_reacquireMouse 4012e0 0 200 0
+input_releaseKeyboard 401460 0 200 0
+wnd_401490 401490 0 200 0
+wnd_467b70 467b70 0 200 0

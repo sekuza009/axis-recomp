@@ -1,0 +1,2 @@
+light_computeLayerLightBy 472400 0 400 0
+render_processRenderingBy 497d20 0 200 0

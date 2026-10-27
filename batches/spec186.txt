@@ -1,0 +1,7 @@
+armc_40e5d0 40e5d0 0 200 0
+armc_41d600 41d600 0 200 0
+armc_41d8a0 41d8a0 0 200 0
+armc_41dfe0 41dfe0 0 200 0
+armc_41e010 41e010 0 200 0
+armc_41dfb0 41dfb0 0 200 0
+menuState700_armCenter 41e040 0 200 0

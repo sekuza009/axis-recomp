@@ -1,0 +1,2 @@
+object_addObjectBy 490c50 1 300 0
+effect_initTextures 48ec20 0 300 0

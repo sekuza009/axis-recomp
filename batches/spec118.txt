@@ -1,0 +1,5 @@
+armc_412450 412450 0 200 0
+skirmish_445520 445520 0 300 0
+profile_44dc60 44dc60 0 200 0
+arena_drawCustomOption 40b550 0 200 0
+room_drawCustomOption 43bde0 0 200 0

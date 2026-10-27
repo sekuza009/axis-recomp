@@ -1,0 +1,4 @@
+menu_drawTexturedRect_427a90 427a90 0 300 0
+menu_drawTexturedRect_427b60 427b60 0 300 0
+menu_drawTexturedRect_428a00 428a00 0 300 0
+menu_drawTexturedRect_428b50 428b50 0 300 0

@@ -1,0 +1,3 @@
+room_439e00 439e00 0 200 0
+skirmish_drawScreenB 4456b0 0 200 0
+skirmish_drawScreenA 444f40 0 200 0

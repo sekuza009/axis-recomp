@@ -1,0 +1,1 @@
+map_loadActorInfoFrom 474550 0 300 0

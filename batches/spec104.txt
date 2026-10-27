@@ -1,0 +1,1 @@
+actor_setupFromParts 457330 0 300 0
