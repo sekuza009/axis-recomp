@@ -12,3 +12,5 @@
 0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
 0x2342ef6  4          u32 eventCount                             # events written so far
 0x2342efa  4          u32 eventFirst                             # first event still shown
+0x233c9e8  4          i32 frameFlag                              # (unclear) 1: state 2 presents its own frame
+0x233cc20  4          i32 inputState                             # the match's state: 1 loading, 2 playing, 3 free camera, 4 replay

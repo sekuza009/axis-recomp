@@ -18,7 +18,11 @@ typedef struct Scene {
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
 	u32 msgWrite;   /* +0x233c598: next slot msgRing gets written to */
 	u32 msgRead;   /* +0x233c59c: next slot replay_drawMessage shows */
-	u8 _pad233c5a0[0x694];
+	u8 _pad233c5a0[0x448];
+	i32 frameFlag;   /* +0x233c9e8: (unclear) 1: state 2 presents its own frame */
+	u8 _pad233c9ec[0x234];
+	i32 inputState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
+	u8 _pad233cc24[0x10];
 	float chatBlink;   /* +0x233cc34: cursor blink clock of the chat line */
 	u8 _pad233cc38[0x8];
 	float msgFade;   /* +0x233cc40: message box fade, seconds (1 or more: opaque) */
@@ -37,6 +41,8 @@ _Static_assert(offsetof(Scene, msgText) == 0x22fbbd8 && sizeof(((Scene *)0)->msg
 _Static_assert(offsetof(Scene, msgRing) == 0x233c318 && sizeof(((Scene *)0)->msgRing) == 0x280, "scene.fields: msgRing");
 _Static_assert(offsetof(Scene, msgWrite) == 0x233c598 && sizeof(((Scene *)0)->msgWrite) == 0x4, "scene.fields: msgWrite");
 _Static_assert(offsetof(Scene, msgRead) == 0x233c59c && sizeof(((Scene *)0)->msgRead) == 0x4, "scene.fields: msgRead");
+_Static_assert(offsetof(Scene, frameFlag) == 0x233c9e8 && sizeof(((Scene *)0)->frameFlag) == 0x4, "scene.fields: frameFlag");
+_Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: inputState");
 _Static_assert(offsetof(Scene, chatBlink) == 0x233cc34 && sizeof(((Scene *)0)->chatBlink) == 0x4, "scene.fields: chatBlink");
 _Static_assert(offsetof(Scene, msgFade) == 0x233cc40 && sizeof(((Scene *)0)->msgFade) == 0x4, "scene.fields: msgFade");
 _Static_assert(offsetof(Scene, chatMode) == 0x2340d35 && sizeof(((Scene *)0)->chatMode) == 0x4, "scene.fields: chatMode");

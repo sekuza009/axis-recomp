@@ -7427,21 +7427,25 @@ LIFT_PLAIN(profile_44cc60, 44cc60)
 /* 0x44cdd0 menu_44cdd0(): the profile screen's keys: none with a dialog (0x90d1c4); during the intro animation
    (0x9f6838, state 0x9f8e54 != 5) Enter / Esc skip it (state 5, the fade values set); else page 0x9f8f10 (1..6)
    picks its handler by an inline jump table (profile_44c600 .. profile_44cc60) */
-LIFT_PLAIN(menu_44cdd0, 44cdd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_44cdd0(void);
 #include "lifted/grp159.c"
 /* 0x4319d0 menu_processKeys(): the menus' keys: none while 0x68039c; the input poll (0x4012c0); none while
    0x680370 or the fade 0x9da434 above its limit; a pending dialog (0x4df900) takes them (0x431950); else the
    screen 0x76d3e8 (200, 210, 300, 400, 500, 600, 700, 800, 900, 9999) picks its key handler by tail call */
-LIFT_PLAIN(menu_processKeys, 4319d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_processKeys(void);
 /* batch 202 (lifted/grp161.c): the fade step after a menu frame and the match's per-state frame */
 #include "lifted/grp161.c"
 /* 0x4202d0 FUN_004202d0(): a menu frame's end: 0x4572b0, then the fade 0x9da434 steps down by 0x4b071c while above
    its limit 0x4a93e8, then 0x420280 by tail call */
-LIFT_PLAIN(FUN_004202d0, 4202d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_004202d0(void);
 /* 0x462050 main_462050() (thiscall on the scene): the match's frame by input state +0x233cc20 (1..4: 0x468750,
    0x48b200, match_inputState3, 0x487f00), each returning the next state; after states 2 (when +0x233c9e8 == 1),
    3 and 4 the frame is presented (0x4685d0). Returns the state */
-static THISCALL DWORD main_462050(char *s) { return run_lifted(lift_462050, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL main_462050(void *scene);
 /* batch 203 (lifted/grp162.c): WinMain */
 #include "lifted/grp162.c"
 /* 0x43f9d0 WinMain(inst, prev, cmd, show) (stdcall): the command line (0x43f160); a running copy's window (by
@@ -7476,12 +7480,14 @@ LIFT_PLAIN(app_checkCdAndLoad, 430400)
    0x441740 while 0x9f63b8, 0x448140 unless page 0x9f62f8 is 2, the draw (0x447cb0); on pages other than 0 / 1 a
    dialog (0x90d1c4) draws its box (0x428c30 with 0x9f6308 .. 0x9f6314), else unless 0x9f6300 the input
    (0x44aa30 with 0x9f62e0, else 0x44aa20) by tail call */
-LIFT_PLAIN(menuState500_missionSelect, 44aa40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState500_missionSelect(void);
 #include "lifted/grp165.c"
 /* 0x420280 main_loop(): one frame: in a match (screen 0x76d3e8 == 9999) 0x41f970 unless 0x67ef0c is 9999 too,
    the input (0x445c60, 0x4012c0) unless 0x68039c, the match frame (main_462050 on the scene 0x9087b4); its 0 ends
    the match (game_postMatch by tail call); outside a match the menus' frame (menu_frame by tail call) */
-LIFT_PLAIN(main_loop, 420280)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void main_loop(void);
 #include "lifted/grp166.c"
 /* 0x494930 hud_drawRanking() (thiscall on the scene): the ranking panel: the mode's name ("%s RANKING" from the
    64-byte table 0x4c7030 by +0x22e7180); in team games (+0x22e7184 == 1) both teams in score order (0x463780,
@@ -7595,7 +7601,8 @@ void hud_4950a0(int x0, int y0, int x1, int y1);
 /* 0x41f8d0 menu_drawVersion(): the title screen's end (0x4df01c counting 0x4e0458 to 19, then screen 210), the
    menu background (0x441740), the emblem transition (@0x41f903: 0x429170, the patch DLL's trans_wrap), the version
    texts (text_draw5) */
-LIFT_PLAIN(menu_drawVersion, 41f8d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawVersion(void);
 /* batch 212 (lifted/grp177.c): native until now, not changed in memory by the patch DLL (it wraps calls to them) */
 #include "lifted/grp177.c"
 /* 0x491f50 hud_drawLockOn() (thiscall on the scene): for each other player in play with a lock timer
@@ -17830,7 +17837,7 @@ static void menucdd0_setup(void)
 	G32(0x6803a0) = key; if (key < 0xfa) G32(0x4d1a98 + 4 * key) = irnd(0, 2) ? 0 : 1;
 	G32(0x90d1c4) = !irnd(0, 4);
 }
-T_PLAIN(menu_44cdd0, 0x44cdd0, menucdd0_setup();, 0, 0, 0, 0, 0)
+ST(menu_44cdd0, menucdd0_setup();, CALL_PLAIN(0x44cdd0, 0, 0, 0, 0, 0), (menu_44cdd0(), 0))
 /* the menus' key dispatch: the blocking flags, the fade at, below or above its limit, a pending dialog, the
    screen among its ten values or another; the poll and every handler stubbed */
 static const DWORD g_stubMenuKeys[] = { 0x4012c0, 0, 0x4081f0, 0, 0x410ab0, 0, 0x4230a0, 0, 0x42ada0, 0, 0x4318b0, 0,
@@ -17844,7 +17851,7 @@ static void menukeys_setup(void)
 	GF(0x9da434) = k == 0 ? lim : k == 1 ? lim + 1.0f : lim - (float)irnd(1, 100) / 10.0f;
 	G32(0x76d3e8) = scr[irnd(0, 12)];
 }
-T_PLAIN(menu_processKeys, 0x4319d0, menukeys_setup();, 0, 0, 0, 0, 0)
+ST(menu_processKeys, menukeys_setup();, CALL_PLAIN(0x4319d0, 0, 0, 0, 0, 0), (menu_processKeys(), 0))
 /* batch 202 */
 /* the fade at, below or above its limit; both callees stubbed */
 static const DWORD g_stubFade[] = { 0x4572b0, 0, 0x420280, 0, 0 };
@@ -17854,7 +17861,7 @@ static void fadestep_setup(void)
 	float lim = GF(0x4a93e8); int k = irnd(0, 3);
 	GF(0x9da434) = k == 0 ? lim : k == 1 ? lim - 1.0f : lim + (float)irnd(1, 100) / 10.0f;
 }
-T_PLAIN(FUN_004202d0, 0x4202d0, fadestep_setup();, 0, 0, 0, 0, 0)
+ST(FUN_004202d0, fadestep_setup();, CALL_PLAIN(0x4202d0, 0, 0, 0, 0, 0), (FUN_004202d0(), 0))
 /* the match's state -1..6 (four handled by the table), the presenting flag, each state handler stubbed returning
    its own next state 0..5 */
 static const DWORD g_stubMatchFrame[] = { 0x468750, 0 | CS_THIS, 0x48b200, 0 | CS_THIS, 0x48a370, 0 | CS_THIS,
@@ -17921,7 +17928,7 @@ static void missionframe_setup(void)
 	G32(0x9f63b8) = irnd(0, 1); G32(0x9f62f8) = irnd(-1, 3); G32(0x90d1c4) = irnd(0, 1); G32(0x9f6300) = !irnd(0, 3);
 	G32(0x9f62e0) = irnd(0, 1); for (int k = 0; k < 4; k++) G32(0x9f6308 + 4 * k) = irnd(0, 640);
 }
-T_PLAIN(menuState500_missionSelect, 0x44aa40, missionframe_setup();, 0, 0, 0, 0, 0)
+ST(menuState500_missionSelect, missionframe_setup();, CALL_PLAIN(0x44aa40, 0, 0, 0, 0, 0), (menuState500_missionSelect(), 0))
 /* the main loop's frame: the screen in a match or not, 0x67ef0c, 0x68039c, the match frame's answer; every callee
    stubbed */
 static const DWORD g_stubMainLoop[] = { 0x4012c0, 0, 0x41f970, 0, 0x41fa40, 0, 0x420100, 0, 0x445c60, 0, 0x462050, 0 | CS_THIS, 0 };
@@ -17932,7 +17939,7 @@ static void mainloop_setup(void)
 	G32(0x76d3e8) = irnd(0, 2) ? 9999 : 200; G32(0x67ef0c) = irnd(0, 1) ? 9999 : 0; G32(0x68039c) = irnd(0, 1);
 	G32(0x9087b4) = (int)BUF;
 }
-T_PLAIN(main_loop, 0x420280, mainloop_setup();, 0, 0, 0, 0, 0)
+ST(main_loop, mainloop_setup();, CALL_PLAIN(0x420280, 0, 0, 0, 0, 0), (main_loop(), 0))
 /* the ranking panel: the mode 0..11, team game or not, 0..8 ranked players (indexes 0..15), names short, teams
    -1..1, kills / deaths / seconds, flags and emblem switches, the players in use; the team order and team tests
    stubbed with small answers, the drawing stubbed (the text calls too: the patch DLL watches them) */
@@ -18392,7 +18399,7 @@ static void version_setup(void)
 	callee_stubs(g_stubVersion, 0);
 	G32(0x4df01c) = irnd(0, 1); G32(0x4e0458) = irnd(10, 20); G32(0x76d3e8) = irnd(0, 3) * 100; GF(0x9da434) = csu_fr(0, 500);
 }
-T_PLAIN(menu_drawVersion, 0x41f8d0, version_setup();, 0, 0, 0, 0, 0)
+ST(menu_drawVersion, version_setup();, CALL_PLAIN(0x41f8d0, 0, 0, 0, 0, 0), (menu_drawVersion(), 0))
 /* batch 212 */
 /* the lock-on squares: each of the 16 players in play or not, its lock timer around 0, screen point on and off
    the screen; the local player; the bind and screen size stubbed */
