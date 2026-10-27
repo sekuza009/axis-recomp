@@ -1,0 +1,747 @@
+lifted function coverage from the state tests (labels reached / labels); "NOT ENTERED" = no test ran it
+487ba0 input_asyncKeyDown                   0/1          grp1.c     487bba
+49ca70 match_escMenu                        1/51         grp140.c   49caa7 49cade 49caed 49cb0a 49cb19 49cb24 49cb3c 49cb79 49cb84 49cb9c 49cba4 49cbaa ...
+406c30 lobby_connect                        1/30         grp133.c   406cb3 406cff 406d4c 406d59 406d9c 406e1b 406e3a 406e66 406e74 406e9c 406ead 406f0c ...
+435fc0 room_435fc0                          1/23         grp125.c   43602a 436063 436087 436095 4360ae 4360fd 436137 436142 436180 4361a2 4361b3 4361c6 ...
+4079c0 lobbyJoin_keysChat                   1/20         grp133.c   407a4d 407aa1 407ab2 407ac3 407b32 407b3d 407b48 407b94 407bdf 407bf3 407c02 407c3e ...
+407410 arena_createClick                    1/20         grp134.c   407484 4074be 4074c5 4074cc 4074df 4074fc 407526 407595 4075ac 4075d0 4075dd 4075e6 ...
+421680 setup_drawKeyBindingRows             6/97         grp2.c     4216cc 4216ed 421704 421719 42173a 421751 421766 421787 42179e 4217b3 4217d4 4217eb ...
+475070 particle_init                        3/44         grp142.c   47521a 47522a 47523a 475268 475296 4752ac 4752bf 4752cf 4752e9 4752fc 47534f 4753e8 ...
+436400 room_436400                          1/14         grp125.c   43646a 43649c 4364a1 4364a6 4364c2 436533 436557 43656f 436587 43659f 4365b4 4365bf ...
+42b590 data_loadPilotProfiles               2/22         win.c      42b679 42b6a5 42b6c9 42b6cd 42b6d2 42b6f8 42b751 42b768 42b7b8 42b7d8 42b7e0 42b7e6 ...
+4474a0 profile_create                       1/10         win.c      44755d 4475d2 4475f0 4475f7 447617 44761b 447620 447645 44764b
+40fd30 armc_40fd30                          2/18         grp125.c   40fd85 40fda8 40fdba 40fdcc 40fdde 40fdf0 40fe02 40fe14 40fe26 40fe38 40fe60 40fe79 ...
+42ba40 data_loadSkirmishInfo                1/9          win.c      42bb26 42bb4e 42bb72 42bb76 42bb7b 42bba3 42bbd2 42bbed
+41f970 menu_enterState                      1/8          grp125.c   41f9b1 41f9c1 41f9d1 41f9e8 41f9f8 41fa1b 41fa2b
+435b00 room_435b00                          1/7          grp125.c   435b45 435b5a 435b6f 435b9c 435bc3 435bfc
+40ff40 armc_colourScreenInput               3/19         grp125.c   40ffb3 40ffd1 40ffe4 40fff7 41001a 41003e 410061 410085 4100a5 4100ca 4100d1 4100d8 ...
+433e60 room_433e60                          1/6          grp126.c   433ebe 433ef9 433f37 433f78 433fb1
+445e40 menu_onStateChange                   2/11         grp135.c   445e88 445e8d 445e92 445ea3 445ea8 445ead 445ec7 445ecc 445ed1
+4036c0 room_4036c0                          3/12         grp124.c   403717 40372c 403747 40376b 403772 403779 403780 403806 403828
+456ed0 sound_play3D                         1/4          grp127.c   456f97 457035 45703b
+42e730 cfg_parseKeyNames                    21/84        grp2.c     42e80a 42e863 42e919 42e923 42e92d 42e937 42e941 42e955 42e95f 42e973 42e97d 42e987 ...
+406a60 lobby_406a60                         2/7          grp126.c   406ae1 406ae6 406aff 406b19 406b2e
+42b830 data_loadMapInfo                     4/13         win.c      42b932 42b963 42b98f 42b9b5 42b9ea 42ba03 42ba13 42ba24 42ba2a
+431600 room_431600                          1/3          grp122.c   43162b 43164c
+407300 lobby_407300                         1/3          grp123.c   407350 407385
+422480 setup_drawGraphicTab                 4/12         grp125.c   42252e 42254e 42256e 42258e 4225ae 4225e1 422646 422670
+434e70 app_onClose                          3/9          grp127.c   434f0c 434f10 434f14 434f18 434f1a 434f3b
+487bd0 input_asyncKeyPressed                1/3          grp5.c     487be9 487c06
+49df10 game_processGameModeInit             14/39        grp140.c   49e039 49e04b 49e086 49e09a 49e0cf 49e33d 49e340 49e365 49e388 49e419 49e45d 49e45f ...
+436620 room_436620                          4/11         grp125.c   4366cb 4366e8 436728 436746 43676f 436794 4367b9
+437630 menu_437630                          4/11         grp125.c   43771d 437740 43775c 43777f 43779b 4377c7 4377e9
+460cb0 app_requireCd                        4/11         grp59.c    460e4b 460ef5 460f01 460f0b 4611b6 4611be 4611c4
+434b90 room_434b90                          4/11         net2.c     434bbe 434bd9 434bf9 434bfd 434c02 434c4e 434c66
+451600 net_closeAll                         3/8          net2.c     4516c5 4516f3 451726 451746 451752
+4221d0 setup_drawSoundTab                   5/13         grp125.c   422295 4222cb 4222e7 422305 422320 422382 42240f 422433
+42c6f0 cfg_parseServer                      7/18         grp1.c     42c7eb 42c7f3 42c7fb 42c803 42c80b 42c813 42c81b 42c823 42c82b 42c833 42c83b
+441810 mainmenu_441810                      6/15         grp123.c   441894 4418a8 4418bc 4418c3 4418ca 4418d1 4418dd 44196e 44197e
+496a30 hud_drawMatchResult                  2/5          grp99.c    496aae 496acd 496aea
+4062b0 app_shutdown                         5/12         grp127.c   40639f 406482 406496 4064aa 4064be 4064d2 406553
+435e70 room_435e70                          3/7          grp123.c   435edc 435ee6 435eeb 435ef0
+44f4b0 profile_44f4b0                       3/7          grp123.c   44f54f 44f589 44f5b0 44f5c7
+43df80 room_43df80                          6/14         grp125.c   43e129 43e1b0 43e1db 43e1e5 43e1ef 43e1f9 43e216 43e21e
+4419d0 mainmenu_startNetGame                6/14         grp126.c   441a7a 441aa4 441ad4 441ae9 441aff 441b1f 441b46 441b6b
+422830 setup_drawControlTab                 10/23        grp125.c   42295f 422978 42298d 4229b9 4229cd 4229e0 422a03 422a26 422a33 422a51 422a5e 422a7c ...
+43e290 room_43e290                          7/16         grp135.c   43e32a 43e376 43e3c3 43e4b4 43e4ce 43e51b 43e565 43e5a8 43e5ae
+425460 setup_425460                         7/16         grp69.c    425715 425793 425827 4258c2 42594f 4259e8 425a83 425b0b 425b19
+452ec0 arena_452ec0                         4/9          grp131.c   452f83 452f8f 452f98 452fa1 452fa8
+43ef70 menuState800_gameRoom                5/11         grp136.c   43f023 43f034 43f045 43f056 43f079 43f0b8
+487c80 input_setCursorPos                   1/2          grp1.c     487c97
+487c30 input_getCursorPos                   1/2          grp1.c     487c4a
+4512c0 match_4512c0                         1/2          grp122.c   451301
+453720 dplay_coInit                         1/2          grp123.c   45375c
+405690 arena_405690                         1/2          grp126.c   405714
+435d30 room_435d30                          5/10         grp126.c   435dc1 435dd2 435de3 435e08 435e19
+462150 msg_newKing                          17/34        grp129.c   462372 4623b0 4623c8 4623f4 462417 462443 462456 462473 462475 462491 4624d7 4624f1 ...
+435c20 room_435c20                          4/8          grp130.c   435c82 435c92 435ca2 435cb1
+407e40 lobbyTop_connect                     8/16         grp134.c   407f81 407f99 407f9e 407ff4 408008 408034 40806a 408091
+41dab0 armc_41dab0                          2/4          grp64.c    41dc46 41dc4d
+468050 glWindow_restoreDisplayMode          1/2          grp7.c     4680ae
+43e610 room_43e610                          4/8          grp7.c     43e65d 43e689 43e6a1 43e6b9
+462e30 msg_playerChangedTeam                2/4          msg.c      462e87 462efc
+48e990 match_48e990                         2/4          net.c      48e9e1 48ea04
+46e1e0 ptx_crtlError                        1/2          win.c      46e258
+47a2d0 bullet_update                        32/62        grp146.c   47a719 47ab4d 47ab62 47ab87 47ab96 47abba 47acc3 47acfc 47ad09 47b6bf 47b707 47b8a4 ...
+435770 room_435770                          9/16         grp1.c     4358b9 4358c5 4358cd 4358d3 4358ed 4358f7 435901
+41dcf0 armc_41dcf0                          17/30        grp2.c     41dda3 41ddbd 41ddca 41de2c 41de38 41de45 41de52 41de5f 41de6c 41de79 41de85 41de91 ...
+4327f0 match_4327f0                         7/12         net2.c     432893 432909 432923 432aa5 432abf
+4220c0 setup_drawTopPage                    5/8          grp123.c   42212b 42213c 42214d
+406950 lobby_406950                         5/8          grp123.c   4069d5 4069e6 4069f7
+4372f0 menu_4372f0                          10/16        grp125.c   4373d7 43749b 437551 437562 4375e7 4375f2
+44ba60 profile_deleteFiles                  5/8          grp7.c     44bbbd 44bbce 44bbd4
+436990 menu_436990                          12/19        grp125.c   436bd9 436c68 436cb3 436cff 436d08 436d6c 436db1
+479b40 bullet_init                          12/19        grp144.c   479c5e 479d0b 479e76 479f59 479f81 479f84 479fa8
+4346c0 room_4346c0                          7/11         grp125.c   4347a6 4347c7 4347ee 434815
+410b50 arena_launchFromFile                 9/14         grp135.c   410e6b 411018 4110b8 4110e4 4110e6
+455aa0 tex_loadColorMask                    47/72        grp26.c    455c00 455cab 455e05 455e0e 4561af 4561cb 4561ed 456207 456260 45627c 45628c 456298 ...
+40d450 menuState400_frame                   4/6          grp135.c   40d461 40d482
+42eca0 cfg_writeDefaultAxisCfg              4/6          grp3.c     42ed88 42ee76
+454d90 dplay_454d90                         4/6          win.c      454df8 454e2d
+43bfe0 room_drawGameSettings                21/31        grp83.c    43c81a 43c885 43c8c3 43c930 43c9c1 43c9dc 43ca70 43cb0d 43cba4 43cc38
+46ce80 image_copyTo                         17/25        grp9.c     46d066 46d0a4 46d0b0 46d0d0 46d0de 46d0f8 46d1f0 46d1fc
+4580b0 actor_processFrame                   262/385      grp173.c   458678 4588f1 458e7c 458e9b 458f31 458f51 45909a 4590a2 45910d 459165 45916d 45918f ...
+42bee0 reg_readCharacterSettings            20/28        grp8.c     42c10e 42c17e 42c1d2 42c221 42c26f 42c2be 42c310 42c35f
+453560 dplay_enumSessionsCallback           5/7          win.c      453596 4535de
+4057a0 lobby_checkReservedName              39/54        grp133.c   40580a 405849 405884 4058bf 4058cc 405901 405940 40597b 4059b6 4059c3 4059f8 405a37 ...
+476410 match_476410                         13/18        grp145.c   47647f 4765df 4765f3 476719 4767db
+4351c0 lobby_checkReservedName3             39/54        grp46.c    4351f5 435234 43526f 4352aa 4352b7 4352ec 43532b 435366 4353a1 4353ae 4353e3 435422 ...
+4052c0 lobby_roomNameCheck                  41/56        grp133.c   40531c 405357 40538e 4053c5 4053d2 405403 40543e 405475 4054ac 4054b9 4054ea 405525 ...
+405cf0 lobby_checkReservedName2             42/57        grp46.c    405d78 405db3 405dea 405e21 405e2e 405e5f 405e9a 405ed1 405f08 405f15 405f46 405f81 ...
+42c910 cfg_parseSound                       3/4          files.c    42c9a3
+410ab0 armc_processInput                    15/20        grp120.c   410e6b 411018 4110b8 4110e4 4110e6
+43e7b0 room_43e7b0                          6/8          grp125.c   43e98c 43e9a0
+471040 collision_initVolume                 12/16        grp15.c    47128d 4712a6 4712c5 471357
+4924d0 hud_drawLeaderIcon                   3/4          grp39.c    492595
+40b750 arena_createDraw                     36/48        grp87.c    40bf92 40bffd 40c034 40c0a1 40c132 40c14d 40c1d3 40c274 40c31e 40c3bb 40c43d 40c44b
+441260 armc_enter                           13/17        grp126.c   441312 44144f 441455 441656
+428c30 menu_drawFrame                       13/17        grp7.c     428f46 428f54 429035 429061
+452620 net_recv                             33/43        grp45.c    452751 452766 45277b 452790 4527a5 4527ba 452835 45284a 45285f 452874
+41fd40 console_init                         21/27        grp60.c    41ff8b 41ff9a 41ffa9 41ffb8 42005a 420069
+409bc0 arena_409bc0                         7/9          grp65.c    409e35 409eb1
+476890 hud_476890                           145/184      grp56.c    476b92 476b9e 476bee 476cb1 476ccf 476d0b 476d29 476dcc 476dd8 476e28 47774e 477782 ...
+40cfd0 lobbyJoin_draw                       19/24        grp134.c   40d0d5 40d0e9 40d113 40d12d 40d141
+42e240 cfg_videoModeNames                   50/63        grp2.c     42e32a 42e36f 42e3b4 42e3f9 42e43e 42e483 42e4c8 42e51e 42e572 42e5c6 42e61a 42e66e ...
+445be0 menuState900_skirmishSetup           4/5          grp131.c   445c4f
+42da70 cfg_gameTypeNames                    68/85        grp2.c     42dbb4 42dbdd 42dc12 42dc6d 42dcaf 42dcf1 42dd33 42dd75 42ddb7 42ddf9 42de3b 42de7d ...
+4521c0 net_send                             20/25        net2.c     452247 45229f 452496 4524bf 452585
+43ea10 room_43ea10                          17/21        grp134.c   43eace 43eb0c 43eb26 43ecc0
+40fb20 armc_40fb20                          13/16        grp118.c   40fc88 40fcab 40fccd
+4729b0 camera_setupView                     13/16        grp16.c    473128 473243 47324d
+42d7f0 cfg_readLines                        18/22        files.c    42d906 42d95a 42d99b 42d9e0
+40f340 armc_40f340                          18/22        grp1.c     40f365 40f37d 40f396 40f3b0
+436e10 menu_436e10                          9/11         grp126.c   437014 437076
+485af0 render_drawObjects                   115/140      grp54.c    48610d 486135 486149 486166 486176 486190 4861a0 4861ba 4861ca 4861db 4864aa 4864d2 ...
+45ee40 armc_computeTotals                   56/68        grp19.c    45f1b5 45f1c1 45f1d7 45f1e4 45f1f1 45f1fe 45f20b 45f251 45f28f 45f2a5 45f7d7 45f7f6
+4545b0 net_4545b0                           5/6          grp1.c     454614
+43f160 arena_readLaunchFile                 11/13        files.c    43f23e 43f2ad
+460000 bullet_playImpactSound               17/20        grp129.c   46018d 4601b6 4601cc
+4732f0 game_setGameTypeFlags                12/14        grp1.c     47333f 47334c
+467f20 glWindow_setDisplayModeBy            6/7          grp7.c     467fc2
+43f300 sys_checkClockTampering              6/7          grp7.c     43f423
+42c9f0 cfg_parseGraphic                     19/22        grp1.c     42cad7 42cb03 42cb2f
+437e00 room_437e00                          32/37        grp74.c    437e77 437e8c 4381d8 4384aa 4387a6
+42e080 cfg_42e080                           13/15        grp1.c     42e199 42e1e7
+43adc0 room_43adc0                          26/30        grp82.c    43b580 43b5c8 43b603 43b649
+442050 menu_mainMenu                        40/46        grp78.c    4420bd 4420e7 442122 442506 4427d8 442ac9
+423330 setup_423330                         34/39        grp70.c    42338f 4233a4 42371a 4239ec 423d12
+408680 lobbyTop_drawTitle                   34/39        grp75.c    4086ef 408704 408a74 408d46 40906c
+490440 actor_render                         21/24        grp145.c   4909c6 490a06 490b20
+412650 armc_drawStatsPanel                  184/210      grp90.c    412eb0 4130e7 41329e 413476 4136af 41395b 413b54 414582 414711 414e73 4150a3 415446 ...
+4988e0 game_processGameMode                 261/297      grp174.c   498e48 498f58 498f63 49948d 4994df 499511 499568 499578 4995f4 499604 499619 499647 ...
+49d290 match_combatInput                    89/101       grp172.c   49d6ec 49d742 49da7e 49dca7 49dcc8 49ddf1 49ddf7 49de1d 49de48 49de7f 49deab 49ded6
+44f860 menuState210_frame                   16/18        grp131.c   44f923 44f928
+491f50 hud_drawLockOn                       8/9          grp177.c   4921bc
+460270 actor_checkLineOfSight               16/18        grp3.c     4603d3 460402
+4460d0 profile_scanSaves                    17/19        menu2.c    4462b0 4462c6
+48e2c0 match_48e2c0                         17/19        net.c      48e4f5 48e518
+48c830 net_processGamePacket                79/88        grp150.c   48cbd3 48ceeb 48d1c0 48d1cc 48d43a 48d724 48d8e9 48da3b 48daa9
+44be00 profile_44be00                       18/20        grp112.c   44c00c 44c0bb
+48b200 match_inputState2                    9/10         grp167.c   48b34b
+44c190 profile_44c190                       10/11        grp112.c   44c319
+4378e0 menu_4378e0                          11/12        grp109.c   437936
+446a10 profile_save                         11/12        win.c      446ccb
+464db0 model_loadObjFormatFrom              139/151      grp22.c    46510a 465148 46517d 465853 465a4f 465a7e 465b3b 465c2f 465c64 465e47 465e83 465f74
+48dbf0 net_sendGamePacket                   12/13        grp2.c     48dfc9
+4555b0 tex_allocIdBy                        12/13        grp28.c    455788
+41d600 armc_41d600                          13/14        grp137.c   41d67a
+48ed90 item_update                          65/70        grp148.c   48f537 48f69c 48f78c 48f78f 48f8b7
+448140 missionsel_448140                    26/28        grp71.c    448439 44870b
+411110 armc_411110                          26/28        grp72.c    411409 4116db
+4445a0 skirmish_4445a0                      26/28        grp72.c    444899 444b6b
+40e930 armc_sendSelectionToNet              27/29        net2.c     40ea95 40ebc3
+425cd0 setup_crosshairScreen                97/104       grp89.c    425ef0 425f03 425f17 425f1f 425f30 427350 4273ce
+411ab0 armc_411ab0                          29/31        grp72.c    411de5 4120b7
+4388e0 room_4388e0                          29/31        grp72.c    438c17 438ee9
+42ada0 match_debugHandler                   15/16        grp126.c   42adf4
+48fee0 object_initObjectBy                  15/16        grp31.c    4903de
+4091b0 arena_4091b0                         30/32        grp72.c    4094f4 4097c6
+44c600 profile_44c600                       16/17        grp160.c   44c762
+487f00 replay_frame                         169/179      grp152.c   488681 488839 488879 488a19 488a36 488f92 488fc8 48958e 489ab7 489af7
+40a070 arena_40a070                         40/42        grp86.c    40aa48 40aa4d
+466120 shape_read                           21/22        grp11.c    4662f9
+40d4e0 arena_loadSettings                   43/45        files.c    40d6f2 40d741
+410500 armc_410500                          22/23        grp118.c   410780
+468750 game_processLoadingMode              57/59        grp151.c   468c84 468c9e
+44cf70 profile_44cf70                       29/30        grp68.c    44d480
+423e50 setup_423e50                         29/30        grp70.c    424041
+419160 armc_419160                          34/35        grp85.c    419dae
+43d060 room_43d060                          35/36        grp81.c    43dd38
+45d3e0 actor_updateAllParts                 36/37        grp47.c    45d93e
+457330 actor_setupFromParts                 36/37        grp49.c    457ae1
+41a280 armc_41a280                          49/50        grp84.c    41af1c
+44c560 profile_processInput                 57/58        grp112.c   44c762
+469b90 skel_loadAseFrom                     130/131      grp20.c    469fe2
+46c140 actor_46c140                         3/3          actor.c    
+46c1c0 actor_46c1c0                         4/4          actor.c    
+46c100 FUN_0046c100                         1/1          actor.c    
+4804b0 space_collideUnit                    10/10        collision.c 
+47dd90 collision_sphereVsUnit               67/67        collision.c 
+4722c0 Vec3_set                             no-labels    collision.c 
+467760 Vec3_normalize                       1/1          collision.c 
+480210 this_set_480210                      no-labels    collision.c 
+480230 collision_480230                     no-labels    collision.c 
+480250 Vec3_cross                           no-labels    collision.c 
+4802b0 Vec3_dot                             no-labels    collision.c 
+4802d0 Vec3_add                             no-labels    collision.c 
+480320 Vec3_sub                             no-labels    collision.c 
+480370 Vec3_scale                           no-labels    collision.c 
+4803c0 collision_4803c0                     no-labels    collision.c 
+480400 SQRT_wrap_480400                     no-labels    collision.c 
+4809d0 Vec4_set                             no-labels    collision.c 
+46cbe0 FUN_0046cbe0                         4/4          files.c    
+46cc30 FUN_0046cc30                         8/8          files.c    
+46cdc0 match_46cdc0                         2/2          files.c    
+42c650 cfg_parsePlayer                      6/6          files.c    
+41e7c0 console_loadFile                     2/2          files.c    
+41e260 app_checkLauncherRunning             1/1          files.c    
+445f70 profile_loadList                     3/3          files.c    
+447320 profile_delete                       3/3          files.c    
+443af0 mission_saveAxisMis                  4/4          files.c    
+4435f0 mission_loadAxisMis                  5/5          files.c    
+42cba0 cfg_keyBindings                      4/4          files.c    
+47d2f0 skel_ase_47d2f0                      no-labels    grp1.c     
+47d320 skel_ase_47d320                      no-labels    grp1.c     
+4548b0 net_ping                             3/3          grp1.c     
+454650 net_454650                           no-labels    grp1.c     
+41f050 gfx_setMenuCamera                    no-labels    grp1.c     
+41b300 armc_41b300                          10/10        grp1.c     
+43f640 app_43f640                           9/9          grp1.c     
+490b30 hud_490b30                           2/2          grp1.c     
+490da0 hud_490da0                           3/3          grp1.c     
+40e7a0 armc_saveSelection                   11/11        grp1.c     
+45ebc0 actor_45ebc0                         20/20        grp1.c     
+4876b0 map_loadPlayInfoFrom                 18/18        grp10.c    
+48b5c0 map_loadMissionInfoFrom              2/2          grp10.c    
+469320 loading_draw                         8/8          grp100.c   
+495610 hud_drawEscMenu                      43/43        grp101.c   
+453920 dplay_release                        6/6          grp102.c   
+453fd0 dplay_enumSessions                   4/4          grp102.c   
+4549a0 arena_4549a0                         1/1          grp102.c   
+4549c0 arena_4549c0                         1/1          grp102.c   
+454ac0 arena_454ac0                         1/1          grp102.c   
+454ae0 arena_454ae0                         1/1          grp102.c   
+454bd0 arena_454bd0                         1/1          grp102.c   
+454bf0 arena_454bf0                         1/1          grp102.c   
+454ce0 arena_454ce0                         1/1          grp102.c   
+454d00 arena_454d00                         1/1          grp102.c   
+453260 arena_453260                         5/5          grp102.c   
+454190 dplay_getPlayerName                  4/4          grp103.c   
+453790 dplay_create                         5/5          grp103.c   
+453cf0 dplay_hostSession                    4/4          grp103.c   
+453e60 dplay_joinSession                    7/7          grp103.c   
+467a50 sound_init                           4/4          grp104.c   
+467d70 dsbuf_play                           3/3          grp104.c   
+467db0 dsbuf_setVolume                      1/1          grp104.c   
+467dd0 sound_467dd0                         4/4          grp104.c   
+457310 music_shutdown                       1/1          grp104.c   
+4572b0 music_4572b0                         2/2          grp104.c   
+457150 music_play                           8/8          grp104.c   
+401310 input_initKeyboard                   5/5          grp105.c   
+4012c0 input_reacquireKeyboard              1/1          grp105.c   
+4012e0 input_reacquireMouse                 2/2          grp105.c   
+401460 input_releaseKeyboard                1/1          grp105.c   
+4013a0 input_4013a0                         4/4          grp105.c   
+401490 wnd_401490                           1/1          grp105.c   
+467b70 wnd_467b70                           1/1          grp105.c   
+401410 input_createDirectInput              2/2          grp105.c   
+467b90 sound_loadWav                        4/4          grp106.c   
+401540 load_401540                          3/3          grp107.c   
+4014f0 load_4014f0                          2/2          grp107.c   
+401590 input_isDown                         5/5          grp107.c   
+41e760 sound_playMenu                       1/1          grp107.c   
+443c80 skirmish_443c80                      no-labels    grp107.c   
+447960 FUN_00447960                         no-labels    grp107.c   
+4479b0 mission_4479b0                       no-labels    grp107.c   
+443e20 skirmish_saveSettings                5/5          grp108.c   
+447a50 mission_447a50                       6/6          grp108.c   
+444070 menu_444070                          3/3          grp108.c   
+434320 room_434320                          no-labels    grp108.c   
+405010 arena_editTextField_405010           no-labels    grp108.c   
+443f20 skirmish_processKeys                 10/10        grp108.c   
+4479d0 mission_4479d0                       no-labels    grp108.c   
+443ef0 menu_443ef0                          2/2          grp108.c   
+447b10 mission_unlockCheat                  2/2          grp108.c   
+4440f0 menu_4440f0                          2/2          grp108.c   
+405200 FUN_00405200                         1/1          grp108.c   
+434da0 room_434da0                          1/1          grp108.c   
+422b30 setup_drawTab                        4/4          grp109.c   
+4230a0 setup_processTabKeys                 4/4          grp109.c   
+4081f0 lobby_processKeys                    9/9          grp109.c   
+436800 room_processKeys                     13/13        grp109.c   
+44f410 profile_44f410                       4/4          grp109.c   
+43ed20 room_43ed20                          9/9          grp109.c   
+40d390 lobbyCreate_draw                     9/9          grp109.c   
+470ad0 scene_reset                          no-labels    grp11.c    
+447c30 menu_447c30                          2/2          grp110.c   
+447b40 menu_447b40                          6/6          grp110.c   
+447c70 menu_447c70                          2/2          grp110.c   
+44aa30 missionsel_44aa30                    no-labels    grp110.c   
+445bd0 skirmish_445bd0                      no-labels    grp110.c   
+4532e0 jmp_net_getLocalAddress_4532e0       no-labels    grp110.c   
+44b600 profile_44b600                       no-labels    grp111.c   
+44b670 profile_44b670                       no-labels    grp111.c   
+44b6e0 profile_44b6e0                       no-labels    grp111.c   
+44c390 profile_44c390                       4/4          grp111.c   
+44c400 profile_44c400                       3/3          grp111.c   
+44c480 profile_44c480                       5/5          grp111.c   
+450bf0 FUN_00450bf0                         1/1          grp113.c   
+450bc0 arena_450bc0                         1/1          grp113.c   
+451270 FUN_00451270                         2/2          grp113.c   
+451350 net_logMessage                       4/4          grp113.c   
+451090 arena_451090                         7/7          grp113.c   
+450c20 net_sendLocalInfo                    6/6          grp113.c   
+450a60 arena_450a60                         9/9          grp113.c   
+450bb0 FUN_00450bb0                         no-labels    grp113.c   
+448ac0 missionsel_448ac0                    31/31        grp114.c   
+44aa20 missionsel_44aa20                    no-labels    grp114.c   
+40f950 armc_40f950                          7/7          grp115.c   
+40f0f0 armc_exit                            5/5          grp115.c   
+40f870 armc_40f870                          16/16        grp116.c   
+40f9e0 armc_40f9e0                          7/7          grp117.c   
+40f220 armc_drawPartScreen                  4/4          grp117.c   
+4101e0 armc_4101e0                          20/20        grp118.c   
+410810 armc_410810                          14/14        grp118.c   
+410190 armc_onStateEnter                    5/5          grp119.c   
+472400 light_computeLayerLightBy            37/37        grp12.c    
+497d20 render_processRenderingBy            29/29        grp12.c    
+453770 arena_453770                         1/1          grp121.c   
+4014c0 wnd_4014c0                           1/1          grp121.c   
+454a20 arena_454a20                         1/1          grp121.c   
+4549e0 arena_4549e0                         1/1          grp121.c   
+403530 room_403530                          2/2          grp121.c   
+4034e0 room_4034e0                          2/2          grp121.c   
+407970 lobbyJoin_keys                       2/2          grp121.c   
+436940 menu_436940                          2/2          grp121.c   
+44ac90 match_44ac90                         no-labels    grp121.c   
+441770 mainmenu_441770                      3/3          grp121.c   
+4080c0 lobby_keysBack                       2/2          grp121.c   
+44ace0 match_44ace0                         1/1          grp121.c   
+435ce0 room_435ce0                          2/2          grp121.c   
+4370e0 menu_4370e0                          2/2          grp121.c   
+454b40 arena_454b40                         1/1          grp121.c   
+454b00 arena_454b00                         1/1          grp121.c   
+404f90 arena_editTextField_404f90           no-labels    grp122.c   
+433a80 room_433a80                          no-labels    grp122.c   
+456e50 sound_playVolume                     4/4          grp122.c   
+431950 menu_431950                          3/3          grp122.c   
+403640 room_403640                          5/5          grp122.c   
+405230 lobby_editTextField_405230           no-labels    grp122.c   
+4318b0 menu_4318b0                          3/3          grp122.c   
+452fe0 arena_452fe0                         7/7          grp122.c   
+404cd0 arena_editTextField_404cd0           no-labels    grp122.c   
+404d70 arena_editTextField_404d70           no-labels    grp122.c   
+4339e0 room_4339e0                          no-labels    grp122.c   
+42bd40 sound_loadMenuSounds                 no-labels    grp122.c   
+437240 menu_437240                          4/4          grp122.c   
+403590 room_403590                          3/3          grp122.c   
+433b00 room_433b00                          no-labels    grp122.c   
+404ed0 arena_editNumberField_404ed0         no-labels    grp122.c   
+422c60 setup_soundTabKeys                   3/3          grp122.c   
+404e10 arena_editNumberField_404e10         no-labels    grp122.c   
+434260 room_434260                          no-labels    grp122.c   
+457080 sound_playFile                       4/4          grp122.c   
+434020 room_434020                          no-labels    grp122.c   
+4340e0 room_4340e0                          no-labels    grp122.c   
+4341a0 room_4341a0                          no-labels    grp122.c   
+433bb0 room_433bb0                          1/1          grp122.c   
+437810 menu_437810                          3/3          grp122.c   
+463390 msg_connectionLost                   3/3          grp123.c   
+4633c0 msg_networkUnstable                  3/3          grp123.c   
+462f30 msg_serverEndsGame                   3/3          grp123.c   
+462f60 msg_userEndsGame                     3/3          grp123.c   
+4633f0 msg_dataLoss                         3/3          grp123.c   
+462f90 msg_fragLimitReached                 3/3          grp123.c   
+462fd0 msg_timeLimitReached                 3/3          grp123.c   
+454c50 arena_454c50                         1/1          grp123.c   
+454d60 arena_454d60                         1/1          grp123.c   
+406b60 lobby_close                          1/1          grp123.c   
+403870 FUN_00403870                         4/4          grp123.c   
+435f40 room_435f40                          1/1          grp123.c   
+433c70 room_433c70                          2/2          grp123.c   
+408110 lobby_keysQuit                       2/2          grp123.c   
+422b70 setup_topPageKeys                    5/5          grp123.c   
+422d20 setup_graphicTabKeys                 4/4          grp123.c   
+407750 lobbyTop_keys                        5/5          grp123.c   
+407840 lobbyPlayer_keys                     6/6          grp123.c   
+433d30 room_433d30                          5/5          grp123.c   
+41ec50 game_returnToMenus_41ec50            2/2          grp124.c   
+41e8b0 game_returnToMenus_41e8b0            2/2          grp124.c   
+41e9d0 game_returnToMenus_41e9d0            2/2          grp124.c   
+41eb00 game_returnToMenus_41eb00            2/2          grp124.c   
+443950 menuState900_enterSkirmish           no-labels    grp124.c   
+434490 room_434490                          3/3          grp124.c   
+447750 menuState500_enter                   2/2          grp124.c   
+462b50 msg_playerConnected                  3/3          grp124.c   
+462c30 msg_chatLine                         4/4          grp124.c   
+462850 music_playMatch                      13/13        grp124.c   
+453a10 dplay_closeSession                   1/1          grp124.c   
+41edc0 FUN_0041edc0                         2/2          grp125.c   
+41ed70 FUN_0041ed70                         2/2          grp125.c   
+453180 arena_453180                         7/7          grp125.c   
+441c00 mainmenu_441c00                      12/12        grp125.c   
+422e10 setup_controlTabKeys                 18/18        grp125.c   
+40ee20 menu_enterMenus                      9/9          grp125.c   
+437140 menu_437140                          7/7          grp126.c   
+441e00 mainmenu_processKeys                 12/12        grp126.c   
+454c10 arena_454c10                         1/1          grp126.c   
+454d20 arena_454d20                         1/1          grp126.c   
+41f540 menuState100_intro                   1/1          grp127.c   
+440840 chat_editSubclass                    8/8          grp127.c   
+420100 game_postMatch                       14/14        grp128.c   
+453a90 dplay_initConnection                 13/13        grp128.c   
+4728e0 load_4728e0                          no-labels    grp13.c    
+481ae0 load_481ae0                          19/19        grp13.c    
+46ab30 skel_applyPose                       25/25        grp13.c    
+441740 menu_drawBackground                  no-labels    grp130.c   
+454940 arena_454940                         3/3          grp130.c   
+454a50 arena_454a50                         3/3          grp130.c   
+454b70 arena_454b70                         4/4          grp130.c   
+454c80 arena_454c80                         4/4          grp130.c   
+4620e0 match_4620e0                         2/2          grp130.c   
+453090 arena_453090                         5/5          grp130.c   
+443530 menuState300_frame                   2/2          grp131.c   
+427920 menuState600_setup                   4/4          grp131.c   
+445bc0 skirmish_445bc0                      no-labels    grp132.c   
+434dd0 room_434dd0                          2/2          grp133.c   
+406200 arena_406200                         4/4          grp133.c   
+4355b0 room_4355b0                          4/4          grp133.c   
+405b80 arena_405b80                         4/4          grp133.c   
+40d840 arena_loadAndQuit                    3/3          grp134.c   
+4076c0 lobby_onStateChange                  10/10        grp135.c   
+40e5d0 armc_40e5d0                          no-labels    grp137.c   
+41d8a0 armc_41d8a0                          10/10        grp137.c   
+41dfe0 armc_41dfe0                          2/2          grp138.c   
+41e010 armc_41e010                          2/2          grp138.c   
+41dfb0 armc_41dfb0                          3/3          grp138.c   
+41e040 menuState700_armCenter               12/12        grp139.c   
+481eb0 space_buildPlanes                    27/27        grp14.c    
+482320 load_482320                          3/3          grp14.c    
+4823c0 space_buildUnits                     16/16        grp14.c    
+4314e0 wnd_setCursor                        2/2          grp140.c   
+48fd50 scene_loadPath                       3/3          grp140.c   
+479950 particle_spawn                       5/5          grp141.c   
+47ce50 bullet_spawn                         6/6          grp143.c   
+47d000 bullet_updateAll                     4/4          grp147.c   
+479a90 match_479a90                         4/4          grp147.c   
+490d40 match_490d40                         4/4          grp149.c   
+496b80 replay_drawFollowedName              2/2          grp149.c   
+456d10 sound_initSoundTable                 4/4          grp149.c   
+4955a0 hud_4955a0                           1/1          grp153.c   
+469730 loading_drawCylinder                 5/5          grp153.c   
+483770 script_processCommandBy              40/40        grp154.c   
+483640 script_processTriggers               8/8          grp155.c   
+45e0c0 actor_updateAll                      6/6          grp156.c   
+48a370 match_inputState3                    88/88        grp157.c   
+44cdd0 menu_44cdd0                          8/8          grp158.c   
+4319d0 menu_processKeys                     11/11        grp159.c   
+44c850 profile_44c850                       2/2          grp160.c   
+44c8c0 profile_44c8c0                       10/10        grp160.c   
+44ca90 profile_44ca90                       10/10        grp160.c   
+44cc60 profile_44cc60                       11/11        grp160.c   
+4202d0 FUN_004202d0                         1/1          grp161.c   
+462050 main_462050                          5/5          grp161.c   
+43f9d0 WinMain                              20/20        grp162.c   
+430400 app_checkCdAndLoad                   12/12        grp163.c   
+44aa40 menuState500_missionSelect           5/5          grp164.c   
+420280 main_loop                            4/4          grp165.c   
+494930 hud_drawRanking                      34/34        grp166.c   
+496240 hud_496240                           3/3          grp166.c   
+41fa40 menu_frame                           23/23        grp168.c   
+460570 game_loadAllData                     7/7          grp169.c   
+463b80 shape_getShadingColorBufferBy        84/84        grp17.c    
+466910 FUN_00466910                         2/2          grp17.c    
+4982f0 hud_pass                             34/34        grp170.c   
+4913a0 hud_drawPlayerMarkers                28/28        grp171.c   
+403170 text_draw5                           1/1          grp175.c   
+402620 text_draw8                           3/3          grp175.c   
+4028b0 text_draw16                          3/3          grp175.c   
+402c90 text_draw32                          3/3          grp175.c   
+402740 text_draw8b                          6/6          grp175.c   
+4029d0 text_drawBox16                       12/12        grp175.c   
+403210 hud_403210                           4/4          grp175.c   
+402db0 hud_402db0                           12/12        grp175.c   
+429bc0 menu_drawCursor                      3/3          grp175.c   
+44ad60 text_drawSized                       5/5          grp176.c   
+44ae10 hud_44ae10                           5/5          grp176.c   
+4950a0 hud_4950a0                           no-labels    grp176.c   
+41f8d0 menu_drawVersion                     1/1          grp176.c   
+429170 menu_titleEmblemTransition           21/21        grp177.c   
+495510 hud_drawFps                          no-labels    grp177.c   
+4953d0 hud_4953d0                           5/5          grp177.c   
+495190 replay_drawMessage                   19/19        grp177.c   
+41ef90 gfx_setProjection2D3D                6/6          grp178.c   
+42eed0 FUN_0042eed0                         4/4          grp179.c   
+46f7a0 data_46f7a0                          6/6          grp18.c    
+46fd20 hud_46fd20                           10/10        grp18.c    
+43fcc0 app_init                             20/20        grp180.c   
+42d730 cfg_loadAxisCfg                      no-labels    grp2.c     
+4050a0 FUN_004050a0                         no-labels    grp2.c     
+44f6c0 profile_44f6c0                       2/2          grp2.c     
+405140 lobby_405140                         no-labels    grp2.c     
+4699d0 skel_loadFrom                        8/8          grp21.c    
+464bf0 model_loadFrom                       8/8          grp23.c    
+46b1a0 skel_getSkeletonPtrBy                42/42        grp24.c    
+46eb00 ptx_open                             19/19        grp25.c    
+46ed80 ptx_decode                           19/19        grp25.c    
+4566c0 tex_bind                             10/10        grp27.c    
+456be0 tex_getIdByName                      3/3          grp28.c    
+466430 shape_bindTextureBy                  4/4          grp29.c    
+466650 FUN_00466650                         4/4          grp29.c    
+41cf20 armc_41cf20                          7/7          grp3.c     
+41d280 armc_41d280                          7/7          grp3.c     
+466dc0 shape_getByName                      45/45        grp30.c    
+490c50 object_addObjectBy                   5/5          grp32.c    
+48ec20 effect_initTextures                  4/4          grp32.c    
+48b710 map_loadObjectInfoFrom               11/11        grp33.c    
+46f4e0 data_loadFrom_46f4e0                 22/22        grp34.c    
+45e1f0 FUN_0045e1f0                         1/1          grp35.c    
+45e2c0 actor_updateBody                     1/1          grp35.c    
+45e390 FUN_0045e390                         1/1          grp35.c    
+45e460 FUN_0045e460                         1/1          grp35.c    
+45e530 FUN_0045e530                         1/1          grp35.c    
+45e600 actor_updatePart                     8/8          grp35.c    
+474060 actor_setActorTypeItemInfoBy         15/15        grp36.c    
+4613d0 armc_setHeadIndex                    1/1          grp37.c    
+461410 armc_setChestIndex                   1/1          grp37.c    
+461450 armc_setArmIndex                     1/1          grp37.c    
+461490 armc_setLegIndex                     1/1          grp37.c    
+4614d0 armc_setBoosterIndex                 1/1          grp37.c    
+461510 armc_461510                          1/1          grp37.c    
+46fed0 actor_46fed0                         3/3          grp37.c    
+474210 match_474210                         no-labels    grp37.c    
+4742f0 load_4742f0                          1/1          grp37.c    
+427a90 menu_drawTexturedRect_427a90         1/1          grp38.c    
+427b60 menu_drawTexturedRect_427b60         1/1          grp38.c    
+428a00 menu_drawTexturedRect_428a00         1/1          grp38.c    
+428b50 menu_drawTexturedRect_428b50         1/1          grp38.c    
+4922c0 hud_drawNameIcon                     2/2          grp39.c    
+496820 replay_drawIcon                      2/2          grp39.c    
+474b50 actor_setPartColor                   16/16        grp4.c     
+474fd0 actor_applyRemoteColours             no-labels    grp4.c     
+4875d0 map_loadItemInfoFrom                 6/6          grp40.c    
+419000 armc_snapshot                        1/1          grp41.c    
+40b420 arena_40b420                         no-labels    grp41.c    
+43bcb0 room_43bcb0                          no-labels    grp41.c    
+46b950 pen_init                             5/5          grp42.c    
+41b400 armc_41b400                          10/10        grp43.c    
+4546d0 net_startThread                      3/3          grp44.c    
+452a30 net_452a30                           8/8          grp44.c    
+452bd0 net_452bd0                           7/7          grp44.c    
+451b80 net_connect                          13/13        grp44.c    
+4060f0 lobby_openConnection                 3/3          grp44.c    
+461250 armc_461250                          1/1          grp46.c    
+474550 map_loadActorInfoFrom                18/18        grp48.c    
+401290 load_401290                          2/2          grp5.c     
+41ef20 FUN_0041ef20                         no-labels    grp5.c     
+470fc0 FUN_00470fc0                         1/1          grp5.c     
+454760 net_454760                           4/4          grp5.c     
+42f0f0 FUN_0042f0f0                         no-labels    grp5.c     
+46bd00 hud_46bd00                           no-labels    grp5.c     
+4841f0 ViewVolume_captureMatrices           4/4          grp5.c     
+452d70 net_452d70                           5/5          grp5.c     
+483fd0 gfx_initVertexArrayExt               2/2          grp5.c     
+483fb0 ViewVolume_dtor                      no-labels    grp5.c     
+454690 net_454690                           no-labels    grp5.c     
+463430 ViewVolume_deletingDtor              1/1          grp5.c     
+472900 hud_472900                           no-labels    grp5.c     
+4283e0 profile_4283e0                       2/2          grp5.c     
+4284d0 menu_drawTexQuad_4284d0              2/2          grp5.c     
+4282f0 menu_drawTexQuad_4282f0              2/2          grp5.c     
+4285c0 menu_drawTexQuad_4285c0              2/2          grp5.c     
+4286b0 menu_drawTexQuad_4286b0              2/2          grp5.c     
+4287a0 menu_drawTexQuad_4287a0              2/2          grp5.c     
+46c840 sys_errorMessageNoName               1/1          grp5.c     
+46c5f0 sys_errorMessage                     1/1          grp5.c     
+46c950 sys_errorTerminate                   2/2          grp5.c     
+46c710 sys_fatalError                       2/2          grp5.c     
+48f970 hud_48f970                           9/9          grp50.c    
+429d70 menu_drawBackground3D                58/58        grp51.c    
+496f20 hud_496f20                           37/37        grp52.c    
+495ed0 hud_495ed0                           9/9          grp53.c    
+45e170 hud_45e170                           3/3          grp55.c    
+45dc00 FUN_0045dc00                         6/6          grp55.c    
+45dd80 match_45dd80                         no-labels    grp55.c    
+45ddc0 armc_45ddc0                          no-labels    grp55.c    
+45de20 actor_applySpawnRecord               2/2          grp55.c    
+479af0 hud_479af0                           3/3          grp56.c    
+48b9d0 map_loadGroundInfoFrom               50/50        grp57.c    
+4680d0 glWindow_wndProc                     9/9          grp58.c    
+468250 glWindow_init                        6/6          grp58.c    
+466d60 shape_findDatEntry                   1/1          grp6.c     
+46b140 skelDat_getItemFileBy                1/1          grp6.c     
+455550 tex_getItemFileBy                    1/1          grp6.c     
+4816c0 space_getNextFreeNodePtr             3/3          grp6.c     
+4817f0 space_getNextFreeUnitPtr             3/3          grp6.c     
+4815c0 space_getNextFreePlanePtr            3/3          grp6.c     
+4818e0 space_getNextFreeBlockPtrBy          3/3          grp6.c     
+48b4a0 map_loadWayPointInfoFrom             3/3          grp6.c     
+48b530 map_loadTriggerInfoFrom              3/3          grp6.c     
+483dd0 factor_addFactorBy                   5/5          grp6.c     
+483e90 load_483e90                          no-labels    grp6.c     
+483ec0 load_483ec0                          no-labels    grp6.c     
+483f00 match_483f00                         no-labels    grp6.c     
+472310 match_472310                         6/6          grp6.c     
+43f8b0 app_deleteDataFiles                  no-labels    grp6.c     
+452af0 net_452af0                           no-labels    grp6.c     
+452c80 net_452c80                           no-labels    grp6.c     
+46c340 math_makeMathFunctionTableFile       3/3          grp6.c     
+46c270 math_initMathFunction                3/3          grp6.c     
+4684c0 glWindow_4684c0                      no-labels    grp6.c     
+42bde0 reg_readServerSettings               3/3          grp6.c     
+403060 text_ascii5Pass                      7/7          grp6.c     
+402420 text_ascii32Pass                     11/11        grp6.c     
+402010 text_ascii8Pass                      15/15        grp6.c     
+402210 text_ascii16Pass                     17/17        grp6.c     
+401870 text_hanCho                          16/16        grp6.c     
+401aa0 text_hanJungJong                     16/16        grp6.c     
+401ce0 hud_401ce0                           11/11        grp6.c     
+401e70 hud_401e70                           11/11        grp6.c     
+4700a0 item_initTextures                    21/21        grp61.c    
+4125c0 armc_4125c0                          1/1          grp62.c    
+4125f0 armc_drawStatLabel                   1/1          grp62.c    
+4290d0 menu_4290d0                          no-labels    grp62.c    
+428940 menu_428940                          3/3          grp62.c    
+44ce90 profile_44ce90                       7/7          grp62.c    
+442d10 mainmenu_442d10                      3/3          grp62.c    
+412450 armc_412450                          7/7          grp63.c    
+445520 skirmish_445520                      5/5          grp63.c    
+44dc60 profile_44dc60                       1/1          grp63.c    
+40b550 arena_drawCustomOption               4/4          grp63.c    
+43bde0 room_drawCustomOption                4/4          grp63.c    
+44e180 profile_44e180                       4/4          grp64.c    
+44e3e0 profile_44e3e0                       4/4          grp64.c    
+44de00 profile_44de00                       6/6          grp64.c    
+41f100 intro_41f100                         19/19        grp65.c    
+4399c0 room_4399c0                          16/16        grp65.c    
+439e00 room_439e00                          10/10        grp66.c    
+4456b0 skirmish_drawScreenB                 14/14        grp66.c    
+444f40 skirmish_drawScreenA                 8/8          grp66.c    
+4038e0 arena_4038e0                         22/22        grp67.c    
+442e10 mainmenu_442e10                      15/15        grp67.c    
+4392c0 room_4392c0                          15/15        grp68.c    
+41b710 armc_41b710                          no-labels    grp7.c     
+40ce70 menu_drawDimOverlay                  1/1          grp7.c     
+43df00 room_43df00                          1/1          grp7.c     
+428890 menu_428890                          2/2          grp7.c     
+467e60 glWindow_setupPixelFormat            3/3          grp7.c     
+468450 glWindow_resize                      1/1          grp7.c     
+46cd00 image_initBy                         6/6          grp7.c     
+466c00 shapeDat_initBy                      3/3          grp7.c     
+46afe0 skelDat_initBy                       3/3          grp7.c     
+487490 timer_getGameTime                    10/10        grp7.c     
+461210 armc_461210                          1/1          grp7.c     
+432400 reg_writeCharacterSettings           1/1          grp7.c     
+433640 room_433640                          no-labels    grp7.c     
+42f150 gfx_initGLState                      no-labels    grp7.c     
+456520 tex_upload                           7/7          grp7.c     
+473610 tex_upload2                          7/7          grp7.c     
+44d720 mainmenu_drawScreen                  20/20        grp71.c    
+43a420 room_43a420                          18/18        grp73.c    
+424810 setup_424810                         18/18        grp76.c    
+4434f0 mainmenu_4434f0                      1/1          grp77.c    
+40cf80 lobbyPlayer_draw                     2/2          grp77.c    
+427830 setup_427830                         2/2          grp77.c    
+427880 setup_427880                         2/2          grp77.c    
+44f5f0 profile_44f5f0                       2/2          grp77.c    
+44f740 profile_44f740                       2/2          grp77.c    
+449a50 missionsel_drawScreen                26/26        grp79.c    
+49d150 match_49d150                         2/2          grp8.c     
+43f460 chat_createEdit                      1/1          grp8.c     
+4734d0 gfx_saveScreenshot                   7/7          grp8.c     
+473780 catalogue_loadComponents             2/2          grp8.c     
+4813e0 space_initBy                         4/4          grp8.c     
+4819b0 space_setBy                          3/3          grp8.c     
+471010 load_471010                          no-labels    grp8.c     
+484050 factor_initBy                        4/4          grp8.c     
+4569d0 texSmall_initBy                      12/12        grp8.c     
+46aa10 skel_loadFrom_46aa10                 6/6          grp8.c     
+44e640 profile_44e640                       29/29        grp80.c    
+44f810 profile_44f810                       2/2          grp88.c    
+43ede0 room_43ede0                          10/10        grp88.c    
+4557e0 tex_textureFileExist                 13/13        grp9.c     
+455080 tex_initBy                           26/26        grp9.c     
+466a60 shape_initBy                         12/12        grp9.c     
+46aeb0 skel_loadFrom_46aeb0                 7/7          grp9.c     
+461540 armc_461540                          6/6          grp91.c    
+40da40 armc_buildPartLists                  28/28        grp92.c    
+430ca0 menu_loadIntroTextures               4/4          grp93.c    
+430bf0 intro_430bf0                         no-labels    grp94.c    
+460c40 Console_ctor                         no-labels    grp95.c    
+460c20 Console_deletingDtor                 1/1          grp95.c    
+454560 net_454560                           2/2          grp96.c    
+4278d0 setup_4278d0                         2/2          grp97.c    
+496610 hud_drawClock                        14/14        grp98.c    
+495140 hud_drawPressFire                    no-labels    grp99.c    
+496c20 hud_drawReadyStart                   3/3          grp99.c    
+496d10 hud_drawRecordIndicator              1/1          grp99.c    
+44f850 profile_44f850                       no-labels    menu2.c    
+41e730 intro_41e730                         1/1          menu2.c    
+435ab0 room_435ab0                          2/2          menu2.c    
+427a40 FUN_00427a40                         no-labels    menu2.c    
+406bd0 lobby_406bd0                         3/3          menu2.c    
+440d70 mainmenu_440d70                      1/1          menu2.c    
+407270 lobby_407270                         3/3          menu2.c    
+4302d0 timer_init                           4/4          menu2.c    
+44b990 profile_selectAndLoad                3/3          menu2.c    
+427970 menu_drawRect                        1/1          menu2.c    
+44b420 menuState210_enter                   2/2          menu2.c    
+487cb0 autoplay_startRecording              8/8          menu2.c    
+4532f0 dplay_enumConnections                6/6          menu2.c    
+45ff30 FUN_0045ff30                         no-labels    misc1.c    
+463960 ResourceSet_dtor_463960              no-labels    misc1.c    
+462740 chat_macro                           3/3          misc1.c    
+46ff70 Stage_dtor                           no-labels    misc1.c    
+4617f0 chat_saveMacros                      2/2          misc1.c    
+471400 collision_moveActor                  15/15        move.c     
+462d30 msg_playerJoinedTeam                 4/4          msg.c      
+4630c0 msg_kill                             8/8          msg.c      
+4547c0 inet_addr_wrap_4547c0                no-labels    net.c      
+452170 net_asyncSelect                      3/3          net.c      
+454220 net_getLocalAddress                  1/1          net.c      
+4520e0 FUN_004520e0                         2/2          net.c      
+4547d0 net_resolveHost                      5/5          net.c      
+48ead0 net_sendState_48ead0                 9/9          net.c      
+48e0f0 match_48e0f0                         4/4          net.c      
+48e680 match_48e680                         12/12        net.c      
+434d00 room_434d00                          no-labels    net2.c     
+4334c0 room_4334c0                          no-labels    net2.c     
+451e60 net_disconnect                       5/5          net2.c     
+435a40 room_leaveGame                       no-labels    net2.c     
+434820 room_434820                          2/2          net2.c     
+44aee0 match_44aee0                         1/1          net2.c     
+4226b0 setup_drawControlSlider              7/7          setup.c    
+420730 setup_420730                         3/3          setup.c    
+482aa0 space_walkNodes_482aa0               17/17        space.c    
+46cbc0 FUN_0046cbc0                         2/2          space.c    
+482e30 space_testSphere                     3/3          sphere.c   
+4809f0 space_traceUnit_4809f0               54/54        trace.c    
+483060 space_traceNodes                     44/44        trace.c    
+471740 collision_rayTrace                   42/42        trace.c    
+46f8c0 actor_46f8c0                         35/35        view.c     
+4853c0 ViewVolume_projectObject             22/22        view.c     
+43f580 GetCurrentDirectoryA_wrap_43f580     no-labels    win.c      
+4685d0 gfx_swapBuffers                      no-labels    win.c      
+4539f0 arena_4539f0                         no-labels    win.c      
+454740 net_454740                           no-labels    win.c      
+46c580 FUN_0046c580                         no-labels    win.c      
+41e7a0 profile_41e7a0                       no-labels    win.c      
+463830 Stage_deletingDtor                   1/1          win.c      
+46c540 mci_pause                            no-labels    win.c      
+43f980 FUN_0043f980                         1/1          win.c      
+41edf0 sys_messageBox                       no-labels    win.c      
+46e260 ptx_error                            1/1          win.c      
+41f880 reg_writeEndMode                     1/1          win.c      
+43f7f0 reg_writeStartMode                   1/1          win.c      
+41f820 menu_frameBegin                      no-labels    win.c      
+43f840 app_registerWindowClassEx            no-labels    win.c      
+452de0 net_452de0                           no-labels    win.c      
+42ef30 app_42ef30                           6/6          win.c      
+4301e0 timer_now                            4/4          win.c      
+42f000 gfx_setPixelFormat                   3/3          win.c      
+440c60 autoplay_listFiles                   4/4          win.c      
+42b3e0 data_loadMessages                    6/6          win.c      
+447010 profile_saveProgress                 6/6          win.c      
+446590 profile_load                         7/7          win.c      
+
+lifts nothing uses (hand-written rebuilds or native functions): actor_setActorTypeHeadInfoBy actor_setActorTypeChestInfoBy actor_setActorTypeArmInfoBy actor_setActorTypeLegInfoBy actor_setActorTypeBoosterInfoBy hud_drawDigits hud_427c30 hud_427e30 text_quad8 text_quad16 text_quad32 text_quad5 hud_427ce0 hud_427ee0 menu_vertex

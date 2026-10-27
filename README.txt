@@ -1264,6 +1264,20 @@ State harness (functions that use game memory): the worker suspends every other 
   printed) and keeps gfx_setProjection2D3D original; its rebuild stays tested. KEPT ORIGINAL lists 3. The DLL's
   other direct return-address tests are for native code (hud_drawMain, font_penDraw) or fall back to the stack
   scan with the same anchor (hud_drawRanking).
+
+Version control (from batch 213 on): recomp/ and decomp/ are git repositories (local only, core.autocrlf off: the
+tools rely on each file's own line endings). The pre-git backups (batches/recomp.c.*, *.pre*, *.post*) stay on disk
+and are ignored; build outputs, logs and screenshots are ignored too.
+
+Coverage: tools/covall.py instruments every lifted file (each function entry and label records its address once,
+without calls: lifted code runs on its own stack, and logging from there faulted in room_43ede0 like the 260-byte
+native_call frame did) and recomp.c (dumps the list at the end); run tools/allstate.sh, restore with
+"git checkout -- lifted recomp.c", then tools/covreport.py <log> writes coverage.txt. First run (batch 213 state):
+744 lifted functions in use, all entered by their tests, 571 fully covered, 7419 / 8862 labels (83.7%). Weakest:
+setup_drawKeyBindingRows 6/97, cfg_parseKeyNames 21/84, match_escMenu 1/51, particle_init 3/44, lobby_connect
+1/30, room_435fc0 1/23, lobbyJoin_keysChat / arena_createClick 1/20; most labels missed: actor_processFrame 123,
+hud_476890 39, game_processGameMode 36, bullet_update 30. The hand-written C rebuilds (not lifted) are not measured.
+15 lifts are unused (hand-written versions replaced them, or the function stays native).
 Reference = the game as built (patches\build_exes.py chain), not retail: 181 code ranges differ from retail (e.g.
   unlockfix.py makes armc_40d990 a no-op). Check a candidate against the patched build before rebuilding it.
 test3.sh (RECOMP_QUICK=1 bash test3.sh for a quick run, RECOMP_NANAUDIT=1 for the NaN audit) = test2.sh, but waits for "recomp: done" in recomp.log before driving the menus.
