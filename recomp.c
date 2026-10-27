@@ -7576,13 +7576,19 @@ static THISCALL DWORD game_processGameMode(char *s) { return run_lifted(lift_498
    projection (0x41ef90), the colour 0x76d438.., per font texture (ids 0x9dae1c, 0x76d360, 0x76d448, set 0xa0e010)
    its glyph pass; the last pass of each (@0x4031f1, 0x402720, 0x4029b0, 0x402d90, 0x40288c, 0x402be8, 0x4032e6,
    0x402fbd) goes through the patch DLL's text_e5 / e8 / e16 / e32 (nearest-texel sampling) */
-LIFT_PLAIN(text_draw5, 403170)
-LIFT_PLAIN(text_draw8, 402620)
-LIFT_PLAIN(text_draw16, 4028b0)
-LIFT_PLAIN(text_draw32, 402c90)
-LIFT_PLAIN(text_draw8b, 402740)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_draw5(int x, int y, const char *text);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_draw8(int x, int y, const char *text);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_draw16(int x, int y, const char *text);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_draw32(int x, int y, const char *text);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_draw8b(int x0, int y, int x1, const char *text);
 LIFT_PLAIN(text_drawBox16, 4029d0)
-LIFT_PLAIN(hud_403210, 403210)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_403210(int x0, int y, int x1, const char *text);
 LIFT_PLAIN(hud_402db0, 402db0)
 /* 0x429bc0 menu_drawCursor(): the menu pointer at 0x4ded68 / 0x4ded6c (blinking by 0x4df910, the click flash
    0x4df03c), a 47-unit sprite through menu_vertex; its right-hand corners (@0x429cc3, @0x429cf0) go through the
@@ -18345,13 +18351,13 @@ static void txtpass_setup(const DWORD *stubs)
 }
 /* the four-argument passes take (x1, y, x2, text) */
 static void txtbox_setup(const DWORD *stubs) { txtpass_setup(stubs); g_a[3] = g_a[2]; g_a[2] = g_a[0] + irnd(-20, 400); }
-T_PLAIN(text_draw5, 0x403170, txtpass_setup(g_stubTxt5);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(text_draw8, 0x402620, txtpass_setup(g_stubTxt8);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(text_draw16, 0x4028b0, txtpass_setup(g_stubTxt16);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(text_draw32, 0x402c90, txtpass_setup(g_stubTxt32);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(text_draw8b, 0x402740, txtbox_setup(g_stubTxt8);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(text_draw5, txtpass_setup(g_stubTxt5);, CALL_PLAIN(0x403170, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw5((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
+ST(text_draw8, txtpass_setup(g_stubTxt8);, CALL_PLAIN(0x402620, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw8((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
+ST(text_draw16, txtpass_setup(g_stubTxt16);, CALL_PLAIN(0x4028b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw16((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
+ST(text_draw32, txtpass_setup(g_stubTxt32);, CALL_PLAIN(0x402c90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw32((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
+ST(text_draw8b, txtbox_setup(g_stubTxt8);, CALL_PLAIN(0x402740, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw8b((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 T_PLAIN(text_drawBox16, 0x4029d0, txtbox_setup(g_stubBox16);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(hud_403210, 0x403210, txtbox_setup(g_stubTxt5);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(hud_403210, txtbox_setup(g_stubTxt5);, CALL_PLAIN(0x403210, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_403210((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 T_PLAIN(hud_402db0, 0x402db0, txtbox_setup(g_stubBox32);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 /* the menu pointer: on or off the screen, blink and click flash states, the frame time; the vertex helper, the
    projection and the bind stubbed (the right-hand corners go through the patch DLL's cursor_vtx when installed) */

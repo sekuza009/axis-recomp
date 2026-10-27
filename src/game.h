@@ -7,12 +7,24 @@
 #include "scene.h"
 
 /* ---- OpenGL, through the import table ---- */
+#define GL_TEXTURE_2D 0x0de1
 #define glColor4f(r, g, b, a) IMPORT(0x4a9228, void, float, float, float, float)(r, g, b, a)
+/* a colour kept in memory, passed on bit for bit (the original copies the four values without the FPU, which
+   would turn a signalling NaN into a quiet one) */
+#define glColor4f_stored(c) IMPORT(0x4a9228, void, u32, u32, u32, u32)(((const u32 *)(c))[0], ((const u32 *)(c))[1], \
+	((const u32 *)(c))[2], ((const u32 *)(c))[3])
+#define glEnable(cap) IMPORT(0x4a9224, void, u32)(cap)
+#define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
 
 /* ---- C runtime of the game ---- */
 #define sprintf(...) GAME_CDECL(0x49e9dd, int, char *, const char *, ...)(__VA_ARGS__)
 
 /* ---- screen ---- */
+#define gfx_setProjection2D3D(mode) GAME_CDECL(0x41ef90, void, int)(mode)   /* 1: 3D, 2: the menus' 2D */
+/* ---- textures ---- */
+typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
+#define g_textures GAME_VAR(TextureSets *, 0xa0e010)
+#define tex_bind(manager, slot) GAME_THISCALL(0x4566c0, void, void *, int)(manager, slot)
 #define gfx_getWidth() GAME_CDECL(0x4685b0, int, void)()
 #define gfx_getHeight() GAME_CDECL(0x4685c0, int, void)()
 #define gfx_fillRect(x0, y0, x1, y1) GAME_CDECL(0x46bd60, void, int, int, int, int)(x0, y0, x1, y1)
@@ -92,6 +104,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
 #define g_textColour ((Colour *)0x76d438)            /* the menus' text colour */
+#define g_textCharWidth GAME_VAR(int, 0x4d23d8)      /* units per character of the font being drawn */
+#define g_fontHanCho GAME_VAR(int, 0x9dae1c)         /* font textures (ids): Hangul initial consonants */
+#define g_fontHanJungJong GAME_VAR(int, 0x76d360)    /* Hangul vowels and finals */
+#define g_fontAscii GAME_VAR(int, 0x76d448)          /* ASCII, 5- and 8-unit fonts */
+#define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)     /* ASCII, 16- and 32-unit fonts */
 /* the title and profile screens */
 #define g_titleShown GAME_VAR(int, 0x4df01c)
 #define g_titleFrames GAME_VAR(int, 0x4e0458)        /* frames the title has been shown */
