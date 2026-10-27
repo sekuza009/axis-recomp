@@ -1278,6 +1278,17 @@ setup_drawKeyBindingRows 6/97, cfg_parseKeyNames 21/84, match_escMenu 1/51, part
 1/30, room_435fc0 1/23, lobbyJoin_keysChat / arena_createClick 1/20; most labels missed: actor_processFrame 123,
 hud_476890 39, game_processGameMode 36, bullet_update 30. The hand-written C rebuilds (not lifted) are not measured.
 15 lifts are unused (hand-written versions replaced them, or the function stays native).
+
+Readable source (src/, from batch 214 on): the goal is the game's code as organised, readable C that stays
+bit-exact. src/ is its own translation unit (x87 maths, -mno-sse), linked into recomp.dll by build.sh (which now
+replaces the single cc command). Conventions are in src/axis.h: the scene object is a struct generated from
+src/scene.fields by tools/mkscene.py (every offset checked at compile time); game.h names the game's functions,
+globals and imports by their original addresses; a call to another game function is an ordinary call that goes
+through the original address (so the harness stubs still apply and the installed version runs); a rebuild is
+defined as "void (name)(...)" so its own call macro does not expand there; float compares are written so NaN
+takes the original's branch; ftol() is the original __ftol. recomp.c declares the src functions and its tests
+call them directly. Pilot (6, all bit-exact first time): src/text/text_size.c (text_drawSized, hud_44ae10),
+src/hud/hud_overlay.c (hud_4950a0, hud_drawFps, hud_4953d0), src/replay/replay_message.c (replay_drawMessage).
 Reference = the game as built (patches\build_exes.py chain), not retail: 181 code ranges differ from retail (e.g.
   unlockfix.py makes armc_40d990 a no-op). Check a candidate against the patched build before rebuilding it.
 test3.sh (RECOMP_QUICK=1 bash test3.sh for a quick run, RECOMP_NANAUDIT=1 for the NaN audit) = test2.sh, but waits for "recomp: done" in recomp.log before driving the menus.

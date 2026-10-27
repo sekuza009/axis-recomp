@@ -7584,11 +7584,14 @@ LIFT_PLAIN(hud_402db0, 402db0)
 LIFT_PLAIN(menu_drawCursor, 429bc0)
 #include "lifted/grp176.c"
 /* 0x44ad60 text_drawSized(x, y, text, size): text_draw5 / 8 / 16 / 32 by the size */
-LIFT_PLAIN(text_drawSized, 44ad60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_drawSized(int x, int y, const char *text, int size);
 /* 0x44ae10 hud_44ae10(x1, y, x2, text, size): text_draw8b / text_drawBox16 / hud_402db0 / hud_403210 by the size */
-LIFT_PLAIN8(hud_44ae10, 44ae10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_44ae10(int x0, int y, int x1, const char *text, int size);
 /* 0x4950a0 hud_4950a0(x1, y1, x2, y2): a filled box (gfx_fillRect) scaled from 640 x 480 to the screen */
-LIFT_PLAIN(hud_4950a0, 4950a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_4950a0(int x0, int y0, int x1, int y1);
 /* 0x41f8d0 menu_drawVersion(): the title screen's end (0x4df01c counting 0x4e0458 to 19, then screen 210), the
    menu background (0x441740), the emblem transition (@0x41f903: 0x429170, the patch DLL's trans_wrap), the version
    texts (text_draw5) */
@@ -7603,15 +7606,18 @@ static THISCALL DWORD hud_drawLockOn(char *s) { return run_lifted(lift_491f50, (
    transition between menus (0x4de1d8 .. 0x4de1ec, textures 0x9dad6c .. 0x9dad88), through menu_vertex */
 LIFT_PLAIN(menu_titleEmblemTransition, 429170)
 /* 0x495510 hud_drawFps() (thiscall on the scene): the FPS icon (0x496820) and "%4.1f" of +0x38 (text_drawSized) */
-static THISCALL DWORD hud_drawFps(char *s) { return run_lifted(lift_495510, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawFps(void *scene);
 /* 0x4953d0 hud_4953d0() (thiscall on the scene): the chat line box: in chat modes 1 / 2 (+0x2340d35) the box
    (hud_4950a0) and the line typed (0x9dc92c), with a "_" cursor blinking by +0x233cc34 */
-static THISCALL DWORD hud_4953d0(char *s) { return run_lifted(lift_4953d0, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_4953d0(void *scene);
 /* 0x495190 replay_drawMessage() (thiscall on the scene): the message box (fading by +0x233cc40): the next message
    of the ring at +0x233c318 (32 x 20 bytes, read +0x233c59c / written +0x233c598) in its colour (0xa1f100 table)
    as four 0x41-byte lines of its text block (+0x22fbbd8, 0x108 each), else the last five events of the ring at
    +0x23429ce (0x108 each, coloured by their type 0..5) */
-static THISCALL DWORD replay_drawMessage(char *s) { return run_lifted(lift_495190, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL replay_drawMessage(void *scene);
 /* batch 213 (lifted/grp178.c .. grp180.c): functions that jump into code caves of the installed exe (0x4a8e20.. at
    the end of .text): lift.py "&lo-hi" lifts each cave as part of the function that reaches it */
 #include "lifted/grp178.c"
@@ -18362,10 +18368,11 @@ static void sized_setup(const DWORD *stubs)
 	g_a[0] = irnd(-20, 660); g_a[1] = irnd(-20, 500); g_a[2] = (int)(BUF + 0x100); g_a[3] = sz[irnd(0, 7)];
 	g_a[4] = irnd(-20, 660);
 }
-T_PLAIN(text_drawSized, 0x44ad60, sized_setup(g_stubSized);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(text_drawSized, sized_setup(g_stubSized);, (((void (*)(int, int, int, int))0x44ad60)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
+	(text_drawSized(g_a[0], g_a[1], (const char *)g_a[2], g_a[3]), 0))
 ST(hud_44ae10, sized_setup(g_stubSized2); g_a[5] = g_a[3]; g_a[3] = g_a[2]; g_a[2] = g_a[4];,
 	(((void (*)(int, int, int, int, int))0x44ae10)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[5]), 0),
-	(hud_44ae10(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[5], 0, 0, 0), 0))
+	(hud_44ae10(g_a[0], g_a[1], g_a[2], (const char *)g_a[3], g_a[5]), 0))
 /* the scaled box: corners on and off the 640 x 480 screen, the screen size; the fill stubbed */
 static const DWORD g_stubBox[] = { 0x4685b0, 0, 0x4685c0, 0, 0x46bd60, 1, 0 };
 static void hudbox_setup(void)
@@ -18375,7 +18382,8 @@ static void hudbox_setup(void)
 	callee_stubs(g_stubBox, 0); callee_ret(0x4685b0, w[k]); callee_ret(0x4685c0, h[k]);
 	for (int i = 0; i < 4; i++) g_a[i] = irnd(-20, 660);
 }
-T_PLAIN(hud_4950a0, 0x4950a0, hudbox_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(hud_4950a0, hudbox_setup();, (((void (*)(int, int, int, int))0x4950a0)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
+	(hud_4950a0(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 /* the title / menu frame end: the title counter near its limit, the version texts; the background, the transition
    (through the patch DLL's trans_wrap when installed), the colour and the text pass stubbed */
 static const DWORD g_stubVersion[] = { 0x403170, 3, 0x41f0e0, 5, 0x429170, 0, 0x441740, 0, 0 };
@@ -18419,7 +18427,7 @@ T_PLAIN(menu_titleEmblemTransition, 0x429170, transition_setup();, 0, 0, 0, 0, 0
 /* the FPS counter: any rate; the icon, colour and text stubbed */
 static const DWORD g_stubFps[] = { 0x44ad30, 4, 0x44ad60, 4, 0x496820, 3 | CS_POP | CS_THIS, 0 };
 static void fps_setup(void) { callee_stubs(g_stubFps, 0); SF(BUF, 0x38) = csu_fr(0, 30000); }
-ST(hud_drawFps, fps_setup();, TC(DWORD, 0x495510, char *)(BUF), hud_drawFps(BUF))
+ST(hud_drawFps, fps_setup();, TC(DWORD, 0x495510, char *)(BUF), (hud_drawFps(BUF), 0))
 /* the chat line: modes -1..3, the blink timer, a typed line of 0..40 characters; the box, colour and text stubbed */
 static const DWORD g_stubChatBox[] = { 0x44ad30, 4, 0x44ad60, 4, 0x4950a0, 4, 0 };
 static void chatbox_setup(void)
@@ -18428,7 +18436,7 @@ static void chatbox_setup(void)
 	S32(BUF, 0x2340d35) = irnd(-1, 3); SF(BUF, 0x233cc34) = csu_fr(0, 100);
 	fill_str((char *)0x9dc92c, 40, 32, 126);
 }
-ST(hud_4953d0, chatbox_setup();, TC(DWORD, 0x4953d0, char *)(BUF), hud_4953d0(BUF))
+ST(hud_4953d0, chatbox_setup();, TC(DWORD, 0x4953d0, char *)(BUF), (hud_4953d0(BUF), 0))
 /* the replay message box: the fade -1..3 s, the message ring's read / write indexes (equal or not, past 32), its
    entries' text block 0..7 and colour 0..20, the text blocks (four short lines each), the event ring's indexes and
    entries (type 0..6, a short text); the box, colour and text stubbed */
@@ -18443,7 +18451,7 @@ static void replaymsg_setup(void)
 	int e = irnd(0, 20); S32(BUF, 0x2342efa) = e; S32(BUF, 0x2342ef6) = e + irnd(0, 6);
 	for (int k = 0; k < 5; k++) { char *v = BUF + 0x23429ce + k * 0x108; S32(v, 0) = irnd(0, 6); fill_str(v + 4, 40, 32, 126); }
 }
-ST(replay_drawMessage, replaymsg_setup();, TC(DWORD, 0x495190, char *)(BUF), replay_drawMessage(BUF))
+ST(replay_drawMessage, replaymsg_setup();, TC(DWORD, 0x495190, char *)(BUF), (replay_drawMessage(BUF), 0))
 /* batch 213 */
 /* the projection switch: the current and wanted modes 0..2, screen sizes 4:3 .. 21:9, the view's angle and depth;
    GL and GLU mocked (the cave's box rewritten by the patch DLL when menu43 is on) */

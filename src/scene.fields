@@ -1,0 +1,14 @@
+# The scene object (the game's one large "this" during a match; 0x2343b0b bytes, built by game_loadAllData).
+# One field per line: offset  size  declaration  # comment. tools/mkscene.py turns this into scene.h (a packed
+# struct with padding between the fields and a compile-time check of every offset). Add fields as rebuilds need them.
+0x38       4          float fps                                  # frames per second, shown by hud_drawFps
+0x22fbbd8  0x4200     char msgText[0x40][0x108]                  # message texts: four lines of 0x41 bytes per block
+0x233c318  0x280      MessageSlot msgRing[32]                    # messages waiting to be shown (ring of 32)
+0x233c598  4          u32 msgWrite                               # next slot msgRing gets written to
+0x233c59c  4          u32 msgRead                                # next slot replay_drawMessage shows
+0x233cc34  4          float chatBlink                            # cursor blink clock of the chat line
+0x233cc40  4          float msgFade                              # message box fade, seconds (1 or more: opaque)
+0x2340d35  4          i32 chatMode                               # 0 closed, 1 / 2 typing (team / all)
+0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
+0x2342ef6  4          u32 eventCount                             # events written so far
+0x2342efa  4          u32 eventFirst                             # first event still shown
