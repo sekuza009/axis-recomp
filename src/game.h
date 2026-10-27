@@ -87,6 +87,13 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define missionsel_448140() GAME_CDECL(0x448140, void, void)()
 #define missionsel_44aa20() GAME_CDECL(0x44aa20, void, void)()
 #define missionsel_44aa30() GAME_CDECL(0x44aa30, void, void)()
+#define sound_playMenu(id) GAME_CDECL(0x41e760, void, int)(id)          /* 0 confirm / back, 2 move */
+#define profile_44b600() GAME_CDECL(0x44b600, void, void)()
+#define profile_44bc00() GAME_CDECL(0x44bc00, void, void)()
+#define profile_deleteFiles() GAME_CDECL(0x44ba60, void, void)()
+#define profile_selectAndLoad() GAME_CDECL(0x44b990, void, void)()
+#define profile_44b320(x, y) GAME_CDECL(0x44b320, int, int, int)(x, y)  /* the button at (x, y): 0 left, 1 right */
+#define profile_44b360(x, y) GAME_CDECL(0x44b360, int, int, int)(x, y)
 #define Color4_set(dst, r, g, b, a) GAME_CDECL(0x41f0e0, void, Colour *, float, float, float, float)(dst, r, g, b, a)
 
 /* ---- globals ---- */
@@ -118,8 +125,37 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
 #define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
 #define g_profilePage GAME_VAR(int, 0x9f8f10)        /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
-#define g_keyEnter GAME_VAR(int, 0x9dae70)           /* key bindings: Enter */
-#define g_keyEnter2 GAME_VAR(int, 0x6803a0)          /* the second Enter key */
+/* key bindings (key codes), named by their use in the menus */
+#define g_keyClick GAME_VAR(int, 0x9dae70)           /* fire / click: the button under the pointer */
+#define g_keyOk GAME_VAR(int, 0x4e1510)              /* confirms a page */
+#define g_keyCancel GAME_VAR(int, 0x6803a0)          /* leaves a page */
+#define g_keyBack GAME_VAR(int, 0x4e0cdc)
+#define g_keyCancel2 GAME_VAR(int, 0x76d48c)
+#define g_keyLeft GAME_VAR(int, 0x9dae14)
+#define g_keyRight GAME_VAR(int, 0x9db974)
+#define g_keyUp GAME_VAR(int, 0x9db0a0)
+#define g_keyDown GAME_VAR(int, 0x76d330)
+#define g_keyToggle GAME_VAR(int, 0x680390)          /* switches a two-button dialog's highlight */
+#define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
+#define g_mouseY GAME_VAR(int, 0x4ded6c)
+#define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
+/* two-button dialogs: the highlighted choice and its marker */
+#define g_dialogChoice GAME_VAR(int, 0x74de1c)       /* 0 the left button, 1 the right one */
+#define g_highlightShown GAME_VAR(int, 0x76d42c)
+#define g_highlightSize GAME_VAR(float, 0x680bc0)
+#define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
+#define g_highlightX GAME_VAR(int, 0x67ef34)
+#define g_highlightY GAME_VAR(int, 0x67fb38)
+/* the profile screen's pages */
+#define g_profileMessage GAME_VAR(int, 0x9f8f34)     /* page 2 shows a message */
+#define g_profileDialogX GAME_VAR(int, 0x9f8f1c)     /* page 3's dialog frame */
+#define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
+#define g_profileDialog2X GAME_VAR(int, 0x9f6834)    /* page 5's dialog frame */
+#define g_profileDialog2Y GAME_VAR(int, 0x9f683c)
+#define g_emblemCursor GAME_VAR(int, 0x9f8d30)       /* page 6: 0..8, row by row */
+#define g_emblemMoved GAME_VAR(int, 0x9f8d68)
+#define g_profile9f8ee4 GAME_VAR(int, 0x9f8ee4)      /* (unclear) cleared when the emblem cursor moves */
+#define g_profile9f6828 GAME_VAR(int, 0x9f6828)      /* (unclear) the same */
 /* the mission-select screen */
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_missionPage GAME_VAR(int, 0x9f62f8)        /* 0 / 1: no keys; 2: no list refresh */

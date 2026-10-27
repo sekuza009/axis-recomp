@@ -30,14 +30,14 @@ void (menu_processKeys)(void)
 	}
 }
 
-/* 0x44cdd0 (menu_44cdd0): the profile screen's keys: none with a dialog open; during the intro animation Enter
-   skips it to its end; else the current page's handler */
+/* 0x44cdd0 (menu_44cdd0): the profile screen's keys: none with a dialog open; during the intro animation the cancel
+   key or a click skips it to its end; else the current page's handler */
 void (menu_44cdd0)(void)
 {
 	if (g_dialogOpen)
 		return;
 	if (g_profileIntro && g_profileIntroState != 5) {
-		if (input_justPressed(g_keyEnter2) == 1 || input_justPressed(g_keyEnter) == 1) {
+		if (input_justPressed(g_keyCancel) == 1 || input_justPressed(g_keyClick) == 1) {
 			g_profileIntroState = 5;
 			g_profileIntroTime = 0;
 			g_profileIntroZoom = 100.0f;

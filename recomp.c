@@ -7413,15 +7413,19 @@ static THISCALL DWORD match_inputState3(char *s) { return run_lifted(lift_48a370
    (profile_44b670, profile_44b6e0) */
 LIFT_PLAIN(profile_44c600, 44c600)
 /* 0x44c850 profile_44c850(): page 2: Enter or Esc back to the list (profile_44b600) */
-LIFT_PLAIN(profile_44c850, 44c850)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44c850(void);
 /* 0x44c8c0 profile_44c8c0(): page 3, the name edit: Esc cancels (profile_44ba60), Enter checks the name
    (profile_44b320) and takes it, up / down move between the fields (sound 2) */
-LIFT_PLAIN(profile_44c8c0, 44c8c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44c8c0(void);
 /* 0x44ca90 profile_44ca90(): page 4, as page 3 for the second form (profile_44b360, profile_44bc00) */
-LIFT_PLAIN(profile_44ca90, 44ca90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44ca90(void);
 /* 0x44cc60 profile_44cc60(): page 5, the 3 x 3 emblem grid: Esc (profile_44b990), the arrows wrap the cursor
    0x9f8d30 by rows and columns (sound 2) */
-LIFT_PLAIN(profile_44cc60, 44cc60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44cc60(void);
 /* batch 201 (lifted/grp158.c, grp159.c): the menu's key dispatch */
 #include "lifted/grp158.c"
 /* 0x44cdd0 menu_44cdd0(): the profile screen's keys: none with a dialog (0x90d1c4); during the intro animation
@@ -17827,10 +17831,10 @@ ST(match_inputState3, instate3_setup();, TC(DWORD, 0x48a370, char *)(BUF), match
 /* the profile pages' keys: profileinput_setup (the page, bindings among a few keys with their latches, repeat
    delays, dialog state); callees real as for profile_processInput */
 T_PLAIN(profile_44c600, 0x44c600, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44c850, 0x44c850, profileinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44c8c0, 0x44c8c0, profileinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44ca90, 0x44ca90, profileinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44cc60, 0x44cc60, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, 0, 0, 0, 0, 0)
+ST(profile_44c850, profileinput_setup();, CALL_PLAIN(0x44c850, 0, 0, 0, 0, 0), (profile_44c850(), 0))
+ST(profile_44c8c0, profileinput_setup();, CALL_PLAIN(0x44c8c0, 0, 0, 0, 0, 0), (profile_44c8c0(), 0))
+ST(profile_44ca90, profileinput_setup();, CALL_PLAIN(0x44ca90, 0, 0, 0, 0, 0), (profile_44ca90(), 0))
+ST(profile_44cc60, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, CALL_PLAIN(0x44cc60, 0, 0, 0, 0, 0), (profile_44cc60(), 0))
 /* the profile screen's key dispatch: profileinput_setup, the dialog flag 0x90d1c4 and Enter's second binding
    0x6803a0 among the same keys; the page handlers stubbed */
 static const DWORD g_stubMenuCdd0[] = { 0x44c600, 0, 0x44c850, 0, 0x44c8c0, 0, 0x44ca90, 0, 0x44cc60, 0, 0 };
