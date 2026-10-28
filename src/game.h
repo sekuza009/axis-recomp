@@ -748,4 +748,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_4532a0() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
 #define arena_4532b0(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
 
+#define room_432be0() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
+
 #endif

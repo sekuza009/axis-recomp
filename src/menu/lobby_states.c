@@ -266,3 +266,35 @@ void (console_41e390)(void)
 		GAME_VAR(int, 0x9dd250) = e4;
 	}
 }
+
+/* 0x432db0: a received game's settings (0xa0563c) into the room: its names, the 11 mech bytes, the six colour pairs
+   (a negative or NaN chroma or value becomes 0), the window rectangle; then the room screen, the lobby's title
+   record and the mech */
+void (room_432db0)(void)
+{
+	strcpy((char *)0x9dd570, (const char *)0xa0563c);
+	strcpy((char *)0x9dd5a6, (const char *)0xa0565a);
+	memcpy((void *)0x9dd5f8, (void *)0xa0568c, 11);
+	for (int k = 0; k < 6; k++) {
+		memcpy((void *)(0x9dd603 + k * 0x18), (void *)(0xa05697 + k * 0x18), 0x18);
+		if (!(GAME_VAR(float, 0x9dd607 + k * 0x18) >= GAME_VAR(float, 0x4a93e8)))
+			GAME_VAR(int, 0x9dd607 + k * 0x18) = 0;
+		if (!(GAME_VAR(float, 0x9dd60b + k * 0x18) >= GAME_VAR(float, 0x4a93e8)))
+			GAME_VAR(int, 0x9dd60b + k * 0x18) = 0;
+	}
+	static const u32 rect[7][2] = { { 0x9dd5d8, 0xa05727 }, { 0x9dd5dc, 0xa05737 }, { 0x9dd5e4, 0xa0573b },
+	                                { 0x9dd5f4, 0xa0573f }, { 0x9dd5ec, 0xa0572f }, { 0x9dd5f0, 0xa05733 },
+	                                { 0x9dd5e8, 0xa0572b } };
+	for (int k = 0; k < 7; k++)
+		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
+	room_432be0();
+	memset((void *)0x4de700, 0, 7 * 4 + 2);
+	strcpy((char *)0x4de700, (const char *)0x9dd570);
+	static const u32 title[6][2] = { { 0x4de71e, 0x9dd5d8 }, { 0x4de722, 0x9dd5dc }, { 0x4de72e, 0x9dd5ec },
+	                                 { 0x4de732, 0x9dd5f0 }, { 0x4de72a, 0x9dd5e8 }, { 0x4de726, 0x9dd5e4 } };
+	for (int k = 0; k < 6; k++)
+		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
+	FUN_0040ddb0();
+	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
+	GAME_VAR(int, 0x9dd84c) = 1;
+}

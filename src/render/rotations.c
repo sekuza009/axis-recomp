@@ -125,3 +125,49 @@ void (FUN_0047d8a0)(float *m, const float *q)
 	r[15] = 1.0f;
 	memcpy(m, r, sizeof r);   /* all of q is read before the first store, as in the original */
 }
+
+static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
+
+/* 0x47d0f0: q = the quaternion (x, y, z, w) of the rotation in m's upper 3 x 3 (columns): from the trace when it is
+   positive, else from the largest diagonal element */
+void THISCALL (skel_ase_47d0f0)(float *q, const float *m)
+{
+	X one = ONE, half = HALF, quarter = GAME_VAR(float, 0x4a941c);
+	X t = (X)m[5] + m[0] + m[10] + one;
+	if (t > GAME_VAR(float, 0x4a93e8)) {
+		X s = half / fsqrt(t);
+		q[3] = (float)(quarter / s);
+		q[0] = (float)(((X)m[9] - m[6]) * s);
+		q[1] = (float)(((X)m[2] - m[8]) * s);
+		q[2] = (float)(((X)m[4] - m[1]) * s);
+		return;
+	}
+	int i = m[0] >= m[5] ? (m[0] >= m[10] ? 0 : 2) : (m[5] >= m[10] ? 1 : 2);
+	X s;
+	switch (i) {
+	case 0:
+		s = fsqrt((X)m[0] + one - m[5] - m[10]);
+		s += s;
+		q[0] = (float)(s * quarter);
+		q[3] = (float)(((X)m[9] - m[6]) / s);
+		q[1] = (float)(((X)m[4] + m[1]) / s);
+		q[2] = (float)(((X)m[8] + m[2]) / s);
+		break;
+	case 1:
+		s = fsqrt((X)m[5] + one - m[10] - m[0]);
+		s += s;
+		q[1] = (float)(s * quarter);
+		q[3] = (float)(((X)m[2] - m[8]) / s);
+		q[2] = (float)(((X)m[9] + m[6]) / s);
+		q[0] = (float)(((X)m[4] + m[1]) / s);
+		break;
+	default:
+		s = fsqrt((X)m[10] + one - m[0] - m[5]);
+		s += s;
+		q[2] = (float)(s * quarter);
+		q[3] = (float)(((X)m[4] - m[1]) / s);
+		q[0] = (float)(((X)m[8] + m[2]) / s);
+		q[1] = (float)(((X)m[9] + m[6]) / s);
+		break;
+	}
+}

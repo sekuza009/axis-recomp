@@ -1636,12 +1636,8 @@ void ptx_initTables(void);
    of the name and never uses it; the suffix test is case-sensitive.) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_454e60(void *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
-static THISCALL void load_470de0(char *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
-                                 const char *s6, const char *s7, const char *s8, const char *s9)   /* 9 upper-cased names */
-{
-	const char *s[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
-	for (int k = 0; k < 9; k++) { strcpy(self + 8 + k * 0x100, s[k]); FUN_0046cb60(self + 8 + k * 0x100); }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_470de0(void *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5, const char *s6, const char *s7, const char *s8, const char *s9);
 /* the options panel shared by the game room and the arena lobby: 8 rows at rec, then (after the screen's own
    middle row) 4 rectangles at rec2 measured from the right edge gx2 */
 static void options_panel(DWORD rec, DWORD rec2, DWORD gx, DWORD gy, DWORD gx2)
@@ -1818,28 +1814,8 @@ static void __cdecl menuState400_enter(void)
 }
 /* a received game's settings -> the room (names, 11 option bytes, 6 x 6 dwords with two floats clamped at a minimum,
    the rectangle record), then refresh the room screen and the lobby title record */
-static void __cdecl room_432db0(void)
-{
-	strcpy(GSTR(0x9dd570), GSTR(0xa0563c));
-	strcpy(GSTR(0x9dd5a6), GSTR(0xa0565a));
-	memcpy((void *)0x9dd5f8, (void *)0xa0568c, 11);
-	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(0x9dd603 + k * 0x18), (void *)(0xa05697 + k * 0x18), 0x18);
-		if (!(GF(0x9dd607 + k * 0x18) >= GF(0x4a93e8))) G32(0x9dd607 + k * 0x18) = 0;   /* below the minimum or NaN */
-		if (!(GF(0x9dd60b + k * 0x18) >= GF(0x4a93e8))) G32(0x9dd60b + k * 0x18) = 0;
-	}
-	static const DWORD cp[7][2] = { { 0x9dd5d8, 0xa05727 }, { 0x9dd5dc, 0xa05737 }, { 0x9dd5e4, 0xa0573b }, { 0x9dd5f4, 0xa0573f },
-	                                { 0x9dd5ec, 0xa0572f }, { 0x9dd5f0, 0xa05733 }, { 0x9dd5e8, 0xa0572b } };
-	for (int k = 0; k < 7; k++) G32(cp[k][0]) = G32(cp[k][1]);
-	room_432be0();
-	memset((void *)0x4de700, 0, 7 * 4 + 2);
-	strcpy(GSTR(0x4de700), GSTR(0x9dd570));
-	static const DWORD cq[6][2] = { { 0x4de71e, 0x9dd5d8 }, { 0x4de722, 0x9dd5dc }, { 0x4de72e, 0x9dd5ec }, { 0x4de732, 0x9dd5f0 },
-	                                { 0x4de72a, 0x9dd5e8 }, { 0x4de726, 0x9dd5e4 } };
-	for (int k = 0; k < 6; k++) G32(cq[k][0]) = G32(cq[k][1]);
-	FUN_0040ddb0();
-	G32(0x4dc4b4) = G32(0x9dd5d8); G32(0x9dd84c) = 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_432db0(void);
 /* control bindings: where a pair's primary key is the "unbound" value (0x4df8e4), swap in the secondary */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawKeyBindingRow(void);
@@ -1901,39 +1877,8 @@ static void __cdecl ptx_decodeBlock_46e380(const int *in, BYTE *out)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0047d8a0(float *m, const float *q);
 /* 3x3 part of a rotation matrix -> quaternion (x, y, z, w) */
-static THISCALL void skel_ase_47d0f0(float *q, const float *m)
-{
-	typedef long double X;
-	X one = GF(0x4a9424), half = GF(0x4a942c), quarter = GF(0x4a941c);
-	X t = (X)m[5] + m[0] + m[10] + one;
-	if (t > GF(0x4a93e8)) {
-		X s = half / sqrtl(t);
-		q[3] = (float)(quarter / s);
-		q[0] = (float)(((X)m[9] - m[6]) * s);
-		q[1] = (float)(((X)m[2] - m[8]) * s);
-		q[2] = (float)(((X)m[4] - m[1]) * s);
-		return;
-	}
-	int i = (m[0] >= m[5]) ? (m[0] >= m[10] ? 0 : 2) : (m[5] >= m[10] ? 1 : 2);
-	X s;
-	switch (i) {
-	case 0:
-		s = sqrtl((X)m[0] + one - m[5] - m[10]); s += s;
-		q[0] = (float)(s * quarter);
-		q[3] = (float)(((X)m[9] - m[6]) / s); q[1] = (float)(((X)m[4] + m[1]) / s); q[2] = (float)(((X)m[8] + m[2]) / s);
-		break;
-	case 1:
-		s = sqrtl((X)m[5] + one - m[10] - m[0]); s += s;
-		q[1] = (float)(s * quarter);
-		q[3] = (float)(((X)m[2] - m[8]) / s); q[2] = (float)(((X)m[9] + m[6]) / s); q[0] = (float)(((X)m[4] + m[1]) / s);
-		break;
-	default:
-		s = sqrtl((X)m[10] + one - m[0] - m[5]); s += s;
-		q[2] = (float)(s * quarter);
-		q[3] = (float)(((X)m[4] - m[1]) / s); q[0] = (float)(((X)m[8] + m[2]) / s); q[1] = (float)(((X)m[9] + m[6]) / s);
-		break;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_ase_47d0f0(float *q, const float *m);
 /* segment p0 -> p1 against a polygon: face plane (n at +0x4c, d at +0x58), then three edge planes from +0x5c (0x10
    apart). On a hit: hit point -> *hit, distance from the hit to p1 -> *dist, returns 1 */
 static THISCALL int space_tracePlanes_47fb80(const char *self, const float *p0, const float *p1, float *hit, float *dist)
@@ -2042,46 +1987,8 @@ static void __cdecl setup_4230e0(void)
 }
 /* menu mouse-look: turn (0x90d1cc, degrees, wraps 0..360) and pitch (0x4de6c4, clamped) with the cursor's offset
    from the screen centre; a click stores the eye/target points of the current slot */
-static void menu_turn_update(int slot)
-{
-	typedef long double X;
-	X a = (X)GF(0x90d1cc) * GD(0x4a9548) * GD(0x4a9540);
-	GF(0x4de6c0) = (float)x87_fsin(a);
-	GF(0x4de6c8) = (float)x87_fcos(a);
-	volatile X t = GF(0x90d1cc);
-	GF(0x4dfa44 + slot * 88) = (float)t;
-}
-static void __cdecl menu_42ab70(void)
-{
-	typedef long double X;
-	if (G32(0x4de6fc)) return;
-	int dx = 0x140 - G32(0x4ded68), dy = 0xf0 - G32(0x4ded6c);
-	int slot = *(BYTE *)0x9fd954;
-	if (dx > 0) {
-		X a = (X)dx * GF(0x4a9564) * GF(0x4b071c) + GF(0x90d1cc);
-		GF(0x90d1cc) = (float)a;
-		if (a > GF(0x4a9460)) G32(0x90d1cc) = 0;
-		menu_turn_update(slot);
-	}
-	if (dx < 0) {
-		X a = (X)GF(0x90d1cc) - (X)(-dx) * GF(0x4a9564) * GF(0x4b071c);
-		GF(0x90d1cc) = (float)a;
-		if (!(a >= GF(0x4a93e8))) GU32(0x90d1cc) = 0x43b40000;   /* 360.0 */
-		menu_turn_update(slot);
-	}
-	if (dy > 0 && !(GF(0x4de6c4) >= GF(0x4a9560)))
-		GF(0x4de6c4) = (float)((X)dy * GF(0x4a955c) * GF(0x4b071c) + GF(0x4de6c4));
-	if (dy < 0 && GF(0x4de6c4) > GF(0x4a9558))
-		GF(0x4de6c4) = (float)((X)dy * GF(0x4a955c) * GF(0x4b071c) + GF(0x4de6c4));
-	if (g_mouseClick1 && !G32(0x4de340)) {
-		DWORD r = 0x4dfa1c + slot * 88;
-		G32(0x4de340) = 1; GU32(0x4de6f0) = 0x41f00000;
-		G32(0x4de6d0) = G32(r); G32(0x4de6d4) = G32(r + 4); G32(0x4de6d8) = G32(r + 8);
-		GF(0x4de350) = (float)((X)GF(0x4de6c0) * GF(0x4a9554) + GF(r));
-		G32(0x4de354) = G32(r + 4);
-		GF(0x4de358) = (float)((X)GF(0x4de6c8) * GF(0x4a9554) + GF(r + 8));
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_42ab70(void);
 
 /* ---- batch 24: intro camera path, view-volume add with clip codes (x87) -------------------------- */
 /* intro camera data for screen height h: two 101-point circles (each stored twice), path settings (inherited from

@@ -251,3 +251,54 @@ void (match_42aad0)(void)
 	F(0x4df024) = (float)((X)F(0x4df024) - tf);
 	F(0x4df02c) = (float)((X)F(0x4df02c) - u);
 }
+
+/* the ARM CENTER's turn (0x90d1cc, degrees) as its sine and cosine, and kept in the slot's record (88 bytes from
+   0x4dfa1c) */
+static void turn_update(int slot)
+{
+	X a = (X)F(0x90d1cc) * GAME_VAR(double, 0x4a9548) * GAME_VAR(double, 0x4a9540);
+	F(0x4de6c0) = (float)fsin(a);
+	F(0x4de6c8) = (float)fcos(a);
+	volatile X t = F(0x90d1cc);
+	F(0x4dfa44 + slot * 88) = (float)t;
+}
+
+/* 0x42ab70: the ARM CENTER's mouse look (unless locked, 0x4de6fc): the pointer's distance from the centre turns
+   the view (wrapping 0 .. 360) and tilts it (0x4de6c4, within its limits); a click starts the camera's move to the
+   slot's point */
+void (menu_42ab70)(void)
+{
+	if (I(0x4de6fc))
+		return;
+	int dx = 0x140 - g_mouseX, dy = 0xf0 - g_mouseY;
+	int slot = GAME_VAR(u8, 0x9fd954);
+	if (dx > 0) {
+		X a = (X)dx * F(0x4a9564) * g_frameTime + F(0x90d1cc);
+		F(0x90d1cc) = (float)a;
+		if (a > F(0x4a9460))
+			I(0x90d1cc) = 0;
+		turn_update(slot);
+	}
+	if (dx < 0) {
+		X a = (X)F(0x90d1cc) - (X)(-dx) * F(0x4a9564) * g_frameTime;
+		F(0x90d1cc) = (float)a;
+		if (!(a >= F(0x4a93e8)))
+			GAME_VAR(u32, 0x90d1cc) = 0x43b40000;   /* 360 */
+		turn_update(slot);
+	}
+	if (dy > 0 && !(F(0x4de6c4) >= F(0x4a9560)))
+		F(0x4de6c4) = (float)((X)dy * F(0x4a955c) * g_frameTime + F(0x4de6c4));
+	if (dy < 0 && F(0x4de6c4) > F(0x4a9558))
+		F(0x4de6c4) = (float)((X)dy * F(0x4a955c) * g_frameTime + F(0x4de6c4));
+	if (g_mouseClick && !I(0x4de340)) {
+		u32 r = 0x4dfa1c + slot * 88;
+		I(0x4de340) = 1;
+		GAME_VAR(u32, 0x4de6f0) = 0x41f00000;   /* 30 */
+		I(0x4de6d0) = I(r);
+		I(0x4de6d4) = I(r + 4);
+		I(0x4de6d8) = I(r + 8);
+		F(0x4de350) = (float)((X)F(0x4de6c0) * F(0x4a9554) + F(r));
+		I(0x4de354) = I(r + 4);
+		F(0x4de358) = (float)((X)F(0x4de6c8) * F(0x4a9554) + F(r + 8));
+	}
+}

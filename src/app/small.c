@@ -412,3 +412,14 @@ void THISCALL (match_496e40)(Stage *stage, float dt)
 		FIELD(float, stage, 0x9ef900) = (float)(e - one);
 	}
 }
+
+/* 0x470de0: nine names (+8, 0x100 bytes apart), each upper-cased with back slashes */
+void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
+                            const char *s6, const char *s7, const char *s8, const char *s9)
+{
+	const char *name[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
+	for (int k = 0; k < 9; k++) {
+		strcpy((char *)self + 8 + k * 0x100, name[k]);
+		FUN_0046cb60((char *)self + 8 + k * 0x100);
+	}
+}
