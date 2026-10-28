@@ -5144,8 +5144,10 @@ LIFT_PLAIN(armc_41b300, 41b300)
 LIFT_PLAIN(app_43f640, 43f640)
 /* 0x490b30 (thiscall) hud_490b30(i, view): queue object i (0x2cc-byte records) in the view volume when it is
    visible and its bounding sphere touches the camera box; 0x490da0 (thiscall) hud_490da0(view): all active ones */
-static THISCALL DWORD hud_490b30(char *scene, DWORD i, DWORD view) { DWORD v[2] = { i, view }; return run_lifted(lift_490b30, (DWORD)scene, 2, v); }
-static THISCALL DWORD hud_490da0(char *scene, DWORD view) { DWORD v[1] = { view }; return run_lifted(lift_490da0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_490b30(void *scene, int i, void *view);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_490da0(void *scene, void *view);
 /* 0x4732f0 (thiscall) game_setGameTypeFlags(type): the rule flags of a game type */
 static THISCALL DWORD game_setGameTypeFlags(char *scene, DWORD type) { DWORD v[1] = { type }; return run_lifted(lift_4732f0, (DWORD)scene, 1, v); }
 /* 0x42c9f0 cfg_parseGraphic(f) / 0x42c6f0 cfg_parseServer(f): write the graphic / server settings to axis.cfg;
@@ -11736,8 +11738,8 @@ static void hudobj_setup(void)
 	}
 	g_a[0] = irnd(0, 11);
 }
-ST(hud_490b30, hudobj_setup();, (TC(void, 0x490b30, char *, int, char *)(HUDSCENE, g_a[0], BUF + 0x100000), 0), (hud_490b30(HUDSCENE, (DWORD)g_a[0], (DWORD)(BUF + 0x100000)), 0))
-ST(hud_490da0, hudobj_setup();, (TC(void, 0x490da0, char *, char *)(HUDSCENE, BUF + 0x100000), 0), (hud_490da0(HUDSCENE, (DWORD)(BUF + 0x100000)), 0))
+ST(hud_490b30, hudobj_setup();, (TC(void, 0x490b30, char *, int, char *)(HUDSCENE, g_a[0], BUF + 0x100000), 0), (hud_490b30(HUDSCENE, g_a[0], BUF + 0x100000), 0))
+ST(hud_490da0, hudobj_setup();, (TC(void, 0x490da0, char *, char *)(HUDSCENE, BUF + 0x100000), 0), (hud_490da0(HUDSCENE, BUF + 0x100000), 0))
 ST(game_setGameTypeFlags, g_a[0] = irnd(-1, 20); fill(SCENE + 0x20f3ab8, 0x24);, (TC(void, 0x4732f0, char *, int)(SCENE, g_a[0]), 0), (game_setGameTypeFlags(SCENE, (DWORD)g_a[0]), 0))
 /* axis.cfg writers: the settings globals varied, output through the VFS (fputs/fprintf mocks) */
 static void cfgw_setup(void)

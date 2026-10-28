@@ -102,6 +102,30 @@ typedef struct FlagSlot {
 	u8 _pad0000004[0x47fce];
 } FlagSlot;
 
+/* a map object's model (skeleton; the size is unknown: only the fields used) */
+typedef struct Model {
+	u8 _pad0000000[0x2c];
+	float radius;   /* +0x2c: its bounding sphere */
+} Model;
+
+/* a map object (Scene.objects): animated scenery */
+typedef struct MapObject {
+	u8 _pad0000000[0x4];
+	i32 active;   /* +0x4: 1: in use */
+	u8 _pad0000008[0x4];
+	u8 flags;   /* +0xc: bit 1 (2): not drawn */
+	u8 _pad000000d[0xe7];
+	float matrix[16];   /* +0xf4: where it is drawn */
+	u8 _pad0000134[0x148];
+	Model *model;   /* +0x27c */
+	u32 poseFrom;   /* +0x280: the pose's source and destination; passed to the view volume by poseSide */
+	u32 poseTo;   /* +0x284 */
+	i32 poseSide;   /* +0x288: 0: poseFrom, else poseTo */
+	u8 _pad000028c[0x30];
+	float pos[3];   /* +0x2bc: the centre of its bounding sphere */
+	u8 _pad00002c8[0x4];
+} MapObject;
+
 /* the scene: the one large object of a match, built by game_loadAllData */
 typedef struct Scene {
 	u8 _pad0000000[0x8];
@@ -110,7 +134,9 @@ typedef struct Scene {
 	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
 	u8 _pad000003c[0x38];
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
-	u8 _pad0000078[0x1f15ec];
+	u8 _pad0000078[0x990];
+	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
+	u8 _pad0000a0c[0x1f0c58];
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
 	u8 _pad01f1668[0x7fc9e0];
 	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
@@ -131,7 +157,10 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0xae3a50];
+	u8 _pad0be172c[0x739718];
+	MapObject objects[1000];   /* +0x131ae44 */
+	i32 objectCount;   /* +0x13c9b24 */
+	u8 _pad13c9b28[0x2fb654];
 	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
 	u8 _pad172147c[0x7bd7a];
 	FlagSlot flags[16];   /* +0x179d1f6 */
@@ -139,7 +168,9 @@ typedef struct Scene {
 	i32 snapshotTex[64];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; count unclear) */
 	u8 _pad1eca130[0x2940];
 	Player players[16];   /* +0x1ecca70 */
-	u8 _pad1f552f0[0x2cccb0];
+	u8 _pad1f552f0[0x19e680];
+	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
+	u8 _pad20f397c[0x12e624];
 	i32 cockpitPlayer;   /* +0x2221fa0: (unclear) no snapshot panel while it is the viewed player */
 	u8 _pad2221fa4[0x14];
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) */
@@ -296,9 +327,21 @@ _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
 _Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
 _Static_assert(sizeof(FlagSlot) == 0x47fd2, "scene.fields: size of FlagSlot");
+_Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
+_Static_assert(sizeof(Model) == 0x30, "scene.fields: size of Model");
+_Static_assert(offsetof(MapObject, active) == 0x4 && sizeof(((MapObject *)0)->active) == 0x4, "scene.fields: MapObject.active");
+_Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x1, "scene.fields: MapObject.flags");
+_Static_assert(offsetof(MapObject, matrix) == 0xf4 && sizeof(((MapObject *)0)->matrix) == 0x40, "scene.fields: MapObject.matrix");
+_Static_assert(offsetof(MapObject, model) == 0x27c && sizeof(((MapObject *)0)->model) == 0x4, "scene.fields: MapObject.model");
+_Static_assert(offsetof(MapObject, poseFrom) == 0x280 && sizeof(((MapObject *)0)->poseFrom) == 0x4, "scene.fields: MapObject.poseFrom");
+_Static_assert(offsetof(MapObject, poseTo) == 0x284 && sizeof(((MapObject *)0)->poseTo) == 0x4, "scene.fields: MapObject.poseTo");
+_Static_assert(offsetof(MapObject, poseSide) == 0x288 && sizeof(((MapObject *)0)->poseSide) == 0x4, "scene.fields: MapObject.poseSide");
+_Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
+_Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
 _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) == 0x4, "scene.fields: Scene.network");
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
+_Static_assert(offsetof(Scene, cullMargin) == 0xa08 && sizeof(((Scene *)0)->cullMargin) == 0x4, "scene.fields: Scene.cullMargin");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, glFogColour) == 0x9ee048 && sizeof(((Scene *)0)->glFogColour) == 0x10, "scene.fields: Scene.glFogColour");
 _Static_assert(offsetof(Scene, glFogStart) == 0x9ee058 && sizeof(((Scene *)0)->glFogStart) == 0x4, "scene.fields: Scene.glFogStart");
@@ -314,10 +357,13 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
+_Static_assert(offsetof(Scene, objects) == 0x131ae44 && sizeof(((Scene *)0)->objects) == 0xaece0, "scene.fields: Scene.objects");
+_Static_assert(offsetof(Scene, objectCount) == 0x13c9b24 && sizeof(((Scene *)0)->objectCount) == 0x4, "scene.fields: Scene.objectCount");
 _Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
 _Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
+_Static_assert(offsetof(Scene, cameraPos) == 0x20f3970 && sizeof(((Scene *)0)->cameraPos) == 0xc, "scene.fields: Scene.cameraPos");
 _Static_assert(offsetof(Scene, cockpitPlayer) == 0x2221fa0 && sizeof(((Scene *)0)->cockpitPlayer) == 0x4, "scene.fields: Scene.cockpitPlayer");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
 _Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");

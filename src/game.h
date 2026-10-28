@@ -152,6 +152,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define this_set_4841d0(view) GAME_THISCALL(0x4841d0, void, void *)(view)
 #define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
+#define hud_490b30(scene, i, view) GAME_THISCALL(0x490b30, void, Scene *, int, void *)(scene, i, view)   /* a map object to the view volume */
+/* queue every mesh of model for drawing (see recomp.c): extra, matrix, a4, a5, cull (1: skip meshes outside a clip plane),
+   material (< 0: the mesh's own), a8 */
+#define ViewVolume_projectObject(view, model, extra, matrix, a4, a5, cull, material, a8) GAME_THISCALL(0x4853c0, void, void *, \
+	void *, u32, const float *, int, int, int, int, int)(view, model, extra, matrix, a4, a5, cull, material, a8)
 #define render_drawObjects(view, mode, alpha) GAME_THISCALL(0x485af0, void, void *, int, float)(view, mode, alpha)
 #define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, void *, float)(stage, scale)
 #define render_processRenderingBy(stage, view, scale) GAME_THISCALL(0x497d20, void, void *, void *, float)(stage, view, scale)
