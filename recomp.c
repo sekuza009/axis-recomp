@@ -1783,28 +1783,8 @@ void FUN_0047d8a0(float *m, const float *q);
 THISCALL void skel_ase_47d0f0(float *q, const float *m);
 /* segment p0 -> p1 against a polygon: face plane (n at +0x4c, d at +0x58), then three edge planes from +0x5c (0x10
    apart). On a hit: hit point -> *hit, distance from the hit to p1 -> *dist, returns 1 */
-static THISCALL int space_tracePlanes_47fb80(const char *self, const float *p0, const float *p1, float *hit, float *dist)
-{
-	typedef long double X;
-	const float *n = (const float *)(self + 0x4c);
-	X zero = GF(0x4a93e8);
-	X d0 = (X)n[1] * p0[1] + (X)p0[2] * n[2] + (X)n[0] * p0[0] - n[3];
-	X d1 = (X)p1[2] * n[2] + (X)n[0] * p1[0] + (X)n[1] * p1[1] - n[3];
-	if (!(!(d1 * d0 >= zero))) return 0;            /* same side (or touching): no crossing */
-	X dx = (X)p1[0] - p0[0];
-	float dy = (float)((X)p1[1] - p0[1]), dz = (float)((X)p1[2] - p0[2]);
-	float t = (float)-(d0 / (dx * n[0] + (X)dy * n[1] + (X)dz * n[2]));
-	float ey = (float)((X)dy * t), ez = (float)((X)dz * t);
-	float h[3] = { (float)(dx * t + p0[0]), (float)((X)ey + p0[1]), (float)((X)ez + p0[2]) };
-	memcpy(hit, h, 12);
-	for (int k = 0; k < 3; k++) {
-		const float *e = (const float *)(self + 0x5c + k * 0x10);
-		if (!(!((X)e[0] * hit[0] + (X)e[1] * hit[1] + (X)e[2] * hit[2] - e[3] >= zero))) return 0;
-	}
-	X a = (X)p1[0] - hit[0], b = (X)p1[1] - hit[1], c = (X)p1[2] - hit[2];
-	*dist = (float)sqrtl(c * c + b * b + a * a);
-	return 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_tracePlanes_47fb80(const char *self, const float *p0, const float *p1, float *hit, float *dist);
 /* r, g, b -> h (degrees; FLT_MAX when there is no saturation), s, v. NaN handling follows the original's compares */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void tex_46def0(float r, float g, float b, float *h, float *s, float *v);
@@ -2176,49 +2156,10 @@ THISCALL int script_runScpFile(void *self, const char *name, int mode);
    the 3 normalised edges (+0x28), the face plane (+0x4c normal, +0x58 distance), the 3 edge planes (+0x5c, 16 bytes
    each: normal = face normal x edge, distance) and 5 raw dwords (+0x8c). All products in 80 bits, rounded where the
    original stores to float; the normal/plane copies go through fld/fstp (SNaN -> QNaN). Returns d (the 4th raw dword) */
-static long double x87neg(float f) { volatile long double x = f; return -x; }
 static long double x87mul(long double a, float b) { volatile long double x = a; return x * b; }
 static void x87copy(float *dst, const float *src) { volatile long double x = *src; *dst = (float)x; }
-static THISCALL int load_47db60(char *self, int id, const float *v0, const float *v1, const float *v2,
-                                 int a, int b, int c, int d, int e)
-{
-	float *f = (float *)self;
-	load_47db50(self);
-	S32(self, 0) = id;
-	memcpy(f + 1, v0, 12); memcpy(f + 4, v1, 12); memcpy(f + 7, v2, 12);
-	for (int i = 0; i < 3; i++) {
-		int j = (i + 1) % 3;
-		float *ed = f + 10 + i * 3;
-		for (int k = 0; k < 3; k++) { volatile long double t = f[1 + j * 3 + k]; t = t - f[1 + i * 3 + k]; ed[k] = (float)t; }
-		Vec3_normalize(ed);
-	}
-	/* face normal: (-e0) x e1 */
-	long double X = x87neg(f[10]), Y = x87neg(f[11]), Z = x87neg(f[12]);
-	float n[3];
-	n[0] = (float)(x87mul(Z, f[14]) - x87mul(Y, f[15]));
-	n[1] = (float)(x87mul(X, f[15]) - x87mul(Z, f[13]));
-	n[2] = (float)(x87mul(Y, f[13]) - x87mul(X, f[14]));
-	Vec3_normalize(n);
-	volatile long double dist = x87mul(n[1], f[2]) + x87mul(n[0], f[1]);
-	dist = dist + x87mul(n[2], f[3]);
-	x87copy(f + 0x13, &n[0]); x87copy(f + 0x14, &n[1]); x87copy(f + 0x15, &n[2]);
-	f[0x16] = (float)dist;
-	for (int k = 0; k < 3; k++) {
-		const float *E = f + 10 + k * 3, *V = f + 1 + k * 3;
-		float p[3];
-		p[0] = (float)(x87mul(n[2], E[1]) - x87mul(n[1], E[2]));
-		p[1] = (float)(x87mul(n[0], E[2]) - x87mul(n[2], E[0]));
-		p[2] = (float)(x87mul(n[1], E[0]) - x87mul(n[0], E[1]));
-		Vec3_normalize(p);
-		volatile long double pd = x87mul(p[2], V[2]) + x87mul(p[1], V[1]);
-		pd = pd + x87mul(p[0], V[0]);
-		float *pl = f + 0x17 + k * 4;
-		x87copy(pl, &p[0]); x87copy(pl + 1, &p[1]); x87copy(pl + 2, &p[2]);
-		pl[3] = (float)pd;
-	}
-	S32(self, 0x8c) = a; S32(self, 0x90) = b; S32(self, 0x94) = c; S32(self, 0x98) = d; S32(self, 0x9c) = e;
-	return d;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int load_47db60(char *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d, int e);
 /* batch 33 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void TextureManager_dtor_wrap_42b380(void);
