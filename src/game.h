@@ -438,4 +438,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_41b300() GAME_CDECL(0x41b300, void, void)()               /* the camera towards the page's target */
 #define music_play(path) GAME_CDECL(0x457150, void, const char *)(path)
 
+/* ---- messages ---- */
+#define msg_print(scene, colour, ...) GAME_CDECL(0x4629f0, void, Scene *, int, const char *, ...)(scene, colour, __VA_ARGS__)   /* a line in the message box (printf) */
+#define sound_playVolume(id, volume) GAME_CDECL(0x456e50, void, int, int)(id, volume)   /* volume 0..100 */
+
 #endif

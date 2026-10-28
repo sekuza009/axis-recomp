@@ -225,6 +225,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23423a9  4          i32 stageCleared                           # (unclear) 0 with g_missionStage == g_missionProgress: "MISSION FAILED, RETRY"
 0x23423ad  4          i32 scoreLimit                             # > 0: the points still needed are shown
 0x23423b1  4          i32 timeLimit                              # minutes; > 0: the time left is shown
+0x2342401  4          i32 dataLossCode                           # shown when a game ends for lost data
 0x23423bd  4          i32 winnerTeam
 0x23423a1  4          i32 roundOver                              # (unclear)
 0x234240d  4          i32 localPlayer                            # the player at this machine (index into players)

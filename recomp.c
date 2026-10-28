@@ -7106,13 +7106,20 @@ LIFT_PLAIN(menu_437810, 437810)
    lobby_close, the room / lobby / setup key and mouse pages, setup_drawTopPage, profile_44f4b0,
    mainmenu_441810 */
 #include "lifted/grp123.c"
-LIFT_PLAIN(msg_connectionLost, 463390)
-LIFT_PLAIN(msg_networkUnstable, 4633c0)
-LIFT_PLAIN(msg_serverEndsGame, 462f30)
-LIFT_PLAIN(msg_userEndsGame, 462f60)
-LIFT_PLAIN(msg_dataLoss, 4633f0)
-LIFT_PLAIN(msg_fragLimitReached, 462f90)
-LIFT_PLAIN(msg_timeLimitReached, 462fd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_connectionLost(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_networkUnstable(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_serverEndsGame(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_userEndsGame(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_dataLoss(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_fragLimitReached(void *scene);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_timeLimitReached(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_454c50(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16826,31 +16833,31 @@ T_PLAIN(menu_437810, 0x437810, gen_setup(g_gs_437810, g_gi_437810, g_gb_437810);
 static const DWORD g_gs_463390[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_463390[] = { 0x9dae74, 0 };
 static const DWORD g_gb_463390[] = { 0 };
-T_PLAIN(msg_connectionLost, 0x463390, gen_setup(g_gs_463390, g_gi_463390, g_gb_463390); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_connectionLost, gen_setup(g_gs_463390, g_gi_463390, g_gb_463390); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x463390, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_connectionLost(BUF), 0))
 static const DWORD g_gs_4633c0[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_4633c0[] = { 0x9dae74, 0 };
 static const DWORD g_gb_4633c0[] = { 0 };
-T_PLAIN(msg_networkUnstable, 0x4633c0, gen_setup(g_gs_4633c0, g_gi_4633c0, g_gb_4633c0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_networkUnstable, gen_setup(g_gs_4633c0, g_gi_4633c0, g_gb_4633c0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x4633c0, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_networkUnstable(BUF), 0))
 static const DWORD g_gs_462f30[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_462f30[] = { 0x9dae74, 0 };
 static const DWORD g_gb_462f30[] = { 0 };
-T_PLAIN(msg_serverEndsGame, 0x462f30, gen_setup(g_gs_462f30, g_gi_462f30, g_gb_462f30); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_serverEndsGame, gen_setup(g_gs_462f30, g_gi_462f30, g_gb_462f30); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x462f30, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_serverEndsGame(BUF), 0))
 static const DWORD g_gs_462f60[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_462f60[] = { 0x9dae74, 0 };
 static const DWORD g_gb_462f60[] = { 0 };
-T_PLAIN(msg_userEndsGame, 0x462f60, gen_setup(g_gs_462f60, g_gi_462f60, g_gb_462f60); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_userEndsGame, gen_setup(g_gs_462f60, g_gi_462f60, g_gb_462f60); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x462f60, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_userEndsGame(BUF), 0))
 static const DWORD g_gs_4633f0[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_4633f0[] = { 0x9dae74, 0 };
 static const DWORD g_gb_4633f0[] = { 0 };
-T_PLAIN(msg_dataLoss, 0x4633f0, gen_setup(g_gs_4633f0, g_gi_4633f0, g_gb_4633f0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_dataLoss, gen_setup(g_gs_4633f0, g_gi_4633f0, g_gb_4633f0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x4633f0, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_dataLoss(BUF), 0))
 static const DWORD g_gs_462f90[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_462f90[] = { 0x9dae74, 0 };
 static const DWORD g_gb_462f90[] = { 0 };
-T_PLAIN(msg_fragLimitReached, 0x462f90, gen_setup(g_gs_462f90, g_gi_462f90, g_gb_462f90); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_fragLimitReached, gen_setup(g_gs_462f90, g_gi_462f90, g_gb_462f90); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x462f90, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_fragLimitReached(BUF), 0))
 static const DWORD g_gs_462fd0[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_462fd0[] = { 0x9dae74, 0 };
 static const DWORD g_gb_462fd0[] = { 0 };
-T_PLAIN(msg_timeLimitReached, 0x462fd0, gen_setup(g_gs_462fd0, g_gi_462fd0, g_gb_462fd0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(msg_timeLimitReached, gen_setup(g_gs_462fd0, g_gi_462fd0, g_gb_462fd0); fill(BUF + 0x2342400, 0x40); /* thiscall on the game */, CALL_PLAIN(0x462fd0, BUF, g_a[0], g_a[1], g_a[2], g_a[3]), (msg_timeLimitReached(BUF), 0))
 static const DWORD g_gs_454c50[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454c50[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454c50[] = { 0 };
