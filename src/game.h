@@ -135,6 +135,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_48f970(stage, view) GAME_THISCALL(0x48f970, void, void *, void *)(stage, view)
 #define hud_472900(stage, volume, a, b, c) GAME_THISCALL(0x472900, void, void *, void *, u32, u32, u32)(stage, volume, a, b, c)
 #define hud_48fde0(stage, x0, y0, x1, y1) GAME_THISCALL(0x48fde0, void, void *, int, int, int, int)(stage, x0, y0, x1, y1)
+/* FUN_004625a0: the match's top player: in team games the best ranked player of the leading team (the local player
+   if it has none), else the first ranked */
+#define scene_topPlayer(scene) GAME_THISCALL(0x4625a0, Player *, Scene *)(scene)
 #define hud_drawPressFire(scene) GAME_THISCALL(0x495140, void, Scene *)(scene)
 #define hud_drawClock(scene) GAME_THISCALL(0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISCALL(0x496a30, void, Scene *)(scene)

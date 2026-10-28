@@ -6646,7 +6646,8 @@ LIFT_PLAIN(setup_4278d0, 4278d0)
    +0x23428f6 when there are any, +0x2342976), blinking red at 1 (by +0x22f040c), "%d" right-aligned with its icon
    (replay_drawIcon 1); with a time limit (+0x23423b1 minutes) the time left (against +0x22f0408 seconds) as
    "%02d:%02d", blinking red under 11 s, with icon 2. Text through text_drawSized (patched: native) */
-static THISCALL DWORD hud_drawClock(char *game) { return run_lifted(lift_496610, (DWORD)game, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawClock(void *scene);
 /* batch 153 (lifted/grp99.c): HUD messages */
 #include "lifted/grp99.c"
 /* 0x495140 hud_drawPressFire(): "Press fire button to start" centred low (hud_44ae10, patched: native) */
@@ -6658,11 +6659,13 @@ void THISCALL hud_drawPressFire(void *scene);
 void THISCALL hud_drawReadyStart(void *scene);
 /* 0x496d10 (thiscall on the game) hud_drawRecordIndicator(): while recording, blinking by the time +0x2340d29: the
    record icon (replay_drawIcon 4), the time as "%02d:%02d" and "[AutoPlay %s]" with the file name +0x2340d0c */
-static THISCALL DWORD hud_drawRecordIndicator(char *game) { return run_lifted(lift_496d10, (DWORD)game, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawRecordIndicator(void *scene);
 /* 0x496a30 (thiscall on the game) hud_drawMatchResult(): team games (+0x22e7184 == 1): a band and "RED TEAM WIN!" /
    "BLUE TEAM WIN!" / "DRAW GAME!" by the winning team (FUN_00463740 of +0x23423bd); else, if the top player
    (FUN_004625a0) has +0x14c set, "Top Player : %s" with its name +0x98 */
-static THISCALL DWORD hud_drawMatchResult(char *game) { return run_lifted(lift_496a30, (DWORD)game, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawMatchResult(void *scene);
 /* batch 154 (lifted/grp100.c): the match loading screen */
 #include "lifted/grp100.c"
 /* 0x469320 loading_draw(scroll): the match loading screen: clear to blue, a textured cylinder (texture 0xa0e980,
@@ -15966,11 +15969,13 @@ static void recind_setup(void)
 ST(hud_drawRecordIndicator, recind_setup();, (TC(void, 0x496d10, char *)(BUF), 0), (hud_drawRecordIndicator(BUF), 0))
 /* not a team game (see below), the teams' slots and the winner id (FUN_00463740's test values), follow_setup's top player,
    every record's flag and name */
+static const DWORD g_stubMatchResult[] = { 0x4950a0, 4, 0x463740, 1 | CS_POP | CS_THIS, 0 };
 static void matchresult_setup(void)
 {
 	hudtext_setup();
 	follow_setup();
-	if (S32(BUF, 0x22e7184) == 1) S32(BUF, 0x22e7184) = 2;   /* the team branch draws through the patched gfx_fillRect, whose patch code calls a null pointer while the tests run */
+	callee_stubs(g_stubMatchResult, 0);   /* the band (its patched gfx_fillRect calls a null pointer while the tests run) and the side stubbed */
+	callee_ret(0x463740, irnd(0, 2));
 	for (int k = 0; k < 5; k++) S32(BUF, 0x2342381 + k * 4) = irnd(-3, 8);
 	int w = irnd(-2, 9); memcpy(BUF + 0x23423bd, &w, 4);
 	for (int a = 0; a < 16; a++) { char *r = BUF + 0x1ecca70 + a * 0x8888; S32(r, 0x14c) = irnd(0, 1); fill_str(r + 0x98, 16, 32, 126); }

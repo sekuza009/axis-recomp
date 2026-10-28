@@ -45,13 +45,13 @@ void THISCALL (hud_pass)(Scene *scene)
 			hud_472900(STAGE(scene), &scene->fogVolume, scene->fogVolumeArgs[0], scene->fogVolumeArgs[1], scene->fogVolumeArgs[2]);
 			glEnable(GL_FOG);
 		}
-		render_drawObjects(&scene->view, scene->objectsMode, scene->objectsAlpha);
+		render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
 		glDisable(GL_FOG);
 	}
 	glClear(GL_DEPTH_BUFFER_BIT);
 	ViewVolume_reset(&scene->view);
 	hud_45e170(STAGE(scene), &scene->view, 1);
-	render_drawObjects(&scene->view, scene->objectsMode, scene->objectsAlpha);
+	render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
 	if (scene->viewMode != 0) {
 		if (scene->viewMode == 2) {
 			glClearDepth(1.0);
