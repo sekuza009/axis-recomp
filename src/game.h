@@ -148,6 +148,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_496240(scene) GAME_THISCALL(0x496240, void, Scene *)(scene)
 #define nullsub_48b420(scene) GAME_THISCALL(0x48b420, void, Scene *)(scene)
 #define hud_4955a0(scene) GAME_THISCALL(0x4955a0, void, Scene *)(scene)
+#define hud_495ed0(scene, x0, y0, x1, y1) GAME_THISCALL(0x495ed0, void, Scene *, int, int, int, int)(scene, x0, y0, x1, y1)   /* a menu box */
 #define hud_drawEscMenu(scene) GAME_THISCALL(0x495610, void, Scene *)(scene)
 #define hud_drawRecordIndicator(scene) GAME_THISCALL(0x496d10, void, Scene *)(scene)
 #define hud_drawReadyStart(scene) GAME_THISCALL(0x496c20, void, Scene *)(scene)
@@ -159,6 +160,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)0xa1f100)          /* the 16 message colours */
 #define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
+#define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
+#define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
 #define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])0x4c7030)   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
