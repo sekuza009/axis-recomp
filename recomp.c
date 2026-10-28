@@ -2707,7 +2707,8 @@ DWORD reg_writeStartMode(DWORD value);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_frameBegin(void);
 /* 0x43f840 app_registerWindowClassEx: register the window class */
-LIFT_PLAIN(app_registerWindowClassEx, 43f840)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_registerWindowClassEx(const DWORD *cls);
 /* 0x452de0 net_452de0: copy the player/host name */
 LIFT_PLAIN(net_452de0, 452de0)
 /* 0x46e1e0 ptx_crtlError: PTX video control error: print and exit */
@@ -2924,7 +2925,8 @@ void FUN_004050a0(void);
 LIFT_PLAIN(lobby_405140, 405140)
 /* 0x44f6c0 profile_44f6c0: with a profile chosen: save it, go to the main menu (state 300), take its name, write
    axis.cfg */
-LIFT_PLAIN(profile_44f6c0, 44f6c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44f6c0(void);
 /* 0x41dcf0 armc_41dcf0: reset the customise screen's state and set the camera for the current page */
 LIFT_PLAIN(armc_41dcf0, 41dcf0)
 /* 0x42e730 cfg_parseKeyNames(f) / 0x42e240 cfg_videoModeNames(f) / 0x42da70 cfg_gameTypeNames(f): read a fixed
@@ -3029,7 +3031,8 @@ void hud_46bd00(int x0, int y0, int x1, int y1);
 static THISCALL DWORD ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD view) { DWORD v[2] = { proj, view }; return run_lifted(lift_4841f0, (DWORD)vv, 2, v); }
 /* 0x483fd0 (thiscall) gfx_initVertexArrayExt / 0x483fb0 ViewVolume_dtor / 0x463430 ViewVolume_deletingDtor(flags):
    free the vertex buffer, look up the GL_EXT_vertex_array entry points; the destructors */
-static THISCALL DWORD gfx_initVertexArrayExt(char *self) { return run_lifted(lift_483fd0, (DWORD)self, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void gfx_initVertexArrayExt(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL ViewVolume_dtor(void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5102,7 +5105,8 @@ LIFT_PLAIN8(arena_453090, 453090)
 void menuState300_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState600_setup(void);
-LIFT_PLAIN(menuState900_skirmishSetup, 445be0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menuState900_skirmishSetup(void);
 LIFT_PLAIN(menuState210_frame, 44f860)
 LIFT_PLAIN(arena_452ec0, 452ec0)
 /* 0x445bc0 skirmish_445bc0: jump to skirmish_drawScreenA (a 5-byte stub missing from functions.csv, added) */
@@ -9280,7 +9284,7 @@ T_PLAIN(ptx_crtlError, 0x46e1e0, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0]
 ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeEndMode((DWORD)(0x80000001u))))
 ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
 ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
-T_PLAIN(app_registerWindowClassEx, 0x43f840, fill(BUF + 0x100, 0x40);, 0, BUF + 0x100, 0, 0, 0)
+ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
 T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(dplay_454d90, 0x454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0)
 T_PLAIN(app_42ef30, 0x42ef30, g_a[0] = irnd(-1, 3);, 0, g_a[0], 0, 0, 0)
@@ -9690,7 +9694,7 @@ static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5)
 T_PLAIN(cfg_loadAxisCfg, 0x42d730, axiscfg_setup();, 0, 0, 0, 0, 0)
 ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
 T_PLAIN(lobby_405140, 0x405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44f6c0, 0x44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, 0, 0, 0, 0, 0)
+ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
 T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 40);, 0, 0, 0, 0, 0)
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
 static void cfgread_setup(void) { vfs_content(95, 0x1000); g_vfsOpenFail = 0; g_paintStacks = 1; }
@@ -15145,7 +15149,7 @@ ST(menuState600_setup, gen_setup(g_gs_427920, g_gi_427920, g_gb_427920);, CALL_P
 static const DWORD g_gs_445be0[] = { 0x428c30, 4, 0x441740, 0, 0x444130, 0, 0x4445a0, 0, 0x445bc0, 0, 0x445bd0, 0, 0 };
 static const DWORD g_gi_445be0[] = { 0x90d1c4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0 };
 static const DWORD g_gb_445be0[] = { 0 };
-T_PLAIN(menuState900_skirmishSetup, 0x445be0, gen_setup(g_gs_445be0, g_gi_445be0, g_gb_445be0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState900_skirmishSetup, gen_setup(g_gs_445be0, g_gi_445be0, g_gb_445be0);, CALL_PLAIN(0x445be0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_skirmishSetup()))
 static const DWORD g_gs_44f860[] = { 0x42b590, 0, 0x441740, 0, 0x44f410, 0, 0x44f4b0, 0, 0x44f5f0, 0, 0x44f6c0, 0, 0x44f740, 0, 0x44f810, 0, 0x44f850, 0, 0 };
 static const DWORD g_gi_44f860[] = { 0x4dda48, 0x9f6838, 0x9f8f10, 0 };
 static const DWORD g_gb_44f860[] = { 0x9f9070, 0 };

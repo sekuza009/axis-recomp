@@ -222,3 +222,22 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
 	r[0x16] = (u32)M;
 	return ret;
 }
+
+/* 0x483fd0: the view's vertex buffer freed (when it owns one, +0xc) and reset; if the driver has GL_EXT_vertex_array,
+   its three entry points looked up (+0x14 .. +0x1c) and the flag (+0x10) set */
+void THISCALL (gfx_initVertexArrayExt)(u8 *view)
+{
+	if (FIELD(int, view, 0xc) == 1) {
+		GAME_CDECL(0x49ef24, void, void *)(FIELD(void *, view, 8));   /* operator delete */
+		FIELD(void *, view, 8) = 0;
+		FIELD(int, view, 0xc) = 0;
+	}
+	GAME_THISCALL(0x483fc0, void, void *)(view);   /* load_483fc0 */
+	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
+	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)0x4c7b5c))   /* strstr */
+		return;
+	FIELD(int, view, 0x10) = 1;
+	static const u32 names[3] = { 0x4c7b48, 0x4c7b34, 0x4c7b1c };   /* the three entry points' names */
+	for (int k = 0; k < 3; k++)
+		FIELD(void *, view, 0x14 + k * 4) = IMPORT(0x4a928c, void *, const char *)((const char *)names[k]);   /* wglGetProcAddress */
+}

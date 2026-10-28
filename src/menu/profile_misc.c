@@ -184,3 +184,22 @@ int (profile_44c400)(void)
 		GAME_VAR(int, 0x9f8f10) = 1;
 	return GAME_VAR(int, 0x4ded8c);
 }
+
+/* 0x44f6c0: logging in with the selected profile (when 0x9f6840): the profile saved, the main menu (state 300), the
+   profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
+u32 (profile_44f6c0)(void)
+{
+	if (!GAME_VAR(int, 0x9f6840))
+		return 0;
+	GAME_VAR(int, 0x9da49c) = 0;
+	if (GAME_VAR(int, 0x76d410) == 1)
+		GAME_VAR(int, 0x9da49c) = 0x65;
+	GAME_CDECL(0x446a10, void, void)();   /* profile_save */
+	g_menuState = 300;
+	GAME_VAR(int, 0x67ef20) = 300;
+	GAME_VAR(int, 0x680370) = 2;
+	GAME_VAR(int, 0x4df8e0) = 0;
+	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)0x4dedb0,
+	                                                        (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48), 0x20);   /* strncpy */
+	return GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
+}

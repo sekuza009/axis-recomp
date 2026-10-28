@@ -37,3 +37,15 @@ int (sys_messageBox)(const char *format, ...)
 	va_end(args);
 	return answer;
 }
+
+/* 0x43f840: the window class registered: a WNDCLASSEXA made from the WNDCLASSA-like record (ten words, no small
+   icon); returns the atom (16 bits) */
+u32 (app_registerWindowClassEx)(const u32 *cls)
+{
+	u32 wc[12];
+	wc[0] = 0x30;   /* cbSize */
+	wc[11] = 0;     /* hIconSm */
+	for (int i = 0; i < 10; i++)
+		wc[1 + i] = cls[i];
+	return IMPORT(0x4a92e8, u32, const u32 *)(wc) & 0xffff;   /* RegisterClassExA */
+}

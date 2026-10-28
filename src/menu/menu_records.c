@@ -355,3 +355,27 @@ u32 (menu_4370e0)(void)
 	}
 	return r;
 }
+
+/* 0x445be0: the skirmish settings screen drawn: the background (when 0x9eeba8), the map list unless closing (state
+   2), the camera; then while open (state past 1) the dialog's frame if one is open, else the screen A (0x9ef1f8 10)
+   or B (20). Returns what the original leaves in eax */
+u32 (menuState900_skirmishSetup)(void)
+{
+	if (GAME_VAR(int, 0x9eeba8))
+		menu_drawBackground();
+	if (GAME_VAR(int, 0x9ef1f0) != 2)
+		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_4445a0 */
+	GAME_CDECL(0x444130, void, void)();       /* skirmish_444130: the camera */
+	int state = GAME_VAR(int, 0x9ef1f0);
+	if (state == 1 || state == 0)
+		return state;
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f16a8), GAME_VAR(int, 0x9f16ac),
+		                                                     GAME_VAR(int, 0x9f16b0), GAME_VAR(int, 0x9f16b4));   /* menu_drawFrame */
+	int screen = GAME_VAR(int, 0x9ef1f8);
+	if (screen == 10)
+		return GAME_CDECL(0x445bc0, u32, void)();   /* skirmish_drawScreenA */
+	if (screen == 20)
+		return GAME_CDECL(0x445bd0, u32, void)();   /* skirmish_drawScreenB */
+	return screen;
+}
