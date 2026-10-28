@@ -62,7 +62,9 @@ typedef struct Player {
 	u8 _pad00004b0[0x4];
 	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
 	i32 warned;   /* +0x4b8: 1: the energy bar blinks red */
-	u8 _pad00004bc[0x10];
+	u8 _pad00004bc[0x8];
+	i32 mechType;   /* +0x4c4: (by use) its mech: the actor type named in kill messages */
+	u8 _pad00004c8[0x4];
 	i32 weapon;   /* +0x4cc: the selected weapon slot */
 	u8 _pad00004d0[0x8];
 	i32 markSolo;   /* +0x4d8: (unclear) 1: a mark (icon 8) after the player's ranking row and over the player, games without teams */
@@ -452,6 +454,7 @@ _Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) 
 _Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
 _Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
+_Static_assert(offsetof(Player, mechType) == 0x4c4 && sizeof(((Player *)0)->mechType) == 0x4, "scene.fields: Player.mechType");
 _Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
 _Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->markSolo) == 0x4, "scene.fields: Player.markSolo");
 _Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");

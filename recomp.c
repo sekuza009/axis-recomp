@@ -4516,7 +4516,8 @@ __asm__(".text\n"
    the team slot table, killer/victim names and the weapon name of the killer). Lifted */
 static THISCALL int msg_playerJoinedTeam(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_462d30, (DWORD)scene, 2, v); }
 static THISCALL int msg_playerChangedTeam(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_462e30, (DWORD)scene, 2, v); }
-static THISCALL int msg_kill(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_4630c0, (DWORD)scene, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_kill(void *scene, int victim, int killer);
 /* 0x482e30 (thiscall) space_testSphere(r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
    the swept sphere in steps of `step` along vel (n = __ftol(|vel| / step) whole steps, each a grid walk, then the
    remainder); 1 at the first hit. Lifted */
@@ -7133,7 +7134,8 @@ LIFT_PLAIN(room_434490, 434490)
 LIFT_PLAIN(menuState500_enter, 447750)
 /* 0x462b50 msg_playerConnected(game, player) / 0x462c30 msg_chatLine(game, player, text, from): the message
    by mode 0x9dae74 (a chat line only from someone else, 0x234243e) and a sound */
-static THISCALL DWORD msg_playerConnected(char *game, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_462b50, (DWORD)game, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_playerConnected(void *scene, int actor);
 static THISCALL DWORD msg_chatLine(char *game, DWORD p, DWORD t, DWORD f) { DWORD v[3] = { p, t, f }; return run_lifted(lift_462c30, (DWORD)game, 3, v); }
 /* 0x462850 music_playMatch() (thiscall on the game): the match music by the map's kind */
 LIFT_PLAIN(music_playMatch, 462850)
@@ -11011,7 +11013,7 @@ ST(msg_cheatUsed, msgscene_setup(); g_a[2] = irnd(0, 4);, (TC(int, 0x463030, cha
    (msg_cheatUsed(BUF, g_a[0], g_a[2]), 0))
 ST(msg_playerJoinedTeam, msgscene_setup();, TC(int, 0x462d30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerJoinedTeam(BUF, g_a[0], g_a[1]))
 ST(msg_playerChangedTeam, msgscene_setup();, TC(int, 0x462e30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerChangedTeam(BUF, g_a[0], g_a[1]))
-ST(msg_kill, msgscene_setup(); if (!irnd(0, 9)) g_a[irnd(0, 1)] = irnd(-3, -1);, TC(int, 0x4630c0, char *, int, int)(BUF, g_a[0], g_a[1]), msg_kill(BUF, g_a[0], g_a[1]))
+ST(msg_kill, msgscene_setup(); if (!irnd(0, 9)) g_a[irnd(0, 1)] = irnd(-3, -1);, (TC(int, 0x4630c0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_kill(BUF, g_a[0], g_a[1]), 0))   /* eax: dead (tools/eaxuse.py) */
 static void tintmask_setup(void)
 {
 	int w = irnd(0, 6), h = irnd(0, 6), i = irnd(0, 3);
@@ -16962,7 +16964,7 @@ static void msgplayer_setup(const DWORD *stubs)
 	callee_stubs(stubs, (DWORD)irnd(0, 2));
 }
 ST(msg_playerConnected, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462b50, char *, int)(BUF, g_a[0]), 0),
-   (msg_playerConnected(BUF, (DWORD)g_a[0]), 0))
+   (msg_playerConnected(BUF, g_a[0]), 0))
 ST(msg_chatLine, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462c30, char *, int, char *, int)(BUF, g_a[0], (char *)g_a[1], g_a[2]), 0),
    (msg_chatLine(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 T_PLAIN(music_playMatch, 0x462850, msgplayer_setup(g_stubMusic);, BUF, 0, 0, 0, 0)
