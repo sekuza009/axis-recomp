@@ -121,3 +121,24 @@ void (profile_44bc00)(void)
 	GAME_VAR(u32, 0x9f8e50) = 0x3dcccccd;   /* 0.1 */
 	GAME_VAR(int, 0x9f8f10) = 1;
 }
+
+/* 0x44b870: does a profile with the typed name (0x9dc92c) exist, ignoring case? (The original's trailing-space trim
+   can't run: it is skipped whenever the length is >= 0. Its compare buffer keeps the tail of a longer earlier
+   name, as here.) */
+int (profile_44b870)(void)
+{
+	char typed[1024], name[1024];
+	memset(name, 0, sizeof name);
+	memset(typed, 0, sizeof typed);
+	const char *s = (const char *)0x9dc92c;
+	for (int i = 0, n = (int)strlen(s); i < n; i++)
+		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
+	for (int e = 0; e < GAME_VAR(int, 0x9f9008); e++) {
+		const char *p = (const char *)(0x9f684c + e * 0x48);
+		for (int i = 0, n = (int)strlen(p); i < n; i++)
+			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
+		if (!strcmp(typed, name))
+			return 1;
+	}
+	return 0;
+}

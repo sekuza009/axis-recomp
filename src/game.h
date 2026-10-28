@@ -744,4 +744,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define color_hsvToRgb(h, s, v, r, g, b) GAME_CDECL(0x46e050, void, u32, u32, u32, float *, float *, float *)(h, s, v, r, g, b)   /* (h, s, v as float bits) */
 #define tex_46de20(rgba, dh, ds, dv) GAME_THISCALL(0x46de20, int, u8 *, u32, u32, u32)(rgba, dh, ds, dv)   /* an RGBA byte colour tinted */
 
+/* ---- (net/net_sessions.c) ---- */
+#define arena_4532a0() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
+#define arena_4532b0(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
+
 #endif

@@ -89,3 +89,31 @@ void (arena_4065e0)(void)
 			break;
 	}
 }
+
+/* 0x406810: the arena list rebuilt from the session list (0x4a-byte records: name, id before it, settings), then
+   sorted */
+void (arena_406810)(void)
+{
+	int n = arena_4532a0();
+	g_sessionCount = n;
+	GAME_VAR(int, 0x680bb8) = n;
+	for (int i = 0; i < g_sessionCount; i++) {
+		const u8 *s = (const u8 *)arena_4532b0(i);
+		u8 *e = SESSION(i);
+		memset(e, 0, 32);
+		strcpy((char *)e, (const char *)s + 0x2e);
+		GAME_VAR(int, e - 4) = GAME_VAR(int, s);
+		e[0x20] = s[0x25];
+		e[0x21] = s[0x24];
+		e[0x28] = s[0x27];
+		e[0x22] = s[0x26];
+		e[0x23] = s[0x2a];
+		e[0x29] = s[0x28];
+		e[0x2a] = s[0x29];
+		GAME_VAR(int, e + 0x24) = 0;
+	}
+	GAME_VAR(int, 0x4dbac8) = 1;
+	GAME_VAR(int, 0x76d41c) = 0;
+	GAME_VAR(int, 0x4dbaa8) = 0;
+	arena_4065e0();
+}

@@ -176,3 +176,41 @@ void (armc_410160)(void)
 		BITS(g_viewAspect) = 0;
 	}
 }
+
+/* 0x40de80: the ARM CENTER camera box's corners (each +-700 or 0, as floats) */
+void (armc_40de80)(void)
+{
+	static const struct { u8 offset; signed char sign; } corner[] = {
+		{ 0x40, -1 }, { 0x44, 1 }, { 0x48, 1 }, { 0x50, 1 }, { 0x58, 1 }, { 0x60, 1 }, { 0x64, -1 }, { 0x68, 1 },
+		{ 0x70, -1 }, { 0x74, -1 }, { 0x78, 1 }, { 0x80, -1 }, { 0x84, 1 }, { 0x88, -1 }, { 0x90, 1 }, { 0x94, 1 },
+		{ 0x98, -1 }, { 0xa0, 1 }, { 0xa4, -1 }, { 0xa8, -1 }, { 0xb0, -1 }, { 0xb4, -1 }, { 0xb8, -1 },
+		{ 0xc0, 0 }, { 0xc4, 0 }, { 0xc8, 0 }, { 0xd0, 0 }, { 0xd4, 0 } };
+	for (unsigned k = 0; k < sizeof corner / sizeof corner[0]; k++)
+		GAME_VAR(u32, 0x4dcf00 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
+}
+
+/* 0x40dfa0: the six parts' bounding boxes (+-600, 0x58 bytes each from 0x4dc550), their offsets, and the camera's
+   limits (200, 600, 2, -2) */
+void (armc_40dfa0)(void)
+{
+	for (u32 p = 0x4dc554; p < 0x4dc764; p += 0x58) {
+		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
+		for (int k = 0; k < 15; k++)
+			if (corner[k])
+				GAME_VAR(u32, p - 4 + k * 4) = corner[k] > 0 ? 0x44160000 : 0xc4160000;
+		GAME_VAR(int, p + 0x3c) = 0;
+		GAME_VAR(int, p + 0x40) = 0;
+		GAME_VAR(int, p + 0x44) = 0;
+		GAME_VAR(int, p + 0x4c) = 0;
+	}
+	GAME_VAR(u32, 0x4dc5a4) = 0x3e19999a;   /* 0.15 */
+	GAME_VAR(u32, 0x4dc5fc) = 0xbeb33333;   /* -0.35 */
+	GAME_VAR(u32, 0x4dc654) = 0xbfc00000;   /* -1.5 */
+	GAME_VAR(u32, 0x4dc6ac) = 0x3fc00000;   /* 1.5 */
+	GAME_VAR(u32, 0x4dc704) = 0xbe3851ec;   /* -0.18 */
+	GAME_VAR(u32, 0x4dc75c) = 0x3e3851ec;   /* 0.18 */
+	GAME_VAR(u32, 0x4b0704) = 0x43480000;   /* 200 */
+	GAME_VAR(u32, 0x4b0708) = 0x44160000;   /* 600 */
+	GAME_VAR(u32, 0x4b070c) = 0x40000000;   /* 2 */
+	GAME_VAR(u32, 0x4b0710) = 0xc0000000;   /* -2 */
+}

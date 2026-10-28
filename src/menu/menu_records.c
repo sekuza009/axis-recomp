@@ -117,6 +117,30 @@ void (FUN_0040ddb0)(void)
 	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
 }
 
+/* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
+   negative or NaN chroma or value becomes 0 in the record first) */
+void (FUN_004463a0)(void)
+{
+	GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x9f19fc);
+	GAME_VAR(int, 0x4dc878) = GAME_VAR(int, 0x9f19f8);
+	GAME_VAR(int, 0x4dc880) = GAME_VAR(int, 0x9f1a00);
+	GAME_VAR(int, 0x4dc888) = GAME_VAR(int, 0x9f1a08);
+	GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x9f1a04);
+	GAME_VAR(int, 0x4dcf20) = GAME_VAR(int, 0x9f1a1c);
+	GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x9f1a24);
+	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x9f1a20);
+	GAME_VAR(int, 0x4dcf2c) = GAME_VAR(int, 0x9f1a28);
+	GAME_VAR(int, 0x4dcf18) = GAME_VAR(int, 0x9f1a14);
+	GAME_VAR(int, 0x4dcf1c) = GAME_VAR(int, 0x9f1a18);
+	for (int o = 0; o < 0x90; o += 0x18) {
+		if (!(GAME_VAR(float, 0x9f1a38 + o) >= 0.0f))
+			GAME_VAR(int, 0x9f1a38 + o) = 0;
+		if (!(GAME_VAR(float, 0x9f1a3c + o) >= 0.0f))
+			GAME_VAR(int, 0x9f1a3c + o) = 0;
+		memcpy((void *)(0x4dcfe0 + o), (void *)(0x9f1a34 + o), 0x18);
+	}
+}
+
 /* 0x4464b0: the mech stored into the profile record (the inverse of FUN_004463a0) */
 void (match_4464b0)(void)
 {

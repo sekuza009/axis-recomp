@@ -594,18 +594,8 @@ void mission_447af0(void);
 
 /* 0x4463a0 FUN_004463a0: load the mech from the profile record (0x9f19f8..); negative chroma/value
    (and NaN: x87 "fcomp 0; test ah, 1" is also true when unordered) become 0 in the record first */
-static void __cdecl FUN_004463a0(void)
-{
-	G32(0x4dc87c) = G32(0x9f19fc); G32(0x4dc878) = G32(0x9f19f8); G32(0x4dc880) = G32(0x9f1a00);
-	G32(0x4dc888) = G32(0x9f1a08); G32(0x4dc884) = G32(0x9f1a04); G32(0x4dcf20) = G32(0x9f1a1c);
-	G32(0x4dcf28) = G32(0x9f1a24); G32(0x4dcf24) = G32(0x9f1a20); G32(0x4dcf2c) = G32(0x9f1a28);
-	G32(0x4dcf18) = G32(0x9f1a14); G32(0x4dcf1c) = G32(0x9f1a18);
-	for (int o = 0; o < 0x90; o += 0x18) {
-		if (!(GF(0x9f1a38 + o) >= 0.0f)) G32(0x9f1a38 + o) = 0;
-		if (!(GF(0x9f1a3c + o) >= 0.0f)) G32(0x9f1a3c + o) = 0;
-		memcpy((void *)(0x4dcfe0 + o), (void *)(0x9f1a34 + o), 0x18);
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_004463a0(void);
 /* 0x4464b0 match_4464b0: store the mech into the profile record (inverse of FUN_004463a0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_4464b0(void);
@@ -669,25 +659,8 @@ THISCALL void tex_recolourMaterial(void *self, int m, DWORD h1, DWORD c1, DWORD 
 THISCALL void hud_456b50(char *self);
 
 /* 0x45dca0 (thiscall) actor_deactivate(i) */
-static THISCALL void actor_deactivate(char *self, int i)
-{
-	char *a = self + i * 0x8888;
-	if (!S32(a, 0x1cd94b0)) return;
-	S32(a, 0x1cd94b0) = 0; S32(a, 0x1cd94f4) = 0;
-	S32(a, 0x1ce1b88) = 0; S32(a, 0x1ce1b90) = 0; S32(a, 0x1ce1b98) = 0;
-	if (S32(self, 0x20fce4c) == i) S32(self, 0x20fce4c) = -1;
-	int team = S32(a, 0x1cd94c0);
-	if (team > -1 && S32(self, 0x20fce50 + team * 4) == i) S32(self, 0x20fce50 + team * 4) = -1;
-	S32(self, 0x202ea80 + i * 4) = 0;
-	if (i < S32(self, 0x202e8cc)) S32(self, 0x202e8cc) = i;            /* lowest free slot */
-	int n = S32(self, 0x202e8c8);                                        /* used slot count: trim trailing free slots */
-	if (i == n - 1)
-		while (n > 0 && S32(self, 0x1cd0c28 + S32(self, 0x202e8c8) * 0x8888) == 0) {
-			n = S32(self, 0x202e8c8) - 1;
-			S32(self, 0x202e8c8) = n;
-		}
-	S32(self, 0x202e8ec) = 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_deactivate(void *self, int i);
 
 /* 0x45dff0 (thiscall) camera_setTarget(actor, mode, value) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1197,18 +1170,9 @@ static void __cdecl menuState300_enter(void)
 /* three camera points: (0, 300, 0), (0, -500, 0), (0, 350, 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_40e510(void);
-static void __cdecl armc_40dfa0(void)           /* six part bounding boxes (+-600) and camera limits */
-{
-	for (DWORD p = 0x4dc554; p < 0x4dc764; p += 0x58) {
-		GU32(p - 4) = 0xc4160000; GU32(p) = 0xc4160000; GU32(p + 4) = 0xc4160000; GU32(p + 0xc) = 0x44160000;
-		GU32(p + 0x10) = 0xc4160000; GU32(p + 0x14) = 0xc4160000; GU32(p + 0x1c) = 0x44160000; GU32(p + 0x20) = 0xc4160000;
-		GU32(p + 0x24) = 0x44160000; GU32(p + 0x2c) = 0xc4160000; GU32(p + 0x30) = 0xc4160000; GU32(p + 0x34) = 0x44160000;
-		G32(p + 0x3c) = 0; G32(p + 0x40) = 0; G32(p + 0x44) = 0; G32(p + 0x4c) = 0;
-	}
-	GU32(0x4dc5a4) = 0x3e19999a; GU32(0x4dc5fc) = 0xbeb33333; GU32(0x4dc654) = 0xbfc00000;
-	GU32(0x4dc6ac) = 0x3fc00000; GU32(0x4dc704) = 0xbe3851ec; GU32(0x4dc75c) = 0x3e3851ec;
-	GU32(0x4b0704) = 0x43480000; GU32(0x4b0708) = 0x44160000; GU32(0x4b070c) = 0x40000000; GU32(0x4b0710) = 0xc0000000;
-}
+/* six part bounding boxes (+-600) and camera limits */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40dfa0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4338c0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1221,40 +1185,12 @@ void profile_44b1a0(void)        /* 3 x 3 grid, then a row of two */;
 /* scene-object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_resetSlot(char *self, int i);
-static THISCALL void actor_clearTargetRefs(char *self, int b)   /* bullet b is gone: drop it from its shooter, free the slot */
-{
-	char *r = self + b * 0x4e8;
-	for (int k = 0; k < 5; k++) {
-		int *t = &S32(self, S32(r, 0x202ef40) * 0x8888 + k * 4 + 0x1cd9708);
-		if (*t == b) *t = -1;
-	}
-	if (!S32(r, 0x202ef38)) return;
-	S32(r, 0x202ef38) = 0;
-	if (b < S32(self, 0x20a99b8)) S32(self, 0x20a99b8) = b;
-	int n = S32(self, 0x20a99b4);
-	if (b != n - 1 || n <= 0) return;
-	do {
-		n = S32(self, 0x20a99b4);
-		if (S32(self, 0x202ea50 + n * 0x4e8)) return;
-		S32(self, 0x20a99b4) = --n;
-	} while (n > 0);
-}
-static THISCALL void load_474480(char *self)    /* reset the 16 player records */
-{
-	for (int p = 0; p < 16; p++) {
-		char *e = self + 0x1561bac + p * 0x47fd2;
-		S32(e, -0x44) = 0; e[-0x40] = 0; S32(e, 0) = 0; S32(e, 4) = -1;
-		e[8] = 0; e[0x48] = 0; e[0x88] = 0; e[0xc8] = 0; e[0x108] = 0;
-		for (int k = 0; k < 5; k++) S32(e, 0x2c8 + k * 4) = -1;
-		for (int k = 0; k < 6; k++) { e[0x148 + k * 0x40] = 0; S32(e, 0x2dc + k * 4) = -1; }
-		for (int r = 0; r < 5; r++) for (int c = 0; c < 2; c++) {
-			char *q = e + 0x4796a + r * 2 + c;
-			q[-0xa] = 0; q[0] = 0; q[0xa] = 0;
-		}
-		FUN_00473470(self, p);
-	}
-	S32(self, 0x19e1888) = 0;
-}
+/* bullet b is gone: drop it from its shooter, free the slot */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_clearTargetRefs(void *self, int b);
+/* reset the 16 player records */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_474480(void *self);
 /* select the next (step 1) or previous (step 5) weapon slot that has a weapon and enough ammo */
 static void weapon_cycle(char *self, int i, int step)
 {
@@ -1292,33 +1228,15 @@ void lobby_setSubState1(void);
 /* fixed ladder game: name, map 8, limits 10/10 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_ladderGameName(void);
-static void __cdecl armc_40de80(void)           /* ARM CENTER camera box corners (+-700) */
-{
-	static const struct { WORD off; signed char s; } v[] = {
-		{ 0x40, -1 }, { 0x44, 1 }, { 0x48, 1 }, { 0x50, 1 }, { 0x58, 1 }, { 0x60, 1 }, { 0x64, -1 }, { 0x68, 1 },
-		{ 0x70, -1 }, { 0x74, -1 }, { 0x78, 1 }, { 0x80, -1 }, { 0x84, 1 }, { 0x88, -1 }, { 0x90, 1 }, { 0x94, 1 },
-		{ 0x98, -1 }, { 0xa0, 1 }, { 0xa4, -1 }, { 0xa8, -1 }, { 0xb0, -1 }, { 0xb4, -1 }, { 0xb8, -1 },
-		{ 0xc0, 0 }, { 0xc4, 0 }, { 0xc8, 0 }, { 0xd0, 0 }, { 0xd4, 0 } };
-	for (unsigned k = 0; k < sizeof v / sizeof v[0]; k++)
-		GU32(0x4dcf00 + v[k].off) = v[k].s > 0 ? 0x442f0000 : v[k].s < 0 ? 0xc42f0000 : 0;
-}
+/* ARM CENTER camera box corners (+-700) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40de80(void);
 /* seven RGBA colours (1.0 / 0.0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void intro_430ab0(void);
-static int __cdecl profile_44b870(void)         /* does a profile with the typed name exist (case-insensitive)? */
-{
-	char a[1024], b[1024];
-	memset(b, 0, sizeof b); memset(a, 0, sizeof a);
-	/* (the original's trailing-space trim is unreachable: it is skipped whenever the length is >= 0) */
-	const char *s = GSTR(0x9dc92c);
-	for (int i = 0, n = (int)strlen(s); i < n; i++) a[i] = (s[i] >= 'A' && s[i] <= 'Z') ? s[i] + 0x20 : s[i];
-	for (int e = 0; e < G32(0x9f9008); e++) {
-		const char *p = GSTR(0x9f684c + e * 0x48);
-		for (int i = 0, n = (int)strlen(p); i < n; i++) b[i] = (p[i] >= 'A' && p[i] <= 'Z') ? p[i] + 0x20 : p[i];
-		if (!strcmp(a, b)) return 1;            /* b keeps the tail of longer earlier names, as in the original */
-	}
-	return 0;
-}
+/* does a profile with the typed name exist (case-insensitive)? */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b870(void);
 
 /* PTX */
 /* YCbCr + alpha planes -> RGBA */
@@ -1394,31 +1312,9 @@ void THISCALL armc_461320(void *scene, const char *name);
 void FUN_00466960(BYTE *px, int mode, const char *shape, const BYTE *c);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_resetInputState(char *self);
-static THISCALL void match_470cb0(char *self)    /* new round: clear players and actors but keep names */
-{
-	for (int k = 0; k < 6; k++) S32(self, 0x202e8d4 + k * 4) = -1;
-	S32(self, 0x202e8ec) = 1;
-	FUN_0045df90(self);
-	for (int p = 0; p < 16; p++) {
-		char *b = self + 0x1561bb4 + p * 0x47fd2;
-		S32(b, -0x4c) = 0; S32(b, -4) = -1;
-		b[0] = 0; b[0x40] = 0; b[0x80] = 0; b[0xc0] = 0; b[0x100] = 0;
-		for (int k = 0; k < 5; k++) S32(b, 0x2c0 + k * 4) = -1;
-		for (int k = 0; k < 6; k++) { b[0x140 + k * 0x40] = 0; S32(b, 0x2d4 + k * 4) = -1; }
-		for (int r = 0; r < 5; r++) for (int c = 0; c < 2; c++) {
-			char *q = b + 0x47962 + r * 2 + c;
-			q[-0xa] = 0; q[0] = 0; q[0xa] = 0;
-		}
-	}
-	S32(self, 0x19e1888) = 0;
-	FUN_0045e070(self);
-	static const short z[] = { 0, 0xc, 0x10, 0x18, 0x1c, 0x24, 0x28, 0x74, 0x3fc, 0x400, 0x404 };
-	for (int i = 0; i < 100; i++) {
-		char *a = self + 0x1cd9480 + i * 0x8888;
-		S32(a, 0x40) = -1;
-		for (unsigned k = 0; k < sizeof z / sizeof z[0]; k++) S32(a, z[k]) = 0;
-	}
-}
+/* new round: clear players and actors but keep names */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_470cb0(void *self);
 
 /* ---- batch 12: constant-store initialisers (tables generated by tools\straightline.py) ----- */
 typedef struct { DWORD a, v; } Store;
@@ -2763,22 +2659,8 @@ int room_43e720(void);
 
 /* 0x406810 arena_406810: copy the session list into the 0x4a-byte arena records at 0x9087c4 (name, id, settings),
    then sort them */
-static void __cdecl arena_406810(void)
-{
-	int n = arena_4532a0();
-	G32(0x67ef30) = n; G32(0x680bb8) = n;
-	for (int i = 0; i < G32(0x67ef30); i++) {
-		unsigned char *rec = (unsigned char *)arena_4532b0(i), *dst = (unsigned char *)0x9087c4 + i * 0x4a;
-		memset(dst, 0, 32);
-		strcpy((char *)dst, (const char *)rec + 0x2e);
-		*(int *)(dst - 4) = *(int *)rec;
-		dst[0x20] = rec[0x25]; dst[0x21] = rec[0x24]; dst[0x28] = rec[0x27]; dst[0x22] = rec[0x26];
-		dst[0x23] = rec[0x2a]; dst[0x29] = rec[0x28]; dst[0x2a] = rec[0x29];
-		*(int *)(dst + 0x24) = 0;
-	}
-	G32(0x4dbac8) = 1; G32(0x76d41c) = 0; G32(0x4dbaa8) = 0;
-	arena_4065e0();
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_406810(void);
 /* batch 32 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TextureManager_dtor(void *self);
