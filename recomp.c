@@ -1269,8 +1269,10 @@ static void rects_column(DWORD rec, DWORD end, int x)   /* records 16 bytes apar
 {
 	for (; rec < end; rec += 16, x += 0xa0) set4ints(x, 0x104, x + 0x78, 0x124, (DWORD *)rec);
 }
-static void __cdecl arena_404150(void) { rects_column(0x4dbb80, 0x4dbba0, 0xb4); }
-static void __cdecl room_431aa0(void) { rects_column(0x9dd390, 0x9dd3b0, 0xb4); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_404150(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431aa0(void);
 /* a row of buttons relative to a movable origin (x at ox, y at oy): stride dx, size w x h, offsets x0/y0 */
 static void rects_row(DWORD rec, DWORD end, DWORD ox, DWORD oy, int x0, int x1, int y0, int y1, int dx)
 {
@@ -1279,18 +1281,18 @@ static void rects_row(DWORD rec, DWORD end, DWORD ox, DWORD oy, int x0, int x1, 
 		set4ints(d + x + x0, y + y0, d + x + x1, y + y1, (DWORD *)rec);
 	}
 }
-static void __cdecl profile_44b0b0(void) { rects_row(0x9f6808, 0x9f6828, 0x9f8f1c, 0x9f8f0c, 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
-static void __cdecl profile_44b100(void) { rects_row(0x9f8ee8, 0x9f8f08, 0x9f6834, 0x9f683c, 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
-static void __cdecl profile_44b150(void)       /* a column: 13 rows 0x14 apart */
-{
-	for (DWORD rec = 0x9f8d78, d = 0; rec < 0x9f8e48; rec += 16, d += 0x14) {
-		int y = G32(0x9f8e4c), x = G32(0x9f8e48);
-		set4ints(x + 0x20, d + y + 0x23, x + 0xd4, d + y + 0x36, (DWORD *)rec);
-	}
-}
-static void __cdecl profile_44b030(void) { rects_row(0x9f9020, 0x9f9040, 0x9f8eac, 0x9f8ea8, 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
-static void __cdecl room_431c00(void) { rects_row(0x9dd3b8, 0x9dd3d8, 0x9dd1a0, 0x9dd1ac, 0x64, 0xdc, -0x40, -0x20, 0xb4); }
-static void __cdecl arena_403f30(void) { rects_row(0x4dbb40, 0x4dbb60, 0x4dba70, 0x4dba74, 0x32, 0xe6, 0x64, 0x94, 0xc8); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b0b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b100(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b150(void)       /* a column: 13 rows 0x14 apart */;
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b030(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431c00(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_403f30(void);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_setColor(DWORD r, DWORD g, DWORD b, DWORD a);
@@ -1480,48 +1482,20 @@ static void rect_spec(DWORD rec, DWORD end, int step, const RArg *a)
 	}
 }
 #define RA(g, c, d) { g, c, d }
-static void __cdecl setup_420480(void)
-{
-	static const RArg a[4] = { RA(0x4dddd0, 0xa, 0), RA(0x4dddd4, 0x3c, 1), RA(0x4dddd0, 0x186, 0), RA(0x4dddd4, 0x5c, 1) };
-	static const RArg b[4] = { RA(0x4dddd0, 0x64, 1), RA(0x4ddddc, -0x40, 0), RA(0x4dddd0, 0xdc, 1), RA(0x4ddddc, -0x20, 0) };
-	rect_spec(0x4ddde0, 0x4dde50, 0x28, a); rect_spec(0x4dde50, 0x4dde70, 0x8c, b);
-}
-static void __cdecl room_431b70(void)
-{
-	static const RArg a[4] = { RA(0x9dd6e8, 0x30, 0), RA(0x9dd6ec, 0x30, 1), RA(0x9dd6e8, 0x210, 0), RA(0x9dd6ec, 0x58, 1) };
-	static const RArg b[4] = { RA(0x9dd6e8, 0x5a, 1), RA(0x9dd6f4, -0x40, 0), RA(0x9dd6e8, 0xfa, 1), RA(0x9dd6f4, -0x20, 0) };
-	rect_spec(0x9dce50, 0x9dce90, 0x30, a); rect_spec(0x9dce90, 0x9dceb0, 0xc8, b);
-}
-static void __cdecl arena_403f80(void)
-{
-	static const RArg a[4] = { RA(0x4dbb68, 0x30, 0), RA(0x4dbb6c, 0x60, 1), RA(0x4dbb68, 0x188, 0), RA(0x4dbb6c, 0x78, 1) };
-	static const RArg b[4] = { RA(0x4dbb68, 0x32, 1), RA(0x4dbb6c, 0xdc, 0), RA(0x4dbb68, 0x96, 1), RA(0x4dbb6c, 0xfc, 0) };
-	rect_spec(0x4db588, 0x4db5b8, 0x19, a); rect_spec(0x4db5b8, 0x4db5e8, 0x78, b);
-}
-static void __cdecl room_431ae0(void)
-{
-	static const RArg a[4] = { RA(0x9dd358, 0xb8, 0), RA(0x9dd35c, 0x50, 1), RA(0x9dd358, 0x1a8, 0), RA(0x9dd35c, 0x70, 1) };
-	static const RArg b[4] = { RA(0x9dd358, 0x30, 1), RA(0x9dd364, -0x40, 0), RA(0x9dd358, 0xa8, 1), RA(0x9dd364, -0x18, 0) };
-	rect_spec(0x9dd7e0, 0x9dd800, 0x30, a); rect_spec(0x9dd800, 0x9dd830, 0xa0, b);
-}
-static void __cdecl skirmish_4437b0(void)
-{
-	static const RArg a[4] = { RA(0x9f16a8, 0x10, 0), RA(0x9f16ac, 0x44, 1), RA(0x9f16a8, 0x25d, 0), RA(0x9f16ac, 0x5c, 1) };
-	static const RArg b[4] = { RA(0x9f16b0, -0x12c, 1), RA(0x9f16b4, -0x40, 0), RA(0x9f16b0, -0xb4, 1), RA(0x9f16b4, -0x20, 0) };
-	rect_spec(0x9ef220, 0x9ef2a0, 0x1a, a); rect_spec(0x9ef2a0, 0x9ef2c0, 0x8c, b);
-}
-static void __cdecl room_431c50(void)
-{
-	static const RArg a[4] = { RA(0x9dd368, 0x84, 0), RA(0x9dd36c, 0x52, 1), RA(0x9dd370, -0x30, 0), RA(0x9dd36c, 0x68, 1) };
-	static const RArg b[4] = { RA(0x9dd368, 0x7d, 1), RA(0x9dd374, -0x30, 0), RA(0x9dd368, 0xf5, 1), RA(0x9dd374, -0x10, 0) };
-	rect_spec(0x9dd400, 0x9dd440, 0x1c, a); rect_spec(0x9dd440, 0x9dd460, 0xa0, b);
-}
-static void __cdecl skirmish_443840(void)
-{
-	static const RArg a[4] = { RA(0x9f16b0, -0x12c, 1), RA(0x9f16b4, -0x30, 0), RA(0x9f16b0, -0xb4, 1), RA(0x9f16b4, -0x10, 0) };
-	static const RArg b[4] = { RA(0x9f16a8, 0x40, 1), RA(0x9f16b4, -0x30, 0), RA(0x9f16a8, 0xb8, 1), RA(0x9f16b4, -0x10, 0) };
-	rect_spec(0x9f16c0, 0x9f16e0, 0x8c, a); rect_spec(0x9f16e0, 0x9f1700, 0x8c, b);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_420480(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431b70(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_403f80(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431ae0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_4437b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431c50(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_443840(void);
 
 /* settings screen tabs (g_setupTab 0x4ddac8) */
 static void __cdecl setup_selectSoundTab(void)
@@ -1899,23 +1873,10 @@ static void __cdecl room_433800(void)
 	G32(0x9dce48) = 1; G32(0x9dd83c) = 1; G32(0x9dd834) = 4; GU32(0x9dd6bc) = 0x3f333333; G32(0x9dd7dc) = 10;
 	GU32(0x9dd384) = 0x4b189680; G32(0x9dd4b8) = 999;                          /* 10000000.0 */
 }
-static void __cdecl missionsel_447660(void)
-{
-	static const RArg a[4] = { RA(0x9f6308, 0x96, 1), RA(0x9f6314, -0x30, 0), RA(0x9f6308, 0x10e, 1), RA(0x9f6314, -0x10, 0) };
-	rect_spec(0x9f6330, 0x9f6350, 0x8c, a);
-	set4ints(G32(0x9f6308) + 0x98, G32(0x9f630c) + 0x4c, G32(0x9f6308) + 0xd0, G32(0x9f630c) + 0x74, (DWORD *)0x9f6350);
-	set4ints(G32(0x9f6308) + 0x160, G32(0x9f630c) + 0x4c, G32(0x9f6308) + 0x198, G32(0x9f630c) + 0x74, (DWORD *)0x9f6360);
-}
-static void __cdecl profile_44b1a0(void)        /* 3 x 3 grid, then a row of two */
-{
-	DWORD rec = 0x9f8f38;
-	for (int i = 0; rec < 0x9f8fc8; i++, rec += 16) {
-		int y = G32(0x9f8c50) + (i / 3) * 86, x = G32(0x9f8c54) + (i % 3) * 86;
-		set4ints(x + 0x20, y + 0x4c, x + 0x74, y + 0xa0, (DWORD *)rec);
-	}
-	static const RArg b[4] = { RA(0x9f8c54, 0xaa, 1), RA(0x9f682c, -0x40, 0), RA(0x9f8c54, 0x122, 1), RA(0x9f682c, -0x20, 0) };
-	rect_spec(0x9f8fc8, 0x9f8fe8, 0xa0, b);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_447660(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b1a0(void)        /* 3 x 3 grid, then a row of two */;
 
 /* scene-object methods */
 static THISCALL void actor_resetSlot(char *self, int i)
@@ -1987,47 +1948,14 @@ static THISCALL void shape_setTint(char *self, DWORD a1, DWORD a2, DWORD a3, DWO
 
 /* ---- batch 10: menu/lobby setup, PTX blocks, player names, scene reset ------------------------ */
 
-static void __cdecl room_431ce0(void)
-{
-	static const RArg a[4] = { RA(0x9dd4a8, 0x20, 1), RA(0x9dd4b4, -0x32, 0), RA(0x9dd4a8, 0x98, 1), RA(0x9dd4b4, -0x12, 0) };
-	static const RArg b[4] = { RA(0x9dd4a8, 0x10, 0), RA(0x9dd4ac, 0x5e, 1), RA(0x9dd4a8, 0x204, 0), RA(0x9dd4ac, 0x74, 1) };
-	static const RArg c[4] = { RA(0x9dd4a8, 0x226, 0), RA(0x9dd4ac, 0x6e, 1), RA(0x9dd4a8, 0x246, 0), RA(0x9dd4ac, 0xae, 1) };
-	rect_spec(0x9dcd48, 0x9dcd88, 0x8c, a); rect_spec(0x9dcd88, 0x9dce18, 0x18, b); rect_spec(0x9dce18, 0x9dce38, 0x50, c);
-}
-static void __cdecl arena_404010(void)
-{
-	static const RArg a[4] = { RA(0x4db8c8, 0x23, 1), RA(0x4db8cc, 0x30, 0), RA(0x4db8c8, 0xc3, 1), RA(0x4db8cc, 0x48, 0) };
-	static const RArg b[4] = { RA(0x4db8c8, 0x5a, 1), RA(0x4db8d4, -0x2c, 0), RA(0x4db8c8, 0xd2, 1), RA(0x4db8d4, -0xc, 0) };
-	static const RArg c[4] = { RA(0x4db8c8, 0x10, 0), RA(0x4db8cc, 0x76, 1), RA(0x4db8c8, 0x204, 0), RA(0x4db8cc, 0x8c, 1) };
-	static const RArg d[4] = { RA(0x4db8c8, 0x21e, 0), RA(0x4db8cc, 0xa0, 1), RA(0x4db8c8, 0x23e, 0), RA(0x4db8cc, 0xe0, 1) };
-	rect_spec(0x4db720, 0x4db750, 0xb4, a); rect_spec(0x4db750, 0x4db780, 0x96, b);
-	rect_spec(0x4db780, 0x4db810, 0x18, c); rect_spec(0x4db810, 0x4db830, 0x50, d);
-}
-static void __cdecl profile_44af30(void)
-{
-	static const RArg a[4] = { RA(0x9f8e48, 0x28, 1), RA(0x9f8ea4, -0x30, 0), RA(0x9f8e48, 0x88, 1), RA(0x9f8ea4, -0x10, 0) };
-	static const short r[4][4] = { { 0x20, 0x23, 0xd4, 0x126 }, { 0xe0, 0x50, 0xf8, 0x80 }, { 0xe0, 0xb4, 0xf8, 0xe4 },
-	                               { 0x1a4, 0x24, 0x1e4, 0x64 } };
-	rect_spec(0x9f8c60, 0x9f8ca0, 0x72, a);
-	for (int k = 0; k < 4; k++)
-		set4ints(G32(0x9f8e48) + r[k][0], G32(0x9f8e4c) + r[k][1], G32(0x9f8e48) + r[k][2], G32(0x9f8e4c) + r[k][3],
-		         (DWORD *)(0x9f8ca0 + k * 16));
-}
-static void __cdecl room_403300(void)
-{
-	int y = 0x57;
-	for (DWORD rec = 0x4d93f8; rec < 0x4d9498; rec += 16, y += 0x18) {
-		set4ints(0x96, y, 0x154, y + 0x14, (DWORD *)(rec - 0xa0));
-		set4ints(0x168, y, 0x1a4, y + 0x14, (DWORD *)rec);
-	}
-	set4ints(0x1c2, 0x96, 0x1e0, 0xca, (DWORD *)0x4d9498);
-	set4ints(0x1c2, 0xdc, 0x1e0, 0x110, (DWORD *)0x4d94a8);
-	int x = 0xaa;
-	for (DWORD rec = 0x4d94d8; rec < 0x4d94f8; rec += 16, x += 0xa0) {
-		set4ints(x, 0x15e, x + 0x8c, 0x17e, (DWORD *)(rec - 0x20));
-		set4ints(x, 0x186, x + 0x8c, 0x1a6, (DWORD *)rec);
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431ce0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_404010(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44af30(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403300(void);
 static void __cdecl lobby_setSubState1(void)
 {
 	static const DWORD z[] = { 0x4df884, 0x4dbaac, 0x4db8b8, 0x4dba84, 0x4db854, 0x4dbbec, 0x4dbbf0, 0x4dba90, 0x4db858,
@@ -2187,74 +2115,20 @@ static void armc_tabs(DWORD rec)                 /* tab row + its second row (bo
 	static const RArg b[4] = { RA(AX, 0x10, 1), RA(AY2, -0x20, 0), RA(AX, 0x70, 1), RA(AY2, 0, 0) };
 	rect_spec(rec, rec + 0x30, 0x64, a); rect_spec(rec + 0x30, rec + 0x50, 0x64, b);
 }
-static void __cdecl armc_40e1c0(void)
-{
-	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x28, 1), RA(AX, 0xa0, 0), RA(AY, 0x54, 1) };
-	armc_tabs(0x4dbc88);
-	rect_spec(0x4dbce8, 0x4dbd48, 0x3f, c);
-	rect1(0x4dbd48, AX2, -0xea, AY, 0x162, AX2, -0xc2, AY, 0x182);
-	rect1(0x4dbd58, AX2, -0x22, AY, 0x162, AX2, 6, AY, 0x182);
-	rect1(0x4dbd68, AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
-}
-static void __cdecl armc_40e300(void)
-{
-	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x40, 1), RA(AX, 0xb0, 0), RA(AY, 0x6c, 1) };
-	static const RArg d[4] = { RA(AX2, -0xb8, 0), RA(AY, 0x58, 1), RA(AX2, -0x18, 0), RA(AY, 0x6c, 1) };
-	static const RArg e[4] = { RA(AX2, -0xb8, 0), RA(AY, 0x108, 1), RA(AX2, -0x18, 0), RA(AY, 0x11c, 1) };
-	armc_tabs(0x4dcb38);
-	rect_spec(0x4dcb88, 0x4dcbe8, 0x30, c);
-	rect_spec(0x4dcbe8, 0x4dcc18, 0x30, d); rect_spec(0x4dcc18, 0x4dcc48, 0x30, e);
-	rect1(0x4dcc48, AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
-}
-static void __cdecl armc_40e060(void)
-{
-	static const RArg c[4] = { RA(AX, 0x10, 0), RA(AY, 0x40, 1), RA(AX, 0xb0, 0), RA(AY, 0x6c, 1) };
-	armc_tabs(0x4dc2a8);
-	rect_spec(0x4dc308, 0x4dc368, 0x30, c);
-	rect1(0x4dc378, AX, 0x114, AY2, -0x20, AX, 0x174, AY2, 0);
-	rect1(0x4dc388, AX, 0xe4, AY2, -0x1c, AX, 0x114, AY2, -4);
-	rect1(0x4dc398, AX, 0x174, AY2, -0x1c, AX, 0x1a4, AY2, -4);
-	rect1(0x4dc3a8, AX2, -0xa0, AY2, -0x20, AX2, 0, AY2, 0);
-}
-static void __cdecl mainmenu_440a20(void)
-{
-	static const RArg a[4] = { RA(0x9dd910, -0x32, 0), RA(0x9dd90c, 0x48, 1), RA(0x9dd910, -0x12, 0), RA(0x9dd90c, 0x88, 1) };
-	static const RArg b[4] = { RA(0x9dd908, 0x10, 0), RA(0x9dd90c, 0xfe, 1), RA(0x9dd908, 0xd8, 0), RA(0x9dd90c, 0x10e, 1) };
-	static const RArg c[4] = { RA(0x9dd908, 0x64, 1), RA(0x9dd914, -0x5c, 0), RA(0x9dd908, 0xdc, 1), RA(0x9dd914, -0x3c, 0) };
-	static const RArg d[4] = { RA(0x9dd908, 0x64, 1), RA(0x9dd914, -0x34, 0), RA(0x9dd908, 0xdc, 1), RA(0x9dd914, -0x14, 0) };
-	static const RArg e[4] = { RA(0x9dd908, 0x28, 0), RA(0x9dd90c, 0x2c, 1), RA(0x9dd910, -0x50, 0), RA(0x9dd90c, 0x3c, 1) };
-	rect_spec(0x9dd950, 0x9dd970, 0x64, a); rect_spec(0x9dd970, 0x9dd990, 0x1e, b); rect_spec(0x9dd990, 0x9dd9b0, 0xa0, c);
-	rect_spec(0x9dd9b0, 0x9dd9d0, 0xa0, d); rect_spec(0x9dd9d0, 0x9dda70, 0x14, e);
-}
-static void __cdecl setup_420510(void)
-{
-	static const RArg a[4] = { RA(0x4dde80, 0x46, 1), RA(0x4dde84, 0x10, 0), RA(0x4dde80, 0xaa, 1), RA(0x4dde84, 0x24, 0) };
-	static const RArg b[4] = { RA(0x4dde80, 0x50, 1), RA(0x4dde8c, -0x30, 0), RA(0x4dde80, 0xc8, 1), RA(0x4dde8c, -0x10, 0) };
-	static const RArg c[4] = { RA(0x4dde80, 0x30, 0), RA(0x4dde84, 0x59, 1), RA(0x4dde88, -0x18, 0), RA(0x4dde84, 0x70, 1) };
-	rect_spec(0x4ddea8, 0x4ddee8, 0x78, a); rect_spec(0x4ddee8, 0x4ddf18, 0x8c, b); rect_spec(0x4ddf18, 0x4ddfc8, 0x18, c);
-	rect1(0x4ddd98, 0x4dde80, 0xc8, 0x4dde84, 0x88, 0x4dde80, 0x108, 0x4dde84, 0xa0);
-	rect1(0x4ddda8, 0x4dde80, 0x1d0, 0x4dde84, 0x88, 0x4dde80, 0x210, 0x4dde84, 0xa0);
-	rect1(0x4dddb8, 0x4dde80, 0x108, 0x4dde84, 0x88, 0x4dde80, 0x1d0, 0x4dde84, 0xa0);
-}
-static void __cdecl setup_420300(void)
-{
-	static const RArg a[4] = { RA(0x4ddad0, 0x74, 0), RA(0x4ddad4, 0x94, 1), RA(0x4ddad0, 0x1ae, 0), RA(0x4ddad4, 0xb4, 1) };
-	static const RArg b[4] = { RA(0x4ddad0, 0x90, 1), RA(0x4ddad4, 0x113, 0), RA(0x4ddad0, 0x108, 1), RA(0x4ddad4, 0x133, 0) };
-	static const short r[5][4] = { { 0x50, 0x50, 0x8f, 0x70 }, { 0x191, 0x50, 0x1d0, 0x70 }, { 0x90, 0x50, 0x190, 0x70 },
-	                               { 0x50, 0x8c, 0x8f, 0xac }, { 0x191, 0x8c, 0x1d0, 0xac } };
-	for (int k = 0; k < 5; k++) rect1(0x4ddcf0 + k * 16, 0x4ddad0, r[k][0], 0x4ddad4, r[k][1], 0x4ddad0, r[k][2], 0x4ddad4, r[k][3]);
-	rect_spec(0x4ddd40, 0x4ddd70, 0x28, a); rect_spec(0x4ddd70, 0x4ddd90, 0x8c, b);
-}
-static void __cdecl room_432040(void)
-{
-	static const RArg a[4] = { RA(0x9dced8, 0x7d, 1), RA(0x9dcee4, -0x30, 0), RA(0x9dced8, 0x11d, 1), RA(0x9dcee4, -0x10, 0) };
-	static const short r[4][2] = { { 0x112, 0x144 }, { 0x14e, 0x130 }, { 0x18a, 0x1bc }, { 0x20c, 0x23e } };   /* [1] is inverted */
-	rect1(0x9dd4c0, 0x9dced8, 0xb2, 0x9dcedc, 0x26, 0x9dced8, 0xe6, 0x9dcedc, 0x3e);
-	rect1(0x9dd4d0, 0x9dced8, 0x144, 0x9dcedc, 0x26, 0x9dced8, 0x178, 0x9dcedc, 0x3e);
-	rect1(0x9dd4e0, 0x9dcee0, -0x78, 0x9dcedc, 0x24, 0x9dcee0, -0x14, 0x9dcedc, 0x40);
-	rect_spec(0x9dd4f0, 0x9dd510, 0xc8, a);
-	for (int k = 0; k < 4; k++) rect1(0x9dd510 + k * 16, 0x9dced8, r[k][0], 0x9dcedc, 0x50, 0x9dced8, r[k][1], 0x9dcedc, 0x66);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40e1c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40e300(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40e060(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_440a20(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_420510(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_420300(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_432040(void);
 
 static void __cdecl room_403420(void)            /* reset the map on/off list (first time: all off; then n maps on) */
 {
@@ -2834,13 +2708,8 @@ static void options_panel(DWORD rec, DWORD rec2, DWORD gx, DWORD gy, DWORD gx2)
 	if (rec) for (int k = 0; k < 8; k++) rect1(rec + k * 16, gx, r[k][0], gy, r[k][1], gx, r[k][2], gy, r[k][3]);
 	if (rec2) for (int k = 0; k < 4; k++) rect1(rec2 + k * 16, gx2, q[k][0], gy, q[k][1], gx2, q[k][2], gy, q[k][3]);
 }
-static void __cdecl room_431de0(void)
-{
-	static const RArg a[4] = { RA(0x9dd1b8, 0x64, 1), RA(0x9dd1c4, -0x40, 0), RA(0x9dd1b8, 0x104, 1), RA(0x9dd1c4, -0x20, 0) };
-	options_panel(0x9dd6f8, 0, 0x9dd1b8, 0x9dd1bc, 0x9dd1c0);
-	rect_spec(0x9dd778, 0x9dd798, 0xc8, a);
-	options_panel(0, 0x9dd798, 0x9dd1b8, 0x9dd1bc, 0x9dd1c0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_431de0(void);
 /* per-mesh draw records: for mesh i (0x20c bytes at +0xdc0278), fill record B (at *(+0xdc0a8c) + i*0x80) and A
    (at *(+0xdc0cd8) + i*0x80), and write the mesh's fixed 6-face index lists */
 static THISCALL void load_497a90(char *self)
@@ -2883,15 +2752,8 @@ static THISCALL void load_497a90(char *self)
 }
 
 /* ---- batch 18: arena options layout, entering the setup screen and the game room --------------- */
-static void __cdecl arena_404190(void)
-{
-	static const RArg a[4] = { RA(0x4dbb00, 0x3c, 1), RA(0x4dbb0c, -0x5a, 0), RA(0x4dbb00, 0x104, 1), RA(0x4dbb0c, -0x3a, 0) };
-	static const RArg b[4] = { RA(0x4dbb00, 0x3c, 1), RA(0x4dbb0c, -0x32, 0), RA(0x4dbb00, 0x104, 1), RA(0x4dbb0c, -0x12, 0) };
-	options_panel(0x4db5e8, 0, 0x4dbb00, 0x4dbb04, 0x4dbb08);
-	rect_spec(0x4db668, 0x4db688, 0xfa, a); rect_spec(0x4db688, 0x4db6a8, 0xfa, b);
-	options_panel(0, 0x4db6a8, 0x4dbb00, 0x4dbb04, 0x4dbb08);
-	rects_column(0x4db6e8, 0x4db708, 0xb4);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_404190(void);
 /* menu state 600 (setup screen): layout origins, camera points, colours, and the option texts of both columns */
 static void __cdecl menuState600_enterSetup(void)
 {
