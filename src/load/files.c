@@ -1,6 +1,7 @@
 /* files.c: small reads and writes of the game's files: the scrambled data files' record blocks (fread_scrambled:
    each byte rotated and xored), the chat macros, the replay file closed. */
 #include "../game.h"
+#include <string.h>
 #include <stdarg.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
@@ -141,4 +142,20 @@ u32 (cfg_parsePlayer)(void *f)
 	FPUTS(GAME_VAR(int, 0x4dedd4) == 1 ? 0x4b17e4 : 0x4b17dc);
 	return FPUTS(0x4b182c);
 #undef FPUTS
+}
+
+/* 0x42d730: axis.cfg written in the data folder (0x9dae7c): its header, then the player, server, sound, graphics and
+   key binding sections (the original does not check that the file opened). Returns fclose's eax */
+u32 (cfg_loadAxisCfg)(void)
+{
+	char path[0x184];
+	strcpy(path, (const char *)0x9dae7c);
+	strcat(path, (const char *)0x4b2198);   /* the file's name */
+	void *f = crt_fopen(path, (const char *)0x4b21a4);
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b0f50, f);   /* fputs */
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b182c, f);
+	static const u32 sections[5] = { 0x42c650, 0x42c6f0, 0x42c910, 0x42c9f0, 0x42cba0 };   /* player .. key bindings */
+	for (int k = 0; k < 5; k++)
+		GAME_CDECL(sections[k], u32, void *)(f);
+	return fclose(f);
 }

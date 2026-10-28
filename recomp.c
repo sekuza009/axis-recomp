@@ -2652,7 +2652,8 @@ THISCALL DWORD load_483d70(char *self, DWORD f);
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
    eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_saveMacros (it loads
    them): Chat.scp into the 100 chat macros, else empty them and write the file. Lifted */
-LIFT_PLAIN(FUN_0045ff30, 45ff30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD FUN_0045ff30(void *self);
 LIFT_PLAIN(ResourceSet_dtor_463960, 463960)
 LIFT_PLAIN(Stage_dtor, 46ff70)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2923,7 +2924,8 @@ LIFT_PLAIN(armc_40f340, 40f340)
 DWORD cd_findDrive(void);
 #include "lifted/grp2.c"
 /* 0x42d730 cfg_loadAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
-LIFT_PLAIN(cfg_loadAxisCfg, 42d730)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_loadAxisCfg(void);
 /* 0x4050a0 FUN_004050a0 / 0x405140 lobby_405140: take the lobby's player/server settings and write axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_004050a0(void);
@@ -4939,7 +4941,8 @@ void setup_soundTabKeys(void);
 void arena_editNumberField_404e10(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_434260(void);
-LIFT_PLAIN(sound_playFile, 457080)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD sound_playFile(const char *name, int volume);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_434020(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9268,7 +9271,7 @@ static void owned_bits(char *base, DWORD span, int n)
 {
 	for (int k = 0; k < n; k++) { char *o = base + 4 * irnd(0, (int)(span / 4) - 4); S32(o, 0) = 1; S32(o, -4) = (int)(BUF + 0x100); }
 }
-T_PLAIN(FUN_0045ff30, 0x45ff30, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, BUF, 0, 0, 0, 0)
+ST(FUN_0045ff30, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, CALL_PLAIN(0x45ff30, BUF, 0, 0, 0, 0), (DWORD)(FUN_0045ff30((void *)BUF)))
 T_PLAIN(ResourceSet_dtor_463960, 0x463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, BUF, 0, 0, 0, 0)
 T_PLAIN(Stage_dtor, 0x46ff70, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, BUF, 0, 0, 0, 0)
 ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
@@ -9731,7 +9734,7 @@ T_PLAIN(armc_40f340, 0x40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, 0, g_
 /* batch 52 */
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
-T_PLAIN(cfg_loadAxisCfg, 0x42d730, axiscfg_setup();, 0, 0, 0, 0, 0)
+ST(cfg_loadAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWORD)(cfg_loadAxisCfg()))
 ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
 ST(lobby_405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_405140()))
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
@@ -14712,7 +14715,7 @@ ST(room_434260, gen_setup(g_gs_434260, g_gi_434260, g_gb_434260);, CALL_PLAIN(0x
 static const DWORD g_gs_457080[] = { 0x467b90, 1, 0x467d60, 1, 0x467d70, 1, 0x467db0, 2, 0 };
 static const DWORD g_gi_457080[] = { 0xa0e66c, 0xa0e80c, 0 };
 static const DWORD g_gb_457080[] = { 0 };
-T_PLAIN(sound_playFile, 0x457080, gen_setup(g_gs_457080, g_gi_457080, g_gb_457080); /* (file, volume) */ g_a[1] = irnd(-10, 120);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(sound_playFile, gen_setup(g_gs_457080, g_gi_457080, g_gb_457080); /* (file, volume) */ g_a[1] = irnd(-10, 120);, CALL_PLAIN(0x457080, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(sound_playFile((const char *)(DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 static const DWORD g_gs_434020[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_434020[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_434020[] = { 0x9dc92c, 0x9dd6d8, 0 };

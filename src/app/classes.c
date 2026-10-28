@@ -234,3 +234,14 @@ static int THISCALL release_skeleton(void *e) { return FUN_004699a0(e); }
 int THISCALL (FUN_00467520)(u8 *self) { return release_all(self, 0x4c, release_model); }
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
 int THISCALL (FUN_0046b7f0)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
+
+/* 0x45ff30: an object's eight member lists destroyed (match_46f470, the last member first: +0x701c .. +0x554).
+   Returns the last call's eax */
+u32 THISCALL (FUN_0045ff30)(u8 *self)
+{
+	static const u32 members[8] = { 0x701c, 0x587c, 0x40dc, 0x34f4, 0x2524, 0x1554, 0xd54, 0x554 };
+	u32 r = 0;
+	for (int k = 0; k < 8; k++)
+		r = GAME_THISCALL(0x46f470, u32, void *)(self + members[k]);
+	return r;
+}

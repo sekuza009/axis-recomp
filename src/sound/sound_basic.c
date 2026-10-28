@@ -1,6 +1,7 @@
 /* sound_basic.c: a sound is eight DirectSound buffers of the same sample, played in turn so a sound can overlap
    itself; the menu sounds play at the menus' volume; the music player is a DirectShow graph. */
 #include "../game.h"
+#include <string.h>
 
 #undef dsbuf_play
 #undef dsbuf_setVolume
@@ -133,4 +134,28 @@ u32 (sound_loadMenuSounds)(void)
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_CDECL(0x467b90, u32, const char *)((const char *)names[k]);
 	return r;
+}
+
+/* 0x457080: a sound file played once (with sound on): loaded under its name (0x467b90), at volume 0 .. 100 of the
+   sound setting (below 0: silent at -1000, above 100: the setting's attenuation), then the buffer released. Returns
+   what the original leaves in eax */
+u32 (sound_playFile)(const char *name, int volume)
+{
+	if (!GAME_VAR(int, 0xa0e80c))
+		return 0;
+	char copy[0x104];
+	strcpy(copy, name);
+	void *sound = GAME_CDECL(0x467b90, void *, const char *)(copy);
+	if (!sound)
+		return 0;
+	int attenuation;
+	if (volume < 0)
+		attenuation = -1000;
+	else if (volume > 100)
+		attenuation = GAME_VAR(int, 0xa0e66c);
+	else
+		attenuation = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
+	GAME_CDECL(0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
+	GAME_CDECL(0x467d70, void, void *)(sound);                     /* dsbuf_play */
+	return GAME_CDECL(0x467d60, u32, void *)(sound);               /* FUN_00467d60 */
 }
