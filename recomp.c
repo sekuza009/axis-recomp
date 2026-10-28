@@ -5954,13 +5954,19 @@ static THISCALL DWORD actor_setActorTypeItemInfoBy(char *sc, DWORD p, DWORD slot
 /* (thiscall on the scene; engine at +0x1f36c8) armc_set{Head,Chest,Arm,Leg,Booster}Index(i): the arm-customise
    screen's part choice, wrapped by the part table's count ((i % n + n) % n), kept at +0x234244a..+0x234245a and,
    with an edited player (+0x234240d >= 0), set on it (actor_setActorType...InfoBy) */
-static THISCALL DWORD armc_setHeadIndex(char *sc, DWORD i) { DWORD v[1] = { i }; return run_lifted(lift_4613d0, (DWORD)sc, 1, v); }
-static THISCALL DWORD armc_setChestIndex(char *sc, DWORD i) { DWORD v[1] = { i }; return run_lifted(lift_461410, (DWORD)sc, 1, v); }
-static THISCALL DWORD armc_setArmIndex(char *sc, DWORD i) { DWORD v[1] = { i }; return run_lifted(lift_461450, (DWORD)sc, 1, v); }
-static THISCALL DWORD armc_setLegIndex(char *sc, DWORD i) { DWORD v[1] = { i }; return run_lifted(lift_461490, (DWORD)sc, 1, v); }
-static THISCALL DWORD armc_setBoosterIndex(char *sc, DWORD i) { DWORD v[1] = { i }; return run_lifted(lift_4614d0, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_setHeadIndex(void *scene, int index);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_setChestIndex(void *scene, int index);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_setArmIndex(void *scene, int index);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_setLegIndex(void *scene, int index);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_setBoosterIndex(void *scene, int index);
 /* 0x461510 (thiscall) armc_461510(slot, item): the same for an item slot (+0x234245e + slot * 4) */
-static THISCALL DWORD armc_461510(char *sc, DWORD slot, DWORD item) { DWORD v[2] = { slot, item }; return run_lifted(lift_461510, (DWORD)sc, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_461510(void *scene, int slot, int item);
 /* 0x46fed0 (thiscall) actor_46fed0(): bind the textures of every shape in an object list (count +0x10, 100-byte
    entries at +0x14, shape first; FUN_00466650) */
 static THISCALL DWORD actor_46fed0(char *list) { return run_lifted(lift_46fed0, (DWORD)list, 0, NULL); }
@@ -14021,17 +14027,17 @@ static void armcindex_setup(int k)
 	S32(SCENE, 0x234240d) = irnd(0, 4) ? g_a[0] : -1;
 	g_a[1] = irnd(-20, 20);
 }
-ST(armc_setHeadIndex, armcindex_setup(0);, (TC(void, 0x4613d0, char *, int)(SCENE, g_a[1]), 0), (armc_setHeadIndex(SCENE, (DWORD)g_a[1]), 0))
-ST(armc_setChestIndex, armcindex_setup(1);, (TC(void, 0x461410, char *, int)(SCENE, g_a[1]), 0), (armc_setChestIndex(SCENE, (DWORD)g_a[1]), 0))
-ST(armc_setArmIndex, armcindex_setup(2);, (TC(void, 0x461450, char *, int)(SCENE, g_a[1]), 0), (armc_setArmIndex(SCENE, (DWORD)g_a[1]), 0))
-ST(armc_setLegIndex, armcindex_setup(3);, (TC(void, 0x461490, char *, int)(SCENE, g_a[1]), 0), (armc_setLegIndex(SCENE, (DWORD)g_a[1]), 0))
-ST(armc_setBoosterIndex, armcindex_setup(4);, (TC(void, 0x4614d0, char *, int)(SCENE, g_a[1]), 0), (armc_setBoosterIndex(SCENE, (DWORD)g_a[1]), 0))
+ST(armc_setHeadIndex, armcindex_setup(0);, (TC(void, 0x4613d0, char *, int)(SCENE, g_a[1]), 0), (armc_setHeadIndex(SCENE, g_a[1]), 0))
+ST(armc_setChestIndex, armcindex_setup(1);, (TC(void, 0x461410, char *, int)(SCENE, g_a[1]), 0), (armc_setChestIndex(SCENE, g_a[1]), 0))
+ST(armc_setArmIndex, armcindex_setup(2);, (TC(void, 0x461450, char *, int)(SCENE, g_a[1]), 0), (armc_setArmIndex(SCENE, g_a[1]), 0))
+ST(armc_setLegIndex, armcindex_setup(3);, (TC(void, 0x461490, char *, int)(SCENE, g_a[1]), 0), (armc_setLegIndex(SCENE, g_a[1]), 0))
+ST(armc_setBoosterIndex, armcindex_setup(4);, (TC(void, 0x4614d0, char *, int)(SCENE, g_a[1]), 0), (armc_setBoosterIndex(SCENE, g_a[1]), 0))
 static void armcitem_setup(void)
 {
 	setitem_setup();
 	S32(SCENE, 0x234240d) = irnd(0, 4) ? g_a[0] : -1;
 }
-ST(armc_461510, armcitem_setup();, (TC(void, 0x461510, char *, int, int)(SCENE, g_a[1], g_a[2]), 0), (armc_461510(SCENE, (DWORD)g_a[1], (DWORD)g_a[2]), 0))
+ST(armc_461510, armcitem_setup();, (TC(void, 0x461510, char *, int, int)(SCENE, g_a[1], g_a[2]), 0), (armc_461510(SCENE, g_a[1], g_a[2]), 0))
 /* an object list of 0..4 entries whose shapes are shapetex_setup's shape (textures with GL slots or texture i) or none */
 static void listbind_setup(void)
 {
