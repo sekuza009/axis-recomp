@@ -89,3 +89,17 @@ void (room_403640)(void)
 	g_mapListOpen = 0;
 	g_mapListKept = 1;
 }
+
+/* 0x4050a0 (FUN_004050a0): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
+void (FUN_004050a0)(void)
+{
+	GAME_VAR(int, 0x4dedd4) = GAME_VAR(int, 0x4db584);
+	const char *name = (const char *)0x4db560;
+	char *kept = (char *)0x4dedb0;
+	int i = 0;
+	do
+		kept[i] = name[i];
+	while (name[i++] != '\0');
+	GAME_VAR(int, 0x4dedd0) = GAME_VAR(int, 0x4db580);
+	cfg_loadAxisCfg();
+}

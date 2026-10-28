@@ -158,3 +158,11 @@ void (armc_41b300)(void)
 	approach(&g_armcCamHeight, height[part]);
 	approach(&g_armcCamDistance, distance[part]);
 }
+
+/* 0x45dd80 (thiscall on the stage): actor slot a claimed (FUN_0045dc00) and made the player's, with weapon slot 0 */
+void THISCALL (match_45dd80)(Stage *stage, int a, int x, int y, void *spawn)
+{
+	FUN_0045dc00(stage, a, x, y, spawn);
+	stage->playerActor = a;
+	FUN_0045e810(stage, a, 0);
+}

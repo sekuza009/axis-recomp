@@ -5135,7 +5135,8 @@ static DWORD __cdecl cd_findDrive(void) { return 1; }
 /* 0x42d730 cfg_loadAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
 LIFT_PLAIN(cfg_loadAxisCfg, 42d730)
 /* 0x4050a0 FUN_004050a0 / 0x405140 lobby_405140: take the lobby's player/server settings and write axis.cfg */
-LIFT_PLAIN(FUN_004050a0, 4050a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_004050a0(void);
 LIFT_PLAIN(lobby_405140, 405140)
 /* 0x44f6c0 profile_44f6c0: with a profile chosen: save it, go to the main menu (state 300), take its name, write
    axis.cfg */
@@ -5368,7 +5369,8 @@ LIFT_PLAIN(room_4334c0, 4334c0)
 LIFT_PLAIN(room_434b90, 434b90)
 LIFT_PLAIN(room_434820, 434820)
 LIFT_PLAIN(room_leaveGame, 435a40)
-LIFT_PLAIN(match_44aee0, 44aee0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_44aee0(void);
 LIFT_PLAIN(match_4327f0, 4327f0)
 LIFT_PLAIN(armc_sendSelectionToNet, 40e930)
 /* 0x451e60 net_disconnect: tell the lobby/room that this player leaves, wait a moment, close the sockets;
@@ -6167,7 +6169,8 @@ void THISCALL hud_45e170(void *stage, void *view, int pass);
    (+0x202e8d4) with weapon slot 0 (FUN_0045e810). 0x45ddc0 armc_45ddc0(): the player's actor again, from its own
    player and the start position (0xa0e7a8..) */
 static THISCALL DWORD FUN_0045dc00(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp) { DWORD v[4] = { a, x, y, pp }; return run_lifted(lift_45dc00, (DWORD)sc, 4, v); }
-static THISCALL DWORD match_45dd80(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp) { DWORD v[4] = { a, x, y, pp }; return run_lifted(lift_45dd80, (DWORD)sc, 4, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL match_45dd80(void *stage, int a, int x, int y, void *spawn);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL armc_45ddc0(void *stage);
 /* 0x45de20 (thiscall) actor_applySpawnRecord(actor, rec): build the actor's mech for the player's actor slot
@@ -11868,7 +11871,7 @@ T_PLAIN(armc_40f340, 0x40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, 0, g_
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
 T_PLAIN(cfg_loadAxisCfg, 0x42d730, axiscfg_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(FUN_004050a0, 0x4050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, 0, 0, 0, 0, 0)
+ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
 T_PLAIN(lobby_405140, 0x405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_44f6c0, 0x44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 40);, 0, 0, 0, 0, 0)
@@ -12296,7 +12299,7 @@ T_PLAIN(room_4334c0, 0x4334c0, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_434b90, 0x434b90, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_434820, 0x434820, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_leaveGame, 0x435a40, netstate_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(match_44aee0, 0x44aee0, netstate_setup();, 0, 0, 0, 0, 0)
+ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
 T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(net_disconnect, 0x451e60, netstate_setup();, 0, 0, 0, 0, 0)
@@ -14699,7 +14702,7 @@ static void slot_setup(void)
 ST(FUN_0045dc00, slot_setup();, TC(int, 0x45dc00, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]),
    FUN_0045dc00(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3]))
 ST(match_45dd80, slot_setup();, (TC(void, 0x45dd80, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
-   (match_45dd80(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3]), 0))
+   (match_45dd80(BUF, g_a[0], g_a[1], g_a[2], (void *)g_a[3]), 0))
 /* the player's actor is the player's own index (armc_45ddc0 passes it as both): that actor's lists constructed */
 static void ownslot_setup(void)
 {

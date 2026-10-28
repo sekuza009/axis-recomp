@@ -179,3 +179,16 @@ void (menuState600_setup)(void)
 	case 0x29a: setup_4277c0(); setup_423330(); break;
 	}
 }
+
+/* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and match_4327f0 when it is not empty */
+void (match_44aee0)(void)
+{
+	const char *from = (const char *)0x9dd570;
+	char *to = (char *)0x4de700;
+	int i = 0;
+	do
+		to[i] = from[i];
+	while (from[i++] != '\0');
+	if (to[0] != '\0')
+		match_4327f0();
+}

@@ -545,4 +545,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define input_initKeyboard(window) GAME_CDECL(0x401310, int, void *)(window)
 #define input_4013a0(window) GAME_CDECL(0x4013a0, int, void *)(window)   /* the mouse */
 
+#define FUN_0045dc00(stage, a, x, y, spawn) GAME_THISCALL(0x45dc00, int, Stage *, int, int, int, void *)(stage, a, x, y, spawn)   /* claim actor slot a */
+#define FUN_0045e810(stage, actor, slot) GAME_THISCALL(0x45e810, void, Stage *, int, int)(stage, actor, slot)   /* select a weapon slot */
+#define match_4327f0() GAME_CDECL(0x4327f0, void, void)()
+
 #endif
