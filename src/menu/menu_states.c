@@ -138,3 +138,44 @@ void (FUN_0041edc0)(void)
 	game_returnToMenus_41e9d0();
 	g_screen = 300;
 }
+
+/* 0x41ed70: back to the main menu from the game room: the background tunnel freed, the menus entered again, the
+   room's state cleared, state 300 */
+void (FUN_0041ed70)(void)
+{
+	while (g_tunnel != NULL)
+		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
+	game_returnToMenus_41e8b0();
+	GAME_VAR(int, 0x9dd838) = 0;
+	GAME_VAR(int, 0x9dd6a4) = 0;
+	GAME_VAR(int, 0x9dd1b0) = 0;
+	GAME_VAR(int, 0x9dd6d4) = 0;
+	g_screen = 300;
+}
+
+/* 0x441770: the map-select dialog's OK: if a map is chosen (0x44-byte entries from 0x9ddac8), the dialog closes and
+   the choice is kept */
+void (mainmenu_441770)(void)
+{
+	int count = GAME_VAR(int, 0x9dd928);
+	for (int i = 0; i < count; i++)
+		if (GAME_VAR(int, 0x9ddac8 + i * 0x44) == 1) {
+			sound_playMenu(0);
+			GAME_VAR(int, 0x9eeab8) = GAME_VAR(int, 0x9dd928);
+			GAME_VAR(int, 0x9db994) = 1;
+			GAME_VAR(int, 0x9eeab4) = 0;
+			return;
+		}
+}
+
+/* 0x427920: the setup screen's frame: the background, then by tab the screen with its page, or the top page */
+void (menuState600_setup)(void)
+{
+	menu_drawBackground();
+	switch (g_setupTab) {
+	case 2: setup_4230e0(); setup_4278d0(); break;
+	case 0: setup_4230e0(); setup_427830(); break;
+	case 1: setup_4230e0(); setup_427880(); break;
+	case 0x29a: setup_4277c0(); setup_423330(); break;
+	}
+}

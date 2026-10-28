@@ -528,4 +528,16 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_freeRing(first) GAME_CDECL(0x441190, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
 #define game_returnToMenus_41e9d0() GAME_CDECL(0x41e9d0, void, void)()
 
+/* ---- more front end (menu/menu_states.c, menu/edit_fields.c) ---- */
+#define g_hChatEdit GAME_VAR(void *, 0x9dd888)        /* the hidden EDIT control typing goes to */
+#define GetWindowTextLengthA(hwnd) IMPORT(0x4a92e0, int, void *)(hwnd)
+#define GetWindowTextA(hwnd, out, size) IMPORT(0x4a92e4, int, void *, char *, int)(hwnd, out, size)
+#define game_returnToMenus_41e8b0() GAME_CDECL(0x41e8b0, void, void)()
+#define setup_4230e0() GAME_CDECL(0x4230e0, void, void)()
+#define setup_4277c0() GAME_CDECL(0x4277c0, void, void)()
+#define setup_423330() GAME_CDECL(0x423330, void, void)()
+#define setup_427830() GAME_CDECL(0x427830, void, void)()
+#define setup_427880() GAME_CDECL(0x427880, void, void)()
+#define setup_4278d0() GAME_CDECL(0x4278d0, void, void)()
+
 #endif

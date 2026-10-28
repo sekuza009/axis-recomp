@@ -4908,9 +4908,11 @@ static DWORD __cdecl menu_vertex(int x, int y)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mci_pause(void);
 /* 0x43f980 FUN_0043f980: read the edit control text */
-LIFT_PLAIN(FUN_0043f980, 43f980)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0043f980(void);
 /* 0x41edf0 sys_messageBox: formatted error message box */
-LIFT_PLAIN(sys_messageBox, 41edf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int sys_messageBox(const char *format, ...);
 /* 0x46e260 ptx_error: PTX video error: print and exit */
 LIFT_PLAIN(ptx_error, 46e260)
 /* 0x41f880 reg_writeEndMode: registry: write the end mode */
@@ -7052,17 +7054,21 @@ void room_4034e0(void);
 /* key pages: cancel (0x4e0cdc) or OK (0x4e1510, sound 2) closes the page: 0x407970 lobbyJoin_keys (0x907b2c),
    0x436940 menu_436940 (0x9dd850), 0x4080c0 lobby_keysBack (0x907b2c, not with a dialog), 0x4370e0 menu_4370e0
    (0x9dd6c4) */
-LIFT_PLAIN(lobbyJoin_keys, 407970)
-LIFT_PLAIN(menu_436940, 436940)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobbyJoin_keys(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_436940(void);
 LIFT_PLAIN(lobby_keysBack, 4080c0)
 LIFT_PLAIN(menu_4370e0, 4370e0)
 /* 0x44ac90 match_44ac90(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
-LIFT_PLAIN(match_44ac90, 44ac90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_44ac90(int x, int y, int maxLength);
 /* 0x44ace0 match_44ace0(): stop typing: the typed line 0x9dc92c kept in 0x9f63e4 (flag 0x9f67e8), the input buffer
    reset, the keyboard back */
 LIFT_PLAIN(match_44ace0, 44ace0)
 /* 0x441770 mainmenu_441770(): the first of the 0x9dd928 entries (0x44 bytes from 0x9ddac8) marked 1 opens its page */
-LIFT_PLAIN(mainmenu_441770, 441770)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_441770(void);
 /* 0x435ce0 room_435ce0(): a click on the room's close button (room_432280) closes the popup 0x9dd6c4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435ce0(void);
@@ -7190,7 +7196,8 @@ long dplay_closeSession(void *dplay);
 #include "lifted/grp125.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041edc0(void);
-LIFT_PLAIN(FUN_0041ed70, 41ed70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0041ed70(void);
 LIFT_PLAIN(arena_453180, 453180)
 LIFT_PLAIN(menu_enterState, 41f970)
 LIFT_PLAIN(room_435b00, 435b00)
@@ -7297,7 +7304,8 @@ LIFT_PLAIN8(arena_453090, 453090)
 #include "lifted/grp132.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState300_frame(void);
-LIFT_PLAIN(menuState600_setup, 427920)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState600_setup(void);
 LIFT_PLAIN(menuState900_skirmishSetup, 445be0)
 LIFT_PLAIN(menuState210_frame, 44f860)
 LIFT_PLAIN(arena_452ec0, 452ec0)
@@ -11447,8 +11455,8 @@ ST(FUN_0046c580, strs_setup();, CALL_PLAIN(0x46c580, 0, BUF + 0x100, BUF + 0x200
 ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
 ST(menu_vertex, g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);, CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), menu_vertex(g_a[0], g_a[1]))
 ST(mci_pause, , CALL_PLAIN(0x46c540, 0, 0, 0, 0, 0), (DWORD)(mci_pause()))
-T_PLAIN(FUN_0043f980, 0x43f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, 0, 0, 0, 0, 0)
-T_PLAIN(sys_messageBox, 0x41edf0, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0)
+ST(FUN_0043f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, CALL_PLAIN(0x43f980, 0, 0, 0, 0, 0), (FUN_0043f980(), 0))
+ST(sys_messageBox, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, CALL_PLAIN(0x41edf0, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0), (DWORD)sys_messageBox((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]), (DWORD)(BUF + 0x200)))
 T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
 T_PLAIN(ptx_crtlError, 0x46e1e0, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
 T_PLAIN(reg_writeEndMode, 0x41f880, g_mockRegFail = !irnd(0, 4);, 0, 0x80000001u, 0, 0, 0)
@@ -16726,13 +16734,13 @@ ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1
 ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 ST(room_403530, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), (room_403530(), 0))
 ST(room_4034e0, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (room_4034e0(), 0))
-T_PLAIN(lobbyJoin_keys, 0x407970, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
-T_PLAIN(menu_436940, 0x436940, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
+ST(lobbyJoin_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (lobbyJoin_keys(), 0))
+ST(menu_436940, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (menu_436940(), 0))
 T_PLAIN(lobby_keysBack, 0x4080c0, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
 T_PLAIN(menu_4370e0, 0x4370e0, small_setup(g_stubKeyClose2);, 0, 0, 0, 0, 0)
-T_PLAIN(match_44ac90, 0x44ac90, small_setup(g_stubTypeOn);, 0, g_a[0], g_a[1], g_a[2], 0)
+ST(match_44ac90, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (match_44ac90((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
 T_PLAIN(match_44ace0, 0x44ace0, small_setup(g_stubTypeOff);, 0, 0, 0, 0, 0)
-T_PLAIN(mainmenu_441770, 0x441770, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
+ST(mainmenu_441770, small_setup(g_stubSound);, CALL_PLAIN(0x441770, 0, 0, 0, 0, 0), (mainmenu_441770(), 0))
 ST(room_435ce0, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (room_435ce0(), 0))
 /* batch 172 */
 /* generated tests (tools/gentests.py): every callee stubbed (the key tests in key mode for the codes 0..3, the
@@ -17032,7 +17040,7 @@ ST(FUN_0041edc0, freelist_setup(g_gs_41edc0, g_gi_41edc0, g_gb_41edc0);, CALL_PL
 static const DWORD g_gs_41ed70[] = { 0x41e8b0, 0, 0 };
 static const DWORD g_gi_41ed70[] = { 0x67fb3c, 0x76d3e8, 0x9dd1b0, 0x9dd6a4, 0x9dd6d4, 0x9dd838, 0 };
 static const DWORD g_gb_41ed70[] = { 0 };
-T_PLAIN(FUN_0041ed70, 0x41ed70, freelist_setup(g_gs_41ed70, g_gi_41ed70, g_gb_41ed70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(FUN_0041ed70, freelist_setup(g_gs_41ed70, g_gi_41ed70, g_gb_41ed70);, CALL_PLAIN(0x41ed70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (FUN_0041ed70(), 0))
 static const DWORD g_gs_453180[] = { 0x4532b0, 1, 0x454a20, 4, 0x454b40, 4, 0x454c50, 4, 0x454d60, 4, 0 };
 static const DWORD g_gi_453180[] = { 0xa0b418, 0 };
 static const DWORD g_gb_453180[] = { 0 };
@@ -17309,7 +17317,7 @@ ST(menuState300_frame, gen_setup(g_gs_443530, g_gi_443530, g_gb_443530);, CALL_P
 static const DWORD g_gs_427920[] = { 0x4230e0, 0, 0x423330, 0, 0x4277c0, 0, 0x427830, 0, 0x427880, 0, 0x4278d0, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_427920[] = { 0x4ddac8, 0 };
 static const DWORD g_gb_427920[] = { 0 };
-T_PLAIN(menuState600_setup, 0x427920, gen_setup(g_gs_427920, g_gi_427920, g_gb_427920);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState600_setup, gen_setup(g_gs_427920, g_gi_427920, g_gb_427920);, CALL_PLAIN(0x427920, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (menuState600_setup(), 0))
 static const DWORD g_gs_445be0[] = { 0x428c30, 4, 0x441740, 0, 0x444130, 0, 0x4445a0, 0, 0x445bc0, 0, 0x445bd0, 0, 0 };
 static const DWORD g_gi_445be0[] = { 0x90d1c4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0 };
 static const DWORD g_gb_445be0[] = { 0 };

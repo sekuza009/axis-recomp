@@ -226,3 +226,28 @@ void (room_434320)(void)
 	EDITING(0x9dd6c8) = 1;
 	chat_createEdit(8);
 }
+
+/* ---- the match ---- */
+
+/* 0x44ac90: a text field in the match (the chat line), its caret at (x, y) */
+void (match_44ac90)(int x, int y, int maxLength)
+{
+	input_releaseKeyboard();
+	g_paused = 1;
+	GAME_VAR(int, 0x9f67e8) = 1;
+	menu_clearInputBuffer(maxLength);
+	GAME_VAR(int, 0x9f63c8) = x;
+	GAME_VAR(int, 0x9f63c4) = y;
+	g_menuFade = 20.0f;
+	chat_createEdit(maxLength);
+}
+
+/* 0x43f980: while typing, the line taken from the hidden EDIT control */
+void (FUN_0043f980)(void)
+{
+	if (g_paused == 0)
+		return;
+	int n = GetWindowTextLengthA(g_hChatEdit);
+	GetWindowTextA(g_hChatEdit, g_chatLine, n + 1);
+	g_chatLength = line_length();
+}

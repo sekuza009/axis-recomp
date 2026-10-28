@@ -1,4 +1,5 @@
 /* win32.c: small Win32 / multimedia wrappers. */
+#include <stdarg.h>
 #include "../game.h"
 
 #define MCI_PAUSE 0x809
@@ -21,4 +22,18 @@ u32 (mci_pause)(void)
 {
 	u32 params[3] = { GAME_VAR(u32, 0xa1efc8), GAME_VAR(u32, 0xa1efcc), GAME_VAR(u32, 0xa1efd0) };
 	return mciSendCommandA(GAME_VAR(u32, 0xa1efd8), MCI_PAUSE, MCI_NOTIFY, params);
+}
+
+/* 0x41edf0: a printf-formatted message box titled "User Message" (the arguments' address kept in 0x4dd0b4 while
+   formatting); MessageBox's answer */
+int (sys_messageBox)(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	GAME_VAR(va_list, 0x4dd0b4) = args;
+	vsprintf((char *)0x4dd0d0, format, args);
+	GAME_VAR(void *, 0x4dd0b4) = NULL;
+	int answer = MessageBoxA(GetActiveWindow(), (const char *)0x4dd0d0, (const char *)0x4b043c, 0);
+	va_end(args);
+	return answer;
 }

@@ -8,7 +8,7 @@
 #define g_roomChatting GAME_VAR(int, 0x9dd6b4)        /* the chat line is being typed */
 #define g_roomFade GAME_VAR(float, 0x4deb74)          /* the white fade, rising to 1 */
 
-/* 0x435ab0: the "leave" dialog: yes (button 0) closes it and leaves (message 2), no (button 1) only closes it */
+/* 0x435ab0: the "leave" dialog: yes (button 0) closes it and leaves (the game closes with exit code 2), no (button 1) only closes it */
 void (room_435ab0)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0)
@@ -92,3 +92,18 @@ void (FUN_00405200)(void)
 		arena_editTextField_405010();
 	}
 }
+
+/* 0x436940, 0x407970 (lobbyJoin_keys): the leave question's keys in the room and in the lobby: back closes it, O
+   leaves (the game closes with exit code 2) */
+static void leave_keys(int *question)
+{
+	if (input_justPressed(g_keyBack)) {
+		*question = 0;
+	} else if (input_justPressed(g_keyOk)) {
+		*question = 0;
+		profile_41e7a0(2);
+	}
+}
+
+void (menu_436940)(void) { leave_keys(&g_leaveDialog); }
+void (lobbyJoin_keys)(void) { leave_keys(&GAME_VAR(int, 0x907b2c)); }
