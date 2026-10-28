@@ -34,7 +34,7 @@ typedef struct Player {
 	u8 _pad00000f0[0xc];
 	i32 timePlayed;   /* +0xfc: seconds */
 	u8 _pad0000100[0x8];
-	i32 waitingRespawn;   /* +0x108: (unclear) 0: "press fire" may be shown */
+	i32 active;   /* +0x108: 1: the slot is in use (0 for the local player's: "press fire" may be shown) */
 	i32 flagOwner;   /* +0x10c: whose flag the ranking shows for this player (unless Scene.network) */
 	u8 _pad0000110[0x8];
 	i32 team;   /* +0x118: 0 / 1 in team games */
@@ -126,6 +126,36 @@ typedef struct MapObject {
 	u8 _pad00002c8[0x4];
 } MapObject;
 
+/* a projectile (Stage.projectiles): bullets, missiles, beams, explosions... */
+typedef struct Projectile {
+	u8 _pad0000000[0x4];
+	i32 active;   /* +0x4: 1: in use */
+	u8 _pad0000008[0x124];
+} Projectile;
+
+/* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
+typedef struct Stage {
+	u8 _pad0000000[0xa08];
+	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
+	u8 _pad0000a0c[0x9ed63c];
+	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
+	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
+	u32 glFogEnd;   /* +0x9ee05c */
+	u32 glFogDensity;   /* +0x9ee060 */
+	u8 _pad09ee064[0x92cde0];
+	MapObject objects[1000];   /* +0x131ae44 */
+	i32 objectCount;   /* +0x13c9b24 */
+	u8 _pad13c9b28[0x90f880];
+	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
+	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
+	u8 _pad202e8cc[0x7b0f4];
+	Projectile projectiles[1000];   /* +0x20a99c0 */
+	i32 projectileCount;   /* +0x20f2da0: slots in use */
+	u8 _pad20f2da4[0xbcc];
+	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
+	u8 _pad20f397c[0x5cac7];
+} Stage;
+
 /* the scene: the one large object of a match, built by game_loadAllData */
 typedef struct Scene {
 	u8 _pad0000000[0x8];
@@ -134,16 +164,9 @@ typedef struct Scene {
 	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
 	u8 _pad000003c[0x38];
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
-	u8 _pad0000078[0x990];
-	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
-	u8 _pad0000a0c[0x1f0c58];
+	u8 _pad0000078[0x1f15ec];
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
-	u8 _pad01f1668[0x7fc9e0];
-	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
-	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
-	u32 glFogEnd;   /* +0x9ee05c */
-	u32 glFogDensity;   /* +0x9ee060 */
-	u8 _pad09ee064[0x1d263c];
+	u8 _pad01f1668[0x9cf038];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
 	u8 _pad0bc06a4[0x4];
 	i32 hudBarTexture;   /* +0xbc06a8: texture id of the counters' plate and weapon slots */
@@ -157,10 +180,7 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0x739718];
-	MapObject objects[1000];   /* +0x131ae44 */
-	i32 objectCount;   /* +0x13c9b24 */
-	u8 _pad13c9b28[0x2fb654];
+	u8 _pad0be172c[0xae3a50];
 	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
 	u8 _pad172147c[0x7bd7a];
 	FlagSlot flags[16];   /* +0x179d1f6 */
@@ -168,9 +188,7 @@ typedef struct Scene {
 	i32 snapshotTex[64];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; count unclear) */
 	u8 _pad1eca130[0x2940];
 	Player players[16];   /* +0x1ecca70 */
-	u8 _pad1f552f0[0x19e680];
-	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
-	u8 _pad20f397c[0x12e624];
+	u8 _pad1f552f0[0x2cccb0];
 	i32 cockpitPlayer;   /* +0x2221fa0: (unclear) no snapshot panel while it is the viewed player */
 	u8 _pad2221fa4[0x14];
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) */
@@ -289,7 +307,7 @@ _Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) =
 _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
 _Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
-_Static_assert(offsetof(Player, waitingRespawn) == 0x108 && sizeof(((Player *)0)->waitingRespawn) == 0x4, "scene.fields: Player.waitingRespawn");
+_Static_assert(offsetof(Player, active) == 0x108 && sizeof(((Player *)0)->active) == 0x4, "scene.fields: Player.active");
 _Static_assert(offsetof(Player, flagOwner) == 0x10c && sizeof(((Player *)0)->flagOwner) == 0x4, "scene.fields: Player.flagOwner");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
 _Static_assert(offsetof(Player, blinkTime) == 0x120 && sizeof(((Player *)0)->blinkTime) == 0x4, "scene.fields: Player.blinkTime");
@@ -338,15 +356,25 @@ _Static_assert(offsetof(MapObject, poseTo) == 0x284 && sizeof(((MapObject *)0)->
 _Static_assert(offsetof(MapObject, poseSide) == 0x288 && sizeof(((MapObject *)0)->poseSide) == 0x4, "scene.fields: MapObject.poseSide");
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
+_Static_assert(offsetof(Projectile, active) == 0x4 && sizeof(((Projectile *)0)->active) == 0x4, "scene.fields: Projectile.active");
+_Static_assert(sizeof(Projectile) == 0x12c, "scene.fields: size of Projectile");
+_Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
+_Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
+_Static_assert(offsetof(Stage, glFogStart) == 0x9ee058 && sizeof(((Stage *)0)->glFogStart) == 0x4, "scene.fields: Stage.glFogStart");
+_Static_assert(offsetof(Stage, glFogEnd) == 0x9ee05c && sizeof(((Stage *)0)->glFogEnd) == 0x4, "scene.fields: Stage.glFogEnd");
+_Static_assert(offsetof(Stage, glFogDensity) == 0x9ee060 && sizeof(((Stage *)0)->glFogDensity) == 0x4, "scene.fields: Stage.glFogDensity");
+_Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
+_Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
+_Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
+_Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
+_Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
+_Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
+_Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
+_Static_assert(sizeof(Stage) == 0x2150443, "scene.fields: size of Stage");
 _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) == 0x4, "scene.fields: Scene.network");
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
-_Static_assert(offsetof(Scene, cullMargin) == 0xa08 && sizeof(((Scene *)0)->cullMargin) == 0x4, "scene.fields: Scene.cullMargin");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
-_Static_assert(offsetof(Scene, glFogColour) == 0x9ee048 && sizeof(((Scene *)0)->glFogColour) == 0x10, "scene.fields: Scene.glFogColour");
-_Static_assert(offsetof(Scene, glFogStart) == 0x9ee058 && sizeof(((Scene *)0)->glFogStart) == 0x4, "scene.fields: Scene.glFogStart");
-_Static_assert(offsetof(Scene, glFogEnd) == 0x9ee05c && sizeof(((Scene *)0)->glFogEnd) == 0x4, "scene.fields: Scene.glFogEnd");
-_Static_assert(offsetof(Scene, glFogDensity) == 0x9ee060 && sizeof(((Scene *)0)->glFogDensity) == 0x4, "scene.fields: Scene.glFogDensity");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, hudBarTexture) == 0xbc06a8 && sizeof(((Scene *)0)->hudBarTexture) == 0x4, "scene.fields: Scene.hudBarTexture");
 _Static_assert(offsetof(Scene, markerTexture) == 0xbc06ac && sizeof(((Scene *)0)->markerTexture) == 0x4, "scene.fields: Scene.markerTexture");
@@ -357,13 +385,10 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
-_Static_assert(offsetof(Scene, objects) == 0x131ae44 && sizeof(((Scene *)0)->objects) == 0xaece0, "scene.fields: Scene.objects");
-_Static_assert(offsetof(Scene, objectCount) == 0x13c9b24 && sizeof(((Scene *)0)->objectCount) == 0x4, "scene.fields: Scene.objectCount");
 _Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
 _Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
-_Static_assert(offsetof(Scene, cameraPos) == 0x20f3970 && sizeof(((Scene *)0)->cameraPos) == 0xc, "scene.fields: Scene.cameraPos");
 _Static_assert(offsetof(Scene, cockpitPlayer) == 0x2221fa0 && sizeof(((Scene *)0)->cockpitPlayer) == 0x4, "scene.fields: Scene.cockpitPlayer");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
 _Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");

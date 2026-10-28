@@ -6183,7 +6183,8 @@ static THISCALL DWORD render_drawObjects(char *vv, DWORD mode, DWORD b) { DWORD 
 #include "lifted/grp55.c"
 /* 0x45e170 (thiscall on the scene) hud_45e170(vv, draw): actor_updateAllParts for every active actor
    (+0x1cd94b0 == 1, count +0x202e8c8) */
-static THISCALL DWORD hud_45e170(char *sc, DWORD vv, DWORD draw) { DWORD v[2] = { vv, draw }; return run_lifted(lift_45e170, (DWORD)sc, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_45e170(void *stage, void *view, int pass);
 /* 0x45dc00 (thiscall) FUN_0045dc00(actor, a, b, &player): claim actor slot `actor` (100 or more: -1): slots past the
    count are cleared and the count grows to cover it; the first free slot is noted (+0x202e8cc); the mech is built
    (actor_setupFromParts); returns the slot. 0x45dd80 match_45dd80(the same): also makes it the player's actor
@@ -6206,7 +6207,8 @@ static THISCALL DWORD actor_applySpawnRecord(char *sc, DWORD a, DWORD rec) { DWO
    the timer, smaller for the viewing actor's own (+0x202e8d8). 0x479af0 hud_479af0(vv): every active projectile
    (count +0x20f2da0) */
 static THISCALL DWORD hud_476890(char *sc, DWORD i, DWORD vv) { DWORD v[2] = { i, vv }; return run_lifted(lift_476890, (DWORD)sc, 2, v); }
-static THISCALL DWORD hud_479af0(char *sc, DWORD vv) { DWORD v[1] = { vv }; return run_lifted(lift_479af0, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_479af0(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
 #include "lifted/grp57.c"
 /* 0x48b9d0 (thiscall on the scene) map_loadGroundInfoFrom(name): the map's ground from "dir/name" (dir +0x108; no
@@ -14591,7 +14593,7 @@ static void allparts_setup(void)
 	S32(BUF, 0x202e8c8) = irnd(0, 7);
 	g_a[0] = g_a[1]; g_a[1] = g_a[2];
 }
-ST(hud_45e170, allparts_setup();, (TC(void, 0x45e170, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (hud_45e170(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
+ST(hud_45e170, allparts_setup();, (TC(void, 0x45e170, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (hud_45e170(BUF, (void *)g_a[0], g_a[1]), 0))
 /* mechsetup_setup's player and actor (slot 0..5, now and then 100+), the actor count 0..8 */
 static void slot_setup(void)
 {
@@ -14673,7 +14675,7 @@ static void projvv_setup(void)
 }
 ST(hud_476890, projvv_setup();, (TC(void, 0x476890, char *, int, char *)(BUF, g_a[0], (char *)g_a[1]), 0),
    (hud_476890(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
-ST(hud_479af0, projvv_setup();, (TC(void, 0x479af0, char *, char *)(BUF, (char *)g_a[1]), 0), (hud_479af0(BUF, (DWORD)g_a[1]), 0))
+ST(hud_479af0, projvv_setup();, (TC(void, 0x479af0, char *, char *)(BUF, (char *)g_a[1]), 0), (hud_479af0(BUF, (void *)g_a[1]), 0))
 /* batch 111 */
 /* the ground file (second VFS content "G1.gnd", built at BUF + 0x2200000, scrambled after the version): random sky
    modes, 0..3 lights of types 0..2, 0..3 layers of 1..12 x 1..12 cells (grey heights mostly), a full 256-row height

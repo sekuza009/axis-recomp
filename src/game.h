@@ -152,7 +152,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define this_set_4841d0(view) GAME_THISCALL(0x4841d0, void, void *)(view)
 #define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
-#define hud_490b30(scene, i, view) GAME_THISCALL(0x490b30, void, Scene *, int, void *)(scene, i, view)   /* a map object to the view volume */
+#define hud_490b30(stage, i, view) GAME_THISCALL(0x490b30, void, Stage *, int, void *)(stage, i, view)   /* a map object to the view volume */
 /* queue every mesh of model for drawing (see recomp.c): extra, matrix, a4, a5, cull (1: skip meshes outside a clip plane),
    material (< 0: the mesh's own), a8 */
 #define ViewVolume_projectObject(view, model, extra, matrix, a4, a5, cull, material, a8) GAME_THISCALL(0x4853c0, void, void *, \
@@ -160,12 +160,18 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define render_drawObjects(view, mode, alpha) GAME_THISCALL(0x485af0, void, void *, int, float)(view, mode, alpha)
 #define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, void *, float)(stage, scale)
 #define render_processRenderingBy(stage, view, scale) GAME_THISCALL(0x497d20, void, void *, void *, float)(stage, view, scale)
-#define hud_490da0(stage, view) GAME_THISCALL(0x490da0, void, void *, void *)(stage, view)
-#define hud_45e170(stage, view, pass) GAME_THISCALL(0x45e170, void, void *, void *, int)(stage, view, pass)
+/* the stage, the scene's own object (scene.fields: Stage) */
+#define STAGE(scene) ((Stage *)((u8 *)(scene) + 0x1f36c8))
+#define hud_490da0(stage, view) GAME_THISCALL(0x490da0, void, Stage *, void *)(stage, view)
+#define hud_45e170(stage, view, pass) GAME_THISCALL(0x45e170, void, Stage *, void *, int)(stage, view, pass)
+/* actor i's frame of its parts (actor_updateBody / actor_updatePart), with the view volume and pass */
+#define actor_updateAllParts(stage, i, view, pass) GAME_THISCALL(0x45d3e0, void, Stage *, int, void *, int)(stage, i, view, pass)
 #define hud_47d060(stage, view) GAME_THISCALL(0x47d060, void, void *, void *)(stage, view)
-#define hud_479af0(stage, view) GAME_THISCALL(0x479af0, void, void *, void *)(stage, view)
+#define hud_479af0(stage, view) GAME_THISCALL(0x479af0, void, Stage *, void *)(stage, view)
+/* projectile i drawn (or queued) in the view volume */
+#define hud_476890(stage, i, view) GAME_THISCALL(0x476890, void, Stage *, int, void *)(stage, i, view)
 #define hud_48f970(stage, view) GAME_THISCALL(0x48f970, void, void *, void *)(stage, view)
-#define hud_472900(stage, volume, a, b, c) GAME_THISCALL(0x472900, void, void *, void *, u32, u32, u32)(stage, volume, a, b, c)
+#define hud_472900(stage, colour, start, end, density) GAME_THISCALL(0x472900, void, Stage *, const void *, u32, u32, u32)(stage, colour, start, end, density)
 #define hud_48fde0(stage, x0, y0, x1, y1) GAME_THISCALL(0x48fde0, void, void *, int, int, int, int)(stage, x0, y0, x1, y1)
 /* FUN_004625a0: the match's top player: in team games the best ranked player of the leading team (the local player
    if it has none), else the first ranked */

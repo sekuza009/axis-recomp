@@ -3,8 +3,6 @@
    wrapped by the patch DLL (each element anchored for wide screens), so they go through their call sites. */
 #include "../game.h"
 
-/* the scene's stage (its own object inside the scene, at +0x1f36c8) */
-#define STAGE(scene) ((void *)((u8 *)(scene) + 0x1f36c8))
 
 /* 0x4982f0: the 2D pass (only while scene->frameFlag) */
 void THISCALL (hud_pass)(Scene *scene)
@@ -82,7 +80,7 @@ void THISCALL (hud_pass)(Scene *scene)
 				    || scene->matchOver == 1 || scene->roundOver == 1)
 					PATCHED_THISCALL(0x4986a0, void, Scene *)(scene);             /* hud_drawRanking */
 				if (scene->localPlayer >= 0 && scene->respawnPlayer >= 0
-				    && scene->players[scene->localPlayer].waitingRespawn == 0 && scene->chatMode == 0
+				    && scene->players[scene->localPlayer].active == 0 && scene->chatMode == 0
 				    && !scene->matchOver && !scene->roundOver)
 					hud_drawPressFire(scene);
 			}
