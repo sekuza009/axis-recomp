@@ -401,7 +401,7 @@ typedef struct Scene {
 	i32 mechItems[6];   /* +0x234245e */
 	u8 _pad2342476[0x7c];
 	i32 cameraSlot;   /* +0x23424f2: the spectator camera's number (0 shows as 10) */
-	u8 _pad23424f6[0x400];
+	char playerNames[16][0x40];   /* +0x23424f6: the players' names kept apart (match_4616e0 / match_461730) */
 	i32 ranking[16];   /* +0x23428f6: players in rank order */
 	i32 rank[16];   /* +0x2342936: each player's place (1: first; the HUD shows rank/rankCount) */
 	i32 rankCount;   /* +0x2342976 */
@@ -416,7 +416,9 @@ typedef struct Scene {
 	u32 eventTime;   /* +0x2342efe: (by use) stamped on each new event line */
 	float readyTimer;   /* +0x2342f02: > 0: "ready" shown */
 	char readyText[0x40];   /* +0x2342f06: shown while no countdown runs */
-	u8 _pad2342f46[0x349];
+	u8 _pad2342f46[0x1c0];
+	i32 noticeChanged;   /* +0x2343106: 1: a HUD notice was raised (match/notices.c) */
+	u8 _pad234310a[0x185];
 	i32 rankingKey;   /* +0x234328f: 1: the ranking key is held */
 	u8 _pad2343293[0xb8];
 	char consoleLines[30][0x40];   /* +0x234334b: the full-screen text list (hud_4955a0) */
@@ -646,6 +648,7 @@ _Static_assert(offsetof(Scene, localTeam) == 0x234243e && sizeof(((Scene *)0)->l
 _Static_assert(offsetof(Scene, mechParts) == 0x234244a && sizeof(((Scene *)0)->mechParts) == 0x14, "scene.fields: Scene.mechParts");
 _Static_assert(offsetof(Scene, mechItems) == 0x234245e && sizeof(((Scene *)0)->mechItems) == 0x18, "scene.fields: Scene.mechItems");
 _Static_assert(offsetof(Scene, cameraSlot) == 0x23424f2 && sizeof(((Scene *)0)->cameraSlot) == 0x4, "scene.fields: Scene.cameraSlot");
+_Static_assert(offsetof(Scene, playerNames) == 0x23424f6 && sizeof(((Scene *)0)->playerNames) == 0x400, "scene.fields: Scene.playerNames");
 _Static_assert(offsetof(Scene, ranking) == 0x23428f6 && sizeof(((Scene *)0)->ranking) == 0x40, "scene.fields: Scene.ranking");
 _Static_assert(offsetof(Scene, rank) == 0x2342936 && sizeof(((Scene *)0)->rank) == 0x40, "scene.fields: Scene.rank");
 _Static_assert(offsetof(Scene, rankCount) == 0x2342976 && sizeof(((Scene *)0)->rankCount) == 0x4, "scene.fields: Scene.rankCount");
@@ -658,6 +661,7 @@ _Static_assert(offsetof(Scene, eventFirst) == 0x2342efa && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, eventTime) == 0x2342efe && sizeof(((Scene *)0)->eventTime) == 0x4, "scene.fields: Scene.eventTime");
 _Static_assert(offsetof(Scene, readyTimer) == 0x2342f02 && sizeof(((Scene *)0)->readyTimer) == 0x4, "scene.fields: Scene.readyTimer");
 _Static_assert(offsetof(Scene, readyText) == 0x2342f06 && sizeof(((Scene *)0)->readyText) == 0x40, "scene.fields: Scene.readyText");
+_Static_assert(offsetof(Scene, noticeChanged) == 0x2343106 && sizeof(((Scene *)0)->noticeChanged) == 0x4, "scene.fields: Scene.noticeChanged");
 _Static_assert(offsetof(Scene, rankingKey) == 0x234328f && sizeof(((Scene *)0)->rankingKey) == 0x4, "scene.fields: Scene.rankingKey");
 _Static_assert(offsetof(Scene, consoleLines) == 0x234334b && sizeof(((Scene *)0)->consoleLines) == 0x780, "scene.fields: Scene.consoleLines");
 _Static_assert(sizeof(Scene) == 0x2343b0b, "scene.fields: size of Scene");

@@ -129,3 +129,24 @@ void THISCALL (FUN_0045dfb0)(Stage *stage, int i)
 	if (i < 0 || FIELD(int, stage, 0x1cd94f4 + i * 0x8888) == 1)
 		FIELD(int, stage, 0x202e8d8) = i;
 }
+/* 0x456820: material m (0x68-byte records at +0xc016c) marked changed, its flags kept to the bits 0x11111113 (the
+   original's guard, flags | 2, is always true) */
+void THISCALL (FUN_00456820)(void *self, int m)
+{
+	u8 *r = (u8 *)self + m * 0x68;
+	u32 f = FIELD(u32, r, 0xc016c);
+	if ((f | 2) != 0) {
+		FIELD(u32, r, 0xc016c) = f & 0x11111113;
+		FIELD(int, r, 0xc018c) = 1;
+	}
+}
+/* 0x456b50: three fields cleared in each of the six objects the object points to (+4 .. +0x18) */
+void THISCALL (hud_456b50)(void *self)
+{
+	for (int k = 1; k <= 6; k++) {
+		u8 *o = FIELD(u8 *, self, k * 4);
+		FIELD(int, o, 0xcd138) = 0;
+		FIELD(int, o, 0xcd13c) = 0;
+		FIELD(int, o, 0xcd140) = 0;
+	}
+}

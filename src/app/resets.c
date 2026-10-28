@@ -1,0 +1,66 @@
+/* resets.c: input and screen state put back to its start: the key tables, the chat line's mode, the network
+   buffers, the map-select list, the message box. */
+#include "../game.h"
+#include <string.h>
+
+/* 0x431590: no key down (the 256 key states at 0x4d1a98), the key repeat delay 5, no input line */
+void (match_431590)(void)
+{
+	memset((void *)0x4d1a98, 0, 0x100 * 4);
+	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5.0 */
+	GAME_VAR(int, 0x9dcd30) = 0;
+	GAME_VAR(int, 0x9dbf10) = 0;
+}
+
+/* 0x401780: the second key table (0x4d1fc4) and its state cleared */
+void (app_401780)(void)
+{
+	GAME_VAR(u16, 0x4d1fba) = 0x8000;
+	memset((void *)0x4d1fc4, 0, 0x100 * 4);
+	GAME_VAR(int, 0x4d1fbc) = 0;
+	GAME_VAR(int, 0x4d1fb0) = 0;
+	GAME_VAR(int, 0x4d1fc0) = 0;
+}
+
+/* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
+void (app_4515d0)(void)
+{
+	memset((void *)0xa0b24c, 0, 0xc * 4 + 2);
+	memset((void *)0xa055fc, 0, 0xc * 4 + 2);
+	GAME_VAR(int, 0xa055f4) = 0;
+	GAME_VAR(int, 0xa05634) = 0;
+}
+
+/* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
+void (mainmenu_440df0)(void)
+{
+	for (u32 p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
+		GAME_VAR(int, p) = 0;
+	GAME_VAR(int, 0x4b2a7c) = 1;
+	GAME_VAR(int, 0x9eeabc) = 0;
+	GAME_VAR(int, 0x9eeac0) = 0;
+}
+
+/* 0x445e10: a click (either button) closes the message box */
+void (menu_445e10)(void)
+{
+	if (GAME_VAR(int, 0x4ded8c)) {
+		GAME_VAR(int, 0x4dda44) = 0;
+		GAME_VAR(int, 0x4df900) = 0;
+	}
+	if (GAME_VAR(int, 0x4ded88)) {
+		GAME_VAR(int, 0x4dda44) = 0;
+		GAME_VAR(int, 0x4df900) = 0;
+	}
+}
+
+/* 0x433610: the room screen's selection from the joined session (none unless its byte 0xa052c1 is 1) */
+void (room_433610)(void)
+{
+	int v = GAME_VAR(u8, 0xa052c1) != 1 ? GAME_VAR(int, 0xa052d6) : 0;
+	GAME_VAR(int, 0x9dd5e0) = v;
+	GAME_VAR(int, 0x9dd248) = v;
+	GAME_VAR(int, 0xa0b354) = 0;
+	GAME_VAR(int, 0x9dd354) = 0;
+	GAME_VAR(int, 0x9dd6d4) = 0;
+}

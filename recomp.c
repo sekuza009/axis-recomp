@@ -728,12 +728,8 @@ void arena_4045e0(void);
 
 /* 0x456820 (thiscall) FUN_00456820(m): mark material m (0x68-byte records at +0xc016c) dirty, keeping flag bits
    0x11111113. The guard "(flags | 2) != 0" is always true */
-static THISCALL void FUN_00456820(char *self, int m)
-{
-	char *r = self + m * 0x68;
-	DWORD f = SU32(r, 0xc016c);
-	if ((f | 2) != 0) { SU32(r, 0xc016c) = f & 0x11111113; S32(r, 0xc018c) = 1; }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_00456820(char *self, int m);
 
 /* x87 "fcomp; test ah, 0x40" equality: C3 is also set when either value is NaN */
 static int x87_equal(DWORD a, DWORD b)
@@ -758,13 +754,8 @@ static THISCALL void tex_recolourMaterial(char *self, int m, DWORD h1, DWORD c1,
 }
 
 /* 0x456b50 (thiscall) hud_456b50: clear three fields (+0xcd138..+0xcd140) in each of the 6 objects at this+4..+0x18 */
-static THISCALL void hud_456b50(char *self)
-{
-	for (int k = 1; k <= 6; k++) {
-		char *o = (char *)S32(self, k * 4);
-		S32(o, 0xcd138) = 0; S32(o, 0xcd13c) = 0; S32(o, 0xcd140) = 0;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_456b50(char *self);
 
 /* 0x45dca0 (thiscall) actor_deactivate(i) */
 static THISCALL void actor_deactivate(char *self, int i)
@@ -788,14 +779,8 @@ static THISCALL void actor_deactivate(char *self, int i)
 }
 
 /* 0x45dff0 (thiscall) camera_setTarget(actor, mode, value) */
-static THISCALL void camera_setTarget(char *self, int i, int mode, int value)
-{
-	if (S32(self, 0x202e8e0) > -1) S32(self, 0x1ce1bf4 + S32(self, 0x202e8e0) * 0x8888) = 0;
-	if (i < 0 || S32(self, 0x1cd94f4 + i * 0x8888) == 1) {
-		S32(self, 0x202e8e0) = i; S32(self, 0x202e8e4) = mode;
-		S32(self, 0x1ce1bf4 + i * 0x8888) = value;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void camera_setTarget(char *self, int i, int mode, int value);
 
 /* 0x45e070 (thiscall) FUN_0045e070: reset the 100 actor slots */
 static THISCALL void FUN_0045e070(char *self)
@@ -832,34 +817,17 @@ static THISCALL void actor_selectWeapon(char *self, int i, int slot)
 }
 
 /* 0x45eab0 / 0x45eb20 (thiscall) actor input record (+0x44c..+0x480): clear / set */
-static const int k_inputFields[12] = { 0x44c, 0x450, 0x454, 0x458, 0x464, 0x468, 0x46c, 0x470, 0x474, 0x478, 0x47c, 0x480 };
-static THISCALL void actor_45eab0(char *self, int i)
-{
-	char *a = self + ACTOR(i);
-	for (int k = 0; k < 12; k++) S32(a, k_inputFields[k]) = k == 9 ? -1 : 0;
-}
-static THISCALL void match_45eb20(char *self, int i, int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7,
-                                  int v8, int v9, int v10, int v11)
-{
-	char *a = self + ACTOR(i);
-	const int v[12] = { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11 };
-	for (int k = 0; k < 12; k++) S32(a, k_inputFields[k]) = v[k];
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_45eab0(char *self, int i);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_45eb20(char *self, int i, int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7, int v8, int v9, int v10, int v11);
 
 /* 0x4616e0 / 0x461730 (thiscall) copy the 16 actor names (+0x1eccb08, stride 0x8888) to the name table
    (+0x23424f6, 0x40 each) and back (also into the player records at +0x1755234) */
-static THISCALL void match_4616e0(char *self)
-{
-	for (int k = 0; k < 16; k++) strcpy(self + 0x23424f6 + k * 0x40, self + 0x1eccb08 + k * 0x8888);
-}
-static THISCALL void match_461730(char *self)
-{
-	for (int k = 0; k < 16; k++) {
-		const char *src = self + 0x23424f6 + k * 0x40;
-		strcpy(self + 0x1755234 + PLAYER(k), src);
-		strcpy(self + 0x1eccb08 + k * 0x8888, src);
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4616e0(char *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_461730(char *self);
 
 /* 0x4625a0 (thiscall) FUN_004625a0(): actor record (+0x1ecca70 + i*0x8888) to follow: in team mode (+0x22e7184 == 1)
    the first listed actor of the trailing team, else the first listed / default actor */
@@ -893,11 +861,8 @@ static THISCALL int chat_matchCheatCode(char *self, int actor, const char *text)
 }
 
 /* match message feed: 5 timed lines (0x108 bytes each, timer float at +0x2342ad2), head/tail at +0x2342efa/+0x2342ef6 */
-static THISCALL void match_4629c0(char *self, int v)
-{
-	S32(self, 0x2342ef6) = 0; S32(self, 0x2342efa) = 0; S32(self, 0x2342efe) = v;
-	S32(self, 0x233cc40) = 0; S32(self, 0x2342f02) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4629c0(char *self, int v);
 static THISCALL void match_462ac0(char *self, float dt)   /* 0x462ac0 age the lines; drop the oldest when expired */
 {
 	for (DWORD u = SU32(self, 0x2342efa); u < SU32(self, 0x2342ef6); ) {
@@ -911,41 +876,18 @@ static THISCALL void match_462ac0(char *self, float dt)   /* 0x462ac0 age the li
 }
 
 /* HUD notices (+0x2343006..): 0x463480 clears them, the others set one notice and raise the "changed" flag +0x2343106 */
-static THISCALL void match_463480(char *self)
-{
-	memset(self + 0x2343006, 0, 0x100);
-	static const int z[] = { 0x2343106, 0x234314e, 0x2343156, 0x234319b, 0x23431e7, 0x2343233, 0x2343237,
-	                         0x234323b, 0x234323f, 0x234324f };
-	for (int k = 0; k < 10; k++) S32(self, z[k]) = 0;
-}
-static THISCALL void match_4634e0(char *self, int a, const char *s)
-{
-	S32(self, 0x234310a) = a; S32(self, 0x234314e) = 1;
-	strcpy(self + 0x234310e, s);
-	S32(self, 0x2343106) = 1;
-}
-static THISCALL void match_463530(char *self, int a)
-{
-	S32(self, 0x2343156) = 1; S32(self, 0x2343152) = a; S32(self, 0x2343106) = 1;
-}
-static THISCALL void match_463550(char *self, int a, const char *s, int b)
-{
-	S32(self, 0x234315a) = a; S32(self, 0x234319b) = 1;
-	strcpy(self + 0x234315e, s);
-	S32(self, 0x2343197) = b; S32(self, 0x2343106) = 1;
-}
-static THISCALL void match_4635b0(char *self, int a, int b, const char *s)
-{
-	S32(self, 0x234319f) = a; S32(self, 0x23431a3) = b; S32(self, 0x23431e7) = 1;
-	strcpy(self + 0x23431a7, s);
-	S32(self, 0x2343106) = 1;
-}
-static THISCALL void match_463610(char *self, int a, int b, const char *s)
-{
-	S32(self, 0x23431eb) = a; S32(self, 0x23431ef) = b; S32(self, 0x2343233) = 1;
-	strcpy(self + 0x23431f3, s);
-	S32(self, 0x2343106) = 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_463480(char *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4634e0(char *self, int a, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_463530(char *self, int a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_463550(char *self, int a, const char *s, int b);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4635b0(char *self, int a, int b, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_463610(char *self, int a, int b, const char *s);
 
 /* ---- comparison harness -------------------------------------------------------------------- */
 
@@ -958,29 +900,14 @@ void net_452e60(void);
 void net_452e80(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_452ea0(void);
-static void __cdecl match_431590(void)
-{
-	memset((void *)0x4d1a98, 0, 0x100 * 4);    /* g_keyState */
-	GU32(0x9da434) = 0x40a00000;               /* 5.0f */
-	G32(0x9dcd30) = 0; G32(0x9dbf10) = 0;
-}
-static void __cdecl app_401780(void)
-{
-	*(WORD *)0x4d1fba = 0x8000;
-	memset((void *)0x4d1fc4, 0, 0x100 * 4);
-	G32(0x4d1fbc) = 0; G32(0x4d1fb0) = 0; G32(0x4d1fc0) = 0;
-}
-static void __cdecl app_4515d0(void)
-{
-	memset((void *)0xa0b24c, 0, 0xc * 4 + 2);
-	memset((void *)0xa055fc, 0, 0xc * 4 + 2);
-	G32(0xa055f4) = 0; G32(0xa05634) = 0;
-}
-static void __cdecl mainmenu_440df0(void)
-{
-	for (DWORD p = 0x9ddac8; p < 0x9eeac8; p += 0x44) G32(p) = 0;
-	G32(0x4b2a7c) = 1; G32(0x9eeabc) = 0; G32(0x9eeac0) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_431590(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void app_401780(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void app_4515d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_440df0(void);
 
 /* constant setters */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -989,17 +916,10 @@ void set_4dc798_40f200(void);
 void set_4dc798_40f320(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void set_a61708_46f090(int v);
-static void __cdecl menu_445e10(void)
-{
-	if (g_mouseClick2) { G32(0x4dda44) = 0; G32(0x4df900) = 0; }
-	if (g_mouseClick1) { G32(0x4dda44) = 0; G32(0x4df900) = 0; }
-}
-static void __cdecl room_433610(void)
-{
-	int v = *(BYTE *)0xa052c1 != 1 ? G32(0xa052d6) : 0;
-	G32(0x9dd5e0) = v; G32(0x9dd248) = v;
-	G32(0xa0b354) = 0; G32(0x9dd354) = 0; G32(0x9dd6d4) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_445e10(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433610(void);
 /* RGBA colour globals at 0xa1f200..: four bytes or four floats each (0x3f800000 = 1.0, 0x3f000000 = 0.5) */
 static void set4b(DWORD a, BYTE r, BYTE g, BYTE b, BYTE al) { BYTE *p = (BYTE *)a; p[0] = r; p[1] = g; p[2] = b; p[3] = al; }
 static void set4d(DWORD a, DWORD x, DWORD y, DWORD z, DWORD w) { DWORD *p = (DWORD *)a; p[0] = x; p[1] = y; p[2] = z; p[3] = w; }
@@ -1063,21 +983,12 @@ void THISCALL match_463690(void *scene);
 void THISCALL match_4636b0(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL this_set_4841d0(void *view);
-static THISCALL void load_479a60(char *self)         /* effect pool: 1000 x 300 bytes, clear each slot's first dword */
-{
-	S32(self, 0x20f2da0) = 0; S32(self, 0x20f2da4) = 0; S32(self, 0x20f2da8) = 0;
-	for (int i = 0; i < 1000; i++) S32(self, 0x20a99c4 + i * 0x12c) = 0;
-}
-static THISCALL void FUN_0047cfd0(char *self)        /* bullet pool: 400 x 0x4e8 bytes */
-{
-	S32(self, 0x20a99b4) = 0; S32(self, 0x20a99b8) = 0; S32(self, 0x20a99bc) = 0;
-	for (int i = 0; i < 400; i++) S32(self, 0x202ef38 + i * 0x4e8) = 0;
-}
-static THISCALL void load_490d10(char *self)         /* 1000 x 0x2cc records */
-{
-	S32(self, 0x13016c8) = 0; S32(self, 0x13c9b24) = 0; S32(self, 0x13c9b28) = 0; S32(self, 0x13c9b2c) = 0;
-	for (int i = 0; i < 1000; i++) S32(self, 0x131ae48 + i * 0x2cc) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_479a60(char *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0047cfd0(char *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_490d10(char *self);
 static THISCALL void match_4722e0(char *self, float v)
 {
 	S32(self, 0xa08) = *(int *)&v;             /* copied with mov, as raw bits */
