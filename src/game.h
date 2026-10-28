@@ -249,6 +249,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)0xa1f100)          /* the 16 message colours */
 #define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
+#define g_chatCaretX GAME_VAR(int, 0x9da3d8)          /* where the line being typed is drawn (menu units) */
+#define g_chatCaretY GAME_VAR(int, 0x9da3dc)
+#define g_chatLength GAME_VAR(int, 0x9dbf10)          /* characters in g_chatLine */
+#define g_chatFieldFlag GAME_VAR(int, 0x4e1868)       /* (unclear) set for the short fields (passwords, rules), clear for names */
+#define input_releaseKeyboard() GAME_CDECL(0x401460, void, void)()
+#define menu_clearInputBuffer(maxLength) GAME_CDECL(0x431560, void, int)(maxLength)
+#define chat_createEdit(maxLength) GAME_CDECL(0x43f460, void, int)(maxLength)   /* the hidden EDIT control typing goes to */
+#define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
 #define g_trig ((const float *)0xa146f8)            /* 3600 values by tenths of a degree (the ring's radius) */
@@ -331,5 +339,22 @@ typedef struct { float r, g, b, a; } Colour;
 #define STR_COPYRIGHT ((const char *)0x4b0474)       /* "AXIS by Jamie System Development" */
 #define STR_2D ((const char *)0x4d03e0)              /* "%2d" */
 #define STR_VERSION ((const char *)0x4b0384)         /* "Axis v1.03" */
+
+/* ---- DirectPlay (net/dplay_slots.c) ---- */
+#define g_dplaySlots ((int *)0xa0d7a4)               /* four connection slots: 1 while open */
+#define dplay_coInit() GAME_CDECL(0x453720, int, void)()                     /* 0 when COM is up */
+#define dplay_connectionAvailable(kind) GAME_CDECL(0x453a30, int, int)(kind)  /* arena_453a30 */
+#define dplay_initConnection(kind, address) GAME_CDECL(0x453a90, int, int, int)(kind, address)
+#define dplay_release() GAME_CDECL(0x453920, int, void)()
+#define dplay_enumSessions() GAME_CDECL(0x453fd0, int, void)()
+#define dplay_hostSession(a1, a2, a3, a4, a5, a6, a7, a8) GAME_CDECL(0x453cf0, int, int, int, int, int, int, int, int, int)\
+	(a1, a2, a3, a4, a5, a6, a7, a8)
+#define dplay_joinSession(a1, a2, a3, a4) GAME_CDECL(0x453e60, int, int, int, int, int)(a1, a2, a3, a4)
+#define dplay_create() GAME_CDECL(0x453790, int, void)()
+#define arena_4509e0() GAME_CDECL(0x4509e0, void, void)()
+#define arena_4549a0() GAME_CDECL(0x4549a0, int, void)()   /* close slot 0 .. 3 */
+#define arena_454ac0() GAME_CDECL(0x454ac0, int, void)()
+#define arena_454bd0() GAME_CDECL(0x454bd0, int, void)()
+#define arena_454ce0() GAME_CDECL(0x454ce0, int, void)()
 
 #endif

@@ -6723,14 +6723,22 @@ LIFT_PLAIN(dplay_release, 453920)
    is no DirectPlay object or the call fails, else 1 */
 LIFT_PLAIN(dplay_enumSessions, 453fd0)
 /* the arena's connection slots 0xa0d7a4 .. 0xa0d7b0: release (clearing the slot) or enumerate when it is open */
-LIFT_PLAIN(arena_4549a0, 4549a0)
-LIFT_PLAIN(arena_4549c0, 4549c0)
-LIFT_PLAIN(arena_454ac0, 454ac0)
-LIFT_PLAIN(arena_454ae0, 454ae0)
-LIFT_PLAIN(arena_454bd0, 454bd0)
-LIFT_PLAIN(arena_454bf0, 454bf0)
-LIFT_PLAIN(arena_454ce0, 454ce0)
-LIFT_PLAIN(arena_454d00, 454d00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4549a0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4549c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454ac0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454ae0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454bd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454bf0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454ce0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454d00(void);
 /* 0x453260 arena_453260(): enumerates through the slot of the connection kind 0xa0b418 (0..3), else 0 */
 LIFT_PLAIN(arena_453260, 453260)
 /* batch 157 (lifted/grp103.c): DirectPlay create, host, join and player names */
@@ -6839,8 +6847,10 @@ LIFT_PLAIN(skirmish_processKeys, 443f20)
 /* 0x434320 room_434320() / 0x405010 arena_editTextField_405010(): start typing in the chat line: keyboard
    released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room / arena chat
    position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
-LIFT_PLAIN(room_434320, 434320)
-LIFT_PLAIN(arena_editTextField_405010, 405010)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_434320(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editTextField_405010(void);
 /* 0x443ef0 menu_443ef0() / 0x4440f0 menu_4440f0(): no dialog open: the skirmish settings (page 0x9ef1f8 10) or undo
    screen (0x14) mouse / keys (0x4440f0 only while 0x9ef1f0 is past 1) */
 LIFT_PLAIN(menu_443ef0, 443ef0)
@@ -7006,15 +7016,20 @@ LIFT_PLAIN(armc_processInput, 410ab0)
 /* batch 171 (lifted/grp121.c): small menu, room and connection functions */
 #include "lifted/grp121.c"
 /* 0x453770 arena_453770(): DirectPlay up again: arena_4509e0, dplay_create, dplay_release when it worked; 0 */
-LIFT_PLAIN(arena_453770, 453770)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_453770(void);
 /* 0x4014c0 wnd_4014c0(): keyboard and mouse released, then DirectInput 0x4d1e98 */
 LIFT_PLAIN(wnd_4014c0, 4014c0)
 /* the arena's connection slots 0xa0d7a4 / 0xa0d7a8: host (dplay_hostSession, 8 arguments: 0x4549e0 / 0x454b00) or
    join (dplay_joinSession: 0x454a20 / 0x454b40; 0x1f4 when the slot is closed) through them */
-LIFT_PLAIN8(arena_4549e0, 4549e0)
-LIFT_PLAIN(arena_454a20, 454a20)
-LIFT_PLAIN8(arena_454b00, 454b00)
-LIFT_PLAIN(arena_454b40, 454b40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4549e0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454a20(int a1, int a2, int a3, int a4);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454b00(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454b40(int a1, int a2, int a3, int a4);
 /* 0x403530 room_403530() / 0x4034e0 room_4034e0(): menu sound 0, the room's 0x67ef00 entries (8 bytes from
    0x4d7358) cleared / all set */
 LIFT_PLAIN(room_403530, 403530)
@@ -7041,8 +7056,10 @@ LIFT_PLAIN(room_435ce0, 435ce0)
    helpers sound_playVolume / sound_playFile / sound_loadMenuSounds, match_4512c0 (a chat line logged and sent),
    arena_452fe0, room_431600 (typing off), the setup page's sound tab keys */
 #include "lifted/grp122.c"
-LIFT_PLAIN(arena_editTextField_404f90, 404f90)
-LIFT_PLAIN(room_433a80, 433a80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editTextField_404f90(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433a80(void);
 LIFT_PLAIN(sound_playVolume, 456e50)
 LIFT_PLAIN(room_431600, 431600)
 LIFT_PLAIN(menu_431950, 431950)
@@ -7051,22 +7068,33 @@ LIFT_PLAIN(match_4512c0, 4512c0)
 LIFT_PLAIN(lobby_editTextField_405230, 405230)
 LIFT_PLAIN(menu_4318b0, 4318b0)
 LIFT_PLAIN(arena_452fe0, 452fe0)
-LIFT_PLAIN(arena_editTextField_404cd0, 404cd0)
-LIFT_PLAIN(arena_editTextField_404d70, 404d70)
-LIFT_PLAIN(room_4339e0, 4339e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editTextField_404cd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editTextField_404d70(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4339e0(void);
 LIFT_PLAIN(sound_loadMenuSounds, 42bd40)
 LIFT_PLAIN(menu_437240, 437240)
 LIFT_PLAIN(room_403590, 403590)
-LIFT_PLAIN(room_433b00, 433b00)
-LIFT_PLAIN(arena_editNumberField_404ed0, 404ed0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433b00(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editNumberField_404ed0(void);
 LIFT_PLAIN(setup_soundTabKeys, 422c60)
-LIFT_PLAIN(arena_editNumberField_404e10, 404e10)
-LIFT_PLAIN(room_434260, 434260)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_editNumberField_404e10(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_434260(void);
 LIFT_PLAIN(sound_playFile, 457080)
-LIFT_PLAIN(room_434020, 434020)
-LIFT_PLAIN(room_4340e0, 4340e0)
-LIFT_PLAIN(room_4341a0, 4341a0)
-LIFT_PLAIN(room_433bb0, 433bb0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_434020(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4340e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4341a0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433bb0(void);
 LIFT_PLAIN(menu_437810, 437810)
 /* batch 173 (lifted/grp123.c): small functions tested with their callees stubbed (tools/gentests.py): the
    in-match messages (connection lost, network unstable, server / user ends the game, data loss, frag / time
@@ -7081,8 +7109,10 @@ LIFT_PLAIN(msg_userEndsGame, 462f60)
 LIFT_PLAIN(msg_dataLoss, 4633f0)
 LIFT_PLAIN(msg_fragLimitReached, 462f90)
 LIFT_PLAIN(msg_timeLimitReached, 462fd0)
-LIFT_PLAIN(arena_454c50, 454c50)
-LIFT_PLAIN(arena_454d60, 454d60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454c50(int a1, int a2, int a3, int a4);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454d60(int a1, int a2, int a3, int a4);
 LIFT_PLAIN(dplay_coInit, 453720)
 LIFT_PLAIN(lobby_close, 406b60)
 LIFT_PLAIN(FUN_00403870, 403870)
@@ -7163,8 +7193,10 @@ LIFT_PLAIN(mainmenu_processKeys, 441e00)
 LIFT_PLAIN(menu_436e10, 436e10)
 LIFT_PLAIN(armc_enter, 441260)
 LIFT_PLAIN(match_debugHandler, 42ada0)
-LIFT_PLAIN8(arena_454c10, 454c10)
-LIFT_PLAIN8(arena_454d20, 454d20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454c10(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454d20(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* batch 177 (lifted/grp127.c): app_onClose / app_shutdown (leaving the game: the room / arena left, DirectPlay and
    the music shut down) and menuState100_intro (the intro: logo fades, the menu music, then the main menu), with
    their callees stubbed (tools/gentests.py); chat_editSubclass and sound_play3D by hand */
@@ -7211,10 +7243,14 @@ static THISCALL DWORD bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWOR
    arena_453090 by hand */
 #include "lifted/grp130.c"
 LIFT_PLAIN(menu_drawBackground, 441740)
-LIFT_PLAIN(arena_454940, 454940)
-LIFT_PLAIN(arena_454a50, 454a50)
-LIFT_PLAIN(arena_454b70, 454b70)
-LIFT_PLAIN(arena_454c80, 454c80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454940(int address);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454a50(int address);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454b70(int address);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_454c80(int address);
 LIFT_PLAIN(room_435c20, 435c20)
 /* 0x4620e0 match_4620e0() (thiscall on the scene): every player's scores cleared, the actors reset, the ranking */
 LIFT_PLAIN(match_4620e0, 4620e0)
@@ -16107,14 +16143,14 @@ static void dplay_setup(void)
 }
 T_PLAIN(dplay_release, 0x453920, dplay_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(dplay_enumSessions, 0x453fd0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_4549a0, 0x4549a0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_4549c0, 0x4549c0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454ac0, 0x454ac0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454ae0, 0x454ae0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454bd0, 0x454bd0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454bf0, 0x454bf0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454ce0, 0x454ce0, dplay_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_454d00, 0x454d00, dplay_setup();, 0, 0, 0, 0, 0)
+ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (arena_4549a0(), 0))
+ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (arena_4549c0(), 0))
+ST(arena_454ac0, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (arena_454ac0(), 0))
+ST(arena_454ae0, dplay_setup();, CALL_PLAIN(0x454ae0, 0, 0, 0, 0, 0), (arena_454ae0(), 0))
+ST(arena_454bd0, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (arena_454bd0(), 0))
+ST(arena_454bf0, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (arena_454bf0(), 0))
+ST(arena_454ce0, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (arena_454ce0(), 0))
+ST(arena_454d00, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (arena_454d00(), 0))
 T_PLAIN(arena_453260, 0x453260, dplay_setup();, 0, 0, 0, 0, 0)
 /* batch 157 */
 static LONG dp_err(void)   /* a success, or one of the DirectPlay results the callers tell apart */
@@ -16339,8 +16375,8 @@ T_PLAIN(mission_447a50, 0x447a50, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(mission_4479d0, 0x4479d0, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(menu_444070, 0x444070, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(skirmish_processKeys, 0x443f20, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(room_434320, 0x434320, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(arena_editTextField_405010, 0x405010, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(room_434320, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (room_434320(), 0))
+ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editTextField_405010(), 0))
 T_PLAIN(menu_443ef0, 0x443ef0, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(menu_4440f0, 0x4440f0, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(mission_unlockCheat, 0x447b10, menudisp_setup();, 0, 0, 0, 0, 0)
@@ -16635,16 +16671,16 @@ static void small_setup(const DWORD *stubs)
 	callee_key(0x401600, irnd(0, 2) ? 0x21 + irnd(0, 1) : -1);
 	callee_ret(0x432280, (DWORD)irnd(-1, 2));
 }
-T_PLAIN(arena_453770, 0x453770, small_setup(g_stubConnUp);, 0, 0, 0, 0, 0)
+ST(arena_453770, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (arena_453770(), 0))
 T_PLAIN(wnd_4014c0, 0x4014c0, small_setup(g_stubInputOff);, 0, 0, 0, 0, 0)
 ST(arena_4549e0, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x4549e0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_4549e0(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   arena_4549e0(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 ST(arena_454b00, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454b00)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454b00(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-T_PLAIN(arena_454a20, 0x454a20, small_setup(g_stubJoin);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
-T_PLAIN(arena_454b40, 0x454b40, small_setup(g_stubJoin);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+   arena_454b00(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454a20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
+ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 T_PLAIN(room_403530, 0x403530, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
 T_PLAIN(room_4034e0, 0x4034e0, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
 T_PLAIN(lobbyJoin_keys, 0x407970, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
@@ -16670,11 +16706,11 @@ static void gen_setup(const DWORD *gs, const DWORD *gi, const DWORD *gb)
 static const DWORD g_gs_404f90[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404f90[] = { 0x4dbacc, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404f90[] = { 0x9dc92c, 0 };
-T_PLAIN(arena_editTextField_404f90, 0x404f90, gen_setup(g_gs_404f90, g_gi_404f90, g_gb_404f90);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_editTextField_404f90, gen_setup(g_gs_404f90, g_gi_404f90, g_gb_404f90);, CALL_PLAIN(0x404f90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404f90(), 0))
 static const DWORD g_gs_433a80[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_433a80[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd1b8, 0x9dd1bc, 0x9dd6a8, 0 };
 static const DWORD g_gb_433a80[] = { 0x9dc92c, 0 };
-T_PLAIN(room_433a80, 0x433a80, gen_setup(g_gs_433a80, g_gi_433a80, g_gb_433a80);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_433a80, gen_setup(g_gs_433a80, g_gi_433a80, g_gb_433a80);, CALL_PLAIN(0x433a80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_433a80(), 0))
 static const DWORD g_gs_456e50[] = { 0x467d70, 1, 0x467db0, 2, 0 };
 static const DWORD g_gi_456e50[] = { 0xa0e66c, 0xa0e80c, 0 };
 static const DWORD g_gb_456e50[] = { 0 };
@@ -16710,15 +16746,15 @@ T_PLAIN(arena_452fe0, 0x452fe0, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0)
 static const DWORD g_gs_404cd0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404cd0[] = { 0x4dbb68, 0x4dbb6c, 0x4dbbd0, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404cd0[] = { 0x4db560, 0x9dc92c, 0 };
-T_PLAIN(arena_editTextField_404cd0, 0x404cd0, gen_setup(g_gs_404cd0, g_gi_404cd0, g_gb_404cd0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_editTextField_404cd0, gen_setup(g_gs_404cd0, g_gi_404cd0, g_gb_404cd0);, CALL_PLAIN(0x404cd0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404cd0(), 0))
 static const DWORD g_gs_404d70[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404d70[] = { 0x4dbab0, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404d70[] = { 0x4db528, 0x9dc92c, 0 };
-T_PLAIN(arena_editTextField_404d70, 0x404d70, gen_setup(g_gs_404d70, g_gi_404d70, g_gb_404d70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_editTextField_404d70, gen_setup(g_gs_404d70, g_gi_404d70, g_gb_404d70);, CALL_PLAIN(0x404d70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404d70(), 0))
 static const DWORD g_gs_4339e0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_4339e0[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd1b8, 0x9dd1bc, 0x9dd380, 0 };
 static const DWORD g_gb_4339e0[] = { 0x4df9c8, 0x9dc92c, 0 };
-T_PLAIN(room_4339e0, 0x4339e0, gen_setup(g_gs_4339e0, g_gi_4339e0, g_gb_4339e0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4339e0, gen_setup(g_gs_4339e0, g_gi_4339e0, g_gb_4339e0);, CALL_PLAIN(0x4339e0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_4339e0(), 0))
 static const DWORD g_gs_42bd40[] = { 0x467b90, 1, 0 };
 static const DWORD g_gi_42bd40[] = { 0x4dd4d4, 0x4dd4d8, 0x4dd4dc, 0x4dd4e0, 0x4dd4e4, 0x4dd4e8, 0x4dd4ec, 0x4dd4f0, 0x4dd4f4, 0x4dd4f8, 0 };
 static const DWORD g_gb_42bd40[] = { 0 };
@@ -16734,11 +16770,11 @@ T_PLAIN(room_403590, 0x403590, gen_setup(g_gs_403590, g_gi_403590, g_gb_403590);
 static const DWORD g_gs_433b00[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_433b00[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd358, 0x9dd35c, 0x9dd38c, 0x9dd830, 0 };
 static const DWORD g_gb_433b00[] = { 0x9dc92c, 0x9dd1d8, 0 };
-T_PLAIN(room_433b00, 0x433b00, gen_setup(g_gs_433b00, g_gi_433b00, g_gb_433b00);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_433b00, gen_setup(g_gs_433b00, g_gi_433b00, g_gb_433b00);, CALL_PLAIN(0x433b00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_433b00(), 0))
 static const DWORD g_gs_404ed0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404ed0[] = { 0x4db54d, 0x4db518, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404ed0[] = { 0x9dc92c, 0 };
-T_PLAIN(arena_editNumberField_404ed0, 0x404ed0, gen_setup(g_gs_404ed0, g_gi_404ed0, g_gb_404ed0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_editNumberField_404ed0, gen_setup(g_gs_404ed0, g_gi_404ed0, g_gb_404ed0);, CALL_PLAIN(0x404ed0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editNumberField_404ed0(), 0))
 static const DWORD g_gs_422c60[] = { 0x401600, 1, 0x41e760, 1, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_422c60[] = { 0x4dd984, 0x4ddcec, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x4e0cd4, 0x4e0cdc, 0x76d48c, 0 };
 static const DWORD g_gb_422c60[] = { 0 };
@@ -16746,11 +16782,11 @@ T_PLAIN(setup_soundTabKeys, 0x422c60, gen_setup(g_gs_422c60, g_gi_422c60, g_gb_4
 static const DWORD g_gs_404e10[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404e10[] = { 0x4db54c, 0x4db850, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404e10[] = { 0x9dc92c, 0 };
-T_PLAIN(arena_editNumberField_404e10, 0x404e10, gen_setup(g_gs_404e10, g_gi_404e10, g_gb_404e10);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_editNumberField_404e10, gen_setup(g_gs_404e10, g_gi_404e10, g_gb_404e10);, CALL_PLAIN(0x404e10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editNumberField_404e10(), 0))
 static const DWORD g_gs_434260[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_434260[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_434260[] = { 0x9dc92c, 0x9dd20e, 0 };
-T_PLAIN(room_434260, 0x434260, gen_setup(g_gs_434260, g_gi_434260, g_gb_434260);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_434260, gen_setup(g_gs_434260, g_gi_434260, g_gb_434260);, CALL_PLAIN(0x434260, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_434260(), 0))
 static const DWORD g_gs_457080[] = { 0x467b90, 1, 0x467d60, 1, 0x467d70, 1, 0x467db0, 2, 0 };
 static const DWORD g_gi_457080[] = { 0xa0e66c, 0xa0e80c, 0 };
 static const DWORD g_gb_457080[] = { 0 };
@@ -16758,19 +16794,19 @@ T_PLAIN(sound_playFile, 0x457080, gen_setup(g_gs_457080, g_gi_457080, g_gb_45708
 static const DWORD g_gs_434020[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_434020[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_434020[] = { 0x9dc92c, 0x9dd6d8, 0 };
-T_PLAIN(room_434020, 0x434020, gen_setup(g_gs_434020, g_gi_434020, g_gb_434020);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_434020, gen_setup(g_gs_434020, g_gi_434020, g_gb_434020);, CALL_PLAIN(0x434020, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_434020(), 0))
 static const DWORD g_gs_4340e0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_4340e0[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_4340e0[] = { 0x9dc92c, 0x9dd1f6, 0 };
-T_PLAIN(room_4340e0, 0x4340e0, gen_setup(g_gs_4340e0, g_gi_4340e0, g_gb_4340e0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4340e0, gen_setup(g_gs_4340e0, g_gi_4340e0, g_gb_4340e0);, CALL_PLAIN(0x4340e0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_4340e0(), 0))
 static const DWORD g_gs_4341a0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_4341a0[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_4341a0[] = { 0x9dc92c, 0x9dd202, 0 };
-T_PLAIN(room_4341a0, 0x4341a0, gen_setup(g_gs_4341a0, g_gi_4341a0, g_gb_4341a0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4341a0, gen_setup(g_gs_4341a0, g_gi_4341a0, g_gb_4341a0);, CALL_PLAIN(0x4341a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_4341a0(), 0))
 static const DWORD g_gs_433bb0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_433bb0[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dced0, 0x9dd358, 0x9dd35c, 0x9dd38c, 0x9dd830, 0 };
 static const DWORD g_gb_433bb0[] = { 0x9dc92c, 0x9dd1f6, 0 };
-T_PLAIN(room_433bb0, 0x433bb0, gen_setup(g_gs_433bb0, g_gi_433bb0, g_gb_433bb0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_433bb0, gen_setup(g_gs_433bb0, g_gi_433bb0, g_gb_433bb0);, CALL_PLAIN(0x433bb0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_433bb0(), 0))
 static const DWORD g_gs_437810[] = { 0x401600, 1, 0x41e760, 1, 0 };
 static const DWORD g_gi_437810[] = { 0x4e0cdc, 0x4e1524, 0x76d40c, 0x76d48c, 0x9dce48, 0x9dd1b4, 0x9dd1d0, 0x9dd300, 0x9dd3b0, 0x9dd6ac, 0x9dd6b8, 0 };
 static const DWORD g_gb_437810[] = { 0 };
@@ -16807,11 +16843,11 @@ T_PLAIN(msg_timeLimitReached, 0x462fd0, gen_setup(g_gs_462fd0, g_gi_462fd0, g_gb
 static const DWORD g_gs_454c50[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454c50[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454c50[] = { 0 };
-T_PLAIN(arena_454c50, 0x454c50, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454c50, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, CALL_PLAIN(0x454c50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454c50((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 static const DWORD g_gs_454d60[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454d60[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454d60[] = { 0 };
-T_PLAIN(arena_454d60, 0x454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0x454d60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454d60((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 static const DWORD g_gs_453720[] = { 0x453770, 0, 0x453920, 0, 0 };
 static const DWORD g_gi_453720[] = { 0xa0b42c, 0xa0b430, 0xa0b434, 0xa0b438, 0 };
 static const DWORD g_gb_453720[] = { 0xa0b470, 0 };
@@ -17079,10 +17115,10 @@ T_PLAIN(match_debugHandler, 0x42ada0, gen_setup(g_gs_42ada0, g_gi_42ada0, g_gb_4
 static const DWORD g_stubHost34[] = { 0x453cf0, 8, 0 };
 ST(arena_454c10, small_setup(g_stubHost34); G32(0xa0d7ac) = irnd(0, 1);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454c10)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454c10(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   arena_454c10(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 ST(arena_454d20, small_setup(g_stubHost34); G32(0xa0d7b0) = irnd(0, 1);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454d20)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454d20(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   arena_454d20(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 /* batch 177: generated tests (tools/gentests.py, gen_setup from batch 172) plus two by hand */
 static const DWORD g_gs_434e70[] = { 0x41ee40, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_434e70[] = { 0x5b1b54, 0x5b1b55, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dbbf8, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
@@ -17193,19 +17229,19 @@ T_PLAIN(menu_drawBackground, 0x441740, gen_setup(g_gs_441740, g_gi_441740, g_gb_
 static const DWORD g_gs_454940[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x4549a0, 0, 0 };
 static const DWORD g_gi_454940[] = { 0xa0d7a4, 0 };
 static const DWORD g_gb_454940[] = { 0 };
-T_PLAIN(arena_454940, 0x454940, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454940, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, CALL_PLAIN(0x454940, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454940((DWORD)(g_a[0])), 0))
 static const DWORD g_gs_454a50[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ac0, 0, 0 };
 static const DWORD g_gi_454a50[] = { 0xa0d7a8, 0 };
 static const DWORD g_gb_454a50[] = { 0 };
-T_PLAIN(arena_454a50, 0x454a50, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454a50, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, CALL_PLAIN(0x454a50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454a50((DWORD)(g_a[0])), 0))
 static const DWORD g_gs_454b70[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454bd0, 0, 0 };
 static const DWORD g_gi_454b70[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454b70[] = { 0 };
-T_PLAIN(arena_454b70, 0x454b70, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454b70, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, CALL_PLAIN(0x454b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454b70((DWORD)(g_a[0])), 0))
 static const DWORD g_gs_454c80[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ce0, 0, 0 };
 static const DWORD g_gi_454c80[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454c80[] = { 0 };
-T_PLAIN(arena_454c80, 0x454c80, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_454c80, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAIN(0x454c80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454c80((DWORD)(g_a[0])), 0))
 static const DWORD g_gs_435c20[] = { 0x41e760, 1, 0x432240, 2, 0x433d30, 0, 0x433e60, 1, 0x434640, 0, 0x4346c0, 0, 0 };
 static const DWORD g_gi_435c20[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0 };
 static const DWORD g_gb_435c20[] = { 0 };
