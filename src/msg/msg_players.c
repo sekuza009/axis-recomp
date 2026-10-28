@@ -55,3 +55,44 @@ void THISCALL (msg_kill)(Scene *scene, int victim, int killer)
 		msg_print(scene, colour, (const char *)(english ? 0x4c490c : 0x4c48d4), scene->players[killer].name, v->name, mech);
 	}
 }
+
+/* the players' records (stride 0x47fd2 from Scene + 0x1755230; scene.fields does not hold them yet): the name at +4,
+   empty when the player is not there */
+#define PLAYER_NAME(scene, p) ((const char *)(scene) + 0x1755234 + (p) * 0x47fd2)
+
+/* 0x462c30: a chat line "[%s]%s" (name, text) said to team: shown in colour 3 or 2 to the first two teams' own
+   players, in colour 1 to everyone when said to all (a team without a slot); sound 9 */
+void THISCALL (msg_chatLine)(Scene *scene, int actor, const char *text, int team)
+{
+	const char *name = scene->players[actor].name;
+	switch (scene_findTeam(scene, team)) {
+	case 0:
+		if (scene->localTeam == team)
+			msg_print(scene, 3, (const char *)0x4c46c0, name, text);
+		break;
+	case 1:
+		if (scene->localTeam == team)
+			msg_print(scene, 2, (const char *)0x4c46c0, name, text);
+		break;
+	default:
+		msg_print(scene, 1, (const char *)0x4c46c0, name, text);
+		break;
+	}
+	sound_playVolume(9, 100);
+}
+
+/* 0x462d30: "%s has joined %s team." in team games, else "%s has joined the battle." (colour 0; the team's name, 16
+   bytes a slot, passed either way); nothing for a player whose record is empty */
+void THISCALL (msg_playerJoinedTeam)(Scene *scene, int player, int team)
+{
+	const char *name = PLAYER_NAME(scene, player);
+	if (name[0] == '\0')
+		return;
+	if (g_language == KOREAN) {
+		const char *format = (const char *)(scene->teamGame == 1 ? 0x4c46e4 : 0x4c46c8);
+		msg_print(scene, 0, format, name, (const char *)(0x4a975c + scene_teamSide(scene, team) * 16));
+	} else if (g_language == ENGLISH) {
+		const char *format = (const char *)(scene->teamGame == 1 ? 0x4c471c : 0x4c4700);
+		msg_print(scene, 0, format, name, (const char *)(0x4a97ac + scene_teamSide(scene, team) * 16));
+	}
+}

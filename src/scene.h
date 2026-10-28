@@ -376,7 +376,9 @@ typedef struct Scene {
 	float recordTime;   /* +0x2340d29: seconds recorded */
 	u8 _pad2340d2d[0x8];
 	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
-	u8 _pad2340d39[0x1660];
+	u8 _pad2340d39[0x1648];
+	i32 teamIds[5];   /* +0x2342381: the teams by slot (free: < 0; match/teams.c) */
+	u8 _pad2342395[0x4];
 	i32 matchOver;   /* +0x2342399: (by use) 1: the result is shown */
 	u8 _pad234239d[0x4];
 	i32 roundOver;   /* +0x23423a1: (unclear) */
@@ -629,6 +631,7 @@ _Static_assert(offsetof(Scene, recordName) == 0x2340d0c && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, recording) == 0x2340d1d && sizeof(((Scene *)0)->recording) == 0x4, "scene.fields: Scene.recording");
 _Static_assert(offsetof(Scene, recordTime) == 0x2340d29 && sizeof(((Scene *)0)->recordTime) == 0x4, "scene.fields: Scene.recordTime");
 _Static_assert(offsetof(Scene, chatMode) == 0x2340d35 && sizeof(((Scene *)0)->chatMode) == 0x4, "scene.fields: Scene.chatMode");
+_Static_assert(offsetof(Scene, teamIds) == 0x2342381 && sizeof(((Scene *)0)->teamIds) == 0x14, "scene.fields: Scene.teamIds");
 _Static_assert(offsetof(Scene, matchOver) == 0x2342399 && sizeof(((Scene *)0)->matchOver) == 0x4, "scene.fields: Scene.matchOver");
 _Static_assert(offsetof(Scene, roundOver) == 0x23423a1 && sizeof(((Scene *)0)->roundOver) == 0x4, "scene.fields: Scene.roundOver");
 _Static_assert(offsetof(Scene, stageCleared) == 0x23423a9 && sizeof(((Scene *)0)->stageCleared) == 0x4, "scene.fields: Scene.stageCleared");

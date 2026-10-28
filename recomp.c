@@ -391,13 +391,9 @@ static int __cdecl FUN_00454110(void)
 }
 
 /* 0x463710 (thiscall) index of id among the 5 ints at this+0x2342381, or -1 (also for negative ids) */
-static THISCALL int FUN_00463710(char *self, int id)
-{
-	if (id < 0) return -1;
-	for (int i = 0; i < 5; i++)
-		if (*(int *)(self + 0x2342381 + i * 4) == id) return i;
-	return -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL scene_findTeam(void *scene, int id);
+#define FUN_00463710 scene_findTeam
 
 /* 0x45dfb0 (thiscall) select actor i (stride 0x8888) if it is active (field 0x1cd94f4 == 1); i < 0 always */
 static THISCALL void FUN_0045dfb0(char *self, int i)
@@ -1330,15 +1326,9 @@ static THISCALL void match_4636d0(char *self)
 	else
 		for (int k = 0; k < 5; k++) S32(self, 0x2342381 + k * 4) = k;
 }
-static THISCALL int FUN_00463740(char *self, int id)   /* find id's slot, or put it in the first free (<0) one */
-{
-	if (id < 0) return -1;
-	int r = FUN_00463710(self, id);
-	if (r >= 0) return r;
-	for (int k = 0; k < 5; k++)
-		if (S32(self, 0x2342381 + k * 4) < 0) { S32(self, 0x2342381 + k * 4) = id; return k; }
-	return -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL scene_teamSide(void *scene, int id);
+#define FUN_00463740 scene_teamSide
 static THISCALL void match_49ca20(char *self, int a, int b)
 {
 	if (S32(self, 0x234240d) < 0) { S32(self, 0x2340cf8) = 4; S32(self, 0x2340cfc) = 0; }
@@ -4514,7 +4504,8 @@ __asm__(".text\n"
 /* 0x462d30 / 0x462e30 / 0x4630c0 (thiscall) msg_playerJoinedTeam(player, team) / msg_playerChangedTeam(team, player)
    / msg_kill(killer, victim): the team and kill messages of the feed, in the language at 0x9dae74 (team names via
    the team slot table, killer/victim names and the weapon name of the killer). Lifted */
-static THISCALL int msg_playerJoinedTeam(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_462d30, (DWORD)scene, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_playerJoinedTeam(void *scene, int player, int team);
 static THISCALL int msg_playerChangedTeam(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_462e30, (DWORD)scene, 2, v); }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_kill(void *scene, int victim, int killer);
@@ -7136,7 +7127,8 @@ LIFT_PLAIN(menuState500_enter, 447750)
    by mode 0x9dae74 (a chat line only from someone else, 0x234243e) and a sound */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_playerConnected(void *scene, int actor);
-static THISCALL DWORD msg_chatLine(char *game, DWORD p, DWORD t, DWORD f) { DWORD v[3] = { p, t, f }; return run_lifted(lift_462c30, (DWORD)game, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_chatLine(void *scene, int actor, const char *text, int team);
 /* 0x462850 music_playMatch() (thiscall on the game): the match music by the map's kind */
 LIFT_PLAIN(music_playMatch, 462850)
 /* 0x453a10 dplay_closeSession(obj): Close and Release a DirectPlay object (0 without one) */
@@ -11011,7 +11003,7 @@ static void msgscene_setup(void)
 ST(msg_playerLeft, msgscene_setup();, (TC(int, 0x462bc0, char *, int)(BUF, g_a[0]), 0), (msg_playerLeft(BUF, g_a[0]), 0))
 ST(msg_cheatUsed, msgscene_setup(); g_a[2] = irnd(0, 4);, (TC(int, 0x463030, char *, int, int)(BUF, g_a[0], g_a[2]), 0),
    (msg_cheatUsed(BUF, g_a[0], g_a[2]), 0))
-ST(msg_playerJoinedTeam, msgscene_setup();, TC(int, 0x462d30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerJoinedTeam(BUF, g_a[0], g_a[1]))
+ST(msg_playerJoinedTeam, msgscene_setup();, (TC(int, 0x462d30, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_playerJoinedTeam(BUF, g_a[0], g_a[1]), 0))   /* eax: dead (tools/eaxuse.py) */
 ST(msg_playerChangedTeam, msgscene_setup();, TC(int, 0x462e30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerChangedTeam(BUF, g_a[0], g_a[1]))
 ST(msg_kill, msgscene_setup(); if (!irnd(0, 9)) g_a[irnd(0, 1)] = irnd(-3, -1);, (TC(int, 0x4630c0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_kill(BUF, g_a[0], g_a[1]), 0))   /* eax: dead (tools/eaxuse.py) */
 static void tintmask_setup(void)
@@ -16966,7 +16958,7 @@ static void msgplayer_setup(const DWORD *stubs)
 ST(msg_playerConnected, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462b50, char *, int)(BUF, g_a[0]), 0),
    (msg_playerConnected(BUF, g_a[0]), 0))
 ST(msg_chatLine, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462c30, char *, int, char *, int)(BUF, g_a[0], (char *)g_a[1], g_a[2]), 0),
-   (msg_chatLine(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
+   (msg_chatLine(BUF, g_a[0], (const char *)g_a[1], g_a[2]), 0))
 T_PLAIN(music_playMatch, 0x462850, msgplayer_setup(g_stubMusic);, BUF, 0, 0, 0, 0)
 T_PLAIN(dplay_closeSession, 0x453a10, g_a[0] = irnd(0, 3) ? (int)fakecom_new(0, 1, g_nargsDplay, 0) : 0;, 0, g_a[0], 0, 0, 0)
 /* batch 175: generated tests (tools/gentests.py, gen_setup from batch 172) */

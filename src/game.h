@@ -112,7 +112,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_46bd00(x0, y0, x1, y1) GAME_CDECL(0x46bd00, void, int, int, int, int)(x0, y0, x1, y1)   /* a rectangle's outline */
 /* a team's slot in teamScores (this_get_0x2342381_463780) and which side of the box it is on (FUN_00463740) */
 #define scene_teamSlot(scene, team) GAME_THISCALL(0x463780, int, Scene *, int)(scene, team)
-#define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)
+#define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)   /* the team's slot, given one if new */
+#define scene_findTeam(scene, team) GAME_THISCALL(0x463710, int, Scene *, int)(scene, team)   /* the team's slot or -1 */
 #define hud_drawNameIcon(scene, emblem, x, y) GAME_THISCALL(0x4922c0, void, Scene *, int, int, int)(scene, emblem, x, y)
 #define hud_drawLeaderIcon(scene, player, x, y) GAME_THISCALL(0x4924d0, void, Scene *, int, int, int)(scene, player, x, y)
 #define replay_drawIcon(scene, x, y, icon) GAME_THISCALL(0x496820, void, Scene *, int, int, int)(scene, x, y, icon)
