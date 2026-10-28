@@ -203,3 +203,40 @@ void (menuState800_enterGameRoom)(void)
 	CLEAR_ALL(cleared);
 	I(0x9dd4b8) = 999;
 }
+
+/* ---- the front end's per-frame dispatch ---- */
+#define CALL(addr) GAME_CDECL(addr, u32, void)()
+
+/* 0x445e40: the frame's input (0x445c60), then, unless the game is leaving (0x680370), the message box's keys while
+   it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,
+   500 missions, 600 setup, 700 the ARM CENTER, 800 the game room, 900 skirmish, 9999 in a match. Returns what the
+   handler leaves in eax (or the original's leftover of its compares) */
+u32 (menu_onStateChange)(void)
+{
+	CALL(0x445c60);
+	if (GAME_VAR(int, 0x680370))
+		return GAME_VAR(u32, 0x680370);
+	if (GAME_VAR(int, 0x4df900))
+		return CALL(0x445e10);   /* the message box */
+	int state = g_menuState;
+	switch (state) {
+	case 200: return CALL(0x445de0);
+	case 210: return CALL(0x44c560);   /* profile_processInput */
+	case 300: return CALL(0x4419d0);
+	case 400: return CALL(0x4076c0);   /* lobby_onStateChange */
+	case 500: return CALL(0x447b10);
+	case 600: return CALL(0x422b30);
+	case 700: return CALL(0x410190);   /* armc_onStateEnter */
+	case 800: return CALL(0x436800);   /* room_processKeys */
+	case 900: return CALL(0x443ef0);
+	case 9999: return CALL(0x42ab70);  /* menu_42ab70 */
+	}
+	/* the original's subtraction chain leaves these */
+	if (state > 900)
+		return (u32)state;
+	if (state > 600)
+		return (u32)(state - 800);
+	if (state > 300)
+		return (u32)(state - 500);
+	return (u32)(state - 210);
+}

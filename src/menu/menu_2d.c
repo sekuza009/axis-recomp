@@ -183,3 +183,16 @@ u32 (gfx_setMenuCamera)(void)
 	return ((u32 (STDCALL *)(double, double, double, double, double, double, double, double, double))0x4509d2)(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
+
+/* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (0x4df81c, then the
+   message 0x74de24) in yellow. Returns the text call's eax */
+u32 (menu_4290d0)(void)
+{
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
+	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
+	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	GAME_CDECL(0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, (const char *)0x4df81c);
+	return GAME_CDECL(0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)0x74de24);
+}
