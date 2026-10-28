@@ -4885,9 +4885,11 @@ LIFT_PLAIN(GetCurrentDirectoryA_wrap_43f580, 43f580)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_swapBuffers(void);
 /* 0x4539f0 arena_4539f0: create the DirectPlay lobby object (CoCreateInstance) */
-LIFT_PLAIN(arena_4539f0, 4539f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long arena_4539f0(void **out);
 /* 0x454740 net_454740: reset/set the network events */
-LIFT_PLAIN(net_454740, 454740)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_454740(void);
 /* 0x46c580 FUN_0046c580: message box (title, text) on the active window */
 LIFT_PLAIN(FUN_0046c580, 46c580)
 /* 0x41e7a0 profile_41e7a0: post a message to the main window */
@@ -5089,7 +5091,8 @@ LIFT_PLAIN(input_getCursorPos, 487c30)
 /* 0x4548b0 net_ping(ip, timeout): ICMP echo, the round-trip time (0 when it fails); 0x454650 net_454650(name, i):
    ping a server by address, its time into slot i; 0x4545b0 net_4545b0: ping every listed server (0x14-byte names) */
 LIFT_PLAIN(net_ping, 4548b0)
-LIFT_PLAIN(net_454650, 454650)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_454650(const char *address, int slot);
 LIFT_PLAIN(net_4545b0, 4545b0)
 /* 0x41f050 gfx_setMenuCamera: gluLookAt from the menu camera position to its target */
 LIFT_PLAIN(gfx_setMenuCamera, 41f050)
@@ -5214,7 +5217,8 @@ LIFT_PLAIN8(FUN_00470fc0, 470fc0)
 /* 0x454760 net_454760: close the two network thread handles; 0x454690 net_454690: clear the server table;
    0x452d70 net_452d70: receive a 62-byte reply (up to 3 s), then accept or refuse */
 LIFT_PLAIN(net_454760, 454760)
-LIFT_PLAIN(net_454690, 454690)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_454690(void);
 LIFT_PLAIN(net_452d70, 452d70)
 /* 0x42f0f0 FUN_0042f0f0(w, h): viewport and perspective projection (gluPerspective) */
 LIFT_PLAIN(FUN_0042f0f0, 42f0f0)
@@ -6709,7 +6713,8 @@ int arena_454ce0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_454d00(void);
 /* 0x453260 arena_453260(): enumerates through the slot of the connection kind 0xa0b418 (0..3), else 0 */
-LIFT_PLAIN(arena_453260, 453260)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_453260(void);
 /* batch 157 (lifted/grp103.c): DirectPlay create, host, join and player names */
 #include "lifted/grp103.c"
 /* 0x454190 dplay_getPlayerName(id, out): asks the DPNAME size (GetPlayerName with no buffer), allocates and locks a
@@ -6927,8 +6932,10 @@ LIFT_PLAIN(profile_processInput, 44c560)
 #include "lifted/grp113.c"
 /* 0x450bc0 arena_450bc0(from*, to*, flags, data, size*) / 0x450bf0 FUN_00450bf0(from, to, flags, data, size):
    DirectPlay Receive / Send through 0xa0b404 (0 without it) */
-LIFT_PLAIN8(arena_450bc0, 450bc0)
-LIFT_PLAIN8(FUN_00450bf0, 450bf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long arena_450bc0(DWORD *from, DWORD *to, DWORD flags, void *data, DWORD *size);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long FUN_00450bf0(DWORD from, DWORD to, DWORD flags, const void *data, DWORD size);
 /* 0x451270 FUN_00451270(msg, to, size): send msg from the local player 0xa0b424; types 2 and 6 guaranteed (flag 1,
    priority 8), type 7 with the given size */
 LIFT_PLAIN(FUN_00451270, 451270)
@@ -7165,7 +7172,8 @@ void THISCALL msg_chatLine(void *scene, int actor, const char *text, int team);
 /* 0x462850 music_playMatch() (thiscall on the game): the match music by the map's kind */
 LIFT_PLAIN(music_playMatch, 462850)
 /* 0x453a10 dplay_closeSession(obj): Close and Release a DirectPlay object (0 without one) */
-LIFT_PLAIN(dplay_closeSession, 453a10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long dplay_closeSession(void *dplay);
 /* batch 175 (lifted/grp125.c): menu and room pages tested with their callees stubbed (tools/gentests.py): two
    return-to-menus entries, the arena's join by connection kind, menu_enterState, room pages and mouse / keys,
    the armour centre's part and colour screens, the main menu keys, the setup tabs' draws and control keys,
@@ -11423,8 +11431,8 @@ static void strs_setup(void)
 }
 T_PLAIN(GetCurrentDirectoryA_wrap_43f580, 0x43f580, , 0, 0, 0, 0, 0)
 ST(gfx_swapBuffers, , CALL_PLAIN(0x4685d0, 0, 0, 0, 0, 0), (DWORD)gfx_swapBuffers())
-T_PLAIN(arena_4539f0, 0x4539f0, fill(BUF + 0x100, 8);, 0, BUF + 0x100, 0, 0, 0)
-T_PLAIN(net_454740, 0x454740, , 0, 0, 0, 0, 0)
+ST(arena_4539f0, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(arena_4539f0((void **)(DWORD)(BUF + 0x100))))
+ST(net_454740, , CALL_PLAIN(0x454740, 0, 0, 0, 0, 0), (DWORD)net_454740())
 T_PLAIN(FUN_0046c580, 0x46c580, strs_setup();, 0, BUF + 0x100, BUF + 0x200, 0, 0)
 ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
 ST(menu_vertex, g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);, CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), menu_vertex(g_a[0], g_a[1]))
@@ -11769,7 +11777,7 @@ static void ping_setup(void)
 	for (int i = 0; i < 8; i++) { if (irnd(0, 3)) fill_str((char *)(0xa0bf20 + i * 0x14), 15, '.', '9'); else *(char *)(0xa0bf20 + i * 0x14) = 0; }
 }
 T_PLAIN(net_ping, 0x4548b0, ping_setup();, 0, g_a[0], g_a[1], 0, 0)
-T_PLAIN(net_454650, 0x454650, ping_setup();, 0, BUF + 0x100, g_a[2], 0, 0)
+ST(net_454650, ping_setup();, CALL_PLAIN(0x454650, 0, BUF + 0x100, g_a[2], 0, 0), (DWORD)(net_454650((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[2]))))
 T_PLAIN(net_4545b0, 0x4545b0, ping_setup();, 0, 0, 0, 0, 0)
 static void lookat_setup(void) { for (int i = 0; i < 3; i++) { GF(0x4df024 + i * 4) = csu_fr(-50000, 50000); GF(0x680378 + i * 4) = csu_fr(-50000, 50000); } }
 T_PLAIN(gfx_setMenuCamera, 0x41f050, lookat_setup();, 0, 0, 0, 0, 0)
@@ -12044,7 +12052,7 @@ static void msgfmt_setup(void)
 ST(FUN_00470fc0, msgfmt_setup();, (((void (__cdecl *)(int, int, int, char *, int, int, int))0x470fc0)(1, 2, 3, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
    (FUN_00470fc0(0, 0, 0, 1, 2, 3, (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0), 0))
 T_PLAIN(net_454760, 0x454760, G32(0xa0d788) = irnd(0, 1) ? irnd(1, 99) : 0; G32(0xa0bf1c) = irnd(0, 1) ? irnd(1, 99) : 0;, 0, 0, 0, 0, 0)
-T_PLAIN(net_454690, 0x454690, , 0, 0, 0, 0, 0)
+ST(net_454690, , CALL_PLAIN(0x454690, 0, 0, 0, 0, 0), (net_454690(), 0))
 static void recv_setup(void)
 {
 	static const int r[] = { 0, -1, 10, 31, 62, 100 };
@@ -16176,7 +16184,7 @@ ST(arena_454bd0, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (DWORD)are
 ST(arena_454bf0, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (DWORD)arena_454bf0())
 ST(arena_454ce0, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (DWORD)arena_454ce0())
 ST(arena_454d00, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (DWORD)arena_454d00())
-T_PLAIN(arena_453260, 0x453260, dplay_setup();, 0, 0, 0, 0, 0)
+ST(arena_453260, dplay_setup();, CALL_PLAIN(0x453260, 0, 0, 0, 0, 0), (DWORD)(arena_453260()))
 /* batch 157 */
 static LONG dp_err(void)   /* a success, or one of the DirectPlay results the callers tell apart */
 {
@@ -16578,10 +16586,10 @@ static void dpmsg_setup(void)
 static DWORD g_rcvOut[4];
 ST(arena_450bc0, dpmsg_setup(); g_rcvOut[2] = (DWORD)irnd(0, 0x100); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD *, DWORD *, DWORD, void *, DWORD *))0x450bc0)(&g_rcvOut[0], &g_rcvOut[1], g_a[2], BUF + 0x3a00, &g_rcvOut[2]),
-   arena_450bc0(0, 0, 0, (DWORD)&g_rcvOut[0], (DWORD)&g_rcvOut[1], g_a[2], (DWORD)(BUF + 0x3a00), (DWORD)&g_rcvOut[2], 0, 0, 0))
+   (DWORD)arena_450bc0(&g_rcvOut[0], &g_rcvOut[1], g_a[2], BUF + 0x3a00, &g_rcvOut[2]))
 ST(FUN_00450bf0, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD, DWORD, DWORD, void *, DWORD))0x450bf0)(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]),
-   FUN_00450bf0(0, 0, 0, g_a[0], g_a[1], g_a[2], (DWORD)(BUF + 0x3800), g_a[4], 0, 0, 0))
+   (DWORD)FUN_00450bf0(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]))
 T_PLAIN(FUN_00451270, 0x451270, dpmsg_setup();, 0, BUF + 0x3800, g_a[0], g_a[4], 0)
 T_PLAIN(net_logMessage, 0x451350, dpmsg_setup();, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0)
 T_PLAIN(arena_451090, 0x451090, dpmsg_setup();, 0, BUF + 0x3800, g_a[4], g_a[5], 0)
@@ -16996,7 +17004,7 @@ ST(msg_playerConnected, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462b50, c
 ST(msg_chatLine, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462c30, char *, int, char *, int)(BUF, g_a[0], (char *)g_a[1], g_a[2]), 0),
    (msg_chatLine(BUF, g_a[0], (const char *)g_a[1], g_a[2]), 0))
 T_PLAIN(music_playMatch, 0x462850, msgplayer_setup(g_stubMusic);, BUF, 0, 0, 0, 0)
-T_PLAIN(dplay_closeSession, 0x453a10, g_a[0] = irnd(0, 3) ? (int)fakecom_new(0, 1, g_nargsDplay, 0) : 0;, 0, g_a[0], 0, 0, 0)
+ST(dplay_closeSession, g_a[0] = irnd(0, 3) ? (int)fakecom_new(0, 1, g_nargsDplay, 0) : 0;, CALL_PLAIN(0x453a10, 0, g_a[0], 0, 0, 0), (DWORD)(dplay_closeSession((void *)(DWORD)(g_a[0]))))
 /* batch 175: generated tests (tools/gentests.py, gen_setup from batch 172) */
 /* FUN_0041edc0 / FUN_0041ed70 free the list at 0x67fb3c one node at a time (FUN_00441190, real: a stub would never
    empty it) before returning to the menus: 0..4 nodes in BUF, the next pointer at +0x3534 */

@@ -499,4 +499,18 @@ typedef struct { float r, g, b, a; } Colour;
 #define menu_447c30() GAME_CDECL(0x447c30, void, void)()
 #define menu_447b40() GAME_CDECL(0x447b40, void, void)()
 
+/* ---- DirectPlay calls (net/dplay_calls.c) ---- */
+#define CoCreateInstance(clsid, outer, context, iid, out) IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)(clsid, outer, context, iid, out)
+#define arena_4549c0() GAME_CDECL(0x4549c0, int, void)()   /* list the sessions through slot 0 .. 3 */
+#define arena_454ae0() GAME_CDECL(0x454ae0, int, void)()
+#define arena_454bf0() GAME_CDECL(0x454bf0, int, void)()
+#define arena_454d00() GAME_CDECL(0x454d00, int, void)()
+
+/* ---- the game's own network code (net/net_servers.c) ---- */
+#define net_ping(ip, timeout) GAME_CDECL(0x4548b0, int, u32, int)(ip, timeout)   /* ICMP echo: the round trip time, 0 when none */
+#define inet_addr_wrap_4547c0(address) GAME_CDECL(0x4547c0, u32, const char *)(address)
+#define net_454760() GAME_CDECL(0x454760, void, void)()   /* the network threads' handles closed */
+#define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
+#define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
+
 #endif
