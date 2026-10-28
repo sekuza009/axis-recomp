@@ -45,6 +45,10 @@ static inline float f32(long double x)
 	return r;
 }
 
+/* a float in memory as its 32 bits (also assignable): for values the original only copies, never loading them into
+   the FPU (which would quiet a signalling NaN) */
+#define BITS(lvalue) (*(u32 *)&(lvalue))
+
 /* a game function at its original address, as a callable expression */
 #define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(addr))
 #define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(addr))

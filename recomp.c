@@ -6150,7 +6150,8 @@ void THISCALL hud_48f970(void *stage, void *view);
    0x9da494; its spin advances by +0x1934 times the frame step (five times faster in modes 1 and 3, 0x680370) and
    wraps at 360. The second part draws the rings' inner layer (+0x1940.., spin +0x3264 / +0x3268) the same way in
    red; the pulse then moves on and turns at 0.05 / 0.95 */
-LIFT_PLAIN(menu_drawBackground3D, 429d70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawBackground3D(void *first);
 /* batch 106 (lifted/grp52.c) */
 #include "lifted/grp52.c"
 /* 0x496f20 (thiscall on the scene) hud_496f20(scale): the level's sky, looking along the camera's direction
@@ -14448,7 +14449,7 @@ static void tunnel_setup(void)
 	GF(0x4b06fc) = (float)irnd(0, 100) / 100.0f;
 	g_a[0] = (int)(BUF + 0x980000);
 }
-ST(menu_drawBackground3D, tunnel_setup();, (CD(void, 0x429d70, char *)((char *)g_a[0]), 0), (menu_drawBackground3D(0, 0, 0, (DWORD)g_a[0], 0, 0, 0), 0))
+ST(menu_drawBackground3D, tunnel_setup();, (CD(void, 0x429d70, char *)((char *)g_a[0]), 0), (menu_drawBackground3D((void *)g_a[0]), 0))
 /* batch 106 */
 /* the sky: every mode at random, every texture id a GL slot owner of menutex_setup's set, the camera, scroll,
    heights, floor vertices and fog values small floats, a scale of 0.1..10 */

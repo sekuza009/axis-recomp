@@ -49,6 +49,11 @@
 #define glGetFloatv(pname, out) IMPORT(0x4a9270, void, u32, float *)(pname, out)
 #define glLoadMatrixf(m) IMPORT(0x4a926c, void, const float *)(m)
 #define glVertex3fv(v) IMPORT(0x4a9290, void, const float *)(v)
+/* a point kept in memory (three floats), passed on bit for bit */
+#define glVertex3f_stored(v) IMPORT(0x4a9210, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
+/* colours and translations given as float bits (see BITS) */
+#define glColor4f_bits(r, g, b, a) IMPORT(0x4a9228, void, u32, u32, u32, u32)(r, g, b, a)
+#define glTranslatef_bits(x, y, z) IMPORT(0x4a9214, void, u32, u32, u32)(x, y, z)
 /* GLU, through the game's jump to its import */
 #define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
 	double, double))0x4509d2)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
@@ -64,6 +69,21 @@
 #define gfx_setProjection2D3D(mode) GAME_CDECL(0x41ef90, void, int)(mode)   /* 1: 3D, 2: the menus' 2D */
 /* a vertex in the menus' 640 x 480 units (the patch DLL replaces this function: kept original) */
 #define menu_vertex(x, y) GAME_CDECL(0x41ef60, void, int, int)(x, y)
+/* the menus' 3D camera (gluLookAt) for models and the tunnel */
+#define gfx_setMenuCamera() GAME_CDECL(0x41f050, void, void)()
+/* glRotatef about x, then y, then z (degrees, as float bits) */
+#define gfx_rotateXYZ(x, y, z) GAME_CDECL(0x41ef20, void, u32, u32, u32)(x, y, z)
+/* the 3D background (menu_tunnel.c) */
+#define g_texturesOff GAME_VAR(int, 0x9da494)        /* (by use) set: the menus' 3D background is drawn untextured (left out) */
+#define g_tunnelTexture GAME_VAR(int, 0x4e186c)
+#define g_flareTextures ((const int *)0x9da470)     /* flare k's texture is g_flareTextures[-k] */
+#define g_cageTexture GAME_VAR(int, 0x76d36c)
+#define g_pulse GAME_VAR(float, 0x4b06fc)            /* the bands' colour pulse, 0.05 .. 0.95 */
+#define g_pulseStep GAME_VAR(float, 0x4b0700)
+#define g_flareSizeB GAME_VAR(float, 0x4b0704)       /* flare 3's half-size, 10 .. 48 */
+#define g_flareSizeA GAME_VAR(float, 0x4b0708)       /* flare 2's */
+#define g_flareStepB GAME_VAR(float, 0x4b070c)
+#define g_flareStepA GAME_VAR(float, 0x4b0710)
 /* ---- textures ---- */
 typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
 #define g_textures GAME_VAR(TextureSets *, 0xa0e010)
