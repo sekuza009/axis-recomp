@@ -42,6 +42,7 @@ static inline int ftol(long double x)
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would */
 #define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
+#define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
 /* an import, through the game's import table slot */
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)(slot))
 /* a global of the game at its address */

@@ -14,6 +14,13 @@
 #define glColor4f_stored(c) IMPORT(0x4a9228, void, u32, u32, u32, u32)(((const u32 *)(c))[0], ((const u32 *)(c))[1], \
 	((const u32 *)(c))[2], ((const u32 *)(c))[3])
 #define glEnable(cap) IMPORT(0x4a9224, void, u32)(cap)
+#define GL_FOG 0x0b60
+#define GL_DEPTH_BUFFER_BIT 0x0100
+#define GL_COLOR_BUFFER_BIT 0x4000
+#define glClear(mask) IMPORT(0x4a91e8, void, u32)(mask)
+#define glClearDepth(depth) IMPORT(0x4a91dc, void, double)(depth)
+/* a clear colour kept in memory (three floats), passed on bit for bit, alpha 1 */
+#define glClearColor_stored(c) IMPORT(0x4a91e0, void, u32, u32, u32, u32)((c)[0], (c)[1], (c)[2], 0x3f800000u)
 #define GL_QUADS 7
 #define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
 #define glEnd() IMPORT(0x4a9220, void, void)()
@@ -110,6 +117,36 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define profile_44b360(x, y) GAME_CDECL(0x44b360, int, int, int)(x, y)
 #define Color4_set(dst, r, g, b, a) GAME_CDECL(0x41f0e0, void, Colour *, float, float, float, float)(dst, r, g, b, a)
 
+/* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
+#define gfx_setProjectionHud(mode, scale) GAME_CDECL(0x4685f0, void, int, float)(mode, scale)
+#define hud_scale() GAME_CDECL(0x468700, float, void)()             /* FUN_00468700: a float setting */
+#define hud_456b50(textures) GAME_THISCALL(0x456b50, void, void *)(textures)
+#define this_set_4841d0(view) GAME_THISCALL(0x4841d0, void, void *)(view)
+#define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
+#define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
+#define render_drawObjects(view, mode, alpha) GAME_THISCALL(0x485af0, void, void *, int, float)(view, mode, alpha)
+#define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, void *, float)(stage, scale)
+#define render_processRenderingBy(stage, view, scale) GAME_THISCALL(0x497d20, void, void *, void *, float)(stage, view, scale)
+#define hud_490da0(stage, view) GAME_THISCALL(0x490da0, void, void *, void *)(stage, view)
+#define hud_45e170(stage, view, pass) GAME_THISCALL(0x45e170, void, void *, void *, int)(stage, view, pass)
+#define hud_47d060(stage, view) GAME_THISCALL(0x47d060, void, void *, void *)(stage, view)
+#define hud_479af0(stage, view) GAME_THISCALL(0x479af0, void, void *, void *)(stage, view)
+#define hud_48f970(stage, view) GAME_THISCALL(0x48f970, void, void *, void *)(stage, view)
+#define hud_472900(stage, volume, a, b, c) GAME_THISCALL(0x472900, void, void *, void *, u32, u32, u32)(stage, volume, a, b, c)
+#define hud_48fde0(stage, x0, y0, x1, y1) GAME_THISCALL(0x48fde0, void, void *, int, int, int, int)(stage, x0, y0, x1, y1)
+#define hud_drawPressFire(scene) GAME_THISCALL(0x495140, void, Scene *)(scene)
+#define hud_drawClock(scene) GAME_THISCALL(0x496610, void, Scene *)(scene)
+#define hud_drawMatchResult(scene) GAME_THISCALL(0x496a30, void, Scene *)(scene)
+#define replay_drawFollowedName(scene) GAME_THISCALL(0x496b80, void, Scene *)(scene)
+#define replay_drawMessage(scene) GAME_THISCALL(0x495190, void, Scene *)(scene)
+#define hud_4953d0(scene) GAME_THISCALL(0x4953d0, void, Scene *)(scene)
+#define hud_496240(scene) GAME_THISCALL(0x496240, void, Scene *)(scene)
+#define nullsub_48b420(scene) GAME_THISCALL(0x48b420, void, Scene *)(scene)
+#define hud_4955a0(scene) GAME_THISCALL(0x4955a0, void, Scene *)(scene)
+#define hud_drawEscMenu(scene) GAME_THISCALL(0x495610, void, Scene *)(scene)
+#define hud_drawRecordIndicator(scene) GAME_THISCALL(0x496d10, void, Scene *)(scene)
+#define hud_drawReadyStart(scene) GAME_THISCALL(0x496c20, void, Scene *)(scene)
+
 /* ---- network ---- */
 #define net_playerInUse(i) GAME_CDECL(0x4a8700, int, int)(i)   /* FUN_004a8700: the player table's slot i is taken */
 
@@ -117,6 +154,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)0xa1f100)          /* the 16 message colours */
 #define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
+#define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])0x4c7030)   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
 #define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,

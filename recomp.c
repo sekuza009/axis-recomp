@@ -7538,7 +7538,8 @@ static THISCALL DWORD game_loadAllData(char *s) { return run_lifted(lift_460570,
    (@0x498580: 0x4913a0), the lock-on (@0x4985c4: 0x491f50), the main HUD (@0x498654: 0x4926f0), the ranking
    (@0x4986a0: 0x494930), messages, clock, team box, FPS (@0x498862: 0x495510) and the rest; the patch DLL wraps
    the five @ calls (markers_wrap .. fps_wrap) */
-static THISCALL DWORD hud_pass(char *s) { return run_lifted(lift_4982f0, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_pass(void *scene);
 /* batch 208 (lifted/grp171.c, grp172.c): functions where the patch DLL overwrites a block of code; lift.py
    "%addr=bytes" lifts the patched block too and the lifted code runs whichever is in memory (g_patchOk lists it) */
 #include "lifted/grp171.c"
@@ -18096,7 +18097,7 @@ static void hudpass_setup(void)
 	SF(BUF, 0x233cc4c) = csu_fr(-50, 50);
 	G32(0xa0e010) = (int)(BUF + 0x1000); G32(0x83a9d4) = irnd(0, 1);
 }
-ST(hud_pass, hudpass_setup();, TC(DWORD, 0x4982f0, char *)(BUF), hud_pass(BUF))
+ST(hud_pass, hudpass_setup();, TC(DWORD, 0x4982f0, char *)(BUF), (hud_pass(BUF), 0))
 /* batch 208 */
 /* the player markers: each of the 16 records in play or not, flags, team, frags, screen point (on and off the
    1024 x 768 screen), short names; the local and followed players, the mode flags, texture ids; the texture set's
