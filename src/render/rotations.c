@@ -74,3 +74,12 @@ long double (FUN_0046c100)(float a)
 		r = fadd_m(r, TURN);
 	return r;
 }
+
+/* 0x482a40: out = the point p transformed by the matrix m (columns, the translation at 12 .. 14), each row summed in
+   the original's order */
+void (load_482a40)(float *out, const float *m, const float *p)
+{
+	out[0] = (float)((X)m[8] * p[2] + (X)m[4] * p[1] + (X)m[0] * p[0] + m[12]);
+	out[1] = (float)((X)m[9] * p[2] + (X)m[1] * p[0] + (X)m[5] * p[1] + m[13]);
+	out[2] = (float)((X)m[10] * p[2] + (X)m[2] * p[0] + (X)m[6] * p[1] + m[14]);
+}

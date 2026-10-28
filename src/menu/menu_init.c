@@ -75,3 +75,19 @@ void (arena_4509e0)(void)
 	GAME_VAR(int, 0x9f9420) = 6;
 	GAME_VAR(int, 0x9f9428) = 7;
 }
+
+/* 0x42f8e0: the key repeat records (four of 0x2c bytes, at 0x4df918 and again at 0x9da328): delay 4, then two rows of
+   five values from the defaults at 0x5b1cfc */
+void (intro_42f8e0)(void)
+{
+	for (int o = 0; o < 0xb0; o += 0x2c) {
+		GAME_VAR(int, 0x4df918 + o) = 4;
+		GAME_VAR(int, 0x9da328 + o) = 4;
+		for (int j = 0; j < 20; j += 4) {
+			GAME_VAR(int, 0x4df91c + o + j) = GAME_VAR(int, 0x5b1cfc + o + j);
+			GAME_VAR(int, 0x9da32c + o + j) = GAME_VAR(int, 0x5b1cfc + o + j);
+			GAME_VAR(int, 0x4df930 + o + j) = GAME_VAR(int, 0x5b1d10 + o + j);
+			GAME_VAR(int, 0x9da340 + o + j) = GAME_VAR(int, 0x5b1d10 + o + j);
+		}
+	}
+}

@@ -100,6 +100,23 @@ void (app_430390)(void)
 		memcpy((void *)p, colour, 24);
 }
 
+/* 0x40ddb0: the mech unpacked from the network / profile record at 0x9dd5f8 (signed bytes: five parts, the weapons,
+   then the colours) */
+void (FUN_0040ddb0)(void)
+{
+	const signed char *rec = (const signed char *)0x9dd5f8;
+	GAME_VAR(int, 0x4dc878) = rec[0];
+	GAME_VAR(int, 0x4dc87c) = rec[1];
+	GAME_VAR(int, 0x4dc880) = rec[2];
+	GAME_VAR(int, 0x4dc884) = rec[3];
+	GAME_VAR(int, 0x4dc888) = rec[4];
+	for (int i = 0; i < 4; i++)
+		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
+	GAME_VAR(int, 0x4dcf1c) = rec[6];
+	GAME_VAR(int, 0x4dcf18) = rec[5];
+	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
+}
+
 /* 0x4464b0: the mech stored into the profile record (the inverse of FUN_004463a0) */
 void (match_4464b0)(void)
 {

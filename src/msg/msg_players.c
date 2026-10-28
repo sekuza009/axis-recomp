@@ -1,6 +1,7 @@
 /* msg_players.c: messages about players, in the game's language (1 Korean, 2 English; none otherwise). The texts are
    the game's own strings; the English ones are quoted. */
 #include "../game.h"
+#include <string.h>
 
 #define KOREAN 1
 #define ENGLISH 2
@@ -95,4 +96,20 @@ void THISCALL (msg_playerJoinedTeam)(Scene *scene, int player, int team)
 		const char *format = (const char *)(scene->teamGame == 1 ? 0x4c471c : 0x4c4700);
 		msg_print(scene, 0, format, name, (const char *)(0x4a97ac + scene_teamSide(scene, team) * 16));
 	}
+}
+
+/* 0x462650: is text one of the cheat codes (entries 2 .. 4 of the language's table of 256-byte codes; empty ones
+   skipped)? The actor's cheat (+0x4d0) set to it and returned, else -1 */
+int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
+{
+	int language = g_language;
+	for (int k = 0; k < 3; k++) {
+		const char *code = language == 1 ? (const char *)(0x4a9a38 + k * 0x100)
+		                 : language == 2 ? (const char *)(0x4a9f38 + k * 0x100) : NULL;
+		if (code && code[0] && !strcmp(code, text)) {
+			GAME_VAR(int, (u8 *)scene + 0x1eccf40 + actor * 0x8888) = k + 2;
+			return k + 2;
+		}
+	}
+	return -1;
 }

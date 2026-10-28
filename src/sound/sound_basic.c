@@ -55,3 +55,24 @@ void (music_shutdown)(void)
 	g_music = NULL;
 	CoUninitialize();
 }
+
+/* 0x456de0: with sound on (0xa0e80c), v times the volume setting (0x4e0c90) as 0 .. 100 becomes the attenuation
+   (0xa0e66c): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at 0x4a93ec. Returns what the
+   original leaves in eax */
+int (FUN_00456de0)(int v)
+{
+	if (!GAME_VAR(int, 0xa0e80c))
+		return 0;
+	int p = ftol(fmul_m((long double)GAME_VAR(int, 0x4e0c90) * v, (const float *)0x4a9504));
+	if (p < 0) {
+		GAME_VAR(int, 0xa0e66c) = -1000;
+		return p;
+	}
+	if (p > 100) {
+		GAME_VAR(int, 0xa0e66c) = 0;
+		return p;
+	}
+	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)0x4a93ec));
+	GAME_VAR(int, 0xa0e66c) = r;
+	return r;
+}

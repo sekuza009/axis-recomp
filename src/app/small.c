@@ -184,12 +184,19 @@ int THISCALL (script_reset)(Stage *stage)
 		FIELD(int, stage, 0x2149308 + i * 4) = 0;
 	return 0;
 }
+/* player p counted among the players seen so far (the highest + 1) */
+static void player_seen(Stage *stage, int p)
+{
+	u32 *seen = &FIELD(u32, stage, 0x19e1888);
+	if (p > (int)(*seen - 1))
+		*seen = p + 1;
+}
+#define PLAYER_RECORD(stage, p) ((u8 *)(stage) + 0x1561b68 + (p) * 0x47fd2)
+
 /* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
 void THISCALL (FUN_00473a10)(Stage *stage, int p, int v)
 {
-	u32 *seen = &FIELD(u32, stage, 0x19e1888);   /* players seen so far (the highest + 1) */
-	if (p > (int)(*seen - 1))
-		*seen = p + 1;
+	player_seen(stage, p);
 	FIELD(int, stage, 0x1561b68 + p * 0x47fd2 + 0x44) = v;
 	for (int i = 0; i < stage->actorCount; i++)
 		if (FIELD(int, &stage->actors[i], 0x10c) == p)
@@ -338,4 +345,41 @@ void THISCALL (match_4722e0)(u8 *view, float v)
 	BITS(FIELD(float, view, 0xa08)) = BITS(v);
 	volatile long double n = -(long double)v;   /* negated first, as the original's fchs */
 	FIELD(float, view, 0xa0c) = (float)(n * FIELD(float, view, 0x20f3a9c) + FIELD(float, view, 0x20f3aac));
+}
+
+/* 0x473940: player p's name set (empty for none), and that of every actor of player p (+0x98) */
+void THISCALL (player_setName)(Stage *stage, int p, const char *name)
+{
+	player_seen(stage, p);
+	char *dst = (char *)PLAYER_RECORD(stage, p) + 4;
+	if (name)
+		strcpy(dst, name);
+	else
+		*dst = 0;
+	for (int i = 0; i < stage->actorCount; i++) {
+		u8 *actor = (u8 *)&stage->actors[i];
+		if (FIELD(int, actor, 0x10c) != p)
+			continue;
+		if (name)
+			strcpy((char *)actor + 0x98, name);
+		else
+			actor[0x98] = 0;
+	}
+}
+
+/* 0x473a80: player p's team set, and that of every actor of player p (one leaving the teams, team < 0, also loses
+   +0x14c); the teams changed (+0x202e8ec) */
+void THISCALL (player_setTeam)(Stage *stage, int p, int team)
+{
+	player_seen(stage, p);
+	FIELD(int, PLAYER_RECORD(stage, p), 0x48) = team;
+	for (int i = 0; i < stage->actorCount; i++) {
+		u8 *actor = (u8 *)&stage->actors[i];
+		if (FIELD(int, actor, 0x10c) == p) {
+			FIELD(int, actor, 0x118) = team;
+			if (team < 0)
+				FIELD(int, actor, 0x14c) = 0;
+		}
+	}
+	FIELD(int, stage, 0x202e8ec) = 1;
 }

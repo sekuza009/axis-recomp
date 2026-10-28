@@ -444,15 +444,8 @@ void THISCALL load_480440(void *self);
 void armc_40d990(void);
 
 /* 0x40ddb0 FUN_0040ddb0: unpack the mech from the network/profile record at 0x9dd5f8 (signed bytes) */
-static void __cdecl FUN_0040ddb0(void)
-{
-	G32(0x4dc878) = G8(0x9dd5f8); G32(0x4dc87c) = G8(0x9dd5f9); G32(0x4dc880) = G8(0x9dd5fa);
-	G32(0x4dc884) = G8(0x9dd5fb); G32(0x4dc888) = G8(0x9dd5fc);
-	for (int i = 0; i < 4; i++) G32(0x4dcf20 + i * 4) = G8(0x9dd5ff + i);
-	G32(0x4dcf1c) = G8(0x9dd5fe);
-	G32(0x4dcf18) = G8(0x9dd5fd);
-	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0040ddb0(void);
 
 /* 0x40e670 armc_40e670: restore the menu camera from its saved copy */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -493,16 +486,8 @@ void armc_dragSecondaryValue(void);
 void app_430390(void);
 
 /* 0x42f8e0 intro_42f8e0: initial key repeat tables (4 records of 0x2c bytes, copied twice) */
-static void __cdecl intro_42f8e0(void)
-{
-	for (int o = 0; o < 0xb0; o += 0x2c) {
-		G32(0x4df918 + o) = 4; G32(0x9da328 + o) = 4;
-		for (int j = 0; j < 20; j += 4) {
-			G32(0x4df91c + o + j) = G32(0x5b1cfc + o + j); G32(0x9da32c + o + j) = G32(0x5b1cfc + o + j);
-			G32(0x4df930 + o + j) = G32(0x5b1d10 + o + j); G32(0x9da340 + o + j) = G32(0x5b1d10 + o + j);
-		}
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_42f8e0(void);
 
 /* 0x430bd0 intro_430bd0: clear the first dword of 16 records of 0x410 bytes at 0x9f9840 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -534,16 +519,8 @@ void lobby_404930(void);
 void FUN_0041ee40(int i);
 
 /* 0x433700 room_433700: copy the room settings record at 0x5b1b30 (name + 6 bytes); types 22..24 become 0 */
-static void __cdecl room_433700(void)
-{
-	if (G8(0x5b1b50) > 0x15 && G8(0x5b1b50) < 0x19) G8(0x5b1b50) = 0;
-	G8(0x4df9e8) = G8(0x5b1b50);
-	memset((void *)0x4df9c8, 0, 32);
-	G8(0x4df9eb) = G8(0x5b1b53);              /* the original stores this before copying the name */
-	strcpy((char *)0x4df9c8, GSTR(0x5b1b30));
-	G8(0x4df9e9) = G8(0x5b1b51); G8(0x4df9ea) = G8(0x5b1b52);
-	G8(0x4df9ec) = G8(0x5b1b54); G8(0x4df9ed) = G8(0x5b1b55);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433700(void);
 
 /* ---- batch 4: room/skirmish/profile/arena helpers -------------------------------------------- */
 
@@ -754,15 +731,8 @@ THISCALL void FUN_0045e070(void *self);
 THISCALL void FUN_0045e810(void *self, int i, int slot);
 
 /* 0x45e880 (thiscall) actor_selectWeapon(i, slot): start switching if the slot holds a valid item */
-static THISCALL void actor_selectWeapon(char *self, int i, int slot)
-{
-	char *a = self + ACTOR(i);
-	if (S32(self, 0x1cd94e8 + i * 0x8888) == slot) return;
-	int item = S32(self, PLAYER(S32(a, 0x10c)) + 0x1561e88 + slot * 4);
-	if (item > -1 && S32(self, 0x14d4874 + item * 0x2e18) > -1) {
-		S32(a, 0x48c) = 1; S32(a, 0x498) = slot; S32(a, 0x494) = 0x40000000;   /* 2.0f */
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_selectWeapon(void *self, int i, int slot);
 
 /* 0x45eab0 / 0x45eb20 (thiscall) actor input record (+0x44c..+0x480): clear / set */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -795,18 +765,8 @@ static THISCALL char *FUN_004625a0(char *self)
 
 /* 0x462650 (thiscall) chat_matchCheatCode(actor, text): cheat entries 2..4 of the current language's table
    (0x100 bytes each; language 1 at 0x4a9a38, language 2 at 0x4a9f38); empty entries are skipped */
-static THISCALL int chat_matchCheatCode(char *self, int actor, const char *text)
-{
-	int lang = G32(0x9dae74);
-	for (int k = 0; k < 3; k++) {
-		const char *code = lang == 1 ? GSTR(0x4a9a38 + k * 0x100) : lang == 2 ? GSTR(0x4a9f38 + k * 0x100) : NULL;
-		if (code && code[0] && !strcmp(code, text)) {
-			S32(self, 0x1eccf40 + actor * 0x8888) = k + 2;
-			return k + 2;
-		}
-	}
-	return -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int chat_matchCheatCode(void *self, int actor, const char *text);
 
 /* match message feed: 5 timed lines (0x108 bytes each, timer float at +0x2342ad2), head/tail at +0x2342efa/+0x2342ef6 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1088,13 +1048,9 @@ THISCALL char *FUN_00470f80(void *self, const char *s);
 THISCALL void collision_4803c0(float *v, float *out, float s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void hud_467700(float *v, int angle);
-static void __cdecl load_482a40(float *out, const float *m, const float *p)   /* out = m * p + m[12..14], row by row */
-{
-	typedef long double X;
-	out[0] = (float)((X)m[8] * p[2] + (X)m[4] * p[1] + (X)m[0] * p[0] + m[12]);
-	out[1] = (float)((X)m[9] * p[2] + (X)m[1] * p[0] + (X)m[5] * p[1] + m[13]);
-	out[2] = (float)((X)m[10] * p[2] + (X)m[2] * p[0] + (X)m[6] * p[1] + m[14]);
-}
+/* out = m * p + m[12..14], row by row */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void load_482a40(float *out, const float *m, const float *p);
 
 /* ---- batch 8: menu setup screens, button rectangles, pools, lookups ---------------------------- */
 
@@ -1129,15 +1085,8 @@ void skirmish_443840(void);
 void setup_selectSoundTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_selectControlTab(void);
-static void __cdecl lobby_setSubState0(void)
-{
-	int v = G32(0x680380);
-	GU32(0x4df870) = 0x420c0000; G32(0x4df874) = 0; G32(0x4df878) = v;       /* 35.0 */
-	GU32(0x76d388) = 0xc28c0000; GU32(0x76d38c) = 0x420c0000; G32(0x76d390) = v;   /* -70.0, 35.0 */
-	lobby_404930();
-	G32(0x4dbb3c) = 1; G32(0x4db51c) = 0; GU32(0x4dbba0) = 0x3f333333; G32(0x4dc24c) = 0; G32(0x4db85c) = 0;
-	GU32(0x4dba68) = 0xc4ce4000;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_setSubState0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_433980(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1263,23 +1212,10 @@ void skel_47d830(DWORD *d, const DWORD *s);
 void THISCALL net_4743b0(void *stage, int p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void FUN_00461ec0(void *self, const char *s);
-static void player_touch(char *self, int p)       /* players seen so far: count = max(count, p + 1) */
-{
-	if (p > (int)((DWORD)S32(self, 0x19e1888) - 1)) S32(self, 0x19e1888) = p + 1;
-}
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void FUN_00473a10(char *self, int p, int v);
-static THISCALL void player_setTeam(char *self, int p, int team)
-{
-	player_touch(self, p);
-	S32(self, p * 0x47fd2 + 0x1561b68 + 0x48) = team;
-	for (int i = 0; i < S32(self, 0x202e8c8); i++)
-		if (S32(self, 0x1cd94b4 + i * 0x8888) == p) {
-			S32(self, 0x1cd94c0 + i * 0x8888) = team;
-			if (team < 0) S32(self, 0x1cd94f4 + i * 0x8888) = 0;
-		}
-	S32(self, 0x202e8ec) = 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void player_setTeam(void *self, int p, int team);
 static THISCALL void match_4799f0(char *self, int i)   /* free effect slot i; shrink the used range */
 {
 	int *e = &S32(self, 0x20a99c4 + i * 300);
@@ -1294,17 +1230,8 @@ static THISCALL void match_4799f0(char *self, int i)   /* free effect slot i; sh
 		S32(self, 0x20f2da0) = --n;
 	} while (n > 0);
 }
-static THISCALL void actor_45edb0(char *self, int i)
-{
-	char *a = self + ACTOR(i);
-	if (S32(a, 0x14c) != 1) return;                 /* +0x1cd94f4 */
-	DWORD r = GU32(0xa1efb8);
-	DWORD v = GU32(0xa106f8 + (r & 0xfff) * 4);
-	GU32(0xa1efb8) = r + 1;
-	actor_selectWeapon(self, i, v % 100 < 80 ? 0 : 4);
-	S32(a, 0x8830) = 0; S32(a, 0x8834) = 0;
-	S32(a, 0x8828) = S32(a, 0x90); S32(a, 0x882c) = S32(a, 0x94);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_45edb0(void *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_4675f0(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1416,15 +1343,8 @@ static void __cdecl armc_40dfa0(void)           /* six part bounding boxes (+-60
 }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4338c0(void);
-static void __cdecl room_433800(void)
-{
-	static const DWORD z[] = { 0x9dd6ac, 0x9dd350, 0x76d40c, 0x9dd6b8, 0x9dd3b0, 0xa0b350, 0xa0b35c, 0x9dd1b4, 0x9dd1d0,
-	                           0x9dd300, 0x9dd328 };
-	for (DWORD e = 0x9dcef4; e < 0x9dd19c; e += 0x44) { memset((void *)(e - 4), 0, 0x36); G32(e + 0x32) = 1; }
-	for (unsigned k = 0; k < sizeof z / sizeof z[0]; k++) G32(z[k]) = 0;
-	G32(0x9dce48) = 1; G32(0x9dd83c) = 1; G32(0x9dd834) = 4; GU32(0x9dd6bc) = 0x3f333333; G32(0x9dd7dc) = 10;
-	GU32(0x9dd384) = 0x4b189680; G32(0x9dd4b8) = 999;                          /* 10000000.0 */
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433800(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_447660(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1499,18 +1419,8 @@ void arena_404010(void);
 void profile_44af30(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_403300(void);
-static void __cdecl lobby_setSubState1(void)
-{
-	static const DWORD z[] = { 0x4df884, 0x4dbaac, 0x4db8b8, 0x4dba84, 0x4db854, 0x4dbbec, 0x4dbbf0, 0x4dba90, 0x4db858,
-	                           0x4dbac8, 0x4dbaa8, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0, 0x4df818, 0x4db71c, 0x4dbaf8,
-	                           0x4db85c, 0x4db8b4, 0x4db718, 0x907b2c, 0x4dbaf0, 0x4db714 };
-	int v = G32(0x680380);
-	GU32(0x4df880) = 0x420c0000; G32(0x4df888) = v; G32(0x76d3a0) = v;
-	GU32(0x76d398) = 0xc28c0000; GU32(0x76d39c) = 0xc20c0000;
-	G32(0x4db51c) = 1; G32(0x4dbb3c) = 1; GU32(0x4dbba0) = 0x3f333333;
-	for (unsigned k = 0; k < sizeof z / sizeof z[0]; k++) G32(z[k]) = 0;
-	G32(0x907b24) = 999; G32(0xa0b360) = 1; GU32(0x4dba68) = 0xc4ce4000; G32(0x5b1914) = 30;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_setSubState1(void);
 static void __cdecl lobby_ladderGameName(void)   /* fixed ladder game: name, map 8, limits 10/10 */
 {
 	strcpy(GSTR(0x4df9c8), GSTR(0x4b17bc));
@@ -1603,17 +1513,8 @@ static void __cdecl FUN_00464a70(BYTE *px, int mode, const DWORD *img, const BYT
 }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_48fe10(char *self);
-static THISCALL void player_setName(char *self, int p, const char *name)
-{
-	player_touch(self, p);
-	char *dst = self + p * 0x47fd2 + 0x1561b68 + 4;
-	if (name) strcpy(dst, name); else *dst = 0;
-	for (int i = 0; i < S32(self, 0x202e8c8); i++) {
-		char *a = self + 0x1cd9440 + i * 0x8888;
-		if (S32(a, 0x74) != p) continue;
-		if (name) strcpy(a, name); else *a = 0;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void player_setName(void *self, int p, const char *name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_resetActors(void *self);
 
@@ -1649,32 +1550,12 @@ void setup_420300(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_432040(void);
 
-static void __cdecl room_403420(void)            /* reset the map on/off list (first time: all off; then n maps on) */
-{
-	if (!G32(0x4db510)) {
-		for (DWORD p = 0x4d950c; p < 0x4db50c; p += 8) { G32(p - 4) = 0; G32(p) = 0; }
-		for (int k = 0; k < G32(0x67ef00); k++) { G32(0x4d9508 + k * 8) = 1; G32(0x4d950c + k * 8) = 0; }
-	}
-	G32(0x4d95b8) = 0; G32(0x4d95c0) = 0; G32(0x4d95c8) = 0; G32(0x4db508) = 0;
-	room_403300();
-	G32(0x4db510) = 1;
-}
-static void __cdecl lobby_drawArenaTitle(void)   /* arena settings record 0x4ded20 -> lobby copy 0x4db528 */
-{
-	signed char m = *(signed char *)0x4ded40;    /* map: entries 0x16..0x18 are not selectable */
-	if (m >= 0x16 && m <= 0x18) *(signed char *)0x4ded40 = m = 0;
-	if (!strcmp(GSTR(0x4ded20), GSTR(0x4ad4a4))) {   /* still the default title: "<player name><suffix>" */
-		memset((void *)0x4ded20, 0, 32);
-		strcpy(GSTR(0x4ded20), GSTR(0x4dedb0));
-		strcat(GSTR(0x4ded20), GSTR(0x4ad49c));
-		m = *(signed char *)0x4ded40;
-	}
-	memset((void *)0x4db528, 0, 32);
-	strcpy(GSTR(0x4db528), GSTR(0x4ded20));
-	BYTE b1 = *(BYTE *)0x4ded41, b2 = *(BYTE *)0x4ded42, b3 = *(BYTE *)0x4ded43, b4 = *(BYTE *)0x4ded44, b5 = *(BYTE *)0x4ded45;
-	*(signed char *)0x4db548 = m; *(BYTE *)0x4db54b = b3; *(BYTE *)0x4db549 = b1; *(BYTE *)0x4db54a = b2;
-	G32(0x4db54e) = 0; *(BYTE *)0x4db54c = b4; *(BYTE *)0x4db54d = b5; G32(0x4db552) = 0;
-}
+/* reset the map on/off list (first time: all off; then n maps on) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403420(void);
+/* arena settings record 0x4ded20 -> lobby copy 0x4db528 */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_drawArenaTitle(void);
 /* copy the arena option texts into the menu tables */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_42bc00(void);
@@ -1828,28 +1709,12 @@ static const Store k_input_setDefaultKeyBindings[118] = {
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void input_setDefaultKeyBindings(void);
 
-static void __cdecl room_433790(void)          /* enter the game-room list (sub-state 2) */
-{
-	static const DWORD z[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4ded54, 0x907b2c, 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8 };
-	room_433700();
-	G32(0x9dd834) = 2; G32(0x9dce48) = 1; GU32(0x9dd6bc) = 0x3f333333;
-	for (unsigned k = 0; k < sizeof z / sizeof z[0]; k++) G32(z[k]) = 0;
-	G32(0x680cd0) = 1; *(char *)0x4df9ea = 0;
-	room_403420();
-}
-static void __cdecl lobby_setSubState2(void)   /* lobby: create arena */
-{
-	static const DWORD z[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4db55c, 0x4ded54, 0x4db85c, 0x907b2c, 0x4dbab0, 0x4db850,
-	                           0x4db518, 0x4dbacc };
-	int v = G32(0x680380);
-	GU32(0x4df890) = 0xc20c0000; G32(0x4df894) = 0; G32(0x4df898) = v;
-	GU32(0x76d3a8) = 0x428c0000; GU32(0x76d3ac) = 0x420c0000; G32(0x76d3b0) = v;
-	lobby_drawArenaTitle();
-	G32(0x4db51c) = 2; G32(0x4dbb3c) = 1; GU32(0x4dbba0) = 0x3f333333;
-	for (unsigned k = 0; k < sizeof z / sizeof z[0]; k++) G32(z[k]) = 0;
-	GU32(0x4dba68) = 0xc4ce4000; G32(0x680cd0) = 1;
-	room_403420();
-}
+/* enter the game-room list (sub-state 2) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_433790(void);
+/* lobby: create arena */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_setSubState2(void);
 static void __cdecl armc_433360(void)          /* menu camera/light positions (5 x 2 vectors) */
 {
 	static const DWORD k[][2] = {
@@ -3680,16 +3545,8 @@ long double FUN_0046c100(DWORD a);
 /* 0x456de0 FUN_00456de0(v): with sound on (0xa0e80c), v * the volume setting (0x4e0c90) scaled to 0..100 (__ftol)
    becomes the DirectSound attenuation at 0xa0e66c: < 0 -> -1000, > 100 -> 0, else __ftol((p * 5 - 500) * 20 *
    the float at 0x4a93ec). Returns what the original leaves in EAX */
-static int __cdecl FUN_00456de0(int v)
-{
-	if (!G32(0xa0e80c)) return 0;
-	int p = crt_ftol(x87_mulm((long double)G32(0x4e0c90) * v, (const float *)0x4a9504));
-	if (p < 0) { G32(0xa0e66c) = -1000; return p; }
-	if (p > 100) { G32(0xa0e66c) = 0; return p; }
-	int r = crt_ftol(x87_mulm((long double)((p * 5 - 500) * 20), (const float *)0x4a93ec));
-	G32(0xa0e66c) = r;
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00456de0(int v);
 /* 0x462bc0 (thiscall) msg_playerLeft(actor): "<name> left" in the language at 0x9dae74 (1: 0x4c468c, 2: 0x4c46a8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_playerLeft(void *scene, int actor);

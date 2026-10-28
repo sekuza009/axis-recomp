@@ -714,4 +714,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define FUN_00443d80() GAME_CDECL(0x443d80, void, void)()   /* skirmish settings: the pending step pushed */
 #define FUN_00443de0() GAME_CDECL(0x443de0, void, void)()   /* one step undone */
 
+/* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
+#define lobby_404930() GAME_CDECL(0x404930, void, void)()   /* the player's record from the profile */
+#define room_403300() GAME_CDECL(0x403300, void, void)()   /* the map list laid out */
+#define lobby_drawArenaTitle() GAME_CDECL(0x404980, void, void)()
+#define room_403420() GAME_CDECL(0x403420, void, void)()   /* the map on/off list reset */
+#define room_433700() GAME_CDECL(0x433700, void, void)()   /* the room settings copied */
+
 #endif
