@@ -423,12 +423,8 @@ static int __cdecl profile_4343b0(const char *name)
 void room_403560(int i);
 
 /* 0x40f830 armc_40f830(i): 1 if list entry i (>= 27) is one of the two colour-part selections */
-static int __cdecl armc_40f830(int i)
-{
-	int v = G32(0x4dcca4 + i * 4);
-	if (v >= 0x1b && (v == G32(0x4dcb18) || v == G32(0x4dcb1c))) return 1;
-	return 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_40f830(int i);
 
 /* 0x46cbc0 FUN_0046cbc0(i, base, stride): base + i * stride, or 0 for a negative index */
 static int __cdecl FUN_0046cbc0(int i, int base, int stride) { return i < 0 ? 0 : i * stride + base; }
@@ -480,51 +476,25 @@ static void __cdecl FUN_0040ddb0(void)
 }
 
 /* 0x40e670 armc_40e670: restore the menu camera from its saved copy */
-static void __cdecl armc_40e670(void)
-{
-	G32(0x4df024) = G32(0x4df870); G32(0x4df028) = G32(0x4df874); G32(0x4df02c) = G32(0x4df878);
-	G32(0x680378) = G32(0x76d388); G32(0x68037c) = G32(0x76d38c); G32(0x680380) = G32(0x76d390);
-	G32(0x4dbc68) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40e670(void);
 
 /* 0x40e6c0 menu_40e6c0: load the saved mech (parts, weapons, colours) into the ARM CENTER working copy */
-static void __cdecl menu_40e6c0(void)
-{
-	G32(0x4dc760) = G32(0x4dc878); g_armcChest = G32(0x4dc87c); G32(0x4dc76c) = G32(0x4dc884);
-	g_armcArm = G32(0x4dc880); G32(0x4dc770) = G32(0x4dc888);
-	G32(0x4dcb24) = G32(0x4dcf24); G32(0x4dcb20) = G32(0x4dcf20); G32(0x4dcb28) = G32(0x4dcf28);
-	G32(0x4dcb1c) = G32(0x4dcf1c); G32(0x4dcb2c) = G32(0x4dcf2c); G32(0x4dcb18) = G32(0x4dcf18);
-	memcpy(g_armcColours, (void *)0x4dcfe0, 0x90);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_40e6c0(void);
 
 /* 0x40ed20 armc_40ed20: position of each selected part in its unlocked list (0 if not listed) */
-static void __cdecl armc_40ed20(void)
-{
-	static const struct { DWORD out, count, list, sel; } k[] = {
-		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8, 0x4dc760 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c, 0x4dc764 },
-		{ 0x4dbc7c, 0x4dca90, 0x4dc964, 0x4dc768 }, { 0x4dcea4, 0x4dca94, 0x4dc89c, 0x4dc76c },
-		{ 0x4dcb30, 0x4dc890, 0x4dbd7c, 0x4dc770 } };
-	for (int j = 0; j < 5; j++) {
-		G32(k[j].out) = 0;
-		for (int i = 0; i < G32(k[j].count); i++)
-			if (G32(k[j].sel) == G32(k[j].list + i * 4)) { G32(k[j].out) = i; break; }
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40ed20(void);
 
 /* 0x40f590 armc_backupColours: copy slot 1 to the undo buffer. The fifth value is copied from the
    second (0x4dc4d4), not from 0x4dc4e0 - kept as in the original */
-static void __cdecl armc_backupColours(void)
-{
-	G32(0x4dc530) = G32(0x4dc4d0); G32(0x4dc538) = G32(0x4dc4d8); G32(0x4dc534) = G32(0x4dc4d4);
-	G32(0x4dc53c) = G32(0x4dc4dc); G32(0x4dc540) = G32(0x4dc4d4); G32(0x4dc544) = G32(0x4dc4e4);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_backupColours(void);
 
 /* 0x41ced0 armc_41ced0: copy the undo buffer into colour slots 0..4 */
-static void __cdecl armc_41ced0(void)
-{
-	for (int s = 0; s < 5; s++)
-		memcpy(&g_armcColours[s * 6], (void *)0x4dc530, 24);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41ced0(void);
 
 /* ARM CENTER colour sliders: cursor x -> value (0.00625 per unit); x87 rounding points as in the original */
 static long double slider_pos(void) { return (long double)((g_menuCursorX - G32(0x4dcc98)) + 0xb8) * 0.00625f; }
