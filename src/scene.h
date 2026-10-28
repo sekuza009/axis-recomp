@@ -112,7 +112,12 @@ typedef struct Scene {
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
 	u8 _pad0000078[0x1f15ec];
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
-	u8 _pad01f1668[0x9cf038];
+	u8 _pad01f1668[0x7fc9e0];
+	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
+	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
+	u32 glFogEnd;   /* +0x9ee05c */
+	u32 glFogDensity;   /* +0x9ee060 */
+	u8 _pad09ee064[0x1d263c];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
 	u8 _pad0bc06a4[0x4];
 	i32 hudBarTexture;   /* +0xbc06a8: texture id of the counters' plate and weapon slots */
@@ -295,6 +300,10 @@ _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) 
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
+_Static_assert(offsetof(Scene, glFogColour) == 0x9ee048 && sizeof(((Scene *)0)->glFogColour) == 0x10, "scene.fields: Scene.glFogColour");
+_Static_assert(offsetof(Scene, glFogStart) == 0x9ee058 && sizeof(((Scene *)0)->glFogStart) == 0x4, "scene.fields: Scene.glFogStart");
+_Static_assert(offsetof(Scene, glFogEnd) == 0x9ee05c && sizeof(((Scene *)0)->glFogEnd) == 0x4, "scene.fields: Scene.glFogEnd");
+_Static_assert(offsetof(Scene, glFogDensity) == 0x9ee060 && sizeof(((Scene *)0)->glFogDensity) == 0x4, "scene.fields: Scene.glFogDensity");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, hudBarTexture) == 0xbc06a8 && sizeof(((Scene *)0)->hudBarTexture) == 0x4, "scene.fields: Scene.hudBarTexture");
 _Static_assert(offsetof(Scene, markerTexture) == 0xbc06ac && sizeof(((Scene *)0)->markerTexture) == 0x4, "scene.fields: Scene.markerTexture");

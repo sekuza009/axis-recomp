@@ -5274,7 +5274,8 @@ static THISCALL DWORD gfx_initVertexArrayExt(char *self) { return run_lifted(lif
 static THISCALL DWORD ViewVolume_dtor(char *self) { return run_lifted(lift_483fb0, (DWORD)self, 0, NULL); }
 static THISCALL DWORD ViewVolume_deletingDtor(char *self, DWORD flags) { DWORD v[1] = { flags }; return run_lifted(lift_463430, (DWORD)self, 1, v); }
 /* 0x472900 (thiscall) hud_472900(colour, start, end, density): linear fog */
-static THISCALL DWORD hud_472900(char *scene, DWORD c, DWORD a, DWORD b, DWORD d) { DWORD v[4] = { c, a, b, d }; return run_lifted(lift_472900, (DWORD)scene, 4, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_472900(void *scene, const void *colour, DWORD start, DWORD end, DWORD density);
 /* Glyph quads, hand-written (not lifted) on purpose: they sit between the HUD code and glVertex2i, and the patch
    DLL's glVertex2i hook (axisnet.c, proportional HUD) identifies a HUD element by finding its call site within 200
    dwords above its own frame. Each lifted level adds a few hundred bytes of real stack (wrapper frame + the
@@ -6012,7 +6013,8 @@ void menu_drawTexturedRect_428b50(int x0, int y0, int x1);
 void THISCALL hud_drawNameIcon(void *scene, int emblem, int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawLeaderIcon(void *scene, int player, int x, int y);
-static THISCALL DWORD replay_drawIcon(char *self, DWORD x, DWORD y, DWORD i) { DWORD v[3] = { x, y, i }; return run_lifted(lift_496820, (DWORD)self, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL replay_drawIcon(void *scene, int x, int y, int icon);
 /* (lifted/grp39.c also holds hud_drawDigits, 0x46bdc0, not used: the patch DLL rewrites it in memory at start-up -
    texture corners half a texel into each digit cell (0x46be96) and the digit height for wide screens - so a copy of
    the code on disk would undo both fixes) */
@@ -12006,7 +12008,7 @@ ST(ViewVolume_dtor, vvext_setup();, (TC(void, 0x483fb0, char *)(BUF + 0x2000), 0
 ST(ViewVolume_deletingDtor, vvext_setup();, (TC(void, 0x463430, char *, int)(BUF + 0x2000, g_a[0]), 0), (ViewVolume_deletingDtor(BUF + 0x2000, (DWORD)g_a[0]), 0))
 static void fog_setup(void) { for (int i = 0; i < 4; i++) SF(BUF + 0x700, i * 4) = csu_fr(0, 100); for (int i = 0; i < 3; i++) GF(&g_a[i]) = csu_fr(-1000, 500000); }
 ST(hud_472900, fog_setup();, (TC(void, 0x472900, char *, char *, int, int, int)(BUF, BUF + 0x700, g_a[0], g_a[1], g_a[2]), 0),
-   (hud_472900(BUF, (DWORD)(BUF + 0x700), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
+   (hud_472900(BUF, BUF + 0x700, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 static void glyph_setup(int maxi) { g_a[0] = irnd(-100, 700); g_a[1] = irnd(-100, 500); g_a[2] = irnd(0, maxi); g_a[3] = irnd(0, 99); }
 ST(hud_427c30, glyph_setup(255);, (((void (__cdecl *)(int, int, int))0x427c30)(g_a[0], g_a[1], g_a[2]), 0), (hud_427c30(g_a[0], g_a[1], g_a[2]), 0))
 ST(hud_427e30, glyph_setup(255);, (((void (__cdecl *)(int, int, int))0x427e30)(g_a[0], g_a[1], g_a[2]), 0), (hud_427e30(g_a[0], g_a[1], g_a[2]), 0))

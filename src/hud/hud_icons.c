@@ -57,3 +57,17 @@ void THISCALL (hud_drawLeaderIcon)(Scene *scene, int player, int x, int y)
 	icon_quad(sx, sy, w, h, texel(col * 24, 1.0f / 128), texel(row * 16, 1.0f / 64),
 	          texel(col * 24 + 24, 1.0f / 128), texel((row + 1) * 16, 1.0f / 64));
 }
+
+/* 0x496820: icon number icon from the emblem texture (scene->emblemTexture, 256 texels wide): eight 32-texel cells
+   per row, the rows starting 96 texels down; drawn 32 x 32 HUD units, white, with its top left at (x, y - 8) */
+void THISCALL (replay_drawIcon)(Scene *scene, int x, int y, int icon)
+{
+	float s0 = texel(icon % 8 * 32, 1.0f / 256), t0 = texel((icon / 8 + 3) * 32, 1.0f / 256);
+	int sy = hud_toScreenY(y - 8), sx = hud_toScreenX(x);
+	int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f);
+	glEnable(GL_TEXTURE_2D);
+	tex_bind(g_textures->managers[scene->emblemTexture / 512], scene->emblemTexture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	float s1 = s0 + 0.125f, t1 = t0 + 0.125f;
+	icon_quad(sx, sy, w, h, s0, t0, s1, t1);
+}

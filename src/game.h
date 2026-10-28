@@ -30,6 +30,19 @@
 #define glBindTexture(target, id) IMPORT(0x4a9264, void, u32, u32)(target, id)
 #define glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
 #define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
+#define GL_FOG_DENSITY 0x0b62
+#define GL_FOG_START 0x0b63
+#define GL_FOG_END 0x0b64
+#define GL_FOG_MODE 0x0b65
+#define GL_FOG_COLOR 0x0b66
+#define GL_FOG_HINT 0x0c54
+#define GL_LINEAR 0x2601
+#define GL_DONT_CARE 0x1100
+#define glFogi(pname, v) IMPORT(0x4a9288, void, u32, int)(pname, v)
+#define glFogfv(pname, v) IMPORT(0x4a9284, void, u32, const void *)(pname, v)
+/* a float kept in memory, passed on bit for bit */
+#define glFogf_stored(pname, v) IMPORT(0x4a9280, void, u32, u32)(pname, v)
+#define glHint(target, mode) IMPORT(0x4a924c, void, u32, u32)(target, mode)
 
 /* ---- C runtime of the game ---- */
 #define sprintf(...) GAME_CDECL(0x49e9dd, int, char *, const char *, ...)(__VA_ARGS__)
