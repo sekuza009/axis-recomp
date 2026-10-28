@@ -2,6 +2,7 @@
    (left, top, right, bottom; 16 bytes each); a hit test gives the index of the first rectangle holding the point, or
    -1. The game has 31 copies of the same code, one per table. */
 #include "../game.h"
+#include <stdarg.h>
 
 /* the first of the rectangles from table (count of them) holding (x, y), or -1 */
 static int hit(int x, int y, const int *table, int count)
@@ -54,4 +55,21 @@ int (arena_404520)(int x, int y)
 		return i < 0 ? -1 : i + 16;
 	}
 	return hit(x, y, (const int *)0x4db5e8, 16);
+}
+
+/* 0x41eea0: is the point (x, y) (menu units) inside the convex polygon of n edges whose corners follow on the stack
+   (5 xs, then 5 ys, centred: x - 320, 240 - y), every edge turning the same way? */
+int (FUN_0041eea0)(int x, int y, int n, ...)
+{
+	va_list args;
+	va_start(args, n);
+	const int *px = (const int *)args, *py = px + 5;
+	int cx = x - 320, cy = 240 - y;
+	for (int i = 0; i < n; i++)
+		if ((int)((u32)(px[i + 1] - px[i]) * (u32)(cy - py[i]) + (u32)(cx - px[i]) * (u32)(py[i] - py[i + 1])) > 0) {
+			va_end(args);
+			return 0;
+		}
+	va_end(args);
+	return 1;
 }

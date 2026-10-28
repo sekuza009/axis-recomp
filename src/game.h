@@ -730,4 +730,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_4065a0(a, b) GAME_CDECL(0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */
 #define Vec3_normalize(v) GAME_THISCALL(0x467760, long double, float *)(v)   /* returns the length, unrounded */
 
+/* ---- (load/lists.c, render/shape_colours.c, net/net_tables.c, match/map_objects.c, menu/lobby_states.c) ---- */
+#define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
+#define crt_strtok(s, delimiters) GAME_CDECL(0x49ec3b, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
+#define crt_atoi(s) GAME_CDECL(0x49ec09, int, const char *)(s)
+#define FUN_00440e20(node, value) GAME_CDECL(0x440e20, u32, void *, int)(node, value)
+#define tex_tintHsv(c, dh, ds, dv) GAME_THISCALL(0x46d950, void, float *, u32, u32, u32)(c, dh, ds, dv)
+#define skel_getSkeletonPtrBy(cache, name) GAME_THISCALL(0x46b1a0, void *, void *, u32)(cache, name)
+#define FUN_0040ddb0() GAME_CDECL(0x40ddb0, void, void)()   /* the mech unpacked */
+
 #endif

@@ -154,7 +154,13 @@ typedef struct MapObject {
 	u32 poseFrom;   /* +0x280: the pose's source and destination; passed to the view volume by poseSide */
 	u32 poseTo;   /* +0x284 */
 	i32 poseSide;   /* +0x288: 0: poseFrom, else poseTo */
-	u8 _pad000028c[0x30];
+	void *unit;   /* +0x28c: its collision unit (none: 0) */
+	i32 animated;   /* +0x290: 1: its skeleton plays */
+	void *skeleton;   /* +0x294 */
+	u8 _pad0000298[0x4];
+	float animRate;   /* +0x29c: 1 / the period (0: stopped) */
+	i32 animMode;   /* +0x2a0 */
+	u8 _pad00002a4[0x18];
 	float pos[3];   /* +0x2bc: the centre of its bounding sphere */
 	u8 _pad00002c8[0x4];
 } MapObject;
@@ -502,6 +508,11 @@ _Static_assert(offsetof(MapObject, model) == 0x27c && sizeof(((MapObject *)0)->m
 _Static_assert(offsetof(MapObject, poseFrom) == 0x280 && sizeof(((MapObject *)0)->poseFrom) == 0x4, "scene.fields: MapObject.poseFrom");
 _Static_assert(offsetof(MapObject, poseTo) == 0x284 && sizeof(((MapObject *)0)->poseTo) == 0x4, "scene.fields: MapObject.poseTo");
 _Static_assert(offsetof(MapObject, poseSide) == 0x288 && sizeof(((MapObject *)0)->poseSide) == 0x4, "scene.fields: MapObject.poseSide");
+_Static_assert(offsetof(MapObject, unit) == 0x28c && sizeof(((MapObject *)0)->unit) == 0x4, "scene.fields: MapObject.unit");
+_Static_assert(offsetof(MapObject, animated) == 0x290 && sizeof(((MapObject *)0)->animated) == 0x4, "scene.fields: MapObject.animated");
+_Static_assert(offsetof(MapObject, skeleton) == 0x294 && sizeof(((MapObject *)0)->skeleton) == 0x4, "scene.fields: MapObject.skeleton");
+_Static_assert(offsetof(MapObject, animRate) == 0x29c && sizeof(((MapObject *)0)->animRate) == 0x4, "scene.fields: MapObject.animRate");
+_Static_assert(offsetof(MapObject, animMode) == 0x2a0 && sizeof(((MapObject *)0)->animMode) == 0x4, "scene.fields: MapObject.animMode");
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
 _Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");

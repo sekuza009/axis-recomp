@@ -88,6 +88,11 @@ struct MapObject 0x2cc                                          # a map object (
 0x280      4          u32 poseFrom                              # the pose's source and destination; passed to the view volume by poseSide
 0x284      4          u32 poseTo
 0x288      4          i32 poseSide                              # 0: poseFrom, else poseTo
+0x28c      4          void *unit                                # its collision unit (none: 0)
+0x290      4          i32 animated                              # 1: its skeleton plays
+0x294      4          void *skeleton
+0x29c      4          float animRate                            # 1 / the period (0: stopped)
+0x2a0      4          i32 animMode
 0x2bc      0xc        float pos[3]                              # the centre of its bounding sphere
 
 struct ItemType 0x90                                            # a kind of map item (Stage.itemTypes)

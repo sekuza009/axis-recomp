@@ -42,3 +42,25 @@ void THISCALL (object_deactivate)(Stage *stage, int i)
 	if (OBJECT_HAS_UNIT(o) == 1 && OBJECT_UNIT(o))
 		space_disableUnit(OBJECT_UNIT(o));
 }
+
+/* 0x490df0: script command 0x1c: object i's animation: none (no name, or mode 0) stops it; otherwise its skeleton
+   from the stage's cache (+0x13016d0), its collision unit out of the collisions, the rate 1 / period (+-1 for a
+   period within 1e-8 of 0, -1 also for a NaN) */
+void THISCALL (object_setAnimation)(Stage *stage, int i, u32 name, float period, int mode)
+{
+	MapObject *o = &stage->objects[i];
+	if (!name || !mode) {
+		BITS(o->animRate) = 0;
+		return;
+	}
+	o->skeleton = skel_getSkeletonPtrBy((u8 *)stage + 0x13016d0, name);
+	if (o->unit)
+		space_disableUnit(o->unit);
+	o->animated = 1;
+	o->animMode = mode;
+	long double p = period;
+	if ((p < 0 ? -p : p) > 1e-8f)
+		o->animRate = (float)(1.0L / p);
+	else
+		o->animRate = period >= 0.0f ? 1.0f : -1.0f;
+}

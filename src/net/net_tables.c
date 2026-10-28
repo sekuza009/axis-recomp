@@ -84,3 +84,34 @@ u32 (arena_454130)(void)
 	GAME_VAR(int, 0xa0b41c) = 0;
 	return r;
 }
+
+/* 0x4542a0: the address typed as "a.b.c.d" (0xa0b43c, cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
+   (a not masked). Each part goes into a 4-byte slot of a zeroed 20-byte buffer (a longer part runs into the next
+   slot); more than four parts would overrun the original's stack, and a string with none makes it copy from NULL */
+int (arena_4542a0)(void)
+{
+	char buf[20];
+	memset(buf, 0, sizeof buf);
+	char *part = crt_strtok((char *)0xa0b43c, (const char *)0x4b1304);   /* "." */
+	strcpy(buf, part);
+	if (part)
+		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)0x4b3e68)) != NULL; slot += 4)
+			strcpy(slot, part);
+	int a = crt_atoi(buf), b = crt_atoi(buf + 4), c = crt_atoi(buf + 8), d = crt_atoi(buf + 12);
+	return ((((a << 8) | (b & 0xff)) << 8 | (c & 0xff)) << 8) | (d & 0xff);
+}
+
+/* 0x454390: the address as "a.b.c.d" (bytes high to low) into 0xa0b460; returns its length + 1 */
+int (dplay_formatSessionEntry)(u32 address)
+{
+	char text[16], part[4];
+	itoa((int)(address >> 24), part, 10);
+	strcpy(text, part);
+	for (int shift = 16; shift >= 0; shift -= 8) {
+		strcat(text, (const char *)0x4b1304);
+		itoa((int)((address >> shift) & 0xff), part, 10);
+		strcat(text, part);
+	}
+	strcpy((char *)0xa0b460, text);
+	return (int)strlen(text) + 1;
+}

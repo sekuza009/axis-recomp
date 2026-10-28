@@ -176,3 +176,25 @@ void (room_433800)(void)
 	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0 */
 	GAME_VAR(int, 0x9dd4b8) = 999;
 }
+
+/* 0x432620: the ladder's fixed game: its name (0x4b17bc) and the player's (0x9dd570), map 8, limits 10 and 10, in
+   both the room's record and the room settings; the mech unpacked */
+void (lobby_ladderGameName)(void)
+{
+	strcpy((char *)0x4df9c8, (const char *)0x4b17bc);
+	GAME_VAR(char, 0x4df9e9) = 8;
+	GAME_VAR(char, 0x4df9eb) = 0;
+	strcpy((char *)0x76d450, (const char *)0x9dd570);
+	GAME_VAR(char, 0x4df9e8) = 0;
+	GAME_VAR(char, 0x4df9ec) = 10;
+	GAME_VAR(char, 0x4df9ed) = 10;
+	GAME_VAR(char, 0x4df9ea) = 0;
+	strcpy((char *)0x5b1b30, (const char *)0x4df9c8);
+	GAME_VAR(char, 0x5b1b51) = 8;
+	GAME_VAR(char, 0x5b1b53) = 0;
+	GAME_VAR(char, 0x5b1b50) = 0;
+	GAME_VAR(char, 0x5b1b54) = 10;
+	GAME_VAR(char, 0x5b1b55) = 10;
+	GAME_VAR(char, 0x5b1b52) = 0;
+	FUN_0040ddb0();
+}

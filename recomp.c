@@ -1098,20 +1098,9 @@ static unsigned char __cdecl net_451530(int id)  /* free every slot owned by id;
 /* read n bits MSB-first from the bit stream; returns the new position */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_46f230(int *out, int n);
-static int __cdecl FUN_0041eea0(int x, int y, int n, ...)  /* point inside a convex polygon (5 xs, then 5 ys)? */
-{
-	va_list ap;
-	va_start(ap, n);
-	const int *px = (const int *)ap, *py = px + 5;
-	int cx = x - 320, cy = 240 - y;
-	for (int i = 0; i < n; i++)
-		if ((int)((DWORD)(px[i + 1] - px[i]) * (DWORD)(cy - py[i]) + (DWORD)(cx - px[i]) * (DWORD)(py[i] - py[i + 1])) > 0) {
-			va_end(ap);
-			return 0;
-		}
-	va_end(ap);
-	return 1;
-}
+/* point inside a convex polygon (5 xs, then 5 ys)? */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0041eea0(int x, int y, int n, ...);
 static int name_cmp(const char *a, const char *b)   /* strcmp, result -1/0/1 */
 {
 	for (;; a++, b++) {
@@ -1316,17 +1305,9 @@ void profile_44af30(void);
 void room_403300(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_setSubState1(void);
-static void __cdecl lobby_ladderGameName(void)   /* fixed ladder game: name, map 8, limits 10/10 */
-{
-	strcpy(GSTR(0x4df9c8), GSTR(0x4b17bc));
-	*(char *)0x4df9e9 = 8; *(char *)0x4df9eb = 0;
-	strcpy(GSTR(0x76d450), GSTR(0x9dd570));
-	*(char *)0x4df9e8 = 0; *(char *)0x4df9ec = 10; *(char *)0x4df9ed = 10; *(char *)0x4df9ea = 0;
-	strcpy(GSTR(0x5b1b30), GSTR(0x4df9c8));
-	*(char *)0x5b1b51 = 8; *(char *)0x5b1b53 = 0; *(char *)0x5b1b50 = 0; *(char *)0x5b1b54 = 10; *(char *)0x5b1b55 = 10;
-	*(char *)0x5b1b52 = 0;
-	FUN_0040ddb0();
-}
+/* fixed ladder game: name, map 8, limits 10/10 */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_ladderGameName(void);
 static void __cdecl armc_40de80(void)           /* ARM CENTER camera box corners (+-700) */
 {
 	static const struct { WORD off; signed char s; } v[] = {
@@ -3294,42 +3275,18 @@ unsigned msg_4629f0(void *scene, int colour, const char *fmt, ...);
 THISCALL void actor_46f770(void *self, int i, DWORD scale);
 /* 0x46de20 (thiscall) tex_46de20(dh, ds, dv): tint an RGBA byte colour: bytes / 255 -> floats, tex_tintHsv, * 255
    -> __ftol back into the bytes (all four channels, alpha too). Returns the last __ftol result */
-static THISCALL int tex_46de20(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv)
-{
-	float c[4];
-	for (int i = 0; i < 4; i++) c[i] = (float)x87_mulm((long double)(int)rgba[i], (const float *)0x4aa2a4);    /* 1/255 */
-	((void (THISCALL *)(float *, DWORD, DWORD, DWORD))tex_tintHsv)(c, dh, ds, dv);
-	int r = 0;
-	for (int i = 0; i < 4; i++) { r = crt_ftol(x87_mulm(LD(c[i]), (const float *)0x4a9744)); rgba[i] = (BYTE)r; }  /* 255 */
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int tex_46de20(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv);
 /* 0x4542a0 arena_4542a0(): the dotted address string at 0xa0b43c (strtok at "." - it is cut up in place) -> 4 bytes
    a.b.c.d packed as (a << 24) | b << 16 | c << 8 | d (a not masked, as in the original). Each token goes into a
    4-byte slot of a zeroed 20-byte buffer (longer tokens run into the next slot); more than 4 tokens would overrun
    the original's stack, and a string without any token makes it copy from NULL */
-static int __cdecl arena_4542a0(void)
-{
-	char buf[20];
-	memset(buf, 0, sizeof buf);
-	char *tok = CRT_strtok((char *)0xa0b43c, (const char *)0x4b1304);
-	strcpy(buf, tok);
-	if (tok)
-		for (char *slot = buf + 4; (tok = CRT_strtok(NULL, (const char *)0x4b3e68)) != NULL; slot += 4) strcpy(slot, tok);
-	int a = CRT_atoi(buf), b = CRT_atoi(buf + 4), c = CRT_atoi(buf + 8), d = CRT_atoi(buf + 12);
-	return ((((a << 8) | (b & 0xff)) << 8 | (c & 0xff)) << 8) | (d & 0xff);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4542a0(void);
 /* 0x454390 dplay_formatSessionEntry(addr): "a.b.c.d" (bytes high to low, _itoa base 10) into 0xa0b460; returns the
    copied length + 1 */
-static int __cdecl dplay_formatSessionEntry(DWORD addr)
-{
-	char acc[16], tmp[4];
-	CRT_itoa((int)(addr >> 24), tmp, 10); strcpy(acc, tmp);
-	strcat(acc, (const char *)0x4b1304); CRT_itoa((int)((addr >> 16) & 0xff), tmp, 10); strcat(acc, tmp);
-	strcat(acc, (const char *)0x4b1304); CRT_itoa((int)((addr >> 8) & 0xff), tmp, 10); strcat(acc, tmp);
-	strcat(acc, (const char *)0x4b1304); CRT_itoa((int)(addr & 0xff), tmp, 10); strcat(acc, tmp);
-	strcpy((char *)0xa0b460, acc);
-	return (int)strlen(acc) + 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_formatSessionEntry(DWORD addr);
 /* batch 40 */
 /* __ftol for lifted code: ST0 -> EDX:EAX, ST0 popped */
 static long long crt_ftol64(long double x)
@@ -3615,20 +3572,8 @@ static DWORD __cdecl FUN_004540b0(SessDesc d)
 DWORD FUN_00441190(DWORD *head);
 /* 0x441120 FUN_00441120(head): append a new 0x3538-byte node (malloc; prev +0x3530, next +0x3534) to the list at *head
    and initialise it with 0x440e20 (called at its address: EAX is what that leaves) and the value at 0x9dae10 */
-static DWORD __cdecl FUN_00441120(DWORD *head)
-{
-	char *first = (char *)*head;
-	char *n = (char *)CRT_malloc(0x3538);
-	if (!n) return 0;
-	if (!*head) { *head = (DWORD)n; S32(n, 0x3530) = 0; }
-	else {
-		char *last = first;
-		while (S32(last, 0x3534)) last = (char *)S32(last, 0x3534);
-		S32(last, 0x3534) = (int)n; S32(n, 0x3530) = (int)last;
-	}
-	S32(n, 0x3534) = 0;
-	return ((DWORD (__cdecl *)(char *, int))0x440e20)(n, G32(0x9dae10));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_00441120(DWORD *head);
 /* batch 44 */
 /* static initialisers: construct the static object, then register its destructor (EAX from the registration) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4687,17 +4632,8 @@ static THISCALL DWORD skel_getSkeletonPtrBy(char *self, DWORD name)
 /* 0x490df0 (thiscall) object_setAnimation(i, name, period, mode): script command 0x1c. No name or mode 0 stops object
    i's animation (rate 0); otherwise its skeleton comes from the scene's cache (+0x13016d0), its collision unit is
    disabled, and the rate is 1 / period (+-1 for a period within 1e-8 of 0, -1 also for a NaN) */
-static THISCALL void object_setAnimation(char *self, int i, DWORD name, float period, int mode)
-{
-	char *o = OBJ(self, i) + 0x131ae44;
-	if (!name || !mode) { S32(o, 0x29c) = 0; return; }
-	S32(o, 0x294) = (int)skel_getSkeletonPtrBy(self + 0x13016d0, name);
-	if (S32(o, 0x28c)) space_disableUnit((char *)S32(o, 0x28c));
-	S32(o, 0x290) = 1;
-	S32(o, 0x2a0) = mode;
-	if (fabsf(period) > 1e-8f) SF(o, 0x29c) = (float)(1.0L / (long double)period);
-	else SF(o, 0x29c) = period >= 0.0f ? 1.0f : -1.0f;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void object_setAnimation(void *self, int i, DWORD name, float period, int mode);
 /* batch 79 (lifted/grp25.c) */
 #include "lifted/grp25.c"
 /* 0x46eb00 ptx_open(path, out, &fmt, &w, &h) / 0x46ed80 ptx_decode(f, out, &fmt, &w, &h): a PTX image. 16-byte
