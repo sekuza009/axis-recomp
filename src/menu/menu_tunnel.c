@@ -4,6 +4,8 @@
    -360 (sic). Floats the original only copies are passed on bit for bit (BITS). */
 #include "../game.h"
 
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+
 static void bind(int texture)
 {
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -270,4 +272,81 @@ TunnelRing *(FUN_00441200)(void)
 	for (; ring->next != NULL; ring = ring->next)
 		BITS(ring->alpha) = 0x3f800000;
 	return ring;
+}
+
+/* ---- 0x440e20: an intro camera path node for screen height h: two circles of 101 points (each stored twice, at
+   heights +500 and -500), the path settings (taken from the linked node, +0x3530, when there is one), the box's
+   corners, and six records whose heights step down ---- */
+static long double fsin_(long double x) { __asm__("fsin" : "+t"(x)); return x; }
+static long double fcos_(long double x) { __asm__("fcos" : "+t"(x)); return x; }
+
+void (intro_cameraPath)(u8 *o, int h)
+{
+	typedef long double X;
+	X H = h;
+	FIELD(int, o, 0) = 0;
+	FIELD(int, o, 4) = 0;
+	FIELD(float, o, 8) = (float)(H * GAME_VAR(float, 0x4a95c0) + H * GAME_VAR(float, 0x4a95bc));
+	FIELD(int, o, 0x3528) = 100;
+	for (int pass = 0; pass < 2; pass++) {
+		u32 base = 0x10;
+		X radius = pass ? GAME_VAR(double, 0x4a95a8) : GAME_VAR(double, 0x4a95b0);
+		if (pass) {   /* the second circle after the path's four fields */
+			FIELD(int, o, 0x1930) = 0;
+			if (FIELD(int, o, 0x3530))
+				FIELD(int, o, 0x1930) = FIELD(int, FIELD(u8 *, o, 0x3530), 0x1930);
+			FIELD(u32, o, 0x1934) = 0x3e4ccccd;   /* 0.2 */
+			FIELD(int, o, 0x1938) = 0;
+			FIELD(int, o, 0x1940) = 0;
+			FIELD(int, o, 0x193c) = 0;
+			base = 0x1944;
+			if (FIELD(int, o, 0x3528) < 0)
+				break;
+		}
+		for (int i = 0; ; ) {
+			X a = (X)i * GAME_VAR(float, 0x4a95b8) * GAME_VAR(double, 0x4a9548) * GAME_VAR(double, 0x4a9540);
+			u8 *r = o + base + i * 16;
+			float s = f32(fsin_(a) * radius), c = f32(fcos_(a) * radius);
+			FIELD(float, r, 0xc90) = s;
+			FIELD(float, r, 0) = s;
+			FIELD(float, r, 0xc94) = c;
+			FIELD(float, r, 4) = c;
+			FIELD(u32, r, 8) = 0x43fa0000;       /* 500 */
+			FIELD(u32, r, 0xc98) = 0xc3fa0000;   /* -500 */
+			if (!(++i <= FIELD(int, o, 0x3528)))
+				break;
+		}
+	}
+	FIELD(u32, o, 0x3264) = 0x43b40000;   /* 360 */
+	if (FIELD(int, o, 0x3530))
+		FIELD(int, o, 0x3264) = FIELD(int, FIELD(u8 *, o, 0x3530), 0x3264);
+	static const struct { short offset; u32 value; } box[] = {
+		{ 0x3268, 0xbf000000 }, { 0x326c, 0 }, { 0x3274, 0 }, { 0x3270, 0 }, { 0x3278, 0xc2480000 }, { 0x327c, 0x42480000 },
+		{ 0x3280, 0x42440000 }, { 0x3288, 0x42480000 }, { 0x328c, 0x42480000 }, { 0x3290, 0x42440000 },
+		{ 0x32a0, 0x42440000 }, { 0x32b0, 0x42440000 }, { 0x32c0, 0xc2440000 }, { 0x32d0, 0xc2440000 },
+		{ 0x32e0, 0xc2440000 }, { 0x32f0, 0xc2440000 }, { 0x3298, 0x42480000 }, { 0x329c, 0xc2480000 },
+		{ 0x32a8, 0xc2480000 }, { 0x32ac, 0xc2480000 }, { 0x32b8, 0xc2480000 }, { 0x32bc, 0x42480000 },
+		{ 0x32c8, 0x42480000 }, { 0x32cc, 0x42480000 }, { 0x32d8, 0x42480000 }, { 0x32dc, 0xc2480000 },
+		{ 0x32e8, 0xc2480000 }, { 0x32ec, 0xc2480000 }, { 0x32f8, 0 }, { 0x32fc, 0 }, { 0x3308, 0 },
+		{ 0x330c, 0xbdcccccd } };   /* (+-50, +-49 ...) */
+	X y = H * GAME_VAR(float, 0x4a95a4) - GAME_VAR(float, 0x4a9498);
+	FIELD(float, o, 0x3300) = (float)y;
+	y -= GAME_VAR(float, 0x4a95a0);
+	for (unsigned i = 0; i < sizeof box / sizeof box[0]; i++)
+		FIELD(u32, o, box[i].offset) = box[i].value;
+	static const struct { signed char offset; u8 kind; } corner[] = {   /* 0: 0.0, 1: +50, 2: -50 */
+		{ -4, 2 }, { 0, 1 }, { 4, 0 }, { 0xc, 1 }, { 0x10, 1 }, { 0x14, 0 }, { 0x1c, 1 }, { 0x20, 2 }, { 0x24, 0 },
+		{ 0x2c, 2 }, { 0x30, 2 }, { 0x34, 0 }, { 0x3c, 0 }, { 0x40, 0 }, { 0x4c, 0 } };
+	for (int j = 0; j < 6; j++) {
+		u8 *r = o + 0x3314 + j * 0x58;
+		for (unsigned i = 0; i < sizeof corner / sizeof corner[0]; i++)
+			FIELD(u32, r, corner[i].offset) = corner[i].kind == 1 ? 0x42480000 : corner[i].kind == 2 ? 0xc2480000 : 0;
+		FIELD(float, r, 0x44) = (float)(y - ((X)GAME_VAR(float, 0x4a9424) - (X)j * GAME_VAR(float, 0x4a93ec)));
+	}
+	static const struct { short offset; u32 value; } rest[] = {
+		{ 0x3364, 0x3e19999a }, { 0x33bc, 0xbeb33333 }, { 0x3414, 0xbfc00000 }, { 0x346c, 0x3fc00000 },
+		{ 0x34c4, 0xbe3851ec }, { 0x351c, 0x3e3851ec }, { 0x3520, 0x3f800000 } };
+	for (unsigned i = 0; i < sizeof rest / sizeof rest[0]; i++)
+		FIELD(u32, o, rest[i].offset) = rest[i].value;
+	FIELD(int, o, 0x3524) = h;
 }

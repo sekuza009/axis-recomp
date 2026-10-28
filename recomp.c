@@ -1729,61 +1729,8 @@ void menu_42ab70(void);
 /* ---- batch 24: intro camera path, view-volume add with clip codes (x87) -------------------------- */
 /* intro camera data for screen height h: two 101-point circles (each stored twice), path settings (inherited from
    the linked object at +0x3530 when there is one), box corners, and 6 records with heights stepping down */
-static void __cdecl intro_cameraPath(char *o, int h)
-{
-	typedef long double X;
-	X H = h;
-	S32(o, 0) = 0; S32(o, 4) = 0;
-	SF(o, 8) = (float)(H * GF(0x4a95c0) + H * GF(0x4a95bc));
-	S32(o, 0x3528) = 100;
-	for (int pass = 0; pass < 2; pass++) {
-		DWORD base = pass ? 0x1934 : 0x10;          /* second circle starts after the 4 path fields at +0x1934 */
-		X rad = pass ? GD(0x4a95a8) : GD(0x4a95b0);
-		if (pass) {
-			S32(o, 0x1930) = 0;
-			if (S32(o, 0x3530)) S32(o, 0x1930) = S32((char *)S32(o, 0x3530), 0x1930);
-			GU32(o + 0x1934) = 0x3e4ccccd; S32(o, 0x1938) = 0; S32(o, 0x1940) = 0; S32(o, 0x193c) = 0;
-			base = 0x1944;
-			if (S32(o, 0x3528) < 0) break;
-		}
-		for (int i = 0; ; ) {
-			X a = (X)i * GF(0x4a95b8) * GD(0x4a9548) * GD(0x4a9540);
-			char *r = o + base + i * 16;
-			float s = (float)(x87_fsin(a) * rad), c = (float)(x87_fcos(a) * rad);
-			SF(r, 0xc90) = s; SF(r, 0) = s;
-			SF(r, 0xc94) = c; SF(r, 4) = c;
-			GU32(r + 8) = 0x43fa0000; GU32(r + 0xc98) = 0xc3fa0000;   /* +500 / -500 */
-			if (!(++i <= S32(o, 0x3528))) break;
-		}
-	}
-	GU32(o + 0x3264) = 0x43b40000;
-	if (S32(o, 0x3530)) S32(o, 0x3264) = S32((char *)S32(o, 0x3530), 0x3264);
-	static const struct { short off; DWORD v; } k[] = {
-		{ 0x3268, 0xbf000000 }, { 0x326c, 0 }, { 0x3274, 0 }, { 0x3270, 0 }, { 0x3278, 0xc2480000 }, { 0x327c, 0x42480000 },
-		{ 0x3280, 0x42440000 }, { 0x3288, 0x42480000 }, { 0x328c, 0x42480000 }, { 0x3290, 0x42440000 }, { 0x32a0, 0x42440000 },
-		{ 0x32b0, 0x42440000 }, { 0x32c0, 0xc2440000 }, { 0x32d0, 0xc2440000 }, { 0x32e0, 0xc2440000 }, { 0x32f0, 0xc2440000 },
-		{ 0x3298, 0x42480000 }, { 0x329c, 0xc2480000 }, { 0x32a8, 0xc2480000 }, { 0x32ac, 0xc2480000 }, { 0x32b8, 0xc2480000 },
-		{ 0x32bc, 0x42480000 }, { 0x32c8, 0x42480000 }, { 0x32cc, 0x42480000 }, { 0x32d8, 0x42480000 }, { 0x32dc, 0xc2480000 },
-		{ 0x32e8, 0xc2480000 }, { 0x32ec, 0xc2480000 }, { 0x32f8, 0 }, { 0x32fc, 0 }, { 0x3308, 0 }, { 0x330c, 0xbdcccccd } };
-	X y = H * GF(0x4a95a4) - GF(0x4a9498);
-	SF(o, 0x3300) = (float)y;
-	y -= GF(0x4a95a0);
-	for (unsigned i = 0; i < sizeof k / sizeof k[0]; i++) GU32(o + k[i].off) = k[i].v;
-	static const struct { signed char off; BYTE kind; } rec[] = {   /* 0 = 0.0, 1 = +50, 2 = -50 */
-		{ -4, 2 }, { 0, 1 }, { 4, 0 }, { 0xc, 1 }, { 0x10, 1 }, { 0x14, 0 }, { 0x1c, 1 }, { 0x20, 2 }, { 0x24, 0 }, { 0x2c, 2 },
-		{ 0x30, 2 }, { 0x34, 0 }, { 0x3c, 0 }, { 0x40, 0 }, { 0x4c, 0 } };
-	for (int j = 0; j < 6; j++) {
-		char *r = o + 0x3314 + j * 0x58;
-		for (unsigned i = 0; i < sizeof rec / sizeof rec[0]; i++)
-			GU32(r + rec[i].off) = rec[i].kind == 1 ? 0x42480000 : rec[i].kind == 2 ? 0xc2480000 : 0;
-		SF(r, 0x44) = (float)(y - ((X)GF(0x4a9424) - (X)j * GF(0x4a93ec)));
-	}
-	static const struct { short off; DWORD v; } k2[] = {
-		{ 0x3364, 0x3e19999a }, { 0x33bc, 0xbeb33333 }, { 0x3414, 0xbfc00000 }, { 0x346c, 0x3fc00000 }, { 0x34c4, 0xbe3851ec },
-		{ 0x351c, 0x3e3851ec }, { 0x3520, F1 } };
-	for (unsigned i = 0; i < sizeof k2 / sizeof k2[0]; i++) GU32(o + k2[i].off) = k2[i].v;
-	S32(o, 0x3524) = h;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_cameraPath(char *o, int h);
 
 /* add an object's two points to the view volume list, transformed by the 4x4 matrix at +0x9130 (column-major,
    (x, y, z, w) in record +4.. and +0x14..). flag 1: drop it again when both points are outside the same clip plane.
@@ -2080,7 +2027,6 @@ THISCALL int script_runScpFile(void *self, const char *name, int mode);
    the 3 normalised edges (+0x28), the face plane (+0x4c normal, +0x58 distance), the 3 edge planes (+0x5c, 16 bytes
    each: normal = face normal x edge, distance) and 5 raw dwords (+0x8c). All products in 80 bits, rounded where the
    original stores to float; the normal/plane copies go through fld/fstp (SNaN -> QNaN). Returns d (the 4th raw dword) */
-static void x87copy(float *dst, const float *src) { volatile long double x = *src; *dst = (float)x; }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int load_47db60(char *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d, int e);
 /* batch 33 */
@@ -2092,7 +2038,6 @@ void TextureManager_dtor_wrap_42b380(void);
    fields at +0x1ecca70..); its player slot (+0x1eccb7c, stride 0x47fd2) picks a part record (stride 0x13f4) and a
    weapon record (stride 0x1820). Every product is 80-bit, rounded once on store. Returns the scene pointer */
 /* dst = (float)(fld *a; fmul *b) - the second factor stays a memory operand (SNaN behaviour, see x87_mulm) */
-static void x87mulf(DWORD dst, const float *a, const float *b) { GF(dst) = (float)x87_mulm(x87_ldm(a), b); }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 char *armc_41c510(void);
 /* batch 34 */
@@ -2100,59 +2045,8 @@ char *armc_41c510(void);
    (body 0x175553c, ... weapon 0x175554c) the part's name goes into a 64-byte field with '\' and '/' turned into '-'
    (via a zeroed 128-byte buffer; no terminator is copied, the field is zeroed first), then that part's stats, some
    scaled (one 80-bit product rounded on store), the float copies via fld/fstp. Returns the weapon index */
-static void armc_partName(DWORD dst, const char *name)
-{
-	char buf[128];
-	memset(buf, 0, sizeof buf);
-	strcpy(buf, name);
-	int len = (int)strlen(buf);
-	for (int i = len - 1; i >= 0; i--) {
-		if (buf[i] == '\\') buf[i] = '-';
-		if (buf[i] == '/') buf[i] = '-';
-	}
-	memset((void *)dst, 0, 64);
-	if (len > 0) memcpy((void *)dst, buf, len);
-}
-static int __cdecl armc_41b750(void)
-{
-	char *g = *(char **)0x9087b4;
-	char *pl = g + S32(g + *(int *)(g + 0x234240d) * 0x8888, 0x1eccb7c) * 0x47fd2;
-	char *p = g + S32(pl, 0x175553c) * 0xaa8;
-	armc_partName(0x4dceb8, p + 0x15bd1f8);
-	x87mulf(0x4dcef8, (const float *)(p + 0x15bdc8c), (const float *)0x4a9420);
-	x87mulf(0x4dcefc, (const float *)(p + 0x15bdc90), (const float *)0x4a93ec);
-	G32(0x4dcf00) = S32(p, 0x15bdc94);
-	x87mulf(0x4dcf04, (const float *)(p + 0x15bdc98), (const float *)0x4a93f4);
-	x87mulf(0x4dcf08, (const float *)(p + 0x15bdc9c), (const float *)0x4a94bc);
-	x87copy((float *)0x4dcf0c, (float *)(p + 0x15bdc88));
-	p = g + S32(pl, 0x1755540) * 0xabc;
-	armc_partName(0x4dbc08, p + 0x15de6cc);
-	x87copy((float *)0x4dbc48, (float *)(p + 0x15df17c));
-	G32(0x4dbc4c) = S32(p, 0x15df180);
-	G32(0x4dbc50) = S32(p, 0x15df184);
-	p = g + S32(pl, 0x1755544) * 0x1300;
-	armc_partName(0x4dc250, p + 0x15fff88);
-	for (int i = 0; i < 5; i++) G32(0x4dc290 + i * 4) = S32(p, 0x1601274 + i * 4);
-	x87copy((float *)0x4dc2a4, (float *)(p + 0x1601270));
-	p = g + S32(pl, 0x1755548) * 0x13f4;
-	armc_partName(0x4dc1e8, p + 0x163b58c);
-	x87copy((float *)0x4dc228, (float *)(p + 0x163c968));
-	x87copy((float *)0x4dc22c, (float *)(p + 0x163c96c));
-	x87mulf(0x4dc230, (const float *)(p + 0x163c970), (const float *)0x4a93f4);
-	x87mulf(0x4dc234, (const float *)(p + 0x163c974), (const float *)0x4a93f4);
-	x87mulf(0x4dc238, (const float *)(p + 0x163c97c), (const float *)0x4a93f4);
-	x87mulf(0x4dc23c, (const float *)(p + 0x163c978), (const float *)0x4a93f4);
-	x87copy((float *)0x4dc240, (float *)(p + 0x163c964));
-	int w = S32(pl, 0x175554c);
-	p = g + w * 0x1820;
-	armc_partName(0x4dce40, p + 0x1679b38);
-	G32(0x4dce80) = S32(p, 0x167b334);
-	for (int i = 0; i < 3; i++) x87mulf(0x4dce84 + i * 4, (const float *)(p + 0x167b33c + i * 4), (const float *)0x4a94bc);
-	for (int i = 0; i < 4; i++) x87mulf(0x4dce90 + i * 4, (const float *)(p + 0x167b348 + i * 4), (const float *)0x4a94b8);
-	G32(0x4dcfd8) = 0x3f800000;
-	x87copy((float *)0x4dcea0, (float *)(p + 0x167b330));
-	return w;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_41b750(void);
 /* batch 35 */
 /* 0x47fce0 (thiscall) load_47fce0(lo, hi, r): does collision triangle `this` (load_47db60 layout) touch the box
    [lo - r, hi + r]? 1 = yes, 0 = no.
@@ -2173,76 +2067,8 @@ THISCALL int load_47fce0(const float *T, const float *P, const float *S, float r
    instead. Every sum keeps the original's operand order. EAX as in the original: the count on "full" and "culled",
    count + 1 for a null list, else raw, or p2.z's bits when raw == 1 (the value its last Vec4::set left there) */
 /* ((a * *ma + b * *mb) + c * *mc) + *t, each product "fld a; fmul m" */
-static long double vv_row(long double a, const float *ma, long double b, const float *mb, long double c,
-                          const float *mc, const float *t)
-{
-	long double s = x87_mulm(a, ma) + x87_mulm(b, mb);
-	s = s + x87_mulm(c, mc);
-	return x87_addm(s, t);
-}
-static THISCALL int ViewVolume_transformObject(char *vv, int id, const DWORD *info6, const DWORD *info3,
-                                               const float *P, const float *M, int raw, int cull)
-{
-	int n = S32(vv, 0x905c);
-	if (n >= S32(vv, 0x9054)) { S32(vv, 0x9098) = 1; return n; }
-	float *rec = (float *)(S32(vv, 0x9058) + n * 0x60);
-	S32(vv, 0x905c) = n + 1;
-	if (!rec) return n + 1;
-	const float *V = (const float *)(vv + 0x9130), *p1 = P + 3, *p2 = P + 6;
-	float *R = rec + 10;
-	if (M) {
-		long double x0 = vv_row(LD(P[0]), &M[0], LD(M[4]), &P[1], LD(P[2]), &M[8], &M[12]);
-		long double y0 = vv_row(LD(M[9]), &P[2], LD(M[5]), &P[1], LD(M[1]), &P[0], &M[13]);
-		long double z0 = vv_row(LD(P[2]), &M[10], LD(P[0]), &M[2], LD(M[6]), &P[1], &M[14]);
-		float x1 = (float)vv_row(LD(p1[0]), &M[0], LD(p1[2]), &M[8], LD(p1[1]), &M[4], &M[12]);
-		float y1 = (float)vv_row(LD(p1[2]), &M[9], LD(p1[1]), &M[5], LD(p1[0]), &M[1], &M[13]);
-		float z1 = (float)vv_row(LD(p1[2]), &M[10], LD(p1[1]), &M[6], LD(p1[0]), &M[2], &M[14]);
-		float x2 = (float)vv_row(LD(p2[2]), &M[8], LD(p2[1]), &M[4], LD(M[0]), &p2[0], &M[12]);
-		float y2 = (float)vv_row(LD(p2[2]), &M[9], LD(p2[1]), &M[5], LD(M[1]), &p2[0], &M[13]);
-		float z2 = (float)vv_row(LD(p2[0]), &M[2], LD(p2[2]), &M[10], LD(p2[1]), &M[6], &M[14]);
-		for (int c = 0; c < 4; c++) {
-			R[c] = (float)vv_row(z0, &V[8 + c], y0, &V[4 + c], x0, &V[c], &V[12 + c]);
-		}
-		for (int c = 0; c < 4; c++) R[4 + c] = (float)vv_row(LD(z1), &V[8 + c], LD(y1), &V[4 + c], LD(x1), &V[c], &V[12 + c]);
-		for (int c = 0; c < 4; c++) R[8 + c] = (float)vv_row(LD(z2), &V[8 + c], LD(y2), &V[4 + c], LD(x2), &V[c], &V[12 + c]);
-	} else {
-		R[0] = (float)vv_row(LD(V[8]), &P[2], LD(V[4]), &P[1], LD(P[0]), &V[0], &V[12]);
-		R[1] = (float)vv_row(LD(V[1]), &P[0], LD(V[9]), &P[2], LD(V[5]), &P[1], &V[13]);
-		R[2] = (float)vv_row(LD(V[2]), &P[0], LD(V[10]), &P[2], LD(V[6]), &P[1], &V[14]);
-		R[3] = (float)vv_row(LD(V[3]), &P[0], LD(V[11]), &P[2], LD(V[7]), &P[1], &V[15]);
-		Mat4_transformPoint(R + 4, V, p1);
-		Mat4_transformPoint(R + 8, V, p2);
-	}
-	if (cull == 1) {
-		unsigned all = 0x111111;
-		for (int k = 0; k < 3; k++) {
-			const float *q = R + k * 4;
-			volatile long double nw = q[3];
-			nw = -nw;
-			unsigned code;
-			if (nw >= q[0]) code = 1; else code = q[0] >= q[3] ? 0x10 : 0;
-			if (nw >= q[1]) code |= 0x100; else if (q[1] >= q[3]) code |= 0x1000;
-			if (nw >= q[2]) code |= 0x10000; else if (q[2] >= q[3]) code |= 0x100000;
-			all &= code;
-		}
-		if (all & 0x111111) { S32(vv, 0x905c) -= 1; return S32(vv, 0x905c); }
-	}
-	DWORD *r = (DWORD *)rec;
-	r[0] = (DWORD)id;
-	if (id >= 0) memcpy(r + 1, info6, 24);
-	memcpy(r + 7, info3, 12);
-	r[0x17] = (DWORD)raw;
-	int ret = raw;
-	if (raw == 1) {
-		x87copy(rec + 10, P); x87copy(rec + 11, P + 1); x87copy(rec + 12, P + 2);
-		r[13] = 0x3f800000;
-		memcpy(r + 14, p1, 12); r[17] = 0x3f800000;
-		memcpy(r + 18, p2, 12); r[21] = 0x3f800000;
-		ret = ((const int *)p2)[2];
-	}
-	r[0x16] = (DWORD)M;
-	return ret;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int ViewVolume_transformObject(char *vv, int id, const DWORD *info6, const DWORD *info3, const float *P, const float *M, int raw, int cull);
 /* batch 37 */
 #include "lifted/collision.c"         /* tools/lift.py: space_collideUnit, collision_sphereVsUnit + the 12 vector helpers they call */
 /* 0x47dd90 (thiscall) collision_sphereVsUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis): the moving

@@ -773,4 +773,6 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define FUN_00454110() GAME_CDECL(0x454110, int, void)()   /* the first free session slot, or -1 */
 
+#define Mat4_transformPoint(out, m, p) GAME_CDECL(0x484860, void, float *, const float *, const float *)(out, m, p)
+
 #endif

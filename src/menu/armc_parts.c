@@ -99,3 +99,69 @@ u8 *(armc_41c510)(void)
 	copyf(0x4dcb08, &FIELD(float, A, 0x1ecca88));
 	return g;
 }
+
+/* a part's name for the panel: its folder path with '\' and '/' turned into '-', in a zeroed 64-byte field (through
+   a zeroed 128-byte buffer; the terminator is not copied) */
+static void panel_name(u32 dst, const char *name)
+{
+	char buf[128];
+	memset(buf, 0, sizeof buf);
+	strcpy(buf, name);
+	int len = (int)strlen(buf);
+	for (int i = len - 1; i >= 0; i--) {
+		if (buf[i] == '\\')
+			buf[i] = '-';
+		if (buf[i] == '/')
+			buf[i] = '-';
+	}
+	memset((void *)dst, 0, 64);
+	if (len > 0)
+		memcpy((void *)dst, buf, len);
+}
+
+/* 0x41b750: the ARM CENTER's part panels for the local player's mech: for its head, chest, arm, leg and weapon (the
+   player record's indices +0x175553c ..) the part's name and stats, some scaled by the game's constants. Returns the
+   weapon's index */
+int (armc_41b750)(void)
+{
+	u8 *g = GAME_VAR(u8 *, 0x9087b4);
+	u8 *player = g + FIELD(int, g + FIELD(int, g, 0x234240d) * 0x8888, 0x1eccb7c) * 0x47fd2;
+	u8 *p = g + FIELD(int, player, 0x175553c) * 0xaa8;   /* head */
+	panel_name(0x4dceb8, (const char *)p + 0x15bd1f8);
+	mulf(0x4dcef8, &FIELD(float, p, 0x15bdc8c), (const float *)0x4a9420);
+	mulf(0x4dcefc, &FIELD(float, p, 0x15bdc90), (const float *)0x4a93ec);
+	GAME_VAR(int, 0x4dcf00) = FIELD(int, p, 0x15bdc94);
+	mulf(0x4dcf04, &FIELD(float, p, 0x15bdc98), (const float *)0x4a93f4);
+	mulf(0x4dcf08, &FIELD(float, p, 0x15bdc9c), (const float *)0x4a94bc);
+	copyf(0x4dcf0c, &FIELD(float, p, 0x15bdc88));
+	p = g + FIELD(int, player, 0x1755540) * 0xabc;   /* chest */
+	panel_name(0x4dbc08, (const char *)p + 0x15de6cc);
+	copyf(0x4dbc48, &FIELD(float, p, 0x15df17c));
+	GAME_VAR(int, 0x4dbc4c) = FIELD(int, p, 0x15df180);
+	GAME_VAR(int, 0x4dbc50) = FIELD(int, p, 0x15df184);
+	p = g + FIELD(int, player, 0x1755544) * 0x1300;   /* arm */
+	panel_name(0x4dc250, (const char *)p + 0x15fff88);
+	for (int i = 0; i < 5; i++)
+		GAME_VAR(int, 0x4dc290 + i * 4) = FIELD(int, p, 0x1601274 + i * 4);
+	copyf(0x4dc2a4, &FIELD(float, p, 0x1601270));
+	p = g + FIELD(int, player, 0x1755548) * 0x13f4;   /* leg */
+	panel_name(0x4dc1e8, (const char *)p + 0x163b58c);
+	copyf(0x4dc228, &FIELD(float, p, 0x163c968));
+	copyf(0x4dc22c, &FIELD(float, p, 0x163c96c));
+	mulf(0x4dc230, &FIELD(float, p, 0x163c970), (const float *)0x4a93f4);
+	mulf(0x4dc234, &FIELD(float, p, 0x163c974), (const float *)0x4a93f4);
+	mulf(0x4dc238, &FIELD(float, p, 0x163c97c), (const float *)0x4a93f4);
+	mulf(0x4dc23c, &FIELD(float, p, 0x163c978), (const float *)0x4a93f4);
+	copyf(0x4dc240, &FIELD(float, p, 0x163c964));
+	int weapon = FIELD(int, player, 0x175554c);
+	p = g + weapon * 0x1820;
+	panel_name(0x4dce40, (const char *)p + 0x1679b38);
+	GAME_VAR(int, 0x4dce80) = FIELD(int, p, 0x167b334);
+	for (int i = 0; i < 3; i++)
+		mulf(0x4dce84 + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)0x4a94bc);
+	for (int i = 0; i < 4; i++)
+		mulf(0x4dce90 + i * 4, &FIELD(float, p, 0x167b348 + i * 4), (const float *)0x4a94b8);
+	GAME_VAR(u32, 0x4dcfd8) = 0x3f800000;
+	copyf(0x4dcea0, &FIELD(float, p, 0x167b330));
+	return weapon;
+}

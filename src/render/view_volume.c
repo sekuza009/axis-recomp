@@ -3,6 +3,7 @@
    space, in the original's order of additions; with flag 1 the entry is dropped again when all its points are
    outside the same clip plane. A full list sets its overflow flag instead. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -136,4 +137,88 @@ void THISCALL (hud_484ca0)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float
 		return;
 	}
 	quad_fields(r, id, uv0, uv1, colour, extra);
+}
+
+/* ((a * *ma + b * *mb) + c * *mc) + *t, each product a register times a float from memory */
+static X row(X a, const float *ma, X b, const float *mb, X c, const float *mc, const float *t)
+{
+	X s = fmul_m(a, ma) + fmul_m(b, mb);
+	s = s + fmul_m(c, mc);
+	return fadd_m(s, t);
+}
+#define LD(f) fld_m(&(f))
+
+/* 0x4842d0: a triangle (P: three points) into the 0x60-byte records of the list at +0x905c: taken through the model
+   matrix M first when there is one (the first point's coordinates kept unrounded, the others rounded), then the view
+   matrix (+0x9130) into clip space (+0x28); with cull 1 dropped when all three are outside one plane. The record:
+   id, six words of info (when id >= 0), three more, raw, M; raw 1 keeps the untransformed points (w = 1) instead.
+   Every sum in the original's operand order. Returns what the original leaves in eax: the count when full or culled,
+   count + 1 for a null list, else raw, or p2.z's bits when raw is 1 */
+int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, const u32 *info3, const float *P,
+                                         const float *M, int raw, int cull)
+{
+	int n = FIELD(int, vv, 0x905c);
+	if (n >= FIELD(int, vv, 0x9054)) {
+		FIELD(int, vv, 0x9098) = 1;
+		return n;
+	}
+	float *rec = (float *)(FIELD(u8 *, vv, 0x9058) + n * 0x60);
+	FIELD(int, vv, 0x905c) = n + 1;
+	if (!rec)
+		return n + 1;
+	const float *V = (const float *)(vv + 0x9130), *p1 = P + 3, *p2 = P + 6;
+	float *R = rec + 10;
+	if (M) {
+		X x0 = row(LD(P[0]), &M[0], LD(M[4]), &P[1], LD(P[2]), &M[8], &M[12]);
+		X y0 = row(LD(M[9]), &P[2], LD(M[5]), &P[1], LD(M[1]), &P[0], &M[13]);
+		X z0 = row(LD(P[2]), &M[10], LD(P[0]), &M[2], LD(M[6]), &P[1], &M[14]);
+		float x1 = f32(row(LD(p1[0]), &M[0], LD(p1[2]), &M[8], LD(p1[1]), &M[4], &M[12]));
+		float y1 = f32(row(LD(p1[2]), &M[9], LD(p1[1]), &M[5], LD(p1[0]), &M[1], &M[13]));
+		float z1 = f32(row(LD(p1[2]), &M[10], LD(p1[1]), &M[6], LD(p1[0]), &M[2], &M[14]));
+		float x2 = f32(row(LD(p2[2]), &M[8], LD(p2[1]), &M[4], LD(M[0]), &p2[0], &M[12]));
+		float y2 = f32(row(LD(p2[2]), &M[9], LD(p2[1]), &M[5], LD(M[1]), &p2[0], &M[13]));
+		float z2 = f32(row(LD(p2[0]), &M[2], LD(p2[2]), &M[10], LD(p2[1]), &M[6], &M[14]));
+		for (int c = 0; c < 4; c++)
+			R[c] = f32(row(z0, &V[8 + c], y0, &V[4 + c], x0, &V[c], &V[12 + c]));
+		for (int c = 0; c < 4; c++)
+			R[4 + c] = f32(row(LD(z1), &V[8 + c], LD(y1), &V[4 + c], LD(x1), &V[c], &V[12 + c]));
+		for (int c = 0; c < 4; c++)
+			R[8 + c] = f32(row(LD(z2), &V[8 + c], LD(y2), &V[4 + c], LD(x2), &V[c], &V[12 + c]));
+	} else {
+		R[0] = f32(row(LD(V[8]), &P[2], LD(V[4]), &P[1], LD(P[0]), &V[0], &V[12]));
+		R[1] = f32(row(LD(V[1]), &P[0], LD(V[9]), &P[2], LD(V[5]), &P[1], &V[13]));
+		R[2] = f32(row(LD(V[2]), &P[0], LD(V[10]), &P[2], LD(V[6]), &P[1], &V[14]));
+		R[3] = f32(row(LD(V[3]), &P[0], LD(V[11]), &P[2], LD(V[7]), &P[1], &V[15]));
+		Mat4_transformPoint(R + 4, V, p1);
+		Mat4_transformPoint(R + 8, V, p2);
+	}
+	if (cull == 1) {
+		unsigned common = 0x111111;
+		for (int k = 0; k < 3; k++)
+			common &= outcode(R + k * 4);
+		if (common & 0x111111) {
+			FIELD(int, vv, 0x905c) -= 1;
+			return FIELD(int, vv, 0x905c);
+		}
+	}
+	u32 *r = (u32 *)rec;
+	r[0] = (u32)id;
+	if (id >= 0)
+		memcpy(r + 1, info6, 24);
+	memcpy(r + 7, info3, 12);
+	r[0x17] = (u32)raw;
+	int ret = raw;
+	if (raw == 1) {
+		rec[10] = (float)LD(P[0]);   /* through the FPU, as the original's fld / fstp */
+		rec[11] = (float)LD(P[1]);
+		rec[12] = (float)LD(P[2]);
+		r[13] = 0x3f800000;
+		memcpy(r + 14, p1, 12);
+		r[17] = 0x3f800000;
+		memcpy(r + 18, p2, 12);
+		r[21] = 0x3f800000;
+		ret = ((const int *)p2)[2];
+	}
+	r[0x16] = (u32)M;
+	return ret;
 }

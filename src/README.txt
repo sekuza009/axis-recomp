@@ -45,7 +45,7 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (787): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (801; every hand-written rebuild is now here, the rest of recomp.c is lifted code): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -90,4 +90,6 @@ team, weapon selection, the volume, cheat codes, the PTX video decoder (app/ptx_
 line widths (text/text_codes.c), the session sort, the follow target, the free menu camera's moves, address strings, object animation,
 the texture tints and RGB <-> HSV (render/tex_colours.c), actor / bullet slots freed and player records
 reset, the screens' set-ups (menu/screen_enter.c), key bindings, the setup camera, shape bounds and bullet trails
-(render/trails.c).
+(render/trails.c), the view volume's lists and object transform (render/view_volume.c), collision triangles,
+their trace and the triangle / box test (load/collision_tris.c), quaternion <-> axis-angle / matrix, the PTX inverse
+DCT, the stage's mesh records, the ARM CENTER's stats and part panels, the intro camera path.
