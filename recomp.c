@@ -5002,7 +5002,8 @@ LIFT_PLAIN(profile_44f850, 44f850)
 LIFT_PLAIN(intro_41e730, 41e730)
 /* 0x435ab0 room_435ab0 / 0x406bd0 lobby_406bd0 / 0x407270 lobby_407270: the "leave" dialog's click handlers (button
    0 = yes: close it and post message 2; button 1 = no: close it; the right button closes it in the lobby) */
-LIFT_PLAIN(room_435ab0, 435ab0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435ab0(void);
 LIFT_PLAIN(lobby_406bd0, 406bd0)
 LIFT_PLAIN(lobby_407270, 407270)
 /* 0x427a40 FUN_00427a40(x0, y0, x1, y1): a line in the menu colour */
@@ -5405,7 +5406,8 @@ LIFT_PLAIN(net_closeAll, 451600)
 LIFT_PLAIN(armc_41b710, 41b710)
 /* 0x40ce70 menu_drawDimOverlay / 0x43df00 room_43df00: fade a dark rectangle in over the screen */
 LIFT_PLAIN(menu_drawDimOverlay, 40ce70)
-LIFT_PLAIN(room_43df00, 43df00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_43df00(void);
 /* 0x428890 menu_428890(x, y): the blinking cursor bar; 0x428c30 menu_drawFrame(x0, y0, x1, y1): a window frame */
 LIFT_PLAIN(menu_428890, 428890)
 LIFT_PLAIN(menu_drawFrame, 428c30)
@@ -6853,7 +6855,8 @@ LIFT_PLAIN(mission_unlockCheat, 447b10)
 /* 0x405200 FUN_00405200() / 0x434da0 room_434da0(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): start
    the arena / room chat line (flag 0x4db8bc / 0x9dd6b4) */
 LIFT_PLAIN(FUN_00405200, 405200)
-LIFT_PLAIN(room_434da0, 434da0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_434da0(void);
 /* batch 163 (lifted/grp109.c): screen dispatchers (setup tabs, lobby / room / profile keys and
    draws) */
 #include "lifted/grp109.c"
@@ -7043,7 +7046,8 @@ LIFT_PLAIN(match_44ace0, 44ace0)
 /* 0x441770 mainmenu_441770(): the first of the 0x9dd928 entries (0x44 bytes from 0x9ddac8) marked 1 opens its page */
 LIFT_PLAIN(mainmenu_441770, 441770)
 /* 0x435ce0 room_435ce0(): a click on the room's close button (room_432280) closes the popup 0x9dd6c4 */
-LIFT_PLAIN(room_435ce0, 435ce0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435ce0(void);
 /* batch 172 (lifted/grp122.c): small menu functions tested with their callees stubbed (tools/gentests.py): the
    arena / lobby / room text and number field editors (the field's text into the edit line 0x9dc92c, the edit box
    at the field, typing on: input_releaseKeyboard, input clear, chat_createEdit), room and menu key pages, the sound
@@ -7112,7 +7116,8 @@ int arena_454d60(int a1, int a2, int a3, int a4);
 LIFT_PLAIN(dplay_coInit, 453720)
 LIFT_PLAIN(lobby_close, 406b60)
 LIFT_PLAIN(FUN_00403870, 403870)
-LIFT_PLAIN(room_435f40, 435f40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435f40(void);
 LIFT_PLAIN(room_435e70, 435e70)
 LIFT_PLAIN(room_433c70, 433c70)
 LIFT_PLAIN(lobby_keysQuit, 408110)
@@ -11463,7 +11468,8 @@ T_PLAIN(profile_44f850, 0x44f850, , 0, 0, 0, 0, 0)
 /* the wait in frames as a double (two stack slots); the mocked counter advances by 0x1234567 per read */
 static double g_frames;
 T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0)
-T_PLAIN(room_435ab0, 0x435ab0, dlgclick_setup(0x9dd390);, 0, 0, 0, 0, 0)
+/* room_435ab0 leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
+ST(room_435ab0, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (room_435ab0(), 0))
 T_PLAIN(lobby_406bd0, 0x406bd0, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
 T_PLAIN(lobby_407270, 0x407270, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_00427a40, 0x427a40, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
@@ -12245,7 +12251,7 @@ T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0
 /* batch 59 */
 T_PLAIN(armc_41b710, 0x41b710, lookat_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(menu_drawDimOverlay, 0x40ce70, GF(0x4deb74) = csu_fr(-50, 120);, 0, 0, 0, 0, 0)
-T_PLAIN(room_43df00, 0x43df00, GF(0x4deb74) = csu_fr(-50, 120);, 0, 0, 0, 0, 0)
+ST(room_43df00, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_43df00(), 0))
 T_PLAIN(menu_428890, 0x428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, 0, g_a[0], g_a[1], 0, 0)
 T_PLAIN(menu_drawFrame, 0x428c30, G32(0x4de740) = irnd(0, 2); for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static void dispmode_setup(void)
@@ -16377,7 +16383,7 @@ T_PLAIN(menu_443ef0, 0x443ef0, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(menu_4440f0, 0x4440f0, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(mission_unlockCheat, 0x447b10, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_00405200, 0x405200, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(room_434da0, 0x434da0, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(room_434da0, menudisp_setup();, CALL_PLAIN(0x434da0, 0, 0, 0, 0, 0), (room_434da0(), 0))
 /* batch 163 */
 /* screen dispatchers: every callee stubbed (callee_stubs: the test compares which is reached with what arguments);
    the state each dispatches on, in and out of range; the dialog flag */
@@ -16686,7 +16692,7 @@ T_PLAIN(menu_4370e0, 0x4370e0, small_setup(g_stubKeyClose2);, 0, 0, 0, 0, 0)
 T_PLAIN(match_44ac90, 0x44ac90, small_setup(g_stubTypeOn);, 0, g_a[0], g_a[1], g_a[2], 0)
 T_PLAIN(match_44ace0, 0x44ace0, small_setup(g_stubTypeOff);, 0, 0, 0, 0, 0)
 T_PLAIN(mainmenu_441770, 0x441770, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
-T_PLAIN(room_435ce0, 0x435ce0, small_setup(g_stubRoomClose);, 0, 0, 0, 0, 0)
+ST(room_435ce0, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (room_435ce0(), 0))
 /* batch 172 */
 /* generated tests (tools/gentests.py): every callee stubbed (the key tests in key mode for the codes 0..3, the
    others answering 0 or 1), the function's integer globals small values (key bindings among them), its buffer
@@ -16859,7 +16865,7 @@ T_PLAIN(FUN_00403870, 0x403870, gen_setup(g_gs_403870, g_gi_403870, g_gb_403870)
 static const DWORD g_gs_435f40[] = { 0x41e760, 1, 0x432340, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_435f40[] = { 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dda44, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x90d1c4, 0x9dce48, 0 };
 static const DWORD g_gb_435f40[] = { 0 };
-T_PLAIN(room_435f40, 0x435f40, gen_setup(g_gs_435f40, g_gi_435f40, g_gb_435f40);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_435f40, gen_setup(g_gs_435f40, g_gi_435f40, g_gb_435f40);, CALL_PLAIN(0x435f40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_435f40(), 0))
 static const DWORD g_gs_435e70[] = { 0x41e760, 1, 0x41ee40, 1, 0x4322c0, 2, 0x434020, 0, 0x4340e0, 0, 0x4341a0, 0, 0x434260, 0, 0x434b90, 0, 0 };
 static const DWORD g_gi_435e70[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x68039c, 0x90d1c4, 0x9dce48, 0x9dd6d4, 0 };
 static const DWORD g_gb_435e70[] = { 0 };

@@ -313,6 +313,22 @@ typedef struct { float r, g, b, a; } Colour;
 #define input_isDown(key) GAME_CDECL(0x401590, int, int)(key)   /* the key (code) is held */
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
+#define g_mouseClick GAME_VAR(int, 0x4ded88)         /* a click this frame */
+#define g_localPlayer GAME_VAR(int, 0x76d41c)        /* (by use) the local player's index in the room's lists */
+#define g_hWndMain GAME_VAR(void *, 0x4ded18)
+#define g_screenW GAME_VAR(int, 0x5b1998)
+#define g_screenH GAME_VAR(int, 0x4e045c)
+#define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
+/* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
+#define menu_drawRect(x0, y0, x1, y1, filled) GAME_CDECL(0x427970, void, int, int, int, int, int)(x0, y0, x1, y1, filled)
+#define g_rectColour ((Colour *)0x9da480)
+/* the room's buttons under (x, y): the index of the button hit, or -1 */
+#define room_4321c0(x, y) GAME_CDECL(0x4321c0, int, int, int)(x, y)
+#define room_432280(x, y) GAME_CDECL(0x432280, int, int, int)(x, y)
+#define room_432340(x, y) GAME_CDECL(0x432340, int, int, int)(x, y)
+#define room_434320() GAME_CDECL(0x434320, void, void)()   /* open the message field */
+#define profile_41e7a0(message) GAME_CDECL(0x41e7a0, void, int)(message)   /* (unclear) posts a front-end message */
+#define arena_452fe0() GAME_CDECL(0x452fe0, void, void)()
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
 #define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */
 #define g_cursorFrameTime GAME_VAR(float, 0x4df910)  /* frame time collected towards the next frame (5 units) */
