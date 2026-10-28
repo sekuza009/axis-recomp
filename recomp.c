@@ -4516,6 +4516,11 @@ static THISCALL int tex_applyTintMask(char *tex, int i)
    calls where it is empty. The lifted call's return address (the original's, in the exe) is also stored just above
    the copied arguments, where no callee reads: the patch DLL places some HUD text by finding its caller's return
    address on the stack (hook_glVertex2i's scan), and must find it there for lifted callers too. */
+/* breadcrumbs (RECOMP_CRUMB=1): native_call stores its target in g_crumb[0], the test loop the test's iteration and
+   side in [1] / [2]; with RECOMP_CRUMB they live in a file mapping (recomp_crumb.bin in the game folder), which
+   keeps them when the process dies too hard for the crash handler (a callee that wrecks the stack) */
+static DWORD g_crumbDummy[4];
+DWORD *g_crumb = g_crumbDummy;
 void __cdecl native_call(X86 *m, DWORD target);
 /* the same call for a callee that returns a float in ST0: nothing in native_call touches the x87 stack after it */
 long double __cdecl native_call_fp(X86 *m, DWORD target) __asm__("_native_call");
@@ -4526,14 +4531,22 @@ __asm__(".text\n"
         "\tmovl 20(%esp), %ebx\n"          /* m */
         "\tmovl 24(%esp), %esi\n"          /* target */
         "\tmovl %esp, %ebp\n"
-        "\tsubl $272, %esp\n"            /* 256 + 16: the stack keeps its alignment */
+        "\tandl $-16, %esp\n"            /* the callee starts on a 16-byte aligned stack, whatever the caller's depth */
+        "\tsubl $272, %esp\n"            /* 256 + 16 */
         "\tmovl 16(%ebx), %eax\n\taddl $4, %eax\n"   /* copy 64 dwords from m->esp + 4 */
         "\tmovl %esp, %edx\n\tmovl $64, %ecx\n"
         "1:\tmovl (%eax), %edi\n\tmovl %edi, (%edx)\n\taddl $4, %eax\n\taddl $4, %edx\n\tdecl %ecx\n\tjnz 1b\n"
         "\tmovl 16(%ebx), %eax\n\tmovl (%eax), %eax\n\tmovl %eax, 256(%esp)\n"   /* the return address, above them */
         "\tmovl 4(%ebx), %ecx\n\tmovl 8(%ebx), %edx\n\tmovl 0(%ebx), %eax\n"
+        "\tmovl _g_crumb, %eax\n\tmovl %esi, (%eax)\n"   /* breadcrumb: the target */
+        "\tmovl 0(%ebx), %eax\n"
         "\tmovl %esp, %edi\n"              /* esp before the call (edi is kept by the callee) */
+        "\tmovl %ebp, 264(%esp)\n"         /* the frame pointer, also in the frame: see below */
         "\tcall *%esi\n"
+        "\tmovl 264(%edi), %ebp\n"         /* not trusting the callee with ebp: room_43d060 (8-byte aligned frame)
+                                            overruns a local buffer by a few bytes on some inputs, into its saved
+                                            caller ebp when the alignment leaves no gap; it still returns, and the
+                                            original's caller (room_43ede0) never uses ebp, but this frame does */
         "\tmovl %eax, 0(%ebx)\n\tmovl %ecx, 4(%ebx)\n\tmovl %edx, 8(%ebx)\n"
         "\tmovl %esp, %eax\n\tsubl %edi, %eax\n\taddl $4, %eax\n\taddl %eax, 16(%ebx)\n"   /* m->esp += 4 + popped */
         "\tmovl %ebp, %esp\n\tpopl %edi\n\tpopl %esi\n\tpopl %ebx\n\tpopl %ebp\n\tret\n");
@@ -9062,7 +9075,7 @@ static int run_one(const STest *t, int full, int log)
 	int same = 1;
 	if (full) restore_data();
 	written(g_w1);                                  /* reset tracking */
-	mock_defaults(); t->setup(); mock_reset(); DWORD r1 = run_guarded(t->o);
+	g_crumb[2] = 1; mock_defaults(); t->setup(); mock_reset(); DWORD r1 = run_guarded(t->o);
 	g_ncalls1 = g_ncalls; memcpy(g_calls1, g_calls, g_ncalls * sizeof(MockCall)); int ovf1 = g_mockOverflow;
 	if (full) memcpy(g_resData, g_data, g_dataSize);
 	g_nw1 = written(g_w1);                          /* save the original's scratch pages, clear them */
@@ -9070,7 +9083,7 @@ static int run_one(const STest *t, int full, int log)
 	zero_pages(g_fake, g_w1, g_nw1);
 	written(g_w2);
 	if (full) restore_data();
-	g_seed = seed; mock_defaults(); t->setup(); mock_reset(); DWORD r2 = run_guarded(t->n);
+	g_seed = seed; g_crumb[2] = 2; mock_defaults(); t->setup(); mock_reset(); DWORD r2 = run_guarded(t->n);
 	g_nw2 = written(g_w2);
 	if (ovf1 || g_mockOverflow || g_ncalls != g_ncalls1 || memcmp(g_calls, g_calls1, g_ncalls * sizeof(MockCall))) {
 		if (log) {
@@ -9141,6 +9154,24 @@ static LONG CALLBACK crash_report(EXCEPTION_POINTERS *e)
 	}
 	return EXCEPTION_CONTINUE_SEARCH;
 }
+/* RECOMP_DUMP=addr,len (hex): write those bytes as they are in memory now (after the patch DLL's start-up changes)
+   to recomp_dump.bin in the game folder, to diff against the exe file. Its own function: run_stest's frame size
+   moves everything the tests run below it (see room_43ede0) */
+__attribute__((noinline)) static void dump_code(void)
+{
+	if (GetEnvironmentVariableA("RECOMP_CRUMB", NULL, 0)) {
+		HANDLE f = CreateFileA("recomp_crumb.bin", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
+		HANDLE m = f != INVALID_HANDLE_VALUE ? CreateFileMappingA(f, NULL, PAGE_READWRITE, 0, 4096, NULL) : NULL;
+		DWORD *v = m ? (DWORD *)MapViewOfFile(m, FILE_MAP_WRITE, 0, 0, 4096) : NULL;
+		if (v) g_crumb = v;
+	}
+	char dump[64];
+	if (!GetEnvironmentVariableA("RECOMP_DUMP", dump, sizeof dump)) return;
+	char *comma = strchr(dump, ',');
+	DWORD addr = strtoul(dump, NULL, 16), len = comma ? strtoul(comma + 1, NULL, 16) : 0, w;
+	HANDLE f = CreateFileA("recomp_dump.bin", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+	if (f != INVALID_HANDLE_VALUE) { WriteFile(f, (const void *)addr, len, &w, NULL); CloseHandle(f); }
+}
 static void run_stest(const STest *t)
 {
 	Stat st = { 0 };
@@ -9149,18 +9180,7 @@ static void run_stest(const STest *t)
 	int nfull = t->nfull, nfast = t->nfast;
 	{	/* RECOMP_ONLY=name,name,...: run only these state tests (for working on one batch; the rest stay unhooked) */
 		static char only[4096]; static int got;
-		if (!got) {
-			got = 1; if (!GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2)) only[1] = 0; only[0] = ','; strcat(only, ",");
-			/* RECOMP_DUMP=addr,len (hex): write those bytes as they are in memory now (after the patch DLL's start-up
-			   changes) to recomp_dump.bin in the game folder, to diff against the exe file */
-			char dump[64];
-			if (GetEnvironmentVariableA("RECOMP_DUMP", dump, sizeof dump)) {
-				char *comma = strchr(dump, ',');
-				DWORD addr = strtoul(dump, NULL, 16), len = comma ? strtoul(comma + 1, NULL, 16) : 0, w;
-				HANDLE f = CreateFileA("recomp_dump.bin", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
-				if (f != INVALID_HANDLE_VALUE) { WriteFile(f, (const void *)addr, len, &w, NULL); CloseHandle(f); }
-			}
-		}
+		if (!got) { got = 1; if (!GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2)) only[1] = 0; only[0] = ','; strcat(only, ","); dump_code(); }
 		char key[128];
 		wsprintfA(key, ",%s,", t->name);
 		if (only[2] && !strstr(only, key)) return;   /* only[2]: the list is ",," when unset */
@@ -9169,6 +9189,7 @@ static void run_stest(const STest *t)
 	progress(t->name);
 	g_wdName = t->name;
 	for (int k = 0; k < nfull + nfast; k++) {
+		g_crumb[1] = (DWORD)k;
 		int same = run_one(t, k < nfull, !logged);
 		if (!same) logged = 1;
 		st.n++; st.exact += same;
