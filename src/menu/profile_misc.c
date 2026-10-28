@@ -203,3 +203,61 @@ u32 (profile_44f6c0)(void)
 	                                                        (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48), 0x20);   /* strncpy */
 	return GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 }
+
+#define CALL(addr) GAME_CDECL(addr, u32, void)()
+
+/* 0x44f410: the profile screen's frame: the message's timer (0x9f8f18, to 0x4a944c; then the message goes), the
+   dialog's frame and its page (0x44b600) while open, else the screen (an entry being edited first), the page shown.
+   Returns what the original leaves in eax */
+u32 (profile_44f410)(void)
+{
+	if (GAME_VAR(int, 0x9f900c)) {
+		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
+		GAME_VAR(float, 0x9f8f18) = (float)t;
+		if (t > GAME_VAR(float, 0x4a944c)) {
+			GAME_VAR(int, 0x9f900c) = 0;
+			GAME_VAR(int, 0x9f8f18) = 0;
+		}
+	}
+	if (g_dialogOpen) {
+		menu_drawFrame(GAME_VAR(int, 0x9f8e48), GAME_VAR(int, 0x9f8e4c), GAME_VAR(int, 0x9f8ea0), GAME_VAR(int, 0x9f8ea4));
+		if (g_dialogOpen)
+			return (u32)g_dialogOpen;
+		if (!GAME_VAR(int, 0x9f8d70))
+			return 0;
+		return CALL(0x44b600);
+	}
+	if (GAME_VAR(int, 0x9f8d68))
+		CALL(0x44bd20);
+	GAME_VAR(int, 0x9f8f10) = 1;
+	return CALL(0x44d720);
+}
+
+/* 0x44c560: the profile screen's input: while its intro plays (0x9f6838) a click skips it (to state 5, the panel
+   sliding in from 100 at 0.05); else, with no dialog, by page (0x9f8f10): 1 the list, 2 the new profile, 3 and 5 the
+   dialogs, 6 the profile list's clicks. Returns what the original leaves in eax */
+u32 (profile_processInput)(void)
+{
+	int intro = GAME_VAR(int, 0x9f6838);
+	if (intro && GAME_VAR(int, 0x9f8e54) != 5) {
+		u32 r = g_mouseClick ? (u32)g_mouseClick : GAME_VAR(u32, 0x4ded8c);
+		if (r) {
+			GAME_VAR(int, 0x9f8e54) = 5;
+			GAME_VAR(int, 0x9f8f30) = 0;
+			GAME_VAR(u32, 0x9f8f14) = 0x42c80000;   /* 100 */
+			GAME_VAR(u32, 0x9f8e50) = 0x3d4ccccd;   /* 0.05 */
+		}
+		return r;
+	}
+	if (g_dialogOpen || intro)
+		return (u32)intro;
+	u32 page = GAME_VAR(u32, 0x9f8f10) - 1;
+	switch (page) {
+	case 0: return CALL(0x44be00);
+	case 1: return CALL(0x44c190);
+	case 2: return CALL(0x44c390);   /* profile_44c390 */
+	case 4: return CALL(0x44c400);   /* profile_44c400 */
+	case 5: return CALL(0x44c480);   /* profile_44c480 */
+	}
+	return page;
+}

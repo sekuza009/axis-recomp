@@ -122,3 +122,15 @@ u32 (sound_467dd0)(u32 *sound, int mode, int value)
 	sound[8] = 0;
 	return turn;
 }
+
+/* 0x42bd40: the ten menu sounds loaded (0x467b90; their names from 0x4b1644 down to 0x4b1564) into 0x4dd4d4 ..
+   0x4dd4f8. Returns the last one */
+u32 (sound_loadMenuSounds)(void)
+{
+	static const u32 names[10] = { 0x4b1644, 0x4b1628, 0x4b1610, 0x4b15f4, 0x4b15dc, 0x4b15c4, 0x4b15b0, 0x4b1598,
+	                               0x4b1580, 0x4b1564 };
+	u32 r = 0;
+	for (int k = 0; k < 10; k++)
+		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_CDECL(0x467b90, u32, const char *)((const char *)names[k]);
+	return r;
+}

@@ -2583,7 +2583,8 @@ DWORD FUN_0046cbe0(BYTE *p, DWORD size, DWORD count, void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_0046cc30(BYTE *p, DWORD size, DWORD count, void *f);
 /* 0x42c650 cfg_parsePlayer: write the player section of axis.cfg. Lifted */
-LIFT_PLAIN(cfg_parsePlayer, 42c650)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_parsePlayer(void *f);
 /* 0x42c910 cfg_parseSound: write the sound section of axis.cfg. Lifted */
 LIFT_PLAIN(cfg_parseSound, 42c910)
 /* 0x41e7c0 console_loadFile: load console script k (names at 0x907b30). Lifted */
@@ -4681,7 +4682,8 @@ DWORD menu_4378e0(void);
 LIFT_PLAIN(room_processKeys, 436800)
 /* 0x44f410 profile_44f410(): the profile screen: a message timer (0x9f900c, 0x9f8f18 up to 0x4a944c), with a dialog
    its box (0x428c30) and maybe 0x44b600, else 0x44bd20 when 0x9f8d68 and the profile frame 0x44d720 */
-LIFT_PLAIN(profile_44f410, 44f410)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44f410(void);
 /* 0x43ed20 room_43ed20() / 0x40d390 lobbyCreate_draw(): the room / create-game screen: its draw, then (entered, not
    leaving) the dialog box or: the settings bytes kept in range (players 0..16, limits, map), the panel, the dialog,
    the chat */
@@ -4742,7 +4744,8 @@ LIFT_PLAIN(profile_44c190, 44c190)
    0x9f8e54); else, no dialog: by page 0x9f8f10 (1..6) the page's mouse handler (profile_44be00, profile_44c190,
    profile_44c390, profile_44c400, profile_44c480) and its keys: up / down held with key repeat (0x76d37c /
    0x680bb4), Enter / Esc, and on the list the arrows move the cursor 0x9f8d30 over the 3 x 3 grid (sound 2) */
-LIFT_PLAIN(profile_processInput, 44c560)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_processInput(void);
 /* batch 167 (lifted/grp113.c): receiving DirectPlay messages */
 #include "lifted/grp113.c"
 /* 0x450bc0 arena_450bc0(from*, to*, flags, data, size*) / 0x450bf0 FUN_00450bf0(from, to, flags, data, size):
@@ -4910,7 +4913,8 @@ void arena_editTextField_404cd0(void);
 void arena_editTextField_404d70(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4339e0(void);
-LIFT_PLAIN(sound_loadMenuSounds, 42bd40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD sound_loadMenuSounds(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_437240(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5136,7 +5140,8 @@ LIFT_PLAIN(skirmish_445bc0, 445bc0)
 #include "lifted/grp133.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_434dd0(int i);
-LIFT_PLAIN(arena_406200, 406200)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_406200(int i);
 LIFT_PLAIN(lobby_roomNameCheck, 4052c0)
 LIFT_PLAIN(lobby_checkReservedName, 4057a0)
 LIFT_PLAIN(lobby_connect, 406c30)
@@ -9159,7 +9164,8 @@ ST(FUN_0046cbe0, vfs_content(0, 0x400); fill(BUF + 0x1000, 0x400); g_a[0] = irnd
    (DWORD)FUN_0046cbe0((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(0)))
 ST(FUN_0046cc30, fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);, CALL_PLAIN(0x46cc30, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(1)),
    (DWORD)FUN_0046cc30((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(1)))
-T_PLAIN(cfg_parsePlayer, 0x42c650, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, 0, VFS_FILE(0), 0, 0, 0)
+ST(cfg_parsePlayer, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, CALL_PLAIN(0x42c650, 0, VFS_FILE(0), 0, 0, 0),
+   cfg_parsePlayer((void *)VFS_FILE(0)))
 T_PLAIN(cfg_parseSound, 0x42c910, , 0, VFS_FILE(0), 0, 0, 0)
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
 T_PLAIN(console_loadFile, 0x41e7c0, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, 0, g_a[0], 0, 0, 0)
@@ -14316,7 +14322,7 @@ ST(setup_processTabKeys, disp_state(); callee_stubs(g_stubSetupKeys, 0);, CALL_P
 ST(lobby_processKeys, disp_state(); callee_stubs(g_stubLobby, 0);, CALL_PLAIN(0x4081f0, 0, 0, 0, 0, 0), (DWORD)(lobby_processKeys()))
 ST(menu_4378e0, disp_state(); callee_stubs(g_stubRoomMouse, 0);, CALL_PLAIN(0x4378e0, 0, 0, 0, 0, 0), (DWORD)(menu_4378e0()))
 T_PLAIN(room_processKeys, 0x436800, disp_state(); callee_stubs(g_stubRoomKeys, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44f410, 0x44f410, disp_state(); callee_stubs(g_stubProfile, 0);, 0, 0, 0, 0, 0)
+ST(profile_44f410, disp_state(); callee_stubs(g_stubProfile, 0);, CALL_PLAIN(0x44f410, 0, 0, 0, 0, 0), (DWORD)(profile_44f410()))
 T_PLAIN(room_43ed20, 0x43ed20, disp_state(); callee_stubs(g_stubRoomDraw, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(lobbyCreate_draw, 0x40d390, disp_state(); callee_stubs(g_stubCreateDraw, 0);, 0, 0, 0, 0, 0)
 /* batch 164 */
@@ -14401,7 +14407,7 @@ static void profileinput_setup(void)
 }
 T_PLAIN(profile_44be00, 0x44be00, profileinput_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(profile_44c190, 0x44c190, profileinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_processInput, 0x44c560, profileinput_setup();, 0, 0, 0, 0, 0)
+ST(profile_processInput, profileinput_setup();, CALL_PLAIN(0x44c560, 0, 0, 0, 0, 0), (DWORD)(profile_processInput()))
 /* batch 167 */
 /* a message: a DirectPlay system message (create player 5 / destroy player 3 / another type: its id and a value) or
    a game packet (type 1..7, a player slot 0..15, a payload size of 0x40 or another, data), in buf (0x80 bytes);
@@ -14658,7 +14664,7 @@ ST(room_4339e0, gen_setup(g_gs_4339e0, g_gi_4339e0, g_gb_4339e0);, CALL_PLAIN(0x
 static const DWORD g_gs_42bd40[] = { 0x467b90, 1, 0 };
 static const DWORD g_gi_42bd40[] = { 0x4dd4d4, 0x4dd4d8, 0x4dd4dc, 0x4dd4e0, 0x4dd4e4, 0x4dd4e8, 0x4dd4ec, 0x4dd4f0, 0x4dd4f4, 0x4dd4f8, 0 };
 static const DWORD g_gb_42bd40[] = { 0 };
-T_PLAIN(sound_loadMenuSounds, 0x42bd40, gen_setup(g_gs_42bd40, g_gi_42bd40, g_gb_42bd40);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(sound_loadMenuSounds, gen_setup(g_gs_42bd40, g_gi_42bd40, g_gb_42bd40);, CALL_PLAIN(0x42bd40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(sound_loadMenuSounds()))
 static const DWORD g_gs_437240[] = { 0x401600, 1, 0x41e760, 1, 0x41ee40, 1, 0x434b90, 0, 0 };
 static const DWORD g_gi_437240[] = { 0x4e0cdc, 0x4e1510, 0x68039c, 0x76d48c, 0x9dce48, 0x9dd6d4, 0 };
 static const DWORD g_gb_437240[] = { 0 };
@@ -15190,7 +15196,7 @@ ST(room_434dd0, gen_setup(g_gs_434dd0, g_gi_434dd0, g_gb_434dd0);, CALL_PLAIN(0x
 static const DWORD g_gs_406200[] = { 0x41ee40, 1, 0x452ec0, 1, 0x452fe0, 0, 0x453260, 0, 0 };
 static const DWORD g_gi_406200[] = { 0x4db708, 0x4db710, 0x4db8b4, 0x4dba84, 0x4dbb10, 0x4dbb78, 0x4dbbec, 0x4dbbf0, 0x4ded18, 0xa0bad0, 0 };
 static const DWORD g_gb_406200[] = { 0x4dbbd4, 0 };
-T_PLAIN(arena_406200, 0x406200, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_406200, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, CALL_PLAIN(0x406200, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_406200((DWORD)(g_a[0]))))
 static const DWORD g_gs_4052c0[] = { 0x405140, 0, 0x452ec0, 2, 0x452fe0, 0, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4052c0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4052c0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };

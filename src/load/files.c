@@ -125,3 +125,20 @@ u32 (FUN_0046cc30)(u8 *p, u32 size, u32 count, void *f)
 	}
 	return r;
 }
+
+/* 0x42c650: the player's section of axis.cfg written: its header, the name, the corporation (0..2) and the sex, by
+   their keywords. Returns the last fputs */
+u32 (cfg_parsePlayer)(void *f)
+{
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+	FPUTS(0x4b1830);
+	FPUTS(0x4dedb0);
+	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)0x4b182c);   /* fprintf */
+	FPUTS(0x4b1818);
+	int corp = GAME_VAR(int, 0x4dedd0);
+	FPUTS(corp == 1 ? 0x4b1808 : corp == 2 ? 0x4b1810 : 0x4b1800);
+	FPUTS(0x4b17e8);
+	FPUTS(GAME_VAR(int, 0x4dedd4) == 1 ? 0x4b17e4 : 0x4b17dc);
+	return FPUTS(0x4b182c);
+#undef FPUTS
+}

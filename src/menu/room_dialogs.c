@@ -191,3 +191,28 @@ int (room_434d00)(void)
 	GAME_VAR(int, 0x5b1914) = 0x1e;
 	return 1;
 }
+
+/* 0x406200: joining arena i of the list (99999: the one typed in, 0x4dbbd4): the search stopped first if it runs,
+   the connection made (0x452ec0; message 0x3f and the search stopped on a failure), the join (arena_453260, not
+   checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
+u32 (arena_406200)(int i)
+{
+	GAME_VAR(int, 0x4dbbec) = 0;
+	GAME_VAR(int, 0x4dbbf0) = 0;
+	if (GAME_VAR(int, 0x4dba84))
+		CALL(0x452fe0);
+	void *session = i == 99999 ? (void *)0x4dbbd4 : (void *)(0x9087ef + i * 0x4a);
+	if (!GAME_CDECL(0x452ec0, int, int, void *)(0, session)) {
+		GAME_CDECL(0x41ee40, void, int)(0x3f);
+		return CALL(0x452fe0);
+	}
+	GAME_VAR(int, 0x4db710) = i;
+	CALL(0x453260);
+	GAME_VAR(int, 0x4dbb10) = 0;
+	GAME_VAR(int, 0x4db8b4) = 1;
+	GAME_VAR(int, 0x4dbb78) = 0;
+	GAME_VAR(int, 0x4db708) = 0;
+	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
+	GAME_VAR(u32, 0xa0bad0) = timer;
+	return timer;
+}
