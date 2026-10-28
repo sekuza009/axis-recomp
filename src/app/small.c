@@ -123,3 +123,9 @@ void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)0x7
 void (arena_404120)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x4dbad0); }
 void (room_431db0)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x9dd308); }
 void (profile_44b080)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)0x9f9010); }
+/* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
+void THISCALL (FUN_0045dfb0)(Stage *stage, int i)
+{
+	if (i < 0 || FIELD(int, stage, 0x1cd94f4 + i * 0x8888) == 1)
+		FIELD(int, stage, 0x202e8d8) = i;
+}

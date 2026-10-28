@@ -1,6 +1,7 @@
 /* profile_misc.c: small pieces of the pilot profiles: the save files' byte scrambling, name checks, and a profile's
    colour record loaded for the preview. */
 #include "../game.h"
+#include <string.h>
 
 /* the bytes xored with a key that counts up by one (from key); the reset of the key is dead code in the original
    (a signed byte is never above 0xa5) */
@@ -51,3 +52,41 @@ static void load_colour(int i)
 /* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
 void (profile_44bc50)(void) { load_colour(GAME_VAR(int, 0x9f8d30)); }
 void (profile_44bd20)(void) { load_colour(GAME_VAR(int, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 72)); }
+
+/* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
+void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
+
+/* 0x42b3c0: a 0x4c-byte record scrambled with a key that just counts up (no reset); returns the count */
+int (profile_42b3c0)(u8 *p, u8 key)
+{
+	int i;
+	for (i = 0; i < 0x4c; i++)
+		p[i] ^= key++;
+	return i;
+}
+
+/* 0x42b390: every byte of s inverted in place; its length */
+int (data_42b390)(char *s)
+{
+	int n = (int)strlen(s);
+	for (int i = 0; i < n; i++)
+		s[i] = ~s[i];
+	return n > 0 ? n : 0;
+}
+
+/* 0x4343b0: 1 when a name is blank (only spaces and control characters) */
+int (profile_4343b0)(const char *name)
+{
+	int n = (int)strlen(name);
+	for (int i = 0; i < n; i++)
+		if (name[i] < 0 || name[i] > 0x20)
+			return 0;
+	return 1;
+}
+
+/* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at 0x9f9010 (left, top, right, bottom), else -1 */
+int (profile_44b2e0)(int x, int y)
+{
+	const int *r = (const int *)0x9f9010;
+	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
+}

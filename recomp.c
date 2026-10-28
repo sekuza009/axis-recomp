@@ -384,39 +384,20 @@ int arena_404520(int x, int y);
 /* 0x445ee0 save_cryptRecord(rec, key): XOR the 0x3ac-byte profile record with key, key+1, ...
    The original meant to wrap the key at 0xa5 back to 0x7e, but compares the sign-extended byte with the
    int 0xa5 (movsx esi, al; cmp esi, 0xa5), which is never true: the key simply counts up mod 256. */
-static void __cdecl save_cryptRecord(unsigned char *rec, unsigned char key)
-{
-	for (int i = 0; i < 0x3ac; i++) {
-		rec[i] ^= key;
-		key++;
-		if ((int)(signed char)key > 0xa5) key = 0x7e;           /* dead, kept to mirror the original */
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void save_cryptRecord(unsigned char *rec, unsigned char key);
 
 /* 0x42b3c0 profile_42b3c0(buf, key): XOR 0x4c bytes with key, key+1, ...; returns 0x4c (EAX = loop counter) */
-static int __cdecl profile_42b3c0(unsigned char *buf, unsigned char key)
-{
-	int i;
-	for (i = 0; i < 0x4c; i++) buf[i] ^= key++;
-	return i;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_42b3c0(unsigned char *p, unsigned char key);
 
 /* 0x42b390 data_42b390(s): invert every byte of a string in place; returns its length (0 if empty) */
-static int __cdecl data_42b390(char *s)
-{
-	int n = (int)strlen(s), i = 0;
-	for (; i < n; i++) s[i] = ~s[i];
-	return n > 0 ? n : 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int data_42b390(char *s);
 
 /* 0x4343b0 profile_4343b0(name): 1 if the name is empty or only spaces/control characters (1..0x20), else 0 */
-static int __cdecl profile_4343b0(const char *name)
-{
-	int n = (int)strlen(name);
-	for (int i = 0; i < n; i++)
-		if (name[i] < 0 || name[i] > 0x20) return 0;
-	return 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_4343b0(const char *name);
 
 /* 0x403560 room_403560(i): toggle flag i of the room option table (8-byte records); 22..24 always end 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -431,13 +412,8 @@ int armc_40f830(int i);
 int FUN_0046cbc0(int i, int base, int stride);
 
 /* 0x454110 FUN_00454110(): first free slot (0 in the first dword) of the 200 x 8-byte table at 0xa0b470, or -1 */
-static int __cdecl FUN_00454110(void)
-{
-	int i = 0;
-	for (DWORD p = 0xa0b470; p < 0xa0bab0; p += 8, i++)
-		if (GU32(p) == 0) return i;
-	return -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00454110(void);
 
 /* 0x463710 (thiscall) index of id among the 5 ints at this+0x2342381, or -1 (also for negative ids) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -445,11 +421,8 @@ int THISCALL scene_findTeam(void *scene, int id);
 #define FUN_00463710 scene_findTeam
 
 /* 0x45dfb0 (thiscall) select actor i (stride 0x8888) if it is active (field 0x1cd94f4 == 1); i < 0 always */
-static THISCALL void FUN_0045dfb0(char *self, int i)
-{
-	if (i < 0 || *(int *)(self + 0x1cd94f4 + i * 0x8888) == 1)
-		*(int *)(self + 0x202e8d8) = i;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045dfb0(char *self, int i);
 
 /* 0x474390 (thiscall) set the flag at 0x1561b68 of player i (stride 0x47fd2) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -521,14 +494,8 @@ static void __cdecl armc_dragSecondaryChroma(void) { long double v = slider_pos(
 static void __cdecl armc_dragSecondaryValue(void)  { long double v = slider_pos(); G32(0x4dca98) = 1; g_armcColours[g_armcColourSlot * 6 + 5] = (float)(v + v - 1.0f); }
 
 /* 0x430390 app_430390: default (empty) saved mech: no weapons, part 0, white colours */
-static void __cdecl app_430390(void)
-{
-	static const float c[6] = { 0, 1, 0, 0, 1, 0 };
-	G32(0x4dcf24) = G32(0x4dcf28) = G32(0x4dcf2c) = G32(0x4dcf18) = G32(0x4dcf1c) = -1;
-	G32(0x4dc878) = G32(0x4dc87c) = G32(0x4dc880) = G32(0x4dc884) = G32(0x4dc888) = 0;
-	G32(0x4dcf20) = 0;
-	for (DWORD p = 0x4dcfe0; p < 0x4dd058; p += 24) memcpy((void *)p, c, 24);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void app_430390(void);
 
 /* 0x42f8e0 intro_42f8e0: initial key repeat tables (4 records of 0x2c bytes, copied twice) */
 static void __cdecl intro_42f8e0(void)
@@ -547,58 +514,29 @@ static void __cdecl intro_42f8e0(void)
 void intro_430bd0(void);
 
 /* 0x431560 menu_clearInputBuffer(mode) */
-static void __cdecl menu_clearInputBuffer(int mode)
-{
-	memset((void *)0x9dc92c, 0, 0x400);
-	G32(0x9dbf10) = 0;
-	G32(0x9dcd30) = mode;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_clearInputBuffer(int mode);
 
 /* 0x4315c0 room_4315c0: push the input line into the 3-line chat history (0x400 bytes each) */
-static void __cdecl room_4315c0(void)
-{
-	memcpy((void *)0x67f738, (void *)0x67f338, 0x400);
-	memcpy((void *)0x67f338, (void *)0x67ef38, 0x400);
-	memcpy((void *)0x67ef38, (void *)0x9dc92c, 0x400);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4315c0(void);
 
 /* 0x4065a0 arena_4065a0(a, b): swap two 0x4a-byte session records */
-static void __cdecl arena_4065a0(void *a, void *b)
-{
-	unsigned char t[0x4a];
-	memcpy(t, a, 0x4a); memcpy(a, b, 0x4a); memcpy(b, t, 0x4a);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4065a0(void *a, void *b);
 
-/* the lobby/room code zeroes a name field, then strcpy's into it */
-static void copy_name(DWORD dst, int zero_bytes, const char *src)
-{
-	memset((void *)dst, 0, zero_bytes);
-	strcpy((char *)dst, src);
-}
 
 /* 0x4050f0 cfg_defaultPlayerName: player name "PLAYER" (string 0x4ad4b0), the two fields after it 0 */
-static void __cdecl cfg_defaultPlayerName(void)
-{
-	copy_name(0x4db560, 32, GSTR(0x4ad4b0));
-	G32(0x4db580) = 0; G32(0x4db584) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_defaultPlayerName(void);
 
 /* 0x404930 lobby_404930: copy the profile name and its two fields into the lobby player record */
-static void __cdecl lobby_404930(void)
-{
-	G32(0x4db584) = G32(0x4dedd4);
-	copy_name(0x4db560, 32, GSTR(0x4dedb0));
-	G32(0x4db580) = G32(0x4dedd0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_404930(void);
 
 /* 0x41ee40 FUN_0041ee40(i): show message i (0x80-byte strings at 0x74de24; i << 7 in the original) */
-static void __cdecl FUN_0041ee40(int i)
-{
-	G32(0x4df900) = 1;
-	memset((void *)0x4df81c, 0, 0x50);
-	G32(0x9da49c) = 0;
-	strcpy((char *)0x4df81c, GSTR(0x74de24 + i * 0x80));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0041ee40(int i);
 
 /* 0x433700 room_433700: copy the room settings record at 0x5b1b30 (name + 6 bytes); types 22..24 become 0 */
 static void __cdecl room_433700(void)
@@ -619,15 +557,6 @@ static void __cdecl room_433700(void)
 #define g_menuDialogOpen G32(0x90d1c4)
 #define g_menuState      G32(0x76d3e8)
 
-/* 0x445f10 / 0x445f40: the profile crypt of save_cryptRecord for 0x104- and 0x80-byte records */
-static void crypt_bytes(unsigned char *p, int n, unsigned char key)
-{
-	for (int i = 0; i < n; i++) {
-		p[i] ^= key;
-		key++;
-		if ((int)(signed char)key > 0xa5) key = 0x7e;           /* never true, see save_cryptRecord */
-	}
-}
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_445f10(unsigned char *p, unsigned char key);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -653,14 +582,10 @@ static void room_listChanged(void)
 {
 	G32(0x9dd350) = 1; G32(0x9dd3b0) = 0; G32(0x76d40c) = 0; G32(0xa0b350) = 0; G32(0xa0b35c) = 0;
 }
-static void __cdecl room_435970(void)          /* 0x435970 previous page */
-{
-	if (G32(0x9dd6ac) > 0) { G32(0x9dd1b4) = G32(0x9dd6ac); G32(0x9dd6ac)--; room_listChanged(); }
-}
-static void __cdecl room_4359b0(void)          /* 0x4359b0 next page */
-{
-	if (G32(0x9dd6ac) < G32(0x9dd4b8) && G32(0x9dd6ac) < 99) { G32(0x9dd1b4) = G32(0x9dd6ac); G32(0x9dd6ac)++; room_listChanged(); }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435970(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4359b0(void);
 static void __cdecl room_4359f0(void)          /* 0x4359f0 cycle the list mode 0..2 */
 {
 	int m = G32(0x9dd1d0);
@@ -673,12 +598,8 @@ static void __cdecl room_4359f0(void)          /* 0x4359f0 cycle the list mode 0
 
 /* 0x43f5a0 app_setDataPaths: "initdata/" into both data path buffers, the stage path (0x4b0498) into the third
    (each buffer 0x105 bytes, cleared first) */
-static void __cdecl app_setDataPaths(void)
-{
-	copy_name(0x9dae7c, 0x105, GSTR(0x4b29bc));
-	copy_name(0x4dedf8, 0x105, GSTR(0x4b29bc));
-	copy_name(0x680bc4, 0x105, GSTR(0x4b0498));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void app_setDataPaths(void);
 
 /* main menu option list: records of 0x44 bytes at 0x9ddac8 (first dword = enabled), count 0x9dd928 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -691,23 +612,12 @@ void mainmenu_4417f0(void);
 #define sk_top G32(0x9f16bc)
 #define sk_row G32(0x9f1058)
 #define sk_sel G32(0x9f16a4)
-static void __cdecl skirmish_443cd0(void)      /* 0x443cd0 up */
-{
-	if (sk_row > 0) { sk_row--; sk_sel = sk_top + sk_row; return; }
-	if (sk_top > 0) sk_top--;
-	sk_sel = sk_top + sk_row;
-}
-static void __cdecl skirmish_443d10(void)      /* 0x443d10 down */
-{
-	if (sk_top + sk_row < G32(0x9ef2c0) - 1) {
-		if (sk_row < 7) sk_row++; else sk_top++;
-		sk_sel = sk_top + sk_row;
-	}
-}
-static void __cdecl skirmish_443d50(int row)   /* 0x443d50 click on a row */
-{
-	if (sk_top + row < G32(0x9ef2c0)) { sk_row = row; sk_sel = sk_top + row; }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_443cd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_443d10(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_443d50(int row);
 
 /* 0x443d80 / 0x443de0: skirmish undo stack of values at 0x9eeadc (depth 0x9f1060); clear the 400-dword buffer at 0x9f1064 */
 static void __cdecl FUN_00443d80(void)
@@ -733,10 +643,8 @@ static void __cdecl FUN_00443de0(void)
 }
 
 /* 0x445de0 menu_445de0: a click starts the menu fade (once) */
-static void __cdecl menu_445de0(void)
-{
-	if ((g_mouseClick1 || g_mouseClick2) && !G32(0x4df01c)) { G32(0x4df01c) = 1; G32(0x4e0458) = 0; }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_445de0(void);
 /* 0x447af0 mission_447af0: a click (no dialog open) clears 0x9f62e0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mission_447af0(void);
@@ -756,26 +664,15 @@ static void __cdecl FUN_004463a0(void)
 	}
 }
 /* 0x4464b0 match_4464b0: store the mech into the profile record (inverse of FUN_004463a0) */
-static void __cdecl match_4464b0(void)
-{
-	G32(0x9f19f8) = G32(0x4dc878); G32(0x9f19fc) = G32(0x4dc87c); G32(0x9f1a04) = G32(0x4dc884);
-	G32(0x9f1a00) = G32(0x4dc880); G32(0x9f1a08) = G32(0x4dc888); G32(0x9f1a20) = G32(0x4dcf24);
-	G32(0x9f1a1c) = G32(0x4dcf20); G32(0x9f1a24) = G32(0x4dcf28); G32(0x9f1a18) = G32(0x4dcf1c);
-	G32(0x9f1a28) = G32(0x4dcf2c); G32(0x9f1a14) = G32(0x4dcf18);
-	memcpy((void *)0x9f1a34, (void *)0x4dcfe0, 0x90);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_4464b0(void);
 /* 0x447910 skirmish_447910: restore the menu camera (armc_40e670 without the flag) */
-static void __cdecl skirmish_447910(void)
-{
-	G32(0x4df024) = G32(0x4df870); G32(0x4df028) = G32(0x4df874); G32(0x4df02c) = G32(0x4df878);
-	G32(0x680378) = G32(0x76d388); G32(0x68037c) = G32(0x76d38c); G32(0x680380) = G32(0x76d390);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_447910(void);
 
 /* 0x44b2e0 profile_44b2e0(x, y): 1 inside the rectangle at 0x9f9010, else -1 */
-static int __cdecl profile_44b2e0(int x, int y)
-{
-	return (x >= G32(0x9f9010) && x <= G32(0x9f9018) && y >= G32(0x9f9014) && y <= G32(0x9f901c)) ? 1 : -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b2e0(int x, int y);
 
 /* network player slots: 16 "used" flags at 0x9f93d8, 16 records of 0x410 bytes at 0x9f9840 */
 static unsigned char __cdecl FUN_00451450(void)  /* 0x451450 claim a free slot; returns it in AL (0xff = none) */
@@ -784,26 +681,14 @@ static unsigned char __cdecl FUN_00451450(void)  /* 0x451450 claim a free slot; 
 		if (G32(0x9f93d8 + i * 4) == 0) { G32(0x9f93d8 + i * 4) = 1; return i; }
 	return 0xff;
 }
-static void __cdecl arena_4514a0(unsigned slot, int id) /* 0x4514a0 initialise slot record */
-{
-	DWORD r = 0x9f9840 + (slot & 0xff) * 0x410;
-	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };    /* shorts at +0x10 .. +0x22 */
-	G32(r) = 1; G32(r + 4) = id;
-	memcpy((void *)(r + 0x10), init, sizeof init);
-	*(short *)(r + 0x32) = *(short *)0xa0b428;
-}
-static void __cdecl arena_4515a0(void)         /* 0x4515a0 free all slots */
-{
-	memset((void *)0x9f93d8, 0, 0x40);
-	for (DWORD r = 0x9f9840; r < 0x9fd940; r += 0x410) memset((void *)r, 0, 16);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4514a0(unsigned slot, int id);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4515a0(void);
 
 /* 0x4532b0 arena_4532b0(i): value of session i (8-byte records at 0xa0b470: used, value; last index 0xa0b41c) */
-static int __cdecl arena_4532b0(int i)
-{
-	if (i > -1 && i <= G32(0xa0b41c) && G32(0xa0b470 + i * 8)) return G32(0xa0b474 + i * 8);
-	return 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4532b0(int i);
 /* 0x453a30 arena_453a30(i): 1 if connection type i (0..3) is available (flags at 0xa0bae0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_453a30(DWORD i);
@@ -828,13 +713,8 @@ static THISCALL int tex_4554c0(char *self, const unsigned char *name)
 
 /* 0x4045e0 arena_4045e0: clear chat record 0x67ef30 (0x4a bytes at 0x9087c4). The original loops 256 times
    without advancing, so the same record is cleared repeatedly */
-static void __cdecl arena_4045e0(void)
-{
-	DWORD r = 0x9087c4 + G32(0x67ef30) * 0x4a;
-	memset((void *)r, 0, 32);
-	G8(r + 0x21) = 0; G8(r + 0x28) = 0; G8(r + 0x22) = 0; G8(r + 0x23) = 0; G8(r + 0x29) = 0; G8(r + 0x2a) = 0;
-	G32(r + 0x24) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4045e0(void);
 
 /* ---- batch 5: scene-object methods (actors, match messages, materials) ----------------------
    "self" is the scene sub-object (GUIDE.txt section 5): actor slots at +0x1cd93a8 (stride 0x8888),
