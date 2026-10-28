@@ -17,7 +17,8 @@ for arg in sys.argv[1:]:
     void = decl.startswith('void ')
     # the wrapper
     pats = [r'LIFT_PLAIN8?\(%s, [0-9a-f]+\)' % name,
-            r'static THISCALL DWORD %s\([^)]*\) \{ (?:DWORD v\[\d\] = \{[^}]*\}; )?return run_lifted\([^;]*\); \}' % name]
+            r'static THISCALL DWORD %s\([^)]*\) \{ (?:DWORD v\[\d\] = \{[^}]*\}; )?return run_lifted\([^;]*\); \}' % name,
+            r'static THISCALL DWORD %s\([^)]*\)\r\n\{\r\n(?:\tDWORD v\[\d\] = \{[^}]*\};\r\n)?\treturn run_lifted\([^;]*\);\r\n\}' % name]
     for pat in pats:
         m = list(re.finditer(pat, s))
         if m: break

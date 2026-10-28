@@ -8896,6 +8896,9 @@ static void mocks_install(int on)
 static DWORD g_stubAddr[MAXSTUBS], g_stubRet, g_stubRetK[MAXSTUBS];
 static int g_stubArgs[MAXSTUBS], g_nstubs, g_stubKey[MAXSTUBS];
 static BYTE g_stubSaved[MAXSTUBS][5];
+/* callee_out: data a stub writes through one of its pointer arguments, as the real callee fills an output buffer
+   (else both sides go on with whatever their stacks held there) */
+static int g_stubOutArg[MAXSTUBS]; static DWORD g_stubOutLen[MAXSTUBS]; static BYTE g_stubOutData[MAXSTUBS][64];
 /* the argument count may carry CS_POP (the callee pops its arguments: stdcall / thiscall, ret N) and CS_THIS (ecx,
    thiscall's object, is recorded first); more than four arguments are recorded four at a time */
 #define CS_POP 0x100
@@ -8907,6 +8910,7 @@ static DWORD __cdecl callee_dispatch(DWORD *f)   /* f[0] ecx, f[1] stub index, f
 	if (fl & CS_THIS) mock_rec(g_stubAddr[k] | 0x80000000u, 0, f[0], 0, 0, 0);
 	for (int i = 0; i == 0 || i < n; i += 4)
 		mock_rec(g_stubAddr[k] + (DWORD)i, n, n > i ? f[3 + i] : 0, n > i + 1 ? f[4 + i] : 0, n > i + 2 ? f[5 + i] : 0, n > i + 3 ? f[6 + i] : 0);
+	if (g_stubOutLen[k]) memcpy((void *)f[3 + g_stubOutArg[k]], g_stubOutData[k], g_stubOutLen[k]);
 	g_stubPop = fl & CS_POP ? 4u * (DWORD)n : 0;
 	if (g_stubKey[k] != -1) return f[3] == (DWORD)g_stubKey[k];   /* callee_key: a key test answering for one key */
 	return g_stubRetK[k];
@@ -8944,7 +8948,7 @@ static void callee_stubs(const DWORD *list, DWORD ret)
 	g_nstubs = 0;
 	for (; *list && g_nstubs < MAXSTUBS; list += 2) {
 		g_stubAddr[g_nstubs] = list[0]; g_stubArgs[g_nstubs] = (int)list[1];
-		g_stubRetK[g_nstubs] = ret; g_stubKey[g_nstubs++] = -1;
+		g_stubRetK[g_nstubs] = ret; g_stubOutLen[g_nstubs] = 0; g_stubKey[g_nstubs++] = -1;
 	}
 	g_stubRet = ret;
 	callee_patch(1);
@@ -8952,6 +8956,12 @@ static void callee_stubs(const DWORD *list, DWORD ret)
 }
 static int callee_index(DWORD addr) { for (int k = 0; k < g_nstubs; k++) if (g_stubAddr[k] == addr) return k; return -1; }
 static void callee_ret(DWORD addr, DWORD ret) { int k = callee_index(addr); if (k >= 0) g_stubRetK[k] = ret; }
+/* the stub at addr writes len bytes of data (up to 64) through its argument number arg (0 = the first) */
+static void callee_out(DWORD addr, int arg, const void *data, DWORD len)
+{
+	int k = callee_index(addr);
+	if (k >= 0 && len <= sizeof g_stubOutData[0]) { g_stubOutArg[k] = arg; g_stubOutLen[k] = len; memcpy(g_stubOutData[k], data, len); }
+}
 /* the stub at addr (a key test taking the key first) answers 1 for key, 0 for any other (-1: none pressed) */
 static void callee_key(DWORD addr, int key) { int k = callee_index(addr); if (k >= 0) g_stubKey[k] = key < 0 ? -2 : key; }
 /* the scripted values a test may change in its setup, back to their defaults before each run */
@@ -17351,6 +17361,9 @@ static void bullets_setup(const DWORD *stubs)
 	for (int i = 0; i < 16; i++) for (int k = 0; k < 8; k++) GF(BUF + 0x1cd93a8 + i * 0x8888 + 0x2e00 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
 	g_a[0] = irnd(0, 399); g_a[1] = irnd(-1, 50); g_a[2] = irnd(0, 15); g_a[3] = irnd(0, 3); g_a[4] = (int)d; g_a[5] = irnd(-1, 15);
 	callee_stubs(stubs, (DWORD)irnd(0, 399));
+	float hit[3];   /* the ray test's hit point (0x471740 fills its third argument), copied into the slot on a hit */
+	for (int k = 0; k < 3; k++) hit[k] = (float)irnd(-1000, 1000) / 10.0f;
+	callee_out(0x471740, 2, hit, sizeof hit);
 }
 ST(bullet_spawn, bullets_setup(g_stubBulletInit);, TC(DWORD, 0x47ce50, char *, int, int, int, char *, int)(BUF, g_a[1], g_a[2], g_a[3], (char *)g_a[4], g_a[5]),
    bullet_spawn(BUF, (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5]))
