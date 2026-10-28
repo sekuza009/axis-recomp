@@ -4441,24 +4441,12 @@ static int __cdecl FUN_00456de0(int v)
 	return r;
 }
 /* 0x462bc0 (thiscall) msg_playerLeft(actor): "<name> left" in the language at 0x9dae74 (1: 0x4c468c, 2: 0x4c46a8) */
-static THISCALL unsigned msg_playerLeft(char *scene, int actor)
-{
-	int lang = G32(0x9dae74);
-	const char *name = scene + actor * 0x8888 + 0x1eccb08;
-	if (lang == 1) return msg_4629f0(scene, 0, (const char *)0x4c468c, name);
-	if (lang == 2) return msg_4629f0(scene, 0, (const char *)0x4c46a8, name);
-	return (unsigned)(lang - 2);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_playerLeft(void *scene, int actor);
 /* 0x463030 (thiscall) msg_cheatUsed(actor, cheat): "<name> used <cheat>" (cheat names: 256-byte entries at
    0x4a9838 / 0x4a9d38 for language 1 / 2), colour 4 */
-static THISCALL unsigned msg_cheatUsed(char *scene, int actor, int cheat)
-{
-	int lang = G32(0x9dae74);
-	const char *name = scene + actor * 0x8888 + 0x1eccb08;
-	if (lang == 1) return msg_4629f0(scene, 4, (const char *)0x4c4894, name, (const char *)(0x4a9838 + cheat * 256));
-	if (lang == 2) return msg_4629f0(scene, 4, (const char *)0x4c48b8, name, (const char *)(0x4a9d38 + cheat * 256));
-	return (unsigned)(lang - 2);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_cheatUsed(void *scene, int actor, int cheat);
 /* 0x456470 (thiscall) tex_applyTintMask(i): if texture slot i (0x68-byte records at +0xc0108) has flag 2 at +0x64,
    tint every pixel (RGBA at +0x114, w x h from +0xc0118/+0xc011c) whose mask byte (+0x80114: R, else G) is >= 200 with
    the slot's first or second HSV tint (tex_46de20). Returns what the original leaves in EAX */
@@ -11017,9 +11005,10 @@ static void msgscene_setup(void)
 	g_a[0] = irnd(0, 7); g_a[1] = irnd(0, 7);        /* negative ids index before the tables (both crash); msg_kill checks */
 	if (!irnd(0, 3)) g_a[1] = g_a[0];
 }
-ST(msg_playerLeft, msgscene_setup();, TC(int, 0x462bc0, char *, int)(BUF, g_a[0]), (int)msg_playerLeft(BUF, g_a[0]))
-ST(msg_cheatUsed, msgscene_setup(); g_a[2] = irnd(0, 4);, TC(int, 0x463030, char *, int, int)(BUF, g_a[0], g_a[2]),
-   (int)msg_cheatUsed(BUF, g_a[0], g_a[2]))
+/* msg_playerLeft / msg_cheatUsed leave junk in eax; net_processGamePacket returns it and nobody reads it (tools/eaxuse.py) */
+ST(msg_playerLeft, msgscene_setup();, (TC(int, 0x462bc0, char *, int)(BUF, g_a[0]), 0), (msg_playerLeft(BUF, g_a[0]), 0))
+ST(msg_cheatUsed, msgscene_setup(); g_a[2] = irnd(0, 4);, (TC(int, 0x463030, char *, int, int)(BUF, g_a[0], g_a[2]), 0),
+   (msg_cheatUsed(BUF, g_a[0], g_a[2]), 0))
 ST(msg_playerJoinedTeam, msgscene_setup();, TC(int, 0x462d30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerJoinedTeam(BUF, g_a[0], g_a[1]))
 ST(msg_playerChangedTeam, msgscene_setup();, TC(int, 0x462e30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerChangedTeam(BUF, g_a[0], g_a[1]))
 ST(msg_kill, msgscene_setup(); if (!irnd(0, 9)) g_a[irnd(0, 1)] = irnd(-3, -1);, TC(int, 0x4630c0, char *, int, int)(BUF, g_a[0], g_a[1]), msg_kill(BUF, g_a[0], g_a[1]))
