@@ -2927,7 +2927,8 @@ LIFT_PLAIN(cfg_loadAxisCfg, 42d730)
 /* 0x4050a0 FUN_004050a0 / 0x405140 lobby_405140: take the lobby's player/server settings and write axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_004050a0(void);
-LIFT_PLAIN(lobby_405140, 405140)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_405140(void);
 /* 0x44f6c0 profile_44f6c0: with a profile chosen: save it, go to the main menu (state 300), take its name, write
    axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3176,7 +3177,8 @@ DWORD menu_drawDimOverlay(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43df00(void);
 /* 0x428890 menu_428890(x, y): the blinking cursor bar; 0x428c30 menu_drawFrame(x0, y0, x1, y1): a window frame */
-LIFT_PLAIN(menu_428890, 428890)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_428890(int x, int y);
 LIFT_PLAIN(menu_drawFrame, 428c30)
 /* GL window: 0x468050 glWindow_restoreDisplayMode / 0x467f20 glWindow_setDisplayModeBy(w, h, bpp) /
    0x467e60 glWindow_setupPixelFormat(dc) / 0x468450 glWindow_resize(w, h); errors as message boxes */
@@ -3202,7 +3204,8 @@ LIFT_PLAIN(profile_deleteFiles, 44ba60)
 /* 0x432400 reg_writeCharacterSettings: player name and character choices into the registry; 0x433640 room_433640 /
    0x43e610 room_43e610: room steps that save them */
 LIFT_PLAIN(reg_writeCharacterSettings, 432400)
-LIFT_PLAIN(room_433640, 433640)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_433640(void);
 LIFT_PLAIN(room_43e610, 43e610)
 /* 0x42f150 gfx_initGLState(w, h): the GL state for a new window and the projection */
 LIFT_PLAIN(gfx_initGLState, 42f150)
@@ -4052,7 +4055,8 @@ void armc_drawStatLabel(int x, int y, const char *text);
 DWORD menu_4290d0(void);
 /* 0x428940 menu_428940(x, y): an input field (no dialog open): the blinking cursor after the cursor position
    (0x9dbf10) and the text 0x9dc92c, masked with '*' for a password field (0x4e1868) */
-LIFT_PLAIN(menu_428940, 428940)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_428940(int x, int y);
 /* 0x44ce90 profile_44ce90(): the profile list's visible names (count 0x9f9008 from 0x9f8c4c, 0x48 bytes each from
    0x9f684c, at most 13, 20 apart), the selected one (0x9f8d74) brighter, all brighter when focused (0x9f8f10) */
 LIFT_PLAIN(profile_44ce90, 44ce90)
@@ -4679,7 +4683,8 @@ DWORD lobby_processKeys(void);
    table), its sub-mode 0x9dd850, popup 0x9dd7d8 and dialogs 0x4db508 / 0x4db8b4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_4378e0(void);
-LIFT_PLAIN(room_processKeys, 436800)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_processKeys(void);
 /* 0x44f410 profile_44f410(): the profile screen: a message timer (0x9f900c, 0x9f8f18 up to 0x4a944c), with a dialog
    its box (0x428c30) and maybe 0x44b600, else 0x44bd20 when 0x9f8d68 and the profile frame 0x44d720 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4688,7 +4693,8 @@ DWORD profile_44f410(void);
    leaving) the dialog box or: the settings bytes kept in range (players 0..16, limits, map), the panel, the dialog,
    the chat */
 LIFT_PLAIN(room_43ed20, 43ed20)
-LIFT_PLAIN(lobbyCreate_draw, 40d390)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobbyCreate_draw(void);
 /* batch 164 (lifted/grp110.c): mission settings keys, three jump stubs */
 #include "lifted/grp110.c"
 /* 0x447c30 menu_447c30(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
@@ -4971,7 +4977,8 @@ DWORD lobby_close(void);
 DWORD FUN_00403870(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435f40(void);
-LIFT_PLAIN(room_435e70, 435e70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_435e70(void);
 LIFT_PLAIN(room_433c70, 433c70)
 LIFT_PLAIN(lobby_keysQuit, 408110)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9720,7 +9727,7 @@ ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
 T_PLAIN(cfg_loadAxisCfg, 0x42d730, axiscfg_setup();, 0, 0, 0, 0, 0)
 ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
-T_PLAIN(lobby_405140, 0x405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, 0, 0, 0, 0, 0)
+ST(lobby_405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_405140()))
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
 T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 40);, 0, 0, 0, 0, 0)
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
@@ -10156,7 +10163,7 @@ T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0
 ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
 ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
 ST(room_43df00, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_43df00(), 0))
-T_PLAIN(menu_428890, 0x428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, 0, g_a[0], g_a[1], 0, 0)
+ST(menu_428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, CALL_PLAIN(0x428890, 0, g_a[0], g_a[1], 0, 0), (DWORD)(menu_428890((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 T_PLAIN(menu_drawFrame, 0x428c30, G32(0x4de740) = irnd(0, 2); for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static void dispmode_setup(void)
 {
@@ -10216,7 +10223,10 @@ T_PLAIN(sys_checkClockTampering, 0x43f300, clock_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(profile_deleteFiles, 0x44ba60, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, 0, 0, 0, 0, 0)
 static void charset_setup(void) { netstate_setup(); fill_str((char *)0x9dd1d8, 20, 32, 126); g_mockRegFail = !irnd(0, 4); G32(0x9dd6c4) = irnd(0, 3); fill_str((char *)0x4df9ee, 12, 32, 126); }
 T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(room_433640, 0x433640, charset_setup();, 0, 0, 0, 0, 0)
+/* the registry always opens here: when it fails, reg_writeCharacterSettings (called without arguments) closes its
+   own argument slot as the key, i.e. the caller's saved register, which no rebuild reproduces (that path is tested
+   in reg_writeCharacterSettings's own test) */
+ST(room_433640, charset_setup(); g_mockRegFail = 0;, CALL_PLAIN(0x433640, 0, 0, 0, 0, 0), (DWORD)(room_433640()))
 T_PLAIN(room_43e610, 0x43e610, charset_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(gfx_initGLState, 0x42f150, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
 /* a texture object (RGBA image at +0x114, size at +0xc0118, mipmap/filter flags) */
@@ -12903,7 +12913,7 @@ static void field_setup(void)
 	fill_str((char *)0x9dc92c, 28, 32, 126);
 	G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100);
 }
-T_PLAIN(menu_428940, 0x428940, field_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(menu_428940, field_setup();, CALL_PLAIN(0x428940, 0, g_a[0], g_a[1], 0, 0), (DWORD)(menu_428940((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* the profile list: 0..20 names, a first visible one and a selection somewhere around it, focused or not */
 static void proflist_setup(void)
 {
@@ -14321,10 +14331,10 @@ ST(setup_drawTab, disp_state(); callee_stubs(g_stubSetupDraw, 0);, CALL_PLAIN(0x
 ST(setup_processTabKeys, disp_state(); callee_stubs(g_stubSetupKeys, 0);, CALL_PLAIN(0x4230a0, 0, 0, 0, 0, 0), (setup_processTabKeys(), 0))
 ST(lobby_processKeys, disp_state(); callee_stubs(g_stubLobby, 0);, CALL_PLAIN(0x4081f0, 0, 0, 0, 0, 0), (DWORD)(lobby_processKeys()))
 ST(menu_4378e0, disp_state(); callee_stubs(g_stubRoomMouse, 0);, CALL_PLAIN(0x4378e0, 0, 0, 0, 0, 0), (DWORD)(menu_4378e0()))
-T_PLAIN(room_processKeys, 0x436800, disp_state(); callee_stubs(g_stubRoomKeys, 0);, 0, 0, 0, 0, 0)
+ST(room_processKeys, disp_state(); callee_stubs(g_stubRoomKeys, 0);, CALL_PLAIN(0x436800, 0, 0, 0, 0, 0), (DWORD)(room_processKeys()))
 ST(profile_44f410, disp_state(); callee_stubs(g_stubProfile, 0);, CALL_PLAIN(0x44f410, 0, 0, 0, 0, 0), (DWORD)(profile_44f410()))
 T_PLAIN(room_43ed20, 0x43ed20, disp_state(); callee_stubs(g_stubRoomDraw, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(lobbyCreate_draw, 0x40d390, disp_state(); callee_stubs(g_stubCreateDraw, 0);, 0, 0, 0, 0, 0)
+ST(lobbyCreate_draw, disp_state(); callee_stubs(g_stubCreateDraw, 0);, CALL_PLAIN(0x40d390, 0, 0, 0, 0, 0), (DWORD)(lobbyCreate_draw()))
 /* batch 164 */
 /* the mission settings keys: menudisp_setup's state with its own bindings (keys or the wheel only, see batch 162)
    and their latches, the settings state, unlock screen and busy flag */
@@ -14773,7 +14783,7 @@ ST(room_435f40, gen_setup(g_gs_435f40, g_gi_435f40, g_gb_435f40);, CALL_PLAIN(0x
 static const DWORD g_gs_435e70[] = { 0x41e760, 1, 0x41ee40, 1, 0x4322c0, 2, 0x434020, 0, 0x4340e0, 0, 0x4341a0, 0, 0x434260, 0, 0x434b90, 0, 0 };
 static const DWORD g_gi_435e70[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x68039c, 0x90d1c4, 0x9dce48, 0x9dd6d4, 0 };
 static const DWORD g_gb_435e70[] = { 0 };
-T_PLAIN(room_435e70, 0x435e70, gen_setup(g_gs_435e70, g_gi_435e70, g_gb_435e70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_435e70, gen_setup(g_gs_435e70, g_gi_435e70, g_gb_435e70);, CALL_PLAIN(0x435e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_435e70()))
 static const DWORD g_gs_433c70[] = { 0x431600, 1, 0 };
 static const DWORD g_gi_433c70[] = { 0x9dd1f6, 0x4ded18, 0x4e1868, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd6b0, 0x9dd888, 0 };
 static const DWORD g_gb_433c70[] = { 0x9dc92c, 0x9dd1d8, 0 };

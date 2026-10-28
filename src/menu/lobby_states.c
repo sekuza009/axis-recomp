@@ -540,3 +540,61 @@ u32 (lobby_editTextField_405230)(void)
 	GAME_VAR(int, 0x4db714) = 1;
 	return r;
 }
+
+/* a settings record (name, six bytes from +0x20, a password from +0x26) stored into another: the password flag
+   (+0x2e: the password is not empty) set in both. Then the store's follow-up; returns what it leaves in eax */
+/* (the copies are plain loops, as the original's inline string instructions: no calls before the follow-up, whose
+   stack the original leaves untouched) */
+static void copy_string(u8 *to, const u8 *from)
+{
+	do
+		*to++ = *from;
+	while (*from++);
+}
+static u32 settings_store(u8 *from, u8 *to, u32 then)
+{
+	u8 locked = from[0x26] != 0;
+	from[0x2e] = locked;
+	copy_string(to, from);
+	static const u8 order[6] = { 0x21, 0x20, 0x23, 0x22, 0x25, 0x24 };
+	for (int k = 0; k < 6; k++)
+		to[order[k]] = from[order[k]];
+	copy_string(to + 0x26, from + 0x26);
+	to[0x2e] = locked;
+	return GAME_CDECL(then, u32, void)();
+}
+/* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
+u32 (lobby_405140)(void) { return settings_store((u8 *)0x4db528, (u8 *)0x4ded20, 0x42d730); }
+/* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
+u32 (room_433640)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b1b30, 0x432400); }
+
+/* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
+   dialog's frame if one is open, else the settings kept in range (players 0 .. 16 else 8, the two limits at most 250
+   else 30, the map 0 .. 14 else 0), the screen, the map list when open, the options panel when shown. Returns what
+   the original leaves in eax */
+u32 (lobbyCreate_draw)(void)
+{
+	CALL(0x4091b0);   /* arena_4091b0: the tunnel */
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
+		return (u32)mode;
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x4dbb00), GAME_VAR(int, 0x4dbb04),
+		                                                     GAME_VAR(int, 0x4dbb08), GAME_VAR(int, 0x4dbb0c));   /* menu_drawFrame */
+	signed char players = GAME_VAR(signed char, 0x4ded41);
+	if (players < 0 || players > 0x10)
+		GAME_VAR(u8, 0x4ded41) = 8;
+	if (GAME_VAR(u8, 0x4ded44) > 0xfa)
+		GAME_VAR(u8, 0x4ded44) = 0x1e;
+	if (GAME_VAR(u8, 0x4ded45) > 0xfa)
+		GAME_VAR(u8, 0x4ded45) = 0x1e;
+	signed char map = GAME_VAR(signed char, 0x4ded43);
+	if (map < 0 || map > 0xe)
+		GAME_VAR(u8, 0x4ded43) = 0;
+	CALL(0x40b750);   /* arena_createDraw */
+	if (GAME_VAR(int, 0x4db508) == 1)
+		CALL(0x4038e0);   /* arena_4038e0: the map list */
+	if (!GAME_VAR(int, 0x4dba88))
+		return 0;
+	return CALL(0x405b80);   /* arena_405b80 */
+}

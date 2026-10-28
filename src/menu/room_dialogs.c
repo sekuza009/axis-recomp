@@ -216,3 +216,65 @@ u32 (arena_406200)(int i)
 	GAME_VAR(u32, 0xa0bad0) = timer;
 	return timer;
 }
+
+/* 0x436800: the game room's keys, by state (0x9dd834): as menu_4378e0's mouse, with the room's own handlers (state 1:
+   the join's wait while it runs, 0x4db8b4). Returns what the handler leaves in eax */
+u32 (room_processKeys)(void)
+{
+	u32 state = GAME_VAR(u32, 0x9dd834);
+	int dialog = GAME_VAR(int, 0x9dd7d8);
+	switch (state) {
+	case 0: return dialog ? (u32)dialog : CALL(0x435e70);   /* room_435e70 */
+	case 1:
+		if (dialog)
+			return (u32)dialog;
+		return GAME_VAR(int, 0x4db8b4) ? CALL(0x435f40) : CALL(0x435fc0);
+	case 2:
+		if (dialog)
+			return (u32)dialog;
+		return GAME_VAR(int, 0x4db508) ? CALL(0x4036c0) : CALL(0x436400);
+	case 4: return dialog ? (u32)dialog : CALL(0x436620);
+	case 66: return GAME_VAR(int, 0x9dd850) ? CALL(0x435ab0) : CALL(0x435b00);
+	case 77: return CALL(0x435c20);   /* room_435c20 */
+	case 88: return GAME_VAR(int, 0x9dd850) ? CALL(0x435ab0) : CALL(0x435ce0);
+	case 99: return dialog ? (u32)dialog : CALL(0x435d30);
+	}
+	return state;
+}
+
+/* 0x435e70: the game room's clicks while it is open (0x9dce48 past 1; no confirm box, dialog or typing): buttons 0 .. 3
+   edit the settings' fields, 4 starts the game when ready (else message 5 and the refusal sound), 5 (or a right click)
+   leaves. Returns what the original leaves in eax */
+u32 (room_435e70)(void)
+{
+	int mode = GAME_VAR(int, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd6d4) == 1)
+		return (u32)mode;
+	if (g_dialogOpen)
+		return (u32)g_dialogOpen;
+	if (GAME_VAR(int, 0x68039c))
+		return GAME_VAR(u32, 0x68039c);
+	if (!GAME_VAR(int, 0x4ded8c)) {
+		if (!g_mouseClick)
+			return 0;
+		u32 button = GAME_CDECL(0x4322c0, u32, int, int)(g_mouseX, g_mouseY);   /* the room's hit test */
+		switch (button) {
+		case 0: return CALL(0x434020);
+		case 1: return CALL(0x4340e0);
+		case 2: return CALL(0x4341a0);
+		case 3: return CALL(0x434260);
+		case 4:
+			if (CALL(0x434b90) == 1)
+				break;
+			GAME_CDECL(0x41ee40, void, int)(5);
+			return sound(6);
+		case 5:
+			break;
+		default:
+			return button;
+		}
+	}
+	u32 r = sound(0);
+	GAME_VAR(int, 0x9dce48) = 0;
+	return r;
+}
