@@ -192,3 +192,35 @@ void (match_44aee0)(void)
 	if (to[0] != '\0')
 		match_4327f0();
 }
+
+/* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at 0x4a9448 per time unit
+   and slid moves back by the same step, until slid is no longer above the double at 0x4a9440 (then the flag drops
+   and slid is set to -1650). Afterwards, while the quit question is up, the keys are held and the next screen set
+   to 9999 (returns 1) */
+static int menu_slide(u32 flag, u32 eased, u32 slid)
+{
+	if (GAME_VAR(int, flag)) {
+		volatile long double d = (long double)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, eased);
+		d = d * g_frameTime;
+		d = d * GAME_VAR(float, 0x4a93ec);
+		volatile long double e = (long double)GAME_VAR(float, eased) + d;
+		GAME_VAR(float, eased) = (float)e;
+		long double s = GAME_VAR(float, slid);
+		if (s > GAME_VAR(double, 0x4a9440)) {
+			volatile long double t = s - d;
+			GAME_VAR(float, slid) = (float)t;
+		} else {
+			GAME_VAR(int, flag) = 0;
+			GAME_VAR(u32, slid) = 0xc4ce4000;   /* -1650.0 */
+		}
+	}
+	if (!g_quitAsked)
+		return 0;
+	set_680370_441250(1);
+	g_nextScreen = 9999;
+	return 1;
+}
+
+/* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
+int (lobbyTop_draw)(void) { return menu_slide(0x4db85c, 0x4dbb60, 0x4dba68); }
+int (room_43e720)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }

@@ -103,3 +103,28 @@ void (FUN_004050a0)(void)
 	GAME_VAR(int, 0x4dedd0) = GAME_VAR(int, 0x4db580);
 	cfg_loadAxisCfg();
 }
+
+/* a map choice moved one on (dir > 0) or back, round the g_mapCount maps, skipping 22 .. 24; nothing while the
+   lock byte is set; the change flagged (0x680cd0) */
+static void map_step(int dir, u32 lock, u32 choice)
+{
+	signed char *c = (signed char *)choice;
+	if (*(char *)lock)
+		return;
+	if (dir > 0) {
+		if (++*c == 0x16)
+			*c = 0x19;
+		if (*c >= g_mapCount)
+			*c = 0;
+	} else {
+		if (--*c < 0)
+			*c = (signed char)(*(char *)0x67ef00 - 1);
+		if (*c == 0x18)
+			*c = 0x15;
+	}
+	GAME_VAR(int, 0x680cd0) = 1;
+}
+
+/* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
+void (arena_4068d0)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
+void (room_4356f0)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }

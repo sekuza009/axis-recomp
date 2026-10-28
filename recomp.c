@@ -628,8 +628,10 @@ static void crypt_bytes(unsigned char *p, int n, unsigned char key)
 		if ((int)(signed char)key > 0xa5) key = 0x7e;           /* never true, see save_cryptRecord */
 	}
 }
-static void __cdecl profile_445f10(unsigned char *p, unsigned char key) { crypt_bytes(p, 0x104, key); }
-static void __cdecl profile_445f40(unsigned char *p, unsigned char key) { crypt_bytes(p, 0x80, key); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_445f10(unsigned char *p, unsigned char key);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_445f40(unsigned char *p, unsigned char key);
 
 /* 1 if the string contains one of the characters in bad */
 static int has_any(const char *s, const char *bad)
@@ -640,9 +642,11 @@ static int has_any(const char *s, const char *bad)
 	return 0;
 }
 /* 0x434400 room_434400(s): 1 if a room/chat name contains ` " ' , / \ | ~ ? */
-static int __cdecl room_434400(const char *s) { return has_any(s, "`\"',/\\|~?"); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_434400(const char *s);
 /* 0x44b7e0 profile_44b7e0(s): 1 if a pilot name contains a character not allowed in file names */
-static int __cdecl profile_44b7e0(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b7e0(const char *s);
 
 /* room list paging: index 0x9dd6ac (0..min(count 0x9dd4b8, 99)), previous index 0x9dd1b4, then a redraw/reset */
 static void room_listChanged(void)
@@ -1571,8 +1575,10 @@ static void map_step(int dir, DWORD lock, DWORD sel)
 	}
 	G32(0x680cd0) = 1;
 }
-static void __cdecl arena_4068d0(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
-static void __cdecl room_4356f0(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4068d0(int dir);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4356f0(int dir);
 
 static unsigned char __cdecl net_451530(int id)  /* free every slot owned by id; returns 0xff in AL */
 {
@@ -1628,8 +1634,10 @@ static int name_search(DWORD countp, DWORD tablep, const char *name)  /* binary 
 	}
 	return -1;
 }
-static int __cdecl shape_466ce0(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
-static int __cdecl skelDat_46b0c0(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int shape_466ce0(const char *name);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int skelDat_46b0c0(const char *name);
 static void __cdecl load_46cad0(const char *src, char *dst)   /* copy a file name without its extension */
 {
 	char buf[256];
@@ -1936,8 +1944,10 @@ static void weapon_cycle(char *self, int i, int step)
 		return;
 	}
 }
-static THISCALL void actor_45e9e0(char *self, int i) { weapon_cycle(self, i, 1); }
-static THISCALL void actor_45e910(char *self, int i) { weapon_cycle(self, i, 5); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL actor_45e9e0(void *stage, int i);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL actor_45e910(void *stage, int i);
 static THISCALL void shape_setTint(char *self, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6)
 {
 	S32(self, 0x234) = a1;
@@ -2456,8 +2466,10 @@ static void profile_loadColour(int i)            /* nine ints of profile colour 
 	GU32(0x9f8f08) = 0x42200000; GU32(0x9f8c48) = 0xbf800000; G32(0x9f8d68) = 0;
 	for (int k = 0; k < 9; k++) GF(0x9f8ec0 + k * 4) = (float)((long double)G32(0x9f9068 + i * 76 + k * 4) + GF(0x4a9560));
 }
-static void __cdecl profile_44bc50(void) { profile_loadColour(G32(0x9f8d30)); }
-static void __cdecl profile_44bd20(void) { profile_loadColour(G32(0x9f688c + G32(0x9f8d74) * 72)); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44bc50(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44bd20(void);
 static THISCALL void match_496e40(char *self, float dt)   /* advance the animation timers (wrap at 1 unit) */
 {
 	typedef long double X;
@@ -3878,8 +3890,10 @@ static int menu_slide(DWORD flag, DWORD eased, DWORD slid)
 	G32(0x67ef20) = 9999;
 	return 1;
 }
-static int __cdecl lobbyTop_draw(void) { return menu_slide(0x4db85c, 0x4dbb60, 0x4dba68); }
-static int __cdecl room_43e720(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int lobbyTop_draw(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_43e720(void);
 
 /* 0x406810 arena_406810: copy the session list into the 0x4a-byte arena records at 0x9087c4 (name, id, settings),
    then sort them */

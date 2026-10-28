@@ -15,7 +15,8 @@ Layout (by subsystem)
   replay/       the message box (match and replay)
   net/          DirectPlay (the arena's connection slots, Receive / Send) and the game's own server list
   msg/          the match's messages
-  match/        the match's rules: teams
+  match/        the match's rules: teams, weapon cycling
+  load/         loading: name lookups
   sound/        DirectSound buffers, the menu sounds
   render/       the stage (scene.fields: Stage, the scene's own object at +0x1f36c8): fog, the lists drawn each pass, the sky
 
@@ -35,7 +36,7 @@ Adding a function
   4. python tools/srcaudit.py (every src function wired in; every patch-DLL call site inside a rebuilt function
      followed), commit; play-test (test3.sh) after a few.
 
-Done so far (514): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (528): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -59,7 +60,8 @@ lobbyJoin_keys, FUN_0041ed70, mainmenu_441770, menuState600_setup | load_4014f0 
 armc_40f830 | app/statics.c: 21 class-name records, 6 global object inits, 26 atexit registrations,
 12 empty functions | app/classes.c: 74 class lifecycles, member clears, getters and setters | app/statics.c: 26 start-up pairs (object or
 class-name record, then atexit), 18 constant colours | app/small.c: 42 one-line pieces (clears, flags, getters,
-setters, list toggles, string lengths) | menu/layouts.c: the 30 screen button layouts | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
+setters, list toggles, string lengths) | menu/layouts.c: the 30 screen button layouts | profile scrambling / name checks / colours, the name tables' searches
+(load/names.c), weapon cycling (match/weapons.c), map stepping, the sliding panels | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
 arena_453770 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
 hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,

@@ -1,0 +1,53 @@
+/* profile_misc.c: small pieces of the pilot profiles: the save files' byte scrambling, name checks, and a profile's
+   colour record loaded for the preview. */
+#include "../game.h"
+
+/* the bytes xored with a key that counts up by one (from key); the reset of the key is dead code in the original
+   (a signed byte is never above 0xa5) */
+static void crypt_bytes(u8 *p, int n, u8 key)
+{
+	for (int i = 0; i < n; i++) {
+		p[i] ^= key;
+		key++;
+		if ((int)(signed char)key > 0xa5)
+			key = 0x7e;
+	}
+}
+
+/* 0x445f10, 0x445f40: a 0x104-byte and a 0x80-byte record scrambled (or unscrambled: the same xor) */
+void (profile_445f10)(u8 *p, u8 key) { crypt_bytes(p, 0x104, key); }
+void (profile_445f40)(u8 *p, u8 key) { crypt_bytes(p, 0x80, key); }
+
+/* 1 if any character of s is one of bad */
+static int has_any(const char *s, const char *bad)
+{
+	int n = 0;
+	while (s[n] != '\0')
+		n++;
+	for (int i = 0; i < n; i++)
+		for (const char *b = bad; *b != '\0'; b++)
+			if (s[i] == *b)
+				return 1;
+	return 0;
+}
+
+/* 0x434400: a room name with a character the network messages cannot carry; 0x44b7e0: a pilot name that cannot be
+   a file name */
+int (room_434400)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
+int (profile_44b7e0)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
+
+/* profile colour record i (nine ints, 76 bytes a record from 0x9f9068) into the preview's floats, each plus the
+   constant at 0x4a9560; the preview reset (distance 40, -1, not turning) */
+static void load_colour(int i)
+{
+	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
+	GAME_VAR(u32, 0x9f8c48) = 0xbf800000;   /* -1.0 */
+	GAME_VAR(int, 0x9f8d68) = 0;
+	for (int k = 0; k < 9; k++)
+		GAME_VAR(float, 0x9f8ec0 + k * 4) =
+			(float)((long double)GAME_VAR(int, 0x9f9068 + i * 76 + k * 4) + GAME_VAR(float, 0x4a9560));
+}
+
+/* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
+void (profile_44bc50)(void) { load_colour(GAME_VAR(int, 0x9f8d30)); }
+void (profile_44bd20)(void) { load_colour(GAME_VAR(int, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 72)); }
