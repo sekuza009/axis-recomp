@@ -106,3 +106,77 @@ void (hud_403210)(int x0, int y, int x1, const char *text)
 	PATCHED_CALL(0x4032e6, void, int, int, const char *)(x, y, text);   /* text_ascii5Pass */
 	glDisable(GL_TEXTURE_2D);
 }
+
+/* the width correction of a line for the special characters it holds (counted by FUN_00402590), in units of 3 */
+#define text_specialCount(s) GAME_CDECL(0x402590, int, const char *)(s)
+
+/* text_drawBox16 / hud_402db0: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
+   "|"; in a match no line breaks), one line under the other */
+static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large)
+{
+	char work[100], line[100], rest[100];
+	memset(work, 0, sizeof work);
+	strcpy(work, text);
+	for (;;) {
+		int length = (int)strlen(work), split = 0, i = 0;
+		memset(line, 0, sizeof line);
+		memset(rest, 0, sizeof rest);
+		if (g_screen != 9999) {
+			for (i = 0; i < length; i++) {
+				if (work[i] != '|')
+					continue;
+				if (work[i + 1] != '|') {
+					split = 1;
+					break;
+				}
+				i++;
+			}
+		}
+		if (split) {
+			strncpy(line, work, i);
+			strncpy(rest, &work[i + 1], length - i - 1);
+			memset(work, 0, sizeof work);
+			strcpy(work, rest);
+		} else {
+			strncpy(line, work, length);
+		}
+		int centre = x0 + (x1 - x0) / 2;
+		int visible = text_visibleLength(line), special = text_specialCount(line);
+		if (!large) {
+			text_begin(13);
+			int x = centre - visible * 4 - special * 3;
+			text_bindFont(g_fontHanCho);
+			text_hanCho(x, y, line);
+			text_bindFont(g_fontHanJungJong);
+			text_hanJungJong(x, y, line);
+			text_bindFont(g_fontAsciiLarge);
+			PATCHED_CALL(0x402be8, void, int, int, const char *)(x, y, line);   /* text_ascii16Pass */
+			y += 0x11;
+		} else {
+			text_begin(18);
+			int x = centre - visible * 8 - special * 3 + 4;
+			text_bindFont(g_fontHanCho);
+			text_hanCho32(x, y, line);
+			text_bindFont(g_fontHanJungJong);
+			text_hanJungJong32(x, y, line);
+			text_bindFont(g_fontAsciiLarge);
+			PATCHED_CALL(0x402fbd, void, int, int, const char *)(x, y, line);   /* text_ascii32Pass */
+			y += 0x21;
+		}
+		glDisable(GL_TEXTURE_2D);
+		if (!split)
+			return;
+	}
+}
+
+/* 0x4029d0: text in the 16-unit font centred between x0 and x1, in lines (13 units per character, 0x11 apart) */
+void (text_drawBox16)(int x0, int y, int x1, const char *text)
+{
+	text_drawBoxLines(x0, y, x1, text, 0);
+}
+
+/* 0x402db0 (hud_402db0): the same in the 32-unit font (18 units per character, 0x21 apart) */
+void (hud_402db0)(int x0, int y, int x1, const char *text)
+{
+	text_drawBoxLines(x0, y, x1, text, 1);
+}

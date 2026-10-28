@@ -7590,10 +7590,12 @@ void text_draw16(int x, int y, const char *text);
 void text_draw32(int x, int y, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_draw8b(int x0, int y, int x1, const char *text);
-LIFT_PLAIN(text_drawBox16, 4029d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_drawBox16(int x0, int y, int x1, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void hud_403210(int x0, int y, int x1, const char *text);
-LIFT_PLAIN(hud_402db0, 402db0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_402db0(int x0, int y, int x1, const char *text);
 /* 0x429bc0 menu_drawCursor(): the menu pointer at 0x4ded68 / 0x4ded6c (blinking by 0x4df910, the click flash
    0x4df03c), a 47-unit sprite through menu_vertex; its right-hand corners (@0x429cc3, @0x429cf0) go through the
    patch DLL's cursor_vtx */
@@ -18360,9 +18362,9 @@ ST(text_draw8, txtpass_setup(g_stubTxt8);, CALL_PLAIN(0x402620, 0, g_a[0], g_a[1
 ST(text_draw16, txtpass_setup(g_stubTxt16);, CALL_PLAIN(0x4028b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw16((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
 ST(text_draw32, txtpass_setup(g_stubTxt32);, CALL_PLAIN(0x402c90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw32((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
 ST(text_draw8b, txtbox_setup(g_stubTxt8);, CALL_PLAIN(0x402740, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_draw8b((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
-T_PLAIN(text_drawBox16, 0x4029d0, txtbox_setup(g_stubBox16);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(text_drawBox16, txtbox_setup(g_stubBox16);, CALL_PLAIN(0x4029d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (text_drawBox16((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 ST(hud_403210, txtbox_setup(g_stubTxt5);, CALL_PLAIN(0x403210, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_403210((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
-T_PLAIN(hud_402db0, 0x402db0, txtbox_setup(g_stubBox32);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(hud_402db0, txtbox_setup(g_stubBox32);, CALL_PLAIN(0x402db0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_402db0((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (const char *)(DWORD)(g_a[3])), 0))
 /* the menu pointer: on or off the screen, blink and click flash states, the frame time; the vertex helper, the
    projection and the bind stubbed (the right-hand corners go through the patch DLL's cursor_vtx when installed) */
 static const DWORD g_stubCursor[] = { 0x41ef60, 2, 0x41ef90, 1, 0x4566c0, 1 | CS_POP | CS_THIS, 0 };
