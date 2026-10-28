@@ -5394,7 +5394,8 @@ LIFT_PLAIN(net_closeAll, 451600)
    settings in the registry and their room users, GL state, texture uploads */
 #include "lifted/grp7.c"
 /* 0x41b710 armc_41b710: 3D projection, white, texturing, the menu camera */
-LIFT_PLAIN(armc_41b710, 41b710)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41b710(void);
 /* 0x40ce70 menu_drawDimOverlay / 0x43df00 room_43df00: fade a dark rectangle in over the screen */
 LIFT_PLAIN(menu_drawDimOverlay, 40ce70)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -6175,7 +6176,8 @@ void THISCALL hud_45e170(void *stage, void *view, int pass);
    player and the start position (0xa0e7a8..) */
 static THISCALL DWORD FUN_0045dc00(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp) { DWORD v[4] = { a, x, y, pp }; return run_lifted(lift_45dc00, (DWORD)sc, 4, v); }
 static THISCALL DWORD match_45dd80(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp) { DWORD v[4] = { a, x, y, pp }; return run_lifted(lift_45dd80, (DWORD)sc, 4, v); }
-static THISCALL DWORD armc_45ddc0(char *sc) { return run_lifted(lift_45ddc0, (DWORD)sc, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_45ddc0(void *stage);
 /* 0x45de20 (thiscall) actor_applySpawnRecord(actor, rec): build the actor's mech for the player's actor slot
    (+0x202e8d4; negative is fatal) from a spawn record (player, position...), then override its stats from the
    record's ints (+0x1c..: scaled to floats) and reset two fields to -NaN */
@@ -6263,9 +6265,11 @@ static THISCALL DWORD item_initTextures(char *sc, DWORD a, DWORD b, DWORD c, DWO
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
 #include "lifted/grp62.c"
 /* 0x4125c0 armc_4125c0(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
-LIFT_PLAIN(armc_4125c0, 4125c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_4125c0(int x, int y, const char *text);
 /* 0x4125f0 armc_drawStatLabel(x, y, s): the same, right-aligned at x (8 / 6 units a character) */
-LIFT_PLAIN(armc_drawStatLabel, 4125f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_drawStatLabel(int x, int y, const char *text);
 /* 0x4290d0 menu_4290d0(): the message box: 2D projection, a translucent panel and two lines (0x4df81c, 0x74de24) */
 LIFT_PLAIN(menu_4290d0, 4290d0)
 /* 0x428940 menu_428940(x, y): an input field (no dialog open): the blinking cursor after the cursor position
@@ -7300,9 +7304,12 @@ LIFT_PLAIN(menuState800_gameRoom, 43ef70)
 LIFT_PLAIN(armc_40e5d0, 40e5d0)
 LIFT_PLAIN(armc_41d600, 41d600)
 LIFT_PLAIN(armc_41d8a0, 41d8a0)
-LIFT_PLAIN(armc_41dfe0, 41dfe0)
-LIFT_PLAIN(armc_41e010, 41e010)
-LIFT_PLAIN(armc_41dfb0, 41dfb0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41dfe0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41e010(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41dfb0(void);
 LIFT_PLAIN(menuState700_armCenter, 41e040)
 /* batch 186 (lifted/grp140.c): game_processGameModeInit (a match's start: modes, teams, items, music),
    match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
@@ -12237,7 +12244,7 @@ T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(net_disconnect, 0x451e60, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0], 0, 0, 0)
 /* batch 59 */
-T_PLAIN(armc_41b710, 0x41b710, lookat_setup();, 0, 0, 0, 0, 0)
+ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
 T_PLAIN(menu_drawDimOverlay, 0x40ce70, GF(0x4deb74) = csu_fr(-50, 120);, 0, 0, 0, 0, 0)
 ST(room_43df00, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_43df00(), 0))
 T_PLAIN(menu_428890, 0x428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, 0, g_a[0], g_a[1], 0, 0)
@@ -14969,8 +14976,8 @@ static void menutext_setup(void)
 	G32(0x9dae74) = irnd(0, 2);
 	fill((void *)0x76d438, 16); fill((void *)0x9da480, 16);
 }
-T_PLAIN(armc_4125c0, 0x4125c0, menutext_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(armc_drawStatLabel, 0x4125f0, menutext_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
+ST(armc_4125c0, menutext_setup();, CALL_PLAIN(0x4125c0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_4125c0((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
+ST(armc_drawStatLabel, menutext_setup();, CALL_PLAIN(0x4125f0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawStatLabel((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
 /* the two message lines (up to 80 characters) */
 static void msgbox_setup(void)
 {
@@ -17367,15 +17374,15 @@ T_PLAIN(armc_41d8a0, 0x41d8a0, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);
 static const DWORD g_gs_41dfe0[] = { 0x412450, 0, 0x419160, 0, 0x41d8a0, 0, 0 };
 static const DWORD g_gi_41dfe0[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41dfe0[] = { 0 };
-T_PLAIN(armc_41dfe0, 0x41dfe0, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_41dfe0, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, CALL_PLAIN(0x41dfe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41dfe0(), 0))
 static const DWORD g_gs_41e010[] = { 0x412450, 0, 0x41a280, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41e010[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41e010[] = { 0 };
-T_PLAIN(armc_41e010, 0x41e010, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_41e010, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, CALL_PLAIN(0x41e010, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41e010(), 0))
 static const DWORD g_gs_41dfb0[] = { 0x40d990, 0, 0x412450, 0, 0x412650, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41dfb0[] = { 0x4dbc68, 0x4dc24c, 0x4dd078, 0 };
 static const DWORD g_gb_41dfb0[] = { 0 };
-T_PLAIN(armc_41dfb0, 0x41dfb0, gen_setup(g_gs_41dfb0, g_gi_41dfb0, g_gb_41dfb0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_41dfb0, gen_setup(g_gs_41dfb0, g_gi_41dfb0, g_gb_41dfb0);, CALL_PLAIN(0x41dfb0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41dfb0(), 0))
 static const DWORD g_gs_41e040[] = { 0x4029d0, 4, 0x40e5d0, 0, 0x410b50, 0, 0x411110, 0, 0x411ab0, 0, 0x41b300, 0, 0x41b400, 0, 0x41b710, 0, 0x41ca50, 2, 0x41dab0, 0, 0x41dcf0, 0, 0x41dfb0, 0, 0x41dfe0, 0, 0x41e010, 0, 0x41f0e0, 5, 0x427970, 5, 0x428c30, 4, 0x441740, 0, 0 };
 static const DWORD g_gi_41e040[] = { 0x4b071c, 0x4dcfd8, 0x4dbc68, 0x4dc24c, 0x4dc54c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dcf10, 0x90d1c4, 0 };
 static const DWORD g_gb_41e040[] = { 0x7572a4, 0x757324, 0x76d438, 0x9da480, 0 };

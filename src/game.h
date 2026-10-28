@@ -400,4 +400,18 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_setBoosterIndex(scene, i) GAME_THISCALL(0x4614d0, void, Scene *, int)(scene, i)
 #define armc_461510(scene, slot, item) GAME_THISCALL(0x461510, void, Scene *, int, int)(scene, slot, item)
 
+/* ---- the ARM CENTER (menu/armc_*.c) ---- */
+#define g_armcHideInterface GAME_VAR(int, 0x4dd078)  /* Ctrl+Alt+M: the screen without its interface */
+#define g_language GAME_VAR(int, 0x9dae74)           /* 2: the small font for labels */
+#define armc_41d600() GAME_CDECL(0x41d600, void, void)()      /* the mech preview */
+#define armc_41d8a0() GAME_CDECL(0x41d8a0, void, void)()      /* the colour page's preview */
+#define armc_40d990() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
+#define armc_412450() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
+#define armc_drawStatsPanel() GAME_CDECL(0x412650, void, void)()
+#define armc_419160() GAME_CDECL(0x419160, void, void)()
+#define armc_41a280() GAME_CDECL(0x41a280, void, void)()
+#define g_startPos ((const u32 *)0xa0e7a8)          /* (by use) where the player's actor starts (three floats) */
+/* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
+#define match_45dd80(stage, a, x, y, spawn) GAME_THISCALL(0x45dd80, void, Stage *, int, int, int, void *)(stage, a, x, y, spawn)
+
 #endif

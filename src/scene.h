@@ -212,7 +212,9 @@ typedef struct Stage {
 	u8 _pad13c9b28[0x90f880];
 	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
-	u8 _pad202e8cc[0x7b0f4];
+	u8 _pad202e8cc[0x8];
+	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
+	u8 _pad202e8d8[0x7b0e8];
 	Projectile projectiles[1000];   /* +0x20a99c0 */
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
 	u8 _pad20f2da4[0xbcc];
@@ -525,6 +527,7 @@ _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->obj
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
 _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
+_Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
 _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
