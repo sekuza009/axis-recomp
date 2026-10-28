@@ -3083,9 +3083,12 @@ void *skelDat_getItemFileBy(const char *name);
 static THISCALL DWORD tex_getItemFileBy(char *tm, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_455550, (DWORD)tm, 1, v); }
 /* space pools (thiscall on the space object): take the first free plane / node / unit / block off its free list,
    count it and initialise it (the block also gets its box); an empty list is fatal */
-static THISCALL DWORD space_getNextFreePlanePtr(char *sp) { return run_lifted(lift_4815c0, (DWORD)sp, 0, NULL); }
-static THISCALL DWORD space_getNextFreeNodePtr(char *sp) { return run_lifted(lift_4816c0, (DWORD)sp, 0, NULL); }
-static THISCALL DWORD space_getNextFreeUnitPtr(char *sp) { return run_lifted(lift_4817f0, (DWORD)sp, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_getNextFreePlanePtr(char *sp);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_getNextFreeNodePtr(char *sp);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_getNextFreeUnitPtr(char *sp);
 static THISCALL DWORD space_getNextFreeBlockPtrBy(char *sp, DWORD mn, DWORD mx) { DWORD v[2] = { mn, mx }; return run_lifted(lift_4818e0, (DWORD)sp, 2, v); }
 /* 0x48b4a0 / 0x48b530 (thiscall) map_loadWayPointInfoFrom(f) / map_loadTriggerInfoFrom(f): the mission's waypoint
    lists (count, 0x14-byte headers, the points linked in) / trigger records (count, 0x1c bytes, their waypoints
@@ -4547,7 +4550,8 @@ LIFT_PLAIN(music_play, 457150)
    device, its data format (0x4a95f8 / 0x4a9610) and cooperative level (6: non-exclusive background / 5: exclusive
    foreground); the keyboard is acquired and its states cleared; 1 when ready, else 0 */
 LIFT_PLAIN(input_initKeyboard, 401310)
-LIFT_PLAIN(input_4013a0, 4013a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_4013a0(void *window);
 /* 0x401410 input_createDirectInput(hwnd, inst): DirectInputCreateA (version 0x700), then the keyboard and mouse */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_createDirectInput(void *window, void *instance);
@@ -4582,7 +4586,8 @@ int load_401540(int key);
 int load_4014f0(int key);
 /* 0x401590 input_isDown(code): the mouse buttons 0xfa..0xfc (0x4ded94..), wheel down / up 0xfd / 0xfe (0x4ded7c < 0 /
    > 0), else the key */
-LIFT_PLAIN(input_isDown, 401590)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_isDown(int key);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void sound_playMenu(int id);
@@ -4699,8 +4704,10 @@ void profile_44b6e0(void);
    0x44c400 profile_44c400(): load confirmation (0x44b360): yes loads (profile_44bc00), no;
    0x44c480 profile_44c480(): the profile list (0x44b3e0, 11 buttons): a profile row selects it (sound 2), load
    (profile_selectAndLoad), back */
-LIFT_PLAIN(profile_44c390, 44c390)
-LIFT_PLAIN(profile_44c400, 44c400)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44c390(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44c400(void);
 LIFT_PLAIN(profile_44c480, 44c480)
 /* batch 166 (lifted/grp112.c): the profile screen's input */
 #include "lifted/grp112.c"
@@ -14139,7 +14146,7 @@ static void dinput_setup(void)
 	g_a[0] = irnd(0, 0xffff); g_a[1] = irnd(0, 0xffff);
 }
 T_PLAIN(input_initKeyboard, 0x401310, dinput_setup();, 0, g_a[0], 0, 0, 0)
-T_PLAIN(input_4013a0, 0x4013a0, dinput_setup();, 0, g_a[0], 0, 0, 0)
+ST(input_4013a0, dinput_setup();, CALL_PLAIN(0x4013a0, 0, g_a[0], 0, 0, 0), (DWORD)(input_4013a0((void *)(DWORD)(g_a[0]))))
 ST(input_createDirectInput, dinput_setup();, CALL_PLAIN(0x401410, 0, g_a[0], g_a[1], 0, 0), (DWORD)(input_createDirectInput((void *)(DWORD)(g_a[0]), (void *)(DWORD)(g_a[1]))))
 ST(input_reacquireKeyboard, dinput_setup();, CALL_PLAIN(0x4012c0, 0, 0, 0, 0, 0), (input_reacquireKeyboard(), 0))
 ST(input_reacquireMouse, dinput_setup();, CALL_PLAIN(0x4012e0, 0, 0, 0, 0, 0), (DWORD)(input_reacquireMouse()))
@@ -14195,7 +14202,7 @@ static void menusnd_setup(void)
 }
 ST(load_401540, keys_setup();, CALL_PLAIN(0x401540, 0, g_a[0], 0, 0, 0), (DWORD)(load_401540((DWORD)(g_a[0]))))
 ST(load_4014f0, keys_setup();, CALL_PLAIN(0x4014f0, 0, g_a[0], 0, 0, 0), (DWORD)(load_4014f0((DWORD)(g_a[0]))))
-T_PLAIN(input_isDown, 0x401590, keys_setup();, 0, g_a[0], 0, 0, 0)
+ST(input_isDown, keys_setup();, CALL_PLAIN(0x401590, 0, g_a[0], 0, 0, 0), (DWORD)(input_isDown((DWORD)(g_a[0]))))
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 ST(skirmish_443c80, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmish_443c80()))
 ST(FUN_00447960, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(FUN_00447960()))
@@ -14323,8 +14330,8 @@ static void profilepage_setup(void)
 ST(profile_44b600, profilepage_setup();, CALL_PLAIN(0x44b600, 0, 0, 0, 0, 0), (profile_44b600(), 0))
 ST(profile_44b670, profilepage_setup();, CALL_PLAIN(0x44b670, 0, 0, 0, 0, 0), (profile_44b670(), 0))
 ST(profile_44b6e0, profilepage_setup();, CALL_PLAIN(0x44b6e0, 0, 0, 0, 0, 0), (profile_44b6e0(), 0))
-T_PLAIN(profile_44c390, 0x44c390, profilepage_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44c400, 0x44c400, profilepage_setup();, 0, 0, 0, 0, 0)
+ST(profile_44c390, profilepage_setup();, CALL_PLAIN(0x44c390, 0, 0, 0, 0, 0), (DWORD)(profile_44c390()))
+ST(profile_44c400, profilepage_setup();, CALL_PLAIN(0x44c400, 0, 0, 0, 0, 0), (DWORD)(profile_44c400()))
 T_PLAIN(profile_44c480, 0x44c480, profilepage_setup();, 0, 0, 0, 0, 0)
 /* batch 166 */
 /* the profile screen's input: profilepage_setup's state, the profile list (profiles_setup), all six button tables

@@ -173,3 +173,39 @@ int (input_asyncKeyPressed)(int key)
 	*seen = 1;
 	return 1;
 }
+
+/* 0x401590: is the key bound to an action down? 0xfa .. 0xfc the mouse buttons (as their state), 0xfd / 0xfe the
+   wheel turned down / up this frame, anything else a key held (1 or 0) */
+int (input_isDown)(int key)
+{
+	switch (key) {
+	case 0xfa:
+		return GAME_VAR(int, 0x4ded94);
+	case 0xfb:
+		return GAME_VAR(int, 0x4ded98);
+	case 0xfc:
+		return GAME_VAR(int, 0x4ded9c);
+	case 0xfd:
+		return GAME_VAR(int, 0x4ded7c) < 0;
+	case 0xfe:
+		return GAME_VAR(int, 0x4ded7c) > 0;
+	}
+	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* load_401540: held */
+}
+
+/* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at 0x4a9698), its data format (c_dfDIMouse,
+   0x4a9610) and its cooperative level for the window (exclusive, foreground). 1 when ready, 0 on a failure */
+int (input_4013a0)(void *window)
+{
+	if (g_mouseActive)
+		return 1;
+	void *dinput = g_directInput;
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)0x4a9698, &g_mouse, NULL) < 0)
+		return 0;
+	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)0x4a9610) < 0)
+		return 0;
+	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
+		return 0;
+	g_mouseActive = 1;
+	return 1;
+}

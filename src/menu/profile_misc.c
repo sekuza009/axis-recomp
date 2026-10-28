@@ -142,3 +142,45 @@ int (profile_44b870)(void)
 	}
 	return 0;
 }
+
+/* ---- the profile screen's confirmation dialogs: a click on the first button does the thing (with the menu sound),
+   the second (or a right click) closes the dialog (0x9f8f10). Both return the right click state (the original's eax) */
+/* 0x44c390: "delete this profile?" */
+int (profile_44c390)(void)
+{
+	GAME_VAR(int, 0x4dda44) = 0;
+	if (g_mouseClick) {
+		int button = GAME_CDECL(0x44b320, int, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
+		if (button == 0) {
+			sound_playMenu(0);
+			profile_deleteFiles();
+			GAME_VAR(int, 0x9f8f10) = 1;
+		} else if (button == 1) {
+			sound_playMenu(0);
+			GAME_VAR(int, 0x9f8f10) = 1;
+		}
+	}
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x9f8f10) = 1;
+	return GAME_VAR(int, 0x4ded8c);
+}
+
+/* 0x44c400: the second dialog: its first button runs profile_44bc00, the second closes it (and clears 0x76d42c) */
+int (profile_44c400)(void)
+{
+	GAME_VAR(int, 0x4dda44) = 0;
+	if (g_mouseClick) {
+		int button = GAME_CDECL(0x44b360, int, int, int)(g_mouseX, g_mouseY);
+		if (button == 0) {
+			sound_playMenu(0);
+			profile_44bc00();
+		} else if (button == 1) {
+			sound_playMenu(0);
+			GAME_VAR(int, 0x9f8f10) = 1;
+			GAME_VAR(int, 0x76d42c) = 0;
+		}
+	}
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x9f8f10) = 1;
+	return GAME_VAR(int, 0x4ded8c);
+}
