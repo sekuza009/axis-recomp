@@ -64,6 +64,7 @@
 
 /* ---- C runtime of the game ---- */
 #define sprintf(...) GAME_CDECL(0x49e9dd, int, char *, const char *, ...)(__VA_ARGS__)
+#define vsprintf(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
 
 /* ---- screen ---- */
 #define gfx_setProjection2D3D(mode) GAME_CDECL(0x41ef90, void, int)(mode)   /* 1: 3D, 2: the menus' 2D */

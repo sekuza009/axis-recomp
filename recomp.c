@@ -4328,20 +4328,8 @@ static int __cdecl vsprintf_wrap_463450(char *obj, const char *fmt, ...)
 /* 0x4629f0 msg_4629f0(obj, colour, fmt, ...): append to the 5-line message feed (ring at obj + 0x23429ce, 0x108-byte
    lines: colour, text, time stamp from +0x2342efe); the read index (+0x2342efa) is pushed along when the ring is full;
    display timer = 5.0. Returns the new count / 5 (what the original leaves in EAX) */
-static unsigned __cdecl msg_4629f0(char *obj, int colour, const char *fmt, ...)
-{
-	va_list va; va_start(va, fmt);
-	unsigned n = (unsigned)S32(obj, 0x2342ef6);
-	S32(obj + (n % 5) * 0x108, 0x23429ce) = colour;
-	CRT_vsprintf(obj + (n % 5) * 0x108 + 0x23429d2, fmt, va);
-	va_end(va);
-	S32(obj + ((unsigned)S32(obj, 0x2342ef6) % 5) * 0x108, 0x2342ad2) = S32(obj, 0x2342efe);
-	unsigned n2 = (unsigned)S32(obj, 0x2342ef6) + 1, head = (unsigned)S32(obj, 0x2342efa);
-	S32(obj, 0x2342ef6) = (int)n2;
-	if (n2 % 5 == head % 5) S32(obj, 0x2342efa) = (int)(head + 1);
-	S32(obj, 0x233cc40) = 0x40a00000;
-	return n2 / 5;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+unsigned msg_4629f0(void *scene, int colour, const char *fmt, ...);
 /* 0x46f770 (thiscall) actor_46f770(frame, scale): select frame i (< count at +0x1c) of the frame table (+0x20): +0x24 =
    i, +0x28 = __ftol(frame's int at +0x20 * scale) */
 static THISCALL void actor_46f770(char *self, int i, DWORD scale)

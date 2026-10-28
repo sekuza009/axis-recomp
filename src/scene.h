@@ -16,7 +16,8 @@ typedef struct MessageSlot {
 /* one line of the event list (Scene.events) */
 typedef struct EventLine {
 	u32 type;   /* +0x0: 0..5: the colour */
-	char text[0x104];   /* +0x4 */
+	char text[0x100];   /* +0x4 */
+	u32 time;   /* +0x104: Scene.eventTime when it was written */
 } EventLine;
 
 /* a player's record (Scene.players) */
@@ -408,7 +409,7 @@ typedef struct Scene {
 	EventLine events[5];   /* +0x23429ce: the last five events (ring of 5) */
 	u32 eventCount;   /* +0x2342ef6: events written so far */
 	u32 eventFirst;   /* +0x2342efa: first event still shown */
-	u8 _pad2342efe[0x4];
+	u32 eventTime;   /* +0x2342efe: (by use) stamped on each new event line */
 	float readyTimer;   /* +0x2342f02: > 0: "ready" shown */
 	char readyText[0x40];   /* +0x2342f06: shown while no countdown runs */
 	u8 _pad2342f46[0x349];
@@ -423,7 +424,8 @@ _Static_assert(offsetof(MessageSlot, text) == 0x4 && sizeof(((MessageSlot *)0)->
 _Static_assert(offsetof(MessageSlot, colour) == 0x8 && sizeof(((MessageSlot *)0)->colour) == 0x4, "scene.fields: MessageSlot.colour");
 _Static_assert(sizeof(MessageSlot) == 0x14, "scene.fields: size of MessageSlot");
 _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type) == 0x4, "scene.fields: EventLine.type");
-_Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x104, "scene.fields: EventLine.text");
+_Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x100, "scene.fields: EventLine.text");
+_Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->time) == 0x4, "scene.fields: EventLine.time");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading) == 0x4, "scene.fields: Player.heading");
 _Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
@@ -647,6 +649,7 @@ _Static_assert(offsetof(Scene, counterGreen) == 0x2342986 && sizeof(((Scene *)0)
 _Static_assert(offsetof(Scene, events) == 0x23429ce && sizeof(((Scene *)0)->events) == 0x528, "scene.fields: Scene.events");
 _Static_assert(offsetof(Scene, eventCount) == 0x2342ef6 && sizeof(((Scene *)0)->eventCount) == 0x4, "scene.fields: Scene.eventCount");
 _Static_assert(offsetof(Scene, eventFirst) == 0x2342efa && sizeof(((Scene *)0)->eventFirst) == 0x4, "scene.fields: Scene.eventFirst");
+_Static_assert(offsetof(Scene, eventTime) == 0x2342efe && sizeof(((Scene *)0)->eventTime) == 0x4, "scene.fields: Scene.eventTime");
 _Static_assert(offsetof(Scene, readyTimer) == 0x2342f02 && sizeof(((Scene *)0)->readyTimer) == 0x4, "scene.fields: Scene.readyTimer");
 _Static_assert(offsetof(Scene, readyText) == 0x2342f06 && sizeof(((Scene *)0)->readyText) == 0x40, "scene.fields: Scene.readyText");
 _Static_assert(offsetof(Scene, rankingKey) == 0x234328f && sizeof(((Scene *)0)->rankingKey) == 0x4, "scene.fields: Scene.rankingKey");

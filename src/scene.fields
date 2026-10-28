@@ -8,7 +8,8 @@ struct MessageSlot 0x14                                         # a message wait
 
 struct EventLine 0x108                                          # one line of the event list (Scene.events)
 0          4          u32 type                                  # 0..5: the colour
-4          0x104      char text[0x104]
+4          0x100      char text[0x100]
+0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
 4          4          float heading                             # (by use) tenths of a degree (the alert ring turns with it)
@@ -253,3 +254,4 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x23429ce  0x528      EventLine events[5]                        # the last five events (ring of 5)
 0x2342ef6  4          u32 eventCount                             # events written so far
 0x2342efa  4          u32 eventFirst                             # first event still shown
+0x2342efe  4          u32 eventTime                              # (by use) stamped on each new event line
