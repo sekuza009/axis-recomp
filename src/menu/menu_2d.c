@@ -132,3 +132,26 @@ u32 (FUN_00427a40)(int x0, int y0, int x1, int y1)
 	menu_vertex(x1, y1);
 	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
 }
+
+/* 0x42f0f0: the 3D view over w x h pixels (from the corner): the projection from the view's angle and aspect.
+   Returns the last glMatrixMode's eax */
+u32 (FUN_0042f0f0)(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(g_viewAngle, g_viewAspect, 1.0, 20000.0);
+	return IMPORT(0x4a91fc, u32, u32)(GL_MODELVIEW);
+}
+
+/* 0x41f820: a menu frame begun: the screen cleared to black (colour and depth), white, blending by alpha. Returns
+   glBlendFunc's eax */
+u32 (menu_frameBegin)(void)
+{
+	IMPORT(0x4a91e0, void, float, float, float, float)(0, 0, 0, 0);   /* glClearColor */
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(0x0be2);   /* GL_BLEND */
+	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
+}

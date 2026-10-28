@@ -92,3 +92,17 @@ void *(skelDat_getItemFileBy)(const char *name)
 {
 	return dat_entry(GAME_CDECL(0x46b0c0, int, const char *)(name), name, 0xa0eab8, 0xa0eabc, 0xa0eaa0);
 }
+
+/* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
+   emptied and the defaults made (chat_loadMacros). Returns what the original leaves in eax */
+u32 THISCALL (chat_saveMacros)(Scene *scene)
+{
+	void *f = crt_fopen((const char *)0x4c45ec, (const char *)0x4ad170);
+	if (f) {
+		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((u8 *)scene + 0x2340d3d, 0x39, 100, f);   /* fread */
+		return fclose(f);
+	}
+	for (int k = 0; k < 100; k++)
+		((u8 *)scene)[0x2340d3d + k * 0x39] = 0;
+	return GAME_THISCALL(0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros */
+}

@@ -199,3 +199,13 @@ void THISCALL (skel_ase_47d260)(float *out, const float *q)
 	out[2] = (float)(fld_m(&q[1]) / s);
 	out[3] = (float)(fld_m(&q[2]) / s);
 }
+
+/* 0x47d320: the two rotations a and b (angle, axis) combined: out = the (angle, axis) of matrix(a) * matrix(b) */
+u32 (skel_ase_47d320)(float *out, const float *a, const float *b)
+{
+	float ma[16], mb[16], m[16];
+	FUN_0047d9a0(ma, a);
+	FUN_0047d9a0(mb, b);
+	GAME_CDECL(0x47d380, void, float *, const float *, const float *)(m, ma, mb);   /* Mat4_multiply */
+	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* skel_ase_47d2f0: matrix -> (angle, axis) */
+}

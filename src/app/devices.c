@@ -156,3 +156,20 @@ int *(input_getCursorPos)(void)
 	}
 	return (int *)0xae2f18;
 }
+
+/* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (0xae2f24 + key * 4) clear
+   when the key is up */
+int (input_asyncKeyPressed)(int key)
+{
+	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+		return 0;
+	int *seen = (int *)(0xae2f24 + key * 4);
+	if (!(u16)GetAsyncKeyState(key))
+		*seen = 0;
+	if (*seen)
+		return 0;
+	if (!(u16)GetAsyncKeyState(key))
+		return 0;
+	*seen = 1;
+	return 1;
+}

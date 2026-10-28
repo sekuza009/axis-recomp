@@ -331,3 +331,52 @@ u32 (lobbyPlayer_draw)(void)
 	return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x4dbb68), GAME_VAR(int, 0x4dbb6c),
 	                                                     GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74));   /* menu_drawFrame */
 }
+
+/* 0x4081f0: the lobby's keys, by sub-screen (0x4db51c): 0 the player's record, 1 the arena list (or its chat line
+   while open), 2 creating an arena (the back keys while the list is open, the map list, the quit dialog, else the
+   connect), 5 the top; 3 and 4 have none. Returns what the handler leaves in eax (else the sub-screen) */
+u32 (lobby_processKeys)(void)
+{
+	u32 screen = GAME_VAR(u32, 0x4db51c);
+	switch (screen) {
+	case 0:
+		return GAME_CDECL(0x407840, u32, void)();   /* lobbyPlayer_keys */
+	case 1:
+		if (GAME_VAR(int, 0x907b2c))
+			return GAME_CDECL(0x407970, u32, void)();   /* lobbyJoin_keys */
+		return GAME_CDECL(0x4079c0, u32, void)();       /* lobbyJoin_keysChat */
+	case 2:
+		if (GAME_VAR(int, 0x907b2c))
+			return GAME_CDECL(0x4080c0, u32, void)();   /* lobby_keysBack */
+		if (GAME_VAR(int, 0x4db508))
+			return GAME_CDECL(0x403870, u32, void)();   /* the map list */
+		if (GAME_VAR(int, 0x4db55c))
+			return GAME_CDECL(0x408110, u32, void)();   /* lobby_keysQuit */
+		return GAME_CDECL(0x407e40, u32, void)();       /* lobbyTop_connect */
+	case 5:
+		return GAME_CDECL(0x407750, u32, void)();       /* lobbyTop_keys */
+	}
+	return screen;
+}
+
+/* 0x406bd0: the lobby's quit dialog's clicks (unless another dialog is open): a right click closes it; on its first
+   button the game quits (code 2), on its second the dialog closes. Returns what the original leaves in eax */
+u32 (lobby_406bd0)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x907b2c) = 0;
+	if (!g_mouseClick)
+		return 0;
+	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
+	if (button == 0) {
+		GAME_VAR(int, 0x907b2c) = 0;
+		return (u32)profile_41e7a0(2);
+	}
+	if (button == 1) {
+		GAME_VAR(int, 0x907b2c) = 0;
+		return 0;
+	}
+	return (u32)(button - 1);
+}

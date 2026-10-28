@@ -783,4 +783,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_40fd30() GAME_CDECL(0x40fd30, u32, void)()
 #define armc_colourScreenInput() GAME_CDECL(0x40ff40, u32, void)()
 
+#define FUN_0047d9a0(m, rotation) GAME_CDECL(0x47d9a0, void, float *, const float *)(m, rotation)   /* (angle, axis) -> matrix */
+
 #endif

@@ -2653,7 +2653,8 @@ THISCALL DWORD load_483d70(char *self, DWORD f);
 LIFT_PLAIN(FUN_0045ff30, 45ff30)
 LIFT_PLAIN(ResourceSet_dtor_463960, 463960)
 LIFT_PLAIN(Stage_dtor, 46ff70)
-LIFT_PLAIN(chat_saveMacros, 4617f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD chat_saveMacros(void *scene);
 /* 0x462740 (thiscall) chat_macro(in, out): "/N=text" stores macro N, "/N" expands it into out; returns 1 when handled. Lifted */
 static THISCALL DWORD chat_macro(char *self, DWORD in, DWORD out) { DWORD v[2] = { in, out }; return run_lifted_regs(lift_462740, 0, (DWORD)self, 0, 2, v); }
 /* batch 47: functions calling Win32 / OpenGL / GDI / registry / more CRT - in the game the real ones, in the tests the
@@ -2702,7 +2703,8 @@ DWORD reg_writeEndMode(DWORD value);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD reg_writeStartMode(DWORD value);
 /* 0x41f820 menu_frameBegin: start a menu frame (clear colour/depth, blend, colour) */
-LIFT_PLAIN(menu_frameBegin, 41f820)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_frameBegin(void);
 /* 0x43f840 app_registerWindowClassEx: register the window class */
 LIFT_PLAIN(app_registerWindowClassEx, 43f840)
 /* 0x452de0 net_452de0: copy the player/host name */
@@ -2756,7 +2758,8 @@ LIFT_PLAIN(intro_41e730, 41e730)
    0 = yes: close it and post message 2; button 1 = no: close it; the right button closes it in the lobby) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435ab0(void);
-LIFT_PLAIN(lobby_406bd0, 406bd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_406bd0(void);
 LIFT_PLAIN(lobby_407270, 407270)
 /* 0x427a40 FUN_00427a40(x0, y0, x1, y1): a line in the menu colour */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2863,7 +2866,8 @@ DWORD reg_readStartMode(void);
 static THISCALL DWORD skel_ase_47d2f0(char *out, DWORD m) { DWORD v[1] = { m }; return run_lifted(lift_47d2f0, (DWORD)out, 1, v); }
 /* 0x47d320 skel_ase_47d320(out, a, b): the angle-axis of the product of the two rotations a and b (FUN_0047d9a0
    makes each a matrix) */
-LIFT_PLAIN(skel_ase_47d320, 47d320)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD skel_ase_47d320(float *out, const float *a, const float *b);
 /* 0x487c80 input_setCursorPos(x, y) / 0x487ba0 input_asyncKeyDown(key) / 0x487c30 input_getCursorPos(): only while
    the game window (0xae2f20, if set) is in front; the key state is 1 when down; the position is kept at 0xae2f18 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3011,9 +3015,11 @@ DWORD net_454760(void);
 void net_454690(void);
 LIFT_PLAIN(net_452d70, 452d70)
 /* 0x42f0f0 FUN_0042f0f0(w, h): viewport and perspective projection (gluPerspective) */
-LIFT_PLAIN(FUN_0042f0f0, 42f0f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_0042f0f0(int w, int h);
 /* 0x487bd0 input_asyncKeyPressed(key): 1 if the key went down since the last query (while the window is in front) */
-LIFT_PLAIN(input_asyncKeyPressed, 487bd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_asyncKeyPressed(int key);
 /* 0x46bd00 hud_46bd00(x0, y0, x1, y1): a rectangle outline (screen y flipped) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void hud_46bd00(int x0, int y0, int x1, int y1);
@@ -4643,7 +4649,8 @@ void setup_drawTab(void);
 void setup_processTabKeys(void);
 /* 0x4081f0 lobby_processKeys(): by lobby page 0x4db51c (0..5), typing (0x907b2c), the dialog flags 0x4db508 /
    0x4db55c */
-LIFT_PLAIN(lobby_processKeys, 4081f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_processKeys(void);
 /* 0x4378e0 menu_4378e0() / 0x436800 room_processKeys(): the room's mouse / keys by page 0x9dd834 (0..0x63, byte
    table), its sub-mode 0x9dd850, popup 0x9dd7d8 and dialogs 0x4db508 / 0x4db8b4 */
 LIFT_PLAIN(menu_4378e0, 4378e0)
@@ -9205,7 +9212,7 @@ static void owned_bits(char *base, DWORD span, int n)
 T_PLAIN(FUN_0045ff30, 0x45ff30, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, BUF, 0, 0, 0, 0)
 T_PLAIN(ResourceSet_dtor_463960, 0x463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, BUF, 0, 0, 0, 0)
 T_PLAIN(Stage_dtor, 0x46ff70, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, BUF, 0, 0, 0, 0)
-T_PLAIN(chat_saveMacros, 0x4617f0, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, BUF, 0, 0, 0, 0)
+ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
 /* chat lines: "/N=text", "/N", "/NN...", other text */
 static void chatline_setup(void)
 {
@@ -9257,7 +9264,7 @@ T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BU
 T_PLAIN(ptx_crtlError, 0x46e1e0, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
 ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeEndMode((DWORD)(0x80000001u))))
 ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
-T_PLAIN(menu_frameBegin, 0x41f820, , 0, 0, 0, 0, 0)
+ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
 T_PLAIN(app_registerWindowClassEx, 0x43f840, fill(BUF + 0x100, 0x40);, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(dplay_454d90, 0x454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0)
@@ -9314,7 +9321,7 @@ static double g_frames;
 T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0)
 /* room_435ab0 leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
 ST(room_435ab0, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (room_435ab0(), 0))
-T_PLAIN(lobby_406bd0, 0x406bd0, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
+ST(lobby_406bd0, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x406bd0, 0, 0, 0, 0, 0), (DWORD)(lobby_406bd0()))
 T_PLAIN(lobby_407270, 0x407270, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
 ST(FUN_00427a40, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, CALL_PLAIN(0x427a40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(FUN_00427a40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
 T_PLAIN(mainmenu_440d70, 0x440d70, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
@@ -9575,7 +9582,7 @@ static void rotmat(char *m)
 }
 static void rot2_setup(void) { rotmat(BUF + 0x100); rotmat(BUF + 0x200); for (int i = 0; i < 4; i++) SF(BUF + 0x300, i * 4) = unit_rnd(); fill(BUF + 0x400, 16); }
 ST(skel_ase_47d2f0, rot2_setup();, (TC(void, 0x47d2f0, char *, char *)(BUF + 0x400, BUF + 0x100), 0), (skel_ase_47d2f0(BUF + 0x400, (DWORD)(BUF + 0x100)), 0))
-T_PLAIN(skel_ase_47d320, 0x47d320, rot2_setup(); for (int i = 0; i < 4; i++) SF(BUF + 0x200, i * 4) = unit_rnd();, 0, BUF + 0x400, BUF + 0x300, BUF + 0x200, 0)
+ST(skel_ase_47d320, rot2_setup(); for (int i = 0; i < 4; i++) SF(BUF + 0x200, i * 4) = unit_rnd();, CALL_PLAIN(0x47d320, 0, BUF + 0x400, BUF + 0x300, BUF + 0x200, 0), (DWORD)(skel_ase_47d320((float *)(DWORD)(BUF + 0x400), (const float *)(DWORD)(BUF + 0x300), (const float *)(DWORD)(BUF + 0x200))))
 static void input_setup(void)
 {
 	static const DWORD w[] = { 0, 0x10010, 0x20020 };
@@ -9880,8 +9887,8 @@ static void recv_setup(void)
 	if (irnd(0, 1)) *(DWORD *)0xa05306 = irnd(0, 2);
 }
 T_PLAIN(net_452d70, 0x452d70, recv_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(FUN_0042f0f0, 0x42f0f0, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
-T_PLAIN(input_asyncKeyPressed, 0x487bd0, input_setup(); fill((void *)0xae2c18, 0x300);, 0, g_a[0] & 0xff, 0, 0, 0)
+ST(FUN_0042f0f0, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, CALL_PLAIN(0x42f0f0, 0, g_a[0], g_a[1], 0, 0), (DWORD)(FUN_0042f0f0((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
+ST(input_asyncKeyPressed, input_setup(); fill((void *)0xae2c18, 0x300);, CALL_PLAIN(0x487bd0, 0, g_a[0] & 0xff, 0, 0, 0), (DWORD)(input_asyncKeyPressed((DWORD)(g_a[0] & 0xff))))
 ST(hud_46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200); screen_random();, CALL_PLAIN(0x46bd00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_46bd00((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 static void capmat_setup(void)
 {
@@ -14266,7 +14273,7 @@ static void disp_state(void)
 }
 ST(setup_drawTab, disp_state(); callee_stubs(g_stubSetupDraw, 0);, CALL_PLAIN(0x422b30, 0, 0, 0, 0, 0), (setup_drawTab(), 0))
 ST(setup_processTabKeys, disp_state(); callee_stubs(g_stubSetupKeys, 0);, CALL_PLAIN(0x4230a0, 0, 0, 0, 0, 0), (setup_processTabKeys(), 0))
-T_PLAIN(lobby_processKeys, 0x4081f0, disp_state(); callee_stubs(g_stubLobby, 0);, 0, 0, 0, 0, 0)
+ST(lobby_processKeys, disp_state(); callee_stubs(g_stubLobby, 0);, CALL_PLAIN(0x4081f0, 0, 0, 0, 0, 0), (DWORD)(lobby_processKeys()))
 T_PLAIN(menu_4378e0, 0x4378e0, disp_state(); callee_stubs(g_stubRoomMouse, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(room_processKeys, 0x436800, disp_state(); callee_stubs(g_stubRoomKeys, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_44f410, 0x44f410, disp_state(); callee_stubs(g_stubProfile, 0);, 0, 0, 0, 0, 0)
