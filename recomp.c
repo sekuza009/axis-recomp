@@ -7687,6 +7687,14 @@ static float rnd(void)               /* mostly -1000..1000, sometimes tiny or ze
 	}
 }
 static int irnd(int lo, int hi) { g_seed = g_seed * 1103515245u + 12345u; return lo + (int)((g_seed >> 8) % (unsigned)(hi - lo + 1)); }
+/* a random screen size (gfx_getWidth / gfx_getHeight read these), 4:3 and wide: at 4:3 a HUD width unit (width / 640)
+   equals a height unit (height / 480), so a test there cannot tell one from the other */
+static void screen_random(void)
+{
+	static const int sizes[][2] = { { 640, 480 }, { 800, 600 }, { 1024, 768 }, { 1152, 648 }, { 1280, 720 }, { 1366, 768 }, { 1920, 1080 }, { 2560, 1080 } };
+	int s = irnd(0, 7);
+	*(int *)0xa0e810 = sizes[s][0]; *(int *)0xa0e928 = sizes[s][1];
+}
 /* RECOMP_NANAUDIT=1: test inputs get QNaNs and SNaNs (random sign and payload) written straight into memory - a float
    returned by value (rnd()) cannot carry an SNaN, the x87 load quiets it. Off: NA() does nothing and draws no random
    numbers, so the normal test inputs are unchanged */
@@ -11946,7 +11954,7 @@ static void recv_setup(void)
 T_PLAIN(net_452d70, 0x452d70, recv_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_0042f0f0, 0x42f0f0, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
 T_PLAIN(input_asyncKeyPressed, 0x487bd0, input_setup(); fill((void *)0xae2c18, 0x300);, 0, g_a[0] & 0xff, 0, 0, 0)
-ST(hud_46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200);, CALL_PLAIN(0x46bd00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_46bd00((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
+ST(hud_46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200); screen_random();, CALL_PLAIN(0x46bd00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_46bd00((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 static void capmat_setup(void)
 {
 	vv_setup();
@@ -14014,9 +14022,9 @@ static void hudicon_setup(void)
 	S32(BUF, 0xbc06b0) = t; S32(BUF, 0x22f86ac) = t; S32(BUF, 0x22f06a8) = irnd(1, 500);
 	g_a[0] = irnd(-3, 40); g_a[1] = irnd(-50, 700); g_a[2] = irnd(-50, 500);
 }
-ST(hud_drawNameIcon, hudicon_setup();, (TC(void, 0x4922c0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
+ST(hud_drawNameIcon, hudicon_setup(); screen_random();, (TC(void, 0x4922c0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
    (hud_drawNameIcon(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
-ST(hud_drawLeaderIcon, hudicon_setup(); S32(BUF, 8) = irnd(0, 1);, (TC(void, 0x4924d0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
+ST(hud_drawLeaderIcon, hudicon_setup(); S32(BUF, 8) = irnd(0, 1); screen_random();, (TC(void, 0x4924d0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
    (hud_drawLeaderIcon(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 ST(replay_drawIcon, hudicon_setup();, (TC(void, 0x496820, char *, int, int, int)(BUF, g_a[1], g_a[2], g_a[0]), 0),
    (replay_drawIcon(BUF, (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[0]), 0))
@@ -14437,7 +14445,7 @@ static void hudpanel_setup(void)
 	S32(BUF, 0xbc06b4) = S32(BUF, 0xbc06b0);
 	g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500); g_a[2] = irnd(-20, 400); g_a[3] = irnd(-20, 300);
 }
-ST(hud_495ed0, hudpanel_setup();, (TC(void, 0x495ed0, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
+ST(hud_495ed0, hudpanel_setup(); screen_random();, (TC(void, 0x495ed0, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
    (hud_495ed0(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 /* batch 108 */
 /* a view volume (BUF + 0x100000) with 0..3 materials (no texture, or a GL slot owner of menutex_setup's set + 1),
@@ -15965,7 +15973,7 @@ static void clock_hud_setup(void)
 	S32(BUF, 0x22f0408) = tl > 0 ? irnd(tl * 60 - 15, tl * 60 + 5) : irnd(0, 1200);
 	SF(BUF, 0x22f040c) = (float)irnd(0, 100) / 100.0f;
 }
-ST(hud_drawClock, clock_hud_setup();, (TC(void, 0x496610, char *)(BUF), 0), (hud_drawClock(BUF), 0))
+ST(hud_drawClock, clock_hud_setup(); screen_random();, (TC(void, 0x496610, char *)(BUF), 0), (hud_drawClock(BUF), 0))
 /* batch 153 */
 /* HUD text: the game at BUF, hudicon_setup's set with the fonts bindable */
 static void hudtext_setup(void)
@@ -15974,7 +15982,7 @@ static void hudtext_setup(void)
 	hudicon_setup();
 	menutex_fonts(0);
 }
-ST(hud_drawPressFire, hudtext_setup();, CALL_PLAIN(0x495140, 0, 0, 0, 0, 0), (hud_drawPressFire((void *)BUF), 0))
+ST(hud_drawPressFire, hudtext_setup(); screen_random();, CALL_PLAIN(0x495140, 0, 0, 0, 0, 0), (hud_drawPressFire((void *)BUF), 0))
 /* the countdown anywhere in -1..5 (whole values now and then), the message */
 static void readystart_setup(void)
 {
@@ -15982,7 +15990,7 @@ static void readystart_setup(void)
 	SF(BUF, 0x233cc4c) = irnd(0, 3) ? (float)irnd(-10, 50) / 10.0f : (float)irnd(-1, 5);
 	fill_str(BUF + 0x2342f06, 30, 32, 126);
 }
-ST(hud_drawReadyStart, readystart_setup();, (TC(void, 0x496c20, char *)(BUF), 0), (hud_drawReadyStart(BUF), 0))
+ST(hud_drawReadyStart, readystart_setup(); screen_random();, (TC(void, 0x496c20, char *)(BUF), 0), (hud_drawReadyStart(BUF), 0))
 /* the recording time 0..3600 s (fractions decide the blink), the file name */
 static void recind_setup(void)
 {
@@ -15990,7 +15998,7 @@ static void recind_setup(void)
 	float t = (float)irnd(0, 36000) / 10.0f; memcpy(BUF + 0x2340d29, &t, 4);
 	fill_str(BUF + 0x2340d0c, 20, 32, 126);
 }
-ST(hud_drawRecordIndicator, recind_setup();, (TC(void, 0x496d10, char *)(BUF), 0), (hud_drawRecordIndicator(BUF), 0))
+ST(hud_drawRecordIndicator, recind_setup(); screen_random();, (TC(void, 0x496d10, char *)(BUF), 0), (hud_drawRecordIndicator(BUF), 0))
 /* not a team game (see below), the teams' slots and the winner id (FUN_00463740's test values), follow_setup's top player,
    every record's flag and name */
 static const DWORD g_stubMatchResult[] = { 0x4950a0, 4, 0x463740, 1 | CS_POP | CS_THIS, 0 };
@@ -16004,7 +16012,7 @@ static void matchresult_setup(void)
 	int w = irnd(-2, 9); memcpy(BUF + 0x23423bd, &w, 4);
 	for (int a = 0; a < 16; a++) { char *r = BUF + 0x1ecca70 + a * 0x8888; S32(r, 0x14c) = irnd(0, 1); fill_str(r + 0x98, 16, 32, 126); }
 }
-ST(hud_drawMatchResult, matchresult_setup();, (TC(void, 0x496a30, char *)(BUF), 0), (hud_drawMatchResult(BUF), 0))
+ST(hud_drawMatchResult, matchresult_setup(); screen_random();, (TC(void, 0x496a30, char *)(BUF), 0), (hud_drawMatchResult(BUF), 0))
 /* batch 154 */
 /* the loading screen: the game at BUF, hudtext_setup's set (fonts and the cylinder texture bindable), modes 0..4,
    receiving or not, play types 0..7 (the eight mode names), rounds 0..15 with map names, limits, the title and
@@ -16040,7 +16048,7 @@ static void escmenu_setup(void)
 	v = irnd(0, 9); memcpy(BUF + 0x23423a9, &v, 4);
 	fill_str((char *)0x9dc92c, 20, 32, 126); G32(0x9dad94) = irnd(0, 15); G32(0x9f181c) = irnd(0, 20);
 }
-ST(hud_drawEscMenu, escmenu_setup();, (TC(void, 0x495610, char *)(BUF), 0), (hud_drawEscMenu(BUF), 0))
+ST(hud_drawEscMenu, escmenu_setup(); screen_random();, (TC(void, 0x495610, char *)(BUF), 0), (hud_drawEscMenu(BUF), 0))
 /* batch 156 */
 /* DirectPlay: a fake lobby and DirectPlay object or none (EnumSessions failing or not, its description hashed),
    the local player, the session list and the global blocks or none, connection kinds -1..4, the four slots */
@@ -17509,7 +17517,7 @@ static void followname_setup(void)
 	S32(BUF, 0x2340c64) = i;
 	for (int k = 0; k < 16; k++) fill_str(BUF + 0x1eccb08 + k * 0x888, 12, 'A', 'z');
 }
-ST(replay_drawFollowedName, followname_setup();, (TC(void, 0x496b80, char *)(BUF), 0), (replay_drawFollowedName(BUF), 0))
+ST(replay_drawFollowedName, followname_setup(); screen_random();, (TC(void, 0x496b80, char *)(BUF), 0), (replay_drawFollowedName(BUF), 0))
 /* the sound table file: sound on or off, a volume, a file of 0..6 entries (index 0..40, a short name, the rest of
    the 0x100 bytes random) ended by a negative index, stored scrambled as the reader descrambles it (byte = rol(x ^
    0x59, 1)); the loader, the table free, the volume and the error message stubbed */
@@ -17739,7 +17747,7 @@ static void help_setup(void)
 	callee_stubs(g_stubHelp, 0);
 	for (int i = 0; i < 30; i++) fill_str(BUF + 0x234334b + i * 0x40, 20, ' ', 'z');
 }
-ST(hud_4955a0, help_setup();, (TC(void, 0x4955a0, char *)(BUF), 0), (hud_4955a0(BUF), 0))
+ST(hud_4955a0, help_setup(); screen_random();, (TC(void, 0x4955a0, char *)(BUF), 0), (hud_4955a0(BUF), 0))
 /* the loading cylinder: mode -2, -1, 1 or another, a short text, the progress so far; the timer real (the
    performance counter mock moves on each call, so the fades end), the screen, quad, swap and texture lookup stubbed */
 static const DWORD g_stubCyl[] = { 0x469320, 1, 0x4685d0, 0, 0x46bd60, 4, 0x456be0, 8 | CS_POP | CS_THIS, 0 };
@@ -18023,7 +18031,7 @@ static void hudrank_setup(void)
 	S32(BUF, 0x233c9f0) = irnd(0, 1); S32(BUF, 0x2342976) = irnd(0, 8);
 	for (int k = 0; k < 8; k++) S32(BUF, 0x23428f6 + k * 4) = irnd(0, 15);
 }
-ST(hud_drawRanking, hudrank_setup();, TC(DWORD, 0x494930, char *)(BUF), (hud_drawRanking(BUF), 0))
+ST(hud_drawRanking, hudrank_setup(); screen_random();, TC(DWORD, 0x494930, char *)(BUF), (hud_drawRanking(BUF), 0))
 /* the main HUD: the viewed player's every HUD field at random (the snapshot panel's actor type -1 only where the
    panel is not drawn), every texture id a bindable one, the drawing callees stubbed: text, the digit counter (the
    patch DLL's copy), the icons, the outline, the screen fill (its patch code needs the game running) and the patch
@@ -18035,8 +18043,7 @@ static void hudmain_setup(void)
 	int t = menutex_setup();
 	g_stubMain[18] = 0x49395f + 5 + *(const int *)0x493960;
 	callee_stubs(g_stubMain, (DWORD)t);
-	static const int sizes[][2] = { { 640, 480 }, { 800, 600 }, { 1024, 768 }, { 1152, 648 }, { 1280, 720 }, { 1366, 768 }, { 1920, 1080 }, { 2560, 1080 } };
-	int s = irnd(0, 7); G32(0xa0e810) = sizes[s][0]; G32(0xa0e928) = sizes[s][1];   /* the screen size (wide too: width and height units differ) */
+	screen_random();
 	S32(BUF, 0x233c9fc) = irnd(0, 2); S32(BUF, 0x234240d) = irnd(0, 15); S32(BUF, 0x2340c64) = irnd(0, 15);
 	S32(BUF, 8) = irnd(0, 1); S32(BUF, 0x233c9f0) = irnd(0, 1); S32(BUF, 0x23424f2) = irnd(0, 3); S32(BUF, 0x2221fa0) = irnd(0, 15);
 	S32(BUF, 0x22e719c) = irnd(0, 2); S32(BUF, 0x22e71a0) = irnd(0, 2); S32(BUF, 0x2342976) = irnd(0, 16);
@@ -18080,7 +18087,7 @@ static void teambox_setup(void)
 	hudrank_players();
 	for (int i = 0; i < 3; i++) S32(BUF, 0x234297e + 4 * i) = irnd(-10, 999);
 }
-ST(hud_496240, teambox_setup();, TC(DWORD, 0x496240, char *)(BUF), (hud_496240(BUF), 0))
+ST(hud_496240, teambox_setup(); screen_random();, TC(DWORD, 0x496240, char *)(BUF), (hud_496240(BUF), 0))
 /* batch 206 */
 /* the scene's frame timer (armc_461210 on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
 static void scenetimer_setup(void)
@@ -18176,7 +18183,7 @@ static void hudpass_setup(void)
 	SF(BUF, 0x233cc4c) = csu_fr(-50, 50);
 	G32(0xa0e010) = (int)(BUF + 0x1000); G32(0x83a9d4) = irnd(0, 1);
 }
-ST(hud_pass, hudpass_setup();, TC(DWORD, 0x4982f0, char *)(BUF), (hud_pass(BUF), 0))
+ST(hud_pass, hudpass_setup(); screen_random();, TC(DWORD, 0x4982f0, char *)(BUF), (hud_pass(BUF), 0))
 /* batch 208 */
 /* the player markers: each of the 16 records in play or not, flags, team, frags, screen point (on and off the
    1024 x 768 screen), short names; the local and followed players, the mode flags, texture ids; the texture set's
@@ -18204,7 +18211,7 @@ static void markers_setup(void)
 	S32(BUF, 0xbc06a0) = irnd(0, 0x3ff); S32(BUF, 0xbc06ac) = irnd(0, 0x3ff);
 	G32(0xa0e010) = (int)(BUF + 0x1000);
 }
-ST(hud_drawPlayerMarkers, markers_setup();, TC(DWORD, 0x4913a0, char *)(BUF), (hud_drawPlayerMarkers(BUF), 0))
+ST(hud_drawPlayerMarkers, markers_setup(); screen_random();, TC(DWORD, 0x4913a0, char *)(BUF), (hud_drawPlayerMarkers(BUF), 0))
 /* the match's input: every key binding its own key code (0x10 + its index), one of them held and one pressed (or
    none) through the stubbed key tests; the scene's state flags (mostly clear), the local player and its record, the
    input flags, the mouse offsets small, the cursor and the menu state; the other callees stubbed (the menu step goes
@@ -18485,7 +18492,7 @@ static void hudbox_setup(void)
 	callee_stubs(g_stubBox, 0); callee_ret(0x4685b0, w[k]); callee_ret(0x4685c0, h[k]);
 	for (int i = 0; i < 4; i++) g_a[i] = irnd(-20, 660);
 }
-ST(hud_4950a0, hudbox_setup();, (((void (*)(int, int, int, int))0x4950a0)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
+ST(hud_4950a0, hudbox_setup(); screen_random();, (((void (*)(int, int, int, int))0x4950a0)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
 	(hud_4950a0(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 /* the title / menu frame end: the title counter near its limit, the version texts; the background, the transition
    (through the patch DLL's trans_wrap when installed), the colour and the text pass stubbed */
@@ -18513,7 +18520,7 @@ static void lockon_setup(void)
 	S32(BUF, 0x234240d) = irnd(-1, 15); S32(BUF, 0xbc06a0) = irnd(0, 0x3ff);
 	G32(0xa0e010) = (int)(BUF + 0x1000);
 }
-ST(hud_drawLockOn, lockon_setup();, TC(DWORD, 0x491f50, char *)(BUF), (hud_drawLockOn(BUF), 0))
+ST(hud_drawLockOn, lockon_setup(); screen_random();, TC(DWORD, 0x491f50, char *)(BUF), (hud_drawLockOn(BUF), 0))
 /* the emblem / transition: title on or off with its counter, the transition state and timers, texture ids, dt;
    the projection, vertex helper and bind stubbed */
 static const DWORD g_stubEmblem[] = { 0x41ef60, 2, 0x41ef90, 1, 0x4566c0, 1 | CS_POP | CS_THIS, 0 };
@@ -18531,7 +18538,7 @@ T_PLAIN(menu_titleEmblemTransition, 0x429170, transition_setup();, 0, 0, 0, 0, 0
 /* the FPS counter: any rate; the icon, colour and text stubbed */
 static const DWORD g_stubFps[] = { 0x44ad30, 4, 0x44ad60, 4, 0x496820, 3 | CS_POP | CS_THIS, 0 };
 static void fps_setup(void) { callee_stubs(g_stubFps, 0); SF(BUF, 0x38) = csu_fr(0, 30000); }
-ST(hud_drawFps, fps_setup();, TC(DWORD, 0x495510, char *)(BUF), (hud_drawFps(BUF), 0))
+ST(hud_drawFps, fps_setup(); screen_random();, TC(DWORD, 0x495510, char *)(BUF), (hud_drawFps(BUF), 0))
 /* the chat line: modes -1..3, the blink timer, a typed line of 0..40 characters; the box, colour and text stubbed */
 static const DWORD g_stubChatBox[] = { 0x44ad30, 4, 0x44ad60, 4, 0x4950a0, 4, 0 };
 static void chatbox_setup(void)
@@ -18540,7 +18547,7 @@ static void chatbox_setup(void)
 	S32(BUF, 0x2340d35) = irnd(-1, 3); SF(BUF, 0x233cc34) = csu_fr(0, 100);
 	fill_str((char *)0x9dc92c, 40, 32, 126);
 }
-ST(hud_4953d0, chatbox_setup();, TC(DWORD, 0x4953d0, char *)(BUF), (hud_4953d0(BUF), 0))
+ST(hud_4953d0, chatbox_setup(); screen_random();, TC(DWORD, 0x4953d0, char *)(BUF), (hud_4953d0(BUF), 0))
 /* the replay message box: the fade -1..3 s, the message ring's read / write indexes (equal or not, past 32), its
    entries' text block 0..7 and colour 0..20, the text blocks (four short lines each), the event ring's indexes and
    entries (type 0..6, a short text); the box, colour and text stubbed */
@@ -18555,7 +18562,7 @@ static void replaymsg_setup(void)
 	int e = irnd(0, 20); S32(BUF, 0x2342efa) = e; S32(BUF, 0x2342ef6) = e + irnd(0, 6);
 	for (int k = 0; k < 5; k++) { char *v = BUF + 0x23429ce + k * 0x108; S32(v, 0) = irnd(0, 6); fill_str(v + 4, 40, 32, 126); }
 }
-ST(replay_drawMessage, replaymsg_setup();, TC(DWORD, 0x495190, char *)(BUF), (replay_drawMessage(BUF), 0))
+ST(replay_drawMessage, replaymsg_setup(); screen_random();, TC(DWORD, 0x495190, char *)(BUF), (replay_drawMessage(BUF), 0))
 /* batch 213 */
 /* the projection switch: the current and wanted modes 0..2, screen sizes 4:3 .. 21:9, the view's angle and depth;
    GL and GLU mocked (the cave's box rewritten by the patch DLL when menu43 is on) */
