@@ -7508,6 +7508,9 @@ void main_loop(void);
    (FUN_004a8700) without a team (+0x80 < 0). The local player (+0x234240d) is highlighted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawRanking(void *scene);
+/* 0x4926f0 hud_drawMain() (thiscall on the scene): the main HUD of the player the view follows; native until the
+   readable rebuild (the patch DLL moves the energy bar's two lengths and retargets the timers' text call) */
+void THISCALL hud_drawMain(void *scene);
 /* 0x496240 hud_496240() (thiscall on the scene): the team score box: both teams' bars (0x46bd60) and scores ("%d"
    by 0x463780), the local player's team marked (0x463740 -> 0x46bd00), then three counters (+0x234297e,
    +0x2342982, +0x2342986), all scaled from the screen size (0x4685b0 / 0x4685c0) */
@@ -9138,7 +9141,18 @@ static void run_stest(const STest *t)
 	int nfull = t->nfull, nfast = t->nfast;
 	{	/* RECOMP_ONLY=name,name,...: run only these state tests (for working on one batch; the rest stay unhooked) */
 		static char only[4096]; static int got;
-		if (!got) { got = 1; if (!GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2)) only[1] = 0; only[0] = ','; strcat(only, ","); }
+		if (!got) {
+			got = 1; if (!GetEnvironmentVariableA("RECOMP_ONLY", only + 1, sizeof only - 2)) only[1] = 0; only[0] = ','; strcat(only, ",");
+			/* RECOMP_DUMP=addr,len (hex): write those bytes as they are in memory now (after the patch DLL's start-up
+			   changes) to recomp_dump.bin in the game folder, to diff against the exe file */
+			char dump[64];
+			if (GetEnvironmentVariableA("RECOMP_DUMP", dump, sizeof dump)) {
+				char *comma = strchr(dump, ',');
+				DWORD addr = strtoul(dump, NULL, 16), len = comma ? strtoul(comma + 1, NULL, 16) : 0, w;
+				HANDLE f = CreateFileA("recomp_dump.bin", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+				if (f != INVALID_HANDLE_VALUE) { WriteFile(f, (const void *)addr, len, &w, NULL); CloseHandle(f); }
+			}
+		}
 		char key[128];
 		wsprintfA(key, ",%s,", t->name);
 		if (only[2] && !strstr(only, key)) return;   /* only[2]: the list is ",," when unset */
@@ -18010,6 +18024,48 @@ static void hudrank_setup(void)
 	for (int k = 0; k < 8; k++) S32(BUF, 0x23428f6 + k * 4) = irnd(0, 15);
 }
 ST(hud_drawRanking, hudrank_setup();, TC(DWORD, 0x494930, char *)(BUF), (hud_drawRanking(BUF), 0))
+/* the main HUD: the viewed player's every HUD field at random (the snapshot panel's actor type -1 only where the
+   panel is not drawn), every texture id a bindable one, the drawing callees stubbed: text, the digit counter (the
+   patch DLL's copy), the icons, the outline, the screen fill (its patch code needs the game running) and the patch
+   DLL's timer text (found through the call at 0x49395f) */
+static DWORD g_stubMain[] = { 0x44ad30, 4, 0x44ad60, 4, 0x46bd60, 4, 0x46bdc0, 6, 0x4922c0, 3 | CS_POP | CS_THIS,
+	0x4924d0, 3 | CS_POP | CS_THIS, 0x496820, 3 | CS_POP | CS_THIS, 0x46bd00, 4, 0x456be0, 8 | CS_POP | CS_THIS, 0, 5, 0 };
+static void hudmain_setup(void)
+{
+	int t = menutex_setup();
+	g_stubMain[18] = 0x49395f + 5 + *(const int *)0x493960;
+	callee_stubs(g_stubMain, (DWORD)t);
+	static const int sizes[][2] = { { 640, 480 }, { 800, 600 }, { 1024, 768 }, { 1152, 648 }, { 1280, 720 }, { 1366, 768 }, { 1920, 1080 }, { 2560, 1080 } };
+	int s = irnd(0, 7); G32(0xa0e810) = sizes[s][0]; G32(0xa0e928) = sizes[s][1];   /* the screen size (wide too: width and height units differ) */
+	S32(BUF, 0x233c9fc) = irnd(0, 2); S32(BUF, 0x234240d) = irnd(0, 15); S32(BUF, 0x2340c64) = irnd(0, 15);
+	S32(BUF, 8) = irnd(0, 1); S32(BUF, 0x233c9f0) = irnd(0, 1); S32(BUF, 0x23424f2) = irnd(0, 3); S32(BUF, 0x2221fa0) = irnd(0, 15);
+	S32(BUF, 0x22e719c) = irnd(0, 2); S32(BUF, 0x22e71a0) = irnd(0, 2); S32(BUF, 0x2342976) = irnd(0, 16);
+	S32(BUF, 0xbc06a0) = t; S32(BUF, 0xbc06a8) = t; S32(BUF, 0xbc06ac) = t; S32(BUF, 0xbc06b0) = t; S32(BUF, 0xbc06b4) = t;
+	S32(BUF, 0x233c9f8) = t;
+	*(float *)0x4c4dec = csu_fr(-100000, 100000);
+	for (int k = 0; k < 32; k++) {
+		S32(BUF, 0x1eca030 + 4 * k) = irnd(0, 1) ? t : -1;
+		char *a = BUF + 0x16c517c + k * 0x2e18;
+		fill_str(a, 12, 'A', 'Z'); SF(a, 0x2e10) = csu_fr(-100, 100);
+	}
+	for (int p = 0; p < 16; p++) {
+		char *r = BUF + 0x1ecca70 + p * 0x8888;
+		S32(BUF, 0x2342936 + 4 * p) = irnd(0, 3); S32(BUF, 0x179d1f6 + p * 0x47fd2) = irnd(0, 1);
+		SF(r, 4) = csu_fr(-1000000, 1000000); S32(r, 0xdc) = irnd(0, 30); S32(r, 0xe4) = irnd(-1, 5); S32(r, 0xec) = irnd(-99, 9999);
+		SF(r, 0x120) = csu_fr(-1000, 1000); S32(r, 0x128) = irnd(0, 999); S32(r, 0x12c) = irnd(0, 999);
+		for (int k = 0; k < 4; k++) { S32(r, 0x130 + 4 * k) = irnd(0, 999); SF(r, 0x3f4 + 4 * k) = csu_fr(-500, 6000); }
+		S32(r, 0x118) = irnd(0, 3); S32(r, 0x140) = irnd(0, 8); S32(r, 0x148) = irnd(0, 31); S32(r, 0x14c) = irnd(0, 2);
+		SF(r, 0x17c) = csu_fr(-100, 100); S32(r, 0x3f0) = irnd(0, 15) << 8 | irnd(0, 255);
+		SF(r, 0x494) = csu_fr(-50, 200); SF(r, 0x4ac) = csu_fr(0, 100); S32(r, 0x4b4) = irnd(0, 1); S32(r, 0x4b8) = irnd(0, 1);
+		S32(r, 0x4cc) = irnd(0, 4); S32(r, 0x4d8) = irnd(0, 1); S32(r, 0x4dc) = irnd(0, 1);
+		SF(r, 0x548) = csu_fr(-100, 100); SF(r, 0x8854) = csu_fr(-100, 100); S32(r, 0x8880) = irnd(0, 1);
+	}
+	if (!irnd(0, 4)) {   /* the ring's actor type test: -1 while the snapshot panel is off */
+		int p = S32(BUF, 0x234240d);
+		S32(BUF, 0x233c9fc) = 1; S32(BUF, 0x2221fa0) = p; S32(BUF + 0x1ecca70 + p * 0x8888, 0x148) = -1;
+	}
+}
+ST(hud_drawMain, hudmain_setup();, (TC(void, 0x4926f0, char *)(BUF), 0), (hud_drawMain(BUF), 0))
 /* the team score box: the screen size, team scores and the three counters; the screen getters, team tests and
    drawing stubbed */
 static const DWORD g_stubTeamBox[] = { 0x44ad30, 4, 0x44ae10, 5, 0x463740, 1 | CS_POP | CS_THIS, 0x463780, 1 | CS_POP | CS_THIS,
@@ -19174,7 +19230,7 @@ static const STest g_stests[] = {
 	/* batch 204 */
 	T(app_checkCdAndLoad, 1, 400, 0),
 	/* batch 205 */
-	T(menuState500_missionSelect, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_496240, 0, 400, 0),
+	T(menuState500_missionSelect, 0, 400, 0), T(main_loop, 0, 400, 0), T(hud_drawRanking, 0, 400, 0), T(hud_drawMain, 0, 400, 0), T(hud_496240, 0, 400, 0),
 	/* batch 206 */
 	T(match_inputState2, 1, 400, 0), T(menu_frame, 0, 400, 0), T(game_loadAllData, 1, 400, 0), T(hud_pass, 0, 400, 0),
 	/* batch 208 */
@@ -19275,6 +19331,9 @@ static const DWORD g_patchOk[][2] = {
 	/* shape_getByName (mk_find, shpread_wrap) */
 	{ 0x466eaa, 4 }, { 0x466eb9, 4 }, { 0x466ee1, 4 }, { 0x466ef0, 4 }, { 0x4671f7, 4 }, { 0x467215, 4 },
 	{ 0x46724a, 4 }, { 0x467268, 4 },
+	/* hud_drawMain (the timers' text call; the energy bar's lengths, all 13 operands) */
+	{ 0x493960, 4 }, { 0x493db8, 4 }, { 0x493e5a, 4 }, { 0x493ee5, 4 }, { 0x493f29, 4 }, { 0x493f99, 4 }, { 0x493fe1, 4 },
+	{ 0x494049, 4 }, { 0x494152, 4 }, { 0x4941e1, 4 }, { 0x494229, 4 }, { 0x4942b4, 4 }, { 0x4943aa, 4 }, { 0x4943ff, 4 },
 	/* hud_drawPlayerMarkers (label_text; label_halfw's 21-byte block) */
 	{ 0x491c2e, 4 }, { 0x491c52, 21 },
 	/* match_combatInput (menu_nav's 12-byte block) */
@@ -20273,7 +20332,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x430400, (void *)app_checkCdAndLoad, "app_checkCdAndLoad" },
 	/* batch 205 */
 	{ 0x44aa40, (void *)menuState500_missionSelect, "menuState500_missionSelect" }, { 0x420280, (void *)main_loop, "main_loop" },
-	{ 0x494930, (void *)hud_drawRanking, "hud_drawRanking" }, { 0x496240, (void *)hud_496240, "hud_496240" },
+	{ 0x4926f0, (void *)hud_drawMain, "hud_drawMain" }, { 0x494930, (void *)hud_drawRanking, "hud_drawRanking" }, { 0x496240, (void *)hud_496240, "hud_496240" },
 	/* batch 206 */
 	{ 0x48b200, (void *)match_inputState2, "match_inputState2" }, { 0x41fa40, (void *)menu_frame, "menu_frame" },
 	{ 0x460570, (void *)game_loadAllData, "game_loadAllData" }, { 0x4982f0, (void *)hud_pass, "hud_pass" },

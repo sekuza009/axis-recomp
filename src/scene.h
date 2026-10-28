@@ -21,28 +21,54 @@ typedef struct EventLine {
 
 /* a player's record (Scene.players) */
 typedef struct Player {
-	u8 _pad0000000[0x98];
+	u8 _pad0000000[0x4];
+	float heading;   /* +0x4: (by use) tenths of a degree (the alert ring turns with it) */
+	u8 _pad0000008[0x90];
 	char name[0x40];   /* +0x98 */
 	u8 _pad00000d8[0x4];
 	i32 emblem;   /* +0xdc: emblem shown in the ranking */
 	u8 _pad00000e0[0x4];
 	i32 kills;   /* +0xe4 */
 	i32 deaths;   /* +0xe8 */
-	u8 _pad00000ec[0x10];
+	i32 score;   /* +0xec: shown top left */
+	u8 _pad00000f0[0xc];
 	i32 timePlayed;   /* +0xfc: seconds */
 	u8 _pad0000100[0x8];
 	i32 waitingRespawn;   /* +0x108: (unclear) 0: "press fire" may be shown */
 	i32 flagOwner;   /* +0x10c: whose flag the ranking shows for this player (unless Scene.network) */
 	u8 _pad0000110[0x8];
 	i32 team;   /* +0x118: 0 / 1 in team games */
-	u8 _pad000011c[0x30];
+	u8 _pad000011c[0x4];
+	float blinkTime;   /* +0x120: (unclear) the energy bar blinks 4 times a second by it while warned */
+	u8 _pad0000124[0x4];
+	i32 counterA;   /* +0x128: (unclear) the first of the two counters bottom left */
+	i32 counterB;   /* +0x12c */
+	i32 ammo[4];   /* +0x130: per weapon slot */
+	i32 gaugeIcon;   /* +0x140: cell of the gauge (3 x 3 cells) */
+	u8 _pad0000144[0x4];
+	i32 actorType;   /* +0x148: index into Scene.actorInfo / snapshotTex */
 	i32 state;   /* +0x14c: 1: in play */
-	u8 _pad0000150[0x29c];
+	u8 _pad0000150[0x2c];
+	float aimBonus;   /* +0x17c: (unclear) > 0: a larger, fainter crosshair */
+	u8 _pad0000180[0x26c];
 	i32 statusIcon;   /* +0x3ec: (unclear) 1 / 2: an icon over the player */
-	u8 _pad00003f0[0xe8];
+	i32 timerFlags;   /* +0x3f0: bit 8 + k: timer k shown */
+	float timers[4];   /* +0x3f4: seconds left (2: boost, the energy bar turns blue) */
+	u8 _pad0000404[0x90];
+	float gauge;   /* +0x494: > 0: the gauge is shown (its alpha, at most 1) */
+	u8 _pad0000498[0x14];
+	float energyUsed;   /* +0x4ac: 0..1 */
+	u8 _pad00004b0[0x4];
+	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
+	i32 warned;   /* +0x4b8: 1: the energy bar blinks red */
+	u8 _pad00004bc[0x10];
+	i32 weapon;   /* +0x4cc: the selected weapon slot */
+	u8 _pad00004d0[0x8];
 	i32 markSolo;   /* +0x4d8: (unclear) 1: a mark (icon 8) after the player's ranking row and over the player, games without teams */
 	i32 markTeam;   /* +0x4dc: (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games */
-	u8 _pad00004e0[0x70];
+	u8 _pad00004e0[0x68];
+	float damageFlash;   /* +0x548: > 0: a white flash over the screen at this alpha */
+	u8 _pad000054c[0x4];
 	i32 viewMarked;   /* +0x550: set by hud_pass for the player the view follows */
 	u8 _pad0000554[0x8268];
 	float screenX;   /* +0x87bc: projected position on the screen, pixels */
@@ -55,8 +81,20 @@ typedef struct Player {
 	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
 	float lockSize;   /* +0x87ec: how far the lock-on box still has to close */
 	float labelFade;   /* +0x87f0: > 0: the name label is up (alpha labelFade / 3) */
-	u8 _pad00087f4[0x94];
+	u8 _pad00087f4[0x60];
+	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
+	u8 _pad0008858[0x28];
+	i32 alert;   /* +0x8880: (unclear) 1: the alert ring (red in network games) */
+	u8 _pad0008884[0x4];
 } Player;
+
+/* an actor type's record (Scene.actorInfo) */
+typedef struct ActorInfo {
+	char name[0x40];   /* +0x0: the folder under Actor/ */
+	u8 _pad0000040[0x2dd0];
+	float ringRange;   /* +0x2e10: (unclear) > 0: the alert ring is shown */
+	u8 _pad0002e14[0x4];
+} ActorInfo;
 
 /* (unclear) a record of stride 0x47fd2 whose first field says a flag is shown */
 typedef struct FlagSlot {
@@ -76,7 +114,8 @@ typedef struct Scene {
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
 	u8 _pad01f1668[0x9cf038];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
-	u8 _pad0bc06a4[0x8];
+	u8 _pad0bc06a4[0x4];
+	i32 hudBarTexture;   /* +0xbc06a8: texture id of the counters' plate and weapon slots */
 	i32 markerTexture;   /* +0xbc06ac: texture id of the solo / team marks over players */
 	i32 emblemTexture;   /* +0xbc06b0: texture id (manager * 512 + slot): emblems, 10 a row from texel 224 */
 	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells */
@@ -87,11 +126,17 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0xbbbaca];
+	u8 _pad0be172c[0xae3a50];
+	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
+	u8 _pad172147c[0x7bd7a];
 	FlagSlot flags[16];   /* +0x179d1f6 */
-	u8 _pad1c1cf16[0x2afb5a];
+	u8 _pad1c1cf16[0x2ad11a];
+	i32 snapshotTex[64];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; count unclear) */
+	u8 _pad1eca130[0x2940];
 	Player players[16];   /* +0x1ecca70 */
-	u8 _pad1f552f0[0x2cccc8];
+	u8 _pad1f552f0[0x2cccb0];
+	i32 cockpitPlayer;   /* +0x2221fa0: (unclear) no snapshot panel while it is the viewed player */
+	u8 _pad2221fa4[0x14];
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) */
 	u8 _pad2221fc8[0x180];
 	float lockTimers[16];   /* +0x2222148: per player: the lock-on building up (> 0) */
@@ -102,7 +147,7 @@ typedef struct Scene {
 	i32 teamGame;   /* +0x22e7184: 1: teams */
 	u8 _pad22e7188[0x14];
 	i32 markersOff;   /* +0x22e719c: (unclear) no team mate arrows or leader marks */
-	i32 leaderMarkOff;   /* +0x22e71a0: (unclear) */
+	i32 leaderMarkOff;   /* +0x22e71a0: (unclear) the team mark replaces the leader mark / rank */
 	u8 _pad22e71a4[0x9264];
 	i32 elapsed;   /* +0x22f0408: the match's time in seconds */
 	float timeFraction;   /* +0x22f040c: (unclear) a 0..1 time value: render_drawObjects' float; the clock blinks red by it */
@@ -122,7 +167,8 @@ typedef struct Scene {
 	i32 frameFlag;   /* +0x233c9e8: (unclear) 1: state 2 presents its own frame */
 	u8 _pad233c9ec[0x4];
 	i32 showEmblems;   /* +0x233c9f0: 1: emblems in the ranking */
-	u8 _pad233c9f4[0x8];
+	u8 _pad233c9f4[0x4];
+	i32 crosshairTexture;   /* +0x233c9f8 */
 	i32 playing;   /* +0x233c9fc: 1: the local player plays; 0: watching watchedPlayer */
 	u8 _pad233ca00[0x210];
 	i32 cameraMode;   /* +0x233cc10 */
@@ -173,7 +219,7 @@ typedef struct Scene {
 	i32 cameraSlot;   /* +0x23424f2: the spectator camera's number (0 shows as 10) */
 	u8 _pad23424f6[0x400];
 	i32 ranking[16];   /* +0x23428f6: players in rank order */
-	i32 leaderMark[16];   /* +0x2342936: (unclear) 1: the leader mark over player i */
+	i32 rank[16];   /* +0x2342936: each player's place (1: first; the HUD shows rank/rankCount) */
 	i32 rankCount;   /* +0x2342976 */
 	u8 _pad234297a[0x4];
 	i32 counterRed;   /* +0x234297e: (unclear) three counts shown under the team box */
@@ -200,18 +246,35 @@ _Static_assert(sizeof(MessageSlot) == 0x14, "scene.fields: size of MessageSlot")
 _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type) == 0x4, "scene.fields: EventLine.type");
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x104, "scene.fields: EventLine.text");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
+_Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading) == 0x4, "scene.fields: Player.heading");
 _Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
 _Static_assert(offsetof(Player, emblem) == 0xdc && sizeof(((Player *)0)->emblem) == 0x4, "scene.fields: Player.emblem");
 _Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
 _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
+_Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
 _Static_assert(offsetof(Player, waitingRespawn) == 0x108 && sizeof(((Player *)0)->waitingRespawn) == 0x4, "scene.fields: Player.waitingRespawn");
 _Static_assert(offsetof(Player, flagOwner) == 0x10c && sizeof(((Player *)0)->flagOwner) == 0x4, "scene.fields: Player.flagOwner");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
+_Static_assert(offsetof(Player, blinkTime) == 0x120 && sizeof(((Player *)0)->blinkTime) == 0x4, "scene.fields: Player.blinkTime");
+_Static_assert(offsetof(Player, counterA) == 0x128 && sizeof(((Player *)0)->counterA) == 0x4, "scene.fields: Player.counterA");
+_Static_assert(offsetof(Player, counterB) == 0x12c && sizeof(((Player *)0)->counterB) == 0x4, "scene.fields: Player.counterB");
+_Static_assert(offsetof(Player, ammo) == 0x130 && sizeof(((Player *)0)->ammo) == 0x10, "scene.fields: Player.ammo");
+_Static_assert(offsetof(Player, gaugeIcon) == 0x140 && sizeof(((Player *)0)->gaugeIcon) == 0x4, "scene.fields: Player.gaugeIcon");
+_Static_assert(offsetof(Player, actorType) == 0x148 && sizeof(((Player *)0)->actorType) == 0x4, "scene.fields: Player.actorType");
 _Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
+_Static_assert(offsetof(Player, aimBonus) == 0x17c && sizeof(((Player *)0)->aimBonus) == 0x4, "scene.fields: Player.aimBonus");
 _Static_assert(offsetof(Player, statusIcon) == 0x3ec && sizeof(((Player *)0)->statusIcon) == 0x4, "scene.fields: Player.statusIcon");
+_Static_assert(offsetof(Player, timerFlags) == 0x3f0 && sizeof(((Player *)0)->timerFlags) == 0x4, "scene.fields: Player.timerFlags");
+_Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers) == 0x10, "scene.fields: Player.timers");
+_Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) == 0x4, "scene.fields: Player.gauge");
+_Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");
+_Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
+_Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
+_Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
 _Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->markSolo) == 0x4, "scene.fields: Player.markSolo");
 _Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");
+_Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->damageFlash) == 0x4, "scene.fields: Player.damageFlash");
 _Static_assert(offsetof(Player, viewMarked) == 0x550 && sizeof(((Player *)0)->viewMarked) == 0x4, "scene.fields: Player.viewMarked");
 _Static_assert(offsetof(Player, screenX) == 0x87bc && sizeof(((Player *)0)->screenX) == 0x4, "scene.fields: Player.screenX");
 _Static_assert(offsetof(Player, screenY) == 0x87c0 && sizeof(((Player *)0)->screenY) == 0x4, "scene.fields: Player.screenY");
@@ -220,7 +283,12 @@ _Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onS
 _Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
 _Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
 _Static_assert(offsetof(Player, labelFade) == 0x87f0 && sizeof(((Player *)0)->labelFade) == 0x4, "scene.fields: Player.labelFade");
+_Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
+_Static_assert(offsetof(Player, alert) == 0x8880 && sizeof(((Player *)0)->alert) == 0x4, "scene.fields: Player.alert");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
+_Static_assert(offsetof(ActorInfo, name) == 0x0 && sizeof(((ActorInfo *)0)->name) == 0x40, "scene.fields: ActorInfo.name");
+_Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
+_Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
 _Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
 _Static_assert(sizeof(FlagSlot) == 0x47fd2, "scene.fields: size of FlagSlot");
 _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) == 0x4, "scene.fields: Scene.network");
@@ -228,6 +296,7 @@ _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4,
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
+_Static_assert(offsetof(Scene, hudBarTexture) == 0xbc06a8 && sizeof(((Scene *)0)->hudBarTexture) == 0x4, "scene.fields: Scene.hudBarTexture");
 _Static_assert(offsetof(Scene, markerTexture) == 0xbc06ac && sizeof(((Scene *)0)->markerTexture) == 0x4, "scene.fields: Scene.markerTexture");
 _Static_assert(offsetof(Scene, emblemTexture) == 0xbc06b0 && sizeof(((Scene *)0)->emblemTexture) == 0x4, "scene.fields: Scene.emblemTexture");
 _Static_assert(offsetof(Scene, menuBoxTexture) == 0xbc06b4 && sizeof(((Scene *)0)->menuBoxTexture) == 0x4, "scene.fields: Scene.menuBoxTexture");
@@ -236,8 +305,11 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
+_Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
 _Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
+_Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
+_Static_assert(offsetof(Scene, cockpitPlayer) == 0x2221fa0 && sizeof(((Scene *)0)->cockpitPlayer) == 0x4, "scene.fields: Scene.cockpitPlayer");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
 _Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");
 _Static_assert(offsetof(Scene, modelview) == 0x22e7068 && sizeof(((Scene *)0)->modelview) == 0x94, "scene.fields: Scene.modelview");
@@ -257,6 +329,7 @@ _Static_assert(offsetof(Scene, msgRead) == 0x233c59c && sizeof(((Scene *)0)->msg
 _Static_assert(offsetof(Scene, viewMode) == 0x233c9d0 && sizeof(((Scene *)0)->viewMode) == 0x4, "scene.fields: Scene.viewMode");
 _Static_assert(offsetof(Scene, frameFlag) == 0x233c9e8 && sizeof(((Scene *)0)->frameFlag) == 0x4, "scene.fields: Scene.frameFlag");
 _Static_assert(offsetof(Scene, showEmblems) == 0x233c9f0 && sizeof(((Scene *)0)->showEmblems) == 0x4, "scene.fields: Scene.showEmblems");
+_Static_assert(offsetof(Scene, crosshairTexture) == 0x233c9f8 && sizeof(((Scene *)0)->crosshairTexture) == 0x4, "scene.fields: Scene.crosshairTexture");
 _Static_assert(offsetof(Scene, playing) == 0x233c9fc && sizeof(((Scene *)0)->playing) == 0x4, "scene.fields: Scene.playing");
 _Static_assert(offsetof(Scene, cameraMode) == 0x233cc10 && sizeof(((Scene *)0)->cameraMode) == 0x4, "scene.fields: Scene.cameraMode");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
@@ -286,7 +359,7 @@ _Static_assert(offsetof(Scene, localPlayer) == 0x234240d && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, respawnPlayer) == 0x234243e && sizeof(((Scene *)0)->respawnPlayer) == 0x4, "scene.fields: Scene.respawnPlayer");
 _Static_assert(offsetof(Scene, cameraSlot) == 0x23424f2 && sizeof(((Scene *)0)->cameraSlot) == 0x4, "scene.fields: Scene.cameraSlot");
 _Static_assert(offsetof(Scene, ranking) == 0x23428f6 && sizeof(((Scene *)0)->ranking) == 0x40, "scene.fields: Scene.ranking");
-_Static_assert(offsetof(Scene, leaderMark) == 0x2342936 && sizeof(((Scene *)0)->leaderMark) == 0x40, "scene.fields: Scene.leaderMark");
+_Static_assert(offsetof(Scene, rank) == 0x2342936 && sizeof(((Scene *)0)->rank) == 0x40, "scene.fields: Scene.rank");
 _Static_assert(offsetof(Scene, rankCount) == 0x2342976 && sizeof(((Scene *)0)->rankCount) == 0x4, "scene.fields: Scene.rankCount");
 _Static_assert(offsetof(Scene, counterRed) == 0x234297e && sizeof(((Scene *)0)->counterRed) == 0x4, "scene.fields: Scene.counterRed");
 _Static_assert(offsetof(Scene, counterBlue) == 0x2342982 && sizeof(((Scene *)0)->counterBlue) == 0x4, "scene.fields: Scene.counterBlue");

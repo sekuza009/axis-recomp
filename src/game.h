@@ -23,6 +23,7 @@
 #define glClearColor_stored(c) IMPORT(0x4a91e0, void, u32, u32, u32, u32)((c)[0], (c)[1], (c)[2], 0x3f800000u)
 #define GL_QUADS 7
 #define GL_LINE_LOOP 2
+#define GL_QUAD_STRIP 8
 #define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
 #define glEnd() IMPORT(0x4a9220, void, void)()
 #define glTexCoord2f(s, t) IMPORT(0x4a920c, void, float, float)(s, t)
@@ -139,6 +140,10 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* FUN_004625a0: the match's top player: in team games the best ranked player of the leading team (the local player
    if it has none), else the first ranked */
 #define scene_topPlayer(scene) GAME_THISCALL(0x4625a0, Player *, Scene *)(scene)
+#define hud_drawDigits(x, y, scale, value, digits, flag) GAME_CDECL(0x46bdc0, void, int, int, float, int, int, int)(x, y, scale, value, digits, flag)
+#define tex_getIdByName(textures, name, a, b, c, d, e, f, g) GAME_THISCALL(0x456be0, int, void *, const char *, int, int, int, int, int, int, int)(textures, name, a, b, c, d, e, f, g)
+#define vec_rotate(v, angle) GAME_THISCALL(0x467700, void, float *, int)(v, angle)   /* turns (x, y) by angle (tenths of a degree) */
+#define game_clock() GAME_CDECL(0x4686d0, float, void)()                          /* FUN_004686d0: the float at 0x4c4dec */
 #define hud_drawPressFire(scene) GAME_THISCALL(0x495140, void, Scene *)(scene)
 #define hud_drawClock(scene) GAME_THISCALL(0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISCALL(0x496a30, void, Scene *)(scene)
@@ -162,6 +167,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
+#define g_trig ((const float *)0xa146f8)            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])0x4c7030)   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
@@ -231,6 +237,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_missionStarted GAME_VAR(int, 0x9f62e0)
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
 #define STR_COPYRIGHT ((const char *)0x4b0474)       /* "AXIS by Jamie System Development" */
+#define STR_2D ((const char *)0x4d03e0)              /* "%2d" */
 #define STR_VERSION ((const char *)0x4b0384)         /* "Axis v1.03" */
 
 #endif

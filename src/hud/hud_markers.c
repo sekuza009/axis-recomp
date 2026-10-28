@@ -54,7 +54,7 @@ static void marker_big(Scene *scene, Player *player, int texture, float alpha, f
    - the solo mark (markSolo) and the team mark in the player's team's cell (markTeam), from the marker texture;
    - the rest only while the name label is up (labelFade > 0), or always for a spectator (playing == 0) or in
      network mode 3, its alpha labelFade / 3 while playing (1 otherwise):
-     an arrow over team mates (unless markersOff), the leader mark (leaderMark[i], with the player's kills > 0),
+     an arrow over team mates (unless markersOff), the leader mark (rank 1, with the player's kills > 0),
      the name label in the team's colour with emblem and flag (not for the player a spectator follows), and the
      player's status icon (statusIcon 1 or 2, always opaque) */
 void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
@@ -85,7 +85,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			int x = ftol(player->screenX) - w / 2;
 			marker_quad(scene->hudTexture, alpha, x, y, w, h, 0.125f, 0.625f, 0.25f, 0.75f);
 		}
-		if (scene->leaderMark[i] == 1 && scene->markersOff == 0 && scene->leaderMarkOff == 0 && player->kills > 0)
+		if (scene->rank[i] == 1 && scene->markersOff == 0 && scene->leaderMarkOff == 0 && player->kills > 0)
 			marker_big(scene, player, scene->hudTexture, alpha, 0.0f, 0.75f, 0.25f, 1.0f);
 
 		if ((scene->playing == 0 && scene->cameraSlot >= 0 && i == scene->watchedPlayer)

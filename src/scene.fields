@@ -11,6 +11,25 @@ struct EventLine 0x108                                          # one line of th
 4          0x104      char text[0x104]
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+4          4          float heading                             # (by use) tenths of a degree (the alert ring turns with it)
+0xec       4          i32 score                                 # shown top left
+0x120      4          float blinkTime                           # (unclear) the energy bar blinks 4 times a second by it while warned
+0x128      4          i32 counterA                              # (unclear) the first of the two counters bottom left
+0x12c      4          i32 counterB
+0x130      0x10       i32 ammo[4]                               # per weapon slot
+0x140      4          i32 gaugeIcon                             # cell of the gauge (3 x 3 cells)
+0x148      4          i32 actorType                             # index into Scene.actorInfo / snapshotTex
+0x17c      4          float aimBonus                            # (unclear) > 0: a larger, fainter crosshair
+0x3f0      4          i32 timerFlags                            # bit 8 + k: timer k shown
+0x3f4      0x10       float timers[4]                           # seconds left (2: boost, the energy bar turns blue)
+0x494      4          float gauge                               # > 0: the gauge is shown (its alpha, at most 1)
+0x4ac      4          float energyUsed                          # 0..1
+0x4b4      4          i32 overheat                              # 1: the energy bar is red
+0x4b8      4          i32 warned                                # 1: the energy bar blinks red
+0x4cc      4          i32 weapon                                # the selected weapon slot
+0x548      4          float damageFlash                         # > 0: a white flash over the screen at this alpha
+0x8854     4          float hitFlash                            # > 0: a red flash at half this alpha
+0x8880     4          i32 alert                                 # (unclear) 1: the alert ring (red in network games)
 0x98       0x40       char name[0x40]
 0xdc       4          i32 emblem                                # emblem shown in the ranking
 0xe4       4          i32 kills
@@ -32,6 +51,10 @@ struct Player 0x8888                                            # a player's rec
 0x550      4          i32 viewMarked                            # set by hud_pass for the player the view follows
 0x4dc      4          i32 markTeam                              # (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games
 
+struct ActorInfo 0x2e18                                         # an actor type's record (Scene.actorInfo)
+0          0x40       char name[0x40]                           # the folder under Actor/
+0x2e10     4          float ringRange                           # (unclear) > 0: the alert ring is shown
+
 struct FlagSlot 0x47fd2                                         # (unclear) a record of stride 0x47fd2 whose first field says a flag is shown
 0          4          i32 shown
 
@@ -39,7 +62,10 @@ struct Scene 0x2343b0b                                          # the scene: the
 8          4          i32 network                                # (by use) 1: a network game (3: (unclear) another mode, no team marks) (JOIN, RECORD and TEAM in the menu; the ranking shows each player's own flag, from flagGlTexture)
 0x74       4          u8 view[4]                                 # the camera's view volume object starts here (passed by address)
 0x38       4          float fps                                  # frames per second, shown by hud_drawFps
+0x16c517c  0x5c300    ActorInfo actorInfo[32]                    # (count unclear)
 0x179d1f6  0x47fd20   FlagSlot flags[16]
+0x1eca030  0x100      i32 snapshotTex[64]                        # texture id of each actor type's snapshot (< 0: not loaded; count unclear)
+0xbc06a8   4          i32 hudBarTexture                          # texture id of the counters' plate and weapon slots
 0xbc06ac   4          i32 markerTexture                          # texture id of the solo / team marks over players
 0xbc06b0   4          i32 emblemTexture                          # texture id (manager * 512 + slot): emblems, 10 a row from texel 224
 0xbc06b4   4          i32 menuBoxTexture                         # texture id of the menu box cells
@@ -52,6 +78,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0xbc06a0   4          i32 hudTexture                             # texture id of the HUD marks (lock-on boxes)
 0x1ecca70  0x88880    Player players[16]
 0x2222148  0x40       float lockTimers[16]                       # per player: the lock-on building up (> 0)
+0x2221fa0  4          i32 cockpitPlayer                          # (unclear) no snapshot panel while it is the viewed player
 0x2221fb8  0x10       i32 teamScores[4]                          # by team slot (this_get_0x2342381_463780 gives a team's slot)
 0x22e7068  0x94       u8 modelview[0x94]                         # (unclear) matrices captured for the overlay parts
 0x22e70fc  0x84       u8 projection[0x84]
@@ -62,13 +89,14 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x22e7180  4          i32 gameMode                               # index into g_gameModeNames
 0x22e7184  4          i32 teamGame                               # 1: teams
 0x22e719c  4          i32 markersOff                             # (unclear) no team mate arrows or leader marks
-0x22e71a0  4          i32 leaderMarkOff                          # (unclear)
+0x22e71a0  4          i32 leaderMarkOff                          # (unclear) the team mark replaces the leader mark / rank
 0x22fbbd8  0x4200     char msgText[0x40][0x108]                  # message texts: four lines of 0x41 bytes per block
 0x233c318  0x280      MessageSlot msgRing[32]                    # messages waiting to be shown (ring of 32)
 0x233c598  4          u32 msgWrite                               # next slot msgRing gets written to
 0x233c59c  4          u32 msgRead                                # next slot replay_drawMessage shows
 0x233c9d0  4          i32 viewMode                               # 0 normal; 1 no overlay parts; 2 depth cleared again
 0x233c9e8  4          i32 frameFlag                              # (unclear) 1: state 2 presents its own frame
+0x233c9f8  4          i32 crosshairTexture
 0x233c9fc  4          i32 playing                                # 1: the local player plays; 0: watching watchedPlayer
 0x233c9f0  4          i32 showEmblems                            # 1: emblems in the ranking
 0x233cc10  4          i32 cameraMode
@@ -99,7 +127,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x234243e  4          i32 respawnPlayer                          # (unclear) >= 0 lets "press fire" show
 0x23424f2  4          i32 cameraSlot                             # the spectator camera's number (0 shows as 10)
 0x23428f6  0x40       i32 ranking[16]                            # players in rank order
-0x2342936  0x40       i32 leaderMark[16]                         # (unclear) 1: the leader mark over player i
+0x2342936  0x40       i32 rank[16]                               # each player's place (1: first; the HUD shows rank/rankCount)
 0x2342976  4          i32 rankCount
 0x234297e  4          i32 counterRed                             # (unclear) three counts shown under the team box
 0x2342982  4          i32 counterBlue
