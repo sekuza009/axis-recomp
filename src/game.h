@@ -691,4 +691,19 @@ typedef struct { float r, g, b, a; } Colour;
 #define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))0x4509c6)(angle, aspect, zNear, zFar)
 #define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))0x4509cc)(left, right, bottom, top)
 
+/* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, load/space_pools.c, render/rotations.c) ---- */
+#define FUN_0046cb60(path) GAME_CDECL(0x46cb60, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */
+#define FUN_00470f80(self, folder) GAME_THISCALL(0x470f80, char *, void *, const char *)(self, folder)
+#define TimeSync_ctor(self) GAME_THISCALL(0x487430, void *, void *)(self)
+#define FUN_004699a0(self) GAME_THISCALL(0x4699a0, int, void *)(self)   /* a skeleton released */
+#define FUN_0045df90(stage) GAME_THISCALL(0x45df90, void, Stage *)(stage)
+#define load_474480(stage) GAME_THISCALL(0x474480, void, Stage *)(stage)   /* the 16 player records reset */
+#define FUN_0045e070(stage) GAME_THISCALL(0x45e070, void, Stage *)(stage)
+#define actor_resetSlot(stage, i) GAME_THISCALL(0x4743e0, void, Stage *, int)(stage, i)
+#define load_47db50(self) GAME_THISCALL(0x47db50, int, void *)(self)   /* a collision plane cleared */
+#define load_480430(self) GAME_THISCALL(0x480430, int, void *)(self)   /* a node */
+#define load_4804a0(self) GAME_THISCALL(0x4804a0, int, void *)(self)   /* a block */
+#define FUN_0047d0b0(q, rotation) GAME_THISCALL(0x47d0b0, void, float *, const float *)(q, rotation)
+#define FUN_0047d8a0(m, q) GAME_CDECL(0x47d8a0, void, float *, const float *)(m, q)   /* quaternion -> matrix */
+
 #endif

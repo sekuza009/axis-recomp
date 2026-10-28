@@ -269,3 +269,36 @@ void THISCALL (match_resetInputState)(Scene *scene)
 	FIELD(int, scene, 0x2343307) = -1;
 	memset((u8 *)scene + 0x2343323, 0, 10 * 4);
 }
+
+/* ---- the no-CD build (patched to return at once; the original checks are still behind the ret) ---- */
+/* 0x401000: the CD drive found */
+u32 (cd_findDrive)(void) { return 1; }
+/* 0x41e550, 0x41e5b0, 0x41e610, 0x41e670, 0x41e6d0: the data files on the CD (Korean profile, skirmish, game,
+   game data, English profile) found */
+u32 (app_checkFile_profkor)(void) { return 1; }
+u32 (app_checkFile_skirmish)(void) { return 1; }
+u32 (app_checkFile_axisgame)(void) { return 1; }
+u32 (app_checkFile_game)(void) { return 1; }
+u32 (app_checkFile_profeng)(void) { return 1; }
+/* 0x40d990: the retail game reset the edited and saved mech's SERAPHIM parts (head 19, chest 13, arm 17, booster
+   15, leg 19) to 0; unlockfix.py turns all ten checks into jumps (the parts stay equipped), leaving nothing */
+void (armc_40d990)(void) {}
+
+/* ---- more small methods ---- */
+void THISCALL (nullsub_483ce0)(void *self, int a) { (void)self; (void)a; }
+/* 0x45dfe0: the stage's +0x202e8dc set (returned) */
+int THISCALL (armc_45dfe0)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
+/* 0x468720: the time sync object at 0xa0e948 constructed */
+void *(load_487430_wrap_468720)(void) { return TimeSync_ctor((void *)0xa0e948); }
+/* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
+char *THISCALL (FUN_00470f80)(void *self, const char *folder)
+{
+	strcpy((char *)self + 0x908, folder);
+	return FUN_0046cb60((char *)self + 0x908);
+}
+/* 0x461ec0: the scene's texture folder (+0x1f35c8) and its stage's */
+void THISCALL (FUN_00461ec0)(Scene *scene, const char *folder)
+{
+	strcpy((char *)scene + 0x1f35c8, folder);
+	FUN_00470f80(STAGE(scene), folder);
+}

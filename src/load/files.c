@@ -1,6 +1,7 @@
 /* files.c: small reads and writes of the game's files: the scrambled data files' record blocks (fread_scrambled:
    each byte rotated and xored), the chat macros, the replay file closed. */
 #include "../game.h"
+#include <stdarg.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -40,4 +41,19 @@ u32 THISCALL (match_487ed0)(Scene *scene)
 	u32 r = fclose(FIELD(void *, scene, 0x2340d08));
 	scene->recording = 0;
 	return r;
+}
+
+/* 0x46ca70: does the file named by the formatted path exist (opens for reading)? */
+int (FUN_0046ca70)(const char *format, ...)
+{
+	char path[256];
+	va_list args;
+	va_start(args, format);
+	vsprintf(path, format, args);
+	va_end(args);
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		return 0;
+	fclose(f);
+	return 1;
 }

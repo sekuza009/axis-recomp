@@ -168,6 +168,17 @@ void (room_4359b0)(void)
 	}
 }
 
+/* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in 0x9dd300), its distance limit back to 10,000,000 */
+void (room_4359f0)(void)
+{
+	int mode = GAME_VAR(int, 0x9dd1d0);
+	GAME_VAR(int, 0x9dd300) = mode;
+	room_pageChanged();
+	GAME_VAR(int, 0x9dd328) = 0;
+	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0f */
+	GAME_VAR(int, 0x9dd1d0) = (mode + 1) % 3;
+}
+
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
 #define sk_top GAME_VAR(int, 0x9f16bc)
 #define sk_row GAME_VAR(int, 0x9f1058)
@@ -205,5 +216,40 @@ void (skirmish_443d50)(int row)
 	if (sk_top + row < sk_count) {
 		sk_row = row;
 		sk_sel = sk_top + row;
+	}
+}
+
+/* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
+   pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
+#define undo_depth GAME_VAR(int, 0x9f1060)
+#define undo_stack ((int *)0x9eeadc)
+#define undo_value GAME_VAR(int, 0x9eeba4)
+#define undo_step GAME_VAR(int, 0x9ef1f4)
+#define undo_pending GAME_VAR(int, 0x4d7348)
+
+/* 0x443d80: the pending step pushed (value = the top - 1 + step) */
+void (FUN_00443d80)(void)
+{
+	if (undo_pending) {
+		int d = undo_depth;
+		undo_depth = d + 1;
+		undo_value = undo_stack[d] - 1 + undo_step;
+		undo_step = 0;
+		undo_stack[d + 1] = undo_value;
+		memset((void *)0x9f1064, 0, 1600);
+		undo_pending = 0;
+	}
+}
+
+/* 0x443de0: one step undone */
+void (FUN_00443de0)(void)
+{
+	if (undo_depth > 0) {
+		undo_depth--;
+		undo_value = undo_stack[undo_depth];
+		memset((void *)0x9f1064, 0, 1600);
+		undo_step = 0;
+		undo_pending = 0;
+		GAME_VAR(int, 0x9f105c) = 0;
 	}
 }

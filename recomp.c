@@ -440,7 +440,8 @@ void THISCALL load_480440(void *self);
    leg 19) to 0 in the edited mech and the saved copy. The rebuild matches the game as built by
    patches\build_exes.py, where unlockfix.py turns all ten checks into jumps (SERAPHIM parts stay equipped),
    so the function does nothing. */
-static void __cdecl armc_40d990(void) { }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40d990(void);
 
 /* 0x40ddb0 FUN_0040ddb0: unpack the mech from the network/profile record at 0x9dd5f8 (signed bytes) */
 static void __cdecl FUN_0040ddb0(void)
@@ -474,24 +475,18 @@ void armc_backupColours(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41ced0(void);
 
-/* ARM CENTER colour sliders: cursor x -> value (0.00625 per unit); x87 rounding points as in the original */
-static long double slider_pos(void) { return (long double)((g_menuCursorX - G32(0x4dcc98)) + 0xb8) * 0.00625f; }
-static void slider_hue(float *h)
-{
-	long double v = slider_pos() * 360.0f;
-	*h = (float)v;
-	if (!(v < 360.0f)) *h = 359.0f;            /* clamps to 359 (0x43b38000), not 360 */
-	v = (long double)*h - 180.0f;
-	*h = (float)v;
-	G32(0x4dca98) = 1;
-	if (v < 0) *h = (float)(v + 360.0f);
-}
-static void __cdecl armc_dragPrimaryHue(void)      { slider_hue(&g_armcColours[g_armcColourSlot * 6]); }
-static void __cdecl armc_dragSecondaryHue(void)    { slider_hue(&g_armcColours[g_armcColourSlot * 6 + 3]); }
-static void __cdecl armc_dragPrimaryChroma(void)   { G32(0x4dca98) = 1; g_armcColours[g_armcColourSlot * 6 + 1] = (float)slider_pos(); }
-static void __cdecl armc_dragPrimaryValue(void)    { G32(0x4dca98) = 1; g_armcColours[g_armcColourSlot * 6 + 2] = (float)slider_pos(); }
-static void __cdecl armc_dragSecondaryChroma(void) { long double v = slider_pos(); G32(0x4dca98) = 1; g_armcColours[g_armcColourSlot * 6 + 4] = (float)(v + v - 1.0f); }
-static void __cdecl armc_dragSecondaryValue(void)  { long double v = slider_pos(); G32(0x4dca98) = 1; g_armcColours[g_armcColourSlot * 6 + 5] = (float)(v + v - 1.0f); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragPrimaryHue(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragSecondaryHue(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragPrimaryChroma(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragPrimaryValue(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragSecondaryChroma(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_dragSecondaryValue(void);
 
 /* 0x430390 app_430390: default (empty) saved mech: no weapons, part 0, white colours */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -577,24 +572,12 @@ int room_434400(const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_44b7e0(const char *s);
 
-/* room list paging: index 0x9dd6ac (0..min(count 0x9dd4b8, 99)), previous index 0x9dd1b4, then a redraw/reset */
-static void room_listChanged(void)
-{
-	G32(0x9dd350) = 1; G32(0x9dd3b0) = 0; G32(0x76d40c) = 0; G32(0xa0b350) = 0; G32(0xa0b35c) = 0;
-}
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435970(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4359b0(void);
-static void __cdecl room_4359f0(void)          /* 0x4359f0 cycle the list mode 0..2 */
-{
-	int m = G32(0x9dd1d0);
-	G32(0x9dd300) = m;
-	room_listChanged();
-	G32(0x9dd328) = 0;
-	G32(0x9dd384) = 0x4b189680;                /* 10,000,000.0f */
-	G32(0x9dd1d0) = (m + 1) % 3;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4359f0(void);
 
 /* 0x43f5a0 app_setDataPaths: "initdata/" into both data path buffers, the stage path (0x4b0498) into the third
    (each buffer 0x105 bytes, cleared first) */
@@ -620,27 +603,10 @@ void skirmish_443d10(void);
 void skirmish_443d50(int row);
 
 /* 0x443d80 / 0x443de0: skirmish undo stack of values at 0x9eeadc (depth 0x9f1060); clear the 400-dword buffer at 0x9f1064 */
-static void __cdecl FUN_00443d80(void)
-{
-	if (G32(0x4d7348)) {
-		int d = G32(0x9f1060);
-		G32(0x9f1060) = d + 1;
-		G32(0x9eeba4) = G32(0x9eeadc + d * 4) - 1 + G32(0x9ef1f4);
-		G32(0x9ef1f4) = 0;
-		G32(0x9eeadc + (d + 1) * 4) = G32(0x9eeba4);
-		memset((void *)0x9f1064, 0, 1600);
-		G32(0x4d7348) = 0;
-	}
-}
-static void __cdecl FUN_00443de0(void)
-{
-	if (G32(0x9f1060) > 0) {
-		G32(0x9f1060)--;
-		G32(0x9eeba4) = G32(0x9eeadc + G32(0x9f1060) * 4);
-		memset((void *)0x9f1064, 0, 1600);
-		G32(0x9ef1f4) = 0; G32(0x4d7348) = 0; G32(0x9f105c) = 0;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00443d80(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00443de0(void);
 
 /* 0x445de0 menu_445de0: a click starts the menu fade (once) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -996,10 +962,8 @@ static THISCALL void match_4722e0(char *self, float v)
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL this_set_480210(void *p, int a, int b, int c);
-static THISCALL void collision_480230(float *v)      /* negate a Vec3 (fld/fchs/fstp: signalling NaNs come out quiet) */
-{
-	for (int i = 0; i < 3; i++) { volatile long double t = v[i]; v[i] = (float)-t; }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void collision_480230(float *v);
 static THISCALL long double SQRT_wrap_480400(const float *v)   /* Vec3 length, returned unrounded in ST0 */
 {
 	typedef long double X;
@@ -1149,7 +1113,8 @@ THISCALL void script_pushEvent(char *self, int a, int b, int c, int d);
 THISCALL void shape_466560(char *self);
 
 /* small object methods */
-static THISCALL char *FUN_00470f80(char *self, const char *s) { strcpy(self + 0x908, s); return FUN_0046cb60(self + 0x908); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL char *FUN_00470f80(void *self, const char *s);
 static THISCALL void collision_4803c0(float *v, float *out, float s)   /* this *= s, out = this */
 {
 	volatile long double k = s;                /* x87 fmul: of two NaNs it keeps the larger payload (SSE mulss would not) */
@@ -1337,7 +1302,8 @@ void skel_47d830(DWORD *d, const DWORD *s);
 /* scene-object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL net_4743b0(void *stage, int p);
-static THISCALL void FUN_00461ec0(char *self, const char *s) { strcpy(self + 0x1f35c8, s); FUN_00470f80(self + 0x1f36c8, s); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_00461ec0(void *self, const char *s);
 static void player_touch(char *self, int p)       /* players seen so far: count = max(count, p + 1) */
 {
 	if (p > (int)((DWORD)S32(self, 0x19e1888) - 1)) S32(self, 0x19e1888) = p + 1;
@@ -1695,15 +1661,8 @@ static THISCALL void player_setName(char *self, int p, const char *name)
 		if (name) strcpy(a, name); else *a = 0;
 	}
 }
-static THISCALL void scene_resetActors(char *self)
-{
-	for (int k = 0; k < 6; k++) S32(self, 0x202e8d4 + k * 4) = -1;
-	S32(self, 0x202e8ec) = 1;
-	FUN_0045df90(self);
-	load_474480(self);
-	FUN_0045e070(self);
-	for (int i = 0; i < 100; i++) actor_resetSlot(self, i);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void scene_resetActors(void *self);
 
 /* ---- batch 11: more screen layouts, lobby title, match resets --------------------------------- */
 
@@ -2171,13 +2130,9 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de1c0, 0x0, 0 }, { 0x4de1c4, 0x0, 0 }, { 0x4de1c8, 0x32, 0 }, { 0x4de1cc, 0x0, 0 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_controlTabHelper_420c10(void);
-static THISCALL void FUN_0047d0b0(float *q, const float *aa)   /* quaternion from {angle, axis x, y, z} */
-{
-	typedef long double X;
-	X s = x87_fsin((X)aa[0] * GF(0x4a94f4));
-	q[0] = (float)(s * aa[1]); q[1] = (float)(s * aa[2]); q[2] = (float)(s * aa[3]);
-	q[3] = (float)x87_fcos((X)aa[0] * GF(0x4a942c));      /* aa[0] re-read, as in the original */
-}
+/* quaternion from {angle, axis x, y, z} */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0047d0b0(float *q, const float *aa);
 static void __cdecl setup_4277c0(void)            /* ease the setup panel in; stop at the end position */
 {
 	typedef long double X;
@@ -2846,7 +2801,8 @@ static THISCALL void ViewVolume_add_485120(char *vv, const DWORD *obj, const flo
 }
 
 /* ---- batch 25: axis-angle -> matrix, HSV tint, view-volume quad add (x87) ------------------------ */
-static void __cdecl FUN_0047d9a0(float *m, const float *aa) { float q[4]; FUN_0047d0b0(q, aa); FUN_0047d8a0(m, q); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0047d9a0(float *m, const float *aa);
 
 /* re-colour rgb in place: the hue becomes dh (wrapped into 0..360 once; the hue of the original colour is computed
    but not used), saturation and value are offset by ds / dv and clamped to 0..1 */
@@ -3086,7 +3042,8 @@ void THISCALL ErrorLog_dtor(void *self);
 void THISCALL TimeSync_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL Scene_dtor(void *self);
-static THISCALL int armc_45dfe0(char *self, int v) { S32(self, 0x202e8dc) = v; return v; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int armc_45dfe0(void *self, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL this_get_0x2342381_463780(void *scene, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3097,7 +3054,8 @@ int THISCALL match_48b440(void *self, int a);
 void THISCALL match_48b430(void *self, int a0, int a1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_48b450(void *self, int a0, int a1, int a2, int a3);
-static THISCALL void nullsub_483ce0(void *self, int a0) { (void)self; (void)a0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void nullsub_483ce0(void *self, int a0);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void nullsub_46b860(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3202,28 +3160,12 @@ int THISCALL load_4723e0(void *stage);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void *ResourceSet_ctor_463850(char *self);
 
-/* space_resetPlanes/Nodes/Blocks: clear every record of a pool, link them (prev, next) and point the free head at
-   the first. EAX ends as (n - 1) * stride when n > 1, else n */
-typedef int (THISCALL *clear_fn)(char *);
-static int space_resetPool(char *self, int cnt, int stride, clear_fn clear, int prev)
-{
-	for (int i = 0; i < S32(self, cnt); i++) clear(*(char **)(self + cnt + 4) + i * stride);
-	for (int i = 1; i < S32(self, cnt); i++) { char *e = *(char **)(self + cnt + 4) + i * stride; *(char **)(e + prev) = e - stride; }
-	int r = S32(self, cnt);
-	if (S32(self, cnt) - 1 > 0) {
-		int i;
-		for (i = 0; i < S32(self, cnt) - 1; i++) {
-			char *a = *(char **)(self + cnt + 4);
-			*(char **)(a + i * stride + prev + 4) = a + (i + 1) * stride;
-		}
-		r = i * stride;
-	}
-	S32(self, cnt + 0xc) = 0; S32(self, cnt + 8) = S32(self, cnt + 4);
-	return r;
-}
-static THISCALL int space_resetPlanes(char *self) { return space_resetPool(self, 0x10, 0xac, (clear_fn)load_47db50, 0xa0); }
-static THISCALL int space_resetNodes(char *self) { return space_resetPool(self, 0x20, 0x10, (clear_fn)load_480430, 8); }
-static THISCALL int space_resetBlocks(char *self) { return space_resetPool(self, 0x40, 0x50, (clear_fn)load_4804a0, 0x48); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_resetPlanes(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_resetNodes(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_resetBlocks(void *self);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int script_reset(char *self);
@@ -3279,7 +3221,8 @@ static void __cdecl arena_406810(void)
 /* batch 32 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TextureManager_dtor(void *self);
-static void *__cdecl load_487430_wrap_468720(void) { return TimeSync_ctor((DWORD *)0xa0e948); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *load_487430_wrap_468720(void);
 /* 0x48fce0 (thiscall) script_runScpFile(name, mode): reset the script state, keep the file name and mode; modes 0/2
    clear the "running" flag at +0x214930c, mode 1 sets it. EAX = 0 for modes 0..2, else mode - 2 */
 static THISCALL int script_runScpFile(char *self, const char *name, int mode)
@@ -4149,26 +4092,10 @@ DWORD intro_4411e0(void);
 DWORD FUN_00441200(void);
 /* 0x467520 / 0x46b7f0 (thiscall): release every entry of the array at +0x11c (count +0x120; 0x4c-byte models /
    0x24-byte skeletons), count = 0, and +0x12c = 0 if it was positive; EAX = the old +0x12c */
-static THISCALL int FUN_00467520(char *self)
-{
-	if (S32(self, 0x120) > 0) {
-		for (int i = 0; i < S32(self, 0x120); i++) FUN_00464bc0((char *)S32(self, 0x11c) + i * 0x4c);
-		S32(self, 0x120) = 0;
-	}
-	int r = S32(self, 0x12c);
-	if (r > 0) S32(self, 0x12c) = 0;
-	return r;
-}
-static THISCALL int FUN_0046b7f0(char *self)
-{
-	if (S32(self, 0x120) > 0) {
-		for (int i = 0; i < S32(self, 0x120); i++) FUN_004699a0((char *)S32(self, 0x11c) + i * 0x24);
-		S32(self, 0x120) = 0;
-	}
-	int r = S32(self, 0x12c);
-	if (r > 0) S32(self, 0x12c) = 0;
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int FUN_00467520(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int FUN_0046b7f0(void *self);
 /* batch 45: file I/O (CRT fopen... at their own addresses; the virtual file system mocks them in the tests) */
 #define CRT_fopen ((DWORD (__cdecl *)(const char *, const char *))0x49e9ca)
 #define CRT_fclose ((DWORD (__cdecl *)(DWORD))0x49e7e0)
@@ -4190,17 +4117,8 @@ THISCALL DWORD chat_loadMacros(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD THISCALL Texture_ctor(void *self);
 /* 0x46ca70 FUN_0046ca70(fmt, ...): does the file named by the formatted path exist (fopen "rb" succeeds)? */
-static int __cdecl FUN_0046ca70(const char *fmt, ...)
-{
-	char path[256];
-	va_list va; va_start(va, fmt);
-	CRT_vsprintf(path, fmt, va);
-	va_end(va);
-	DWORD f = CRT_fopen(path, (const char *)0x4ad170);
-	if (!f) return 0;
-	CRT_fclose(f);
-	return 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046ca70(const char *fmt, ...);
 #include "lifted/files.c"   /* tools/lift.py: 15 file functions, CRT and game callees as native calls */
 /* run a lifted function with eax/ecx/edx as given */
 static DWORD run_lifted_regs(void (*f)(X86 *), DWORD eax, DWORD ecx, DWORD edx, int nargs, const DWORD *args)
@@ -4496,11 +4414,16 @@ static THISCALL DWORD ViewVolume_projectObject(char *self, DWORD a1, DWORD a2, D
 /* 0x41e550 / 0x41e5b0 / 0x41e610 / 0x41e670 / 0x41e6d0 app_checkFile_profkor / _skirmish / _axisgame / _game /
    _profeng and 0x43f770 reg_readStartMode: patched (no-CD build) to return 1 at once; the original check code is
    still behind the ret */
-static DWORD __cdecl app_checkFile_profkor(void) { return 1; }
-static DWORD __cdecl app_checkFile_skirmish(void) { return 1; }
-static DWORD __cdecl app_checkFile_axisgame(void) { return 1; }
-static DWORD __cdecl app_checkFile_game(void) { return 1; }
-static DWORD __cdecl app_checkFile_profeng(void) { return 1; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_checkFile_profkor(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_checkFile_skirmish(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_checkFile_axisgame(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_checkFile_game(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_checkFile_profeng(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD reg_readStartMode(void);
 #include "lifted/grp1.c"
@@ -4550,7 +4473,8 @@ LIFT_PLAIN(room_435770, 435770)
 LIFT_PLAIN(armc_40f340, 40f340)
 /* batch 52: more tools/closure.py groups (lifted/grp2.c) */
 /* 0x401000 cd_findDrive: patched (no-CD build) to return 1 at once */
-static DWORD __cdecl cd_findDrive(void) { return 1; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cd_findDrive(void);
 #include "lifted/grp2.c"
 /* 0x42d730 cfg_loadAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
 LIFT_PLAIN(cfg_loadAxisCfg, 42d730)

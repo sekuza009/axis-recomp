@@ -106,3 +106,17 @@ int THISCALL (hud_48fde0)(Stage *stage, int a, int b, int c, int d)
 	hud_48b450((u8 *)stage + 0x2148ed8, a, b, c, d);
 	return b;
 }
+
+/* 0x470a70: every actor slot emptied: the six slot numbers from playerActor on (-1), +0x202e8ec 1, the scores, the
+   16 player records and the stage's own reset, then the 100 slots */
+void THISCALL (scene_resetActors)(Stage *stage)
+{
+	for (int k = 0; k < 6; k++)
+		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
+	FIELD(int, stage, 0x202e8ec) = 1;
+	FUN_0045df90(stage);
+	load_474480(stage);
+	FUN_0045e070(stage);
+	for (int i = 0; i < 100; i++)
+		actor_resetSlot(stage, i);
+}

@@ -211,3 +211,26 @@ void *THISCALL (ResourceSet_ctor_463850)(u8 *self)
 	}
 	return self;
 }
+
+/* ---- arrays of members released ---- */
+/* the array at +0x11c (count +0x120) of stride-byte entries, each released, the count 0; +0x12c set to 0 if it
+   was positive; returns its old value */
+typedef int (THISCALL *Release)(void *entry);
+static int release_all(u8 *self, int stride, Release release)
+{
+	if (*(int *)(self + 0x120) > 0) {
+		for (int i = 0; i < *(int *)(self + 0x120); i++)
+			release(*(u8 **)(self + 0x11c) + i * stride);
+		*(int *)(self + 0x120) = 0;
+	}
+	int r = *(int *)(self + 0x12c);
+	if (r > 0)
+		*(int *)(self + 0x12c) = 0;
+	return r;
+}
+static int THISCALL release_model(void *e) { return FUN_00464bc0(e); }
+static int THISCALL release_skeleton(void *e) { return FUN_004699a0(e); }
+/* 0x467520: a shape manager's models (0x4c bytes) */
+int THISCALL (FUN_00467520)(u8 *self) { return release_all(self, 0x4c, release_model); }
+/* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
+int THISCALL (FUN_0046b7f0)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
