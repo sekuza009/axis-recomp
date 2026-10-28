@@ -29,12 +29,13 @@ Adding a function
      the test reaches; a weak test should be strengthened first.
   4. Commit; play-test (test3.sh) after a few.
 
-Done so far (103): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (109): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
 edit fields (arena_editTextField_404cd0 / 404d70 / 404f90 / 405010, arena_editNumberField_404e10 / 404ed0, room_4339e0 / 433a80 /
-433b00 / 433bb0 / 434020 / 4340e0 / 4341a0 / 434260 / 434320) | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
+433b00 / 433bb0 / 434020 / 4340e0 / 4341a0 / 434260 / 434320) | the arena map list (room_403490 / 4034e0 / 403530 / 403560 / 403590 /
+403640) | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
 arena_453770 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
 hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,

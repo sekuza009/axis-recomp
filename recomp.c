@@ -367,12 +367,8 @@ static int __cdecl profile_4343b0(const char *name)
 }
 
 /* 0x403560 room_403560(i): toggle flag i of the room option table (8-byte records); 22..24 always end 0 */
-static void __cdecl room_403560(int i)
-{
-	int *f = (int *)(0x4d7358 + i * 8);
-	*f = 1 - *f;
-	if (i >= 0x16 && i <= 0x18) *f = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403560(int i);
 
 /* 0x40f830 armc_40f830(i): 1 if list entry i (>= 27) is one of the two colour-part selections */
 static int __cdecl armc_40f830(int i)
@@ -1261,12 +1257,8 @@ static void __cdecl setup_selectGraphicTab(void)
 	G32(0x4ddac8) = 1; G32(0x4ddcec) = 1; GU32(0x4de038) = 0x3f333333;   /* 0.7 */
 	G32(0x4ddb98) = 0; G32(0x4dde90) = -1; G32(0x4dda60) = 0; GU32(0x4ddd90) = 0xc4ce4000;   /* -1650.0 */
 }
-static void __cdecl room_403490(void)
-{
-	int n = G32(0x67ef00);
-	for (int i = 0; i < n; i++) { G32(0x4d7358 + i * 8) = G32(0x4d9508 + i * 8); G32(0x4d735c + i * 8) = G32(0x4d950c + i * 8); }
-	G32(0x4d7408) = 0; G32(0x4d7410) = 0; G32(0x4d7418) = 0; G32(0x4db508) = 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403490(void);
 static void __cdecl menu_443ea0(void)
 {
 	if (g_menuDialogOpen) return;
@@ -7032,8 +7024,10 @@ int arena_454b00(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 int arena_454b40(int a1, int a2, int a3, int a4);
 /* 0x403530 room_403530() / 0x4034e0 room_4034e0(): menu sound 0, the room's 0x67ef00 entries (8 bytes from
    0x4d7358) cleared / all set */
-LIFT_PLAIN(room_403530, 403530)
-LIFT_PLAIN(room_4034e0, 4034e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403530(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4034e0(void);
 /* key pages: cancel (0x4e0cdc) or OK (0x4e1510, sound 2) closes the page: 0x407970 lobbyJoin_keys (0x907b2c),
    0x436940 menu_436940 (0x9dd850), 0x4080c0 lobby_keysBack (0x907b2c, not with a dialog), 0x4370e0 menu_4370e0
    (0x9dd6c4) */
@@ -7063,7 +7057,8 @@ void room_433a80(void);
 LIFT_PLAIN(sound_playVolume, 456e50)
 LIFT_PLAIN(room_431600, 431600)
 LIFT_PLAIN(menu_431950, 431950)
-LIFT_PLAIN(room_403640, 403640)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403640(void);
 LIFT_PLAIN(match_4512c0, 4512c0)
 LIFT_PLAIN(lobby_editTextField_405230, 405230)
 LIFT_PLAIN(menu_4318b0, 4318b0)
@@ -7076,7 +7071,8 @@ void arena_editTextField_404d70(void);
 void room_4339e0(void);
 LIFT_PLAIN(sound_loadMenuSounds, 42bd40)
 LIFT_PLAIN(menu_437240, 437240)
-LIFT_PLAIN(room_403590, 403590)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_403590(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_433b00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16681,8 +16677,8 @@ ST(arena_454b00, small_setup(g_stubHost);,
    arena_454b00(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454a20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
-T_PLAIN(room_403530, 0x403530, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
-T_PLAIN(room_4034e0, 0x4034e0, small_setup(g_stubSound);, 0, 0, 0, 0, 0)
+ST(room_403530, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), (room_403530(), 0))
+ST(room_4034e0, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (room_4034e0(), 0))
 T_PLAIN(lobbyJoin_keys, 0x407970, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
 T_PLAIN(menu_436940, 0x436940, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
 T_PLAIN(lobby_keysBack, 0x4080c0, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
@@ -16726,7 +16722,7 @@ T_PLAIN(menu_431950, 0x431950, gen_setup(g_gs_431950, g_gi_431950, g_gb_431950);
 static const DWORD g_gs_403640[] = { 0x41e760, 0, 0 };
 static const DWORD g_gi_403640[] = { 0x4d7408, 0x4d7410, 0x4d7418, 0x4d94fc, 0x4db508, 0x67ef00, 0 };
 static const DWORD g_gb_403640[] = { 0x4d7358, 0 };
-T_PLAIN(room_403640, 0x403640, gen_setup(g_gs_403640, g_gi_403640, g_gb_403640);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_403640, gen_setup(g_gs_403640, g_gi_403640, g_gb_403640);, CALL_PLAIN(0x403640, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_403640(), 0))
 static const DWORD g_gs_4512c0[] = { 0x450bf0, 5, 0x451350, 2, 0 };
 static const DWORD g_gi_4512c0[] = { 0xa0b424, 0 };
 static const DWORD g_gb_4512c0[] = { 0x9fd944, 0 };
@@ -16766,7 +16762,7 @@ T_PLAIN(menu_437240, 0x437240, gen_setup(g_gs_437240, g_gi_437240, g_gb_437240);
 static const DWORD g_gs_403590[] = { 0x401590, 1, 0 };
 static const DWORD g_gi_403590[] = { 0x67ef24, 0x6803a8, 0x9dad8c, 0x9db0ac, 0 };
 static const DWORD g_gb_403590[] = { 0 };
-T_PLAIN(room_403590, 0x403590, gen_setup(g_gs_403590, g_gi_403590, g_gb_403590); /* (setting index: 8 bytes from 0x4d7358) */ g_a[0] = irnd(0, 30);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_403590, gen_setup(g_gs_403590, g_gi_403590, g_gb_403590); /* (setting index: 8 bytes from 0x4d7358) */ g_a[0] = irnd(0, 30);, CALL_PLAIN(0x403590, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (room_403590((DWORD)(g_a[0])), 0))
 static const DWORD g_gs_433b00[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_433b00[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd358, 0x9dd35c, 0x9dd38c, 0x9dd830, 0 };
 static const DWORD g_gb_433b00[] = { 0x9dc92c, 0x9dd1d8, 0 };

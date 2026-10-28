@@ -306,6 +306,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_keyUp GAME_VAR(int, 0x9db0a0)
 #define g_keyDown GAME_VAR(int, 0x76d330)
 #define g_keyToggle GAME_VAR(int, 0x680390)          /* switches a two-button dialog's highlight */
+#define g_keyLeftShift GAME_VAR(int, 0x67ef24)       /* the modifier keys (DIK codes 0x2a, 0x36, 0x1d, 0x9d) */
+#define g_keyRightShift GAME_VAR(int, 0x9db0ac)
+#define g_keyLeftCtrl GAME_VAR(int, 0x6803a8)
+#define g_keyRightCtrl GAME_VAR(int, 0x9dad8c)
+#define input_isDown(key) GAME_CDECL(0x401590, int, int)(key)   /* the key (code) is held */
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
