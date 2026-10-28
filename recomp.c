@@ -7668,7 +7668,8 @@ void menu_drawVersion(void);
 void THISCALL hud_drawLockOn(void *scene);
 /* 0x429170 menu_titleEmblemTransition(): the title emblem (faded in by 0x4e0458 while 0x4df01c) and the zooming
    transition between menus (0x4de1d8 .. 0x4de1ec, textures 0x9dad6c .. 0x9dad88), through menu_vertex */
-LIFT_PLAIN(menu_titleEmblemTransition, 429170)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_titleEmblemTransition(void);
 /* 0x495510 hud_drawFps() (thiscall on the scene): the FPS icon (0x496820) and "%4.1f" of +0x38 (text_drawSized) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawFps(void *scene);
@@ -18571,7 +18572,7 @@ static void transition_setup(void)
 	GF(0x4de1d8) = csu_fr(-50, 300); GF(0x4de1e0) = csu_fr(-50, 300); GF(0x4de1e8) = csu_fr(-50, 300);
 	if (irnd(0, 1)) G32(0x4de1ec) = irnd(0, 3); else GF(0x4de1ec) = csu_fr(-50, 300);   /* used as int and float */
 }
-T_PLAIN(menu_titleEmblemTransition, 0x429170, transition_setup();, 0, 0, 0, 0, 0)
+ST(menu_titleEmblemTransition, transition_setup();, CALL_PLAIN(0x429170, 0, 0, 0, 0, 0), (menu_titleEmblemTransition(), 0))
 /* the FPS counter: any rate; the icon, colour and text stubbed */
 static const DWORD g_stubFps[] = { 0x44ad30, 4, 0x44ad60, 4, 0x496820, 3 | CS_POP | CS_THIS, 0 };
 static void fps_setup(void) { callee_stubs(g_stubFps, 0); SF(BUF, 0x38) = csu_fr(0, 30000); }

@@ -27,6 +27,7 @@
 #define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
 #define glEnd() IMPORT(0x4a9220, void, void)()
 #define glTexCoord2f(s, t) IMPORT(0x4a920c, void, float, float)(s, t)
+#define glTexCoord2d(s, t) IMPORT(0x4a9208, void, double, double)(s, t)
 #define glBindTexture(target, id) IMPORT(0x4a9264, void, u32, u32)(target, id)
 #define glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
 #define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
@@ -252,6 +253,14 @@ typedef struct { float r, g, b, a; } Colour;
 /* the title and profile screens */
 #define g_titleShown GAME_VAR(int, 0x4df01c)
 #define g_titleFrames GAME_VAR(int, 0x4e0458)        /* frames the title has been shown */
+/* the title emblem (menu_title.c) */
+#define g_titleTextures ((const int *)0x9dad6c)     /* eight: the base picture's quarters, then the pulsing layer's */
+#define g_titleSpread ((const int *)0x4b065c)       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
+#define g_emblemAlpha GAME_VAR(float, 0x4de1e0)      /* the pulsing layer's alpha (0.2 .. 0.9) */
+#define g_emblemPulse GAME_VAR(float, 0x4de1d8)      /* its change per time unit (+-0.018) */
+#define g_logoFade GAME_VAR(float, 0x4de1e8)         /* the logo fading in, 0 .. 1 */
+#define g_logoFadeLate GAME_VAR(float, 0x4de1ec)     /* (unclear) a faster fade from 0.2, not read here */
+#define g_logoTexture GAME_VAR(int, 0x76d3f0)
 #define g_profileIntro GAME_VAR(int, 0x9f6838)       /* the profile screen's intro animation runs */
 #define g_profileIntroState GAME_VAR(int, 0x9f8e54)  /* 5: finished */
 #define g_profileIntroTime GAME_VAR(int, 0x9f8f30)
