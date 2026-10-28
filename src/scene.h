@@ -23,18 +23,32 @@ typedef struct EventLine {
 typedef struct Player {
 	u8 _pad0000000[0x118];
 	i32 team;   /* +0x118: 0 / 1 in team games */
-	u8 _pad000011c[0x876c];
+	u8 _pad000011c[0x30];
+	i32 state;   /* +0x14c: 1: in play */
+	u8 _pad0000150[0x866c];
+	float screenX;   /* +0x87bc: projected position on the screen, pixels */
+	float screenY;   /* +0x87c0 */
+	u8 _pad00087c4[0x1c];
+	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
+	u8 _pad00087e4[0x4];
+	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
+	float lockSize;   /* +0x87ec: how far the lock-on box still has to close */
+	u8 _pad00087f0[0x98];
 } Player;
 
 /* the scene: the one large object of a match, built by game_loadAllData */
 typedef struct Scene {
 	u8 _pad0000000[0x38];
 	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
-	u8 _pad000003c[0x1ecca34];
+	u8 _pad000003c[0xbc0664];
+	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
+	u8 _pad0bc06a4[0x130c3cc];
 	Player players[16];   /* +0x1ecca70 */
 	u8 _pad1f552f0[0x2cccc8];
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) */
-	u8 _pad2221fc8[0xd9c10];
+	u8 _pad2221fc8[0x180];
+	float lockTimers[16];   /* +0x2222148: per player: the lock-on building up (> 0) */
+	u8 _pad2222188[0xd9a50];
 	char msgText[0x40][0x108];   /* +0x22fbbd8: message texts: four lines of 0x41 bytes per block */
 	u8 _pad22ffdd8[0x3c540];
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
@@ -71,10 +85,18 @@ _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x104, "scene.fields: EventLine.text");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
+_Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
+_Static_assert(offsetof(Player, screenX) == 0x87bc && sizeof(((Player *)0)->screenX) == 0x4, "scene.fields: Player.screenX");
+_Static_assert(offsetof(Player, screenY) == 0x87c0 && sizeof(((Player *)0)->screenY) == 0x4, "scene.fields: Player.screenY");
+_Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
+_Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
+_Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
+_Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
+_Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");
 _Static_assert(offsetof(Scene, msgText) == 0x22fbbd8 && sizeof(((Scene *)0)->msgText) == 0x4200, "scene.fields: Scene.msgText");
 _Static_assert(offsetof(Scene, msgRing) == 0x233c318 && sizeof(((Scene *)0)->msgRing) == 0x280, "scene.fields: Scene.msgRing");
 _Static_assert(offsetof(Scene, msgWrite) == 0x233c598 && sizeof(((Scene *)0)->msgWrite) == 0x4, "scene.fields: Scene.msgWrite");

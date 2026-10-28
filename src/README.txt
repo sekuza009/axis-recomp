@@ -11,7 +11,7 @@ Layout (by subsystem)
   app/          the main loop
   menu/         the front end: key dispatch, screens, the profile screen's pages
   text/         the bitmap fonts: the text passes, sizes
-  hud/          the in-match HUD
+  hud/          the in-match HUD: overlays, the team box, lock-on marks
   replay/       the message box (match and replay)
 
 Building: ../build.sh (src/ is compiled as its own translation unit with x87 maths and linked into recomp.dll).
@@ -27,6 +27,7 @@ Adding a function
      the test reaches; a weak test should be strengthened first.
   4. Commit; play-test (test3.sh) after a few.
 
-Done so far (23): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
-menu_drawVersion, profile_44c850 / 44c8c0 / 44ca90 / 44cc60 | text_draw5 / 8 / 16 / 32, text_draw8b, hud_403210,
-text_drawSized, hud_44ae10 | hud_4950a0, hud_drawFps, hud_4953d0 | replay_drawMessage.
+Done so far (29): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60 | text_draw5 / 8 / 16 / 32,
+text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_4950a0,
+hud_drawFps, hud_4953d0, hud_496240, hud_drawLockOn | replay_drawMessage.

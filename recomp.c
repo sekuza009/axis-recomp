@@ -7622,7 +7622,8 @@ void menu_drawVersion(void);
 /* 0x491f50 hud_drawLockOn() (thiscall on the scene): for each other player in play with a lock timer
    (+0x2222148, per player) the lock-on square at its screen point, the timer scaling it (textures from the set
    0xa0e010 by +0xbc06a0, quads through glTexCoord2f / glVertex2i) */
-static THISCALL DWORD hud_drawLockOn(char *s) { return run_lifted(lift_491f50, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawLockOn(void *scene);
 /* 0x429170 menu_titleEmblemTransition(): the title emblem (faded in by 0x4e0458 while 0x4df01c) and the zooming
    transition between menus (0x4de1d8 .. 0x4de1ec, textures 0x9dad6c .. 0x9dad88), through menu_vertex */
 LIFT_PLAIN(menu_titleEmblemTransition, 429170)
@@ -18425,12 +18426,13 @@ static void lockon_setup(void)
 		char *e = BUF + 0x1ed5250 + p * 0x8888;
 		S32(e, -0x8694) = irnd(0, 3) ? 1 : irnd(0, 2); S32(e, 0) = irnd(0, 3) ? 1 : 0;
 		SF(e, 0xc) = csu_fr(-100, 300); SF(e, -0x24) = (float)irnd(-200, 1200); SF(e, -0x20) = (float)irnd(-200, 1000);
+		SF(e, 8) = csu_fr(-100, 300);   /* locked on (> 0): the second mark */
 		SF(BUF, 0x2222148 + p * 4) = csu_fr(-100, 300);
 	}
 	S32(BUF, 0x234240d) = irnd(-1, 15); S32(BUF, 0xbc06a0) = irnd(0, 0x3ff);
 	G32(0xa0e010) = (int)(BUF + 0x1000);
 }
-ST(hud_drawLockOn, lockon_setup();, TC(DWORD, 0x491f50, char *)(BUF), hud_drawLockOn(BUF))
+ST(hud_drawLockOn, lockon_setup();, TC(DWORD, 0x491f50, char *)(BUF), (hud_drawLockOn(BUF), 0))
 /* the emblem / transition: title on or off with its counter, the transition state and timers, texture ids, dt;
    the projection, vertex helper and bind stubbed */
 static const DWORD g_stubEmblem[] = { 0x41ef60, 2, 0x41ef90, 1, 0x4566c0, 1 | CS_POP | CS_THIS, 0 };

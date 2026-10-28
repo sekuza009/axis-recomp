@@ -12,10 +12,18 @@ struct EventLine 0x108                                          # one line of th
 
 struct Player 0x8888                                            # a player's record (Scene.players)
 0x118      4          i32 team                                  # 0 / 1 in team games
+0x14c      4          i32 state                                 # 1: in play
+0x87bc     4          float screenX                             # projected position on the screen, pixels
+0x87c0     4          float screenY
+0x87e0     4          i32 onScreen                              # 1: projected in front of the camera
+0x87e8     4          float lockedOn                            # > 0: locked on by the local player
+0x87ec     4          float lockSize                            # how far the lock-on box still has to close
 
 struct Scene 0x2343b0b                                          # the scene: the one large object of a match, built by game_loadAllData
 0x38       4          float fps                                  # frames per second, shown by hud_drawFps
+0xbc06a0   4          i32 hudTexture                             # texture id of the HUD marks (lock-on boxes)
 0x1ecca70  0x88880    Player players[16]
+0x2222148  0x40       float lockTimers[16]                       # per player: the lock-on building up (> 0)
 0x2221fb8  0x10       i32 teamScores[4]                          # by team slot (this_get_0x2342381_463780 gives a team's slot)
 0x22fbbd8  0x4200     char msgText[0x40][0x108]                  # message texts: four lines of 0x41 bytes per block
 0x233c318  0x280      MessageSlot msgRing[32]                    # messages waiting to be shown (ring of 32)
