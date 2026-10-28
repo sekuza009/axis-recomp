@@ -659,26 +659,10 @@ void arena_4045e0(void);
 THISCALL void FUN_00456820(char *self, int m);
 
 /* x87 "fcomp; test ah, 0x40" equality: C3 is also set when either value is NaN */
-static int x87_equal(DWORD a, DWORD b)
-{
-	float x, y;
-	memcpy(&x, &a, 4); memcpy(&y, &b, 4);
-	return x == y || x != x || y != y;
-}
 /* 0x456860 (thiscall) tex_recolourMaterial(m, primary h/c/v, secondary h/c/v): store new colours and mark the
    material dirty if any value changed. Values are copied as raw dwords */
-static THISCALL void tex_recolourMaterial(char *self, int m, DWORD h1, DWORD c1, DWORD v1, DWORD h2, DWORD c2, DWORD v2)
-{
-	char *r = self + m * 0x68;
-	DWORD f = SU32(r, 0xc016c) | 2;
-	if (f == 0 || !x87_equal(SU32(r, 0xc0170), h1) || !x87_equal(SU32(r, 0xc0174), c1) || !x87_equal(SU32(r, 0xc0178), v1) ||
-	    !x87_equal(SU32(r, 0xc017c), h2) || !x87_equal(SU32(r, 0xc0180), c2) || !x87_equal(SU32(r, 0xc0184), v2)) {
-		SU32(r, 0xc016c) = f;
-		SU32(r, 0xc0170) = h1; SU32(r, 0xc0174) = c1; SU32(r, 0xc0178) = v1;
-		SU32(r, 0xc017c) = h2; SU32(r, 0xc0180) = c2; SU32(r, 0xc0184) = v2;
-		S32(r, 0xc018c) = 1;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_recolourMaterial(void *self, int m, DWORD h1, DWORD c1, DWORD v1, DWORD h2, DWORD c2, DWORD v2);
 
 /* 0x456b50 (thiscall) hud_456b50: clear three fields (+0xcd138..+0xcd140) in each of the 6 objects at this+4..+0x18 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1350,19 +1334,9 @@ int ptx_internal_46f0b0(int *blk);
 THISCALL void *ResourceSet_init_463a40(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_setTextureDir(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
-static void __cdecl FUN_00464a70(BYTE *px, int mode, const DWORD *img, const BYTE *c)   /* add a colour to RGBA pixels */
-{
-	if (mode == 1 || (img[0] & 2)) {           /* plain fill */
-		for (int i = 0; i < (int)img[0x13]; i++) ((DWORD *)px)[i] = *(const DWORD *)c;
-		return;
-	}
-	int r = c[0], g = c[1], b = c[2];
-	for (int i = 0; i < (int)img[0x13]; i++, px += 4) {
-		int x = px[0] + r, y = px[1] + g, z = px[2] + b;
-		px[0] = (BYTE)(x > 255 ? 255 : x); px[1] = (BYTE)(y > 255 ? 255 : y); px[2] = (BYTE)(z > 255 ? 255 : z);
-		if (px[3] > c[3]) px[3] = c[3];
-	}
-}
+/* add a colour to RGBA pixels */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00464a70(BYTE *px, int mode, const DWORD *img, const BYTE *c);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_48fe10(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1822,21 +1796,8 @@ void ptx_initTables(void);
 /* texture record: name, eight parameters, and the animation kind from the name's suffix: "_ANI" -> 1, "_ANI0".."_ANI3"
    -> 1..4 (another digit leaves +0x60 unchanged), anything else -> 0. (The original also builds an upper-cased stack copy
    of the name and never uses it; the suffix test is case-sensitive.) */
-static THISCALL void tex_454e60(char *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
-{
-	strcpy(self, name);
-	S32(self, 0x44) = a3; S32(self, 0x40) = a2; S32(self, 0x48) = a4; S32(self, 0x4c) = a5;
-	S32(self, 0x50) = a6; S32(self, 0x54) = a7; S32(self, 0x58) = a8; S32(self, 0x5c) = a9;
-	int n = (int)strlen(self);
-	if (n > 4 && !memcmp(self + n - 4, "_ANI", 4)) { S32(self, 0x60) = 1; S32(self, 0x64) = 0; return; }
-	if (n > 5 && !memcmp(self + n - 5, "_ANI", 4)) {
-		char c = self[n - 1];
-		if (c >= '0' && c <= '3') S32(self, 0x60) = c - '0' + 1;
-		S32(self, 0x64) = 0;
-		return;
-	}
-	S32(self, 0x60) = 0; S32(self, 0x64) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_454e60(void *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
 static THISCALL void load_470de0(char *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
                                  const char *s6, const char *s7, const char *s8, const char *s9)   /* 9 upper-cased names */
 {
@@ -2197,25 +2158,8 @@ static THISCALL int space_tracePlanes_47fb80(const char *self, const float *p0, 
 	return 1;
 }
 /* r, g, b -> h (degrees; FLT_MAX when there is no saturation), s, v. NaN handling follows the original's compares */
-static void __cdecl tex_46def0(float r, float g, float b, float *h, float *s, float *v)
-{
-	typedef long double X;
-	X mx = (r > g) ? (r > b ? r : b) : (g > b ? g : b);
-	X mn = !(r >= g) ? (!(r >= b) ? r : b) : (!(g >= b) ? g : b);
-	{ volatile X t = mx; *v = (float)t; }
-	X sat = (mx > GF(0x4aa268)) ? (mx - mn) / mx : (X)GF(0x4a93e8);
-	*s = (float)sat;
-	if (!(sat >= GF(0x4aa268))) { GU32(h) = 0x7f7fffff; return; }
-	float delta = (float)(mx - mn);
-#define EQ_OR_NAN(a, b) (!((a) < (b)) && !((a) > (b)))   /* fcomp + test ah,0x40: equal, or unordered */
-	if (EQ_OR_NAN((X)r, mx)) *h = (float)(((X)g - b) / delta);
-	else if (EQ_OR_NAN((X)g, mx)) *h = (float)(((X)b - r) / delta + GF(0x4a93fc));
-	else if (EQ_OR_NAN((X)b, mx)) *h = (float)(((X)r - g) / delta + GF(0x4a947c));
-#undef EQ_OR_NAN
-	X d = (X)*h * GF(0x4a94dc);
-	*h = (float)d;
-	if (!(d >= GF(0x4a93e8))) *h = (float)(d + GF(0x4a9460));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void tex_46def0(float r, float g, float b, float *h, float *s, float *v);
 
 /* ---- batch 23: shape bounds, settings camera ease, menu mouse-look (x87) ------------------------- */
 /* bounding box of all parts (per part at +0x68..+0x7c, overall box always includes the origin) and a bounding sphere
@@ -2438,23 +2382,8 @@ void FUN_0047d9a0(float *m, const float *aa);
 
 /* re-colour rgb in place: the hue becomes dh (wrapped into 0..360 once; the hue of the original colour is computed
    but not used), saturation and value are offset by ds / dv and clamped to 0..1 */
-static THISCALL void tex_tintHsv(float *rgb, float dh, float ds, float dv)
-{
-	typedef long double X;
-	float h, s, v;
-	tex_46def0(rgb[0], rgb[1], rgb[2], &h, &s, &v);
-	X d = dh;
-	if (!(d >= GF(0x4a93e8))) h = (float)(d + GF(0x4a9460));
-	else if (!(d < GF(0x4a9460))) h = (float)(d - GF(0x4a9460));
-	else memcpy(&h, &dh, 4);
-	X t = (X)s + ds;
-	s = (float)t;
-	if (!(t >= GF(0x4a93e8))) s = 0; else if (s > GF(0x4a9424)) GU32(&s) = F1;
-	t = (X)v + dv;
-	v = (float)t;
-	if (!(t >= GF(0x4a93e8))) v = 0; else if (v > GF(0x4a9424)) GU32(&v) = F1;
-	color_hsvToRgb(h, s, v, &rgb[0], &rgb[1], &rgb[2]);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_tintHsv(float *rgb, float dh, float ds, float dv);
 
 /* add a quad (4 points) to the view volume's polygon list (92-byte records): transformed points at +0x18..+0x54;
    flag 1 drops it again when all 4 points are outside one clip plane; then id, two uv pairs, a texture and a value */
@@ -3347,20 +3276,8 @@ void THISCALL msg_cheatUsed(void *scene, int actor, int cheat);
 /* 0x456470 (thiscall) tex_applyTintMask(i): if texture slot i (0x68-byte records at +0xc0108) has flag 2 at +0x64,
    tint every pixel (RGBA at +0x114, w x h from +0xc0118/+0xc011c) whose mask byte (+0x80114: R, else G) is >= 200 with
    the slot's first or second HSV tint (tex_46de20). Returns what the original leaves in EAX */
-static THISCALL int tex_applyTintMask(char *tex, int i)
-{
-	char *rec = tex + i * 0x68;
-	BYTE flag = *(BYTE *)(rec + 0xc016c);
-	if (!(flag & 2)) return (int)(((DWORD)i & 0xffffff00u) | flag);
-	for (int y = 0; y < S32(tex, 0xc011c); y++)
-		for (int x = 0; x < S32(tex, 0xc0118); x++) {
-			int idx = S32(tex, 0xc0118) * y + x;
-			BYTE *px = (BYTE *)(tex + idx * 4 + 0x114), *mask = (BYTE *)(tex + idx * 4 + 0x80114);
-			if (mask[0] >= 200) tex_46de20(px, (DWORD)S32(rec, 0xc0170), (DWORD)S32(rec, 0xc0174), (DWORD)S32(rec, 0xc0178));
-			else if (mask[1] >= 200) tex_46de20(px, (DWORD)S32(rec, 0xc017c), (DWORD)S32(rec, 0xc0180), (DWORD)S32(rec, 0xc0184));
-		}
-	return S32(tex, 0xc011c);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int tex_applyTintMask(void *tex, int i);
 
 /* native_call(m, target): run real code (a rebuilt, library or system function) from lifted code. The callee runs on
    the real thread stack (system and driver calls can use far more stack than the emulated one has, and the lifted

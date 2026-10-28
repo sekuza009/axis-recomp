@@ -45,7 +45,7 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (747): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (760): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -87,4 +87,5 @@ hud_drawPlayerMarkers, hud_drawMain, replay_drawIcon | hud_472900 (fog), hud_490
 triangle normal and point transform (render/rotations.c), the collision space's pools (load/space_pools.c), the
 no-CD stubs and small methods (app/small.c), the lobby's and room's screens (menu/lobby_states.c), player name and
 team, weapon selection, the volume, cheat codes, the PTX video decoder (app/ptx_decode.c), Johab syllables and chat
-line widths (text/text_codes.c), the session sort, the follow target, the free menu camera's moves.
+line widths (text/text_codes.c), the session sort, the follow target, the free menu camera's moves, address strings, object animation,
+the texture tints and RGB <-> HSV (render/tex_colours.c).
