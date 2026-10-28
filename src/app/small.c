@@ -342,7 +342,7 @@ void THISCALL (actor_46f770)(u8 *anim, int i, float scale)
 /* 0x4722e0: a view's distance set (+0xa08, the float's bits copied) and its depth -v * a + b from the stage's pair */
 void THISCALL (match_4722e0)(u8 *view, float v)
 {
-	BITS(FIELD(float, view, 0xa08)) = BITS(v);
+	BITS(FIELD(float, view, 0xa08)) = *(volatile u32 *)&v;   /* as bits: never through the FPU, which quiets a signalling NaN */
 	volatile long double n = -(long double)v;   /* negated first, as the original's fchs */
 	FIELD(float, view, 0xa0c) = (float)(n * FIELD(float, view, 0x20f3a9c) + FIELD(float, view, 0x20f3aac));
 }

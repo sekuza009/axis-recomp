@@ -208,3 +208,46 @@ void (missionsel_447cb0)(void)
 	static const MenuCam2 mission = { 0x9f62f8, 0x9f63b8, 0x9f6300, 1 };
 	menu_camera2(&mission);
 }
+
+/* ---- the free menu camera moved along its heading (the turn at 0x90d1cc, plus a quarter turn, wrapped, in radians)
+   by the frame time times its speed ---- */
+static X fsin(X x) { __asm__("fsin" : "+t"(x)); return x; }
+static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
+
+static X heading(void)
+{
+	X v = (X)F(0x90d1cc) + F(0x4a9550);
+	if (v > F(0x4a9460))
+		v -= F(0x4a9460);
+	return v * (X)GAME_VAR(double, 0x4a9548) * (X)GAME_VAR(double, 0x4a9540);
+}
+#define SPEED F(0x4a9534)
+
+/* 0x42aa30: forward (the camera's position 0x4de344 / 0x4de34c and the menu camera's) */
+void (match_42aa30)(void)
+{
+	X a = heading();
+	float s = (float)fsin(a);
+	X c = fcos(a);
+	X t = (X)g_frameTime * s * SPEED;
+	float tf = (float)t;
+	F(0x4de344) = (float)(t + F(0x4de344));   /* the unrounded step here ... */
+	X u = c * g_frameTime * SPEED;
+	F(0x4de34c) = (float)(u + F(0x4de34c));
+	F(0x4df024) = (float)((X)tf + F(0x4df024));   /* ... the rounded one here */
+	F(0x4df02c) = (float)(u + F(0x4df02c));
+}
+
+/* 0x42aad0: back (here every use of the sideways step is rounded) */
+void (match_42aad0)(void)
+{
+	X a = heading();
+	float s = (float)fsin(a);
+	X c = fcos(a);
+	float tf = (float)((X)g_frameTime * s * SPEED);
+	F(0x4de344) = (float)((X)F(0x4de344) - tf);
+	X u = c * g_frameTime * SPEED;
+	F(0x4de34c) = (float)((X)F(0x4de34c) - u);
+	F(0x4df024) = (float)((X)F(0x4df024) - tf);
+	F(0x4df02c) = (float)((X)F(0x4df02c) - u);
+}

@@ -71,3 +71,21 @@ void (arena_406640)(void)
 	static const Received arena = { 0xa0b368, 0xa05791, 0x5b, -0x48, -0x16, 0x4dba8c, { 0x4db858, 0x4df018, 0x4db8b8 } };
 	merge(&arena);
 }
+
+/* 0x4065e0: the session list sorted by player count (+0x24, bubble sort). The original swaps 0x4a-byte blocks that
+   start 4 bytes before each record (from 0x9087c0): a record's last 4 bytes travel with the record after it */
+void (arena_4065e0)(void)
+{
+	for (int pass = 0; g_sessionCount - 1 > 0; ) {
+		int swapped = 0;
+		for (int j = 0; j < g_sessionCount - 1; j++) {
+			u8 *e = SESSION(j);
+			if (GAME_VAR(int, e + 0x24) > GAME_VAR(int, e + 0x4a + 0x24)) {
+				arena_4065a0(e - 4, e + 0x4a - 4);
+				swapped = 1;
+			}
+		}
+		if (!swapped || ++pass >= g_sessionCount - 1)
+			break;
+	}
+}

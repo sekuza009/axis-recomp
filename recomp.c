@@ -635,21 +635,8 @@ int arena_453a30(DWORD i);
 
 /* 0x4554c0 (thiscall) tex_4554c0(name): binary search of the sorted 0x44-byte name records (pointer at
    this+0x10c, count at this+0x108); index or -1. The upper bound starts at count, not count - 1, as in the original */
-static THISCALL int tex_4554c0(char *self, const unsigned char *name)
-{
-	int hi = *(int *)(self + 0x108), lo = 0;
-	if (hi <= 0) return -1;
-	const unsigned char *tab = *(const unsigned char **)(self + 0x10c);
-	while (lo <= hi) {
-		int mid = (lo + hi) / 2;
-		const unsigned char *a = name, *b = tab + mid * 0x44;
-		while (*a == *b && *a) a++, b++;
-		int c = *a == *b ? 0 : (*a < *b ? -1 : 1);
-		if (c == 0) return mid;
-		if (c < 0) hi = mid - 1; else lo = mid + 1;
-	}
-	return -1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int tex_4554c0(void *self, const unsigned char *name);
 
 /* 0x4045e0 arena_4045e0: clear chat record 0x67ef30 (0x4a bytes at 0x9087c4). The original loops 256 times
    without advancing, so the same record is cleared repeatedly */
@@ -749,19 +736,8 @@ THISCALL void match_461730(char *self);
 
 /* 0x4625a0 (thiscall) FUN_004625a0(): actor record (+0x1ecca70 + i*0x8888) to follow: in team mode (+0x22e7184 == 1)
    the first listed actor of the trailing team, else the first listed / default actor */
-static THISCALL char *FUN_004625a0(char *self)
-{
-	int i;
-	if (S32(self, 0x22e7184) == 1) {
-		int losing = S32(self, 0x2221fb8) < S32(self, 0x2221fbc);
-		for (int k = 0; k < S32(self, 0x2342976); k++)
-			if (S32(self, 0x1eccb88 + S32(self, 0x23428f6 + k * 4) * 0x8888) == losing)
-				return self + 0x1ecca70 + S32(self, 0x23428f6 + k * 4) * 0x8888;
-		i = S32(self, 0x234240d);
-	} else
-		i = S32(self, 0x23428f6);
-	return self + 0x1ecca70 + i * 0x8888;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL char *FUN_004625a0(void *self);
 
 /* 0x462650 (thiscall) chat_matchCheatCode(actor, text): cheat entries 2..4 of the current language's table
    (0x100 bytes each; language 1 at 0x4a9a38, language 2 at 0x4a9f38); empty entries are skipped */
@@ -997,17 +973,9 @@ void room_403490(void);
 void menu_443ea0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_451410(void);
-static void __cdecl arena_4065e0(void)        /* bubble sort of the 0x4a-byte records at 0x9087c0 by their int at +0x28 */
-{
-	for (int pass = 0; G32(0x67ef30) - 1 > 0; ) {
-		int swapped = 0;
-		for (int j = 0; j < G32(0x67ef30) - 1; j++) {
-			DWORD k = 0x9087e8 + j * 0x4a;
-			if (G32(k) > G32(k + 0x4a)) { arena_4065a0((void *)(k - 0x28), (void *)(k + 0x22)); swapped = 1; }
-		}
-		if (!swapped || ++pass >= G32(0x67ef30) - 1) break;
-	}
-}
+/* bubble sort of the 0x4a-byte records at 0x9087c0 by their int at +0x28 */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4065e0(void);
 
 /* PTX (video) tables */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1127,17 +1095,9 @@ static unsigned char __cdecl net_451530(int id)  /* free every slot owned by id;
 	}
 	return 0xff;
 }
-static int __cdecl ptx_46f230(int *out, int n)   /* read n bits MSB-first from the bit stream; returns the new position */
-{
-	*out = 0;
-	if (n <= 0) return n;
-	for (int k = n - 1; n > 0; n--, k--) {
-		int pos = G32(0xa21704);
-		if (((BYTE *)G32(0xa61708))[pos >> 3] & (BYTE)(1 << (7 - (pos & 7)))) *out |= 1u << (k & 31);
-		G32(0xa21704) = pos + 1;
-	}
-	return G32(0xa21704);
-}
+/* read n bits MSB-first from the bit stream; returns the new position */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_46f230(int *out, int n);
 static int __cdecl FUN_0041eea0(int x, int y, int n, ...)  /* point inside a convex polygon (5 xs, then 5 ys)? */
 {
 	va_list ap;
@@ -1178,28 +1138,9 @@ int skelDat_46b0c0(const char *name);
 /* copy a file name without its extension */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void load_46cad0(const char *src, char *dst);
-static int __cdecl FUN_00402590(const char *s)   /* printable width of a chat line, skipping colour/format codes */
-{
-	int n = 0, st = g_menuState;
-	char c = *s;
-	if (!c) return 0;
-	const char *p = s;
-	do {
-		p++;
-		if (st != 9999 && c == '|') {
-			if (*p != '|') { p++; goto next; }
-			c = '|'; p++;
-		} else if (c == '$' && p[0] == '[' && p[2] == ']' && p[4]) {
-			c = p[4]; p += 5;
-		}
-		if ((st == 9999 || st == 400) && c == '$' && p[0] == '#' && p[2]) { c = p[2]; p += 3; }
-		if (c & 0x80) { p++; goto next; }
-		if (c != ' ') n++;
-	next:
-		c = *p;
-	} while (c);
-	return n;
-}
+/* printable width of a chat line, skipping colour/format codes */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00402590(const char *s);
 /* copy a 4x4 matrix, column by column */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0047d5a0(DWORD *d, const DWORD *s);
@@ -1250,71 +1191,25 @@ void THISCALL armc_461370(void *scene, int v);
 void THISCALL match_4613a0(void *scene, int team);
 
 /* Johab (Korean) syllable split: lead/vowel/tail indices from a 16-bit code given as two bytes */
-#define SC(a) ((int)*(signed char *)(a))
-static int __cdecl hud_4017d0(DWORD hi, DWORD lo)
-{
-	DWORD v = (hi & 0xffff0000u) | (hi & 0xff) << 8 | (lo & 0xff);   /* the original rebuilds the word over its first argument */
-	int vow = SC(0x4ad3e4 + ((v >> 5) & 31)), tail = SC(0x4ad404 + (v & 31)), lead = SC(0x4ad3c4 + ((v >> 10) & 31));
-	int t = SC(0x4ad478 + vow), a, b;
-	if (!tail) { a = SC(0x4ad450 + lead); b = SC(0x4ad424 + vow); }
-	else { a = SC(0x4ad464 + lead); b = SC(0x4ad43a + vow); }
-	G32(0x4d60e0) = lead + b * 20;
-	G32(0x4d23d4) = vow + a * 22;
-	return G32(0x4d23dc) = tail + t * 28;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int hud_4017d0(DWORD hi, DWORD lo);
 
 /* PTX: Huffman-coded values (16 bits peeked, table of {length, code}) */
-static void huff_value(int *out, int n)       /* read n bits; the top bit clear means negative (JPEG-style) */
-{
-	if (n <= 0) { *out = 0; return; }
-	ptx_46f230(out, n);
-	if (!(*out & (1 << (n - 1)))) *out = *out - (1 << n) + 1;
-}
-static void __cdecl ptx_internal_46f190(int *out)  /* DC difference: 16 categories */
-{
-	int v, len = 0, k;
-	ptx_46f230(&v, 16);
-	const int *t = (const int *)(0x4c5af0 + G32(0xaa2e94) * 96);
-	for (k = 0; k < 16; k++, t += 2) { len = t[0]; if (v >> ((16 - len) & 31) == t[1]) break; }
-	G32(0xa21704) += len - 16;                  /* only len bits were used */
-	huff_value(out, k);
-}
-static void __cdecl ptx_internal_46f2a0(int *out, int *run)   /* AC: 256 symbols = run << 4 | size */
-{
-	int v, len = 0, k;
-	ptx_46f230(&v, 16);
-	const int *t = (const int *)(0x4c5bb0 + (G32(0xaa2e94) << 11));
-	for (k = 0; k < 256; k++, t += 2) { len = t[0]; if (len && v >> ((16 - len) & 31) == t[1]) break; }
-	*run = k >> 4;
-	G32(0xa21704) += len - 16;
-	huff_value(out, k & 15);
-}
-static void __cdecl ptx_internal_46e830(const BYTE *y, BYTE *dst, unsigned n)   /* YCbCr planes (0x10000 apart) -> RGB */
-{
-	const BYTE *cb = y + 0x10000, *cr = y + 0x20000, *clamp = (const BYTE *)G32(0xa1f300);
-	for (; n; n--) {
-		int Y = *y++, B = *cb++, R = *cr++;
-		*dst++ = clamp[G32(0xaa228c + R * 4) + Y];
-		*dst++ = clamp[((G32(0xa6170c + B * 4) + G32(0xaa2690 + R * 4)) >> 16) + Y];
-		*dst++ = clamp[G32(0xa1f304 + B * 4) + Y];
-	}
-}
+/* DC difference: 16 categories */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_internal_46f190(int *out);
+/* AC: 256 symbols = run << 4 | size */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_internal_46f2a0(int *out, int *run);
+/* YCbCr planes (0x10000 apart) -> RGB */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_internal_46e830(const BYTE *y, BYTE *dst, unsigned n);
 /* RGB -> YCbCr tables, 8 x 256 entries (16.16 fixed point) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ptx_initTable_46efd0(void);
-static void __cdecl ptx_internal_46ea30(const BYTE *src, BYTE *dst, int w, int h, int bpp)   /* 8x8 blocks -> image rows */
-{
-	if (h <= 0) return;
-	int row = w * bpp, brow = bpp * 8;
-	for (unsigned by = ((unsigned)h + 7) >> 3; by; by--, dst += row * 8) {
-		if (w <= 0) continue;
-		BYTE *bd = dst;
-		for (unsigned bx = ((unsigned)w + 7) >> 3; bx; bx--, bd += brow) {
-			BYTE *o = bd;
-			for (int r = 0; r < 8; r++, o += row, src += brow) memcpy(o, src, brow);
-		}
-	}
-}
+/* 8x8 blocks -> image rows */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_internal_46ea30(const BYTE *src, BYTE *dst, int w, int h, int bpp);
 
 /* menu state resets */
 static void __cdecl menuState300_enter(void)
@@ -1461,36 +1356,12 @@ static int __cdecl profile_44b870(void)         /* does a profile with the typed
 }
 
 /* PTX */
-static void __cdecl ptx_internal_46e8e0(const BYTE *y, BYTE *dst, unsigned n)   /* YCbCr + alpha planes -> RGBA */
-{
-	const BYTE *cb = y + 0x10000, *cr = y + 0x20000, *al = y + 0x30000, *clamp = (const BYTE *)G32(0xa1f300);
-	for (; n; n--) {
-		int Y = *y++, B = *cb++, R = *cr++, A = *al++;
-		*dst++ = clamp[G32(0xaa228c + R * 4) + Y];
-		*dst++ = clamp[((G32(0xa6170c + B * 4) + G32(0xaa2690 + R * 4)) >> 16) + Y];
-		*dst++ = clamp[G32(0xa1f304 + B * 4) + Y];
-		*dst++ = (BYTE)A;
-	}
-}
-static int __cdecl ptx_internal_46f0b0(int *blk)   /* decode one 8x8 block of coefficients in zigzag order */
-{
-	const int *zz = (const int *)0x4c59ec;
-	int dc, val, run, k = 1;
-	memset(blk, 0, 64 * 4);
-	ptx_internal_46f190(&dc);
-	blk[0] = G32(0xaa268c) + dc;
-	G32(0xaa268c) += dc;
-	do {
-		ptx_internal_46f2a0(&val, &run);
-		if (!run && !val) {                     /* end of block */
-			for (; k < 64; k++) blk[zz[k]] = 0;
-			break;
-		}
-		while (run-- > 0) blk[zz[k++]] = 0;
-		blk[zz[k++]] = val;
-	} while (k < 64);
-	return G32(0xa21704);
-}
+/* YCbCr + alpha planes -> RGBA */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_internal_46e8e0(const BYTE *y, BYTE *dst, unsigned n);
+/* decode one 8x8 block of coefficients in zigzag order */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_internal_46f0b0(int *blk);
 
 /* objects */
 /* construct the 8 resource lists */
@@ -1760,40 +1631,12 @@ void arena_406640(void);
 #define GD(a) (*(double *)(a))
 static long double x87_fsin(long double x) { __asm__("fsin" : "+t"(x)); return x; }   /* the FPU's own sin/cos, */
 static long double x87_fcos(long double x) { __asm__("fcos" : "+t"(x)); return x; }   /* not a library version  */
-static long double cam_angle(void)               /* menu camera angle from the turn value at 0x90d1cc */
-{
-	typedef long double X;
-	X v = (X)GF(0x90d1cc) + GF(0x4a9550);
-	if (v > GF(0x4a9460)) v -= GF(0x4a9460);
-	return v * (X)GD(0x4a9548) * (X)GD(0x4a9540);
-}
-static void __cdecl match_42aa30(void)           /* move the camera forward along its heading */
-{
-	typedef long double X;
-	X a = cam_angle();
-	float s = (float)x87_fsin(a);
-	X c = x87_fcos(a);
-	X t = (X)GF(0x4b071c) * s * GF(0x4a9534);
-	float tf = (float)t;
-	GF(0x4de344) = (float)(t + GF(0x4de344));    /* uses the unrounded step */
-	X u = c * GF(0x4b071c) * GF(0x4a9534);
-	GF(0x4de34c) = (float)(u + GF(0x4de34c));
-	GF(0x4df024) = (float)((X)tf + GF(0x4df024));
-	GF(0x4df02c) = (float)(u + GF(0x4df02c));
-}
-static void __cdecl match_42aad0(void)           /* ... and back (here every use of the sin step is rounded) */
-{
-	typedef long double X;
-	X a = cam_angle();
-	float s = (float)x87_fsin(a);
-	X c = x87_fcos(a);
-	float tf = (float)((X)GF(0x4b071c) * s * GF(0x4a9534));
-	GF(0x4de344) = (float)((X)GF(0x4de344) - tf);
-	X u = c * GF(0x4b071c) * GF(0x4a9534);
-	GF(0x4de34c) = (float)((X)GF(0x4de34c) - u);
-	GF(0x4df024) = (float)((X)GF(0x4df024) - tf);
-	GF(0x4df02c) = (float)((X)GF(0x4df02c) - u);
-}
+/* move the camera forward along its heading */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_42aa30(void);
+/* ... and back (here every use of the sin step is rounded) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_42aad0(void);
 static void profile_loadColour(int i)            /* nine ints of profile colour record i -> floats (+ offset) */
 {
 	GU32(0x9f8f08) = 0x42200000; GU32(0x9f8c48) = 0xbf800000; G32(0x9f8d68) = 0;
@@ -1963,19 +1806,9 @@ static void __cdecl setup_4277c0(void)            /* ease the setup panel in; st
 /* scaled dequantisation tables for quality q (AAN IDCT factors) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ptx_46e2b0(int q);
-static void __cdecl FUN_004679a0(float *out, const float *p1, const float *p0, const float *p2)   /* unit normal */
-{
-	typedef long double X;
-	X ux = (X)p2[0] - p0[0], uy = (X)p2[1] - p0[1], uz = (X)p2[2] - p0[2];
-	float vx = (float)((X)p1[0] - p0[0]), vy = (float)((X)p1[1] - p0[1]);
-	X vz = (X)p1[2] - p0[2];                          /* stays unrounded */
-	float n[3];
-	n[0] = (float)(vz * uy - vy * uz);
-	n[1] = (float)(vx * uz - vz * ux);
-	n[2] = (float)(vy * ux - vx * uy);
-	Vec3_normalize(n);
-	out[0] = n[0]; out[1] = n[1]; out[2] = n[2];
-}
+/* unit normal */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_004679a0(float *out, const float *p1, const float *p0, const float *p2);
 /* console/room rectangles: A = 0x9dd5d8.., B = 0x9dd240.., C = 0x4de71e.. (fields +0, +4, +0xc, +0x10, +0x14, +0x18, +0x1c) */
 static void rect7_copy(DWORD dst, DWORD src)
 {

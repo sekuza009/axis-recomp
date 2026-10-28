@@ -1,5 +1,7 @@
 /* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
+
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 #include <string.h>
 
 /* strcmp, as -1 / 0 / 1 (bytes compared unsigned) */
@@ -48,4 +50,28 @@ void (load_46cad0)(const char *src, char *dst)
 			break;
 		}
 	strcpy(dst, buf);
+}
+
+/* 0x4554c0: a texture manager's name, by binary search of its sorted 0x44-byte records (+0x10c, count +0x108): the
+   index or -1. The upper bound starts at the count, not count - 1, as in the original */
+int THISCALL (tex_4554c0)(u8 *self, const u8 *name)
+{
+	int hi = FIELD(int, self, 0x108), lo = 0;
+	if (hi <= 0)
+		return -1;
+	const u8 *records = FIELD(const u8 *, self, 0x10c);
+	while (lo <= hi) {
+		int mid = (lo + hi) / 2;
+		const u8 *a = name, *b = records + mid * 0x44;
+		while (*a == *b && *a)
+			a++, b++;
+		int c = *a == *b ? 0 : *a < *b ? -1 : 1;
+		if (c == 0)
+			return mid;
+		if (c < 0)
+			hi = mid - 1;
+		else
+			lo = mid + 1;
+	}
+	return -1;
 }

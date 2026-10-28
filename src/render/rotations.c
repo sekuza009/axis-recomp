@@ -83,3 +83,20 @@ void (load_482a40)(float *out, const float *m, const float *p)
 	out[1] = (float)((X)m[9] * p[2] + (X)m[1] * p[0] + (X)m[5] * p[1] + m[13]);
 	out[2] = (float)((X)m[10] * p[2] + (X)m[2] * p[0] + (X)m[6] * p[1] + m[14]);
 }
+
+/* 0x4679a0: out = the unit normal of the triangle p0, p1, p2 ((p1 - p0) x (p2 - p0)); of p1 - p0, x and y are
+   rounded to floats and z is not */
+void (FUN_004679a0)(float *out, const float *p1, const float *p0, const float *p2)
+{
+	X ux = (X)p2[0] - p0[0], uy = (X)p2[1] - p0[1], uz = (X)p2[2] - p0[2];
+	float vx = f32((X)p1[0] - p0[0]), vy = f32((X)p1[1] - p0[1]);
+	X vz = (X)p1[2] - p0[2];
+	float n[3];
+	n[0] = (float)(vz * uy - vy * uz);
+	n[1] = (float)(vx * uz - vz * ux);
+	n[2] = (float)(vy * ux - vx * uy);
+	Vec3_normalize(n);
+	out[0] = n[0];
+	out[1] = n[1];
+	out[2] = n[2];
+}

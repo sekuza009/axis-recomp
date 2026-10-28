@@ -721,4 +721,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_403420() GAME_CDECL(0x403420, void, void)()   /* the map on/off list reset */
 #define room_433700() GAME_CDECL(0x433700, void, void)()   /* the room settings copied */
 
+/* ---- the PTX video decoder (app/ptx_decode.c) ---- */
+#define ptx_46f230(out, n) GAME_CDECL(0x46f230, int, int *, int)(out, n)   /* the next n bits of the stream */
+#define ptx_internal_46f190(out) GAME_CDECL(0x46f190, void, int *)(out)   /* a DC difference */
+#define ptx_internal_46f2a0(out, run) GAME_CDECL(0x46f2a0, void, int *, int *)(out, run)   /* an AC symbol */
+
+/* ---- (net/net_sessions.c, render/rotations.c) ---- */
+#define arena_4065a0(a, b) GAME_CDECL(0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */
+#define Vec3_normalize(v) GAME_THISCALL(0x467760, long double, float *)(v)   /* returns the length, unrounded */
+
 #endif
