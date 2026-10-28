@@ -2696,9 +2696,11 @@ int sys_messageBox(const char *format, ...);
 /* 0x46e260 ptx_error: PTX video error: print and exit */
 LIFT_PLAIN(ptx_error, 46e260)
 /* 0x41f880 reg_writeEndMode: registry: write the end mode */
-LIFT_PLAIN(reg_writeEndMode, 41f880)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD reg_writeEndMode(DWORD value);
 /* 0x43f7f0 reg_writeStartMode: registry: write the start mode */
-LIFT_PLAIN(reg_writeStartMode, 43f7f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD reg_writeStartMode(DWORD value);
 /* 0x41f820 menu_frameBegin: start a menu frame (clear colour/depth, blend, colour) */
 LIFT_PLAIN(menu_frameBegin, 41f820)
 /* 0x43f840 app_registerWindowClassEx: register the window class */
@@ -3003,7 +3005,8 @@ void FUN_0041ef20(DWORD x, DWORD y, DWORD z);
 void FUN_00470fc0(int a, int b, int c, const char *format, ...);
 /* 0x454760 net_454760: close the two network thread handles; 0x454690 net_454690: clear the server table;
    0x452d70 net_452d70: receive a 62-byte reply (up to 3 s), then accept or refuse */
-LIFT_PLAIN(net_454760, 454760)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD net_454760(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_454690(void);
 LIFT_PLAIN(net_452d70, 452d70)
@@ -3067,8 +3070,10 @@ LIFT_PLAIN8(sys_fatalError, 46c710)
 /* 0x466d60 shape_findDatEntry(name) / 0x46b140 skelDat_getItemFileBy(name) / 0x455550 (thiscall)
    tex_getItemFileBy(name): find the item in the dat file's sorted index (0x44-byte entries: name, offset), seek the
    dat file to it and return the file; an unknown name is fatal */
-LIFT_PLAIN(shape_findDatEntry, 466d60)
-LIFT_PLAIN(skelDat_getItemFileBy, 46b140)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *shape_findDatEntry(const char *name);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *skelDat_getItemFileBy(const char *name);
 static THISCALL DWORD tex_getItemFileBy(char *tm, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_455550, (DWORD)tm, 1, v); }
 /* space pools (thiscall on the space object): take the first free plane / node / unit / block off its free list,
    count it and initialise it (the block also gets its box); an empty list is fatal */
@@ -4526,7 +4531,8 @@ LIFT_PLAIN(sound_467dd0, 467dd0)
    duration into 0xa0e018 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void music_shutdown(void);
-LIFT_PLAIN(music_4572b0, 4572b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD music_4572b0(void);
 LIFT_PLAIN(music_play, 457150)
 /* batch 159 (lifted/grp105.c): DirectInput keyboard and mouse, DirectSound release */
 #include "lifted/grp105.c"
@@ -4827,13 +4833,15 @@ void lobbyJoin_keys(void);
 void menu_436940(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_keysBack(void);
-LIFT_PLAIN(menu_4370e0, 4370e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_4370e0(void);
 /* 0x44ac90 match_44ac90(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_44ac90(int x, int y, int maxLength);
 /* 0x44ace0 match_44ace0(): stop typing: the typed line 0x9dc92c kept in 0x9f63e4 (flag 0x9f67e8), the input buffer
    reset, the keyboard back */
-LIFT_PLAIN(match_44ace0, 44ace0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD match_44ace0(void);
 /* 0x441770 mainmenu_441770(): the first of the 0x9dd928 entries (0x44 bytes from 0x9ddac8) marked 1 opens its page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_441770(void);
@@ -9247,8 +9255,8 @@ ST(FUN_0043f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, CALL_
 ST(sys_messageBox, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, CALL_PLAIN(0x41edf0, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0), (DWORD)sys_messageBox((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]), (DWORD)(BUF + 0x200)))
 T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
 T_PLAIN(ptx_crtlError, 0x46e1e0, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
-T_PLAIN(reg_writeEndMode, 0x41f880, g_mockRegFail = !irnd(0, 4);, 0, 0x80000001u, 0, 0, 0)
-T_PLAIN(reg_writeStartMode, 0x43f7f0, g_mockRegFail = !irnd(0, 4);, 0, 0x80000001u, 0, 0, 0)
+ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeEndMode((DWORD)(0x80000001u))))
+ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
 T_PLAIN(menu_frameBegin, 0x41f820, , 0, 0, 0, 0, 0)
 T_PLAIN(app_registerWindowClassEx, 0x43f840, fill(BUF + 0x100, 0x40);, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
@@ -9863,7 +9871,7 @@ static void msgfmt_setup(void)
 }
 ST(FUN_00470fc0, msgfmt_setup();, (((void (__cdecl *)(int, int, int, char *, int, int, int))0x470fc0)(1, 2, 3, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
    (FUN_00470fc0(1, 2, 3, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
-T_PLAIN(net_454760, 0x454760, G32(0xa0d788) = irnd(0, 1) ? irnd(1, 99) : 0; G32(0xa0bf1c) = irnd(0, 1) ? irnd(1, 99) : 0;, 0, 0, 0, 0, 0)
+ST(net_454760, G32(0xa0d788) = irnd(0, 1) ? irnd(1, 99) : 0; G32(0xa0bf1c) = irnd(0, 1) ? irnd(1, 99) : 0;, CALL_PLAIN(0x454760, 0, 0, 0, 0, 0), (DWORD)(net_454760()))
 ST(net_454690, , CALL_PLAIN(0x454690, 0, 0, 0, 0, 0), (net_454690(), 0))
 static void recv_setup(void)
 {
@@ -9930,8 +9938,8 @@ static void datitem_setup(DWORD countp, DWORD tablep, DWORD filep)
 	for (int i = 0; i <= 41; i++) S32(BUF + 0x10000 + i * 0x44, 0x40) = irnd(0, 0x1000);
 	vfs_content(0, 0x2000); g_vfsOpenFail = 0; G32(filep) = (int)VFS_FILE(0);
 }
-T_PLAIN(shape_findDatEntry, 0x466d60, datitem_setup(0xa0e79c, 0xa0e7a0, 0xa0e7a4);, 0, BUF + 0x100, 0, 0, 0)
-T_PLAIN(skelDat_getItemFileBy, 0x46b140, datitem_setup(0xa0eab4, 0xa0eab8, 0xa0eabc);, 0, BUF + 0x100, 0, 0, 0)
+ST(shape_findDatEntry, datitem_setup(0xa0e79c, 0xa0e7a0, 0xa0e7a4);, CALL_PLAIN(0x466d60, 0, BUF + 0x100, 0, 0, 0), (DWORD)(shape_findDatEntry((const char *)(DWORD)(BUF + 0x100))))
+ST(skelDat_getItemFileBy, datitem_setup(0xa0eab4, 0xa0eab8, 0xa0eabc);, CALL_PLAIN(0x46b140, 0, BUF + 0x100, 0, 0, 0), (DWORD)(skelDat_getItemFileBy((const char *)(DWORD)(BUF + 0x100))))
 static void texitem_setup(void)
 {
 	tex_setup();
@@ -14103,7 +14111,7 @@ ST(dsbuf_play, dsbuf_setup(0);, CALL_PLAIN(0x467d70, 0, g_a[2], 0, 0, 0), (dsbuf
 ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 0), (dsbuf_setVolume((void *)(DWORD)(g_a[2]), (DWORD)(g_a[1])), 0))
 T_PLAIN(sound_467dd0, 0x467dd0, dsbuf_setup(1);, 0, g_a[2], g_a[0], g_a[1], 0)
 ST(music_shutdown, music_setup();, CALL_PLAIN(0x457310, 0, 0, 0, 0, 0), (music_shutdown(), 0))
-T_PLAIN(music_4572b0, 0x4572b0, music_setup();, 0, 0, 0, 0, 0)
+ST(music_4572b0, music_setup();, CALL_PLAIN(0x4572b0, 0, 0, 0, 0, 0), (DWORD)(music_4572b0()))
 T_PLAIN(music_play, 0x457150, musicplay_setup();, 0, BUF + 0x1c0, 0, 0, 0)
 /* batch 159 */
 /* DirectInput: a fake DirectInput (CreateDevice giving a fake device), DirectInputCreateA giving it or failing,
@@ -14531,9 +14539,9 @@ ST(room_4034e0, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), 
 ST(lobbyJoin_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (lobbyJoin_keys(), 0))
 ST(menu_436940, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (menu_436940(), 0))
 ST(lobby_keysBack, small_setup(g_stubKeyClose);, CALL_PLAIN(0x4080c0, 0, 0, 0, 0, 0), (DWORD)(lobby_keysBack()))
-T_PLAIN(menu_4370e0, 0x4370e0, small_setup(g_stubKeyClose2);, 0, 0, 0, 0, 0)
+ST(menu_4370e0, small_setup(g_stubKeyClose2);, CALL_PLAIN(0x4370e0, 0, 0, 0, 0, 0), (DWORD)(menu_4370e0()))
 ST(match_44ac90, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (match_44ac90((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
-T_PLAIN(match_44ace0, 0x44ace0, small_setup(g_stubTypeOff);, 0, 0, 0, 0, 0)
+ST(match_44ace0, small_setup(g_stubTypeOff);, CALL_PLAIN(0x44ace0, 0, 0, 0, 0, 0), (DWORD)(match_44ace0()))
 ST(mainmenu_441770, small_setup(g_stubSound);, CALL_PLAIN(0x441770, 0, 0, 0, 0, 0), (mainmenu_441770(), 0))
 ST(room_435ce0, small_setup(g_stubRoomClose);, CALL_PLAIN(0x435ce0, 0, 0, 0, 0, 0), (room_435ce0(), 0))
 /* batch 172 */

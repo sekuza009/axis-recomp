@@ -445,3 +445,35 @@ void (FUN_00470fc0)(int a, int b, int c, const char *format, ...)
 	va_end(args);
 	hook(b, c, text);
 }
+
+/* ---- the registry: a DWORD value under HKCU\<the game's key> (0x4b0458) ---- */
+#define RegOpenKeyExA(root, key, options, access, out) IMPORT(0x4a9004, int, u32, const char *, u32, u32, u32 *)(root, key, options, access, out)
+#define RegSetValueExA(key, name, reserved, type, data, size) IMPORT(0x4a9000, int, u32, const char *, u32, u32, const void *, u32)(key, name, reserved, type, data, size)
+#define RegCloseKey(key) IMPORT(0x4a900c, u32, u32)(key)
+
+/* value written as name (a REG_DWORD); returns RegCloseKey's answer. The key's handle goes into the argument's own
+   slot, so when the key can't be opened the original closes whatever RegOpenKeyExA left there */
+static u32 reg_write(u32 value, const char *name)
+{
+	u32 key = value, data = value;
+	if (!RegOpenKeyExA(0x80000001, (const char *)0x4b0458, 0, 0xf003f, &key))
+		RegSetValueExA(key, name, 0, 4, &data, 4);
+	return RegCloseKey(key);
+}
+/* 0x41f880, 0x43f7f0: the end mode and the start mode */
+u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)0x4b0450); }
+u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)0x4b29dc); }
+
+/* 0x44ace0: the typed chat line (0x9dc92c) kept as the match's last line (0x9f63e4, 0x400 bytes; cleared when there
+   is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
+u32 (match_44ace0)(void)
+{
+	memset((void *)0x9f63e4, 0, 0x400);
+	if (strlen((const char *)0x9dc92c)) {
+		memcpy((void *)0x9f63e4, (const void *)0x9dc92c, 0x400);
+		GAME_VAR(int, 0x9f67e8) = 0;
+	}
+	GAME_VAR(int, 0x68039c) = 0;
+	GAME_CDECL(0x431590, void, void)();   /* match_431590: the key state */
+	return (u32)input_initKeyboard(g_hWndMain);
+}

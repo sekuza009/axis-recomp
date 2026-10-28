@@ -70,3 +70,25 @@ u32 (FUN_0046cbe0)(u8 *p, u32 size, u32 count, void *f)
 	}
 	return r;
 }
+
+/* ---- an entry of a .dat archive (0x44-byte records, the data's offset at +0x40) found by name and the archive's
+   file positioned at it; a missing name is reported to the log ---- */
+static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
+{
+	if (index < 0) {
+		GAME_CDECL(0x46c710, void, void *, const char *, const char *)((void *)log, (const char *)0x4b3f80, name);   /* sys_fatalError */
+		return 0;
+	}
+	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
+	return GAME_VAR(void *, file);
+}
+/* 0x466d60: in Shape.dat */
+void *(shape_findDatEntry)(const char *name)
+{
+	return dat_entry(GAME_CDECL(0x466ce0, int, const char *)(name), name, 0xa0e7a0, 0xa0e7a4, 0xa0e788);
+}
+/* 0x46b140: in the skeleton archive */
+void *(skelDat_getItemFileBy)(const char *name)
+{
+	return dat_entry(GAME_CDECL(0x46b0c0, int, const char *)(name), name, 0xa0eab8, 0xa0eabc, 0xa0eaa0);
+}

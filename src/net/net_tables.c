@@ -196,3 +196,21 @@ int (dplay_coInit)(void)
 	dplay_release();
 	return hr;
 }
+
+/* 0x454760: the network thread's three handles closed (0xa0d788, 0xa0bf1c, 0xa0bb10) and the running flag cleared.
+   Returns what the original leaves in eax (the last close's answer, or 0) */
+u32 (net_454760)(void)
+{
+	static const u32 handles[3] = { 0xa0d788, 0xa0bf1c, 0xa0bb10 };
+	u32 r = 0;
+	for (int k = 0; k < 3; k++) {
+		r = GAME_VAR(u32, handles[k]);
+		if (r) {
+			r = IMPORT(0x4a91b0, u32, u32)(r);   /* CloseHandle */
+			GAME_VAR(u32, handles[k]) = 0;
+		}
+	}
+	if (GAME_VAR(int, 0xa0d784))
+		GAME_VAR(int, 0xa0d784) = 0;
+	return r;
+}

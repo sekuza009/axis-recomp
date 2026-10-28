@@ -76,3 +76,23 @@ int (FUN_00456de0)(int v)
 	GAME_VAR(int, 0xa0e66c) = r;
 	return r;
 }
+
+/* 0x4572b0: the music segment (0xa0e670) restarted from the start once it has played to its length (0xa0e018, 64
+   bits). Returns what the original leaves in eax */
+u32 (music_4572b0)(void)
+{
+	void *segment = GAME_VAR(void *, 0xa0e670);
+	if (!segment)
+		return 0;
+	u32 pos[2];
+	COM(segment, 0x20, u32, u32 *)(segment, pos);   /* the play position */
+	int hi = (int)pos[1], end_hi = GAME_VAR(int, 0xa0e01c);
+	if (hi < end_hi)
+		return (u32)hi;
+	if (hi == end_hi && pos[0] < GAME_VAR(u32, 0xa0e018))
+		return GAME_VAR(u32, 0xa0e018);
+	segment = GAME_VAR(void *, 0xa0e670);
+	COM(segment, 0x28, u32, u32, u32)(segment, 0, 0);
+	segment = GAME_VAR(void *, 0xa0e670);
+	return COM(segment, 0x1c, u32, u32)(segment, 1);
+}

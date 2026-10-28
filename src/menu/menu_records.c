@@ -337,3 +337,21 @@ static u32 leave_settings(u32 state)
 }
 u32 (skirmish_443c80)(void) { return leave_settings(0x9ef1f0); }
 u32 (FUN_00447960)(void) { return leave_settings(0x9f62f8); }
+
+/* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
+   menu sound. Returns what the original leaves in eax */
+u32 (menu_4370e0)(void)
+{
+	u32 r = input_justPressed(GAME_VAR(int, 0x4e1510));
+	if (r == 1) {
+		r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
+		GAME_VAR(int, 0x9dd6c4) = 1;
+		return r;
+	}
+	r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
+	if (r == 1) {
+		r = GAME_CDECL(0x41e760, u32, int)(0);
+		GAME_VAR(int, 0x9dd6c4) = 2;
+	}
+	return r;
+}
