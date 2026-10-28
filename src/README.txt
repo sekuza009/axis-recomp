@@ -62,7 +62,11 @@ armc_40f830 | app/statics.c: 21 class-name records, 6 global object inits, 26 at
 class-name record, then atexit), 18 constant colours | app/small.c: 42 one-line pieces (clears, flags, getters,
 setters, list toggles, string lengths) | menu/layouts.c: the 30 screen button layouts | profile scrambling / name checks / colours, the name tables' searches
 (load/names.c), weapon cycling (match/weapons.c), map stepping, the sliding panels | the store-table initialisers
-(app/store_tables.c, 9), the depth sorts (render/depth_sort.c), the glyph quads (text/glyph_quads.c, 8) | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
+(app/store_tables.c, 9), the depth sorts (render/depth_sort.c), the glyph quads (text/glyph_quads.c, 8) | the front end's records, list paging and resets (menu/menu_records.c, menu/menu_init.c, app/resets.c), room dialogs
+(menu/room_dialogs.c), setup tabs, menu cameras (menu/menu_cameras.c), ARM CENTER part info (menu/armc_parts.c), font cell tables
+(text/glyph_cells.c), PTX video tables (app/ptx_tables.c), actor slots and pools (match/actor_slots.c), HUD notices
+(match/notices.c), map objects (match/map_objects.c), shape tints (render/shape_colours.c), session tables and merges
+(net/net_tables.c, net/net_sessions.c), scrambled file blocks (load/files.c), frees (app/frees.c) | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
 arena_453770 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
 hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,
