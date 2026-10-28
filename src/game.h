@@ -157,6 +157,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define this_set_4841d0(view) GAME_THISCALL(0x4841d0, void, void *)(view)
 #define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
+/* out = the inverse of m (4 x 4); returns 0 and leaves out untouched when m is singular */
+#define Mat4_invert(out, m) GAME_CDECL(0x47d740, int, float *, const float *)(out, m)
+/* a shape's shading colours from light factors (seen through inverse, the inverse of the shape's matrix), every part
+   into its slice of out; first = 1 (0x466910) */
+#define shape_shadeParts(out, first, shape, factors, inverse) GAME_CDECL(0x466910, void, u32 *, int, Model *, const LightFactors *, \
+	const float *)(out, first, shape, factors, inverse)
+/* a shape's colours from point lights: set (first = 1) or added (0), every part into its slice of out (0x466960) */
+#define shape_lightParts(out, first, shape, lights) GAME_CDECL(0x466960, void, u32 *, int, Model *, const void *)(out, first, shape, lights)
 #define hud_490b30(stage, i, view) GAME_THISCALL(0x490b30, void, Stage *, int, void *)(stage, i, view)   /* a map object to the view volume */
 /* queue every mesh of model for drawing (see recomp.c): extra, matrix (none: the current modelview), a4, colour (4 bytes,
    or none), cull (1: skip meshes outside a clip plane),

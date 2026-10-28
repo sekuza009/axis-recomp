@@ -28,7 +28,7 @@ Adding a function
      the test reaches; a weak test should be strengthened first.
   4. Commit; play-test (test3.sh) after a few.
 
-Done so far (62): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (64): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
@@ -36,4 +36,4 @@ hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps
 hud_drawPressFire, hud_drawReadyStart, hud_drawClock,
 hud_drawMatchResult, hud_drawRecordIndicator, hud_drawNameIcon, hud_drawLeaderIcon,
 hud_drawEscMenu, hud_495ed0,
-hud_drawPlayerMarkers, hud_drawMain (kept on the original in play: see recomp.c hook()), replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume) | replay_drawMessage, replay_drawFollowedName.
+hud_drawPlayerMarkers, hud_drawMain (kept on the original in play: see recomp.c hook()), replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume), data_46f7a0, hud_46fd20 (object lists) | replay_drawMessage, replay_drawFollowedName.

@@ -5689,16 +5689,14 @@ LIFT_PLAIN8(FUN_00466910, 466910)
 /* 0x46f7a0 (thiscall) data_46f7a0(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
    apart from +0x14: shape, -, colour buffer, matrix): with neither, the colours (shape +0x18 dwords) are cleared;
    factors through the inverted matrix (FUN_00466910), pixel lights (FUN_00466960) on top or alone */
-static THISCALL DWORD data_46f7a0(char *list, DWORD fac, DWORD px) { DWORD v[2] = { fac, px }; return run_lifted(lift_46f7a0, (DWORD)list, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL data_46f7a0(void *list, const void *factors, const void *lights);
 /* 0x46fd20 (thiscall) hud_46fd20(vv, factors, pixelLights, a, b, c): if the list has frames (+0x1c, the current one
    +0x20[+0x24] set) and entries: each entry is lit as in data_46f7a0 when the list is pre-lit (+0x2c == 1; factors
    only when their pool's +0xb00c is 1) and then projected with its own colours, else projected with the lights
    passed on (ViewVolume_projectObject). Returns 1 if it ran, else 0 */
-static THISCALL DWORD hud_46fd20(char *list, DWORD vv, DWORD fac, DWORD px, DWORD a, DWORD b, DWORD c)
-{
-	DWORD v[6] = { vv, fac, px, a, b, c };
-	return run_lifted(lift_46fd20, (DWORD)list, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL hud_46fd20(void *list, void *view, const void *factors, const void *lights, int cull, int material, int a8);
 /* batch 72 (lifted/grp19.c) */
 #include "lifted/grp19.c"
 /* 0x45ee40 (thiscall) armc_computeTotals(actor): the "data loss" check game_processGameMode runs every 20 s on the
@@ -12981,10 +12979,10 @@ static void objlist_setup(void)
 	g_paintStacks = 1;
 }
 ST(data_46f7a0, objlist_setup();, (TC(void, 0x46f7a0, char *, int, int)(BUF + 0x50000, g_ol[0], g_ol[1]), 0),
-   (data_46f7a0(BUF + 0x50000, (DWORD)g_ol[0], (DWORD)g_ol[1]), 0))
+   (data_46f7a0(BUF + 0x50000, (void *)g_ol[0], (void *)g_ol[1]), 0))
 ST(hud_46fd20, objlist_setup();,
    TC(int, 0x46fd20, char *, char *, int, int, int, int, int)(BUF + 0x50000, BUF + 0x100000, g_ol[0], g_ol[1], g_ol[2], g_ol[3], g_ol[4]),
-   hud_46fd20(BUF + 0x50000, (DWORD)(BUF + 0x100000), (DWORD)g_ol[0], (DWORD)g_ol[1], (DWORD)g_ol[2], (DWORD)g_ol[3], (DWORD)g_ol[4]))
+   hud_46fd20(BUF + 0x50000, BUF + 0x100000, (void *)g_ol[0], (void *)g_ol[1], g_ol[2], g_ol[3], g_ol[4]))
 /* batch 72 */
 /* an actor (0..3) in state 1 mostly, its stat block random, its player (0..3) with a pilot 0..7, part indices 0..3
    and items -1..7 (the item, part and type tables random around the fields read), game mode 0..12 and the

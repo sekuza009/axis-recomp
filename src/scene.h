@@ -102,11 +102,41 @@ typedef struct FlagSlot {
 	u8 _pad0000004[0x47fce];
 } FlagSlot;
 
-/* a map object's model (skeleton; the size is unknown: only the fields used) */
+/* a shape (a map object's model, an object list's entries...; the size is unknown: only the fields used) */
 typedef struct Model {
-	u8 _pad0000000[0x2c];
+	u8 _pad0000000[0x18];
+	i32 colourCount;   /* +0x18: (by use) dwords in a shading colour buffer for it */
+	u8 _pad000001c[0x10];
 	float radius;   /* +0x2c: its bounding sphere */
 } Model;
+
+/* an object list's entry (ObjectList.entries) */
+typedef struct ListedObject {
+	Model *shape;   /* +0x0: none: an empty entry */
+	u8 _pad0000004[0x4];
+	u32 *colours;   /* +0x8: its shading colours (Model.colourCount dwords) */
+	float matrix[16];   /* +0xc: where it is placed */
+	u8 _pad000004c[0x18];
+} ListedObject;
+
+/* shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown) */
+typedef struct ObjectList {
+	u8 _pad0000000[0x10];
+	i32 count;   /* +0x10 */
+	ListedObject *entries;   /* +0x14 */
+	u8 _pad0000018[0x4];
+	i32 frameCount;   /* +0x1c: 0: nothing to draw */
+	i32 *frames;   /* +0x20: frames[frame] == 0: nothing to draw */
+	i32 frame;   /* +0x24 */
+	u8 _pad0000028[0x4];
+	i32 preLit;   /* +0x2c: 1: lit here, drawn with its own colours */
+} ObjectList;
+
+/* (by use) the light factors shape_shadeParts takes (the size is unknown) */
+typedef struct LightFactors {
+	u8 _pad0000000[0xb00c];
+	i32 enabled;   /* +0xb00c: 1: a pre-lit object list uses them without point lights */
+} LightFactors;
 
 /* a map object (Scene.objects): animated scenery */
 typedef struct MapObject {
@@ -369,8 +399,22 @@ _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
 _Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
 _Static_assert(sizeof(FlagSlot) == 0x47fd2, "scene.fields: size of FlagSlot");
+_Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
 _Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
 _Static_assert(sizeof(Model) == 0x30, "scene.fields: size of Model");
+_Static_assert(offsetof(ListedObject, shape) == 0x0 && sizeof(((ListedObject *)0)->shape) == 0x4, "scene.fields: ListedObject.shape");
+_Static_assert(offsetof(ListedObject, colours) == 0x8 && sizeof(((ListedObject *)0)->colours) == 0x4, "scene.fields: ListedObject.colours");
+_Static_assert(offsetof(ListedObject, matrix) == 0xc && sizeof(((ListedObject *)0)->matrix) == 0x40, "scene.fields: ListedObject.matrix");
+_Static_assert(sizeof(ListedObject) == 0x64, "scene.fields: size of ListedObject");
+_Static_assert(offsetof(ObjectList, count) == 0x10 && sizeof(((ObjectList *)0)->count) == 0x4, "scene.fields: ObjectList.count");
+_Static_assert(offsetof(ObjectList, entries) == 0x14 && sizeof(((ObjectList *)0)->entries) == 0x4, "scene.fields: ObjectList.entries");
+_Static_assert(offsetof(ObjectList, frameCount) == 0x1c && sizeof(((ObjectList *)0)->frameCount) == 0x4, "scene.fields: ObjectList.frameCount");
+_Static_assert(offsetof(ObjectList, frames) == 0x20 && sizeof(((ObjectList *)0)->frames) == 0x4, "scene.fields: ObjectList.frames");
+_Static_assert(offsetof(ObjectList, frame) == 0x24 && sizeof(((ObjectList *)0)->frame) == 0x4, "scene.fields: ObjectList.frame");
+_Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)->preLit) == 0x4, "scene.fields: ObjectList.preLit");
+_Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
+_Static_assert(offsetof(LightFactors, enabled) == 0xb00c && sizeof(((LightFactors *)0)->enabled) == 0x4, "scene.fields: LightFactors.enabled");
+_Static_assert(sizeof(LightFactors) == 0xb010, "scene.fields: size of LightFactors");
 _Static_assert(offsetof(MapObject, active) == 0x4 && sizeof(((MapObject *)0)->active) == 0x4, "scene.fields: MapObject.active");
 _Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x1, "scene.fields: MapObject.flags");
 _Static_assert(offsetof(MapObject, matrix) == 0xf4 && sizeof(((MapObject *)0)->matrix) == 0x40, "scene.fields: MapObject.matrix");
