@@ -769,4 +769,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_432040() GAME_CDECL(0x432040, void, void)()
 #define room_431aa0() GAME_CDECL(0x431aa0, void, void)()
 
+#define hud_4848e0(view, texture, uv0, uv1, colour, points, kind, flag) GAME_THISCALL(0x4848e0, void, void *, int, const u32 *, const u32 *, const u32 *, const float *, u32, int)(view, texture, uv0, uv1, colour, points, kind, flag)   /* a textured quad into the view volume */
+
 #endif

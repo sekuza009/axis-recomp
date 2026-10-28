@@ -302,3 +302,48 @@ void (menu_42ab70)(void)
 		F(0x4de358) = (float)((X)F(0x4de6c8) * F(0x4a9554) + F(r + 8));
 	}
 }
+
+/* 0x4230e0: the setup screen's camera: to the setup tab's menu point (mode 1; its height not eased), or home (mode
+   0), then snapped and settled (mode 2) once close enough */
+void (setup_4230e0)(void)
+{
+	if (g_frameTime > F(0x4a9418))
+		BITS(g_frameTime) = 0x3f800000;
+	int mode = I(0x4ddcec);
+	X k = g_frameTime, c = RATE;
+	if (mode == 1) {
+		int i = I(0x4ddac8) * 16;
+		F(0x4df024) = (float)(((X)F(i + 0x4df870) - F(0x4df024)) * k * c + F(0x4df024));
+		F(0x4df02c) = (float)(((X)F(i + 0x4df878) - F(0x4df02c)) * k * c + F(0x4df02c));
+		X look = ((X)F(i + 0x76d388) - F(0x680378)) * k * c + F(0x680378);
+		F(0x680378) = (float)look;
+		F(0x68037c) = (float)(((X)F(i + 0x76d38c) - F(0x68037c)) * k * c + F(0x68037c));
+		if (!(look >= F(0x4a93e8)))
+			look = -look;
+		if (!(look > GAME_VAR(double, 0x4a93e0)))
+			return;
+		for (int a = 0; a < 3; a++) {
+			I(0x4df024 + a * 4) = I(i + 0x4df870 + a * 4);
+		}
+		for (int a = 0; a < 3; a++)
+			I(0x680378 + a * 4) = I(i + 0x76d388 + a * 4);
+		I(0x4ddcec) = 2;
+		g_dialogOpen = 1;
+	} else if (mode == 0) {
+		F(0x4df024) = (float)((X)F(0x4df024) - ((X)F(0x4df024) - F(0x9db090)) * k * c);
+		F(0x4df02c) = (float)((X)F(0x4df02c) - ((X)F(0x4df02c) - F(0x9db098)) * k * c);
+		X look = (X)F(0x680378) - ((X)F(0x680378) - F(0x76d3f8)) * k * c;
+		F(0x680378) = (float)look;
+		F(0x68037c) = (float)((X)F(0x68037c) - ((X)F(0x68037c) - F(0x76d3fc)) * k * c);
+		if (!(look >= F(0x4a93e8)))
+			look = -look;
+		if (look >= GAME_VAR(double, 0x4a93d8))
+			return;
+		for (int a = 0; a < 3; a++)
+			I(0x680378 + a * 4) = I(0x76d3f8 + a * 4);
+		I(0x4ddcec) = 2;
+		for (int a = 0; a < 3; a++)
+			I(0x4df024 + a * 4) = I(0x9db090 + a * 4);
+		I(0x4ddac8) = 0x29a;
+	}
+}

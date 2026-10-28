@@ -1812,81 +1812,11 @@ void tex_46def0(float r, float g, float b, float *h, float *s, float *v);
 /* ---- batch 23: shape bounds, settings camera ease, menu mouse-look (x87) ------------------------- */
 /* bounding box of all parts (per part at +0x68..+0x7c, overall box always includes the origin) and a bounding sphere
    (centre +0x20, radius +0x2c) */
-static THISCALL void shape_relocate(char *self)
-{
-	typedef long double X;
-	if (!S32(self, 0x10)) { S32(self, 0x20) = 0; S32(self, 0x24) = 0; S32(self, 0x28) = 0; S32(self, 0x2c) = 0; return; }
-	DWORD mnx = 0, mxx = 0, mny = 0, mxy = 0, mxz = 0, mnz = GU32(0x4a93e8);   /* raw floats */
-#define F_(d) (*(float *)&(d))
-	for (int i = 0; i < S32(self, 0x10); i++) {
-		char *p = (char *)S32(self, 0x14) + i * 0x80;
-		for (int k = 0; k < 6; k++) S32(p, 0x68 + k * 4) = 0;
-		const DWORD *v = (const DWORD *)S32(p, 0x50);
-		for (int n = S32(p, 0x4c); n > 0; n--, v += 3) {
-			for (int a = 0; a < 3; a++) {
-				if (!(SF(p, 0x74 + a * 4) >= F_(v[a]))) SU32(p, 0x74 + a * 4) = v[a];   /* max */
-				if (SF(p, 0x68 + a * 4) > F_(v[a])) SU32(p, 0x68 + a * 4) = v[a];       /* min */
-			}
-		}
-		if (!(F_(mxx) >= SF(p, 0x74))) mxx = SU32(p, 0x74);
-		if (F_(mnx) > SF(p, 0x68)) mnx = SU32(p, 0x68);
-		if (!(F_(mxy) >= SF(p, 0x78))) mxy = SU32(p, 0x78);
-		if (F_(mny) > SF(p, 0x6c)) mny = SU32(p, 0x6c);
-		if (!(F_(mxz) >= SF(p, 0x7c))) mxz = SU32(p, 0x7c);
-		if (F_(mnz) > SF(p, 0x70)) mnz = SU32(p, 0x70);
-	}
-	X half = GF(0x4a942c);
-	SF(self, 0x20) = (float)(((X)F_(mnx) + F_(mxx)) * half);
-	SF(self, 0x24) = (float)(((X)F_(mny) + F_(mxy)) * half);
-	SF(self, 0x28) = (float)(((X)F_(mnz) + F_(mxz)) * half);
-#undef F_
-	float r2 = 0;
-	int parts = S32(self, 0x10);
-	for (int i = 0; i < parts; i++) {
-		char *p = (char *)S32(self, 0x14) + i * 0x80;
-		const float *v = (const float *)S32(p, 0x50);
-		for (int n = S32(p, 0x4c); n > 0; n--, v += 3) {
-			X dz = (X)v[2] - SF(self, 0x28), dy = (X)v[1] - SF(self, 0x24), dx = (X)v[0] - SF(self, 0x20);
-			X d2 = dx * dx + dy * dy + dz * dz;
-			if (d2 > r2) r2 = (float)d2;
-		}
-	}
-	SF(self, 0x2c) = (float)sqrtl(r2);
-	S32(self, 0x30) = 0x71110300;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void shape_relocate(void *self);
 /* settings screen camera: ease towards point g_setupTab (mode 1) or back home (mode 0), then snap */
-static void __cdecl setup_4230e0(void)
-{
-	typedef long double X;
-	if (GF(0x4b071c) > GF(0x4a9418)) GU32(0x4b071c) = F1;
-	int mode = G32(0x4ddcec);
-	X k = (X)GF(0x4b071c), c = GF(0x4a93ec);
-	if (mode == 1) {
-		int i = G32(0x4ddac8) * 16;
-		GF(0x4df024) = (float)(((X)GF(i + 0x4df870) - GF(0x4df024)) * k * c + GF(0x4df024));
-		GF(0x4df02c) = (float)(((X)GF(i + 0x4df878) - GF(0x4df02c)) * k * c + GF(0x4df02c));
-		X l = ((X)GF(i + 0x76d388) - GF(0x680378)) * k * c + GF(0x680378);
-		GF(0x680378) = (float)l;
-		GF(0x68037c) = (float)(((X)GF(i + 0x76d38c) - GF(0x68037c)) * k * c + GF(0x68037c));
-		if (!(l >= GF(0x4a93e8))) l = -l;
-		if (!(l > GD(0x4a93e0))) return;
-		G32(0x4df024) = G32(i + 0x4df870); G32(0x4df028) = G32(i + 0x4df874); G32(0x4df02c) = G32(i + 0x4df878);
-		G32(0x680378) = G32(i + 0x76d388); G32(0x68037c) = G32(i + 0x76d38c); G32(0x680380) = G32(i + 0x76d390);
-		G32(0x4ddcec) = 2; g_menuDialogOpen = 1;
-	} else if (mode == 0) {
-		GF(0x4df024) = (float)((X)GF(0x4df024) - ((X)GF(0x4df024) - GF(0x9db090)) * k * c);
-		GF(0x4df02c) = (float)((X)GF(0x4df02c) - ((X)GF(0x4df02c) - GF(0x9db098)) * k * c);
-		X l = (X)GF(0x680378) - ((X)GF(0x680378) - GF(0x76d3f8)) * k * c;
-		GF(0x680378) = (float)l;
-		GF(0x68037c) = (float)((X)GF(0x68037c) - ((X)GF(0x68037c) - GF(0x76d3fc)) * k * c);
-		if (!(l >= GF(0x4a93e8))) l = -l;
-		if (l >= GD(0x4a93d8)) return;
-		G32(0x680378) = G32(0x76d3f8); G32(0x68037c) = G32(0x76d3fc); G32(0x680380) = G32(0x76d400);
-		G32(0x4ddcec) = 2;
-		G32(0x4df024) = G32(0x9db090); G32(0x4df028) = G32(0x9db094); G32(0x4df02c) = G32(0x9db098);
-		G32(0x4ddac8) = 0x29a;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_4230e0(void);
 /* menu mouse-look: turn (0x90d1cc, degrees, wraps 0..360) and pitch (0x4de6c4, clamped) with the cursor's offset
    from the screen centre; a click stores the eye/target points of the current slot */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2054,48 +1984,8 @@ void missionsel_447cb0(void);
    slot at +0x494. Newest first, each live segment adds 4 quads joining the slot to the previous one; the first expired
    (or older than 18) segment adds an end cap fanning to the previous slot's centre, and stops. Only for weapon type 3
    bullets whose box (+0x78..) is within camera distance (+0xa08) of the camera (+0x20f3970). */
-static THISCALL void hud_47ca70(char *self, int b, char *vv)
-{
-	typedef long double X;
-	char *e = self + 0x202ef34 + b * 0x4e8;
-	X r = SF(self, 0xa08);
-	for (int a = 0; a < 3; a++) if ((X)SF(self, 0x20f3970 + a * 4) - r > SF(e, 0x78 + a * 4)) return;
-	for (int a = 0; a < 3; a++) if (!(r + SF(self, 0x20f3970 + a * 4) >= SF(e, 0x78 + a * 4))) return;
-	if (S32(self, S32(e, 8) * 0x2e18 + 0x14d48b0) != 3) return;
-	int tex = S32(self, 0x9ccfd8);
-	DWORD uv0[2] = { 0x3e840000, 0x3e840000 }, uv1[2] = { 0x3efc0000, 0x3ebc0000 };
-	int n = S32(e, 0x4e4);
-	if (n <= 0) return;
-	const float *ring = (const float *)(e + 0xd4);
-	for (int i = n, j = n + 0x13; ; ) {
-		int prev = j % 20, cur = i % 20;
-		DWORD color = 0xffffffff;
-		float pts[12];
-		X age = (X)SF(e, 0x70) - GF(0x4a9424);
-		if (age > SF(e, 0x494 + cur * 4) || i <= S32(e, 0x4e4) - 0x12) {   /* end cap, then stop */
-			const float *p = ring + prev * 12;
-			X sx = (X)p[3] + p[0];
-			float sy = (float)((X)p[4] + p[1]), sz = (float)((X)p[5] + p[2]);
-			float c[3] = { (float)(sx * GF(0x4a942c)), (float)((X)sy * GF(0x4a942c)), (float)((X)sz * GF(0x4a942c)) };
-			for (int k = 1; k <= 4; k++) {
-				memcpy(pts, c, 12); memcpy(pts + 9, c, 12);
-				memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
-				memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
-				hud_4848e0(vv, tex, uv0, uv1, &color, pts, 2, 1);
-			}
-			return;
-		}
-		for (int k = 1; k <= 4; k++) {
-			memcpy(pts, ring + (prev * 4 + k - 1) * 3, 12);
-			memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
-			memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
-			memcpy(pts + 9, ring + (prev * 4 + k % 4) * 3, 12);
-			hud_4848e0(vv, tex, uv0, uv1, &color, pts, 2, 1);
-		}
-		if (--i <= 0) return;
-		j--;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_47ca70(void *self, int b, void *vv);
 
 /* ---- batch 28: billboard quad into the view volume ------------------------------------------------------------- */
 /* camera-facing quad at point p: p goes to camera space with the matrix at +0x90f0 (x, y rounded to float, z kept),
