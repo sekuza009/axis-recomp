@@ -91,6 +91,18 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define menu_enterState() GAME_CDECL(0x41f970, void, void)()
 #define menu_drawBackground() GAME_CDECL(0x441740, void, void)()
 #define menu_drawFrame(x0, y0, x1, y1) GAME_CDECL(0x428c30, void, int, int, int, int)(x0, y0, x1, y1)
+/* textured quads (menu_quads.c): buttons from the bound sheet (lit == 1: the lit cell), whole textures, panel ornaments */
+#define menu_drawTexQuad_4282f0(x0, y0, x1, y1, lit) GAME_CDECL(0x4282f0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define profile_4283e0(x0, y0, x1, y1, lit) GAME_CDECL(0x4283e0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexQuad_4284d0(x0, y0, x1, y1, lit) GAME_CDECL(0x4284d0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexQuad_4285c0(x0, y0, x1, y1, lit) GAME_CDECL(0x4285c0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexQuad_4286b0(x0, y0, x1, y1, lit) GAME_CDECL(0x4286b0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexQuad_4287a0(x0, y0, x1, y1, lit) GAME_CDECL(0x4287a0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexturedRect_427a90(x0, y0, x1, y1, tex) GAME_CDECL(0x427a90, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
+#define menu_drawTexturedRect_427b60(x0, y0, x1, y1, tex) GAME_CDECL(0x427b60, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
+#define menu_drawTexturedRect_428a00(x0, y0, x1, y1) GAME_CDECL(0x428a00, void, int, int, int, int)(x0, y0, x1, y1)
+#define menu_drawTexturedRect_428b50(x0, y0, x1) GAME_CDECL(0x428b50, void, int, int, int)(x0, y0, x1)
+#define g_menuOrnamentTexture GAME_VAR(int, 0x4deb4c)   /* the panel corner ornaments (texture id, four 128-unit quarters) */
 #define menu_431950() GAME_CDECL(0x431950, void, void)()
 #define menu_4318b0() GAME_CDECL(0x4318b0, void, void)()
 #define menu_44cdd0() GAME_CDECL(0x44cdd0, void, void)()

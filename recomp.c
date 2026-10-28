@@ -5309,12 +5309,18 @@ static void __cdecl hud_427ee0(int x, int y, int i, int j)
 	glyph_quad(x, y, 0x1f, 0x1f, j, 0x4df458, 0x4df638, 0x83a600, 0x83a7e0);
 }
 /* textured quads (x0, y0, x1, y1, part) with fixed texture coordinates per part */
-LIFT_PLAIN8(profile_4283e0, 4283e0)
-LIFT_PLAIN8(menu_drawTexQuad_4284d0, 4284d0)
-LIFT_PLAIN8(menu_drawTexQuad_4282f0, 4282f0)
-LIFT_PLAIN8(menu_drawTexQuad_4285c0, 4285c0)
-LIFT_PLAIN8(menu_drawTexQuad_4286b0, 4286b0)
-LIFT_PLAIN8(menu_drawTexQuad_4287a0, 4287a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_4283e0(int x0, int y0, int x1, int y1, int lit);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexQuad_4284d0(int x0, int y0, int x1, int y1, int lit);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexQuad_4282f0(int x0, int y0, int x1, int y1, int lit);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexQuad_4285c0(int x0, int y0, int x1, int y1, int lit);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexQuad_4286b0(int x0, int y0, int x1, int y1, int lit);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexQuad_4287a0(int x0, int y0, int x1, int y1, int lit);
 /* error reporters (fmt, ...) / (object, fmt, ...): message with the time (and the object's name) into ERROR.TXT
    when enabled (0xa1efdc); sys_errorTerminate / sys_fatalError then run the cleanup hook and exit */
 LIFT_PLAIN8(sys_errorMessageNoName, 46c840)
@@ -5988,10 +5994,14 @@ static THISCALL DWORD load_4742f0(char *eng, DWORD p, DWORD rec) { DWORD v[2] = 
    of the global texture set 0xa0e010, index tex % 512; tex_bind) and draw the quad x1,y1 - x2,y2 through
    menu_vertex (0x41ef60), _427b60 with the texture flipped vertically; _428a00(x1, y1, x2, y2) / _428b50(-, y, x):
    the menu frame texture (0x4deb4c) as two quads (corner pieces at fixed offsets around the given points) / one */
-LIFT_PLAIN8(menu_drawTexturedRect_427a90, 427a90)
-LIFT_PLAIN8(menu_drawTexturedRect_427b60, 427b60)
-LIFT_PLAIN8(menu_drawTexturedRect_428a00, 428a00)
-LIFT_PLAIN8(menu_drawTexturedRect_428b50, 428b50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexturedRect_427a90(int x0, int y0, int x1, int y1, int tex);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexturedRect_427b60(int x0, int y0, int x1, int y1, int tex);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexturedRect_428a00(int x0, int y0, int x1, int y1);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawTexturedRect_428b50(int x0, int y0, int x1);
 /* batch 93 (lifted/grp39.c) */
 #include "lifted/grp39.c"
 /* (thiscall) hud_drawNameIcon(n, x, y) / hud_drawLeaderIcon(i, x, y) / replay_drawIcon(x, y, i): a 2D icon from a HUD
@@ -12008,7 +12018,7 @@ ST(hud_427ce0, glyph_setup(99);, (((void (__cdecl *)(int, int, int, int))0x427ce
 ST(hud_427ee0, glyph_setup(99);, (((void (__cdecl *)(int, int, int, int))0x427ee0)(g_a[0], g_a[1], g_a[2], g_a[3]), 0), (hud_427ee0(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 #define TEXQUAD_TEST(name, addr) ST(name, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] = irnd(-1, 6);, \
 	(((void (__cdecl *)(int, int, int, int, int))addr)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0), \
-	(name(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], 0, 0, 0), 0))
+	(name(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
 TEXQUAD_TEST(profile_4283e0, 0x4283e0)
 TEXQUAD_TEST(menu_drawTexQuad_4284d0, 0x4284d0)
 TEXQUAD_TEST(menu_drawTexQuad_4282f0, 0x4282f0)
@@ -14028,13 +14038,13 @@ static int menutex_setup(void)
 	return c < 6 ? k * 512 + S32((char *)S32(BUF, 0xcd134), 4) : k * 512 + i;
 }
 ST(menu_drawTexturedRect_427a90, g_a[4] = menutex_setup();, (CD(void, 0x427a90, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
-   (menu_drawTexturedRect_427a90(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], 0, 0, 0), 0))
+   (menu_drawTexturedRect_427a90(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
 ST(menu_drawTexturedRect_427b60, g_a[4] = menutex_setup();, (CD(void, 0x427b60, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
-   (menu_drawTexturedRect_427b60(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], 0, 0, 0), 0))
+   (menu_drawTexturedRect_427b60(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
 ST(menu_drawTexturedRect_428a00, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428a00, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
-   (menu_drawTexturedRect_428a00(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], 0, 0, 0, 0), 0))
+   (menu_drawTexturedRect_428a00(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(menu_drawTexturedRect_428b50, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428b50, int, int, int)(g_a[0], g_a[1], g_a[2]), 0),
-   (menu_drawTexturedRect_428b50(0, 0, 0, g_a[0], g_a[1], g_a[2], 0, 0, 0, 0, 0), 0))
+   (menu_drawTexturedRect_428b50(g_a[0], g_a[1], g_a[2]), 0))
 /* batch 93 */
 /* menutex_setup's texture set; the HUD object is BUF (its texture fields set to the chosen id), screen positions */
 static void hudicon_setup(void)
