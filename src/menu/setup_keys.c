@@ -1,0 +1,136 @@
+/* setup_keys.c: the setup screen's top level: its tabs (sound, graphics, controls, and the top page), their keys,
+   and the pages drawn over the screen's background. */
+#include "../game.h"
+
+#define TAB_SOUND 0
+#define TAB_GRAPHIC 1
+#define TAB_CONTROL 2
+#define TAB_TOP 0x29a
+
+#define g_setupPage GAME_VAR(int, 0x4ddcec)           /* (by use) the open page's state: 0 and 1 closed */
+#define g_soundEdited ((const int *)0x4dde98)         /* the sound tab's values being edited (music volume first) */
+#define g_soundSettings ((int *)0x4e0c90)             /* the sound settings in use */
+#define g_musicLevel GAME_VAR(int, 0x4dd984)          /* (by use) the music volume as the player sets it: (v * 5 - 500) * 4 */
+#define g_graphicEdited ((const u32 *)0x4ddba0)       /* the graphics tab's seven values being edited */
+#define g_graphicSettings ((u32 *)0x83a9c0)           /* the graphics settings in use (g_items3D is the third) */
+#define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
+
+/* 0x422b30: the tab's page (nothing while a dialog is up) */
+void (setup_drawTab)(void)
+{
+	if (g_dialogOpen != 0)
+		return;
+	switch (g_setupTab) {
+	case TAB_CONTROL: setup_drawControlTab(); break;
+	case TAB_SOUND: setup_drawSoundTab(); break;
+	case TAB_GRAPHIC: setup_drawGraphicTab(); break;
+	case TAB_TOP: setup_drawTopPage(); break;
+	}
+}
+
+/* 0x4230a0: the tab's keys */
+void (setup_processTabKeys)(void)
+{
+	if (g_dialogOpen != 0)
+		return;
+	switch (g_setupTab) {
+	case TAB_CONTROL: setup_controlTabKeys(); break;
+	case TAB_SOUND: setup_soundTabKeys(); break;
+	case TAB_GRAPHIC: setup_graphicTabKeys(); break;
+	case TAB_TOP: setup_topPageKeys(); break;
+	}
+}
+
+/* back to the main menu */
+static void leave(void)
+{
+	set_680370_441250(4);
+	g_nextScreen = 300;
+	g_cursorBlink = 0.0f;
+	nullsub_48b420(NULL);
+}
+
+/* 0x422b70: the top page: a tab key opens its tab; the back key (when 0x9dae10 allows) or the leave key goes
+   back to the main menu */
+void (setup_topPageKeys)(void)
+{
+	if (input_justPressed(g_keyCancel2) && GAME_VAR(int, 0x9dae10) > 0) {
+		leave();
+	} else if (input_justPressed(GAME_VAR(int, 0x4e1524)) == 1) {
+		sound_playMenu(0);
+		setup_selectSoundTab();
+	} else if (input_justPressed(GAME_VAR(int, 0x4e14ec)) == 1) {
+		sound_playMenu(0);
+		setup_selectGraphicTab();
+	} else if (input_justPressed(g_keyBack) == 1) {
+		sound_playMenu(0);
+		setup_selectControlTab();
+	} else if (input_justPressed(GAME_VAR(int, 0x4e153c)) == 1) {
+		sound_playMenu(0);
+		leave();
+	}
+}
+
+/* 0x422c60: the sound tab: OK takes the edited values (and restarts the menu music with them); back or cancel
+   closes the page */
+void (setup_soundTabKeys)(void)
+{
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
+		int music = g_soundEdited[0];
+		g_soundSettings[2] = g_soundEdited[2];
+		g_soundSettings[1] = g_soundEdited[1];
+		g_soundSettings[0] = music;
+		g_soundSettings[3] = g_soundEdited[3];
+		g_musicLevel = (music * 5 - 500) * 4;
+		sound_playMenu(0);
+		cfg_loadAxisCfg();
+		g_setupPage = 0;
+		music_shutdown();
+		music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3" */
+	} else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
+		sound_playMenu(0);
+		g_setupPage = 0;
+	}
+}
+
+/* 0x422d20: the graphics tab: OK takes the edited values; if the four that need a restart changed (all but the
+   third and the last two), the front end is told (message 1) instead of closing the page */
+void (setup_graphicTabKeys)(void)
+{
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
+		int same = g_graphicSettings[1] == g_graphicEdited[1] && g_graphicSettings[0] == g_graphicEdited[0]
+		           && g_graphicSettings[3] == g_graphicEdited[3] && g_graphicSettings[4] == g_graphicEdited[4];
+		sound_playMenu(0);
+		for (int i = 0; i < 7; i++)
+			g_graphicSettings[i] = g_graphicEdited[i];
+		cfg_loadAxisCfg();
+		if (same)
+			g_setupPage = 0;
+		else
+			profile_41e7a0(1);
+	} else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
+		sound_playMenu(0);
+		g_setupPage = 0;
+	}
+}
+
+/* the setup screen with an open page over it: the page, or just its frame while a dialog is up */
+static void with_page(void (*draw)(void), const int frame[4])
+{
+	setup_423e50();
+	if (g_setupPage == 1 || g_setupPage == 0 || g_setupTab == TAB_TOP)
+		return;
+	if (g_dialogOpen == 0)
+		draw();
+	else
+		menu_drawFrame(frame[0], frame[1], frame[2], frame[3]);
+}
+
+static void page_424810(void) { setup_424810(); }
+static void page_425460(void) { setup_425460(); }
+static void page_crosshair(void) { setup_crosshairScreen(); }
+
+/* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
+void (setup_427830)(void) { with_page(page_424810, (const int *)0x4ddad0); }
+void (setup_427880)(void) { with_page(page_425460, (const int *)0x4dddd0); }
+void (setup_4278d0)(void) { with_page(page_crosshair, (const int *)0x4dde80); }

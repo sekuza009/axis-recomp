@@ -6429,8 +6429,10 @@ LIFT_PLAIN(lobbyPlayer_draw, 40cf80)
 /* 0x427830 setup_427830() / 0x427880 setup_427880(): the setup tunnel (setup_423e50), then in modes other than
    0 / 1 (0x4ddcec) and not on tab 0x29a (0x4ddac8) the sound (setup_424810) / options (setup_425460) dialog or,
    while a message is open, its frame */
-LIFT_PLAIN(setup_427830, 427830)
-LIFT_PLAIN(setup_427880, 427880)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_427830(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_427880(void);
 /* 0x44f5f0 profile_44f5f0() / 0x44f740 profile_44f740(): while the cursor glides (0x76d42c) it moves a share of
    the way to (0x67ef34, 0x67fb38) by 0x4b071c and the glide time 0x680bc0 runs down (then ends); the profile
    screen (mainmenu_drawScreen), then the two-button dialog (profile_44e180 / profile_44e3e0) or, while a message
@@ -6627,7 +6629,8 @@ LIFT_PLAIN(net_454560, 454560)
 #include "lifted/grp97.c"
 /* 0x4278d0 setup_4278d0(): the setup tunnel (setup_423e50), then in modes other than 0 / 1 (0x4ddcec) and not on
    tab 0x29a (0x4ddac8) the controls dialog (setup_crosshairScreen) or, while a message is open, its frame */
-LIFT_PLAIN(setup_4278d0, 4278d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_4278d0(void);
 /* batch 152 (lifted/grp98.c): the HUD clock */
 #include "lifted/grp98.c"
 /* 0x496610 (thiscall on the game) hud_drawClock(): with a score limit (+0x23423ad) the points still needed (team
@@ -6829,8 +6832,10 @@ void room_434da0(void);
 #include "lifted/grp109.c"
 /* 0x422b30 setup_drawTab() / 0x4230a0 setup_processTabKeys(): no dialog open: the setup tab 0x4ddac8 (0..2, 0x29a)
    drawn / its keys */
-LIFT_PLAIN(setup_drawTab, 422b30)
-LIFT_PLAIN(setup_processTabKeys, 4230a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawTab(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_processTabKeys(void);
 /* 0x4081f0 lobby_processKeys(): by lobby page 0x4db51c (0..5), typing (0x907b2c), the dialog flags 0x4db508 /
    0x4db55c */
 LIFT_PLAIN(lobby_processKeys, 4081f0)
@@ -7053,7 +7058,8 @@ void room_403590(int i);
 void room_433b00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editNumberField_404ed0(void);
-LIFT_PLAIN(setup_soundTabKeys, 422c60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_soundTabKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editNumberField_404e10(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7100,8 +7106,10 @@ void room_435f40(void);
 LIFT_PLAIN(room_435e70, 435e70)
 LIFT_PLAIN(room_433c70, 433c70)
 LIFT_PLAIN(lobby_keysQuit, 408110)
-LIFT_PLAIN(setup_topPageKeys, 422b70)
-LIFT_PLAIN(setup_graphicTabKeys, 422d20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_topPageKeys(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_graphicTabKeys(void);
 LIFT_PLAIN(lobbyTop_keys, 407750)
 LIFT_PLAIN(setup_drawTopPage, 4220c0)
 LIFT_PLAIN(lobby_406950, 406950)
@@ -15482,8 +15490,8 @@ static void setupdlg_setup(int sound)
 	G32(0x9db0a4) = G32(0x4e0cd0); G32(0x4deb50) = G32(0x4e0cd0); G32(0x4deb4c) = G32(0x4e0cd0);
 	G32(0x4ddac8) = irnd(0, 3) ? irnd(0, 0x300) : 0x29a; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-T_PLAIN(setup_427830, 0x427830, setupdlg_setup(1);, 0, 0, 0, 0, 0)
-T_PLAIN(setup_427880, 0x427880, setupdlg_setup(0);, 0, 0, 0, 0, 0)
+ST(setup_427830, setupdlg_setup(1);, CALL_PLAIN(0x427830, 0, 0, 0, 0, 0), (setup_427830(), 0))
+ST(setup_427880, setupdlg_setup(0);, CALL_PLAIN(0x427880, 0, 0, 0, 0, 0), (setup_427880(), 0))
 /* the profile screen with a dialog: profscreen_setup and the dialog's window (profdlg_setup), the glide on or off
    with a target and time left */
 static void profglide_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
@@ -16015,7 +16023,7 @@ static void controlsdlg_setup(void)
 	GF(0x4e14fc) = (float)irnd(0, 1990) / 10.0f; GF(0x4deda8) = (float)irnd(0, 50) / 10.0f; GF(0x4b071c) = (float)irnd(1, 30) / 10.0f;
 	G32(0x4ddac8) = irnd(0, 3) ? irnd(0, 0x300) : 0x29a; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-T_PLAIN(setup_4278d0, 0x4278d0, controlsdlg_setup();, 0, 0, 0, 0, 0)
+ST(setup_4278d0, controlsdlg_setup();, CALL_PLAIN(0x4278d0, 0, 0, 0, 0, 0), (setup_4278d0(), 0))
 /* batch 152 */
 /* the clock: hudicon_setup's set (fonts bindable too), a score limit or none, team mode or not with scores near the
    limit, the players' scores, a time limit or none with the elapsed time near it, the blink phase */
@@ -16400,8 +16408,8 @@ static void disp_state(void)
 	G32(0x9dce48) = irnd(-1, 3); G32(0x4dbb3c) = irnd(-1, 3); G32(0x4dba88) = irnd(0, 1);
 	fill((void *)0x5b1b50, 8); fill((void *)0x4ded40, 8);
 }
-T_PLAIN(setup_drawTab, 0x422b30, disp_state(); callee_stubs(g_stubSetupDraw, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(setup_processTabKeys, 0x4230a0, disp_state(); callee_stubs(g_stubSetupKeys, 0);, 0, 0, 0, 0, 0)
+ST(setup_drawTab, disp_state(); callee_stubs(g_stubSetupDraw, 0);, CALL_PLAIN(0x422b30, 0, 0, 0, 0, 0), (setup_drawTab(), 0))
+ST(setup_processTabKeys, disp_state(); callee_stubs(g_stubSetupKeys, 0);, CALL_PLAIN(0x4230a0, 0, 0, 0, 0, 0), (setup_processTabKeys(), 0))
 T_PLAIN(lobby_processKeys, 0x4081f0, disp_state(); callee_stubs(g_stubLobby, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(menu_4378e0, 0x4378e0, disp_state(); callee_stubs(g_stubRoomMouse, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(room_processKeys, 0x436800, disp_state(); callee_stubs(g_stubRoomKeys, 0);, 0, 0, 0, 0, 0)
@@ -16767,7 +16775,7 @@ ST(arena_editNumberField_404ed0, gen_setup(g_gs_404ed0, g_gi_404ed0, g_gb_404ed0
 static const DWORD g_gs_422c60[] = { 0x401600, 1, 0x41e760, 1, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_422c60[] = { 0x4dd984, 0x4ddcec, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x4e0cd4, 0x4e0cdc, 0x76d48c, 0 };
 static const DWORD g_gb_422c60[] = { 0 };
-T_PLAIN(setup_soundTabKeys, 0x422c60, gen_setup(g_gs_422c60, g_gi_422c60, g_gb_422c60);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_soundTabKeys, gen_setup(g_gs_422c60, g_gi_422c60, g_gb_422c60);, CALL_PLAIN(0x422c60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (setup_soundTabKeys(), 0))
 static const DWORD g_gs_404e10[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404e10[] = { 0x4db54c, 0x4db850, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404e10[] = { 0x9dc92c, 0 };
@@ -16868,11 +16876,11 @@ T_PLAIN(lobby_keysQuit, 0x408110, gen_setup(g_gs_408110, g_gi_408110, g_gb_40811
 static const DWORD g_gs_422b70[] = { 0x401600, 1, 0x41e760, 1, 0x420ad0, 0, 0x420b40, 0, 0x420ba0, 0, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_422b70[] = { 0x4dda44, 0x4e0cdc, 0x4e14ec, 0x4e1524, 0x4e153c, 0x67ef20, 0x76d48c, 0x9dae10, 0 };
 static const DWORD g_gb_422b70[] = { 0 };
-T_PLAIN(setup_topPageKeys, 0x422b70, gen_setup(g_gs_422b70, g_gi_422b70, g_gb_422b70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_topPageKeys, gen_setup(g_gs_422b70, g_gi_422b70, g_gb_422b70);, CALL_PLAIN(0x422b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (setup_topPageKeys(), 0))
 static const DWORD g_gs_422d20[] = { 0x401600, 1, 0x41e760, 1, 0x41e7a0, 1, 0x42d730, 0, 0 };
 static const DWORD g_gi_422d20[] = { 0x4ddba0, 0x83a9c0, 0x4ddba4, 0x4ddbac, 0x4ddbb0, 0x4ddcec, 0x4e0cd4, 0x4e0cdc, 0x76d48c, 0x83a9c4, 0x83a9cc, 0x83a9d0, 0 };
 static const DWORD g_gb_422d20[] = { 0 };
-T_PLAIN(setup_graphicTabKeys, 0x422d20, gen_setup(g_gs_422d20, g_gi_422d20, g_gb_422d20);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_graphicTabKeys, gen_setup(g_gs_422d20, g_gi_422d20, g_gb_422d20);, CALL_PLAIN(0x422d20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (setup_graphicTabKeys(), 0))
 static const DWORD g_gs_407750[] = { 0x401600, 1, 0x404ac0, 0, 0x404b30, 0, 0x404c20, 0, 0x41e760, 1, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_407750[] = { 0x4e0cdc, 0x4e14f8, 0x4e1514, 0x4e153c, 0x67ef14, 0x67ef20, 0x76d48c, 0x90d1c4, 0x9dae10, 0 };
 static const DWORD g_gb_407750[] = { 0 };

@@ -444,4 +444,25 @@ typedef struct { float r, g, b, a; } Colour;
 #define msg_print(scene, colour, ...) GAME_CDECL(0x4629f0, void, Scene *, int, const char *, ...)(scene, colour, __VA_ARGS__)   /* a line in the message box (printf) */
 #define sound_playVolume(id, volume) GAME_CDECL(0x456e50, void, int, int)(id, volume)   /* volume 0..100 */
 
+/* ---- the setup screen (menu/setup_keys.c) ---- */
+#define g_setupTab GAME_VAR(int, 0x4ddac8)           /* 0 sound, 1 graphics, 2 controls, 0x29a the top page */
+#define set_680370_441250(v) GAME_CDECL(0x441250, void, int)(v)   /* g_keysBlocked = v */
+#define setup_drawTopPage() GAME_CDECL(0x4220c0, void, void)()
+#define setup_drawSoundTab() GAME_CDECL(0x4221d0, void, void)()
+#define setup_drawGraphicTab() GAME_CDECL(0x422480, void, void)()
+#define setup_drawControlTab() GAME_CDECL(0x422830, void, void)()
+#define setup_topPageKeys() GAME_CDECL(0x422b70, void, void)()
+#define setup_soundTabKeys() GAME_CDECL(0x422c60, void, void)()
+#define setup_graphicTabKeys() GAME_CDECL(0x422d20, void, void)()
+#define setup_controlTabKeys() GAME_CDECL(0x422e10, void, void)()
+#define setup_selectSoundTab() GAME_CDECL(0x420ad0, void, void)()
+#define setup_selectGraphicTab() GAME_CDECL(0x420b40, void, void)()
+#define setup_selectControlTab() GAME_CDECL(0x420ba0, void, void)()
+#define setup_423e50() GAME_CDECL(0x423e50, void, void)()
+#define setup_424810() GAME_CDECL(0x424810, void, void)()
+#define setup_425460() GAME_CDECL(0x425460, void, void)()
+#define setup_crosshairScreen() GAME_CDECL(0x425cd0, void, void)()
+#define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
+#define music_shutdown() GAME_CDECL(0x457310, void, void)()
+
 #endif
