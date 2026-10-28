@@ -494,3 +494,27 @@ u32 (room_leaveGame)(void)
 	GAME_VAR(int, 0x9dd84c) = 0;
 	return CALL(0x4463a0);                              /* FUN_004463a0 */
 }
+
+/* 0x407270: the create screen's quit dialog clicks, only with none of its other panels (and no dialog) open: as
+   lobby_406bd0. Returns what the original leaves in eax */
+u32 (lobby_407270)(void)
+{
+	static const u32 panels[5] = { 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, 0x90d1c4 };
+	for (int k = 0; k < 5; k++)
+		if (GAME_VAR(int, panels[k]))
+			return GAME_VAR(u32, panels[k]);
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x907b2c) = 0;
+	if (!g_mouseClick)
+		return 0;
+	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);
+	if (button == 0) {
+		GAME_VAR(int, 0x907b2c) = 0;
+		return (u32)profile_41e7a0(2);
+	}
+	if (button == 1) {
+		GAME_VAR(int, 0x907b2c) = 0;
+		return 0;
+	}
+	return (u32)(button - 1);
+}

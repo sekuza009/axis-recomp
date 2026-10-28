@@ -118,3 +118,22 @@ void (armc_433360)(void)
 	GAME_VAR(int, 0x76d400) = lz;
 	GAME_VAR(int, 0x9dd6d4) = 0;
 }
+
+/* 0x440d70: the main menu's replay list opened: its state, a dialog open, its frame, the 1024 records (0x44 bytes
+   from 0x9dda88) cleared, the layout and the replay files listed. Returns the listing's eax */
+u32 (mainmenu_440d70)(void)
+{
+	GAME_VAR(int, 0x9dd928) = 0;
+	GAME_VAR(int, 0x9dd92c) = 0;
+	GAME_VAR(int, 0x9dd944) = 0;
+	GAME_VAR(int, 0x9eea88) = 0;
+	g_dialogOpen = 1;
+	GAME_VAR(int, 0x9dd908) = 0x50;
+	GAME_VAR(int, 0x9dd90c) = 0x28;
+	GAME_VAR(int, 0x9dd910) = 0x230;
+	GAME_VAR(int, 0x9dd914) = 0x1b8;
+	for (u32 r = 0x9ddac8; r < 0x9eeac8; r += 0x44)
+		memset((void *)(r - 0x40), 0, 0x44);
+	GAME_CDECL(0x440a20, void, void)();          /* mainmenu_440a20: the layout */
+	return GAME_CDECL(0x440c60, u32, void)();    /* autoplay_listFiles */
+}

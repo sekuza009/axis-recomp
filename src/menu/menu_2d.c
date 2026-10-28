@@ -155,3 +155,18 @@ u32 (menu_frameBegin)(void)
 	glEnable(0x0be2);   /* GL_BLEND */
 	return IMPORT(0x4a91ec, u32, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 }
+
+/* 0x40ce70: the screen dimmed by a black overlay fading in (0x4deb74 grows by the frame time times a rate; its alpha
+   at most 1). Returns menu_drawRect's eax */
+u32 (menu_drawDimOverlay)(void)
+{
+	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a943c), (const float *)0x4deb74);
+	GAME_VAR(float, 0x4deb74) = (float)a;
+	float alpha = (float)a;
+	if (a > GAME_VAR(float, 0x4a9424))
+		BITS(alpha) = 0x3f800000;
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
+	return GAME_CDECL(0x427970, u32, int, int, int, int, int)(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
+}

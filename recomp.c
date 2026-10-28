@@ -2762,12 +2762,14 @@ LIFT_PLAIN(intro_41e730, 41e730)
 void room_435ab0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406bd0(void);
-LIFT_PLAIN(lobby_407270, 407270)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_407270(void);
 /* 0x427a40 FUN_00427a40(x0, y0, x1, y1): a line in the menu colour */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_00427a40(int x0, int y0, int x1, int y1);
 /* 0x440d70 mainmenu_440d70: open the autoplay file dialog (clears the 0x44-byte file entries, lists the files) */
-LIFT_PLAIN(mainmenu_440d70, 440d70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mainmenu_440d70(void);
 /* 0x4302d0 timer_init: QueryPerformanceFrequency, halved until it is at most 2 MHz (the shift count is kept), and
    the tick length 1 / f */
 LIFT_PLAIN(timer_init, 4302d0)
@@ -3165,7 +3167,8 @@ LIFT_PLAIN(net_closeAll, 451600)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41b710(void);
 /* 0x40ce70 menu_drawDimOverlay / 0x43df00 room_43df00: fade a dark rectangle in over the screen */
-LIFT_PLAIN(menu_drawDimOverlay, 40ce70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_drawDimOverlay(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43df00(void);
 /* 0x428890 menu_428890(x, y): the blinking cursor bar; 0x428c30 menu_drawFrame(x0, y0, x1, y1): a window frame */
@@ -4615,13 +4618,16 @@ void mission_4479b0(int mission);
 LIFT_PLAIN(skirmish_saveSettings, 443e20)
 /* 0x447a50 mission_447a50(): the mission settings the same way (missionsel_447710, 0x9f6338): 0 start
    (mission_4479d0), 1 leave, 2 / 3 the mission 0x9f63b4 down / up within the unlocked 0x9f181c and 0..14 */
-LIFT_PLAIN(mission_447a50, 447a50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mission_447a50(void);
 /* 0x4479d0 mission_4479d0(): mission 0x9f63b4 as the stage (0x9dad94), its map name (0x907b30) as the title
    0x67fb44, its limits (0x9db9e4 + 0x5c * m: 0x76d368, 0x4df8e8 frag, 0x76d408 time), leave the settings, state 3 */
-LIFT_PLAIN(mission_4479d0, 4479d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mission_4479d0(void);
 /* 0x444070 menu_444070(): keys on the skirmish undo screen: back (0x4e0cd4) nothing, cancel (0x4e0cdc / 0x76d48c)
    to page 10, undo / redo (0x4e150c / 0x4e1514: FUN_00443d80 / FUN_00443de0) */
-LIFT_PLAIN(menu_444070, 444070)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_444070(void);
 /* 0x443f20 skirmish_processKeys(): back / enter save (mission_saveAxisMis), cancel leaves, up / down held
    (0x9db0a0 / 0x76d330) repeat after a delay (0x76d37c / 0x680bb4: 4 frames, then the key repeat 0x4b071c) moving
    the selection (skirmish_443cd0 / 443d10) */
@@ -4879,8 +4885,10 @@ void arena_editTextField_404f90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_433a80(void);
 LIFT_PLAIN(sound_playVolume, 456e50)
-LIFT_PLAIN(room_431600, 431600)
-LIFT_PLAIN(menu_431950, 431950)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_431600(int ok);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_431950(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_403640(void);
 LIFT_PLAIN(match_4512c0, 4512c0)
@@ -9341,9 +9349,9 @@ T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : ir
 /* room_435ab0 leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
 ST(room_435ab0, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (room_435ab0(), 0))
 ST(lobby_406bd0, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x406bd0, 0, 0, 0, 0, 0), (DWORD)(lobby_406bd0()))
-T_PLAIN(lobby_407270, 0x407270, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
+ST(lobby_407270, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x407270, 0, 0, 0, 0, 0), (DWORD)(lobby_407270()))
 ST(FUN_00427a40, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, CALL_PLAIN(0x427a40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(FUN_00427a40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
-T_PLAIN(mainmenu_440d70, 0x440d70, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
+ST(mainmenu_440d70, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440d70, 0, 0, 0, 0, 0), (DWORD)(mainmenu_440d70()))
 static void qpf_setup(void)
 {
 	static const DWORD f[] = { 0, 1, 1193182, 2000000, 2000001, 3579545, 10000000, 14318180, 0xffffffff };
@@ -10127,7 +10135,7 @@ T_PLAIN(net_disconnect, 0x451e60, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0], 0, 0, 0)
 /* batch 59 */
 ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
-T_PLAIN(menu_drawDimOverlay, 0x40ce70, GF(0x4deb74) = csu_fr(-50, 120);, 0, 0, 0, 0, 0)
+ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
 ST(room_43df00, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_43df00(), 0))
 T_PLAIN(menu_428890, 0x428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, 0, g_a[0], g_a[1], 0, 0)
 T_PLAIN(menu_drawFrame, 0x428c30, G32(0x4de740) = irnd(0, 2); for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
@@ -14250,9 +14258,9 @@ static void menudisp_setup(void)
 	fill((void *)0x9dc92c, 0x400);
 }
 T_PLAIN(skirmish_saveSettings, 0x443e20, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(mission_447a50, 0x447a50, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(mission_4479d0, 0x4479d0, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(menu_444070, 0x444070, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(mission_447a50, menudisp_setup();, CALL_PLAIN(0x447a50, 0, 0, 0, 0, 0), (DWORD)(mission_447a50()))
+ST(mission_4479d0, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWORD)(mission_4479d0()))
+ST(menu_444070, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(menu_444070()))
 T_PLAIN(skirmish_processKeys, 0x443f20, menudisp_setup();, 0, 0, 0, 0, 0)
 ST(room_434320, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (room_434320(), 0))
 ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editTextField_405010(), 0))
@@ -14597,11 +14605,11 @@ T_PLAIN(sound_playVolume, 0x456e50, gen_setup(g_gs_456e50, g_gi_456e50, g_gb_456
 static const DWORD g_gs_431600[] = { 0x401310, 1, 0x431590, 0, 0x4315c0, 0, 0 };
 static const DWORD g_gi_431600[] = { 0x4ded18, 0x68039c, 0x9da434, 0x9dbf10, 0x9dcd30, 0 };
 static const DWORD g_gb_431600[] = { 0x9dc92c, 0 };
-T_PLAIN(room_431600, 0x431600, gen_setup(g_gs_431600, g_gi_431600, g_gb_431600);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_431600, gen_setup(g_gs_431600, g_gi_431600, g_gb_431600);, CALL_PLAIN(0x431600, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_431600((DWORD)(g_a[0]))))
 static const DWORD g_gs_431950[] = { 0x401600, 1, 0 };
 static const DWORD g_gi_431950[] = { 0x4dda44, 0x4df900, 0x5b1da8, 0x6803a0, 0x9dae70, 0 };
 static const DWORD g_gb_431950[] = { 0 };
-T_PLAIN(menu_431950, 0x431950, gen_setup(g_gs_431950, g_gi_431950, g_gb_431950);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_431950, gen_setup(g_gs_431950, g_gi_431950, g_gb_431950);, CALL_PLAIN(0x431950, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_431950()))
 static const DWORD g_gs_403640[] = { 0x41e760, 0, 0 };
 static const DWORD g_gi_403640[] = { 0x4d7408, 0x4d7410, 0x4d7418, 0x4d94fc, 0x4db508, 0x67ef00, 0 };
 static const DWORD g_gb_403640[] = { 0x4d7358, 0 };

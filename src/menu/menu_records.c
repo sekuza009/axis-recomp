@@ -379,3 +379,109 @@ u32 (menuState900_skirmishSetup)(void)
 		return GAME_CDECL(0x445bd0, u32, void)();   /* skirmish_drawScreenB */
 	return screen;
 }
+
+/* 0x444070: the skirmish settings' keys: two keys (and a third) switch to screen A (0x9ef1f8 = 10), two step the
+   settings forward and back. Returns what the original leaves in eax */
+u32 (menu_444070)(void)
+{
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1)
+		return 1;
+	if (input_justPressed(GAME_VAR(int, 0x4e0cdc)) == 1 || input_justPressed(GAME_VAR(int, 0x76d48c)) == 1) {
+		GAME_VAR(int, 0x9ef1f8) = 10;
+		return 1;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1)
+		return GAME_CDECL(0x443d80, u32, void)();   /* FUN_00443d80: the pending step pushed */
+	u32 r = input_justPressed(GAME_VAR(int, 0x4e1514));
+	if (r == 1)
+		return GAME_CDECL(0x443de0, u32, void)();   /* FUN_00443de0: one step undone */
+	return r;
+}
+
+/* ---- the mission select (selection 0x9f63b4) ---- */
+/* 0x4479d0: mission sel chosen: its 32-byte record (0x907b30) as the current one (0x67fb44), its three values from the
+   0x5c-byte table at 0x9db9e4, the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
+u32 (mission_4479d0)(void)
+{
+	int sel = GAME_VAR(int, 0x9f63b4);
+	u32 t = (u32)sel * 0x5c;
+	GAME_VAR(int, 0x9dad94) = sel;
+	memcpy((void *)0x67fb44, (const void *)(0x907b30 + sel * 32), 32);
+	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
+	GAME_VAR(int, 0x9da3e0) = 0;
+	GAME_VAR(int, 0x76d368) = a;
+	GAME_VAR(int, 0x4df8e8) = b;
+	GAME_VAR(int, 0x76d408) = c;
+	u32 r = GAME_CDECL(0x447960, u32, void)();   /* FUN_00447960: the settings left */
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x5ae9c4) = 3;
+	return r;
+}
+
+/* 0x447a50: the mission select's clicks (no dialog open): a right click leaves; buttons 0 choose, 1 leave, 2 and 3
+   step the selection down and up (within 0 .. the count 0x9f181c and 14). Returns what the original leaves in eax */
+u32 (mission_447a50)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_CDECL(0x447960, u32, void)();
+	if (!g_mouseClick)
+		return 0;
+	u32 button = GAME_CDECL(0x447710, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
+	int sel = GAME_VAR(int, 0x9f63b4);
+	switch (button) {
+	case 0:
+		return GAME_CDECL(0x4479d0, u32, void)();   /* mission_4479d0 */
+	case 1:
+		return GAME_CDECL(0x447960, u32, void)();
+	case 2:
+		if (sel <= 0)
+			return (u32)sel;
+		GAME_VAR(int, 0x9f63b4) = --sel;
+		return GAME_CDECL(0x4479b0, u32, int)(sel);   /* mission_4479b0 */
+	case 3:
+		if (sel >= GAME_VAR(int, 0x9f181c) || sel >= 0xe)
+			return (u32)sel;
+		GAME_VAR(int, 0x9f63b4) = ++sel;
+		return GAME_CDECL(0x4479b0, u32, int)(sel);
+	}
+	return button;
+}
+
+/* 0x431600: the chat line closed: sent (into the history) when ok, else emptied; typing off, the keyboard taken again,
+   the fade timer 10. Returns what the original leaves in eax */
+u32 (room_431600)(int ok)
+{
+	u32 r;
+	GAME_VAR(int, 0x68039c) = 0;
+	if (ok) {
+		GAME_CDECL(0x431590, void, void)();   /* match_431590 */
+		input_initKeyboard(g_hWndMain);
+		r = GAME_CDECL(0x4315c0, u32, void)();   /* room_4315c0: into the history */
+	} else {
+		if (GAME_VAR(int, 0x9dcd30) > 0)
+			memset((void *)0x9dc92c, 0, GAME_VAR(int, 0x9dcd30));
+		GAME_CDECL(0x431590, void, void)();
+		r = (u32)input_initKeyboard(g_hWndMain);
+	}
+	GAME_VAR(int, 0x9dcd30) = 0;
+	GAME_VAR(int, 0x9dbf10) = 0;
+	GAME_VAR(u32, 0x9da434) = 0x41200000;   /* 10 */
+	return r;
+}
+
+/* 0x431950: any of three keys closes the message box (0x4df900). Returns the last key's state */
+u32 (menu_431950)(void)
+{
+	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
+	u32 r = 0;
+	for (int k = 0; k < 3; k++) {
+		r = input_justPressed(GAME_VAR(int, keys[k]));
+		if (r == 1) {
+			GAME_VAR(int, 0x4dda44) = 0;
+			GAME_VAR(int, 0x4df900) = 0;
+		}
+	}
+	return r;
+}
