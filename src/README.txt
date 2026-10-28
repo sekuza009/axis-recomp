@@ -45,7 +45,7 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (673): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (747): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -83,4 +83,8 @@ hud_drawPressFire, hud_drawReadyStart, hud_drawClock,
 hud_drawMatchResult, hud_drawRecordIndicator, hud_drawNameIcon, hud_drawLeaderIcon,
 hud_drawEscMenu, hud_495ed0,
 hud_drawPlayerMarkers, hud_drawMain, replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume), data_46f7a0, hud_46fd20 (object lists), hud_496f20 (the sky) | replay_drawMessage, replay_drawFollowedName | menu_vertex, menu_drawRect, gfx_setProjection2D3D
-(menu/menu_2d.c).
+(menu/menu_2d.c) | the ARM CENTER colour sliders (menu/armc_colours.c), rotations, the 2D turn, angle wrap,
+triangle normal and point transform (render/rotations.c), the collision space's pools (load/space_pools.c), the
+no-CD stubs and small methods (app/small.c), the lobby's and room's screens (menu/lobby_states.c), player name and
+team, weapon selection, the volume, cheat codes, the PTX video decoder (app/ptx_decode.c), Johab syllables and chat
+line widths (text/text_codes.c), the session sort, the follow target, the free menu camera's moves.
