@@ -85,3 +85,76 @@ void THISCALL (armc_45ddc0)(Stage *stage)
 	spawn.zero3 = 0;
 	match_45dd80(stage, slot, -1, slot, &spawn);
 }
+
+#define g_armcCamHeight GAME_VAR(float, 0x4df028)     /* the preview camera's height */
+#define g_armcCamDistance GAME_VAR(float, 0x4df02c)   /* and distance (1600 at rest) */
+#define g_armcFrom GAME_VAR(int, 0x4dc24c)            /* where the screen was entered from: 1, 2 the lobby, 3 the room */
+
+/* 0x40f0f0: leaving the screen; confirmed: keep the mech (saved with the profile, or sent to the room's players
+   when entered from the room). The front end's 3D background and camera are reset and the Netsphere music starts */
+void (armc_exit)(int confirmed)
+{
+	switch (g_armcFrom) {
+	case 1:
+		armc_40e670();
+		GAME_VAR(int, 0x4dc790) = 0;
+		GAME_VAR(float, 0x4e1870) = 0.1f;
+		if (confirmed)
+			armc_saveSelection();
+		break;
+	case 2:
+		GAME_VAR(int, 0x4dc790) = 0;
+		GAME_VAR(float, 0x4e1870) = 0.1f;
+		g_lobbySubState = 0;
+		if (confirmed)
+			armc_saveSelection();
+		break;
+	case 3:
+		armc_40e670();
+		GAME_VAR(int, 0x4dc790) = 0;
+		GAME_VAR(float, 0x4e1870) = 0.1f;
+		if (confirmed)
+			armc_sendSelectionToNet();
+		break;
+	}
+	g_armcCamHeight = 0.0f;
+	g_armcCamDistance = 1600.0f;
+	GAME_VAR(int, 0x68037c) = 0;
+	GAME_VAR(int, 0x680380) = 0;
+	GAME_VAR(int, 0x4dcf10) = 1;
+	g_flareSizeB = 10.0f;
+	g_flareSizeA = 48.0f;
+	g_flareStepB = 0.2f;
+	g_flareStepA = -0.2f;
+	sound_playMenu(4);
+	music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3", the game's own string */
+	if (GAME_VAR(int, 0x76d410) == 1 && GAME_VAR(int, 0x9da49c) == 0x66)
+		GAME_VAR(int, 0x9da49c) = 0x67;
+}
+
+/* v moved a tenth of the way to target per time unit */
+static void approach(float *v, float target)
+{
+	*v = (float)(((long double)target - *v) * g_frameTime * 0.1f + *v);
+}
+
+/* 0x41b300: the preview camera eases towards the part being edited (on the parts and colour pages, by their part
+   slot: head, chest, arm, leg, booster, weapons) or the weapons (on the weapons page) */
+void (armc_41b300)(void)
+{
+	static const float height[6] = { 500.0f, 100.0f, -200.0f, -400.0f, -200.0f, 550.0f };
+	static const float distance[6] = { 1300.0f, 1300.0f, 1500.0f, 1300.0f, 1500.0f, 1300.0f };
+	int part;
+	if (g_armcMode == 1)
+		part = g_armcPartSlot;
+	else if (g_armcMode == 3)
+		part = g_armcColourSlot;
+	else if (g_armcMode == 2)
+		part = 5;
+	else
+		return;
+	if ((unsigned)part > 5)
+		return;
+	approach(&g_armcCamHeight, height[part]);
+	approach(&g_armcCamDistance, distance[part]);
+}

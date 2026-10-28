@@ -428,4 +428,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define actor_selectWeapon(stage, actor, slot) GAME_THISCALL(0x45e880, void, Stage *, int, int)(stage, actor, slot)
 #define app_requireCd(scene, a, b) GAME_THISCALL(0x460cb0, void, Scene *, int, int)(scene, a, b)
 
+#define g_armcMode GAME_VAR(int, 0x4dc798)           /* the ARM CENTER's page: 1 the parts, 2 the weapons, 3 the colours, 4 ... */
+#define g_armcPartSlot GAME_VAR(int, 0x4dbc6c)       /* 0 head, 1 chest, 2 arm, 3 leg, 4 booster, 5 weapons */
+#define g_armcColourSlot GAME_VAR(int, 0x4dc4b0)     /* the colour slot being edited */
+#define g_lobbySubState GAME_VAR(int, 0x4db51c)      /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
+#define armc_40e670() GAME_CDECL(0x40e670, void, void)()
+#define armc_saveSelection() GAME_CDECL(0x40e7a0, void, void)()       /* keep the mech, save the progress */
+#define armc_sendSelectionToNet() GAME_CDECL(0x40e930, void, void)()
+#define armc_41b300() GAME_CDECL(0x41b300, void, void)()               /* the camera towards the page's target */
+#define music_play(path) GAME_CDECL(0x457150, void, const char *)(path)
+
 #endif

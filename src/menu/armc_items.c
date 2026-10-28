@@ -110,3 +110,28 @@ void (armc_40e5d0)(void)
 	GAME_VAR(int, 0x4dc54c) = 1;
 	GAME_VAR(int, 0x4dd074) = 1;
 }
+
+/* 0x40f220: the weapons page: every slot's item handed to the parts list, the cursor on slot 0's weapon (its first
+   place in the list, else 0), all seven snapshots of the mech taken, then slot 0 picked and the camera moved */
+void (armc_drawPartScreen)(void)
+{
+	g_armcMode = 2;
+	g_armcSlot = 0;
+	GAME_VAR(int, 0x4dc864) = 0;
+	for (int slot = 0; slot < 6; slot++)
+		armc_41ca50(slot, *slot_item(slot));
+	g_armcCursor = 0;
+	for (int i = 0; i < g_weaponCount; i++)
+		if (g_weaponList[i] == *slot_item(0)) {
+			g_armcCursor = i;
+			break;
+		}
+	armc_41cca0(g_weaponList[g_armcCursor]);
+	for (int k = 0; k < 7; k++)
+		armc_snapshot(k);
+	g_armcChanged = 0;
+	GAME_VAR(int, 0x4dcf14) = 1;
+	g_armcSlot = -1;
+	armc_40f870(0);
+	armc_41b300();
+}

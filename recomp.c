@@ -5123,7 +5123,8 @@ LIFT_PLAIN(net_4545b0, 4545b0)
 /* 0x41f050 gfx_setMenuCamera: gluLookAt from the menu camera position to its target */
 LIFT_PLAIN(gfx_setMenuCamera, 41f050)
 /* 0x41b300 armc_41b300: move the customise-screen camera part of the way towards the target for the mode/slot */
-LIFT_PLAIN(armc_41b300, 41b300)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41b300(void);
 /* 0x43f640 app_43f640: screen size from the video mode */
 LIFT_PLAIN(app_43f640, 43f640)
 /* 0x490b30 (thiscall) hud_490b30(i, view): queue object i (0x2cc-byte records) in the view volume when it is
@@ -6977,11 +6978,13 @@ void armc_40f870(int slot);
 void armc_40f9e0(void);
 /* 0x40f220 armc_drawPartScreen(): enter the part screen (page 2): the six slots drawn (armc_41ca50), the armour
    choice previewed, the seven snapshots, no kind, the panel (armc_41b300) */
-LIFT_PLAIN(armc_drawPartScreen, 40f220)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_drawPartScreen(void);
 /* 0x40f0f0 armc_exit(save): leave the armour centre by how it was entered (0x4dc24c: 1 / 3 with armc_40e670, 2 back
    to the lobby page 0): with save the selection kept (armc_saveSelection) or sent (armc_sendSelectionToNet); the
    camera and light back, menu sound 4, the menu music, the main menu page 0x66 -> 0x67 when 0x76d410 */
-LIFT_PLAIN(armc_exit, 40f0f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_exit(int confirmed);
 /* batch 170 (lifted/grp118.c, grp119.c, grp120.c: split so the calls between these go through their native
    addresses, where the tests stub them): the armour centre's states and input */
 #include "lifted/grp118.c"
@@ -11754,7 +11757,8 @@ static void armcam_setup(void)
 {
 	lookat_setup(); G32(0x4dc798) = irnd(0, 4); G32(0x4dbc6c) = irnd(-1, 7); G32(0x4dc4b0) = irnd(-1, 7);
 }
-T_PLAIN(armc_41b300, 0x41b300, armcam_setup();, 0, 0, 0, 0, 0)
+/* armc_41b300 leaves the mode or slot in eax; its callers return it up to menu_frame, which never reads it */
+ST(armc_41b300, armcam_setup();, (CALL_PLAIN(0x41b300, 0, 0, 0, 0, 0), 0), (armc_41b300(), 0))
 T_PLAIN(app_43f640, 0x43f640, G32(0x83a9c0) = irnd(-1, 9);, 0, 0, 0, 0, 0)
 #define HUDSCENE BUF
 /* the scene here starts at the scratch area itself (these functions use fields from +0xa08 on, below SCENE's
@@ -16599,8 +16603,8 @@ static void armcsel_setup(void)
 ST(armc_40f950, armcsel_setup(); callee_stubs(g_stubArmcView, 0);, CALL_PLAIN(0x40f950, 0, 0, 0, 0, 0), (armc_40f950(), 0))
 ST(armc_40f870, armcsel_setup(); callee_stubs(g_stubArmcKind, 0);, CALL_PLAIN(0x40f870, 0, g_a[0], 0, 0, 0), (armc_40f870((DWORD)(g_a[0])), 0))
 ST(armc_40f9e0, armcsel_setup(); callee_stubs(g_stubArmcTake, 0);, CALL_PLAIN(0x40f9e0, 0, 0, 0, 0, 0), (armc_40f9e0(), 0))
-T_PLAIN(armc_drawPartScreen, 0x40f220, armcsel_setup(); callee_stubs(g_stubArmcScreen, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(armc_exit, 0x40f0f0, armcsel_setup(); callee_stubs(g_stubArmcExit, 0);, 0, g_a[1], 0, 0, 0)
+ST(armc_drawPartScreen, armcsel_setup(); callee_stubs(g_stubArmcScreen, 0);, CALL_PLAIN(0x40f220, 0, 0, 0, 0, 0), (armc_drawPartScreen(), 0))
+ST(armc_exit, armcsel_setup(); callee_stubs(g_stubArmcExit, 0);, CALL_PLAIN(0x40f0f0, 0, g_a[1], 0, 0, 0), (armc_exit((DWORD)(g_a[1])), 0))
 /* batch 170 */
 /* the armour centre's states with their callees stubbed (callee_stubs); the key tests (input_justPressed /
    input_isDown) are stubs too (callee_key: one binding pressed, or none), which also keeps the patch DLL's mouse
