@@ -14,6 +14,11 @@
 #define glColor4f_stored(c) IMPORT(0x4a9228, void, u32, u32, u32, u32)(((const u32 *)(c))[0], ((const u32 *)(c))[1], \
 	((const u32 *)(c))[2], ((const u32 *)(c))[3])
 #define glEnable(cap) IMPORT(0x4a9224, void, u32)(cap)
+#define GL_QUADS 7
+#define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
+#define glEnd() IMPORT(0x4a9220, void, void)()
+#define glTexCoord2f(s, t) IMPORT(0x4a920c, void, float, float)(s, t)
+#define glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
 #define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
 
 /* ---- C runtime of the game ---- */
@@ -21,6 +26,8 @@
 
 /* ---- screen ---- */
 #define gfx_setProjection2D3D(mode) GAME_CDECL(0x41ef90, void, int)(mode)   /* 1: 3D, 2: the menus' 2D */
+/* a vertex in the menus' 640 x 480 units (the patch DLL replaces this function: kept original) */
+#define menu_vertex(x, y) GAME_CDECL(0x41ef60, void, int, int)(x, y)
 /* ---- textures ---- */
 typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
 #define g_textures GAME_VAR(TextureSets *, 0xa0e010)
@@ -139,6 +146,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
+#define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */
+#define g_cursorFrameTime GAME_VAR(float, 0x4df910)  /* frame time collected towards the next frame (5 units) */
+#define g_cursorTexture GAME_VAR(int, 0x4e152c)      /* the pointer's sprite sheet (texture id) */
 /* two-button dialogs: the highlighted choice and its marker */
 #define g_dialogChoice GAME_VAR(int, 0x74de1c)       /* 0 the left button, 1 the right one */
 #define g_highlightShown GAME_VAR(int, 0x76d42c)

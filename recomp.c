@@ -7599,7 +7599,8 @@ void hud_402db0(int x0, int y, int x1, const char *text);
 /* 0x429bc0 menu_drawCursor(): the menu pointer at 0x4ded68 / 0x4ded6c (blinking by 0x4df910, the click flash
    0x4df03c), a 47-unit sprite through menu_vertex; its right-hand corners (@0x429cc3, @0x429cf0) go through the
    patch DLL's cursor_vtx */
-LIFT_PLAIN(menu_drawCursor, 429bc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawCursor(void);
 #include "lifted/grp176.c"
 /* 0x44ad60 text_drawSized(x, y, text, size): text_draw5 / 8 / 16 / 32 by the size */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -18373,9 +18374,9 @@ static void cursor_setup(void)
 	callee_stubs(g_stubCursor, 0);
 	G32(0xa0e010) = (int)(BUF + 0x1000);
 	G32(0x4ded68) = irnd(-50, 700); G32(0x4ded6c) = irnd(-50, 530); GF(0x4df910) = csu_fr(-100, 300);
-	G32(0x4df03c) = irnd(0, 3); G32(0x4e152c) = irnd(0, 0x7ff); GF(0x4b071c) = csu_fr(0, 10);
+	G32(0x4df03c) = irnd(0, 16);   /* the animation frame: every row of the sheet, and past the last */ G32(0x4e152c) = irnd(0, 0x7ff); GF(0x4b071c) = csu_fr(0, 10);
 }
-T_PLAIN(menu_drawCursor, 0x429bc0, cursor_setup();, 0, 0, 0, 0, 0)
+ST(menu_drawCursor, cursor_setup();, CALL_PLAIN(0x429bc0, 0, 0, 0, 0, 0), (menu_drawCursor(), 0))
 /* the size dispatchers: sizes among the fonts' and others; the passes stubbed */
 static const DWORD g_stubSized[] = { 0x402620, 3, 0x4028b0, 3, 0x402c90, 3, 0x403170, 3, 0 };
 static const DWORD g_stubSized2[] = { 0x402740, 4, 0x4029d0, 4, 0x402db0, 4, 0x403210, 4, 0 };
