@@ -278,3 +278,139 @@ u32 (room_435e70)(void)
 	GAME_VAR(int, 0x9dce48) = 0;
 	return r;
 }
+
+/* 0x43ed20: the game room drawn (its background first): while open and not leaving (state 99), the dialog's frame if
+   one is open, else the room settings kept in range (players 0 .. 16 else 8, the frag limit at most 50 and the time
+   at most 60 else 30, the map 0 .. 11 else 0), the settings panel, the map list when open, the options when shown.
+   Returns what the original leaves in eax */
+u32 (room_43ed20)(void)
+{
+	CALL(0x4388e0);   /* room_4388e0 */
+	int mode = GAME_VAR(int, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 0x63)
+		return (u32)mode;
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd1b8), GAME_VAR(int, 0x9dd1bc),
+		                                                     GAME_VAR(int, 0x9dd1c0), GAME_VAR(int, 0x9dd1c4));   /* menu_drawFrame */
+	signed char players = GAME_VAR(signed char, 0x5b1b51);
+	if (players < 0 || players > 0x10)
+		GAME_VAR(u8, 0x5b1b51) = 8;
+	if (GAME_VAR(u8, 0x5b1b54) > 0x32)
+		GAME_VAR(u8, 0x5b1b54) = 0x1e;
+	if (GAME_VAR(u8, 0x5b1b55) > 0x3c)
+		GAME_VAR(u8, 0x5b1b55) = 0x1e;
+	signed char map = GAME_VAR(signed char, 0x5b1b53);
+	if (map < 0 || map > 0xb)
+		GAME_VAR(u8, 0x5b1b53) = 0;
+	CALL(0x43bfe0);   /* room_drawGameSettings */
+	if (GAME_VAR(int, 0x4db508) == 1)
+		CALL(0x4038e0);   /* arena_4038e0: the map list */
+	if (!GAME_VAR(int, 0x4dba88))
+		return 0;
+	return CALL(0x4355b0);   /* room_4355b0 */
+}
+
+/* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the room's name
+   (0x9dd1cc set: up to 30 bytes at 0x9dd1d8) or its password (0x9dd6b0: 12 bytes at 0x9dd1f6, the stars off).
+   Returns what the original leaves in eax */
+u32 (room_433c70)(void)
+{
+	IMPORT(0x4a9344, u32, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
+	GAME_CDECL(0x431600, u32, int)(1);                           /* room_431600: the line sent */
+	if (GAME_VAR(int, 0x9dd1cc) == 1) {
+		memset((void *)0x9dd1d8, 0, 30);
+		GAME_VAR(int, 0x9dd1cc) = 0;
+		strcpy((char *)0x9dd1d8, (const char *)0x9dc92c);
+		return 0;
+	}
+	if (GAME_VAR(int, 0x9dd6b0) == 1) {
+		memset((void *)0x9dd1f6, 0, 12);
+		GAME_VAR(int, 0x4e1868) = 0;
+		strcpy((char *)0x9dd1f6, (const char *)0x9dc92c);
+		GAME_VAR(int, 0x9dd6b0) = 0;
+		return 0;
+	}
+	return GAME_VAR(u32, 0x9dd1cc);
+}
+
+/* 0x43e610: the game room's network events: a pending leave (0x9dd6c4: 1 leave now, 2 to state 0x4d), then the
+   server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the ladder game set up, the settings written, to
+   state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
+u32 (room_43e610)(void)
+{
+	u32 r = GAME_VAR(u32, 0x9dd6c4) - 2;   /* (what the original's compare chain leaves) */
+	if (GAME_VAR(int, 0x9dd6c4) == 1) {
+		r = CALL(0x434820);   /* room_434820 */
+		GAME_VAR(int, 0x9dd6c4) = 0;
+	} else if (GAME_VAR(int, 0x9dd6c4) == 2) {
+		r = 0;
+		GAME_VAR(int, 0x9dd834) = 0x4d;
+		GAME_VAR(int, 0x9dd6c4) = 0;
+	}
+	if (!GAME_VAR(int, 0x9dd6a4))
+		return r;
+	u32 answer = GAME_VAR(u32, 0xa0b37c);
+	switch (answer) {
+	case 0:
+		return 0;
+	case 33:
+		GAME_VAR(int, 0x9dd834) = 0x63;
+		GAME_VAR(int, 0x9dd838) = 0;
+		CALL(0x432620);   /* lobby_ladderGameName */
+		r = CALL(0x432400);   /* reg_writeCharacterSettings */
+		GAME_VAR(int, 0xa0b37c) = 0;
+		GAME_VAR(int, 0x9dd84c) = 1;
+		return r;
+	case 30:
+		GAME_VAR(int, 0x9dd838) = 0;
+		r = GAME_CDECL(0x41ee40, u32, int)(0x22);
+		GAME_VAR(int, 0xa0b37c) = 0;
+		return r;
+	case 42:
+		GAME_VAR(int, 0x9dd838) = 0;
+		GAME_VAR(int, 0xa0b37c) = 0;
+		GAME_VAR(int, 0x9dd850) = 1;
+		return answer;
+	}
+	GAME_VAR(int, 0x9dd838) = 0;
+	r = GAME_CDECL(0x41ee40, u32, int)(0x2a);
+	GAME_VAR(int, 0xa0b37c) = 0;
+	return r;
+}
+
+/* 0x437810: the room list's keys while its password box is up (0x9dd6b8): one key cancels it (the list's page and
+   mode put back), another cancels it or, without it, leaves the screen; a third leaves the screen. Returns what the
+   original leaves in eax */
+u32 (menu_437810)(void)
+{
+	u32 r;
+	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
+		if (!GAME_VAR(int, 0x9dd6b8))
+			return 0;
+		r = sound(0);
+		GAME_VAR(int, 0x9dd6b8) = 0;
+		GAME_VAR(int, 0x76d40c) = 0;
+		GAME_VAR(int, 0x9dd6ac) = GAME_VAR(int, 0x9dd1b4);
+		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
+		GAME_VAR(int, 0x9dd3b0) = 1;
+		return r;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e0cdc))) {
+		if (GAME_VAR(int, 0x9dd6b8))
+			return GAME_VAR(u32, 0x9dd6b8);
+		r = sound(0);
+		GAME_VAR(int, 0x9dd6b8) = 0;
+		GAME_VAR(int, 0x9dd3b0) = 0;
+		GAME_VAR(int, 0x76d40c) = 0;
+		GAME_VAR(int, 0x9dce48) = 0;
+		return r;
+	}
+	if (!input_justPressed(GAME_VAR(int, 0x76d48c)))
+		return 0;
+	if (GAME_VAR(int, 0x9dd6b8))
+		return GAME_VAR(u32, 0x9dd6b8);
+	r = sound(0);
+	GAME_VAR(int, 0x9dce48) = 0;
+	return r;
+}

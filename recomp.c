@@ -3206,7 +3206,8 @@ LIFT_PLAIN(profile_deleteFiles, 44ba60)
 LIFT_PLAIN(reg_writeCharacterSettings, 432400)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_433640(void);
-LIFT_PLAIN(room_43e610, 43e610)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_43e610(void);
 /* 0x42f150 gfx_initGLState(w, h): the GL state for a new window and the projection */
 LIFT_PLAIN(gfx_initGLState, 42f150)
 /* 0x456520 (thiscall) tex_upload(name, mode): upload the texture object's RGBA image (with mipmaps if wanted);
@@ -4420,7 +4421,8 @@ LIFT_PLAIN(menu_loadIntroTextures, 430ca0)
 /* 0x430bf0 intro_430bf0(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (intro_430ab0,
    intro_42f2b0, intro_42f500, intro_42f690, intro_42f8e0, intro_430bd0), each followed by a loading-screen frame
    (intro_41f100, progress 0x4dda34 + 1) and, but for the last, a wait of 2.0 (intro_41e730) */
-LIFT_PLAIN(intro_430bf0, 430bf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD intro_430bf0(void);
 /* batch 149 (lifted/grp95.c): the console's destructor */
 #include "lifted/grp95.c"
 /* 0x460c40 (thiscall) Console_ctor(): misnamed: the console's destructor: an SEH frame, the vtable 0x4aa238, then
@@ -4692,7 +4694,8 @@ DWORD profile_44f410(void);
 /* 0x43ed20 room_43ed20() / 0x40d390 lobbyCreate_draw(): the room / create-game screen: its draw, then (entered, not
    leaving) the dialog box or: the settings bytes kept in range (players 0..16, limits, map), the panel, the dialog,
    the chat */
-LIFT_PLAIN(room_43ed20, 43ed20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_43ed20(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyCreate_draw(void);
 /* batch 164 (lifted/grp110.c): mission settings keys, three jump stubs */
@@ -4735,7 +4738,8 @@ void profile_44b6e0(void);
 int profile_44c390(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_44c400(void);
-LIFT_PLAIN(profile_44c480, 44c480)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44c480(void);
 /* batch 166 (lifted/grp112.c): the profile screen's input */
 #include "lifted/grp112.c"
 /* 0x44be00 profile_44be00(): the profile list page's mouse: a left click on the list (profile_44b3a0, 7 kinds:
@@ -4944,7 +4948,8 @@ void room_4340e0(void);
 void room_4341a0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_433bb0(void);
-LIFT_PLAIN(menu_437810, 437810)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_437810(void);
 /* batch 173 (lifted/grp123.c): small functions tested with their callees stubbed (tools/gentests.py): the
    in-match messages (connection lost, network unstable, server / user ends the game, data loss, frag / time
    limit: a message by mode 0x9dae74 and a sound), the arena slots 3 / 4 join wrappers, dplay_coInit,
@@ -4979,7 +4984,8 @@ DWORD FUN_00403870(void);
 void room_435f40(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_435e70(void);
-LIFT_PLAIN(room_433c70, 433c70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_433c70(void);
 LIFT_PLAIN(lobby_keysQuit, 408110)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_topPageKeys(void);
@@ -10227,7 +10233,7 @@ T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)
    own argument slot as the key, i.e. the caller's saved register, which no rebuild reproduces (that path is tested
    in reg_writeCharacterSettings's own test) */
 ST(room_433640, charset_setup(); g_mockRegFail = 0;, CALL_PLAIN(0x433640, 0, 0, 0, 0, 0), (DWORD)(room_433640()))
-T_PLAIN(room_43e610, 0x43e610, charset_setup();, 0, 0, 0, 0, 0)
+ST(room_43e610, charset_setup();, CALL_PLAIN(0x43e610, 0, 0, 0, 0, 0), (DWORD)(room_43e610()))
 T_PLAIN(gfx_initGLState, 0x42f150, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
 /* a texture object (RGBA image at +0x114, size at +0xc0118, mipmap/filter flags) */
 static void texobj_setup(void)
@@ -13902,7 +13908,7 @@ static void introsetup_setup(void)
 	fill((void *)0x67ef38, 0xc00); fill((void *)0x9dada0, 0x70); fill((void *)0x5b1cfc, 0xd0);
 	g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);
 }
-T_PLAIN(intro_430bf0, 0x430bf0, introsetup_setup();, 0, 0, 0, 0, 0)
+ST(intro_430bf0, introsetup_setup();, CALL_PLAIN(0x430bf0, 0, 0, 0, 0, 0), (DWORD)(intro_430bf0()))
 /* batch 149 */
 /* a console at BUF (it fits: its stage at +0x1f36c8 ends below the mock heap): ownership flags inside the stage as
    Stage_dtor's test sets them (up to the stage's last fields, +0x2149330), the view volume at +0x74 as vvext_setup
@@ -14333,7 +14339,7 @@ ST(lobby_processKeys, disp_state(); callee_stubs(g_stubLobby, 0);, CALL_PLAIN(0x
 ST(menu_4378e0, disp_state(); callee_stubs(g_stubRoomMouse, 0);, CALL_PLAIN(0x4378e0, 0, 0, 0, 0, 0), (DWORD)(menu_4378e0()))
 ST(room_processKeys, disp_state(); callee_stubs(g_stubRoomKeys, 0);, CALL_PLAIN(0x436800, 0, 0, 0, 0, 0), (DWORD)(room_processKeys()))
 ST(profile_44f410, disp_state(); callee_stubs(g_stubProfile, 0);, CALL_PLAIN(0x44f410, 0, 0, 0, 0, 0), (DWORD)(profile_44f410()))
-T_PLAIN(room_43ed20, 0x43ed20, disp_state(); callee_stubs(g_stubRoomDraw, 0);, 0, 0, 0, 0, 0)
+ST(room_43ed20, disp_state(); callee_stubs(g_stubRoomDraw, 0);, CALL_PLAIN(0x43ed20, 0, 0, 0, 0, 0), (DWORD)(room_43ed20()))
 ST(lobbyCreate_draw, disp_state(); callee_stubs(g_stubCreateDraw, 0);, CALL_PLAIN(0x40d390, 0, 0, 0, 0, 0), (DWORD)(lobbyCreate_draw()))
 /* batch 164 */
 /* the mission settings keys: menudisp_setup's state with its own bindings (keys or the wheel only, see batch 162)
@@ -14381,7 +14387,7 @@ ST(profile_44b670, profilepage_setup();, CALL_PLAIN(0x44b670, 0, 0, 0, 0, 0), (p
 ST(profile_44b6e0, profilepage_setup();, CALL_PLAIN(0x44b6e0, 0, 0, 0, 0, 0), (profile_44b6e0(), 0))
 ST(profile_44c390, profilepage_setup();, CALL_PLAIN(0x44c390, 0, 0, 0, 0, 0), (DWORD)(profile_44c390()))
 ST(profile_44c400, profilepage_setup();, CALL_PLAIN(0x44c400, 0, 0, 0, 0, 0), (DWORD)(profile_44c400()))
-T_PLAIN(profile_44c480, 0x44c480, profilepage_setup();, 0, 0, 0, 0, 0)
+ST(profile_44c480, profilepage_setup();, CALL_PLAIN(0x44c480, 0, 0, 0, 0, 0), (DWORD)(profile_44c480()))
 /* batch 166 */
 /* the profile screen's input: profilepage_setup's state, the profile list (profiles_setup), all six button tables
    and the name page's OK rectangle with the cursor often on a button, key bindings among a few keys or the wheel
@@ -14726,7 +14732,7 @@ ST(room_433bb0, gen_setup(g_gs_433bb0, g_gi_433bb0, g_gb_433bb0);, CALL_PLAIN(0x
 static const DWORD g_gs_437810[] = { 0x401600, 1, 0x41e760, 1, 0 };
 static const DWORD g_gi_437810[] = { 0x4e0cdc, 0x4e1524, 0x76d40c, 0x76d48c, 0x9dce48, 0x9dd1b4, 0x9dd1d0, 0x9dd300, 0x9dd3b0, 0x9dd6ac, 0x9dd6b8, 0 };
 static const DWORD g_gb_437810[] = { 0 };
-T_PLAIN(menu_437810, 0x437810, gen_setup(g_gs_437810, g_gi_437810, g_gb_437810);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_437810, gen_setup(g_gs_437810, g_gi_437810, g_gb_437810);, CALL_PLAIN(0x437810, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_437810()))
 /* batch 173: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_463390[] = { 0x456e50, 2, 0x4629f0, 2, 0 };
 static const DWORD g_gi_463390[] = { 0x9dae74, 0 };
@@ -14787,7 +14793,7 @@ ST(room_435e70, gen_setup(g_gs_435e70, g_gi_435e70, g_gb_435e70);, CALL_PLAIN(0x
 static const DWORD g_gs_433c70[] = { 0x431600, 1, 0 };
 static const DWORD g_gi_433c70[] = { 0x9dd1f6, 0x4ded18, 0x4e1868, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd6b0, 0x9dd888, 0 };
 static const DWORD g_gb_433c70[] = { 0x9dc92c, 0x9dd1d8, 0 };
-T_PLAIN(room_433c70, 0x433c70, gen_setup(g_gs_433c70, g_gi_433c70, g_gb_433c70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_433c70, gen_setup(g_gs_433c70, g_gi_433c70, g_gb_433c70);, CALL_PLAIN(0x433c70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_433c70()))
 static const DWORD g_gs_408110[] = { 0x401600, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_408110[] = { 0x4ded40, 0x4ded42, 0x4ded43, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4df8e8, 0x4e0cdc, 0x4e1510, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x90d1c4, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_408110[] = { 0x4ded20, 0x67fb44, 0 };

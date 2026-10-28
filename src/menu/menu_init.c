@@ -137,3 +137,23 @@ u32 (mainmenu_440d70)(void)
 	GAME_CDECL(0x440a20, void, void)();          /* mainmenu_440a20: the layout */
 	return GAME_CDECL(0x440c60, u32, void)();    /* autoplay_listFiles */
 }
+
+/* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
+   repeat records, the menu's records), each counted on the progress bar (0x4dda34), drawn, and followed by a 2-second
+   wait. Returns the last progress drawing's eax */
+u32 (intro_430bf0)(void)
+{
+	static const u32 steps[5] = { 0x42f2b0, 0x42f500, 0x42f690, 0x42f8e0, 0x430bd0 };
+	memset((void *)0x67ef38, 0, 0x300 * 4);
+	GAME_CDECL(0x430ab0, void, void)();   /* intro_430ab0: the colours */
+	u32 r = 0;
+	for (int k = 0; ; k++) {
+		GAME_VAR(int, 0x4dda34)++;
+		r = GAME_CDECL(0x41f100, u32, void)();   /* intro_41f100: the progress drawn */
+		if (k == 5)
+			break;
+		GAME_CDECL(0x41e730, void, double)(2.0);   /* intro_41e730: wait */
+		GAME_CDECL(steps[k], void, void)();
+	}
+	return r;
+}

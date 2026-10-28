@@ -261,3 +261,34 @@ u32 (profile_processInput)(void)
 	}
 	return page;
 }
+
+/* 0x44c480: the profile list's clicks: rows 0 .. 8 select a profile (with sound 2, its pilot panel reset), 9 logs in
+   with the typed name (profile_selectAndLoad), 10 cancels; a right click closes the page. Returns the right click
+   state (the original's eax) */
+int (profile_44c480)(void)
+{
+	GAME_VAR(int, 0x4dda44) = 0;
+	if (g_mouseClick) {
+		u32 row = GAME_CDECL(0x44b3e0, u32, int, int)(g_mouseX, g_mouseY);   /* the list's hit test */
+		if (row <= 8) {
+			if (GAME_VAR(u32, 0x9f8d30) != row) {
+				GAME_VAR(u32, 0x9f8d30) = row;
+				GAME_VAR(int, 0x9f8d68) = 1;
+				sound_playMenu(2);
+				GAME_VAR(int, 0x9f8ee4) = 0;
+				GAME_VAR(int, 0x9f6828) = 0;
+			}
+		} else if (row == 9) {
+			sound_playMenu(0);
+			CALL(0x44b990);   /* profile_selectAndLoad */
+			GAME_VAR(int, 0x9f8f10) = 1;
+		} else if (row == 10) {
+			sound_playMenu(0);
+			GAME_VAR(int, 0x9f8f10) = 1;
+			GAME_VAR(int, 0x76d42c) = 0;
+		}
+	}
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x9f8f10) = 1;
+	return GAME_VAR(int, 0x4ded8c);
+}
