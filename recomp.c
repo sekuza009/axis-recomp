@@ -1086,9 +1086,12 @@ static void __cdecl mainmenu_440df0(void)
 }
 
 /* constant setters */
-static void __cdecl set_4dc798_40f200(void) { G32(0x4dc798) = 1; G32(0x4dc788) = 0; }
-static void __cdecl set_4dc798_40f320(void) { G32(0x4dc798) = 3; G32(0x4dc4b0) = 5; }
-static void __cdecl set_a61708_46f090(int v) { G32(0xa61708) = v; G32(0xa21704) = 0; G32(0xaa268c) = 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_4dc798_40f200(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_4dc798_40f320(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a61708_46f090(int v);
 static void __cdecl menu_445e10(void)
 {
 	if (g_mouseClick2) { G32(0x4dda44) = 0; G32(0x4df900) = 0; }
@@ -1123,19 +1126,26 @@ static void __cdecl FUN_0046d490(void) { set4d(0xa1f2d8, F1, F1, 0, F1); }
 static void __cdecl FUN_0046d350(void) { set4d(0xa1f2f0, FH, FH, FH, F1); }
 /* three-float vectors at 0xa0e7a8..: zero or a unit axis */
 static void set3d(DWORD a, DWORD x, DWORD y, DWORD z) { DWORD *p = (DWORD *)a; p[0] = x; p[1] = y; p[2] = z; }
-static void __cdecl set_a0e7a8_4678f0(void) { set3d(0xa0e7a8, 0, 0, 0); }
-static void __cdecl set_a0e7b8_467890(void) { set3d(0xa0e7b8, 0, 0, 0); }
-static void __cdecl set_a0e7c8_467980(void) { set3d(0xa0e7c8, 0, 0, F1); }
-static void __cdecl set_a0e7d8_467950(void) { set3d(0xa0e7d8, 0, F1, 0); }
-static void __cdecl set_a0e7e8_4678c0(void) { set3d(0xa0e7e8, 0, 0, 0); }
-static void __cdecl set_a0e7f8_467920(void) { set3d(0xa0e7f8, F1, 0, 0); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7a8_4678f0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7b8_467890(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7c8_467980(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7d8_467950(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7e8_4678c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void set_a0e7f8_467920(void);
 
 /* scene-object methods (this = the scene sub-object) */
 static THISCALL void FUN_0045df90(char *self) { memset(self + 0x202e8f0, 0, 100 * 4); }
 static THISCALL void match_463670(char *self) { S32(self, 0x2343237) = 1; S32(self, 0x2343106) = 1; }
 static THISCALL void match_463690(char *self) { S32(self, 0x234323b) = 1; S32(self, 0x2343106) = 1; }
 static THISCALL void match_4636b0(char *self) { S32(self, 0x234323f) = 1; S32(self, 0x2343106) = 1; }
-static THISCALL void this_set_4841d0(char *self) { S32(self, 0x90a4) = 0; S32(self, 0x90a8) = 0; S32(self, 0x90ac) = 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL this_set_4841d0(void *view);
 static THISCALL void load_479a60(char *self)         /* effect pool: 1000 x 300 bytes, clear each slot's first dword */
 {
 	S32(self, 0x20f2da0) = 0; S32(self, 0x20f2da4) = 0; S32(self, 0x20f2da8) = 0;
@@ -1159,7 +1169,8 @@ static THISCALL void match_4722e0(char *self, float v)
 }
 
 /* small object methods */
-static THISCALL void this_set_480210(int *p, int a, int b, int c) { p[0] = a; p[1] = b; p[2] = c; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL this_set_480210(void *p, int a, int b, int c);
 static THISCALL void collision_480230(float *v)      /* negate a Vec3 (fld/fchs/fstp: signalling NaNs come out quiet) */
 {
 	for (int i = 0; i < 3; i++) { volatile long double t = v[i]; v[i] = (float)-t; }
@@ -1245,11 +1256,8 @@ static void __cdecl arena_403f30(void) { rects_row(0x4dbb40, 0x4dbb60, 0x4dba70,
 
 static void __cdecl text_setColor(DWORD r, DWORD g, DWORD b, DWORD a) { Color4_set((DWORD *)0x76d438, r, g, b, a); }
 static int __cdecl cfg_44ac70(char *s) { int n = cfg_44ac50(s); s[n - 1] = 0; return n; }   /* drop the last character */
-static THISCALL void *ErrorLog_ctor(DWORD *self, DWORD a, DWORD b)
-{
-	self[0] = 0x4aa2a0; self[1] = a; G32(0xa1efe8) = (int)b;
-	return self;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL ErrorLog_ctor(void *self, const char *name, int b);
 static void __cdecl armc_410160(void)
 {
 	if (g_mouseClick2) { armc_40e670(); G32(0x4dc790) = 0; G32(0x4e1870) = 0; }
@@ -3723,8 +3731,10 @@ static THISCALL void hud_47d060(char *self, char *vv)
 /* batch 30: the small leftovers - setters, getters, clears, vtable-only dtors, nullsubs, static ErrorLog objects */
 static int __cdecl skirmish_4017b0(int v) { G32(0x4ad490) = v; return v; }
 static int __cdecl skirmish_4017c0(int v) { G32(0x4ad494) = v; return v; }
-static int __cdecl set_680370_441250(int v) { G32(0x680370) = v; return v; }
-static int __cdecl set_4b42dc_457140(int v) { G32(0x4b42dc) = v; return v; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int set_680370_441250(int v);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int set_4b42dc_457140(int v);
 static int __cdecl match_4686e0(int v) { G32(0x4c4dec) = v; return v; }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_initObject_4e1878(void);
@@ -3738,27 +3748,48 @@ void static_initObject_76d498(void);
 void static_initObject_90d1e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_initObject_83a9e0(void);
-static int __cdecl arena_4532a0(void) { return G32(0xa0b41c); }
-static int __cdecl gfx_getWidth(void) { return G32(0xa0e810); }
-static int __cdecl gfx_getHeight(void) { return G32(0xa0e928); }
-static long double __cdecl FUN_004686d0(void) { return *(volatile float *)0x4c4dec; }
-static long double __cdecl match_4686f0(void) { return *(volatile float *)0x4c4df0; }
-static long double __cdecl FUN_00468700(void) { return *(volatile float *)0x4c4df4; }
-static THISCALL int FUN_004569a0(char *self) { memset(self, 0, 0x8 * 4); return 0; }
-static THISCALL int FUN_00464bb0(char *self) { memset(self, 0, 0x13 * 4); return 0; }
-static THISCALL int load_466a20(char *self) { memset(self, 0, 0x93 * 4); return 0; }
-static THISCALL int load_46ae70(char *self) { memset(self, 0, 0x4c * 4); return 0; }
-static THISCALL int load_47db50(char *self) { memset(self, 0, 0x2b * 4); return 0; }
-static THISCALL int load_4804a0(char *self) { memset(self, 0, 0x14 * 4); return 0; }
-static THISCALL int load_4813a0(char *self) { memset(self, 0, 0x3d * 4); return 0; }
-static THISCALL int load_483fc0(char *self) { memset(self, 0, 0x245c * 4); return 0; }
-static THISCALL int load_487480(char *self) { memset(self, 0, 0xe * 4); return 0; }
-static THISCALL int load_480430(char *self) { memset(self, 0, 0x4 * 4); return 0; }
-static THISCALL int this_set_483d60(char *self) { S32(self, 0xb004) = 0; S32(self, 0xb008) = 0; return 0; }
-static THISCALL int load_48fc30(char *self) { S32(self, 0x2148ed0) = 0; S32(self, 0x2148ed4) = 0; return 0; }
-static THISCALL void ErrorLog_dtor(DWORD *self) { self[0] = 0x4aa2a0; }
-static THISCALL void TimeSync_dtor(DWORD *self) { self[0] = 0x4aa46c; }
-static THISCALL void Scene_dtor(DWORD *self) { self[0] = 0x4aa258; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4532a0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int gfx_getWidth(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int gfx_getHeight(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+float FUN_004686d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+float match_4686f0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+float FUN_00468700(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL FUN_004569a0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL FUN_00464bb0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_466a20(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_46ae70(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_47db50(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_4804a0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_4813a0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_483fc0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_487480(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_480430(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL this_set_483d60(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_48fc30(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL ErrorLog_dtor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL TimeSync_dtor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL Scene_dtor(void *self);
 static THISCALL int armc_45dfe0(char *self, int v) { S32(self, 0x202e8dc) = v; return v; }
 static THISCALL int this_get_0x2342381_463780(char *self, int i) { return *(int *)(self + i * 4 + 0x2342381); }
 static THISCALL void *match_45fff0(void *self) { return self; }
@@ -3841,18 +3872,28 @@ GUARDED_DTOR(FUN_0046f450, 0xae2eb0, 0xae2e98) GUARDED_DTOR(FUN_0046ff50, 0xae2e
 GUARDED_DTOR(FUN_00481370, 0xae2ed8, 0xae2ed0) GUARDED_DTOR(FUN_00483d30, 0xae2ee0, 0xae2ee8)
 GUARDED_DTOR(FUN_00483f90, 0xae2ef8, 0xae2ef0) GUARDED_DTOR(FUN_00487410, 0xae2f08, 0xae2f00)
 GUARDED_DTOR(FUN_0048b3f0, 0xae3330, 0xae3328)
-static void __cdecl ErrorLog_dtor_wrap_456cc0(void) { ErrorLog_dtor((DWORD *)0xa0e020); }
-static void __cdecl TimeSync_dtor_wrap_468740(void) { TimeSync_dtor((DWORD *)0xa0e948); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ErrorLog_dtor_wrap_456cc0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void TimeSync_dtor_wrap_468740(void);
 
 /* constructors: vtable, then the member clear (which for some classes clears the vtable again, as in the original) */
-static THISCALL int FUN_004569b0(char *self) { FUN_004569a0(self); S32(self, 0x1c) = 0; return 0; }
-static int __cdecl TextureManager_ctor(void) { G32(0x83a5e0) = 0x4a9570; return FUN_004569a0((char *)0x83a5e0); }
-static THISCALL void *Light_ctor(DWORD *self) { self[0] = 0x4aa248; this_set_483d60((char *)self); return self; }
-static THISCALL void *Model_ctor(DWORD *self) { self[0] = 0x4aa250; FUN_00464bb0((char *)self); return self; }
-static THISCALL void *CollisionVolume_ctor(DWORD *self) { self[0] = 0x4aa254; load_4813a0((char *)self); return self; }
-static THISCALL void *Scene_ctor(DWORD *self) { self[0] = 0x4aa258; nullsub_48b420(); return self; }
-static THISCALL void *TimeSync_ctor(DWORD *self) { self[0] = 0x4aa46c; load_487480((char *)self); return self; }
-static THISCALL int Light_dtor(DWORD *self) { self[0] = 0x4aa248; return this_set_483d60((char *)self); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL FUN_004569b0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int TextureManager_ctor(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Light_ctor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Model_ctor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL CollisionVolume_ctor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Scene_ctor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL TimeSync_ctor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL Light_dtor(void *self);
 static THISCALL int load_4723e0(char *self) { S32(self, 0x9d800c) = 0; return this_set_483d60(self + 0x9d8010); }
 /* 0x463850: five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) inside one object; the
    original's SEH frame only matters if a constructor throws, and these cannot */
@@ -3884,9 +3925,9 @@ static int space_resetPool(char *self, int cnt, int stride, clear_fn clear, int 
 	S32(self, cnt + 0xc) = 0; S32(self, cnt + 8) = S32(self, cnt + 4);
 	return r;
 }
-static THISCALL int space_resetPlanes(char *self) { return space_resetPool(self, 0x10, 0xac, load_47db50, 0xa0); }
-static THISCALL int space_resetNodes(char *self) { return space_resetPool(self, 0x20, 0x10, load_480430, 8); }
-static THISCALL int space_resetBlocks(char *self) { return space_resetPool(self, 0x40, 0x50, load_4804a0, 0x48); }
+static THISCALL int space_resetPlanes(char *self) { return space_resetPool(self, 0x10, 0xac, (clear_fn)load_47db50, 0xa0); }
+static THISCALL int space_resetNodes(char *self) { return space_resetPool(self, 0x20, 0x10, (clear_fn)load_480430, 8); }
+static THISCALL int space_resetBlocks(char *self) { return space_resetPool(self, 0x40, 0x50, (clear_fn)load_4804a0, 0x48); }
 
 static THISCALL int script_reset(char *self)
 {
@@ -3946,7 +3987,8 @@ static void __cdecl arena_406810(void)
 	arena_4065e0();
 }
 /* batch 32 */
-static THISCALL int TextureManager_dtor(DWORD *self) { self[0] = 0x4a9570; return FUN_004569b0((char *)self); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL TextureManager_dtor(void *self);
 static void *__cdecl load_487430_wrap_468720(void) { return TimeSync_ctor((DWORD *)0xa0e948); }
 /* 0x48fce0 (thiscall) script_runScpFile(name, mode): reset the script state, keep the file name and mode; modes 0/2
    clear the "running" flag at +0x214930c, mode 1 sets it. EAX = 0 for modes 0..2, else mode - 2 */
@@ -4008,7 +4050,8 @@ static THISCALL int load_47db60(char *self, int id, const float *v0, const float
 	return d;
 }
 /* batch 33 */
-static void __cdecl TextureManager_dtor_wrap_42b380(void) { TextureManager_dtor((DWORD *)0x83a5e0); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void TextureManager_dtor_wrap_42b380(void);
 
 /* 0x41c510 armc_41c510: copy the shown mech's stats into the ARM CENTER readout at 0x4dcaa0..0x4dcb0c (scaled by
    the constants the original multiplies with). Scene at *0x9087b4; actor = scene index at +0x234240d (stride 0x8888,
@@ -4672,18 +4715,27 @@ int static_registerDtor_48b3e0(void);
 /* 0x467d60 FUN_00467d60(p): delete p unless null */
 static DWORD __cdecl FUN_00467d60(DWORD p) { return p ? CRT_delete(p) : 0; }
 /* the deleting destructors (vtable slot 0): destroy, then free the object when flags bit 0 is set; return this */
-static THISCALL char *TextureManager_deletingDtor(char *self, DWORD flags) { TextureManager_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *Light_deletingDtor(char *self, DWORD flags) { Light_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *Scene_deletingDtor(char *self, DWORD flags) { Scene_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *ErrorLog_deletingDtor(char *self, DWORD flags) { ErrorLog_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *TimeSync_deletingDtor(char *self, DWORD flags) { TimeSync_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL TextureManager_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Light_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Scene_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL ErrorLog_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL TimeSync_deletingDtor(void *self, int flags);
 /* release functions: free the owned buffer (+8, owned when +0xc == 1), then the class clear (EAX = 0) */
-static THISCALL int FUN_00464bc0(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } FUN_00464bb0(self); return 0; }
-static THISCALL int load_466a30(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } load_466a20(self); return 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL FUN_00464bc0(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_466a30(void *self);
 static THISCALL int FUN_004699a0(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } FUN_00469980((int *)self); return 0; }
-static THISCALL int load_46ae80(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } load_46ae70(self); return 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_46ae80(void *self);
 static THISCALL int FUN_0046f4b0(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } FUN_0046f480((int *)self); return 0; }
-static THISCALL int load_4813b0(char *self) { if (S32(self, 0xc) == 1) { CRT_delete((DWORD)S32(self, 8)); S32(self, 8) = 0; S32(self, 0xc) = 0; } load_4813a0(self); return 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL load_4813b0(void *self);
 /* 0x4519b0 arena_4519b0(): free the arena's 19 allocated buffers (in the original's order) and null the pointers;
    EAX = free's return for the last one, or 0 when it was null */
 static DWORD __cdecl arena_4519b0(void)
@@ -4780,11 +4832,15 @@ static DWORD __cdecl FUN_00483cf0(void) { Light_rtti(); return static_registerDt
 static DWORD __cdecl FUN_00483f50(void) { ViewVolume_rtti(); return static_registerDtor_483f80(); }
 static DWORD __cdecl FUN_004873d0(void) { TimeSync_rtti(); return static_registerDtor_487400(); }
 static DWORD __cdecl FUN_0048b3b0(void) { Scene_rtti(); return static_registerDtor_48b3e0(); }
-static THISCALL int Model_dtor(DWORD *self) { self[0] = 0x4aa250; return FUN_00464bc0((char *)self); }
-static THISCALL int ShapeManager_dtor(DWORD *self) { self[0] = 0x4aa244; return load_466a30((char *)self); }
-static THISCALL int SkeletonManager_dtor(DWORD *self) { self[0] = 0x4aa240; return load_46ae80((char *)self); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL Model_dtor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL ShapeManager_dtor(void *self);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL SkeletonManager_dtor(void *self);
 static THISCALL int match_46f470(DWORD *self) { self[0] = 0x4a9754; return FUN_0046f4b0((char *)self); }
-static THISCALL int CollisionVolume_dtor(DWORD *self) { self[0] = 0x4aa254; return load_4813b0((char *)self); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL CollisionVolume_dtor(void *self);
 /* 0x4411e0 intro_4411e0(): restart the intro camera path list at 0x67fb3c with one node (counter 0x9dae10 = 0) */
 static DWORD __cdecl intro_4411e0(void) { G32(0x9dae10) = 0; return FUN_00441120((DWORD *)0x67fb3c); }
 /* 0x441200 FUN_00441200(): append one more path node (counter + 1) and set +0x3520 = 1.0 on every node but the last;
@@ -4826,7 +4882,8 @@ static THISCALL int FUN_0046b7f0(char *self)
 /* 0x46ce50 (thiscall) FUN_0046ce50(): close the file at +4 if any; EAX = 0 or fclose's result */
 static THISCALL DWORD FUN_0046ce50(DWORD *self) { return self[1] ? CRT_fclose(self[1]) : 0; }
 /* 0x46ce60 (thiscall) BMPRGBFile_ctor (really the destructor body): vtable 0x4a96f8, close the file at +4 */
-static THISCALL void BMPRGBFile_ctor(DWORD *self) { self[0] = 0x4a96f8; if (self[1]) CRT_fclose(self[1]); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL BMPRGBFile_ctor(void *self);
 /* 0x487ed0 (thiscall) match_487ed0(): close the replay file (+0x2340d08) when one is open (+0x2340d1d) */
 static THISCALL DWORD match_487ed0(char *self)
 {
@@ -4845,14 +4902,8 @@ static THISCALL DWORD chat_loadMacros(char *self)
 }
 /* 0x455030 (thiscall) Texture_ctor (really the destructor body): vtable 0x4a956c, delete the pixel buffer (+0x10c,
    when +0x108 >= 0), close the file (+0x110). EAX as the original leaves it */
-static THISCALL DWORD Texture_ctor(DWORD *self)
-{
-	DWORD r = self[0x42];
-	self[0] = 0x4a956c;
-	if ((int)r >= 0) { r = CRT_delete(self[0x43]); self[0x42] = 0; }
-	if (self[0x44]) r = CRT_fclose(self[0x44]);
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD THISCALL Texture_ctor(void *self);
 /* 0x46ca70 FUN_0046ca70(fmt, ...): does the file named by the formatted path exist (fopen "rb" succeeds)? */
 static int __cdecl FUN_0046ca70(const char *fmt, ...)
 {
@@ -4911,19 +4962,31 @@ LIFT_PLAIN(cfg_keyBindings, 42cba0)
 static THISCALL DWORD match_46cdc0(char *self, DWORD name) { DWORD v[1] = { name }; return run_lifted_regs(lift_46cdc0, 0, (DWORD)self, 0, 1, v); }
 /* batch 46 */
 /* deleting destructors: destroy, free the object when flags bit 0 is set, return this */
-static THISCALL char *Texture_deletingDtor(char *self, DWORD flags) { Texture_ctor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *BMPRGBFile_deletingDtor(char *self, DWORD flags) { BMPRGBFile_ctor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *Model_deletingDtor(char *self, DWORD flags) { Model_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *ShapeManager_deletingDtor(char *self, DWORD flags) { ShapeManager_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *CollisionVolume_deletingDtor(char *self, DWORD flags) { CollisionVolume_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
-static THISCALL char *SkeletonManager_deletingDtor(char *self, DWORD flags) { SkeletonManager_dtor((DWORD *)self); if (flags & 1) CRT_delete((DWORD)self); return self; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Texture_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL BMPRGBFile_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Model_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL ShapeManager_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL CollisionVolume_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL SkeletonManager_deletingDtor(void *self, int flags);
 /* Texture_ctor_wrap_*: run the Texture destructor body on one static texture */
-static DWORD __cdecl Texture_ctor_wrap_42b180(void) { return Texture_ctor((DWORD *)0x4e1878); }
-static DWORD __cdecl Texture_ctor_wrap_42b1d0(void) { return Texture_ctor((DWORD *)0x5b1db8); }
-static DWORD __cdecl Texture_ctor_wrap_42b220(void) { return Texture_ctor((DWORD *)0x680cd8); }
-static DWORD __cdecl Texture_ctor_wrap_42b270(void) { return Texture_ctor((DWORD *)0x76d498); }
-static DWORD __cdecl Texture_ctor_wrap_42b2c0(void) { return Texture_ctor((DWORD *)0x90d1e0); }
-static DWORD __cdecl Texture_ctor_wrap_42b310(void) { return Texture_ctor((DWORD *)0x83a9e0); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b180(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b1d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b220(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b270(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b2c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD Texture_ctor_wrap_42b310(void);
 /* 0x456cd0 FUN_00456cd0(): with sound on (0xa0e80c), delete every loaded sound buffer (pointers 0xa0e02c..0xa0e66c)
    and null them. EAX as the original leaves it */
 static DWORD __cdecl FUN_00456cd0(void)
@@ -9776,7 +9839,7 @@ ST(text_setColor, fill((void *)0x76d438, 16); fill(g_a, 16);,
    (CD(void, 0x44ad30, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0), (text_setColor(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(cfg_44ac70, fill(BUF + 0xf0, 0x10); fill_str(BUF + 0x100, 60, 1, 255);, CD(int, 0x44ac70, char *)(BUF + 0x100), cfg_44ac70(BUF + 0x100))
 ST(ErrorLog_ctor, fill(BUF + 0x100, 8); fill((void *)0xa1efe8, 4); g_a[0] = irnd(-9999, 9999); g_a[1] = irnd(-9999, 9999);,
-   TC(void *, 0x46c5a0, char *, int, int)(BUF + 0x100, g_a[0], g_a[1]), ErrorLog_ctor((DWORD *)(BUF + 0x100), g_a[0], g_a[1]))
+   TC(void *, 0x46c5a0, char *, int, int)(BUF + 0x100, g_a[0], g_a[1]), ErrorLog_ctor((DWORD *)(BUF + 0x100), (const char *)g_a[0], g_a[1]))
 V0(armc_410160, 0x410160, g_mouseClick2 = irnd(0, 1); fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);
    fill((void *)0x4dc790, 4); fill((void *)0x4e1870, 4);)
 #define PROFILE_VARS fill((void *)0x9f8c48, 4); fill((void *)0x9f8d30, 0x48); fill((void *)0x9f8e50, 8); fill((void *)0x9f8ec0, 0x28); \

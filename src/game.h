@@ -553,4 +553,30 @@ typedef struct { float r, g, b, a; } Colour;
 #define ErrorLog_ctor(self, name, b) GAME_THISCALL(0x46c5a0, void *, void *, const char *, int)(self, name, b)   /* a named record (vtable 0x4aa2a0) */
 #define atexit(f) GAME_CDECL(0x49ef9c, int, void (*)(void))(f)
 
+/* ---- small classes (app/classes.c) ---- */
+#define fclose(f) GAME_CDECL(0x49e7e0, u32, void *)(f)
+#define FUN_004569a0(self) GAME_THISCALL(0x4569a0, int, void *)(self)
+#define FUN_00464bb0(self) GAME_THISCALL(0x464bb0, int, void *)(self)
+#define load_466a20(self) GAME_THISCALL(0x466a20, int, void *)(self)
+#define load_46ae70(self) GAME_THISCALL(0x46ae70, int, void *)(self)
+#define load_4813a0(self) GAME_THISCALL(0x4813a0, int, void *)(self)
+#define load_487480(self) GAME_THISCALL(0x487480, int, void *)(self)
+#define this_set_483d60(self) GAME_THISCALL(0x483d60, int, void *)(self)
+#define FUN_004569b0(self) GAME_THISCALL(0x4569b0, int, void *)(self)
+#define load_466a30(self) GAME_THISCALL(0x466a30, int, void *)(self)
+#define load_46ae80(self) GAME_THISCALL(0x46ae80, int, void *)(self)
+#define load_4813b0(self) GAME_THISCALL(0x4813b0, int, void *)(self)
+#define FUN_00464bc0(self) GAME_THISCALL(0x464bc0, int, void *)(self)
+#define TextureManager_dtor(self) GAME_THISCALL(0x456990, int, void *)(self)
+#define Light_dtor(self) GAME_THISCALL(0x483d50, int, void *)(self)
+#define CollisionVolume_dtor(self) GAME_THISCALL(0x481390, int, void *)(self)
+#define Model_dtor(self) GAME_THISCALL(0x464ba0, int, void *)(self)
+#define ShapeManager_dtor(self) GAME_THISCALL(0x466a10, int, void *)(self)
+#define SkeletonManager_dtor(self) GAME_THISCALL(0x46ae60, int, void *)(self)
+#define TimeSync_dtor(self) GAME_THISCALL(0x487470, void, void *)(self)
+#define Scene_dtor(self) GAME_THISCALL(0x48b410, void, void *)(self)
+#define BMPRGBFile_ctor(self) GAME_THISCALL(0x46ce60, void, void *)(self)
+#define ErrorLog_dtor(self) GAME_THISCALL(0x46c5e0, void, void *)(self)
+#define Texture_ctor(self) GAME_THISCALL(0x455030, u32, void *)(self)   /* in fact Texture's destructor */
+
 #endif
