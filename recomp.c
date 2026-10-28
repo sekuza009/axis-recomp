@@ -4882,7 +4882,8 @@ static THISCALL DWORD chat_macro(char *self, DWORD in, DWORD out) { DWORD v[2] =
 /* 0x43f580 GetCurrentDirectoryA_wrap_43f580: the current directory into the game path buffer */
 LIFT_PLAIN(GetCurrentDirectoryA_wrap_43f580, 43f580)
 /* 0x4685d0 gfx_swapBuffers: glFinish + SwapBuffers */
-LIFT_PLAIN(gfx_swapBuffers, 4685d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int gfx_swapBuffers(void);
 /* 0x4539f0 arena_4539f0: create the DirectPlay lobby object (CoCreateInstance) */
 LIFT_PLAIN(arena_4539f0, 4539f0)
 /* 0x454740 net_454740: reset/set the network events */
@@ -6737,15 +6738,18 @@ LIFT_PLAIN(sound_init, 467a50)
    per buffer. 0x467d70 dsbuf_play(snd): plays the current buffer and moves to the next; 0x467db0
    dsbuf_setVolume(snd, vol); 0x467dd0 sound_467dd0(snd, kind, value): value in -10000..10000 is stored as the
    current buffer's kind 1 or 2 value, set as its pan, and the buffer played */
-LIFT_PLAIN(dsbuf_play, 467d70)
-LIFT_PLAIN(dsbuf_setVolume, 467db0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void dsbuf_play(void *sound);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void dsbuf_setVolume(void *sound, int volume);
 LIFT_PLAIN(sound_467dd0, 467dd0)
 /* the music stream 0xa0e670 (IAMMultiMediaStream). 0x457310 music_shutdown(): releases it, CoUninitialize;
    0x4572b0 music_4572b0(): at the end (GetTime >= the duration 0xa0e018) seeks to 0 and runs it again (loop);
    0x457150 music_play(name): music volume 0x4e0c94 below 50 or no such file: stops; else CoInitialize, a
    multimedia stream (CoCreateInstance), Initialize, an audio stream, OpenFile, run, name into 0xa0e674 and the
    duration into 0xa0e018 */
-LIFT_PLAIN(music_shutdown, 457310)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void music_shutdown(void);
 LIFT_PLAIN(music_4572b0, 4572b0)
 LIFT_PLAIN(music_play, 457150)
 /* batch 159 (lifted/grp105.c): DirectInput keyboard and mouse, DirectSound release */
@@ -6760,13 +6764,18 @@ LIFT_PLAIN(input_4013a0, 4013a0)
 LIFT_PLAIN(input_createDirectInput, 401410)
 /* 0x4012c0 input_reacquireKeyboard(): Acquire when ready; 0x4012e0 input_reacquireMouse(): Acquire (or Unacquire
    when the game has no mouse capture, 0x4ad17c == 0), 1 if there is a mouse */
-LIFT_PLAIN(input_reacquireKeyboard, 4012c0)
-LIFT_PLAIN(input_reacquireMouse, 4012e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_reacquireKeyboard(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_reacquireMouse(void);
 /* 0x401460 input_releaseKeyboard() / 0x401490 wnd_401490(): Unacquire and Release the keyboard / mouse, not ready;
    0x467b70 wnd_467b70(): Release DirectSound 0xa0e804 */
-LIFT_PLAIN(input_releaseKeyboard, 401460)
-LIFT_PLAIN(wnd_401490, 401490)
-LIFT_PLAIN(wnd_467b70, 467b70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_releaseKeyboard(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void wnd_401490(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void wnd_467b70(void);
 /* batch 160 (lifted/grp106.c): loading a WAV sound */
 #include "lifted/grp106.c"
 /* 0x467b90 sound_loadWav(name): reads the 44-byte WAV header and the data (CreateFile / ReadFile), a static
@@ -6784,7 +6793,8 @@ LIFT_PLAIN(load_4014f0, 4014f0)
    > 0), else the key */
 LIFT_PLAIN(input_isDown, 401590)
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
-LIFT_PLAIN(sound_playMenu, 41e760)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void sound_playMenu(int id);
 /* 0x443c80 skirmish_443c80() / 0x447960 FUN_00447960(): leave the skirmish / mission settings (state 0x9ef1f0 /
    0x9f62f8 = 0), the camera back (0x4e1870, 0x4df028 / 0x4df02c, 0x68037c / 0x680380), menu sound 4 and the saved
    camera (skirmish_447910) */
@@ -6997,7 +7007,8 @@ LIFT_PLAIN(armc_processInput, 410ab0)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_453770(void);
 /* 0x4014c0 wnd_4014c0(): keyboard and mouse released, then DirectInput 0x4d1e98 */
-LIFT_PLAIN(wnd_4014c0, 4014c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void wnd_4014c0(void);
 /* the arena's connection slots 0xa0d7a4 / 0xa0d7a8: host (dplay_hostSession, 8 arguments: 0x4549e0 / 0x454b00) or
    join (dplay_joinSession: 0x454a20 / 0x454b40; 0x1f4 when the slot is closed) through them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -11401,7 +11412,7 @@ static void strs_setup(void)
 	for (char *p = BUF + 0x200; *p; p++) if (*p == '%') *p = '#';
 }
 T_PLAIN(GetCurrentDirectoryA_wrap_43f580, 0x43f580, , 0, 0, 0, 0, 0)
-T_PLAIN(gfx_swapBuffers, 0x4685d0, , 0, 0, 0, 0, 0)
+ST(gfx_swapBuffers, , CALL_PLAIN(0x4685d0, 0, 0, 0, 0, 0), (DWORD)gfx_swapBuffers())
 T_PLAIN(arena_4539f0, 0x4539f0, fill(BUF + 0x100, 8);, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(net_454740, 0x454740, , 0, 0, 0, 0, 0)
 T_PLAIN(FUN_0046c580, 0x46c580, strs_setup();, 0, BUF + 0x100, BUF + 0x200, 0, 0)
@@ -16258,10 +16269,10 @@ static void musicplay_setup(void)
 	fill((void *)0xa0e674, 0x40);
 }
 T_PLAIN(sound_init, 0x467a50, dsinit_setup();, 0, g_a[0], 0, 0, 0)
-T_PLAIN(dsbuf_play, 0x467d70, dsbuf_setup(0);, 0, g_a[2], 0, 0, 0)
-T_PLAIN(dsbuf_setVolume, 0x467db0, dsbuf_setup(0);, 0, g_a[2], g_a[1], 0, 0)
+ST(dsbuf_play, dsbuf_setup(0);, CALL_PLAIN(0x467d70, 0, g_a[2], 0, 0, 0), (dsbuf_play((void *)(DWORD)(g_a[2])), 0))
+ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 0), (dsbuf_setVolume((void *)(DWORD)(g_a[2]), (DWORD)(g_a[1])), 0))
 T_PLAIN(sound_467dd0, 0x467dd0, dsbuf_setup(1);, 0, g_a[2], g_a[0], g_a[1], 0)
-T_PLAIN(music_shutdown, 0x457310, music_setup();, 0, 0, 0, 0, 0)
+ST(music_shutdown, music_setup();, CALL_PLAIN(0x457310, 0, 0, 0, 0, 0), (music_shutdown(), 0))
 T_PLAIN(music_4572b0, 0x4572b0, music_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(music_play, 0x457150, musicplay_setup();, 0, BUF + 0x1c0, 0, 0, 0)
 /* batch 159 */
@@ -16285,11 +16296,11 @@ static void dinput_setup(void)
 T_PLAIN(input_initKeyboard, 0x401310, dinput_setup();, 0, g_a[0], 0, 0, 0)
 T_PLAIN(input_4013a0, 0x4013a0, dinput_setup();, 0, g_a[0], 0, 0, 0)
 T_PLAIN(input_createDirectInput, 0x401410, dinput_setup();, 0, g_a[0], g_a[1], 0, 0)
-T_PLAIN(input_reacquireKeyboard, 0x4012c0, dinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(input_reacquireMouse, 0x4012e0, dinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(input_releaseKeyboard, 0x401460, dinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(wnd_401490, 0x401490, dinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(wnd_467b70, 0x467b70, dinput_setup();, 0, 0, 0, 0, 0)
+ST(input_reacquireKeyboard, dinput_setup();, CALL_PLAIN(0x4012c0, 0, 0, 0, 0, 0), (input_reacquireKeyboard(), 0))
+ST(input_reacquireMouse, dinput_setup();, CALL_PLAIN(0x4012e0, 0, 0, 0, 0, 0), (DWORD)(input_reacquireMouse()))
+ST(input_releaseKeyboard, dinput_setup();, CALL_PLAIN(0x401460, 0, 0, 0, 0, 0), (input_releaseKeyboard(), 0))
+ST(wnd_401490, dinput_setup();, CALL_PLAIN(0x401490, 0, 0, 0, 0, 0), (wnd_401490(), 0))
+ST(wnd_467b70, dinput_setup();, CALL_PLAIN(0x467b70, 0, 0, 0, 0, 0), (wnd_467b70(), 0))
 /* batch 160 */
 /* a WAV file at BUF + 0x2000 (or none): the standard 44-byte header (channels, rate, bits) and 0..2000 bytes of
    data, its size field sometimes larger than the file; DirectSound with CreateSoundBuffer / DuplicateSoundBuffer
@@ -16340,7 +16351,7 @@ static void menusnd_setup(void)
 T_PLAIN(load_401540, 0x401540, keys_setup();, 0, g_a[0], 0, 0, 0)
 T_PLAIN(load_4014f0, 0x4014f0, keys_setup();, 0, g_a[0], 0, 0, 0)
 T_PLAIN(input_isDown, 0x401590, keys_setup();, 0, g_a[0], 0, 0, 0)
-T_PLAIN(sound_playMenu, 0x41e760, menusnd_setup();, 0, g_a[4], 0, 0, 0)
+ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 T_PLAIN(skirmish_443c80, 0x443c80, menusnd_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_00447960, 0x447960, menusnd_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(mission_4479b0, 0x4479b0, menusnd_setup();, 0, g_a[3], 0, 0, 0)
@@ -16676,7 +16687,7 @@ static void small_setup(const DWORD *stubs)
 	callee_ret(0x432280, (DWORD)irnd(-1, 2));
 }
 ST(arena_453770, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (DWORD)arena_453770())
-T_PLAIN(wnd_4014c0, 0x4014c0, small_setup(g_stubInputOff);, 0, 0, 0, 0, 0)
+ST(wnd_4014c0, small_setup(g_stubInputOff);, CALL_PLAIN(0x4014c0, 0, 0, 0, 0, 0), (wnd_4014c0(), 0))
 ST(arena_4549e0, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x4549e0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
    arena_4549e0(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))

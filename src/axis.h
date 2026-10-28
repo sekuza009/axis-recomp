@@ -73,6 +73,10 @@ static inline int code_matches(u32 addr, const char *pattern)
 	}
 	return 1;
 }
+/* a COM method of obj (DirectInput, DirectSound...): the vtable entry at byte offset, called stdcall with obj first */
+#define COM(obj, offset, ret, ...) ((ret (STDCALL *)(void *, ##__VA_ARGS__))(*(void ***)(obj))[(offset) / 4])
+#define COM_RELEASE 0x08
+
 /* an import, through the game's import table slot */
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)(slot))
 /* a global of the game at its address */

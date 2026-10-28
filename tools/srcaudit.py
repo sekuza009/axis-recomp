@@ -1,0 +1,27 @@
+"""srcaudit.py: checks for the readable rebuilds in src/:
+1. every function defined in src/ ("ret (name)(...)") is wired into recomp.c as a readable rebuild (not a lifted
+   wrapper or a hand-written static), so the tests run it;
+2. no address the patch DLL rewrites (axisnet_recomp.c: (BYTE *)0x4..... sites and the wrapped call table) lies
+   inside a rebuilt function unless the src code names that address (PATCHED_CALL / code_matches)."""
+import re, csv, glob, os
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+s = open('recomp.c', encoding='utf-8-sig').read()
+src = {f: open(f).read() for f in glob.glob('src/**/*.c', recursive=True)}
+names = set()
+for t in src.values(): names |= set(re.findall(r'^\w[\w \*]*?\((\w+)\)\(', t, re.M))
+bad = 0
+for n in sorted(names):
+    if re.search(r'LIFT_PLAIN8?\(%s,' % n, s) or re.search(r'static [^\n;]*\b%s\((char|DWORD|void|int)[^;\n]*(\{|$)' % n, s, re.M):
+        print('NOT WIRED (old version still in recomp.c):', n); bad += 1
+    elif not re.search(r'readable rebuild in src/[^\n]*\r?\n[^\n]*\b%s\(' % n, s) and not re.search(r'\b(int|void|unsigned)[^\n;(]*\b%s\([^;\n]*\);' % n, s):
+        print('NO DECLARATION in recomp.c:', n); bad += 1
+dll = open('axisnet_recomp.c', encoding='latin-1').read()
+sites = set(int(a, 16) for a in re.findall(r'\(BYTE \*\)\s*(0x4[0-9a-f]{5})', dll))
+sites |= set(int(a, 16) for a in re.findall(r'\{(0x4[0-9a-f]{5}), 0x4[0-9a-f]{5}, \(void \*\)', dll))
+fns = [(int(r['address'], 16), int(r['size']), r['name']) for r in csv.DictReader(open('../decomp/out/functions.csv'))]
+alltext = ''.join(src.values())
+for a in sorted(sites):
+    own = [n for b, z, n in fns if b <= a < b + z]
+    if own and own[0] in names and ('%x' % a) not in alltext and ('%x' % (a + 6)) not in alltext:
+        print('PATCH-DLL SITE NOT FOLLOWED: %#x in %s' % (a, own[0])); bad += 1
+print('%d functions in src, %d problems' % (len(names), bad))

@@ -8,9 +8,8 @@
 #define TAB_TOP 0x29a
 
 #define g_setupPage GAME_VAR(int, 0x4ddcec)           /* (by use) the open page's state: 0 and 1 closed */
-#define g_soundEdited ((const int *)0x4dde98)         /* the sound tab's values being edited (music volume first) */
+#define g_soundEdited ((const int *)0x4dde98)         /* the sound tab's values being edited (the menu sounds' volume first) */
 #define g_soundSettings ((int *)0x4e0c90)             /* the sound settings in use */
-#define g_musicLevel GAME_VAR(int, 0x4dd984)          /* (by use) the music volume as the player sets it: (v * 5 - 500) * 4 */
 #define g_graphicEdited ((const u32 *)0x4ddba0)       /* the graphics tab's seven values being edited */
 #define g_graphicSettings ((u32 *)0x83a9c0)           /* the graphics settings in use (g_items3D is the third) */
 #define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
@@ -71,17 +70,17 @@ void (setup_topPageKeys)(void)
 	}
 }
 
-/* 0x422c60: the sound tab: OK takes the edited values (and restarts the menu music with them); back or cancel
+/* 0x422c60: the sound tab: OK takes the edited values (the menu sounds' volume worked out, the menu music restarted); back or cancel
    closes the page */
 void (setup_soundTabKeys)(void)
 {
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
-		int music = g_soundEdited[0];
+		int volume = g_soundEdited[0];
 		g_soundSettings[2] = g_soundEdited[2];
 		g_soundSettings[1] = g_soundEdited[1];
-		g_soundSettings[0] = music;
+		g_soundSettings[0] = volume;
 		g_soundSettings[3] = g_soundEdited[3];
-		g_musicLevel = (music * 5 - 500) * 4;
+		g_menuVolume = (volume * 5 - 500) * 4;
 		sound_playMenu(0);
 		cfg_loadAxisCfg();
 		g_setupPage = 0;

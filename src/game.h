@@ -468,4 +468,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
 #define music_shutdown() GAME_CDECL(0x457310, void, void)()
 
+/* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */
+#define g_menuVolume GAME_VAR(int, 0x4dd984)          /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
+#define dsbuf_play(sound) GAME_CDECL(0x467d70, void, void *)(sound)
+#define dsbuf_setVolume(sound, volume) GAME_CDECL(0x467db0, void, void *, int)(sound, volume)
+#define wnd_401490() GAME_CDECL(0x401490, void, void)()   /* the mouse let go and released */
+#define glFinish() IMPORT(0x4a91f0, void, void)()
+#define SwapBuffers(hdc) IMPORT(0x4a9028, int, void *)(hdc)
+#define g_hdc GAME_VAR(void *, 0xa0e938)
+#define CoUninitialize() IMPORT(0x4a93b8, void, void)()
+
 #endif

@@ -16,6 +16,7 @@ Layout (by subsystem)
   net/          DirectPlay: the arena's connection slots
   msg/          the match's messages
   match/        the match's rules: teams
+  sound/        DirectSound buffers, the menu sounds
   render/       the stage (scene.fields: Stage, the scene's own object at +0x1f36c8): fog, the lists drawn each pass, the sky
 
 Building: ../build.sh (src/ is compiled as its own translation unit with x87 maths and linked into recomp.dll).
@@ -29,9 +30,10 @@ Adding a function
   3. python tools/tosrc.py "decl;call" (switches recomp.c from the lifted wrapper to it), ../build.sh,
      bash tools/only.sh name: it must stay bit-exact on every test. coverage.txt says how much of the function
      the test reaches; a weak test should be strengthened first.
-  4. Commit; play-test (test3.sh) after a few.
+  4. python tools/srcaudit.py (every src function wired in; every patch-DLL call site inside a rebuilt function
+     followed), commit; play-test (test3.sh) after a few.
 
-Done so far (168): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (179): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -45,7 +47,8 @@ networkUnstable / fragLimitReached / timeLimitReached / dataLoss, msg_4629f0 (ms
 msg_cheatUsed, msg_playerConnected, msg_kill, msg_chatLine, msg_playerJoinedTeam | match: scene_findTeam,
 scene_teamSide | setup: setup_drawTab, setup_processTabKeys, setup_topPageKeys / soundTabKeys /
 graphicTabKeys, setup_427830 / 427880 / 4278d0 | profile_41e7a0 (quit with a code), profile_44f850, profile_44b600 / 44b670 /
-44b6e0 / 44f810 | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
+44b6e0 / 44f810 | devices and sound: input_reacquireKeyboard / reacquireMouse / releaseKeyboard,
+wnd_401490 / 4014c0 / 467b70, sound_playMenu, dsbuf_play / setVolume, music_shutdown, gfx_swapBuffers | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
 arena_453770 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
 hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,
