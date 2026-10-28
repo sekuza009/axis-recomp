@@ -73,3 +73,47 @@ void (wnd_467b70)(void)
 		g_directSound = NULL;
 	}
 }
+
+#define DI_GETDEVICESTATE 0x24
+#define DIERR_INPUTLOST 0x8007001eL
+#define g_keyState ((u8 *)0x4d1e9c)                    /* the keyboard's 256 key bytes (0x80: held) */
+
+/* the keyboard's state into g_keyState; when the keyboard was lost it is taken again */
+static long read_keys(void)
+{
+	long r = COM(g_keyboard, DI_GETDEVICESTATE, long, u32, void *)(g_keyboard, 0x100, g_keyState);
+	if (r == (long)DIERR_INPUTLOST)
+		input_reacquireKeyboard();
+	return r;
+}
+
+/* 0x4014f0 (load_4014f0): 1 while key (a DIK code) is held */
+int (load_4014f0)(int key)
+{
+	if (g_keyboardActive == 0)
+		return 0;
+	if (read_keys() < 0)
+		return 0;
+	return (g_keyState[key] & 0x80) ? 1 : 0;
+}
+
+/* 0x401540 (load_401540): the same, 0 when reading the keyboard did not fully succeed */
+int (load_401540)(int key)
+{
+	if (g_keyboardActive == 0)
+		return 0;
+	if (read_keys() != 0)
+		return 0;
+	return g_keyState[key] >> 7;
+}
+
+/* 0x401410: DirectInput (version 0x700) made for instance, then the keyboard and mouse for window; 1 when all
+   three worked */
+int (input_createDirectInput)(void *window, void *instance)
+{
+	if (DirectInputCreateA(instance, 0x700, &g_directInput, NULL) < 0)
+		return 0;
+	if (!input_initKeyboard(window))
+		return 0;
+	return input_4013a0(window) != 0;
+}

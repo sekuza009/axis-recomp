@@ -540,4 +540,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_427880() GAME_CDECL(0x427880, void, void)()
 #define setup_4278d0() GAME_CDECL(0x4278d0, void, void)()
 
+/* ---- DirectInput setup (app/devices.c) ---- */
+#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))0x4509c0)(instance, version, out, outer)
+#define input_initKeyboard(window) GAME_CDECL(0x401310, int, void *)(window)
+#define input_4013a0(window) GAME_CDECL(0x4013a0, int, void *)(window)   /* the mouse */
+
 #endif

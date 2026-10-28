@@ -34,3 +34,11 @@ void *THISCALL (Stage_deletingDtor)(Stage *stage, int flags)
 		operator_delete(stage);
 	return stage;
 }
+
+/* 0x401290 (load_401290): the compiler's array constructor: construct (thiscall) on count objects of size bytes
+   from first (stdcall) */
+void STDCALL (load_401290)(u8 *first, int size, int count, void (THISCALL *construct)(void *))
+{
+	for (int i = 0; i < count; i++, first += size)
+		construct(first);
+}

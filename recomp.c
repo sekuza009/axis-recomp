@@ -5215,7 +5215,8 @@ static THISCALL DWORD actor_applyRemoteColours(char *scene, DWORD p, DWORD part,
    volume's setup and teardown, network helpers, and the error reporters (ERROR.TXT) */
 #include "lifted/grp5.c"
 /* 0x401290 load_401290(p, size, n, ctor) (stdcall): call ctor n times (an object-array constructor loop) */
-static DWORD WINAPI load_401290(DWORD p, DWORD size, DWORD n, DWORD ctor) { DWORD v[4] = { p, size, n, ctor }; return run_lifted(lift_401290, 0, 4, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void WINAPI load_401290(void *first, int size, int count, void *construct);
 /* 0x41ef20 FUN_0041ef20(x, y, z): rotate about x, then y, then z */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041ef20(DWORD x, DWORD y, DWORD z);
@@ -6777,7 +6778,8 @@ LIFT_PLAIN(music_play, 457150)
 LIFT_PLAIN(input_initKeyboard, 401310)
 LIFT_PLAIN(input_4013a0, 4013a0)
 /* 0x401410 input_createDirectInput(hwnd, inst): DirectInputCreateA (version 0x700), then the keyboard and mouse */
-LIFT_PLAIN(input_createDirectInput, 401410)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_createDirectInput(void *window, void *instance);
 /* 0x4012c0 input_reacquireKeyboard(): Acquire when ready; 0x4012e0 input_reacquireMouse(): Acquire (or Unacquire
    when the game has no mouse capture, 0x4ad17c == 0), 1 if there is a mouse */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -6803,8 +6805,10 @@ LIFT_PLAIN(sound_loadWav, 467b90)
 #include "lifted/grp107.c"
 /* the keyboard's state (GetDeviceState, 256 bytes into 0x4d1e9c) when ready (0x4d1fa8): 0x401540 load_401540(key):
    bit 7 of the key's byte, 0 on a failure (input lost: reacquire); 0x4014f0 load_4014f0(key): the same as 0 / 1 */
-LIFT_PLAIN(load_401540, 401540)
-LIFT_PLAIN(load_4014f0, 4014f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int load_401540(int key);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int load_4014f0(int key);
 /* 0x401590 input_isDown(code): the mouse buttons 0xfa..0xfc (0x4ded94..), wheel down / up 0xfd / 0xfe (0x4ded7c < 0 /
    > 0), else the key */
 LIFT_PLAIN(input_isDown, 401590)
@@ -12054,7 +12058,7 @@ static void __cdecl tst_log(DWORD a, DWORD b, const char *s) { S32(BUF, 0x980) =
 static void __cdecl tst_hook0(void) { S32(BUF, 0x988) += 1; }
 ST(load_401290, g_tstN = 0; g_a[0] = irnd(1, 0x40); g_a[1] = irnd(-1, 6);,
    (((void (WINAPI *)(char *, int, int, void *))0x401290)(BUF + 0x1000, g_a[0], g_a[1], (void *)tst_ctor), 0),
-   (load_401290((DWORD)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)tst_ctor), 0))
+   (load_401290(BUF + 0x1000, g_a[0], g_a[1], (void *)tst_ctor), 0))
 ST(FUN_0041ef20, for (int i = 0; i < 3; i++) GF(&g_a[i]) = csu_fr(-36000, 36000);, CALL_PLAIN(0x41ef20, 0, g_a[0], g_a[1], g_a[2], 0), (FUN_0041ef20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
 static void msgfmt_setup(void)
 {
@@ -16331,7 +16335,7 @@ static void dinput_setup(void)
 }
 T_PLAIN(input_initKeyboard, 0x401310, dinput_setup();, 0, g_a[0], 0, 0, 0)
 T_PLAIN(input_4013a0, 0x4013a0, dinput_setup();, 0, g_a[0], 0, 0, 0)
-T_PLAIN(input_createDirectInput, 0x401410, dinput_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(input_createDirectInput, dinput_setup();, CALL_PLAIN(0x401410, 0, g_a[0], g_a[1], 0, 0), (DWORD)(input_createDirectInput((void *)(DWORD)(g_a[0]), (void *)(DWORD)(g_a[1]))))
 ST(input_reacquireKeyboard, dinput_setup();, CALL_PLAIN(0x4012c0, 0, 0, 0, 0, 0), (input_reacquireKeyboard(), 0))
 ST(input_reacquireMouse, dinput_setup();, CALL_PLAIN(0x4012e0, 0, 0, 0, 0, 0), (DWORD)(input_reacquireMouse()))
 ST(input_releaseKeyboard, dinput_setup();, CALL_PLAIN(0x401460, 0, 0, 0, 0, 0), (input_releaseKeyboard(), 0))
@@ -16384,8 +16388,8 @@ static void menusnd_setup(void)
 	fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);
 	g_a[3] = irnd(-5, 100); g_a[4] = irnd(0, 5);
 }
-T_PLAIN(load_401540, 0x401540, keys_setup();, 0, g_a[0], 0, 0, 0)
-T_PLAIN(load_4014f0, 0x4014f0, keys_setup();, 0, g_a[0], 0, 0, 0)
+ST(load_401540, keys_setup();, CALL_PLAIN(0x401540, 0, g_a[0], 0, 0, 0), (DWORD)(load_401540((DWORD)(g_a[0]))))
+ST(load_4014f0, keys_setup();, CALL_PLAIN(0x4014f0, 0, g_a[0], 0, 0, 0), (DWORD)(load_4014f0((DWORD)(g_a[0]))))
 T_PLAIN(input_isDown, 0x401590, keys_setup();, 0, g_a[0], 0, 0, 0)
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 T_PLAIN(skirmish_443c80, 0x443c80, menusnd_setup();, 0, 0, 0, 0, 0)
