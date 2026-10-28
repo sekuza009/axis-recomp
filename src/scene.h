@@ -21,11 +21,25 @@ typedef struct EventLine {
 
 /* a player's record (Scene.players) */
 typedef struct Player {
-	u8 _pad0000000[0x118];
+	u8 _pad0000000[0x98];
+	char name[0x40];   /* +0x98 */
+	u8 _pad00000d8[0x4];
+	i32 emblem;   /* +0xdc: emblem shown in the ranking */
+	u8 _pad00000e0[0x4];
+	i32 kills;   /* +0xe4 */
+	i32 deaths;   /* +0xe8 */
+	u8 _pad00000ec[0x10];
+	i32 timePlayed;   /* +0xfc: seconds */
+	u8 _pad0000100[0xc];
+	i32 flagOwner;   /* +0x10c: whose flag the ranking shows for him (unless Scene.flagOwnerIsSelf) */
+	u8 _pad0000110[0x8];
 	i32 team;   /* +0x118: 0 / 1 in team games */
 	u8 _pad000011c[0x30];
 	i32 state;   /* +0x14c: 1: in play */
-	u8 _pad0000150[0x866c];
+	u8 _pad0000150[0x388];
+	i32 markSolo;   /* +0x4d8: (unclear) 1: a mark (icon 8) after his ranking row, games without teams */
+	i32 markTeam;   /* +0x4dc: (unclear) 1: a mark (his team's icon) after his ranking row, team games */
+	u8 _pad00004e0[0x82dc];
 	float screenX;   /* +0x87bc: projected position on the screen, pixels */
 	float screenY;   /* +0x87c0 */
 	u8 _pad00087c4[0x1c];
@@ -36,19 +50,32 @@ typedef struct Player {
 	u8 _pad00087f0[0x98];
 } Player;
 
+/* (unclear) a record of stride 0x47fd2 whose first field says a flag is shown */
+typedef struct FlagSlot {
+	i32 shown;   /* +0x0 */
+	u8 _pad0000004[0x47fce];
+} FlagSlot;
+
 /* the scene: the one large object of a match, built by game_loadAllData */
 typedef struct Scene {
-	u8 _pad0000000[0x38];
+	u8 _pad0000000[0x8];
+	i32 flagOwnerIsSelf;   /* +0x8: (unclear) the ranking shows each player's own flag, not Player.flagOwner's */
+	u8 _pad000000c[0x2c];
 	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
 	u8 _pad000003c[0xbc0664];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
-	u8 _pad0bc06a4[0x130c3cc];
+	u8 _pad0bc06a4[0xbdcb52];
+	FlagSlot flags[16];   /* +0x179d1f6 */
+	u8 _pad1c1cf16[0x2afb5a];
 	Player players[16];   /* +0x1ecca70 */
 	u8 _pad1f552f0[0x2cccc8];
 	i32 teamScores[4];   /* +0x2221fb8: by team slot (this_get_0x2342381_463780 gives a team's slot) */
 	u8 _pad2221fc8[0x180];
 	float lockTimers[16];   /* +0x2222148: per player: the lock-on building up (> 0) */
-	u8 _pad2222188[0xd9a50];
+	u8 _pad2222188[0xc4ff8];
+	i32 gameMode;   /* +0x22e7180: index into g_gameModeNames */
+	i32 teamGame;   /* +0x22e7184: 1: teams */
+	u8 _pad22e7188[0x14a50];
 	char msgText[0x40][0x108];   /* +0x22fbbd8: message texts: four lines of 0x41 bytes per block */
 	u8 _pad22ffdd8[0x3c540];
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
@@ -56,7 +83,9 @@ typedef struct Scene {
 	u32 msgRead;   /* +0x233c59c: next slot replay_drawMessage shows */
 	u8 _pad233c5a0[0x448];
 	i32 frameFlag;   /* +0x233c9e8: (unclear) 1: state 2 presents its own frame */
-	u8 _pad233c9ec[0x234];
+	u8 _pad233c9ec[0x4];
+	i32 showEmblems;   /* +0x233c9f0: 1: emblems in the ranking */
+	u8 _pad233c9f4[0x22c];
 	i32 inputState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
 	u8 _pad233cc24[0x10];
 	float chatBlink;   /* +0x233cc34: cursor blink clock of the chat line */
@@ -66,7 +95,11 @@ typedef struct Scene {
 	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
 	u8 _pad2340d39[0x16d4];
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
-	u8 _pad2342411[0x56d];
+	u8 _pad2342411[0x4e5];
+	i32 ranking[16];   /* +0x23428f6: players in rank order */
+	u8 _pad2342936[0x40];
+	i32 rankCount;   /* +0x2342976 */
+	u8 _pad234297a[0x4];
 	i32 counterRed;   /* +0x234297e: (unclear) three counts shown under the team box */
 	i32 counterBlue;   /* +0x2342982 */
 	i32 counterGreen;   /* +0x2342986 */
@@ -84,29 +117,46 @@ _Static_assert(sizeof(MessageSlot) == 0x14, "scene.fields: size of MessageSlot")
 _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type) == 0x4, "scene.fields: EventLine.type");
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x104, "scene.fields: EventLine.text");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
+_Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
+_Static_assert(offsetof(Player, emblem) == 0xdc && sizeof(((Player *)0)->emblem) == 0x4, "scene.fields: Player.emblem");
+_Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
+_Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
+_Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
+_Static_assert(offsetof(Player, flagOwner) == 0x10c && sizeof(((Player *)0)->flagOwner) == 0x4, "scene.fields: Player.flagOwner");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");
 _Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
+_Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->markSolo) == 0x4, "scene.fields: Player.markSolo");
+_Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");
 _Static_assert(offsetof(Player, screenX) == 0x87bc && sizeof(((Player *)0)->screenX) == 0x4, "scene.fields: Player.screenX");
 _Static_assert(offsetof(Player, screenY) == 0x87c0 && sizeof(((Player *)0)->screenY) == 0x4, "scene.fields: Player.screenY");
 _Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
 _Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
 _Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
+_Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
+_Static_assert(sizeof(FlagSlot) == 0x47fd2, "scene.fields: size of FlagSlot");
+_Static_assert(offsetof(Scene, flagOwnerIsSelf) == 0x8 && sizeof(((Scene *)0)->flagOwnerIsSelf) == 0x4, "scene.fields: Scene.flagOwnerIsSelf");
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
+_Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
 _Static_assert(offsetof(Scene, teamScores) == 0x2221fb8 && sizeof(((Scene *)0)->teamScores) == 0x10, "scene.fields: Scene.teamScores");
 _Static_assert(offsetof(Scene, lockTimers) == 0x2222148 && sizeof(((Scene *)0)->lockTimers) == 0x40, "scene.fields: Scene.lockTimers");
+_Static_assert(offsetof(Scene, gameMode) == 0x22e7180 && sizeof(((Scene *)0)->gameMode) == 0x4, "scene.fields: Scene.gameMode");
+_Static_assert(offsetof(Scene, teamGame) == 0x22e7184 && sizeof(((Scene *)0)->teamGame) == 0x4, "scene.fields: Scene.teamGame");
 _Static_assert(offsetof(Scene, msgText) == 0x22fbbd8 && sizeof(((Scene *)0)->msgText) == 0x4200, "scene.fields: Scene.msgText");
 _Static_assert(offsetof(Scene, msgRing) == 0x233c318 && sizeof(((Scene *)0)->msgRing) == 0x280, "scene.fields: Scene.msgRing");
 _Static_assert(offsetof(Scene, msgWrite) == 0x233c598 && sizeof(((Scene *)0)->msgWrite) == 0x4, "scene.fields: Scene.msgWrite");
 _Static_assert(offsetof(Scene, msgRead) == 0x233c59c && sizeof(((Scene *)0)->msgRead) == 0x4, "scene.fields: Scene.msgRead");
 _Static_assert(offsetof(Scene, frameFlag) == 0x233c9e8 && sizeof(((Scene *)0)->frameFlag) == 0x4, "scene.fields: Scene.frameFlag");
+_Static_assert(offsetof(Scene, showEmblems) == 0x233c9f0 && sizeof(((Scene *)0)->showEmblems) == 0x4, "scene.fields: Scene.showEmblems");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
 _Static_assert(offsetof(Scene, chatBlink) == 0x233cc34 && sizeof(((Scene *)0)->chatBlink) == 0x4, "scene.fields: Scene.chatBlink");
 _Static_assert(offsetof(Scene, msgFade) == 0x233cc40 && sizeof(((Scene *)0)->msgFade) == 0x4, "scene.fields: Scene.msgFade");
 _Static_assert(offsetof(Scene, chatMode) == 0x2340d35 && sizeof(((Scene *)0)->chatMode) == 0x4, "scene.fields: Scene.chatMode");
 _Static_assert(offsetof(Scene, localPlayer) == 0x234240d && sizeof(((Scene *)0)->localPlayer) == 0x4, "scene.fields: Scene.localPlayer");
+_Static_assert(offsetof(Scene, ranking) == 0x23428f6 && sizeof(((Scene *)0)->ranking) == 0x40, "scene.fields: Scene.ranking");
+_Static_assert(offsetof(Scene, rankCount) == 0x2342976 && sizeof(((Scene *)0)->rankCount) == 0x4, "scene.fields: Scene.rankCount");
 _Static_assert(offsetof(Scene, counterRed) == 0x234297e && sizeof(((Scene *)0)->counterRed) == 0x4, "scene.fields: Scene.counterRed");
 _Static_assert(offsetof(Scene, counterBlue) == 0x2342982 && sizeof(((Scene *)0)->counterBlue) == 0x4, "scene.fields: Scene.counterBlue");
 _Static_assert(offsetof(Scene, counterGreen) == 0x2342986 && sizeof(((Scene *)0)->counterGreen) == 0x4, "scene.fields: Scene.counterGreen");

@@ -7499,7 +7499,8 @@ void main_loop(void);
    with name, emblem (0x4922c0 when +0x233c9f0), flag (0x4924d0 by the player's +0x179d1f6), "KILL/DEATH" and
    "TIME mm:ss" and the leader icon (0x496820); else the ranked players the same way; then the players in use
    (FUN_004a8700) without a team (+0x80 < 0). The local player (+0x234240d) is highlighted */
-static THISCALL DWORD hud_drawRanking(char *s) { return run_lifted(lift_494930, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawRanking(void *scene);
 /* 0x496240 hud_496240() (thiscall on the scene): the team score box: both teams' bars (0x46bd60) and scores ("%d"
    by 0x463780), the local player's team marked (0x463740 -> 0x46bd00), then three counters (+0x234297e,
    +0x2342982, +0x2342986), all scaled from the screen size (0x4685b0 / 0x4685c0) */
@@ -17984,7 +17985,7 @@ static void hudrank_setup(void)
 	S32(BUF, 0x233c9f0) = irnd(0, 1); S32(BUF, 0x2342976) = irnd(0, 8);
 	for (int k = 0; k < 8; k++) S32(BUF, 0x23428f6 + k * 4) = irnd(0, 15);
 }
-ST(hud_drawRanking, hudrank_setup();, TC(DWORD, 0x494930, char *)(BUF), hud_drawRanking(BUF))
+ST(hud_drawRanking, hudrank_setup();, TC(DWORD, 0x494930, char *)(BUF), (hud_drawRanking(BUF), 0))
 /* the team score box: the screen size, team scores and the three counters; the screen getters, team tests and
    drawing stubbed */
 static const DWORD g_stubTeamBox[] = { 0x44ad30, 4, 0x44ae10, 5, 0x463740, 1 | CS_POP | CS_THIS, 0x463780, 1 | CS_POP | CS_THIS,

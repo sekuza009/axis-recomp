@@ -56,6 +56,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* a team's slot in teamScores (this_get_0x2342381_463780) and which side of the box it is on (FUN_00463740) */
 #define scene_teamSlot(scene, team) GAME_THISCALL(0x463780, int, Scene *, int)(scene, team)
 #define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)
+#define hud_drawNameIcon(scene, emblem, x, y) GAME_THISCALL(0x4922c0, void, Scene *, int, int, int)(scene, emblem, x, y)
+#define hud_drawLeaderIcon(scene, player, x, y) GAME_THISCALL(0x4924d0, void, Scene *, int, int, int)(scene, player, x, y)
 #define replay_drawIcon(scene, x, y, icon) GAME_THISCALL(0x496820, void, Scene *, int, int, int)(scene, x, y, icon)
 
 /* ---- main loop and match ---- */
@@ -108,10 +110,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define profile_44b360(x, y) GAME_CDECL(0x44b360, int, int, int)(x, y)
 #define Color4_set(dst, r, g, b, a) GAME_CDECL(0x41f0e0, void, Colour *, float, float, float, float)(dst, r, g, b, a)
 
+/* ---- network ---- */
+#define net_playerInUse(i) GAME_CDECL(0x4a8700, int, int)(i)   /* FUN_004a8700: the player table's slot i is taken */
+
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)0xa1f100)          /* the 16 message colours */
 #define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
+#define g_gameModeNames ((const char (*)[64])0x4c7030)   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
 #define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
                                                          500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
