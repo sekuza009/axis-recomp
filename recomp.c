@@ -7556,7 +7556,8 @@ void THISCALL hud_pass(void *scene);
    colours (0x463740), the emblem (0x4922c0) and flag (0x4924d0), the shield bar by the frag count and the name
    label (@0x491c2d: 0x44ae10, the patch DLL's label_text) centred by its half width (0x491c52: len / 2 * 8, or
    the patch DLL's label_halfw(name) in its 21-byte block) */
-static THISCALL DWORD hud_drawPlayerMarkers(char *s) { return run_lifted(lift_4913a0, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawPlayerMarkers(void *scene);
 #include "lifted/grp172.c"
 /* 0x49d290 match_combatInput() (thiscall on the scene): the match's input: 0x461f10; unless paused, dead or in a
    menu the key bindings (0x4deb58 .., 0x4def00 .., 0x4e0460 .., tested pressed by 0x401600 / held by 0x401590)
@@ -18134,7 +18135,7 @@ static void markers_setup(void)
 	S32(BUF, 0xbc06a0) = irnd(0, 0x3ff); S32(BUF, 0xbc06ac) = irnd(0, 0x3ff);
 	G32(0xa0e010) = (int)(BUF + 0x1000);
 }
-ST(hud_drawPlayerMarkers, markers_setup();, TC(DWORD, 0x4913a0, char *)(BUF), hud_drawPlayerMarkers(BUF))
+ST(hud_drawPlayerMarkers, markers_setup();, TC(DWORD, 0x4913a0, char *)(BUF), (hud_drawPlayerMarkers(BUF), 0))
 /* the match's input: every key binding its own key code (0x10 + its index), one of them held and one pressed (or
    none) through the stubbed key tests; the scene's state flags (mostly clear), the local player and its record, the
    input flags, the mouse offsets small, the cursor and the menu state; the other callees stubbed (the menu step goes

@@ -43,6 +43,23 @@ static inline int ftol(long double x)
    whatever the instruction at the original call site targets now, as the original's would */
 #define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
 #define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
+/* 1 when the game's code at addr currently reads as pattern (hex bytes separated by spaces, "??" for any byte): for
+   a block the patch DLL rewrites at start-up, so the rebuild follows whichever version is in memory */
+static inline int code_matches(u32 addr, const char *pattern)
+{
+	const u8 *code = (const u8 *)addr;
+	for (const char *p = pattern; *p; code++) {
+		if (p[0] != '?') {
+			unsigned hi = p[0] <= '9' ? p[0] - '0' : p[0] - 'a' + 10, lo = p[1] <= '9' ? p[1] - '0' : p[1] - 'a' + 10;
+			if (*code != (u8)(hi * 16 + lo))
+				return 0;
+		}
+		p += 2;
+		while (*p == ' ')
+			p++;
+	}
+	return 1;
+}
 /* an import, through the game's import table slot */
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)(slot))
 /* a global of the game at its address */
