@@ -214,3 +214,25 @@ u32 (net_454760)(void)
 		GAME_VAR(int, 0xa0d784) = 0;
 	return r;
 }
+
+/* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
+   the connection's state reset (arena_4519b0); then the connection flags cleared. Returns what the original leaves
+   in eax */
+u32 (FUN_004520e0)(void)
+{
+	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
+	u32 r = GAME_VAR(u32, 0xa055f8);
+	for (int k = 0; k < 2; k++) {
+		if (!GAME_VAR(u32, sockets[k]))
+			continue;
+		GAME_VAR(int, 0x9fd94c) = 1;
+		((int (STDCALL *)(void))0x4a8292)();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		GAME_VAR(u32, sockets[k]) = 0;
+		r = GAME_CDECL(0x4519b0, u32, void)();                                   /* arena_4519b0 */
+	}
+	GAME_VAR(int, 0xa0b300) = 0;
+	GAME_VAR(int, 0xa0b380) = 0;
+	return r;
+}

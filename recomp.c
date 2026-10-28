@@ -2807,7 +2807,8 @@ int net_asyncSelect(void *wnd, int which);
 /* 0x454220 net_getLocalAddress: this machine's address as a dotted string (gethostname, gethostbyname, inet_ntoa) */
 LIFT_PLAIN(net_getLocalAddress, 454220)
 /* 0x4520e0 FUN_004520e0: close both sockets (WSACleanup, shutdown, closesocket) and reset the connection state */
-LIFT_PLAIN(FUN_004520e0, 4520e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_004520e0(void);
 /* 0x4547d0 net_resolveHost(name): WSAStartup, a raw socket and gethostbyname; the address as a dotted string */
 LIFT_PLAIN(net_resolveHost, 4547d0)
 /* match packet senders (thiscall on the scene): each builds a 64-byte packet, sends it with net_sendPacketData,
@@ -2887,7 +2888,8 @@ LIFT_PLAIN(net_ping, 4548b0)
 int net_454650(const char *address, int slot);
 LIFT_PLAIN(net_4545b0, 4545b0)
 /* 0x41f050 gfx_setMenuCamera: gluLookAt from the menu camera position to its target */
-LIFT_PLAIN(gfx_setMenuCamera, 41f050)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD gfx_setMenuCamera(void);
 /* 0x41b300 armc_41b300: move the customise-screen camera part of the way towards the target for the mode/slot */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41b300(void);
@@ -4541,7 +4543,8 @@ LIFT_PLAIN(sound_init, 467a50)
 void dsbuf_play(void *sound);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void dsbuf_setVolume(void *sound, int volume);
-LIFT_PLAIN(sound_467dd0, 467dd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD sound_467dd0(DWORD *sound, int mode, int value);
 /* the music stream 0xa0e670 (IAMMultiMediaStream). 0x457310 music_shutdown(): releases it, CoUninitialize;
    0x4572b0 music_4572b0(): at the end (GetTime >= the duration 0xa0e018) seeks to 0 and runs it again (loop);
    0x457150 music_play(name): music volume 0x4e0c94 below 50 or no such file: stops; else CoInitialize, a
@@ -4558,7 +4561,8 @@ LIFT_PLAIN(music_play, 457150)
    0x4d1fa4 (ready flag 0x4d1fac). 0x401310 input_initKeyboard(hwnd) / 0x4013a0 input_4013a0(hwnd): once, create the
    device, its data format (0x4a95f8 / 0x4a9610) and cooperative level (6: non-exclusive background / 5: exclusive
    foreground); the keyboard is acquired and its states cleared; 1 when ready, else 0 */
-LIFT_PLAIN(input_initKeyboard, 401310)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_initKeyboard(void *window);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_4013a0(void *window);
 /* 0x401410 input_createDirectInput(hwnd, inst): DirectInputCreateA (version 0x700), then the keyboard and mouse */
@@ -4892,8 +4896,10 @@ DWORD menu_431950(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_403640(void);
 LIFT_PLAIN(match_4512c0, 4512c0)
-LIFT_PLAIN(lobby_editTextField_405230, 405230)
-LIFT_PLAIN(menu_4318b0, 4318b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_editTextField_405230(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_4318b0(void);
 LIFT_PLAIN(arena_452fe0, 452fe0)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editTextField_404cd0(void);
@@ -9419,7 +9425,7 @@ static void host_setup(void)
 	g_mockWsaFail = !irnd(0, 5) ? 10091 : 0; g_mockSocket = irnd(0, 4) ? (DWORD)irnd(1, 0x7fff) : 0xffffffffu;
 }
 T_PLAIN(net_getLocalAddress, 0x454220, host_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(FUN_004520e0, 0x4520e0, sockets_setup();, 0, 0, 0, 0, 0)
+ST(FUN_004520e0, sockets_setup();, CALL_PLAIN(0x4520e0, 0, 0, 0, 0, 0), (DWORD)(FUN_004520e0()))
 T_PLAIN(net_resolveHost, 0x4547d0, host_setup();, 0, BUF + 0x100, 0, 0, 0)
 /* the scene's packet counter and autoplay recording (file = a VFS handle) */
 static void sendrec_setup(void)
@@ -9634,7 +9640,7 @@ T_PLAIN(net_ping, 0x4548b0, ping_setup();, 0, g_a[0], g_a[1], 0, 0)
 ST(net_454650, ping_setup();, CALL_PLAIN(0x454650, 0, BUF + 0x100, g_a[2], 0, 0), (DWORD)(net_454650((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[2]))))
 T_PLAIN(net_4545b0, 0x4545b0, ping_setup();, 0, 0, 0, 0, 0)
 static void lookat_setup(void) { for (int i = 0; i < 3; i++) { GF(0x4df024 + i * 4) = csu_fr(-50000, 50000); GF(0x680378 + i * 4) = csu_fr(-50000, 50000); } }
-T_PLAIN(gfx_setMenuCamera, 0x41f050, lookat_setup();, 0, 0, 0, 0, 0)
+ST(gfx_setMenuCamera, lookat_setup();, CALL_PLAIN(0x41f050, 0, 0, 0, 0, 0), (DWORD)(gfx_setMenuCamera()))
 static void armcam_setup(void)
 {
 	lookat_setup(); G32(0x4dc798) = irnd(0, 4); G32(0x4dbc6c) = irnd(-1, 7); G32(0x4dc4b0) = irnd(-1, 7);
@@ -14143,7 +14149,7 @@ static void musicplay_setup(void)
 T_PLAIN(sound_init, 0x467a50, dsinit_setup();, 0, g_a[0], 0, 0, 0)
 ST(dsbuf_play, dsbuf_setup(0);, CALL_PLAIN(0x467d70, 0, g_a[2], 0, 0, 0), (dsbuf_play((void *)(DWORD)(g_a[2])), 0))
 ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 0), (dsbuf_setVolume((void *)(DWORD)(g_a[2]), (DWORD)(g_a[1])), 0))
-T_PLAIN(sound_467dd0, 0x467dd0, dsbuf_setup(1);, 0, g_a[2], g_a[0], g_a[1], 0)
+ST(sound_467dd0, dsbuf_setup(1);, CALL_PLAIN(0x467dd0, 0, g_a[2], g_a[0], g_a[1], 0), (DWORD)(sound_467dd0((DWORD *)(DWORD)(g_a[2]), (DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(music_shutdown, music_setup();, CALL_PLAIN(0x457310, 0, 0, 0, 0, 0), (music_shutdown(), 0))
 ST(music_4572b0, music_setup();, CALL_PLAIN(0x4572b0, 0, 0, 0, 0, 0), (DWORD)(music_4572b0()))
 T_PLAIN(music_play, 0x457150, musicplay_setup();, 0, BUF + 0x1c0, 0, 0, 0)
@@ -14165,7 +14171,7 @@ static void dinput_setup(void)
 	G32(0xa0e804) = irnd(0, 3) ? (int)fakecom_new(4, 3, g_nargsDsound, 0) : 0;
 	g_a[0] = irnd(0, 0xffff); g_a[1] = irnd(0, 0xffff);
 }
-T_PLAIN(input_initKeyboard, 0x401310, dinput_setup();, 0, g_a[0], 0, 0, 0)
+ST(input_initKeyboard, dinput_setup();, CALL_PLAIN(0x401310, 0, g_a[0], 0, 0, 0), (DWORD)(input_initKeyboard((void *)(DWORD)(g_a[0]))))
 ST(input_4013a0, dinput_setup();, CALL_PLAIN(0x4013a0, 0, g_a[0], 0, 0, 0), (DWORD)(input_4013a0((void *)(DWORD)(g_a[0]))))
 ST(input_createDirectInput, dinput_setup();, CALL_PLAIN(0x401410, 0, g_a[0], g_a[1], 0, 0), (DWORD)(input_createDirectInput((void *)(DWORD)(g_a[0]), (void *)(DWORD)(g_a[1]))))
 ST(input_reacquireKeyboard, dinput_setup();, CALL_PLAIN(0x4012c0, 0, 0, 0, 0, 0), (input_reacquireKeyboard(), 0))
@@ -14621,11 +14627,11 @@ T_PLAIN(match_4512c0, 0x4512c0, gen_setup(g_gs_4512c0, g_gi_4512c0, g_gb_4512c0)
 static const DWORD g_gs_405230[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_405230[] = { 0x4db714, 0x4db8c8, 0x4db8cc, 0x4dbbd4, 0x4dbbd8, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_405230[] = { 0x9dc92c, 0 };
-T_PLAIN(lobby_editTextField_405230, 0x405230, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_editTextField_405230, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, CALL_PLAIN(0x405230, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_editTextField_405230()))
 static const DWORD g_gs_4318b0[] = { 0x401600, 1, 0 };
 static const DWORD g_gi_4318b0[] = { 0x4df01c, 0x4e0458, 0x5b1da8, 0x6803a0, 0x9dae70, 0 };
 static const DWORD g_gb_4318b0[] = { 0 };
-T_PLAIN(menu_4318b0, 0x4318b0, gen_setup(g_gs_4318b0, g_gi_4318b0, g_gb_4318b0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_4318b0, gen_setup(g_gs_4318b0, g_gi_4318b0, g_gb_4318b0);, CALL_PLAIN(0x4318b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_4318b0()))
 static const DWORD g_gs_452fe0[] = { 0x451270, 3, 0x454130, 0, 0x4549a0, 0, 0x454ac0, 0, 0x454bd0, 0, 0x454ce0, 0, 0 };
 static const DWORD g_gi_452fe0[] = { 0x9f941c, 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0baf8, 0 };
 static const DWORD g_gb_452fe0[] = { 0x9f9418, 0 };

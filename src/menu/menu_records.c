@@ -485,3 +485,21 @@ u32 (menu_431950)(void)
 	}
 	return r;
 }
+
+/* 0x4318b0: any of three keys starts the menu's fade (0x4df01c, once; its timer 0x4e0458 from 0). Returns what the
+   original leaves in eax */
+u32 (menu_4318b0)(void)
+{
+	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
+	u32 r = 0;
+	for (int k = 0; k < 3; k++) {
+		r = input_justPressed(GAME_VAR(int, keys[k]));
+		if (r == 1) {
+			if (GAME_VAR(int, 0x4df01c))
+				return GAME_VAR(u32, 0x4df01c);
+			GAME_VAR(int, 0x4df01c) = 1;
+			GAME_VAR(int, 0x4e0458) = 0;
+		}
+	}
+	return r;
+}

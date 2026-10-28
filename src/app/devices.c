@@ -1,6 +1,7 @@
 /* devices.c: DirectInput's keyboard and mouse (taken while the window is active, let go when it is not) and the
    objects released when the game closes. */
 #include "../game.h"
+#include <string.h>
 
 #define DI_ACQUIRE 0x1c
 #define DI_UNACQUIRE 0x20
@@ -207,5 +208,25 @@ int (input_4013a0)(void *window)
 	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
 		return 0;
 	g_mouseActive = 1;
+	return 1;
+}
+
+/* 0x401310: the DirectInput keyboard made (once): the device (GUID_SysKeyboard, 0x4a9688), its data format
+   (c_dfDIKeyboard, 0x4a95f8), its cooperative level for the window (non-exclusive, foreground), acquired, the key
+   state (0x4d1a98) cleared. 1 when ready, 0 on a failure */
+int (input_initKeyboard)(void *window)
+{
+	if (g_keyboardActive)
+		return 1;
+	void *dinput = g_directInput;
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)0x4a9688, &g_keyboard, NULL) < 0)
+		return 0;
+	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)0x4a95f8) < 0)
+		return 0;
+	if (COM(g_keyboard, 0x34, int, void *, u32)(g_keyboard, window, 6) < 0)
+		return 0;
+	COM(g_keyboard, DI_ACQUIRE, int)(g_keyboard);   /* (its result not checked) */
+	memset((void *)0x4d1a98, 0, 0x400);
+	g_keyboardActive = 1;
 	return 1;
 }

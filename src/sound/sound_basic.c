@@ -96,3 +96,29 @@ u32 (music_4572b0)(void)
 	segment = GAME_VAR(void *, 0xa0e670);
 	return COM(segment, 0x1c, u32, u32)(segment, 1);
 }
+
+/* 0x467dd0: the sound's next buffer (of eight, the turn at +0x20) played with a setting (mode 1 or 2: value, within
+   +-10000, kept per buffer at +0x44; the mode at +0x24): the value applied (method 0x40), then played. Returns what
+   the original leaves in eax: 0 without a sound, 1 for a value out of range, else the next turn (7 when wrapping) */
+u32 (sound_467dd0)(u32 *sound, int mode, int value)
+{
+	if (!sound)
+		return 0;
+	if (value > 10000 || value < -10000)
+		return 1;
+	u32 *modes = sound + 9, *values = sound + 0x11;
+	modes[sound[8]] = (u32)mode;
+	if (mode == 1 || mode == 2)
+		values[sound[8]] = (u32)value;
+	void *buffer = (void *)sound[sound[8]];
+	COM(buffer, 0x40, u32, u32)(buffer, values[sound[8]]);
+	buffer = (void *)sound[sound[8]];
+	COM(buffer, 0x30, u32, u32, u32, u32)(buffer, 0, 0, 0);   /* Play */
+	u32 turn = sound[8];
+	if ((int)turn < 7) {
+		sound[8] = turn + 1;
+		return turn + 1;
+	}
+	sound[8] = 0;
+	return turn;
+}

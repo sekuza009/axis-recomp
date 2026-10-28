@@ -170,3 +170,16 @@ u32 (menu_drawDimOverlay)(void)
 	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
 	return GAME_CDECL(0x427970, u32, int, int, int, int, int)(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
+
+/* 0x41f050: the menu camera: the scene moved by minus the camera's position (0x4df024), then the view from it towards
+   the look-at point (0x680378), y up. Returns gluLookAt's eax */
+u32 (gfx_setMenuCamera)(void)
+{
+	float z = (float)-fld_m((const float *)0x4df02c), y = (float)-fld_m((const float *)0x4df028),
+	      x = (float)-fld_m((const float *)0x4df024);
+	IMPORT(0x4a9214, void, float, float, float)(x, y, z);   /* glTranslatef */
+	glLoadIdentity();
+	const float *eye = (const float *)0x4df024, *at = (const float *)0x680378;
+	return ((u32 (STDCALL *)(double, double, double, double, double, double, double, double, double))0x4509d2)(
+		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
+}

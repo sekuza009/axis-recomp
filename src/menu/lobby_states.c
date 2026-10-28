@@ -518,3 +518,25 @@ u32 (lobby_407270)(void)
 	}
 	return (u32)(button - 1);
 }
+
+/* 0x405230: the arena title's edit field opened: the keyboard released for typing, the input line emptied (20
+   characters at most), placed at the panel's origin + (0xd8, 0xd0), the fade timer 5, the Windows edit control made.
+   Returns what that leaves in eax */
+u32 (lobby_editTextField_405230)(void)
+{
+	GAME_CDECL(0x401460, void, void)();   /* input_releaseKeyboard */
+	GAME_VAR(int, 0x68039c) = 1;
+	menu_clearInputBuffer(0x14);
+	memset((void *)0x9dc92c, 0, 0x400);
+	GAME_VAR(int, 0x4dbbd4) = 0;
+	GAME_VAR(int, 0x9da3d8) = GAME_VAR(int, 0x4db8c8) + 0xd8;
+	GAME_VAR(int, 0x9da3dc) = GAME_VAR(int, 0x4db8cc) + 0xd0;
+	GAME_VAR(int, 0x9dbf10) = (int)strlen((const char *)0x9dc92c);
+	GAME_VAR(int, 0x4dbbd8) = 0;
+	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5 */
+	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
+	   argument */
+	u32 r = GAME_CDECL(0x43f460, u32, int, int)(0x14, 0x14);
+	GAME_VAR(int, 0x4db714) = 1;
+	return r;
+}
