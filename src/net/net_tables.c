@@ -157,3 +157,42 @@ int (FUN_00451270)(const int *message, u32 to, u32 size)
 	}
 	return FUN_00450bf0(GAME_VAR(u32, 0xa0b424), to, flags, message, length);
 }
+
+/* 0x452170: socket 100 (message 0x40a) or 101 (0x40c) set to tell the window wnd about reads and closes
+   (WSAAsyncSelect, 0x21); 0 when that fails, else 1 (also without the socket) */
+int (net_asyncSelect)(void *wnd, int which)
+{
+	u32 sock, message;
+	if (which == 100) {
+		sock = GAME_VAR(u32, 0xa055f8);
+		message = 0x40a;
+	} else if (which == 101) {
+		sock = GAME_VAR(u32, 0xa05630);
+		message = 0x40c;
+	} else
+		return 1;
+	if (!sock)
+		return 1;
+	if (((int (STDCALL *)(u32, void *, u32, u32))0x4a82c8)(sock, wnd, message, 0x21) == -1)
+		return 0;
+	return 1;
+}
+
+/* 0x453720: DirectPlay's start: its state and the session table cleared, COM started, the DirectPlay objects made
+   (arena_453770); on a failure everything released again and the error returned, else 0 */
+int (dplay_coInit)(void)
+{
+	GAME_VAR(int, 0xa0b42c) = 0;
+	GAME_VAR(int, 0xa0b430) = 0;
+	GAME_VAR(int, 0xa0b434) = 0;
+	memset((void *)0xa0b470, 0, 0x190 * 4);
+	GAME_VAR(int, 0xa0b438) = 0;
+	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
+	if (hr >= 0) {
+		hr = GAME_CDECL(0x453770, int, void)();      /* arena_453770 */
+		if (hr >= 0)
+			return 0;
+	}
+	dplay_release();
+	return hr;
+}

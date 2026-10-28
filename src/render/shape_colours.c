@@ -98,3 +98,15 @@ int THISCALL (tex_46de20)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 	}
 	return r;
 }
+
+/* 0x466910: every part's shading colours (shape_getShadingColorBufferBy) into out at the part's index (+0x48),
+   with the factors and the matrix. Returns the part count */
+int (FUN_00466910)(float *out, int first, u8 *shape, void *factors, int matrix)
+{
+	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
+		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
+		GAME_CDECL(0x463b80, void, float *, int, void *, void *, int)(out + FIELD(int, part, 0x48), first, part, factors,
+		                                                                matrix);   /* shape_getShadingColorBufferBy */
+	}
+	return FIELD(int, shape, 0x10);
+}

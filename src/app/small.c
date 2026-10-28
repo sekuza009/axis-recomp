@@ -1,6 +1,7 @@
 /* small.c: one-line pieces from all over the game that need nothing of their own: clears, flags, getters and
    setters, list toggles, string lengths. Grouped by where they are used. */
 #include "../game.h"
+#include <stdarg.h>
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
@@ -428,4 +429,19 @@ void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char
 void THISCALL (load_471010)(u8 *scene)
 {
 	space_setBy(scene + 0xa10, scene + 0x9ef904, scene + 0x9ef910, 1, 1, 1, 0, 0, 0);
+}
+
+/* 0x470fc0: a message formatted and handed to the log hook (0xae2ec8) if one is set, with b and c (a unused) */
+void (FUN_00470fc0)(int a, int b, int c, const char *format, ...)
+{
+	char text[0x400];
+	(void)a;
+	void (CDECL *hook)(int, int, const char *) = GAME_VAR(void *, 0xae2ec8);
+	if (!hook)
+		return;
+	va_list args;
+	va_start(args, format);
+	vsprintf(text, format, args);
+	va_end(args);
+	hook(b, c, text);
 }

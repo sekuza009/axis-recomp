@@ -319,3 +319,21 @@ void (menu_443ea0)(void)
 	}
 	GAME_VAR(int, 0x9ef1f8) = 10;
 }
+
+/* ---- leaving the skirmish settings (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
+   view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
+   put back. Both return what that leaves in eax ---- */
+#define put_camera_back() GAME_CDECL(0x447910, u32, void)()   /* skirmish_447910 */
+static u32 leave_settings(u32 state)
+{
+	GAME_VAR(int, state) = 0;
+	GAME_VAR(u32, 0x4e1870) = 0x3dcccccd;   /* g_viewAspect = 0.1 */
+	GAME_VAR(int, 0x4df028) = 0;
+	GAME_VAR(u32, 0x4df02c) = 0x44c80000;   /* 1600 */
+	GAME_VAR(int, 0x68037c) = 0;
+	GAME_VAR(int, 0x680380) = 0;
+	sound_playMenu(4);
+	return put_camera_back();
+}
+u32 (skirmish_443c80)(void) { return leave_settings(0x9ef1f0); }
+u32 (FUN_00447960)(void) { return leave_settings(0x9f62f8); }

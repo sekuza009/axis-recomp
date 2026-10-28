@@ -2577,7 +2577,8 @@ static DWORD run_lifted_regs(void (*f)(X86 *), DWORD eax, DWORD ecx, DWORD edx, 
 #define LIFT_PLAIN(name, a) static DWORD __attribute__((regparm(3))) name(DWORD eax_, DWORD edx_, DWORD ecx_, DWORD a1, DWORD a2, DWORD a3, DWORD a4) \
 	{ DWORD v[4] = { a1, a2, a3, a4 }; return run_lifted_regs(lift_##a, eax_, ecx_, edx_, 4, v); }
 /* 0x46cbe0 FUN_0046cbe0: fread + descramble (rotate left, xor 0x59) of size * count bytes. Lifted */
-LIFT_PLAIN(FUN_0046cbe0, 46cbe0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_0046cbe0(BYTE *p, DWORD size, DWORD count, void *f);
 /* 0x46cc30 FUN_0046cc30: scramble, fwrite, unscramble. Lifted */
 LIFT_PLAIN(FUN_0046cc30, 46cc30)
 /* 0x42c650 cfg_parsePlayer: write the player section of axis.cfg. Lifted */
@@ -2756,7 +2757,8 @@ void room_435ab0(void);
 LIFT_PLAIN(lobby_406bd0, 406bd0)
 LIFT_PLAIN(lobby_407270, 407270)
 /* 0x427a40 FUN_00427a40(x0, y0, x1, y1): a line in the menu colour */
-LIFT_PLAIN(FUN_00427a40, 427a40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_00427a40(int x0, int y0, int x1, int y1);
 /* 0x440d70 mainmenu_440d70: open the autoplay file dialog (clears the 0x44-byte file entries, lists the files) */
 LIFT_PLAIN(mainmenu_440d70, 440d70)
 /* 0x4302d0 timer_init: QueryPerformanceFrequency, halved until it is at most 2 MHz (the shift count is kept), and
@@ -2791,7 +2793,8 @@ static DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DW
 DWORD inet_addr_wrap_4547c0(const char *text);
 /* 0x452170 net_asyncSelect(wnd, which): WSAAsyncSelect of socket 100 (message 0x40a) or 101 (0x40c) for read and
    close events; 0 only when it fails */
-LIFT_PLAIN(net_asyncSelect, 452170)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_asyncSelect(void *wnd, int which);
 /* 0x454220 net_getLocalAddress: this machine's address as a dotted string (gethostname, gethostbyname, inet_ntoa) */
 LIFT_PLAIN(net_getLocalAddress, 454220)
 /* 0x4520e0 FUN_004520e0: close both sockets (WSACleanup, shutdown, closesocket) and reset the connection state */
@@ -2996,7 +2999,8 @@ void WINAPI load_401290(void *first, int size, int count, void *construct);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041ef20(DWORD x, DWORD y, DWORD z);
 /* 0x470fc0 FUN_00470fc0(a, b, c, fmt, ...): format the message and pass it to the log hook (0xae2ec8) if set */
-LIFT_PLAIN8(FUN_00470fc0, 470fc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00470fc0(int a, int b, int c, const char *format, ...);
 /* 0x454760 net_454760: close the two network thread handles; 0x454690 net_454690: clear the server table;
    0x452d70 net_452d70: receive a 62-byte reply (up to 3 s), then accept or refuse */
 LIFT_PLAIN(net_454760, 454760)
@@ -3415,7 +3419,8 @@ static THISCALL DWORD camera_setupView(char *scene, DWORD pos, DWORD dir, DWORD 
 LIFT_PLAIN8(shape_getShadingColorBufferBy, 463b80)
 /* 0x466910 FUN_00466910(out, first, shape, factors, matrix): shape_getShadingColorBufferBy for every part (0x80 apart,
    count +0x10), each into out + its colour offset (+0x48) * 4 */
-LIFT_PLAIN8(FUN_00466910, 466910)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00466910(float *out, int first, BYTE *shape, void *factors, int matrix);
 /* batch 71 (lifted/grp18.c) */
 #include "lifted/grp18.c"
 /* 0x46f7a0 (thiscall) data_46f7a0(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
@@ -4196,7 +4201,8 @@ LIFT_PLAIN(setup_424810, 424810)
 void mainmenu_4434f0(void);
 /* 0x40cf80 lobbyPlayer_draw(): the arena tunnel (arena_4091b0), then in modes other than 0 / 1 (0x4dbb3c) and
    outside sub-state 5 (0x4db51c) the arena name dialog (arena_409bc0) or, while a message is open, its frame */
-LIFT_PLAIN(lobbyPlayer_draw, 40cf80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobbyPlayer_draw(void);
 /* 0x427830 setup_427830() / 0x427880 setup_427880(): the setup tunnel (setup_423e50), then in modes other than
    0 / 1 (0x4ddcec) and not on tab 0x29a (0x4ddac8) the sound (setup_424810) / options (setup_425460) dialog or,
    while a message is open, its frame */
@@ -4571,8 +4577,10 @@ void sound_playMenu(int id);
 /* 0x443c80 skirmish_443c80() / 0x447960 FUN_00447960(): leave the skirmish / mission settings (state 0x9ef1f0 /
    0x9f62f8 = 0), the camera back (0x4e1870, 0x4df028 / 0x4df02c, 0x68037c / 0x680380), menu sound 4 and the saved
    camera (skirmish_447910) */
-LIFT_PLAIN(skirmish_443c80, 443c80)
-LIFT_PLAIN(FUN_00447960, 447960)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD skirmish_443c80(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_00447960(void);
 /* 0x4479b0 mission_4479b0(m): the mission m chosen (0x9f6328, 0x9f63b0 = 1), menu sound 2 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mission_4479b0(int mission);
@@ -4817,7 +4825,8 @@ void room_4034e0(void);
 void lobbyJoin_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_436940(void);
-LIFT_PLAIN(lobby_keysBack, 4080c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_keysBack(void);
 LIFT_PLAIN(menu_4370e0, 4370e0)
 /* 0x44ac90 match_44ac90(x, y, len): start typing (keyboard released, input cleared, the edit box at x / y) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4904,7 +4913,8 @@ void THISCALL msg_timeLimitReached(void *scene);
 int arena_454c50(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_454d60(int a1, int a2, int a3, int a4);
-LIFT_PLAIN(dplay_coInit, 453720)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_coInit(void);
 LIFT_PLAIN(lobby_close, 406b60)
 LIFT_PLAIN(FUN_00403870, 403870)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9090,8 +9100,9 @@ ST(Texture_ctor, fill(BUF, 0x200); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF
 ST(FUN_0046ca70, vfs_content(0, 0); fill_str(BUF + 0x100, 40, 32, 126); for (char *p = BUF + 0x100; *p; p++) if (*p == '%') *p = 'x';
    strcat(BUF + 0x100, "%d_%s"); fill_str(BUF + 0x300, 20, 33, 126); g_a[0] = irnd(-999, 999);,
    CD(int, 0x46ca70, const char *, ...)(BUF + 0x100, g_a[0], BUF + 0x300), FUN_0046ca70(BUF + 0x100, g_a[0], BUF + 0x300))
-T_PLAIN(FUN_0046cbe0, 0x46cbe0, vfs_content(0, 0x400); fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);,
-        0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(0))
+ST(FUN_0046cbe0, vfs_content(0, 0x400); fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);,
+   CALL_PLAIN(0x46cbe0, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(0)),
+   (DWORD)FUN_0046cbe0((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(0)))
 T_PLAIN(FUN_0046cc30, 0x46cc30, fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(1))
 T_PLAIN(cfg_parsePlayer, 0x42c650, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, 0, VFS_FILE(0), 0, 0, 0)
 T_PLAIN(cfg_parseSound, 0x42c910, , 0, VFS_FILE(0), 0, 0, 0)
@@ -9297,7 +9308,7 @@ T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : ir
 ST(room_435ab0, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (room_435ab0(), 0))
 T_PLAIN(lobby_406bd0, 0x406bd0, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
 T_PLAIN(lobby_407270, 0x407270, dlgclick_setup(0x4dbb80);, 0, 0, 0, 0, 0)
-T_PLAIN(FUN_00427a40, 0x427a40, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(FUN_00427a40, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800);, CALL_PLAIN(0x427a40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(FUN_00427a40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
 T_PLAIN(mainmenu_440d70, 0x440d70, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
 static void qpf_setup(void)
 {
@@ -9358,7 +9369,7 @@ static void sockets_setup(void)
 	static const int which[] = { 100, 101, 99, 0, 102 };
 	g_a[0] = irnd(0, 0xffff); g_a[1] = which[irnd(0, 4)];
 }
-T_PLAIN(net_asyncSelect, 0x452170, sockets_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(net_asyncSelect, sockets_setup();, CALL_PLAIN(0x452170, 0, g_a[0], g_a[1], 0, 0), (DWORD)(net_asyncSelect((void *)(DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 static void host_setup(void)
 {
 	g_mockHostNameFail = !irnd(0, 4); g_mockHostFail = !irnd(0, 4); g_mockHostAddr = (DWORD)irnd(0, 0x7fffffff) * 2 + irnd(0, 1);
@@ -9851,7 +9862,7 @@ static void msgfmt_setup(void)
 	vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 4);
 }
 ST(FUN_00470fc0, msgfmt_setup();, (((void (__cdecl *)(int, int, int, char *, int, int, int))0x470fc0)(1, 2, 3, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
-   (FUN_00470fc0(0, 0, 0, 1, 2, 3, (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0), 0))
+   (FUN_00470fc0(1, 2, 3, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 T_PLAIN(net_454760, 0x454760, G32(0xa0d788) = irnd(0, 1) ? irnd(1, 99) : 0; G32(0xa0bf1c) = irnd(0, 1) ? irnd(1, 99) : 0;, 0, 0, 0, 0, 0)
 ST(net_454690, , CALL_PLAIN(0x454690, 0, 0, 0, 0, 0), (net_454690(), 0))
 static void recv_setup(void)
@@ -10823,7 +10834,7 @@ ST(shape_getShadingColorBufferBy, shade_setup();,
    (shape_getShadingColorBufferBy(0, 0, 0, (DWORD)(BUF + 0x30000), (DWORD)g_a[0], (DWORD)(BUF + 0x200 + g_a[2] * 0x80), (DWORD)(BUF + 0x10000), (DWORD)g_a[1], 0, 0, 0), 0))
 ST(FUN_00466910, shade_setup();,
    (((void (__cdecl *)(char *, int, char *, char *, int))0x466910)(BUF + 0x30000, g_a[0], BUF + 0x100, BUF + 0x10000, g_a[1]), 0),
-   (FUN_00466910(0, 0, 0, (DWORD)(BUF + 0x30000), (DWORD)g_a[0], (DWORD)(BUF + 0x100), (DWORD)(BUF + 0x10000), (DWORD)g_a[1], 0, 0, 0), 0))
+   (FUN_00466910((float *)(BUF + 0x30000), g_a[0], (BYTE *)(BUF + 0x100), BUF + 0x10000, g_a[1]), 0))
 /* batch 71 */
 /* shade_setup's shape and factor pool; the parts also get ViewVolume_projectObject's mesh fields (vv_setup's view
    volume); an object list (BUF + 0x50000) of up to 3 entries (shape or none, colour buffers, invertible matrices),
@@ -13319,7 +13330,7 @@ static void arenaplayer_setup(void)
 	G32(0x4e0cd0) = G32(0x9db0a4); for (DWORD a = 0x4df03c; a <= 0x4df04c; a += 4) G32(a) = G32(0x9db0a4);
 	G32(0x4dbb3c) = irnd(0, 3); G32(0x4db51c) = irnd(0, 3) ? irnd(0, 4) : 5; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-T_PLAIN(lobbyPlayer_draw, 0x40cf80, arenaplayer_setup();, 0, 0, 0, 0, 0)
+ST(lobbyPlayer_draw, arenaplayer_setup();, CALL_PLAIN(0x40cf80, 0, 0, 0, 0, 0), (DWORD)(lobbyPlayer_draw()))
 static void setupdlg_setup(int sound)
 {
 	if (sound) sound_setup(); else options_setup();
@@ -14171,8 +14182,8 @@ ST(load_401540, keys_setup();, CALL_PLAIN(0x401540, 0, g_a[0], 0, 0, 0), (DWORD)
 ST(load_4014f0, keys_setup();, CALL_PLAIN(0x4014f0, 0, g_a[0], 0, 0, 0), (DWORD)(load_4014f0((DWORD)(g_a[0]))))
 T_PLAIN(input_isDown, 0x401590, keys_setup();, 0, g_a[0], 0, 0, 0)
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
-T_PLAIN(skirmish_443c80, 0x443c80, menusnd_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(FUN_00447960, 0x447960, menusnd_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_443c80, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmish_443c80()))
+ST(FUN_00447960, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(FUN_00447960()))
 ST(mission_4479b0, menusnd_setup();, CALL_PLAIN(0x4479b0, 0, g_a[3], 0, 0, 0), (mission_4479b0((DWORD)(g_a[3])), 0))
 /* batch 162 */
 /* the settings screens: the skirmish lists (sk_setup), keyboard (keys_setup) and menu sounds (menusnd_setup), the
@@ -14519,7 +14530,7 @@ ST(room_403530, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), 
 ST(room_4034e0, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (room_4034e0(), 0))
 ST(lobbyJoin_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (lobbyJoin_keys(), 0))
 ST(menu_436940, small_setup(g_stubKeyClose);, CALL_PLAIN(0x436940, 0, 0, 0, 0, 0), (menu_436940(), 0))
-T_PLAIN(lobby_keysBack, 0x4080c0, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
+ST(lobby_keysBack, small_setup(g_stubKeyClose);, CALL_PLAIN(0x4080c0, 0, 0, 0, 0, 0), (DWORD)(lobby_keysBack()))
 T_PLAIN(menu_4370e0, 0x4370e0, small_setup(g_stubKeyClose2);, 0, 0, 0, 0, 0)
 ST(match_44ac90, small_setup(g_stubTypeOn);, CALL_PLAIN(0x44ac90, 0, g_a[0], g_a[1], g_a[2], 0), (match_44ac90((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
 T_PLAIN(match_44ace0, 0x44ace0, small_setup(g_stubTypeOff);, 0, 0, 0, 0, 0)
@@ -14685,7 +14696,7 @@ ST(arena_454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0
 static const DWORD g_gs_453720[] = { 0x453770, 0, 0x453920, 0, 0 };
 static const DWORD g_gi_453720[] = { 0xa0b42c, 0xa0b430, 0xa0b434, 0xa0b438, 0 };
 static const DWORD g_gb_453720[] = { 0xa0b470, 0 };
-T_PLAIN(dplay_coInit, 0x453720, gen_setup(g_gs_453720, g_gi_453720, g_gb_453720);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(dplay_coInit, gen_setup(g_gs_453720, g_gi_453720, g_gb_453720);, CALL_PLAIN(0x453720, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(dplay_coInit()))
 static const DWORD g_gs_406b60[] = { 0x4044e0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_406b60[] = { 0x4db8b4, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dda44, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x90d1c4, 0 };
 static const DWORD g_gb_406b60[] = { 0 };

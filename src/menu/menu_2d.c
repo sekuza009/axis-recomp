@@ -122,3 +122,13 @@ void (gfx_setProjection2D3D)(int mode)
 	g_projMode = mode;
 	glMatrixMode(GL_MODELVIEW);
 }
+
+/* 0x427a40: a line in the menu colour from (x0, y0) to (x1, y1). Returns glEnd's eax */
+u32 (FUN_00427a40)(int x0, int y0, int x1, int y1)
+{
+	glColor4f_stored(g_menuColour);
+	glBegin(GL_LINES);
+	menu_vertex(x0, y0);
+	menu_vertex(x1, y1);
+	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+}

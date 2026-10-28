@@ -298,3 +298,36 @@ void (room_432db0)(void)
 	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
 	GAME_VAR(int, 0x9dd84c) = 1;
 }
+
+/* 0x4080c0: the lobby's back keys (unless a dialog is open): the first closes the list (0x907b2c), the second leaves
+   the game (quit code 2). Returns what the original leaves in eax */
+u32 (lobby_keysBack)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	u32 r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
+	if (r) {
+		GAME_VAR(int, 0x907b2c) = 0;
+		return r;
+	}
+	r = input_justPressed(GAME_VAR(int, 0x4e1510));
+	if (!r)
+		return 0;
+	GAME_VAR(int, 0x907b2c) = 0;
+	return profile_41e7a0(2);
+}
+
+/* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (0x4dbb3c) and not on
+   sub-screen 5, the player panel (arena_409bc0), or with a dialog open just its frame. Returns what the original
+   leaves in eax */
+u32 (lobbyPlayer_draw)(void)
+{
+	GAME_CDECL(0x4091b0, void, void)();   /* arena_4091b0: the tunnel */
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
+		return mode;
+	if (!g_dialogOpen)
+		return GAME_CDECL(0x409bc0, u32, void)();   /* arena_409bc0 */
+	return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x4dbb68), GAME_VAR(int, 0x4dbb6c),
+	                                                     GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74));   /* menu_drawFrame */
+}

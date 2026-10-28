@@ -57,3 +57,16 @@ int (FUN_0046ca70)(const char *format, ...)
 	fclose(f);
 	return 1;
 }
+
+/* 0x46cbe0: count records of size bytes read, each byte unscrambled: xor 0x59, rotated left by one. Returns fread's
+   count */
+u32 (FUN_0046cbe0)(u8 *p, u32 size, u32 count, void *f)
+{
+	int n = (int)(size * count);
+	u32 r = GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f);   /* fread */
+	for (int i = 0; i < n; i++) {
+		u8 c = p[i] ^ 0x59;
+		p[i] = (u8)(c << 1 | c >> 7);
+	}
+	return r;
+}
