@@ -17,3 +17,4 @@ batches/*.post*
 # temporary coverage instrumentation (tools/covlift.py)
 lifted/*.cov.bak
 batches/*.log
+tools/__pycache__/

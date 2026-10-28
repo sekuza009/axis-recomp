@@ -6142,7 +6142,8 @@ static THISCALL DWORD actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, 
    0x90, +0x8c) projected at the item's place and turn (ViewVolume_projectObject; faded items with a white colour of
    alpha 255 * fade), else a 300-unit billboard cut from the item atlas (8 icons per row, 32 px each) through the
    billboard object (+0x9ccff8, hud_484ca0) */
-static THISCALL DWORD hud_48f970(char *sc, DWORD vv) { DWORD v[1] = { vv }; return run_lifted(lift_48f970, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_48f970(void *stage, void *view);
 /* batch 105 (lifted/grp51.c) */
 #include "lifted/grp51.c"
 /* 0x429d70 menu_drawBackground3D(ring): the menu's 3D tunnel. The ring chain (+0x3534 next, +0x3530 back) is walked to its last
@@ -14421,7 +14422,7 @@ static void mapitems_setup(void)
 	G32(0x83a9c8) = irnd(0, 1); fill((void *)0xa1f23c, 4);
 	g_a[0] = (int)(BUF + 0x100000);
 }
-ST(hud_48f970, mapitems_setup();, (TC(void, 0x48f970, char *, char *)(BUF, (char *)g_a[0]), 0), (hud_48f970(BUF, (DWORD)g_a[0]), 0))
+ST(hud_48f970, mapitems_setup();, (TC(void, 0x48f970, char *, char *)(BUF, (char *)g_a[0]), 0), (hud_48f970(BUF, (void *)g_a[0]), 0))
 /* batch 105 */
 /* 1..4 tunnel rings (0x4000 apart from BUF + 0x980000, linked both ways (+0x3534 next, +0x3530 back); every float field of 0.1..100, spins some past 360, 0..120
    vertices), menutex_setup's texture as the tunnel texture, untextured now and then, modes 0..3, the pulse */

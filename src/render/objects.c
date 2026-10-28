@@ -20,7 +20,7 @@ void THISCALL (hud_490b30)(Stage *stage, int i, void *view)
 	for (int k = 0; k < 3; k++)
 		if (!((long double)r + stage->cameraPos[k] >= o->pos[k]))
 			return;
-	ViewVolume_projectObject(view, model, o->poseSide == 0 ? o->poseFrom : o->poseTo, o->matrix, 0, 0, 1, -1, 0);
+	ViewVolume_projectObject(view, model, o->poseSide == 0 ? o->poseFrom : o->poseTo, o->matrix, 0, NULL, 1, -1, 0);
 }
 
 /* 0x490da0 (hud_490da0): every active object */

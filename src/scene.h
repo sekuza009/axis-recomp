@@ -126,6 +126,23 @@ typedef struct MapObject {
 	u8 _pad00002c8[0x4];
 } MapObject;
 
+/* a kind of map item (Stage.itemTypes) */
+typedef struct ItemType {
+	u8 _pad0000000[0x8c];
+	Model *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
+} ItemType;
+
+/* an item lying on the map (Stage.items): power-ups, ammo... */
+typedef struct MapItem {
+	i32 type;   /* +0x0: index into Stage.itemTypes and the item atlas; < 0: none */
+	u8 _pad0000004[0x8];
+	float pos[3];   /* +0xc */
+	u8 _pad0000018[0x4];
+	float angle;   /* +0x1c: its turn, tenths of a degree */
+	i32 taken;   /* +0x20: 1: taken (not drawn) */
+	float fade;   /* +0x24: below 1: drawn faded (alpha 255 * fade) */
+} MapItem;
+
 /* a projectile (Stage.projectiles): bullets, missiles, beams, explosions... */
 typedef struct Projectile {
 	u8 _pad0000000[0x4];
@@ -137,7 +154,9 @@ typedef struct Projectile {
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
-	u8 _pad0000a0c[0x9ed63c];
+	u8 _pad0000a0c[0x9cc5ec];
+	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
+	u8 _pad09ccffc[0x2104c];
 	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
 	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
 	u32 glFogEnd;   /* +0x9ee05c */
@@ -153,7 +172,12 @@ typedef struct Stage {
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
 	u8 _pad20f2da4[0xbcc];
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
-	u8 _pad20f397c[0x5cac7];
+	u8 _pad20f397c[0x164];
+	ItemType itemTypes[64];   /* +0x20f3ae0: (count unclear) */
+	u8 _pad20f5ee0[0x4f18];
+	MapItem items[200];   /* +0x20fadf8 */
+	i32 itemCount;   /* +0x20fcd38 */
+	u8 _pad20fcd3c[0x53707];
 } Stage;
 
 /* the scene: the one large object of a match, built by game_loadAllData */
@@ -356,9 +380,18 @@ _Static_assert(offsetof(MapObject, poseTo) == 0x284 && sizeof(((MapObject *)0)->
 _Static_assert(offsetof(MapObject, poseSide) == 0x288 && sizeof(((MapObject *)0)->poseSide) == 0x4, "scene.fields: MapObject.poseSide");
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
+_Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");
+_Static_assert(sizeof(ItemType) == 0x90, "scene.fields: size of ItemType");
+_Static_assert(offsetof(MapItem, type) == 0x0 && sizeof(((MapItem *)0)->type) == 0x4, "scene.fields: MapItem.type");
+_Static_assert(offsetof(MapItem, pos) == 0xc && sizeof(((MapItem *)0)->pos) == 0xc, "scene.fields: MapItem.pos");
+_Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle) == 0x4, "scene.fields: MapItem.angle");
+_Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
+_Static_assert(offsetof(MapItem, fade) == 0x24 && sizeof(((MapItem *)0)->fade) == 0x4, "scene.fields: MapItem.fade");
+_Static_assert(sizeof(MapItem) == 0x28, "scene.fields: size of MapItem");
 _Static_assert(offsetof(Projectile, active) == 0x4 && sizeof(((Projectile *)0)->active) == 0x4, "scene.fields: Projectile.active");
 _Static_assert(sizeof(Projectile) == 0x12c, "scene.fields: size of Projectile");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
+_Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
 _Static_assert(offsetof(Stage, glFogStart) == 0x9ee058 && sizeof(((Stage *)0)->glFogStart) == 0x4, "scene.fields: Stage.glFogStart");
 _Static_assert(offsetof(Stage, glFogEnd) == 0x9ee05c && sizeof(((Stage *)0)->glFogEnd) == 0x4, "scene.fields: Stage.glFogEnd");
@@ -370,6 +403,9 @@ _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
+_Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
+_Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
+_Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");
 _Static_assert(sizeof(Stage) == 0x2150443, "scene.fields: size of Stage");
 _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) == 0x4, "scene.fields: Scene.network");
 _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");

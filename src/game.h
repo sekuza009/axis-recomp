@@ -43,6 +43,11 @@
 /* a float kept in memory, passed on bit for bit */
 #define glFogf_stored(pname, v) IMPORT(0x4a9280, void, u32, u32)(pname, v)
 #define glHint(target, mode) IMPORT(0x4a924c, void, u32, u32)(target, mode)
+#define glPushMatrix() IMPORT(0x4a9204, void, void)()
+#define glPopMatrix() IMPORT(0x4a9258, void, void)()
+/* a point kept in memory (three floats), passed on bit for bit */
+#define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
+#define glRotatef(angle, x, y, z) IMPORT(0x4a91f8, void, float, float, float, float)(angle, x, y, z)
 
 /* ---- C runtime of the game ---- */
 #define sprintf(...) GAME_CDECL(0x49e9dd, int, char *, const char *, ...)(__VA_ARGS__)
@@ -153,10 +158,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
 #define hud_490b30(stage, i, view) GAME_THISCALL(0x490b30, void, Stage *, int, void *)(stage, i, view)   /* a map object to the view volume */
-/* queue every mesh of model for drawing (see recomp.c): extra, matrix, a4, a5, cull (1: skip meshes outside a clip plane),
+/* queue every mesh of model for drawing (see recomp.c): extra, matrix (none: the current modelview), a4, colour (4 bytes,
+   or none), cull (1: skip meshes outside a clip plane),
    material (< 0: the mesh's own), a8 */
-#define ViewVolume_projectObject(view, model, extra, matrix, a4, a5, cull, material, a8) GAME_THISCALL(0x4853c0, void, void *, \
-	void *, u32, const float *, int, int, int, int, int)(view, model, extra, matrix, a4, a5, cull, material, a8)
+#define ViewVolume_projectObject(view, model, extra, matrix, a4, colour, cull, material, a8) GAME_THISCALL(0x4853c0, void, void *, \
+	void *, u32, const float *, int, const void *, int, int, int)(view, model, extra, matrix, a4, colour, cull, material, a8)
 #define render_drawObjects(view, mode, alpha) GAME_THISCALL(0x485af0, void, void *, int, float)(view, mode, alpha)
 #define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, void *, float)(stage, scale)
 #define render_processRenderingBy(stage, view, scale) GAME_THISCALL(0x497d20, void, void *, void *, float)(stage, view, scale)
@@ -169,6 +175,12 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_47d060(stage, view) GAME_THISCALL(0x47d060, void, void *, void *)(stage, view)
 #define hud_479af0(stage, view) GAME_THISCALL(0x479af0, void, Stage *, void *)(stage, view)
 /* projectile i drawn (or queued) in the view volume */
+/* a camera-facing quad at p into the view volume's billboard list id: corners p + a .. p + b, depth + dz, texture
+   coordinates uv0 .. uv1, colour (4 bytes) */
+#define hud_484ca0(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISCALL(0x484ca0, void, void *, int, const float *, \
+	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
+#define g_items3D GAME_VAR(int, 0x83a9c8)            /* (unclear) a graphics setting: 1 draws map items as models */
+#define g_white GAME_VAR(u32, 0xa1f23c)              /* four bytes 0xff: an opaque white colour */
 #define hud_476890(stage, i, view) GAME_THISCALL(0x476890, void, Stage *, int, void *)(stage, i, view)
 #define hud_48f970(stage, view) GAME_THISCALL(0x48f970, void, void *, void *)(stage, view)
 #define hud_472900(stage, colour, start, end, density) GAME_THISCALL(0x472900, void, Stage *, const void *, u32, u32, u32)(stage, colour, start, end, density)
