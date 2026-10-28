@@ -21,8 +21,8 @@ static long double hy(float k) { return (long double)gfx_getHeight() * SY * k; }
 static float wf(void) { return (float)gfx_getWidth(); }
 static float hf(void) { return (float)gfx_getHeight(); }
 /* a texel count to a texture coordinate (texture 256 or 255 texels across), rounded to a float */
-static float tex256(int n) { return (float)((long double)n * (1.0f / 256)); }
-static float tex255(int n) { return (float)((long double)n * (1.0f / 255)); }
+static float tex256(int n) { return f32((long double)n * (1.0f / 256)); }
+static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 
 /* the energy bar's length and left edge in HUD units: floats the patch DLL may move (it rewrites every operand that
    reads them, all to the same new address); read through the first of those operands */
@@ -36,7 +36,7 @@ static void main_ring(Scene *scene, Player *player)
 	int t = ftol((long double)game_clock() * 5.0f);
 	float trig = g_trig[(t % 3600 + 3600) % 3600];
 	int half = gfx_getHeight() / 2;
-	float radius = (float)(half / (long double)trig);
+	float radius = f32(half / (long double)trig);
 	glBegin(GL_QUAD_STRIP);
 	for (int angle = 0; angle <= 3600; angle += 100) {
 		if (player->alert == 1 && scene->network == 1)
@@ -44,7 +44,7 @@ static void main_ring(Scene *scene, Player *player)
 		else
 			glColor4f(0.0f, 1.0f, 0.0f, 0.25f);
 		int heading = ftol(player->heading);
-		float v[2] = { 0.0f, (float)(g_trig[(heading % 3600 + 3600) % 3600] * (long double)radius) };
+		float v[2] = { 0.0f, f32(g_trig[(heading % 3600 + 3600) % 3600] * (long double)radius) };
 		vec_rotate(v, angle);
 		for (int pass = 0; pass < 2; pass++) {
 			if (pass == 1) {
@@ -52,8 +52,8 @@ static void main_ring(Scene *scene, Player *player)
 					glColor4f(1.0f, 0.0f, 0.0f, 0.0f);
 				else
 					glColor4f(0.0f, 1.0f, 0.0f, 0.0f);
-				v[0] = (float)(v[0] * 1.2f);
-				v[1] = (float)(v[1] * 1.2f);
+				v[0] = f32(v[0] * 1.2f);
+				v[1] = f32(v[1] * 1.2f);
 			}
 			int cy = gfx_getHeight() / 2;
 			int dy = ftol(v[1]) - cy;
@@ -70,7 +70,7 @@ static void main_counters(Scene *scene, Player *player)
 {
 	float h = hf();
 	int y0 = ftol(h - hy(74.0f));
-	float w8 = (float)wx(8.0f);
+	float w8 = f32(wx(8.0f));
 	int x = ftol(wx(8.0f) + w8);
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->managers[scene->hudBarTexture / 512], scene->hudBarTexture % 512);
@@ -95,7 +95,7 @@ static void main_counters(Scene *scene, Player *player)
 	glDisable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 2; k++) {
-		float scale = (float)wx(0.9f);
+		float scale = f32(wx(0.9f));
 		int dy = ftol(hy(37.0f) + y0f);
 		int dx = ftol(wx(k == 0 ? 66.0f : 168.0f) + xf);
 		hud_drawDigits(dx, dy, scale, k == 0 ? player->counterA : player->counterB, 3, 0);
@@ -130,8 +130,8 @@ static void main_weapons(Scene *scene, Player *player)
 		int y0 = ftol(h - hy(50.0f));
 		float acrossf = (float)across;
 		float left = wf();
-		left = (float)(left - wx(8.0f));
-		left = (float)(left - wx(244.0f));
+		left = f32(left - wx(8.0f));
+		left = f32(left - wx(244.0f));
 		int x = ftol(wx(acrossf) + left);
 		int other = player->weapon != i;
 		glEnable(GL_TEXTURE_2D);
@@ -139,7 +139,7 @@ static void main_weapons(Scene *scene, Player *player)
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(GL_QUADS);
 		float t0 = tex256(other * 39 + 48);
-		float s0 = (float)(acrossf * (1.0f / 256));
+		float s0 = f32(acrossf * (1.0f / 256));
 		glTexCoord2f(s0, t0);
 		glVertex2i(x, gfx_getHeight() - y0);
 		float s1 = tex256(across + 61);
@@ -160,12 +160,12 @@ static void main_weapons(Scene *scene, Player *player)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, player->weapon == i ? 1.0f : 0.5f);
-		float scale = (float)wx(0.53f);
-		float dyf = (float)(hy(50.0f) + y0f);
-		dyf = (float)(dyf - hy(26.0f));
+		float scale = f32(wx(0.53f));
+		float dyf = f32(hy(50.0f) + y0f);
+		dyf = f32(dyf - hy(26.0f));
 		long double unit = (long double)gfx_getHeight() * SY;
 		int dy = ftol(unit + unit + dyf);
-		float w28 = (float)wx(28.0f);
+		float w28 = f32(wx(28.0f));
 		int dx = ftol(wx(4.0f) + w28 + xf);
 		hud_drawDigits(dx, dy, scale, player->ammo[i], 3, 0);
 	}
@@ -176,9 +176,9 @@ static void main_weapons(Scene *scene, Player *player)
 static void main_gauge(Scene *scene, Player *player)
 {
 	float h = hf();
-	h = (float)(h - hy(8.0f));
+	h = f32(h - hy(8.0f));
 	int y = ftol(h - hy(64.0f));
-	float centre = (float)(gfx_getWidth() / 2);
+	float centre = f32(gfx_getWidth() / 2);
 	int x = ftol(centre - wx(32.0f));
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->managers[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
@@ -212,12 +212,12 @@ static void main_timers(Scene *scene, Player *player)
 		if (!(player->timerFlags & 0x100 << k))
 			continue;
 		float left = player->timers[k];
-		float h = (float)(gfx_getHeight() / 2);
-		h = (float)(h - hy(96.0f));
+		float h = f32(gfx_getHeight() / 2);
+		h = f32(h - hy(96.0f));
 		long double unit = (long double)gfx_getHeight() * SY;
 		int y = ftol(unit * (k * 48) + h);
 		float w = wf();
-		w = (float)(w - wx(8.0f));
+		w = f32(w - wx(8.0f));
 		int x = ftol(w - wx(32.0f));
 		glEnable(GL_TEXTURE_2D);
 		tex_bind(g_textures->managers[scene->emblemTexture / 512], scene->emblemTexture % 512);
@@ -260,21 +260,21 @@ static void main_snapshot(Scene *scene, Player *player)
 	int x, y;
 	if (scene->playing == 1) {
 		float h = hf();
-		h = (float)(h - hy(8.0f));
-		h = (float)(h - hy(50.0f));
-		h = (float)(h - wx(8.0f));                        /* (sic: a width) */
+		h = f32(h - hy(8.0f));
+		h = f32(h - hy(50.0f));
+		h = f32(h - wx(8.0f));                        /* (sic: a width) */
 		y = ftol(h - hy(64.0f));
 		float w = wf();
-		w = (float)(w - wx(8.0f));
+		w = f32(w - wx(8.0f));
 		x = ftol(w - wx(128.0f));
 	}
 	if (scene->playing == 0) {
 		float h = hf();
-		h = (float)(h - hy(8.0f));
-		h = (float)(h - wx(8.0f));
+		h = f32(h - hy(8.0f));
+		h = f32(h - wx(8.0f));
 		y = ftol(h - hy(64.0f));
 		float w = wf();
-		w = (float)(w - wx(8.0f));
+		w = f32(w - wx(8.0f));
 		x = ftol(w - wx(128.0f));
 	}
 	glEnable(GL_TEXTURE_2D);
@@ -311,7 +311,7 @@ static int energy_top(int cut, int haveCut)
 {
 	float a = hf();
 	float b = hf();
-	b = (float)(b - hy(22.0f));
+	b = f32(b - hy(22.0f));
 	if (haveCut) {
 		float cutf = (float)cut;
 		return ftol(a - (b - (hy(ENERGY_HEIGHT) - cutf)));
@@ -326,7 +326,7 @@ static int energy_bottom(void)
 }
 static int energy_right(void)
 {
-	float w8 = (float)wx(8.0f);
+	float w8 = f32(wx(8.0f));
 	return ftol(wx(ENERGY_WIDTH) + w8);
 }
 
@@ -369,7 +369,7 @@ static void main_energy(Player *player)
 	int y1 = ftol(a - hy(22.0f));
 	int x1 = energy_right();
 	float b = hf();
-	b = (float)(b - hy(22.0f));
+	b = f32(b - hy(22.0f));
 	int y0 = ftol(b - hy(ENERGY_HEIGHT));
 	hud_46bd00(ftol(wx(8.0f)), y0, x1, y1);
 }
@@ -431,7 +431,7 @@ void THISCALL (hud_drawMain)(Scene *scene)
 		}
 	}
 	if (scene->playing == 1 && player->hitFlash > 0.0f) {
-		glColor4f(1.0f, 0.0f, 0.0f, (float)(player->hitFlash * 0.5f));
+		glColor4f(1.0f, 0.0f, 0.0f, f32(player->hitFlash * 0.5f));
 		int h = gfx_getHeight();
 		gfx_fillRect(0, 0, gfx_getWidth(), h);
 	}
