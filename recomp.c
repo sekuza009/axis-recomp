@@ -2080,7 +2080,6 @@ THISCALL int script_runScpFile(void *self, const char *name, int mode);
    the 3 normalised edges (+0x28), the face plane (+0x4c normal, +0x58 distance), the 3 edge planes (+0x5c, 16 bytes
    each: normal = face normal x edge, distance) and 5 raw dwords (+0x8c). All products in 80 bits, rounded where the
    original stores to float; the normal/plane copies go through fld/fstp (SNaN -> QNaN). Returns d (the 4th raw dword) */
-static long double x87mul(long double a, float b) { volatile long double x = a; return x * b; }
 static void x87copy(float *dst, const float *src) { volatile long double x = *src; *dst = (float)x; }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int load_47db60(char *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d, int e);
@@ -2092,42 +2091,10 @@ void TextureManager_dtor_wrap_42b380(void);
    the constants the original multiplies with). Scene at *0x9087b4; actor = scene index at +0x234240d (stride 0x8888,
    fields at +0x1ecca70..); its player slot (+0x1eccb7c, stride 0x47fd2) picks a part record (stride 0x13f4) and a
    weapon record (stride 0x1820). Every product is 80-bit, rounded once on store. Returns the scene pointer */
-static long double x87_fsqrt(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 /* dst = (float)(fld *a; fmul *b) - the second factor stays a memory operand (SNaN behaviour, see x87_mulm) */
 static void x87mulf(DWORD dst, const float *a, const float *b) { GF(dst) = (float)x87_mulm(x87_ldm(a), b); }
-static char *__cdecl armc_41c510(void)
-{
-	char *g = *(char **)0x9087b4;
-	char *A = g + *(int *)(g + 0x234240d) * 0x8888;
-	volatile long double s = GF(A + 0x1ecca70);
-	s = x87_fsqrt(s);
-	s = s * *(double *)0x4a94c0;
-	GF(0x4dcaa0) = (float)s;
-	x87mulf(0x4dcaa4, (const float *)(A + 0x1ecca74), (const float *)0x4a93ec);
-	G32(0x4dcaa8) = S32(A, 0x1ecca78);
-	x87mulf(0x4dcaac, (const float *)(A + 0x1ecca7c), (const float *)0x4a93f4);
-	x87mulf(0x4dcab0, (const float *)(A + 0x1ecca80), (const float *)0x4a94bc);
-	for (int i = 0; i < 7; i++) G32(0x4dcab4 + i * 4) = S32(A, 0x1ecca8c + i * 4);
-	x87copy((float *)0x4dcad0, (float *)(A + 0x1eccaa8));
-	char *pl = g + S32(A, 0x1eccb7c) * 0x47fd2;
-	char *part = g + S32(pl, 0x1755548) * 0x13f4;
-	x87copy((float *)0x4dcad4, (float *)(part + 0x163c96c));
-	x87mulf(0x4dcad8, (const float *)(part + 0x163c970), (const float *)0x4a93f4);
-	x87mulf(0x4dcadc, (const float *)(part + 0x163c974), (const float *)0x4a93f4);
-	x87mulf(0x4dcae0, (const float *)(part + 0x163c97c), (const float *)0x4a93f4);
-	x87mulf(0x4dcae4, (const float *)(part + 0x163c978), (const float *)0x4a93f4);
-	G32(0x4dcae8) = S32(g + S32(pl, 0x175554c) * 0x1820, 0x167b334);
-	x87mulf(0x4dcaec, (const float *)(A + 0x1eccab4), (const float *)0x4a94bc);
-	x87mulf(0x4dcaf0, (const float *)(A + 0x1eccab8), (const float *)0x4a94bc);
-	x87mulf(0x4dcaf4, (const float *)(A + 0x1eccabc), (const float *)0x4a94bc);
-	x87mulf(0x4dcaf8, (const float *)(A + 0x1eccac0), (const float *)(0x4a94b8));
-	x87mulf(0x4dcafc, (const float *)(0x4dcaf8), (const float *)(A + 0x1eccac4));
-	GF(0x4dcb00) = (float)-x87_mulm(x87_ldm((const float *)0x4dcaf8), (const float *)(A + 0x1eccac8));
-	x87mulf(0x4dcb04, (const float *)(0x4dcaf8), (const float *)(A + 0x1eccacc));
-	x87copy((float *)0x4dcb0c, (float *)(A + 0x1ecca84));
-	x87copy((float *)0x4dcb08, (float *)(A + 0x1ecca88));
-	return g;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+char *armc_41c510(void);
 /* batch 34 */
 /* 0x41b750 armc_41b750: the ARM CENTER part readout for the shown mech. For each of the 5 part slots of its player
    (body 0x175553c, ... weapon 0x175554c) the part's name goes into a 64-byte field with '\' and '/' turned into '-'
@@ -2194,73 +2161,8 @@ static int __cdecl armc_41b750(void)
    3. each edge against the 6 box faces (the second coordinate uses the parameter rounded to float, as stored) -> 1;
    4. a corner inside all 3 edge planes -> 1; else 0.
    Compares follow the original's flags (NaN fails every "greater"). */
-static long double x87add(float a, float b) { volatile long double x = a; return x + b; }
-static long double x87sub(float a, float b) { volatile long double x = a; return x - b; }
-static int tribox_edges(const float *T, float pv, int a, int b, int c, float lob, float hib, float loc, float hic)
-{
-	for (int i = 0; i < 3; i++) {
-		const float *v = T + 1 + i * 3, *e = T + 10 + i * 3;
-		volatile long double t = x87sub(pv, v[a]);
-		t = t / e[a];
-		float tf = (float)t;
-		volatile long double y = t * e[b];
-		y = y + v[b];
-		if (!(y > lob)) continue;
-		if (y >= hib) continue;
-		volatile long double z = x87mul(tf, e[c]);
-		z = z + v[c];
-		if (!(z > loc)) continue;
-		if (!(z >= hic)) return 1;
-	}
-	return 0;
-}
-static THISCALL int load_47fce0(const float *T, const float *P, const float *S, float r)
-{
-	float lox = (float)x87sub(P[0], r), loy = (float)x87sub(P[1], r), loz = (float)x87sub(P[2], r);
-	unsigned all = 0x111111, any = 0;
-	for (int i = 0; i < 3; i++) {
-		const float *v = T + 1 + i * 3;
-		unsigned code;
-		if (!(v[0] > lox)) code = 1; else if (!(x87add(r, S[0]) > v[0])) code = 0x10; else code = 0;
-		if (!(v[1] > loy)) code |= 0x100; else if (!(x87add(r, S[1]) > v[1])) code |= 0x1000;
-		if (!(v[2] > loz)) code |= 0x10000; else if (!(x87add(r, S[2]) > v[2])) code |= 0x100000;
-		all &= code; any |= code;
-	}
-	if (all & 0x111111) return 0;
-	if (!any) return 1;
-	float hx = (float)x87add(r, S[0]), hy = (float)x87add(r, S[1]), hz = (float)x87add(r, S[2]);
-	const float c[8][3] = { { lox, loy, loz }, { hx, loy, loz }, { lox, loy, hz }, { hx, loy, hz },
-	                        { lox, hy, loz }, { hx, hy, loz }, { lox, hy, hz }, { hx, hy, hz } };
-	float K = GF(0x4a93e8);
-	int side = -1;
-	for (int k = 0; ; k++) {
-		volatile long double d = x87mul(c[k][2], T[0x15]) + x87mul(c[k][0], T[0x13]);
-		d = d + x87mul(c[k][1], T[0x14]);
-		d = d - T[0x16];
-		if (d > K) { if (side == 1) break; if (side < 0) side = 0; }
-		else { if (side == 0) break; if (side < 0) side = 1; }
-		if (k >= 7) return 0;
-	}
-	if (tribox_edges(T, lox, 0, 1, 2, loy, hy, loz, hz) || tribox_edges(T, hx, 0, 1, 2, loy, hy, loz, hz) ||
-	    tribox_edges(T, loy, 1, 2, 0, loz, hz, lox, hx) || tribox_edges(T, hy, 1, 2, 0, loz, hz, lox, hx) ||
-	    tribox_edges(T, loz, 2, 0, 1, lox, hx, loy, hy) || tribox_edges(T, hz, 2, 0, 1, lox, hx, loy, hy))
-		return 1;
-	for (int k = 0; k < 8; k++) {
-		volatile long double d = x87mul(T[0x19], c[k][2]) + x87mul(c[k][1], T[0x18]);
-		d = d + x87mul(T[0x17], c[k][0]);
-		d = d - T[0x1a];
-		if (d > K) continue;
-		d = x87mul(T[0x1c], c[k][1]) + x87mul(T[0x1d], c[k][2]);
-		d = d + x87mul(T[0x1b], c[k][0]);
-		d = d - T[0x1e];
-		if (d > K) continue;
-		d = x87mul(T[0x20], c[k][1]) + x87mul(T[0x21], c[k][2]);
-		d = d + x87mul(T[0x1f], c[k][0]);
-		d = d - T[0x22];
-		if (!(d > K)) return 1;
-	}
-	return 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int load_47fce0(const float *T, const float *P, const float *S, float r);
 /* batch 36 */
 /* 0x4842d0 (thiscall) ViewVolume_transformObject(id, info6, info3, pts, M, raw, cull): append a 0x60-byte record to
    the view volume's list (base +0x9058, count +0x905c, capacity +0x9054; full -> flag +0x9098). The 3 points are

@@ -95,3 +95,110 @@ int THISCALL (space_tracePlanes_47fb80)(const u8 *self, const float *p0, const f
 	*dist = (float)fsqrt(c * c + b * b + a * a);
 	return 1;
 }
+
+/* ---- 0x47fce0: does the triangle touch the box from P - r to S + r? (r, P and S as the collision code passes them).
+   1. every corner of the triangle outside one face of the box: no; all inside: yes;
+   2. all eight box corners on one side of the face plane: no;
+   3. an edge of the triangle crossing a face of the box (its other two coordinates within it): yes;
+   4. a box corner inside all three edge planes: yes; else no.
+   The compares are the original's (a NaN fails every "greater"), the operands from memory as there ---- */
+
+/* the triangle's edges crossing the box face at coordinate *at of axis a: the crossing's coordinates on axes b
+   (unrounded) and c (from the parameter rounded to a float, as the original stores it) within (lob, hib) and
+   (loc, hic) */
+static int edges_cross(const float *T, const float *at, int a, int b, int c, const float *lob, const float *hib,
+                       const float *loc, const float *hic)
+{
+	for (int i = 0; i < 3; i++) {
+		const float *v = T + 1 + i * 3, *e = T + 10 + i * 3;
+		X t = fdiv_m(fsub_m(fld_m(at), &v[a]), &e[a]);
+		float tf = f32(t);
+		X y = fadd_m(fmul_m(t, &e[b]), &v[b]);
+		if (!(y > *lob))
+			continue;
+		if (y >= *hib)
+			continue;
+		X z = fadd_m(fmul_m(fld_m(&tf), &e[c]), &v[c]);
+		if (!(z > *loc))
+			continue;
+		if (!(z >= *hic))
+			return 1;
+	}
+	return 0;
+}
+
+int THISCALL (load_47fce0)(const float *T, const float *P, const float *S, float r)
+{
+	float lo[3];
+	for (int a = 0; a < 3; a++)
+		lo[a] = f32(fsub_m(fld_m(&P[a]), &r));
+	unsigned all = 0x111111, any = 0;
+	for (int i = 0; i < 3; i++) {
+		const float *v = T + 1 + i * 3;
+		unsigned code = 0;
+		for (int a = 0; a < 3; a++) {
+			if (!(v[a] > lo[a]))
+				code |= 1u << (a * 8);
+			else if (!(fadd_m(fld_m(&r), &S[a]) > v[a]))
+				code |= 0x10u << (a * 8);
+		}
+		all &= code;
+		any |= code;
+	}
+	if (all & 0x111111)
+		return 0;
+	if (!any)
+		return 1;
+	float hi[3];
+	for (int a = 0; a < 3; a++)
+		hi[a] = f32(fadd_m(fld_m(&r), &S[a]));
+	const float corner[8][3] = { { lo[0], lo[1], lo[2] }, { hi[0], lo[1], lo[2] }, { lo[0], lo[1], hi[2] },
+	                             { hi[0], lo[1], hi[2] }, { lo[0], hi[1], lo[2] }, { hi[0], hi[1], lo[2] },
+	                             { lo[0], hi[1], hi[2] }, { hi[0], hi[1], hi[2] } };
+	X zero = GAME_VAR(float, 0x4a93e8);
+	int side = -1;
+	for (int k = 0; ; k++) {   /* the corners against the face plane */
+		X d = fmul_m(fld_m(&corner[k][2]), &T[0x15]) + fmul_m(fld_m(&corner[k][0]), &T[0x13]);
+		d = d + fmul_m(fld_m(&corner[k][1]), &T[0x14]);
+		d = fsub_m(d, &T[0x16]);
+		if (d > zero) {
+			if (side == 1)
+				break;
+			if (side < 0)
+				side = 0;
+		} else {
+			if (side == 0)
+				break;
+			if (side < 0)
+				side = 1;
+		}
+		if (k >= 7)
+			return 0;
+	}
+	if (edges_cross(T, &lo[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
+	    edges_cross(T, &hi[0], 0, 1, 2, &lo[1], &hi[1], &lo[2], &hi[2]) ||
+	    edges_cross(T, &lo[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
+	    edges_cross(T, &hi[1], 1, 2, 0, &lo[2], &hi[2], &lo[0], &hi[0]) ||
+	    edges_cross(T, &lo[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]) ||
+	    edges_cross(T, &hi[2], 2, 0, 1, &lo[0], &hi[0], &lo[1], &hi[1]))
+		return 1;
+	for (int k = 0; k < 8; k++) {   /* a corner inside the three edge planes */
+		const float *c = corner[k];
+		X d = fmul_m(fld_m(&T[0x19]), &c[2]) + fmul_m(fld_m(&c[1]), &T[0x18]);
+		d = d + fmul_m(fld_m(&T[0x17]), &c[0]);
+		d = fsub_m(d, &T[0x1a]);
+		if (d > zero)
+			continue;
+		d = fmul_m(fld_m(&T[0x1c]), &c[1]) + fmul_m(fld_m(&T[0x1d]), &c[2]);
+		d = d + fmul_m(fld_m(&T[0x1b]), &c[0]);
+		d = fsub_m(d, &T[0x1e]);
+		if (d > zero)
+			continue;
+		d = fmul_m(fld_m(&T[0x20]), &c[1]) + fmul_m(fld_m(&T[0x21]), &c[2]);
+		d = d + fmul_m(fld_m(&T[0x1f]), &c[0]);
+		d = fsub_m(d, &T[0x22]);
+		if (!(d > zero))
+			return 1;
+	}
+	return 0;
+}
