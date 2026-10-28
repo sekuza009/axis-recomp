@@ -637,4 +637,15 @@ typedef struct { float r, g, b, a; } Colour;
 #define static_registerDtor_487400() GAME_CDECL(0x487400, int, void)()
 #define static_registerDtor_48b3e0() GAME_CDECL(0x48b3e0, int, void)()
 
+/* ---- small pieces (app/small.c) ---- */
+#define set_colour_bits(c, r, g, b, a) GAME_CDECL(0x41f0e0, void, Colour *, u32, u32, u32, u32)(c, r, g, b, a)   /* Color4_set with float bits */
+#define set4ints(a, b, c, d, out) GAME_CDECL(0x42eeb0, void, int, int, int, int, int *)(a, b, c, d, out)
+#define FUN_00441120(head) GAME_CDECL(0x441120, u32, void *)(head)   /* a ring added to the background tunnel */
+#define FUN_00473470(stage, p) GAME_THISCALL(0x473470, void, Stage *, int)(stage, p)   /* player p's colour grid cleared */
+#define actor_deactivate(stage, i) GAME_THISCALL(0x45dca0, void, Stage *, int)(stage, i)
+#define FUN_00469980(self) GAME_THISCALL(0x469980, void, void *)(self)
+#define FUN_0046f480(self) GAME_THISCALL(0x46f480, void, void *)(self)
+#define FUN_0046f4b0(self) GAME_THISCALL(0x46f4b0, int, void *)(self)
+#define cfg_44ac50(s) GAME_CDECL(0x44ac50, int, const char *)(s)
+
 #endif
