@@ -2224,7 +2224,8 @@ static const Store k_color_initDefaultColours[16] = {
 	{ 0xa1f2b0, 0xffa6ffcc }, { 0xa1f2b4, 0xff00f0ff }, { 0xa1f2b8, 0xffd3c8c8 }, { 0xa1f2bc, 0xffa09090 }, { 0xa1f2ac, 0xff23d33c },
 	{ 0xa1f2c0, 0xff859a98 }, { 0xa1f2c4, 0xff000085 }, { 0xa1f2c8, 0xffff000c }, { 0xa1f2cc, 0xffff00d2 }, { 0xa1f2d0, 0xff3a322e },
 	{ 0xa1f2d4, 0xffa2ff00 } };
-static void __cdecl color_initDefaultColours(void) { apply_stores(k_color_initDefaultColours, 16); }   /* 0x46dc50 default RGBA colours (bytes) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void color_initDefaultColours(void);
 static const Store k_intro_42f500[44] = {
 	{ 0x5b1d10, 0xe7 }, { 0x5b1d20, 0xe7 }, { 0x5b1d6c, 0xe7 }, { 0x5b1cfc, 0xffffff65 }, { 0x5b1d0c, 0xffffff65 },
 	{ 0x5b1d04, 0xffffff7e }, { 0x5b1d08, 0xfffffef2 }, { 0x5b1d28, 0xfffffef2 }, { 0x5b1d2c, 0xffffff7e }, { 0x5b1d38, 0xfffffef2 },
@@ -2235,7 +2236,8 @@ static const Store k_intro_42f500[44] = {
 	{ 0x5b1d70, 0x42 }, { 0x5b1d60, 0x82 }, { 0x5b1d74, 0x1f }, { 0x5b1d64, 0x49 }, { 0x5b1d78, 0x70 },
 	{ 0x5b1d7c, 0x4 }, { 0x5b1d80, 0x82 }, { 0x5b1d94, 0xffffffe2 }, { 0x5b1d88, 0x9b }, { 0x5b1d9c, 0xffffff1a },
 	{ 0x5b1d8c, 0x4b }, { 0x5b1da0, 0xffffff90 }, { 0x5b1d90, 0x82 }, { 0x5b1da4, 0xffffffe2 } };
-static void __cdecl intro_42f500(void) { apply_stores(k_intro_42f500, 44); }   /* 0x42f500 intro table */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_42f500(void);
 static const Store k_input_initVkTable[57] = {
 	{ 0x4df054, 0x1b }, { 0x4df058, 0x31 }, { 0x4df05c, 0x32 }, { 0x4df060, 0x33 }, { 0x4df064, 0x34 },
 	{ 0x4df068, 0x35 }, { 0x4df06c, 0x36 }, { 0x4df070, 0x37 }, { 0x4df074, 0x38 }, { 0x4df078, 0x39 },
@@ -2249,7 +2251,8 @@ static const Store k_input_initVkTable[57] = {
 	{ 0x4df108, 0x43 }, { 0x4df10c, 0x56 }, { 0x4df110, 0x42 }, { 0x4df114, 0x4e }, { 0x4df118, 0x4d },
 	{ 0x4df11c, 0x2c }, { 0x4df120, 0x2e }, { 0x4df124, 0x2f }, { 0x4df128, 0x10 }, { 0x4df12c, 0x2a },
 	{ 0x4df130, 0x0 }, { 0x4df134, 0x20 } };
-static void __cdecl input_initVkTable(void) { apply_stores(k_input_initVkTable, 57); }   /* 0x431680 scan-code row -> virtual key table */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_initVkTable(void);
 static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f100, 0x3f800000 }, { 0xa1f104, 0x3f800000 }, { 0xa1f108, 0x3f800000 }, { 0xa1f10c, 0x3f800000 }, { 0xa1f110, 0x3f73f3f4 },
 	{ 0xa1f114, 0x3ea8a8a9 }, { 0xa1f118, 0x3ea8a8a9 }, { 0xa1f11c, 0x3f800000 }, { 0xa1f120, 0x3f7dfdfe }, { 0xa1f124, 0x3f37b7b8 },
@@ -2264,7 +2267,8 @@ static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f1c8, 0x3f800000 }, { 0xa1f1cc, 0x3f800000 }, { 0xa1f1d0, 0x3f52d2d3 }, { 0xa1f1d4, 0x0 }, { 0xa1f1d8, 0x3f800000 },
 	{ 0xa1f1dc, 0x3f800000 }, { 0xa1f1e0, 0x3e38b8b9 }, { 0xa1f1e4, 0x3e48c8c9 }, { 0xa1f1e8, 0x3e68e8e9 }, { 0xa1f1ec, 0x3f800000 },
 	{ 0xa1f1f0, 0x0 }, { 0xa1f1f4, 0x3f800000 }, { 0xa1f1f8, 0x3f22a2a3 }, { 0xa1f1fc, 0x3f800000 } };
-static void __cdecl replay_46d4d0(void) { apply_stores(k_replay_46d4d0, 64); }   /* 0x46d4d0 64-entry table */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void replay_46d4d0(void);
 static const Store k_intro_42f2b0[66] = {
 	{ 0x4debb0, 0xfffffefc }, { 0x4debbc, 0xfffffefc }, { 0x4debc0, 0xfffffefc }, { 0x4debb4, 0xffffff81 }, { 0x4debb8, 0xffffff81 },
 	{ 0x4deb84, 0xffffff6f }, { 0x4deb94, 0xffffff6f }, { 0x4debe8, 0xffffff6f }, { 0x4deb80, 0x4 }, { 0x4deb98, 0xe8 },
@@ -2280,7 +2284,8 @@ static const Store k_intro_42f2b0[66] = {
 	{ 0x4dec54, 0xffffffd8 }, { 0x4dec44, 0x7d }, { 0x4dec58, 0x28 }, { 0x4dec60, 0x78 }, { 0x4dec74, 0xffffffce },
 	{ 0x4dec64, 0xff }, { 0x4dec68, 0x92 }, { 0x4dec7c, 0xffffff1a }, { 0x4dec80, 0xffffff91 }, { 0x4dec70, 0x78 },
 	{ 0x4dec84, 0xffffffce } };
-static void __cdecl intro_42f2b0(void) { apply_stores(k_intro_42f2b0, 66); }   /* 0x42f2b0 intro table */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_42f2b0(void);
 static const Store k_intro_42f690[66] = {
 	{ 0x9dafb8, 0xfffffefc }, { 0x9dafc4, 0xfffffefc }, { 0x9dafc8, 0xfffffefc }, { 0x9dafbc, 0xffffff81 }, { 0x9dafc0, 0xffffff81 },
 	{ 0x9daf8c, 0xffffff6f }, { 0x9daf9c, 0xffffff6f }, { 0x9daff0, 0xffffff6f }, { 0x9daf88, 0x4 }, { 0x9dafa0, 0xe8 },
@@ -2296,7 +2301,8 @@ static const Store k_intro_42f690[66] = {
 	{ 0x9db05c, 0xffffffd8 }, { 0x9db04c, 0x7d }, { 0x9db060, 0x28 }, { 0x9db068, 0x78 }, { 0x9db07c, 0xffffffce },
 	{ 0x9db06c, 0xff }, { 0x9db070, 0x92 }, { 0x9db084, 0xffffff1a }, { 0x9db088, 0xffffff91 }, { 0x9db078, 0x78 },
 	{ 0x9db08c, 0xffffffce } };
-static void __cdecl intro_42f690(void) { apply_stores(k_intro_42f690, 66); }   /* 0x42f690 intro table */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_42f690(void);
 static const Store k_input_setDefaultKeyBindings[118] = {
 	{ 0x4df8e4, 0x0 }, { 0x6803a0, 0x1 }, { 0x4e0468, 0x2 }, { 0x4e046c, 0x3 }, { 0x4e0470, 0x4 },
 	{ 0x4e0874, 0x5 }, { 0x4e0c78, 0x6 }, { 0x4e0c7c, 0x7 }, { 0x4e0c80, 0x8 }, { 0x4e0c84, 0x9 },
@@ -2322,7 +2328,8 @@ static const Store k_input_setDefaultKeyBindings[118] = {
 	{ 0x4df04c, 0xd2 }, { 0x5b1db0, 0xc9 }, { 0x9dae6c, 0xc7 }, { 0x76d32c, 0xcf }, { 0x907b28, 0xd3 },
 	{ 0x76d370, 0xd1 }, { 0x680388, 0x2c }, { 0x67ef2c, 0x1c }, { 0x4de73c, 0xfa }, { 0x76d424, 0xfb },
 	{ 0x680bbc, 0xfc }, { 0x9da490, 0xfd }, { 0x76d490, 0xfe } };
-static void __cdecl input_setDefaultKeyBindings(void) { apply_stores(k_input_setDefaultKeyBindings, 118); }   /* 0x42fd40 default key bindings */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_setDefaultKeyBindings(void);
 
 static void __cdecl room_433790(void)          /* enter the game-room list (sub-state 2) */
 {
@@ -2562,8 +2569,10 @@ static void depth_sort(const QsGlobals *q, DWORD *e, int lo, int hi)
 }
 static const QsGlobals k_sortA = { 0xae5338, 0x4c83c4, 0x4ca3c4, 0xae3338, 0xae7340, 0xaed350, 0xae9340 };
 static const QsGlobals k_sortB = { 0xae533c, 0x4cc3c4, 0x4ce3c4, 0xaeb350, 0xae9350, 0xae5340, 0xae9348 };
-static void __cdecl render_depthSort_490f80(DWORD *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
-static void __cdecl render_depthSort_491190(DWORD *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void render_depthSort_490f80(DWORD *e, int lo, int hi);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void render_depthSort_491190(DWORD *e, int lo, int hi);
 
 /* ---- batch 16: key-binding table copies (tools\straightline.py), x87 helpers, console rect merge ---- */
 typedef struct { DWORD a, v; BYTE copy; } CStore;   /* copy: v is a source address, read when the function starts */
@@ -2591,7 +2600,8 @@ static const CStore k_input_applyKeyBindings[68] = {
 	{ 0x4defe0, 0x680390, 1 }, { 0x4defe4, 0x4df8e4, 1 }, { 0x4defe8, 0x4df8dc, 1 }, { 0x4defec, 0x4df8e4, 1 },
 	{ 0x4deff4, 0x4df8e4, 1 }, { 0x4deffc, 0x4df8e4, 1 }, { 0x4deff0, 0x4e1534, 1 }, { 0x4deff8, 0x9da440, 1 },
 	{ 0x4df000, 0x0, 0 }, { 0x4df004, 0x0, 0 }, { 0x4df008, 0x32, 0 }, { 0x4df00c, 0x0, 0 } };
-static void __cdecl input_applyKeyBindings(void) { apply_cstores(k_input_applyKeyBindings, 68); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_applyKeyBindings(void);
 static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de0c8, 0x4e1524, 1 }, { 0x4de0d0, 0x4e0cd4, 1 }, { 0x4de0d8, 0x4e0ce0, 1 }, { 0x4de0e0, 0x9dae14, 1 },
 	{ 0x4de0e8, 0x9db974, 1 }, { 0x4de0f0, 0x76d424, 1 }, { 0x4de0f8, 0x5b1da8, 1 }, { 0x4de100, 0x4e151c, 1 },
@@ -2610,7 +2620,8 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de1a0, 0x680390, 1 }, { 0x4de1a4, 0x4df8e4, 1 }, { 0x4de1a8, 0x4df8dc, 1 }, { 0x4de1ac, 0x4df8e4, 1 },
 	{ 0x4de1b4, 0x4df8e4, 1 }, { 0x4de1bc, 0x4df8e4, 1 }, { 0x4de1b0, 0x4e1534, 1 }, { 0x4de1b8, 0x9da440, 1 },
 	{ 0x4de1c0, 0x0, 0 }, { 0x4de1c4, 0x0, 0 }, { 0x4de1c8, 0x32, 0 }, { 0x4de1cc, 0x0, 0 } };
-static void __cdecl setup_controlTabHelper_420c10(void) { apply_cstores(k_setup_controlTabHelper_420c10, 68); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_controlTabHelper_420c10(void);
 static THISCALL void FUN_0047d0b0(float *q, const float *aa)   /* quaternion from {angle, axis x, y, z} */
 {
 	typedef long double X;
@@ -5378,22 +5389,22 @@ static void glyph_quad(int x, int y, int w, int h, int i, DWORD u0, DWORD v0, DW
 	GL_TEXCOORD2F(G32(u1 + i * 4), G32(v1 + i * 4)); menu_vertex(x + w, y + h);
 	GL_TEXCOORD2F(G32(u0 + i * 4), G32(v1 + i * 4)); menu_vertex(x, y + h);
 }
-static void __cdecl hud_427c30(int x, int y, int i) { glyph_quad(x, y, 0xd, 0xd, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
-static void __cdecl hud_427e30(int x, int y, int i) { glyph_quad(x, y, 0x1f, 0x1f, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
-static void __cdecl text_quad8(int x, int y, int c) { glyph_quad(x, y, 7, 0xf, c - 1, 0x6807ac, 0x6803ac, 0x67fb64, 0x67ff64); }
-static void __cdecl text_quad16(int x, int y, int c) { glyph_quad(x, y, 0xf, 0xf, c - 1, 0x9da90c, 0x9da4a8, 0x9db510, 0x9db0b0); }
-static void __cdecl text_quad32(int x, int y, int c) { glyph_quad(x, y, 0x17, 0x1f, c - 1, 0x9da90c, 0x9da4a8, 0x9db510, 0x9db0b0); }
-static void __cdecl text_quad5(int x, int y, int c) { glyph_quad(x, y, 7, 7, c - 1, 0x5b1514, 0x5b1114, 0x4e10e8, 0x4e0ce4); }
-static void __cdecl hud_427ce0(int x, int y, int i, int j)
-{
-	glyph_quad(x, y, 0xd, 0xd, i, 0x4e1548, 0x4e16d8, 0x5b199c, 0x5b1b64);
-	glyph_quad(x, y, 0xd, 0xd, j, 0x4df458, 0x4df638, 0x83a600, 0x83a7e0);
-}
-static void __cdecl hud_427ee0(int x, int y, int i, int j)
-{
-	glyph_quad(x, y, 0x1f, 0x1f, i, 0x4e1548, 0x4e16d8, 0x5b199c, 0x5b1b64);
-	glyph_quad(x, y, 0x1f, 0x1f, j, 0x4df458, 0x4df638, 0x83a600, 0x83a7e0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_427c30(int x, int y, int i);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_427e30(int x, int y, int i);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_quad8(int x, int y, int c);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_quad16(int x, int y, int c);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_quad32(int x, int y, int c);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void text_quad5(int x, int y, int c);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_427ce0(int x, int y, int i, int j);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_427ee0(int x, int y, int i, int j);
 /* textured quads (x0, y0, x1, y1, part) with fixed texture coordinates per part */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_4283e0(int x0, int y0, int x1, int y1, int lit);
