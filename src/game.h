@@ -771,4 +771,6 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define hud_4848e0(view, texture, uv0, uv1, colour, points, kind, flag) GAME_THISCALL(0x4848e0, void, void *, int, const u32 *, const u32 *, const u32 *, const float *, u32, int)(view, texture, uv0, uv1, colour, points, kind, flag)   /* a textured quad into the view volume */
 
+#define FUN_00454110() GAME_CDECL(0x454110, int, void)()   /* the first free session slot, or -1 */
+
 #endif

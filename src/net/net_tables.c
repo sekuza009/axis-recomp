@@ -115,3 +115,24 @@ int (dplay_formatSessionEntry)(u32 address)
 	strcpy((char *)0xa0b460, text);
 	return (int)strlen(text) + 1;
 }
+
+/* a DirectPlay session description as the enumeration callback gets it, by value */
+typedef struct { u8 b[0x85]; } SessionDesc;
+
+/* 0x4540b0: a session found: unless it is the game's own (its GUID, bytes 4 .. 19, the one at 0x4aae70), a copy
+   (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for the game's
+   own, or -1 when the table is full */
+u32 (FUN_004540b0)(SessionDesc d)
+{
+	if (!memcmp(d.b + 4, (const void *)0x4aae70, 16))
+		return 0;
+	int i = FUN_00454110();
+	if (i < 0)
+		return (u32)i;
+	void *copy = crt_malloc(0x85);
+	GAME_VAR(void *, 0xa0b474 + i * 8) = copy;
+	GAME_VAR(int, 0xa0b470 + i * 8) = 1;
+	memcpy(GAME_VAR(void *, 0xa0b474 + i * 8), d.b, 0x85);
+	GAME_VAR(int, 0xa0b41c) += 1;
+	return (u32)copy;
+}

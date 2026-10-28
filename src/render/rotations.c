@@ -171,3 +171,31 @@ void THISCALL (skel_ase_47d0f0)(float *q, const float *m)
 		break;
 	}
 }
+
+/* the game's CRT acos (_CIacos: the argument and result on the FPU stack) */
+static X crt_acos(X x)
+{
+	__asm__ volatile("call *%1" : "+t"(x) : "r"(0x49ffc0) : "eax", "ecx", "edx", "memory");
+	return x;
+}
+
+/* 0x47d260: out = (angle, axis) of the quaternion q = (x, y, z, w): the angle -2 acos(w) (0 for w >= 1, -2 pi for
+   w <= -1 or NaN), the axis (x, y, z) / sqrt(1 - w * w), a root below 1e-8 (or NaN) taken as 1 */
+void THISCALL (skel_ase_47d260)(float *out, const float *q)
+{
+	if (q[3] >= ONE)
+		out[0] = 0;
+	else if (q[3] > GAME_VAR(float, 0x4a9474))
+		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), (const float *)0x4a94a8);   /* * -2 */
+	else
+		BITS(out[0]) = 0xc0c90fdb;   /* -2 pi */
+	X w = fld_m(&q[3]);
+	X s = fsubr_m(w * w, (const float *)0x4a9424), a;
+	__asm__("fsqrt" : "+t"(s));
+	__asm__("fabs" : "=t"(a) : "0"(s));
+	if (!(a >= GAME_VAR(double, 0x4aa458)))
+		s = fld_m((const float *)0x4a9424);
+	out[1] = (float)(fld_m(&q[0]) / s);
+	out[2] = (float)(fld_m(&q[1]) / s);
+	out[3] = (float)(fld_m(&q[2]) / s);
+}

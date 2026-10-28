@@ -2856,17 +2856,8 @@ DWORD arena_454130(void);
    unless its bytes 4..19 equal the GUID at 0x4aae70 (then 0) or no slot is free (then the slot finder's -1): a
    malloc'd copy goes into the free slot, count + 1. Returns the copy */
 typedef struct { BYTE b[0x85]; } SessDesc;
-static DWORD __cdecl FUN_004540b0(SessDesc d)
-{
-	if (!memcmp(d.b + 4, (const void *)0x4aae70, 16)) return 0;      /* bytes 4..19: the GUID after the size field */
-	int i = FUN_00454110();
-	if (i < 0) return (DWORD)i;
-	DWORD p = CRT_malloc(0x85);
-	G32(0xa0b474 + i * 8) = (int)p; G32(0xa0b470 + i * 8) = 1;
-	memcpy((void *)G32(0xa0b474 + i * 8), d.b, 0x85);
-	G32(0xa0b41c) += 1;
-	return p;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_004540b0(SessDesc d);
 /* 0x441190 FUN_00441190(head): remove the last node of the list at *head (next at +0x3534) and free it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_00441190(DWORD *head);
@@ -3227,28 +3218,11 @@ static THISCALL DWORD match_48e680(char *scene) { return run_lifted(lift_48e680,
 static THISCALL DWORD match_48e2c0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e2c0, (DWORD)scene, 1, v); }
 /* batch 50 */
 /* the CRT's x87 acos (0x49ffc0, _CIacos): argument and result in ST0 */
-static long double crt_CIacos(long double x)
-{
-	__asm__ volatile("call *%1" : "+t"(x) : "r"(0x49ffc0) : "eax", "ecx", "edx", "memory");
-	return x;
-}
 /* 0x47d260 (thiscall) skel_ase_47d260(q): quaternion q = (x, y, z, w) -> out = (angle, axis): angle = -2 acos(w)
    (0 for w >= 1; -2 pi for w <= -1 or NaN), axis = (x, y, z) / sqrt(1 - w*w), where a root below 1e-8 (or NaN)
    is replaced by 1. All in 80-bit like the original; each result is rounded to float when stored. */
-static THISCALL void skel_ase_47d260(float *out, const float *q)
-{
-	if (q[3] >= *(const float *)0x4a9424) out[0] = 0;
-	else if (q[3] > *(const float *)0x4a9474) out[0] = (float)x87_mulm(crt_CIacos(LD(q[3])), (const float *)0x4a94a8);
-	else *(DWORD *)&out[0] = 0xc0c90fdbu;
-	long double w = LD(q[3]);
-	long double s = x87_subrm(w * w, (const float *)0x4a9424), a;
-	__asm__("fsqrt" : "+t"(s));
-	__asm__("fabs" : "=t"(a) : "0"(s));
-	if (!(a >= *(const double *)0x4aa458)) s = LD(*(const float *)0x4a9424);
-	out[1] = (float)(LD(q[0]) / s);
-	out[2] = (float)(LD(q[1]) / s);
-	out[3] = (float)(LD(q[2]) / s);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_ase_47d260(float *out, const float *q);
 #include "lifted/view.c"   /* tools/lift.py: actor_46f8c0, ViewVolume_projectObject */
 /* 0x46f8c0 (thiscall) actor_46f8c0(base): pose the skeleton for the current animation frame: per bone, the parent
    bone's matrix (or base, default the current modelview) is loaded, translated by the bone's position (or the
