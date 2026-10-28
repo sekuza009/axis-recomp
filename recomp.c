@@ -1108,22 +1108,38 @@ static void set4b(DWORD a, BYTE r, BYTE g, BYTE b, BYTE al) { BYTE *p = (BYTE *)
 static void set4d(DWORD a, DWORD x, DWORD y, DWORD z, DWORD w) { DWORD *p = (DWORD *)a; p[0] = x; p[1] = y; p[2] = z; p[3] = w; }
 #define F1 0x3f800000u
 #define FH 0x3f000000u
-static void __cdecl FUN_0046dbf0(void) { set4b(0xa1f200, 0, 0, 0xff, 0xff); }
-static void __cdecl FUN_0046db30(void) { set4b(0xa1f204, 0x7f, 0x7f, 0x7f, 0xff); }
-static void __cdecl FUN_0046dc20(void) { set4b(0xa1f208, 0xff, 0xff, 0, 0xff); }
-static void __cdecl FUN_0046dad0(void) { set4b(0xa1f220, 0, 0, 0, 0); }
-static void __cdecl FUN_0046db90(void) { set4b(0xa1f238, 0xff, 0, 0, 0xff); }
-static void __cdecl FUN_0046db60(void) { set4b(0xa1f23c, 0xff, 0xff, 0xff, 0xff); }
-static void __cdecl FUN_0046db00(void) { set4b(0xa1f278, 0, 0, 0, 0xff); }
-static void __cdecl FUN_0046dbc0(void) { set4b(0xa1f2ec, 0, 0xff, 0, 0xff); }
-static void __cdecl FUN_0046d2d0(void) { set4d(0xa1f210, 0, 0, 0, 0); }
-static void __cdecl FUN_0046d450(void) { set4d(0xa1f228, 0, 0, F1, F1); }
-static void __cdecl FUN_0046d390(void) { set4d(0xa1f240, F1, F1, F1, F1); }
-static void __cdecl FUN_0046d410(void) { set4d(0xa1f258, 0, F1, 0, F1); }
-static void __cdecl FUN_0046d3d0(void) { set4d(0xa1f268, F1, 0, 0, F1); }
-static void __cdecl FUN_0046d310(void) { set4d(0xa1f280, 0, 0, 0, F1); }
-static void __cdecl FUN_0046d490(void) { set4d(0xa1f2d8, F1, F1, 0, F1); }
-static void __cdecl FUN_0046d350(void) { set4d(0xa1f2f0, FH, FH, FH, F1); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046dbf0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046db30(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046dc20(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046dad0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046db90(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046db60(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046db00(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046dbc0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d2d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d450(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d390(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d410(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d3d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d310(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d490(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0046d350(void);
 /* three-float vectors at 0xa0e7a8..: zero or a unit axis */
 static void set3d(DWORD a, DWORD x, DWORD y, DWORD z) { DWORD *p = (DWORD *)a; p[0] = x; p[1] = y; p[2] = z; }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4804,34 +4820,62 @@ static DWORD __cdecl FUN_00441120(DWORD *head)
 }
 /* batch 44 */
 /* static initialisers: construct the static object, then register its destructor (EAX from the registration) */
-static DWORD __cdecl FUN_0042b120(void) { static_initObject_4e1878(); return static_registerDtor_42b170(); }
-static DWORD __cdecl FUN_0042b190(void) { static_initObject_5b1db8(); return static_registerDtor_42b1c0(); }
-static DWORD __cdecl FUN_0042b1e0(void) { static_initObject_680cd8(); return static_registerDtor_42b210(); }
-static DWORD __cdecl FUN_0042b230(void) { static_initObject_76d498(); return static_registerDtor_42b260(); }
-static DWORD __cdecl FUN_0042b280(void) { static_initObject_90d1e0(); return static_registerDtor_42b2b0(); }
-static DWORD __cdecl FUN_0042b2d0(void) { static_initObject_83a9e0(); return static_registerDtor_42b300(); }
-static DWORD __cdecl FUN_0042b320(void) { TextureManager_ctor(); return static_registerDtor_42b370(); }
-static DWORD __cdecl FUN_00454fd0(void) { Texture_rtti(); return static_registerDtor_455000(); }
-static DWORD __cdecl FUN_00456930(void) { TextureManager_rtti(); return static_registerDtor_456960(); }
-static DWORD __cdecl FUN_00456c80(void) { Sound_rtti(); return static_registerDtor_456cb0(); }
-static DWORD __cdecl FUN_00460510(void) { Console_rtti(); return static_registerDtor_460540(); }
-static DWORD __cdecl FUN_00463b20(void) { Shape_rtti(); return static_registerDtor_463b50(); }
-static DWORD __cdecl FUN_004669b0(void) { ShapeManager_rtti(); return static_registerDtor_4669e0(); }
-static DWORD __cdecl FUN_00468710(void) { load_487430_wrap_468720(); return static_registerDtor_468730(); }
-static DWORD __cdecl FUN_00469920(void) { Skeleton_rtti(); return static_registerDtor_469950(); }
-static DWORD __cdecl FUN_0046ae00(void) { SkeletonManager_rtti(); return static_registerDtor_46ae30(); }
-static DWORD __cdecl FUN_0046cca0(void) { BMPRGBFile_rtti(); return static_registerDtor_46ccd0(); }
-static DWORD __cdecl FUN_0046d260(void) { RealColor_rtti(); return static_registerDtor_46d290(); }
-static DWORD __cdecl FUN_0046da60(void) { PackedColor_rtti(); return static_registerDtor_46da90(); }
-static DWORD __cdecl FUN_0046f350(void) { UnitPartInfo_rtti(); return static_registerDtor_46f380(); }
-static DWORD __cdecl FUN_0046f3b0(void) { UnitPoseInfo_rtti(); return static_registerDtor_46f3e0(); }
-static DWORD __cdecl FUN_0046f410(void) { Unit_rtti(); return static_registerDtor_46f440(); }
-static DWORD __cdecl FUN_0046ff10(void) { Stage_rtti(); return static_registerDtor_46ff40(); }
-static DWORD __cdecl FUN_00481330(void) { CollisionVolume_rtti(); return static_registerDtor_481360(); }
-static DWORD __cdecl FUN_00483cf0(void) { Light_rtti(); return static_registerDtor_483d20(); }
-static DWORD __cdecl FUN_00483f50(void) { ViewVolume_rtti(); return static_registerDtor_483f80(); }
-static DWORD __cdecl FUN_004873d0(void) { TimeSync_rtti(); return static_registerDtor_487400(); }
-static DWORD __cdecl FUN_0048b3b0(void) { Scene_rtti(); return static_registerDtor_48b3e0(); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b120(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b190(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b1e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b230(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b280(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b2d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0042b320(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00454fd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00456930(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00456c80(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00460510(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00463b20(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_004669b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00468710(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00469920(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046ae00(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046cca0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046d260(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046da60(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046f350(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046f3b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046f410(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046ff10(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00481330(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00483cf0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00483f50(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_004873d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0048b3b0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL Model_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
