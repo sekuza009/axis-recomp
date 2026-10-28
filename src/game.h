@@ -414,4 +414,18 @@ typedef struct { float r, g, b, a; } Colour;
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define match_45dd80(stage, a, x, y, spawn) GAME_THISCALL(0x45dd80, void, Stage *, int, int, int, void *)(stage, a, x, y, spawn)
 
+#define armc_461250(scene, name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5) GAME_THISCALL(0x461250, void, \
+	Scene *, const char *, int, int, int, int, int, int, int, int, int, int, int, int, int)(scene, name, v, team, head, chest, arm, leg, \
+	booster, i0, i1, i2, i3, i4, i5)
+#define armc_45ddc0(stage) GAME_THISCALL(0x45ddc0, void, Stage *)(stage)
+#define armc_461540(scene, slot) GAME_THISCALL(0x461540, void, Scene *, int)(scene, slot)   /* re-equip the preview mech */
+#define armc_40f870(slot) GAME_CDECL(0x40f870, void, int)(slot)
+#define armc_40f950() GAME_CDECL(0x40f950, void, void)()
+#define armc_41cca0(item) GAME_CDECL(0x41cca0, void, int)(item)   /* the item shown on the preview */
+#define armc_41ca50(slot, item) GAME_CDECL(0x41ca50, void, int, int)(slot, item)
+#define armc_snapshot(which) GAME_CDECL(0x419000, void, int)(which)
+#define armc_41c510() GAME_CDECL(0x41c510, void, void)()
+#define actor_selectWeapon(stage, actor, slot) GAME_THISCALL(0x45e880, void, Stage *, int, int)(stage, actor, slot)
+#define app_requireCd(scene, a, b) GAME_THISCALL(0x460cb0, void, Scene *, int, int)(scene, a, b)
+
 #endif

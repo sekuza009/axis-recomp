@@ -6965,13 +6965,16 @@ LIFT_PLAIN(missionsel_44aa20, 44aa20)
    parts 0x4dcb20 / 24 / 28 / 2c (armour) and 0x4dcb18 / 0x4dcb1c.
    0x40f950 armc_40f950(): the position wrapped into its list, that part previewed (armc_41cca0), the snapshot 6
    (armc_snapshot), the lobby player's part re-applied (armc_461540 on the game 0x9087b4), then armc_41c510 */
-LIFT_PLAIN(armc_40f950, 40f950)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40f950(void);
 /* 0x40f870 armc_40f870(kind): switch to part kind: the position of the kind's chosen part in its list; for the
    armour kinds the weapon / part shown on the scene's actor (actor_selectWeapon), then armc_40f950 */
-LIFT_PLAIN(armc_40f870, 40f870)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40f870(int slot);
 /* 0x40f9e0 armc_40f9e0(): take the part under the position as the kind's choice, the slot redrawn (armc_41ca50),
    its snapshot, all six choices sent to the lobby player (armc_461250, 14 arguments), back to no kind */
-LIFT_PLAIN(armc_40f9e0, 40f9e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40f9e0(void);
 /* 0x40f220 armc_drawPartScreen(): enter the part screen (page 2): the six slots drawn (armc_41ca50), the armour
    choice previewed, the seven snapshots, no kind, the panel (armc_41b300) */
 LIFT_PLAIN(armc_drawPartScreen, 40f220)
@@ -7301,7 +7304,8 @@ LIFT_PLAIN(menuState800_gameRoom, 43ef70)
 #include "lifted/grp137.c"
 #include "lifted/grp138.c"
 #include "lifted/grp139.c"
-LIFT_PLAIN(armc_40e5d0, 40e5d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_40e5d0(void);
 LIFT_PLAIN(armc_41d600, 41d600)
 LIFT_PLAIN(armc_41d8a0, 41d8a0)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16592,9 +16596,9 @@ static void armcsel_setup(void)
 	G32(0x4dc24c) = irnd(0, 4); G32(0x76d410) = irnd(0, 1); G32(0x9da49c) = irnd(0, 2) ? 0x66 : irnd(0x60, 0x70);
 	g_a[0] = irnd(-1, 7); g_a[1] = irnd(0, 1);
 }
-T_PLAIN(armc_40f950, 0x40f950, armcsel_setup(); callee_stubs(g_stubArmcView, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(armc_40f870, 0x40f870, armcsel_setup(); callee_stubs(g_stubArmcKind, 0);, 0, g_a[0], 0, 0, 0)
-T_PLAIN(armc_40f9e0, 0x40f9e0, armcsel_setup(); callee_stubs(g_stubArmcTake, 0);, 0, 0, 0, 0, 0)
+ST(armc_40f950, armcsel_setup(); callee_stubs(g_stubArmcView, 0);, CALL_PLAIN(0x40f950, 0, 0, 0, 0, 0), (armc_40f950(), 0))
+ST(armc_40f870, armcsel_setup(); callee_stubs(g_stubArmcKind, 0);, CALL_PLAIN(0x40f870, 0, g_a[0], 0, 0, 0), (armc_40f870((DWORD)(g_a[0])), 0))
+ST(armc_40f9e0, armcsel_setup(); callee_stubs(g_stubArmcTake, 0);, CALL_PLAIN(0x40f9e0, 0, 0, 0, 0, 0), (armc_40f9e0(), 0))
 T_PLAIN(armc_drawPartScreen, 0x40f220, armcsel_setup(); callee_stubs(g_stubArmcScreen, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_exit, 0x40f0f0, armcsel_setup(); callee_stubs(g_stubArmcExit, 0);, 0, g_a[1], 0, 0, 0)
 /* batch 170 */
@@ -17362,7 +17366,7 @@ T_PLAIN(menuState800_gameRoom, 0x43ef70, gen_setup(g_gs_43ef70, g_gi_43ef70, g_g
 static const DWORD g_gs_40e5d0[] = { 0x45ddc0, 0, 0x460cb0, 2 | CS_POP | CS_THIS, 0x461250, 14 | CS_POP | CS_THIS, 0 };
 static const DWORD g_gi_40e5d0[] = { 0x4dbc68, 0x4dc54c, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dd074, 0x9087b4, 0x9f1818, 0 };
 static const DWORD g_gb_40e5d0[] = { 0x4dedb0, 0 };
-T_PLAIN(armc_40e5d0, 0x40e5d0, gen_setup(g_gs_40e5d0, g_gi_40e5d0, g_gb_40e5d0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_40e5d0, gen_setup(g_gs_40e5d0, g_gi_40e5d0, g_gb_40e5d0);, CALL_PLAIN(0x40e5d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_40e5d0(), 0))
 static const DWORD g_gs_41d600[] = { 0x41b750, 0, 0x41c510, 0, 0x41cf20, 0, 0x41d280, 0, 0x41ef20, 3, 0x41ef90, 1, 0x4613d0, 1 | CS_POP | CS_THIS, 0x461410, 1 | CS_POP | CS_THIS, 0x461450, 1 | CS_POP | CS_THIS, 0x461490, 1 | CS_POP | CS_THIS, 0x4614d0, 1 | CS_POP | CS_THIS, 0x461540, 1 | CS_POP | CS_THIS, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d600[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dc798, 0x4dca98, 0x4dcc58, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d600[] = { 0 };
