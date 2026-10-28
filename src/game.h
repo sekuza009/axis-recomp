@@ -750,4 +750,23 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define room_432be0() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
 
+/* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
+#define arena_4045e0() GAME_CDECL(0x4045e0, void, void)()
+#define arena_403f30() GAME_CDECL(0x403f30, void, void)()
+#define arena_403f80() GAME_CDECL(0x403f80, void, void)()
+#define arena_404010() GAME_CDECL(0x404010, void, void)()
+#define arena_404120() GAME_CDECL(0x404120, void, void)()
+#define arena_404190() GAME_CDECL(0x404190, void, void)()
+#define arena_404150() GAME_CDECL(0x404150, void, void)()
+#define setup_420300() GAME_CDECL(0x420300, void, void)()
+#define setup_420480() GAME_CDECL(0x420480, void, void)()
+#define setup_420510() GAME_CDECL(0x420510, void, void)()
+#define room_431ae0() GAME_CDECL(0x431ae0, void, void)()
+#define room_431c50() GAME_CDECL(0x431c50, void, void)()
+#define room_431ce0() GAME_CDECL(0x431ce0, void, void)()
+#define room_431db0() GAME_CDECL(0x431db0, void, void)()
+#define room_431de0() GAME_CDECL(0x431de0, void, void)()
+#define room_432040() GAME_CDECL(0x432040, void, void)()
+#define room_431aa0() GAME_CDECL(0x431aa0, void, void)()
+
 #endif

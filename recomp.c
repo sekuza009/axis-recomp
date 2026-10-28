@@ -1158,15 +1158,8 @@ void ptx_initTable_46efd0(void);
 void ptx_internal_46ea30(const BYTE *src, BYTE *dst, int w, int h, int bpp);
 
 /* menu state resets */
-static void __cdecl menuState300_enter(void)
-{
-	G32(0x9eea90) = (int)0xc3960000; G32(0x9eeab0) = 0;                       /* -300.0 */
-	GU32(0x4b0704) = 0x41200000; GU32(0x4b0708) = 0x42400000; GU32(0x4b070c) = 0x3e4ccccd; GU32(0x4b0710) = 0xbe4ccccd;
-	G32(0x4dda44) = 0; G32(0x9dda80) = 0; GU32(0x9dd948) = 0x3d4ccccd;
-	G32(0x9eea8c) = 0; G32(0x9eeab4) = 0; G32(0x9eea98) = 0; GU32(0x9eea9c) = F1; GU32(0x9eeaa0) = F1; GU32(0x9eeaa4) = F1;
-	GU32(0x9dda70) = 0x3e99999a; GU32(0x9dda74) = 0x3f333333; GU32(0x9dda78) = 0x3f333333; GU32(0x9dda7c) = F1;
-	G32(0x5ae9c4) = 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState300_enter(void);
 /* three camera points: (0, 300, 0), (0, -500, 0), (0, 350, 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_40e510(void);
@@ -1697,71 +1690,11 @@ static THISCALL void load_497a90(char *self)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_404190(void);
 /* menu state 600 (setup screen): layout origins, camera points, colours, and the option texts of both columns */
-static void __cdecl menuState600_enterSetup(void)
-{
-	static const DWORD k1[][2] = {
-		{ 0x4ddac8, 0x29a }, { 0x4ddd90, 0xc4af0000 }, { 0x4dda60, 1 }, { 0x4de03c, 0 }, { 0x4ddcec, 2 }, { 0x4ddad0, 0x32 },
-		{ 0x4ddad4, 0x3c }, { 0x4ddadc, 0x1a4 }, { 0x4dddd0, 0x64 }, { 0x4dddd8, 0x21c }, { 0x4ddddc, 0x1c2 }, { 0x4dde80, 0x28 },
-		{ 0x4dde8c, 0x1b8 }, { 0x4df870, 0x420c0000 }, { 0x4df874, 0 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x420c0000 },
-		{ 0x4df880, 0x420c0000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0xc20c0000 }, { 0x4df890, 0xc20c0000 },
-		{ 0x4df894, 0 }, { 0x76d3a8, 0x428c0000 }, { 0x76d3ac, 0x420c0000 }, { 0x4df8a0, 0xc20c0000 }, { 0x4df8a4, 0 },
-		{ 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0xc20c0000 } };
-	static const DWORD k2[][2] = {
-		{ 0x4de048, 0 }, { 0x4de04c, F1 }, { 0x4de050, F1 }, { 0x4de054, F1 }, { 0x4ddae0, 0 }, { 0x4ddae4, 0x3f19999a },
-		{ 0x4ddae8, 0x3f19999a }, { 0x4ddaec, F1 }, { 0x4e14fc, 0 }, { 0x4deda8, F1 }, { 0x9db978, 0 }, { 0x4df010, F1 } };
-	G32(0x4dddd4) = 0x1e; G32(0x4dde84) = 0x1e; G32(0x4ddad8) = 0x24e; G32(0x4dde88) = 0x24e;
-	int v = G32(0x680380);
-	for (int i = 0; i < 4; i++) { G32(0x4df878 + i * 0x10) = v; G32(0x76d390 + i * 0x10) = v; }
-	G32(0x9db090) = G32(0x4df024); G32(0x9db094) = G32(0x4df028); G32(0x9db098) = G32(0x4df02c);
-	int f = G32(0x680378), g = G32(0x68037c), h = G32(0x680380);
-	for (unsigned i = 0; i < sizeof k1 / sizeof k1[0]; i++) GU32(k1[i][0]) = k1[i][1];
-	G32(0x76d3f8) = f; G32(0x76d3fc) = g; G32(0x76d400) = h;
-	setup_420300(); setup_420480(); setup_420510();
-	for (unsigned i = 0; i < sizeof k2 / sizeof k2[0]; i++) GU32(k2[i][0]) = k2[i][1];
-	for (int k = 0; k < 2; k++) {                    /* two option columns: texts 0x80 apart in the source block */
-		DWORD s = 0x75b7a4 + k * 0x80, o = k * 0x32;
-		strcpy(GSTR(0x4ddbbc + o), GSTR(s - 0x200)); strcpy(GSTR(0x4dda64 + o), GSTR(s - 0x100));
-		strcpy(GSTR(0x4ddc84 + o), GSTR(s)); strcpy(GSTR(0x4de058 + o), GSTR(s));
-		strcpy(GSTR(0x4ddc20 + o), GSTR(s)); strcpy(GSTR(0x4ddaf0 + o), GSTR(s));
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState600_enterSetup(void);
 /* menu state 800 (game room): layout origins for all room panels, colours, camera points, clear the room state */
-static void __cdecl menuState800_enterGameRoom(void)
-{
-	static const DWORD k1[][2] = {
-		{ 0x9dd698, 0xc4af0000 }, { 0x9dd7d8, 1 }, { 0x9dd560, 0 }, { 0x9dce48, 2 }, { 0x9dd6bc, 0x3f333333 }, { 0x9dd834, 0x42 },
-		{ 0x4dba88, 0 }, { 0x9dd358, 0x32 }, { 0x9dd35c, 0x6e }, { 0x9dd360, 0x24e }, { 0x9dd364, 0x172 }, { 0x9dd368, 0x3c },
-		{ 0x9dd36c, 0x1e }, { 0x9dd370, 0x244 }, { 0x9dd374, 0x1c2 }, { 0x9dd4a8, 0x14 }, { 0x9dd4ac, 0x28 }, { 0x9dd4b0, 0x26c },
-		{ 0x9dd4b4, 0x1b8 }, { 0x9dd1b8, 0x28 }, { 0x9dd1bc, 0x1e }, { 0x9dd1c0, 0x258 }, { 0x9dd1c4, 0x1c2 }, { 0x9dced8, 0x10 },
-		{ 0x9dcedc, 0x1e }, { 0x9dcee0, 0x268 }, { 0x9dcee4, 0x1b8 } };
-	static const DWORD k2[][2] = {   /* colours and camera/light vectors (the v slots are filled separately) */
-		{ 0x4ded60, 2 }, { 0x9dcec0, 0 }, { 0x9dcec4, F1 }, { 0x9dcec8, F1 }, { 0x9dcecc, F1 }, { 0x9dd338, 0x3e99999a },
-		{ 0x9dd33c, 0x3f333333 }, { 0x9dd340, 0x3f333333 }, { 0x9dd344, F1 },
-		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },
-		{ 0x4df880, 0x41a00000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0 },
-		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
-		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
-		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };
-	static const DWORD z[] = { 0x9dd838, 0x9dd6a4, 0x9dd1b0, 0x4ded54, 0x9dd1c8, 0x9dd350, 0x9dd84c, 0x9dd6d4, 0x9dd850 };
-	G32(0x5ae9c4) = 2;
-	arena_4045e0();
-	for (unsigned i = 0; i < sizeof k1 / sizeof k1[0]; i++) GU32(k1[i][0]) = k1[i][1];
-	room_431ae0(); room_431c50(); room_431ce0(); room_431db0(); room_431de0(); room_432040(); room_431aa0();
-	int v = G32(0x680380);
-	for (unsigned i = 0; i < sizeof k2 / sizeof k2[0]; i++) GU32(k2[i][0]) = k2[i][1];
-	for (int i = 0; i < 5; i++) { G32(0x4df878 + i * 0x10) = v; G32(0x76d390 + i * 0x10) = v; }
-	G32(0x9db090) = G32(0x4df024); G32(0x9db094) = G32(0x4df028); G32(0x9db098) = G32(0x4df02c);
-	G32(0x76d3f8) = G32(0x680378); G32(0x76d3fc) = G32(0x68037c); G32(0x76d400) = G32(0x680380);
-	memset((void *)0x9dd5a6, 0, 7 * 4 + 2);
-	G32(0x9dd58e) = 0; G32(0x9dd592) = 0; G32(0x9dd596) = 0;
-	G32(0x9dd830) = 0; G32(0x9dd38c) = 1;
-	memset((void *)0x9dd5f8, 0, 5);
-	G32(0x9dd6b0) = 1; G32(0x9dd1cc) = 0; G32(0x9dd198) = 0;
-	room_432be0();
-	G32(0x9dced0) = 1;
-	for (unsigned i = 0; i < sizeof z / sizeof z[0]; i++) G32(z[i]) = 0;
-	G32(0x9dd4b8) = 999;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState800_enterGameRoom(void);
 
 /* ---- batch 19: ARM CENTER part-info records, font-atlas cell tables ------------------------------ */
 /* part-info record (0x80 bytes) for weapon/part idx: file name without its folder, copied values, scaled floats */
@@ -1778,40 +1711,9 @@ void hud_42fb40(void);
 
 /* ---- batch 20: arena lobby entry, received room settings, key-binding pairs --------------------- */
 /* the four menu camera points used by several screens (x/y at 0x4df870.., z at 0x76d388..) */
-static const DWORD k_menuCam4[][2] = {
-	{ 0x4df870, 0x420c0000 }, { 0x4df874, 0 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x420c0000 },
-	{ 0x4df880, 0x420c0000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0xc20c0000 },
-	{ 0x4df890, 0xc20c0000 }, { 0x4df894, 0 }, { 0x76d3a8, 0x428c0000 }, { 0x76d3ac, 0x420c0000 },
-	{ 0x4df8a0, 0xc20c0000 }, { 0x4df8a4, 0 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0xc20c0000 } };
 /* menu state 400 (arena lobby) */
-static void __cdecl menuState400_enter(void)
-{
-	static const DWORD k1[][2] = {
-		{ 0x4dbb60, 0 }, { 0x4db51c, 5 }, { 0x4dba70, 0x50 }, { 0x4dba74, 0x96 }, { 0x4dba78, 0x230 }, { 0x4dba7c, 0x15e },
-		{ 0x4dbb70, 0x21c }, { 0x4dbb74, 0x190 }, { 0x4db8d0, 0x262 }, { 0x4dbb00, 0x28 }, { 0x4dbb04, 0x1e }, { 0x4dbb08, 0x258 } };
-	static const DWORD z1[] = { 0x4dbbd0, 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, 0x4dba90, 0x4db858, 0x4dbac8, 0x4dbaa8,
-	                            0x67ef30, 0x4dba80 };
-	static const DWORD z2[] = { 0x76d41c, 0x680bb0, 0x4df818, 0x4dba84, 0x4db854, 0x4dba98, 0x907b2c, 0x4dbbf4 };
-	static const DWORD k2[][2] = {
-		{ 0x4dbb3c, 2 }, { 0x907b24, 999 }, { 0x4dba9c, F1 }, { 0x4dbaa0, F1 }, { 0x4dbaa4, F1 }, { 0x4db8a0, 0x3e99999a },
-		{ 0x4db8a4, 0x3f333333 }, { 0x4db8a8, 0x3f333333 }, { 0x4db8ac, F1 }, { 0x9fd958, 0xf }, { 0x4dc24c, 1 } };
-	G32(0x5ae9c4) = 1;
-	arena_4045e0();
-	G32(0x4dbb68) = 0x64; G32(0x4dbb6c) = 0x64; G32(0x4dda44) = 0; G32(0x4db8c8) = 0x14; G32(0x4db8cc) = 0x14;
-	GU32(0x4dba68) = 0xc4af0000; G32(0x4db8d4) = 0x1c2; G32(0x4dbb0c) = 0x1c2;
-	int v = G32(0x680380);
-	G32(0x4db85c) = 1;
-	for (int i = 0; i < 4; i++) { G32(0x4df878 + i * 0x10) = v; G32(0x76d390 + i * 0x10) = v; }
-	G32(0x9db090) = G32(0x4df024); G32(0x9db094) = G32(0x4df028); G32(0x9db098) = G32(0x4df02c);
-	int f = G32(0x680378), g = G32(0x68037c), h = G32(0x680380);
-	for (unsigned i = 0; i < sizeof k1 / sizeof k1[0]; i++) GU32(k1[i][0]) = k1[i][1];
-	for (unsigned i = 0; i < sizeof k_menuCam4 / sizeof k_menuCam4[0]; i++) GU32(k_menuCam4[i][0]) = k_menuCam4[i][1];
-	G32(0x76d3f8) = f; G32(0x76d3fc) = g; G32(0x76d400) = h;
-	for (unsigned i = 0; i < sizeof z1 / sizeof z1[0]; i++) G32(z1[i]) = 0;
-	arena_403f30(); arena_403f80(); arena_404010(); arena_404120(); arena_404190(); arena_404150();
-	for (unsigned i = 0; i < sizeof z2 / sizeof z2[0]; i++) G32(z2[i]) = 0;
-	for (unsigned i = 0; i < sizeof k2 / sizeof k2[0]; i++) GU32(k2[i][0]) = k2[i][1];
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState400_enter(void);
 /* a received game's settings -> the room (names, 11 option bytes, 6 x 6 dwords with two floats clamped at a minimum,
    the rectangle record), then refresh the room screen and the lobby title record */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
