@@ -6,10 +6,15 @@
    width * (1/640) * k or height * (1/480) * k, kept in extended precision, and some partial sums are rounded to
    floats on the way (stored); each such step is one statement here so the screen size is asked for in the same
    order. The patch DLL changes the energy bar's two lengths in memory at start-up (the operands at 0x493db8 ..
-   0x494400 point to its own values), and the timers' text goes through the call at 0x49395f, which it retargets. */
+   0x494400 point to its own values), and the timers' text goes through the call at 0x49395f, which it retargets.
+
+   On a screen wider than 4:3 the patch DLL moves each part of this HUD to the edge it belongs to (its glVertex2i
+   hook), keeping 4:3 proportions. It used to recognise the parts by the return addresses of the original's calls;
+   this rebuild names each part as it draws it instead (part(), wide.h). */
 #include "../game.h"
 #include <string.h>
 #include "hud.h"
+#include "../wide.h"
 
 #define SX (1.0f / 640)          /* 0x4a9578 */
 #define SY (1.0f / 480)          /* 0x4a9574 */
@@ -415,13 +420,16 @@ static void main_cornerMark(int x, int texture, float s0, float s1)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* 0x4926f0: the main HUD of the local player while playing (else of the watched player) */
-void THISCALL (hud_drawMain)(Scene *scene)
+/* the part of the HUD drawn next, for the patch DLL (HUD_*) */
+static void part(int anchor) { *g_wide->hudPart = anchor; }
+
+static void main_draw(Scene *scene)
 {
 	char text[256];
 	int p = scene->playing == 1 ? scene->localPlayer : scene->watchedPlayer;
 	Player *player = &scene->players[p];
 
+	part(HUD_SCREEN);
 	if (scene->playing == 1) {
 		float flash = player->damageFlash;
 		if (flash > 0.0f) {
@@ -436,28 +444,38 @@ void THISCALL (hud_drawMain)(Scene *scene)
 		gfx_fillRect(0, 0, gfx_getWidth(), h);
 	}
 	if (scene->playing == 1 && (player->alert == 1
-	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].ringRange > 0.0f)))
+	    || (player->actorType >= 0 && scene->actorInfo[player->actorType].ringRange > 0.0f))) {
+		part(HUD_PIXELS);
 		main_ring(scene, player);
+	}
+	part(HUD_LEFT);
 	if (scene->playing == 1)
 		main_counters(scene, player);
 	if (scene->playing == 1) {
+		part(HUD_CENTRE);
 		if (scene->showEmblems == 1)
 			main_score(scene, player, p);
+		part(HUD_RIGHT);
 		if (scene->playing == 1)
 			main_weapons(scene, player);
 	}
+	part(HUD_CENTRE);
 	if (player->gauge > 0.0f && scene->playing == 1)
 		main_gauge(scene, player);
+	part(HUD_RIGHT);
 	if (scene->playing == 1)
 		main_timers(scene, player);
 	if ((scene->playing == 1 && scene->cockpitPlayer != p) || (scene->playing == 0 && scene->cameraSlot == 2))
 		main_snapshot(scene, player);
+	part(HUD_LEFT);
 	if (scene->playing == 1)
 		main_energy(player);
+	part(HUD_CENTRE);
 	if (scene->playing == 1 && player->state == 1)
 		main_crosshair(scene, player);
 
 	/* top right: the solo mark, the team mark, the leader mark (rank 1 with kills), else "rank/count" */
+	part(HUD_CORNER);
 	if (scene->markersOff == 1) {
 		if (player->markSolo == 1) {
 			int x = gfx_getWidth() - 0x40;
@@ -478,7 +496,16 @@ void THISCALL (hud_drawMain)(Scene *scene)
 		main_cornerMark(x, scene->hudTexture, 0.0f, 0.25f);
 		return;
 	}
+	part(HUD_RIGHT);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(text, "%d/%d ", scene->rank[p], scene->rankCount);
 	text_drawSized(0x280 - (int)strlen(text) * 13, 8, text, 16);
+}
+
+/* 0x4926f0: the main HUD of the local player while playing (else of the watched player) */
+void THISCALL (hud_drawMain)(Scene *scene)
+{
+	int was = *g_wide->hudPart;
+	main_draw(scene);
+	part(was);
 }

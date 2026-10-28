@@ -7,6 +7,7 @@ in the game (../test3.sh). Each function's comment gives its original address.
 Layout (by subsystem)
   axis.h        conventions: calling conventions, ftol, how game functions / imports / globals are reached
   game.h        the game's functions, globals and imports at their original addresses, by name
+  wide.h/.c     the patch DLL's widescreen state, for the rebuilds that carry its fixes (below)
   scene.fields  the scene object's known fields -> scene.h (tools/mkscene.py; offsets checked when building)
   app/          the main loop
   menu/         the front end: key dispatch, screens, the profile screen's pages, textured quads (buttons, panels)
@@ -36,7 +37,15 @@ Adding a function
   4. python tools/srcaudit.py (every src function wired in; every patch-DLL call site inside a rebuilt function
      followed), commit; play-test (test3.sh) after a few.
 
-Done so far (670): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Widescreen fixes carried by rebuilds: the patch DLL (axisnet) used to fix four functions from outside, by replacing
+them in memory (menu_vertex, menu_drawRect) or by recognising their OpenGL calls' return addresses
+(gfx_setProjection2D3D, hud_drawMain), so their rebuilds could not take over. They now do the fix's part
+themselves: menu/menu_2d.c (the menu cursor over the full screen, full-screen rectangles, the menus' 4:3 box and the
+HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the screen edge it is anchored to). The patch
+DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
+HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
+
+Done so far (673): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -73,4 +82,5 @@ hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps
 hud_drawPressFire, hud_drawReadyStart, hud_drawClock,
 hud_drawMatchResult, hud_drawRecordIndicator, hud_drawNameIcon, hud_drawLeaderIcon,
 hud_drawEscMenu, hud_495ed0,
-hud_drawPlayerMarkers, hud_drawMain (kept on the original in play: see recomp.c hook()), replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume), data_46f7a0, hud_46fd20 (object lists), hud_496f20 (the sky) | replay_drawMessage, replay_drawFollowedName.
+hud_drawPlayerMarkers, hud_drawMain, replay_drawIcon | hud_472900 (fog), hud_490b30, hud_490da0, hud_45e170, hud_479af0, hud_48f970 (objects, actors, projectiles, items to the view volume), data_46f7a0, hud_46fd20 (object lists), hud_496f20 (the sky) | replay_drawMessage, replay_drawFollowedName | menu_vertex, menu_drawRect, gfx_setProjection2D3D
+(menu/menu_2d.c).

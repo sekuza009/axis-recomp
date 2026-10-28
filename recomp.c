@@ -4320,12 +4320,8 @@ int FUN_0046c580(const char *title, const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_41e7a0(int code);
 /* 0x41ef60 menu_vertex: a menu vertex (glVertex2i of scaled coordinates) */
-static DWORD __cdecl menu_vertex(int x, int y)
-{
-	int fy = crt_ftol(x87_mulm((long double)y, (const float *)0x4df014));
-	int fx = crt_ftol(x87_mulm((long double)x, (const float *)0x680bac));
-	return ((DWORD (WINAPI *)(int, int))*(DWORD *)0x4a91f4)(fx, G32(0x4e045c) - fy);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_vertex(int x, int y);
 /* 0x46c540 mci_pause: pause the CD/MCI music */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mci_pause(void);
@@ -4409,7 +4405,8 @@ LIFT_PLAIN(timer_init, 4302d0)
    and load the profile */
 LIFT_PLAIN(profile_selectAndLoad, 44b990)
 /* 0x427970 menu_drawRect(x0, y0, x1, y1, filled): a filled quad or an outline in the menu colour */
-LIFT_PLAIN8(menu_drawRect, 427970)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawRect(int x0, int y0, int x1, int y1, int filled);
 /* 0x44b420 menuState210_enter: the profile screen's layout, profile list and colours */
 LIFT_PLAIN(menuState210_enter, 44b420)
 /* 0x4460d0 profile_scanSaves: the *.axs profiles of the save directory into the profile list (or delete
@@ -4672,23 +4669,6 @@ void *THISCALL ViewVolume_deletingDtor(void *view, int flags);
 /* 0x472900 (thiscall) hud_472900(colour, start, end, density): linear fog */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_472900(void *scene, const void *colour, DWORD start, DWORD end, DWORD density);
-/* Glyph quads, hand-written (not lifted) on purpose: they sit between the HUD code and glVertex2i, and the patch
-   DLL's glVertex2i hook (axisnet.c, proportional HUD) identifies a HUD element by finding its call site within 200
-   dwords above its own frame. Each lifted level adds a few hundred bytes of real stack (wrapper frame + the
-   arguments native_call copies), and with a lifted text pass on top of lifted quads the "n/8" counter's call site
-   fell out of that window: it was anchored like a centre element (drawn over the FPS counter). The same window
-   explains the old menu_vertex problem. So code on that path keeps small frames: at most one lifted level.
-   Each quad: four corners with their texture coordinates from the font's tables (passed through as raw floats).
-   0x427c30 hud_427c30 / 0x427e30 hud_427e30 (13 / 31 px, glyph i), 0x428030 / 0x4280e0 / 0x428190 / 0x428240
-   text_quad8/16/32/5 (character c, 1-based), 0x427ce0 / 0x427ee0 hud_427ce0/ee0 (two layers, glyph i and j) */
-#define GL_TEXCOORD2F(s_, t_) ((void (WINAPI *)(DWORD, DWORD))*(DWORD *)0x4a920c)((s_), (t_))
-static void glyph_quad(int x, int y, int w, int h, int i, DWORD u0, DWORD v0, DWORD u1, DWORD v1)
-{
-	GL_TEXCOORD2F(G32(u0 + i * 4), G32(v0 + i * 4)); menu_vertex(x, y);
-	GL_TEXCOORD2F(G32(u1 + i * 4), G32(v0 + i * 4)); menu_vertex(x + w, y);
-	GL_TEXCOORD2F(G32(u1 + i * 4), G32(v1 + i * 4)); menu_vertex(x + w, y + h);
-	GL_TEXCOORD2F(G32(u0 + i * 4), G32(v1 + i * 4)); menu_vertex(x, y + h);
-}
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void hud_427c30(int x, int y, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7204,7 +7184,8 @@ void THISCALL replay_drawMessage(void *scene);
    centred box of h * 16 / 9, or with the patch DLL's menu43 rewrite of the cave (%0x4a8fbb) h * 4 / 3, when the
    screen is wider), the projection (mode 1: gluPerspective from 0x68038c / 0x4e1870, depth on; else gluOrtho2D,
    depth off) */
-LIFT_PLAIN(gfx_setProjection2D3D, 41ef90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void gfx_setProjection2D3D(int mode);
 #include "lifted/grp179.c"
 /* 0x42eed0 FUN_0042eed0(w, h, bpp, hz): the display mode: the cave 0x4a8e54 keeps the desktop mode (0x67eefc /
    0x76d430) as is (leaving a changed one, flag 0xb12a80, by ChangeDisplaySettingsA(0)) and remembers any other
@@ -7220,6 +7201,9 @@ LIFT_PLAIN(FUN_0042eed0, 42eed0)
 LIFT_PLAIN(app_init, 43fcc0)
 static FILE *g_log;
 static unsigned g_seed = 12345;
+/* the seed the running state test started from (in a crash report), and RECOMP_SEED=hex: the seed of the first state
+   test run (with RECOMP_ONLY, to replay one run of a crash report) */
+static unsigned g_runSeed, g_forceSeed;
 static float rnd(void)               /* mostly -1000..1000, sometimes tiny or zero */
 {
 	g_seed = g_seed * 1103515245u + 12345u;
@@ -8602,7 +8586,8 @@ static DWORD __attribute__((noinline)) run_guarded(DWORD (*f)(void))
 /* one comparison; full = also restore and compare .data */
 static int run_one(const STest *t, int full, int log)
 {
-	unsigned seed = g_seed;
+	if (g_forceSeed) { g_seed = g_forceSeed; g_forceSeed = 0; }
+	unsigned seed = g_runSeed = g_seed;
 	int same = 1;
 	if (full) restore_data();
 	written(g_w1);                                  /* reset tracking */
@@ -8669,11 +8654,12 @@ static LONG CALLBACK crash_report(EXCEPTION_POINTERS *e)
 {
 	if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && g_prog != INVALID_HANDLE_VALUE) {
 		char b[320]; DWORD w; CONTEXT *c = e->ContextRecord;
-		int n = wsprintfA(b, "  crash: eip %08lx, %s %08lx, esp %08lx\r\n  eax %08lx ebx %08lx ecx %08lx edx %08lx esi %08lx edi %08lx ebp %08lx, scratch %08lx\r\n",
+		int n = wsprintfA(b, "  crash: eip %08lx, %s %08lx, esp %08lx\r\n  eax %08lx ebx %08lx ecx %08lx edx %08lx esi %08lx edi %08lx ebp %08lx, scratch %08lx, seed %08x, run %lu\r\n",
 		                  (unsigned long)c->Eip, e->ExceptionRecord->ExceptionInformation[0] ? "writing" : "reading",
 		                  (unsigned long)e->ExceptionRecord->ExceptionInformation[1], (unsigned long)c->Esp,
 		                  (unsigned long)c->Eax, (unsigned long)c->Ebx, (unsigned long)c->Ecx, (unsigned long)c->Edx,
-		                  (unsigned long)c->Esi, (unsigned long)c->Edi, (unsigned long)c->Ebp, (unsigned long)(DWORD)g_fake);
+		                  (unsigned long)c->Esi, (unsigned long)c->Edi, (unsigned long)c->Ebp, (unsigned long)(DWORD)g_fake,
+		                  g_runSeed, (unsigned long)g_crumb[2]);
 		MEMORY_BASIC_INFORMATION mi;                 /* the top of the stack (return addresses of a library call's caller) */
 		if (VirtualQuery((void *)c->Esp, &mi, sizeof mi) && mi.State == MEM_COMMIT && (DWORD)mi.BaseAddress + mi.RegionSize >= c->Esp + 32) {
 			const DWORD *s = (const DWORD *)c->Esp;
@@ -10883,7 +10869,19 @@ ST(arena_4539f0, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 
 ST(net_454740, , CALL_PLAIN(0x454740, 0, 0, 0, 0, 0), (DWORD)net_454740())
 ST(FUN_0046c580, strs_setup();, CALL_PLAIN(0x46c580, 0, BUF + 0x100, BUF + 0x200, 0, 0), (DWORD)(FUN_0046c580((const char *)(DWORD)(BUF + 0x100), (const char *)(DWORD)(BUF + 0x200))))
 ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
-ST(menu_vertex, g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);, CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), menu_vertex(g_a[0], g_a[1]))
+/* menu vertices at screen scales 1 .. 6, and (with the patch DLL's menu fix in) half of them while the menu cursor is
+   drawn over the full screen: then the original side is the patch DLL's menu_vtx, which places it as in the box */
+void wide_testCursor(int on, int x, int w);
+int wide_menuFix(void);
+static void menuvtx_setup(void)
+{
+	g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);
+	GF(0x680bac) = csu_fr(100, 600); GF(0x4df014) = csu_fr(100, 600);
+	g_a[2] = wide_menuFix() && irnd(0, 1); g_a[3] = irnd(0, 1500); g_a[4] = irnd(1, 4000);
+}
+ST(menu_vertex, menuvtx_setup();,
+   (wide_testCursor(g_a[2], g_a[3], g_a[4]), CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), wide_testCursor(0, 0, 0), 0),
+   (wide_testCursor(g_a[2], g_a[3], g_a[4]), menu_vertex(g_a[0], g_a[1]), wide_testCursor(0, 0, 0), 0))
 ST(mci_pause, , CALL_PLAIN(0x46c540, 0, 0, 0, 0, 0), (DWORD)(mci_pause()))
 ST(FUN_0043f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, CALL_PLAIN(0x43f980, 0, 0, 0, 0, 0), (FUN_0043f980(), 0))
 ST(sys_messageBox, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, CALL_PLAIN(0x41edf0, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0), (DWORD)sys_messageBox((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]), (DWORD)(BUF + 0x200)))
@@ -10960,12 +10958,18 @@ static void qpf_setup(void)
 	g_mockQpfFail = !irnd(0, 5);
 }
 T_PLAIN(timer_init, 0x4302d0, qpf_setup();, 0, 0, 0, 0, 0)
-/* the entered name and the selected slot (0..13) */
-static void selectload_setup(void) { fill_str((char *)0x9dc92c, 40, 32, 126); G32(0x9f9008) = irnd(0, 13); G32(0x9f8c4c) = irnd(0, 3); vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); }
+/* the entered name (at most 31 characters) and the selected slot (0..13), the stack painted so the runs don't depend on
+   what earlier tests left there. profile_load copies the selected profile's name into the 32-byte field at 0x9f8fe8,
+   right before the profile count (0x9f9008): a longer name overwrites the count with its last letters (~0x5a41), and
+   the original then saved ~21000 records, reading past the end of the image (it crashed the full suite once the
+   random order gave it a 33..40-character name) */
+static void selectload_setup(void) { fill_str((char *)0x9dc92c, 31, 32, 126); G32(0x9f9008) = irnd(0, 13); G32(0x9f8c4c) = irnd(0, 3); vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); g_paintStacks = 1; }
 T_PLAIN(profile_selectAndLoad, 0x44b990, selectload_setup();, 0, 0, 0, 0, 0)
-ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] = irnd(0, 1) ? 0 : irnd(-3, 3);,
-   ((DWORD (__cdecl *)(int, int, int, int, int))0x427970)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]),
-   menu_drawRect(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], 0, 0, 0))
+/* a third of the rectangles cover the whole 640 x 480 (drawn full screen with the patch DLL's menu fix) */
+ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] = irnd(0, 1) ? 0 : irnd(-3, 3);
+   if (!irnd(0, 2)) { g_a[0] = irnd(-100, 0); g_a[1] = irnd(-100, 0); g_a[2] = irnd(640, 800); g_a[3] = irnd(480, 600); },
+   (((DWORD (__cdecl *)(int, int, int, int, int))0x427970)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
+   (menu_drawRect(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
 T_PLAIN(menuState210_enter, 0x44b420, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); G32(0x9f9008) = irnd(0, 3);, 0, 0, 0, 0, 0)
 /* every save is read at 0x4e20 for 0x104 bytes: shorter files leave that stack buffer uninitialised, and the original
    copies it into the profile table anyway, so the test files are long enough */
@@ -18130,7 +18134,7 @@ static void proj2d_setup(void)
 	GF(0x68038c) = csu_fr(1000, 9000); GF(0x4e1870) = csu_fr(1, 500);
 	g_a[0] = irnd(0, 2);
 }
-T_PLAIN(gfx_setProjection2D3D, 0x41ef90, proj2d_setup();, 0, g_a[0], 0, 0, 0)
+ST(gfx_setProjection2D3D, proj2d_setup();, (CALL_PLAIN(0x41ef90, 0, g_a[0], 0, 0, 0), 0), (gfx_setProjection2D3D((DWORD)(g_a[0])), 0))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
    ChangeDisplaySettingsA's answer; the DEVMODE's unset bytes painted alike */
 static void displaymode_setup(void)
@@ -18380,7 +18384,7 @@ static const STest g_stests[] = {
 	T(ResourceSet_dtor_463960, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
 	/* batch 47 */
 	T(GetCurrentDirectoryA_wrap_43f580, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(arena_4539f0, 1, 40, 0), T(net_454740, 1, 40, 0),
-	T(FUN_0046c580, 1, 40, 0), T(profile_41e7a0, 1, 40, 0), T(menu_vertex, 1, 40, 0), T(mci_pause, 1, 40, 0),
+	T(FUN_0046c580, 1, 40, 0), T(profile_41e7a0, 1, 40, 0), T(menu_vertex, 1, 400, 0), T(mci_pause, 1, 40, 0),
 	T(FUN_0043f980, 1, 40, 0), T(sys_messageBox, 1, 40, 0), T(ptx_error, 1, 40, 0), T(ptx_crtlError, 1, 40, 0),
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
 	T(net_452de0, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_42ef30, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
@@ -18390,7 +18394,7 @@ static const STest g_stests[] = {
 	/* batch 48 */
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
 	T(lobby_407270, 1, 40, 0), T(FUN_00427a40, 1, 40, 0), T(mainmenu_440d70, 1, 40, 0), T(timer_init, 0, 40, 0),
-	T(profile_selectAndLoad, 1, 40, 0), T(menu_drawRect, 1, 40, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
+	T(profile_selectAndLoad, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
 	T(autoplay_startRecording, 1, 40, 0), T(dplay_enumConnections, 1, 40, 0),
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
@@ -18947,31 +18951,38 @@ static int patched_in_memory(DWORD addr)
 		}
 	return -1;
 }
+/* src/wide.c: the patch DLL handed over its widescreen state (and installed its menu fix) */
+int wide_present(void);
+int wide_menuFix(void);
 static void hook(DWORD addr, void *fn, const char *name)
 {
 	DWORD old;
 	unsigned char *p = (unsigned char *)addr;
+	int folded_fix = 0;
 	if (!passed(name)) {                       /* only bit-exact rebuilds replace the original */
 		say("  KEPT ORIGINAL %08lx %s (rebuilt version did not match on every test)\n", addr, name);
 		return;
 	}
 	{	/* rebuilt and bit-exact, but the patch DLL tells its caller by the return address of a call it makes, which a
-		   lifted function cannot give: hook_glViewport widens the 2D viewport during the HUD only for a call from
-		   gfx_setProjection2D3D's cave (return address 0x4a8fdd); lifted, the HUD lost its right edge.
-		   hud_drawMain (0x4926f0, readable in src/hud/hud_main.c): hook_glVertex2i anchors each part of the main HUD to
-		   the left or right edge of a wide screen by the return address of its glVertex2i calls (inside 0x4926f0 ..
-		   0x494930) and, for text, digits and icons, by finding the call site's return address on the stack; called
-		   from recomp.dll it found neither, so everything was centred (the "1/8" rank over the FPS counter) */
+		   rebuild cannot give: hook_glViewport widened the 2D viewport during the HUD only for a call from
+		   gfx_setProjection2D3D's cave (return address 0x4a8fdd), and hook_glVertex2i anchored each part of the main HUD
+		   (hud_drawMain) to the left or right edge of a wide screen by the return addresses of its glVertex2i calls
+		   and call sites; called from recomp.dll it found neither, so the HUD lost its right edge and everything was
+		   centred (the "1/8" rank over the FPS counter). Both rebuilds now do that part of the fix themselves
+		   (src/wide.h), with the patch DLL's state: without its table they stay on the originals. */
 		static const DWORD keep[] = { 0x41ef90, 0x4926f0 };
-		for (unsigned i = 0; i < sizeof keep / sizeof keep[0]; i++)
+		for (unsigned i = 0; i < sizeof keep / sizeof keep[0] && !wide_present(); i++)
 			if (keep[i] == addr) { say("  KEPT ORIGINAL %08lx %s (the patch DLL checks its return address)\n", addr, name); return; }
 	}
-	{
-		int pm = patched_in_memory(addr);
+	{	/* menu_vertex and menu_drawRect: the patch DLL's menu43 replaces their entries with jumps to its own versions;
+		   the rebuilds carry that fix (src/menu/menu_2d.c), so they take over from the patch DLL's jump */
+		int folded = (addr == 0x41ef60 || addr == 0x427970) && wide_menuFix() && p[0] == 0xE9;
+		int pm = folded ? 0 : patched_in_memory(addr);
 		if (pm) {
 			say("  KEPT ORIGINAL %08lx %s (%s)\n", addr, name, pm > 0 ? "changed in memory by the patch DLL" : "could not compare with the exe file");
 			return;
 		}
+		if (folded) folded_fix = 1;
 	}
 	{	/* RECOMP_SKIP=name,name,...: keep these on their originals (for bisecting a problem in play) */
 		static char skip[4096]; static int got;
@@ -18984,6 +18995,7 @@ static void hook(DWORD addr, void *fn, const char *name)
 		say("  KEPT ORIGINAL %08lx %s (a thread was stopped inside its first bytes)\n", addr, name);
 		return;
 	}
+	if (folded_fix) say("  %08lx %s replaces the patch DLL's version (carries its fix)\n", addr, name);
 	VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
 	p[0] = 0xE9;
 	*(DWORD *)(p + 1) = (DWORD)fn - (addr + 5);
@@ -19936,6 +19948,7 @@ static DWORD WINAPI worker(LPVOID unused)
 	g_log = fopen(path, "w");
 	if (!g_log) return 0;
 	g_quick = GetEnvironmentVariableA("RECOMP_QUICK", NULL, 0) != 0;
+	{ char sb[16]; if (GetEnvironmentVariableA("RECOMP_SEED", sb, sizeof sb)) g_forceSeed = (unsigned)strtoul(sb, NULL, 16); }
 	g_nanAudit = GetEnvironmentVariableA("RECOMP_NANAUDIT", NULL, 0) != 0;
 	{ DWORD tid; HANDLE h = CreateThread(NULL, 0, watchdog, NULL, 0, &tid); if (h) { g_wdOwn = tid; CloseHandle(h); } }
 	Sleep(8000);                              /* let the game load MATHFUNC.TBL (sin/cos tables) */

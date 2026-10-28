@@ -9,8 +9,8 @@ typedef long double X;
 
 #define F(a) GAME_VAR(float, a)
 #define I(a) GAME_VAR(int, a)
-#define g_menuFade F(0x4e1870)             /* (by use) the menu's brightness */
-#define FADE_FULL ((X)I(0x5b1998) / I(0x4e045c))
+/* g_viewAspect (game.h): the 3D view's aspect ratio, eased to the screen's while the camera moves */
+#define SCREEN_ASPECT ((X)I(0x5b1998) / I(0x4e045c))
 #define RATE F(0x4a93ec)                   /* the share eased per second */
 
 static const u32 cam[6] = { 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380 };
@@ -100,7 +100,7 @@ static void menu_camera(const MenuCam *m)
 		if (I(0x67ef14) == 1)
 			I(0x4deb74) = 0;
 		else
-			g_menuFade = (float)((long double)I(0x5b1998) / I(0x4e045c));
+			g_viewAspect = (float)((long double)I(0x5b1998) / I(0x4e045c));
 		return;
 	}
 	if (I(0x67ef14) == 1) {
@@ -145,11 +145,11 @@ static void menu_camera2(const MenuCam2 *m)
 			last = ((X)F(point0[i]) - F(cam[i])) * k * c + F(cam[i]);
 			F(cam[i]) = (float)last;
 		}
-		if (g_menuFade > F(0x4a93e8))
-			g_menuFade = (float)((X)g_menuFade - (X)g_frameTime * F(0x4a946c));
+		if (g_viewAspect > F(0x4a93e8))
+			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * F(0x4a946c));
 		if (!(last > F(0x4a9474)))
 			return;
-		X full = FADE_FULL;
+		X full = SCREEN_ASPECT;
 		I(0x4df024) = 0;
 		GAME_VAR(u32, 0x4df028) = 0xc3480000;   /* -200 */
 		GAME_VAR(u32, 0x4df02c) = 0x44bb8000;   /* 1500 */
@@ -159,7 +159,7 @@ static void menu_camera2(const MenuCam2 *m)
 		I(m->mode) = 2;
 		I(m->flag) = 0;
 		g_dialogOpen = 1;
-		g_menuFade = (float)full;
+		g_viewAspect = (float)full;
 		return;
 	}
 	if (mode != 0)
@@ -169,9 +169,9 @@ static void menu_camera2(const MenuCam2 *m)
 	I(m->flag) = 1;
 	for (int i = 0; i < 6; i++)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
-	X full = FADE_FULL;
-	if (!(g_menuFade >= full))
-		g_menuFade = (float)((X)g_frameTime * F(fast ? 0x4a9468 : 0x4a9420) + g_menuFade);
+	X full = SCREEN_ASPECT;
+	if (!(g_viewAspect >= full))
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? 0x4a9468 : 0x4a9420) + g_viewAspect);
 	if (F(0x680380) > F(0x4a95d4))
 		return;
 	/* home */
@@ -185,7 +185,7 @@ static void menu_camera2(const MenuCam2 *m)
 	I(0x4df02c) = I(0x9db098);
 	if (m->mission && I(0x67ef14) == 1)
 		I(0x4deb74) = 0;
-	g_menuFade = (float)full;
+	g_viewAspect = (float)full;
 	if (!m->mission)
 		I(m->mode) = 2;
 	I(m->minus1) = -1;

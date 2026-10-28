@@ -1415,6 +1415,18 @@ static int hud_anchor(DWORD ret, DWORD site) {
     if (site >= 0x488000 && site < 0x49a000) return A_CENTER;    /* chat, menu, frag counter, messages */
     return A_NONE;
 }
+/* RECOMP TEST BUILD ONLY: the main HUD rebuilt in recomp.dll (src/hud/hud_main.c) can't be recognised by the return
+   addresses above and below; it says which part it is drawing instead (g_hudpart, the values of src/wide.h HUD_*:
+   0 not said, 1 left, 2 centre, 3 right, 4 as drawn, 5 screen pixels, 6 the top right corner marks) */
+volatile int g_hudpart;
+enum { HP_AUTO, HP_LEFT, HP_CENTRE, HP_RIGHT, HP_SCREEN, HP_PIXELS, HP_CORNER };
+static int hud_part_is(int area, DWORD ret, DWORD lo, DWORD hi, int part) {
+    return area == 2 && g_hudpart ? g_hudpart == part : ret >= lo && ret < hi;
+}
+static int hud_part_anchor(int area, DWORD ret, DWORD site) {
+    if (area != 2 || !g_hudpart) return hud_anchor(ret, site);
+    return g_hudpart == HP_LEFT ? A_LEFT : g_hudpart == HP_CENTRE ? A_CENTER : g_hudpart == HP_RIGHT ? A_RIGHT : A_NONE;
+}
 static void WINAPI hook_glViewport(int x, int y, int w, int h) {
     if (g_hudtrace) {    /* log each distinct viewport with its caller */
         static struct { int x, y, w, h; void *ret; } seen[64];
@@ -1913,6 +1925,7 @@ __attribute__((noinline)) static void WINAPI hook_glVertex2i(int x, int y) {
     if (site) ;
     else if (area == 1) site = (void *)0x498585;                               /* player markers */
     else if (area == 5) site = (void *)0x4985c9;                               /* lock-on square */
+    else if (area == 2 && g_hudpart) site = (void *)0x498659;                  /* rebuilt main HUD: g_hudpart */
     else if (area == 2) {
         /* main HUD: its own vertices by address; for helpers, accept only a return address whose call
            instruction really calls that helper (the routine's uninitialised locals can hold leftovers) */
@@ -1968,12 +1981,12 @@ __attribute__((noinline)) static void WINAPI hook_glVertex2i(int x, int y) {
     /* lock-on range circle (homing weapons, 0x492840-0x4929d0): drawn in screen pixels with an H-based radius,
        so it is round as the game draws it - but the HUD ortho (0..w) is stretched over the centred 16:9
        viewport on wider screens, which squeezed it into an oval. Map its x 1:1 to screen pixels. */
-    if (g_hud43 && g_inhud && area == 2 && w > 0 && g_vpw > 0 && (DWORD)ret >= 0x492840 && (DWORD)ret < 0x4929d0) {
+    if (g_hud43 && g_inhud && area == 2 && w > 0 && g_vpw > 0 && hud_part_is(area, (DWORD)ret, 0x492840, 0x4929d0, HP_PIXELS)) {
         x = (int)((double)(x - g_vpx) * w / g_vpw + (x >= g_vpx ? 0.5 : -0.5));
         real_glVertex2i(x, y);
         return;
     }
-    if (g_hud43 && g_inhud && area == 2 && w > 0 && h > 0 && (DWORD)ret >= 0x494600 && (DWORD)ret < 0x4948b3) {
+    if (g_hud43 && g_inhud && area == 2 && w > 0 && h > 0 && hud_part_is(area, (DWORD)ret, 0x494600, 0x4948b3, HP_CORNER)) {
         double sw = g_vpx * 2 + g_vpw, bw = sw, k = h / 480.0;
         if (g_hudaspect > 0 && bw > h * g_hudaspect) bw = h * g_hudaspect;
         double X = (sw + bw) / 2 - (w - x) * k;       /* w - x: pixels from the right edge, as the game drew it */
@@ -1983,7 +1996,7 @@ __attribute__((noinline)) static void WINAPI hook_glVertex2i(int x, int y) {
         return;
     }
     if (g_hud43 && g_inhud && w > 0 && h > 0 &&
-        (a = area == 6 ? A_LEFT : area == 7 ? A_RIGHT : area == 8 ? A_CENTER : hud_anchor((DWORD)ret, (DWORD)site)) != A_NONE) {
+        (a = area == 6 ? A_LEFT : area == 7 ? A_RIGHT : area == 8 ? A_CENTER : hud_part_anchor(area, (DWORD)ret, (DWORD)site)) != A_NONE) {
         /* to screen pixels (ortho 0..w over the current viewport), remap, and back */
         double X = g_vpx + (double)x * g_vpw / w;
         int sw = g_vpx * 2 + g_vpw;                   /* the viewport is centred (or full) */
@@ -2195,12 +2208,25 @@ static void *hook_import(HMODULE mod, const char *dll, const char *func, void *r
 
 __declspec(dllexport) int AxisNetVersion(void) { return 2; }
 
+/* RECOMP TEST BUILD ONLY: the widescreen state the rebuilt game functions that carry these fixes need (menu_vertex,
+   menu_drawRect, gfx_setProjection2D3D, hud_drawMain; recomp.dll src/wide.h has the same layout), handed over
+   when recomp.dll is loaded */
+static volatile int g_menufix;   /* menu_vtx / rect_wrap / trans_wrap installed (menu43) */
+static const struct {
+    int size;
+    const volatile int *menuFix, *menu43, *inHud, *hudArea, *cursorOn, *cursorX, *cursorW;
+    volatile int *hudPart;
+    void (__cdecl *fullScreen)(int on);
+} g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full };
+
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
     DisableThreadLibraryCalls(inst);
     { /* RECOMP TEST BUILD ONLY: load rebuilt game functions (recomp.dll) from the game folder if present */
       char rp[MAX_PATH]; GetModuleFileNameA(NULL, rp, MAX_PATH); strcpy(strrchr(rp, '\\') + 1, "recomp.dll");
-      if (GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES) LoadLibraryA(rp); }
+      HMODULE rm = GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES ? LoadLibraryA(rp) : NULL;
+      void (*set_wide)(const void *) = rm ? (void (*)(const void *))GetProcAddress(rm, "recomp_setWide") : NULL;
+      if (set_wide) set_wide(&g_wide); }
     /* The game renders at the monitor's real resolution (DESKTOP mode), but with display scaling Windows
        gives a DPI-unaware program a smaller, stretched window, so only part of the picture was visible
        (menus off-centre, top cut off). Declare DPI awareness before the game creates its window. */
@@ -2404,6 +2430,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
                 VirtualProtect(pcur, 5, old, &old);
                 FlushInstructionCache(GetCurrentProcess(), pcur, 5);
             }
+            g_menufix = 1;
             logf("menus: centred 4:3 box, full-screen effects kept full screen");
         } else logf("menus: centred 4:3 box (full-screen effect hooks NOT installed)");
     }

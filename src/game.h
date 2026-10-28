@@ -271,6 +271,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_paused GAME_VAR(int, 0x68039c)             /* (unclear) input off: the window is inactive or a text box has the keys */
 #define g_keysBlocked GAME_VAR(int, 0x680370)        /* (unclear) the menus ignore their keys while set */
 #define g_menuFade GAME_VAR(float, 0x9da434)          /* the menus' fade-in: the keys wait for it to reach 0 */
+#define g_viewAspect GAME_VAR(float, 0x4e1870)        /* the 3D view's aspect ratio (gluPerspective), width / height */
 #define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time, seconds */
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
@@ -679,5 +680,15 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define g_menuState GAME_VAR(int, 0x76d3e8)          /* the front end's screen (300 the main menu) */
 #define arena_4065e0() GAME_CDECL(0x4065e0, void, void)()   /* the session list sorted */
+
+/* ---- the projection switch and the menus' 2D (menu_2d.c) ---- */
+#define GL_LINES 1
+#define GL_DEPTH_TEST 0x0b71
+#define GL_MODELVIEW 0x1700
+#define GL_PROJECTION 0x1701
+#define glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
+#define glMatrixMode(mode) IMPORT(0x4a91fc, void, u32)(mode)
+#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))0x4509c6)(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))0x4509cc)(left, right, bottom, top)
 
 #endif

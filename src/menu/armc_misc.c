@@ -98,13 +98,13 @@ void (armc_exit)(int confirmed)
 	case 1:
 		armc_40e670();
 		GAME_VAR(int, 0x4dc790) = 0;
-		GAME_VAR(float, 0x4e1870) = 0.1f;
+		g_viewAspect = 0.1f;
 		if (confirmed)
 			armc_saveSelection();
 		break;
 	case 2:
 		GAME_VAR(int, 0x4dc790) = 0;
-		GAME_VAR(float, 0x4e1870) = 0.1f;
+		g_viewAspect = 0.1f;
 		g_lobbySubState = 0;
 		if (confirmed)
 			armc_saveSelection();
@@ -112,7 +112,7 @@ void (armc_exit)(int confirmed)
 	case 3:
 		armc_40e670();
 		GAME_VAR(int, 0x4dc790) = 0;
-		GAME_VAR(float, 0x4e1870) = 0.1f;
+		g_viewAspect = 0.1f;
 		if (confirmed)
 			armc_sendSelectionToNet();
 		break;
@@ -173,6 +173,6 @@ void (armc_410160)(void)
 	if (GAME_VAR(int, 0x4ded8c)) {
 		armc_40e670();
 		GAME_VAR(int, 0x4dc790) = 0;
-		GAME_VAR(int, 0x4e1870) = 0;
+		BITS(g_viewAspect) = 0;
 	}
 }
