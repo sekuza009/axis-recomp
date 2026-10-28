@@ -198,3 +198,71 @@ void (lobby_ladderGameName)(void)
 	GAME_VAR(char, 0x5b1b52) = 0;
 	FUN_0040ddb0();
 }
+
+/* 0x432be0: the joined game's settings (0x9dd570: its name, its host's, the room record 0x5b1b30, the mech and the
+   window rectangles) copied into the room screen's */
+void (room_432be0)(void)
+{
+	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
+	strcpy((char *)0x9dd20e, (const char *)0x9dd5a6);
+	u8 map = GAME_VAR(u8, 0x5b1b51);
+	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
+	GAME_VAR(u8, 0x4df9e9) = map;
+	GAME_VAR(u8, 0x4df9e8) = GAME_VAR(u8, 0x5b1b50);
+	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
+	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);
+	GAME_VAR(u8, 0x4df9ec) = GAME_VAR(u8, 0x5b1b54);
+	GAME_VAR(u8, 0x4df9ed) = GAME_VAR(u8, 0x5b1b55);
+	memcpy((void *)0x9dd260, (void *)0x9dd5f8, 11);
+	memcpy((void *)0x9dd26b, (void *)0x9dd603, 0x90);
+	static const u32 copy[6][2] = { { 0x9dd240, 0x9dd5d8 }, { 0x9dd244, 0x9dd5dc }, { 0x9dd25c, 0x9dd5f4 },
+	                                { 0x9dd254, 0x9dd5ec }, { 0x9dd258, 0x9dd5f0 }, { 0x9dd250, 0x9dd5e8 } };
+	for (int k = 0; k < 6; k++)
+		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
+}
+
+/* a window rectangle record's seven fields copied (in the original's order) */
+static void rect_copy(u32 dst, u32 src)
+{
+	static const int field[] = { 0, 0xc, 0x1c, 0x18, 4, 0x14, 0x10 };
+	for (int k = 0; k < 7; k++)
+		GAME_VAR(int, dst + field[k]) = GAME_VAR(int, src + field[k]);
+}
+
+/* 0x41e390: the two window rectangles (the joined game's 0x9dd5d8 and the room's 0x9dd240) made the same when one
+   reaches past the other, then each limited to the screen's (0x4de71e) */
+void (console_41e390)(void)
+{
+	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
+	if (GAME_VAR(int, 0x9dd5ec) > GAME_VAR(int, 0x9dd254) || GAME_VAR(int, 0x9dd5dc) > GAME_VAR(int, 0x9dd244)) {
+		rect_copy(0x9dd5d8, 0x9dd240);
+		c5 = GAME_VAR(int, 0x9dd254);
+		a1 = b1 = GAME_VAR(int, 0x9dd244);
+	} else {
+		c5 = GAME_VAR(int, 0x9dd5ec);
+		a1 = GAME_VAR(int, 0x9dd5dc);
+		b1 = GAME_VAR(int, 0x9dd244);
+		if (GAME_VAR(int, 0x9dd254) > c5 || b1 > a1) {
+			rect_copy(0x9dd240, 0x9dd5d8);
+			b1 = a1;
+		}
+	}
+	int e0 = GAME_VAR(int, 0x4de71e), e1 = GAME_VAR(int, 0x4de722), e3 = GAME_VAR(int, 0x4de726),
+	    e4 = GAME_VAR(int, 0x4de72a), e5 = GAME_VAR(int, 0x4de72e), e6 = GAME_VAR(int, 0x4de732);
+	if (c5 > e5 || a1 > e1) {
+		GAME_VAR(int, 0x9dd5d8) = e0;
+		GAME_VAR(int, 0x9dd5dc) = e1;
+		GAME_VAR(int, 0x9dd5e4) = e3;
+		GAME_VAR(int, 0x9dd5ec) = e5;
+		GAME_VAR(int, 0x9dd5f0) = e6;
+		GAME_VAR(int, 0x9dd5e8) = e4;
+	}
+	if (GAME_VAR(int, 0x9dd254) > e5 || b1 > e1) {
+		GAME_VAR(int, 0x9dd244) = e1;
+		GAME_VAR(int, 0x9dd240) = e0;
+		GAME_VAR(int, 0x9dd24c) = e3;
+		GAME_VAR(int, 0x9dd254) = e5;
+		GAME_VAR(int, 0x9dd258) = e6;
+		GAME_VAR(int, 0x9dd250) = e4;
+	}
+}

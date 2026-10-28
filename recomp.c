@@ -1437,38 +1437,14 @@ void room_433790(void);
 /* lobby: create arena */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_setSubState2(void);
-static void __cdecl armc_433360(void)          /* menu camera/light positions (5 x 2 vectors) */
-{
-	static const DWORD k[][2] = {
-		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },
-		{ 0x4df880, 0x41a00000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0 },
-		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
-		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
-		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };
-	int v = G32(0x680380);
-	for (int i = 0; i < 5; i++) { G32(0x4df878 + i * 0x10) = v; G32(0x76d390 + i * 0x10) = v; }
-	G32(0x9db090) = G32(0x4df024); G32(0x9db094) = G32(0x4df028); G32(0x9db098) = G32(0x4df02c);
-	int f = G32(0x680378), g = G32(0x68037c), h = G32(0x680380);
-	for (unsigned i = 0; i < sizeof k / sizeof k[0]; i++) GU32(k[i][0]) = k[i][1];
-	G32(0x76d3f8) = f; G32(0x76d3fc) = g; G32(0x76d400) = h; G32(0x9dd6d4) = 0;
-}
+/* menu camera/light positions (5 x 2 vectors) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_433360(void);
 
 /* ---- batch 13: game-room / arena list copies ---------------------------------------------------- */
-static void __cdecl room_432be0(void)            /* copy the joined game's settings into the room screen */
-{
-	strcpy(GSTR(0x9dd1d8), GSTR(0x9dd570));
-	strcpy(GSTR(0x9dd20e), GSTR(0x9dd5a6));
-	BYTE m = *(BYTE *)0x5b1b51;
-	strcpy(GSTR(0x4df9c8), GSTR(0x5b1b30));
-	*(BYTE *)0x4df9e9 = m;
-	*(BYTE *)0x4df9e8 = *(BYTE *)0x5b1b50; *(BYTE *)0x4df9ea = *(BYTE *)0x5b1b52; *(BYTE *)0x4df9eb = *(BYTE *)0x5b1b53;
-	*(BYTE *)0x4df9ec = *(BYTE *)0x5b1b54; *(BYTE *)0x4df9ed = *(BYTE *)0x5b1b55;
-	memcpy((void *)0x9dd260, (void *)0x9dd5f8, 11);
-	memcpy((void *)0x9dd26b, (void *)0x9dd603, 0x90);
-	static const DWORD cp[6][2] = { { 0x9dd240, 0x9dd5d8 }, { 0x9dd244, 0x9dd5dc }, { 0x9dd25c, 0x9dd5f4 }, { 0x9dd254, 0x9dd5ec },
-	                                { 0x9dd258, 0x9dd5f0 }, { 0x9dd250, 0x9dd5e8 } };
-	for (int k = 0; k < 6; k++) G32(cp[k][0]) = G32(cp[k][1]);
-}
+/* copy the joined game's settings into the room screen */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_432be0(void);
 /* add newly received network games to the arena list, then re-sort. Records are `stride` bytes; s = record + key:
    name at s+nameOff, flags s[-6..0], player count s[9], strings at s+0xa and s+str2Off. `total` sums byte s[-4]. */
 /* game room: 0x79-byte records */
@@ -1497,21 +1473,9 @@ static void profile_loadColour(int i)            /* nine ints of profile colour 
 void profile_44bc50(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44bd20(void);
-static THISCALL void match_496e40(char *self, float dt)   /* advance the animation timers (wrap at 1 unit) */
-{
-	typedef long double X;
-	if (S32(self, 0x2149308) && S32(self, 0x214930c) == 1) return;
-	X d = (X)dt * GF(0x4a9428), c = GF(0x4a9424);
-	for (int k = 0; k < 2; k++) {
-		X a = d + SF(self, 0x9ef0a8 + k * 4);
-		SF(self, 0x9ef0a8 + k * 4) = (float)a;
-		if (a >= c) { S32(self, 0x9ef0a0 + k * 4)++; SF(self, 0x9ef0a8 + k * 4) = (float)(a - c); }
-	}
-	if (S32(self, 0x9ef30c) != 2) return;
-	X e = (X)dt * GF(0x4aa498) + SF(self, 0x9ef900);
-	SF(self, 0x9ef900) = (float)e;
-	if (e >= c) { S32(self, 0x9ef8fc) = (S32(self, 0x9ef8fc) + 1) % 16; SF(self, 0x9ef900) = (float)(e - c); }
-}
+/* advance the animation timers (wrap at 1 unit) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_496e40(void *self, float dt);
 static int ks_row(int hi, int lo, int base, int first)   /* paired KS rows -> Johab lead byte + trail byte */
 {
 	int r = hi - first;
@@ -1661,30 +1625,8 @@ void ptx_46e2b0(int q);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_004679a0(float *out, const float *p1, const float *p0, const float *p2);
 /* console/room rectangles: A = 0x9dd5d8.., B = 0x9dd240.., C = 0x4de71e.. (fields +0, +4, +0xc, +0x10, +0x14, +0x18, +0x1c) */
-static void rect7_copy(DWORD dst, DWORD src)
-{
-	static const int f[] = { 0, 0xc, 0x1c, 0x18, 4, 0x14, 0x10 };
-	for (int k = 0; k < 7; k++) G32(dst + f[k]) = G32(src + f[k]);
-}
-static void __cdecl console_41e390(void)
-{
-	int c5, a1, b1;                                  /* ecx / edx / ebp at the merge point in the original */
-	if (G32(0x9dd5ec) > G32(0x9dd254) || G32(0x9dd5dc) > G32(0x9dd244)) {
-		rect7_copy(0x9dd5d8, 0x9dd240);
-		c5 = G32(0x9dd254); a1 = b1 = G32(0x9dd244);
-	} else {
-		c5 = G32(0x9dd5ec); a1 = G32(0x9dd5dc); b1 = G32(0x9dd244);
-		if (G32(0x9dd254) > c5 || b1 > a1) { rect7_copy(0x9dd240, 0x9dd5d8); b1 = a1; }
-	}
-	int e0 = G32(0x4de71e), e1 = G32(0x4de722), e3 = G32(0x4de726), e4 = G32(0x4de72a), e5 = G32(0x4de72e), e6 = G32(0x4de732);
-	if (c5 > e5 || a1 > e1) {
-		G32(0x9dd5d8) = e0; G32(0x9dd5dc) = e1; G32(0x9dd5e4) = e3; G32(0x9dd5ec) = e5; G32(0x9dd5f0) = e6; G32(0x9dd5e8) = e4;
-	}
-	if (G32(0x9dd254) > e5 || b1 > e1) {
-		G32(0x9dd244) = e1; G32(0x9dd240) = e0; G32(0x9dd24c) = e3;
-		G32(0x9dd254) = e5; G32(0x9dd258) = e6; G32(0x9dd250) = e4;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void console_41e390(void);
 
 /* ---- batch 17: video table init, texture/mesh records, room layout ----------------------------- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1899,32 +1841,14 @@ static void __cdecl room_432db0(void)
 	G32(0x4dc4b4) = G32(0x9dd5d8); G32(0x9dd84c) = 1;
 }
 /* control bindings: where a pair's primary key is the "unbound" value (0x4df8e4), swap in the secondary */
-static void __cdecl setup_drawKeyBindingRow(void)
-{
-	static const DWORD p[] = { 0x4de0c0, 0x4de0c8, 0x4de0d0, 0x4de0d8, 0x4de0e0, 0x4de0e8, 0x4de0f0, 0x4de0f8, 0x4de100,
-	                           0x4de108, 0x4de110, 0x4de118, 0x4de120, 0x4de138, 0x4de140, 0x4de148, 0x4de150, 0x4de128,
-	                           0x4de130, 0x4de158, 0x4de160, 0x4de168, 0x4de170, 0x4de178, 0x4de180, 0x4de188, 0x4de190,
-	                           0x4de198, 0x4de1a0, 0x4de1a8, 0x4de1b0, 0x4de1b8 };
-	int none = G32(0x4df8e4);
-	for (unsigned k = 0; k < sizeof p / sizeof p[0]; k++)
-		if (G32(p[k]) == none) { G32(p[k]) = G32(p[k] + 4); G32(p[k] + 4) = none; }
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawKeyBindingRow(void);
 
 /* ---- batch 21: key unbinding, PTX inverse DCT ---------------------------------------------------- */
 /* remove key k from the control bindings: the first pair whose secondary is k gets its primary moved into the
    secondary slot and "none" as primary, and the scan stops; a primary equal to k becomes "none" */
-static void __cdecl setup_420e50(int k)
-{
-	static const DWORD p[] = { 0x4de0c0, 0x4de0c8, 0x4de0d0, 0x4de0d8, 0x4de0e0, 0x4de0e8, 0x4de0f0, 0x4de0f8, 0x4de100,
-	                           0x4de108, 0x4de110, 0x4de118, 0x4de120, 0x4de138, 0x4de140, 0x4de148, 0x4de150, 0x4de128,
-	                           0x4de130, 0x4de158, 0x4de160, 0x4de168, 0x4de170, 0x4de178, 0x4de180, 0x4de188, 0x4de190,
-	                           0x4de198, 0x4de1a0, 0x4de1a8, 0x4de1b0, 0x4de1b8 };
-	int none = G32(0x4df8e4);
-	for (unsigned i = 0; i < sizeof p / sizeof p[0]; i++) {
-		if (G32(p[i] + 4) == k) { G32(p[i] + 4) = G32(p[i]); G32(p[i]) = none; return; }
-		if (G32(p[i]) == k) G32(p[i]) = none;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_420e50(int k);
 
 /* libjpeg's jpeg_idct_ifast: 8x8 coefficients (ints) x quantisation table (ints at 0xaa2c94) -> 8x8 bytes, through the
    range-limit table at *(0xa1f300) + 0x80. Multiplies are (x * c) >> 8 in wrapping 32-bit ints, no rounding. */
@@ -1974,27 +1898,8 @@ static void __cdecl ptx_decodeBlock_46e380(const int *in, BYTE *out)
 /* ---- batch 22: quaternion <-> matrix, ray vs polygon, RGB -> HSV (x87, operation order from the disassembly) -- */
 /* quaternion (x, y, z, w) -> 4x4 rotation matrix (column-major). xx, xy and w*z stay in 80 bits; the other products
    are rounded to float locals first, exactly as the original spills them */
-static void __cdecl FUN_0047d8a0(float *m, const float *q)
-{
-	typedef long double X;
-	X x = q[0], y = q[1], z = q[2], w = q[3], one = GF(0x4a9424);
-	X xx = x * x, xy = y * x;
-	float xz = (float)(z * x), nwx = (float)-(w * x), yy = (float)(y * y), yz = (float)(z * y), nwy = (float)-(w * y);
-	float zz = (float)(z * z);
-	X nwz = -(w * z);
-	float r[16];
-	r[0] = (float)(one - ((X)zz + yy) * 2);
-	r[4] = (float)((xy - nwz) * 2);
-	r[8] = (float)(((X)nwy + xz) * 2);
-	r[1] = (float)((nwz + xy) * 2);
-	r[5] = (float)(one - ((X)zz + xx) * 2);
-	r[9] = (float)(((X)yz - nwx) * 2);
-	r[2] = (float)(((X)xz - nwy) * 2);
-	r[6] = (float)(((X)yz + nwx) * 2);
-	r[10] = (float)(one - ((X)yy + xx) * 2);
-	r[3] = r[7] = r[11] = r[12] = r[13] = r[14] = 0; r[15] = 1.0f;
-	memcpy(m, r, sizeof r);                         /* the original reads all of q before its first store */
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0047d8a0(float *m, const float *q);
 /* 3x3 part of a rotation matrix -> quaternion (x, y, z, w) */
 static THISCALL void skel_ase_47d0f0(float *q, const float *m)
 {

@@ -385,3 +385,30 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 	}
 	FIELD(int, stage, 0x202e8ec) = 1;
 }
+
+/* 0x496e40: the stage's animation clocks advanced by dt (unless a script runs in mode 1): two at dt * the rate at
+   0x4a9428, wrapping at 1 and counting the turns; in game mode 2 a third at dt * the rate at 0x4aa498, counting turns
+   0 .. 15 */
+void THISCALL (match_496e40)(Stage *stage, float dt)
+{
+	typedef long double X;
+	if (FIELD(int, stage, 0x2149308) && FIELD(int, stage, 0x214930c) == 1)
+		return;
+	X d = (X)dt * GAME_VAR(float, 0x4a9428), one = GAME_VAR(float, 0x4a9424);
+	for (int k = 0; k < 2; k++) {
+		X a = d + FIELD(float, stage, 0x9ef0a8 + k * 4);
+		FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)a;
+		if (a >= one) {
+			FIELD(int, stage, 0x9ef0a0 + k * 4)++;
+			FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)(a - one);
+		}
+	}
+	if (FIELD(int, stage, 0x9ef30c) != 2)
+		return;
+	X e = (X)dt * GAME_VAR(float, 0x4aa498) + FIELD(float, stage, 0x9ef900);
+	FIELD(float, stage, 0x9ef900) = (float)e;
+	if (e >= one) {
+		FIELD(int, stage, 0x9ef8fc) = (FIELD(int, stage, 0x9ef8fc) + 1) % 16;
+		FIELD(float, stage, 0x9ef900) = (float)(e - one);
+	}
+}

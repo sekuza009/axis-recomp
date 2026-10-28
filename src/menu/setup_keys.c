@@ -171,3 +171,40 @@ void (setup_selectControlTab)(void)
 	GAME_VAR(int, 0x4b04f8) = -1;
 	tab_opened();
 }
+
+/* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at 0x4df8e4 ---- */
+static const u32 bindings[32] = { 0x4de0c0, 0x4de0c8, 0x4de0d0, 0x4de0d8, 0x4de0e0, 0x4de0e8, 0x4de0f0, 0x4de0f8,
+                                  0x4de100, 0x4de108, 0x4de110, 0x4de118, 0x4de120, 0x4de138, 0x4de140, 0x4de148,
+                                  0x4de150, 0x4de128, 0x4de130, 0x4de158, 0x4de160, 0x4de168, 0x4de170, 0x4de178,
+                                  0x4de180, 0x4de188, 0x4de190, 0x4de198, 0x4de1a0, 0x4de1a8, 0x4de1b0, 0x4de1b8 };
+#define KEY_NONE GAME_VAR(int, 0x4df8e4)
+
+/* 0x421350: a pair with no primary key gets its secondary as the primary */
+void (setup_drawKeyBindingRow)(void)
+{
+	int none = KEY_NONE;
+	for (int k = 0; k < 32; k++) {
+		int *pair = (int *)bindings[k];
+		if (pair[0] == none) {
+			pair[0] = pair[1];
+			pair[1] = none;
+		}
+	}
+}
+
+/* 0x420e50: key k unbound: the first pair holding it as its secondary keeps only its primary, moved to the secondary
+   (and the scan stops); a primary equal to k before that becomes none */
+void (setup_420e50)(int k)
+{
+	int none = KEY_NONE;
+	for (int i = 0; i < 32; i++) {
+		int *pair = (int *)bindings[i];
+		if (pair[1] == k) {
+			pair[1] = pair[0];
+			pair[0] = none;
+			return;
+		}
+		if (pair[0] == k)
+			pair[0] = none;
+	}
+}

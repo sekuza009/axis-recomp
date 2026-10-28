@@ -91,3 +91,30 @@ void (intro_42f8e0)(void)
 		}
 	}
 }
+
+/* 0x433360: the menu camera's five target points and look-at points (all at the camera's height), the home point
+   from where the camera is now */
+void (armc_433360)(void)
+{
+	static const u32 point[][2] = {
+		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },
+		{ 0x4df880, 0x41a00000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0 },
+		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
+		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
+		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };   /* (+-20, +-10), (-+70, +-55) */
+	int z = GAME_VAR(int, 0x680380);
+	for (int i = 0; i < 5; i++) {
+		GAME_VAR(int, 0x4df878 + i * 0x10) = z;
+		GAME_VAR(int, 0x76d390 + i * 0x10) = z;
+	}
+	GAME_VAR(int, 0x9db090) = GAME_VAR(int, 0x4df024);
+	GAME_VAR(int, 0x9db094) = GAME_VAR(int, 0x4df028);
+	GAME_VAR(int, 0x9db098) = GAME_VAR(int, 0x4df02c);
+	int lx = GAME_VAR(int, 0x680378), ly = GAME_VAR(int, 0x68037c), lz = GAME_VAR(int, 0x680380);
+	for (unsigned i = 0; i < sizeof point / sizeof point[0]; i++)
+		GAME_VAR(u32, point[i][0]) = point[i][1];
+	GAME_VAR(int, 0x76d3f8) = lx;
+	GAME_VAR(int, 0x76d3fc) = ly;
+	GAME_VAR(int, 0x76d400) = lz;
+	GAME_VAR(int, 0x9dd6d4) = 0;
+}

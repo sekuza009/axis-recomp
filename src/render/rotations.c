@@ -11,6 +11,7 @@ static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
 
 #define MINUS_HALF GAME_VAR(float, 0x4a94f4)   /* -0.5 */
 #define HALF GAME_VAR(float, 0x4a942c)         /* 0.5 */
+#define ONE GAME_VAR(float, 0x4a9424)
 
 /* 0x47d0b0: q = the quaternion of {angle, axis x, y, z}: sin(-angle / 2) times the axis, then cos(angle / 2) (the
    angle read again for it) */
@@ -99,4 +100,28 @@ void (FUN_004679a0)(float *out, const float *p1, const float *p0, const float *p
 	out[0] = n[0];
 	out[1] = n[1];
 	out[2] = n[2];
+}
+
+/* 0x47d8a0: m = the rotation matrix (columns) of the quaternion q = (x, y, z, w). xx, xy and w * z stay unrounded;
+   the other products are rounded to floats first, as the original keeps them */
+void (FUN_0047d8a0)(float *m, const float *q)
+{
+	X x = q[0], y = q[1], z = q[2], w = q[3], one = ONE;
+	X xx = x * x, xy = y * x;
+	float xz = f32(z * x), nwx = f32(-(w * x)), yy = f32(y * y), yz = f32(z * y), nwy = f32(-(w * y));
+	float zz = f32(z * z);
+	X nwz = -(w * z);
+	float r[16];
+	r[0] = (float)(one - ((X)zz + yy) * 2);
+	r[4] = (float)((xy - nwz) * 2);
+	r[8] = (float)(((X)nwy + xz) * 2);
+	r[1] = (float)((nwz + xy) * 2);
+	r[5] = (float)(one - ((X)zz + xx) * 2);
+	r[9] = (float)(((X)yz - nwx) * 2);
+	r[2] = (float)(((X)xz - nwy) * 2);
+	r[6] = (float)(((X)yz + nwx) * 2);
+	r[10] = (float)(one - ((X)yy + xx) * 2);
+	r[3] = r[7] = r[11] = r[12] = r[13] = r[14] = 0;
+	r[15] = 1.0f;
+	memcpy(m, r, sizeof r);   /* all of q is read before the first store, as in the original */
 }
