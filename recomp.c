@@ -1972,48 +1972,12 @@ static void __cdecl room_432be0(void)            /* copy the joined game's setti
 }
 /* add newly received network games to the arena list, then re-sort. Records are `stride` bytes; s = record + key:
    name at s+nameOff, flags s[-6..0], player count s[9], strings at s+0xa and s+str2Off. `total` sums byte s[-4]. */
-static void netgames_merge(DWORD flag, DWORD base, int stride, int nameOff, int str2Off, DWORD total, const DWORD *clr)
-{
-	if (G32(flag)) {
-		for (int i = 0; i < G32(0xa0d79c); i++) {
-			if (G32(0xa0bb14 + i * 4) != 1) continue;
-			const BYTE *s = (const BYTE *)(base + i * stride);
-			if (G32(0xa0d384 + i * 4) > 0) {
-				int k = G32(0x67ef30);
-				DWORD r = k * 0x4a;
-				memset((void *)(r + 0x9087c4), 0, 32);
-				strcpy(GSTR(r + 0x9087c4), (const char *)s + nameOff);
-				BYTE b6 = s[-6];
-				*(BYTE *)(r + 0x9087e4) = s[0]; *(BYTE *)(r + 0x9087e5) = b6; *(BYTE *)(r + 0x9087ec) = s[-3];
-				*(BYTE *)(r + 0x9087e6) = s[-5]; *(BYTE *)(r + 0x9087e7) = s[-4]; *(BYTE *)(r + 0x9087ed) = s[-2];
-				*(BYTE *)(r + 0x9087ee) = s[-1];
-				G32(r + 0x9087e8) = G32(0xa0d384 + i * 4);
-				*(BYTE *)(r + 0x908807) = s[9];
-				G32(r + 0x9087ff) = 0; G32(r + 0x908803) = 0;
-				strcpy(GSTR(r + 0x9087ff), (const char *)s + 0xa);
-				memset((void *)(r + 0x9087ef), 0, 16);
-				strcpy(GSTR(r + 0x9087ef), (const char *)s + str2Off);
-				G32(total) += *(signed char *)(r + 0x9087e7);
-				G32(0x67ef30) = k + 1;
-				arena_4065e0();
-			}
-			G32(0xa0bb14 + i * 4) = 0;
-			G32(0x680bb8)++;
-		}
-		if (!G32(0xa0d7a0)) return;
-	}
-	for (int k = 0; k < 3; k++) G32(clr[k]) = 0;
-}
-static void __cdecl room_434ff0(void)            /* game room: 0x79-byte records */
-{
-	static const DWORD clr[3] = { 0x9dd6a0, 0x9da498, 0x9dd3fc };
-	netgames_merge(0xa0b358, 0x9fd9c7, 0x79, -0x66, -0x34, 0x9dd840, clr);
-}
-static void __cdecl arena_406640(void)           /* arena lobby: 0x5b-byte records */
-{
-	static const DWORD clr[3] = { 0x4db858, 0x4df018, 0x4db8b8 };
-	netgames_merge(0xa0b368, 0xa05791, 0x5b, -0x48, -0x16, 0x4dba8c, clr);
-}
+/* game room: 0x79-byte records */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_434ff0(void);
+/* arena lobby: 0x5b-byte records */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_406640(void);
 
 /* ---- batch 14: x87 camera/timer updates, profile colours, EUC-KR -> Johab ---------------------- */
 #define GD(a) (*(double *)(a))
@@ -2419,69 +2383,16 @@ static void __cdecl menuState800_enterGameRoom(void)
 
 /* ---- batch 19: ARM CENTER part-info records, font-atlas cell tables ------------------------------ */
 /* part-info record (0x80 bytes) for weapon/part idx: file name without its folder, copied values, scaled floats */
-static void part_info(DWORD rec, int idx)
-{
-	typedef long double X;
-	if (idx == -1) {
-		memset((void *)rec, 0, 64);
-		G32(rec + 0x40) = -1;
-		memset((void *)(rec + 0x44), 0, 0x3c);
-		return;
-	}
-	char buf[128] = { 0 };
-	DWORD e = GU32(0x9087b4) + idx * 0x2e18;
-	strcpy(buf, GSTR(e + 0x16c517c));
-	int n = (int)strlen(buf), i = n - 1;
-	while (i >= 0 && buf[i] != '\\' && buf[i] != '/') i--;
-	memset((void *)rec, 0, 64);
-	if (i + 1 < n) memcpy((void *)rec, buf + i + 1, n - (i + 1));
-	static const short cp[6][2] = { { 0x40, 0x7f38 }, { 0x44, 0x7f3c }, { 0x48, 0x7f40 }, { 0x4c, 0x7f44 }, { 0x50, 0x7f58 },
-	                                { 0x54, 0x7f5c } };
-	for (int k = 0; k < 6; k++) G32(rec + cp[k][0]) = G32(e + 0x16c0000 + cp[k][1]);
-	static const struct { short dst, src; DWORD c; } sc[] = {
-		{ 0x58, 0x7f60, 0x4a9420 }, { 0x5c, 0x7f64, 0x4a9420 }, { 0x60, 0x7f68, 0x4a93ec }, { 0x64, 0x7f6c, 0x4a9420 },
-		{ 0x68, 0x7f70, 0x4a9420 }, { 0x70, 0x7f84, 0x4a94bc }, { 0x74, 0x7f88, 0x4a93ec }, { 0x78, 0x7f8c, 0x4a94bc } };
-	for (unsigned k = 0; k < sizeof sc / sizeof sc[0]; k++) {
-		if (k == 5) G32(rec + 0x6c) = G32(e + 0x16c7f74);
-		GF(rec + sc[k].dst) = (float)((X)GF(e + 0x16c0000 + sc[k].src) * GF(sc[k].c));
-	}
-	G32(rec + 0x7c) = G32(e + 0x16c7f34);
-}
-static void __cdecl armc_41ca50(int slot, int idx) { part_info(0x4dbe50 + slot * 0x80, idx); }
-static void __cdecl armc_41cca0(int idx)
-{
-	part_info(0x4dc150, idx);
-	if (idx != -1 && G32(0x4dc194) == -1) G32(0x4dc198) = idx;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41ca50(int slot, int idx);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41cca0(int idx);
 /* font-atlas cell tables: rows r = r0, r0+rstep, ... < rend; each row has a low and a high edge (filled across the row's
    `cols` entries) and each column a low and a high edge; every value is n * (1/256-ish constant at 0x4a957c) */
-static void glyph_grid(int r0, int rstep, int rend, int rLo, int rHi, int cols, int cstep, int cLo, int cHi,
-                       DWORD fillHi, DWORD fillLo, DWORD colLo, DWORD colHi)
-{
-	typedef long double X;
-	int idx = 0;
-	for (int r = r0; r < rend; r += rstep) {
-		float lo = (float)((X)(r + rLo) * GF(0x4a957c)), hi = (float)((X)(r + rHi) * GF(0x4a957c));
-		for (int c = 0; c < cols; c++) GF(fillHi + (idx + c) * 4) = hi;
-		for (int c = 0; c < cols; c++) GF(fillLo + (idx + c) * 4) = lo;
-		for (int c = 0; c < cols; c++, idx++) {
-			GF(colLo + idx * 4) = (float)((X)(c * cstep + cLo) * GF(0x4a957c));
-			GF(colHi + idx * 4) = (float)((X)(c * cstep + cHi) * GF(0x4a957c));
-		}
-	}
-}
-static void __cdecl app_42f940(void)
-{
-	glyph_grid(0, 16, 0x80, 0, 15, 16, 16, 0, 15, 0x9db0b0, 0x9da4a8, 0x9da90c, 0x9db510);
-	glyph_grid(0, 16, 0x80, 0, 15, 32, 8, 1, 8, 0x67ff64, 0x6803ac, 0x6807ac, 0x67fb64);
-	glyph_grid(0x87, 8, 0xa7, -7, 0, 32, 8, 1, 8, 0x4e0ce4, 0x5b1114, 0x5b1514, 0x4e10e8);
-}
-static void __cdecl hud_42fb40(void)
-{
-	glyph_grid(0, 16, 0x100, 0, 15, 16, 16, 0, 15, 0x4e0474, 0x5b0910, 0x5b0d10, 0x4e0878);
-	glyph_grid(0, 16, 0x60, 0, 15, 16, 16, 0, 15, 0x5b1b64, 0x4e16d8, 0x4e1548, 0x5b199c);
-	glyph_grid(0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, 0x83a7e0, 0x4df638, 0x4df458, 0x83a600);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void app_42f940(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_42fb40(void);
 
 /* ---- batch 20: arena lobby entry, received room settings, key-binding pairs --------------------- */
 /* the four menu camera points used by several screens (x/y at 0x4df870.., z at 0x76d388..) */
@@ -2998,133 +2909,18 @@ static THISCALL void hud_4848e0(char *vv, int id, const DWORD *uv0, const DWORD 
 }
 
 /* ---- batch 26: room / arena menu camera (ease to a menu point, back home, snap) -------------------- */
-typedef struct { DWORD mode, idx, v150; int idxHome, arena; } MenuCam;
-static void ease_from(DWORD a, DWORD target)   /* a -= (a - target) * k * c, as fsub/fmul/fmul/fsubr */
-{
-	typedef long double X;
-	GF(a) = (float)((X)GF(a) - ((X)GF(a) - GF(target)) * GF(0x4b071c) * GF(0x4a93ec));
-}
-static void menu_camera(const MenuCam *m)
-{
-	typedef long double X;
-	if (GF(0x4b071c) > GF(0x4a93d0)) GU32(0x4b071c) = F1;
-	int mode = G32(m->mode);
-	if (mode == 1) {
-		int i = G32(m->idx) * 16;
-		X k = GF(0x4b071c), c = GF(0x4a93ec);
-		GF(0x4df024) = (float)(((X)GF(i + 0x4df870) - GF(0x4df024)) * k * c + GF(0x4df024));
-		if (!m->arena) GF(0x4df028) = (float)(((X)GF(i + 0x4df874) - GF(0x4df028)) * k * c + GF(0x4df028));
-		GF(0x4df02c) = (float)(((X)GF(i + 0x4df878) - GF(0x4df02c)) * k * c + GF(0x4df02c));
-		X l = ((X)GF(i + 0x76d388) - GF(0x680378)) * k * c + GF(0x680378);
-		GF(0x680378) = (float)l;
-		GF(0x68037c) = (float)(((X)GF(i + 0x76d38c) - GF(0x68037c)) * k * c + GF(0x68037c));
-		if (!(l >= GF(0x4a93e8))) l = -l;
-		if (!(l > GD(0x4a93e0))) return;
-		if (!m->arena) {
-			G32(m->mode) = 2;
-			G32(0x4df024) = G32(i + 0x4df870); G32(0x4df028) = G32(i + 0x4df874); G32(0x4df02c) = G32(i + 0x4df878);
-			G32(0x680378) = G32(i + 0x76d388); G32(0x68037c) = G32(i + 0x76d38c); G32(0x680380) = G32(i + 0x76d390);
-			g_menuDialogOpen = 1;
-		} else {                                     /* the arena also records the camera it snapped to */
-			g_menuDialogOpen = 1;
-			G32(0x4df028) = G32(i + 0x4df874); G32(0x4df02c) = G32(i + 0x4df878);
-			volatile X fx = GF(i + 0x4df870);        /* fld/fst/fstp */
-			G32(0x4db844) = G32(0x4df028);
-			GF(0x4df024) = (float)fx;
-			G32(0x680378) = G32(i + 0x76d388); G32(0x68037c) = G32(i + 0x76d38c);
-			GF(0x4db840) = (float)fx;
-			G32(0x680380) = G32(i + 0x76d390);
-			G32(0x4db848) = G32(0x4df02c);
-			G32(m->mode) = 2;
-			G32(0x4dbab8) = G32(0x680378); G32(0x4dbabc) = G32(0x68037c); G32(0x4dbac0) = G32(0x680380);
-		}
-		return;
-	}
-	if (mode != 0) return;
-	X l = GF(0x680378);
-	if (!(l >= GF(0x4a93e8))) l = -l;
-	if (!(l >= GD(0x4a93d8))) {                     /* close enough: snap home */
-		G32(0x680378) = G32(0x76d3f8); G32(0x68037c) = G32(0x76d3fc); G32(0x680380) = G32(0x76d400);
-		G32(m->mode) = 2;
-		G32(0x4df024) = G32(0x9db090); G32(0x4df028) = G32(0x9db094); G32(0x4df02c) = G32(0x9db098);
-		G32(m->idx) = m->idxHome;
-		if (G32(0x67ef14) == 1) G32(0x4deb74) = 0;
-		else GF(0x4e1870) = (float)((long double)G32(0x5b1998) / G32(0x4e045c));
-		return;
-	}
-	if (G32(0x67ef14) == 1) {
-		if (GF(0x4b071c) > GF(0x4a93d0)) GU32(0x4b071c) = F1;
-		GU32(m->v150) = 0x43160000;                  /* 150.0 */
-	}
-	ease_from(0x4df024, 0x9db090); ease_from(0x4df028, 0x9db094); ease_from(0x4df02c, 0x9db098);
-	ease_from(0x680378, 0x76d3f8); ease_from(0x68037c, 0x76d3fc); ease_from(0x680380, 0x76d400);
-}
-static void __cdecl room_437a10(void)
-{
-	static const MenuCam m = { 0x9dce48, 0x9dd834, 0x9dd848, 0x63, 0 };
-	menu_camera(&m);
-}
-static void __cdecl arena_408270(void)
-{
-	static const MenuCam m = { 0x4dbb3c, 0x4db51c, 0x4dbaf4, 5, 1 };
-	menu_camera(&m);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_437a10(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_408270(void);
 
 /* skirmish / mission-select camera: mode 1 flies to the fixed menu point and counts the fade value (0x4e1870) down,
    then snaps to the launch view; mode 0 flies home (fast or slow depending on height), counts the fade up towards
    the ratio 0x5b1998 / 0x4e045c, and when low enough snaps home and returns to the main menu (state 300) */
-typedef struct { DWORD mode, flag, minus1; int mission; } MenuCam2;
-static void menu_camera2(const MenuCam2 *m)
-{
-	typedef long double X;
-	if (GF(0x4b071c) > GF(0x4a9418)) GU32(0x4b071c) = F1;
-	int mode = G32(m->mode);
-	if (mode == 1) {
-		X k = GF(0x4b071c), c = GF(0x4a93ec);
-		static const DWORD cur[6] = { 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380 };
-		static const DWORD tgt[6] = { 0x4df870, 0x4df874, 0x4df878, 0x76d388, 0x76d38c, 0x76d390 };
-		X l = 0;
-		for (int i = 0; i < 6; i++) { l = ((X)GF(tgt[i]) - GF(cur[i])) * k * c + GF(cur[i]); GF(cur[i]) = (float)l; }
-		if (GF(0x4e1870) > GF(0x4a93e8)) GF(0x4e1870) = (float)((X)GF(0x4e1870) - (X)GF(0x4b071c) * GF(0x4a946c));
-		if (!(l > GF(0x4a9474))) return;
-		X r = (X)G32(0x5b1998) / G32(0x4e045c);
-		G32(0x4df024) = 0; GU32(0x4df028) = 0xc3480000; GU32(0x4df02c) = 0x44bb8000;   /* (0, -200, 1500) */
-		G32(0x680378) = 0; GU32(0x68037c) = 0xc3480000; G32(0x680380) = 0;
-		G32(m->mode) = 2; G32(m->flag) = 0; g_menuDialogOpen = 1;
-		GF(0x4e1870) = (float)r;
-		return;
-	}
-	if (mode != 0) return;
-	int fast = GF(0x680380) > GF(0x4a95d8);
-	X c = fast ? GF(0x4a93ec) : GF(0x4a942c);
-	G32(m->flag) = 1;
-	static const DWORD cur[6] = { 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380 };
-	static const DWORD home[6] = { 0x9db090, 0x9db094, 0x9db098, 0x76d3f8, 0x76d3fc, 0x76d400 };
-	for (int i = 0; i < 6; i++) GF(cur[i]) = (float)((X)GF(cur[i]) - ((X)GF(cur[i]) - GF(home[i])) * GF(0x4b071c) * c);
-	X r = (X)G32(0x5b1998) / G32(0x4e045c);
-	if (!(GF(0x4e1870) >= r))
-		GF(0x4e1870) = (float)((X)GF(0x4b071c) * GF(fast ? 0x4a9468 : 0x4a9420) + GF(0x4e1870));
-	if (GF(0x680380) > GF(0x4a95d4)) return;
-	G32(0x680378) = G32(0x76d3f8); G32(0x68037c) = G32(0x76d3fc); G32(0x680380) = G32(0x76d400);
-	if (m->mission) G32(m->mode) = 2;
-	G32(0x4df024) = G32(0x9db090); G32(0x4df028) = G32(0x9db094); G32(0x4df02c) = G32(0x9db098);
-	if (m->mission && G32(0x67ef14) == 1) G32(0x4deb74) = 0;
-	GF(0x4e1870) = (float)r;
-	if (!m->mission) G32(m->mode) = 2;
-	G32(m->minus1) = -1;
-	g_menuState = 300; G32(0x67ef0c) = 300; G32(0x67ef20) = 300;
-	G32(0x4dda44) = 0;
-}
-static void __cdecl skirmish_444130(void)
-{
-	static const MenuCam2 m = { 0x9ef1f0, 0x9eeba8, 0x9ef1f8, 0 };
-	menu_camera2(&m);
-}
-static void __cdecl missionsel_447cb0(void)
-{
-	static const MenuCam2 m = { 0x9f62f8, 0x9f63b8, 0x9f6300, 1 };
-	menu_camera2(&m);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_444130(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_447cb0(void);
 
 /* ---- batch 27: bullet trail ribbon (quads into the view volume) -------------------------------------------------- */
 /* bullet b's trail: a ring of 20 slots (4 points each, 0x30 bytes from +0xd4 of the bullet record) with a time per

@@ -677,4 +677,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define hud_48b450(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
 #define FUN_00467d60(p) GAME_CDECL(0x467d60, u32, void *)(p)   /* p deleted (0 for none) */
 
+#define g_menuState GAME_VAR(int, 0x76d3e8)          /* the front end's screen (300 the main menu) */
+#define arena_4065e0() GAME_CDECL(0x4065e0, void, void)()   /* the session list sorted */
+
 #endif

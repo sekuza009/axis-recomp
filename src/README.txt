@@ -36,7 +36,7 @@ Adding a function
   4. python tools/srcaudit.py (every src function wired in; every patch-DLL call site inside a rebuilt function
      followed), commit; play-test (test3.sh) after a few.
 
-Done so far (547): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (670): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
