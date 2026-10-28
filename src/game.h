@@ -478,4 +478,25 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_hdc GAME_VAR(void *, 0xa0e938)
 #define CoUninitialize() IMPORT(0x4a93b8, void, void)()
 
+/* ---- front-end screens (menu/menu_states.c) ---- */
+#define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
+#define g_progress GAME_VAR(int, 0x9f181c)            /* rounds beaten (missions unlocked) */
+#define armc_enter(tunnel) GAME_CDECL(0x441260, void, void *)(tunnel)   /* moves the background tunnel on */
+#define menu_drawBackground3D(tunnel) GAME_CDECL(0x429d70, void, void *)(tunnel)
+#define mission_4479b0(m) GAME_CDECL(0x4479b0, void, int)(m)
+#define mainmenu_4434f0() GAME_CDECL(0x4434f0, void, void)()
+#define menu_mainMenu() GAME_CDECL(0x442050, void, void)()
+#define mainmenu_442e10() GAME_CDECL(0x442e10, void, void)()
+#define menu_drawDimOverlay() GAME_CDECL(0x40ce70, void, void)()
+#define skirmish_saveSettings() GAME_CDECL(0x443e20, void, void)()
+#define menu_443ea0() GAME_CDECL(0x443ea0, void, void)()
+#define skirmish_processKeys() GAME_CDECL(0x443f20, void, void)()
+#define menu_444070() GAME_CDECL(0x444070, void, void)()
+#define mission_447af0() GAME_CDECL(0x447af0, void, void)()
+#define mission_447a50() GAME_CDECL(0x447a50, void, void)()
+#define mission_4479d0() GAME_CDECL(0x4479d0, void, void)()
+#define FUN_00447960() GAME_CDECL(0x447960, void, void)()
+#define menu_447c30() GAME_CDECL(0x447c30, void, void)()
+#define menu_447b40() GAME_CDECL(0x447b40, void, void)()
+
 #endif

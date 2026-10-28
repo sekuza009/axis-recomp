@@ -6425,7 +6425,8 @@ LIFT_PLAIN(setup_424810, 424810)
 /* batch 131 (lifted/grp77.c): screen dispatchers over the rebuilt screens */
 #include "lifted/grp77.c"
 /* 0x4434f0 mainmenu_4434f0(): the map-select dialog (mainmenu_442e10), or only its frame while a message is open */
-LIFT_PLAIN(mainmenu_4434f0, 4434f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_4434f0(void);
 /* 0x40cf80 lobbyPlayer_draw(): the arena tunnel (arena_4091b0), then in modes other than 0 / 1 (0x4dbb3c) and
    outside sub-state 5 (0x4db51c) the arena name dialog (arena_409bc0) or, while a message is open, its frame */
 LIFT_PLAIN(lobbyPlayer_draw, 40cf80)
@@ -6801,7 +6802,8 @@ void sound_playMenu(int id);
 LIFT_PLAIN(skirmish_443c80, 443c80)
 LIFT_PLAIN(FUN_00447960, 447960)
 /* 0x4479b0 mission_4479b0(m): the mission m chosen (0x9f6328, 0x9f63b0 = 1), menu sound 2 */
-LIFT_PLAIN(mission_4479b0, 4479b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mission_4479b0(int mission);
 /* batch 162 (lifted/grp108.c): skirmish / mission settings input, the room and arena text fields */
 #include "lifted/grp108.c"
 /* 0x443e20 skirmish_saveSettings(): no dialog open: a right click leaves (skirmish_443c80); a left click on the
@@ -6830,11 +6832,14 @@ void room_434320(void);
 void arena_editTextField_405010(void);
 /* 0x443ef0 menu_443ef0() / 0x4440f0 menu_4440f0(): no dialog open: the skirmish settings (page 0x9ef1f8 10) or undo
    screen (0x14) mouse / keys (0x4440f0 only while 0x9ef1f0 is past 1) */
-LIFT_PLAIN(menu_443ef0, 443ef0)
-LIFT_PLAIN(menu_4440f0, 4440f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_443ef0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_4440f0(void);
 /* 0x447b10 mission_unlockCheat(): no dialog, not busy (0x9f6300): the unlock screen 0x9f62e0 (mission_447af0) or
    the mission settings mouse (mission_447a50) */
-LIFT_PLAIN(mission_unlockCheat, 447b10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mission_unlockCheat(void);
 /* 0x405200 FUN_00405200() / 0x434da0 room_434da0(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): start
    the arena / room chat line (flag 0x4db8bc / 0x9dd6b4) */
 LIFT_PLAIN(FUN_00405200, 405200)
@@ -6867,14 +6872,17 @@ LIFT_PLAIN(lobbyCreate_draw, 40d390)
 /* batch 164 (lifted/grp110.c): mission settings keys, three jump stubs */
 #include "lifted/grp110.c"
 /* 0x447c30 menu_447c30(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
-LIFT_PLAIN(menu_447c30, 447c30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_447c30(void);
 /* 0x447b40 menu_447b40(): the mission settings keys: cancel / 0x4e0cdc leave (FUN_00447960), 0x4e1510 start
    (mission_4479d0), 0x9dae14 / 0x9db974 the mission down / up within the unlocked count 0x9f181c and 0..14
    (mission_4479b0); holding 0x6803a8 and 0x4df9fc and pressing 0x4df90c unlocks all 16 (the cheat) */
-LIFT_PLAIN(menu_447b40, 447b40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_447b40(void);
 /* 0x447c70 menu_447c70(): in the mission settings (0x9f62f8 past 1), no dialog, not busy (0x9f6300): the unlock
    screen's keys (0x9f62e0) or the settings keys */
-LIFT_PLAIN(menu_447c70, 447c70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_447c70(void);
 /* jump stubs: 0x44aa30 missionsel_44aa30 -> missionsel_drawScreen, 0x445bd0 skirmish_445bd0 ->
    skirmish_drawScreenB, 0x4532e0 jmp_net_getLocalAddress_4532e0 -> net_getLocalAddress */
 LIFT_PLAIN(missionsel_44aa30, 44aa30)
@@ -7249,7 +7257,8 @@ static THISCALL DWORD bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWOR
    the slot open or released), room_435c20, with their callees stubbed (tools/gentests.py); match_4620e0 and
    arena_453090 by hand */
 #include "lifted/grp130.c"
-LIFT_PLAIN(menu_drawBackground, 441740)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawBackground(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_454940(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7268,7 +7277,8 @@ LIFT_PLAIN8(arena_453090, 453090)
    address resolved, that kind's slot connected, the player id), with their callees stubbed (tools/gentests.py) */
 #include "lifted/grp131.c"
 #include "lifted/grp132.c"
-LIFT_PLAIN(menuState300_frame, 443530)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState300_frame(void);
 LIFT_PLAIN(menuState600_setup, 427920)
 LIFT_PLAIN(menuState900_skirmishSetup, 445be0)
 LIFT_PLAIN(menuState210_frame, 44f860)
@@ -15493,7 +15503,7 @@ T_PLAIN(setup_424810, 0x424810, sound_setup();, 0, 0, 0, 0, 0)
 /* each dispatcher's screens as their own tests set them up, a message open now and then (dlgwin_setup's
    0x90d1c4), the modes and tabs that choose the dialog */
 static void mapselect2_setup(void) { mapselect_setup(); G32(0x90d1c4) = irnd(0, 3) ? 0 : 1; }
-T_PLAIN(mainmenu_4434f0, 0x4434f0, mapselect2_setup();, 0, 0, 0, 0, 0)
+ST(mainmenu_4434f0, mapselect2_setup();, CALL_PLAIN(0x4434f0, 0, 0, 0, 0, 0), (mainmenu_4434f0(), 0))
 static void arenaplayer_setup(void)
 {
 	tunnels_setup(); arenaname_setup();          /* the dialog rebuilds the texture set: the tunnel's slots from the new one */
@@ -16354,7 +16364,7 @@ T_PLAIN(input_isDown, 0x401590, keys_setup();, 0, g_a[0], 0, 0, 0)
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 T_PLAIN(skirmish_443c80, 0x443c80, menusnd_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_00447960, 0x447960, menusnd_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(mission_4479b0, 0x4479b0, menusnd_setup();, 0, g_a[3], 0, 0, 0)
+ST(mission_4479b0, menusnd_setup();, CALL_PLAIN(0x4479b0, 0, g_a[3], 0, 0, 0), (mission_4479b0((DWORD)(g_a[3])), 0))
 /* batch 162 */
 /* the settings screens: the skirmish lists (sk_setup), keyboard (keys_setup) and menu sounds (menusnd_setup), the
    save file, the undo history; dialog open or not, clicks; the skirmish and mission button tables with the cursor
@@ -16392,9 +16402,9 @@ T_PLAIN(menu_444070, 0x444070, menudisp_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(skirmish_processKeys, 0x443f20, menudisp_setup();, 0, 0, 0, 0, 0)
 ST(room_434320, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (room_434320(), 0))
 ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editTextField_405010(), 0))
-T_PLAIN(menu_443ef0, 0x443ef0, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(menu_4440f0, 0x4440f0, menudisp_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(mission_unlockCheat, 0x447b10, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(menu_443ef0, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (menu_443ef0(), 0))
+ST(menu_4440f0, menudisp_setup();, CALL_PLAIN(0x4440f0, 0, 0, 0, 0, 0), (menu_4440f0(), 0))
+ST(mission_unlockCheat, menudisp_setup();, CALL_PLAIN(0x447b10, 0, 0, 0, 0, 0), (mission_unlockCheat(), 0))
 T_PLAIN(FUN_00405200, 0x405200, menudisp_setup();, 0, 0, 0, 0, 0)
 ST(room_434da0, menudisp_setup();, CALL_PLAIN(0x434da0, 0, 0, 0, 0, 0), (room_434da0(), 0))
 /* batch 163 */
@@ -16452,9 +16462,9 @@ static void missionkeys_setup(void)
 static const DWORD g_stubMissionDraw[] = { 0x449a50, 0, 0 };
 static const DWORD g_stubSkirmishDraw[] = { 0x4456b0, 0, 0 };
 static const DWORD g_stubLocalAddr[] = { 0x454220, 0, 0 };
-T_PLAIN(menu_447c30, 0x447c30, missionkeys_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(menu_447b40, 0x447b40, missionkeys_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(menu_447c70, 0x447c70, missionkeys_setup();, 0, 0, 0, 0, 0)
+ST(menu_447c30, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (menu_447c30(), 0))
+ST(menu_447b40, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (menu_447b40(), 0))
+ST(menu_447c70, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (menu_447c70(), 0))
 T_PLAIN(missionsel_44aa30, 0x44aa30, callee_stubs(g_stubMissionDraw, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(skirmish_445bd0, 0x445bd0, callee_stubs(g_stubSkirmishDraw, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(jmp_net_getLocalAddress_4532e0, 0x4532e0, callee_stubs(g_stubLocalAddr, 0);, 0, 0, 0, 0, 0)
@@ -17240,7 +17250,7 @@ ST(bullet_playImpactSound, rankactors_setup(g_stubImpact);,
 static const DWORD g_gs_441740[] = { 0x41ef90, 1, 0x429d70, 1, 0x441260, 1, 0 };
 static const DWORD g_gi_441740[] = { 0x67fb3c, 0 };
 static const DWORD g_gb_441740[] = { 0 };
-T_PLAIN(menu_drawBackground, 0x441740, gen_setup(g_gs_441740, g_gi_441740, g_gb_441740);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_drawBackground, gen_setup(g_gs_441740, g_gi_441740, g_gb_441740);, CALL_PLAIN(0x441740, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (menu_drawBackground(), 0))
 static const DWORD g_gs_454940[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x4549a0, 0, 0 };
 static const DWORD g_gi_454940[] = { 0xa0d7a4, 0 };
 static const DWORD g_gb_454940[] = { 0 };
@@ -17277,7 +17287,7 @@ ST(arena_453090, G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); for (int
 static const DWORD g_gs_443530[] = { 0x40ce70, 0, 0x441250, 1, 0x441740, 0, 0x442050, 0, 0x4434f0, 0, 0 };
 static const DWORD g_gi_443530[] = { 0x67ef14, 0x67ef20, 0x9eeab4, 0 };
 static const DWORD g_gb_443530[] = { 0 };
-T_PLAIN(menuState300_frame, 0x443530, gen_setup(g_gs_443530, g_gi_443530, g_gb_443530);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState300_frame, gen_setup(g_gs_443530, g_gi_443530, g_gb_443530);, CALL_PLAIN(0x443530, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (menuState300_frame(), 0))
 static const DWORD g_gs_427920[] = { 0x4230e0, 0, 0x423330, 0, 0x4277c0, 0, 0x427830, 0, 0x427880, 0, 0x4278d0, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_427920[] = { 0x4ddac8, 0 };
 static const DWORD g_gb_427920[] = { 0 };

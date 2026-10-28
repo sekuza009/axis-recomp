@@ -12,7 +12,6 @@
 #define g_soundSettings ((int *)0x4e0c90)             /* the sound settings in use */
 #define g_graphicEdited ((const u32 *)0x4ddba0)       /* the graphics tab's seven values being edited */
 #define g_graphicSettings ((u32 *)0x83a9c0)           /* the graphics settings in use (g_items3D is the third) */
-#define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
 
 /* 0x422b30: the tab's page (nothing while a dialog is up) */
 void (setup_drawTab)(void)

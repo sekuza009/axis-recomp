@@ -1,4 +1,4 @@
-"""srcaudit.py: checks for the readable rebuilds in src/:
+r"""srcaudit.py: checks for the readable rebuilds in src/:
 1. every function defined in src/ ("ret (name)(...)") is wired into recomp.c as a readable rebuild (not a lifted
    wrapper or a hand-written static), so the tests run it;
 2. no address the patch DLL rewrites (axisnet_recomp.c: (BYTE *)0x4..... sites and the wrapped call table) lies
@@ -24,4 +24,12 @@ for a in sorted(sites):
     own = [n for b, z, n in fns if b <= a < b + z]
     if own and own[0] in names and ('%x' % a) not in alltext and ('%x' % (a + 6)) not in alltext:
         print('PATCH-DLL SITE NOT FOLLOWED: %#x in %s' % (a, own[0])); bad += 1
+# 3. a call from src to a function rebuilt in src must go through its game.h name (the original address), so the
+#    installed version runs and the harness can stub it; without one it calls the C function directly
+game = open('src/game.h').read()
+for n in sorted(names):
+    if re.search(r'#define %s\(' % n, game): continue
+    for f, t in src.items():
+        if re.search(r'(?<![\w(])%s\(' % n, t):
+            print('DIRECT CALL (no game.h name): %s in %s' % (n, f)); bad += 1
 print('%d functions in src, %d problems' % (len(names), bad))
