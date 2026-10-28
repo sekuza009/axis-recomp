@@ -315,19 +315,71 @@ static int hit_rect(int x, int y, DWORD base, DWORD limit)
 	X(0x44b2a0, 0x9f9028, 0x9f9048, profile_44b2a0) X(0x44b320, 0x9f6810, 0x9f6830, profile_44b320) \
 	X(0x44b360, 0x9f8ef0, 0x9f8f10, profile_44b360) X(0x44b3a0, 0x9f8d80, 0x9f8e50, profile_44b3a0) \
 	X(0x44b3e0, 0x9f8f40, 0x9f8ff0, profile_44b3e0)
-#define X(addr, base, limit, name) static int __cdecl name(int x, int y) { return hit_rect(x, y, base, limit); }
-HIT_TESTS(X)
-#undef X
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4033e0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_404460(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4044a0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4044e0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_4045a0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_40e450(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_40e490(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_40e4d0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int setup_420670(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int setup_4206b0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int setup_4206f0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int setup_420730(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_4321c0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432200(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432240(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432280(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_4322c0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432300(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432340(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_432380(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_4323c0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int mainmenu_440b70(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int skirmish_4438d0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int skirmish_443910(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int missionsel_447710(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b260(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b2a0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b320(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b360(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b3a0(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_44b3e0(int x, int y);
 
-/* 0x404520 arena create-screen hit-test: two tables, chosen by [0x4db55c]; the second numbers from 16 */
-static int __cdecl arena_404520(int x, int y)
-{
-	if (G32(0x4db55c)) {
-		int i = hit_rect(x, y, 0x4db6f0, 0x4db710);
-		return i < 0 ? -1 : i + 16;
-	}
-	return hit_rect(x, y, 0x4db5f0, 0x4db6f0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_404520(int x, int y);
 
 /* 0x445ee0 save_cryptRecord(rec, key): XOR the 0x3ac-byte profile record with key, key+1, ...
    The original meant to wrap the key at 0xa5 back to 0x7e, but compares the sign-extended byte with the
