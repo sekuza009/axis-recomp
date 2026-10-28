@@ -19422,8 +19422,12 @@ static void hook(DWORD addr, void *fn, const char *name)
 	}
 	{	/* rebuilt and bit-exact, but the patch DLL tells its caller by the return address of a call it makes, which a
 		   lifted function cannot give: hook_glViewport widens the 2D viewport during the HUD only for a call from
-		   gfx_setProjection2D3D's cave (return address 0x4a8fdd); lifted, the HUD lost its right edge */
-		static const DWORD keep[] = { 0x41ef90 };
+		   gfx_setProjection2D3D's cave (return address 0x4a8fdd); lifted, the HUD lost its right edge.
+		   hud_drawMain (0x4926f0, readable in src/hud/hud_main.c): hook_glVertex2i anchors each part of the main HUD to
+		   the left or right edge of a wide screen by the return address of its glVertex2i calls (inside 0x4926f0 ..
+		   0x494930) and, for text, digits and icons, by finding the call site's return address on the stack; called
+		   from recomp.dll it found neither, so everything was centred (the "1/8" rank over the FPS counter) */
+		static const DWORD keep[] = { 0x41ef90, 0x4926f0 };
 		for (unsigned i = 0; i < sizeof keep / sizeof keep[0]; i++)
 			if (keep[i] == addr) { say("  KEPT ORIGINAL %08lx %s (the patch DLL checks its return address)\n", addr, name); return; }
 	}

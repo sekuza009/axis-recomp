@@ -34,4 +34,4 @@ hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps
 hud_drawPressFire, hud_drawReadyStart, hud_drawClock,
 hud_drawMatchResult, hud_drawRecordIndicator, hud_drawNameIcon, hud_drawLeaderIcon,
 hud_drawEscMenu, hud_495ed0,
-hud_drawPlayerMarkers, hud_drawMain | replay_drawMessage, replay_drawFollowedName.
+hud_drawPlayerMarkers, hud_drawMain (kept on the original in play: see recomp.c hook()) | replay_drawMessage, replay_drawFollowedName.
