@@ -380,3 +380,117 @@ u32 (lobby_406bd0)(void)
 	}
 	return (u32)(button - 1);
 }
+
+/* ---- the lobby's per-frame dispatch by sub-screen (0x4db51c): drawing and clicks. Each returns what the handler it
+   ends in leaves in eax (or the sub-screen when there is none) ---- */
+#define CALL(addr) GAME_CDECL(addr, u32, void)()
+
+/* 0x40d450: the lobby drawn: the top (5: its title, or the dim overlay while connecting to a ladder game), else the
+   background, the camera and the sub-screen (0 the player, 1 the arena list, 2 creating an arena) */
+u32 (menuState400_frame)(void)
+{
+	u32 screen = GAME_VAR(u32, 0x4db51c);
+	switch (screen) {
+	case 5:
+		CALL(0x40cef0);   /* lobbyTop_draw */
+		menu_drawBackground();
+		if (GAME_VAR(int, 0x67ef14) == 1 && GAME_VAR(int, 0x4dbb3c) == 2)
+			return CALL(0x40ce70);   /* menu_drawDimOverlay */
+		return CALL(0x408680);       /* lobbyTop_drawTitle */
+	case 0:
+		menu_drawBackground();
+		CALL(0x408270);              /* arena_408270: the lobby's camera */
+		return CALL(0x40cf80);       /* lobbyPlayer_draw */
+	case 1:
+		menu_drawBackground();
+		CALL(0x408270);
+		return CALL(0x40cfd0);       /* lobbyJoin_draw */
+	case 2:
+		menu_drawBackground();
+		CALL(0x408270);
+		return CALL(0x40d390);       /* lobbyCreate_draw */
+	}
+	return screen;
+}
+
+/* 0x4076c0: the lobby's clicks: the top (lobby_406950), the player (lobby_406a60), the arena list (its close button
+   while closing, the quit dialog while open, else connecting), creating an arena (the list's dialog, the map list,
+   else the quit dialog if open, then the screen's clicks) */
+u32 (lobby_onStateChange)(void)
+{
+	u32 screen = GAME_VAR(u32, 0x4db51c);
+	switch (screen) {
+	case 5:
+		return CALL(0x406950);
+	case 0:
+		return CALL(0x406a60);
+	case 1:
+		if (GAME_VAR(int, 0x4db8b4))
+			return CALL(0x406b60);   /* lobby_close */
+		if (GAME_VAR(int, 0x907b2c))
+			return CALL(0x406bd0);   /* lobby_406bd0 */
+		return CALL(0x406c30);       /* lobby_connect */
+	case 2:
+		if (GAME_VAR(int, 0x907b2c))
+			return CALL(0x407270);   /* lobby_407270 */
+		if (GAME_VAR(int, 0x4db508))
+			return CALL(0x4036c0);   /* room_4036c0: the map list */
+		if (GAME_VAR(int, 0x4db55c))
+			CALL(0x407300);          /* lobby_407300 */
+		return CALL(0x407410);       /* arena_createClick */
+	}
+	return screen;
+}
+
+/* 0x406b60: a click on the arena list's close button (mode 2, no dialog open): the list closed, the session search
+   stopped (arena_452fe0) and its timer (0x378) killed. Returns what the original leaves in eax */
+u32 (lobby_close)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (!g_mouseClick || GAME_VAR(int, 0x4dbb3c) != 2)
+		return g_mouseClick;
+	GAME_VAR(int, 0x4dda44) = 0;
+	u32 hit = GAME_CDECL(0x4044e0, u32, int, int)(g_mouseX, g_mouseY);   /* the close button's hit test */
+	if (hit)
+		return hit;
+	GAME_VAR(int, 0x4dbb10) = 0;
+	GAME_VAR(int, 0x4dbb78) = 0;
+	CALL(0x452fe0);   /* arena_452fe0 */
+	GAME_VAR(int, 0x4db8b4) = 0;
+	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
+}
+
+/* 0x403870: the map list's keys: the first key toggles the map (room_403640) - or, read a second time, closes the
+   list with a sound -, the others move the cursor up and down */
+u32 (FUN_00403870)(void)
+{
+	if (input_justPressed(GAME_VAR(int, 0x4e1510)))
+		return CALL(0x403640);   /* room_403640 */
+	if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
+		u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
+		GAME_VAR(int, 0x4db508) = 0;
+		return r;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
+		return CALL(0x4034e0);   /* room_4034e0 */
+	u32 r = input_justPressed(GAME_VAR(int, 0x4e0ce0));
+	if (r)
+		return CALL(0x403530);   /* room_403530 */
+	return r;
+}
+
+/* 0x435a40: leaving the game room: the room's name sent to the others (message 0x19, 0x65 bytes), a pause of half a
+   second, back to the main menu (state 300), the connection closed, the mech reloaded from the profile */
+u32 (room_leaveGame)(void)
+{
+	strcpy(GAME_VAR(char *, 0xa0b33c), (const char *)0x9dd570);
+	GAME_CDECL(0x4521c0, int, int, int)(0x19, 0x65);   /* net_send */
+	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
+	GAME_CDECL(0x441250, void, int)(4);                 /* set_680370_441250 */
+	GAME_VAR(int, 0x67ef20) = 300;
+	GAME_CDECL(0x48b420, void, void)();                 /* nullsub_48b420 */
+	GAME_CDECL(0x451e60, void, void)();                 /* net_disconnect */
+	GAME_VAR(int, 0x9dd84c) = 0;
+	return CALL(0x4463a0);                              /* FUN_004463a0 */
+}

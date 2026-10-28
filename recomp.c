@@ -2580,7 +2580,8 @@ static DWORD run_lifted_regs(void (*f)(X86 *), DWORD eax, DWORD ecx, DWORD edx, 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_0046cbe0(BYTE *p, DWORD size, DWORD count, void *f);
 /* 0x46cc30 FUN_0046cc30: scramble, fwrite, unscramble. Lifted */
-LIFT_PLAIN(FUN_0046cc30, 46cc30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_0046cc30(BYTE *p, DWORD size, DWORD count, void *f);
 /* 0x42c650 cfg_parsePlayer: write the player section of axis.cfg. Lifted */
 LIFT_PLAIN(cfg_parsePlayer, 42c650)
 /* 0x42c910 cfg_parseSound: write the sound section of axis.cfg. Lifted */
@@ -3143,7 +3144,8 @@ LIFT_PLAIN(room_434d00, 434d00)
 LIFT_PLAIN(room_4334c0, 4334c0)
 LIFT_PLAIN(room_434b90, 434b90)
 LIFT_PLAIN(room_434820, 434820)
-LIFT_PLAIN(room_leaveGame, 435a40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_leaveGame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_44aee0(void);
 LIFT_PLAIN(match_4327f0, 4327f0)
@@ -3590,7 +3592,8 @@ static THISCALL DWORD shape_bindTextureBy(char *shape, DWORD sfx, DWORD flags, D
 }
 /* 0x466650 (thiscall) FUN_00466650(): with GL_TEXTURE_2D enabled, bind every part's texture (+0x44 >= 0: set
    index / 512, texture % 512) */
-static THISCALL DWORD FUN_00466650(char *shape) { return run_lifted(lift_466650, (DWORD)shape, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_00466650(char *shape);
 /* batch 84 (lifted/grp30.c) */
 #include "lifted/grp30.c"
 /* 0x466dc0 (thiscall) shape_getByName(name, bind): the shape cache, as skel_getSkeletonPtrBy (upper-cased name,
@@ -4937,8 +4940,10 @@ int arena_454c50(int a1, int a2, int a3, int a4);
 int arena_454d60(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_coInit(void);
-LIFT_PLAIN(lobby_close, 406b60)
-LIFT_PLAIN(FUN_00403870, 403870)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_close(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_00403870(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435f40(void);
 LIFT_PLAIN(room_435e70, 435e70)
@@ -5128,8 +5133,10 @@ LIFT_PLAIN(lobbyJoin_draw, 40cfd0)
    from a launch file), with their callees stubbed (tools/gentests.py) */
 #include "lifted/grp135.c"
 #include "lifted/grp136.c"
-LIFT_PLAIN(lobby_onStateChange, 4076c0)
-LIFT_PLAIN(menuState400_frame, 40d450)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_onStateChange(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menuState400_frame(void);
 LIFT_PLAIN(menu_onStateChange, 445e40)
 LIFT_PLAIN(room_43e290, 43e290)
 LIFT_PLAIN(arena_launchFromFile, 410b50)
@@ -9125,7 +9132,8 @@ ST(FUN_0046ca70, vfs_content(0, 0); fill_str(BUF + 0x100, 40, 32, 126); for (cha
 ST(FUN_0046cbe0, vfs_content(0, 0x400); fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);,
    CALL_PLAIN(0x46cbe0, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(0)),
    (DWORD)FUN_0046cbe0((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(0)))
-T_PLAIN(FUN_0046cc30, 0x46cc30, fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(1))
+ST(FUN_0046cc30, fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0, 100);, CALL_PLAIN(0x46cc30, 0, BUF + 0x1000, g_a[0], g_a[1], VFS_FILE(1)),
+   (DWORD)FUN_0046cc30((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(1)))
 T_PLAIN(cfg_parsePlayer, 0x42c650, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, 0, VFS_FILE(0), 0, 0, 0)
 T_PLAIN(cfg_parseSound, 0x42c910, , 0, VFS_FILE(0), 0, 0, 0)
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
@@ -10107,7 +10115,7 @@ T_PLAIN(room_434d00, 0x434d00, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_4334c0, 0x4334c0, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_434b90, 0x434b90, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_434820, 0x434820, netstate_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(room_leaveGame, 0x435a40, netstate_setup();, 0, 0, 0, 0, 0)
+ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
 T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup();, 0, 0, 0, 0, 0)
@@ -14722,11 +14730,11 @@ ST(dplay_coInit, gen_setup(g_gs_453720, g_gi_453720, g_gb_453720);, CALL_PLAIN(0
 static const DWORD g_gs_406b60[] = { 0x4044e0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_406b60[] = { 0x4db8b4, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dda44, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x90d1c4, 0 };
 static const DWORD g_gb_406b60[] = { 0 };
-T_PLAIN(lobby_close, 0x406b60, gen_setup(g_gs_406b60, g_gi_406b60, g_gb_406b60);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_close, gen_setup(g_gs_406b60, g_gi_406b60, g_gb_406b60);, CALL_PLAIN(0x406b60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_close()))
 static const DWORD g_gs_403870[] = { 0x401600, 1, 0x4034e0, 0, 0x403530, 0, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_403870[] = { 0x4db508, 0x4e0cd4, 0x4e0ce0, 0x4e1510, 0 };
 static const DWORD g_gb_403870[] = { 0 };
-T_PLAIN(FUN_00403870, 0x403870, gen_setup(g_gs_403870, g_gi_403870, g_gb_403870);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(FUN_00403870, gen_setup(g_gs_403870, g_gi_403870, g_gb_403870);, CALL_PLAIN(0x403870, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(FUN_00403870()))
 static const DWORD g_gs_435f40[] = { 0x41e760, 1, 0x432340, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_435f40[] = { 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dda44, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x90d1c4, 0x9dce48, 0 };
 static const DWORD g_gb_435f40[] = { 0 };
@@ -15207,11 +15215,11 @@ T_PLAIN(lobbyJoin_draw, 0x40cfd0, gen_setup(g_gs_40cfd0, g_gi_40cfd0, g_gb_40cfd
 static const DWORD g_gs_4076c0[] = { 0x4036c0, 0, 0x406950, 0, 0x406a60, 0, 0x406b60, 0, 0x406bd0, 0, 0x406c30, 0, 0x407270, 0, 0x407300, 0, 0x407410, 0, 0 };
 static const DWORD g_gi_4076c0[] = { 0x4db508, 0x4db51c, 0x4db55c, 0x4db8b4, 0x907b2c, 0 };
 static const DWORD g_gb_4076c0[] = { 0 };
-T_PLAIN(lobby_onStateChange, 0x4076c0, gen_setup(g_gs_4076c0, g_gi_4076c0, g_gb_4076c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_onStateChange, gen_setup(g_gs_4076c0, g_gi_4076c0, g_gb_4076c0);, CALL_PLAIN(0x4076c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_onStateChange()))
 static const DWORD g_gs_40d450[] = { 0x408270, 0, 0x408680, 0, 0x40ce70, 0, 0x40cef0, 0, 0x40cf80, 0, 0x40cfd0, 0, 0x40d390, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_40d450[] = { 0x4db51c, 0x4dbb3c, 0x67ef14, 0 };
 static const DWORD g_gb_40d450[] = { 0 };
-T_PLAIN(menuState400_frame, 0x40d450, gen_setup(g_gs_40d450, g_gi_40d450, g_gb_40d450);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState400_frame, gen_setup(g_gs_40d450, g_gi_40d450, g_gb_40d450);, CALL_PLAIN(0x40d450, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState400_frame()))
 static const DWORD g_gs_445e40[] = { 0x4076c0, 0, 0x410190, 0, 0x422b30, 0, 0x42ab70, 0, 0x436800, 0, 0x4419d0, 0, 0x443ef0, 0, 0x445c60, 0, 0x445de0, 0, 0x445e10, 0, 0x447b10, 0, 0x44c560, 0, 0 };
 static const DWORD g_gi_445e40[] = { 0x4df900, 0x680370, 0x76d3e8, 0 };
 static const DWORD g_gb_445e40[] = { 0 };

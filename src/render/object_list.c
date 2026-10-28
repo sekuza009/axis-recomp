@@ -139,3 +139,16 @@ void THISCALL (actor_46fed0)(u8 *list)
 			FUN_00466650(shape);
 	}
 }
+
+/* 0x466650: the textures of a shape's parts (their texture id at +0x44, none when negative) bound in turn, with
+   texturing on during it */
+void THISCALL (FUN_00466650)(u8 *shape)
+{
+	glEnable(GL_TEXTURE_2D);
+	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
+		int id = FIELD(int, FIELD(u8 *, shape, 0x14) + i * 0x80, 0x44);
+		if (id >= 0)
+			tex_bind(g_textures->managers[id / 512], id % 512);
+	}
+	glDisable(GL_TEXTURE_2D);
+}

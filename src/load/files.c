@@ -106,3 +106,22 @@ u32 THISCALL (chat_saveMacros)(Scene *scene)
 		((u8 *)scene)[0x2340d3d + k * 0x39] = 0;
 	return GAME_THISCALL(0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros */
 }
+
+/* 0x46cc30: count records of size bytes written scrambled (each byte rotated right by one, xor 0x59), then put back
+   as they were. Returns fwrite's count */
+u32 (FUN_0046cc30)(u8 *p, u32 size, u32 count, void *f)
+{
+	int n = (int)(size * count);
+	for (int i = 0; i < n; i++) {
+		u8 c = p[i];
+		p[i] = (u8)(c >> 1 | c << 7);
+		p[i] ^= 0x59;
+	}
+	u32 r = crt_fwrite(p, size, count, f);
+	for (int i = 0; i < n; i++) {
+		u8 c = p[i] ^ 0x59;
+		p[i] = c;
+		p[i] = (u8)(c << 1 | c >> 7);
+	}
+	return r;
+}
