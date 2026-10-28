@@ -1,7 +1,8 @@
-/* hud_escmenu.c: the in-match menu (Esc): its pages, each a grey title box and white item boxes (hud_495ed0),
+/* hud_escmenu.c: the in-match menu (Esc) and its boxes: its pages, each a grey title box and white item boxes (hud_495ed0),
    fading in over its first quarter second. The item under the cursor (scene->escCursor) is drawn bright. */
 #include "../game.h"
 #include <string.h>
+#include "hud.h"
 
 /* an item's text colour: bright yellow-white under the cursor, else grey */
 static void esc_itemColour(int selected, float alpha)
@@ -131,4 +132,59 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 		esc_yesNo(scene, alpha);
 		break;
 	}
+}
+
+/* 0x495ed0 (hud_495ed0): a menu box: the rectangle (x0, y0) - (x1, y1) in HUD units with a 32-unit border around
+   it, drawn as nine quads (corners, edges, middle) from the 3 x 3 cells of 32 texels at the top left of the menu
+   texture (scene->menuBoxTexture) */
+void THISCALL (hud_495ed0)(Scene *scene, int x0, int y0, int x1, int y1)
+{
+	int left[9], top[9], right[9], bottom[9];
+	int sx0 = hud_toScreenX(x0), sy0 = hud_toScreenY(y0), sx1 = hud_toScreenX(x1), sy1 = hud_toScreenY(y1);
+	for (int k = 0; k < 9; k++) {
+		switch (k % 3) {
+		case 0: {
+			float fx = (float)sx0;
+			left[k] = ftol(fx - 32.0f / ((long double)640.0f / gfx_getWidth()));
+			right[k] = sx0;
+			break;
+		}
+		case 1: left[k] = sx0; right[k] = sx1; break;
+		case 2:
+			left[k] = sx1;
+			right[k] = ftol(32.0f / ((long double)640.0f / gfx_getWidth()) + sx1);
+			break;
+		}
+		switch (k / 3) {
+		case 0: {
+			float fy = (float)sy0;
+			top[k] = ftol(fy - 32.0f / ((long double)480.0f / gfx_getHeight()));
+			bottom[k] = sy0;
+			break;
+		}
+		case 1: top[k] = sy0; bottom[k] = sy1; break;
+		case 2:
+			top[k] = sy1;
+			bottom[k] = ftol(32.0f / ((long double)480.0f / gfx_getHeight()) + sy1);
+			break;
+		}
+	}
+	glEnable(GL_TEXTURE_2D);
+	tex_bind(g_textures->managers[scene->menuBoxTexture / 512], scene->menuBoxTexture % 512);
+	glBegin(GL_QUADS);
+	for (int k = 0; k < 9; k++) {
+		int row = k / 3, col = k % 3;
+		float t0 = (float)((long double)(row * 32) * (1.0f / 256)), s0 = (float)((long double)(col * 32) * (1.0f / 256));
+		float s1 = (float)((long double)((col + 1) * 32) * (1.0f / 256)), t1 = (float)((long double)((row + 1) * 32) * (1.0f / 256));
+		glTexCoord2f(s0, t0);
+		glVertex2i(left[k], gfx_getHeight() - top[k]);
+		glTexCoord2f(s1, t0);
+		glVertex2i(right[k], gfx_getHeight() - top[k]);
+		glTexCoord2f(s1, t1);
+		glVertex2i(right[k], gfx_getHeight() - bottom[k]);
+		glTexCoord2f(s0, t1);
+		glVertex2i(left[k], gfx_getHeight() - bottom[k]);
+	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }

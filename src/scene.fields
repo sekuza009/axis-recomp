@@ -38,6 +38,7 @@ struct Scene 0x2343b0b                                          # the scene: the
 0x38       4          float fps                                  # frames per second, shown by hud_drawFps
 0x179d1f6  0x47fd20   FlagSlot flags[16]
 0xbc06b0   4          i32 emblemTexture                          # texture id (manager * 512 + slot): emblems, 10 a row from texel 224
+0xbc06b4   4          i32 menuBoxTexture                         # texture id of the menu box cells
 0xbe16f8   4          i32 fogOn                                  # 1: the screen is cleared to the fog colour
 0xbe16fc   0xc        u32 fogColour[3]                           # r, g, b (floats, passed on unchanged)
 0xbe170c   4          i32 fogInOverlay                           # 1: the stage's fog volume is drawn in the 2D pass

@@ -73,7 +73,8 @@ typedef struct Scene {
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
 	u8 _pad0bc06a4[0xc];
 	i32 emblemTexture;   /* +0xbc06b0: texture id (manager * 512 + slot): emblems, 10 a row from texel 224 */
-	u8 _pad0bc06b4[0x21044];
+	i32 menuBoxTexture;   /* +0xbc06b4: texture id of the menu box cells */
+	u8 _pad0bc06b8[0x21040];
 	i32 fogOn;   /* +0xbe16f8: 1: the screen is cleared to the fog colour */
 	u32 fogColour[3];   /* +0xbe16fc: r, g, b (floats, passed on unchanged) */
 	u8 _pad0be1708[0x4];
@@ -216,6 +217,7 @@ _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
 _Static_assert(offsetof(Scene, emblemTexture) == 0xbc06b0 && sizeof(((Scene *)0)->emblemTexture) == 0x4, "scene.fields: Scene.emblemTexture");
+_Static_assert(offsetof(Scene, menuBoxTexture) == 0xbc06b4 && sizeof(((Scene *)0)->menuBoxTexture) == 0x4, "scene.fields: Scene.menuBoxTexture");
 _Static_assert(offsetof(Scene, fogOn) == 0xbe16f8 && sizeof(((Scene *)0)->fogOn) == 0x4, "scene.fields: Scene.fogOn");
 _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fogColour) == 0xc, "scene.fields: Scene.fogColour");
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");

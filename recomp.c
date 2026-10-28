@@ -6137,12 +6137,8 @@ static THISCALL DWORD hud_496f20(char *sc, DWORD scale) { DWORD v[1] = { scale }
 /* batch 107 (lifted/grp53.c) */
 #include "lifted/grp53.c"
 /* 0x495ed0 (thiscall) hud_495ed0(x, y, w, h): a HUD panel: the rectangle in 640 x 480 units scaled to the window
-   (gfx_getWidth / gfx_getHeight), drawn as a textured quad (texture +0xbc06b4, the full image) */
-static THISCALL DWORD hud_495ed0(char *self, DWORD x, DWORD y, DWORD w, DWORD h)
-{
-	DWORD v[4] = { x, y, w, h };
-	return run_lifted(lift_495ed0, (DWORD)self, 4, v);
-}
+   (gfx_getWidth / gfx_getHeight), drawn as nine textured quads (texture +0xbc06b4) */
+void THISCALL hud_495ed0(void *scene, int x0, int y0, int x1, int y1);
 /* batch 108 (lifted/grp54.c) */
 #include "lifted/grp54.c"
 /* 0x485af0 (thiscall on a view volume) render_drawObjects(mode, b): draw what ViewVolume_projectObject queued. The
@@ -14417,7 +14413,7 @@ static void hudpanel_setup(void)
 	g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500); g_a[2] = irnd(-20, 400); g_a[3] = irnd(-20, 300);
 }
 ST(hud_495ed0, hudpanel_setup();, (TC(void, 0x495ed0, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
-   (hud_495ed0(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3]), 0))
+   (hud_495ed0(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 /* batch 108 */
 /* a view volume (BUF + 0x100000) with 0..3 materials (no texture, or a GL slot owner of menutex_setup's set + 1),
    each with a chain of 1..3 items over 4 meshes (shade_setup-like parts with positions, normals, colours, texture
