@@ -329,7 +329,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_432280(x, y) GAME_CDECL(0x432280, int, int, int)(x, y)
 #define room_432340(x, y) GAME_CDECL(0x432340, int, int, int)(x, y)
 #define room_434320() GAME_CDECL(0x434320, void, void)()   /* open the message field */
-#define profile_41e7a0(message) GAME_CDECL(0x41e7a0, void, int)(message)   /* (unclear) posts a front-end message */
+#define profile_41e7a0(code) GAME_CDECL(0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
+#define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
+#define profile_44bc50() GAME_CDECL(0x44bc50, void, void)()
+#define profile_44e640() GAME_CDECL(0x44e640, void, void)()
 #define arena_452fe0() GAME_CDECL(0x452fe0, void, void)()
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
 #define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */

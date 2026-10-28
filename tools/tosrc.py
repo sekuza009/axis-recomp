@@ -31,7 +31,11 @@ for arg in sys.argv[1:]:
         g = t[0].groups()
         c = call
         for k, a in enumerate(g[3:7]): c = re.sub(r'\ba%d\b' % (k + 1), '(DWORD)(%s)' % a.strip(), c)
-        new = 'ST(%s, %s, CALL_PLAIN(%s, %s, %s, %s, %s, %s), (%s, 0))%s' % (name, g[1], g[0], g[2], g[3], g[4], g[5], g[6], c, nl)
+        # a function that returns a value keeps it compared; a void one returns 0 on its side (the original's eax is
+        # then compared against 0: when that fails, check the callers with tools/eaxuse.py and wrap the original side)
+        ret = c if void else '(DWORD)(%s)' % c
+        new = 'ST(%s, %s, CALL_PLAIN(%s, %s, %s, %s, %s, %s), %s%s' % (name, g[1], g[0], g[2], g[3], g[4], g[5], g[6],
+                                                             '(%s, 0))' % c if void else ret + ')', nl)
         s = s[:t[0].start()] + new + s[t[0].end():]
     else:
         st = list(re.finditer(r'ST\(%s, .*' % name, s))

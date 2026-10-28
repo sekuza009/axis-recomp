@@ -31,7 +31,7 @@ Adding a function
      the test reaches; a weak test should be strengthened first.
   4. Commit; play-test (test3.sh) after a few.
 
-Done so far (162): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (168): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -44,7 +44,8 @@ armc_drawPartScreen, armc_exit, armc_41b300 (the preview camera) | msg: msg_serv
 networkUnstable / fragLimitReached / timeLimitReached / dataLoss, msg_4629f0 (msg_print), msg_playerLeft,
 msg_cheatUsed, msg_playerConnected, msg_kill, msg_chatLine, msg_playerJoinedTeam | match: scene_findTeam,
 scene_teamSide | setup: setup_drawTab, setup_processTabKeys, setup_topPageKeys / soundTabKeys /
-graphicTabKeys, setup_427830 / 427880 / 4278d0 | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
+graphicTabKeys, setup_427830 / 427880 / 4278d0 | profile_41e7a0 (quit with a code), profile_44f850, profile_44b600 / 44b670 /
+44b6e0 / 44f810 | net: the DirectPlay slots (arena_454940 .. 454d60, 20) and
 arena_453770 | text_draw5 / 8 / 16 / 32,
 text_draw8b, text_drawBox16, hud_403210, hud_402db0, text_drawSized, hud_44ae10 (text/ complete) | hud_pass,
 hud_drawRanking, hud_drawLockOn, hud_496240, hud_4950a0, hud_46bd00, hud_drawFps, hud_4953d0, hud_4955a0,

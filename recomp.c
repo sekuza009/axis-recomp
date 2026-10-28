@@ -4890,7 +4890,8 @@ LIFT_PLAIN(net_454740, 454740)
 /* 0x46c580 FUN_0046c580: message box (title, text) on the active window */
 LIFT_PLAIN(FUN_0046c580, 46c580)
 /* 0x41e7a0 profile_41e7a0: post a message to the main window */
-LIFT_PLAIN(profile_41e7a0, 41e7a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_41e7a0(int code);
 /* 0x41ef60 menu_vertex: a menu vertex (glVertex2i of scaled coordinates) */
 static DWORD __cdecl menu_vertex(int x, int y)
 {
@@ -4956,7 +4957,8 @@ static THISCALL DWORD dplay_enumSessionsCallback(DWORD ecx_, DWORD a, DWORD b, D
 	DWORD a5, DWORD a6, DWORD a7, DWORD a8) \
 	{ DWORD v[8] = { a1, a2, a3, a4, a5, a6, a7, a8 }; return run_lifted_regs(lift_##a, eax_, ecx_, edx_, 8, v); }
 /* 0x44f850 profile_44f850: post message 0 to the main window */
-LIFT_PLAIN(profile_44f850, 44f850)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44f850(void);
 /* 0x41e730 intro_41e730(double frames): busy-wait until `frames` 1/60 s have passed (timer_now) */
 LIFT_PLAIN(intro_41e730, 41e730)
 /* 0x435ab0 room_435ab0 / 0x406bd0 lobby_406bd0 / 0x407270 lobby_407270: the "leave" dialog's click handlers (button
@@ -6549,7 +6551,8 @@ LIFT_PLAIN(arena_createDraw, 40b750)
 #include "lifted/grp88.c"
 /* 0x44f810 profile_44f810(): the pilot-select dialog (profile_44e640), its colours refreshed first when asked
    (0x9f8d68: profile_44bc50), or only its frame while a message is open */
-LIFT_PLAIN(profile_44f810, 44f810)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44f810(void);
 /* 0x43ede0 room_43ede0(): the ranking page: a pending request (0x9dd350) for sort column 0x9dd1d0 sends packet
    0x15 / 0x65 (code 0x25 / 0x23 / 0x26 and the first rank of page 0x9dd6ac, stored as in room_43d060) and starts
    waiting (0x9dd6b8, blink 1000), column 3 just clears it; the room tunnel (room_4388e0); then, in room modes
@@ -6871,11 +6874,14 @@ LIFT_PLAIN(jmp_net_getLocalAddress_4532e0, 4532e0)
 #include "lifted/grp111.c"
 /* 0x44b600 profile_44b600(): start typing a profile name: keyboard released, input cleared, the edit box at the
    name field (0x9f8ea8 + 0x38, 0x9f8eac + 0x24), page 2, a dialog open, the edit window created */
-LIFT_PLAIN(profile_44b600, 44b600)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b600(void);
 /* 0x44b670 profile_44b670() / 0x44b6e0 profile_44b6e0(): open the delete (page 3, box at 0x9f8f0c / 0x9f8f1c) or
    load (page 5, box at 0x9f683c / 0x9f6834) confirmation: menu sound 0, a dialog open, its pop-in animation */
-LIFT_PLAIN(profile_44b670, 44b670)
-LIFT_PLAIN(profile_44b6e0, 44b6e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b670(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44b6e0(void);
 /* the profile pages' mouse (a left click on the page's buttons, a right click back to page 1):
    0x44c390 profile_44c390(): delete confirmation (0x44b320): yes deletes (profile_deleteFiles), no;
    0x44c400 profile_44c400(): load confirmation (0x44b360): yes loads (profile_44bc00), no;
@@ -11399,7 +11405,7 @@ T_PLAIN(gfx_swapBuffers, 0x4685d0, , 0, 0, 0, 0, 0)
 T_PLAIN(arena_4539f0, 0x4539f0, fill(BUF + 0x100, 8);, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(net_454740, 0x454740, , 0, 0, 0, 0, 0)
 T_PLAIN(FUN_0046c580, 0x46c580, strs_setup();, 0, BUF + 0x100, BUF + 0x200, 0, 0)
-T_PLAIN(profile_41e7a0, 0x41e7a0, g_a[0] = irnd(-5, 5);, 0, g_a[0], 0, 0, 0)
+ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
 ST(menu_vertex, g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);, CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), menu_vertex(g_a[0], g_a[1]))
 T_PLAIN(mci_pause, 0x46c540, , 0, 0, 0, 0, 0)
 T_PLAIN(FUN_0043f980, 0x43f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, 0, 0, 0, 0, 0)
@@ -11458,7 +11464,8 @@ static void dlgclick_setup(DWORD table)
 	G32(0x4ded88) = irnd(0, 2) != 0; G32(0x4ded8c) = !irnd(0, 2);
 	G32(0x4dbab0) = !irnd(0, 6); G32(0x4db850) = !irnd(0, 6); G32(0x4db518) = !irnd(0, 6); G32(0x4dbacc) = !irnd(0, 6);
 }
-T_PLAIN(profile_44f850, 0x44f850, , 0, 0, 0, 0, 0)
+/* profile_44f850 leaves PostMessage's result in eax; menu_frame reloads eax after it (tools/eaxuse.py) */
+ST(profile_44f850, , (CALL_PLAIN(0x44f850, 0, 0, 0, 0, 0), 0), (profile_44f850(), 0))
 /* the wait in frames as a double (two stack slots); the mocked counter advances by 0x1234567 per read */
 static double g_frames;
 T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0)
@@ -15809,7 +15816,7 @@ static void pilotselect2_setup(void)
 	pilotselect_setup();
 	G32(0x9f8d68) = irnd(0, 1); G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-T_PLAIN(profile_44f810, 0x44f810, pilotselect2_setup();, 0, 0, 0, 0, 0)
+ST(profile_44f810, pilotselect2_setup();, CALL_PLAIN(0x44f810, 0, 0, 0, 0, 0), (profile_44f810(), 0))
 /* the ranking dispatcher: netstate_setup's packet buffers (0xa0b324 among them), the room tunnel, the ranking table
    (its setup rebuilds the texture set: the tunnel's slots from the new one), the room list room_435770 reads, a
    request pending or not for columns 0..3, waiting, an answer in, room modes and sub-states, a message open */
@@ -16140,14 +16147,14 @@ static void dplay_setup(void)
 }
 T_PLAIN(dplay_release, 0x453920, dplay_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(dplay_enumSessions, 0x453fd0, dplay_setup();, 0, 0, 0, 0, 0)
-ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (arena_4549a0(), 0))
-ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (arena_4549c0(), 0))
-ST(arena_454ac0, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (arena_454ac0(), 0))
-ST(arena_454ae0, dplay_setup();, CALL_PLAIN(0x454ae0, 0, 0, 0, 0, 0), (arena_454ae0(), 0))
-ST(arena_454bd0, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (arena_454bd0(), 0))
-ST(arena_454bf0, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (arena_454bf0(), 0))
-ST(arena_454ce0, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (arena_454ce0(), 0))
-ST(arena_454d00, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (arena_454d00(), 0))
+ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (DWORD)arena_4549a0())
+ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (DWORD)arena_4549c0())
+ST(arena_454ac0, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (DWORD)arena_454ac0())
+ST(arena_454ae0, dplay_setup();, CALL_PLAIN(0x454ae0, 0, 0, 0, 0, 0), (DWORD)arena_454ae0())
+ST(arena_454bd0, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (DWORD)arena_454bd0())
+ST(arena_454bf0, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (DWORD)arena_454bf0())
+ST(arena_454ce0, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (DWORD)arena_454ce0())
+ST(arena_454d00, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (DWORD)arena_454d00())
 T_PLAIN(arena_453260, 0x453260, dplay_setup();, 0, 0, 0, 0, 0)
 /* batch 157 */
 static LONG dp_err(void)   /* a success, or one of the DirectPlay results the callers tell apart */
@@ -16457,9 +16464,9 @@ static void profilepage_setup(void)
 	G32(0x9f8d30) = irnd(-1, 12);
 	G32(0x9f8d74) = irnd(0, 15);   /* the selected profile: an index into the table at 0x9f684c (PROFILE_VARS fills it) */
 }
-T_PLAIN(profile_44b600, 0x44b600, profilepage_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44b670, 0x44b670, profilepage_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44b6e0, 0x44b6e0, profilepage_setup();, 0, 0, 0, 0, 0)
+ST(profile_44b600, profilepage_setup();, CALL_PLAIN(0x44b600, 0, 0, 0, 0, 0), (profile_44b600(), 0))
+ST(profile_44b670, profilepage_setup();, CALL_PLAIN(0x44b670, 0, 0, 0, 0, 0), (profile_44b670(), 0))
+ST(profile_44b6e0, profilepage_setup();, CALL_PLAIN(0x44b6e0, 0, 0, 0, 0, 0), (profile_44b6e0(), 0))
 T_PLAIN(profile_44c390, 0x44c390, profilepage_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(profile_44c400, 0x44c400, profilepage_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(profile_44c480, 0x44c480, profilepage_setup();, 0, 0, 0, 0, 0)
@@ -16668,7 +16675,7 @@ static void small_setup(const DWORD *stubs)
 	callee_key(0x401600, irnd(0, 2) ? 0x21 + irnd(0, 1) : -1);
 	callee_ret(0x432280, (DWORD)irnd(-1, 2));
 }
-ST(arena_453770, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (arena_453770(), 0))
+ST(arena_453770, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (DWORD)arena_453770())
 T_PLAIN(wnd_4014c0, 0x4014c0, small_setup(g_stubInputOff);, 0, 0, 0, 0, 0)
 ST(arena_4549e0, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x4549e0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
@@ -16676,8 +16683,8 @@ ST(arena_4549e0, small_setup(g_stubHost);,
 ST(arena_454b00, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454b00)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
    arena_454b00(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454a20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
-ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
+ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454a20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
+ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 ST(room_403530, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), (room_403530(), 0))
 ST(room_4034e0, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (room_4034e0(), 0))
 T_PLAIN(lobbyJoin_keys, 0x407970, small_setup(g_stubKeyClose);, 0, 0, 0, 0, 0)
@@ -16840,11 +16847,11 @@ ST(msg_timeLimitReached, gen_setup(g_gs_462fd0, g_gi_462fd0, g_gb_462fd0); fill(
 static const DWORD g_gs_454c50[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454c50[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454c50[] = { 0 };
-ST(arena_454c50, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, CALL_PLAIN(0x454c50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454c50((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
+ST(arena_454c50, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, CALL_PLAIN(0x454c50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454c50((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 static const DWORD g_gs_454d60[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454d60[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454d60[] = { 0 };
-ST(arena_454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0x454d60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454d60((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
+ST(arena_454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0x454d60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454d60((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 static const DWORD g_gs_453720[] = { 0x453770, 0, 0x453920, 0, 0 };
 static const DWORD g_gi_453720[] = { 0xa0b42c, 0xa0b430, 0xa0b434, 0xa0b438, 0 };
 static const DWORD g_gb_453720[] = { 0xa0b470, 0 };
@@ -17226,19 +17233,19 @@ T_PLAIN(menu_drawBackground, 0x441740, gen_setup(g_gs_441740, g_gi_441740, g_gb_
 static const DWORD g_gs_454940[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x4549a0, 0, 0 };
 static const DWORD g_gi_454940[] = { 0xa0d7a4, 0 };
 static const DWORD g_gb_454940[] = { 0 };
-ST(arena_454940, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, CALL_PLAIN(0x454940, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454940((DWORD)(g_a[0])), 0))
+ST(arena_454940, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, CALL_PLAIN(0x454940, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454940((DWORD)(g_a[0])))
 static const DWORD g_gs_454a50[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ac0, 0, 0 };
 static const DWORD g_gi_454a50[] = { 0xa0d7a8, 0 };
 static const DWORD g_gb_454a50[] = { 0 };
-ST(arena_454a50, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, CALL_PLAIN(0x454a50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454a50((DWORD)(g_a[0])), 0))
+ST(arena_454a50, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, CALL_PLAIN(0x454a50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454a50((DWORD)(g_a[0])))
 static const DWORD g_gs_454b70[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454bd0, 0, 0 };
 static const DWORD g_gi_454b70[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454b70[] = { 0 };
-ST(arena_454b70, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, CALL_PLAIN(0x454b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454b70((DWORD)(g_a[0])), 0))
+ST(arena_454b70, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, CALL_PLAIN(0x454b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454b70((DWORD)(g_a[0])))
 static const DWORD g_gs_454c80[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ce0, 0, 0 };
 static const DWORD g_gi_454c80[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454c80[] = { 0 };
-ST(arena_454c80, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAIN(0x454c80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_454c80((DWORD)(g_a[0])), 0))
+ST(arena_454c80, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAIN(0x454c80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454c80((DWORD)(g_a[0])))
 static const DWORD g_gs_435c20[] = { 0x41e760, 1, 0x432240, 2, 0x433d30, 0, 0x433e60, 1, 0x434640, 0, 0x4346c0, 0, 0 };
 static const DWORD g_gi_435c20[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0 };
 static const DWORD g_gb_435c20[] = { 0 };
