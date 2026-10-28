@@ -44,6 +44,13 @@
 #define glFogf_stored(pname, v) IMPORT(0x4a9280, void, u32, u32)(pname, v)
 #define glHint(target, mode) IMPORT(0x4a924c, void, u32, u32)(target, mode)
 #define glPushMatrix() IMPORT(0x4a9204, void, void)()
+#define glLoadIdentity() IMPORT(0x4a9218, void, void)()
+#define glGetFloatv(pname, out) IMPORT(0x4a9270, void, u32, float *)(pname, out)
+#define glLoadMatrixf(m) IMPORT(0x4a926c, void, const float *)(m)
+#define glVertex3fv(v) IMPORT(0x4a9290, void, const float *)(v)
+/* GLU, through the game's jump to its import */
+#define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
+	double, double))0x4509d2)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT(0x4a9258, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
 #define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
@@ -172,7 +179,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define ViewVolume_projectObject(view, model, extra, matrix, a4, colour, cull, material, a8) GAME_THISCALL(0x4853c0, void, void *, \
 	void *, u32, const float *, int, const void *, int, int, int)(view, model, extra, matrix, a4, colour, cull, material, a8)
 #define render_drawObjects(view, mode, alpha) GAME_THISCALL(0x485af0, void, void *, int, float)(view, mode, alpha)
-#define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, void *, float)(stage, scale)
+#define hud_496f20(stage, scale) GAME_THISCALL(0x496f20, void, Stage *, float)(stage, scale)   /* the sky (render/sky.c) */
 #define render_processRenderingBy(stage, view, scale) GAME_THISCALL(0x497d20, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
 #define STAGE(scene) ((Stage *)((u8 *)(scene) + 0x1f36c8))

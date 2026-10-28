@@ -12,7 +12,7 @@ void THISCALL (hud_490b30)(Stage *stage, int i, void *view)
 	Model *model = o->model;
 	if (model == NULL)
 		return;
-	float r = (float)((long double)model->radius + stage->cullMargin);
+	float r = f32((long double)model->radius + stage->cullMargin);
 	/* the low sides first, then the high ones; a NaN passes both tests */
 	for (int k = 0; k < 3; k++)
 		if ((long double)stage->cameraPos[k] - r > o->pos[k])

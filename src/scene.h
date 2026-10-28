@@ -191,7 +191,22 @@ typedef struct Stage {
 	u32 glFogStart;   /* +0x9ee058: (floats, kept as bits) */
 	u32 glFogEnd;   /* +0x9ee05c */
 	u32 glFogDensity;   /* +0x9ee060 */
-	u8 _pad09ee064[0x92cde0];
+	i32 skyMode;   /* +0x9ee064: the sky sphere: 0 none, 1 the upper half, 2 whole (render/sky.c) */
+	i32 skyTextures[6];   /* +0x9ee068: one per face (texture ids) */
+	float skySphere[6][7][7][3];   /* +0x9ee080: per face a 7 x 7 grid of points (scaled 10000 when drawn) */
+	i32 layerMode;   /* +0x9eee48: cloud layers: 0 none, 1 one, 2 two */
+	i32 layerTextures[2];   /* +0x9eee4c */
+	float layer[7][7][3];   /* +0x9eee54: the layers' grid (scaled 10000) */
+	u8 _pad09ef0a0[0x8];
+	float layerScroll[2];   /* +0x9ef0a8: u, v: the layers' texture offset */
+	i32 sideMode;   /* +0x9ef0b0: side walls: 0 none, 1 low, else high */
+	i32 sideTextures[6];   /* +0x9ef0b4 */
+	float sides[6][8][3];   /* +0x9ef0cc: per wall eight points; the first four give x and z (scaled 8000) */
+	i32 floorOn;   /* +0x9ef30c: 1: the animated floor under the sky */
+	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
+	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale hud_496f20 gets) */
+	i32 floorFrame;   /* +0x9ef8fc */
+	u8 _pad09ef900[0x92b544];
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
 	u8 _pad13c9b28[0x90f880];
@@ -202,7 +217,9 @@ typedef struct Stage {
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
 	u8 _pad20f2da4[0xbcc];
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
-	u8 _pad20f397c[0x164];
+	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
+	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
+	u8 _pad20f3994[0x14c];
 	ItemType itemTypes[64];   /* +0x20f3ae0: (count unclear) */
 	u8 _pad20f5ee0[0x4f18];
 	MapItem items[200];   /* +0x20fadf8 */
@@ -440,6 +457,20 @@ _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, glFogStart) == 0x9ee058 && sizeof(((Stage *)0)->glFogStart) == 0x4, "scene.fields: Stage.glFogStart");
 _Static_assert(offsetof(Stage, glFogEnd) == 0x9ee05c && sizeof(((Stage *)0)->glFogEnd) == 0x4, "scene.fields: Stage.glFogEnd");
 _Static_assert(offsetof(Stage, glFogDensity) == 0x9ee060 && sizeof(((Stage *)0)->glFogDensity) == 0x4, "scene.fields: Stage.glFogDensity");
+_Static_assert(offsetof(Stage, skyMode) == 0x9ee064 && sizeof(((Stage *)0)->skyMode) == 0x4, "scene.fields: Stage.skyMode");
+_Static_assert(offsetof(Stage, skyTextures) == 0x9ee068 && sizeof(((Stage *)0)->skyTextures) == 0x18, "scene.fields: Stage.skyTextures");
+_Static_assert(offsetof(Stage, skySphere) == 0x9ee080 && sizeof(((Stage *)0)->skySphere) == 0xdc8, "scene.fields: Stage.skySphere");
+_Static_assert(offsetof(Stage, layerMode) == 0x9eee48 && sizeof(((Stage *)0)->layerMode) == 0x4, "scene.fields: Stage.layerMode");
+_Static_assert(offsetof(Stage, layerTextures) == 0x9eee4c && sizeof(((Stage *)0)->layerTextures) == 0x8, "scene.fields: Stage.layerTextures");
+_Static_assert(offsetof(Stage, layer) == 0x9eee54 && sizeof(((Stage *)0)->layer) == 0x24c, "scene.fields: Stage.layer");
+_Static_assert(offsetof(Stage, layerScroll) == 0x9ef0a8 && sizeof(((Stage *)0)->layerScroll) == 0x8, "scene.fields: Stage.layerScroll");
+_Static_assert(offsetof(Stage, sideMode) == 0x9ef0b0 && sizeof(((Stage *)0)->sideMode) == 0x4, "scene.fields: Stage.sideMode");
+_Static_assert(offsetof(Stage, sideTextures) == 0x9ef0b4 && sizeof(((Stage *)0)->sideTextures) == 0x18, "scene.fields: Stage.sideTextures");
+_Static_assert(offsetof(Stage, sides) == 0x9ef0cc && sizeof(((Stage *)0)->sides) == 0x240, "scene.fields: Stage.sides");
+_Static_assert(offsetof(Stage, floorOn) == 0x9ef30c && sizeof(((Stage *)0)->floorOn) == 0x4, "scene.fields: Stage.floorOn");
+_Static_assert(offsetof(Stage, floorTextures) == 0x9ef310 && sizeof(((Stage *)0)->floorTextures) == 0x40, "scene.fields: Stage.floorTextures");
+_Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor) == 0x5ac, "scene.fields: Stage.floor");
+_Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
@@ -447,6 +478,8 @@ _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
+_Static_assert(offsetof(Stage, viewDir) == 0x20f397c && sizeof(((Stage *)0)->viewDir) == 0xc, "scene.fields: Stage.viewDir");
+_Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->viewUp) == 0xc, "scene.fields: Stage.viewUp");
 _Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
 _Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
 _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");

@@ -6159,7 +6159,8 @@ LIFT_PLAIN(menu_drawBackground3D, 429d70)
    (+0x9ef0b0; textures +0x9ef0b4.., heights +0x9ef0d4..) scaled by the camera height, and the animated floor
    (+0x9ef30c; frame textures +0x9ef310.., vertices +0x9ef358..) under linear fog (hud_472900) with texture
    coordinates from the camera position */
-static THISCALL DWORD hud_496f20(char *sc, DWORD scale) { DWORD v[1] = { scale }; return run_lifted(lift_496f20, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_496f20(void *stage, DWORD scale);
 /* batch 107 (lifted/grp53.c) */
 #include "lifted/grp53.c"
 /* 0x495ed0 (thiscall) hud_495ed0(x, y, w, h): a HUD panel: the rectangle in 640 x 480 units scaled to the window

@@ -110,6 +110,20 @@ struct Stage 0x2150443                                          # the stage: the
 0x9ee058   4          u32 glFogStart                             # (floats, kept as bits)
 0x9ee05c   4          u32 glFogEnd
 0x9ee060   4          u32 glFogDensity
+0x9ee064   4          i32 skyMode                                # the sky sphere: 0 none, 1 the upper half, 2 whole (render/sky.c)
+0x9ee068   0x18       i32 skyTextures[6]                         # one per face (texture ids)
+0x9ee080   0xdc8      float skySphere[6][7][7][3]                # per face a 7 x 7 grid of points (scaled 10000 when drawn)
+0x9eee48   4          i32 layerMode                              # cloud layers: 0 none, 1 one, 2 two
+0x9eee4c   8          i32 layerTextures[2]
+0x9eee54   0x24c      float layer[7][7][3]                       # the layers' grid (scaled 10000)
+0x9ef0a8   8          float layerScroll[2]                       # u, v: the layers' texture offset
+0x9ef0b0   4          i32 sideMode                               # side walls: 0 none, 1 low, else high
+0x9ef0b4   0x18       i32 sideTextures[6]
+0x9ef0cc   0x240      float sides[6][8][3]                       # per wall eight points; the first four give x and z (scaled 8000)
+0x9ef30c   4          i32 floorOn                                # 1: the animated floor under the sky
+0x9ef310   0x40       i32 floorTextures[16]                      # its animation frames
+0x9ef350   0x5ac      float floor[11][11][3]                     # its grid (times the scale hud_496f20 gets)
+0x9ef8fc   4          i32 floorFrame
 0x131ae44  0xaece0    MapObject objects[1000]
 0x13c9b24  4          i32 objectCount
 0x1cd93a8  0x355520   Player actors[100]                         # the actor slots (Scene.players, the players' actors first)
@@ -120,6 +134,8 @@ struct Stage 0x2150443                                          # the stage: the
 0x20fcd38  4          i32 itemCount
 0x202e8c8  4          i32 actorCount                             # slots in use (the highest claimed + 1)
 0x20f3970  0xc        float cameraPos[3]                         # (by use) the centre of the camera box objects are tested against
+0x20f397c  0xc        float viewDir[3]                           # (by use) the camera's direction (the sky's look-at)
+0x20f3988  0xc        float viewUp[3]                            # (by use) the camera's up
 
 struct Scene 0x2343b0b                                          # the scene: the one large object of a match, built by game_loadAllData
 8          4          i32 network                                # (by use) 1: a network game (3: (unclear) another mode, no team marks) (JOIN, RECORD and TEAM in the menu; the ranking shows each player's own flag, from flagGlTexture)

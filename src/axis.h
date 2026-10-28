@@ -36,6 +36,15 @@ static inline int ftol(long double x)
 	return (int)r;
 }
 
+/* x rounded to a float, as the original's fstp dword does. Needed wherever a rounded value is used again in
+   arithmetic: clang keeps x87 temporaries at 80 bits even through a (float) cast or a float variable, and rounds
+   only when the value goes to memory (a store, an argument). */
+static inline float f32(long double x)
+{
+	volatile float r = (float)x;
+	return r;
+}
+
 /* a game function at its original address, as a callable expression */
 #define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(addr))
 #define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(addr))
