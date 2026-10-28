@@ -55,10 +55,3 @@ void (music_shutdown)(void)
 	g_music = NULL;
 	CoUninitialize();
 }
-
-/* 0x4685d0: the frame finished and shown (SwapBuffers' result) */
-int (gfx_swapBuffers)(void)
-{
-	glFinish();
-	return SwapBuffers(g_hdc);
-}

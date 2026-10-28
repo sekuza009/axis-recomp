@@ -14,7 +14,7 @@ for arg in sys.argv[1:]:
     decl, _, call = arg.partition(';')
     decl = decl.strip().rstrip(';') + ';'
     name = re.search(r'(\w+)\s*\(', decl).group(1)
-    void = decl.startswith('void ')
+    void = re.match(r'void\s+(?!\*)', decl) is not None and not re.match(r'void\s*\*', decl)
     # the wrapper
     pats = [r'LIFT_PLAIN8?\(%s, [0-9a-f]+\)' % name,
             r'static THISCALL DWORD %s\([^)]*\) \{ (?:DWORD v\[\d\] = \{[^}]*\}; )?return run_lifted\([^;]*\); \}' % name,

@@ -128,3 +128,13 @@ void (menu_447c70)(void)
 	else
 		menu_447b40();
 }
+
+/* 0x41edc0 (FUN_0041edc0): back to the main menu: the background tunnel freed ring by ring (last first), the menus
+   entered again, state 300 */
+void (FUN_0041edc0)(void)
+{
+	while (g_tunnel != NULL)
+		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
+	game_returnToMenus_41e9d0();
+	g_screen = 300;
+}

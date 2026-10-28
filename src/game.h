@@ -513,4 +513,19 @@ typedef struct { float r, g, b, a; } Colour;
 #define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
 #define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
 
+/* ---- objects, Win32, GL helpers (app/objects.c, app/win32.c, render/gl_helpers.c) ---- */
+#define gfx_initVertexArrayExt(view) GAME_THISCALL(0x483fd0, int, void *)(view)   /* frees the view's vertex buffer, finds GL_EXT_vertex_array */
+#define ViewVolume_dtor(view) GAME_THISCALL(0x483fb0, int, void *)(view)
+#define Console_dtor(console) GAME_THISCALL(0x460c40, void, void *)(console)   /* named Console_ctor in symbols.csv */
+#define Stage_dtor(stage) GAME_THISCALL(0x46ff70, void, Stage *)(stage)
+#define operator_delete(p) GAME_CDECL(0x49ef24, void, void *)(p)
+#define GetCurrentDirectoryA(size, out) IMPORT(0x4a9108, u32, u32, char *)(size, out)
+#define GetActiveWindow() IMPORT(0x4a9320, void *, void)()
+#define MessageBoxA(hwnd, text, title, type) IMPORT(0x4a9324, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
+#define mciSendCommandA(device, msg, flags, params) IMPORT(0x4a9368, u32, u32, u32, u32, void *)(device, msg, flags, params)
+#define glRotatef_bits(angle, x, y, z) IMPORT(0x4a91f8, void, u32, u32, u32, u32)(angle, x, y, z)
+#define arena_editTextField_405010() GAME_CDECL(0x405010, void, void)()
+#define armc_freeRing(first) GAME_CDECL(0x441190, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
+#define game_returnToMenus_41e9d0() GAME_CDECL(0x41e9d0, void, void)()
+
 #endif

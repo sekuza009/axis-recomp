@@ -4880,7 +4880,8 @@ static THISCALL DWORD chat_macro(char *self, DWORD in, DWORD out) { DWORD v[2] =
 	{ DWORD v[4] = { a1, a2, a3, a4 }; LSTK_BEGIN(mm, 4, v) mm.eax = eax_; mm.ecx = ecx_; mm.edx = edx_; \
 	  lift_##a(&mm); LSTK_END(); return mm.ft ? mm.fs[mm.ft - 1] : 0.0L; }
 /* 0x43f580 GetCurrentDirectoryA_wrap_43f580: the current directory into the game path buffer */
-LIFT_PLAIN(GetCurrentDirectoryA_wrap_43f580, 43f580)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD GetCurrentDirectoryA_wrap_43f580(void);
 /* 0x4685d0 gfx_swapBuffers: glFinish + SwapBuffers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_swapBuffers(void);
@@ -4891,7 +4892,8 @@ long arena_4539f0(void **out);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_454740(void);
 /* 0x46c580 FUN_0046c580: message box (title, text) on the active window */
-LIFT_PLAIN(FUN_0046c580, 46c580)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_0046c580(const char *title, const char *text);
 /* 0x41e7a0 profile_41e7a0: post a message to the main window */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_41e7a0(int code);
@@ -4903,7 +4905,8 @@ static DWORD __cdecl menu_vertex(int x, int y)
 	return ((DWORD (WINAPI *)(int, int))*(DWORD *)0x4a91f4)(fx, G32(0x4e045c) - fy);
 }
 /* 0x46c540 mci_pause: pause the CD/MCI music */
-LIFT_PLAIN(mci_pause, 46c540)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mci_pause(void);
 /* 0x43f980 FUN_0043f980: read the edit control text */
 LIFT_PLAIN(FUN_0043f980, 43f980)
 /* 0x41edf0 sys_messageBox: formatted error message box */
@@ -4949,7 +4952,8 @@ LIFT_PLAIN(profile_save, 446a10)
 /* 0x4301e0 timer_now(): seconds from QueryPerformanceCounter (returned in ST0) */
 LIFT_PLAIN_FP(timer_now, 4301e0)
 /* 0x463830 (thiscall) Stage_deletingDtor(flags) */
-static THISCALL DWORD Stage_deletingDtor(char *self, DWORD fl) { DWORD v[1] = { fl }; return run_lifted_regs(lift_463830, 0, (DWORD)self, 0, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Stage_deletingDtor(void *stage, int flags);
 /* 0x453560 dplay_enumSessionsCallback(desc, timeout, flags, context) (stdcall): copy one found session into the list */
 static THISCALL DWORD dplay_enumSessionsCallback(DWORD ecx_, DWORD a, DWORD b, DWORD c, DWORD d) { DWORD v[4] = { a, b, c, d }; return run_lifted_regs(lift_453560, 0, ecx_, 0, 4, v); }
 /* batch 48: menu input handlers, screen setups, rect/line drawing, the timer setup, the save scan, the autoplay
@@ -5211,7 +5215,8 @@ static THISCALL DWORD actor_applyRemoteColours(char *scene, DWORD p, DWORD part,
 /* 0x401290 load_401290(p, size, n, ctor) (stdcall): call ctor n times (an object-array constructor loop) */
 static DWORD WINAPI load_401290(DWORD p, DWORD size, DWORD n, DWORD ctor) { DWORD v[4] = { p, size, n, ctor }; return run_lifted(lift_401290, 0, 4, v); }
 /* 0x41ef20 FUN_0041ef20(x, y, z): rotate about x, then y, then z */
-LIFT_PLAIN(FUN_0041ef20, 41ef20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0041ef20(DWORD x, DWORD y, DWORD z);
 /* 0x470fc0 FUN_00470fc0(a, b, c, fmt, ...): format the message and pass it to the log hook (0xae2ec8) if set */
 LIFT_PLAIN8(FUN_00470fc0, 470fc0)
 /* 0x454760 net_454760: close the two network thread handles; 0x454690 net_454690: clear the server table;
@@ -5233,8 +5238,10 @@ static THISCALL DWORD ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD vie
 /* 0x483fd0 (thiscall) gfx_initVertexArrayExt / 0x483fb0 ViewVolume_dtor / 0x463430 ViewVolume_deletingDtor(flags):
    free the vertex buffer, look up the GL_EXT_vertex_array entry points; the destructors */
 static THISCALL DWORD gfx_initVertexArrayExt(char *self) { return run_lifted(lift_483fd0, (DWORD)self, 0, NULL); }
-static THISCALL DWORD ViewVolume_dtor(char *self) { return run_lifted(lift_483fb0, (DWORD)self, 0, NULL); }
-static THISCALL DWORD ViewVolume_deletingDtor(char *self, DWORD flags) { DWORD v[1] = { flags }; return run_lifted(lift_463430, (DWORD)self, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int THISCALL ViewVolume_dtor(void *view);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL ViewVolume_deletingDtor(void *view, int flags);
 /* 0x472900 (thiscall) hud_472900(colour, start, end, density): linear fog */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_472900(void *scene, const void *colour, DWORD start, DWORD end, DWORD density);
@@ -6627,7 +6634,8 @@ LIFT_PLAIN(intro_430bf0, 430bf0)
    time sync at +0xc (TimeSync_dtor) */
 static THISCALL DWORD Console_ctor(char *self) { return run_lifted(lift_460c40, (DWORD)self, 0, NULL); }
 /* 0x460c20 (thiscall) Console_deletingDtor(flags): the destructor, then delete when flags bit 0; returns this */
-static THISCALL DWORD Console_deletingDtor(char *self, DWORD flags) { DWORD v[1] = { flags }; return run_lifted(lift_460c20, (DWORD)self, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL Console_deletingDtor(void *console, int flags);
 /* batch 150 (lifted/grp96.c): the network receive thread */
 #include "lifted/grp96.c"
 /* 0x454560 net_454560(): the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop):
@@ -6847,7 +6855,8 @@ void menu_4440f0(void);
 void mission_unlockCheat(void);
 /* 0x405200 FUN_00405200() / 0x434da0 room_434da0(): typing allowed (0x908807 + 0x4a * the player 0x76d41c): start
    the arena / room chat line (flag 0x4db8bc / 0x9dd6b4) */
-LIFT_PLAIN(FUN_00405200, 405200)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00405200(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_434da0(void);
 /* batch 163 (lifted/grp109.c): screen dispatchers (setup tabs, lobby / room / profile keys and
@@ -7179,7 +7188,8 @@ long dplay_closeSession(void *dplay);
    the armour centre's part and colour screens, the main menu keys, the setup tabs' draws and control keys,
    menu_enterMenus */
 #include "lifted/grp125.c"
-LIFT_PLAIN(FUN_0041edc0, 41edc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_0041edc0(void);
 LIFT_PLAIN(FUN_0041ed70, 41ed70)
 LIFT_PLAIN(arena_453180, 453180)
 LIFT_PLAIN(menu_enterState, 41f970)
@@ -11429,14 +11439,14 @@ static void strs_setup(void)
 	for (char *p = BUF + 0x100; *p; p++) if (*p == '%') *p = '#';
 	for (char *p = BUF + 0x200; *p; p++) if (*p == '%') *p = '#';
 }
-T_PLAIN(GetCurrentDirectoryA_wrap_43f580, 0x43f580, , 0, 0, 0, 0, 0)
+ST(GetCurrentDirectoryA_wrap_43f580, , CALL_PLAIN(0x43f580, 0, 0, 0, 0, 0), (DWORD)(GetCurrentDirectoryA_wrap_43f580()))
 ST(gfx_swapBuffers, , CALL_PLAIN(0x4685d0, 0, 0, 0, 0, 0), (DWORD)gfx_swapBuffers())
 ST(arena_4539f0, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(arena_4539f0((void **)(DWORD)(BUF + 0x100))))
 ST(net_454740, , CALL_PLAIN(0x454740, 0, 0, 0, 0, 0), (DWORD)net_454740())
-T_PLAIN(FUN_0046c580, 0x46c580, strs_setup();, 0, BUF + 0x100, BUF + 0x200, 0, 0)
+ST(FUN_0046c580, strs_setup();, CALL_PLAIN(0x46c580, 0, BUF + 0x100, BUF + 0x200, 0, 0), (DWORD)(FUN_0046c580((const char *)(DWORD)(BUF + 0x100), (const char *)(DWORD)(BUF + 0x200))))
 ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
 ST(menu_vertex, g_a[0] = irnd(-100, 800); g_a[1] = irnd(-100, 600);, CD(DWORD, 0x41ef60, int, int)(g_a[0], g_a[1]), menu_vertex(g_a[0], g_a[1]))
-T_PLAIN(mci_pause, 0x46c540, , 0, 0, 0, 0, 0)
+ST(mci_pause, , CALL_PLAIN(0x46c540, 0, 0, 0, 0, 0), (DWORD)(mci_pause()))
 T_PLAIN(FUN_0043f980, 0x43f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, 0, 0, 0, 0, 0)
 T_PLAIN(sys_messageBox, 0x41edf0, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0)
 T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
@@ -11462,7 +11472,7 @@ ST(timer_now, g_mockQpc = (DWORD)irnd(0, 0x7fffffff);,
    ld_hash(((long double (__attribute__((regparm(3))) *)(DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD))0x4301e0)(0, 0, 0, 0, 0, 0, 0)),
    ld_hash(timer_now(0, 0, 0, 0, 0, 0, 0)))
 static void stagedel_setup(void) { owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12)); g_a[0] = irnd(0, 3); }
-ST(Stage_deletingDtor, stagedel_setup();, TC(DWORD, 0x463830, char *, DWORD)(BUF, (DWORD)g_a[0]), Stage_deletingDtor(BUF, (DWORD)g_a[0]))
+ST(Stage_deletingDtor, stagedel_setup();, TC(DWORD, 0x463830, char *, DWORD)(BUF, (DWORD)g_a[0]), (DWORD)Stage_deletingDtor(BUF, (DWORD)g_a[0]))
 /* a session description whose every dword points at a short string (the callback copies names out of it) */
 static void sessdesc2_setup(void)
 {
@@ -12037,7 +12047,7 @@ static void __cdecl tst_hook0(void) { S32(BUF, 0x988) += 1; }
 ST(load_401290, g_tstN = 0; g_a[0] = irnd(1, 0x40); g_a[1] = irnd(-1, 6);,
    (((void (WINAPI *)(char *, int, int, void *))0x401290)(BUF + 0x1000, g_a[0], g_a[1], (void *)tst_ctor), 0),
    (load_401290((DWORD)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)tst_ctor), 0))
-T_PLAIN(FUN_0041ef20, 0x41ef20, for (int i = 0; i < 3; i++) GF(&g_a[i]) = csu_fr(-36000, 36000);, 0, g_a[0], g_a[1], g_a[2], 0)
+ST(FUN_0041ef20, for (int i = 0; i < 3; i++) GF(&g_a[i]) = csu_fr(-36000, 36000);, CALL_PLAIN(0x41ef20, 0, g_a[0], g_a[1], g_a[2], 0), (FUN_0041ef20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2])), 0))
 static void msgfmt_setup(void)
 {
 	fill_str(BUF + 0x300, 30, 32, 126);
@@ -16032,7 +16042,7 @@ static void console_dtor_setup(void)
 	g_mockGlExt = (DWORD)irnd(0, 2); g_a[0] = irnd(0, 3);
 }
 ST(Console_ctor, console_dtor_setup();, (TC(void, 0x460c40, char *)(BUF), 0), (Console_ctor(BUF), 0))
-ST(Console_deletingDtor, console_dtor_setup();, TC(DWORD, 0x460c20, char *, int)(BUF, g_a[0]), Console_deletingDtor(BUF, (DWORD)g_a[0]))
+ST(Console_deletingDtor, console_dtor_setup();, TC(DWORD, 0x460c20, char *, int)(BUF, g_a[0]), (DWORD)Console_deletingDtor(BUF, (DWORD)g_a[0]))
 /* batch 150 */
 /* the receive thread: net_4545b0's state as ping_setup sets it, the two event handles, 0..5 data events (now and
    then a timeout or failure value in between) before the stop event; the mocked ExitThread ends the run */
@@ -16413,7 +16423,7 @@ ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 
 ST(menu_443ef0, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (menu_443ef0(), 0))
 ST(menu_4440f0, menudisp_setup();, CALL_PLAIN(0x4440f0, 0, 0, 0, 0, 0), (menu_4440f0(), 0))
 ST(mission_unlockCheat, menudisp_setup();, CALL_PLAIN(0x447b10, 0, 0, 0, 0, 0), (mission_unlockCheat(), 0))
-T_PLAIN(FUN_00405200, 0x405200, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(FUN_00405200, menudisp_setup();, CALL_PLAIN(0x405200, 0, 0, 0, 0, 0), (FUN_00405200(), 0))
 ST(room_434da0, menudisp_setup();, CALL_PLAIN(0x434da0, 0, 0, 0, 0, 0), (room_434da0(), 0))
 /* batch 163 */
 /* screen dispatchers: every callee stubbed (callee_stubs: the test compares which is reached with what arguments);
@@ -17018,7 +17028,7 @@ static void freelist_setup(const DWORD *gs, const DWORD *gi, const DWORD *gb)
 static const DWORD g_gs_41edc0[] = { 0x41e9d0, 0, 0 };
 static const DWORD g_gi_41edc0[] = { 0x67fb3c, 0x76d3e8, 0 };
 static const DWORD g_gb_41edc0[] = { 0 };
-T_PLAIN(FUN_0041edc0, 0x41edc0, freelist_setup(g_gs_41edc0, g_gi_41edc0, g_gb_41edc0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(FUN_0041edc0, freelist_setup(g_gs_41edc0, g_gi_41edc0, g_gb_41edc0);, CALL_PLAIN(0x41edc0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (FUN_0041edc0(), 0))
 static const DWORD g_gs_41ed70[] = { 0x41e8b0, 0, 0 };
 static const DWORD g_gi_41ed70[] = { 0x67fb3c, 0x76d3e8, 0x9dd1b0, 0x9dd6a4, 0x9dd6d4, 0x9dd838, 0 };
 static const DWORD g_gb_41ed70[] = { 0 };

@@ -82,3 +82,13 @@ void (room_43df00)(void)
 	Color4_set(g_rectColour, 1.0f, 1.0f, 1.0f, alpha);
 	menu_drawRect(0, 0, g_screenW, g_screenH, 1);
 }
+
+/* 0x405200 (FUN_00405200): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
+void (FUN_00405200)(void)
+{
+	GAME_VAR(int, 0x4db8bc) = 0;
+	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
+		GAME_VAR(int, 0x4db8bc) = 1;
+		arena_editTextField_405010();
+	}
+}
