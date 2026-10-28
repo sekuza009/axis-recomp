@@ -1715,16 +1715,10 @@ static THISCALL void space_resetUnits(char *self)   /* reset the unit array and 
 
 /* ---- batch 9: menu resets, PTX video decoding helpers, weapon cycling ------------------------- */
 
-static THISCALL void armc_461370(char *self, int v)    /* this = scene; +0x1f36c8 = engine sub-object */
-{
-	S32(self, 0x234243a) = v;
-	if (S32(self, 0x234240d) >= 0) FUN_00473a10(self + 0x1f36c8, S32(self, 0x234240d), v);
-}
-static THISCALL void match_4613a0(char *self, int team)
-{
-	S32(self, 0x234243e) = team;
-	if (S32(self, 0x234240d) >= 0) player_setTeam(self + 0x1f36c8, S32(self, 0x234240d), team);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_461370(void *scene, int v);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL match_4613a0(void *scene, int team);
 
 /* Johab (Korean) syllable split: lead/vowel/tail indices from a 16-bit code given as two bytes */
 #define SC(a) ((int)*(signed char *)(a))
@@ -2235,11 +2229,8 @@ static void __cdecl arena_42bc00(void)           /* copy the arena option texts 
 }
 
 /* scene objects */
-static THISCALL void armc_461320(char *self, const char *name)
-{
-	strcpy(self + 0x2342429, name);
-	if (S32(self, 0x234240d) >= 0) player_setName(self + 0x1f36c8, S32(self, 0x234240d), self + 0x2342429);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_461320(void *scene, const char *name);
 static void __cdecl FUN_00466960(BYTE *px, int mode, const char *shape, const BYTE *c)   /* colour every part's pixels */
 {
 	for (int i = 0; i < S32(shape, 0x10); i++) {
@@ -6076,12 +6067,9 @@ LIFT_PLAIN(net_recv, 452620)
 /* 0x461250 (thiscall on the scene) armc_461250(name, v, team, head, chest, arm, leg, booster, item0..5): the
    arm-customise screen's whole mech at once (armc_461320 / armc_461370 / match_4613a0, the five part pickers, the six
    item slots), and the edited player marked used (FUN_00474390) */
-static THISCALL DWORD armc_461250(char *sc, DWORD name, DWORD v, DWORD team, DWORD head, DWORD chest, DWORD arm, DWORD leg,
-                                  DWORD booster, DWORD i0, DWORD i1, DWORD i2, DWORD i3, DWORD i4, DWORD i5)
-{
-	DWORD a[14] = { name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5 };   /* the hook's real arguments */
-	return run_lifted(lift_461250, (DWORD)sc, 14, a);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL armc_461250(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
+	int item1, int item2, int item3, int item4, int item5);
 /* 0x4351c0 lobby_checkReservedName3() / 0x405cf0 lobby_checkReservedName2(): the player name the lobby sends
    (0x5b1b30 / 0x4ded20) against the reserved names (the developer's, 0x4ad4b8..0x4ad554): a reserved one gives
    status 0x18 / 0x16 (0x5b1b50 / 0x4ded40); otherwise the login packet is filled in (name, mech bytes, address via
@@ -14291,7 +14279,7 @@ static void armcmech_setup(void)
 ST(armc_461250, armcmech_setup();,
    (TC(void, 0x461250, char *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD)(SCENE,
      g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11], g_am[12], g_am[13]), 0),
-   (armc_461250(SCENE, g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11],
+   (armc_461250(SCENE, (const char *)g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11],
      g_am[12], g_am[13]), 0))
 /* the name: one of the reserved names (as stored, so a byte-exact match) or a random one; the mech bytes, the
    version strings and the address strings the packet takes; the send buffer; the network mocks */

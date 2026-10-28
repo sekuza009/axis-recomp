@@ -378,4 +378,26 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_454bd0() GAME_CDECL(0x454bd0, int, void)()
 #define arena_454ce0() GAME_CDECL(0x454ce0, int, void)()
 
+/* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
+#define player_setName(stage, p, name) GAME_THISCALL(0x473940, void, Stage *, int, const char *)(stage, p, name)
+#define player_setValue(stage, p, v) GAME_THISCALL(0x473a10, void, Stage *, int, int)(stage, p, v)   /* FUN_00473a10 */
+#define player_setTeam(stage, p, team) GAME_THISCALL(0x473a80, void, Stage *, int, int)(stage, p, team)
+#define actor_setActorTypeHeadInfoBy(stage, p, i) GAME_THISCALL(0x473b10, int, Stage *, int, int)(stage, p, i)
+#define actor_setActorTypeChestInfoBy(stage, p, i) GAME_THISCALL(0x473c20, int, Stage *, int, int)(stage, p, i)
+#define actor_setActorTypeArmInfoBy(stage, p, i) GAME_THISCALL(0x473d30, int, Stage *, int, int)(stage, p, i)
+#define actor_setActorTypeLegInfoBy(stage, p, i) GAME_THISCALL(0x473e40, int, Stage *, int, int)(stage, p, i)
+#define actor_setActorTypeBoosterInfoBy(stage, p, i) GAME_THISCALL(0x473f50, int, Stage *, int, int)(stage, p, i)
+#define actor_setActorTypeItemInfoBy(stage, p, slot, item) GAME_THISCALL(0x474060, void, Stage *, int, int, int)(stage, p, slot, item)
+#define player_markUsed(stage, p) GAME_THISCALL(0x474390, void, Stage *, int)(stage, p)   /* FUN_00474390 */
+/* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
+#define armc_461320(scene, name) GAME_THISCALL(0x461320, void, Scene *, const char *)(scene, name)
+#define armc_461370(scene, v) GAME_THISCALL(0x461370, void, Scene *, int)(scene, v)
+#define match_4613a0(scene, team) GAME_THISCALL(0x4613a0, void, Scene *, int)(scene, team)
+#define armc_setHeadIndex(scene, i) GAME_THISCALL(0x4613d0, void, Scene *, int)(scene, i)
+#define armc_setChestIndex(scene, i) GAME_THISCALL(0x461410, void, Scene *, int)(scene, i)
+#define armc_setArmIndex(scene, i) GAME_THISCALL(0x461450, void, Scene *, int)(scene, i)
+#define armc_setLegIndex(scene, i) GAME_THISCALL(0x461490, void, Scene *, int)(scene, i)
+#define armc_setBoosterIndex(scene, i) GAME_THISCALL(0x4614d0, void, Scene *, int)(scene, i)
+#define armc_461510(scene, slot, item) GAME_THISCALL(0x461510, void, Scene *, int, int)(scene, slot, item)
+
 #endif

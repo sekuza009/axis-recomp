@@ -287,7 +287,16 @@ typedef struct Scene {
 	i32 fogInOverlay;   /* +0xbe170c: 1: the stage's fog volume is drawn in the 2D pass */
 	u8 fogVolume[0x10];   /* +0xbe1710 */
 	u32 fogVolumeArgs[3];   /* +0xbe1720: (floats, passed on unchanged) */
-	u8 _pad0be172c[0xae3a50];
+	u8 _pad0be172c[0x9fcf9c];
+	i32 headCount;   /* +0x15de6c8: parts of each kind (the pickers wrap around them) */
+	u8 _pad15de6cc[0x218b8];
+	i32 chestCount;   /* +0x15fff84 */
+	u8 _pad15fff88[0x3b600];
+	i32 armCount;   /* +0x163b588 */
+	u8 _pad163b58c[0x3e5a8];
+	i32 legCount;   /* +0x1679b34 */
+	u8 _pad1679b38[0x4b640];
+	i32 boosterCount;   /* +0x16c5178 */
 	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
 	u8 _pad172147c[0x7bd7a];
 	FlagSlot flags[16];   /* +0x179d1f6 */
@@ -374,9 +383,14 @@ typedef struct Scene {
 	i32 winnerTeam;   /* +0x23423bd */
 	u8 _pad23423c1[0x4c];
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
-	u8 _pad2342411[0x2d];
-	i32 respawnPlayer;   /* +0x234243e: (unclear) >= 0 lets "press fire" show */
-	u8 _pad2342442[0xb0];
+	u8 _pad2342411[0x18];
+	char mechName[0x11];   /* +0x2342429: the ARM CENTER's mech being edited (menu/armc_mech.c) */
+	i32 mechValue;   /* +0x234243a: (unclear) kept with the player (record +0x44) */
+	i32 localTeam;   /* +0x234243e: the local player's team; < 0: only watching (no "press fire", START / JOIN) */
+	u8 _pad2342442[0x8];
+	i32 mechParts[5];   /* +0x234244a: head, chest, arm, leg, booster */
+	i32 mechItems[6];   /* +0x234245e */
+	u8 _pad2342476[0x7c];
 	i32 cameraSlot;   /* +0x23424f2: the spectator camera's number (0 shows as 10) */
 	u8 _pad23424f6[0x400];
 	i32 ranking[16];   /* +0x23428f6: players in rank order */
@@ -556,6 +570,11 @@ _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
 _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fogVolume) == 0x10, "scene.fields: Scene.fogVolume");
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
+_Static_assert(offsetof(Scene, headCount) == 0x15de6c8 && sizeof(((Scene *)0)->headCount) == 0x4, "scene.fields: Scene.headCount");
+_Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->chestCount) == 0x4, "scene.fields: Scene.chestCount");
+_Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->armCount) == 0x4, "scene.fields: Scene.armCount");
+_Static_assert(offsetof(Scene, legCount) == 0x1679b34 && sizeof(((Scene *)0)->legCount) == 0x4, "scene.fields: Scene.legCount");
+_Static_assert(offsetof(Scene, boosterCount) == 0x16c5178 && sizeof(((Scene *)0)->boosterCount) == 0x4, "scene.fields: Scene.boosterCount");
 _Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
 _Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
@@ -607,7 +626,11 @@ _Static_assert(offsetof(Scene, scoreLimit) == 0x23423ad && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, timeLimit) == 0x23423b1 && sizeof(((Scene *)0)->timeLimit) == 0x4, "scene.fields: Scene.timeLimit");
 _Static_assert(offsetof(Scene, winnerTeam) == 0x23423bd && sizeof(((Scene *)0)->winnerTeam) == 0x4, "scene.fields: Scene.winnerTeam");
 _Static_assert(offsetof(Scene, localPlayer) == 0x234240d && sizeof(((Scene *)0)->localPlayer) == 0x4, "scene.fields: Scene.localPlayer");
-_Static_assert(offsetof(Scene, respawnPlayer) == 0x234243e && sizeof(((Scene *)0)->respawnPlayer) == 0x4, "scene.fields: Scene.respawnPlayer");
+_Static_assert(offsetof(Scene, mechName) == 0x2342429 && sizeof(((Scene *)0)->mechName) == 0x11, "scene.fields: Scene.mechName");
+_Static_assert(offsetof(Scene, mechValue) == 0x234243a && sizeof(((Scene *)0)->mechValue) == 0x4, "scene.fields: Scene.mechValue");
+_Static_assert(offsetof(Scene, localTeam) == 0x234243e && sizeof(((Scene *)0)->localTeam) == 0x4, "scene.fields: Scene.localTeam");
+_Static_assert(offsetof(Scene, mechParts) == 0x234244a && sizeof(((Scene *)0)->mechParts) == 0x14, "scene.fields: Scene.mechParts");
+_Static_assert(offsetof(Scene, mechItems) == 0x234245e && sizeof(((Scene *)0)->mechItems) == 0x18, "scene.fields: Scene.mechItems");
 _Static_assert(offsetof(Scene, cameraSlot) == 0x23424f2 && sizeof(((Scene *)0)->cameraSlot) == 0x4, "scene.fields: Scene.cameraSlot");
 _Static_assert(offsetof(Scene, ranking) == 0x23428f6 && sizeof(((Scene *)0)->ranking) == 0x40, "scene.fields: Scene.ranking");
 _Static_assert(offsetof(Scene, rank) == 0x2342936 && sizeof(((Scene *)0)->rank) == 0x40, "scene.fields: Scene.rank");

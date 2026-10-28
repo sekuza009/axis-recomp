@@ -79,7 +79,7 @@ void THISCALL (hud_pass)(Scene *scene)
 				    || (scene->localPlayer >= 0 && scene->players[scene->localPlayer].state == 2)
 				    || scene->matchOver == 1 || scene->roundOver == 1)
 					PATCHED_THISCALL(0x4986a0, void, Scene *)(scene);             /* hud_drawRanking */
-				if (scene->localPlayer >= 0 && scene->respawnPlayer >= 0
+				if (scene->localPlayer >= 0 && scene->localTeam >= 0
 				    && scene->players[scene->localPlayer].active == 0 && scene->chatMode == 0
 				    && !scene->matchOver && !scene->roundOver)
 					hud_drawPressFire(scene);

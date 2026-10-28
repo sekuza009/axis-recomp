@@ -72,20 +72,20 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 	switch (scene->escPage) {
 	case 0: {
 		int net = scene->network;
-		int y = net != 0 || scene->respawnPlayer < 0 ? 0xb4 : 0xc8;
-		if (net == 1 && scene->teamGame == 1 && scene->respawnPlayer >= 0)
+		int y = net != 0 || scene->localTeam < 0 ? 0xb4 : 0xc8;
+		if (net == 1 && scene->teamGame == 1 && scene->localTeam >= 0)
 			y -= 0x14;
 		if (net == 1)
 			y -= 0x14;
 		esc_title(scene, alpha, alpha, y, "MENU");
 		y += 0x28;
-		if (scene->network != 0 || scene->respawnPlayer < 0) {
-			const char *label = scene->respawnPlayer >= 0 ? "SPECTATOR" : scene->network == 0 ? "START" : "JOIN";
+		if (scene->network != 0 || scene->localTeam < 0) {
+			const char *label = scene->localTeam >= 0 ? "SPECTATOR" : scene->network == 0 ? "START" : "JOIN";
 			esc_item(scene, alpha, y, label, 0);
 			y += 0x28;
 		}
 		if (scene->network == 1) {
-			if (scene->teamGame == 1 && scene->respawnPlayer >= 0) {
+			if (scene->teamGame == 1 && scene->localTeam >= 0) {
 				esc_item(scene, alpha, y, "TEAM", 1);
 				y += 0x28;
 			}
