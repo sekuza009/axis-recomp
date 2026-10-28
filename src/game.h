@@ -47,10 +47,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define text_draw8b(x0, y, x1, s) GAME_CDECL(0x402740, void, int, int, int, const char *)(x0, y, x1, s)
 #define text_drawBox16(x0, y, x1, s) GAME_CDECL(0x4029d0, void, int, int, int, const char *)(x0, y, x1, s)
 #define hud_402db0(x0, y, x1, s) GAME_CDECL(0x402db0, void, int, int, int, const char *)(x0, y, x1, s)
+#define hud_44ae10(x0, y, x1, s, size) GAME_CDECL(0x44ae10, void, int, int, int, const char *, int)(x0, y, x1, s, size)
 #define text_drawSized(x, y, s, size) GAME_CDECL(0x44ad60, void, int, int, const char *, int)(x, y, s, size)
 
 /* ---- HUD ---- */
 #define hud_4950a0(x0, y0, x1, y1) GAME_CDECL(0x4950a0, void, int, int, int, int)(x0, y0, x1, y1)
+#define hud_46bd00(x0, y0, x1, y1) GAME_CDECL(0x46bd00, void, int, int, int, int)(x0, y0, x1, y1)   /* a rectangle's outline */
+/* a team's slot in teamScores (this_get_0x2342381_463780) and which side of the box it is on (FUN_00463740) */
+#define scene_teamSlot(scene, team) GAME_THISCALL(0x463780, int, Scene *, int)(scene, team)
+#define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)
 #define replay_drawIcon(scene, x, y, icon) GAME_THISCALL(0x496820, void, Scene *, int, int, int)(scene, x, y, icon)
 
 /* ---- main loop and match ---- */

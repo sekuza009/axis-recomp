@@ -55,3 +55,49 @@ void THISCALL (hud_4953d0)(Scene *scene)
 		text_drawSized(0x60, 0x168, g_chatLine, 8);
 	}
 }
+
+/* 0x496240 (hud_496240): the team score box at the top: two boxes of 48 x 20 units side by side (red for the team
+   in slot 0, blue for slot 1) with their scores, the local player's team outlined, and under them a band of
+   26 x 17 units with three counts in red, green and blue */
+void THISCALL (hud_496240)(Scene *scene)
+{
+	char text[256];
+	int boxWidth = hud_toScreenX(48), boxHeight = hud_toScreenY(20), top = hud_toScreenY(6);
+	int left = gfx_getWidth() / 2 - boxWidth;
+	glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
+	gfx_fillRect(left + 1, top + 1, boxWidth + left - 1, boxHeight + top - 1);
+	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+	sprintf(text, "%d", scene->teamScores[scene_teamSlot(scene, 0)]);
+	hud_44ae10(0x128, 9, 0x128, text, 16);
+	int right = boxWidth + left + 1;
+	glColor4f(0.0f, 0.5f, 1.0f, 0.5f);
+	gfx_fillRect(right, top, boxWidth + right, boxHeight + top);
+	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+	sprintf(text, "%d", scene->teamScores[scene_teamSlot(scene, 1)]);
+	hud_44ae10(0x158, 9, 0x158, text, 16);
+
+	top = hud_toScreenY(6);
+	left = gfx_getWidth() / 2 - boxWidth;
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	int team = scene->players[scene->localPlayer].team;
+	if (scene_teamSide(scene, team) == 0) {
+		hud_46bd00(left, top, boxWidth + left, boxHeight + top);
+	} else if (scene_teamSide(scene, scene->players[scene->localPlayer].team) == 1) {
+		int x = left + boxWidth + 1;
+		hud_46bd00(x + 1, top + 1, boxWidth + x - 1, boxHeight + top - 1);
+	}
+
+	int bandWidth = hud_toScreenX(26), bandHeight = hud_toScreenY(17), bandTop = hud_toScreenY(26);
+	int bandLeft = gfx_getWidth() / 2 - bandWidth / 2 - bandWidth;
+	glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
+	gfx_fillRect(bandLeft, bandTop, bandWidth + bandLeft + bandWidth * 2, bandHeight + bandTop - 1);
+	text_setColor(1.0f, 0.0f, 0.0f, 1.0f);
+	sprintf(text, "%d", scene->counterRed);
+	hud_44ae10(0x119, 0x1b, 0x133, text, 16);
+	text_setColor(0.0f, 1.0f, 0.0f, 1.0f);
+	sprintf(text, "%d", scene->counterGreen);
+	hud_44ae10(0x133, 0x1b, 0x14d, text, 16);
+	text_setColor(0.0f, 0.0f, 1.0f, 1.0f);
+	sprintf(text, "%d", scene->counterBlue);
+	hud_44ae10(0x14d, 0x1b, 0x167, text, 16);
+}

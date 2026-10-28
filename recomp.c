@@ -7503,7 +7503,8 @@ static THISCALL DWORD hud_drawRanking(char *s) { return run_lifted(lift_494930, 
 /* 0x496240 hud_496240() (thiscall on the scene): the team score box: both teams' bars (0x46bd60) and scores ("%d"
    by 0x463780), the local player's team marked (0x463740 -> 0x46bd00), then three counters (+0x234297e,
    +0x2342982, +0x2342986), all scaled from the screen size (0x4685b0 / 0x4685c0) */
-static THISCALL DWORD hud_496240(char *s) { return run_lifted(lift_496240, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_496240(void *scene);
 /* batch 206 (lifted/grp167.c .. grp170.c): functions whose call sites the patch DLL retargets; those calls are lifted
    with lift.py "@site" (the target read from the live instruction) and the rel32 bytes listed in g_patchOk */
 #include "lifted/grp167.c"
@@ -17997,7 +17998,7 @@ static void teambox_setup(void)
 	hudrank_players();
 	for (int i = 0; i < 3; i++) S32(BUF, 0x234297e + 4 * i) = irnd(-10, 999);
 }
-ST(hud_496240, teambox_setup();, TC(DWORD, 0x496240, char *)(BUF), hud_496240(BUF))
+ST(hud_496240, teambox_setup();, TC(DWORD, 0x496240, char *)(BUF), (hud_496240(BUF), 0))
 /* batch 206 */
 /* the scene's frame timer (armc_461210 on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
 static void scenetimer_setup(void)
