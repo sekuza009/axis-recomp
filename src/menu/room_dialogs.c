@@ -414,3 +414,25 @@ u32 (menu_437810)(void)
 	GAME_VAR(int, 0x9dce48) = 0;
 	return r;
 }
+
+/* 0x4334c0: the request to join the selected room sent: the room's password and state cleared, the room screen at
+   state 0 (open, brightness 0.7), the room's name (0x9dd570, 30 bytes) as message 0x1d; then the confirm box up.
+   Returns net_send's eax */
+u32 (room_4334c0)(void)
+{
+	static const u32 cleared[] = { 0x9dd202, 0x9dd1f6, 0x9dd206, 0x9dd6d8, 0x9dd1fa, 0x9dd20a, 0x9dd6dc, 0x9dd834 };
+	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
+		GAME_VAR(int, cleared[k]) = 0;
+	GAME_VAR(int, 0x9dce48) = 1;
+	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
+	static const u32 cleared2[] = { 0x9dd69c, 0x9dd37c, 0x9dd378, 0x9dd304, 0x9dd6d0, 0x9dd1fe, 0x9dd6e0 };
+	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
+		GAME_VAR(int, cleared2[k]) = 0;
+	char *message = GAME_VAR(char *, 0xa055e0);
+	memset(message, 0, 30);
+	strcpy(message, (const char *)0x9dd570);
+	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0x1d, 0x65);   /* net_send */
+	GAME_VAR(int, 0x9dd354) = 0;
+	GAME_VAR(int, 0x9dd6d4) = 1;
+	return r;
+}

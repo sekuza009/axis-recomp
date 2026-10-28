@@ -2777,7 +2777,8 @@ DWORD mainmenu_440d70(void);
 LIFT_PLAIN(timer_init, 4302d0)
 /* 0x44b990 profile_selectAndLoad: copy the entered name into the selected profile slot, make the save directory
    and load the profile */
-LIFT_PLAIN(profile_selectAndLoad, 44b990)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_selectAndLoad(void);
 /* 0x427970 menu_drawRect(x0, y0, x1, y1, filled): a filled quad or an outline in the menu colour */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawRect(int x0, int y0, int x1, int y1, int filled);
@@ -3153,7 +3154,8 @@ LIFT_PLAIN(net_send, 4521c0)
    armc_sendSelectionToNet (copies the customised parts and colours into the player record and sends it) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int room_434d00(void);
-LIFT_PLAIN(room_4334c0, 4334c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_4334c0(void);
 LIFT_PLAIN(room_434b90, 434b90)
 LIFT_PLAIN(room_434820, 434820)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4249,7 +4251,8 @@ void setup_427880(void);
    the way to (0x67ef34, 0x67fb38) by 0x4b071c and the glide time 0x680bc0 runs down (then ends); the profile
    screen (mainmenu_drawScreen), then the two-button dialog (profile_44e180 / profile_44e3e0) or, while a message
    is open, its frame */
-LIFT_PLAIN(profile_44f5f0, 44f5f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44f5f0(void);
 LIFT_PLAIN(profile_44f740, 44f740)
 /* batch 132 (lifted/grp78.c): the main menu */
 #include "lifted/grp78.c"
@@ -5036,7 +5039,8 @@ void FUN_0041edc0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041ed70(void);
 LIFT_PLAIN(arena_453180, 453180)
-LIFT_PLAIN(menu_enterState, 41f970)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_enterState(void);
 LIFT_PLAIN(room_435b00, 435b00)
 LIFT_PLAIN(room_4346c0, 4346c0)
 LIFT_PLAIN(room_436620, 436620)
@@ -9401,7 +9405,7 @@ T_PLAIN(timer_init, 0x4302d0, qpf_setup();, 0, 0, 0, 0, 0)
    the original then saved ~21000 records, reading past the end of the image (it crashed the full suite once the
    random order gave it a 33..40-character name) */
 static void selectload_setup(void) { fill_str((char *)0x9dc92c, 31, 32, 126); G32(0x9f9008) = irnd(0, 13); G32(0x9f8c4c) = irnd(0, 3); vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); g_paintStacks = 1; }
-T_PLAIN(profile_selectAndLoad, 0x44b990, selectload_setup();, 0, 0, 0, 0, 0)
+ST(profile_selectAndLoad, selectload_setup();, CALL_PLAIN(0x44b990, 0, 0, 0, 0, 0), (DWORD)(profile_selectAndLoad()))
 /* a third of the rectangles cover the whole 640 x 480 (drawn full screen with the patch DLL's menu fix) */
 ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] = irnd(0, 1) ? 0 : irnd(-3, 3);
    if (!irnd(0, 2)) { g_a[0] = irnd(-100, 0); g_a[1] = irnd(-100, 0); g_a[2] = irnd(640, 800); g_a[3] = irnd(480, 600); },
@@ -10159,7 +10163,7 @@ static void netstate_setup(void)
 }
 T_PLAIN(net_send, 0x4521c0, netstate_setup();, 0, g_a[0], g_a[1], 0, 0)
 ST(room_434d00, netstate_setup();, CALL_PLAIN(0x434d00, 0, 0, 0, 0, 0), (DWORD)(room_434d00()))
-T_PLAIN(room_4334c0, 0x4334c0, netstate_setup();, 0, 0, 0, 0, 0)
+ST(room_4334c0, netstate_setup();, CALL_PLAIN(0x4334c0, 0, 0, 0, 0, 0), (DWORD)(room_4334c0()))
 T_PLAIN(room_434b90, 0x434b90, netstate_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_434820, 0x434820, netstate_setup();, 0, 0, 0, 0, 0)
 ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
@@ -13432,7 +13436,7 @@ static void profglide_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 	G32(0x76d42c) = irnd(0, 1); G32(0x67ef34) = irnd(0, 640); G32(0x67fb38) = irnd(0, 480);
 	GF(0x680bc0) = (float)irnd(-10, 100) / 10.0f; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
-T_PLAIN(profile_44f5f0, 0x44f5f0, profglide_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, 0, 0, 0, 0, 0)
+ST(profile_44f5f0, profglide_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44f5f0, 0, 0, 0, 0, 0), (DWORD)(profile_44f5f0()))
 T_PLAIN(profile_44f740, 0x44f740, profglide_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, 0, 0, 0, 0, 0)
 /* batch 132 */
 /* the main menu: tunnels_setup's tunnel and textures, six panel quads (run-time data at 0x4deb80) with the cursor
@@ -14922,7 +14926,7 @@ T_PLAIN(arena_453180, 0x453180, gen_setup(g_gs_453180, g_gi_453180, g_gb_453180)
 static const DWORD g_gs_41f970[] = { 0x404640, 0, 0x41fd40, 0, 0x420770, 0, 0x432ff0, 0, 0x440bb0, 0, 0x443950, 0, 0x447750, 0, 0x44b420, 0, 0 };
 static const DWORD g_gi_41f970[] = { 0x4deb48, 0x67ef0c, 0x76d3e8, 0 };
 static const DWORD g_gb_41f970[] = { 0 };
-T_PLAIN(menu_enterState, 0x41f970, gen_setup(g_gs_41f970, g_gi_41f970, g_gb_41f970);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_enterState, gen_setup(g_gs_41f970, g_gi_41f970, g_gb_41f970);, CALL_PLAIN(0x41f970, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_enterState()))
 static const DWORD g_gs_435b00[] = { 0x401310, 1, 0x41e760, 1, 0x431590, 0, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x433c70, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_435b00[] = { 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4e1868, 0x67ef20, 0x68039c, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd6b0, 0x9dd834, 0x9dd838, 0x9dd850, 0 };
 static const DWORD g_gb_435b00[] = { 0 };

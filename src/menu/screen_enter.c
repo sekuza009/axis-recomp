@@ -240,3 +240,24 @@ u32 (menu_onStateChange)(void)
 		return (u32)(state - 500);
 	return (u32)(state - 210);
 }
+
+/* 0x41f970: a screen entered: its set-up by the state (0x76d3e8; the main menu also flags 0x4deb48), the state kept as
+   the one before (0x67ef0c). Returns the state */
+u32 (menu_enterState)(void)
+{
+	switch (g_menuState) {
+	case 210: CALL(0x44b420); break;   /* menuState210_enter */
+	case 300:
+		GAME_VAR(int, 0x4deb48) = 1;
+		CALL(0x440bb0);                 /* menuState300_enter */
+		break;
+	case 400: CALL(0x404640); break;   /* menuState400_enter */
+	case 500: CALL(0x447750); break;   /* menuState500_enter */
+	case 600: CALL(0x420770); break;   /* menuState600_enterSetup */
+	case 800: CALL(0x432ff0); break;   /* menuState800_enterGameRoom */
+	case 900: CALL(0x443950); break;   /* menuState900_enterSkirmish */
+	case 9999: CALL(0x41fd40); break;  /* console_init */
+	}
+	GAME_VAR(int, 0x67ef0c) = g_menuState;
+	return (u32)g_menuState;
+}

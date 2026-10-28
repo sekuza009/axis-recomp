@@ -292,3 +292,55 @@ int (profile_44c480)(void)
 		GAME_VAR(int, 0x9f8f10) = 1;
 	return GAME_VAR(int, 0x4ded8c);
 }
+
+#define chdir_(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
+#define mkdir_(path) GAME_CDECL(0x49f94a, int, const char *)(path)
+
+/* 0x44b990: a new profile made from the typed name: it goes into the next slot (with the chosen pilot, 0x9f8d30), the
+   save folder is made if missing, the list scrolls to show it (13 rows), it is saved (profile_load) and the screen
+   updated. Returns what that leaves in eax */
+u32 (profile_selectAndLoad)(void)
+{
+	int n = GAME_VAR(int, 0x9f9008);
+	strcpy((char *)(0x9f684c + n * 0x48), (const char *)0x9dc92c);
+	GAME_VAR(int, 0x9f688c + n * 0x48) = GAME_VAR(int, 0x9f8d30);
+	if (chdir_((const char *)0x4b2adc)) {
+		mkdir_((const char *)0x4b2adc);
+		chdir_((const char *)0x4b2adc);
+	}
+	chdir_((const char *)0x4b2a80);
+	int count = n + 1;
+	GAME_VAR(int, 0x9f9008) = count;
+	if (count <= 0xd) {
+		GAME_VAR(int, 0x9f8c5c) = count - 1;
+		GAME_VAR(int, 0x9f8d74) = GAME_VAR(int, 0x9f8c4c) + count - 1;
+	} else {
+		GAME_VAR(int, 0x9f8c5c) = 0xc;
+		GAME_VAR(int, 0x9f8c4c) = count - 0xd;
+		GAME_VAR(int, 0x9f8d74) = count - 1;
+	}
+	CALL(0x446590);         /* profile_load (it writes the profile) */
+	return CALL(0x44b7a0);  /* profile_44b7a0 */
+}
+
+/* 0x44f5f0: the profile screen's pilot panel: while it glides (0x76d42c) the pointer is pulled towards its target
+   (0x67ef34, 0x67fb38) by the frame time, until its timer (0x680bc0) runs out; the screen drawn, then the dialog's
+   frame if one is open, else the panel. Returns what the original leaves in eax */
+u32 (profile_44f5f0)(void)
+{
+	if (GAME_VAR(int, 0x76d42c)) {
+		int step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67ef34) - g_mouseX), &g_frameTime), (const float *)0x4a941c));
+		g_mouseX += step;
+		step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67fb38) - g_mouseY), &g_frameTime), (const float *)0x4a941c));
+		g_mouseY += step;
+		long double t = fsub_m(fld_m((const float *)0x680bc0), &g_frameTime);
+		GAME_VAR(float, 0x680bc0) = (float)t;
+		if (!(t >= GAME_VAR(float, 0x4a93e8)))
+			GAME_VAR(int, 0x76d42c) = 0;
+	}
+	CALL(0x44d720);   /* mainmenu_drawScreen */
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f8f1c), GAME_VAR(int, 0x9f8f0c),
+		                                                     GAME_VAR(int, 0x9f8f2c), GAME_VAR(int, 0x9f8f28));   /* menu_drawFrame */
+	return CALL(0x44e180);   /* profile_44e180 */
+}
