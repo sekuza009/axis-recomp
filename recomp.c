@@ -3726,12 +3726,18 @@ static int __cdecl skirmish_4017c0(int v) { G32(0x4ad494) = v; return v; }
 static int __cdecl set_680370_441250(int v) { G32(0x680370) = v; return v; }
 static int __cdecl set_4b42dc_457140(int v) { G32(0x4b42dc) = v; return v; }
 static int __cdecl match_4686e0(int v) { G32(0x4c4dec) = v; return v; }
-static void __cdecl static_initObject_4e1878(void) { G32(0x4e1878) = 0x4a956c; G32(0x4e187c) = 0; }
-static void __cdecl static_initObject_5b1db8(void) { G32(0x5b1db8) = 0x4a956c; G32(0x5b1dbc) = 0; }
-static void __cdecl static_initObject_680cd8(void) { G32(0x680cd8) = 0x4a956c; G32(0x680cdc) = 0; }
-static void __cdecl static_initObject_76d498(void) { G32(0x76d498) = 0x4a956c; G32(0x76d49c) = 0; }
-static void __cdecl static_initObject_90d1e0(void) { G32(0x90d1e0) = 0x4a956c; G32(0x90d1e4) = 0; }
-static void __cdecl static_initObject_83a9e0(void) { G32(0x83a9e0) = 0x4a956c; G32(0x83a9e4) = 0; }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_4e1878(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_5b1db8(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_680cd8(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_76d498(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_90d1e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void static_initObject_83a9e0(void);
 static int __cdecl arena_4532a0(void) { return G32(0xa0b41c); }
 static int __cdecl gfx_getWidth(void) { return G32(0xa0e810); }
 static int __cdecl gfx_getHeight(void) { return G32(0xa0e928); }
@@ -3760,37 +3766,68 @@ static THISCALL int match_48b440(void *self, int a) { (void)self; (void)a; retur
 static THISCALL void match_48b430(void *self, int a0, int a1) { (void)self; (void)a0; (void)a1; }
 static THISCALL void hud_48b450(void *self, int a0, int a1, int a2, int a3) { (void)self; (void)a0; (void)a1; (void)a2; (void)a3; }
 static THISCALL void nullsub_483ce0(void *self, int a0) { (void)self; (void)a0; }
-static void __cdecl nullsub_46b860(void) { }
-static void __cdecl nullsub_46b880(void) { }
-static void __cdecl nullsub_46b8a0(void) { }
-static void __cdecl nullsub_46b8c0(void) { }
-static void __cdecl nullsub_46b8e0(void) { }
-static void __cdecl nullsub_46b900(void) { }
-static void __cdecl nullsub_46b920(void) { }
-static void __cdecl nullsub_46b940(void) { }
-static void __cdecl nullsub_487b70(void) { }
-static void __cdecl nullsub_487b90(void) { }
-static void __cdecl nullsub_48b420(void) { }
-static void *__cdecl Texture_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0dff8, 0x4b3e74, 0); }
-static void *__cdecl TextureManager_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0e000, 0x4b4134, 0); }
-static void *__cdecl Sound_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0e020, 0x4b42e0, 0); }
-static void *__cdecl Console_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0e778, 0x4c456c, 0); }
-static void *__cdecl Shape_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0e790, 0x4c4a40, 0); }
-static void *__cdecl ShapeManager_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0e788, 0x4c4ca8, 0); }
-static void *__cdecl Skeleton_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0eaa8, 0x4c534c, 0); }
-static void *__cdecl SkeletonManager_rtti(void) { return ErrorLog_ctor((DWORD *)0xa0eaa0, 0x4c549c, 0); }
-static void *__cdecl BMPRGBFile_rtti(void) { return ErrorLog_ctor((DWORD *)0xa1f0f0, 0x4c58f4, 0); }
-static void *__cdecl RealColor_rtti(void) { return ErrorLog_ctor((DWORD *)0xa1f290, 0x4c59c0, 0); }
-static void *__cdecl PackedColor_rtti(void) { return ErrorLog_ctor((DWORD *)0xa1f250, 0x4c59d4, 0); }
-static void *__cdecl UnitPartInfo_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2ea0, 0x4c6ffc, 0); }
-static void *__cdecl UnitPoseInfo_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2ea8, 0x4c7010, 0); }
-static void *__cdecl Unit_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2e98, 0x4c7024, 0); }
-static void *__cdecl Stage_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2eb8, 0x4c73b0, 0); }
-static void *__cdecl CollisionVolume_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2ed0, 0x4c7800, 0); }
-static void *__cdecl Light_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2ee8, 0x4c7ad4, 0); }
-static void *__cdecl ViewVolume_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2ef0, 0x4c7b08, 0); }
-static void *__cdecl TimeSync_rtti(void) { return ErrorLog_ctor((DWORD *)0xae2f00, 0x4c7b70, 0); }
-static void *__cdecl Scene_rtti(void) { return ErrorLog_ctor((DWORD *)0xae3328, 0x4c7d18, 0); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b860(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b880(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b8a0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b8c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b8e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b900(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b920(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_46b940(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_487b70(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_487b90(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void nullsub_48b420(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Texture_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *TextureManager_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Sound_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Console_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Shape_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *ShapeManager_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Skeleton_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *SkeletonManager_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *BMPRGBFile_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *RealColor_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *PackedColor_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *UnitPartInfo_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *UnitPoseInfo_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Unit_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Stage_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *CollisionVolume_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Light_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *ViewVolume_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *TimeSync_rtti(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *Scene_rtti(void);
 /* batch 31: callers unlocked by batch 30 - static-object destructors (atexit, guarded by a bit), ctors, list resets */
 #define GUARDED_DTOR(name, guard, obj) \
 	static void __cdecl name(void) { if (!(*(BYTE *)(guard) & 1)) { *(BYTE *)(guard) |= 1; ErrorLog_dtor((DWORD *)(obj)); } }
@@ -4576,34 +4613,62 @@ static THISCALL int collision_moveActor(char *stage, DWORD r, DWORD pos, DWORD v
 #define CRT_free ((DWORD (__cdecl *)(DWORD))0x49ee81)
 #define CRT_malloc ((DWORD (__cdecl *)(DWORD))0x49eeb0)
 /* static_registerDtor_*: atexit(the static object's guarded destructor) */
-static DWORD __cdecl static_registerDtor_42b170(void) { return CRT_atexit(0x42b180); }
-static DWORD __cdecl static_registerDtor_42b1c0(void) { return CRT_atexit(0x42b1d0); }
-static DWORD __cdecl static_registerDtor_42b210(void) { return CRT_atexit(0x42b220); }
-static DWORD __cdecl static_registerDtor_42b260(void) { return CRT_atexit(0x42b270); }
-static DWORD __cdecl static_registerDtor_42b2b0(void) { return CRT_atexit(0x42b2c0); }
-static DWORD __cdecl static_registerDtor_42b300(void) { return CRT_atexit(0x42b310); }
-static DWORD __cdecl static_registerDtor_42b370(void) { return CRT_atexit(0x42b380); }
-static DWORD __cdecl static_registerDtor_455000(void) { return CRT_atexit(0x455010); }
-static DWORD __cdecl static_registerDtor_456960(void) { return CRT_atexit(0x456970); }
-static DWORD __cdecl static_registerDtor_456cb0(void) { return CRT_atexit(0x456cc0); }
-static DWORD __cdecl static_registerDtor_460540(void) { return CRT_atexit(0x460550); }
-static DWORD __cdecl static_registerDtor_463b50(void) { return CRT_atexit(0x463b60); }
-static DWORD __cdecl static_registerDtor_4669e0(void) { return CRT_atexit(0x4669f0); }
-static DWORD __cdecl static_registerDtor_468730(void) { return CRT_atexit(0x468740); }
-static DWORD __cdecl static_registerDtor_469950(void) { return CRT_atexit(0x469960); }
-static DWORD __cdecl static_registerDtor_46ae30(void) { return CRT_atexit(0x46ae40); }
-static DWORD __cdecl static_registerDtor_46ccd0(void) { return CRT_atexit(0x46cce0); }
-static DWORD __cdecl static_registerDtor_46d290(void) { return CRT_atexit(0x46d2a0); }
-static DWORD __cdecl static_registerDtor_46da90(void) { return CRT_atexit(0x46daa0); }
-static DWORD __cdecl static_registerDtor_46f380(void) { return CRT_atexit(0x46f390); }
-static DWORD __cdecl static_registerDtor_46f3e0(void) { return CRT_atexit(0x46f3f0); }
-static DWORD __cdecl static_registerDtor_46f440(void) { return CRT_atexit(0x46f450); }
-static DWORD __cdecl static_registerDtor_46ff40(void) { return CRT_atexit(0x46ff50); }
-static DWORD __cdecl static_registerDtor_481360(void) { return CRT_atexit(0x481370); }
-static DWORD __cdecl static_registerDtor_483d20(void) { return CRT_atexit(0x483d30); }
-static DWORD __cdecl static_registerDtor_483f80(void) { return CRT_atexit(0x483f90); }
-static DWORD __cdecl static_registerDtor_487400(void) { return CRT_atexit(0x487410); }
-static DWORD __cdecl static_registerDtor_48b3e0(void) { return CRT_atexit(0x48b3f0); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b170(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b1c0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b210(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b260(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b2b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b300(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_42b370(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_455000(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_456960(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_456cb0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_460540(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_463b50(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_4669e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_468730(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_469950(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46ae30(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46ccd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46d290(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46da90(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46f380(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46f3e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46f440(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_46ff40(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_481360(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_483d20(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_483f80(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_487400(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int static_registerDtor_48b3e0(void);
 /* 0x467d60 FUN_00467d60(p): delete p unless null */
 static DWORD __cdecl FUN_00467d60(DWORD p) { return p ? CRT_delete(p) : 0; }
 /* the deleting destructors (vtable slot 0): destroy, then free the object when flags bit 0 is set; return this */

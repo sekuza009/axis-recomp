@@ -549,4 +549,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define FUN_0045e810(stage, actor, slot) GAME_THISCALL(0x45e810, void, Stage *, int, int)(stage, actor, slot)   /* select a weapon slot */
 #define match_4327f0() GAME_CDECL(0x4327f0, void, void)()
 
+/* ---- start-up objects (app/statics.c) ---- */
+#define ErrorLog_ctor(self, name, b) GAME_THISCALL(0x46c5a0, void *, void *, const char *, int)(self, name, b)   /* a named record (vtable 0x4aa2a0) */
+#define atexit(f) GAME_CDECL(0x49ef9c, int, void (*)(void))(f)
+
 #endif
