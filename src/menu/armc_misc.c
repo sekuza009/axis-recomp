@@ -214,3 +214,26 @@ void (armc_40dfa0)(void)
 	GAME_VAR(u32, 0x4b070c) = 0x40000000;   /* 2 */
 	GAME_VAR(u32, 0x4b0710) = 0xc0000000;   /* -2 */
 }
+
+/* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (0x4dc798) in a state past 1 (0x4dc790) with no dialog open.
+   Returns what the original leaves in eax (the value it stopped at, or the page's handler's) */
+u32 (armc_onStateEnter)(void)
+{
+	int state = GAME_VAR(int, 0x4dc790);
+	if (state == 1 || state == 0)
+		return state;
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	u32 page = GAME_VAR(u32, 0x4dc798) - 1;
+	switch (page) {
+	case 0:
+		return armc_40fb20();
+	case 1:
+		return armc_40fd30();
+	case 2:
+		return armc_colourScreenInput();
+	case 3:
+		return GAME_CDECL(0x410160, u32, void)();   /* armc_410160 (its eax) */
+	}
+	return page;
+}

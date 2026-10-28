@@ -2787,7 +2787,8 @@ static DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DW
    in the tests: the size and a hash of each packet are logged). All lifted (lifted/net.c) */
 #include "lifted/net.c"
 /* 0x4547c0 inet_addr_wrap_4547c0(str): inet_addr, result dropped */
-LIFT_PLAIN(inet_addr_wrap_4547c0, 4547c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD inet_addr_wrap_4547c0(const char *text);
 /* 0x452170 net_asyncSelect(wnd, which): WSAAsyncSelect of socket 100 (message 0x40a) or 101 (0x40c) for read and
    close events; 0 only when it fails */
 LIFT_PLAIN(net_asyncSelect, 452170)
@@ -2860,9 +2861,12 @@ static THISCALL DWORD skel_ase_47d2f0(char *out, DWORD m) { DWORD v[1] = { m }; 
 LIFT_PLAIN(skel_ase_47d320, 47d320)
 /* 0x487c80 input_setCursorPos(x, y) / 0x487ba0 input_asyncKeyDown(key) / 0x487c30 input_getCursorPos(): only while
    the game window (0xae2f20, if set) is in front; the key state is 1 when down; the position is kept at 0xae2f18 */
-LIFT_PLAIN(input_setCursorPos, 487c80)
-LIFT_PLAIN(input_asyncKeyDown, 487ba0)
-LIFT_PLAIN(input_getCursorPos, 487c30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD input_setCursorPos(int x, int y);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_asyncKeyDown(int key);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int *input_getCursorPos(void);
 /* 0x4548b0 net_ping(ip, timeout): ICMP echo, the round-trip time (0 when it fails); 0x454650 net_454650(name, i):
    ping a server by address, its time into slot i; 0x4545b0 net_4545b0: ping every listed server (0x14-byte names) */
 LIFT_PLAIN(net_ping, 4548b0)
@@ -3211,7 +3215,8 @@ static THISCALL DWORD space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD 
 	return run_lifted(lift_4819b0, (DWORD)sp, 8, v);
 }
 /* 0x471010 (thiscall) load_471010: the scene's level grid (scene + 0xa10) as one cell over the level bounds */
-static THISCALL DWORD load_471010(char *scene) { return run_lifted(lift_471010, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_471010(char *scene);
 /* 0x484050 (thiscall) factor_initBy(items, matrices, a, b, c, d, mem, memSize): the view volume's pools (render
    items, matrices and four more lists), memory from mem or allocated, laid out one after the other */
 static THISCALL DWORD factor_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h)
@@ -3700,7 +3705,8 @@ void THISCALL armc_setBoosterIndex(void *scene, int index);
 void THISCALL armc_461510(void *scene, int slot, int item);
 /* 0x46fed0 (thiscall) actor_46fed0(): bind the textures of every shape in an object list (count +0x10, 100-byte
    entries at +0x14, shape first; FUN_00466650) */
-static THISCALL DWORD actor_46fed0(char *list) { return run_lifted(lift_46fed0, (DWORD)list, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_46fed0(char *list);
 /* 0x474210 (thiscall) match_474210(player, name, v, team, head, chest, arm, leg, booster, item0..5) /
    0x4742f0 load_4742f0(player, record): set up a player completely (name, +0x44 value, team, the five part types,
    the six item slots) and mark it used (FUN_00474390); load_4742f0 takes them from a record (+4 value, +8 name,
@@ -4700,7 +4706,8 @@ long arena_450bc0(DWORD *from, DWORD *to, DWORD flags, void *data, DWORD *size);
 long FUN_00450bf0(DWORD from, DWORD to, DWORD flags, const void *data, DWORD size);
 /* 0x451270 FUN_00451270(msg, to, size): send msg from the local player 0xa0b424; types 2 and 6 guaranteed (flag 1,
    priority 8), type 7 with the given size */
-LIFT_PLAIN(FUN_00451270, 451270)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int FUN_00451270(const int *message, DWORD to, DWORD size);
 /* 0x451350 net_logMessage(from, text, out): "<name>: <text>" (the sender's name from DirectPlay, "?" text when
    NULL) in a new global block (*out); the error from the name lookup or 0x8007000e */
 LIFT_PLAIN(net_logMessage, 451350)
@@ -4772,7 +4779,8 @@ LIFT_PLAIN(armc_4101e0, 4101e0)
 LIFT_PLAIN(armc_410500, 410500)
 LIFT_PLAIN(armc_410810, 410810)
 /* 0x410190 armc_onStateEnter(): in a state past 1 (0x4dc790), no dialog: the mouse of page 0x4dc798 (1..4) */
-LIFT_PLAIN(armc_onStateEnter, 410190)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_onStateEnter(void);
 /* 0x410ab0 armc_processInput(): the armour centre's frame input: entering (state 0x4dc790 0 / 1: the menu camera
    and projection set up, the camera eased in), the page's keys (armc_4101e0 / armc_410500 / armc_410810), the
    held rotation keys turning the camera, leaving (state 3: the camera eased out, then armc_433360 or the arena's
@@ -9342,7 +9350,7 @@ ST(dplay_enumConnections, enumconn_setup();,
    ((DWORD (WINAPI *)(char *, char *, DWORD, char *, DWORD, DWORD))0x4532f0)(BUF + 0x100, BUF + 0x200, (DWORD)g_a[0], BUF + 0x300, 0, 0),
    dplay_enumConnections((DWORD)(BUF + 0x100), (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)(BUF + 0x300), 0, 0))
 /* batch 49 */
-T_PLAIN(inet_addr_wrap_4547c0, 0x4547c0, fill_str(BUF + 0x100, 20, '.', '9');, 0, BUF + 0x100, 0, 0, 0)
+ST(inet_addr_wrap_4547c0, fill_str(BUF + 0x100, 20, '.', '9');, CALL_PLAIN(0x4547c0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(inet_addr_wrap_4547c0((const char *)(DWORD)(BUF + 0x100))))
 static void sockets_setup(void)
 {
 	G32(0xa055f8) = irnd(0, 2) ? irnd(1, 0x7fff) : 0; G32(0xa05630) = irnd(0, 2) ? irnd(1, 0x7fff) : 0;
@@ -9557,9 +9565,9 @@ static void input_setup(void)
 	g_mockKeyState = irnd(0, 1) ? 0 : (DWORD)(irnd(0, 1) ? 0x8000 : irnd(1, 0xffff));
 	g_a[0] = irnd(-100, 2000); g_a[1] = irnd(-100, 1200);
 }
-T_PLAIN(input_setCursorPos, 0x487c80, input_setup();, 0, g_a[0], g_a[1], 0, 0)
-T_PLAIN(input_asyncKeyDown, 0x487ba0, input_setup();, 0, g_a[0] & 0xff, 0, 0, 0)
-T_PLAIN(input_getCursorPos, 0x487c30, input_setup();, 0, 0, 0, 0, 0)
+ST(input_setCursorPos, input_setup();, CALL_PLAIN(0x487c80, 0, g_a[0], g_a[1], 0, 0), (DWORD)(input_setCursorPos((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
+ST(input_asyncKeyDown, input_setup();, CALL_PLAIN(0x487ba0, 0, g_a[0] & 0xff, 0, 0, 0), (DWORD)(input_asyncKeyDown((DWORD)(g_a[0] & 0xff))))
+ST(input_getCursorPos, input_setup();, CALL_PLAIN(0x487c30, 0, 0, 0, 0, 0), (DWORD)(input_getCursorPos()))
 static void ping_setup(void)
 {
 	g_mockIcmp = irnd(0, 5) ? 0x2222 : 0xffffffffu; g_mockEchoRet = irnd(0, 3) != 0; g_mockEchoRtt = (DWORD)irnd(0, 3000);
@@ -14383,7 +14391,7 @@ ST(arena_450bc0, dpmsg_setup(); g_rcvOut[2] = (DWORD)irnd(0, 0x100); if (!irnd(0
 ST(FUN_00450bf0, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD, DWORD, DWORD, void *, DWORD))0x450bf0)(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]),
    (DWORD)FUN_00450bf0(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]))
-T_PLAIN(FUN_00451270, 0x451270, dpmsg_setup();, 0, BUF + 0x3800, g_a[0], g_a[4], 0)
+ST(FUN_00451270, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(FUN_00451270((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
 T_PLAIN(net_logMessage, 0x451350, dpmsg_setup();, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0)
 T_PLAIN(arena_451090, 0x451090, dpmsg_setup();, 0, BUF + 0x3800, g_a[4], g_a[5], 0)
 T_PLAIN(net_sendLocalInfo, 0x450c20, dpmsg_setup();, 0, BUF + 0x3800, 0, 0, 0)
@@ -14464,7 +14472,7 @@ T_PLAIN(armc_40fb20, 0x40fb20, armcstate_setup(g_stubArmcMouse);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_4101e0, 0x4101e0, armcstate_setup(g_stubArmcMainKeys);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_410500, 0x410500, armcstate_setup(g_stubArmcPartKeys);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_410810, 0x410810, armcstate_setup(g_stubArmcColourKeys);, 0, 0, 0, 0, 0)
-T_PLAIN(armc_onStateEnter, 0x410190, armcstate_setup(g_stubArmcState);, 0, 0, 0, 0, 0)
+ST(armc_onStateEnter, armcstate_setup(g_stubArmcState);, CALL_PLAIN(0x410190, 0, 0, 0, 0, 0), (DWORD)(armc_onStateEnter()))
 T_PLAIN(armc_processInput, 0x410ab0, armcstate_setup(g_stubArmcInput);, 0, 0, 0, 0, 0)
 /* batch 171 */
 /* small functions with every callee stubbed (callee_stubs, the key test in key mode over the bindings' codes, the

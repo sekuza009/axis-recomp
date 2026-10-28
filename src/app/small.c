@@ -423,3 +423,9 @@ void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char
 		FUN_0046cb60((char *)self + 8 + k * 0x100);
 	}
 }
+
+/* 0x471010: the scene's level grid (+0xa10) set up as one cell over the level's bounds (+0x9ef904 .. +0x9ef910) */
+void THISCALL (load_471010)(u8 *scene)
+{
+	space_setBy(scene + 0xa10, scene + 0x9ef904, scene + 0x9ef910, 1, 1, 1, 0, 0, 0);
+}

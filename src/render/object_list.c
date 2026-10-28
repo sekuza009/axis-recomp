@@ -128,3 +128,14 @@ void THISCALL (load_497a90)(u8 *stage)
 		FIELD(int, stage, 0xdc0cdc) += FIELD(int, A, 0x4c);
 	}
 }
+
+/* 0x46fed0: the textures of every shape in an object list bound (count +0x10, 100-byte entries from *(+0x14), the
+   shape first) */
+void THISCALL (actor_46fed0)(u8 *list)
+{
+	for (int i = 0; i < FIELD(int, list, 0x10); i++) {
+		void *shape = FIELD(void *, FIELD(u8 *, list, 0x14) + i * 0x64, 0);
+		if (shape)
+			FUN_00466650(shape);
+	}
+}

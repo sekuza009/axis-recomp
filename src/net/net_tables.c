@@ -136,3 +136,24 @@ u32 (FUN_004540b0)(SessionDesc d)
 	GAME_VAR(int, 0xa0b41c) += 1;
 	return (u32)copy;
 }
+
+/* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
+u32 (inet_addr_wrap_4547c0)(const char *text) { return ((u32 (STDCALL *)(const char *))0x4a82b0)(text); }
+
+/* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
+   type 7 with size bytes, any other with none. Returns the send's result */
+int (FUN_00451270)(const int *message, u32 to, u32 size)
+{
+	u32 flags = 0, length = 0;
+	switch (message[0]) {
+	case 2:
+	case 6:
+		flags = 1;
+		length = 8;
+		break;
+	case 7:
+		length = size;
+		break;
+	}
+	return FUN_00450bf0(GAME_VAR(u32, 0xa0b424), to, flags, message, length);
+}

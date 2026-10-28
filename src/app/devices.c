@@ -117,3 +117,42 @@ int (input_createDirectInput)(void *window, void *instance)
 		return 0;
 	return input_4013a0(window) != 0;
 }
+
+/* ---- the cursor and the keys through Win32, only while the game's window (if there is one) is in front ---- */
+#define GetForegroundWindow() IMPORT(0x4a92fc, void *, void)()
+#define GetAsyncKeyState(key) IMPORT(0x4a92f8, u32, int)(key)
+#define GetCursorPos(p) IMPORT(0x4a9300, u32, int *)(p)
+#define SetCursorPos(x, y) IMPORT(0x4a9304, u32, int, int)(x, y)
+
+/* 0x487c80: the cursor put at (x, y) (screen pixels). Returns what the original leaves in eax: SetCursorPos's
+   answer, or the window in front when it isn't the game's */
+u32 (input_setCursorPos)(int x, int y)
+{
+	if (g_hWndMain) {
+		void *front = GetForegroundWindow();
+		if (g_hWndMain != front)
+			return (u32)front;
+	}
+	return SetCursorPos(x, y);
+}
+
+/* 0x487ba0: is the key down now (1 or 0; GetAsyncKeyState's low 16 bits)? */
+int (input_asyncKeyDown)(int key)
+{
+	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+		return 0;
+	return (u16)GetAsyncKeyState(key) != 0;
+}
+
+/* 0x487c30: the cursor's position (screen pixels) into 0xae2f18, left as it was while another window is in front;
+   returns the point */
+int *(input_getCursorPos)(void)
+{
+	if (!g_hWndMain || GetForegroundWindow() == g_hWndMain) {
+		int p[2];
+		GetCursorPos(p);
+		GAME_VAR(int, 0xae2f18) = p[0];
+		GAME_VAR(int, 0xae2f1c) = p[1];
+	}
+	return (int *)0xae2f18;
+}

@@ -775,4 +775,12 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define Mat4_transformPoint(out, m, p) GAME_CDECL(0x484860, void, float *, const float *, const float *)(out, m, p)
 
+/* ---- (app/devices.c, net/net_tables.c, app/small.c, render/object_list.c, menu/armc_misc.c) ---- */
+#define FUN_00450bf0(from, to, flags, data, size) GAME_CDECL(0x450bf0, int, u32, u32, u32, const void *, u32)(from, to, flags, data, size)   /* a DirectPlay message sent */
+#define space_setBy(space, lo, hi, nx, ny, nz, a, b, depth) GAME_THISCALL(0x4819b0, u32, void *, void *, void *, int, int, int, int, int, int)(space, lo, hi, nx, ny, nz, a, b, depth)
+#define FUN_00466650(shape) GAME_THISCALL(0x466650, u32, void *)(shape)   /* a shape's textures bound */
+#define armc_40fb20() GAME_CDECL(0x40fb20, u32, void)()
+#define armc_40fd30() GAME_CDECL(0x40fd30, u32, void)()
+#define armc_colourScreenInput() GAME_CDECL(0x40ff40, u32, void)()
+
 #endif
