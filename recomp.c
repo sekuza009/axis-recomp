@@ -1884,37 +1884,8 @@ static void __cdecl intro_cameraPath(char *o, int h)
 /* add an object's two points to the view volume list, transformed by the 4x4 matrix at +0x9130 (column-major,
    (x, y, z, w) in record +4.. and +0x14..). flag 1: drop it again when both points are outside the same clip plane.
    List full: set +0x90a0 */
-static THISCALL void ViewVolume_add_485120(char *vv, const DWORD *obj, const float *p, const float *q, int flag)
-{
-	typedef long double X;
-	int n = S32(vv, 0x908c);
-	if (n >= S32(vv, 0x9084)) { S32(vv, 0x90a0) = 1; return; }
-	float *r = (float *)((char *)S32(vv, 0x9088) + n * 36);
-	S32(vv, 0x908c) = n + 1;
-	if (!r) return;
-	const float *M = (const float *)(vv + 0x9130);
-	for (int c = 0; c < 4; c++)
-		r[1 + c] = (float)((X)M[8 + c] * p[2] + (X)M[4 + c] * p[1] + (X)p[0] * M[c] + M[12 + c]);
-	r[5] = (float)((X)M[4] * q[1] + (X)M[8] * q[2] + (X)q[0] * M[0] + M[12]);
-	for (int c = 1; c < 4; c++)
-		r[5 + c] = (float)((X)M[c] * q[0] + (X)M[4 + c] * q[1] + (X)M[8 + c] * q[2] + M[12 + c]);
-	if (flag == 1) {
-		unsigned code[2];
-		for (int k = 0; k < 2; k++) {               /* per point: x -> 1 / 0x10, y -> 0x100 / 0x1000, z -> 0x10000 / 0x100000 */
-			const float *v = r + 1 + k * 4;
-			X nw = -(X)v[3];
-			unsigned m = 0;
-			for (int a = 0; a < 3; a++) {
-				if (nw >= v[a]) m |= 1u << (a * 8);               /* fcom: C0 clear = ordered >= */
-				else if (v[a] >= v[3]) m |= 0x10u << (a * 8);
-			}
-			code[k] = m;
-		}
-		unsigned both = code[0] & code[1];
-		if ((both & 0x11) || (both & 0x111100)) { S32(vv, 0x908c)--; return; }
-	}
-	*(DWORD *)r = *obj;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void ViewVolume_add_485120(char *vv, const DWORD *obj, const float *p, const float *q, int flag);
 
 /* ---- batch 25: axis-angle -> matrix, HSV tint, view-volume quad add (x87) ------------------------ */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1927,43 +1898,8 @@ THISCALL void tex_tintHsv(float *rgb, float dh, float ds, float dv);
 
 /* add a quad (4 points) to the view volume's polygon list (92-byte records): transformed points at +0x18..+0x54;
    flag 1 drops it again when all 4 points are outside one clip plane; then id, two uv pairs, a texture and a value */
-static THISCALL void hud_4848e0(char *vv, int id, const DWORD *uv0, const DWORD *uv1, const DWORD *tex, const float *p,
-                                DWORD extra, int flag)
-{
-	typedef long double X;
-	int n = S32(vv, 0x9070);
-	if (n >= S32(vv, 0x9068)) { S32(vv, 0x909c) = 1; return; }
-	float *r = (float *)((char *)S32(vv, 0x906c) + n * 92);
-	S32(vv, 0x9070) = n + 1;
-	if (!r) return;
-	const float *M = (const float *)(vv + 0x9130);
-	for (int k = 0; k < 4; k++) {
-		const float *v = p + k * 3;
-		float *o = r + 6 + k * 4;
-		for (int c = 0; c < 4; c++)
-			o[c] = (c == 0 || k == 0)                 /* two addition orders, as in the original */
-			     ? (float)((X)M[8 + c] * v[2] + (X)M[4 + c] * v[1] + (X)M[c] * v[0] + M[12 + c])
-			     : (float)((X)M[8 + c] * v[2] + (X)M[c] * v[0] + (X)M[4 + c] * v[1] + M[12 + c]);
-	}
-	if (flag == 1) {
-		unsigned all = 0x111111;
-		for (int k = 0; k < 4; k++) {
-			const float *v = r + 6 + k * 4;
-			X nw = -(X)v[3];
-			unsigned m = 0;
-			for (int a = 0; a < 3; a++) {
-				if (nw >= v[a]) m |= 1u << (a * 8);
-				else if (v[a] >= v[3]) m |= 0x10u << (a * 8);
-			}
-			all &= m;
-		}
-		if ((all & 0x11) || (all & 0x111100)) { S32(vv, 0x9070)--; return; }
-	}
-	S32(r, 0) = id;
-	if (id >= 0) { SU32(r, 4) = uv0[0]; SU32(r, 8) = uv0[1]; SU32(r, 0xc) = uv1[0]; SU32(r, 0x10) = uv1[1]; }
-	SU32(r, 0x14) = *tex;
-	SU32(r, 0x58) = extra;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_4848e0(char *vv, int id, const DWORD *uv0, const DWORD *uv1, const DWORD *tex, const float *p, DWORD extra, int flag);
 
 /* ---- batch 26: room / arena menu camera (ease to a menu point, back home, snap) -------------------- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1992,47 +1928,8 @@ THISCALL void hud_47ca70(void *self, int b, void *vv);
    corners (x+A.x, y+A.y), (x+B.x, y+A.y), (x+B.x, y+B.y), (x+A.x, y+B.y) at depth z+dz are projected with the matrix
    at +0x90b0. Corners 0 and 3 are rounded to float before projecting, corners 1 and 2 are not (as in the original).
    Same list, clip test and record layout as hud_4848e0. */
-static THISCALL void hud_484ca0(char *vv, int id, const DWORD *uv0, const DWORD *uv1, float dz, const DWORD *tex,
-                                const float *A, const float *B, const float *p, DWORD extra, int flag)
-{
-	typedef long double X;
-	int n = S32(vv, 0x9070);
-	if (n >= S32(vv, 0x9068)) { S32(vv, 0x909c) = 1; return; }
-	float *r = (float *)((char *)S32(vv, 0x906c) + n * 92);
-	S32(vv, 0x9070) = n + 1;
-	if (!r) return;
-	const float *V = (const float *)(vv + 0x90f0), *P = (const float *)(vv + 0x90b0);
-	float cx = (float)((X)V[4] * p[1] + (X)V[8] * p[2] + (X)p[0] * V[0] + V[12]);
-	float cy = (float)((X)V[5] * p[1] + (X)V[9] * p[2] + (X)V[1] * p[0] + V[13]);
-	X z = (X)V[6] * p[1] + (X)V[10] * p[2] + (X)V[2] * p[0] + V[14];
-	z += dz;
-	X xs[4], ys[4];
-	xs[0] = (float)((X)cx + A[0]); ys[0] = (float)((X)cy + A[1]);
-	xs[1] = (X)cx + B[0];          ys[1] = (X)cy + A[1];
-	xs[2] = (X)cx + B[0];          ys[2] = (X)cy + B[1];
-	xs[3] = (float)((X)cx + A[0]); ys[3] = (float)((X)cy + B[1]);
-	for (int k = 0; k < 4; k++)
-		for (int c = 0; c < 4; c++)
-			r[6 + k * 4 + c] = (float)(z * P[8 + c] + ys[k] * P[4 + c] + xs[k] * P[c] + P[12 + c]);
-	if (flag == 1) {
-		unsigned all = 0x111111;
-		for (int k = 0; k < 4; k++) {
-			const float *v = r + 6 + k * 4;
-			X nw = -(X)v[3];
-			unsigned m = 0;
-			for (int a = 0; a < 3; a++) {
-				if (nw >= v[a]) m |= 1u << (a * 8);
-				else if (v[a] >= v[3]) m |= 0x10u << (a * 8);
-			}
-			all &= m;
-		}
-		if ((all & 0x11) || (all & 0x111100)) { S32(vv, 0x9070)--; return; }
-	}
-	S32(r, 0) = id;
-	if (id >= 0) { SU32(r, 4) = uv0[0]; SU32(r, 8) = uv0[1]; SU32(r, 0xc) = uv1[0]; SU32(r, 0x10) = uv1[1]; }
-	SU32(r, 0x14) = *tex;
-	SU32(r, 0x58) = extra;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_484ca0(char *vv, int id, const DWORD *uv0, const DWORD *uv1, float dz, const DWORD *tex, const float *A, const float *B, const float *p, DWORD extra, int flag);
 
 /* ---- batch 29: draw every live bullet's trail ---- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
