@@ -3,6 +3,8 @@
    and handed to the view volume. */
 #include "../game.h"
 
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+
 /* an entry's colours: with neither lights nor factors cleared; factors first (they set the colours), point lights
    then added on top, or alone (setting them). The inverse is taken again before the point lights, as the original
    does, though they do not use it; a singular matrix leaves inverse as it was */
@@ -60,4 +62,69 @@ int THISCALL (hud_46fd20)(ObjectList *list, void *view, const LightFactors *fact
 		}
 	}
 	return 1;
+}
+
+/* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from +0xdc0278): for mesh i a vertex record B
+   (at *(+0xdc0a8c) + i * 0x80) and a box record A (*(+0xdc0cd8) + i * 0x80), the vertex and index counts summed, and
+   each mesh's fixed six-face index lists written into it (with their pointers) */
+void THISCALL (load_497a90)(u8 *stage)
+{
+	int n = FIELD(int, stage, 0xdc0a74);
+	FIELD(int, stage, 0xdc0a88) = n;
+	FIELD(int, stage, 0xdc0a90) = 0;
+	FIELD(int, stage, 0xdc0a94) = 0;
+	FIELD(int, stage, 0xdc0cd4) = FIELD(int, stage, 0xdc0a74);
+	FIELD(int, stage, 0xdc0cdc) = 0;
+	FIELD(int, stage, 0xdc0ce0) = 0;
+	static const short faces[][2] = {   /* (offset in the mesh, value), in the original's order of stores */
+		{ 0x1b4, 6 }, { 0x1a8, 6 }, { 0x1c0, 6 }, { 0x1cc, 6 }, { 0x1ac, 5 }, { 0x1b8, 5 }, { 0x1c4, 5 }, { 0x1d0, 5 },
+		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },
+		{ 0x178, 0 }, { 0x17c, 5 }, { 0x180, 8 }, { 0x184, 9 }, { 0x188, 2 }, { 0x18c, 1 }, { 0x190, 7 }, { 0x194, 0xa },
+		{ 0x198, 0xb }, { 0x19c, 3 }, { 0x1a0, 2 }, { 0x1a4, 9 } };
+	for (int i = 0; i < FIELD(int, stage, 0xdc0a74); i++) {
+		u8 *m = stage + 0xdc0278 + i * 0x20c;
+		u8 *A = FIELD(u8 *, stage, 0xdc0cd8) + i * 0x80, *B = FIELD(u8 *, stage, 0xdc0a8c) + i * 0x80;
+		switch (FIELD(int, m, -0x34)) {
+		case 0:
+			FIELD(int, B, 0) = 0;
+			FIELD(int, A, 0) = 0;
+			break;
+		case 1:
+			FIELD(int, B, 0) = 8;
+			FIELD(int, A, 0) = 8;
+			break;
+		case 2:
+			FIELD(int, B, 0) = 6;
+			FIELD(int, A, 0) = 6;
+			break;
+		}
+		FIELD(int, B, 0x44) = FIELD(int, m, 0);
+		FIELD(int, A, 0x44) = FIELD(int, m, 0);
+		FIELD(int, B, 0x48) = FIELD(int, stage, 0xdc0a90);
+		FIELD(int, B, 0x4c) = (int)((u32)(FIELD(int, m, -0x18) + 1) * (u32)(FIELD(int, m, -0x14) + 1));
+		FIELD(int, B, 0x50) = FIELD(int, m, 0xc);
+		FIELD(int, B, 0x58) = FIELD(int, m, 0x14);
+		FIELD(int, B, 0x5c) = FIELD(int, m, 0x1c);
+		FIELD(int, B, 0x60) = 0;
+		FIELD(int, B, 0x64) = FIELD(int, m, 0x30);
+		FIELD(int, A, 0x48) = FIELD(int, stage, 0xdc0cdc);
+		FIELD(u8 *, A, 0x50) = m + 0x38;
+		FIELD(u8 *, A, 0x58) = m + 0xc8;
+		FIELD(int, A, 0x4c) = 0xc;
+		FIELD(u8 *, A, 0x5c) = m + 0xf8;
+		FIELD(int, A, 0x60) = FIELD(int, m, -4) == 1 ? 4 : 0;
+		FIELD(u8 *, A, 0x64) = m + 0x1a8;
+		for (unsigned k = 0; k < sizeof faces / sizeof faces[0]; k++) {
+			if (k == 8) {   /* the index lists' pointers, stored among the constants */
+				FIELD(u8 *, m, 0x1b0) = m + 0x158;
+				FIELD(u8 *, m, 0x1c8) = m + 0x180;
+				FIELD(u8 *, m, 0x1bc) = m + 0x16c;
+			}
+			if (k == 10)
+				FIELD(u8 *, m, 0x1d4) = m + 0x194;
+			FIELD(int, m, faces[k][0]) = faces[k][1];
+		}
+		FIELD(int, stage, 0xdc0a90) += FIELD(int, B, 0x4c);
+		FIELD(int, stage, 0xdc0cdc) += FIELD(int, A, 0x4c);
+	}
 }

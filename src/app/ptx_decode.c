@@ -140,3 +140,67 @@ void (ptx_internal_46ea30)(const u8 *src, u8 *dst, int w, int h, int bpp)
 		}
 	}
 }
+
+/* ---- 0x46e380: one 8 x 8 block of coefficients to 8 x 8 bytes: libjpeg's jpeg_idct_ifast (AAN, 8-bit fixed point
+   multiplies as (x * c) >> 8 in wrapping 32-bit ints, no rounding), with the quantisation table at 0xaa2c94 and the
+   range limit table at the clamp table + 0x80 ---- */
+static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
+#define Q(i) ((u32)(i))
+
+void (ptx_decodeBlock_46e380)(const int *in, u8 *out)
+{
+	const int *quant = (const int *)0xaa2c94;
+	const u8 *limit = g_clamp + 0x80;
+	int ws[64];
+	for (int c = 0; c < 8; c++) {   /* pass 1: the columns, dequantised */
+		const int *i = in + c, *q = quant + c;
+		int *w = ws + c;
+		if (!i[8] && !i[16] && !i[24] && !i[32] && !i[40] && !i[48] && !i[56]) {
+			int dc = (int)(Q(i[0]) * Q(q[0]));
+			for (int r = 0; r < 8; r++)
+				w[r * 8] = dc;
+			continue;
+		}
+		int t0 = (int)(Q(i[0]) * q[0]), t1 = (int)(Q(i[16]) * q[16]);
+		int t2 = (int)(Q(i[32]) * q[32]), t3 = (int)(Q(i[48]) * q[48]);
+		int t10 = t0 + t2, t11 = t0 - t2, t13 = t1 + t3, t12 = idct_mul(t1 - t3, 362) - t13;
+		t0 = t10 + t13;
+		t3 = t10 - t13;
+		t1 = t11 + t12;
+		t2 = t11 - t12;
+		int t4 = (int)(Q(i[8]) * q[8]), t5 = (int)(Q(i[24]) * q[24]);
+		int t6 = (int)(Q(i[40]) * q[40]), t7 = (int)(Q(i[56]) * q[56]);
+		int z13 = t6 + t5, z10 = t6 - t5, z11 = t4 + t7, z12 = t4 - t7;
+		t7 = z11 + z13;
+		int z5 = idct_mul(z10 + z12, 473);
+		t6 = idct_mul(z10, -669) - t7 + z5;
+		t5 = idct_mul(z11 - z13, 362) - t6;
+		t4 = idct_mul(z12, 277) - z5 + t5;
+		w[0] = t0 + t7;
+		w[56] = t0 - t7;
+		w[8] = t1 + t6;
+		w[48] = t1 - t6;
+		w[16] = t2 + t5;
+		w[40] = t2 - t5;
+		w[32] = t3 + t4;
+		w[24] = t3 - t4;
+	}
+	for (int r = 0; r < 8; r++, out += 8) {   /* pass 2: the rows, descaled (>> 5) and range limited */
+		const int *w = ws + r * 8;
+		int t10 = w[0] + w[4], t11 = w[0] - w[4], t13 = w[2] + w[6], t12 = idct_mul(w[2] - w[6], 362) - t13;
+		int t0 = t10 + t13, t3 = t10 - t13, t1 = t11 + t12, t2 = t11 - t12;
+		int z13 = w[5] + w[3], z10 = w[5] - w[3], z11 = w[1] + w[7], z12 = w[1] - w[7];
+		int t7 = z11 + z13, z5 = idct_mul(z10 + z12, 473);
+		int t6 = idct_mul(z10, -669) - t7 + z5, t5 = idct_mul(z11 - z13, 362) - t6, t4 = idct_mul(z12, 277) - z5 + t5;
+#define LIMIT(x) limit[((x) >> 5) & 0x3ff]
+		out[0] = LIMIT(t0 + t7);
+		out[7] = LIMIT(t0 - t7);
+		out[1] = LIMIT(t1 + t6);
+		out[6] = LIMIT(t1 - t6);
+		out[2] = LIMIT(t2 + t5);
+		out[5] = LIMIT(t2 - t5);
+		out[4] = LIMIT(t3 + t4);
+		out[3] = LIMIT(t3 - t4);
+#undef LIMIT
+	}
+}

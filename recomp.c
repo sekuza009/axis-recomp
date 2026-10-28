@@ -1647,44 +1647,8 @@ static void options_panel(DWORD rec, DWORD rec2, DWORD gx, DWORD gy, DWORD gx2)
 void room_431de0(void);
 /* per-mesh draw records: for mesh i (0x20c bytes at +0xdc0278), fill record B (at *(+0xdc0a8c) + i*0x80) and A
    (at *(+0xdc0cd8) + i*0x80), and write the mesh's fixed 6-face index lists */
-static THISCALL void load_497a90(char *self)
-{
-	int n = S32(self, 0xdc0a74);
-	S32(self, 0xdc0a88) = n; S32(self, 0xdc0a90) = 0; S32(self, 0xdc0a94) = 0;
-	S32(self, 0xdc0cd4) = S32(self, 0xdc0a74); S32(self, 0xdc0cdc) = 0; S32(self, 0xdc0ce0) = 0;
-	static const short k1[][2] = {   /* constant ints in the mesh block, in the original's store order */
-		{ 0x1b4, 6 }, { 0x1a8, 6 }, { 0x1c0, 6 }, { 0x1cc, 6 }, { 0x1ac, 5 }, { 0x1b8, 5 }, { 0x1c4, 5 }, { 0x1d0, 5 },
-		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },
-		{ 0x178, 0 }, { 0x17c, 5 }, { 0x180, 8 }, { 0x184, 9 }, { 0x188, 2 }, { 0x18c, 1 }, { 0x190, 7 }, { 0x194, 0xa },
-		{ 0x198, 0xb }, { 0x19c, 3 }, { 0x1a0, 2 }, { 0x1a4, 9 } };
-	for (int i = 0; i < S32(self, 0xdc0a74); i++) {
-		char *m = self + 0xdc0278 + i * 0x20c;
-		char *A = (char *)S32(self, 0xdc0cd8) + i * 0x80, *B = (char *)S32(self, 0xdc0a8c) + i * 0x80;
-		switch (S32(m, -0x34)) {
-		case 0: S32(B, 0) = 0; S32(A, 0) = 0; break;
-		case 1: S32(B, 0) = 8; S32(A, 0) = 8; break;
-		case 2: S32(B, 0) = 6; S32(A, 0) = 6; break;
-		}
-		S32(B, 0x44) = S32(m, 0); S32(A, 0x44) = S32(m, 0);
-		S32(B, 0x48) = S32(self, 0xdc0a90);
-		S32(B, 0x4c) = (int)((DWORD)(S32(m, -0x18) + 1) * (DWORD)(S32(m, -0x14) + 1));
-		S32(B, 0x50) = S32(m, 0xc); S32(B, 0x58) = S32(m, 0x14); S32(B, 0x5c) = S32(m, 0x1c); S32(B, 0x60) = 0;
-		S32(B, 0x64) = S32(m, 0x30);
-		S32(A, 0x48) = S32(self, 0xdc0cdc); S32(A, 0x50) = (int)(m + 0x38); S32(A, 0x58) = (int)(m + 0xc8);
-		S32(A, 0x4c) = 0xc; S32(A, 0x5c) = (int)(m + 0xf8);
-		S32(A, 0x60) = S32(m, -4) == 1 ? 4 : 0;
-		S32(A, 0x64) = (int)(m + 0x1a8);
-		for (unsigned k = 0; k < sizeof k1 / sizeof k1[0]; k++) {
-			if (k == 8) {                            /* pointers to the index lists, written among the constants */
-				S32(m, 0x1b0) = (int)(m + 0x158); S32(m, 0x1c8) = (int)(m + 0x180); S32(m, 0x1bc) = (int)(m + 0x16c);
-			}
-			if (k == 10) S32(m, 0x1d4) = (int)(m + 0x194);
-			S32(m, k1[k][0]) = k1[k][1];
-		}
-		S32(self, 0xdc0a90) += S32(B, 0x4c);
-		S32(self, 0xdc0cdc) += S32(A, 0x4c);
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_497a90(char *self);
 
 /* ---- batch 18: arena options layout, entering the setup screen and the game room --------------- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1730,48 +1694,8 @@ void setup_420e50(int k);
 
 /* libjpeg's jpeg_idct_ifast: 8x8 coefficients (ints) x quantisation table (ints at 0xaa2c94) -> 8x8 bytes, through the
    range-limit table at *(0xa1f300) + 0x80. Multiplies are (x * c) >> 8 in wrapping 32-bit ints, no rounding. */
-static int idct_mul(int x, int c) { return (int)((unsigned)x * (unsigned)c) >> 8; }
-static void __cdecl ptx_decodeBlock_46e380(const int *in, BYTE *out)
-{
-	const int *q = (const int *)0xaa2c94;
-	const BYTE *rl = (const BYTE *)G32(0xa1f300) + 0x80;
-	int ws[64];
-	for (int c = 0; c < 8; c++) {                 /* pass 1: columns */
-		const int *i = in + c, *qq = q + c;
-		int *w = ws + c;
-		if (!i[8] && !i[16] && !i[24] && !i[32] && !i[40] && !i[48] && !i[56]) {
-			int dc = (int)((unsigned)i[0] * (unsigned)qq[0]);
-			for (int r = 0; r < 8; r++) w[r * 8] = dc;
-			continue;
-		}
-		int t0 = (int)((unsigned)i[0] * qq[0]), t1 = (int)((unsigned)i[16] * qq[16]);
-		int t2 = (int)((unsigned)i[32] * qq[32]), t3 = (int)((unsigned)i[48] * qq[48]);
-		int t10 = t0 + t2, t11 = t0 - t2, t13 = t1 + t3, t12 = idct_mul(t1 - t3, 362) - t13;
-		t0 = t10 + t13; t3 = t10 - t13; t1 = t11 + t12; t2 = t11 - t12;
-		int t4 = (int)((unsigned)i[8] * qq[8]), t5 = (int)((unsigned)i[24] * qq[24]);
-		int t6 = (int)((unsigned)i[40] * qq[40]), t7 = (int)((unsigned)i[56] * qq[56]);
-		int z13 = t6 + t5, z10 = t6 - t5, z11 = t4 + t7, z12 = t4 - t7;
-		t7 = z11 + z13;
-		int z5 = idct_mul(z10 + z12, 473);
-		t6 = idct_mul(z10, -669) - t7 + z5;
-		t5 = idct_mul(z11 - z13, 362) - t6;
-		t4 = idct_mul(z12, 277) - z5 + t5;
-		w[0] = t0 + t7; w[56] = t0 - t7; w[8] = t1 + t6; w[48] = t1 - t6;
-		w[16] = t2 + t5; w[40] = t2 - t5; w[32] = t3 + t4; w[24] = t3 - t4;
-	}
-	for (int r = 0; r < 8; r++, out += 8) {      /* pass 2: rows */
-		const int *w = ws + r * 8;
-		int t10 = w[0] + w[4], t11 = w[0] - w[4], t13 = w[2] + w[6], t12 = idct_mul(w[2] - w[6], 362) - t13;
-		int t0 = t10 + t13, t3 = t10 - t13, t1 = t11 + t12, t2 = t11 - t12;
-		int z13 = w[5] + w[3], z10 = w[5] - w[3], z11 = w[1] + w[7], z12 = w[1] - w[7];
-		int t7 = z11 + z13, z5 = idct_mul(z10 + z12, 473);
-		int t6 = idct_mul(z10, -669) - t7 + z5, t5 = idct_mul(z11 - z13, 362) - t6, t4 = idct_mul(z12, 277) - z5 + t5;
-#define RL(x) rl[((x) >> 5) & 0x3ff]
-		out[0] = RL(t0 + t7); out[7] = RL(t0 - t7); out[1] = RL(t1 + t6); out[6] = RL(t1 - t6);
-		out[2] = RL(t2 + t5); out[5] = RL(t2 - t5); out[4] = RL(t3 + t4); out[3] = RL(t3 - t4);
-#undef RL
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void ptx_decodeBlock_46e380(const int *in, BYTE *out);
 
 /* ---- batch 22: quaternion <-> matrix, ray vs polygon, RGB -> HSV (x87, operation order from the disassembly) -- */
 /* quaternion (x, y, z, w) -> 4x4 rotation matrix (column-major). xx, xy and w*z stay in 80 bits; the other products
