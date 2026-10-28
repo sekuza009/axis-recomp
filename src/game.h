@@ -22,6 +22,7 @@
 /* a clear colour kept in memory (three floats), passed on bit for bit, alpha 1 */
 #define glClearColor_stored(c) IMPORT(0x4a91e0, void, u32, u32, u32, u32)((c)[0], (c)[1], (c)[2], 0x3f800000u)
 #define GL_QUADS 7
+#define GL_LINE_LOOP 2
 #define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
 #define glEnd() IMPORT(0x4a9220, void, void)()
 #define glTexCoord2f(s, t) IMPORT(0x4a920c, void, float, float)(s, t)

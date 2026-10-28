@@ -155,9 +155,12 @@ typedef struct Scene {
 	u32 eventFirst;   /* +0x2342efa: first event still shown */
 	u8 _pad2342efe[0x4];
 	float readyTimer;   /* +0x2342f02: > 0: "ready" shown */
-	u8 _pad2342f06[0x389];
+	char readyText[0x40];   /* +0x2342f06: shown while no countdown runs */
+	u8 _pad2342f46[0x349];
 	i32 rankingKey;   /* +0x234328f: 1: the ranking key is held */
-	u8 _pad2343293[0x878];
+	u8 _pad2343293[0xb8];
+	char consoleLines[30][0x40];   /* +0x234334b: the full-screen text list (hud_4955a0) */
+	u8 _pad2343acb[0x40];
 } Scene;
 #pragma pack(pop)
 
@@ -241,7 +244,9 @@ _Static_assert(offsetof(Scene, events) == 0x23429ce && sizeof(((Scene *)0)->even
 _Static_assert(offsetof(Scene, eventCount) == 0x2342ef6 && sizeof(((Scene *)0)->eventCount) == 0x4, "scene.fields: Scene.eventCount");
 _Static_assert(offsetof(Scene, eventFirst) == 0x2342efa && sizeof(((Scene *)0)->eventFirst) == 0x4, "scene.fields: Scene.eventFirst");
 _Static_assert(offsetof(Scene, readyTimer) == 0x2342f02 && sizeof(((Scene *)0)->readyTimer) == 0x4, "scene.fields: Scene.readyTimer");
+_Static_assert(offsetof(Scene, readyText) == 0x2342f06 && sizeof(((Scene *)0)->readyText) == 0x40, "scene.fields: Scene.readyText");
 _Static_assert(offsetof(Scene, rankingKey) == 0x234328f && sizeof(((Scene *)0)->rankingKey) == 0x4, "scene.fields: Scene.rankingKey");
+_Static_assert(offsetof(Scene, consoleLines) == 0x234334b && sizeof(((Scene *)0)->consoleLines) == 0x780, "scene.fields: Scene.consoleLines");
 _Static_assert(sizeof(Scene) == 0x2343b0b, "scene.fields: size of Scene");
 
 #endif

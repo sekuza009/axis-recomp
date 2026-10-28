@@ -5250,7 +5250,8 @@ LIFT_PLAIN(FUN_0042f0f0, 42f0f0)
 /* 0x487bd0 input_asyncKeyPressed(key): 1 if the key went down since the last query (while the window is in front) */
 LIFT_PLAIN(input_asyncKeyPressed, 487bd0)
 /* 0x46bd00 hud_46bd00(x0, y0, x1, y1): a rectangle outline (screen y flipped) */
-LIFT_PLAIN(hud_46bd00, 46bd00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void hud_46bd00(int x0, int y0, int x1, int y1);
 /* 0x4841f0 (thiscall) ViewVolume_captureMatrices(proj, view): the view-projection matrix (the given matrices or the
    current GL ones) */
 static THISCALL DWORD ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD view) { DWORD v[2] = { proj, view }; return run_lifted(lift_4841f0, (DWORD)vv, 2, v); }
@@ -6649,10 +6650,12 @@ static THISCALL DWORD hud_drawClock(char *game) { return run_lifted(lift_496610,
 /* batch 153 (lifted/grp99.c): HUD messages */
 #include "lifted/grp99.c"
 /* 0x495140 hud_drawPressFire(): "Press fire button to start" centred low (hud_44ae10, patched: native) */
-LIFT_PLAIN(hud_drawPressFire, 495140)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawPressFire(void *scene);
 /* 0x496c20 (thiscall on the game) hud_drawReadyStart(): the countdown (+0x233cc4c): "READY %d" in yellow, below 1
    "START!" in red, large; at 0 or below the game's message +0x2342f06 */
-static THISCALL DWORD hud_drawReadyStart(char *game) { return run_lifted(lift_496c20, (DWORD)game, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_drawReadyStart(void *scene);
 /* 0x496d10 (thiscall on the game) hud_drawRecordIndicator(): while recording, blinking by the time +0x2340d29: the
    record icon (replay_drawIcon 4), the time as "%02d:%02d" and "[AutoPlay %s]" with the file name +0x2340d0c */
 static THISCALL DWORD hud_drawRecordIndicator(char *game) { return run_lifted(lift_496d10, (DWORD)game, 0, NULL); }
@@ -7326,7 +7329,8 @@ static THISCALL DWORD item_update(char *s, DWORD dt) { DWORD v[1] = { dt }; retu
 static THISCALL DWORD match_490d40(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_490d40, (DWORD)s, 1, v); }
 /* 0x496b80 replay_drawFollowedName() (thiscall on the scene): white text at (0x192, 0x280), the followed player's
    name (+0x2340c64, the 0x888-byte player records' names at +0x1eccb08) or the fixed text when there is none */
-static THISCALL DWORD replay_drawFollowedName(char *s) { return run_lifted(lift_496b80, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL replay_drawFollowedName(void *scene);
 /* 0x456d10 sound_initSoundTable(file, volume): with sound on (0xa0e80c), the table freed (0x456cd0), the volume set,
    the file opened (an error message when it does not open) and read descrambled (0x46cbe0): index, 0x100-byte
    name, ... until an index < 0, each name loaded (sound_loadWav) into the table 0xa0e02c; 1, or 0 with sound off */
@@ -7367,7 +7371,8 @@ static THISCALL DWORD replay_frame(char *s) { return run_lifted(lift_487f00, (DW
 /* 0x4955a0 hud_4955a0() (thiscall on the scene; with "help_draw" at 0x4955c0, which functions.csv listed apart: the
    head runs straight into it): a half-transparent black quad over the screen (0x46bd60), then the 30 help lines
    (0x40 bytes each from +0x234334b) in white at x 0xc0, y 0, 0x10 ... 0x1d0 (0x44ad60) */
-static THISCALL DWORD hud_4955a0(char *s) { return run_lifted(lift_4955a0, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL hud_4955a0(void *scene);
 /* 0x469730 loading_drawCylinder(mode, unused, text): the loading screen (0x469320, at the progress 0xa0ea88) with
    its text (copied to 0xa0e988). Mode -1: the progress reset, the backdrop texture looked up, then a fade from
    black over one second of game time (timer 0xa0e948, a full-screen quad 0x46bd60 each frame, swapped by 0x4685d0);
@@ -11914,7 +11919,7 @@ static void recv_setup(void)
 T_PLAIN(net_452d70, 0x452d70, recv_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(FUN_0042f0f0, 0x42f0f0, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
 T_PLAIN(input_asyncKeyPressed, 0x487bd0, input_setup(); fill((void *)0xae2c18, 0x300);, 0, g_a[0] & 0xff, 0, 0, 0)
-T_PLAIN(hud_46bd00, 0x46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(hud_46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200);, CALL_PLAIN(0x46bd00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_46bd00((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
 static void capmat_setup(void)
 {
 	vv_setup();
@@ -15942,7 +15947,7 @@ static void hudtext_setup(void)
 	hudicon_setup();
 	menutex_fonts(0);
 }
-T_PLAIN(hud_drawPressFire, 0x495140, hudtext_setup();, 0, 0, 0, 0, 0)
+ST(hud_drawPressFire, hudtext_setup();, CALL_PLAIN(0x495140, 0, 0, 0, 0, 0), (hud_drawPressFire((void *)BUF), 0))
 /* the countdown anywhere in -1..5 (whole values now and then), the message */
 static void readystart_setup(void)
 {
