@@ -1,19 +1,14 @@
-/* hud_overlay.c: small overlays of the in-match HUD. The HUD is laid out in 640 x 480 units and scaled to the
-   screen. */
+/* hud_overlay.c: small overlays of the in-match HUD, and the HUD's unit conversion (hud.h). */
 #include "../game.h"
+#include "hud.h"
 
-/* x in 640-unit HUD space to screen pixels, as the original computes it: x as a float, divided by the units per
-   pixel (640 / width) */
-static int hud_toScreenX(int x)
+int hud_scaleX(float units)
 {
-	float fx = (float)x;
-	return ftol(fx / ((long double)640.0f / gfx_getWidth()));
+	return ftol(units / ((long double)640.0f / gfx_getWidth()));
 }
-/* y in 480-unit HUD space to screen pixels */
-static int hud_toScreenY(int y)
+int hud_scaleY(float units)
 {
-	float fy = (float)y;
-	return ftol(fy / ((long double)480.0f / gfx_getHeight()));
+	return ftol(units / ((long double)480.0f / gfx_getHeight()));
 }
 
 /* 0x4950a0 (hud_4950a0): a filled rectangle given in HUD units, in the current colour. The corners are converted

@@ -26,6 +26,7 @@
 #define glBegin(mode) IMPORT(0x4a921c, void, u32)(mode)
 #define glEnd() IMPORT(0x4a9220, void, void)()
 #define glTexCoord2f(s, t) IMPORT(0x4a920c, void, float, float)(s, t)
+#define glBindTexture(target, id) IMPORT(0x4a9264, void, u32, u32)(target, id)
 #define glVertex2i(x, y) IMPORT(0x4a91f4, void, int, int)(x, y)
 #define glDisable(cap) IMPORT(0x4a922c, void, u32)(cap)
 

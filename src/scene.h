@@ -62,7 +62,7 @@ typedef struct FlagSlot {
 /* the scene: the one large object of a match, built by game_loadAllData */
 typedef struct Scene {
 	u8 _pad0000000[0x8];
-	i32 flagOwnerIsSelf;   /* +0x8: (unclear) the ranking shows each player's own flag, not Player.flagOwner's */
+	i32 flagOwnerIsSelf;   /* +0x8: (unclear) the ranking shows each player's own flag, not Player.flagOwner's, from flagGlTexture */
 	u8 _pad000000c[0x2c];
 	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
 	u8 _pad000003c[0x38];
@@ -71,7 +71,9 @@ typedef struct Scene {
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
 	u8 _pad01f1668[0x9cf038];
 	i32 hudTexture;   /* +0xbc06a0: texture id of the HUD marks (lock-on boxes) */
-	u8 _pad0bc06a4[0x21054];
+	u8 _pad0bc06a4[0xc];
+	i32 emblemTexture;   /* +0xbc06b0: texture id (manager * 512 + slot): emblems, 10 a row from texel 224 */
+	u8 _pad0bc06b4[0x21044];
 	i32 fogOn;   /* +0xbe16f8: 1: the screen is cleared to the fog colour */
 	u32 fogColour[3];   /* +0xbe16fc: r, g, b (floats, passed on unchanged) */
 	u8 _pad0be1708[0x4];
@@ -94,7 +96,11 @@ typedef struct Scene {
 	u8 _pad22e7188[0x9280];
 	i32 elapsed;   /* +0x22f0408: the match's time in seconds */
 	float timeFraction;   /* +0x22f040c: (unclear) a 0..1 time value: render_drawObjects' float; the clock blinks red by it */
-	u8 _pad22f0410[0xb7c8];
+	u8 _pad22f0410[0x298];
+	u32 flagGlTexture;   /* +0x22f06a8: GL texture of the flags, used while flagOwnerIsSelf */
+	u8 _pad22f06ac[0x8000];
+	i32 flagTexture;   /* +0x22f86ac: texture id of the flags (4 a row) */
+	u8 _pad22f86b0[0x3528];
 	char msgText[0x40][0x108];   /* +0x22fbbd8: message texts: four lines of 0x41 bytes per block */
 	u8 _pad22ffdd8[0x3c540];
 	MessageSlot msgRing[32];   /* +0x233c318: messages waiting to be shown (ring of 32) */
@@ -204,6 +210,7 @@ _Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4,
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, hudTexture) == 0xbc06a0 && sizeof(((Scene *)0)->hudTexture) == 0x4, "scene.fields: Scene.hudTexture");
+_Static_assert(offsetof(Scene, emblemTexture) == 0xbc06b0 && sizeof(((Scene *)0)->emblemTexture) == 0x4, "scene.fields: Scene.emblemTexture");
 _Static_assert(offsetof(Scene, fogOn) == 0xbe16f8 && sizeof(((Scene *)0)->fogOn) == 0x4, "scene.fields: Scene.fogOn");
 _Static_assert(offsetof(Scene, fogColour) == 0xbe16fc && sizeof(((Scene *)0)->fogColour) == 0xc, "scene.fields: Scene.fogColour");
 _Static_assert(offsetof(Scene, fogInOverlay) == 0xbe170c && sizeof(((Scene *)0)->fogInOverlay) == 0x4, "scene.fields: Scene.fogInOverlay");
@@ -219,6 +226,8 @@ _Static_assert(offsetof(Scene, gameMode) == 0x22e7180 && sizeof(((Scene *)0)->ga
 _Static_assert(offsetof(Scene, teamGame) == 0x22e7184 && sizeof(((Scene *)0)->teamGame) == 0x4, "scene.fields: Scene.teamGame");
 _Static_assert(offsetof(Scene, elapsed) == 0x22f0408 && sizeof(((Scene *)0)->elapsed) == 0x4, "scene.fields: Scene.elapsed");
 _Static_assert(offsetof(Scene, timeFraction) == 0x22f040c && sizeof(((Scene *)0)->timeFraction) == 0x4, "scene.fields: Scene.timeFraction");
+_Static_assert(offsetof(Scene, flagGlTexture) == 0x22f06a8 && sizeof(((Scene *)0)->flagGlTexture) == 0x4, "scene.fields: Scene.flagGlTexture");
+_Static_assert(offsetof(Scene, flagTexture) == 0x22f86ac && sizeof(((Scene *)0)->flagTexture) == 0x4, "scene.fields: Scene.flagTexture");
 _Static_assert(offsetof(Scene, msgText) == 0x22fbbd8 && sizeof(((Scene *)0)->msgText) == 0x4200, "scene.fields: Scene.msgText");
 _Static_assert(offsetof(Scene, msgRing) == 0x233c318 && sizeof(((Scene *)0)->msgRing) == 0x280, "scene.fields: Scene.msgRing");
 _Static_assert(offsetof(Scene, msgWrite) == 0x233c598 && sizeof(((Scene *)0)->msgWrite) == 0x4, "scene.fields: Scene.msgWrite");
