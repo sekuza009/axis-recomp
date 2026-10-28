@@ -1,5 +1,6 @@
-/* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries). */
+/* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
+#include <string.h>
 
 /* strcmp, as -1 / 0 / 1 (bytes compared unsigned) */
 static int name_cmp(const char *a, const char *b)
@@ -35,3 +36,16 @@ static int name_search(u32 count, u32 table, const char *name)
 /* 0x466ce0: a shape by name; 0x46b0c0: a skeleton data file by name */
 int (shape_466ce0)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
 int (skelDat_46b0c0)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
+
+/* 0x46cad0: src without its extension (from the last '.') copied to dst */
+void (load_46cad0)(const char *src, char *dst)
+{
+	char buf[256];
+	strcpy(buf, src);
+	for (int i = (int)strlen(buf) - 1; i >= 0; i--)
+		if (buf[i] == '.') {
+			buf[i] = '\0';
+			break;
+		}
+	strcpy(dst, buf);
+}

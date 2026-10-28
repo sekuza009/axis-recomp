@@ -72,3 +72,37 @@ void THISCALL (FUN_0047cfd0)(Stage *stage)
 	for (int i = 0; i < 400; i++)
 		FIELD(int, stage, 0x202ef38 + i * 0x4e8) = 0;
 }
+
+/* 0x4743e0: actor slot i emptied: no name, no player (-1), no team (-1), its counters and marks cleared */
+void THISCALL (actor_resetSlot)(Stage *stage, int i)
+{
+	Player *a = &stage->actors[i];
+	a->name[0] = '\0';
+	FIELD(int, a, 0x10c) = -1;
+	FIELD(int, a, 0x114) = 0;
+	a->team = -1;
+	for (int k = 0; k < 11; k++)
+		FIELD(int, a, 0xd8 + k * 4) = 0;
+	a->state = 0;
+	FIELD(int, a, 0x4d4) = 0;
+	a->viewMarked = 0;
+	a->markSolo = 0;
+	a->markTeam = 0;
+}
+
+/* 0x47d060: every bullet in use drawn (its trail, hud_47ca70) */
+void THISCALL (hud_47d060)(Stage *stage, void *view)
+{
+	for (int i = 0; i < FIELD(int, stage, 0x20a99b4); i++)
+		if (FIELD(int, stage, 0x202ef38 + i * 0x4e8) == 1)
+			hud_47ca70(stage, i, view);
+}
+
+/* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (hud_48b450); returns b */
+int THISCALL (hud_48fde0)(Stage *stage, int a, int b, int c, int d)
+{
+	if (!FIELD(int, stage, 0x2149308))
+		return 0;
+	hud_48b450((u8 *)stage + 0x2148ed8, a, b, c, d);
+	return b;
+}

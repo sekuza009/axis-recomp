@@ -40,3 +40,26 @@ void (arena_4515a0)(void)
 	for (u32 r = 0x9f9840; r < 0x9fd940; r += 0x410)
 		memset((void *)r, 0, 16);
 }
+
+/* 0x451450: a free player slot claimed (its flag in the sixteen at 0x9f93d8 set); 0xff when none is free */
+u8 (FUN_00451450)(void)
+{
+	for (u8 i = 0; i < 0x10; i++)
+		if (GAME_VAR(int, 0x9f93d8 + i * 4) == 0) {
+			GAME_VAR(int, 0x9f93d8 + i * 4) = 1;
+			return i;
+		}
+	return 0xff;
+}
+
+/* 0x451410: a slot claimed for the local player (id 0xa0b424) when the session is up; 1 when done */
+int (arena_451410)(void)
+{
+	if (!GAME_VAR(int, 0xa0baf8))
+		return 0;
+	u8 slot = FUN_00451450();
+	arena_4514a0(slot, GAME_VAR(int, 0xa0b424));
+	GAME_VAR(u8, 0x9fd954) = slot;
+	GAME_VAR(int, 0x9f9838) = 1;
+	return 1;
+}

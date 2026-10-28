@@ -3,6 +3,7 @@
    reset. */
 #include "../game.h"
 #include <string.h>
+#include <stdarg.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -86,4 +87,25 @@ void THISCALL (match_463610)(Scene *scene, int a, int b, const char *text)
 	FIELD(int, scene, 0x2343233) = 1;
 	strcpy((char *)scene + 0x23431f3, text);
 	scene->noticeChanged = 1;
+}
+
+/* 0x463450: the centre-screen notice printed (shown for 2 seconds); vsprintf's count */
+int (vsprintf_wrap_463450)(Scene *scene, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int n = vsprintf(scene->readyText, format, args);
+	va_end(args);
+	BITS(scene->readyTimer) = 0x40000000;   /* 2.0 */
+	return n;
+}
+
+/* 0x473450: printed into the stage's text buffer (+0x20fcd4c) */
+int (vsprintf_wrap_473450)(u8 *obj, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int n = vsprintf((char *)obj + 0x20fcd4c, format, args);
+	va_end(args);
+	return n;
 }

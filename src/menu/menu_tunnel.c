@@ -242,3 +242,32 @@ void (menu_drawBackground3D)(TunnelRing *first)
 	cages(first);
 	glDisable(GL_TEXTURE_2D);
 }
+
+#define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)   /* the first ring */
+#define g_tunnelRings GAME_VAR(int, 0x9dae10)
+
+/* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
+u32 (FUN_00441190)(TunnelRing **head)
+{
+	TunnelRing *first = *head, *last = first, *prev = first;
+	while (last->next != NULL) {
+		prev = last;
+		last = last->next;
+	}
+	if (first == last)
+		*head = last->next;
+	else
+		prev->next = last->next;
+	return crt_free(last);
+}
+
+/* 0x441200: one more ring added; every ring but the new last one at full alpha; the last ring */
+TunnelRing *(FUN_00441200)(void)
+{
+	g_tunnelRings += 1;
+	FUN_00441120(&g_tunnel);
+	TunnelRing *ring = g_tunnel;
+	for (; ring->next != NULL; ring = ring->next)
+		BITS(ring->alpha) = 0x3f800000;
+	return ring;
+}

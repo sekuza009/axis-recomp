@@ -90,3 +90,34 @@ int (profile_44b2e0)(int x, int y)
 	const int *r = (const int *)0x9f9010;
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
+
+/* 0x44b7a0: the colour preview reset: no colours, distance 40, -1, turning */
+void (profile_44b7a0)(void)
+{
+	memset((void *)0x9f8ec0, 0, 36);
+	memset((void *)0x9f8d34, 0, 36);
+	GAME_VAR(int, 0x9f8d68) = 1;
+	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
+	GAME_VAR(u32, 0x9f8c48) = 0xbf800000;   /* -1.0 */
+}
+
+/* 0x44b750: the same, and no profile selected */
+void (profile_44b750)(void)
+{
+	profile_44b7a0();
+	GAME_VAR(int, 0x9f8d30) = 0;
+	GAME_VAR(int, 0x9f8ee4) = 0;
+	GAME_VAR(int, 0x9f6828) = 0;
+}
+
+/* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
+void (profile_44bc00)(void)
+{
+	GAME_VAR(int, 0x9f8e54) = 0;
+	GAME_VAR(int, 0x9f6838) = 1;
+	GAME_VAR(int, 0x9f6800) = -1;
+	GAME_VAR(u32, 0x9f8f14) = 0x42a00000;   /* 80.0 */
+	GAME_VAR(int, 0x9f8f30) = 0;
+	GAME_VAR(u32, 0x9f8e50) = 0x3dcccccd;   /* 0.1 */
+	GAME_VAR(int, 0x9f8f10) = 1;
+}

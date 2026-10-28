@@ -648,4 +648,33 @@ typedef struct { float r, g, b, a; } Colour;
 #define FUN_0046f4b0(self) GAME_THISCALL(0x46f4b0, int, void *)(self)
 #define cfg_44ac50(s) GAME_CDECL(0x44ac50, int, const char *)(s)
 
+/* ---- batch: front-end records, objects, video tables ---- */
+#define FUN_00451450() GAME_CDECL(0x451450, u8, void)()   /* a free network player slot claimed (0xff: none) */
+#define arena_4514a0(slot, id) GAME_CDECL(0x4514a0, void, u32, int)(slot, id)   /* player slot taken by id */
+#define space_disableUnit(unit) GAME_THISCALL(0x480460, void, void *)(unit)
+#define space_enableUnit(unit) GAME_THISCALL(0x480480, void, void *)(unit)
+#define FUN_00456820(self, m) GAME_THISCALL(0x456820, void, void *, int)(self, m)   /* material m marked changed */
+#define profile_44b7a0() GAME_CDECL(0x44b7a0, void, void)()
+#define ptx_46e320() GAME_CDECL(0x46e320, void, void)()
+#define ptx_initTable_46efd0() GAME_CDECL(0x46efd0, void, void)()
+#define ptx_46e2b0(q) GAME_CDECL(0x46e2b0, void, int)(q)
+#define ptx_46e7c0() GAME_CDECL(0x46e7c0, void, void)()
+#define ptx_46e9b0(q) GAME_CDECL(0x46e9b0, void, int)(q)
+
+#define room_431c00() GAME_CDECL(0x431c00, void, void)()
+#define room_431b70() GAME_CDECL(0x431b70, void, void)()
+#define tex_recolourMaterial(set, m, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(set, m, h1, c1, v1, h2, c2, v2)
+#define FUN_00464a70(px, mode, part, colour) GAME_CDECL(0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
+#define load_480440(slot) GAME_THISCALL(0x480440, void, int *)(slot)
+#define shape_466560(shape) GAME_THISCALL(0x466560, void, void *)(shape)
+#define shape_4665c0(shape, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x4665c0, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, c1, v1, h2, c2, v2)
+
+#define crt_free(p) GAME_CDECL(0x49ee81, u32, void *)(p)
+#define crt_fopen(name, mode) GAME_CDECL(0x49e9ca, void *, const char *, const char *)(name, mode)
+#define crt_fwrite(p, size, count, f) GAME_CDECL(0x49f58a, u32, const void *, u32, u32, void *)(p, size, count, f)
+#define fread_scrambled(p, size, count, f) GAME_CDECL(0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */
+#define hud_47ca70(stage, i, view) GAME_THISCALL(0x47ca70, void, Stage *, int, void *)(stage, i, view)   /* bullet i's trail drawn */
+#define hud_48b450(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
+#define FUN_00467d60(p) GAME_CDECL(0x467d60, u32, void *)(p)   /* p deleted (0 for none) */
+
 #endif

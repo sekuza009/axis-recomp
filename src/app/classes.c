@@ -194,3 +194,20 @@ void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 	GAME_VAR(int, 0xa1efe8) = b;
 	return self;
 }
+
+/* 0x463850: a resource set: five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in
+   place (the original's exception frame only matters if a constructor throws, and these cannot) */
+void *THISCALL (ResourceSet_ctor_463850)(u8 *self)
+{
+	static const u32 shapes[5] = { 0x338, 0x8284, 0x101d0, 0x1fe1c, 0x2fa68 };
+	static const u32 skels[5] = { 0x43534, 0x43e34, 0x44734, 0x45804, 0x468d4 };
+	for (int i = 0; i < 5; i++) {
+		*(u32 *)(self + shapes[i]) = 0x4aa244;
+		load_466a20(self + shapes[i]);
+	}
+	for (int i = 0; i < 5; i++) {
+		*(u32 *)(self + skels[i]) = 0x4aa240;
+		load_46ae70(self + skels[i]);
+	}
+	return self;
+}

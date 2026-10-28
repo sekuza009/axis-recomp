@@ -166,3 +166,13 @@ void THISCALL (match_45dd80)(Stage *stage, int a, int x, int y, void *spawn)
 	stage->playerActor = a;
 	FUN_0045e810(stage, a, 0);
 }
+
+/* 0x410160: a right click leaves the ARM CENTER's page, the menu camera put back */
+void (armc_410160)(void)
+{
+	if (GAME_VAR(int, 0x4ded8c)) {
+		armc_40e670();
+		GAME_VAR(int, 0x4dc790) = 0;
+		GAME_VAR(int, 0x4e1870) = 0;
+	}
+}

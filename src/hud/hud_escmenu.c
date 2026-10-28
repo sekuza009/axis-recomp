@@ -188,3 +188,17 @@ void THISCALL (hud_495ed0)(Scene *scene, int x0, int y0, int x1, int y1)
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
+
+/* 0x49ca20: the in-match menu opened on page with item under the cursor (a spectator's page 4 first, overwritten:
+   the original stores both) */
+void THISCALL (match_49ca20)(Scene *scene, int page, int item)
+{
+	if (scene->localPlayer < 0) {
+		scene->escPage = 4;
+		scene->escCursor = 0;
+	}
+	scene->escMenuOpen = 1;
+	scene->escPage = page;
+	scene->escCursor = item;
+	BITS(scene->escTimer) = 0;
+}

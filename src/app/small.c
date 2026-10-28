@@ -1,6 +1,7 @@
 /* small.c: one-line pieces from all over the game that need nothing of their own: clears, flags, getters and
    setters, list toggles, string lengths. Grouped by where they are used. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -149,4 +150,122 @@ void THISCALL (hud_456b50)(void *self)
 		FIELD(int, o, 0xcd13c) = 0;
 		FIELD(int, o, 0xcd140) = 0;
 	}
+}
+/* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
+void THISCALL (FUN_00473470)(Stage *stage, int p)
+{
+	u8 *rec = (u8 *)stage + 0x1561b68 + p * 0x47fd2;
+	int colour = GAME_VAR(int, 0xa1f220);
+	for (int k = 0; k < 16 * 24; k++)
+		FIELD(int, rec, 0x479c2 + k * 4) = colour;
+	FIELD(int, rec, 0x47fc6) = 0;
+	FIELD(int, rec, 0x47fca) = 0;
+	FIELD(int, rec, 0x47fce) = 0x180;
+}
+/* 0x48fc40: an event (a, b, c, d, d) put in the stage's script ring of 32 (20 bytes each); when full the oldest is
+   dropped */
+void THISCALL (script_pushEvent)(Stage *stage, int a, int b, int c, int d)
+{
+	int *e = (int *)((u8 *)stage + 0x2148c50 + (FIELD(int, stage, 0x2148ed0) & 0x1f) * 20);
+	e[0] = a;
+	e[1] = b;
+	e[2] = c;
+	e[3] = d;
+	e[4] = d;
+	int head = ++FIELD(int, stage, 0x2148ed0);
+	if (((FIELD(int, stage, 0x2148ed4) ^ head) & 0x1f) == 0)
+		FIELD(int, stage, 0x2148ed4)++;
+}
+/* 0x48fca0: the script's six counters cleared */
+int THISCALL (script_reset)(Stage *stage)
+{
+	nullsub_48b420((Scene *)stage);   /* an empty method of the stage */
+	for (int i = 0; i < 6; i++)
+		FIELD(int, stage, 0x2149308 + i * 4) = 0;
+	return 0;
+}
+/* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
+void THISCALL (FUN_00473a10)(Stage *stage, int p, int v)
+{
+	u32 *seen = &FIELD(u32, stage, 0x19e1888);   /* players seen so far (the highest + 1) */
+	if (p > (int)(*seen - 1))
+		*seen = p + 1;
+	FIELD(int, stage, 0x1561b68 + p * 0x47fd2 + 0x44) = v;
+	for (int i = 0; i < stage->actorCount; i++)
+		if (FIELD(int, &stage->actors[i], 0x10c) == p)
+			FIELD(int, &stage->actors[i], 0x114) = v;
+}
+/* 0x48fe10: the stage's identity matrix, 200 points at the origin (0xa0e7a8), the colour at 0xa1f220 */
+void THISCALL (load_48fe10)(Stage *stage)
+{
+	for (int k = 0; k < 16; k++)
+		FIELD(u32, stage, 0x20f2fc8 + k * 4) = k % 5 ? 0 : 0x3f800000;
+	for (int k = 0; k < 200; k++)
+		for (int j = 0; j < 3; j++)
+			FIELD(int, stage, 0x20f300c + k * 12 + j * 4) = GAME_VAR(int, 0xa0e7a8 + j * 4);
+	FIELD(int, stage, 0x20f3008) = 0;
+	FIELD(int, stage, 0x20f396c) = GAME_VAR(int, 0xa1f220);
+}
+
+/* ---- matrices (16 dwords) ---- */
+/* 0x47d5a0: copied (column by column) */
+void (FUN_0047d5a0)(u32 *d, const u32 *s)
+{
+	for (int c = 0; c < 4; c++)
+		for (int r = 0; r < 4; r++)
+			d[r * 4 + c] = s[r * 4 + c];
+}
+/* 0x47d830: copied transposed */
+void (skel_47d830)(u32 *d, const u32 *s)
+{
+	for (int k = 0; k < 16; k++)
+		d[(k & 3) * 4 + (k >> 2)] = s[k];
+}
+
+/* ---- objects put to their start ---- */
+/* 0x463a40: a resource set's eight lists, each a UnitPoseInfo (vtable 0x4a9754) with its members cleared */
+void *THISCALL (ResourceSet_init_463a40)(u8 *self)
+{
+	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
+	for (int k = 0; k < 8; k++) {
+		FIELD(u32, self, lists[k]) = 0x4a9754;
+		FUN_0046f480(self + lists[k]);
+	}
+	return self;
+}
+/* 0x484260: the view volume emptied: its two 0xc01-dword tables and its counters */
+void THISCALL (ViewVolume_reset)(u8 *self)
+{
+	static const int cleared[] = { 0x9038, 0x9044, 0x905c, 0x9070, 0x908c, 0x9090, 0x9094, 0x9098, 0x909c, 0x90a0 };
+	FIELD(int, self, 0x3024) = 0;
+	memset(self + 0x3028, 0, 0xc01 * 4);
+	memset(self + 0x602c, 0, 0xc01 * 4);
+	for (int k = 0; k < 10; k++)
+		FIELD(int, self, cleared[k]) = 0;
+}
+/* 0x481760: the collision space's units: count at +0x30, the 0x14-byte units at +0x34, each emptied (load_480440) and
+   chained (prev at +0xc, next at +0x10) */
+void THISCALL (space_resetUnits)(u8 *self)
+{
+	for (int i = 0; i < FIELD(int, self, 0x30); i++)
+		load_480440((int *)(FIELD(u8 *, self, 0x34) + i * 0x14));
+	for (int i = 1; i < FIELD(int, self, 0x30); i++) {
+		u8 *e = FIELD(u8 *, self, 0x34) + i * 0x14;
+		FIELD(u8 *, e, 0xc) = e - 0x14;
+	}
+	for (int i = 0; i < FIELD(int, self, 0x30) - 1; i++) {
+		u8 *e = FIELD(u8 *, self, 0x34) + i * 0x14;
+		FIELD(u8 *, e, 0x10) = e + 0x14;
+	}
+	FIELD(int, self, 0x3c) = 0;
+	FIELD(u8 *, self, 0x38) = FIELD(u8 *, self, 0x34);
+}
+/* 0x461f10: the scene's input state cleared (two of its fields -1) */
+void THISCALL (match_resetInputState)(Scene *scene)
+{
+	for (int off = 0x234325f; off < 0x2343323; off += 4)
+		FIELD(int, scene, off) = 0;
+	FIELD(int, scene, 0x2343287) = -1;
+	FIELD(int, scene, 0x2343307) = -1;
+	memset((u8 *)scene + 0x2343323, 0, 10 * 4);
 }

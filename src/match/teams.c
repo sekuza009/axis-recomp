@@ -29,3 +29,14 @@ int THISCALL (scene_teamSide)(Scene *scene, int id)
 		}
 	return -1;
 }
+
+/* 0x4636d0: the team slots at the start of a match: all free in a local team game, else teams 0 .. 4 */
+void THISCALL (match_4636d0)(Scene *scene)
+{
+	if (scene->network == 0 && scene->teamGame == 1)
+		for (int k = 0; k < 5; k++)
+			scene->teamIds[k] = -1;
+	else
+		for (int k = 0; k < 5; k++)
+			scene->teamIds[k] = k;
+}

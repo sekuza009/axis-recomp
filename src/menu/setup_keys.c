@@ -1,6 +1,7 @@
 /* setup_keys.c: the setup screen's top level: its tabs (sound, graphics, controls, and the top page), their keys,
    and the pages drawn over the screen's background. */
 #include "../game.h"
+#include <string.h>
 
 #define TAB_SOUND 0
 #define TAB_GRAPHIC 1
@@ -132,3 +133,41 @@ static void page_crosshair(void) { setup_crosshairScreen(); }
 void (setup_427830)(void) { with_page(page_424810, (const int *)0x4ddad0); }
 void (setup_427880)(void) { with_page(page_425460, (const int *)0x4dddd0); }
 void (setup_4278d0)(void) { with_page(page_crosshair, (const int *)0x4dde80); }
+
+/* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
+static void tab_opened(void)
+{
+	g_setupPage = 1;
+	GAME_VAR(u32, 0x4de038) = 0x3f333333;   /* 0.7 */
+	GAME_VAR(int, 0x4ddb98) = 0;
+	GAME_VAR(int, 0x4dde90) = -1;
+	GAME_VAR(int, 0x4dda60) = 0;
+	GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;   /* -1650.0 */
+}
+
+/* 0x420ad0, 0x420b40, 0x420ba0: the sound, graphics and controls tabs opened, each on a copy of its settings in
+   use */
+void (setup_selectSoundTab)(void)
+{
+	memcpy((void *)g_soundEdited, g_soundSettings, 16);
+	g_setupTab = TAB_SOUND;
+	tab_opened();
+}
+
+void (setup_selectGraphicTab)(void)
+{
+	memcpy((void *)g_graphicEdited, g_graphicSettings, 7 * 4);
+	g_setupTab = TAB_GRAPHIC;
+	tab_opened();
+}
+
+void (setup_selectControlTab)(void)
+{
+	memcpy((void *)0x4de0c0, (void *)0x4def00, 0x44 * 4);   /* the key bindings */
+	g_setupTab = TAB_CONTROL;
+	GAME_VAR(int, 0x4ddce8) = 0;
+	GAME_VAR(int, 0x4de040) = -1;
+	GAME_VAR(int, 0x4dddc8) = 0;
+	GAME_VAR(int, 0x4b04f8) = -1;
+	tab_opened();
+}
