@@ -302,3 +302,40 @@ void THISCALL (FUN_00461ec0)(Scene *scene, const char *folder)
 	strcpy((char *)scene + 0x1f35c8, folder);
 	FUN_00470f80(STAGE(scene), folder);
 }
+
+/* 0x48fce0: a script file started: the script state reset, its name and mode kept; modes 0 and 2 clear the running
+   flag, 1 sets it. Returns 0 for those modes, else mode - 2 */
+int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
+{
+	script_reset(stage);
+	strcpy((char *)stage + 0x2149208, name);
+	FIELD(int, stage, 0x2149308) = mode;
+	if (mode == 0 || mode == 2) {
+		FIELD(int, stage, 0x214930c) = 0;
+		return 0;
+	}
+	if (mode == 1) {
+		FIELD(int, stage, 0x214930c) = 1;
+		return 0;
+	}
+	return mode - 2;
+}
+
+/* 0x46f770: an animation's frame i chosen (when it has a frame table, +0x20, and i is below the count +0x1c), and its
+   length (the frame's int at +0x20) times scale */
+void THISCALL (actor_46f770)(u8 *anim, int i, float scale)
+{
+	if (!FIELD(int, anim, 0x20) || i >= FIELD(int, anim, 0x1c))
+		return;
+	FIELD(int, anim, 0x24) = i;
+	const int *frame = FIELD(int **, anim, 0x20)[i];
+	FIELD(int, anim, 0x28) = ftol(fmul_m((long double)frame[8], &scale));
+}
+
+/* 0x4722e0: a view's distance set (+0xa08, the float's bits copied) and its depth -v * a + b from the stage's pair */
+void THISCALL (match_4722e0)(u8 *view, float v)
+{
+	BITS(FIELD(float, view, 0xa08)) = BITS(v);
+	volatile long double n = -(long double)v;   /* negated first, as the original's fchs */
+	FIELD(float, view, 0xa0c) = (float)(n * FIELD(float, view, 0x20f3a9c) + FIELD(float, view, 0x20f3aac));
+}

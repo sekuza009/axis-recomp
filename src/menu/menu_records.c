@@ -253,3 +253,28 @@ void (FUN_00443de0)(void)
 		GAME_VAR(int, 0x9f105c) = 0;
 	}
 }
+
+/* 0x443ea0: a click on the skirmish settings' arrows: 1 marks a change (0x9ef1f8 = 10, as a right click does), 2 adds
+   the pending step, 3 undoes one */
+void (menu_443ea0)(void)
+{
+	if (g_dialogOpen)
+		return;
+	if (!GAME_VAR(int, 0x4ded8c)) {
+		if (!g_mouseClick)
+			return;
+		switch (skirmish_443910(g_mouseX, g_mouseY)) {
+		case 1:
+			break;
+		case 2:
+			FUN_00443d80();
+			return;
+		case 3:
+			FUN_00443de0();
+			return;
+		default:
+			return;
+		}
+	}
+	GAME_VAR(int, 0x9ef1f8) = 10;
+}

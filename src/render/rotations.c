@@ -1,6 +1,8 @@
-/* rotations.c: a rotation given as an angle (radians) about an axis, as a quaternion and as a matrix; a vector
-   negated. The sine and cosine are the FPU's own (fsin / fcos), as the original's. */
+/* rotations.c: a rotation given as an angle (radians) about an axis, as a quaternion and as a matrix; a 2D turn by
+   the game's tables; an angle wrapped; a vector negated or scaled. The sine and cosine are the FPU's own (fsin /
+   fcos), as the original's. */
 #include "../game.h"
+#include <string.h>
 
 typedef long double X;
 
@@ -36,4 +38,39 @@ void THISCALL (collision_480230)(float *v)
 		volatile X t = v[i];
 		v[i] = (float)-t;
 	}
+}
+
+/* 0x467700: (x, y) turned by angle tenths of a degree, from the game's cosine and sine tables */
+#define g_cos ((const float *)0xa17f38)
+#define g_sin ((const float *)0xa1b778)
+void THISCALL (hud_467700)(float *v, int angle)
+{
+	int i = (angle % 3600 + 3600) % 3600;
+	X c = g_cos[i], s = g_sin[i];
+	X x = c * v[0] + s * v[1], y = c * v[1] - s * v[0];
+	v[1] = (float)y;
+	v[0] = (float)x;
+}
+
+/* 0x4803c0: v scaled by s, and copied to out */
+void THISCALL (collision_4803c0)(float *v, float *out, float s)
+{
+	volatile X k = s;   /* x87 fmul: of two NaNs it keeps the larger payload */
+	for (int i = 0; i < 3; i++)
+		v[i] = (float)(k * v[i]);
+	memcpy(out, v, 12);
+}
+
+/* 0x46c100: an angle in tenths of a degree wrapped into 0 .. 3600 (a - whole turns, plus a turn when that is
+   negative or NaN); returned unrounded */
+#define TURN ((const float *)0x4a94c8)        /* 3600 */
+#define PER_TURN ((const float *)0x4aa284)    /* 1 / 3600 */
+#define ZERO GAME_VAR(float, 0x4a93e8)
+long double (FUN_0046c100)(float a)
+{
+	int turns = ftol(fmul_m(fld_m(&a), PER_TURN));
+	X r = fsubr_m(fmul_m((X)turns, TURN), &a);
+	if (!(r >= ZERO))
+		r = fadd_m(r, TURN);
+	return r;
 }

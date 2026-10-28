@@ -706,4 +706,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define FUN_0047d0b0(q, rotation) GAME_THISCALL(0x47d0b0, void, float *, const float *)(q, rotation)
 #define FUN_0047d8a0(m, q) GAME_CDECL(0x47d8a0, void, float *, const float *)(m, q)   /* quaternion -> matrix */
 
+/* ---- (render/shape_colours.c, app/small.c, menu/menu_records.c callers) ---- */
+#define shape_setTint(model, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, c1, v1, h2, c2, v2)
+#define shape_4675f0(model) GAME_THISCALL(0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
+#define script_reset(stage) GAME_THISCALL(0x48fca0, int, Stage *)(stage)
+#define skirmish_443910(x, y) GAME_CDECL(0x443910, int, int, int)(x, y)   /* which skirmish settings arrow is at (x, y) */
+#define FUN_00443d80() GAME_CDECL(0x443d80, void, void)()   /* skirmish settings: the pending step pushed */
+#define FUN_00443de0() GAME_CDECL(0x443de0, void, void)()   /* one step undone */
+
 #endif

@@ -45,6 +45,17 @@ static inline float f32(long double x)
 	return r;
 }
 
+/* x87 arithmetic with a float operand straight from memory (flds / fmuls / fadds ... dword [m]), where the original
+   does that and a NaN can reach it: a signalling NaN taken from memory this way meets a quiet NaN differently from
+   one loaded into a register first. x op *m, or *m op x for the reversed ones. */
+static inline long double fld_m(const float *m) { long double x; __asm__("flds %1" : "=t"(x) : "m"(*m)); return x; }
+static inline long double fmul_m(long double x, const float *m) { __asm__("fmuls %1" : "+t"(x) : "m"(*m)); return x; }
+static inline long double fadd_m(long double x, const float *m) { __asm__("fadds %1" : "+t"(x) : "m"(*m)); return x; }
+static inline long double fsub_m(long double x, const float *m) { __asm__("fsubs %1" : "+t"(x) : "m"(*m)); return x; }
+static inline long double fsubr_m(long double x, const float *m) { __asm__("fsubrs %1" : "+t"(x) : "m"(*m)); return x; }
+static inline long double fdiv_m(long double x, const float *m) { __asm__("fdivs %1" : "+t"(x) : "m"(*m)); return x; }
+static inline long double fdivr_m(long double x, const float *m) { __asm__("fdivrs %1" : "+t"(x) : "m"(*m)); return x; }
+
 /* a float in memory as its 32 bits (also assignable): for values the original only copies, never loading them into
    the FPU (which would quiet a signalling NaN) */
 #define BITS(lvalue) (*(u32 *)&(lvalue))

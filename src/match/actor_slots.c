@@ -120,3 +120,18 @@ void THISCALL (scene_resetActors)(Stage *stage)
 	for (int i = 0; i < 100; i++)
 		actor_resetSlot(stage, i);
 }
+
+/* 0x45e070: the 100 actor slots emptied (none in use, each free with no player), with the counts */
+void THISCALL (FUN_0045e070)(Stage *stage)
+{
+	FIELD(int, stage, 0x202e8c8) = 0;
+	FIELD(int, stage, 0x202e8cc) = 0;
+	FIELD(int, stage, 0x202e8d0) = 0;
+	for (int i = 0; i < 100; i++) {
+		u8 *a = (u8 *)stage + i * 0x8888;
+		FIELD(int, a, 0x1cd94b0) = 0;
+		FIELD(int, a, 0x1cd94b4) = -1;
+		FIELD(int, a, 0x1cd94f4) = 0;
+		FIELD(int, stage, 0x202ea80 + i * 4) = 0;
+	}
+}

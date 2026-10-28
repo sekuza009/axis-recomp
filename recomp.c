@@ -746,27 +746,12 @@ static THISCALL void actor_deactivate(char *self, int i)
 THISCALL void camera_setTarget(char *self, int i, int mode, int value);
 
 /* 0x45e070 (thiscall) FUN_0045e070: reset the 100 actor slots */
-static THISCALL void FUN_0045e070(char *self)
-{
-	S32(self, 0x202e8c8) = 0; S32(self, 0x202e8cc) = 0; S32(self, 0x202e8d0) = 0;
-	for (int i = 0; i < 100; i++) {
-		char *a = self + i * 0x8888;
-		S32(a, 0x1cd94b0) = 0; S32(a, 0x1cd94b4) = -1; S32(a, 0x1cd94f4) = 0;
-		S32(self, 0x202ea80 + i * 4) = 0;
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e070(void *self);
 
 /* 0x45e810 (thiscall) FUN_0045e810(i, slot): change actor i's weapon slot; slots 0..3 are also remembered */
-static THISCALL void FUN_0045e810(char *self, int i, int slot)
-{
-	char *a = self + ACTOR(i);
-	int player = S32(self, 0x1cd94b4 + i * 0x8888);
-	if (S32(a, 0x140) != slot) {
-		S32(a, 0x140) = slot;
-		if (slot < 4) S32(a, 0x144) = slot;
-		S32(a, 0x148) = S32(self, PLAYER(player) + 0x1561e88 + slot * 4);
-	}
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e810(void *self, int i, int slot);
 
 /* 0x45e880 (thiscall) actor_selectWeapon(i, slot): start switching if the slot holds a valid item */
 static THISCALL void actor_selectWeapon(char *self, int i, int slot)
@@ -952,12 +937,8 @@ THISCALL void load_479a60(char *self);
 THISCALL void FUN_0047cfd0(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_490d10(char *self);
-static THISCALL void match_4722e0(char *self, float v)
-{
-	S32(self, 0xa08) = *(int *)&v;             /* copied with mov, as raw bits */
-	volatile long double n = -(long double)v;   /* fchs first: kept apart so it is not folded into b - v*a (NaN sign) */
-	SF(self, 0xa0c) = (float)(n * SF(self, 0x20f3a9c) + SF(self, 0x20f3aac));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4722e0(void *self, float v);
 
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1052,20 +1033,8 @@ void profile_44bc00(void);
 void setup_selectGraphicTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_403490(void);
-static void __cdecl menu_443ea0(void)
-{
-	if (g_menuDialogOpen) return;
-	if (!g_mouseClick2) {
-		if (!g_mouseClick1) return;
-		switch (skirmish_443910(G32(0x4ded68), G32(0x4ded6c))) {
-		case 1: break;
-		case 2: FUN_00443d80(); return;
-		case 3: FUN_00443de0(); return;
-		default: return;
-		}
-	}
-	G32(0x9ef1f8) = 10;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_443ea0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_451410(void);
 static void __cdecl arena_4065e0(void)        /* bubble sort of the 0x4a-byte records at 0x9087c0 by their int at +0x28 */
@@ -1115,20 +1084,10 @@ THISCALL void shape_466560(char *self);
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL char *FUN_00470f80(void *self, const char *s);
-static THISCALL void collision_4803c0(float *v, float *out, float s)   /* this *= s, out = this */
-{
-	volatile long double k = s;                /* x87 fmul: of two NaNs it keeps the larger payload (SSE mulss would not) */
-	for (int i = 0; i < 3; i++) v[i] = (float)(k * v[i]);
-	memcpy(out, v, 12);
-}
-static THISCALL void hud_467700(float *v, int angle)   /* rotate (x, y) by angle/10 degrees */
-{
-	int i = (angle % 3600 + 3600) % 3600;
-	typedef long double X;
-	X c = COS_TABLE[i], s = SIN_TABLE[i];
-	X x = c * v[0] + s * v[1], y = c * v[1] - s * v[0];
-	v[1] = (float)y; v[0] = (float)x;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void collision_4803c0(float *v, float *out, float s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_467700(float *v, int angle);
 static void __cdecl load_482a40(float *out, const float *m, const float *p)   /* out = m * p + m[12..14], row by row */
 {
 	typedef long double X;
@@ -1627,14 +1586,8 @@ static int __cdecl ptx_internal_46f0b0(int *blk)   /* decode one 8x8 block of co
 /* construct the 8 resource lists */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void *ResourceSet_init_463a40(char *self);
-static THISCALL void shape_setTextureDir(char *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4,
-                                         DWORD a5, DWORD a6)
-{
-	strcpy(self + 0x130, name);
-	S32(self, 0x230) = flags;
-	if (flags & 2) shape_setTint(self, a1, a2, a3, a4, a5, a6);
-	else shape_4675f0(self);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void shape_setTextureDir(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 static void __cdecl FUN_00464a70(BYTE *px, int mode, const DWORD *img, const BYTE *c)   /* add a colour to RGBA pixels */
 {
 	if (mode == 1 || (img[0] & 2)) {           /* plain fill */
@@ -3225,15 +3178,8 @@ int THISCALL TextureManager_dtor(void *self);
 void *load_487430_wrap_468720(void);
 /* 0x48fce0 (thiscall) script_runScpFile(name, mode): reset the script state, keep the file name and mode; modes 0/2
    clear the "running" flag at +0x214930c, mode 1 sets it. EAX = 0 for modes 0..2, else mode - 2 */
-static THISCALL int script_runScpFile(char *self, const char *name, int mode)
-{
-	script_reset(self);
-	strcpy(self + 0x2149208, name);
-	S32(self, 0x2149308) = mode;
-	if (mode == 0 || mode == 2) { S32(self, 0x214930c) = 0; return 0; }
-	if (mode == 1) { S32(self, 0x214930c) = 1; return 0; }
-	return mode - 2;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int script_runScpFile(void *self, const char *name, int mode);
 
 /* 0x47db60 (thiscall) load_47db60(id, v0, v1, v2, a..e): collision triangle record (0xac bytes): id, the 3 corners,
    the 3 normalised edges (+0x28), the face plane (+0x4c normal, +0x58 distance), the 3 edge planes (+0x5c, 16 bytes
@@ -3646,13 +3592,8 @@ int vsprintf_wrap_463450(char *obj, const char *fmt, ...);
 unsigned msg_4629f0(void *scene, int colour, const char *fmt, ...);
 /* 0x46f770 (thiscall) actor_46f770(frame, scale): select frame i (< count at +0x1c) of the frame table (+0x20): +0x24 =
    i, +0x28 = __ftol(frame's int at +0x20 * scale) */
-static THISCALL void actor_46f770(char *self, int i, DWORD scale)
-{
-	if (!S32(self, 0x20) || i >= S32(self, 0x1c)) return;
-	S32(self, 0x24) = i;
-	const int *fr = ((int **)S32(self, 0x20))[i];
-	S32(self, 0x28) = crt_ftol(x87_mulm((long double)fr[8], (const float *)&scale));
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_46f770(void *self, int i, DWORD scale);
 /* 0x46de20 (thiscall) tex_46de20(dh, ds, dv): tint an RGBA byte colour: bytes / 255 -> floats, tex_tintHsv, * 255
    -> __ftol back into the bytes (all four channels, alpha too). Returns the last __ftol result */
 static THISCALL int tex_46de20(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv)
@@ -3734,13 +3675,8 @@ static int __cdecl setup_drawControlSlider(void)
 /* batch 41 */
 /* 0x46c100 FUN_0046c100(a): a wrapped into [0, K) with K = the float at 0x4a94c8 (q = __ftol(a * the float at
    0x4aa284), a - q * K, plus K when that is negative or NaN); the result is returned unrounded in ST0 */
-static long double __cdecl FUN_0046c100(DWORD a)
-{
-	int q = crt_ftol(x87_mulm(x87_ldm((const float *)&a), (const float *)0x4aa284));
-	long double r = x87_subrm(x87_mulm((long double)q, (const float *)0x4a94c8), (const float *)&a);
-	if (!(r >= *(const float *)0x4a93e8)) r = x87_addm(r, (const float *)0x4a94c8);
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long double FUN_0046c100(DWORD a);
 /* 0x456de0 FUN_00456de0(v): with sound on (0xa0e80c), v * the volume setting (0x4e0c90) scaled to 0..100 (__ftol)
    becomes the DirectSound attenuation at 0xa0e66c: < 0 -> -1000, > 100 -> 0, else __ftol((p * 5 - 500) * 20 *
    the float at 0x4a93ec). Returns what the original leaves in EAX */
@@ -3967,20 +3903,8 @@ int THISCALL load_4813b0(void *self);
 DWORD arena_4519b0(void);
 /* 0x454130 arena_454130(): with a session list (0xa0b384), free every used session record (8-byte slots at 0xa0b470:
    used, malloc'd copy) and empty the list (count 0xa0b41c). EAX as the original leaves it: the count, or 0 */
-static DWORD __cdecl arena_454130(void)
-{
-	if (!G32(0xa0b384)) return 0;
-	for (int i = 0; i < G32(0xa0b41c); i++) {
-		DWORD rec = 0xa0b470 + i * 8;
-		if (G32(rec) != 1) continue;
-		G32(rec) = 0;
-		if (G32(rec + 4)) CRT_free((DWORD)G32(rec + 4));
-		G32(rec) = 0; G32(rec + 4) = 0;
-	}
-	DWORD r = (DWORD)G32(0xa0b41c);
-	G32(0xa0b41c) = 0;
-	return r;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_454130(void);
 /* 0x4540b0 FUN_004540b0(desc): add a DirectPlay session description (0x85 bytes, by value) to the session list,
    unless its bytes 4..19 equal the GUID at 0x4aae70 (then 0) or no slot is free (then the slot finder's -1): a
    malloc'd copy goes into the free slot, count + 1. Returns the copy */

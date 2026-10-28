@@ -63,3 +63,24 @@ int (arena_451410)(void)
 	GAME_VAR(int, 0x9f9838) = 1;
 	return 1;
 }
+
+/* 0x454130: with a session list (0xa0b384), every used session record (8 bytes from 0xa0b470: used, a malloc'd copy)
+   freed and the list emptied (count 0xa0b41c). Returns the count, or 0 without a list */
+u32 (arena_454130)(void)
+{
+	if (!GAME_VAR(int, 0xa0b384))
+		return 0;
+	for (int i = 0; i < GAME_VAR(int, 0xa0b41c); i++) {
+		u32 *rec = (u32 *)(0xa0b470 + i * 8);
+		if (rec[0] != 1)
+			continue;
+		rec[0] = 0;
+		if (rec[1])
+			crt_free((void *)rec[1]);
+		rec[0] = 0;
+		rec[1] = 0;
+	}
+	u32 r = GAME_VAR(u32, 0xa0b41c);
+	GAME_VAR(int, 0xa0b41c) = 0;
+	return r;
+}

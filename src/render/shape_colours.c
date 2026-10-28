@@ -1,6 +1,7 @@
 /* shape_colours.c: a model's tint: each of its shapes' parts names a material (set m / 512, entry m % 512 of the
    material sets at 0xa0e010) that is recoloured, or marked changed when the tint is taken off. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -67,4 +68,17 @@ void (FUN_00466960)(u8 *px, int mode, const void *shape, const u8 *colour)
 		const u32 *part = (const u32 *)PART(shape, i);
 		FUN_00464a70(px + part[0x12] * 4, mode, part, colour);
 	}
+}
+
+/* 0x467580: a model's texture folder (+0x130) and flags (+0x230) set; with flag 2 its tint (two HSV colours), else
+   its shapes' own colours */
+void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2,
+                                    u32 v2)
+{
+	strcpy((char *)model + 0x130, folder);
+	FIELD(int, model, 0x230) = flags;
+	if (flags & 2)
+		shape_setTint(model, h1, c1, v1, h2, c2, v2);
+	else
+		shape_4675f0(model);
 }
