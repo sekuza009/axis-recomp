@@ -4378,7 +4378,8 @@ LIFT_PLAIN(menu_mainMenu, 442050)
    shows a text); the allies (+0x24 count, +0x28 portraits from the 3 x 3 atlas 0x4dfa00) and the enemies (+0
    count, +4 portraits; outside 0..8 "???") in framed rows; two buttons (0x75f6a4); the border; then a dimmed
    screen with the message 0x75f7a4 / 0x74de24 */
-LIFT_PLAIN(missionsel_drawScreen, 449a50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_drawScreen(void);
 /* batch 134 (lifted/grp80.c): the pilot-select dialog */
 #include "lifted/grp80.c"
 /* 0x44e640 profile_44e640(): the pilot-select dialog (window 0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): frame,
@@ -4923,7 +4924,8 @@ LIFT_PLAIN(FUN_00450bb0, 450bb0)
    the chosen mission's name, preview and texts (the strings at 0x75bfa4 .. 0x75f6a4), its record (0x9db99c +
    0x5c * mission: allies and enemies with portraits, kind, values), the mission number with the arrows (greyed
    at 0 and at the unlocked count 0x9f181c), the buttons (missionsel_447710) lit under the cursor */
-LIFT_PLAIN(missionsel_448ac0, 448ac0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_448ac0(void);
 /* 0x44aa20 missionsel_44aa20: jump to missionsel_448ac0 */
 LIFT_PLAIN(missionsel_44aa20, 44aa20)
 /* batch 169 (lifted/grp115.c, grp116.c, grp117.c: split so that the calls between these go through their native
@@ -13691,7 +13693,7 @@ static void missionscreen_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	g_paintStacks = 1;
 }
-T_PLAIN(missionsel_drawScreen, 0x449a50, missionscreen_setup();, 0, 0, 0, 0, 0)
+ST(missionsel_drawScreen, missionscreen_setup();, (CALL_PLAIN(0x449a50, 0, 0, 0, 0, 0), 0), (missionsel_drawScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 134 */
 /* the pilot-select dialog: pilotpanel_setup's pilots, labels and textures (every texture this dialog binds from
    the same set), the chosen pilot 0..8, the dialog window, the highlight pulse and reveal timers anywhere in their
@@ -14695,7 +14697,7 @@ static void missionsettings_setup(void)
 	rect_table(0x9f6338, 0x9f6378);
 	if (irnd(0, 1)) { point_in_table(0x9f6338, 0x9f6378); G32(0x4ded68) = g_a[0]; G32(0x4ded6c) = g_a[1]; }
 }
-T_PLAIN(missionsel_448ac0, 0x448ac0, missionsettings_setup();, 0, 0, 0, 0, 0)
+ST(missionsel_448ac0, missionsettings_setup();, (CALL_PLAIN(0x448ac0, 0, 0, 0, 0, 0), 0), (missionsel_448ac0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 T_PLAIN(missionsel_44aa20, 0x44aa20, missionsettings_setup();, 0, 0, 0, 0, 0)
 /* batch 169 */
 /* the armour centre's part selection with every heavy callee stubbed (callee_stubs: the scene / actor ones are
