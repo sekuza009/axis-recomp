@@ -818,7 +818,7 @@ int (lobby_openConnection)(void)
 {
 	if (!GAME_VAR(int, 0x4db718)) {
 		GAME_CDECL(0x451e60, void, void)();                   /* net_disconnect */
-		int r = GAME_CDECL(0x451b80, int, int)(100);          /* net_connect */
+		int r = net_connect(100);
 		if (r == 0 || r == 2) {
 			GAME_CDECL(0x41ee40, void, int)(r == 0 ? 0x3d : 0x46);   /* the message */
 			return 0;

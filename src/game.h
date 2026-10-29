@@ -570,6 +570,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
 #define net_closeAll(mode) GAME_CDECL(0x451600, void, int)(mode)   /* every socket closed before connecting */
+#define net_connect(mode) GAME_CDECL(0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
 #define net_disconnect() GAME_CDECL(0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */
 #define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)
 #define glWindow_resize(w, h) GAME_CDECL(0x468450, int, int, int)(w, h)   /* app/win32.c */
