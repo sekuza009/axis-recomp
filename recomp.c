@@ -17408,6 +17408,9 @@ static int patched_in_memory(DWORD addr)
 /* src/wide.c: the patch DLL handed over its widescreen state (and installed its menu fix) */
 int wide_present(void);
 int wide_menuFix(void);
+/* the functions hooked, for recomp.passed (the list RECOMP_EARLY=1 hooks at start-up) */
+static const char *g_hooked[MAXRESULT];
+static int g_nhooked;
 static void hook(DWORD addr, void *fn, const char *name)
 {
 	DWORD old;
@@ -17456,6 +17459,7 @@ static void hook(DWORD addr, void *fn, const char *name)
 	VirtualProtect(p, 5, old, &old);
 	FlushInstructionCache(GetCurrentProcess(), p, 5);
 	say("  hooked %08lx %s\n", addr, name);
+	if (g_nhooked < MAXRESULT) g_hooked[g_nhooked++] = name;
 }
 
 /* batch 3 (state harness) hooks */
@@ -18392,6 +18396,35 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x43fcc0, (void *)app_init, "app_init" },
 };
 
+/* every rebuilt function that passed its tests (state_ok: the state harness ran) switched in */
+static void install_hooks(int state_ok)
+{
+	for (unsigned i = 0; state_ok && i < sizeof g_hits / sizeof g_hits[0]; i++)
+		hook(g_hits[i].addr, (void *)g_hits[i].fn, g_hits[i].name);
+	for (unsigned i = 0; state_ok && i < sizeof g_hooks3 / sizeof g_hooks3[0]; i++)
+		hook(g_hooks3[i].addr, g_hooks3[i].fn, g_hooks3[i].name);
+	hook(0x4722c0, (void *)Vec3_set, "Vec3_set");
+	hook(0x467760, (void *)Vec3_normalize, "Vec3_normalize");
+	hook(0x480250, (void *)Vec3_cross, "Vec3_cross");
+	hook(0x4802b0, (void *)Vec3_dot, "Vec3_dot");
+	hook(0x4802d0, (void *)Vec3_add, "Vec3_add");
+	hook(0x480320, (void *)Vec3_sub, "Vec3_sub");
+	hook(0x480370, (void *)Vec3_scale, "Vec3_scale");
+	hook(0x4809d0, (void *)Vec4_set, "Vec4_set");
+	hook(0x4677c0, (void *)Vec3_rotateAxis, "Vec3_rotateAxis");
+	hook(0x47d380, (void *)Mat4_multiply, "Mat4_multiply");
+	hook(0x484860, (void *)Mat4_transformPoint, "Mat4_transformPoint");
+	hook(0x47d610, (void *)Mat4_minor, "Mat4_minor");
+	hook(0x47d690, (void *)Mat4_determinant, "Mat4_determinant");
+	hook(0x47d740, (void *)Mat4_invert, "Mat4_invert");
+	hook(0x47d9d0, (void *)math_segmentSphere, "math_segmentSphere");
+	hook(0x46e050, (void *)color_hsvToRgb, "color_hsvToRgb");
+	hook(0x4326f0, (void *)actor_levelFromValue, "actor_levelFromValue");
+	hook(0x41f0e0, (void *)Color4_set, "Color4_set");
+	hook(0x42eeb0, (void *)set4ints, "set4ints");
+	hook(0x480400, (void *)SQRT_wrap_480400, "SQRT_wrap_480400");
+}
+
 static DWORD WINAPI worker(LPVOID unused)
 {
 	char path[MAX_PATH];
@@ -18450,34 +18483,18 @@ static DWORD WINAPI worker(LPVOID unused)
 	}
 	if (GetEnvironmentVariableA("RECOMP_NOHOOK", NULL, 0) == 0) {
 		say("recomp: switching the game to the rebuilt functions\n");
-		for (unsigned i = 0; state_ok && i < sizeof g_hits / sizeof g_hits[0]; i++)
-			hook(g_hits[i].addr, (void *)g_hits[i].fn, g_hits[i].name);
-		for (unsigned i = 0; state_ok && i < sizeof g_hooks3 / sizeof g_hooks3[0]; i++)
-			hook(g_hooks3[i].addr, g_hooks3[i].fn, g_hooks3[i].name);
-		hook(0x4722c0, (void *)Vec3_set, "Vec3_set");
-		hook(0x467760, (void *)Vec3_normalize, "Vec3_normalize");
-		hook(0x480250, (void *)Vec3_cross, "Vec3_cross");
-		hook(0x4802b0, (void *)Vec3_dot, "Vec3_dot");
-		hook(0x4802d0, (void *)Vec3_add, "Vec3_add");
-		hook(0x480320, (void *)Vec3_sub, "Vec3_sub");
-		hook(0x480370, (void *)Vec3_scale, "Vec3_scale");
-		hook(0x4809d0, (void *)Vec4_set, "Vec4_set");
-		hook(0x4677c0, (void *)Vec3_rotateAxis, "Vec3_rotateAxis");
-		hook(0x47d380, (void *)Mat4_multiply, "Mat4_multiply");
-		hook(0x484860, (void *)Mat4_transformPoint, "Mat4_transformPoint");
-		hook(0x47d610, (void *)Mat4_minor, "Mat4_minor");
-		hook(0x47d690, (void *)Mat4_determinant, "Mat4_determinant");
-		hook(0x47d740, (void *)Mat4_invert, "Mat4_invert");
-		hook(0x47d9d0, (void *)math_segmentSphere, "math_segmentSphere");
-		hook(0x46e050, (void *)color_hsvToRgb, "color_hsvToRgb");
-		hook(0x4326f0, (void *)actor_levelFromValue, "actor_levelFromValue");
-		hook(0x41f0e0, (void *)Color4_set, "Color4_set");
-		hook(0x42eeb0, (void *)set4ints, "set4ints");
-		hook(0x480400, (void *)SQRT_wrap_480400, "SQRT_wrap_480400");
+		install_hooks(state_ok);
 	}
+
 	thaw();
 	g_frozen = 0;
 	fwrite(g_logbuf, 1, g_loglen, g_log);
+	if (g_nhooked) {                          /* the functions switched in, for a RECOMP_EARLY=1 run */
+		strcpy(strrchr(path, '\\') + 1, "recomp.passed");
+		FILE *f = fopen(path, "w");
+		for (int i = 0; f && i < g_nhooked; i++) fprintf(f, "%s\n", g_hooked[i]);
+		if (f) fclose(f);
+	}
 	g_loglen = 0;
 	say("recomp: done\n");
 	fclose(g_log);
@@ -18486,10 +18503,40 @@ static DWORD WINAPI worker(LPVOID unused)
 
 __declspec(dllexport) int RecompVersion(void) { return 1; }
 
+/* RECOMP_EARLY=1: no tests; the functions a full run hooked (recomp.passed, next to the exe) are switched in at once,
+   before the game's own code starts, so its start-up (data files, sound table, the first screens) runs on the
+   rebuilds too. Called by the patch DLL (test build) once its own patches are in place; the log goes to
+   recomp_early.log. Returns the number hooked */
+__declspec(dllexport) int recomp_hookEarly(void)
+{
+	char path[MAX_PATH], line[128];
+	if (!GetEnvironmentVariableA("RECOMP_EARLY", NULL, 0)) return 0;
+	GetModuleFileNameA(NULL, path, MAX_PATH);
+	strcpy(strrchr(path, '\\') + 1, "recomp_early.log");
+	g_log = fopen(path, "w");
+	if (!g_log) return 0;
+	strcpy(strrchr(path, '\\') + 1, "recomp.passed");
+	FILE *f = fopen(path, "r");
+	if (!f) { say("recomp early: no recomp.passed (run the full tests once first)\n"); fclose(g_log); return 0; }
+	while (g_nresult < MAXRESULT && fgets(line, sizeof line, f)) {
+		line[strcspn(line, "\r\n")] = 0;
+		if (!line[0]) continue;
+		g_result[g_nresult].name = _strdup(line);
+		g_result[g_nresult++].ok = 1;
+	}
+	fclose(f);
+	say("recomp early: %d functions passed the last full run; switching them in before the game starts\n", g_nresult);
+	install_hooks(1);
+	say("recomp early: %d hooked\n", g_nhooked);
+	fclose(g_log);
+	g_log = NULL;
+	return g_nhooked;
+}
+
 BOOL WINAPI DllMain(HINSTANCE h, DWORD reason, LPVOID r)
 {
 	(void)h; (void)r;
-	if (reason == DLL_PROCESS_ATTACH)
+	if (reason == DLL_PROCESS_ATTACH && !GetEnvironmentVariableA("RECOMP_EARLY", NULL, 0))   /* (early: no tests) */
 		CloseHandle(CreateThread(NULL, 0, worker, NULL, 0, NULL));
 	return TRUE;
 }

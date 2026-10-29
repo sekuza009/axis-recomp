@@ -2219,12 +2219,14 @@ static const struct {
     void (__cdecl *fullScreen)(int on);
 } g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full };
 
+static HMODULE g_recomp;   /* RECOMP TEST BUILD ONLY: recomp.dll, when loaded */
+
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
     DisableThreadLibraryCalls(inst);
     { /* RECOMP TEST BUILD ONLY: load rebuilt game functions (recomp.dll) from the game folder if present */
       char rp[MAX_PATH]; GetModuleFileNameA(NULL, rp, MAX_PATH); strcpy(strrchr(rp, '\\') + 1, "recomp.dll");
-      HMODULE rm = GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES ? LoadLibraryA(rp) : NULL;
+      HMODULE rm = g_recomp = GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES ? LoadLibraryA(rp) : NULL;
       void (*set_wide)(const void *) = rm ? (void (*)(const void *))GetProcAddress(rm, "recomp_setWide") : NULL;
       if (set_wide) set_wide(&g_wide); }
     /* The game renders at the monitor's real resolution (DESKTOP mode), but with display scaling Windows
@@ -2473,5 +2475,9 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
          movie ? "ok" : "MISSING", dpi_ok ? "yes" : "no");
     if (!real_connect) real_connect = connect;
     if (!real_CoCreateInstance) real_CoCreateInstance = (COCREATE)CoCreateInstance;
+    { /* RECOMP TEST BUILD ONLY: with RECOMP_EARLY=1, recomp.dll switches its tested functions in now, after this
+         DLL's own patches and before the game's code runs (see recomp.c recomp_hookEarly) */
+      int (*early)(void) = g_recomp ? (int (*)(void))GetProcAddress(g_recomp, "recomp_hookEarly") : NULL;
+      if (early) logf("recomp: %d rebuilt functions switched in at start-up", early()); }
     return TRUE;
 }

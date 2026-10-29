@@ -18,3 +18,4 @@ batches/*.post*
 lifted/*.cov.bak
 batches/*.log
 tools/__pycache__/
+recomp.passed
