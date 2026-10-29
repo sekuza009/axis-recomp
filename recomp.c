@@ -5227,7 +5227,8 @@ DWORD game_postMatch(void);
 /* 0x453a90 dplay_initConnection(kind, address): a fresh DirectPlay object for connection kind 0..3 (TCP/IP: the
    host address as a compound address from the lobby; the others stored), InitializeConnection, the caps' three
    values into 0xa0bb00; 1, or 0 on a failure */
-LIFT_PLAIN(dplay_initConnection, 453a90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_initConnection(int kind, const char *address);
 /* batch 179 (lifted/grp129.c): the king-of-the-hill ranking and a bullet's damage, both on the scene's actor records */
 #include "lifted/grp129.c"
 /* 0x462150 msg_newKing() (thiscall on the scene, BUF in the tests): the teams' counts from the 16 player records
@@ -15252,7 +15253,7 @@ static void dpinit_setup(void)
 	G32(0xa0baf0) = 0;
 	g_a[0] = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); g_a[1] = irnd(0, 3) ? (int)(BUF + 0x300) : 0;
 }
-T_PLAIN(dplay_initConnection, 0x453a90, dpinit_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(dplay_initConnection, dpinit_setup();, CALL_PLAIN(0x453a90, 0, g_a[0], g_a[1], 0, 0), (DWORD)(dplay_initConnection((DWORD)(g_a[0]), (const char *)(DWORD)(DWORD)(g_a[1]))))
 /* batch 179 */
 /* the scene's 16 actor / player records at BUF (stride 0x8888; the scratch area is zero between tests): teams -1..3,
    frags and deaths, active / alive flags, the player link and slot, flags; the player table's used flags

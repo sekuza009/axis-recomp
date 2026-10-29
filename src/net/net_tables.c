@@ -831,3 +831,56 @@ u32 (arena_451090)(const u8 *message, u32 size, u32 from)
 	}
 	return type - 1;
 }
+
+/* 0x453a90: a fresh DirectPlay connection of kind 0 .. 3: the old object closed (dplay_closeSession). The kind picks
+   the service provider (0xa0bad8: 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and its stored connection (0xa0badc from
+   0xa0bae0 + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
+   host `address` (or 0xa0bb0c), size query then fill, into a new block 0xa0baf0. Then (when there is a connection) a
+   new DirectPlay object (arena_4539f0) initialised with it and its caps kept (timeout, buffer and queue sizes into
+   0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
+int (dplay_initConnection)(int kind, const char *address)
+{
+	if (GAME_VAR(void *, 0xa0b404)) {
+		GAME_CDECL(0x453a10, void, void *)(GAME_VAR(void *, 0xa0b404));   /* dplay_closeSession */
+		GAME_VAR(void *, 0xa0b404) = NULL;
+	}
+	static const u32 provider[4] = { 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8 };
+	if ((u32)kind <= 3) {
+		GAME_VAR(u32, 0xa0bad8) = provider[kind];
+		GAME_VAR(u32, 0xa0badc) = GAME_VAR(u32, 0xa0bae0 + kind * 4);
+	}
+	if (kind == 0) {
+		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
+		char host[0xc0];
+		u32 size = 0;
+		strcpy(host, address ? address : (const char *)0xa0bb0c);
+		memcpy(element[0].guid, (const void *)0x4a9638, 16);   /* DPAID_ServiceProvider */
+		element[0].size = 0x10;
+		element[0].data = GAME_VAR(const void *, 0xa0bad8);
+		memcpy(element[1].guid, (const void *)0x4a9628, 16);   /* DPAID_INet */
+		element[1].size = strlen(host) + 1;
+		element[1].data = host;
+		void *lobby = GAME_VAR(void *, 0xa0b398);
+		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, NULL, &size);   /* CreateCompoundAddress */
+		void *block = crt_malloc(size);
+		GAME_VAR(void *, 0xa0baf0) = block;
+		lobby = GAME_VAR(void *, 0xa0b398);
+		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, block, &size);
+		GAME_VAR(void *, 0xa0badc) = GAME_VAR(void *, 0xa0baf0);
+	}
+	if (!GAME_VAR(void *, 0xa0badc))
+		return 1;
+	if (GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404) < 0 || !GAME_VAR(void *, 0xa0b404))   /* arena_4539f0 */
+		return 0;
+	void *play = GAME_VAR(void *, 0xa0b404);
+	if (COM(play, 0x98, int, void *, u32)(play, GAME_VAR(void *, 0xa0badc), 0) < 0)   /* InitializeConnection */
+		return 0;
+	u32 caps[10] = { 0x28 };   /* DPCAPS */
+	play = GAME_VAR(void *, 0xa0b404);
+	if (COM(play, 0x38, int, u32 *, u32)(play, caps, 0))   /* GetCaps */
+		return 0;
+	GAME_VAR(u32, 0xa0bb00) = caps[9];   /* dwTimeout */
+	GAME_VAR(u32, 0xa0bb04) = caps[2];   /* dwMaxBufferSize */
+	GAME_VAR(u32, 0xa0bb08) = caps[3];   /* dwMaxQueueSize */
+	return 1;
+}
