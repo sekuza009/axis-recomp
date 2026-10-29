@@ -4247,7 +4247,8 @@ void mainmenu_442e10(void);
    line, two labelled dark boxes (0x758424), the name 0x9dd1d8 and the password 0x9dd1f6 as '*' (each hidden while
    edited: 0x9dd830 / 0x9dd38c), three buttons (0x758524; none bright while connecting, 0x9dd838, which shows a box
    with two lines 0x74f6a4 / 0x74f724), the confirmation box (0x9dd850) and the border */
-LIFT_PLAIN(room_4392c0, 4392c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_4392c0(void);
 /* 0x44cf70 profile_44cf70(): the selected profile's pilot panel (with profiles, 0x9f9008): the pilot (0x9f688c of
    the selected profile 0x9f8d74, into 0x9f8d6c), 13 labels (0x75e824), the portrait (texture 0x4dfa00, cell
    pilot % 3, pilot / 3 of 86 texels) in a yellow frame, name (0x9f9040, 0x4c apart), title (+0x10), class (+0x20, a
@@ -13389,7 +13390,7 @@ static void roomlogin_setup(void)
 	G32(0x9dd838) = irnd(0, 3) ? 0 : 1; G32(0x9dd850) = irnd(0, 3) ? 0 : 1;
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dd358) + irnd(0x30, 0x1e8); G32(0x4ded6c) = G32(0x9dd364) - irnd(0x20, 0x40); }
 }
-T_PLAIN(room_4392c0, 0x4392c0, roomlogin_setup();, 0, 0, 0, 0, 0)
+ST(room_4392c0, roomlogin_setup();, CALL_PLAIN(0x4392c0, 0, 0, 0, 0, 0), room_4392c0())
 /* the pilot panel: menutex_setup's set as portrait and bar textures, 0..6 profiles (the selected one's pilot
    0..8: the portrait atlas is 3 x 3), nine pilots with short names and titles, classes 0..4, stats with one to
    four digits and a sign now and then, the bars' current and target values, focused or not */
