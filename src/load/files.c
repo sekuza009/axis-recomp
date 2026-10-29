@@ -1027,3 +1027,61 @@ void (cfg_42e080)(void *f)
 	GAME_VAR(int, 0x4e0c9c) = !strcmp(value, (const char *)0x4b21bc);
 	skip_line(f);
 }
+
+/* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
+   back up, nothing found): each *.axs file's name (0x9f1ac4, 0x40 apart) and its header (0x104 bytes at 20000,
+   unscrambled, into 0x9f61d8); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
+   0x9f6848: its number, its name less ".axs", and a stray word: the original reads a stack argument no caller
+   passes), any other file is deleted. Then back up, profile_create, the list loaded (profile_loadList) and the
+   profile named 0x9f8fe8 (among as many as there were files) chosen into 0x9f8c58. The original leaves eax to
+   callers that ignore it */
+void (profile_scanSaves)(u32 stray)
+{
+	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
+		crt_chdir((const char *)0x9dae7c);
+		IMPORT(0x4a9104, u32, const char *)((const char *)0x4b2acc);   /* DeleteFileA("axisuser.dat") */
+		crt_chdir((const char *)0x4b2a80);   /* ".." */
+		return;
+	}
+	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
+	int search = crt_findfirst((const char *)0x4b2ac4, &found);   /* "*.axs" */
+	if (search < 0) {
+		crt_chdir((const char *)0x4b2a80);
+		profile_loadList(0);
+		return;
+	}
+	char (*files)[0x40] = (char (*)[0x40])0x9f1ac4;
+	strcpy(files[0], found.name);
+	int count = 1;
+	while (!crt_findnext(search, &found))
+		strcpy(files[count++], found.name);
+	crt_findclose(search);
+	int valid = 0;
+	for (int i = 0; i < count; i++) {
+		u8 header[0x104];
+		void *f = crt_fopen(files[i], (const char *)0x4ad170);   /* "rb" */
+		crt_fseek(f, 20000, 0);
+		crt_fread(header, 0x104, 1, f);
+		fclose(f);
+		profile_445f10(header, 0x7e);
+		memcpy((void *)0x9f61d8, header, 0x104);
+		char name[32] = { 0 };
+		memcpy(name, files[i], strlen(files[i]) - 4);
+		if (strcmp((const char *)0x9f61d8, (const char *)0x4b0fa0)) {
+			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
+			continue;
+		}
+		u8 *profile = (u8 *)0x9f6848 + valid * 0x48;
+		strcpy((char *)profile + 4, name);
+		*(u32 *)(profile + 0x44) = stray;
+		*(int *)profile = valid++;
+	}
+	crt_chdir((const char *)0x4b2a80);
+	profile_create();
+	profile_loadList(valid);
+	for (int i = 0; i < count; i++)
+		if (!strcmp((const char *)0x9f684c + i * 0x48, (const char *)0x9f8fe8)) {
+			GAME_VAR(int, 0x9f8c58) = i;
+			return;
+		}
+}

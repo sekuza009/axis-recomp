@@ -815,7 +815,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define crt_fopen(name, mode) GAME_CDECL(0x49e9ca, void *, const char *, const char *)(name, mode)
 #define crt_fwrite(p, size, count, f) GAME_CDECL(0x49f58a, u32, const void *, u32, u32, void *)(p, size, count, f)
 #define crt_rand() GAME_CDECL(0x49f92c, int, void)()
-#define save_cryptRecord(rec, key) GAME_CDECL(0x445ee0, void, u8 *, u8)(rec, key)   /* a 0x3ac-byte profile record scrambled (menu/profile_misc.c) */
+#define save_cryptRecord(rec, key) GAME_CDECL(0x445ee0, void, u8 *, u8)(rec, key)
+#define profile_445f10(rec, key) GAME_CDECL(0x445f10, void, u8 *, u8)(rec, key)   /* a 0x104-byte record (un)scrambled */
+#define profile_loadList(count) GAME_CDECL(0x445f70, u32, int)(count)
+#define profile_create() GAME_CDECL(0x4474a0, u32, void)()   /* a 0x3ac-byte profile record scrambled (menu/profile_misc.c) */
 #define match_4464b0() GAME_CDECL(0x4464b0, void, void)()   /* the current profile's record gathered (0x9f1718) */
 #define profile_445f40(p, key) GAME_CDECL(0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
 #define fread_scrambled(p, size, count, f) GAME_CDECL(0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */

@@ -2816,7 +2816,8 @@ void menu_drawRect(int x0, int y0, int x1, int y1, int filled);
 DWORD menuState210_enter(void);
 /* 0x4460d0 profile_scanSaves: the *.axs profiles of the save directory into the profile list (or delete
    axisuser.dat when the directory is missing) */
-LIFT_PLAIN(profile_scanSaves, 4460d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_scanSaves(DWORD stray);
 /* 0x487cb0 (thiscall) autoplay_startRecording(name): open AutoPlay\name.ape (or the first free AutoPlay###) and
    write the recording header */
 static THISCALL DWORD autoplay_startRecording(char *scene, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_487cb0, (DWORD)scene, 1, v); }
@@ -9621,7 +9622,7 @@ ST(menuState210_enter, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); G3
 /* every save is read at 0x4e20 for 0x104 bytes: shorter files leave that stack buffer uninitialised, and the original
    copies it into the profile table anyway, so the test files are long enough */
 static void scansaves_vfs(void) { int n = 0x4f24 + irnd(0, 0x200); fill(BUF + 0x200000, n); g_vfsData = (const BYTE *)(BUF + 0x200000); g_vfsSize = (DWORD)n; }
-T_PLAIN(profile_scanSaves, 0x4460d0, scansaves_vfs(); g_mockFindCount = irnd(0, 12); g_mockMkdirFail = !irnd(0, 4); g_mockDeleteOk = irnd(0, 1);, 0, 0, 0, 0, 0)
+ST(profile_scanSaves, scansaves_vfs(); g_mockFindCount = irnd(0, 12); g_mockMkdirFail = !irnd(0, 4); g_mockDeleteOk = irnd(0, 1);, (CALL_PLAIN(0x4460d0, 0, 0, 0, 0, 0), 0), (profile_scanSaves(0), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* recording into AutoPlay\name.ape, or (no name) the first AutoPlay### that does not exist yet */
 static void autorec_setup(void)
 {
