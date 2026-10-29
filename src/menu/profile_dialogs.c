@@ -268,3 +268,182 @@ void (mainmenu_drawScreen)(void)
 #undef Y1
 #undef PAGE
 }
+
+/* 0x44e640: the pilot-select dialog (0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): the window, its title 0x75e7a4 and
+   rule; the portraits (texture 0x4dfa00) and over them the chosen pilot's (0x9f8d30: cell % 3, / 3 of 86 texels)
+   growing by 2 a reveal step (0x9f6828, up to 8, one a 1.0 of 0x9f8ee4) under a pulsing frame (0x9dad90; its alpha
+   by 0x9f8f08, which bounces between 2 and 38 at 0x9f8c48 a frame); the details: 13 labels (0x75e824), the pilot's
+   name, title, class (0x75eea4), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (0x9f8d34,
+   easing to 0x9f8ec0); two buttons (0x7517a4; 9 / 10 under the pointer by profile_44b3e0, bright) and the border.
+   The original leaves eax to callers that ignore it */
+void (profile_44e640)(void)
+{
+#define X0 GAME_VAR(int, 0x9f8c54)
+#define Y0 GAME_VAR(int, 0x9f8c50)
+#define X1 GAME_VAR(int, 0x9f6830)
+#define Y1 GAME_VAR(int, 0x9f682c)
+#define K(addr) ((const float *)(addr))
+#define g_pilot GAME_VAR(int, 0x9f8d30)
+#define g_reveal GAME_VAR(int, 0x9f6828)
+#define g_frameAlpha GAME_VAR(float, 0x9f8f08)
+#define g_frameStep GAME_VAR(u32, 0x9f8c48)
+#define g_revealClock GAME_VAR(float, 0x9f8ee4)
+	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* profile_44b3e0 */
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75e7a4);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	/* the portraits */
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x4dfa00);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	menu_vertex(X0 + 0x20, Y0 + 0x4c);
+	glTexCoord2d(1.0, 0.0);
+	menu_vertex(X0 + 0x120, Y0 + 0x4c);
+	glTexCoord2d(1.0, 1.0);
+	menu_vertex(X0 + 0x120, Y0 + 0x14c);
+	glTexCoord2d(0.0, 1.0);
+	menu_vertex(X0 + 0x20, Y0 + 0x14c);
+	glEnd();
+	/* the chosen one's cell, grown by the reveal: corners at (x, y) less the reveal and 2 x reveal + 85 further */
+	float col = (float)(g_pilot % 3), row = (float)(g_pilot / 3);
+	long double reveal = (long double)g_reveal;
+	float x = f32(fmul_m(col, K(0x4a95ec)) - reveal), y = f32(fmul_m(row, K(0x4a95ec)) - reveal);
+	glBegin(GL_QUADS);
+	long double rt = fmul_m(row, K(0x4a95ec)), ct = fmul_m(col, K(0x4a95ec));
+	float row_t = f32(rt), col_t = f32(ct);
+	float t0 = f32(fmul_m(rt, K(0x4a957c))), s0 = f32(fmul_m(ct, K(0x4a957c)));
+	glTexCoord2f(s0, t0);
+	int y0 = ftol(fadd_m((long double)(Y0 + 0x4c), &y));
+	menu_vertex(ftol(fadd_m((long double)(X0 + 0x20), &x)), y0);
+	float s1 = f32(fmul_m(fadd_m(col_t, K(0x4a95e8)), K(0x4a957c)));
+	glTexCoord2f(s1, t0);
+	y0 = ftol(fadd_m((long double)(Y0 + 0x4c), &y));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), K(0x4a95e8))), y0);
+	float t1 = f32(fmul_m(fadd_m(row_t, K(0x4a95e8)), K(0x4a957c)));
+	glTexCoord2f(s1, t1);
+	int y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), K(0x4a95e8)));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), K(0x4a95e8))), y1);
+	glTexCoord2f(s0, t1);
+	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a95e8)));
+	menu_vertex(ftol(fadd_m((long double)(X0 + 0x20), &x)), y1);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	/* its pulsing frame: 5 outside the cell's corner, 90 beyond it */
+	glEnable(GL_TEXTURE_2D);
+	texture = GAME_VAR(int, 0x9dad90);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_frameAlpha), K(0x4a9428)), K(0x4a9424))));
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.5f);
+	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), K(0x4a93d0)));
+	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y0);
+	glTexCoord2f(0.5f, 0.5f);
+	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), K(0x4a93d0)));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(X0 + 0x20), &x), K(0x4a9550))), y0);
+	glTexCoord2f(0.5f, 1.0f);
+	y1 = ftol(fadd_m(fadd_m((long double)(Y0 + 0x4c) + (long double)(g_reveal * 2), &y), K(0x4a9550)));
+	menu_vertex(ftol(fadd_m(fadd_m((long double)(X0 + 0x20) + (long double)(g_reveal * 2), &x), K(0x4a9550))), y1);
+	glTexCoord2f(0.0f, 1.0f);
+	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a9550)));
+	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y1);
+	glEnd();
+	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_frameStep), &g_frameAlpha);
+	g_frameAlpha = f32(pulse);
+	if (!(pulse > *K(0x4a93fc)))
+		g_frameStep = 0x3f800000;   /* 1 */
+	if (pulse >= *K(0x4a93f8))
+		g_frameStep = 0xbf800000;   /* -1 */
+	if (g_reveal < 8) {
+		long double clock = fadd_m(fld_m(&g_revealClock), K(0x4b071c));
+		g_revealClock = f32(clock);
+		if (clock > *K(0x4a9424)) {
+			g_revealClock = 0;
+			g_reveal++;
+		}
+	}
+	/* the details */
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	menu_drawRect(X0 + 0x130, Y0 + 0x40, X0 + 0x22a, Y0 + 0x158, 0);
+	for (int k = 0; k < 13; k++)
+		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(0x75e824 + k * 0x80));
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+#define pilot ((const u8 *)0x9f9040 + g_pilot * 0x4c)
+	text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)pilot);
+	text_draw8(X0 + 0x184, Y0 + 0x5d, (const char *)pilot + 0x10);
+	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(0x75eea4 + *(const int *)(pilot + 0x20) * 0x80));
+	char text[20];
+	itoa(*(const int *)(pilot + 0x24), text, 10);
+	text_draw8(X0 + 0x184, Y0 + 0x87, text);
+	for (int k = 0; k < 9; k++) {
+		itoa(*(const int *)(pilot + 0x28 + k * 4), text, 10);
+		int pad;
+		if (text[0] != '-')
+			pad = strlen(text) < 2 ? 0x10 : 8;
+		else
+			pad = strlen(text) < 3 ? 8 : 0;
+		strcat(text, (const char *)0x4b3e2c);
+		text_draw8(X0 + pad + 0x192, Y0 + k * 0x15 + 0x9c, text);
+	}
+#undef pilot
+	glEnable(GL_TEXTURE_2D);
+	texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	float *bar = (float *)0x9f8d34;
+	const float *target = (const float *)0x9f8ec0;
+	for (int k = 0; k < 9; k++) {
+		glBegin(GL_QUADS);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), K(0x4b071c)), K(0x4a93ec)), &bar[k]);
+		bar[k] = f32(eased);
+		long double end = fadd_m(fmul_m(eased, K(0x4a9420)), K(0x4a9468));
+		float s = f32(end);
+		if (end > *K(0x4a953c))
+			s = 0.95f;
+		int y = Y0 + k * 0x15;
+		glTexCoord2f(0.05f, 0.1875f);
+		menu_vertex(X0 + 0x1bc, y + 0x9f);
+		glTexCoord2f(s, 0.1875f);
+		menu_vertex(X0 - ftol(fmul_m(fld_m(&bar[k]), K(0x4a95f4))) + 0x1bc, Y0 + k * 0x15 + 0x9f);
+		glTexCoord2f(s, 0.1875f);
+		menu_vertex(X0 - ftol(fmul_m(fld_m(&bar[k]), K(0x4a95f4))) + 0x1bc, Y0 + k * 0x15 + 0xa4);
+		glTexCoord2f(0.05f, 0.1875f);
+		menu_vertex(X0 + 0x1bc, Y0 + k * 0x15 + 0xa4);
+		glEnd();
+	}
+	glDisable(GL_TEXTURE_2D);
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		int lit = hovered == k + 9;
+		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+		int bx = X0 + k * 0xa0;
+		menu_drawTexQuad_4282f0(bx + 0xaa, Y1 - 0x40, bx + 0x122, Y1 - 0x20, 1);
+		const u32 *colour = lit ? panel : dim;
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(bx + 0xaa, Y1 - 0x38, bx + 0x122, (const char *)(0x7517a4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+#undef g_revealClock
+#undef g_frameStep
+#undef g_frameAlpha
+#undef g_reveal
+#undef g_pilot
+#undef K
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}

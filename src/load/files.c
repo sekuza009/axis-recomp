@@ -144,6 +144,69 @@ u32 (cfg_parsePlayer)(void *f)
 #undef FPUTS
 }
 
+/* 0x42cba0: the key bindings' section of axis.cfg: a "set_key <action><1|2> " line for each binding (0x4def00, 64
+   of them, written in the menu's order) with its key's name (0x4b0750), then the mouse: convert and smooth (ON / OFF:
+   0x4df000, 0x4df004), the sensitivity (0x4df008) and the crosshairs (0x4df00c). Returns the last fputs */
+u32 (cfg_keyBindings)(void *f)
+{
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+	static const struct { u32 line; u8 binding; } keys[64] = {
+		{ 0x4b2184, 0 }, { 0x4b2170, 1 },   /* forward */
+		{ 0x4b215c, 2 }, { 0x4b2148, 3 },   /* backward */
+		{ 0x4b2134, 4 }, { 0x4b2120, 5 },   /* left-step */
+		{ 0x4b2108, 6 }, { 0x4b20f0, 7 },   /* right-step */
+		{ 0x4b20dc, 8 }, { 0x4b20c8, 9 },   /* left-turn */
+		{ 0x4b20b0, 10 }, { 0x4b2098, 11 },   /* right-turn */
+		{ 0x4b207c, 12 }, { 0x4b2060, 13 },   /* fixed-altitude */
+		{ 0x4b204c, 14 }, { 0x4b2038, 15 },   /* booster */
+		{ 0x4b2024, 16 }, { 0x4b2010, 17 },   /* moveup */
+		{ 0x4b1ffc, 18 }, { 0x4b1fe8, 19 },   /* movedown */
+		{ 0x4b1fd8, 20 }, { 0x4b1fc8, 21 },   /* fire */
+		{ 0x4b1fb0, 22 }, { 0x4b1f98, 23 },   /* pre-weapon */
+		{ 0x4b1f80, 24 }, { 0x4b1f68, 25 },   /* next-weapon */
+		{ 0x4b1f4c, 30 }, { 0x4b1f30, 31 },   /* 1st-hand-weapon */
+		{ 0x4b1f14, 32 }, { 0x4b1ef8, 33 },   /* 2nd-hand-weapon */
+		{ 0x4b1edc, 34 }, { 0x4b1ec0, 35 },   /* 3rd-hand-weapon */
+		{ 0x4b1ea4, 36 }, { 0x4b1e88, 37 },   /* 4th-hand-weapon */
+		{ 0x4b1e68, 26 }, { 0x4b1e48, 27 },   /* right-shoulder-weapon */
+		{ 0x4b1e28, 28 }, { 0x4b1e08, 29 },   /* left-shoulder-weapon */
+		{ 0x4b1df8, 38 }, { 0x4b1de8, 39 },   /* zoom */
+		{ 0x4b1dd4, 40 }, { 0x4b1dc0, 41 },   /* alt-shoot */
+		{ 0x4b1db0, 42 }, { 0x4b1da0, 43 },   /* talk */
+		{ 0x4b1d8c, 44 }, { 0x4b1d78, 45 },   /* team-talk */
+		{ 0x4b1d64, 46 }, { 0x4b1d50, 47 },   /* use-item */
+		{ 0x4b1d3c, 48 }, { 0x4b1d28, 49 },   /* feedback */
+		{ 0x4b1d14, 50 }, { 0x4b1d00, 51 },   /* call-menu */
+		{ 0x4b1ce8, 52 }, { 0x4b1cd0, 53 },   /* quick-save */
+		{ 0x4b1cb8, 54 }, { 0x4b1ca0, 55 },   /* quick-load */
+		{ 0x4b1c90, 56 }, { 0x4b1c80, 57 },   /* score */
+		{ 0x4b1c64, 58 }, { 0x4b1c48, 59 },   /* mission-objective */
+		{ 0x4b1c2c, 60 }, { 0x4b1c10, 61 },   /* change-viewmode */
+		{ 0x4b1c00, 62 }, { 0x4b1bf0, 63 },   /* help */
+	};
+	const int *binding = (const int *)0x4def00;
+	const char *const *key_name = (const char *const *)0x4b0750;
+	for (int k = 0; k < 64; k++) {
+		FPUTS(keys[k].line);
+		FPUTS(key_name[binding[keys[k].binding]]);
+		FPUTS(0x4b182c);
+	}
+	FPUTS(0x4b1bd8);
+	FPUTS(GAME_VAR(int, 0x4df000) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(0x4b1bc0);
+	FPUTS(GAME_VAR(int, 0x4df004) == 1 ? 0x4b17e4 : 0x4b17dc);
+	char number[12];
+	itoa(GAME_VAR(int, 0x4df008), number, 10);
+	FPUTS(0x4b1ba8);
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	itoa(GAME_VAR(int, 0x4df00c), number, 10);
+	FPUTS(0x4b1b90);
+	FPUTS(number);
+	return FPUTS(0x4b182c);
+#undef FPUTS
+}
+
 /* 0x42d730: axis.cfg written in the data folder (0x9dae7c): its header, then the player, server, sound, graphics and
    key binding sections (the original does not check that the file opened). Returns fclose's eax */
 u32 (cfg_loadAxisCfg)(void)

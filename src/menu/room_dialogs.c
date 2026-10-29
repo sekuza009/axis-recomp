@@ -437,11 +437,11 @@ u32 (room_4334c0)(void)
 	return r;
 }
 
-/* a password as stars: the buffer cleared (30 bytes), then one '*' a character */
-static void stars(char *out, const char *password)
+/* a password as stars: the buffer cleared (size bytes), then one '*' a character */
+static void stars(char *out, int size, const char *password)
 {
 	int n = strlen(password);
-	memset(out, 0, 30);
+	memset(out, 0, size);
 	if (n > 0)
 		memset(out, '*', n);
 }
@@ -476,11 +476,11 @@ u32 (room_4399c0)(void)
 	if (!GAME_VAR(int, 0x9dd348) || !g_paused)
 		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)0x9dd1d8);
 	if (!GAME_VAR(int, 0x9dd3f8) || !g_paused) {
-		stars(hidden, (const char *)0x9dd1f6);
+		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
 		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
 	}
 	if (!GAME_VAR(int, 0x9dd564) || !g_paused) {
-		stars(hidden, (const char *)0x9dd202);
+		stars(hidden, sizeof hidden, (const char *)0x9dd202);
 		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
 	}
 	if (!GAME_VAR(int, 0x9dd6cc) || !g_paused)
@@ -622,7 +622,7 @@ u32 (room_4392c0)(void)
 		text_draw8(X0 + 0xc8, Y0 + 0x58, (const char *)0x9dd1d8);
 	if (!GAME_VAR(int, 0x9dd38c)) {
 		char hidden[30];
-		stars(hidden, (const char *)0x9dd1f6);
+		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
 		text_draw8(X0 + 0xc8, Y0 + 0x88, hidden);
 	}
 	for (int k = 0; k < 3; k++) {
@@ -648,6 +648,126 @@ u32 (room_4392c0)(void)
 		confirm_box();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_CDECL(0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+
+/* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (0x9dd6d4 = 1) only a
+   box with two lines (0x75b1a4, 0x74f724). The title 0x7592a4, five labels for the fields (0x759324, 0x80 apart) and
+   seven for the record (0x7595a4); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
+   0x9dd1f6, 0x9dd202; each left out while it is being typed in: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (left
+   out while 0x9dd304); the level 0x9dd5d8 with its rank badge (cell (level - 1) % 10, / 10 of the texture 0x76d448),
+   the clan 0x9dd248 (0x759924 when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
+   0x9dd5f0, 0x9dd5dc); two buttons (0x7517a4; 4 / 5 under the pointer by room_4322c0, lit unless 0x68039c), a
+   rule and the border. The original leaves eax to callers that ignore it */
+void (room_43a420)(void)
+{
+#define X0 GAME_VAR(int, 0x9dd368)
+#define Y0 GAME_VAR(int, 0x9dd36c)
+#define X1 GAME_VAR(int, 0x9dd370)
+#define Y1 GAME_VAR(int, 0x9dd374)
+#define K(addr) ((const float *)(addr))
+	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	int hovered = GAME_CDECL(0x4322c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4322c0 */
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	if (GAME_VAR(int, 0x9dd6d4) == 1) {
+		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
+		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
+		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		text_drawBox16(0x50, 0xdc, 0x230, (const char *)0x75b1a4);
+		text_drawBox16(0x50, 0xf0, 0x230, (const char *)0x74f724);
+		return;
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x7592a4);
+	for (int k = 0; k < 5; k++)
+		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(0x759324 + k * 0x80));
+	for (int k = 0; k < 7; k++)
+		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(0x7595a4 + k * 0x80));
+	text_draw8(X0 + 0x98, Y0 + 0x38, (const char *)0x9dd1d8);
+	for (int k = 0; k < 4; k++) {
+		int y = Y0 + k * 0x1c;
+		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f800000);   /* 0.1, 0.1, 0.1, 1 */
+		menu_drawRect(X0 + 0x8e, y + 0x4e, X1 - 0x20, y + 0x64, 1);
+		set_colour_bits(g_rectColour, 0, 0x3f800000, 0, 0x3f800000);
+		menu_drawRect(X0 + 0x8e, y + 0x4e, X1 - 0x20, y + 0x64, 0);
+	}
+	char text[20];
+	static const struct { u32 typing, password; int y; } hidden[3] = {
+		{ 0x9dd69c, 0x9dd6d8, 0x50 }, { 0x9dd37c, 0x9dd1f6, 0x6c }, { 0x9dd378, 0x9dd202, 0x88 },
+	};
+	for (int k = 0; k < 3; k++)
+		if (!GAME_VAR(int, hidden[k].typing)) {
+			stars(text, sizeof text, (const char *)hidden[k].password);
+			text_draw8(X0 + 0x98, Y0 + hidden[k].y, text);
+		}
+	if (!GAME_VAR(int, 0x9dd304))
+		text_draw8(X0 + 0x98, Y0 + 0xa4, (const char *)0x9dd20e);
+	itoa(GAME_VAR(int, 0x9dd5d8), text, 10);
+	text_draw8(X0 + 0x98, Y0 + 0xbe, text);
+	/* the rank badge */
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x76d448);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	int cell = GAME_VAR(int, 0x9dd5d8) - 1;
+	float u0 = f32(fmul_m((long double)(cell % 10), K(0x4a9590)));
+	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), K(0x4a958c)), K(0x4a9588)));
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glTexCoord2f(u0, v0);
+	menu_vertex(X0 + 0xc0, Y0 + 0xbe);
+	float u1 = f32(fadd_m(u0, K(0x4a9590)));
+	glTexCoord2f(u1, v0);
+	menu_vertex(X0 + 0xd8, Y0 + 0xbe);
+	float v1 = f32(fadd_m(v0, K(0x4a958c)));
+	glTexCoord2f(u1, v1);
+	menu_vertex(X0 + 0xd8, Y0 + 0xce);
+	glTexCoord2f(u0, v1);
+	menu_vertex(X0 + 0xc0, Y0 + 0xce);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
+	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
+	/* the record */
+	if (!GAME_VAR(int, 0x9dd248))
+		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)0x759924);
+	else {
+		itoa(GAME_VAR(int, 0x9dd248), text, 10);
+		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
+	}
+	sprintf(text, (const char *)0x4b0268, (double)GAME_VAR(float, 0x9dd5e4));
+	text_draw8(X0 + 0x98, Y0 + 0xee, text);
+	sprintf(text, (const char *)0x4b0268, (double)GAME_VAR(float, 0x9dd5f4));
+	text_draw8(X0 + 0x98, Y0 + 0x106, text);
+	static const u32 counts[3] = { 0x9dd5ec, 0x9dd5f0, 0x9dd5dc };
+	for (int k = 0; k < 3; k++) {
+		itoa(GAME_VAR(int, counts[k]), text, 10);
+		text_draw8(X0 + 0x98, Y0 + 0x11e + k * 0x18, text);
+	}
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		int lit = hovered == k + 4 && !GAME_VAR(int, 0x68039c);
+		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+		int x = X0 + k * 0xa0;
+		menu_drawTexQuad_4282f0(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
+		const u32 *colour = lit ? bright : dim;
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(0x7517a4 + k * 0x80));
+	}
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+#undef K
 #undef X0
 #undef Y0
 #undef X1

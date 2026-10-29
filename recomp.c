@@ -2614,7 +2614,8 @@ LIFT_PLAIN(cfg_readLines, 42d7f0)
 /* 0x40d4e0 arena_loadSettings: read an arena settings file (fgets/strtok/atoi). Lifted */
 LIFT_PLAIN(arena_loadSettings, 40d4e0)
 /* 0x42cba0 cfg_keyBindings: write the key bindings section of axis.cfg. Lifted */
-LIFT_PLAIN(cfg_keyBindings, 42cba0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_keyBindings(void *f);
 /* 0x46cdc0 (thiscall) match_46cdc0(name): open a 24-bit BMP (file kept at +4), read its headers; the file, or 0. Lifted */
 static THISCALL DWORD match_46cdc0(char *self, DWORD name) { DWORD v[1] = { name }; return run_lifted_regs(lift_46cdc0, 0, (DWORD)self, 0, 1, v); }
 /* batch 46 */
@@ -4309,7 +4310,8 @@ LIFT_PLAIN(arena_4091b0, 4091b0)
    edited: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (0x9dd304), the level 0x9dd5d8 with its rank icon (cell
    (level - 1) % 10, / 10 of the font texture 0x76d448), the clan 0x9dd248 (or 0x759924 when none), two ratios
    ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec, 0x9dd5f0, 0x9dd5dc); three buttons, a line, the border */
-LIFT_PLAIN(room_43a420, 43a420)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_43a420(void);
 /* batch 128 (lifted/grp74.c): the room menu's tunnel with hover panels */
 #include "lifted/grp74.c"
 /* 0x437e00 room_437e00(): the room menu: setup_423330's code for the room: the cursor tested against six panels
@@ -4331,7 +4333,8 @@ LIFT_PLAIN(lobbyTop_drawTitle, 408680)
    while 0x4ddb98 counts down by 0x4b071c (then -1); label 0x753424 and three labelled switches (0x7534a4..):
    on / off texts from 0x753624 (0x80 apart) by 0x4dde9c > 0, 0x4ddea0 and 0x4ddea4, the hovered one (setup_420670
    5..7) shadowed and highlighted; two buttons (0x753724); the border */
-LIFT_PLAIN(setup_424810, 424810)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_424810(void);
 /* batch 131 (lifted/grp77.c): screen dispatchers over the rebuilt screens */
 #include "lifted/grp77.c"
 /* 0x4434f0 mainmenu_4434f0(): the map-select dialog (mainmenu_442e10), or only its frame while a message is open */
@@ -4384,7 +4387,8 @@ LIFT_PLAIN(missionsel_drawScreen, 449a50)
    0x9f6828 steps up to 8 every 1.0 of 0x9f8ee4; the details box: 13 labels (0x75e824), the pilot's name, title,
    class (0x75eea4), level and nine stats (as profile_44cf70), their bars; two buttons (0x7517a4), the hovered one
    (profile_44b3e0) bright; the border */
-LIFT_PLAIN(profile_44e640, 44e640)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44e640(void);
 /* batch 135 (lifted/grp81.c): the room's ranking table */
 #include "lifted/grp81.c"
 /* 0x43d060 room_43d060(): the ranking window (0x9dced8..): frame, title 0x75aba4; the page arrows (the hovered one,
@@ -9375,7 +9379,8 @@ ST(cfg_parsePlayer, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, CA
    cfg_parsePlayer((void *)VFS_FILE(0)))
 ST(cfg_parseSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
    cfg_parseSound((void *)VFS_FILE(0)))
-T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
+ST(cfg_keyBindings, , CALL_PLAIN(0x42cba0, 0, VFS_FILE(1), 0, 0, 0),
+   cfg_keyBindings((void *)VFS_FILE(1)))
 ST(console_loadFile, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(console_loadFile((DWORD)(g_a[0]))))
 ST(app_checkLauncherRunning, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_checkLauncherRunning()))
 ST(profile_loadList, vfs_content(0, 0); g_a[0] = irnd(0, 10);, CALL_PLAIN(0x445f70, 0, g_a[0], 0, 0, 0), (DWORD)(profile_loadList((DWORD)(g_a[0]))))
@@ -13537,7 +13542,7 @@ static void roominfo_setup(void)
 	G32(0x9dd5ec) = irnd(-999999, 999999); G32(0x9dd5f0) = irnd(-999999, 999999); G32(0x9dd5dc) = irnd(-999999, 999999);
 	G32(0x76d448) = G32(0x9db0a4);
 }
-T_PLAIN(room_43a420, 0x43a420, roominfo_setup();, 0, 0, 0, 0, 0)
+ST(room_43a420, roominfo_setup();, (CALL_PLAIN(0x43a420, 0, 0, 0, 0, 0), 0), (room_43a420(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 128 */
 /* the room menu: tunnels_setup's tunnel and textures, six panel quads (run-time data at 0x9daf88) with the cursor
    often at a panel's centre, the hover state and glow, modes 0..3, the captions */
@@ -13590,7 +13595,7 @@ static void sound_setup(void)
 	for (int k = 0; k < 2; k++) fill_str((char *)0x753724 + k * 0x80, 10, 32, 126);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4ddad0) + irnd(0x120, 0x180); G32(0x4ded6c) = G32(0x4ddad4) + 0x9c + irnd(0, 2) * 0x28 + irnd(0, 12); }
 }
-T_PLAIN(setup_424810, 0x424810, sound_setup();, 0, 0, 0, 0, 0)
+ST(setup_424810, sound_setup();, (CALL_PLAIN(0x424810, 0, 0, 0, 0, 0), 0), (setup_424810(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 131 */
 /* each dispatcher's screens as their own tests set them up, a message open now and then (dlgwin_setup's
    0x90d1c4), the modes and tabs that choose the dialog */
@@ -13707,7 +13712,7 @@ static void pilotselect_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9f8c54) + irnd(0x40, 0x200); G32(0x4ded6c) = G32(0x9f682c) - irnd(0x10, 0x30); }
 }
-T_PLAIN(profile_44e640, 0x44e640, pilotselect_setup();, 0, 0, 0, 0, 0)
+ST(profile_44e640, pilotselect_setup();, (CALL_PLAIN(0x44e640, 0, 0, 0, 0, 0), 0), (profile_44e640(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 135 */
 /* the ranking window: dlgwin_setup's window at 0x9dced8, every texture it binds from that set (the rank icons
    from 0x76d448), pages 0..20, sort columns -1..4, a list or none, 0..10 rows (an empty name ends them), some
