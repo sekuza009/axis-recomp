@@ -674,6 +674,28 @@ static void campaign_new(void)
 	}
 }
 
+/* 0x446590: a new campaign for the chosen pilot: axisuser.dat written (no file: nothing more), the profile's record
+   gathered (match_4464b0), then a new record made and the pilot's file written with it. Returns the last chdir's
+   eax */
+int (profile_load)(void)
+{
+	void *f = profiles_create();
+	if (!f)
+		return 0;
+	set_current_name();
+	profiles_write(f);
+	match_4464b0();
+	enter_save_folder();
+	char path[0x80];
+	pilot_path(path);
+	campaign_new();
+	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	if (f)
+		pilot_write(f);
+	fclose(f);
+	return crt_chdir((const char *)0x4b2a80);
+}
+
 /* 1 when the pilot's file is there and signed */
 static int campaign_signed(const char *path)
 {
