@@ -4523,7 +4523,8 @@ LIFT_PLAIN(armc_buildPartLists, 40da40)
    (the intro frames, 0x9db0a4 the button texture, 0x4e0cd0 the tunnel, 0x4dfa00 the portraits, 0x76d36c, ...),
    drawing the loading screen (intro_41f100, progress 0x4dda34 + 1 each step) between the groups and waiting 2.0
    once (intro_41e730) */
-LIFT_PLAIN(menu_loadIntroTextures, 430ca0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_loadIntroTextures(void);
 /* batch 148 (lifted/grp94.c): the intro set-up */
 #include "lifted/grp94.c"
 /* 0x430bf0 intro_430bf0(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (intro_430ab0,
@@ -14091,7 +14092,7 @@ static void introtex_setup(void)
 	g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);
 	g_vfsOpenFail = 0;
 }
-T_PLAIN(menu_loadIntroTextures, 0x430ca0, introtex_setup();, 0, 0, 0, 0, 0)
+ST(menu_loadIntroTextures, introtex_setup();, (CALL_PLAIN(0x430ca0, 0, 0, 0, 0, 0), 0), (menu_loadIntroTextures(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 148 */
 /* the intro set-up: loading_setup's screen (its picture bindable, progress from 0..28 kept low: six more frames),
    the tables' areas random, the wait's frame counter as intro_41e730's test sets it */

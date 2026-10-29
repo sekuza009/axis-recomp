@@ -148,6 +148,61 @@ static int texture_named(const char *name)
 	return tex_getIdByName(g_textures, copy, 0, 0, 0, 0, 0, 0, 0);
 }
 
+/* ---- the menus' textures, loaded with the loading screen moved on a step (g_loadStep) between them ---- */
+#define g_loadStep GAME_VAR(int, 0x4dda34)
+#define T(addr) texture_named((const char *)(addr))
+
+static void next_step(void)
+{
+	g_loadStep++;
+	intro_41f100();
+}
+
+/* 0x430ca0: the menus' textures by name: the intro frames ("iftex/m_intro1" .. 4, "m2_intro1" .. 4 into 0x9dad6c),
+   the corner and box screen (0x4deb4c), the main, arena, control and ladder menus' pairs (0x76d478 / 0x4df040 /
+   0x5b1978 / 0x4df904), the six spirals (0x9da45c), then "gameconnect" (0x4df450), "option" (0x9db0a4, the
+   buttons), "mouse" (0x4e152c), "cylinder" (0x4e186c), "cylinder_menu" (0x76d36c), "menu34" (0x4e0cd0, the tunnel)
+   and "character" (0x4dfa00); first a step and a wait of 2 */
+void (menu_loadIntroTextures)(void)
+{
+	static const u32 intro[8] = { 0x4b25dc, 0x4b25cc, 0x4b25bc, 0x4b25ac, 0x4b259c, 0x4b258c, 0x4b257c, 0x4b256c };
+	static const u32 frames[2] = { 0x4b2480, 0x4b2470 };   /* corner, boxscreen */
+	static const u32 mainmenu[2] = { 0x4b245c, 0x4b2448 }, arenamenu[2] = { 0x4b2434, 0x4b2420 };
+	static const u32 ctrlmenu[2] = { 0x4b23e4, 0x4b23d0 }, laddermenu[2] = { 0x4b240c, 0x4b23f8 };
+	static const u32 spiral[6] = { 0x4b23c0, 0x4b23b0, 0x4b23a0, 0x4b2390, 0x4b2380, 0x4b2370 };
+	next_step();
+	intro_41e730(2.0);
+	for (int k = 0; k < 8; k++) {
+		((int *)0x9dad6c)[k] = T(intro[k]);
+		next_step();
+	}
+	for (int k = 0; k < 2; k++) {
+		((int *)0x4deb4c)[k] = T(frames[k]);
+		next_step();
+	}
+	for (int k = 0; k < 2; k++) {
+		((int *)0x76d478)[k] = T(mainmenu[k]);
+		((int *)0x4df040)[k] = T(arenamenu[k]);
+		next_step();
+		((int *)0x5b1978)[k] = T(ctrlmenu[k]);
+		((int *)0x4df904)[k] = T(laddermenu[k]);
+		next_step();
+	}
+	for (int k = 0; k < 6; k++) {
+		((int *)0x9da45c)[k] = T(spiral[k]);
+		next_step();
+	}
+	static const struct { u32 name, into; } rest[7] = {
+		{ 0x4ad574, 0x4df450 }, { 0x4b2360, 0x9db0a4 }, { 0x4b2354, 0x4e152c }, { 0x4b2344, 0x4e186c },
+		{ 0x4b2330, 0x76d36c }, { 0x4b2320, 0x4e0cd0 }, { 0x4b255c, 0x4dfa00 },
+	};
+	for (int k = 0; k < 7; k++) {
+		GAME_VAR(int, rest[k].into) = T(rest[k].name);
+		next_step();
+	}
+}
+#undef T
+
 /* 0x430400: the start-up load: the key tables (0x4d1688, 0x4d1a98) cleared, the settings, tables and lists loaded,
    the text area the whole screen, the timer; DirectInput made once (0x9dbf0c; failure: a message box, 0); unless
    0x76d410 the data files checked (failure: the message 0x4b04b0, 0); the sound (0xa0e80c: it works; then the menu
