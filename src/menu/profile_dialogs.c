@@ -83,3 +83,55 @@ u32 (profile_44dc60)(void)
 #undef X1
 #undef Y1
 }
+
+/* ---- a two-button profile dialog: the window (x0, y0, x1, y1 kept in four globals) with its frame (texture
+   0x4deb50), the question across the top in the panel colour (0x9f8eb0), two buttons 0x78 apart (texture 0x9db0a4,
+   labels 0x80 bytes apart from 0x7517a4), the hovered one (by hit) bright in the panel colour, the other dim in
+   0x9f8d58, and the border. Returns the border call's eax ---- */
+typedef struct { u32 x0, y0, x1, y1, hit, question; } TwoButtons;
+
+static u32 two_buttons(const TwoButtons *d)
+{
+#define X0 GAME_VAR(int, d->x0)
+#define Y0 GAME_VAR(int, d->y0)
+#define X1 GAME_VAR(int, d->x1)
+#define Y1 GAME_VAR(int, d->y1)
+	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	int hovered = GAME_CDECL(d->hit, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
+	text_drawBox16(X0, Y0 + 0x10, X1, (const char *)d->question);
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		const u32 *colour = k == hovered ? panel : dim;
+		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
+		menu_drawTexQuad_4282f0(X0 + k * 0x78 + 0x6e, Y0 + 0x3c, X0 + k * 0x78 + 0xce, Y0 + 0x5c, 1);
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(0x7517a4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+
+/* 0x44e180: the delete question (profile_44b320, question 0x751da4); 0x44e3e0: the second dialog (profile_44b360,
+   question 0x751e24) */
+u32 (profile_44e180)(void)
+{
+	static const TwoButtons d = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28, 0x44b320, 0x751da4 };
+	return two_buttons(&d);
+}
+u32 (profile_44e3e0)(void)
+{
+	static const TwoButtons d = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0, 0x44b360, 0x751e24 };
+	return two_buttons(&d);
+}

@@ -4160,8 +4160,10 @@ DWORD room_drawCustomOption(void);
 /* 0x44e180 profile_44e180() / 0x44e3e0 profile_44e3e0(): two-button profile dialogs (window 0x9f8f1c.. /
    0x9f6834..; titles 0x751da4 / 0x751e24): frame, title, two textured buttons (texture 0x9db0a4) labelled 0x7517a4 /
    0x751824, the one under the cursor (profile_44b320 / profile_44b360) bright, the frame's border */
-LIFT_PLAIN(profile_44e180, 44e180)
-LIFT_PLAIN(profile_44e3e0, 44e3e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44e180(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44e3e0(void);
 /* 0x44de00 profile_44de00(): the new-profile dialog: frame, title 0x751ca4, the name field (profile_4283e0), two
    buttons (the first dimmed while the name 0x9dc92c is empty), the border */
 LIFT_PLAIN(profile_44de00, 44de00)
@@ -13162,8 +13164,8 @@ static void profdlg_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 	fill_str((char *)0x7517a4, 30, 32, 126); fill_str((char *)0x751824, 30, 32, 126);
 	if (irnd(0, 2)) fill_str((char *)0x9dc92c, 20, 32, 126); else *(char *)0x9dc92c = 0;
 }
-T_PLAIN(profile_44e180, 0x44e180, profdlg_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44e3e0, 0x44e3e0, profdlg_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, 0, 0, 0, 0, 0)
+ST(profile_44e180, profdlg_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44e180, 0, 0, 0, 0, 0), (DWORD)(profile_44e180()))
+ST(profile_44e3e0, profdlg_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44e3e0, 0, 0, 0, 0, 0), (DWORD)(profile_44e3e0()))
 T_PLAIN(profile_44de00, 0x44de00, profdlg_setup(0x9f8eac, 0x9f8ea8, 0x9f8f20, 0x9f8f24);, 0, 0, 0, 0, 0)
 /* the weight line: ten part weights and a limit (whole and fractional, below a million: "%.0f" goes into 20
    bytes), the language, the label */
