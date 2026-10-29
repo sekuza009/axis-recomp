@@ -298,3 +298,88 @@ u32 (armc_saveSelection)(void)
 	GAME_CDECL(0x40d990, void, void)();
 	return GAME_CDECL(0x447010, u32, void)();   /* profile_saveProgress */
 }
+
+/* 0x40fb20: the armour centre's main page clicked (armc_40e450's buttons 1 .. 16): 1 / 2 the part and colour pages
+   (armc_40f220 / 40f320, unless already there), 3 / 4 the part screen's two sides (armc_40f0f0), 6 .. 11 the mech
+   view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_40f340; not in view 5),
+   16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
+u32 (armc_40fb20)(void)
+{
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	u32 button = GAME_CDECL(0x40e450, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e450 */
+	int view = GAME_VAR(int, 0x4dbc6c);
+	switch (button) {
+	case 1:
+		if (GAME_VAR(int, 0x4dc798) == 2)
+			return 2;
+		sound_playMenu(2);
+		return GAME_CDECL(0x40f220, u32, void)();
+	case 2:
+		if (GAME_VAR(int, 0x4dc798) == 3)
+			return 1;
+		sound_playMenu(2);
+		return GAME_CDECL(0x40f320, u32, void)();
+	case 3: case 4:
+		sound_playMenu(0);
+		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+	case 6: case 7: case 8: case 9: case 10: case 11:
+		if (view == (int)button - 6)
+			return button == 7 || button == 11 ? button - 1 : button - 6;
+		{
+			u32 r = GAME_CDECL(0x41e760, u32, int)(2);
+			GAME_VAR(int, 0x4dbc6c) = button - 6;
+			GAME_VAR(float, 0x4dcfd8) = 1.0f;
+			return r;
+		}
+	case 14: case 15:
+		if (view == 5)
+			return button - 1;
+		sound_playMenu(8);
+		return GAME_CDECL(0x40f340, u32, int, int)(GAME_VAR(int, 0x4dbc6c), button == 14 ? 1 : 2);
+	case 16:
+		sound_playMenu(2);
+		view = GAME_VAR(int, 0x4dceac);
+		GAME_VAR(int, 0x4dceac) = 1 - view;
+		return view;
+	}
+	return button - 1;
+}
+
+/* 0x40ff40: the colour page clicked (armc_40e4d0's buttons 0 .. 17): 0 .. 2 the part screen, main and colour pages
+   (armc_40f200 / 40f220 / 40f320, unless already there), 3 / 4 the two sides (armc_40f0f0), 5 .. 10 the colour slot
+   0 .. 5 (0x4dc4b0; slot 5 also armc_40f590), 11 .. 16 the slider and swatch buttons (armc_40f5d0 .. 40f7e0), 17 the
+   rotation toggle. Returns what the original leaves in eax */
+u32 (armc_colourScreenInput)(void)
+{
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e4d0 */
+	static const u32 page[3] = { 0x40f200, 0x40f220, 0x40f320 };
+	static const u32 control[6] = { 0x40f5d0, 0x40f670, 0x40f6b0, 0x40f6f0, 0x40f790, 0x40f7e0 };
+	u32 r;
+	switch (button) {
+	case 0: case 1: case 2:
+		if (GAME_VAR(u32, 0x4dc798) == button + 1)
+			return button == 1 ? 2 : button;
+		sound_playMenu(2);
+		return GAME_CDECL(page[button], u32, void)();
+	case 3: case 4:
+		sound_playMenu(2);
+		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+	case 5: case 6: case 7: case 8: case 9: case 10:
+		if (GAME_VAR(u32, 0x4dc4b0) == button - 5)
+			return button - 5;
+		r = GAME_CDECL(0x41e760, u32, int)(2);
+		GAME_VAR(u32, 0x4dc4b0) = button - 5;
+		return button == 10 ? GAME_CDECL(0x40f590, u32, void)() : r;
+	case 11: case 12: case 13: case 14: case 15: case 16:
+		return GAME_CDECL(control[button - 11], u32, void)();
+	case 17:
+		sound_playMenu(2);
+		r = GAME_VAR(u32, 0x4dceac);
+		GAME_VAR(u32, 0x4dceac) = 1 - r;
+		return r;
+	}
+	return button;
+}

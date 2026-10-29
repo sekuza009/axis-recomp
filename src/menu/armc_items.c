@@ -135,3 +135,50 @@ void (armc_drawPartScreen)(void)
 	armc_40f870(0);
 	armc_41b300();
 }
+
+/* 0x40fd30: the part screen clicked (armc_40e490's buttons 0 .. 14): 0 / 2 the main and colour pages (the slot
+   closed first; unless already there), 3 / 4 the screen's two sides (armc_40f0f0), 6 .. 11 slot 0 .. 5 picked,
+   12 / 13 the cursor back / on (weapons wrap past the first entry; for the other items a step the slot cannot take
+   (armc_40f830) is skipped) with the item shown and taken, 14 the rotation toggle. Each with its sound. Returns
+   what the original leaves in eax */
+u32 (armc_40fd30)(void)
+{
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	u32 button = GAME_CDECL(0x40e490, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e490 */
+	u32 r;
+	int step;
+	switch (button) {
+	case 0: case 2:
+		if (GAME_VAR(int, 0x4dc798) == (button == 0 ? 1 : 3))
+			return button;
+		sound_playMenu(2);
+		GAME_CDECL(0x40f870, void, int)(0);
+		return GAME_CDECL(button == 0 ? 0x40f200 : 0x40f320, u32, void)();
+	case 3: case 4:
+		sound_playMenu(0);
+		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+	case 6: case 7: case 8: case 9: case 10: case 11:
+		GAME_CDECL(0x40f870, void, int)(button - 6);   /* armc_40f870: the slot picked */
+		return GAME_CDECL(0x41e760, u32, int)(2);
+	case 12: case 13:
+		step = button == 12 ? -1 : 1;
+		g_armcCursor += step;
+		if (g_armcSlot == 0) {
+			if (step < 0 && g_armcCursor == 0)
+				g_armcCursor = g_weaponCount - 1;
+			else if (step > 0 && g_armcCursor >= g_weaponCount)
+				g_armcCursor = 1;
+		} else if (g_armcSlot > 3 && GAME_CDECL(0x40f830, int, int)(g_armcCursor) == 1)   /* armc_40f830 */
+			g_armcCursor += step;
+		sound_playMenu(8);
+		GAME_CDECL(0x40f950, void, void)();          /* armc_40f950: the item shown */
+		return GAME_CDECL(0x40f9e0, u32, void)();    /* armc_40f9e0: and taken */
+	case 14:
+		sound_playMenu(2);
+		r = 1 - GAME_VAR(u32, 0x4dceac);
+		GAME_VAR(u32, 0x4dceac) = r;
+		return r;
+	}
+	return button;
+}

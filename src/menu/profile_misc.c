@@ -467,3 +467,81 @@ u32 (profile_deleteFiles)(void)
 	GAME_CDECL(0x447320, u32, void)();
 	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
 }
+
+/* typing over: the key state reset (match_431590) and the keyboard taken again; returns input_initKeyboard's eax */
+static u32 keyboard_back(void)
+{
+	GAME_CDECL(0x431590, void, void)();
+	return GAME_CDECL(0x401310, u32, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+}
+
+/* the typed line emptied (its length 0x9dcd30) */
+static void line_wipe(void)
+{
+	int n = GAME_VAR(int, 0x9dcd30);
+	if (n > 0)
+		memset((void *)0x9dc92c, 0, n);
+}
+
+/* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_44b2e0) or
+   Enter starts it (profile_44b600). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
+   (message 0x81, the dialog shut) or takes it (profile_44b870; when that fails the dialog stays for another go),
+   cancel (1) empties the line; Enter (0x4ded8c) leaves typing with the line emptied. Returns what the original
+   leaves in eax */
+u32 (profile_44c190)(void)
+{
+	const char *typed = (const char *)0x9dc92c;
+	GAME_VAR(float, 0x4dda44) = 0.0f;
+	u32 r = 0;
+	if (GAME_VAR(int, 0x9f8f34)) {
+		if (GAME_VAR(int, 0x4ded88) &&
+		    GAME_CDECL(0x44b2e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {   /* profile_44b2e0 */
+			sound_playMenu(0);
+			GAME_VAR(int, 0x9f8f34) = 0;
+			g_paused = 1;
+			r = GAME_CDECL(0x44b600, u32, void)();   /* profile_44b600: typing starts */
+		}
+		if (!GAME_VAR(int, 0x4ded8c))
+			return r;
+		GAME_VAR(int, 0x9f8f34) = 0;
+		r = GAME_CDECL(0x44b600, u32, void)();
+		g_paused = 1;
+		return r;
+	}
+	if (GAME_VAR(int, 0x4ded88)) {
+		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* profile_44b2a0 */
+		r = button - 1;
+		if (button == 0) {
+			if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1)   /* profile_4343b0: blank */
+				return GAME_CDECL(0x41e760, u32, int)(6);
+			if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_44b7e0: a bad character */
+				sound_playMenu(6);
+				g_dialogOpen = 0;
+				GAME_VAR(int, 0x9f8f34) = 0;
+				GAME_VAR(int, 0x9f8f10) = 1;
+				GAME_CDECL(0x41ee40, void, int)(0x81);
+				g_paused = 0;
+				return keyboard_back();
+			}
+			if (GAME_CDECL(0x44b870, int, void)()) {   /* profile_44b870: taken */
+				sound_playMenu(6);
+				GAME_VAR(int, 0x9f8f34) = 1;
+				g_dialogOpen = 1;
+			} else
+				sound_playMenu(0);
+			g_paused = 0;
+			r = keyboard_back();
+		} else if (button == 1) {
+			sound_playMenu(0);
+			g_paused = 0;
+			line_wipe();
+			r = keyboard_back();
+		}
+	}
+	if (!GAME_VAR(int, 0x4ded8c))
+		return r;
+	GAME_VAR(int, 0x9f8f10) = 1;
+	g_paused = 0;
+	line_wipe();
+	return keyboard_back();
+}

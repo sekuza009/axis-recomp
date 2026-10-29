@@ -92,22 +92,29 @@ void (setup_soundTabKeys)(void)
 	}
 }
 
-/* 0x422d20: the graphics tab: OK takes the edited values; if the four that need a restart changed (all but the
-   third and the last two), the front end is told (message 1) instead of closing the page */
+/* the graphics tab's OK: the edited values taken and axis.cfg written; if the four that need a restart changed
+   (all but the third and the last two), the front end is told (message 1) instead of closing the page. Returns the
+   last call's eax */
+static u32 graphics_apply(void)
+{
+	int same = g_graphicSettings[1] == g_graphicEdited[1] && g_graphicSettings[0] == g_graphicEdited[0]
+	           && g_graphicSettings[3] == g_graphicEdited[3] && g_graphicSettings[4] == g_graphicEdited[4];
+	sound_playMenu(0);
+	for (int i = 0; i < 7; i++)
+		g_graphicSettings[i] = g_graphicEdited[i];
+	u32 r = GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
+	if (!same)
+		return GAME_CDECL(0x41e7a0, u32, int)(1);   /* profile_41e7a0 */
+	g_setupPage = 0;
+	return r;
+}
+
+/* 0x422d20: the graphics tab's keys: OK (0x4e0cd4) as graphics_apply, back / cancel close the page */
 void (setup_graphicTabKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
-		int same = g_graphicSettings[1] == g_graphicEdited[1] && g_graphicSettings[0] == g_graphicEdited[0]
-		           && g_graphicSettings[3] == g_graphicEdited[3] && g_graphicSettings[4] == g_graphicEdited[4];
-		sound_playMenu(0);
-		for (int i = 0; i < 7; i++)
-			g_graphicSettings[i] = g_graphicEdited[i];
-		cfg_loadAxisCfg();
-		if (same)
-			g_setupPage = 0;
-		else
-			profile_41e7a0(1);
-	} else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
+		graphics_apply();
+	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
 		g_setupPage = 0;
 	}
@@ -246,4 +253,47 @@ u32 (setup_drawTopPage)(void)
 	GAME_VAR(int, 0x4dda44) = 0;
 	GAME_CDECL(0x48b420, void, void)();
 	return r;
+}
+
+/* 0x422480: the graphics tab clicked (the page open, no message box; a right click closes it). Buttons
+   (setup_4206b0): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
+   mipmapping and frame counter switched, 6 the simple menu (with 0x9da494), 7 OK (graphics_apply), 8 close. Each
+   with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
+u32 (setup_drawGraphicTab)(void)
+{
+	u32 page = GAME_VAR(u32, 0x4ddcec);
+	if (page == 1 || page == 0 || GAME_VAR(int, 0x90d1c4))
+		return page;
+	if (GAME_VAR(int, 0x4ded8c))
+		g_setupPage = 0;
+	if (!GAME_VAR(int, 0x4ded88))
+		return page;
+	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setup_4206b0 */
+	u32 *edited = (u32 *)g_graphicEdited, old, mode;
+	switch (button) {
+	case 0:
+		sound_playMenu(2);
+		mode = ++edited[0];
+		if ((int)mode > 7)
+			edited[0] = 0;
+		return mode;
+	case 1: case 2: case 3: case 4: case 5:
+		sound_playMenu(2);
+		old = edited[button];
+		edited[button] = 1 - old;
+		return button == 2 || button == 5 ? 1 - old : old;   /* the original's eax held one or the other */
+	case 6:
+		sound_playMenu(2);
+		old = GAME_VAR(u32, 0x9da494);
+		edited[6] = 1 - edited[6];
+		GAME_VAR(u32, 0x9da494) = 1 - old;
+		return old;
+	case 7:
+		return graphics_apply();
+	case 8:
+		old = GAME_CDECL(0x41e760, u32, int)(0);
+		g_setupPage = 0;
+		return old;
+	}
+	return button;
 }

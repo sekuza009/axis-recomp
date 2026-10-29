@@ -321,3 +321,43 @@ int (menuState500_enter)(void)
 	}
 	return I(0x9f181c);
 }
+
+/* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_create) with
+   the current one selected and scrolled into the 13 visible rows, the new-pilot dialog up when there are none, the
+   message box and the screen's rectangles (profile_44af30, 44b030 .. 44b1a0), its colours, then the list shown
+   (profile_44b7a0). Returns that call's eax */
+u32 (menuState210_enter)(void)
+{
+	static const Store layout[] = {
+		{ 0x9f8e48, 0x3c }, { 0x9f8e4c, 0x3c }, { 0x9f8f28, 0x10e }, { 0x9f93c0, 0x10e }, { 0x9f8ea0, 0x244 },
+		{ 0x9f8ea4, 0x1a4 }, { 0x9f8eac, 0x78 }, { 0x9f8ea8, 0x96 }, { 0x9f8f20, 0x208 }, { 0x9f8f24, 0x118 },
+		{ 0x9f8f1c, 0x78 }, { 0x9f8f0c, 0x96 }, { 0x9f8f2c, 0x208 }, { 0x9f6834, 0x78 }, { 0x9f683c, 0x96 },
+		{ 0x9f93bc, 0x208 }, { 0x9f8c54, 0x1e }, { 0x9f8c50, 0x14 }, { 0x9f6830, 0x262 }, { 0x9f682c, 0x1c2 } };
+	static const u32 cleared[] = { 0x9f8d70, 0x9f6840, 0x9f8c4c, 0x9f8c5c, 0x9f8d74, 0x9f8c58, 0x680bb4, 0x76d37c,
+	                               0x76d42c };
+	static const Store colours[] = {
+		{ 0x9f8eb0, 0 }, { 0x9f8eb4, ONE }, { 0x9f8eb8, ONE }, { 0x9f8ebc, ONE }, { 0x9f8d58, 0 },
+		{ 0x9f8d5c, 0x3f19999a }, { 0x9f8d60, 0x3f19999a }, { 0x9f8d64, ONE }, { 0x4dda44, 0 }, { 0x4dda48, 0 },
+		{ 0x9f6838, 0 }, { 0x9f900c, 0 }, { 0x9f8f18, 0 } };
+	static const u32 rects[7] = { 0x44af30, 0x44b030, 0x44b080, 0x44b0b0, 0x44b100, 0x44b150, 0x44b1a0 };
+	STORE_ALL(layout);
+	CLEAR_ALL(cleared);
+	GAME_CDECL(0x4474a0, u32, void)();   /* profile_create: the header read back */
+	int current = I(0x9f8c58);
+	I(0x9f8d74) = current;
+	I(0x9f8c5c) = current;
+	if (current >= 13) {
+		I(0x9f8c5c) = 12;
+		I(0x9f8c4c) = current - 12;
+	}
+	if (I(0x9f9008) == 0)
+		I(0x9f8d70) = 1;
+	I(0x4de740) = 1;
+	I(0x76d428) = 0;
+	I(0x90d1c4) = 1;
+	I(0x9f8f10) = 1;
+	for (int k = 0; k < 7; k++)
+		GAME_CDECL(rects[k], void, void)();
+	STORE_ALL(colours);
+	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
+}

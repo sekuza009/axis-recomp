@@ -783,3 +783,51 @@ int (dplay_create)(void)
 		global_free(GAME_VAR(void *, 0xa0baf4));
 	return r;
 }
+
+/* 0x451090: a game message from player `from`, by its type (the first word): 1 a chat line (+0xc) logged into
+   0x9fd948 (the old one dropped first; 0x9fd95c raised); 2 the host's id (+4, into 0x9fd94c) with the player slots
+   reset (0x454130, then 0x4515a0); 6 our own player slot (byte +4, 0x410 bytes a slot from 0x9f9840) taken, the slot
+   noted in 0x9fd954 and 0x9f9838 raised; 7 another player's slot data: the slot taken by `from` if it was free,
+   then a 0x40-byte block (size +5, data +9) stored when the size is right. Returns what the original leaves in
+   eax */
+u32 (arena_451090)(const u8 *message, u32 size, u32 from)
+{
+	(void)size;
+	u32 type = *(const u32 *)message;
+	u32 slot = message[4], length = *(const u32 *)(message + 5);
+	u8 *player = (u8 *)0x9f9840 + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
+	int r;
+	switch (type) {
+	case 1:
+		if (GAME_VAR(int, 0x9fd948))
+			GAME_VAR(int, 0x9fd948) = 0;
+		r = GAME_CDECL(0x451350, int, u32, const u8 *, char **)(from, message + 0xc, (char **)0x9fd948);   /* net_logMessage */
+		if (r >= 0)
+			GAME_VAR(int, 0x9fd95c) = 1;
+		return r;
+	case 2:
+		GAME_VAR(u32, 0x9fd94c) = *(const u32 *)(message + 4);
+		GAME_CDECL(0x454130, void, void)();
+		return GAME_CDECL(0x4515a0, u32, void)();
+	case 6:
+		arena_4514a0(slot, GAME_VAR(int, 0xa0b424));
+		*(int *)player = 1;
+		GAME_VAR(int, 0x9f9838) = 1;
+		GAME_VAR(u8, 0x9fd954) = (u8)slot;
+		return slot;
+	case 7:
+		if (*(int *)player != 1) {
+			arena_4514a0(slot, from);
+			*(int *)player = 1;
+			*(u32 *)(player + 4) = from;
+		} else if (length != 0x40)
+			return slot * 0x410;
+		if (length != 0x40)
+			return length;
+		*(int *)(player + 8) = 1;
+		*(u32 *)(player + 0xc) = length;
+		memcpy(player + 0x10, message + 9, length);
+		return length;
+	}
+	return type - 1;
+}

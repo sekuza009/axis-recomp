@@ -549,3 +549,234 @@ u32 (room_434490)(void)
 	GAME_VAR(int, 0x9dd838) = 1;
 	return r;
 }
+
+/* 0x436620: the ranking page's clicks (room modes other than 0 / 1, no message box open; a right click closes the
+   page unless waiting for an answer). Not waiting (0x9dd6b8): buttons 0 .. 2 open the room's other pages
+   (room_435970 / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
+   0x9dd300 and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
+   put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
+u32 (room_436620)(void)
+{
+	u32 mode = GAME_VAR(u32, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
+		return mode;
+	int waiting = GAME_VAR(int, 0x9dd6b8);
+	if (GAME_VAR(int, 0x4ded8c) && !waiting)
+		GAME_VAR(int, 0x9dce48) = 0;
+	if (!GAME_VAR(int, 0x4ded88))
+		return mode;
+	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4323c0 */
+	if (button > 8 || button == 6 || (button == 3 ? !GAME_VAR(int, 0x9dd6b8) : GAME_VAR(int, 0x9dd6b8) != 0))
+		return button;
+	u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* the click sound */
+	static const u32 page[3] = { 0x435970, 0x4359b0, 0x4359f0 };
+	int column;
+	switch (button) {
+	case 0: case 1: case 2:
+		return GAME_CDECL(page[button], u32, void)();
+	case 3:
+		GAME_VAR(int, 0x9dd3b0) = 1;
+		GAME_VAR(int, 0x9dd6b8) = 0;
+		GAME_VAR(int, 0x76d40c) = 0;
+		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
+		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
+	case 4:
+		GAME_VAR(int, 0x9dce48) = 0;
+		return r;
+	}
+	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
+	u32 old = GAME_VAR(u32, 0x9dd1d0);
+	GAME_VAR(u32, 0x9dd300) = old;
+	GAME_VAR(int, 0x9dd1d0) = column;
+	GAME_VAR(int, 0x9dd350) = 1;
+	GAME_VAR(int, 0x9dd3b0) = 0;
+	GAME_VAR(int, 0x76d40c) = 0;
+	GAME_VAR(int, 0xa0b350) = 0;
+	GAME_VAR(int, 0xa0b35c) = 0;
+	return button == 8 ? old : r;
+}
+
+/* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
+   box; a right click closes the page). Buttons (room_432380): 0 / 1 type the room's name or password
+   (room_4339e0 / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
+   0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_4351c0; not while connecting),
+   9 close, 11 / 2, 10, 12 the map back / on (room_4356f0), 13 the map list (room_403490). Returns what the original
+   leaves in eax (for the byte settings, its low byte the new value) */
+u32 (room_436400)(void)
+{
+	static const u32 typing[4] = { 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8 };
+	for (int k = 0; k < 4; k++)
+		if (GAME_VAR(int, typing[k]))
+			return GAME_VAR(u32, typing[k]);
+	u32 mode = GAME_VAR(u32, 0x9dce48);
+	if (mode == 1 || mode == 0)
+		return mode;
+	if (GAME_VAR(int, 0x90d1c4))
+		return GAME_VAR(u32, 0x90d1c4);
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_VAR(int, 0x9dce48) = 0;
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	u32 button = GAME_CDECL(0x432380, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432380 */
+	u8 *players = (u8 *)0x4df9e9, *type = (u8 *)0x4df9eb, *frags = (u8 *)0x4df9ec, *time = (u8 *)0x4df9ed;
+	u32 r;
+	switch (button) {
+	case 0:
+		return GAME_CDECL(0x4339e0, u32, void)();   /* room_4339e0 */
+	case 1:
+		return GAME_CDECL(0x433a80, u32, void)();   /* room_433a80 */
+	case 2: case 10: case 12:
+		return GAME_CDECL(0x4356f0, u32, int)(1);   /* room_4356f0: the next map */
+	case 11:
+		return GAME_CDECL(0x4356f0, u32, int)(0);
+	case 3:
+		*players += 2;
+		r = *players;
+		if ((signed char)*players > 16)
+			*players = 2;
+		return r;
+	case 5:
+		if (input_isDown(GAME_VAR(int, 0x67ef24)) || input_isDown(GAME_VAR(int, 0x9db0ac)) ||
+		    input_isDown(GAME_VAR(int, 0x6803a8)) || input_isDown(GAME_VAR(int, 0x9dad8c))) {
+			r = GAME_CDECL(0x41e760, u32, int)(2);
+			*type -= 1;
+			r = (r & ~0xffu) | *type;
+			if ((signed char)*type < 0)
+				*type = 9;
+		} else {
+			r = GAME_CDECL(0x41e760, u32, int)(2);
+			*type += 1;
+			r = (r & ~0xffu) | *type;
+			if ((signed char)*type > 9)
+				*type = 0;
+		}
+		return r;
+	case 6:
+		*frags += 5;
+		r = *frags;
+		if (*frags > 50)
+			*frags = 5;
+		return r;
+	case 7:
+		*time += 5;
+		r = *time;
+		if (*time > 60)
+			*time = 5;
+		return r;
+	case 8:
+		if (GAME_VAR(int, 0x4ded54))
+			return GAME_VAR(u32, 0x4ded54);
+		sound_playMenu(0);
+		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
+	case 9:
+		r = GAME_CDECL(0x41e760, u32, int)(0);
+		GAME_VAR(int, 0x9dce48) = 0;
+		return r;
+	case 13:
+		sound_playMenu(0);
+		return GAME_CDECL(0x403490, u32, int)(2);   /* room_403490: the map list (the original pushes a 2 it ignores) */
+	}
+	return button;
+}
+
+/* 0x437630: the game room's settings page after typing (not while typing or with a message box): a typed field is
+   taken (the room's name into 0x4df9c8 unless blank (sound 6); the password into 0x4df9ee; the frag and time limits
+   as numbers into the bytes 0x4df9ec / 0x4df9ed; an empty line changes nothing), else the keys: start (0x4e1510;
+   room_4351c0, not while connecting) and the two close keys (0x4e0cdc, 0x76d48c). Returns what the original leaves
+   in eax */
+u32 (menu_437630)(void)
+{
+	if (GAME_VAR(int, 0x90d1c4))
+		return GAME_VAR(u32, 0x90d1c4);
+	if (g_paused)
+		return 0;
+	const char *line = (const char *)0x9dc92c;
+	if (GAME_VAR(int, 0x9dd380)) {   /* the room's name */
+		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* profile_4343b0: blank */
+			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
+			GAME_VAR(int, 0x9dd380) = 0;
+			return r;
+		}
+		GAME_VAR(int, 0x9dd380) = 0;
+		memset((void *)0x4df9c8, 0, 32);
+		strcpy((char *)0x4df9c8, line);
+		return strlen(line) + 1;
+	}
+	if (GAME_VAR(int, 0x9dd6a8)) {   /* the password */
+		memset((void *)0x4df9ee, 0, 8);
+		GAME_VAR(int, 0x9dd6a8) = 0;
+		GAME_VAR(int, 0x4e1868) = 0;
+		strcpy((char *)0x4df9ee, line);
+		return 0;
+	}
+	static const u32 limit[2][2] = { { 0x9dd388, 0x4df9ec }, { 0x9dd568, 0x4df9ed } };   /* frags, time */
+	for (int k = 0; k < 2; k++) {
+		if (!GAME_VAR(int, limit[k][0]))
+			continue;
+		u32 r = strlen(line) ? (u32)crt_atoi(line) : 0;
+		GAME_VAR(int, limit[k][0]) = 0;
+		if (strlen(line))
+			GAME_VAR(u8, limit[k][1]) = (u8)r;
+		return r;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1510)) && !GAME_VAR(int, 0x4ded54)) {
+		sound_playMenu(0);
+		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
+	}
+	u32 r = 0;
+	static const u32 close[2] = { 0x4e0cdc, 0x76d48c };
+	for (int k = 0; k < 2; k++) {
+		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
+		if (r) {
+			r = GAME_CDECL(0x41e760, u32, int)(0);
+			GAME_VAR(int, 0x9dce48) = 0;
+		}
+	}
+	return r;
+}
+
+/* ---- the map preview box (panel at y P[0], x P[1]; the box 0x80 square from (x - 0x96, y + 0x50)): the preview
+   reloaded when asked (0x680cd0), then either "custom" (0x4ad56c, yellow on a dark box) when the custom flag is
+   set or the preview texture 0x9da324, and a yellow outline. Returns the outline call's eax ---- */
+static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
+{
+#define X0 (panel[1] - 0x96)
+#define X1 (panel[1] - 0x16)
+#define Y0 (panel[0] + 0x50)
+#define Y1 (panel[0] + 0xd0)
+	if (GAME_VAR(int, 0x680cd0))
+		GAME_CDECL(reload, void, void)();
+	if (GAME_VAR(u8, custom)) {
+		Color4_set((Colour *)0x9da480, 0.0f, 0.0f, 0.0f, 0.4f);
+		menu_drawRect(X0, Y0, X1, Y1, 1);
+		Color4_set((Colour *)0x76d438, 1.0f, 1.0f, 0.0f, 1.0f);
+		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)0x4ad56c);
+	} else {
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9da324);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		glBegin(7);   /* GL_QUADS */
+		glTexCoord2f(0.0f, 0.0f);
+		menu_vertex(X0, Y0);
+		glTexCoord2f(1.0f, 0.0f);
+		menu_vertex(X1, Y0);
+		glTexCoord2f(1.0f, 1.0f);
+		menu_vertex(X1, Y1);
+		glTexCoord2f(0.0f, 1.0f);
+		menu_vertex(X0, Y1);
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+	}
+	Color4_set((Colour *)0x9da480, 1.0f, 1.0f, 0.0f, 1.0f);
+	return GAME_CDECL(0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
+#undef X0
+#undef X1
+#undef Y0
+#undef Y1
+}
+
+/* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_43bcb0); 0x40b550: the arena screen's
+   (0x4dbb04, 0x4db54a, arena_40b420) */
+u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, 0x43bcb0); }
+u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, 0x40b420); }

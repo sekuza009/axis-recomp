@@ -2743,11 +2743,14 @@ int autoplay_listFiles(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD data_loadMessages(void);
 /* 0x4474a0 profile_create: create a new pilot profile (directory + files) */
-LIFT_PLAIN(profile_create, 4474a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_create(void);
 /* 0x42ba40 data_loadSkirmishInfo: load the skirmish info file */
-LIFT_PLAIN(data_loadSkirmishInfo, 42ba40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD data_loadSkirmishInfo(void);
 /* 0x42b830 data_loadMapInfo: load the map info file */
-LIFT_PLAIN(data_loadMapInfo, 42b830)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD data_loadMapInfo(void);
 /* 0x42b590 data_loadPilotProfiles: load the pilot profiles file */
 LIFT_PLAIN(data_loadPilotProfiles, 42b590)
 /* 0x447010 profile_saveProgress: save the campaign progress */
@@ -2800,7 +2803,8 @@ DWORD profile_selectAndLoad(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawRect(int x0, int y0, int x1, int y1, int filled);
 /* 0x44b420 menuState210_enter: the profile screen's layout, profile list and colours */
-LIFT_PLAIN(menuState210_enter, 44b420)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menuState210_enter(void);
 /* 0x4460d0 profile_scanSaves: the *.axs profiles of the save directory into the profile list (or delete
    axisuser.dat when the directory is missing) */
 LIFT_PLAIN(profile_scanSaves, 4460d0)
@@ -4146,8 +4150,10 @@ DWORD profile_44dc60(void);
 /* 0x40b550 arena_drawCustomOption() / 0x43bde0 room_drawCustomOption(): the map preview (reloaded first when
    0x680cd0 is set: arena_40b420 / room_43bcb0) or, for custom rules (0x4db54a / 0x4df9ea), a dark box saying
    "CUSTOM"; a yellow frame round it */
-LIFT_PLAIN(arena_drawCustomOption, 40b550)
-LIFT_PLAIN(room_drawCustomOption, 43bde0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_drawCustomOption(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_drawCustomOption(void);
 /* batch 118 (lifted/grp64.c): profile dialogs and the armour weight line */
 #include "lifted/grp64.c"
 /* 0x44e180 profile_44e180() / 0x44e3e0 profile_44e3e0(): two-button profile dialogs (window 0x9f8f1c.. /
@@ -4827,7 +4833,8 @@ LIFT_PLAIN(profile_44be00, 44be00)
 /* 0x44c190 profile_44c190(): the name edit page: OK / cancel buttons (profile_44b2a0, profile_44b2e0) and Enter:
    the name checked (profile_4343b0, profile_44b7e0) and taken (profile_44b870) or a message (FUN_0041ee40); the
    keyboard re-initialised (input_initKeyboard) and the input buffer reset (match_431590) when leaving */
-LIFT_PLAIN(profile_44c190, 44c190)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44c190(void);
 /* 0x44c560 profile_processInput(): the profile screen: a click skips the intro animation (0x9f6838, state
    0x9f8e54); else, no dialog: by page 0x9f8f10 (1..6) the page's mouse handler (profile_44be00, profile_44c190,
    profile_44c390, profile_44c400, profile_44c480) and its keys: up / down held with key repeat (0x76d37c /
@@ -4853,7 +4860,8 @@ int net_logMessage(DWORD from, const char *text, char **out);
 /* 0x451090 arena_451090(msg, size, from): a game packet by type (1..7): 1 a chat line (net_logMessage into
    0x9fd948, flag 0x9fd95c), 2 the host's id (0x9fd94c) and the room reset (0x454130, 0x4515a0), 3..7 a player slot
    (byte +4: 0x9f9840 + 0x410 * slot) claimed or updated with up to 0x40 bytes of its data (+5 size, +9 data) */
-LIFT_PLAIN(arena_451090, 451090)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_451090(const void *message, DWORD size, DWORD from);
 /* 0x450c20 net_sendLocalInfo(sysmsg): DirectPlay system messages: 5 (create player): the host's slot (0x451530),
    and when hosting over TCP/IP the room or arena info sent to the newcomer (by 0xa0b380: 200 room, 201 arena; the
    packets 0xa0b310 / 0xa0b314 or 0xa0b328 / 0xa0b32c, net_send); 3 (destroy player): its slot freed (0x451450,
@@ -4914,7 +4922,8 @@ void armc_exit(int confirmed);
    page's keys (one binding after another: parts, colours, the rotation toggle 0x4dceac, back); 0x410500
    armc_410500(): the part screen's keys (kinds armc_40f870, positions 0x4dc77c with armc_40f950, take
    armc_40f9e0, back); 0x410810 armc_410810(): the colour page's keys (armc_backupColours, back) */
-LIFT_PLAIN(armc_40fb20, 40fb20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_40fb20(void);
 LIFT_PLAIN(armc_4101e0, 4101e0)
 LIFT_PLAIN(armc_410500, 410500)
 LIFT_PLAIN(armc_410810, 410810)
@@ -5140,13 +5149,19 @@ DWORD menu_enterState(void);
 DWORD room_435b00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_4346c0(void);
-LIFT_PLAIN(room_436620, 436620)
-LIFT_PLAIN(armc_40fd30, 40fd30)
-LIFT_PLAIN(armc_colourScreenInput, 40ff40)
-LIFT_PLAIN(room_436400, 436400)
-LIFT_PLAIN(menu_437630, 437630)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_436620(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_40fd30(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_colourScreenInput(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_436400(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_437630(void);
 LIFT_PLAIN(mainmenu_441c00, 441c00)
-LIFT_PLAIN(setup_drawGraphicTab, 422480)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD setup_drawGraphicTab(void);
 LIFT_PLAIN(room_43e7b0, 43e7b0)
 LIFT_PLAIN(setup_drawSoundTab, 4221d0)
 LIFT_PLAIN(setup_controlTabKeys, 422e10)
@@ -9451,9 +9466,9 @@ ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), 
 ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
 ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
 ST(data_loadMessages, vfs_content(95, 0x2000);, CALL_PLAIN(0x42b3e0, 0, 0, 0, 0, 0), (DWORD)(data_loadMessages()))
-T_PLAIN(profile_create, 0x4474a0, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
-T_PLAIN(data_loadSkirmishInfo, 0x42ba40, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
-T_PLAIN(data_loadMapInfo, 0x42b830, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
+ST(profile_create, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x4474a0, 0, 0, 0, 0, 0), (DWORD)(profile_create()))
+ST(data_loadSkirmishInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42ba40, 0, 0, 0, 0, 0), (DWORD)(data_loadSkirmishInfo()))
+ST(data_loadMapInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42b830, 0, 0, 0, 0, 0), (DWORD)(data_loadMapInfo()))
 T_PLAIN(data_loadPilotProfiles, 0x42b590, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_saveProgress, 0x447010, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_load, 0x446590, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
@@ -9524,7 +9539,7 @@ ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] =
    if (!irnd(0, 2)) { g_a[0] = irnd(-100, 0); g_a[1] = irnd(-100, 0); g_a[2] = irnd(640, 800); g_a[3] = irnd(480, 600); },
    (((DWORD (__cdecl *)(int, int, int, int, int))0x427970)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
    (menu_drawRect(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
-T_PLAIN(menuState210_enter, 0x44b420, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); G32(0x9f9008) = irnd(0, 3);, 0, 0, 0, 0, 0)
+ST(menuState210_enter, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); G32(0x9f9008) = irnd(0, 3);, CALL_PLAIN(0x44b420, 0, 0, 0, 0, 0), (DWORD)(menuState210_enter()))
 /* every save is read at 0x4e20 for 0x104 bytes: shorter files leave that stack buffer uninitialised, and the original
    copies it into the profile table anyway, so the test files are long enough */
 static void scansaves_vfs(void) { int n = 0x4f24 + irnd(0, 0x200); fill(BUF + 0x200000, n); g_vfsData = (const BYTE *)(BUF + 0x200000); g_vfsSize = (DWORD)n; }
@@ -13123,8 +13138,8 @@ static void customopt_setup(DWORD idxp, DWORD flag, DWORD px, DWORD py)
 	else { G32(0x9da324) = menutex_fonts(menutex_setup()); G32(0x680cd0) = 0; *(char *)flag = irnd(0, 1) ? 0 : (char)irnd(1, 2); }
 	G32(px) = irnd(-50, 700); G32(py) = irnd(-50, 400);
 }
-T_PLAIN(arena_drawCustomOption, 0x40b550, customopt_setup(0x4db548, 0x4db54a, 0x4dbb08, 0x4dbb04);, 0, 0, 0, 0, 0)
-T_PLAIN(room_drawCustomOption, 0x43bde0, customopt_setup(0x4df9e8, 0x4df9ea, 0x9dd1c0, 0x9dd1bc);, 0, 0, 0, 0, 0)
+ST(arena_drawCustomOption, customopt_setup(0x4db548, 0x4db54a, 0x4dbb08, 0x4dbb04);, CALL_PLAIN(0x40b550, 0, 0, 0, 0, 0), (DWORD)(arena_drawCustomOption()))
+ST(room_drawCustomOption, customopt_setup(0x4df9e8, 0x4df9ea, 0x9dd1c0, 0x9dd1bc);, CALL_PLAIN(0x43bde0, 0, 0, 0, 0, 0), (DWORD)(room_drawCustomOption()))
 /* batch 118 */
 /* a dialog: menutex_setup's set (fonts bindable), its texture as frame, button and border, a window rectangle at
    (xo, yo) .. (xe, ye), the cursor sometimes over a button, colours, titles and the two button labels; the new
@@ -14542,7 +14557,7 @@ static void profileinput_setup(void)
 	G32(0x74de1c) = irnd(0, 2); G32(0x76d42c) = irnd(0, 2); G32(0x9f8f34) = irnd(0, 2); G32(0x9f8c5c) = irnd(-1, 3);
 }
 T_PLAIN(profile_44be00, 0x44be00, profileinput_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(profile_44c190, 0x44c190, profileinput_setup();, 0, 0, 0, 0, 0)
+ST(profile_44c190, profileinput_setup();, CALL_PLAIN(0x44c190, 0, 0, 0, 0, 0), (DWORD)(profile_44c190()))
 ST(profile_processInput, profileinput_setup();, CALL_PLAIN(0x44c560, 0, 0, 0, 0, 0), (DWORD)(profile_processInput()))
 /* batch 167 */
 /* a message: a DirectPlay system message (create player 5 / destroy player 3 / another type: its id and a value) or
@@ -14601,7 +14616,7 @@ ST(FUN_00450bf0, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    (DWORD)FUN_00450bf0(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]))
 ST(FUN_00451270, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(FUN_00451270((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
 ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
-T_PLAIN(arena_451090, 0x451090, dpmsg_setup();, 0, BUF + 0x3800, g_a[4], g_a[5], 0)
+ST(arena_451090, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(arena_451090(BUF + 0x3800, g_a[4], g_a[5])))
 T_PLAIN(net_sendLocalInfo, 0x450c20, dpmsg_setup();, 0, BUF + 0x3800, 0, 0, 0)
 ST(arena_450a60, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(arena_450a60()))
 T_PLAIN(FUN_00450bb0, 0x450bb0, dpmsg_setup();, 0, 0, 0, 0, 0)
@@ -14676,7 +14691,7 @@ static void armcstate_setup(const DWORD *stubs)
 	callee_key(0x401590, irnd(0, 1) ? 0x10 + irnd(0, 17) : -1);
 	callee_ret(0x40e450, (DWORD)irnd(-1, 12));
 }
-T_PLAIN(armc_40fb20, 0x40fb20, armcstate_setup(g_stubArmcMouse);, 0, 0, 0, 0, 0)
+ST(armc_40fb20, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_40fb20()))
 T_PLAIN(armc_4101e0, 0x4101e0, armcstate_setup(g_stubArmcMainKeys);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_410500, 0x410500, armcstate_setup(g_stubArmcPartKeys);, 0, 0, 0, 0, 0)
 T_PLAIN(armc_410810, 0x410810, armcstate_setup(g_stubArmcColourKeys);, 0, 0, 0, 0, 0)
@@ -15051,23 +15066,23 @@ ST(room_4346c0, gen_setup(g_gs_4346c0, g_gi_4346c0, g_gb_4346c0);, CALL_PLAIN(0x
 static const DWORD g_gs_436620[] = { 0x41e760, 1, 0x4323c0, 2, 0x435970, 0, 0x4359b0, 0, 0x4359f0, 0, 0 };
 static const DWORD g_gi_436620[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x76d40c, 0x90d1c4, 0x9dce48, 0x9dd1b4, 0x9dd1d0, 0x9dd300, 0x9dd350, 0x9dd3b0, 0x9dd6ac, 0x9dd6b8, 0xa0b350, 0xa0b35c, 0 };
 static const DWORD g_gb_436620[] = { 0 };
-T_PLAIN(room_436620, 0x436620, gen_setup(g_gs_436620, g_gi_436620, g_gb_436620);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_436620, gen_setup(g_gs_436620, g_gi_436620, g_gb_436620);, CALL_PLAIN(0x436620, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_436620()))
 static const DWORD g_gs_40fd30[] = { 0x40e490, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f320, 0, 0x40f830, 1, 0x40f870, 1, 0x40f950, 0, 0x40f9e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40fd30[] = { 0x4dbe48, 0x4dc244, 0x4dc77c, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40fd30[] = { 0 };
-T_PLAIN(armc_40fd30, 0x40fd30, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_40fd30, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, CALL_PLAIN(0x40fd30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_40fd30()))
 static const DWORD g_gs_40ff40[] = { 0x40e4d0, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f220, 0, 0x40f320, 0, 0x40f590, 0, 0x40f5d0, 0, 0x40f670, 0, 0x40f6b0, 0, 0x40f6f0, 0, 0x40f790, 0, 0x40f7e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40ff40[] = { 0x4dc4b0, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40ff40[] = { 0 };
-T_PLAIN(armc_colourScreenInput, 0x40ff40, gen_setup(g_gs_40ff40, g_gi_40ff40, g_gb_40ff40);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_colourScreenInput, gen_setup(g_gs_40ff40, g_gi_40ff40, g_gb_40ff40);, CALL_PLAIN(0x40ff40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_colourScreenInput()))
 static const DWORD g_gs_436400[] = { 0x401590, 1, 0x403490, 0, 0x41e760, 1, 0x432380, 2, 0x4339e0, 0, 0x433a80, 0, 0x4351c0, 0, 0x4356f0, 1, 0 };
 static const DWORD g_gi_436400[] = { 0x4df9e9, 0x4df9eb, 0x4df9ec, 0x4df9ed, 0x4ded54, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef24, 0x6803a8, 0x90d1c4, 0x9dad8c, 0x9db0ac, 0x9dce48, 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8, 0 };
 static const DWORD g_gb_436400[] = { 0 };
-T_PLAIN(room_436400, 0x436400, gen_setup(g_gs_436400, g_gi_436400, g_gb_436400);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_436400, gen_setup(g_gs_436400, g_gi_436400, g_gb_436400);, CALL_PLAIN(0x436400, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_436400()))
 static const DWORD g_gs_437630[] = { 0x401600, 1, 0x41e760, 1, 0x4343b0, 1, 0x4351c0, 0, 0 };
 static const DWORD g_gi_437630[] = { 0x4df9ee, 0x4df9ec, 0x4df9ed, 0x4ded54, 0x4df9f2, 0x4e0cdc, 0x4e1510, 0x4e1868, 0x68039c, 0x76d48c, 0x90d1c4, 0x9dce48, 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8, 0 };
 static const DWORD g_gb_437630[] = { 0x4df9c8, 0x9dc92c, 0 };
-T_PLAIN(menu_437630, 0x437630, gen_setup(g_gs_437630, g_gi_437630, g_gb_437630);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_437630, gen_setup(g_gs_437630, g_gi_437630, g_gb_437630);, CALL_PLAIN(0x437630, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_437630()))
 static const DWORD g_gs_441c00[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x440df0, 0, 0x441770, 0, 0x4417f0, 0, 0 };
 static const DWORD g_gi_441c00[] = { 0x4b071c, 0x680bb4, 0x76d37c, 0x4dda44, 0x4e0cd4, 0x4e0cdc, 0x4e0ce0, 0x4e1510, 0x4e151c, 0x76d330, 0x76d48c, 0x9db0a0, 0x9dd928, 0x9dd92c, 0x9eeab4, 0x9eeac0, 0 };
 static const DWORD g_gb_441c00[] = { 0 };
@@ -15075,7 +15090,7 @@ T_PLAIN(mainmenu_441c00, 0x441c00, gen_setup(g_gs_441c00, g_gi_441c00, g_gb_441c
 static const DWORD g_gs_422480[] = { 0x41e760, 1, 0x41e7a0, 1, 0x4206b0, 2, 0x42d730, 0, 0 };
 static const DWORD g_gi_422480[] = { 0x4ddba0, 0x83a9c0, 0x4ddba4, 0x4ddba8, 0x4ddbac, 0x4ddbb0, 0x4ddbb4, 0x4ddbb8, 0x4ddcec, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x83a9c4, 0x83a9cc, 0x83a9d0, 0x90d1c4, 0x9da494, 0 };
 static const DWORD g_gb_422480[] = { 0 };
-T_PLAIN(setup_drawGraphicTab, 0x422480, gen_setup(g_gs_422480, g_gi_422480, g_gb_422480);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_drawGraphicTab, gen_setup(g_gs_422480, g_gi_422480, g_gb_422480);, CALL_PLAIN(0x422480, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(setup_drawGraphicTab()))
 static const DWORD g_gs_43e7b0[] = { 0x428c30, 4, 0x433610, 0, 0x434020, 0, 0x4340e0, 0, 0x4341a0, 0, 0x434260, 0, 0x4388e0, 0, 0x43a420, 0, 0 };
 static const DWORD g_gi_43e7b0[] = { 0x9dd1f6, 0x9dd202, 0x9dd6d8, 0x4e1868, 0x68039c, 0x90d1c4, 0x9dc428, 0x9dce48, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd304, 0x9dd354, 0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374, 0x9dd378, 0x9dd37c, 0x9dd69c, 0x9dd6d4, 0x9dd6dc, 0x9dd6e0, 0x9dd834, 0 };
 static const DWORD g_gb_43e7b0[] = { 0x9dc92c, 0x9dd20e, 0 };

@@ -292,11 +292,16 @@ int (app_checkLauncherRunning)(void)
 /* ---- axisuser.dat (in the data folder 0x9dae7c), written afresh: a magic word (0xfefefef7), the count (0x9f9008),
    the current profile (0x9f8c58, first set from 0x9f8d74), 0x9f8c4c, 0x9f8c5c, the 32-byte name 0x9f8fe8 and the
    0x48-byte profile records from 0x9f6848. Without the file the count is 0 ---- */
+static void profiles_path(char *path)
+{
+	strcpy(path, (const char *)0x9dae7c);
+	strcat(path, (const char *)0x4b2ab4);   /* "\axisuser.dat" */
+}
+
 static void *profiles_create(void)
 {
 	char path[0x184];
-	strcpy(path, (const char *)0x9dae7c);
-	strcat(path, (const char *)0x4b2ab4);   /* "\axisuser.dat" */
+	profiles_path(path);
 	GAME_VAR(u32, 0x9f8c58) = GAME_VAR(u32, 0x9f8d74);
 	void *f = crt_fopen(path, (const char *)0x4b2ab0);
 	if (!f)
@@ -523,22 +528,36 @@ u32 (arena_readLaunchFile)(char *line)
 	return strlen(args[2]) + 1;
 }
 
+/* the game ended with an error box (title "ERROR") */
+static void data_missing(u32 message)
+{
+	MessageBoxA(NULL, (const char *)message, (const char *)0x4b141c, 0);
+	GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
+}
+
 #define crt_fgets(line, size, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, size, f)
+
+/* a data file (in folder, the data folder 0x9dae7c or the maps' 0x4dedf8) opened with mode; without it the game
+   ends with a message box */
+static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
+{
+	char path[0x105];
+	memset(path, 0, sizeof path);
+	strcpy(path, (const char *)folder);
+	strcat(path, (const char *)name);
+	void *f = crt_fopen(path, (const char *)mode);
+	if (!f)
+		data_missing(missing);
+	return f;
+}
 
 /* 0x42b3e0: the game's messages read from msgkor.dat or msgeng.dat (by the language 0x9dae74; in the data folder),
    one line each into 0x80-byte slots from 0x74de24 with the line break cut off; "//" comment lines and empty lines
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {
-	char path[0x105];
-	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)0x9dae7c);
-	strcat(path, (const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b1430 : 0x4b1424));   /* "msgkor.dat" / "msgeng.dat" */
-	void *f = crt_fopen(path, (const char *)0x4ad5e0);   /* "rt" */
-	if (!f) {
-		MessageBoxA(NULL, (const char *)0x4b13f8, (const char *)0x4b141c, 0);   /* "Text Message Data File Not Found" */
-		GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
-	}
+	void *f = data_open(0x9dae7c, GAME_VAR(int, 0x9dae74) == 1 ? 0x4b1430 : 0x4b1424, 0x4ad5e0,   /* "msgkor.dat" / "msgeng.dat", "rt" */
+	                    0x4b13f8);   /* "Text Message Data File Not Found" */
 	char *message = (char *)0x74de24;
 	for (;;) {
 		char line[0x80];
@@ -554,4 +573,104 @@ u32 (data_loadMessages)(void)
 		message += 0x80;
 	}
 	return fclose(f);
+}
+
+/* 0x4474a0: axisuser.dat's header read back (the magic word, the count, the current profile, 0x9f8c4c, 0x9f8c5c and
+   the last pilot's name 0x9f8fe8; no file or a wrong magic word: no profiles), the save folder made if it cannot be
+   entered ("save " then "save"), and the current profile set to the one with that name, if any. Returns fclose's
+   eax (0 without the file) */
+u32 (profile_create)(void)
+{
+	char path[0x184];
+	profiles_path(path);
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f) {
+		GAME_VAR(int, 0x9f9008) = 0;
+		return 0;
+	}
+	u32 magic;
+	crt_fread(&magic, 4, 1, f);
+	if (magic != 0xfefefef7) {
+		u32 r = fclose(f);
+		GAME_VAR(int, 0x9f9008) = 0;
+		return r;
+	}
+	crt_fread((void *)0x9f9008, 4, 1, f);
+	crt_fread((void *)0x9f8c58, 4, 1, f);
+	crt_fread((void *)0x9f8c4c, 4, 1, f);
+	crt_fread((void *)0x9f8c5c, 4, 1, f);
+	crt_fread((void *)0x9f8fe8, 0x20, 1, f);
+	if (crt_chdir((const char *)0x4b2b04)) {   /* "save " */
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir("save") */
+		crt_chdir((const char *)0x4b2adc);
+	}
+	crt_chdir((const char *)0x4b2a80);   /* ".." */
+	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
+		if (str_order((const char *)(0x9f684c + i * 0x48), (const char *)0x9f8fe8) == 0) {
+			GAME_VAR(int, 0x9f8c58) = i;
+			break;
+		}
+	return fclose(f);
+}
+
+/* 0x42ba40: skirmish.dat read: at least 10000 bytes and starting with "AXIS SKIRMISH INFOMATION DATA FILE" (0x80
+   bytes), else the game ends with "Skirmish Data File Not Found"; from 25000 on the count (0x90d1d8) and that many
+   0x5c-byte entries into 0x9db998. Returns fclose's eax */
+u32 (data_loadSkirmishInfo)(void)
+{
+	void *f = data_open(0x9dae7c, 0x4b1554, 0x4ad170, 0x4b1534);   /* "skirmish.dat", "rb" */
+	crt_fseek(f, 0, 2);
+	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
+		fclose(f);
+		data_missing(0x4b1534);
+	}
+	crt_fseek(f, 0, 0);
+	char header[0x80];
+	crt_fread(header, 0x80, 1, f);
+	if (str_order(header, (const char *)0x4b1510)) {
+		fclose(f);
+		data_missing(0x4b1534);
+	}
+	crt_fseek(f, 25000, 1);
+	crt_fread((void *)0x90d1d8, 4, 1, f);
+	for (int i = 0; i < GAME_VAR(int, 0x90d1d8); i++)
+		crt_fread((void *)(0x9db998 + i * 0x5c), 0x5c, 1, f);
+	return fclose(f);
+}
+
+/* 0x42b830: mapinfo.dat read (from the maps' folder 0x4dedf8): its header must start with "AXIS MAP INFOMATION DATA
+   FILE" and have 0x1a at +0x32, else the game ends with "Map Infomation Data File Not Found"; then the map count
+   (0x67ef00) and for each map its 32-byte name (0x907b30) and 0x50-byte description (0x5ae9d0), both decoded
+   (data_42b390), and the names' trailing spaces cut. Returns 0, or the count when there are none */
+u32 (data_loadMapInfo)(void)
+{
+	void *f = data_open(0x4dedf8, 0x4b1504, 0x4ad170, 0x4b14e0);   /* "mapinfo.dat", "rb" */
+	u8 header[0x80];
+	crt_fread(header, 0x80, 1, f);
+	if (str_order((const char *)header, (const char *)0x4b14c0)) {   /* (the original compares a 0x30-byte copy) */
+		fclose(f);
+		data_missing(0x4b14e0);
+	}
+	if (header[0x32] != 0x1a) {
+		fclose(f);
+		data_missing(0x4b14e0);
+	}
+	crt_fread((void *)0x67ef00, 4, 1, f);
+	for (int i = 0; i < GAME_VAR(int, 0x67ef00); i++) {
+		char *name = (char *)(0x907b30 + i * 0x20), *about = (char *)(0x5ae9d0 + i * 0x50);
+		crt_fread(name, 0x20, 1, f);
+		GAME_CDECL(0x42b390, int, char *)(name);    /* data_42b390: decoded */
+		crt_fread(about, 0x50, 1, f);
+		GAME_CDECL(0x42b390, int, char *)(about);
+	}
+	fclose(f);
+	int count = GAME_VAR(int, 0x67ef00);
+	if (count <= 0)
+		return count;
+	for (int i = 0; i < count; i++) {
+		char *name = (char *)(0x907b30 + i * 0x20);
+		for (int n = strlen(name); n > 0 && name[n - 1] == ' '; n--)
+			name[n - 1] = '\0';
+	}
+	return 0;
 }
