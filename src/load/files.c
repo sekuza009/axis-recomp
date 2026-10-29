@@ -288,3 +288,34 @@ int (app_checkLauncherRunning)(void)
 	fclose(f);
 	return 1;
 }
+
+/* 0x445f70: axisuser.dat (in the data folder 0x9dae7c) written afresh with `count` profiles: a magic word
+   (0xfefefef7), the count (0x9f9008), three cleared words (0x9f8c58, 0x9f8c4c, 0x9f8c5c; 0x9f8c58 is first set from
+   0x9f8d74), 32 bytes from 0x9f8fe8 and the 0x48-byte profile records from 0x9f6848. Without the file the count
+   is 0. Returns fclose's eax (0 without the file) */
+u32 (profile_loadList)(int count)
+{
+	char path[0x184];
+	strcpy(path, (const char *)0x9dae7c);
+	strcat(path, (const char *)0x4b2ab4);   /* "\axisuser.dat" */
+	GAME_VAR(u32, 0x9f8c58) = GAME_VAR(u32, 0x9f8d74);
+	void *f = crt_fopen(path, (const char *)0x4b2ab0);
+	if (!f) {
+		GAME_VAR(int, 0x9f9008) = 0;
+		return 0;
+	}
+	u32 magic = 0xfefefef7;
+	GAME_VAR(int, 0x9f9008) = count;
+	GAME_VAR(u32, 0x9f8c58) = 0;
+	GAME_VAR(u32, 0x9f8c4c) = 0;
+	GAME_VAR(u32, 0x9f8c5c) = 0;
+	crt_fwrite(&magic, 4, 1, f);
+	crt_fwrite((void *)0x9f9008, 4, 1, f);
+	crt_fwrite((void *)0x9f8c58, 4, 1, f);
+	crt_fwrite((void *)0x9f8c4c, 4, 1, f);
+	crt_fwrite((void *)0x9f8c5c, 4, 1, f);
+	crt_fwrite((void *)0x9f8fe8, 0x20, 1, f);
+	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
+		crt_fwrite((void *)(0x9f6848 + i * 0x48), 0x48, 1, f);
+	return fclose(f);
+}

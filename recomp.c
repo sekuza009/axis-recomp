@@ -2595,7 +2595,8 @@ int console_loadFile(int k);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_checkLauncherRunning(void);
 /* 0x445f70 profile_loadList: (re)write axisuser.dat. Lifted */
-LIFT_PLAIN(profile_loadList, 445f70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_loadList(int count);
 /* 0x447320 profile_delete: delete the current profile from the list file. Lifted */
 LIFT_PLAIN(profile_delete, 447320)
 /* 0x443af0 mission_saveAxisMis: load mission k's block from the .mis file. Lifted */
@@ -3232,7 +3233,8 @@ static THISCALL long double timer_getGameTime(char *t) { return run_lifted_fp(li
 static THISCALL DWORD armc_461210(char *t) { return run_lifted(lift_461210, (DWORD)t, 0, NULL); }
 /* 0x43f300 sys_checkClockTampering: compare the system time with the last one seen; a clock set back ends the
    game with a message */
-LIFT_PLAIN(sys_checkClockTampering, 43f300)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int sys_checkClockTampering(void);
 /* 0x44ba60 profile_deleteFiles: delete the selected profile's files and reload the list */
 LIFT_PLAIN(profile_deleteFiles, 44ba60)
 /* 0x432400 reg_writeCharacterSettings: player name and character choices into the registry; 0x433640 room_433640 /
@@ -9267,7 +9269,7 @@ ST(cfg_parseSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
 ST(console_loadFile, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(console_loadFile((DWORD)(g_a[0]))))
 ST(app_checkLauncherRunning, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_checkLauncherRunning()))
-T_PLAIN(profile_loadList, 0x445f70, vfs_content(0, 0); g_a[0] = irnd(0, 10);, 0, g_a[0], 0, 0, 0)
+ST(profile_loadList, vfs_content(0, 0); g_a[0] = irnd(0, 10);, CALL_PLAIN(0x445f70, 0, g_a[0], 0, 0, 0), (DWORD)(profile_loadList((DWORD)(g_a[0]))))
 T_PLAIN(profile_delete, 0x447320, vfs_content(0, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(mission_saveAxisMis, 0x443af0, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, 0, g_a[0], 0, 0, 0)
 /* a launcher command line of 0..6 tokens */
@@ -10309,7 +10311,7 @@ static void clock_setup(void)
 	for (int i = 0; i < 8; i++) g_mockTime[i] = (WORD)(i == 0 ? 2026 : irnd(0, 59));
 	g_mockTimeMs = (DWORD)irnd(0, 0x7fffffff);
 }
-T_PLAIN(sys_checkClockTampering, 0x43f300, clock_setup();, 0, 0, 0, 0, 0)
+ST(sys_checkClockTampering, clock_setup();, CALL_PLAIN(0x43f300, 0, 0, 0, 0, 0), (DWORD)(sys_checkClockTampering()))
 T_PLAIN(profile_deleteFiles, 0x44ba60, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, 0, 0, 0, 0, 0)
 static void charset_setup(void) { netstate_setup(); fill_str((char *)0x9dd1d8, 20, 32, 126); g_mockRegFail = !irnd(0, 4); G32(0x9dd6c4) = irnd(0, 3); fill_str((char *)0x4df9ee, 12, 32, 126); }
 T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)

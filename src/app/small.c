@@ -535,3 +535,37 @@ int (app_43f640)(void)
 	}
 	return GAME_VAR(int, 0x9da494) = GAME_VAR(int, 0x83a9d8);
 }
+
+#define GetSystemTime(st) IMPORT(0x4a910c, void, void *)(st)
+#define timeGetTime() IMPORT(0x4a9364, u32, void)()
+
+/* 0x43f300: a clock set back? The seconds passed by the system clock since the last check (0x9dd878, minutes and
+   seconds; an hour change counts 60 more minutes; into 0x9dd860) against the seconds passed by timeGetTime (from
+   0x9dd8e8; into 0x9dd8ec): when the clock's are fewer than 0.7 of them, a message (by the language 0x9dae74) and
+   either the window closed (0x9dd904; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
+int (sys_checkClockTampering)(void)
+{
+	const u16 *now = (const u16 *)0x9dd8d0, *last = (const u16 *)0x9dd878;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
+	GetSystemTime((void *)0x9dd8d0);
+	u32 tick = timeGetTime();
+	GAME_VAR(u32, 0x9dd8e0) = tick;
+	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
+	int seconds = minutes > last[5] ? (int)(minutes * 60 - last[5] * 60 - last[6] + now[6]) : (int)(now[6] - last[6]);
+	u32 tickSeconds = (tick - GAME_VAR(u32, 0x9dd8e8)) / 1000;
+	GAME_VAR(int, 0x9dd860) = seconds;
+	GAME_VAR(u32, 0x9dd8ec) = tickSeconds;
+	long double ticked = (long double)(uint64_t)tickSeconds;
+	if (ticked * GAME_VAR(double, 0x4a9598) + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
+		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
+		if (GAME_VAR(int, 0x9dd904)) {
+			PostMessageA(GAME_VAR(void *, 0x4ded18), 0x10, 0, 0);   /* WM_CLOSE */
+			return 1;
+		}
+		GetSystemTime((void *)0x9dd878);
+		GAME_VAR(u32, 0x9dd8e8) = timeGetTime();
+		return 0;
+	}
+	GetSystemTime((void *)0x9dd878);
+	GAME_VAR(u32, 0x9dd8e8) = timeGetTime();
+	return 1;
+}
