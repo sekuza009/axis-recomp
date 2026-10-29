@@ -5186,7 +5186,8 @@ DWORD arena_405690(int session);
 DWORD room_435d30(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int room_433e60(int k);
-LIFT_PLAIN(mainmenu_startNetGame, 4419d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mainmenu_startNetGame(void);
 LIFT_PLAIN(mainmenu_processKeys, 441e00)
 LIFT_PLAIN(menu_436e10, 436e10)
 LIFT_PLAIN(armc_enter, 441260)
@@ -15151,7 +15152,7 @@ ST(room_433e60, gen_setup(g_gs_433e60, g_gi_433e60, g_gb_433e60);, CALL_PLAIN(0x
 static const DWORD g_gs_4419d0[] = { 0x40ee20, 0, 0x41e760, 1, 0x41ee40, 1, 0x41eea0, 2, 0x441250, 1, 0x441810, 0, 0x447010, 0, 0x447750, 0, 0x451b80, 1, 0x452170, 2, 0x48b420, 0, 0 };
 static const DWORD g_gi_4419d0[] = { 0x4dc24c, 0x4dda44, 0x4deb48, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef20, 0x9dae10, 0x9db994, 0x9eeab4, 0 };
 static const DWORD g_gb_4419d0[] = { 0x4deb80, 0 };
-T_PLAIN(mainmenu_startNetGame, 0x4419d0, gen_setup(g_gs_4419d0, g_gi_4419d0, g_gb_4419d0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(mainmenu_startNetGame, gen_setup(g_gs_4419d0, g_gi_4419d0, g_gb_4419d0);, CALL_PLAIN(0x4419d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(mainmenu_startNetGame()))
 static const DWORD g_gs_441e00[] = { 0x401600, 1, 0x40ee20, 0, 0x41e760, 1, 0x41ee40, 1, 0x440d70, 0, 0x441250, 1, 0x441c00, 0, 0x447010, 0, 0x447750, 0, 0x451b80, 1, 0x452170, 2, 0x48b420, 0, 0 };
 static const DWORD g_gi_441e00[] = { 0x4dc24c, 0x4dda44, 0x4deb48, 0x4ded18, 0x4e0cd4, 0x4e1500, 0x4e1504, 0x4e1508, 0x4e1524, 0x4e153c, 0x67ef20, 0x76d48c, 0x9da440, 0x9dae10, 0x9db994, 0x9eeab4, 0 };
 static const DWORD g_gb_441e00[] = { 0 };
