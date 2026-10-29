@@ -5307,7 +5307,8 @@ static LONG WINAPI chat_editSubclass(DWORD w, DWORD m, DWORD wp, DWORD lp)
 }
 /* 0x456ed0 sound_play3D(sound, pos, listener, volume, range): with sound on, the sound's pan from the source's
    direction against the listener's ear vector 0xa0e7d8 and its volume from the distance, then played */
-LIFT_PLAIN8(sound_play3D, 456ed0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void sound_play3D(int index, const float *pos, const float *listener, const float *side, float range);
 /* batch 178 (lifted/grp128.c): game_postMatch (after a match: by mode back to the room, arena, lobby or menus,
    the result sent, the music) and dplay_initConnection */
 #include "lifted/grp128.c"
@@ -15357,18 +15358,19 @@ static void chatedit_setup(void)
 }
 static void sound3d_setup(void)
 {
-	G32(0xa0e80c) = irnd(0, 3) ? 1 : 0; G32(0xa0e66c) = irnd(-10000, 0); G32(0x4e0c9c) = irnd(0, 100);
+	G32(0xa0e80c) = irnd(0, 3) ? 1 : 0; G32(0xa0e66c) = irnd(-10000, 0); G32(0x4e0c9c) = irnd(0, 1) ? 0 : irnd(1, 100);
 	for (int k = 0; k < 16; k++) G32(0xa0e02c + 4 * k) = irnd(0, 3) ? 0x1000 + k : 0;
 	for (int k = 0; k < 6; k++) GF(BUF + 0x10 + 4 * k) = (float)irnd(-5000, 5000) / 10.0f;
 	for (int k = 0; k < 3; k++) GF(0xa0e7d8 + 4 * k) = (float)irnd(-100, 100) / 100.0f;
 	g_a[0] = irnd(0, 15); g_a[1] = (int)(BUF + 0x10); g_a[2] = (int)(BUF + 0x1c);
-	g_a[3] = irnd(-10, 120); g_a[4] = irnd(0, 3) ? irnd(0, 100) : irnd(-50, 5000);
+	for (int k = 0; k < 3; k++) GF(BUF + 0x40 + 4 * k) = (float)irnd(-100, 100) / 100.0f;   /* the listener's side (a vector) */
+	g_a[3] = (int)(BUF + 0x40); GF(&g_a[4]) = irnd(0, 3) ? (float)irnd(500, 3000) : (float)irnd(-50, 100);   /* the range (a float): mostly reached */
 	callee_stubs(g_stubSound3d, 0);
 }
 ST(chat_editSubclass, chatedit_setup();, ((LONG (WINAPI *)(DWORD, DWORD, DWORD, DWORD))0x440840)(g_a[0], g_a[1], g_a[2], g_a[3]),
    chat_editSubclass(g_a[0], g_a[1], g_a[2], g_a[3]))
-ST(sound_play3D, sound3d_setup();, ((DWORD (__cdecl *)(int, void *, void *, int, int))0x456ed0)(g_a[0], (void *)g_a[1], (void *)g_a[2], g_a[3], g_a[4]),
-   sound_play3D(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], 0, 0, 0))
+ST(sound_play3D, sound3d_setup();, (((DWORD (__cdecl *)(int, void *, void *, int, int))0x456ed0)(g_a[0], (void *)g_a[1], (void *)g_a[2], g_a[3], g_a[4]), 0),
+   (sound_play3D(g_a[0], (const float *)g_a[1], (const float *)g_a[2], (const float *)g_a[3], GF(&g_a[4])), 0))   /* the callers ignore its eax (tools/eaxuse.py) */
 /* batch 178: game_postMatch generated (tools/gentests.py), dplay_initConnection by hand */
 static const DWORD g_gs_420100[] = { 0x41e7a0, 0, 0x41e8b0, 0, 0x41e9d0, 0, 0x41eb00, 0, 0x41ec50, 0, 0x41ee40, 1, 0x41f880, 0, 0x447010, 0, 0x44aee0, 0, 0x451270, 3, 0x4521c0, 2, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_420100[] = { 0x4de6f8, 0x5ae9c4, 0x5b1dac, 0x76d3e8, 0x76d410, 0x9db990, 0x9f181c, 0x9f941c, 0xa05630, 0xa0b328, 0xa0b330, 0xa0baf8, 0xa0ea94, 0 };

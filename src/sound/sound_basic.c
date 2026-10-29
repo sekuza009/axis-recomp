@@ -212,6 +212,40 @@ u32 (sound_playVolume)(int index, int volume)
 	return GAME_CDECL(0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
 }
 
+/* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
+   0xa0e7d8) within range (a float): fading from the base volume (0xa0e66c) at the listener to silence at range,
+   and panned by the side of the listener it is on (0x4a9700, or 0x4a96fc with 0x4e0c9c set, as the pan's scale).
+   Nothing out of range or with sound off. The callers ignore the eax it leaves */
+void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
+{
+	if (!GAME_VAR(int, 0xa0e80c) || !GAME_VAR(void *, 0xa0e02c + index * 4))
+		return;
+	const float *up = (const float *)0xa0e7d8;
+	float d[3], v[3], c[3];
+	for (int k = 0; k < 3; k++)
+		d[k] = f32(fsub_m(fld_m(pos + k), listener + k));
+	memcpy(v, d, sizeof v);
+	long double length = Vec3_normalize(v);
+	float distance = f32(length);
+	if (!(length < (long double)range) && !__builtin_isnan(length) && !__builtin_isnan(range))
+		return;
+	if (!(range > 0.0f))
+		return;
+	int base = GAME_VAR(int, 0xa0e66c) + 10000;
+	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)0x4a9424) * (long double)base) - 10000;
+	if (volume > 0)
+		volume = 0;
+	c[0] = f32(fmul_m(fld_m(&d[1]), &up[2]) - fmul_m(fld_m(&d[2]), &up[1]));
+	c[1] = f32(fmul_m(fld_m(&d[2]), &up[0]) - fmul_m(fld_m(&up[2]), &d[0]));
+	c[2] = f32(fmul_m(fld_m(&up[1]), &d[0]) - fmul_m(fld_m(&d[1]), &up[0]));
+	Vec3_normalize(c);
+	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
+	across = across + fmul_m(fld_m(&c[0]), &side[0]);
+	int pan = ftol(fmul_m(across, (const float *)(GAME_VAR(int, 0x4e0c9c) ? 0x4a96fc : 0x4a9700)));
+	GAME_CDECL(0x467db0, void, void *, int)(GAME_VAR(void *, 0xa0e02c + index * 4), volume);   /* dsbuf_setVolume */
+	sound_467dd0(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
+}
+
 #define DS_CREATESOUNDBUFFER 0x0c
 #define DS_DUPLICATESOUNDBUFFER 0x14
 #define DSB_LOCK 0x2c

@@ -547,6 +547,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_menuVolume GAME_VAR(int, 0x4dd984)          /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
 #define dsbuf_play(sound) GAME_CDECL(0x467d70, void, void *)(sound)
 #define dsbuf_setVolume(sound, volume) GAME_CDECL(0x467db0, void, void *, int)(sound, volume)
+#define sound_467dd0(sound, mode, value) GAME_CDECL(0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
 #define wnd_401490() GAME_CDECL(0x401490, void, void)()   /* the mouse let go and released */
 #define glFinish() IMPORT(0x4a91f0, void, void)()
 #define SwapBuffers(hdc) IMPORT(0x4a9028, int, void *)(hdc)
