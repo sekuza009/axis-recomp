@@ -823,3 +823,77 @@ u32 (room_43e7b0)(void)
 	}
 	return r;
 }
+
+/* ---- the server login dialog's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
+   into (0x67ef34 / 0x67fb38) ---- */
+#define g_loginField GAME_VAR(int, 0x74de1c)
+#define g_tabDirection GAME_VAR(int, 0x9dc428)   /* 20 forward, 10 back (shift) */
+
+/* the cursor into field to at (x, y) */
+static void login_field(int to, int x, int y)
+{
+	g_loginField = to;
+	GAME_VAR(int, 0x76d42c) = 1;
+	GAME_VAR(u32, 0x680bc0) = 0x41a00000;   /* 20 */
+	GAME_VAR(u32, 0x9da4a4) = 0x3ecccccd;   /* 0.4 */
+	GAME_VAR(int, 0x67ef34) = x;
+	GAME_VAR(int, 0x67fb38) = y;
+	g_tabDirection = 0;
+}
+
+/* OK (button 4 clicked, or the OK key) logs in (room_4346c0), cancel (button 5, or 0x4e0cdc) closes (room_434640);
+   neither while a message is up (0x68039c) */
+static int login_buttons(void)
+{
+	int button = -1;
+	if (input_justPressed(GAME_VAR(int, 0x9dae70)) == 1)
+		button = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432240 */
+	if (button != 4 && button != 5) {
+		if (input_justPressed(g_keyOk) == 1)
+			button = 4;
+		else if (input_justPressed(GAME_VAR(int, 0x4e0cdc)) == 1)
+			button = 5;
+		else
+			return 0;
+	}
+	if (!GAME_VAR(int, 0x68039c)) {
+		sound_playMenu(0);
+		if (button == 4)
+			GAME_CDECL(0x4346c0, void, void)();   /* room_4346c0 */
+		else
+			GAME_CDECL(0x434640, void, void)();   /* room_434640 */
+	}
+	return 1;
+}
+
+/* 0x436e10: the server login dialog's keys: its two buttons, then Tab (0x680390) to the next field, or with shift
+   (0x67ef24 / 0x9db0ac held) the one before (the original's path for "back" from the first field is never taken).
+   The original leaves eax to callers that ignore it */
+void (menu_436e10)(void)
+{
+	if (login_buttons())
+		return;
+	if (input_justPressed(GAME_VAR(int, 0x680390)) != 1 || GAME_VAR(int, 0x68039c))
+		return;
+	g_tabDirection = 20;
+	if (input_isDown(GAME_VAR(int, 0x67ef24)) == 1 || input_isDown(GAME_VAR(int, 0x9db0ac)) == 1)
+		g_tabDirection = 10;
+	if (g_tabDirection == 20) {
+		if (g_loginField == 1)
+			login_field(2, GAME_VAR(int, 0x9dd6e8) + 0x172, GAME_VAR(int, 0x9dd6f4) - 0x30);
+		else if (g_loginField == 2) {
+			GAME_VAR(int, 0x9dd348) = 1;
+			GAME_VAR(int, 0x9dd3f8) = 0;
+			login_field(2, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0x44);
+		}
+	} else {
+		if (g_loginField == 1) {
+			GAME_VAR(int, 0x9dd564) = 0;
+			GAME_VAR(int, 0x9dd6cc) = 1;
+			login_field(0, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0xd4);
+		} else if (g_loginField == 2)
+			login_field(1, GAME_VAR(int, 0x9dd6e8) + 0xaa, GAME_VAR(int, 0x9dd6f4) - 0x30);
+	}
+}
+#undef g_tabDirection
+#undef g_loginField

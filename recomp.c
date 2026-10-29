@@ -5253,7 +5253,8 @@ int room_433e60(int k);
 DWORD mainmenu_startNetGame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mainmenu_processKeys(void);
-LIFT_PLAIN(menu_436e10, 436e10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_436e10(void);
 LIFT_PLAIN(armc_enter, 441260)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_debugHandler(void);
@@ -15253,7 +15254,7 @@ ST(mainmenu_processKeys, gen_setup(g_gs_441e00, g_gi_441e00, g_gb_441e00);, CALL
 static const DWORD g_gs_436e10[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x432240, 2, 0x434640, 0, 0x4346c0, 0, 0 };
 static const DWORD g_gi_436e10[] = { 0x4ded68, 0x4ded6c, 0x4e0cdc, 0x4e1510, 0x67ef24, 0x67ef34, 0x67fb38, 0x680390, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dae70, 0x9db0ac, 0x9dc428, 0x9dd348, 0x9dd358, 0x9dd35c, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6f4, 0 };
 static const DWORD g_gb_436e10[] = { 0 };
-T_PLAIN(menu_436e10, 0x436e10, gen_setup(g_gs_436e10, g_gi_436e10, g_gb_436e10);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_436e10, gen_setup(g_gs_436e10, g_gi_436e10, g_gb_436e10);, (CALL_PLAIN(0x436e10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menu_436e10(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_441260[] = { 0x40ee20, 0, 0x41e760, 1, 0x441190, 1, 0x441200, 0, 0 };
 static const DWORD g_gi_441260[] = { 0x4b2a78, 0x4b071c, 0x4df02c, 0x680380, 0x68038c, 0x9dd920, 0x9dd938, 0x4b2a70, 0x4b2a74, 0x4dc24c, 0x4deb48, 0x4df024, 0x4df028, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x76d3e8, 0x76d410, 0x9da49c, 0x9dae10, 0x9dd918, 0x9dd91c, 0x9dd930, 0x9dd934, 0x9eeaa8, 0 };
 static const DWORD g_gb_441260[] = { 0x67fb3c, 0 };
