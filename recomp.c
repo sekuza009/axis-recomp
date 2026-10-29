@@ -4200,7 +4200,8 @@ DWORD profile_44de00(void);
 /* 0x41dab0 armc_41dab0(): the armour screen's weight line: the label 0x7573a4 right-aligned (8 or 14 units a
    character by language), the total of the ten part weights (stored at 0x4dc78c) " / " the limit 0x4dcb0c, the
    total red when over the limit, else green */
-LIFT_PLAIN(armc_41dab0, 41dab0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41dab0(void);
 /* batch 119 (lifted/grp65.c): the loading screen and two dialogs */
 #include "lifted/grp65.c"
 /* 0x41f100 intro_41f100(): the loading screen: clear to 0x76d350, the loading picture (texture 0x76d3f0) in the
@@ -13367,7 +13368,7 @@ static void weight_setup(void)
 	G32(0x9dae74) = irnd(0, 2); G32(0x4dcc94) = irnd(-50, 400);
 	fill_str((char *)0x7573a4, 30, 32, 126);
 }
-T_PLAIN(armc_41dab0, 0x41dab0, weight_setup();, 0, 0, 0, 0, 0)
+ST(armc_41dab0, weight_setup();, (CALL_PLAIN(0x41dab0, 0, 0, 0, 0, 0), 0), (armc_41dab0(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* batch 119 */
 /* the loading screen: menutex_setup's set with a bindable picture, a clear colour, progress 0..28 (16 columns
    each, the three ramps start at 200 and 400 columns; more would overflow the 4096-call log) */

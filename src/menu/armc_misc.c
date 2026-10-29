@@ -596,6 +596,37 @@ void (armc_snapshot)(int i)
 	GAME_VAR(int, 0x4dcc64) = 0;
 }
 
+/* 0x41dab0: the armour screen's weight line at y (0x4dcc94): the label 0x7573a4 right-aligned at 0x27c (8 units a
+   character in mode 1, 0x9dae74, else 14); below it the total weight (the ten parts' weights summed into 0x4dc78c)
+   in red when above the most the legs carry (0x4dcb0c), else green, then "/most" in white, both as "%.0f" and
+   right-aligned at 0x27e. The original leaves eax to callers that ignore it */
+void (armc_41dab0)(void)
+{
+	static const u32 weights[10] = { 0x4dc14c, 0x4dc0cc, 0x4dc04c, 0x4dbfcc, 0x4dbf4c, 0x4dbecc, 0x4dcea0, 0x4dc240, 0x4dc2a4, 0x4dcf0c };
+	int y = GAME_VAR(int, 0x4dcc94);
+	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	int length = (int)strlen((const char *)0x7573a4);
+	text_draw16(0x27c - length * (GAME_VAR(int, 0x9dae74) == 1 ? 8 : 14), y, (const char *)0x7573a4);
+	long double sum = fld_m((const float *)weights[0]);
+	for (int k = 1; k < 10; k++)
+		sum = fadd_m(sum, (const float *)weights[k]);
+	GAME_VAR(float, 0x4dc78c) = f32(sum);
+	memset(s.most, 0, sizeof s.most);
+	strcpy(s.most, (const char *)0x4ad564);   /* "/" */
+	sprintf(s.total, (const char *)0x4b0354, (double)GAME_VAR(float, 0x4dcb0c));   /* "%.0f" */
+	strcat(s.most, s.total);
+	memset(s.total, 0, sizeof s.total);
+	sprintf(s.total, (const char *)0x4b0354, (double)GAME_VAR(float, 0x4dc78c));
+	if (GAME_VAR(float, 0x4dc78c) > GAME_VAR(float, 0x4dcb0c))
+		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);
+	else
+		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
+	text_draw16(0x27e - ((int)strlen(s.total) + (int)strlen(s.most)) * 14, y + 0x10, s.total);
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	text_draw16(0x27e - (int)strlen(s.most) * 14, y + 0x10, s.most);
+}
+
 /* 0x412450: the three mode tabs across the top (0x4dcc90 / 0x4dcc94, 100 apart): the tab texture (0x9db0a4), the
    chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (0x7565a4, 0x80 a slot) in its colour (0x4dbc58
    chosen, else 0x4dc1d0). Returns 3 (the original's eax) */
