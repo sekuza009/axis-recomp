@@ -2898,7 +2898,8 @@ int *input_getCursorPos(void);
 DWORD net_ping(DWORD ip, DWORD timeout);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_454650(const char *address, int slot);
-LIFT_PLAIN(net_4545b0, 4545b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD net_4545b0(void);
 /* 0x41f050 gfx_setMenuCamera: gluLookAt from the menu camera position to its target */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD gfx_setMenuCamera(void);
@@ -4556,7 +4557,8 @@ int arena_453260(void);
 /* 0x454190 dplay_getPlayerName(id, out): asks the DPNAME size (GetPlayerName with no buffer), allocates and locks a
    global block of it and fetches the name into it (*out = the block, 0); on a failure frees the block and returns the
    error (0x8007000e when the allocation fails) */
-LIFT_PLAIN(dplay_getPlayerName, 454190)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_getPlayerName(DWORD id, void **out);
 /* 0x453790 dplay_create(): through the lobby (CoCreateInstance into 0xa0b398): the connection settings (size query,
    then into the global block 0xa0baf4; session flags 0x44, max players 16), SetConnectionSettings, ConnectEx into
    0xa0b404, CreatePlayer, host or client by the session flags (0xa0baf8); then (also when the lobby part fails)
@@ -4952,7 +4954,8 @@ int match_4512c0(const char *text);
 DWORD lobby_editTextField_405230(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_4318b0(void);
-LIFT_PLAIN(arena_452fe0, 452fe0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_452fe0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editTextField_404cd0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9710,7 +9713,7 @@ static void ping_setup(void)
 }
 ST(net_ping, ping_setup();, CALL_PLAIN(0x4548b0, 0, g_a[0], g_a[1], 0, 0), (DWORD)(net_ping((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(net_454650, ping_setup();, CALL_PLAIN(0x454650, 0, BUF + 0x100, g_a[2], 0, 0), (DWORD)(net_454650((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[2]))))
-T_PLAIN(net_4545b0, 0x4545b0, ping_setup();, 0, 0, 0, 0, 0)
+ST(net_4545b0, ping_setup();, CALL_PLAIN(0x4545b0, 0, 0, 0, 0, 0), (DWORD)(net_4545b0()))
 static void lookat_setup(void) { for (int i = 0; i < 3; i++) { GF(0x4df024 + i * 4) = csu_fr(-50000, 50000); GF(0x680378 + i * 4) = csu_fr(-50000, 50000); } }
 ST(gfx_setMenuCamera, lookat_setup();, CALL_PLAIN(0x41f050, 0, 0, 0, 0, 0), (DWORD)(gfx_setMenuCamera()))
 static void armcam_setup(void)
@@ -14163,7 +14166,7 @@ static void dplaycreate_setup(void)
 }
 static DWORD g_dpname;
 ST(dplay_getPlayerName, dplayconn_setup(); G32(0xa0b404) = (int)&g_fakeCom[1];,
-   CALL_PLAIN(0x454190, 0, g_a[0], &g_dpname, 0, 0), dplay_getPlayerName(0, 0, 0, g_a[0], (DWORD)&g_dpname, 0, 0))
+   CALL_PLAIN(0x454190, 0, g_a[0], &g_dpname, 0, 0), dplay_getPlayerName(g_a[0], (void **)&g_dpname))
 T_PLAIN(dplay_create, 0x453790, dplaycreate_setup();, 0, 0, 0, 0, 0)
 ST(dplay_hostSession, dplayconn_setup();,
    ((DWORD (__cdecl *)(int, char *, int, int, int, int, int, int))0x453cf0)(g_a[0], BUF + 0x1c0, g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
@@ -14710,7 +14713,7 @@ ST(menu_4318b0, gen_setup(g_gs_4318b0, g_gi_4318b0, g_gb_4318b0);, CALL_PLAIN(0x
 static const DWORD g_gs_452fe0[] = { 0x451270, 3, 0x454130, 0, 0x4549a0, 0, 0x454ac0, 0, 0x454bd0, 0, 0x454ce0, 0, 0 };
 static const DWORD g_gi_452fe0[] = { 0x9f941c, 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0baf8, 0 };
 static const DWORD g_gb_452fe0[] = { 0x9f9418, 0 };
-T_PLAIN(arena_452fe0, 0x452fe0, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_452fe0, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0);, CALL_PLAIN(0x452fe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_452fe0()))
 static const DWORD g_gs_404cd0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404cd0[] = { 0x4dbb68, 0x4dbb6c, 0x4dbbd0, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404cd0[] = { 0x4db560, 0x9dc92c, 0 };

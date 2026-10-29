@@ -484,3 +484,50 @@ u32 (net_ping)(u32 ip, u32 timeout)
 	((int (STDCALL *)(void *))0x454e40)(icmp);
 	return GAME_VAR(u32, 0xa0d798);
 }
+
+/* 0x454190: player id's name (a DPNAME) fetched into a new global block (*out): its size asked first (GetPlayerName
+   with no buffer). 0, or the error (0x8007000e when the block cannot be had; the block is freed again on a failure) */
+int (dplay_getPlayerName)(u32 id, void **out)
+{
+	void *play = GAME_VAR(void *, 0xa0b404);
+	u32 size;
+	int r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, NULL, &size);
+	if (r != (int)0x8877001e)   /* DPERR_BUFFERTOOSMALL */
+		return r;
+	void *name = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	if (!name)
+		return 0x8007000e;
+	play = GAME_VAR(void *, 0xa0b404);
+	r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, name, &size);
+	if (r >= 0) {
+		*out = name;
+		return 0;
+	}
+	global_free(name);
+	return r;
+}
+
+/* 0x4545b0: every server in the list pinged (net_454650 by name, 20 bytes a slot at 0xa0bf20) until done
+   (0xa0d7a0): its time in 0xa0d384 (above 1000 ms less 400; 0 when it did not answer) and marked pinged (0xa0bb14);
+   then done, and the events reset (0x454740, whose eax it returns) */
+u32 (net_4545b0)(void)
+{
+	GAME_VAR(int, 0xa0d798) = 0;
+	if (GAME_VAR(int, 0xa0d79c) > 0) {
+		for (int i = 0; i < GAME_VAR(int, 0xa0d79c) && GAME_VAR(int, 0xa0d7a0) != 1; i++) {
+			const char *name = (const char *)(0xa0bf20 + i * 20);
+			if ((int)strlen(name) <= 0)
+				continue;
+			if (GAME_CDECL(0x454650, int, const char *, int)(name, i)) {   /* net_454650 */
+				int time = GAME_VAR(int, 0xa0d798);
+				if (time > 1000)
+					GAME_VAR(int, 0xa0d798) = time -= 400;
+				GAME_VAR(int, 0xa0d384 + i * 4) = time;
+			} else
+				GAME_VAR(int, 0xa0d384 + i * 4) = 0;
+			GAME_VAR(int, 0xa0bb14 + i * 4) = 1;
+		}
+	}
+	GAME_VAR(int, 0xa0d7a0) = 1;
+	return GAME_CDECL(0x454740, u32, void)();   /* net_454740 */
+}
