@@ -5037,7 +5037,8 @@ DWORD lobby_keysQuit(void);
 void setup_topPageKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_graphicTabKeys(void);
-LIFT_PLAIN(lobbyTop_keys, 407750)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobbyTop_keys(void);
 LIFT_PLAIN(setup_drawTopPage, 4220c0)
 LIFT_PLAIN(lobby_406950, 406950)
 LIFT_PLAIN(lobby_407300, 407300)
@@ -5107,7 +5108,8 @@ LIFT_PLAIN(menu_436990, 436990)
 #include "lifted/grp126.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406a60(void);
-LIFT_PLAIN(menu_437140, 437140)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_437140(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_405690(int session);
 LIFT_PLAIN(room_435d30, 435d30)
@@ -14863,7 +14865,7 @@ ST(setup_graphicTabKeys, gen_setup(g_gs_422d20, g_gi_422d20, g_gb_422d20);, CALL
 static const DWORD g_gs_407750[] = { 0x401600, 1, 0x404ac0, 0, 0x404b30, 0, 0x404c20, 0, 0x41e760, 1, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_407750[] = { 0x4e0cdc, 0x4e14f8, 0x4e1514, 0x4e153c, 0x67ef14, 0x67ef20, 0x76d48c, 0x90d1c4, 0x9dae10, 0 };
 static const DWORD g_gb_407750[] = { 0 };
-T_PLAIN(lobbyTop_keys, 0x407750, gen_setup(g_gs_407750, g_gi_407750, g_gb_407750);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobbyTop_keys, gen_setup(g_gs_407750, g_gi_407750, g_gb_407750);, CALL_PLAIN(0x407750, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobbyTop_keys()))
 static const DWORD g_gs_4220c0[] = { 0x41e760, 1, 0x41eea0, 2, 0x420ad0, 0, 0x420b40, 0, 0x420ba0, 0, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_4220c0[] = { 0x4dda44, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef20, 0x9dae10, 0 };
 static const DWORD g_gb_4220c0[] = { 0x4df918, 0 };
@@ -15054,7 +15056,7 @@ ST(lobby_406a60, gen_setup(g_gs_406a60, g_gi_406a60, g_gb_406a60);, CALL_PLAIN(0
 static const DWORD g_gs_437140[] = { 0x401600, 1, 0x40ee20, 0, 0x41e760, 1, 0x4334c0, 0, 0x433590, 0, 0x433790, 0, 0x433800, 0, 0x435a40, 0, 0 };
 static const DWORD g_gi_437140[] = { 0x4dc24c, 0x4e0cd4, 0x4e0cdc, 0x4e14f8, 0x4e1514, 0x4e151c, 0x4e153c, 0x76d48c, 0 };
 static const DWORD g_gb_437140[] = { 0 };
-T_PLAIN(menu_437140, 0x437140, gen_setup(g_gs_437140, g_gi_437140, g_gb_437140);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_437140, gen_setup(g_gs_437140, g_gi_437140, g_gb_437140);, CALL_PLAIN(0x437140, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_437140()))
 static const DWORD g_gs_405690[] = { 0x41ee40, 1, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_405690[] = { 0x4db54c, 0x4db54d, 0x4ded44, 0x4ded45, 0x4db8b4, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405690[] = { 0x4dedb0, 0x67fb44, 0 };

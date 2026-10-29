@@ -695,3 +695,43 @@ u32 (arena_405690)(int session)
 	GAME_VAR(int, 0x4df8e8) = rec[0x2d];
 	return GAME_VAR(int, 0x76d408) = rec[0x2e];
 }
+
+/* ---- a menu key: the key bound at `binding` was just pressed (the confirm sound played then) ---- */
+static int key_hit(u32 binding)
+{
+	if (!input_justPressed(GAME_VAR(int, binding)))
+		return 0;
+	sound_playMenu(0);
+	return 1;
+}
+/* back to the main menu; returns set_680370_441250's eax (4) */
+static u32 to_main_menu(void)
+{
+	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* set_680370_441250: keys blocked */
+	g_nextScreen = 300;
+	GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
+	return r;
+}
+
+/* 0x407750: the lobby's top page keys (no dialog open, not while 0x67ef14 is 1): back (when 0x9dae10 allows) or
+   leave goes to the main menu; the other three pick the lobby's sub-pages 2, 0 and 1. Returns the action's eax */
+u32 (lobbyTop_keys)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (GAME_VAR(int, 0x67ef14) == 1)
+		return 0;
+	if (input_justPressed(g_keyCancel2) && GAME_VAR(int, 0x9dae10) > 0) {
+		sound_playMenu(0);
+		return to_main_menu();
+	}
+	if (key_hit(0x4e0cdc))
+		return GAME_CDECL(0x404c20, u32, void)();   /* lobby_setSubState2 */
+	if (key_hit(0x4e1514))
+		return GAME_CDECL(0x404ac0, u32, void)();   /* lobby_setSubState0 */
+	if (key_hit(0x4e14f8))
+		return GAME_CDECL(0x404b30, u32, void)();   /* lobby_setSubState1 */
+	if (key_hit(0x4e153c))
+		return to_main_menu();
+	return 0;
+}

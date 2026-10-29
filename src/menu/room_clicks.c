@@ -129,3 +129,35 @@ int (skirmish_saveSettings)(void)
 		return GAME_CDECL(0x443c80, int, void)();
 	return row;
 }
+
+/* ---- a menu key: the key bound at `binding` was just pressed (the confirm sound played then) ---- */
+static int key_hit(u32 binding)
+{
+	if (!input_justPressed(GAME_VAR(int, binding)))
+		return 0;
+	sound_playMenu(0);
+	return 1;
+}
+
+/* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (0x4334c0,
+   0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, menu_enterMenus). Returns the action's eax */
+u32 (menu_437140)(void)
+{
+	if (key_hit(0x76d48c))
+		return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
+	if (key_hit(0x4e1514))
+		return GAME_CDECL(0x4334c0, u32, void)();   /* room_4334c0 */
+	if (key_hit(0x4e14f8))
+		return GAME_CDECL(0x433590, u32, void)();   /* room_433590 */
+	if (key_hit(0x4e0cdc))
+		return GAME_CDECL(0x433790, u32, void)();   /* room_433790 */
+	if (key_hit(0x4e151c))
+		return GAME_CDECL(0x433800, u32, void)();   /* room_433800 */
+	if (key_hit(0x4e0cd4)) {
+		GAME_VAR(int, 0x4dc24c) = 3;
+		return GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus */
+	}
+	if (key_hit(0x4e153c))
+		return GAME_CDECL(0x435a40, u32, void)();
+	return 0;
+}
