@@ -1,6 +1,7 @@
 /* profile_dialogs.c: the profile screen's dialogs: typing a new pilot's name, and the two yes / no questions. */
 #include "../game.h"
 #include <string.h>
+#include "portrait.h"
 
 #define g_profileDialog GAME_VAR(int, 0x9f8f10)       /* (by use) the open dialog: 2 the name, 3 and 5 the questions */
 #define g_questionX GAME_VAR(int, 0x67ef34)           /* where the two-button question is drawn */
@@ -269,6 +270,59 @@ void (mainmenu_drawScreen)(void)
 #undef PAGE
 }
 
+/* ---- a pilot's details (0x9f9040, 0x4c bytes a pilot: name, +0x10 title, +0x20 class, +0x24 level, +0x28 nine
+   stats) ---- */
+#define PILOT(n) ((const u8 *)0x9f9040 + (n) * 0x4c)
+
+/* the nine stats, right-aligned (by their digits and sign) from x, step apart from y, each with 0x4b3e2c */
+static void pilot_stats(int pilot, int x, int y, int step)
+{
+	char text[20];
+	for (int k = 0; k < 9; k++) {
+		itoa(*(const int *)(PILOT(pilot) + 0x28 + k * 4), text, 10);
+		int pad;
+		if (text[0] != '-')
+			pad = strlen(text) < 2 ? 0x10 : 8;
+		else
+			pad = strlen(text) < 3 ? 8 : 0;
+		strcat(text, (const char *)0x4b3e2c);
+		text_draw8(x + pad, y + k * step, text);
+	}
+}
+
+/* the nine stat bars (0x9f8d34, easing a tenth a frame to 0x9f8ec0) from x, 5 high and step apart from y, as long as
+   the bar by scale (negative: to the right), in grey; each the button texture's strip 0.05 .. 0.95 (by length) */
+static void stat_bars(int x, int y, int step, const float *scale, float grey)
+{
+	const float *frame = (const float *)0x4b071c;
+	float *bar = (float *)0x9f8d34;
+	const float *target = (const float *)0x9f8ec0;
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	for (int k = 0; k < 9; k++) {
+		glBegin(GL_QUADS);
+		glColor4f(grey, grey, grey, 1.0f);
+		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), frame), (const float *)0x4a93ec), &bar[k]);
+		bar[k] = f32(eased);
+		long double end = fadd_m(fmul_m(eased, (const float *)0x4a9420), (const float *)0x4a9468);
+		float s = f32(end);
+		if (end > *(const float *)0x4a953c)
+			s = 0.95f;
+		glTexCoord2f(0.05f, 0.1875f);
+		menu_vertex(x, y + k * step);
+		glTexCoord2f(s, 0.1875f);
+		menu_vertex(x - ftol(fmul_m(fld_m(&bar[k]), scale)), y + k * step);
+		glTexCoord2f(s, 0.1875f);
+		menu_vertex(x - ftol(fmul_m(fld_m(&bar[k]), scale)), y + k * step + 5);
+		glTexCoord2f(0.05f, 0.1875f);
+		menu_vertex(x, y + k * step + 5);
+		glEnd();
+	}
+	glDisable(GL_TEXTURE_2D);
+}
+
 /* 0x44e640: the pilot-select dialog (0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): the window, its title 0x75e7a4 and
    rule; the portraits (texture 0x4dfa00) and over them the chosen pilot's (0x9f8d30: cell % 3, / 3 of 86 texels)
    growing by 2 a reveal step (0x9f6828, up to 8, one a 1.0 of 0x9f8ee4) under a pulsing frame (0x9dad90; its alpha
@@ -376,51 +430,14 @@ void (profile_44e640)(void)
 	for (int k = 0; k < 13; k++)
 		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(0x75e824 + k * 0x80));
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-#define pilot ((const u8 *)0x9f9040 + g_pilot * 0x4c)
-	text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)pilot);
-	text_draw8(X0 + 0x184, Y0 + 0x5d, (const char *)pilot + 0x10);
-	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(0x75eea4 + *(const int *)(pilot + 0x20) * 0x80));
+text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
+	text_draw8(X0 + 0x184, Y0 + 0x5d, (const char *)PILOT(g_pilot) + 0x10);
+	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(0x75eea4 + *(const int *)(PILOT(g_pilot) + 0x20) * 0x80));
 	char text[20];
-	itoa(*(const int *)(pilot + 0x24), text, 10);
+	itoa(*(const int *)(PILOT(g_pilot) + 0x24), text, 10);
 	text_draw8(X0 + 0x184, Y0 + 0x87, text);
-	for (int k = 0; k < 9; k++) {
-		itoa(*(const int *)(pilot + 0x28 + k * 4), text, 10);
-		int pad;
-		if (text[0] != '-')
-			pad = strlen(text) < 2 ? 0x10 : 8;
-		else
-			pad = strlen(text) < 3 ? 8 : 0;
-		strcat(text, (const char *)0x4b3e2c);
-		text_draw8(X0 + pad + 0x192, Y0 + k * 0x15 + 0x9c, text);
-	}
-#undef pilot
-	glEnable(GL_TEXTURE_2D);
-	texture = GAME_VAR(int, 0x9db0a4);
-	tex_bind(g_textures->managers[texture / 512], texture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	float *bar = (float *)0x9f8d34;
-	const float *target = (const float *)0x9f8ec0;
-	for (int k = 0; k < 9; k++) {
-		glBegin(GL_QUADS);
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), K(0x4b071c)), K(0x4a93ec)), &bar[k]);
-		bar[k] = f32(eased);
-		long double end = fadd_m(fmul_m(eased, K(0x4a9420)), K(0x4a9468));
-		float s = f32(end);
-		if (end > *K(0x4a953c))
-			s = 0.95f;
-		int y = Y0 + k * 0x15;
-		glTexCoord2f(0.05f, 0.1875f);
-		menu_vertex(X0 + 0x1bc, y + 0x9f);
-		glTexCoord2f(s, 0.1875f);
-		menu_vertex(X0 - ftol(fmul_m(fld_m(&bar[k]), K(0x4a95f4))) + 0x1bc, Y0 + k * 0x15 + 0x9f);
-		glTexCoord2f(s, 0.1875f);
-		menu_vertex(X0 - ftol(fmul_m(fld_m(&bar[k]), K(0x4a95f4))) + 0x1bc, Y0 + k * 0x15 + 0xa4);
-		glTexCoord2f(0.05f, 0.1875f);
-		menu_vertex(X0 + 0x1bc, Y0 + k * 0x15 + 0xa4);
-		glEnd();
-	}
-	glDisable(GL_TEXTURE_2D);
+	pilot_stats(g_pilot, X0 + 0x192, Y0 + 0x9c, 0x15);
+	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, K(0x4a95f4), 1.0f);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = GAME_VAR(int, 0x9db0a4);
@@ -446,4 +463,51 @@ void (profile_44e640)(void)
 #undef Y0
 #undef X1
 #undef Y1
+}
+
+/* 0x44cf70: the chosen profile's pilot (0x9f688c, 0x48 bytes a profile, of 0x9f8d74, into 0x9f8d6c) beside the
+   profile list, when there are profiles (0x9f9008): 13 labels (0x75e824), the portrait in a yellow frame, the name,
+   title and class (the original places these two by the panel's x, 0x9f8e48, not its y), the level, the nine
+   stats and their bars; all at half brightness while the list does not have the focus (0x9f8f10) */
+void (profile_44cf70)(void)
+{
+#define X0 GAME_VAR(int, 0x9f8e48)
+#define Y0 GAME_VAR(int, 0x9f8e4c)
+	if (GAME_VAR(int, 0x9f9008) <= 0)
+		return;
+	int pilot = *(const int *)(0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
+	GAME_VAR(int, 0x9f8d6c) = pilot;
+	int focus = GAME_VAR(int, 0x9f8f10) == 1;
+	float *panel = (float *)0x9f8eb0;
+	if (focus)
+		set_colour_bits((Colour *)0x76d438, BITS(panel[0]), BITS(panel[1]), BITS(panel[2]), BITS(panel[3]));
+	else {
+		const float *half = (const float *)0x4a942c;
+		float b = f32(fmul_m(fld_m(&panel[2]), half)), g = f32(fmul_m(fld_m(&panel[1]), half));
+		float r = f32(fmul_m(fld_m(&panel[0]), half));
+		set_colour_bits((Colour *)0x76d438, BITS(r), BITS(g), BITS(b), BITS(panel[3]));
+	}
+	for (int k = 0; k < 13; k++)
+		text_draw8(X0 + 0x10c, Y0 + k * 0x14 + 0x24, (const char *)(0x75e824 + k * 0x80));
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x4dfa00);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	float grey = focus ? 1.0f : 0.5f;
+	glColor4f(grey, grey, grey, 1.0f);
+	portrait(GAME_VAR(int, 0x9f8d6c), X0 + 0x1a4, Y0 + 0x24, 0x40);
+	glDisable(GL_TEXTURE_2D);
+	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
+	menu_drawRect(X0 + 0x1a4, Y0 + 0x24, X0 + 0x1e4, Y0 + 0x64, 0);
+	u32 text_grey = focus ? 0x3f800000 : 0x3f000000;
+	set_colour_bits((Colour *)0x76d438, text_grey, text_grey, text_grey, 0x3f800000);
+	text_draw8(X0 + 0x14e, Y0 + 0x24, (const char *)PILOT(GAME_VAR(int, 0x9f8d6c)));
+	text_draw8(X0 + 0x14e, X0 + 0x38, (const char *)PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x10);
+	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(0x75eea4 + *(const int *)(PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x20) * 0x80));
+	char text[20];
+	itoa(*(const int *)(PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x24), text, 10);
+	text_draw8(X0 + 0x14e, Y0 + 0x60, text);
+	pilot_stats(GAME_VAR(int, 0x9f8d6c), X0 + 0x166, Y0 + 0x74, 0x14);
+	stat_bars(X0 + 0x18a, Y0 + 0x78, 0x14, (const float *)0x4a95f0, grey);
+#undef X0
+#undef Y0
 }

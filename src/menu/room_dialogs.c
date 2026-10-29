@@ -654,6 +654,28 @@ u32 (room_4392c0)(void)
 #undef Y1
 }
 
+/* a rank's badge (rank 1 .. : cell rank - 1 of the 10-wide grid of the font texture 0x76d448, bound) 24 x 16 at
+   (x, y) */
+static void rank_badge(int rank, int x, int y)
+{
+	const float *col_w = (const float *)0x4a9590, *row_h = (const float *)0x4a958c;
+	int cell = rank - 1;
+	float u0 = f32(fmul_m((long double)(cell % 10), col_w));
+	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), (const float *)0x4a9588));
+	glBegin(GL_QUADS);
+	glTexCoord2f(u0, v0);
+	menu_vertex(x, y);
+	float u1 = f32(fadd_m(u0, col_w));
+	glTexCoord2f(u1, v0);
+	menu_vertex(x + 0x18, y);
+	float v1 = f32(fadd_m(v0, row_h));
+	glTexCoord2f(u1, v1);
+	menu_vertex(x + 0x18, y + 0x10);
+	glTexCoord2f(u0, v1);
+	menu_vertex(x, y + 0x10);
+	glEnd();
+}
+
 /* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (0x9dd6d4 = 1) only a
    box with two lines (0x75b1a4, 0x74f724). The title 0x7592a4, five labels for the fields (0x759324, 0x80 apart) and
    seven for the record (0x7595a4); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
@@ -716,22 +738,8 @@ void (room_43a420)(void)
 	glEnable(GL_TEXTURE_2D);
 	int texture = GAME_VAR(int, 0x76d448);
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
-	int cell = GAME_VAR(int, 0x9dd5d8) - 1;
-	float u0 = f32(fmul_m((long double)(cell % 10), K(0x4a9590)));
-	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), K(0x4a958c)), K(0x4a9588)));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	glBegin(GL_QUADS);
-	glTexCoord2f(u0, v0);
-	menu_vertex(X0 + 0xc0, Y0 + 0xbe);
-	float u1 = f32(fadd_m(u0, K(0x4a9590)));
-	glTexCoord2f(u1, v0);
-	menu_vertex(X0 + 0xd8, Y0 + 0xbe);
-	float v1 = f32(fadd_m(v0, K(0x4a958c)));
-	glTexCoord2f(u1, v1);
-	menu_vertex(X0 + 0xd8, Y0 + 0xce);
-	glTexCoord2f(u0, v1);
-	menu_vertex(X0 + 0xc0, Y0 + 0xce);
-	glEnd();
+	rank_badge(GAME_VAR(int, 0x9dd5d8), X0 + 0xc0, Y0 + 0xbe);
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
@@ -768,6 +776,159 @@ void (room_43a420)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
 #undef K
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+
+/* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
+   by room_4323c0, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
+   (0x75ac24; 2) with the sorted column's name; two rules and the column heads (0x75aca4 .., the sorted one in
+   yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (the name at 0x9dcef4, its rank at -4) until an
+   empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (+0x32) in a yellow frame, "%8.1f" (+0x36),
+   "%3.2f" (+0x2e) and three counts (+0x26, +0x2a, +0x1e), the sorted value in yellow; a rule, two buttons
+   (0x75b0a4; 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking 0x75b1a4; the
+   border. Returns the border's eax */
+u32 (room_43d060)(void)
+{
+#define X0 GAME_VAR(int, 0x9dced8)
+#define Y0 GAME_VAR(int, 0x9dcedc)
+#define X1 GAME_VAR(int, 0x9dcee0)
+#define Y1 GAME_VAR(int, 0x9dcee4)
+#define g_sort GAME_VAR(int, 0x9dd1d0)
+#define TEXT(c) set_colour_bits((Colour *)0x76d438, (c)[0], (c)[1], (c)[2], (c)[3])
+	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
+	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
+	int hovered = GAME_CDECL(0x4323c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4323c0 */
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	TEXT(bright);
+	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)0x75aba4);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4284d0(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
+	menu_drawTexQuad_4285c0(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
+	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
+	char page[64], last[64];
+	int first = GAME_VAR(int, 0x9dd6ac) * 10 + 1;
+	GAME_VAR(int, 0x9dd83c) = first;
+	GAME_VAR(int, 0x9dd7dc) = (GAME_VAR(int, 0x9dd6ac) * 5 + 5) * 2;
+	itoa(first, page, 10);
+	itoa(GAME_VAR(int, 0x9dd7dc), last, 10);
+	strcat(page, (const char *)0x4b278c);   /* " ~ " */
+	strcat(page, last);
+	menu_drawTexQuad_4282f0(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
+	text_draw8b(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
+	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)0x75ac24);
+	glEnable(GL_TEXTURE_2D);
+	texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, hovered == 2 ? 1.0f : 0.6f);
+	menu_drawTexQuad_4282f0(X1 - 0x78, Y0 + 0x24, X1 - 0x14, Y0 + 0x40, 1);
+	TEXT(yellow);
+	static const u32 sorted_by[4] = { 0x75ae24, 0x75af24, 0x75b024, 0x75aea4 };
+	if ((unsigned)g_sort <= 3)
+		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)sorted_by[g_sort]);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
+	FUN_00427a40(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
+	/* the column heads, the numbers' right-aligned (8 a character) */
+	TEXT(bright);
+	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)0x75aca4);
+	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)0x75ad24);
+	text_draw8(X0 - (int)strlen((const char *)0x75ada4) * 8 + 0xec, Y0 + 0x52, (const char *)0x75ada4);
+	static const struct { u32 text; int right, sort; } heads[5] = {
+		{ 0x75ae24, 0x12c, 0 }, { 0x75aea4, 0x2d * 8, 3 }, { 0x75af24, 0x35 * 8, 1 }, { 0x75afa4, 0x3c * 8, -1 },
+		{ 0x75b024, 0x226, 2 },
+	};
+	for (int c = 0; c < 5; c++) {
+		int x = heads[c].right - (int)strlen((const char *)heads[c].text) * 8;
+		if (heads[c].sort >= 0 && g_sort == heads[c].sort)
+			TEXT(yellow);
+		else
+			TEXT(bright);
+		text_draw8(X0 + x + 0x18, Y0 + 0x52, (const char *)heads[c].text);
+	}
+	TEXT(white);
+	if (GAME_VAR(int, 0x9dd3b0)) {
+		char text[64];
+		for (int i = 0; i < 10; i++) {
+			const u8 *row = (const u8 *)0x9dcef4 + i * 0x44;
+#define ROW(type, offset) (*(const type *)(row + (offset)))
+			if (!*row) {
+				GAME_VAR(int, 0x9dd4b8) = GAME_VAR(int, 0x9dd6ac);
+				break;
+			}
+			int y = Y0 + i * 0x16 + 0x78;
+			TEXT(white);
+			itoa(ROW(int, -4), text, 10);
+			text_draw8(X0 + 0x18, y, text);
+			text_draw8(X0 + 0x48, y, (const char *)row);
+			glEnable(GL_TEXTURE_2D);
+			texture = GAME_VAR(int, 0x76d448);
+			tex_bind(g_textures->managers[texture / 512], texture % 512);
+			rank_badge(ROW(int, 0x32), X0 + 0xd2, y);
+			glDisable(GL_TEXTURE_2D);
+			set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
+			menu_drawRect(X0 + 0xd3, y + 1, X0 + 0xea, y + 0x10, 0);
+			TEXT(white);
+			if (g_sort == 0)
+				TEXT(yellow);
+			sprintf(text, (const char *)0x4b2784, (double)ROW(float, 0x36));   /* "%8.1f" */
+			text_draw8(X0 - (int)strlen(text) * 8 + 0x144, y, text);
+			TEXT(white);
+			if (g_sort == 3)
+				TEXT(yellow);
+			sprintf(text, (const char *)0x4b277c, (double)ROW(float, 0x2e));   /* "%3.2f" */
+			text_draw8(X0 + (0x30 - (int)strlen(text)) * 8, y, text);
+			TEXT(white);
+			if (g_sort == 1)
+				TEXT(yellow);
+			itoa(ROW(int, 0x26), text, 10);
+			text_draw8(X0 - (int)strlen(text) * 8 + 0x1bc, y, text);
+			TEXT(white);
+			itoa(ROW(int, 0x2a), text, 10);
+			text_draw8(X0 - (int)strlen(text) * 8 + 0x1f4, y, text);
+			TEXT(white);
+			if (g_sort == 2)
+				TEXT(yellow);
+			itoa(ROW(int, 0x1e), text, 10);
+			text_draw8(X0 - (int)strlen(text) * 8 + 0x23e, y, text);
+#undef ROW
+		}
+	}
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		int lit = hovered == k + 3 && !(hovered == 3 && !GAME_VAR(int, 0x9dd6b8));
+		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+		int x = X0 + k * 0xc8;
+		menu_drawTexQuad_4282f0(x + 0x7d, Y1 - 0x30, x + 0x11d, Y1 - 0x10, 1);
+		if (lit)
+			TEXT(bright);
+		else
+			TEXT(dim);
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(0x75b0a4 + k * 0x80));
+	}
+	if (GAME_VAR(int, 0x9dd6b8)) {   /* loading: blinking in ten steps */
+		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 10;
+		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)0x4a93ec), (const float *)0x4a9424));
+		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, BITS(alpha));
+		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)0x75b1a4);
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return GAME_CDECL(0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef TEXT
+#undef g_sort
 #undef X0
 #undef Y0
 #undef X1

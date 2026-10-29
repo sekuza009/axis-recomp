@@ -4256,7 +4256,8 @@ DWORD room_4392c0(void);
    pilot % 3, pilot / 3 of 86 texels) in a yellow frame, name (0x9f9040, 0x4c apart), title (+0x10), class (+0x20, a
    0x75eea4 string), level (+0x24), nine stats (+0x28..) right-aligned, and nine bars easing (by 0x4b071c / 10)
    from 0x9f8d34 to 0x9f8ec0; dimmed when the panel is not focused (0x9f8f10) */
-LIFT_PLAIN(profile_44cf70, 44cf70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44cf70(void);
 /* batch 123 (lifted/grp69.c): the video / sound options dialog */
 #include "lifted/grp69.c"
 /* 0x425460 setup_425460(): the options dialog (window 0x4dddd0..): frame, title 0x7538a4, seven labels (0x753924,
@@ -4401,7 +4402,8 @@ void profile_44e640(void);
    (+0x32, cell of the font texture 0x76d448), "%8.1f" (+0x36), "%3.2f" (+0x2e) and three counts (+0x26, +0x2a,
    +0x1e), the sorted column in yellow; a line, three buttons (0x75b0a4; the middle one dead while 0x9dd6b8 is
    clear); while loading (0x9dd6b8) the blinking 0x75b1a4 (alpha from 0x4dba80 * k % 10); the border */
-LIFT_PLAIN(room_43d060, 43d060)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_43d060(void);
 /* batch 136 (lifted/grp82.c): the room's game list */
 #include "lifted/grp82.c"
 /* 0x43adc0 room_43adc0(): the game list (window 0x9dd4a8..): frame, title 0x759ca4, five column heads
@@ -13423,7 +13425,7 @@ static void pilotpanel_setup(void)
 	}
 	for (int s = 0; s < 9; s++) { GF(0x9f8d34 + s * 4) = (float)irnd(0, 1000) / 10.0f; GF(0x9f8ec0 + s * 4) = (float)irnd(0, 1000) / 10.0f; }
 }
-T_PLAIN(profile_44cf70, 0x44cf70, pilotpanel_setup();, 0, 0, 0, 0, 0)
+ST(profile_44cf70, pilotpanel_setup();, (CALL_PLAIN(0x44cf70, 0, 0, 0, 0, 0), 0), (profile_44cf70(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 123 */
 /* the options dialog: dlgwin_setup's window at 0x4dddd0, its labels, the six value tables (filled at run time in
    the game: here two short entries each) and settings 0..1, a resolution 0..7, the cursor sometimes on a value */
@@ -13744,7 +13746,7 @@ static void ranking_setup(void)
 	}
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dced8) + irnd(0x7d, 0x2e0); G32(0x4ded6c) = G32(0x9dcee4) - irnd(0x10, 0x30); }
 }
-T_PLAIN(room_43d060, 0x43d060, ranking_setup();, 0, 0, 0, 0, 0)
+ST(room_43d060, ranking_setup();, CALL_PLAIN(0x43d060, 0, 0, 0, 0, 0), room_43d060())
 /* batch 136 */
 /* the game list: dlgwin_setup's window at 0x9dd4a8 (the lock icons from its set too), a list or none, 0..30 games
    from a first visible one 0..20, short names, maps 0..15 (the record's map is a signed byte index), modes 0..4,

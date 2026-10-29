@@ -2,6 +2,7 @@
    preview, the mission record (0x9db99c, 0x5c bytes a mission) and the two buttons */
 #include "../game.h"
 #include <string.h>
+#include "portrait.h"
 
 #define X0 GAME_VAR(int, 0x9f6308)
 #define Y0 GAME_VAR(int, 0x9f630c)
@@ -36,27 +37,6 @@ static void value_line(int y, u32 label, int value, u32 none, u32 unit)
 		strcat(line, (const char *)unit);
 	}
 	text_draw16(X0 + 0xc4, y, line);
-}
-
-/* a portrait (0 .. 8, a cell of the 3 x 3 atlas 0x4dfa00 of 86 texels) 48 square at (x, y) */
-static void portrait(int face, int x, int y)
-{
-	int col = face % 3, row = face / 3;
-	glBegin(GL_QUADS);
-	long double rt = fmul_m((long double)row, K(0x4a95ec)), ct = fmul_m((long double)col, K(0x4a95ec));
-	float row_t = f32(rt), col_t = f32(ct);
-	float t0 = f32(fmul_m(rt, K(0x4a957c))), s0 = f32(fmul_m(ct, K(0x4a957c)));
-	glTexCoord2f(s0, t0);
-	menu_vertex(x, y);
-	float s1 = f32(fmul_m(fadd_m(col_t, K(0x4a95e8)), K(0x4a957c)));
-	glTexCoord2f(s1, t0);
-	menu_vertex(x + 0x30, y);
-	float t1 = f32(fmul_m(fadd_m(row_t, K(0x4a95e8)), K(0x4a957c)));
-	glTexCoord2f(s1, t1);
-	menu_vertex(x + 0x30, y + 0x30);
-	glTexCoord2f(s0, t1);
-	menu_vertex(x, y + 0x30);
-	glEnd();
 }
 
 /* the screen, hovered the button (0 / 1) or arrow (2 / 3) under the pointer (-1: none, nothing lit) */
@@ -130,7 +110,7 @@ static void mission_screen(int hovered)
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int x0 = 0x146 - record[0x24 / 4] * 0x20;
 		for (int i = 0; i < record[0x24 / 4]; i++)
-			portrait(record[0x28 / 4 + i], x0 + i * 0x40, Y0 + 0x104);
+			portrait(record[0x28 / 4 + i], x0 + i * 0x40, Y0 + 0x104, 0x30);
 		glDisable(GL_TEXTURE_2D);
 		set_colour_bits(g_rectColour, 0x3f800000, 0x3dcccccd, 0x3dcccccd, 0x3f800000);   /* 1, 0.1, 0.1, 1 */
 		for (int i = 0; i < record[0x24 / 4]; i++)
@@ -145,7 +125,7 @@ static void mission_screen(int hovered)
 		bind(GAME_VAR(int, 0x4dfa00));
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		if (face >= 0 && face <= 8)
-			portrait(face, x, Y0 + 0x154);
+			portrait(face, x, Y0 + 0x154, 0x30);
 		else
 			text_drawBox16(x, Y0 + 0x164, x + 0x30, (const char *)0x4b2b0c);
 	}
