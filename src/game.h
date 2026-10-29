@@ -579,6 +579,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define menu_loadIntroTextures() GAME_CDECL(0x430ca0, void, void)()
 #define profile_44f850() GAME_CDECL(0x44f850, void, void)()   /* quit (app/app_quit.c) */
 #define net_closeAll(mode) GAME_CDECL(0x451600, void, int)(mode)   /* every socket closed before connecting */
+#define net_send(kind, socket) GAME_CDECL(0x4521c0, u32, int, int)(kind, socket)   /* a packet (0xc room, 0x14 arena...) to the lobby (100) / game server (0x65) */
 #define net_connect(mode) GAME_CDECL(0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
 #define net_disconnect() GAME_CDECL(0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */
 #define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)

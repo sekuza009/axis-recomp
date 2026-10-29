@@ -943,6 +943,93 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 #define WSACancelBlockingCall() ((int (STDCALL *)(void))0x4a8292)()
 
+/* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
+   the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */
+#define lstrcpyA(to, from) IMPORT(0x4a911c, char *, char *, const char *)(to, from)
+#define g_playerCount GAME_VAR(int, 0x9fd950)
+
+static void room_info(u8 *dst, u8 first, u8 count)
+{
+	const u8 *src = GAME_VAR(const u8 *, 0xa0b310);
+	dst[0] = first;
+	static const u8 bytes[] = { 0x49, 0x47, 0x48, 0x46 };
+	for (int k = 0; k < 4; k++)
+		dst[bytes[k]] = src[bytes[k]];
+	dst[0x45] = count;
+	dst[0x43] = src[0x43];
+	dst[0x44] = src[0x44];
+	dst[0x52] = src[0x52];
+	lstrcpyA((char *)dst + 0x53, (const char *)src + 0x53);
+	lstrcpyA((char *)dst + 0x33, (const char *)src + 0x33);
+	lstrcpyA((char *)dst + 1, (const char *)src + 1);
+	net_send(0xc, 0x64);
+}
+
+static void arena_info(u8 *dst, u8 first, u8 count)
+{
+	const u8 *src = GAME_VAR(const u8 *, 0xa0b328);
+	dst[0] = first;
+	dst[0x67] = src[0x67];
+	dst[0x65] = src[0x65];
+	dst[0x64] = src[0x64];
+	dst[0x63] = count;
+	static const u8 bytes[] = { 0x61, 0x62, 0x66, 0x70 };
+	for (int k = 0; k < 4; k++)
+		dst[bytes[k]] = src[bytes[k]];
+	lstrcpyA((char *)dst + 0x71, (const char *)src + 0x71);
+	lstrcpyA((char *)dst + 0x43, (const char *)src + 0x43);
+	lstrcpyA((char *)dst + 0x33, (const char *)src + 0x33);
+	net_send(0x14, 0x65);
+}
+
+/* 0x450c20 (DirectPlay system message): 5, a player created: its slot taken by the host (net_451530, unless
+   0x9fd94c), then the info sent with the count less one; 3, a player gone: a slot freed (FUN_00451450 into
+   0x9f9424, FUN_00451270), the message's count kept and the info sent (an arena's then starts with 1). Only while
+   hosting (0xa0baf8) over TCP/IP (0xa0b418 = 0) with the right socket open (200: the room on the lobby's, 201: the
+   arena on the game server's) and nothing pending (0xa0b360 / 0xa0b364). The original leaves eax to callers that
+   ignore it */
+void (net_sendLocalInfo)(const u32 *msg)
+{
+	int gone;
+	if (msg[0] == 5) {
+		if (!GAME_VAR(int, 0x9fd94c))
+			GAME_CDECL(0x451530, void, u32)(msg[2]);   /* net_451530 */
+		gone = 0;
+	} else if (msg[0] == 3) {
+		if (!GAME_VAR(int, 0xa0baf8))
+			return;
+		GAME_VAR(u8, 0x9f9424) = FUN_00451450();
+		GAME_CDECL(0x451270, void, void *, u32, int)((void *)0x9f9420, msg[2], 0);   /* FUN_00451270 */
+		gone = 1;
+	} else
+		return;
+	if (!GAME_VAR(int, 0xa0baf8) || GAME_VAR(int, 0xa0b418))
+		return;
+	switch (GAME_VAR(int, 0xa0b380)) {
+	case 201:
+		if (GAME_VAR(int, 0xa0b364) || !GAME_VAR(int, 0xa05630))
+			return;
+		if (gone)
+			g_playerCount = msg[3];
+		if (!GAME_VAR(u8 *, 0xa0b32c))
+			return;
+		if (gone)
+			arena_info(GAME_VAR(u8 *, 0xa0b32c), 1, (u8)g_playerCount);
+		else
+			arena_info(GAME_VAR(u8 *, 0xa0b32c), GAME_VAR(const u8 *, 0xa0b328)[0], (u8)(g_playerCount - 1));
+		break;
+	case 200:
+		if (GAME_VAR(int, 0xa0b360) || !GAME_VAR(int, 0xa055f8))
+			return;
+		if (gone)
+			g_playerCount = msg[3];
+		if (!GAME_VAR(u8 *, 0xa0b314))
+			return;
+		room_info(GAME_VAR(u8 *, 0xa0b314), GAME_VAR(const u8 *, 0xa0b310)[0], (u8)(g_playerCount - !gone));
+		break;
+	}
+}
+
 /* a TCP socket into *sock connected to the host 0xa055e4 (a dotted address, else looked up by name) at port
    0xa05326, after Winsock 2.2 starts and the socket is bound to any address; connected: 0xa0b380 = status, 1. A
    refusal (connect's result compared with 10061, as the original does) 2, any failure 0 (Winsock cleaned up and

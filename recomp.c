@@ -4894,7 +4894,8 @@ DWORD arena_451090(const void *message, DWORD size, DWORD from);
    and when hosting over TCP/IP the room or arena info sent to the newcomer (by 0xa0b380: 200 room, 201 arena; the
    packets 0xa0b310 / 0xa0b314 or 0xa0b328 / 0xa0b32c, net_send); 3 (destroy player): its slot freed (0x451450,
    FUN_00451270 with 0x9f9420) and the info sent again */
-LIFT_PLAIN(net_sendLocalInfo, 450c20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_sendLocalInfo(const void *msg);
 /* 0x450a60 arena_450a60(): every waiting DirectPlay message: the buffer (a global block of 0x9fd940 bytes) grown when
    too small, system messages (sender 0) to net_sendLocalInfo, a type 7 of more than 0x49 bytes ends the loop, others
    to arena_451090; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
@@ -14665,7 +14666,7 @@ ST(FUN_00450bf0, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
 ST(FUN_00451270, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(FUN_00451270((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
 ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
 ST(arena_451090, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(arena_451090(BUF + 0x3800, g_a[4], g_a[5])))
-T_PLAIN(net_sendLocalInfo, 0x450c20, dpmsg_setup();, 0, BUF + 0x3800, 0, 0, 0)
+ST(net_sendLocalInfo, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_sendLocalInfo((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(arena_450a60, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(arena_450a60()))
 T_PLAIN(FUN_00450bb0, 0x450bb0, dpmsg_setup();, 0, 0, 0, 0, 0)
 /* batch 168 */
