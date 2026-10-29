@@ -4383,7 +4383,8 @@ DWORD profile_44f740(void);
    adds to the idle time. Flying in counts frames (0x9eeab0) and eases the depth 0x9eea90 to -550. The tunnel
    (missionsel_448140's layout at depth 0x9eea90), then the hovered panel's caption (0x7501a4, 0x80 apart) or,
    idle for long enough and nothing else open (0x680370, 0x9eeab4), the "AUTOPLAY-F1" hint fading in and out */
-LIFT_PLAIN(menu_mainMenu, 442050)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_mainMenu(void);
 /* batch 133 (lifted/grp79.c): the mission-select screen */
 #include "lifted/grp79.c"
 /* 0x449a50 missionsel_drawScreen(): the mission-select screen for mission 0x9f63b4 (no direct callers: reached
@@ -13693,7 +13694,7 @@ static void mainmenu_setup(void)
 		if (!irnd(0, 5)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
-T_PLAIN(menu_mainMenu, 0x442050, mainmenu_setup();, 0, 0, 0, 0, 0)
+ST(menu_mainMenu, mainmenu_setup();, (CALL_PLAIN(0x442050, 0, 0, 0, 0, 0), 0), (menu_mainMenu(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 133 */
 /* the mission-select screen: missions 0..15; the preview looked up now and then (mappreview_setup's indexed map
    name, sometimes left out: fatal) or already bindable; every texture of the set (menutex_fonts after the set is
