@@ -171,3 +171,8 @@ void (missionsel_drawScreen)(void)
 	text_drawBox16(0x46, 0xdc, 0x23a, (const char *)0x75f7a4);
 	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)0x74de24);
 }
+
+/* 0x44aa20, 0x44aa30: jumps to missionsel_448ac0 and missionsel_drawScreen (the mission select's states'
+   frames; their callers ignore eax) */
+void (missionsel_44aa20)(void) { missionsel_448ac0(); }
+void (missionsel_44aa30)(void) { missionsel_drawScreen(); }

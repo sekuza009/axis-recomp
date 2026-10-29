@@ -934,6 +934,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_432300(x, y) GAME_CDECL(0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
 #define room_434da0() GAME_CDECL(0x434da0, void, void)()   /* the selected game joined */
 #define room_434d00() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
+#define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
+#define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */
+#define missionsel_448ac0() GAME_CDECL(0x448ac0, void, void)()
+#define missionsel_drawScreen() GAME_CDECL(0x449a50, void, void)()
+#define skirmish_drawScreenA() GAME_CDECL(0x444f40, void, void)()
+#define skirmish_drawScreenB() GAME_CDECL(0x4456b0, void, void)()
 #define arena_404460(x, y) GAME_CDECL(0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
 #define arena_452ec0(kind, host) GAME_CDECL(0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_CDECL(0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */

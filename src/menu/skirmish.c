@@ -199,3 +199,8 @@ void (skirmish_drawScreenB)(void)
 		                (const char *)(0x75e3a4 + k * 0x80));
 	}
 }
+
+/* 0x445bc0, 0x445bd0: jumps to skirmish_drawScreenA and skirmish_drawScreenB (the skirmish setup's states'
+   frames; their callers ignore eax) */
+void (skirmish_445bc0)(void) { skirmish_drawScreenA(); }
+void (skirmish_445bd0)(void) { skirmish_drawScreenB(); }

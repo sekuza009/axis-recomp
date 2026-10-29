@@ -1115,3 +1115,7 @@ u32 (net_disconnect)(void)
 	GAME_VAR(int, 0xa0b2fc) = 0;
 	return r;
 }
+
+/* 0x450bb0, 0x4532e0: jumps to arena_450a60 and net_getLocalAddress (their eax passed on) */
+u32 (FUN_00450bb0)(void) { return arena_450a60(); }
+int (jmp_net_getLocalAddress_4532e0)(void) { return net_getLocalAddress(); }

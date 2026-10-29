@@ -4866,9 +4866,12 @@ void menu_447b40(void);
 void menu_447c70(void);
 /* jump stubs: 0x44aa30 missionsel_44aa30 -> missionsel_drawScreen, 0x445bd0 skirmish_445bd0 ->
    skirmish_drawScreenB, 0x4532e0 jmp_net_getLocalAddress_4532e0 -> net_getLocalAddress */
-LIFT_PLAIN(missionsel_44aa30, 44aa30)
-LIFT_PLAIN(skirmish_445bd0, 445bd0)
-LIFT_PLAIN(jmp_net_getLocalAddress_4532e0, 4532e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_44aa30(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_445bd0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int jmp_net_getLocalAddress_4532e0(void);
 /* batch 165 (lifted/grp111.c): profile screen dialogs and mouse handlers */
 #include "lifted/grp111.c"
 /* 0x44b600 profile_44b600(): start typing a profile name: keyboard released, input cleared, the edit box at the
@@ -4943,7 +4946,8 @@ void net_sendLocalInfo(const void *msg);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_450a60(void);
 /* 0x450bb0 FUN_00450bb0: jump to arena_450a60 */
-LIFT_PLAIN(FUN_00450bb0, 450bb0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD FUN_00450bb0(void);
 /* batch 168 (lifted/grp114.c): the mission settings screen */
 #include "lifted/grp114.c"
 /* 0x448ac0 missionsel_448ac0(): the mission settings screen (the mission select's sibling): the frame and panels,
@@ -4953,7 +4957,8 @@ LIFT_PLAIN(FUN_00450bb0, 450bb0)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_448ac0(void);
 /* 0x44aa20 missionsel_44aa20: jump to missionsel_448ac0 */
-LIFT_PLAIN(missionsel_44aa20, 44aa20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_44aa20(void);
 /* batch 169 (lifted/grp115.c, grp116.c, grp117.c: split so that the calls between these go through their native
    addresses, where the tests stub them): the armour centre's part selection */
 #include "lifted/grp115.c"
@@ -5366,7 +5371,8 @@ void menuState210_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_452ec0(DWORD kind, const char *host);
 /* 0x445bc0 skirmish_445bc0: jump to skirmish_drawScreenA (a 5-byte stub missing from functions.csv, added) */
-LIFT_PLAIN(skirmish_445bc0, 445bc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_445bc0(void);
 /* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_434dd0, arena_406200), the lobby's
    room-name and reserved-name checks, lobby_connect, lobbyJoin_keysChat, room_4355b0, arena_405b80 (the room /
    arena settings checked and the game hosted or joined), with their callees stubbed (tools/gentests.py) */
@@ -14638,9 +14644,9 @@ static const DWORD g_stubLocalAddr[] = { 0x454220, 0, 0 };
 ST(menu_447c30, missionkeys_setup();, CALL_PLAIN(0x447c30, 0, 0, 0, 0, 0), (menu_447c30(), 0))
 ST(menu_447b40, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), (menu_447b40(), 0))
 ST(menu_447c70, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (menu_447c70(), 0))
-T_PLAIN(missionsel_44aa30, 0x44aa30, callee_stubs(g_stubMissionDraw, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(skirmish_445bd0, 0x445bd0, callee_stubs(g_stubSkirmishDraw, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(jmp_net_getLocalAddress_4532e0, 0x4532e0, callee_stubs(g_stubLocalAddr, 0);, 0, 0, 0, 0, 0)
+ST(missionsel_44aa30, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (missionsel_44aa30(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(skirmish_445bd0, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (skirmish_445bd0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(jmp_net_getLocalAddress_4532e0, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress_4532e0())
 /* batch 165 */
 /* the profile screen: its variables (PROFILE_VARS), saves to load and delete (selectload_setup), the keyboard and
    menu sounds, the chat edit's state; the three button tables with the cursor often on a button, clicks */
@@ -14760,7 +14766,7 @@ ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900,
 ST(arena_451090, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(arena_451090(BUF + 0x3800, g_a[4], g_a[5])))
 ST(net_sendLocalInfo, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_sendLocalInfo((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(arena_450a60, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(arena_450a60()))
-T_PLAIN(FUN_00450bb0, 0x450bb0, dpmsg_setup();, 0, 0, 0, 0, 0)
+ST(FUN_00450bb0, dpmsg_setup();, CALL_PLAIN(0x450bb0, 0, 0, 0, 0, 0), (DWORD)FUN_00450bb0())
 /* batch 168 */
 /* the mission settings screen: missionscreen_setup's state (missions, preview, textures, texts, records), the
    unlocked count, the settings buttons with the cursor often on one */
@@ -14772,7 +14778,7 @@ static void missionsettings_setup(void)
 	if (irnd(0, 1)) { point_in_table(0x9f6338, 0x9f6378); G32(0x4ded68) = g_a[0]; G32(0x4ded6c) = g_a[1]; }
 }
 ST(missionsel_448ac0, missionsettings_setup();, (CALL_PLAIN(0x448ac0, 0, 0, 0, 0, 0), 0), (missionsel_448ac0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-T_PLAIN(missionsel_44aa20, 0x44aa20, missionsettings_setup();, 0, 0, 0, 0, 0)
+ST(missionsel_44aa20, missionsettings_setup();, (CALL_PLAIN(0x44aa20, 0, 0, 0, 0, 0), 0), (missionsel_44aa20(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 169 */
 /* the armour centre's part selection with every heavy callee stubbed (callee_stubs: the scene / actor ones are
    thiscall: CS_THIS records the object, CS_POP pops as they do): kinds -1..6, positions inside and outside the
@@ -15480,7 +15486,7 @@ static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
 ST(arena_452ec0, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_452ec0((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
 /* skirmish_445bc0: a jump stub (to skirmish_drawScreenA), its target stubbed */
 static const DWORD g_stubSkirmishA[] = { 0x444f40, 0, 0 };
-T_PLAIN(skirmish_445bc0, 0x445bc0, callee_stubs(g_stubSkirmishA, 0);, 0, 0, 0, 0, 0)
+ST(skirmish_445bc0, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (skirmish_445bc0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 182: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_434dd0[] = { 0x41ee40, 1, 0x452ec0, 1, 0x452fe0, 0, 0x453260, 0, 0 };
 static const DWORD g_gi_434dd0[] = { 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4ded18, 0x9dd56c, 0xa0bad0, 0 };
