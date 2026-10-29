@@ -5387,7 +5387,8 @@ DWORD arena_createClick(void);
 DWORD lobbyTop_connect(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_loadAndQuit(void);
-LIFT_PLAIN(room_43ea10, 43ea10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_43ea10(void);
 LIFT_PLAIN(lobbyJoin_draw, 40cfd0)
 /* batch 184 (lifted/grp135.c, grp136.c: menuState800_gameRoom on its own so its call to room_43e290 goes through
    the native address, where the test stubs it): the menu state dispatchers lobby_onStateChange, menuState400_frame,
@@ -15544,7 +15545,7 @@ static void room43ea10_setup(void)
 		if (irnd(0, 2)) strcpy((char *)0x9087ff + G32(0x76d41c) * 0x4a, (char *)0x9dc92c);
 	}
 }
-T_PLAIN(room_43ea10, 0x43ea10, room43ea10_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_43ea10, room43ea10_setup();, (CALL_PLAIN(0x43ea10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (room_43ea10(), 0))   /* its eax goes out through menuState800_gameRoom, which menu_frame ignores */
 static const DWORD g_gs_40cfd0[] = { 0x405690, 1, 0x406200, 1, 0x406640, 0, 0x406810, 0, 0x4091b0, 0, 0x40a070, 0, 0x41ee40, 0, 0x428c30, 4, 0x453260, 0, 0 };
 static const DWORD g_gi_40cfd0[] = { 0x4db520, 0x4b071c, 0x4dba80, 0x4dbaf0, 0x4dbaf8, 0x4db51c, 0x4db524, 0x4db70c, 0x4db714, 0x4db71c, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4db8c8, 0x4db8cc, 0x4db8d0, 0x4db8d4, 0x4dba90, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4df018, 0x5b1914, 0x68039c, 0x76d41c, 0x76d484, 0x907b2c, 0x90d1c4, 0xa0d7a0, 0 };
 static const DWORD g_gb_40cfd0[] = { 0x4dbbd4, 0x9dc92c, 0 };

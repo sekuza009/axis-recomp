@@ -345,3 +345,90 @@ void (room_43adc0)(void)
 #undef Y0
 #undef X1
 #undef Y1
+
+/* 0x43ea10: the game room's page of games: the "searching" message's clock (0x9dcd40, while 0x9dd34c; done above 0x4a944c),
+   the tunnel; in room modes other than 0 / 1, and not page 99: a message box (0x90d1c4) alone, else the search's
+   end (0x9dd6a0 searching, 0x9da498 the answer in, 0x76d484 its result: -1 .. 4) and the blinking clock (0x4dba80
+   falling, back to 1000 below 0x4a9418); while the list refreshes (0x9dd3fc) its timer (0x9dd6c0 against 0x5b1914:
+   the list asked for again, the next in 5) and a stop (0xa0d7a0); then the list, and with a game joined (0x9dd56c)
+   the join sent (0x9dd6b4 clear) or, once a password is typed (0x9dd6c8), it checked against the game's (+0x3b)
+   (message 0x27 when wrong) */
+void (room_43ea10)(void)
+{
+	const float *step = (const float *)0x4ad498, *blinkFloor = (const float *)0x4a9418;
+	if (GAME_VAR(int, 0x9dd34c)) {
+		long double t = fadd_m(fld_m(&g_frameTime), &GAME_VAR(float, 0x9dcd40));
+		GAME_VAR(float, 0x9dcd40) = f32(t);
+		if (t > *(const float *)0x4a944c) {
+			GAME_VAR(int, 0x9dd34c) = 0;
+			GAME_VAR(int, 0x9dcd40) = 0;
+		}
+	}
+	room_4388e0();
+	int mode = GAME_VAR(int, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
+		return;
+	if (GAME_VAR(int, 0x90d1c4)) {
+		menu_drawFrame(GAME_VAR(int, 0x9dd4a8), GAME_VAR(int, 0x9dd4ac), GAME_VAR(int, 0x9dd4b0), GAME_VAR(int, 0x9dd4b4));
+		return;
+	}
+	if (GAME_VAR(int, 0x9dd6a0)) {
+		if (GAME_VAR(int, 0x9da498) == 1) {
+			int result = GAME_VAR(int, 0x76d484);
+			if (result != 2 && (u32)(result + 1) <= 5) {
+				GAME_VAR(int, 0x4db858) = 0;
+				GAME_VAR(int, 0x4df018) = 0;
+				GAME_VAR(int, 0x4db8b8) = result == 1;
+				if (result == 3)
+					GAME_VAR(int, 0x907b2c) = 1;
+				else if (result == 0)
+					FUN_0041ee40(0x40);
+				else if (result == 4)
+					FUN_0041ee40(0x2a);
+			}
+			GAME_VAR(int, 0x9dd6a0) = 0;
+			GAME_VAR(int, 0x9da498) = 0;
+			GAME_VAR(int, 0x9dd3fc) = 1;
+		}
+		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &GAME_VAR(float, 0x4dba80));
+		GAME_VAR(float, 0x4dba80) = f32(blink);
+		if (!(blink >= *blinkFloor))
+			GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
+	}
+	if (GAME_VAR(int, 0x9dd3fc)) {
+		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x9dd6c0)), &g_frameTime);
+		GAME_VAR(float, 0x9dd6c0) = f32(t);
+		if (t > (long double)GAME_VAR(int, 0x5b1914)) {
+			room_434ff0();
+			GAME_VAR(int, 0x9dd6c0) = 0;
+			GAME_VAR(int, 0x5b1914) = 5;
+		}
+		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &GAME_VAR(float, 0x4dba80));
+		GAME_VAR(float, 0x4dba80) = f32(blink);
+		if (!(blink >= *blinkFloor))
+			GAME_VAR(u32, 0x4dba80) = 0x447a0000;
+		if (GAME_VAR(int, 0xa0d7a0)) {
+			room_434ff0();
+			GAME_VAR(int, 0x9dd6a0) = 0;
+			GAME_VAR(int, 0x9da498) = 0;
+			GAME_VAR(int, 0x9dd3fc) = 0;
+		}
+	}
+	room_43adc0();
+	if (!GAME_VAR(int, 0x9dd56c))
+		return;
+	if (!GAME_VAR(int, 0x9dd6b4)) {
+		room_434dd0(g_localPlayer);
+		return;
+	}
+	if (!GAME_VAR(int, 0x9dd6c8) || g_paused)
+		return;
+	GAME_VAR(int, 0x9dd6c8) = 0;
+	memset((void *)0x9dcee8, 0, 8);
+	strcpy((char *)0x9dcee8, g_chatLine);
+	if (strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x9dcee8) != 0) {
+		FUN_0041ee40(0x27);
+		GAME_VAR(int, 0x9dd56c) = 0;
+	}
+	GAME_VAR(int, 0x9dd6b4) = 0;
+}
