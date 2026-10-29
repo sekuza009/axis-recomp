@@ -2610,7 +2610,8 @@ DWORD arena_readLaunchFile(char *line);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mission_loadAxisMis(void);
 /* 0x42d7f0 cfg_readLines: read axis.cfg lines (fgets/strtok) into the settings. Lifted */
-LIFT_PLAIN(cfg_readLines, 42d7f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_readLines(void *f);
 /* 0x40d4e0 arena_loadSettings: read an arena settings file (fgets/strtok/atoi). Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_loadSettings(const char *path);
@@ -9414,7 +9415,7 @@ static void mislist_setup(void)
 	for (DWORD o = 16; o + 4 <= g_vfsSize; o += 0x64) S32(BUF + 0x200000, o) = irnd(0, 6);
 }
 ST(mission_loadAxisMis, mislist_setup();, CALL_PLAIN(0x4435f0, 0, 0, 0, 0, 0), (DWORD)(mission_loadAxisMis()))
-T_PLAIN(cfg_readLines, 0x42d7f0, vfs_content(95, 0x1000);, 0, VFS_FILE(0), 0, 0, 0)
+ST(cfg_readLines, vfs_content(95, 0x1000);, (CALL_PLAIN(0x42d7f0, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_readLines((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* axiswl.dat-like settings: lines of space/tab separated tokens where every keyword has a value after it, at least one
    token per line, short lines, some "//" comments. The original dereferences NULL on a line without tokens or with a
    keyword as its last token (strtok returns NULL), so real files never have those */

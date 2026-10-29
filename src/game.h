@@ -687,6 +687,8 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- small classes (app/classes.c) ---- */
 #define fclose(f) GAME_CDECL(0x49e7e0, u32, void *)(f)
+#define arena_loadSettings(path) GAME_CDECL(0x40d4e0, int, const char *)(path)   /* an arena settings file; 0 if missing */
+#define cfg_44ac70(s) GAME_CDECL(0x44ac70, int, char *)(s)   /* s cut to its last character (app/small.c) */
 #define FUN_004569a0(self) GAME_THISCALL(0x4569a0, int, void *)(self)
 #define FUN_00464bb0(self) GAME_THISCALL(0x464bb0, int, void *)(self)
 #define load_466a20(self) GAME_THISCALL(0x466a20, int, void *)(self)

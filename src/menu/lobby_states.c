@@ -915,7 +915,7 @@ u32 (arena_loadAndQuit)(void)
 		GAME_VAR(int, 0x9da49c) = 0x69;
 		return r;
 	}
-	if (!GAME_CDECL(0x40d4e0, int, const char *)((const char *)0x4ad5e4))   /* arena_loadSettings("axiswl.dat") */
+	if (!arena_loadSettings((const char *)0x4ad5e4))   /* "axiswl.dat" */
 		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
 	memset((void *)0x4ded20, 0, 32);
 	strcpy((char *)0x4ded20, (const char *)0x5b191c);

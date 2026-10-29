@@ -964,3 +964,39 @@ int (arena_loadSettings)(const char *path)
 	fclose(f);
 	return 1;
 }
+
+/* 0x42d7f0: the player's section of axis.cfg read back (the lines cfg_parsePlayer writes): three lines, each cut at
+   its last character, its keyword and the next word skipped and the rest joined: the name (words joined by spaces,
+   then cut once more by cfg_44ac70, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0; 0x4dedd0) and
+   the sex (ON: 1; 0x4dedd4); then one more line is read past. The original leaves fgets's eax to callers that
+   ignore it */
+void (cfg_readLines)(void *f)
+{
+	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	char line[0x50], value[0x84];
+	for (int i = 0; i < 3; i++) {
+		crt_fgets(line, 0x50, f);
+		line[strlen(line) - 1] = '\0';
+		crt_strtok(line, gaps);
+		crt_strtok(NULL, gaps);
+		memset(value, 0, sizeof value);
+		for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
+			strcat(value, word);
+			if (i == 0)
+				strcat(value, (const char *)0x4b035c);   /* " " */
+		}
+		if (i == 0) {
+			cfg_44ac70(value);
+			strcpy((char *)0x4dedb0, value);
+		} else if (i == 1) {
+			if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
+				GAME_VAR(int, 0x4dedd0) = 0;
+			else if (!strcmp(value, (const char *)0x4b21b0))   /* BLUE */
+				GAME_VAR(int, 0x4dedd0) = 1;
+			else
+				GAME_VAR(int, 0x4dedd0) = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
+		} else
+			GAME_VAR(int, 0x4dedd4) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	}
+	crt_fgets(line, 0x50, f);
+}
