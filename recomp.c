@@ -4225,7 +4225,8 @@ void skirmish_drawScreenB(void);
    blue bars, up to 8 rows of the 0xfc-byte mission records (0x9ef2d4, count 0x9ef2c0, from 0x9f16bc): name,
    +0x40 text, +0xe0 number (_itoa), +0xe8 kind (a 0x75dda4 string), the selected one (0x9f16a4) highlighted and
    its description (+0x60) below; two buttons (0x75e0a4) */
-LIFT_PLAIN(skirmish_drawScreenA, 444f40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_drawScreenA(void);
 /* batch 121 (lifted/grp67.c): the arena slot list and the map-select dialog */
 #include "lifted/grp67.c"
 /* 0x4038e0 arena_4038e0(): the arena's slot list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up
@@ -13334,7 +13335,7 @@ static void missionlist_setup(void)
 		S32(r, 0xe0) = irnd(-9999, 9999); S32(r, 0xe8) = irnd(0, 4);
 	}
 }
-T_PLAIN(skirmish_drawScreenA, 0x444f40, missionlist_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_drawScreenA, missionlist_setup();, (CALL_PLAIN(0x444f40, 0, 0, 0, 0, 0), 0), (skirmish_drawScreenA(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 121 */
 /* the slot list: menutex_setup's set as the button texture, 0..30 slots from a first visible one (0..20, so the
    skipped slots 22..24 show up now and then), taken or not, kinds 0..4 with short names (10 rows of 4 strings stay
