@@ -335,6 +335,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
 #define g_mouseClick GAME_VAR(int, 0x4ded88)         /* a click this frame */
+#define g_mouseHeld GAME_VAR(int, 0x4ded94)          /* (by use) the button held down */
 #define g_localPlayer GAME_VAR(int, 0x76d41c)        /* (by use) the local player's index in the room's lists */
 #define g_hWndMain GAME_VAR(void *, 0x4ded18)
 #define g_screenW GAME_VAR(int, 0x5b1998)
@@ -591,6 +592,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define timer_getGameTime(timer) GAME_THISCALL(0x487490, long double, void *)(timer)   /* seconds since its last call */
 #define loading_draw_bits(progress) GAME_CDECL(0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
 #define mainmenu_4417f0() GAME_CDECL(0x4417f0, void, void)()   /* every map of the map-select list in */
+#define mainmenu_4417c0(i) GAME_CDECL(0x4417c0, void, int)(i)   /* map i of the map-select list in or out */
+#define mainmenu_440b70(x, y) GAME_CDECL(0x440b70, int, int, int)(x, y)   /* the map-select control at (x, y), -1: none */
+#define arena_4033e0(x, y) GAME_CDECL(0x4033e0, int, int, int)(x, y)   /* the arena map list's control at (x, y) */
+#define room_403560(i) GAME_CDECL(0x403560, void, int)(i)     /* the arena list: map i in or out */
+#define room_403590(i) GAME_CDECL(0x403590, void, int)(i)     /* map i's game type stepped */
+#define room_403530() GAME_CDECL(0x403530, void, void)()      /* no map chosen */
+#define room_4034e0() GAME_CDECL(0x4034e0, void, void)()      /* every map chosen */
+#define room_403640() GAME_CDECL(0x403640, void, void)()      /* the list kept */
 #define mainmenu_440df0() GAME_CDECL(0x440df0, void, void)()   /* and out */
 #define mainmenu_441770() GAME_CDECL(0x441770, void, void)()   /* the map-select dialog's OK */
 #define net_452de0(reply) GAME_CDECL(0x452de0, void, void *)(reply)   /* the server's accept reply handled */

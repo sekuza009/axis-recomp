@@ -415,6 +415,48 @@ void (mainmenu_441c00)(void)
 		key_repeat(g_keyDown, &g_repeatDown, maps_down);
 }
 
+/* 0x441810: the map-select dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
+   toggles (0x4b2a7c, 0x9eeac0), every map in or out, OK, cancel (7), or a row's map (8 .. 17); holding an arrow
+   scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore it */
+void (mainmenu_441810)(void)
+{
+	const float *repeat = (const float *)0x4a93d0;
+	if (g_mouseClick) {
+		g_cursorBlink = 0.0f;
+		int on = mainmenu_440b70(g_mouseX, g_mouseY);
+		if (on == 0)
+			maps_up();
+		else if (on == 1)
+			maps_down();
+		else if (on == 2)
+			GAME_VAR(int, 0x4b2a7c) = 1 - GAME_VAR(int, 0x4b2a7c);
+		else if (on == 3)
+			GAME_VAR(int, 0x9eeac0) = 1 - GAME_VAR(int, 0x9eeac0);
+		else if (on == 4)
+			mainmenu_4417f0();
+		else if (on == 5)
+			mainmenu_440df0();
+		else if (on == 6)
+			mainmenu_441770();
+		else if (on == 7)
+			GAME_VAR(int, 0x9eeab4) = 0;
+		else if (on >= 8 && on < 18) {
+			sound_playMenu(2);
+			mainmenu_4417c0(g_mapFirst + on - 8);
+		}
+	}
+	if (!g_mouseHeld)
+		return;
+	int on = mainmenu_440b70(g_mouseX, g_mouseY);
+	if ((on == 0 || on == 1) && g_cursorBlink >= *repeat) {
+		if (on == 0)
+			maps_up();
+		else
+			maps_down();
+		g_cursorBlink = 0.0f;
+	}
+}
+
 /* 0x44f860: the profile screen's frame: while its intro (0x9f6838) runs, quit (profile_44f850); else the background and, once the zoom (0x4dda48)
    is not above 0, the pilot list reloaded for every value of the nine 0x4c-byte pilot stat records (from 0x9f9068)
    that is out of range (above 30, the eighth above 50), then the page (0x9f8f10, 1 .. 6). The original leaves eax

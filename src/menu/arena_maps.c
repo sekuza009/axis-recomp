@@ -213,3 +213,52 @@ void (arena_4038e0)(void)
 	map_buttons(hovered, 0x18, 0x186, 0x75da24);
 }
 #undef cyan_text
+
+/* 0x4036c0: the map list's mouse: a click (the blink clock restarted) on a row's map (0 .. 9) or game type (10 ..
+   19), the arrows (20 / 21: one row up / down), none, every map, OK, or close (25); in mode 2 (0x4dbb3c) holding an
+   arrow scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore
+   it */
+void (room_4036c0)(void)
+{
+	const float *repeat = (const float *)0x4a93d0;
+	if (g_mouseClick) {
+		g_cursorBlink = 0.0f;
+		int on = arena_4033e0(g_mouseX, g_mouseY);
+		if (on >= 0 && on < 10)
+			room_403560(g_mapTop + on);
+		else if (on >= 10 && on < 20)
+			room_403590(g_mapTop + on - 10);
+		else if (on == 20) {
+			sound_playMenu(2);
+			if (g_mapTop > 0)
+				g_mapTop--;
+		} else if (on == 21) {
+			sound_playMenu(2);
+			if (g_mapTop + 10 < g_mapCount)
+				g_mapTop++;
+		} else if (on == 22)
+			room_403530();
+		else if (on == 23)
+			room_4034e0();
+		else if (on == 24)
+			room_403640();
+		else if (on == 25) {
+			sound_playMenu(0);
+			g_mapListOpen = 0;
+		}
+	}
+	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2)
+		return;
+	int on = arena_4033e0(g_mouseX, g_mouseY);
+	if (on == 20 && g_cursorBlink >= *repeat) {
+		if (g_mapTop > 0)
+			g_mapTop--;
+		g_cursorBlink = 0.0f;
+	} else if (on == 21 && g_cursorBlink >= *repeat) {
+		if (g_mapTop + 10 < g_mapCount) {
+			g_cursorBlink = 0.0f;
+			g_mapTop++;
+		} else
+			g_cursorBlink = 0.0f;
+	}
+}

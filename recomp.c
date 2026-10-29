@@ -5170,7 +5170,8 @@ DWORD lobbyPlayer_keys(void);
 DWORD room_433d30(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44f4b0(void);
-LIFT_PLAIN(mainmenu_441810, 441810)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_441810(void);
 /* batch 174 (lifted/grp124.c): returning from a match to the menus (four variants: state, camera, DirectPlay
    left or kept, keyboard back), the room's settings page mouse room_4036c0, the skirmish / mission state entries, room_434490 (a room request
    sent), with their callees stubbed (tools/gentests.py); the in-match player messages (thiscall on the game),
@@ -5184,7 +5185,8 @@ DWORD game_returnToMenus_41e8b0(void);
 DWORD game_returnToMenus_41e9d0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD game_returnToMenus_41eb00(void);
-LIFT_PLAIN(room_4036c0, 4036c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4036c0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int menuState900_enterSkirmish(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15096,7 +15098,7 @@ ST(profile_44f4b0, gen_setup(g_gs_44f4b0, g_gi_44f4b0, g_gb_44f4b0);, CALL_PLAIN
 static const DWORD g_gs_441810[] = { 0x41e760, 1, 0x440b70, 2, 0x440df0, 0, 0x441770, 0, 0x4417c0, 1, 0x4417f0, 0, 0 };
 static const DWORD g_gi_441810[] = { 0x4dda44, 0x4b2a7c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x9dd928, 0x9dd92c, 0x9eeab4, 0x9eeac0, 0 };
 static const DWORD g_gb_441810[] = { 0 };
-T_PLAIN(mainmenu_441810, 0x441810, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810); callee_ret(0x440b70, (DWORD)irnd(-1, 19));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(mainmenu_441810, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810); callee_ret(0x440b70, (DWORD)irnd(-1, 19));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1);, (CALL_PLAIN(0x441810, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (mainmenu_441810(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 174: generated tests (tools/gentests.py, gen_setup from batch 172) plus four by hand */
 static const DWORD g_gs_41ec50[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41ec50[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
@@ -15117,7 +15119,7 @@ ST(game_returnToMenus_41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);,
 static const DWORD g_gs_4036c0[] = { 0x4033e0, 2, 0x4034e0, 0, 0x403530, 0, 0x403560, 1, 0x403590, 1, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_4036c0[] = { 0x4dda44, 0x4d7350, 0x4db508, 0x4dbb3c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x67ef00, 0 };
 static const DWORD g_gb_4036c0[] = { 0 };
-T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0x4033e0, (DWORD)(irnd(0, 2) ? irnd(-1, 27) : irnd(0x14, 0x15)));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); if (irnd(0, 1)) G32(0x4dbb3c) = 2;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0x4033e0, (DWORD)(irnd(0, 2) ? irnd(-1, 27) : irnd(0x14, 0x15)));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); if (irnd(0, 1)) G32(0x4dbb3c) = 2;, (CALL_PLAIN(0x4036c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (room_4036c0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_443950[] = { 0x41e760, 1, 0x4435f0, 0, 0x4437b0, 0, 0x443840, 0, 0 };
 static const DWORD g_gi_443950[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x680bb4, 0x76d37c, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9eeac8, 0x9eeacc, 0x9eead0, 0x9eead4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9ef208, 0x9ef20c, 0x9ef210, 0x9ef214, 0x9f1058, 0x9f16a4, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0x9f16bc, 0 };
 static const DWORD g_gb_443950[] = { 0 };
