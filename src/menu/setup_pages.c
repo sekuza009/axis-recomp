@@ -313,27 +313,34 @@ void (setup_423e50)(void)
    0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on. The deep ones (deep): the panels
    purple, the stripes red, layer 2 drawn (fully transparent) */
 typedef struct {
-	u32 depth;        /* how far the walls are pushed back (float bits) */
-	u32 textures;     /* layer 2's and 3's textures from here, 4 down a layer */
-	int deep, clamp;
-	int turn_only;    /* the pulse only turned round at its ends */
+	u32 depth;             /* how far the walls are pushed back (float bits) */
+	u32 textures;          /* layer 2's and 3's textures from here, 4 down a layer */
+	int deep;              /* purple panels, red stripes */
+	int layer2;            /* layer 2 drawn (fully transparent) */
+	int clamp;
+	int turn_only;         /* the pulse only turned round at its ends */
+	int walls;             /* 6: three places a side (turned -40 / 0 / 40), 4: two (-35 / 35) */
+	const float *height;   /* the panels' half height (10 at 0x4a9418, 12 at 0x4a9410) */
+	const float *step;     /* layer 3's strip a place down the texture (0.15625 at 0x4a9478, 0.25 at 0x4a941c) */
+	float t0, t1;          /* layer 3's strip's top on the far walls, and its height there */
 } Tunnel;
 
 static void menu_tunnel(const Tunnel *t)
 {
-	int deep = t->deep, clamp = t->clamp;
-	const float turns[3] = { -40.0f, 0.0f, 40.0f };
+	int deep = t->deep, clamp = t->clamp, places = t->walls / 2;
+	static const float turns3[3] = { -40.0f, 0.0f, 40.0f }, turns2[2] = { -35.0f, 35.0f };
+	const float *turns = places == 3 ? turns3 : turns2;
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
 	for (int layer = 0; layer < 4; layer++) {
 		/* layer 3's texture strip (s from s0 .. s0 + ds to s_far; t from t0 / t1 on by the wall's place) */
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer > 1)
-			s0 = 0.5f, ds = 0, t0 = 0.46875f, t1 = 0.625f, s_far = 1.0f;
+			s0 = 0.5f, ds = 0, t0 = t->t0, t1 = t->t1, s_far = 1.0f;
 		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, t->textures - layer * 4);
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
-		for (int wall = 0; wall < 6; wall++) {
-			int place = wall % 3, far = wall >= 3;
+		for (int wall = 0; wall < t->walls; wall++) {
+			int place = wall % places, far = wall >= places;
 			gfx_setMenuCamera();
 			glTranslatef_bits(0, 0, t->depth);
 			float turn = turns[place];
@@ -351,17 +358,18 @@ static void menu_tunnel(const Tunnel *t)
 					glColor4f(1.0f, 0.1f, 0.1f, 0.7f);
 				else
 					glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
-				stripes(far, 10.0f);
+				stripes(far, *t->height);
 				continue;
 			} else if (layer == 2) {
-				if (!deep)
+				if (!t->layer2)
 					continue;
 				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);   /* (the original's other colour here, for wall -1, is never used) */
 			} else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
-			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));    /* 10 s0 */
-			float top = f32(fsub_m(fld_m((const float *)0x4a9418), &x));   /* 10 - x */
-			float bottom = f32(fsub_m(fld_m(&x), (const float *)0x4a9418));
+			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));   /* 10 s0 */
+			float y = f32(fmul_m(fld_m(&s0), t->height));
+			float top = f32(fsub_m(fld_m(t->height), &y));
+			float bottom = f32(fsub_m(fld_m(&y), t->height));
 			glBegin(GL_QUADS);
 			if (layer == 0 && !far) {
 				float z0 = f32(fsub_m(fld_m((const float *)0x4a9414), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)0x4a9414));
@@ -385,10 +393,10 @@ static void menu_tunnel(const Tunnel *t)
 				glVertex3f(30.0f, bottom, z0);
 			} else if (!far) {
 				float fp = (float)place;
-				float ta = f32(fmul_m(fld_m(&fp), (const float *)0x4a9478));   /* 0.15625 a place */
+				float ta = f32(fmul_m(fld_m(&fp), t->step));   /* 0.15625 a place */
 				float z0 = f32(fsub_m(fld_m((const float *)0x4a9414), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)0x4a9414));
 				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)0x4a93ec), (const float *)0x4a940c));
-				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)0x4a9424), (const float *)0x4a9478));
+				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)0x4a9424), t->step));
 				glTexCoord2f(0.0f, ta);
 				glVertex3f(wx, top, z0);
 				glTexCoord2f(s_far, ta);
@@ -398,7 +406,7 @@ static void menu_tunnel(const Tunnel *t)
 				glTexCoord2f(0.0f, tb);
 				glVertex3f(wx, bottom, z0);
 			} else {
-				long double pk = fmul_m((long double)place, (const float *)0x4a9478);
+				long double pk = fmul_m((long double)place, t->step);
 				float ta = f32(pk);
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m((const float *)0x4a9400), &x)), z1 = f32(fadd_m(fld_m(&x), (const float *)0x4a9414));
@@ -440,15 +448,25 @@ static void menu_tunnel(const Tunnel *t)
 /* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
    clamped); 0x411ab0: the ARM CENTER's deep one (1650 back, its pulse only turned round); 0x4388e0: the game room's
    (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
-void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0 }; menu_tunnel(&t); }
-void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 1, 0 }; menu_tunnel(&t); }
-void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 1, 0 }; menu_tunnel(&t); }
-void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 0, 1 }; menu_tunnel(&t); }
+#define SIX_WALLS 6, (const float *)0x4a9418, (const float *)0x4a9478, 0.46875f, 0.625f
+#define FOUR_WALLS 4, (const float *)0x4a9410, (const float *)0x4a941c, 0.5f, 0.75f
+void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t); }
+void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t); }
+void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t); }
+void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t); }
 void (room_4388e0)(void)
 {
-	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 0 };
+	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t);
 }
+/* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
+void (arena_4091b0)(void)
+{
+	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
+	menu_tunnel(&t);
+}
+#undef SIX_WALLS
+#undef FOUR_WALLS
 #undef g_scroll
 #undef g_tunnelPulseStep
 #undef g_tunnelPulse

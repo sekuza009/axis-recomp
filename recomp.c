@@ -4313,7 +4313,8 @@ void armc_411ab0(void);
    textures 0x4df908 / 0x4df904 and 0x4df044 / 0x4df040 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4388e0(void);
-LIFT_PLAIN(arena_4091b0, 4091b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4091b0(void);
 /* batch 127 (lifted/grp73.c): the room's player-info panel */
 #include "lifted/grp73.c"
 /* 0x43a420 room_43a420(): while waiting (0x9dd6d4 == 1) only a box with two lines (0x75b1a4, 0x74f724); else the
@@ -13552,7 +13553,7 @@ ST(armc_411110, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (arm
 ST(skirmish_4445a0, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_4445a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_411ab0, tunnels_setup();, (CALL_PLAIN(0x411ab0, 0, 0, 0, 0, 0), 0), (armc_411ab0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_4388e0, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_4388e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-T_PLAIN(arena_4091b0, 0x4091b0, tunnels_setup();, 0, 0, 0, 0, 0)
+ST(arena_4091b0, tunnels_setup();, (CALL_PLAIN(0x4091b0, 0, 0, 0, 0, 0), 0), (arena_4091b0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 127 */
 /* the info panel: dlgwin_setup's window at 0x9dd368, short labels, the password fields at most 11 characters (the
    '*' buffer, also used for the numbers, holds 20), ratios below a million ("%.2f" goes into it too), counts and
