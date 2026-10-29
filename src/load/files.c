@@ -1028,6 +1028,61 @@ void (cfg_42e080)(void *f)
 	skip_line(f);
 }
 
+/* 0x42eca0 (named for its second half): axis.cfg read from the data folder (0x9dae7c) when its first line is the
+   header (0x4b0f50): the player, server, sound, graphics and key binding sections. Without the file or with another
+   header, the defaults (the player PLAYER, the server AXIS ARENA with 8 players, sound at 100 / 100, the switches and
+   graphics settings) and the default key bindings, then axis.cfg written with them. The player's name and the
+   server's (32 bytes each) are cleared first either way.
+   The line is cut at its last character; with an empty file fgets leaves the buffer as it was, and the cut lands
+   wherever the old bytes end: the original's buffer is followed by the path, so this one is too. (A first line
+   starting with a NUL byte makes the original clear the top byte of its caller's saved ebx, which is not
+   reproduced) */
+void (cfg_writeDefaultAxisCfg)(void)
+{
+	struct { char line[0x84]; char path[0x184]; } s;
+	strcpy(s.path, (const char *)0x9dae7c);
+	strcat(s.path, (const char *)0x4b2198);   /* "\\axis.cfg" */
+	memset((void *)0x4dedb0, 0, 32);
+	memset((void *)0x4ded20, 0, 32);
+	void *f = crt_fopen(s.path, (const char *)0x4ad5e0);   /* "rt" */
+	if (f) {
+		__asm__("" : "=m"(s.line));   /* (left as the stack holds it until fgets writes it) */
+		crt_fgets(s.line, 0x50, f);
+		size_t length = strlen((const char *)&s);
+		if (length)
+			((char *)&s)[length - 1] = '\0';
+		if (!strcmp(s.line, (const char *)0x4b0f50)) {
+			cfg_readLines(f);
+			cfg_gameTypeNames(f);
+			cfg_42e080(f);
+			cfg_videoModeNames(f);
+			cfg_parseKeyNames(f);
+			fclose(f);
+			return;
+		}
+		fclose(f);
+	}
+	GAME_VAR(int, 0x4e0c9c) = 0;
+	GAME_VAR(int, 0x83a9c4) = 0;
+	GAME_VAR(int, 0x83a9c0) = 0;
+	GAME_VAR(int, 0x83a9d4) = 0;
+	GAME_VAR(int, 0x83a9d8) = 0;
+	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
+	GAME_VAR(int, 0x4dedd0) = 0;
+	GAME_VAR(int, 0x4dedd4) = 0;
+	strcpy((char *)0x4ded20, (const char *)0x4ad4a4);   /* "AXIS ARENA" */
+	GAME_VAR(int, 0x4e0c90) = 100;
+	GAME_VAR(int, 0x4e0c94) = 100;
+	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
+	memcpy((void *)0x4ded40, server, 6);
+	GAME_VAR(int, 0x4e0c98) = 1;
+	GAME_VAR(int, 0x83a9c8) = 1;
+	GAME_VAR(int, 0x83a9d0) = 1;
+	GAME_VAR(int, 0x83a9cc) = 1;
+	input_applyKeyBindings();
+	cfg_loadAxisCfg();
+}
+
 /* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
    back up, nothing found): each *.axs file's name (0x9f1ac4, 0x40 apart) and its header (0x104 bytes at 20000,
    unscrambled, into 0x9f61d8); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from

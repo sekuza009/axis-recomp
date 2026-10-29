@@ -538,6 +538,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_424810() GAME_CDECL(0x424810, void, void)()
 #define setup_425460() GAME_CDECL(0x425460, void, void)()
 #define setup_crosshairScreen() GAME_CDECL(0x425cd0, void, void)()
+#define cfg_readLines(f) GAME_CDECL(0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
+#define cfg_gameTypeNames(f) GAME_CDECL(0x42da70, void, void *)(f)      /* its server section */
+#define cfg_42e080(f) GAME_CDECL(0x42e080, void, void *)(f)             /* its sound section */
+#define cfg_videoModeNames(f) GAME_CDECL(0x42e240, void, void *)(f)     /* its graphics section */
+#define cfg_parseKeyNames(f) GAME_CDECL(0x42e730, void, void *)(f)      /* its key bindings */
+#define input_applyKeyBindings() GAME_CDECL(0x42c410, void, void)()     /* the default key bindings */
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
 #define setup_drawKeyBindingRows(key) GAME_CDECL(0x421680, void, int)(key)   /* (by use) the row being bound gets key */
 #define setup_controlTabHelper_420c10() GAME_CDECL(0x420c10, void, void)()   /* the default key bindings */

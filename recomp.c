@@ -3021,7 +3021,8 @@ static THISCALL DWORD collision_rayTrace(char *scene, DWORD p0, DWORD p1, DWORD 
 #include "lifted/grp3.c"
 /* 0x42eca0 cfg_writeDefaultAxisCfg: read axis.cfg (key names, video modes, game types, key bindings and the rest)
    and apply the key bindings; without the file write the defaults (cfg_loadAxisCfg) */
-LIFT_PLAIN(cfg_writeDefaultAxisCfg, 42eca0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_writeDefaultAxisCfg(void);
 /* 0x460270 (thiscall) actor_checkLineOfSight(p): for player p (range +0x8848), every listed point (lists of 0x14-byte
    points, 0x1c-byte list records) within range on each axis that the line of sight (collision_rayTrace) reaches is
    a candidate (up to 5 kept, later ones replace a random one); one is picked at random as the new target (list,
@@ -10167,7 +10168,7 @@ static void axiscfg_header_setup(void)
 		memmove(d + n, d, g_vfsSize); memcpy(d, head, n); g_vfsSize += n;
 	}
 }
-T_PLAIN(cfg_writeDefaultAxisCfg, 0x42eca0, axiscfg_header_setup();, 0, 0, 0, 0, 0)
+ST(cfg_writeDefaultAxisCfg, axiscfg_header_setup();, (CALL_PLAIN(0x42eca0, 0, 0, 0, 0, 0), 0), (cfg_writeDefaultAxisCfg(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* the line-of-sight scene of the ray trace tests, plus up to 6 point lists (up to 8 points around the scene) and
    player p's record (position near the scene, range, current target) */
 static int g_losPicks;
