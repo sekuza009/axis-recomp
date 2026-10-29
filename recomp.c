@@ -13506,8 +13506,8 @@ static void setupmenu_setup(void)
 	/* the panels (run-time data: 0x4df918, 11 dwords each: corner count 4, five xs, five ys): four quads */
 	for (int k = 0; k < 4; k++) {
 		DWORD *p = (DWORD *)0x4df918 + k * 11; int x = irnd(0, 500), y = irnd(0, 380), w = irnd(20, 140), h = irnd(20, 100);
-		p[0] = 4; p[1] = x; p[2] = x + w; p[3] = x + w; p[4] = x; p[5] = 0;
-		p[6] = y; p[7] = y; p[8] = y + h; p[9] = y + h; p[10] = 0;
+		p[0] = 4; p[1] = x - 320; p[2] = x + w - 320; p[3] = x + w - 320; p[4] = x - 320; p[5] = x - 320;   /* centred, clockwise, closed (FUN_0041eea0) */
+		p[6] = 240 - y; p[7] = 240 - y; p[8] = 240 - y - h; p[9] = 240 - y - h; p[10] = 240 - y;
 		if (!irnd(0, 3)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
@@ -13593,8 +13593,8 @@ static void roommenu_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	for (int k = 0; k < 6; k++) {
 		DWORD *p = (DWORD *)0x9daf88 + k * 11; int x = irnd(0, 500), y = irnd(0, 380), w = irnd(20, 140), h = irnd(20, 100);
-		p[0] = 4; p[1] = x; p[2] = x + w; p[3] = x + w; p[4] = x; p[5] = 0;
-		p[6] = y; p[7] = y; p[8] = y + h; p[9] = y + h; p[10] = 0;
+		p[0] = 4; p[1] = x - 320; p[2] = x + w - 320; p[3] = x + w - 320; p[4] = x - 320; p[5] = x - 320;   /* centred, clockwise, closed (FUN_0041eea0) */
+		p[6] = 240 - y; p[7] = 240 - y; p[8] = 240 - y - h; p[9] = 240 - y - h; p[10] = 240 - y;
 		if (!irnd(0, 5)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
@@ -13611,8 +13611,8 @@ static void arenamenu_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	for (int k = 0; k < 4; k++) {
 		DWORD *p = (DWORD *)0x5b1cf8 + k * 11; int x = irnd(0, 500), y = irnd(0, 380), w = irnd(20, 140), h = irnd(20, 100);
-		p[0] = 4; p[1] = x; p[2] = x + w; p[3] = x + w; p[4] = x; p[5] = 0;
-		p[6] = y; p[7] = y; p[8] = y + h; p[9] = y + h; p[10] = 0;
+		p[0] = 4; p[1] = x - 320; p[2] = x + w - 320; p[3] = x + w - 320; p[4] = x - 320; p[5] = x - 320;   /* centred, clockwise, closed (FUN_0041eea0) */
+		p[6] = 240 - y; p[7] = 240 - y; p[8] = 240 - y - h; p[9] = 240 - y - h; p[10] = 240 - y;
 		if (!irnd(0, 3)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
@@ -13685,8 +13685,8 @@ static void mainmenu_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	for (int k = 0; k < 6; k++) {
 		DWORD *p = (DWORD *)0x4deb80 + k * 11; int x = irnd(0, 500), y = irnd(0, 380), w = irnd(20, 140), h = irnd(20, 100);
-		p[0] = 4; p[1] = x; p[2] = x + w; p[3] = x + w; p[4] = x; p[5] = 0;
-		p[6] = y; p[7] = y; p[8] = y + h; p[9] = y + h; p[10] = 0;
+		p[0] = 4; p[1] = x - 320; p[2] = x + w - 320; p[3] = x + w - 320; p[4] = x - 320; p[5] = x - 320;   /* centred, clockwise, closed (FUN_0041eea0) */
+		p[6] = 240 - y; p[7] = 240 - y; p[8] = 240 - y - h; p[9] = 240 - y - h; p[10] = 240 - y;
 		if (!irnd(0, 5)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
