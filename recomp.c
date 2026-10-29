@@ -2956,7 +2956,8 @@ DWORD armc_saveSelection(void);
 /* 0x45ebc0 (thiscall) actor_45ebc0(p): player p's starting values (+0x1c/+0x20/+0x128 and four slots) by game type */
 static THISCALL DWORD actor_45ebc0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_45ebc0, (DWORD)scene, 1, v); }
 /* 0x435770 room_435770: rebuild the room's 10 game slots (0x44 bytes at 0x9dcef0) from the listed games at 0xa05330 */
-LIFT_PLAIN(room_435770, 435770)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435770(void);
 /* 0x40f340 armc_40f340(part, dir): previous/next choice for a part (wrapping) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_40f340(DWORD part, int dir);
@@ -9971,7 +9972,7 @@ static void roomlist_setup(void)
 	}
 	G32(0x9dd1d0) = irnd(0, 2) ? irnd(0, 3) : irnd(-1, 4);   /* the column sorted by */
 }
-T_PLAIN(room_435770, 0x435770, roomlist_setup();, 0, 0, 0, 0, 0)
+ST(room_435770, roomlist_setup();, (CALL_PLAIN(0x435770, 0, 0, 0, 0, 0), 0), (room_435770(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_40f340((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* batch 52 */
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())

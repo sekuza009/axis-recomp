@@ -220,6 +220,70 @@ void (room_4359f0)(void)
 	GAME_VAR(int, 0x9dd1d0) = (mode + 1) % 3;
 }
 
+/* the value a row is ranked by in mode (0x9dd1d0): 0 a float at +0x3e, 1 an int at +0x2e, 2 an int at +0x26, 3 a
+   float at +0x36; another mode keeps the one before (0: none) */
+static int rank_value(const u8 *row, int mode, long double *value)
+{
+	if (mode == 0)
+		*value = fld_m((const float *)(row + 0x3e));
+	else if (mode == 1)
+		*value = (long double)*(const int *)(row + 0x2e);
+	else if (mode == 2)
+		*value = (long double)*(const int *)(row + 0x26);
+	else if (mode == 3)
+		*value = fld_m((const float *)(row + 0x36));
+	else
+		return 0;
+	return 1;
+}
+
+/* 0x435770: the room list's page of ten rows (0x44 bytes from 0x9dceec) filled from the players received (62-byte
+   records from 0xa05330, up to the first without a name): each row its rank (page 0x9dd6ac * 10 + its place) or,
+   when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
+   (0x9dd384, 0x9dd328) start the comparison, and this page's are kept there for the next */
+void (room_435770)(void)
+{
+	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
+	u8 *rows = (u8 *)0x9dceec;
+	for (int i = 0; i < 10; i++) {
+		u8 *row = rows + i * 0x44;
+		*(int *)(row + 4) = 0;
+		memset(row + 8, 0, 30);
+		static const u8 cleared[5] = { 0x26, 0x2a, 0x2e, 0x32, 0x36 };   /* (+0x3e is left as it was) */
+		for (int k = 0; k < 5; k++)
+			*(int *)(row + cleared[k]) = 0;
+		*(int *)(row + 0x3a) = 1;
+	}
+	long double value = fld_m((const float *)0x4a94ec);
+	float before = 1000000.0f;
+	int i;
+	for (i = 0; i < 10; i++) {
+		const u8 *player = (const u8 *)0xa05330 + i * 62;
+		if (!*player)
+			break;
+		u8 *row = rows + i * 0x44;
+		*(int *)(row + 4) = i + GAME_VAR(int, 0x9dd6ac) * 10 + 1;
+		strcpy((char *)(row + 8), (const char *)player);
+		for (int k = 0; k < 7; k++)
+			*(u32 *)(row + dst[k]) = *(const u32 *)(player + src[k]);
+		int mode = GAME_VAR(int, 0x9dd1d0), rank;
+		if (i == 0) {
+			before = GAME_VAR(float, 0x9dd384);
+			rank = GAME_VAR(int, 0x9dd328);
+		} else {
+			long double v;
+			rank = *(const int *)(row - 0x44 + 4);
+			if (rank_value(row - 0x44, mode, &v))
+				before = f32(v);
+		}
+		rank_value(row, mode, &value);
+		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
+			*(int *)(row + 4) = rank;
+	}
+	GAME_VAR(float, 0x9dd384) = f32(value);
+	GAME_VAR(int, 0x9dd328) = *(const int *)(rows + (i - 1) * 0x44 + 4);
+}
+
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
 #define sk_top GAME_VAR(int, 0x9f16bc)
 #define sk_row GAME_VAR(int, 0x9f1058)
