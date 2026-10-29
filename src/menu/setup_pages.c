@@ -169,14 +169,19 @@ static void stripes(int right, float h)
 #undef S_RIGHT
 }
 
-/* the panels' pulse bounced between 0 and 100 (by 0x4df010 a frame) and the stripes scrolled on (0x4deda8 a frame,
-   back to 0 at 200) */
-static void tunnel_advance(void)
+/* the panels' pulse bounced between 0 and 100 (by 0x4df010 a frame; turn_only: only turned round, not clamped there)
+   and the stripes scrolled on (0x4deda8 a frame, back to 0 at 200) */
+static void tunnel_advance(int turn_only)
 {
 	const float *frame = (const float *)0x4b071c;
 	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
 	g_tunnelPulse = f32(pulse);
-	if (!(pulse > *(const float *)0x4a93e8)) {
+	if (turn_only) {
+		if (!(pulse > *(const float *)0x4a93e8))
+			g_tunnelPulseStep = 0x3f800000;
+		if (pulse >= *(const float *)0x4a93f4)
+			g_tunnelPulseStep = 0xbf800000;
+	} else if (!(pulse > *(const float *)0x4a93e8)) {
 		g_tunnelPulse = 0;
 		g_tunnelPulseStep = 0x3f800000;   /* 1 */
 	} else if (g_tunnelPulse >= *(const float *)0x4a93f4) {
@@ -298,15 +303,17 @@ void (setup_423e50)(void)
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
-	tunnel_advance();
+	tunnel_advance(0);
 }
 /* the menus' tunnel (mission select, skirmish, ARM CENTER): four layers of six walls (each under the menu camera,
    pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture 0x4e0cd0,
    10 high, dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10,
    0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a
    tenth further out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by
-   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on */
-static void menu_tunnel(int clamp)
+   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on. The deep one (deep): pushed back
+   1650, textures 0x4df908 / 0x4df904, the panels purple, the stripes red, layer 2 drawn (fully transparent) and the
+   pulse only turned round at its ends */
+static void menu_tunnel(int clamp, int deep)
 {
 	const float turns[3] = { -40.0f, 0.0f, 40.0f };
 	gfx_setProjection2D3D(1);
@@ -316,25 +323,34 @@ static void menu_tunnel(int clamp)
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = 0.46875f, t1 = 0.625f, s_far = 1.0f;
-		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, 0x76d484 - layer * 4);
+		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, (deep ? 0x4df910 : 0x76d484) - layer * 4);
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		for (int wall = 0; wall < 6; wall++) {
 			int place = wall % 3, far = wall >= 3;
 			gfx_setMenuCamera();
-			glTranslatef_bits(0, 0, 0xc4098000);   /* -550 */
+			glTranslatef_bits(0, 0, deep ? 0xc4ce4000 : 0xc4098000);   /* -1650 / -550 */
 			float turn = turns[place];
 			if (far)
 				turn = -turn;
 			FUN_0041ef20(0, 0, BITS(turn));
-			if (layer == 0)
-				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), (const float *)0x4a942c)));
-			else if (layer == 1) {
-				glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
+			if (layer == 0) {
+				float a = f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), (const float *)0x4a942c));
+				if (deep)
+					glColor4f(0.7f, 0.0f, 0.7f, a);
+				else
+					glColor4f(1.0f, 1.0f, 1.0f, a);
+			} else if (layer == 1) {
+				if (deep)
+					glColor4f(1.0f, 0.1f, 0.1f, 0.7f);
+				else
+					glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
 				stripes(far, 10.0f);
 				continue;
-			} else if (layer == 2)
-				continue;
-			else
+			} else if (layer == 2) {
+				if (!deep)
+					continue;
+				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);   /* (the original's other colour here, for wall -1, is never used) */
+			} else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));    /* 10 s0 */
 			float top = f32(fsub_m(fld_m((const float *)0x4a9418), &x));   /* 10 - x */
@@ -411,14 +427,15 @@ static void menu_tunnel(int clamp)
 			GAME_VAR(u32, 0x4df454) = 0xbf800000;
 		}
 	}
-	tunnel_advance();
+	tunnel_advance(deep);
 }
 
 /* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
-   clamped). The originals leave eax to callers that ignore it */
-void (missionsel_448140)(void) { menu_tunnel(0); }
-void (skirmish_4445a0)(void) { menu_tunnel(1); }
-void (armc_411110)(void) { menu_tunnel(1); }
+   clamped); 0x411ab0: the ARM CENTER's deep one. The originals leave eax to callers that ignore it */
+void (missionsel_448140)(void) { menu_tunnel(0, 0); }
+void (skirmish_4445a0)(void) { menu_tunnel(1, 0); }
+void (armc_411110)(void) { menu_tunnel(1, 0); }
+void (armc_411ab0)(void) { menu_tunnel(0, 1); }
 #undef g_scroll
 #undef g_tunnelPulseStep
 #undef g_tunnelPulse
