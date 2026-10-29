@@ -15378,6 +15378,7 @@ static void m436990_setup(void)
 	callee_ret(0x432200, (DWORD)irnd(-1, 5));
 	G32(0x9dd838) = irnd(0, 2) ? 0 : 1; G32(0x9dd1c8) = irnd(0, 2) ? 0 : 1; G32(0x68039c) = irnd(0, 2) ? 0 : 1;
 	if (irnd(0, 1)) G32(0x9dc428) = irnd(0, 1) ? 10 : 20;
+	G32(0x74de1c) = irnd(0, 3);   /* the dialog button highlighted */
 }
 T_PLAIN(menu_436990, 0x436990, m436990_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 /* batch 176: generated tests (tools/gentests.py, gen_setup from batch 172) plus the arena host wrappers */
