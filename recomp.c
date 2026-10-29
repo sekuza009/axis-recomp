@@ -4447,7 +4447,8 @@ void armc_41a280(void);
    panel: nothing chosen (0x4dc190 == -1: 0x757da4), a part type only (0x4dc194 == -1: 0x765fa4 and its kind), or
    the 16 stats (0x4dc190..0x4dc1cc) with labels 0x7574a4: counts, a pilot-scaled bonus " +%d" / " %d" (skill of
    pilot 0x9f1818 by kind 0x4dc194), "%.0f" / "%.1f" values with units (0x765624..0x7657a4), right-aligned */
-LIFT_PLAIN(armc_419160, 419160)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_419160(void);
 /* batch 140 (lifted/grp86.c): the arena's game list */
 #include "lifted/grp86.c"
 /* 0x40a070 arena_40a070(): room_43adc0's game list for the arena (window 0x4db8c8..): frame, a line, title 0x7524a4;
@@ -13878,7 +13879,7 @@ static void armcbuild_setup(void)
 	}
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-T_PLAIN(armc_419160, 0x419160, armcbuild_setup();, 0, 0, 0, 0, 0)
+ST(armc_419160, armcbuild_setup();, (CALL_PLAIN(0x419160, 0, 0, 0, 0, 0), 0), (armc_419160(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 140 */
 /* the arena's game list: dlgwin_setup's window at 0x4db8c8 (lock icons from its set), the game records as
    gamelist_setup's (maps 0..15, modes 0..4 as kind strings), the list kinds, the box / searching flags, short texts */
