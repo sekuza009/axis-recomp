@@ -3521,7 +3521,8 @@ static THISCALL DWORD camera_setupView(char *scene, DWORD pos, DWORD dir, DWORD 
    (position +0x10, through the matrix if one is given; radius +0x28; vertices +0x50) skipped when the part's box
    (+0x68..+0x7c) is out of reach. first = 1 writes the first factor, the rest are added and clamped to 255; parts
    flagged 2 and empty pools take the base colours; an unknown type is fatal (sys_errorTerminate) */
-LIFT_PLAIN8(shape_getShadingColorBufferBy, 463b80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void shape_getShadingColorBufferBy(BYTE *out, int first, const void *part, const BYTE *factors, const float *matrix);
 /* 0x466910 FUN_00466910(out, first, shape, factors, matrix): shape_getShadingColorBufferBy for every part (0x80 apart,
    count +0x10), each into out + its colour offset (+0x48) * 4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -11110,7 +11111,7 @@ static void shade_setup(void)
 }
 ST(shape_getShadingColorBufferBy, shade_setup();,
    (((void (__cdecl *)(char *, int, char *, char *, int))0x463b80)(BUF + 0x30000, g_a[0], BUF + 0x200 + g_a[2] * 0x80, BUF + 0x10000, g_a[1]), 0),
-   (shape_getShadingColorBufferBy(0, 0, 0, (DWORD)(BUF + 0x30000), (DWORD)g_a[0], (DWORD)(BUF + 0x200 + g_a[2] * 0x80), (DWORD)(BUF + 0x10000), (DWORD)g_a[1], 0, 0, 0), 0))
+   (shape_getShadingColorBufferBy((BYTE *)(BUF + 0x30000), (int)g_a[0], BUF + 0x200 + g_a[2] * 0x80, (const BYTE *)(BUF + 0x10000), (const float *)g_a[1]), 0))
 ST(FUN_00466910, shade_setup();,
    (((void (__cdecl *)(char *, int, char *, char *, int))0x466910)(BUF + 0x30000, g_a[0], BUF + 0x100, BUF + 0x10000, g_a[1]), 0),
    (FUN_00466910((float *)(BUF + 0x30000), g_a[0], (BYTE *)(BUF + 0x100), BUF + 0x10000, g_a[1]), 0))
