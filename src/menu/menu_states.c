@@ -224,3 +224,107 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 /* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
 int (lobbyTop_draw)(void) { return menu_slide(0x4db85c, 0x4dbb60, 0x4dba68); }
 int (room_43e720)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
+
+/* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
+   the player slots (0x410 bytes from 0x9f9840) emptied ---- */
+static void leave_game(u32 lobby, int disconnect)
+{
+	GAME_VAR(int, 0x67ef14) = 0;
+	GAME_VAR(u32, 0x5ae9c4) = lobby;
+	GAME_CDECL(0x452fe0, void, void)();       /* arena_452fe0 */
+	if (disconnect)
+		GAME_CDECL(0x451e60, void, void)();   /* net_disconnect */
+	GAME_VAR(int, 0x4dbbf4) = 0;
+	for (u32 p = 0x9f9844; p < 0x9fd944; p += 0x410) {
+		GAME_VAR(int, p - 4) = 0;
+		GAME_VAR(int, p) = 0;
+	}
+}
+/* the menu cameras placed (both at (0, 0, z), the far one at farZ, the near one at nearZ: float bits), the keys
+   blocked as given, 0x4deb48 set (and 0x4e1868 cleared when asked), the menu state cleared and the keyboard taken back if it was let go. Returns
+   what the original leaves in eax: input_initKeyboard's, or 0x68039c's value */
+static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e1868)
+{
+	u32 typing = GAME_VAR(u32, 0x68039c);
+	GAME_VAR(u32, 0x4df028) = 0;
+	GAME_VAR(u32, 0x4df024) = 0;
+	GAME_VAR(u32, 0x4df02c) = farZ;
+	GAME_VAR(u32, 0x680378) = 0;
+	GAME_VAR(u32, 0x68037c) = 0;
+	GAME_VAR(u32, 0x680380) = nearZ;
+	GAME_VAR(int, 0x680370) = blocked;
+	GAME_VAR(int, 0x4df8e0) = 0;
+	GAME_VAR(u32, 0x9dd930) = 0;
+	GAME_VAR(u32, 0x9dd934) = 0;
+	GAME_VAR(u32, 0x9dd938) = farZ;
+	GAME_VAR(u32, 0x9dd918) = 0;
+	GAME_VAR(u32, 0x9dd91c) = 0;
+	GAME_VAR(u32, 0x9dd920) = nearZ;
+	GAME_VAR(int, 0x4deb48) = deb48;
+	GAME_VAR(int, 0x9db990) = 0;
+	GAME_VAR(int, 0x4dda44) = 0;
+	GAME_VAR(int, 0x4dda48) = 0;
+	if (clear_4e1868)
+		GAME_VAR(int, 0x4e1868) = 0;
+	if (typing != 1)
+		return typing;
+	GAME_VAR(int, 0x68039c) = 0;
+	GAME_CDECL(0x431590, void, void)();   /* match_431590 */
+	return GAME_CDECL(0x401310, u32, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+}
+#define FAR_BACK 0xc3e10000u    /* -450 */
+#define NEAR_BACK 0xc4098000u   /* -550 */
+
+/* 0x41ec50: to screen 500 */
+u32 (game_returnToMenus_41ec50)(void)
+{
+	leave_game(0, 1);
+	GAME_VAR(int, 0x76d3e8) = 500;
+	g_nextScreen = 500;
+	GAME_CDECL(0x4411e0, void, void)();
+	GAME_CDECL(0x441200, void, void)();
+	return reset_menus(FAR_BACK, NEAR_BACK, 0, 0, 0);
+}
+
+/* 0x41e8b0: to the main menu (300), the cameras in front (500, 400), 0x4deb48 set and 0x4e1868 cleared. Returns 1
+   when the keyboard was not let go */
+u32 (game_returnToMenus_41e8b0)(void)
+{
+	leave_game(0, 1);
+	GAME_VAR(int, 0x76d3e8) = 300;
+	g_nextScreen = 300;
+	GAME_CDECL(0x4411e0, void, void)();
+	u32 typing = GAME_VAR(u32, 0x68039c);
+	u32 r = reset_menus(0x43fa0000, 0x43c80000, 2, 1, 1);
+	return typing == 1 ? r : 1;
+}
+
+/* 0x41e9d0: to screen 400, the previous screen 300 */
+u32 (game_returnToMenus_41e9d0)(void)
+{
+	leave_game(0, 1);
+	g_nextScreen = 400;
+	GAME_VAR(int, 0x76d3e8) = 300;
+	GAME_VAR(int, 0x67ef0c) = 300;
+	GAME_CDECL(0x4411e0, void, void)();
+	GAME_CDECL(0x441200, void, void)();
+	return reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
+}
+
+/* 0x41eb00: back to the game room (800; lobby state 2, the connection kept): the room's state cleared too */
+u32 (game_returnToMenus_41eb00)(void)
+{
+	leave_game(2, 0);
+	GAME_VAR(int, 0x9dd834) = 0x63;
+	GAME_VAR(int, 0x76d3e8) = 800;
+	g_nextScreen = 800;
+	GAME_VAR(int, 0x67ef0c) = 800;
+	GAME_CDECL(0x4411e0, void, void)();
+	GAME_CDECL(0x441200, void, void)();
+	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
+	GAME_VAR(int, 0x9dced0) = 0;
+	GAME_VAR(int, 0x4ded54) = 0;
+	GAME_VAR(int, 0x9dd1c8) = 0;
+	GAME_VAR(int, 0x9dd350) = 0;
+	return r;
+}

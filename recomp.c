@@ -5057,10 +5057,14 @@ LIFT_PLAIN(mainmenu_441810, 441810)
    sent), with their callees stubbed (tools/gentests.py); the in-match player messages (thiscall on the game),
    music_playMatch, dplay_closeSession */
 #include "lifted/grp124.c"
-LIFT_PLAIN(game_returnToMenus_41ec50, 41ec50)
-LIFT_PLAIN(game_returnToMenus_41e8b0, 41e8b0)
-LIFT_PLAIN(game_returnToMenus_41e9d0, 41e9d0)
-LIFT_PLAIN(game_returnToMenus_41eb00, 41eb00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD game_returnToMenus_41ec50(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD game_returnToMenus_41e8b0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD game_returnToMenus_41e9d0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD game_returnToMenus_41eb00(void);
 LIFT_PLAIN(room_4036c0, 4036c0)
 LIFT_PLAIN(menuState900_enterSkirmish, 443950)
 LIFT_PLAIN(room_434490, 434490)
@@ -14907,19 +14911,19 @@ T_PLAIN(mainmenu_441810, 0x441810, gen_setup(g_gs_441810, g_gi_441810, g_gb_4418
 static const DWORD g_gs_41ec50[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41ec50[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41ec50[] = { 0x9f9844, 0 };
-T_PLAIN(game_returnToMenus_41ec50, 0x41ec50, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(game_returnToMenus_41ec50, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, CALL_PLAIN(0x41ec50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41ec50()))
 static const DWORD g_gs_41e8b0[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41e8b0[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x4e1868, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41e8b0[] = { 0x9f9844, 0 };
-T_PLAIN(game_returnToMenus_41e8b0, 0x41e8b0, gen_setup(g_gs_41e8b0, g_gi_41e8b0, g_gb_41e8b0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(game_returnToMenus_41e8b0, gen_setup(g_gs_41e8b0, g_gi_41e8b0, g_gb_41e8b0);, CALL_PLAIN(0x41e8b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41e8b0()))
 static const DWORD g_gs_41e9d0[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41e9d0[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef0c, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41e9d0[] = { 0x9f9844, 0 };
-T_PLAIN(game_returnToMenus_41e9d0, 0x41e9d0, gen_setup(g_gs_41e9d0, g_gi_41e9d0, g_gb_41e9d0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(game_returnToMenus_41e9d0, gen_setup(g_gs_41e9d0, g_gi_41e9d0, g_gb_41e9d0);, CALL_PLAIN(0x41e9d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41e9d0()))
 static const DWORD g_gs_41eb00[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41eb00[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4ded54, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef0c, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dced0, 0x9dd1c8, 0x9dd350, 0x9dd834, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41eb00[] = { 0x9f9844, 0 };
-T_PLAIN(game_returnToMenus_41eb00, 0x41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(game_returnToMenus_41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);, CALL_PLAIN(0x41eb00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41eb00()))
 static const DWORD g_gs_4036c0[] = { 0x4033e0, 2, 0x4034e0, 0, 0x403530, 0, 0x403560, 1, 0x403590, 1, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_4036c0[] = { 0x4dda44, 0x4d7350, 0x4db508, 0x4dbb3c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x67ef00, 0 };
 static const DWORD g_gb_4036c0[] = { 0 };
