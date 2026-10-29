@@ -965,38 +965,65 @@ int (arena_loadSettings)(const char *path)
 	return 1;
 }
 
-/* 0x42d7f0: the player's section of axis.cfg read back (the lines cfg_parsePlayer writes): three lines, each cut at
-   its last character, its keyword and the next word skipped and the rest joined: the name (words joined by spaces,
-   then cut once more by cfg_44ac70, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0; 0x4dedd0) and
-   the sex (ON: 1; 0x4dedd4); then one more line is read past. The original leaves fgets's eax to callers that
+/* ---- axis.cfg read back: each line cut at its last character (its newline), its keyword and the next word
+   skipped and the rest joined into value (0x84 bytes; spaced: a space after each word) ---- */
+static void read_value(void *f, char *value, int spaced)
+{
+	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	char line[0x50];
+	crt_fgets(line, 0x50, f);
+	line[strlen(line) - 1] = '\0';
+	crt_strtok(line, gaps);
+	crt_strtok(NULL, gaps);
+	memset(value, 0, 0x84);
+	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
+		strcat(value, word);
+		if (spaced)
+			strcat(value, (const char *)0x4b035c);   /* " " */
+	}
+}
+
+/* a line read past */
+static void skip_line(void *f)
+{
+	char line[0x50];
+	crt_fgets(line, 0x50, f);
+}
+
+/* 0x42d7f0: the player's section read back (the lines cfg_parsePlayer writes): the name (its words joined by
+   spaces, then cut once more by cfg_44ac70, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
+   0x4dedd0) and the sex (ON: 1; 0x4dedd4); then one more line. The original leaves fgets's eax to callers that
    ignore it */
 void (cfg_readLines)(void *f)
 {
-	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
-	char line[0x50], value[0x84];
-	for (int i = 0; i < 3; i++) {
-		crt_fgets(line, 0x50, f);
-		line[strlen(line) - 1] = '\0';
-		crt_strtok(line, gaps);
-		crt_strtok(NULL, gaps);
-		memset(value, 0, sizeof value);
-		for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
-			strcat(value, word);
-			if (i == 0)
-				strcat(value, (const char *)0x4b035c);   /* " " */
-		}
-		if (i == 0) {
-			cfg_44ac70(value);
-			strcpy((char *)0x4dedb0, value);
-		} else if (i == 1) {
-			if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
-				GAME_VAR(int, 0x4dedd0) = 0;
-			else if (!strcmp(value, (const char *)0x4b21b0))   /* BLUE */
-				GAME_VAR(int, 0x4dedd0) = 1;
-			else
-				GAME_VAR(int, 0x4dedd0) = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
-		} else
-			GAME_VAR(int, 0x4dedd4) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
-	}
-	crt_fgets(line, 0x50, f);
+	char value[0x84];
+	read_value(f, value, 1);
+	cfg_44ac70(value);
+	strcpy((char *)0x4dedb0, value);
+	read_value(f, value, 0);
+	if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
+		GAME_VAR(int, 0x4dedd0) = 0;
+	else if (!strcmp(value, (const char *)0x4b21b0))   /* BLUE */
+		GAME_VAR(int, 0x4dedd0) = 1;
+	else
+		GAME_VAR(int, 0x4dedd0) = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
+	read_value(f, value, 0);
+	GAME_VAR(int, 0x4dedd4) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	skip_line(f);
+}
+
+/* 0x42e080: four lines read back: two numbers (0x4e0c90, 0x4e0c94) and two switches (ON: 1; 0x4e0c98, 0x4e0c9c),
+   then one more line. The original leaves fgets's eax to callers that ignore it */
+void (cfg_42e080)(void *f)
+{
+	char value[0x84];
+	read_value(f, value, 0);
+	GAME_VAR(int, 0x4e0c90) = crt_atoi(value);
+	read_value(f, value, 0);
+	GAME_VAR(int, 0x4e0c94) = crt_atoi(value);
+	read_value(f, value, 0);
+	GAME_VAR(int, 0x4e0c98) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	read_value(f, value, 0);
+	GAME_VAR(int, 0x4e0c9c) = !strcmp(value, (const char *)0x4b21bc);
+	skip_line(f);
 }

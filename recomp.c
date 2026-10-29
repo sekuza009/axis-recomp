@@ -2947,7 +2947,8 @@ static THISCALL DWORD game_setGameTypeFlags(char *scene, DWORD type) { DWORD v[1
 DWORD cfg_parseGraphic(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_parseServer(void *f);
-LIFT_PLAIN(cfg_42e080, 42e080)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_42e080(void *f);
 /* 0x40e7a0 armc_saveSelection: keep the customised parts and colours, save the progress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_saveSelection(void);
@@ -9924,7 +9925,7 @@ ST(cfg_parseGraphic, cfgw_setup();, CALL_PLAIN(0x42c9f0, 0, VFS_FILE(0), 0, 0, 0
 ST(cfg_parseServer, cfgw_setup();, CALL_PLAIN(0x42c6f0, 0, VFS_FILE(0), 0, 0, 0), cfg_parseServer((void *)VFS_FILE(0)))
 /* four lines of key bindings (words of the config vocabulary); at the end of the file fgets leaves the stack
    buffer as it was, so the stack is painted */
-T_PLAIN(cfg_42e080, 0x42e080, vfs_content(95, 0x200); g_vfsOpenFail = 0; g_paintStacks = 1;, 0, VFS_FILE(0), 0, 0, 0)
+ST(cfg_42e080, vfs_content(95, 0x200); g_vfsOpenFail = 0; g_paintStacks = 1;, (CALL_PLAIN(0x42e080, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_42e080((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_saveSelection, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4); G32(0x4dc760) = irnd(0, 0x14); G32(0x4dc76c) = irnd(0, 0x14);, CALL_PLAIN(0x40e7a0, 0, 0, 0, 0, 0), (DWORD)(armc_saveSelection()))
 ST(actor_45ebc0, g_a[0] = irnd(0, 7); S32(SCENE, 0x1cd94b0 + g_a[0] * 0x8888) = irnd(0, 2) ? 1 : 0; S32(SCENE, 0x20f3ab8) = irnd(-1, 14);,
    (TC(void, 0x45ebc0, char *, int)(SCENE, g_a[0]), 0), (actor_45ebc0(SCENE, (DWORD)g_a[0]), 0))
