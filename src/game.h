@@ -484,6 +484,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_41cca0(item) GAME_CDECL(0x41cca0, void, int)(item)   /* the item shown on the preview */
 #define armc_41ca50(slot, item) GAME_CDECL(0x41ca50, void, int, int)(slot, item)
 #define armc_snapshot(which) GAME_CDECL(0x419000, void, int)(which)
+#define armc_4125c0(x, y, s) GAME_CDECL(0x4125c0, void, int, int, const char *)(x, y, s)
+#define armc_drawStatLabel(x, y, s) GAME_CDECL(0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
 #define armc_41c510() GAME_CDECL(0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISCALL(0x45e880, void, Stage *, int, int)(stage, actor, slot)
 #define app_requireCd(scene, a, b) GAME_THISCALL(0x460cb0, void, Scene *, int, int)(scene, a, b)

@@ -208,8 +208,6 @@ void (armc_41a280)(void)
 }
 
 /* ---- the build screen ---- */
-#define armc_4125c0(x, y, s) GAME_CDECL(0x4125c0, void, int, int, const char *)(x, y, s)
-#define armc_drawStatLabel(x, y, s) GAME_CDECL(0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
 #define g_buildSlot GAME_VAR(int, 0x4dbe48)
 #define SLOT_NAME(k) ((const char *)0x4dbe50 + (k) * 0x80)
 #define STAT(type, offset) GAME_VAR(type, 0x4dc190 + (offset))
