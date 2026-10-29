@@ -1183,3 +1183,149 @@ u32 (arena_createClick)(void)
 	}
 	return button;
 }
+
+/* 0x4079c0: the arena lobby's join screen keys (none while the "full" or "joining" box, a message box, or in modes
+   0 / 1 (0x4dbb3c)). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
+   move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_listTop, the
+   selection in 0x76d41c); while no search runs (0x4dba90, 0x4db858, the result box 0x4db8b8) the click key or fire
+   joins the selected game (0x4dbbec; the chat line opened when connected, 0x4dbaac) or asks its password
+   (0x4dbbf0); cancel2 and back leave (to mode 0), 0x4e1524 cancels the search; 0x4e14f4 searches the local network
+   (a slot opened, 0x4dba80 150), 0x4e1528 the lobby server; 0x4e1514 edits the arena's title */
+void (lobbyJoin_keysChat)(void)
+{
+#define g_listTop GAME_VAR(int, 0x680bb0)
+#define g_listRow GAME_VAR(int, 0x4df818)
+#define g_gameCount GAME_VAR(int, 0x67ef30)
+#define busy (GAME_VAR(int, 0x4dba90) || GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4db8b8))
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (GAME_VAR(int, 0x4db714) || mode == 1 || mode == 0 || GAME_VAR(int, 0x4db8bc) || GAME_VAR(int, 0x90d1c4))
+		return;
+	if (GAME_VAR(int, 0x4db8b4)) {
+		if (input_justPressed(g_keyBack)) {
+			GAME_VAR(int, 0x4dbb10) = 0;
+			GAME_VAR(int, 0x4dbb78) = 0;
+			arena_452fe0();
+			GAME_VAR(int, 0x4db8b4) = 0;
+			KillTimer(g_hWndMain, 0x378);
+		}
+		return;
+	}
+	if (input_isDown(g_keyUp)) {
+		if (!(g_cursorBlink >= *(const float *)0x4a93d0))
+			return;
+		int row = g_listRow;
+		g_cursorBlink = 0.0f;
+		if (row > 0)
+			g_listRow = --row;
+		else if (g_listTop > 0)
+			g_listTop--;
+		g_localPlayer = g_listTop + row;
+		return;
+	}
+	if (input_isDown(g_keyDown)) {
+		if (!(g_cursorBlink >= *(const float *)0x4a93d0))
+			return;
+		g_cursorBlink = 0.0f;
+		if (g_listTop + g_listRow >= g_gameCount - 1)
+			return;
+		if (g_listRow < 8)
+			g_listRow++;
+		else
+			g_listTop++;
+		g_localPlayer = g_listTop + g_listRow;
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e14f8)) || input_justPressed(g_keyClick)) {
+		if (busy || g_gameCount <= 0)
+			return;
+		if (GAME_VAR(int, 0x4dbaac)) {
+			GAME_VAR(int, 0x4dbbec) = 1;
+			GAME_VAR(int, 0x4dbbf0) = 0;
+			FUN_00405200();
+		} else {
+			GAME_VAR(int, 0x4dbbf0) = 1;
+			GAME_VAR(int, 0x4dbbec) = 0;
+		}
+		return;
+	}
+	if (input_justPressed(g_keyCancel2)) {
+		GAME_VAR(int, 0xa0b36c) = 0;
+		arena_452fe0();
+		net_disconnect();
+		GAME_VAR(int, 0x4df018) = 1;
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
+		GAME_VAR(int, 0xa0b36c) = 0;
+		GAME_VAR(u32, 0x4dba80) = 0x3f800000;
+		GAME_VAR(int, 0x4df018) = 1;
+		GAME_VAR(int, 0x76d484) = -1;
+		GAME_VAR(int, 0x4db718) = 0;
+		arena_452fe0();
+		net_disconnect();
+		if (GAME_VAR(int, 0x4db8b8) == 1) {
+			GAME_VAR(int, 0x4db8b8) = 0;
+			GAME_VAR(int, 0x4db858) = 0;
+			GAME_VAR(int, 0x4df018) = 0;
+		}
+		GAME_VAR(int, 0xa0d7a0) = 1;
+		return;
+	}
+	if (input_justPressed(g_keyBack)) {
+		if (busy)
+			return;
+		GAME_VAR(int, 0xa0b36c) = 0;
+		GAME_VAR(u32, 0x4dba80) = 0x3f800000;
+		GAME_VAR(int, 0x4df018) = 1;
+		arena_452fe0();
+		net_disconnect();
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e14f4))) {
+		if (busy)
+			return;
+		if (GAME_VAR(int, 0x4db854)) {
+			GAME_VAR(int, 0x4db718) = 0;
+			net_disconnect();
+		}
+		if (GAME_VAR(int, 0x4dba84))
+			arena_452fe0();
+		GAME_VAR(int, 0xa0b368) = 0;
+		arena_452ec0(1, NULL);
+		GAME_VAR(int, 0x4dba90) = 1;
+		GAME_VAR(int, 0x4dba84) = 1;
+		GAME_VAR(int, 0x680bb8) = 0;
+		g_gameCount = 0;
+		GAME_VAR(int, 0x4dbaac) = 0;
+		GAME_VAR(int, 0x4db854) = 0;
+		GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1528))) {
+		if (busy)
+			return;
+		GAME_VAR(int, 0x4db718) = 0;
+		net_disconnect();
+		arena_452fe0();
+		GAME_VAR(int, 0xa0b368) = 0;
+		if (lobby_openConnection() == 1) {
+			GAME_VAR(int, 0x4dbaac) = 1;
+			GAME_VAR(int, 0x4db858) = 1;
+			GAME_VAR(int, 0x4db854) = 1;
+			GAME_VAR(int, 0x4db718) = 1;
+			GAME_VAR(int, 0x4dba84) = 0;
+		}
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1514)) && !GAME_VAR(int, 0x4db714)) {
+		sound_playMenu(0);
+		lobby_editTextField_405230();
+	}
+#undef g_listTop
+#undef g_listRow
+#undef g_gameCount
+#undef busy
+}

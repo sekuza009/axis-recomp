@@ -5377,7 +5377,8 @@ DWORD arena_406200(int i);
 LIFT_PLAIN(lobby_roomNameCheck, 4052c0)
 LIFT_PLAIN(lobby_checkReservedName, 4057a0)
 LIFT_PLAIN(lobby_connect, 406c30)
-LIFT_PLAIN(lobbyJoin_keysChat, 4079c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobbyJoin_keysChat(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_4355b0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15512,7 +15513,7 @@ static void keyschat_setup(void)
 	static const DWORD flags[] = { 0x4dbaac, 0x4db854, 0x4dba84, 0x4db8b8, 0x4db858, 0x4dba90 };
 	for (int k = 0; k < 6; k++) G32(flags[k]) = irnd(0, 2) ? 0 : 1;
 }
-T_PLAIN(lobbyJoin_keysChat, 0x4079c0, keyschat_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobbyJoin_keysChat, keyschat_setup();, (CALL_PLAIN(0x4079c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (lobbyJoin_keysChat(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 static const DWORD g_gs_4355b0[] = { 0x41ee40, 1, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4355b0[] = { 0x5b1b50, 0x5b1b51, 0x5b1b52, 0x5b1b53, 0x4dba88, 0x4ded54, 0x4ded60, 0x4df8e8, 0x5b1b54, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
 static const DWORD g_gb_4355b0[] = { 0x5b1b30, 0x67fb44, 0x9dd570, 0 };
