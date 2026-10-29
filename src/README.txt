@@ -45,7 +45,7 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (1069: every hand-written rebuild, and the lifted ones being rewritten - recomp.c keeps the rest): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (1082: every hand-written rebuild, and the lifted ones being rewritten - recomp.c keeps the rest): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
@@ -98,4 +98,7 @@ intro_41e730), ptx_error, net_454560, net_452d70, match_4620e0 (match/scores.c),
 sound_loadWav, glWindow_init, the ARM CENTER's frame, entry, previews and keys (menu/armc_misc.c, menu/armc_keys.c) |
 setup_controlTabKeys, menu_frame (app/main_loop.c), net_connect, the pilot's campaign file (load/files.c: profile_save opens or
 makes it, profile_load starts a new one, profile_saveProgress), the part panels and mech tints, profile_44de00, loading_draw.
+| the start-up screens (menuState100_intro, intro_41f100), the display mode switch and restore, reg_writeCharacterSettings,
+the profile screen's frame and panels, room_434820, the server login dialog, the briefing window, the PTX reader
+(ptx_open / ptx_decode), net_sendLocalInfo.
 Left lifted on purpose for now: armc_buildPartLists and app_init (they run into patch-DLL code mid-function).
