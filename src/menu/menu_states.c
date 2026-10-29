@@ -145,6 +145,72 @@ void (menu_drawBackground)(void)
 	menu_drawBackground3D(g_tunnel);
 }
 
+/* 0x442e10: the map-select dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
+   its scroll arrows (0 / 1 under the pointer, by FUN_00440b70), two tick boxes (0x4b2a7c: 0x74e924, 0x9eeac0:
+   0x74e9a4), two rows of two buttons (0x74ea24 lit from 4, 0x74eb24 from 6), the list row under the pointer
+   (8 .. 0x11) highlighted, the list (mainmenu_442d10) and the border. The original leaves eax to callers that
+   ignore it */
+void (mainmenu_442e10)(void)
+{
+#define X0 GAME_VAR(int, 0x9dd908)
+#define Y0 GAME_VAR(int, 0x9dd90c)
+#define X1 GAME_VAR(int, 0x9dd910)
+#define Y1 GAME_VAR(int, 0x9dd914)
+	const u32 *bright = (const u32 *)0x9eea98, *dim = (const u32 *)0x9dda70;
+	int hovered = GAME_CDECL(0x440b70, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x74e8a4);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4286b0(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
+	menu_drawTexQuad_4287a0(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
+	glDisable(GL_TEXTURE_2D);
+	const int *ticked[2] = { (const int *)0x4b2a7c, (const int *)0x9eeac0 };
+	for (int k = 0; k < 2; k++) {
+		int y = Y0 + 0xfe + k * 0x1e;
+		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+		menu_drawRect(X0 + 0x10, y, X0 + 0x20, y + 0x10, 0);
+		if (*ticked[k]) {
+			set_colour_bits(g_rectColour, 0x3f800000, 0, 0, 0x3f800000);
+			menu_drawRect(X0 + 0x12, y + 2, X0 + 0x1d, y + 0xd, 1);
+		}
+		set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+		text_draw16(X0 + 0x28, k ? y : y + 2, (const char *)(0x74e924 + k * 0x80));   /* (the second label 2 higher) */
+	}
+	for (int row = 0; row < 2; row++)
+		for (int k = 0; k < 2; k++) {
+			glEnable(GL_TEXTURE_2D);
+			texture = GAME_VAR(int, 0x9db0a4);
+			tex_bind(g_textures->managers[texture / 512], texture % 512);
+			int lit = hovered == 4 + row * 2 + k;
+			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;
+			menu_drawTexQuad_4282f0(x + 0x64, y, x + 0xdc, y + 0x20, 1);
+			const u32 *colour = lit ? bright : dim;
+			set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(0x74ea24 + row * 0x100 + k * 0x80));
+		}
+	if (hovered > 7 && hovered < 0x12) {
+		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
+		menu_drawRect(X0 + 0x20, Y0 + hovered * 20 - 0x75, X1 - 0x50, Y0 + hovered * 20 - 0x63, 1);
+	}
+	mainmenu_442d10();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+
 /* 0x4434f0: the map-select dialog of the main menu (only its frame while a dialog is up) */
 void (mainmenu_4434f0)(void)
 {

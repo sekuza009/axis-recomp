@@ -4239,7 +4239,8 @@ void arena_4038e0(void);
 /* 0x442e10 mainmenu_442e10(): the map-select dialog: frame, title 0x74e8a4, the list box with its scroll arrows,
    two checkboxes (0x4b2a7c / 0x9eeac0 ticked: 0x74e924 / 0x74e9a4), two button rows (0x74ea24, 0x74eb24), the
    hovered list row highlighted, the map list (mainmenu_442d10), the border */
-LIFT_PLAIN(mainmenu_442e10, 442e10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_442e10(void);
 /* batch 122 (lifted/grp68.c): the room login dialog and the pilot stats panel */
 #include "lifted/grp68.c"
 /* 0x4392c0 room_4392c0(): the room login dialog (only its frame while a message is open): title 0x7583a4 and its
@@ -13369,7 +13370,7 @@ static void mapselect_setup(void)
 	for (int k = 0; k < 14; k++) { char *r = (char *)0x9dda88 + k * 0x44; r[irnd(0, 12)] = 0; }   /* the list's names short */
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dd908) + irnd(0x20, 0x200); G32(0x4ded6c) = G32(0x9dd90c) + irnd(0x28, 0xf5); }
 }
-T_PLAIN(mainmenu_442e10, 0x442e10, mapselect_setup();, 0, 0, 0, 0, 0)
+ST(mainmenu_442e10, mapselect_setup();, (CALL_PLAIN(0x442e10, 0, 0, 0, 0, 0), 0), (mainmenu_442e10(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 122 */
 /* the room login dialog: dlgwin_setup's window at 0x9dd358, short texts, the editing / connecting / confirmation
    flags */

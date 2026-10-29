@@ -542,6 +542,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define menu_drawBackground3D(tunnel) GAME_CDECL(0x429d70, void, void *)(tunnel)
 #define mission_4479b0(m) GAME_CDECL(0x4479b0, void, int)(m)
 #define mainmenu_4434f0() GAME_CDECL(0x4434f0, void, void)()
+#define mainmenu_442d10() GAME_CDECL(0x442d10, u32, void)()   /* the map-select dialog's list */
 #define menu_mainMenu() GAME_CDECL(0x442050, void, void)()
 #define mainmenu_442e10() GAME_CDECL(0x442e10, void, void)()
 #define menu_drawDimOverlay() GAME_CDECL(0x40ce70, void, void)()
