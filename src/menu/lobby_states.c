@@ -892,3 +892,40 @@ u32 (arena_loadAndQuit)(void)
 	GAME_VAR(int, 0x9da49c) = 0x68;
 	return r;
 }
+
+/* 0x407300: the lobby page's clicks (nothing else open: 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, no dialog): a right
+   click or button 0x11 closes the page (0x4db55c); button 0x10 starts the game with the player's settings (the
+   32-byte record 0x4ded20 and its colour / corporation bytes), the music stopped. Returns what the original
+   leaves in eax */
+u32 (lobby_407300)(void)
+{
+	u32 busy = GAME_VAR(u32, 0x4dbab0);
+	if (busy || GAME_VAR(int, 0x4db850) || GAME_VAR(int, 0x4db518) || GAME_VAR(int, 0x4dbacc) || g_dialogOpen)
+		return busy;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		GAME_VAR(int, 0x4db55c) = 0;
+		return 0;
+	}
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	int button = GAME_CDECL(0x404520, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_404520 */
+	if (button == 0x11) {
+		GAME_VAR(int, 0x4db55c) = 0;
+		return 0;
+	}
+	if (button != 0x10)
+		return button - 0x11;
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 1;
+	music_shutdown();
+	GAME_VAR(int, 0x9da3e0) = (signed char)GAME_VAR(u8, 0x4ded42);
+	GAME_VAR(int, 0x9dad94) = (signed char)GAME_VAR(u8, 0x4ded40);
+	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	GAME_VAR(int, 0x76d368) = (signed char)GAME_VAR(u8, 0x4ded43);
+	GAME_VAR(int, 0x4df8e8) = GAME_VAR(u8, 0x4ded44);
+	GAME_VAR(int, 0x76d408) = GAME_VAR(u8, 0x4ded45);
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	GAME_VAR(int, 0x4dbbf4) = 1;
+	GAME_VAR(int, 0x4db55c) = 0;
+	return GAME_VAR(u32, 0x4ded44);
+}

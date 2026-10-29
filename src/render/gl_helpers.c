@@ -20,7 +20,7 @@ int (gfx_swapBuffers)(void)
    depth test (<=) on, texturing, smoothing, lighting, fog and face culling off, filled polygons with counter-clockwise
    fronts (back faces the ones to cull). The original also calls glEnable(0x1d01), GL_SMOOTH, which is not a
    capability; kept. Returns the last glDisable's eax */
-u32 (glWindow_4684c0)(void)
+static u32 default_gl_state(void)
 {
 	glHint(0xc50, 0x1102);                                      /* GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST */
 	IMPORT(0x4a91c8, void, u32, u32, u32)(0x2300, 0x2200, 0x46040000);   /* glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE) */
@@ -43,4 +43,21 @@ u32 (glWindow_4684c0)(void)
 	IMPORT(0x4a91c0, void, u32)(0x901);                         /* glFrontFace(GL_CCW) */
 	IMPORT(0x4a91d0, void, u32)(0x405);                         /* glCullFace(GL_BACK) */
 	return IMPORT(0x4a922c, u32, u32)(0xb44);                   /* glDisable(GL_CULL_FACE) */
+}
+u32 (glWindow_4684c0)(void) { return default_gl_state(); }
+
+/* 0x42f150: a new window's GL state: the defaults, then the projection (field of view 0x68038c, the aspect
+   width / height kept in 0x4e1870, depth 1 .. 20000) and the window's size (0x42f0f0); 0x5ae9bc set. Returns
+   0x42f0f0's eax */
+u32 (gfx_initGLState)(int width, int height)
+{
+	default_gl_state();
+	IMPORT(0x4a91fc, void, u32)(0x1701);   /* glMatrixMode(GL_PROJECTION) */
+	GAME_VAR(float, 0x4e1870) = f32((long double)width / (long double)height);
+	((void (STDCALL *)(double, double, double, double))0x4509c6)((double)fld_m((const float *)0x68038c),
+		(double)fld_m((const float *)0x4e1870), 1.0, 20000.0);   /* gluPerspective */
+	IMPORT(0x4a91fc, void, u32)(0x1700);   /* glMatrixMode(GL_MODELVIEW) */
+	u32 r = GAME_CDECL(0x42f0f0, u32, int, int)(width, height);
+	GAME_VAR(int, 0x5ae9bc) = 1;
+	return r;
 }

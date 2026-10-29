@@ -3243,7 +3243,8 @@ DWORD room_433640(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_43e610(void);
 /* 0x42f150 gfx_initGLState(w, h): the GL state for a new window and the projection */
-LIFT_PLAIN(gfx_initGLState, 42f150)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD gfx_initGLState(int width, int height);
 /* 0x456520 (thiscall) tex_upload(name, mode): upload the texture object's RGBA image (with mipmaps if wanted);
    0x473610 (thiscall) tex_upload2: copy each changed player colour block into the shared texture and upload it */
 static THISCALL DWORD tex_upload(char *tex, DWORD name, DWORD mode) { DWORD v[2] = { name, mode }; return run_lifted(lift_456520, (DWORD)tex, 2, v); }
@@ -5054,7 +5055,8 @@ DWORD lobbyTop_keys(void);
 DWORD setup_drawTopPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406950(void);
-LIFT_PLAIN(lobby_407300, 407300)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_407300(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyPlayer_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -10316,7 +10318,7 @@ T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)
    in reg_writeCharacterSettings's own test) */
 ST(room_433640, charset_setup(); g_mockRegFail = 0;, CALL_PLAIN(0x433640, 0, 0, 0, 0, 0), (DWORD)(room_433640()))
 ST(room_43e610, charset_setup();, CALL_PLAIN(0x43e610, 0, 0, 0, 0, 0), (DWORD)(room_43e610()))
-T_PLAIN(gfx_initGLState, 0x42f150, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, 0, g_a[0], g_a[1], 0, 0)
+ST(gfx_initGLState, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, CALL_PLAIN(0x42f150, 0, g_a[0], g_a[1], 0, 0), (DWORD)(gfx_initGLState((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* a texture object (RGBA image at +0x114, size at +0xc0118, mipmap/filter flags) */
 static void texobj_setup(void)
 {
@@ -14903,7 +14905,7 @@ ST(lobby_406950, gen_setup(g_gs_406950, g_gi_406950, g_gb_406950);, CALL_PLAIN(0
 static const DWORD g_gs_407300[] = { 0x404520, 2, 0x457310, 0, 0 };
 static const DWORD g_gi_407300[] = { 0x4ded40, 0x4ded42, 0x4ded43, 0x4db518, 0x4db55c, 0x4db850, 0x4dbab0, 0x4dbacc, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x90d1c4, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_407300[] = { 0x4ded20, 0x67fb44, 0 };
-T_PLAIN(lobby_407300, 0x407300, gen_setup(g_gs_407300, g_gi_407300, g_gb_407300);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_407300, gen_setup(g_gs_407300, g_gi_407300, g_gb_407300);, CALL_PLAIN(0x407300, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_407300()))
 static const DWORD g_gs_407840[] = { 0x401600, 1, 0x4050a0, 0, 0x4050f0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_407840[] = { 0x4dbb3c, 0x4dbbd0, 0x4e0cdc, 0x4e0ce0, 0x4e1510, 0x68039c, 0x76d48c, 0x90d1c4, 0 };
 static const DWORD g_gb_407840[] = { 0x4db560, 0x9dc92c, 0 };
