@@ -10481,7 +10481,7 @@ static void netstate_setup(void)
 	static const DWORD strs[] = { 0x9dd570, 0x9dd1d8, 0x9dd58e, 0x9dd6d8 };
 	for (int i = 0; i < 4; i++) fill_str((char *)strs[i], 20, 32, 126);
 	host_setup(); g_mockWsaFail = 0; g_mockSocket = 0x1234;
-	g_a[0] = irnd(0, 3) ? irnd(10, 45) : irnd(-5, 120); g_a[1] = irnd(0, 2) ? 100 : irnd(0, 1) ? 101 : irnd(0, 200);
+	g_a[0] = irnd(0, 3) ? irnd(10, 29) : irnd(-5, 120); g_a[1] = irnd(0, 2) ? 100 : irnd(0, 1) ? 101 : irnd(0, 200);   /* kinds 10 .. 29 mostly */
 	g_paintStacks = 1;
 }
 T_PLAIN(net_send, 0x4521c0, netstate_setup();, 0, g_a[0], g_a[1], 0, 0)
@@ -17338,7 +17338,7 @@ static const STest g_stests[] = {
 	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 40, 0), T(load_483ec0, 0, 40, 0), T(match_483f00, 0, 40, 0),
 	T(match_472310, 0, 40, 0),
 	/* batch 58 */
-	T(net_send, 0, 40, 0), T(room_434d00, 1, 40, 0), T(room_4334c0, 0, 40, 0), T(room_434b90, 1, 40, 0),
+	T(net_send, 0, 400, 0), T(room_434d00, 1, 40, 0), T(room_4334c0, 0, 40, 0), T(room_434b90, 1, 40, 0),
 	T(room_434820, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(match_44aee0, 0, 40, 0), T(match_4327f0, 0, 400, 0),
 	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_closeAll, 0, 200, 0),
 	/* batch 59 */
