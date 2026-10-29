@@ -10110,7 +10110,17 @@ ST(collision_rayTrace, raytrace_setup();, ray_orig(),
    collision_rayTrace(BUF, (DWORD)(BUF + 0x206200), (DWORD)(BUF + 0x206210), (DWORD)(BUF + 0x206100)))
 #undef RND
 /* batch 54 */
-T_PLAIN(cfg_writeDefaultAxisCfg, 0x42eca0, vfs_content(95, 0x2000); g_vfsOpenFail = !irnd(0, 3); g_paintStacks = 1;, 0, 0, 0, 0, 0)
+/* axis.cfg: words and lines, half the time after the header line the file must start with (else the defaults) */
+static void axiscfg_setup(void)
+{
+	vfs_content(95, 0x2000); g_vfsOpenFail = !irnd(0, 3); g_paintStacks = 1;
+	if (irnd(0, 1)) {
+		static const char head[] = "AXIS CONFIGURATION FILE Master ver 1.00.\n";
+		char *d = BUF + 0x200000; DWORD n = sizeof head - 1;
+		memmove(d + n, d, g_vfsSize); memcpy(d, head, n); g_vfsSize += n;
+	}
+}
+T_PLAIN(cfg_writeDefaultAxisCfg, 0x42eca0, axiscfg_setup();, 0, 0, 0, 0, 0)
 /* the line-of-sight scene of the ray trace tests, plus up to 6 point lists (up to 8 points around the scene) and
    player p's record (position near the scene, range, current target) */
 static int g_losPicks;
@@ -17182,7 +17192,7 @@ static const STest g_stests[] = {
 	/* batch 53 */
 	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
-	T(cfg_writeDefaultAxisCfg, 1, 40, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_41cf20, 1, 300, 0), T(armc_41d280, 1, 300, 0),
+	T(cfg_writeDefaultAxisCfg, 1, 200, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_41cf20, 1, 300, 0), T(armc_41d280, 1, 300, 0),
 	/* batch 55 */
 	T(actor_setPartColor, 0, 300, 0), T(actor_applyRemoteColours, 0, 300, 0),
 	/* batch 56 */
