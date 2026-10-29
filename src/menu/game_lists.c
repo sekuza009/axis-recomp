@@ -432,3 +432,54 @@ void (room_43ea10)(void)
 	}
 	GAME_VAR(int, 0x9dd6b4) = 0;
 }
+
+/* ---- the arena's name dialog (its window at 0x4dbb68 .. 0x4dbb74) ---- */
+
+/* text with a near-black shadow one down and right, then in yellow */
+static void shadowed(int x, int y, const char *text)
+{
+	set_colour_bits((Colour *)0x76d438, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
+	text_draw8(x + 1, y + 1, text);
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);           /* 1, 0.8, 0 */
+	text_draw8(x, y, text);
+}
+
+/* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
+   and the name 0x4db560 (hidden while it is typed in, g_paused); without a message (0x4dbbd0) the name or the
+   second label under the pointer (arena_404460's 0 / 2) shadowed in yellow; three buttons (0x7521a4, 0x80 apart;
+   3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
+void (arena_409bc0)(void)
+{
+	int x0 = GAME_VAR(int, 0x4dbb68), y0 = GAME_VAR(int, 0x4dbb6c);
+	int hovered = arena_404460(g_mouseX, g_mouseY);
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(x0, y0, GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74), GAME_VAR(int, 0x4deb50));
+	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
+	menu_drawRect(x0 + 0x20, y0 + 0x30, GAME_VAR(int, 0x4dbb70) - 0x20, GAME_VAR(int, 0x4dbb74) - 0x20, 0);
+	TEXT(bright);
+	text_draw16(x0 + 0x50, y0 + 0x10, (const char *)0x751fa4);
+	bind_buttons();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	text_draw8(x0 + 0x40, y0 + 0x64, (const char *)0x752024);
+	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)0x752124);
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	if (!g_paused)
+		text_draw8(x0 + 0xc2, y0 + 0x64, (const char *)0x4db560);
+	if (!GAME_VAR(int, 0x4dbbd0)) {
+		if (hovered == 0 && !g_paused)
+			shadowed(x0 + 0xc1, y0 + 0x63, (const char *)0x4db560);
+		else if (hovered == 2)
+			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)0x752124);
+	}
+	for (int k = 0; k < 3; k++) {
+		int x = GAME_VAR(int, 0x4dbb68) + k * 0x78, y = GAME_VAR(int, 0x4dbb6c);
+		bind_buttons();
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		button(hovered == k + 3 && !GAME_VAR(int, 0x4dbbd0), x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
+		text_drawBox16(x + 0x32, GAME_VAR(int, 0x4dbb6c) + 0xe4, x + 0x96, (const char *)(0x7521a4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(GAME_VAR(int, 0x4dbb68), GAME_VAR(int, 0x4dbb6c), GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74));
+}

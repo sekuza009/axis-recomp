@@ -4216,7 +4216,8 @@ DWORD room_4399c0(void);
 /* 0x409bc0 arena_409bc0(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
    0x4db560 (hidden while edited, 0x68039c); without a message (0x4dbbd0) the label under the cursor gets a shadow
    and a highlight; three buttons (0x7521a4, 0x80 apart), the border */
-LIFT_PLAIN(arena_409bc0, 409bc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_409bc0(void);
 /* batch 120 (lifted/grp66.c): the room's server dialog and the two skirmish briefing screens */
 #include "lifted/grp66.c"
 /* 0x439e00 room_439e00(): the room's server dialog (only its frame while a message is open): title 0x758da4, an
@@ -13352,7 +13353,7 @@ static void arenaname_setup(void)
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb68) + irnd(0x40, 0x120); G32(0x4ded6c) = G32(0x4dbb6c) + irnd(0x60, 0xa0); }
 	pointer_on(0x4db588, 6);   /* arena_404460's rectangles */
 }
-T_PLAIN(arena_409bc0, 0x409bc0, arenaname_setup();, 0, 0, 0, 0, 0)
+ST(arena_409bc0, arenaname_setup();, (CALL_PLAIN(0x409bc0, 0, 0, 0, 0, 0), 0), (arena_409bc0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 120 */
 /* the server dialog: dlgwin_setup's window at 0x9dd1a0, its texts, the confirmation open now and then (the cursor
    then sometimes over one of its buttons) */

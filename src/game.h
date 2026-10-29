@@ -919,6 +919,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_434ff0() GAME_CDECL(0x434ff0, void, void)()   /* the list of games asked for again */
 #define room_43adc0() GAME_CDECL(0x43adc0, void, void)()   /* the game room's list of games drawn */
 #define room_434dd0(i) GAME_CDECL(0x434dd0, u32, int)(i)   /* game i of the list joined */
+#define arena_404460(x, y) GAME_CDECL(0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
 #define FUN_0041ee40(i) GAME_CDECL(0x41ee40, void, int)(i)   /* message i in the message box */
 #define reg_writeCharacterSettings() GAME_CDECL(0x432400, void, void)()
 
