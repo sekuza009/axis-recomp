@@ -133,6 +133,70 @@ void (armc_exit)(int confirmed)
 		GAME_VAR(int, 0x9da49c) = 0x67;
 }
 
+#define g_armcState GAME_VAR(int, 0x4dc790)           /* (by use) 0 / 1: the screen is not up; 2: the preview camera is kept */
+#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
+#define g_armcSessionMade GAME_VAR(int, 0x4dc54c)
+#define g_armcFlash GAME_VAR(float, 0x4dcfd8)         /* (unclear) counts down to -2 */
+
+/* 0x41e040: the ARM CENTER's frame: the menus' background (unless entered from the lobby), the entry state, then,
+   while the screen is up: only the dialog's frame while one is open; the session made (and the six item slots
+   filled) once the "please wait" box has been shown; the preview camera; the page; the box while there is neither a
+   preview nor a session. The original leaves eax to callers that ignore it */
+void (menuState700_armCenter)(void)
+{
+	if (GAME_VAR(int, 0x4dc868) && g_armcFrom != 2)
+		menu_drawBackground();
+	if (g_armcState != 2) {
+		if (g_armcFrom == 3)
+			armc_411ab0();
+		if (g_armcFrom == 1)
+			armc_411110();
+	}
+	arena_launchFromFile();
+	int state = g_armcState;
+	if (state == 1 || state == 0)
+		return;
+	if (g_dialogOpen) {
+		menu_drawFrame(GAME_VAR(int, 0x4dcc90), GAME_VAR(int, 0x4dcc94), GAME_VAR(int, 0x4dcc98), GAME_VAR(int, 0x4dcc9c));
+		return;
+	}
+	if (g_armcSessionDue && !g_armcSessionMade) {
+		static const u32 items[6] = { 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcb18, 0x4dcb1c };
+		armc_40e5d0();
+		for (int slot = 0; slot < 6; slot++)
+			armc_41ca50(slot, GAME_VAR(int, items[slot]));
+		state = g_armcState;
+	}
+	if (state == 2 && !GAME_VAR(int, 0x4dcf10)) {
+		armc_41b300();
+		armc_41b710();
+		armc_41b400();
+	}
+	armc_41dcf0();
+	switch (g_armcMode) {
+	case 1: armc_41dfb0(); break;
+	case 2: armc_41dfe0(); break;
+	case 3: armc_41e010(); break;
+	}
+	int box = 1;
+	if (g_armcPreview) {
+		armc_41dab0();
+		box = !g_armcPreview;
+	}
+	if (box && !g_armcSessionMade) {
+		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
+		menu_drawRect(100, 200, 540, 280, 1);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
+		text_drawBox16(105, 220, 535, (const char *)0x7572a4);
+		text_drawBox16(105, 244, 535, (const char *)0x757324);
+		g_armcSessionDue = 1;
+	}
+	long double flash = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a93ec), &g_armcFlash);
+	g_armcFlash = flash;
+	if (!(flash >= GAME_VAR(float, 0x4a94a8)))
+		g_armcFlash = -2.0f;
+}
+
 /* v moved a tenth of the way to target per time unit */
 static void approach(float *v, float target)
 {

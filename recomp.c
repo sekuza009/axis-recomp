@@ -5354,7 +5354,8 @@ void armc_41dfe0(void);
 void armc_41e010(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41dfb0(void);
-LIFT_PLAIN(menuState700_armCenter, 41e040)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState700_armCenter(void);
 /* batch 186 (lifted/grp140.c): game_processGameModeInit (a match's start: modes, teams, items, music),
    match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
    music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
@@ -15467,7 +15468,7 @@ ST(armc_41dfb0, gen_setup(g_gs_41dfb0, g_gi_41dfb0, g_gb_41dfb0);, CALL_PLAIN(0x
 static const DWORD g_gs_41e040[] = { 0x4029d0, 4, 0x40e5d0, 0, 0x410b50, 0, 0x411110, 0, 0x411ab0, 0, 0x41b300, 0, 0x41b400, 0, 0x41b710, 0, 0x41ca50, 2, 0x41dab0, 0, 0x41dcf0, 0, 0x41dfb0, 0, 0x41dfe0, 0, 0x41e010, 0, 0x41f0e0, 5, 0x427970, 5, 0x428c30, 4, 0x441740, 0, 0 };
 static const DWORD g_gi_41e040[] = { 0x4b071c, 0x4dcfd8, 0x4dbc68, 0x4dc24c, 0x4dc54c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dcf10, 0x90d1c4, 0 };
 static const DWORD g_gb_41e040[] = { 0x7572a4, 0x757324, 0x76d438, 0x9da480, 0 };
-T_PLAIN(menuState700_armCenter, 0x41e040, gen_setup(g_gs_41e040, g_gi_41e040, g_gb_41e040);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState700_armCenter, gen_setup(g_gs_41e040, g_gi_41e040, g_gb_41e040);, (CALL_PLAIN(0x41e040, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState700_armCenter(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 186: game_processGameModeInit / match_escMenu generated (tools/gentests.py, thiscall on the game: ecx =
    BUF, zero apart from what the callees would set), wnd_setCursor and scene_loadPath by hand */
 static const DWORD g_gs_49df10[] = { 0x4326f0, 1, 0x44ace0, 0, 0x456de0, 1, 0x457140, 1, 0x45dfb0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x4620e0, 0, 0x4629c0, 1 | CS_POP, 0x4636d0, 0, 0x4685b0, 0, 0x4685c0, 0, 0x46c710, 3, 0x4732f0, 1 | CS_POP, 0x473940, 2 | CS_POP, 0x4743e0, 1 | CS_POP, 0x487490, 0, 0 };

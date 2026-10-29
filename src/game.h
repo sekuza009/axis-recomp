@@ -411,6 +411,17 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_language GAME_VAR(int, 0x9dae74)           /* 2: the small font for labels */
 #define armc_41d600() GAME_CDECL(0x41d600, void, void)()      /* the mech preview */
 #define armc_41d8a0() GAME_CDECL(0x41d8a0, void, void)()      /* the colour page's preview */
+#define armc_411ab0() GAME_CDECL(0x411ab0, void, void)()      /* the screen's state entered from the room */
+#define armc_411110() GAME_CDECL(0x411110, void, void)()      /* and from the main menu */
+#define arena_launchFromFile() GAME_CDECL(0x410b50, void, void)()
+#define armc_40e5d0() GAME_CDECL(0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
+#define armc_41b710() GAME_CDECL(0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
+#define armc_41b400() GAME_CDECL(0x41b400, void, void)()
+#define armc_41dcf0() GAME_CDECL(0x41dcf0, void, void)()
+#define armc_41dfb0() GAME_CDECL(0x41dfb0, void, void)()      /* the pages' draw passes (menu/armc_misc.c) */
+#define armc_41dfe0() GAME_CDECL(0x41dfe0, void, void)()
+#define armc_41e010() GAME_CDECL(0x41e010, void, void)()
+#define armc_41dab0() GAME_CDECL(0x41dab0, void, void)()
 #define armc_40d990() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
 #define armc_412450() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
 #define armc_drawStatsPanel() GAME_CDECL(0x412650, void, void)()
