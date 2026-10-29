@@ -325,10 +325,13 @@ typedef struct {
 	float t0, t1;          /* layer 3's strip's top on the far walls, and its height there */
 } Tunnel;
 
-/* hovered: the wall whose layer 2 panel glows (-1: none), in the colour glow (r, g, b; its alpha falling as the glow,
-   0x680ccc, rises) */
-static void menu_tunnel(const Tunnel *t, int hovered, const float *glow)
+/* the hovered menu panel: on, the wall whose layer 2 panel glows (-1: none), in the colour glow (r, g, b; its alpha
+   falling as the glow, 0x680ccc, rises); with layer3, layer 3's panels at 0.6 and the hovered one fading from 1 */
+typedef struct { int on; const float *glow; int layer3; } Highlight;
+
+static void menu_tunnel(const Tunnel *t, const Highlight *h)
 {
+	int hovered = h->on;
 	int deep = t->deep, clamp = t->clamp, places = t->walls / 2;
 	static const float turns3[3] = { -40.0f, 0.0f, 40.0f }, turns2[2] = { -35.0f, 35.0f };
 	const float *turns = places == 3 ? turns3 : turns2;
@@ -366,11 +369,15 @@ static void menu_tunnel(const Tunnel *t, int hovered, const float *glow)
 				if (!t->layer2)
 					continue;
 				if (wall == hovered)
-					glColor4f(glow[0], glow[1], glow[2], f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9428), (const float *)0x4a9424)));
+					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9428), (const float *)0x4a9424)));
 				else
 					glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-			} else
+			} else if (!h->layer3)
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
+			else if (wall == hovered)
+				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9420), (const float *)0x4a9424)));
+			else
+				glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
 			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));   /* 10 s0 */
 			float y = f32(fmul_m(fld_m(&s0), t->height));
 			float top = f32(fsub_m(fld_m(t->height), &y));
@@ -453,24 +460,36 @@ static void menu_tunnel(const Tunnel *t, int hovered, const float *glow)
 /* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
    clamped); 0x411ab0: the ARM CENTER's deep one (1650 back, its pulse only turned round); 0x4388e0: the game room's
    (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
+static const Highlight none = { -1, NULL, 0 };
+static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)0x4a9418, (const float *)0x4a9478, 0.46875f, 0.625f
 #define FOUR_WALLS 4, (const float *)0x4a9410, (const float *)0x4a941c, 0.5f, 0.75f
-void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
-void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
-void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
-void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
+void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_4388e0)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
+	static const Highlight h = { -1, glow, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
-	menu_tunnel(&t, -1, glow);
+	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
 void (arena_4091b0)(void)
 {
-	static const float glow[3] = { 1.0f, 1.0f, 1.0f };
+	static const Highlight h = { -1, white, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
-	menu_tunnel(&t, -1, glow);
+	menu_tunnel(&t, &h);
+}
+
+/* a menu panel's caption (0x80 apart from captions) in white along the bottom */
+static void caption(u32 captions, int on)
+{
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	text_drawBox16(0, 0x1bc, 0x280, (const char *)(captions + on * 0x80));
 }
 
 /* the menu panel under the pointer: the first of count outlines (FUN_0041eea0's, 0x2c bytes apart from outlines)
@@ -499,15 +518,35 @@ static int hovered_panel(u32 outlines, int count, int locked)
 void (room_437e00)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
-	int on = hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8));
+	Highlight h = { hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8)), glow, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
-	menu_tunnel(&t, on, glow);
-	if (on != -1 && GAME_VAR(int, 0x9dce48) == 2) {
-		gfx_setProjection2D3D(2);
-		glLoadIdentity();
-		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_drawBox16(0, 0x1bc, 0x280, (const char *)(0x750ba4 + on * 0x80));
-	}
+	menu_tunnel(&t, &h);
+	if (h.on != -1 && GAME_VAR(int, 0x9dce48) == 2)
+		caption(0x750ba4, h.on);
+}
+
+/* 0x408680: the arena lobby's top menu: the panel under the pointer (four, 0x5b1cf8; none while 0x4db85c), the
+   arena tunnel (as deep as 0x4dba68) with that panel lit, and in mode 2 (0x4dbb3c) its caption (0x750924) unless
+   0x680370. The original leaves eax to callers that ignore it */
+void (lobbyTop_drawTitle)(void)
+{
+	Highlight h = { hovered_panel(0x5b1cf8, 4, GAME_VAR(int, 0x4db85c)), white, 1 };
+	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
+	menu_tunnel(&t, &h);
+	if (h.on != -1 && GAME_VAR(int, 0x4dbb3c) == 2 && !GAME_VAR(int, 0x680370))
+		caption(0x750924, h.on);
+}
+
+/* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / 0x5b1978, as deep as
+   0x4ddd90): four panels (0x4df918; none while 0x4dda60), the caption (0x7506a4) in mode 2 (0x4ddcec). The original
+   leaves eax to callers that ignore it */
+void (setup_423330)(void)
+{
+	Highlight h = { hovered_panel(0x4df918, 4, GAME_VAR(int, 0x4dda60)), white, 1 };
+	Tunnel t = { GAME_VAR(u32, 0x4ddd90), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
+	menu_tunnel(&t, &h);
+	if (h.on != -1 && GAME_VAR(int, 0x4ddcec) == 2 && !GAME_VAR(int, 0x680370))
+		caption(0x7506a4, h.on);
 }
 #undef SIX_WALLS
 #undef FOUR_WALLS

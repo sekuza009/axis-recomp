@@ -4284,7 +4284,8 @@ void setup_423e50(void);
    (0x680ccc = 40, 0x4df454 = -1) when it changes (0x907b24); the tunnel layers as setup_423e50's with the hovered
    panel glowing (0x680ccc bouncing 2..38); in mode 2 without a message (0x680370) the hovered panel's caption
    (0x7506a4, 0x80 apart) at the bottom */
-LIFT_PLAIN(setup_423330, 423330)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_423330(void);
 /* batch 125 (lifted/grp71.c): the mission-select tunnel and the profile screen */
 #include "lifted/grp71.c"
 /* 0x448140 missionsel_448140(): the mission-select backdrop: the setup tunnel's layers (setup_423e50) with three
@@ -4339,7 +4340,8 @@ void room_437e00(void);
    (0x5b1cf8, 11 dwords each; none while 0x4db85c), the hover glow, the arena tunnel (depth 0x4dba68, two walls a
    side at -35 / 35, textures 0x4e0cd0 and 0x4df044 / 0x4df040), and in mode 2 (0x4dbb3c) without a message
    (0x680370) the hovered panel's caption (0x750924, 0x80 apart) */
-LIFT_PLAIN(lobbyTop_drawTitle, 408680)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobbyTop_drawTitle(void);
 /* batch 130 (lifted/grp76.c): the sound settings dialog */
 #include "lifted/grp76.c"
 /* 0x424810 setup_424810(): the sound dialog (window 0x4ddad0..): frame, cyan box, title 0x7533a4; the volume slider
@@ -13512,7 +13514,7 @@ static void setupmenu_setup(void)
 		if (!irnd(0, 3)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
-T_PLAIN(setup_423330, 0x423330, setupmenu_setup();, 0, 0, 0, 0, 0)
+ST(setup_423330, setupmenu_setup();, (CALL_PLAIN(0x423330, 0, 0, 0, 0, 0), 0), (setup_423330(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 125 */
 /* the mission-select backdrop: the setup tunnel's values and textures, its own two textures, the hover glow */
 static void missionbg_setup(void)
@@ -13617,7 +13619,7 @@ static void arenamenu_setup(void)
 		if (!irnd(0, 3)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
-T_PLAIN(lobbyTop_drawTitle, 0x408680, arenamenu_setup();, 0, 0, 0, 0, 0)
+ST(lobbyTop_drawTitle, arenamenu_setup();, (CALL_PLAIN(0x408680, 0, 0, 0, 0, 0), 0), (lobbyTop_drawTitle(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 130 */
 /* the sound dialog: dlgwin_setup's window at 0x4ddad0, the volume 0..100, an arrow flash sometimes running (any
    arrow, the timer about to run out now and then), the switches on / off, short texts, the cursor sometimes on a
