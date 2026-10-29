@@ -184,3 +184,87 @@ u32 (profile_44de00)(void)
 #undef X1
 #undef Y1
 }
+
+/* 0x44d720: the profile screen (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
+   page 0x9f8f10 = 1), the list's and the details' frames, the title 0x751a24, four buttons (0x751aa4, 0x80 apart:
+   on the list page the one under the pointer, by profile_44b260, lit; on page k + 2 button k lit, in the panel
+   colour less 0.2 in green and blue), the pilot list (profile_44ce90), its scroll arrows (5 / 6 under the
+   pointer), the details (profile_44cf70), the border and the version string 0x4b0384 right-aligned at the bottom.
+   The original leaves eax to callers that ignore it */
+void (mainmenu_drawScreen)(void)
+{
+#define X0 GAME_VAR(int, 0x9f8e48)
+#define Y0 GAME_VAR(int, 0x9f8e4c)
+#define X1 GAME_VAR(int, 0x9f8ea0)
+#define Y1 GAME_VAR(int, 0x9f8ea4)
+#define PAGE GAME_VAR(int, 0x9f8f10)
+	float *panel = (float *)0x9f8eb0;
+	const u32 *bright = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
+	int hovered = GAME_CDECL(0x44b260, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	if (PAGE == 1) {
+		set_colour_bits(g_rectColour, 0x3e4ccccd, 0, 0x3f000000, 0x3f800000);   /* 0.2, 0, 0.5, 1 */
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	} else {
+		set_colour_bits(g_rectColour, 0x3dcccccd, 0, 0x3e99999a, 0x3f000000);   /* 0.1, 0, 0.3, 0.5 */
+		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+	}
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	if (PAGE == 1)
+		set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);
+	else
+		set_colour_bits(g_rectColour, 0x3f000000, 0x3f000000, 0x3f000000, 0x3f000000);
+	menu_drawRect(X0 + 0x20, Y0 + 0x20, X0 + 0x100, Y1 - 0x40, 0);
+	menu_drawRect(X0 + 0x108, Y0 + 0x20, X1 - 0x20, Y1 - 0x40, 0);
+	const u32 *title = PAGE == 1 ? bright : dim;
+	set_colour_bits((Colour *)0x76d438, title[0], title[1], title[2], title[3]);
+	text_draw16(X0 + 0x20, Y0 + 0xa, (const char *)0x751a24);
+	for (int k = 0; k < 4; k++) {
+		int x = X0 + k * 0x72;
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		if (PAGE == 1) {
+			if (k == hovered) {
+				glColor4f(1.0f, 0.8f, 1.0f, 1.0f);
+				set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+			} else {
+				glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+				set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
+			}
+		} else if (PAGE == k + 2) {
+			glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
+			float b = f32(fsub_m(fld_m(&panel[2]), (const float *)0x4a94f8));
+			float g = f32(fsub_m(fld_m(&panel[1]), (const float *)0x4a94f8));
+			set_colour_bits((Colour *)0x76d438, bright[0], BITS(g), BITS(b), bright[3]);
+		} else {
+			glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
+			set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
+		}
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		menu_drawTexQuad_4282f0(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
+		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(0x751aa4 + k * 0x80));
+	}
+	GAME_CDECL(0x44ce90, void, void)();   /* the pilot list */
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4286b0(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
+	menu_drawTexQuad_4287a0(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
+	glDisable(GL_TEXTURE_2D);
+	GAME_CDECL(0x44cf70, void, void)();   /* the details */
+	if (PAGE == 1)
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	else
+		glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	const char *version = (const char *)0x4b0384;
+	text_draw5((0x69 - (int)strlen(version)) * 6, 0x1d6, version);
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+#undef PAGE
+}

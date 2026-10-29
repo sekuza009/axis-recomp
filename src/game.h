@@ -572,6 +572,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
 #define data_loadPilotProfiles() GAME_CDECL(0x42b590, void, void)()
+#define FUN_00427a40(x0, y0, x1, y1) GAME_CDECL(0x427a40, void, int, int, int, int)(x0, y0, x1, y1)   /* a line in the menu colour */
 #define intro_41e730(frames) GAME_CDECL(0x41e730, void, double)(frames)   /* wait frames 1/60 s (app/timer.c) */
 #define intro_41f100() GAME_CDECL(0x41f100, void, void)()   /* the loading picture at the next step (0x4dda34) */
 #define intro_4411e0() GAME_CDECL(0x4411e0, void, void)()
@@ -594,6 +595,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define skirmish_443c80() GAME_CDECL(0x443c80, u32, void)()   /* leave the skirmish settings */
 #define skirmish_443cd0() GAME_CDECL(0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_443d10() GAME_CDECL(0x443d10, void, void)()   /* and down */
+#define skirmish_445520() GAME_CDECL(0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
 #define skirmish_4017b0(v) GAME_CDECL(0x4017b0, int, int)(v)   /* the text wrap x (0x4ad490) */
 #define skirmish_4017c0(v) GAME_CDECL(0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
 #define timer_now() GAME_CDECL(0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */

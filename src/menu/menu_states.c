@@ -12,21 +12,17 @@
 #define g_mission GAME_VAR(int, 0x9f63b4)             /* the mission chosen, 0 .. 14 */
 #define g_quitAsked GAME_VAR(int, 0x67ef14)           /* (by use) 1: the quit question is up */
 
-/* 0x41f540: the intro: the start-up logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) shown once over the
-   clear colour 0x76d350, then the loading picture stepped four times (0x4dda34) around the start-up loads, with
-   waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at
-   (310, 230), the Netsphere music and the frame clocks cleared */
-void (menuState100_intro)(void)
+/* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
+   0x76d350, blended ---- */
+static void draw_logo(int first)
 {
-	GAME_VAR(int, 0x4df01c) = 0;
-	GAME_VAR(int, 0x4e0458) = 0;
-	GAME_VAR(int, 0x4dda34) = 0;
 	const u32 *clear = (const u32 *)0x76d350;
 	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
 	glClear(0x4100);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(0xbe2);   /* GL_BLEND */
-	glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+	if (first)
+		glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
 	IMPORT(0x4a91ec, void, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -45,6 +41,68 @@ void (menuState100_intro)(void)
 	menu_vertex(0xa0, 0x13c);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+}
+
+#define K(addr) ((const float *)(addr))
+/* v kept within 0 .. 1 (a NaN becomes 0) */
+static float unit(float v)
+{
+	if (!(v >= *K(0x4a93e8)))
+		v = 0;
+	if (v > *K(0x4a9424))
+		v = 1;
+	return v;
+}
+
+/* one pixel column of the progress bar at x in the colour (r, g, b) */
+static void bar_column(int x, float r, float g, float b)
+{
+	set_colour_bits(g_rectColour, BITS(r), BITS(g), BITS(b), 0x3f800000);
+	menu_drawRect(x, 0x1da, x + 1, 0x1de, 1);
+}
+
+/* 0x41f100: the start-up screen at progress 0x4dda34 (16 pixels a step): the logo, then a bar of that many columns
+   below it, red to blue over the first 200, blue to green over the next 200, green to yellow after that. Returns
+   SwapBuffers' answer */
+int (intro_41f100)(void)
+{
+	draw_logo(0);
+	int n = GAME_VAR(int, 0x4dda34) * 16;
+	for (int i = 0; i < n && i < 200; i++) {
+		long double f = (long double)i;
+		float r = f32(fsubr_m(fmul_m(f, K(0x4a9404)), K(0x4a9424)));   /* 1 - i * 0.005 */
+		float b = f32(fmul_m(f, K(0x4a94d8)));                         /* i * 0.0051 */
+		bar_column(i + 0x14, unit(r), 0.0f, unit(b));
+	}
+	if (n > 200)
+		for (int i = 0; i + 200 < 400 && i + 200 < n; i++) {
+			long double t = fmul_m((long double)i, K(0x4a9404));
+			float g = f32(t), b = f32(1.0L - t);
+			bar_column(i + 0xdc, 0.0f, unit(g), unit(b));
+		}
+	if (n > 400) {
+		int i = 0;
+		do {
+			long double t = fmul_m((long double)i, K(0x4a9420));      /* i * 0.01 */
+			float r = f32(t), g = f32(fadd_m(t, K(0x4a9424)));
+			bar_column(i + 0x1a4, unit(r), unit(g), 0.0f);
+			i++;
+		} while (i + 400 < n);
+	}
+	glFinish();
+	return SwapBuffers(GAME_VAR(void *, 0x76d480));
+}
+#undef K
+
+/* 0x41f540: the intro: the start-up logo shown once (dimmed), then the loading picture stepped four times (0x4dda34) around the start-up loads, with
+   waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at
+   (310, 230), the Netsphere music and the frame clocks cleared */
+void (menuState100_intro)(void)
+{
+	GAME_VAR(int, 0x4df01c) = 0;
+	GAME_VAR(int, 0x4e0458) = 0;
+	GAME_VAR(int, 0x4dda34) = 0;
+	draw_logo(1);
 	glFinish();
 	SwapBuffers(GAME_VAR(void *, 0x76d480));
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red text */

@@ -73,3 +73,67 @@ void (skirmish_445520)(void)
 	skirmish_4017b0(0x280);
 	skirmish_4017c0(0x1e0);
 }
+
+/* ---- the briefing window (0x9f16a8 .. 0x9f16b4) ---- */
+#define BX0 GAME_VAR(int, 0x9f16a8)
+#define BY0 GAME_VAR(int, 0x9f16ac)
+#define BX1 GAME_VAR(int, 0x9f16b0)
+#define BY1 GAME_VAR(int, 0x9f16b4)
+#define g_panelColour ((const u32 *)0x9ef208)
+#define g_dimColour ((const u32 *)0x9eeac8)
+
+/* one of the window's buttons (x0 .. x1 along its bottom): the textured quad, lit when lit, then its label in
+   colour (none: grey, the button greyed) */
+static void briefing_button(int x0, int x1, int lit, const u32 *colour, const char *label)
+{
+	static const u32 grey[4] = { 0x3f19999a, 0x3f19999a, 0x3f19999a, 0x3f800000 };   /* 0.6, 0.6, 0.6, 1 */
+	if (!colour)
+		glColor4f(0.6f, 0.6f, 0.6f, 1.0f);
+	menu_drawTexQuad_4282f0(x0, BY1 - 0x30, x1, BY1 - 0x10, lit);
+	if (!colour)
+		colour = grey;
+	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+	text_drawBox16(x0, BY1 - 0x28, x1, label);
+}
+
+static void bind_button_texture(void)
+{
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+/* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
+   typed out (skirmish_445520), two buttons at the right (0x75e2a4, 0x80 apart; lit under the pointer: 0 / 1 by
+   skirmish_443910) and two at the left (0x75e3a4: 2 only once the text is out (0x4d7348), 3 only with something to
+   undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
+void (skirmish_drawScreenB)(void)
+{
+	int hovered = skirmish_443910(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
+	menu_drawRect(BX0, BY0, BX1, BY1, 1);
+	set_colour_bits((Colour *)0x76d438, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
+	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)0x75e024);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
+	FUN_00427a40(BX0 + 0x18, BY1 - 0x40, BX1 - 0x18, BY1 - 0x40);
+	set_colour_bits((Colour *)0x76d438, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
+	skirmish_445520();
+	for (int k = 0; k < 2; k++) {
+		bind_button_texture();
+		int x = BX1 + k * 0x8c;
+		int lit = hovered == k;
+		briefing_button(x - 0x12c, x - 0xb4, lit, lit ? g_panelColour : g_dimColour, (const char *)(0x75e2a4 + k * 0x80));
+	}
+	for (int k = 0; k < 2; k++) {
+		bind_button_texture();
+		int x = BX0 + k * 0x8c;
+		int usable = k == 0 ? GAME_VAR(int, 0x4d7348) != 0 : GAME_VAR(int, 0x9f1060) > 0;
+		int lit = usable && hovered == k + 2;
+		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
+		                (const char *)(0x75e3a4 + k * 0x80));
+	}
+}

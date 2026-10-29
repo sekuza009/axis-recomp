@@ -436,3 +436,70 @@ u32 (room_4334c0)(void)
 	GAME_VAR(int, 0x9dd6d4) = 1;
 	return r;
 }
+
+/* a password as stars: the buffer cleared (30 bytes), then one '*' a character */
+static void stars(char *out, const char *password)
+{
+	int n = strlen(password);
+	memset(out, 0, 30);
+	if (n > 0)
+		memset(out, '*', n);
+}
+
+/* 0x4399c0: the server login dialog (0x9dd6e8 .. 0x9dd6f4; only its frame while a message box is open): the title
+   0x7588a4, four labelled lines (0x758924, 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
+   passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
+   0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
+   FUN_00432240, bright) and the border. Returns the frame's or the border's eax */
+u32 (room_4399c0)(void)
+{
+#define X0 GAME_VAR(int, 0x9dd6e8)
+#define Y0 GAME_VAR(int, 0x9dd6ec)
+#define X1 GAME_VAR(int, 0x9dd6f0)
+#define Y1 GAME_VAR(int, 0x9dd6f4)
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
+	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	int hovered = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7588a4);
+	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
+	for (int k = 0; k < 4; k++) {
+		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(0x758924 + k * 0x80));
+		FUN_00427a40(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
+	}
+	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
+	if (!GAME_VAR(int, 0x9dd348) || !g_paused)
+		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)0x9dd1d8);
+	if (!GAME_VAR(int, 0x9dd3f8) || !g_paused) {
+		stars(hidden, (const char *)0x9dd1f6);
+		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
+	}
+	if (!GAME_VAR(int, 0x9dd564) || !g_paused) {
+		stars(hidden, (const char *)0x9dd202);
+		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
+	}
+	if (!GAME_VAR(int, 0x9dd6cc) || !g_paused)
+		text_draw8(X0 + 0x94, Y0 + 0xcc, (const char *)0x9dd20e);
+	for (int k = 0; k < 2; k++) {
+		int x = k * 0xc8;
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		const u32 *colour = hovered == k + 4 ? bright : dim;
+		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
+		profile_4283e0(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(0x7517a4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return GAME_CDECL(0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}

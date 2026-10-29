@@ -4197,12 +4197,14 @@ LIFT_PLAIN(armc_41dab0, 41dab0)
 /* 0x41f100 intro_41f100(): the loading screen: clear to 0x76d350, the loading picture (texture 0x76d3f0) in the
    middle, the progress bar (0x4dda34 * 16 one-unit columns in three colour ramps: red to blue, green to blue, red
    to yellow), glFinish and SwapBuffers on 0x76d480 */
-LIFT_PLAIN(intro_41f100, 41f100)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int intro_41f100(void);
 /* 0x4399c0 room_4399c0(): the server login dialog (only its frame while a message is open): title 0x7588a4, four
    labelled lines (0x758924, 0x80 apart) with underlines, the values (name 0x9dd1d8, the two password fields
    0x9dd1f6 / 0x9dd202 as '*', 0x9dd20e), each hidden while its field is being edited (0x9dd348 / 0x9dd3f8 /
    0x9dd564 / 0x9dd6cc with 0x68039c), two buttons (the one under the cursor bright) and the border */
-LIFT_PLAIN(room_4399c0, 4399c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_4399c0(void);
 /* 0x409bc0 arena_409bc0(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
    0x4db560 (hidden while edited, 0x68039c); without a message (0x4dbbd0) the label under the cursor gets a shadow
    and a highlight; three buttons (0x7521a4, 0x80 apart), the border */
@@ -4217,7 +4219,8 @@ LIFT_PLAIN(room_439e00, 439e00)
 /* 0x4456b0 skirmish_drawScreenB(): the mission briefing: a translucent window (0x9f16a8..), title 0x75e024, a cyan
    frame and line, the typewriter text (skirmish_445520), two buttons (0x75e2a4) and the back / start buttons
    (0x75e3a4): back greyed until the briefing is done (0x4d7348), start greyed without a mission (0x9f1060) */
-LIFT_PLAIN(skirmish_drawScreenB, 4456b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_drawScreenB(void);
 /* 0x444f40 skirmish_drawScreenA(): the mission list: window, title 0x75dda4, column heads (0x75de24..0x75dfa4) on
    blue bars, up to 8 rows of the 0xfc-byte mission records (0x9ef2d4, count 0x9ef2c0, from 0x9f16bc): name,
    +0x40 text, +0xe0 number (_itoa), +0xe8 kind (a 0x75dda4 string), the selected one (0x9f16a4) highlighted and
@@ -4279,7 +4282,8 @@ LIFT_PLAIN(missionsel_448140, 448140)
    title 0x751a24, four buttons (0x751aa4; the hovered one, profile_44b260, bright; out of focus the focused
    button 0x9f8f10 - 2), the profile list (profile_44ce90) and its scroll arrows, the pilot panel
    (profile_44cf70), the border and "Axis v1.03" */
-LIFT_PLAIN(mainmenu_drawScreen, 44d720)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_drawScreen(void);
 /* batch 126 (lifted/grp72.c): five more screens' tunnel backdrops (missionsel_448140's layout) */
 #include "lifted/grp72.c"
 /* 0x411110 armc_411110() / 0x4445a0 skirmish_4445a0(): the armour and skirmish screens' tunnel, as
@@ -13234,7 +13238,7 @@ static void loading_setup(void)
 	G32(0x4dda34) = irnd(0, 3) ? irnd(0, 28) : irnd(-3, 2);
 	G32(0x76d480) = irnd(0, 1) ? 0xdc0 : 0;
 }
-T_PLAIN(intro_41f100, 0x41f100, loading_setup();, 0, 0, 0, 0, 0)
+ST(intro_41f100, loading_setup();, CALL_PLAIN(0x41f100, 0, 0, 0, 0, 0), (DWORD)(intro_41f100()))
 /* a dialog window (x0, y0, x1, y1 at a), menutex_setup's set as frame / button / border textures, the cursor
    sometimes over a button, the editing flags and colours */
 static void dlgwin_setup(DWORD a)
@@ -13261,7 +13265,7 @@ static void login_setup(void)
 	for (int k = 0; k < 3; k++) fill_str((char *)0x7517a4 + k * 0x80, 30, 32, 126);
 	G32(0x9dd348) = irnd(0, 1); G32(0x9dd3f8) = irnd(0, 1); G32(0x9dd564) = irnd(0, 1); G32(0x9dd6cc) = irnd(0, 1);
 }
-T_PLAIN(room_4399c0, 0x4399c0, login_setup();, 0, 0, 0, 0, 0)
+ST(room_4399c0, login_setup();, CALL_PLAIN(0x4399c0, 0, 0, 0, 0, 0), (DWORD)(room_4399c0()))
 /* the arena name dialog: title, labels, the name, three buttons, a message open now and then */
 static void arenaname_setup(void)
 {
@@ -13312,7 +13316,7 @@ static void briefing_setup(void)
 	for (int k = 0; k < 2; k++) fill_str((char *)0x75e3a4 + k * 0x80, 20, 32, 126);
 	G32(0x9f1060) = irnd(-1, 3);
 }
-T_PLAIN(skirmish_drawScreenB, 0x4456b0, briefing_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_drawScreenB, briefing_setup();, (CALL_PLAIN(0x4456b0, 0, 0, 0, 0, 0), 0), (skirmish_drawScreenB(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the mission list: 0..14 records with short texts (eight rows of four columns stay inside the call log), the
    first visible one and the selection, kinds 0..4 */
 static void missionlist_setup(void)
@@ -13486,7 +13490,7 @@ static void profscreen_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9f8e48) + 0x28 + irnd(0, 3) * 0x72 + irnd(0, 0x60); G32(0x4ded6c) = G32(0x9f8ea4) - irnd(0x10, 0x30); }
 }
-T_PLAIN(mainmenu_drawScreen, 0x44d720, profscreen_setup();, 0, 0, 0, 0, 0)
+ST(mainmenu_drawScreen, profscreen_setup();, (CALL_PLAIN(0x44d720, 0, 0, 0, 0, 0), 0), (mainmenu_drawScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 126 */
 /* missionbg_setup's tunnel, every texture slot these screens bind bindable (0x4df900..0x4df910, 0x4df03c..
    0x4df04c), the room's and the arena's depths */
