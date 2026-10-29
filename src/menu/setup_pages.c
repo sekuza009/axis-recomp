@@ -300,13 +300,13 @@ void (setup_423e50)(void)
 	glDisable(GL_TEXTURE_2D);
 	tunnel_advance();
 }
-/* 0x448140: the mission-select screen's tunnel: four layers of six walls (each under the menu camera, pushed back
-   550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture 0x4e0cd0, 10 high,
-   dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10, 0.4), layer 2
-   nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a tenth further
-   out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by 0x4df454) and
-   the pulse and scroll stepped on. The original leaves eax to callers that ignore it */
-void (missionsel_448140)(void)
+/* the menus' tunnel (mission select, skirmish, ARM CENTER): four layers of six walls (each under the menu camera,
+   pushed back 550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture 0x4e0cd0,
+   10 high, dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10,
+   0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a
+   tenth further out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by
+   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on */
+static void menu_tunnel(int clamp)
 {
 	const float turns[3] = { -40.0f, 0.0f, 40.0f };
 	gfx_setProjection2D3D(1);
@@ -398,13 +398,27 @@ void (missionsel_448140)(void)
 	if (GAME_VAR(int, 0x680398)) {
 		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &GAME_VAR(float, 0x680ccc));
 		GAME_VAR(float, 0x680ccc) = f32(glow);
-		if (!(glow > *(const float *)0x4a93fc))
-			GAME_VAR(u32, 0x4df454) = 0x3f800000;   /* 1 */
-		if (glow >= *(const float *)0x4a93f8)
-			GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+		if (!clamp) {
+			if (!(glow > *(const float *)0x4a93fc))
+				GAME_VAR(u32, 0x4df454) = 0x3f800000;   /* 1 */
+			if (glow >= *(const float *)0x4a93f8)
+				GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+		} else if (!(glow > *(const float *)0x4a93fc)) {
+			GAME_VAR(u32, 0x680ccc) = 0x40000000;   /* 2 */
+			GAME_VAR(u32, 0x4df454) = 0x3f800000;
+		} else if (GAME_VAR(float, 0x680ccc) >= *(const float *)0x4a93f8) {
+			GAME_VAR(u32, 0x680ccc) = 0x42180000;   /* 38 */
+			GAME_VAR(u32, 0x4df454) = 0xbf800000;
+		}
 	}
 	tunnel_advance();
 }
+
+/* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
+   clamped). The originals leave eax to callers that ignore it */
+void (missionsel_448140)(void) { menu_tunnel(0); }
+void (skirmish_4445a0)(void) { menu_tunnel(1); }
+void (armc_411110)(void) { menu_tunnel(1); }
 #undef g_scroll
 #undef g_tunnelPulseStep
 #undef g_tunnelPulse

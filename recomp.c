@@ -4302,8 +4302,10 @@ void mainmenu_drawScreen(void);
 #include "lifted/grp72.c"
 /* 0x411110 armc_411110() / 0x4445a0 skirmish_4445a0(): the armour and skirmish screens' tunnel, as
    missionsel_448140's (depth 550, textures 0x4e0cd0 and 0x76d47c / 0x76d478) */
-LIFT_PLAIN(armc_411110, 411110)
-LIFT_PLAIN(skirmish_4445a0, 4445a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_411110(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_4445a0(void);
 /* 0x411ab0 armc_411ab0(): the same deeper (depth 1650), textures 0x4df908 / 0x4df904, dimmer stripes */
 LIFT_PLAIN(armc_411ab0, 411ab0)
 /* 0x4388e0 room_4388e0() / 0x4091b0 arena_4091b0(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
@@ -13544,8 +13546,8 @@ static void tunnels_setup(void)
 	for (DWORD a = 0x4df03c; a <= 0x4df04c; a += 4) G32(a) = G32(0x4e0cd0);
 	GF(0x9dd698) = (float)irnd(-20000, 0) / 10.0f; GF(0x4dba68) = (float)irnd(-20000, 0) / 10.0f;
 }
-T_PLAIN(armc_411110, 0x411110, tunnels_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(skirmish_4445a0, 0x4445a0, tunnels_setup();, 0, 0, 0, 0, 0)
+ST(armc_411110, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (armc_411110(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(skirmish_4445a0, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_4445a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 T_PLAIN(armc_411ab0, 0x411ab0, tunnels_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(room_4388e0, 0x4388e0, tunnels_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(arena_4091b0, 0x4091b0, tunnels_setup();, 0, 0, 0, 0, 0)
