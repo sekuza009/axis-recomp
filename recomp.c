@@ -15343,7 +15343,21 @@ ST(menu_enterMenus, gen_setup(g_gs_40ee20, g_gi_40ee20, g_gb_40ee20);, CALL_PLAI
 static const DWORD g_gs_4372f0[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x434d00, 0, 0x434da0, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_4372f0[] = { 0x4dda44, 0x4db8b4, 0x4dba80, 0x4dbb10, 0x4dbb78, 0x4ded18, 0x4df818, 0x4e0cdc, 0x4e14f8, 0x4e151c, 0x4e1524, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d330, 0x76d41c, 0x76d48c, 0x9da498, 0x9dae70, 0x9db0a0, 0x9dce48, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_4372f0[] = { 0 };
-T_PLAIN(menu_4372f0, 0x4372f0, gen_setup(g_gs_4372f0, g_gi_4372f0, g_gb_4372f0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, each bound key its own code and one of them pressed for each key test, the gates mostly open (no join,
+   no confirmation), the list of games (count, top row, cursor) and the search flags 0 or 1 */
+static void roomkeys_setup(void)
+{
+	gen_setup(g_gs_4372f0, g_gi_4372f0, g_gb_4372f0);
+	static const DWORD keys[] = { 0x4e0cdc, 0x4e14f8, 0x4e151c, 0x4e1524, 0x76d330, 0x76d48c, 0x9dae70, 0x9db0a0 };
+	for (int k = 0; k < 8; k++) G32(keys[k]) = 0x100 + k;
+	callee_key(0x401600, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1); callee_key(0x401590, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1);
+	if (irnd(0, 3)) { G32(0x9dd6b4) = 0; G32(0x4db8b4) = irnd(0, 4) ? 0 : 1; }
+	G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 9);
+	static const DWORD flags[] = { 0x9dd56c, 0x9dd6a0, 0x9dd3fc, 0x9da498 };
+	for (int k = 0; k < 4; k++) G32(flags[k]) = irnd(0, 2) ? 0 : 1;
+	GF(0x4dda44) = (float)irnd(0, 80) / 10;
+}
+T_PLAIN(menu_4372f0, 0x4372f0, roomkeys_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
 static const DWORD g_gi_435fc0[] = { 0x4dda44, 0x4dba80, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x90d1c4, 0x9da498, 0x9dcd40, 0x9dce48, 0x9dd34c, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_435fc0[] = { 0 };
@@ -17584,7 +17598,7 @@ static const STest g_stests[] = {
 	T(room_435b00, 0, 200, 0), T(room_4346c0, 0, 200, 0), T(room_436620, 0, 200, 0), T(armc_40fd30, 0, 200, 0),
 	T(armc_colourScreenInput, 0, 200, 0), T(room_436400, 0, 200, 0), T(menu_437630, 0, 200, 0), T(mainmenu_441c00, 0, 200, 0),
 	T(setup_drawGraphicTab, 0, 200, 0), T(room_43e7b0, 0, 200, 0), T(setup_drawSoundTab, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
-	T(setup_drawControlTab, 0, 200, 0), T(room_43df80, 0, 1000, 0), T(menu_enterMenus, 0, 200, 0), T(menu_4372f0, 0, 200, 0),
+	T(setup_drawControlTab, 0, 200, 0), T(room_43df80, 0, 1000, 0), T(menu_enterMenus, 0, 200, 0), T(menu_4372f0, 0, 1000, 0),
 	T(room_435fc0, 0, 1000, 0), T(menu_436990, 0, 200, 0),
 	/* batch 176 */
 	T(lobby_406a60, 0, 200, 0), T(menu_437140, 0, 200, 0), T(arena_405690, 0, 200, 0), T(room_435d30, 0, 200, 0),
