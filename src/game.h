@@ -916,6 +916,9 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- (load/lists.c, render/shape_colours.c, net/net_tables.c, match/map_objects.c, menu/lobby_states.c) ---- */
 #define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
+#define net_454690() GAME_CDECL(0x454690, void, void)()                  /* the server table cleared */
+#define net_resolveHost(host) GAME_CDECL(0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
+#define arena_4519b0() GAME_CDECL(0x4519b0, u32, void)()
 #define crt_strtok(s, delimiters) GAME_CDECL(0x49ec3b, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
 #define crt_atoi(s) GAME_CDECL(0x49ec09, int, const char *)(s)
 #define FUN_00440e20(node, value) GAME_CDECL(0x440e20, u32, void *, int)(node, value)

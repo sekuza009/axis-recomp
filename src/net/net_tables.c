@@ -261,6 +261,54 @@ u32 (FUN_004520e0)(void)
 	return r;
 }
 
+/* a block of n bytes from malloc, cleared */
+static void *alloc_clear(u32 n)
+{
+	void *p = crt_malloc(n);
+	memset(p, 0, n);
+	return p;
+}
+
+/* 0x451600: the connection to `kind` (100 the lobby, 101 the game server) started afresh: the server table cleared,
+   both sockets closed (a blocking call cancelled, sending shut down; arena_4519b0 after each), the server's address
+   taken (its host name, or what net_resolveHost made of it, into 0xa055e4) with its port (0xa05326); then every
+   network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
+void (net_closeAll)(int kind)
+{
+	net_454690();
+	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
+	for (int k = 0; k < 2; k++) {
+		if (!GAME_VAR(u32, sockets[k]))
+			continue;
+		((int (STDCALL *)(void))0x4a8292)();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		GAME_VAR(u32, sockets[k]) = 0;
+		arena_4519b0();
+	}
+	if (kind == 100 || kind == 101) {
+		const char *host = (const char *)(kind == 100 ? 0xa0b24c : 0xa055fc);
+		strcpy((char *)0xa055e4, net_resolveHost(host) ? (const char *)0xa0d320 : host);
+		GAME_VAR(u16, 0xa05326) = GAME_VAR(u16, kind == 100 ? 0xa055f4 : 0xa05634);
+	}
+	memset((void *)0x9fd960, 0, 0x1e40 * 4);
+	memset((void *)0xa05748, 0, 0x16c0 * 4);
+	memset((void *)0xa05330, 0, 0x2aa);
+	static const struct { u32 at, size; } buffers[] = {
+		{ 0xa0b310, 0x5b }, { 0xa0b314, 0x5b }, { 0xa0b318, 0x5b }, { 0xa0b31c, 4 }, { 0xa0b304, 0x10 }, { 0xa0b320, 0x10b },
+		{ 0xa0b324, 8 }, { 0xa0b328, 0x79 }, { 0xa0b32c, 0x79 }, { 0xa0b330, 0x79 }, { 0xa0b334, 4 }, { 0xa0b30c, 4 },
+		{ 0xa0b308, 0x10 }, { 0xa0b340, 0xb9 }, { 0xa0b344, 0x5c }, { 0xa0b338, 0x36 }, { 0xa052e4, 1 }, { 0xa055e0, 0x1e } };
+	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
+		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
+	memset((void *)0xa052c0, 0, 0x22);
+	GAME_VAR(void *, 0xa0b33c) = alloc_clear(0x1e);
+	memset((void *)0xa05260, 0, 0x5b);
+	memset((void *)0xa0b280, 0, 0x79);
+	GAME_VAR(int, 0xa05328) = 0;
+	memset((void *)0xa052e8, 0, 0x3e);
+	memset((void *)0xa05638, 0, 0x10b);
+}
+
 /* a GlobalAlloc'd block unlocked and freed (through its handle) */
 static void global_free(void *p)
 {

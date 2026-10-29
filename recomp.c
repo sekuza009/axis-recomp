@@ -3235,7 +3235,8 @@ void armc_sendSelectionToNet(void);
    0x451600 net_closeAll(reconnect): close everything and (optionally) resolve the server again */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD net_disconnect(void);
-LIFT_PLAIN(net_closeAll, 451600)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_closeAll(int kind);
 /* batch 59 (lifted/grp7.c): menu frame/overlay drawing (calling the patched projection switch natively), GL window
    and display mode, dat/image file opening, the game timer, the clock check, profile deletion, the character
    settings in the registry and their room users, GL state, texture uploads */
@@ -10490,7 +10491,7 @@ ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
 ST(armc_sendSelectionToNet, netstate_setup(); fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc760, 20); fill((void *)0x4dcb18, 24);   /* any bits: NaNs too */ G32(0x9dd5d8) = irnd(0, 2) ? irnd(0, 30) : 0x14;   /* 0x14: the selection kept as it is */, (CALL_PLAIN(0x40e930, 0, 0, 0, 0, 0), 0), (armc_sendSelectionToNet(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
-T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, 0, g_a[0], 0, 0, 0)
+ST(net_closeAll, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_closeAll(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* batch 59 */
 ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
 ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
