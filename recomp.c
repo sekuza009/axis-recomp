@@ -10111,7 +10111,7 @@ ST(collision_rayTrace, raytrace_setup();, ray_orig(),
 #undef RND
 /* batch 54 */
 /* axis.cfg: words and lines, half the time after the header line the file must start with (else the defaults) */
-static void axiscfg_setup(void)
+static void axiscfg_header_setup(void)
 {
 	vfs_content(95, 0x2000); g_vfsOpenFail = !irnd(0, 3); g_paintStacks = 1;
 	if (irnd(0, 1)) {
@@ -10120,7 +10120,7 @@ static void axiscfg_setup(void)
 		memmove(d + n, d, g_vfsSize); memcpy(d, head, n); g_vfsSize += n;
 	}
 }
-T_PLAIN(cfg_writeDefaultAxisCfg, 0x42eca0, axiscfg_setup();, 0, 0, 0, 0, 0)
+T_PLAIN(cfg_writeDefaultAxisCfg, 0x42eca0, axiscfg_header_setup();, 0, 0, 0, 0, 0)
 /* the line-of-sight scene of the ray trace tests, plus up to 6 point lists (up to 8 points around the scene) and
    player p's record (position near the scene, range, current target) */
 static int g_losPicks;
