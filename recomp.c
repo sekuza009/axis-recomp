@@ -10490,7 +10490,19 @@ ST(room_434b90, netstate_setup();, CALL_PLAIN(0x434b90, 0, 0, 0, 0, 0), (DWORD)(
 ST(room_434820, netstate_setup();, CALL_PLAIN(0x434820, 0, 0, 0, 0, 0), (DWORD)(room_434820()))
 ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
-T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
+/* the best record kept (wins 0x4de72e, losses 0x4de732: ints) and the two records it is compared with (from
+   0x9dd5d8 and 0x9dd240: wins at +0x14, losses at +0x18; often more than 300 wins above it), zero now and then */
+static void bestrecord_setup(void)
+{
+	netstate_setup();
+	G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; G32(0x4de732) = irnd(0, 2) ? irnd(0, 500) : 0; G32(0x4de722) = irnd(0, 100);
+	static const DWORD rec[2] = { 0x9dd5d8, 0x9dd240 };
+	for (int r = 0; r < 2; r++) {
+		for (int k = 0; k < 8; k++) G32(rec[r] + 4 * k) = irnd(0, 60);
+		G32(rec[r] + 0x14) = irnd(0, 3) ? irnd(0, 1500) : 0; G32(rec[r] + 0x18) = irnd(0, 3) ? irnd(0, 800) : 0;
+	}
+}
+T_PLAIN(match_4327f0, 0x4327f0, bestrecord_setup();, 0, 0, 0, 0, 0)
 ST(armc_sendSelectionToNet, netstate_setup(); fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc760, 20); fill((void *)0x4dcb18, 24);   /* any bits: NaNs too */ G32(0x9dd5d8) = irnd(0, 2) ? irnd(0, 30) : 0x14;   /* 0x14: the selection kept as it is */, (CALL_PLAIN(0x40e930, 0, 0, 0, 0, 0), 0), (armc_sendSelectionToNet(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
 ST(net_closeAll, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_closeAll(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
