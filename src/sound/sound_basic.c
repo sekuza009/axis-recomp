@@ -244,3 +244,29 @@ int (sound_init)(void *hwnd)
 	GAME_VAR(int, 0xa0e80c) = 1;
 	return 1;
 }
+
+/* 0x462850 (thiscall on the stage): the match music by the map's kind (+0xbe3004), picked with the random table
+   (0xa106f8) at the counter 0xa1efb8: 1 one of four (the counter before it moves on), 2 always "darkness", 3 and 4
+   one of three (the counter after). Returns music_play's eax, or kind - 1 for another kind */
+u32 THISCALL (music_playMatch)(u8 *stage)
+{
+	static const u32 kind1[4] = { 0x4b496c, 0x4b4a6c, 0x4b4b6c, 0x4b4c6c };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
+	static const u32 kind3[3] = { 0x4b4d6c, 0x4b4e6c, 0x4b506c };             /* Forgotten, desert wind, ashes of past */
+	static const u32 kind4[3] = { 0x4b516c, 0x4b536c, 0x4b546c };             /* Speed of Light, Fierce battle, Valhalla */
+	const u32 *random = (const u32 *)0xa106f8;
+	u32 kind = *(u32 *)(stage + 0xbe3004) - 1;
+	u32 n;
+	switch (kind) {
+	case 0:
+		n = GAME_VAR(u32, 0xa1efb8)++;
+		return GAME_CDECL(0x457150, u32, const char *)((const char *)kind1[random[n & 0xfff] & 3]);   /* music_play */
+	case 1:
+		GAME_VAR(u32, 0xa1efb8)++;
+		return GAME_CDECL(0x457150, u32, const char *)((const char *)0x4b4f6c);   /* darkness */
+	case 2:
+	case 3:
+		n = ++GAME_VAR(u32, 0xa1efb8);
+		return GAME_CDECL(0x457150, u32, const char *)((const char *)(kind == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
+	}
+	return kind;
+}

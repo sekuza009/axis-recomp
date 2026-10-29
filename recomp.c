@@ -4833,7 +4833,8 @@ LIFT_PLAIN(net_sendLocalInfo, 450c20)
 /* 0x450a60 arena_450a60(): every waiting DirectPlay message: the buffer (a global block of 0x9fd940 bytes) grown when
    too small, system messages (sender 0) to net_sendLocalInfo, a type 7 of more than 0x49 bytes ends the loop, others
    to arena_451090; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
-LIFT_PLAIN(arena_450a60, 450a60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_450a60(void);
 /* 0x450bb0 FUN_00450bb0: jump to arena_450a60 */
 LIFT_PLAIN(FUN_00450bb0, 450bb0)
 /* batch 168 (lifted/grp114.c): the mission settings screen */
@@ -5084,7 +5085,8 @@ void THISCALL msg_playerConnected(void *scene, int actor);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_chatLine(void *scene, int actor, const char *text, int team);
 /* 0x462850 music_playMatch() (thiscall on the game): the match music by the map's kind */
-LIFT_PLAIN(music_playMatch, 462850)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD music_playMatch(void *stage);
 /* 0x453a10 dplay_closeSession(obj): Close and Release a DirectPlay object (0 without one) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 long dplay_closeSession(void *dplay);
@@ -14561,7 +14563,7 @@ ST(FUN_00451270, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g
 ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
 T_PLAIN(arena_451090, 0x451090, dpmsg_setup();, 0, BUF + 0x3800, g_a[4], g_a[5], 0)
 T_PLAIN(net_sendLocalInfo, 0x450c20, dpmsg_setup();, 0, BUF + 0x3800, 0, 0, 0)
-T_PLAIN(arena_450a60, 0x450a60, dpmsg_setup();, 0, 0, 0, 0, 0)
+ST(arena_450a60, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(arena_450a60()))
 T_PLAIN(FUN_00450bb0, 0x450bb0, dpmsg_setup();, 0, 0, 0, 0, 0)
 /* batch 168 */
 /* the mission settings screen: missionscreen_setup's state (missions, preview, textures, texts, records), the
@@ -14970,7 +14972,7 @@ ST(msg_playerConnected, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462b50, c
    (msg_playerConnected(BUF, g_a[0]), 0))
 ST(msg_chatLine, msgplayer_setup(g_stubMsgPlayer);, (TC(void, 0x462c30, char *, int, char *, int)(BUF, g_a[0], (char *)g_a[1], g_a[2]), 0),
    (msg_chatLine(BUF, g_a[0], (const char *)g_a[1], g_a[2]), 0))
-T_PLAIN(music_playMatch, 0x462850, msgplayer_setup(g_stubMusic);, BUF, 0, 0, 0, 0)
+ST(music_playMatch, msgplayer_setup(g_stubMusic);, CALL_PLAIN(0x462850, BUF, 0, 0, 0, 0), (DWORD)(music_playMatch((void *)BUF)))
 ST(dplay_closeSession, g_a[0] = irnd(0, 3) ? (int)fakecom_new(0, 1, g_nargsDplay, 0) : 0;, CALL_PLAIN(0x453a10, 0, g_a[0], 0, 0, 0), (DWORD)(dplay_closeSession((void *)(DWORD)(g_a[0]))))
 /* batch 175: generated tests (tools/gentests.py, gen_setup from batch 172) */
 /* FUN_0041edc0 / FUN_0041ed70 free the list at 0x67fb3c one node at a time (FUN_00441190, real: a stub would never

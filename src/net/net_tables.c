@@ -594,3 +594,50 @@ void (net_452bd0)(void)
 		break;
 	}
 }
+
+/* a global block freed; returns GlobalFree's eax */
+static u32 global_free_r(void *p)
+{
+	IMPORT(0x4a918c, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));          /* GlobalUnlock(GlobalHandle(p)) */
+	return IMPORT(0x4a9190, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalFree(GlobalHandle(p)) */
+}
+
+/* 0x450a60: every waiting DirectPlay message received (0x450bc0) into a global block of 0x9fd940 bytes, grown when
+   too small: system messages (from 0) go to 0x450c20 and the next is read; the first player message goes to
+   arena_451090 (a type 7 one longer than 0x49 bytes is dropped). The block is freed at the end (its size reset).
+   Returns what the original leaves in eax */
+u32 (arena_450a60)(void)
+{
+	u8 *buf = NULL;
+	u32 size = GAME_VAR(u32, 0x9fd940), r;
+	for (;;) {
+		u32 from = 0, to = 0;
+		r = GAME_CDECL(0x450bc0, u32, u32 *, u32 *, int, void *, u32 *)(&from, &to, 1, buf, &size);
+		if (r == 0x887700be || r == 0x887703e8)   /* no more messages */
+			break;
+		if (r == 0x8877001e) {                     /* the buffer too small: a bigger one */
+			if (buf)
+				global_free_r(buf);
+			buf = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+			if (!buf)
+				return 0;
+			GAME_VAR(u32, 0x9fd940) = size;
+			continue;
+		}
+		if (r != 0 || GAME_VAR(u32, 0x9fd940) < 4)
+			break;
+		if (!from) {
+			GAME_CDECL(0x450c20, void, void *)(buf);   /* a system message */
+			continue;
+		}
+		if (*(u32 *)buf == 7 && GAME_VAR(u32, 0x9fd940) > 0x49)
+			return global_free_r(buf);
+		r = GAME_CDECL(0x451090, u32, void *, u32, u32)(buf, GAME_VAR(u32, 0x9fd940), from);   /* arena_451090 */
+		break;
+	}
+	if (!buf)
+		return r;
+	r = global_free_r(buf);
+	GAME_VAR(u32, 0x9fd940) = 0;
+	return r;
+}
