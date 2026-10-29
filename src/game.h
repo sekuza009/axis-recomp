@@ -919,6 +919,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_434ff0() GAME_CDECL(0x434ff0, void, void)()   /* the list of games asked for again */
 #define room_43adc0() GAME_CDECL(0x43adc0, void, void)()   /* the game room's list of games drawn */
 #define room_434dd0(i) GAME_CDECL(0x434dd0, u32, int)(i)   /* game i of the list joined */
+#define room_432300(x, y) GAME_CDECL(0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
+#define room_434da0() GAME_CDECL(0x434da0, void, void)()   /* the selected game joined */
+#define room_434d00() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define arena_404460(x, y) GAME_CDECL(0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
 #define arena_452ec0(kind, host) GAME_CDECL(0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_CDECL(0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */

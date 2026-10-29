@@ -5252,7 +5252,8 @@ void room_43df80(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_enterMenus(void);
 LIFT_PLAIN(menu_4372f0, 4372f0)
-LIFT_PLAIN(room_435fc0, 435fc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_435fc0(void);
 LIFT_PLAIN(menu_436990, 436990)
 /* batch 176 (lifted/grp126.c): menu, room and lobby pages tested with their callees stubbed (tools/gentests.py):
    lobby_406a60, menu_437140, arena_405690, room_435d30, room_433e60, mainmenu_startNetGame,
@@ -15258,7 +15259,7 @@ T_PLAIN(menu_4372f0, 0x4372f0, gen_setup(g_gs_4372f0, g_gi_4372f0, g_gb_4372f0);
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
 static const DWORD g_gi_435fc0[] = { 0x4dda44, 0x4dba80, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x90d1c4, 0x9da498, 0x9dcd40, 0x9dce48, 0x9dd34c, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_435fc0[] = { 0 };
-T_PLAIN(room_435fc0, 0x435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x432300, (DWORD)irnd(-1, 15)); callee_ret(0x434d00, (DWORD)irnd(0, 1));   /* the control under the pointer; the join's answer */ if (irnd(0, 3)) { G32(0x9dce48) = 2; G32(0x9dd6b4) = 0; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x9dd6a0) = irnd(0, 2) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 2) ? 0 : 1; G32(0x9dd56c) = irnd(0, 2) ? 0 : 1; } G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 80) / 10; G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 12);   /* the list: count, top row, cursor */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x432300, (DWORD)irnd(-1, 15)); callee_ret(0x434d00, (DWORD)irnd(0, 1));   /* the control under the pointer; the join's answer */ if (irnd(0, 3)) { G32(0x9dce48) = 2; G32(0x9dd6b4) = 0; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x9dd6a0) = irnd(0, 2) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 2) ? 0 : 1; G32(0x9dd56c) = irnd(0, 2) ? 0 : 1; } G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 80) / 10; G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 12);   /* the list: count, top row, cursor */, (CALL_PLAIN(0x435fc0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (room_435fc0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 static const DWORD g_gs_436990[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_436990[] = { 0x4ded68, 0x4ded6c, 0x4e0cdc, 0x4e14f4, 0x4e150c, 0x4e1868, 0x67ef20, 0x67ef24, 0x67ef34, 0x67fb38, 0x680390, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x76d48c, 0x9da4a4, 0x9dae70, 0x9db0ac, 0x9dc428, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd6b0, 0x9dd834, 0x9dd838, 0xa0b378, 0 };
 static const DWORD g_gb_436990[] = { 0 };

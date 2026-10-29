@@ -483,3 +483,147 @@ void (arena_409bc0)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(GAME_VAR(int, 0x4dbb68), GAME_VAR(int, 0x4dbb6c), GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74));
 }
+
+/* ---- the game room's list of games: its mouse ---- */
+
+/* the selection one row up (the list scrolls at the top row) */
+static void games_up(void)
+{
+	int row = GAME_VAR(int, 0x4df818);
+	if (row > 0)
+		GAME_VAR(int, 0x4df818) = --row;
+	else if (g_listTop > 0)
+		g_listTop--;
+	g_localPlayer = g_listTop + row;
+}
+
+/* one row down (nine rows shown), unless at the last game: 0 then */
+static int games_down(void)
+{
+	int row = GAME_VAR(int, 0x4df818);
+	if (g_listTop + row >= g_gameCount - 1)
+		return 0;
+	if (row < 8)
+		GAME_VAR(int, 0x4df818) = ++row;
+	else
+		g_listTop++;
+	g_localPlayer = g_listTop + row;
+	return 1;
+}
+
+/* 0x435fc0: the game room's list of games, its mouse (in room modes other than 0 / 1; not while joining, 0x9dd6b4,
+   or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (room_432300) on: 0
+   join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
+   refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
+   the double-click time (0x9dd34c) joins it. Holding the button on the arrows scrolls once the blink clock reaches
+   5. The original leaves eax to callers that ignore it */
+void (room_435fc0)(void)
+{
+#define g_searching GAME_VAR(int, 0x9dd6a0)
+#define g_refreshing GAME_VAR(int, 0x9dd3fc)
+#define g_joined GAME_VAR(int, 0x9dd56c)
+	int mode = GAME_VAR(int, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd6b4) || GAME_VAR(int, 0x90d1c4))
+		return;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		if (g_searching)
+			return;
+		sound_playMenu(0);
+		GAME_VAR(int, 0xa0b34c) = 0;
+		GAME_VAR(int, 0x9dce48) = 0;
+		GAME_VAR(int, 0xa0b364) = 0;
+		return;
+	}
+	if (g_mouseClick) {
+		int on = room_432300(g_mouseX, g_mouseY);
+		if (on == 0) {
+			if (g_joined)
+				return;
+			if (g_searching || g_refreshing || g_gameCount <= 0) {
+				sound_playMenu(6);
+				return;
+			}
+			sound_playMenu(0);
+			room_434da0();
+			g_joined = 1;
+		} else if (on == 1) {
+			if (g_searching || g_refreshing) {
+				sound_playMenu(6);
+				return;
+			}
+			if (g_joined)
+				return;
+			GAME_VAR(int, 0xa0b358) = 0;
+			GAME_VAR(int, 0x680bb8) = 0;
+			if (room_434d00() == 1) {
+				sound_playMenu(0);
+				g_searching = 1;
+				GAME_VAR(int, 0x9dd4bc) = 1;
+			}
+		} else if (on == 2) {
+			sound_playMenu(0);
+			GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+			GAME_VAR(int, 0xa0b34c) = 0;
+			GAME_VAR(int, 0x9da498) = 1;
+			if (g_refreshing == 1) {
+				g_refreshing = 0;
+				g_searching = 0;
+				GAME_VAR(int, 0x9da498) = 0;
+			}
+			GAME_VAR(int, 0xa0d7a0) = 1;
+		} else if (on == 3) {
+			if (g_searching || g_refreshing) {
+				sound_playMenu(6);
+				return;
+			}
+			sound_playMenu(0);
+			GAME_VAR(int, 0xa0b34c) = 0;
+			GAME_VAR(int, 0x9dce48) = 0;
+			GAME_VAR(int, 0xa0b364) = 0;
+			GAME_VAR(int, 0xa0d7a0) = 1;
+		} else if (on == 13)
+			games_up();
+		else if (on == 14) {
+			if (!games_down())
+				return;
+		} else if (on >= 4 && on <= 12) {
+			int row = on - 4;
+			if (g_listTop + row >= g_gameCount)
+				return;
+			if (row == GAME_VAR(int, 0x4df818) && GAME_VAR(int, 0x9dd34c)) {
+				if (g_gameCount <= 0)
+					return;
+				if (g_searching || g_refreshing) {
+					sound_playMenu(6);
+					return;
+				}
+				if (g_joined)
+					return;
+				sound_playMenu(0);
+				GAME_VAR(int, 0x9dd34c) = 0;
+				GAME_VAR(int, 0x9dcd40) = 0;
+				g_joined = 1;
+				room_434da0();
+			} else {
+				sound_playMenu(0);
+				GAME_VAR(int, 0x9dd34c) = 1;
+				GAME_VAR(int, 0x9dcd40) = 0;
+				GAME_VAR(int, 0x4df818) = row;
+				g_localPlayer = g_listTop + row;
+			}
+		}
+	}
+	if (!g_mouseHeld)
+		return;
+	int on = room_432300(g_mouseX, g_mouseY);
+	if ((on != 13 && on != 14) || !(g_cursorBlink >= *(const float *)0x4a93d0))
+		return;
+	if (on == 13 || games_down()) {
+		if (on == 13)
+			games_up();
+		g_cursorBlink = 0.0f;
+	}
+#undef g_searching
+#undef g_refreshing
+#undef g_joined
+}
