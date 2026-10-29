@@ -15352,10 +15352,10 @@ static void roomkeys_setup(void)
 	for (int k = 0; k < 8; k++) G32(keys[k]) = 0x100 + k;
 	callee_key(0x401600, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1); callee_key(0x401590, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1);
 	if (irnd(0, 3)) { G32(0x9dd6b4) = 0; G32(0x4db8b4) = irnd(0, 4) ? 0 : 1; }
-	G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 9);
+	G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 1) ? irnd(0, 1) * 8 : irnd(0, 9);   /* the top row or row 8 often */
 	static const DWORD flags[] = { 0x9dd56c, 0x9dd6a0, 0x9dd3fc, 0x9da498 };
 	for (int k = 0; k < 4; k++) G32(flags[k]) = irnd(0, 2) ? 0 : 1;
-	GF(0x4dda44) = (float)irnd(0, 80) / 10;
+	GF(0x4dda44) = irnd(0, 1) ? 6.0f : (float)irnd(0, 80) / 10;   /* the repeat clock past 5 half the time */
 }
 T_PLAIN(menu_4372f0, 0x4372f0, roomkeys_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
