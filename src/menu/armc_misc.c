@@ -5,6 +5,12 @@
 
 #define g_armcPreview GAME_VAR(int, 0x4dbc68)         /* (by use) the mech preview is shown */
 #define g_armcModeShown GAME_VAR(int, 0x4dc24c)       /* (unclear) 3: the part lists are left as they are */
+#define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
+#define g_armcSpin GAME_VAR(int, 0x4dceac)
+#define g_armcState GAME_VAR(int, 0x4dc790)           /* (by use) 0 / 1: the screen is not up; 2: the preview camera is kept */
+#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
+#define g_armcSessionMade GAME_VAR(int, 0x4dc54c)
+#define g_armcZoom GAME_VAR(float, 0x4dcfd8)          /* (by use) 1 when the part in view changes; each frame lowers it until it is below a limit, then -2 */
 
 /* 0x41dfb0: the parts page: the preview, the part lists (armc_40d990, a no-op in the patched game) and, unless the
    interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
@@ -135,8 +141,6 @@ void (armc_exit)(int confirmed)
 
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
    while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
-#define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
-#define g_armcSpin GAME_VAR(int, 0x4dceac)
 #define g_armcEye ((const u32 *)0xa0e7a8)              /* (by use) the preview camera's position */
 #define NO_POSE (-2)
 
@@ -224,10 +228,6 @@ void (armc_41d8a0)(void)
 	}
 }
 
-#define g_armcState GAME_VAR(int, 0x4dc790)           /* (by use) 0 / 1: the screen is not up; 2: the preview camera is kept */
-#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
-#define g_armcSessionMade GAME_VAR(int, 0x4dc54c)
-#define g_armcFlash GAME_VAR(float, 0x4dcfd8)         /* (unclear) counts down to -2 */
 
 /* 0x41e040: the ARM CENTER's frame: the menus' background (unless entered from the lobby), the entry state, then,
    while the screen is up: only the dialog's frame while one is open; the session made (and the six item slots
@@ -282,10 +282,108 @@ void (menuState700_armCenter)(void)
 		text_drawBox16(105, 244, 535, (const char *)0x757324);
 		g_armcSessionDue = 1;
 	}
-	long double flash = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a93ec), &g_armcFlash);
-	g_armcFlash = flash;
-	if (!(flash >= GAME_VAR(float, 0x4a94a8)))
-		g_armcFlash = -2.0f;
+	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a93ec), &g_armcZoom);
+	g_armcZoom = zoom;
+	if (!(zoom >= GAME_VAR(float, 0x4a94a8)))
+		g_armcZoom = -2.0f;
+}
+
+#define g_menuEye ((u32 *)0x4df024)                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
+#define g_menuAt ((u32 *)0x680378)                    /* and the point it looks at */
+
+/* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
+   mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
+   lists built and the mech read (from the room's session or the profile), a sound; 0x4dcf34 set when the money
+   (0x9dd5d8 from the room, 0x9f181c otherwise) went up since last time, the new amount kept and returned */
+u32 (menu_enterMenus)(void)
+{
+	g_armcHideInterface = 0;
+	GAME_VAR(int, 0x4dbe48) = 0;
+	menu_40e510();
+	music_play((const char *)0x4b01b0);
+	g_armcPartSlot = 5;
+	GAME_VAR(int, 0x4dce38) = 5;
+	g_armcColourSlot = 5;
+	int fromRoom = g_armcFrom == 3;
+	g_armcMode = 1;
+	GAME_VAR(int, 0x4dc788) = 0;
+	g_menuEye[0] = 0;
+	g_menuEye[1] = 0;
+	u32 distance = fromRoom ? GAME_VAR(u32, 0x4a9458) : GAME_VAR(u32, 0x4a9454);   /* -1550, -450 */
+	g_menuAt[0] = 0;
+	g_menuAt[1] = 0;
+	g_menuEye[2] = distance;
+	g_menuAt[2] = fromRoom ? 0xc4ce4000 : 0xc4098000;                                /* -1650, -550 */
+	GAME_VAR(int, 0x4dcc90) = 10;
+	GAME_VAR(int, 0x4dcc94) = 10;
+	GAME_VAR(int, 0x4dcc98) = 0x276;
+	GAME_VAR(int, 0x4dcc9c) = 0x1d6;
+	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
+	for (int i = 0; i < 4; i++) {
+		GAME_VAR(u32, 0x4dbc58 + i * 4) = colourA[i];
+		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
+	}
+	GAME_VAR(int, 0x4dcf34) = 0;
+	u32 *point = (u32 *)0x4df870, *pointAt = (u32 *)0x76d388;   /* the ARM CENTER's camera point */
+	point[0] = 0;
+	point[1] = 0;
+	pointAt[0] = 0;
+	pointAt[1] = 0;
+	if (fromRoom) {
+		point[2] = 0xc47a0000;    /* -1000 */
+		pointAt[2] = 0xc4898000;  /* -1100 */
+		if (GAME_VAR(int, 0x9dd5d8) > GAME_VAR(int, 0x4dc4b4))
+			GAME_VAR(int, 0x4dcf34) = 1;
+	} else {
+		point[2] = 0x42c80000;    /* 100 */
+		pointAt[2] = 0;
+		if (GAME_VAR(int, 0x9f181c) > GAME_VAR(int, 0x4dc1e0))
+			GAME_VAR(int, 0x4dcf34) = 1;
+	}
+	u32 *home = (u32 *)0x9db090, *homeAt = (u32 *)0x76d3f8;
+	home[2] = distance;
+	home[0] = 0;
+	home[1] = 0;
+	homeAt[0] = 0;
+	homeAt[1] = 0;
+	homeAt[2] = g_menuAt[2];
+	g_armcState = 1;
+	g_screen = 700;
+	g_lastScreen = 700;
+	g_nextScreen = 700;
+	armc_40e060();
+	armc_40e1c0();
+	armc_40e300();
+	armc_buildPartLists();
+	GAME_VAR(int, 0x4dc868) = 1;
+	g_armcSpin = 1;
+	GAME_VAR(int, 0x4dcc58) = 1;
+	g_armcPreview = 0;
+	g_armcSessionDue = 0;
+	g_armcSessionMade = 0;
+	GAME_VAR(int, 0x4dcf10) = 0;
+	GAME_VAR(int, 0x4dbc00) = 0;
+	BITS(g_armcAngle) = 0;
+	g_armcZoom = 1.0f;
+	if (g_armcFrom == 3)
+		FUN_0040ddb0();
+	else
+		FUN_004463a0();
+	menu_40e6c0();
+	armc_40de80();
+	armc_40dfa0();
+	armc_40ed20();
+	sound_playMenu(4);
+	if (g_armcFrom == 3) {
+		int money = GAME_VAR(int, 0x9dd5d8);
+		if (money > GAME_VAR(int, 0x4dc4b4))
+			GAME_VAR(int, 0x4dc4b4) = money;
+		return money;
+	}
+	int money = GAME_VAR(int, 0x9f181c);
+	if (money > GAME_VAR(int, 0x4dc1e0))
+		GAME_VAR(int, 0x4dc1e0) = money;
+	return money;
 }
 
 /* v moved a tenth of the way to target per time unit */

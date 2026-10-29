@@ -423,6 +423,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_41dfe0() GAME_CDECL(0x41dfe0, void, void)()
 #define armc_41e010() GAME_CDECL(0x41e010, void, void)()
 #define armc_41dab0() GAME_CDECL(0x41dab0, void, void)()
+#define armc_exit(confirmed) GAME_CDECL(0x40f0f0, void, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
+#define set_4dc798_40f200() GAME_CDECL(0x40f200, void, void)()   /* to the parts page */
+#define set_4dc798_40f320() GAME_CDECL(0x40f320, void, void)()   /* to the third page */
+#define armc_drawPartScreen() GAME_CDECL(0x40f220, void, void)()   /* to the weapons page (menu/armc_items.c) */
+#define armc_backupColours() GAME_CDECL(0x40f590, void, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
+#define armc_40f340(part, dir) GAME_CDECL(0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
 #define armc_41b750() GAME_CDECL(0x41b750, void, void)()
 #define armc_41d280() GAME_CDECL(0x41d280, void, void)()
 #define armc_41cf20() GAME_CDECL(0x41cf20, void, void)()
@@ -445,6 +451,18 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_461540(scene, slot) GAME_THISCALL(0x461540, void, Scene *, int)(scene, slot)   /* re-equip the preview mech */
 #define armc_40f870(slot) GAME_CDECL(0x40f870, void, int)(slot)
 #define armc_40f950() GAME_CDECL(0x40f950, void, void)()
+#define armc_40f9e0() GAME_CDECL(0x40f9e0, void, void)()   /* the item slots given to the mech (menu/armc_items.c) */
+#define armc_40f830(i) GAME_CDECL(0x40f830, int, int)(i)   /* item list entry i is a colour part already in a slot */
+#define menu_40e510() GAME_CDECL(0x40e510, void, void)()
+#define armc_40e060() GAME_CDECL(0x40e060, void, void)()   /* the part lists made (heads, chests, arms...) */
+#define armc_40e1c0() GAME_CDECL(0x40e1c0, void, void)()
+#define armc_40e300() GAME_CDECL(0x40e300, void, void)()
+#define armc_buildPartLists() GAME_CDECL(0x40da40, void, void)()
+#define FUN_004463a0() GAME_CDECL(0x4463a0, void, void)()   /* the saved mech read (from the profile) */
+#define menu_40e6c0() GAME_CDECL(0x40e6c0, void, void)()
+#define armc_40de80() GAME_CDECL(0x40de80, void, void)()
+#define armc_40dfa0() GAME_CDECL(0x40dfa0, void, void)()
+#define armc_40ed20() GAME_CDECL(0x40ed20, void, void)()
 #define armc_41cca0(item) GAME_CDECL(0x41cca0, void, int)(item)   /* the item shown on the preview */
 #define armc_41ca50(slot, item) GAME_CDECL(0x41ca50, void, int, int)(slot, item)
 #define armc_snapshot(which) GAME_CDECL(0x419000, void, int)(which)
@@ -533,6 +551,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
+#define GetModuleHandleA(name) IMPORT(0x4a915c, void *, const char *)(name)
+#define glWindow_resize(w, h) GAME_CDECL(0x468450, int, int, int)(w, h)   /* app/win32.c */
 #define timer_getGameTime(timer) GAME_THISCALL(0x487490, long double, void *)(timer)   /* seconds since its last call */
 #define loading_draw_bits(progress) GAME_CDECL(0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
 #define mainmenu_4417f0() GAME_CDECL(0x4417f0, void, void)()   /* every map of the map-select list in */

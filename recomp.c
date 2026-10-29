@@ -4077,7 +4077,8 @@ static LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l)
    a message and 0): the title (0xa0e81c) and the mode kept, the window class registered (failure: message, 0), the
    display mode switched for full screen (glWindow_setDisplayModeBy), the window created (a child of parent, or
    pop-up), shown, focused and the GL state set (glWindow_4684c0); returns the window */
-LIFT_PLAIN8(glWindow_init, 468250)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *glWindow_init(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen, void *window, void *other);
 /* batch 113 (lifted/grp59.c) */
 #include "lifted/grp59.c"
 /* 0x460cb0 (thiscall on the game) app_requireCd(a, mode): misnamed (the CD check is only its first step; the no-CD
@@ -4936,9 +4937,12 @@ void armc_exit(int confirmed);
    armc_40f9e0, back); 0x410810 armc_410810(): the colour page's keys (armc_backupColours, back) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_40fb20(void);
-LIFT_PLAIN(armc_4101e0, 4101e0)
-LIFT_PLAIN(armc_410500, 410500)
-LIFT_PLAIN(armc_410810, 410810)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_4101e0(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_410500(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_410810(void);
 /* 0x410190 armc_onStateEnter(): in a state past 1 (0x4dc790), no dialog: the mouse of page 0x4dc798 (1..4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_onStateEnter(void);
@@ -5181,7 +5185,8 @@ LIFT_PLAIN(setup_drawSoundTab, 4221d0)
 LIFT_PLAIN(setup_controlTabKeys, 422e10)
 LIFT_PLAIN(setup_drawControlTab, 422830)
 LIFT_PLAIN(room_43df80, 43df80)
-LIFT_PLAIN(menu_enterMenus, 40ee20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menu_enterMenus(void);
 LIFT_PLAIN(menu_4372f0, 4372f0)
 LIFT_PLAIN(room_435fc0, 435fc0)
 LIFT_PLAIN(menu_436990, 436990)
@@ -12902,7 +12907,7 @@ static void glwinit_setup(void)
 	g_mockPixelFormat = irnd(0, 4) ? 7 : 0;
 }
 ST(glWindow_init, glwinit_setup();, CD(DWORD, 0x468250, char *, int, int, int, int, int, int, int)((char *)g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   glWindow_init(0, 0, 0, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3], (DWORD)g_a[4], (DWORD)g_a[5], (DWORD)g_a[6], (DWORD)g_a[7]))
+   (DWORD)glWindow_init((const char *)g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], (void *)g_a[6], (void *)g_a[7]))
 /* batch 113 */
 /* the game object as scene_reset's, scene_resetActors' and match_463480's tests set it up; 0..12 map list entries
    (names up to 60 characters, some flagged); the camera globals random; modes -1..4 */
@@ -14716,9 +14721,9 @@ static void armcstate_setup(const DWORD *stubs)
 	callee_ret(0x40e450, (DWORD)irnd(-1, 12));
 }
 ST(armc_40fb20, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_40fb20()))
-T_PLAIN(armc_4101e0, 0x4101e0, armcstate_setup(g_stubArmcMainKeys);, 0, 0, 0, 0, 0)
-T_PLAIN(armc_410500, 0x410500, armcstate_setup(g_stubArmcPartKeys);, 0, 0, 0, 0, 0)
-T_PLAIN(armc_410810, 0x410810, armcstate_setup(g_stubArmcColourKeys);, 0, 0, 0, 0, 0)
+ST(armc_4101e0, armcstate_setup(g_stubArmcMainKeys);, (CALL_PLAIN(0x4101e0, 0, 0, 0, 0, 0), 0), (armc_4101e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_410500, armcstate_setup(g_stubArmcPartKeys);, (CALL_PLAIN(0x410500, 0, 0, 0, 0, 0), 0), (armc_410500(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_410810, armcstate_setup(g_stubArmcColourKeys);, (CALL_PLAIN(0x410810, 0, 0, 0, 0, 0), 0), (armc_410810(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_onStateEnter, armcstate_setup(g_stubArmcState);, CALL_PLAIN(0x410190, 0, 0, 0, 0, 0), (DWORD)(armc_onStateEnter()))
 T_PLAIN(armc_processInput, 0x410ab0, armcstate_setup(g_stubArmcInput);, 0, 0, 0, 0, 0)
 /* batch 171 */
@@ -15138,7 +15143,7 @@ T_PLAIN(room_43df80, 0x43df80, gen_setup(g_gs_43df80, g_gi_43df80, g_gb_43df80);
 static const DWORD g_gs_40ee20[] = { 0x40da40, 0, 0x40ddb0, 0, 0x40de80, 0, 0x40dfa0, 0, 0x40e060, 0, 0x40e1c0, 0, 0x40e300, 0, 0x40e510, 0, 0x40e6c0, 0, 0x40ed20, 0, 0x41e760, 1, 0x4463a0, 0, 0x457150, 1, 0 };
 static const DWORD g_gi_40ee20[] = { 0x4df02c, 0x9db098, 0x4dbc00, 0x4dbc04, 0x4dbc58, 0x4dbc5c, 0x4dbc60, 0x4dbc64, 0x4dbc68, 0x4dbc6c, 0x4dbe48, 0x4dc1d0, 0x4dc1d4, 0x4dc1d8, 0x4dc1dc, 0x4dc1e0, 0x4dc24c, 0x4dc4b0, 0x4dc4b4, 0x4dc54c, 0x4dc788, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcc58, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dce38, 0x4dceac, 0x4dcf10, 0x4dcf34, 0x4dcfd8, 0x4dd078, 0x4df024, 0x4df028, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9dd5d8, 0x9f181c, 0 };
 static const DWORD g_gb_40ee20[] = { 0 };
-T_PLAIN(menu_enterMenus, 0x40ee20, gen_setup(g_gs_40ee20, g_gi_40ee20, g_gb_40ee20);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_enterMenus, gen_setup(g_gs_40ee20, g_gi_40ee20, g_gb_40ee20);, CALL_PLAIN(0x40ee20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menu_enterMenus()))
 static const DWORD g_gs_4372f0[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x434d00, 0, 0x434da0, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_4372f0[] = { 0x4dda44, 0x4db8b4, 0x4dba80, 0x4dbb10, 0x4dbb78, 0x4ded18, 0x4df818, 0x4e0cdc, 0x4e14f8, 0x4e151c, 0x4e1524, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d330, 0x76d41c, 0x76d48c, 0x9da498, 0x9dae70, 0x9db0a0, 0x9dce48, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_4372f0[] = { 0 };

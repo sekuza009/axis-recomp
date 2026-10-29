@@ -68,6 +68,71 @@ int (glWindow_resize)(int width, int height)
 	return 1;
 }
 
+#define g_glWindowMade GAME_VAR(int, 0xa0e930)        /* the window exists (it is made once) */
+#define g_glWindow GAME_VAR(void *, 0xa0e934)
+#define g_glTitle ((char *)0xa0e81c)                   /* also the window class's, icon's and menu's name */
+
+/* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
+   colour / depth bits (0xa0e810, 0xa0e928, 0xa0e818, 0xa0e924) kept. Without a given window (window and other
+   NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
+   switched in full screen (failing that, a message and windowed), a pop-up window of that size made, shown and
+   focused; otherwise the given window (and other, 0xa0e938) taken and resized. Then the GL state (glWindow_4684c0);
+   returns the window */
+void *(glWindow_init)(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen,
+                      void *window, void *other)
+{
+	if (g_glWindowMade == 1) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4fd8);   /* sys_errorMessageNoName */
+		return NULL;
+	}
+	strcpy(g_glTitle, title);
+	GAME_VAR(int, 0xa0e818) = colourBits;
+	GAME_VAR(int, 0xa0e924) = depthBits;
+	GAME_VAR(int, 0xa0e920) = fullscreen;
+	GAME_VAR(int, 0xa0e810) = width;
+	GAME_VAR(int, 0xa0e928) = height;
+	if (window == NULL && other == NULL) {
+		u32 wc[10];   /* WNDCLASSA */
+		wc[0] = 0;                 /* style */
+		wc[1] = 0x4680d0;          /* glWindow_wndProc */
+		wc[2] = 0;
+		wc[3] = 0;
+		wc[4] = (u32)GetModuleHandleA(NULL);
+		wc[5] = (u32)IMPORT(0x4a92c4, void *, void *, const char *)(GetModuleHandleA(NULL), g_glTitle);   /* LoadIconA */
+		wc[6] = (u32)IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);                               /* LoadCursorA(IDC_ARROW) */
+		wc[7] = 6;                 /* COLOR_WINDOW + 1 */
+		wc[8] = (u32)g_glTitle;    /* menu name */
+		wc[9] = (u32)g_glTitle;    /* class name */
+		if (!(IMPORT(0x4a92b8, u16, const u32 *)(wc))) {                                               /* RegisterClassA */
+			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4fa4);
+			return NULL;
+		}
+		if (GAME_VAR(int, 0xa0e920) == 1 &&
+		    !GAME_CDECL(0x467f20, int, int, int, int)(GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), GAME_VAR(int, 0xa0e818))) {
+			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
+			GAME_VAR(int, 0xa0e920) = 0;
+		}
+		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
+			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), NULL, NULL,
+			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
+		if (g_glWindow == NULL) {
+			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f14);
+			return NULL;
+		}
+		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
+		IMPORT(0x4a92c0, int, void *)(g_glWindow);            /* UpdateWindow */
+		IMPORT(0x4a935c, void *, void *)(g_glWindow);         /* SetFocus */
+		g_glWindowMade = 1;
+	} else {
+		g_glWindow = window;
+		GAME_VAR(void *, 0xa0e938) = other;
+		glWindow_resize(width, height);
+	}
+	GAME_CDECL(0x4684c0, void, void)();   /* glWindow_4684c0 */
+	GAME_VAR(int, 0x4c4de8) = -1;
+	return g_glWindow;
+}
+
 /* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
    the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
    the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
