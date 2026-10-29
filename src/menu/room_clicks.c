@@ -2,6 +2,7 @@
    white fade over the screen. Buttons are hit-tested with the pointer (room_4321c0 and its kind: the index of the
    button under it, or -1). */
 #include "../game.h"
+#include <string.h>
 
 #define g_roomPopup GAME_VAR(int, 0x9dd6c4)           /* (by use) the room's popup: 1 / 2 closed by its buttons */
 #define g_leaveDialog GAME_VAR(int, 0x9dd850)         /* the "leave" dialog is up */
@@ -251,4 +252,45 @@ u32 (room_435d30)(void)
 		return allowed;
 	sound_playMenu(0);
 	return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
+}
+
+/* 0x43bcb0: the selected map's preview (map 0x4df9e8, a signed byte; its name 32 bytes a slot at 0x907b30) loaded
+   as a texture: "<0x680bc4><name>/<name>" (the texture manager 0xa0e010) into 0x9da324; 0x680cd0 cleared */
+void (room_43bcb0)(void)
+{
+	char path[0x80], copy[0x40];
+	const char *name = (const char *)(0x907b30 + (signed char)GAME_VAR(u8, 0x4df9e8) * 32);
+	memset(path, 0, sizeof path);
+	strcpy(path, (const char *)0x680bc4);   /* the maps' folder */
+	strcat(path, name);
+	strcat(path, (const char *)0x4ad564);   /* "/" */
+	strcat(path, name);
+	strcpy(copy, path);
+	GAME_VAR(int, 0x9da324) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
+	GAME_VAR(int, 0x680cd0) = 0;
+}
+
+/* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
+   0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
+   (0x9dd1d8, 30 bytes), two short fields (0x9dd1f6, 0x9dd202, 12 bytes) or the comment (0x9dd20e, 50 bytes).
+   Returns what the original leaves in eax */
+u32 (room_433d30)(void)
+{
+	static const struct { u32 editing, field, size; } fields[4] = {
+		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
+	u32 r = 0;
+	if (GAME_VAR(int, 0x68039c)) {
+		IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+		IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+		r = GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
+	}
+	const char *typed = (const char *)0x9dc92c;
+	for (int k = 0; k < 4; k++) {
+		if (GAME_VAR(int, fields[k].editing) != 1)
+			continue;
+		memset((void *)fields[k].field, 0, fields[k].size);
+		strcpy((char *)fields[k].field, typed);
+		return k == 3 ? strlen(typed) + 1 : 0;
+	}
+	return r;
 }
