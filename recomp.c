@@ -4426,7 +4426,8 @@ DWORD room_43d060(void);
    joining 0x9dd6b4); the scroll arrows; the blinking 0x75a1a4 while 0x9dd6a0 / 0x9dd3fc (alpha from 0x4dba80); the
    joining box (0x74f124 and the room name 0x9dcee8); the confirmation (0x4db8b4: 0x752aa4 / 0x752b24, its button
    0x751824 by room_432340); the border */
-LIFT_PLAIN(room_43adc0, 43adc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_43adc0(void);
 /* batch 137 (lifted/grp83.c): the room's game settings form */
 #include "lifted/grp83.c"
 /* 0x43bfe0 room_drawGameSettings(): the game settings form (window 0x9dd1b8..): frame, title 0x75a424, a line,
@@ -13793,7 +13794,7 @@ static void gamelist_setup(void)
 	fill_str((char *)0x752aa4, 12, 32, 126); fill_str((char *)0x752b24, 12, 32, 126); fill_str((char *)0x751824, 8, 32, 126);
 	for (int k = 0; k < 5; k++) fill_str((char *)0x7673a4 + k * 0x80, 6, 32, 126);
 	for (int k = 0; k < 16; k++) fill_str((char *)0x907b30 + k * 0x20, 10, 'A', 'z');
-	G32(0x9dd330) = irnd(0, 4) ? 1 : 0; G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 20);
+	G32(0x9dd330) = irnd(0, 4) ? 1 : 0; G32(0x67ef30) = irnd(0, 3) ? irnd(1, 30) : 0; G32(0x680bb0) = irnd(0, 20);
 	for (int g = 0; g < 50; g++) {
 		char *r = (char *)0x9087c4 + g * 0x4a;
 		fill(r, 0x4a);
@@ -13807,8 +13808,13 @@ static void gamelist_setup(void)
 	G32(0x9dd6a0) = irnd(0, 3) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 3) ? 0 : 1; G32(0x9dd6b4) = irnd(0, 4) ? 0 : 1;
 	G32(0x4db8b4) = irnd(0, 4) ? 0 : 1; GF(0x4dba80) = (float)irnd(0, 100000) / 100.0f;
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dd4a8) + irnd(0x20, 0x240); G32(0x4ded6c) = G32(0x9dd4b4) - irnd(0x12, 0x32); }
+	if (irnd(0, 1)) {   /* the pointer on one of the 15 controls (room_432300's rectangles at 0x9dcd48) */
+		int *r = (int *)0x9dcd48, on = irnd(0, 14), x = G32(0x4ded68), y = G32(0x4ded6c);
+		for (int i = 0; i < 15; i++) { r[i * 4] = 1; r[i * 4 + 1] = 1; r[i * 4 + 2] = 0; r[i * 4 + 3] = 0; }
+		r[on * 4] = x - 1; r[on * 4 + 1] = y - 1; r[on * 4 + 2] = x + 1; r[on * 4 + 3] = y + 1;
+	}
 }
-T_PLAIN(room_43adc0, 0x43adc0, gamelist_setup();, 0, 0, 0, 0, 0)
+ST(room_43adc0, gamelist_setup();, (CALL_PLAIN(0x43adc0, 0, 0, 0, 0, 0), 0), (room_43adc0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 137 */
 /* the settings form: the texture set and the custom option as customopt_setup's (the preview reloaded through
    mappreview_setup for custom rules, else a bindable preview), the window at 0x9dd1b8 after that (the custom option
