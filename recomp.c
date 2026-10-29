@@ -4215,7 +4215,8 @@ LIFT_PLAIN(arena_409bc0, 409bc0)
    underline, the server name 0x9dd1d8 in a green-framed box, a note 0x758e24, two buttons (0x758f24, the one under
    the cursor bright); with the confirmation open (0x9dd850) a dimmed screen, a box with two lines (0x74dfa4,
    0x74e024) and its two buttons (0x7517a4); the border */
-LIFT_PLAIN(room_439e00, 439e00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_439e00(void);
 /* 0x4456b0 skirmish_drawScreenB(): the mission briefing: a translucent window (0x9f16a8..), title 0x75e024, a cyan
    frame and line, the typewriter text (skirmish_445520), two buttons (0x75e2a4) and the back / start buttons
    (0x75e3a4): back greyed until the briefing is done (0x4d7348), start greyed without a mission (0x9f1060) */
@@ -13293,7 +13294,7 @@ static void srvdlg_setup(void)
 	G32(0x9dd850) = irnd(0, 2) ? 0 : 1;
 	if (G32(0x9dd850) && irnd(0, 1)) { G32(0x4ded68) = 0xb4 + irnd(0, 1) * 0xa0 + irnd(0, 0x78); G32(0x4ded6c) = 0x104 + irnd(0, 0x20); }
 }
-T_PLAIN(room_439e00, 0x439e00, srvdlg_setup();, 0, 0, 0, 0, 0)
+ST(room_439e00, srvdlg_setup();, CALL_PLAIN(0x439e00, 0, 0, 0, 0, 0), room_439e00())
 /* a skirmish window (0x9f16a8..0x9f16b4) with menutex_setup's set, colours, the cursor sometimes on a button */
 static void skwin_setup(void)
 {
