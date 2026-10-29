@@ -9616,7 +9616,20 @@ static void skirmishinfo_setup(void)
 }
 ST(data_loadSkirmishInfo, skirmishinfo_setup();, CALL_PLAIN(0x42ba40, 0, 0, 0, 0, 0), (DWORD)(data_loadSkirmishInfo()))
 ST(data_loadMapInfo, mapinfo_setup();, CALL_PLAIN(0x42b830, 0, 0, 0, 0, 0), (DWORD)(data_loadMapInfo()))
-T_PLAIN(data_loadPilotProfiles, 0x42b590, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
+/* profkor.dat / profeng.dat: random content (the game ends), or mostly a valid file: the header ("AXIS CHARACTER
+   PROFILE DATA FILE", 0x80 bytes), 0x1046a bytes on the record count and the check word (0x115c + 0x67; now and
+   then wrong), then the 0x4c-byte records (any bytes: decoded, then the stats clamped); sometimes too short */
+static void pilotfile_setup(void)
+{
+	vfs_content(0, 0x2000); G32(0x9dae74) = irnd(0, 2);
+	if (!irnd(0, 4)) return;
+	BYTE *d = (BYTE *)(BUF + 0x200000); int n = irnd(0, 9) ? irnd(0, 12) : irnd(0, 103);
+	DWORD size = 0x80 + 0x1046a + 8 + n * 0x4c;
+	fill(d, size); memset(d, 0, 0x80); strcpy((char *)d, irnd(0, 9) ? "AXIS CHARACTER PROFILE DATA FILE" : "AXIS CHARACTER");
+	*(int *)(d + 0x80 + 0x1046a) = n; *(int *)(d + 0x80 + 0x1046a + 4) = irnd(0, 9) ? 0x115c + 0x67 : irnd(0, 0x2000);
+	g_vfsData = d; g_vfsSize = irnd(0, 9) ? size : irnd(0x80, 9999);
+}
+T_PLAIN(data_loadPilotProfiles, 0x42b590, pilotfile_setup();, 0, 0, 0, 0, 0)
 ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 ST(profile_load, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446590, 0, 0, 0, 0, 0), (DWORD)(profile_load()))
 ST(profile_save, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446a10, 0, 0, 0, 0, 0), (DWORD)(profile_save()))
@@ -17202,7 +17215,7 @@ static const STest g_stests[] = {
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
 	T(net_452de0, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_42ef30, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
-	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 40, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
+	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
 	T(profile_save, 1, 40, 0), T(timer_now, 1, 40, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 40, 0),
 	/* batch 48 */
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
