@@ -1391,3 +1391,96 @@ void (lobbyJoin_keysChat)(void)
 #undef g_gameCount
 #undef busy
 }
+
+/* ---- the player's record (from 0x4de700: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a 0x4de72a,
+   +0x2e wins, +0x32 losses) and its two kept copies (0x9dd5d8 and 0x9dd240: +0 level, +4 points, +0xc rating,
+   +0x10 0x4de72a's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
+#define R_POINTS GAME_VAR(int, 0x4de722)
+#define R_RATING GAME_VAR(float, 0x4de726)
+#define R_OTHER GAME_VAR(int, 0x4de72a)
+#define R_WINS GAME_VAR(int, 0x4de72e)
+#define R_LOSSES GAME_VAR(int, 0x4de732)
+
+/* the win rate in percent (as its float bits): 0 without games (and, when checked, with a total not above 0) */
+static u32 win_rate(int wins, int losses, int checked)
+{
+	if (!wins && !losses)
+		return 0;
+	int total = wins + losses;
+	if (checked && total <= 0)
+		return 0;
+	float rate = f32(fmul_m((long double)wins, (const float *)0x4a93f4) / (long double)total);   /* x 100 / total */
+	return BITS(rate);
+}
+
+/* the rating: the rate x 0.01 x the points */
+static void rate_points(u32 rate)
+{
+	float r;
+	BITS(r) = rate;
+	R_RATING = f32(fmul_m(fld_m(&r), (const float *)0x4a9420) * (long double)R_POINTS);
+}
+
+/* a kept copy taken back as the record, when the record's wins are more than 300 above it */
+static u32 take_back(u32 kept, u32 rate)
+{
+	if (R_WINS <= GAME_VAR(int, kept + 0x14) + 300)
+		return rate;
+	R_POINTS = GAME_VAR(int, kept + 4);
+	R_LOSSES = GAME_VAR(int, kept + 0x18);
+	R_OTHER = GAME_VAR(int, kept + 0x10);
+	R_WINS = GAME_VAR(int, kept + 0x14);
+	rate = win_rate(R_WINS, R_LOSSES, 0);
+	rate_points(rate);
+	return rate;
+}
+
+/* the record into the packet (0xa0b338: the name when asked, then the same fields from +0x1e) and both kept
+   copies, and sent to the game server (kind 0x11) */
+static void record_send(u32 rate, int name)
+{
+	u8 *packet = GAME_VAR(u8 *, 0xa0b338);
+	if (name)
+		strcpy((char *)packet, (const char *)0x4de700);
+	*(int *)(packet + 0x1e) = R_OTHER;
+	*(int *)(packet + 0x22) = R_WINS;
+	*(int *)(packet + 0x26) = R_LOSSES;
+	*(int *)(packet + 0x2a) = R_POINTS;
+	*(float *)(packet + 0x32) = f32(fld_m(&R_RATING));
+	*(int *)(packet + 0x2e) = actor_levelFromValue(R_POINTS);
+	static const u32 kept[2] = { 0x9dd5d8, 0x9dd240 };
+	for (int k = 0; k < 2; k++) {
+		GAME_VAR(int, kept[k] + 0x10) = R_OTHER;
+		GAME_VAR(int, kept[k] + 0x14) = R_WINS;
+		GAME_VAR(int, kept[k] + 0x18) = R_LOSSES;
+		GAME_VAR(int, kept[k] + 4) = R_POINTS;
+		GAME_VAR(int, kept[k]) = (signed char)actor_levelFromValue(R_POINTS);
+		GAME_VAR(u32, kept[k] + 0x1c) = rate;
+		GAME_VAR(u32, kept[k] + 0xc) = GAME_VAR(u32, 0x4de726);
+	}
+	net_send(0x11, 0x65);
+}
+
+/* 0x4327f0: the player's record checked and sent: the rating worked out from the win rate; a kept copy (0x9dd5d8,
+   then 0x9dd240) taken back when the record's wins are more than 300 above it; the record sent and kept; then, when
+   the points are more than 150 a win, they are cut to 2 a win and the record is sent and kept again. The caller
+   ignores the eax it leaves */
+void (match_4327f0)(void)
+{
+	u32 rate = win_rate(R_WINS, R_LOSSES, 1);
+	rate_points(rate);
+	rate = take_back(0x9dd5d8, rate);
+	rate = take_back(0x9dd240, rate);
+	record_send(rate, 1);
+	if (R_WINS * 150 >= R_POINTS)
+		return;
+	R_POINTS = R_WINS * 2;
+	rate = win_rate(R_WINS, R_LOSSES, 0);
+	rate_points(rate);
+	record_send(rate, 0);
+}
+#undef R_POINTS
+#undef R_RATING
+#undef R_OTHER
+#undef R_WINS
+#undef R_LOSSES

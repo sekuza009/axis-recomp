@@ -951,6 +951,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_434d00() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define room_432200(x, y) GAME_CDECL(0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
 #define room_4338c0() GAME_CDECL(0x4338c0, void, void)()
+#define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */
 #define missionsel_448ac0() GAME_CDECL(0x448ac0, void, void)()

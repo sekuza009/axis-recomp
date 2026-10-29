@@ -3228,7 +3228,8 @@ DWORD room_434820(void);
 DWORD room_leaveGame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_44aee0(void);
-LIFT_PLAIN(match_4327f0, 4327f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_4327f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_sendSelectionToNet(void);
 /* 0x451e60 net_disconnect: tell the lobby/room that this player leaves, wait a moment, close the sockets;
@@ -10502,7 +10503,7 @@ static void bestrecord_setup(void)
 		G32(rec[r] + 0x14) = irnd(0, 3) ? irnd(0, 1500) : 0; G32(rec[r] + 0x18) = irnd(0, 3) ? irnd(0, 800) : 0;
 	}
 }
-T_PLAIN(match_4327f0, 0x4327f0, bestrecord_setup();, 0, 0, 0, 0, 0)
+ST(match_4327f0, bestrecord_setup();, (CALL_PLAIN(0x4327f0, 0, 0, 0, 0, 0), 0), (match_4327f0(), 0))   /* its eax reaches callers that ignore it (tools/eaxuse.py) */
 ST(armc_sendSelectionToNet, netstate_setup(); fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc760, 20); fill((void *)0x4dcb18, 24);   /* any bits: NaNs too */ G32(0x9dd5d8) = irnd(0, 2) ? irnd(0, 30) : 0x14;   /* 0x14: the selection kept as it is */, (CALL_PLAIN(0x40e930, 0, 0, 0, 0, 0), 0), (armc_sendSelectionToNet(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
 ST(net_closeAll, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_closeAll(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
@@ -17338,7 +17339,7 @@ static const STest g_stests[] = {
 	T(match_472310, 0, 40, 0),
 	/* batch 58 */
 	T(net_send, 0, 40, 0), T(room_434d00, 1, 40, 0), T(room_4334c0, 0, 40, 0), T(room_434b90, 1, 40, 0),
-	T(room_434820, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(match_44aee0, 0, 40, 0), T(match_4327f0, 0, 40, 0),
+	T(room_434820, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(match_44aee0, 0, 40, 0), T(match_4327f0, 0, 400, 0),
 	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_closeAll, 0, 200, 0),
 	/* batch 59 */
 	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_43df00, 0, 40, 0), T(menu_428890, 0, 40, 0),
