@@ -560,28 +560,34 @@ static void list_moved(void)
 	sound_playMenu(2);
 }
 
-static void list_up(void)
+/* the cursor a row up (the list scrolled at the top); 0 when already at the first */
+static int list_up(void)
 {
 	if (g_listRow > 0)
 		g_listRow--;
 	else if (g_listTop > 0)
 		g_listTop--;
 	else
-		return;
+		return 0;
 	list_moved();
+	return 1;
 }
 
-static void list_down(void)
+/* a row down (scrolled once the cursor is on the 13th row); 0 at the last profile */
+static int list_down(void)
 {
-	int at = g_listTop + g_listRow;
-	if (at >= g_profileCount - 1 || at >= g_profileCount)
-		return;
+	if (g_listTop + g_listRow >= g_profileCount - 1)
+		return 0;
 	if (g_listRow < 12)
 		g_listRow++;
 	else
 		g_listTop++;
 	list_moved();
+	return 1;
 }
+
+static void key_up(void) { list_up(); }
+static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
    at its ends (sound 2); Enter (0x4e150c) takes the profile (profile_44b600); 0x4e0ce0 / 0x76d414 delete it
@@ -590,7 +596,7 @@ static void list_down(void)
    callers that ignore it */
 void (profile_44c600)(void)
 {
-	if (key_repeat(g_keyUp, &g_repeatUp, list_up) || key_repeat(g_keyDown, &g_repeatDown, list_down))
+	if (key_repeat(g_keyUp, &g_repeatUp, key_up) || key_repeat(g_keyDown, &g_repeatDown, key_down))
 		return;
 	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
 		sound_playMenu(0);
@@ -614,6 +620,87 @@ void (profile_44c600)(void)
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
 		GAME_CDECL(0x44b6e0, void, void)();   /* profile_44b6e0 */
 }
+/* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profile_44b260): 0 takes the profile
+   (profile_44b600), 1 deletes it (profile_44b670) when there is one, 2 opens the new-profile dialog (or takes the
+   profile when there are none), 3 copies it (profile_44b6e0), 4 the list: a row (profile_44b3a0) chosen, or the
+   chosen row clicked again (0x9f900c) opens the dialog; 5 / 6 a row up / down. Then with the button held
+   (0x4ded94) on the arrows they step again once the blink clock (0x4dda44) reaches 5. The original leaves eax to
+   callers that ignore it */
+void (profile_44be00)(void)
+{
+#define g_mouseX GAME_VAR(int, 0x4ded68)
+#define g_mouseY GAME_VAR(int, 0x4ded6c)
+	if (GAME_VAR(int, 0x4ded88)) {
+		g_cursorBlink = 0;
+		switch (GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profile_44b260 */
+		case 0:
+			sound_playMenu(0);
+			profile_44b600();
+			break;
+		case 1:
+			if (g_profileCount > 0)
+				GAME_CDECL(0x44b670, void, void)();   /* profile_44b670 */
+			break;
+		case 2:
+			sound_playMenu(0);
+			g_cursorBlink = 0;
+			if (g_profileCount <= 0) {
+				profile_44b600();
+				return;
+			}
+			GAME_VAR(int, 0x9f6840) = 1;
+			GAME_VAR(int, 0x9f8f10) = 4;
+			break;
+		case 3:
+			GAME_CDECL(0x44b6e0, void, void)();   /* profile_44b6e0 */
+			break;
+		case 4: {
+			sound_playMenu(2);
+			int row = GAME_CDECL(0x44b3a0, int, int, int)(g_mouseX, g_mouseY);   /* profile_44b3a0 */
+			if (row == -1 || g_listTop + row >= g_profileCount)
+				return;
+			if (row == g_listRow && GAME_VAR(int, 0x9f900c)) {
+				g_cursorBlink = 0;
+				GAME_VAR(int, 0x9f6840) = 1;
+				GAME_VAR(int, 0x9f8f10) = 4;
+				GAME_VAR(int, 0x9f900c) = 0;
+				GAME_VAR(int, 0x9f8f18) = 0;
+				break;
+			}
+			g_listRow = row;
+			GAME_VAR(int, 0x9f900c) = 1;
+			GAME_VAR(int, 0x9f8f18) = 0;
+			if (GAME_VAR(int, 0x9f8d74) != g_listTop + row) {
+				GAME_VAR(int, 0x9f8d74) = g_listTop + row;
+				GAME_VAR(int, 0x9f8d68) = 1;
+			}
+			break;
+		}
+		case 5:
+			list_up();
+			break;
+		case 6:
+			if (!list_down())
+				return;
+			break;
+		}
+	}
+	if (!GAME_VAR(int, 0x4ded94))
+		return;
+	int held = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);   /* profile_44b260 */
+	if (held != 5 && held != 6)
+		return;
+	if (!(g_cursorBlink >= *(const float *)0x4a93d0))   /* 5 */
+		return;
+	if (held == 5)
+		list_up();
+	else if (!list_down())
+		return;
+	g_cursorBlink = 0;
+#undef g_mouseX
+#undef g_mouseY
+}
+
 #undef g_profileCount
 #undef g_listRow
 #undef g_listTop

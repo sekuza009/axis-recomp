@@ -1031,11 +1031,10 @@ void (cfg_42e080)(void *f)
 /* 0x4460d0: the pilot profiles found in the save folder ("save"; made when missing: then "axisuser.dat" deleted and
    back up, nothing found): each *.axs file's name (0x9f1ac4, 0x40 apart) and its header (0x104 bytes at 20000,
    unscrambled, into 0x9f61d8); one with the right header (0x4b0fa0) becomes the next profile (0x48 bytes from
-   0x9f6848: its number, its name less ".axs", and a stray word: the original reads a stack argument no caller
-   passes), any other file is deleted. Then back up, profile_create, the list loaded (profile_loadList) and the
+   0x9f6848: its number, its name less ".axs" and its pilot, the header's last word), any other file is deleted. Then back up, profile_create, the list loaded (profile_loadList) and the
    profile named 0x9f8fe8 (among as many as there were files) chosen into 0x9f8c58. The original leaves eax to
    callers that ignore it */
-void (profile_scanSaves)(u32 stray)
+void (profile_scanSaves)(void)
 {
 	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
 		crt_chdir((const char *)0x9dae7c);
@@ -1073,7 +1072,7 @@ void (profile_scanSaves)(u32 stray)
 		}
 		u8 *profile = (u8 *)0x9f6848 + valid * 0x48;
 		strcpy((char *)profile + 4, name);
-		*(u32 *)(profile + 0x44) = stray;
+		*(u32 *)(profile + 0x44) = *(const u32 *)(header + 0x100);   /* the pilot */
 		*(int *)profile = valid++;
 	}
 	crt_chdir((const char *)0x4b2a80);

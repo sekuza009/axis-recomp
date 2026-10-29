@@ -2817,7 +2817,7 @@ DWORD menuState210_enter(void);
 /* 0x4460d0 profile_scanSaves: the *.axs profiles of the save directory into the profile list (or delete
    axisuser.dat when the directory is missing) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void profile_scanSaves(DWORD stray);
+void profile_scanSaves(void);
 /* 0x487cb0 (thiscall) autoplay_startRecording(name): open AutoPlay\name.ape (or the first free AutoPlay###) and
    write the recording header */
 static THISCALL DWORD autoplay_startRecording(char *scene, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_487cb0, (DWORD)scene, 1, v); }
@@ -4882,7 +4882,8 @@ int profile_44c480(void);
 /* 0x44be00 profile_44be00(): the profile list page's mouse: a left click on the list (profile_44b3a0, 7 kinds:
    a profile, scroll, new / delete / load / back ...) or the bottom buttons (profile_44b260), sounds; opens the name
    edit (profile_44b600) or the delete / load confirmations (profile_44b670 / profile_44b6e0) */
-LIFT_PLAIN(profile_44be00, 44be00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44be00(void);
 /* 0x44c190 profile_44c190(): the name edit page: OK / cancel buttons (profile_44b2a0, profile_44b2e0) and Enter:
    the name checked (profile_4343b0, profile_44b7e0) and taken (profile_44b870) or a message (FUN_0041ee40); the
    keyboard re-initialised (input_initKeyboard) and the input buffer reset (match_431590) when leaving */
@@ -9621,8 +9622,22 @@ ST(menu_drawRect, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 800); g_a[4] =
 ST(menuState210_enter, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4); G32(0x9f9008) = irnd(0, 3);, CALL_PLAIN(0x44b420, 0, 0, 0, 0, 0), (DWORD)(menuState210_enter()))
 /* every save is read at 0x4e20 for 0x104 bytes: shorter files leave that stack buffer uninitialised, and the original
    copies it into the profile table anyway, so the test files are long enough */
-static void scansaves_vfs(void) { int n = 0x4f24 + irnd(0, 0x200); fill(BUF + 0x200000, n); g_vfsData = (const BYTE *)(BUF + 0x200000); g_vfsSize = (DWORD)n; }
-ST(profile_scanSaves, scansaves_vfs(); g_mockFindCount = irnd(0, 12); g_mockMkdirFail = !irnd(0, 4); g_mockDeleteOk = irnd(0, 1);, (CALL_PLAIN(0x4460d0, 0, 0, 0, 0, 0), 0), (profile_scanSaves(0), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+/* a profile file: random, and in half the runs a valid header at 20000 (the magic 0x4b0fa0, a pilot word at +0x100),
+   scrambled as the game stores it (0x445f10, key 0x7e) */
+static void scansaves_vfs(void)
+{
+	int n = 0x4f24 + irnd(0, 0x200);
+	fill(BUF + 0x200000, n);
+	if (irnd(0, 1)) {
+		BYTE *h = (BYTE *)(BUF + 0x200000 + 20000);
+		strcpy((char *)h, (const char *)0x4b0fa0);
+		*(DWORD *)(h + 0x100) = (DWORD)irnd(0, 8);
+		((void (__cdecl *)(BYTE *, BYTE))0x445f10)(h, 0x7e);
+	}
+	g_vfsData = (const BYTE *)(BUF + 0x200000);
+	g_vfsSize = (DWORD)n;
+}
+ST(profile_scanSaves, scansaves_vfs(); g_mockFindCount = irnd(0, 12); g_mockMkdirFail = !irnd(0, 4); g_mockDeleteOk = irnd(0, 1);, (CALL_PLAIN(0x4460d0, 0, 0, 0, 0, 0), 0), (profile_scanSaves(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* recording into AutoPlay\name.ape, or (no name) the first AutoPlay### that does not exist yet */
 static void autorec_setup(void)
 {
@@ -14635,7 +14650,7 @@ static void profileinput_setup(void)
 	GF(0x76d37c) = (float)irnd(-1, 5); GF(0x680bb4) = (float)irnd(-1, 5);
 	G32(0x74de1c) = irnd(0, 2); G32(0x76d42c) = irnd(0, 2); G32(0x9f8f34) = irnd(0, 2); G32(0x9f8c5c) = irnd(-1, 3);
 }
-T_PLAIN(profile_44be00, 0x44be00, profileinput_setup();, 0, 0, 0, 0, 0)
+ST(profile_44be00, profileinput_setup();, (CALL_PLAIN(0x44be00, 0, 0, 0, 0, 0), 0), (profile_44be00(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(profile_44c190, profileinput_setup();, CALL_PLAIN(0x44c190, 0, 0, 0, 0, 0), (DWORD)(profile_44c190()))
 ST(profile_processInput, profileinput_setup();, CALL_PLAIN(0x44c560, 0, 0, 0, 0, 0), (DWORD)(profile_processInput()))
 /* batch 167 */
