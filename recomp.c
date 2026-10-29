@@ -3184,7 +3184,8 @@ LIFT_PLAIN(net_send, 4521c0)
 int room_434d00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_4334c0(void);
-LIFT_PLAIN(room_434b90, 434b90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_434b90(void);
 LIFT_PLAIN(room_434820, 434820)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_leaveGame(void);
@@ -5112,7 +5113,8 @@ int arena_453180(int session, int a2, int a3, int a4);
 DWORD menu_enterState(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_435b00(void);
-LIFT_PLAIN(room_4346c0, 4346c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_4346c0(void);
 LIFT_PLAIN(room_436620, 436620)
 LIFT_PLAIN(armc_40fd30, 40fd30)
 LIFT_PLAIN(armc_colourScreenInput, 40ff40)
@@ -5269,7 +5271,8 @@ DWORD menuState400_frame(void);
 DWORD menu_onStateChange(void);
 LIFT_PLAIN(room_43e290, 43e290)
 LIFT_PLAIN(arena_launchFromFile, 410b50)
-LIFT_PLAIN(menuState800_gameRoom, 43ef70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD menuState800_gameRoom(void);
 /* batch 185 (lifted/grp137-139.c: split so the calls among these go through their native addresses, where the
    tests stub them): armc_40e5d0 (an armour-centre session: the lobby player made, his parts given, the actor
    reset), the main page / part screen frames armc_41d600 / armc_41d8a0 (the mech turned by the cursor:
@@ -10246,7 +10249,7 @@ static void netstate_setup(void)
 T_PLAIN(net_send, 0x4521c0, netstate_setup();, 0, g_a[0], g_a[1], 0, 0)
 ST(room_434d00, netstate_setup();, CALL_PLAIN(0x434d00, 0, 0, 0, 0, 0), (DWORD)(room_434d00()))
 ST(room_4334c0, netstate_setup();, CALL_PLAIN(0x4334c0, 0, 0, 0, 0, 0), (DWORD)(room_4334c0()))
-T_PLAIN(room_434b90, 0x434b90, netstate_setup();, 0, 0, 0, 0, 0)
+ST(room_434b90, netstate_setup();, CALL_PLAIN(0x434b90, 0, 0, 0, 0, 0), (DWORD)(room_434b90()))
 T_PLAIN(room_434820, 0x434820, netstate_setup();, 0, 0, 0, 0, 0)
 ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
@@ -15016,7 +15019,7 @@ ST(room_435b00, gen_setup(g_gs_435b00, g_gi_435b00, g_gb_435b00);, CALL_PLAIN(0x
 static const DWORD g_gs_4346c0[] = { 0x41ee40, 1, 0x433980, 0, 0x433d30, 0, 0x4343b0, 1, 0x434400, 1, 0 };
 static const DWORD g_gi_4346c0[] = { 0x68039c, 0x9dc428, 0x9dd348, 0x9dd3f8, 0x9dd6cc, 0 };
 static const DWORD g_gb_4346c0[] = { 0x9dd1d8, 0x9dd1f6, 0x9dd202, 0x9dd20e, 0 };
-T_PLAIN(room_4346c0, 0x4346c0, gen_setup(g_gs_4346c0, g_gi_4346c0, g_gb_4346c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4346c0, gen_setup(g_gs_4346c0, g_gi_4346c0, g_gb_4346c0);, CALL_PLAIN(0x4346c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_4346c0()))
 static const DWORD g_gs_436620[] = { 0x41e760, 1, 0x4323c0, 2, 0x435970, 0, 0x4359b0, 0, 0x4359f0, 0, 0 };
 static const DWORD g_gi_436620[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x76d40c, 0x90d1c4, 0x9dce48, 0x9dd1b4, 0x9dd1d0, 0x9dd300, 0x9dd350, 0x9dd3b0, 0x9dd6ac, 0x9dd6b8, 0xa0b350, 0xa0b35c, 0 };
 static const DWORD g_gb_436620[] = { 0 };
@@ -15371,7 +15374,7 @@ T_PLAIN(arena_launchFromFile, 0x410b50, gen_setup(g_gs_410b50, g_gi_410b50, g_gb
 static const DWORD g_gs_43ef70[] = { 0x437a10, 0, 0x437e00, 0, 0x4392c0, 0, 0x4399c0, 0, 0x439e00, 0, 0x43df00, 0, 0x43df80, 0, 0x43e290, 0, 0x43e610, 0, 0x43e720, 0, 0x43e7b0, 0, 0x43ea10, 0, 0x43ed20, 0, 0x43ede0, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_43ef70[] = { 0x4b071c, 0x680bc0, 0x4ded68, 0x4ded6c, 0x67ef14, 0x67ef34, 0x67fb38, 0x76d42c, 0x9dce48, 0x9dd834, 0 };
 static const DWORD g_gb_43ef70[] = { 0 };
-T_PLAIN(menuState800_gameRoom, 0x43ef70, gen_setup(g_gs_43ef70, g_gi_43ef70, g_gb_43ef70);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState800_gameRoom, gen_setup(g_gs_43ef70, g_gi_43ef70, g_gb_43ef70);, CALL_PLAIN(0x43ef70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState800_gameRoom()))
 /* batch 185: generated tests (tools/gentests.py, gen_setup from batch 172); the thiscall callees with CS_THIS */
 static const DWORD g_gs_40e5d0[] = { 0x45ddc0, 0, 0x460cb0, 2 | CS_POP | CS_THIS, 0x461250, 14 | CS_POP | CS_THIS, 0 };
 static const DWORD g_gi_40e5d0[] = { 0x4dbc68, 0x4dc54c, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dd074, 0x9087b4, 0x9f1818, 0 };

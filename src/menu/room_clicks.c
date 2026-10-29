@@ -393,3 +393,54 @@ u32 (app_onClose)(void)
 	GAME_VAR(int, 0x76d408) = game[0x2e];
 	return row;
 }
+
+/* 0x4346c0: the account form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
+   a blank name, a bad name or password character, a missing or mismatched password and a bad e-mail each give
+   their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
+u32 (room_4346c0)(void)
+{
+	GAME_CDECL(0x433d30, void, void)();   /* room_433d30 */
+	GAME_VAR(int, 0x68039c) = 0;
+	GAME_VAR(int, 0x9dc428) = 0;
+	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
+	int message, reopen;
+	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* profile_4343b0: blank */
+		message = 0x24, reopen = 0x9dd348;
+	else if (GAME_CDECL(0x434400, int, const char *)(name) == 1)                  /* room_434400: a bad character */
+		message = 0x15a, reopen = 0x9dd348;
+	else if (strlen(password) == 0)
+		message = 0x25, reopen = 0x9dd3f8;
+	else if (strcmp(password, (const char *)0x9dd202))
+		message = 0x21, reopen = 0x9dd3f8;
+	else if (GAME_CDECL(0x434400, int, const char *)(password) == 1)
+		message = 0x15b, reopen = 0x9dd3f8;
+	else if (GAME_CDECL(0x434400, int, const char *)((const char *)0x9dd20e) == 1)
+		message = 0x81, reopen = 0x9dd6cc;
+	else
+		return GAME_CDECL(0x433980, u32, void)();   /* the next dialog */
+	u32 r = GAME_CDECL(0x41ee40, u32, int)(message);
+	GAME_VAR(int, reopen) = 1;
+	return r;
+}
+
+/* 0x434b90: the account change sent: the old password (0x9dd6d8) right and the new one repeated, every field free
+   of bad characters (else message 0x81 and 0x9dd1c8 cleared), the name, password and e-mail go out in message 0x1c.
+   1 when sent */
+int (room_434b90)(void)
+{
+	if (strcmp((const char *)0x9dd58e, (const char *)0x9dd6d8) || strcmp((const char *)0x9dd1f6, (const char *)0x9dd202))
+		return 0;
+	static const u32 fields[4] = { 0x9dd6d8, 0x9dd1f6, 0x9dd202, 0x9dd20e };
+	for (int i = 0; i < 4; i++)
+		if (GAME_CDECL(0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_434400 */
+			GAME_CDECL(0x41ee40, void, int)(0x81);
+			GAME_VAR(int, 0x9dd1c8) = 0;
+			return 0;
+		}
+	char *out = GAME_VAR(char *, 0xa0b344);
+	strcpy(out, (const char *)0x9dd1d8);
+	strcpy(out + 0x1e, (const char *)0x9dd1f6);
+	strcpy(out + 0x2a, (const char *)0x9dd20e);
+	GAME_CDECL(0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
+	return 1;
+}

@@ -328,3 +328,53 @@ u32 (game_returnToMenus_41eb00)(void)
 	GAME_VAR(int, 0x9dd350) = 0;
 	return r;
 }
+
+/* 0x43ef70: the game room's frame. While the dialog highlight is shown the mouse glides a quarter of the way to it
+   and the highlight shrinks by the step 0x4b071c (gone below 0). Then the room's page (0x9dd834): 0 .. 4 the room's own pages over the
+   background and the room's camera (0x437a10), 66 / 77 / 88 / 99 dialogs drawn before the background (99 shows the
+   quit question while it waits on the network). Returns the last call's eax, or the page */
+u32 (menuState800_gameRoom)(void)
+{
+	if (g_highlightShown) {
+		int *mouse = (int *)0x4ded68;
+		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)0x4b071c), (const float *)0x4a941c));
+		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)0x4b071c), (const float *)0x4a941c));
+		long double size = fsub_m(fld_m((const float *)0x680bc0), (const float *)0x4b071c);
+		g_highlightSize = f32(size);
+		if (!(size >= 0))   /* below 0, or not a number */
+			g_highlightShown = 0;
+	}
+#define CALL(addr) GAME_CDECL(addr, u32, void)()
+	u32 page = GAME_VAR(u32, 0x9dd834);
+	switch (page) {
+	case 0: case 1: case 2: case 4:
+		menu_drawBackground();
+		CALL(0x437a10);   /* the room's camera */
+		switch (page) {
+		case 0: return CALL(0x43e7b0);
+		case 1: return CALL(0x43ea10);
+		case 2: return CALL(0x43ed20);
+		default: return CALL(0x43ede0);
+		}
+	case 66:
+		CALL(0x43df80);
+		menu_drawBackground();
+		return CALL(0x4392c0);
+	case 77:
+		CALL(0x43e290);
+		menu_drawBackground();
+		return CALL(0x4399c0);
+	case 88:
+		CALL(0x43e610);
+		menu_drawBackground();
+		return CALL(0x439e00);
+	case 99:
+		CALL(0x43e720);
+		menu_drawBackground();
+		if (g_quitAsked == 1 && GAME_VAR(int, 0x9dce48) == 2)
+			return CALL(0x43df00);
+		return CALL(0x437e00);
+	}
+#undef CALL
+	return page;
+}
