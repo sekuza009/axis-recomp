@@ -9967,6 +9967,7 @@ static void roomlist_setup(void)
 		fill(r, 0x3e);
 		if (i == n) r[0] = 0; else fill_str(r, 30, 32, 126);
 	}
+	G32(0x9dd1d0) = irnd(-1, 4);   /* the column sorted by */
 }
 T_PLAIN(room_435770, 0x435770, roomlist_setup();, 0, 0, 0, 0, 0)
 ST(armc_40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_40f340((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
@@ -10404,7 +10405,7 @@ ST(room_434820, netstate_setup();, CALL_PLAIN(0x434820, 0, 0, 0, 0, 0), (DWORD)(
 ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
-T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup();, 0, 0, 0, 0, 0)
+T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup(); G32(0x9dd5d8) = irnd(0, 2) ? irnd(0, 30) : 0x14;   /* 0x14: the selection kept as it is */, 0, 0, 0, 0, 0)
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
 T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0], 0, 0, 0)
 /* batch 59 */
@@ -13321,6 +13322,16 @@ static void login_setup(void)
 }
 ST(room_4399c0, login_setup();, CALL_PLAIN(0x4399c0, 0, 0, 0, 0, 0), (DWORD)(room_4399c0()))
 /* the arena name dialog: title, labels, the name, three buttons, a message open now and then */
+/* half the time, one of a hit test's count rectangles (x0, y0, x1, y1 from table) put under the pointer and the
+   others made empty, so that the control it names is the one hovered */
+static void pointer_on(DWORD table, int count)
+{
+	if (!irnd(0, 1))
+		return;
+	int *r = (int *)table, on = irnd(0, count - 1), x = G32(0x4ded68), y = G32(0x4ded6c);
+	for (int i = 0; i < count; i++) { r[i * 4] = 1; r[i * 4 + 1] = 1; r[i * 4 + 2] = 0; r[i * 4 + 3] = 0; }
+	r[on * 4] = x - 1; r[on * 4 + 1] = y - 1; r[on * 4 + 2] = x + 1; r[on * 4 + 3] = y + 1;
+}
 static void arenaname_setup(void)
 {
 	dlgwin_setup(0x4dbb68);
@@ -13330,6 +13341,7 @@ static void arenaname_setup(void)
 	for (int k = 0; k < 3; k++) fill_str((char *)0x7521a4 + k * 0x80, 30, 32, 126);
 	G32(0x4dbbd0) = irnd(0, 3) ? 0 : 1;
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb68) + irnd(0x40, 0x120); G32(0x4ded6c) = G32(0x4dbb6c) + irnd(0x60, 0xa0); }
+	pointer_on(0x4db588, 6);   /* arena_404460's rectangles */
 }
 T_PLAIN(arena_409bc0, 0x409bc0, arenaname_setup();, 0, 0, 0, 0, 0)
 /* batch 120 */
@@ -15084,7 +15096,7 @@ ST(profile_44f4b0, gen_setup(g_gs_44f4b0, g_gi_44f4b0, g_gb_44f4b0);, CALL_PLAIN
 static const DWORD g_gs_441810[] = { 0x41e760, 1, 0x440b70, 2, 0x440df0, 0, 0x441770, 0, 0x4417c0, 1, 0x4417f0, 0, 0 };
 static const DWORD g_gi_441810[] = { 0x4dda44, 0x4b2a7c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x9dd928, 0x9dd92c, 0x9eeab4, 0x9eeac0, 0 };
 static const DWORD g_gb_441810[] = { 0 };
-T_PLAIN(mainmenu_441810, 0x441810, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(mainmenu_441810, 0x441810, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810); callee_ret(0x440b70, (DWORD)irnd(-1, 19));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 /* batch 174: generated tests (tools/gentests.py, gen_setup from batch 172) plus four by hand */
 static const DWORD g_gs_41ec50[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41ec50[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
@@ -15105,7 +15117,7 @@ ST(game_returnToMenus_41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);,
 static const DWORD g_gs_4036c0[] = { 0x4033e0, 2, 0x4034e0, 0, 0x403530, 0, 0x403560, 1, 0x403590, 1, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_4036c0[] = { 0x4dda44, 0x4d7350, 0x4db508, 0x4dbb3c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x67ef00, 0 };
 static const DWORD g_gb_4036c0[] = { 0 };
-T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0x4033e0, (DWORD)irnd(-1, 27));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); if (irnd(0, 1)) G32(0x4dbb3c) = 2;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_443950[] = { 0x41e760, 1, 0x4435f0, 0, 0x4437b0, 0, 0x443840, 0, 0 };
 static const DWORD g_gi_443950[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x680bb4, 0x76d37c, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9eeac8, 0x9eeacc, 0x9eead0, 0x9eead4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9ef208, 0x9ef20c, 0x9ef210, 0x9ef214, 0x9f1058, 0x9f16a4, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0x9f16bc, 0 };
 static const DWORD g_gb_443950[] = { 0 };
@@ -15210,7 +15222,7 @@ ST(room_43e7b0, gen_setup(g_gs_43e7b0, g_gi_43e7b0, g_gb_43e7b0);, CALL_PLAIN(0x
 static const DWORD g_gs_4221d0[] = { 0x41e760, 1, 0x420670, 2, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_4221d0[] = { 0x4dda44, 0x4dd984, 0x4ddad0, 0x4ddb98, 0x4ddcec, 0x4dde90, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x90d1c4, 0 };
 static const DWORD g_gb_4221d0[] = { 0 };
-T_PLAIN(setup_drawSoundTab, 0x4221d0, gen_setup(g_gs_4221d0, g_gi_4221d0, g_gb_4221d0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(setup_drawSoundTab, 0x4221d0, gen_setup(g_gs_4221d0, g_gi_4221d0, g_gb_4221d0); callee_ret(0x420670, (DWORD)irnd(-1, 10));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; } G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 30) / 10;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_422e10[] = { 0x401600, 1, 0x41e760, 1, 0x420c10, 0, 0x421680, 1, 0x42d730, 0, 0 };
 static const DWORD g_gi_422e10[] = { 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4e0cd4, 0x4e0cdc, 0x4e0ce0, 0x4e14f4, 0x4e1508, 0x4e1524, 0x4e1530, 0x76d330, 0x76d48c, 0x9da440, 0x9dae70, 0x9db0a0, 0 };
 static const DWORD g_gb_422e10[] = { 0x4de0c0, 0x4def00, 0 };
@@ -15218,11 +15230,11 @@ ST(setup_controlTabKeys, gen_setup(g_gs_422e10, g_gi_422e10, g_gb_422e10);, (CAL
 static const DWORD g_gs_422830[] = { 0x41e760, 1, 0x4206f0, 2, 0x420c10, 0, 0x421680, 1, 0x4226b0, 0, 0x42d730, 0, 0 };
 static const DWORD g_gi_422830[] = { 0x4dda44, 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4de1c4, 0x4de1cc, 0x4de73c, 0x4ded68, 0x4ded6c, 0x4ded70, 0x4ded7c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x76d424, 0x76d490, 0x90d1c4, 0x9da490, 0 };
 static const DWORD g_gb_422830[] = { 0x4de0c0, 0x4def00, 0 };
-T_PLAIN(setup_drawControlTab, 0x422830, gen_setup(g_gs_422830, g_gi_422830, g_gb_422830);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(setup_drawControlTab, 0x422830, gen_setup(g_gs_422830, g_gi_422830, g_gb_422830); callee_ret(0x4206f0, (DWORD)irnd(-1, 18));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x4dddc8) = irnd(0, 2) ? 0 : irnd(-2, 2); } G32(0x4ded70) = irnd(0, 1); G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); G32(0x4ddce8) = irnd(0, 1) ? 3 : irnd(0, 5); G32(0x4de040) = irnd(-1, 3); G32(0x4de1cc) = irnd(0, 8); GF(0x4dda44) = (float)irnd(0, 30) / 10;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_43df80[] = { 0x41ee40, 0, 0x432400, 0, 0x432be0, 0, 0x432db0, 0, 0x433b00, 0, 0x433bb0, 0, 0x433c70, 0, 0x434490, 0, 0 };
 static const DWORD g_gi_43df80[] = { 0x9dd1f6, 0x4e1868, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dced0, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd358, 0x9dd364, 0x9dd38c, 0x9dd6b0, 0x9dd830, 0x9dd834, 0x9dd838, 0x9dd850, 0xa0b378, 0 };
 static const DWORD g_gb_43df80[] = { 0x9dc92c, 0x9dd1d8, 0 };
-T_PLAIN(room_43df80, 0x43df80, gen_setup(g_gs_43df80, g_gi_43df80, g_gb_43df80);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_43df80, 0x43df80, gen_setup(g_gs_43df80, g_gi_43df80, g_gb_43df80); G32(0x9dc428) = irnd(0, 2) ? (irnd(0, 1) ? 10 : 20) : irnd(0, 30); G32(0xa0b378) = irnd(-1, 0x2b); G32(0x68039c) = irnd(0, 2) ? 0 : 1;   /* the reply (10 / 20), the message, no field edited */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_40ee20[] = { 0x40da40, 0, 0x40ddb0, 0, 0x40de80, 0, 0x40dfa0, 0, 0x40e060, 0, 0x40e1c0, 0, 0x40e300, 0, 0x40e510, 0, 0x40e6c0, 0, 0x40ed20, 0, 0x41e760, 1, 0x4463a0, 0, 0x457150, 1, 0 };
 static const DWORD g_gi_40ee20[] = { 0x4df02c, 0x9db098, 0x4dbc00, 0x4dbc04, 0x4dbc58, 0x4dbc5c, 0x4dbc60, 0x4dbc64, 0x4dbc68, 0x4dbc6c, 0x4dbe48, 0x4dc1d0, 0x4dc1d4, 0x4dc1d8, 0x4dc1dc, 0x4dc1e0, 0x4dc24c, 0x4dc4b0, 0x4dc4b4, 0x4dc54c, 0x4dc788, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcc58, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dce38, 0x4dceac, 0x4dcf10, 0x4dcf34, 0x4dcfd8, 0x4dd078, 0x4df024, 0x4df028, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9dd5d8, 0x9f181c, 0 };
 static const DWORD g_gb_40ee20[] = { 0 };
@@ -15234,7 +15246,7 @@ T_PLAIN(menu_4372f0, 0x4372f0, gen_setup(g_gs_4372f0, g_gi_4372f0, g_gb_4372f0);
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
 static const DWORD g_gi_435fc0[] = { 0x4dda44, 0x4dba80, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x90d1c4, 0x9da498, 0x9dcd40, 0x9dce48, 0x9dd34c, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_435fc0[] = { 0 };
-T_PLAIN(room_435fc0, 0x435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_435fc0, 0x435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x432300, (DWORD)irnd(-1, 15)); callee_ret(0x434d00, (DWORD)irnd(0, 1));   /* the control under the pointer; the join's answer */ if (irnd(0, 3)) { G32(0x9dce48) = 2; G32(0x9dd6b4) = 0; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x9dd6a0) = irnd(0, 2) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 2) ? 0 : 1; G32(0x9dd56c) = irnd(0, 2) ? 0 : 1; } G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 80) / 10; G32(0x4df818) = irnd(0, 1) ? G32(0x76d41c) : irnd(0, 3);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_436990[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_436990[] = { 0x4ded68, 0x4ded6c, 0x4e0cdc, 0x4e14f4, 0x4e150c, 0x4e1868, 0x67ef20, 0x67ef24, 0x67ef34, 0x67fb38, 0x680390, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x76d48c, 0x9da4a4, 0x9dae70, 0x9db0ac, 0x9dc428, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd6b0, 0x9dd834, 0x9dd838, 0xa0b378, 0 };
 static const DWORD g_gb_436990[] = { 0 };
@@ -15475,7 +15487,18 @@ T_PLAIN(lobby_connect, 0x406c30, gen_setup(g_gs_406c30, g_gi_406c30, g_gb_406c30
 static const DWORD g_gs_4079c0[] = { 0x401590, 1, 0x401600, 1, 0x405200, 0, 0x405230, 0, 0x4060f0, 0, 0x41e760, 1, 0x451e60, 0, 0x452ec0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_4079c0[] = { 0x4dda44, 0x4db714, 0x4db718, 0x4db854, 0x4db858, 0x4db8b4, 0x4db8b8, 0x4db8bc, 0x4dba80, 0x4dba84, 0x4dba90, 0x4dbaac, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dbbec, 0x4dbbf0, 0x4ded18, 0x4df018, 0x4df818, 0x4e0cdc, 0x4e14f4, 0x4e14f8, 0x4e1514, 0x4e1524, 0x4e1528, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d330, 0x76d41c, 0x76d484, 0x76d48c, 0x90d1c4, 0x9dae70, 0x9db0a0, 0xa0b368, 0xa0b36c, 0xa0d7a0, 0 };
 static const DWORD g_gb_4079c0[] = { 0 };
-T_PLAIN(lobbyJoin_keysChat, 0x4079c0, gen_setup(g_gs_4079c0, g_gi_4079c0, g_gb_4079c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, the gates mostly open, each bound key (its global) a code of its own and one of them pressed for each
+   key test (0x401600 / 0x401590) */
+static void keyschat_setup(void)
+{
+	gen_setup(g_gs_4079c0, g_gi_4079c0, g_gb_4079c0);
+	static const DWORD keys[] = { 0x4e0cdc, 0x9db0a0, 0x76d330, 0x4e14f8, 0x9dae70, 0x76d48c, 0x4e1524, 0x4e14f4, 0x4e1528, 0x4e1514 };
+	for (int k = 0; k < 10; k++) G32(keys[k]) = 0x100 + k;
+	callee_key(0x401600, irnd(0, 3) ? 0x100 + irnd(0, 9) : -1); callee_key(0x401590, irnd(0, 3) ? 0x100 + irnd(0, 9) : -1);
+	if (irnd(0, 3)) { G32(0x4db714) = 0; G32(0x4dbb3c) = 2; G32(0x4db8bc) = 0; G32(0x90d1c4) = 0; G32(0x4db8b4) = irnd(0, 3) ? 0 : 1; }
+	GF(0x4dda44) = (float)irnd(0, 80) / 10;
+}
+T_PLAIN(lobbyJoin_keysChat, 0x4079c0, keyschat_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_4355b0[] = { 0x41ee40, 1, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4355b0[] = { 0x5b1b50, 0x5b1b51, 0x5b1b52, 0x5b1b53, 0x4dba88, 0x4ded54, 0x4ded60, 0x4df8e8, 0x5b1b54, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
 static const DWORD g_gb_4355b0[] = { 0x5b1b30, 0x67fb44, 0x9dd570, 0 };
@@ -15500,7 +15523,19 @@ ST(arena_loadAndQuit, gen_setup(g_gs_40d840, g_gi_40d840, g_gb_40d840);, CALL_PL
 static const DWORD g_gs_43ea10[] = { 0x41ee40, 0, 0x428c30, 4, 0x434dd0, 1, 0x434ff0, 0, 0x4388e0, 0, 0x43adc0, 0, 0 };
 static const DWORD g_gi_43ea10[] = { 0x9dcee8, 0x4b071c, 0x4dba80, 0x9dcd40, 0x9dd6c0, 0x4db858, 0x4db8b8, 0x4df018, 0x5b1914, 0x68039c, 0x76d41c, 0x76d484, 0x907b2c, 0x90d1c4, 0x9da498, 0x9dce48, 0x9dceec, 0x9dd34c, 0x9dd3fc, 0x9dd4a8, 0x9dd4ac, 0x9dd4b0, 0x9dd4b4, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0x9dd6c8, 0x9dd834, 0xa0d7a0, 0 };
 static const DWORD g_gb_43ea10[] = { 0x9dc92c, 0 };
-T_PLAIN(room_43ea10, 0x43ea10, gen_setup(g_gs_43ea10, g_gi_43ea10, g_gb_43ea10);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, and now and then the search finishing (mode 2, searching, 0x9da498 1: the switch on 0x76d484 -1 .. 4)
+   or the joined game's name (+0x3b of 0x76d41c's record) equal to the typed one (0x9dc92c) */
+static void room43ea10_setup(void)
+{
+	gen_setup(g_gs_43ea10, g_gi_43ea10, g_gb_43ea10);
+	if (!irnd(0, 2)) { G32(0x9dce48) = 2; G32(0x9dd834) = 0; G32(0x90d1c4) = 0; G32(0x9dd6a0) = 1; G32(0x9da498) = 1; G32(0x76d484) = irnd(-2, 5); }
+	if (!irnd(0, 2)) {
+		G32(0x9dce48) = 2; G32(0x9dd834) = 0; G32(0x90d1c4) = 0; G32(0x9dd56c) = 1; G32(0x9dd6b4) = 1; G32(0x9dd6c8) = 1; G32(0x68039c) = 0;
+		G32(0x76d41c) = irnd(0, 15); ((char *)0x9dc92c)[irnd(0, 12)] = 0;
+		if (irnd(0, 2)) strcpy((char *)0x9087ff + G32(0x76d41c) * 0x4a, (char *)0x9dc92c);
+	}
+}
+T_PLAIN(room_43ea10, 0x43ea10, room43ea10_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_40cfd0[] = { 0x405690, 1, 0x406200, 1, 0x406640, 0, 0x406810, 0, 0x4091b0, 0, 0x40a070, 0, 0x41ee40, 0, 0x428c30, 4, 0x453260, 0, 0 };
 static const DWORD g_gi_40cfd0[] = { 0x4db520, 0x4b071c, 0x4dba80, 0x4dbaf0, 0x4dbaf8, 0x4db51c, 0x4db524, 0x4db70c, 0x4db714, 0x4db71c, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4db8c8, 0x4db8cc, 0x4db8d0, 0x4db8d4, 0x4dba90, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4df018, 0x5b1914, 0x68039c, 0x76d41c, 0x76d484, 0x907b2c, 0x90d1c4, 0xa0d7a0, 0 };
 static const DWORD g_gb_40cfd0[] = { 0x4dbbd4, 0x9dc92c, 0 };
@@ -15521,7 +15556,7 @@ ST(menu_onStateChange, gen_setup(g_gs_445e40, g_gi_445e40, g_gb_445e40);, CALL_P
 static const DWORD g_gs_43e290[] = { 0x433e60, 0, 0 };
 static const DWORD g_gi_43e290[] = { 0x9dd1f6, 0x9dd202, 0x4df900, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd348, 0x9dd3f8, 0x9dd4a0, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6f4, 0 };
 static const DWORD g_gb_43e290[] = { 0x9dc92c, 0x9dd1d8, 0x9dd20e, 0 };
-T_PLAIN(room_43e290, 0x43e290, gen_setup(g_gs_43e290, g_gi_43e290, g_gb_43e290);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_43e290, 0x43e290, gen_setup(g_gs_43e290, g_gi_43e290, g_gb_43e290); if (irnd(0, 3)) { G32(0x9dd4a0) = 0; G32(0x4df900) = 0; G32(0x68039c) = 0; G32(0x9dc428) = irnd(0, 4) ? (irnd(0, 1) ? 10 : 20) : 3; G32(0x9dd348) = irnd(0, 2) ? 0 : 1; G32(0x9dd3f8) = irnd(0, 2) ? 0 : 1; G32(0x9dd564) = irnd(0, 2) ? 0 : 1; G32(0x9dd6cc) = irnd(0, 2) ? 0 : 1; }   /* a reply (10 / 20) to whichever request is waiting */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_410b50[] = { 0x40d840, 0, 0x433360, 0, 0 };
 static const DWORD g_gi_410b50[] = { 0x4df870, 0x4df874, 0x4df878, 0x4e1870, 0x76d388, 0x76d38c, 0x76d390, 0x4b071c, 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x4db840, 0x4db844, 0x4db848, 0x4dbab8, 0x4dbabc, 0x4dbac0, 0x4dc24c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dda44, 0x4e045c, 0x5b1998, 0x67ef0c, 0x67ef20, 0x76d3e8, 0x76d410, 0x90d1c4, 0x9da49c, 0 };
 static const DWORD g_gb_410b50[] = { 0 };
@@ -15568,7 +15603,22 @@ T_PLAIN(game_processGameModeInit, 0x49df10, gen_setup(g_gs_49df10, g_gi_49df10, 
 static const DWORD g_gs_49ca70[] = { 0x44ac90, 3, 0x44ace0, 0, 0x456e50, 2, 0x45dca0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x462150, 0, 0x462850, 0, 0x462d30, 2 | CS_POP, 0x462e30, 2 | CS_POP, 0x463450, 2, 0x4635b0, 3 | CS_POP, 0x463610, 3 | CS_POP, 0x463740, 1 | CS_POP, 0x487cb0, 1 | CS_POP, 0x487ed0, 0, 0x49ca20, 2 | CS_POP, 0x49d150, 0, 0 };
 static const DWORD g_gi_49ca70[] = { 0x68039c, 0 };
 static const DWORD g_gb_49ca70[] = { 0x4d06f4, 0x9f63e4, 0 };
-T_PLAIN(match_escMenu, 0x49ca70, gen_setup(g_gs_49ca70, g_gi_49ca70, g_gb_49ca70); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+/* the Esc menu's input: escmenu_setup's game (faded in mostly), the stubs, and every field the handler reads given a
+   small value (the pressed keys at +0x234330b .. +0x2343317 0 or 1) */
+static void escinput_setup(void)
+{
+	escmenu_setup();
+	gen_setup(g_gs_49ca70, g_gi_49ca70, g_gb_49ca70);
+	static const DWORD small[] = { 0x2342429, 0x234241d, 0x2342415, 0x2342385, 0x2342381, 0x234297e, 0x2342982, 0x233ca04, 0x233c9f0,
+		0x23432cf, 0x2340d00, 0x2340cf4, 0x2340cec, 0x2340c64, 0x233ca2c, 0x233ca28, 0x233c9fc, 0x22f0410, 0x22f040c, 0x22f0408,
+		0x22ee238, 0x22ee234, 0x22ee228, 0x1f36c8 };
+	int v;
+	for (int k = 0; k < (int)(sizeof small / sizeof *small); k++) { v = irnd(0, 3) ? irnd(0, 2) : irnd(-1, 8); memcpy(BUF + small[k], &v, 4); }
+	for (int k = 0; k < 4; k++) { v = irnd(0, 2) ? 0 : 1; memcpy(BUF + 0x234330b + k * 4, &v, 4); }
+	v = irnd(-3, 3); memcpy(BUF + 0x234240d, &v, 4);
+	float f = irnd(0, 4) ? 0.5f : (float)irnd(0, 50) / 100.0f; memcpy(BUF + 0x2340c9c, &f, 4);
+}
+T_PLAIN(match_escMenu, 0x49ca70, escinput_setup(); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
 /* the shutdown (wnd_setCursor): the game object 0x9087b4 kept 0 (its deleting destructor would run on the real
    game), the sounds 0x4dd4d4 .., the cursor; callees stubbed. scene_loadPath(path) (thiscall on the scene): the
    path record at +0x2148ed8 loaded once (+0x2148ee0), the path's name looked up (stubbed), its sound */
