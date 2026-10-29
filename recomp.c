@@ -3851,8 +3851,9 @@ int net_startThread(void);
 /* 0x452a30 net_452a30 / 0x452bd0 net_452bd0(): read one 0x5b-byte (lobby, socket 0xa055f8, into 0xa05260) / 0x79-byte
    (game server, socket 0xa05630, into 0xa0b280) reply, waiting up to 3 s; by its type (0xa052aa / 0xa0b2e8): 0 handle
    it (net_452af0 / net_452c80), 1 start the network thread, others set the connection state (0xa0b36c / 0xa0b34c) */
-LIFT_PLAIN(net_452a30, 452a30)
-LIFT_PLAIN(net_452bd0, 452bd0)
+/* readable rebuilds in src/ (their own translation unit, see src/axis.h) */
+void net_452a30(void);
+void net_452bd0(void);
 /* 0x451b80 net_connect(mode): close everything (net_closeAll), then 100: the lobby socket (0xa055f8), 0x65: the
    game-server socket (0xa05630): Winsock 2.2, a TCP socket bound to any address, connected to the host 0xa055e4 (a
    dotted address, else resolved by name) at port 0xa05326. 1 connected (+ 0xa0b380 = 200 for the lobby), 2 refused
@@ -12211,8 +12212,8 @@ static void netreply_setup(DWORD buf, int len, DWORD typep)
 	fill((void *)0xa0d79c, 4); G32(0xa0b368) = irnd(0, 9); G32(0xa0b358) = irnd(0, 9);   /* list slots, as netrec_setup's */
 	fill((void *)0xa0b36c, 4); fill((void *)0xa0b34c, 4); fill((void *)0xa0b300, 4);
 }
-ST(net_452a30, netreply_setup(0xa05260, 0x5b, 0xa052aa);, (CD(void, 0x452a30, void)(), 0), (net_452a30(0, 0, 0, 0, 0, 0, 0), 0))
-ST(net_452bd0, netreply_setup(0xa0b280, 0x79, 0xa0b2e8);, (CD(void, 0x452bd0, void)(), 0), (net_452bd0(0, 0, 0, 0, 0, 0, 0), 0))
+ST(net_452a30, netreply_setup(0xa05260, 0x5b, 0xa052aa);, (CD(void, 0x452a30, void)(), 0), (net_452a30(), 0))
+ST(net_452bd0, netreply_setup(0xa0b280, 0x79, 0xa0b2e8);, (CD(void, 0x452bd0, void)(), 0), (net_452bd0(), 0))
 ST(net_connect, netmock_setup(); g_a[0] = irnd(0, 9) ? 100 + irnd(0, 1) : irnd(0, 200);,
    CD(int, 0x451b80, int)(g_a[0]), net_connect(0, 0, 0, (DWORD)g_a[0], 0, 0, 0))
 /* the lobby: connected already or not, with the lobby screen's state variables random */

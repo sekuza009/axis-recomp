@@ -531,3 +531,66 @@ u32 (net_4545b0)(void)
 	GAME_VAR(int, 0xa0d7a0) = 1;
 	return GAME_CDECL(0x454740, u32, void)();   /* net_454740 */
 }
+
+/* ---- a reply of size bytes read from socket into buf, waiting up to 3 s. Each recv lands at buf's start (as in the
+   original); the bytes are only counted ---- */
+static void reply_read(u32 socket, void *buf, u32 size)
+{
+	u32 start = IMPORT(0x4a9184, u32, void)();   /* GetTickCount */
+	u32 got = 0;
+	do {
+		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		if (n > 0)
+			got += n;
+	} while (IMPORT(0x4a9184, u32, void)() - start <= 3000 && got < size);
+}
+
+/* 0x452a30: a lobby reply (0x5b bytes into 0xa05260, socket 0xa055f8), by its type (0xa052aa): 0 a server for the
+   list (net_452af0), 1 the list is complete (its count to 0xa0d79c, the ping thread started), 2 / 3 the connection
+   state 0xa0b36c set (0xcb / 0x29); 1..3 also end the wait (0xa0b300) */
+void (net_452a30)(void)
+{
+	reply_read(0xa055f8, (void *)0xa05260, 0x5b);
+	switch (GAME_VAR(u32, 0xa052aa)) {
+	case 0:
+		GAME_CDECL(0x452af0, int, void *)((void *)0xa05260);   /* net_452af0 */
+		break;
+	case 1:
+		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b368);
+		GAME_CDECL(0x4546d0, int, void)();   /* net_startThread */
+		GAME_VAR(int, 0xa0b36c) = 0xca;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	case 2:
+		GAME_VAR(int, 0xa0b36c) = 0xcb;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	case 3:
+		GAME_VAR(int, 0xa0b36c) = 0x29;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	}
+}
+
+/* 0x452bd0: a game server's reply (0x79 bytes into 0xa0b280, socket 0xa05630), by its type (0xa0b2e8): 0 a room for
+   the list (net_452c80), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
+void (net_452bd0)(void)
+{
+	reply_read(0xa05630, (void *)0xa0b280, 0x79);
+	switch (GAME_VAR(u32, 0xa0b2e8)) {
+	case 0:
+		GAME_CDECL(0x452c80, int, void *)((void *)0xa0b280);   /* net_452c80 */
+		break;
+	case 1:
+		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b358);
+		GAME_CDECL(0x4546d0, int, void)();
+		GAME_VAR(int, 0xa0b34c) = 0xca;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	case 2:
+	case 3:
+		GAME_VAR(int, 0xa0b34c) = 0x28;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	}
+}
