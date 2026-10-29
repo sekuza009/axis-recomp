@@ -545,6 +545,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_parseKeyNames(f) GAME_CDECL(0x42e730, void, void *)(f)      /* its key bindings */
 #define input_applyKeyBindings() GAME_CDECL(0x42c410, void, void)()     /* the default key bindings */
 #define menu_enterMenus() GAME_CDECL(0x40ee20, u32, void)()
+#define arena_453180(session, id, name, colour) GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
 #define FUN_00441200() GAME_CDECL(0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define FUN_00441190(head) GAME_CDECL(0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define profile_42b3c0(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */

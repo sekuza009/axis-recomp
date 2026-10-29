@@ -713,6 +713,22 @@ u32 (lobby_406a60)(void)
 	return button;
 }
 
+/* a joined session's settings taken from its record (0x4a bytes): the music stopped, the 32-byte rules (+4), +0x24,
+   +0x25, +0x2c and the colours (+0x2d, +0x2e); the lobby left (0x4dbb3c 0) for the game (0x67ef14 1, 0x67ef04 2) */
+static void take_session(const u8 *rec)
+{
+	music_shutdown();
+	GAME_VAR(int, 0x9dad94) = (signed char)rec[0x25];
+	memcpy((void *)0x67fb44, rec + 4, 32);
+	GAME_VAR(int, 0x9da3e0) = (signed char)rec[0x24];
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 2;
+	GAME_VAR(int, 0x76d368) = (signed char)rec[0x2c];
+	GAME_VAR(int, 0x4df8e8) = rec[0x2d];
+	GAME_VAR(int, 0x76d408) = rec[0x2e];
+}
+
 /* 0x405690: arena session `session` joined: its record (0x4a bytes from 0x9087c0) gives the colours shown
    (+0x2d, +0x2e) and the join's argument (+0); a refused join shows message 0x36 (full) or 0x35. Joined, the music
    stops and the session's settings are taken: the 32-byte rules (+4), +0x24, +0x25, +0x2c, the colours. Returns the
@@ -728,17 +744,63 @@ u32 (arena_405690)(int session)
 	                                                               GAME_VAR(int, 0x4dedd0));   /* arena_453180: join */
 	if (r != 0x1f4)
 		return GAME_CDECL(0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
-	music_shutdown();
-	GAME_VAR(int, 0x9dad94) = (signed char)rec[0x25];
-	memcpy((void *)0x67fb44, rec + 4, 32);
-	GAME_VAR(int, 0x9da3e0) = (signed char)rec[0x24];
-	GAME_VAR(int, 0x4dbb3c) = 0;
+	take_session(rec);
 	GAME_VAR(int, 0x4db8b4) = 0;
-	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 2;
-	GAME_VAR(int, 0x76d368) = (signed char)rec[0x2c];
-	GAME_VAR(int, 0x4df8e8) = rec[0x2d];
-	return GAME_VAR(int, 0x76d408) = rec[0x2e];
+	return rec[0x2e];
+}
+
+/* 0x4062b0 (named app_shutdown; by use the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
+   message 0x44 and the connection closed; else a pending join (0x4db708) of the game picked (0x4db710: 99999 for
+   the one received at 0x4dbbf8, copied into a session record at 0x9dae20, otherwise its row of the list, which
+   takes the received id) is answered (arena_453180): joined, the session's settings are taken and the lobby
+   connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
+   closed. The caller ignores the eax it leaves */
+void (app_shutdown)(void)
+{
+	if (GAME_VAR(int, 0x4dbb78)) {
+		GAME_VAR(int, 0x4dbb10) = 0;
+		GAME_VAR(int, 0x4dbb78) = 0;
+		arena_452fe0();
+		FUN_0041ee40(0x44);
+		GAME_VAR(int, 0x4db8b4) = 0;
+		return;
+	}
+	int pick = GAME_VAR(int, 0x4db710);
+	u8 *rec;
+	if (pick == 99999) {
+		GAME_VAR(int, 0x4db710) = 0;
+		if (!GAME_VAR(int, 0x4db708))
+			return;
+		const u8 *in = GAME_VAR(const u8 *, 0x4dbbf8);
+		rec = (u8 *)0x9dae20;
+		*(u32 *)rec = *(const u32 *)in;
+		rec[0x2d] = in[0x28];
+		rec[0x2e] = in[0x29];
+		rec[0x2c] = in[0x27];
+		rec[0x25] = in[0x24];
+		rec[0x24] = in[0x25];
+		strcpy((char *)rec + 4, (const char *)in + 0x2e);
+	} else {
+		if (!GAME_VAR(int, 0x4db708))
+			return;
+		rec = (u8 *)(0x9087c0 + pick * 0x4a);
+		*(u32 *)rec = *GAME_VAR(const u32 *, 0x4dbbf8);
+		GAME_VAR(u8, 0x4ded44) = rec[0x2d];
+		GAME_VAR(u8, 0x4ded45) = rec[0x2e];
+	}
+	int r = arena_453180(0, *(const u32 *)rec, (const char *)0x4dedb0, GAME_VAR(int, 0x4dedd0));
+	if (r == 0x1f4) {
+		take_session(rec);
+		net_disconnect();
+	} else {
+		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };   /* 501 .. 505 */
+		if ((u32)(r - 0x1f5) <= 4)
+			FUN_0041ee40(message[r - 0x1f5]);
+		arena_452fe0();
+	}
+	GAME_VAR(int, 0x4dbb10) = 0;
+	GAME_VAR(int, 0x4db708) = 0;
+	GAME_VAR(int, 0x4db8b4) = 0;
 }
 
 /* ---- a menu key: the key bound at `binding` was just pressed (the confirm sound played then) ---- */
