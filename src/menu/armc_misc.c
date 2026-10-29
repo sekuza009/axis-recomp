@@ -636,6 +636,39 @@ u32 (armc_saveSelection)(void)
 	return GAME_CDECL(0x447010, u32, void)();   /* profile_saveProgress */
 }
 
+/* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from 0x4dc4b8, through the
+   FPU: a signalling NaN arrives quiet) kept (0x4dcfe0) and in the room's copy (0x9dd603); the part lists
+   (armc_40d990) unless 0x9dd5d8 is 0x14; the parts (0x4dc760) and six settings (0x4dcb18) kept as in
+   armc_saveSelection (the range checks jumped over again); their low bytes into the room's copy (0x9dd5f8: the five
+   parts, then settings 4 / 5, then 0 .. 3); then the packet at 0xa0b340: the name (0x9dd570), those 11 bytes from
+   +0x1e, the colours from +0x29; sent as kind 0x1b to the game server (0x65). The original returns net_send's eax
+   to a caller that ignores it */
+void (armc_sendSelectionToNet)(void)
+{
+	for (int i = 0; i < 0x24; i++) {
+		float v = f32(fld_m((const float *)0x4dc4b8 + i));
+		((float *)0x4dcfe0)[i] = v;
+		((float *)0x9dd603)[i] = v;
+	}
+	if (GAME_VAR(int, 0x9dd5d8) != 0x14)
+		armc_40d990();
+	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
+	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
+	u8 *room = (u8 *)0x9dd5f8;
+	const int *parts = (const int *)0x4dc878, *settings = (const int *)0x4dcf18;
+	for (int i = 0; i < 4; i++)
+		room[7 + i] = (u8)settings[2 + i];
+	room[5] = (u8)GAME_VAR(int, 0x4dcb18);
+	room[6] = (u8)GAME_VAR(int, 0x4dcb1c);
+	for (int i = 0; i < 5; i++)
+		room[i] = (u8)parts[i];
+	u8 *packet = GAME_VAR(u8 *, 0xa0b340);
+	strcpy((char *)packet, (const char *)0x9dd570);
+	memcpy(packet + 0x1e, room, 11);
+	memcpy(packet + 0x29, (const void *)0x9dd603, 0x90);
+	net_send(0x1b, 0x65);
+}
+
 /* 0x40fb20: the armour centre's main page clicked (armc_40e450's buttons 1 .. 16): 1 / 2 the part and colour pages
    (armc_40f220 / 40f320, unless already there), 3 / 4 the part screen's two sides (armc_40f0f0), 6 .. 11 the mech
    view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_40f340; not in view 5),
