@@ -7212,6 +7212,11 @@ static void mock_reset(void)
    never wrote (e.g. a packet buffer sent whole but filled only in part) reads the same bytes in both. One constant
    pattern, since the original runs on the thread stack and lifted code in the arena. paint_below is a leaf: it fills
    downwards from just below its own return address (page by page, as a stack probe must). */
+/* the large and Hangul fonts (ids 0x9dad90, 0x9dae1c, 0x76d360) are not loaded yet when the game is frozen: the
+   first text drawn with one loads it, the mocked file is no PTX image and ptx_error exits, both runs alike, so a
+   test checked nothing after its first text (armc_41dab0 exited in all its runs). The small ASCII font (0x76d448)
+   is loaded: before each setup the other ids point at it (a setup that sets them overrides this) */
+static void fonts_loaded(void) { G32(0x9dad90) = G32(0x9dae1c) = G32(0x76d360) = G32(0x76d448); }
 void __cdecl paint_below(DWORD bytes);
 __asm__(".text\n"
         ".globl _paint_below\n"
@@ -7269,7 +7274,7 @@ static int run_one(const STest *t, int full, int log)
 	int same = 1;
 	if (full) restore_data();
 	written(g_w1);                                  /* reset tracking */
-	g_crumb[2] = 1; mock_defaults(); t->setup(); mock_reset(); DWORD r1 = run_guarded(t->o);
+	g_crumb[2] = 1; mock_defaults(); fonts_loaded(); t->setup(); mock_reset(); DWORD r1 = run_guarded(t->o);
 	g_ncalls1 = g_ncalls; memcpy(g_calls1, g_calls, g_ncalls * sizeof(MockCall)); int ovf1 = g_mockOverflow;
 	if (full) memcpy(g_resData, g_data, g_dataSize);
 	g_nw1 = written(g_w1);                          /* save the original's scratch pages, clear them */
@@ -7277,7 +7282,7 @@ static int run_one(const STest *t, int full, int log)
 	zero_pages(g_fake, g_w1, g_nw1);
 	written(g_w2);
 	if (full) restore_data();
-	g_seed = seed; g_crumb[2] = 2; mock_defaults(); t->setup(); mock_reset(); DWORD r2 = run_guarded(t->n);
+	g_seed = seed; g_crumb[2] = 2; mock_defaults(); fonts_loaded(); t->setup(); mock_reset(); DWORD r2 = run_guarded(t->n);
 	g_nw2 = written(g_w2);
 	if (ovf1 || g_mockOverflow || g_ncalls != g_ncalls1 || memcmp(g_calls, g_calls1, g_ncalls * sizeof(MockCall))) {
 		if (log) {
