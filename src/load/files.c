@@ -575,47 +575,157 @@ u32 (data_loadMessages)(void)
 	return fclose(f);
 }
 
-/* 0x447010: the campaign progress saved: axisuser.dat written (the name 0x9f8fe8 being the current profile's; no
-   file: nothing more), then in the save folder (made if it cannot be entered) the pilot's file (its name + 0x4b2afc)
-   between blocks of noise: 20000 bytes of it, the profile's 0x3ac-byte record (gathered by match_4464b0, scrambled
-   with key 0x7e), then 24999 more (the same 10000 random bytes, below 0xfe, each time). 0x9f1818 = the pilot's value
-   (record +0x40). Returns the last chdir's eax */
+/* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record 0x9f1718
+   (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
+   before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
+#define g_pilot GAME_VAR(int, 0x9f8d74)               /* the pilot chosen in the list */
+#define pilot_name(i) ((const char *)(0x9f684c + (i) * 0x48))
+#define g_campaign ((u8 *)0x9f1718)
+
+/* the current profile's name as axisuser.dat keeps it */
+static void set_current_name(void)
+{
+	memset((void *)0x9f8fe8, 0, 0x20);
+	strcpy((char *)0x9f8fe8, pilot_name(GAME_VAR(int, 0x9f8c58)));
+}
+
+static void enter_save_folder(void)
+{
+	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir */
+		crt_chdir((const char *)0x4b2adc);
+	}
+}
+
+static void pilot_path(char *path)
+{
+	memset(path, 0, 0x80);
+	strcpy(path, pilot_name(g_pilot));
+	strcat(path, (const char *)0x4b2afc);
+}
+
+static void pilot_write(void *f)
+{
+	u8 *noise = (u8 *)0x9f3ac4;
+	for (int i = 0; i < 10000; i++)
+		noise[i] = (u8)(crt_rand() % 0xfe);
+	crt_fwrite(noise, 10000, 1, f);
+	crt_fwrite(noise, 10000, 1, f);
+	u8 record[0x3ac];
+	memcpy(record, g_campaign, sizeof record);
+	save_cryptRecord(record, 0x7e);
+	crt_fwrite(record, sizeof record, 1, f);
+	crt_fwrite(noise, 10000, 1, f);
+	crt_fwrite(noise, 10000, 1, f);
+	crt_fwrite(noise, 4999, 1, f);
+}
+
+/* 0x447010: the campaign progress saved: axisuser.dat written (no file: nothing more), then the pilot's file with
+   the profile's record (gathered by match_4464b0); 0x9f1818 = the pilot's value. Returns the last chdir's eax */
 int (profile_saveProgress)(void)
 {
 	void *f = profiles_create();
 	if (!f)
 		return 0;
-	memset((void *)0x9f8fe8, 0, 0x20);
-	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48));
+	set_current_name();
 	profiles_write(f);
 	match_4464b0();
-	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir */
-		crt_chdir((const char *)0x4b2adc);
-	}
+	enter_save_folder();
 	char path[0x80];
-	memset(path, 0, sizeof path);
-	int pilot = GAME_VAR(int, 0x9f8d74);
-	strcpy(path, (const char *)(0x9f684c + pilot * 0x48));
-	strcat(path, (const char *)0x4b2afc);
+	pilot_path(path);
 	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
-	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
-	if (f) {
-		u8 *noise = (u8 *)0x9f3ac4;
-		for (int i = 0; i < 10000; i++)
-			noise[i] = (u8)(crt_rand() % 0xfe);
-		crt_fwrite(noise, 10000, 1, f);
-		crt_fwrite(noise, 10000, 1, f);
-		u8 record[0x3ac];
-		memcpy(record, (const void *)0x9f1718, sizeof record);
-		save_cryptRecord(record, 0x7e);
-		crt_fwrite(record, sizeof record, 1, f);
-		crt_fwrite(noise, 10000, 1, f);
-		crt_fwrite(noise, 10000, 1, f);
-		crt_fwrite(noise, 4999, 1, f);
-	}
+	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	if (f)
+		pilot_write(f);
 	fclose(f);
 	return crt_chdir((const char *)0x4b2a80);   /* ".." */
+}
+
+/* a new pilot's record: the signature, the name, the value; no progress, the default parts (0x4b2af4, 0x4b2aec,
+   0x4b2ae4) and settings, twelve (170, 0.4, 0) triples */
+static void campaign_new(void)
+{
+	memset(g_campaign, 0, 0x80);
+	strcpy((char *)g_campaign, (const char *)0x4b0fa0);
+	memset((void *)0x9f1798, 0, 0x80);
+	memcpy((void *)0x9f1798, pilot_name(g_pilot), 0x80);
+	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	GAME_VAR(int, 0x9f181c) = 0;
+	memset((void *)0x9f1820, 0, 0x190);
+	memset((void *)0x9f19b0, 0, 0x40);
+	static const u32 cleared[6] = { 0x9f19f0, 0x9f1a0c, 0x9f19f4, 0x9f1a10, 0x9f1a2c, 0x9f1a30 };
+	for (int i = 0; i < 6; i++)
+		GAME_VAR(u32, cleared[i]) = 0;
+	strcpy((char *)0x9f19f0, (const char *)0x4b2af4);
+	strcpy((char *)0x9f1a0c, (const char *)0x4b2aec);
+	strcpy((char *)0x9f1a2c, (const char *)0x4b2ae4);
+	GAME_VAR(int, 0x9f1a28) = -1;
+	GAME_VAR(int, 0x9f1a14) = -1;
+	for (u32 a = 0x9f19f8; a <= 0x9f1a08; a += 4)
+		GAME_VAR(int, a) = 0;
+	GAME_VAR(int, 0x9f1a1c) = 0;
+	GAME_VAR(int, 0x9f1a20) = 2;
+	GAME_VAR(int, 0x9f1a24) = 8;
+	GAME_VAR(int, 0x9f1a18) = 0x11;
+	for (u32 *t = (u32 *)0x9f1a34; t < (u32 *)0x9f1ac4; t += 3) {
+		t[0] = 0x432a0000;   /* 170 */
+		t[1] = 0x3ecccccd;   /* 0.4 */
+		t[2] = 0;
+	}
+}
+
+/* 1 when the pilot's file is there and signed */
+static int campaign_signed(const char *path)
+{
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		return 0;
+	crt_fseek(f, 20000, 0);
+	u8 head[0x80];
+	crt_fread(head, 0x80, 1, f);
+	profile_445f40(head, 0x7e);
+	int ok = str_order((const char *)head, (const char *)0x4b0fa0) == 0;
+	fclose(f);
+	return ok;
+}
+
+/* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
+   into 0x9f1718 (its name from the list at +0x80) when it is there and signed, else a new record made and written;
+   then the mech read, 0x4dcf34 / 0x9f62e0 cleared, 0x9f62fc = the progress. Returns FUN_004463a0's eax */
+u32 (profile_save)(void)
+{
+	set_current_name();
+	void *f = profiles_create();
+	if (!f)
+		return 0;
+	set_current_name();
+	profiles_write(f);
+	enter_save_folder();
+	char path[0x80];
+	pilot_path(path);
+	if (campaign_signed(path)) {
+		f = crt_fopen(path, (const char *)0x4ad170);
+		if (f) {
+			crt_fseek(f, 20000, 0);
+			u8 record[0x3ac];
+			crt_fread(record, sizeof record, 1, f);
+			save_cryptRecord(record, 0x7e);
+			memcpy(g_campaign, record, sizeof record);
+			memcpy((void *)0x9f1798, pilot_name(g_pilot), 0x80);
+		}
+	} else {
+		campaign_new();
+		f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+		if (f)
+			pilot_write(f);
+	}
+	fclose(f);
+	crt_chdir((const char *)0x4b2a80);
+	u32 r = FUN_004463a0();
+	GAME_VAR(int, 0x4dcf34) = 0;
+	GAME_VAR(int, 0x9f62e0) = 0;
+	GAME_VAR(int, 0x9f62fc) = GAME_VAR(int, 0x9f181c);
+	return r;
 }
 
 /* 0x4474a0: axisuser.dat's header read back (the magic word, the count, the current profile, 0x9f8c4c, 0x9f8c5c and

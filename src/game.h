@@ -474,7 +474,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_40e1c0() GAME_CDECL(0x40e1c0, void, void)()
 #define armc_40e300() GAME_CDECL(0x40e300, void, void)()
 #define armc_buildPartLists() GAME_CDECL(0x40da40, void, void)()
-#define FUN_004463a0() GAME_CDECL(0x4463a0, void, void)()   /* the saved mech read (from the profile) */
+#define FUN_004463a0() GAME_CDECL(0x4463a0, u32, void)()   /* the saved mech read (from the profile) */
 #define menu_40e6c0() GAME_CDECL(0x40e6c0, void, void)()
 #define armc_40de80() GAME_CDECL(0x40de80, void, void)()
 #define armc_40dfa0() GAME_CDECL(0x40dfa0, void, void)()
@@ -755,6 +755,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define crt_rand() GAME_CDECL(0x49f92c, int, void)()
 #define save_cryptRecord(rec, key) GAME_CDECL(0x445ee0, void, u8 *, u8)(rec, key)   /* a 0x3ac-byte profile record scrambled (menu/profile_misc.c) */
 #define match_4464b0() GAME_CDECL(0x4464b0, void, void)()   /* the current profile's record gathered (0x9f1718) */
+#define profile_445f40(p, key) GAME_CDECL(0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
 #define fread_scrambled(p, size, count, f) GAME_CDECL(0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */
 #define hud_47ca70(stage, i, view) GAME_THISCALL(0x47ca70, void, Stage *, int, void *)(stage, i, view)   /* bullet i's trail drawn */
 #define hud_48b450(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
