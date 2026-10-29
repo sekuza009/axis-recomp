@@ -9967,7 +9967,7 @@ static void roomlist_setup(void)
 		fill(r, 0x3e);
 		if (i == n) r[0] = 0; else fill_str(r, 30, 32, 126);
 	}
-	G32(0x9dd1d0) = irnd(-1, 4);   /* the column sorted by */
+	G32(0x9dd1d0) = irnd(0, 2) ? irnd(0, 3) : irnd(-1, 4);   /* the column sorted by */
 }
 T_PLAIN(room_435770, 0x435770, roomlist_setup();, 0, 0, 0, 0, 0)
 ST(armc_40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_40f340((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
@@ -15117,7 +15117,7 @@ ST(game_returnToMenus_41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);,
 static const DWORD g_gs_4036c0[] = { 0x4033e0, 2, 0x4034e0, 0, 0x403530, 0, 0x403560, 1, 0x403590, 1, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_4036c0[] = { 0x4dda44, 0x4d7350, 0x4db508, 0x4dbb3c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x67ef00, 0 };
 static const DWORD g_gb_4036c0[] = { 0 };
-T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0x4033e0, (DWORD)irnd(-1, 27));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); if (irnd(0, 1)) G32(0x4dbb3c) = 2;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0); callee_ret(0x4033e0, (DWORD)(irnd(0, 2) ? irnd(-1, 27) : irnd(0x14, 0x15)));   /* the control under the pointer */ GF(0x4dda44) = irnd(0, 1) ? 0.0f : (float)irnd(0, 80) / 10; G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); if (irnd(0, 1)) G32(0x4dbb3c) = 2;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_443950[] = { 0x41e760, 1, 0x4435f0, 0, 0x4437b0, 0, 0x443840, 0, 0 };
 static const DWORD g_gi_443950[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x680bb4, 0x76d37c, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9eeac8, 0x9eeacc, 0x9eead0, 0x9eead4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9ef208, 0x9ef20c, 0x9ef210, 0x9ef214, 0x9f1058, 0x9f16a4, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0x9f16bc, 0 };
 static const DWORD g_gb_443950[] = { 0 };
@@ -15234,7 +15234,8 @@ T_PLAIN(setup_drawControlTab, 0x422830, gen_setup(g_gs_422830, g_gi_422830, g_gb
 static const DWORD g_gs_43df80[] = { 0x41ee40, 0, 0x432400, 0, 0x432be0, 0, 0x432db0, 0, 0x433b00, 0, 0x433bb0, 0, 0x433c70, 0, 0x434490, 0, 0 };
 static const DWORD g_gi_43df80[] = { 0x9dd1f6, 0x4e1868, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dced0, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd358, 0x9dd364, 0x9dd38c, 0x9dd6b0, 0x9dd830, 0x9dd834, 0x9dd838, 0x9dd850, 0xa0b378, 0 };
 static const DWORD g_gb_43df80[] = { 0x9dc92c, 0x9dd1d8, 0 };
-T_PLAIN(room_43df80, 0x43df80, gen_setup(g_gs_43df80, g_gi_43df80, g_gb_43df80); G32(0x9dc428) = irnd(0, 2) ? (irnd(0, 1) ? 10 : 20) : irnd(0, 30); G32(0xa0b378) = irnd(-1, 0x2b); G32(0x68039c) = irnd(0, 2) ? 0 : 1;   /* the reply (10 / 20), the message, no field edited */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+static const int kMsgs[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a };   /* the messages room_43df80 handles */
+T_PLAIN(room_43df80, 0x43df80, gen_setup(g_gs_43df80, g_gi_43df80, g_gb_43df80); G32(0x9dc428) = irnd(0, 2) ? (irnd(0, 1) ? 10 : 20) : irnd(0, 30); G32(0xa0b378) = irnd(0, 2) ? kMsgs[irnd(0, 5)] : irnd(-1, 0x2b); if (irnd(0, 1)) { G32(0x9dd830) = 0; G32(0x9dd38c) = 0; G32(0x9dd838) = 1; } G32(0x68039c) = irnd(0, 2) ? 0 : 1;   /* the reply (10 / 20), the message, no field edited */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_40ee20[] = { 0x40da40, 0, 0x40ddb0, 0, 0x40de80, 0, 0x40dfa0, 0, 0x40e060, 0, 0x40e1c0, 0, 0x40e300, 0, 0x40e510, 0, 0x40e6c0, 0, 0x40ed20, 0, 0x41e760, 1, 0x4463a0, 0, 0x457150, 1, 0 };
 static const DWORD g_gi_40ee20[] = { 0x4df02c, 0x9db098, 0x4dbc00, 0x4dbc04, 0x4dbc58, 0x4dbc5c, 0x4dbc60, 0x4dbc64, 0x4dbc68, 0x4dbc6c, 0x4dbe48, 0x4dc1d0, 0x4dc1d4, 0x4dc1d8, 0x4dc1dc, 0x4dc1e0, 0x4dc24c, 0x4dc4b0, 0x4dc4b4, 0x4dc54c, 0x4dc788, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcc58, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dce38, 0x4dceac, 0x4dcf10, 0x4dcf34, 0x4dcfd8, 0x4dd078, 0x4df024, 0x4df028, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9dd5d8, 0x9f181c, 0 };
 static const DWORD g_gb_40ee20[] = { 0 };
@@ -15246,7 +15247,7 @@ T_PLAIN(menu_4372f0, 0x4372f0, gen_setup(g_gs_4372f0, g_gi_4372f0, g_gb_4372f0);
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
 static const DWORD g_gi_435fc0[] = { 0x4dda44, 0x4dba80, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x90d1c4, 0x9da498, 0x9dcd40, 0x9dce48, 0x9dd34c, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_435fc0[] = { 0 };
-T_PLAIN(room_435fc0, 0x435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x432300, (DWORD)irnd(-1, 15)); callee_ret(0x434d00, (DWORD)irnd(0, 1));   /* the control under the pointer; the join's answer */ if (irnd(0, 3)) { G32(0x9dce48) = 2; G32(0x9dd6b4) = 0; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x9dd6a0) = irnd(0, 2) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 2) ? 0 : 1; G32(0x9dd56c) = irnd(0, 2) ? 0 : 1; } G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 80) / 10; G32(0x4df818) = irnd(0, 1) ? G32(0x76d41c) : irnd(0, 3);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(room_435fc0, 0x435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x432300, (DWORD)irnd(-1, 15)); callee_ret(0x434d00, (DWORD)irnd(0, 1));   /* the control under the pointer; the join's answer */ if (irnd(0, 3)) { G32(0x9dce48) = 2; G32(0x9dd6b4) = 0; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x9dd6a0) = irnd(0, 2) ? 0 : 1; G32(0x9dd3fc) = irnd(0, 2) ? 0 : 1; G32(0x9dd56c) = irnd(0, 2) ? 0 : 1; } G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 80) / 10; G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 12);   /* the list: count, top row, cursor */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_436990[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_436990[] = { 0x4ded68, 0x4ded6c, 0x4e0cdc, 0x4e14f4, 0x4e150c, 0x4e1868, 0x67ef20, 0x67ef24, 0x67ef34, 0x67fb38, 0x680390, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x76d48c, 0x9da4a4, 0x9dae70, 0x9db0ac, 0x9dc428, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd6b0, 0x9dd834, 0x9dd838, 0xa0b378, 0 };
 static const DWORD g_gb_436990[] = { 0 };
@@ -15497,6 +15498,9 @@ static void keyschat_setup(void)
 	callee_key(0x401600, irnd(0, 3) ? 0x100 + irnd(0, 9) : -1); callee_key(0x401590, irnd(0, 3) ? 0x100 + irnd(0, 9) : -1);
 	if (irnd(0, 3)) { G32(0x4db714) = 0; G32(0x4dbb3c) = 2; G32(0x4db8bc) = 0; G32(0x90d1c4) = 0; G32(0x4db8b4) = irnd(0, 3) ? 0 : 1; }
 	GF(0x4dda44) = (float)irnd(0, 80) / 10;
+	G32(0x67ef30) = irnd(0, 30); G32(0x680bb0) = irnd(0, 3) ? irnd(0, G32(0x67ef30)) : 0; G32(0x4df818) = irnd(0, 9);   /* the list: count, top row, cursor */
+	static const DWORD flags[] = { 0x4dbaac, 0x4db854, 0x4dba84, 0x4db8b8, 0x4db858, 0x4dba90 };
+	for (int k = 0; k < 6; k++) G32(flags[k]) = irnd(0, 2) ? 0 : 1;
 }
 T_PLAIN(lobbyJoin_keysChat, 0x4079c0, keyschat_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_4355b0[] = { 0x41ee40, 1, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
@@ -15614,7 +15618,9 @@ static void escinput_setup(void)
 		0x22ee238, 0x22ee234, 0x22ee228, 0x1f36c8 };
 	int v;
 	for (int k = 0; k < (int)(sizeof small / sizeof *small); k++) { v = irnd(0, 3) ? irnd(0, 2) : irnd(-1, 8); memcpy(BUF + small[k], &v, 4); }
-	for (int k = 0; k < 4; k++) { v = irnd(0, 2) ? 0 : 1; memcpy(BUF + 0x234330b + k * 4, &v, 4); }
+	for (int k = 0; k < 4; k++) { v = irnd(0, 1); memcpy(BUF + 0x234330b + k * 4, &v, 4); }
+	S32(BUF, 8) = irnd(0, 1) ? 0 : irnd(1, 3);   /* the mode: 0 (single player) half the time */
+	v = irnd(-1, 4); memcpy(BUF + 0x2340cfc, &v, 4); v = irnd(0, 4); memcpy(BUF + 0x2340cf8, &v, 4);   /* the selection, the page */
 	v = irnd(-3, 3); memcpy(BUF + 0x234240d, &v, 4);
 	float f = irnd(0, 4) ? 0.5f : (float)irnd(0, 50) / 100.0f; memcpy(BUF + 0x2340c9c, &f, 4);
 }
@@ -17143,7 +17149,7 @@ static const STest g_stests[] = {
 	T(net_454650, 1, 40, 0), T(net_4545b0, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_41b300, 1, 40, 0),
 	T(app_43f640, 1, 40, 0), T(hud_490b30, 0, 300, 0), T(hud_490da0, 0, 300, 0), T(game_setGameTypeFlags, 0, 40, 0),
 	T(cfg_parseGraphic, 1, 40, 0), T(cfg_parseServer, 1, 40, 0), T(cfg_42e080, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
-	T(actor_45ebc0, 0, 40, 0), T(room_435770, 1, 40, 0), T(armc_40f340, 1, 40, 0),
+	T(actor_45ebc0, 0, 40, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(FUN_004050a0, 1, 40, 0), T(lobby_405140, 1, 40, 0),
 	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 40, 0), T(cfg_parseKeyNames, 1, 40, 0), T(cfg_videoModeNames, 1, 40, 0),
@@ -17454,7 +17460,7 @@ static const STest g_stests[] = {
 	T(profile_44f4b0, 0, 200, 0), T(mainmenu_441810, 0, 200, 0),
 	/* batch 174 */
 	T(game_returnToMenus_41ec50, 0, 200, 0), T(game_returnToMenus_41e8b0, 0, 200, 0), T(game_returnToMenus_41e9d0, 0, 200, 0), T(game_returnToMenus_41eb00, 0, 200, 0),
-	T(room_4036c0, 0, 200, 0), T(menuState900_enterSkirmish, 0, 200, 0), T(room_434490, 0, 200, 0),
+	T(room_4036c0, 0, 1000, 0), T(menuState900_enterSkirmish, 0, 200, 0), T(room_434490, 0, 200, 0),
 	T(menuState500_enter, 0, 200, 0), T(msg_playerConnected, 0, 200, 0), T(msg_chatLine, 0, 300, 0), T(music_playMatch, 0, 300, 0),
 	T(dplay_closeSession, 0, 100, 0),
 	/* batch 175 */
@@ -17462,8 +17468,8 @@ static const STest g_stests[] = {
 	T(room_435b00, 0, 200, 0), T(room_4346c0, 0, 200, 0), T(room_436620, 0, 200, 0), T(armc_40fd30, 0, 200, 0),
 	T(armc_colourScreenInput, 0, 200, 0), T(room_436400, 0, 200, 0), T(menu_437630, 0, 200, 0), T(mainmenu_441c00, 0, 200, 0),
 	T(setup_drawGraphicTab, 0, 200, 0), T(room_43e7b0, 0, 200, 0), T(setup_drawSoundTab, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
-	T(setup_drawControlTab, 0, 200, 0), T(room_43df80, 0, 200, 0), T(menu_enterMenus, 0, 200, 0), T(menu_4372f0, 0, 200, 0),
-	T(room_435fc0, 0, 200, 0), T(menu_436990, 0, 200, 0),
+	T(setup_drawControlTab, 0, 200, 0), T(room_43df80, 0, 1000, 0), T(menu_enterMenus, 0, 200, 0), T(menu_4372f0, 0, 200, 0),
+	T(room_435fc0, 0, 1000, 0), T(menu_436990, 0, 200, 0),
 	/* batch 176 */
 	T(lobby_406a60, 0, 200, 0), T(menu_437140, 0, 200, 0), T(arena_405690, 0, 200, 0), T(room_435d30, 0, 200, 0),
 	T(room_433e60, 0, 200, 0), T(mainmenu_startNetGame, 0, 200, 0), T(mainmenu_processKeys, 0, 200, 0), T(menu_436e10, 0, 200, 0),
@@ -17483,7 +17489,7 @@ static const STest g_stests[] = {
 	T(arena_452ec0, 0, 200, 0), T(skirmish_445bc0, 0, 50, 0),
 	/* batch 182 */
 	T(room_434dd0, 0, 200, 0), T(arena_406200, 0, 200, 0), T(lobby_roomNameCheck, 0, 200, 0), T(lobby_checkReservedName, 0, 200, 0),
-	T(lobby_connect, 0, 200, 0), T(lobbyJoin_keysChat, 0, 200, 0), T(room_4355b0, 0, 200, 0), T(arena_405b80, 0, 200, 0),
+	T(lobby_connect, 0, 200, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_4355b0, 0, 200, 0), T(arena_405b80, 0, 200, 0),
 	/* batch 183 */
 	T(arena_createClick, 0, 200, 0), T(lobbyTop_connect, 0, 200, 0), T(arena_loadAndQuit, 0, 200, 0), T(room_43ea10, 0, 200, 0),
 	T(lobbyJoin_draw, 0, 200, 0),
@@ -17494,7 +17500,7 @@ static const STest g_stests[] = {
 	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 200, 0), T(armc_41d8a0, 0, 200, 0), T(armc_41dfe0, 0, 200, 0),
 	T(armc_41e010, 0, 200, 0), T(armc_41dfb0, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
-	T(game_processGameModeInit, 0, 200, 0), T(match_escMenu, 0, 200, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
+	T(game_processGameModeInit, 0, 200, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
 	/* batch 187 */
 	T(particle_spawn, 0, 300, 0), T(particle_init, 0, 400, 0),
 	/* batch 188 */
