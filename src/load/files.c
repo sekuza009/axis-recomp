@@ -912,3 +912,55 @@ u32 (data_loadMapInfo)(void)
 	}
 	return 0;
 }
+
+/* 0x40d4e0: an arena's settings file read (text, "rt"): each line (but // comments) split at spaces and tabs, a
+   keyword taking the next word as its value: gamename (into 0x5b191c, 32 bytes), secret (0x5b1958), password
+   (0x5b193c, 8 bytes), gametype (0x5b194c), maxplayer (0x5b1948), map (0x5b1944), fraglimit (0x5b1950), timelimit
+   (0x5b1954; the original then reads on from the keyword, not the value). Each test sees the word the one before
+   left. Returns 1, or 0 when the file does not open */
+int (arena_loadSettings)(const char *path)
+{
+	void *f = crt_fopen(path, (const char *)0x4ad5e0);   /* "rt" */
+	if (!f)
+		return 0;
+	static const struct { u32 key, into; } numbers[4] = {
+		{ 0x4ad5b0, 0x5b194c }, { 0x4ad5a4, 0x5b1948 }, { 0x4ad5a0, 0x5b1944 }, { 0x4ad594, 0x5b1950 },
+	};
+	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	for (;;) {
+		char line[0x50];
+		memset(line, 0, sizeof line);
+		if (!crt_fgets(line, 0x50, f))
+			break;
+		if (line[0] == '/' && line[1] == '/')
+			continue;
+		char *word = crt_strtok(line, gaps);
+		while (word) {
+			if (!strcmp(word, (const char *)0x4ad5d0)) {   /* gamename */
+				word = crt_strtok(NULL, gaps);
+				memset((void *)0x5b191c, 0, 0x20);
+				strcpy((char *)0x5b191c, word);
+			}
+			if (!strcmp(word, (const char *)0x4ad5c8)) {   /* secret */
+				word = crt_strtok(NULL, gaps);
+				GAME_VAR(int, 0x5b1958) = crt_atoi(word);
+			}
+			if (!strcmp(word, (const char *)0x4ad5bc)) {   /* password */
+				word = crt_strtok(NULL, gaps);
+				GAME_VAR(u32, 0x5b193c) = 0;
+				GAME_VAR(u32, 0x5b1940) = 0;
+				strcpy((char *)0x5b193c, word);
+			}
+			for (int k = 0; k < 4; k++)
+				if (!strcmp(word, (const char *)numbers[k].key)) {
+					word = crt_strtok(NULL, gaps);
+					GAME_VAR(int, numbers[k].into) = crt_atoi(word);
+				}
+			if (!strcmp(word, (const char *)0x4ad588))   /* timelimit */
+				GAME_VAR(int, 0x5b1954) = crt_atoi(crt_strtok(NULL, gaps));
+			word = crt_strtok(NULL, gaps);
+		}
+	}
+	fclose(f);
+	return 1;
+}

@@ -2612,7 +2612,8 @@ DWORD mission_loadAxisMis(void);
 /* 0x42d7f0 cfg_readLines: read axis.cfg lines (fgets/strtok) into the settings. Lifted */
 LIFT_PLAIN(cfg_readLines, 42d7f0)
 /* 0x40d4e0 arena_loadSettings: read an arena settings file (fgets/strtok/atoi). Lifted */
-LIFT_PLAIN(arena_loadSettings, 40d4e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_loadSettings(const char *path);
 /* 0x42cba0 cfg_keyBindings: write the key bindings section of axis.cfg. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_keyBindings(void *f);
@@ -9438,7 +9439,7 @@ static void settings_setup(void)
 	g_vfsOpenFail = !irnd(0, 7);
 	fill_str(BUF + 0x100, 20, 33, 126);
 }
-T_PLAIN(arena_loadSettings, 0x40d4e0, settings_setup();, 0, BUF + 0x100, 0, 0, 0)
+ST(arena_loadSettings, settings_setup();, CALL_PLAIN(0x40d4e0, 0, BUF + 0x100, 0, 0, 0), (DWORD)arena_loadSettings((const char *)(BUF + 0x100)))
 ST(match_46cdc0, fill(BUF, 0x80); S32(BUF + 0x10, 4) = irnd(0, 1) ? (int)VFS_FILE(1) : 0; vfs_content(0, 0x80); fill_str(BUF + 0x200, 20, 33, 126);
    if (irnd(0, 1) && g_vfsSize > 0x30) { *(short *)(BUF + 0x200000 + 0x1c) = 0x18; S32(BUF + 0x200000, 0x1e) = 0; },
    TC(DWORD, 0x46cdc0, char *, char *)(BUF + 0x10, BUF + 0x200), match_46cdc0(BUF + 0x10, (DWORD)(BUF + 0x200)))
