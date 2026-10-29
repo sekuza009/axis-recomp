@@ -10162,7 +10162,7 @@ static void axiscfg_header_setup(void)
 {
 	vfs_content(95, 0x2000); g_vfsOpenFail = !irnd(0, 3); g_paintStacks = 1;
 	if (irnd(0, 1)) {
-		static const char head[] = "AXIS CONFIGURATION FILE Master ver 1.00.\n";
+		static const char head[] = "AXIS CONFIGURATION FILE Master ver 1.00.0106\n";
 		char *d = BUF + 0x200000; DWORD n = sizeof head - 1;
 		memmove(d + n, d, g_vfsSize); memcpy(d, head, n); g_vfsSize += n;
 	}
