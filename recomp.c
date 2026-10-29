@@ -5182,7 +5182,8 @@ DWORD setup_drawGraphicTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_43e7b0(void);
 LIFT_PLAIN(setup_drawSoundTab, 4221d0)
-LIFT_PLAIN(setup_controlTabKeys, 422e10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_controlTabKeys(void);
 LIFT_PLAIN(setup_drawControlTab, 422830)
 LIFT_PLAIN(room_43df80, 43df80)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15131,7 +15132,7 @@ T_PLAIN(setup_drawSoundTab, 0x4221d0, gen_setup(g_gs_4221d0, g_gi_4221d0, g_gb_4
 static const DWORD g_gs_422e10[] = { 0x401600, 1, 0x41e760, 1, 0x420c10, 0, 0x421680, 1, 0x42d730, 0, 0 };
 static const DWORD g_gi_422e10[] = { 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4e0cd4, 0x4e0cdc, 0x4e0ce0, 0x4e14f4, 0x4e1508, 0x4e1524, 0x4e1530, 0x76d330, 0x76d48c, 0x9da440, 0x9dae70, 0x9db0a0, 0 };
 static const DWORD g_gb_422e10[] = { 0x4de0c0, 0x4def00, 0 };
-T_PLAIN(setup_controlTabKeys, 0x422e10, gen_setup(g_gs_422e10, g_gi_422e10, g_gb_422e10);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_controlTabKeys, gen_setup(g_gs_422e10, g_gi_422e10, g_gb_422e10);, (CALL_PLAIN(0x422e10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (setup_controlTabKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_422830[] = { 0x41e760, 1, 0x4206f0, 2, 0x420c10, 0, 0x421680, 1, 0x4226b0, 0, 0x42d730, 0, 0 };
 static const DWORD g_gi_422830[] = { 0x4dda44, 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4de1c4, 0x4de1cc, 0x4de73c, 0x4ded68, 0x4ded6c, 0x4ded70, 0x4ded7c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x76d424, 0x76d490, 0x90d1c4, 0x9da490, 0 };
 static const DWORD g_gb_422830[] = { 0x4de0c0, 0x4def00, 0 };

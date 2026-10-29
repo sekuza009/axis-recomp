@@ -503,6 +503,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_425460() GAME_CDECL(0x425460, void, void)()
 #define setup_crosshairScreen() GAME_CDECL(0x425cd0, void, void)()
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
+#define setup_drawKeyBindingRows(key) GAME_CDECL(0x421680, void, int)(key)   /* (by use) the row being bound gets key */
+#define setup_controlTabHelper_420c10() GAME_CDECL(0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_CDECL(0x457310, void, void)()
 
 /* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */

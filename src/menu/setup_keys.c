@@ -297,3 +297,87 @@ u32 (setup_drawGraphicTab)(void)
 	}
 	return button;
 }
+
+/* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
+#define g_bindWaiting GAME_VAR(int, 0x4dddc8)         /* the selected row waits for its new key */
+#define g_bindRow GAME_VAR(int, 0x4de040)
+#define g_bindPage GAME_VAR(int, 0x4ddce8)
+#define g_bindRows ((const int *)0x4b04ec)            /* rows per page */
+#define g_bindToggle GAME_VAR(int, 0x4de1c0)          /* row 10's setting (on / off) */
+
+/* 0x422e10: the controls tab's keys. 0x9da440 only gives a sound. While a row waits: cancel stops waiting, any
+   other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
+   page's rows, four keys pick the page, OK takes the bindings (the copy at 0x4de0c0 into 0x4def00, axis.cfg read)
+   and closes, back or cancel closes, 0x4e0ce0 puts the defaults back (the original leaves eax to callers that
+   ignore it) */
+void (setup_controlTabKeys)(void)
+{
+	if (input_justPressed(GAME_VAR(int, 0x9da440))) {
+		sound_playMenu(6);
+		return;
+	}
+	if (g_bindWaiting) {
+		if (input_justPressed(GAME_VAR(int, 0x9da440))) {
+			sound_playMenu(6);
+			return;
+		}
+		if (input_justPressed(g_keyCancel2)) {
+			sound_playMenu(1);
+			g_bindWaiting = 0;
+			return;
+		}
+		for (int key = 2; key < 0xde; key++)
+			if (input_justPressed(key)) {
+				sound_playMenu(2);
+				setup_drawKeyBindingRows(key);
+				g_bindWaiting = 0;
+				return;
+			}
+		return;
+	}
+	if (input_justPressed(g_keyClick) == 1) {
+		if (g_bindRow < 0)
+			return;
+		sound_playMenu(2);
+		if (g_bindRow == 10)
+			g_bindToggle = 1 - g_bindToggle;
+		else
+			g_bindWaiting = 1;
+		return;
+	}
+	if (input_justPressed(g_keyUp) == 1) {
+		if (g_bindRow >= 0)
+			g_bindRow--;
+		return;
+	}
+	if (input_justPressed(g_keyDown) == 1) {
+		if (g_bindRow < g_bindRows[g_bindPage] - 1)
+			g_bindRow++;
+		return;
+	}
+	static const u32 page_keys[4] = { 0x4e1508, 0x4e1524, 0x4e14f4, 0x4e1530 };
+	for (int page = 0; page < 4; page++)
+		if (input_justPressed(GAME_VAR(int, page_keys[page])) == 1) {
+			sound_playMenu(2);
+			g_bindPage = page;
+			return;
+		}
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1) {
+		sound_playMenu(0);
+		memcpy((void *)0x4def00, (const void *)0x4de0c0, 0x44 * 4);
+		cfg_loadAxisCfg();
+		g_setupPage = 0;
+		return;
+	}
+	if (input_justPressed(g_keyBack) != 1) {
+		if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
+			sound_playMenu(0);
+			setup_controlTabHelper_420c10();
+			return;
+		}
+		if (!input_justPressed(g_keyCancel2))
+			return;
+	}
+	sound_playMenu(0);
+	g_setupPage = 0;
+}
