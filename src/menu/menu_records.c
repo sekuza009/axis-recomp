@@ -537,11 +537,48 @@ static u32 leave_game(void)
 	return GAME_CDECL(0x48b420, u32, void)();
 }
 
-/* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the map-select dialog first if open).
-   Its six buttons (outlines 0x2c bytes apart from 0x4deb80): 0 the campaign (menuState500_enter), 1 skirmish (next
-   screen 400), 2 network play (net_connect then 0x452170, messages 0x2a / 0x29 when they fail; next screen 800), 3
-   the setup (600), 4 the armour centre (0x40ee20), 5 quit. A right click quits too when the game was started from
-   the launcher (0x9dae10). Returns what the original leaves in eax */
+/* main menu choice i (with its sound; 0x4dda44 cleared): 0 the campaign (menuState500_enter), 1 skirmish (next
+   screen 400), 2 network play (net_connect, then 0x452170; messages 0x2a / 0x29 when they fail; next screen 800), 3
+   the setup (600), 4 the armour centre (0x40ee20), 5 quit. The original's eax into *r; 1 when a failure ended the
+   caller there */
+static int menu_choice(int i, u32 *r)
+{
+	sound_playMenu(0);
+	if (i)
+		GAME_VAR(float, 0x4dda44) = 0.0f;
+	int result;
+	switch (i) {
+	case 0:
+		*r = GAME_CDECL(0x447750, u32, void)();   /* menuState500_enter */
+		GAME_VAR(int, 0x4deb48) = 0;
+		return 0;
+	case 2:
+		result = GAME_CDECL(0x451b80, int, int)(0x65);   /* net_connect */
+		if (result == 2 || result == 0 || GAME_CDECL(0x452170, int, void *, int)(GAME_VAR(void *, 0x4ded18), 0x65) == 0) {
+			sound_playMenu(6);
+			*r = GAME_CDECL(0x41ee40, u32, int)(result == 2 ? 0x2a : 0x29);
+			return 1;
+		}
+		/* fall through */
+	case 1: case 3:
+		*r = GAME_CDECL(0x441250, u32, int)(2);   /* set_680370_441250 */
+		GAME_VAR(int, 0x4deb48) = 0;
+		GAME_VAR(int, 0x67ef20) = i == 1 ? 400 : i == 2 ? 800 : 600;
+		return 0;
+	case 4:
+		GAME_VAR(int, 0x4dc24c) = 1;
+		*r = GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus: the armour centre */
+		GAME_VAR(int, 0x4deb48) = 0;
+		return 0;
+	default:
+		*r = leave_game();
+		return 0;
+	}
+}
+
+/* 0x4419d0: the main menu clicked (not while it is fading in (0x9db994 = 1); the map-select dialog first if open):
+   its six buttons (outlines 0x2c bytes apart from 0x4deb80) as menu_choice. A right click quits too when the game
+   was started from the launcher (0x9dae10). Returns what the original leaves in eax */
 u32 (mainmenu_startNetGame)(void)
 {
 	if (GAME_VAR(int, 0x9db994) == 1)
@@ -554,45 +591,9 @@ u32 (mainmenu_startNetGame)(void)
 		int i = 0;
 		while (i < 6 && point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
 			i++;
-		int r;
-		switch (i) {
-		case 0:
-			sound_playMenu(0);
-			GAME_CDECL(0x447750, int, void)();   /* menuState500_enter */
-			GAME_VAR(int, 0x4deb48) = 0;
-			break;
-		case 1: case 3:
-			sound_playMenu(0);
-			set_680370_441250(2);
-			GAME_VAR(int, 0x67ef20) = i == 1 ? 400 : 600;
-			GAME_VAR(int, 0x4deb48) = 0;
-			break;
-		case 2:
-			sound_playMenu(0);
-			r = GAME_CDECL(0x451b80, int, int)(0x65);   /* net_connect */
-			if (r == 2) {
-				sound_playMenu(6);
-				return GAME_CDECL(0x41ee40, u32, int)(0x2a);
-			}
-			if (r == 0 || GAME_CDECL(0x452170, int, void *, int)(GAME_VAR(void *, 0x4ded18), 0x65) == 0) {
-				sound_playMenu(6);
-				return GAME_CDECL(0x41ee40, u32, int)(0x29);
-			}
-			set_680370_441250(2);
-			GAME_VAR(int, 0x67ef20) = 800;
-			GAME_VAR(int, 0x4deb48) = 0;
-			break;
-		case 4:
-			sound_playMenu(0);
-			GAME_VAR(int, 0x4dc24c) = 1;
-			GAME_CDECL(0x40ee20, void, void)();   /* menu_enterMenus: the armour centre */
-			GAME_VAR(int, 0x4deb48) = 0;
-			break;
-		case 5:
-			sound_playMenu(0);
-			leave_game();
-			break;
-		}
+		u32 r;
+		if (i < 6 && menu_choice(i, &r))
+			return r;
 	}
 	if (!GAME_VAR(int, 0x4ded8c))
 		return 0;
@@ -601,4 +602,35 @@ u32 (mainmenu_startNetGame)(void)
 		return launched;
 	GAME_VAR(float, 0x4dda44) = 0.0f;
 	return leave_game();
+}
+
+/* 0x441e00: the main menu's keys (not while fading in; the map-select dialog's keys (mainmenu_441c00) when open):
+   the six choices' keys as menu_choice, the back key quitting (without saving) when started from the launcher, and
+   the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
+u32 (mainmenu_processKeys)(void)
+{
+	static const u32 key[6] = { 0x4e1500, 0x4e1508, 0x4e1504, 0x4e1524, 0x4e0cd4, 0x4e153c };
+	if (GAME_VAR(int, 0x9db994) == 1)
+		return 1;
+	if (GAME_VAR(int, 0x9eeab4))
+		return GAME_CDECL(0x441c00, u32, void)();   /* mainmenu_441c00 */
+	for (int i = 0; i < 6; i++)
+		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
+			u32 r;
+			menu_choice(i, &r);
+			return r;
+		}
+	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && GAME_VAR(int, 0x9dae10) > 0) {
+		GAME_VAR(float, 0x4dda44) = 0.0f;
+		set_680370_441250(4);
+		GAME_VAR(int, 0x4deb48) = 1;
+		GAME_VAR(int, 0x67ef20) = 210;
+		return GAME_CDECL(0x48b420, u32, void)();
+	}
+	u32 r = (u32)input_justPressed(GAME_VAR(int, 0x9da440));
+	if (r != 1)
+		return r;
+	r = GAME_CDECL(0x440d70, u32, void)();
+	GAME_VAR(int, 0x9eeab4) = 1;
+	return r;
 }
