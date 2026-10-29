@@ -477,3 +477,20 @@ u32 (match_44ace0)(void)
 	GAME_CDECL(0x431590, void, void)();   /* match_431590: the key state */
 	return (u32)input_initKeyboard(g_hWndMain);
 }
+
+/* 0x42ef30: a start-up problem reported: codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
+   0x751024 over the main window; returns the box's answer, or the code itself when it has no message */
+int (app_42ef30)(int code)
+{
+	u32 text;
+	switch (code) {
+	case 1: text = 0x7511a4; break;
+	case -4: text = 0x751224; break;
+	case -5: text = 0x7512a4; break;
+	case -1: text = 0x751324; break;
+	case -2: text = 0x7513a4; break;
+	case -3: text = 0x751424; break;
+	default: return code;
+	}
+	return MessageBoxA(GAME_VAR(void *, 0x4ded18), (const char *)text, (const char *)0x751024, 0);
+}

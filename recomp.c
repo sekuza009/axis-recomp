@@ -2585,8 +2585,9 @@ DWORD FUN_0046cc30(BYTE *p, DWORD size, DWORD count, void *f);
 /* 0x42c650 cfg_parsePlayer: write the player section of axis.cfg. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_parsePlayer(void *f);
-/* 0x42c910 cfg_parseSound: write the sound section of axis.cfg. Lifted */
-LIFT_PLAIN(cfg_parseSound, 42c910)
+/* 0x42c910 cfg_parseSound: write the sound section of axis.cfg */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_parseSound(void *f);
 /* 0x41e7c0 console_loadFile: load console script k (names at 0x907b30). Lifted */
 LIFT_PLAIN(console_loadFile, 41e7c0)
 /* 0x41e260 app_checkLauncherRunning: read 8 check bytes from axisplay.exe. Lifted */
@@ -2719,7 +2720,8 @@ LIFT_PLAIN(ptx_crtlError, 46e1e0)
 /* 0x454d90 dplay_454d90: DirectPlay name compare/copy helper */
 LIFT_PLAIN(dplay_454d90, 454d90)
 /* 0x42ef30 app_42ef30: startup checks with message boxes */
-LIFT_PLAIN(app_42ef30, 42ef30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int app_42ef30(int code);
 /* 0x42f000 gfx_setPixelFormat: choose and set the pixel format */
 LIFT_PLAIN(gfx_setPixelFormat, 42f000)
 /* 0x440c60 autoplay_listFiles: list the autoplay files (_findfirst/_findnext) */
@@ -9206,7 +9208,8 @@ ST(FUN_0046cc30, fill(BUF + 0x1000, 0x400); g_a[0] = irnd(0, 8); g_a[1] = irnd(0
    (DWORD)FUN_0046cc30((BYTE *)(BUF + 0x1000), (DWORD)g_a[0], (DWORD)g_a[1], (void *)VFS_FILE(1)))
 ST(cfg_parsePlayer, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, CALL_PLAIN(0x42c650, 0, VFS_FILE(0), 0, 0, 0),
    cfg_parsePlayer((void *)VFS_FILE(0)))
-T_PLAIN(cfg_parseSound, 0x42c910, , 0, VFS_FILE(0), 0, 0, 0)
+ST(cfg_parseSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
+   cfg_parseSound((void *)VFS_FILE(0)))
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
 T_PLAIN(console_loadFile, 0x41e7c0, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, 0, g_a[0], 0, 0, 0)
 T_PLAIN(app_checkLauncherRunning, 0x41e260, vfs_content(0, 0x6000);, 0, 0, 0, 0, 0)
@@ -9354,7 +9357,7 @@ ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBeg
 ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
 T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
 T_PLAIN(dplay_454d90, 0x454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0)
-T_PLAIN(app_42ef30, 0x42ef30, g_a[0] = irnd(-1, 3);, 0, g_a[0], 0, 0, 0)
+ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
 T_PLAIN(gfx_setPixelFormat, 0x42f000, g_mockPixelFormat = irnd(0, 9);, 0, 0xdc0, 0, 0, 0)
 T_PLAIN(autoplay_listFiles, 0x440c60, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
 T_PLAIN(data_loadMessages, 0x42b3e0, vfs_content(95, 0x2000);, 0, 0, 0, 0, 0)

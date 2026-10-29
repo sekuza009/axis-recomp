@@ -202,3 +202,25 @@ static u32 dat_open(u32 count, const char *format, void *log)
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
 u32 (shapeDat_initBy)(void) { return dat_open(0xa0e79c, (const char *)0x4c4d20, (void *)0xa0e788); }
 u32 (skelDat_initBy)(void) { return dat_open(0xa0eab4, (const char *)0x4c54b4, (void *)0xa0eaa0); }
+
+/* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
+   switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
+u32 (cfg_parseSound)(void *f)
+{
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+	char number[12];
+	itoa(GAME_VAR(int, 0x4e0c90), number, 10);
+	FPUTS(0x4b1a4c);
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	itoa(GAME_VAR(int, 0x4e0c94), number, 10);
+	FPUTS(0x4b1a34);
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	FPUTS(0x4b1a20);
+	FPUTS(GAME_VAR(int, 0x4e0c98) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(0x4b1a04);
+	FPUTS(GAME_VAR(int, 0x4e0c9c) == 1 ? 0x4b17e4 : 0x4b17dc);
+	return FPUTS(0x4b182c);
+#undef FPUTS
+}
