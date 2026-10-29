@@ -3118,7 +3118,8 @@ static THISCALL DWORD load_483e90(char *pool, DWORD a) { DWORD v[1] = { a }; ret
 static THISCALL DWORD load_483ec0(char *pool, DWORD a, DWORD p) { DWORD v[2] = { a, p }; return run_lifted(lift_483ec0, (DWORD)pool, 2, v); }
 static THISCALL DWORD match_483f00(char *pool, DWORD a, DWORD x, DWORD p) { DWORD v[3] = { a, x, p }; return run_lifted(lift_483f00, (DWORD)pool, 3, v); }
 /* 0x472310 (thiscall) match_472310: reset the factor pool and add every active player and live effect */
-static THISCALL DWORD match_472310(char *scene) { return run_lifted(lift_472310, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_472310(char *scene);
 /* 0x43f8b0 app_deleteDataFiles: reset the three data files' progress word and delete the saved game */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_deleteDataFiles(void);
@@ -4786,7 +4787,8 @@ long FUN_00450bf0(DWORD from, DWORD to, DWORD flags, const void *data, DWORD siz
 int FUN_00451270(const int *message, DWORD to, DWORD size);
 /* 0x451350 net_logMessage(from, text, out): "<name>: <text>" (the sender's name from DirectPlay, "?" text when
    NULL) in a new global block (*out); the error from the name lookup or 0x8007000e */
-LIFT_PLAIN(net_logMessage, 451350)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_logMessage(DWORD from, const char *text, char **out);
 /* 0x451090 arena_451090(msg, size, from): a game packet by type (1..7): 1 a chat line (net_logMessage into
    0x9fd948, flag 0x9fd95c), 2 the host's id (0x9fd94c) and the room reset (0x454130, 0x4515a0), 3..7 a player slot
    (byte +4: 0x9f9840 + 0x410 * slot) claimed or updated with up to 0x40 bytes of its data (+5 size, +9 data) */
@@ -14503,7 +14505,7 @@ ST(FUN_00450bf0, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD, DWORD, DWORD, void *, DWORD))0x450bf0)(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]),
    (DWORD)FUN_00450bf0(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]))
 ST(FUN_00451270, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(FUN_00451270((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
-T_PLAIN(net_logMessage, 0x451350, dpmsg_setup();, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0)
+ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
 T_PLAIN(arena_451090, 0x451090, dpmsg_setup();, 0, BUF + 0x3800, g_a[4], g_a[5], 0)
 T_PLAIN(net_sendLocalInfo, 0x450c20, dpmsg_setup();, 0, BUF + 0x3800, 0, 0, 0)
 T_PLAIN(arena_450a60, 0x450a60, dpmsg_setup();, 0, 0, 0, 0, 0)

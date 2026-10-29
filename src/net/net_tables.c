@@ -361,3 +361,29 @@ int (net_452c80)(const u8 *rec)
 	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
 	return list_append(0xa0b358, 0x9fd960, 0x79, rec, strings, 4, 0x33, bytes, 9);
 }
+
+#define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
+/* 0x451350: a chat line for the log: "<name>: <text>" (format 0x4b3e30; the sender's short name from DirectPlay
+   through 0x454190, "?" when it has none) in a new global block, stored in *out. Returns the name lookup's result,
+   or 0x8007000e (E_OUTOFMEMORY) when the block cannot be had */
+int (net_logMessage)(u32 from, const char *text, char **out)
+{
+	u8 *name = NULL;
+	int r = GAME_CDECL(0x454190, int, u32, u8 **)(from, &name);
+	if (r >= 0) {
+		const char *shortName = *(const char **)(name + 8);
+		if (!shortName)
+			shortName = (const char *)0x4b3e38;
+		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)0x4b3e30) + 1;
+		char *line = IMPORT(0x4a9198, char *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, length));   /* GlobalLock(GlobalAlloc(GHND)) */
+		if (!line)
+			r = 0x8007000e;
+		else {
+			((int (CDECL *)(char *, const char *, ...))GAME_VAR(void *, 0x4a92f0))(line, (const char *)0x4b3e30, shortName, text);   /* wsprintfA */
+			*out = line;
+		}
+	}
+	if (name)
+		global_free(name);
+	return r;
+}

@@ -61,3 +61,25 @@ void *THISCALL (FUN_004625a0)(Scene *scene)
 		i = FIELD(int, s, 0x23428f6);
 	return s + 0x1ecca70 + i * 0x8888;
 }
+
+/* 0x472310: the factor pool (+0x9d8010) refilled: flagged (+0x9d800c), emptied (0x483d60), then a factor (kind
+   0xa1f23c) for each active actor, of (its +0x4ec + 0x4a9424) * 0x4aa410 at its +0x154, and for each active
+   projectile whose +0x7c is above 0x4a93e8, of that at its +0x10 */
+void THISCALL (match_472310)(Stage *stage)
+{
+	u8 *pool = (u8 *)stage + 0x9d8010;
+	GAME_VAR(int, (u8 *)stage + 0x9d800c) = 1;
+	this_set_483d60(pool);
+	for (int i = 0; i < stage->actorCount; i++) {
+		u8 *a = (u8 *)&stage->actors[i];
+		if (stage->actors[i].active == 1) {
+			float value = f32(fmul_m(fadd_m(fld_m((const float *)(a + 0x4ec)), (const float *)0x4a9424), (const float *)0x4aa410));
+			GAME_THISCALL(0x483f00, int, void *, u32, float, void *)(pool, 0xa1f23c, value, a + 0x154);   /* match_483f00 */
+		}
+	}
+	for (int i = 0; i < stage->projectileCount; i++) {
+		u8 *p = (u8 *)&stage->projectiles[i];
+		if (stage->projectiles[i].active == 1 && *(const float *)(p + 0x7c) > GAME_VAR(float, 0x4a93e8))
+			GAME_THISCALL(0x483f00, int, void *, u32, u32, void *)(pool, 0xa1f23c, GAME_VAR(u32, p + 0x7c), p + 0x10);
+	}
+}
