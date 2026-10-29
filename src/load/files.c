@@ -876,6 +876,53 @@ u32 (data_loadSkirmishInfo)(void)
 	return fclose(f);
 }
 
+/* 0x42b590: the pilots read from profkor.dat or profeng.dat (by the language 0x9dae74; in the data folder): at least
+   10000 bytes starting with "AXIS CHARACTER PROFILE DATA FILE" (0x80 bytes), else the game ends ("... Not Found");
+   0x1046a bytes on the record count and a version word (0x115c + 0x67, else the game ends: "wrong version", the file
+   left open), then the 0x4c-byte records, each decoded with its own key ('a', 'b', ...) into 0x9f9040. Then the 0x67
+   records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
+void (data_loadPilotProfiles)(void)
+{
+	void *f = data_open(0x9dae7c, GAME_VAR(int, 0x9dae74) == 1 ? 0x4b14b4 : 0x4b14a8, 0x4ad170,   /* "profkor.dat" / "profeng.dat", "rb" */
+	                    0x4b1480);   /* "Character Profile Data File Not Found" */
+	crt_fseek(f, 0, 2);
+	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
+		fclose(f);
+		data_missing(0x4b1480);
+	}
+	crt_fseek(f, 0, 0);
+	char header[0x80];
+	crt_fread(header, 0x80, 1, f);
+	if (strcmp(header, (const char *)0x4b145c)) {   /* "AXIS CHARACTER PROFILE DATA FILE" */
+		fclose(f);
+		data_missing(0x4b1480);
+	}
+	crt_fseek(f, 0x1046a, 1);
+	int count, version;
+	crt_fread(&count, 4, 1, f);
+	crt_fread(&version, 4, 1, f);
+	version -= 0x115c;
+	if (version != 0x67)
+		data_missing(0x4b143c);   /* "Character Profile wrong version" */
+	u8 key = 'a';
+	for (int i = 0; i < count; i++) {
+		u8 record[0x4c];
+		crt_fread(record, 0x4c, 1, f);
+		profile_42b3c0(record, key++);
+		memcpy((void *)(0x9f9040 + i * 0x4c), record, 0x4c);
+	}
+	fclose(f);
+	for (int i = 0; i < version; i++) {
+		int *stats = (int *)(0x9f9040 + i * 0x4c);
+		static const u8 limited[8] = { 0x28, 0x30, 0x34, 0x2c, 0x3c, 0x38, 0x40, 0x48 };
+		for (int k = 0; k < 8; k++)
+			if (stats[limited[k] / 4] > 30)
+				stats[limited[k] / 4] = 0;
+		if (stats[0x44 / 4] > 50)
+			stats[0x44 / 4] = 0;
+	}
+}
+
 /* 0x42b830: mapinfo.dat read (from the maps' folder 0x4dedf8): its header must start with "AXIS MAP INFOMATION DATA
    FILE" and have 0x1a at +0x32, else the game ends with "Map Infomation Data File Not Found"; then the map count
    (0x67ef00) and for each map its 32-byte name (0x907b30) and 0x50-byte description (0x5ae9d0), both decoded

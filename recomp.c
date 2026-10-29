@@ -2756,7 +2756,8 @@ DWORD data_loadSkirmishInfo(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD data_loadMapInfo(void);
 /* 0x42b590 data_loadPilotProfiles: load the pilot profiles file */
-LIFT_PLAIN(data_loadPilotProfiles, 42b590)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void data_loadPilotProfiles(void);
 /* 0x447010 profile_saveProgress: save the campaign progress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_saveProgress(void);
@@ -9631,7 +9632,7 @@ static void pilotfile_setup(void)
 	*(int *)(d + 0x80 + 0x1046a) = n; *(int *)(d + 0x80 + 0x1046a + 4) = irnd(0, 9) ? 0x115c + 0x67 : irnd(0, 0x2000);
 	g_vfsData = d; g_vfsSize = irnd(0, 9) ? size : irnd(0x80, 9999);
 }
-T_PLAIN(data_loadPilotProfiles, 0x42b590, pilotfile_setup();, 0, 0, 0, 0, 0)
+ST(data_loadPilotProfiles, pilotfile_setup();, (CALL_PLAIN(0x42b590, 0, 0, 0, 0, 0), 0), (data_loadPilotProfiles(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 ST(profile_load, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446590, 0, 0, 0, 0, 0), (DWORD)(profile_load()))
 ST(profile_save, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446a10, 0, 0, 0, 0, 0), (DWORD)(profile_save()))
