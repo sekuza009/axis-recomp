@@ -6402,7 +6402,8 @@ static int g_mockMkdirFail, g_mockFindCount, g_mockFindPos;
 #define EXITED 0xe817e817u
 static void *g_exitJmp[5];
 static int g_inRun;
-static void __cdecl mock_exit(int code) { mock_rec(0x49edac, 1, (DWORD)code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
+static int g_exitRuns;   /* runs of the current state test that ended in exit (both sides counted) */
+static void __cdecl mock_exit(int code) { g_exitRuns++; mock_rec(0x49edac, 1, (DWORD)code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
 /* a thread procedure's ExitThread ends the run as exit() does; WaitForMultipleObjects answers from g_mockWaits
    (then 1 for ever, so a wait loop ends) */
 static void WINAPI mstub_ExitThread(DWORD code) { mock_rec(0x4a9180, 1, code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
@@ -7382,6 +7383,7 @@ static void run_stest(const STest *t)
 	if (g_quick) { if (nfull > 2) nfull = 2; if (nfast > 100) nfast = 100; }
 	progress(t->name);
 	g_wdName = t->name;
+	g_exitRuns = 0;
 	for (int k = 0; k < nfull + nfast; k++) {
 		g_crumb[1] = (DWORD)k;
 		int same = run_one(t, k < nfull, !logged);
@@ -7390,6 +7392,7 @@ static void run_stest(const STest *t)
 	}
 	restore_data();
 	report(t->name, &st);
+	if (g_exitRuns) say("      (%s: %d of its %d runs ended in exit)\n", t->name, g_exitRuns, 2 * st.n);   /* a test that exits early covers less */
 	if (GetTickCount() - t0 >= 400) say("      (%s took %lu ms)\n", t->name, GetTickCount() - t0);
 }
 
