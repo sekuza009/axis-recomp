@@ -209,10 +209,6 @@ void (setup_420e50)(int k)
 	}
 }
 
-/* a button's outline as FUN_0041eea0 takes it on the stack: the edge count, then the corners' xs and ys */
-typedef struct { int n, x[5], y[5]; } Outline;
-#define point_in_outline(x, y, outline) GAME_CDECL(0x41eea0, int, int, int, Outline)(x, y, outline)   /* FUN_0041eea0 */
-
 /* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at 0x4df918)
    opens the sound, graphics or controls tab or goes back to the main menu; a right click (when 0x9dae10 allows) goes
    back too. Returns what the original leaves in eax */

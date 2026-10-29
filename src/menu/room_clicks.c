@@ -161,3 +161,58 @@ u32 (menu_437140)(void)
 		return GAME_CDECL(0x435a40, u32, void)();
 	return 0;
 }
+
+/* 0x435b00: the game room's left clicks (nothing open: 0x9dd1c8, 0x9dd838; no right click) on its buttons
+   (0x432200): 0 / 1 open the room's two lists (0x433b00, 0x433bb0), 2 opens the chat line, 3 leaves for the main
+   menu (the keyboard taken back if it was let go, the connection closed), 4 0x4338c0. Returns the action's eax */
+u32 (room_435b00)(void)
+{
+	u32 open = GAME_VAR(u32, 0x9dd1c8);
+	if (open)
+		return open;
+	if ((open = GAME_VAR(u32, 0x9dd838)))
+		return open;
+	if ((open = GAME_VAR(u32, 0x4ded8c)))
+		return open;
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	u32 button = GAME_CDECL(0x432200, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	u32 r;
+	switch (button) {
+	case 0:
+		GAME_CDECL(0x433c70, void, void)();          /* room_433c70 */
+		r = GAME_CDECL(0x433b00, u32, void)();       /* room_433b00 */
+		GAME_VAR(int, 0x9dd1cc) = 1;
+		return r;
+	case 1:
+		GAME_CDECL(0x433c70, void, void)();
+		r = GAME_CDECL(0x433bb0, u32, void)();       /* room_433bb0 */
+		GAME_VAR(int, 0x9dd6b0) = 1;
+		return r;
+	case 2:
+		if ((open = GAME_VAR(u32, 0x9dd1c8)))
+			return open;
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9dd198) = 1;
+		GAME_VAR(int, 0x9dd1c8) = 1;
+		GAME_VAR(int, 0x9dd850) = 0;
+		return 1;
+	case 3:
+		if (GAME_VAR(int, 0x68039c)) {
+			GAME_VAR(int, 0x68039c) = 0;
+			GAME_CDECL(0x431590, void, void)();      /* match_431590 */
+			GAME_CDECL(0x401310, void, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+		}
+		sound_playMenu(0);
+		set_680370_441250(4);
+		GAME_VAR(int, 0x9dd834) = 0x63;
+		g_nextScreen = 300;
+		GAME_VAR(int, 0x4e1868) = 0;
+		GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
+		return GAME_CDECL(0x451e60, u32, void)();    /* net_disconnect */
+	case 4:
+		sound_playMenu(0);
+		return GAME_CDECL(0x4338c0, u32, void)();    /* room_4338c0 */
+	}
+	return button;
+}

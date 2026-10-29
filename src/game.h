@@ -792,4 +792,8 @@ typedef struct { float r, g, b, a; } Colour;
 /* the error reporters (src/app/error_log.c): a message, or a fatal one that ends the game */
 #define sys_errorTerminate(...) GAME_CDECL(0x46c950, void, const char *, ...)(__VA_ARGS__)
 
+/* a menu button's outline as FUN_0041eea0 takes it on the stack: the edge count, then the corners' xs and ys */
+typedef struct { int n, x[5], y[5]; } Outline;
+#define point_in_outline(x, y, outline) GAME_CDECL(0x41eea0, int, int, int, Outline)(x, y, outline)   /* FUN_0041eea0 */
+
 #endif

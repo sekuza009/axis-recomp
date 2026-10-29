@@ -735,3 +735,37 @@ u32 (lobbyTop_keys)(void)
 		return to_main_menu();
 	return 0;
 }
+
+/* 0x406950: the lobby's top page clicks (no dialog open, not while 0x67ef14 is 1): a left click on one of its four
+   buttons (outlines at 0x5b1cf8) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when
+   0x9dae10 allows) goes back too. Returns what the original leaves in eax */
+u32 (lobby_406950)(void)
+{
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (GAME_VAR(int, 0x67ef14) == 1)
+		return 0;
+	if (GAME_VAR(int, 0x4ded88)) {
+		const Outline *buttons = (const Outline *)0x5b1cf8;
+		for (int i = 0; i < 4; i++) {
+			if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+				continue;
+			sound_playMenu(0);
+			switch (i) {
+			case 0: GAME_CDECL(0x404ac0, void, void)(); break;   /* lobby_setSubState0 */
+			case 1: GAME_CDECL(0x404b30, void, void)(); break;   /* lobby_setSubState1 */
+			case 2: GAME_CDECL(0x404c20, void, void)(); break;   /* lobby_setSubState2 */
+			case 3: to_main_menu(); break;
+			}
+			break;
+		}
+	}
+	int right = GAME_VAR(int, 0x4ded8c);
+	if (!right)
+		return 0;
+	int allowed = GAME_VAR(int, 0x9dae10);
+	if (allowed <= 0)
+		return allowed;
+	sound_playMenu(0);
+	return to_main_menu();
+}
