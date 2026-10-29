@@ -334,6 +334,100 @@ u32 (room_433c70)(void)
 	return GAME_VAR(u32, 0x9dd1cc);
 }
 
+/* the dialog's button choice (g_dialogChoice) highlighted at (x, y) */
+static void highlight_choice(int choice, int x, int y)
+{
+	g_dialogChoice = choice;
+	g_highlightShown = 1;
+	GAME_VAR(u32, 0x680bc0) = 0x41a00000;   /* g_highlightSize 20 */
+	GAME_VAR(u32, 0x9da4a4) = 0x3ecccccd;   /* g_highlightAlpha 0.4 */
+	g_highlightX = x;
+	g_highlightY = y;
+}
+
+/* 0x43df80: the create-game dialog (its panel at 0x9dd358): a password to retype (0x9dced0: the settings back and
+   the password opened again), the login to send (0x9dd198); once typing has ended (g_paused clear), the line taken
+   into the game's name (0x9dd830; 30 bytes at 0x9dd1d8) or password (0x9dd38c; 12 at 0x9dd1f6) and the key that
+   ended it (0x9dc428: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
+   to the request (0xa0b378, awaited: 0x9dd838): 33 accepted (state 99, the settings written and taken), 42 done
+   (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
+void (room_43df80)(void)
+{
+#define g_editKey GAME_VAR(int, 0x9dc428)
+	if (GAME_VAR(int, 0x9dced0)) {
+		room_432be0();
+		room_433bb0();
+		GAME_VAR(int, 0x9dced0) = 0;
+		return;
+	}
+	if (GAME_VAR(int, 0x9dd198) == 1) {
+		room_433c70();
+		room_434490();
+		GAME_VAR(int, 0x9dd198) = 0;
+		return;
+	}
+	if (GAME_VAR(int, 0x9dd830)) {
+		if (g_paused)
+			return;
+		GAME_VAR(int, 0x9dd830) = 0;
+		memset((void *)0x9dd1d8, 0, 30);
+		strcpy((char *)0x9dd1d8, g_chatLine);
+		if (g_editKey == 10) {
+			highlight_choice(3, GAME_VAR(int, 0x9dd358) + 0x1a2, GAME_VAR(int, 0x9dd364) - 0x30);
+			GAME_VAR(int, 0x9dd1cc) = 0;
+			g_editKey = 0;
+		} else if (g_editKey == 20) {
+			GAME_VAR(int, 0x9dd1cc) = 0;
+			room_433bb0();
+			GAME_VAR(int, 0x9dd6b0) = 1;
+			g_chatFieldFlag = 1;
+			g_editKey = 0;
+		}
+		return;
+	}
+	if (GAME_VAR(int, 0x9dd38c)) {
+		if (g_paused)
+			return;
+		memset((void *)0x9dd1f6, 0, 12);
+		GAME_VAR(int, 0x9dd38c) = 0;
+		strcpy((char *)0x9dd1f6, g_chatLine);
+		g_chatFieldFlag = 0;
+		if (g_editKey == 10) {
+			GAME_VAR(int, 0x9dd1cc) = 1;
+			GAME_VAR(int, 0x9dd6b0) = 0;
+			room_433b00();
+			g_editKey = 0;
+		} else if (g_editKey == 20) {
+			highlight_choice(1, GAME_VAR(int, 0x9dd358) + 0x62, GAME_VAR(int, 0x9dd364) - 0x30);
+			GAME_VAR(int, 0x9dd1cc) = 0;
+			GAME_VAR(int, 0x9dd6b0) = 0;
+			g_editKey = 0;
+		}
+		return;
+	}
+	if (!GAME_VAR(int, 0x9dd838))
+		return;
+	u32 answer = GAME_VAR(u32, 0xa0b378);
+	if (answer == 0)
+		return;
+	GAME_VAR(int, 0x9dd838) = 0;
+	if (answer == 0x21) {
+		GAME_VAR(int, 0x9dd834) = 99;
+		reg_writeCharacterSettings();
+		room_432db0();
+	} else if (answer == 0x2a)
+		GAME_VAR(int, 0x9dd850) = 1;
+	else if (answer == 0x1f || answer == 0x20)
+		FUN_0041ee40(answer);
+	else if (answer == 0x22)
+		FUN_0041ee40(0x23);
+	else
+		FUN_0041ee40(0x2a);
+	GAME_VAR(int, 0xa0b378) = 0;
+	GAME_VAR(int, 0x9dd1c8) = 0;
+#undef g_editKey
+}
+
 /* 0x43e610: the game room's network events: a pending leave (0x9dd6c4: 1 leave now, 2 to state 0x4d), then the
    server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the ladder game set up, the settings written, to
    state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */

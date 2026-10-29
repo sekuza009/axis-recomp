@@ -906,6 +906,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_4532b0(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
 
 #define room_432be0() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
+#define room_432db0() GAME_CDECL(0x432db0, void, void)()   /* a received game's settings into the room */
+#define room_433b00() GAME_CDECL(0x433b00, void, void)()   /* the game's name opened for typing */
+#define room_433bb0() GAME_CDECL(0x433bb0, void, void)()   /* the game's password opened for typing */
+#define room_433c70() GAME_CDECL(0x433c70, void, void)()   /* the chat edit control closed, the line taken */
+#define room_434490() GAME_CDECL(0x434490, void, void)()   /* the login sent */
+#define FUN_0041ee40(i) GAME_CDECL(0x41ee40, void, int)(i)   /* message i in the message box */
+#define reg_writeCharacterSettings() GAME_CDECL(0x432400, void, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
 #define arena_4045e0() GAME_CDECL(0x4045e0, void, void)()
