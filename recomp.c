@@ -5261,7 +5261,8 @@ void setup_drawControlTab(void);
 void room_43df80(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_enterMenus(void);
-LIFT_PLAIN(menu_4372f0, 4372f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_4372f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435fc0(void);
 LIFT_PLAIN(menu_436990, 436990)
@@ -15357,7 +15358,7 @@ static void roomkeys_setup(void)
 	for (int k = 0; k < 4; k++) G32(flags[k]) = irnd(0, 2) ? 0 : 1;
 	GF(0x4dda44) = irnd(0, 1) ? 6.0f : (float)irnd(0, 80) / 10;   /* the repeat clock past 5 half the time */
 }
-T_PLAIN(menu_4372f0, 0x4372f0, roomkeys_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_4372f0, roomkeys_setup();, (CALL_PLAIN(0x4372f0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menu_4372f0(), 0))   /* its eax reaches only menu_frame, which ignores it */
 static const DWORD g_gs_435fc0[] = { 0x41e760, 0, 0x432300, 2, 0x434d00, 0, 0x434da0, 0, 0 };
 static const DWORD g_gi_435fc0[] = { 0x4dda44, 0x4dba80, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x90d1c4, 0x9da498, 0x9dcd40, 0x9dce48, 0x9dd34c, 0x9dd3fc, 0x9dd4bc, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0xa0b34c, 0xa0b358, 0xa0b364, 0xa0d7a0, 0 };
 static const DWORD g_gb_435fc0[] = { 0 };

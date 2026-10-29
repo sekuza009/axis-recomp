@@ -511,6 +511,36 @@ static int games_down(void)
 	return 1;
 }
 
+/* stop: the search or refresh ended (a refresh: both flags cleared and its answer dropped) */
+static void games_stop(void)
+{
+	sound_playMenu(0);
+	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+	GAME_VAR(int, 0xa0b34c) = 0;
+	GAME_VAR(int, 0x9da498) = 1;
+	if (GAME_VAR(int, 0x9dd3fc) == 1) {
+		GAME_VAR(int, 0x9dd3fc) = 0;
+		GAME_VAR(int, 0x9dd6a0) = 0;
+		GAME_VAR(int, 0x9da498) = 0;
+	}
+	GAME_VAR(int, 0xa0d7a0) = 1;
+}
+
+/* leave the list; 0 (sound 6) while searching or refreshing */
+static int games_leave(void)
+{
+	if (GAME_VAR(int, 0x9dd6a0) || GAME_VAR(int, 0x9dd3fc)) {
+		sound_playMenu(6);
+		return 0;
+	}
+	sound_playMenu(0);
+	GAME_VAR(int, 0xa0b34c) = 0;
+	GAME_VAR(int, 0x9dce48) = 0;
+	GAME_VAR(int, 0xa0b364) = 0;
+	GAME_VAR(int, 0xa0d7a0) = 1;
+	return 1;
+}
+
 /* 0x435fc0: the game room's list of games, its mouse (in room modes other than 0 / 1; not while joining, 0x9dd6b4,
    or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (room_432300) on: 0
    join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
@@ -560,27 +590,11 @@ void (room_435fc0)(void)
 				g_searching = 1;
 				GAME_VAR(int, 0x9dd4bc) = 1;
 			}
-		} else if (on == 2) {
-			sound_playMenu(0);
-			GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
-			GAME_VAR(int, 0xa0b34c) = 0;
-			GAME_VAR(int, 0x9da498) = 1;
-			if (g_refreshing == 1) {
-				g_refreshing = 0;
-				g_searching = 0;
-				GAME_VAR(int, 0x9da498) = 0;
-			}
-			GAME_VAR(int, 0xa0d7a0) = 1;
-		} else if (on == 3) {
-			if (g_searching || g_refreshing) {
-				sound_playMenu(6);
+		} else if (on == 2)
+			games_stop();
+		else if (on == 3) {
+			if (!games_leave())
 				return;
-			}
-			sound_playMenu(0);
-			GAME_VAR(int, 0xa0b34c) = 0;
-			GAME_VAR(int, 0x9dce48) = 0;
-			GAME_VAR(int, 0xa0b364) = 0;
-			GAME_VAR(int, 0xa0d7a0) = 1;
 		} else if (on == 13)
 			games_up();
 		else if (on == 14) {
@@ -626,4 +640,81 @@ void (room_435fc0)(void)
 #undef g_searching
 #undef g_refreshing
 #undef g_joined
+}
+
+/* 0x4372f0: the game room's list of games, its keys (not while joining, 0x9dd6b4). With the join confirmation up only
+   back answers it (the timer 0x378 killed). 0x4e14f8 or fire joins the selected game (not while searching or
+   refreshing, and only with games: else sound 6); 0x4e151c searches; 0x4e1524 stops; back leaves the list; up / down
+   held move the selection (once the blink clock reaches 5, restarting it); cancel2 leaves the room's lists. The
+   original leaves eax to callers that ignore it */
+void (menu_4372f0)(void)
+{
+	if (GAME_VAR(int, 0x9dd6b4))
+		return;
+	if (g_confirming) {
+		if (input_justPressed(g_keyBack)) {
+			sound_playMenu(0);
+			GAME_VAR(int, 0x4dbb10) = 0;
+			GAME_VAR(int, 0x4dbb78) = 0;
+			arena_452fe0();
+			g_confirming = 0;
+			KillTimer(g_hWndMain, 0x378);
+		}
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e14f8)) || input_justPressed(g_keyClick)) {
+		if (GAME_VAR(int, 0x9dd56c))
+			return;
+		if (GAME_VAR(int, 0x9dd6a0) || GAME_VAR(int, 0x9dd3fc) || g_gameCount <= 0) {
+			sound_playMenu(6);
+			return;
+		}
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9dd56c) = 1;
+		room_434da0();
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
+		if (GAME_VAR(int, 0x9dd6a0) || GAME_VAR(int, 0x9dd3fc)) {
+			sound_playMenu(6);
+			return;
+		}
+		GAME_VAR(int, 0xa0b358) = 0;
+		GAME_VAR(int, 0x680bb8) = 0;
+		if (room_434d00() == 1) {
+			GAME_VAR(int, 0x9dd6a0) = 1;
+			GAME_VAR(int, 0x9dd4bc) = 1;
+			sound_playMenu(0);
+		}
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
+		games_stop();
+		return;
+	}
+	if (input_justPressed(g_keyBack)) {
+		games_leave();
+		return;
+	}
+	if (input_isDown(g_keyUp)) {
+		if (g_cursorBlink >= *(const float *)0x4a93d0) {
+			sound_playMenu(2);
+			g_cursorBlink = 0.0f;
+			games_up();
+		}
+		return;
+	}
+	if (input_isDown(g_keyDown)) {
+		if (g_cursorBlink >= *(const float *)0x4a93d0) {
+			sound_playMenu(2);
+			g_cursorBlink = 0.0f;
+			games_down();
+		}
+		return;
+	}
+	if (input_justPressed(g_keyCancel2)) {
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9dce48) = 0;
+		GAME_VAR(int, 0xa0b34c) = 0;
+	}
 }
