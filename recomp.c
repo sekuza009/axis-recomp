@@ -5574,7 +5574,8 @@ static THISCALL DWORD match_inputState3(char *s) { return run_lifted(lift_48a370
 /* 0x44c600 profile_44c600(): page 1, the profile list: up / down held with key repeat (0x76d37c / 0x680bb4) move
    the cursor 0x9f8d30 over the 3 x 3 grid (sound 2), Enter picks (profile_44b600), the delete / copy keys
    (profile_44b670, profile_44b6e0) */
-LIFT_PLAIN(profile_44c600, 44c600)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void profile_44c600(void);
 /* 0x44c850 profile_44c850(): page 2: Enter or Esc back to the list (profile_44b600) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44c850(void);
@@ -16085,7 +16086,7 @@ ST(match_inputState3, instate3_setup();, TC(DWORD, 0x48a370, char *)(BUF), match
 /* batch 201 */
 /* the profile pages' keys: profileinput_setup (the page, bindings among a few keys with their latches, repeat
    delays, dialog state); callees real as for profile_processInput */
-T_PLAIN(profile_44c600, 0x44c600, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, 0, 0, 0, 0, 0)
+ST(profile_44c600, profileinput_setup(); G32(0x9f8d30) = irnd(0, 8);, (CALL_PLAIN(0x44c600, 0, 0, 0, 0, 0), 0), (profile_44c600(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(profile_44c850, profileinput_setup();, CALL_PLAIN(0x44c850, 0, 0, 0, 0, 0), (profile_44c850(), 0))
 ST(profile_44c8c0, profileinput_setup();, CALL_PLAIN(0x44c8c0, 0, 0, 0, 0, 0), (profile_44c8c0(), 0))
 ST(profile_44ca90, profileinput_setup();, CALL_PLAIN(0x44ca90, 0, 0, 0, 0, 0), (profile_44ca90(), 0))

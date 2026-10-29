@@ -2,6 +2,7 @@
    colour record loaded for the preview. */
 #include "../game.h"
 #include <string.h>
+#include "key_repeat.h"
 
 /* the bytes xored with a key that counts up by one (from key); the reset of the key is dead code in the original
    (a signed byte is never above 0xa5) */
@@ -545,3 +546,74 @@ u32 (profile_44c190)(void)
 	line_wipe();
 	return keyboard_back();
 }
+
+/* ---- the profile list's keys (page 1): 13 rows shown from 0x9f8c4c, the cursor 0x9f8c5c on them, the profile
+   chosen (0x9f8d74) the one under it; there are 0x9f9008 profiles ---- */
+#define g_listTop GAME_VAR(int, 0x9f8c4c)
+#define g_listRow GAME_VAR(int, 0x9f8c5c)
+#define g_profileCount GAME_VAR(int, 0x9f9008)
+
+static void list_moved(void)
+{
+	GAME_VAR(int, 0x9f8d74) = g_listTop + g_listRow;
+	GAME_VAR(int, 0x9f8d68) = 1;
+	sound_playMenu(2);
+}
+
+static void list_up(void)
+{
+	if (g_listRow > 0)
+		g_listRow--;
+	else if (g_listTop > 0)
+		g_listTop--;
+	else
+		return;
+	list_moved();
+}
+
+static void list_down(void)
+{
+	int at = g_listTop + g_listRow;
+	if (at >= g_profileCount - 1 || at >= g_profileCount)
+		return;
+	if (g_listRow < 12)
+		g_listRow++;
+	else
+		g_listTop++;
+	list_moved();
+}
+
+/* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
+   at its ends (sound 2); Enter (0x4e150c) takes the profile (profile_44b600); 0x4e0ce0 / 0x76d414 delete it
+   (profile_44b670) when there is one; 0x4e14f4 opens the new-profile dialog (0x9f6840, page 4), or takes the
+   profile when there are none; OK / the second cancel key copy it (profile_44b6e0). The original leaves eax to
+   callers that ignore it */
+void (profile_44c600)(void)
+{
+	if (key_repeat(g_keyUp, &g_repeatUp, list_up) || key_repeat(g_keyDown, &g_repeatDown, list_down))
+		return;
+	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
+		sound_playMenu(0);
+		g_cursorBlink = 0;
+		profile_44b600();
+		return;
+	}
+	if ((input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1 || input_justPressed(GAME_VAR(int, 0x76d414)) == 1)
+	    && g_profileCount > 0)
+		GAME_CDECL(0x44b670, void, void)();   /* profile_44b670 */
+	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) == 1) {
+		sound_playMenu(0);
+		g_cursorBlink = 0;
+		if (g_profileCount <= 0) {
+			profile_44b600();
+			return;
+		}
+		GAME_VAR(int, 0x9f6840) = 1;
+		GAME_VAR(int, 0x9f8f10) = 4;
+	}
+	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
+		GAME_CDECL(0x44b6e0, void, void)();   /* profile_44b6e0 */
+}
+#undef g_profileCount
+#undef g_listRow
+#undef g_listTop
