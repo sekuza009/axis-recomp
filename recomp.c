@@ -4290,7 +4290,8 @@ LIFT_PLAIN(setup_423330, 423330)
 /* 0x448140 missionsel_448140(): the mission-select backdrop: the setup tunnel's layers (setup_423e50) with three
    panels a side (at -40 / 0 / 40, pushed back 550), textures 0x4e0cd0 and 0x76d47c / 0x76d478, the hovered panel's
    glow (0x680398, 0x680ccc) and the pulse / scroll advancing as there */
-LIFT_PLAIN(missionsel_448140, 448140)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void missionsel_448140(void);
 /* 0x44d720 mainmenu_drawScreen(): the profile screen: frame and the two panels (bright when focused, 0x9f8f10),
    title 0x751a24, four buttons (0x751aa4; the hovered one, profile_44b260, bright; out of focus the focused
    button 0x9f8f10 - 2), the profile list (profile_44ce90) and its scroll arrows, the pilot panel
@@ -13512,7 +13513,7 @@ static void missionbg_setup(void)
 	G32(0x76d47c) = G32(0x4e0cd0); G32(0x76d478) = G32(0x4e0cd0); G32(0x76d480) = irnd(0, 1) ? 0xdc0 : 0;
 	G32(0x680398) = irnd(0, 1); GF(0x680ccc) = (float)irnd(0, 400) / 10.0f; GF(0x4df454) = irnd(0, 1) ? 1.0f : -1.0f;
 }
-T_PLAIN(missionsel_448140, 0x448140, missionbg_setup();, 0, 0, 0, 0, 0)
+ST(missionsel_448140, missionbg_setup();, (CALL_PLAIN(0x448140, 0, 0, 0, 0, 0), 0), (missionsel_448140(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the profile screen: pilotpanel_setup's panel and proflist_setup's list (positions shared), every text short (the
    screen draws the list, the panel, four buttons and labels: about ten logged calls a character), the window
    0x9f8e48..0x9f8ea4, focus 0..3, the cursor sometimes on a button */

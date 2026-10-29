@@ -114,9 +114,9 @@ void (setup_424810)(void)
 #define g_tunnelPulseStep GAME_VAR(u32, 0x4df010)
 #define g_scroll GAME_VAR(float, 0x4e14fc)      /* runs 0 .. 200 */
 
-/* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), two quads either side of the moving seam
-   z = 40 - 0.4 scroll */
-static void stripes(int right)
+/* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), h either side of the floor, two quads either
+   side of the moving seam z = 40 - 0.4 scroll */
+static void stripes(int right, float h)
 {
 #define SEAM f32(fsubr_m(fmul_m(fld_m(&g_scroll), (const float *)0x4a9408), (const float *)0x4a9414))
 #define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_scroll), (const float *)0x4a9404), (const float *)0x4a9424))   /* 1 - 0.005 scroll */
@@ -124,49 +124,69 @@ static void stripes(int right)
 	if (!right) {
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(-29.9f, 12.0f, SEAM);
+		glVertex3f(-29.9f, h, SEAM);
 		glTexCoord2f(S_LEFT, 0.0f);
-		glVertex3f(-29.9f, 12.0f, -40.0f);
+		glVertex3f(-29.9f, h, -40.0f);
 		glTexCoord2f(S_LEFT, 0.5f);
-		glVertex3f(-29.9f, -12.0f, -40.0f);
+		glVertex3f(-29.9f, -h, -40.0f);
 		glTexCoord2f(0.0f, 0.5f);
-		glVertex3f(-29.9f, -12.0f, SEAM);
+		glVertex3f(-29.9f, -h, SEAM);
 		glEnd();
 		glBegin(GL_QUADS);
 		glTexCoord2f(S_LEFT, 0.0f);
-		glVertex3f(-29.9f, 12.0f, 40.0f);
+		glVertex3f(-29.9f, h, 40.0f);
 		glTexCoord2f(1.0f, 0.0f);
-		glVertex3f(-29.9f, 12.0f, SEAM);
+		glVertex3f(-29.9f, h, SEAM);
 		glTexCoord2f(1.0f, 0.5f);
-		glVertex3f(-29.9f, -12.0f, SEAM);
+		glVertex3f(-29.9f, -h, SEAM);
 		glTexCoord2f(S_LEFT, 0.5f);
-		glVertex3f(-29.9f, -12.0f, 40.0f);
+		glVertex3f(-29.9f, -h, 40.0f);
 		glEnd();
 	} else {
 		glBegin(GL_QUADS);
 		glTexCoord2f(S_RIGHT, 0.0f);
-		glVertex3f(29.9f, 12.0f, -40.0f);
+		glVertex3f(29.9f, h, -40.0f);
 		glTexCoord2f(1.0f, 0.0f);
-		glVertex3f(29.9f, 12.0f, SEAM);
+		glVertex3f(29.9f, h, SEAM);
 		glTexCoord2f(1.0f, 0.5f);
-		glVertex3f(29.9f, -12.0f, SEAM);
+		glVertex3f(29.9f, -h, SEAM);
 		glTexCoord2f(S_RIGHT, 0.5f);
-		glVertex3f(29.9f, -12.0f, -40.0f);
+		glVertex3f(29.9f, -h, -40.0f);
 		glEnd();
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(29.9f, 12.0f, SEAM);
+		glVertex3f(29.9f, h, SEAM);
 		glTexCoord2f(S_RIGHT, 0.0f);
-		glVertex3f(29.9f, 12.0f, 40.0f);
+		glVertex3f(29.9f, h, 40.0f);
 		glTexCoord2f(S_RIGHT, 0.5f);
-		glVertex3f(29.9f, -12.0f, 40.0f);
+		glVertex3f(29.9f, -h, 40.0f);
 		glTexCoord2f(0.0f, 0.5f);
-		glVertex3f(29.9f, -12.0f, SEAM);
+		glVertex3f(29.9f, -h, SEAM);
 		glEnd();
 	}
 #undef SEAM
 #undef S_LEFT
 #undef S_RIGHT
+}
+
+/* the panels' pulse bounced between 0 and 100 (by 0x4df010 a frame) and the stripes scrolled on (0x4deda8 a frame,
+   back to 0 at 200) */
+static void tunnel_advance(void)
+{
+	const float *frame = (const float *)0x4b071c;
+	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
+	g_tunnelPulse = f32(pulse);
+	if (!(pulse > *(const float *)0x4a93e8)) {
+		g_tunnelPulse = 0;
+		g_tunnelPulseStep = 0x3f800000;   /* 1 */
+	} else if (g_tunnelPulse >= *(const float *)0x4a93f4) {
+		g_tunnelPulse = 100.0f;
+		g_tunnelPulseStep = 0xbf800000;   /* -1 */
+	}
+	long double scroll = fadd_m(fmul_m(fld_m((const float *)0x4deda8), frame), &g_scroll);
+	g_scroll = f32(scroll);
+	if (scroll >= *(const float *)0x4a93f0)
+		g_scroll = 0;
 }
 
 /* 0x423e50: the tunnel behind the setup pages (3D projection): its alpha (0x4de038) eases to 0.3 (mode 0x4ddcec 1)
@@ -215,7 +235,7 @@ void (setup_423e50)(void)
 				turn = -turn;
 			FUN_0041ef20(0, 0, BITS(turn));
 			if (layer == 1) {
-				stripes(far);
+				stripes(far, 12.0f);
 				continue;
 			}
 			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));    /* 10 s0 */
@@ -278,19 +298,112 @@ void (setup_423e50)(void)
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
-	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
-	g_tunnelPulse = f32(pulse);
-	if (!(pulse > *(const float *)0x4a93e8)) {
-		g_tunnelPulse = 0;
-		g_tunnelPulseStep = 0x3f800000;   /* 1 */
-	} else if (g_tunnelPulse >= *(const float *)0x4a93f4) {
-		g_tunnelPulse = 100.0f;
-		g_tunnelPulseStep = 0xbf800000;   /* -1 */
+	tunnel_advance();
+}
+/* 0x448140: the mission-select screen's tunnel: four layers of six walls (each under the menu camera, pushed back
+   550 and turned by -40 / 0 / 40, the far three the other way): layer 0 the panels (texture 0x4e0cd0, 10 high,
+   dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10, 0.4), layer 2
+   nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a tenth further
+   out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by 0x4df454) and
+   the pulse and scroll stepped on. The original leaves eax to callers that ignore it */
+void (missionsel_448140)(void)
+{
+	const float turns[3] = { -40.0f, 0.0f, 40.0f };
+	gfx_setProjection2D3D(1);
+	glEnable(GL_TEXTURE_2D);
+	for (int layer = 0; layer < 4; layer++) {
+		/* layer 3's texture strip (s from s0 .. s0 + ds to s_far; t from t0 / t1 on by the wall's place) */
+		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
+		if (layer > 1)
+			s0 = 0.5f, ds = 0, t0 = 0.46875f, t1 = 0.625f, s_far = 1.0f;
+		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, 0x76d484 - layer * 4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		for (int wall = 0; wall < 6; wall++) {
+			int place = wall % 3, far = wall >= 3;
+			gfx_setMenuCamera();
+			glTranslatef_bits(0, 0, 0xc4098000);   /* -550 */
+			float turn = turns[place];
+			if (far)
+				turn = -turn;
+			FUN_0041ef20(0, 0, BITS(turn));
+			if (layer == 0)
+				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), (const float *)0x4a942c)));
+			else if (layer == 1) {
+				glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
+				stripes(far, 10.0f);
+				continue;
+			} else if (layer == 2)
+				continue;
+			else
+				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
+			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));    /* 10 s0 */
+			float top = f32(fsub_m(fld_m((const float *)0x4a9418), &x));   /* 10 - x */
+			float bottom = f32(fsub_m(fld_m(&x), (const float *)0x4a9418));
+			glBegin(GL_QUADS);
+			if (layer == 0 && !far) {
+				float z0 = f32(fsub_m(fld_m((const float *)0x4a9414), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)0x4a9414));
+				glTexCoord2f(0.0f, 0.5f);
+				glVertex3f(-30.0f, top, z0);
+				glTexCoord2f(1.0f, 0.5f);
+				glVertex3f(-30.0f, top, z1);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(-30.0f, bottom, z1);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(-30.0f, bottom, z0);
+			} else if (layer == 0) {
+				float z0 = f32(fsub_m(fld_m((const float *)0x4a9400), &x)), z1 = f32(fadd_m(fld_m(&x), (const float *)0x4a9414));
+				glTexCoord2f(1.0f, 0.5f);
+				glVertex3f(30.0f, top, z0);
+				glTexCoord2f(0.0f, 0.5f);
+				glVertex3f(30.0f, top, z1);
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(30.0f, bottom, z1);
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(30.0f, bottom, z0);
+			} else if (!far) {
+				float fp = (float)place;
+				float ta = f32(fmul_m(fld_m(&fp), (const float *)0x4a9478));   /* 0.15625 a place */
+				float z0 = f32(fsub_m(fld_m((const float *)0x4a9414), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)0x4a9414));
+				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)0x4a93ec), (const float *)0x4a940c));
+				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)0x4a9424), (const float *)0x4a9478));
+				glTexCoord2f(0.0f, ta);
+				glVertex3f(wx, top, z0);
+				glTexCoord2f(s_far, ta);
+				glVertex3f(wx, top, z1);
+				glTexCoord2f(s_far, tb);
+				glVertex3f(wx, bottom, z1);
+				glTexCoord2f(0.0f, tb);
+				glVertex3f(wx, bottom, z0);
+			} else {
+				long double pk = fmul_m((long double)place, (const float *)0x4a9478);
+				float ta = f32(pk);
+				float u0 = f32(fadd_m(pk, &t0));
+				float z0 = f32(fsub_m(fld_m((const float *)0x4a9400), &x)), z1 = f32(fadd_m(fld_m(&x), (const float *)0x4a9414));
+				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)0x4a93ec), (const float *)0x4a940c));
+				float s1 = f32(fadd_m(fld_m(&s_far), &ds));
+				float u1 = f32(fadd_m(fld_m(&ta), &t1));
+				glTexCoord2f(ds, u0);
+				glVertex3f(wx, top, z0);
+				glTexCoord2f(s1, u0);
+				glVertex3f(wx, top, z1);
+				glTexCoord2f(s1, u1);
+				glVertex3f(wx, bottom, z1);
+				glTexCoord2f(ds, u1);
+				glVertex3f(wx, bottom, z0);
+			}
+			glEnd();
+		}
 	}
-	long double scroll = fadd_m(fmul_m(fld_m((const float *)0x4deda8), frame), &g_scroll);
-	g_scroll = f32(scroll);
-	if (scroll >= *(const float *)0x4a93f0)
-		g_scroll = 0;
+	glDisable(GL_TEXTURE_2D);
+	if (GAME_VAR(int, 0x680398)) {
+		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &GAME_VAR(float, 0x680ccc));
+		GAME_VAR(float, 0x680ccc) = f32(glow);
+		if (!(glow > *(const float *)0x4a93fc))
+			GAME_VAR(u32, 0x4df454) = 0x3f800000;   /* 1 */
+		if (glow >= *(const float *)0x4a93f8)
+			GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+	}
+	tunnel_advance();
 }
 #undef g_scroll
 #undef g_tunnelPulseStep
