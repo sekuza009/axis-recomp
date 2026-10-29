@@ -5236,7 +5236,8 @@ int arena_454d20(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_onClose(void);
 LIFT_PLAIN(app_shutdown, 4062b0)
-LIFT_PLAIN(menuState100_intro, 41f540)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState100_intro(void);
 /* 0x440840 chat_editSubclass(hwnd, msg, wparam, lparam) (stdcall, ret 0x10): the chat edit's window proc: Enter
    sends the line, Esc / Tab / arrows handled, the room's timers send their requests, all else to the original
    proc (0x9dd868, CallWindowProcA) */
@@ -15232,7 +15233,7 @@ T_PLAIN(app_shutdown, 0x4062b0, gen_setup(g_gs_4062b0, g_gi_4062b0, g_gb_4062b0)
 static const DWORD g_gs_41f540[] = { 0x41e730, 2, 0x41ef60, 2, 0x41ef90, 1, 0x41f0e0, 5, 0x41f100, 0, 0x430bf0, 0, 0x430ca0, 0, 0x4411e0, 0, 0x4566c0, 1 | CS_POP, 0x457150, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_41f540[] = { 0x4dd080, 0x4dd084, 0x4dd0a8, 0x4dd0ac, 0x4dd0c8, 0x4dd0cc, 0x4dd560, 0x4dd564, 0x4dda34, 0x4dda48, 0x4ded68, 0x4ded6c, 0x4deda8, 0x4df010, 0x4df01c, 0x4df03c, 0x4df8e0, 0x4df910, 0x4e0458, 0x4e14fc, 0x67ef0c, 0x680370, 0x76d350, 0x76d354, 0x76d358, 0x76d35c, 0x76d3e8, 0x76d3f0, 0x76d480, 0x9db978, 0xa0e010, 0 };
 static const DWORD g_gb_41f540[] = { 0x76d438, 0 };
-T_PLAIN(menuState100_intro, 0x41f540, gen_setup(g_gs_41f540, g_gi_41f540, g_gb_41f540); /* an inlined texture lookup: the set 0xa0e010 and the logo texture 0x76d3f0 from it */ G32(0x76d3f0) = menutex_fonts(menutex_setup());, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState100_intro, gen_setup(g_gs_41f540, g_gi_41f540, g_gb_41f540); /* an inlined texture lookup: the set 0xa0e010 and the logo texture 0x76d3f0 from it */ G32(0x76d3f0) = menutex_fonts(menutex_setup());, (CALL_PLAIN(0x41f540, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState100_intro(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the chat edit's subclass (stdcall: hwnd, msg, wparam, lparam): a key down (codes 9 .. 0x25: Enter sends the line,
    Esc, Tab, the arrows ...), the two room timers (0x29a, 0x115c) or another message, the original proc and the
    room / typing flags, the shift state; every callee stubbed. The 3D sound: sound 0..15 (the table 0xa0e02c), a

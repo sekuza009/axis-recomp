@@ -12,6 +12,73 @@
 #define g_mission GAME_VAR(int, 0x9f63b4)             /* the mission chosen, 0 .. 14 */
 #define g_quitAsked GAME_VAR(int, 0x67ef14)           /* (by use) 1: the quit question is up */
 
+/* 0x41f540: the intro: the start-up logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) shown once over the
+   clear colour 0x76d350, then the loading picture stepped four times (0x4dda34) around the start-up loads, with
+   waits of 5 and 2 (1/60 s); then the title screen (200) with the front end's state reset, the pointer at
+   (310, 230), the Netsphere music and the frame clocks cleared */
+void (menuState100_intro)(void)
+{
+	GAME_VAR(int, 0x4df01c) = 0;
+	GAME_VAR(int, 0x4e0458) = 0;
+	GAME_VAR(int, 0x4dda34) = 0;
+	const u32 *clear = (const u32 *)0x76d350;
+	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
+	glClear(0x4100);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(0xbe2);   /* GL_BLEND */
+	glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+	IMPORT(0x4a91ec, void, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	int texture = GAME_VAR(int, 0x76d3f0);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	menu_vertex(0xa0, 0x3c);
+	glTexCoord2d(1.0, 0.0);
+	menu_vertex(0x1e0, 0x3c);
+	glTexCoord2d(1.0, 1.0);
+	menu_vertex(0x1e0, 0x13c);
+	glTexCoord2d(0.0, 1.0);
+	menu_vertex(0xa0, 0x13c);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	glFinish();
+	SwapBuffers(GAME_VAR(void *, 0x76d480));
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
+	GAME_VAR(int, 0x4dda34)++;
+	intro_41f100();
+	intro_41e730(5.0);
+	intro_4411e0();
+	GAME_VAR(int, 0x4dda34)++;
+	intro_41f100();
+	intro_41e730(2.0);
+	menu_loadIntroTextures();
+	intro_430bf0();
+	GAME_VAR(int, 0x4dda34)++;
+	intro_41f100();
+	nullsub_48b420(NULL);   /* (an empty function) */
+	GAME_VAR(int, 0x4dda34)++;
+	intro_41f100();
+	g_screen = 200;
+	g_lastScreen = 200;
+	static const u32 cleared[] = { 0x4df01c, 0x4e0458, 0x680370, 0x4df8e0, 0x4df03c, 0x4df910, 0x4e14fc, 0x9db978, 0x4dda48 };
+	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
+		GAME_VAR(u32, cleared[i]) = 0;
+	GAME_VAR(u32, 0x4deda8) = 0x3f800000;   /* 1.0 */
+	GAME_VAR(u32, 0x4df010) = 0x3f800000;
+	GAME_VAR(int, 0x4ded68) = 0x136;
+	GAME_VAR(int, 0x4ded6c) = 0xe6;
+	music_play((const char *)0x4b01cc);   /* "music/Netsphere.mp3" */
+	static const u32 clocks[] = { 0x4dd560, 0x4dd0a8, 0x4dd080, 0x4dd0c8 };   /* four doubles */
+	for (int i = 0; i < 4; i++) {
+		GAME_VAR(u32, clocks[i]) = 0;
+		GAME_VAR(u32, clocks[i] + 4) = 0;
+	}
+}
+
 /* 0x441740: the 3D background behind the menus: the tunnel's rings moved on (armc_enter) and drawn */
 void (menu_drawBackground)(void)
 {
