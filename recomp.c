@@ -12060,6 +12060,10 @@ static void datalist_setup(void)
 		for (int k = 12; k < 15; k++) m[k] = (float)irnd(-500, 500) / 10.0f;
 	}
 	g_paintStacks = 1;
+	/* (about 1 test in 1000 differs in the skeleton cache's pool, 0x980000 on: 32 bytes the original's skeleton loading
+	   takes from stack it never wrote, which holds the earlier callees' leftovers 4 bytes apart in the two runs, since
+	   native_call realigns the callee's stack. Seen 2026-10-29 with 4 shapes, 3 skeletons, lit 2; the play test then
+	   keeps the original. Not the lifted code's doing) */
 }
 ST(data_loadFrom_46f4e0, datalist_setup();,
    (TC(void, 0x46f4e0, char *, int, int, int, int, int, int, int, int, int, int, int)(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3],
