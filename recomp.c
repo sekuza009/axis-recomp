@@ -15385,7 +15385,22 @@ ST(menu_436e10, gen_setup(g_gs_436e10, g_gi_436e10, g_gb_436e10);, (CALL_PLAIN(0
 static const DWORD g_gs_441260[] = { 0x40ee20, 0, 0x41e760, 1, 0x441190, 1, 0x441200, 0, 0 };
 static const DWORD g_gi_441260[] = { 0x4b2a78, 0x4b071c, 0x4df02c, 0x680380, 0x68038c, 0x9dd920, 0x9dd938, 0x4b2a70, 0x4b2a74, 0x4dc24c, 0x4deb48, 0x4df024, 0x4df028, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x76d3e8, 0x76d410, 0x9da49c, 0x9dae10, 0x9dd918, 0x9dd91c, 0x9dd930, 0x9dd934, 0x9eeaa8, 0 };
 static const DWORD g_gb_441260[] = { 0x67fb3c, 0 };
-T_PLAIN(armc_enter, 0x441260, gen_setup(g_gs_441260, g_gi_441260, g_gb_441260);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, and the argument a chain of 1 .. 4 tunnel rings (0x3538 bytes, the next at +0x3534; the one before the
+   last is worked on: its counter +0x193c, angle +0x1940, +0x3520), the state 0x680370 0 .. 4 mostly */
+static void armcenter_setup(void)
+{
+	gen_setup(g_gs_441260, g_gi_441260, g_gb_441260);
+	int n = irnd(1, 4);
+	for (int k = 0; k < n; k++) {
+		char *r = BUF + 0x40000 + k * 0x3540;
+		S32(r, 0x193c) = irnd(0, 3) ? irnd(0, 0x900) : irnd(-100, 3000); SF(r, 0x1940) = (float)irnd(-3600, 3600) / 10.0f;
+		SF(r, 0x3520) = (float)irnd(0, 100) / 100.0f; S32(r, 0x3534) = k + 1 < n ? (int)(r + 0x3540) : 0;
+	}
+	g_a[0] = (int)(BUF + 0x40000);
+	if (irnd(0, 3)) G32(0x680370) = irnd(0, 4);
+	GF(0x4b071c) = (float)irnd(1, 30) / 10.0f;
+}
+T_PLAIN(armc_enter, 0x441260, armcenter_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_42ada0[] = { 0x401310, 1, 0x401460, 0, 0x401590, 1, 0x401600, 1, 0x41e8b0, 0, 0x42aa30, 0, 0x42aad0, 0, 0x431560, 1, 0x431590, 0, 0x451270, 3, 0x4512c0, 1, 0 };
 static const DWORD g_gi_42ada0[] = { 0x9fd954, 0x4b071c, 0x4de6c0, 0x4de6c4, 0x4de6c8, 0x4df024, 0x4df028, 0x4df02c, 0x68037c, 0x4de344, 0x4de348, 0x4de34c, 0x4de6e0, 0x4de6f8, 0x4de6fc, 0x4ded18, 0x4def00, 0x4def08, 0x4def10, 0x4def18, 0x4defa8, 0x4e0464, 0x4e0468, 0x4e046c, 0x4e0470, 0x4e0874, 0x680378, 0x680380, 0x680388, 0x68039c, 0x76d48c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9f941c, 0x9fd948, 0x9fd95c, 0xa0baf8, 0 };
 static const DWORD g_gb_42ada0[] = { 0x9dc92c, 0x9f9418, 0 };
