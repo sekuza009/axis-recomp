@@ -4470,7 +4470,8 @@ void armc_419160(void);
    searching or 0x4db8b8 (alpha from 0x4dba80); the joining box (0x4db8bc: 0x74f124 and the arena name 0x4db520),
    the full box (0x4db714: 0x74f624), the confirmation (0x4db8b4: 0x752aa4 / 0x752b24, its button 0x751824 by
    arena_4044e0); the border */
-LIFT_PLAIN(arena_40a070, 40a070)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_40a070(void);
 /* batch 141 (lifted/grp87.c): the create-arena screen */
 #include "lifted/grp87.c"
 /* 0x40b750 arena_createDraw(): room_drawGameSettings' form for a new arena (window 0x4dbb00..): title 0x752c24,
@@ -13926,7 +13927,7 @@ static void arenalist_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4db8c8) + irnd(0x23, 0x23e); G32(0x4ded6c) = G32(0x4db8cc) + irnd(0x30, 0x50); }
 }
-T_PLAIN(arena_40a070, 0x40a070, arenalist_setup();, 0, 0, 0, 0, 0)
+ST(arena_40a070, arenalist_setup();, (CALL_PLAIN(0x40a070, 0, 0, 0, 0, 0), 0), (arena_40a070(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 141 */
 /* the create-arena screen: gamesettings_setup's approach for the arena (texture set and preview first, through
    mappreview_setup for custom rules, the window at 0x4dbb00 after), the fields in range (map 0..15, kind 0..4,
