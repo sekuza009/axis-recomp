@@ -259,3 +259,28 @@ u32 THISCALL (ResourceSet_dtor_463960)(u8 *self)
 		r = GAME_THISCALL(0x466a10, u32, void *)(self + shapes[k]);  /* ShapeManager_dtor */
 	return r;
 }
+
+#define eh_vector_destructor(array, size, count, dtor) \
+	((void (STDCALL *)(void *, u32, int, u32))0x49fc4f)(array, size, count, dtor)   /* `eh vector destructor iterator' (stdcall) */
+
+/* 0x46ff70: the stage destroyed, its members last first: 0x48b410 (+0x2148ed8), the 100 actors (+0x1cd93a8,
+   0x8888 bytes each, 0x45ff30), the skeleton and shape managers, the 16 resource sets (+0x1561b68, 0x47fd2 bytes
+   each, ResourceSet_dtor_463960), two more managers, two 0x464ba0 tables, the three factor pools and +0xa10.
+   Returns the last destructor's eax */
+u32 THISCALL (Stage_dtor)(u8 *self)
+{
+	*(u32 *)self = 0x4aa23c;   /* the vtable */
+	GAME_THISCALL(0x48b410, void, void *)(self + 0x2148ed8);
+	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, 0x45ff30);
+	GAME_THISCALL(0x46ae60, void, void *)(self + 0x1cbe198);   /* SkeletonManager_dtor */
+	GAME_THISCALL(0x466a10, void, void *)(self + 0x19e188c);   /* ShapeManager_dtor */
+	eh_vector_destructor(self + 0x1561b68, 0x47fd2, 16, 0x463960);
+	GAME_THISCALL(0x46ae60, void, void *)(self + 0x13016d0);
+	GAME_THISCALL(0x466a10, void, void *)(self + 0xe3c93c);
+	GAME_THISCALL(0x464ba0, void, void *)(self + 0xdc0cc4);
+	GAME_THISCALL(0x464ba0, void, void *)(self + 0xdc0a78);
+	GAME_THISCALL(0x483d50, void, void *)(self + 0x9e3020);
+	GAME_THISCALL(0x483d50, void, void *)(self + 0x9d8010);
+	GAME_THISCALL(0x483d50, void, void *)(self + 0x9ccffc);
+	return GAME_THISCALL(0x481390, u32, void *)(self + 0xa10);
+}

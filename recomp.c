@@ -2659,7 +2659,8 @@ THISCALL DWORD load_483d70(char *self, DWORD f);
 THISCALL DWORD FUN_0045ff30(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD ResourceSet_dtor_463960(void *self);
-LIFT_PLAIN(Stage_dtor, 46ff70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD Stage_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD chat_saveMacros(void *scene);
 /* 0x462740 (thiscall) chat_macro(in, out): "/N=text" stores macro N, "/N" expands it into out; returns 1 when handled. Lifted */
@@ -9345,7 +9346,7 @@ static void owned_bits(char *base, DWORD span, int n)
 }
 ST(FUN_0045ff30, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, CALL_PLAIN(0x45ff30, BUF, 0, 0, 0, 0), (DWORD)(FUN_0045ff30((void *)BUF)))
 ST(ResourceSet_dtor_463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, CALL_PLAIN(0x463960, BUF, 0, 0, 0, 0), (DWORD)(ResourceSet_dtor_463960((void *)BUF)))
-T_PLAIN(Stage_dtor, 0x46ff70, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, BUF, 0, 0, 0, 0)
+ST(Stage_dtor, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, CALL_PLAIN(0x46ff70, BUF, 0, 0, 0, 0), (DWORD)(Stage_dtor((void *)BUF)))
 ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
 /* chat lines: "/N=text", "/N", "/NN...", other text */
 static void chatline_setup(void)
