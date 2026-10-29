@@ -3131,8 +3131,10 @@ int net_452c80(const void *rec);
 /* 0x46c340 math_makeMathFunctionTableFile: sin / cos / tan tables (0.1 degree steps, fsin/fcos), 4096 rand()
    values, written to MATHFUNC.TBL; 0x46c270 math_initMathFunction: read them (making the file first if missing),
    then the tan table for -90..90 degrees (fptan) */
-LIFT_PLAIN(math_makeMathFunctionTableFile, 46c340)
-LIFT_PLAIN(math_initMathFunction, 46c270)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD math_makeMathFunctionTableFile(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int math_initMathFunction(void);
 /* 0x4684c0 glWindow_4684c0: the default GL state */
 LIFT_PLAIN(glWindow_4684c0, 4684c0)
 /* 0x42bde0 reg_readServerSettings: server names and ports from the registry, or a message and quit */
@@ -10129,8 +10131,8 @@ static void netrec_setup(void)
 }
 ST(net_452af0, netrec_setup();, CALL_PLAIN(0x452af0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452af0((const void *)(DWORD)(BUF + 0x100))))
 ST(net_452c80, netrec_setup();, CALL_PLAIN(0x452c80, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452c80((const void *)(DWORD)(BUF + 0x100))))
-T_PLAIN(math_makeMathFunctionTableFile, 0x46c340, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, 0, 0, 0, 0, 0)
-T_PLAIN(math_initMathFunction, 0x46c270, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
+ST(math_makeMathFunctionTableFile, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, CALL_PLAIN(0x46c340, 0, 0, 0, 0, 0), (DWORD)(math_makeMathFunctionTableFile()))
+ST(math_initMathFunction, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, CALL_PLAIN(0x46c270, 0, 0, 0, 0, 0), (DWORD)(math_initMathFunction()))
 T_PLAIN(glWindow_4684c0, 0x4684c0, , 0, 0, 0, 0, 0)
 T_PLAIN(reg_readServerSettings, 0x42bde0, g_mockRegFail = !irnd(0, 3); G32(0x9dae74) = irnd(0, 2); g_paintStacks = 1; /* a failed open closes the unset key */, 0, 0, 0, 0, 0)
 /* text: printable ASCII with colour codes ("$#n", "$[n]"), '|' and CR LF, or Korean 2-byte characters; the menu
