@@ -1084,3 +1084,122 @@ u32 (room_43d060)(void)
 #undef X1
 #undef Y1
 }
+
+/* the create-game dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
+static void creategame_close(void)
+{
+	set_680370_441250(4);
+	GAME_VAR(int, 0x9dd834) = 99;
+	GAME_VAR(int, 0x67ef20) = 300;
+	GAME_CDECL(0x48b420, void, void)();   /* nullsub_48b420 */
+}
+
+/* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
+   only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
+   buttons (room_432200: 2 send, 3 close and disconnect, 4 room_4338c0), 0x4e14f4 send, back close, 0x4e150c
+   room_4338c0 (none of these while typing, g_paused); the toggle key moves the highlight (g_dialogChoice) on: from
+   the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
+   back: from OK (3) to the password field, to the name, then into the password field for typing. The original
+   leaves eax to callers that ignore it */
+void (menu_436990)(void)
+{
+#define g_editKey GAME_VAR(int, 0x9dc428)
+	int dialogX = GAME_VAR(int, 0x9dd358), dialogBottom = GAME_VAR(int, 0x9dd364) - 0x30;
+	if (GAME_VAR(int, 0x9dd838) || GAME_VAR(int, 0x9dd1c8)) {
+		if (input_justPressed(g_keyCancel2)) {
+			GAME_VAR(int, 0x9dd838) = 0;
+			GAME_VAR(int, 0xa0b378) = 0;
+			GAME_VAR(int, 0x9dd1c8) = 0;
+			g_chatFieldFlag = 0;
+			g_paused = 0;
+			creategame_close();
+			g_highlightShown = 0;
+			net_disconnect();
+		}
+		return;
+	}
+	if (input_justPressed(g_keyClick) == 1) {
+		int on = room_432200(g_mouseX, g_mouseY);
+		if (on == 2) {
+			if (GAME_VAR(int, 0x9dd1c8))
+				return;
+			sound_playMenu(0);
+			g_highlightShown = 0;
+			GAME_VAR(int, 0x9dd198) = 1;
+			GAME_VAR(int, 0x9dd1c8) = 1;
+			return;
+		}
+		if (on == 3) {
+			sound_playMenu(0);
+			g_paused = 0;
+			creategame_close();
+			g_chatFieldFlag = 0;
+			g_highlightShown = 0;
+			net_disconnect();
+			return;
+		}
+		if (on == 4) {
+			g_paused = 0;
+			g_highlightShown = 0;
+			sound_playMenu(0);
+			room_4338c0();
+			return;
+		}
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) == 1) {
+		if (g_paused || GAME_VAR(int, 0x9dd1c8))
+			return;
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9dd198) = 1;
+		GAME_VAR(int, 0x9dd1c8) = 1;
+		return;
+	}
+	if (input_justPressed(g_keyBack) == 1) {
+		if (g_paused)
+			return;
+		g_chatFieldFlag = 0;
+		sound_playMenu(0);
+		creategame_close();
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
+		if (g_paused)
+			return;
+		sound_playMenu(0);
+		room_4338c0();
+		return;
+	}
+	if (input_justPressed(g_keyToggle) != 1)
+		return;
+	g_editKey = 20;
+	int choice = g_dialogChoice;
+	if (input_isDown(g_keyLeftShift) == 1 || input_isDown(g_keyRightShift) == 1) {
+		g_editKey = 10;
+		if (choice == 1) {
+			highlight_choice(0, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
+			room_433bb0();
+			GAME_VAR(int, 0x9dd6b0) = 1;
+			g_chatFieldFlag = 1;
+		} else if (choice == 2)
+			highlight_choice(1, dialogX + 0x62, dialogBottom);
+		else if (choice == 3)
+			highlight_choice(2, dialogX + 0x102, dialogBottom);
+		else
+			return;
+	} else {
+		if (choice == 1)
+			highlight_choice(2, dialogX + 0x102, dialogBottom);
+		else if (choice == 2)
+			highlight_choice(3, dialogX + 0x1a2, dialogBottom);
+		else if (choice == 3) {
+			highlight_choice(3, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
+			room_433b00();
+			g_editKey = 0;
+			GAME_VAR(int, 0x9dd1cc) = 1;
+			return;
+		} else
+			return;
+	}
+	g_editKey = 0;
+#undef g_editKey
+}

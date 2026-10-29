@@ -5265,7 +5265,8 @@ DWORD menu_enterMenus(void);
 void menu_4372f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435fc0(void);
-LIFT_PLAIN(menu_436990, 436990)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_436990(void);
 /* batch 176 (lifted/grp126.c): menu, room and lobby pages tested with their callees stubbed (tools/gentests.py):
    lobby_406a60, menu_437140, arena_405690, room_435d30, room_433e60, mainmenu_startNetGame,
    mainmenu_processKeys, menu_436e10, armc_enter (a list node's camera and fade, then it is freed),
@@ -15380,7 +15381,7 @@ static void m436990_setup(void)
 	if (irnd(0, 1)) G32(0x9dc428) = irnd(0, 1) ? 10 : 20;
 	G32(0x74de1c) = irnd(0, 3);   /* the dialog button highlighted */
 }
-T_PLAIN(menu_436990, 0x436990, m436990_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_436990, m436990_setup();, (CALL_PLAIN(0x436990, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menu_436990(), 0))   /* its eax reaches only menu_frame, which ignores it */
 /* batch 176: generated tests (tools/gentests.py, gen_setup from batch 172) plus the arena host wrappers */
 static const DWORD g_gs_406a60[] = { 0x404460, 2, 0x404cd0, 0, 0x4050a0, 0, 0x4050f0, 0, 0x40ee20, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_406a60[] = { 0x4dbb3c, 0x4dbbd0, 0x4dc24c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0 };
