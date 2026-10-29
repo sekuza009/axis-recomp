@@ -9588,8 +9588,34 @@ ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 
 ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
 ST(data_loadMessages, vfs_content(95, 0x2000);, CALL_PLAIN(0x42b3e0, 0, 0, 0, 0, 0), (DWORD)(data_loadMessages()))
 ST(profile_create, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x4474a0, 0, 0, 0, 0, 0), (DWORD)(profile_create()))
-ST(data_loadSkirmishInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42ba40, 0, 0, 0, 0, 0), (DWORD)(data_loadSkirmishInfo()))
-ST(data_loadMapInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42b830, 0, 0, 0, 0, 0), (DWORD)(data_loadMapInfo()))
+/* the two data files: random content (the game then ends: "... Not Found"), or half the time a valid file:
+   mapinfo.dat's header (the name, NUL-padded, 0x1a at +0x32; sometimes not), a map count and that many 32-byte
+   names (trailing spaces now and then) and 0x50-byte descriptions; skirmish.dat's header, then 25000 bytes on
+   the entry count and its 0x5c-byte entries (sometimes shorter than 10000 bytes) */
+static void mapinfo_setup(void)
+{
+	vfs_content(0, 0x2000);
+	if (irnd(0, 1)) return;
+	BYTE *d = (BYTE *)(BUF + 0x200000); int n = irnd(0, 9) ? irnd(0, 40) : irnd(-3, 0);
+	memset(d, 0, 0x80); strcpy((char *)d, "AXIS MAP INFOMATION DATA FILE"); d[0x32] = irnd(0, 5) ? 0x1a : 0x1b;
+	*(int *)(d + 0x80) = n;
+	for (int i = 0; i < (n > 0 ? n : 0); i++) {
+		char *r = (char *)d + 0x84 + i * 0x70; fill_str(r, 0x1f, 32, 126); fill(r + 0x20, 0x50);
+		if (irnd(0, 2)) { int l = (int)strlen(r); for (int k = irnd(0, 4); k > 0 && l > 0; k--) r[--l] = ' '; }
+	}
+	g_vfsData = d; g_vfsSize = 0x84 + (n > 0 ? n : 0) * 0x70;
+}
+static void skirmishinfo_setup(void)
+{
+	vfs_content(0, 0x2000);
+	if (irnd(0, 1)) return;
+	BYTE *d = (BYTE *)(BUF + 0x200000); int n = irnd(0, 12);
+	fill(d, 0x80 + 25000 + 4 + n * 0x5c); memset(d, 0, 0x80); strcpy((char *)d, irnd(0, 5) ? "AXIS SKIRMISH INFOMATION DATA FILE" : "AXIS SKIRMISH");
+	*(int *)(d + 0x80 + 25000) = n;
+	g_vfsData = d; g_vfsSize = irnd(0, 5) ? 0x80 + 25000 + 4 + n * 0x5c : irnd(0x80, 9999);
+}
+ST(data_loadSkirmishInfo, skirmishinfo_setup();, CALL_PLAIN(0x42ba40, 0, 0, 0, 0, 0), (DWORD)(data_loadSkirmishInfo()))
+ST(data_loadMapInfo, mapinfo_setup();, CALL_PLAIN(0x42b830, 0, 0, 0, 0, 0), (DWORD)(data_loadMapInfo()))
 T_PLAIN(data_loadPilotProfiles, 0x42b590, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
 ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 ST(profile_load, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446590, 0, 0, 0, 0, 0), (DWORD)(profile_load()))
@@ -17171,8 +17197,8 @@ static const STest g_stests[] = {
 	T(FUN_0043f980, 1, 40, 0), T(sys_messageBox, 1, 40, 0), T(ptx_error, 1, 40, 0), T(ptx_crtlError, 1, 40, 0),
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
 	T(net_452de0, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_42ef30, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
-	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 40, 0),
-	T(data_loadMapInfo, 1, 40, 0), T(data_loadPilotProfiles, 1, 40, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
+	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
+	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 40, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
 	T(profile_save, 1, 40, 0), T(timer_now, 1, 40, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 40, 0),
 	/* batch 48 */
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
