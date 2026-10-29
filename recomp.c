@@ -5239,10 +5239,12 @@ void mainmenu_441c00(void);
 DWORD setup_drawGraphicTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_43e7b0(void);
-LIFT_PLAIN(setup_drawSoundTab, 4221d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawSoundTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_controlTabKeys(void);
-LIFT_PLAIN(setup_drawControlTab, 422830)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawControlTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43df80(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15228,7 +15230,7 @@ ST(room_43e7b0, gen_setup(g_gs_43e7b0, g_gi_43e7b0, g_gb_43e7b0);, CALL_PLAIN(0x
 static const DWORD g_gs_4221d0[] = { 0x41e760, 1, 0x420670, 2, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_4221d0[] = { 0x4dda44, 0x4dd984, 0x4ddad0, 0x4ddb98, 0x4ddcec, 0x4dde90, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x90d1c4, 0 };
 static const DWORD g_gb_4221d0[] = { 0 };
-T_PLAIN(setup_drawSoundTab, 0x4221d0, gen_setup(g_gs_4221d0, g_gi_4221d0, g_gb_4221d0); callee_ret(0x420670, (DWORD)irnd(-1, 10));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; } G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 30) / 10;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_drawSoundTab, gen_setup(g_gs_4221d0, g_gi_4221d0, g_gb_4221d0); callee_ret(0x420670, (DWORD)irnd(-1, 10));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; } G32(0x4ded88) = irnd(0, 1); G32(0x4ded94) = irnd(0, 1); GF(0x4dda44) = (float)irnd(0, 30) / 10;, (CALL_PLAIN(0x4221d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (setup_drawSoundTab(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_422e10[] = { 0x401600, 1, 0x41e760, 1, 0x420c10, 0, 0x421680, 1, 0x42d730, 0, 0 };
 static const DWORD g_gi_422e10[] = { 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4e0cd4, 0x4e0cdc, 0x4e0ce0, 0x4e14f4, 0x4e1508, 0x4e1524, 0x4e1530, 0x76d330, 0x76d48c, 0x9da440, 0x9dae70, 0x9db0a0, 0 };
 static const DWORD g_gb_422e10[] = { 0x4de0c0, 0x4def00, 0 };
@@ -15236,7 +15238,7 @@ ST(setup_controlTabKeys, gen_setup(g_gs_422e10, g_gi_422e10, g_gb_422e10);, (CAL
 static const DWORD g_gs_422830[] = { 0x41e760, 1, 0x4206f0, 2, 0x420c10, 0, 0x421680, 1, 0x4226b0, 0, 0x42d730, 0, 0 };
 static const DWORD g_gi_422830[] = { 0x4dda44, 0x4ddce8, 0x4ddcec, 0x4dddc8, 0x4de040, 0x4de1c0, 0x4de1c4, 0x4de1cc, 0x4de73c, 0x4ded68, 0x4ded6c, 0x4ded70, 0x4ded7c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x76d424, 0x76d490, 0x90d1c4, 0x9da490, 0 };
 static const DWORD g_gb_422830[] = { 0x4de0c0, 0x4def00, 0 };
-T_PLAIN(setup_drawControlTab, 0x422830, gen_setup(g_gs_422830, g_gi_422830, g_gb_422830); callee_ret(0x4206f0, (DWORD)irnd(-1, 18));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x4dddc8) = irnd(0, 2) ? 0 : irnd(-2, 2); } G32(0x4ded70) = irnd(0, 1); G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); G32(0x4ddce8) = irnd(0, 1) ? 3 : irnd(0, 5); G32(0x4de040) = irnd(-1, 3); G32(0x4de1cc) = irnd(0, 8); GF(0x4dda44) = (float)irnd(0, 30) / 10;, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_drawControlTab, gen_setup(g_gs_422830, g_gi_422830, g_gb_422830); callee_ret(0x4206f0, (DWORD)irnd(-1, 18));   /* the control under the pointer */ if (irnd(0, 3)) { G32(0x4ddcec) = 2; G32(0x90d1c4) = 0; G32(0x4ded8c) = irnd(0, 3) ? 0 : 1; G32(0x4dddc8) = irnd(0, 2) ? 0 : irnd(-2, 2); } G32(0x4ded70) = irnd(0, 1); G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 1); G32(0x4ddce8) = irnd(0, 1) ? 3 : irnd(0, 5); G32(0x4de040) = irnd(-1, 3); G32(0x4de1cc) = irnd(0, 8); GF(0x4dda44) = (float)irnd(0, 30) / 10;, (CALL_PLAIN(0x422830, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (setup_drawControlTab(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_43df80[] = { 0x41ee40, 0, 0x432400, 0, 0x432be0, 0, 0x432db0, 0, 0x433b00, 0, 0x433bb0, 0, 0x433c70, 0, 0x434490, 0, 0 };
 static const DWORD g_gi_43df80[] = { 0x9dd1f6, 0x4e1868, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dced0, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd1fa, 0x9dd1fe, 0x9dd358, 0x9dd364, 0x9dd38c, 0x9dd6b0, 0x9dd830, 0x9dd834, 0x9dd838, 0x9dd850, 0xa0b378, 0 };
 static const DWORD g_gb_43df80[] = { 0x9dc92c, 0x9dd1d8, 0 };

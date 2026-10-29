@@ -512,6 +512,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_drawSoundTab() GAME_CDECL(0x4221d0, void, void)()
 #define setup_drawGraphicTab() GAME_CDECL(0x422480, void, void)()
 #define setup_drawControlTab() GAME_CDECL(0x422830, void, void)()
+#define setup_420670(x, y) GAME_CDECL(0x420670, int, int, int)(x, y)   /* the sound tab's control at (x, y) */
+#define setup_4206f0(x, y) GAME_CDECL(0x4206f0, int, int, int)(x, y)   /* the controls tab's control at (x, y) */
+#define setup_drawControlSlider() GAME_CDECL(0x4226b0, void, void)()   /* the controls tab's slider follows the pointer */
 #define setup_topPageKeys() GAME_CDECL(0x422b70, void, void)()
 #define setup_soundTabKeys() GAME_CDECL(0x422c60, void, void)()
 #define setup_graphicTabKeys() GAME_CDECL(0x422d20, void, void)()

@@ -70,23 +70,29 @@ void (setup_topPageKeys)(void)
 	}
 }
 
-/* 0x422c60: the sound tab: OK takes the edited values (the menu sounds' volume worked out, the menu music restarted); back or cancel
-   closes the page */
+/* the sound tab's OK: the edited values taken (the menu sounds' volume worked out), the page closed and the menu
+   music restarted */
+static void sound_ok(void)
+{
+	int volume = g_soundEdited[0];
+	g_soundSettings[2] = g_soundEdited[2];
+	g_soundSettings[1] = g_soundEdited[1];
+	g_soundSettings[0] = volume;
+	g_soundSettings[3] = g_soundEdited[3];
+	g_menuVolume = (volume * 5 - 500) * 4;
+	sound_playMenu(0);
+	cfg_loadAxisCfg();
+	g_setupPage = 0;
+	music_shutdown();
+	music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3" */
+}
+
+/* 0x422c60: the sound tab: OK (sound_ok); back or cancel closes the page */
 void (setup_soundTabKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
-		int volume = g_soundEdited[0];
-		g_soundSettings[2] = g_soundEdited[2];
-		g_soundSettings[1] = g_soundEdited[1];
-		g_soundSettings[0] = volume;
-		g_soundSettings[3] = g_soundEdited[3];
-		g_menuVolume = (volume * 5 - 500) * 4;
-		sound_playMenu(0);
-		cfg_loadAxisCfg();
-		g_setupPage = 0;
-		music_shutdown();
-		music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3" */
-	} else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
+		sound_ok();
+	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
 		g_setupPage = 0;
 	}
@@ -298,6 +304,77 @@ u32 (setup_drawGraphicTab)(void)
 	return button;
 }
 
+/* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; 0x4dde90 the arrow last used, 0x4ddb98 its
+   glow) ---- */
+#define g_volume GAME_VAR(int, 0x4dde98)
+
+static void volume_down(void)
+{
+	if (g_volume > 0) {
+		GAME_VAR(int, 0x4dde90) = 0;
+		g_volume--;
+		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;   /* 5 */
+	}
+}
+
+static void volume_up(void)
+{
+	if (g_volume < 100) {
+		GAME_VAR(int, 0x4dde90) = 1;
+		g_volume++;
+		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;
+	}
+}
+
+/* the slider set where the pointer is (its track 0x90 in from the page, 0x4ddad0) */
+static void volume_at_pointer(void)
+{
+	g_volume = 1 - ftol(fmul_m((long double)(g_mouseX - GAME_VAR(int, 0x4ddad0) - 0x90), (const float *)0x4a94f0));
+}
+
+/* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
+   blink clock restarted) on the volume's arrows (0 / 1) or slider (2), the sound toggles (5: 0x4dde9c 0 / 100; 6, 7:
+   0x4ddea0, 0x4ddea4), OK (8) or close (9); holding the arrows or the slider repeats once the clock passes 1 (and
+   restarts it). The original leaves eax to callers that ignore it */
+void (setup_drawSoundTab)(void)
+{
+	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
+		return;
+	if (GAME_VAR(int, 0x4ded8c))
+		g_setupPage = 0;
+	if (g_mouseClick) {
+		g_cursorBlink = 0.0f;
+		switch (setup_420670(g_mouseX, g_mouseY)) {
+		case 0: volume_down(); break;
+		case 1: volume_up(); break;
+		case 2: volume_at_pointer(); break;
+		case 5: GAME_VAR(int, 0x4dde9c) = GAME_VAR(int, 0x4dde9c) >= 50 ? 0 : 100; break;
+		case 6:
+			sound_playMenu(2);
+			GAME_VAR(int, 0x4ddea0) = 1 - GAME_VAR(int, 0x4ddea0);
+			break;
+		case 7:
+			sound_playMenu(2);
+			GAME_VAR(int, 0x4ddea4) = 1 - GAME_VAR(int, 0x4ddea4);
+			break;
+		case 8: sound_ok(); break;
+		case 9:
+			sound_playMenu(0);
+			g_setupPage = 0;
+			break;
+		}
+	}
+	if (!g_mouseHeld || !(g_cursorBlink > *(const float *)0x4a9424))
+		return;
+	g_cursorBlink = 0.0f;
+	switch (setup_420670(g_mouseX, g_mouseY)) {
+	case 0: volume_down(); break;
+	case 1: volume_up(); break;
+	case 2: volume_at_pointer(); break;
+	}
+}
+#undef g_volume
+
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
 #define g_bindWaiting GAME_VAR(int, 0x4dddc8)         /* the selected row waits for its new key */
 #define g_bindRow GAME_VAR(int, 0x4de040)
@@ -380,4 +457,76 @@ void (setup_controlTabKeys)(void)
 	}
 	sound_playMenu(0);
 	g_setupPage = 0;
+}
+
+/* 0x422830: the controls tab's mouse (an open page, no message box). While a row waits for its key, a right click,
+   the wheel (down 0x9da490, up 0x76d490) or a click binds that button to it; otherwise a right click closes the page
+   (and goes on). A click picks a page (0 .. 3), OK (the bindings at 0x4de0c0 kept in 0x4def00, axis.cfg read; the
+   page closed), close, the defaults; on page 3 rows 7 / 8 toggle their setting (0x4de1c0 / 0x4de1c4), 9 drags the
+   slider and 10 / 11 step 0x4de1cc (0 .. 7); any other row control with a row selected makes it wait for a key.
+   Holding the button on page 3's slider (once the blink clock passes 1) drags it. The original leaves eax to
+   callers that ignore it */
+void (setup_drawControlTab)(void)
+{
+	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
+		return;
+	int waiting = g_bindWaiting;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		if (waiting) {
+			setup_drawKeyBindingRows(GAME_VAR(int, 0x76d424));
+			g_bindWaiting = 0;
+			return;
+		}
+		g_setupPage = 0;
+	}
+	if (GAME_VAR(int, 0x4ded70) && waiting) {
+		int wheel = GAME_VAR(int, 0x4ded7c);
+		if (wheel < 0)
+			setup_drawKeyBindingRows(GAME_VAR(int, 0x9da490));
+		else if (wheel > 0)
+			setup_drawKeyBindingRows(GAME_VAR(int, 0x76d490));
+		g_bindWaiting = 0;
+		return;
+	}
+	if (g_mouseClick) {
+		if (waiting) {
+			setup_drawKeyBindingRows(GAME_VAR(int, 0x4de73c));
+			g_bindWaiting = 0;
+			return;
+		}
+		int on = setup_4206f0(g_mouseX, g_mouseY), row = g_bindRow, page = g_bindPage;
+		if ((u32)on <= 3) {
+			sound_playMenu(2);
+			g_bindPage = on;
+		} else if (on == 4) {
+			sound_playMenu(0);
+			memcpy((void *)0x4def00, (const void *)0x4de0c0, 0x110);
+			cfg_loadAxisCfg();
+			g_setupPage = 0;
+		} else if (on == 5) {
+			sound_playMenu(0);
+			g_setupPage = 0;
+		} else if (on == 6) {
+			sound_playMenu(0);
+			setup_controlTabHelper_420c10();
+		} else if ((on == 7 || on == 8) && row >= 0 && page == 3) {
+			int *setting = &GAME_VAR(int, on == 7 ? 0x4de1c0 : 0x4de1c4);
+			*setting = 1 - *setting;
+			sound_playMenu(0);
+			return;
+		} else if ((on == 9 || ((on == 7 || on == 8) && row < 0)) && page == 3) {
+			setup_drawControlSlider();
+			return;
+		} else if ((on == 10 || on == 11) && g_bindPage == 3) {
+			if (++GAME_VAR(int, 0x4de1cc) > 7)
+				GAME_VAR(int, 0x4de1cc) = 0;
+			sound_playMenu(0);
+			return;
+		} else if (on >= 7 && on <= 17 && row >= 0) {
+			g_bindWaiting = 1;
+			sound_playMenu(0);
+		}
+	}
+	if (g_mouseHeld && g_cursorBlink > *(const float *)0x4a9424 && setup_4206f0(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
+		setup_drawControlSlider();
 }
