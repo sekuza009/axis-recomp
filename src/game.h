@@ -515,6 +515,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
+#define timer_getGameTime(timer) GAME_THISCALL(0x487490, long double, void *)(timer)   /* seconds since its last call */
+#define loading_draw_bits(progress) GAME_CDECL(0x469320, void, u32)(progress)   /* the loading screen at progress (float bits) */
+#define mainmenu_4417f0() GAME_CDECL(0x4417f0, void, void)()   /* every map of the map-select list in */
+#define mainmenu_440df0() GAME_CDECL(0x440df0, void, void)()   /* and out */
+#define mainmenu_441770() GAME_CDECL(0x441770, void, void)()   /* the map-select dialog's OK */
 #define net_452de0(reply) GAME_CDECL(0x452de0, void, void *)(reply)   /* the server's accept reply handled */
 #define mission_saveAxisMis(k) GAME_CDECL(0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
 #define skirmish_443c80() GAME_CDECL(0x443c80, u32, void)()   /* leave the skirmish settings */

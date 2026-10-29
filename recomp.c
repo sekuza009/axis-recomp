@@ -5170,7 +5170,8 @@ DWORD armc_colourScreenInput(void);
 DWORD room_436400(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_437630(void);
-LIFT_PLAIN(mainmenu_441c00, 441c00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void mainmenu_441c00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD setup_drawGraphicTab(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5486,7 +5487,8 @@ void THISCALL hud_4955a0(void *scene);
    black over one second of game time (timer 0xa0e948, a full-screen quad 0x46bd60 each frame, swapped by 0x4685d0);
    -2: the progress advanced, then a fade to black; any other: the progress advanced (the text kept unless 1), one
    frame drawn */
-LIFT_PLAIN(loading_drawCylinder, 469730)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void loading_drawCylinder(int mode, int unused, const char *text);
 /* batch 199 (lifted/grp154.c): a script's commands */
 #include "lifted/grp154.c"
 /* 0x483770 script_processCommandBy(actor, trigger, entry) (thiscall on the scene, ret 0xc): the trigger's script
@@ -15104,7 +15106,7 @@ ST(menu_437630, gen_setup(g_gs_437630, g_gi_437630, g_gb_437630);, CALL_PLAIN(0x
 static const DWORD g_gs_441c00[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x440df0, 0, 0x441770, 0, 0x4417f0, 0, 0 };
 static const DWORD g_gi_441c00[] = { 0x4b071c, 0x680bb4, 0x76d37c, 0x4dda44, 0x4e0cd4, 0x4e0cdc, 0x4e0ce0, 0x4e1510, 0x4e151c, 0x76d330, 0x76d48c, 0x9db0a0, 0x9dd928, 0x9dd92c, 0x9eeab4, 0x9eeac0, 0 };
 static const DWORD g_gb_441c00[] = { 0 };
-T_PLAIN(mainmenu_441c00, 0x441c00, gen_setup(g_gs_441c00, g_gi_441c00, g_gb_441c00);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(mainmenu_441c00, gen_setup(g_gs_441c00, g_gi_441c00, g_gb_441c00);, (CALL_PLAIN(0x441c00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (mainmenu_441c00(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_422480[] = { 0x41e760, 1, 0x41e7a0, 1, 0x4206b0, 2, 0x42d730, 0, 0 };
 static const DWORD g_gi_422480[] = { 0x4ddba0, 0x83a9c0, 0x4ddba4, 0x4ddba8, 0x4ddbac, 0x4ddbb0, 0x4ddbb4, 0x4ddbb8, 0x4ddcec, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x83a9c4, 0x83a9cc, 0x83a9d0, 0x90d1c4, 0x9da494, 0 };
 static const DWORD g_gb_422480[] = { 0 };
@@ -15910,7 +15912,7 @@ static void cyl_setup(void)
 	fill_str(BUF + 0x100, 40, ' ', 'z'); g_a[2] = (int)(BUF + 0x100);
 	GF(0xa0ea88) = (float)irnd(0, 100) / 100.0f;
 }
-T_PLAIN(loading_drawCylinder, 0x469730, cyl_setup();, 0, g_a[0], g_a[1], g_a[2], 0)
+ST(loading_drawCylinder, cyl_setup();, CALL_PLAIN(0x469730, 0, g_a[0], g_a[1], g_a[2], 0), (loading_drawCylinder((int)(DWORD)(g_a[0]), (int)(DWORD)(g_a[1]), (const char *)(DWORD)(g_a[2])), 0))
 /* batch 199 */
 /* a script: trigger 0..7 pointing at 1..4 entries of 0..8 commands (at BUF + 0x2390000, past the scene's fields),
    each a type 0..0x21 (0x20 / 0x21: none) with arguments kept where the game's scripts keep them: trigger indexes

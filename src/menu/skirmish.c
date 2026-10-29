@@ -1,28 +1,7 @@
 /* skirmish.c: the skirmish screen: its list's keys and the briefing typed out one character at a time. */
 #include "../game.h"
 #include <string.h>
-
-#define g_repeatUp GAME_VAR(float, 0x76d37c)       /* frames until a held up / down key steps again */
-#define g_repeatDown GAME_VAR(float, 0x680bb4)
-#define g_zero GAME_VAR(float, 0x4a93e8)
-
-/* a held key's repeat: the first press steps at once and waits 4 frames, then it steps whenever the wait runs out.
-   1 when the key is held */
-static int repeat(int key, float *wait, void (*step)(void))
-{
-	if (input_isDown(key) == 0)
-		BITS(*wait) = 0;
-	if (input_isDown(key) != 1)
-		return 0;
-	g_cursorBlink = 0;
-	if (*wait > g_zero) {
-		*wait = fsub_m(fld_m(wait), &g_frameTime);
-		return 1;
-	}
-	*wait = 4.0f;
-	step();
-	return 1;
-}
+#include "key_repeat.h"
 
 static void list_up(void) { skirmish_443cd0(); }
 static void list_down(void) { skirmish_443d10(); }
@@ -39,8 +18,8 @@ void (skirmish_processKeys)(void)
 		skirmish_443c80();
 		return;
 	}
-	if (!repeat(g_keyUp, &g_repeatUp, list_up))
-		repeat(g_keyDown, &g_repeatDown, list_down);
+	if (!key_repeat(g_keyUp, &g_repeatUp, list_up))
+		key_repeat(g_keyDown, &g_repeatDown, list_down);
 }
 
 /* ---- the briefing: the text block 0x9ef1ec (read by mission_saveAxisMis), from offset 0x9eeba4 up to 0x9ef200;

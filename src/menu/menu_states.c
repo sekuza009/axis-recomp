@@ -1,6 +1,7 @@
 /* menu_states.c: small pieces of the front end's screens: the main menu's frame, the 3D background behind the
    menus, the skirmish and mission settings pages' dispatch, and the mission select keys. */
 #include "../game.h"
+#include "key_repeat.h"
 
 #define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)      /* the background tunnel's first ring */
 #define g_settingsPage GAME_VAR(int, 0x9ef1f8)        /* (by use) 10 the skirmish settings, 20 the mission settings */
@@ -166,6 +167,61 @@ void (mainmenu_441770)(void)
 			GAME_VAR(int, 0x9eeab4) = 0;
 			return;
 		}
+}
+
+/* ---- the map-select dialog's list: 10 rows shown from map 0x9dd92c of the 0x9dd928 ---- */
+#define g_mapFirst GAME_VAR(int, 0x9dd92c)
+static void maps_up(void)
+{
+	if (g_mapFirst > 0) {
+		g_mapFirst--;
+		sound_playMenu(2);
+	}
+}
+static void maps_down(void)
+{
+	if (g_mapFirst + 10 < GAME_VAR(int, 0x9dd928)) {
+		g_mapFirst++;
+		sound_playMenu(2);
+	}
+}
+
+/* 0x441c00: the map-select dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (mainmenu_441770),
+   0x4e151c toggles 0x9eeac0, 0x4e0ce0 / 0x4e0cd4 take every map out / in, up / down scroll the list with a key
+   repeat (the original leaves eax to callers that ignore it) */
+void (mainmenu_441c00)(void)
+{
+	if (input_justPressed(g_keyCancel2) == 1) {
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9eeab4) = 0;
+		return;
+	}
+	if (input_justPressed(g_keyOk) == 1) {
+		mainmenu_441770();
+		return;
+	}
+	if (input_justPressed(g_keyBack) == 1) {
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9eeab4) = 0;
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e151c)) == 1) {
+		sound_playMenu(0);
+		GAME_VAR(int, 0x9eeac0) = 1 - GAME_VAR(int, 0x9eeac0);
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
+		sound_playMenu(0);
+		mainmenu_440df0();
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1) {
+		sound_playMenu(0);
+		mainmenu_4417f0();
+		return;
+	}
+	if (!key_repeat(g_keyUp, &g_repeatUp, maps_up))
+		key_repeat(g_keyDown, &g_repeatDown, maps_down);
 }
 
 /* 0x427920: the setup screen's frame: the background, then by tab the screen with its page, or the top page */
