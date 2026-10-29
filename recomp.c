@@ -3867,7 +3867,8 @@ LIFT_PLAIN(net_connect, 451b80)
 /* 0x4060f0 lobby_openConnection(): unless already connected (0x4db718): disconnect, net_connect(100) and
    net_asyncSelect on the main window (messages 0x3d / 0x46 / 0x3e via FUN_0041ee40 and 0 on failure); then the lobby
    screen's state variables are reset; 1 */
-LIFT_PLAIN(lobby_openConnection, 4060f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int lobby_openConnection(void);
 /* batch 99 (lifted/grp45.c) */
 #include "lifted/grp45.c"
 /* 0x452620 net_recv(): the network state machine's receive step, by state 0xa0b300: 10 / 0x12 a 4-byte answer on the
@@ -5209,7 +5210,8 @@ void menuState600_setup(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState900_skirmishSetup(void);
 LIFT_PLAIN(menuState210_frame, 44f860)
-LIFT_PLAIN(arena_452ec0, 452ec0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_452ec0(DWORD kind, const char *host);
 /* 0x445bc0 skirmish_445bc0: jump to skirmish_drawScreenA (a 5-byte stub missing from functions.csv, added) */
 LIFT_PLAIN(skirmish_445bc0, 445bc0)
 /* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_434dd0, arena_406200), the lobby's
@@ -12246,7 +12248,7 @@ static void lobbyopen_setup(void)
 	G32(0x4db718) = irnd(0, 3) ? 0 : 1;
 	G32(0xa0b31c) = (int)(BUF + 0x960000); fill(BUF + 0x960000, 0x100);   /* the send buffer pointer */
 }
-ST(lobby_openConnection, lobbyopen_setup();, CD(int, 0x4060f0, void)(), lobby_openConnection(0, 0, 0, 0, 0, 0, 0))
+ST(lobby_openConnection, lobbyopen_setup();, CD(int, 0x4060f0, void)(), lobby_openConnection())
 /* batch 99 */
 /* every state of the machine (and some others) with the network mocks; the answers already in the buffers (recv may
    overwrite them, or return nothing so they stay): small status values, both reply buffers as netreply_setup's */
@@ -15269,7 +15271,7 @@ T_PLAIN(menuState210_frame, 0x44f860, gen_setup(g_gs_44f860, g_gi_44f860, g_gb_4
 static const DWORD g_gs_452ec0[] = { 0x4515a0, 0, 0x452fe0, 0, 0x4547d0, 1, 0x454940, 1, 0x454a50, 1, 0x454b70, 1, 0x454c80, 1, 0 };
 static const DWORD g_gi_452ec0[] = { 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0b41c, 0xa0b420, 0xa0b424, 0xa0b428, 0 };
 static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
-T_PLAIN(arena_452ec0, 0x452ec0, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_452ec0, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_452ec0((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
 /* skirmish_445bc0: a jump stub (to skirmish_drawScreenA), its target stubbed */
 static const DWORD g_stubSkirmishA[] = { 0x444f40, 0, 0 };
 T_PLAIN(skirmish_445bc0, 0x445bc0, callee_stubs(g_stubSkirmishA, 0);, 0, 0, 0, 0, 0)

@@ -2,6 +2,7 @@
    kinds, 2 and 3 the others), each with its own small set of functions: open on a connection kind, close, list the
    sessions, host and join through it. A slot is 1 while its connection is up. */
 #include "../game.h"
+#include <string.h>
 
 /* close slot k (close is the slot's own close function, called through the game as the original does) */
 static int slot_close(int k)
@@ -161,5 +162,41 @@ u32 (arena_452fe0)(void)
 	GAME_VAR(int, 0xa0b384) = 0;
 	GAME_VAR(int, 0xa0b388) = 0;
 	GAME_VAR(int, 0xa0b390) = 0;
+	return r;
+}
+
+/* 0x452ec0: an arena session opened with connection kind (0 TCP/IP to host, which is resolved first; 1..3 the
+   others): the old session left, the session state reset and the slot opened (0x454940 with the address, or
+   0x454a50 / 0x454b70 / 0x454c80). The slot's answer (and the session marked open), or 0 */
+int (arena_452ec0)(u32 kind, const char *host)
+{
+	static const u32 open[4] = { 0x454940, 0x454a50, 0x454b70, 0x454c80 };
+	char address[16] = { 0 };
+	GAME_CDECL(0x4515a0, void, void)();
+	GAME_VAR(int, 0xa0b390) = 1;
+	if (host) {
+		if (!GAME_CDECL(0x4547d0, int, const char *)(host))   /* net_resolveHost */
+			return 0;
+		strcpy(address, (const char *)0xa0d320);
+	}
+	if (GAME_VAR(int, 0xa0b384)) {
+		if (GAME_VAR(u32, 0xa0b418) == kind) {
+			GAME_CDECL(0x452fe0, void, void)();   /* arena_452fe0 */
+			GAME_VAR(int, 0xa0b384) = 0;
+		} else
+			GAME_CDECL(0x452fe0, void, void)();
+	}
+	GAME_VAR(u32, 0xa0b418) = kind;
+	GAME_VAR(int, 0xa0b41c) = 0;
+	GAME_VAR(int, 0xa0b420) = 0;
+	GAME_VAR(int, 0xa0b424) = 0;
+	GAME_VAR(int, 0xa0b428) = 0;
+	if (kind > 3)
+		return 0;
+	int r = kind == 0 ? GAME_CDECL(open[0], int, const char *)(address) : GAME_CDECL(open[kind], int, int)(0);
+	if (!r)
+		return 0;
+	GAME_VAR(int, 0xa0b384) = 1;
+	GAME_VAR(int, 0xa0b388) = 1;
 	return r;
 }

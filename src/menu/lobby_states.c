@@ -810,3 +810,46 @@ u32 (lobbyPlayer_keys)(void)
 	GAME_VAR(int, 0x4dbb3c) = 0;
 	return r;
 }
+
+/* 0x4060f0: the lobby server connection opened (unless open, 0x4db718): the old one closed, net_connect(100) (0: no
+   server, message 0x3d; 2: message 0x46) and the socket's messages sent to the main window (failing: 0x3e). Then
+   the lobby screen's state reset and the hello sent (0x180001, net_send(0xd, 100)). 1, or 0 on a failure */
+int (lobby_openConnection)(void)
+{
+	if (!GAME_VAR(int, 0x4db718)) {
+		GAME_CDECL(0x451e60, void, void)();                   /* net_disconnect */
+		int r = GAME_CDECL(0x451b80, int, int)(100);          /* net_connect */
+		if (r == 0 || r == 2) {
+			GAME_CDECL(0x41ee40, void, int)(r == 0 ? 0x3d : 0x46);   /* the message */
+			return 0;
+		}
+		if (!GAME_CDECL(0x452170, int, void *, int)(GAME_VAR(void *, 0x4ded18), 100)) {   /* net_asyncSelect */
+			GAME_CDECL(0x41ee40, void, int)(0x3e);
+			return 0;
+		}
+	}
+	GAME_VAR(int, 0x4db718) = 1;
+	GAME_VAR(int, 0x4dbaac) = 1;
+	GAME_VAR(int, 0x4dba88) = 1;
+	GAME_VAR(int, 0x4ded60) = 2;
+	GAME_VAR(int, 0x4df018) = 0;
+	GAME_VAR(int, 0x4db8b8) = 0;
+	GAME_VAR(int, 0x4db858) = 1;
+	GAME_VAR(int, 0x76d484) = 0;
+	GAME_VAR(int, 0x680bb8) = 0;
+	GAME_VAR(int, 0x4dba8c) = 0;
+	GAME_VAR(int, 0xa0b36c) = 0;
+	GAME_VAR(int, 0x9087b0) = 0;
+	GAME_VAR(int, 0x67ef30) = 0;
+	GAME_VAR(int, 0x4dbaa8) = 1;
+	GAME_VAR(int, 0x4dbac8) = 0;
+	GAME_VAR(int, 0x76d41c) = 0;
+	GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000.0f */
+	GAME_VAR(int, 0x680bb0) = 0;
+	GAME_VAR(int, 0x4df818) = 0;
+	*GAME_VAR(u32 *, 0xa0b31c) = 0x180001;   /* the message to send */
+	GAME_CDECL(0x4521c0, int, int, int)(0xd, 100);   /* net_send */
+	GAME_VAR(int, 0x4db8b4) = 0;
+	GAME_VAR(int, 0x5b1914) = 30;
+	return 1;
+}
