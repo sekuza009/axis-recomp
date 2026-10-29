@@ -328,3 +328,36 @@ int (dplay_enumSessions)(void)
 		return 0;
 	return 1;
 }
+
+#define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
+
+/* ---- a received record appended to a list: its strings (each also as the list's name, 20 bytes a slot at
+   0xa0bf20) and single bytes copied into the next slot, the count advanced. Returns the slot's offset in the list
+   (the original's eax) ---- */
+static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *strings, int nstrings, int name,
+                       const u8 *bytes, int nbytes)
+{
+	for (int k = 0; k < nstrings; k++)
+		lstrcpyA((char *)(base + GAME_VAR(int, count) * size + strings[k]), (const char *)rec + strings[k]);
+	lstrcpyA((char *)(0xa0bf20 + GAME_VAR(int, count) * 20), (const char *)rec + name);
+	int i = GAME_VAR(int, count);
+	u8 *slot = (u8 *)(base + i * size);
+	for (int k = 0; k < nbytes; k++)
+		slot[bytes[k]] = rec[bytes[k]];
+	GAME_VAR(int, count) = i + 1;
+	return i * size;
+}
+/* 0x452af0: a server record (0x5b bytes) into the list at 0xa05748 (count 0xa0b368) */
+int (net_452af0)(const u8 *rec)
+{
+	static const u8 strings[3] = { 0x33, 0x01, 0x53 };
+	static const u8 bytes[9] = { 0x00, 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 };
+	return list_append(0xa0b368, 0xa05748, 0x5b, rec, strings, 3, 0x33, bytes, 9);
+}
+/* 0x452c80: a room record (0x79 bytes) into the list at 0x9fd960 (count 0xa0b358) */
+int (net_452c80)(const u8 *rec)
+{
+	static const u8 strings[4] = { 0x43, 0x33, 0x01, 0x71 };
+	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
+	return list_append(0xa0b358, 0x9fd960, 0x79, rec, strings, 4, 0x33, bytes, 9);
+}

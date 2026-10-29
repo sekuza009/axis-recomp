@@ -785,4 +785,8 @@ typedef struct { float r, g, b, a; } Colour;
 
 #define FUN_0047d9a0(m, rotation) GAME_CDECL(0x47d9a0, void, float *, const float *)(m, rotation)   /* (angle, axis) -> matrix */
 
+/* the DirectPlay slot functions by connection kind (src/net/dplay_slots.c) */
+#define dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8) 	GAME_CDECL(((const u32[4]){ 0x4549e0, 0x454b00, 0x454c10, 0x454d20 })[kind], int, int, int, int, int, int, int, int, int)(a1, a2, a3, a4, a5, a6, a7, a8)
+#define dplay_slotJoin(kind, a1, a2, a3, a4) 	GAME_CDECL(((const u32[4]){ 0x454a20, 0x454b40, 0x454c50, 0x454d60 })[kind], int, int, int, int, int)(a1, a2, a3, a4)
+
 #endif

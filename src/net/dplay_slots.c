@@ -115,3 +115,28 @@ int (arena_453770)(void)
 		dplay_release();
 	return 0;
 }
+
+/* 0x453090: a session hosted through the slot of connection kind 0xa0b418 (its eight arguments passed on); 0 for an
+   unknown kind */
+int (arena_453090)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+{
+	u32 kind = GAME_VAR(u32, 0xa0b418);
+	if (kind > 3)
+		return 0;
+	return dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+/* 0x453180: session `session` joined through the slot of connection kind 0xa0b418 (with the session record's byte
+   +0x27); 0x1f7 when there is no such session, 0x1f5 when it is full (+0x2a players of +0x26), 0 for an unknown kind */
+int (arena_453180)(int session, int a2, int a3, int a4)
+{
+	const u8 *rec = (const u8 *)arena_4532b0(session);
+	if (!rec)
+		return 0x1f7;
+	if (*(const int *)(rec + 0x2a) == rec[0x26])
+		return 0x1f5;
+	u32 kind = GAME_VAR(u32, 0xa0b418);
+	if (kind > 3)
+		return 0;
+	return dplay_slotJoin(kind, a2, a3, a4, rec[0x27]);
+}

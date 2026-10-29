@@ -3123,8 +3123,10 @@ static THISCALL DWORD match_472310(char *scene) { return run_lifted(lift_472310,
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_deleteDataFiles(void);
 /* 0x452af0 net_452af0(rec) / 0x452c80 net_452c80(rec): copy a received server/room record into the list slot */
-LIFT_PLAIN(net_452af0, 452af0)
-LIFT_PLAIN(net_452c80, 452c80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_452af0(const void *rec);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_452c80(const void *rec);
 /* 0x46c340 math_makeMathFunctionTableFile: sin / cos / tan tables (0.1 degree steps, fsin/fcos), 4096 rand()
    values, written to MATHFUNC.TBL; 0x46c270 math_initMathFunction: read them (making the file first if missing),
    then the tan table for -90..90 degrees (fptan) */
@@ -5048,7 +5050,8 @@ long dplay_closeSession(void *dplay);
 void FUN_0041edc0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041ed70(void);
-LIFT_PLAIN(arena_453180, 453180)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_453180(int session, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_enterState(void);
 LIFT_PLAIN(room_435b00, 435b00)
@@ -5149,7 +5152,8 @@ DWORD room_435c20(void);
 /* 0x4620e0 match_4620e0() (thiscall on the scene): every player's scores cleared, the actors reset, the ranking */
 LIFT_PLAIN(match_4620e0, 4620e0)
 /* 0x453090 arena_453090(8 arguments): host through the slot of connection kind 0xa0b418 (0 otherwise) */
-LIFT_PLAIN8(arena_453090, 453090)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int arena_453090(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* batch 181 (lifted/grp131.c): the menu state frames that draw the background (menuState300_frame, menuState600_setup,
    menuState900_skirmishSetup, menuState210_frame) and arena_452ec0 (connect by kind: the host
    address resolved, that kind's slot connected, the player id), with their callees stubbed (tools/gentests.py) */
@@ -10121,8 +10125,8 @@ static void netrec_setup(void)
 	fill_str(BUF + 0x101, 30, 32, 126); fill_str(BUF + 0x133, 20, 32, 126); fill_str(BUF + 0x153, 20, 32, 126);
 	G32(0xa0b368) = irnd(0, 9); G32(0xa0b358) = irnd(0, 9); fill_str(BUF + 0x143, 15, 32, 126);
 }
-T_PLAIN(net_452af0, 0x452af0, netrec_setup();, 0, BUF + 0x100, 0, 0, 0)
-T_PLAIN(net_452c80, 0x452c80, netrec_setup();, 0, BUF + 0x100, 0, 0, 0)
+ST(net_452af0, netrec_setup();, CALL_PLAIN(0x452af0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452af0((const void *)(DWORD)(BUF + 0x100))))
+ST(net_452c80, netrec_setup();, CALL_PLAIN(0x452c80, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452c80((const void *)(DWORD)(BUF + 0x100))))
 T_PLAIN(math_makeMathFunctionTableFile, 0x46c340, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(math_initMathFunction, 0x46c270, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(glWindow_4684c0, 0x4684c0, , 0, 0, 0, 0, 0)
@@ -14934,7 +14938,7 @@ ST(FUN_0041ed70, freelist_setup(g_gs_41ed70, g_gi_41ed70, g_gb_41ed70);, CALL_PL
 static const DWORD g_gs_453180[] = { 0x4532b0, 1, 0x454a20, 4, 0x454b40, 4, 0x454c50, 4, 0x454d60, 4, 0 };
 static const DWORD g_gi_453180[] = { 0xa0b418, 0 };
 static const DWORD g_gb_453180[] = { 0 };
-T_PLAIN(arena_453180, 0x453180, gen_setup(g_gs_453180, g_gi_453180, g_gb_453180); /* 0x4532b0 gives a session record */ fill(BUF + 0x5000, 0x40); callee_ret(0x4532b0, irnd(0, 3) ? (DWORD)(BUF + 0x5000) : 0); G32(0xa0b418) = irnd(0, 4);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_453180, gen_setup(g_gs_453180, g_gi_453180, g_gb_453180); /* 0x4532b0 gives a session record */ fill(BUF + 0x5000, 0x40); callee_ret(0x4532b0, irnd(0, 3) ? (DWORD)(BUF + 0x5000) : 0); G32(0xa0b418) = irnd(0, 4);, CALL_PLAIN(0x453180, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_453180((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
 static const DWORD g_gs_41f970[] = { 0x404640, 0, 0x41fd40, 0, 0x420770, 0, 0x432ff0, 0, 0x440bb0, 0, 0x443950, 0, 0x447750, 0, 0x44b420, 0, 0 };
 static const DWORD g_gi_41f970[] = { 0x4deb48, 0x67ef0c, 0x76d3e8, 0 };
 static const DWORD g_gb_41f970[] = { 0 };
@@ -15198,7 +15202,7 @@ T_PLAIN(match_4620e0, 0x4620e0, for (int i = 0; i < 16; i++) fill(BUF + 0x1eccb4
 ST(arena_453090, G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); for (int i = 0; i < 8; i++) g_a[i] = irnd(-5, 1000);
    callee_stubs(g_stubHostKind, (DWORD)irnd(0, 1));,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x453090)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_453090(0, 0, 0, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   arena_453090(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 /* batch 181: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_443530[] = { 0x40ce70, 0, 0x441250, 1, 0x441740, 0, 0x442050, 0, 0x4434f0, 0, 0 };
 static const DWORD g_gi_443530[] = { 0x67ef14, 0x67ef20, 0x9eeab4, 0 };
