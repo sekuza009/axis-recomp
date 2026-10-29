@@ -667,3 +667,31 @@ u32 (lobby_406a60)(void)
 	}
 	return button;
 }
+
+/* 0x405690: arena session `session` joined: its record (0x4a bytes from 0x9087c0) gives the colours shown
+   (+0x2d, +0x2e) and the join's argument (+0); a refused join shows message 0x36 (full) or 0x35. Joined, the music
+   stops and the session's settings are taken: the 32-byte rules (+4), +0x24, +0x25, +0x2c, the colours. Returns the
+   message's eax, or the colour +0x2e */
+u32 (arena_405690)(int session)
+{
+	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
+	GAME_VAR(int, 0x4dbbec) = 0;
+	GAME_VAR(int, 0x4dbbf0) = 0;
+	GAME_VAR(u8, 0x4ded45) = GAME_VAR(u8, 0x4db54d) = rec[0x2e];
+	GAME_VAR(u8, 0x4ded44) = GAME_VAR(u8, 0x4db54c) = rec[0x2d];
+	int r = GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, *(const u32 *)rec, (const char *)0x4dedb0,
+	                                                               GAME_VAR(int, 0x4dedd0));   /* arena_453180: join */
+	if (r != 0x1f4)
+		return GAME_CDECL(0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
+	music_shutdown();
+	GAME_VAR(int, 0x9dad94) = (signed char)rec[0x25];
+	memcpy((void *)0x67fb44, rec + 4, 32);
+	GAME_VAR(int, 0x9da3e0) = (signed char)rec[0x24];
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	GAME_VAR(int, 0x4db8b4) = 0;
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 2;
+	GAME_VAR(int, 0x76d368) = (signed char)rec[0x2c];
+	GAME_VAR(int, 0x4df8e8) = rec[0x2d];
+	return GAME_VAR(int, 0x76d408) = rec[0x2e];
+}

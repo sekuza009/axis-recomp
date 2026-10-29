@@ -62,3 +62,38 @@ int (FUN_00402590)(const char *s)
 	} while (c);
 	return n;
 }
+
+/* 0x403060: text drawn with the 5-pixel font as quads from (x, y), 6 pixels a letter: "|" a new line 10 pixels down
+   ("||" a "|"; unless 0x76d3e8 is 9999), "$[n]?c" letter c in colour n of the table at 0x9dada0, otherwise the
+   default colour (0x76d438); a byte with the top bit set and the next one are skipped (16 pixels). Returns
+   glEnd's eax */
+u32 (text_ascii5Pass)(int x, int y, const u8 *s)
+{
+	int left = x;
+	glBegin(7);   /* GL_QUADS */
+	for (u8 c = *s; c; c = *s) {
+		glColor4f_stored((const u32 *)0x76d438);
+		s++;
+		if (GAME_VAR(int, 0x76d3e8) != 9999 && c == '|') {
+			if (*s != '|') {
+				y += 10;
+				x = left;
+				continue;
+			}
+			s++;
+		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
+			const u32 *colour = (const u32 *)(0x9dada0 + ((signed char)s[1] - '0') * 16);
+			c = s[4];
+			s += 5;
+			glColor4f_stored(colour);
+		}
+		if (c & 0x80) {
+			s++;
+			x += 16;
+		} else {
+			GAME_CDECL(0x428240, void, int, int, int)(x, y, c);   /* text_quad5 */
+			x += 6;
+		}
+	}
+	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+}

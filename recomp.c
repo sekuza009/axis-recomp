@@ -3086,10 +3086,11 @@ void menu_drawTexQuad_4286b0(int x0, int y0, int x1, int y1, int lit);
 void menu_drawTexQuad_4287a0(int x0, int y0, int x1, int y1, int lit);
 /* error reporters (fmt, ...) / (object, fmt, ...): message with the time (and the object's name) into ERROR.TXT
    when enabled (0xa1efdc); sys_errorTerminate / sys_fatalError then run the cleanup hook and exit */
-LIFT_PLAIN8(sys_errorMessageNoName, 46c840)
-LIFT_PLAIN8(sys_errorMessage, 46c5f0)
-LIFT_PLAIN8(sys_errorTerminate, 46c950)
-LIFT_PLAIN8(sys_fatalError, 46c710)
+/* readable rebuilds in src/app/error_log.c (their own translation unit, see src/axis.h) */
+int sys_errorMessageNoName(const char *format, ...);
+int sys_errorMessage(const void *object, const char *format, ...);
+void sys_errorTerminate(const char *format, ...);
+void sys_fatalError(const void *object, const char *format, ...);
 /* batch 57: groups on top of the error reporters (lifted/grp6.c) */
 #include "lifted/grp6.c"
 /* 0x466d60 shape_findDatEntry(name) / 0x46b140 skelDat_getItemFileBy(name) / 0x455550 (thiscall)
@@ -3146,7 +3147,8 @@ LIFT_PLAIN(glWindow_4684c0, 4684c0)
 int reg_readServerSettings(void);
 /* text passes (x, y, str): one glyph quad per character (colour codes, line breaks and wrapping as in the other
    passes): ASCII 5/8/16/32 px, and the Korean initial / medial+final passes at 13 and 31 px */
-LIFT_PLAIN(text_ascii5Pass, 403060)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_ascii5Pass(int x, int y, const void *s);
 LIFT_PLAIN(text_ascii8Pass, 402010)
 LIFT_PLAIN(text_ascii16Pass, 402210)
 LIFT_PLAIN(text_ascii32Pass, 402420)
@@ -5089,7 +5091,8 @@ LIFT_PLAIN(menu_436990, 436990)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406a60(void);
 LIFT_PLAIN(menu_437140, 437140)
-LIFT_PLAIN(arena_405690, 405690)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_405690(int session);
 LIFT_PLAIN(room_435d30, 435d30)
 LIFT_PLAIN(room_433e60, 433e60)
 LIFT_PLAIN(mainmenu_startNetGame, 4419d0)
@@ -10022,13 +10025,13 @@ TEXQUAD_TEST(menu_drawTexQuad_4285c0, 0x4285c0)
 TEXQUAD_TEST(menu_drawTexQuad_4286b0, 0x4286b0)
 TEXQUAD_TEST(menu_drawTexQuad_4287a0, 0x4287a0)
 ST(sys_errorMessageNoName, msgfmt_setup();, (((void (__cdecl *)(char *, int, int, int))0x46c840)(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
-   (sys_errorMessageNoName(0, 0, 0, (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0, 0, 0, 0), 0))
+   (sys_errorMessageNoName(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 ST(sys_errorMessage, msgfmt_setup();, (((void (__cdecl *)(char *, char *, int, int, int))0x46c5f0)(BUF + 0x100, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
-   (sys_errorMessage(0, 0, 0, (DWORD)(BUF + 0x100), (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0, 0, 0), 0))
+   (sys_errorMessage(BUF + 0x100, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 ST(sys_errorTerminate, msgfmt_setup();, (((void (__cdecl *)(char *, int, int, int))0x46c950)(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
-   (sys_errorTerminate(0, 0, 0, (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0, 0, 0, 0), 0))
+   (sys_errorTerminate(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 ST(sys_fatalError, msgfmt_setup();, (((void (__cdecl *)(char *, char *, int, int, int))0x46c710)(BUF + 0x100, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
-   (sys_fatalError(0, 0, 0, (DWORD)(BUF + 0x100), (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], 0, 0, 0), 0))
+   (sys_fatalError(BUF + 0x100, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 /* batch 57 */
 /* dat file lookups: the sorted index of names_table_setup / tex_setup with seek offsets, the dat file a VFS file */
 static void datitem_setup(DWORD countp, DWORD tablep, DWORD filep)
@@ -10161,7 +10164,7 @@ static void textpass_setup(void)
 	G32(0x4ad490) = irnd(0, 3) ? 640 : irnd(0, 640); G32(0x4ad494) = irnd(0, 3) ? 480 : irnd(0, 480);
 	g_a[0] = irnd(-20, 600); g_a[1] = irnd(-20, 460);
 }
-T_PLAIN(text_ascii5Pass, 0x403060, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
+ST(text_ascii5Pass, textpass_setup();, CALL_PLAIN(0x403060, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii5Pass((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const void *)(DWORD)(BUF + 0x400))))
 T_PLAIN(text_ascii8Pass, 0x402010, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
 T_PLAIN(text_ascii16Pass, 0x402210, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
 T_PLAIN(text_ascii32Pass, 0x402420, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
@@ -15037,7 +15040,7 @@ T_PLAIN(menu_437140, 0x437140, gen_setup(g_gs_437140, g_gi_437140, g_gb_437140);
 static const DWORD g_gs_405690[] = { 0x41ee40, 1, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_405690[] = { 0x4db54c, 0x4db54d, 0x4ded44, 0x4ded45, 0x4db8b4, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405690[] = { 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(arena_405690, 0x405690, gen_setup(g_gs_405690, g_gi_405690, g_gb_405690); /* (player: 0x4a bytes from 0x9087b4) */ g_a[0] = irnd(0, 15);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_405690, gen_setup(g_gs_405690, g_gi_405690, g_gb_405690); /* (player: 0x4a bytes from 0x9087b4) */ g_a[0] = irnd(0, 15);, CALL_PLAIN(0x405690, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_405690((DWORD)(g_a[0]))))
 static const DWORD g_gs_435d30[] = { 0x40ee20, 0, 0x41e760, 1, 0x41eea0, 2, 0x4334c0, 0, 0x433590, 0, 0x433790, 0, 0x433800, 0, 0x435a40, 0, 0 };
 static const DWORD g_gi_435d30[] = { 0x4dc24c, 0x4deb48, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0x9dae10, 0x9dce48, 0 };
 static const DWORD g_gb_435d30[] = { 0x9daf88, 0 };
