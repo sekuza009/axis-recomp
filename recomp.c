@@ -4690,7 +4690,8 @@ void wnd_467b70(void);
    buffer of that size and format (CreateSoundBuffer, "SoundBuffer create error" box and NULL on a failure), the
    data copied in (Lock / Unlock), then the sound (100 bytes): 7 duplicates of the buffer, index and kinds 0;
    NULL when the file does not open */
-LIFT_PLAIN(sound_loadWav, 467b90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *sound_loadWav(const char *name);
 /* batch 161 (lifted/grp107.c): keyboard state, menu sounds, settings screens leaving */
 #include "lifted/grp107.c"
 /* the keyboard's state (GetDeviceState, 256 bytes into 0x4d1e9c) when ready (0x4d1fa8): 0x401540 load_401540(key):
@@ -14384,7 +14385,7 @@ static void wav_setup(void)
 	G32(0xa0e804) = (int)ds;
 	fill_str(BUF + 0x1c0, 30, 'a', 'z');
 }
-T_PLAIN(sound_loadWav, 0x467b90, wav_setup();, 0, BUF + 0x1c0, 0, 0, 0)
+ST(sound_loadWav, wav_setup();, CALL_PLAIN(0x467b90, 0, BUF + 0x1c0, 0, 0, 0), (DWORD)(sound_loadWav((const char *)(DWORD)(BUF + 0x1c0))))
 /* batch 161 */
 /* the keyboard: a fake device or none (only when not ready), ready or not, GetDeviceState succeeding with random
    key states, losing the input (reacquire) or failing; the mouse buttons and wheel; a key code 0..255 or a mouse

@@ -8,7 +8,12 @@
 #define DSB_PLAY 0x30
 #define DSB_SETVOLUME 0x3c
 
-typedef struct { void *buffers[8]; i32 next; } Sound;   /* +0x20: the buffer to play next */
+typedef struct {
+	void *buffers[8];
+	i32 next;            /* the buffer to play next */
+	i32 slotA[8];        /* (unclear) per buffer, cleared when loaded */
+	i32 slotB[8];
+} Sound;                 /* 100 bytes */
 
 #define g_soundOn GAME_VAR(int, 0xa0e80c)             /* (by use) 1: sound works */
 #define g_menuSounds ((Sound *const *)0x4dd4d4)
@@ -205,6 +210,76 @@ u32 (sound_playVolume)(int index, int volume)
 		level = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (long double)(GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
 	GAME_CDECL(0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
 	return GAME_CDECL(0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
+}
+
+#define DS_CREATESOUNDBUFFER 0x0c
+#define DS_DUPLICATESOUNDBUFFER 0x14
+#define DSB_LOCK 0x2c
+#define DSB_UNLOCK 0x4c
+#define CreateFileA(name, access, share, security, how, attributes, tmpl) \
+	IMPORT(0x4a91b4, void *, const char *, u32, u32, void *, u32, u32, void *)(name, access, share, security, how, attributes, tmpl)
+#define ReadFile(file, out, size, done, overlapped) IMPORT(0x4a9068, int, void *, void *, u32, u32 *, void *)(file, out, size, done, overlapped)
+#define CloseHandle(handle) IMPORT(0x4a91b0, int, void *)(handle)
+
+/* the buffer's format and description as the original lays them out on its stack: the description starts where
+   the format's cbSize would be (so that reads as the description's size, 0x24) */
+typedef struct __attribute__((packed)) {
+	u16 formatTag, channels;
+	u32 samplesPerSec, avgBytesPerSec;
+	u16 blockAlign, bitsPerSample;
+	u32 size, flags, bufferBytes, reserved;   /* DSBUFFERDESC */
+	void *format;
+	u8 algorithm3D[16];
+} WaveDesc;
+
+/* 0x467b90: a sound from a PCM .wav file (its 44-byte header, then the data): a static buffer of the data's size and
+   format (DSBCAPS 0xe2), the data copied in, then the 8 buffers all duplicates of it. NULL when the file does not
+   open or the buffer is not made ("SoundBuffer create error") */
+Sound *(sound_loadWav)(const char *name)
+{
+	void *file = CreateFileA(name, 0x80000000, 1, NULL, 3, 0x80, NULL);   /* GENERIC_READ, share read, OPEN_EXISTING */
+	if (file == (void *)-1)
+		return NULL;
+	u8 header[0x2c];
+	u32 done;
+	ReadFile(file, header, 0x2c, &done, NULL);
+	WaveDesc desc;
+	memset(&desc, 0, sizeof desc);
+	desc.formatTag = 1;
+	desc.channels = *(u16 *)(header + 0x16);
+	desc.samplesPerSec = *(u32 *)(header + 0x18);
+	desc.blockAlign = *(u16 *)(header + 0x20);
+	desc.avgBytesPerSec = desc.blockAlign * desc.samplesPerSec;
+	desc.bitsPerSample = *(u16 *)(header + 0x22);
+	u32 size = *(u32 *)(header + 0x28);
+	desc.size = 0x24;
+	desc.flags = 0xe2;
+	desc.bufferBytes = size;
+	desc.format = &desc;
+	u8 *data = operator_new(size);
+	Sound *sound = operator_new(100);
+	ReadFile(file, data, size, &done, NULL);
+	CloseHandle(file);
+	void *ds = GAME_VAR(void *, 0xa0e804);
+	if (COM(ds, DS_CREATESOUNDBUFFER, long, void *, void **, void *)(ds, &desc.size, &sound->buffers[0], NULL)) {
+		MessageBoxA(NULL, (const char *)0x4c4dc4, (const char *)0x4c4de0, 0);
+		return NULL;
+	}
+	void *buffer = sound->buffers[0], *locked;
+	COM(buffer, DSB_LOCK, long, u32, u32, void **, u32 *, void **, u32 *, u32)(buffer, 0, size, &locked, &size, NULL, NULL, 0);
+	memcpy(locked, data, size);
+	COM(buffer, DSB_UNLOCK, long, void *, u32, void *, u32)(buffer, locked, size, NULL, 0);
+	sound->next = 0;
+	for (int i = 0; i < 8; i++) {
+		sound->slotA[i] = 0;
+		sound->slotB[i] = 0;
+	}
+	for (int i = 0; i < 8; i++) {
+		ds = GAME_VAR(void *, 0xa0e804);
+		COM(ds, DS_DUPLICATESOUNDBUFFER, long, void *, void **)(ds, sound->buffers[0], &sound->buffers[i]);
+	}
+	operator_delete(data);
+	return sound;
 }
 
 /* 0x467a50: DirectSound started on window hwnd (0xa0e804, priority level) with its primary buffer (0xa0e808) set to

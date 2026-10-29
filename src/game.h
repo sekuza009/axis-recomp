@@ -539,6 +539,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define Console_dtor(console) GAME_THISCALL(0x460c40, void, void *)(console)   /* named Console_ctor in symbols.csv */
 #define Stage_dtor(stage) GAME_THISCALL(0x46ff70, void, Stage *)(stage)
 #define operator_delete(p) GAME_CDECL(0x49ef24, void, void *)(p)
+#define operator_new(size) GAME_CDECL(0x49f1aa, void *, u32)(size)
 #define GetCurrentDirectoryA(size, out) IMPORT(0x4a9108, u32, u32, char *)(size, out)
 #define GetActiveWindow() IMPORT(0x4a9320, void *, void)()
 #define MessageBoxA(hwnd, text, title, type) IMPORT(0x4a9324, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
