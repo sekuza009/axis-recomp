@@ -2730,7 +2730,8 @@ int app_42ef30(int code);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_setPixelFormat(void *dc);
 /* 0x440c60 autoplay_listFiles: list the autoplay files (_findfirst/_findnext) */
-LIFT_PLAIN(autoplay_listFiles, 440c60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int autoplay_listFiles(void);
 /* 0x42b3e0 data_loadMessages: load messages.txt (fgets) */
 LIFT_PLAIN(data_loadMessages, 42b3e0)
 /* 0x4474a0 profile_create: create a new pilot profile (directory + files) */
@@ -4585,7 +4586,8 @@ LIFT_PLAIN(dplay_joinSession, 453e60)
 /* 0x467a50 sound_init(hwnd): DirectSoundCreate into 0xa0e804, cooperative level 2 (priority), the primary buffer
    0xa0e808 set to 44.1 kHz 16-bit stereo and looping silently; 0xa0e80c = 1 and 1, else 0 (DirectSound released
    when the primary buffer does not play) */
-LIFT_PLAIN(sound_init, 467a50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int sound_init(void *hwnd);
 /* a sound: 8 DirectSound buffers (+0, rotated through by +0x20) with a volume or pan kind (+0x24) and value (+0x44)
    per buffer. 0x467d70 dsbuf_play(snd): plays the current buffer and moves to the next; 0x467db0
    dsbuf_setVolume(snd, vol); 0x467dd0 sound_467dd0(snd, kind, value): value in -10000..10000 is stored as the
@@ -9400,7 +9402,7 @@ ST(net_452de0, strs_setup();, CALL_PLAIN(0x452de0, 0, BUF + 0x100, 0, 0, 0), (DW
 ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)dplay_454d90((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
 ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
 ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
-T_PLAIN(autoplay_listFiles, 0x440c60, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
+ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
 T_PLAIN(data_loadMessages, 0x42b3e0, vfs_content(95, 0x2000);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_create, 0x4474a0, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(data_loadSkirmishInfo, 0x42ba40, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
@@ -14246,7 +14248,7 @@ static void musicplay_setup(void)
 	g_mockCoClsid[0] = 0x4aaf10; g_mockCoObj[0] = irnd(0, 4) ? (DWORD)m : 0;
 	fill((void *)0xa0e674, 0x40);
 }
-T_PLAIN(sound_init, 0x467a50, dsinit_setup();, 0, g_a[0], 0, 0, 0)
+ST(sound_init, dsinit_setup();, CALL_PLAIN(0x467a50, 0, g_a[0], 0, 0, 0), (DWORD)(sound_init((void *)(DWORD)(g_a[0]))))
 ST(dsbuf_play, dsbuf_setup(0);, CALL_PLAIN(0x467d70, 0, g_a[2], 0, 0, 0), (dsbuf_play((void *)(DWORD)(g_a[2])), 0))
 ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 0), (dsbuf_setVolume((void *)(DWORD)(g_a[2]), (DWORD)(g_a[1])), 0))
 ST(sound_467dd0, dsbuf_setup(1);, CALL_PLAIN(0x467dd0, 0, g_a[2], g_a[0], g_a[1], 0), (DWORD)(sound_467dd0((DWORD *)(DWORD)(g_a[2]), (DWORD)(g_a[0]), (DWORD)(g_a[1]))))

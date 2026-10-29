@@ -206,3 +206,41 @@ u32 (sound_playVolume)(int index, int volume)
 	GAME_CDECL(0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
 	return GAME_CDECL(0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
 }
+
+/* 0x467a50: DirectSound started on window hwnd (0xa0e804, priority level) with its primary buffer (0xa0e808) set to
+   44.1 kHz 16-bit stereo and playing (looped); sound on (0xa0e80c). 1, or 0 when any step fails (DirectSound
+   released again when the buffer will not play) */
+int (sound_init)(void *hwnd)
+{
+	if (((int (STDCALL *)(void *, void **, void *))0x4a82e6)(NULL, (void **)0xa0e804, NULL))   /* DirectSoundCreate */
+		return 0;
+	void *ds = GAME_VAR(void *, 0xa0e804);
+	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
+		return 0;
+	struct { u16 format, channels; u32 rate, bytesPerSecond; u16 blockAlign, bits, extra; } wave;   /* WAVEFORMATEX */
+	struct { u32 size, flags, bytes, reserved; void *format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
+	memset(&desc, 0, sizeof desc);
+	desc.size = 0x24;
+	desc.flags = 1;   /* DSBCAPS_PRIMARYBUFFER */
+	wave.format = 1;  /* PCM */
+	wave.channels = 2;
+	wave.rate = 44100;
+	wave.bytesPerSecond = 0x2b110;
+	wave.blockAlign = 4;
+	wave.bits = 16;
+	wave.extra = 0;
+	ds = GAME_VAR(void *, 0xa0e804);
+	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)0xa0e808, NULL))   /* CreateSoundBuffer */
+		return 0;
+	void *primary = GAME_VAR(void *, 0xa0e808);
+	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
+	primary = GAME_VAR(void *, 0xa0e808);
+	if (COM(primary, 0x30, int, u32, u32, u32)(primary, 0, 0, 1)) {   /* Play, looping */
+		ds = GAME_VAR(void *, 0xa0e804);
+		COM(ds, COM_RELEASE, u32)(ds);
+		GAME_VAR(void *, 0xa0e804) = NULL;
+		return 0;
+	}
+	GAME_VAR(int, 0xa0e80c) = 1;
+	return 1;
+}

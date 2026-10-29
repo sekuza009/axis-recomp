@@ -243,3 +243,31 @@ int (console_loadFile)(int k)
 	fclose(f);
 	return 1;
 }
+
+#define crt_chdir(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
+#define crt_findfirst(pattern, data) GAME_CDECL(0x49f694, int, const char *, void *)(pattern, data)
+#define crt_findnext(handle, data) GAME_CDECL(0x49f75e, int, int, void *)(handle, data)
+#define crt_findclose(handle) GAME_CDECL(0x49f823, int, int)(handle)
+
+/* 0x440c60: the autoplay folder's files (0x4b2a8c, pattern 0x4b2a84) appended to the map list (0x44-byte records
+   from 0x9dda88, count 0x9dd928, at most 1023), then back to the parent folder (0x4b2a80). Returns the last chdir's
+   eax */
+int (autoplay_listFiles)(void)
+{
+	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
+	int r = crt_chdir((const char *)0x4b2a8c);
+	if (r)
+		return r;
+	int search = crt_findfirst((const char *)0x4b2a84, &found);
+	if (search < 0)
+		return crt_chdir((const char *)0x4b2a80);
+	strcpy((char *)(0x9dda88 + GAME_VAR(int, 0x9dd928) * 0x44), found.name);
+	GAME_VAR(int, 0x9dd928)++;
+	while (!crt_findnext(search, &found)) {
+		strcpy((char *)(0x9dda88 + GAME_VAR(int, 0x9dd928) * 0x44), found.name);
+		if (++GAME_VAR(int, 0x9dd928) > 0x3fe)
+			break;
+	}
+	crt_findclose(search);
+	return crt_chdir((const char *)0x4b2a80);
+}
