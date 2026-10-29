@@ -325,7 +325,9 @@ typedef struct {
 	float t0, t1;          /* layer 3's strip's top on the far walls, and its height there */
 } Tunnel;
 
-static void menu_tunnel(const Tunnel *t)
+/* hovered: the wall whose layer 2 panel glows (-1: none), in the colour glow (r, g, b; its alpha falling as the glow,
+   0x680ccc, rises) */
+static void menu_tunnel(const Tunnel *t, int hovered, const float *glow)
 {
 	int deep = t->deep, clamp = t->clamp, places = t->walls / 2;
 	static const float turns3[3] = { -40.0f, 0.0f, 40.0f }, turns2[2] = { -35.0f, 35.0f };
@@ -363,7 +365,10 @@ static void menu_tunnel(const Tunnel *t)
 			} else if (layer == 2) {
 				if (!t->layer2)
 					continue;
-				glColor4f(0.0f, 0.0f, 0.0f, 0.0f);   /* (the original's other colour here, for wall -1, is never used) */
+				if (wall == hovered)
+					glColor4f(glow[0], glow[1], glow[2], f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9428), (const float *)0x4a9424)));
+				else
+					glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 			} else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));   /* 10 s0 */
@@ -450,20 +455,59 @@ static void menu_tunnel(const Tunnel *t)
    (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
 #define SIX_WALLS 6, (const float *)0x4a9418, (const float *)0x4a9478, 0.46875f, 0.625f
 #define FOUR_WALLS 4, (const float *)0x4a9410, (const float *)0x4a941c, 0.5f, 0.75f
-void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t); }
-void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t); }
-void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t); }
-void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t); }
+void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
+void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
+void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
+void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, -1, NULL); }
 void (room_4388e0)(void)
 {
+	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
-	menu_tunnel(&t);
+	menu_tunnel(&t, -1, glow);
 }
 /* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
 void (arena_4091b0)(void)
 {
+	static const float glow[3] = { 1.0f, 1.0f, 1.0f };
 	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
-	menu_tunnel(&t);
+	menu_tunnel(&t, -1, glow);
+}
+
+/* the menu panel under the pointer: the first of count outlines (FUN_0041eea0's, 0x2c bytes apart from outlines)
+   holding it, none (-1) while locked; 0x680398 tells whether there is one, and a new one restarts the glow (0x907b24
+   the last, 0x680ccc 40, 0x4df454 -1) */
+static int hovered_panel(u32 outlines, int count, int locked)
+{
+	int on = -1;
+	for (int k = 0; k < count && !locked; k++)
+		if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), *(const Outline *)(outlines + k * 0x2c)) == 1) {
+			on = k;
+			break;
+		}
+	GAME_VAR(int, 0x680398) = on != -1;
+	if (on != -1 && GAME_VAR(int, 0x907b24) != on) {
+		GAME_VAR(int, 0x907b24) = on;
+		GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
+		GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+	}
+	return on;
+}
+
+/* 0x437e00: the game room's menu: the panel under the pointer (six, 0x9daf88; none while 0x9dd7d8), the room's
+   tunnel with that panel glowing, and in mode 2 (0x9dce48) its caption (0x750ba4, 0x80 apart) at the bottom. The
+   original leaves eax to callers that ignore it */
+void (room_437e00)(void)
+{
+	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
+	int on = hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8));
+	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
+	menu_tunnel(&t, on, glow);
+	if (on != -1 && GAME_VAR(int, 0x9dce48) == 2) {
+		gfx_setProjection2D3D(2);
+		glLoadIdentity();
+		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+		text_drawBox16(0, 0x1bc, 0x280, (const char *)(0x750ba4 + on * 0x80));
+	}
 }
 #undef SIX_WALLS
 #undef FOUR_WALLS

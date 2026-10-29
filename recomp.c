@@ -4331,7 +4331,8 @@ void room_43a420(void);
    (0x9daf88, 11 dwords each; none while 0x9dd7d8), the hovered one's glow restarted when it changes (0x907b24),
    the room tunnel (depth 0x9dd698, textures 0x4e0cd0 and 0x4df908 / 0x4df904) with the glowing panel, and in mode
    2 (0x9dce48) the hovered panel's caption (0x750ba4, 0x80 apart) */
-LIFT_PLAIN(room_437e00, 437e00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_437e00(void);
 /* batch 129 (lifted/grp75.c): the arena menu's tunnel with hover panels */
 #include "lifted/grp75.c"
 /* 0x408680 lobbyTop_drawTitle(): the arena menu (misnamed): setup_423330's code for the arena: four panels
@@ -13598,7 +13599,7 @@ static void roommenu_setup(void)
 		if (!irnd(0, 5)) { G32(0x4ded68) = x + w / 2; G32(0x4ded6c) = y + h / 2; }
 	}
 }
-T_PLAIN(room_437e00, 0x437e00, roommenu_setup();, 0, 0, 0, 0, 0)
+ST(room_437e00, roommenu_setup();, (CALL_PLAIN(0x437e00, 0, 0, 0, 0, 0), 0), (room_437e00(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 129 */
 /* the arena menu: tunnels_setup's tunnel and textures, four panel quads (run-time data at 0x5b1cf8) with the cursor
    often at a panel's centre, the hover state and glow, modes 0..3, a message open now and then, the captions */
