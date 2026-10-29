@@ -4097,7 +4097,8 @@ DWORD menu_428940(int x, int y);
 DWORD profile_44ce90(void);
 /* 0x442d10 mainmenu_442d10(): the map list's visible names (count 0x9dd928 from 0x9dd92c, 0x44 bytes each from
    0x9dda88, at most 10, 20 apart), flagged ones (+0x40) on a red bar */
-LIFT_PLAIN(mainmenu_442d10, 442d10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mainmenu_442d10(void);
 /* batch 117 (lifted/grp63.c): more menu screens over the native text passes */
 #include "lifted/grp63.c"
 /* 0x412450 armc_412450(): the armour screen's three mode tabs: a textured tab each (texture 0x9db0a4), the current
@@ -5039,7 +5040,8 @@ void setup_topPageKeys(void);
 void setup_graphicTabKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyTop_keys(void);
-LIFT_PLAIN(setup_drawTopPage, 4220c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD setup_drawTopPage(void);
 LIFT_PLAIN(lobby_406950, 406950)
 LIFT_PLAIN(lobby_407300, 407300)
 LIFT_PLAIN(lobbyPlayer_keys, 407840)
@@ -12993,7 +12995,7 @@ static void maplist_setup(void)
 	G32(0x9dd908) = irnd(-50, 400); G32(0x9dd90c) = irnd(-50, 300); G32(0x9dd910) = irnd(0, 640);
 	for (int k = 0; k < 20; k++) { char *r = (char *)0x9dda88 + k * 0x44; fill_str(r, 40, 32, 126); S32(r, 0x40) = irnd(0, 2) ? 0 : irnd(1, 3); }
 }
-T_PLAIN(mainmenu_442d10, 0x442d10, maplist_setup();, 0, 0, 0, 0, 0)
+ST(mainmenu_442d10, maplist_setup();, CALL_PLAIN(0x442d10, 0, 0, 0, 0, 0), (DWORD)(mainmenu_442d10()))
 /* batch 117 */
 /* after menutex_setup has replaced the texture set: the font textures the text passes bind (0x9dae1c, 0x76d448,
    0x76d360, 0x9dad90: the ASCII and Korean fonts) must be textures of that set too: the one owning the
@@ -14869,7 +14871,7 @@ ST(lobbyTop_keys, gen_setup(g_gs_407750, g_gi_407750, g_gb_407750);, CALL_PLAIN(
 static const DWORD g_gs_4220c0[] = { 0x41e760, 1, 0x41eea0, 2, 0x420ad0, 0, 0x420b40, 0, 0x420ba0, 0, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_4220c0[] = { 0x4dda44, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef20, 0x9dae10, 0 };
 static const DWORD g_gb_4220c0[] = { 0x4df918, 0 };
-T_PLAIN(setup_drawTopPage, 0x4220c0, gen_setup(g_gs_4220c0, g_gi_4220c0, g_gb_4220c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(setup_drawTopPage, gen_setup(g_gs_4220c0, g_gi_4220c0, g_gb_4220c0);, CALL_PLAIN(0x4220c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(setup_drawTopPage()))
 static const DWORD g_gs_406950[] = { 0x404ac0, 0, 0x404b30, 0, 0x404c20, 0, 0x41e760, 1, 0x41eea0, 2, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_406950[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef14, 0x67ef20, 0x90d1c4, 0x9dae10, 0 };
 static const DWORD g_gb_406950[] = { 0x5b1cf8, 0 };

@@ -208,3 +208,46 @@ void (setup_420e50)(int k)
 			pair[0] = none;
 	}
 }
+
+/* a button's outline as FUN_0041eea0 takes it on the stack: the edge count, then the corners' xs and ys */
+typedef struct { int n, x[5], y[5]; } Outline;
+#define point_in_outline(x, y, outline) GAME_CDECL(0x41eea0, int, int, int, Outline)(x, y, outline)   /* FUN_0041eea0 */
+
+/* 0x4220c0: the setup screen's top page clicks: a left click on one of its four buttons (outlines at 0x4df918)
+   opens the sound, graphics or controls tab or goes back to the main menu; a right click (when 0x9dae10 allows) goes
+   back too. Returns what the original leaves in eax */
+u32 (setup_drawTopPage)(void)
+{
+	if (GAME_VAR(int, 0x4ded88)) {
+		const Outline *buttons = (const Outline *)0x4df918;
+		for (int i = 0; i < 4; i++) {
+			if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+				continue;
+			switch (i) {
+			case 0: sound_playMenu(0); GAME_CDECL(0x420ad0, void, void)(); break;   /* the sound tab */
+			case 1: sound_playMenu(0); GAME_CDECL(0x420b40, void, void)(); break;   /* graphics */
+			case 2: sound_playMenu(0); GAME_CDECL(0x420ba0, void, void)(); break;   /* controls */
+			case 3:
+				set_680370_441250(4);
+				sound_playMenu(0);
+				g_nextScreen = 300;
+				GAME_VAR(int, 0x4dda44) = 0;
+				GAME_CDECL(0x48b420, void, void)();   /* nullsub_48b420 */
+				break;
+			}
+			break;
+		}
+	}
+	int right = GAME_VAR(int, 0x4ded8c);
+	if (!right)
+		return 0;
+	int allowed = GAME_VAR(int, 0x9dae10);
+	if (allowed <= 0)
+		return allowed;
+	sound_playMenu(0);
+	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* set_680370_441250 */
+	g_nextScreen = 300;
+	GAME_VAR(int, 0x4dda44) = 0;
+	GAME_CDECL(0x48b420, void, void)();
+	return r;
+}

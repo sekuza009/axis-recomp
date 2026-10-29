@@ -503,3 +503,25 @@ u32 (menu_4318b0)(void)
 	}
 	return r;
 }
+
+/* 0x442d10: the map list's visible names: up to 10 rows, 20 pixels apart, from the first shown (0x9dd92c) of the
+   0x9dd928 maps (0x44-byte records from 0x9dda88): a flagged one (+0x40) on a red bar with yellow text, the others
+   pale blue. Returns the last text_draw8's eax (0 with no rows) */
+u32 (mainmenu_442d10)(void)
+{
+	u32 r = 0;
+	for (int i = 0, dy = 0; i < GAME_VAR(int, 0x9dd928) && dy < 200; i++, dy += 20) {
+		set_colour_bits((Colour *)0x76d438, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
+		int map = GAME_VAR(int, 0x9dd92c) + i;
+		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
+			set_colour_bits((Colour *)0x9da480, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
+			menu_drawRect(GAME_VAR(int, 0x9dd908) + 0x20, GAME_VAR(int, 0x9dd90c) + dy + 0x2b, GAME_VAR(int, 0x9dd910) - 0x50,
+			              GAME_VAR(int, 0x9dd90c) + dy + 0x3d, 1);
+			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
+		}
+		map = GAME_VAR(int, 0x9dd92c) + i;
+		r = GAME_CDECL(0x402620, u32, int, int, const char *)(GAME_VAR(int, 0x9dd908) + 0x28, GAME_VAR(int, 0x9dd90c) + dy + 0x2c,
+		                                                      (const char *)(0x9dda88 + map * 0x44));   /* text_draw8 */
+	}
+	return r;
+}
