@@ -4587,10 +4587,12 @@ LIFT_PLAIN(dplay_create, 453790)
    connection kind 0's address from net_getLocalAddress / arena_4542a0), Open as host, CreatePlayer named name;
    the player id into 0xa0b424, data into 0xa0b428, host flag 0xa0baf8, then claims a player slot (arena_451410).
    0 without a DirectPlay object or on a failure, else 1 */
-LIFT_PLAIN8(dplay_hostSession, 453cf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_hostSession(const char *session, const char *player, DWORD user1, DWORD maxPlayers, DWORD user2, signed char hi, signed char lo, DWORD data);
 /* 0x453e60 dplay_joinSession(guid, name, data): Open the session guid, CreatePlayer; 0x1f4 joined (or another
    CreatePlayer error), 0x1f6 / 0x1f8 / 0x1f9 Open errors, 0x1fa the session full or refused, 0x1fb no DirectPlay */
-LIFT_PLAIN(dplay_joinSession, 453e60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_joinSession(const void *guid, const char *player, DWORD data);
 /* batch 158 (lifted/grp104.c): DirectSound set-up and buffers, the music stream */
 #include "lifted/grp104.c"
 /* 0x467a50 sound_init(hwnd): DirectSoundCreate into 0xa0e804, cooperative level 2 (priority), the primary buffer
@@ -5247,7 +5249,8 @@ LIFT_PLAIN(lobby_connect, 406c30)
 LIFT_PLAIN(lobbyJoin_keysChat, 4079c0)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_4355b0(void);
-LIFT_PLAIN(arena_405b80, 405b80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_405b80(void);
 /* batch 183 (lifted/grp134.c): the arena create page's mouse (arena_createClick), lobbyTop_connect,
    arena_loadAndQuit, room_43ea10, lobbyJoin_draw, with their callees stubbed (tools/gentests.py) */
 #include "lifted/grp134.c"
@@ -14213,8 +14216,8 @@ ST(dplay_getPlayerName, dplayconn_setup(); G32(0xa0b404) = (int)&g_fakeCom[1];,
 T_PLAIN(dplay_create, 0x453790, dplaycreate_setup();, 0, 0, 0, 0, 0)
 ST(dplay_hostSession, dplayconn_setup();,
    ((DWORD (__cdecl *)(int, char *, int, int, int, int, int, int))0x453cf0)(g_a[0], BUF + 0x1c0, g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   dplay_hostSession(0, 0, 0, g_a[0], (DWORD)(BUF + 0x1c0), g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-T_PLAIN(dplay_joinSession, 0x453e60, dplayconn_setup();, 0, BUF + 0x40, BUF + 0x1c0, g_a[2], 0)
+   (DWORD)dplay_hostSession((const char *)(DWORD)g_a[0], BUF + 0x1c0, g_a[2], g_a[3], g_a[4], (signed char)g_a[5], (signed char)g_a[6], g_a[7]))
+ST(dplay_joinSession, dplayconn_setup();, CALL_PLAIN(0x453e60, 0, BUF + 0x40, BUF + 0x1c0, g_a[2], 0), (DWORD)(dplay_joinSession(BUF + 0x40, BUF + 0x1c0, g_a[2])))
 /* batch 158 */
 static LONG ds_res(void) { return irnd(0, 4) ? 0 : irnd(0, 1) ? (LONG)0x80004005 : (LONG)0x88780078; }
 /* sound_init: DirectSoundCreate giving a fake DirectSound or failing, each step succeeding or not (the buffer
@@ -15328,7 +15331,7 @@ ST(room_4355b0, gen_setup(g_gs_4355b0, g_gi_4355b0, g_gb_4355b0);, CALL_PLAIN(0x
 static const DWORD g_gs_405b80[] = { 0x41ee40, 1, 0x451e60, 0, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_405b80[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4dba88, 0x4dbb3c, 0x4ded44, 0x4ded54, 0x4ded60, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405b80[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(arena_405b80, 0x405b80, gen_setup(g_gs_405b80, g_gi_405b80, g_gb_405b80);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_405b80, gen_setup(g_gs_405b80, g_gi_405b80, g_gb_405b80);, CALL_PLAIN(0x405b80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_405b80()))
 /* batch 183: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_407410[] = { 0x401590, 1, 0x403490, 0, 0x404520, 2, 0x404d70, 0, 0x404e10, 0, 0x404ed0, 0, 0x404f90, 0, 0x4052c0, 0, 0x4057a0, 0, 0x405cf0, 0, 0x4068d0, 1, 0x41e760, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_407410[] = { 0x4db549, 0x4db54a, 0x4db54b, 0x4db518, 0x4db850, 0x4dbab0, 0x4dbacc, 0x4dbb3c, 0x4ded54, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef24, 0x6803a8, 0x90d1c4, 0x9dad8c, 0x9db0ac, 0 };

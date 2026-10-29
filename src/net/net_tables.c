@@ -641,3 +641,85 @@ u32 (arena_450a60)(void)
 	GAME_VAR(u32, 0x9fd940) = 0;
 	return r;
 }
+
+/* the session description shared by hosting and joining (DPSESSIONDESC2 at 0xa0b3b0): cleared, its size, the
+   session's GUID and the game's application GUID (0x4a96e8) */
+static u32 *session_desc(const void *guid)
+{
+	u32 *desc = (u32 *)0xa0b3b0;
+	memset(desc, 0, 0x50);
+	desc[0] = 0x50;                              /* dwSize */
+	memcpy(&desc[2], guid, 16);                  /* guidInstance */
+	memcpy(&desc[6], (const void *)0x4a96e8, 16);   /* guidApplication */
+	return desc;
+}
+
+/* the local player created (CreatePlayer with the short name `name`, no data); its id into *id */
+static int create_player(void *play, u32 *id, const char *name)
+{
+	u32 dpname[4] = { 0x10, 0, (u32)name, 0 };   /* DPNAME: dwSize, dwFlags, lpszShortNameA, lpszLongNameA */
+	return COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, id, dpname, NULL, NULL, 0, 0);
+}
+
+/* 0x453cf0: a session hosted (Open with DPOPEN_CREATE): flags 0x44, the instance GUID from *0xa0bad8, the session
+   name, at most maxPlayers, the user words (user3 = hi << 8 | lo, sign-extended bytes; user4 the local address,
+   unless 0xa0b418), then the local player `player`: its id into 0xa0b424, data into 0xa0b428, the host flag
+   0xa0baf8 set and a player slot claimed (arena_451410). 0 without DirectPlay or on a failure, else 1 */
+int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 maxPlayers, u32 user2,
+                        signed char hi, signed char lo, u32 data)
+{
+	void *play = GAME_VAR(void *, 0xa0b404);
+	if (!play)
+		return 0;
+	u32 *desc = session_desc(GAME_VAR(const void *, 0xa0bad8));
+	desc[1] = 0x44;                  /* dwFlags */
+	desc[12] = (u32)session;         /* lpszSessionNameA */
+	desc[10] = maxPlayers;
+	desc[16] = user1;
+	desc[17] = user2;
+	desc[18] = (u32)((int)hi << 8 | (int)lo);
+	if (!GAME_VAR(int, 0xa0b418)) {
+		GAME_CDECL(0x454220, void, void)();                 /* net_getLocalAddress */
+		desc[19] = GAME_CDECL(0x4542a0, u32, void)();       /* arena_4542a0 */
+		play = GAME_VAR(void *, 0xa0b404);
+	}
+	if (COM(play, 0x60, int, void *, u32)(play, desc, 2) < 0)   /* Open(DPOPEN_CREATE) */
+		return 0;
+	u32 id;
+	if (create_player(GAME_VAR(void *, 0xa0b404), &id, player) < 0)
+		return 0;
+	GAME_VAR(u32, 0xa0b428) = data;
+	GAME_VAR(u32, 0xa0b424) = id;
+	GAME_VAR(int, 0xa0baf8) = 1;
+	GAME_CDECL(0x451410, void, void)();   /* arena_451410 */
+	return 1;
+}
+
+/* 0x453e60: the session `guid` joined (Open with DPOPEN_JOIN), then the local player `player`: its id into
+   0xa0b424, data into 0xa0b428, the host flag 0xa0baf8 cleared. 0x1f4 joined (also for a CreatePlayer error not
+   listed), 0x1f9 / 0x1f8 / 0x1f6 Open failing (0x887700dc, 0x887700f0, any other), 0x1fa the session full or
+   refusing the player, 0x1fb without DirectPlay */
+int (dplay_joinSession)(const void *guid, const char *player, u32 data)
+{
+	void *play = GAME_VAR(void *, 0xa0b404);
+	if (!play)
+		return 0x1fb;
+	int r = COM(play, 0x60, int, void *, u32)(play, session_desc(guid), 1);   /* Open(DPOPEN_JOIN) */
+	if (r == (int)0x887700dc)
+		return 0x1f9;
+	if (r == (int)0x887700f0)
+		return 0x1f8;
+	if (r)
+		return 0x1f6;
+	u32 id;
+	r = create_player(GAME_VAR(void *, 0xa0b404), &id, player);
+	switch ((u32)r) {
+	case 0x88770078: case 0x80070057: case 0x88770028: case 0x8877003c: case 0x887700aa: case 0x88770168:
+		return 0x1fa;
+	case 0:
+		GAME_VAR(u32, 0xa0b428) = data;
+		GAME_VAR(u32, 0xa0b424) = id;
+		GAME_VAR(int, 0xa0baf8) = 0;
+	}
+	return 0x1f4;
+}

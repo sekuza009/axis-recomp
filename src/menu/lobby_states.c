@@ -929,3 +929,46 @@ u32 (lobby_407300)(void)
 	GAME_VAR(int, 0x4db55c) = 0;
 	return GAME_VAR(u32, 0x4ded44);
 }
+
+/* 0x405b80: the arena connection's outcome (0x4ded60; 2 nothing to do). 1 connected: the music stopped, the player
+   slot opened (arena_452ec0), the arena hosted with the player's record (0x4ded20: name, 0x4dedb0, colours,
+   corporation; 0x4dedd0) and its settings taken for the game, 0x4ded54 set; then (as the state stands after) 0
+   closed, 3 closed for a ladder game (0x907b2c), 4 refused (message 0x46): the connection closed (net_451e60) and
+   the state back to 2. Returns what the original leaves in eax */
+u32 (arena_405b80)(void)
+{
+	int state = GAME_VAR(int, 0x4ded60);
+	if (state == 2)
+		return 2;
+	const u8 *me = (const u8 *)0x4ded20;
+	if (state == 1) {
+		GAME_VAR(int, 0x4dba88) = 0;
+		GAME_VAR(int, 0x67ef14) = 1;
+		GAME_VAR(int, 0x67ef04) = 1;
+		music_shutdown();
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		GAME_CDECL(0x452ec0, void, int, int)(0, 0);   /* arena_452ec0 */
+		GAME_CDECL(0x453090, void, const void *, const void *, int, int, int, int, int, u32)(me, (const void *)0x4dedb0,
+			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
+			me[0x24], me[0x25], GAME_VAR(u32, 0x4dedd0));   /* arena_453090: host */
+		GAME_VAR(int, 0x9dad94) = (signed char)me[0x20];
+		memcpy((void *)0x67fb44, me, 32);
+		GAME_VAR(int, 0x9da3e0) = (signed char)me[0x22];
+		GAME_VAR(int, 0x76d368) = (signed char)me[0x23];
+		GAME_VAR(int, 0x4df8e8) = me[0x24];
+		GAME_VAR(int, 0x76d408) = me[0x25];
+		state = GAME_VAR(int, 0x4ded60);
+		GAME_VAR(int, 0x4ded54) = 1;
+	}
+	if (state != 0 && state != 3 && state != 4)
+		return state;
+	u32 r = GAME_CDECL(0x451e60, u32, void)();   /* net_451e60: the connection closed */
+	GAME_VAR(int, 0x4ded60) = 2;
+	if (state == 3)
+		GAME_VAR(int, 0x907b2c) = 1;
+	GAME_VAR(int, 0x4dba88) = 0;
+	GAME_VAR(int, 0x4ded54) = 0;
+	if (state == 4)
+		r = GAME_CDECL(0x41ee40, u32, int)(0x46);   /* the message */
+	return r;
+}
