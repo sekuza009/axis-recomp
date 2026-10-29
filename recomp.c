@@ -5651,7 +5651,8 @@ static THISCALL DWORD match_inputState2(char *s) { return run_lifted(lift_48b200
    pointer (0x428940) while 0x68039c; GL resets, the menu cursor (@0x41fc28: 0x429bc0, the patch DLL's
    cursor_draw), glFinish, SwapBuffers; the brightness step 0x68038c by 0x4e0464; the frame time (timer_now): the FPS
    every second (0x83a9d4), the frame's dt 0x4b071c (at most 1) */
-LIFT_PLAIN(menu_frame, 41fa40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_frame(void);
 #include "lifted/grp169.c"
 /* 0x460570 game_loadAllData() (thiscall: the scene's constructor): the timers, every member array built (0x401290 /
    the CRT's vector constructor 0x49fd2d), vtables set, the parts loaded (0x4700a0 with nine names; @0x460920:
@@ -16295,7 +16296,7 @@ static void menuframe_setup(void)
 	double t = (double)irnd(0, 100000) / 10.0;
 	*(double *)0x4dd0a0 = t - (double)irnd(0, 30) / 10.0; *(double *)0x4dd0c8 = t - (double)irnd(1, 500) / 1000.0;
 }
-T_PLAIN(menu_frame, 0x41fa40, menuframe_setup();, 0, 0, 0, 0, 0)
+ST(menu_frame, menuframe_setup();, (CALL_PLAIN(0x41fa40, 0, 0, 0, 0, 0), 0), (menu_frame(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the scene's constructor: every constructor and loader stubbed (the CRT's vector constructor too), the parts'
    loads passing or not; the chat macro file missing or 0..40 lines of 0..80 characters */
 static const DWORD g_stubSceneCtor[] = { 0x401290, 4 | CS_POP, 0x45dfb0, 1 | CS_POP | CS_THIS, 0x4617f0, 0 | CS_THIS,

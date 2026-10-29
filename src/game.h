@@ -136,6 +136,22 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 
 /* ---- menus: the screens' frames and key handlers ---- */
 #define menu_frame() GAME_CDECL(0x41fa40, void, void)()
+#define menu_onStateChange() GAME_CDECL(0x445e40, void, void)()
+#define menu_processKeys() GAME_CDECL(0x4319d0, void, void)()
+#define menu_frameBegin() GAME_CDECL(0x41f820, void, void)()
+#define menuState100_intro() GAME_CDECL(0x41f540, void, void)()
+#define menu_drawVersion() GAME_CDECL(0x41f8d0, void, void)()   /* the title screen (200) */
+#define menuState210_frame() GAME_CDECL(0x44f860, void, void)()
+#define menuState300_frame() GAME_CDECL(0x443530, void, void)()
+#define menuState400_frame() GAME_CDECL(0x40d450, void, void)()
+#define menuState500_missionSelect() GAME_CDECL(0x44aa40, void, void)()
+#define menuState600_setup() GAME_CDECL(0x427920, void, void)()
+#define menuState700_armCenter() GAME_CDECL(0x41e040, void, void)()
+#define menuState800_gameRoom() GAME_CDECL(0x43ef70, void, void)()
+#define menuState900_skirmishSetup() GAME_CDECL(0x445be0, void, void)()
+#define menu_4290d0() GAME_CDECL(0x4290d0, void, void)()   /* the message box */
+#define menu_428940(a, b) GAME_CDECL(0x428940, void, int, int)(a, b)
+#define menu_drawCursor() GAME_CDECL(0x429bc0, void, void)()
 #define menu_enterState() GAME_CDECL(0x41f970, void, void)()
 #define menu_drawBackground() GAME_CDECL(0x441740, void, void)()
 #define menu_drawFrame(x0, y0, x1, y1) GAME_CDECL(0x428c30, void, int, int, int, int)(x0, y0, x1, y1)
@@ -273,7 +289,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_menuFade GAME_VAR(float, 0x9da434)          /* the menus' fade-in: the keys wait for it to reach 0 */
 #define g_viewAngle GAME_VAR(float, 0x68038c)          /* the 3D view's vertical angle (degrees) */
 #define g_viewAspect GAME_VAR(float, 0x4e1870)        /* the 3D view's aspect ratio (gluPerspective), width / height */
-#define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time, seconds */
+#define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time in 1/60 s (menu_frame; 1 after a stall) */
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
 #define g_textColour ((Colour *)0x76d438)            /* the menus' text colour */
