@@ -4435,7 +4435,8 @@ LIFT_PLAIN(room_drawGameSettings, 43bfe0)
    offset by one first); the slot list (texture 0x9db0a4, five slots and a sixth box 0x756d24, labels 0x756aa4, the
    current slot 0x4dc4b0 bright) with the parts' names when 0x4dbc68 is set; the hue / saturation / value sliders
    for both colours (hue wrapped by 180 into 0..1) and their knobs; the hovered control (armc_40e4d0) */
-LIFT_PLAIN(armc_41a280, 41a280)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41a280(void);
 /* batch 139 (lifted/grp85.c): the armour build screen */
 #include "lifted/grp85.c"
 /* 0x419160 armc_419160(): the armour build screen: three buttons (0x7517a4; the hovered one, armc_40e490, bright),
@@ -13836,7 +13837,7 @@ static void colour_setup(void)
 	for (int k = 0; k < 5; k++) fill_str((char *)nm[k], 10, 32, 126);
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-T_PLAIN(armc_41a280, 0x41a280, colour_setup();, 0, 0, 0, 0, 0)
+ST(armc_41a280, colour_setup();, (CALL_PLAIN(0x41a280, 0, 0, 0, 0, 0), 0), (armc_41a280(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 139 */
 /* the build screen: menutex_setup's set (every texture it binds from it), positions, the selected slot, slot names
    empty / one character / short, the part box's indexes in range, the stats panel in its three states with values
