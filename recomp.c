@@ -15366,7 +15366,20 @@ ST(room_435fc0, gen_setup(g_gs_435fc0, g_gi_435fc0, g_gb_435fc0); callee_ret(0x4
 static const DWORD g_gs_436990[] = { 0x401590, 1, 0x401600, 1, 0x41e760, 1, 0x432200, 2, 0x4338c0, 0, 0x433b00, 0, 0x433bb0, 0, 0x441250, 1, 0x451e60, 0, 0x48b420, 0, 0 };
 static const DWORD g_gi_436990[] = { 0x4ded68, 0x4ded6c, 0x4e0cdc, 0x4e14f4, 0x4e150c, 0x4e1868, 0x67ef20, 0x67ef24, 0x67ef34, 0x67fb38, 0x680390, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x76d48c, 0x9da4a4, 0x9dae70, 0x9db0ac, 0x9dc428, 0x9dd198, 0x9dd1c8, 0x9dd1cc, 0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd6b0, 0x9dd834, 0x9dd838, 0xa0b378, 0 };
 static const DWORD g_gb_436990[] = { 0 };
-T_PLAIN(menu_436990, 0x436990, gen_setup(g_gs_436990, g_gi_436990, g_gb_436990);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, each bound key its own code and one of them pressed for each key test, the button under the pointer
+   (room_432200) across its range, the dialog flags (0x9dd838, 0x9dd1c8) and typing (g_paused) 0 or 1, the
+   ended-typing key (0x9dc428) 10 / 20 now and then */
+static void m436990_setup(void)
+{
+	gen_setup(g_gs_436990, g_gi_436990, g_gb_436990);
+	static const DWORD keys[] = { 0x4e0cdc, 0x4e14f4, 0x4e150c, 0x67ef24, 0x680390, 0x76d48c, 0x9dae70, 0x9db0ac };
+	for (int k = 0; k < 8; k++) G32(keys[k]) = 0x100 + k;
+	callee_key(0x401600, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1); callee_key(0x401590, irnd(0, 3) ? 0x100 + irnd(0, 7) : -1);
+	callee_ret(0x432200, (DWORD)irnd(-1, 5));
+	G32(0x9dd838) = irnd(0, 2) ? 0 : 1; G32(0x9dd1c8) = irnd(0, 2) ? 0 : 1; G32(0x68039c) = irnd(0, 2) ? 0 : 1;
+	if (irnd(0, 1)) G32(0x9dc428) = irnd(0, 1) ? 10 : 20;
+}
+T_PLAIN(menu_436990, 0x436990, m436990_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 /* batch 176: generated tests (tools/gentests.py, gen_setup from batch 172) plus the arena host wrappers */
 static const DWORD g_gs_406a60[] = { 0x404460, 2, 0x404cd0, 0, 0x4050a0, 0, 0x4050f0, 0, 0x40ee20, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_406a60[] = { 0x4dbb3c, 0x4dbbd0, 0x4dc24c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0 };
@@ -17600,7 +17613,7 @@ static const STest g_stests[] = {
 	T(armc_colourScreenInput, 0, 200, 0), T(room_436400, 0, 200, 0), T(menu_437630, 0, 200, 0), T(mainmenu_441c00, 0, 200, 0),
 	T(setup_drawGraphicTab, 0, 200, 0), T(room_43e7b0, 0, 200, 0), T(setup_drawSoundTab, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
 	T(setup_drawControlTab, 0, 200, 0), T(room_43df80, 0, 1000, 0), T(menu_enterMenus, 0, 200, 0), T(menu_4372f0, 0, 1000, 0),
-	T(room_435fc0, 0, 1000, 0), T(menu_436990, 0, 200, 0),
+	T(room_435fc0, 0, 1000, 0), T(menu_436990, 0, 1000, 0),
 	/* batch 176 */
 	T(lobby_406a60, 0, 200, 0), T(menu_437140, 0, 200, 0), T(arena_405690, 0, 200, 0), T(room_435d30, 0, 200, 0),
 	T(room_433e60, 0, 200, 0), T(mainmenu_startNetGame, 0, 200, 0), T(mainmenu_processKeys, 0, 200, 0), T(menu_436e10, 0, 200, 0),
@@ -17628,7 +17641,7 @@ static const STest g_stests[] = {
 	T(lobby_onStateChange, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_onStateChange, 0, 200, 0), T(room_43e290, 0, 200, 0),
 	T(arena_launchFromFile, 0, 200, 0), T(menuState800_gameRoom, 0, 200, 0),
 	/* batch 185 */
-	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 200, 0), T(armc_41d8a0, 0, 200, 0), T(armc_41dfe0, 0, 200, 0),
+	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 1000, 0), T(armc_41d8a0, 0, 1000, 0), T(armc_41dfe0, 0, 200, 0),
 	T(armc_41e010, 0, 200, 0), T(armc_41dfb0, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
 	T(game_processGameModeInit, 0, 200, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),

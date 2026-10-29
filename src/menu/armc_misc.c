@@ -142,9 +142,8 @@ void (armc_exit)(int confirmed)
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
    while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
 #define g_armcEye ((const u32 *)0xa0e7a8)              /* (by use) the preview camera's position */
-#define NO_POSE (-2)
 
-static void preview(int part)
+static void preview(int posed, int part)   /* posed: the mech posed for part */
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -155,7 +154,7 @@ static void preview(int part)
 	FUN_0041ef20(0, BITS(turn), 0);
 	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
-	if (part != NO_POSE)
+	if (posed)
 		armc_rotateFromCursor(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
 	if (g_armcSpin) {
 		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a94cc), &g_armcAngle);
@@ -198,9 +197,9 @@ void (armc_41d600)(void)
 		GAME_VAR(int, 0x4dca98) = 0;
 	}
 	switch (g_armcMode) {
-	case 1: preview(part_in_view()); break;
-	case 2: case 3: preview(-1); break;
-	default: preview(NO_POSE); break;
+	case 1: preview(1, part_in_view()); break;
+	case 2: case 3: preview(1, -1); break;
+	default: preview(0, 0); break;
 	}
 }
 
@@ -215,16 +214,16 @@ void (armc_41d8a0)(void)
 	}
 	int slot;
 	switch (g_armcMode) {
-	case 1: preview(part_in_view()); break;
+	case 1: preview(1, part_in_view()); break;
 	case 2:
 		slot = GAME_VAR(int, 0x4dbe48);
 		if (GAME_VAR(int, 0x4dbe90 + slot * 0x80) == -1)
-			preview(-1);
+			preview(1, -1);
 		else
-			preview(slot > 3 ? slot + 2 : 5);
+			preview(1, slot > 3 ? slot + 2 : 5);
 		break;
-	case 3: preview(-1); break;
-	default: preview(NO_POSE); break;
+	case 3: preview(1, -1); break;
+	default: preview(0, 0); break;
 	}
 }
 
