@@ -184,3 +184,25 @@ int (sound_initSoundTable)(const char *file, int volume)
 	fclose(f);
 	return 1;
 }
+
+/* 0x456e50: sound `index` played at volume 0..100 (with sound on and the sound loaded): below 0 silent (-1000),
+   above 100 the base volume (0xa0e66c), otherwise volume * 0x4a9504 * (base + 10000) - 10000. Returns the play's
+   eax, or what the original leaves when there is nothing to play */
+u32 (sound_playVolume)(int index, int volume)
+{
+	u32 on = GAME_VAR(u32, 0xa0e80c);
+	if (!on)
+		return 0;
+	void *sound = GAME_VAR(void *, 0xa0e02c + index * 4);
+	if (!sound)
+		return on;
+	int level;
+	if (volume < 0)
+		level = -1000;
+	else if (volume > 100)
+		level = GAME_VAR(int, 0xa0e66c);
+	else
+		level = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (long double)(GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
+	GAME_CDECL(0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
+	return GAME_CDECL(0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
+}

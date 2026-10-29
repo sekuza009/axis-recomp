@@ -49,3 +49,38 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 		wc[1 + i] = cls[i];
 	return IMPORT(0x4a92e8, u32, const u32 *)(wc) & 0xffff;   /* RegisterClassExA */
 }
+
+/* 0x468450: the GL window resized to width x height (0xa0e810, 0xa0e928): the viewport set and, in full screen
+   (0xa0e920), the display mode changed to match (0x467f20; failing that, a message and 0). The cached state
+   0x4c4de8 is reset; returns 1 */
+int (glWindow_resize)(int width, int height)
+{
+	GAME_VAR(int, 0xa0e810) = width;
+	GAME_VAR(int, 0xa0e928) = height;
+	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
+	if (GAME_VAR(int, 0xa0e920) == 1 &&
+	    !GAME_CDECL(0x467f20, int, int, int, int)(GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), 0)) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
+		return 0;
+	}
+	GAME_VAR(int, 0x4c4de8) = -1;
+	return 1;
+}
+
+/* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
+   the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
+   the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
+u32 (wnd_setCursor)(void)
+{
+	void *object = GAME_VAR(void *, 0x9087b4);
+	if (object)
+		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
+	GAME_CDECL(0x42eed0, void, int, int, int, int)(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
+	GAME_CDECL(0x4014c0, void, void)();
+	music_shutdown();
+	for (u32 p = 0x4dd4d4; p < 0x4dd4fc; p += 4)
+		FUN_00467d60(GAME_VAR(void *, p));
+	GAME_CDECL(0x456cd0, void, void)();
+	return GAME_CDECL(0x467b70, u32, void)();
+}

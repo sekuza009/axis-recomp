@@ -2714,7 +2714,8 @@ DWORD menu_frameBegin(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_registerWindowClassEx(const DWORD *cls);
 /* 0x452de0 net_452de0: copy the player/host name */
-LIFT_PLAIN(net_452de0, 452de0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_452de0(const void *rec);
 /* 0x46e1e0 ptx_crtlError: PTX video control error: print and exit */
 LIFT_PLAIN(ptx_crtlError, 46e1e0)
 /* 0x454d90 dplay_454d90: DirectPlay name compare/copy helper */
@@ -3204,7 +3205,8 @@ LIFT_PLAIN(menu_drawFrame, 428c30)
 LIFT_PLAIN(glWindow_restoreDisplayMode, 468050)
 LIFT_PLAIN(glWindow_setDisplayModeBy, 467f20)
 LIFT_PLAIN(glWindow_setupPixelFormat, 467e60)
-LIFT_PLAIN(glWindow_resize, 468450)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int glWindow_resize(int width, int height);
 /* 0x46cd00 (thiscall) image_initBy(path): open a 24-bit BMP, read and check its headers, keep width/height */
 static THISCALL DWORD image_initBy(char *img, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_46cd00, (DWORD)img, 1, v); }
 /* 0x466c00 shapeDat_initBy / 0x46afe0 skelDat_initBy: open Data\Shape.dat / Data\Skeleton.dat once and read its
@@ -3840,7 +3842,8 @@ LIFT_PLAIN(armc_41b400, 41b400)
 #include "lifted/grp44.c"
 /* 0x4546d0 net_startThread(): the network worker: two events (0xa0bb10 / 0xa0bf1c) and a thread running net_454560
    (handle 0xa0d788, id 0xa0d784), the first event set; 0 if any of them cannot be made */
-LIFT_PLAIN(net_startThread, 4546d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_startThread(void);
 /* 0x452a30 net_452a30 / 0x452bd0 net_452bd0(): read one 0x5b-byte (lobby, socket 0xa055f8, into 0xa05260) / 0x79-byte
    (game server, socket 0xa05630, into 0xa0b280) reply, waiting up to 3 s; by its type (0xa052aa / 0xa0b2e8): 0 handle
    it (net_452af0 / net_452c80), 1 start the network thread, others set the connection state (0xa0b36c / 0xa0b34c) */
@@ -4654,7 +4657,8 @@ void mission_4479b0(int mission);
 /* 0x443e20 skirmish_saveSettings(): no dialog open: a right click leaves (skirmish_443c80); a left click on the
    settings screen's buttons (skirmish_4438d0, 0x9ef228): rows 0..7 skirmish_443d50(row), 8 save (mission_saveAxisMis
    with the selection 0x9f16a4), 9 leave */
-LIFT_PLAIN(skirmish_saveSettings, 443e20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int skirmish_saveSettings(void);
 /* 0x447a50 mission_447a50(): the mission settings the same way (missionsel_447710, 0x9f6338): 0 start
    (mission_4479d0), 1 leave, 2 / 3 the mission 0x9f63b4 down / up within the unlocked 0x9f181c and 0..14 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4931,7 +4935,8 @@ void room_435ce0(void);
 void arena_editTextField_404f90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_433a80(void);
-LIFT_PLAIN(sound_playVolume, 456e50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD sound_playVolume(int index, int volume);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_431600(int ok);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5243,7 +5248,8 @@ LIFT_PLAIN(menuState700_armCenter, 41e040)
 #include "lifted/grp140.c"
 LIFT_PLAIN(game_processGameModeInit, 49df10)
 LIFT_PLAIN(match_escMenu, 49ca70)
-LIFT_PLAIN(wnd_setCursor, 4314e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD wnd_setCursor(void);
 /* 0x48fd50 scene_loadPath(path) (thiscall on the scene, ret 4) */
 static THISCALL DWORD scene_loadPath(char *scene, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_48fd50, (DWORD)scene, 1, v); }
 /* batch 187 (lifted/grp141.c, grp142.c: split, they call each other): particles */
@@ -9361,7 +9367,7 @@ ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x800
 ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
 ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
 ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
-T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
+ST(net_452de0, strs_setup();, CALL_PLAIN(0x452de0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452de0((const void *)(DWORD)(BUF + 0x100))))
 ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)dplay_454d90((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
 ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
 T_PLAIN(gfx_setPixelFormat, 0x42f000, g_mockPixelFormat = irnd(0, 9);, 0, 0xdc0, 0, 0, 0)
@@ -10217,7 +10223,7 @@ static void dispmode_setup(void)
 T_PLAIN(glWindow_restoreDisplayMode, 0x468050, dispmode_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(glWindow_setDisplayModeBy, 0x467f20, dispmode_setup();, 0, g_a[0], g_a[1], g_a[2], 0)
 T_PLAIN(glWindow_setupPixelFormat, 0x467e60, dispmode_setup();, 0, 0xdc0, 0, 0, 0)
-T_PLAIN(glWindow_resize, 0x468450, dispmode_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(glWindow_resize, dispmode_setup();, CALL_PLAIN(0x468450, 0, g_a[0], g_a[1], 0, 0), (DWORD)(glWindow_resize((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* a BMP file: 14-byte file header + 40-byte info header, mostly 24-bit uncompressed; the image object may still
    hold an open file */
 static void bmp_setup(void)
@@ -12187,7 +12193,7 @@ static void netmock_setup(void)
 	fill((void *)0xa055f8, 4); fill((void *)0xa05630, 4); fill((void *)0xa0b2fc, 4); fill((void *)0xa0b380, 4);
 	fill((void *)0xa0bb10, 4); fill((void *)0xa0bf1c, 4); fill((void *)0xa0d784, 8);
 }
-ST(net_startThread, netmock_setup();, CD(int, 0x4546d0, void)(), net_startThread(0, 0, 0, 0, 0, 0, 0))
+ST(net_startThread, netmock_setup();, CD(int, 0x4546d0, void)(), net_startThread())
 /* a reply of the given type in the buffer (recv may overwrite it) */
 static void netreply_setup(DWORD buf, int len, DWORD typep)
 {
@@ -14328,7 +14334,7 @@ static void menudisp_setup(void)
 	G32(0x9dae74) = irnd(0, 2);
 	fill((void *)0x9dc92c, 0x400);
 }
-T_PLAIN(skirmish_saveSettings, 0x443e20, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_saveSettings, menudisp_setup();, CALL_PLAIN(0x443e20, 0, 0, 0, 0, 0), (DWORD)(skirmish_saveSettings()))
 ST(mission_447a50, menudisp_setup();, CALL_PLAIN(0x447a50, 0, 0, 0, 0, 0), (DWORD)(mission_447a50()))
 ST(mission_4479d0, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWORD)(mission_4479d0()))
 ST(menu_444070, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(menu_444070()))
@@ -14672,7 +14678,7 @@ ST(room_433a80, gen_setup(g_gs_433a80, g_gi_433a80, g_gb_433a80);, CALL_PLAIN(0x
 static const DWORD g_gs_456e50[] = { 0x467d70, 1, 0x467db0, 2, 0 };
 static const DWORD g_gi_456e50[] = { 0xa0e66c, 0xa0e80c, 0 };
 static const DWORD g_gb_456e50[] = { 0 };
-T_PLAIN(sound_playVolume, 0x456e50, gen_setup(g_gs_456e50, g_gi_456e50, g_gb_456e50); /* (sound index, volume) */ fill((void *)0xa0e02c, 0x40); g_a[0] = irnd(0, 15); g_a[1] = irnd(-10, 120);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(sound_playVolume, gen_setup(g_gs_456e50, g_gi_456e50, g_gb_456e50); /* (sound index, volume) */ fill((void *)0xa0e02c, 0x40); g_a[0] = irnd(0, 15); g_a[1] = irnd(-10, 120);, CALL_PLAIN(0x456e50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(sound_playVolume((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 static const DWORD g_gs_431600[] = { 0x401310, 1, 0x431590, 0, 0x4315c0, 0, 0 };
 static const DWORD g_gi_431600[] = { 0x4ded18, 0x68039c, 0x9da434, 0x9dbf10, 0x9dcd30, 0 };
 static const DWORD g_gb_431600[] = { 0x9dc92c, 0 };
@@ -15363,8 +15369,8 @@ T_PLAIN(match_escMenu, 0x49ca70, gen_setup(g_gs_49ca70, g_gi_49ca70, g_gb_49ca70
    path record at +0x2148ed8 loaded once (+0x2148ee0), the path's name looked up (stubbed), its sound */
 static const DWORD g_stubShutdown[] = { 0x42eed0, 4, 0x4014c0, 0, 0x457310, 0, 0x467d60, 1, 0x456cd0, 0, 0x467b70, 0, 0 };
 static const DWORD g_stubLoadPath[] = { 0x457080, 2, 0x48b430, 2 | CS_POP | CS_THIS, 0x48b440, 1 | CS_POP | CS_THIS, 0 };
-T_PLAIN(wnd_setCursor, 0x4314e0, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x76d3ec, 4); fill((void *)0x76d430, 4);
-   fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, 0, 0, 0, 0, 0)
+ST(wnd_setCursor, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x76d3ec, 4); fill((void *)0x76d430, 4);
+   fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, CALL_PLAIN(0x4314e0, 0, 0, 0, 0, 0), wnd_setCursor())
 ST(scene_loadPath, S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x2148ee0) = irnd(0, 1); fill_str(BUF + 0x100, 30, 'a', 'z');
    callee_stubs(g_stubLoadPath, (DWORD)irnd(0, 1));,
    TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), scene_loadPath(BUF, (DWORD)(BUF + 0x100)))

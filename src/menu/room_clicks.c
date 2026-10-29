@@ -107,3 +107,25 @@ static void leave_keys(int *question)
 
 void (menu_436940)(void) { leave_keys(&g_leaveDialog); }
 void (lobbyJoin_keys)(void) { leave_keys(&GAME_VAR(int, 0x907b2c)); }
+
+/* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
+   click on its buttons (skirmish_4438d0): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
+   selection 0x9f16a4), 9 leaves. Returns the last call's eax */
+int (skirmish_saveSettings)(void)
+{
+	int r = GAME_VAR(int, 0x90d1c4);
+	if (r)
+		return r;
+	if (GAME_VAR(int, 0x4ded8c))
+		GAME_CDECL(0x443c80, int, void)();
+	if (!GAME_VAR(int, 0x4ded88))
+		return 0;
+	int row = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmish_4438d0 */
+	if ((u32)row <= 7)
+		return GAME_CDECL(0x443d50, int, int)(row);
+	if (row == 8)
+		return GAME_CDECL(0x443af0, int, int)(GAME_VAR(int, 0x9f16a4));
+	if (row == 9)
+		return GAME_CDECL(0x443c80, int, void)();
+	return row;
+}

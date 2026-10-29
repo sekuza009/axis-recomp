@@ -404,3 +404,32 @@ const char *(dplay_454d90)(const char *text, const char *word, int exact)
 	}
 	return NULL;
 }
+
+/* 0x4546d0: the network worker started: two events (0xa0bb10, 0xa0bf1c) and the thread running 0x454560 (handle
+   0xa0d788, id 0xa0d784), then the first event set. 1, or 0 when any of them cannot be made */
+int (net_startThread)(void)
+{
+	if (!(GAME_VAR(void *, 0xa0bb10) = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))   /* CreateEventA */
+		return 0;
+	if (!(GAME_VAR(void *, 0xa0bf1c) = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
+		return 0;
+	GAME_VAR(void *, 0xa0d788) = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)0x454560, NULL, 0, (u32 *)0xa0d784);   /* CreateThread */
+	if (!GAME_VAR(void *, 0xa0d788))
+		return 0;
+	SetEvent(GAME_VAR(void *, 0xa0bb10));
+	return 1;
+}
+
+/* 0x452de0: a player record appended to the list at 0xa05330 (62 bytes a slot, count 0xa0b35c): its name and seven
+   dwords (+0x22 .. +0x3a). Returns the slot's offset (the original's eax) */
+int (net_452de0)(const u8 *rec)
+{
+	static const u8 fields[7] = { 0x2a, 0x26, 0x22, 0x2e, 0x36, 0x3a, 0x32 };
+	lstrcpyA((char *)(0xa05330 + GAME_VAR(int, 0xa0b35c) * 62), (const char *)rec);
+	int i = GAME_VAR(int, 0xa0b35c);
+	u8 *slot = (u8 *)(0xa05330 + i * 62);
+	for (int k = 0; k < 7; k++)
+		*(u32 *)(slot + fields[k]) = *(const u32 *)(rec + fields[k]);
+	GAME_VAR(int, 0xa0b35c) = i + 1;
+	return i * 62;
+}
