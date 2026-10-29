@@ -165,3 +165,26 @@ int (armc_41b750)(void)
 	copyf(0x4dcea0, &FIELD(float, p, 0x167b330));
 	return weapon;
 }
+
+/* 0x40f340: mech part `part` (0 .. 4: head, chest, arm, leg, booster) stepped through its list, back (dir 1) or on
+   (wrapping at both ends): its cursor, the list's count and entries, the chosen part (0x4dc760 + 4 * part), and
+   the mech marked changed (0x4dcc58). Returns what the original leaves in eax: the new part on the even steps back
+   and odd steps on, else the cursor (another part: the part number) */
+u32 (armc_40f340)(u32 part, int dir)
+{
+	static const struct { u32 cursor, count, list; } parts[5] = {
+		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c }, { 0x4dbc7c, 0x4dca90, 0x4dc964 },
+		{ 0x4dcea4, 0x4dca94, 0x4dc89c }, { 0x4dcb30, 0x4dc890, 0x4dbd7c } };
+	GAME_VAR(int, 0x4dcc58) = 1;
+	if (part > 4)
+		return part;
+	int *cursor = (int *)parts[part].cursor, count = GAME_VAR(int, parts[part].count);
+	if (dir == 1) {
+		if (--*cursor < 0)
+			*cursor = count - 1;
+	} else if (++*cursor >= count)
+		*cursor = 0;
+	u32 chosen = ((const u32 *)parts[part].list)[*cursor];
+	GAME_VAR(u32, 0x4dc760 + part * 4) = chosen;
+	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
+}

@@ -2947,7 +2947,8 @@ static THISCALL DWORD actor_45ebc0(char *scene, DWORD p) { DWORD v[1] = { p }; r
 /* 0x435770 room_435770: rebuild the room's 10 game slots (0x44 bytes at 0x9dcef0) from the listed games at 0xa05330 */
 LIFT_PLAIN(room_435770, 435770)
 /* 0x40f340 armc_40f340(part, dir): previous/next choice for a part (wrapping) */
-LIFT_PLAIN(armc_40f340, 40f340)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_40f340(DWORD part, int dir);
 /* batch 52: more tools/closure.py groups (lifted/grp2.c) */
 /* 0x401000 cd_findDrive: patched (no-CD build) to return 1 at once */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9863,7 +9864,7 @@ static void roomlist_setup(void)
 	}
 }
 T_PLAIN(room_435770, 0x435770, roomlist_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(armc_40f340, 0x40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, 0, g_a[0], g_a[1], 0, 0)
+ST(armc_40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_40f340((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* batch 52 */
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
