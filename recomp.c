@@ -5627,7 +5627,8 @@ static DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show)
    (0x456be0); 0x466c00, 0x46afe0; the scene (operator new 0x2343acb, constructed by 0x460570 -> 0x9087b4, 0 if the
    allocation failed); 0x456d10; a fifth texture; the camera and menu defaults (two 0x41f0e0 vectors, the fade 5,
    the screen centre from 0x5b1998 / 0x4e045c, 0x4dd984 from 0x4e0c90). SEH frame emulated. Returns 1, or 0 */
-LIFT_PLAIN(app_checkCdAndLoad, 430400)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int app_checkCdAndLoad(void *instance);
 /* batch 205 (lifted/grp164.c .. grp166.c): the mission-select state, the main loop's frame, two HUD panels */
 #include "lifted/grp164.c"
 /* 0x44aa40 menuState500_missionSelect(): the mission-select screen's frame (119 bytes; functions.csv said 4099):
@@ -16168,7 +16169,7 @@ static void startload_setup(void)
 	G32(0x4e0c90) = irnd(0, 400); G32(0x83a9cc) = irnd(0, 3); G32(0x83a9d0) = irnd(0, 3);
 	G32(0x4ded18) = 0x10010; g_a[0] = 0x400000;
 }
-T_PLAIN(app_checkCdAndLoad, 0x430400, startload_setup();, 0, g_a[0], 0, 0, 0)
+ST(app_checkCdAndLoad, startload_setup();, CALL_PLAIN(0x430400, 0, g_a[0], 0, 0, 0), (DWORD)(app_checkCdAndLoad((void *)g_a[0])))
 /* batch 205 */
 /* the mission-select frame: its flags, page -1..3 and dialog either way; every callee stubbed */
 static const DWORD g_stubMission[] = { 0x428c30, 4, 0x441740, 0, 0x447cb0, 0, 0x448140, 0, 0x44aa20, 0, 0x44aa30, 0, 0 };

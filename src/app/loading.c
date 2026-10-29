@@ -136,3 +136,133 @@ void (loading_draw)(u32 progress)
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
 	text_drawSized(0x96, row * 16 + 0x76, (const char *)0xa0e988, 0x10);
 }
+
+/* ---- the game's start-up load ---- */
+#define g_mainWindow GAME_VAR(void *, 0x4ded18)
+
+/* a texture's id by its name (copied to the stack first, as the original does) */
+static int texture_named(const char *name)
+{
+	char copy[64];
+	strcpy(copy, name);
+	return tex_getIdByName(g_textures, copy, 0, 0, 0, 0, 0, 0, 0);
+}
+
+/* 0x430400: the start-up load: the key tables (0x4d1688, 0x4d1a98) cleared, the settings, tables and lists loaded,
+   the text area the whole screen, the timer; DirectInput made once (0x9dbf0c; failure: a message box, 0); unless
+   0x76d410 the data files checked (failure: the message 0x4b04b0, 0); the sound (0xa0e80c: it works; then the menu
+   sounds); the pointer at 310, 230, the keys' table; the CD (failure: a message box, 0); the six texture sets (the
+   sizes 0x83a9cc / 0x83a9d0) gathered into 0x83a5e0 (g_textures), the font, four textures by name, the shape and
+   skeleton files, the scene (0x2343acb bytes, constructed; 0 if not had) into 0x9087b4, the sound table, the logo;
+   then the camera and menu defaults. Returns 1 (0 on a failure) */
+int (app_checkCdAndLoad)(void *instance)
+{
+	memset((void *)0x4d1688, 0, 0x400);
+	memset((void *)0x4d1a98, 0, 0x400);
+	GAME_VAR(int, 0x9dd84c) = 0;
+	app_4515d0();
+	reg_readServerSettings();
+	math_initMathFunction();
+	reg_readCharacterSettings();
+	app_430390();
+	data_loadPilotProfiles();
+	data_loadMapInfo();
+	data_loadSkirmishInfo();
+	arena_42bc00();
+	profile_scanSaves();
+	app_42f940();
+	hud_42fb40();
+	skirmish_4017b0(0x280);
+	skirmish_4017c0(0x1e0);
+	GAME_VAR(int, 0x4d7348) = 0;
+	timer_init();
+	GAME_VAR(int, 0x4d23d0) = 1;
+	GAME_VAR(int, 0x67ef14) = 0;
+	if (!GAME_VAR(int, 0x9dbf0c)) {
+		if (!input_createDirectInput(g_mainWindow, instance)) {
+			MessageBoxA(g_mainWindow, (const char *)0x751624, (const char *)0x7510a4, 0);
+			return 0;
+		}
+		GAME_VAR(int, 0x9dbf0c) = 1;
+	}
+	if (!GAME_VAR(int, 0x76d410)) {
+		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
+		    || !app_checkFile_game()) {
+			sys_messageBox((const char *)0x4b04b0);
+			return 0;
+		}
+	}
+	if (!sound_init(g_mainWindow))
+		GAME_VAR(int, 0xa0e80c) = 0;
+	else {
+		GAME_VAR(int, 0xa0e80c) = 1;
+		sound_loadMenuSounds();
+	}
+	GAME_VAR(int, 0x4ded68) = 0x136;
+	GAME_VAR(int, 0x4ded6c) = 0xe6;
+	input_initVkTable();
+	app_401780();
+	GAME_VAR(u32, 0x68038c) = 0x42340000;   /* 45 */
+	if (!cd_findDrive()) {
+		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);
+		return 0;
+	}
+	const char *dir = (const char *)0x4b1304;
+	u32 w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x4e1878, dir, 0x28, 0, 0x40, 0x40, w, h);
+	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x5b1db8, dir, 0x28, 0, 0x80, 0x40, w, h);
+	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x680cd8, dir, 0x28, 0, 0x100, 0x40, w, h);
+	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x76d498, dir, 0x28, 0, 0x80, 0x80, w, h);
+	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x90d1e0, dir, 0x50, 0, 0x100, 0x80, w, h);
+	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	tex_initBy((void *)0x83a9e0, dir, 0x28, 0, 0x100, 0x100, w, h);
+	texSmall_initBy((void *)0x83a5e0, (void *)0x4e1878, (void *)0x5b1db8, (void *)0x680cd8, (void *)0x76d498,
+	                (void *)0x90d1e0, (void *)0x83a9e0);
+	g_textures = (TextureSets *)0x83a5e0;
+	pen_init((const char *)0x4b2514);
+	GAME_VAR(int, 0x76d448) = texture_named((const char *)0x4b24c4);
+	GAME_VAR(int, 0x9dad90) = texture_named((const char *)0x4b24b4);
+	GAME_VAR(int, 0x9dae1c) = texture_named((const char *)0x4b24a4);
+	GAME_VAR(int, 0x76d360) = texture_named((const char *)0x4b2490);
+	shapeDat_initBy();
+	skelDat_initBy();
+	void *scene = operator_new(0x2343acb);
+	GAME_VAR(void *, 0x9087b4) = scene ? game_loadAllData(scene) : NULL;
+	sound_initSoundTable((const char *)0x4b2504, 0x64);
+	char logo[64];
+	strcpy(logo, (const char *)0x4b24f0);
+	GAME_VAR(u32, 0x4df028) = 0;
+	GAME_VAR(u32, 0x4df024) = 0;
+	GAME_VAR(u32, 0x4df02c) = 0x43fa0000;   /* 500 */
+	GAME_VAR(u32, 0x680378) = 0;
+	GAME_VAR(u32, 0x68037c) = 0;
+	GAME_VAR(u32, 0x680380) = 0x43c80000;   /* 400 */
+	GAME_VAR(int, 0x4dd0b0) = 0;
+	GAME_VAR(int, 0x76d3f0) = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
+	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
+	set_colour_bits((Colour *)0x76d350, 0, 0, 0, 0x3f800000);
+	int width = GAME_VAR(int, 0x5b1998), height = GAME_VAR(int, 0x4e045c);
+	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5 */
+	GAME_VAR(float, 0x680bac) = f32(fmul_m((long double)width, (const float *)0x4a9578));
+	GAME_VAR(int, 0x4e1520) = width / 2;
+	GAME_VAR(int, 0x76d474) = 0;
+	GAME_VAR(float, 0x4df014) = f32(fmul_m((long double)height, (const float *)0x4a9574));
+	GAME_VAR(int, 0x4df900) = 0;
+	GAME_VAR(int, 0x680394) = height / 2;
+	GAME_VAR(u32, 0x4dd96c) = 0;
+	GAME_VAR(int, 0x4dd0b8) = 0;
+	GAME_VAR(u32, 0x4de1e0) = 0x3dcccccd;   /* 0.1 */
+	GAME_VAR(u32, 0x4de1d8) = 0x3ca3d70a;   /* 0.02 */
+	GAME_VAR(u32, 0x4de1e8) = 0;
+	GAME_VAR(int, 0x4df03c) = 0;
+	GAME_VAR(u32, 0x4df910) = 0;
+	GAME_VAR(int, 0x4e1868) = 0;
+	GAME_VAR(int, 0x5ae9c4) = 0;
+	GAME_VAR(int, 0x4dd984) = (GAME_VAR(int, 0x4e0c90) * 5 - 0x1f4) * 4;
+	GAME_VAR(int, 0x5b1dac) = 0;
+	return 1;
+}
