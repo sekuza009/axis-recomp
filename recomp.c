@@ -4064,7 +4064,8 @@ DWORD menu_4290d0(void);
 DWORD menu_428940(int x, int y);
 /* 0x44ce90 profile_44ce90(): the profile list's visible names (count 0x9f9008 from 0x9f8c4c, 0x48 bytes each from
    0x9f684c, at most 13, 20 apart), the selected one (0x9f8d74) brighter, all brighter when focused (0x9f8f10) */
-LIFT_PLAIN(profile_44ce90, 44ce90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44ce90(void);
 /* 0x442d10 mainmenu_442d10(): the map list's visible names (count 0x9dd928 from 0x9dd92c, 0x44 bytes each from
    0x9dda88, at most 10, 20 apart), flagged ones (+0x40) on a red bar */
 LIFT_PLAIN(mainmenu_442d10, 442d10)
@@ -4253,7 +4254,8 @@ void setup_427880(void);
    is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44f5f0(void);
-LIFT_PLAIN(profile_44f740, 44f740)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44f740(void);
 /* batch 132 (lifted/grp78.c): the main menu */
 #include "lifted/grp78.c"
 /* 0x442050 menu_mainMenu(): the main menu: unless it is flying in (0x9eeaa8) the cursor is tested against six
@@ -4992,7 +4994,8 @@ void room_435f40(void);
 DWORD room_435e70(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_433c70(void);
-LIFT_PLAIN(lobby_keysQuit, 408110)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_keysQuit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_topPageKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5064,7 +5067,8 @@ LIFT_PLAIN(menu_436990, 436990)
    mainmenu_processKeys, menu_436e10, armc_enter (a list node's camera and fade, then it is freed),
    match_debugHandler (the debug keys); the arena slots 3 / 4 host wrappers */
 #include "lifted/grp126.c"
-LIFT_PLAIN(lobby_406a60, 406a60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobby_406a60(void);
 LIFT_PLAIN(menu_437140, 437140)
 LIFT_PLAIN(arena_405690, 405690)
 LIFT_PLAIN(room_435d30, 435d30)
@@ -12935,7 +12939,7 @@ static void proflist_setup(void)
 	G32(0x9f8f10) = irnd(0, 2); G32(0x9f8e48) = irnd(-50, 500); G32(0x9f8e4c) = irnd(-50, 400);
 	for (int k = 0; k < 28; k++) fill_str((char *)0x9f684c + k * 0x48, 40, 32, 126);
 }
-T_PLAIN(profile_44ce90, 0x44ce90, proflist_setup();, 0, 0, 0, 0, 0)
+ST(profile_44ce90, proflist_setup();, CALL_PLAIN(0x44ce90, 0, 0, 0, 0, 0), (DWORD)(profile_44ce90()))
 /* the map list: 0..14 names (flags +0x40 set or not), a first visible one */
 static void maplist_setup(void)
 {
@@ -13437,7 +13441,7 @@ static void profglide_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 	GF(0x680bc0) = (float)irnd(-10, 100) / 10.0f; G32(0x90d1c4) = irnd(0, 3) ? 0 : 1;
 }
 ST(profile_44f5f0, profglide_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44f5f0, 0, 0, 0, 0, 0), (DWORD)(profile_44f5f0()))
-T_PLAIN(profile_44f740, 0x44f740, profglide_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, 0, 0, 0, 0, 0)
+ST(profile_44f740, profglide_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44f740, 0, 0, 0, 0, 0), (DWORD)(profile_44f740()))
 /* batch 132 */
 /* the main menu: tunnels_setup's tunnel and textures, six panel quads (run-time data at 0x4deb80) with the cursor
    often at a panel's centre, flying in or not (depth near or at -550), locked now and then, the idle time below and
@@ -14804,7 +14808,7 @@ ST(room_433c70, gen_setup(g_gs_433c70, g_gi_433c70, g_gb_433c70);, CALL_PLAIN(0x
 static const DWORD g_gs_408110[] = { 0x401600, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_408110[] = { 0x4ded40, 0x4ded42, 0x4ded43, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4df8e8, 0x4e0cdc, 0x4e1510, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x90d1c4, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_408110[] = { 0x4ded20, 0x67fb44, 0 };
-T_PLAIN(lobby_keysQuit, 0x408110, gen_setup(g_gs_408110, g_gi_408110, g_gb_408110);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_keysQuit, gen_setup(g_gs_408110, g_gi_408110, g_gb_408110);, CALL_PLAIN(0x408110, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_keysQuit()))
 static const DWORD g_gs_422b70[] = { 0x401600, 1, 0x41e760, 1, 0x420ad0, 0, 0x420b40, 0, 0x420ba0, 0, 0x441250, 1, 0x48b420, 0, 0 };
 static const DWORD g_gi_422b70[] = { 0x4dda44, 0x4e0cdc, 0x4e14ec, 0x4e1524, 0x4e153c, 0x67ef20, 0x76d48c, 0x9dae10, 0 };
 static const DWORD g_gb_422b70[] = { 0 };
@@ -15003,7 +15007,7 @@ T_PLAIN(menu_436990, 0x436990, gen_setup(g_gs_436990, g_gi_436990, g_gb_436990);
 static const DWORD g_gs_406a60[] = { 0x404460, 2, 0x404cd0, 0, 0x4050a0, 0, 0x4050f0, 0, 0x40ee20, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_406a60[] = { 0x4dbb3c, 0x4dbbd0, 0x4dc24c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0 };
 static const DWORD g_gb_406a60[] = { 0 };
-T_PLAIN(lobby_406a60, 0x406a60, gen_setup(g_gs_406a60, g_gi_406a60, g_gb_406a60);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_406a60, gen_setup(g_gs_406a60, g_gi_406a60, g_gb_406a60);, CALL_PLAIN(0x406a60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_406a60()))
 static const DWORD g_gs_437140[] = { 0x401600, 1, 0x40ee20, 0, 0x41e760, 1, 0x4334c0, 0, 0x433590, 0, 0x433790, 0, 0x433800, 0, 0x435a40, 0, 0 };
 static const DWORD g_gi_437140[] = { 0x4dc24c, 0x4e0cd4, 0x4e0cdc, 0x4e14f8, 0x4e1514, 0x4e151c, 0x4e153c, 0x76d48c, 0 };
 static const DWORD g_gb_437140[] = { 0 };

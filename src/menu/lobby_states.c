@@ -598,3 +598,72 @@ u32 (lobbyCreate_draw)(void)
 		return 0;
 	return CALL(0x405b80);   /* arena_405b80 */
 }
+
+/* 0x408110: the create screen's quit dialog keys (no other dialog open): one closes it, the other starts the arena:
+   multiplayer on, the music stopped, the arena settings (0x4ded20) as the game's (map, players, limits), the lobby
+   left. Returns what the original leaves in eax */
+u32 (lobby_keysQuit)(void)
+{
+	if (g_dialogOpen)
+		return (u32)g_dialogOpen;
+	u32 r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
+	if (r) {
+		GAME_VAR(int, 0x4db55c) = 0;
+		return r;
+	}
+	if (!input_justPressed(GAME_VAR(int, 0x4e1510)))
+		return 0;
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 1;
+	CALL(0x457310);   /* music_shutdown */
+	u32 limits = GAME_VAR(u32, 0x4ded44);
+	GAME_VAR(int, 0x9da3e0) = GAME_VAR(signed char, 0x4ded42);
+	GAME_VAR(int, 0x9dad94) = GAME_VAR(signed char, 0x4ded40);
+	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	GAME_VAR(int, 0x76d368) = GAME_VAR(signed char, 0x4ded43);
+	GAME_VAR(u32, 0x4df8e8) = limits & 0xff;
+	GAME_VAR(u32, 0x76d408) = (limits >> 8) & 0xff;
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	GAME_VAR(int, 0x4dbbf4) = 1;
+	GAME_VAR(int, 0x4db55c) = 0;
+	return limits;
+}
+
+/* 0x406a60: the lobby player screen's clicks (mode 2, no dialog or list open): a right click goes back; buttons: 0 the
+   name field, 2 the ARM CENTER, 3 the profile's record kept, 4 back, 5 the default name. Returns what the original
+   leaves in eax */
+u32 (lobby_406a60)(void)
+{
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || g_dialogOpen || GAME_VAR(int, 0x4dbbd0))
+		return (u32)mode;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return GAME_CDECL(0x41e760, u32, int)(0);
+	}
+	if (!g_mouseClick || mode != 2)
+		return (u32)mode;
+	u32 button = GAME_CDECL(0x404460, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
+	u32 r;
+	switch (button) {
+	case 0:
+		return CALL(0x404cd0);   /* arena_editTextField_404cd0 */
+	case 2:
+		sound_playMenu(0);
+		GAME_VAR(int, 0x4dc24c) = 2;
+		return CALL(0x40ee20);   /* menu_enterMenus: the ARM CENTER */
+	case 3:
+		sound_playMenu(0);
+		r = CALL(0x4050a0);      /* FUN_004050a0 */
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return r;
+	case 4:
+		r = GAME_CDECL(0x41e760, u32, int)(0);
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return r;
+	case 5:
+		sound_playMenu(0);
+		return CALL(0x4050f0);   /* cfg_defaultPlayerName */
+	}
+	return button;
+}

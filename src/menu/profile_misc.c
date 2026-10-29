@@ -323,15 +323,15 @@ u32 (profile_selectAndLoad)(void)
 	return CALL(0x44b7a0);  /* profile_44b7a0 */
 }
 
-/* 0x44f5f0: the profile screen's pilot panel: while it glides (0x76d42c) the pointer is pulled towards its target
-   (0x67ef34, 0x67fb38) by the frame time, until its timer (0x680bc0) runs out; the screen drawn, then the dialog's
-   frame if one is open, else the panel. Returns what the original leaves in eax */
-u32 (profile_44f5f0)(void)
+/* a profile screen page with a panel: while the pointer glides (0x76d42c) it is pulled towards its target (0x67ef34,
+   0x67fb38) by the frame time times rate, until the glide's timer (0x680bc0) runs out; the screen drawn, then the
+   dialog's frame (at frame: x0, y0, x1, y1) if one is open, else the panel. Returns what the original leaves in eax */
+static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 {
 	if (GAME_VAR(int, 0x76d42c)) {
-		int step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67ef34) - g_mouseX), &g_frameTime), (const float *)0x4a941c));
+		int step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67ef34) - g_mouseX), &g_frameTime), rate));
 		g_mouseX += step;
-		step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67fb38) - g_mouseY), &g_frameTime), (const float *)0x4a941c));
+		step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67fb38) - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
 		long double t = fsub_m(fld_m((const float *)0x680bc0), &g_frameTime);
 		GAME_VAR(float, 0x680bc0) = (float)t;
@@ -340,7 +340,39 @@ u32 (profile_44f5f0)(void)
 	}
 	CALL(0x44d720);   /* mainmenu_drawScreen */
 	if (g_dialogOpen)
-		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f8f1c), GAME_VAR(int, 0x9f8f0c),
-		                                                     GAME_VAR(int, 0x9f8f2c), GAME_VAR(int, 0x9f8f28));   /* menu_drawFrame */
-	return CALL(0x44e180);   /* profile_44e180 */
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, frame[0]), GAME_VAR(int, frame[1]),
+		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrame */
+	return CALL(panel);
+}
+/* 0x44f5f0: the pilot panel's page (profile_44e180) */
+u32 (profile_44f5f0)(void)
+{
+	static const u32 frame[4] = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28 };
+	return glide_page((const float *)0x4a941c, frame, 0x44e180);
+}
+/* 0x44f740: the second panel's page (profile_44e3e0), gliding at its own rate */
+u32 (profile_44f740)(void)
+{
+	static const u32 frame[4] = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0 };
+	return glide_page((const float *)0x4a94f8, frame, 0x44e3e0);
+}
+
+/* 0x44ce90: the profile list's names drawn (13 rows from the top entry 0x9f8c4c, 20 units apart in the panel at
+   0x9f8e48): grey-blue, the selected one brighter; dimmer while a dialog page is up (page other than 1). Returns the
+   last text call's eax */
+u32 (profile_44ce90)(void)
+{
+	u32 r = 0;
+	for (int i = 0; i < 13 && i < GAME_VAR(int, 0x9f9008); i++) {
+		int page1 = GAME_VAR(int, 0x9f8f10) == 1;
+		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
+		GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
+		if (GAME_VAR(int, 0x9f8c4c) + i == GAME_VAR(int, 0x9f8d74)) {
+			shade = GAME_VAR(int, 0x9f8f10) == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
+			GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
+		}
+		r = GAME_CDECL(0x402620, u32, int, int, const char *)(GAME_VAR(int, 0x9f8e48) + 0x28, GAME_VAR(int, 0x9f8e4c) + 0x24 + i * 0x14,
+		                                                      (const char *)(0x9f684c + (GAME_VAR(int, 0x9f8c4c) + i) * 0x48));   /* text_draw8 */
+	}
+	return r;
 }
