@@ -884,3 +884,62 @@ int (dplay_initConnection)(int kind, const char *address)
 	GAME_VAR(u32, 0xa0bb08) = caps[3];   /* dwMaxQueueSize */
 	return 1;
 }
+
+/* a server socket closed: pending Winsock calls cancelled, sends shut down, the socket closed and forgotten, then
+   0x4519b0. Returns its eax */
+static u32 socket_close(u32 socket)
+{
+	((int (STDCALL *)(void))0x4a8292)();                                  /* WSACancelBlockingCall */
+	((int (STDCALL *)(int, int))0x4a828c)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
+	((int (STDCALL *)(int))0x4a8286)(GAME_VAR(int, socket));              /* closesocket */
+	GAME_VAR(int, socket) = 0;
+	return GAME_CDECL(0x4519b0, u32, void)();
+}
+
+/* the leaving player's record (from *from into *to): the leave flag (+0) and the flagged byte, the bytes listed
+   copied in order, then three names; sent as message `type` (net_send), then a second's wait */
+static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged, const u8 *names, int type, int code)
+{
+	u8 *dst = GAME_VAR(u8 *, to);
+	if (!dst)
+		return 0;
+	dst[0] = 1;
+	for (int i = 0; i < nbytes; i++) {
+		if (bytes[i] == flagged)
+			GAME_VAR(u8 *, to)[flagged] = 1;
+		else
+			GAME_VAR(u8 *, to)[bytes[i]] = GAME_VAR(u8 *, from)[bytes[i]];
+	}
+	for (int i = 0; i < 3; i++)
+		lstrcpyA(GAME_VAR(char *, to) + names[i], GAME_VAR(char *, from) + names[i]);
+	GAME_CDECL(0x4521c0, int, int, int)(type, code);   /* net_send */
+	IMPORT(0x4a9110, void, u32)(1000);                 /* Sleep */
+	return 1;
+}
+
+/* 0x451e60: leaving the network (while connected, 0xa0b2fc = 1): on the lobby's socket (0xa055f8) the player's
+   leave record (0xa0b310 into 0xa0b318, message 0xb) unless 0xa0b360, on the room's (0xa05630) the room record
+   (0xa0b328 into 0xa0b330, message 0x16) unless 0xa0b364; each socket closed. Without a send buffer it stops there
+   (0). Then the connection flags cleared. Returns what the original leaves in eax */
+u32 (net_disconnect)(void)
+{
+	static const u8 lobbyBytes[9] = { 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 }, lobbyNames[3] = { 0x53, 0x33, 1 };
+	static const u8 roomBytes[9] = { 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 }, roomNames[3] = { 0x71, 0x43, 0x33 };
+	if (GAME_VAR(int, 0xa0b2fc) != 1)
+		return GAME_VAR(u32, 0xa0b2fc);
+	u32 r = GAME_VAR(u32, 0xa055f8);
+	if (GAME_VAR(int, 0xa055f8)) {
+		if (!GAME_VAR(int, 0xa0b360) && !send_leave(0xa0b310, 0xa0b318, lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+			return 0;
+		r = socket_close(0xa055f8);
+	}
+	if (GAME_VAR(int, 0xa05630)) {
+		if (!GAME_VAR(int, 0xa0b364) && !send_leave(0xa0b328, 0xa0b330, roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
+			return 0;
+		r = socket_close(0xa05630);
+	}
+	GAME_VAR(int, 0xa0b300) = 0;
+	GAME_VAR(int, 0xa0b380) = 0;
+	GAME_VAR(int, 0xa0b2fc) = 0;
+	return r;
+}

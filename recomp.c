@@ -3214,7 +3214,8 @@ LIFT_PLAIN(match_4327f0, 4327f0)
 LIFT_PLAIN(armc_sendSelectionToNet, 40e930)
 /* 0x451e60 net_disconnect: tell the lobby/room that this player leaves, wait a moment, close the sockets;
    0x451600 net_closeAll(reconnect): close everything and (optionally) resolve the server again */
-LIFT_PLAIN(net_disconnect, 451e60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD net_disconnect(void);
 LIFT_PLAIN(net_closeAll, 451600)
 /* batch 59 (lifted/grp7.c): menu frame/overlay drawing (calling the patched projection switch natively), GL window
    and display mode, dat/image file opening, the game timer, the clock check, profile deletion, the character
@@ -5301,8 +5302,10 @@ DWORD arena_405b80(void);
 /* batch 183 (lifted/grp134.c): the arena create page's mouse (arena_createClick), lobbyTop_connect,
    arena_loadAndQuit, room_43ea10, lobbyJoin_draw, with their callees stubbed (tools/gentests.py) */
 #include "lifted/grp134.c"
-LIFT_PLAIN(arena_createClick, 407410)
-LIFT_PLAIN(lobbyTop_connect, 407e40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_createClick(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobbyTop_connect(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_loadAndQuit(void);
 LIFT_PLAIN(room_43ea10, 43ea10)
@@ -10305,7 +10308,7 @@ ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWOR
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)
 T_PLAIN(armc_sendSelectionToNet, 0x40e930, netstate_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(net_disconnect, 0x451e60, netstate_setup();, 0, 0, 0, 0, 0)
+ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
 T_PLAIN(net_closeAll, 0x451600, netstate_setup(); g_a[0] = irnd(0, 2);, 0, g_a[0], 0, 0, 0)
 /* batch 59 */
 ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
@@ -15383,11 +15386,11 @@ ST(arena_405b80, gen_setup(g_gs_405b80, g_gi_405b80, g_gb_405b80);, CALL_PLAIN(0
 static const DWORD g_gs_407410[] = { 0x401590, 1, 0x403490, 0, 0x404520, 2, 0x404d70, 0, 0x404e10, 0, 0x404ed0, 0, 0x404f90, 0, 0x4052c0, 0, 0x4057a0, 0, 0x405cf0, 0, 0x4068d0, 1, 0x41e760, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_407410[] = { 0x4db549, 0x4db54a, 0x4db54b, 0x4db518, 0x4db850, 0x4dbab0, 0x4dbacc, 0x4dbb3c, 0x4ded54, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef24, 0x6803a8, 0x90d1c4, 0x9dad8c, 0x9db0ac, 0 };
 static const DWORD g_gb_407410[] = { 0 };
-T_PLAIN(arena_createClick, 0x407410, gen_setup(g_gs_407410, g_gi_407410, g_gb_407410);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_createClick, gen_setup(g_gs_407410, g_gi_407410, g_gb_407410);, CALL_PLAIN(0x407410, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_createClick()))
 static const DWORD g_gs_407e40[] = { 0x401600, 1, 0x4052c0, 0, 0x4057a0, 0, 0x405cf0, 0, 0x41e760, 1, 0x4343b0, 1, 0x452fe0, 0, 0 };
 static const DWORD g_gi_407e40[] = { 0x4db54e, 0x4db54c, 0x4db54d, 0x4db518, 0x4db552, 0x4db850, 0x4dbab0, 0x4dbacc, 0x4dbb3c, 0x4ded54, 0x4e0cdc, 0x4e14f4, 0x4e1528, 0x4e1868, 0x68039c, 0x76d48c, 0x90d1c4, 0 };
 static const DWORD g_gb_407e40[] = { 0x4db528, 0x9dc92c, 0 };
-T_PLAIN(lobbyTop_connect, 0x407e40, gen_setup(g_gs_407e40, g_gi_407e40, g_gb_407e40);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobbyTop_connect, gen_setup(g_gs_407e40, g_gi_407e40, g_gb_407e40);, CALL_PLAIN(0x407e40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobbyTop_connect()))
 static const DWORD g_gs_40d840[] = { 0x404640, 0, 0x404b30, 0, 0x4057a0, 0, 0x406200, 1, 0x40d4e0, 1, 0 };
 static const DWORD g_gi_40d840[] = { 0x4ded46, 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded44, 0x4ded45, 0x4ded4e, 0x5b1944, 0x5b1948, 0x5b194c, 0x5b1950, 0x5b1954, 0x5b1958, 0x4ded4a, 0x76d364, 0x9da49c, 0 };
 static const DWORD g_gb_40d840[] = { 0x4dbbd4, 0x4de748, 0x4ded20, 0x5b191c, 0x5b193c, 0 };

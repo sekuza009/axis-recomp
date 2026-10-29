@@ -972,3 +972,169 @@ u32 (arena_405b80)(void)
 		r = GAME_CDECL(0x41ee40, u32, int)(0x46);   /* the message */
 	return r;
 }
+
+/* 0x407e40: the "create arena" page after typing (not while typing or with a message box): a typed field is taken
+   (the arena's name into 0x4db528 unless blank (sound 6); the password into 0x4db54e; the two limits as numbers,
+   0 .. 250 (else 250), into the bytes 0x4db54c / 0x4db54d; an empty line changes nothing), else the keys: create
+   (0x4e14f4; lobby_4052c0) and join (0x4e1528; 0x405cf0, then the name check) unless connecting, and the two close
+   keys (the arena left). Returns what the original leaves in eax */
+u32 (lobbyTop_connect)(void)
+{
+	u32 mode = GAME_VAR(u32, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || g_dialogOpen)
+		return mode;
+	const char *line = (const char *)0x9dc92c;
+	if (GAME_VAR(int, 0x4dbab0)) {   /* the arena's name */
+		if (g_paused)
+			return mode;
+		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* profile_4343b0: blank */
+			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
+			GAME_VAR(int, 0x4dbab0) = 0;
+			return r;
+		}
+		GAME_VAR(int, 0x4dbab0) = 0;
+		memset((void *)0x4db528, 0, 32);
+		strcpy((char *)0x4db528, line);
+		return strlen(line) + 1;
+	}
+	if (GAME_VAR(int, 0x4dbacc)) {   /* the password */
+		if (g_paused)
+			return mode;
+		memset((void *)0x4db54e, 0, 8);
+		GAME_VAR(int, 0x4dbacc) = 0;
+		GAME_VAR(int, 0x4e1868) = 0;
+		strcpy((char *)0x4db54e, line);
+		return 0;
+	}
+	static const u32 limit[2][2] = { { 0x4db850, 0x4db54c }, { 0x4db518, 0x4db54d } };
+	for (int k = 0; k < 2; k++) {
+		if (!GAME_VAR(int, limit[k][0]))
+			continue;
+		if (g_paused)
+			return mode;
+		if (!strlen(line)) {
+			GAME_VAR(int, limit[k][0]) = 0;
+			return 0;
+		}
+		int v = crt_atoi(line);
+		if (v > 250 || v < 0)
+			v = 250;
+		GAME_VAR(int, limit[k][0]) = 0;
+		GAME_VAR(u8, limit[k][1]) = (u8)v;
+		return (u32)v;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) && !GAME_VAR(int, 0x4ded54)) {
+		sound_playMenu(0);
+		return GAME_CDECL(0x4052c0, u32, void)();   /* lobby_4052c0: create */
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1528)) && !GAME_VAR(int, 0x4ded54)) {
+		sound_playMenu(0);
+		u32 r = GAME_CDECL(0x405cf0, u32, void)();
+		return r ? r : GAME_CDECL(0x4057a0, u32, void)();   /* lobby_checkReservedName */
+	}
+	u32 r = 0;
+	static const u32 close[2] = { 0x4e0cdc, 0x76d48c };
+	for (int k = 0; k < 2; k++) {
+		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
+		if (r) {
+			GAME_CDECL(0x452fe0, void, void)();   /* arena_452fe0: the arena left */
+			GAME_VAR(int, 0x4dbb3c) = 0;
+			r = GAME_CDECL(0x41e760, u32, int)(0);
+		}
+	}
+	return r;
+}
+
+/* 0x407410: the "create arena" page clicked (no field being typed, page state 2, no message box; a right click leaves
+   the arena). Buttons (arena_404520): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
+   14 the map on and 13 back (lobby_4068d0), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
+   type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
+   create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; room_403490). Returns what
+   the original leaves in eax (for the byte settings, its low byte the new value) */
+u32 (arena_createClick)(void)
+{
+	if (GAME_VAR(int, 0x4dbab0))
+		return GAME_VAR(u32, 0x4dbab0);
+	if (GAME_VAR(int, 0x4db850) || GAME_VAR(int, 0x4db518) || GAME_VAR(int, 0x4dbacc))
+		return 0;
+	u32 mode = GAME_VAR(u32, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || g_dialogOpen)
+		return mode;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		sound_playMenu(0);
+		u32 r = GAME_CDECL(0x452fe0, u32, void)();   /* arena_452fe0: the arena left */
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return r;
+	}
+	if (!GAME_VAR(int, 0x4ded88) || mode != 2)
+		return mode;
+	u32 button = GAME_CDECL(0x404520, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_404520 */
+	u8 *players = (u8 *)0x4db549, *custom = (u8 *)0x4db54a, *type = (u8 *)0x4db54b;
+	u32 r;
+	u8 old;
+	switch (button) {
+	case 0: return GAME_CDECL(0x404d70, u32, void)();
+	case 1: return GAME_CDECL(0x404f90, u32, void)();
+	case 6: return GAME_CDECL(0x404e10, u32, void)();
+	case 7: return GAME_CDECL(0x404ed0, u32, void)();
+	case 2:
+		sound_playMenu(2);
+		/* fall through */
+	case 12: case 14:
+		return GAME_CDECL(0x4068d0, u32, int)(1);   /* lobby_4068d0: the next map */
+	case 13:
+		return GAME_CDECL(0x4068d0, u32, int)(0);
+	case 3:
+		*players += 2;
+		r = *players;
+		if ((signed char)*players > 16)
+			*players = 2;
+		return r;
+	case 4:
+		old = *custom;
+		*custom = 1 - old;
+		if (*custom)
+			*type = 0xe;
+		else if ((signed char)*type > 0xd)
+			*type = 0;
+		return old;
+	case 5:
+		r = (u32)input_isDown(GAME_VAR(int, 0x67ef24));
+		if (!r) r = (u32)input_isDown(GAME_VAR(int, 0x9db0ac));
+		if (!r) r = (u32)input_isDown(GAME_VAR(int, 0x6803a8));
+		if (!r) r = (u32)input_isDown(GAME_VAR(int, 0x9dad8c));
+		if (r) {   /* back */
+			*type -= 1;
+			r = (r & ~0xffu) | *type;
+			if ((signed char)*type < 0)
+				*type = *custom ? 0xe : 0xd;
+		} else {
+			*type += 1;
+			r = *type;
+			if ((signed char)*type > (*custom ? 0xe : 0xd))
+				*type = 0;
+		}
+		return r;
+	case 8:
+		if (GAME_VAR(int, 0x4ded54))
+			return 8;
+		sound_playMenu(0);
+		return GAME_CDECL(0x4052c0, u32, void)();   /* lobby_4052c0: create */
+	case 9:
+		if (GAME_VAR(int, 0x4ded54))
+			return 9;
+		sound_playMenu(0);
+		r = GAME_CDECL(0x405cf0, u32, void)();
+		return r ? r : GAME_CDECL(0x4057a0, u32, void)();   /* lobby_checkReservedName */
+	case 11:
+		GAME_CDECL(0x452fe0, void, void)();
+		GAME_VAR(int, 0x4dbb3c) = 0;
+		return GAME_CDECL(0x41e760, u32, int)(0);
+	case 15:
+		if (*custom != 1)
+			return 15;
+		sound_playMenu(2);
+		return GAME_CDECL(0x403490, u32, int)(1);   /* room_403490: the map list (the original pushes a 1 it ignores) */
+	}
+	return button;
+}
