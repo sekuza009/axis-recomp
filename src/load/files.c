@@ -271,3 +271,20 @@ int (autoplay_listFiles)(void)
 	crt_findclose(search);
 	return crt_chdir((const char *)0x4b2a80);
 }
+
+/* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into 0x4dd988 (12
+   bytes cleared first). 1, or 0 when the file is missing */
+int (app_checkLauncherRunning)(void)
+{
+	static const u16 offsets[8] = { 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2 };
+	memset((void *)0x4dd988, 0, 12);
+	void *f = crt_fopen((const char *)0x4b03b4, (const char *)0x4ad170);
+	if (!f)
+		return 0;
+	for (int i = 0; i < 8; i++) {
+		GAME_CDECL(0x49e91e, int, void *, int, int)(f, offsets[i], 0);   /* fseek */
+		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(0x4dd988 + i), 1, 1, f);   /* fread */
+	}
+	fclose(f);
+	return 1;
+}

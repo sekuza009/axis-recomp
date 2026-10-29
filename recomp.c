@@ -2592,7 +2592,8 @@ DWORD cfg_parseSound(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int console_loadFile(int k);
 /* 0x41e260 app_checkLauncherRunning: read 8 check bytes from axisplay.exe. Lifted */
-LIFT_PLAIN(app_checkLauncherRunning, 41e260)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int app_checkLauncherRunning(void);
 /* 0x445f70 profile_loadList: (re)write axisuser.dat. Lifted */
 LIFT_PLAIN(profile_loadList, 445f70)
 /* 0x447320 profile_delete: delete the current profile from the list file. Lifted */
@@ -3253,7 +3254,8 @@ static THISCALL DWORD tex_upload2(char *scene) { return run_lifted(lift_473610, 
 static THISCALL DWORD match_49d150(char *scene) { return run_lifted(lift_49d150, (DWORD)scene, 0, NULL); }
 /* 0x43f460 chat_createEdit(parent): the chat input box: a font (12 px, charset by language), an edit control,
    its window procedure replaced, focus */
-LIFT_PLAIN(chat_createEdit, 43f460)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int chat_createEdit(int chars);
 /* 0x42bee0 reg_readCharacterSettings: player name and character choices from the registry (created with the
    defaults if missing) */
 LIFT_PLAIN(reg_readCharacterSettings, 42bee0)
@@ -9255,7 +9257,7 @@ ST(cfg_parseSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
    cfg_parseSound((void *)VFS_FILE(0)))
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
 ST(console_loadFile, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(console_loadFile((DWORD)(g_a[0]))))
-T_PLAIN(app_checkLauncherRunning, 0x41e260, vfs_content(0, 0x6000);, 0, 0, 0, 0, 0)
+ST(app_checkLauncherRunning, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_checkLauncherRunning()))
 T_PLAIN(profile_loadList, 0x445f70, vfs_content(0, 0); g_a[0] = irnd(0, 10);, 0, g_a[0], 0, 0, 0)
 T_PLAIN(profile_delete, 0x447320, vfs_content(0, 0);, 0, 0, 0, 0, 0)
 T_PLAIN(mission_saveAxisMis, 0x443af0, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, 0, g_a[0], 0, 0, 0)
@@ -10336,7 +10338,7 @@ static void hits_setup(void)
 	netstate_setup();
 }
 ST(match_49d150, hits_setup();, (TC(void, 0x49d150, char *)(SCENE), 0), (match_49d150(SCENE), 0))
-T_PLAIN(chat_createEdit, 0x43f460, G32(0x9dae74) = irnd(0, 2);, 0, 0x10010, 0, 0, 0)
+ST(chat_createEdit, G32(0x9dae74) = irnd(0, 2);, CALL_PLAIN(0x43f460, 0, 0x10010, 0, 0, 0), (DWORD)(chat_createEdit((DWORD)(0x10010))))
 T_PLAIN(reg_readCharacterSettings, 0x42bee0, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1;, 0, 0, 0, 0, 0)
 /* player p's record: name at +4; the emblem BMP (header sizes varied around the 23 x 15 minimum) from the VFS */
 static void emblem_setup(void)

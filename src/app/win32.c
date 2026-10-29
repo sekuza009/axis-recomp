@@ -136,3 +136,34 @@ int (gfx_setPixelFormat)(void *dc)
 		return 0;
 	return SetPixelFormat(dc, format, pfd) != 0;
 }
+
+#define SendMessageA(hwnd, msg, w, l) IMPORT(0x4a92ec, int, void *, u32, u32, u32)(hwnd, msg, w, l)
+
+/* 0x43f460: the chat input box, `chars` letters wide (0x76d418): a 12-pixel font (face 0x4b29b0, 0x9dd8e4) and an
+   edit control (0x9dd888) on the main window at the chat line (0x9da3d8 - 5, 0x9da3dc + 0x21), subclassed by
+   0x440840 (the old procedure in 0x9dd868), focused, holding the typed line (0x9dc92c) with the caret at its end.
+   Returns the last SendMessageA's eax */
+int (chat_createEdit)(int chars)
+{
+	struct { int height, width, escapement, orientation, weight; u8 italic, underline, strikeOut, charSet, outPrecision,
+	         clipPrecision, quality, pitchAndFamily; char face[32]; } font;   /* LOGFONTA */
+	memset(&font, 0, sizeof font);
+	font.height = -12;
+	font.charSet = 1;   /* DEFAULT_CHARSET */
+	strcpy(font.face, (const char *)0x4b29b0);
+	GAME_VAR(int, 0x76d418) = chars;
+	GAME_VAR(void *, 0x9dd8e4) = IMPORT(0x4a9038, void *, const void *)(&font);   /* CreateFontIndirectA */
+	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
+		0, (const char *)0x4b29a8, NULL, 0x40000400, GAME_VAR(int, 0x9da3d8) - 5, GAME_VAR(int, 0x9da3dc) + 0x21,
+		chars * 8, 0x18, GAME_VAR(void *, 0x4ded18), 0xca, GAME_VAR(void *, 0x67ef18), NULL);   /* CreateWindowExA("EDIT") */
+	GAME_VAR(void *, 0x9dd888) = edit;
+	if (edit) {
+		SendMessageA(edit, 0x30, GAME_VAR(u32, 0x9dd8e4), 0);   /* WM_SETFONT */
+		edit = GAME_VAR(void *, 0x9dd888);
+	}
+	GAME_VAR(u32, 0x9dd868) = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, 0x440840);   /* SetWindowLongA(GWL_WNDPROC) */
+	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x9dd888));   /* SetFocus */
+	u32 length = strlen((const char *)0x9dc92c);
+	SendMessageA(GAME_VAR(void *, 0x9dd888), 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
+	return SendMessageA(GAME_VAR(void *, 0x9dd888), 0xb1, length, length);   /* EM_SETSEL */
+}
