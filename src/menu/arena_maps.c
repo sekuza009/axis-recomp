@@ -1,6 +1,7 @@
 /* arena_maps.c: the arena's map list: per map whether it is in the rotation and its game type (0 .. 13), edited on
    a working copy (g_mapChoices) and kept on OK (g_mapChoicesKept). Maps 22 .. 24 can never be chosen. */
 #include "../game.h"
+#include <string.h>
 
 typedef struct { i32 chosen; i32 type; } MapChoice;
 #define g_mapCount GAME_VAR(int, 0x67ef00)
@@ -128,3 +129,87 @@ static void map_step(int dir, u32 lock, u32 choice)
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
 void (arena_4068d0)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
 void (room_4356f0)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
+
+/* ---- the map list's drawing ---- */
+#define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */
+#define cyan_text(a) set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, a)
+
+/* a map's cell from x0 to x1 in the row at y: on a red bar (yellow text) when the map is chosen */
+static void map_cell(int map, int x0, int x1, int y)
+{
+	if (g_mapChoices[map].chosen) {
+		set_colour_bits(g_rectColour, 0x3f800000, 0, 0x3f000000, 0x3f000000);   /* 1, 0, 0.5, 0.5 */
+		menu_drawRect(x0, y, x1, y + 0x14, 1);
+		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	} else
+		cyan_text(0x3f4ccccd);
+}
+
+/* a row of two buttons at y (labels 0x80 apart from label), lit while the pointer (hovered) is on first + k */
+static void map_buttons(int hovered, int first, int y, int label)
+{
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		int x = 0xaa + k * 0xa0;
+		if (hovered == first + k) {
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+		} else {
+			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
+			set_colour_bits((Colour *)0x76d438, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
+		}
+		menu_drawTexQuad_4282f0(x, y, x + 0x8c, y + 0x20, 1);
+		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(label + k * 0x80));
+	}
+}
+
+/* 0x4038e0: the map list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up to 10 rows from g_mapTop
+   (22 .. 24 left out): the number, the name (0x907b30, 0x20 apart) and the game type's name (0x4db8d8, 20 apart),
+   the row under the pointer (by arena_4033e0) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
+   (0x75db24 from 0x16, 0x75da24 from 0x18). The original leaves eax to callers that ignore it */
+void (arena_4038e0)(void)
+{
+	int hovered = GAME_CDECL(0x4033e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4033e0 */
+	set_colour_bits(g_rectColour, 0, 0, 0, 0x3e99999a);   /* 0.3 */
+	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
+	set_colour_bits(g_rectColour, 0, 0, 0, 0x3f333333);   /* 0.7 */
+	menu_drawRect(0x8c, 0x28, 0x1f4, 0x1b8, 1);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
+	menu_drawRect(0x90, 0x2c, 0x1f0, 0x1b4, 0);
+	cyan_text(0x3f800000);
+	text_draw8(0xc8, 0x32, (const char *)0x75d924);
+	cyan_text(0x3f800000);
+	text_draw8(0x168, 0x32, (const char *)0x75d9a4);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
+	FUN_00427a40(0x96, 0x4b, 0x1ea, 0x4b);
+	for (int i = 0; i < g_mapCount && i < 10; i++) {
+		int y = 0x57 + i * 0x18;
+		if (hovered == i) {
+			set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f4ccccd, 0x3ecccccd);   /* 0.1, 0.2, 0.8, 0.4 */
+			menu_drawRect(0x96, y, 0x1a4, y + 0x14, 1);
+		}
+		int map = g_mapTop + i;
+		if (map >= 22 && map <= 24)
+			continue;
+		char number[20] = { 0 };
+		itoa(map + 1, number, 10);
+		map_cell(g_mapTop + i, 0x96, 0x154, y);
+		text_draw8(0xb4 - (int)strlen(number) * 8, y + 3, number);
+		text_draw8(0xbe, y + 3, (const char *)(0x907b30 + (g_mapTop + i) * 0x20));
+		map_cell(g_mapTop + i, 0x168, 0x1a4, y);
+		text_draw8(0x17c, y + 3, (const char *)(0x4db8d8 + g_mapChoices[g_mapTop + i].type * 20));
+	}
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
+	FUN_00427a40(0x96, 0x14f, 0x1ea, 0x14f);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4286b0(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
+	menu_drawTexQuad_4287a0(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
+	map_buttons(hovered, 0x16, 0x15e, 0x75db24);
+	map_buttons(hovered, 0x18, 0x186, 0x75da24);
+}
+#undef cyan_text

@@ -4234,7 +4234,8 @@ void skirmish_drawScreenA(void);
    to 10 rows from slot 0x4d7350 (count 0x67ef00; slots 22..24 skipped): the number, the map name (0x907b30, 0x20
    apart) and the kind (0x4db8d8, 5 apart, by the slot's +4), on red bars when the slot is taken (0x4d7358, 8
    apart); the row under the cursor highlighted; scroll arrows; two pairs of buttons (0x75db24, 0x75da24) */
-LIFT_PLAIN(arena_4038e0, 4038e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_4038e0(void);
 /* 0x442e10 mainmenu_442e10(): the map-select dialog: frame, title 0x74e8a4, the list box with its scroll arrows,
    two checkboxes (0x4b2a7c / 0x9eeac0 ticked: 0x74e924 / 0x74e9a4), two button rows (0x74ea24, 0x74eb24), the
    hovered list row highlighted, the map list (mainmenu_442d10), the border */
@@ -13353,7 +13354,7 @@ static void slotlist_setup(void)
 	for (int k = 0; k < 4; k++) fill_str((char *)0x75da24 + k * 0x80, 10, 32, 126);
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-T_PLAIN(arena_4038e0, 0x4038e0, slotlist_setup();, 0, 0, 0, 0, 0)
+ST(arena_4038e0, slotlist_setup();, (CALL_PLAIN(0x4038e0, 0, 0, 0, 0, 0), 0), (arena_4038e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the map-select dialog: maplist_setup's list (positions overwritten by the window), dlgwin_setup's window at
    0x9dd908 with its textures and cursor, the two checkboxes, titles, short button labels */
 static void mapselect_setup(void)
