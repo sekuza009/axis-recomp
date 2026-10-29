@@ -911,6 +911,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_433bb0() GAME_CDECL(0x433bb0, void, void)()   /* the game's password opened for typing */
 #define room_433c70() GAME_CDECL(0x433c70, void, void)()   /* the chat edit control closed, the line taken */
 #define room_434490() GAME_CDECL(0x434490, void, void)()   /* the login sent */
+#define room_433e60(k) GAME_CDECL(0x433e60, int, int)(k)   /* the login form's field k opened for typing */
 #define FUN_0041ee40(i) GAME_CDECL(0x41ee40, void, int)(i)   /* message i in the message box */
 #define reg_writeCharacterSettings() GAME_CDECL(0x432400, void, void)()
 

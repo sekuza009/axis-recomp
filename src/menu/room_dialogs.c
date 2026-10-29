@@ -428,6 +428,62 @@ void (room_43df80)(void)
 #undef g_editKey
 }
 
+/* 0x43e290: the login form (its panel at 0x9dd6e8): the name opened when asked (0x9dd4a0); with no message box
+   (0x4df900) and typing ended, the line taken into the field being typed in (the first of the four flagged 1) and
+   the key that ended it (0x9dc428: 20 on, 10 back) moving to the next or previous field; on from the e-mail
+   highlights the right button, back from the name the left one (the name's flag left set). Then the flagged field
+   opened again for typing (the password's before the repeat's) */
+void (room_43e290)(void)
+{
+	static const struct { u32 editing, text; int size; } field[4] = {
+		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
+#define EDITING(k) GAME_VAR(int, field[k].editing)
+	if (GAME_VAR(int, 0x9dd4a0)) {
+		room_433e60(0);
+		GAME_VAR(int, 0x9dd4a0) = 0;
+		return;
+	}
+	if (GAME_VAR(int, 0x4df900) || g_paused)
+		return;
+	int key = GAME_VAR(int, 0x9dc428);
+	if (key == 20 || key == 10) {
+		int k = 0;
+		while (k < 4 && EDITING(k) != 1)
+			k++;
+		if (k < 4) {
+			memset((void *)field[k].text, 0, field[k].size);
+			strcpy((char *)field[k].text, g_chatLine);
+			if (key == 10 && k == 0)
+				highlight_choice(2, GAME_VAR(int, 0x9dd6e8) + 0x172, GAME_VAR(int, 0x9dd6f4) - 0x2c);
+			else {
+				EDITING(k) = 0;
+				if (key == 10)
+					EDITING(k - 1) = 1;
+				else if (k < 3)
+					EDITING(k + 1) = 1;
+				else {
+					EDITING(0) = 0;
+					highlight_choice(1, GAME_VAR(int, 0x9dd6e8) + 0xaa, GAME_VAR(int, 0x9dd6f4) - 0x2c);
+				}
+			}
+		}
+		GAME_VAR(int, 0x9dc428) = 0;
+	}
+	if (EDITING(0) == 1) {
+		room_433e60(0);
+		return;
+	}
+	if (EDITING(1) == 1)
+		room_433e60(1);
+	if (EDITING(2) == 1) {
+		room_433e60(2);
+		return;
+	}
+	if (EDITING(3) == 1)
+		room_433e60(3);
+#undef EDITING
+}
+
 /* 0x43e610: the game room's network events: a pending leave (0x9dd6c4: 1 leave now, 2 to state 0x4d), then the
    server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the ladder game set up, the settings written, to
    state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */

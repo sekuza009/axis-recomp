@@ -5401,7 +5401,8 @@ DWORD lobby_onStateChange(void);
 DWORD menuState400_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_onStateChange(void);
-LIFT_PLAIN(room_43e290, 43e290)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_43e290(void);
 LIFT_PLAIN(arena_launchFromFile, 410b50)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState800_gameRoom(void);
@@ -15564,7 +15565,7 @@ ST(menu_onStateChange, gen_setup(g_gs_445e40, g_gi_445e40, g_gb_445e40);, CALL_P
 static const DWORD g_gs_43e290[] = { 0x433e60, 0, 0 };
 static const DWORD g_gi_43e290[] = { 0x9dd1f6, 0x9dd202, 0x4df900, 0x67ef34, 0x67fb38, 0x68039c, 0x680bc0, 0x74de1c, 0x76d42c, 0x9da4a4, 0x9dc428, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd348, 0x9dd3f8, 0x9dd4a0, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6f4, 0 };
 static const DWORD g_gb_43e290[] = { 0x9dc92c, 0x9dd1d8, 0x9dd20e, 0 };
-T_PLAIN(room_43e290, 0x43e290, gen_setup(g_gs_43e290, g_gi_43e290, g_gb_43e290); if (irnd(0, 3)) { G32(0x9dd4a0) = 0; G32(0x4df900) = 0; G32(0x68039c) = 0; G32(0x9dc428) = irnd(0, 4) ? (irnd(0, 1) ? 10 : 20) : 3; G32(0x9dd348) = irnd(0, 2) ? 0 : 1; G32(0x9dd3f8) = irnd(0, 2) ? 0 : 1; G32(0x9dd564) = irnd(0, 2) ? 0 : 1; G32(0x9dd6cc) = irnd(0, 2) ? 0 : 1; }   /* a reply (10 / 20) to whichever request is waiting */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_43e290, gen_setup(g_gs_43e290, g_gi_43e290, g_gb_43e290); if (irnd(0, 3)) { G32(0x9dd4a0) = 0; G32(0x4df900) = 0; G32(0x68039c) = 0; G32(0x9dc428) = irnd(0, 4) ? (irnd(0, 1) ? 10 : 20) : 3; G32(0x9dd348) = irnd(0, 2) ? 0 : 1; G32(0x9dd3f8) = irnd(0, 2) ? 0 : 1; G32(0x9dd564) = irnd(0, 2) ? 0 : 1; G32(0x9dd6cc) = irnd(0, 2) ? 0 : 1; }   /* a reply (10 / 20) to whichever request is waiting */, (CALL_PLAIN(0x43e290, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (room_43e290(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_410b50[] = { 0x40d840, 0, 0x433360, 0, 0 };
 static const DWORD g_gi_410b50[] = { 0x4df870, 0x4df874, 0x4df878, 0x4e1870, 0x76d388, 0x76d38c, 0x76d390, 0x4b071c, 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x4db840, 0x4db844, 0x4db848, 0x4dbab8, 0x4dbabc, 0x4dbac0, 0x4dc24c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dda44, 0x4e045c, 0x5b1998, 0x67ef0c, 0x67ef20, 0x76d3e8, 0x76d410, 0x90d1c4, 0x9da49c, 0 };
 static const DWORD g_gb_410b50[] = { 0 };
