@@ -224,6 +224,30 @@ void (mainmenu_441c00)(void)
 		key_repeat(g_keyDown, &g_repeatDown, maps_down);
 }
 
+/* 0x44f860: the profile screen's frame: while its intro (0x9f6838) runs, quit (profile_44f850); else the background and, once the zoom (0x4dda48)
+   is not above 0, the pilot list reloaded for every value of the nine 0x4c-byte pilot stat records (from 0x9f9068)
+   that is out of range (above 30, the eighth above 50), then the page (0x9f8f10, 1 .. 6). The original leaves eax
+   to callers that ignore it */
+void (menuState210_frame)(void)
+{
+	if (g_profileIntro) {
+		profile_44f850();
+		return;
+	}
+	menu_drawBackground();
+	if (GAME_VAR(float, 0x4dda48) > GAME_VAR(float, 0x4a93e8))
+		return;
+	static const signed char fields[9] = { -8, 0, 4, -4, 12, 8, 16, 24, 20 };   /* in the order checked */
+	for (u32 rec = 0x9f9070; rec < 0x9f931c; rec += 0x4c)
+		for (int f = 0; f < 9; f++)
+			if (GAME_VAR(int, rec + fields[f]) > (fields[f] == 20 ? 50 : 30))
+				data_loadPilotProfiles();
+	static const u32 pages[6] = { 0x44f410, 0x44f4b0, 0x44f5f0, 0x44f6c0, 0x44f740, 0x44f810 };
+	u32 page = GAME_VAR(u32, 0x9f8f10) - 1;
+	if (page <= 5)
+		GAME_CDECL(pages[page], void, void)();   /* profile_44f410 .. profile_44f810 */
+}
+
 /* 0x427920: the setup screen's frame: the background, then by tab the screen with its page, or the top page */
 void (menuState600_setup)(void)
 {

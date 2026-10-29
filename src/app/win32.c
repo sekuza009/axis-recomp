@@ -133,6 +133,68 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	return g_glWindow;
 }
 
+#define ChangeDisplaySettingsA(mode, flags) IMPORT(0x4a9314, int, void *, u32)(mode, flags)
+#define GetDeviceCaps(dc, index) IMPORT(0x4a9034, int, void *, int)(dc, index)
+#define g_modeChanged GAME_VAR(int, 0xa0e940)          /* the display mode was switched (to be put back) */
+#define g_glDc GAME_VAR(void *, 0xa0e938)
+#define g_desktopW GAME_VAR(int, 0xa0e92c)             /* the desktop's mode before the switch */
+#define g_desktopH GAME_VAR(int, 0xa0e814)
+#define g_desktopBits GAME_VAR(int, 0xa0e91c)
+
+/* a DEVMODEA asking for width x height (and bits). (The original fills only these fields and leaves the
+   rest as the stack had it; here it is zeroed.) */
+static void display_mode(u8 *mode, int width, int height, int bits, u32 fields)
+{
+	memset(mode, 0, 0x94);
+	*(u16 *)(mode + 0x24) = 0x94;                         /* dmSize */
+	*(u32 *)(mode + 0x28) = fields;   /* 0x1c0000: DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT */
+	*(u32 *)(mode + 0x68) = bits;
+	*(u32 *)(mode + 0x6c) = width;
+	*(u32 *)(mode + 0x70) = height;
+}
+
+/* 0x468050: the desktop's mode put back after a switch (failing that, a message and 0); 1 */
+int (glWindow_restoreDisplayMode)(void)
+{
+	if (g_modeChanged != 1)
+		return 1;
+	u8 mode[0x94];
+	display_mode(mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
+	if (ChangeDisplaySettingsA(mode, 0)) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4ed4);   /* sys_errorMessageNoName */
+		return 0;
+	}
+	g_modeChanged = 0;
+	return 1;
+}
+
+/* 0x467f20: the display switched to width x height (bits: any when 0): the window's DC taken when there is none,
+   the desktop's mode kept before the first switch; 1 when the screen is already in that mode or the switch worked
+   (then 0xa0e940 is set), else a message and 0 */
+int (glWindow_setDisplayModeBy)(int width, int height, int bits)
+{
+	void *dc = g_glDc;
+	if (!dc)
+		dc = g_glDc = IMPORT(0x4a9318, void *, void *)(GetActiveWindow());   /* GetDC */
+	if (!g_modeChanged) {
+		g_desktopW = GetDeviceCaps(dc, 8);       /* HORZRES */
+		g_desktopH = GetDeviceCaps(g_glDc, 10);  /* VERTRES */
+		g_desktopBits = GetDeviceCaps(g_glDc, 12);   /* BITSPIXEL */
+		dc = g_glDc;
+	}
+	if (GetDeviceCaps(dc, 8) == width && GetDeviceCaps(g_glDc, 10) == height &&
+	    (!bits || GetDeviceCaps(g_glDc, 12) == bits))
+		return 1;
+	u8 mode[0x94];
+	display_mode(mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
+	if (ChangeDisplaySettingsA(mode, 0)) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e94);
+		return 0;
+	}
+	g_modeChanged = 1;
+	return 1;
+}
+
 /* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
    the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
    the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */

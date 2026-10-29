@@ -571,6 +571,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
 #define GetTickCount() IMPORT(0x4a9184, u32, void)()
+#define data_loadPilotProfiles() GAME_CDECL(0x42b590, void, void)()
+#define profile_44f850() GAME_CDECL(0x44f850, void, void)()   /* quit (app/app_quit.c) */
 #define net_closeAll(mode) GAME_CDECL(0x451600, void, int)(mode)   /* every socket closed before connecting */
 #define net_connect(mode) GAME_CDECL(0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
 #define net_disconnect() GAME_CDECL(0x451e60, u32, void)()   /* leaving the network (net/net_tables.c) */

@@ -460,6 +460,35 @@ static u32 reg_write(u32 value, const char *name)
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
+/* 0x432400: the player's name and character: the room's name (0x9dd1d8) and the other name (0x9dd20e) copied into
+   the registry's copies (0x9dd570, 0x9dd5a6; the first also into 0x76d450), the character record 0x4df9c8 (a
+   32-byte name and six choices) into 0x5b1b30; then under HKCU\<the game's key> (0x4b179c) the two names and the six
+   choices as DWORDs (sign-extended but for the fourth and fifth). Returns RegCloseKey's answer (the key is closed
+   even when it could not be opened) */
+u32 (reg_writeCharacterSettings)(void)
+{
+	strcpy((char *)0x9dd570, (const char *)0x9dd1d8);
+	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
+	strcpy((char *)0x76d450, (const char *)0x9dd570);
+	strcpy((char *)0x5b1b30, (const char *)0x4df9c8);
+	memcpy((void *)0x5b1b50, (const void *)0x4df9e8, 6);
+	u32 key;
+	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
+	if (!RegOpenKeyExA(0x80000001, (const char *)0x4b179c, 0, 0xf003f, &key)) {
+		RegSetValueExA(key, (const char *)0x4b1794, 0, 1, (const void *)0x9dd570, 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, (const char *)0x4b1788, 0, 1, (const void *)0x5b1b30, 0x20);
+		const signed char *choice = (const signed char *)0x5b1b50;
+		static const u32 names[6] = { 0x4b1784, 0x4b1778, 0x4b176c, 0x4b1760, 0x4b1754, 0x4b1748 };
+		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
+		for (int i = 0; i < 6; i++) {
+			int k = order[i];
+			u32 data = (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
+			RegSetValueExA(key, (const char *)names[i], 0, 4, &data, 4);
+		}
+	}
+	return RegCloseKey(key);
+}
+
 /* 0x41f880, 0x43f7f0: the end mode and the start mode */
 u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)0x4b0450); }
 u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)0x4b29dc); }

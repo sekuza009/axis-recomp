@@ -3244,8 +3244,10 @@ DWORD menu_428890(int x, int y);
 LIFT_PLAIN(menu_drawFrame, 428c30)
 /* GL window: 0x468050 glWindow_restoreDisplayMode / 0x467f20 glWindow_setDisplayModeBy(w, h, bpp) /
    0x467e60 glWindow_setupPixelFormat(dc) / 0x468450 glWindow_resize(w, h); errors as message boxes */
-LIFT_PLAIN(glWindow_restoreDisplayMode, 468050)
-LIFT_PLAIN(glWindow_setDisplayModeBy, 467f20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int glWindow_restoreDisplayMode(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int glWindow_setDisplayModeBy(int width, int height, int bits);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int glWindow_setupPixelFormat(void *dc);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3271,7 +3273,8 @@ int sys_checkClockTampering(void);
 DWORD profile_deleteFiles(void);
 /* 0x432400 reg_writeCharacterSettings: player name and character choices into the registry; 0x433640 room_433640 /
    0x43e610 room_43e610: room steps that save them */
-LIFT_PLAIN(reg_writeCharacterSettings, 432400)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD reg_writeCharacterSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_433640(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5303,7 +5306,8 @@ void menuState300_frame(void);
 void menuState600_setup(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState900_skirmishSetup(void);
-LIFT_PLAIN(menuState210_frame, 44f860)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menuState210_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_452ec0(DWORD kind, const char *host);
 /* 0x445bc0 skirmish_445bc0: jump to skirmish_drawScreenA (a 5-byte stub missing from functions.csv, added) */
@@ -10353,8 +10357,8 @@ static void dispmode_setup(void)
 	g_a[0] = irnd(320, 2560); g_a[1] = irnd(200, 1600); g_a[2] = irnd(0, 3) ? 32 : irnd(0, 32);
 	g_paintStacks = 1;   /* DEVMODE / PIXELFORMATDESCRIPTOR are filled only in part and passed whole */
 }
-T_PLAIN(glWindow_restoreDisplayMode, 0x468050, dispmode_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(glWindow_setDisplayModeBy, 0x467f20, dispmode_setup();, 0, g_a[0], g_a[1], g_a[2], 0)
+ST(glWindow_restoreDisplayMode, dispmode_setup();, CALL_PLAIN(0x468050, 0, 0, 0, 0, 0), (DWORD)(glWindow_restoreDisplayMode()))
+ST(glWindow_setDisplayModeBy, dispmode_setup();, CALL_PLAIN(0x467f20, 0, g_a[0], g_a[1], g_a[2], 0), (DWORD)(glWindow_setDisplayModeBy((int)(DWORD)(g_a[0]), (int)(DWORD)(g_a[1]), (int)(DWORD)(g_a[2]))))
 ST(glWindow_setupPixelFormat, dispmode_setup();, CALL_PLAIN(0x467e60, 0, 0xdc0, 0, 0, 0), (DWORD)(glWindow_setupPixelFormat((void *)(DWORD)(0xdc0))))
 ST(glWindow_resize, dispmode_setup();, CALL_PLAIN(0x468450, 0, g_a[0], g_a[1], 0, 0), (DWORD)(glWindow_resize((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* a BMP file: 14-byte file header + 40-byte info header, mostly 24-bit uncompressed; the image object may still
@@ -10403,7 +10407,7 @@ static void clock_setup(void)
 ST(sys_checkClockTampering, clock_setup();, CALL_PLAIN(0x43f300, 0, 0, 0, 0, 0), (DWORD)(sys_checkClockTampering()))
 ST(profile_deleteFiles, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x44ba60, 0, 0, 0, 0, 0), (DWORD)(profile_deleteFiles()))
 static void charset_setup(void) { netstate_setup(); fill_str((char *)0x9dd1d8, 20, 32, 126); g_mockRegFail = !irnd(0, 4); G32(0x9dd6c4) = irnd(0, 3); fill_str((char *)0x4df9ee, 12, 32, 126); }
-T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)
+ST(reg_writeCharacterSettings, charset_setup();, CALL_PLAIN(0x432400, 0, 0, 0, 0, 0), (DWORD)(reg_writeCharacterSettings()))
 /* the registry always opens here: when it fails, reg_writeCharacterSettings (called without arguments) closes its
    own argument slot as the key, i.e. the caller's saved register, which no rebuild reproduces (that path is tested
    in reg_writeCharacterSettings's own test) */
@@ -15371,7 +15375,7 @@ ST(menuState900_skirmishSetup, gen_setup(g_gs_445be0, g_gi_445be0, g_gb_445be0);
 static const DWORD g_gs_44f860[] = { 0x42b590, 0, 0x441740, 0, 0x44f410, 0, 0x44f4b0, 0, 0x44f5f0, 0, 0x44f6c0, 0, 0x44f740, 0, 0x44f810, 0, 0x44f850, 0, 0 };
 static const DWORD g_gi_44f860[] = { 0x4dda48, 0x9f6838, 0x9f8f10, 0 };
 static const DWORD g_gb_44f860[] = { 0x9f9070, 0 };
-T_PLAIN(menuState210_frame, 0x44f860, gen_setup(g_gs_44f860, g_gi_44f860, g_gb_44f860);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState210_frame, gen_setup(g_gs_44f860, g_gi_44f860, g_gb_44f860);, (CALL_PLAIN(0x44f860, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menuState210_frame(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_452ec0[] = { 0x4515a0, 0, 0x452fe0, 0, 0x4547d0, 1, 0x454940, 1, 0x454a50, 1, 0x454b70, 1, 0x454c80, 1, 0 };
 static const DWORD g_gi_452ec0[] = { 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0b41c, 0xa0b420, 0xa0b424, 0xa0b428, 0 };
 static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
