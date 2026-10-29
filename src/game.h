@@ -511,6 +511,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_ping(ip, timeout) GAME_CDECL(0x4548b0, int, u32, int)(ip, timeout)   /* ICMP echo: the round trip time, 0 when none */
 #define inet_addr_wrap_4547c0(address) GAME_CDECL(0x4547c0, u32, const char *)(address)
 #define net_454760() GAME_CDECL(0x454760, void, void)()   /* the network threads' handles closed */
+#define net_4545b0() GAME_CDECL(0x4545b0, void, void)()   /* ping every listed server */
+#define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
+#define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
+#define timer_now() GAME_CDECL(0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
+#define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
+#define msg_newKing(scene) GAME_THISCALL(0x462150, void, Scene *)(scene)   /* the ranking and its "new king" message */
 #define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
 #define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
 

@@ -224,3 +224,18 @@ int (ptx_crtlError)(int code, const char *format, ...)
 		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
 	return code;
 }
+
+/* 0x46e260: a video error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
+int (ptx_error)(int code, const char *format, ...)
+{
+	void *err = (void *)0x4d0878;   /* stderr */
+	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4b182c);
+	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fd0);
+	va_list args;
+	va_start(args, format);
+	GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
+	va_end(args);
+	if (code)
+		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
+	return code;
+}

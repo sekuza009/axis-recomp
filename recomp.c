@@ -2708,7 +2708,8 @@ void FUN_0043f980(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int sys_messageBox(const char *format, ...);
 /* 0x46e260 ptx_error: PTX video error: print and exit */
-LIFT_PLAIN(ptx_error, 46e260)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_error(int code, const char *format, ...);
 /* 0x41f880 reg_writeEndMode: registry: write the end mode */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD reg_writeEndMode(DWORD value);
@@ -2777,7 +2778,8 @@ static THISCALL DWORD dplay_enumSessionsCallback(DWORD ecx_, DWORD a, DWORD b, D
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44f850(void);
 /* 0x41e730 intro_41e730(double frames): busy-wait until `frames` 1/60 s have passed (timer_now) */
-LIFT_PLAIN(intro_41e730, 41e730)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void intro_41e730(double frames);
 /* 0x435ab0 room_435ab0 / 0x406bd0 lobby_406bd0 / 0x407270 lobby_407270: the "leave" dialog's click handlers (button
    0 = yes: close it and post message 2; button 1 = no: close it; the right button closes it in the lobby) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2794,7 +2796,8 @@ DWORD FUN_00427a40(int x0, int y0, int x1, int y1);
 DWORD mainmenu_440d70(void);
 /* 0x4302d0 timer_init: QueryPerformanceFrequency, halved until it is at most 2 MHz (the shift count is kept), and
    the tick length 1 / f */
-LIFT_PLAIN(timer_init, 4302d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void timer_init(void);
 /* 0x44b990 profile_selectAndLoad: copy the entered name into the selected profile slot, make the save directory
    and load the profile */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4516,7 +4519,8 @@ void *THISCALL Console_deletingDtor(void *console, int flags);
 /* 0x454560 net_454560(): the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop):
    data handles the incoming packets (net_4545b0) and waits again, stop ends the thread (ExitThread 0), anything
    else waits again */
-LIFT_PLAIN(net_454560, 454560)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_454560(void);
 /* batch 151 (lifted/grp97.c): the controls screen dispatcher */
 #include "lifted/grp97.c"
 /* 0x4278d0 setup_4278d0(): the setup tunnel (setup_423e50), then in modes other than 0 / 1 (0x4ddcec) and not on
@@ -5263,7 +5267,8 @@ int arena_454c80(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_435c20(void);
 /* 0x4620e0 match_4620e0() (thiscall on the scene): every player's scores cleared, the actors reset, the ranking */
-LIFT_PLAIN(match_4620e0, 4620e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL match_4620e0(void *scene);
 /* 0x453090 arena_453090(8 arguments): host through the slot of connection kind 0xa0b418 (0 otherwise) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_453090(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
@@ -9464,7 +9469,7 @@ ST(menu_vertex, menuvtx_setup();,
 ST(mci_pause, , CALL_PLAIN(0x46c540, 0, 0, 0, 0, 0), (DWORD)(mci_pause()))
 ST(FUN_0043f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, CALL_PLAIN(0x43f980, 0, 0, 0, 0, 0), (FUN_0043f980(), 0))
 ST(sys_messageBox, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, CALL_PLAIN(0x41edf0, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0), (DWORD)sys_messageBox((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]), (DWORD)(BUF + 0x200)))
-T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
+ST(ptx_error, strs_setup(); g_a[0] = irnd(-5, 50);, CALL_PLAIN(0x46e260, 0, g_a[0], BUF + 0x200, 0, 0), (DWORD)(ptx_error((int)(DWORD)(g_a[0]), (const char *)(DWORD)(BUF + 0x200))))
 ST(ptx_crtlError, strs_setup(); g_a[0] = irnd(-5, 50);, CALL_PLAIN(0x46e1e0, 0, g_a[0], BUF + 0x200, 0, 0), (DWORD)(ptx_crtlError((DWORD)(g_a[0]), (const char *)(DWORD)(BUF + 0x200), (DWORD)(0), (DWORD)(0))))
 ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeEndMode((DWORD)(0x80000001u))))
 ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
@@ -9522,7 +9527,7 @@ static void dlgclick_setup(DWORD table)
 ST(profile_44f850, , (CALL_PLAIN(0x44f850, 0, 0, 0, 0, 0), 0), (profile_44f850(), 0))
 /* the wait in frames as a double (two stack slots); the mocked counter advances by 0x1234567 per read */
 static double g_frames;
-T_PLAIN(intro_41e730, 0x41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0)
+ST(intro_41e730, g_frames = irnd(0, 3) ? irnd(-2, 400) / 3.0 : irnd(0, 100000);, CALL_PLAIN(0x41e730, 0, ((DWORD *)&g_frames)[0], ((DWORD *)&g_frames)[1], 0, 0), (intro_41e730(g_frames), 0))
 /* room_435ab0 leaves the hit test's result in eax; nobody reads it (tail jumps up to menu_frame, which calls on) */
 ST(room_435ab0, dlgclick_setup(0x9dd390);, (CALL_PLAIN(0x435ab0, 0, 0, 0, 0, 0), 0), (room_435ab0(), 0))
 ST(lobby_406bd0, dlgclick_setup(0x4dbb80);, CALL_PLAIN(0x406bd0, 0, 0, 0, 0, 0), (DWORD)(lobby_406bd0()))
@@ -9536,7 +9541,7 @@ static void qpf_setup(void)
 	g_mockQpf[1] = irnd(0, 3) ? 0 : (DWORD)irnd(0, 0x7fffffff);
 	g_mockQpfFail = !irnd(0, 5);
 }
-T_PLAIN(timer_init, 0x4302d0, qpf_setup();, 0, 0, 0, 0, 0)
+ST(timer_init, qpf_setup();, CALL_PLAIN(0x4302d0, 0, 0, 0, 0, 0), (timer_init(), 0))
 /* the entered name (at most 31 characters) and the selected slot (0..13), the stack painted so the runs don't depend on
    what earlier tests left there. profile_load copies the selected profile's name into the 32-byte field at 0x9f8fe8,
    right before the profile count (0x9f9008): a longer name overwrites the count with its last letters (~0x5a41), and
@@ -14077,7 +14082,7 @@ static void netthread_setup(void)
 	g_mockNWaits = (DWORD)irnd(0, 5);
 	for (DWORD k = 0; k < g_mockNWaits; k++) g_mockWaits[k] = irnd(0, 5) ? 0 : (irnd(0, 1) ? 0x102 : 0xffffffff);
 }
-T_PLAIN(net_454560, 0x454560, netthread_setup();, 0, 0, 0, 0, 0)
+ST(net_454560, netthread_setup();, CALL_PLAIN(0x454560, 0, 0, 0, 0, 0), (net_454560(), 0))
 /* batch 151 */
 /* the controls dialog as controls_setup sets it (its crosshair lookup indexed or not), the setup tunnel's values
    with its textures from the dialog's set (setuptunnel_setup would rebuild the set and lose the index: its values
@@ -15319,8 +15324,8 @@ ST(room_435c20, gen_setup(g_gs_435c20, g_gi_435c20, g_gb_435c20);, CALL_PLAIN(0x
    (8 arguments passed on) */
 static const DWORD g_stubResetScores[] = { 0x45df90, 0 | CS_THIS, 0x462150, 0 | CS_THIS, 0 };
 static const DWORD g_stubHostKind[] = { 0x4549e0, 8, 0x454b00, 8, 0x454c10, 8, 0x454d20, 8, 0 };
-T_PLAIN(match_4620e0, 0x4620e0, for (int i = 0; i < 16; i++) fill(BUF + 0x1eccb40 + i * 0x8888, 0x50); S32(BUF, 8) = irnd(0, 2);
-   callee_stubs(g_stubResetScores, 0);, BUF, 0, 0, 0, 0)
+ST(match_4620e0, for (int i = 0; i < 16; i++) fill(BUF + 0x1eccb40 + i * 0x8888, 0x50); S32(BUF, 8) = irnd(0, 2);
+   callee_stubs(g_stubResetScores, 0);, CALL_PLAIN(0x4620e0, BUF, 0, 0, 0, 0), (match_4620e0((void *)BUF), 0))
 ST(arena_453090, G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); for (int i = 0; i < 8; i++) g_a[i] = irnd(-5, 1000);
    callee_stubs(g_stubHostKind, (DWORD)irnd(0, 1));,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x453090)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),

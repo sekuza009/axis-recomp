@@ -26,15 +26,18 @@ typedef struct Player {
 	float heading;   /* +0x4: (by use) tenths of a degree (the alert ring turns with it) */
 	u8 _pad0000008[0x90];
 	char name[0x40];   /* +0x98 */
-	u8 _pad00000d8[0x4];
+	i32 statD8;   /* +0xd8: (unclear) cleared with the scores (match_4620e0) */
 	i32 emblem;   /* +0xdc: emblem shown in the ranking */
 	u8 _pad00000e0[0x4];
 	i32 kills;   /* +0xe4 */
 	i32 deaths;   /* +0xe8 */
 	i32 score;   /* +0xec: shown top left */
-	u8 _pad00000f0[0xc];
+	i32 statF0;   /* +0xf0: (unclear) cleared with the scores */
+	i32 statF4;   /* +0xf4: (unclear) cleared with the scores */
+	u8 _pad00000f8[0x4];
 	i32 timePlayed;   /* +0xfc: seconds */
-	u8 _pad0000100[0x8];
+	i32 stat100;   /* +0x100: (unclear) cleared with the scores */
+	u8 _pad0000104[0x4];
 	i32 active;   /* +0x108: 1: the slot is in use (0 for the local player's: "press fire" may be shown) */
 	i32 flagOwner;   /* +0x10c: whose flag the ranking shows for this player (unless Scene.network) */
 	u8 _pad0000110[0x8];
@@ -441,11 +444,15 @@ _Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->ti
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading) == 0x4, "scene.fields: Player.heading");
 _Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
+_Static_assert(offsetof(Player, statD8) == 0xd8 && sizeof(((Player *)0)->statD8) == 0x4, "scene.fields: Player.statD8");
 _Static_assert(offsetof(Player, emblem) == 0xdc && sizeof(((Player *)0)->emblem) == 0x4, "scene.fields: Player.emblem");
 _Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
 _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
 _Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
+_Static_assert(offsetof(Player, statF0) == 0xf0 && sizeof(((Player *)0)->statF0) == 0x4, "scene.fields: Player.statF0");
+_Static_assert(offsetof(Player, statF4) == 0xf4 && sizeof(((Player *)0)->statF4) == 0x4, "scene.fields: Player.statF4");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
+_Static_assert(offsetof(Player, stat100) == 0x100 && sizeof(((Player *)0)->stat100) == 0x4, "scene.fields: Player.stat100");
 _Static_assert(offsetof(Player, active) == 0x108 && sizeof(((Player *)0)->active) == 0x4, "scene.fields: Player.active");
 _Static_assert(offsetof(Player, flagOwner) == 0x10c && sizeof(((Player *)0)->flagOwner) == 0x4, "scene.fields: Player.flagOwner");
 _Static_assert(offsetof(Player, team) == 0x118 && sizeof(((Player *)0)->team) == 0x4, "scene.fields: Player.team");

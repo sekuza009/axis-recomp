@@ -29,6 +29,20 @@ void (net_454690)(void)
 	net_454760();
 }
 
+/* 0x454560: the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop): data pings the
+   listed servers and waits again, stop ends the thread, anything else waits again */
+void (net_454560)(void)
+{
+	void *events[2] = { GAME_VAR(void *, 0xa0bb10), GAME_VAR(void *, 0xa0bf1c) };
+	for (;;) {
+		u32 r = WaitForMultipleObjects(2, events, 0, 0xffffffff);
+		if (r == 0)
+			net_4545b0();
+		else if (r == 1)
+			ExitThread(0);
+	}
+}
+
 /* 0x454740: the network thread told to go on (one event reset, the other set; SetEvent's result) */
 int (net_454740)(void)
 {
