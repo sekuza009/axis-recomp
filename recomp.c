@@ -3163,7 +3163,8 @@ int reg_readServerSettings(void);
 DWORD text_ascii5Pass(int x, int y, const void *s);
 LIFT_PLAIN(text_ascii8Pass, 402010)
 LIFT_PLAIN(text_ascii16Pass, 402210)
-LIFT_PLAIN(text_ascii32Pass, 402420)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_ascii32Pass(int x, int y, const char *s);
 LIFT_PLAIN(text_hanCho, 401870)
 LIFT_PLAIN(text_hanJungJong, 401aa0)
 LIFT_PLAIN(hud_401ce0, 401ce0)
@@ -4615,7 +4616,8 @@ DWORD sound_467dd0(DWORD *sound, int mode, int value);
 void music_shutdown(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD music_4572b0(void);
-LIFT_PLAIN(music_play, 457150)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int music_play(const char *name);
 /* batch 159 (lifted/grp105.c): DirectInput keyboard and mouse, DirectSound release */
 #include "lifted/grp105.c"
 /* DirectInput: the object 0x4d1e98, the keyboard 0x4d1fa0 (ready flag 0x4d1fa8, key states 0x4d1a98) and the mouse
@@ -5154,7 +5156,8 @@ int arena_454d20(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
    the music shut down) and menuState100_intro (the intro: logo fades, the menu music, then the main menu), with
    their callees stubbed (tools/gentests.py); chat_editSubclass and sound_play3D by hand */
 #include "lifted/grp127.c"
-LIFT_PLAIN(app_onClose, 434e70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_onClose(void);
 LIFT_PLAIN(app_shutdown, 4062b0)
 LIFT_PLAIN(menuState100_intro, 41f540)
 /* 0x440840 chat_editSubclass(hwnd, msg, wparam, lparam) (stdcall, ret 0x10): the chat edit's window proc: Enter
@@ -10217,7 +10220,7 @@ static void textpass_setup(void)
 ST(text_ascii5Pass, textpass_setup();, CALL_PLAIN(0x403060, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii5Pass((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const void *)(DWORD)(BUF + 0x400))))
 T_PLAIN(text_ascii8Pass, 0x402010, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
 T_PLAIN(text_ascii16Pass, 0x402210, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(text_ascii32Pass, 0x402420, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
+ST(text_ascii32Pass, textpass_setup();, CALL_PLAIN(0x402420, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii32Pass(g_a[0], g_a[1], BUF + 0x400)))
 T_PLAIN(text_hanCho, 0x401870, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
 T_PLAIN(text_hanJungJong, 0x401aa0, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
 T_PLAIN(hud_401ce0, 0x401ce0, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
@@ -14267,7 +14270,7 @@ ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 
 ST(sound_467dd0, dsbuf_setup(1);, CALL_PLAIN(0x467dd0, 0, g_a[2], g_a[0], g_a[1], 0), (DWORD)(sound_467dd0((DWORD *)(DWORD)(g_a[2]), (DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(music_shutdown, music_setup();, CALL_PLAIN(0x457310, 0, 0, 0, 0, 0), (music_shutdown(), 0))
 ST(music_4572b0, music_setup();, CALL_PLAIN(0x4572b0, 0, 0, 0, 0, 0), (DWORD)(music_4572b0()))
-T_PLAIN(music_play, 0x457150, musicplay_setup();, 0, BUF + 0x1c0, 0, 0, 0)
+ST(music_play, musicplay_setup();, CALL_PLAIN(0x457150, 0, BUF + 0x1c0, 0, 0, 0), (DWORD)(music_play(BUF + 0x1c0)))
 /* batch 159 */
 /* DirectInput: a fake DirectInput (CreateDevice giving a fake device), DirectInputCreateA giving it or failing,
    each device step succeeding or not, the keyboard and mouse devices there or not, ready or not, the mouse capture
@@ -15131,7 +15134,7 @@ ST(arena_454d20, small_setup(g_stubHost34); G32(0xa0d7b0) = irnd(0, 1);,
 static const DWORD g_gs_434e70[] = { 0x41ee40, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_434e70[] = { 0x5b1b54, 0x5b1b55, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dbbf8, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
 static const DWORD g_gb_434e70[] = { 0x67fb44, 0x9dd570, 0 };
-T_PLAIN(app_onClose, 0x434e70, gen_setup(g_gs_434e70, g_gi_434e70, g_gb_434e70); /* 0x4dbbf8: the session record */ fill(BUF + 0x5000, 0x40); G32(0x4dbbf8) = (int)(BUF + 0x5000);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(app_onClose, gen_setup(g_gs_434e70, g_gi_434e70, g_gb_434e70); /* 0x4dbbf8: the session record */ fill(BUF + 0x5000, 0x40); G32(0x4dbbf8) = (int)(BUF + 0x5000);, CALL_PLAIN(0x434e70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(app_onClose()))
 static const DWORD g_gs_4062b0[] = { 0x41ee40, 1, 0x451e60, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_4062b0[] = { 0x4ded44, 0x4ded45, 0x9dae44, 0x9dae45, 0x9dae4c, 0x9dae4d, 0x9dae4e, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dbbf8, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dae20, 0 };
 static const DWORD g_gb_4062b0[] = { 0x4dedb0, 0x67fb44, 0x9dae24, 0 };

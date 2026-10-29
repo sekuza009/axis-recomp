@@ -344,3 +344,52 @@ u32 (room_4355b0)(void)
 	}
 	return step;
 }
+
+/* 0x434e70: the window closed while connecting. An arena wait (0x4dbb78): it ends, the arena is left and message
+   0x44. Joining a listed game (0x4db708; the record 0x4a bytes a slot at 0x9087c0, row 0x4db710): the record's
+   session from 0x4dbbf8 and its colour bytes (0x5b1b54/55) for the join. Joined (0x1f4): the music stopped and the
+   player's settings taken from the record for the game; otherwise a message by the result and the arena left.
+   Returns what the original leaves in eax */
+u32 (app_onClose)(void)
+{
+	if (GAME_VAR(int, 0x4dbb78)) {
+		GAME_VAR(int, 0x4dbb10) = 0;
+		GAME_VAR(int, 0x4dbb78) = 0;
+		GAME_CDECL(0x452fe0, void, void)();   /* arena_452fe0 */
+		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
+		GAME_VAR(int, 0x4db8b4) = 0;
+		return r;
+	}
+	if (!GAME_VAR(int, 0x4db708))
+		return 0;
+	u32 row = GAME_VAR(u32, 0x4db710) * 0x4a;
+	u8 *game = (u8 *)0x9087c0 + row;
+	*(u32 *)game = *GAME_VAR(u32 *, 0x4dbbf8);
+	GAME_VAR(u8, 0x5b1b54) = game[0x2d];
+	GAME_VAR(u8, 0x5b1b55) = game[0x2e];
+	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* arena_453180 */
+	if (r != 0x1f4) {
+		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
+		if ((u32)(r - 0x1f5) <= 4)
+			GAME_CDECL(0x41ee40, void, int)(message[r - 0x1f5]);
+		u32 e = GAME_CDECL(0x452fe0, u32, void)();
+		GAME_VAR(int, 0x4dbb10) = 0;
+		GAME_VAR(int, 0x4db708) = 0;
+		GAME_VAR(int, 0x4db8b4) = 0;
+		return e;
+	}
+	GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 2;
+	GAME_VAR(int, 0x9dce48) = 0;
+	GAME_VAR(int, 0x4dbb10) = 0;
+	GAME_VAR(int, 0x4db708) = 0;
+	GAME_VAR(int, 0x4db8b4) = 0;
+	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
+	memcpy((void *)0x67fb44, game + 4, 32);
+	GAME_VAR(int, 0x9da3e0) = (signed char)game[0x24];
+	GAME_VAR(int, 0x76d368) = (signed char)game[0x2c];
+	GAME_VAR(int, 0x4df8e8) = game[0x2d];
+	GAME_VAR(int, 0x76d408) = game[0x2e];
+	return row;
+}

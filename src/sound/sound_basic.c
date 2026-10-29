@@ -270,3 +270,40 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	}
 	return kind;
 }
+
+/* 0x457150: the music file `name` played through DirectShow's multimedia stream (CoCreateInstance of 0x4aaf10;
+   Initialize for reading, the default audio renderer added, the file opened, run), the stream kept in g_music, its
+   duration in 0xa0e018 and the name in 0xa0e674. The music volume (0x4e0c94) below 50 or no such file: the music
+   stopped and 1. Any failing step: 0 (the stream let go of nothing). Otherwise 1 */
+int (music_play)(const char *name)
+{
+	if (GAME_VAR(int, 0x4e0c94) < 50) {
+		GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
+		return 1;
+	}
+	if (g_music)
+		GAME_CDECL(0x457310, void, void)();
+	if (!GAME_CDECL(0x46ca70, int, const char *)(name)) {   /* the file exists */
+		if (g_music)
+			GAME_CDECL(0x457310, void, void)();
+		return 1;
+	}
+	void *stream;
+	unsigned short wname[0x104];
+	IMPORT(0x4a93bc, long, void *)(NULL);   /* CoInitialize */
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4aaf10, NULL, 1,
+			(const void *)0x4aae90, &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
+		return 0;
+	IMPORT(0x4a9164, int, u32, u32, const char *, int, void *, int)(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
+	if (COM(stream, 0x30, long, u32, u32, void *)(stream, 0, 1, NULL))   /* Initialize(read, no graph thread) */
+		return 0;
+	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)0x4aafc0, 1, NULL))
+		return 0;   /* AddMediaStream(primary audio, default renderer) */
+	if (COM(stream, 0x40, long, const void *, u32)(stream, wname, 0))   /* OpenFile */
+		return 0;
+	g_music = stream;
+	COM(stream, 0x1c, long, u32)(stream, 1);   /* SetState(run) */
+	strcpy((char *)0xa0e674, name);
+	COM(g_music, 0x24, long, void *)(g_music, (void *)0xa0e018);   /* GetDuration */
+	return 1;
+}

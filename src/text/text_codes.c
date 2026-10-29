@@ -97,3 +97,55 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	}
 	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
 }
+
+/* 0x402420: like text_ascii5Pass with the large glyphs (0x428190; 0x16 wide, 0x10 for a space, I and i, 0x20 for
+   a double-byte letter), lines 0x21 apart, "\r\n" also breaking the line, the line wrapped at x 0x4ad490 and the
+   text stopped at y 0x4ad494 (0x4d7348 set). Where it ended is kept in 0x4d23c8 / 0x4d23cc; texturing is switched
+   off after. Returns glDisable's eax */
+u32 (text_ascii32Pass)(int x, int y, const u8 *s)
+{
+	int left = x;
+	glBegin(7);   /* GL_QUADS */
+	for (u8 c = *s; c; c = *s) {
+		glColor4f_stored((const u32 *)0x76d438);
+		s++;
+		if (GAME_VAR(int, 0x76d3e8) != 9999 && c == '|') {
+			if (*s != '|') {
+				y += 0x21;
+				x = left;
+				continue;
+			}
+			s++;
+		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
+			const u32 *colour = (const u32 *)(0x9dada0 + ((signed char)s[1] - '0') * 16);
+			c = s[4];
+			s += 5;
+			glColor4f_stored(colour);
+		}
+		if (c == '\r' && *s == '\n') {
+			s++;
+			y += 0x21;
+			x = left;
+			continue;
+		}
+		if (x >= GAME_VAR(int, 0x4ad490)) {
+			x = left;
+			y += 0x21;
+		}
+		if (y >= GAME_VAR(int, 0x4ad494)) {
+			GAME_VAR(int, 0x4d7348) = 1;
+			break;
+		}
+		if (c & 0x80) {
+			s++;
+			x += 0x20;
+		} else {
+			GAME_CDECL(0x428190, void, int, int, int)(x, y, c);   /* text_quad32 */
+			x += c == ' ' || c == 'I' || c == 'i' ? 0x10 : 0x16;
+		}
+	}
+	GAME_VAR(int, 0x4d23c8) = x;
+	GAME_VAR(int, 0x4d23cc) = y;
+	glEnd();
+	return IMPORT(0x4a922c, u32, u32)(0xde1);   /* glDisable(GL_TEXTURE_2D) */
+}
