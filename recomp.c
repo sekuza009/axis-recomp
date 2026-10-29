@@ -10493,7 +10493,15 @@ ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b7
 ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
 ST(room_43df00, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_43df00(), 0))
 ST(menu_428890, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, CALL_PLAIN(0x428890, 0, g_a[0], g_a[1], 0, 0), (DWORD)(menu_428890((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
-T_PLAIN(menu_drawFrame, 0x428c30, G32(0x4de740) = irnd(0, 2); for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* the opening frame: closed / opening (0x4de740), its frame counter (0x76d428, mostly early in the animation) and
+   frame time, a rectangle (mostly a proper one) */
+static void drawframe_setup(void)
+{
+	G32(0x4de740) = irnd(0, 4); G32(0x76d428) = irnd(0, 3) ? irnd(0, 60) : irnd(-5, 400); GF(0x4b071c) = (float)irnd(1, 30) / 10.0f;
+	if (irnd(0, 3)) { g_a[0] = irnd(0, 300); g_a[1] = irnd(0, 200); g_a[2] = g_a[0] + irnd(10, 340); g_a[3] = g_a[1] + irnd(10, 280); }
+	else for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);
+}
+T_PLAIN(menu_drawFrame, 0x428c30, drawframe_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static void dispmode_setup(void)
 {
 	g_mockDispRet = irnd(0, 2) ? 0 : (DWORD)irnd(-2, 1); g_mockCaps = (DWORD)irnd(0, 64); g_mockPixelFormat = irnd(0, 9);
@@ -17273,7 +17281,7 @@ static const STest g_stests[] = {
 	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_closeAll, 0, 40, 0),
 	/* batch 59 */
 	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_43df00, 0, 40, 0), T(menu_428890, 0, 40, 0),
-	T(menu_drawFrame, 0, 40, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
+	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 40, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 40, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
