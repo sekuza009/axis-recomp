@@ -294,3 +294,50 @@ u32 (room_433d30)(void)
 	}
 	return r;
 }
+
+/* 0x4355b0: the game room's hosting step (0x4ded60): 1 hosts the room's session (the music stopped, 0x452ec0, then
+   arena_453090 with the room's settings record 0x5b1b30 and name 0x9dd570) and takes its settings (the 32-byte
+   rules, +0x20 .. +0x25); then 0 or 3 (3 also sets 0x907b2c) move on to 2, and 4 does too with message 0x2a.
+   Returns the step (or the message's eax) */
+u32 (room_4355b0)(void)
+{
+	const u8 *room = (const u8 *)0x5b1b30;
+	u32 step = GAME_VAR(u32, 0x4ded60);
+	if (step == 2)
+		return 2;
+	if (step == 1) {
+		GAME_VAR(int, 0x4dba88) = 0;
+		GAME_VAR(int, 0x67ef14) = 1;
+		GAME_VAR(int, 0x67ef04) = 1;
+		music_shutdown();
+		GAME_VAR(int, 0x9dce48) = 0;
+		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_452ec0 */
+		GAME_CDECL(0x453090, int, const void *, const char *, int, int, int, int, int, int)(
+			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
+			room[0x24], room[0x25], 0);   /* arena_453090: host */
+		GAME_VAR(int, 0x9dad94) = (signed char)room[0x20];
+		GAME_VAR(int, 0x76d368) = (signed char)room[0x23];
+		memcpy((void *)0x67fb44, room, 32);
+		GAME_VAR(int, 0x9da3e0) = (signed char)room[0x22];
+		GAME_VAR(int, 0x4df8e8) = room[0x24];
+		GAME_VAR(int, 0x76d408) = room[0x25];
+		step = GAME_VAR(u32, 0x4ded60);
+		GAME_VAR(int, 0x4ded54) = 1;
+	}
+	switch (step) {
+	case 3:
+		GAME_VAR(int, 0x907b2c) = 1;
+		/* fall through */
+	case 0:
+		GAME_VAR(int, 0x4dba88) = 0;
+		GAME_VAR(int, 0x4ded54) = 0;
+		GAME_VAR(int, 0x4ded60) = 2;
+		return step;
+	case 4:
+		GAME_VAR(int, 0x4dba88) = 0;
+		GAME_VAR(int, 0x4ded60) = 2;
+		GAME_VAR(int, 0x4ded54) = 0;
+		return GAME_CDECL(0x41ee40, u32, int)(0x2a);   /* the message */
+	}
+	return step;
+}

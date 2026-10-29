@@ -5220,7 +5220,8 @@ LIFT_PLAIN(lobby_roomNameCheck, 4052c0)
 LIFT_PLAIN(lobby_checkReservedName, 4057a0)
 LIFT_PLAIN(lobby_connect, 406c30)
 LIFT_PLAIN(lobbyJoin_keysChat, 4079c0)
-LIFT_PLAIN(room_4355b0, 4355b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_4355b0(void);
 LIFT_PLAIN(arena_405b80, 405b80)
 /* batch 183 (lifted/grp134.c): the arena create page's mouse (arena_createClick), lobbyTop_connect,
    arena_loadAndQuit, room_43ea10, lobbyJoin_draw, with their callees stubbed (tools/gentests.py) */
@@ -15296,7 +15297,7 @@ T_PLAIN(lobbyJoin_keysChat, 0x4079c0, gen_setup(g_gs_4079c0, g_gi_4079c0, g_gb_4
 static const DWORD g_gs_4355b0[] = { 0x41ee40, 1, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4355b0[] = { 0x5b1b50, 0x5b1b51, 0x5b1b52, 0x5b1b53, 0x4dba88, 0x4ded54, 0x4ded60, 0x4df8e8, 0x5b1b54, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
 static const DWORD g_gb_4355b0[] = { 0x5b1b30, 0x67fb44, 0x9dd570, 0 };
-T_PLAIN(room_4355b0, 0x4355b0, gen_setup(g_gs_4355b0, g_gi_4355b0, g_gb_4355b0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_4355b0, gen_setup(g_gs_4355b0, g_gi_4355b0, g_gb_4355b0);, CALL_PLAIN(0x4355b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_4355b0()))
 static const DWORD g_gs_405b80[] = { 0x41ee40, 1, 0x451e60, 0, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_405b80[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4dba88, 0x4dbb3c, 0x4ded44, 0x4ded54, 0x4ded60, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405b80[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
