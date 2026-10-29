@@ -11,7 +11,6 @@
 #define TABLE_FILE ((const char *)0x4c575c)   /* "MATHFUNC.TBL" */
 
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define crt_rand() GAME_CDECL(0x49f92c, int, void)()
 
 static inline long double x87_fsin(long double x) { __asm__("fsin" : "+t"(x)); return x; }
 static inline long double x87_fcos(long double x) { __asm__("fcos" : "+t"(x)); return x; }

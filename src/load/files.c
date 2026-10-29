@@ -575,6 +575,49 @@ u32 (data_loadMessages)(void)
 	return fclose(f);
 }
 
+/* 0x447010: the campaign progress saved: axisuser.dat written (the name 0x9f8fe8 being the current profile's; no
+   file: nothing more), then in the save folder (made if it cannot be entered) the pilot's file (its name + 0x4b2afc)
+   between blocks of noise: 20000 bytes of it, the profile's 0x3ac-byte record (gathered by match_4464b0, scrambled
+   with key 0x7e), then 24999 more (the same 10000 random bytes, below 0xfe, each time). 0x9f1818 = the pilot's value
+   (record +0x40). Returns the last chdir's eax */
+int (profile_saveProgress)(void)
+{
+	void *f = profiles_create();
+	if (!f)
+		return 0;
+	memset((void *)0x9f8fe8, 0, 0x20);
+	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48));
+	profiles_write(f);
+	match_4464b0();
+	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir */
+		crt_chdir((const char *)0x4b2adc);
+	}
+	char path[0x80];
+	memset(path, 0, sizeof path);
+	int pilot = GAME_VAR(int, 0x9f8d74);
+	strcpy(path, (const char *)(0x9f684c + pilot * 0x48));
+	strcat(path, (const char *)0x4b2afc);
+	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
+	if (f) {
+		u8 *noise = (u8 *)0x9f3ac4;
+		for (int i = 0; i < 10000; i++)
+			noise[i] = (u8)(crt_rand() % 0xfe);
+		crt_fwrite(noise, 10000, 1, f);
+		crt_fwrite(noise, 10000, 1, f);
+		u8 record[0x3ac];
+		memcpy(record, (const void *)0x9f1718, sizeof record);
+		save_cryptRecord(record, 0x7e);
+		crt_fwrite(record, sizeof record, 1, f);
+		crt_fwrite(noise, 10000, 1, f);
+		crt_fwrite(noise, 10000, 1, f);
+		crt_fwrite(noise, 4999, 1, f);
+	}
+	fclose(f);
+	return crt_chdir((const char *)0x4b2a80);   /* ".." */
+}
+
 /* 0x4474a0: axisuser.dat's header read back (the magic word, the count, the current profile, 0x9f8c4c, 0x9f8c5c and
    the last pilot's name 0x9f8fe8; no file or a wrong magic word: no profiles), the save folder made if it cannot be
    entered ("save " then "save"), and the current profile set to the one with that name, if any. Returns fclose's

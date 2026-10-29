@@ -2755,7 +2755,8 @@ DWORD data_loadMapInfo(void);
 /* 0x42b590 data_loadPilotProfiles: load the pilot profiles file */
 LIFT_PLAIN(data_loadPilotProfiles, 42b590)
 /* 0x447010 profile_saveProgress: save the campaign progress */
-LIFT_PLAIN(profile_saveProgress, 447010)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int profile_saveProgress(void);
 /* 0x446590 profile_load: load a profile */
 LIFT_PLAIN(profile_load, 446590)
 /* 0x446a10 profile_save: save a profile */
@@ -9502,7 +9503,7 @@ ST(profile_create, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_
 ST(data_loadSkirmishInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42ba40, 0, 0, 0, 0, 0), (DWORD)(data_loadSkirmishInfo()))
 ST(data_loadMapInfo, vfs_content(0, 0x2000);, CALL_PLAIN(0x42b830, 0, 0, 0, 0, 0), (DWORD)(data_loadMapInfo()))
 T_PLAIN(data_loadPilotProfiles, 0x42b590, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
-T_PLAIN(profile_saveProgress, 0x447010, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
+ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 T_PLAIN(profile_load, 0x446590, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_save, 0x446a10, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 ST(timer_now, g_mockQpc = (DWORD)irnd(0, 0x7fffffff);,
