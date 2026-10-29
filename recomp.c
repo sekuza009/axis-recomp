@@ -2726,7 +2726,8 @@ const char *dplay_454d90(const char *text, const char *word, int exact);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_42ef30(int code);
 /* 0x42f000 gfx_setPixelFormat: choose and set the pixel format */
-LIFT_PLAIN(gfx_setPixelFormat, 42f000)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int gfx_setPixelFormat(void *dc);
 /* 0x440c60 autoplay_listFiles: list the autoplay files (_findfirst/_findnext) */
 LIFT_PLAIN(autoplay_listFiles, 440c60)
 /* 0x42b3e0 data_loadMessages: load messages.txt (fgets) */
@@ -3208,7 +3209,8 @@ LIFT_PLAIN(menu_drawFrame, 428c30)
    0x467e60 glWindow_setupPixelFormat(dc) / 0x468450 glWindow_resize(w, h); errors as message boxes */
 LIFT_PLAIN(glWindow_restoreDisplayMode, 468050)
 LIFT_PLAIN(glWindow_setDisplayModeBy, 467f20)
-LIFT_PLAIN(glWindow_setupPixelFormat, 467e60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int glWindow_setupPixelFormat(void *dc);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int glWindow_resize(int width, int height);
 /* 0x46cd00 (thiscall) image_initBy(path): open a 24-bit BMP, read and check its headers, keep width/height */
@@ -9378,7 +9380,7 @@ ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, 
 ST(net_452de0, strs_setup();, CALL_PLAIN(0x452de0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452de0((const void *)(DWORD)(BUF + 0x100))))
 ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)dplay_454d90((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
 ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
-T_PLAIN(gfx_setPixelFormat, 0x42f000, g_mockPixelFormat = irnd(0, 9);, 0, 0xdc0, 0, 0, 0)
+ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
 T_PLAIN(autoplay_listFiles, 0x440c60, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
 T_PLAIN(data_loadMessages, 0x42b3e0, vfs_content(95, 0x2000);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_create, 0x4474a0, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
@@ -10230,7 +10232,7 @@ static void dispmode_setup(void)
 }
 T_PLAIN(glWindow_restoreDisplayMode, 0x468050, dispmode_setup();, 0, 0, 0, 0, 0)
 T_PLAIN(glWindow_setDisplayModeBy, 0x467f20, dispmode_setup();, 0, g_a[0], g_a[1], g_a[2], 0)
-T_PLAIN(glWindow_setupPixelFormat, 0x467e60, dispmode_setup();, 0, 0xdc0, 0, 0, 0)
+ST(glWindow_setupPixelFormat, dispmode_setup();, CALL_PLAIN(0x467e60, 0, 0xdc0, 0, 0, 0), (DWORD)(glWindow_setupPixelFormat((void *)(DWORD)(0xdc0))))
 ST(glWindow_resize, dispmode_setup();, CALL_PLAIN(0x468450, 0, g_a[0], g_a[1], 0, 0), (DWORD)(glWindow_resize((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* a BMP file: 14-byte file header + 40-byte info header, mostly 24-bit uncompressed; the image object may still
    hold an open file */

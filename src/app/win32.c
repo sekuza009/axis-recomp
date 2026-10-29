@@ -1,5 +1,6 @@
 /* win32.c: small Win32 / multimedia wrappers. */
 #include <stdarg.h>
+#include <string.h>
 #include "../game.h"
 
 #define MCI_PAUSE 0x809
@@ -83,4 +84,55 @@ u32 (wnd_setCursor)(void)
 		FUN_00467d60(GAME_VAR(void *, p));
 	GAME_CDECL(0x456cd0, void, void)();
 	return GAME_CDECL(0x467b70, u32, void)();
+}
+
+#define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
+#define SetPixelFormat(dc, format, pfd) IMPORT(0x4a9030, int, void *, int, const void *)(dc, format, pfd)
+
+/* 0x467e60: the GL window's pixel format chosen and set: double-buffered (flags 0x21) RGBA with 0xa0e818 colour and
+   0xa0e924 depth bits. A message and 0 when there is none, it needs a palette, or it cannot be set; 1 when set.
+   (The original fills only these fields and leaves the rest of the descriptor as the stack had it; here it is
+   zeroed.) */
+int (glWindow_setupPixelFormat)(void *dc)
+{
+	u8 pfd[0x28];   /* PIXELFORMATDESCRIPTOR */
+	memset(pfd, 0, sizeof pfd);
+	*(u16 *)pfd = 0x28;                  /* nSize */
+	*(u16 *)(pfd + 2) = 1;               /* nVersion */
+	*(u32 *)(pfd + 4) = 0x21;            /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
+	pfd[9] = GAME_VAR(u8, 0xa0e818);     /* cColorBits */
+	pfd[0x17] = GAME_VAR(u8, 0xa0e924);  /* cDepthBits */
+	int format = ChoosePixelFormat(dc, pfd);
+	if (!format) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e5c);   /* sys_errorMessageNoName */
+		return 0;
+	}
+	if (pfd[4] & 0x80) {   /* PFD_NEED_PALETTE */
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e30);
+		return 0;
+	}
+	if (!SetPixelFormat(dc, format, pfd)) {
+		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4df8);
+		return 0;
+	}
+	return 1;
+}
+
+/* 0x42f000: the window's pixel format from the game's descriptor (0x4b1020), filled in the first time (flag bit 1 of
+   0x9dbefc): (video depth 0x83a9c4 + 1) * 16 colour bits, 16 depth bits, the rest zero. 1 when set; 0 when there
+   is none, it needs a palette, or it cannot be set */
+int (gfx_setPixelFormat)(void *dc)
+{
+	u8 *pfd = (u8 *)0x4b1020;
+	if (!(GAME_VAR(u8, 0x9dbefc) & 1)) {
+		GAME_VAR(u8, 0x9dbefc) |= 1;
+		pfd[9] = (u8)((GAME_VAR(u8, 0x83a9c4) + 1) << 4);   /* cColorBits */
+		memset(pfd + 0xa, 0, 0x17 - 0xa);
+		pfd[0x17] = 0x10;                                    /* cDepthBits */
+		memset(pfd + 0x18, 0, 0x28 - 0x18);
+	}
+	int format = ChoosePixelFormat(dc, pfd);
+	if (!format || (pfd[4] & 0x80))
+		return 0;
+	return SetPixelFormat(dc, format, pfd) != 0;
 }
