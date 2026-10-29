@@ -749,6 +749,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define ptx_46e2b0(q) GAME_CDECL(0x46e2b0, void, int)(q)
 #define ptx_46e7c0() GAME_CDECL(0x46e7c0, void, void)()
 #define ptx_46e9b0(q) GAME_CDECL(0x46e9b0, void, int)(q)
+#define ptx_error(...) ((int (CDECL *)(int, const char *, ...))0x46e260)(__VA_ARGS__)   /* app/ptx_decode.c */
+#define ptx_crtlError(...) ((int (CDECL *)(int, const char *, ...))0x46e1e0)(__VA_ARGS__)
+#define set_a61708_46f090(p) GAME_CDECL(0x46f090, void, const u8 *)(p)   /* the bit reader started at p */
+#define ptx_internal_46f0b0(block) GAME_CDECL(0x46f0b0, int, int *)(block)   /* one block's coefficients; the bit position */
+#define ptx_decodeBlock_46e380(in, out) GAME_CDECL(0x46e380, void, const int *, u8 *)(in, out)
+#define ptx_internal_46e830(y, dst, n) GAME_CDECL(0x46e830, void, const u8 *, u8 *, unsigned)(y, dst, n)
+#define ptx_internal_46e8e0(y, dst, n) GAME_CDECL(0x46e8e0, void, const u8 *, u8 *, unsigned)(y, dst, n)
+#define ptx_internal_46ea30(src, dst, w, h, bpp) GAME_CDECL(0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
 
 #define room_431c00() GAME_CDECL(0x431c00, void, void)()
 #define room_431b70() GAME_CDECL(0x431b70, void, void)()

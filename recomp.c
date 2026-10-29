@@ -3622,8 +3622,10 @@ THISCALL void object_setAnimation(void *self, int i, DWORD name, float period, i
    (4 planes, fmt 3), quality), then up to 64 KB of Huffman-coded 8x8 DCT blocks, each plane byte-aligned (planes
    1 and 2 use the second table pair); converted to RGB(A) rows in out. A bad header is fatal (ptx_error), and so
    is a failed open in ptx_open, which also closes the file */
-LIFT_PLAIN8(ptx_open, 46eb00)
-LIFT_PLAIN8(ptx_decode, 46ed80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_open(const char *path, char *out, int *fmt, int *width, int *height);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_decode(void *f, char *out, int *fmt, int *width, int *height);
 /* batch 80 (lifted/grp26.c) */
 #include "lifted/grp26.c"
 /* 0x455aa0 (thiscall) tex_loadColorMask(i): load texture i's image (name +0xc0128 + i * 0x68, cut at '*', under the
@@ -11456,10 +11458,10 @@ static void ptxfile_setup(void)
 }
 ST(ptx_open, ptxfile_setup();,
    (CD(void, 0x46eb00, char *, char *, char *, char *, char *)(BUF + 0x300, BUF + 0x10000, BUF + 0x100, BUF + 0x104, BUF + 0x108), 0),
-   (ptx_open(0, 0, 0, (DWORD)(BUF + 0x300), (DWORD)(BUF + 0x10000), (DWORD)(BUF + 0x100), (DWORD)(BUF + 0x104), (DWORD)(BUF + 0x108), 0, 0, 0), 0))
+   (ptx_open(BUF + 0x300, BUF + 0x10000, (int *)(BUF + 0x100), (int *)(BUF + 0x104), (int *)(BUF + 0x108)), 0))
 ST(ptx_decode, ptxfile_setup(); g_vfsOpenFail = 0;,
    (CD(void, 0x46ed80, int, char *, char *, char *, char *)((int)VFS_FILE(0), BUF + 0x10000, BUF + 0x100, BUF + 0x104, BUF + 0x108), 0),
-   (ptx_decode(0, 0, 0, (DWORD)VFS_FILE(0), (DWORD)(BUF + 0x10000), (DWORD)(BUF + 0x100), (DWORD)(BUF + 0x104), (DWORD)(BUF + 0x108), 0, 0, 0), 0))
+   (ptx_decode((void *)VFS_FILE(0), BUF + 0x10000, (int *)(BUF + 0x100), (int *)(BUF + 0x104), (int *)(BUF + 0x108)), 0))
 /* batch 80 */
 /* a texture manager (BUF): format 0..2 (rarely 3), dir or none, texture i's name with or without a "*" tail, its
    size mostly the image's. Format 0: a dat index (BUF + 0x200) of the name and, each often, its _ALPHA / _COLOR

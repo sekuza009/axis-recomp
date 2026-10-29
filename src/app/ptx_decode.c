@@ -239,3 +239,80 @@ int (ptx_error)(int code, const char *format, ...)
 		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
 	return code;
 }
+
+/* ---- a PTX image: a 16-byte header ("PTX\0", version 0x100, width / 8, height / 8, type 0x81 = YCbCr (3 planes,
+   fmt 2) or 0x82 = YCbCrA (4 planes, fmt 3), quality), then up to 64 KB of Huffman-coded 8 x 8 DCT blocks, each plane
+   byte-aligned (planes 1 and 2 use the second table pair, 0xaa2e94); the planes decoded into 0xa6228c (64 KB
+   each), converted to RGB(A) at 0xa21708 and laid out as rows in out. A bad header is fatal (ptx_error) ---- */
+#define ptx_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+
+static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int close)
+{
+	struct { char magic[4]; u16 version; short w, h, type, quality; u8 pad[6]; } head;
+	ptx_fread(&head, 1, 0x10, f);
+	if (head.magic[0] != 'P' || head.magic[1] != 'T' || head.magic[2] != 'X' || head.magic[3] != 0)
+		ptx_error(-1, (const char *)0x4c6fec);
+	if (head.version != 0x100)
+		ptx_error(-1, (const char *)0x4c6fec);
+	int w = head.w * 8, h = head.h * 8, planes;
+	if (head.type == 0x81)
+		planes = 3;
+	else if (head.type == 0x82)
+		planes = 4;
+	else {
+		ptx_error(-1, (const char *)0x4c6fd8);
+		planes = -1;
+	}
+	ptx_46e9b0(head.quality);
+	u8 *data = (u8 *)0xaa2e98;
+	ptx_fread(data, 1, 0x10000, f);
+	int pos = 0, bits = 0;
+	for (int p = 0; p < planes; p++) {
+		if (p <= 3)
+			GAME_VAR(int, 0xaa2e94) = p == 1 || p == 2;
+		u8 *plane = (u8 *)0xa6228c + (p << 16);
+		set_a61708_46f090(data + pos);
+		if (w * h > 0)
+			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
+				int block[64];
+				bits = ptx_internal_46f0b0(block);
+				ptx_decodeBlock_46e380(block, plane);
+				plane += 0x40;
+			}
+		pos += (bits + 7) / 8;
+	}
+	if (close)
+		fclose(f);
+	if (head.type == 0x81)
+		ptx_internal_46e830((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
+	else if (head.type == 0x82)
+		ptx_internal_46e8e0((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
+	ptx_internal_46ea30((const u8 *)0xa21708, out, w, h, planes);
+	*width = w;
+	*height = h;
+	if (head.type == 0x81) {
+		*fmt = 2;
+		return 0;
+	}
+	if (head.type == 0x82) {
+		*fmt = 3;
+		return 0;
+	}
+	return head.type - 0x82;
+}
+
+/* 0x46eb00: the image read from the file at path (a failed open is fatal: ptx_crtlError), which is closed before
+   the conversion. Returns 0, or the type less 0x82 for an unknown type */
+int (ptx_open)(const char *path, u8 *out, int *fmt, int *width, int *height)
+{
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		ptx_crtlError(-1, (const char *)0x4b3fd8, path);
+	return ptx_read(f, out, fmt, width, height, 1);
+}
+
+/* 0x46ed80: the image read from the open file f (left open) */
+int (ptx_decode)(void *f, u8 *out, int *fmt, int *width, int *height)
+{
+	return ptx_read(f, out, fmt, width, height, 0);
+}
