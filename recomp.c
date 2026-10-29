@@ -2589,7 +2589,8 @@ DWORD cfg_parsePlayer(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_parseSound(void *f);
 /* 0x41e7c0 console_loadFile: load console script k (names at 0x907b30). Lifted */
-LIFT_PLAIN(console_loadFile, 41e7c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int console_loadFile(int k);
 /* 0x41e260 app_checkLauncherRunning: read 8 check bytes from axisplay.exe. Lifted */
 LIFT_PLAIN(app_checkLauncherRunning, 41e260)
 /* 0x445f70 profile_loadList: (re)write axisuser.dat. Lifted */
@@ -3147,7 +3148,8 @@ DWORD math_makeMathFunctionTableFile(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int math_initMathFunction(void);
 /* 0x4684c0 glWindow_4684c0: the default GL state */
-LIFT_PLAIN(glWindow_4684c0, 4684c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD glWindow_4684c0(void);
 /* 0x42bde0 reg_readServerSettings: server names and ports from the registry, or a message and quit */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int reg_readServerSettings(void);
@@ -9233,7 +9235,7 @@ ST(cfg_parsePlayer, G32(0x4dedd0) = irnd(-1, 3); G32(0x4dedd4) = irnd(0, 2);, CA
 ST(cfg_parseSound, , CALL_PLAIN(0x42c910, 0, VFS_FILE(0), 0, 0, 0),
    cfg_parseSound((void *)VFS_FILE(0)))
 T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
-T_PLAIN(console_loadFile, 0x41e7c0, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, 0, g_a[0], 0, 0, 0)
+ST(console_loadFile, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(console_loadFile((DWORD)(g_a[0]))))
 T_PLAIN(app_checkLauncherRunning, 0x41e260, vfs_content(0, 0x6000);, 0, 0, 0, 0, 0)
 T_PLAIN(profile_loadList, 0x445f70, vfs_content(0, 0); g_a[0] = irnd(0, 10);, 0, g_a[0], 0, 0, 0)
 T_PLAIN(profile_delete, 0x447320, vfs_content(0, 0);, 0, 0, 0, 0, 0)
@@ -10158,7 +10160,7 @@ ST(net_452af0, netrec_setup();, CALL_PLAIN(0x452af0, 0, BUF + 0x100, 0, 0, 0), (
 ST(net_452c80, netrec_setup();, CALL_PLAIN(0x452c80, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_452c80((const void *)(DWORD)(BUF + 0x100))))
 ST(math_makeMathFunctionTableFile, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, CALL_PLAIN(0x46c340, 0, 0, 0, 0, 0), (DWORD)(math_makeMathFunctionTableFile()))
 ST(math_initMathFunction, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, CALL_PLAIN(0x46c270, 0, 0, 0, 0, 0), (DWORD)(math_initMathFunction()))
-T_PLAIN(glWindow_4684c0, 0x4684c0, , 0, 0, 0, 0, 0)
+ST(glWindow_4684c0, , CALL_PLAIN(0x4684c0, 0, 0, 0, 0, 0), (DWORD)(glWindow_4684c0()))
 ST(reg_readServerSettings, g_mockRegFail = !irnd(0, 3); G32(0x9dae74) = irnd(0, 2); g_paintStacks = 1; /* a failed open closes the unset key */, CALL_PLAIN(0x42bde0, 0, 0, 0, 0, 0), (DWORD)(reg_readServerSettings()))
 /* text: printable ASCII with colour codes ("$#n", "$[n]"), '|' and CR LF, or Korean 2-byte characters; the menu
    state (9999 / 400 enable the codes) and the wrap limits varied */

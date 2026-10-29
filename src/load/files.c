@@ -224,3 +224,22 @@ u32 (cfg_parseSound)(void *f)
 	return FPUTS(0x4b182c);
 #undef FPUTS
 }
+
+/* 0x41e7c0: does map k's file exist ("map/" + its name (32 bytes a slot at 0x907b30) + ".bfd")? 1 when it opens, 0
+   when not or when the name is shorter than 2 letters */
+int (console_loadFile)(int k)
+{
+	const char *name = (const char *)(0x907b30 + k * 32);
+	if (strlen(name) <= 1)
+		return 0;
+	char path[0x400];
+	memset(path, 0, sizeof path);
+	strcpy(path, (const char *)0x4b0434);   /* "map/" */
+	strcat(path, name);
+	strcat(path, (const char *)0x4b042c);   /* ".bfd" */
+	void *f = crt_fopen(path, (const char *)0x4ad170);
+	if (!f)
+		return 0;
+	fclose(f);
+	return 1;
+}
