@@ -376,3 +376,50 @@ u32 (profile_44ce90)(void)
 	}
 	return r;
 }
+
+/* 0x44f4b0: the profile screen's name entry step (after 0x44d720): with a dialog open its frame is drawn
+   (0x428c30); while a profile is being made (0x9f8f34) 0x44dc60; once the typed name (0x9dc92c) is in (the keyboard
+   back): empty cancels, an existing name (profile_4343b0) or a bad one (profile_44b7e0, message 0x81) is refused
+   with sound 6, otherwise the profile is made (profile_44b870; failing that state 6 and 0x44b750). Returns the
+   last call's eax */
+u32 (profile_44f4b0)(void)
+{
+	const char *typed = (const char *)0x9dc92c;
+	GAME_CDECL(0x44d720, void, void)();
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f8eac), GAME_VAR(int, 0x9f8ea8),
+		                                                     GAME_VAR(int, 0x9f8f20), GAME_VAR(int, 0x9f8f24));
+	if (GAME_VAR(int, 0x9f8f34))
+		return GAME_CDECL(0x44dc60, u32, void)();
+	if (GAME_VAR(int, 0x68039c))
+		return GAME_CDECL(0x44de00, u32, void)();
+	if (!strlen(typed)) {
+		g_dialogOpen = 0;
+		GAME_VAR(int, 0x9f8f34) = 0;
+		GAME_VAR(int, 0x9f8f10) = 1;
+		return GAME_CDECL(0x44de00, u32, void)();
+	}
+	if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1) {   /* profile_4343b0 */
+		u32 r = GAME_CDECL(0x41e760, u32, int)(6);              /* sound_playMenu */
+		GAME_VAR(int, 0x9f8f10) = 1;
+		g_dialogOpen = 0;
+		GAME_VAR(int, 0x9f8f34) = 0;
+		return r;
+	}
+	if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_44b7e0 */
+		sound_playMenu(6);
+		g_dialogOpen = 0;
+		GAME_VAR(int, 0x9f8f34) = 0;
+		GAME_VAR(int, 0x9f8f10) = 1;
+		return GAME_CDECL(0x41ee40, u32, int)(0x81);             /* the message */
+	}
+	if (GAME_CDECL(0x44b870, int, void)()) {                     /* profile_44b870 */
+		sound_playMenu(6);
+		GAME_VAR(int, 0x9f8f34) = 1;
+		g_dialogOpen = 1;
+		return GAME_CDECL(0x44de00, u32, void)();
+	}
+	GAME_VAR(int, 0x9f8f10) = 6;
+	GAME_CDECL(0x44b750, void, void)();
+	return GAME_CDECL(0x44de00, u32, void)();
+}

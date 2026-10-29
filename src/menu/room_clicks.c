@@ -254,12 +254,12 @@ u32 (room_435d30)(void)
 	return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
 }
 
-/* 0x43bcb0: the selected map's preview (map 0x4df9e8, a signed byte; its name 32 bytes a slot at 0x907b30) loaded
-   as a texture: "<0x680bc4><name>/<name>" (the texture manager 0xa0e010) into 0x9da324; 0x680cd0 cleared */
-void (room_43bcb0)(void)
+/* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at 0x907b30) loaded as a
+   texture: "<0x680bc4><name>/<name>" (the texture manager 0xa0e010) into 0x9da324; 0x680cd0 cleared ---- */
+static void load_map_preview(u32 selected)
 {
 	char path[0x80], copy[0x40];
-	const char *name = (const char *)(0x907b30 + (signed char)GAME_VAR(u8, 0x4df9e8) * 32);
+	const char *name = (const char *)(0x907b30 + (signed char)GAME_VAR(u8, selected) * 32);
 	memset(path, 0, sizeof path);
 	strcpy(path, (const char *)0x680bc4);   /* the maps' folder */
 	strcat(path, name);
@@ -269,6 +269,9 @@ void (room_43bcb0)(void)
 	GAME_VAR(int, 0x9da324) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
 	GAME_VAR(int, 0x680cd0) = 0;
 }
+/* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
+void (room_43bcb0)(void) { load_map_preview(0x4df9e8); }
+void (arena_40b420)(void) { load_map_preview(0x4db548); }
 
 /* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
    0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
