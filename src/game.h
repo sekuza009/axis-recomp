@@ -514,6 +514,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_4545b0() GAME_CDECL(0x4545b0, void, void)()   /* ping every listed server */
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
 #define ExitThread(code) IMPORT(0x4a9180, void, u32)(code)
+#define GetTickCount() IMPORT(0x4a9184, u32, void)()
+#define net_452de0(reply) GAME_CDECL(0x452de0, void, void *)(reply)   /* the server's accept reply handled */
+#define mission_saveAxisMis(k) GAME_CDECL(0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
+#define skirmish_443c80() GAME_CDECL(0x443c80, u32, void)()   /* leave the skirmish settings */
+#define skirmish_443cd0() GAME_CDECL(0x443cd0, void, void)()   /* the skirmish list's cursor up */
+#define skirmish_443d10() GAME_CDECL(0x443d10, void, void)()   /* and down */
+#define skirmish_4017b0(v) GAME_CDECL(0x4017b0, int, int)(v)   /* the text wrap x (0x4ad490) */
+#define skirmish_4017c0(v) GAME_CDECL(0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
 #define timer_now() GAME_CDECL(0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
 #define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
 #define msg_newKing(scene) GAME_THISCALL(0x462150, void, Scene *)(scene)   /* the ranking and its "new king" message */

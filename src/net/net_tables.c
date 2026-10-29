@@ -215,6 +215,30 @@ u32 (net_454760)(void)
 	return r;
 }
 
+/* 0x452d70: the server's 62-byte reply received into 0xa052e8 (recv on 0xa05630 until 62 bytes have come or 3 s
+   have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_452de0), 1
+   refused (0xa0b350 set, 0xa0b300 cleared) */
+void (net_452d70)(void)
+{
+	u8 *reply = (u8 *)0xa052e8;
+	u32 start = GetTickCount();
+	u32 got = 0;
+	do {
+		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, 0xa05630), reply, 0x3e, 0);   /* recv */
+		if (n > 0)
+			got += n;
+	} while (GetTickCount() - start <= 3000 && got < 0x3e);
+	switch (GAME_VAR(int, 0xa05306)) {
+	case 0:
+		net_452de0(reply);
+		break;
+	case 1:
+		GAME_VAR(int, 0xa0b350) = 1;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	}
+}
+
 /* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
    the connection's state reset (arena_4519b0); then the connection flags cleared. Returns what the original leaves
    in eax */

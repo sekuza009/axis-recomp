@@ -3058,7 +3058,8 @@ void FUN_00470fc0(int a, int b, int c, const char *format, ...);
 DWORD net_454760(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_454690(void);
-LIFT_PLAIN(net_452d70, 452d70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_452d70(void);
 /* 0x42f0f0 FUN_0042f0f0(w, h): viewport and perspective projection (gluPerspective) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_0042f0f0(int w, int h);
@@ -4147,7 +4148,8 @@ int armc_412450(void);
    finished (0x9f105c) or skipped (0x4d7348), every 1.4 of the timer 0x9f16b8 shows one more character (a CR LF or a
    double-byte character at once) by copying the text so far to 0x9f1064; drawn in the briefing window, with a
    blinking cursor bar while still typing */
-LIFT_PLAIN(skirmish_445520, 445520)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_445520(void);
 /* 0x44dc60 profile_44dc60(): the profile message window: frame (0x4deb50), title 0x751d24, the OK button
    (texture 0x9db0a4) and its label 0x7517a4, the frame's border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4736,7 +4738,8 @@ DWORD menu_444070(void);
 /* 0x443f20 skirmish_processKeys(): back / enter save (mission_saveAxisMis), cancel leaves, up / down held
    (0x9db0a0 / 0x76d330) repeat after a delay (0x76d37c / 0x680bb4: 4 frames, then the key repeat 0x4b071c) moving
    the selection (skirmish_443cd0 / 443d10) */
-LIFT_PLAIN(skirmish_processKeys, 443f20)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void skirmish_processKeys(void);
 /* 0x434320 room_434320() / 0x405010 arena_editTextField_405010(): start typing in the chat line: keyboard
    released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room / arena chat
    position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
@@ -10095,7 +10098,7 @@ static void recv_setup(void)
 	g_mockRecvRet = (DWORD)r[irnd(0, 5)]; G32(0xa05630) = irnd(1, 99); fill((void *)0xa052e8, 0x40);
 	if (irnd(0, 1)) *(DWORD *)0xa05306 = irnd(0, 2);
 }
-T_PLAIN(net_452d70, 0x452d70, recv_setup();, 0, 0, 0, 0, 0)
+ST(net_452d70, recv_setup();, (CALL_PLAIN(0x452d70, 0, 0, 0, 0, 0), 0), (net_452d70(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(FUN_0042f0f0, g_a[0] = irnd(0, 2000); g_a[1] = irnd(0, 1500); GF(0x68038c) = csu_fr(100, 12000); GF(0x4e1870) = csu_fr(50, 300);, CALL_PLAIN(0x42f0f0, 0, g_a[0], g_a[1], 0, 0), (DWORD)(FUN_0042f0f0((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(input_asyncKeyPressed, input_setup(); fill((void *)0xae2c18, 0x300);, CALL_PLAIN(0x487bd0, 0, g_a[0] & 0xff, 0, 0, 0), (DWORD)(input_asyncKeyPressed((DWORD)(g_a[0] & 0xff))))
 ST(hud_46bd00, for (int i = 0; i < 4; i++) g_a[i] = irnd(-100, 1200); screen_random();, CALL_PLAIN(0x46bd00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (hud_46bd00((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])), 0))
@@ -13130,7 +13133,7 @@ static void typewriter_setup(void)
 	G32(0x9f16a8) = irnd(-50, 400); G32(0x9f16ac) = irnd(-50, 300); G32(0x4d23c8) = irnd(-50, 600); G32(0x4d23cc) = irnd(-50, 400);
 	memset((void *)0x9f1064, 0, 0x200); fill_str((char *)0x9f1064, 100, 32, 126);   /* drawn as is when nothing is typed; zeroed: a typing step copies without a terminator */
 }
-T_PLAIN(skirmish_445520, 0x445520, typewriter_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_445520, typewriter_setup();, (CALL_PLAIN(0x445520, 0, 0, 0, 0, 0), 0), (skirmish_445520(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the message window: menutex_setup's texture as frame and button, a window rectangle, two texts */
 static void profmsg_setup(void)
 {
@@ -14446,7 +14449,7 @@ ST(skirmish_saveSettings, menudisp_setup();, CALL_PLAIN(0x443e20, 0, 0, 0, 0, 0)
 ST(mission_447a50, menudisp_setup();, CALL_PLAIN(0x447a50, 0, 0, 0, 0, 0), (DWORD)(mission_447a50()))
 ST(mission_4479d0, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWORD)(mission_4479d0()))
 ST(menu_444070, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(menu_444070()))
-T_PLAIN(skirmish_processKeys, 0x443f20, menudisp_setup();, 0, 0, 0, 0, 0)
+ST(skirmish_processKeys, menudisp_setup();, (CALL_PLAIN(0x443f20, 0, 0, 0, 0, 0), 0), (skirmish_processKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_434320, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (room_434320(), 0))
 ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editTextField_405010(), 0))
 ST(menu_443ef0, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (menu_443ef0(), 0))
