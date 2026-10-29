@@ -110,8 +110,8 @@ void (setup_424810)(void)
 /* ---- the tunnel behind the setup pages ---- */
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
 #define g_tunnelAlpha GAME_VAR(float, 0x4de038)
-#define g_pulse GAME_VAR(float, 0x9db978)       /* bounces 0 .. 100 */
-#define g_pulseStep GAME_VAR(u32, 0x4df010)
+#define g_tunnelPulse GAME_VAR(float, 0x9db978)       /* bounces 0 .. 100 */
+#define g_tunnelPulseStep GAME_VAR(u32, 0x4df010)
 #define g_scroll GAME_VAR(float, 0x4e14fc)      /* runs 0 .. 200 */
 
 /* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), two quads either side of the moving seam
@@ -195,7 +195,7 @@ void (setup_423e50)(void)
 			s0 = 0.5f, ds = 0, t0 = 0.5f, t1 = 0.75f, s_far = 1.0f;
 		int texture;
 		if (layer == 0) {
-			glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_pulse), (const float *)0x4a9430), &g_tunnelAlpha)));
+			glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), &g_tunnelAlpha)));
 			texture = GAME_VAR(int, 0x4e0cd0);
 		} else if (layer == 1) {
 			glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
@@ -278,14 +278,14 @@ void (setup_423e50)(void)
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
-	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_pulseStep), &g_pulse);
-	g_pulse = f32(pulse);
+	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
+	g_tunnelPulse = f32(pulse);
 	if (!(pulse > *(const float *)0x4a93e8)) {
-		g_pulse = 0;
-		g_pulseStep = 0x3f800000;   /* 1 */
-	} else if (g_pulse >= *(const float *)0x4a93f4) {
-		g_pulse = 100.0f;
-		g_pulseStep = 0xbf800000;   /* -1 */
+		g_tunnelPulse = 0;
+		g_tunnelPulseStep = 0x3f800000;   /* 1 */
+	} else if (g_tunnelPulse >= *(const float *)0x4a93f4) {
+		g_tunnelPulse = 100.0f;
+		g_tunnelPulseStep = 0xbf800000;   /* -1 */
 	}
 	long double scroll = fadd_m(fmul_m(fld_m((const float *)0x4deda8), frame), &g_scroll);
 	g_scroll = f32(scroll);
@@ -293,6 +293,6 @@ void (setup_423e50)(void)
 		g_scroll = 0;
 }
 #undef g_scroll
-#undef g_pulseStep
-#undef g_pulse
+#undef g_tunnelPulseStep
+#undef g_tunnelPulse
 #undef g_tunnelAlpha
