@@ -13071,6 +13071,10 @@ static void session_setup(void)
 	fill((void *)0xa0e7a8, 0x40);
 	fill(BUF, 0x10); fill(BUF + 0x1f1cbc, 0x40 * 12 + 0x10);
 	g_a[0] = (int)rnd32(); g_a[1] = irnd(-1, 4);
+	/* cd_findDrive: a CD found mostly (none: sys_fatalError ends the game); scene_reset (its own test) stubbed: its
+	   space allocation is above what the mocked malloc gives, and the game ended there in every run */
+	static const DWORD cd[] = { 0x401000, 0, 0x470ad0, 0, 0 };
+	callee_stubs(cd, irnd(0, 4) ? 1 : 0);
 }
 ST(app_requireCd, session_setup();, (TC(void, 0x460cb0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (app_requireCd(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
 /* batch 114 */
