@@ -116,7 +116,7 @@ void (menu_frame)(void)
 		menu_428940(GAME_VAR(int, 0x9da3d8), GAME_VAR(int, 0x9da3dc));
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileIntro)
-		menu_drawCursor();
+		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
 	SwapBuffers(GAME_VAR(void *, 0x76d480));
