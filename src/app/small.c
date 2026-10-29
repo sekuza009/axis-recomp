@@ -494,3 +494,44 @@ int (app_42ef30)(int code)
 	}
 	return MessageBoxA(GAME_VAR(void *, 0x4ded18), (const char *)text, (const char *)0x751024, 0);
 }
+
+#define RegQueryValueExA(key, name, reserved, type, data, size) IMPORT(0x4a9008, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
+
+/* 0x42bde0: the server settings read from HKCU\<0x4b1728>: the server name (0xa0b24c, 50 bytes), two more values
+   (0xa055fc, 0xa05634; their size is what the read before left) and the port (0xa055f4, 4 bytes). Without the key a
+   message (which one by 0x9dae74), the key's unset handle closed (as the original does) and the main window closed.
+   Returns the last call's eax */
+int (reg_readServerSettings)(void)
+{
+	u32 key, type, size;
+	if (RegOpenKeyExA(0x80000001, (const char *)0x4b1728, 0, 0xf003f, &key)) {
+		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b16a4 : 0x4b1660));   /* sys_messageBox */
+		RegCloseKey(key);
+		return PostMessageA(GAME_VAR(void *, 0x4ded18), 0x10, 0, 0);   /* WM_CLOSE */
+	}
+	size = 50;
+	RegQueryValueExA(key, (const char *)0x4b1720, 0, &type, (void *)0xa0b24c, &size);
+	RegQueryValueExA(key, (const char *)0x4b1714, 0, &type, (void *)0xa055fc, &size);
+	size = 4;
+	RegQueryValueExA(key, (const char *)0x4b170c, 0, &type, (void *)0xa055f4, &size);
+	RegQueryValueExA(key, (const char *)0x4b1700, 0, &type, (void *)0xa05634, &size);
+	return RegCloseKey(key);
+}
+
+/* 0x43f640: the screen size (0x5b1998 x 0x4e045c) for video mode 0x83a9c0: 640x480, 1280x720, 1600x900, 1920x1080,
+   2560x1440, 3840x2160, 1024x768, or 7 the desktop's (0x67eefc x 0x76d430); any mode also sets 0x9da494 from
+   0x83a9d8, which it returns */
+int (app_43f640)(void)
+{
+	static const int sizes[7][2] = { { 640, 480 }, { 1280, 720 }, { 1600, 900 }, { 1920, 1080 }, { 2560, 1440 },
+	                                 { 3840, 2160 }, { 1024, 768 } };
+	u32 mode = GAME_VAR(u32, 0x83a9c0);
+	if (mode < 7) {
+		GAME_VAR(int, 0x5b1998) = sizes[mode][0];
+		GAME_VAR(int, 0x4e045c) = sizes[mode][1];
+	} else if (mode == 7) {
+		GAME_VAR(int, 0x5b1998) = GAME_VAR(int, 0x67eefc);
+		GAME_VAR(int, 0x4e045c) = GAME_VAR(int, 0x76d430);
+	}
+	return GAME_VAR(int, 0x9da494) = GAME_VAR(int, 0x83a9d8);
+}

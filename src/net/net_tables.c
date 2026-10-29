@@ -387,3 +387,20 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 		global_free(name);
 	return r;
 }
+
+/* 0x454d90: the first place in text where word appears (strncmp at each position where the first letters match, or
+   _strnicmp, ignoring case, when exact is 0); NULL when it does not */
+const char *(dplay_454d90)(const char *text, const char *word, int exact)
+{
+	int length = strlen(word);
+	int positions = strlen(text) - length + 1;
+	char first = word[0];
+	for (int i = 0; i < positions; i++) {
+		if (exact) {
+			if (text[i] == first && !GAME_CDECL(0x49fbe0, int, const char *, const char *, u32)(text + i, word, length))   /* strncmp */
+				return text + i;
+		} else if (!GAME_CDECL(0x4a8740, int, const char *, const char *, u32)(text + i, word, length))   /* _strnicmp */
+			return text + i;
+	}
+	return NULL;
+}

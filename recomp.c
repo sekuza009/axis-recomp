@@ -2718,7 +2718,8 @@ LIFT_PLAIN(net_452de0, 452de0)
 /* 0x46e1e0 ptx_crtlError: PTX video control error: print and exit */
 LIFT_PLAIN(ptx_crtlError, 46e1e0)
 /* 0x454d90 dplay_454d90: DirectPlay name compare/copy helper */
-LIFT_PLAIN(dplay_454d90, 454d90)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+const char *dplay_454d90(const char *text, const char *word, int exact);
 /* 0x42ef30 app_42ef30: startup checks with message boxes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_42ef30(int code);
@@ -2901,7 +2902,8 @@ DWORD gfx_setMenuCamera(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41b300(void);
 /* 0x43f640 app_43f640: screen size from the video mode */
-LIFT_PLAIN(app_43f640, 43f640)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int app_43f640(void);
 /* 0x490b30 (thiscall) hud_490b30(i, view): queue object i (0x2cc-byte records) in the view volume when it is
    visible and its bounding sphere touches the camera box; 0x490da0 (thiscall) hud_490da0(view): all active ones */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3140,7 +3142,8 @@ int math_initMathFunction(void);
 /* 0x4684c0 glWindow_4684c0: the default GL state */
 LIFT_PLAIN(glWindow_4684c0, 4684c0)
 /* 0x42bde0 reg_readServerSettings: server names and ports from the registry, or a message and quit */
-LIFT_PLAIN(reg_readServerSettings, 42bde0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int reg_readServerSettings(void);
 /* text passes (x, y, str): one glyph quad per character (colour codes, line breaks and wrapping as in the other
    passes): ASCII 5/8/16/32 px, and the Korean initial / medial+final passes at 13 and 31 px */
 LIFT_PLAIN(text_ascii5Pass, 403060)
@@ -9356,7 +9359,7 @@ ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x8
 ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
 ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
 T_PLAIN(net_452de0, 0x452de0, strs_setup();, 0, BUF + 0x100, 0, 0, 0)
-T_PLAIN(dplay_454d90, 0x454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0)
+ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)dplay_454d90((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
 ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
 T_PLAIN(gfx_setPixelFormat, 0x42f000, g_mockPixelFormat = irnd(0, 9);, 0, 0xdc0, 0, 0, 0)
 T_PLAIN(autoplay_listFiles, 0x440c60, g_mockFindCount = irnd(0, 12);, 0, 0, 0, 0, 0)
@@ -9703,7 +9706,7 @@ static void armcam_setup(void)
 }
 /* armc_41b300 leaves the mode or slot in eax; its callers return it up to menu_frame, which never reads it */
 ST(armc_41b300, armcam_setup();, (CALL_PLAIN(0x41b300, 0, 0, 0, 0, 0), 0), (armc_41b300(), 0))
-T_PLAIN(app_43f640, 0x43f640, G32(0x83a9c0) = irnd(-1, 9);, 0, 0, 0, 0, 0)
+ST(app_43f640, G32(0x83a9c0) = irnd(-1, 9);, CALL_PLAIN(0x43f640, 0, 0, 0, 0, 0), (DWORD)(app_43f640()))
 #define HUDSCENE BUF
 /* the scene here starts at the scratch area itself (these functions use fields from +0xa08 on, below SCENE's
    mapped part); scene objects (0x2cc bytes at +0x131ae44): active flag +4, hidden flag (bit 1 of +0xc), model +0x27c (the
@@ -10137,7 +10140,7 @@ ST(net_452c80, netrec_setup();, CALL_PLAIN(0x452c80, 0, BUF + 0x100, 0, 0, 0), (
 ST(math_makeMathFunctionTableFile, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, CALL_PLAIN(0x46c340, 0, 0, 0, 0, 0), (DWORD)(math_makeMathFunctionTableFile()))
 ST(math_initMathFunction, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, CALL_PLAIN(0x46c270, 0, 0, 0, 0, 0), (DWORD)(math_initMathFunction()))
 T_PLAIN(glWindow_4684c0, 0x4684c0, , 0, 0, 0, 0, 0)
-T_PLAIN(reg_readServerSettings, 0x42bde0, g_mockRegFail = !irnd(0, 3); G32(0x9dae74) = irnd(0, 2); g_paintStacks = 1; /* a failed open closes the unset key */, 0, 0, 0, 0, 0)
+ST(reg_readServerSettings, g_mockRegFail = !irnd(0, 3); G32(0x9dae74) = irnd(0, 2); g_paintStacks = 1; /* a failed open closes the unset key */, CALL_PLAIN(0x42bde0, 0, 0, 0, 0, 0), (DWORD)(reg_readServerSettings()))
 /* text: printable ASCII with colour codes ("$#n", "$[n]"), '|' and CR LF, or Korean 2-byte characters; the menu
    state (9999 / 400 enable the codes) and the wrap limits varied */
 static void textpass_setup(void)
