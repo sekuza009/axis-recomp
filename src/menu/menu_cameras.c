@@ -4,6 +4,7 @@
    eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in
    the original's order and at x87 precision (long double). */
 #include "../game.h"
+#include <string.h>
 
 typedef long double X;
 
@@ -346,4 +347,97 @@ void (setup_4230e0)(void)
 			I(0x4df024 + a * 4) = I(0x9db090 + a * 4);
 		I(0x4ddac8) = 0x29a;
 	}
+}
+
+/* 0x42ada0: the free camera's keys (while watching): typing a chat line (0x4de6fc) until it is closed (0x68039c
+   clear): then sent (match_4512c0, 0x9fd95c / 0x9fd948) unless empty and the keyboard taken back; 0x4defa8 opens the
+   chat line (50 characters); the second cancel key leaves (a hosted game, 0xa0baf8, told first); the turn keys
+   (0x4def00 / 0x4def08) slide the camera and the menu camera sideways (0x4de6c0, 0x4de6c8 at 0x4a9534 a frame),
+   the move keys step it (match_42aa30 / match_42aad0); then the menu camera follows (0x680378 .. 0x680380 and the
+   look-at 0x4df024 ..) and the camera's position is kept in the watched slot (0x4dfa1c, 0x58 bytes, by 0x9fd954);
+   0x680388 toggles 0x4e0464 between 1 and 2, and four keys step 0x4de6e0 by 1 / 10 (not below 1). The original
+   leaves eax to callers that ignore it */
+void (match_debugHandler)(void)
+{
+	const float *frame = (const float *)0x4b071c, *speed = (const float *)0x4a9534;
+	if (GAME_VAR(int, 0x4de6fc)) {
+		if (GAME_VAR(int, 0x68039c))
+			return;
+		if (strlen((const char *)0x9dc92c)) {
+			match_4512c0((const char *)0x9dc92c);
+			GAME_VAR(int, 0x4de6fc) = 0;
+			GAME_VAR(int, 0x9fd95c) = 1;
+			GAME_VAR(u32, 0x9fd948) = 0x9dc92c;
+		} else {
+			GAME_VAR(int, 0x4de6fc) = 0;
+			GAME_VAR(int, 0x9fd95c) = 0;
+		}
+		GAME_VAR(int, 0x68039c) = 0;
+		match_431590();
+		input_initKeyboard(GAME_VAR(void *, 0x4ded18));
+		return;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4defa8))) {
+		input_releaseKeyboard();
+		GAME_VAR(int, 0x68039c) = 1;
+		menu_clearInputBuffer(0x32);
+		GAME_VAR(int, 0x4de6fc) = 1;
+		GAME_VAR(u32, 0x9da434) = 0x41a00000;   /* 20 */
+		GAME_VAR(int, 0x9da3d8) = 0x32;
+		GAME_VAR(int, 0x9da3dc) = 0x1cc;
+		return;
+	}
+	if (input_justPressed(g_keyCancel2)) {
+		if (GAME_VAR(int, 0xa0baf8)) {
+			GAME_VAR(int, 0x9f941c) = 1;
+			FUN_00451270((void *)0x9f9418, 0, 0);
+			GAME_VAR(int, 0x9f941c) = 0;
+		}
+		GAME_VAR(int, 0x4de6f8) = 1;
+		game_returnToMenus_41e8b0();
+		return;
+	}
+	if (input_isDown(GAME_VAR(int, 0x4def00)) == 1) {
+		long double a = fmul_m(fmul_m(fld_m(frame), &F(0x4de6c0)), speed);
+		F(0x4de344) = f32(fadd_m(a, &F(0x4de344)));
+		long double b = fmul_m(fmul_m(fld_m(&F(0x4de6c8)), frame), speed);
+		float bf = f32(b);
+		F(0x4de34c) = f32(fadd_m(b, &F(0x4de34c)));
+		F(0x4df024) = f32(fadd_m(a, &F(0x4df024)));
+		F(0x4df02c) = f32(fadd_m(fld_m(&bf), &F(0x4df02c)));
+	}
+	if (input_isDown(GAME_VAR(int, 0x4def08)) == 1) {
+		long double a = fmul_m(fmul_m(fld_m(frame), &F(0x4de6c0)), speed);
+		F(0x4de344) = f32(fld_m(&F(0x4de344)) - a);
+		float bf = f32(fmul_m(fmul_m(fld_m(&F(0x4de6c8)), frame), speed));
+		F(0x4de34c) = f32(fsub_m(fld_m(&F(0x4de34c)), &bf));
+		F(0x4df024) = f32(fld_m(&F(0x4df024)) - a);
+		F(0x4df02c) = f32(fsub_m(fld_m(&F(0x4df02c)), &bf));
+	}
+	if (input_isDown(GAME_VAR(int, 0x4def10)) == 1)
+		match_42aa30();
+	if (input_isDown(GAME_VAR(int, 0x4def18)) == 1)
+		match_42aad0();
+	GAME_VAR(u32, 0x680378) = GAME_VAR(u32, 0x4de344);
+	GAME_VAR(u32, 0x680380) = GAME_VAR(u32, 0x4de34c);
+	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));
+	F(0x4df028) = f32(fadd_m(fld_m(&F(0x4de348)), (const float *)0x4a9418));
+	u32 *slot = (u32 *)(0x4dfa1c + GAME_VAR(u8, 0x9fd954) * 0x58);
+	slot[0] = GAME_VAR(u32, 0x4de344);
+	slot[1] = GAME_VAR(u32, 0x4de348);
+	slot[2] = GAME_VAR(u32, 0x4de34c);
+	F(0x4df02c) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c8)), (const float *)0x4a9560), &F(0x4de34c)));
+	F(0x68037c) = f32(fadd_m(fld_m(&F(0x4de6c4)), &F(0x4de348)));
+	if (input_justPressed(GAME_VAR(int, 0x680388)) == 1)
+		GAME_VAR(int, 0x4e0464) = GAME_VAR(int, 0x4e0464) == 1 ? 2 : 1;
+	if (input_justPressed(GAME_VAR(int, 0x4e0468)) == 1)
+		GAME_VAR(int, 0x4de6e0)++;
+	if (input_justPressed(GAME_VAR(int, 0x4e046c)) == 1)
+		GAME_VAR(int, 0x4de6e0) += 10;
+	if (input_justPressed(GAME_VAR(int, 0x4e0470)) == 1)
+		GAME_VAR(int, 0x4de6e0)--;
+	if (input_justPressed(GAME_VAR(int, 0x4e0874)) == 1)
+		GAME_VAR(int, 0x4de6e0) -= 10;
+	if (GAME_VAR(int, 0x4de6e0) < 1)
+		GAME_VAR(int, 0x4de6e0) = 1;
 }

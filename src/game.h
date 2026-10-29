@@ -660,6 +660,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define GetWindowTextLengthA(hwnd) IMPORT(0x4a92e0, int, void *)(hwnd)
 #define GetWindowTextA(hwnd, out, size) IMPORT(0x4a92e4, int, void *, char *, int)(hwnd, out, size)
 #define game_returnToMenus_41e8b0() GAME_CDECL(0x41e8b0, void, void)()
+#define match_4512c0(text) GAME_CDECL(0x4512c0, int, const char *)(text)   /* a chat line sent */
+#define match_431590() GAME_CDECL(0x431590, void, void)()
+#define match_42aa30() GAME_CDECL(0x42aa30, void, void)()   /* the free camera forward */
+#define match_42aad0() GAME_CDECL(0x42aad0, void, void)()   /* and back */
+#define FUN_00451270(players, id, a) GAME_CDECL(0x451270, void, void *, u32, int)(players, id, a)
 #define setup_4230e0() GAME_CDECL(0x4230e0, void, void)()
 #define setup_4277c0() GAME_CDECL(0x4277c0, void, void)()
 #define setup_423330() GAME_CDECL(0x423330, void, void)()

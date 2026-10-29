@@ -5250,7 +5250,8 @@ DWORD mainmenu_startNetGame(void);
 DWORD mainmenu_processKeys(void);
 LIFT_PLAIN(menu_436e10, 436e10)
 LIFT_PLAIN(armc_enter, 441260)
-LIFT_PLAIN(match_debugHandler, 42ada0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void match_debugHandler(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_454c10(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15241,7 +15242,7 @@ T_PLAIN(armc_enter, 0x441260, gen_setup(g_gs_441260, g_gi_441260, g_gb_441260);,
 static const DWORD g_gs_42ada0[] = { 0x401310, 1, 0x401460, 0, 0x401590, 1, 0x401600, 1, 0x41e8b0, 0, 0x42aa30, 0, 0x42aad0, 0, 0x431560, 1, 0x431590, 0, 0x451270, 3, 0x4512c0, 1, 0 };
 static const DWORD g_gi_42ada0[] = { 0x9fd954, 0x4b071c, 0x4de6c0, 0x4de6c4, 0x4de6c8, 0x4df024, 0x4df028, 0x4df02c, 0x68037c, 0x4de344, 0x4de348, 0x4de34c, 0x4de6e0, 0x4de6f8, 0x4de6fc, 0x4ded18, 0x4def00, 0x4def08, 0x4def10, 0x4def18, 0x4defa8, 0x4e0464, 0x4e0468, 0x4e046c, 0x4e0470, 0x4e0874, 0x680378, 0x680380, 0x680388, 0x68039c, 0x76d48c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9f941c, 0x9fd948, 0x9fd95c, 0xa0baf8, 0 };
 static const DWORD g_gb_42ada0[] = { 0x9dc92c, 0x9f9418, 0 };
-T_PLAIN(match_debugHandler, 0x42ada0, gen_setup(g_gs_42ada0, g_gi_42ada0, g_gb_42ada0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(match_debugHandler, gen_setup(g_gs_42ada0, g_gi_42ada0, g_gb_42ada0);, (CALL_PLAIN(0x42ada0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (match_debugHandler(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the arena's connection slots 3 / 4 (0xa0d7ac / 0xa0d7b0): host through them (dplay_hostSession, 8 arguments) */
 static const DWORD g_stubHost34[] = { 0x453cf0, 8, 0 };
 ST(arena_454c10, small_setup(g_stubHost34); G32(0xa0d7ac) = irnd(0, 1);,
