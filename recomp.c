@@ -3251,7 +3251,8 @@ void room_43df00(void);
 /* 0x428890 menu_428890(x, y): the blinking cursor bar; 0x428c30 menu_drawFrame(x0, y0, x1, y1): a window frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_428890(int x, int y);
-LIFT_PLAIN(menu_drawFrame, 428c30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void menu_drawFrame(int x0, int y0, int x1, int y1);
 /* GL window: 0x468050 glWindow_restoreDisplayMode / 0x467f20 glWindow_setDisplayModeBy(w, h, bpp) /
    0x467e60 glWindow_setupPixelFormat(dc) / 0x468450 glWindow_resize(w, h); errors as message boxes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -10501,7 +10502,7 @@ static void drawframe_setup(void)
 	if (irnd(0, 3)) { g_a[0] = irnd(0, 300); g_a[1] = irnd(0, 200); g_a[2] = g_a[0] + irnd(10, 340); g_a[3] = g_a[1] + irnd(10, 280); }
 	else for (int i = 0; i < 4; i++) g_a[i] = irnd(-50, 700);
 }
-T_PLAIN(menu_drawFrame, 0x428c30, drawframe_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menu_drawFrame, drawframe_setup();, (CALL_PLAIN(0x428c30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (menu_drawFrame(g_a[0], g_a[1], g_a[2], g_a[3]), 0))   /* its eax reaches only menu_frame, which ignores it */
 static void dispmode_setup(void)
 {
 	g_mockDispRet = irnd(0, 2) ? 0 : (DWORD)irnd(-2, 1); g_mockCaps = (DWORD)irnd(0, 64); g_mockPixelFormat = irnd(0, 9);

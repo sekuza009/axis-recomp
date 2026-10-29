@@ -184,6 +184,106 @@ u32 (gfx_setMenuCamera)(void)
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
 
+/* ---- a dialog frame opening on (x0, y0) .. (x1, y1) (phase 0x4de740, frame counter 0x76d428) ---- */
+#define g_framePhase GAME_VAR(int, 0x4de740)
+#define g_frameCount GAME_VAR(int, 0x76d428)
+
+/* the counter's progress: frames x the frame time x scale (unrounded) */
+static long double frame_progress(const float *scale)
+{
+	return fmul_m(fmul_m((long double)g_frameCount, &g_frameTime), scale);
+}
+
+/* a progress, or the limit once it has gone past it */
+static int up_to(long double progress, int limit)
+{
+	return progress > (long double)limit ? limit : ftol(progress);
+}
+
+/* the fading lines' alpha: 1 - frames x the frame time / 10, 0 once below */
+static float fading(void)
+{
+	long double a = frame_progress((const float *)0x4a93ec);
+	return a > *(const float *)0x4a9424 ? 0.0f : f32(fsubr_m(a, (const float *)0x4a9424));   /* 1 - a */
+}
+
+static void line(int xa, int ya, int xb, int yb)
+{
+	glBegin(GL_LINES);
+	menu_vertex(xa, ya);
+	menu_vertex(xb, yb);
+	glEnd();
+}
+
+/* the next phase once the counter x 64 x the frame time passes 640 */
+static int phase_done(int next)
+{
+	g_frameCount++;
+	if (fmul_m((long double)(g_frameCount << 6), &g_frameTime) > *(const float *)0x4a9510) {
+		g_framePhase = next;
+		g_frameCount = 0;
+		return 1;
+	}
+	return 0;
+}
+
+/* 0x428c30: the dialog frame opening, one step a frame, in three phases: 1 two cyan lines grow from the left edge
+   along y0 and from the bottom up x0 (64 and 48 units a frame); 2 those fade out as full-screen lines while two
+   more grow in from the right along y1 and down x1; 3 the green lines along y1 and x1 fade while a dark blue panel
+   (0, 0, 0.5, 0.3) grows from (x0, y0) by a tenth of the frame a frame, and once it is as wide as the frame the
+   phase goes back to 1 and the message box flag (0x90d1c4) is cleared. Other phases draw nothing. The callers pass
+   on the eax it leaves to menu_frame, which ignores it */
+void (menu_drawFrame)(int x0, int y0, int x1, int y1)
+{
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	if (g_framePhase == 1) {
+		glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
+		line(0, y0, up_to(frame_progress((const float *)0x4a9518), x1), y0);
+		glBegin(GL_LINES);
+		menu_vertex(x0, g_screenH);
+		long double down = frame_progress((const float *)0x4a9514);
+		menu_vertex(x0, down > (long double)y1 ? g_screenH - y1 : g_screenH - ftol(down));
+		glEnd();
+		if (phase_done(2))
+			return;
+	}
+	if (g_framePhase == 2) {
+		glColor4f(0.0f, 1.0f, 1.0f, fading());
+		line(0, y0, g_screenW, y0);
+		line(x0, g_screenH, x0, 0);
+		glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
+		long double across = frame_progress((const float *)0x4a9518);
+		line(across > (long double)x1 ? g_screenW - x1 : g_screenW - ftol(across), y1, g_screenW, y1);
+		line(x1, up_to(frame_progress((const float *)0x4a9514), y1), x1, 0);
+		if (phase_done(3))
+			return;
+	}
+	if (g_framePhase != 3)
+		return;
+	glColor4f(0.0f, 1.0f, 0.0f, fading());
+	line(0, y1, g_screenW, y1);
+	line(x1, g_screenH, x1, 0);
+	set_colour_bits(g_rectColour, 0, 0, 0x3f000000, 0x3e99999a);   /* 0.5, 0.3 */
+	int dx = (x1 - x0) / 10, dy = (y1 - y0) / 10, n = g_frameCount;
+	long double grown = fmul_m((long double)(dy * n), &g_frameTime);
+	long double bottom = (long double)y0 + grown;
+	int right = ftol(fmul_m((long double)(dx * n), &g_frameTime));
+	if ((long double)y1 < bottom || __builtin_isnan(bottom))
+		menu_drawRect(x0, y0, right + x0, y1, 1);
+	else
+		menu_drawRect(x0, y0, right + x0, ftol(grown) + y0, 1);
+	n = ++g_frameCount;
+	long double width = fmul_m((long double)(dx * n), &g_frameTime) + (long double)x0;
+	if (!((long double)x1 > width)) {
+		g_framePhase = 1;
+		g_frameCount = 0;
+		GAME_VAR(int, 0x90d1c4) = 0;
+	}
+}
+#undef g_framePhase
+#undef g_frameCount
+
 /* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (0x4df81c, then the
    message 0x74de24) in yellow. Returns the text call's eax */
 u32 (menu_4290d0)(void)
