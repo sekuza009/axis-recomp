@@ -418,6 +418,18 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_461320(scene, name) GAME_THISCALL(0x461320, void, Scene *, const char *)(scene, name)
 #define armc_461370(scene, v) GAME_THISCALL(0x461370, void, Scene *, int)(scene, v)
 #define match_4613a0(scene, team) GAME_THISCALL(0x4613a0, void, Scene *, int)(scene, team)
+#define match_49ca20(scene, page, item) GAME_THISCALL(0x49ca20, void, Scene *, int, int)(scene, page, item)   /* the Esc menu opened on page */
+#define match_49d150(scene) GAME_THISCALL(0x49d150, void, Scene *)(scene)
+#define msg_playerChangedTeam(scene, player, team) GAME_THISCALL(0x462e30, void, Scene *, int, int)(scene, player, team)
+#define msg_playerJoinedTeam(scene, player, team) GAME_THISCALL(0x462d30, void, Scene *, int, int)(scene, player, team)
+#define match_463610(scene, a, b, text) GAME_THISCALL(0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define match_4635b0(scene, a, b, text) GAME_THISCALL(0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define vsprintf_wrap_463450(scene, text) GAME_CDECL(0x463450, int, Scene *, const char *)(scene, text)   /* a HUD notice */
+#define match_44ac90(x, y, maxLength) GAME_CDECL(0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
+#define match_44ace0() GAME_CDECL(0x44ace0, void, void)()
+#define match_487ed0(scene) GAME_THISCALL(0x487ed0, void, Scene *)(scene)   /* the recording stopped */
+#define autoplay_startRecording(scene, name) GAME_THISCALL(0x487cb0, void, Scene *, const char *)(scene, name)
+#define music_playMatch(scene) GAME_THISCALL(0x462850, void, Scene *)(scene)
 #define armc_setHeadIndex(scene, i) GAME_THISCALL(0x4613d0, void, Scene *, int)(scene, i)
 #define armc_setChestIndex(scene, i) GAME_THISCALL(0x461410, void, Scene *, int)(scene, i)
 #define armc_setArmIndex(scene, i) GAME_THISCALL(0x461450, void, Scene *, int)(scene, i)

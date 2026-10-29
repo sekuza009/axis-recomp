@@ -5440,7 +5440,8 @@ void menuState700_armCenter(void);
    music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
 #include "lifted/grp140.c"
 LIFT_PLAIN(game_processGameModeInit, 49df10)
-LIFT_PLAIN(match_escMenu, 49ca70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD wnd_setCursor(void);
 /* 0x48fd50 scene_loadPath(path) (thiscall on the scene, ret 4) */
@@ -15640,7 +15641,7 @@ static void escinput_setup(void)
 	v = irnd(-3, 3); memcpy(BUF + 0x234240d, &v, 4);
 	float f = irnd(0, 4) ? 0.5f : (float)irnd(0, 50) / 100.0f; memcpy(BUF + 0x2340c9c, &f, 4);
 }
-T_PLAIN(match_escMenu, 0x49ca70, escinput_setup(); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(match_escMenu, escinput_setup();, (TC(void, 0x49ca70, char *)(BUF), 0), (match_escMenu(BUF), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the shutdown (wnd_setCursor): the game object 0x9087b4 kept 0 (its deleting destructor would run on the real
    game), the sounds 0x4dd4d4 .., the cursor; callees stubbed. scene_loadPath(path) (thiscall on the scene): the
    path record at +0x2148ed8 loaded once (+0x2148ee0), the path's name looked up (stubbed), its sound */
