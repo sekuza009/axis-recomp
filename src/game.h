@@ -796,4 +796,21 @@ typedef struct { float r, g, b, a; } Colour;
 typedef struct { int n, x[5], y[5]; } Outline;
 #define point_in_outline(x, y, outline) GAME_CDECL(0x41eea0, int, int, int, Outline)(x, y, outline)   /* FUN_0041eea0 */
 
+/* the Korean text passes (text/text_codes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */
+#define text_hanCho(x, y, s) GAME_CDECL(0x401870, void, int, int, const char *)(x, y, s)
+#define text_hanJungJong(x, y, s) GAME_CDECL(0x401aa0, void, int, int, const char *)(x, y, s)
+#define text_hanCho32(x, y, s) GAME_CDECL(0x401ce0, void, int, int, const char *)(x, y, s)
+#define text_hanJungJong32(x, y, s) GAME_CDECL(0x401e70, void, int, int, const char *)(x, y, s)
+
+/* strcmp as the original inlines it: -1 / 0 / 1, the bytes compared unsigned */
+static inline int str_order(const char *a, const char *b)
+{
+	for (;; a++, b++) {
+		if (*a != *b)
+			return (u8)*a < (u8)*b ? -1 : 1;
+		if (*a == '\0')
+			return 0;
+	}
+}
+
 #endif

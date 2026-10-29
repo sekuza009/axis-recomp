@@ -2598,13 +2598,17 @@ int app_checkLauncherRunning(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_loadList(int count);
 /* 0x447320 profile_delete: delete the current profile from the list file. Lifted */
-LIFT_PLAIN(profile_delete, 447320)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_delete(void);
 /* 0x443af0 mission_saveAxisMis: load mission k's block from the .mis file. Lifted */
-LIFT_PLAIN(mission_saveAxisMis, 443af0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mission_saveAxisMis(int k);
 /* 0x43f160 arena_readLaunchFile: parse the launcher command line, write axiswl.dat. Lifted */
-LIFT_PLAIN(arena_readLaunchFile, 43f160)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_readLaunchFile(char *line);
 /* 0x4435f0 mission_loadAxisMis: read the mission list file. Lifted */
-LIFT_PLAIN(mission_loadAxisMis, 4435f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD mission_loadAxisMis(void);
 /* 0x42d7f0 cfg_readLines: read axis.cfg lines (fgets/strtok) into the settings. Lifted */
 LIFT_PLAIN(cfg_readLines, 42d7f0)
 /* 0x40d4e0 arena_loadSettings: read an arena settings file (fgets/strtok/atoi). Lifted */
@@ -2736,7 +2740,8 @@ int gfx_setPixelFormat(void *dc);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int autoplay_listFiles(void);
 /* 0x42b3e0 data_loadMessages: load messages.txt (fgets) */
-LIFT_PLAIN(data_loadMessages, 42b3e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD data_loadMessages(void);
 /* 0x4474a0 profile_create: create a new pilot profile (directory + files) */
 LIFT_PLAIN(profile_create, 4474a0)
 /* 0x42ba40 data_loadSkirmishInfo: load the skirmish info file */
@@ -2925,11 +2930,14 @@ void THISCALL hud_490da0(void *scene, void *view);
 static THISCALL DWORD game_setGameTypeFlags(char *scene, DWORD type) { DWORD v[1] = { type }; return run_lifted(lift_4732f0, (DWORD)scene, 1, v); }
 /* 0x42c9f0 cfg_parseGraphic(f) / 0x42c6f0 cfg_parseServer(f): write the graphic / server settings to axis.cfg;
    0x42e080 cfg_42e080(f): read the key bindings section */
-LIFT_PLAIN(cfg_parseGraphic, 42c9f0)
-LIFT_PLAIN(cfg_parseServer, 42c6f0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_parseGraphic(void *f);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD cfg_parseServer(void *f);
 LIFT_PLAIN(cfg_42e080, 42e080)
 /* 0x40e7a0 armc_saveSelection: keep the customised parts and colours, save the progress */
-LIFT_PLAIN(armc_saveSelection, 40e7a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD armc_saveSelection(void);
 /* 0x45ebc0 (thiscall) actor_45ebc0(p): player p's starting values (+0x1c/+0x20/+0x128 and four slots) by game type */
 static THISCALL DWORD actor_45ebc0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_45ebc0, (DWORD)scene, 1, v); }
 /* 0x435770 room_435770: rebuild the room's 10 game slots (0x44 bytes at 0x9dcef0) from the listed games at 0xa05330 */
@@ -3161,14 +3169,20 @@ int reg_readServerSettings(void);
    passes): ASCII 5/8/16/32 px, and the Korean initial / medial+final passes at 13 and 31 px */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD text_ascii5Pass(int x, int y, const void *s);
-LIFT_PLAIN(text_ascii8Pass, 402010)
-LIFT_PLAIN(text_ascii16Pass, 402210)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_ascii8Pass(int x, int y, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_ascii16Pass(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD text_ascii32Pass(int x, int y, const char *s);
-LIFT_PLAIN(text_hanCho, 401870)
-LIFT_PLAIN(text_hanJungJong, 401aa0)
-LIFT_PLAIN(hud_401ce0, 401ce0)
-LIFT_PLAIN(hud_401e70, 401e70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_hanCho(int x, int y, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD text_hanJungJong(int x, int y, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD hud_401ce0(int x, int y, const char *s);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD hud_401e70(int x, int y, const char *s);
 /* batch 58: the lobby / room network senders (lifted/net2.c); Winsock send and Sleep are mocked in the tests */
 #include "lifted/net2.c"
 /* 0x4521c0 net_send(msg, socket): send the 4-byte message code on socket 100 (lobby) / 101 (room), then the
@@ -3238,7 +3252,8 @@ static THISCALL DWORD armc_461210(char *t) { return run_lifted(lift_461210, (DWO
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int sys_checkClockTampering(void);
 /* 0x44ba60 profile_deleteFiles: delete the selected profile's files and reload the list */
-LIFT_PLAIN(profile_deleteFiles, 44ba60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_deleteFiles(void);
 /* 0x432400 reg_writeCharacterSettings: player name and character choices into the registry; 0x433640 room_433640 /
    0x43e610 room_43e610: room steps that save them */
 LIFT_PLAIN(reg_writeCharacterSettings, 432400)
@@ -3849,7 +3864,8 @@ void room_43bcb0(void);
 /* 0x46b950 pen_init(name): the HUD pixel font. A second call (0xa106a8 == 1) gives a message and 0; otherwise the
    font texture by name from the global texture set (0xa106ac), the glyph widths (8) and the texture coordinates of
    the 8-pixel and 14-pixel glyph grids (21 per row) are filled in */
-LIFT_PLAIN(pen_init, 46b950)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int pen_init(const char *name);
 /* batch 97 (lifted/grp43.c) */
 #include "lifted/grp43.c"
 /* 0x41b400 armc_41b400(): the arm-customise screen's five spinning part panels: for k = 1..5, under the menu camera
@@ -4116,7 +4132,8 @@ DWORD mainmenu_442d10(void);
 #include "lifted/grp63.c"
 /* 0x412450 armc_412450(): the armour screen's three mode tabs: a textured tab each (texture 0x9db0a4), the current
    mode (0x4dc798) brighter, and their labels (0x7565a4, 0x80 apart) in the selected / normal colours */
-LIFT_PLAIN(armc_412450, 412450)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int armc_412450(void);
 /* 0x445520 skirmish_445520(): the briefing typewriter: while text is shown (offset 0x9ef1ec into 0x9eeba4) and not
    finished (0x9f105c) or skipped (0x4d7348), every 1.4 of the timer 0x9f16b8 shows one more character (a CR LF or a
    double-byte character at once) by copying the text so far to 0x9f1064; drawn in the briefing window, with a
@@ -4124,7 +4141,8 @@ LIFT_PLAIN(armc_412450, 412450)
 LIFT_PLAIN(skirmish_445520, 445520)
 /* 0x44dc60 profile_44dc60(): the profile message window: frame (0x4deb50), title 0x751d24, the OK button
    (texture 0x9db0a4) and its label 0x7517a4, the frame's border */
-LIFT_PLAIN(profile_44dc60, 44dc60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44dc60(void);
 /* 0x40b550 arena_drawCustomOption() / 0x43bde0 room_drawCustomOption(): the map preview (reloaded first when
    0x680cd0 is set: arena_40b420 / room_43bcb0) or, for custom rules (0x4db54a / 0x4df9ea), a dark box saying
    "CUSTOM"; a yellow frame round it */
@@ -4418,7 +4436,8 @@ void profile_44f810(void);
    (and a request when it closes), else while waiting an answer (0x76d40c) fills the list (room_435770) and keeps
    the column and page (0x9dd300, 0x9dd1b4), the blink counts down (by 0x4b071c * 0x4ad498, from 1000 again below
    0); the ranking table (room_43d060) */
-LIFT_PLAIN(room_43ede0, 43ede0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_43ede0(void);
 /* batch 143 (lifted/grp89.c): the controls / crosshair screen */
 #include "lifted/grp89.c"
 /* 0x425cd0 setup_crosshairScreen(): the controls dialog (window 0x4dde80..): frame, lines, column heads
@@ -4582,7 +4601,8 @@ int dplay_getPlayerName(DWORD id, void **out);
    then into the global block 0xa0baf4; session flags 0x44, max players 16), SetConnectionSettings, ConnectEx into
    0xa0b404, CreatePlayer, host or client by the session flags (0xa0baf8); then (also when the lobby part fails)
    a plain DirectPlay object (arena_4539f0) and EnumConnections with dplay_enumConnections; frees the block */
-LIFT_PLAIN(dplay_create, 453790)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_create(void);
 /* 0x453cf0 dplay_hostSession(max, name, a3, a4, a5, c6, c7, data): fills the session description 0xa0b3b0 (the
    connection kind 0's address from net_getLocalAddress / arena_4542a0), Open as host, CreatePlayer named name;
    the player id into 0xa0b424, data into 0xa0b428, host flag 0xa0baf8, then claims a player slot (arena_451410).
@@ -5085,9 +5105,12 @@ DWORD game_returnToMenus_41e9d0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD game_returnToMenus_41eb00(void);
 LIFT_PLAIN(room_4036c0, 4036c0)
-LIFT_PLAIN(menuState900_enterSkirmish, 443950)
-LIFT_PLAIN(room_434490, 434490)
-LIFT_PLAIN(menuState500_enter, 447750)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int menuState900_enterSkirmish(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_434490(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int menuState500_enter(void);
 /* 0x462b50 msg_playerConnected(game, player) / 0x462c30 msg_chatLine(game, player, text, from): the message
    by mode 0x9dae74 (a chat line only from someone else, 0x234243e) and a sound */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5146,7 +5169,8 @@ DWORD menu_437140(void);
 DWORD arena_405690(int session);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_435d30(void);
-LIFT_PLAIN(room_433e60, 433e60)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int room_433e60(int k);
 LIFT_PLAIN(mainmenu_startNetGame, 4419d0)
 LIFT_PLAIN(mainmenu_processKeys, 441e00)
 LIFT_PLAIN(menu_436e10, 436e10)
@@ -5178,7 +5202,8 @@ LIFT_PLAIN8(sound_play3D, 456ed0)
 /* batch 178 (lifted/grp128.c): game_postMatch (after a match: by mode back to the room, arena, lobby or menus,
    the result sent, the music) and dplay_initConnection */
 #include "lifted/grp128.c"
-LIFT_PLAIN(game_postMatch, 420100)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD game_postMatch(void);
 /* 0x453a90 dplay_initConnection(kind, address): a fresh DirectPlay object for connection kind 0..3 (TCP/IP: the
    host address as a compound address from the lobby; the others stored), InitializeConnection, the caps' three
    values into 0xa0bb00; 1, or 0 on a failure */
@@ -9279,8 +9304,8 @@ T_PLAIN(cfg_keyBindings, 0x42cba0, , 0, VFS_FILE(1), 0, 0, 0)
 ST(console_loadFile, vfs_content(90, 0x2000); g_a[0] = irnd(0, 7);, CALL_PLAIN(0x41e7c0, 0, g_a[0], 0, 0, 0), (DWORD)(console_loadFile((DWORD)(g_a[0]))))
 ST(app_checkLauncherRunning, vfs_content(0, 0x6000);, CALL_PLAIN(0x41e260, 0, 0, 0, 0, 0), (DWORD)(app_checkLauncherRunning()))
 ST(profile_loadList, vfs_content(0, 0); g_a[0] = irnd(0, 10);, CALL_PLAIN(0x445f70, 0, g_a[0], 0, 0, 0), (DWORD)(profile_loadList((DWORD)(g_a[0]))))
-T_PLAIN(profile_delete, 0x447320, vfs_content(0, 0);, 0, 0, 0, 0, 0)
-T_PLAIN(mission_saveAxisMis, 0x443af0, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, 0, g_a[0], 0, 0, 0)
+ST(profile_delete, vfs_content(0, 0);, CALL_PLAIN(0x447320, 0, 0, 0, 0, 0), (DWORD)(profile_delete()))
+ST(mission_saveAxisMis, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, CALL_PLAIN(0x443af0, 0, g_a[0], 0, 0, 0), (DWORD)(mission_saveAxisMis(g_a[0])))
 /* a launcher command line of 0..6 tokens */
 static void cmdline_setup(void)
 {
@@ -9289,7 +9314,7 @@ static void cmdline_setup(void)
 	s[n] = 0;
 	vfs_content(0, 0);
 }
-T_PLAIN(arena_readLaunchFile, 0x43f160, cmdline_setup();, 0, BUF + 0x100, 0, 0, 0)
+ST(arena_readLaunchFile, cmdline_setup();, CALL_PLAIN(0x43f160, 0, BUF + 0x100, 0, 0, 0), (DWORD)(arena_readLaunchFile(BUF + 0x100)))
 /* the mission list: small counts first (the loop bounds come from the file), then random bytes */
 static void mislist_setup(void)
 {
@@ -9297,7 +9322,7 @@ static void mislist_setup(void)
 	for (int i = 0; i < 4 && i * 4 < (int)g_vfsSize; i++) S32(BUF + 0x200000, i * 4) = irnd(0, 6);
 	for (DWORD o = 16; o + 4 <= g_vfsSize; o += 0x64) S32(BUF + 0x200000, o) = irnd(0, 6);
 }
-T_PLAIN(mission_loadAxisMis, 0x4435f0, mislist_setup();, 0, 0, 0, 0, 0)
+ST(mission_loadAxisMis, mislist_setup();, CALL_PLAIN(0x4435f0, 0, 0, 0, 0, 0), (DWORD)(mission_loadAxisMis()))
 T_PLAIN(cfg_readLines, 0x42d7f0, vfs_content(95, 0x1000);, 0, VFS_FILE(0), 0, 0, 0)
 /* axiswl.dat-like settings: lines of space/tab separated tokens where every keyword has a value after it, at least one
    token per line, short lines, some "//" comments. The original dereferences NULL on a line without tokens or with a
@@ -9425,7 +9450,7 @@ ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, C
 ST(app_42ef30, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_42ef30((DWORD)(g_a[0]))))
 ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
 ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
-T_PLAIN(data_loadMessages, 0x42b3e0, vfs_content(95, 0x2000);, 0, 0, 0, 0, 0)
+ST(data_loadMessages, vfs_content(95, 0x2000);, CALL_PLAIN(0x42b3e0, 0, 0, 0, 0, 0), (DWORD)(data_loadMessages()))
 T_PLAIN(profile_create, 0x4474a0, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, 0, 0, 0, 0, 0)
 T_PLAIN(data_loadSkirmishInfo, 0x42ba40, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
 T_PLAIN(data_loadMapInfo, 0x42b830, vfs_content(0, 0x2000);, 0, 0, 0, 0, 0)
@@ -9803,12 +9828,12 @@ static void cfgw_setup(void)
 	for (int i = 0; i < 0x20; i++) *(BYTE *)(0x4ded40 + i) = (BYTE)irnd(0, 3);
 	vfs_content(0, 0); g_vfsOpenFail = 0;
 }
-T_PLAIN(cfg_parseGraphic, 0x42c9f0, cfgw_setup();, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(cfg_parseServer, 0x42c6f0, cfgw_setup();, 0, VFS_FILE(0), 0, 0, 0)
+ST(cfg_parseGraphic, cfgw_setup();, CALL_PLAIN(0x42c9f0, 0, VFS_FILE(0), 0, 0, 0), cfg_parseGraphic((void *)VFS_FILE(0)))
+ST(cfg_parseServer, cfgw_setup();, CALL_PLAIN(0x42c6f0, 0, VFS_FILE(0), 0, 0, 0), cfg_parseServer((void *)VFS_FILE(0)))
 /* four lines of key bindings (words of the config vocabulary); at the end of the file fgets leaves the stack
    buffer as it was, so the stack is painted */
 T_PLAIN(cfg_42e080, 0x42e080, vfs_content(95, 0x200); g_vfsOpenFail = 0; g_paintStacks = 1;, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(armc_saveSelection, 0x40e7a0, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4); G32(0x4dc760) = irnd(0, 0x14); G32(0x4dc76c) = irnd(0, 0x14);, 0, 0, 0, 0, 0)
+ST(armc_saveSelection, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4); G32(0x4dc760) = irnd(0, 0x14); G32(0x4dc76c) = irnd(0, 0x14);, CALL_PLAIN(0x40e7a0, 0, 0, 0, 0, 0), (DWORD)(armc_saveSelection()))
 ST(actor_45ebc0, g_a[0] = irnd(0, 7); S32(SCENE, 0x1cd94b0 + g_a[0] * 0x8888) = irnd(0, 2) ? 1 : 0; S32(SCENE, 0x20f3ab8) = irnd(-1, 14);,
    (TC(void, 0x45ebc0, char *, int)(SCENE, g_a[0]), 0), (actor_45ebc0(SCENE, (DWORD)g_a[0]), 0))
 /* up to 10 listed games (0x3e-byte records at 0xa05330, ended by an empty name) */
@@ -10224,13 +10249,13 @@ static void textpass_setup(void)
 	g_a[0] = irnd(-20, 600); g_a[1] = irnd(-20, 460);
 }
 ST(text_ascii5Pass, textpass_setup();, CALL_PLAIN(0x403060, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii5Pass((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const void *)(DWORD)(BUF + 0x400))))
-T_PLAIN(text_ascii8Pass, 0x402010, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(text_ascii16Pass, 0x402210, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
+ST(text_ascii8Pass, textpass_setup();, CALL_PLAIN(0x402010, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii8Pass(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_ascii16Pass, textpass_setup();, CALL_PLAIN(0x402210, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii16Pass(g_a[0], g_a[1], BUF + 0x400)))
 ST(text_ascii32Pass, textpass_setup();, CALL_PLAIN(0x402420, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_ascii32Pass(g_a[0], g_a[1], BUF + 0x400)))
-T_PLAIN(text_hanCho, 0x401870, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(text_hanJungJong, 0x401aa0, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(hud_401ce0, 0x401ce0, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
-T_PLAIN(hud_401e70, 0x401e70, textpass_setup();, 0, g_a[0], g_a[1], BUF + 0x400, 0)
+ST(text_hanCho, textpass_setup();, CALL_PLAIN(0x401870, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hanCho(g_a[0], g_a[1], BUF + 0x400)))
+ST(text_hanJungJong, textpass_setup();, CALL_PLAIN(0x401aa0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(text_hanJungJong(g_a[0], g_a[1], BUF + 0x400)))
+ST(hud_401ce0, textpass_setup();, CALL_PLAIN(0x401ce0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(hud_401ce0(g_a[0], g_a[1], BUF + 0x400)))
+ST(hud_401e70, textpass_setup();, CALL_PLAIN(0x401e70, 0, g_a[0], g_a[1], BUF + 0x400, 0), (DWORD)(hud_401e70(g_a[0], g_a[1], BUF + 0x400)))
 /* batch 58: the network state: the packet buffers (0xa0b304..0xa0b344) point into the scratch area (never
    null: room_434d00 writes one unchecked), sockets set or 0, the connection flags varied; strings the senders copy are short and terminated */
 static void netstate_setup(void)
@@ -10321,7 +10346,7 @@ static void clock_setup(void)
 	g_mockTimeMs = (DWORD)irnd(0, 0x7fffffff);
 }
 ST(sys_checkClockTampering, clock_setup();, CALL_PLAIN(0x43f300, 0, 0, 0, 0, 0), (DWORD)(sys_checkClockTampering()))
-T_PLAIN(profile_deleteFiles, 0x44ba60, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, 0, 0, 0, 0, 0)
+ST(profile_deleteFiles, selectload_setup(); g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x44ba60, 0, 0, 0, 0, 0), (DWORD)(profile_deleteFiles()))
 static void charset_setup(void) { netstate_setup(); fill_str((char *)0x9dd1d8, 20, 32, 126); g_mockRegFail = !irnd(0, 4); G32(0x9dd6c4) = irnd(0, 3); fill_str((char *)0x4df9ee, 12, 32, 126); }
 T_PLAIN(reg_writeCharacterSettings, 0x432400, charset_setup();, 0, 0, 0, 0, 0)
 /* the registry always opens here: when it fails, reg_writeCharacterSettings (called without arguments) closes its
@@ -12209,7 +12234,7 @@ static void pen_setup(void)
 	G32(0xa106a8) = irnd(0, 9) ? 0 : 1;
 	g_a[0] = (int)nm;
 }
-ST(pen_init, pen_setup();, CD(int, 0x46b950, char *)((char *)g_a[0]), pen_init(0, 0, 0, (DWORD)g_a[0], 0, 0, 0))
+ST(pen_init, pen_setup();, CD(int, 0x46b950, char *)((char *)g_a[0]), pen_init((const char *)g_a[0]))
 /* batch 97 */
 /* menutex_setup's texture set with the five panels' texture ids (GL slot owners; panel 1 also texture i), the panels' corners,
    offsets, angles (some past +-360) and speeds, the height and depth */
@@ -13054,7 +13079,7 @@ static void armctabs_setup(void)
 	fill((void *)0x4dc1d0, 16); fill((void *)0x4dbc58, 16);
 	for (int k = 0; k < 3; k++) fill_str((char *)0x7565a4 + k * 0x80, 60, 32, 126);
 }
-T_PLAIN(armc_412450, 0x412450, armctabs_setup();, 0, 0, 0, 0, 0)
+ST(armc_412450, armctabs_setup();, CALL_PLAIN(0x412450, 0, 0, 0, 0, 0), (DWORD)(armc_412450()))
 /* the briefing text: a random text (CR LF pairs, double-byte characters) of up to 160 bytes at BUF + 0x10000,
    shown from offset 0..20, the typing position somewhere in it, the end; the timer near its step */
 static void typewriter_setup(void)
@@ -13087,7 +13112,7 @@ static void profmsg_setup(void)
 	fill((void *)0x9f8eb0, 16);
 	fill_str((char *)0x751d24, 60, 32, 126); fill_str((char *)0x7517a4, 30, 32, 126);
 }
-T_PLAIN(profile_44dc60, 0x44dc60, profmsg_setup();, 0, 0, 0, 0, 0)
+ST(profile_44dc60, profmsg_setup();, CALL_PLAIN(0x44dc60, 0, 0, 0, 0, 0), (DWORD)(profile_44dc60()))
 /* the custom option: either the preview reloaded first (mappreview_setup) for custom rules (no texture bound: a
    preview that was not found would bind id -1, outside the set), or no reload and a bindable preview texture,
    custom or not */
@@ -13845,7 +13870,7 @@ static void rankpage_setup(void)
 	G32(0x90d1c4) = irnd(0, 3) ? 0 : 1; GF(0x4ad498) = (float)irnd(1, 100);
 	GF(0x4dba80) = irnd(0, 3) ? (float)irnd(0, 10000) / 10.0f : (float)irnd(-10, 10) / 10.0f;
 }
-T_PLAIN(room_43ede0, 0x43ede0, rankpage_setup();, 0, 0, 0, 0, 0)
+ST(room_43ede0, rankpage_setup();, CALL_PLAIN(0x43ede0, 0, 0, 0, 0, 0), (DWORD)(room_43ede0()))
 /* batch 143 */
 /* the controls dialog: the crosshair either unchanged (menutex_setup's set, a bindable 0x4e0c8c) or changed (its
    path indexed by texpath_index, sometimes left out: fatal; a choice outside 0..7 keeps the path already in
@@ -14213,7 +14238,7 @@ static void dplaycreate_setup(void)
 static DWORD g_dpname;
 ST(dplay_getPlayerName, dplayconn_setup(); G32(0xa0b404) = (int)&g_fakeCom[1];,
    CALL_PLAIN(0x454190, 0, g_a[0], &g_dpname, 0, 0), dplay_getPlayerName(g_a[0], (void **)&g_dpname))
-T_PLAIN(dplay_create, 0x453790, dplaycreate_setup();, 0, 0, 0, 0, 0)
+ST(dplay_create, dplaycreate_setup();, CALL_PLAIN(0x453790, 0, 0, 0, 0, 0), (DWORD)(dplay_create()))
 ST(dplay_hostSession, dplayconn_setup();,
    ((DWORD (__cdecl *)(int, char *, int, int, int, int, int, int))0x453cf0)(g_a[0], BUF + 0x1c0, g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
    (DWORD)dplay_hostSession((const char *)(DWORD)g_a[0], BUF + 0x1c0, g_a[2], g_a[3], g_a[4], (signed char)g_a[5], (signed char)g_a[6], g_a[7]))
@@ -14957,15 +14982,15 @@ T_PLAIN(room_4036c0, 0x4036c0, gen_setup(g_gs_4036c0, g_gi_4036c0, g_gb_4036c0);
 static const DWORD g_gs_443950[] = { 0x41e760, 1, 0x4435f0, 0, 0x4437b0, 0, 0x443840, 0, 0 };
 static const DWORD g_gi_443950[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x680bb4, 0x76d37c, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9eeac8, 0x9eeacc, 0x9eead0, 0x9eead4, 0x9eeba8, 0x9ef1f0, 0x9ef1f8, 0x9ef208, 0x9ef20c, 0x9ef210, 0x9ef214, 0x9f1058, 0x9f16a4, 0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4, 0x9f16bc, 0 };
 static const DWORD g_gb_443950[] = { 0 };
-T_PLAIN(menuState900_enterSkirmish, 0x443950, gen_setup(g_gs_443950, g_gi_443950, g_gb_443950);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState900_enterSkirmish, gen_setup(g_gs_443950, g_gi_443950, g_gb_443950);, CALL_PLAIN(0x443950, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState900_enterSkirmish()))
 static const DWORD g_gs_434490[] = { 0x41ee40, 1, 0x431600, 1, 0x434400, 1, 0x4521c0, 2, 0 };
 static const DWORD g_gi_434490[] = { 0x9dd58e, 0x4ded18, 0x4e1868, 0x68039c, 0x9dd1c8, 0x9dd38c, 0x9dd592, 0x9dd596, 0x9dd830, 0x9dd838, 0x9dd888, 0xa0b320, 0 };
 static const DWORD g_gb_434490[] = { 0x9dd1d8, 0x9dd1f6, 0x9dd570, 0 };
-T_PLAIN(room_434490, 0x434490, gen_setup(g_gs_434490, g_gi_434490, g_gb_434490); netstate_setup(); /* 0xa0b320 is a packet buffer */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_434490, gen_setup(g_gs_434490, g_gi_434490, g_gb_434490); netstate_setup(); /* 0xa0b320 is a packet buffer */, CALL_PLAIN(0x434490, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_434490()))
 static const DWORD g_gs_447750[] = { 0x41e760, 1, 0x447660, 0, 0 };
 static const DWORD g_gi_447750[] = { 0x4df024, 0x4df028, 0x4df02c, 0x4df870, 0x4df874, 0x4df878, 0x67ef0c, 0x67ef20, 0x680378, 0x68037c, 0x680380, 0x76d388, 0x76d38c, 0x76d390, 0x76d3e8, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x9f181c, 0x9f62e0, 0x9f62e8, 0x9f62ec, 0x9f62f0, 0x9f62f4, 0x9f62f8, 0x9f62fc, 0x9f6300, 0x9f6308, 0x9f630c, 0x9f6310, 0x9f6314, 0x9f6318, 0x9f631c, 0x9f6320, 0x9f6324, 0x9f6328, 0x9f63b0, 0x9f63b4, 0x9f63b8, 0 };
 static const DWORD g_gb_447750[] = { 0 };
-T_PLAIN(menuState500_enter, 0x447750, gen_setup(g_gs_447750, g_gi_447750, g_gb_447750);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(menuState500_enter, gen_setup(g_gs_447750, g_gi_447750, g_gb_447750);, CALL_PLAIN(0x447750, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(menuState500_enter()))
 /* the in-match messages with a player: thiscall on the game (ecx = BUF; the player record is only an address for
    the stubbed message call), the player index, the chat text, the sender; the match music by the map's kind
    (BUF + 0xbe3004, 1..4, and the shuffled choice 0xa1efb8 in the table 0xa106f8); a DirectPlay object closed
@@ -15107,7 +15132,7 @@ ST(room_435d30, gen_setup(g_gs_435d30, g_gi_435d30, g_gb_435d30);, CALL_PLAIN(0x
 static const DWORD g_gs_433e60[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 0, 0 };
 static const DWORD g_gi_433e60[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd32c, 0x9dd348, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6ec, 0 };
 static const DWORD g_gb_433e60[] = { 0x9dc92c, 0x9dd1d8, 0x9dd1f6, 0x9dd202, 0x9dd20e, 0 };
-T_PLAIN(room_433e60, 0x433e60, gen_setup(g_gs_433e60, g_gi_433e60, g_gb_433e60);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_433e60, gen_setup(g_gs_433e60, g_gi_433e60, g_gb_433e60);, CALL_PLAIN(0x433e60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_433e60((DWORD)(g_a[0]))))
 static const DWORD g_gs_4419d0[] = { 0x40ee20, 0, 0x41e760, 1, 0x41ee40, 1, 0x41eea0, 2, 0x441250, 1, 0x441810, 0, 0x447010, 0, 0x447750, 0, 0x451b80, 1, 0x452170, 2, 0x48b420, 0, 0 };
 static const DWORD g_gi_4419d0[] = { 0x4dc24c, 0x4dda44, 0x4deb48, 0x4ded18, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef20, 0x9dae10, 0x9db994, 0x9eeab4, 0 };
 static const DWORD g_gb_4419d0[] = { 0x4deb80, 0 };
@@ -15185,7 +15210,7 @@ ST(sound_play3D, sound3d_setup();, ((DWORD (__cdecl *)(int, void *, void *, int,
 static const DWORD g_gs_420100[] = { 0x41e7a0, 0, 0x41e8b0, 0, 0x41e9d0, 0, 0x41eb00, 0, 0x41ec50, 0, 0x41ee40, 1, 0x41f880, 0, 0x447010, 0, 0x44aee0, 0, 0x451270, 3, 0x4521c0, 2, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_420100[] = { 0x4de6f8, 0x5ae9c4, 0x5b1dac, 0x76d3e8, 0x76d410, 0x9db990, 0x9f181c, 0x9f941c, 0xa05630, 0xa0b328, 0xa0b330, 0xa0baf8, 0xa0ea94, 0 };
 static const DWORD g_gb_420100[] = { 0x9f9418, 0 };
-T_PLAIN(game_postMatch, 0x420100, gen_setup(g_gs_420100, g_gi_420100, g_gb_420100); netstate_setup(); /* 0xa0b328 / 0xa0b330 are packet buffers (lstrcpyA between them) */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(game_postMatch, gen_setup(g_gs_420100, g_gi_420100, g_gb_420100); netstate_setup(); /* 0xa0b328 / 0xa0b330 are packet buffers (lstrcpyA between them) */, CALL_PLAIN(0x420100, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_postMatch()))
 /* dplay_initConnection(kind, address): the old DirectPlay object closed (dplay_closeSession, real: a fake object or
    none), the connection by kind (0 TCP/IP: a compound address for the host name built by the fake lobby, size
    query then fill; 1..3 the stored connections 0xa0bae4 .. 0xa0baec, some empty; others), a new DirectPlay object

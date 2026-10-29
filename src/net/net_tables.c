@@ -723,3 +723,63 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 	}
 	return 0x1f4;
 }
+
+/* the lobby's part of dplay_create: its connection settings (DPLCONNECTION, into a global block 0xa0baf4) with the
+   session flags 0x44 and at most 16 players, connected (ConnectEx into 0xa0b404) and the local player created
+   with the lobby's player name record; the host flag 0xa0baf8 by the connection's flags (2 create, 1 join). Stops at the
+   first failure */
+static void lobby_connect(void)
+{
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4a9648, NULL, 1,
+			(const void *)0x4a9658, (void **)0xa0b398) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
+		return;
+	void *lobby = GAME_VAR(void *, 0xa0b398);
+	u32 size;
+	if ((u32)COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
+		return;
+	u8 *conn = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc) */
+	GAME_VAR(void *, 0xa0baf4) = conn;
+	if (!conn)
+		return;
+	lobby = GAME_VAR(void *, 0xa0b398);
+	if (COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, conn, &size) < 0)   /* GetConnectionSettings */
+		return;
+	u32 *session = *(u32 **)(GAME_VAR(u8 *, 0xa0baf4) + 8);
+	session[1] = 0x44;    /* dwFlags */
+	session[10] = 16;     /* dwMaxPlayers */
+	lobby = GAME_VAR(void *, 0xa0b398);
+	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, GAME_VAR(void *, 0xa0baf4)) < 0)   /* SetConnectionSettings */
+		return;
+	lobby = GAME_VAR(void *, 0xa0b398);
+	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)0x4a9678, (void **)0xa0b404, NULL) < 0)
+		return;   /* ConnectEx */
+	u32 id;
+	void *play = GAME_VAR(void *, 0xa0b404);   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
+	if (COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, &id, *(void **)(GAME_VAR(u8 *, 0xa0baf4) + 0xc),
+			NULL, NULL, 0, 0) < 0)
+		return;
+	u32 flags = *(u32 *)(GAME_VAR(u8 *, 0xa0baf4) + 4);
+	if (flags & 2)
+		GAME_VAR(int, 0xa0baf8) = 1;
+	else if (flags & 1)
+		GAME_VAR(int, 0xa0baf8) = 0;
+}
+
+/* 0x453790: DirectPlay made: first through a lobby that started the game (lobby_connect), then (either way) a plain
+   DirectPlay object (arena_4539f0; its failure returned) and the connections listed (EnumConnections of the game's
+   application with dplay_enumConnections). The lobby's settings block is freed (but 0xa0baf4 kept). Returns the
+   listing's failure, else 0 */
+int (dplay_create)(void)
+{
+	lobby_connect();
+	int r = GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404);   /* arena_4539f0 */
+	if (r < 0)
+		return r;
+	void *play = GAME_VAR(void *, 0xa0b404);
+	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)0x4a96e8, (void *)0x4532f0, NULL, 0);
+	if (r >= 0)
+		r = 0;
+	if (GAME_VAR(void *, 0xa0baf4))
+		global_free(GAME_VAR(void *, 0xa0baf4));
+	return r;
+}

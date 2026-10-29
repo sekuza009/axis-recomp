@@ -4,17 +4,6 @@
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 #include <string.h>
 
-/* strcmp, as -1 / 0 / 1 (bytes compared unsigned) */
-static int name_cmp(const char *a, const char *b)
-{
-	for (;; a++, b++) {
-		if (*a != *b)
-			return (u8)*a < (u8)*b ? -1 : 1;
-		if (*a == '\0')
-			return 0;
-	}
-}
-
 /* binary search of name in the table at *table (count at *count; the search starts with hi = count); -1 when not
    found */
 static int name_search(u32 count, u32 table, const char *name)
@@ -24,7 +13,7 @@ static int name_search(u32 count, u32 table, const char *name)
 		return -1;
 	while (lo <= hi) {
 		int mid = (lo + hi) / 2;
-		int r = name_cmp(name, (const char *)(GAME_VAR(u32, table) + mid * 0x44));
+		int r = str_order(name, (const char *)(GAME_VAR(u32, table) + mid * 0x44));
 		if (r == 0)
 			return mid;
 		if (r < 0)

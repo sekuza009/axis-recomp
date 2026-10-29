@@ -277,16 +277,22 @@ void (arena_40b420)(void) { load_map_preview(0x4db548); }
    0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
    (0x9dd1d8, 30 bytes), two short fields (0x9dd1f6, 0x9dd202, 12 bytes) or the comment (0x9dd20e, 50 bytes).
    Returns what the original leaves in eax */
+/* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
+   closed (room_431600); returns that call's eax, or 0 */
+static u32 typing_end(void)
+{
+	if (!GAME_VAR(int, 0x68039c))
+		return 0;
+	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+	return GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
+}
+
 u32 (room_433d30)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
 		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
-	u32 r = 0;
-	if (GAME_VAR(int, 0x68039c)) {
-		IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
-		IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
-		r = GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
-	}
+	u32 r = typing_end();
 	const char *typed = (const char *)0x9dc92c;
 	for (int k = 0; k < 4; k++) {
 		if (GAME_VAR(int, fields[k].editing) != 1)
@@ -443,4 +449,103 @@ int (room_434b90)(void)
 	strcpy(out + 0x2a, (const char *)0x9dd20e);
 	GAME_CDECL(0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
 	return 1;
+}
+
+/* a no-argument cdecl game function called with ebp saved around it: room_43d060 overruns a local buffer into its
+   saved caller ebp at some stack alignments (see run_lifted in recomp.c); the original's caller never used ebp
+   after it, compiled code may */
+static u32 call_keeping_ebp(u32 address)
+{
+	u32 r;
+	__asm__ volatile("pushl %%ebp\n\tcall *%1\n\tpopl %%ebp" : "=a"(r) : "r"(address) : "ecx", "edx", "memory");
+	return r;
+}
+
+/* 0x43ede0: the ranking page. A request pending (0x9dd350) for sort column 0x9dd1d0: columns 0 .. 2 send their
+   code (0x25 / 0x23 / 0x26) with the first rank of page 0x9dd6ac (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
+   start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; in room
+   modes other than 0 / 1 (0x9dce48) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
+   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (room_435770) and
+   keeps the column and page, the blink counts down by 0x4b071c * 0x4ad498 (from 1000 again below 0), and the
+   table is drawn (room_43d060). Returns what the original leaves in eax */
+u32 (room_43ede0)(void)
+{
+	if (GAME_VAR(int, 0x9dd350)) {
+		u32 column = GAME_VAR(u32, 0x9dd1d0);
+		static const int code[3] = { 0x25, 0x23, 0x26 };
+		if (column == 3) {
+			GAME_VAR(int, 0x9dd350) = 0;
+			return 3;
+		}
+		int *out = GAME_VAR(int *, 0xa0b324);
+		if (column < 3)
+			out[0] = code[column];
+		int page = GAME_VAR(int, 0x9dd6ac);
+		GAME_VAR(int, 0x9dd83c) = page * 10 + 1;
+		GAME_VAR(int, 0x9dd7dc) = page * 10 + 10;
+		out[1] = page * 10 + 1;
+		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
+		GAME_VAR(int, 0x9dd350) = 0;
+		GAME_VAR(float, 0x4dba80) = 1000.0f;
+		GAME_VAR(int, 0x9dd6b8) = 1;
+	}
+	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
+	int mode = GAME_VAR(int, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
+		return mode;
+	if (GAME_VAR(int, 0x90d1c4)) {
+		const int *box = (const int *)0x9dced8;
+		GAME_CDECL(0x428c30, void, int, int, int, int)(box[0], box[1], box[2], box[3]);   /* the message box */
+		if (GAME_VAR(int, 0x90d1c4))
+			return GAME_VAR(u32, 0x90d1c4);
+		GAME_VAR(int, 0x9dd350) = 1;
+		return 0;
+	}
+	if (GAME_VAR(int, 0x9dd6b8)) {
+		if (GAME_VAR(int, 0x76d40c)) {
+			GAME_CDECL(0x435770, void, void)();   /* room_435770: the list filled */
+			GAME_VAR(int, 0x9dd6b8) = 0;
+			GAME_VAR(int, 0x9dd3b0) = 1;
+			GAME_VAR(int, 0x76d40c) = 0;
+			GAME_VAR(int, 0x9dd300) = GAME_VAR(int, 0x9dd1d0);
+			GAME_VAR(int, 0x9dd1b4) = GAME_VAR(int, 0x9dd6ac);
+		}
+		long double blink = fld_m((const float *)0x4dba80) - fmul_m(fld_m((const float *)0x4b071c), (const float *)0x4ad498);
+		GAME_VAR(float, 0x4dba80) = f32(blink);
+		if (!(blink >= 0))
+			GAME_VAR(float, 0x4dba80) = 1000.0f;
+	}
+	return call_keeping_ebp(0x43d060);   /* room_43d060: the table */
+}
+
+/* 0x434490: the login sent: typing closed and the form's flags cleared; a name or password with a character the
+   messages cannot carry gives its message (0x15a / 0x15b, 0x9dd1c8 cleared); else the name and password are kept
+   (0x9dd570, 30 bytes, and 0x9dd58e, 12) and sent as message 0x18 (net_send 0xe), then 0x9dd838 set. Returns the
+   message's or the send's eax */
+u32 (room_434490)(void)
+{
+	typing_end();
+	GAME_VAR(int, 0x9dd830) = 0;
+	GAME_VAR(int, 0x9dd38c) = 0;
+	GAME_VAR(int, 0x4e1868) = 0;
+	GAME_VAR(int, 0x68039c) = 0;
+	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
+	int bad = GAME_CDECL(0x434400, int, const char *)(name) == 1 ? 0x15a
+	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_434400 */
+	if (bad) {
+		u32 r = GAME_CDECL(0x41ee40, u32, int)(bad);
+		GAME_VAR(int, 0x9dd1c8) = 0;
+		return r;
+	}
+	memset((void *)0x9dd570, 0, 30 + 12);
+	strcpy((char *)0x9dd570, name);
+	strcpy((char *)0x9dd58e, password);
+	memset(GAME_VAR(u8 *, 0xa0b320) + 4, 0, 30);
+	memset(GAME_VAR(u8 *, 0xa0b320) + 0x22, 0, 12);
+	strcpy(GAME_VAR(char *, 0xa0b320) + 4, name);
+	strcpy(GAME_VAR(char *, 0xa0b320) + 0x22, password);
+	GAME_VAR(int *, 0xa0b320)[0] = 0x18;
+	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xe, 0x65);   /* net_send */
+	GAME_VAR(int, 0x9dd838) = 1;
+	return r;
 }

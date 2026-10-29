@@ -261,3 +261,63 @@ u32 (menu_enterState)(void)
 	GAME_VAR(int, 0x67ef0c) = g_menuState;
 	return (u32)g_menuState;
 }
+
+
+/* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
+   point (0, 0, 100) looking at the origin */
+static const Store briefing_camera[] = {
+	{ 0x4df024, 0 }, { 0x4df028, 0 }, { 0x4df02c, 0xc3e10000 }, { 0x680378, 0 }, { 0x68037c, 0 },
+	{ 0x680380, 0xc4098000 }, { 0x4df870, 0 }, { 0x4df874, 0 }, { 0x4df878, 0x42c80000 }, { 0x76d388, 0 },
+	{ 0x76d38c, 0 }, { 0x76d390, 0 }, { 0x9db090, 0 }, { 0x9db094, 0 }, { 0x9db098, 0xc3e10000 }, { 0x76d3f8, 0 },
+	{ 0x76d3fc, 0 }, { 0x76d400, 0xc4098000 } };
+
+/* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
+   panels (skirmish_4437b0, skirmish_443840), the page set to 10 (skirmish settings) with a sound, the mission list
+   loaded (mission_loadAxisMis) and its state cleared. Returns 0 (the original's eax) */
+int (menuState900_enterSkirmish)(void)
+{
+	static const Store setup[] = {
+		{ 0x9f16a8, 0xa }, { 0x9f16ac, 0x14 }, { 0x9f16b0, 0x276 }, { 0x9f16b4, 0x1cc }, { 0x9ef208, 0 },
+		{ 0x9ef20c, ONE }, { 0x9ef210, ONE }, { 0x9ef214, ONE }, { 0x9eeac8, 0 }, { 0x9eeacc, 0x3f19999a },
+		{ 0x9eead0, 0x3f19999a }, { 0x9eead4, ONE }, { 0x9ef1f0, 1 }, { 0x76d3e8, 900 }, { 0x67ef0c, 900 },
+		{ 0x67ef20, 900 } };
+	static const u32 cleared[] = { 0x9f16bc, 0x9f1058, 0x9f16a4, 0x680bb4, 0x76d37c };
+	STORE_ALL(briefing_camera);
+	STORE_ALL(setup);
+	GAME_CDECL(0x4437b0, void, void)();   /* skirmish_4437b0 */
+	GAME_CDECL(0x443840, void, void)();   /* skirmish_443840 */
+	I(0x9eeba8) = 1;
+	I(0x9ef1f8) = 10;
+	sound_playMenu(4);
+	GAME_CDECL(0x4435f0, void, void)();   /* mission_loadAxisMis */
+	CLEAR_ALL(cleared);
+	return 0;
+}
+
+/* 0x447750: the mission select (screen 500): the briefing camera, the window and its colours, the screen's panels
+   (mission_447660), the mission shown (0x9f63b4, 0x9f6328) the campaign's next one (0x9f181c, at most 14), a sound;
+   a newly reached mission (past 0x9f62fc) raises it and the briefing flag 0x9f62e0. Returns the campaign's mission */
+int (menuState500_enter)(void)
+{
+	static const Store setup[] = {
+		{ 0x9f6308, 0x28 }, { 0x9f630c, 0xa }, { 0x9f6310, 0x258 }, { 0x9f6314, 0x1cc }, { 0x9f6318, 0 },
+		{ 0x9f631c, ONE }, { 0x9f6320, ONE }, { 0x9f6324, ONE }, { 0x9f62e8, 0 }, { 0x9f62ec, 0x3f19999a },
+		{ 0x9f62f0, 0x3f19999a }, { 0x9f62f4, ONE }, { 0x9f62f8, 1 }, { 0x76d3e8, 500 }, { 0x67ef0c, 500 },
+		{ 0x67ef20, 500 } };
+	STORE_ALL(briefing_camera);
+	STORE_ALL(setup);
+	GAME_CDECL(0x447660, void, void)();   /* mission_447660 */
+	I(0x9f63b8) = 1;
+	I(0x9f6300) = 0;
+	int mission = I(0x9f181c) < 15 ? I(0x9f181c) : 14;
+	I(0x9f63b4) = mission;
+	I(0x9f6328) = mission;
+	I(0x9f63b0) = 1;
+	sound_playMenu(4);
+	I(0x9f62e0) = 0;
+	if (I(0x9f181c) > I(0x9f62fc)) {
+		I(0x9f62e0) = 1;
+		I(0x9f62fc) = I(0x9f181c);
+	}
+	return I(0x9f181c);
+}

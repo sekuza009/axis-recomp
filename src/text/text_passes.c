@@ -6,10 +6,6 @@
 #include <string.h>
 
 /* the pass functions: (x, y, text) */
-#define text_hanCho(x, y, s) GAME_CDECL(0x401870, void, int, int, const char *)(x, y, s)
-#define text_hanJungJong(x, y, s) GAME_CDECL(0x401aa0, void, int, int, const char *)(x, y, s)
-#define text_hanCho32(x, y, s) GAME_CDECL(0x401ce0, void, int, int, const char *)(x, y, s)
-#define text_hanJungJong32(x, y, s) GAME_CDECL(0x401e70, void, int, int, const char *)(x, y, s)
 
 /* every pass: the character width set, the 2D projection, texturing on, the current text colour */
 static void text_begin(int charWidth)

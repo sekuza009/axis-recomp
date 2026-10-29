@@ -51,3 +51,35 @@ void (profile_44f810)(void)
 		profile_44bc50();
 	profile_44e640();
 }
+
+/* 0x44dc60: the profile message window (the panel 0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): its frame (texture
+   0x4deb50), the message 0x751d24 across the top in the panel's colour (0x9f8eb0), the OK button (texture
+   0x9db0a4, 0x60 wide, centred) with its label 0x7517a4, and the border. Returns the border call's eax */
+u32 (profile_44dc60)(void)
+{
+#define X0 GAME_VAR(int, 0x9f8eac)
+#define Y0 GAME_VAR(int, 0x9f8ea8)
+#define X1 GAME_VAR(int, 0x9f8f20)
+#define Y1 GAME_VAR(int, 0x9f8f24)
+	const u32 *colour = (const u32 *)0x9f8eb0;
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	int button = X0 + (X1 - X0) / 2 - 0x32;
+	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+	text_drawBox16(X0, Y0 + 0x20, X1, (const char *)0x751d24);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4282f0(button, Y0 + 0x50, button + 0x60, Y0 + 0x70, 1);
+	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+	text_drawBox16(button, Y0 + 0x58, button + 0x60, (const char *)0x7517a4);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}

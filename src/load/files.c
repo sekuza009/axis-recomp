@@ -289,26 +289,25 @@ int (app_checkLauncherRunning)(void)
 	return 1;
 }
 
-/* 0x445f70: axisuser.dat (in the data folder 0x9dae7c) written afresh with `count` profiles: a magic word
-   (0xfefefef7), the count (0x9f9008), three cleared words (0x9f8c58, 0x9f8c4c, 0x9f8c5c; 0x9f8c58 is first set from
-   0x9f8d74), 32 bytes from 0x9f8fe8 and the 0x48-byte profile records from 0x9f6848. Without the file the count
-   is 0. Returns fclose's eax (0 without the file) */
-u32 (profile_loadList)(int count)
+/* ---- axisuser.dat (in the data folder 0x9dae7c), written afresh: a magic word (0xfefefef7), the count (0x9f9008),
+   the current profile (0x9f8c58, first set from 0x9f8d74), 0x9f8c4c, 0x9f8c5c, the 32-byte name 0x9f8fe8 and the
+   0x48-byte profile records from 0x9f6848. Without the file the count is 0 ---- */
+static void *profiles_create(void)
 {
 	char path[0x184];
 	strcpy(path, (const char *)0x9dae7c);
 	strcat(path, (const char *)0x4b2ab4);   /* "\axisuser.dat" */
 	GAME_VAR(u32, 0x9f8c58) = GAME_VAR(u32, 0x9f8d74);
 	void *f = crt_fopen(path, (const char *)0x4b2ab0);
-	if (!f) {
+	if (!f)
 		GAME_VAR(int, 0x9f9008) = 0;
-		return 0;
-	}
+	return f;
+}
+
+/* returns fclose's eax */
+static u32 profiles_write(void *f)
+{
 	u32 magic = 0xfefefef7;
-	GAME_VAR(int, 0x9f9008) = count;
-	GAME_VAR(u32, 0x9f8c58) = 0;
-	GAME_VAR(u32, 0x9f8c4c) = 0;
-	GAME_VAR(u32, 0x9f8c5c) = 0;
 	crt_fwrite(&magic, 4, 1, f);
 	crt_fwrite((void *)0x9f9008, 4, 1, f);
 	crt_fwrite((void *)0x9f8c58, 4, 1, f);
@@ -317,5 +316,242 @@ u32 (profile_loadList)(int count)
 	crt_fwrite((void *)0x9f8fe8, 0x20, 1, f);
 	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
 		crt_fwrite((void *)(0x9f6848 + i * 0x48), 0x48, 1, f);
+	return fclose(f);
+}
+
+/* 0x445f70: the file written with `count` profiles and the three header words cleared. Returns fclose's eax (0
+   without the file) */
+u32 (profile_loadList)(int count)
+{
+	void *f = profiles_create();
+	if (!f)
+		return 0;
+	GAME_VAR(int, 0x9f9008) = count;
+	GAME_VAR(u32, 0x9f8c58) = 0;
+	GAME_VAR(u32, 0x9f8c4c) = 0;
+	GAME_VAR(u32, 0x9f8c5c) = 0;
+	return profiles_write(f);
+}
+
+/* 0x447320: the file written as the profiles stand, the name 0x9f8fe8 being the current profile's. Returns
+   fclose's eax (0 without the file) */
+u32 (profile_delete)(void)
+{
+	void *f = profiles_create();
+	if (!f)
+		return 0;
+	memset((void *)0x9f8fe8, 0, 0x20);
+	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48));
+	return profiles_write(f);
+}
+
+#define crt_fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+
+/* axis.mis (in the data folder) opened for reading */
+static void *mis_open(void)
+{
+	char path[0x184];
+	strcpy(path, (const char *)0x9dae7c);
+	strcat(path, (const char *)0x4b2aa4);   /* "\axis.mis" */
+	return crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+}
+
+/* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_443570), four header words (the
+   count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's 0xfc-byte entry from 0x9ef2d0 (a word, the 0x40-byte
+   name, 0x20 and 0x80-byte texts, four words) and then all their block sizes (+0xf4). Without the file, message
+   0xb and its eax; otherwise fclose's */
+u32 (mission_loadAxisMis)(void)
+{
+	void *f = mis_open();
+	if (!f)
+		return GAME_CDECL(0x41ee40, u32, int)(0xb);
+	GAME_CDECL(0x443570, void, void)();   /* skirmish_443570 */
+	for (int k = 0; k < 4; k++)
+		crt_fread((void *)(0x9ef2c0 + k * 4), 4, 1, f);
+	static const struct { int offset, size; } part[8] = {
+		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
+	u8 *mission = (u8 *)0x9ef2d0;
+	for (int i = 0; i < GAME_VAR(int, 0x9ef2c0); i++)
+		for (int k = 0; k < 8; k++)
+			crt_fread(mission + i * 0xfc + part[k].offset, part[k].size, 1, f);
+	for (int i = 0; i < GAME_VAR(int, 0x9ef2c0); i++)
+		crt_fread(mission + i * 0xfc + 0xf4, 4, 1, f);
+	return fclose(f);
+}
+
+/* 0x443af0: mission k's block read from axis.mis (in the data folder): after a 0x1a-byte header, 0xf8 bytes for
+   each of the 0x9ef2c0 entries and the blocks before it (sizes 0xfc apart from 0x9ef3c4) into a new buffer
+   0x9ef1ec (the old one freed); its size into 0x9ef200, the settings page's state cleared and the page set to
+   20 (the mission settings). Without the file, message 0xb and its eax; otherwise 0 */
+u32 (mission_saveAxisMis)(int k)
+{
+	void *f = mis_open();
+	if (!f)
+		return GAME_CDECL(0x41ee40, u32, int)(0xb);
+	const int *size = (const int *)0x9ef3c4;   /* size[i * 63] */
+	int offset = 0;
+	for (int i = 0; i < k; i++)
+		offset += size[i * 63];
+	crt_fseek(f, offset + GAME_VAR(int, 0x9ef2c0) * 0xf8 + 0x1a, 0);
+	if (GAME_VAR(void *, 0x9ef1ec))
+		crt_free(GAME_VAR(void *, 0x9ef1ec));
+	void *block = crt_malloc(size[k * 63]);
+	GAME_VAR(void *, 0x9ef1ec) = block;
+	crt_fread(block, size[k * 63], 1, f);
+	fclose(f);
+	memset((void *)0x9eeadc, 0, 0xc8);
+	GAME_VAR(int, 0x9ef218) = 0;
+	memset((void *)0x9f1064, 0, 0x640);
+	memset((void *)0x9eebac, 0, 0x640);
+	GAME_VAR(int, 0x9ef1f4) = 0;
+	GAME_VAR(int, 0x9f105c) = 0;
+	GAME_VAR(int, 0x9eeba4) = 0;
+	GAME_VAR(int, 0x4d7348) = 0;
+	GAME_VAR(int, 0x9f1060) = 0;
+	GAME_VAR(int, 0x9ef1f8) = 20;
+	GAME_VAR(int, 0x9ef200) = size[k * 63];
+	GAME_VAR(int, 0x9f16b8) = 0;
+	return 0;
+}
+
+/* 0x42c9f0: the graphic section of axis.cfg written: the video mode by its number 0x83a9c0 (0 .. 7: 640x480 and
+   the added wide modes, 1024x768, DESKTOP; nothing for another), the colour depth (0x83a9c4: 16 or 32), polygon
+   detail (0x83a9c8: LOW or HIGH), then four on/off switches (0x83a9cc .. 0x83a9d8; 1 is on): linear filtering,
+   mipmapping, the frame counter and the simple menu, each line after its keyword. Returns the last fputs */
+u32 (cfg_parseGraphic)(void *f)
+{
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+	static const u32 mode[8] = { 0x4b1b6c, 0x4ac84c, 0x4ac870, 0x4ac894, 0x4ac8b8, 0x4ac8dc, 0x4ac900, 0x4ac920 };
+	static const u32 switches[4] = { 0x4b1aac, 0x4b1a94, 0x4b1a7c, 0x4b1a64 };
+	FPUTS(0x4b1b78);   /* "set_graphic videomode " */
+	if (GAME_VAR(u32, 0x83a9c0) <= 7)
+		FPUTS(mode[GAME_VAR(u32, 0x83a9c0)]);
+	FPUTS(0x4b1b00);   /* "set_graphic colordepth " */
+	FPUTS(GAME_VAR(int, 0x83a9c4) ? 0x4b1af8 : 0x4b1afc);
+	FPUTS(0x4b1adc);   /* "set_graphic polygondetail " */
+	FPUTS(GAME_VAR(int, 0x83a9c8) ? 0x4b1acc : 0x4b1ad4);
+	for (int i = 0; i < 4; i++) {
+		FPUTS(switches[i]);
+		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? 0x4b17e4 : 0x4b17dc);
+	}
+	return FPUTS(0x4b182c);
+#undef FPUTS
+}
+
+/* 0x42c6f0: the server section of axis.cfg written from the player's record (0x4ded20): the name (with an extra
+   line break by fprintf), the map and player count (signed bytes 0x4ded40 / 41), customize on/off (0x4ded42), the
+   game type (0x4ded43: 1 .. 14 by name, any other DEATH MATCH) and the game and time flags (bytes 0x4ded44 / 45).
+   Returns the last fputs */
+u32 (cfg_parseServer)(void *f)
+{
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+	static const u32 type[15] = { 0x4b1878, 0x4b1988, 0x4b1978, 0x4b1964, 0x4b1954, 0x4b1940, 0x4b192c, 0x4b1914,
+	                              0x4b1904, 0x4b18f0, 0x4b18dc, 0x4b18c4, 0x4b18b0, 0x4b18a0, 0x4b1888 };
+	const u8 *me = (const u8 *)0x4ded20;
+	char number[12];
+	FPUTS(0x4b19f0);   /* "set_server name " */
+	FPUTS(me);
+	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)0x4b182c);   /* fprintf "\n" */
+	FPUTS(0x4b19e0);   /* "set_server map " */
+	itoa((signed char)me[0x20], number, 10);
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	FPUTS(0x4b19c8);   /* "set_server numofplayer " */
+	itoa((signed char)me[0x21], number, 10);
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	FPUTS(0x4b19b0);   /* "set_server customize " */
+	FPUTS(me[0x22] == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(0x4b199c);   /* "set_server type " */
+	u32 kind = (u32)(int)(signed char)me[0x23];
+	FPUTS(type[kind <= 14 ? kind : 0]);
+	itoa(me[0x24], number, 10);
+	FPUTS(0x4b1860);   /* "set_server gameflag " */
+	FPUTS(number);
+	FPUTS(0x4b182c);
+	itoa(me[0x25], number, 10);
+	FPUTS(0x4b1848);   /* "set_server timeflag " */
+	FPUTS(number);
+	return FPUTS(0x4b1844);   /* "\n\n" */
+#undef FPUTS
+}
+
+/* 0x43f160: the command line the launcher started the game with, split at spaces into 0x9dd890 (the count in
+   0x9dd88c). "-net" alone: started for a network game when axiswl.dat is there (0x76d410 and 0x76d364 set);
+   "-ip x <server>": the server's address into 0x4de748 (0x76d410 set). Empty or longer than 0x400: nothing.
+   Returns what the original leaves in eax (the count, the comparison, fclose's or strcpy's length) */
+u32 (arena_readLaunchFile)(char *line)
+{
+	size_t length = strlen(line);
+	if (length > 0x400 || length <= 1) {
+		GAME_VAR(int, 0x9dd88c) = 0;
+		GAME_VAR(int, 0x76d410) = 0;
+		GAME_VAR(int, 0x76d364) = 0;
+		return 0;
+	}
+	char **args = (char **)0x9dd890;
+	char *word = crt_strtok(line, (const char *)0x4b035c);   /* " " */
+	GAME_VAR(int, 0x9dd88c) = 0;
+	do {
+		args[GAME_VAR(int, 0x9dd88c)++] = word;
+		word = crt_strtok(NULL, (const char *)0x4b035c);
+	} while (word);
+	GAME_VAR(int, 0x76d410) = 0;
+	GAME_VAR(int, 0x76d364) = 0;
+	u32 r = GAME_VAR(u32, 0x9dd88c);
+	if (r == 1) {
+		r = (u32)str_order(args[0], (const char *)0x4b2880);   /* "-net" */
+		if (r)
+			return r;
+		void *f = crt_fopen((const char *)0x4ad5e4, (const char *)0x4ad5e0);   /* "axiswl.dat", "rt" */
+		if (f) {
+			GAME_VAR(int, 0x76d410) = 1;
+			GAME_VAR(int, 0x76d364) = 1;
+			r = fclose(f);
+		}
+	}
+	if (GAME_VAR(int, 0x9dd88c) != 3)
+		return r;
+	r = (u32)str_order(args[1], (const char *)0x4b287c);   /* "-ip" */
+	if (r)
+		return r;
+	GAME_VAR(int, 0x76d410) = 1;
+	memset((void *)0x4de748, 0, 0x400);
+	GAME_VAR(int, 0x76d364) = 0;
+	strcpy((char *)0x4de748, args[2]);
+	return strlen(args[2]) + 1;
+}
+
+#define crt_fgets(line, size, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, size, f)
+
+/* 0x42b3e0: the game's messages read from msgkor.dat or msgeng.dat (by the language 0x9dae74; in the data folder),
+   one line each into 0x80-byte slots from 0x74de24 with the line break cut off; "//" comment lines and empty lines
+   skipped. Without the file a message box and the game ends. Returns fclose's eax */
+u32 (data_loadMessages)(void)
+{
+	char path[0x105];
+	memset(path, 0, sizeof path);
+	strcpy(path, (const char *)0x9dae7c);
+	strcat(path, (const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b1430 : 0x4b1424));   /* "msgkor.dat" / "msgeng.dat" */
+	void *f = crt_fopen(path, (const char *)0x4ad5e0);   /* "rt" */
+	if (!f) {
+		MessageBoxA(NULL, (const char *)0x4b13f8, (const char *)0x4b141c, 0);   /* "Text Message Data File Not Found" */
+		GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
+	}
+	char *message = (char *)0x74de24;
+	for (;;) {
+		char line[0x80];
+		memset(line, 0, sizeof line);
+		if (!crt_fgets(line, 0x80, f))
+			break;
+		if ((line[0] == '/' && line[1] == '/') || strlen(line) == 1)
+			continue;
+		strcpy(message, line);
+		size_t n = strlen(message);
+		message[n - 1] = '\0';   /* the line break */
+		message[n] = '\0';
+		message += 0x80;
+	}
 	return fclose(f);
 }

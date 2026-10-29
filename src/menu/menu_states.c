@@ -378,3 +378,80 @@ u32 (menuState800_gameRoom)(void)
 #undef CALL
 	return page;
 }
+
+#define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
+
+/* the match's result sent to the others (the host only): message 0x9f9418 with its flag word 0x9f941c raised
+   while it goes out (FUN_00451270) */
+static void send_result(void)
+{
+	if (!GAME_VAR(int, 0xa0baf8))
+		return;
+	GAME_VAR(int, 0x9f941c) = 1;
+	GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);
+	GAME_VAR(int, 0x9f941c) = 0;
+}
+
+/* 0x420100: after a match. Started from outside (0x76d410 = 1): the game quits (code 0) and the text mode is reset.
+   Otherwise by the match's mode 0x5ae9c4 (0 after a replay, 0x9db990): 1 the arena (the result sent; screen 400),
+   2 a network game (the result sent, the two players' names 0x43 / 0x33 into a game record, net_send 0x16; back to
+   the room when 0xa05630, else the menus), 3 the campaign (the end mode set by the mission 0x9f181c and the
+   progress saved; after the last mission, 15, the game quits with code 0x63 instead), any other the menus. Then
+   the menu music, and message 6 when 0xa0ea94 asks for it. Returns what the original leaves in eax */
+u32 (game_postMatch)(void)
+{
+	GAME_VAR(int, 0x4de6f8) = 1;
+	GAME_VAR(int, 0x5b1dac) = 0;
+	if (GAME_VAR(int, 0x76d410) == 1) {
+		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* profile_41e7a0: quit */
+		GAME_VAR(int, 0x76d3e8) = -1;
+		return r;
+	}
+	if (GAME_VAR(int, 0x9db990))
+		GAME_VAR(int, 0x5ae9c4) = 0;
+	u32 r;
+	int mission;
+	switch (GAME_VAR(int, 0x5ae9c4)) {
+	case 1:
+		send_result();
+		game_returnToMenus_41e9d0();
+		break;
+	case 2:
+		if (GAME_VAR(int, 0xa0baf8)) {
+			send_result();
+			char *to = GAME_VAR(char *, 0xa0b330), *from = GAME_VAR(char *, 0xa0b328);
+			lstrcpyA(to + 0x43, from + 0x43);
+			lstrcpyA(to + 0x33, from + 0x33);
+			GAME_CDECL(0x4521c0, int, int, int)(0x16, 0x65);   /* net_send */
+		}
+		if (GAME_VAR(int, 0xa05630)) {
+			GAME_CDECL(0x44aee0, void, void)();   /* the room's text kept */
+			GAME_CDECL(0x41eb00, void, void)();   /* game_returnToMenus_41eb00: the room */
+		} else
+			game_returnToMenus_41e8b0();
+		break;
+	case 3:
+		mission = GAME_VAR(int, 0x9f181c);
+		if (mission == 15) {
+			GAME_VAR(int, 0x9f181c) = 16;
+			GAME_CDECL(0x447010, void, void)();     /* profile_saveProgress */
+			GAME_CDECL(0x41f880, u32, u32)(1);      /* reg_writeEndMode */
+			music_shutdown();
+			r = GAME_CDECL(0x41e7a0, u32, int)(0x63);
+			goto message;
+		}
+		GAME_CDECL(0x41f880, u32, u32)(mission < 15 ? 0 : 1);
+		GAME_CDECL(0x447010, void, void)();
+		GAME_CDECL(0x41ec50, void, void)();         /* game_returnToMenus_41ec50 */
+		break;
+	default:
+		game_returnToMenus_41e8b0();
+	}
+	r = GAME_CDECL(0x457150, u32, const char *)((const char *)0x4b01cc);   /* music_play */
+message:
+	if (GAME_VAR(int, 0xa0ea94)) {
+		r = GAME_CDECL(0x41ee40, u32, int)(6);
+		GAME_VAR(int, 0xa0ea94) = 0;
+	}
+	return r;
+}

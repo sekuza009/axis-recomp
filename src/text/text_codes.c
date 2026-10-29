@@ -98,54 +98,120 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
 }
 
-/* 0x402420: like text_ascii5Pass with the large glyphs (0x428190; 0x16 wide, 0x10 for a space, I and i, 0x20 for
-   a double-byte letter), lines 0x21 apart, "\r\n" also breaking the line, the line wrapped at x 0x4ad490 and the
-   text stopped at y 0x4ad494 (0x4d7348 set). Where it ended is kept in 0x4d23c8 / 0x4d23cc; texturing is switched
-   off after. Returns glDisable's eax */
-u32 (text_ascii32Pass)(int x, int y, const u8 *s)
+/* ---- the larger text passes, one quad per character (colour 0x76d438): "|" breaks the line outside the console
+   (screen 9999; "||" is a '|'), as does "\r\n"; "$[c]" colours the next character with colour c (16 bytes a slot
+   at 0x9dada0); the 13-unit passes also take "$#c" in a match or the game room (screens 9999 / 400): colour c
+   kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x 0x4ad490 and stop
+   at y 0x4ad494. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
+   then keep where they ended (0x4d23c8 / 0x4d23cc; 0x4d7348 set when stopped). The Korean passes draw only the
+   double-byte syllables, each split by hud_4017d0 (after the conversion 0x44aac0 when 0x4d23d0 is 1): the lead
+   glyph alone (0x4d60e0) or the vowel and tail glyphs as two layers (0x4d23d4 / 0x4d23dc); other characters move
+   `space` for a space, else 0x4d23d8. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
+typedef struct {
+	int line, wide;
+	int sticky;                  /* "$#c" understood */
+	u32 glyph;                   /* the quad: (x, y, c), or (x, y, i[, j]) for Korean */
+	int korean, layered;
+	int space, narrow, other;    /* the ASCII advance for ' ', for 'I' / 'i', for the rest (Korean: space only) */
+	int untexture;               /* glDisable(GL_TEXTURE_2D) after */
+} TextPass;
+
+static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 {
-	int left = x;
+	int left = x, kept = 0, colour = 0;
 	glBegin(7);   /* GL_QUADS */
 	for (u8 c = *s; c; c = *s) {
-		glColor4f_stored((const u32 *)0x76d438);
+		int screen = GAME_VAR(int, 0x76d3e8), special = pass->sticky && (screen == 9999 || screen == 400);
 		s++;
+		if (special && c == '$' && s[0] == '#' && s[2]) {
+			colour = (signed char)s[1] - '0';
+			kept = 1;
+			c = s[2];
+			s += 3;
+		}
+		glColor4f_stored(special && kept ? (const u32 *)(0x9dada0 + colour * 16) : (const u32 *)0x76d438);
 		if (GAME_VAR(int, 0x76d3e8) != 9999 && c == '|') {
 			if (*s != '|') {
-				y += 0x21;
+				y += pass->line;
 				x = left;
 				continue;
 			}
 			s++;
 		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
-			const u32 *colour = (const u32 *)(0x9dada0 + ((signed char)s[1] - '0') * 16);
+			int code = (signed char)s[1] - '0';
+			if (pass->sticky)
+				colour = code;
 			c = s[4];
 			s += 5;
-			glColor4f_stored(colour);
+			glColor4f_stored((const u32 *)(0x9dada0 + code * 16));
 		}
 		if (c == '\r' && *s == '\n') {
 			s++;
-			y += 0x21;
+			y += pass->line;
 			x = left;
 			continue;
 		}
 		if (x >= GAME_VAR(int, 0x4ad490)) {
 			x = left;
-			y += 0x21;
+			y += pass->line;
 		}
 		if (y >= GAME_VAR(int, 0x4ad494)) {
-			GAME_VAR(int, 0x4d7348) = 1;
+			if (!pass->korean)
+				GAME_VAR(int, 0x4d7348) = 1;
 			break;
 		}
-		if (c & 0x80) {
-			s++;
-			x += 0x20;
-		} else {
-			GAME_CDECL(0x428190, void, int, int, int)(x, y, c);   /* text_quad32 */
-			x += c == ' ' || c == 'I' || c == 'i' ? 0x10 : 0x16;
+		if (!pass->korean) {
+			if (c & 0x80) {
+				s++;
+				x += pass->wide;
+				continue;
+			}
+			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, c);
+			x += c == ' ' ? pass->space : c == 'I' || c == 'i' ? pass->narrow : pass->other;
+			continue;
 		}
+		if (!(c & 0x80)) {
+			x += c == ' ' ? pass->space : GAME_VAR(int, 0x4d23d8);
+			continue;
+		}
+		u8 hi = c, lo = *s++;
+		if (GAME_VAR(int, 0x4d23d0) == 1) {
+			u32 code = GAME_CDECL(0x44aac0, u32, u32)((u32)hi << 8 | lo);
+			hi = (u8)(code >> 8);
+			lo = (u8)code;
+		}
+		GAME_CDECL(0x4017d0, int, u32, u32)(hi, lo);   /* hud_4017d0 */
+		if (pass->layered)
+			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, GAME_VAR(int, 0x4d23d4), GAME_VAR(int, 0x4d23dc));
+		else
+			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, GAME_VAR(int, 0x4d60e0));
+		x += pass->wide;
 	}
-	GAME_VAR(int, 0x4d23c8) = x;
-	GAME_VAR(int, 0x4d23cc) = y;
-	glEnd();
-	return IMPORT(0x4a922c, u32, u32)(0xde1);   /* glDisable(GL_TEXTURE_2D) */
+	if (!pass->korean) {
+		GAME_VAR(int, 0x4d23c8) = x;
+		GAME_VAR(int, 0x4d23cc) = y;
+	}
+	u32 r = IMPORT(0x4a9220, u32, void)();   /* glEnd */
+	return pass->untexture ? IMPORT(0x4a922c, u32, u32)(0xde1) : r;   /* glDisable(GL_TEXTURE_2D) */
 }
+
+/*                              line  wide  sticky glyph     korean layered space narrow other untexture */
+static const TextPass ascii8 =  { 0x11, 0x10, 1, 0x428030, 0, 0, 8,    8,    8,    0 };   /* text_quad8 */
+static const TextPass ascii16 = { 0x11, 0x10, 1, 0x4280e0, 0, 0, 8,    0xb,  0xd,  1 };   /* text_quad16 */
+static const TextPass ascii32 = { 0x21, 0x20, 0, 0x428190, 0, 0, 0x10, 0x10, 0x16, 1 };   /* text_quad32 */
+static const TextPass han13 =   { 0x11, 0x10, 1, 0x427c30, 1, 0, 8,    0,    0,    0 };   /* hud_427c30 */
+static const TextPass han13b =  { 0x11, 0x10, 1, 0x427ce0, 1, 1, 8,    0,    0,    0 };   /* hud_427ce0 */
+static const TextPass han31 =   { 0x21, 0x20, 0, 0x427e30, 1, 0, 0x10, 0,    0,    0 };   /* hud_427e30 */
+static const TextPass han31b =  { 0x21, 0x20, 0, 0x427ee0, 1, 1, 0x10, 0,    0,    0 };   /* hud_427ee0 */
+
+/* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
+   end overwrites) */
+u32 (text_ascii8Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii8); }
+u32 (text_ascii16Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii16); }
+u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &ascii32); }
+/* 0x401870, 0x401aa0: Korean at 13 units, the lead glyphs and the vowel and tail glyphs; 0x401ce0, 0x401e70: the
+   same at 31 units */
+u32 (text_hanCho)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
+u32 (text_hanJungJong)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
+u32 (hud_401ce0)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
+u32 (hud_401e70)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }

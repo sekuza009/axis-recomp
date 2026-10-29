@@ -251,3 +251,36 @@ void (FUN_0043f980)(void)
 	GetWindowTextA(g_hChatEdit, g_chatLine, n + 1);
 	g_chatLength = line_length();
 }
+
+/* 0x433e60: the login form's field k opened for typing: the name (16 typed, a 30-byte buffer), the password and
+   its repeat (12; the short-field flag set) or the e-mail (40), its current text copied in, the caret by the form (0x9dd6e8; rows 0x30
+   apart). Another k only clears the form's flags. Returns 0 (the original's eax) */
+int (room_433e60)(int k)
+{
+	static const struct { u32 editing, text; int bufferLength, maxLength, flag; } field[4] = {
+		{ 0x9dd348, 0x9dd1d8, 0x1e, 0x10, 0 }, { 0x9dd3f8, 0x9dd1f6, 0xc, 0xc, 1 }, { 0x9dd564, 0x9dd202, 0xc, 0xc, 1 },
+		{ 0x9dd6cc, 0x9dd20e, 0x28, 0x28, 0 } };
+	input_releaseKeyboard();
+	line_clear();
+	g_paused = 1;
+	EDITING(0x9dd348) = 0;
+	GAME_VAR(int, 0x9dd32c) = 0;
+	EDITING(0x9dd3f8) = 0;
+	EDITING(0x9dd564) = 0;
+	EDITING(0x9dd6cc) = 0;
+	g_chatFieldFlag = 0;
+	int row = 0;
+	if ((u32)k <= 3) {
+		menu_clearInputBuffer(field[k].bufferLength);
+		EDITING(field[k].editing) = 1;
+		if (field[k].flag)
+			g_chatFieldFlag = 1;
+		line_set((const char *)field[k].text);
+		chat_createEdit(field[k].maxLength);
+		row = k;
+	}
+	caret(PANEL_X(0x9dd6e8) + 0x94, PANEL_Y(0x9dd6e8) + row * 0x30 + 0x3c);
+	g_menuFade = 5.0f;
+	g_chatLength = line_length();
+	return 0;
+}

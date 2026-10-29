@@ -423,3 +423,47 @@ u32 (profile_44f4b0)(void)
 	GAME_CDECL(0x44b750, void, void)();
 	return GAME_CDECL(0x44de00, u32, void)();
 }
+
+/* 0x44ba60: the current profile (0x9f8d74) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
+   twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
+   With none left everything is reset and the list written (profile_delete); otherwise, if the current one was the
+   last, the selection steps back (the scrolled row 0x9f8c5c, else the list's top 0x9f8c4c), then the list is
+   written and shown again (profile_44b7a0). Returns the last call's eax */
+u32 (profile_deleteFiles)(void)
+{
+	int current = GAME_VAR(int, 0x9f8d74);
+	u8 *records = (u8 *)0x9f6848;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
+	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)0x4b2adc) == 0) {   /* chdir("save") */
+		char path[0x80];
+		memset(path, 0, sizeof path);
+		strcpy(path, (const char *)(records + current * 0x48 + 4));
+		strcat(path, (const char *)0x4b2afc);   /* ".axs" */
+		if (!IMPORT(0x4a9104, int, const char *)(path))   /* DeleteFileA */
+			IMPORT(0x4a9104, int, const char *)(path);
+		GAME_CDECL(0x49f8a6, int, const char *)((const char *)0x4b2a80);   /* chdir("..") */
+	}
+	int count = GAME_VAR(int, 0x9f9008) - 1, last = current;
+	for (; last < count; last++)
+		memcpy(records + last * 0x48, records + (last + 1) * 0x48, 0x48);
+	u8 *freed = records + last * 0x48;
+	memset(freed + 4, 0, 0x40);
+	*(int *)freed = 0;
+	*(int *)(freed + 0x44) = -1;
+	GAME_VAR(int, 0x9f9008) = count;
+	if (GAME_VAR(int, 0x9f8d74) >= count) {
+		if (count <= 0) {
+			GAME_VAR(int, 0x9f8c5c) = 0;
+			GAME_VAR(int, 0x9f8c4c) = 0;
+			GAME_VAR(int, 0x9f8d74) = 0;
+			GAME_VAR(int, 0x9f9008) = 0;
+			return GAME_CDECL(0x447320, u32, void)();   /* profile_delete: the list written */
+		}
+		if (GAME_VAR(int, 0x9f8c5c) > 0)
+			GAME_VAR(int, 0x9f8c5c)--;
+		else
+			GAME_VAR(int, 0x9f8c4c)--;
+		GAME_VAR(int, 0x9f8d74) = GAME_VAR(int, 0x9f8c4c) + GAME_VAR(int, 0x9f8c5c);
+	}
+	GAME_CDECL(0x447320, u32, void)();
+	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
+}

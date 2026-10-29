@@ -258,3 +258,43 @@ void (armc_snapshot)(int i)
 	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
 	GAME_VAR(int, 0x4dcc64) = 0;
 }
+
+/* 0x412450: the three mode tabs across the top (0x4dcc90 / 0x4dcc94, 100 apart): the tab texture (0x9db0a4), the
+   chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (0x7565a4, 0x80 a slot) in its colour (0x4dbc58
+   chosen, else 0x4dc1d0). Returns 3 (the original's eax) */
+int (armc_412450)(void)
+{
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	for (int i = 0; i < 3; i++) {
+		glColor4f(1.0f, 1.0f, 1.0f, GAME_VAR(int, 0x4dc798) == i + 1 ? 0.8f : 0.4f);
+		int x = GAME_VAR(int, 0x4dcc90), y = GAME_VAR(int, 0x4dcc94);
+		menu_drawTexQuad_4282f0(x + i * 100 + 0x10, y - 8, x + i * 100 + 0x70, y + 0x18, 1);
+	}
+	glDisable(GL_TEXTURE_2D);
+	for (int i = 0; i < 3; i++) {
+		const u32 *c = (const u32 *)(GAME_VAR(int, 0x4dc798) == i + 1 ? 0x4dbc58 : 0x4dc1d0);
+		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
+		int x = GAME_VAR(int, 0x4dcc90);
+		text_drawBox16(x + i * 100 + 0x10, GAME_VAR(int, 0x4dcc94), x + i * 100 + 0x70, (const char *)(0x7565a4 + i * 0x80));
+	}
+	return 3;
+}
+
+/* 0x40e7a0: the selection kept: the part choices (0x90 bytes from 0x4dc4b8 into 0x4dcfe0), the five colour
+   choices (0x4dc760 into 0x4dc878) and six more settings (0x4dcb18 into 0x4dcf18), between two calls of the part
+   lists (armc_40d990); the original then checked the choices' ranges, which the patched game jumps over. Then the
+   progress saved; returns profile_saveProgress's eax */
+u32 (armc_saveSelection)(void)
+{
+	GAME_CDECL(0x40d990, void, void)();
+	memcpy((void *)0x4dcfe0, (const void *)0x4dc4b8, 0x90);
+	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
+	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
+	GAME_CDECL(0x40d990, void, void)();
+	return GAME_CDECL(0x447010, u32, void)();   /* profile_saveProgress */
+}
