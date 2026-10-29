@@ -236,3 +236,45 @@ u32 (FUN_004520e0)(void)
 	GAME_VAR(int, 0xa0b380) = 0;
 	return r;
 }
+
+/* a GlobalAlloc'd block unlocked and freed (through its handle) */
+static void global_free(void *p)
+{
+	IMPORT(0x4a918c, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalUnlock(GlobalHandle(p)) */
+	IMPORT(0x4a9190, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalFree(GlobalHandle(p)) */
+}
+
+/* 0x453920: DirectPlay shut down: the lobby object released, the local player destroyed and the session closed and
+   released, the session buffers freed (0xa0bab0 is freed but not cleared), COM ended. Returns 0 */
+int (dplay_release)(void)
+{
+	void *lobby = GAME_VAR(void *, 0xa0b398);
+	if (lobby) {
+		COM(lobby, COM_RELEASE, u32)(lobby);
+		GAME_VAR(void *, 0xa0b398) = 0;
+	}
+	void *play = GAME_VAR(void *, 0xa0b404);
+	if (play) {
+		if (GAME_VAR(u32, 0xa0b424)) {
+			COM(play, 0x24, u32, u32)(play, GAME_VAR(u32, 0xa0b424));   /* DestroyPlayer */
+			play = GAME_VAR(void *, 0xa0b404);
+			GAME_VAR(u32, 0xa0b424) = 0;
+		}
+		COM(play, 0x10, u32)(play);   /* Close */
+		play = GAME_VAR(void *, 0xa0b404);
+		COM(play, COM_RELEASE, u32)(play);
+		GAME_VAR(void *, 0xa0b404) = 0;
+	}
+	if (GAME_VAR(void *, 0xa0baf0)) {
+		crt_free(GAME_VAR(void *, 0xa0baf0));
+		GAME_VAR(void *, 0xa0baf0) = 0;
+	}
+	if (GAME_VAR(void *, 0xa0bab0))
+		global_free(GAME_VAR(void *, 0xa0bab0));
+	if (GAME_VAR(void *, 0xa0baf4)) {
+		global_free(GAME_VAR(void *, 0xa0baf4));
+		GAME_VAR(void *, 0xa0baf4) = 0;
+	}
+	IMPORT(0x4a93b8, void, void)();   /* CoUninitialize */
+	return 0;
+}

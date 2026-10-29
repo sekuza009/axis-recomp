@@ -159,3 +159,28 @@ u32 (sound_playFile)(const char *name, int volume)
 	GAME_CDECL(0x467d70, void, void *)(sound);                     /* dsbuf_play */
 	return GAME_CDECL(0x467d60, u32, void *)(sound);               /* FUN_00467d60 */
 }
+
+/* 0x456d10: the sound table loaded (with sound on): the old one released (0x456cd0), the volume set, then from the
+   scrambled file: records of an index and a 256-byte sound name, each sound loaded into the table at 0xa0e02c,
+   until a negative index. A missing file is a fatal error. Returns 1 (0 with sound off) */
+int (sound_initSoundTable)(const char *file, int volume)
+{
+	if (!GAME_VAR(int, 0xa0e80c))
+		return 0;
+	GAME_CDECL(0x456cd0, void, void)();   /* FUN_00456cd0 */
+	GAME_CDECL(0x456de0, int, int)(volume);   /* FUN_00456de0 */
+	void *f = crt_fopen(file, (const char *)0x4ad170);
+	if (!f)
+		GAME_CDECL(0x46c710, void, void *, const char *, const char *)((void *)0xa0e020, (const char *)0x4b42e8, file);   /* sys_fatalError */
+	int index;
+	char name[0x100];
+	fread_scrambled(&index, 4, 1, f);
+	while (index >= 0) {
+		fread_scrambled(name, 1, 0x100, f);
+		u32 sound = GAME_CDECL(0x467b90, u32, const char *)(name);
+		GAME_VAR(u32, 0xa0e02c + index * 4) = sound;
+		fread_scrambled(&index, 4, 1, f);
+	}
+	fclose(f);
+	return 1;
+}

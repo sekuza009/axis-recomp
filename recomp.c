@@ -2654,7 +2654,8 @@ THISCALL DWORD load_483d70(char *self, DWORD f);
    them): Chat.scp into the 100 chat macros, else empty them and write the file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD FUN_0045ff30(void *self);
-LIFT_PLAIN(ResourceSet_dtor_463960, 463960)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD ResourceSet_dtor_463960(void *self);
 LIFT_PLAIN(Stage_dtor, 46ff70)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD chat_saveMacros(void *scene);
@@ -3118,7 +3119,8 @@ static THISCALL DWORD match_483f00(char *pool, DWORD a, DWORD x, DWORD p) { DWOR
 /* 0x472310 (thiscall) match_472310: reset the factor pool and add every active player and live effect */
 static THISCALL DWORD match_472310(char *scene) { return run_lifted(lift_472310, (DWORD)scene, 0, NULL); }
 /* 0x43f8b0 app_deleteDataFiles: reset the three data files' progress word and delete the saved game */
-LIFT_PLAIN(app_deleteDataFiles, 43f8b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD app_deleteDataFiles(void);
 /* 0x452af0 net_452af0(rec) / 0x452c80 net_452c80(rec): copy a received server/room record into the list slot */
 LIFT_PLAIN(net_452af0, 452af0)
 LIFT_PLAIN(net_452c80, 452c80)
@@ -3194,8 +3196,10 @@ LIFT_PLAIN(glWindow_resize, 468450)
 static THISCALL DWORD image_initBy(char *img, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_46cd00, (DWORD)img, 1, v); }
 /* 0x466c00 shapeDat_initBy / 0x46afe0 skelDat_initBy: open Data\Shape.dat / Data\Skeleton.dat once and read its
    index (count, 0x44-byte entries) */
-LIFT_PLAIN(shapeDat_initBy, 466c00)
-LIFT_PLAIN(skelDat_initBy, 46afe0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD shapeDat_initBy(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD skelDat_initBy(void);
 /* 0x487490 (thiscall) timer_getGameTime: frame time from the performance counter (initialised on first use),
    returned in ST0; 0x461210 (thiscall) armc_461210: its average over the last 10 frames */
 static THISCALL long double timer_getGameTime(char *t) { return run_lifted_fp(lift_487490, (DWORD)t, 0, NULL); }
@@ -4501,7 +4505,8 @@ void THISCALL hud_drawEscMenu(void *scene);
 /* 0x453920 dplay_release(): releases the lobby (0xa0b398) and the DirectPlay object (0xa0b404: destroys the local
    player 0xa0b424, Close, Release), frees the session list 0xa0baf0, unlocks and frees the global blocks 0xa0bab0 /
    0xa0baf4 and calls CoUninitialize; returns 0 */
-LIFT_PLAIN(dplay_release, 453920)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_release(void);
 /* 0x453fd0 dplay_enumSessions(): a 0x50-byte session description (the application GUID *0xa0bad8, the game's
    GUID 0x4a96e8), EnumSessions with the callback 0x453560 for connection kinds 0 and 1 (0xa0b418); 0 if there
    is no DirectPlay object or the call fails, else 1 */
@@ -5301,7 +5306,8 @@ void THISCALL replay_drawFollowedName(void *scene);
 /* 0x456d10 sound_initSoundTable(file, volume): with sound on (0xa0e80c), the table freed (0x456cd0), the volume set,
    the file opened (an error message when it does not open) and read descrambled (0x46cbe0): index, 0x100-byte
    name, ... until an index < 0, each name loaded (sound_loadWav) into the table 0xa0e02c; 1, or 0 with sound off */
-LIFT_PLAIN(sound_initSoundTable, 456d10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int sound_initSoundTable(const char *file, int volume);
 /* batch 194 (lifted/grp150.c): the in-match network packets */
 #include "lifted/grp150.c"
 /* 0x48c830 net_processGamePacket(from, type, packet) (thiscall on the scene, ret 0xc): only type 0x40; recorded to
@@ -9280,7 +9286,7 @@ static void owned_bits(char *base, DWORD span, int n)
 	for (int k = 0; k < n; k++) { char *o = base + 4 * irnd(0, (int)(span / 4) - 4); S32(o, 0) = 1; S32(o, -4) = (int)(BUF + 0x100); }
 }
 ST(FUN_0045ff30, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, CALL_PLAIN(0x45ff30, BUF, 0, 0, 0, 0), (DWORD)(FUN_0045ff30((void *)BUF)))
-T_PLAIN(ResourceSet_dtor_463960, 0x463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, BUF, 0, 0, 0, 0)
+ST(ResourceSet_dtor_463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, CALL_PLAIN(0x463960, BUF, 0, 0, 0, 0), (DWORD)(ResourceSet_dtor_463960((void *)BUF)))
 T_PLAIN(Stage_dtor, 0x46ff70, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, BUF, 0, 0, 0, 0)
 ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
 /* chat lines: "/N=text", "/N", "/NN...", other text */
@@ -10105,7 +10111,7 @@ static void factorscene_setup(void)
 	for (int i = 0; i < 12; i++) { char *e = BUF + 0x20a9a3c + i * 300; S32(e, -0x78) = irnd(0, 2) ? 1 : 0; SF(e, 0) = csu_fr(-100, 10000); }
 }
 ST(match_472310, factorscene_setup();, (TC(void, 0x472310, char *)(BUF), 0), (match_472310(BUF), 0))
-T_PLAIN(app_deleteDataFiles, 0x43f8b0, vfs_content(0, 0x1000); g_vfsOpenFail = 0; g_mockDeleteOk = irnd(0, 1);, 0, 0, 0, 0, 0)
+ST(app_deleteDataFiles, vfs_content(0, 0x1000); g_vfsOpenFail = 0; g_mockDeleteOk = irnd(0, 1);, CALL_PLAIN(0x43f8b0, 0, 0, 0, 0, 0), (DWORD)(app_deleteDataFiles()))
 /* a received record: strings at +1, +0x33, +0x53 and the byte fields; the slot index 0..9 */
 static void netrec_setup(void)
 {
@@ -10214,8 +10220,8 @@ static void datinit_setup(DWORD countp, DWORD filep)
 	G32(countp) = irnd(0, 3) ? 0 : irnd(-1, 3); G32(filep) = irnd(0, 3) ? 0 : (int)VFS_FILE(1);
 	g_mockMallocFail = !irnd(0, 8);
 }
-T_PLAIN(shapeDat_initBy, 0x466c00, datinit_setup(0xa0e79c, 0xa0e7a4);, 0, 0, 0, 0, 0)
-T_PLAIN(skelDat_initBy, 0x46afe0, datinit_setup(0xa0eab4, 0xa0eabc);, 0, 0, 0, 0, 0)
+ST(shapeDat_initBy, datinit_setup(0xa0e79c, 0xa0e7a4);, CALL_PLAIN(0x466c00, 0, 0, 0, 0, 0), (DWORD)(shapeDat_initBy()))
+ST(skelDat_initBy, datinit_setup(0xa0eab4, 0xa0eabc);, CALL_PLAIN(0x46afe0, 0, 0, 0, 0, 0), (DWORD)(skelDat_initBy()))
 /* a timer object: initialised or not, counters, a frame-time ring of 10 floats at +0x48 (index +0x70) */
 static void gametimer_setup(void)
 {
@@ -14074,7 +14080,7 @@ static void dplay_setup(void)
 	G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(0, 1) ? -1 : 4;
 	for (int k = 0; k < 4; k++) G32(0xa0d7a4 + 4 * k) = irnd(0, 1);
 }
-T_PLAIN(dplay_release, 0x453920, dplay_setup();, 0, 0, 0, 0, 0)
+ST(dplay_release, dplay_setup();, CALL_PLAIN(0x453920, 0, 0, 0, 0, 0), (DWORD)(dplay_release()))
 T_PLAIN(dplay_enumSessions, 0x453fd0, dplay_setup();, 0, 0, 0, 0, 0)
 ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (DWORD)arena_4549a0())
 ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (DWORD)arena_4549c0())
@@ -15548,7 +15554,7 @@ static void sndtab_setup(void)
 	fill_str(BUF + 0x100, 20, 'a', 'z');
 	g_a[0] = (int)(BUF + 0x100); g_a[1] = irnd(-10, 120);
 }
-T_PLAIN(sound_initSoundTable, 0x456d10, sndtab_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(sound_initSoundTable, sndtab_setup();, CALL_PLAIN(0x456d10, 0, g_a[0], g_a[1], 0, 0), (DWORD)(sound_initSoundTable((const char *)(DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* batch 194 */
 /* the game packets: a random 0x100-byte packet at BUF + 0x100 of kind 0..15 (type 0x40, or another type now and
    then), with the bytes each kind uses as player / table indexes, divisors' inputs and string lengths kept where

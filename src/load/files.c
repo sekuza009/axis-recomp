@@ -159,3 +159,46 @@ u32 (cfg_loadAxisCfg)(void)
 		GAME_CDECL(sections[k], u32, void *)(f);
 	return fclose(f);
 }
+
+/* 0x43f8b0: the data files spoilt: a marker word (0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4) written at offset 2000 of
+   three files, then two more deleted. Returns the last DeleteFileA's eax */
+u32 (app_deleteDataFiles)(void)
+{
+	static const u32 files[3] = { 0x4b03c4, 0x4b03dc, 0x4b03f4 };
+	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
+	for (int k = 0; k < 3; k++) {
+		void *f = crt_fopen((const char *)files[k], (const char *)0x4b29e8);
+		GAME_CDECL(0x49e91e, int, void *, int, int)(f, 2000, 0);   /* fseek */
+		u32 mark = marks[k];
+		crt_fwrite(&mark, 4, 1, f);
+		fclose(f);
+	}
+	IMPORT(0x4a9104, u32, const char *)((const char *)0x4b040c);   /* DeleteFileA */
+	return IMPORT(0x4a9104, u32, const char *)((const char *)0x4b0420);
+}
+
+/* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
+   entries into a malloc'd table; a missing file or no memory is a fatal error (to log). Returns what the original
+   leaves in eax ---- */
+static u32 dat_open(u32 count, const char *format, void *log)
+{
+	u32 table = count + 4, file = count + 8;
+	if (GAME_VAR(int, count) > 0)
+		return GAME_VAR(u32, count);
+	if (GAME_VAR(void *, file))
+		return GAME_VAR(u32, file);
+	char path[0x100];
+	GAME_CDECL(0x49e9dd, int, char *, const char *)(path, format);   /* sprintf */
+	GAME_VAR(void *, file) = crt_fopen(path, (const char *)0x4ad170);
+	if (!GAME_VAR(void *, file))
+		GAME_CDECL(0x46c710, void, void *, const char *, const char *)(log, (const char *)0x4b3ee4, path);
+	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)count, 4, 1, GAME_VAR(void *, file));   /* fread */
+	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
+	if (!GAME_VAR(void *, table))
+		GAME_CDECL(0x46c710, void, void *, const char *, int)(log, (const char *)0x4b3eb4, GAME_VAR(int, count));
+	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
+	                                                          GAME_VAR(void *, file));
+}
+/* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
+u32 (shapeDat_initBy)(void) { return dat_open(0xa0e79c, (const char *)0x4c4d20, (void *)0xa0e788); }
+u32 (skelDat_initBy)(void) { return dat_open(0xa0eab4, (const char *)0x4c54b4, (void *)0xa0eaa0); }

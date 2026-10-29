@@ -245,3 +245,17 @@ u32 THISCALL (FUN_0045ff30)(u8 *self)
 		r = GAME_THISCALL(0x46f470, u32, void *)(self + members[k]);
 	return r;
 }
+
+/* 0x463960: a resource set destroyed: its five skeleton managers, then its five shape managers, the last member first
+   (as ResourceSet_ctor_463850 built them). Returns the last destructor's eax */
+u32 THISCALL (ResourceSet_dtor_463960)(u8 *self)
+{
+	static const u32 skeletons[5] = { 0x468d4, 0x45804, 0x44734, 0x43e34, 0x43534 };
+	static const u32 shapes[5] = { 0x2fa68, 0x1fe1c, 0x101d0, 0x8284, 0x338 };
+	u32 r = 0;
+	for (int k = 0; k < 5; k++)
+		GAME_THISCALL(0x46ae60, u32, void *)(self + skeletons[k]);   /* SkeletonManager_dtor */
+	for (int k = 0; k < 5; k++)
+		r = GAME_THISCALL(0x466a10, u32, void *)(self + shapes[k]);  /* ShapeManager_dtor */
+	return r;
+}
