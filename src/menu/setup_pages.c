@@ -310,11 +310,18 @@ void (setup_423e50)(void)
    10 high, dimmed from 0.5 as the pulse rises), layer 1 the stripes (the same texture, in the colour 1, 1, 10,
    0.4), layer 2 nothing (its texture 0x76d47c bound, the walls' turns still made), layer 3 a strip of 0x76d478 a
    tenth further out (alpha 0.7); then the hovered panel's glow (0x680398: 0x680ccc bouncing between 2 and 38 by
-   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on. The deep one (deep): pushed back
-   1650, textures 0x4df908 / 0x4df904, the panels purple, the stripes red, layer 2 drawn (fully transparent) and the
-   pulse only turned round at its ends */
-static void menu_tunnel(int clamp, int deep)
+   0x4df454; clamped there when clamp is set) and the pulse and scroll stepped on. The deep ones (deep): the panels
+   purple, the stripes red, layer 2 drawn (fully transparent) */
+typedef struct {
+	u32 depth;        /* how far the walls are pushed back (float bits) */
+	u32 textures;     /* layer 2's and 3's textures from here, 4 down a layer */
+	int deep, clamp;
+	int turn_only;    /* the pulse only turned round at its ends */
+} Tunnel;
+
+static void menu_tunnel(const Tunnel *t)
 {
+	int deep = t->deep, clamp = t->clamp;
 	const float turns[3] = { -40.0f, 0.0f, 40.0f };
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
@@ -323,12 +330,12 @@ static void menu_tunnel(int clamp, int deep)
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = 0.46875f, t1 = 0.625f, s_far = 1.0f;
-		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, (deep ? 0x4df910 : 0x76d484) - layer * 4);
+		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, t->textures - layer * 4);
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		for (int wall = 0; wall < 6; wall++) {
 			int place = wall % 3, far = wall >= 3;
 			gfx_setMenuCamera();
-			glTranslatef_bits(0, 0, deep ? 0xc4ce4000 : 0xc4098000);   /* -1650 / -550 */
+			glTranslatef_bits(0, 0, t->depth);
 			float turn = turns[place];
 			if (far)
 				turn = -turn;
@@ -427,15 +434,21 @@ static void menu_tunnel(int clamp, int deep)
 			GAME_VAR(u32, 0x4df454) = 0xbf800000;
 		}
 	}
-	tunnel_advance(deep);
+	tunnel_advance(t->turn_only);
 }
 
 /* 0x448140: the mission-select screen's tunnel; 0x4445a0 / 0x411110: the skirmish and ARM CENTER screens' (the glow
-   clamped); 0x411ab0: the ARM CENTER's deep one. The originals leave eax to callers that ignore it */
-void (missionsel_448140)(void) { menu_tunnel(0, 0); }
-void (skirmish_4445a0)(void) { menu_tunnel(1, 0); }
-void (armc_411110)(void) { menu_tunnel(1, 0); }
-void (armc_411ab0)(void) { menu_tunnel(0, 1); }
+   clamped); 0x411ab0: the ARM CENTER's deep one (1650 back, its pulse only turned round); 0x4388e0: the game room's
+   (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
+void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0 }; menu_tunnel(&t); }
+void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 1, 0 }; menu_tunnel(&t); }
+void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 1, 0 }; menu_tunnel(&t); }
+void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 0, 1 }; menu_tunnel(&t); }
+void (room_4388e0)(void)
+{
+	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 0 };
+	menu_tunnel(&t);
+}
 #undef g_scroll
 #undef g_tunnelPulseStep
 #undef g_tunnelPulse

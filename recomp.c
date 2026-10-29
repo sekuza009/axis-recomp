@@ -4311,7 +4311,8 @@ void skirmish_4445a0(void);
 void armc_411ab0(void);
 /* 0x4388e0 room_4388e0() / 0x4091b0 arena_4091b0(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
    textures 0x4df908 / 0x4df904 and 0x4df044 / 0x4df040 */
-LIFT_PLAIN(room_4388e0, 4388e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_4388e0(void);
 LIFT_PLAIN(arena_4091b0, 4091b0)
 /* batch 127 (lifted/grp73.c): the room's player-info panel */
 #include "lifted/grp73.c"
@@ -13550,7 +13551,7 @@ static void tunnels_setup(void)
 ST(armc_411110, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (armc_411110(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(skirmish_4445a0, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_4445a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_411ab0, tunnels_setup();, (CALL_PLAIN(0x411ab0, 0, 0, 0, 0, 0), 0), (armc_411ab0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-T_PLAIN(room_4388e0, 0x4388e0, tunnels_setup();, 0, 0, 0, 0, 0)
+ST(room_4388e0, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_4388e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 T_PLAIN(arena_4091b0, 0x4091b0, tunnels_setup();, 0, 0, 0, 0, 0)
 /* batch 127 */
 /* the info panel: dlgwin_setup's window at 0x9dd368, short labels, the password fields at most 11 characters (the
