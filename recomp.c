@@ -3214,7 +3214,8 @@ int room_434d00(void);
 DWORD room_4334c0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int room_434b90(void);
-LIFT_PLAIN(room_434820, 434820)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_434820(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_leaveGame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -10338,7 +10339,7 @@ T_PLAIN(net_send, 0x4521c0, netstate_setup();, 0, g_a[0], g_a[1], 0, 0)
 ST(room_434d00, netstate_setup();, CALL_PLAIN(0x434d00, 0, 0, 0, 0, 0), (DWORD)(room_434d00()))
 ST(room_4334c0, netstate_setup();, CALL_PLAIN(0x4334c0, 0, 0, 0, 0, 0), (DWORD)(room_4334c0()))
 ST(room_434b90, netstate_setup();, CALL_PLAIN(0x434b90, 0, 0, 0, 0, 0), (DWORD)(room_434b90()))
-T_PLAIN(room_434820, 0x434820, netstate_setup();, 0, 0, 0, 0, 0)
+ST(room_434820, netstate_setup();, CALL_PLAIN(0x434820, 0, 0, 0, 0, 0), (DWORD)(room_434820()))
 ST(room_leaveGame, netstate_setup();, CALL_PLAIN(0x435a40, 0, 0, 0, 0, 0), (DWORD)(room_leaveGame()))
 ST(match_44aee0, netstate_setup();, CALL_PLAIN(0x44aee0, 0, 0, 0, 0, 0), (match_44aee0(), 0))
 T_PLAIN(match_4327f0, 0x4327f0, netstate_setup(); G32(0x4de72e) = irnd(0, 2) ? irnd(0, 500) : 0; GF(0x4de732) = irnd(0, 2) ? (float)irnd(0, 500) : 0.0f;, 0, 0, 0, 0, 0)

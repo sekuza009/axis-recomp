@@ -299,6 +299,51 @@ void (room_432db0)(void)
 	GAME_VAR(int, 0x9dd84c) = 1;
 }
 
+/* the default mech settings (11 bytes) and six colour pairs (hue 0, chroma 1, value 0.6) at mech, colours */
+static void default_mech(u8 *mech, u8 *colours)
+{
+	static const u8 bytes[11] = { 0, 0, 0, 0, 0, 0xff, 0x11, 0, 2, 8, 0xff };
+	static const u32 pair[6] = { 0, 0x3f800000, 0x3f19999a, 0, 0x3f800000, 0x3f19999a };
+	memcpy(mech, bytes, sizeof bytes);
+	for (int k = 0; k < 6; k++)
+		memcpy(colours + k * 0x18, pair, sizeof pair);
+}
+
+/* 0x434820: a new room hosted: the room's names copied as the joined game's, the default mech and colours in both,
+   the window rectangle reset (to 1, 0, ...) in both and the title record (0x4de700) set from it; the room record
+   (0xa0b320: kind 0x18, the three names, the defaults) sent to the server (net_send 0xf, 0x65). Returns net_send's
+   eax */
+u32 (room_434820)(void)
+{
+	strcpy((char *)0x9dd570, (const char *)0x9dd1d8);
+	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
+	default_mech((u8 *)0x9dd260, (u8 *)0x9dd26b);
+	default_mech((u8 *)0x9dd5f8, (u8 *)0x9dd603);
+	GAME_VAR(int, 0x9dd240) = 1;
+	GAME_VAR(int, 0x9dd5d8) = 1;
+	memset((void *)0x4de700, 0, 7 * 4 + 2);
+	static const u32 zero[] = { 0x9dd5dc, 0x9dd5ec, 0x9dd5f0, 0x9dd5e8, 0x9dd5f4, 0x9dd244, 0x9dd254, 0x9dd258,
+	                            0x9dd250, 0x9dd25c };
+	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
+		GAME_VAR(int, zero[k]) = 0;
+	strcpy((char *)0x4de700, (const char *)0x9dd570);
+	GAME_VAR(int, 0x4de726) = GAME_VAR(int, 0x9dd5e4);
+	GAME_VAR(int, 0x4de71e) = 1;
+	static const u32 zero2[] = { 0x4de722, 0x4de72e, 0x4de732, 0x4de72a };
+	for (int k = 0; k < 4; k++)
+		GAME_VAR(int, zero2[k]) = 0;
+	strcpy(GAME_VAR(char *, 0xa0b320) + 4, (const char *)0x9dd1d8);
+	strcpy(GAME_VAR(char *, 0xa0b320) + 0x22, (const char *)0x9dd1f6);
+	strcpy(GAME_VAR(char *, 0xa0b320) + 0x2e, (const char *)0x9dd20e);
+	u8 *record = GAME_VAR(u8 *, 0xa0b320);
+	default_mech(record + 0x70, record + 0x7b);
+	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
+	*(int *)record = 0x18;
+	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xf, 0x65);   /* net_send */
+	GAME_VAR(int, 0x9dd6a4) = 1;
+	return r;
+}
+
 /* 0x4080c0: the lobby's back keys (unless a dialog is open): the first closes the list (0x907b2c), the second leaves
    the game (quit code 2). Returns what the original leaves in eax */
 u32 (lobby_keysBack)(void)
