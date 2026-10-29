@@ -4273,7 +4273,8 @@ LIFT_PLAIN(setup_425460, 425460)
    by 0x4b04c4 / FUN_0041ef20), the first two with texture 0x4e0cd0, the others 0x5b197c / 0x5b1978: layer 0 the
    pulsing panels (0x9db978), layer 1 the scrolling stripes (0x4e14fc), layer 3 brighter; then the pulse
    (0x9db978 bouncing 0..100 by 0x4df010) and the scroll (0x4e14fc += 0x4deda8, wrapping at 200) advance */
-LIFT_PLAIN(setup_423e50, 423e50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_423e50(void);
 /* 0x423330 setup_423330(): the tunnel of the setup menu itself: the cursor tested against the four menu panels
    (0x4df918, 11 dwords each, FUN_0041eea0; none while 0x4dda60): the hovered one (0x680398) restarts its glow
    (0x680ccc = 40, 0x4df454 = -1) when it changes (0x907b24); the tunnel layers as setup_423e50's with the hovered
@@ -13460,7 +13461,7 @@ static void setuptunnel_setup(void)
 	GF(0x4e14fc) = irnd(0, 5) ? (float)irnd(0, 1990) / 10.0f : (float)irnd(195, 205);
 	GF(0x4deda8) = (float)irnd(0, 50) / 10.0f; GF(0x4b071c) = (float)irnd(1, 30) / 10.0f;
 }
-T_PLAIN(setup_423e50, 0x423e50, setuptunnel_setup();, 0, 0, 0, 0, 0)
+ST(setup_423e50, setuptunnel_setup();, (CALL_PLAIN(0x423e50, 0, 0, 0, 0, 0), 0), (setup_423e50(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the setup menu: the tunnel as above, four panel quads, the cursor often at a panel's centre, the hovered
    panel unchanged or not, its glow anywhere in 0..40, a message open now and then, the captions */
 static void setupmenu_setup(void)
