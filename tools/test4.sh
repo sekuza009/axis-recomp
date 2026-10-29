@@ -13,7 +13,7 @@ rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/recomp.log"
 cp "$R/build/AxisGL.exe" "$G/AxisGL.exe"; cp "$R/recomp.dll" "$G/recomp.dll"
 set +e
 powershell -NoProfile -Command "Start-Process -FilePath 'C:\Users\Alexander\Desktop\Axis\AxisGL.exe' -WorkingDirectory 'C:\Users\Alexander\Desktop\Axis'"
-for i in $(seq 1 450); do grep -q "recomp: done" "$G/recomp.log" 2>/dev/null && break; sleep 2; done
+for i in $(seq 1 750); do grep -q "recomp: done" "$G/recomp.log" 2>/dev/null && break; sleep 2; done
 grep -q "recomp: done" "$G/recomp.log" 2>/dev/null && echo "recomp finished after ~$((i * 2)) s" || echo "RECOMP DID NOT FINISH"
 sleep 4
 shot menu0
