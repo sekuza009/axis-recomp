@@ -258,7 +258,9 @@ typedef struct TunnelRing {
 	float outer[2][201][4];   /* +0x10: the outer band: near and far circles of points (x, y, z + pad) */
 	float spin;   /* +0x1930 */
 	float spinSpeed;   /* +0x1934 */
-	u8 _pad0001938[0xc];
+	u8 _pad0001938[0x4];
+	i32 moveSteps;   /* +0x193c: (by use) armc_enter: steps moved toward the next ring */
+	float turn;   /* +0x1940: (by use) armc_enter: turned on by 1100 / 2200 a ring */
 	float inner[2][201][4];   /* +0x1944: the inner band */
 	float innerSpin;   /* +0x3264 */
 	float innerSpeed;   /* +0x3268 */
@@ -592,6 +594,8 @@ _Static_assert(offsetof(TunnelRing, depth) == 0x8 && sizeof(((TunnelRing *)0)->d
 _Static_assert(offsetof(TunnelRing, outer) == 0x10 && sizeof(((TunnelRing *)0)->outer) == 0x1920, "scene.fields: TunnelRing.outer");
 _Static_assert(offsetof(TunnelRing, spin) == 0x1930 && sizeof(((TunnelRing *)0)->spin) == 0x4, "scene.fields: TunnelRing.spin");
 _Static_assert(offsetof(TunnelRing, spinSpeed) == 0x1934 && sizeof(((TunnelRing *)0)->spinSpeed) == 0x4, "scene.fields: TunnelRing.spinSpeed");
+_Static_assert(offsetof(TunnelRing, moveSteps) == 0x193c && sizeof(((TunnelRing *)0)->moveSteps) == 0x4, "scene.fields: TunnelRing.moveSteps");
+_Static_assert(offsetof(TunnelRing, turn) == 0x1940 && sizeof(((TunnelRing *)0)->turn) == 0x4, "scene.fields: TunnelRing.turn");
 _Static_assert(offsetof(TunnelRing, inner) == 0x1944 && sizeof(((TunnelRing *)0)->inner) == 0x1920, "scene.fields: TunnelRing.inner");
 _Static_assert(offsetof(TunnelRing, innerSpin) == 0x3264 && sizeof(((TunnelRing *)0)->innerSpin) == 0x4, "scene.fields: TunnelRing.innerSpin");
 _Static_assert(offsetof(TunnelRing, innerSpeed) == 0x3268 && sizeof(((TunnelRing *)0)->innerSpeed) == 0x4, "scene.fields: TunnelRing.innerSpeed");

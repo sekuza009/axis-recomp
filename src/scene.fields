@@ -160,6 +160,8 @@ struct TunnelRing 0x3538                                        # a ring of the 
 0x10       0x1920     float outer[2][201][4]                    # the outer band: near and far circles of points (x, y, z + pad)
 0x1930     4          float spin
 0x1934     4          float spinSpeed
+0x193c     4          i32 moveSteps                             # (by use) armc_enter: steps moved toward the next ring
+0x1940     4          float turn                                # (by use) armc_enter: turned on by 1100 / 2200 a ring
 0x1944     0x1920     float inner[2][201][4]                    # the inner band
 0x3264     4          float innerSpin
 0x3268     4          float innerSpeed

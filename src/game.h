@@ -544,6 +544,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_videoModeNames(f) GAME_CDECL(0x42e240, void, void *)(f)     /* its graphics section */
 #define cfg_parseKeyNames(f) GAME_CDECL(0x42e730, void, void *)(f)      /* its key bindings */
 #define input_applyKeyBindings() GAME_CDECL(0x42c410, void, void)()     /* the default key bindings */
+#define menu_enterMenus() GAME_CDECL(0x40ee20, u32, void)()
+#define FUN_00441200() GAME_CDECL(0x441200, TunnelRing *, void)()   /* one more tunnel ring */
+#define FUN_00441190(head) GAME_CDECL(0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define profile_42b3c0(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
 #define setup_drawKeyBindingRows(key) GAME_CDECL(0x421680, void, int)(key)   /* (by use) the row being bound gets key */

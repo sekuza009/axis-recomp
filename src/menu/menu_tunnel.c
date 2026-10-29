@@ -350,3 +350,140 @@ void (intro_cameraPath)(u8 *o, int h)
 		FIELD(u32, o, rest[i].offset) = rest[i].value;
 	FIELD(int, o, 0x3524) = h;
 }
+
+/* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
+   (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_keysBlocked (0 still, 1 / 3 moving in / out a ring,
+   2 / 4 the view swinging up before them) ---- */
+#define EYE ((float *)0x4df024)
+#define LOOK ((float *)0x680378)
+#define EYE_KEPT ((float *)0x9dd930)
+#define LOOK_KEPT ((float *)0x9dd918)
+
+static void camera_keep(void)
+{
+	for (int k = 0; k < 3; k++) {   /* (bit copies) */
+		((u32 *)EYE_KEPT)[k] = ((const u32 *)EYE)[k];
+		((u32 *)LOOK_KEPT)[k] = ((const u32 *)LOOK)[k];
+	}
+}
+
+/* the view tipped up a ring's worth (2 frame times a frame) until it passes 90; then the move starts (next) */
+static void swing(int next)
+{
+	long double angle = fadd_m(fld_m(&g_frameTime) + fld_m(&g_frameTime), &g_viewAngle);
+	g_viewAngle = f32(angle);
+	if (angle < *(const float *)0x4a9550 || __builtin_isnan(angle))
+		return;
+	BITS(g_viewAngle) = 0x42b40000;   /* 90 */
+	g_keysBlocked = next;
+	sound_playMenu(4);
+}
+
+/* the view lowered toward 45 (0x4a94e8) */
+static void lower_view(const float *rate)
+{
+	if (g_viewAngle > *(const float *)0x4a94e8)
+		g_viewAngle = rate ? f32(fsubr_m(fmul_m(fld_m(&g_frameTime), rate), &g_viewAngle))
+		                   : f32(fsub_m(fld_m(&g_viewAngle), &g_frameTime));
+}
+
+/* 0x441260: one frame of the tunnel camera's move, worked on the ring before the last of the chain at ring. The
+   frame time is held at 2 at most; a step is 30 frame times (0x4b2a74, and as a float 0x4b2a78); a ring is 1100
+   steps (950 when entering the menus, 0x4deb48, which starts the eye and look point at 0; 2200 in the ARM CENTER,
+   0x67ef14). Still (0): the flares at full alpha, the view lowered, the camera kept once asked (0x4b2a70), and the
+   menus entered when the network is ready (0x76d410, 0x9da49c 0x65). Moving in (1) / out (3): eye and look point a
+   step down / up the tunnel; once a ring's worth is done, the camera back at the kept place a ring further, the
+   ring turned (by -1100, -2200 in the ARM CENTER, or +1100), a ring added (in) or the last one taken off (out),
+   the screen's state 0x67ef20 into 0x76d3e8 and the camera kept; moving out also lowers the view. 2 / 4 swing the
+   view up and start 1 / 3. The caller ignores the eax it leaves */
+void (armc_enter)(TunnelRing *ring)
+{
+	if (g_frameTime > *(const float *)0x4a9418)
+		BITS(g_frameTime) = 0x40000000;   /* 2 */
+	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)0x4a940c));
+	int ringLength = 0x44c;
+	GAME_VAR(int, 0x4b2a74) = step;
+	GAME_VAR(float, 0x4b2a78) = (float)step;
+	if (GAME_VAR(int, 0x4deb48)) {
+		ringLength = 0x3b6;
+		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
+	}
+	if (GAME_VAR(int, 0x67ef14))
+		ringLength = 0x898;
+	TunnelRing *r = ring;
+	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
+		r = last;
+	const float *stepF = (const float *)0x4b2a78;
+	int state = g_keysBlocked;
+	switch (state) {
+	case 0:
+		BITS(r->alpha) = 0x3f800000;
+		lower_view(NULL);
+		if (GAME_VAR(int, 0x4b2a70)) {
+			camera_keep();
+			GAME_VAR(int, 0x4b2a70) = 0;
+		}
+		if (GAME_VAR(int, 0x76d410) == 1 && GAME_VAR(int, 0x9da49c) == 0x65) {
+			GAME_VAR(int, 0x4dc24c) = 1;
+			menu_enterMenus();
+			GAME_VAR(int, 0x4deb48) = 0;
+			GAME_VAR(int, 0x9da49c) = 0x66;
+		}
+		return;
+	case 1:
+	case 3:
+		if (state == 1) {
+			EYE[2] = f32(fsub_m(fld_m(&EYE[2]), stepF));
+			LOOK[2] = f32(fsub_m(fld_m(&LOOK[2]), stepF));
+		} else {
+			EYE[2] = f32(fadd_m(fld_m(&EYE[2]), stepF));
+			LOOK[2] = f32(fadd_m(fld_m(&LOOK[2]), stepF));
+		}
+		r->moveSteps += step;
+		if (r->moveSteps >= ringLength) {
+			if (state == 1)
+				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(GAME_VAR(int, 0x67ef14) ? 0x4a95c8 : 0x4a95c4)));
+			else
+				r->turn = f32(fadd_m(fld_m(&r->turn), (const float *)0x4a95c4));
+			r->moveSteps = 0;
+			for (int k = 0; k < 2; k++) {
+				((u32 *)EYE)[k] = ((const u32 *)EYE_KEPT)[k];
+				((u32 *)LOOK)[k] = ((const u32 *)LOOK_KEPT)[k];
+			}
+			if (state == 1) {
+				EYE[2] = f32(fld_m(&EYE_KEPT[2]) - (long double)ringLength);
+				LOOK[2] = f32(fld_m(&LOOK_KEPT[2]) - (long double)ringLength);
+			} else {
+				EYE[2] = f32(fadd_m((long double)ringLength, &EYE_KEPT[2]));
+				LOOK[2] = f32(fadd_m((long double)ringLength, &LOOK_KEPT[2]));
+			}
+			g_keysBlocked = 0;
+			BITS(r->alpha) = 0x3f800000;
+			if (state == 1)
+				FUN_00441200();
+			else {
+				g_tunnelRings--;
+				FUN_00441190(&g_tunnel);
+			}
+			GAME_VAR(int, 0x76d3e8) = GAME_VAR(int, 0x67ef20);
+			GAME_VAR(int, 0x9eeaa8) = 1;
+			GAME_VAR(int, 0x4b2a70) = 1;
+			camera_keep();
+			if (state == 1) {
+				GAME_VAR(int, 0x4deb48) = 0;
+				return;
+			}
+		} else if (state == 1)
+			return;
+		lower_view((const float *)0x4a942c);
+		return;
+	case 2:
+	case 4:
+		swing(state - 1);
+		return;
+	}
+}
+#undef EYE
+#undef LOOK
+#undef EYE_KEPT
+#undef LOOK_KEPT
