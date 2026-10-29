@@ -133,6 +133,97 @@ void (armc_exit)(int confirmed)
 		GAME_VAR(int, 0x9da49c) = 0x67;
 }
 
+/* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
+   while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
+#define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
+#define g_armcSpin GAME_VAR(int, 0x4dceac)
+#define g_armcEye ((const u32 *)0xa0e7a8)              /* (by use) the preview camera's position */
+#define NO_POSE (-2)
+
+static void preview(int part)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(g_viewAngle, g_viewAspect, 100.0, 20000.0);
+	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
+	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)0x4a93ec));
+	FUN_0041ef20(0, BITS(turn), 0);
+	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
+	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
+	if (part != NO_POSE)
+		armc_rotateFromCursor(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
+	if (g_armcSpin) {
+		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a94cc), &g_armcAngle);
+		g_armcAngle = angle;
+		if (angle >= GAME_VAR(float, 0x4a94c8))
+			BITS(g_armcAngle) = 0;
+	}
+}
+
+/* the part a page's preview poses: on the parts page the part slot in view (none: -1 for the weapons, 5) */
+static int part_in_view(void)
+{
+	return g_armcPartSlot == 5 ? -1 : g_armcPartSlot;
+}
+
+/* 0x41d600: the parts page's preview: a part changed (0x4dcc58) is put on the preview mech first (the item slots
+   too), a pending colour change (0x4dca98) applied */
+void (armc_41d600)(void)
+{
+	gfx_setProjection2D3D(1);
+	if (GAME_VAR(int, 0x4dcc58) == 1) {
+		const int *parts = (const int *)0x4dc760;    /* the mech's head, chest, arm, leg, booster */
+		switch (g_armcPartSlot) {
+		case 0: armc_setHeadIndex(g_scene, parts[0]); break;
+		case 1: armc_setChestIndex(g_scene, parts[1]); break;
+		case 2: armc_setArmIndex(g_scene, parts[2]); break;
+		case 3: armc_setLegIndex(g_scene, parts[3]); break;
+		case 4: armc_setBoosterIndex(g_scene, parts[4]); break;
+		}
+		armc_41b750();
+		armc_461540(g_scene, GAME_VAR(int, 0x4dbe48));
+		armc_41c510();
+		GAME_VAR(int, 0x4dcc58) = 0;
+		armc_41d280();
+	}
+	if (GAME_VAR(int, 0x4dbc80) == 1)
+		GAME_VAR(int, 0x4dbc80) = 0;
+	if (GAME_VAR(int, 0x4dca98)) {
+		armc_41cf20();
+		GAME_VAR(int, 0x4dca98) = 0;
+	}
+	switch (g_armcMode) {
+	case 1: preview(part_in_view()); break;
+	case 2: case 3: preview(-1); break;
+	default: preview(NO_POSE); break;
+	}
+}
+
+/* 0x41d8a0: the colour page's preview: item slot 0 emptied first when asked (0x4dbc80). The second page poses the
+   item slot being picked (slots 4 / 5 as 6 / 7, the weapon slots as 5; none when that slot's record is empty) */
+void (armc_41d8a0)(void)
+{
+	gfx_setProjection2D3D(1);
+	if (GAME_VAR(int, 0x4dbc80) == 1) {
+		armc_41ca50(0, 0);
+		GAME_VAR(int, 0x4dbc80) = 0;
+	}
+	int slot;
+	switch (g_armcMode) {
+	case 1: preview(part_in_view()); break;
+	case 2:
+		slot = GAME_VAR(int, 0x4dbe48);
+		if (GAME_VAR(int, 0x4dbe90 + slot * 0x80) == -1)
+			preview(-1);
+		else
+			preview(slot > 3 ? slot + 2 : 5);
+		break;
+	case 3: preview(-1); break;
+	default: preview(NO_POSE); break;
+	}
+}
+
 #define g_armcState GAME_VAR(int, 0x4dc790)           /* (by use) 0 / 1: the screen is not up; 2: the preview camera is kept */
 #define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
 #define g_armcSessionMade GAME_VAR(int, 0x4dc54c)

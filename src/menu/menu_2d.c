@@ -12,7 +12,6 @@
 #define g_menuScaleX GAME_VAR(float, 0x680bac)   /* pixels per menu unit across */
 #define g_menuScaleY GAME_VAR(float, 0x4df014)   /* and down */
 #define g_projMode GAME_VAR(int, 0x5ae9bc)       /* the projection set last (1 3D, 2 the menus' 2D) */
-#define g_viewAngle GAME_VAR(float, 0x68038c)    /* the 3D view's vertical angle (degrees) */
 #define g_menuColour ((const u32 *)0x9da480)     /* RGBA floats */
 
 /* the menu cursor's x (px = x * the scale, pixels) on the full screen, placed as it would be in the viewport it is

@@ -5346,8 +5346,10 @@ DWORD menuState800_gameRoom(void);
 #include "lifted/grp139.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_40e5d0(void);
-LIFT_PLAIN(armc_41d600, 41d600)
-LIFT_PLAIN(armc_41d8a0, 41d8a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41d600(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41d8a0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41dfe0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -15448,11 +15450,11 @@ ST(armc_40e5d0, gen_setup(g_gs_40e5d0, g_gi_40e5d0, g_gb_40e5d0);, CALL_PLAIN(0x
 static const DWORD g_gs_41d600[] = { 0x41b750, 0, 0x41c510, 0, 0x41cf20, 0, 0x41d280, 0, 0x41ef20, 3, 0x41ef90, 1, 0x4613d0, 1 | CS_POP | CS_THIS, 0x461410, 1 | CS_POP | CS_THIS, 0x461450, 1 | CS_POP | CS_THIS, 0x461490, 1 | CS_POP | CS_THIS, 0x4614d0, 1 | CS_POP | CS_THIS, 0x461540, 1 | CS_POP | CS_THIS, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d600[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dc798, 0x4dca98, 0x4dcc58, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d600[] = { 0 };
-T_PLAIN(armc_41d600, 0x41d600, gen_setup(g_gs_41d600, g_gi_41d600, g_gb_41d600);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_41d600, gen_setup(g_gs_41d600, g_gi_41d600, g_gb_41d600);, (CALL_PLAIN(0x41d600, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_41d600(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_41d8a0[] = { 0x41ca50, 2, 0x41ef20, 3, 0x41ef90, 1, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d8a0[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc798, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d8a0[] = { 0 };
-T_PLAIN(armc_41d8a0, 0x41d8a0, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(armc_41d8a0, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, (CALL_PLAIN(0x41d8a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_41d8a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_41dfe0[] = { 0x412450, 0, 0x419160, 0, 0x41d8a0, 0, 0 };
 static const DWORD g_gi_41dfe0[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41dfe0[] = { 0 };

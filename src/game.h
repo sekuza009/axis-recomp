@@ -271,6 +271,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_paused GAME_VAR(int, 0x68039c)             /* (unclear) input off: the window is inactive or a text box has the keys */
 #define g_keysBlocked GAME_VAR(int, 0x680370)        /* (unclear) the menus ignore their keys while set */
 #define g_menuFade GAME_VAR(float, 0x9da434)          /* the menus' fade-in: the keys wait for it to reach 0 */
+#define g_viewAngle GAME_VAR(float, 0x68038c)          /* the 3D view's vertical angle (degrees) */
 #define g_viewAspect GAME_VAR(float, 0x4e1870)        /* the 3D view's aspect ratio (gluPerspective), width / height */
 #define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time, seconds */
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
@@ -422,6 +423,12 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_41dfe0() GAME_CDECL(0x41dfe0, void, void)()
 #define armc_41e010() GAME_CDECL(0x41e010, void, void)()
 #define armc_41dab0() GAME_CDECL(0x41dab0, void, void)()
+#define armc_41b750() GAME_CDECL(0x41b750, void, void)()
+#define armc_41d280() GAME_CDECL(0x41d280, void, void)()
+#define armc_41cf20() GAME_CDECL(0x41cf20, void, void)()
+#define FUN_0041ef20(x, y, z) GAME_CDECL(0x41ef20, void, u32, u32, u32)(x, y, z)   /* turned about x, y, z (degrees as float bits; render/gl_helpers.c) */
+#define armc_rotateFromCursor(scene, eye, forward, up, part, angle, w, h) \
+	GAME_THISCALL(0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)
 #define armc_40d990() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
 #define armc_412450() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
 #define armc_drawStatsPanel() GAME_CDECL(0x412650, void, void)()
