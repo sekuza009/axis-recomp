@@ -780,3 +780,46 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
    (0x4dbb04, 0x4db54a, arena_40b420) */
 u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, 0x43bcb0); }
 u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, 0x40b420); }
+
+/* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
+   frame; else the page (0x433610 when 0x9dd354, then room_43a420) and, once a field's typing has ended, the typed
+   line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
+   (0x9dc428: 0xa back, 0x14 on) opening the field before or after (room_434020 .. 434260). Returns what the
+   original leaves in eax */
+u32 (room_43e7b0)(void)
+{
+	static const struct { u32 editing, field, size, back, on; } fields[4] = {
+		{ 0x9dd69c, 0x9dd6d8, 12, 0, 0x4340e0 }, { 0x9dd37c, 0x9dd1f6, 12, 0x434020, 0x4341a0 },
+		{ 0x9dd378, 0x9dd202, 12, 0x4340e0, 0x434260 }, { 0x9dd304, 0x9dd20e, 50, 0x4341a0, 0 } };
+	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
+	u32 mode = GAME_VAR(u32, 0x9dce48);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
+		return mode;
+	if (g_dialogOpen)
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd368), GAME_VAR(int, 0x9dd36c),
+		                                                     GAME_VAR(int, 0x9dd370), GAME_VAR(int, 0x9dd374));
+	if (GAME_VAR(int, 0x9dd354))
+		GAME_CDECL(0x433610, void, void)();
+	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* room_43a420: the page */
+	if (GAME_VAR(int, 0x9dd6d4) == 1)
+		return r;
+	for (int k = 0; k < 4; k++) {
+		if (!GAME_VAR(int, fields[k].editing))
+			continue;
+		if (g_paused)
+			return r;
+		memset((void *)fields[k].field, 0, fields[k].size);
+		GAME_VAR(int, fields[k].editing) = 0;
+		GAME_VAR(int, 0x4e1868) = 0;
+		strcpy((char *)fields[k].field, (const char *)0x9dc92c);
+		u32 key = GAME_VAR(u32, 0x9dc428);
+		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
+		if (!next)
+			return key;
+		r = GAME_CDECL(next, u32, void)();
+		if (!(k == 2 && key == 0xa))   /* (the original keeps the key there) */
+			GAME_VAR(int, 0x9dc428) = 0;
+		return r;
+	}
+	return r;
+}

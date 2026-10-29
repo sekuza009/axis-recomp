@@ -5165,7 +5165,8 @@ DWORD menu_437630(void);
 LIFT_PLAIN(mainmenu_441c00, 441c00)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD setup_drawGraphicTab(void);
-LIFT_PLAIN(room_43e7b0, 43e7b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_43e7b0(void);
 LIFT_PLAIN(setup_drawSoundTab, 4221d0)
 LIFT_PLAIN(setup_controlTabKeys, 422e10)
 LIFT_PLAIN(setup_drawControlTab, 422830)
@@ -15100,7 +15101,7 @@ ST(setup_drawGraphicTab, gen_setup(g_gs_422480, g_gi_422480, g_gb_422480);, CALL
 static const DWORD g_gs_43e7b0[] = { 0x428c30, 4, 0x433610, 0, 0x434020, 0, 0x4340e0, 0, 0x4341a0, 0, 0x434260, 0, 0x4388e0, 0, 0x43a420, 0, 0 };
 static const DWORD g_gi_43e7b0[] = { 0x9dd1f6, 0x9dd202, 0x9dd6d8, 0x4e1868, 0x68039c, 0x90d1c4, 0x9dc428, 0x9dce48, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd304, 0x9dd354, 0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374, 0x9dd378, 0x9dd37c, 0x9dd69c, 0x9dd6d4, 0x9dd6dc, 0x9dd6e0, 0x9dd834, 0 };
 static const DWORD g_gb_43e7b0[] = { 0x9dc92c, 0x9dd20e, 0 };
-T_PLAIN(room_43e7b0, 0x43e7b0, gen_setup(g_gs_43e7b0, g_gi_43e7b0, g_gb_43e7b0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_43e7b0, gen_setup(g_gs_43e7b0, g_gi_43e7b0, g_gb_43e7b0);, CALL_PLAIN(0x43e7b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_43e7b0()))
 static const DWORD g_gs_4221d0[] = { 0x41e760, 1, 0x420670, 2, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_4221d0[] = { 0x4dda44, 0x4dd984, 0x4ddad0, 0x4ddb98, 0x4ddcec, 0x4dde90, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x90d1c4, 0 };
 static const DWORD g_gb_4221d0[] = { 0 };
