@@ -278,3 +278,53 @@ int (dplay_release)(void)
 	IMPORT(0x4a93b8, void, void)();   /* CoUninitialize */
 	return 0;
 }
+
+/* 0x4547d0: host (a name or dotted address) resolved: Winsock started, a raw ICMP socket opened (for the pings),
+   the host looked up and its first address as text in 0xa0d320; the socket closed again. 1 when there is an
+   address; 0 if Winsock, the socket or the lookup failed (the socket is left open then, as in the original) */
+int (net_resolveHost)(const char *host)
+{
+	u8 wsa[0x190];
+	memset((void *)0xa0d320, 0, 0x64);
+	if (((int (STDCALL *)(u32, void *))0x4a82c2)(0x202, wsa))             /* WSAStartup */
+		return 0;
+	int sock = ((int (STDCALL *)(int, int, int))0x4a82bc)(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
+	if (sock == -1)
+		return 0;
+	u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(host);           /* gethostbyname */
+	if (!entry)
+		return 0;
+	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
+	strcpy((char *)0xa0d320, ((const char *(STDCALL *)(u32))0x4a82da)(address));   /* inet_ntoa */
+	if (!strlen((const char *)0xa0d320))
+		return 0;
+	if (sock) {
+		((int (STDCALL *)(void))0x4a8292)();      /* WSACancelBlockingCall */
+		((int (STDCALL *)(int))0x4a8286)(sock);   /* closesocket */
+	}
+	return 1;
+}
+
+/* 0x453fd0: the sessions asked for (DirectPlay EnumSessions, async with the callback 0x453560, flags 0x12): of the
+   game's application (GUID at 0x4a96e8), on the instance at *0xa0bad8; once more while 0xa0b418 is 1. 1 on success,
+   0 without DirectPlay or on a failure */
+int (dplay_enumSessions)(void)
+{
+	void *play = GAME_VAR(void *, 0xa0b404);
+	if (!play)
+		return 0;
+	u32 desc[0x14];
+	memset(desc, 0, sizeof desc);
+	desc[0] = 0x50;                                                  /* dwSize */
+	memcpy(&desc[2], GAME_VAR(const void *, 0xa0bad8), 16);         /* guidInstance */
+	memcpy(&desc[6], (const void *)0x4a96e8, 16);                    /* guidApplication */
+	if (!GAME_VAR(int, 0xa0b418)) {
+		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)0x453560, NULL, 0x12) < 0)
+			return 0;
+		play = GAME_VAR(void *, 0xa0b404);
+	}
+	if (GAME_VAR(int, 0xa0b418) == 1 &&
+	    COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)0x453560, NULL, 0x12) < 0)
+		return 0;
+	return 1;
+}

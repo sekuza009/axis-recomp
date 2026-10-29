@@ -2814,7 +2814,8 @@ LIFT_PLAIN(net_getLocalAddress, 454220)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_004520e0(void);
 /* 0x4547d0 net_resolveHost(name): WSAStartup, a raw socket and gethostbyname; the address as a dotted string */
-LIFT_PLAIN(net_resolveHost, 4547d0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_resolveHost(const char *host);
 /* match packet senders (thiscall on the scene): each builds a 64-byte packet, sends it with net_sendPacketData,
    counts it and, while recording an autoplay, writes it to the recording too.
    0x48e990 match_48e990(player): packet 0x0c, the player's next 16 3-byte entries of a 0x180 ring (or -1);
@@ -4510,7 +4511,8 @@ int dplay_release(void);
 /* 0x453fd0 dplay_enumSessions(): a 0x50-byte session description (the application GUID *0xa0bad8, the game's
    GUID 0x4a96e8), EnumSessions with the callback 0x453560 for connection kinds 0 and 1 (0xa0b418); 0 if there
    is no DirectPlay object or the call fails, else 1 */
-LIFT_PLAIN(dplay_enumSessions, 453fd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int dplay_enumSessions(void);
 /* the arena's connection slots 0xa0d7a4 .. 0xa0d7b0: release (clearing the slot) or enumerate when it is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_4549a0(void);
@@ -9469,7 +9471,7 @@ static void host_setup(void)
 }
 T_PLAIN(net_getLocalAddress, 0x454220, host_setup();, 0, 0, 0, 0, 0)
 ST(FUN_004520e0, sockets_setup();, CALL_PLAIN(0x4520e0, 0, 0, 0, 0, 0), (DWORD)(FUN_004520e0()))
-T_PLAIN(net_resolveHost, 0x4547d0, host_setup();, 0, BUF + 0x100, 0, 0, 0)
+ST(net_resolveHost, host_setup();, CALL_PLAIN(0x4547d0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_resolveHost((const char *)(DWORD)(BUF + 0x100))))
 /* the scene's packet counter and autoplay recording (file = a VFS handle) */
 static void sendrec_setup(void)
 {
@@ -14081,7 +14083,7 @@ static void dplay_setup(void)
 	for (int k = 0; k < 4; k++) G32(0xa0d7a4 + 4 * k) = irnd(0, 1);
 }
 ST(dplay_release, dplay_setup();, CALL_PLAIN(0x453920, 0, 0, 0, 0, 0), (DWORD)(dplay_release()))
-T_PLAIN(dplay_enumSessions, 0x453fd0, dplay_setup();, 0, 0, 0, 0, 0)
+ST(dplay_enumSessions, dplay_setup();, CALL_PLAIN(0x453fd0, 0, 0, 0, 0, 0), (DWORD)(dplay_enumSessions()))
 ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (DWORD)arena_4549a0())
 ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (DWORD)arena_4549c0())
 ST(arena_454ac0, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (DWORD)arena_454ac0())
