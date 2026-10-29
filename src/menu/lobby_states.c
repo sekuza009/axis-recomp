@@ -769,3 +769,44 @@ u32 (lobby_406950)(void)
 	sound_playMenu(0);
 	return to_main_menu();
 }
+
+/* 0x407840: the lobby's player page keys (page open, 0x4dbb3c not 0 or 1; no dialog): while the name is being typed
+   (0x4dbbd0), the typed line (0x9dc92c) becomes the player's name (0x4db560, 32 bytes) once the keyboard is back
+   (0x68039c clear) and typing ends; otherwise back closes the page, 0x4e1510 applies (0x4050a0) and closes it,
+   0x4e0ce0 resets the name to the default, 0x4e0cdc closes it. Returns what the original leaves in eax */
+u32 (lobbyPlayer_keys)(void)
+{
+	u32 page = GAME_VAR(u32, 0x4dbb3c);
+	if (page == 1 || page == 0 || g_dialogOpen)
+		return page;
+	if (GAME_VAR(int, 0x4dbbd0)) {
+		if (GAME_VAR(int, 0x68039c))
+			return page;
+		const char *typed = (const char *)0x9dc92c;
+		u32 length = strlen(typed);
+		GAME_VAR(int, 0x4dbbd0) = 0;
+		if (!length)
+			return 0;
+		memset((void *)0x4db560, 0, 32);
+		strcpy((char *)0x4db560, typed);
+		return length + 1;
+	}
+	if (input_justPressed(g_keyCancel2)) {
+		sound_playMenu(0);
+		GAME_VAR(int, 0x4dbb3c) = 0;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
+		sound_playMenu(0);
+		GAME_CDECL(0x4050a0, void, void)();
+		GAME_VAR(int, 0x4dbb3c) = 0;
+	}
+	if (input_justPressed(GAME_VAR(int, 0x4e0ce0))) {
+		sound_playMenu(0);
+		return GAME_CDECL(0x4050f0, u32, void)();   /* cfg_defaultPlayerName */
+	}
+	if (!input_justPressed(g_keyBack))
+		return 0;
+	u32 r = GAME_CDECL(0x41e760, u32, int)(0);      /* sound_playMenu */
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	return r;
+}

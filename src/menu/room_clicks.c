@@ -216,3 +216,39 @@ u32 (room_435b00)(void)
 	}
 	return button;
 }
+
+/* 0x435d30: the game room's page clicks (page open, 0x9dce48 not 0 or 1; no dialog): its six buttons (outlines at
+   0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when 0x9dae10
+   allows) leaves too. Returns what the original leaves in eax */
+u32 (room_435d30)(void)
+{
+	static const u32 actions[6] = { 0x4334c0, 0x433590, 0x433790, 0, 0x433800, 0x435a40 };
+	u32 page = GAME_VAR(u32, 0x9dce48);
+	if (page == 1 || page == 0)
+		return page;
+	if (g_dialogOpen)
+		return g_dialogOpen;
+	if (GAME_VAR(int, 0x4ded88)) {
+		const Outline *buttons = (const Outline *)0x9daf88;
+		for (int i = 0; i < 6; i++) {
+			if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+				continue;
+			sound_playMenu(0);
+			if (i == 3) {   /* the arm center */
+				GAME_VAR(int, 0x4dc24c) = 3;
+				GAME_CDECL(0x40ee20, void, void)();   /* menu_enterMenus */
+				GAME_VAR(int, 0x4deb48) = 0;
+			} else
+				GAME_CDECL(actions[i], void, void)();
+			break;
+		}
+	}
+	int right = GAME_VAR(int, 0x4ded8c);
+	if (!right)
+		return 0;
+	int allowed = GAME_VAR(int, 0x9dae10);
+	if (allowed <= 0)
+		return allowed;
+	sound_playMenu(0);
+	return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
+}

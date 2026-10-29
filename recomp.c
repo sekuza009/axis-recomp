@@ -5045,7 +5045,8 @@ DWORD setup_drawTopPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406950(void);
 LIFT_PLAIN(lobby_407300, 407300)
-LIFT_PLAIN(lobbyPlayer_keys, 407840)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD lobbyPlayer_keys(void);
 LIFT_PLAIN(room_433d30, 433d30)
 LIFT_PLAIN(profile_44f4b0, 44f4b0)
 LIFT_PLAIN(mainmenu_441810, 441810)
@@ -5116,7 +5117,8 @@ DWORD lobby_406a60(void);
 DWORD menu_437140(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_405690(int session);
-LIFT_PLAIN(room_435d30, 435d30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD room_435d30(void);
 LIFT_PLAIN(room_433e60, 433e60)
 LIFT_PLAIN(mainmenu_startNetGame, 4419d0)
 LIFT_PLAIN(mainmenu_processKeys, 441e00)
@@ -14885,7 +14887,7 @@ T_PLAIN(lobby_407300, 0x407300, gen_setup(g_gs_407300, g_gi_407300, g_gb_407300)
 static const DWORD g_gs_407840[] = { 0x401600, 1, 0x4050a0, 0, 0x4050f0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_407840[] = { 0x4dbb3c, 0x4dbbd0, 0x4e0cdc, 0x4e0ce0, 0x4e1510, 0x68039c, 0x76d48c, 0x90d1c4, 0 };
 static const DWORD g_gb_407840[] = { 0x4db560, 0x9dc92c, 0 };
-T_PLAIN(lobbyPlayer_keys, 0x407840, gen_setup(g_gs_407840, g_gi_407840, g_gb_407840);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobbyPlayer_keys, gen_setup(g_gs_407840, g_gi_407840, g_gb_407840);, CALL_PLAIN(0x407840, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobbyPlayer_keys()))
 static const DWORD g_gs_433d30[] = { 0x431600, 1, 0 };
 static const DWORD g_gi_433d30[] = { 0x9dd1f6, 0x9dd202, 0x4ded18, 0x68039c, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd348, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x9dd888, 0 };
 static const DWORD g_gb_433d30[] = { 0x9dc92c, 0x9dd1d8, 0x9dd20e, 0 };
@@ -15068,7 +15070,7 @@ ST(arena_405690, gen_setup(g_gs_405690, g_gi_405690, g_gb_405690); /* (player: 0
 static const DWORD g_gs_435d30[] = { 0x40ee20, 0, 0x41e760, 1, 0x41eea0, 2, 0x4334c0, 0, 0x433590, 0, 0x433790, 0, 0x433800, 0, 0x435a40, 0, 0 };
 static const DWORD g_gi_435d30[] = { 0x4dc24c, 0x4deb48, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0x9dae10, 0x9dce48, 0 };
 static const DWORD g_gb_435d30[] = { 0x9daf88, 0 };
-T_PLAIN(room_435d30, 0x435d30, gen_setup(g_gs_435d30, g_gi_435d30, g_gb_435d30);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(room_435d30, gen_setup(g_gs_435d30, g_gi_435d30, g_gb_435d30);, CALL_PLAIN(0x435d30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_435d30()))
 static const DWORD g_gs_433e60[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 0, 0 };
 static const DWORD g_gi_433e60[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd32c, 0x9dd348, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x9dd6e8, 0x9dd6ec, 0 };
 static const DWORD g_gb_433e60[] = { 0x9dc92c, 0x9dd1d8, 0x9dd1f6, 0x9dd202, 0x9dd20e, 0 };
