@@ -1,6 +1,7 @@
 /* armc_misc.c: small pieces of the ARM CENTER screen: its per-mode draw passes, the 3D view's setup, the text
    helpers that follow the language, and re-making the player's actor. */
 #include "../game.h"
+#include <string.h>
 
 #define g_armcPreview GAME_VAR(int, 0x4dbc68)         /* (by use) the mech preview is shown */
 #define g_armcModeShown GAME_VAR(int, 0x4dc24c)       /* (unclear) 3: the part lists are left as they are */
@@ -236,4 +237,24 @@ u32 (armc_onStateEnter)(void)
 		return GAME_CDECL(0x410160, u32, void)();   /* armc_410160 (its eax) */
 	}
 	return page;
+}
+
+/* 0x419000: catalogue item i's snapshot texture ("Actor/item/<name>/snapshot"; the name 0x80 bytes a slot at
+   0x4dbe50) loaded into 0x4dcc70[i]; nothing for a name shorter than 2 letters. 0x4dcc64 cleared either way */
+void (armc_snapshot)(int i)
+{
+	const char *name = (const char *)(0x4dbe50 + i * 0x80);
+	if (strlen(name) <= 1) {
+		GAME_VAR(int, 0x4dcc64) = 0;
+		return;
+	}
+	char path[0x80], copy[0x40];
+	memset(path, 0, sizeof path);
+	strcpy(path, (const char *)0x4b036c);   /* "Actor/item/" */
+	strcat(path, name);
+	strcat(path, (const char *)0x4ad564);   /* "/" */
+	strcat(path, (const char *)0x4b0360);   /* "snapshot" */
+	strcpy(copy, path);
+	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
+	GAME_VAR(int, 0x4dcc64) = 0;
 }

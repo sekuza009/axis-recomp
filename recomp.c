@@ -3831,7 +3831,8 @@ static THISCALL DWORD map_loadItemInfoFrom(char *scene, DWORD path) { DWORD v[1]
 /* 0x419000 armc_snapshot(i): the snapshot texture of the arm-customise catalogue's item i (name 0x4dbe50 + i * 0x80;
    shorter than 2 characters: none): "Actor/item/<name>/snapshot" from the global texture set (tex_getIdByName) into
    0x4dcc70 + i * 4; the "loading" flag 0x4dcc64 cleared */
-LIFT_PLAIN(armc_snapshot, 419000)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_snapshot(int i);
 /* 0x40b420 arena_40b420 / 0x43bcb0 room_43bcb0(): the selected map's preview texture: dir (0x680bc4) + map name
    (0x907b30 + index * 0x20; index byte 0x4db548 / 0x4df9e8) + "/" + the name again, into 0x9da324; 0x680cd0 = 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5243,7 +5244,8 @@ LIFT_PLAIN(arena_405b80, 405b80)
 #include "lifted/grp134.c"
 LIFT_PLAIN(arena_createClick, 407410)
 LIFT_PLAIN(lobbyTop_connect, 407e40)
-LIFT_PLAIN(arena_loadAndQuit, 40d840)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD arena_loadAndQuit(void);
 LIFT_PLAIN(room_43ea10, 43ea10)
 LIFT_PLAIN(lobbyJoin_draw, 40cfd0)
 /* batch 184 (lifted/grp135.c, grp136.c: menuState800_gameRoom on its own so its call to room_43e290 goes through
@@ -12167,7 +12169,7 @@ static void snapshot_setup(void)
 	fill((void *)0x4dcc64, 4); fill((void *)(0x4dcc70 + i * 4), 4);
 	g_a[0] = i;
 }
-ST(armc_snapshot, snapshot_setup();, (CD(void, 0x419000, int)(g_a[0]), 0), (armc_snapshot(0, 0, 0, (DWORD)g_a[0], 0, 0, 0), 0))
+ST(armc_snapshot, snapshot_setup();, (CD(void, 0x419000, int)(g_a[0]), 0), (armc_snapshot(g_a[0]), 0))
 static void mappreview_setup(DWORD idxp)
 {
 	int k = irnd(0, 15);
@@ -15329,7 +15331,7 @@ T_PLAIN(lobbyTop_connect, 0x407e40, gen_setup(g_gs_407e40, g_gi_407e40, g_gb_407
 static const DWORD g_gs_40d840[] = { 0x404640, 0, 0x404b30, 0, 0x4057a0, 0, 0x406200, 1, 0x40d4e0, 1, 0 };
 static const DWORD g_gi_40d840[] = { 0x4ded46, 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded44, 0x4ded45, 0x4ded4e, 0x5b1944, 0x5b1948, 0x5b194c, 0x5b1950, 0x5b1954, 0x5b1958, 0x4ded4a, 0x76d364, 0x9da49c, 0 };
 static const DWORD g_gb_40d840[] = { 0x4dbbd4, 0x4de748, 0x4ded20, 0x5b191c, 0x5b193c, 0 };
-T_PLAIN(arena_loadAndQuit, 0x40d840, gen_setup(g_gs_40d840, g_gi_40d840, g_gb_40d840);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(arena_loadAndQuit, gen_setup(g_gs_40d840, g_gi_40d840, g_gb_40d840);, CALL_PLAIN(0x40d840, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_loadAndQuit()))
 static const DWORD g_gs_43ea10[] = { 0x41ee40, 0, 0x428c30, 4, 0x434dd0, 1, 0x434ff0, 0, 0x4388e0, 0, 0x43adc0, 0, 0 };
 static const DWORD g_gi_43ea10[] = { 0x9dcee8, 0x4b071c, 0x4dba80, 0x9dcd40, 0x9dd6c0, 0x4db858, 0x4db8b8, 0x4df018, 0x5b1914, 0x68039c, 0x76d41c, 0x76d484, 0x907b2c, 0x90d1c4, 0x9da498, 0x9dce48, 0x9dceec, 0x9dd34c, 0x9dd3fc, 0x9dd4a8, 0x9dd4ac, 0x9dd4b0, 0x9dd4b4, 0x9dd56c, 0x9dd6a0, 0x9dd6b4, 0x9dd6c8, 0x9dd834, 0xa0d7a0, 0 };
 static const DWORD g_gb_43ea10[] = { 0x9dc92c, 0 };

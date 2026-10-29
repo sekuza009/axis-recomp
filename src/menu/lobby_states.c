@@ -853,3 +853,42 @@ int (lobby_openConnection)(void)
 	GAME_VAR(int, 0x5b1914) = 30;
 	return 1;
 }
+
+/* 0x40d840: the arena screen entered. Started by the launcher (0x76d364 = 1): its settings (axiswl.dat,
+   arena_loadSettings; none: quit) give the player (name 0x5b191c into 0x4ded20, the optional clan 0x5b193c, the
+   colours and corporation bytes 0x4ded40..45), then the lobby's sub-page 1 and the name check (screen 0x68).
+   Otherwise the lobby page with the server name (0x4de748 into 0x4dbbd4) and 0x406200(99999) (screen 0x69).
+   Returns the last call's eax */
+u32 (arena_loadAndQuit)(void)
+{
+	if (GAME_VAR(int, 0x76d364) != 1) {
+		GAME_CDECL(0x404640, void, void)();   /* menuState400_enter */
+		GAME_CDECL(0x404b30, void, void)();   /* lobby_setSubState1 */
+		memset((void *)0x4dbbd4, 0, 24);
+		strcpy((char *)0x4dbbd4, (const char *)0x4de748);
+		u32 r = GAME_CDECL(0x406200, u32, int)(99999);   /* arena_406200 */
+		GAME_VAR(int, 0x9da49c) = 0x69;
+		return r;
+	}
+	if (!GAME_CDECL(0x40d4e0, int, const char *)((const char *)0x4ad5e4))   /* arena_loadSettings("axiswl.dat") */
+		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
+	memset((void *)0x4ded20, 0, 32);
+	strcpy((char *)0x4ded20, (const char *)0x5b191c);
+	u8 clan = GAME_VAR(u8, 0x5b1958);
+	GAME_VAR(u32, 0x4ded46) = 0;
+	GAME_VAR(u8, 0x4ded4e) = clan;
+	GAME_VAR(u32, 0x4ded4a) = 0;
+	if (clan == 1)
+		strcpy((char *)0x4ded46, (const char *)0x5b193c);
+	GAME_VAR(u8, 0x4ded44) = GAME_VAR(u8, 0x5b1950);
+	GAME_VAR(u8, 0x4ded43) = GAME_VAR(u8, 0x5b194c);
+	GAME_VAR(u8, 0x4ded42) = 0;
+	GAME_VAR(u8, 0x4ded40) = GAME_VAR(u8, 0x5b1944);
+	GAME_VAR(u8, 0x4ded41) = GAME_VAR(u8, 0x5b1948);
+	GAME_VAR(u8, 0x4ded45) = GAME_VAR(u8, 0x5b1954);
+	GAME_CDECL(0x404640, void, void)();
+	GAME_CDECL(0x404b30, void, void)();
+	u32 r = GAME_CDECL(0x4057a0, u32, void)();   /* lobby_checkReservedName */
+	GAME_VAR(int, 0x9da49c) = 0x68;
+	return r;
+}
