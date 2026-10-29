@@ -45,7 +45,7 @@ HUD's 16:9 box during a match) and hud/hud_main.c (each HUD part names the scree
 DLL's state comes through wide.h; the test build of the patch DLL (../axisnet_recomp.c) hands it over and reads the
 HUD part. While its menu fix is on, menu_vertex works in single precision as the patch DLL's own version did.
 
-Done so far (958: every hand-written rebuild, and the lifted ones being rewritten - recomp.c keeps the rest): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
+Done so far (965: every hand-written rebuild, and the lifted ones being rewritten - recomp.c keeps the rest): main_loop, FUN_004202d0, main_462050 | menu_processKeys, menu_44cdd0, menuState500_missionSelect,
 menu_drawVersion, menu_drawCursor, profile_44c850 / 44c8c0 / 44ca90 / 44cc60,
 menu_drawTexQuad_4282f0 / 4284d0 / 4285c0 / 4286b0 / 4287a0, profile_4283e0, menu_drawTexturedRect_427a90 / 427b60 / 428a00 / 428b50, menu_titleEmblemTransition,
 menu_drawBackground3D (the 3D tunnel) |
