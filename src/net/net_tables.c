@@ -433,3 +433,54 @@ int (net_452de0)(const u8 *rec)
 	GAME_VAR(int, 0xa0b35c) = i + 1;
 	return i * 62;
 }
+
+/* 0x454220: this machine's address as text in 0xa0b43c (16 bytes, cleared first): its host name looked up and the
+   first address taken. -1 when the name cannot be had, otherwise 0 */
+int (net_getLocalAddress)(void)
+{
+	char name[0xc8];
+	memset((void *)0xa0b43c, 0, 16);
+	if (((int (STDCALL *)(char *, int))0x4a82e0)(name, 0xc8) == -1)   /* gethostname */
+		return -1;
+	u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(name);     /* gethostbyname */
+	if (entry)
+		strcpy((char *)0xa0b43c, ((const char *(STDCALL *)(u32))0x4a82da)(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+	return 0;
+}
+
+/* 0x4512c0: a chat line sent: logged for this player (net_logMessage into 0x9fd944), then a message (type 1, from
+   the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
+int (match_4512c0)(const char *text)
+{
+	if (GAME_CDECL(0x451350, int, u32, const char *, char **)(GAME_VAR(u32, 0xa0b424), text, (char **)0x9fd944) < 0)   /* net_logMessage */
+		return 0;
+	int size = lstrlenA(text) + 0x10;
+	u8 *message = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	if (!message)
+		return 0;
+	*(u32 *)message = 1;
+	*(u32 *)(message + 8) = GAME_VAR(u32, 0xa0b424);
+	lstrcpyA((char *)message + 0xc, text);
+	return GAME_CDECL(0x450bf0, int, u32, u32, u32, void *, int)(GAME_VAR(u32, 0xa0b424), 0, 0, message, size) >= 0;
+}
+
+/* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in 0xa0d798:
+   0 when the echo failed with no time, 1 when it came back in no time */
+u32 (net_ping)(u32 ip, u32 timeout)
+{
+	u32 reply[9];   /* ICMP_ECHO_REPLY; [2] the round trip time */
+	GAME_VAR(u32, 0xa0d798) = 0;
+	void *icmp = ((void *(STDCALL *)(void))0x454e4c)();   /* IcmpCreateFile */
+	memset(reply, 0, sizeof reply);
+	reply[2] = 0xffffffff;
+	u32 sent = ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))0x454e46)(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
+	u32 rtt = reply[2];
+	if (!sent) {
+		GAME_VAR(u32, 0xa0d798) = rtt;
+		((int (STDCALL *)(void *))0x454e40)(icmp);   /* IcmpCloseHandle */
+		return rtt ? GAME_VAR(u32, 0xa0d798) : 0;
+	}
+	GAME_VAR(u32, 0xa0d798) = rtt ? rtt : 1;
+	((int (STDCALL *)(void *))0x454e40)(icmp);
+	return GAME_VAR(u32, 0xa0d798);
+}

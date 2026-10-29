@@ -2,6 +2,7 @@
    Huffman-coded DC differences and AC run / size symbols for each 8 x 8 block of coefficients in zigzag order, then
    the decoded planes (Y, Cb, Cr and alpha, 0x10000 bytes apart) turned into RGB(A) through the tables of
    ptx_tables.c, and the 8 x 8 blocks laid out as image rows. */
+#include <stdarg.h>
 #include "../game.h"
 #include <string.h>
 
@@ -203,4 +204,23 @@ void (ptx_decodeBlock_46e380)(const int *in, u8 *out)
 		out[3] = LIMIT(t3 - t4);
 #undef LIMIT
 	}
+}
+
+/* 0x46e1e0: a video decoder error: "<name of the current stage (0xaef35c)>" and the message (when there is one) to
+   stderr; a non-zero code exits with it. Returns the code */
+int (ptx_crtlError)(int code, const char *format, ...)
+{
+	void *err = (void *)0x4d0878;   /* stderr */
+	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4b182c);
+	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fc0, GAME_VAR(u32, 0x4d0780 + GAME_VAR(int, 0xaef35c) * 4));
+	if (format && strlen(format)) {
+		((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fb0);
+		va_list args;
+		va_start(args, format);
+		GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
+		va_end(args);
+	}
+	if (code)
+		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
+	return code;
 }

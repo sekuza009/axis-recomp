@@ -2717,7 +2717,8 @@ DWORD app_registerWindowClassEx(const DWORD *cls);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_452de0(const void *rec);
 /* 0x46e1e0 ptx_crtlError: PTX video control error: print and exit */
-LIFT_PLAIN(ptx_crtlError, 46e1e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int ptx_crtlError(int code, const char *format, ...);
 /* 0x454d90 dplay_454d90: DirectPlay name compare/copy helper */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 const char *dplay_454d90(const char *text, const char *word, int exact);
@@ -2813,7 +2814,8 @@ DWORD inet_addr_wrap_4547c0(const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_asyncSelect(void *wnd, int which);
 /* 0x454220 net_getLocalAddress: this machine's address as a dotted string (gethostname, gethostbyname, inet_ntoa) */
-LIFT_PLAIN(net_getLocalAddress, 454220)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_getLocalAddress(void);
 /* 0x4520e0 FUN_004520e0: close both sockets (WSACleanup, shutdown, closesocket) and reset the connection state */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_004520e0(void);
@@ -2892,7 +2894,8 @@ int input_asyncKeyDown(int key);
 int *input_getCursorPos(void);
 /* 0x4548b0 net_ping(ip, timeout): ICMP echo, the round-trip time (0 when it fails); 0x454650 net_454650(name, i):
    ping a server by address, its time into slot i; 0x4545b0 net_4545b0: ping every listed server (0x14-byte names) */
-LIFT_PLAIN(net_ping, 4548b0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD net_ping(DWORD ip, DWORD timeout);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_454650(const char *address, int slot);
 LIFT_PLAIN(net_4545b0, 4545b0)
@@ -4943,7 +4946,8 @@ DWORD room_431600(int ok);
 DWORD menu_431950(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_403640(void);
-LIFT_PLAIN(match_4512c0, 4512c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int match_4512c0(const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_editTextField_405230(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9362,7 +9366,7 @@ ST(mci_pause, , CALL_PLAIN(0x46c540, 0, 0, 0, 0, 0), (DWORD)(mci_pause()))
 ST(FUN_0043f980, g_mockTextLen = irnd(0, 3) ? irnd(0, 40) : irnd(0, 300);, CALL_PLAIN(0x43f980, 0, 0, 0, 0, 0), (FUN_0043f980(), 0))
 ST(sys_messageBox, strs_setup(); strcat(BUF + 0x100, " %d %s"); g_a[0] = irnd(-99, 99);, CALL_PLAIN(0x41edf0, 0, BUF + 0x100, g_a[0], BUF + 0x200, 0), (DWORD)sys_messageBox((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]), (DWORD)(BUF + 0x200)))
 T_PLAIN(ptx_error, 0x46e260, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
-T_PLAIN(ptx_crtlError, 0x46e1e0, strs_setup(); g_a[0] = irnd(-5, 50);, 0, g_a[0], BUF + 0x200, 0, 0)
+ST(ptx_crtlError, strs_setup(); g_a[0] = irnd(-5, 50);, CALL_PLAIN(0x46e1e0, 0, g_a[0], BUF + 0x200, 0, 0), (DWORD)(ptx_crtlError((DWORD)(g_a[0]), (const char *)(DWORD)(BUF + 0x200), (DWORD)(0), (DWORD)(0))))
 ST(reg_writeEndMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x41f880, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeEndMode((DWORD)(0x80000001u))))
 ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x80000001u, 0, 0, 0), (DWORD)(reg_writeStartMode((DWORD)(0x80000001u))))
 ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
@@ -9492,7 +9496,7 @@ static void host_setup(void)
 	fill_str(g_mockHostName, 40, 'a', 'z'); fill_str(BUF + 0x100, 40, 'a', 'z');
 	g_mockWsaFail = !irnd(0, 5) ? 10091 : 0; g_mockSocket = irnd(0, 4) ? (DWORD)irnd(1, 0x7fff) : 0xffffffffu;
 }
-T_PLAIN(net_getLocalAddress, 0x454220, host_setup();, 0, 0, 0, 0, 0)
+ST(net_getLocalAddress, host_setup();, CALL_PLAIN(0x454220, 0, 0, 0, 0, 0), (DWORD)(net_getLocalAddress()))
 ST(FUN_004520e0, sockets_setup();, CALL_PLAIN(0x4520e0, 0, 0, 0, 0, 0), (DWORD)(FUN_004520e0()))
 ST(net_resolveHost, host_setup();, CALL_PLAIN(0x4547d0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_resolveHost((const char *)(DWORD)(BUF + 0x100))))
 /* the scene's packet counter and autoplay recording (file = a VFS handle) */
@@ -9704,7 +9708,7 @@ static void ping_setup(void)
 	G32(0xa0d79c) = n; G32(0xa0d7a0) = !irnd(0, 5);
 	for (int i = 0; i < 8; i++) { if (irnd(0, 3)) fill_str((char *)(0xa0bf20 + i * 0x14), 15, '.', '9'); else *(char *)(0xa0bf20 + i * 0x14) = 0; }
 }
-T_PLAIN(net_ping, 0x4548b0, ping_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(net_ping, ping_setup();, CALL_PLAIN(0x4548b0, 0, g_a[0], g_a[1], 0, 0), (DWORD)(net_ping((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(net_454650, ping_setup();, CALL_PLAIN(0x454650, 0, BUF + 0x100, g_a[2], 0, 0), (DWORD)(net_454650((const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[2]))))
 T_PLAIN(net_4545b0, 0x4545b0, ping_setup();, 0, 0, 0, 0, 0)
 static void lookat_setup(void) { for (int i = 0; i < 3; i++) { GF(0x4df024 + i * 4) = csu_fr(-50000, 50000); GF(0x680378 + i * 4) = csu_fr(-50000, 50000); } }
@@ -14694,7 +14698,7 @@ ST(room_403640, gen_setup(g_gs_403640, g_gi_403640, g_gb_403640);, CALL_PLAIN(0x
 static const DWORD g_gs_4512c0[] = { 0x450bf0, 5, 0x451350, 2, 0 };
 static const DWORD g_gi_4512c0[] = { 0xa0b424, 0 };
 static const DWORD g_gb_4512c0[] = { 0x9fd944, 0 };
-T_PLAIN(match_4512c0, 0x4512c0, gen_setup(g_gs_4512c0, g_gi_4512c0, g_gb_4512c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(match_4512c0, gen_setup(g_gs_4512c0, g_gi_4512c0, g_gb_4512c0);, CALL_PLAIN(0x4512c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(match_4512c0((const char *)(DWORD)(g_a[0]))))
 static const DWORD g_gs_405230[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_405230[] = { 0x4db714, 0x4db8c8, 0x4db8cc, 0x4dbbd4, 0x4dbbd8, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_405230[] = { 0x9dc92c, 0 };
