@@ -941,6 +941,68 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	return 1;
 }
 
+#define WSACancelBlockingCall() ((int (STDCALL *)(void))0x4a8292)()
+
+/* a TCP socket into *sock connected to the host 0xa055e4 (a dotted address, else looked up by name) at port
+   0xa05326, after Winsock 2.2 starts and the socket is bound to any address; connected: 0xa0b380 = status, 1. A
+   refusal (connect's result compared with 10061, as the original does) 2, any failure 0 (Winsock cleaned up and
+   the network left where the original does so) */
+static int connect_socket(int *sock, int status)
+{
+	const char *host = (const char *)0xa055e4;
+	u8 wsa[0x190];
+	if (((int (STDCALL *)(u32, void *))0x4a82c2)(0x202, wsa))                /* WSAStartup */
+		return 0;
+	if (wsa[0] != 2 || wsa[1] != wsa[0]) {
+		WSACancelBlockingCall();
+		return 0;
+	}
+	*sock = ((int (STDCALL *)(int, int, int))0x4a82bc)(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
+	if (*sock == -1) {
+		WSACancelBlockingCall();
+		net_disconnect();
+		return 0;
+	}
+	struct { u16 family, port; u32 address; u8 zero[8]; } where;          /* sockaddr_in */
+	memset(&where, 0, sizeof where);
+	where.family = 2;
+	if (((int (STDCALL *)(int, void *, int))0x4a82b6)(*sock, &where, 16) == -1)   /* bind */
+		return 0;
+	where.family = 2;
+	where.address = ((u32 (STDCALL *)(const char *))0x4a82b0)(host);      /* inet_addr */
+	where.port = ((u16 (STDCALL *)(u32))0x4a82aa)(GAME_VAR(u16, 0xa05326)); /* htons */
+	if (where.address == 0xffffffff) {
+		u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(host);       /* gethostbyname */
+		if (!entry) {
+			((void (STDCALL *)(int))0x4a8298)(0x2726);                     /* WSASetLastError(WSAEINVAL) */
+			return 0;
+		}
+		where.address = ***(u32 ***)(entry + 0xc);                          /* h_addr_list[0] */
+	}
+	int r = ((int (STDCALL *)(int, void *, int))0x4a829e)(*sock, &where, 16);   /* connect */
+	if (r == 10061 || r == -1) {
+		WSACancelBlockingCall();
+		net_disconnect();
+		*sock = 0;
+		return r == 10061 ? 2 : 0;
+	}
+	GAME_VAR(int, 0xa0b380) = status;
+	return 1;
+}
+
+/* 0x451b80: connecting (everything closed first): 100 the lobby's socket (0xa055f8, status 200), 0x65 the game
+   server's (0xa05630, status 201); any other mode just 1 */
+int (net_connect)(int mode)
+{
+	net_closeAll(mode);
+	GAME_VAR(int, 0xa0b2fc) = 1;
+	if (mode == 100)
+		return connect_socket((int *)0xa055f8, 200);
+	if (mode == 0x65)
+		return connect_socket((int *)0xa05630, 201);
+	return 1;
+}
+
 /* 0x451e60: leaving the network (while connected, 0xa0b2fc = 1): on the lobby's socket (0xa055f8) the player's
    leave record (0xa0b310 into 0xa0b318, message 0xb) unless 0xa0b360, on the room's (0xa05630) the room record
    (0xa0b328 into 0xa0b330, message 0x16) unless 0xa0b364; each socket closed. Without a send buffer it stops there

@@ -3900,7 +3900,8 @@ void net_452bd0(void);
    game-server socket (0xa05630): Winsock 2.2, a TCP socket bound to any address, connected to the host 0xa055e4 (a
    dotted address, else resolved by name) at port 0xa05326. 1 connected (+ 0xa0b380 = 200 for the lobby), 2 refused
    (10061), 0 any failure (Winsock cleaned up, net_disconnect); other modes just 1 */
-LIFT_PLAIN(net_connect, 451b80)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int net_connect(int mode);
 /* 0x4060f0 lobby_openConnection(): unless already connected (0x4db718): disconnect, net_connect(100) and
    net_asyncSelect on the main window (messages 0x3d / 0x46 / 0x3e via FUN_0041ee40 and 0 on failure); then the lobby
    screen's state variables are reset; 1 */
@@ -12331,7 +12332,7 @@ static void netreply_setup(DWORD buf, int len, DWORD typep)
 ST(net_452a30, netreply_setup(0xa05260, 0x5b, 0xa052aa);, (CD(void, 0x452a30, void)(), 0), (net_452a30(), 0))
 ST(net_452bd0, netreply_setup(0xa0b280, 0x79, 0xa0b2e8);, (CD(void, 0x452bd0, void)(), 0), (net_452bd0(), 0))
 ST(net_connect, netmock_setup(); g_a[0] = irnd(0, 9) ? 100 + irnd(0, 1) : irnd(0, 200);,
-   CD(int, 0x451b80, int)(g_a[0]), net_connect(0, 0, 0, (DWORD)g_a[0], 0, 0, 0))
+   CD(int, 0x451b80, int)(g_a[0]), net_connect(g_a[0]))
 /* the lobby: connected already or not, with the lobby screen's state variables random */
 static void lobbyopen_setup(void)
 {
