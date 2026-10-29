@@ -3024,8 +3024,10 @@ static THISCALL DWORD actor_checkLineOfSight(char *scene, DWORD p) { DWORD v[1] 
 /* 0x41cf20 armc_41cf20 / 0x41d280 armc_41d280: tint the customise screen's model parts (the scene at 0x9087b4, the
    player's part shapes) with the chosen colours: the current colour slot / all slots after a change, then the
    current part */
-LIFT_PLAIN(armc_41cf20, 41cf20)
-LIFT_PLAIN(armc_41d280, 41d280)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41cf20(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41d280(void);
 /* batch 55 (lifted/grp4.c) */
 #include "lifted/grp4.c"
 /* 0x474b50 (thiscall) actor_setPartColor(p, part, h1, s1, v1, h2, s2, v2): player p's part colours: hues wrapped to
@@ -3886,7 +3888,8 @@ int pen_init(const char *name);
    offset +0x40, its spin angle +0x50 about y; panels 2 and 3 resized from 0x4b0708 / 0x4b0704 first) drawn at height
    k * 5 + 0x4dcfc4 + 1 - 105, depth 0x4dcfc8; the angle then advances by its speed (+0x54) times 0x4b071c and wraps
    at +-360 */
-LIFT_PLAIN(armc_41b400, 41b400)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41b400(void);
 /* batch 98 (lifted/grp44.c) */
 #include "lifted/grp44.c"
 /* 0x4546d0 net_startThread(): the network worker: two events (0xa0bb10 / 0xa0bf1c) and a thread running net_454560
@@ -4177,7 +4180,8 @@ DWORD profile_44e180(void);
 DWORD profile_44e3e0(void);
 /* 0x44de00 profile_44de00(): the new-profile dialog: frame, title 0x751ca4, the name field (profile_4283e0), two
    buttons (the first dimmed while the name 0x9dc92c is empty), the border */
-LIFT_PLAIN(profile_44de00, 44de00)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD profile_44de00(void);
 /* 0x41dab0 armc_41dab0(): the armour screen's weight line: the label 0x7573a4 right-aligned (8 or 14 units a
    character by language), the total of the ten part weights (stored at 0x4dc78c) " / " the limit 0x4dcb0c, the
    total red when over the limit, else green */
@@ -4569,7 +4573,8 @@ void THISCALL hud_drawMatchResult(void *scene);
    0xa0ea8c +8), "ZONE : %s" (the round's map 0x907b30 or "ON RECEIVING" while +0x1f1cb0 == 1), "PLAY TYPE : %s"
    (the mode name 0x4c7030 + 0x40 * +0x22e7180, or "ON RECEIVING"), "FRAG LIMIT : %d" (0x4df8e8), "TIME LIMIT :
    %d" (0x76d408) and in grey the status line 0xa0e988 */
-LIFT_PLAIN(loading_draw, 469320)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void loading_draw(DWORD progress);
 /* batch 155 (lifted/grp101.c): the in-match Esc menu */
 #include "lifted/grp101.c"
 /* 0x495610 (thiscall on the game) hud_drawEscMenu(): the in-match menu, fading in over its first 0.25 s (+0x2340c9c),
@@ -10058,8 +10063,8 @@ static void armctint_setup(void)
 	G32(0x4dc4b0) = irnd(-1, 6); G32(0x4dd074) = irnd(0, 1); G32(0x4dbc6c) = irnd(-1, 6);
 	for (int i = 0; i < 36; i++) GF(0x4dc4b8 + i * 4) = csu_fr(-100, 400);
 }
-T_PLAIN(armc_41cf20, 0x41cf20, armctint_setup();, 0, 0, 0, 0, 0)
-T_PLAIN(armc_41d280, 0x41d280, armctint_setup();, 0, 0, 0, 0, 0)
+ST(armc_41cf20, armctint_setup();, (CALL_PLAIN(0x41cf20, 0, 0, 0, 0, 0), 0), (armc_41cf20(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_41d280, armctint_setup();, (CALL_PLAIN(0x41d280, 0, 0, 0, 0, 0), 0), (armc_41d280(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 55: the five part shapes of player p (scene + 0x1561ea0 ... + p * 0x47fd2) are fake shapes sharing the part
    list of shapes_setup; colour values in and outside the clamp ranges (or NaN) */
 static void partcolor_setup(void)
@@ -12305,7 +12310,7 @@ static void panels_setup(void)
 	}
 	GF(0x4dcfc4) = (float)irnd(-500, 500) / 10.0f; GF(0x4dcfc8) = (float)irnd(-500, 500) / 10.0f;
 }
-ST(armc_41b400, panels_setup();, (CD(void, 0x41b400, void)(), 0), (armc_41b400(0, 0, 0, 0, 0, 0, 0), 0))
+ST(armc_41b400, panels_setup();, (CD(void, 0x41b400, void)(), 0), (armc_41b400(), 0))
 /* batch 98 */
 /* the network mocks: events and threads that fail now and then, recv returning 0..0x80 bytes or an error, Winsock
    versions 2.2 or other, sockets, bind and connect that fail or are refused, a host name that is no dotted address */
@@ -13196,7 +13201,7 @@ static void profdlg_setup(DWORD xo, DWORD yo, DWORD xe, DWORD ye)
 }
 ST(profile_44e180, profdlg_setup(0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28);, CALL_PLAIN(0x44e180, 0, 0, 0, 0, 0), (DWORD)(profile_44e180()))
 ST(profile_44e3e0, profdlg_setup(0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0);, CALL_PLAIN(0x44e3e0, 0, 0, 0, 0, 0), (DWORD)(profile_44e3e0()))
-T_PLAIN(profile_44de00, 0x44de00, profdlg_setup(0x9f8eac, 0x9f8ea8, 0x9f8f20, 0x9f8f24);, 0, 0, 0, 0, 0)
+ST(profile_44de00, profdlg_setup(0x9f8eac, 0x9f8ea8, 0x9f8f20, 0x9f8f24);, CALL_PLAIN(0x44de00, 0, 0, 0, 0, 0), (DWORD)(profile_44de00()))
 /* the weight line: ten part weights and a limit (whole and fractional, below a million: "%.0f" goes into 20
    bytes), the language, the label */
 static void weight_setup(void)
@@ -14195,7 +14200,7 @@ static void loadingscr_setup(void)
 	fill_str((char *)0x67fb44, 24, 32, 126); fill_str((char *)0xa0e988, 40, 32, 126);
 	GF(&g_a[0]) = (float)irnd(-1000, 1000) / 100.0f;
 }
-T_PLAIN(loading_draw, 0x469320, loadingscr_setup();, 0, g_a[0], 0, 0, 0)
+ST(loading_draw, loadingscr_setup();, CALL_PLAIN(0x469320, 0, g_a[0], 0, 0, 0), (loading_draw((DWORD)(g_a[0])), 0))
 /* batch 155 */
 /* the Esc menu: the game at BUF, hudtext_setup's set with hudpanel_setup's panel textures, the fade 0..0.5 s, pages
    -1..5, modes 0..3, a slot or none, team game or not, the selection 0..4, recording or not, the record name, the

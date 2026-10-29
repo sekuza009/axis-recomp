@@ -59,3 +59,44 @@ void (armc_dragSecondaryValue)(void)
 	g_coloursChanged = 1;
 	g_armcColours[g_armcColourSlot * 6 + 5] = (float)(v + v - 1.0f);
 }
+
+/* ---- the preview mech tinted: the local player's five part shapes (in its stride-0x47fd2 record) take colour
+   slots' six values (shape_setTint) ---- */
+static const u32 part_shapes[5] = { 0x1755568, 0x175d4b4, 0x1765400, 0x177504c, 0x1784c98 };
+
+static void tint_part(int part, int slot)
+{
+	const u32 *c = (const u32 *)g_armcColours + slot * 6;
+	Scene *scene = g_scene;
+	shape_setTint((u8 *)scene + part_shapes[part] + scene->localPlayer * 0x47fd2, c[0], c[1], c[2], c[3], c[4], c[5]);
+}
+
+/* 0x41cf20: the colour slot being edited applied to its part; slot 5 (all) puts the undo buffer back first and
+   tints every part with it */
+void (armc_41cf20)(void)
+{
+	int slot = g_armcColourSlot;
+	if (slot < 0 || slot > 5)
+		return;
+	if (slot < 5) {
+		tint_part(slot, slot);
+		return;
+	}
+	armc_41ced0();
+	for (int part = 0; part < 5; part++)
+		tint_part(part, g_armcColourSlot);
+}
+
+/* 0x41d280: after a change (0x4dd074) every part takes its own slot's colours; then the part in view is tinted
+   again with its slot */
+void (armc_41d280)(void)
+{
+	if (GAME_VAR(int, 0x4dd074)) {
+		for (int part = 0; part < 5; part++)
+			tint_part(part, part);
+		GAME_VAR(int, 0x4dd074) = 0;
+	}
+	int slot = g_armcPartSlot;
+	if (slot >= 0 && slot <= 4)
+		tint_part(slot, slot);
+}

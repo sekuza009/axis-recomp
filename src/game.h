@@ -54,6 +54,7 @@
 /* colours and translations given as float bits (see BITS) */
 #define glColor4f_bits(r, g, b, a) IMPORT(0x4a9228, void, u32, u32, u32, u32)(r, g, b, a)
 #define glTranslatef_bits(x, y, z) IMPORT(0x4a9214, void, u32, u32, u32)(x, y, z)
+#define glScalef_bits(x, y, z) IMPORT(0x4a9200, void, u32, u32, u32)(x, y, z)
 /* GLU, through the game's jump to its import */
 #define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
 	double, double))0x4509d2)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
@@ -448,6 +449,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_41b750() GAME_CDECL(0x41b750, void, void)()
 #define armc_41d280() GAME_CDECL(0x41d280, void, void)()
 #define armc_41cf20() GAME_CDECL(0x41cf20, void, void)()
+#define armc_41ced0() GAME_CDECL(0x41ced0, void, void)()   /* the undo buffer into colour slots 0 .. 4 (menu/armc_state.c) */
 #define FUN_0041ef20(x, y, z) GAME_CDECL(0x41ef20, void, u32, u32, u32)(x, y, z)   /* turned about x, y, z (degrees as float bits; render/gl_helpers.c) */
 #define armc_rotateFromCursor(scene, eye, forward, up, part, angle, w, h) \
 	GAME_THISCALL(0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)

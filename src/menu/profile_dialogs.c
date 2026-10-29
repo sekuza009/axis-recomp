@@ -1,5 +1,6 @@
 /* profile_dialogs.c: the profile screen's dialogs: typing a new pilot's name, and the two yes / no questions. */
 #include "../game.h"
+#include <string.h>
 
 #define g_profileDialog GAME_VAR(int, 0x9f8f10)       /* (by use) the open dialog: 2 the name, 3 and 5 the questions */
 #define g_questionX GAME_VAR(int, 0x67ef34)           /* where the two-button question is drawn */
@@ -134,4 +135,52 @@ u32 (profile_44e3e0)(void)
 {
 	static const TwoButtons d = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0, 0x44b360, 0x751e24 };
 	return two_buttons(&d);
+}
+
+/* 0x44de00: the new-profile dialog (0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): the frame, the title 0x751ca4, the
+   name field, the two buttons side by side (the hovered one, by profile_44b2a0, bright; OK dimmed while no name has
+   been typed, 0x9dc92c) and the border. Returns the border call's eax */
+u32 (profile_44de00)(void)
+{
+#define X0 GAME_VAR(int, 0x9f8eac)
+#define Y0 GAME_VAR(int, 0x9f8ea8)
+#define X1 GAME_VAR(int, 0x9f8f20)
+#define Y1 GAME_VAR(int, 0x9f8f24)
+	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	int hovered = GAME_CDECL(0x44b2a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
+	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
+	text_draw16(X0 + 0x14, Y0 + 0x10, (const char *)0x751ca4);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	profile_4283e0(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
+	for (int k = 0; k < 2; k++) {
+		int x = X0 + k * 0x78;
+		glEnable(GL_TEXTURE_2D);
+		texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		const u32 *colour = k == hovered ? panel : dim;
+		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
+		menu_drawTexQuad_4282f0(x + 0xa0, Y0 + 0x5a, x + 0x100, Y0 + 0x7a, 1);
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		if (strlen((const char *)0x9dc92c) == 0 && k == 0) {
+			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
+			menu_drawTexQuad_4282f0(X0 + 0xa0, Y0 + 0x5a, X0 + 0x100, Y0 + 0x7a, 1);
+			set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
+		}
+		text_drawBox16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(0x7517a4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
 }

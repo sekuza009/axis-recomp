@@ -386,6 +386,90 @@ u32 (menu_enterMenus)(void)
 	return money;
 }
 
+/* ---- the five spinning part panels behind the mech (panels 1 .. 5 of the records at 0x4dc550) ---- */
+typedef struct {
+	u32 corners[4][4];   /* x, y, z (and a pad) */
+	u32 x;               /* the panel's x offset */
+	u32 pad[3];
+	float angle;         /* its turn about y, kept within -360 .. 360 */
+	float speed;
+} Panel;                 /* 0x58 bytes */
+#define g_panels ((Panel *)0x4dc550)
+#define g_panelSize2 GAME_VAR(float, 0x4b0708)   /* panels 2 and 3 breathe: a half width growing by its rate, */
+#define g_panelSize3 GAME_VAR(float, 0x4b0704)   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
+#define g_panelRate2 GAME_VAR(float, 0x4b0710)
+#define g_panelRate3 GAME_VAR(float, 0x4b070c)
+#define F(addr) ((const float *)(addr))
+
+/* a square of half width size: corners (-s, s), (s, s), (s, -s), (-s, -s) in x, z */
+static void panel_resize(Panel *p, float *size)
+{
+	long double s = -fld_m(size);
+	*(float *)&p->corners[0][0] = s;
+	*(float *)&p->corners[2][2] = s;
+	*(float *)&p->corners[3][0] = s;
+	*(float *)&p->corners[3][2] = s;
+	p->corners[0][2] = BITS(*size);
+	p->corners[1][0] = BITS(*size);
+	p->corners[1][2] = BITS(*size);
+	p->corners[2][0] = BITS(*size);
+}
+
+/* 0x41b400: the panels drawn: each under the menu camera scaled 0.8, its texture (0x9da470 - k * 4), at height
+   k * 5 + 0x4dcfc4 + 1 - 105 and depth 0x4dcfc8, turned by its angle; the angle advances by its speed. Then
+   panels 2 / 3 breathe */
+void (armc_41b400)(void)
+{
+	glEnable(GL_TEXTURE_2D);
+	for (int k = 1; k < 6; k++) {
+		gfx_setMenuCamera();
+		glScalef_bits(0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);   /* 0.8 */
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		int texture = GAME_VAR(int, 0x9da470 - k * 4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		Panel *p = &g_panels[k];
+		if (k == 2)
+			panel_resize(p, &g_panelSize2);
+		else if (k == 3)
+			panel_resize(p, &g_panelSize3);
+		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(0x4dcfc4)), F(0x4a9424)), F(0x4a94b4)));
+		glTranslatef_bits(p->x, BITS(y), GAME_VAR(u32, 0x4dcfc8));
+		glPushMatrix();
+		FUN_0041ef20(0, BITS(p->angle), 0);
+		glBegin(GL_QUADS);
+		static const float uv[4][2] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
+		for (int c = 0; c < 4; c++) {
+			glTexCoord2f(uv[c][0], uv[c][1]);
+			glVertex3f_stored(p->corners[c]);
+		}
+		glEnd();
+		glPopMatrix();
+		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), &p->speed), &p->angle);
+		float stored = f32(angle);
+		p->angle = stored;
+		if (angle > *F(0x4a9460)) {
+			BITS(p->angle) = 0xc3b40000;   /* -360 */
+			stored = -360.0f;
+		}
+		if (!(stored >= *F(0x4a94b0)))
+			BITS(p->angle) = 0x43b40000;   /* 360 */
+	}
+	long double size = fadd_m(fld_m(&g_panelRate3), &g_panelSize3);
+	float stored = f32(size);
+	g_panelSize3 = stored;
+	if (size >= *F(0x4a94ac))
+		g_panelRate3 = fmul_m(fld_m(&g_frameTime), F(0x4a94a8));
+	if (!(stored > *F(0x4a93f0)))   /* the stored size (panel 2 below compares the sum itself) */
+		g_panelRate3 = (long double)g_frameTime + g_frameTime;
+	size = fadd_m(fld_m(&g_panelRate2), &g_panelSize2);
+	g_panelSize2 = size;
+	if (size >= *F(0x4a94ac))
+		g_panelRate2 = fmul_m(fld_m(&g_frameTime), F(0x4a94a8));
+	if (!(size > *F(0x4a93f0)))
+		g_panelRate2 = (long double)g_frameTime + g_frameTime;
+}
+#undef F
+
 /* v moved a tenth of the way to target per time unit */
 static void approach(float *v, float target)
 {
