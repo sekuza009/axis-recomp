@@ -71,3 +71,59 @@ static int THISCALL clear_unit(void *r) { load_480440(r); return 0; }
 void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, 0x4c7818); }
 void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, 0x4c7874); }
 void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, 0x4c78cc); }
+
+/* 0x4818e0 (thiscall on the space): a block taken from the free list (+0x48; its next at +0x4c, the new head's back
+   link +0x48 cleared), counted (+0x4c), reset (load_4804a0) and given the bounds mn / mx (three dwords each);
+   returns it. With none free, a fatal message with the pools' sizes and 0 */
+void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32 *mx)
+{
+#define FIELD(type, offset) GAME_VAR(type, space + (offset))
+	u32 *block = FIELD(u32 *, 0x48);
+	if (!block) {
+		GAME_CDECL(0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)0xae2ed0, (const char *)0x4c7924,
+			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
+		return 0;
+	}
+	u32 *next = (u32 *)block[0x4c / 4];
+	if (next) {
+		FIELD(u32 *, 0x48) = next;
+		next[0x48 / 4] = 0;
+	} else
+		FIELD(u32 *, 0x48) = 0;
+	FIELD(int, 0x4c)++;
+	load_4804a0(block);
+	for (int i = 0; i < 3; i++)
+		block[i] = mn[i];
+	for (int i = 0; i < 3; i++)
+		block[3 + i] = mx[i];
+	return block;
+#undef FIELD
+}
+
+/* 0x482320 (thiscall on the space): a unit's planes built (space_buildPlanes) and, when there are any, linked at the
+   end of the owner's list (owner +4 its last; +0xa0 / +0xa4 next / previous) and given a node (space_getNextFreeNode
+   Ptr: +0 the planes, +8 / +0xc next / previous; owner +8 its last node). Its callers ignore the eax it leaves */
+void THISCALL (load_482320)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
+{
+#define AT(type, p, offset) GAME_VAR(type, (u8 *)(p) + (offset))
+	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
+	if (!planes)
+		return;
+	u8 *last = AT(u8 *, owner, 4);
+	if (last) {
+		AT(u8 *, last, 0xa0) = planes;
+		AT(u8 *, planes, 0xa4) = AT(u8 *, owner, 4);
+	}
+	AT(u8 *, owner, 4) = planes;
+	u8 **node = space_getNextFreeNodePtr(space);
+	node[0] = planes;
+	u8 **last_node = AT(u8 **, owner, 8);
+	if (last_node) {
+		AT(u8 *, last_node[0], 0xa0) = planes;
+		AT(u8 *, node[0], 0xa4) = AT(u8 **, owner, 8)[0];
+		AT(u8 **, AT(u8 **, owner, 8), 8) = node;
+		AT(u8 **, node, 0xc) = AT(u8 **, owner, 8);
+	}
+	AT(u8 **, owner, 8) = node;
+#undef AT
+}

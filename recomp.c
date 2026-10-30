@@ -3158,12 +3158,15 @@ THISCALL DWORD space_getNextFreePlanePtr(char *sp);
 THISCALL DWORD space_getNextFreeNodePtr(char *sp);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD space_getNextFreeUnitPtr(char *sp);
-static THISCALL DWORD space_getNextFreeBlockPtrBy(char *sp, DWORD mn, DWORD mx) { DWORD v[2] = { mn, mx }; return run_lifted(lift_4818e0, (DWORD)sp, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_getNextFreeBlockPtrBy(char *sp, DWORD mn, DWORD mx);
 /* 0x48b4a0 / 0x48b530 (thiscall) map_loadWayPointInfoFrom(f) / map_loadTriggerInfoFrom(f): the mission's waypoint
    lists (count, 0x14-byte headers, the points linked in) / trigger records (count, 0x1c bytes, their waypoints
    linked in, radius squared * 10000); a total that does not match the waypoint count is fatal */
-static THISCALL DWORD map_loadWayPointInfoFrom(char *scene, DWORD f) { DWORD v[1] = { f }; return run_lifted(lift_48b4a0, (DWORD)scene, 1, v); }
-static THISCALL DWORD map_loadTriggerInfoFrom(char *scene, DWORD f) { DWORD v[1] = { f }; return run_lifted(lift_48b530, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadWayPointInfoFrom(char *scene, DWORD f);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadTriggerInfoFrom(char *scene, DWORD f);
 /* 0x483dd0 (thiscall) factor_addFactorBy(rec): put a 0x2c-byte record into the factor pool's next free slot (at
    most 1024) and find the next free one; 0x483e90 load_483e90(a) / 0x483ec0 load_483ec0(a, pos) /
    0x483f00 match_483f00(a, value, pos): build such a record and add it */
@@ -3498,11 +3501,8 @@ static THISCALL DWORD space_buildPlanes(char *sp, DWORD id, DWORD v0, DWORD v1, 
 /* 0x482320 (thiscall) load_482320(id, unit, part, i0, i1, i2, v0, v1, v2): space_buildPlanes for one of a unit's
    triangles; a made plane is linked into the unit's plane list (+4, planes +0xa0 / +0xa4) and gets a node in its node
    list (+8) */
-static THISCALL DWORD load_482320(char *sp, DWORD id, DWORD unit, DWORD part, DWORD i0, DWORD i1, DWORD i2, DWORD v0, DWORD v1, DWORD v2)
-{
-	DWORD v[9] = { id, unit, part, i0, i1, i2, v0, v1, v2 };
-	return run_lifted(lift_482320, (DWORD)sp, 9, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_482320(char *sp, DWORD id, DWORD unit, DWORD part, DWORD i0, DWORD i1, DWORD i2, DWORD v0, DWORD v1, DWORD v2);
 /* 0x4823c0 (thiscall) space_buildUnits(id, shape, matrix): a unit (pool) for a shape: every part not flagged 0x20
    (flag 1 -> id 0x10) has its primitives' triangles (type 4 lists, 5 strips with alternating winding, 6 fans)
    transformed by the matrix (the GL modelview one if none is given) and added with load_482320. Returns the unit */
@@ -3857,7 +3857,8 @@ static THISCALL DWORD match_474210(char *eng, DWORD p, DWORD name, DWORD v, DWOR
 	DWORD a[15] = { p, name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5 };   /* the hook's real arguments */
 	return run_lifted(lift_474210, (DWORD)eng, 15, a);
 }
-static THISCALL DWORD load_4742f0(char *eng, DWORD p, DWORD rec) { DWORD v[2] = { p, rec }; return run_lifted(lift_4742f0, (DWORD)eng, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_4742f0(char *eng, DWORD p, DWORD rec);
 /* (hud_4955a0: batch 198, lifted whole in lifted/grp153.c) */
 /* batch 92 (lifted/grp38.c) */
 #include "lifted/grp38.c"
@@ -5496,7 +5497,8 @@ void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD wnd_setCursor(void);
 /* 0x48fd50 scene_loadPath(path) (thiscall on the scene, ret 4) */
-static THISCALL DWORD scene_loadPath(char *scene, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_48fd50, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void scene_loadPath(char *scene, DWORD path);
 /* batch 187 (lifted/grp141.c, grp142.c: split, they call each other): particles */
 #include "lifted/grp141.c"
 #include "lifted/grp142.c"
@@ -16084,7 +16086,7 @@ ST(wnd_setCursor, G32(0x9087b4) = 0; fill((void *)0x4dd4d4, 40); fill((void *)0x
    fill((void *)0x67eefc, 4); callee_stubs(g_stubShutdown, 0);, CALL_PLAIN(0x4314e0, 0, 0, 0, 0, 0), wnd_setCursor())
 ST(scene_loadPath, S32(BUF, 0x2149308) = irnd(0, 1); S32(BUF, 0x2148ee0) = irnd(0, 1); fill_str(BUF + 0x100, 30, 'a', 'z');
    callee_stubs(g_stubLoadPath, (DWORD)irnd(0, 1));,
-   TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), scene_loadPath(BUF, (DWORD)(BUF + 0x100)))
+   (TC(DWORD, 0x48fd50, char *, char *)(BUF, BUF + 0x100), 0), (scene_loadPath(BUF, (DWORD)(BUF + 0x100)), 0))   /* (its caller ignores eax) */
 /* batch 187 */
 /* particles: the system at BUF (thiscall), its 1000 slots' used flags random (some runs of free ones), the next
    free and highest used slot (sometimes full: 1000), the serial; a descriptor at BUF + 0x100 (kind 0..2 at
@@ -17625,7 +17627,7 @@ static const STest g_stests[] = {
 	T(reg_readServerSettings, 0, 40, 0), T(text_ascii5Pass, 0, 40, 0), T(text_ascii8Pass, 0, 40, 0), T(text_ascii16Pass, 0, 40, 0),
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(hud_401ce0, 0, 40, 0),
 	T(hud_401e70, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
-	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 40, 0), T(map_loadWayPointInfoFrom, 0, 40, 0), T(map_loadTriggerInfoFrom, 0, 40, 0),
+	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 400, 0), T(map_loadWayPointInfoFrom, 0, 400, 0), T(map_loadTriggerInfoFrom, 0, 400, 0),
 	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 400, 0), T(load_483ec0, 0, 400, 0), T(match_483f00, 0, 400, 0),
 	T(match_472310, 0, 40, 0),
 	/* batch 58 */

@@ -673,3 +673,43 @@ int (sys_checkClockTampering)(void)
 	GAME_VAR(u32, 0x9dd8e8) = timeGetTime();
 	return 1;
 }
+
+/* 0x48fd50 (thiscall on the scene): with a recording on (+0x2149308): the recorder (+0x2148ed8) opened when it is not
+   yet (+0x2148ee0; match_48b430 with +0x2149208 and 0x4c45e4) and the path given to it (match_48b440; failing, the
+   recording off); with a name for it (+0x2149108) a sound played (the name formatted by 0x4c8304) at volume 100.
+   Its caller ignores the eax it leaves */
+void THISCALL (scene_loadPath)(u8 *scene, u32 path)
+{
+	if (!GAME_VAR(int, scene + 0x2149308))
+		return;
+	if (!GAME_VAR(int, scene + 0x2148ee0))
+		match_48b430(scene + 0x2148ed8, scene + 0x2149208, (const void *)0x4c45e4);
+	if (!match_48b440(scene + 0x2148ed8, path))
+		GAME_VAR(int, scene + 0x2149308) = 0;
+	const char *name = (const char *)(scene + 0x2149108);
+	if (*name) {
+		char text[0x100];
+		sprintf(text, (const char *)0x4c8304, name);
+		sound_playFile(text, 100);
+	}
+}
+
+/* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (+0x28), the
+   parts (head, chest, arm, leg, booster: +0x2c .. +0x3c), the six items (+0x40 ..), then marked in use. Its caller
+   ignores the eax it leaves */
+void THISCALL (load_4742f0)(Stage *stage, int p, const u8 *rec)
+{
+#define R(offset) GAME_VAR(int, rec + (offset))
+	player_setName(stage, p, (const char *)(rec + 8));
+	player_setValue(stage, p, R(4));
+	player_setTeam(stage, p, R(0x28));
+	actor_setActorTypeHeadInfoBy(stage, p, R(0x2c));
+	actor_setActorTypeChestInfoBy(stage, p, R(0x30));
+	actor_setActorTypeArmInfoBy(stage, p, R(0x34));
+	actor_setActorTypeLegInfoBy(stage, p, R(0x38));
+	actor_setActorTypeBoosterInfoBy(stage, p, R(0x3c));
+	for (int k = 0; k < 6; k++)
+		actor_setActorTypeItemInfoBy(stage, p, k, R(0x40 + k * 4));
+	player_markUsed(stage, p);
+#undef R
+}

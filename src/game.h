@@ -126,6 +126,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, long, int)(f, offset, origin)
 #define FUN_0047d5a0(d, s) GAME_CDECL(0x47d5a0, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
 #define Mat4_multiply(out, a, b) GAME_CDECL(0x47d380, void, float *, const float *, const float *)(out, a, b)
+#define space_getNextFreeNodePtr(space) GAME_THISCALL(0x4816c0, void *, void *)(space)
+#define space_buildPlanes(space, id, v0, v1, v2, unit, part, i0, i1, i2) GAME_THISCALL(0x481eb0, u8 *, void *, u32, u32, u32, u32, void *, u32, u32, u32, u32)(space, id, v0, v1, v2, unit, part, i0, i1, i2)
+#define match_48b430(self, a0, a1) GAME_THISCALL(0x48b430, void, void *, void *, const void *)(self, a0, a1)   /* (an empty method) */
+#define match_48b440(self, a) GAME_THISCALL(0x48b440, int, void *, u32)(self, a)                             /* (answers 0) */
+#define sound_playFile(name, volume) GAME_CDECL(0x457080, u32, const char *, int)(name, volume)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
