@@ -15694,12 +15694,12 @@ static void lobbyconnect_setup(void)
 {
 	static const DWORD stubs[] = { 0x41e760, 1, 0x452fe0, 0, 0x451e60, 0, 0x405200, 0, 0x4060f0, 0, 0x405230, 0, 0x4044a0, 2, 0x452ec0, 2, 0 };
 	callee_stubs(stubs, 0);
-	callee_ret(0x4044a0, irnd(-1, 0x11));
+	callee_ret(0x4044a0, irnd(0, 2) ? irnd(-1, 0x11) : 15 + irnd(0, 1));   /* the arrows often (held) */
 	callee_ret(0x4060f0, irnd(0, 1));
 	G32(0x4dbb3c) = irnd(0, 3) ? 2 : irnd(0, 3);
 	static const DWORD flags[] = { 0x4db8bc, 0x4db714, 0x90d1c4, 0x4db858, 0x4dba90, 0x4db8b8, 0x4db854, 0x4dba84, 0x4dbaac, 0x4db71c };
 	for (int k = 0; k < 10; k++) G32(flags[k]) = irnd(0, 7) ? 0 : 1;
-	G32(0x4ded8c) = irnd(0, 4) ? 0 : 1; G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
+	G32(0x4ded8c) = irnd(0, 4) ? 0 : 1; G32(0x4ded88) = irnd(0, 1);   /* a click resets the hold clock: half the frames only hold */ G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
 	G32(0x4ded68) = irnd(0, 800); G32(0x4ded6c) = irnd(0, 600);
 	G32(0x680bb0) = irnd(0, 3) ? irnd(0, 12) : irnd(-2, 40); G32(0x4df818) = irnd(0, 2) ? irnd(0, 9) : irnd(0, 1) ? 8 : irnd(-2, 12);   /* the bottom row (8) often */
 	G32(0x67ef30) = irnd(0, 3) ? irnd(0, 24) : irnd(-2, 40);
