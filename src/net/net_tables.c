@@ -800,7 +800,7 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    session flags 0x44 and at most 16 players, connected (ConnectEx into 0xa0b404) and the local player created
    with the lobby's player name record; the host flag 0xa0baf8 by the connection's flags (2 create, 1 join). Stops at the
    first failure */
-static void lobby_connect(void)
+static void dplay_lobbyConnect(void)
 {
 	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4a9648, NULL, 1,
 			(const void *)0x4a9658, (void **)0xa0b398) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
@@ -837,13 +837,13 @@ static void lobby_connect(void)
 		GAME_VAR(int, 0xa0baf8) = 0;
 }
 
-/* 0x453790: DirectPlay made: first through a lobby that started the game (lobby_connect), then (either way) a plain
+/* 0x453790: DirectPlay made: first through a lobby that started the game (dplay_lobbyConnect), then (either way) a plain
    DirectPlay object (arena_4539f0; its failure returned) and the connections listed (EnumConnections of the game's
    application with dplay_enumConnections). The lobby's settings block is freed (but 0xa0baf4 kept). Returns the
    listing's failure, else 0 */
 int (dplay_create)(void)
 {
-	lobby_connect();
+	dplay_lobbyConnect();
 	int r = GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404);   /* arena_4539f0 */
 	if (r < 0)
 		return r;
