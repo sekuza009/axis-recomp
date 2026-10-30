@@ -1,5 +1,6 @@
 /* setup_pages.c: the setup screen's pages drawn */
 #include "../game.h"
+#include <string.h>
 
 /* a textured quad, (s0, t0) .. (s1, t1) of the bound texture on (x0, y0) .. (x1, y1) */
 static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int x1, int y1)
@@ -167,6 +168,198 @@ void (setup_425460)(void)
 #undef X1
 #undef Y1
 }
+
+/* ---- the controls dialog ---- */
+#define glTexCoord2i(s, t) IMPORT(0x4a91d8, void, int, int)(s, t)
+
+/* the binding each key row of the first three tabs shows (as setup_drawKeyBindingRows edits them, setup_keys.c);
+   rows 4 and 9 of the third tab (bindings 25 and 31) are fixed keys */
+static const signed char key_rows[3][11] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 },
+	{ 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20 },
+	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
+};
+
+/* a key tab (0 .. 2): its title bright again, its labels, and each row's two keys by name (0x4b0750; the unbound
+   value 0x4df8e4 shows nothing). A fixed row is red, its one key in large type in both columns */
+static void key_tab(int tab)
+{
+#define X0 GAME_VAR(int, 0x4dde80)
+#define Y0 GAME_VAR(int, 0x4dde84)
+	static const u32 labels[3] = { 0x754a24, 0x7551a4, 0x755924 };
+	static const int rows[3] = { 10, 11, 10 };
+	const u32 *bright = (const u32 *)0x4de048;
+	const char *const *key_name = (const char *const *)0x4b0750;
+	int none = GAME_VAR(int, 0x4df8e4);
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x46 + tab * 0x78, Y0 + 0x12, (const char *)(0x754324 + tab * 0x80));
+	for (int r = 0; r < rows[tab]; r++)
+		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(labels[tab] + r * 0x80));
+	for (int r = 0; r < rows[tab]; r++) {
+		const int *slot = (const int *)(0x4de0c0 + key_rows[tab][r] * 8);
+		int y = Y0 + 0x5c + r * 0x18;
+		if (tab == 2 && (r == 4 || r == 9)) {
+			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red */
+			if (slot[0] != none) {
+				text_draw16(X0 + 0xc8, y, key_name[slot[0]]);
+				text_draw16(X0 + 0x14a, y, key_name[slot[0]]);
+			}
+			if (r == 4)
+				set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+			continue;
+		}
+		for (int k = 0; k < 2; k++)
+			if (slot[k] != none)
+				text_draw8(X0 + (k ? 0x14a : 0xc8), y, key_name[slot[k]]);
+	}
+#undef X0
+#undef Y0
+}
+
+/* the fourth tab: its title, labels (0x7560a4, and 0x756224 lower), the two switches (0x4de1c0 / 0x4de1c4: on
+   0x7519a4, off 0x751924), the sensitivity slider (0x4de1c8, its arrows lit while 0x4ddb98 runs down: 0x4dde90 0 /
+   1) and the crosshair 0x4de1cc: when it changed (from 0x4b04f8) its texture looked up again (0 .. 7: the path
+   "texture/crosshair/crosshair<n>"; others keep the path in 0x4ddb58) into 0x4e0c8c, drawn in a box */
+static void settings_tab(void)
+{
+#define X0 GAME_VAR(int, 0x4dde80)
+#define Y0 GAME_VAR(int, 0x4dde84)
+#define g_pressedClock GAME_VAR(float, 0x4ddb98)
+#define g_pressed GAME_VAR(int, 0x4dde90)
+	const u32 *bright = (const u32 *)0x4de048;
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)0x7544a4);
+	for (int r = 0; r < 3; r++)
+		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(0x7560a4 + r * 0x80));
+	text_draw8(X0 + 0x30, Y0 + 0xb0, (const char *)0x756224);
+	for (int k = 0; k < 2; k++)
+		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, 0x4de1c0 + k * 4) == 1 ? 0x7519a4 : 0x751924));
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexQuad_4284d0(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
+	menu_drawTexQuad_4285c0(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
+	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x108, Y0 + 0x88, X0 + 0x1d0, Y0 + 0xa0);   /* the track */
+	long double sensitivity = (long double)GAME_VAR(int, 0x4de1c8);
+	float s = f32(fmul_m(sensitivity, (const float *)0x4a9504));
+	int x = X0 - ftol(fmul_m(sensitivity, (const float *)0x4a94a8)) + 0x108;
+	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x108, Y0 + 0x88, x, Y0 + 0xa0);           /* the bar */
+	const float *zero = (const float *)0x4a93e8;
+	if (g_pressedClock > *zero) {
+		if (g_pressed == 0)
+			menu_drawTexQuad_4284d0(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
+		else if (g_pressed == 1)
+			menu_drawTexQuad_4285c0(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
+	}
+	int crosshair = GAME_VAR(int, 0x4de1cc);
+	if (crosshair != GAME_VAR(int, 0x4b04f8)) {
+		if ((u32)crosshair <= 7)
+			strcpy((char *)0x4ddb58, (const char *)(0x4b063c - crosshair * 0x20));
+		GAME_VAR(int, 0x4e0c8c) = tex_getIdByName(g_textures, (const char *)0x4ddb58, 0, 0, 0, 0, 0, 0, 0);
+		GAME_VAR(int, 0x4b04f8) = crosshair;
+	}
+	glEnable(GL_TEXTURE_2D);
+	texture = GAME_VAR(int, 0x4e0c8c);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glTexCoord2i(0, 0);
+	menu_vertex(X0 + 0xc8, Y0 + 0xa0);
+	glTexCoord2i(1, 0);
+	menu_vertex(X0 + 0xf8, Y0 + 0xa0);
+	glTexCoord2i(1, 1);
+	menu_vertex(X0 + 0xf8, Y0 + 0xd0);
+	glTexCoord2i(0, 1);
+	menu_vertex(X0 + 0xc8, Y0 + 0xd0);
+	glEnd();
+	long double left = fsub_m(fld_m(&g_pressedClock), (const float *)0x4b071c);
+	g_pressedClock = f32(left);
+	if (!(left >= *zero)) {
+		g_pressedClock = 0;
+		g_pressed = -1;
+	}
+#undef g_pressed
+#undef g_pressedClock
+#undef X0
+#undef Y0
+}
+
+/* 0x425cd0 (named setup_crosshairScreen; by use the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
+   the column heads (0x754524 ..), the four tab titles (0x754324, 0x80 apart; dim, the current one, 0x4ddce8, bright
+   again). The row under the pointer (setup_4206f0: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
+   ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (0x7546a4, lit from 4
+   unless editing); the help line (0x754824 over a row, 0x7548a4 while editing) and the border. The caller ignores
+   the eax it leaves */
+void (setup_crosshairScreen)(void)
+{
+#define X0 GAME_VAR(int, 0x4dde80)
+#define Y0 GAME_VAR(int, 0x4dde84)
+#define X1 GAME_VAR(int, 0x4dde88)
+#define Y1 GAME_VAR(int, 0x4dde8c)
+#define g_row GAME_VAR(int, 0x4de040)
+	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
+	int hovered = setup_4206f0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	text_draw8(X0 + 0x30, Y0 + 0x3c, (const char *)0x754524);
+	text_draw8(X0 + 0xc8, Y0 + 0x3c, (const char *)0x7545a4);
+	text_draw8(X0 + 0x14a, Y0 + 0x3c, (const char *)0x754624);
+	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	FUN_00427a40(X0 + 0x20, Y0 + 0x50, X1 - 0x20, Y0 + 0x50);
+	FUN_00427a40(X0 + 0x20, Y1 - 0x38, X1 - 0x20, Y1 - 0x38);
+	set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
+	for (int k = 0; k < 4; k++)
+		text_draw16(X0 + 0x46 + k * 0x78, Y0 + 0x12, (const char *)(0x754324 + k * 0x80));
+	int editing = GAME_VAR(int, 0x4dddc8), tab = GAME_VAR(int, 0x4ddce8);
+	int over_row = hovered > 6 && hovered < 18;
+	if (over_row && !editing) {
+		g_row = hovered - 7;
+		if ((tab == 0 && hovered > 16) || (tab == 2 && (hovered > 15 || hovered == 11)) || (tab == 3 && hovered > 8))
+			g_row = -1;
+		else {
+			set_colour_bits(g_rectColour, 0, 0x3f000000, 0x3f800000, 0x3e99999a);   /* 0, 0.5, 1, 0.3 */
+			menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_row * 0x18, X1 - 0x24, Y0 + 0x6e + g_row * 0x18, 1);
+		}
+	} else if (editing) {
+		set_colour_bits(g_rectColour, 0x3f800000, 0, 0x3f800000, 0x3e99999a);   /* 1, 0, 1, 0.3 */
+		menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_row * 0x18, X1 - 0x24, Y0 + 0x6e + g_row * 0x18, 1);
+	}
+	if (tab >= 0 && tab <= 2)
+		key_tab(tab);
+	else if (tab == 3)
+		settings_tab();
+	for (int k = 0; k < 3; k++) {
+		glEnable(GL_TEXTURE_2D);
+		int texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		int lit = hovered == k + 4 && !editing;
+		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+		int bx = X0 + 0x50 + k * 0x8c;
+		menu_drawTexQuad_4282f0(bx, Y1 - 0x30, bx + 0x78, Y1 - 0x10, 1);
+		const u32 *c = lit ? bright : dim;
+		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
+		text_drawBox16(bx, Y1 - 0x28, bx + 0x78, (const char *)(0x7546a4 + k * 0x80));
+	}
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	if (over_row && !editing)
+		text_drawBox16(0, 0x1bc, 0x280, (const char *)0x754824);
+	if (editing)
+		text_drawBox16(0, 0x1bc, 0x280, (const char *)0x7548a4);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+#undef g_row
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+#undef glTexCoord2i
 
 /* ---- the tunnel behind the setup pages ---- */
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)

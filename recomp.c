@@ -4538,7 +4538,8 @@ DWORD room_43ede0(void);
    arrows (0x4ddb98 / 0x4dde90, counting down by 0x4b071c), and the crosshair 0x4de1cc: a changed choice (cached
    0x4b04f8) looks up "texture/crosshair/crosshair<n>" (0..7; others keep the path in 0x4ddb58) into 0x4e0c8c,
    drawn in a box; three buttons (0x7546a4), the border */
-LIFT_PLAIN(setup_crosshairScreen, 425cd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_crosshairScreen(void);
 /* batch 144 (lifted/grp90.c): the armour screen's stats panel, the largest function in the game */
 #include "lifted/grp90.c"
 /* 0x412650 armc_drawStatsPanel(): the armour screen with the stats of the part in slot 0x4dbc6c (0..5): the
@@ -14315,7 +14316,8 @@ static void controls_hover_setup(void)
 	callee_stubs(hit, 0);
 	callee_ret(0x4206f0, (DWORD)irnd(-1, 18));
 }
-T_PLAIN(setup_crosshairScreen, 0x425cd0, controls_hover_setup();, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(setup_crosshairScreen, controls_hover_setup();, (CALL_PLAIN(0x425cd0, 0, 0, 0, 0, 0), 0), (setup_crosshairScreen(), 0))
 /* batch 144 */
 /* the stats panel: pilotpanel_setup's pilots and texture set, positions, slots -1..6 (mostly 0..5), English or
    Korean, every float the panel reads below 10000 (its sprintf targets hold 20 bytes), every count below a million,
