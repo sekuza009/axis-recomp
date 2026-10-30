@@ -7388,6 +7388,7 @@ static LONG CALLBACK crash_report(EXCEPTION_POINTERS *e)
 			n += wsprintfA(b + n, "  stack %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\r\n", (unsigned long)s[0], (unsigned long)s[1],
 			               (unsigned long)s[2], (unsigned long)s[3], (unsigned long)s[4], (unsigned long)s[5], (unsigned long)s[6], (unsigned long)s[7]);
 		}
+		n += wsprintfA(b + n, "  recomp.dll at %08lx (its own addresses above: less this, plus 0x10000000)\r\n", (unsigned long)(DWORD)GetModuleHandleA("recomp.dll"));
 		WriteFile(g_prog, b, (DWORD)n, &w, NULL);
 		FlushFileBuffers(g_prog);
 	}
@@ -10090,18 +10091,31 @@ ST(armc_41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x
    words and join the rest), as many as the reader takes and a few more, or fewer (the file ending early). A value is
    one of the reader's own strings (pool; words split by spaces or tabs), a key name from the game's table at 0x4b0750
    (keys), a number or junk; now and then an empty line, a missing "=", or a line longer than fgets' 0x50 bytes */
+/* n in decimal at d (no library call: a setup runs with the library mocks in place); its length */
+static int put_int(char *d, int n)
+{
+	char t[12]; int k = 0, i = 0; unsigned u = n < 0 ? 0u - (unsigned)n : (unsigned)n;
+	do t[k++] = (char)('0' + u % 10); while (u /= 10);
+	if (n < 0) d[i++] = '-';
+	while (k) d[i++] = t[--k];
+	d[i] = 0;
+	return i;
+}
 static void cfglines_setup(int lines, const char *const *pool, int npool, int keys)
 {
 	char *d = BUF + 0x200000, num[16];
-	int i = 0, total = irnd(0, 9) ? lines + irnd(0, 3) : irnd(0, lines);
-	for (int l = 0; l < total; l++) {
+	/* at least one line: with none the first fgets fails and the original takes strlen of its unset buffer (the
+	   paint, no end), writing a 0 far up the stack, into the harness's own frames */
+	int i = 0, total = irnd(0, 9) ? lines + irnd(0, 3) : irnd(1, lines);
+	for (int l = 0; l < total && i < 0xe00; l++) {   /* (vfs_content's 0x1000 bytes at most: what follows is not for it) */
 		int kind = irnd(0, 11);
 		if (kind == 0) { d[i++] = '\n'; continue; }
-		i += wsprintfA(d + i, irnd(0, 15) ? "KEY%d =" : "KEY%d", l);
+		d[i++] = 'K'; i += put_int(d + i, l);
+		if (irnd(0, 15)) { d[i++] = ' '; d[i++] = '='; }
 		const char *v;
 		if (kind <= 5 && npool) v = pool[irnd(0, npool - 1)];
 		else if (kind <= 8 && keys) v = (const char *)G32(0x4b0750 + irnd(0, 255) * 4);
-		else if (kind <= 9) { wsprintfA(num, "%d", irnd(-5, 2000)); v = num; }
+		else if (kind <= 9) { put_int(num, irnd(-5, 2000)); v = num; }
 		else v = irnd(0, 1) ? "OFF" : "Q";
 		d[i++] = irnd(0, 3) ? ' ' : '\t';
 		for (; *v; v++) {
