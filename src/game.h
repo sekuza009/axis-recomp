@@ -142,6 +142,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define sys_errorMessage(out, format, a, b) GAME_CDECL(0x46c5f0, void, char *, const char *, int, int)(out, format, a, b)
 #define data_loadFrom_46f4e0(self, a, b, c, d, e, f, g, h, i, j, limit) GAME_THISCALL(0x46f4e0, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(self, a, b, c, d, e, f, g, h, i, j, limit)
 #define shape_getByName(cache, name, flag) GAME_THISCALL(0x466dc0, u32, void *, const char *, int)(cache, name, flag)
+#define sys_fatalErrorN(out, format, ...) GAME_CDECL(0x46c710, void, char *, const char *, ...)(out, format, __VA_ARGS__)   /* (several values) */
+#define script_processCommandBy(scene, a, i, b) GAME_THISCALL(0x483770, void, void *, int, int, int)(scene, a, i, b)
+#define space_resetPlanes(space) GAME_THISCALL(0x481520, int, void *)(space)
+#define space_resetNodes(space) GAME_THISCALL(0x481630, int, void *)(space)
+#define space_resetUnits(space) GAME_THISCALL(0x481760, void, void *)(space)
+#define space_resetBlocks(space) GAME_THISCALL(0x481860, int, void *)(space)
+#define match_46cdc0(image, path) GAME_THISCALL(0x46cdc0, int, void *, const char *)(image, path)   /* a BMP opened */
+#define image_copyTo(image, out, w, h, bpp, a, b, c, d, w2, h2, e) GAME_THISCALL(0x46ce80, int, void *, void *, int, int, int, int, int, int, int, int, int, int)(image, out, w, h, bpp, a, b, c, d, w2, h2, e)
+#define FUN_0046ce50(self) GAME_THISCALL(0x46ce50, u32, void *)(self)   /* the object's file closed */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

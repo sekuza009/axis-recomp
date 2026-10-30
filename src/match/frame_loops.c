@@ -133,3 +133,45 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #undef COUNT
 #undef NEXT
 }
+
+/* 0x483640 (thiscall on the scene): the map's triggers (0x1c-byte records from +0xe3b038, +0xe3c938 of them): each
+   armed one (+8 1) fires (+0x18) on its time (flag 1: the clock, +0x20fcd40 + +0x20fcd44, reaching +0x10) or on the
+   player (flag 2: the player's actor, +0x202e8d4, within the squared radius +0x14 of its way point, +4; a NaN distance
+   counts as within). Then each fired one runs its command (script_processCommandBy), is disarmed, and noted in the
+   fired list (+0xe3c618, one dword each, the others 0) */
+void THISCALL (script_processTriggers)(u8 *s)
+{
+#define COUNT FIELD(int, s, 0xe3c938)
+#define TRIGGER(i) (s + 0xe3b038 + (i) * 0x1c)
+	for (int i = 0; i < COUNT; i++) {
+		u8 *t = TRIGGER(i);
+		if (FIELD(int, t, 8) != 1)
+			continue;
+		u32 flags = FIELD(u32, t, 0xc);
+		if (flags & 1) {
+			long double now = (long double)FIELD(int, s, 0x20fcd40) + FIELD(float, s, 0x20fcd44);
+			if (now >= FIELD(float, t, 0x10))
+				FIELD(int, t, 0x18) = 1;
+		}
+		int player = FIELD(int, s, 0x202e8d4);
+		if (flags & 2 && player >= 0) {
+			const float *at = (const float *)(s + 0x1cd94fc + player * 0x8888);
+			const float *point = FIELD(const float *, t, 4);
+			long double dx = (long double)at[0] - point[0], dy = (long double)at[1] - point[1], dz = (long double)at[2] - point[2];
+			if (!(dz * dz + dy * dy + dx * dx >= FIELD(float, t, 0x14)))
+				FIELD(int, t, 0x18) = 1;
+		}
+	}
+	for (int i = 0; i < COUNT; i++) {
+		u8 *t = TRIGGER(i);
+		if (FIELD(int, t, 0x18) == 1) {
+			script_processCommandBy(s, -1, i, 0);
+			FIELD(int, t, 0x18) = 0;
+			FIELD(int, t, 8) = 0;
+			FIELD(int, s, 0xe3c618 + i * 4) = 1;
+		} else
+			FIELD(int, s, 0xe3c618 + i * 4) = 0;
+	}
+#undef COUNT
+#undef TRIGGER
+}

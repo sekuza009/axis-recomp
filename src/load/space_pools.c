@@ -2,6 +2,7 @@
    and a free list (head, then a used count, at +8 / +0xc from the count); emptying it clears every record, links
    them both ways (prev, then next, at the same offset in each) and puts the whole array on the free list. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -126,4 +127,41 @@ void THISCALL (load_482320)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u3
 	}
 	AT(u8 **, owner, 8) = node;
 #undef AT
+}
+
+/* 0x4819b0 (thiscall on the space): the space emptied (planes, nodes, units, blocks) and laid out: its bounds mn / mx
+   (+0x5c, +0x68), a grid of nx x ny x nz cells (+0x74 .., +0x58 their number: none, or more than its +0x50 cells, a
+   fatal message), each cell's size (+0x80 .. +0x88: z, x, y over nx, ny, nz, as the original pairs them), a / b (+0x8c,
+   +0x90) and the depth (+0x94; over 8 a fatal message); the cells' table (+0x54, two bytes each) all 0xff. Its callers
+   ignore the eax it leaves */
+void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 a, u32 b, int depth)
+{
+#define FIELD(type, offset) GAME_VAR(type, space + (offset))
+	space_resetPlanes(space);
+	space_resetNodes(space);
+	space_resetUnits(space);
+	space_resetBlocks(space);
+	for (int i = 0; i < 3; i++)
+		FIELD(u32, 0x5c + i * 4) = mn[i];
+	FIELD(u32, 0x68) = mx[0];
+	FIELD(u32, 0x6c) = mx[1];
+	FIELD(int, 0x78) = ny;
+	FIELD(u32, 0x70) = mx[2];
+	FIELD(int, 0x74) = nx;
+	FIELD(int, 0x7c) = nz;
+	int cells = FIELD(int, 0x58) = nx * ny * nz;
+	if (cells <= 0)
+		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c79f4, nx, ny, nz);
+	else if (cells > FIELD(int, 0x50))
+		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c79bc, nx, ny, nz, cells, FIELD(int, 0x50));
+	FIELD(u32, 0x90) = b;
+	FIELD(u32, 0x8c) = a;
+	FIELD(int, 0x94) = depth;
+	FIELD(float, 0x80) = (float)(((long double)FIELD(float, 0x70) - FIELD(float, 0x64)) / FIELD(int, 0x74));
+	FIELD(float, 0x84) = (float)(((long double)FIELD(float, 0x68) - FIELD(float, 0x5c)) / FIELD(int, 0x78));
+	FIELD(float, 0x88) = (float)(((long double)FIELD(float, 0x6c) - FIELD(float, 0x60)) / FIELD(int, 0x7c));
+	if (depth > 8)
+		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c7980, depth, 8);
+	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
+#undef FIELD
 }

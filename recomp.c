@@ -3329,7 +3329,8 @@ int chat_createEdit(int chars);
 void reg_readCharacterSettings(void);
 /* 0x4734d0 (thiscall) gfx_saveScreenshot(p): load player p's emblem picture (Save\<name>.BMP, at least 23 x 15)
    into the player record as 24 x 16 RGBA, black = transparent */
-static THISCALL DWORD gfx_saveScreenshot(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_4734d0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD gfx_saveScreenshot(char *scene, DWORD p);
 /* 0x473780 (thiscall) catalogue_loadComponents(path): the actor component catalogue (version 0x1204): six
    sections of part records (0xaa8 .. 0x2e18 bytes each, at most 50), read through the descrambling reader */
 static THISCALL DWORD catalogue_loadComponents(char *scene, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_473780, (DWORD)scene, 1, v); }
@@ -3345,11 +3346,8 @@ static THISCALL DWORD space_initBy(char *sp, DWORD a, DWORD b, DWORD c, DWORD d,
 /* 0x4819b0 (thiscall) space_setBy(min, max, nx, ny, nz, a, b, depth): reset the pools, set the grid bounds and cell
    counts (nx * ny * nz cells, at most the index table's size; at least 1), cell sizes, recursion depth (at most 8),
    clear the index table */
-static THISCALL DWORD space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD ny, DWORD nz, DWORD a, DWORD b, DWORD depth)
-{
-	DWORD v[8] = { mn, mx, nx, ny, nz, a, b, depth };
-	return run_lifted(lift_4819b0, (DWORD)sp, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD ny, DWORD nz, DWORD a, DWORD b, DWORD depth);
 /* 0x471010 (thiscall) load_471010: the scene's level grid (scene + 0xa10) as one cell over the level bounds */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_471010(char *scene);
@@ -3370,11 +3368,8 @@ static THISCALL DWORD texSmall_initBy(char *self, DWORD a, DWORD b, DWORD c, DWO
 /* 0x46aa10 (thiscall) skel_loadFrom_46aa10(f, mem, memSize): an animation: 0x24-byte header into the object
    (size +4, count +0x10), the memory from mem or allocated, then count 0x70-byte tracks, each followed by its
    position keys (0x20 bytes) and rotation keys (0x28 bytes); the track's key pointers are linked in */
-static THISCALL DWORD skel_loadFrom_46aa10(char *self, DWORD f, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { f, mem, size };
-	return run_lifted(lift_46aa10, (DWORD)self, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_loadFrom_46aa10(char *self, DWORD f, DWORD mem, DWORD size);
 /* batch 62: image / texture / data-memory initialisers (lifted/grp9.c) */
 #include "lifted/grp9.c"
 /* 0x46ce80 (thiscall) image_copyTo(dst, dstW, dstH, depth, sx, sy, dx, dy, w, h, topDown): copy a w x h block of
@@ -3405,11 +3400,8 @@ static THISCALL DWORD shape_initBy(char *self, DWORD dir, DWORD n, DWORD a, DWOR
 	return run_lifted(lift_466a60, (DWORD)self, 6, v);
 }
 /* 0x46aeb0 (thiscall) skel_loadFrom_46aeb0(dir, n, a, extra, mem, memSize): the same for n skeletons (0x70 bytes each) */
-static THISCALL DWORD skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size)
-{
-	DWORD v[6] = { dir, n, a, extra, mem, size };
-	return run_lifted(lift_46aeb0, (DWORD)self, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size);
 /* batch 63: the map's play and mission info loaders (lifted/grp10.c) */
 #include "lifted/grp10.c"
 /* 0x4876b0 (thiscall) map_loadPlayInfoFrom(name): <dir +0x108>\<name>, version 0x1201, skip the first section, then
@@ -3699,11 +3691,8 @@ THISCALL DWORD tex_getIdByName(char *set, DWORD name, DWORD flags, DWORD a, DWOR
 /* 0x466430 (thiscall) shape_bindTextureBy(suffix, flags, 6 floats): for each of the shape's parts (count +0x10,
    0x80 bytes at +0x14, texture name +4): append "*" suffix to the name when the suffix is not empty (a result over
    63 characters is fatal), then look the texture up in the global set (0xa0e010, tex_getIdByName) into +0x44 */
-static THISCALL DWORD shape_bindTextureBy(char *shape, DWORD sfx, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[8] = { sfx, flags, a, b, c, d, e, f };
-	return run_lifted(lift_466430, (DWORD)shape, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void shape_bindTextureBy(char *shape, DWORD sfx, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x466650 (thiscall) FUN_00466650(): with GL_TEXTURE_2D enabled, bind every part's texture (+0x44 >= 0: set
    index / 512, texture % 512) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5636,7 +5625,8 @@ static THISCALL DWORD script_processCommandBy(char *s, DWORD actor, DWORD trig, 
    on the game time (flag 1: +0x20fcd40 + +0x20fcd44 past its time) or on the player's actor (+0x202e8d4) inside its
    radius (flag 2); then each fired one runs its script (script_processCommandBy, no actor, entry 0), is cleared and
    disarmed, and its "ran" flag (+0xe3c618) set */
-static THISCALL DWORD script_processTriggers(char *s) { return run_lifted(lift_483640, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void script_processTriggers(char *s);
 /* batch 200 (lifted/grp156.c): the actors' frame loop */
 #include "lifted/grp156.c"
 /* 0x45e0c0 actor_updateAll(dt) (thiscall on the scene, ret 4): unless paused (+0x2149308 with +0x214930c == 1),
@@ -17638,14 +17628,14 @@ static const STest g_stests[] = {
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),
 	/* batch 60 */
-	T(match_49d150, 0, 40, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 40, 0),
+	T(match_49d150, 0, 40, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 40, 0),
 	/* batch 61 */
-	T(space_initBy, 0, 40, 0), T(space_setBy, 0, 40, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
-	T(texSmall_initBy, 0, 40, 0), T(skel_loadFrom_46aa10, 0, 40, 0),
+	T(space_initBy, 0, 40, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
+	T(texSmall_initBy, 0, 40, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 40, 0),
-	T(skel_loadFrom_46aeb0, 0, 40, 0),
+	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 40, 0),
 	/* batch 64 */

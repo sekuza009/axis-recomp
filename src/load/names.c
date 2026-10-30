@@ -93,3 +93,22 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
 	sys_fatalError((char *)0xa0e000, (const char *)0x4b42b0, (int)name);
 	return -1;
 }
+
+/* 0x466430 (thiscall on a shape): each of its parts (0x80 bytes from +0x14, +0x10 of them) given its texture (+0x44:
+   tex_getIdByName on the game's texture sets, 0xa0e010, by the part's name at +4, the rest of the arguments passed on);
+   with a suffix the name gets 0x4b12f4 and the suffix appended first (too long for the 0x40 bytes: a fatal message
+   first). Its callers ignore the eax it leaves */
+void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int a, int b, int c, int d, int e, int f)
+{
+	for (int i = 0; i < GAME_VAR(int, shape + 0x10); i++) {
+		u8 *part = GAME_VAR(u8 *, shape + 0x14) + i * 0x80;
+		char *name = (char *)part + 4;
+		if (*suffix) {
+			if (strlen(name) + strlen(suffix) > 0x3f)
+				sys_fatalErrorN((char *)0xa0e790, (const char *)0x4c4c6c, name, suffix);
+			strcat(name, (const char *)0x4b12f4);
+			strcat(name, suffix);
+		}
+		GAME_VAR(int, part + 0x44) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, flags, a, b, c, d, e, f);
+	}
+}

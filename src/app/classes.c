@@ -309,3 +309,30 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 #undef crt_fread
 #undef fatal
 }
+
+/* 0x4734d0 (named gfx_saveScreenshot; by use a part type's emblem loaded): the BMP named after type p (its record at
+   +0x1561b68, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
+   24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1
+   returned; else 0 */
+int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
+{
+	u8 *type = scene + 0x1561b68 + p * 0x47fd2;
+	u8 image[0x48];
+	GAME_VAR(u32, image) = 0x4a96f8;   /* (its vtable) */
+	GAME_VAR(u32, image + 4) = 0;      /* (no file yet) */
+	char path[0x100];
+	sprintf(path, (const char *)0x4c74e8, type + 4);
+	int ok = 0;
+	if (match_46cdc0(image, path)) {
+		if (GAME_VAR(int, image + 0x3e) >= 23 && GAME_VAR(int, image + 0x42) >= 15) {
+			u8 *pixel = type + 0x479c2;
+			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
+			for (int k = 0; k < 24 * 16; k++, pixel += 4)
+				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
+			ok = 1;
+		}
+		FUN_0046ce50(image);
+	}
+	BMPRGBFile_ctor(image);   /* (by use its destructor) */
+	return ok;
+}
