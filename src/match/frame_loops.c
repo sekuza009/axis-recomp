@@ -36,3 +36,48 @@ void THISCALL (match_490d40)(void *s, int dt)
 		if (FIELD(int, s, 0x131ae48 + i * 0x2cc) == 1)
 			actor_render(s, i, dt);
 }
+
+/* 0x479950 (thiscall on the scene): an effect started in the next free slot (+0x20f2da4; at most 999): a slot added
+   when that is the count (+0x20f2da0, the new one marked free), the next free one after it found (none: it stays),
+   then the effect set up (particle_init). Returns its slot, or -1 */
+int THISCALL (particle_spawn)(u8 *s, u32 desc)
+{
+#define COUNT FIELD(int, s, 0x20f2da0)
+#define NEXT FIELD(int, s, 0x20f2da4)
+	if (NEXT >= 1000)
+		return -1;
+	if (NEXT == COUNT) {
+		COUNT++;
+		FIELD(int, s, 0x20a99c4 + COUNT * 0x12c) = 0;
+	}
+	int slot = NEXT;
+	for (int k = slot + 1; k <= COUNT; k++)
+		if (FIELD(int, s, 0x20a99c4 + k * 0x12c) == 0) {
+			NEXT = k;
+			break;
+		}
+	particle_init(s, slot, desc);
+	return slot;
+#undef COUNT
+#undef NEXT
+}
+
+/* 0x45e0c0 (thiscall on the scene): the actors (0x8888-byte slots from +0x1cd94b0, +0x202e8c8 of them) moved on by
+   dt, the triggers run (all of it skipped while paused); dt added to the clock's fraction (+0x20fcd44), whole units over 1 moved into
+   the clock (+0x20fcd40). Its callers ignore the eax it leaves */
+void THISCALL (actor_updateAll)(u8 *s, float dt)
+{
+	if (paused(s))
+		return;
+	for (int i = 0; i < FIELD(int, s, 0x202e8c8); i++)
+		if (FIELD(int, s, 0x1cd94b0 + i * 0x8888) == 1)
+			actor_processFrame(s, i, dt);
+	script_processTriggers(s);
+	long double t = (long double)dt + FIELD(float, s, 0x20fcd44);
+	FIELD(float, s, 0x20fcd44) = (float)t;
+	if (t > GAME_VAR(float, 0x4a9424)) {   /* 1 */
+		int whole = ftol(t);
+		FIELD(int, s, 0x20fcd40) += whole;
+		FIELD(float, s, 0x20fcd44) = (float)(t - whole);
+	}
+}

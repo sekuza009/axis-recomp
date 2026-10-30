@@ -131,6 +131,12 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_48b430(self, a0, a1) GAME_THISCALL(0x48b430, void, void *, void *, const void *)(self, a0, a1)   /* (an empty method) */
 #define match_48b440(self, a) GAME_THISCALL(0x48b440, int, void *, u32)(self, a)                             /* (answers 0) */
 #define sound_playFile(name, volume) GAME_CDECL(0x457080, u32, const char *, int)(name, volume)
+#define actor_setupFromParts(scene, i, x, y, parts) GAME_THISCALL(0x457330, void, void *, int, u32, u32, u32)(scene, i, x, y, parts)
+#define particle_init(system, i, desc) GAME_THISCALL(0x475070, void, void *, int, u32)(system, i, desc)
+#define tex_allocIdBy(manager, name, a, b, c, d, e, f, g) GAME_THISCALL(0x4555b0, int, void *, u32, u32, u32, u32, u32, u32, u32, u32)(manager, name, a, b, c, d, e, f, g)
+#define actor_setPartColor(scene, p, part, a, b, c, d, e, f) GAME_THISCALL(0x474b50, u32, void *, int, int, float, float, float, float, float, float)(scene, p, part, a, b, c, d, e, f)
+#define actor_processFrame(scene, i, dt) GAME_THISCALL(0x4580b0, void, void *, int, float)(scene, i, dt)
+#define script_processTriggers(scene) GAME_THISCALL(0x483640, void, void *)(scene)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

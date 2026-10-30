@@ -3054,11 +3054,8 @@ static THISCALL DWORD actor_setPartColor(char *scene, DWORD p, DWORD part, DWORD
 }
 /* 0x474fd0 (thiscall) actor_applyRemoteColours(p, part, 6 signed bytes): a colour packet: hues * 1.40625,
    the other values / 128, then actor_setPartColor */
-static THISCALL DWORD actor_applyRemoteColours(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[8] = { p, part, a, b, c, d, e, f };
-	return run_lifted(lift_474fd0, (DWORD)scene, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_applyRemoteColours(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 56: small groups (lifted/grp5.c): glyph and textured quads, HUD helpers, GL view/fog setup, the view
    volume's setup and teardown, network helpers, and the error reporters (ERROR.TXT) */
 #include "lifted/grp5.c"
@@ -3693,11 +3690,8 @@ static THISCALL DWORD tex_allocIdBy(char *tm, DWORD name, DWORD flags, DWORD a, 
 }
 /* 0x456be0 (thiscall) tex_getIdByName(...the same): try the six managers (+4..+0x18, null ones skipped) in turn;
    manager k's index i gives k * 512 + i; none is fatal */
-static THISCALL DWORD tex_getIdByName(char *set, DWORD name, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[8] = { name, flags, a, b, c, d, e, f };
-	return run_lifted(lift_456be0, (DWORD)set, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD tex_getIdByName(char *set, DWORD name, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 83 (lifted/grp29.c) */
 #include "lifted/grp29.c"
 /* 0x466430 (thiscall) shape_bindTextureBy(suffix, flags, 6 floats): for each of the shape's parts (count +0x10,
@@ -4071,7 +4065,8 @@ void THISCALL hud_45e170(void *stage, void *view, int pass);
    (actor_setupFromParts); returns the slot. 0x45dd80 match_45dd80(the same): also makes it the player's actor
    (+0x202e8d4) with weapon slot 0 (FUN_0045e810). 0x45ddc0 armc_45ddc0(): the player's actor again, from its own
    player and the start position (0xa0e7a8..) */
-static THISCALL DWORD FUN_0045dc00(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp) { DWORD v[4] = { a, x, y, pp }; return run_lifted(lift_45dc00, (DWORD)sc, 4, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD FUN_0045dc00(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_45dd80(void *stage, int a, int x, int y, void *spawn);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5506,7 +5501,8 @@ THISCALL void scene_loadPath(char *scene, DWORD path);
    +0x20a99c0 (used flag +4), the next free +0x20f2da4, the highest used +0x20f2da0, a serial +0x20f2da8.
    0x479950 particle_spawn(desc) (ret 4): the first free slot from the next free one on (-1 when full), set up by
    particle_init; returns the slot */
-static THISCALL DWORD particle_spawn(char *ps, DWORD desc) { DWORD v[1] = { desc }; return run_lifted(lift_479950, (DWORD)ps, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD particle_spawn(char *ps, DWORD desc);
 /* 0x475070 particle_init(slot, desc) (ret 8): the slot from the descriptor (kind +0x30, positions, velocities,
    colours, sizes, life), its matrix (Mat4_invert, real), the sound (sound_play3D) and child particles
    (particle_spawn) */
@@ -5647,7 +5643,8 @@ static THISCALL DWORD script_processTriggers(char *s) { return run_lifted(lift_4
 /* 0x45e0c0 actor_updateAll(dt) (thiscall on the scene, ret 4): unless paused (+0x2149308 with +0x214930c == 1),
    each actor in use (+0x1cd94b0 == 1, +0x202e8c8 of them) gets its frame (actor_processFrame(i, dt)), the triggers
    run (script_processTriggers), and the game clock (+0x20fcd40 whole seconds, +0x20fcd44 the fraction) moves on */
-static THISCALL DWORD actor_updateAll(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_45e0c0, (DWORD)s, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_updateAll(char *s, DWORD dt);
 #include "lifted/grp157.c"
 /* 0x48a370 match_inputState3() (thiscall on the scene): the free camera / test mode. On its first frame the ten
    cameras reset and the cursor centred; then the keys (movement W/A/S/D/Q/E, speed, camera 1..6, zoom, the F1..F6

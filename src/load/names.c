@@ -77,3 +77,19 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 	crt_fseek(GAME_VAR(void *, manager + 0x110), GAME_VAR(long, GAME_VAR(u8 *, manager + 0x10c) + i * 0x44 + 0x40), 0);
 	return GAME_VAR(void *, manager + 0x110);
 }
+
+/* 0x456be0 (thiscall on the texture sets): a texture's id by name: each of the six managers (+4 ..) asked in turn
+   (tex_allocIdBy, with the rest of the arguments); the first answer k x 512 + its index. None: a fatal message, -1 */
+int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g)
+{
+	for (int k = 0; k < 6; k++) {
+		void *manager = GAME_VAR(void *, sets + 4 + k * 4);
+		if (!manager)
+			continue;
+		int i = tex_allocIdBy(manager, (u32)name, a, b, c, d, e, f, g);
+		if (i >= 0)
+			return k * 512 + i;
+	}
+	sys_fatalError((char *)0xa0e000, (const char *)0x4b42b0, (int)name);
+	return -1;
+}

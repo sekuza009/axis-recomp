@@ -254,3 +254,37 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 		}
 	FIELD(int, stage, 0x202e8ec) = 1;
 }
+
+/* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
+   slots up to it are added first (each new one marked free, +0x108), and the first free slot (searched up to and
+   including the count, as the original does) kept as the next free (+0x202e8cc). Returns i, or -1 */
+int THISCALL (FUN_0045dc00)(u8 *scene, int i, u32 x, u32 y, u32 parts)
+{
+#define COUNT GAME_VAR(int, scene + 0x202e8c8)
+#define USED(k) GAME_VAR(int, scene + 0x1cd94b0 + (k) * 0x8888)
+	if (i >= 100)
+		return -1;
+	if (COUNT <= i) {
+		for (int k = COUNT; k <= i; k++)
+			USED(k) = 0;
+		COUNT = i + 1;
+	}
+	for (int k = 0; k <= COUNT; k++)
+		if (USED(k) == 0) {
+			GAME_VAR(int, scene + 0x202e8cc) = k;
+			break;
+		}
+	actor_setupFromParts(scene, i, x, y, parts);
+	return i;
+#undef COUNT
+#undef USED
+}
+
+/* 0x474fd0: a player's part coloured from the network: six signed bytes, scaled (the first and fourth by 0x4aa41c,
+   the others by 0x4aa420), given to actor_setPartColor. Its caller ignores the eax it leaves */
+void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int a, int b, int c, int d, int e, int f)
+{
+	long double k1 = GAME_VAR(float, 0x4aa41c), k2 = GAME_VAR(float, 0x4aa420);
+	actor_setPartColor(scene, p, part, (float)((signed char)a * k1), (float)((signed char)b * k2), (float)((signed char)c * k2),
+	                   (float)((signed char)d * k1), (float)((signed char)e * k2), (float)((signed char)f * k2));
+}
