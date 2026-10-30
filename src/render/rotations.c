@@ -209,3 +209,12 @@ u32 (skel_ase_47d320)(float *out, const float *a, const float *b)
 	GAME_CDECL(0x47d380, void, float *, const float *, const float *)(m, ma, mb);   /* Mat4_multiply */
 	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* skel_ase_47d2f0: matrix -> (angle, axis) */
 }
+
+/* 0x47d2f0: out (a rotation) set from the matrix m by way of its quaternion (skel_ase_47d0f0, then skel_ase_47d260).
+   Its callers ignore the eax it leaves */
+void THISCALL (skel_ase_47d2f0)(float *out, const float *m)
+{
+	float q[4];
+	skel_ase_47d0f0(q, m);
+	skel_ase_47d260(out, q);
+}

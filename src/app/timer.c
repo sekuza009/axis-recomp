@@ -81,3 +81,21 @@ long double (timer_now)(void)
 #undef g_time
 #undef g_lastCount
 }
+
+/* 0x461210 (thiscall on a frame timer): the frame's time (timer_getGameTime of the timer at +0xc) kept in a ring of
+   ten (+0x48, next at +0x70), their average (the sum times 0x4a955c, 0.1) in +0x44; the average is also left on the
+   FPU stack, as the original leaves it (its callers pop it) */
+long double THISCALL (armc_461210)(u8 *t)
+{
+#define FIELD(type, offset) GAME_VAR(type, t + (offset))
+	long double now = timer_getGameTime(t + 0xc);
+	FIELD(float, 0x48 + FIELD(int, 0x70) * 4) = (float)now;
+	FIELD(int, 0x70) = (FIELD(int, 0x70) + 1) % 10;
+	long double sum = GAME_VAR(float, 0x4a93e8);   /* 0 */
+	for (int i = 0; i < 10; i++)
+		sum += FIELD(float, 0x48 + i * 4);
+	sum *= GAME_VAR(float, 0x4a955c);
+	FIELD(float, 0x44) = (float)sum;
+	return sum;
+#undef FIELD
+}

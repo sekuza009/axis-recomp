@@ -115,6 +115,10 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_4629c0(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
 #define match_4636d0(scene) GAME_THISCALL(0x4636d0, void, Scene *)(scene)
 #define armc_40e450(x, y) GAME_CDECL(0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
+#define skel_ase_47d0f0(q, m) GAME_THISCALL(0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
+#define skel_ase_47d260(out, q) GAME_THISCALL(0x47d260, void, float *, const float *)(out, q)
+#define factor_addFactorBy(pool, record) GAME_THISCALL(0x483dd0, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
+#define light_computeLayerLightBy(scene, layer, verts, a, b, c, rows, cols) GAME_THISCALL(0x472400, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, verts, a, b, c, rows, cols)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

@@ -2905,7 +2905,8 @@ DWORD app_checkFile_profeng(void);
 DWORD reg_readStartMode(void);
 #include "lifted/grp1.c"
 /* 0x47d2f0 (thiscall) skel_ase_47d2f0(out, m): rotation matrix -> quaternion (skel_ase_47d0f0) -> angle-axis */
-static THISCALL DWORD skel_ase_47d2f0(char *out, DWORD m) { DWORD v[1] = { m }; return run_lifted(lift_47d2f0, (DWORD)out, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_ase_47d2f0(char *out, DWORD m);
 /* 0x47d320 skel_ase_47d320(out, a, b): the angle-axis of the product of the two rotations a and b (FUN_0047d9a0
    makes each a matrix) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3165,9 +3166,12 @@ static THISCALL DWORD map_loadTriggerInfoFrom(char *scene, DWORD f) { DWORD v[1]
    most 1024) and find the next free one; 0x483e90 load_483e90(a) / 0x483ec0 load_483ec0(a, pos) /
    0x483f00 match_483f00(a, value, pos): build such a record and add it */
 static THISCALL DWORD factor_addFactorBy(char *pool, DWORD rec) { DWORD v[1] = { rec }; return run_lifted(lift_483dd0, (DWORD)pool, 1, v); }
-static THISCALL DWORD load_483e90(char *pool, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_483e90, (DWORD)pool, 1, v); }
-static THISCALL DWORD load_483ec0(char *pool, DWORD a, DWORD p) { DWORD v[2] = { a, p }; return run_lifted(lift_483ec0, (DWORD)pool, 2, v); }
-static THISCALL DWORD match_483f00(char *pool, DWORD a, DWORD x, DWORD p) { DWORD v[3] = { a, x, p }; return run_lifted(lift_483f00, (DWORD)pool, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_483e90(char *pool, DWORD a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_483ec0(char *pool, DWORD a, DWORD p);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_483f00(char *pool, DWORD a, DWORD x, DWORD p);
 /* 0x472310 (thiscall) match_472310: reset the factor pool and add every active player and live effect */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_472310(char *scene);
@@ -3282,7 +3286,8 @@ DWORD skelDat_initBy(void);
 /* 0x487490 (thiscall) timer_getGameTime: frame time from the performance counter (initialised on first use),
    returned in ST0; 0x461210 (thiscall) armc_461210: its average over the last 10 frames */
 static THISCALL long double timer_getGameTime(char *t) { return run_lifted_fp(lift_487490, (DWORD)t, 0, NULL); }
-static THISCALL DWORD armc_461210(char *t) { return run_lifted(lift_461210, (DWORD)t, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL long double armc_461210(char *t);
 /* 0x43f300 sys_checkClockTampering: compare the system time with the last one seen; a clock set back ends the
    game with a message */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3453,7 +3458,8 @@ static THISCALL DWORD render_processRenderingBy(char *scene, DWORD vv, DWORD h)
 #include "lifted/grp13.c"
 /* 0x4728e0 load_4728e0(layer): a terrain layer's whole light map from scratch (light_computeLayerLightBy with
    first = 1 over rows 0..+0x1c, columns 0..+0x20, into its own light map +0x48); ecx passes through (the scene) */
-static THISCALL DWORD load_4728e0(char *scene, DWORD layer) { DWORD v[1] = { layer }; return run_lifted(lift_4728e0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void load_4728e0(char *scene, DWORD layer);
 /* 0x481ae0 (thiscall) load_481ae0(block, item, depth): put a collision triangle into the space object's block tree:
    nothing if it misses the block's box (load_47fce0 with the space's margin +0x8c) or is already first in its list;
    a leaf (+0x24 == 0) gets a node (item, block, linked in at +0x18, count +0x1c), and once it holds more than +0x90
@@ -17614,7 +17620,7 @@ static const STest g_stests[] = {
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(hud_401ce0, 0, 40, 0),
 	T(hud_401e70, 0, 40, 0), T(tex_getItemFileBy, 1, 40, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 40, 0), T(map_loadWayPointInfoFrom, 0, 40, 0), T(map_loadTriggerInfoFrom, 0, 40, 0),
-	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 40, 0), T(load_483ec0, 0, 40, 0), T(match_483f00, 0, 40, 0),
+	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 400, 0), T(load_483ec0, 0, 400, 0), T(match_483f00, 0, 400, 0),
 	T(match_472310, 0, 40, 0),
 	/* batch 58 */
 	T(net_send, 0, 400, 0), T(room_434d00, 1, 40, 0), T(room_4334c0, 0, 40, 0), T(room_434b90, 1, 40, 0),
@@ -17624,7 +17630,7 @@ static const STest g_stests[] = {
 	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_43df00, 0, 40, 0), T(menu_428890, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 40, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
-	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 40, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
+	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),
 	/* batch 60 */
