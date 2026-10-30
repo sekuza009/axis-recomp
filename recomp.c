@@ -4288,7 +4288,8 @@ void profile_44cf70(void);
    and six choices from 0x32-byte string tables (0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 by
    0x4ddba4..0x4ddbb8); the value under the cursor (setup_4206b0) gets a shadow and a highlight; two buttons
    (0x753ca4); the border */
-LIFT_PLAIN(setup_425460, 425460)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_425460(void);
 /* batch 124 (lifted/grp70.c): the setup screens' 3D tunnel */
 #include "lifted/grp70.c"
 /* 0x423e50 setup_423e50(): the tunnel behind the setup screens (3D projection): its alpha 0x4de038 eases to 0.3
@@ -13705,7 +13706,8 @@ static void options_hover_setup(void)   /* the hit test (setup_4206b0, its own t
 	callee_stubs(hit, 0);
 	callee_ret(0x4206b0, (DWORD)irnd(-1, 9));
 }
-T_PLAIN(setup_425460, 0x425460, options_hover_setup();, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(setup_425460, options_hover_setup();, (CALL_PLAIN(0x425460, 0, 0, 0, 0, 0), 0), (setup_425460(), 0))
 /* batch 124 */
 /* the tunnel: menutex_setup's set with every texture it binds bindable (0x4e0cd0, 0x5b197c, 0x5b1978), modes 0..3,
    the animation values anywhere in (and now and then at the edges of) their ranges, the step 0x4b071c */

@@ -107,6 +107,67 @@ void (setup_424810)(void)
 #undef Y1
 }
 
+/* 0x425460: the options dialog (0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
+   apart) and their values: the screen size (the names at 0x4b04cc by 0x4ddba0) and six choices, each from its own
+   table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setup_4206b0) drawn
+   again with a shadow, in yellow; two buttons (0x753ca4, lit from 7) and the border. The caller ignores the eax it
+   leaves */
+void (setup_425460)(void)
+{
+#define X0 GAME_VAR(int, 0x4dddd0)
+#define Y0 GAME_VAR(int, 0x4dddd4)
+#define X1 GAME_VAR(int, 0x4dddd8)
+#define Y1 GAME_VAR(int, 0x4ddddc)
+	static const u32 names[6] = { 0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 };
+	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
+	int hovered = setup_4206b0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	gfx_setProjection2D3D(2);
+	glLoadIdentity();
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x7538a4);
+	glEnable(GL_TEXTURE_2D);
+	int texture = GAME_VAR(int, 0x9db0a4);
+	tex_bind(g_textures->managers[texture / 512], texture % 512);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	for (int k = 0; k < 7; k++)
+		text_draw8(X0 + 0x50, Y0 + 0x44 + k * 0x28, (const char *)(0x753924 + k * 0x80));
+	/* the values: the screen size's name, then each choice's */
+	const char *value[7];
+	value[0] = GAME_VAR(const char *, 0x4b04cc + GAME_VAR(int, 0x4ddba0) * 4);
+	for (int k = 1; k < 7; k++)
+		value[k] = (const char *)(names[k - 1] + GAME_VAR(int, 0x4ddba4 + (k - 1) * 4) * 0x32);
+	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	for (int k = 0; k < 7; k++)
+		text_draw8(X0 + 0xe6, Y0 + 0x44 + k * 0x28, value[k]);
+	if (hovered >= 0 && hovered <= 6) {
+		int y = Y0 + 0x44 + hovered * 0x28;
+		set_colour_bits((Colour *)0x76d438, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01: the shadow */
+		text_draw8(X0 + 0xe6, y, value[hovered]);
+		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
+		text_draw8(X0 + 0xe5, y - 1, value[hovered]);
+	}
+	for (int k = 0; k < 2; k++) {
+		glEnable(GL_TEXTURE_2D);
+		texture = GAME_VAR(int, 0x9db0a4);
+		tex_bind(g_textures->managers[texture / 512], texture % 512);
+		int lit = hovered == k + 7;
+		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
+		int bx = X0 + k * 0x8c;
+		menu_drawTexQuad_4282f0(bx + 0x64, Y1 - 0x40, bx + 0xdc, Y1 - 0x20, 1);
+		const u32 *colour = lit ? bright : dim;
+		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(bx + 0x64, Y1 - 0x38, bx + 0xdc, (const char *)(0x753ca4 + k * 0x80));
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+}
+
 /* ---- the tunnel behind the setup pages ---- */
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
 #define g_tunnelAlpha GAME_VAR(float, 0x4de038)

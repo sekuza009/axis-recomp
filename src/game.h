@@ -98,6 +98,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define text_setColor(r, g, b, a) GAME_CDECL(0x44ad30, void, float, float, float, float)(r, g, b, a)
 #define text_draw5(x, y, s) GAME_CDECL(0x403170, void, int, int, const char *)(x, y, s)
 #define text_draw8(x, y, s) GAME_CDECL(0x402620, void, int, int, const char *)(x, y, s)
+#define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
 /* the box passes: text centred between x0 and x1 */
