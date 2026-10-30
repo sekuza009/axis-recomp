@@ -209,3 +209,36 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	space_resetBlocks(space);
 #undef FIELD
 }
+
+/* 0x482e30 (thiscall on the collision space): a sphere of radius r swept from pos along vel in whole steps of length
+   step (n = |vel| / step; the walk down the nodes, space_walkNodes_482aa0, from pos + i steps, i = 0 .. n - 1), then
+   from pos + n steps over what is left of vel. 1 at the first hit, else what the last walk found (1 or 0); the
+   outputs are the walks' */
+int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float *vel, float step, u32 k, u32 outPos,
+                                u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
+{
+	float dir[3], d[3], p[3];
+	memcpy(dir, vel, sizeof dir);
+	int n = ftol(fdiv_m(Vec3_normalize(dir), &step));
+	for (int c = 0; c < 3; c++)
+		d[c] = f32(fmul_m(fld_m(&dir[c]), &step));
+	for (int i = 0; i < n; i++) {
+		long double li = i;
+		float x = f32(fld_m(&d[0]) * li), y = f32(fld_m(&d[1]) * li);
+		p[0] = f32(fadd_m(fld_m(&x), &pos[0]));
+		p[1] = f32(fadd_m(fld_m(&y), &pos[1]));
+		p[2] = f32(fadd_m(fmul_m(li, &d[2]), &pos[2]));
+		if (space_walkNodes_482aa0(grid, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
+			return 1;
+	}
+	long double ln = n;
+	float x = f32(fmul_m(ln, &d[0])), y = f32(fld_m(&d[1]) * ln);
+	p[0] = f32(fadd_m(fld_m(&x), &pos[0]));
+	p[1] = f32(fadd_m(fld_m(&y), &pos[1]));
+	p[2] = f32(fadd_m(fmul_m(ln, &d[2]), &pos[2]));
+	float rest[3];
+	rest[0] = f32(fsub_m(fld_m(&vel[0]), &x));
+	rest[1] = f32(fsub_m(fld_m(&vel[1]), &y));
+	rest[2] = f32(fld_m(&vel[2]) - fmul_m(ln, &d[2]));
+	return space_walkNodes_482aa0(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
+}

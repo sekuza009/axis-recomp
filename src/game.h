@@ -174,6 +174,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define model_loadObjFormatFrom(shape, f, mem, size) GAME_THISCALL(0x464db0, void, void *, void *, void *, int)(shape, f, mem, size)
 #define skel_loadFrom_46aa10(sk, f, mem, size) GAME_THISCALL(0x46aa10, void, void *, void *, void *, int)(sk, f, mem, size)
 #define skel_loadAseFrom(sk, f, mem, size) GAME_THISCALL(0x469b90, void, void *, void *, void *, int)(sk, f, mem, size)
+#define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
+#define dplay_454d90(text, word, exact) GAME_CDECL(0x454d90, const char *, const char *, const char *, int)(text, word, exact)
+#define file_exists_46ca70(path) GAME_CDECL(0x46ca70, int, const char *)(path)
+#define space_walkNodes_482aa0(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
+	GAME_THISCALL(0x482aa0, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

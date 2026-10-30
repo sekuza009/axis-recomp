@@ -399,3 +399,35 @@ void THISCALL (actor_45ebc0)(u8 *scene, int p)
 			FIELD(int, a, 0x130 + k * 4) = FIELD(int, a, 0x28 + k * 4) / 2;
 	}
 }
+
+/* 0x45e600 (thiscall on the scene): actor a's item in slot (its player type record's +0x320 + slot x 4; negative:
+   none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (+0x587c; +0x701c, from the
+   item's second set of tables), any other only when it is the selected one (+0x140: +0x40dc, and +0x4cc the item's
+   +0x2dc0, -1 without). Without an item the loader is emptied (FUN_0046f4b0). Its callers ignore the eax it leaves */
+void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
+{
+	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	if (!FIELD(int, actor, 0x108))
+		return;
+	u8 *type = scene + 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2;
+	int item = FIELD(int, type, 0x320 + slot * 4);
+	u8 *it = item >= 0 ? scene + 0x14d1ab4 + item * 0x2e18 : NULL;
+	int self, models = 0x40, bones = 0x94c, counts = 0x12dc, frames = 0x1468;
+	if (slot == 4)
+		self = 0x587c;
+	else if (slot == 5) {
+		self = 0x701c;
+		models = 0x16fc, bones = 0x2008, counts = 0x2998, frames = 0x2b24;
+	} else if (slot == FIELD(int, actor, 0x140))
+		self = 0x40dc;
+	else
+		return;
+	if (it)
+		data_loadFrom_46f4e0(actor + self, scene + 0x19e188c, scene + 0x1cbe198, FIELD(u32, it, models + variant * 4),
+		                     it + bones + variant * 0x330, FIELD(u32, it, counts + variant * 4), it + frames + variant * 0x80,
+		                     0, 0, 0, actor + self + 0x30, 0x1770);
+	else
+		FUN_0046f4b0(actor + self);
+	if (self == 0x40dc)
+		FIELD(int, actor, 0x4cc) = it ? FIELD(int, it, 0x2dc0) : -1;
+}

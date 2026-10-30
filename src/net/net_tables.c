@@ -1433,3 +1433,37 @@ void THISCALL (match_48e0f0)(u8 *s, int p)
 		FUN_0046cc30(packet, 1, size, f);
 	}
 }
+
+/* 0x4532f0: DirectPlay's EnumConnections callback: the service provider's short name kept upper-cased (the 0x80-byte
+   slot of the count 0xa0bac8, which counts up to 9), and by its kind (the name containing "TCP", "IPX", "MODEM" or
+   its Korean name, "SERIAL" or its Korean name) its GUID (0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and a copy of its
+   connection data (GlobalAlloc'ed, 0xa0bab0; 0xa0bae0 .. 0xa0baec). Returns 1 (go on) */
+u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
+{
+	static const struct { u32 words[2], guid, data; } kinds[4] = {
+		{ { 0x4b3e64 }, 0xa0b3a0, 0xa0bae0 }, { { 0x4b3e60 }, 0xa0b450, 0xa0bae4 },
+		{ { 0x4b3e58, 0x4b3e50 }, 0xa0b408, 0xa0bae8 }, { { 0x4b3e48, 0x4b3e40 }, 0xa0bab8, 0xa0baec } };
+	char names[10][0x80];
+	char *own = names[GAME_VAR(int, 0xa0bac8)];
+	strcpy(own, (const char *)name[2]);   /* lpszShortNameA */
+	crt_strupr(own);
+	u32 *id = operator_new(0x10);
+	if (!id)
+		return 1;
+	memcpy(id, guid, 0x10);
+	void *data = GAME_VAR(void *, 0xa0bab0) = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	if (!data)
+		return 1;
+	memcpy(data, connection, size);
+	for (int k = 0; k < 4; k++)
+		if (dplay_454d90(own, (const char *)kinds[k].words[0], 1) ||
+		    (kinds[k].words[1] && dplay_454d90(own, (const char *)kinds[k].words[1], 1))) {
+			memcpy((void *)kinds[k].guid, id, 0x10);
+			GAME_VAR(void *, kinds[k].data) = GAME_VAR(void *, 0xa0bab0);
+			break;
+		}
+	operator_delete(id);
+	if (GAME_VAR(int, 0xa0bac8) < 9)
+		GAME_VAR(int, 0xa0bac8)++;
+	return 1;
+}

@@ -2309,12 +2309,9 @@ void THISCALL msg_kill(void *scene, int victim, int killer);
 /* 0x482e30 (thiscall) space_testSphere(r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
    the swept sphere in steps of `step` along vel (n = __ftol(|vel| / step) whole steps, each a grid walk, then the
    remainder); 1 at the first hit. Lifted */
-static THISCALL int space_testSphere(void *grid, DWORD r, DWORD pos, DWORD vel, DWORD step, DWORD k, DWORD outPos, DWORD outVel,
-                                     DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs)
-{
-	DWORD v[12] = { r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs };
-	return (int)run_lifted(lift_482e30, (DWORD)grid, 12, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_testSphere(void *grid, DWORD r, DWORD pos, DWORD vel, DWORD step, DWORD k, DWORD outPos, DWORD outVel,
+                              DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* batch 42 */
 #include "lifted/actor.c"    /* tools/lift.py: actor_46c140, actor_46c1c0 + FUN_0046c100 (its ST0 result stays on the emulated stack) */
 #include "lifted/move.c"     /* tools/lift.py: collision_moveActor (calls the lifted space_testSphere) */
@@ -2818,14 +2815,12 @@ DWORD menuState210_enter(void);
 void profile_scanSaves(void);
 /* 0x487cb0 (thiscall) autoplay_startRecording(name): open AutoPlay\name.ape (or the first free AutoPlay###) and
    write the recording header */
-static THISCALL DWORD autoplay_startRecording(char *scene, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_487cb0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void autoplay_startRecording(char *scene, DWORD name);
 /* 0x4532f0 dplay_enumConnections(guid, connection, size, name, flags, context): DirectPlay EnumConnections callback:
    keeps the service provider's GUID, connection data and upper-cased name, and notes which kind it is */
-static DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[6] = { a, b, c, d, e, f };
-	return run_lifted(lift_4532f0, 0, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 49: Winsock users (in the tests the IAT mocks) and the match packet senders (net_sendPacketData is mocked
    in the tests: the size and a hash of each packet are logged). All lifted (lifted/net.c) */
 #include "lifted/net.c"
@@ -3768,11 +3763,8 @@ THISCALL void FUN_0045e530(char *sc, DWORD a);
    0x2e18-byte items at +0x14d1ab4, < 0 none) with the scene's caches (+0x19e188c / +0x1cbe198): slot 4 and 5 their
    own lists (memory +0x58ac / +0x704c), the actor's current slot (+0x140) the weapon list (+0x410c) and its kind
    (item +0x2dc0 -> actor +0x4cc, -1 without an item); no item releases the list */
-static THISCALL DWORD actor_updatePart(char *sc, DWORD a, DWORD slot, DWORD var)
-{
-	DWORD v[3] = { a, slot, var };
-	return run_lifted(lift_45e600, (DWORD)sc, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_updatePart(char *sc, DWORD a, DWORD slot, DWORD var);
 /* batch 90 (lifted/grp36.c) */
 #include "lifted/grp36.c"
 /* (thiscall on the scene) actor_setActorType{Head,Chest,Arm,Leg,Booster}InfoBy(player, type): a negative type
@@ -9777,7 +9769,7 @@ static void autorec_setup(void)
 	vfs_content(0, 0x2000);
 	g_a[0] = irnd(0, 1) ? (int)(BUF + 0x400) : 0;
 }
-ST(autoplay_startRecording, autorec_setup();, TC(DWORD, 0x487cb0, char *, char *)(SCENE, (char *)g_a[0]), autoplay_startRecording(SCENE, (DWORD)g_a[0]))
+ST(autoplay_startRecording, autorec_setup();, (TC(void, 0x487cb0, char *, char *)(SCENE, (char *)g_a[0]), 0), (autoplay_startRecording(SCENE, (DWORD)g_a[0]), 0))
 /* a service provider: GUID, connection data of `size` bytes, DPNAME whose short name (+8) is a string; the
    provider count (index into the 10 name slots) 0..8 */
 static void enumconn_setup(void)
@@ -17499,7 +17491,7 @@ static const STest g_stests[] = {
 	/* batch 41 */
 	T(FUN_0046c100, 1, 4, 5000), T(FUN_00456de0, 1, 300, 0), T(msg_playerLeft, 1, 4, 2000), T(msg_cheatUsed, 1, 4, 2000),
 	T(msg_playerJoinedTeam, 1, 4, 2000), T(msg_playerChangedTeam, 1, 4, 2000), T(msg_kill, 1, 4, 2000), T(tex_applyTintMask, 1, 4, 2000),
-	T(space_testSphere, 1, 10, 10000),
+	T(space_testSphere, 1, 100, 10000),
 	/* batch 42 */
 	T(actor_46c140, 1, 4, 10000), T(actor_46c1c0, 1, 4, 10000), T(collision_moveActor, 1, 10, 8000),
 	/* batch 43 */
@@ -17551,7 +17543,7 @@ static const STest g_stests[] = {
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
 	T(lobby_407270, 1, 40, 0), T(FUN_00427a40, 1, 40, 0), T(mainmenu_440d70, 1, 40, 0), T(timer_init, 0, 40, 0),
 	T(profile_selectAndLoad, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
-	T(autoplay_startRecording, 1, 40, 0), T(dplay_enumConnections, 1, 40, 0),
+	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
 	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),

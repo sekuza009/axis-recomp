@@ -1344,3 +1344,54 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	fclose(f);
 	return 1;
 }
+
+/* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: match_487ed0): the file
+   AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
+   +0x2340d0c; none free, or the file not made: nothing more). Recording (+0x2340d1d 1, the clock +0x2340d29 0), the
+   header written: version 0x1201, the settings (0x5ae9c4, 0x9dad94, the 32 bytes at 0x67fb44, 0x9da3e0), the map
+   (+0x22e7180), 0x4df8e8 and 0x76d408. Every player in use (net_playerInUse) is flagged to be sent (+0x234300e,
+   +0x2343012), the shown one (+0x234240d) too (+0x234300a, +0x2343006, its +0x179d1fe cleared). Its caller ignores
+   the eax it leaves */
+void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
+{
+	char *kept = (char *)s + 0x2340d0c, path[0x100];
+	if (FIELD(int, s, 0x2340d1d) == 1)
+		match_487ed0((Scene *)s);
+	if (name) {
+		strcpy(kept, name);
+		sprintf(path, (const char *)0x4c7cc8, kept);   /* "AutoPlay\%s.ape" */
+	} else {
+		int i = 0;
+		for (;; i++) {
+			sprintf(kept, (const char *)0x4c7cb8, i);   /* "AutoPlay%03d" */
+			sprintf(path, (const char *)0x4c7cc8, kept);
+			if (!file_exists_46ca70(path))
+				break;
+			if (i == 999)
+				return;
+		}
+	}
+	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	if (!f)
+		return;
+	FIELD(int, s, 0x2340d1d) = 1;
+	FIELD(int, s, 0x2340d29) = 0;
+	int value = 0x1201;
+	FUN_0046cc30(&value, 4, 1, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x5ae9c4, 4, 1, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x9dad94, 4, 1, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x67fb44, 1, 0x20, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x9da3e0, 4, 1, FIELD(void *, s, 0x2340d08));
+	value = FIELD(int, s, 0x22e7180);
+	FUN_0046cc30(&value, 4, 1, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x4df8e8, 4, 1, FIELD(void *, s, 0x2340d08));
+	FUN_0046cc30((void *)0x76d408, 4, 1, FIELD(void *, s, 0x2340d08));
+	for (int i = 0; i < 16; i++)
+		if (net_playerInUse(i) == 1) {
+			FIELD(int, s, 0x234300e + i * 0x10) = 1;
+			FIELD(int, s, 0x2343012 + i * 0x10) = 1;
+		}
+	FIELD(int, s, 0x234300a + FIELD(int, s, 0x234240d) * 0x10) = 1;
+	FIELD(int, s, 0x179d1fe + FIELD(int, s, 0x234240d) * 0x47fd2) = 0;
+	FIELD(int, s, 0x2343006 + FIELD(int, s, 0x234240d) * 0x10) = 1;
+}
