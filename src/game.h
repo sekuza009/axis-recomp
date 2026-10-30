@@ -158,6 +158,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define load_48b460(self, f) GAME_THISCALL(0x48b460, u32, void *, void *)(self, f)
 #define FUN_0046cc30(p, size, count, f) GAME_CDECL(0x46cc30, u32, const void *, u32, u32, void *)(p, size, count, f)   /* fwrite, scrambled */
 #define net_sendPacketData(size, data) GAME_CDECL(0x4a8360, u32, int, void *)(size, data)
+#define glWindow_setupPixelFormat(dc) GAME_CDECL(0x467e60, int, void *)(dc)
+#define glWindow_restoreDisplayMode() GAME_CDECL(0x468050, void, void)()
+#define tex_loadColorMask(textures, i) GAME_THISCALL(0x455aa0, void, void *, int)(textures, i)
+#define tex_applyTintMask(textures, i) GAME_THISCALL(0x456470, void, void *, int)(textures, i)
+#define tex_upload(textures, id, mode) GAME_THISCALL(0x456520, void, void *, u32, int)(textures, id, mode)
+#define glPixelStorei(pname, v) IMPORT(0x4a9268, void, u32, int)(pname, v)
+#define glTexParameterf_bits(target, pname, bits) IMPORT(0x4a9260, void, u32, u32, u32)(target, pname, bits)   /* (the float as its bits) */
+#define glTexImage2D(target, level, format, w, h, border, layout, type, data) IMPORT(0x4a91e4, void, u32, int, int, int, int, int, u32, u32, const void *)(target, level, format, w, h, border, layout, type, data)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

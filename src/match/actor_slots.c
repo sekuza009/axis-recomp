@@ -329,3 +329,44 @@ void THISCALL (actor_updateBody)(u8 *scene, int a) { part_load(scene, a, &g_part
 void THISCALL (FUN_0045e390)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
 void THISCALL (FUN_0045e460)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
 void THISCALL (FUN_0045e530)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
+
+/* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (+0x202e8d4; none: a fatal
+   message): set up from its parts (FUN_0045dc00, with the record's position, angle and parts picked out), then given
+   the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
+   count from a scaled value, and the rest copied; no targets (+0x87f8, +0x87fc -1). Its callers ignore the eax it
+   leaves */
+void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
+{
+#define R(type, offset) GAME_VAR(type, rec + (offset))
+	int player = GAME_VAR(int, scene + 0x202e8d4);
+	if (player < 0)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4b4538, player);
+	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
+	((float *)spawn)[5] = f32(fld_m(&R(float, 0x10)));
+	((float *)spawn)[6] = f32(fld_m(&R(float, 0x14)));
+	FUN_0045dc00((Stage *)scene, a, -1, GAME_VAR(int, scene + 0x202e8d4), spawn);
+	if (a < 0)
+		return;
+	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+#define A(type, offset) GAME_VAR(type, actor + (offset))
+	A(u32, 0x64) = R(u32, 0x1c);
+	A(u32, 0x1c) = R(u32, 0x20);
+	A(u32, 0x20) = R(u32, 0x24);
+	A(u32, 0x128) = R(u32, 0x20);
+	A(u32, 0x12c) = R(u32, 0x24);
+	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)GAME_VAR(float, 0x4a9750));
+	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)GAME_VAR(float, 0x4a9418));
+	long double radius = R(float, 0x30);
+	A(float, 0) = (float)(radius * radius * GAME_VAR(float, 0x4a9708));
+	A(u32, 0x70) = R(u32, 0x34);
+	A(int, 0x74) = ftol(R(float, 0x38) * (long double)GAME_VAR(float, 0x4a9418));
+	A(u32, 0x78) = R(u32, 0x3c);
+	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)GAME_VAR(float, 0x4a93f4));
+	A(float, 0x80) = (float)(R(float, 0x44) * (long double)GAME_VAR(float, 0x4a93f4));
+	for (int k = 0; k < 5; k++)
+		A(u32, 0x84 + k * 4) = R(u32, 0x48 + k * 4);
+	A(int, 0x87f8) = -1;
+	A(int, 0x87fc) = -1;
+#undef R
+#undef A
+}

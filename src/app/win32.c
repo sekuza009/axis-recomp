@@ -415,3 +415,53 @@ int (app_init)(void *inst, int show)
 }
 #undef GetSystemMetrics
 #undef GetVersion
+
+/* 0x4680d0: the GL window's messages. Created: the cursor hidden, its DC (0xa0e938) given a pixel format (failing, the
+   game quits) and a GL context (0xa0e93c) made current. Painted: begun and ended. Resized: the view resized. Closed:
+   destroyed. Destroyed: the context and DC let go, the display mode restored, the cursor shown, the game quits. The
+   rest go to DefWindowProcA */
+long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
+{
+#define g_dc GAME_VAR(void *, 0xa0e938)
+#define g_context GAME_VAR(void *, 0xa0e93c)
+#define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
+#define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
+	u32 rect[4], paint[0x10];
+	switch (msg) {
+	case 1:   /* WM_CREATE */
+		ShowCursor(0);
+		g_dc = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
+		if (!glWindow_setupPixelFormat(g_dc))
+			PostQuitMessage(0);
+		g_context = IMPORT(0x4a9230, void *, void *)(g_dc);   /* wglCreateContext */
+		IMPORT(0x4a9254, int, void *, void *)(g_dc, g_context);   /* wglMakeCurrent */
+		IMPORT(0x4a9310, int, void *, u32 *)(wnd, rect);   /* GetClientRect */
+		return 0;
+	case 0xf:   /* WM_PAINT */
+		IMPORT(0x4a9308, void *, void *, u32 *)(wnd, paint);   /* BeginPaint */
+		IMPORT(0x4a92dc, int, void *, u32 *)(wnd, paint);   /* EndPaint */
+		return 0;
+	case 0x10:   /* WM_CLOSE */
+		IMPORT(0x4a9344, int, void *)(wnd);   /* DestroyWindow */
+		return 0;
+	case 5:   /* WM_SIZE */
+		glWindow_resize(l & 0xffff, l >> 16);
+		return 0;
+	case 2:   /* WM_DESTROY */
+		if (g_context)
+			IMPORT(0x4a9274, int, void *)(g_context);   /* wglDeleteContext */
+		if (g_dc)
+			IMPORT(0x4a931c, int, void *, void *)(wnd, g_dc);   /* ReleaseDC */
+		g_context = 0;
+		g_dc = 0;
+		glWindow_restoreDisplayMode();
+		ShowCursor(1);
+		PostQuitMessage(0);
+		return 0;
+	}
+	return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, msg, w, l);   /* DefWindowProcA */
+#undef g_dc
+#undef g_context
+#undef ShowCursor
+#undef PostQuitMessage
+}

@@ -336,3 +336,36 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 	BMPRGBFile_ctor(image);   /* (by use its destructor) */
 	return ok;
 }
+
+/* 0x473610 (thiscall on the scene): the sixteen part types' emblems (24 x 16 RGBA each, +0x479c2 in a type's record)
+   that changed (+0x608 1) copied into the emblem atlas (+0x20fcfe4, 128 x 64, four to a row) and marked done; when one
+   of them was new (+0x604 0, now 1) the atlas is uploaded to its GL texture (+0x20fcfe0). Its callers ignore the eax
+   it leaves */
+void THISCALL (tex_upload2)(u8 *scene)
+{
+	int uploaded = 0;
+	for (int p = 0; p < 16; p++) {
+		u8 *emblem = scene + 0x1561b68 + p * 0x47fd2 + 0x479c2;
+		if (GAME_VAR(int, emblem + 0x608) != 1)
+			continue;
+		u32 *atlas = (u32 *)(scene + 0x20fcfe4) + (p / 4) * 16 * 128 + (p % 4) * 24;
+		const u32 *pixel = (const u32 *)emblem;
+		for (int y = 0; y < 16; y++, atlas += 128)
+			for (int x = 0; x < 24; x++)
+				atlas[x] = *pixel++;
+		GAME_VAR(int, emblem + 0x608) = 0;
+		if (!GAME_VAR(int, emblem + 0x604)) {
+			GAME_VAR(int, emblem + 0x604) = 1;
+			uploaded = 1;
+		}
+	}
+	if (uploaded != 1)
+		return;
+	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
+	glBindTexture(0xde1, GAME_VAR(u32, scene + 0x20fcfe0));
+	glTexParameterf_bits(0xde1, 0x2802, 0x46240000);   /* wrap S: GL_CLAMP */
+	glTexParameterf_bits(0xde1, 0x2803, 0x46240000);   /* wrap T */
+	glTexParameterf_bits(0xde1, 0x2800, 0x46180400);   /* mag filter: GL_LINEAR */
+	glTexParameterf_bits(0xde1, 0x2801, 0x46180400);   /* min filter */
+	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, scene + 0x20fcfe4);   /* RGBA, unsigned bytes */
+}

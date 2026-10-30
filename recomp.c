@@ -3314,7 +3314,8 @@ DWORD gfx_initGLState(int width, int height);
 /* 0x456520 (thiscall) tex_upload(name, mode): upload the texture object's RGBA image (with mipmaps if wanted);
    0x473610 (thiscall) tex_upload2: copy each changed player colour block into the shared texture and upload it */
 static THISCALL DWORD tex_upload(char *tex, DWORD name, DWORD mode) { DWORD v[2] = { name, mode }; return run_lifted(lift_456520, (DWORD)tex, 2, v); }
-static THISCALL DWORD tex_upload2(char *scene) { return run_lifted(lift_473610, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_upload2(char *scene);
 /* batch 60 (lifted/grp8.c) */
 #include "lifted/grp8.c"
 /* 0x49d150 (thiscall) match_49d150: add the local player's hits/shots/kills since the last call to the totals
@@ -3666,11 +3667,8 @@ static THISCALL DWORD tex_loadColorMask(char *tm, DWORD i)
    upload count +0xcd138 counted; one with a slot is reloaded the same way when flagged (+0xc018c), else just bound.
    The slot then becomes the newest: moved before the next-reused one, or, if it was that one, the ring advances and
    the new next-reused slot's owner loses it */
-static THISCALL DWORD tex_bind(char *tm, DWORD i)
-{
-	DWORD v[1] = { i };
-	return run_lifted(lift_4566c0, (DWORD)tm, 1, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_bind(char *tm, DWORD i);
 /* batch 82 (lifted/grp28.c) */
 #include "lifted/grp28.c"
 /* 0x4555b0 (thiscall) tex_allocIdBy(name, flags, 6 floats): the texture's index in this manager. The name is
@@ -4065,7 +4063,8 @@ void THISCALL armc_45ddc0(void *stage);
 /* 0x45de20 (thiscall) actor_applySpawnRecord(actor, rec): build the actor's mech for the player's actor slot
    (+0x202e8d4; negative is fatal) from a spawn record (player, position...), then override its stats from the
    record's ints (+0x1c..: scaled to floats) and reset two fields to -NaN */
-static THISCALL DWORD actor_applySpawnRecord(char *sc, DWORD a, DWORD rec) { DWORD v[2] = { a, rec }; return run_lifted(lift_45de20, (DWORD)sc, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_applySpawnRecord(char *sc, DWORD a, DWORD rec);
 /* batch 110 (lifted/grp56.c) */
 #include "lifted/grp56.c"
 /* 0x476890 (thiscall on the scene) hud_476890(i, vv): draw projectile i (0x12c-byte records at +0x20a99c0: frame,
@@ -4099,11 +4098,8 @@ static THISCALL DWORD map_loadGroundInfoFrom(char *sc, DWORD name) { DWORD v[1] 
    context current (0xa0e93c); WM_SIZE resizes the GL view (glWindow_resize); WM_PAINT validates; WM_CLOSE destroys
    the window; WM_DESTROY deletes the context, releases the DC, restores the display mode, shows the cursor and
    quits; anything else goes to DefWindowProcA */
-static LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l)
-{
-	DWORD v[4] = { wnd, msg, w, l };
-	return (LRESULT)run_lifted(lift_4680d0, 0, 4, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l);
 /* 0x468250 glWindow_init(title, w, h, depth, a, fullscreen, parent, b): the game window, once (a second call gives
    a message and 0): the title (0xa0e81c) and the mode kept, the window class registered (failure: message, 0), the
    display mode switched for full screen (glWindow_setDisplayModeBy), the window created (a child of parent, or
@@ -17626,7 +17622,7 @@ static const STest g_stests[] = {
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
-	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),
+	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */
 	T(match_49d150, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 40, 0),

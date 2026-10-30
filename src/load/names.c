@@ -112,3 +112,53 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 		GAME_VAR(int, part + 0x44) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, flags, a, b, c, d, e, f);
 	}
 }
+
+/* 0x4566c0 (thiscall on a texture manager): texture i bound, through the cache of GL textures (0x14-byte slots from
+   +0xcd12c: their index, the texture in them, the GL id, next and previous in a ring, +0xcd134 the oldest). Not in the
+   cache (its slot, +0xc0168 in its 0x68-byte record, negative): the oldest slot taken and the texture loaded into it
+   (tinted when its flags, +0xc016c, have 2; mipmapped unless they have 1; +0xcd138 counts the loads); in it but changed
+   (+0xc018c 1): loaded again; else just bound. The slot then becomes the newest: when it was the oldest the next one is
+   (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
+void THISCALL (tex_bind)(u8 *tm, int i)
+{
+#define AT(type, p, offset) GAME_VAR(type, (u8 *)(p) + (offset))
+#define OLDEST AT(u8 *, tm, 0xcd134)
+	u8 *texture = tm + i * 0x68;
+	u8 *slot;
+	if (AT(int, texture, 0xc0168) < 0) {
+		slot = OLDEST;
+		AT(int, slot, 4) = i;
+		tex_loadColorMask(tm, i);
+		if (AT(u8, texture, 0xc016c) & 2)
+			tex_applyTintMask(tm, i);
+		tex_upload(tm, AT(u32, slot, 8), AT(u8, texture, 0xc016c) & 1 ? 0 : 1);
+		AT(int, tm, 0xcd138)++;
+	} else {
+		slot = AT(u8 *, tm, 0xcd12c) + AT(int, texture, 0xc0168) * 0x14;
+		if (AT(int, texture, 0xc018c) == 1) {
+			tex_loadColorMask(tm, i);
+			if (AT(u8, texture, 0xc016c) & 2)
+				tex_applyTintMask(tm, i);
+			tex_upload(tm, AT(u32, slot, 8), AT(u8, texture, 0xc016c) & 1 ? 0 : 1);
+			AT(int, tm, 0xcd138)++;
+			AT(int, texture, 0xc018c) = 0;
+		} else
+			glBindTexture(0xde1, AT(u32, slot, 8));   /* GL_TEXTURE_2D */
+	}
+	if (slot == OLDEST) {
+		OLDEST = AT(u8 *, slot, 0xc);
+		AT(int, tm + AT(int, OLDEST, 4) * 0x68, 0xc0168) = -1;
+	} else {
+		AT(u8 *, AT(u8 *, slot, 0xc), 0x10) = AT(u8 *, slot, 0x10);
+		AT(u8 *, AT(u8 *, slot, 0x10), 0xc) = AT(u8 *, slot, 0xc);
+		u8 *oldest = OLDEST;
+		AT(u8 *, slot, 0xc) = oldest;
+		AT(u8 *, slot, 0x10) = AT(u8 *, OLDEST, 0x10);
+		AT(u8 *, oldest, 0x10) = slot;
+		AT(u8 *, AT(u8 *, slot, 0x10), 0xc) = slot;
+	}
+	AT(int, slot, 4) = i;
+	AT(int, texture, 0xc0168) = AT(int, slot, 0);
+#undef AT
+#undef OLDEST
+}
