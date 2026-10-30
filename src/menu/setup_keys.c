@@ -562,3 +562,47 @@ void (setup_drawKeyBindingRows)(int key)
 	}
 	setup_drawKeyBindingRow();
 }
+
+/* the mouse-sensitivity slider's part under the cursor acted on: the minus / plus buttons step the value (0x4de1c8)
+   within 0..100 (0x4dde90 which way) and start the 5.0 highlight timer (0x4ddb98); the bar sets it from the cursor x */
+static void slider_press(void)
+{
+#define VALUE GAME_VAR(int, 0x4de1c8)
+	switch (setup_420730(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {
+	case 0:
+		if (VALUE > 0) {
+			GAME_VAR(int, 0x4dde90) = 0;
+			VALUE--;
+			GAME_VAR(u32, 0x4ddb98) = 0x40a00000;   /* 5.0f */
+		}
+		break;
+	case 1:
+		if (VALUE < 100) {
+			GAME_VAR(int, 0x4dde90) = 1;
+			VALUE++;
+			GAME_VAR(u32, 0x4ddb98) = 0x40a00000;
+		}
+		break;
+	case 2:
+		VALUE = 1 - ftol((GAME_VAR(int, 0x4ded68) - GAME_VAR(int, 0x4dde80) - 0x108) * (long double)GAME_VAR(float, 0x4a94f4));
+		break;
+	}
+#undef VALUE
+}
+
+/* 0x4226b0: the slider on the control setup page: a click (0x4ded88), or the button held (0x4ded94) for over a
+   second (its timer 0x4dda44 past 0x4a9424), presses the part under the cursor, the timer starting again. Nothing
+   uses the eax it leaves */
+void (setup_drawControlSlider)(void)
+{
+#define TIMER GAME_VAR(float, 0x4dda44)
+	if (GAME_VAR(int, 0x4ded88)) {
+		TIMER = 0;
+		slider_press();
+	}
+	if (GAME_VAR(int, 0x4ded94) && TIMER > GAME_VAR(float, 0x4a9424)) {
+		TIMER = 0;
+		slider_press();
+	}
+#undef TIMER
+}

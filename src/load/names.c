@@ -162,3 +162,21 @@ void THISCALL (tex_bind)(u8 *tm, int i)
 #undef AT
 #undef OLDEST
 }
+
+/* 0x4569d0 (thiscall on the texture sets): the six managers kept (+4 .. +0x18), each (when given) checked for its
+   size: 64 x 64, 128 x 64, 256 x 64, 128 x 128, 256 x 128, 256 x 256 (its +0xc0118 / +0xc011c), a fatal message
+   with the size found otherwise. Its caller ignores the eax it leaves */
+void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 *f)
+{
+	static const u32 sizes[6][3] = { { 64, 64, 0x4b4278 }, { 128, 64, 0x4b423c }, { 256, 64, 0x4b4200 },
+	                                 { 128, 128, 0x4b41c4 }, { 256, 128, 0x4b4188 }, { 256, 256, 0x4b414c } };
+	u8 *managers[6] = { a, b, c, d, e, f };
+	FUN_004569b0(sets);
+	for (int k = 0; k < 6; k++) {
+		u8 *m = managers[k];
+		if (m && (GAME_VAR(u32, m + 0xc0118) != sizes[k][0] || GAME_VAR(u32, m + 0xc011c) != sizes[k][1]))
+			sys_fatalErrorN((char *)0xa0e000, (const char *)sizes[k][2], GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
+	}
+	for (int k = 0; k < 6; k++)
+		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
+}

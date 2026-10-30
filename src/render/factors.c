@@ -79,3 +79,48 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 #undef NEXT
 #undef SLOT
 }
+
+/* 0x484050 (thiscall on a view volume): sized for its six tables (a x 0x1c, b x 0x40, c x 4, d x 0x68, e x 0x64,
+   f x 0x24 bytes; the counts at +0x9030, +0x903c, +0x9048, +0x9054, +0x9068, +0x9084) in one block (+8, its size +4;
+   allocated and owned, +0xc 1, without memory given, else the memory given, the caller's size checked: fatal
+   messages), the tables' starts laid out (+0x9034 ..; d's and e's each in parts), then reset (this_set_4841d0). Its
+   caller ignores the eax it leaves */
+void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f, void *mem, int size)
+{
+#define FIELD(type, offset) GAME_VAR(type, view + (offset))
+	gfx_initVertexArrayExt(view);
+	FIELD(int, 0x9048) = c;
+	FIELD(int, 0x9030) = a;
+	FIELD(int, 0x903c) = b;
+	FIELD(int, 0x9054) = d;
+	FIELD(int, 0x9068) = e;
+	FIELD(int, 0x9084) = f;
+	int need = FIELD(int, 4) = a * 0x1c + b * 0x40 + c * 4 + d * 0x68 + e * 0x64 + f * 0x24;
+	if (!mem) {
+		FIELD(void *, 8) = operator_new(need);
+		if (!FIELD(void *, 8))
+			sys_fatalError((char *)0xae2ef0, (const char *)0x4c4cec, FIELD(int, 4));
+		FIELD(int, 0xc) = 1;
+	} else {
+		if (size < need)
+			sys_fatalErrorN((char *)0xae2ef0, (const char *)0x4c4cbc, need, size);
+		FIELD(void *, 8) = mem;
+	}
+	u8 *block = FIELD(u8 *, 8);
+	FIELD(u8 *, 0x9034) = block;
+	int at = FIELD(int, 0x9030) * 0x1c;
+	FIELD(u8 *, 0x9040) = block + at;
+	at += FIELD(int, 0x903c) * 0x40;
+	FIELD(u8 *, 0x904c) = block + at;
+	at += FIELD(int, 0x9048) * 4;
+	FIELD(u8 *, 0x9058) = block + at;
+	FIELD(u8 *, 0x9060) = block + at + FIELD(int, 0x9054) * 0x60;
+	at += FIELD(int, 0x9054) * 0x68;
+	FIELD(u8 *, 0x906c) = block + at;
+	int count = FIELD(int, 0x9068);
+	FIELD(u8 *, 0x9074) = block + at + count * 0x5c;
+	FIELD(u8 *, 0x907c) = block + at + count * 0x64;
+	FIELD(u8 *, 0x9088) = block + at + count * 0x6c;
+	this_set_4841d0(view);
+#undef FIELD
+}

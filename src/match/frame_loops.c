@@ -199,3 +199,21 @@ void THISCALL (match_49d150)(u8 *s)
 #undef NOW
 #undef LAST
 }
+
+/* 0x48ec20 (thiscall on the scene): the effects' shapes looked up in the shape cache (+0x19e188c): three sets of eight
+   numbered ones (+0x20f2dac, +0x20f2dcc, +0x20f2dec; named by 0x4c8170, 0x4c815c, 0x4c8144) and eight single ones
+   (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
+void THISCALL (effect_initTextures)(u8 *s)
+{
+	static const u32 sets[3][2] = { { 0x4c8170, 0x20f2dac }, { 0x4c815c, 0x20f2dcc }, { 0x4c8144, 0x20f2dec } };
+	static const u32 singles[8] = { 0x4c8130, 0x4c811c, 0x4c8108, 0x4c80f4, 0x4c80e0, 0x4c80c8, 0x4c80b0, 0x4c8098 };
+	FIELD(int, s, 0x20f2f3c) = 0;
+	char name[0x100];
+	for (int set = 0; set < 3; set++)
+		for (int k = 0; k < 8; k++) {
+			sprintf(name, (const char *)sets[set][0], k);
+			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName(s + 0x19e188c, name, 1);
+		}
+	for (int k = 0; k < 8; k++)
+		FIELD(u32, s, 0x20f2e74 + k * 4) = shape_getByName(s + 0x19e188c, (const char *)singles[k], 1);
+}

@@ -2201,7 +2201,6 @@ static long long crt_ftol64(long double x)
 	return r;
 }
 #include "lifted/space.c"    /* tools/lift.py: space_walkNodes_482aa0 + FUN_0046cbc0 (calls the lifted space_collideUnit) */
-#include "lifted/setup.c"    /* tools/lift.py: setup_drawControlSlider + setup_420730 */
 static DWORD run_lifted(void (*f)(X86 *), DWORD ecx, int nargs, const DWORD *args)
 {
 	LSTK_BEGIN(mm, nargs, args)
@@ -2228,10 +2227,8 @@ static THISCALL int space_walkNodes_482aa0(void *self, DWORD r, DWORD pos, DWORD
    (__ftol). Lifted (tools/lift.py). EAX is not compared: the original leaves the FPU status word of its last compare
    there, including sticky exception flags the emulation does not model, and nothing uses it (setup_drawControlTab
    and setup_drawTab pass it on by tail calls, menu_frame ignores it) */
-static int __cdecl setup_drawControlSlider(void)
-{
-	return (int)run_lifted(lift_4226b0, 0, 0, 0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawControlSlider(void);
 /* batch 41 */
 /* 0x46c100 FUN_0046c100(a): a wrapped into [0, K) with K = the float at 0x4a94c8 (q = __ftol(a * the float at
    0x4aa284), a - q * K, plus K when that is negative or NaN); the result is returned unrounded in ST0 */
@@ -3353,18 +3350,12 @@ THISCALL void space_setBy(char *sp, DWORD mn, DWORD mx, DWORD nx, DWORD ny, DWOR
 THISCALL void load_471010(char *scene);
 /* 0x484050 (thiscall) factor_initBy(items, matrices, a, b, c, d, mem, memSize): the view volume's pools (render
    items, matrices and four more lists), memory from mem or allocated, laid out one after the other */
-static THISCALL DWORD factor_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h)
-{
-	DWORD v[8] = { a, b, c, d, e, f, g, h };
-	return run_lifted(lift_484050, (DWORD)vv, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void factor_initBy(char *vv, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h);
 /* 0x4569d0 (thiscall) texSmall_initBy(t64, t128x64, t256x64, t128, t256x128, t256): keep six texture images,
    each checked for its size (a wrong one is fatal) */
-static THISCALL DWORD texSmall_initBy(char *self, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[6] = { a, b, c, d, e, f };
-	return run_lifted(lift_4569d0, (DWORD)self, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void texSmall_initBy(char *self, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x46aa10 (thiscall) skel_loadFrom_46aa10(f, mem, memSize): an animation: 0x24-byte header into the object
    (size +4, count +0x10), the memory from mem or allocated, then count 0x70-byte tracks, each followed by its
    position keys (0x20 bytes) and rotation keys (0x28 bytes); the track's key pointers are linked in */
@@ -3732,7 +3723,8 @@ THISCALL DWORD object_addObjectBy(char *scene, DWORD type);
 /* 0x48ec20 (thiscall) effect_initTextures(): the effect shapes from the shape cache at +0x19e188c, each bound:
    "Effect\PlasmaThrust-0..7", "IonThrust-0..7", "GravityThrust-0..7" (+0x20f2dac, +0x20f2dcc, +0x20f2dec) and
    eight shots / muzzle flashes (+0x20f2e74..+0x20f2e90); clears +0x20f2f3c first */
-static THISCALL DWORD effect_initTextures(char *self) { return run_lifted(lift_48ec20, (DWORD)self, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void effect_initTextures(char *self);
 /* batch 87 (lifted/grp33.c) */
 #include "lifted/grp33.c"
 /* 0x48b710 (thiscall) map_loadObjectInfoFrom(name, mode): a map's objects. Releases the shape and skeleton caches
@@ -9186,7 +9178,7 @@ static void slider_setup(void)
 	G32(0x4dde80) = irnd(-50, 50);
 	fill((void *)0x4dde90, 4); fill((void *)0x4ddb98, 4);
 }
-ST(setup_drawControlSlider, slider_setup();, CD(int, 0x4226b0, void)(), setup_drawControlSlider())
+ST(setup_drawControlSlider, slider_setup();, (CD(int, 0x4226b0, void)(), 0), (setup_drawControlSlider(), 0))
 /* batch 41 */
 static void wrap_setup(void)
 {
@@ -17627,8 +17619,8 @@ static const STest g_stests[] = {
 	T(match_49d150, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 40, 0),
 	/* batch 61 */
-	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
-	T(texSmall_initBy, 0, 40, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
+	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
+	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 40, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
