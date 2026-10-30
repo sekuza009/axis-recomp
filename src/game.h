@@ -119,6 +119,13 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define skel_ase_47d260(out, q) GAME_THISCALL(0x47d260, void, float *, const float *)(out, q)
 #define factor_addFactorBy(pool, record) GAME_THISCALL(0x483dd0, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
 #define light_computeLayerLightBy(scene, layer, verts, a, b, c, rows, cols) GAME_THISCALL(0x472400, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, verts, a, b, c, rows, cols)
+#define bullet_update(scene, i, dt) GAME_THISCALL(0x47a2d0, void, void *, int, int)(scene, i, dt)
+#define match_476410(scene, i, dt) GAME_THISCALL(0x476410, void, void *, int, int)(scene, i, dt)   /* one effect updated */
+#define actor_render(scene, i, dt) GAME_THISCALL(0x490440, void, void *, int, int)(scene, i, dt)
+#define tex_4554c0(manager, name) GAME_THISCALL(0x4554c0, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
+#define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, long, int)(f, offset, origin)
+#define FUN_0047d5a0(d, s) GAME_CDECL(0x47d5a0, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
+#define Mat4_multiply(out, a, b) GAME_CDECL(0x47d380, void, float *, const float *, const float *)(out, a, b)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

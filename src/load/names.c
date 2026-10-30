@@ -64,3 +64,16 @@ int THISCALL (tex_4554c0)(u8 *self, const u8 *name)
 	}
 	return -1;
 }
+
+/* 0x455550 (thiscall on a texture manager): the item named, its file (+0x110) moved to where the item starts (its
+   0x44-byte record at +0x10c, +0x40); returns the file, or 0 after a fatal message when there is no such item */
+void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
+{
+	int i = tex_4554c0(manager, name);
+	if (i < 0) {
+		sys_fatalError((char *)0xa0dff8, (const char *)0x4b3f80, (int)name);
+		return 0;
+	}
+	crt_fseek(GAME_VAR(void *, manager + 0x110), GAME_VAR(long, GAME_VAR(u8 *, manager + 0x10c) + i * 0x44 + 0x40), 0);
+	return GAME_VAR(void *, manager + 0x110);
+}

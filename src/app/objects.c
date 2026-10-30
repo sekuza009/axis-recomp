@@ -42,3 +42,30 @@ void STDCALL (load_401290)(u8 *first, int size, int count, void (THISCALL *const
 	for (int i = 0; i < count; i++, first += size)
 		construct(first);
 }
+
+/* 0x460c40 (named Console_ctor; by use the Console's destructor): its vtable back (0x4aa238), then its members
+   destroyed: the stage (+0x1f36c8), the view volume (+0x74) and the time sync (+0xc). The caller ignores the eax it
+   leaves */
+void THISCALL (Console_ctor)(u8 *self)
+{
+	GAME_VAR(u32, self) = 0x4aa238;
+	Stage_dtor((Stage *)(self + 0x1f36c8));
+	ViewVolume_dtor(self + 0x74);
+	TimeSync_dtor(self + 0xc);
+}
+
+/* 0x4841f0 (thiscall on a view volume): its projection (+0x90b0) and view (+0x90f0) matrices copied from those
+   given, or each read from OpenGL when none is given, and their product kept (+0x9130) */
+void THISCALL (ViewVolume_captureMatrices)(u8 *view, const float *projection, const float *modelview)
+{
+	float *p = (float *)(view + 0x90b0), *m = (float *)(view + 0x90f0);
+	if (projection)
+		FUN_0047d5a0(p, projection);
+	else
+		glGetFloatv(0xba7, p);   /* GL_PROJECTION_MATRIX */
+	if (modelview)
+		FUN_0047d5a0(m, modelview);
+	else
+		glGetFloatv(0xba6, m);   /* GL_MODELVIEW_MATRIX */
+	Mat4_multiply((float *)(view + 0x9130), p, m);
+}

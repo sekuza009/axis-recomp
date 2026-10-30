@@ -3090,7 +3090,8 @@ int input_asyncKeyPressed(int key);
 void hud_46bd00(int x0, int y0, int x1, int y1);
 /* 0x4841f0 (thiscall) ViewVolume_captureMatrices(proj, view): the view-projection matrix (the given matrices or the
    current GL ones) */
-static THISCALL DWORD ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD view) { DWORD v[2] = { proj, view }; return run_lifted(lift_4841f0, (DWORD)vv, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void ViewVolume_captureMatrices(char *vv, DWORD proj, DWORD view);
 /* 0x483fd0 (thiscall) gfx_initVertexArrayExt / 0x483fb0 ViewVolume_dtor / 0x463430 ViewVolume_deletingDtor(flags):
    free the vertex buffer, look up the GL_EXT_vertex_array entry points; the destructors */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3147,7 +3148,8 @@ void sys_fatalError(const void *object, const char *format, ...);
 void *shape_findDatEntry(const char *name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *skelDat_getItemFileBy(const char *name);
-static THISCALL DWORD tex_getItemFileBy(char *tm, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_455550, (DWORD)tm, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD tex_getItemFileBy(char *tm, DWORD name);
 /* space pools (thiscall on the space object): take the first free plane / node / unit / block off its free list,
    count it and initialise it (the block also gets its box); an empty list is fatal */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4596,7 +4598,8 @@ DWORD intro_430bf0(void);
 /* 0x460c40 (thiscall) Console_ctor(): misnamed: the console's destructor: an SEH frame, the vtable 0x4aa238, then
    the members in reverse: the stage at +0x1f36c8 (Stage_dtor), the view volume at +0x74 (ViewVolume_dtor), the
    time sync at +0xc (TimeSync_dtor) */
-static THISCALL DWORD Console_ctor(char *self) { return run_lifted(lift_460c40, (DWORD)self, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void Console_ctor(char *self);
 /* 0x460c20 (thiscall) Console_deletingDtor(flags): the destructor, then delete when flags bit 0; returns this */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Console_deletingDtor(void *console, int flags);
@@ -5549,8 +5552,10 @@ static THISCALL DWORD bullet_update(char *s, DWORD slot, DWORD dt) { DWORD v[2] 
 /* 0x47d000 bullet_updateAll(dt) / 0x479a90 match_479a90(dt) (thiscall on the scene, ret 4): unless the game is paused
    (+0x2149308 with +0x214930c == 1), every bullet / particle slot in use up to the highest one (bullet_update /
    match_476410) */
-static THISCALL DWORD bullet_updateAll(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_47d000, (DWORD)s, 1, v); }
-static THISCALL DWORD match_479a90(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_479a90, (DWORD)s, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void bullet_updateAll(char *s, DWORD dt);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_479a90(char *s, DWORD dt);
 /* batch 192 (lifted/grp148.c): item pickups */
 #include "lifted/grp148.c"
 /* 0x48ed90 item_update(dt) (thiscall on the scene, ret 4): the actors' pickup flags cleared; every item (0x28-byte
@@ -5564,7 +5569,8 @@ static THISCALL DWORD item_update(char *s, DWORD dt) { DWORD v[1] = { dt }; retu
 /* 0x490d40 match_490d40(dt) (thiscall on the scene, ret 4): unless the game is paused (+0x2149308 with +0x214930c ==
    1), every object in use (0x2cc-byte records, flag +0x131ae48, count +0x13c9b24) gets its frame (0x490440, its
    index and dt) */
-static THISCALL DWORD match_490d40(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_490d40, (DWORD)s, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_490d40(char *s, DWORD dt);
 /* 0x496b80 replay_drawFollowedName() (thiscall on the scene): white text at (0x192, 0x280), the followed player's
    name (+0x2340c64, the 0x888-byte player records' names at +0x1eccb08) or the fixed text when there is none */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -17611,14 +17617,14 @@ static const STest g_stests[] = {
 	T(text_quad32, 0, 40, 0), T(text_quad5, 0, 40, 0), T(hud_427ce0, 0, 40, 0), T(hud_427ee0, 0, 40, 0),
 	T(profile_4283e0, 0, 40, 0), T(menu_drawTexQuad_4284d0, 0, 40, 0), T(menu_drawTexQuad_4282f0, 0, 40, 0), T(menu_drawTexQuad_4285c0, 0, 40, 0),
 	T(menu_drawTexQuad_4286b0, 0, 40, 0), T(menu_drawTexQuad_4287a0, 0, 40, 0), T(sys_errorMessageNoName, 0, 40, 0), T(sys_errorMessage, 0, 40, 0),
-	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 40, 0), T(gfx_initVertexArrayExt, 0, 40, 0),
+	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 400, 0), T(gfx_initVertexArrayExt, 0, 40, 0),
 	T(ViewVolume_dtor, 0, 40, 0), T(ViewVolume_deletingDtor, 0, 40, 0), T(hud_472900, 0, 40, 0), T(load_401290, 0, 40, 0),
 	/* batch 57 */
 	T(shape_findDatEntry, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_deleteDataFiles, 0, 40, 0), T(net_452af0, 0, 40, 0),
 	T(net_452c80, 0, 40, 0), T(math_makeMathFunctionTableFile, 0, 40, 0), T(math_initMathFunction, 0, 40, 0), T(glWindow_4684c0, 0, 40, 0),
 	T(reg_readServerSettings, 0, 40, 0), T(text_ascii5Pass, 0, 40, 0), T(text_ascii8Pass, 0, 40, 0), T(text_ascii16Pass, 0, 40, 0),
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(hud_401ce0, 0, 40, 0),
-	T(hud_401e70, 0, 40, 0), T(tex_getItemFileBy, 1, 40, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
+	T(hud_401e70, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 40, 0), T(map_loadWayPointInfoFrom, 0, 40, 0), T(map_loadTriggerInfoFrom, 0, 40, 0),
 	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 400, 0), T(load_483ec0, 0, 400, 0), T(match_483f00, 0, 400, 0),
 	T(match_472310, 0, 40, 0),
