@@ -202,7 +202,7 @@ static void later_round(Scene *s)
 
 /* 0x49df10 (thiscall on the scene): the round started, the first (frameFlag clear) or a later one. Its caller
    ignores the eax it leaves */
-void (game_processGameModeInit)(Scene *s)
+void THISCALL (game_processGameModeInit)(Scene *s)
 {
 	if (s->frameFlag)
 		later_round(s);

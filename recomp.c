@@ -5479,7 +5479,7 @@ void menuState700_armCenter(void);
    music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
 #include "lifted/grp140.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void game_processGameModeInit(char *scene);
+THISCALL void game_processGameModeInit(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */

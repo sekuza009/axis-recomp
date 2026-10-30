@@ -33,4 +33,12 @@ for n in sorted(names):
     for f, t in src.items():
         if re.search(r'(?<![\w(])%s\(' % n, t):
             print('DIRECT CALL (no game.h name): %s in %s' % (n, f)); bad += 1
+# 4. a function whose original the tests call as thiscall (TC(...)) must be defined THISCALL in src: the tests call
+#    the rebuild as recomp.c declares it, so a cdecl rebuild of a thiscall original still passes them, and the game
+#    (which passes this in ecx) gives it garbage (game_processGameModeInit crashed at a match's start, 2026-10-30)
+thiscall = set(re.findall(r'(?m)^ST\((\w+),[^\n]*?\bTC\(', s))
+for t in src.values():
+    for m in re.finditer(r'^\w[\w \*]*?\((\w+)\)\(', t, re.M):
+        if m.group(1) in thiscall and 'THISCALL' not in m.group(0):
+            print('NOT THISCALL (its original is): %s' % m.group(1)); bad += 1
 print('%d functions in src, %d problems' % (len(names), bad))
