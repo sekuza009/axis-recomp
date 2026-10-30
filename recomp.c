@@ -3167,7 +3167,8 @@ THISCALL void map_loadTriggerInfoFrom(char *scene, DWORD f);
 /* 0x483dd0 (thiscall) factor_addFactorBy(rec): put a 0x2c-byte record into the factor pool's next free slot (at
    most 1024) and find the next free one; 0x483e90 load_483e90(a) / 0x483ec0 load_483ec0(a, pos) /
    0x483f00 match_483f00(a, value, pos): build such a record and add it */
-static THISCALL DWORD factor_addFactorBy(char *pool, DWORD rec) { DWORD v[1] = { rec }; return run_lifted(lift_483dd0, (DWORD)pool, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void factor_addFactorBy(char *pool, DWORD rec);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_483e90(char *pool, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3278,7 +3279,8 @@ int glWindow_setupPixelFormat(void *dc);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int glWindow_resize(int width, int height);
 /* 0x46cd00 (thiscall) image_initBy(path): open a 24-bit BMP, read and check its headers, keep width/height */
-static THISCALL DWORD image_initBy(char *img, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_46cd00, (DWORD)img, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD image_initBy(char *img, DWORD path);
 /* 0x466c00 shapeDat_initBy / 0x46afe0 skelDat_initBy: open Data\Shape.dat / Data\Skeleton.dat once and read its
    index (count, 0x44-byte entries) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3738,11 +3740,8 @@ static THISCALL DWORD object_initObjectBy(char *scene, DWORD i, DWORD type)
    past the highest used one, +0x13c9b24, that one grows and its slot is cleared) with object_initObjectBy, then move
    the free slot on to the next unused object (+0x131ae48 == 0) up to the highest. Returns the slot; with 1000 in
    use, a message (sys_errorMessage) and -1 */
-static THISCALL DWORD object_addObjectBy(char *scene, DWORD type)
-{
-	DWORD v[1] = { type };
-	return run_lifted(lift_490c50, (DWORD)scene, 1, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD object_addObjectBy(char *scene, DWORD type);
 /* 0x48ec20 (thiscall) effect_initTextures(): the effect shapes from the shape cache at +0x19e188c, each bound:
    "Effect\PlasmaThrust-0..7", "IonThrust-0..7", "GravityThrust-0..7" (+0x20f2dac, +0x20f2dcc, +0x20f2dec) and
    eight shots / muzzle flashes (+0x20f2e74..+0x20f2e90); clears +0x20f2f3c first */
@@ -5514,11 +5513,8 @@ static THISCALL DWORD particle_init(char *ps, DWORD slot, DWORD desc) { DWORD v[
    the next free +0x20a99b8, the highest used +0x20a99b4, a serial +0x20a99bc.
    0x47ce50 bullet_spawn(a1, a2, a3, shot, a5) (ret 0x14): -1 for a shot without a weapon (+4 < 0) or with all slots
    in use, else the first free slot set up by bullet_init; returns the slot */
-static THISCALL DWORD bullet_spawn(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5)
-{
-	DWORD v[5] = { a1, a2, a3, a4, a5 };
-	return run_lifted(lift_47ce50, (DWORD)s, 5, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD bullet_spawn(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5);
 /* 0x479b40 bullet_init(slot, id, owner, a4, shot, a6) (ret 0x18): the slot from the shot (weapon +4: its record at
    +0x14d1ab4, origin and direction), the owner actor's muzzle and team, the id (or the next serial), its matrix,
    the firing sound and muzzle particles (stubbed) */
@@ -17625,7 +17621,7 @@ static const STest g_stests[] = {
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(hud_401ce0, 0, 40, 0),
 	T(hud_401e70, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
 	T(space_getNextFreeUnitPtr, 1, 40, 0), T(space_getNextFreeBlockPtrBy, 1, 400, 0), T(map_loadWayPointInfoFrom, 0, 400, 0), T(map_loadTriggerInfoFrom, 0, 400, 0),
-	T(factor_addFactorBy, 0, 40, 0), T(load_483e90, 0, 400, 0), T(load_483ec0, 0, 400, 0), T(match_483f00, 0, 400, 0),
+	T(factor_addFactorBy, 0, 400, 0), T(load_483e90, 0, 400, 0), T(load_483ec0, 0, 400, 0), T(match_483f00, 0, 400, 0),
 	T(match_472310, 0, 40, 0),
 	/* batch 58 */
 	T(net_send, 0, 400, 0), T(room_434d00, 1, 40, 0), T(room_4334c0, 0, 40, 0), T(room_434b90, 1, 40, 0),
@@ -17634,7 +17630,7 @@ static const STest g_stests[] = {
 	/* batch 59 */
 	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_43df00, 0, 40, 0), T(menu_428890, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
-	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 40, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
+	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),

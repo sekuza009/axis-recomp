@@ -284,3 +284,28 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	GAME_THISCALL(0x483d50, void, void *)(self + 0x9ccffc);
 	return GAME_THISCALL(0x481390, u32, void *)(self + 0xa10);
 }
+
+/* 0x46cd00 (thiscall on an image): a 24-bit BMP opened (the last one closed first): its file header (14 bytes, +8)
+   and info header (0x28 bytes, +0x16) read, each missing a fatal message, and anything but 24 bits uncompressed one
+   too; its width and height kept (+0x3e, +0x42). Returns the file, or 0 when it can't be opened */
+void *THISCALL (image_initBy)(u8 *image, const char *path)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define fatal(text) GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)(text))
+	if (GAME_VAR(void *, image + 4))
+		fclose(GAME_VAR(void *, image + 4));
+	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		return 0;
+	if (crt_fread(image + 8, 0xe, 1, f) < 1)
+		fatal(0x4c5948);
+	if (crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1)
+		fatal(0x4c592c);
+	if (GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
+		fatal(0x4c5908);
+	GAME_VAR(u32, image + 0x3e) = GAME_VAR(u32, image + 0x1a);
+	GAME_VAR(u32, image + 0x42) = GAME_VAR(u32, image + 0x1e);
+	return GAME_VAR(void *, image + 4);
+#undef crt_fread
+#undef fatal
+}

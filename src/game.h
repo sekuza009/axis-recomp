@@ -137,6 +137,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define actor_setPartColor(scene, p, part, a, b, c, d, e, f) GAME_THISCALL(0x474b50, u32, void *, int, int, float, float, float, float, float, float)(scene, p, part, a, b, c, d, e, f)
 #define actor_processFrame(scene, i, dt) GAME_THISCALL(0x4580b0, void, void *, int, float)(scene, i, dt)
 #define script_processTriggers(scene) GAME_THISCALL(0x483640, void, void *)(scene)
+#define bullet_init(scene, slot, a1, a2, a3, a4, a5) GAME_THISCALL(0x479b40, void, void *, int, u32, u32, u32, u32, u32)(scene, slot, a1, a2, a3, a4, a5)
+#define object_initObjectBy(scene, slot, type) GAME_THISCALL(0x48fee0, void, void *, int, u32)(scene, slot, type)
+#define sys_errorMessage(out, format, a, b) GAME_CDECL(0x46c5f0, void, char *, const char *, int, int)(out, format, a, b)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

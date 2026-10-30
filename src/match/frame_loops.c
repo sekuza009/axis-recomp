@@ -81,3 +81,55 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 		FIELD(float, s, 0x20fcd44) = (float)(t - whole);
 	}
 }
+
+/* 0x47ce50 (thiscall on the scene): a bullet fired (a4 its weapon: none with a4 +4 negative) into the next free slot
+   (+0x20a99b8; at most 399; a slot added when that is the count, +0x20a99b4), the next free one after it found, then
+   the bullet set up (bullet_init). Returns its slot, or -1 */
+int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
+{
+#define COUNT FIELD(int, s, 0x20a99b4)
+#define NEXT FIELD(int, s, 0x20a99b8)
+	if (GAME_VAR(int, a4 + 4) < 0 || NEXT >= 400)
+		return -1;
+	if (NEXT == COUNT) {
+		COUNT++;
+		FIELD(int, s, 0x202ef38 + COUNT * 0x4e8) = 0;
+	}
+	int slot = NEXT;
+	for (int k = slot + 1; k <= COUNT; k++)
+		if (FIELD(int, s, 0x202ef38 + k * 0x4e8) == 0) {
+			NEXT = k;
+			break;
+		}
+	bullet_init(s, slot, a1, a2, a3, (u32)a4, a5);
+	return slot;
+#undef COUNT
+#undef NEXT
+}
+
+/* 0x490c50: an object added into the next free slot (+0x13c9b28; at most 999, else a message and -1; a slot added
+   when that is the count, +0x13c9b24), set up (object_initObjectBy), then the next free one after it found. Returns
+   its slot */
+int THISCALL (object_addObjectBy)(u8 *s, u32 type)
+{
+#define COUNT FIELD(int, s, 0x13c9b24)
+#define NEXT FIELD(int, s, 0x13c9b28)
+	if (NEXT >= 1000) {
+		sys_errorMessage((char *)0xae2eb8, (const char *)0x4c8398, NEXT + 1, 1000);
+		return -1;
+	}
+	if (NEXT == COUNT) {
+		COUNT++;
+		FIELD(int, s, 0x131ae48 + COUNT * 0x2cc) = 0;
+	}
+	int slot = NEXT;
+	object_initObjectBy(s, slot, type);
+	for (int k = NEXT + 1; k <= COUNT; k++)
+		if (FIELD(int, s, 0x131ae48 + k * 0x2cc) == 0) {
+			NEXT = k;
+			break;
+		}
+	return slot;
+#undef COUNT
+#undef NEXT
+}
