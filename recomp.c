@@ -5438,7 +5438,8 @@ static THISCALL DWORD match_476410(char *ps, DWORD slot, DWORD a2) { DWORD v[2] 
    its animation time advanced by dt and its speed, by mode (+0x2a0: once, loop, back and forth) wrapped or
    stopped, the pose applied (skel_applyPose), its matrices built (Mat4_multiply / Mat4_invert, real), the unit
    enabled in the space, effects spawned; callees stubbed */
-static THISCALL DWORD actor_render(char *s, DWORD i, DWORD dt) { DWORD v[2] = { i, dt }; return run_lifted(lift_490440, (DWORD)s, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_render(char *s, DWORD i, DWORD dt);
 /* batch 190 (lifted/grp146.c): a bullet's frame */
 #include "lifted/grp146.c"
 /* 0x47a2d0 bullet_update(slot, dt) (thiscall on the scene, ret 8): bullet slot's flight (0x4e8 bytes from
@@ -16094,6 +16095,9 @@ static void objframe_setup(void)
 	fill(BUF + 0x400, 0x40); S32(r, 0x280) = (int)(BUF + 0x400); S32(r, 0x284) = (int)(BUF + 0x500);
 	g_a[0] = i; GF(&g_a[1]) = (float)irnd(1, 100) / 1000.0f;
 	callee_stubs(g_stubObjFrame, (DWORD)irnd(0, 1));
+	G32(0x83a9c8) = irnd(0, 1); S32(BUF, 0x202e8c8) = irnd(0, 4);   /* flares on or off; actors near the object or not */
+	for (int k = 0; k < 4; k++) { char *a = BUF + 0x1cd93a8 + k * 0x8888; S32(a, 0x14c) = irnd(0, 2) ? 1 : 0;
+		for (int c = 0; c < 3; c++) GF(a + 0x154 + c * 4) = GF(r + 0x58 + c * 4) + (float)irnd(-300, 300); }
 }
 ST(actor_render, objframe_setup();, (TC(void, 0x490440, char *, int, int)(BUF, g_a[0], g_a[1]), 0),
    (actor_render(BUF, (DWORD)g_a[0], (DWORD)g_a[1]), 0))
