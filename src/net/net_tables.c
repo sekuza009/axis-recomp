@@ -1720,3 +1720,426 @@ void THISCALL (net_sendGamePacket)(u8 *s, int p)
 	*flag = 0;
 	send_packet(s, packet);
 }
+
+#define G(type, offset) GAME_VAR(type, g + (offset))
+#define K(address) ((const float *)(address))
+#define STAGE (g + 0x1f36c8)
+#define ACTOR(i) (g + 0x1ecca70 + (i) * 0x8888)   /* the stage's actors, from the game object */
+#define PLAYER(i) (g + 0x1755230 + (i) * 0x47fd2)
+#define CALL1(addr, a) GAME_THISCALL(addr, void, void *, int)(STAGE, a)
+
+/* thiscall fn(self, a1 .. a8), returning what the callee leaves in ecx (the original pushes registers whose upper
+   bytes are the callee's leftovers) */
+__attribute__((naked)) static u32 thiscall8_ecx(u32 fn, void *self, u32 a1, u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8)
+{
+	__asm__("push %ebx\n\t"
+	        "mov 8(%esp), %ebx\n\t"
+	        "mov 12(%esp), %ecx\n\t"
+	        "pushl 44(%esp)\n\tpushl 44(%esp)\n\tpushl 44(%esp)\n\tpushl 44(%esp)\n\t"
+	        "pushl 44(%esp)\n\tpushl 44(%esp)\n\tpushl 44(%esp)\n\tpushl 44(%esp)\n\t"
+	        "call *%ebx\n\t"
+	        "mov %ecx, %eax\n\t"
+	        "pop %ebx\n\t"
+	        "ret");
+}
+
+/* x 10 (a packed position) */
+static float tens(int v) { return f32(fmul_m((long double)v, K(0x4a9418))); }
+
+/* a table entry's checksum against the packet's: word w into a table of 'per' columns (count, stride) */
+static int table_ok(u8 *g, u32 base, u32 per, u32 count, int stride, u16 w, u32 sum)
+{
+	int n = G(int, per);
+	int row = (int)w / n % G(int, count);
+	return G(u32, base + (row * stride + (int)w % n) * 4) == sum;
+}
+
+/* a player's name copied into its actor (+0x98) and the slot's own index noted (+0x10c) */
+static void actor_name(u8 *g, int i, const char *name)
+{
+	char *to = (char *)ACTOR(i) + 0x98;
+	if (name)
+		strcpy(to, name);
+	else
+		to[0] = 0;
+	GAME_VAR(int, ACTOR(i) + 0x10c) = i;
+}
+
+/* team change (kinds 10 / 11): the team, team colours when team colours are on, the name, the notice; a player
+   leaving the teams (negative) who is alive is taken out and gets a death */
+static void team_change(u8 *g, int i, const char *pkt, u32 notice)
+{
+	GAME_THISCALL(0x473a80, void, void *, int, int)(STAGE, i, pkt[3]);   /* player_setTeam */
+	if (G(int, 0x22e7184) == 1) {
+		int t = GAME_THISCALL(0x463740, int, void *, int)(g, pkt[3]);
+		for (int k = 0; k < 5; k++)
+			GAME_THISCALL(0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, 0x4a97fc + t * 4),
+			                                                                             GAME_VAR(u32, 0x4a9810 + t * 4),
+			                                                                             GAME_VAR(u32, 0x4a9824 + t * 4), 0,
+			                                                                             0xbf800000, 0x3f7fbe77);   /* actor_setPartColor */
+	}
+	GAME_THISCALL(0x473940, void, void *, int, const char *)(STAGE, i, pkt + 4);   /* player_setName */
+	actor_name(g, i, pkt + 4);
+	GAME_THISCALL(notice, void, void *, int, int)(g, i, pkt[3]);
+	if (pkt[3] >= 0 || GAME_VAR(int, ACTOR(i) + 0xd8) != 1)
+		return;
+	CALL1(0x45dca0, i);   /* actor_deactivate */
+	GAME_VAR(int, ACTOR(i) + 0xe8)++;
+}
+
+/* the end of a match's limit (kinds 4 / 5, state 0 frags or 1 time): once, its notice, and the result for team
+   play (the red team's score +0x2221fb8 against the blue +0x2221fbc: 0 red ahead, 1 blue, -1 level) */
+static void match_limit(u8 *g, int state, u32 notice)
+{
+	if (G(int, 0x22f0408) <= 0x1e || G(int, 0x23423b5) == state)
+		return;
+	G(int, 0x23423b5) = state;
+	GAME_THISCALL(notice, void, void *)(g);
+	if (G(int, 0x2342399))
+		return;
+	if (G(int, 0x22e7184) == 1) {
+		int red = G(int, 0x2221fb8), blue = G(int, 0x2221fbc);
+		G(int, 0x23423bd) = red > blue ? 0 : red < blue ? 1 : -1;
+	}
+	G(int, 0x2342399) = 1;
+	G(u32, 0x234239d) = 0x41200000;   /* 10 s */
+}
+
+/* 0x48c830 (thiscall on the game object): a network packet (type 0x40 only) from a player. When recording
+   (+0x2340d1d) it goes to the replay file first; while the game is starting (+0x233cc20 1) only kind 1. By the kind
+   (byte 1): 0 a player's state (position, aim, weapon, lights, the five weapon slots; a player not yet set up is
+   asked for); 1 the game state (round, time, map change, the checksums of the part and item tables, scores, items);
+   2 a player joining with his mech; 3 the server ending the game; 4 / 5 the frag / time limit; 6 a cheat notice; 7
+   a chat line; 8 a player connecting; 9 one leaving; 10 / 11 team changes; 12 a player's emblem rows; 13 a pause
+   timer; 14 the items' states. Anything else goes to 0x48b420 (nothing) */
+void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt)
+{
+	if (type != 0x40)
+		return;
+	if (G(int, 0x2340d1d) == 1) {
+		void *f = G(void *, 0x2340d08);
+		GAME_CDECL(0x46cc30, void, const void *, int, int, void *)(g + 0x2340d29, 4, 1, f);
+		GAME_CDECL(0x46cc30, void, const void *, int, int, void *)(&from, 4, 1, f);
+		GAME_CDECL(0x46cc30, void, const void *, int, int, void *)(&type, 4, 1, f);
+		GAME_CDECL(0x46cc30, void, const void *, int, int, void *)(pkt, 1, type, f);
+	}
+	if (G(int, 0x233cc20) == 1 && pkt[1] != 1)
+		return;
+	const u8 *b = (const u8 *)pkt;
+	switch (b[1]) {
+	case 0: {
+		int weapon = (b[4] >> 1) & 7, i = b[4] >> 4;
+		float x = tens(*(const short *)(pkt + 5)), y = tens(*(const short *)(pkt + 7)), z = tens(*(const short *)(pkt + 9));
+		long double h = fmul_m((long double)b[0xb], K(0x4aa494));
+		float yaw = f32(h);
+		if (h > *K(0x4aa288))
+			yaw = f32(fsub_m(fld_m(&yaw), K(0x4a94c8)));
+		float pitch = f32(fmul_m((long double)b[0xc], K(0x4aa494)));
+		if (GAME_VAR(int, PLAYER(i)) == 0) {
+			G(int, 0x2343006 + G(int, 0x234240d) * 0x10) = 1;
+			G(int, 0x234300e + i * 0x10) = 1;
+			return;
+		}
+		u8 *ac = ACTOR(i);
+		if ((GAME_VAR(u16, ac + 0x3f0) ^ *(const u16 *)(pkt + 2)) & 0x4000)
+			CALL1(0x45dca0, i);   /* actor_deactivate */
+		if (GAME_VAR(int, ac + 0x108) == 0 && (b[4] & 1)) {
+			u32 rec[7] = { (u32)i, 0 };
+			memcpy(&rec[2], &x, 4);
+			memcpy(&rec[3], &y, 4);
+			memcpy(&rec[4], &z, 4);
+			memcpy(&rec[5], &yaw, 4);
+			memcpy(&rec[6], &pitch, 4);
+			GAME_THISCALL(0x45dc00, void, void *, int, int, u32, u32 *)(STAGE, i, -1, from, rec);
+			GAME_THISCALL(0x462150, void, void *)(g);   /* msg_newKing */
+		}
+		GAME_VAR(int, ac + 0x1e8) = 1;
+		GAME_VAR(float, ac + 0x124) = f32(fadd_m(fld_m((const float *)(ac + 0x120)), K(0x4a9418)));
+		GAME_VAR(u32, ac + 0x3f0) = *(const u16 *)(pkt + 2);
+		if (weapon == 6)
+			GAME_VAR(int, ac + 0x3ec) = 1;
+		else if (weapon == 7)
+			GAME_VAR(int, ac + 0x3ec) = 2;
+		else {
+			GAME_VAR(int, ac + 0x3ec) = 0;
+			GAME_THISCALL(0x45e810, void, void *, int, int)(STAGE, i, weapon);   /* FUN_0045e810 */
+		}
+		GAME_VAR(float, ac + 0x1ac) = x;
+		GAME_VAR(float, ac + 0x1b0) = y;
+		GAME_VAR(float, ac + 0x1b4) = z;
+		GAME_VAR(float, ac + 0x1b8) = yaw;
+		GAME_VAR(float, ac + 0x1bc) = pitch;
+		GAME_VAR(float, ac + 0x1c0) = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
+		GAME_VAR(float, ac + 0x1c4) = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
+		GAME_VAR(float, ac + 0x1c8) = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
+		GAME_VAR(float, ac + 0x1d0) = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
+		h = fmul_m((long double)b[0x10], K(0x4aa48c));
+		GAME_VAR(float, ac + 0x1cc) = f32(h);
+		if (h > *K(0x4aa288))
+			GAME_VAR(float, ac + 0x1cc) = f32(fsub_m(h, K(0x4a94c8)));
+		int hurt;
+		if (b[0x11] & 0x80) {
+			GAME_VAR(int, ac + 0x4c0) = b[0x11] & 0xf;
+			GAME_VAR(int, ac + 0x4c4) = b[0x12];
+			hurt = 1;
+			if ((b[0x11] & 0x40) && GAME_VAR(int, ac + 0x128) > 0)
+				GAME_VAR(int, ac + 0x128) = 0;
+		} else {
+			hurt = !(b[4] & 1) && GAME_VAR(int, ac + 0x128) > 0;
+			if (hurt)
+				GAME_VAR(int, ac + 0x128) = 0;
+		}
+		if (hurt)
+			GAME_VAR(u32, ac + 0x8854) = 0x3f000000;
+		const u8 *w = b + 0x13;
+		for (int k = 0; k < 5; k++, w += 9) {
+			u32 *slot = (u32 *)(ac + 0x1f8 + k * 0x20);
+			if (!(w[0] & 1) || GAME_VAR(int, ac + 0x118) < 0) {
+				slot[0] = 0;
+				continue;
+			}
+			slot[0] = 1;
+			slot[1] = (w[0] >> 1) & 1;
+			u16 v = *(const u16 *)(w + 1);
+			if (w[0] & 4) {
+				slot[2] = v;
+				slot[3] = (u32)-1;
+			} else {
+				slot[2] = (u32)-1;
+				slot[3] = v - 1;
+			}
+			slot[4] = w[0] & 8 ? 1 : 0;
+			float p[3] = { tens(*(const short *)(w + 3)), tens(*(const short *)(w + 5)), tens(*(const short *)(w + 7)) };
+			memcpy(&slot[5], p, 12);
+		}
+		return;
+	}
+	case 1: {
+		if (b[2] > 0x10 || pkt[3] < -1 || pkt[4] < -1 || pkt[5] < -1 || pkt[6] < -1)
+			break;
+		if (b[2] == 0) {
+			G(u32, 0x22f0408) = *(const u32 *)(pkt + 9);
+			G(u32, 0x22f040c) = *(const u32 *)(pkt + 0xd);
+			if (pkt[3] >= 0) {
+				int round = GAME_VAR(int, 0x9dad94);
+				if (round != pkt[3] && (round < 0 || G(int, 0x1f1cb0) == 1 || G(int, 0x22f0408) > 0x1e)) {
+					GAME_VAR(int, 0x9dad94) = pkt[3];
+					G(int, 0x1f1cb4) = pkt[4];
+					G(int, 0x1f1cb8) = pkt[6];
+					FUN_00461ec0((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+					G(int, 0x233cc20) = 1;
+					G(int, 0x233cc28) = 0;
+					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
+					G(int, 0x1f1cb0) = 0;
+					return;
+				}
+				G(int, 0x1f1cb4) = pkt[4];
+				G(int, 0x1f1cb8) = pkt[6];
+				if (GAME_VAR(int, 0x9dad94) == pkt[3] && G(int, 0xbe3000) != *(const short *)(pkt + 7)) {
+					G(int, 0x23423fd) = 1;
+					G(int, 0x2342401) = 1;
+				}
+			}
+			static const u32 parts[5][4] = { { 0x15bd1f8, 0x23423e5, 0x15de6c8, 0x2aa }, { 0x15de6cc, 0x23423e9, 0x15fff84, 0x2af },
+			                                 { 0x15fff88, 0x23423ed, 0x163b588, 0x4c0 }, { 0x163b58c, 0x23423f1, 0x1679b34, 0x4fd },
+			                                 { 0x1679b38, 0x23423f5, 0x16c5178, 0x608 } };
+			u16 w = *(const u16 *)(pkt + 0x2c);
+			int part = b[0x2b];
+			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, *(const u32 *)(pkt + 0x2e))) {
+				G(int, 0x23423fd) = 1;
+				G(int, 0x2342401) = 2;
+			}
+			if (!table_ok(g, 0x16c517c, 0x23423f9, 0x175522c, 0xb86, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
+				G(int, 0x23423fd) = 1;
+				G(int, 0x2342401) = 3;
+			}
+		}
+		u8 *ac = ACTOR(b[2]);
+		GAME_VAR(u32, ac + 0xfc) = *(const u32 *)(pkt + 0x11);
+		GAME_VAR(u32, ac + 0x100) = *(const u32 *)(pkt + 0x15);
+		int me = G(int, 0x234240d);
+		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
+			G(int, 0x234300a + me * 0x10) = 1;
+		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
+			GAME_VAR(int, PLAYER(me) + 0x47fce) = 0;
+		GAME_VAR(int, ACTOR(b[2]) + 0xe4) = *(const short *)(pkt + 0x21);
+		GAME_VAR(int, ACTOR(b[2]) + 0xe8) = *(const short *)(pkt + 0x23);
+		if (b[2] == 0) {
+			G(int, 0x2221fb8) = *(const short *)(pkt + 0x25);
+			G(int, 0x2221fbc) = *(const short *)(pkt + 0x27);
+		}
+		short item = *(const short *)(pkt + 0x29);
+		if ((G(int, 8) != 3 || G(int, 0x1f35c4) > 0x1201) && item >= 0 && G(int, (item + 0xdf8ec) * 0x28) == 0) {
+			G(int, (item + 0xdf8ec) * 0x28) = 1;
+			G(int, 0x22ee4e4 + item * 0x28) = 0;
+		}
+		if (G(int, 8) == 3 && G(int, 0x1f35c4) >= 0x1202)
+			GAME_THISCALL(0x462150, void, void *)(g);   /* msg_newKing */
+		return;
+	}
+	case 2: {
+		const char *name = pkt + 2;
+		const u8 *m = b + 2;   /* the record after the name's 0x11 bytes */
+		int i = m[0x14], lim = G(int, 0x175522c);
+		if (strlen(name) >= 0x11 || (signed char)m[0x11] < 0 || (signed char)m[0x11] > 8 || i >= 0x10 || m[0x15] > G(int, 0x15de6c8) ||
+		    m[0x16] > G(int, 0x15fff84) || m[0x17] > G(int, 0x163b588) || m[0x18] > G(int, 0x1679b34) || m[0x19] > G(int, 0x16c5178))
+			break;
+		int bad = 0;
+		for (int k = 0; k < 6; k++)
+			bad |= m[0x1a + k] > lim;
+		if (bad)
+			break;
+		GAME_VAR(int, ACTOR(i) + 0x10c) = i;
+		GAME_THISCALL(0x473940, void, void *, int, const char *)(STAGE, i, name);   /* player_setName */
+		GAME_THISCALL(0x473a10, void, void *, int, int)(STAGE, i, (signed char)m[0x11]);
+		GAME_THISCALL(0x473a80, void, void *, int, int)(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
+		static const u32 setters[5] = { 0x473b10, 0x473c20, 0x473d30, 0x473e40, 0x473f50 };   /* head .. booster */
+		for (int k = 0; k < 5; k++)
+			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, m[0x15 + k] - 1);
+		for (int k = 0; k < 6; k++)
+			GAME_THISCALL(0x474060, void, void *, int, int, int)(STAGE, i, k, m[0x1a + k] - 1);   /* actor_setActorTypeItemInfoBy */
+		GAME_VAR(int, ACTOR(i) + 0xdc) = (signed char)m[0x13];
+		char *to = (char *)ACTOR(i) + 0x98;
+		if (name)
+			strcpy(to, name);
+		else
+			to[0] = 0;
+		GAME_VAR(int, ACTOR(i) + 0xe0) = GAME_VAR(int, ACTOR(i) + 0xdc);
+		const u8 *c = m + 0x2b;
+		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
+		   rest of eax is left from the actor's address and of ecx from its +0xdc; later eax holds the player and ecx what
+		   the call left) */
+		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = GAME_VAR(u32, ACTOR(i) + 0xdc) & ~0xffu;
+		for (int k = 0; k < 5; k++, c += 2) {
+			u32 left = thiscall8_ecx(0x474fd0, STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
+			                         hi_a | c[0xa]);   /* actor_applyRemoteColours */
+			hi_a = 0;
+			hi_c = left & ~0xffu;
+		}
+		if (GAME_VAR(int, PLAYER(i) + 0x48) >= 0)
+			GAME_THISCALL(0x474390, void, void *, int)(STAGE, i);
+		return;
+	}
+	case 3:
+		if (pkt[2] != 'k')
+			break;
+		if (G(int, 0x23423b5) == 2)
+			return;
+		G(int, 0x23423b5) = 2;
+		GAME_THISCALL(0x462f30, void, void *)(g);   /* msg_serverEndsGame */
+		if (G(int, 0x23423a1))
+			return;
+		G(int, 0x23423a1) = 1;
+		G(u32, 0x23423a5) = 0x40400000;
+		GAME_VAR(int, 0x9f67f8) = 1;
+		return;
+	case 4:
+		if (pkt[2] != 'k')
+			break;
+		match_limit(g, 0, 0x462f90);   /* msg_fragLimitReached */
+		return;
+	case 5:
+		if (pkt[2] != 'k')
+			break;
+		match_limit(g, 1, 0x462fd0);   /* msg_timeLimitReached */
+		return;
+	case 6:
+		if (b[2] > 0x10)
+			break;
+		GAME_THISCALL(0x463030, void, void *, int, int)(g, b[2], b[3]);   /* msg_cheatUsed */
+		return;
+	case 7:
+		if (b[2] > 0x10 || strlen(pkt + 3) >= 0x39)
+			break;
+		GAME_THISCALL(0x462c30, void, void *, int, const char *, int)(g, b[2], pkt + 3, pkt[0x3c]);   /* msg_chatLine */
+		return;
+	case 8:
+		if (b[2] > 0x10 || strlen(pkt + 3) >= 0x11)
+			break;
+		CALL1(0x4743b0, b[2]);   /* net_4743b0 */
+		GAME_THISCALL(0x473940, void, void *, int, const char *)(STAGE, b[2], pkt + 3);   /* player_setName */
+		CALL1(0x4743e0, b[2]);   /* actor_resetSlot */
+		actor_name(g, b[2], pkt + 3);
+		G(int, 0x234300a + G(int, 0x234240d) * 0x10) = 1;
+		GAME_THISCALL(0x462b50, void, void *, int)(g, b[2]);   /* msg_playerConnected */
+		if (G(int, 4) == 0)
+			GAME_THISCALL(0x48ead0, void, void *)(g);   /* net_sendState_48ead0 */
+		return;
+	case 9:
+		if (b[2] > 0x10)
+			break;
+		GAME_THISCALL(0x462bc0, void, void *, int)(g, b[2]);   /* msg_playerLeft */
+		CALL1(0x4743b0, b[2]);
+		CALL1(0x4743e0, b[2]);
+		GAME_VAR(u8, PLAYER(b[2]) + 4) = 0;
+		GAME_VAR(int, PLAYER(b[2]) + 0x48) = -1;
+		CALL1(0x45dca0, b[2]);   /* actor_deactivate */
+		return;
+	case 10:
+		if (b[2] >= 0x10)
+			break;
+		team_change(g, b[2], pkt, 0x462d30);   /* msg_playerJoinedTeam */
+		return;
+	case 11:
+		if (pkt[2] >= 0x10)
+			break;
+		team_change(g, pkt[2], pkt, 0x462e30);   /* msg_playerChangedTeam */
+		return;
+	case 12: {
+		short row = *(const short *)(pkt + 3);
+		if (pkt[2] > 0x10 || row > 0x170)
+			break;
+		u8 *p = PLAYER(pkt[2]);
+		if (row >= 0) {
+			u8 *to = p + 0x479c2 + row * 4;
+			const u8 *from3 = b + 5;
+			for (int k = 0; k < 16; k++, from3 += 3, to += 4) {
+				to[0] = from3[0];
+				to[1] = from3[1];
+				to[2] = from3[2];
+				to[3] = from3[0] || from3[1] || from3[2] ? 0xff : 0;
+			}
+		}
+		if (GAME_VAR(int, p + 0x47fca))
+			return;
+		u8 *mine = PLAYER(G(int, 0x234240d));
+		if (GAME_VAR(int, p + 0x47fc6) == 0 && (GAME_VAR(int, mine + 0x47fc6) == 1 || GAME_VAR(int, mine + 0x47fca) == 1))
+			GAME_VAR(int, mine + 0x47fce) = 0;
+		G(u32, 0x2342425) = 0x40a00000;
+		if (*(const short *)(pkt + 3) < 0)
+			return;
+		GAME_VAR(int, p + 0x47fca) = 1;
+		return;
+	}
+	case 13:
+		if (pkt[2] != 'k')
+			break;
+		G(u32, 0x233cc4c) = 0x40a00000;
+		return;
+	case 14:
+		if (G(int, 0x2343253) == 1)
+			return;
+		for (int k = 0; k < G(int, 0x22f0400) && k < 0x7c; k++) {
+			u8 *it = g + 0x22ee4c0 + k * 0x28;
+			if (GAME_VAR(int, it) < 0)
+				continue;
+			u8 v = b[2 + k / 2];
+			int n = (k % 2 == 0 ? v : v >> 4) & 0xf;
+			if (n == 0)
+				GAME_VAR(int, it + 0x20) = GAME_VAR(int, it + 0x24) = 0;
+			else {
+				GAME_VAR(int, it + 0x20) = 1;
+				GAME_VAR(float, it + 0x24) = f32(fmul_m((long double)n, K(0x4a9418)));
+			}
+		}
+		G(int, 0x2343253) = 1;
+		return;
+	}
+	GAME_CDECL(0x48b420, void, const char *)(pkt);   /* nullsub_48b420 */
+}
+#undef G
+#undef K
+#undef STAGE
+#undef ACTOR
+#undef PLAYER
+#undef CALL1

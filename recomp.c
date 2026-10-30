@@ -5467,7 +5467,8 @@ int sound_initSoundTable(const char *file, int volume);
    map, scores, the checksums of the map tables, the item states), 2 a player joining (name, team, settings,
    weapons), 3..5 pause / resume, 6..11 player events (name, team changes, leaving), 12 a player's record, 13 a
    timer, 14 the items' states; other kinds go to 0x48b420 (a no-op). The scene's handlers are stubbed */
-static THISCALL DWORD net_processGamePacket(char *s, DWORD from, DWORD type, DWORD pkt) { DWORD v[3] = { from, type, pkt }; return run_lifted(lift_48c830, (DWORD)s, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void net_processGamePacket(char *s, DWORD from, DWORD type, DWORD pkt);
 /* batch 195 (lifted/grp151.c): the loading screen's state machine */
 #include "lifted/grp151.c"
 /* 0x468750 game_processLoadingMode() (thiscall on the scene): one step of loading per call. On the first call
