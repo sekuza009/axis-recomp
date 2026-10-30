@@ -4558,7 +4558,8 @@ static THISCALL DWORD armc_461540(char *game, DWORD slot) { DWORD v[1] = { slot 
    level: a count and the part numbers) are appended to the five lists (0x4dc3e8 / 0x4dcd6c / 0x4dc964 / 0x4dc89c /
    0x4dbd7c, counts 0x4dc780 / 0x4dcc60 / 0x4dca90 / 0x4dca94 / 0x4dc890); then the current choices are checked
    against them */
-LIFT_PLAIN(armc_buildPartLists, 40da40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's helper (0xb68e80) done in C */
+void armc_buildPartLists(void);
 /* batch 147 (lifted/grp93.c): the menu textures */
 #include "lifted/grp93.c"
 /* 0x430ca0 menu_loadIntroTextures(): the menu's textures by name ("iftex/m_intro1".."4", "m2_intro1".."4", the
@@ -14266,7 +14267,8 @@ static void partlists_setup(void)
 	fill((void *)0x4dc3e8, 0x200); fill((void *)0x4dcd6c, 0x100); fill((void *)0x4dc964, 0x100); fill((void *)0x4dc89c, 0xc0);
 	fill((void *)0x4dbd7c, 0x100);
 }
-T_PLAIN(armc_buildPartLists, 0x40da40, partlists_setup();, 0, 0, 0, 0, 0)
+/* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_buildPartLists, partlists_setup();, (CALL_PLAIN(0x40da40, 0, 0, 0, 0, 0), 0), (armc_buildPartLists(), 0))
 /* batch 147 */
 /* the menu textures: texset_setup's manager at BUF with a dat index (BUF + 0xd8000, as groundfile_setup's) of all
    31 names (upper-cased, '/' -> '\', sorted; one sometimes left out: fatal), format 0, a random bind limit; the

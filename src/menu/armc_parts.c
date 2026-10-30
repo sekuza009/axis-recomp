@@ -188,3 +188,76 @@ u32 (armc_40f340)(u32 part, int dir)
 	GAME_VAR(u32, 0x4dc760 + part * 4) = chosen;
 	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
 }
+
+/* ---- the unlocked part lists ---- */
+
+/* one level's entry (0x28 bytes) of an unlock table: a count and up to nine part numbers */
+typedef struct { int count; int parts[9]; } Unlock;
+
+/* the level's parts appended to the list at list (its length at *len); dword by dword, as rep movsd copies */
+static int append_parts(const Unlock *entry, u32 list, int len)
+{
+	int n = entry->count;
+	if ((int)((u32)n + 1) <= 1)   /* none (the original's test: n + 1 > 1, wrapping) */
+		return len;
+	for (int i = 0; i < n; i++)
+		((int *)list)[len + i] = entry->parts[i];
+	return len + n;
+}
+
+/* the unlocked level: in network play (0x4dc24c 3) the player's level (0x9dd5d8) less one; else the progress
+   (0x9f181c) as the exe's patch reads it (its helper at 0xb68e80): up to 14 as it is, 15 becomes 14, 16 and above
+   15. (The original's check after it, 0x7f and above becoming 14, can no longer be met.) */
+static int unlocked_level(int network)
+{
+	if (network)
+		return GAME_VAR(int, 0x9dd5d8) - 1;
+	int level = g_progress;
+	if (level >= 15)
+		level = level < 16 ? 14 : 15;
+	if (level >= 0x7f)
+		level = 14;
+	return level;
+}
+
+/* 0x40da40: the unlocked part lists up to a level (0x4dc784, also 0x4dc870): for each level up to it, of the table
+   set (network play 0x4aebd0, else 0x4ad5f0; seven tables 0x320 bytes apart, an Unlock a level), the first five
+   tables' parts appended to the five part lists (0x4dc3e8 / 0x4dcd6c / 0x4dc964 / 0x4dc89c / 0x4dbd7c, lengths
+   0x4dc780 / 0x4dcc60 / 0x4dca90 / 0x4dca94 / 0x4dc890), the last two's to the two lists that start with -1
+   (0x4dc79c / 0x4dcca4, lengths 0x4dc244 / 0x4dc778). The lengths are read from memory at each step as the
+   original does (a list long enough to run over them would change them); the caller ignores the eax it leaves */
+void (armc_buildPartLists)(void)
+{
+	int network = GAME_VAR(int, 0x4dc24c) == 3;
+	int level = unlocked_level(network);
+	GAME_VAR(int, 0x4dc870) = level;
+	GAME_VAR(int, 0x4dc784) = level;
+	static const u32 lists[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7c };
+	static const u32 lengths[5] = { 0x4dc780, 0x4dcc60, 0x4dca90, 0x4dca94, 0x4dc890 };
+	for (int k = 0; k < 5; k++)
+		GAME_VAR(int, lengths[k]) = 0;
+	u32 tables = network ? 0x4aebd0 : 0x4ad5f0;
+#define TABLE(k, lv) ((const Unlock *)(tables + (k) * 0x320) + (lv))
+	if (level >= 0) {
+		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */
+		for (int lv = 0; lv <= level; lv++) {
+			for (int k = 0; k < 4; k++)
+				GAME_VAR(int, lengths[k]) = append_parts(TABLE(k, lv), lists[k], GAME_VAR(int, lengths[k]));
+			last = append_parts(TABLE(4, lv), lists[4], last);
+		}
+		GAME_VAR(int, 0x4dc890) = last;
+	}
+	/* the two lists that start with -1; their lengths too stored once at the end */
+	static const u32 extra[2] = { 0x4dc79c, 0x4dcca4 }, extra_len[2] = { 0x4dc244, 0x4dc778 };
+	for (int j = 0; j < 2; j++) {
+		GAME_VAR(int, extra[j]) = -1;
+		GAME_VAR(int, extra_len[j]) = 1;
+		int top = GAME_VAR(int, 0x4dc784), len = 1;
+		if (top < 0)
+			continue;
+		for (int lv = 0; lv <= top; lv++)
+			len = append_parts(TABLE(5 + j, lv), extra[j], len);
+		GAME_VAR(int, extra_len[j]) = len;
+	}
+#undef TABLE
+}
