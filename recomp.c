@@ -15988,7 +15988,29 @@ ST(menuState700_armCenter, gen_setup(g_gs_41e040, g_gi_41e040, g_gb_41e040);, (C
 static const DWORD g_gs_49df10[] = { 0x4326f0, 1, 0x44ace0, 0, 0x456de0, 1, 0x457140, 1, 0x45dfb0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x4620e0, 0, 0x4629c0, 1 | CS_POP, 0x4636d0, 0, 0x4685b0, 0, 0x4685c0, 0, 0x46c710, 3, 0x4732f0, 1 | CS_POP, 0x473940, 2 | CS_POP, 0x4743e0, 1 | CS_POP, 0x487490, 0, 0 };
 static const DWORD g_gi_49df10[] = { 0x4dc878, 0x4dc87c, 0x4dc880, 0x4dc884, 0x4dc888, 0x4dcf18, 0x4dcf1c, 0x4dcf20, 0x4dcf24, 0x4dcf28, 0x4dcf2c, 0x4de722, 0x4de72a, 0x4ded68, 0x4ded6c, 0x4df8e8, 0x4e0c90, 0x4e0c94, 0x5ae9c4, 0x67ef00, 0x68039c, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9f1818, 0x9fd94c, 0xa1efb8, 0 };
 static const DWORD g_gb_49df10[] = { 0x4d0710, 0x4d950c, 0x4dcfe4, 0x4dedd8, 0x9db9ec, 0xa0e778, 0 };
-T_PLAIN(game_processGameModeInit, 0x49df10, gen_setup(g_gs_49df10, g_gi_49df10, g_gb_49df10); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+/* game_processGameModeInit (thiscall on the game at BUF): gen_setup's stubs and random globals, then what decides
+   its paths: the first round or a later one (+0x233c9e8), the kind of match (0x5ae9c4 2: the room), the mode (+8: 0
+   solo, 1 network, 2) and host or client (+4), the rotation (0x9da3e0) over the arena maps (0x67ef00 of them, 8 bytes
+   each from 0x4d9508: in rotation, map; at least the first in it, as with none the original divides by zero), the
+   level (actor_levelFromValue, stubbed) in and out of 1 .. 20, the six geometry tables' counts small or 0 */
+static void gamemode_setup(void)
+{
+	gen_setup(g_gs_49df10, g_gi_49df10, g_gb_49df10);
+	S32(BUF, 0x233c9e8) = irnd(0, 1);
+	G32(0x5ae9c4) = irnd(0, 3);
+	S32(BUF, 8) = irnd(0, 3) ? irnd(0, 1) : irnd(0, 2);
+	S32(BUF, 4) = irnd(0, 1);
+	G32(0x9da3e0) = irnd(0, 1);
+	int n = irnd(1, 8); G32(0x67ef00) = n;
+	for (int k = 0; k < n; k++) { G32(0x4d9508 + k * 8) = k == 0 || irnd(0, 1); G32(0x4d950c + k * 8) = irnd(0, 15); }
+	G32(0x76d368) = irnd(0, 20);
+	callee_ret(0x4326f0, (DWORD)irnd(0, 21));
+	static const DWORD counts[6] = { 0x15de6c8, 0x15fff84, 0x163b588, 0x1679b34, 0x16c5178, 0x175522c };
+	for (int k = 0; k < 6; k++) S32(BUF, counts[k]) = irnd(0, 2) ? irnd(1, 6) : 0;
+	S32(BUF, 0x234240d) = irnd(-1, 7);
+	G32(0x68039c) = irnd(0, 1);
+}
+T_PLAIN(game_processGameModeInit, 0x49df10, gamemode_setup(); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_49ca70[] = { 0x44ac90, 3, 0x44ace0, 0, 0x456e50, 2, 0x45dca0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x462150, 0, 0x462850, 0, 0x462d30, 2 | CS_POP, 0x462e30, 2 | CS_POP, 0x463450, 2, 0x4635b0, 3 | CS_POP, 0x463610, 3 | CS_POP, 0x463740, 1 | CS_POP, 0x487cb0, 1 | CS_POP, 0x487ed0, 0, 0x49ca20, 2 | CS_POP, 0x49d150, 0, 0 };
 static const DWORD g_gi_49ca70[] = { 0x68039c, 0 };
 static const DWORD g_gb_49ca70[] = { 0x4d06f4, 0x9f63e4, 0 };
@@ -17885,7 +17907,7 @@ static const STest g_stests[] = {
 	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 1000, 0), T(armc_41d8a0, 0, 1000, 0), T(armc_41dfe0, 0, 200, 0),
 	T(armc_41e010, 0, 200, 0), T(armc_41dfb0, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
-	T(game_processGameModeInit, 0, 200, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
+	T(game_processGameModeInit, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
 	/* batch 187 */
 	T(particle_spawn, 0, 300, 0), T(particle_init, 0, 400, 0),
 	/* batch 188 */
