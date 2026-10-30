@@ -2988,7 +2988,8 @@ void cfg_videoModeNames(void *f);
 void cfg_gameTypeNames(void *f);
 /* 0x48dbf0 (thiscall) net_sendGamePacket(p): player p's state packet, with samples of the level geometry tables
    (index from a rolling counter) and the pending event bits */
-static THISCALL DWORD net_sendGamePacket(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48dbf0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void net_sendGamePacket(char *scene, DWORD p);
 /* 0x421680 setup_drawKeyBindingRows(key): redraw the key-binding row being edited */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawKeyBindingRows(int key);
@@ -3363,12 +3364,9 @@ THISCALL void skel_loadFrom_46aa10(char *self, DWORD f, DWORD mem, DWORD size);
 /* 0x46ce80 (thiscall) image_copyTo(dst, dstW, dstH, depth, sx, sy, dx, dy, w, h, topDown): copy a w x h block of
    the open 24-bit BMP (file +4, data offset +0x12, size +0x3e / +0x42) at (sx, sy) into the dstW x dstH buffer at
    (dx, dy), both clipped; BGR -> RGB (depth 3) or RGBA with alpha 0xff (depth 4); rows bottom-up unless topDown */
-static THISCALL DWORD image_copyTo(char *img, DWORD dst, DWORD dw, DWORD dh, DWORD depth, DWORD sx, DWORD sy,
-                                   DWORD dx, DWORD dy, DWORD w, DWORD h, DWORD topDown)
-{
-	DWORD v[11] = { dst, dw, dh, depth, sx, sy, dx, dy, w, h, topDown };
-	return run_lifted(lift_46ce80, (DWORD)img, 11, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void image_copyTo(char *img, DWORD dst, DWORD dw, DWORD dh, DWORD depth, DWORD sx, DWORD sy,
+                           DWORD dx, DWORD dy, DWORD w, DWORD h, DWORD topDown);
 /* 0x4557e0 (thiscall) tex_textureFileExist(name): is the texture there in the manager's format (+0xc0114): a dat
    entry (0, binary search of the index), a BMP (1) or a RAW file (2) of the manager's size (+0xc0118 / +0xc011c)? */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -17588,7 +17586,7 @@ static const STest g_stests[] = {
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
-	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
+	T(image_copyTo, 0, 400, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 400, 0), T(map_loadMissionInfoFrom, 0, 400, 0),

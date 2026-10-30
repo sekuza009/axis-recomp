@@ -1634,3 +1634,89 @@ void THISCALL (match_48e2c0)(u8 *g, int p)
 	}
 	send_packet(g, packet);
 }
+
+/* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
+static u32 table_rand(void)
+{
+	u32 at = GAME_VAR(u32, 0xa1efb8);
+	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
+}
+
+/* a random entry of one of the level's geometry tables (rows of row_len dwords from base, rows of them at +rows,
+   n per row at +per_row): its random position (a 16-bit word, below 100000 before it was cut) into *at, the entry
+   returned */
+static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
+{
+	u16 r = (u16)(table_rand() % 100000);
+	memcpy(at, &r, 2);
+	int n = GAME_VAR(int, s + per_row);
+	int row = r / n % GAME_VAR(int, s + rows);
+	return GAME_VAR(u32, s + base + (row * row_len + r % n) * 4);
+}
+
+/* 0x48dbf0 (thiscall on the scene): player p's game packet (1), sent when flagged (+0x2343006 + p x 0x10, cleared):
+   the room's game (its map and modes from +0x1f1668 / +0x1f1cb4 ..; 0xff and 0xffff without one, or once the start
+   countdown +0x234239d is running), the clock (+0x22f0408, +0x22f040c), the player's two scores (+0x1eccb6c,
+   +0x1eccb70 of its actor), which of the players in use (net_playerInUse) were flagged twice (+0x234300e,
+   +0x2343012: cleared, one bit each), the actor's two counts (+0x1eccb54 / 58) and the team scores (+0x2221fb8 /
+   bc), the kill notice (+0x22f0404, set back to -1), then two random checks of the level: one of the five geometry
+   tables in turn (+0x23423c9 counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
+   Sent by send_packet. Its caller ignores the eax it leaves */
+void THISCALL (net_sendGamePacket)(u8 *s, int p)
+{
+	static const struct { u32 per_row, rows; int row_len; u32 base; } tables[5] = {
+		{ 0x23423e5, 0x15de6c8, 682, 0x15bd1f8 }, { 0x23423e9, 0x15fff84, 687, 0x15de6cc },
+		{ 0x23423ed, 0x163b588, 0x4c0, 0x15fff88 }, { 0x23423f1, 0x1679b34, 1277, 0x163b58c },
+		{ 0x23423f5, 0x16c5178, 1544, 0x1679b38 } };
+	int *flag = (int *)(s + 0x2343006 + p * 0x10);
+	if (!*flag)
+		return;
+	u8 *a = s + p * 0x8888;
+	u8 packet[0x40];
+	packet[1] = 1;
+	packet[2] = (u8)p;
+	if (GAME_VAR(int, s + 0x1f1ca8) > 0 && !(GAME_VAR(float, s + 0x234239d) > *(const float *)0x4a93e8)) {
+		int k = GAME_VAR(int, s + 0x1f1cac) * 16;
+		packet[3] = s[0x1f1668 + k];
+		packet[4] = s[0x1f1cb4];
+		packet[5] = s[0x1f166c + k];
+		packet[6] = s[0x1f1cb8];
+		memcpy(packet + 7, s + 0xbe3000, 2);
+	} else
+		memset(packet + 3, 0xff, 6);
+	memcpy(packet + 9, s + 0x22f0408, 4);
+	float clock = f32(fld_m((const float *)(s + 0x22f040c)));
+	memcpy(packet + 0xd, &clock, 4);
+	u32 turn = GAME_VAR(u32, s + 0x23423c9);
+	packet[0x2b] = (u8)(turn % 5);
+	GAME_VAR(u32, s + 0x23423c9) = turn + 1;
+	u32 v = sample(s, tables[packet[0x2b]].per_row, tables[packet[0x2b]].rows, tables[packet[0x2b]].row_len, tables[packet[0x2b]].base,
+	               packet + 0x2c);
+	memcpy(packet + 0x2e, &v, 4);
+	v = sample(s, 0x23423f9, 0x175522c, 2950, 0x16c517c, packet + 0x32);
+	memcpy(packet + 0x34, &v, 4);
+	memcpy(packet + 0x11, a + 0x1eccb6c, 4);
+	memcpy(packet + 0x15, a + 0x1eccb70, 4);
+	u32 twice[2] = { 0, 0 };
+	for (int i = 0; i < 16; i++) {
+		if (net_playerInUse(i) != 1)
+			continue;
+		for (int k = 0; k < 2; k++) {
+			int *f = (int *)(s + 0x234300e + i * 0x10 + k * 4);
+			if (*f == 1) {
+				*f = 0;
+				twice[k] |= 1u << i;
+			}
+		}
+	}
+	memcpy(packet + 0x19, twice, 8);
+	memcpy(packet + 0x21, a + 0x1eccb54, 2);
+	memcpy(packet + 0x23, a + 0x1eccb58, 2);
+	memcpy(packet + 0x25, s + 0x2221fb8, 2);
+	memcpy(packet + 0x27, s + 0x2221fbc, 2);
+	memcpy(packet + 0x29, s + 0x22f0404, 2);
+	GAME_VAR(int, s + 0x22f0404) = -1;
+	*flag = 0;
+	send_packet(s, packet);
+}

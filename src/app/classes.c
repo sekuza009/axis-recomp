@@ -369,3 +369,78 @@ void THISCALL (tex_upload2)(u8 *scene)
 	glTexParameterf_bits(0xde1, 0x2801, 0x46180400);   /* min filter */
 	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, scene + 0x20fcfe4);   /* RGBA, unsigned bytes */
 }
+
+/* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at +0x12, size +0x3e
+   x +0x42, rows stored bottom-up) from (sx, sy) copied into the dw x dh buffer dst at (dx, dy), both clipped (nothing
+   left: nothing; wider than 0x400 a fatal message): BGR to RGB (depth 3) or RGBA with alpha 0xff (depth 4; another
+   depth a fatal message per row), the rows placed top-down when topDown, else bottom-up. Its callers ignore the eax
+   it leaves */
+void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int sx, int sy, int dx, int dy, int w, int h,
+                             int topDown)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	void *f = GAME_VAR(void *, image + 4);
+	int iw = GAME_VAR(int, image + 0x3e), ih = GAME_VAR(int, image + 0x42);
+	if (sx < 0) {
+		dx -= sx;
+		w += sx;
+		sx = 0;
+	}
+	if (sy < 0) {
+		dy -= sy;
+		h += sy;
+		sy = 0;
+	}
+	if (sx >= iw || sy >= ih)
+		return;
+	if (sx + w > iw)
+		w = iw - sx;
+	if (sy + h > ih)
+		h = ih - sy;
+	if (dx < 0) {
+		sx -= dx;
+		w += dx;
+		dx = 0;
+	}
+	if (dy < 0) {
+		sy -= dy;
+		h += dy;
+		dy = 0;
+	}
+	if (dx >= dw || dy >= dh)
+		return;
+	if (dx + w > dw)
+		w = dw - dx;
+	if (h + dy > dh)
+		h = dh - dy;
+	if (w <= 0 || h <= 0)
+		return;
+	if (w > 0x400)
+		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5984);
+	crt_fseek(f, GAME_VAR(int, image + 0x12) + ((GAME_VAR(int, image + 0x42) - sy - h) * GAME_VAR(int, image + 0x3e) + sx) * 3, 0);
+	u8 row[0xc00];
+	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
+	u8 *p3 = dst + (first * dw + dx) * 3, *p4 = dst + (first * dw + dx) * 4;
+	for (int r = 0; r < h; r++) {
+		crt_fread(row, w * 3, 1, f);
+		if (depth == 3)
+			for (int k = 0; k < w; k++) {
+				p3[k * 3] = row[k * 3 + 2];
+				p3[k * 3 + 1] = row[k * 3 + 1];
+				p3[k * 3 + 2] = row[k * 3];
+			}
+		else if (depth == 4)
+			for (int k = 0; k < w; k++) {
+				p4[k * 4] = row[k * 3 + 2];
+				p4[k * 4 + 1] = row[k * 3 + 1];
+				p4[k * 4 + 2] = row[k * 3];
+				p4[k * 4 + 3] = 0xff;
+			}
+		else
+			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5964);
+		crt_fseek(f, (GAME_VAR(int, image + 0x3e) - w) * 3, 1);
+		p3 += step * 3;
+		p4 += step * 4;
+	}
+#undef crt_fread
+}
