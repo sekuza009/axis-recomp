@@ -5696,7 +5696,8 @@ void menu_frame(void);
    0x473780, the patch DLL's cat_wrap; 0x4875d0; failure: 0x46c710 to the log), the ten camera presets, 0x45dfb0,
    the HUD defaults, up to 30 chat macros (63 characters each) read from a text file by fgets with their line ends
    cut, 0x4617f0. SEH frame emulated. Returns the scene */
-static THISCALL DWORD game_loadAllData(char *s) { return run_lifted(lift_460570, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD game_loadAllData(char *s);
 #include "lifted/grp170.c"
 /* 0x4982f0 hud_pass() (thiscall on the scene): the in-match 2D pass: GL state, the fog colour from +0xbe16f8 ..,
    clears, the HUD projection (0x4685f0), the scene parts drawn in order (0x4841f0 .., 0x496f20 / 0x497d20 with

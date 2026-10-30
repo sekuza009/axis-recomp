@@ -2,6 +2,7 @@
    members), destructors (the vtable set back, an owned buffer freed), the "deleting" destructors, and the helpers
    that clear a block of members. Most return what the original leaves in eax (usually 0 or the object). */
 #include "../game.h"
+#include <string.h>
 
 /* n dwords of an object cleared */
 static int clear(void *p, int dwords)
@@ -443,4 +444,117 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 		p4 += step * 4;
 	}
 #undef crt_fread
+}
+
+/* the scene's camera presets (+0x233ca30: six tables of ten, as float bits or ints) */
+static const u32 k_cameraPresets[6][10] = {
+	{ 0, 0, 0, 0, 0, 0, 0x42480000, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0x44610000, 0xc4610000, 0x43960000, 0xc2c80000, 0x44e10000, 0 },
+	{ 0x44e10000, 0x41200000, 0x43960000, 0x453b8000, 0x44e10000, 0x44e10000, 0x44e10000, 0x453b8000, 0x44e10000, 0x44e10000 },
+	{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 1, 1, 0, 0, 1, 1 },
+	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } };
+
+/* 0x460570 (thiscall: the game object's constructor): its clock (TimeSync_ctor at +0xc), view volume (+0x74) and the
+   stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors 0x401290 / 0x49fd2d with their
+   element constructors) and vtables set; the factor tables sized (factor_initBy into the block at +0x91e4); the
+   parts (item_initTextures with nine names), the component catalogue and the items loaded (failing: a fatal
+   message); the ten camera presets, the stage's player slots reset (FUN_0045dfb0 -1), the geometry check sizes; the
+   30 chat macros (63 characters each, 0x40 apart from +0x234334b) read from their file, each with its line end cut
+   (an empty one cuts the byte before it), and saved back (chat_saveMacros). (The original's SEH frame, for
+   unwinding a failed construction, is not reproduced.) Returns the object */
+u8 *THISCALL (game_loadAllData)(u8 *g)
+{
+#define CALL(addr, at) GAME_THISCALL(addr, void, void *)(at)
+#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))0x401290)(at, size, count, 0x45fff0)   /* (the CRT's iterators are stdcall) */
+#define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
+	u8 *s = g + 0x1f36c8;
+	CALL(0x487430, g + 0xc);   /* TimeSync_ctor */
+	VTABLE(g + 0x74, 0x4aa24c);
+	CALL(0x483fc0, g + 0x74);
+	CALL(0x463790, s + 0xa10);   /* CollisionVolume_ctor */
+	VECTOR(s + 0x9cd000, 0x2c, 0x400);
+	VTABLE(s + 0x9ccffc, 0x4aa248);
+	CALL(0x483d60, s + 0x9ccffc);
+	VECTOR(s + 0x9d8014, 0x2c, 0x400);
+	VTABLE(s + 0x9d8010, 0x4aa248);
+	CALL(0x483d60, s + 0x9d8010);
+	CALL(0x462560, s + 0x9e3020);   /* Light_ctor */
+	VECTOR(s + 0x9ee080, 0xc, 0x126);
+	VECTOR(s + 0x9eee54, 0xc, 0x31);
+	VECTOR(s + 0x9ef0cc, 0xc, 0x30);
+	VECTOR(s + 0x9ef350, 0xc, 0x79);
+	VECTOR(s + 0xdc0244, 0x20c, 4);
+	CALL(0x462cf0, s + 0xdc0a78);   /* Model_ctor */
+	CALL(0x462cf0, s + 0xdc0cc4);
+	VECTOR(s + 0xe36214, 0x14, 0x3e8);
+	VTABLE(s + 0xe3c93c, 0x4aa244);
+	CALL(0x466a20, s + 0xe3c93c);
+	VECTOR(s + 0xf30dc8, 4, 1000000);
+	VTABLE(s + 0x13016d0, 0x4aa240);
+	CALL(0x46ae70, s + 0x13016d0);
+	VECTOR(s + 0x131ae44, 0x2cc, 0x3e8);
+	VECTOR(s + 0x14d1ab4, 0x2e18, 0x32);
+	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1561b68, 0x47fd2, 0x10, 0x463850, 0x463960);
+	VTABLE(s + 0x19e188c, 0x4aa244);
+	CALL(0x466a20, s + 0x19e188c);
+	VTABLE(s + 0x1cbe198, 0x4aa240);
+	CALL(0x46ae70, s + 0x1cbe198);
+	VECTOR(s + 0x1cd6fb4, 0x5c, 0x64);
+	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1cd93a8, 0x8888, 0x64, 0x463a40, 0x45ff30);
+	VECTOR(s + 0x202ef34, 0x4e8, 0x190);
+	VECTOR(s + 0x20a99c0, 0x12c, 0x3e8);
+	VECTOR(s + 0x20f300c, 0xc, 0xc8);
+	VECTOR(s + 0x20fab74, 0x14, 0x20);
+	VECTOR(s + 0x20fadf8, 0x28, 0xc8);
+	VECTOR(s + 0x20fcfe4, 4, 0x2000);
+	CALL(0x4637f0, s + 0x2148ed8);   /* Scene_ctor */
+	VTABLE(s, 0x4aa23c);
+	GAME_VAR(int, s + 4) = 0;
+	VTABLE(g, 0x4aa238);
+	GAME_VAR(int, g + 4) = GAME_VAR(int, g + 8) = -1;
+	CALL(0x487480, g + 0xc);
+	for (int k = 0; k < 10; k++)
+		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
+	GAME_VAR(int, g + 0x70) = 0;
+	GAME_THISCALL(0x484050, void, void *, int, int, int, int, int, int, void *, int)(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
+	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
+	GAME_THISCALL(0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, 0x4c45a8, 0x4b1784, 0x4c45b0, 0x4c45b8,
+	                                                                                  0x4c45c0, 0x4c45cc, 0x4c45d4, 0x4c45dc, 0x4c45e4);   /* item_initTextures */
+	if (!GAME_THISCALL(0x473780, int, void *, const char *)(s, (const char *)0x4b4418))   /* catalogue_loadComponents */
+		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+	if (!GAME_THISCALL(0x4875d0, int, void *, const char *)(s, (const char *)0x4c4588))   /* map_loadItemInfoFrom */
+		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
+	GAME_VAR(int, g + 0x233cc10) = 1;
+	FUN_0045dfb0((Stage *)s, -1);
+	GAME_VAR(int, g + 0x23423e5) = 6;
+	GAME_VAR(int, g + 0x23423ed) = 6;
+	GAME_VAR(int, g + 0x2340c64) = -1;
+	GAME_VAR(int, g + 0x2340c68) = GAME_VAR(int, g + 0x2340c6c) = GAME_VAR(int, g + 0x2340c70) = 0;
+	GAME_VAR(int, g + 0x23423e9) = 3;
+	GAME_VAR(int, g + 0x23423f1) = 7;
+	GAME_VAR(int, g + 0x23423f5) = 10;
+	GAME_VAR(int, g + 0x23423f9) = 0x18;
+	char *macros = (char *)g + 0x234334b;
+	for (int k = 0; k < 30; k++)
+		macros[k * 0x40] = 0;
+	void *f = crt_fopen((const char *)0x4c457c, (const char *)0x4ad5e0);
+	if (f) {
+#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+		if (crt_fgets(macros, 0x3f, f))
+			for (int k = 1; k < 30 && crt_fgets(macros + k * 0x40, 0x3f, f); k++)
+				;
+#undef crt_fgets
+		fclose(f);
+	}
+	for (int k = 0; k < 30; k++) {
+		char *m = macros + k * 0x40;
+		m[(int)strlen(m) - 1] = 0;
+	}
+	CALL(0x4617f0, g);   /* chat_saveMacros */
+	return g;
+#undef CALL
+#undef VECTOR
+#undef VTABLE
 }
