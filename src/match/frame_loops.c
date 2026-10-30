@@ -409,3 +409,94 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		shape_shadeParts(FIELD(u32 *, obj, 0x280), 1, (Model *)FIELD(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9ccffc),
 		                 (const float *)(obj + 0x134));
 }
+
+/* a particle of kind at p (particle_spawn's record: the kind, 0, the point, the world's colour 0xa0e7e8, zeros) */
+static void spawn_at(u8 *s, u32 kind, const float *p)
+{
+	u32 rec[13] = { kind, 0 };
+	memcpy(&rec[2], p, 12);
+	memcpy(&rec[5], (const void *)0xa0e7e8, 12);
+	particle_spawn(s, rec);
+}
+
+/* a falling spark (kind 9) moved by its velocity (+0x1c) over dt and dropped 2000 dt further: what it meets on the
+   way (collision_rayTrace) stops it there, ends it and leaves a kind 2 particle; its orientation (+0x2c) turned by
+   its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
+static void spark(u8 *s, u8 *p, float dt)
+{
+	float *pos = (float *)(p + 0x10);
+	const float *v = (const float *)(p + 0x1c), *k = (const float *)0x4a9554;
+	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
+	float hit[3], below[3];
+	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
+	hit[1] = f32(fadd_m(fld_m(&dy), &pos[1]));
+	hit[2] = f32(fadd_m(fld_m(&dz), &pos[2]));
+	below[0] = hit[0];
+	below[1] = f32(fld_m(&hit[1]) - fmul_m(fld_m(&dt), k));
+	below[2] = hit[2];
+	if (collision_rayTrace(s, pos, below, hit)) {
+		memcpy(pos, hit, 12);
+		GAME_VAR(u32, p + 0x70) = GAME_VAR(u32, p + 0x6c);
+		spawn_at(s, 2, hit);
+	} else
+		memcpy(pos, below, 12);
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef_stored(pos);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)0x4a94c8)), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)0x4a94c8)), 0.0f, 0.0f, 1.0f);
+	glGetFloatv(0xba6, (float *)(p + 0x2c));
+	glPopMatrix();
+	long double wait = fsub_m(fld_m((const float *)(p + 0x84)), &dt);
+	GAME_VAR(float, p + 0x84) = f32(wait);
+	if (wait > 0)
+		return;
+	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % 10;
+	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	spawn_at(s, r ? 0 : 2, pos);
+	GAME_VAR(u32, p + 0x84) = 0x3dcccccd;
+	if (!r)
+		GAME_VAR(u32, p + 0x70) = GAME_VAR(u32, p + 0x6c);
+}
+
+/* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from +0x20a99c0). Its age (+0x74, kept at +0x6c)
+   past its life (+0x70) frees it (0x4799f0); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
+   26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (+0x7c); the age moves on by dt. Its caller
+   ignores the eax it leaves */
+void THISCALL (match_476410)(u8 *s, int slot, float dt)
+{
+	u8 *p = s + 0x20a99c0 + slot * 0x12c;
+	float age = GAME_VAR(float, p + 0x74);
+	GAME_VAR(float, p + 0x6c) = age;
+	if (age > GAME_VAR(float, p + 0x70)) {
+		GAME_THISCALL(0x4799f0, void, void *, int)(s, slot);
+		return;
+	}
+	float t = GAME_VAR(float, p + 0x70) > 0 ? f32(fdiv_m(fld_m(&age), (const float *)(p + 0x70))) : 0.0f;
+	int k = GAME_VAR(int, p + 8);
+	u32 size = 0;   /* where the size constant is */
+	switch (k / 5) {
+	case 0:
+		size = k == 2 ? 0x4aa42c : k == 3 ? 0x4aa430 : 0;
+		break;
+	case 1:
+		if (k == 9)
+			spark(s, p, dt);
+		break;
+	case 5:
+		size = k == 25 || k == 26 ? 0x4a9554 : 0;
+		break;
+	case 6:
+		size = k <= 31 ? 0x4a94bc : 0x4a949c;
+		break;
+	case 7:
+		size = k == 35 ? 0x4aa430 : k == 36 ? 0x4aa42c : k <= 38 ? 0x4a949c : 0;
+		break;
+	}
+	if (size) {
+		long double u = fsub_m(fld_m((const float *)0x4a9424), &t);
+		GAME_VAR(float, p + 0x7c) = f32(fmul_m(u * u, (const float *)size));
+	}
+	GAME_VAR(float, p + 0x74) = f32(fadd_m(fld_m(&dt), (const float *)(p + 0x74)));
+}

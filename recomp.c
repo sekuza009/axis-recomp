@@ -5430,7 +5430,8 @@ static THISCALL DWORD bullet_init(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a
 /* 0x476410 match_476410(slot, a2) (thiscall on the particle system, ret 8): the slot (0x12c bytes from +0x20a99c0)
    aged (+0x6c from the clock against its life +0x70: freed at the end, 0x4799f0), moved, slowed, faded and turned
    by its kind; trail particles spawned (particle_spawn); callees stubbed */
-static THISCALL DWORD match_476410(char *ps, DWORD slot, DWORD a2) { DWORD v[2] = { slot, a2 }; return run_lifted(lift_476410, (DWORD)ps, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_476410(char *ps, DWORD slot, DWORD a2);
 /* 0x490440 actor_render(i, dt) (thiscall on the scene, ret 8): object i's record (0x2cc bytes from +0x131ae44):
    its animation time advanced by dt and its speed, by mode (+0x2a0: once, loop, back and forth) wrapped or
    stopped, the pose applied (skel_applyPose), its matrices built (Mat4_multiply / Mat4_invert, real), the unit
@@ -16069,7 +16070,8 @@ static void partframe_setup(void)
 	int slot = irnd(0, 999);
 	char *r = BUF + 0x20a99c0 + slot * 0x12c;
 	for (int k = 0; k < 0x12c / 4; k++) GF(r + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
-	S32(r, 4) = irnd(0, 3); S32(r, 8) = irnd(0, 200); S32(r, 0x14) = irnd(0, 50); S32(r, 0x18) = irnd(0, 50);
+	S32(r, 4) = irnd(0, 3); { static const int kinds[] = { 2, 3, 9, 9, 9, 25, 26, 30, 31, 32, 35, 36, 37, 39, -3 };
+	S32(r, 8) = irnd(0, 1) ? kinds[irnd(0, 14)] : irnd(-10, 200); } S32(r, 0x14) = irnd(0, 50); S32(r, 0x18) = irnd(0, 50);
 	GF(r + 0x70) = irnd(0, 9) ? (float)irnd(1, 500) / 10.0f : 0.0f; GF(BUF + 0x20a9a34 + slot * 0x12c) = (float)irnd(0, 600) / 10.0f;
 	S32(r, 0x28) = 0;
 	g_a[0] = slot; g_a[1] = irnd(0, 1) ? irnd(0, 10) : (int)0x3d4ccccd;
@@ -17877,7 +17879,7 @@ static const STest g_stests[] = {
 	/* batch 188 */
 	T(bullet_spawn, 0, 300, 0), T(bullet_init, 0, 400, 0),
 	/* batch 189 */
-	T(match_476410, 0, 400, 0), T(actor_render, 0, 400, 0),
+	T(match_476410, 0, 600, 0), T(actor_render, 0, 400, 0),
 	/* batch 190 */
 	T(bullet_update, 0, 400, 0),
 	/* batch 191 */
