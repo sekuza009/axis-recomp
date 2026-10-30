@@ -5900,7 +5900,8 @@ int FUN_0042eed0(int w, int h, DWORD flags, int bits);
    (FUN_0042eed0) and 0x42ef30; the checks again; the window class (WndProc, icon, cursor, brush; 0x43f840 on old
    Windows, else RegisterClassA), the window (the cave 0x4a8f50: the size from 0x5b1998 / 0x4e045c), three timers,
    shown; app_checkCdAndLoad (failure: the mode back, 0); screen 100, the cursor hidden, 0x43f300. Returns 1 */
-LIFT_PLAIN(app_init, 43fcc0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's caves (0x4a8e20, 0x4a8f50) done in C */
+int app_init(void *inst, int show);
 static FILE *g_log;
 static unsigned g_seed = 12345;
 /* the seed the running state test started from (in a crash report), and RECOMP_SEED=hex: the seed of the first state
@@ -17147,7 +17148,7 @@ static void appinit_setup(void)
 	g_mockAtom = irnd(0, 3) ? 0xc001 : 0;
 	g_a[0] = 0x400000; g_a[1] = irnd(0, 10);
 }
-T_PLAIN(app_init, 0x43fcc0, appinit_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(app_init, appinit_setup();, CALL_PLAIN(0x43fcc0, 0, g_a[0], g_a[1], 0, 0), (DWORD)app_init((void *)g_a[0], g_a[1]))
 #define T(name, ret, nfull, nfast) { #name, su_##name, or_##name, nw_##name, ret, nfull, nfast }
 static const STest g_stests[] = {
 	T(arena_404520, 1, 4, 3000), T(save_cryptRecord, 0, 4, 500), T(profile_42b3c0, 1, 4, 500), T(data_42b390, 1, 4, 2000),

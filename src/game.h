@@ -134,6 +134,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define input_reacquireKeyboard() GAME_CDECL(0x4012c0, void, void)()
 #define input_updateMenuCursor() GAME_CDECL(0x445c60, void, void)()
 #define input_justPressed(key) GAME_CDECL(0x401600, int, int)(key)
+#define app_setDataPaths() GAME_CDECL(0x43f5a0, void, void)()
+#define data_loadMessages() GAME_CDECL(0x42b3e0, void, void)()
+#define input_setDefaultKeyBindings() GAME_CDECL(0x42fd40, void, void)()
+#define cfg_writeDefaultAxisCfg() GAME_CDECL(0x42eca0, void, void)()
+#define app_43f640() GAME_CDECL(0x43f640, void, void)()
+#define app_registerWindowClassEx(wc) GAME_CDECL(0x43f840, int, void *)(wc)   /* the class registered on old Windows */
+#define app_checkCdAndLoad(inst) GAME_CDECL(0x430400, int, void *)(inst)
+#define app_42ef30(code) GAME_CDECL(0x42ef30, int, int)(code)   /* a start-up problem reported */
+#define GetCurrentDirectoryA_wrap_43f580() GAME_CDECL(0x43f580, u32, void)()
 #define FUN_0042eed0(w, h, flags, bits) GAME_CDECL(0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
 #define armc_4101e0() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
 #define armc_410500() GAME_CDECL(0x410500, void, void)()   /* page 2 */

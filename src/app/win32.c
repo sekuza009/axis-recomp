@@ -317,3 +317,101 @@ int (chat_createEdit)(int chars)
 	SendMessageA(GAME_VAR(void *, 0x9dd888), 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
 	return SendMessageA(GAME_VAR(void *, 0x9dd888), 0xb1, length, length);   /* EM_SETSEL */
 }
+
+/* ---- the start-up ---- */
+#define GetSystemMetrics(index) IMPORT(0x4a9358, int, int)(index)
+#define GetVersion() IMPORT(0x4a90fc, u32, void)()
+
+/* the files the game checks for (each failing: "Run AxisPlay.exe" and 0) */
+static int files_present(void)
+{
+	if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() ||
+	    !app_checkFile_axisgame() || !app_checkFile_game()) {
+		sys_messageBox((const char *)0x4b04b0);
+		return 0;
+	}
+	return 1;
+}
+
+/* 0x43fcc0: the game started (inst, show): outside the lobby (0x76d410) the files checked; a 640 x 480 default; the
+   directory, data paths and messages; the process made DPI aware when user32 has SetProcessDPIAware (the exe
+   patch's cave at 0x4a8e20); the desktop's size, DC and depth (0x67eefc, 0x76d430, 0x76d480, 0x76d3ec); the
+   default keys and axis.cfg, 0x43f640, the display mode set (32 bits) and its answer reported (app_42ef30); the
+   files checked again. The window class "AXIS" (WndProc 0x440070; app_registerWindowClassEx where GetVersion says
+   so, else RegisterClassA; kept at 0x4e0ca8), the window at (0, -1), the screen's size with one more row (the
+   patch's cave at 0x4a8f50), three timers, shown. Then the CD and the data (failing: the desktop's mode back, 0);
+   screen 100, the cursor hidden, the clock check. Returns 1, or 0 on any failure */
+int (app_init)(void *inst, int show)
+{
+	if (!GAME_VAR(int, 0x76d410) && !files_present())
+		return 0;
+	g_screenW = 640;
+	g_screenH = 480;
+	GetCurrentDirectoryA_wrap_43f580();
+	app_setDataPaths();
+	data_loadMessages();
+	void *user32 = GetModuleHandleA((const char *)0x4ac820);
+	if (user32) {
+		void (STDCALL *dpi_aware)(void) = IMPORT(0x4a907c, void *, void *, const char *)(user32, (const char *)0x4ac82c);   /* GetProcAddress */
+		if (dpi_aware)
+			dpi_aware();
+	}
+	GAME_VAR(int, 0x9dd8f8) = 0;
+	GAME_VAR(int, 0x67eefc) = GetSystemMetrics(0);   /* SM_CXSCREEN */
+	GAME_VAR(int, 0x76d430) = GetSystemMetrics(1);
+	void *dc = IMPORT(0x4a9318, void *, void *)(NULL);   /* GetDC */
+	GAME_VAR(void *, 0x76d480) = dc;
+	GAME_VAR(int, 0x76d3ec) = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
+	input_setDefaultKeyBindings();
+	cfg_writeDefaultAxisCfg();
+	app_43f640();
+	app_42ef30(FUN_0042eed0(g_screenW, g_screenH, 4, (GAME_VAR(int, 0x83a9c4) + 1) * 16));   /* CDS_FULLSCREEN */
+	if (!GAME_VAR(int, 0x76d410) && !files_present())
+		return 0;
+
+	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
+	wc.style = 0;
+	wc.proc = 0x440070;   /* WndProc */
+	wc.cls_extra = wc.wnd_extra = 0;
+	wc.inst = inst;
+	wc.icon = IMPORT(0x4a92c4, void *, void *, const char *)(inst, NULL);   /* LoadIconA */
+	wc.cursor = IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
+	wc.brush = IMPORT(0x4a903c, void *, int)(4);   /* GetStockObject(BLACK_BRUSH) */
+	wc.menu = wc.name = (const char *)0x4b0714;
+	int extended;   /* (GetVersion asked up to three times, as the original does) */
+	if (GetVersion() < 0x80000000)
+		extended = 0;
+	else if (GetVersion() < 0x80000000)
+		extended = 1;
+	else
+		extended = (u8)GetVersion() >= 4;
+	if (extended) {
+		if (!app_registerWindowClassEx(&wc))
+			return 0;
+	} else if (!(u16)IMPORT(0x4a92b8, u32, void *)(&wc))   /* RegisterClassA */
+		return 0;
+
+	memcpy((void *)0x4e0ca8, &wc, sizeof wc);
+	g_hWndMain = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
+		(0, (const char *)0x4b0714, (const char *)0x4b2874, 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
+	if (!g_hWndMain)
+		return 0;
+	GAME_VAR(void *, 0x67ef18) = inst;
+	GAME_VAR(int, 0x4deb54) = show;
+	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
+	for (int k = 0; k < 3; k++)
+		IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
+	IMPORT(0x4a92bc, int, void *, int)(g_hWndMain, show);   /* ShowWindow */
+	IMPORT(0x4a92c0, int, void *)(g_hWndMain);   /* UpdateWindow */
+	if (!app_checkCdAndLoad(inst)) {
+		FUN_0042eed0(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+		return 0;
+	}
+	g_menuState = 100;
+	IMPORT(0x4a92c8, int, int)(0);   /* ShowCursor */
+	GAME_VAR(int, 0x9dd904) = 1;
+	sys_checkClockTampering();
+	return 1;
+}
+#undef GetSystemMetrics
+#undef GetVersion
