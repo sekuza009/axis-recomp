@@ -3007,11 +3007,8 @@ static THISCALL DWORD space_traceUnit_4809f0(char *node, DWORD p0, DWORD p1, DWO
 }
 /* 0x483060 (thiscall) space_traceNodes(p0, p1, hit, subs, nsubs): the segment through the grid's cells (3D DDA over
    the cells it crosses, nearest first), tracing the octree of each cell that has one; the first hit wins */
-static THISCALL DWORD space_traceNodes(char *grid, DWORD p0, DWORD p1, DWORD hit, DWORD subs, DWORD nsubs)
-{
-	DWORD v[5] = { p0, p1, hit, subs, nsubs };
-	return run_lifted(lift_483060, (DWORD)grid, 5, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_traceNodes(char *grid, DWORD p0, DWORD p1, DWORD hit, DWORD subs, DWORD nsubs);
 /* 0x471740 (thiscall) collision_rayTrace(p0, p1, hit): line of sight through the level: every active scene object
    whose model box the segment (taken into the object) does not miss on one side becomes a sub-model (list,
    matrices), then the level grid (scene + 0xa10) is traced with them */

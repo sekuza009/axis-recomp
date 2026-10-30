@@ -243,6 +243,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define space_getNextFreeUnitPtr(space) GAME_THISCALL(0x4817f0, u32 *, void *)(space)
 #define load_482320(space, id, unit, part, i0, i1, i2, v0, v1, v2) GAME_THISCALL(0x482320, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, id, unit, part, i0, i1, i2, v0, v1, v2)
 #define load_482a40(out, m, v) GAME_CDECL(0x482a40, void, float *, const float *, const float *)(out, m, v)   /* a point through a matrix */
+#define space_traceUnit_4809f0(node, p0, p1, hit, dist, subs, nsubs) GAME_THISCALL(0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

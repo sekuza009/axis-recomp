@@ -569,3 +569,98 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 	}
 	return unit;
 }
+
+/* a coordinate's cell along one axis (from the space's low corner, by the cell size), kept within 0 .. n - 1 */
+static int cell_of(const float *p, const float *low, const float *size, int n)
+{
+	int c = ftol(fdiv_m(fsub_m(fld_m(p), low), size));
+	return c < 0 ? 0 : c > n - 1 ? n - 1 : c;
+}
+
+/* the boundary between cells c - 1 and c along an axis: c x size + low, at full precision */
+static long double cell_edge(int c, const float *size, const float *low)
+{
+	return fadd_m(fmul_m((long double)c, size), low);
+}
+
+/* 0x483060 (thiscall on the collision space): the segment p0 .. p1 through the grid's cells (z, x, y: sizes +0x80,
+   +0x84, +0x88; +0x74, +0x78, +0x7c of them), cell by cell from p0's towards p1's: y slabs, within each the z slabs,
+   within those the x cells, the segment clipped to each (the y and x clips through a parameter rounded to a float,
+   the z clip at full precision, as the original has them). Each cell with a root node (shorts at +0x54; 0xffff none)
+   has its octree traced (space_traceUnit_4809f0, the 0x50-byte nodes at +0x44); the first that reports a hit is the
+   answer. 0 when nothing is hit */
+int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
+{
+	int nz = FIELD(int, space, 0x74), nx = FIELD(int, space, 0x78), ny = FIELD(int, space, 0x7c);
+	if (nz <= 0 || nx <= 0 || ny <= 0)
+		return 0;
+	const float *low = (const float *)(space + 0x5c);
+	const float *size_z = (const float *)(space + 0x80), *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	int z0 = cell_of(&p0[2], &low[2], size_z, nz), x0 = cell_of(&p0[0], &low[0], size_x, nx), y0 = cell_of(&p0[1], &low[1], size_y, ny);
+	int z1 = cell_of(&p1[2], &low[2], size_z, nz), x1 = cell_of(&p1[0], &low[0], size_x, nx), y1 = cell_of(&p1[1], &low[1], size_y, ny);
+	int step_y = y0 > y1 ? -1 : 1, step_z = z0 > z1 ? -1 : 1, step_x = x0 > x1 ? -1 : 1;
+	float d[3];
+	for (int c = 0; c < 3; c++)
+		d[c] = f32(fsub_m(fld_m(&p1[c]), &p0[c]));
+	for (int cy = y0;; cy += step_y) {
+		float a[3], e[3], da[3];   /* the y slab's part of the segment */
+		for (int end = 0; end < 2; end++) {
+			float *q = end ? e : a;
+			if (cy == (end ? y1 : y0))
+				memcpy(q, end ? p1 : p0, 12);
+			else {
+				long double b = cell_edge((step_y > 0) == end ? cy + 1 : cy, size_y, &low[1]);
+				float t = f32(fdiv_m(fsub_m(b, &p0[1]), &d[1]));
+				q[0] = f32(fadd_m(fmul_m(fld_m(&d[0]), &t), &p0[0]));
+				q[1] = f32(b);
+				q[2] = f32(fadd_m(fmul_m(fld_m(&d[2]), &t), &p0[2]));
+			}
+		}
+		for (int c = 0; c < 3; c++)
+			da[c] = f32(fsub_m(fld_m(&e[c]), &a[c]));
+		for (int cz = z0;; cz += step_z) {
+			float a2[3], e2[3], db[3];   /* the z slab's part of that */
+			for (int end = 0; end < 2; end++) {
+				float *q = end ? e2 : a2;
+				if (cz == (end ? z1 : z0))
+					memcpy(q, end ? e : a, 12);
+				else {
+					long double b = cell_edge((step_z > 0) == end ? cz + 1 : cz, size_z, &low[2]);
+					long double t = fdiv_m(fsub_m(b, &a[2]), &da[2]);
+					q[0] = f32(fadd_m(fld_m(&da[0]) * t, &a[0]));
+					q[1] = f32(fadd_m(fld_m(&da[1]) * t, &a[1]));
+					q[2] = f32(b);
+				}
+			}
+			for (int c = 0; c < 3; c++)
+				db[c] = f32(fsub_m(fld_m(&e2[c]), &a2[c]));
+			for (int cx = x0;; cx += step_x) {
+				float a3[3], e3[3], dist;   /* the cell's part */
+				for (int end = 0; end < 2; end++) {
+					float *q = end ? e3 : a3;
+					if (cx == (end ? x1 : x0))
+						memcpy(q, end ? e2 : a2, 12);
+					else {
+						long double b = cell_edge((step_x > 0) == end ? cx + 1 : cx, size_x, &low[0]);
+						float t = f32(fdiv_m(fsub_m(b, &a2[0]), &db[0]));
+						q[0] = f32(b);
+						q[1] = f32(fadd_m(fmul_m(fld_m(&db[1]), &t), &a2[1]));
+						q[2] = f32(fadd_m(fmul_m(fld_m(&db[2]), &t), &a2[2]));
+					}
+				}
+				u16 root = FIELD(u16 *, space, 0x54)[(cy * FIELD(int, space, 0x74) + cz) * FIELD(int, space, 0x78) + cx];
+				if (root != 0xffff) {
+					int r = space_traceUnit_4809f0(FIELD(u8 *, space, 0x44) + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
+					if (r)
+						return r;
+				}
+				if (cx == x1)
+					break;
+			}
+			if (cz == z1)
+				break;
+		}
+		if (cy == y1)
+			return 0;
+	}
+}
