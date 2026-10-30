@@ -1169,8 +1169,6 @@ u32 (FUN_00450bb0)(void) { return arena_450a60(); }
 int (jmp_net_getLocalAddress_4532e0)(void) { return net_getLocalAddress(); }
 
 /* ---- packets to the lobby (socket 0xa055f8) and the game server (0xa05630): a kind word, then the kind's buffer ---- */
-#define LOBBY GAME_VAR(u32, 0xa055f8)
-#define SERVER GAME_VAR(u32, 0xa05630)
 
 /* the buffer at the pointer kept at `buffer` sent whole (size bytes) over the socket kept at `socket`, if both are
    there */
@@ -1260,5 +1258,3 @@ void (net_send)(int kind, int to)
 		return;
 	}
 }
-#undef LOBBY
-#undef SERVER
