@@ -14306,7 +14306,16 @@ static void controls_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dde80) + irnd(0x24, 0x200); G32(0x4ded6c) = G32(0x4dde84) + 0x58 + irnd(0, 10) * 0x18 + irnd(0, 20); }
 }
-T_PLAIN(setup_crosshairScreen, 0x425cd0, controls_setup();, 0, 0, 0, 0, 0)
+/* the hit test (setup_4206f0, its own test) stubbed: every item of the 18 or none; the row being edited cleared
+   more often, so the hovered rows are highlighted */
+static void controls_hover_setup(void)
+{
+	controls_setup();
+	static const DWORD hit[] = { 0x4206f0, 2, 0 };
+	callee_stubs(hit, 0);
+	callee_ret(0x4206f0, (DWORD)irnd(-1, 18));
+}
+T_PLAIN(setup_crosshairScreen, 0x425cd0, controls_hover_setup();, 0, 0, 0, 0, 0)
 /* batch 144 */
 /* the stats panel: pilotpanel_setup's pilots and texture set, positions, slots -1..6 (mostly 0..5), English or
    Korean, every float the panel reads below 10000 (its sprintf targets hold 20 bytes), every count below a million,
@@ -17778,7 +17787,7 @@ static const STest g_stests[] = {
 	/* batch 142 */
 	T(profile_44f810, 0, 200, 0), T(room_43ede0, 0, 200, 0),
 	/* batch 143 */
-	T(setup_crosshairScreen, 0, 300, 0),
+	T(setup_crosshairScreen, 0, 1000, 0),
 	/* batch 144 */
 	T(armc_drawStatsPanel, 0, 300, 0),
 	/* batch 145 */
