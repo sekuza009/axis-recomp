@@ -5421,11 +5421,8 @@ THISCALL DWORD bullet_spawn(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWO
 /* 0x479b40 bullet_init(slot, id, owner, a4, shot, a6) (ret 0x18): the slot from the shot (weapon +4: its record at
    +0x14d1ab4, origin and direction), the owner actor's muzzle and team, the id (or the next serial), its matrix,
    the firing sound and muzzle particles (stubbed) */
-static THISCALL DWORD bullet_init(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6)
-{
-	DWORD v[6] = { a1, a2, a3, a4, a5, a6 };
-	return run_lifted(lift_479b40, (DWORD)s, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void bullet_init(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* batch 189 (lifted/grp145.c): a particle's frame and an object's */
 #include "lifted/grp145.c"
 /* 0x476410 match_476410(slot, a2) (thiscall on the particle system, ret 8): the slot (0x12c bytes from +0x20a99c0)
@@ -16050,7 +16047,15 @@ static void bullets_setup(const DWORD *stubs)
 	for (int k = 0; k < 0x20; k++) GF(d + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
 	S32(d, 4) = irnd(0, 9) ? irnd(0, 7) : -1;
 	for (int i = 0; i < 16; i++) for (int k = 0; k < 8; k++) GF(BUF + 0x1cd93a8 + i * 0x8888 + 0x2e00 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
-	g_a[0] = irnd(0, 399); g_a[1] = irnd(-1, 50); g_a[2] = irnd(0, 15); g_a[3] = irnd(0, 3); g_a[4] = (int)d; g_a[5] = irnd(-1, 15);
+	for (int i = 0; i < 8; i++) { char *w = BUF + 0x14d1ab4 + i * 0x2e18;   /* the weapons' speed, range, spread, flash, mode, sound, tracer */
+		GF(w + 0x2de4) = (float)irnd(1, 5000) / 10.0f; GF(w + 0x2de8) = irnd(0, 3) ? (float)irnd(1, 5000) / 10.0f : 0.0f;
+		GF(w + 0x2dec) = irnd(0, 1) ? (float)irnd(-100, 3000) / 10.0f : 0.0f; GF(w + 0x2df0) = (float)irnd(0, 100) / 10.0f;
+		S32(w, 0x2dfc) = irnd(0, 3); S32(w, 0x2e00) = irnd(-1, 5); GF(w + 0x2e0c) = (float)irnd(-10, 10); }
+	for (int i = 0; i < 16; i++) S32(BUF, 0x1cd93cc + i * 0x8888) = irnd(0, 30);
+	S32(d, 0) = irnd(0, 2) ? 0 : 1; S32(d, 0x14) = irnd(-1, 9); S32(BUF, 0xa24) = (int)(BUF + 0x1000);
+	if (!S32(d, 0)) { float n = (float)irnd(1, 100) / 10.0f; GF(d + 0x18) /= n; GF(d + 0x1c) /= n; GF(d + 0x20) /= n; }
+	g_a[0] = irnd(0, 399); g_a[1] = irnd(-1, 50); g_a[2] = irnd(0, 15); g_a[3] = irnd(-1, 3);
+	S32(BUF, 0x202e8d4) = irnd(0, 1) ? g_a[2] : irnd(0, 15); g_a[4] = (int)d; g_a[5] = irnd(-1, 15);
 	callee_stubs(stubs, (DWORD)irnd(0, 399));
 	float hit[3];   /* the ray test's hit point (0x471740 fills its third argument), copied into the slot on a hit */
 	for (int k = 0; k < 3; k++) hit[k] = (float)irnd(-1000, 1000) / 10.0f;
@@ -17878,7 +17883,7 @@ static const STest g_stests[] = {
 	/* batch 187 */
 	T(particle_spawn, 0, 300, 0), T(particle_init, 0, 400, 0),
 	/* batch 188 */
-	T(bullet_spawn, 0, 300, 0), T(bullet_init, 0, 400, 0),
+	T(bullet_spawn, 0, 300, 0), T(bullet_init, 0, 600, 0),
 	/* batch 189 */
 	T(match_476410, 0, 600, 0), T(actor_render, 0, 400, 0),
 	/* batch 190 */

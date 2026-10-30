@@ -1,5 +1,6 @@
 /* weapons.c: switching an actor's weapon. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -196,3 +197,144 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 	} else
 		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), (const float *)0x4a974c));
 }
+
+#define K(address) ((const float *)(address))
+#define B(type, offset) GAME_VAR(type, b + (offset))
+
+static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
+
+/* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
+static u32 next_rand(u32 n)
+{
+	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
+	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	return r;
+}
+
+/* 0x479b40 (thiscall on the scene): bullet slot (0x4e8 bytes from +0x202ef34) fired by owner from the shot (+0 a
+   target given, +4 the weapon: its record 0x2e18 bytes from +0x14d1ab4, +8 the origin, +0x14 the target's record,
+   +0x18 the direction or the target, +0x24 kept at +0x10). Its id (or the next serial, +0x20a99bc). Aimed shots
+   spread with the weapon's +0x2dec less the owner's steadiness (+0x24) and are renormalised; mode 3 (+0x2dfc) fires
+   into a random cone about the direction (through gluLookAt's inverse); the first step (speed +0x2de4) is traced
+   (collision_rayTrace; the hit record +0x6c) and the part of a step used (+0x74) kept from 0 to 10. Then its
+   velocity (+0x2de8 times the direction, or the step), colour, the owner's own tracer end (+0x2e0c), and, unless
+   quiet, the muzzle flash (particle kind +0x2dfc + 10) and the firing sound (+0x2e00: at full volume for the local
+   player +0x202e8d4, else placed). Its callers ignore the eax it leaves */
+void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8 *shot, int quiet)
+{
+	u8 *b = s + 0x202ef34 + slot * 0x4e8;
+	u8 *w = s + 0x14d1ab4 + GAME_VAR(int, shot + 4) * 0x2e18;
+	const float *o = (const float *)(shot + 8), *aim = (const float *)(shot + 0x18);
+	if (id >= 0)
+		B(int, 0) = id;
+	else
+		B(int, 0) = GAME_VAR(int, s + 0x20a99bc)++;
+	B(int, 4) = 1;
+	B(int, 8) = GAME_VAR(int, shot + 4);
+	B(int, 0xc) = owner;
+	B(u32, 0x10) = GAME_VAR(u32, shot + 0x24);
+	memcpy(b + 0x54, o, 12);
+	float dir[3];
+	const float *w2de8 = (const float *)(w + 0x2de8);
+	if (GAME_VAR(int, shot) == 0) {
+		memcpy(dir, aim, 12);
+		if (GAME_VAR(float, w + 0x2dec) > 0) {
+			long double spread = fmul_m(fld_m((const float *)(w + 0x2dec)) -
+			                            fmul_m((long double)GAME_VAR(int, s + 0x1cd93cc + owner * 0x8888), K(0x4a9418)), K(0x4aa448));
+			if (!(spread >= 0))
+				spread = 0;
+			for (int k = 0; k < 3; k++)
+				dir[k] = f32(fadd_m((long double)((int)next_rand(100) - 50) * spread, &dir[k]));
+			Vec3_normalize(dir);
+		}
+		if (GAME_VAR(int, w + 0x2dfc) == 3) {
+			glPushMatrix();
+			glLoadIdentity();
+			for (int k = 0; k < 3; k++)
+				dir[k] = f32(fadd_m(fld_m(&dir[k]), &o[k]));
+			gluLookAt(o[0], o[1], o[2], dir[0], dir[1], dir[2], 0.0, 1.0, 0.0);
+			float m[16], inv[16];
+			glGetFloatv(0xba6, m);
+			Mat4_invert(inv, m);
+			glPopMatrix();
+			u32 cone[3] = { 0, 0x3e10d068, 0x3f7d6d5d };   /* 0, 0.141, 0.990: 8.1 degrees off the axis */
+			float *v = (float *)cone;
+			Vec3_rotateAxis(v, 0, (int)next_rand(3600));
+			for (int r = 0; r < 3; r++)
+				dir[r] = f32(fmul_m(fld_m(&v[2]), &inv[8 + r]) + fmul_m(fld_m(&v[1]), &inv[4 + r]) + fmul_m(fld_m(&inv[r]), &v[0]));
+		}
+		const float *speed = (const float *)(w + 0x2de4), *from = (const float *)(b + 0x54);
+		float *end = (float *)(b + 0x60);
+		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
+		long double sz = fmul_m(fld_m(speed), &dir[2]);
+		end[0] = f32(fadd_m(fld_m(&sx), &from[0]));
+		end[1] = f32(fadd_m(fld_m(&sy), &from[1]));
+		end[2] = f32(fadd_m(sz, &from[2]));
+		float hit[3];
+		B(int, 0x6c) = collision_rayTrace(s, from, end, hit);
+		if (B(int, 0x6c)) {
+			memcpy(end, hit, 12);
+			if (*w2de8 > 0) {
+				float dx = f32(fsub_m(fld_m(&hit[0]), &from[0]));
+				long double dy = fsub_m(fld_m(&hit[1]), &from[1]), dz = fsub_m(fld_m(&hit[2]), &from[2]);
+				B(float, 0x74) = f32(fdiv_m(root((fmul_m(fld_m(&dx), &dx) + dz * dz) + dy * dy), w2de8));
+			} else
+				B(int, 0x74) = 0;
+		} else if (*w2de8 > 0)
+			B(float, 0x74) = f32(fdiv_m(fld_m(speed), w2de8));
+		else
+			B(int, 0x74) = 0;
+		if (!(B(float, 0x74) >= 0) || B(float, 0x74) > *K(0x4a9418))
+			B(int, 0x74) = 0;
+	} else {
+		for (int k = 0; k < 3; k++)
+			dir[k] = f32(fsub_m(fld_m(&aim[k]), &o[k]));
+		Vec3_normalize(dir);
+		int target = GAME_VAR(int, shot + 0x14);
+		B(u32, 0x6c) = target >= 0 ? GAME_VAR(u32, s + 0xa24) + target * 0xac : 0;
+		memcpy(b + 0x60, aim, 12);
+		B(u32, 0x74) = 0x41200000;   /* 10 */
+	}
+	B(int, 0x70) = 0;
+	memcpy(b + 0x78, o, 12);
+	memcpy(b + 0x84, o, 12);
+	B(int, 0x9c) = 0;
+	float *vel = (float *)(b + 0xa0);
+	for (int k = 0; k < 3; k++)
+		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(b + 0x60) + k), (const float *)(b + 0x54) + k));
+	memcpy(b + 0xac, (const void *)0xa0e7e8, 12);
+	B(int, 0xb8) = -1;
+	B(int, 0xc0) = 0;
+	B(int, 0xbc) = a4;
+	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4)) {
+		const float *at = (const float *)(b + 0x78);
+		float *tip = (float *)(b + 0xc4);
+		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
+		float ty = f32(fmul_m(fld_m(&aim[1]), K(0x4aa444))), tz = f32(fmul_m(fld_m(&aim[2]), K(0x4aa444)));
+		tip[0] = f32(fadd_m(tx, &at[0]));
+		tip[1] = f32(fadd_m(fld_m(&ty), &at[1]));
+		tip[2] = f32(fadd_m(fld_m(&tz), &at[2]));
+	}
+	B(int, 0xd0) = 0;
+	B(int, 0x4e4) = 0;
+	if (quiet)
+		return;
+	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, B(u32, 0xc) };
+	memcpy(&rec[2], b + 0x78, 12);
+	memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+	rec[8] = B(u32, 0x10);
+	float size = f32(fld_m((const float *)(w + 0x2df0)));
+	memcpy(&rec[11], &size, 4);
+	particle_spawn(s, rec);
+	int sound = GAME_VAR(int, w + 0x2e00);
+	if (sound < 0)
+		return;
+	if (B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4))
+		sound_playVolume(sound, 100);
+	else
+		GAME_CDECL(0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
+		                                                                                (const float *)(b + 0x78), (const float *)(s + 0x20f397c), 0x47435000);
+}
+#undef K
+#undef B
