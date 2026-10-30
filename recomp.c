@@ -3479,11 +3479,8 @@ static THISCALL DWORD space_buildUnits(char *sp, DWORD id, DWORD shape, DWORD ma
    triangles each (the winding flipped for ceilings, vertices +0x3c, rows +0x18, columns +0x1c); every active object
    (+0x131ae48, 0x2cc apart, count +0x13c9b24; not flagged 4 at +8) as a unit of its shape (+0x278) through its matrix
    (+0xf0), stored at +0x288. Progress messages through FUN_00470fc0 */
-static THISCALL DWORD collision_initVolume(char *scene, DWORD sz, DWORD sx, DWORD sy, DWORD mg, DWORD per, DWORD depth)
-{
-	DWORD v[6] = { sz, sx, sy, mg, per, depth };
-	return run_lifted(lift_471040, (DWORD)scene, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void collision_initVolume(char *stage, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 69 (lifted/grp16.c) */
 #include "lifted/grp16.c"
 /* 0x4729b0 (thiscall) camera_setupView(pos, dir, up, fov, w, h, near, far, dt): keep the previous camera position
@@ -11221,7 +11218,7 @@ static void colvol_setup(void)
 	for (int i = 0; i < nl; i++) {
 		char *L = BUF + 0xdc0248 + i * 0x20c; int rows = irnd(0, 3), cols = irnd(0, 3);
 		fill(L, 0x60);
-		S32(L, 4) = irnd(0, 4) ? irnd(0, 1) : 2; S32(L, 0x18) = rows; S32(L, 0x1c) = cols; S32(L, 0x3c) = (int)(BUF + 0x20000 + i * 0x400);
+		S32(L, -4) = irnd(0, 4) ? irnd(0, 1) : 2;   /* (the kind is the record's first dword) */ S32(L, 0x18) = rows; S32(L, 0x1c) = cols; S32(L, 0x3c) = (int)(BUF + 0x20000 + i * 0x400);
 		for (int k = 0; k < (rows + 1) * (cols + 1) * 3; k++) SF(BUF + 0x20000 + i * 0x400, 4 * k) = (float)irnd(-1600, 1600) / 100.0f;
 	}
 	int no = irnd(0, 3); S32(BUF, 0x13c9b24) = no;
@@ -17596,7 +17593,7 @@ static const STest g_stests[] = {
 	/* batch 67 */
 	T(space_buildPlanes, 1, 400, 0), T(load_482320, 0, 400, 0), T(space_buildUnits, 1, 200, 0),
 	/* batch 68 */
-	T(collision_initVolume, 0, 100, 0),
+	T(collision_initVolume, 0, 300, 0),
 	/* batch 69 */
 	T(camera_setupView, 0, 200, 0),
 	/* batch 70 */

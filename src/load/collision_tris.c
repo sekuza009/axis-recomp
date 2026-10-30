@@ -277,3 +277,67 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	return space_testSphere(stage + 0xa10, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
 	                        stage + 0x9ca0f4, count);
 }
+
+/* a triangle of the stage's ground or bounds put into the collision space (no unit, part or indices) */
+static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, const void *c)
+{
+	space_buildPlanes(grid, id, (u32)a, (u32)b, (u32)c, 0, -1, -1, -1, -1);
+}
+
+/* 0x471040 (thiscall on the stage): its collision space (+0xa10) set up over the world box (+0x9ef904 low, +0x9ef910
+   high) in cells of the given sizes (z, x, y: the counts of whole cells), with a, b and the depth. Then, with
+   +0x9ef30c, the floor (the box's lower face, two triangles, id 0x10); each ground layer (+0xdc0a74 of them, 0x20c
+   bytes from +0xdc0244: kind 0 or 1, rows +0x1c, columns +0x20, the (columns + 1) x (rows + 1) points +0x40) as two
+   triangles a cell, split one way for kind 0 and the other for kind 1, each row logged; and every object in use
+   (+4) that is not flagged 4 (+0xc) as a unit (space_buildUnits with its shape +0x27c and matrix +0xf4: +0x28c),
+   every second one logged. Its caller ignores the eax it leaves */
+void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 a, u32 b, u32 depth)
+{
+	u8 *grid = stage + 0xa10;
+	const float *low = (const float *)(stage + 0x9ef904), *high = (const float *)(stage + 0x9ef910);
+	FUN_00470fc0((int)stage, 0, 0, (const char *)0x4c7490);
+	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
+	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
+	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
+	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, a, b, depth);
+	FUN_00470fc0((int)stage, 0, 0, (const char *)0x4c747c);
+	if (FIELD(int, stage, 0x9ef30c)) {
+#define F(v) f32(fld_m(&(v)))
+		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
+		float vd[3] = { F(high[0]), F(low[1]), F(high[2]) };
+#undef F
+		u32 vc[3];
+		memcpy(vc, low, sizeof vc);
+		ground_triangle(grid, 0x10, vc, vb, va);
+		ground_triangle(grid, 0x10, va, vb, vd);
+	}
+	for (int l = 0; l < FIELD(int, stage, 0xdc0a74); l++) {
+		u8 *layer = stage + 0xdc0244 + l * 0x20c;
+		int kind = FIELD(int, layer, 0);
+		if (kind != 0 && kind != 1)
+			continue;
+		for (int r = 0; r < FIELD(int, layer, 0x1c); r++) {
+			FUN_00470fc0((int)stage, 0, r, (const char *)(kind ? 0x4c7430 : 0x4c7458), r);
+			for (int c = 0; c < FIELD(int, layer, 0x20); c++) {
+				int w = FIELD(int, layer, 0x20) + 1;
+				const float *v = FIELD(const float *, layer, 0x40);
+				const float *p00 = v + (w * r + c) * 3, *p01 = p00 + 3, *p10 = v + (w * (r + 1) + c) * 3, *p11 = p10 + 3;
+				if (kind == 0) {
+					ground_triangle(grid, 0, p00, p10, p01);
+					ground_triangle(grid, 0, p01, p10, p11);
+				} else {
+					ground_triangle(grid, 0, p00, p01, p10);
+					ground_triangle(grid, 0, p01, p11, p10);
+				}
+			}
+		}
+	}
+	for (int i = 0; i < FIELD(int, stage, 0x13c9b24); i++) {
+		u8 *obj = stage + 0x131ae44 + i * 0x2cc;
+		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
+			continue;
+		if (i % 2 == 0)
+			FUN_00470fc0((int)stage, 0, i, (const char *)0x4c7418, i);
+		FIELD(u32, obj, 0x28c) = space_buildUnits(grid, i, FIELD(void *, obj, 0x27c), (const float *)(obj + 0xf4));
+	}
+}
