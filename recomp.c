@@ -2984,9 +2984,12 @@ DWORD profile_44f6c0(void);
 void armc_41dcf0(void);
 /* 0x42e730 cfg_parseKeyNames(f) / 0x42e240 cfg_videoModeNames(f) / 0x42da70 cfg_gameTypeNames(f): read a fixed
    number of axis.cfg lines (68 / 7 / 7) and take the values named in them */
-LIFT_PLAIN(cfg_parseKeyNames, 42e730)
-LIFT_PLAIN(cfg_videoModeNames, 42e240)
-LIFT_PLAIN(cfg_gameTypeNames, 42da70)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_parseKeyNames(void *f);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_videoModeNames(void *f);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void cfg_gameTypeNames(void *f);
 /* 0x48dbf0 (thiscall) net_sendGamePacket(p): player p's state packet, with samples of the level geometry tables
    (index from a rolling counter) and the pending event bits */
 static THISCALL DWORD net_sendGamePacket(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48dbf0, (DWORD)scene, 1, v); }
@@ -10136,9 +10139,12 @@ static const char *const k_cfgGameTypes[] = { "ON", "OFF", "TEAM DEATH MATCH", "
 	"TEAM SUDDEN DEATH", "SHOTGUN ARENA", "TEAM SHOTGUN ARENA", "IONCANNON ARENA", "TEAM IONCANNON ARENA", "ROCKET ARENA",
 	"TEAM ROCKET ARENA", "GLADIATOR ARENA", "TEAM GLADIATOR ARENA", "KING ON THE HILL", "PLATOON MODE",
 	"ACCEPT ADVANCED MODE", "15", "30" };
-T_PLAIN(cfg_parseKeyNames, 0x42e730, cfglines_setup(68, k_cfgOnOff, 4, 1);, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(cfg_videoModeNames, 0x42e240, cfglines_setup(7, k_cfgVideo, 14, 0);, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(cfg_gameTypeNames, 0x42da70, cfglines_setup(7, k_cfgGameTypes, 19, 0);, 0, VFS_FILE(0), 0, 0, 0)
+/* its caller ignores the eax it leaves */
+ST(cfg_parseKeyNames, cfglines_setup(68, k_cfgOnOff, 4, 1);, (CALL_PLAIN(0x42e730, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_parseKeyNames((void *)VFS_FILE(0)), 0))
+/* its caller ignores the eax it leaves */
+ST(cfg_videoModeNames, cfglines_setup(7, k_cfgVideo, 14, 0);, (CALL_PLAIN(0x42e240, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_videoModeNames((void *)VFS_FILE(0)), 0))
+/* its caller ignores the eax it leaves */
+ST(cfg_gameTypeNames, cfglines_setup(7, k_cfgGameTypes, 19, 0);, (CALL_PLAIN(0x42da70, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_gameTypeNames((void *)VFS_FILE(0)), 0))
 /* the scene at the scratch area (fields from +0x1f1668 on): six geometry tables, each "count" rows of "stride"
    dwords with a sampling divisor (kept within a row) and a row count, the event flags, the recording */
 static void gamepkt_setup(void)

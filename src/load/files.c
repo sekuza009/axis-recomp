@@ -1075,6 +1075,139 @@ void (cfg_42e080)(void *f)
 	skip_line(f);
 }
 
+/* ---- the server, graphics and key binding sections: their buffers laid out as the originals' are, the line
+   straight after the joined value, kept across the lines. At the file's end fgets leaves the last line as it was,
+   cut once more; cutting an empty one writes the byte before it, the value's last (cleared next anyway). A few bytes
+   lie before the value for cfg_44ac70's cut of an empty value (in the original the top byte of the caller's saved
+   ebx, which is not reproduced) ---- */
+typedef struct { char before[4]; char value[0x84]; char line[0x78]; } CfgBuf;
+
+static void read_into(void *f, CfgBuf *b, int spaced)
+{
+	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	crt_fgets(b->line, 0x50, f);
+	char *end = b->line + strlen(b->line) - 1;
+	*end = '\0';
+	crt_strtok(b->line, gaps);
+	crt_strtok(NULL, gaps);
+	memset(b->value, 0, 0x84);
+	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
+		strcat(b->value, word);
+		if (spaced)
+			strcat(b->value, (const char *)0x4b035c);   /* " " */
+	}
+}
+
+/* the value's position among count strings (1 ..), 0 when none */
+static int named(const char *value, const u32 *names, int count)
+{
+	for (int k = 0; k < count; k++)
+		if (!strcmp(value, (const char *)names[k]))
+			return k + 1;
+	return 0;
+}
+
+#define IS_ON(value) (!strcmp((value), (const char *)0x4b21bc))   /* "ON" */
+
+/* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; 0x4ded20),
+   the map (0 .. 21, else 0; 0x4ded40), the players (0 .. 16, else 8; 0x4ded41), a switch (ON; 0x4ded42), the game
+   type (TEAM DEATH MATCH 1 .. ACCEPT ADVANCED MODE 14, else 0; 0x4ded43), two limits (above 250: 30; 0x4ded44 /
+   0x4ded45); then one more line */
+void (cfg_gameTypeNames)(void *f)
+{
+	static const u32 types[14] = { 0x4b22b8, 0x4b22a8, 0x4b2294, 0x4b2284, 0x4b2270, 0x4b2260, 0x4b2248, 0x4b2238,
+	                               0x4b2224, 0x4b2214, 0x4b21fc, 0x4b21e8, 0x4b21d8, 0x4b21c0 };
+	CfgBuf b;
+	__asm__("" : "=m"(b));   /* (left as the stack holds it) */
+	for (int n = 0; n < 7; n++) {
+		read_into(f, &b, n == 0 || n == 4);
+		signed char v;
+		switch (n) {
+		case 0:
+			cfg_44ac70(b.value);
+			strcpy((char *)0x4ded20, b.value);
+			break;
+		case 1:
+			v = (signed char)crt_atoi(b.value);
+			GAME_VAR(signed char, 0x4ded40) = v < 0 || v > 0x15 ? 0 : v;
+			break;
+		case 2:
+			v = (signed char)crt_atoi(b.value);
+			GAME_VAR(signed char, 0x4ded41) = v < 0 || v > 0x10 ? 8 : v;
+			break;
+		case 3:
+			GAME_VAR(u8, 0x4ded42) = IS_ON(b.value);
+			break;
+		case 4:
+			cfg_44ac70(b.value);
+			GAME_VAR(u8, 0x4ded43) = (u8)named(b.value, types, 14);
+			break;
+		default: {
+			u8 limit = (u8)crt_atoi(b.value);
+			GAME_VAR(u8, 0x4ded44 + (n - 5)) = limit > 250 ? 30 : limit;
+			break;
+		}
+		}
+	}
+	crt_fgets(b.line, 0x50, f);
+}
+
+/* 0x42e240: the graphics section read back: the screen size (1280x720 1, 1600x900 2, 1920x1080 3, 2560x1440 4,
+   3840x2160 5, 1024x768 6, DESKTOP 7, else 0; 0x83a9c0), 32 bits (0x83a9c4), HIGH (0x83a9c8) and four switches (ON;
+   0x83a9cc .. 0x83a9d8); then one more line */
+void (cfg_videoModeNames)(void *f)
+{
+	static const u32 sizes[7] = { 0x4ac858, 0x4ac87c, 0x4ac8a0, 0x4ac8c4, 0x4ac8e8, 0x4ac90c, 0x4ac92c };
+	CfgBuf b;
+	__asm__("" : "=m"(b));
+	for (int n = 0; n < 7; n++) {
+		read_into(f, &b, 0);
+		if (n == 0)
+			GAME_VAR(int, 0x83a9c0) = named(b.value, sizes, 7);
+		else if (n == 1)
+			GAME_VAR(int, 0x83a9c4) = !strcmp(b.value, (const char *)0x4b22d4);   /* "32" */
+		else if (n == 2)
+			GAME_VAR(int, 0x83a9c8) = !strcmp(b.value, (const char *)0x4b22cc);   /* "HIGH" */
+		else
+			GAME_VAR(int, 0x83a9cc + (n - 3) * 4) = IS_ON(b.value);
+	}
+	crt_fgets(b.line, 0x50, f);
+}
+
+/* the binding a key line is read into: the lines run in the menu's order (cfg_keyBindings' table), and the last
+   line (help, second key) goes to the binding before it, 62, so binding 63 is never read back */
+static int read_binding(int line)
+{
+	if (line >= 26 && line <= 33)
+		return line + 4;
+	if (line >= 34 && line <= 37)
+		return line - 8;
+	return line == 63 ? 62 : line;
+}
+
+/* 0x42e730: the key bindings read back: 64 lines of key names (each looked up among the 256 at 0x4b0750, the last
+   match kept; none leaves the binding as it was) into the bindings (0x4def00), then the mouse: convert and smooth
+   (ON; 0x4df000, 0x4df004), the sensitivity and the crosshairs (0x4df008, 0x4df00c); then one more line */
+void (cfg_parseKeyNames)(void *f)
+{
+	const char *const *key_name = (const char *const *)0x4b0750;
+	CfgBuf b;
+	__asm__("" : "=m"(b));
+	for (int n = 0; n < 0x44; n++) {
+		read_into(f, &b, 0);
+		if (n == 0x40 || n == 0x41)
+			GAME_VAR(int, 0x4df000 + (n - 0x40) * 4) = IS_ON(b.value);
+		else if (n == 0x42 || n == 0x43)
+			GAME_VAR(int, 0x4df008 + (n - 0x42) * 4) = crt_atoi(b.value);
+		else
+			for (int k = 0; k < 256; k++)
+				if (!strcmp(b.value, key_name[k]))
+					GAME_VAR(int, 0x4def00 + read_binding(n) * 4) = k;
+	}
+	crt_fgets(b.line, 0x50, f);
+}
+#undef IS_ON
+
 /* 0x42eca0 (named for its second half): axis.cfg read from the data folder (0x9dae7c) when its first line is the
    header (0x4b0f50): the player, server, sound, graphics and key binding sections. Without the file or with another
    header, the defaults (the player PLAYER, the server AXIS ARENA with 8 players, sound at 100 / 100, the switches and
