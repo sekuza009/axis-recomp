@@ -3942,7 +3942,8 @@ int lobby_openConnection(void);
    (net_452a30 / net_452bd0 / net_452d70), 0x1a clear the room table (net_452ea0), 0x1d a 0x22-byte chat line
    (0xa052c0; non-empty sets 0xa0b354); each read waits up to 3 s (timeout: status 0x29 / 0x28) and most end the
    state (0) */
-LIFT_PLAIN(net_recv, 452620)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
 #include "lifted/grp46.c"
 /* 0x461250 (thiscall on the scene) armc_461250(name, v, team, head, chest, arm, leg, booster, item0..5): the
@@ -12561,7 +12562,7 @@ static void netrecv_setup(void)
 	/* the reply's code (its first dword, as recv delivers it): an answer 30 .. 42 or a small one */
 	DWORD code = irnd(0, 2) ? 0x1e + irnd(0, 12) : irnd(0, 4); memcpy(g_mockRecvHead, &code, 4); g_mockRecvHeadLen = 4;
 }
-ST(net_recv, netrecv_setup();, (CD(void, 0x452620, void)(), 0), (net_recv(0, 0, 0, 0, 0, 0, 0), 0))
+ST(net_recv, netrecv_setup();, (CD(void, 0x452620, void)(), 0), (net_recv(), 0))
 /* batch 100 */
 /* the whole mech: wholeplayer_setup's player as the edited one (or none), the name, value, team and part / item
    indices any value (the pickers wrap them) */

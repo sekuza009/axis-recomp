@@ -1258,3 +1258,108 @@ void (net_send)(int kind, int to)
 		return;
 	}
 }
+
+/* ---- replies to the last request (0xa0b300) ---- */
+
+/* size bytes read from the socket kept at `socket` into buf, again and again until that many have come (1) or 3
+   seconds since start have passed (0) */
+static int recv_all(u32 socket, void *buf, int size, u32 start)
+{
+	u32 got = 0;
+	for (;;) {
+		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		if (n > 0)
+			got += n;
+		if (GetTickCount() - start > 3000)
+			return 0;
+		if (got >= (u32)size)
+			return 1;
+	}
+}
+
+/* a status reply (four bytes into reply): 1 the connection closed, 0 refused, 3 the timeout's code; each ends the
+   request and leaves its code in status */
+static void status_reply(u32 socket, u32 reply, u32 status, u32 timeout, u32 start)
+{
+	if (!recv_all(socket, (void *)reply, 4, start)) {
+		GAME_VAR(int, status) = timeout;
+		GAME_VAR(int, 0xa0b300) = 0;
+	}
+	switch (GAME_VAR(int, reply)) {
+	case 1:
+		GAME_VAR(int, status) = 0x67;
+		net_disconnect();
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	case 0:
+		GAME_VAR(int, 0xa0b300) = 0;
+		GAME_VAR(int, status) = 0x66;
+		break;
+	case 3:
+		GAME_VAR(int, 0xa0b300) = 0;
+		GAME_VAR(int, status) = timeout;
+		break;
+	}
+}
+
+/* an answer (0x10b bytes into 0xa05638) from the game server: its code kept in `answer` when it is one of `codes`
+   (that ends the request); a timeout leaves 0x28 */
+static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
+{
+	if (!recv_all(0xa05630, (void *)0xa05638, 0x10b, start)) {
+		GAME_VAR(int, answer) = 0x28;
+		GAME_VAR(int, 0xa0b300) = 0;
+	}
+	int code = GAME_VAR(int, 0xa05638);
+	for (int k = 0; k < count; k++)
+		if (code == codes[k]) {
+			GAME_VAR(int, 0xa0b300) = 0;
+			GAME_VAR(int, answer) = code;
+			return;
+		}
+}
+
+/* 0x452620: the reply to the last request (0xa0b300) read: 10 the lobby's status (0xa055dc into 0xa0b370), 13 the
+   list of games, 14 / 15 the game server's answers (kept in 0xa0b378 / 0xa0b37c), 18 its status (0xa0b248 into
+   0xa0b374), 19 the server list, 21 the player list, 26 the player list cleared (0xa0b350), 29 a 0x22-byte notice
+   (0xa052c0; 0xa0b354 when it is not empty). The callers ignore the eax it leaves */
+void (net_recv)(void)
+{
+	u32 start = GetTickCount();
+	static const u8 answers14[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a }, answers15[4] = { 0x1e, 0x21, 0x28, 0x2a };
+	switch (GAME_VAR(int, 0xa0b300)) {
+	case 10:
+		status_reply(0xa055f8, 0xa055dc, 0xa0b370, 0x29, start);
+		break;
+	case 13:
+		net_452a30();
+		break;
+	case 14:
+		answer_reply(0xa0b378, answers14, 6, start);
+		break;
+	case 15:
+		answer_reply(0xa0b37c, answers15, 4, start);
+		break;
+	case 18:
+		status_reply(0xa05630, 0xa0b248, 0xa0b374, 0x28, start);
+		break;
+	case 19:
+		net_452bd0();
+		break;
+	case 21:
+		net_452d70();
+		break;
+	case 26:
+		net_452ea0();
+		GAME_VAR(int, 0xa0b350) = 1;
+		GAME_VAR(int, 0xa0b300) = 0;
+		break;
+	case 29:
+		recv_all(0xa05630, (void *)0xa052c0, 0x22, start);
+		if (*(const u8 *)0xa052c0) {
+			GAME_VAR(int, 0xa0b354) = 1;
+			GAME_VAR(int, 0xa0b300) = 0;
+		}
+		break;
+	}
+}

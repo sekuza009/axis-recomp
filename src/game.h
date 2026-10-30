@@ -920,6 +920,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_resolveHost(host) GAME_CDECL(0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
 #define arena_4519b0() GAME_CDECL(0x4519b0, u32, void)()
 #define net_452e60() GAME_CDECL(0x452e60, void, void)()   /* the game list table cleared */
+#define net_452a30() GAME_CDECL(0x452a30, void, void)()   /* the list of games received */
+#define net_452bd0() GAME_CDECL(0x452bd0, void, void)()   /* the server list received */
+#define net_452d70() GAME_CDECL(0x452d70, void, void)()   /* the player list received */
 #define net_452e80() GAME_CDECL(0x452e80, void, void)()   /* the server table cleared */
 #define net_452ea0() GAME_CDECL(0x452ea0, void, void)()   /* the player list cleared */
 #define jmp_net_getLocalAddress_4532e0() GAME_CDECL(0x4532e0, int, void)()   /* this machine's address (0xa0b43c) */
