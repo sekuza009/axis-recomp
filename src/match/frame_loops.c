@@ -1,6 +1,7 @@
 /* frame_loops.c: the scene's per-frame passes over its slots: each slot in use (its first dword 1) updated, unless
    the game is paused (+0x2149308 set with +0x214930c 1). The count is read again after each slot. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -324,4 +325,87 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 	}
 #undef TRIGGER
 #undef ACTOR
+}
+
+/* a 4 x 4 identity matrix (as float bits) */
+static void identity4(u32 *m)
+{
+	for (int k = 0; k < 16; k++)
+		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
+}
+
+/* 0x48fee0 (thiscall on the scene): map object i (0x2cc bytes from +0x131ae44) set up from its type record: the
+   type's name found among the object names (0x40 bytes from +0x130b440, +0x131ae40 of them) or added (at most 1000,
+   else a fatal message); the next serial (+0x13c9b2c), in use, the name's index, three values (+0x40 ..), the
+   animation path ("dir\sub\name" by 0x4c7a30 when the type names one, +0x4c), the position (+0x8c) and rotation
+   (+0x98, a quaternion); its matrix (+0x74: translation x rotation) and inverse (+0xb4), a copy (+0xf4) and its
+   inverse (+0x134), two identities (+0x174, +0x1b4), the copy times the inverse (+0x1f4) and its inverse (+0x234).
+   Its shape (shape_getByName, bound) and two ranges of its element count from the shading pool (+0xf30dc8, used
+   +0x13016c8; past 1000000 a fatal message), two values (+0xa8), the counters cleared, the shape's centre through
+   the matrix (+0x2bc; no shape: the position), and its shading worked out unless the map has it (+0x13016cc). Its
+   callers ignore the eax it leaves */
+void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
+{
+	u8 *obj = s + 0x131ae44 + i * 0x2cc;
+	int idx = 0;
+	for (; idx < FIELD(int, s, 0x131ae40); idx++)
+		if (!strcmp((const char *)type, (const char *)s + 0x130b440 + idx * 0x40))
+			break;
+	if (idx == FIELD(int, s, 0x131ae40)) {
+		if (idx >= 1000)
+			sys_fatalError((char *)0xae2eb8, (const char *)0x4c8364, 1000);
+		idx = FIELD(int, s, 0x131ae40)++;
+		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)type);
+	}
+	FIELD(int, obj, 0) = FIELD(int, s, 0x13c9b2c)++;
+	FIELD(int, obj, 4) = 1;
+	FIELD(int, obj, 8) = idx;
+	memcpy(obj + 0xc, type + 0x40, 12);
+	if (type[0x4c])
+		sprintf((char *)obj + 0x18, (const char *)0x4c7a30, s + 8, s + 0x908, type + 0x4c);
+	else
+		obj[0x18] = 0;
+	memcpy(obj + 0x58, type + 0x8c, 12);
+	u32 move[16];
+	identity4(move);
+	for (int c = 0; c < 3; c++)
+		((float *)move)[12 + c] = f32(fld_m((const float *)(obj + 0x58) + c));
+	memcpy(obj + 0x64, type + 0x98, 16);
+	float turn[16];
+	FUN_0047d8a0(turn, (const float *)(obj + 0x64));
+	float *m = (float *)(obj + 0xf4);
+	Mat4_multiply((float *)(obj + 0x74), (const float *)move, turn);
+	Mat4_invert((float *)(obj + 0xb4), (const float *)(obj + 0x74));
+	FUN_0047d5a0(m, obj + 0x74);
+	Mat4_invert((float *)(obj + 0x134), m);
+	identity4((u32 *)(obj + 0x174));
+	identity4((u32 *)(obj + 0x1b4));
+	Mat4_multiply((float *)(obj + 0x1f4), m, (const float *)(obj + 0xb4));
+	Mat4_invert((float *)(obj + 0x234), (const float *)(obj + 0x1f4));
+	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)type, 1);
+	FIELD(u8 *, obj, 0x27c) = shape;
+	for (int r = 0; r < 2; r++) {
+		int need = FIELD(int, s, 0x13016c8) + FIELD(int, shape, 0x18);
+		if (need > 1000000)
+			sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4c8314, i, need, 1000000);
+		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + FIELD(int, s, 0x13016c8) * 4;
+		FIELD(int, s, 0x13016c8) += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
+	}
+	FIELD(int, obj, 0x288) = 1;
+	FIELD(u32, obj, 0x274) = FIELD(u32, type, 0xa8);
+	FIELD(u32, obj, 0x278) = FIELD(u32, type, 0xac);
+	memset(obj + 0x28c, 0, 7 * 4);
+	if (shape) {
+		const float *c = (const float *)(shape + 0x20);
+		float *out = (float *)(obj + 0x2bc);
+		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
+		for (int r = 1; r < 3; r++)
+			out[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &c[2]) + fmul_m(fld_m(&m[r]), &c[0]) + fmul_m(fld_m(&m[4 + r]), &c[1]), &m[12 + r]));
+	} else
+		memcpy(obj + 0x2bc, obj + 0x58, 12);
+	FIELD(int, obj, 0x2a8) = 0;
+	FIELD(int, obj, 0x2c8) = 0;
+	if (FIELD(int, s, 0x13016cc) == 0)
+		shape_shadeParts(FIELD(u32 *, obj, 0x280), 1, (Model *)FIELD(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9ccffc),
+		                 (const float *)(obj + 0x134));
 }

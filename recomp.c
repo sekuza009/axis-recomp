@@ -3669,11 +3669,8 @@ THISCALL DWORD shape_getByName(char *self, DWORD name, DWORD bind);
    (translation x rotation, inverse, two more pairs), its shape (shape_getByName at +0xe3c93c, bound), two element
    ranges of the shape's size from the pool at +0xf30dc8 (count +0x13016c8; past 1000000 is fatal), its shape centre
    through the matrix, and, unless +0x13016cc, its shading colours (FUN_00466910 with the factors at +0x9ccffc) */
-static THISCALL DWORD object_initObjectBy(char *scene, DWORD i, DWORD type)
-{
-	DWORD v[2] = { i, type };
-	return run_lifted(lift_48fee0, (DWORD)scene, 2, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void object_initObjectBy(char *scene, DWORD i, DWORD type);
 /* batch 86 (lifted/grp32.c) */
 #include "lifted/grp32.c"
 /* 0x490c50 (thiscall) object_addObjectBy(type): add a map object of this type in the first free slot (+0x13c9b28;
@@ -17633,7 +17630,7 @@ static const STest g_stests[] = {
 	/* batch 84 */
 	T(shape_getByName, 1, 400, 0),
 	/* batch 85 */
-	T(object_initObjectBy, 0, 300, 0),
+	T(object_initObjectBy, 0, 400, 0),
 	/* batch 86 */
 	T(object_addObjectBy, 1, 300, 0), T(effect_initTextures, 0, 300, 0),
 	/* batch 87 */
