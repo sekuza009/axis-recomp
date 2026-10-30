@@ -341,3 +341,200 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 #undef crt_fread
 #undef setPartColor
 }
+
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define POOL_MAX 4000000
+
+/* the next n bytes of the layers' pool (+0x9ef940, +0xdc0240 used of 4,000,000: past it a fatal message); the
+   caller adds n once the block is filled */
+static u8 *pool_take(u8 *s, int n)
+{
+	int used = GAME_VAR(int, s + 0xdc0240);
+	if (used + n > POOL_MAX)
+		sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4c7eb4, used + n, POOL_MAX);
+	return s + 0x9ef940 + GAME_VAR(int, s + 0xdc0240);
+}
+
+/* texture id of "<dir>/<what>" (with an optional number) */
+static u32 ground_tex(const char *dir, u32 fmt, int n, char *name)
+{
+	sprintf(name, (const char *)fmt, dir, n);
+	return tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+}
+
+/* the grey value of a height-map pixel (r = g = b), or -1 */
+static int grey(const u8 *px)
+{
+	return px[0] == px[1] && px[0] == px[2] ? px[0] : -1;
+}
+
+/* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory +0x108). No file or a
+   version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
+   range (+0xa08), the lights (load_483d70), the clear colour and fog (+0x9ee030 ..), the background modes (sphere
+   +0x9ee064, sky +0x9eee48, sides +0x9ef0b0, floor +0x9ef30c) and their textures, the area limits (+0x9ef904 ..),
+   and the layers (+0xdc0a74; 0x20c-byte records from +0xdc0244: rows +0x1c, columns +0x20, origin +4, cell +0x24,
+   height scale +0x28, texture size +0x2c): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
+   (grey pixels are heights) giving, in the pool, its heights (+0x38), flat cells (+0x3c), vertices (+0x40), normals
+   (+0x44: the four triangles about each inner vertex, flipped by +0 1; the border the default 0xa0e7d8), light map
+   (+0x48, load_4728e0), texture coordinates (+0x50), index (+0x54 / +0x58) and primitive (+0x60 / +0x64) heaps;
+   last the layer meshes (load_497a90). Returns 1 */
+int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
+{
+	u8 image[0x30000];   /* (on the stack, as the original's: the file reads log its address) */
+	char path[0x100], dir[0x100], tex[0x100];
+	u32 n;
+	sprintf(path, (const char *)0x4c77f0, (const char *)s + 0x108, name);
+	void *f = crt_fopen(path, (const char *)0x4ad170);
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c806c, (int)path);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c77b4);
+	crt_fread(&n, 4, 1, f);
+	if (n != 0x1201)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
+	for (int k = 0; k < 4; k++) {
+		fread_scrambled(&n, 4, 1, f);
+		crt_fseek(f, n, 1);
+	}
+	fread_scrambled(dir, 1, 0x100, f);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c804c);
+	fread_scrambled(s + 0xa08, 4, 1, f);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c8040);
+	load_483d70(s + 0x9ccffc, f);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c802c);
+	fread_scrambled(s + 0x9ee030, 4, 1, f);
+	fread_scrambled(s + 0x9ee034, 0x10, 1, f);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c801c);
+	fread_scrambled(s + 0x9ee044, 4, 1, f);
+	fread_scrambled(s + 0x9ee048, 0x10, 1, f);
+	static const u32 fog_and_modes[] = { 0x9ee058, 0x9ee05c, 0x9ee060, 0x9ee064, 0x9eee48, 0x9ef0b0, 0x9ef30c };
+	for (int k = 0; k < 7; k++)
+		fread_scrambled(s + fog_and_modes[k], 4, 1, f);
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c8004);
+	int mode = GAME_VAR(int, s + 0x9ee064);
+	if (mode == 1 || mode == 2) {
+		if (mode == 2)
+			GAME_VAR(u32, s + 0x9ee07c) = ground_tex(dir, 0x4c7ff4, 0, tex);   /* SphereFloor */
+		static const u32 sphere[5] = { 0x4c7fe0, 0x4c7fd0, 0x4c7fc0, 0x4c7fb0, 0x4c7fa0 };   /* ceiling, east, south, west, north */
+		for (int k = 0; k < 5; k++)
+			GAME_VAR(u32, s + 0x9ee068 + k * 4) = ground_tex(dir, sphere[k], 0, tex);
+	}
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f8c);
+	mode = GAME_VAR(int, s + 0x9eee48);
+	if (mode == 1 || mode == 2) {
+		if (mode == 2)
+			GAME_VAR(u32, s + 0x9eee50) = ground_tex(dir, 0x4c7f78, 0, tex);   /* SkyInnerLayer */
+		GAME_VAR(u32, s + 0x9eee4c) = ground_tex(dir, 0x4c7f64, 0, tex);       /* SkyOuterLayer */
+	}
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f4c);
+	if (GAME_VAR(int, s + 0x9ef0b0) > 0 && GAME_VAR(int, s + 0x9ef0b0) <= 2)
+		for (int k = 0; k < 6; k++)
+			GAME_VAR(u32, s + 0x9ef0b4 + k * 4) = ground_tex(dir, 0x4c7f3c, k + 1, tex);   /* SideLayer<n> */
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f24);
+	if (GAME_VAR(int, s + 0x9ef30c) > 0 && GAME_VAR(int, s + 0x9ef30c) <= 2)
+		for (int k = 0; k < 16; k++)
+			GAME_VAR(u32, s + 0x9ef310 + k * 4) = ground_tex(dir, 0x4c7f14, k + 1, tex);   /* FloorAni<nn> */
+	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f04);
+	static const u8 limits[7][2] = { { 0x04, 0xc }, { 0x10, 0xc }, { 0x1c, 0xc }, { 0x28, 0xc }, { 0x34, 4 }, { 0x38, 4 }, { 0x3c, 4 } };
+	for (int k = 0; k < 7; k++)
+		fread_scrambled(s + 0x9ef900 + limits[k][0], limits[k][1], 1, f);
+	fread_scrambled(s + 0xdc0a74, 4, 1, f);
+	GAME_VAR(int, s + 0xdc0240) = 0;
+	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
+		u8 *l = s + 0xdc0244 + i * 0x20c;
+		FUN_00470fc0((int)s, 0, i, (const char *)0x4c7ef4, i);
+		fread_scrambled(l, 0x20c, 1, f);
+		GAME_VAR(u32, l + 0x34) = ground_tex(dir, 0x4c7ee4, i, tex);
+		fread_scrambled(image, 0x300, 0x100, f);
+		int rows = GAME_VAR(int, l + 0x1c), cols = GAME_VAR(int, l + 0x20), w = cols + 1;
+		int count = w * (rows + 1);
+		u8 *heights = GAME_VAR(u8 *, l + 0x38) = pool_take(s, count);
+		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
+			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
+				int g = grey(image + r * 0x300 + c * 3);
+				heights[(GAME_VAR(int, l + 0x20) + 1) * r + c] = g < 0 ? 0 : (u8)g;
+			}
+		GAME_VAR(int, s + 0xdc0240) += count;
+		int cells = GAME_VAR(int, l + 0x20) * GAME_VAR(int, l + 0x1c);
+		u8 *flat = GAME_VAR(u8 *, l + 0x3c) = pool_take(s, cells);
+		for (int r = 0; r < GAME_VAR(int, l + 0x1c); r++)
+			for (int c = 0; c < GAME_VAR(int, l + 0x20); c++) {
+				const u8 *px = image + r * 0x300 + c * 3;
+				flat[GAME_VAR(int, l + 0x20) * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
+			}
+		GAME_VAR(int, s + 0xdc0240) += cells;
+		int size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 12;
+		float *v = GAME_VAR(float *, l + 0x40) = (float *)pool_take(s, size);
+		const float *origin = (const float *)(l + 4), *cell = (const float *)(l + 0x24), *hs = (const float *)(l + 0x28);
+		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
+			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
+				int at = (GAME_VAR(int, l + 0x20) + 1) * r + c;
+				float *p = v + at * 3;
+				long double z = fadd_m(fmul_m((long double)r, cell), &origin[2]);
+				long double y = fadd_m(fmul_m((long double)heights[at], hs), &origin[1]);
+				p[0] = f32(fadd_m(fmul_m((long double)c, cell), &origin[0]));
+				p[1] = f32(y);
+				p[2] = f32(z);
+			}
+		GAME_VAR(int, s + 0xdc0240) += size;
+		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 12;
+		u8 *normals = GAME_VAR(u8 *, l + 0x44) = pool_take(s, size);
+		w = GAME_VAR(int, l + 0x20) + 1;
+		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++) {
+			memcpy(normals + (w * r) * 12, (const void *)0xa0e7d8, 12);
+			memcpy(normals + (w * r + GAME_VAR(int, l + 0x20)) * 12, (const void *)0xa0e7d8, 12);
+		}
+		for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {
+			memcpy(normals + c * 12, (const void *)0xa0e7d8, 12);
+			memcpy(normals + ((GAME_VAR(int, l + 0x20) + 1) * GAME_VAR(int, l + 0x1c) + c) * 12, (const void *)0xa0e7d8, 12);
+		}
+		for (int r = 1; r < GAME_VAR(int, l + 0x1c); r++)
+			for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {
+				w = GAME_VAR(int, l + 0x20) + 1;
+				const float *vs = GAME_VAR(const float *, l + 0x40);
+				const float *p = vs + (w * r + c) * 3, *up = vs + (w * (r - 1) + c) * 3, *down = vs + (w * (r + 1) + c) * 3;
+				const float *right = p + 3, *left = p - 3;
+				float t[3], n1[3], n2[3], n3[3], n4[3];
+				memcpy(n1, FUN_004679a0(t, left, p, up), 12);
+				memcpy(n2, FUN_004679a0(t, up, p, right), 12);
+				memcpy(n3, FUN_004679a0(t, right, p, down), 12);
+				memcpy(n4, FUN_004679a0(t, down, p, left), 12);
+				float *out = (float *)(GAME_VAR(u8 *, l + 0x44) + (w * r + c) * 12);
+				for (int k = 0; k < 3; k++)
+					out[k] = f32(fadd_m(fadd_m(fadd_m(fld_m(&n4[k]), &n3[k]), &n2[k]), &n1[k]));
+				if (GAME_VAR(int, l) == 1)
+					for (int k = 0; k < 3; k++)
+						out[k] = f32(-fld_m(&out[k]));
+			}
+		GAME_VAR(int, s + 0xdc0240) += size;
+		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 4;
+		GAME_VAR(u8 *, l + 0x48) = pool_take(s, size);
+		load_4728e0(s, l);
+		GAME_VAR(int, s + 0xdc0240) += size;
+		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 8;
+		float *uv = GAME_VAR(float *, l + 0x50) = (float *)pool_take(s, size);
+		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
+			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
+				int at = (GAME_VAR(int, l + 0x20) + 1) * r + c;
+				const float *p = GAME_VAR(const float *, l + 0x40) + at * 3;
+				long double tz = fdiv_m(fld_m(&p[2]), (const float *)(l + 0x2c));
+				uv[at * 2] = f32(fdiv_m(fld_m(&p[0]), (const float *)(l + 0x2c)));
+				uv[at * 2 + 1] = f32(tz);
+			}
+		GAME_VAR(int, s + 0xdc0240) += size;
+		int indices = (GAME_VAR(int, l + 0x20) + 200) * GAME_VAR(int, l + 0x1c) * 2;
+		u8 *heap = pool_take(s, indices * 4);
+		GAME_VAR(int, l + 0x54) = indices;
+		GAME_VAR(u8 *, l + 0x58) = heap;
+		GAME_VAR(int, s + 0xdc0240) += indices * 4;
+		int prims = GAME_VAR(int, l + 0x1c) * 200 + 4;
+		heap = pool_take(s, prims * 12);
+		GAME_VAR(int, l + 0x60) = prims;
+		GAME_VAR(u8 *, l + 0x64) = heap;
+		GAME_VAR(int, s + 0xdc0240) += prims * 12;
+	}
+	load_497a90(s);
+	fclose(f);
+	return 1;
+}
+#undef crt_fread
+#undef POOL_MAX

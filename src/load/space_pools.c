@@ -803,3 +803,118 @@ u32 THISCALL (space_traceUnit_4809f0)(u8 *unit, const float *from, const float *
 		}
 	}
 }
+
+/* where v lies against lo .. hi: bit when not above lo, bit << 4 when not below hi (a NaN counts as below lo) */
+static u32 side(float v, float lo, float hi, u32 bit)
+{
+	return !(v > lo) ? bit : !(v < hi) ? bit << 4 : 0;
+}
+
+/* the segment's direction b - a, rounded as the original's Vec3 constructor takes it */
+static void direction(float *d, const float *a, const float *b)
+{
+	for (int k = 0; k < 3; k++)
+		d[k] = f32(fsub_m(fld_m(&b[k]), &a[k]));
+}
+
+/* the segment's start a moved along d onto the plane at *plane across axis k (0 or 1): its x and y as
+   f32(f32(t d) / d[k]) + a, its z with t d2 / d[k] rounded or not as the original has it; then d = b - a */
+static void clip_start(float *a, const float *b, float *d, const float *plane, int k, int round_z)
+{
+	long double t = fsub_m(fld_m(plane), &a[k]);
+	float e0 = f32(fmul_m(t, &d[0])), e1 = f32(fmul_m(t, &d[1]));
+	float n0 = f32(fdiv_m(fld_m(&e0), &d[k])), n1 = f32(fdiv_m(fld_m(&e1), &d[k]));
+	long double z = fdiv_m(fmul_m(t, &d[2]), &d[k]);
+	if (round_z)
+		z = f32(z);
+	a[0] = f32(fadd_m(fld_m(&n0), &a[0]));
+	a[1] = f32(fadd_m(fld_m(&n1), &a[1]));
+	a[2] = f32(fadd_m(z, &a[2]));
+	direction(d, a, b);
+}
+
+/* the segment's end b moved back along d onto the plane across axis k: b - f32(f32(t d) / d[k]) (inline: the z
+   unrounded, f32(t d2) / d[k] kept whole) */
+static void clip_end(const float *a, float *b, float *d, const float *plane, int k, int inline_z)
+{
+	long double t = fsub_m(fld_m(plane), &b[k]);
+	float v[3], w[3];
+	for (int i = 0; i < 2; i++) {
+		v[i] = f32(fmul_m(t, &d[i]));
+		w[i] = f32(fdiv_m(fld_m(&v[i]), &d[k]));
+	}
+	if (inline_z)
+		b[2] = f32(fld_m(&b[2]) - fdiv_m(fmul_m(t, &d[2]), &d[k]));
+	else {
+		v[2] = f32(fmul_m(t, &d[2]));
+		w[2] = f32(fdiv_m(fld_m(&v[2]), &d[k]));
+		b[2] = f32(fsub_m(fld_m(&b[2]), &w[2]));
+	}
+	b[0] = f32(fsub_m(fld_m(&b[0]), &w[0]));
+	b[1] = f32(fsub_m(fld_m(&b[1]), &w[1]));
+	(void)a;
+}
+
+/* 0x471740 (thiscall on the scene): the line of sight p0 -> p1 through the level. Every active scene object (0x2cc
+   bytes from +0x131ae44, +0x13c9b24 of them: +4 1, its unit +0x28c with a list and enabled +0x290) takes the segment
+   into its frame (the inverse +0x134); unless both ends lie beyond one side of its model's box (+0x27c: +0x34 low,
+   +0x40 high), clipped to the box in x then y (the original's own rounding at every step), it becomes a sub-model
+   (+0x9ca0f4: its list, its matrices +0x1f4 / +0x234). Then the level grid (+0xa10) is traced with them
+   (space_traceNodes). Returns its hit record or 0 */
+u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void *hit)
+{
+	int n = 0;
+	for (int i = 0; i < GAME_VAR(int, s + 0x13c9b24); i++) {
+		u8 *o = s + 0x131ae44 + i * 0x2cc;
+		if (GAME_VAR(int, o + 4) != 1 || GAME_VAR(int, o + 0x290) != 1 || !GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8))
+			continue;
+		const float *m = (const float *)(o + 0x134);
+		const float *lo = (const float *)(GAME_VAR(u8 *, o + 0x27c) + 0x34), *hi = lo + 3;
+		float a[3], b[3], d[3];
+		for (int r = 0; r < 3; r++)
+			a[r] = f32(fadd_m(fmul_m(fld_m(&p0[2]), &m[8 + r]) + fmul_m(fld_m(&p0[r ? 1 : 0]), &m[r ? 4 + r : 0]) +
+			                  fmul_m(fld_m(&p0[r ? 0 : 1]), &m[r ? r : 4]), &m[12 + r]));
+		b[0] = f32(fadd_m(fmul_m(fld_m(&p1[0]), &m[0]) + fmul_m(fld_m(&p1[1]), &m[4]) + fmul_m(fld_m(&m[8]), &p1[2]), &m[12]));
+		b[1] = f32(fadd_m(fmul_m(fld_m(&p1[1]), &m[5]) + fmul_m(fld_m(&p1[0]), &m[1]) + fmul_m(fld_m(&m[9]), &p1[2]), &m[13]));
+		long double b2 = fadd_m(fmul_m(fld_m(&p1[1]), &m[6]) + fmul_m(fld_m(&p1[0]), &m[2]) + fmul_m(fld_m(&m[10]), &p1[2]), &m[14]);
+		b[2] = f32(b2);
+		d[0] = f32(fsub_m(fld_m(&b[0]), &a[0]));
+		d[1] = f32(fsub_m(fld_m(&b[1]), &a[1]));
+		d[2] = f32(fsub_m(b2, &a[2]));
+		u32 ca = side(a[0], lo[0], hi[0], 1) | side(a[1], lo[1], hi[1], 0x100) | side(a[2], lo[2], hi[2], 0x10000);
+		u32 cb = side(b[0], lo[0], hi[0], 1) | side(b[1], lo[1], hi[1], 0x100) | side(b[2], lo[2], hi[2], 0x10000);
+		if (ca & cb)
+			continue;
+		if (ca & 1)
+			clip_start(a, b, d, &lo[0], 0, 0);
+		else if (ca & 0x10)
+			clip_start(a, b, d, &hi[0], 0, 0);
+		if (cb & 1) {
+			clip_end(a, b, d, &lo[0], 0, 1);
+			direction(d, a, b);
+		} else if (cb & 0x10) {
+			clip_end(a, b, d, &hi[0], 0, 0);
+			direction(d, a, b);
+		}
+		ca = side(a[1], lo[1], hi[1], 0x100);
+		cb = side(b[1], lo[1], hi[1], 0x100);
+		if (ca & cb)
+			continue;
+		if (ca & 0x100)
+			clip_start(a, b, d, &lo[1], 1, 0);
+		else if (ca & 0x1000)
+			clip_start(a, b, d, &hi[1], 1, 1);
+		if (cb & 0x100)
+			clip_end(a, b, d, &lo[1], 1, 0);
+		else if (cb & 0x1000)
+			clip_end(a, b, d, &hi[1], 1, 0);
+		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
+			continue;
+		u32 *sub = (u32 *)(s + 0x9ca0f4) + n * 3;
+		sub[0] = GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8);
+		sub[1] = (u32)(o + 0x1f4);
+		sub[2] = (u32)(o + 0x234);
+		n++;
+	}
+	return space_traceNodes(s + 0xa10, p0, p1, hit, s + 0x9ca0f4, n);
+}

@@ -1,6 +1,7 @@
 /* actor_slots.c: the stage's actor slots: selecting one, the camera's target, an actor's input record, and the
    stage's pools of map objects, projectiles and bullets emptied. */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
@@ -603,3 +604,251 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 }
 #undef K
 #undef A
+
+#define A(type, offset) GAME_VAR(type, ac + (offset))
+#define K(address) ((const float *)(address))
+
+/* n dwords from at in the actor set to v */
+static void fill_dwords(u8 *at, int n, u32 v)
+{
+	for (int k = 0; k < n; k++)
+		GAME_VAR(u32, at + k * 4) = v;
+}
+
+/* the pilot level's factor k (the level table 0x9f9078, 0x4c bytes a level, by the player's +0x44) as
+   level value x 0.01 + 1 */
+static long double level_factor(u8 *p, int k)
+{
+	return fadd_m(fmul_m((long double)GAME_VAR(int, 0x9f9078 + GAME_VAR(int, p + 0x44) * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
+}
+
+/* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
+   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, a2, a3 copied, the position +8
+   and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
+   bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
+   head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
+   overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
+   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (FUN_0045e810),
+   the starting values (actor_45ebc0), the position history, timers and flags reset, its lists loaded and parts
+   placed (FUN_0045e1f0 .. FUN_0045e530, actor_updatePart; viewed by another than itself +0x49c), and the scene told
+   an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
+void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
+{
+	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
+	u8 *head = s + 0x13c9b30 + GAME_VAR(int, p + 0x30c) * 0xaa8, *chest = s + 0x13eb004 + GAME_VAR(int, p + 0x310) * 0xabc;
+	u8 *arms = s + 0x140c8c0 + GAME_VAR(int, p + 0x314) * 0x1300, *legs = s + 0x1447ec4 + GAME_VAR(int, p + 0x318) * 0x13f4;
+	u8 *boost = s + 0x1486470 + GAME_VAR(int, p + 0x31c) * 0x1820;
+	for (int k = 0; k < 4; k++) {
+		A(u32, 0x404 + k * 4) = 0x3f800000;
+		A(int, 0x414 + k * 4) = 0;
+	}
+	A(int, 0x424) = 0;
+	A(u32, 0x428) = A(u32, 0x42c) = 0x3f800000;
+	A(int, 0x430) = 0;
+	fill_dwords(ac + 0x434, 5, 0x3f800000);
+	A(int, 0x448) = 0;
+	for (int k = 0; k < 6; k++) {
+		int it = GAME_VAR(int, p + 0x320 + k * 4);
+		if (it < 0 || GAME_VAR(int, s + 0x14d1ab4 + it * 0x2e18 + 0x2dc0) >= 0)
+			continue;
+		switch (it) {
+		case 0x1b:
+			for (int i = 0; i < 4; i++)
+				A(float, 0x404 + i * 4) = f32(fadd_m(fld_m((const float *)(ac + 0x404) + i), K(0x4a94fc)));
+			break;
+		case 0x1c: A(int, 0x41c) += 100; break;
+		case 0x1d: A(int, 0x414) += 100; break;
+		case 0x1e: A(int, 0x418) += 100; break;
+		case 0x1f: A(int, 0x420) += 100; break;
+		case 0x20:
+			A(float, 0x424) = f32(fadd_m(fld_m((const float *)(ac + 0x424)), K(0x4a9708)));
+			A(float, 0x428) = f32(fsub_m(fld_m((const float *)(ac + 0x428)), K(0x4a942c)));
+			A(float, 0x42c) = f32(fadd_m(fld_m((const float *)(ac + 0x42c)), K(0x4a9424)));
+			A(int, 0x430) += 3;
+			break;
+		case 0x21:
+			A(float, 0x434) = f32(fadd_m(fld_m((const float *)(ac + 0x434)), K(0x4a942c)));
+			A(float, 0x438) = f32(fsub_m(fld_m((const float *)(ac + 0x438)), K(0x4a942c)));
+			A(float, 0x43c) = f32(fsub_m(fld_m((const float *)(ac + 0x43c)), K(0x4a942c)));
+			break;
+		case 0x22:
+			A(float, 0x440) = f32(fadd_m(fld_m((const float *)(ac + 0x440)), K(0x4a94f8)));
+			break;
+		case 0x23:
+			A(float, 0x444) = f32(fadd_m(fld_m((const float *)(ac + 0x444)), K(0x4a94fc)));
+			A(int, 0x448) += 4;
+			break;
+		}
+	}
+	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), (const float *)(ac + 0x424));
+	A(float, 0) = f32(hp * hp);
+	A(float, 4) = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
+	A(int, 8) = GAME_VAR(int, head + 0xa9c) + A(int, 0x430);
+	A(float, 0xc) = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), (const float *)(ac + 0x428)));
+	A(float, 0x10) = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), (const float *)(ac + 0x42c)));
+	A(float, 0x14) = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), (const float *)(ac + 0x440)));
+	A(float, 0x18) = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
+	                                   (const float *)(arms + 0x12e8)), (const float *)(head + 0xa90)));
+	int type = GAME_VAR(int, s + 0x20f3ab8);
+	if (type < 2 || type > 0xb)
+		for (int k = 0; k < 6; k++) {
+			int it = GAME_VAR(int, p + 0x320 + k * 4);
+			if (it >= 0)
+				A(float, 0x18) = f32(fadd_m(fld_m((const float *)(s + 0x14d1ab4 + it * 0x2e18 + 0x2db8)), (const float *)(ac + 0x18)));
+		}
+	long double over = A(float, 0x18) > A(float, 0x14)
+		? fmul_m(fdiv_m(fsub_m(fld_m((const float *)(ac + 0x18)), (const float *)(ac + 0x14)), (const float *)(ac + 0x14)), K(0x4a947c))
+		: fld_m(K(0x4a93e8));
+	A(int, 0x1c) = ftol(fadd_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab4), K(0x4a942c)));
+	A(int, 0x20) = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), (const float *)(ac + 0x444)), K(0x4a942c)));
+	A(u32, 0x24) = GAME_VAR(u32, arms + 0x12ec);
+	for (int k = 0; k < 4; k++)
+		A(int, 0x28 + k * 4) = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), (const float *)(ac + 0x404) + k), K(0x4a942c))) +
+		                       A(int, 0x414 + k * 4);
+	long double left = fld_m(K(0x4a9424)) - over;
+	long double v = fmul_m(level_factor(p, 0), (const float *)(legs + 0x13dc)) * left;
+	A(float, 0x38) = f32(v);
+	if (!(v >= 0))
+		A(int, 0x38) = 0;
+	if (GAME_VAR(int, s + 0x20f3acc) == 1)
+		A(float, 0x38) = f32(fmul_m(fld_m((const float *)(ac + 0x38)), K(0x4a9704)));
+	A(u32, 0x40) = GAME_VAR(u32, boost + 0x1800);
+	A(float, 0x44) = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), (const float *)(ac + 0x434)));
+	A(float, 0x48) = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), (const float *)(ac + 0x438)));
+	A(float, 0x4c) = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), (const float *)(ac + 0x43c)));
+	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
+#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, 0x9f907c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
+	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
+	A(float, 0x50) = f32(v);
+	if (!(v >= *K(0x4a93f4)))
+		A(u32, 0x50) = 0x42c80000;   /* 100 */
+	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), (const float *)(ac + 0x50));
+	A(float, 0x3c) = f32(v);
+	if (GAME_VAR(int, s + 0x20f3acc) == 1)
+		A(float, 0x3c) = f32(fmul_m(v, K(0x4a9704)));
+	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), (const float *)(ac + 0x50)) * left;
+	A(float, 0x54) = f32(v);
+	if (!(v >= 0))
+		A(int, 0x54) = 0;
+	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), (const float *)(boost + 0x1818)), (const float *)(ac + 0x50)) * left, K(0x4a9474));
+	A(float, 0x58) = f32(v);
+	if (v > 0)
+		A(int, 0x58) = 0;
+	v = fdiv_m(fmul_m(LEG(0x13f0), (const float *)(boost + 0x181c)), (const float *)(ac + 0x50)) * left;
+	A(float, 0x5c) = f32(v);
+	if (!(v >= 0))
+		A(int, 0x5c) = 0;
+#undef LEG
+	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
+	A(int, 0x64) = 100;
+	A(u32, 0x68) = A(u32, 0x50);
+	A(u32, 0x6c) = 0x44610000;   /* 900 */
+	A(u32, 0x70) = 0x40400000;   /* 3 */
+	A(int, 0x74) = 10;
+	A(int, 0x78) = 0;
+	A(u32, 0x7c) = 0x447a0000;   /* 1000 */
+	A(u32, 0x80) = 0x43fa0000;   /* 500 */
+	A(u32, 0x84) = 0x40000000;   /* 2 */
+	A(u32, 0x88) = 0x3f800000;
+	A(u32, 0x8c) = 0x457a0000;   /* 4000 */
+	A(u32, 0x90) = 0x40a00000;   /* 5 */
+	A(u32, 0x94) = 0x3f800000;
+	A(int, 0xd8) = 1;
+	strcpy((char *)ac + 0x98, (const char *)p + 4);
+	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
+	A(int, 0x108) = 1;
+	A(u32, 0x10c) = pp[0];
+	A(u32, 0x110) = a3;
+	int level = GAME_VAR(int, p + 0x44);
+	A(int, 0x114) = level >= 0 && level < 9 ? level : 0;
+	A(u32, 0x118) = GAME_VAR(u32, p + 0x48);
+	A(u32, 0x11c) = pp[1];
+	A(int, 0x120) = 0;
+	A(u32, 0x124) = 0x3f800000;
+	A(u32, 0x128) = A(u32, 0x1c);
+	A(u32, 0x12c) = A(u32, 0x20);
+	fill_dwords(ac + 0x130, 4, 0);
+	A(int, 0x140) = -1;
+	A(int, 0x144) = 0;
+	FUN_0045e810((Stage *)s, a, 0);
+	GAME_THISCALL(0x45ebc0, void, void *, int)(s, a);   /* actor_45ebc0 */
+	A(int, 0x14c) = 1;
+	A(int, 0x150) = 0;
+	memcpy(ac + 0x154, pp + 2, 12);
+	A(u32, 0x160) = pp[5];
+	A(u32, 0x164) = pp[6];
+	fill_dwords(ac + 0x168, 6, 0);
+	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* three past positions: the place and the heading */
+	for (int k = 0; k < 3; k++) {
+		u8 *h = ac + past[k];
+		memcpy(h, ac + 0x154, 12);
+		GAME_VAR(u32, h + 0xc) = A(u32, 0x160);
+		GAME_VAR(u32, h + 0x10) = A(u32, 0x164);
+	}
+	fill_dwords(ac + 0x194, 6, 0);
+	fill_dwords(ac + 0x1c0, 5, 0);
+	fill_dwords(ac + 0x1e8, 3, 0);
+	A(int, 0x1f4) = 0;
+	for (int k = 0; k < 5; k++) {
+		A(int, 0x1f8 + k * 0x20) = 0;
+		A(int, 0x1fc + k * 0x20) = 0;
+		A(int, 0x360 + k * 4) = -1;
+	}
+	A(int, 0x374) = 0;
+	memcpy(ac + 0x378, (const void *)0xa0e7e8, 12);
+	memcpy(ac + 0x384, (const void *)0xa0e7e8, 12);
+	A(u32, 0x3e8) = 0x43fa0000;   /* 500 */
+	A(int, 0x3ec) = 0;
+	A(int, 0x3f0) = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
+	fill_dwords(ac + 0x3f4, 4, 0);
+	fill_dwords(ac + 0x44c, 11, 0);
+	A(int, 0x478) = -1;
+	fill_dwords(ac + 0x47c, 5, 0);
+	A(u32, 0x490) = 0x3f800000;
+	A(int, 0x494) = A(int, 0x498) = 0;
+	A(int, 0x49c) = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
+	fill_dwords(ac + 0x4a0, 3, 0);
+	A(u32, 0x4ac) = A(u32, 0x4b0) = 0x3f800000;
+	A(int, 0x4b4) = A(int, 0x4b8) = 0;
+	fill_dwords(ac + 0x4bc, 3, (u32)-1);
+	A(int, 0x4d0) = -1;
+	memcpy(ac + 0x4e0, ac + 0x154, 12);
+	A(int, 0x4ec) = 0;
+	A(u8, 0x4f4) = 0;
+	A(u32, 0x534) = 0xc61c4000;   /* -10000 */
+	A(int, 0x538) = -1;
+	fill_dwords(ac + 0x53c, 3, 0);
+	A(u32, 0x548) = 0x3f800000;
+	A(int, 0x54c) = 0;
+	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* FUN_0045e1f0 */
+	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
+	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* FUN_0045e390 */
+	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* FUN_0045e460 */
+	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* FUN_0045e530 */
+	for (int k = 5; k >= 0; k--)
+		actor_updatePart(s, a, k, A(u32, 0x49c));
+	fill_dwords(ac + 0x87bc, 10, 0);
+	fill_dwords(ac + 0x87e8, 4, 0);
+	A(int, 0x87f8) = A(int, 0x87fc) = -1;
+	A(int, 0x8800) = A(int, 0x8804) = 0;
+	A(int, 0x8808) = -1;
+	A(int, 0x880c) = 0;
+	fill_dwords(ac + 0x8810, 5, (u32)-1);
+	fill_dwords(ac + 0x8824, 5, 0);
+	memcpy(ac + 0x8838, (const void *)0xa0e7e8, 12);
+	A(int, 0x8844) = 0;
+	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
+	fill_dwords(ac + 0x884c, 3, 0);
+	memcpy(ac + 0x885c, (const void *)0xa0e7e8, 12);
+	A(int, 0x8858) = 0;
+	A(int, 0x8868) = 0;
+	A(u32, 0x886c) = 0x3f800000;
+	A(int, 0x8870) = -1;
+	memcpy(ac + 0x8874, (const void *)0xa0e7e8, 12);
+	A(int, 0x8880) = A(int, 0x8884) = 0;
+	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
+	GAME_VAR(int, s + 0x202e8ec) = 1;
+}
+#undef A
+#undef K

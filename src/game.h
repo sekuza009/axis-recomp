@@ -276,6 +276,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define map_loadMissionInfoFrom(stage, name) GAME_THISCALL(0x48b5c0, void, void *, const char *)(stage, name)
 #define map_loadActorInfoFrom(stage, name) GAME_THISCALL(0x474550, void, void *, const char *)(stage, name)
 #define font_penDraw(x, y, a, text) GAME_CDECL(0x46bb00, void, int, int, int, const char *)(x, y, a, text)
+#define space_traceNodes(grid, p0, p1, hit, subs, nsubs) GAME_THISCALL(0x483060, u32, void *, const float *, const float *, void *, void *, int)(grid, p0, p1, hit, subs, nsubs)
+#define match_resetInputState(scene) GAME_THISCALL(0x461f10, void, void *)(scene)
+#define FUN_004a86e0() GAME_CDECL(0x4a86e0, int, void)()   /* the network says the match is over? */
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define load_483d70(lights, f) GAME_THISCALL(0x483d70, void, void *, void *)(lights, f)   /* the lights read */
+#define FUN_004679a0(out, a, b, c) GAME_CDECL(0x4679a0, float *, float *, const float *, const float *, const float *)(out, a, b, c)   /* a triangle's normal */
+#define load_4728e0(scene, layer) GAME_THISCALL(0x4728e0, void, void *, void *)(scene, layer)   /* a layer's light map */
+#define load_497a90(scene) GAME_THISCALL(0x497a90, void, void *)(scene)   /* the layer meshes */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

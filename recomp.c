@@ -3006,11 +3006,8 @@ THISCALL DWORD space_traceNodes(char *grid, DWORD p0, DWORD p1, DWORD hit, DWORD
 /* 0x471740 (thiscall) collision_rayTrace(p0, p1, hit): line of sight through the level: every active scene object
    whose model box the segment (taken into the object) does not miss on one side becomes a sub-model (list,
    matrices), then the level grid (scene + 0xa10) is traced with them */
-static THISCALL DWORD collision_rayTrace(char *scene, DWORD p0, DWORD p1, DWORD hit)
-{
-	DWORD v[3] = { p0, p1, hit };
-	return run_lifted(lift_471740, (DWORD)scene, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD collision_rayTrace(char *scene, DWORD p0, DWORD p1, DWORD hit);
 /* batch 54 (lifted/grp3.c) */
 #include "lifted/grp3.c"
 /* 0x42eca0 cfg_writeDefaultAxisCfg: read axis.cfg (key names, video modes, game types, key bindings and the rest)
@@ -3903,11 +3900,8 @@ THISCALL void map_loadActorInfoFrom(char *sc, DWORD name);
    records with a negative kind (+0x2dc0), the stats summed / scaled from the head, chest, arm, leg and booster
    records, the part object lists loaded (FUN_0045e1f0 .. FUN_0045e530, actor_updatePart), the player's starting
    values (actor_45ebc0) and the weapon slot (FUN_0045e810) */
-static THISCALL DWORD actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp)
-{
-	DWORD v[4] = { a, x, y, pp };
-	return run_lifted(lift_457330, (DWORD)sc, 4, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp);
 /* batch 104 (lifted/grp50.c) */
 #include "lifted/grp50.c"
 /* 0x48f970 (thiscall on the scene) hud_48f970(vv): draw the map's items (count +0x20fcd38, 0x28-byte entries from
@@ -4003,7 +3997,8 @@ void THISCALL hud_479af0(void *stage, void *view);
    +0x9ef940 (used +0xdc0240; overflow is fatal): heights, flat-cell flags, vertices, normals (FUN_004679a0, sign by
    +0), light map (load_4728e0), texture coordinates, index and primitive buffers; finally the layer meshes
    (load_497a90). Returns 1 */
-static THISCALL DWORD map_loadGroundInfoFrom(char *sc, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_48b9d0, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD map_loadGroundInfoFrom(char *sc, DWORD name);
 /* batch 112 (lifted/grp58.c) */
 #include "lifted/grp58.c"
 /* 0x4680d0 glWindow_wndProc(wnd, msg, w, l) (stdcall, the window class's procedure): WM_CREATE hides the cursor,
@@ -5705,7 +5700,8 @@ void THISCALL hud_drawPlayerMarkers(void *scene);
    set the scene's input flags (+0x2343257 .. +0x234331f), weapon and view choices, chat and menu keys; the mouse
    offset (+0x2343293 / +0x2343297) moves the in-match menu's selection (0x49ddcb: the original's own step, or the
    patch DLL's menu_nav in its 12-byte block) */
-static THISCALL DWORD match_combatInput(char *s) { return run_lifted(lift_49d290, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_combatInput(char *s);
 /* batch 209 (lifted/grp173.c): an actor's frame */
 #include "lifted/grp173.c"
 /* 0x4580b0 actor_processFrame(i, dt) (thiscall on the scene, ret 8; 21 KB): actor i (+0x1cd93a8, stride 0x8888) of
@@ -16919,7 +16915,7 @@ static void combat_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = 384; G32(0x4ded88) = irnd(-5, 5); G32(0x4ded8c) = irnd(-5, 5);
 	G32(0x4df000) = irnd(0, 3); GF(0x4df008) = csu_fr(-100, 100);
 }
-ST(match_combatInput, combat_setup();, TC(DWORD, 0x49d290, char *)(BUF), match_combatInput(BUF))
+ST(match_combatInput, combat_setup();, (TC(void, 0x49d290, char *)(BUF), 0), (match_combatInput(BUF), 0))
 /* batch 209 */
 /* an actor's frame: actor 0..15 of player 0..7, every actor field the function reads given a value by its use
    (floats -50..50, ints 0..3), the player's part indexes 0..3 and items -1..3, the scene's actor counts and local /

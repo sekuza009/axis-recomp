@@ -1,6 +1,7 @@
 /* main_loop.c: one frame of the game. WinMain's message loop calls FUN_004202d0 whenever no window message is
    waiting; it runs either a match frame or the front end's menus. */
 #include "../game.h"
+#include <string.h>
 
 /* 0x4202d0 (FUN_004202d0): the frame: the music, the menus' fade-in counted down, then main_loop */
 void (FUN_004202d0)(void)
@@ -211,3 +212,168 @@ int THISCALL (match_inputState2)(u8 *s)
 	return FIELD(int, 0x233cc20);
 #undef FIELD
 }
+
+#define S(type, offset) GAME_VAR(type, s + (offset))
+#define KEY(at) GAME_VAR(int, at)
+
+/* either key of a binding (its two key globals) pressed this frame / held */
+static int pressed2(u32 a, u32 b) { return input_justPressed(KEY(a)) || input_justPressed(KEY(b)); }
+static int held2(u32 a, u32 b) { return input_isDown(KEY(a)) || input_isDown(KEY(b)); }
+
+/* the mouse's offset from the screen centre (+0x2343293 vertical, inverted by the setting 0x4df000; +0x2343297
+   horizontal, negated when steer is set) scaled by the sensitivity (0x4df008: ((s 0.02)^2 + 1) / 2), and the
+   pointer put back in the centre (0x4ded68 / 0x4ded6c) */
+static void mouse_offset(u8 *s, int steer)
+{
+	S(int, 0x2343257) = KEY(0x4ded68);
+	S(int, 0x234325b) = KEY(0x4ded6c);
+	long double dy = (long double)(S(int, 0x234325b) - gfx_getHeight() / 2);
+	S(float, 0x2343293) = f32(KEY(0x4df000) ? -dy : dy);
+	long double dx = (long double)(S(int, 0x2343257) - gfx_getWidth() / 2);
+	if (steer)
+		dx = -dx;
+	S(float, 0x2343297) = f32(dx);
+	long double k = fmul_m((long double)KEY(0x4df008), (const float *)0x4aa480);
+	long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
+	S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
+	S(float, 0x2343297) = f32(steer ? fmul_m(f, (const float *)(s + 0x2343297)) : dx * f);
+	KEY(0x4ded68) = gfx_getWidth() / 2;
+	KEY(0x4ded6c) = gfx_getHeight() / 2;
+}
+
+/* the weapon slot keys: slot 1 .. 9, 0 (+0x23424f2), each also asking for the switch (+0x2340c6c, +0x23432cb) */
+static const u32 k_slotKeys[10][2] = { { 0x4dec90, 1 }, { 0x4dec8c, 2 }, { 0x4deb5c, 3 }, { 0x4deb58, 4 }, { 0x4deb64, 5 },
+                                       { 0x4deb60, 6 }, { 0x4deb6c, 7 }, { 0x4deb68, 8 }, { 0x4deb70, 9 }, { 0x4deb78, 0 } };
+/* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
+static const u32 k_radioKeys[10] = { 0x4e0468, 0x4e046c, 0x4e0470, 0x4e0874, 0x4e0c78, 0x4e0c7c, 0x4e0c80, 0x4e0c84, 0x4e0c88, 0x4e0460 };
+/* the held controls: the binding's two keys and the flag they set */
+static const u32 k_heldKeys[10][2] = { { 0x4def30, 0x234325f }, { 0x4def10, 0x234326b }, { 0x4def18, 0x234326f },
+                                       { 0x4def00, 0x2343263 }, { 0x4def08, 0x2343267 }, { 0x4def40, 0x2343273 },
+                                       { 0x4def48, 0x2343277 }, { 0x4def98, 0x234328b }, { 0x4defe0, 0x234328f },
+                                       { 0x4def38, 0x2343283 } };
+/* the view keys (+0x2343287: the last held wins, else -1) */
+static const u32 k_viewKeys[6] = { 0x4def78, 0x4def80, 0x4def88, 0x4def90, 0x4def68, 0x4def70 };
+
+/* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
+   more before the match runs, +0x233c9e8). In play (no menu +0x2340d35 / +0x2340cf4): with the own view (+0x233c9fc
+   0) and alive (+0x2340cf0, or a network game, or the local player's +0x1eccb48), the weapon slot and radio keys,
+   else the fire keys only; a spectator's view the fire keys held / pressed; then every held control, the view keys,
+   the mouse look (above 0.2 s of frame time it is still), quitting (Esc keys when the death timer +0x2340d39 is
+   over), the chat keys, the camera mode cycle (+0x233cc10), the scoreboard keys, the message log toggle cycle
+   (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
+   original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
+   end (FUN_004a86e0) quits. Its caller ignores the eax it leaves */
+void THISCALL (match_combatInput)(u8 *s)
+{
+	match_resetInputState(s);
+	if (!S(int, 0x233c9e8))
+		return;
+	if (S(int, 0x2340d35) == 0 && S(int, 0x2340cf4) == 0) {
+		if (S(int, 0x233c9fc) == 0) {
+			if (S(int, 0x2340cf0) == 0 || (S(int, 8) == 0 && S(int, 0x1eccb48 + S(int, 0x234240d) * 0x8888) == 0)) {
+				if (pressed2(0x4def50, 0x4def54))
+					S(int, 0x23432cf) = 1;
+			} else {
+				if (KEY(0x4ded88)) {
+					S(int, 0x234331b) = 1;
+					S(int, 0x2340c68) = 1;
+				}
+				if (S(int, 0x23424f2) >= 0 && KEY(0x4ded8c)) {
+					S(int, 0x234331f) = 1;
+					S(int, 0x2340c6c) = 1;
+					S(int, 0x23432cb) = 1;
+				}
+				for (int k = 0; k < 10; k++)
+					if (input_justPressed(KEY(k_slotKeys[k][0]))) {
+						S(int, 0x23424f2) = k_slotKeys[k][1];
+						S(int, 0x2340c6c) = 1;
+						S(int, 0x23432cb) = 1;
+					}
+				S(int, 0x2343307) = 0;
+				for (int k = 0; k < 10; k++)
+					if (input_justPressed(KEY(k_radioKeys[k])))
+						S(int, 0x2343307) = k < 6 ? (input_justPressed(KEY(0x67ef24)) ? 10 : 0) + k + 1 : k + 1;
+				S(int, 0x2343307)--;
+			}
+		} else {
+			if (held2(0x4def50, 0x4def54))
+				S(int, 0x234327b) = 1;
+			if (pressed2(0x4def50, 0x4def54))
+				S(int, 0x234327f) = 1;
+		}
+		for (int k = 0; k < 10; k++)
+			if (held2(k_heldKeys[k][0], k_heldKeys[k][0] + 4))
+				S(int, k_heldKeys[k][1]) = 1;
+		S(int, 0x2343287) = -1;
+		for (int k = 0; k < 6; k++)
+			if (held2(k_viewKeys[k], k_viewKeys[k] + 4))
+				S(int, 0x2343287) = k;
+		if (!(S(float, 0x44) >= *(const float *)0x4a94f8)) {
+			S(int, 0x2343257) = KEY(0x4ded68);
+			S(int, 0x234325b) = KEY(0x4ded6c);
+			mouse_offset(s, 1);
+		} else {
+			S(int, 0x2343257) = KEY(0x4ded68);
+			S(int, 0x234325b) = KEY(0x4ded6c);
+			S(int, 0x2343293) = S(int, 0x2343297) = 0;
+			long double k = fmul_m((long double)KEY(0x4df008), (const float *)0x4aa480);
+			long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
+			S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
+			S(float, 0x2343297) = f32(fmul_m(f, (const float *)(s + 0x2343297)));
+			KEY(0x4ded68) = gfx_getWidth() / 2;
+			KEY(0x4ded6c) = gfx_getHeight() / 2;
+		}
+		if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0))
+			S(int, 0x23432cf) = 1;
+		if (pressed2(0x4def58, 0x4def5c))
+			S(int, 0x23432eb) = 1;
+		if (pressed2(0x4def60, 0x4def64))
+			S(int, 0x23432ef) = 1;
+		if (pressed2(0x4deff0, 0x4deff4))
+			S(int, 0x23424ee) = S(int, 0x233cc10) == 1 ? 2 : S(int, 0x233cc10) == 2 ? 3 : 1;
+		if (pressed2(0x4defa8, 0x4defac) && !(S(float, 0x2340d39) > 0))
+			S(int, 0x23432fb) = 1;
+		else if (pressed2(0x4defb0, 0x4defb4) && !(S(float, 0x2340d39) > 0))
+			S(int, 0x23432ff) = 1;
+		if (pressed2(0x4deff8, 0x4deffc))
+			S(int, 0x2343303) = 1;
+		if (input_justPressed(KEY(0x4df8d0))) {
+			if (S(int, 0x2340ce8) == 0) {
+				S(int, 0x2340ce8) = 1;
+				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7d00);
+			} else if (S(int, 0x2340ce4) == 0) {
+				S(int, 0x2340ce4) = 1;
+				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7cf0);
+			} else {
+				S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
+				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7ce4);
+			}
+		}
+	} else if (S(int, 0x2340cf4) == 1) {
+		mouse_offset(s, 0);
+		if (code_matches(0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
+			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
+		else {
+			const float *down = (const float *)0x4a9558, *up = (const float *)0x4a9560;
+			if (!(S(float, 0x2343293) >= *down) || !(S(float, 0x2343297) >= *down))
+				S(int, 0x234330b) = 1;
+			if (S(float, 0x2343293) > *up || S(float, 0x2343297) > *up)
+				S(int, 0x234330f) = 1;
+		}
+		if (pressed2(0x4def50, 0x4def54))
+			S(int, 0x2343313) = 1;
+		S(int, 0x2343293) = S(int, 0x2343297) = 0;
+		if (input_justPressed(KEY(0x9dae14)) || input_justPressed(KEY(0x9db0a0)))
+			S(int, 0x234330b) = 1;
+		if (input_justPressed(KEY(0x9db974)) || input_justPressed(KEY(0x76d330)))
+			S(int, 0x234330f) = 1;
+		if (input_justPressed(KEY(0x9dae70)) || input_justPressed(KEY(0x5b1da8)))
+			S(int, 0x2343313) = 1;
+		if (input_justPressed(KEY(0x6803a0)))
+			S(int, 0x2343317) = 1;
+	}
+	if (FUN_004a86e0())
+		S(int, 0x23432cf) = 1;
+}
+#undef S
+#undef KEY
