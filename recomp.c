@@ -3520,11 +3520,8 @@ static THISCALL DWORD armc_computeTotals(char *scene, DWORD actor) { DWORD v[1] 
    TICKSPERFRAME (key times = tick / ticksPerFrame * 1000 / frameSpeed), and per bone its NODE_NAME, NODE_PARENT
    (looked up among the earlier bones; missing is fatal), TM_POS / TM_ROTAXIS / TM_ROTANGLE (y and z swapped, z and
    the angle negated) and its key lists (rotation keys accumulated onto the previous one); then the bones' matrices */
-static THISCALL DWORD skel_loadAseFrom(char *sk, DWORD f, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { f, mem, size };
-	return run_lifted(lift_469b90, (DWORD)sk, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_loadAseFrom(char *sk, DWORD f, DWORD mem, DWORD size);
 /* batch 74 (lifted/grp21.c) */
 #include "lifted/grp21.c"
 /* 0x4699d0 (thiscall) skel_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
@@ -17588,7 +17585,7 @@ static const STest g_stests[] = {
 	/* batch 72 */
 	T(armc_computeTotals, 1, 400, 0),
 	/* batch 73 */
-	T(skel_loadAseFrom, 0, 200, 0),
+	T(skel_loadAseFrom, 0, 400, 0),
 	/* batch 74 */
 	T(skel_loadFrom, 0, 400, 0),
 	/* batch 75 */

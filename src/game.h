@@ -284,6 +284,10 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define FUN_004679a0(out, a, b, c) GAME_CDECL(0x4679a0, float *, float *, const float *, const float *, const float *)(out, a, b, c)   /* a triangle's normal */
 #define load_4728e0(scene, layer) GAME_THISCALL(0x4728e0, void, void *, void *)(scene, layer)   /* a layer's light map */
 #define load_497a90(scene) GAME_THISCALL(0x497a90, void, void *)(scene)   /* the layer meshes */
+#define crt_atof(s) GAME_CDECL(0x49fe7a, double, const char *)(s)
+#define skel_ase_47d320(out, a, b) GAME_CDECL(0x47d320, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
+#define skel_47d830(out, m) GAME_CDECL(0x47d830, void, float *, const float *)(out, m)   /* copied transposed */
+#define skel_ase_47d2f0(out, m) GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

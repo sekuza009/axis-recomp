@@ -549,3 +549,209 @@ void THISCALL (actor_46f8c0)(u8 *pose, const float *base)
 	}
 	glLoadMatrixf(saved);
 }
+
+#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+#define TOKEN(delims) crt_strtok(NULL, (const char *)(delims))
+#define SPACE 0x4ad5dc     /* " \t" */
+#define LINE_END 0x4b4310  /* " \t\n" */
+
+/* the next number of the line as a float (atof's double rounded), negated or not */
+static float ase_float(u32 delims, int negate)
+{
+	long double v = crt_atof(TOKEN(delims));
+	return f32(negate ? -v : v);
+}
+
+/* a key's time: its tick over the ticks per frame, times the milliseconds per frame */
+static int ase_time(int ticks, int ms)
+{
+	return crt_atoi(TOKEN(SPACE)) / ticks * ms;
+}
+
+/* a 4 x 4 translation by p (its floats loaded and stored as the original does) */
+static void translation(float *m, const float *p)
+{
+	memset(m, 0, 64);
+	m[0] = m[5] = m[10] = m[15] = 1.0f;
+	for (int k = 0; k < 3; k++)
+		m[12 + k] = f32(fld_m(&p[k]));
+}
+
+/* 0x469b90 (thiscall on a skeleton): a skeleton from a 3ds Max ASE text file. The old one released
+   (FUN_004699a0); pass 1 counts GEOMOBJECTs (bones, 0x70 bytes), TCB / Bezier position keys (0x20) and TCB rotation
+   keys (0x28) and takes the data memory (allocated, +0xc 1; or given: too small is fatal); pass 2 (from the top)
+   reads SCENE_LASTFRAME / FRAMESPEED (+0x20 the length in ms) / TICKSPERFRAME, and per bone (cameras skipped) its
+   NODE_NAME, NODE_PARENT (among the earlier bones; missing is fatal), TM_POS / TM_ROTAXIS / TM_ROTANGLE (y and z
+   swapped, z and the angle negated) and its key lists (each rotation key composed onto the previous one). Then the
+   bones become relative to their parents (last first) and the keys get their spans and deltas. Its caller ignores
+   the eax it leaves */
+void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
+{
+	char line[0x100], parent[0x40];
+	FUN_004699a0(sk);
+	GAME_VAR(int, sk + 0x10) = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
+	while (crt_fgets(line, 0x100, f)) {
+		const char *t = crt_strtok(line, (const char *)0x4c5498);
+		if (!strcmp(t, (const char *)0x4c548c))
+			GAME_VAR(int, sk + 0x10)++;
+		else if (!strcmp(t, (const char *)0x4c5478) || !strcmp(t, (const char *)0x4c5460))
+			GAME_VAR(int, sk + 0x18)++;
+		else if (!strcmp(t, (const char *)0x4c544c))
+			GAME_VAR(int, sk + 0x1c)++;
+	}
+	int bones = GAME_VAR(int, sk + 0x10);
+	if (bones <= 0)
+		return;
+	int size = GAME_VAR(int, sk + 4) = bones * 0x70 + GAME_VAR(int, sk + 0x1c) * 0x28 + GAME_VAR(int, sk + 0x18) * 0x20;
+	if (!mem) {
+		GAME_VAR(void *, sk + 8) = operator_new(size);
+		if (!GAME_VAR(void *, sk + 8))
+			sys_fatalError((char *)0xa0eaa8, (const char *)0x4c4bec, GAME_VAR(int, sk + 4));
+		GAME_VAR(int, sk + 0xc) = 1;
+	} else {
+		if (memSize < size)
+			sys_fatalErrorN((char *)0xa0eaa8, (const char *)0x4c4b08, size, memSize);
+		GAME_VAR(u8 *, sk + 8) = mem;
+		GAME_VAR(int, sk + 0xc) = 0;
+	}
+	GAME_VAR(u8 *, sk + 0x14) = GAME_VAR(u8 *, sk + 8);
+	int keys = GAME_VAR(int, sk + 0x10) * 0x70;   /* where the next key list goes, after the bones */
+	crt_fseek(f, 0, 0);
+	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
+	u8 *b = NULL;
+	while (crt_fgets(line, 0x100, f)) {
+		const char *t = crt_strtok(line, (const char *)0x4c5498);
+		if (!strcmp(t, (const char *)0x4c543c))   /* SCENE_LASTFRAME */
+			frames = crt_atoi(TOKEN(LINE_END));
+		else if (!strcmp(t, (const char *)0x4c541c)) {   /* SCENE_FRAMESPEED */
+			ms = 1000 / crt_atoi(TOKEN(LINE_END));
+			GAME_VAR(int, sk + 0x20) = ms * frames;
+		} else if (!strcmp(t, (const char *)0x4c5408))   /* SCENE_TICKSPERFRAME */
+			ticks = crt_atoi(TOKEN(LINE_END));
+		else if (!strcmp(t, (const char *)0x4c548c)) {   /* GEOMOBJECT */
+			index++;
+			skip = 0;
+			at += 0x70;
+			b = GAME_VAR(u8 *, sk + 0x14) + at;
+			GAME_VAR(int, b + 0x40) = -1;
+			GAME_VAR(int, b + 0x60) = GAME_VAR(int, b + 0x64) = GAME_VAR(int, b + 0x68) = GAME_VAR(int, b + 0x6c) = 0;
+		} else if (!strcmp(t, (const char *)0x4c53f8)) {   /* CAMERAOBJECT */
+			skip = 1;
+			continue;
+		}
+		if (skip)
+			continue;
+		if (!strcmp(t, (const char *)0x4c5430))   /* NODE_NAME */
+			strcpy((char *)b, TOKEN(0x4c53f4));
+		else if (!strcmp(t, (const char *)0x4c53e8)) {   /* NODE_PARENT */
+			strcpy(parent, TOKEN(0x4c53f4));
+			if (at > 0)
+				for (int j = 0; j < index; j++)
+					if (!strcmp((const char *)GAME_VAR(u8 *, sk + 0x14) + j * 0x70, parent)) {
+						GAME_VAR(int, b + 0x40) = j;
+						break;
+					}
+			if (GAME_VAR(int, b + 0x40) < 0)
+				sys_fatalError((char *)0xa0eaa8, (const char *)0x4c53b8, (int)parent);
+		} else if (!strcmp(t, (const char *)0x4c53b0)) {   /* TM_POS */
+			GAME_VAR(float, b + 0x44) = ase_float(SPACE, 0);
+			GAME_VAR(float, b + 0x4c) = ase_float(SPACE, 1);
+			GAME_VAR(float, b + 0x48) = ase_float(LINE_END, 0);
+		} else if (!strcmp(t, (const char *)0x4c53a4)) {   /* TM_ROTAXIS */
+			GAME_VAR(float, b + 0x54) = ase_float(SPACE, 0);
+			GAME_VAR(float, b + 0x5c) = ase_float(SPACE, 1);
+			GAME_VAR(float, b + 0x58) = ase_float(LINE_END, 0);
+		} else if (!strcmp(t, (const char *)0x4c5398))   /* TM_ROTANGLE */
+			GAME_VAR(float, b + 0x50) = ase_float(LINE_END, 1);
+		else if (!strcmp(t, (const char *)0x4c5388) || !strcmp(t, (const char *)0x4c5374)) {   /* CONTROL_POS_TCB / _BEZIER */
+			GAME_VAR(u8 *, b + 0x64) = GAME_VAR(u8 *, sk + 8) + keys;
+			while (crt_fgets(line, 0x100, f)) {
+				t = crt_strtok(line, (const char *)0x4c535c);
+				if (!strcmp(t, (const char *)0x4c5478) || !strcmp(t, (const char *)0x4c5460)) {
+					u8 *k = GAME_VAR(u8 *, b + 0x64) + GAME_VAR(int, b + 0x60) * 0x20;
+					GAME_VAR(int, k) = ase_time(ticks, ms);
+					GAME_VAR(float, k + 8) = ase_float(SPACE, 0);
+					GAME_VAR(float, k + 0x10) = ase_float(SPACE, 1);
+					GAME_VAR(float, k + 0xc) = ase_float(SPACE, 0);
+					GAME_VAR(int, b + 0x60)++;
+				} else if (t && t[0] == '}')
+					break;
+			}
+			keys += GAME_VAR(int, b + 0x60) * 0x20;
+		} else if (!strcmp(t, (const char *)0x4c5364)) {   /* CONTROL_ROT_TCB */
+			GAME_VAR(u8 *, b + 0x6c) = GAME_VAR(u8 *, sk + 8) + keys;
+			while (crt_fgets(line, 0x100, f)) {
+				t = crt_strtok(line, (const char *)0x4c535c);
+				if (!strcmp(t, (const char *)0x4c544c)) {
+					u8 *k = GAME_VAR(u8 *, b + 0x6c) + GAME_VAR(int, b + 0x68) * 0x28;
+					GAME_VAR(int, k) = ase_time(ticks, ms);
+					GAME_VAR(float, k + 0xc) = ase_float(SPACE, 0);
+					GAME_VAR(float, k + 0x14) = ase_float(SPACE, 1);
+					GAME_VAR(float, k + 0x10) = ase_float(SPACE, 0);
+					GAME_VAR(float, k + 8) = ase_float(SPACE, 1);
+					if (GAME_VAR(int, b + 0x68) > 0) {
+						float r[4];
+						skel_ase_47d320(r, (const float *)(k + 8), (const float *)(k + 8 - 0x28));
+						memcpy(k + 8, r, 16);
+					}
+					GAME_VAR(int, b + 0x68)++;
+				} else if (t && t[0] == '}')
+					break;
+			}
+			keys += GAME_VAR(int, b + 0x68) * 0x28;
+		}
+	}
+	u8 *all = GAME_VAR(u8 *, sk + 0x14);
+	for (int i = GAME_VAR(int, sk + 0x10) - 1; i >= 0; i--) {
+		u8 *bone = all + i * 0x70;
+		if (GAME_VAR(int, bone + 0x40) < 0)
+			continue;
+		u8 *up = all + GAME_VAR(int, bone + 0x40) * 0x70;
+		float t[16], r[16], m[16], inv[16], local[16], rel[16];
+		translation(t, (const float *)(up + 0x44));
+		FUN_0047d9a0(r, (const float *)(up + 0x50));
+		Mat4_multiply(m, t, r);
+		Mat4_invert(inv, m);
+		translation(t, (const float *)(bone + 0x44));
+		FUN_0047d9a0(r, (const float *)(bone + 0x50));
+		Mat4_multiply(local, t, r);
+		Mat4_multiply(rel, inv, local);
+		for (int k = 0; k < 3; k++)
+			GAME_VAR(float, bone + 0x44 + k * 4) = f32(fld_m(&rel[12 + k]));
+		rel[12] = rel[13] = rel[14] = 0;
+		skel_ase_47d2f0((float *)(bone + 0x50), rel);
+	}
+	for (int i = 0; i < GAME_VAR(int, sk + 0x10); i++) {
+		u8 *bone = GAME_VAR(u8 *, sk + 0x14) + i * 0x70;
+		for (int k = 0; k < GAME_VAR(int, bone + 0x60) - 1; k++) {
+			u8 *key = GAME_VAR(u8 *, bone + 0x64) + k * 0x20;
+			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x20) - GAME_VAR(int, key);
+			for (int c = 0; c < 3; c++)
+				GAME_VAR(float, key + 0x14 + c * 4) = f32(fsub_m(fld_m((const float *)(key + 0x28) + c), (const float *)(key + 8) + c));
+		}
+		if (GAME_VAR(int, bone + 0x60) > 0) {
+			u8 *last = GAME_VAR(u8 *, bone + 0x64) + (GAME_VAR(int, bone + 0x60) - 1) * 0x20;
+			GAME_VAR(int, last + 4) = 0;
+			GAME_VAR(int, last + 0x14) = GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = 0;
+		}
+		for (int k = 0; k < GAME_VAR(int, bone + 0x68) - 1; k++) {
+			u8 *key = GAME_VAR(u8 *, bone + 0x6c) + k * 0x28;
+			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x28) - GAME_VAR(int, key);
+			float r[16], back[16], next[16], step[16];
+			FUN_0047d9a0(r, (const float *)(key + 8));
+			skel_47d830(back, r);
+			FUN_0047d9a0(next, (const float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x30));
+			Mat4_multiply(step, back, next);
+			skel_ase_47d2f0((float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x18), step);
+		}
+		if (GAME_VAR(int, bone + 0x68) > 0) {
+			u8 *last = GAME_VAR(u8 *, bone + 0x6c) + (GAME_VAR(int, bone + 0x68) - 1) * 0x28;
+			GAME_VAR(int, last + 4) = 0;
+			GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = GAME_VAR(int, last + 0x20) = GAME_VAR(int, last + 0x24) = 0;
+		}
+	}
+}
+#undef crt_fgets
+#undef TOKEN
+#undef SPACE
+#undef LINE_END
