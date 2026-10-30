@@ -257,6 +257,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define particle_spawn(scene, record) GAME_THISCALL(0x479950, void, void *, const void *)(scene, record)
 #define skel_applyPose(sk, out, bone, t) GAME_THISCALL(0x46ab30, void, void *, void *, int, u32)(sk, out, bone, t)
 #define space_tracePlanes_47fb80(rec, p0, p1, hit, t) GAME_THISCALL(0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
+#define hud_46fd20(list, vv, lights, tint, a4, a5, a6) GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

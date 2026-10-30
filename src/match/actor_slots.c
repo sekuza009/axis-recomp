@@ -479,8 +479,6 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 
 #define K(address) ((const float *)(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define hud_46fd20(list, vv, lights, tint, a4, a5, a6) \
-	GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
 
 /* the actor's eight object lists (the body, the parts, the weapons) */
 static const u32 k_partLists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c, 0x40dc };
@@ -605,4 +603,3 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 }
 #undef K
 #undef A
-#undef hud_46fd20
