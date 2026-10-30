@@ -12587,9 +12587,9 @@ static void lobbylogin_setup(DWORD name, DWORD bytes, DWORD bufp)
 	fill_str((char *)0xa0b43c, 15, 32, 126); fill_str((char *)0x9dd570, 15, 32, 126); fill_str((char *)0x4dbbf4, 15, 32, 126);
 	fill((void *)0x4dba88, 4); fill((void *)0x4ded60, 4); fill((void *)0x4ded18, 4); fill((void *)0xa0b43c + 0x10, 4);
 }
-ST(lobby_checkReservedName3, lobbylogin_setup(0x5b1b30, 0x5b1b50, 0xa0b328);, (CD(void, 0x4351c0, void)(), 0),
+ST(lobby_checkReservedName3, lobbylogin_setup(0x5b1b30, 0x5b1b50, 0xa0b328); reserved_name((char *)0x4df9c8);   /* (room_433640 copies the name from there) */, (CD(void, 0x4351c0, void)(), 0),
    (lobby_checkReservedName3(0, 0, 0, 0, 0, 0, 0), 0))
-ST(lobby_checkReservedName2, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310);, (CD(void, 0x405cf0, void)(), 0),
+ST(lobby_checkReservedName2, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310); reserved_name((char *)0x4db528);   /* (lobby_405140 copies the name from there) */, (CD(void, 0x405cf0, void)(), 0),
    (lobby_checkReservedName2(0, 0, 0, 0, 0, 0, 0), 0))
 /* batch 101 */
 /* an actor (0..6) with empty, freshly constructed object lists (ResourceSet_init_463a40), every part table and item
