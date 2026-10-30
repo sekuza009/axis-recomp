@@ -10086,10 +10086,45 @@ ST(lobby_405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
 ST(armc_41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_41dcf0(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
-static void cfgread_setup(void) { vfs_content(95, 0x1000); g_vfsOpenFail = 0; g_paintStacks = 1; }
-T_PLAIN(cfg_parseKeyNames, 0x42e730, cfgread_setup();, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(cfg_videoModeNames, 0x42e240, cfgread_setup();, 0, VFS_FILE(0), 0, 0, 0)
-T_PLAIN(cfg_gameTypeNames, 0x42da70, cfgread_setup();, 0, VFS_FILE(0), 0, 0, 0)
+/* axis.cfg text for the three cfg readers (BUF + 0x200000): lines "KEYn = value" (the readers skip the first two
+   words and join the rest), as many as the reader takes and a few more, or fewer (the file ending early). A value is
+   one of the reader's own strings (pool; words split by spaces or tabs), a key name from the game's table at 0x4b0750
+   (keys), a number or junk; now and then an empty line, a missing "=", or a line longer than fgets' 0x50 bytes */
+static void cfglines_setup(int lines, const char *const *pool, int npool, int keys)
+{
+	char *d = BUF + 0x200000, num[16];
+	int i = 0, total = irnd(0, 9) ? lines + irnd(0, 3) : irnd(0, lines);
+	for (int l = 0; l < total; l++) {
+		int kind = irnd(0, 11);
+		if (kind == 0) { d[i++] = '\n'; continue; }
+		i += wsprintfA(d + i, irnd(0, 15) ? "KEY%d =" : "KEY%d", l);
+		const char *v;
+		if (kind <= 5 && npool) v = pool[irnd(0, npool - 1)];
+		else if (kind <= 8 && keys) v = (const char *)G32(0x4b0750 + irnd(0, 255) * 4);
+		else if (kind <= 9) { wsprintfA(num, "%d", irnd(-5, 2000)); v = num; }
+		else v = irnd(0, 1) ? "OFF" : "Q";
+		d[i++] = irnd(0, 3) ? ' ' : '\t';
+		for (; *v; v++) {
+			if (*v != ' ') { d[i++] = *v; continue; }
+			d[i++] = irnd(0, 3) ? ' ' : '\t';
+			if (!irnd(0, 5)) d[i++] = ' ';
+		}
+		if (!irnd(0, 25)) for (int k = 0; k < 0x60; k++) d[i++] = 'X';
+		if (irnd(0, 9)) d[i++] = irnd(0, 5) ? '\n' : '\r';
+		d[i++] = '\n';
+	}
+	g_vfsData = (const BYTE *)d; g_vfsSize = (DWORD)i; g_vfsOpenFail = 0; g_paintStacks = 1;
+}
+static const char *const k_cfgOnOff[] = { "ON", "OFF", "1", "0" };
+static const char *const k_cfgVideo[] = { "ON", "OFF", "32", "16", "HIGH", "LOW", "DESKTOP", "1024x768", "3840x2160",
+	"2560x1440", "1920x1080", "1600x900", "1280x720", "800x600" };
+static const char *const k_cfgGameTypes[] = { "ON", "OFF", "TEAM DEATH MATCH", "DEATH MATCH", "SUDDEN DEATH",
+	"TEAM SUDDEN DEATH", "SHOTGUN ARENA", "TEAM SHOTGUN ARENA", "IONCANNON ARENA", "TEAM IONCANNON ARENA", "ROCKET ARENA",
+	"TEAM ROCKET ARENA", "GLADIATOR ARENA", "TEAM GLADIATOR ARENA", "KING ON THE HILL", "PLATOON MODE",
+	"ACCEPT ADVANCED MODE", "15", "30" };
+T_PLAIN(cfg_parseKeyNames, 0x42e730, cfglines_setup(68, k_cfgOnOff, 4, 1);, 0, VFS_FILE(0), 0, 0, 0)
+T_PLAIN(cfg_videoModeNames, 0x42e240, cfglines_setup(7, k_cfgVideo, 14, 0);, 0, VFS_FILE(0), 0, 0, 0)
+T_PLAIN(cfg_gameTypeNames, 0x42da70, cfglines_setup(7, k_cfgGameTypes, 19, 0);, 0, VFS_FILE(0), 0, 0, 0)
 /* the scene at the scratch area (fields from +0x1f1668 on): six geometry tables, each "count" rows of "stride"
    dwords with a sampling divisor (kept within a row) and a row count, the event flags, the recording */
 static void gamepkt_setup(void)
@@ -17424,8 +17459,8 @@ static const STest g_stests[] = {
 	T(actor_45ebc0, 0, 40, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(FUN_004050a0, 1, 40, 0), T(lobby_405140, 1, 40, 0),
-	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 40, 0), T(cfg_videoModeNames, 1, 40, 0),
-	T(cfg_gameTypeNames, 1, 40, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 40, 0),
+	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
+	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 40, 0),
 	/* batch 53 */
 	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
