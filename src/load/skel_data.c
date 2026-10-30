@@ -415,3 +415,67 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		FUN_00466650(shape);
 	return shape;
 }
+
+/* 0x466120 (thiscall on a shape): read from f. Its old data released (FUN_00464bc0), the 0x34-byte header (block size
+   +4, part count +0x10, a point +0x20, the version +0x30: 0x71110300 the current format; an older file has a 0x30-byte
+   header and 0x68-byte parts, its block grown by 0x18 a part, the position put back as it was), the block (+8, as
+   take_block). The 0x80-byte parts (+0x14) at the block's start, then each part's tables after them: vertices,
+   normals (12 bytes each), colours (4), texture coordinates (8) for its +0x4c vertices, and its +0x60 primitives
+   (12 bytes; one slot more is left past them), each with its index list (+4 of them). An old file is relocated
+   (shape_relocate). The shape's box (+0x34 low, +0x40 high) from the point +0x20 and every part's box (+0x68 ..). Its
+   callers ignore the eax it leaves */
+void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
+{
+	FUN_00464bc0(shape);
+	crt_fread(shape, 0x34, 1, f);
+	int current = AT(u32, shape, 0x30) == 0x71110300;
+	if (!current) {
+		long at = crt_ftell(f);
+		crt_fseek(f, -4, 1);   /* SEEK_CUR */
+		AT(int, shape, 4) += AT(int, shape, 0x10) * 0x18;
+		crt_fseek(f, at, 0);   /* SEEK_SET */
+	}
+	take_block(shape, mem, size, (char *)0xa0e790, 0x4c4bec, 0x4c4b08, 1);
+	u8 *parts = AT(u8 *, shape, 0x14) = AT(u8 *, shape, 8);
+	if (current)
+		crt_fread(parts, 0x80, AT(u32, shape, 0x10), f);
+	else
+		for (int i = 0; i < AT(int, shape, 0x10); i++)
+			crt_fread(AT(u8 *, shape, 0x14) + i * 0x80, 0x68, 1, f);
+	int at = AT(int, shape, 0x10) * 0x80;
+	for (int i = 0; i < AT(int, shape, 0x10); i++) {
+		u8 *p = AT(u8 *, shape, 0x14) + i * 0x80;
+		AT(int, p, 0x44) = -1;
+		int n = AT(int, p, 0x4c);
+		static const u8 sizes[4] = { 12, 12, 4, 8 };   /* vertices, normals, colours, texture coordinates */
+		for (int t = 0; t < 4; t++) {
+			AT(u8 *, p, 0x50 + t * 4) = AT(u8 *, shape, 8) + at;
+			at += n * sizes[t];
+		}
+		for (int t = 0; t < 4; t++)
+			crt_fread(AT(u8 *, p, 0x50 + t * 4), sizes[t], AT(u32, p, 0x4c), f);
+		AT(u8 *, p, 0x64) = AT(u8 *, shape, 8) + at;
+		crt_fread(AT(u8 *, p, 0x64), 0xc, AT(u32, p, 0x60), f);
+		at += 0xc;
+		for (int k = 0; k < AT(int, p, 0x60); k++) {
+			u8 *prim = AT(u8 *, p, 0x64) + k * 0xc;
+			AT(u8 *, prim, 8) = AT(u8 *, shape, 8) + at;
+			crt_fread(AT(u8 *, prim, 8), 4, AT(u32, prim, 4), f);
+			at += AT(int, prim, 4) * 4;
+		}
+	}
+	if (!current)
+		shape_relocate(shape);
+	memcpy(shape + 0x34, shape + 0x20, 12);
+	memcpy(shape + 0x40, shape + 0x20, 12);
+	float *low = (float *)(shape + 0x34), *high = (float *)(shape + 0x40);
+	for (int i = 0; i < AT(int, shape, 0x10); i++) {
+		const float *box = (const float *)(AT(u8 *, shape, 0x14) + i * 0x80 + 0x68);
+		for (int c = 0; c < 3; c++)
+			if (low[c] > box[c])
+				((u32 *)low)[c] = ((const u32 *)box)[c];
+		for (int c = 0; c < 3; c++)
+			if (!(high[c] >= box[3 + c]))
+				((u32 *)high)[c] = ((const u32 *)box)[3 + c];
+	}
+}

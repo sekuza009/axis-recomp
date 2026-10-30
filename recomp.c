@@ -3406,11 +3406,8 @@ THISCALL void scene_reset(char *scene);
    mem or allocated, the part records (0x80 apart), then per part its vertices, normals, colours, texture
    coordinates, polygons and their index lists; old files get their bounds computed (shape_relocate); the overall
    box from the parts' boxes */
-static THISCALL DWORD shape_read(char *self, DWORD f, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { f, mem, size };
-	return run_lifted(lift_466120, (DWORD)self, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void shape_read(char *self, DWORD f, DWORD mem, DWORD size);
 /* batch 65 (lifted/grp12.c) */
 #include "lifted/grp12.c"
 /* 0x472400 (thiscall) light_computeLayerLightBy(layer, colours, first, row0, col0, row1, col1): a terrain layer's
@@ -9601,7 +9598,7 @@ static void mapinfo_setup(void)
 	memset(d, 0, 0x80); strcpy((char *)d, "AXIS MAP INFOMATION DATA FILE"); d[0x32] = irnd(0, 5) ? 0x1a : 0x1b;
 	*(int *)(d + 0x80) = n;
 	for (int i = 0; i < (n > 0 ? n : 0); i++) {
-		char *r = (char *)d + 0x84 + i * 0x70; fill_str(r, 0x1f, 32, 126); fill(r + 0x20, 0x50);
+		char *r = (char *)d + 0x84 + i * 0x70; fill_str(r, 0x1f, 32, 126); fill(r + 0x20, 0x50); r[0x20 + irnd(0, 0x4f)] = 0;   /* (an unended description runs the original's strlen off its table) */
 		if (irnd(0, 2)) { int l = (int)strlen(r); for (int k = irnd(0, 4); k > 0 && l > 0; k--) r[--l] = ' '; }
 	}
 	g_vfsData = d; g_vfsSize = 0x84 + (n > 0 ? n : 0) * 0x70;
@@ -12428,7 +12425,7 @@ static int menutex_setup(void)
 	while (S32(BUF + 0x400000, 4 + k * 4) != (int)BUF) k++;
 	S32(BUF, 0xcd128) = 21;
 	for (int a = 0; a < 4; a++) g_a[a] = irnd(-100, 800);
-	return c < 6 ? k * 512 + S32((char *)S32(BUF, 0xcd134), 4) : k * 512 + i;
+	return c < 6 ? k * 512 + (S32((char *)S32(BUF, 0xcd134), 4) & 0x1ff) : k * 512 + (i & 0x1ff);   /* (outside the manager's 512 records it names an empty one: the original crashes) */
 }
 ST(menu_drawTexturedRect_427a90, g_a[4] = menutex_setup();, (CD(void, 0x427a90, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
    (menu_drawTexturedRect_427a90(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
@@ -17590,7 +17587,7 @@ static const STest g_stests[] = {
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 400, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
 	/* batch 64 */
-	T(scene_reset, 0, 400, 0), T(shape_read, 0, 40, 0),
+	T(scene_reset, 0, 400, 0), T(shape_read, 0, 400, 0),
 	/* batch 65 */
 	T(light_computeLayerLightBy, 0, 400, 0), T(render_processRenderingBy, 0, 200, 0),
 	/* batch 66 */
