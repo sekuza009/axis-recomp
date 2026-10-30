@@ -4037,7 +4037,8 @@ void *glWindow_init(const char *title, int width, int height, int colourBits, in
    and sets the game type flags for type 0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20
    (2 -> 3, 3 -> 1, else 2) and its defaults, the match state (match_4636d0), the notices (match_463480) and the
    lobby slots (+0x234240d -1 in modes 1 and 3) */
-static THISCALL DWORD app_requireCd(char *g, DWORD a, DWORD mode) { DWORD v[2] = { a, mode }; return run_lifted(lift_460cb0, (DWORD)g, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void app_requireCd(char *g, DWORD a, DWORD mode);
 /* batch 114 (lifted/grp60.c) */
 #include "lifted/grp60.c"
 /* 0x41fd40 console_init: the console's start: pending node list freed (0x67fb3c, FUN_00441190), the five profile
@@ -17678,7 +17679,7 @@ static const STest g_stests[] = {
 	/* batch 112 */
 	T(glWindow_wndProc, 1, 300, 0), T(glWindow_init, 1, 300, 0),
 	/* batch 113 */
-	T(app_requireCd, 0, 200, 0),
+	T(app_requireCd, 0, 400, 0),
 	/* batch 114 */
 	T(console_init, 0, 200, 0),
 	/* batch 115 */

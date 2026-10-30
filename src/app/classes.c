@@ -558,3 +558,83 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #undef VECTOR
 #undef VTABLE
 }
+
+/* n dwords from at set to 0 (some of the game object's are unaligned) */
+static void zero_dwords(u8 *at, int n)
+{
+	for (int k = 0; k < n; k++)
+		GAME_VAR(u32, at + k * 4) = 0;
+}
+
+/* 0x460cb0 (thiscall on the game object): a session started in mode (+4 a, +8 mode). With no CD found a fatal
+   message. Its counters cleared; in mode 3 the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte
+   records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
+   clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
+   0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
+   defaults, the match state (match_4636d0), the notices (match_463480) and the lobby slots (+0x234240d -1 in modes 1
+   and 3). Its callers ignore the eax it leaves */
+void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
+{
+	if (!cd_findDrive())
+		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, GAME_VAR(const char *, 0x4b4568));
+	GAME_VAR(u32, g + 4) = a;
+	GAME_VAR(int, g + 8) = mode;
+	GAME_VAR(int, g + 0x1f1664) = 0;
+	zero_dwords(g + 0x1f1ca8, 3);
+	zero_dwords(g + 0x233c9e8, 3);
+	GAME_VAR(int, g + 0x1f35bc) = 0;
+	if (GAME_VAR(int, g + 8) == 3)
+		for (int k = 0; k < GAME_VAR(int, 0x9eeab8); k++) {
+			const char *e = (const char *)0x9dda88 + k * 0x44;
+			if (GAME_VAR(int, e + 0x40) == 1)
+				strcpy((char *)g + 0x1f1cbc + GAME_VAR(int, g + 0x1f35bc)++ * 0x40, e);
+		}
+	u8 *s = g + 0x1f36c8;
+	GAME_VAR(int, g + 0x1f35c0) = GAME_VAR(int, g + 0x1f35c4) = 0;
+	scene_resetActors(s);
+	scene_reset(s);
+	if (GAME_VAR(int, g + 8) == 2) {
+		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* armc_45dfe0 */
+		GAME_VAR(int, g + 0x2221f9c) = 0;
+		for (int k = 0; k < 3; k++) {
+			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;
+			GAME_VAR(u32, g + 0xbe2fd8 + k * 4) = 0x47c35000;
+		}
+		memcpy(g + 0xbe2fe4, g + 0xbe2fcc, 12);
+		memcpy(g + 0xbe2ff0, g + 0xbe2fd8, 12);
+		GAME_VAR(u32, g + 0xbe2ffc) = 0x3f800000;
+		game_setGameTypeFlags((Stage *)s, 0);
+	}
+	GAME_VAR(int, g + 0x233c9fc) = GAME_VAR(int, g + 0x233ca00) = 0;
+	memcpy(g + 0x233ca04, (const void *)0xa0e7a8, 12);
+	for (int k = 0; k < 3; k++)
+		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)0xa0e7c8 + k));
+	memcpy(g + 0x233ca1c, (const void *)0xa0e7d8, 12);
+	GAME_VAR(int, g + 0x233ca28) = GAME_VAR(int, g + 0x233ca2c) = 0;
+	GAME_VAR(int, g + 0x233cc20) = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;
+	GAME_VAR(int, g + 0x233cc28) = GAME_VAR(int, g + 0x233cc30) = GAME_VAR(int, g + 0x233cc34) = 0;
+	GAME_VAR(int, g + 0x233cc40) = GAME_VAR(int, g + 0x233cc44) = 0;
+	GAME_VAR(u32, g + 0x233cc50) = 0x43960000;   /* 300, 3, 5, 15 */
+	GAME_VAR(u32, g + 0x233cc54) = 0x40400000;
+	GAME_VAR(u32, g + 0x233cc58) = 0x40a00000;
+	GAME_VAR(u32, g + 0x233cc5c) = 0x41700000;
+	zero_dwords(g + 0x2340ca4, 11);
+	GAME_VAR(int, g + 0x2340cd0) = 1;
+	zero_dwords(g + 0x2340cd4, 13);
+	zero_dwords(g + 0x2340d1d, 7);
+	match_4636d0((Scene *)g);
+	zero_dwords(g + 0x2342395, 8);
+	GAME_VAR(int, g + 0x23423b5) = -1;
+	zero_dwords(g + 0x23423c9, 7);
+	GAME_VAR(int, g + 0x23423fd) = GAME_VAR(int, g + 0x2342409) = 0;
+	zero_dwords(g + 0x234325f, 10);
+	GAME_VAR(int, g + 0x2343287) = -1;
+	zero_dwords(g + 0x234328b, 31);
+	zero_dwords(g + 0x234330b, 4);
+	GAME_THISCALL(0x463480, void, void *)(g);   /* match_463480 */
+	GAME_VAR(int, g + 0x234240d) = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
+	zero_dwords(g + 0x2342411, 3);
+	GAME_VAR(int, g + 0x234241d) = -1;
+	GAME_VAR(int, g + 0x2342421) = 0;
+	GAME_VAR(int, g + 0x2343253) = 0;
+}
