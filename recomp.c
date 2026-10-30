@@ -6824,11 +6824,13 @@ static int WINAPI mstub_send(DWORD so, const BYTE *buf, int len, int flags)
 	mock_rec(0x4a9394, 4, so, (DWORD)len, mock_hash(buf, len > 0 && len <= 0x1000 ? (DWORD)len : 0), (DWORD)flags);
 	return len;
 }
+/* g_mockRecvHead: the bytes a reply starts with (g_mockRecvHeadLen of them; a test sets them for a reply code) */
+static BYTE g_mockRecvHead[8]; static int g_mockRecvHeadLen;
 static int WINAPI mstub_recv(DWORD so, BYTE *buf, int len, int flags)
 {
 	mock_rec(0x4a9398, 3, so, (DWORD)len, (DWORD)flags, 0);
 	int n = (int)g_mockRecvRet;
-	for (int i = 0; i < n && i < len; i++) buf[i] = (BYTE)(i * 37 + 11);
+	for (int i = 0; i < n && i < len; i++) buf[i] = i < g_mockRecvHeadLen ? g_mockRecvHead[i] : (BYTE)(i * 37 + 11);
 	return n;
 }
 /* the game's packet sender (0x4a8360, cdecl (size, data)): the size and a hash of the packet are logged */
@@ -7202,7 +7204,7 @@ static void callee_key(DWORD addr, int key) { int k = callee_index(addr); if (k 
 /* the scripted values a test may change in its setup, back to their defaults before each run */
 static void mock_defaults(void)
 {
-	g_mockMallocFail = 0; g_vfsOpenFail = 0; g_vfsFailMask = 0; g_vfsData = NULL; g_vfsSize = 0;
+	g_mockRecvHeadLen = 0; g_mockMallocFail = 0; g_vfsOpenFail = 0; g_vfsFailMask = 0; g_vfsData = NULL; g_vfsSize = 0;
 	g_vfsAltName = NULL; g_vfsAltData = NULL; g_vfsAltSize = 0; g_vfsAltName2 = NULL; g_vfsAltData2 = NULL; g_vfsAltSize2 = 0;
 	g_mockMkdirFail = 0; g_mockFindCount = 0; g_mockRegFail = 0; g_mockPixelFormat = 7; g_mockTextLen = 5; g_mockQpc = 0x1000;
 	g_mockQpf[0] = 3579545; g_mockQpf[1] = 0; g_mockQpfFail = 0; g_mockDeleteOk = 1;
@@ -12556,6 +12558,8 @@ static void netrecv_setup(void)
 	fill((void *)0xa052e8, 0x40); fill((void *)0xa05330, 0x9b * 4 + 8);
 	fill((void *)0xa0b350, 8); fill((void *)0xa0b370, 0x10);
 	G32(0xa0b300) = states[irnd(0, 10)];
+	/* the reply's code (its first dword, as recv delivers it): an answer 30 .. 42 or a small one */
+	DWORD code = irnd(0, 2) ? 0x1e + irnd(0, 12) : irnd(0, 4); memcpy(g_mockRecvHead, &code, 4); g_mockRecvHeadLen = 4;
 }
 ST(net_recv, netrecv_setup();, (CD(void, 0x452620, void)(), 0), (net_recv(0, 0, 0, 0, 0, 0, 0), 0))
 /* batch 100 */
