@@ -476,3 +476,133 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 #undef K
+
+#define K(address) ((const float *)(address))
+#define A(type, offset) GAME_VAR(type, ac + (offset))
+#define hud_46fd20(list, vv, lights, tint, a4, a5, a6) \
+	GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
+
+/* the actor's eight object lists (the body, the parts, the weapons) */
+static const u32 k_partLists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c, 0x40dc };
+
+/* the light the actor's flags ask for (0x100: +0x20f2f3c, 0x800: +0x20f2f44, else +0x20f2f40) */
+static u32 flag_light(u8 *s, u32 f)
+{
+	return GAME_VAR(u32, s + (f & 0x100 ? 0x20f2f3c : f & 0x800 ? 0x20f2f44 : 0x20f2f40));
+}
+
+/* the list of the weapon in hand (+0x140: 4, 5, else the last) */
+static u8 *weapon_list(u8 *ac)
+{
+	return ac + (A(int, 0x140) == 4 ? 0x587c : A(int, 0x140) == 5 ? 0x701c : 0x40dc);
+}
+
+/* 0x45d3e0 (thiscall on the scene): actor a drawn into the view volume vv when in play and within the view range
+   (+0xa08 plus its radius +0x3e8) of the camera (+0x20f3970..) on every axis. Its tint (+0x4f0): a cloaked actor
+   (flag 0x200) at the local player's rank or above white and faint (0x40 to itself, 0x10 to others); else a hit
+   flash (+0x120 up to K 0x4a9534) fading in then out, or the damage glow (+0x4ec white, +0x8854 red-orange); a
+   faint tint lights it with +0x20f2f48. The viewing actor (+0x202e8d8), when draw is set, shows only the weapon in
+   hand; others, when draw is not 1, all their lists up to the count +0x54c (the fifth unless +0x550; flags 0xd00 skip
+   them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
+   lit pass. A list that would not draw has them all reloaded (FUN_0045e1f0 / actor_updateBody / FUN_0045e390 /
+   FUN_0045e460 / FUN_0045e530 / actor_updatePart). Its caller ignores the eax it leaves */
+void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
+{
+	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	if (A(int, 0x14c) != 1 || A(int, 0x884c) == 1)
+		return;
+	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), (const float *)(ac + 0x3e8)));
+	const float *cam = (const float *)(s + 0x20f3970), *at = (const float *)(ac + 0x154);
+	for (int k = 0; k < 3; k++)
+		if (fsub_m(fld_m(&cam[k]), &r) > at[k])
+			return;
+	for (int k = 0; k < 3; k++)
+		if (!(fadd_m(fld_m(&r), &cam[k]) >= at[k]))
+			return;
+	u8 *tint = ac + 0x4f0;
+	int local = GAME_VAR(int, s + 0x202e8d4);
+	if ((A(u32, 0x3f0) & 0x200) && A(int, 8) >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
+		tint[0] = tint[1] = tint[2] = 0xff;
+		tint[3] = a == local ? 0x40 : 0x10;
+	} else if (!(A(float, 0x120) > *K(0x4a9534))) {
+		if (!(A(float, 0x120) >= *K(0x4a974c)))
+			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m((const float *)(ac + 0x120)), K(0x4a9748)));
+		else {
+			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m((const float *)(ac + 0x120)), K(0x4a974c)), K(0x4a9748))));
+			tint[3] = 0xff;
+		}
+	} else if (A(float, 0x4ec) > 0 || A(float, 0x8854) > 0) {
+		int c[3] = { 0, 0, 0 };
+		if (A(float, 0x4ec) > 0)
+			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m((const float *)(ac + 0x4ec)), K(0x4a9744)));
+		if (A(float, 0x8854) > 0) {
+			int red = ftol(fmul_m(fld_m((const float *)(ac + 0x8854)), K(0x4a9744)));
+			c[0] += red;
+			c[1] += red / 2;
+			c[2] += red / 2;
+		}
+		for (int k = 0; k < 3; k++)
+			tint[k] = (u8)(c[k] > 0xff ? 0xff : c[k]);
+		tint[3] = 0xff;
+	} else
+		tint = NULL;
+	u32 light = tint && tint[3] <= 0x10 ? (u32)(s + 0x20f2f48) : 0;
+	u8 *lights = s + 0x9e3020;
+	int ok = 1;
+	u32 f;
+	if (a == GAME_VAR(int, s + 0x202e8d8)) {
+		if (draw) {
+			ok = hud_46fd20(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
+			f = A(u32, 0x3f0);
+			if ((f & 0x100) || (f & 0xc00))
+				ok &= hud_46fd20(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)(s + 0x20f2f88));
+		}
+	} else if (draw != 1) {
+		f = A(u32, 0x3f0);
+		int lists = 1;
+		if (f & 0xd00) {
+			if (GAME_VAR(int, 0x83a9c8) == 0)
+				lists = 0;
+			else {
+				float size = f32(fsub_m(fld_m((const float *)(ac + 0x87d4)), (const float *)(ac + 0x87c8)));
+				if (fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(0x4a9414)) > size)
+					lists = 0;
+			}
+		}
+		if (lists && GAME_VAR(int, 0x83a9c8) != 1 && tint && tint[3] <= 0x10)
+			lists = 0;
+		if (lists) {
+			int n = A(int, 0x54c);
+			if (n < 0)
+				return;
+			for (int k = 0; k < 8; k++) {
+				if (k > 0 && n < k)
+					return;
+				if (k == 4 && A(int, 0x550))
+					continue;
+				int r = hud_46fd20(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
+				ok = k ? ok & r : r & 1;
+			}
+		}
+		f = A(u32, 0x3f0);
+		if ((f & 0x100) || (f & 0xc00)) {
+			u32 lt = flag_light(s, f);
+			for (int k = 0; k < 8; k++)
+				if (k != 4 || !A(int, 0x550))
+					ok &= hud_46fd20(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)(s + 0x20f2f88));
+		}
+	}
+	A(int, 0x550) = 0;
+	if (ok)
+		return;
+	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* FUN_0045e1f0 */
+	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
+	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* FUN_0045e390 */
+	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* FUN_0045e460 */
+	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* FUN_0045e530 */
+	for (int k = 0; k < 6; k++)
+		actor_updatePart(s, a, k, A(u32, 0x49c));
+}
+#undef K
+#undef A
+#undef hud_46fd20

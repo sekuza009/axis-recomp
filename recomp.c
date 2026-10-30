@@ -3888,11 +3888,8 @@ int lobby_checkReservedName2(void);
    relit and drawn through hud_46fd20 (lights +0x20f2f3c.. by flags 0x100 / 0x400 / 0x800; the current weapon +0x140);
    a list that cannot be drawn is reloaded (FUN_0045e1f0 / actor_updateBody / FUN_0045e390 / FUN_0045e460 /
    FUN_0045e530 / actor_updatePart) */
-static THISCALL DWORD actor_updateAllParts(char *sc, DWORD a, DWORD vv, DWORD draw)
-{
-	DWORD v[3] = { a, vv, draw };
-	return run_lifted(lift_45d3e0, (DWORD)sc, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_updateAllParts(char *sc, DWORD a, DWORD vv, DWORD draw);
 /* batch 102 (lifted/grp48.c) */
 #include "lifted/grp48.c"
 /* 0x474550 (thiscall on the scene) map_loadActorInfoFrom(name): the map's players and actors from "dir/name" (dir
@@ -12673,10 +12670,11 @@ static void updateparts_setup(void)
 	fill(ac + 0x4f0, 4); fill(ac + 0x54c, 8); fill(ac + 0x87c8, 0x10);
 	S32(sc, 0x202e8d4) = irnd(0, 6); S32(sc, 0x202e8d8) = irnd(0, 1) ? a : irnd(0, 6);
 	fill(sc + 0x20f2f3c, 0x10); fill(sc + 0x20f2f88, 0x10);
-	g_a[0] = a; g_a[1] = (int)(BUF + 0x980000); g_a[2] = irnd(0, 1);
+	g_a[0] = a; g_a[1] = (int)(BUF + 0x980000); g_a[2] = irnd(0, 2); G32(0x83a9c8) = irnd(0, 2);
+	if (irnd(0, 1)) S32(ac, 0x54c) = irnd(-1, 8);
 }
-ST(actor_updateAllParts, updateparts_setup();, TC(int, 0x45d3e0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]),
-   actor_updateAllParts(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]))
+ST(actor_updateAllParts, updateparts_setup();, (TC(void, 0x45d3e0, char *, int, int, int)(BUF, g_a[0], g_a[1], g_a[2]), 0),
+   (actor_updateAllParts(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]), 0))
 /* batch 102 */
 /* the clan texture's path in the texture index (texpath_index), every part table and item record ready (as
    wholeplayer_setup), and the actor file as the second VFS content ("M1.act"): version 0x1201 (rarely not), three
