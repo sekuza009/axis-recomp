@@ -36,3 +36,48 @@ void (intro_41e730)(double frames)
 	while (!((timer_now() - start) * FRAME_RATE >= frames))
 		;
 }
+
+/* 0x4301e0: the time in seconds (0x9db980, a double; the value returned unrounded): the performance counter
+   (QueryPerformanceCounter, kept at 0x5ae9c8) shifted right by 0x67ef1c into 32 bits, its rise since the last
+   reading (0x9dbf08) times the seconds per count (0x4ded58) added. The first call (0x4b1048) only takes the
+   reading; a reading a little below the last (less than 0x10000000) adds nothing. A time that stays equal to the
+   one before (0x9db988) 100000 calls in a row is moved on by 0x4a94e0 */
+long double (timer_now)(void)
+{
+#define g_time GAME_VAR(double, 0x9db980)
+#define g_lastCount GAME_VAR(u32, 0x9dbf08)
+	u32 counter[2];
+	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
+	int shift = GAME_VAR(int, 0x67ef1c);
+	GAME_VAR(u32, 0x5ae9cc) = counter[1];
+	GAME_VAR(u32, 0x5ae9c8) = counter[0];
+	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
+	if (GAME_VAR(int, 0x4b1048)) {
+		long double t = g_time;
+		g_lastCount = count;
+		GAME_VAR(int, 0x4b1048) = 0;
+		return t;
+	}
+	u32 last = g_lastCount;
+	if (count <= last && last - count < 0x10000000) {
+		long double t = g_time;
+		g_lastCount = count;
+		return t;
+	}
+	g_lastCount = count;
+	long double t = (long double)(count - last) * GAME_VAR(double, 0x4ded58) + g_time;
+	g_time = (double)t;
+	long double before = GAME_VAR(double, 0x9db988);
+	if (t == before || t != t || before != before) {   /* (fcom: equal or unordered) */
+		if (++GAME_VAR(int, 0x9dbf00) > 100000) {
+			t += GAME_VAR(double, 0x4a94e0);
+			g_time = (double)t;
+			GAME_VAR(int, 0x9dbf00) = 0;
+		}
+	} else
+		GAME_VAR(int, 0x9dbf00) = 0;
+	GAME_VAR(double, 0x9db988) = (double)t;
+	return t;
+#undef g_time
+#undef g_lastCount
+}

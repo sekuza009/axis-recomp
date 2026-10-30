@@ -2767,8 +2767,8 @@ int profile_load(void);
 /* 0x446a10 profile_save: save a profile */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_save(void);
-/* 0x4301e0 timer_now(): seconds from QueryPerformanceCounter (returned in ST0) */
-LIFT_PLAIN_FP(timer_now, 4301e0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long double timer_now(void);
 /* 0x463830 (thiscall) Stage_deletingDtor(flags) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Stage_deletingDtor(void *stage, int flags);
@@ -4549,7 +4549,8 @@ void setup_crosshairScreen(void);
    0x4dce84..0x4dcf0c and 0x4dc228..0x4dc248, counts such as 0x4dcab4..0x4dcacc), several scaled by the pilot's
    skills (0x9f9078..0x9f9088 of pilot 0x9f1818), with units (0x7655a4..0x765aa4), the type names 0x7623a4 by
    0x4dce80 and on / off by 0x4dceac; English and Korean layouts are separate switches on the slot */
-LIFT_PLAIN(armc_drawStatsPanel, 412650)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_drawStatsPanel(void);
 /* batch 145 (lifted/grp91.c): re-equipping the current player's armour part */
 #include "lifted/grp91.c"
 /* 0x461540 (thiscall on the game) armc_461540(slot): for the player in lobby slot +0x234240d (none when negative):
@@ -7344,8 +7345,8 @@ static int run_one(const STest *t, int full, int log)
 		if (log) {
 			int k = 0;
 			while (k < g_ncalls && k < g_ncalls1 && !memcmp(&g_calls[k], &g_calls1[k], sizeof(MockCall))) k++;
-			say("      %s: library calls differ (original %d, rebuilt %d calls%s); first difference at call %d: %08lx(%08lx %08lx %08lx %08lx) / %08lx(%08lx %08lx %08lx %08lx)\n",
-			    t->name, g_ncalls1, g_ncalls, ovf1 || g_mockOverflow ? ", log overflow" : "", k,
+			say("      %s: library calls differ (original %d, rebuilt %d calls%s, seed %08x); first difference at call %d: %08lx(%08lx %08lx %08lx %08lx) / %08lx(%08lx %08lx %08lx %08lx)\n",
+			    t->name, g_ncalls1, g_ncalls, ovf1 || g_mockOverflow ? ", log overflow" : "", seed, k,
 			    k < g_ncalls1 ? g_calls1[k].fn : 0, k < g_ncalls1 ? g_calls1[k].a[0] : 0, k < g_ncalls1 ? g_calls1[k].a[1] : 0, k < g_ncalls1 ? g_calls1[k].a[2] : 0, k < g_ncalls1 ? g_calls1[k].a[3] : 0,
 			    k < g_ncalls ? g_calls[k].fn : 0, k < g_ncalls ? g_calls[k].a[0] : 0, k < g_ncalls ? g_calls[k].a[1] : 0, k < g_ncalls ? g_calls[k].a[2] : 0, k < g_ncalls ? g_calls[k].a[3] : 0);
 		}
@@ -9691,9 +9692,22 @@ ST(data_loadPilotProfiles, pilotfile_setup();, (CALL_PLAIN(0x42b590, 0, 0, 0, 0,
 ST(profile_saveProgress, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x447010, 0, 0, 0, 0, 0), (DWORD)(profile_saveProgress()))
 ST(profile_load, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446590, 0, 0, 0, 0, 0), (DWORD)(profile_load()))
 ST(profile_save, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_PLAIN(0x446a10, 0, 0, 0, 0, 0), (DWORD)(profile_save()))
-ST(timer_now, g_mockQpc = (DWORD)irnd(0, 0x7fffffff);,
+/* the counter (mocked), its shift (0x67ef1c, 0 .. 12), the first call or not (0x4b1048), the last count
+   (0x9dbf08) just below, above or far from the new one, the time and the time before (0x9db980 / 0x9db988; equal
+   now and then) and the stuck count (0x9dbf00) near its 100000 */
+static void timernow_setup(void)
+{
+	g_mockQpc = (DWORD)irnd(0, 0x7fffffff);
+	G32(0x67ef1c) = irnd(0, 12); G32(0x4b1048) = irnd(0, 4) ? 0 : 1;
+	G32(0x9dbf08) = irnd(0, 1) ? (int)rnd32() : (int)(g_mockQpc >> G32(0x67ef1c)) - irnd(-3, 3);
+	double t = irnd(0, 1000000) / 64.0;
+	*(double *)0x9db980 = t; *(double *)0x9db988 = irnd(0, 2) ? t : t - irnd(1, 9);
+	G32(0x9dbf00) = irnd(0, 1) ? 100000 - irnd(0, 2) : irnd(0, 50);
+}
+/* (returned in ST0) */
+ST(timer_now, timernow_setup();,
    ld_hash(((long double (__attribute__((regparm(3))) *)(DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD))0x4301e0)(0, 0, 0, 0, 0, 0, 0)),
-   ld_hash(timer_now(0, 0, 0, 0, 0, 0, 0)))
+   ld_hash(timer_now()))
 static void stagedel_setup(void) { owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12)); g_a[0] = irnd(0, 3); }
 ST(Stage_deletingDtor, stagedel_setup();, TC(DWORD, 0x463830, char *, DWORD)(BUF, (DWORD)g_a[0]), (DWORD)Stage_deletingDtor(BUF, (DWORD)g_a[0]))
 /* a session description whose every dword points at a short string (the callback copies names out of it) */
@@ -14354,7 +14368,8 @@ static void statspanel_setup(void)
 	int pilot = G32(0x9f1818);   /* the pilot's skills (19-dword records from 0x9f9078) 0 now and then too */
 	if ((unsigned)pilot < 64) for (int k = 0; k < 5; k++) if (!irnd(0, 3)) G32(0x9f9078 + pilot * 0x4c + k * 4) = 0;
 }
-T_PLAIN(armc_drawStatsPanel, 0x412650, statspanel_setup();, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(armc_drawStatsPanel, statspanel_setup();, (CALL_PLAIN(0x412650, 0, 0, 0, 0, 0), 0), (armc_drawStatsPanel(), 0))
 /* batch 145 */
 /* armc_45ddc0's player and actor (ownslot_setup: the actor is the player's own index), the game's lobby slot that
    player (sometimes none), local or not, and an item record for the slot asked (-1..7) and for the actor's stored
@@ -17553,7 +17568,7 @@ static const STest g_stests[] = {
 	T(net_452de0, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_42ef30, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
 	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
-	T(profile_save, 1, 40, 0), T(timer_now, 1, 40, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 40, 0),
+	T(profile_save, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 40, 0),
 	/* batch 48 */
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
 	T(lobby_407270, 1, 40, 0), T(FUN_00427a40, 1, 40, 0), T(mainmenu_440d70, 1, 40, 0), T(timer_init, 0, 40, 0),
@@ -17794,7 +17809,7 @@ static const STest g_stests[] = {
 	/* batch 143 */
 	T(setup_crosshairScreen, 0, 1000, 0),
 	/* batch 144 */
-	T(armc_drawStatsPanel, 0, 2000, 0),
+	T(armc_drawStatsPanel, 0, 4000, 0),
 	/* batch 145 */
 	T(armc_461540, 0, 300, 0),
 	/* batch 146 */

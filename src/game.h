@@ -114,6 +114,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_4620e0(scene) GAME_THISCALL(0x4620e0, void, Scene *)(scene)
 #define match_4629c0(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
 #define match_4636d0(scene) GAME_THISCALL(0x4636d0, void, Scene *)(scene)
+#define armc_40e450(x, y) GAME_CDECL(0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
