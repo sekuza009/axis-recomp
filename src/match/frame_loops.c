@@ -175,3 +175,27 @@ void THISCALL (script_processTriggers)(u8 *s)
 #undef COUNT
 #undef TRIGGER
 }
+
+/* 0x49d150 (thiscall on the scene): the camera's actor (+0x234240d, none when negative): how far it moved since the
+   last frame (its position +0x1eccb54 .., the last one +0x1eccb60 ..) added to the listener's position (0x4de72e,
+   0x4de732, 0x4de722), and the last position brought up to date; outside the menus' text mode (+0x23423a1 0) the
+   room's text kept (match_44aee0); the view distance (+0x233cc50) 300. Its callers ignore the eax it leaves */
+void THISCALL (match_49d150)(u8 *s)
+{
+#define ACTOR FIELD(int, s, 0x234240d)
+#define NOW(k) FIELD(int, s, 0x1eccb54 + ACTOR * 0x8888 + (k) * 4)
+#define LAST(k) FIELD(int, s, 0x1eccb60 + ACTOR * 0x8888 + (k) * 4)
+	if (ACTOR >= 0) {
+		GAME_VAR(int, 0x4de72e) += NOW(0) - LAST(0);
+		GAME_VAR(int, 0x4de732) += NOW(1) - LAST(1);
+		GAME_VAR(int, 0x4de722) += NOW(2) - LAST(2);
+		for (int k = 0; k < 3; k++)
+			LAST(k) = NOW(k);
+	}
+	if (!FIELD(int, s, 0x23423a1))
+		match_44aee0();
+	FIELD(u32, s, 0x233cc50) = 0x43960000;   /* 300.0f */
+#undef ACTOR
+#undef NOW
+#undef LAST
+}

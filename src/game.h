@@ -151,6 +151,13 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_46cdc0(image, path) GAME_THISCALL(0x46cdc0, int, void *, const char *)(image, path)   /* a BMP opened */
 #define image_copyTo(image, out, w, h, bpp, a, b, c, d, w2, h2, e) GAME_THISCALL(0x46ce80, int, void *, void *, int, int, int, int, int, int, int, int, int, int)(image, out, w, h, bpp, a, b, c, d, w2, h2, e)
 #define FUN_0046ce50(self) GAME_THISCALL(0x46ce50, u32, void *)(self)   /* the object's file closed */
+#define map_loadWayPointInfoFrom(scene, f) GAME_THISCALL(0x48b4a0, void, void *, void *)(scene, f)
+#define map_loadTriggerInfoFrom(scene, f) GAME_THISCALL(0x48b530, void, void *, void *)(scene, f)
+#define match_44aee0() GAME_CDECL(0x44aee0, void, void)()   /* the room's text kept */
+#define FUN_00470fc0(a, b, c, ...) GAME_CDECL(0x470fc0, void, int, int, int, const char *, ...)(a, b, c, __VA_ARGS__)   /* a message to the log hook */
+#define load_48b460(self, f) GAME_THISCALL(0x48b460, u32, void *, void *)(self, f)
+#define FUN_0046cc30(p, size, count, f) GAME_CDECL(0x46cc30, u32, const void *, u32, u32, void *)(p, size, count, f)   /* fwrite, scrambled */
+#define net_sendPacketData(size, data) GAME_CDECL(0x4a8360, u32, int, void *)(size, data)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

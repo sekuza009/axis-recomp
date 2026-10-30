@@ -1363,3 +1363,37 @@ void (net_recv)(void)
 		break;
 	}
 }
+
+/* 0x48ead0 (thiscall on the scene): the players' levels sent (a 0x40-byte packet, kind 0xe in its second byte): one
+   nibble each for up to 124 players (+0x22ee4c0, 0x28 bytes each, +0x22f0400 of them; two to a byte from the third,
+   the even one low), a player in the game (+0 not negative, +0x20 1) its level (+0x24) / 10 + 1, at most 15 (each
+   byte cleared at its even player). The frame count (+0x2340c78) goes up; while recording (+0x2340d1d 1) the frame
+   (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
+   (+0x2340d08). Its caller ignores the eax it leaves */
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+void THISCALL (net_sendState_48ead0)(u8 *s)
+{
+	u8 packet[0x40];
+	packet[1] = 0xe;
+	for (int i = 0; i < FIELD(int, s, 0x22f0400) && i < 0x7c; i++) {
+		u8 *player = s + 0x22ee4c0 + i * 0x28;
+		if (i % 2 == 0)
+			packet[2 + i / 2] = 0;
+		if (FIELD(int, player, 0) < 0 || FIELD(int, player, 0x20) != 1)
+			continue;
+		int level = ftol(FIELD(float, player, 0x24)) / 10 + 1;
+		if (level > 15)
+			level = 15;
+		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
+	}
+	net_sendPacketData(0x40, packet);
+	FIELD(int, s, 0x2340c78)++;
+	if (FIELD(int, s, 0x2340d1d) == 1) {
+		int size = 0x40;
+		FUN_0046cc30(s + 0x2340d29, 4, 1, FIELD(void *, s, 0x2340d08));
+		FUN_0046cc30(s + 0x234240d, 4, 1, FIELD(void *, s, 0x2340d08));
+		FUN_0046cc30(&size, 4, 1, FIELD(void *, s, 0x2340d08));
+		FUN_0046cc30(packet, 1, size, FIELD(void *, s, 0x2340d08));
+	}
+}
+#undef FIELD

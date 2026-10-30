@@ -2856,7 +2856,8 @@ int net_resolveHost(const char *host);
    0x48e680 match_48e680: packets 0x03..0x0d for the first pending match event (strings, team and score changes);
    0x48e2c0 match_48e2c0(player): the player's state (position, angles, flags) and five shot slots */
 static THISCALL DWORD match_48e990(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e990, (DWORD)scene, 1, v); }
-static THISCALL DWORD net_sendState_48ead0(char *scene) { return run_lifted(lift_48ead0, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void net_sendState_48ead0(char *scene);
 static THISCALL DWORD match_48e0f0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e0f0, (DWORD)scene, 1, v); }
 static THISCALL DWORD match_48e680(char *scene) { return run_lifted(lift_48e680, (DWORD)scene, 0, NULL); }
 static THISCALL DWORD match_48e2c0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e2c0, (DWORD)scene, 1, v); }
@@ -3318,7 +3319,8 @@ static THISCALL DWORD tex_upload2(char *scene) { return run_lifted(lift_473610, 
 #include "lifted/grp8.c"
 /* 0x49d150 (thiscall) match_49d150: add the local player's hits/shots/kills since the last call to the totals
    (0x4de72e..) and remember the new values; without a replay running, send the result (match_44aee0) */
-static THISCALL DWORD match_49d150(char *scene) { return run_lifted(lift_49d150, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_49d150(char *scene);
 /* 0x43f460 chat_createEdit(parent): the chat input box: a font (12 px, charset by language), an edit control,
    its window procedure replaced, focus */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3338,11 +3340,8 @@ static THISCALL DWORD catalogue_loadComponents(char *scene, DWORD path) { DWORD 
 /* 0x4813e0 (thiscall) space_initBy(planes, nodes, units, blocks, indices, mem, memSize): size the space object's
    pools (planes 0xb0 bytes, nodes 0x10, units, blocks 0x50, a block index table of shorts), take the memory from
    mem (memSize must suffice) or allocate it, lay the pools out, set the index table to -1 and reset the free lists */
-static THISCALL DWORD space_initBy(char *sp, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g)
-{
-	DWORD v[7] = { a, b, c, d, e, f, g };
-	return run_lifted(lift_4813e0, (DWORD)sp, 7, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void space_initBy(char *sp, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g);
 /* 0x4819b0 (thiscall) space_setBy(min, max, nx, ny, nz, a, b, depth): reset the pools, set the grid bounds and cell
    counts (nx * ny * nz cells, at most the index table's size; at least 1), cell sizes, recursion depth (at most 8),
    clear the index table */
@@ -3411,7 +3410,8 @@ THISCALL void skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWOR
 static THISCALL DWORD map_loadPlayInfoFrom(char *map, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_4876b0, (DWORD)map, 1, v); }
 /* 0x48b5c0 (thiscall) map_loadMissionInfoFrom(name): version 0x1201, skip two sections, then the actions
    (load_48b460), waypoint lists and triggers */
-static THISCALL DWORD map_loadMissionInfoFrom(char *map, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_48b5c0, (DWORD)map, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadMissionInfoFrom(char *map, DWORD name);
 /* batch 64 (lifted/grp11.c) */
 #include "lifted/grp11.c"
 /* 0x470ad0 (thiscall) scene_reset: reset the scene's subsystems (lists, effects, actors, particles, scripts, the
@@ -17576,7 +17576,7 @@ static const STest g_stests[] = {
 	T(autoplay_startRecording, 1, 40, 0), T(dplay_enumConnections, 1, 40, 0),
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 40, 0), T(match_48e0f0, 0, 40, 0),
+	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 40, 0),
 	T(match_48e680, 0, 40, 0), T(match_48e2c0, 0, 40, 0),
 	/* batch 50 */
 	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 300, 0), T(ViewVolume_projectObject, 0, 300, 0),
@@ -17628,16 +17628,16 @@ static const STest g_stests[] = {
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),
 	/* batch 60 */
-	T(match_49d150, 0, 40, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
+	T(match_49d150, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 40, 0),
 	/* batch 61 */
-	T(space_initBy, 0, 40, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
+	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
 	T(texSmall_initBy, 0, 40, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
 	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 40, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
-	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 40, 0),
+	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
 	/* batch 64 */
 	T(scene_reset, 0, 40, 0), T(shape_read, 0, 40, 0),
 	/* batch 65 */

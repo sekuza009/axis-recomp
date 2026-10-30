@@ -67,3 +67,35 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	return 1;
 #undef crt_fread
 }
+
+/* 0x48b5c0 (thiscall on the scene): the map's mission file (its name from +0x108 and name by 0x4c77f0; none: a fatal
+   message): its version (0x1201, else a fatal message), two sections skipped (each a scrambled size, then that many
+   bytes), a third size read, then the sections read in turn, each announced to the log first: 0x48b460's, the way
+   points and the triggers. Its caller ignores the eax it leaves */
+void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	char path[0x100];
+	sprintf(path, (const char *)0x4c77f0, scene + 0x108, name);
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7dec, (int)path);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	u32 version, skip;
+	crt_fread(&version, 4, 1, f);
+	if (version != 0x1201)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
+	for (int k = 0; k < 2; k++) {
+		fread_scrambled(&skip, 4, 1, f);
+		crt_fseek(f, skip, 1);   /* SEEK_CUR */
+	}
+	fread_scrambled(&skip, 4, 1, f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7ddc);
+	load_48b460(scene, f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7dcc);
+	map_loadWayPointInfoFrom(scene, f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7dbc);
+	map_loadTriggerInfoFrom(scene, f);
+	fclose(f);
+#undef crt_fread
+}

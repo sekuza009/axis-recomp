@@ -165,3 +165,47 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
 #undef FIELD
 }
+
+/* 0x4813e0 (thiscall on the space): sized for the pools: planes (0xac bytes each, +0x10 of them), nodes (0x10, +0x20),
+   units (0x14, +0x30), blocks (0x50, +0x40) and the cells' table (2 bytes, +0x50) laid out in that order in one block
+   (+8, its size +4; allocated and owned, +0xc 1, without memory given, else the memory given, the caller's size checked:
+   fatal messages); each pool's start kept twice (+0x14 / +0x18, +0x24 / +0x28, +0x34 / +0x38, +0x44 / +0x48), the
+   table's (+0x54) filled with 0xff, then the pools emptied. Its caller ignores the eax it leaves */
+void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int blocks, int cells, void *mem, int size)
+{
+#define FIELD(type, offset) GAME_VAR(type, space + (offset))
+	load_4813b0(space);
+	FIELD(int, 0x30) = units;
+	FIELD(int, 0x40) = blocks;
+	FIELD(int, 0x10) = planes;
+	FIELD(int, 0x20) = nodes;
+	FIELD(int, 0x50) = cells;
+	int need = FIELD(int, 4) = planes * 0xac + nodes * 0x10 + units * 0x14 + blocks * 0x50 + cells * 2;
+	if (!mem) {
+		FIELD(void *, 8) = operator_new(need);
+		if (!FIELD(void *, 8))
+			sys_fatalError((char *)0xae2ed0, (const char *)0x4c4cec, FIELD(int, 4));
+		FIELD(int, 0xc) = 1;
+	} else {
+		if (size < need)
+			sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c4cbc, need, size);
+		FIELD(void *, 8) = mem;
+	}
+	u8 *block = FIELD(u8 *, 8);
+	FIELD(u8 *, 0x14) = FIELD(u8 *, 0x18) = block;
+	int at = FIELD(int, 0x10) * 0xac;
+	FIELD(u8 *, 0x24) = block + at;
+	at += FIELD(int, 0x20) * 0x10;
+	FIELD(u8 *, 0x28) = FIELD(u8 *, 0x24);
+	FIELD(u8 *, 0x34) = block + at;
+	at += FIELD(int, 0x30) * 0x14;
+	FIELD(u8 *, 0x38) = FIELD(u8 *, 0x34);
+	FIELD(u8 *, 0x44) = FIELD(u8 *, 0x48) = block + at;
+	FIELD(u8 *, 0x54) = block + FIELD(int, 0x40) * 0x50 + at;
+	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
+	space_resetPlanes(space);
+	space_resetNodes(space);
+	space_resetUnits(space);
+	space_resetBlocks(space);
+#undef FIELD
+}
