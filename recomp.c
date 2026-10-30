@@ -2874,11 +2874,8 @@ THISCALL void actor_46f8c0(char *self, DWORD base);
    mesh entirely outside one clip plane is skipped. Each item (0x1c bytes: mesh, extra + offset, a4, a5, matrix, a8,
    next) is chained per material (material < 0: the mesh's own), new materials listed in order. Full pools set the
    overflow flags. Lifted */
-static THISCALL DWORD ViewVolume_projectObject(char *self, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8)
-{
-	DWORD v[8] = { a1, a2, a3, a4, a5, a6, a7, a8 };
-	return run_lifted(lift_4853c0, (DWORD)self, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void ViewVolume_projectObject(char *self, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8);
 /* batch 51: the first groups from tools/closure.py (a function plus the unrebuilt functions it calls), lifted
    (lifted/grp1.c), and the no-CD stubs */
 /* 0x41e550 / 0x41e5b0 / 0x41e610 / 0x41e670 / 0x41e6d0 app_checkFile_profkor / _skirmish / _axisgame / _game /
@@ -17514,7 +17511,7 @@ static const STest g_stests[] = {
 	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 400, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
 	T(match_48e680, 0, 400, 0), T(match_48e2c0, 0, 400, 0),
 	/* batch 50 */
-	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 400, 0), T(ViewVolume_projectObject, 0, 300, 0),
+	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 400, 0), T(ViewVolume_projectObject, 0, 400, 0),
 	/* batch 51 */
 	T(app_checkFile_profkor, 1, 40, 0), T(app_checkFile_skirmish, 1, 40, 0), T(app_checkFile_axisgame, 1, 40, 0), T(app_checkFile_game, 1, 40, 0),
 	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(skel_ase_47d2f0, 0, 300, 0), T(skel_ase_47d320, 0, 300, 0),

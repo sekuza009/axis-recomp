@@ -241,3 +241,98 @@ void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 	for (int k = 0; k < 3; k++)
 		FIELD(void *, view, 0x14 + k * 4) = IMPORT(0x4a928c, void *, const char *)((const char *)names[k]);   /* wglGetProcAddress */
 }
+
+/* a box corner (x stored as a float, y and z kept on the FPU) through the 4 x 4 matrix m into clip space: each row
+   m[r] x + m[4 + r] y + m[8 + r] z + m[12 + r], the first two terms of a row being x and y (first corner) or y and z
+   (the others), as the original sums them */
+static void corner(float *out, const float *m, const float *px, long double y, long double z, int x_first)
+{
+	for (int r = 0; r < 4; r++) {
+		long double tx = fmul_m(fld_m(&m[r]), px), ty = fld_m(&m[4 + r]) * y, tz = fld_m(&m[8 + r]) * z;
+		out[r] = f32(fadd_m(x_first ? (tx + ty) + tz : (ty + tz) + tx, &m[12 + r]));
+	}
+}
+
+/* 0x4853c0 (thiscall on a view volume): every part of model with primitives queued for drawing under the matrix
+   (none given: the current GL modelview into the volume's next matrix slot, +0x9040, +0x9044 used of +0x903c; full:
+   +0x9094 set and nothing queued). With cull 1 a part whose box (+0x68 low, +0x74 high) lies wholly beyond one side
+   of the clip volume (through the projection +0x9130 times the matrix) is left out. Each queued part goes to the end
+   of its material's list (material, or the part's +0x44; plus one; the volume's 0x1c-byte entries +0x9034, +0x9038
+   used of +0x9030: full sets +0x9090; a material's first entry is listed at +0x20, +0x3024 of them; heads +0x3028,
+   tails +0x602c): the part, its colours (from extra, by the part's +0x48), a4, the colour, the matrix, a8 */
+void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 a4, u32 colour, int cull,
+                                         int material, u32 a8)
+{
+	if (GAME_VAR(int, model + 0x10) <= 0)
+		return;
+	float *m = (float *)matrix;
+	if (!m) {
+		if (GAME_VAR(int, view + 0x9044) >= GAME_VAR(int, view + 0x903c)) {
+			GAME_VAR(int, view + 0x9094) = 1;
+			return;
+		}
+		m = (float *)(GAME_VAR(u8 *, view + 0x9040) + GAME_VAR(int, view + 0x9044)++ * 0x40);
+		if (!m)
+			return;
+		glGetFloatv(0xba6, m);
+	}
+	float clip_m[16];
+	Mat4_multiply(clip_m, (const float *)(view + 0x9130), m);
+	for (int i = 0; i < GAME_VAR(int, model + 0x10); i++) {
+		u8 *part = GAME_VAR(u8 *, model + 0x14) + i * 0x80;
+		if (GAME_VAR(int, part + 0x60) <= 0)
+			continue;
+		if (cull == 1) {
+			const float *lo = (const float *)(part + 0x68), *hi = (const float *)(part + 0x74);
+			static const u8 pick[7][3] = { { 0, 1, 1 }, { 1, 1, 1 }, { 0, 1, 0 }, { 1, 1, 0 }, { 0, 0, 1 }, { 1, 0, 1 }, { 0, 0, 0 } };
+			float c[8][4], p[3];
+			for (int k = 0; k < 7; k++) {
+				long double z = fld_m(pick[k][2] ? &hi[2] : &lo[2]), y = fld_m(pick[k][1] ? &hi[1] : &lo[1]);
+				p[0] = f32(fld_m(pick[k][0] ? &hi[0] : &lo[0]));
+				corner(c[k], clip_m, &p[0], y, z, k == 0);
+			}
+			p[0] = f32(fld_m(&hi[0]));
+			p[1] = f32(fld_m(&lo[1]));
+			p[2] = f32(fld_m(&lo[2]));
+			Mat4_transformPoint(c[7], clip_m, p);
+			u32 all = 0x111111;
+			for (int k = 0; k < 8; k++) {
+				long double w = c[k][3], nw = -w;
+				u32 out = 0;
+				for (int a = 0; a < 3; a++) {
+					if (nw >= c[k][a])   /* (a NaN counts as inside, as fcom has it) */
+						out |= 1u << (a * 8);
+					else if (c[k][a] >= w)
+						out |= 0x10u << (a * 8);
+				}
+				all &= out;
+			}
+			if ((all & 0x11) || (all & 0x111100))
+				continue;
+		}
+		int list = (material >= 0 ? material : GAME_VAR(int, part + 0x44)) + 1;
+		if (GAME_VAR(int, view + 0x9038) >= GAME_VAR(int, view + 0x9030)) {
+			GAME_VAR(int, view + 0x9090) = 1;
+			return;
+		}
+		u32 *e = (u32 *)(GAME_VAR(u8 *, view + 0x9034) + GAME_VAR(int, view + 0x9038)++ * 0x1c);
+		if (!e)
+			return;
+		if (GAME_VAR(u32 *, view + 0x3028 + list * 4) == 0) {
+			GAME_VAR(int, view + 0x20 + GAME_VAR(int, view + 0x3024) * 4) = list;
+			GAME_VAR(int, view + 0x3024)++;
+			GAME_VAR(u32 *, view + 0x3028 + list * 4) = e;
+		}
+		u32 *tail = GAME_VAR(u32 *, view + 0x602c + list * 4);
+		if (tail)
+			tail[6] = (u32)e;
+		GAME_VAR(u32 *, view + 0x602c + list * 4) = e;
+		e[0] = (u32)part;
+		e[1] = extra ? (u32)(extra + GAME_VAR(int, part + 0x48)) : 0;
+		e[2] = a4;
+		e[3] = colour;
+		e[4] = (u32)m;
+		e[5] = a8;
+		e[6] = 0;
+	}
+}
