@@ -969,6 +969,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_40a070() GAME_CDECL(0x40a070, void, void)()   /* the arena's list of games drawn */
 #define arena_406200(i) GAME_CDECL(0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
 #define arena_405690(i) GAME_CDECL(0x405690, u32, int)(i)   /* session i joined */
+#define sys_checkClockTampering() GAME_CDECL(0x43f300, void, void)()
+#define glWindow_init(title, w, h, bits, depth, full, hwnd, flag) GAME_CDECL(0x468250, void, const char *, int, int, int, int, int, void *, int)(title, w, h, bits, depth, full, hwnd, flag)
+#define console_loadFile(map) GAME_CDECL(0x41e7c0, int, int)(map)   /* the map's files loaded: 0 failed */
+#define console_41e390() GAME_CDECL(0x41e390, void, void)()
+#define FUN_00461ec0(scene, map) GAME_THISCALL(0x461ec0, void, Scene *, const char *)(scene, map)
 #define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */

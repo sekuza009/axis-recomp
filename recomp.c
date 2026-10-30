@@ -4128,7 +4128,8 @@ static THISCALL DWORD app_requireCd(char *g, DWORD a, DWORD mode) { DWORD v[2] =
    (app_requireCd on the game 0x9087b4); else the round's console file (console_loadFile, round 0x9dad94): none
    sends the menu to 400 / 800 by start mode 0x5ae9c4; with it, mode 1 clamps the selections 0x4dc878.. and loads
    the pilot profiles, modes 1 / 3 start a session, and the round's name (0x907b30) goes to FUN_00461ec0 */
-LIFT_PLAIN(console_init, 41fd40)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void console_init(void);
 /* batch 115 (lifted/grp61.c) */
 #include "lifted/grp61.c"
 /* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
@@ -13161,7 +13162,7 @@ static void consoleinit_setup(void)
 	static const DWORD pilots[] = { 0x42b590, 0, 0 };   /* data_loadPilotProfiles (its own test): with random files it ends the game */
 	callee_stubs(pilots, 0);
 }
-ST(console_init, consoleinit_setup();, (CD(void, 0x41fd40, void)(), 0), (console_init(0, 0, 0, 0, 0, 0, 0), 0))
+ST(console_init, consoleinit_setup();, (CD(void, 0x41fd40, void)(), 0), (console_init(), 0))
 /* batch 115 */
 /* the scene at BUF, as scene_reset's and scene_resetActors' tests set it up (item_initTextures lays out the rest).
    Everything else lives in the gap after the scene's last fields (BUF + 0x2150000 ..): a texture manager whose

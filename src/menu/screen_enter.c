@@ -361,3 +361,76 @@ u32 (menuState210_enter)(void)
 	STORE_ALL(colours);
 	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
 }
+
+/* the profile files checked (the English one, then four times the Korean one): a missing one ends the game with
+   the message 0x4b04b0 */
+static void check_profiles(void)
+{
+	for (int k = 0; k < 5; k++)
+		if (!(k == 0 ? app_checkFile_profeng() : app_checkFile_profkor())) {
+			sys_messageBox((const char *)0x4b04b0);
+			GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
+		}
+}
+
+/* the player's name for the match (0x4dedd8, 32 bytes) */
+static void match_name(const char *name)
+{
+	memset((void *)0x4dedd8, 0, 32);
+	strcpy((char *)0x4dedd8, name);
+}
+
+/* 0x41fd40 (named console_init; by use the match started, state 9999): the menus' tunnel freed; outside the lobby
+   (0x76d410) the profile files checked; the display opened (aspect 0x4e1870, glWindow_init); a replay (0x9db990)
+   started at once (app_requireCd 0, 3); else the map (0x9dad94) loaded (failing: message 6 and back to state 400 /
+   800 for the arena / room). By the kind of match (0x5ae9c4): 1 the arena, 2 the room (the pilots read, the
+   player's name taken from the profile / the room, the part lists 0x40d990), 3 a skirmish (the name 0x9f1798),
+   started with app_requireCd (a host unless 0x67ef04 is 1; 3: 0, 0); then the map's name announced. The caller
+   ignores the eax it leaves */
+void (console_init)(void)
+{
+	while (GAME_VAR(TunnelRing *, 0x67fb3c))   /* the menus' tunnel, ring by ring */
+		FUN_00441190((TunnelRing **)0x67fb3c);
+	if (!GAME_VAR(int, 0x76d410))
+		check_profiles();
+	GAME_VAR(int, 0x5b1dac) = 1;
+	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
+	sys_checkClockTampering();
+	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, GAME_VAR(int, 0x83a9c4), 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
+	Scene *scene = GAME_VAR(Scene *, 0x9087b4);
+	if (GAME_VAR(int, 0x9db990)) {
+		GAME_VAR(int, 0x5ae9c4) = 0;
+		app_requireCd(scene, 0, 3);
+		return;
+	}
+	int kind = GAME_VAR(int, 0x5ae9c4);
+	if (!console_loadFile(GAME_VAR(int, 0x9dad94))) {
+		if (kind == 1)
+			GAME_VAR(int, 0x76d3e8) = 400;
+		else if (kind == 2)
+			GAME_VAR(int, 0x76d3e8) = 800;
+		FUN_0041ee40(6);
+		return;
+	}
+	switch (kind) {
+	case 1:   /* (the selection's range checks are jumped over in the patched game) */
+		data_loadPilotProfiles();
+		match_name((const char *)0x4dedb0);
+		armc_40d990();
+		app_requireCd(scene, GAME_VAR(int, 0x67ef04) == 1 ? 0 : 1, 1);
+		break;
+	case 2:
+		console_41e390();
+		if (GAME_VAR(int, 0x9dd5d8) != 0x14)
+			armc_40d990();
+		data_loadPilotProfiles();
+		match_name((const char *)0x9dd570);
+		app_requireCd(scene, GAME_VAR(int, 0x67ef04) == 1 ? 0 : 1, 1);
+		break;
+	case 3:
+		match_name((const char *)0x9f1798);
+		app_requireCd(scene, 0, 0);
+		break;
+	}
+	FUN_00461ec0(GAME_VAR(Scene *, 0x9087b4), (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+}
