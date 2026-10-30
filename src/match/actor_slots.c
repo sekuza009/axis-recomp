@@ -622,20 +622,12 @@ static long double level_factor(u8 *p, int k)
 	return fadd_m(fmul_m((long double)GAME_VAR(int, 0x9f9078 + GAME_VAR(int, p + 0x44) * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
 }
 
-/* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
-   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, a2, a3 copied, the position +8
-   and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
-   bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
-   head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
-   overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
-   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (FUN_0045e810),
-   the starting values (actor_45ebc0), the position history, timers and flags reset, its lists loaded and parts
-   placed (FUN_0045e1f0 .. FUN_0045e530, actor_updatePart; viewed by another than itself +0x49c), and the scene told
-   an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
-void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
+/* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
+   pilot level, the special items' bonuses at +0x404 .., the weight against the limit and the overload r slowing the
+   legs and booster) and the fixed values, +0 .. +0x94. check: armc_computeTotals' copy, which rounds two of them
+   differently */
+static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 {
-	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
-	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
 	u8 *head = s + 0x13c9b30 + GAME_VAR(int, p + 0x30c) * 0xaa8, *chest = s + 0x13eb004 + GAME_VAR(int, p + 0x310) * 0xabc;
 	u8 *arms = s + 0x140c8c0 + GAME_VAR(int, p + 0x314) * 0x1300, *legs = s + 0x1447ec4 + GAME_VAR(int, p + 0x318) * 0x13f4;
 	u8 *boost = s + 0x1486470 + GAME_VAR(int, p + 0x31c) * 0x1820;
@@ -725,8 +717,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(u32, 0x50) = 0x42c80000;   /* 100 */
 	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), (const float *)(ac + 0x50));
 	A(float, 0x3c) = f32(v);
-	if (GAME_VAR(int, s + 0x20f3acc) == 1)
-		A(float, 0x3c) = f32(fmul_m(v, K(0x4a9704)));
+	if (GAME_VAR(int, s + 0x20f3acc) == 1)   /* (the check scales the stored value) */
+		A(float, 0x3c) = f32(fmul_m(check ? fld_m((const float *)(ac + 0x3c)) : v, K(0x4a9704)));
 	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), (const float *)(ac + 0x50)) * left;
 	A(float, 0x54) = f32(v);
 	if (!(v >= 0))
@@ -737,7 +729,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(int, 0x58) = 0;
 	v = fdiv_m(fmul_m(LEG(0x13f0), (const float *)(boost + 0x181c)), (const float *)(ac + 0x50)) * left;
 	A(float, 0x5c) = f32(v);
-	if (!(v >= 0))
+	if (!((check ? fld_m((const float *)(ac + 0x5c)) : v) >= 0))   /* (the check tests the stored value) */
 		A(int, 0x5c) = 0;
 #undef LEG
 	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
@@ -754,6 +746,23 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(u32, 0x8c) = 0x457a0000;   /* 4000 */
 	A(u32, 0x90) = 0x40a00000;   /* 5 */
 	A(u32, 0x94) = 0x3f800000;
+}
+
+/* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
+   +0x1561b68; its parts +0x30c head, chest, arms, legs, booster; pp: the player, a2, a3 copied, the position +8
+   and the heading +0x14). The special items in its six slots (+0x320; kinds 0x1b .. 0x23 with a negative +0x2dc0)
+   bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
+   head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
+   overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
+   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (FUN_0045e810),
+   the starting values (actor_45ebc0), the position history, timers and flags reset, its lists loaded and parts
+   placed (FUN_0045e1f0 .. FUN_0045e530, actor_updatePart; viewed by another than itself +0x49c), and the scene told
+   an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
+void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
+{
+	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
+	mech_stats(s, ac, p, 0);
 	A(int, 0xd8) = 1;
 	strcpy((char *)ac + 0x98, (const char *)p + 4);
 	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
@@ -849,6 +858,87 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x8880) = A(int, 0x8884) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
+}
+#undef A
+#undef K
+
+#define A(type, offset) GAME_VAR(type, ac + (offset))
+#define K(address) ((const float *)(address))
+
+/* the actor's eight part lists (constructed on the stack copy as the original does) */
+static const u16 k_listAt[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
+
+/* |a - b| (an x87 abs: a NaN stays) within 0.1 */
+static int close_enough(const float *a, const float *b)
+{
+	long double d = fsub_m(fld_m(a), b);
+	if (!(d >= 0))
+		d = -d;
+	return !(d > *K(0x4a93ec));
+}
+
+/* whether actor ac's stats agree with mine, worked out again from its player's record (mech_stats in check mode,
+   then the game type's fixed energy and weapons), and its limits hold */
+static int totals_agree(u8 *s, u8 *ac, u8 *me)
+{
+	u8 *p = s + 0x1561b68 + A(int, 0x10c) * 0x47fd2;
+	mech_stats(s, me, p, 1);
+	unsigned mode = GAME_VAR(int, s + 0x20f3ab8) - 2;
+	if (mode <= 9) {
+		int pair = mode / 2;
+		GAME_VAR(int, me + 0x1c) = GAME_VAR(int, me + 0x20) = pair == 0 ? 10 : 150;
+		if (pair < 4)
+			GAME_VAR(int, me + 0x28 + pair * 4) = 100;
+	}
+	static const u8 floats1[] = { 0, 4 }, ints[] = { 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34 };
+	static const u8 floats2[] = { 0xc, 0x10, 0x14, 0x18 }, floats3[] = { 0x38, 0x44, 0x48, 0x4c, 0x50, 0x3c, 0x54, 0x58, 0x5c, 0x60 };
+	for (int k = 0; k < 2; k++)
+		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
+			return 0;
+	if (A(int, 8) != GAME_VAR(int, me + 8))
+		return 0;
+	for (int k = 0; k < 4; k++)
+		if (!close_enough((const float *)(ac + floats2[k]), (const float *)(me + floats2[k])))
+			return 0;
+	for (int k = 0; k < 7; k++)
+		if (A(int, ints[k]) != GAME_VAR(int, me + ints[k]))
+			return 0;
+	for (int k = 0; k < 10; k++)
+		if (!close_enough((const float *)(ac + floats3[k]), (const float *)(me + floats3[k])))
+			return 0;
+	if (!close_enough((const float *)(ac + 0x68), (const float *)(me + 0x50)))
+		return 0;
+	int d = A(int, 0x448) - GAME_VAR(int, me + 0x448);
+	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))
+		return 0;
+	if (A(int, 0x128) > A(int, 0x1c) + 100 || A(int, 0x12c) > A(int, 0x20) + 100 || A(int, 0x130) > A(int, 0x28) ||
+	    A(int, 0x134) > A(int, 0x2c) || A(int, 0x138) > A(int, 0x30) || A(int, 0x13c) > A(int, 0x34) || A(int, 0x448) > 8)
+		return 0;
+	const float *heat = K(0x4a940c);
+	if ((A(int, 0x4d8) == 0 && A(float, 0x3f4) > *heat) || A(float, 0x3f8) > *heat || (A(int, 0x4d8) == 0 && A(float, 0x3fc) > *heat) ||
+	    A(float, 0x400) > *heat)
+		return 0;
+	return 1;
+}
+
+/* 0x45ee40 (thiscall on the scene): the "data loss" check game_processGameMode runs every 20 s on the local
+   player's actor a: one not in play (+0x14c) passes; else totals_agree. The original's stack actor (its five
+   resource sets and eight part lists constructed and destroyed again) is kept; its SEH frame is not reproduced.
+   Returns 1 if all agree, else 0 */
+u32 THISCALL (armc_computeTotals)(u8 *s, int a)
+{
+	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
+	for (int k = 0; k < 5; k++)
+		GAME_THISCALL(0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* match_45fff0: a resource set */
+	for (int k = 0; k < 8; k++) {
+		GAME_VAR(u32, me + k_listAt[k]) = 0x4a9754;
+		FUN_0046f480(me + k_listAt[k]);
+	}
+	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	int ok = A(int, 0x14c) != 1 || totals_agree(s, ac, me);
+	for (int k = 7; k >= 0; k--)
+		GAME_THISCALL(0x46f470, void, void *)(me + k_listAt[k]);   /* match_46f470: a part list released */
+	return ok;
 }
 #undef A
 #undef K

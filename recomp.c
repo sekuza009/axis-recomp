@@ -3511,7 +3511,8 @@ int THISCALL hud_46fd20(void *list, void *view, const void *factors, const void 
    +0x20f3acc), and every field of the actor's stat block must agree within 0.1 (some exactly), its limits must hold
    and its heat values stay <= 30. Returns 1 if all agree, else 0. 0x88a0-byte frame (_chkstk), eight stack objects
    with an SEH frame for their destructors */
-static THISCALL DWORD armc_computeTotals(char *scene, DWORD actor) { DWORD v[1] = { actor }; return run_lifted(lift_45ee40, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD armc_computeTotals(char *scene, DWORD actor);
 /* batch 73 (lifted/grp20.c) */
 #include "lifted/grp20.c"
 /* 0x469b90 (thiscall) skel_loadAseFrom(f, mem, memSize): a skeleton from a 3ds Max ASE text file. Pass 1 counts
