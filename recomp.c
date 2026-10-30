@@ -5478,7 +5478,8 @@ void menuState700_armCenter(void);
    match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
    music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
 #include "lifted/grp140.c"
-LIFT_PLAIN(game_processGameModeInit, 49df10)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void game_processGameModeInit(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_escMenu(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16010,7 +16011,8 @@ static void modeinit_setup(void)
 	S32(BUF, 0x234240d) = irnd(-1, 7);
 	G32(0x68039c) = irnd(0, 1);
 }
-T_PLAIN(game_processGameModeInit, 0x49df10, modeinit_setup(); /* thiscall on the game */, BUF, g_a[0], g_a[1], g_a[2], g_a[3])
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(game_processGameModeInit, modeinit_setup(); /* thiscall on the game */, (TC(void, 0x49df10, char *)(BUF), 0), (game_processGameModeInit(BUF), 0))
 static const DWORD g_gs_49ca70[] = { 0x44ac90, 3, 0x44ace0, 0, 0x456e50, 2, 0x45dca0, 1 | CS_POP, 0x4613a0, 1 | CS_POP, 0x462150, 0, 0x462850, 0, 0x462d30, 2 | CS_POP, 0x462e30, 2 | CS_POP, 0x463450, 2, 0x4635b0, 3 | CS_POP, 0x463610, 3 | CS_POP, 0x463740, 1 | CS_POP, 0x487cb0, 1 | CS_POP, 0x487ed0, 0, 0x49ca20, 2 | CS_POP, 0x49d150, 0, 0 };
 static const DWORD g_gi_49ca70[] = { 0x68039c, 0 };
 static const DWORD g_gb_49ca70[] = { 0x4d06f4, 0x9f63e4, 0 };

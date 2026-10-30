@@ -105,6 +105,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define room_drawCustomOption(map) GAME_CDECL(0x43bde0, u32, int)(map)   /* the room form's map preview (the map passed, unused) */
 #define setup_420e50(key) GAME_CDECL(0x420e50, void, int)(key)   /* the key taken off the other bindings */
 #define setup_drawKeyBindingRow() GAME_CDECL(0x421350, void, void)()
+#define game_setGameTypeFlags(stage, mode) GAME_THISCALL(0x4732f0, void, Stage *, int)(stage, mode)
+#define sys_fatalError(out, format, value) GAME_CDECL(0x46c710, void, char *, const char *, int)(out, format, value)   /* (one value) a message, then exit */
+#define FUN_004a8300(host) GAME_CDECL(0x4a8300, void, int)(host)
+#define FUN_0045dfb0(stage, i) GAME_THISCALL(0x45dfb0, void, Stage *, int)(stage, i)
+#define FUN_00456de0(v) GAME_CDECL(0x456de0, void, int)(v)
+#define set_4b42dc_457140(v) GAME_CDECL(0x457140, void, int)(v)
+#define match_4620e0(scene) GAME_THISCALL(0x4620e0, void, Scene *)(scene)
+#define match_4629c0(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
+#define match_4636d0(scene) GAME_THISCALL(0x4636d0, void, Scene *)(scene)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
