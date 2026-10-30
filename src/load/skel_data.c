@@ -296,3 +296,122 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	glGetFloatv(0xba6, (float *)out);
 	glLoadMatrixf(saved);
 }
+
+/* A cache's name tree: 0x4c-byte nodes from +0x118 (the name, its item's index +0x40, left +0x44 and right +0x48 by
+   strcmp), +0x120 of them (at most +0x114: none, or full, a fatal message out / no_room, full). The index of key's
+   node; a missing one is added (index the count, *added set; the caller loads the item and counts it) */
+static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 full, int *added)
+{
+	*added = 0;
+	if (AT(int, cache, 0x114) == 0)
+		GAME_CDECL(0x46c710, void, char *, const char *)(out, (const char *)no_room);
+	u8 *nodes = AT(u8 *, cache, 0x118), *node = nodes;
+	u8 **link = NULL;
+	if (AT(int, cache, 0x120) != 0)
+		for (;;) {
+			int c = strcmp(key, (const char *)node);
+			if (c == 0)
+				return AT(int, node, 0x40);
+			link = (u8 **)(node + (c < 0 ? 0x44 : 0x48));
+			if (!*link)
+				break;
+			node = *link;
+		}
+	int i = AT(int, cache, 0x120);
+	if (link) {
+		if (i >= AT(int, cache, 0x114))
+			sys_fatalError(out, (const char *)full, i);
+		i = AT(int, cache, 0x120);
+		*link = node = AT(u8 *, cache, 0x118) + i * 0x4c;
+	}
+	strcpy((char *)node, key);
+	AT(int, node, 0x40) = link ? i : 0;
+	AT(int, node, 0x44) = AT(int, node, 0x48) = 0;
+	*added = 1;
+	return i;
+}
+
+/* an item's file path: "dir\name.ext" with the cache's directory (+0x10), or "name.ext"; the extension by the cache's
+   format (+0x110: 0 or 1, another a fatal message) */
+static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
+{
+	char ext[4];
+	int format = AT(int, cache, 0x110);
+	if (format == 0 || format == 1)
+		strcpy(ext, (const char *)(format ? ext1 : ext0));
+	else
+		sys_fatalError(out, (const char *)bad, format);
+	if (cache[0x10])
+		sprintf(path, (const char *)0x4c4d5c, cache + 0x10, name, ext);
+	else
+		sprintf(path, (const char *)0x4c4d54, name, ext);
+}
+
+/* 0x46b1a0 (thiscall on a skeleton cache): the skeleton named name (upper-cased; empty or starting with '.': none,
+   0), found in the cache's name tree or added to it (tree_lookup) and loaded into skeleton i (0x24 bytes each from
+   +0x11c): from the skeleton dat (format +0x110 2: its item's file, skel_loadFrom_46aa10) or a "ske" / "ase" file
+   (skel_loadFrom), into the cache's data memory when it has one (+0x128, its size +0x124, +0x12c used: the
+   skeleton's size added) */
+u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
+{
+	char key[0x100];
+	strcpy(key, name);
+	FUN_0046cb60(key);
+	if (key[0] == 0 || key[0] == '.')
+		return NULL;
+	int added, i = tree_lookup(cache, key, (char *)0xa0eaa0, 0x4c5528, 0x4c54c8, &added);
+	u8 *sk = AT(u8 *, cache, 0x11c) + i * 0x24;
+	if (!added)
+		return sk;
+	const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
+	u8 *mem = AT(u8 *, cache, 0x128);
+	void *at = mem ? mem + AT(int, cache, 0x12c) : NULL;
+	int room = mem ? AT(int, cache, 0x124) - AT(int, cache, 0x12c) : 0;
+	if (AT(int, cache, 0x110) == 2)
+		skel_loadFrom_46aa10(sk, skelDat_getItemFileBy(key), at, room);
+	else {
+		char path[0x100];
+		item_path(path, cache, own, 0x4c54f4, 0x4c54f8, (char *)0xa0eaa0, 0x4c54fc);   /* "ske" / "ase" */
+		skel_loadFrom(sk, path, at, room);
+	}
+	if (mem)
+		AT(int, cache, 0x12c) += AT(int, sk, 4);
+	AT(int, cache, 0x120)++;
+	return sk;
+}
+
+/* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
+   i (0x4c bytes each from +0x11c) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
+   (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture sets +0x130 and seven values
+   +0x230 ..); bound (FUN_00466650) when bind is 1, found or added */
+u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
+{
+	char key[0x100];
+	strcpy(key, name);
+	FUN_0046cb60(key);
+	if (key[0] == 0 || key[0] == '.')
+		return NULL;
+	int added, i = tree_lookup(cache, key, (char *)0xa0e788, 0x4c4d98, 0x4c4d30, &added);
+	u8 *shape = AT(u8 *, cache, 0x11c) + i * 0x4c;
+	if (added) {
+		const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
+		u8 *mem = AT(u8 *, cache, 0x128);
+		void *at = mem ? mem + AT(int, cache, 0x12c) : NULL;
+		int room = mem ? AT(int, cache, 0x124) - AT(int, cache, 0x12c) : 0;
+		if (AT(int, cache, 0x110) == 2)
+			shape_read(shape, shape_findDatEntry(key), at, room);
+		else {
+			char path[0x100];
+			item_path(path, cache, own, 0x4c4d68, 0x4c4d6c, (char *)0xa0e788, 0x4c4d70);   /* "shp" / "obj" */
+			model_loadFrom(shape, path, at, room);
+		}
+		if (mem)
+			AT(int, cache, 0x12c) += AT(int, shape, 4);
+		shape_bindTextureBy(shape, cache + 0x130, AT(u32, cache, 0x230), AT(u32, cache, 0x234), AT(u32, cache, 0x238),
+		                    AT(u32, cache, 0x23c), AT(u32, cache, 0x240), AT(u32, cache, 0x244), AT(u32, cache, 0x248));
+		AT(int, cache, 0x120)++;
+	}
+	if (bind == 1)
+		FUN_00466650(shape);
+	return shape;
+}

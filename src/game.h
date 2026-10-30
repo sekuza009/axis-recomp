@@ -217,6 +217,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define object_activate(scene, i) GAME_THISCALL(0x490ee0, void, void *, u32)(scene, i)
 #define object_deactivate(scene, i) GAME_THISCALL(0x490f30, void, void *, u32)(scene, i)
 #define load_4742f0(scene, p, record) GAME_THISCALL(0x4742f0, void, void *, int, void *)(scene, p, record)   /* a player set up from its map record */
+#define skelDat_getItemFileBy(name) GAME_CDECL(0x46b140, void *, const char *)(name)   /* the item's file in the skeleton dat */
+#define skel_loadFrom(sk, path, mem, size) GAME_THISCALL(0x4699d0, void, void *, const char *, void *, int)(sk, path, mem, size)
+#define shape_findDatEntry(name) GAME_CDECL(0x466d60, void *, const char *)(name)   /* the shape's file in the shape dat */
+#define model_loadFrom(shape, path, mem, size) GAME_THISCALL(0x464bf0, void, void *, const char *, void *, int)(shape, path, mem, size)
+#define shape_bindTextureBy(shape, textures, a, b, c, d, e, f, g) GAME_THISCALL(0x466430, void, void *, void *, u32, u32, u32, u32, u32, u32, u32)(shape, textures, a, b, c, d, e, f, g)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

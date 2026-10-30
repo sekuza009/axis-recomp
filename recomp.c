@@ -3584,11 +3584,8 @@ THISCALL void model_loadFrom(char *shape, DWORD path, DWORD mem, DWORD size);
    skeleton by format +0x110: 0 "ske" / 1 "ase" files ("dir\name.ext" with dir +0x10, or "name.ext") through
    skel_loadFrom, 2 the item from the skeleton dat file (skelDat_getItemFileBy), anything else fatal; with data
    memory (+0x128 base, +0x124 size, +0x12c used) the skeleton's size is added to the used part */
-static THISCALL DWORD skel_getSkeletonPtrBy(char *self, DWORD name)
-{
-	DWORD v[1] = { name };
-	return run_lifted(lift_46b1a0, (DWORD)self, 1, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD skel_getSkeletonPtrBy(char *self, DWORD name);
 /* batch 78 */
 /* 0x490df0 (thiscall) object_setAnimation(i, name, period, mode): script command 0x1c. No name or mode 0 stops object
    i's animation (rate 0); otherwise its skeleton comes from the scene's cache (+0x13016d0), its collision unit is
@@ -3662,11 +3659,8 @@ THISCALL void FUN_00466650(char *shape);
    at +0x11c. A miss loads by format +0x110: 0 "shp" / 1 "obj" files through model_loadFrom, 2 the item of the shape
    dat (shape_findDatEntry, shape_read); then its parts' textures are looked up with the suffix +0x130 and the flags
    and colours +0x230..+0x248 (shape_bindTextureBy). bind == 1 also binds the shape's textures (FUN_00466650) */
-static THISCALL DWORD shape_getByName(char *self, DWORD name, DWORD bind)
-{
-	DWORD v[2] = { name, bind };
-	return run_lifted(lift_466dc0, (DWORD)self, 2, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD shape_getByName(char *self, DWORD name, DWORD bind);
 /* batch 85 (lifted/grp31.c) */
 #include "lifted/grp31.c"
 /* 0x48fee0 (thiscall) object_initObjectBy(i, type): set up map object i (0x2cc bytes at +0x131ae44) from a 0xb0-byte
@@ -9482,7 +9476,9 @@ static void settings_setup(void)
 			w = vals[irnd(0, 8)];
 			while (*w) d[n++] = *w++;
 		}
-		if (irnd(0, 9)) d[n++] = '\n';
+		/* (only the last line may lack its newline: lines run together past fgets' 0x50 bytes split a key from its
+		   value, and the original passes the missing value, NULL, to atoi) */
+		if (l < lines - 1 || irnd(0, 9)) d[n++] = '\n';
 	}
 	g_vfsData = (const BYTE *)d; g_vfsSize = (DWORD)n;
 	g_vfsOpenFail = !irnd(0, 7);
@@ -17610,7 +17606,7 @@ static const STest g_stests[] = {
 	/* batch 76 */
 	T(model_loadFrom, 0, 400, 0),
 	/* batch 77 */
-	T(skel_getSkeletonPtrBy, 1, 300, 0),
+	T(skel_getSkeletonPtrBy, 1, 400, 0),
 	/* batch 78 */
 	T(object_setAnimation, 0, 300, 0),
 	/* batch 79 */
@@ -17624,7 +17620,7 @@ static const STest g_stests[] = {
 	/* batch 83 */
 	T(shape_bindTextureBy, 0, 300, 0), T(FUN_00466650, 0, 300, 0),
 	/* batch 84 */
-	T(shape_getByName, 1, 300, 0),
+	T(shape_getByName, 1, 400, 0),
 	/* batch 85 */
 	T(object_initObjectBy, 0, 300, 0),
 	/* batch 86 */
