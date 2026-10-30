@@ -3956,8 +3956,10 @@ void THISCALL armc_461250(void *scene, const char *name, int v, int team, int he
    status 0x18 / 0x16 (0x5b1b50 / 0x4ded40); otherwise the login packet is filled in (name, mech bytes, address via
    0x4532e0, the version strings) in the send buffer (0xa0b328 / 0xa0b310) and sent (net_4521c0); Name2 first
    connects (net_connect, messages through FUN_0041ee40 on failure) */
-LIFT_PLAIN(lobby_checkReservedName3, 4351c0)
-LIFT_PLAIN(lobby_checkReservedName2, 405cf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_checkReservedName3(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int lobby_checkReservedName2(void);
 /* batch 101 (lifted/grp47.c) */
 #include "lifted/grp47.c"
 /* 0x45d3e0 (thiscall on the scene) actor_updateAllParts(actor, vv, draw): per frame for a live actor (+0x14c == 1,
@@ -5395,8 +5397,10 @@ void skirmish_445bc0(void);
 DWORD room_434dd0(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_406200(int i);
-LIFT_PLAIN(lobby_roomNameCheck, 4052c0)
-LIFT_PLAIN(lobby_checkReservedName, 4057a0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_roomNameCheck(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_checkReservedName(void);
 LIFT_PLAIN(lobby_connect, 406c30)
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobbyJoin_keysChat(void);
@@ -12588,9 +12592,9 @@ static void lobbylogin_setup(DWORD name, DWORD bytes, DWORD bufp)
 	fill((void *)0x4dba88, 4); fill((void *)0x4ded60, 4); fill((void *)0x4ded18, 4); fill((void *)0xa0b43c + 0x10, 4);
 }
 ST(lobby_checkReservedName3, lobbylogin_setup(0x5b1b30, 0x5b1b50, 0xa0b328); reserved_name((char *)0x4df9c8);   /* (room_433640 copies the name from there) */, (CD(void, 0x4351c0, void)(), 0),
-   (lobby_checkReservedName3(0, 0, 0, 0, 0, 0, 0), 0))
-ST(lobby_checkReservedName2, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310); reserved_name((char *)0x4db528);   /* (lobby_405140 copies the name from there) */, (CD(void, 0x405cf0, void)(), 0),
-   (lobby_checkReservedName2(0, 0, 0, 0, 0, 0, 0), 0))
+   (lobby_checkReservedName3(), 0))
+ST(lobby_checkReservedName2, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310); reserved_name((char *)0x4db528);   /* (lobby_405140 copies the name from there) */, CD(DWORD, 0x405cf0, void)(),
+   (DWORD)lobby_checkReservedName2())
 /* batch 101 */
 /* an actor (0..6) with empty, freshly constructed object lists (ResourceSet_init_463a40), every part table and item
    record ready (cleared names, see part_record), and its state at random: alive or not, near the camera or not, hit /
@@ -15652,11 +15656,11 @@ ST(arena_406200, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, CALL_PLAIN(0
 static const DWORD g_gs_4052c0[] = { 0x405140, 0, 0x452ec0, 2, 0x452fe0, 0, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4052c0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4052c0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(lobby_roomNameCheck, 0x4052c0, gen_setup(g_gs_4052c0, g_gi_4052c0, g_gb_4052c0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_roomNameCheck, gen_setup(g_gs_4052c0, g_gi_4052c0, g_gb_4052c0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, (CALL_PLAIN(0x4052c0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (lobby_roomNameCheck(), 0))   /* its eax reaches only menu_frame, which ignores it */
 static const DWORD g_gs_4057a0[] = { 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4057a0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4057a0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(lobby_checkReservedName, 0x4057a0, gen_setup(g_gs_4057a0, g_gi_4057a0, g_gb_4057a0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobby_checkReservedName, gen_setup(g_gs_4057a0, g_gi_4057a0, g_gb_4057a0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, (CALL_PLAIN(0x4057a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (lobby_checkReservedName(), 0))   /* its eax reaches only menu_frame, which ignores it */
 static const DWORD g_gs_406c30[] = { 0x4044a0, 2, 0x405200, 0, 0x405230, 0, 0x4060f0, 0, 0x41e760, 1, 0x451e60, 0, 0x452ec0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_406c30[] = { 0x4dda44, 0x4db714, 0x4db718, 0x4db71c, 0x4db854, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4dba80, 0x4dba84, 0x4dba90, 0x4dbaac, 0x4dbaf8, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df018, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x76d484, 0x90d1c4, 0xa0b368, 0xa0b36c, 0xa0d7a0, 0 };
 static const DWORD g_gb_406c30[] = { 0 };

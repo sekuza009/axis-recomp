@@ -955,6 +955,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_434d00() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define room_432200(x, y) GAME_CDECL(0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
 #define room_4338c0() GAME_CDECL(0x4338c0, void, void)()
+#define arena_453090(name, player, map, a, b, c, d, corp) GAME_CDECL(0x453090, int, const char *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
+#define net_asyncSelect(hwnd, socket) GAME_CDECL(0x452170, int, void *, int)(hwnd, socket)
+#define lobby_405140() GAME_CDECL(0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
+#define room_433640() GAME_CDECL(0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
 #define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */

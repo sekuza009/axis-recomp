@@ -1484,3 +1484,159 @@ void (match_4327f0)(void)
 #undef R_OTHER
 #undef R_WINS
 #undef R_LOSSES
+
+/* ---- hosting under a name: the special rooms ---- */
+#define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
+
+/* a game named like one of the special rooms gets its hidden map (22 .. 24, which the map list never offers):
+   JamieSystem 0x18, Operator Room 0x16, Developer Room 0x17 (each in Korean and three spellings) */
+static void special_map(const char *name, u8 *map)
+{
+	static const struct { u8 map; u32 names[4]; } rooms[3] = {
+		{ 0x18, { 0x4ad554, 0x4ad548, 0x4ad53c, 0x4ad530 } },
+		{ 0x16, { 0x4ad524, 0x4ad514, 0x4ad504, 0x4ad4f4 } },
+		{ 0x17, { 0x4ad4e8, 0x4ad4d8, 0x4ad4c8, 0x4ad4b8 } } };
+	for (int r = 0; r < 3; r++)
+		for (int k = 0; k < 4; k++)
+			if (!strcmp(name, (const char *)rooms[r].names[k])) {
+				*map = rooms[r].map;
+				break;
+			}
+}
+
+#define ARENA(off) GAME_VAR(signed char, 0x4ded20 + (off))   /* the arena's settings: the name, then the map (+0x20) .. */
+
+/* the arena hosted with its settings (arena_453090): 0 when that failed */
+static int host_arena(void)
+{
+	return arena_453090((const char *)0x4ded20, (const char *)0x4dedb0, ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
+	                    ARENA(0x21), ARENA(0x23), (u8)ARENA(0x24), (u8)ARENA(0x25), GAME_VAR(int, 0x4dedd0));
+}
+
+/* the hosted arena's settings taken for the match */
+static void take_arena(void)
+{
+	GAME_VAR(int, 0x9dad94) = ARENA(0x20);
+	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	GAME_VAR(int, 0x9da3e0) = ARENA(0x22);
+	GAME_VAR(int, 0x76d368) = ARENA(0x23);
+	GAME_VAR(int, 0x4df8e8) = (u8)ARENA(0x24);
+	GAME_VAR(int, 0x76d408) = (u8)ARENA(0x25);
+	GAME_VAR(int, 0x4ded54) = 1;
+}
+
+/* 0x4052c0: the arena hosted on the local network (a slot opened, kind 1): the settings kept, a special room's map;
+   the slot or the hosting failing, the game state put back and the connection closed (0x4db55c set); else the music stopped and the
+   settings taken (0x4dbbf4 1, back to lobby mode 0). The callers ignore the eax it leaves */
+void (lobby_roomNameCheck)(void)
+{
+	int was = GAME_VAR(int, 0x67ef04);
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 1;
+	lobby_405140();
+	int hosted = arena_452ec0(1, NULL);
+	if (hosted) {
+		special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+		hosted = host_arena();
+	}
+	if (!hosted) {
+		GAME_VAR(int, 0x4db55c) = 1;
+		GAME_VAR(int, 0x67ef14) = 0;
+		GAME_VAR(int, 0x67ef04) = was;
+		arena_452fe0();
+		return;
+	}
+	music_shutdown();
+	GAME_VAR(int, 0x4dbbf4) = 1;
+	take_arena();
+	GAME_VAR(int, 0x4dbb3c) = 0;
+}
+
+/* 0x4057a0: the arena hosted through DirectPlay (a slot opened, kind 0): the music stopped first, a special room's
+   map, the arena hosted and its settings taken whatever the answer. The callers ignore the eax it leaves */
+void (lobby_checkReservedName)(void)
+{
+	GAME_VAR(int, 0x4dbbf4) = 2;
+	GAME_VAR(int, 0x67ef14) = 1;
+	GAME_VAR(int, 0x67ef04) = 1;
+	music_shutdown();
+	GAME_VAR(int, 0x4dbb3c) = 0;
+	arena_452ec0(0, NULL);
+	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+	host_arena();
+	take_arena();
+}
+
+/* 0x405cf0: the arena announced on the lobby server: the settings kept, connected (messages 0x3d no server, 0x46
+   refused, 0x3e no events; 0), a special room's map, the hello packet (0xa0b310: kind 0x18, the settings, the
+   arena's name, this machine's address) sent as kind 10. Returns 1 when sent */
+int (lobby_checkReservedName2)(void)
+{
+	lobby_405140();
+	int r = net_connect(100);
+	if (r == 0) {
+		FUN_0041ee40(0x3d);
+		return 0;
+	}
+	if (r == 2) {
+		FUN_0041ee40(0x46);
+		return 0;
+	}
+	if (!net_asyncSelect(g_hWndMain, 100)) {
+		FUN_0041ee40(0x3e);
+		return 0;
+	}
+	GAME_VAR(int, 0x4ded54) = 1;
+	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+	u8 *packet = GAME_VAR(u8 *, 0xa0b310);
+	packet[0] = 0x18;
+	packet[0x49] = ARENA(0x22);
+	packet[0x48] = ARENA(0x25);
+	packet[0x47] = ARENA(0x24);
+	packet[0x46] = ARENA(0x23);
+	packet[0x45] = 1;
+	packet[0x43] = ARENA(0x20);
+	packet[0x44] = ARENA(0x21);
+	packet[0x52] = ARENA(0x2e);
+	lstrcpyA((char *)packet + 0x53, (const char *)0x4ded46);
+	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b310) + 1, (const char *)0x4ded20);
+	jmp_net_getLocalAddress_4532e0();
+	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b310) + 0x33, (const char *)0xa0b43c);
+	GAME_VAR(int, 0x4dba88) = 1;
+	GAME_VAR(int, 0x4ded60) = 2;
+	net_send(0xa, 0x64);
+	GAME_VAR(int, 0x4dbbf4) = 2;
+	return 1;
+}
+#undef ARENA
+
+/* 0x4351c0: the game room's game announced on the game server: the room's settings kept (0x5b1b30), a special
+   room's map, the packet (0xa0b328: kind 0x18, the player's name 0x9dd570 at +0x43, the settings, the game's name,
+   this machine's address) sent as kind 0x12. The callers ignore the eax it leaves */
+void (lobby_checkReservedName3)(void)
+{
+	room_433640();
+	special_map((const char *)0x5b1b30, (u8 *)0x5b1b50);
+	u8 *packet = GAME_VAR(u8 *, 0xa0b328);
+	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)0x9dd570, 0x1e);   /* strncpy */
+	packet = GAME_VAR(u8 *, 0xa0b328);
+	const u8 *room = (const u8 *)0x5b1b30;
+	packet[0] = 0x18;
+	packet[0x67] = room[0x22];
+	packet[0x66] = room[0x25];
+	packet[0x65] = room[0x24];
+	packet[0x64] = room[0x23];
+	packet[0x63] = 1;
+	packet[0x61] = room[0x20];
+	packet[0x62] = room[0x21];
+	packet[0x70] = room[0x2e];
+	lstrcpyA((char *)packet + 0x71, (const char *)0x5b1b56);
+	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b328) + 1, (const char *)0x5b1b30);
+	jmp_net_getLocalAddress_4532e0();
+	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b328) + 0x33, (const char *)0xa0b43c);
+	GAME_VAR(int, 0x4dba88) = 1;
+	GAME_VAR(int, 0x4ded60) = 2;
+	net_send(0x12, 0x65);
+	GAME_VAR(int, 0x4dbbf4) = 2;
+}
+#undef lstrcpyA
