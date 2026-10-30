@@ -2855,7 +2855,8 @@ int net_resolveHost(const char *host);
 static THISCALL DWORD match_48e990(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e990, (DWORD)scene, 1, v); }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendState_48ead0(char *scene);
-static THISCALL DWORD match_48e0f0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e0f0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_48e0f0(char *scene, DWORD p);
 static THISCALL DWORD match_48e680(char *scene) { return run_lifted(lift_48e680, (DWORD)scene, 0, NULL); }
 static THISCALL DWORD match_48e2c0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e2c0, (DWORD)scene, 1, v); }
 /* batch 50 */
@@ -2954,7 +2955,8 @@ void cfg_42e080(void *f);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_saveSelection(void);
 /* 0x45ebc0 (thiscall) actor_45ebc0(p): player p's starting values (+0x1c/+0x20/+0x128 and four slots) by game type */
-static THISCALL DWORD actor_45ebc0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_45ebc0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_45ebc0(char *scene, DWORD p);
 /* 0x435770 room_435770: rebuild the room's 10 game slots (0x44 bytes at 0x9dcef0) from the listed games at 0xa05330 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_435770(void);
@@ -3334,7 +3336,8 @@ void reg_readCharacterSettings(void);
 THISCALL DWORD gfx_saveScreenshot(char *scene, DWORD p);
 /* 0x473780 (thiscall) catalogue_loadComponents(path): the actor component catalogue (version 0x1204): six
    sections of part records (0xaa8 .. 0x2e18 bytes each, at most 50), read through the descrambling reader */
-static THISCALL DWORD catalogue_loadComponents(char *scene, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_473780, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD catalogue_loadComponents(char *scene, DWORD path);
 /* batch 61: pool / data initialisers (lifted/grp8.c, lifted in batch 60) */
 /* 0x4813e0 (thiscall) space_initBy(planes, nodes, units, blocks, indices, mem, memSize): size the space object's
    pools (planes 0xb0 bytes, nodes 0x10, units, blocks 0x50, a block index table of shorts), take the memory from
@@ -3575,11 +3578,8 @@ static THISCALL DWORD skel_loadAseFrom(char *sk, DWORD f, DWORD mem, DWORD size)
 /* 0x4699d0 (thiscall) skel_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
    extension (after the last '.', not past a '\' or '/'; case-insensitive): "ske" the binary format
    (skel_loadFrom_46aa10), "ase" the text format (skel_loadAseFrom), anything else is fatal; then close it */
-static THISCALL DWORD skel_loadFrom(char *sk, DWORD path, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { path, mem, size };
-	return run_lifted(lift_4699d0, (DWORD)sk, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_loadFrom(char *sk, DWORD path, DWORD mem, DWORD size);
 /* batch 75 (lifted/grp22.c) */
 #include "lifted/grp22.c"
 /* 0x464db0 (thiscall) model_loadObjFormatFrom(f, mem, memSize): a shape from a Wavefront OBJ text file in three
@@ -3599,11 +3599,8 @@ static THISCALL DWORD model_loadObjFormatFrom(char *shape, DWORD f, DWORD mem, D
 /* 0x464bf0 (thiscall) model_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
    extension (after the last '.', not past a '\' or '/'; case-insensitive): "shp" the binary format (shape_read),
    "obj" Wavefront text (model_loadObjFormatFrom), anything else is fatal; then close it */
-static THISCALL DWORD model_loadFrom(char *shape, DWORD path, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { path, mem, size };
-	return run_lifted(lift_464bf0, (DWORD)shape, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void model_loadFrom(char *shape, DWORD path, DWORD mem, DWORD size);
 /* batch 77 (lifted/grp24.c) */
 #include "lifted/grp24.c"
 /* 0x46b1a0 (thiscall) skel_getSkeletonPtrBy(name): the skeleton cache. The name is upper-cased with '/' -> '\'
@@ -5308,11 +5305,8 @@ void menuState100_intro(void);
 /* 0x440840 chat_editSubclass(hwnd, msg, wparam, lparam) (stdcall, ret 0x10): the chat edit's window proc: Enter
    sends the line, Esc / Tab / arrows handled, the room's timers send their requests, all else to the original
    proc (0x9dd868, CallWindowProcA) */
-static LONG WINAPI chat_editSubclass(DWORD w, DWORD m, DWORD wp, DWORD lp)
-{
-	DWORD v[4] = { w, m, wp, lp };
-	return (LONG)run_lifted(lift_440840, 0, 4, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+LONG WINAPI chat_editSubclass(DWORD w, DWORD m, DWORD wp, DWORD lp);
 /* 0x456ed0 sound_play3D(sound, pos, listener, volume, range): with sound on, the sound's pan from the source's
    direction against the listener's ear vector 0xa0e7d8 and its volume from the distance, then played */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -17560,7 +17554,7 @@ static const STest g_stests[] = {
 	T(autoplay_startRecording, 1, 40, 0), T(dplay_enumConnections, 1, 40, 0),
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 40, 0),
+	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
 	T(match_48e680, 0, 40, 0), T(match_48e2c0, 0, 40, 0),
 	/* batch 50 */
 	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 300, 0), T(ViewVolume_projectObject, 0, 300, 0),
@@ -17571,7 +17565,7 @@ static const STest g_stests[] = {
 	T(net_454650, 1, 40, 0), T(net_4545b0, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_41b300, 1, 40, 0),
 	T(app_43f640, 1, 40, 0), T(hud_490b30, 0, 300, 0), T(hud_490da0, 0, 300, 0), T(game_setGameTypeFlags, 0, 40, 0),
 	T(cfg_parseGraphic, 1, 40, 0), T(cfg_parseServer, 1, 40, 0), T(cfg_42e080, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
-	T(actor_45ebc0, 0, 40, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
+	T(actor_45ebc0, 0, 400, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(FUN_004050a0, 1, 40, 0), T(lobby_405140, 1, 40, 0),
 	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
@@ -17613,7 +17607,7 @@ static const STest g_stests[] = {
 	T(tex_upload, 0, 400, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */
 	T(match_49d150, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
-	T(catalogue_loadComponents, 1, 40, 0),
+	T(catalogue_loadComponents, 1, 400, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
@@ -17643,11 +17637,11 @@ static const STest g_stests[] = {
 	/* batch 73 */
 	T(skel_loadAseFrom, 0, 200, 0),
 	/* batch 74 */
-	T(skel_loadFrom, 0, 200, 0),
+	T(skel_loadFrom, 0, 400, 0),
 	/* batch 75 */
 	T(model_loadObjFormatFrom, 0, 200, 0),
 	/* batch 76 */
-	T(model_loadFrom, 0, 200, 0),
+	T(model_loadFrom, 0, 400, 0),
 	/* batch 77 */
 	T(skel_getSkeletonPtrBy, 1, 300, 0),
 	/* batch 78 */

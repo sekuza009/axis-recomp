@@ -465,3 +465,59 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #undef ShowCursor
 #undef PostQuitMessage
 }
+
+#define CallWindowProcA(proc, wnd, msg, w, l) IMPORT(0x4a930c, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
+
+/* the chat line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
+   and the line closed (room_431600, sent or not) */
+static void chat_close(void *edit, int sent)
+{
+	if (sent)
+		SendMessageA(edit, 0xd, 0x80, 0x9dc92c);   /* WM_GETTEXT */
+	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
+	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+	GAME_CDECL(0x431600, u32, int)(sent);   /* room_431600 */
+	GAME_VAR(int, 0x9dd900) = 1;
+}
+
+/* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (0x9da434)
+   is not over 0x4a93e8, takes the line and sends it (the fade 0x9dc428 20); Esc drops it; Tab in the room
+   (0x76d3e8 0x320) closes it (sent) and sets the fade by Shift (10 held, else 20); Home and Left are swallowed (0).
+   Timers: 0x29a, in the lobby (0x4dbbf4 2), and 0x115c, when connected (0x9dd84c), send their keep-alives (0x17 to
+   the lobby, 0x18 to the game server). Everything not swallowed goes on to the edit's own procedure (0x9dd868) */
+long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
+{
+	if (msg == 0x100) {   /* WM_KEYDOWN */
+		switch (w) {
+		case 0xd:   /* Enter */
+			if (!(GAME_VAR(float, 0x9da434) > GAME_VAR(float, 0x4a93e8))) {
+				chat_close(wnd, 1);
+				GAME_VAR(int, 0x9dc428) = 0x14;
+			}
+			break;
+		case 0x1b:   /* Esc */
+			chat_close(wnd, 0);
+			break;
+		case 9:   /* Tab */
+			if (GAME_VAR(int, 0x76d3e8) == 0x320) {
+				IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+				IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+				GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
+				GAME_VAR(int, 0x9dc428) = 0x14;
+				GAME_VAR(int, 0x9dd900) = 1;
+				GAME_VAR(int, 0x9dc428) = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
+			}
+			break;
+		case 0x24: case 0x25:   /* Home, Left */
+			return 0;
+		}
+	} else if (msg == 0x113) {   /* WM_TIMER */
+		if (w == 0x29a) {
+			if (GAME_VAR(int, 0x4dbbf4) == 2)
+				net_send(0x17, 100);
+		} else if (w == 0x115c && GAME_VAR(int, 0x9dd84c))
+			net_send(0x18, 0x65);
+	}
+	return CallWindowProcA(GAME_VAR(u32, 0x9dd868), (u32)wnd, msg, w, l);
+}

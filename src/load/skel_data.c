@@ -100,3 +100,64 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	for (int k = 0; k < 7; k++)
 		AT(int, self, 0x230 + k * 4) = 0;
 }
+
+/* a file's format by its extension (after the last '.', none past a '\' or '/'; its first three letters compared
+   without case): 0 the first name given, 1 the second, -1 neither */
+static int file_format(const char *path, const char *first, const char *second)
+{
+	int i = (int)strlen(path) - 1;
+	for (; i >= 0 && path[i] != '.'; i--)
+		if (path[i] == '\\' || path[i] == '/')
+			return -1;
+	if (i < 0)
+		return -1;
+	char ext[0x100];
+	strcpy(ext, path + i + 1);
+	for (int k = 0; k < 2; k++) {
+		const char *name = k ? second : first;
+		if (crt_tolower(ext[0]) == name[0] && crt_tolower(ext[1]) == name[1] && crt_tolower(ext[2]) == name[2])
+			return k;
+	}
+	return -1;
+}
+
+/* 0x464bf0 (thiscall on a shape): loaded from the file path (a failed open is a fatal message) by its extension:
+   "shp" the binary format (shape_read), "obj" Wavefront text (model_loadObjFormatFrom), anything else a fatal
+   message; the file closed. Its callers ignore the eax it leaves */
+void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
+{
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xa0e790, (const char *)0x4c4ae4, (int)path);
+	switch (file_format(path, "shp", "obj")) {
+	case 0:
+		shape_read(shape, f, mem, size);
+		break;
+	case 1:
+		model_loadObjFormatFrom(shape, f, mem, size);
+		break;
+	default:
+		sys_fatalError((char *)0xa0e790, (const char *)0x4c4aa4, (int)path);
+	}
+	fclose(f);
+}
+
+/* 0x4699d0 (thiscall on a skeleton): the same for skeletons: "ske" the binary format (skel_loadFrom_46aa10), "ase"
+   ASCII scene export (skel_loadAseFrom). Its callers ignore the eax it leaves */
+void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
+{
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xa0eaa8, (const char *)0x4c4ae4, (int)path);
+	switch (file_format(path, "ske", "ase")) {
+	case 0:
+		skel_loadFrom_46aa10(sk, f, mem, size);
+		break;
+	case 1:
+		skel_loadAseFrom(sk, f, mem, size);
+		break;
+	default:
+		sys_fatalError((char *)0xa0eaa8, (const char *)0x4c4aa4, (int)path);
+	}
+	fclose(f);
+}

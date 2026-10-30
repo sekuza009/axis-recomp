@@ -169,6 +169,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define setup_420730(x, y) GAME_CDECL(0x420730, int, int, int)(x, y)   /* the slider's part under the cursor */
 #define actor_updatePart(scene, i, slot, value) GAME_THISCALL(0x45e600, void, void *, int, int, u32)(scene, i, slot, value)
 #define gluBuild2DMipmaps(target, components, w, h, format, type, data) IMPORT(0x4a9044, int, u32, int, int, int, u32, u32, const void *)(target, components, w, h, format, type, data)
+#define crt_tolower(c) GAME_CDECL(0x49fdaf, int, int)(c)
+#define shape_read(shape, f, mem, size) GAME_THISCALL(0x466120, void, void *, void *, void *, int)(shape, f, mem, size)
+#define model_loadObjFormatFrom(shape, f, mem, size) GAME_THISCALL(0x464db0, void, void *, void *, void *, int)(shape, f, mem, size)
+#define skel_loadFrom_46aa10(sk, f, mem, size) GAME_THISCALL(0x46aa10, void, void *, void *, void *, int)(sk, f, mem, size)
+#define skel_loadAseFrom(sk, f, mem, size) GAME_THISCALL(0x469b90, void, void *, void *, void *, int)(sk, f, mem, size)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

@@ -370,3 +370,32 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #undef R
 #undef A
 }
+
+/* 0x45ebc0 (thiscall on the scene): player p's starting values when the slot is in use (+0x108 1). Game types 2 ..
+   11 (+0x20f3ab8) by pairs: the energy (+0x1c, +0x20, +0x128) 10 then 150, +0x12c 0, the four weapon slots
+   (+0x130 ..) empty but one (the pair's: 10 the first, else 50, its +0x28 .. 100; the last pair none). Otherwise
+   +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
+void THISCALL (actor_45ebc0)(u8 *scene, int p)
+{
+	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
+	if (FIELD(int, a, 0x108) != 1)
+		return;
+	unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
+	if (mode <= 9) {
+		int pair = mode / 2;
+		int energy = pair == 0 ? 10 : 150;
+		FIELD(int, a, 0x1c) = FIELD(int, a, 0x20) = FIELD(int, a, 0x128) = energy;
+		FIELD(int, a, 0x12c) = 0;
+		for (int k = 0; k < 4; k++)
+			if (k == pair) {
+				FIELD(int, a, 0x28 + k * 4) = 100;
+				FIELD(int, a, 0x130 + k * 4) = pair == 0 ? 10 : 50;
+			} else
+				FIELD(int, a, 0x130 + k * 4) = 0;
+	} else {
+		FIELD(int, a, 0x12c) = FIELD(int, a, 0x20);
+		FIELD(int, a, 0x128) = FIELD(int, a, 0x1c);
+		for (int k = 0; k < 4; k++)
+			FIELD(int, a, 0x130 + k * 4) = FIELD(int, a, 0x28 + k * 4) / 2;
+	}
+}

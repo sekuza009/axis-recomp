@@ -1397,3 +1397,39 @@ void THISCALL (net_sendState_48ead0)(u8 *s)
 	}
 }
 #undef FIELD
+
+/* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
+   2 (64 bytes, its first byte left as it was): the name (from the part type record +0x1755230 + p x 0x47fd2, +4),
+   then +0x13 its +0x44, +0x14 its +0x48, the actor's team byte (+0x1eccb4c), p, the five parts and six items (each
+   + 1), the 30 colour bytes (+0x479a4). The packet counter (+0x2340c78) counts it; when recording (+0x2340d1d 1)
+   the clock, the shown actor, its size and the packet go to the file. Its caller ignores the eax it leaves */
+void THISCALL (match_48e0f0)(u8 *s, int p)
+{
+	int *flag = (int *)(s + 0x234300a + p * 0x10);
+	if (!*flag)
+		return;
+	u8 *r = s + 0x1755230 + p * 0x47fd2;
+	u8 packet[0x40];
+	packet[1] = 2;
+	strcpy((char *)packet + 2, (const char *)r + 4);
+	packet[0x14] = r[0x48];
+	packet[0x13] = r[0x44];
+	packet[0x16] = (u8)p;
+	packet[0x15] = s[0x1eccb4c + p * 0x8888];
+	for (int k = 0; k < 5; k++)
+		packet[0x17 + k] = r[0x30c + k * 4] + 1;
+	for (int k = 0; k < 6; k++)
+		packet[0x1c + k] = r[0x320 + k * 4] + 1;
+	memcpy(packet + 0x22, r + 0x479a4, 30);
+	*flag = 0;
+	net_sendPacketData(0x40, packet);
+	GAME_VAR(int, s + 0x2340c78)++;
+	if (GAME_VAR(int, s + 0x2340d1d) == 1) {
+		void *f = GAME_VAR(void *, s + 0x2340d08);
+		int size = 0x40;
+		FUN_0046cc30(s + 0x2340d29, 4, 1, f);
+		FUN_0046cc30(s + 0x234240d, 4, 1, f);
+		FUN_0046cc30(&size, 4, 1, f);
+		FUN_0046cc30(packet, 1, size, f);
+	}
+}

@@ -1319,3 +1319,28 @@ void (profile_scanSaves)(void)
 			return;
 		}
 }
+
+/* 0x473780 (thiscall on the scene): the component catalogue from path (a failed open or a version other than 0x1204
+   is a fatal message): six tables, each logged, its count then its records read unscrambled (frames, weapons,
+   bodies, legs, parts, items). Returns 1 */
+u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
+{
+	static const u32 tables[6][4] = {   /* log message, count, records, record size */
+		{ 0x4c755c, 0x13eb000, 0x13c9b30, 0xaa8 }, { 0x4c7548, 0x140c8bc, 0x13eb004, 0xabc },
+		{ 0x4c7534, 0x1447ec0, 0x140c8c0, 0x1300 }, { 0x4c7520, 0x148646c, 0x1447ec4, 0x13f4 },
+		{ 0x4c7508, 0x14d1ab0, 0x1486470, 0x1820 }, { 0x4c74f4, 0x1561b64, 0x14d1ab4, 0x2e18 } };
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c75bc, (int)path);
+	int version;
+	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(&version, 4, 1, f);   /* fread */
+	if (version != 0x1204)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7570, (int)path);
+	for (int k = 0; k < 6; k++) {
+		FUN_00470fc0((int)scene, 0, 0, (const char *)tables[k][0]);
+		fread_scrambled(scene + tables[k][1], 4, 1, f);
+		fread_scrambled(scene + tables[k][2], tables[k][3], FIELD(u32, scene, tables[k][1]), f);
+	}
+	fclose(f);
+	return 1;
+}
