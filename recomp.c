@@ -5441,7 +5441,8 @@ DWORD menuState400_frame(void);
 DWORD menu_onStateChange(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43e290(void);
-LIFT_PLAIN(arena_launchFromFile, 410b50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_launchFromFile(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState800_gameRoom(void);
 /* batch 185 (lifted/grp137-139.c: split so the calls among these go through their native addresses, where the
@@ -15834,7 +15835,8 @@ static void armccam_setup(void)
 	fill((void *)0x4dc798, 4); fill((void *)0x4dc868, 4); fill((void *)0x90d1c4, 4); fill((void *)0x4dda44, 4);
 	fill((void *)0x76d3e8, 4); fill((void *)0x67ef0c, 4); fill((void *)0x67ef20, 4);
 }
-T_PLAIN(arena_launchFromFile, 0x410b50, armccam_setup();, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(arena_launchFromFile, armccam_setup();, (CALL_PLAIN(0x410b50, 0, 0, 0, 0, 0), 0), (arena_launchFromFile(), 0))
 static const DWORD g_gs_43ef70[] = { 0x437a10, 0, 0x437e00, 0, 0x4392c0, 0, 0x4399c0, 0, 0x439e00, 0, 0x43df00, 0, 0x43df80, 0, 0x43e290, 0, 0x43e610, 0, 0x43e720, 0, 0x43e7b0, 0, 0x43ea10, 0, 0x43ed20, 0, 0x43ede0, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_43ef70[] = { 0x4b071c, 0x680bc0, 0x4ded68, 0x4ded6c, 0x67ef14, 0x67ef34, 0x67fb38, 0x76d42c, 0x9dce48, 0x9dd834, 0 };
 static const DWORD g_gb_43ef70[] = { 0 };

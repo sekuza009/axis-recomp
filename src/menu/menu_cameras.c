@@ -196,6 +196,102 @@ static void menu_camera2(const MenuCam2 *m)
 	I(0x4dda44) = 0;
 }
 
+/* 0x410b50 (named arena_launchFromFile; by use the arm screen's camera, 0x4dc790: 1 out to the first menu point, 0
+   back home, 2 there). Going out it eases there (the view's aspect narrowing) and snaps once its depth passes -1
+   (-1101 in network play, 0x4dc24c 3): at (0, -200, 1500; 400 in network play) looking at (0, -200, 0), the dialog
+   up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
+   snaps home once within 0.01 of -550 (-1650); then on to where it came from (0x4dc24c): 1 the main menu (300), 2 the
+   arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
+   game room (800, armc_433360); a lobby game with a reply 0x67 (0x9da49c) then leaves (arena_loadAndQuit). The caller
+   ignores the eax it leaves */
+void (arena_launchFromFile)(void)
+{
+	limit_frame_time(0x4a9418);
+	int from = I(0x4dc24c), network = from == 3;
+	float base = network ? -1650.0f : -550.0f;
+	int mode = I(0x4dc790);
+	if (mode == 1) {
+		X k = g_frameTime, c = RATE;
+		X last = 0;
+		for (int i = 0; i < 6; i++) {
+			last = ((X)F(point0[i]) - F(cam[i])) * k * c + F(cam[i]);
+			F(cam[i]) = (float)last;
+		}
+		if (g_viewAspect > F(0x4a93e8))
+			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * F(0x4a946c));
+		if (!(last > F(network ? 0x4a9470 : 0x4a9474)))   /* (the depth before its rounding) */
+			return;
+		I(0x4df024) = 0;
+		GAME_VAR(u32, 0x4df028) = 0xc3480000;   /* -200 */
+		GAME_VAR(u32, 0x4df02c) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
+		g_dialogOpen = 1;
+		I(0x680378) = 0;
+		GAME_VAR(u32, 0x68037c) = 0xc3480000;
+		I(0x680380) = 0;
+		I(0x4dc790) = 2;
+		I(0x4dc868) = 0;
+		g_viewAspect = (float)SCREEN_ASPECT;
+		return;
+	}
+	if (mode != 0)
+		return;
+	int fast = !((X)base + F(0x4a9424) >= F(0x680380));
+	X c = fast ? F(0x4a93ec) : F(0x4a942c);
+	I(0x4dc868) = 1;
+	for (int i = 0; i < 6; i++)
+		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
+	X full = SCREEN_ASPECT;
+	if (!(g_viewAspect >= full))
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? 0x4a9468 : 0x4a9420) + g_viewAspect);
+	if (!((X)base + F(0x4a9420) >= F(0x680380)))
+		return;
+	/* home */
+	I(0x4dc790) = 2;
+	for (int i = 0; i < 6; i++)
+		I(cam[i]) = I(home[i]);
+	I(0x4dc798) = 0;
+	int state;
+	switch (from) {
+	case 1:
+		state = 300;
+		I(0x4dda44) = 0;
+		break;
+	case 2:
+		state = 400;
+		I(0x4df024) = I(0x4db840);
+		I(0x4df028) = I(0x4db844);
+		I(0x4df02c) = I(0x4db848);
+		I(0x680378) = I(0x4dbab8);
+		I(0x68037c) = I(0x4dbabc);
+		I(0x680380) = I(0x4dbac0);
+		I(0x9db090) = 0;
+		I(0x9db094) = 0;
+		GAME_VAR(u32, 0x9db098) = 0xc4c1c000;   /* -1550 */
+		I(0x76d3f8) = 0;
+		I(0x76d3fc) = 0;
+		GAME_VAR(u32, 0x76d400) = 0xc4ce4000;   /* -1650 */
+		break;
+	case 3:
+		state = 800;
+		I(0x4dda44) = 0;
+		break;
+	default:
+		state = 0;
+		break;
+	}
+	if (state) {
+		g_viewAspect = (float)full;
+		g_menuState = state;
+		I(0x67ef0c) = state;
+		g_nextScreen = state;
+		I(0x4dc24c) = 0;
+		if (state == 800)
+			GAME_CDECL(0x433360, void, void)();   /* armc_433360 */
+	}
+	if (I(0x76d410) == 1 && I(0x9da49c) == 0x67)
+		GAME_CDECL(0x40d840, void, void)();   /* arena_loadAndQuit */
+}
+
 /* 0x444130: the skirmish screen's camera */
 void (skirmish_444130)(void)
 {
