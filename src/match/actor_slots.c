@@ -288,3 +288,44 @@ void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int a, in
 	actor_setPartColor(scene, p, part, (float)((signed char)a * k1), (float)((signed char)b * k2), (float)((signed char)c * k2),
 	                   (float)((signed char)d * k1), (float)((signed char)e * k2), (float)((signed char)f * k2));
 }
+
+/* The five parts' animations (0x45e1f0 .. 0x45e530): where each part's model and its own fields are. An actor's part
+   type (its type record at +0x1561b68, 0x47fd2 bytes each, by the actor's +0x10c) names the part's model (by +model_at
+   in that record); the actor's pose (+0x484) picks the model's frame */
+typedef struct {
+	int model_at;      /* the model's index in the type record */
+	u32 models;        /* the models' table in the scene, */
+	int model_size;    /* and each one's size */
+	int bones, bone_size, counts, frames;   /* in the model: per pose */
+	int data, names;   /* the type record's data handed over */
+	int self;          /* the actor's loader for this part */
+	u32 limit;
+} PartModel;
+
+static void part_load(u8 *scene, int a, const PartModel *m)
+{
+	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	if (!GAME_VAR(int, actor + 0x108))
+		return;
+	u8 *type = scene + 0x1561b68 + GAME_VAR(int, actor + 0x10c) * 0x47fd2;
+	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
+	int pose = GAME_VAR(int, actor + 0x484);
+	data_loadFrom_46f4e0(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
+	                     model + m->bones + pose * m->bone_size, GAME_VAR(u32, model + m->counts + pose * 4),
+	                     model + m->frames + pose * 0x80, 0, 0, 0, actor + m->self + 0x30, m->limit);
+}
+
+static const PartModel g_parts[5] = {
+	{ 0x30c, 0x13c9b30, 0xaa8, 0x448, 0x220, 0x888, 0x990, 0x338, 0x43534, 0x554, 0x7d0 },
+	{ 0x310, 0x13eb004, 0xabc, 0x448, 0x220, 0x888, 0x990, 0x8284, 0x43e34, 0xd54, 0x7d0 },
+	{ 0x314, 0x140c8c0, 0x1300, 0x848, 0x440, 0x10c8, 0x11d0, 0x101d0, 0x44734, 0x1554, 0xfa0 },
+	{ 0x318, 0x1447ec4, 0x13f4, 0x848, 0x440, 0x10c8, 0x11d0, 0x1fe1c, 0x45804, 0x2524, 0xfa0 },
+	{ 0x31c, 0x1486470, 0x1820, 0xa48, 0x550, 0x14e8, 0x15f0, 0x2fa68, 0x468d4, 0x34f4, 0xbb8 },
+};
+
+/* (thiscall on the scene; their callers ignore the eax they leave) */
+void THISCALL (FUN_0045e1f0)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
+void THISCALL (actor_updateBody)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
+void THISCALL (FUN_0045e390)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
+void THISCALL (FUN_0045e460)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
+void THISCALL (FUN_0045e530)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }

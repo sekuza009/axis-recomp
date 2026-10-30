@@ -3780,11 +3780,16 @@ static THISCALL DWORD data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD
    chest / arm / leg / booster type (player +0x30c..+0x31c) in that part's type table, variant actor +0x484: load
    the part's object list (data_loadFrom_46f4e0) with the player's own shape and skeleton caches, the variant's
    shape names and skeleton names, into the actor's memory (2000 / 2000 / 4000 / 4000 / 3000 bytes) */
-static THISCALL DWORD FUN_0045e1f0(char *sc, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_45e1f0, (DWORD)sc, 1, v); }
-static THISCALL DWORD actor_updateBody(char *sc, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_45e2c0, (DWORD)sc, 1, v); }
-static THISCALL DWORD FUN_0045e390(char *sc, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_45e390, (DWORD)sc, 1, v); }
-static THISCALL DWORD FUN_0045e460(char *sc, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_45e460, (DWORD)sc, 1, v); }
-static THISCALL DWORD FUN_0045e530(char *sc, DWORD a) { DWORD v[1] = { a }; return run_lifted(lift_45e530, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e1f0(char *sc, DWORD a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_updateBody(char *sc, DWORD a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e390(char *sc, DWORD a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e460(char *sc, DWORD a);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void FUN_0045e530(char *sc, DWORD a);
 /* 0x45e600 (thiscall) actor_updatePart(actor, slot, variant): the item in the player's slot (+0x320 + slot * 4;
    0x2e18-byte items at +0x14d1ab4, < 0 none) with the scene's caches (+0x19e188c / +0x1cbe198): slot 4 and 5 their
    own lists (memory +0x58ac / +0x704c), the actor's current slot (+0x140) the weapon list (+0x410c) and its kind
@@ -3844,12 +3849,9 @@ THISCALL void actor_46fed0(char *list);
    0x4742f0 load_4742f0(player, record): set up a player completely (name, +0x44 value, team, the five part types,
    the six item slots) and mark it used (FUN_00474390); load_4742f0 takes them from a record (+4 value, +8 name,
    +0x28 team, +0x2c.. parts, +0x40.. items) */
-static THISCALL DWORD match_474210(char *eng, DWORD p, DWORD name, DWORD v, DWORD team, DWORD head, DWORD chest, DWORD arm,
-                                   DWORD leg, DWORD booster, DWORD i0, DWORD i1, DWORD i2, DWORD i3, DWORD i4, DWORD i5)
-{
-	DWORD a[15] = { p, name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5 };   /* the hook's real arguments */
-	return run_lifted(lift_474210, (DWORD)eng, 15, a);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_474210(char *eng, DWORD p, DWORD name, DWORD v, DWORD team, DWORD head, DWORD chest, DWORD arm,
+                           DWORD leg, DWORD booster, DWORD i0, DWORD i1, DWORD i2, DWORD i3, DWORD i4, DWORD i5);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void load_4742f0(char *eng, DWORD p, DWORD rec);
 /* (hud_4955a0: batch 198, lifted whole in lifted/grp153.c) */
@@ -3888,7 +3890,8 @@ void THISCALL replay_drawIcon(void *scene, int x, int y, int icon);
    version 0x1201 (else fatal); a scrambled count (+0x20f3adc) and that many 0x90-byte records (+0x20f3ae0) follow;
    each record with a non-empty name (+0) gets its shape (name +0x4c) from the cache at +0x19e188c, bound, into +0x8c
    (else 0). Returns 1 */
-static THISCALL DWORD map_loadItemInfoFrom(char *scene, DWORD path) { DWORD v[1] = { path }; return run_lifted(lift_4875d0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD map_loadItemInfoFrom(char *scene, DWORD path);
 /* batch 95 (lifted/grp41.c) */
 #include "lifted/grp41.c"
 /* 0x419000 armc_snapshot(i): the snapshot texture of the arm-customise catalogue's item i (name 0x4dbe50 + i * 0x80;

@@ -42,3 +42,28 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 	if (total != FIELD(int, scene, 0xe3b034))
 		fatal4(0x4c7d74, total, FIELD(int, scene, 0xe3b034));
 }
+
+/* 0x4875d0 (thiscall on the scene): the item file: its version (0x1201, else a fatal message; no file one too), the
+   items' count (+0x20f3adc) and 0x90-byte records (+0x20f3ae0); each item named (its first byte set) given its shape
+   (+0x8c: shape_getByName on the scene's shapes, +0x19e188c, by its name at +0x4c), the others none. Returns 1 */
+int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		GAME_CDECL(0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7bd4, path);
+	u32 version;
+	crt_fread(&version, 4, 1, f);
+	if (version != 0x1201)
+		GAME_CDECL(0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7b94, path);
+	int *count = (int *)(scene + 0x20f3adc);
+	fread_scrambled(count, 4, 1, f);
+	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
+	fclose(f);
+	for (int i = 0; i < *count; i++) {
+		u8 *item = scene + 0x20f3ae0 + i * 0x90;
+		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName(scene + 0x19e188c, (const char *)(item + 0x4c), 1) : 0;
+	}
+	return 1;
+#undef crt_fread
+}

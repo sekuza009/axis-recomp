@@ -140,6 +140,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define bullet_init(scene, slot, a1, a2, a3, a4, a5) GAME_THISCALL(0x479b40, void, void *, int, u32, u32, u32, u32, u32)(scene, slot, a1, a2, a3, a4, a5)
 #define object_initObjectBy(scene, slot, type) GAME_THISCALL(0x48fee0, void, void *, int, u32)(scene, slot, type)
 #define sys_errorMessage(out, format, a, b) GAME_CDECL(0x46c5f0, void, char *, const char *, int, int)(out, format, a, b)
+#define data_loadFrom_46f4e0(self, a, b, c, d, e, f, g, h, i, j, limit) GAME_THISCALL(0x46f4e0, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(self, a, b, c, d, e, f, g, h, i, j, limit)
+#define shape_getByName(cache, name, flag) GAME_THISCALL(0x466dc0, u32, void *, const char *, int)(cache, name, flag)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

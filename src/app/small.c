@@ -713,3 +713,22 @@ void THISCALL (load_4742f0)(Stage *stage, int p, const u8 *rec)
 	player_markUsed(stage, p);
 #undef R
 }
+
+/* 0x474210 (thiscall on the stage): player p set from its pieces: name, value, team, the five parts, the six items,
+   then marked in use (as load_4742f0 does from a record). Its caller ignores the eax it leaves */
+void THISCALL (match_474210)(Stage *stage, int p, const char *name, int v, int team, int head, int chest, int arm, int leg,
+                             int booster, int i0, int i1, int i2, int i3, int i4, int i5)
+{
+	player_setName(stage, p, name);
+	player_setValue(stage, p, v);
+	player_setTeam(stage, p, team);
+	actor_setActorTypeHeadInfoBy(stage, p, head);
+	actor_setActorTypeChestInfoBy(stage, p, chest);
+	actor_setActorTypeArmInfoBy(stage, p, arm);
+	actor_setActorTypeLegInfoBy(stage, p, leg);
+	actor_setActorTypeBoosterInfoBy(stage, p, booster);
+	int items[6] = { i0, i1, i2, i3, i4, i5 };
+	for (int k = 0; k < 6; k++)
+		actor_setActorTypeItemInfoBy(stage, p, k, items[k]);
+	player_markUsed(stage, p);
+}
