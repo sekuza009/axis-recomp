@@ -3373,7 +3373,8 @@ static THISCALL DWORD image_copyTo(char *img, DWORD dst, DWORD dw, DWORD dh, DWO
 }
 /* 0x4557e0 (thiscall) tex_textureFileExist(name): is the texture there in the manager's format (+0xc0114): a dat
    entry (0, binary search of the index), a BMP (1) or a RAW file (2) of the manager's size (+0xc0118 / +0xc011c)? */
-static THISCALL DWORD tex_textureFileExist(char *tm, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_4557e0, (DWORD)tm, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD tex_textureFileExist(char *tm, DWORD name);
 /* 0x455080 (thiscall) tex_initBy(dir, slots, format, w, h, a, b): the texture manager: directory (upper case),
    format and size; for the dat format the index of the size's Data\Image*.dat (count + 0x44-byte entries); then
    at most 0x200 texture slots in a ring, each with a GL texture name */
@@ -3723,11 +3724,8 @@ THISCALL void effect_initTextures(char *self);
    no file is fatal): version 0x1201 (else fatal), scrambled count and one more value, then the 0xb0-byte object
    types in scrambled blocks of 56, each added with object_addObjectBy until one fails. Mode 1 without a shading
    file writes one ("wb", scrambled) */
-static THISCALL DWORD map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode)
-{
-	DWORD v[2] = { name, mode };
-	return run_lifted(lift_48b710, (DWORD)scene, 2, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
 /* batch 88 (lifted/grp34.c) */
 #include "lifted/grp34.c"
 /* 0x46f4e0 (thiscall) data_loadFrom_46f4e0(shapeCache, skelCache, nShapes, shapeNames, nSkels, skelNames, lit,
@@ -3736,12 +3734,9 @@ static THISCALL DWORD map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode
    summed (+0x18), the data memory (100 bytes per shape, 4 per skeleton, with lit == 1 the colour buffers too) from
    mem (too small is fatal) or operator new (none is fatal), then per shape its entry (shape, the int, colour
    buffer when lit), the skeletons by name (0x40 apart) after them, and with lit == 1 the colours (data_46f7a0) */
-static THISCALL DWORD data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
-                                           DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size)
-{
-	DWORD v[11] = { sc, kc, ns, names, nk, knames, lit, fac, px, mem, size };
-	return run_lifted(lift_46f4e0, (DWORD)list, 11, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
+                                  DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size);
 /* batch 89 (lifted/grp35.c) */
 #include "lifted/grp35.c"
 /* (thiscall on the scene) FUN_0045e1f0 / actor_updateBody / FUN_0045e390 / FUN_0045e460 / FUN_0045e530(actor):
@@ -17604,7 +17599,7 @@ static const STest g_stests[] = {
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
-	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 400, 0),
+	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 400, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
@@ -17655,9 +17650,9 @@ static const STest g_stests[] = {
 	/* batch 86 */
 	T(object_addObjectBy, 1, 300, 0), T(effect_initTextures, 0, 300, 0),
 	/* batch 87 */
-	T(map_loadObjectInfoFrom, 0, 200, 0),
+	T(map_loadObjectInfoFrom, 0, 400, 0),
 	/* batch 88 */
-	T(data_loadFrom_46f4e0, 0, 300, 0),
+	T(data_loadFrom_46f4e0, 0, 400, 0),
 	/* batch 89 */
 	T(FUN_0045e1f0, 0, 300, 0), T(actor_updateBody, 0, 300, 0), T(FUN_0045e390, 0, 300, 0), T(FUN_0045e460, 0, 300, 0),
 	T(FUN_0045e530, 0, 300, 0), T(actor_updatePart, 0, 300, 0),

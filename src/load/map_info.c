@@ -99,3 +99,68 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	fclose(f);
 #undef crt_fread
 }
+
+/* 0x48b710 (thiscall on the scene): the map's objects. The caches emptied (+0xe3c93c shapes, +0x13016d0 skeletons,
+   the object list: load_490d10), the shading not loaded (+0x13016cc 0). Mode 0: the shading file (named by 0x4c7e90
+   from +0x108 and the name's base, load_46cad0) read when there (a count, +0x13016c8, then that many dwords at
+   +0xf30dc8; the count cleared, +0x13016cc 1). The objects file (by 0x4c77f0; none: a fatal message): version
+   0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object types in blocks of 56, each added
+   (object_addObjectBy) until one fails; every second one logged. Mode 1 without shading loaded: the shading file
+   written. Its caller ignores the eax it leaves */
+void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	char path[0x100], base[0x100];
+	u8 objects[56][0xb0];
+	FIELD(int, scene, 0x131ae40) = 0;
+	FUN_00467520(scene + 0xe3c93c);
+	FUN_0046b7f0(scene + 0x13016d0);
+	load_490d10(scene);
+	FIELD(int, scene, 0x13016cc) = 0;
+	if (mode == 0) {
+		load_46cad0(name, base);
+		sprintf(path, (const char *)0x4c7e90, scene + 0x108, base);
+		void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+		if (f) {
+			FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7e74);
+			fread_scrambled(scene + 0x13016c8, 4, 1, f);
+			fread_scrambled(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
+			fclose(f);
+			FIELD(int, scene, 0x13016c8) = 0;
+			FIELD(int, scene, 0x13016cc) = 1;
+		}
+	}
+	sprintf(path, (const char *)0x4c77f0, scene + 0x108, name);
+	void *f = crt_fopen(path, (const char *)0x4ad170);
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7e48, (int)path);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	int version, value, count;
+	crt_fread(&version, 4, 1, f);
+	if (version != 0x1201)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
+	fread_scrambled(&value, 4, 1, f);
+	fread_scrambled(&count, 4, 1, f);
+	for (int i = 0; i < count; i++) {
+		if (i % 2 == 0)
+			FUN_00470fc0((int)scene, 0, i, (const char *)0x4c7e38, i);
+		unsigned k = (unsigned)i % 56;
+		if (k == 0)
+			fread_scrambled(objects, 0xb0, 56, f);
+		if (object_addObjectBy(scene, objects[k]) < 0)
+			break;
+	}
+	fclose(f);
+	load_46cad0(name, base);
+	sprintf(path, (const char *)0x4c7e90, scene + 0x108, base);
+	if (mode == 1 && FIELD(int, scene, 0x13016cc) == 0) {
+		f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+		if (f) {
+			FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7e1c);
+			FUN_0046cc30(scene + 0x13016c8, 4, 1, f);
+			FUN_0046cc30(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
+			fclose(f);
+		}
+	}
+#undef crt_fread
+}

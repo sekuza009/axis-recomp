@@ -199,3 +199,52 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 	if (mipmaps)
 		gluBuild2DMipmaps(0xde1, 4, GAME_VAR(int, tm + 0xc0118), GAME_VAR(int, tm + 0xc011c), 0x1908, 0x1401, tm + 0x114);
 }
+
+/* 0x4557e0 (thiscall on a texture manager): is the texture name (up to a '*') there in the manager's format (+0xc0114,
+   under its directory +8 when it has one) at its size (+0xc0118 x +0xc011c)? 0: in the dat index (tex_4554c0); 1: a
+   BMP of that size; 2: a RAW whose header (at 6, two shorts in 8-pixel units) gives it; else a fatal message. 1 or
+   0, the local image (a BMPRGBFile) closed either way */
+int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	static const u32 formats[3][2] = { { 0x4b3fdc, 0x4b3fd8 }, { 0x4b3fec, 0x4b3fe4 }, { 0x4b4000, 0x4b3ff8 } };   /* "%s\%s" "%s", .BMP, .RAW */
+	u8 image[0x48];
+	FIELD(u32, image, 0) = 0x4a96f8;   /* (its vtable) */
+	FIELD(u32, image, 4) = 0;          /* (no file yet) */
+	char base[0x100], path[0x100];
+	strcpy(base, name);
+	crt_strtok(base, (const char *)0x4b12f4);   /* "*" */
+	const char *dir = (const char *)tm + 8;
+	int format = FIELD(int, tm, 0xc0114), ok = 0;
+	if ((unsigned)format > 2)
+		sys_fatalError((char *)0xa0dff8, (const char *)0x4b400c, format);
+	else {
+		if (*dir)
+			sprintf(path, (const char *)formats[format][0], dir, base);
+		else
+			sprintf(path, (const char *)formats[format][1], base);
+		if (format == 0)
+			ok = tex_4554c0(tm, path) >= 0;
+		else if (format == 1) {
+			if (file_exists_46ca70(path)) {
+				image_initBy(image, path);
+				int w = FIELD(int, image, 0x3e), h = FIELD(int, image, 0x42);
+				FUN_0046ce50(image);
+				ok = w == FIELD(int, tm, 0xc0118) && h == FIELD(int, tm, 0xc011c);
+			}
+		} else {
+			void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+			if (f) {
+				short size[2];
+				crt_fseek(f, 6, 0);
+				crt_fread(&size[0], 2, 1, f);
+				crt_fread(&size[1], 2, 1, f);
+				fclose(f);
+				ok = size[0] * 8 == FIELD(int, tm, 0xc0118) && size[1] * 8 == FIELD(int, tm, 0xc011c);
+			}
+		}
+	}
+	BMPRGBFile_ctor(image);   /* (by use its destructor) */
+	return ok;
+#undef crt_fread
+}

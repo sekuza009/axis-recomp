@@ -179,6 +179,13 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define file_exists_46ca70(path) GAME_CDECL(0x46ca70, int, const char *)(path)
 #define space_walkNodes_482aa0(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISCALL(0x482aa0, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+#define image_initBy(image, path) GAME_THISCALL(0x46cd00, void *, void *, const char *)(image, path)   /* a 24-bit BMP opened */
+#define FUN_00467520(models) GAME_THISCALL(0x467520, int, void *)(models)   /* the shape cache emptied */
+#define FUN_0046b7f0(skels) GAME_THISCALL(0x46b7f0, int, void *)(skels)   /* the skeleton cache emptied */
+#define load_46cad0(src, dst) GAME_CDECL(0x46cad0, void, const char *, char *)(src, dst)
+#define load_490d10(stage) GAME_THISCALL(0x490d10, void, void *)(stage)
+#define object_addObjectBy(scene, type) GAME_THISCALL(0x490c50, int, void *, const void *)(scene, type)
+#define data_46f7a0(list, factors, lights) GAME_THISCALL(0x46f7a0, void, void *, u32, u32)(list, factors, lights)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
