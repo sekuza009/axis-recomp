@@ -664,3 +664,142 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 			return 0;
 	}
 }
+
+/* which half of the node (0 or 1) coordinate p falls in along an axis */
+static int half_of(const float *p, const float *low, const float *half)
+{
+	int i = ftol(fdiv_m(fsub_m(fld_m(p), low), half));
+	return i < 0 ? 0 : i > 1 ? 1 : i;
+}
+
+/* where the segment from + d t meets the plane (n halves along the axis from low): the other two coordinates as
+   (d t) + from, t rounded to a float or not as the original keeps it */
+static void cut_at(float *out, const float *from, const float *d, int n, const float *half, const float *low, int axis, int round_t)
+{
+	long double plane = fadd_m(fmul_m((long double)n, half), low);
+	long double t = fdiv_m(fsub_m(plane, &from[axis]), &d[axis]);
+	float tf = f32(t);
+	for (int a = 0; a < 3; a++)
+		if (a != axis)
+			out[a] = f32(fadd_m(round_t ? fmul_m(fld_m(&d[a]), &tf) : fld_m(&d[a]) * t, &from[a]));
+	out[axis] = f32(plane);
+}
+
+/* p through the 4 x 3 part of m: per row the y and z terms first, or (rows 1 and 2 with yx set) y and x, the last
+   term then, then the translation */
+static void through_m(float *out, const float *m, const float *p, int yx)
+{
+	for (int r = 0; r < 3; r++) {
+		long double tx = fmul_m(fld_m(&m[r]), &p[0]), ty = fmul_m(fld_m(&m[4 + r]), &p[1]), tz = fmul_m(fld_m(&m[8 + r]), &p[2]);
+		out[r] = f32(fadd_m(yx && r ? (ty + tx) + tz : (ty + tz) + tx, &m[12 + r]));
+	}
+}
+
+/* 0x4809f0 (thiscall on an octree node: box low +0, high +0xc): the segment from -> to traced for the furthest hit
+   (by the t space_tracePlanes_47fb80 gives, from -FLT_MAX in dist; the hit point to hit). A split node (+0x24 1) walks
+   its eight children (+0x28, x by 1, z by 2, y by 4) the segment passes through in order, cut at each child's
+   boundary planes (the z planes spaced by the x half and the x planes by the z half: the original's slip, harmless
+   on cubes), and returns the first child's hit. A leaf traces its list (+0x18; nodes: record +0, next +0xc; records
+   flagged 1 skipped) and then each of nsubs sub-model lists (subs: 3 dwords each, the list, the matrix out, the
+   matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
+u32 THISCALL (space_traceUnit_4809f0)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
+{
+	const float *low = (const float *)unit, *k = (const float *)0x4a942c;
+	if (GAME_VAR(int, unit + 0x24) == 1) {
+		float half[3], d[3];
+		for (int a = 0; a < 3; a++) {
+			float ext = f32(fsub_m(fld_m(&low[3 + a]), &low[a]));
+			half[a] = f32(fmul_m(fld_m(&ext), k));
+		}
+		int z0 = half_of(&from[2], &low[2], &half[2]), x0 = half_of(&from[0], &low[0], &half[0]), y0 = half_of(&from[1], &low[1], &half[1]);
+		int z1 = half_of(&to[2], &low[2], &half[2]), x1 = half_of(&to[0], &low[0], &half[0]), y1 = half_of(&to[1], &low[1], &half[1]);
+		int sy = y0 > y1 ? -1 : 1, sz = z0 > z1 ? -1 : 1, sx = x0 > x1 ? -1 : 1;
+		for (int a = 0; a < 3; a++)
+			d[a] = f32(fsub_m(fld_m(&to[a]), &from[a]));
+		for (int y = y0;; y += sy) {
+			float p0[3], p1[3], dp[3];
+			if (y == y0)
+				memcpy(p0, from, 12);
+			else
+				cut_at(p0, from, d, sy > 0 ? y : y + 1, &half[1], &low[1], 1, 1);
+			if (y == y1)
+				memcpy(p1, to, 12);
+			else
+				cut_at(p1, from, d, sy > 0 ? y + 1 : y, &half[1], &low[1], 1, 1);
+			for (int a = 0; a < 3; a++)
+				dp[a] = f32(fsub_m(fld_m(&p1[a]), &p0[a]));
+			for (int z = z0;; z += sz) {
+				float q0[3], q1[3], dq[3];
+				if (z == z0)
+					memcpy(q0, p0, 12);
+				else
+					cut_at(q0, p0, dp, sz > 0 ? z : z + 1, &half[0], &low[2], 2, 0);
+				if (z == z1)
+					memcpy(q1, p1, 12);
+				else
+					cut_at(q1, p0, dp, sz > 0 ? z + 1 : z, &half[0], &low[2], 2, 0);
+				for (int a = 0; a < 3; a++)
+					dq[a] = f32(fsub_m(fld_m(&q1[a]), &q0[a]));
+				for (int x = x0;; x += sx) {
+					float r0[3], r1[3];
+					if (x == x0)
+						memcpy(r0, q0, 12);
+					else
+						cut_at(r0, q0, dq, sx > 0 ? x : x + 1, &half[2], &low[0], 0, 1);
+					if (x == x1)
+						memcpy(r1, q1, 12);
+					else
+						cut_at(r1, q0, dq, sx > 0 ? x + 1 : x, &half[2], &low[0], 0, 1);
+					u8 *child = GAME_VAR(u8 *, unit + 0x28 + (x + 2 * z + 4 * y) * 4);
+					if (child) {
+						u32 r = space_traceUnit_4809f0(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
+						if (r)
+							return r;
+					}
+					if (x == x1)
+						break;
+				}
+				if (z == z1)
+					break;
+			}
+			if (y == y1)
+				return 0;
+		}
+	}
+	u32 *node = GAME_VAR(u32 *, unit + 0x18);
+	if (!node)
+		return 0;
+	GAME_VAR(u32, dist) = 0xff7fffff;
+	float f[3], t[3];
+	memcpy(f, from, 12);
+	memcpy(t, to, 12);
+	u32 found = 0;
+	const u32 *sub = NULL;
+	for (int s = -1;;) {
+		u8 *rec = (u8 *)node[0];
+		if (s >= 0 || !(rec[0] & 1)) {
+			float at[3], tt;
+			if (space_tracePlanes_47fb80(rec, f, t, at, &tt) == 1 && tt > *dist) {
+				if (s < 0)
+					memcpy(hit, at, 12);
+				else {
+					const float *m = (const float *)sub[1];
+					for (int r = 0; r < 3; r++)
+						hit[r] = f32(fadd_m(fmul_m(fld_m(&at[2]), &m[8 + r]) + fmul_m(fld_m(&at[1]), &m[4 + r]) +
+						                    fmul_m(fld_m(&at[0]), &m[r]), &m[12 + r]));
+				}
+				*dist = tt;
+				found = node[0];
+			}
+		}
+		node = (u32 *)node[3];
+		if (!node) {
+			if (++s >= nsubs)
+				return found;
+			sub = subs + s * 3;
+			node = (u32 *)sub[0];
+			through_m(f, (const float *)sub[2], from, 0);
+			through_m(t, (const float *)sub[2], to, 1);
+		}
+	}
+}

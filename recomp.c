@@ -2997,11 +2997,8 @@ void setup_drawKeyBindingRows(int key);
    at the box midpoints and recurses into the children in the order the segment meets them, stopping at the first
    hit; a leaf traces its triangle list (space_tracePlanes_47fb80; records flagged 1 are skipped) and every sub-model
    list (the segment taken into the model, the hit back out), keeping the nearest. Returns the hit record or 0 */
-static THISCALL DWORD space_traceUnit_4809f0(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs)
-{
-	DWORD v[6] = { p0, p1, hit, dist, subs, nsubs };
-	return run_lifted(lift_4809f0, (DWORD)node, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_traceUnit_4809f0(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs);
 /* 0x483060 (thiscall) space_traceNodes(p0, p1, hit, subs, nsubs): the segment through the grid's cells (3D DDA over
    the cells it crosses, nearest first), tracing the octree of each cell that has one; the first hit wins */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
