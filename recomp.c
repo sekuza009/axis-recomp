@@ -14191,8 +14191,8 @@ ST(arena_40a070, arenalist_setup();, (CALL_PLAIN(0x40a070, 0, 0, 0, 0, 0), 0), (
 static void createarena_setup(void)
 {
 	textpass_setup();
-	if (!irnd(0, 3)) { mappreview_setup(0x4db548); G32(0x680cd0) = 1; *(char *)0x4db54a = (char)irnd(1, 2); }
-	else { menutex_setup(); G32(0x680cd0) = 0; *(char *)0x4db54a = irnd(0, 1) ? 0 : (char)irnd(1, 4); *(char *)0x4db548 = (char)irnd(0, 15); }
+	/* the map preview is stubbed (its own test): the test texture set always */
+	menutex_setup(); G32(0x680cd0) = irnd(0, 1); *(char *)0x4db54a = irnd(0, 1) ? 0 : (char)irnd(1, 4); *(char *)0x4db548 = (char)irnd(0, 15);
 	menutex_fonts(0);
 	int id = G32(0x9dae1c);
 	G32(0x9db0a4) = id; G32(0x4deb50) = id; G32(0x4deb4c) = id;
@@ -14217,7 +14217,17 @@ static void createarena_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb00) + irnd(0x9f, 0x1a7); G32(0x4ded6c) = G32(0x4dbb04) + irnd(0x2f, 0x133); }
 }
-T_PLAIN(arena_createDraw, 0x40b750, createarena_setup();, 0, 0, 0, 0, 0)
+/* the form's hit test (arena_404520), the confirmation box's (arena_4045a0) and the map preview (0x40b550; its
+   missing picture ends the game) stubbed, each with its own test: any item or none */
+static void createarena_hover_setup(void)
+{
+	createarena_setup();
+	static const DWORD stubs[] = { 0x404520, 2, 0x4045a0, 2, 0x40b550, 1, 0 };
+	callee_stubs(stubs, 0);
+	callee_ret(0x404520, (DWORD)irnd(-1, 22));
+	callee_ret(0x4045a0, (DWORD)irnd(-1, 3));
+}
+T_PLAIN(arena_createDraw, 0x40b750, createarena_hover_setup();, 0, 0, 0, 0, 0)
 /* batch 142 */
 /* the pilot-select dispatcher: profcol_setup's colour data, then pilotselect_setup (which keeps the pilot 0..8),
    the refresh flag, a message open now and then */
@@ -17721,7 +17731,7 @@ static const STest g_stests[] = {
 	/* batch 140 */
 	T(arena_40a070, 0, 300, 0),
 	/* batch 141 */
-	T(arena_createDraw, 0, 300, 0),
+	T(arena_createDraw, 0, 1000, 0),
 	/* batch 142 */
 	T(profile_44f810, 0, 200, 0), T(room_43ede0, 0, 200, 0),
 	/* batch 143 */
