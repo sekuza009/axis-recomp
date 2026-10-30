@@ -3466,11 +3466,8 @@ THISCALL void load_482320(char *sp, DWORD id, DWORD unit, DWORD part, DWORD i0, 
 /* 0x4823c0 (thiscall) space_buildUnits(id, shape, matrix): a unit (pool) for a shape: every part not flagged 0x20
    (flag 1 -> id 0x10) has its primitives' triangles (type 4 lists, 5 strips with alternating winding, 6 fans)
    transformed by the matrix (the GL modelview one if none is given) and added with load_482320. Returns the unit */
-static THISCALL DWORD space_buildUnits(char *sp, DWORD id, DWORD shape, DWORD mat)
-{
-	DWORD v[3] = { id, shape, mat };
-	return run_lifted(lift_4823c0, (DWORD)sp, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_buildUnits(char *sp, DWORD id, DWORD shape, DWORD mat);
 /* batch 68 (lifted/grp15.c) */
 #include "lifted/grp15.c"
 /* 0x471040 (thiscall) collision_initVolume(sizeZ, sizeX, sizeY, margin, perBlock, depth): set up the level grid
@@ -17591,7 +17588,7 @@ static const STest g_stests[] = {
 	/* batch 66 */
 	T(load_4728e0, 0, 400, 0), T(load_481ae0, 1, 400, 0), T(skel_applyPose, 0, 400, 0),
 	/* batch 67 */
-	T(space_buildPlanes, 1, 400, 0), T(load_482320, 0, 400, 0), T(space_buildUnits, 1, 200, 0),
+	T(space_buildPlanes, 1, 400, 0), T(load_482320, 0, 400, 0), T(space_buildUnits, 1, 400, 0),
 	/* batch 68 */
 	T(collision_initVolume, 0, 300, 0),
 	/* batch 69 */

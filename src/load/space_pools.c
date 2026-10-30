@@ -458,3 +458,114 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 		}
 	return plane;
 }
+
+/* How the original works out a vertex through the unit's matrix (column-major): each row is three products summed
+   in turn, then the translation, and each product loads one operand and multiplies by the other from memory. The
+   order differs from one place to the next, so each is written out: per row the three products, each as the operand
+   loaded and the one multiplied by (0 .. 15: the matrix element; V0 .. V2: the vertex's x, y, z) */
+#define V0 16
+#define V1 17
+#define V2 18
+typedef const u8 Rows[3][3][2];
+static Rows k_fanFirst  = { { { V2, 8 }, { 4, V1 }, { V0, 0 } }, { { V2, 9 }, { V1, 5 }, { V0, 1 } }, { { V2, 10 }, { V1, 6 }, { 2, V0 } } };
+static Rows k_evenFirst = { { { 4, V1 }, { V0, 0 }, { V2, 8 } }, { { V0, 1 }, { V2, 9 }, { V1, 5 } }, { { 10, V2 }, { 6, V1 }, { 2, V0 } } };
+static Rows k_evenNext  = { { { V0, 0 }, { 4, V1 }, { V2, 8 } }, { { V2, 9 }, { V1, 5 }, { V0, 1 } }, { { V2, 10 }, { V1, 6 }, { V0, 2 } } };
+static Rows k_evenLast  = { { { 4, V1 }, { 0, V0 }, { V2, 8 } }, { { 1, V0 }, { V2, 9 }, { V1, 5 } }, { { 10, V2 }, { 6, V1 }, { 2, V0 } } };
+static Rows k_oddFirst  = { { { 4, V1 }, { V2, 8 }, { 0, V0 } }, { { 1, V0 }, { V2, 9 }, { V1, 5 } }, { { V2, 10 }, { V1, 6 }, { 2, V0 } } };
+static Rows k_oddNext   = { { { 4, V1 }, { V2, 8 }, { 0, V0 } }, { { V2, 9 }, { V1, 5 }, { V0, 1 } }, { { 2, V0 }, { V2, 10 }, { V1, 6 } } };
+static Rows k_oddLast   = { { { 4, V1 }, { 0, V0 }, { V2, 8 } }, { { V0, 1 }, { V2, 9 }, { V1, 5 } }, { { 10, V2 }, { 6, V1 }, { 2, V0 } } };
+static Rows k_listFirst = { { { 4, V1 }, { 0, V0 }, { V2, 8 } }, { { 1, V0 }, { V2, 9 }, { V1, 5 } }, { { 10, V2 }, { 6, V1 }, { 2, V0 } } };
+static Rows k_listNext  = { { { 4, V1 }, { V2, 8 }, { 0, V0 } }, { { 1, V0 }, { V2, 9 }, { V1, 5 } }, { { V2, 10 }, { V1, 6 }, { 2, V0 } } };
+static Rows k_listLast  = { { { V2, 8 }, { 4, V1 }, { 0, V0 } }, { { V0, 1 }, { V2, 9 }, { V1, 5 } }, { { 2, V0 }, { 10, V2 }, { 6, V1 } } };
+
+static void through(float *out, const float *m, const float *v, Rows rows)
+{
+	for (int r = 0; r < 3; r++) {
+		long double sum = 0;
+		for (int t = 0; t < 3; t++) {
+			const float *a = rows[r][t][0] >= V0 ? &v[rows[r][t][0] - V0] : &m[rows[r][t][0]];
+			const float *b = rows[r][t][1] >= V0 ? &v[rows[r][t][1] - V0] : &m[rows[r][t][1]];
+			long double p = fmul_m(fld_m(a), b);
+			sum = t ? sum + p : p;
+		}
+		out[r] = f32(fadd_m(sum, &m[12 + r]));
+	}
+}
+#undef V0
+#undef V1
+#undef V2
+
+/* 0x4823c0 (thiscall on the collision space): a unit for shape (from the pool, its id first) with every part not
+   flagged 0x20 (flag 1: its triangles' id 0x10, else 0) turned into triangles: its primitives (12 bytes: type, index
+   count, indices) as lists (4), strips (5) or fans (6) of its vertices (+0x50) through the matrix (the current GL
+   modelview when none is given), each added with load_482320. Returns the unit */
+u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matrix)
+{
+	float own[16];
+	if (!matrix) {
+		glGetFloatv(0xba6, own);   /* GL_MODELVIEW_MATRIX */
+		matrix = own;
+	}
+	u32 *unit = space_getNextFreeUnitPtr(space);
+	unit[0] = id;
+	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
+		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
+		if (part[0] & 0x20)
+			continue;
+		u32 kind = part[0] & 1 ? 0x10 : 0;
+		const float *verts = FIELD(const float *, part, 0x50);
+		for (int j = 0; j < FIELD(int, part, 0x60); j++) {
+			u8 *prim = FIELD(u8 *, part, 0x64) + j * 0xc;
+			int n = FIELD(int, prim, 4);
+#define IDX(k) FIELD(u32, FIELD(u8 *, prim, 8), (k) * 4)
+#define VERT(k) (FIELD(const float *, part, 0x50) + IDX(k) * 3)
+			float a[3], b[3], c[3];
+			switch (FIELD(int, prim, 0)) {
+			case 6:   /* a fan */
+				for (int k = 2; k < n; k++) {
+					u32 i0 = IDX(0);
+					through(a, matrix, verts + i0 * 3, k_fanFirst);
+					u32 i1 = IDX(k - 1);
+					load_482a40(b, matrix, VERT(k - 1));
+					u32 i2 = IDX(k);
+					load_482a40(c, matrix, VERT(k));
+					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+				}
+				break;
+			case 5:   /* a strip */
+				for (int k = 2; k < n; k++) {
+					u32 i0 = IDX(k - 2), i1, i2;
+					if (k % 2 == 0) {
+						through(a, matrix, VERT(k - 2), k_evenFirst);
+						i1 = IDX(k - 1);
+						through(b, matrix, VERT(k - 1), k_evenNext);
+						i2 = IDX(k);
+						through(c, matrix, VERT(k), k_evenLast);
+					} else {
+						through(a, matrix, VERT(k - 2), k_oddFirst);
+						i2 = IDX(k);
+						through(c, matrix, VERT(k), k_oddLast);
+						i1 = IDX(k - 1);
+						through(b, matrix, VERT(k - 1), k_oddNext);
+					}
+					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+				}
+				break;
+			case 4:   /* a list */
+				for (int k = 0; k < n; k += 3) {
+					u32 i0 = IDX(k);
+					through(a, matrix, VERT(k), k_listFirst);
+					u32 i1 = IDX(k + 1);
+					through(b, matrix, VERT(k + 1), k_listNext);
+					u32 i2 = IDX(k + 2);
+					through(c, matrix, VERT(k + 2), k_listLast);
+					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+				}
+				break;
+			}
+#undef IDX
+#undef VERT
+		}
+	}
+	return unit;
+}
