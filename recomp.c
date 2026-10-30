@@ -3420,11 +3420,8 @@ THISCALL void light_computeLayerLightBy(char *scene, DWORD layer, DWORD cols, DW
    as triangle strips (type 5) of grid indices, into the layer's primitive buffer and index heap (overflow is
    fatal); a water layer (+0x2c == 1) also gets its 4 + 6 surface vertices and texture coordinates around the
    camera; then both terrain objects (+0xdc0cc4, +0xdc0a78) go to vv's queue (ViewVolume_projectObject) */
-static THISCALL DWORD render_processRenderingBy(char *scene, DWORD vv, DWORD h)
-{
-	DWORD v[2] = { vv, h };
-	return run_lifted(lift_497d20, (DWORD)scene, 2, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void render_processRenderingBy(char *scene, DWORD vv, DWORD h);
 /* batch 66 (lifted/grp13.c) */
 #include "lifted/grp13.c"
 /* 0x4728e0 load_4728e0(layer): a terrain layer's whole light map from scratch (light_computeLayerLightBy with
@@ -17579,7 +17576,7 @@ static const STest g_stests[] = {
 	/* batch 64 */
 	T(scene_reset, 0, 400, 0), T(shape_read, 0, 400, 0),
 	/* batch 65 */
-	T(light_computeLayerLightBy, 0, 400, 0), T(render_processRenderingBy, 0, 200, 0),
+	T(light_computeLayerLightBy, 0, 400, 0), T(render_processRenderingBy, 0, 400, 0),
 	/* batch 66 */
 	T(load_4728e0, 0, 400, 0), T(load_481ae0, 1, 400, 0), T(skel_applyPose, 0, 400, 0),
 	/* batch 67 */

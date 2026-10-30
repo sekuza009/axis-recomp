@@ -260,3 +260,113 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		first = 0;
 	}
 }
+
+/* the two indices of column c's edge between rows r and r + 1 added to the open strip (the layer's index heap +0x58,
+   +0x5c used, at most +0x54: past it a fatal message) */
+static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
+{
+	if (GAME_VAR(int, layer + 0x5c) + 2 > GAME_VAR(int, layer + 0x54))
+		sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4d052c, GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
+	idx[(*n)++] = r * w + c;
+	GAME_VAR(int, layer + 0x5c)++;
+	idx[(*n)++] = (r + 1) * w + c;
+	GAME_VAR(int, layer + 0x5c)++;
+}
+
+/* a water vertex: v turned about the vertical by angle, moved to the camera, stored with its texture coordinates (its
+   x and z over the layer's texture size +0x2c) */
+static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
+{
+	Vec3_rotateAxis(v, 2, angle);
+	v[0] = f32(fadd_m(fld_m(&v[0]), (const float *)(scene + 0x20f3970)));
+	v[2] = f32(fadd_m(fld_m(&v[2]), (const float *)(scene + 0x20f3978)));
+	memcpy(GAME_VAR(u8 *, part + 0x50) + at, v, 12);
+	float *t = (float *)(GAME_VAR(u8 *, part + 0x5c) + tex_at);
+	t[0] = f32(fdiv_m(fld_m(&v[0]), (const float *)(layer + 0x2c)));
+	t[1] = f32(fdiv_m(fld_m(&v[2]), (const float *)(layer + 0x2c)));
+}
+
+/* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
+   +0xdc0244, +0xdc0a74 of them: origin +4, rows +0x1c, columns +0x20, cell size +0x24, cell bitmap +0x3c) the cells
+   (bit 0 set) within the view range (+0xa08) of the camera (+0x20f3970 / 78) become triangle strips (type 5, from the
+   layer's primitive heap +0x64, +0x68 of them, at most +0x60: a fatal message) of grid indices, into the part of the
+   first terrain model (+0xdc0a8c, 0x80 bytes a layer: its +0x58, +0x60). A water layer (+0x30 1) gives the second
+   model's part (+0xdc0cd8) its surface around the camera at its height (+8): rings of four and of eight (the second
+   h x 0x4aa500 out) with texture coordinates; otherwise that part has none. Both models then go to the view volume's
+   queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
+void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
+{
+	const float *range = (const float *)(s + 0xa08), *cam = (const float *)(s + 0x20f3970);
+	float min_x = f32(fsub_m(fld_m(&cam[0]), range)), min_z = f32(fsub_m(fld_m(&cam[2]), range));
+	float max_x = f32(fadd_m(fld_m(range), &cam[0])), max_z = f32(fadd_m(fld_m(&cam[2]), range));
+	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
+		u8 *layer = s + 0xdc0244 + i * 0x20c;
+		u8 *part = GAME_VAR(u8 *, s + 0xdc0a8c) + i * 0x80, *water = GAME_VAR(u8 *, s + 0xdc0cd8) + i * 0x80;
+		const float *size = (const float *)(layer + 0x24), *origin = (const float *)(layer + 4);
+		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
+		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
+		int cols = GAME_VAR(int, layer + 0x20), rows = GAME_VAR(int, layer + 0x1c);
+		long double e = fadd_m(fmul_m((long double)cols, size), &origin[0]);
+		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;
+		e = fadd_m(fmul_m((long double)rows, size), &origin[0]);   /* (the x origin: the original's slip) */
+		int r1 = (e > max_z ? rows - ftol(fdiv_m(fsub_m(e, &max_z), size)) : rows) - 1;
+		GAME_VAR(u32, part + 0x58) = GAME_VAR(u32, layer + 0x48);
+		int w = GAME_VAR(int, layer + 0x20) + 1;
+		GAME_VAR(int, layer + 0x5c) = 0;
+		GAME_VAR(int, layer + 0x68) = 0;
+		for (int r = r0; r <= r1; r++) {
+			int open = 0, n = 0, c = c0;
+			u32 *prim = NULL;
+			for (; c <= c1; c++) {
+				if (GAME_VAR(u8 *, layer + 0x3c)[r * GAME_VAR(int, layer + 0x20) + c] & 1) {
+					if (!open) {
+						if (GAME_VAR(int, layer + 0x68) >= GAME_VAR(int, layer + 0x60))
+							sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4d056c, GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
+						prim = (u32 *)(GAME_VAR(u8 *, layer + 0x64) + GAME_VAR(int, layer + 0x68) * 12);
+						GAME_VAR(int, layer + 0x68)++;
+						open = 1;
+						n = 0;
+						prim[0] = 5;
+						prim[1] = 0;
+						prim[2] = (u32)(GAME_VAR(u8 *, layer + 0x58) + GAME_VAR(int, layer + 0x5c) * 4);
+					}
+					strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+				} else if (open) {
+					open = 0;
+					strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+					prim[1] = n;
+				}
+			}
+			if (open) {
+				strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+				prim[1] = n;
+			}
+		}
+		GAME_VAR(int, part + 0x60) = GAME_VAR(int, layer + 0x68);
+		if (GAME_VAR(int, layer + 0x30) != 1) {
+			GAME_VAR(int, water + 0x60) = 0;
+			continue;
+		}
+		GAME_VAR(int, water + 0x60) = 4;
+		for (int ring = 0; ring < 2; ring++)   /* (the original makes the same ring twice) */
+			for (int angle = 0, at = 0, tex_at = 0; angle < 3600; angle += 900, at += 0xc, tex_at += 8) {
+				float v[3];
+				v[0] = f32(-fld_m(range));
+				v[1] = f32(fld_m((const float *)(layer + 8)));
+				v[2] = v[0];
+				water_point(s, layer, water, at, tex_at, v, angle);
+			}
+		u32 out = 0;
+		float r2 = f32(fmul_m(fld_m(&h), (const float *)0x4aa500));
+		memcpy(&out, &r2, 4);
+		for (int k = 0, angle = 0; k < 8; k++, angle += 450) {
+			float v[3];
+			v[1] = f32(fld_m((const float *)(layer + 8)));
+			GAME_VAR(int, &v[0]) = 0;
+			GAME_VAR(u32, &v[2]) = out;
+			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);
+		}
+	}
+	ViewVolume_projectObject(view, s + 0xdc0cc4, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, s + 0xdc0a78, 0, NULL, 0, NULL, 0, -1, 0);
+}
