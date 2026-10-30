@@ -828,3 +828,196 @@ void (lobbyJoin_draw)(void)
 	if (GAME_VAR(int, 0x4dbbf0))
 		arena_405690(g_localPlayer);
 }
+
+/* ---- the arena lobby's list of games: its mouse ---- */
+
+/* the lobby busy: searching, connecting (0x4db858) or refreshing (0x4db8b8) */
+static int lobby_busy(void)
+{
+	return GAME_VAR(int, 0x4dba90) || GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4db8b8);
+}
+
+/* the selected game joined: connected to the server (0x4dbaac) its chat line opened (0x4dbbec), else the join
+   asked of the lobby (0x4dbbf0) */
+static void lobby_join(void)
+{
+	sound_playMenu(0);
+	if (GAME_VAR(int, 0x4dbaac)) {
+		GAME_VAR(int, 0x4dbbec) = 1;
+		GAME_VAR(int, 0x4dbbf0) = 0;
+		FUN_00405200();
+	} else {
+		GAME_VAR(int, 0x4dbbf0) = 1;
+		GAME_VAR(int, 0x4dbbec) = 0;
+	}
+}
+
+/* the lobby left for the arena screen's first page (0x4dba80 1; 0x4df018 set) */
+static void lobby_leave(void)
+{
+	GAME_VAR(int, 0xa0b36c) = 0;
+	sound_playMenu(0);
+	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+	GAME_VAR(int, 0x4df018) = 1;
+}
+
+/* 0x406c30 (named lobby_connect; by use the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
+   while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
+   connection and the mode. A click (arena_4044a0) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
+   the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a
+   refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
+   it, or on the selected row again (0x4db71c) joins it. A busy lobby answers sound 6. Holding the button on the
+   arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
+void (lobby_connect)(void)
+{
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || g_joining || g_full || GAME_VAR(int, 0x90d1c4))
+		return;
+	if (GAME_VAR(int, 0x4ded8c)) {
+		if (GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4dba90))
+			return;
+		GAME_VAR(int, 0xa0b36c) = 0;
+		arena_452fe0();
+		net_disconnect();
+		sound_playMenu(0);
+		GAME_VAR(int, 0x4dbb3c) = mode = 0;
+	}
+	if (g_mouseClick && mode == 2) {
+		g_cursorBlink = 0.0f;
+		int on = arena_4044a0(g_mouseX, g_mouseY);
+		switch (on) {
+		case 0:
+		case 1:
+			if (lobby_busy()) {
+				sound_playMenu(6);
+				return;
+			}
+			if (g_full)
+				return;
+			sound_playMenu(0);
+			if (on == 0) {
+				if (GAME_VAR(int, 0x4db854)) {
+					GAME_VAR(int, 0x4db718) = 0;
+					net_disconnect();
+				}
+				if (GAME_VAR(int, 0x4dba84))
+					arena_452fe0();
+				GAME_VAR(int, 0xa0b368) = 0;
+				arena_452ec0(1, NULL);
+				GAME_VAR(int, 0x680bb8) = 0;
+				GAME_VAR(int, 0x4dba90) = 1;
+				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
+				g_gameCount = 0;
+				GAME_VAR(int, 0x4dbaac) = 0;
+				GAME_VAR(int, 0x4dba84) = 1;
+				GAME_VAR(int, 0x4db854) = 0;
+			} else {
+				GAME_VAR(int, 0x4db718) = 0;
+				net_disconnect();
+				arena_452fe0();
+				GAME_VAR(int, 0xa0b368) = 0;
+				if (lobby_openConnection() == 1) {
+					GAME_VAR(int, 0x4dbaac) = 1;
+					GAME_VAR(int, 0x4db858) = 1;
+					GAME_VAR(int, 0x4db854) = 1;
+					GAME_VAR(int, 0x4dba84) = 0;
+					GAME_VAR(int, 0x4db718) = 1;
+				}
+			}
+			break;
+		case 2:
+			if (g_full)
+				return;
+			sound_playMenu(0);
+			lobby_editTextField_405230();
+			break;
+		case 3:
+			if (lobby_busy()) {
+				sound_playMenu(6);
+				return;
+			}
+			if (g_full)
+				return;
+			if (g_gameCount <= 0) {
+				sound_playMenu(6);
+				return;
+			}
+			lobby_join();
+			break;
+		case 4:
+			if (g_full)
+				return;
+			lobby_leave();
+			GAME_VAR(int, 0x76d484) = -1;
+			GAME_VAR(int, 0x4db718) = 0;
+			arena_452fe0();
+			net_disconnect();
+			if (GAME_VAR(int, 0x4db8b8) == 1) {
+				GAME_VAR(int, 0x4db8b8) = 0;
+				GAME_VAR(int, 0x4db858) = 0;
+				GAME_VAR(int, 0x4df018) = 0;
+			}
+			GAME_VAR(int, 0xa0d7a0) = 1;
+			break;
+		case 5:
+			if (lobby_busy()) {
+				sound_playMenu(6);
+				return;
+			}
+			if (g_full)
+				return;
+			lobby_leave();
+			arena_452fe0();
+			net_disconnect();
+			GAME_VAR(int, 0x4dbb3c) = 0;
+			GAME_VAR(int, 0xa0d7a0) = 1;
+			break;
+		case 15:
+			if (g_full)
+				return;
+			games_up();
+			break;
+		case 16:
+			if (g_full)
+				return;
+			if (!games_down())
+				return;
+			break;
+		default:
+			if (on < 6 || on > 14)
+				break;
+			if (g_full)
+				return;
+			int row = on - 6;
+			if (g_listTop + row >= g_gameCount)
+				return;
+			if (row == GAME_VAR(int, 0x4df818) && GAME_VAR(int, 0x4db71c)) {
+				if (g_gameCount <= 0)
+					return;
+				if (lobby_busy()) {
+					sound_playMenu(6);
+					return;
+				}
+				lobby_join();
+				GAME_VAR(int, 0x4db71c) = 0;
+			} else {
+				sound_playMenu(0);
+				GAME_VAR(int, 0x4db71c) = 1;
+				GAME_VAR(int, 0x4df818) = row;
+				g_localPlayer = g_listTop + row;
+			}
+			GAME_VAR(int, 0x4dbaf8) = 0;
+			break;
+		}
+	}
+	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2 || g_full)
+		return;
+	int on = arena_4044a0(g_mouseX, g_mouseY);
+	if ((on != 15 && on != 16) || !(g_cursorBlink >= *(const float *)0x4a93d0))
+		return;
+	if (on == 15 || games_down()) {
+		if (on == 15)
+			games_up();
+		g_cursorBlink = 0.0f;
+	}
+}

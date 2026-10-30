@@ -5404,7 +5404,8 @@ DWORD arena_406200(int i);
 void lobby_roomNameCheck(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_checkReservedName(void);
-LIFT_PLAIN(lobby_connect, 406c30)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobby_connect(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobbyJoin_keysChat(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -7190,6 +7191,10 @@ static void callee_unpatch(void) { callee_patch(0); }
    change one stub's answer) */
 static void callee_stubs(const DWORD *list, DWORD ret)
 {
+	/* a setup that stubs again (after a shared setup stubbed) replaces the list: the old stubs are taken out first,
+	   else their jumps stayed in the game (console_init's setup once left cd_findDrive answering "no CD", the
+	   hook check took that for the patch DLL's change, and the game ended at the start of a match) */
+	if (g_postRun == callee_unpatch) callee_patch(0);
 	g_nstubs = 0;
 	for (; *list && g_nstubs < MAXSTUBS; list += 2) {
 		g_stubAddr[g_nstubs] = list[0]; g_stubArgs[g_nstubs] = (int)list[1];
@@ -13167,8 +13172,9 @@ static void consoleinit_setup(void)
 	/* a failed open in the profile checks would exit: files fail only when they are skipped, or after them */
 	g_vfsFailMask = irnd(0, 2) ? 0 : 1u << irnd(G32(0x76d410) ? 0 : 5, 8);
 	g_paintStacks = 1;
-	static const DWORD pilots[] = { 0x42b590, 0, 0 };   /* data_loadPilotProfiles (its own test): with random files it ends the game */
-	callee_stubs(pilots, 0);
+	/* session_setup's stubs and data_loadPilotProfiles (its own test: with random files it ends the game) */
+	static const DWORD stubs[] = { 0x401000, 0, 0x470ad0, 0, 0x42b590, 0, 0 };
+	callee_stubs(stubs, irnd(0, 4) ? 1 : 0);
 }
 ST(console_init, consoleinit_setup();, (CD(void, 0x41fd40, void)(), 0), (console_init(), 0))
 /* batch 115 */
@@ -15681,7 +15687,27 @@ ST(lobby_checkReservedName, gen_setup(g_gs_4057a0, g_gi_4057a0, g_gb_4057a0); re
 static const DWORD g_gs_406c30[] = { 0x4044a0, 2, 0x405200, 0, 0x405230, 0, 0x4060f0, 0, 0x41e760, 1, 0x451e60, 0, 0x452ec0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_406c30[] = { 0x4dda44, 0x4db714, 0x4db718, 0x4db71c, 0x4db854, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4dba80, 0x4dba84, 0x4dba90, 0x4dbaac, 0x4dbaf8, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df018, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x76d484, 0x90d1c4, 0xa0b368, 0xa0b36c, 0xa0d7a0, 0 };
 static const DWORD g_gb_406c30[] = { 0 };
-T_PLAIN(lobby_connect, 0x406c30, gen_setup(g_gs_406c30, g_gi_406c30, g_gb_406c30);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* lobby_connect (by use the lobby's click handler): the screen's state 0x4dbb3c (0 .. 3), the busy flags mostly
+   clear, the hit test (0x4044a0, stubbed) any button or none, the game list's offset / cursor / count around
+   their limits, the held-button timer (0x4dda44) on either side of 5 */
+static void lobbyconnect_setup(void)
+{
+	static const DWORD stubs[] = { 0x41e760, 1, 0x452fe0, 0, 0x451e60, 0, 0x405200, 0, 0x4060f0, 0, 0x405230, 0, 0x4044a0, 2, 0x452ec0, 2, 0 };
+	callee_stubs(stubs, 0);
+	callee_ret(0x4044a0, irnd(-1, 0x11));
+	callee_ret(0x4060f0, irnd(0, 1));
+	G32(0x4dbb3c) = irnd(0, 3);
+	static const DWORD flags[] = { 0x4db8bc, 0x4db714, 0x90d1c4, 0x4db858, 0x4dba90, 0x4db8b8, 0x4db854, 0x4dba84, 0x4dbaac, 0x4db71c };
+	for (int k = 0; k < 10; k++) G32(flags[k]) = irnd(0, 4) ? 0 : 1;
+	G32(0x4ded8c) = irnd(0, 1); G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
+	G32(0x4ded68) = irnd(0, 800); G32(0x4ded6c) = irnd(0, 600);
+	G32(0x680bb0) = irnd(0, 3) ? irnd(0, 12) : irnd(-2, 40); G32(0x4df818) = irnd(0, 3) ? irnd(0, 9) : irnd(-2, 12);
+	G32(0x67ef30) = irnd(0, 3) ? irnd(0, 24) : irnd(-2, 40);
+	static const float held[] = { 0, 4.9f, 5, 5.1f, 30 }; GF(0x4dda44) = held[irnd(0, 4)];
+	fill((void *)0x4dbbec, 8); fill((void *)0x76d41c, 4); fill((void *)0x4df018, 4); fill((void *)0xa0d7a0, 4);
+}
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(lobby_connect, lobbyconnect_setup();, (CALL_PLAIN(0x406c30, 0, 0, 0, 0, 0), 0), (lobby_connect(), 0))
 static const DWORD g_gs_4079c0[] = { 0x401590, 1, 0x401600, 1, 0x405200, 0, 0x405230, 0, 0x4060f0, 0, 0x41e760, 1, 0x451e60, 0, 0x452ec0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_4079c0[] = { 0x4dda44, 0x4db714, 0x4db718, 0x4db854, 0x4db858, 0x4db8b4, 0x4db8b8, 0x4db8bc, 0x4dba80, 0x4dba84, 0x4dba90, 0x4dbaac, 0x4dbb10, 0x4dbb3c, 0x4dbb78, 0x4dbbec, 0x4dbbf0, 0x4ded18, 0x4df018, 0x4df818, 0x4e0cdc, 0x4e14f4, 0x4e14f8, 0x4e1514, 0x4e1524, 0x4e1528, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d330, 0x76d41c, 0x76d484, 0x76d48c, 0x90d1c4, 0x9dae70, 0x9db0a0, 0xa0b368, 0xa0b36c, 0xa0d7a0, 0 };
 static const DWORD g_gb_4079c0[] = { 0 };
@@ -17931,6 +17957,12 @@ static void hook(DWORD addr, void *fn, const char *name)
 		   the rebuilds carry that fix (src/menu/menu_2d.c), so they take over from the patch DLL's jump */
 		int folded = (addr == 0x41ef60 || addr == 0x427970) && wide_menuFix() && p[0] == 0xE9;
 		int pm = folded ? 0 : patched_in_memory(addr);
+		if (pm > 0 && p[0] == 0xE9) {   /* a jump into recomp.dll itself: a test's stub left in place, a harness bug */
+			HMODULE self = NULL; DWORD to = (DWORD)p + 5 + *(DWORD *)(p + 1);
+			if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)to, &self) &&
+			    self == GetModuleHandleA("recomp.dll"))
+				say("  HARNESS BUG: %08lx %s still jumps to a test stub (%08lx); a setup replaced callee_stubs without taking them out\n", addr, name, to);
+		}
 		if (pm) {
 			say("  KEPT ORIGINAL %08lx %s (%s)\n", addr, name, pm > 0 ? "changed in memory by the patch DLL" : "could not compare with the exe file");
 			return;

@@ -984,6 +984,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_404460(x, y) GAME_CDECL(0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
 #define arena_452ec0(kind, host) GAME_CDECL(0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_CDECL(0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
+#define arena_4044a0(x, y) GAME_CDECL(0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
 #define FUN_00405200() GAME_CDECL(0x405200, void, void)()   /* the arena screen's chat line opened */
 #define lobby_editTextField_405230() GAME_CDECL(0x405230, void, void)()   /* the arena title's edit field opened */
 #define FUN_0041ee40(i) GAME_CDECL(0x41ee40, void, int)(i)   /* message i in the message box */

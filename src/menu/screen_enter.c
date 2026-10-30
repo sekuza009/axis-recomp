@@ -397,14 +397,15 @@ void (console_init)(void)
 	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
 	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, GAME_VAR(int, 0x83a9c4), 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
-	Scene *scene = GAME_VAR(Scene *, 0x9087b4);
+#define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (GAME_VAR(int, 0x9db990)) {
 		GAME_VAR(int, 0x5ae9c4) = 0;
 		app_requireCd(scene, 0, 3);
 		return;
 	}
-	int kind = GAME_VAR(int, 0x5ae9c4);
-	if (!console_loadFile(GAME_VAR(int, 0x9dad94))) {
+	int loaded = console_loadFile(GAME_VAR(int, 0x9dad94));
+	int kind = GAME_VAR(int, 0x5ae9c4);   /* (after the load, as the original reads it) */
+	if (!loaded) {
 		if (kind == 1)
 			GAME_VAR(int, 0x76d3e8) = 400;
 		else if (kind == 2)
@@ -432,5 +433,6 @@ void (console_init)(void)
 		app_requireCd(scene, 0, 0);
 		break;
 	}
-	FUN_00461ec0(GAME_VAR(Scene *, 0x9087b4), (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	FUN_00461ec0(scene, (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+#undef scene
 }
