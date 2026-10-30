@@ -3310,7 +3310,8 @@ DWORD room_43e610(void);
 DWORD gfx_initGLState(int width, int height);
 /* 0x456520 (thiscall) tex_upload(name, mode): upload the texture object's RGBA image (with mipmaps if wanted);
    0x473610 (thiscall) tex_upload2: copy each changed player colour block into the shared texture and upload it */
-static THISCALL DWORD tex_upload(char *tex, DWORD name, DWORD mode) { DWORD v[2] = { name, mode }; return run_lifted(lift_456520, (DWORD)tex, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_upload(char *tex, DWORD name, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_upload2(char *scene);
 /* batch 60 (lifted/grp8.c) */
@@ -3385,11 +3386,8 @@ static THISCALL DWORD tex_initBy(char *tm, DWORD dir, DWORD slots, DWORD fmt, DW
 }
 /* 0x466a60 (thiscall) shape_initBy(dir, n, a, extra, mem, memSize): free owned data memory, keep the directory,
    data memory for n shapes (0x98 bytes each) plus extra, from mem or allocated; clear the shape headers */
-static THISCALL DWORD shape_initBy(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size)
-{
-	DWORD v[6] = { dir, n, a, extra, mem, size };
-	return run_lifted(lift_466a60, (DWORD)self, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void shape_initBy(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size);
 /* 0x46aeb0 (thiscall) skel_loadFrom_46aeb0(dir, n, a, extra, mem, memSize): the same for n skeletons (0x70 bytes each) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size);
@@ -3797,11 +3795,8 @@ SET_TYPE(actor_setActorTypeBoosterInfoBy, 473f50)
    other slots; otherwise a negative item empties the slot. The item's name goes to the player (+0x18c + slot * 0x40,
    empty for none), an item past the count (+0x1561b64) is fatal, the index is stored (+0x320 + slot * 4) and every
    actor of the player reloads that slot (actor_updatePart with its variant +0x49c) */
-static THISCALL DWORD actor_setActorTypeItemInfoBy(char *sc, DWORD p, DWORD slot, DWORD item)
-{
-	DWORD v[3] = { p, slot, item };
-	return run_lifted(lift_474060, (DWORD)sc, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_setActorTypeItemInfoBy(char *sc, DWORD p, DWORD slot, DWORD item);
 /* batch 91 (lifted/grp37.c) */
 #include "lifted/grp37.c"
 /* (thiscall on the scene; engine at +0x1f36c8) armc_set{Head,Chest,Arm,Leg,Booster}Index(i): the arm-customise
@@ -4541,7 +4536,8 @@ void armc_drawStatsPanel(void);
    slot means the actor's current one, +0x1eccbb0), mark whether it is the local player (+0x1eccf0c against
    +0x2221fa0), rebuild the actor's lists (armc_45ddc0 on the scene +0x1f36c8), put the kept fields back, and for
    slots above 3 first re-apply the stored slot +0x1eccbb4, then the slot (FUN_0045e810, actor_updatePart) */
-static THISCALL DWORD armc_461540(char *game, DWORD slot) { DWORD v[1] = { slot }; return run_lifted(lift_461540, (DWORD)game, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void armc_461540(char *game, DWORD slot);
 /* batch 146 (lifted/grp92.c): the armour screen's part lists */
 #include "lifted/grp92.c"
 /* 0x40da40 armc_buildPartLists(): the unlocked part lists up to a level (0x4dc784, also 0x4dc870): in network mode
@@ -17614,7 +17610,7 @@ static const STest g_stests[] = {
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
 	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
-	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 400, 0),
+	T(tex_upload, 0, 400, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */
 	T(match_49d150, 0, 400, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 400, 0),
 	T(catalogue_loadComponents, 1, 40, 0),
@@ -17622,7 +17618,7 @@ static const STest g_stests[] = {
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
-	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 40, 0),
+	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 40, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 400, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 400, 0),

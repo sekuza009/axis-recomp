@@ -732,3 +732,28 @@ void THISCALL (match_474210)(Stage *stage, int p, const char *name, int v, int t
 		actor_setActorTypeItemInfoBy(stage, p, k, items[k]);
 	player_markUsed(stage, p);
 }
+
+/* 0x474060 (thiscall on the stage): player p's item in slot set (its part type record at +0x1561b68, 0x47fd2 bytes
+   each: the item at +0x320 + slot x 4, its name at +0x18c + slot x 0x40). Game types 2 .. 11 (+0x20f3ab8) fix the
+   first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
+   the item given (negative: empty). An item past the catalogue (+0x1561b64) is a fatal message. Each of the player's
+   actors then has the slot updated (actor_updatePart, with its +0x49c). The callers ignore the eax it leaves */
+void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
+{
+	u8 *scene = (u8 *)stage;
+	u8 *type = scene + 0x1561b68 + p * 0x47fd2;
+	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
+	unsigned mode = GAME_VAR(int, scene + 0x20f3ab8) - 2;
+	if (mode <= 9)
+		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
+	if (item >= 0)
+		strcpy((char *)type + 0x18c + slot * 0x40, (const char *)scene + 0x14d1ab4 + item * 0x2e18);
+	else
+		type[0x18c + slot * 0x40] = 0;
+	if (item >= GAME_VAR(int, scene + 0x1561b64))
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c76f0, item);
+	GAME_VAR(int, type + 0x320 + slot * 4) = item;
+	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
+		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
+			actor_updatePart(scene, i, slot, GAME_VAR(u32, scene + 0x1cd9844 + i * 0x8888));
+}

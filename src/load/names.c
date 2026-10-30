@@ -180,3 +180,22 @@ void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
 }
+
+/* 0x456520 (thiscall on a texture manager): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped
+   (mode 1: repeat, else clamp), filtered linearly or not (+0xc0124 1), with mipmaps (+0xc0120 1: built by
+   gluBuild2DMipmaps after the first level) or without. Its callers ignore the eax it leaves */
+void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
+{
+	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
+	glBindTexture(0xde1, id);
+	u32 wrap = mode == 1 ? 0x46240400 : 0x46240000;   /* GL_REPEAT : GL_CLAMP */
+	glTexParameterf_bits(0xde1, 0x2802, wrap);
+	glTexParameterf_bits(0xde1, 0x2803, wrap);
+	int linear = GAME_VAR(int, tm + 0xc0124) == 1;
+	int mipmaps = GAME_VAR(int, tm + 0xc0120) == 1;
+	glTexParameterf_bits(0xde1, 0x2800, linear ? 0x46180400 : 0x46180000);   /* mag: GL_LINEAR : GL_NEAREST */
+	glTexParameterf_bits(0xde1, 0x2801, mipmaps ? (linear ? 0x461c0c00 : 0x461c0000) : (linear ? 0x46180400 : 0x46180000));
+	glTexImage2D(0xde1, 0, 4, GAME_VAR(int, tm + 0xc0118), GAME_VAR(int, tm + 0xc011c), 0, 0x1908, 0x1401, tm + 0x114);
+	if (mipmaps)
+		gluBuild2DMipmaps(0xde1, 4, GAME_VAR(int, tm + 0xc0118), GAME_VAR(int, tm + 0xc011c), 0x1908, 0x1401, tm + 0x114);
+}

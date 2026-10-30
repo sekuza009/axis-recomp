@@ -101,3 +101,34 @@ void THISCALL (armc_461250)(Scene *scene, const char *name, int v, int team, int
 	if (scene->localPlayer >= 0)
 		player_markUsed(STAGE(scene), scene->localPlayer);
 }
+
+/* 0x461540 (thiscall on the game): the shown actor (+0x234240d; none when negative) given a weapon slot (none given,
+   negative: its current one, +0x1eccbb0) through the stage's refresh (armc_45ddc0), its position and two angles kept
+   across that; its +0x1eccf0c set unless it is the stage's own (+0x2221fa0). A slot over 3 first selects and updates
+   its +0x1eccbb4 one. Its callers ignore the eax it leaves */
+void THISCALL (armc_461540)(u8 *game, int slot)
+{
+#define I GAME_VAR(int, game + 0x234240d)
+#define ACTOR(type, offset) GAME_VAR(type, game + I * 0x8888 + (offset))
+	if (I < 0)
+		return;
+	u32 at[3] = { ACTOR(u32, 0x1eccbf0), ACTOR(u32, 0x1eccbf4), ACTOR(u32, 0x1eccbf8) };
+	u32 angle0 = ACTOR(u32, 0x1eccbfc), angle1 = ACTOR(u32, 0x1eccc00);   /* (copied as dwords, put back through the FPU) */
+	int other = ACTOR(int, 0x1eccbb4);
+	int chosen = slot >= 0 ? slot : ACTOR(int, 0x1eccbb0);
+	ACTOR(int, 0x1eccf0c) = I != GAME_VAR(int, game + 0x2221fa0);
+	Stage *stage = (Stage *)(game + 0x1f36c8);
+	armc_45ddc0(stage);
+	for (int k = 0; k < 3; k++)
+		ACTOR(u32, 0x1eccbf0 + k * 4) = at[k];
+	ACTOR(float, 0x1eccbfc) = f32(fld_m((const float *)&angle0));
+	ACTOR(float, 0x1eccc00) = f32(fld_m((const float *)&angle1));
+	if (slot > 3) {
+		FUN_0045e810(stage, I, other);
+		actor_updatePart(stage, I, other, ACTOR(u32, 0x1eccf0c));
+	}
+	FUN_0045e810(stage, I, chosen);
+	actor_updatePart(stage, I, chosen, ACTOR(u32, 0x1eccf0c));
+#undef I
+#undef ACTOR
+}
