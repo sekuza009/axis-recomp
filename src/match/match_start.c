@@ -269,3 +269,157 @@ void THISCALL (scene_reset)(u8 *s)
 	load_471010(s);
 	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
 }
+
+#define K(address) ((const float *)(address))
+
+/* a part type's (or the stage's) shape set and skeleton set sized into their blocks */
+static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
+                       int sextra, u8 *smem, int ssize)
+{
+	shape_initBy(shapes, dir, n, 2, extra, shapes + 0x24c, size);
+	skel_loadFrom_46aeb0(skels, skel_dir, sn, 2, sextra, smem, ssize);
+}
+
+/* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to load_470de0): the collision space (in its
+   block +0xb04), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
+   the default light (grey, from (-1, -1, -1)). The sky box (+0x9ee080: six faces of 7 x 7 points, a cube of side
+   1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
+   six 4-point rings top and bottom (+0x9ef0cc), an 11 x 11 ground grid (+0x9ef350); the world box (+-100000), the
+   layer lists cleared; the shape and skeleton sets of the stage, of each of the 16 part types (five parts each) and
+   of the map; the effects and three textures (0x4c73f4 ..), an identity and a 1.1 scale matrix, the emblem atlas
+   (a texture, filled with 0xa1f220); the game type 0, the actors and the scene reset; built (+4 1). Its caller
+   ignores the eax it leaves */
+void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4, const char *skel_dir, u32 a6, u32 a7, u32 a8,
+                                  u32 a9)
+{
+	load_470de0(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
+	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
+	char name[0x100];
+	for (int i = 0; i < 10; i++) {
+		sprintf(name, (const char *)0x4c7410, sky, i);
+		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, i > 7, 0, 0, 0, 0, 0, 0);
+	}
+	this_set_483d60(s + 0x9ccffc);
+	load_483e90(s + 0x9ccffc, (const void *)0xa1f23c);
+	load_4723e0(s);
+	this_set_483d60(s + 0x9e3020);
+	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
+	load_483e90(s + 0x9e3020, grey);
+	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
+	load_483ec0(s + 0x9e3020, (const void *)0xa1f23c, down);
+	long double root = 1;
+	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(*(const double *)0x4aa408));
+	memset(s + 0x9ee030, 0, 14 * 4);
+	long double inv = fld_m(K(0x4a9424)) / root;
+	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));
+	for (int face = 0; face < 6; face++) {
+		FIELD(int, s, 0x9ee068 + face * 4) = -1;
+		float *dst = (float *)(s + 0x9ee080 + face * 49 * 12);
+		for (int row = 3; row >= -3; row--) {
+			float fr = f32(row);
+			for (int c = 0; c <= 6; c++, dst += 3) {
+				float v[3];
+				v[0] = out;
+				float fc = f32(c - 3);
+				v[1] = f32(fld_m(&r) * fld_m(&fr));
+				v[2] = f32(fmul_m(fld_m(&r), &fc));
+				if (face == 0)
+					Vec3_rotateAxis(v, 0, 900);
+				else if (face <= 4)
+					Vec3_rotateAxis(v, 2, 900 - face * 900);
+				else
+					Vec3_rotateAxis(v, 0, -900);
+				memcpy(dst, v, 12);
+			}
+		}
+	}
+	FIELD(int, s, 0x9eee48) = 0;
+	FIELD(int, s, 0x9eee4c) = FIELD(int, s, 0x9eee50) = -1;
+	float *dome = (float *)(s + 0x9eee54);
+	for (int i = 0; i <= 6; i++) {
+		int ai = ftol(fmul_m(fsub_m((long double)i, K(0x4a9534)), K(0x4a93f0)));
+		for (int j = 0; j <= 6; j++, dome += 3) {
+			u32 v[3] = { 0, 0x3f800000, 0 };
+			Vec3_rotateAxis((float *)v, 1, ai);
+			Vec3_rotateAxis((float *)v, 0, ftol(fmul_m(fsub_m((long double)j, K(0x4a9534)), K(0x4a93f0))));
+			((float *)v)[1] = f32(fsub_m(fld_m((float *)&v[1]), K(0x4a942c)));
+			memcpy(dome, v, 12);
+		}
+	}
+	memset(s + 0x9ef0a0, 0, 5 * 4);
+	for (int o = 0, angle = 0; angle < 3600; o++, angle += 600) {
+		FIELD(int, s, 0x9ef0b4 + o * 4) = -1;
+		for (int k = 0; k < 4; k++) {
+			u32 v[3] = { 0, 0x3f800000, 0x3f800000 };
+			Vec3_rotateAxis((float *)v, 2, angle + k * 200);
+			memcpy(s + 0x9ef0cc + o * 0x60 + k * 0xc, v, 12);
+			float *low = (float *)(s + 0x9ef0fc + o * 0x60 + k * 0xc);
+			low[0] = f32(fld_m((float *)&v[0]));
+			FIELD(int, low, 4) = 0;
+			low[2] = f32(fld_m((float *)&v[2]));
+		}
+	}
+	FIELD(int, s, 0x9ef30c) = 0;
+	memset(s + 0x9ef310, 0xff, 16 * 4);
+	float *grid = (float *)(s + 0x9ef350);
+	for (int i = 0; i <= 10; i++) {
+		float x = f32(fmul_m(fsub_m((long double)i, K(0x4a93d0)), K(0x4aa400)));
+		for (int j = 0; j <= 10; j++, grid += 3) {
+			grid[0] = f32(fmul_m(fsub_m((long double)j, K(0x4a93d0)), K(0x4aa400)));
+			FIELD(int, grid, 4) = 0;
+			grid[2] = x;
+		}
+	}
+	FIELD(int, s, 0x9ef8fc) = FIELD(int, s, 0x9ef900) = 0;
+	for (int c = 0; c < 3; c++) {
+		FIELD(u32, s, 0x9ef904 + c * 4) = 0xc7c35000;   /* -100000 */
+		FIELD(u32, s, 0x9ef910 + c * 4) = 0x47c35000;   /* 100000 */
+	}
+	memcpy(s + 0x9ef91c, s + 0x9ef904, 12);
+	FIELD(u32, s, 0x9ef934) = 0x3f800000;
+	FIELD(int, s, 0xdc0240) = 0;
+	memcpy(s + 0x9ef928, s + 0x9ef910, 12);
+	FIELD(int, s, 0xdc0a74) = 0;
+	FIELD(u8 *, s, 0xdc0a8c) = s + 0xdc0ac4;
+	FIELD(u8 *, s, 0xdc0cd8) = s + 0xdc0d10;
+	const char *dir = (const char *)s + 0x308;
+	shape_initBy(s + 0xe3c93c, dir, 0x190, 2, 0xe54c0, s + 0xe3cb88, 1000000);
+	FIELD(int, s, 0x13016c8) = 0;
+	skel_loadFrom_46aeb0(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
+	static const u32 zero[10] = { 0x131ae40, 0x13c9b24, 0x13c9b28, 0x13c9b2c, 0x13eb000, 0x140c8bc, 0x1447ec0, 0x148646c,
+	                              0x14d1ab0, 0x19e1888 };
+	for (int k = 0; k < 10; k++)
+		FIELD(int, s, zero[k]) = 0;
+	static const struct { u32 shapes; int n, extra, size; u32 skels; int sextra; u32 smem; int ssize; } parts[5] = {
+		{ 0, 8, 0x7840, 0x7d00, 0x431fc, 0x6f0, 0x4332c, 0x7d0 }, { 0x7f4c, 8, 0x7840, 0x7d00, 0x43afc, 0x6f0, 0x43c2c, 0x7d0 },
+		{ 0xfe98, 0x10, 0xf080, 0xfa00, 0x443fc, 0xec0, 0x4452c, 0xfa0 }, { 0x1fae4, 0x10, 0xf080, 0xfa00, 0x454cc, 0xec0, 0x455fc, 0xfa0 },
+		{ 0x2f730, 0x14, 0x12ca0, 0x13880, 0x4659c, 0xec0, 0x466cc, 0xfa0 } };
+	for (int t = 0; t < 16; t++) {
+		u8 *type = s + 0x1561ea0 + t * 0x47fd2;
+		for (int k = 0; k < 5; k++)
+			model_sets(type + parts[k].shapes, dir, parts[k].n, parts[k].extra, parts[k].size, type + parts[k].skels, skel_dir, 2,
+			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
+	}
+	shape_initBy(s + 0x19e188c, dir, 0x258, 2, 0x2c6280, s + 0x19e1ad8, 0x2dc6c0);
+	skel_loadFrom_46aeb0(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
+	nullsub_48b420((Scene *)s);
+	effect_initTextures(s);
+	static const u32 names[3] = { 0x4c73f4, 0x4c73d8, 0x4c73bc };
+	for (int k = 0; k < 3; k++) {
+		sprintf(name, (const char *)names[k]);
+		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+	}
+	for (int k = 0; k < 16; k++) {
+		FIELD(u32, s, 0x20f2f48 + k * 4) = k % 5 == 0 ? 0x3f800000 : 0;
+		FIELD(u32, s, 0x20f2f88 + k * 4) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
+	}
+	IMPORT(0x4a925c, void, int, void *)(1, s + 0x20fcfe0);   /* glGenTextures */
+	for (int k = 0; k < 0x2000; k++)
+		FIELD(u32, s, 0x20fcfe4 + k * 4) = GAME_VAR(u32, 0xa1f220);
+	FIELD(int, s, 0x20f3ab4) = 0;
+	game_setGameTypeFlags((Stage *)s, 0);
+	scene_resetActors(s);
+	scene_reset(s);
+	FIELD(int, s, 4) = 1;
+}
+#undef K

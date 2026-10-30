@@ -4069,11 +4069,8 @@ void console_init(void);
    effect shapes (effect_initTextures) and the item textures (damage map, booster, shield: +0x20f2f3c..); two
    item matrices; a GL texture name +0x20fcfe0 and a 128 x 64 image of 0xa1f220; the game type flags for type 0;
    actors and scene reset; +4 = 1 */
-static THISCALL DWORD item_initTextures(char *sc, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f, DWORD g, DWORD h, DWORD i)
-{
-	DWORD v[9] = { a, b, c, d, e, f, g, h, i };
-	return run_lifted(lift_4700a0, (DWORD)sc, 9, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void item_initTextures(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
 /* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawBox16, gfx_setProjection2D3D and menu_drawRect
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
 #include "lifted/grp62.c"

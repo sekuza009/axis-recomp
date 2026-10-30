@@ -244,6 +244,16 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define load_482320(space, id, unit, part, i0, i1, i2, v0, v1, v2) GAME_THISCALL(0x482320, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, id, unit, part, i0, i1, i2, v0, v1, v2)
 #define load_482a40(out, m, v) GAME_CDECL(0x482a40, void, float *, const float *, const float *)(out, m, v)   /* a point through a matrix */
 #define space_traceUnit_4809f0(node, p0, p1, hit, dist, subs, nsubs) GAME_THISCALL(0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
+#define Vec3_rotateAxis(v, axis, angle) GAME_THISCALL(0x4677c0, void, float *, int, int)(v, axis, angle)   /* about axis 0 / 1 / 2 by tenths of a degree */
+#define load_483e90(self, colour) GAME_THISCALL(0x483e90, void, void *, const void *)(self, colour)
+#define load_483ec0(self, colour, dir) GAME_THISCALL(0x483ec0, void, void *, const void *, const void *)(self, colour, dir)
+#define space_initBy(space, planes, nodes, units, blocks, cells, mem, size) GAME_THISCALL(0x4813e0, void, void *, int, int, int, int, int, void *, int)(space, planes, nodes, units, blocks, cells, mem, size)
+#define shape_initBy(self, dir, n, a, extra, mem, size) GAME_THISCALL(0x466a60, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
+#define skel_loadFrom_46aeb0(self, dir, n, a, extra, mem, size) GAME_THISCALL(0x46aeb0, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
+#define scene_resetActors(scene) GAME_THISCALL(0x470a70, void, void *)(scene)
+#define scene_reset(scene) GAME_THISCALL(0x470ad0, void, void *)(scene)
+#define effect_initTextures(scene) GAME_THISCALL(0x48ec20, void, void *)(scene)
+#define load_470de0(s, a1, a2, a3, a4, a5, a6, a7, a8, a9) GAME_THISCALL(0x470de0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
