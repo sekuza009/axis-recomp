@@ -202,3 +202,78 @@ int THISCALL (load_47fce0)(const float *T, const float *P, const float *S, float
 	}
 	return 0;
 }
+
+/* the world box's clamp of one coordinate of the moved position (a NaN goes to the low side, as fcom has it): 1 when
+   it was moved */
+static int clamp_to(float *v, const float *low, const float *high)
+{
+	if (!(*v >= *low)) {
+		*(u32 *)v = *(const u32 *)low;
+		return 1;
+	}
+	if (*v > *high) {
+		*(u32 *)v = *(const u32 *)high;
+		return 1;
+	}
+	return 0;
+}
+
+/* 0x471400 (thiscall on the stage): an actor's move (radius r from pos along vel) for this frame. outPos is pos + vel
+   kept inside the world box (+0x9ef91c low, +0x9ef928 high); when it had to be, the move is cut to match. The map
+   objects (+0x13c9b24 of them, 0x2cc bytes from +0x131ae48: active, solid +0x28c, triangles +0x288's +8, a box
+   +0x278, the world-to-model matrix +0x130) with pos inside their box widened by r + the move's length become the
+   sub-models (+0x9ca0f4: triangles and the two matrices +0x1f0 / +0x230), and space_testSphere runs on the stage's
+   grid (+0xa10) with them. Returns what it finds */
+int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
+                                   u32 outVel, u32 outDist, u32 outPlane, u32 axis)
+{
+	float to[3], d[3];
+	to[0] = f32(fadd_m(fld_m(&pos[0]), &vel[0]));
+	to[1] = f32(fadd_m(fld_m(&vel[1]), &pos[1]));
+	to[2] = f32(fadd_m(fld_m(&vel[2]), &pos[2]));
+	memcpy(outPos, to, sizeof to);
+	const float *low = (const float *)(stage + 0x9ef91c), *high = (const float *)(stage + 0x9ef928);
+	int clamped = clamp_to(&outPos[0], &low[0], &high[0]);
+	clamped |= clamp_to(&outPos[1], &low[1], &high[1]);
+	clamped |= clamp_to(&outPos[2], &low[2], &high[2]);
+	if (clamped)
+		for (int c = 0; c < 3; c++)
+			d[c] = f32(fsub_m(fld_m(&outPos[c]), &pos[c]));
+	else
+		memcpy(d, vel, sizeof d);
+	int count = 0;
+	u32 *sub = (u32 *)(stage + 0x9ca0f4);
+	X reach = 0;
+	for (int i = 0; i < FIELD(int, stage, 0x13c9b24); i++) {
+		if (i == 0) {
+			X y = fld_m(&d[1]), z = fld_m(&d[2]);
+			reach = fadd_m(fsqrt(z * z + y * y + mul(fld_m(&d[0]), &d[0])), &r);
+		}
+		u8 *obj = stage + 0x131ae48 + i * 0x2cc;
+		if (FIELD(int, obj, 0) != 1 || FIELD(int, obj, 0x28c) != 1)
+			continue;
+		u32 tris = FIELD(u32, FIELD(u8 *, obj, 0x288), 8);
+		if (!tris)
+			continue;
+		const float *m = (const float *)(obj + 0x130);
+		float at[3];
+		at[0] = f32(fadd_m(mul(fld_m(&m[8]), &pos[2]) + mul(fld_m(&m[4]), &pos[1]) + mul(fld_m(&m[0]), &pos[0]), &m[12]));
+		at[1] = f32(fadd_m(mul(fld_m(&m[1]), &pos[0]) + mul(fld_m(&m[9]), &pos[2]) + mul(fld_m(&m[5]), &pos[1]), &m[13]));
+		at[2] = f32(fadd_m(mul(fld_m(&m[2]), &pos[0]) + mul(fld_m(&m[10]), &pos[2]) + mul(fld_m(&m[6]), &pos[1]), &m[14]));
+		const float *box = (const float *)(FIELD(u8 *, obj, 0x278) + 0x34);
+		int inside = 1;
+		for (int c = 0; c < 3 && inside; c++)
+			inside = !(fld_m(&box[c]) - reach >= at[c]);
+		for (int c = 0; c < 3 && inside; c++)
+			inside = fadd_m(reach, &box[3 + c]) > at[c];
+		if (!inside)
+			continue;
+		sub[0] = tris;
+		sub[1] = (u32)(obj + 0x1f0);
+		sub[2] = (u32)(obj + 0x230);
+		sub += 3;
+		count++;
+	}
+	return space_testSphere(stage + 0xa10, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
+	                        stage + 0x9ca0f4, count);
+}

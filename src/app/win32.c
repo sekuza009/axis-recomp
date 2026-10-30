@@ -521,3 +521,79 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 	}
 	return CallWindowProcA(GAME_VAR(u32, 0x9dd868), (u32)wnd, msg, w, l);
 }
+
+/* 0x43f9d0: the program. The launch file read (arena_readLaunchFile); a running launcher (window class 0x4b2834)
+   told to quit, then half a second; the start time (GetSystemTime into 0x9dd878, timeGetTime 0x9dd8e8) and two
+   seconds. A game already running (an "AXIS" window), or no CD (cd_findDrive), ends it with a message box. The
+   language by the system's (Korean 0x412 / 0x812: 1 and the message 0x4b2794, else 2 and 0x4b27e4, at 0x9dae74 /
+   0x9dd8c8); the clock check; outside the lobby (0x76d410) the launcher, start mode and file checks, each failing
+   with its message. The launcher told to quit again, app_init (failing: a message box), the screen saver off, then
+   the message loop (TranslateMessage while 0x68039c) with a frame (0x43f980) and the fade step after each round of
+   messages, until 0x4b2790 is cleared. Returns 1, or 0 on the exits. (Named game_WinMain: WinMain is the SDK's) */
+u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
+{
+#define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
+#define Sleep(ms) IMPORT(0x4a9110, void, u32)(ms)
+	arena_readLaunchFile(cmd);
+	void *launcher = FindWindowA((const char *)0x4b2834, (const char *)0x4b2854);
+	if (launcher) {
+		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */
+		Sleep(500);
+	}
+	IMPORT(0x4a910c, void, void *)((void *)0x9dd878);              /* GetSystemTime */
+	GAME_VAR(u32, 0x9dd8e8) = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
+	Sleep(2000);
+	if (FindWindowA((const char *)0x4b0714, NULL)) {
+		MessageBoxA(NULL, (const char *)0x4b2a00, (const char *)0x4b2554, 0);
+		return 0;
+	}
+	if (!cd_findDrive()) {
+		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);
+		return 0;
+	}
+	u16 language = IMPORT(0x4a9100, u16, void)();   /* GetSystemDefaultLangID */
+	GAME_VAR(u16, 0x9dd858) = language;
+	if (language == 0x412 || language == 0x812) {
+		GAME_VAR(int, 0x9dae74) = 1;
+		GAME_VAR(u32, 0x9dd8c8) = 0x4b2794;
+	} else {
+		GAME_VAR(int, 0x9dae74) = 2;
+		GAME_VAR(u32, 0x9dd8c8) = 0x4b27e4;
+	}
+	sys_checkClockTampering();
+	if (!GAME_VAR(int, 0x76d410)) {
+		if (!app_checkLauncherRunning()) {
+			sys_messageBox(GAME_VAR(const char *, 0x9dd8c8));
+			return 0;
+		}
+		if (!reg_readStartMode()) {
+			sys_messageBox((const char *)0x4b04b0);
+			return 0;
+		}
+		if (!files_present())
+			return 0;
+	}
+	launcher = FindWindowA((const char *)0x4b2834, (const char *)0x4b2854);
+	if (launcher)
+		PostMessageA(launcher, 0x12, 0, 0);
+	if (!app_init(inst, show)) {
+		MessageBoxA(g_hWndMain, (const char *)0x4b29ec, (const char *)0x4b141c, 0);
+		return 0;
+	}
+	GAME_VAR(int, 0x4b2790) = 1;
+	IMPORT(0x4a92d0, int, u32, u32, void *, u32)(0x61, 1, NULL, 0);   /* SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING) */
+	u32 msg[7];   /* MSG */
+	while (GAME_VAR(int, 0x4b2790)) {
+		while (IMPORT(0x4a92d4, int, void *, void *, u32, u32, u32)(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
+			if (IMPORT(0x4a92d8, int, void *, void *, u32, u32)(msg, NULL, 0, 0)) {   /* GetMessageA */
+				if (GAME_VAR(int, 0x68039c))
+					IMPORT(0x4a9348, int, const void *)(msg);   /* TranslateMessage */
+				IMPORT(0x4a934c, long, const void *)(msg);       /* DispatchMessageA */
+			}
+		FUN_0043f980();
+		FUN_004202d0();
+	}
+	return 1;
+#undef FindWindowA
+#undef Sleep
+}

@@ -186,6 +186,37 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define load_490d10(stage) GAME_THISCALL(0x490d10, void, void *)(stage)
 #define object_addObjectBy(scene, type) GAME_THISCALL(0x490c50, int, void *, const void *)(scene, type)
 #define data_46f7a0(list, factors, lights) GAME_THISCALL(0x46f7a0, void, void *, u32, u32)(list, factors, lights)
+#define glTranslatef(x, y, z) IMPORT(0x4a9214, void, float, float, float)(x, y, z)
+#define arena_readLaunchFile(cmd) GAME_CDECL(0x43f160, void, const char *)(cmd)
+#define app_checkLauncherRunning() GAME_CDECL(0x41e260, u32, void)()
+#define reg_readStartMode() GAME_CDECL(0x43f770, u32, void)()
+#define FUN_0043f980() GAME_CDECL(0x43f980, void, void)()   /* a frame */
+#define FUN_004202d0() GAME_CDECL(0x4202d0, void, void)()   /* the fade step */
+#define app_init(inst, show) GAME_CDECL(0x43fcc0, int, void *, int)(inst, show)
+#define space_testSphere(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
+	GAME_THISCALL(0x482e30, int, void *, u32, const float *, const float *, u32, u32, u32, u32, u32, u32, u32, void *, int)(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+#define FUN_0046cbc0(i, base, stride) GAME_CDECL(0x46cbc0, int, int, int, int)(i, base, stride)   /* record i of an array (none when negative) */
+#define space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
+	GAME_THISCALL(0x4804b0, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
+#define load_47fce0(item, low, high, margin) GAME_THISCALL(0x47fce0, int, void *, const float *, const float *, u32)(item, low, high, margin)   /* the item meets the box (widened) */
+#define space_getNextFreeBlockPtrBy(space, low, high) GAME_THISCALL(0x4818e0, u8 *, void *, const float *, const float *)(space, low, high)
+#define load_481730(space, node) GAME_THISCALL(0x481730, void, void *, void *)(space, node)   /* a node back to the free list */
+#define load_481980(space, block) GAME_THISCALL(0x481980, void, void *, void *)(space, block)   /* a block back to the free list */
+#define load_481ae0(space, block, item, depth) GAME_THISCALL(0x481ae0, int, void *, void *, void *, int)(space, block, item, depth)
+#define FUN_0046c100(degrees) GAME_CDECL(0x46c100, long double, float)(degrees)   /* an angle wrapped into a turn (in ST0) */
+#define shape_setTextureDir(shape, dir, mode, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x467580, void, void *, const char *, int, u32, u32, u32, u32, u32, u32)(shape, dir, mode, h1, s1, v1, h2, s2, v2)
+#define space_getNextFreePlanePtr(space) GAME_THISCALL(0x4815c0, u8 *, void *)(space)
+#define load_47db60(plane, id, v0, v1, v2, unit, part, i0, i1, i2) GAME_THISCALL(0x47db60, void, void *, u32, const float *, const float *, const float *, u32, u32, u32, u32, u32)(plane, id, v0, v1, v2, unit, part, i0, i1, i2)   /* the triangle's planes */
+#define FUN_0046cba0(record, base, stride) GAME_CDECL(0x46cba0, int, void *, int, int)(record, base, stride)   /* a record's index in its array */
+#define nullsub_483ce0(scene, v) GAME_THISCALL(0x483ce0, void, void *, u32)(scene, v)
+#define actor_applySpawnRecord(scene, i, record) GAME_THISCALL(0x45de20, int, void *, int, void *)(scene, i, record)
+#define camera_setTarget(scene, a, b, c) GAME_THISCALL(0x45dff0, void, void *, u32, u32, u32)(scene, a, b, c)
+#define script_pushEvent(scene, a, b, c, d) GAME_THISCALL(0x48fc40, void, void *, u32, u32, u32, u32)(scene, a, b, c, d)
+#define script_runScpFile(scene, name, v) GAME_THISCALL(0x48fce0, void, void *, const char *, u32)(scene, name, v)
+#define object_setAnimation(scene, i, name, a, b) GAME_THISCALL(0x490df0, void, void *, u32, const char *, u32, u32)(scene, i, name, a, b)
+#define object_activate(scene, i) GAME_THISCALL(0x490ee0, void, void *, u32)(scene, i)
+#define object_deactivate(scene, i) GAME_THISCALL(0x490f30, void, void *, u32)(scene, i)
+#define load_4742f0(scene, p, record) GAME_THISCALL(0x4742f0, void, void *, int, void *)(scene, p, record)   /* a player set up from its map record */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

@@ -217,3 +217,111 @@ void THISCALL (effect_initTextures)(u8 *s)
 	for (int k = 0; k < 8; k++)
 		FIELD(u32, s, 0x20f2e74 + k * 4) = shape_getByName(s + 0x19e188c, (const char *)singles[k], 1);
 }
+
+/* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
+   +0xe3b03c, +0 their entry list; an entry 0x14 bytes: +0xc its command count, +0x10 the 0x30-byte commands) run for
+   actor a (none when negative; actors are 0x8888 bytes from +0x1cd93a8). Each command by its type: triggers on / off
+   (+4) and armed (+0x14); the actor's orders, targets, speed and flags; actors spawned, reset or deactivated; the
+   camera's target; events; .scp files, animations and sounds by formatted names; objects (de)activated. Its callers
+   ignore the eax it leaves */
+void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
+{
+#define TRIGGER(i, offset) FIELD(int, s, 0xe3b03c + (i) * 0x1c + (offset))
+#define ACTOR(i, type, offset) FIELD(type, s, 0x1cd93a8 + (i) * 0x8888 + (offset))
+	u8 *actor = a >= 0 ? s + 0x1cd93a8 + a * 0x8888 : NULL;
+	u8 *e = FIELD(u8 *, s, 0xe3b03c + trig * 0x1c) + entry * 0x14;
+	char name[0x100];
+	for (int i = 0; i < FIELD(int, e, 0xc); i++) {
+		u32 *c = (u32 *)(FIELD(u8 *, e, 0x10) + i * 0x30);
+		switch (c[0]) {
+		case 0: TRIGGER(c[1], 4) = 1; break;
+		case 1: TRIGGER(c[1], 4) = 0; break;
+		case 2: TRIGGER(c[1], 0x14) = 1; break;
+		case 3: nullsub_483ce0(s, c[1]); break;
+		case 4: if (actor) FIELD(u32, actor, 0x8804) = c[1]; break;
+		case 5: if (actor) FIELD(u32, actor, 0x8808) = c[1]; break;
+		case 7:
+			if (actor) {
+				FIELD(u32, actor, 0x87f8) = c[1];
+				FIELD(u32, actor, 0x87fc) = c[2];
+			}
+			break;
+		case 8:
+			if (actor && FIELD(int, actor, 0x8820) >= 0)
+				TRIGGER(c[1], 0x14) = 1;
+			break;
+		case 9:
+			if (actor && FIELD(int, actor, 0x8820) >= 0)
+				nullsub_483ce0(s, c[1]);
+			break;
+		case 10: if (actor) FIELD(int, actor, 0x78) = 0; break;
+		case 11: if (actor) FIELD(int, actor, 0x78) = 1; break;
+		case 12:
+			if (actor) {
+				FIELD(int, actor, 0x8804) = 0;
+				FIELD(int, actor, 0x8808) = -1;
+				FIELD(u32, actor, 0x50) = FIELD(u32, actor, 0x68);
+				FIELD(int, actor, 0x880c) = 0;
+				FIELD(int, actor, 0x8810) = FIELD(int, actor, 0x8814) = FIELD(int, actor, 0x8818) = FIELD(int, actor, 0x881c) = -1;
+			}
+			break;
+		case 13:
+			if (actor)
+				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)0x4a9750));
+			break;
+		case 14: if (actor) FIELD(int, actor, 0x880c) = 1; break;
+		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
+		case 16: ACTOR(c[1], int, 0x128) = 0; break;
+		case 17: actor_deactivate((Stage *)s, c[1]); break;
+		case 18: if (actor) FIELD(u32, actor, 0x8810) = c[1]; break;
+		case 19:
+			if (actor) {
+				FIELD(u32, actor, 0x8814) = c[1];
+				FIELD(u32, actor, 0x8818) = c[2];
+			}
+			break;
+		case 20:   /* the actor's weapon holding item c[1] selected */
+			if (actor) {
+				for (int k = 0; k < 6; k++)
+					if (FIELD(u32, s, 0x1561e88 + FIELD(int, actor, 0x10c) * 0x47fd2 + k * 4) == c[1])
+						actor_selectWeapon((Stage *)s, a, k);
+				FIELD(int, actor, 0x46c) = 1;
+			}
+			break;
+		case 21: if (actor) FIELD(u32, actor, 0x881c) = c[1]; break;
+		case 22:
+			ACTOR(c[1], int, 0x87f8) = -1;
+			ACTOR(c[1], int, 0x87fc) = -1;
+			break;
+		case 23:
+			ACTOR(c[1], u32, 0x87f8) = c[2];
+			ACTOR(c[1], u32, 0x87fc) = c[3];
+			break;
+		case 24: camera_setTarget(s, c[1], c[2], c[3]); break;
+		case 25: camera_setTarget(s, -1, -1, 0); break;
+		case 26:
+			if (FIELD(int, s, 0x2104fe8 + c[1] * 0x88) == 0)
+				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7a8c, c[1]);
+			if (FIELD(int, s, 0x210850c + c[2] * 0x108) == 0)
+				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7a48, c[2]);
+			script_pushEvent(s, c[1], c[2], c[3], c[4]);
+			break;
+		case 27:
+			sprintf(name, (const char *)0x4c7a3c, s + 0x808, (const char *)&c[1]);
+			script_runScpFile(s, name, c[9]);
+			break;
+		case 28:
+			sprintf(name, (const char *)0x4c7a30, s + 8, s + 0x908, (const char *)&c[2]);
+			object_setAnimation(s, c[1], name, c[10], c[11]);
+			break;
+		case 29:
+			sprintf(name, (const char *)0x4c7a20, s + 0x908, (const char *)&c[1]);
+			sound_playFile(name, 100);
+			break;
+		case 30: object_activate(s, c[1]); break;
+		case 31: object_deactivate(s, c[1]); break;
+		}
+	}
+#undef TRIGGER
+#undef ACTOR
+}

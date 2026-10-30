@@ -216,3 +216,83 @@ void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns
 	if (AT(int, list, 0x2c) == 1)
 		data_46f7a0(list, factors, lights);
 }
+
+/* the key for frame among a bone's n keys (size bytes each, their first dword the frame they start at): the last one
+   starting at or before it (a binary search); a frame before the first key is moved up to it */
+static u8 *key_at(u8 *keys, int n, int size, int *frame)
+{
+	int lo = 0;
+	if (*frame < AT(int, keys, 0))
+		*frame = AT(int, keys, 0);
+	else
+		for (int hi = n - 1; lo < hi;) {
+			int mid = (hi + lo + 1) / 2;
+			if (*frame < AT(int, keys, mid * size))
+				hi = mid - 1;
+			else
+				lo = mid;
+		}
+	return keys + lo * size;
+}
+
+/* does the FPU compare v with 0 as equal (as fcomp's C3 says: also for a NaN)? */
+static int zero_or_nan(float v)
+{
+	return !(v < 0) && !(v > 0);
+}
+
+/* glRotatef by angle (rounded to a float) about axis (its x through the FPU, y and z as their bits), unless the
+   axis is all zero (or NaN) */
+static void rotate(long double angle, const float *axis)
+{
+	if (zero_or_nan(axis[0]) && zero_or_nan(axis[1]) && zero_or_nan(axis[2]))
+		return;
+	float a = f32(angle), x = f32(fld_m(&axis[0]));
+	u32 abits, xbits;
+	memcpy(&abits, &a, 4);
+	memcpy(&xbits, &x, 4);
+	glRotatef_bits(abits, xbits, ((const u32 *)axis)[1], ((const u32 *)axis)[2]);
+}
+
+/* 0x46ab30 (thiscall on a skeleton): bone's matrix at time t (0 .. 1 of the +0x20 frames) into out, worked out on
+   the GL modelview matrix (saved, then put back): the identity, then the position (the bone's +0x44, or its keys
+   from +0x64, +0x60 of them, 0x20 bytes: base +8 and delta +0x14 over the key's length +4), then the rotation (the
+   angle +0x50 in 0x4aa270 units about +0x54; or its keys from +0x6c, +0x68 of them, 0x28 bytes: a base rotation
+   +8 about +0xc and a delta +0x18 about +0x1c). A bone past the count (+0x10) gets the identity. Its callers ignore
+   the eax it leaves */
+void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
+{
+	if (bone >= AT(int, sk, 0x10)) {
+		for (int k = 0; k < 16; k++)
+			out[k] = k % 5 == 0 ? 0x3f800000 : 0;   /* 1.0 on the diagonal */
+		return;
+	}
+	const float *unit = (const float *)0x4aa270;
+	float saved[16];
+	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
+	int frames = AT(int, sk, 0x20);
+	int frame = ftol(fmul_m(frames, &t));
+	if (frame < 0)
+		frame = 0;
+	else if (frame >= frames)
+		frame = frames;
+	glLoadIdentity();
+	u8 *b = AT(u8 *, sk, 0x14) + bone * 0x70;
+	if (AT(int, b, 0x60) > 0) {
+		float *key = (float *)key_at(AT(u8 *, b, 0x64), AT(int, b, 0x60), 0x20, &frame);
+		int length = ((int *)key)[1];
+		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)0x4a93e8);
+		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
+	} else
+		glTranslatef_bits(AT(u32, b, 0x44), AT(u32, b, 0x48), AT(u32, b, 0x4c));
+	if (AT(int, b, 0x68) > 0) {
+		float *key = (float *)key_at(AT(u8 *, b, 0x6c), AT(int, b, 0x68), 0x28, &frame);
+		int length = ((int *)key)[1];
+		float f = length > 0 ? f32((long double)(frame - ((int *)key)[0]) / length) : 0;
+		rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
+		rotate(fmul_m(fmul_m(fld_m(&f), &key[6]), unit), &key[7]);
+	} else
+		rotate(fmul_m(fld_m((const float *)(b + 0x50)), unit), (const float *)(b + 0x54));
+	glGetFloatv(0xba6, (float *)out);
+	glLoadMatrixf(saved);
+}

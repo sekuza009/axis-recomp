@@ -1364,6 +1364,21 @@ void (net_recv)(void)
 	}
 }
 
+/* a match packet (0x40 bytes) sent and counted (+0x2340c78); while recording (+0x2340d1d 1) the frame (+0x2340d29),
+   the camera's actor (+0x234240d), the packet's size and the packet written to the recording (+0x2340d08) */
+static void send_packet(u8 *s, u8 *packet)
+{
+	net_sendPacketData(0x40, packet);
+	GAME_VAR(int, s + 0x2340c78)++;
+	if (GAME_VAR(int, s + 0x2340d1d) == 1) {
+		int size = 0x40;
+		FUN_0046cc30(s + 0x2340d29, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		FUN_0046cc30(s + 0x234240d, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		FUN_0046cc30(&size, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		FUN_0046cc30(packet, 1, size, GAME_VAR(void *, s + 0x2340d08));
+	}
+}
+
 /* 0x48ead0 (thiscall on the scene): the players' levels sent (a 0x40-byte packet, kind 0xe in its second byte): one
    nibble each for up to 124 players (+0x22ee4c0, 0x28 bytes each, +0x22f0400 of them; two to a byte from the third,
    the even one low), a player in the game (+0 not negative, +0x20 1) its level (+0x24) / 10 + 1, at most 15 (each
@@ -1386,23 +1401,15 @@ void THISCALL (net_sendState_48ead0)(u8 *s)
 			level = 15;
 		packet[2 + i / 2] |= (u8)(i % 2 ? level << 4 : level);
 	}
-	net_sendPacketData(0x40, packet);
-	FIELD(int, s, 0x2340c78)++;
-	if (FIELD(int, s, 0x2340d1d) == 1) {
-		int size = 0x40;
-		FUN_0046cc30(s + 0x2340d29, 4, 1, FIELD(void *, s, 0x2340d08));
-		FUN_0046cc30(s + 0x234240d, 4, 1, FIELD(void *, s, 0x2340d08));
-		FUN_0046cc30(&size, 4, 1, FIELD(void *, s, 0x2340d08));
-		FUN_0046cc30(packet, 1, size, FIELD(void *, s, 0x2340d08));
-	}
+	send_packet(s, packet);
 }
 #undef FIELD
 
 /* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
    2 (64 bytes, its first byte left as it was): the name (from the part type record +0x1755230 + p x 0x47fd2, +4),
    then +0x13 its +0x44, +0x14 its +0x48, the actor's team byte (+0x1eccb4c), p, the five parts and six items (each
-   + 1), the 30 colour bytes (+0x479a4). The packet counter (+0x2340c78) counts it; when recording (+0x2340d1d 1)
-   the clock, the shown actor, its size and the packet go to the file. Its caller ignores the eax it leaves */
+   + 1), the 30 colour bytes (+0x479a4). Sent by send_packet. Its caller ignores the eax it
+   leaves */
 void THISCALL (match_48e0f0)(u8 *s, int p)
 {
 	int *flag = (int *)(s + 0x234300a + p * 0x10);
@@ -1422,16 +1429,7 @@ void THISCALL (match_48e0f0)(u8 *s, int p)
 		packet[0x1c + k] = r[0x320 + k * 4] + 1;
 	memcpy(packet + 0x22, r + 0x479a4, 30);
 	*flag = 0;
-	net_sendPacketData(0x40, packet);
-	GAME_VAR(int, s + 0x2340c78)++;
-	if (GAME_VAR(int, s + 0x2340d1d) == 1) {
-		void *f = GAME_VAR(void *, s + 0x2340d08);
-		int size = 0x40;
-		FUN_0046cc30(s + 0x2340d29, 4, 1, f);
-		FUN_0046cc30(s + 0x234240d, 4, 1, f);
-		FUN_0046cc30(&size, 4, 1, f);
-		FUN_0046cc30(packet, 1, size, f);
-	}
+	send_packet(s, packet);
 }
 
 /* 0x4532f0: DirectPlay's EnumConnections callback: the service provider's short name kept upper-cased (the 0x80-byte
@@ -1466,4 +1464,62 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 	if (GAME_VAR(int, 0xa0bac8) < 9)
 		GAME_VAR(int, 0xa0bac8)++;
 	return 1;
+}
+
+/* 0x48e680 (thiscall on the scene): the first pending match event (flags at 1, each cleared when taken) sent as its
+   packet (kind in the second byte; 0x6b where it carries nothing): 3, 4, 5 (+0x2343237, +0x234323b, +0x234323f); 6 two
+   bytes (+0x234324f: +0x2343247, +0x234324b); 7 a byte and a line (+0x234319b: +0x234315a, +0x234315e; and byte
+   0x3e from +0x2343197); 8 the same (+0x234314e: +0x234310a, +0x234310e); 9 a byte (+0x2343156: +0x2343152); 10 two
+   bytes and a line (+0x23431e7: +0x234319f, +0x23431a3, +0x23431a7); 11 the camera's actor, a byte and a line
+   (+0x2343233: +0x23431ef, +0x23431f3); 13 (+0x2343243). With none pending any more the events are done
+   (+0x2343106 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
+void THISCALL (match_48e680)(u8 *s)
+{
+#define FLAG(offset) GAME_VAR(int, s + (offset))
+#define TAKE(offset) (FLAG(offset) == 1 && (FLAG(offset) = 0, 1))
+	static const u32 flags[10] = { 0x234319b, 0x234314e, 0x2343156, 0x23431e7, 0x2343233, 0x2343237, 0x234323b, 0x234323f, 0x234324f, 0x2343243 };
+	u8 packet[0x40];
+	if (TAKE(0x2343237))
+		packet[1] = 3, packet[2] = 0x6b;
+	else if (TAKE(0x234323b))
+		packet[1] = 4, packet[2] = 0x6b;
+	else if (TAKE(0x234323f))
+		packet[1] = 5, packet[2] = 0x6b;
+	else if (TAKE(0x234324f))
+		packet[1] = 6, packet[2] = s[0x2343247], packet[3] = s[0x234324b];
+	else if (FLAG(0x234319b) == 1) {
+		packet[1] = 7;
+		packet[2] = s[0x234315a];
+		strcpy((char *)packet + 3, (const char *)s + 0x234315e);
+		FLAG(0x234319b) = 0;
+		packet[0x3c] = s[0x2343197];
+	} else if (FLAG(0x234314e) == 1) {
+		packet[1] = 8;
+		packet[2] = s[0x234310a];
+		strcpy((char *)packet + 3, (const char *)s + 0x234310e);
+		FLAG(0x234314e) = 0;
+	} else if (TAKE(0x2343156))
+		packet[1] = 9, packet[2] = s[0x2343152];
+	else if (FLAG(0x23431e7) == 1) {
+		packet[1] = 10;
+		packet[2] = s[0x234319f];
+		packet[3] = s[0x23431a3];
+		strcpy((char *)packet + 4, (const char *)s + 0x23431a7);
+		FLAG(0x23431e7) = 0;
+	} else if (FLAG(0x2343233) == 1) {
+		packet[1] = 11;
+		packet[2] = s[0x234240d];
+		packet[3] = s[0x23431ef];
+		strcpy((char *)packet + 4, (const char *)s + 0x23431f3);
+		FLAG(0x2343233) = 0;
+	} else if (TAKE(0x2343243))
+		packet[1] = 13, packet[2] = 0x6b;
+	int pending = 0;
+	for (int k = 0; k < 10; k++)
+		pending |= FLAG(flags[k]) != 0;
+	if (!pending)
+		FLAG(0x2343106) = 0;
+	send_packet(s, packet);
+#undef FLAG
+#undef TAKE
 }

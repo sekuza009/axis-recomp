@@ -2215,12 +2215,9 @@ static DWORD run_lifted(void (*f)(X86 *), DWORD ecx, int nargs, const DWORD *arg
    names a root node (short at +0x54 table; -1 = none; FUN_0046cbc0 -> node array +0x44, 0x50-byte nodes); the walk
    goes down the octree by comparing with each node box's midpoints to a leaf (+0x24 == 0) and runs
    space_collideUnit on it; the result is kept at +0x98. Lifted (tools/lift.py) */
-static THISCALL int space_walkNodes_482aa0(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
-                                           DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs)
-{
-	DWORD a[11] = { r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs };
-	return (int)run_lifted(lift_482aa0, (DWORD)self, 11, a);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_walkNodes_482aa0(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
+                                   DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* 0x4226b0 setup_drawControlSlider(): the mouse-sensitivity slider on the control setup page. A click (or a held
    button after 1.0 s, 0x4ded94/0x4dda44) on the minus/plus buttons (setup_420730 rects 0, 1) steps the value at
    0x4de1c8 within 0..100 and starts the 5.0 highlight timer; a click on the bar (rect 2) sets it from the cursor x
@@ -2334,12 +2331,9 @@ static long double __cdecl actor_46c1c0(DWORD a, DWORD b, DWORD step) { DWORD v[
    is shortened to match), the map objects (count +0x13c9b24, 0x2cc-byte records at +0x131ae48: active, solid, a
    triangle list, a box, a world->model matrix) whose box holds the swept sphere become the sub-model list at
    +0x9ca0f4, and space_testSphere runs on the stage grid (+0xa10). Lifted */
-static THISCALL int collision_moveActor(char *stage, DWORD r, DWORD pos, DWORD vel, DWORD step, DWORD k, DWORD outPos,
-                                         DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis)
-{
-	DWORD v[10] = { r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis };
-	return (int)run_lifted(lift_471400, (DWORD)stage, 10, v);      /* EAX = space_testSphere's result */
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int collision_moveActor(char *stage, DWORD r, DWORD pos, DWORD vel, DWORD step, DWORD k, DWORD outPos,
+                                 DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
 /* batch 43: functions that call side-effecting CRT functions (atexit, operator delete, free, malloc) - in the game the
    real ones, in the frozen tests the library mocks. CRT pointers are typed to return EAX, so whatever the original
    leaves there after the call is passed on */
@@ -2852,7 +2846,8 @@ static THISCALL DWORD match_48e990(char *scene, DWORD p) { DWORD v[1] = { p }; r
 THISCALL void net_sendState_48ead0(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_48e0f0(char *scene, DWORD p);
-static THISCALL DWORD match_48e680(char *scene) { return run_lifted(lift_48e680, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_48e680(char *scene);
 static THISCALL DWORD match_48e2c0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e2c0, (DWORD)scene, 1, v); }
 /* batch 50 */
 /* the CRT's x87 acos (0x49ffc0, _CIacos): argument and result in ST0 */
@@ -3042,11 +3037,8 @@ void armc_41d280(void);
 /* 0x474b50 (thiscall) actor_setPartColor(p, part, h1, s1, v1, h2, s2, v2): player p's part colours: hues wrapped to
    -180..180 degrees (FUN_0046c100), the other values clamped to -1..0.999, stored as bytes, then the part's shape
    gets the tinted textures of player p's texture directory (shape_setTextureDir) */
-static THISCALL DWORD actor_setPartColor(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[8] = { p, part, a, b, c, d, e, f };
-	return run_lifted(lift_474b50, (DWORD)scene, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_setPartColor(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x474fd0 (thiscall) actor_applyRemoteColours(p, part, 6 signed bytes): a colour packet: hues * 1.40625,
    the other values / 128, then actor_setPartColor */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3378,11 +3370,8 @@ THISCALL DWORD tex_textureFileExist(char *tm, DWORD name);
 /* 0x455080 (thiscall) tex_initBy(dir, slots, format, w, h, a, b): the texture manager: directory (upper case),
    format and size; for the dat format the index of the size's Data\Image*.dat (count + 0x44-byte entries); then
    at most 0x200 texture slots in a ring, each with a GL texture name */
-static THISCALL DWORD tex_initBy(char *tm, DWORD dir, DWORD slots, DWORD fmt, DWORD w, DWORD h, DWORD a, DWORD b)
-{
-	DWORD v[7] = { dir, slots, fmt, w, h, a, b };
-	return run_lifted(lift_455080, (DWORD)tm, 7, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_initBy(char *tm, DWORD dir, DWORD slots, DWORD fmt, DWORD w, DWORD h, DWORD a, DWORD b);
 /* 0x466a60 (thiscall) shape_initBy(dir, n, a, extra, mem, memSize): free owned data memory, keep the directory,
    data memory for n shapes (0x98 bytes each) plus extra, from mem or allocated; clear the shape headers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3396,7 +3385,8 @@ THISCALL void skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWOR
    the play records (0x24 bytes, read 0x71c at a time into a 64 KB frame) through the descrambling reader: type 0
    the player start (+0x20fab60, angles x10), 1 a multiplayer start (at most 32), 2 an item point (at most 200; the
    item kind remapped by the game options at +0x20f3ac0..) */
-static THISCALL DWORD map_loadPlayInfoFrom(char *map, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_4876b0, (DWORD)map, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadPlayInfoFrom(char *map, DWORD name);
 /* 0x48b5c0 (thiscall) map_loadMissionInfoFrom(name): version 0x1201, skip two sections, then the actions
    (load_48b460), waypoint lists and triggers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3424,11 +3414,8 @@ static THISCALL DWORD shape_read(char *self, DWORD f, DWORD mem, DWORD size)
    times the factor's colour / 256, written (first) or added and clamped to 255, alpha 255; a layer with sky colours
    (+0x30 == 1) also gets the light straight down in its 12 colours at +0xfc. A type-2 layer only clears its light
    map (+0x48) and sky colours */
-static THISCALL DWORD light_computeLayerLightBy(char *scene, DWORD layer, DWORD cols, DWORD first, DWORD r0, DWORD c0, DWORD r1, DWORD c1)
-{
-	DWORD v[7] = { layer, cols, first, r0, c0, r1, c1 };
-	return run_lifted(lift_472400, (DWORD)scene, 7, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void light_computeLayerLightBy(char *scene, DWORD layer, DWORD cols, DWORD first, DWORD r0, DWORD c0, DWORD r1, DWORD c1);
 /* 0x497d20 (thiscall) render_processRenderingBy(vv, h): per terrain layer (scene +0xdc0248, 0x20c apart, count
    +0xdc0a74) the cells of its bitmap (bit 0) within the view distance (+0xa08) of the camera (+0x20f3970 / +0x20f3978)
    as triangle strips (type 5) of grid indices, into the layer's primitive buffer and index heap (overflow is
@@ -3451,21 +3438,15 @@ THISCALL void load_4728e0(char *scene, DWORD layer);
    items and depth > 0 it splits into 8 child blocks (+0x28.., octants of the box), re-inserts every item into them
    (depth - 1), frees its nodes and the children left empty; an inner block passes the item to each child (made
    when missing), freeing the children left empty. Returns 1 after a split, else 0 */
-static THISCALL DWORD load_481ae0(char *sp, DWORD block, DWORD item, DWORD depth)
-{
-	DWORD v[3] = { block, item, depth };
-	return run_lifted(lift_481ae0, (DWORD)sp, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD load_481ae0(char *sp, DWORD block, DWORD item, DWORD depth);
 /* 0x46ab30 (thiscall) skel_applyPose(out, bone, t): a bone's matrix at time t (0..1 of the skeleton's +0x20 frames)
    through the GL modelview matrix (saved and restored): identity, then the position (bone +0x44, or the key
    interpolated: keys of 8 dwords from +0x64, count +0x60, frame / length / base / delta, binary search), then the
    rotation (angle +0x50 about +0x54 if the axis is not zero, or the key's base and delta rotations: keys of 10
    dwords from +0x6c, count +0x68), read back into out. A bone outside 0..+0x10 gets the identity */
-static THISCALL DWORD skel_applyPose(char *sk, DWORD out, DWORD bone, DWORD t)
-{
-	DWORD v[3] = { out, bone, t };
-	return run_lifted(lift_46ab30, (DWORD)sk, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void skel_applyPose(char *sk, DWORD out, DWORD bone, DWORD t);
 /* batch 67 (lifted/grp14.c) */
 #include "lifted/grp14.c"
 /* 0x481eb0 (thiscall) space_buildPlanes(id, v0, v1, v2, a..e): a collision triangle for the space object: nothing (0)
@@ -3473,11 +3454,8 @@ static THISCALL DWORD skel_applyPose(char *sk, DWORD out, DWORD bone, DWORD t)
    pool (load_47db60), then for every grid cell its box overlaps (cell sizes +0x84 / +0x88 / +0x80, dims +0x78 / +0x7c /
    +0x74) that load_47fce0 confirms: the cell's block (index table +0x54, -1 = make one from the block pool) gets the
    triangle (load_481ae0, depth +0x94). Returns the plane */
-static THISCALL DWORD space_buildPlanes(char *sp, DWORD id, DWORD v0, DWORD v1, DWORD v2, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e)
-{
-	DWORD v[9] = { id, v0, v1, v2, a, b, c, d, e };
-	return run_lifted(lift_481eb0, (DWORD)sp, 9, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD space_buildPlanes(char *sp, DWORD id, DWORD v0, DWORD v1, DWORD v2, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e);
 /* 0x482320 (thiscall) load_482320(id, unit, part, i0, i1, i2, v0, v1, v2): space_buildPlanes for one of a unit's
    triangles; a made plane is linked into the unit's plane list (+4, planes +0xa0 / +0xa4) and gets a node in its node
    list (+8) */
@@ -3953,7 +3931,8 @@ static THISCALL DWORD actor_updateAllParts(char *sc, DWORD a, DWORD vv, DWORD dr
    (as actor_setActorTypeItemInfoBy) and is set up from its record (load_4742f0); the player count goes to
    +0x19e1888, the actors after the first are marked active, the clan texture "Stage\<map +0x908>\Clan" is looked up
    (+0x2104fe4) and every player gets two fields set (+0x1561b68 + p * 0x47fd2 + 0x3fc6 / +0x3fce) */
-static THISCALL DWORD map_loadActorInfoFrom(char *sc, DWORD name) { DWORD v[1] = { name }; return run_lifted(lift_474550, (DWORD)sc, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void map_loadActorInfoFrom(char *sc, DWORD name);
 /* batch 103 (lifted/grp49.c) */
 #include "lifted/grp49.c"
 /* 0x457330 (thiscall on the scene) actor_setupFromParts(actor, a, b, &player): build actor's mech from its player's
@@ -5583,7 +5562,8 @@ void loading_drawCylinder(int mode, int unused, const char *text);
    commands): each 0x30-byte command by its type 0..0x1f: triggers on / off / armed, the acting actor's (-1: none;
    0x8888-byte records at +0x1cd93a8) orders, targets, speed and flags, players and objects reset or moved, sounds,
    messages, objects created from formatted names; the scene's handlers stubbed */
-static THISCALL DWORD script_processCommandBy(char *s, DWORD actor, DWORD trig, DWORD entry) { DWORD v[3] = { actor, trig, entry }; return run_lifted(lift_483770, (DWORD)s, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void script_processCommandBy(char *s, DWORD actor, DWORD trig, DWORD entry);
 #include "lifted/grp155.c"
 /* 0x483640 script_processTriggers() (thiscall on the scene): every armed trigger (+0xe3c938 of them, 28-byte records
    at +0xe3b03c: +0 its point / entry list, +4 armed, +8 flags, +0xc time, +0x10 squared radius, +0x14 fired) fires
@@ -5666,11 +5646,8 @@ int THISCALL main_462050(void *scene);
    off; then the message loop (PeekMessageA / GetMessageA, TranslateMessage while 0x68039c, DispatchMessageA) with
    the frame (0x43f980) and the fade step (FUN_004202d0) until 0x4b2790 is cleared. Returns 1, or 0 on the exits.
    Named game_WinMain (WinMain is the SDK's) */
-static DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show)
-{
-	DWORD v[4] = { inst, prev, cmd, show };
-	return run_lifted(lift_43f9d0, 0, 4, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* batch 204 (lifted/grp163.c): the game's start-up load */
 #include "lifted/grp163.c"
 /* 0x430400 app_checkCdAndLoad(inst): key tables 0x4d1688 / 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
@@ -9469,9 +9446,12 @@ ST(mission_saveAxisMis, vfs_content(0, 0x8000); g_a[0] = irnd(-1, 14);, CALL_PLA
 /* a launcher command line of 0..6 tokens */
 static void cmdline_setup(void)
 {
-	char *s = BUF + 0x100; int n = 0, toks = irnd(0, 6);
-	for (int t = 0; t < toks; t++) { if (t) s[n++] = (char)(irnd(0, 3) ? ' ' : '\t'); const char *w = k_cfgWords[irnd(0, 22)]; while (*w) s[n++] = *w++; }
-	s[n] = 0;
+	char *s = BUF + 0x100; int n;
+	do {   /* (a line of two or more spaces only crashes the original: its first token is NULL) */
+		n = 0; int toks = irnd(0, 6);
+		for (int t = 0; t < toks; t++) { if (t) s[n++] = (char)(irnd(0, 3) ? ' ' : '\t'); const char *w = k_cfgWords[irnd(0, 22)]; while (*w) s[n++] = *w++; }
+		s[n] = 0;
+	} while (n > 1 && strspn(s, " ") == (size_t)n);
 	vfs_content(0, 0);
 }
 ST(arena_readLaunchFile, cmdline_setup();, CALL_PLAIN(0x43f160, 0, BUF + 0x100, 0, 0, 0), (DWORD)(arena_readLaunchFile(BUF + 0x100)))
@@ -17482,13 +17462,13 @@ static const STest g_stests[] = {
 	T(vsprintf_wrap_473450, 1, 4, 2000), T(vsprintf_wrap_463450, 1, 4, 2000), T(msg_4629f0, 1, 4, 2000), T(actor_46f770, 0, 4, 2000),
 	T(tex_46de20, 1, 4, 3000), T(arena_4542a0, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
 	/* batch 40 */
-	T(space_walkNodes_482aa0, 1, 10, 20000), T(setup_drawControlSlider, 0, 400, 0),
+	T(space_walkNodes_482aa0, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
 	/* batch 41 */
 	T(FUN_0046c100, 1, 4, 5000), T(FUN_00456de0, 1, 300, 0), T(msg_playerLeft, 1, 4, 2000), T(msg_cheatUsed, 1, 4, 2000),
 	T(msg_playerJoinedTeam, 1, 4, 2000), T(msg_playerChangedTeam, 1, 4, 2000), T(msg_kill, 1, 4, 2000), T(tex_applyTintMask, 1, 4, 2000),
 	T(space_testSphere, 1, 100, 10000),
 	/* batch 42 */
-	T(actor_46c140, 1, 4, 10000), T(actor_46c1c0, 1, 4, 10000), T(collision_moveActor, 1, 10, 8000),
+	T(actor_46c140, 1, 4, 10000), T(actor_46c1c0, 1, 4, 10000), T(collision_moveActor, 1, 100, 8000),
 	/* batch 43 */
 	T(static_registerDtor_42b170, 1, 2, 0), T(static_registerDtor_42b1c0, 1, 2, 0), T(static_registerDtor_42b210, 1, 2, 0), T(static_registerDtor_42b260, 1, 2, 0),
 	T(static_registerDtor_42b2b0, 1, 2, 0), T(static_registerDtor_42b300, 1, 2, 0), T(static_registerDtor_42b370, 1, 2, 0), T(static_registerDtor_455000, 1, 2, 0),
@@ -17542,7 +17522,7 @@ static const STest g_stests[] = {
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
 	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
-	T(match_48e680, 0, 40, 0), T(match_48e2c0, 0, 40, 0),
+	T(match_48e680, 0, 400, 0), T(match_48e2c0, 0, 40, 0),
 	/* batch 50 */
 	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 300, 0), T(ViewVolume_projectObject, 0, 300, 0),
 	/* batch 51 */
@@ -17562,7 +17542,7 @@ static const STest g_stests[] = {
 	/* batch 54 */
 	T(cfg_writeDefaultAxisCfg, 1, 200, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_41cf20, 1, 300, 0), T(armc_41d280, 1, 300, 0),
 	/* batch 55 */
-	T(actor_setPartColor, 0, 300, 0), T(actor_applyRemoteColours, 0, 300, 0),
+	T(actor_setPartColor, 0, 400, 0), T(actor_applyRemoteColours, 0, 300, 0),
 	/* batch 56 */
 	T(FUN_0041ef20, 0, 40, 0), T(FUN_00470fc0, 0, 40, 0), T(net_454760, 0, 40, 0), T(net_454690, 0, 40, 0),
 	T(net_452d70, 0, 40, 0), T(FUN_0042f0f0, 0, 40, 0), T(input_asyncKeyPressed, 1, 40, 0), T(hud_46bd00, 0, 40, 0),
@@ -17599,10 +17579,10 @@ static const STest g_stests[] = {
 	T(space_initBy, 0, 400, 0), T(space_setBy, 0, 400, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 400, 0),
 	T(texSmall_initBy, 0, 400, 0), T(skel_loadFrom_46aa10, 0, 400, 0),
 	/* batch 62 */
-	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 40, 0), T(shape_initBy, 0, 400, 0),
+	T(image_copyTo, 0, 40, 0), T(tex_textureFileExist, 1, 400, 0), T(tex_initBy, 0, 400, 0), T(shape_initBy, 0, 400, 0),
 	T(skel_loadFrom_46aeb0, 0, 400, 0),
 	/* batch 63 */
-	T(map_loadPlayInfoFrom, 0, 40, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
+	T(map_loadPlayInfoFrom, 0, 400, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
 	/* batch 64 */
 	T(scene_reset, 0, 40, 0), T(shape_read, 0, 40, 0),
 	/* batch 65 */

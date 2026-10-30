@@ -242,3 +242,219 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	rest[2] = f32(fld_m(&vel[2]) - fmul_m(ln, &d[2]));
 	return space_walkNodes_482aa0(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
+
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+
+/* 0x482aa0 (thiscall on the collision space): the leaf of the space's octrees at pos + vel (written to outPos) has its
+   triangles tested (space_collideUnit, its answer also kept at +0x98). The end point must be inside the space's box
+   (+0x5c low, +0x68 high) widened by the margin (+0x8c); its cell (z, x, y: sizes +0x80, +0x84, +0x88; +0x74, +0x78,
+   +0x7c of them, each index at most the last) names a root node (shorts at +0x54; 0xffff none) among the 0x50-byte
+   nodes (+0x44). From the cell's box the walk goes down into the eighth (children +0x28 .., x upper +4, z upper +8,
+   y upper +0x10) holding the point until a leaf (+0x24 0). 0 when there is none. The x middle is compared at full
+   precision, the others as floats, as the original has them */
+int THISCALL (space_walkNodes_482aa0)(u8 *grid, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
+                                      u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
+{
+	if (FIELD(int, grid, 0x74) <= 0 || FIELD(int, grid, 0x78) <= 0 || FIELD(int, grid, 0x7c) <= 0)
+		return 0;
+	float to[3];
+	for (int c = 0; c < 3; c++)
+		to[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
+	memcpy(outPos, to, sizeof to);
+	const float *low = (const float *)(grid + 0x5c), *high = (const float *)(grid + 0x68);
+	const float *margin = (const float *)(grid + 0x8c);
+	const float *size_z = (const float *)(grid + 0x80), *size_x = (const float *)(grid + 0x84), *size_y = (const float *)(grid + 0x88);
+	for (int c = 0; c < 3; c++)
+		if (fsub_m(fld_m(&low[c]), margin) >= outPos[c])
+			return 0;
+	for (int c = 0; c < 3; c++)
+		if (!(fadd_m(fld_m(&high[c]), margin) > outPos[c]))
+			return 0;
+	int nz = FIELD(int, grid, 0x74), nx = FIELD(int, grid, 0x78), ny = FIELD(int, grid, 0x7c);
+	int cz = ftol(fdiv_m(fsub_m(fld_m(&outPos[2]), &low[2]), size_z));
+	if (cz > nz - 1)
+		cz = nz - 1;
+	int cx = ftol(fdiv_m(fsub_m(fld_m(&outPos[0]), &low[0]), size_x));
+	if (cx > nx - 1)
+		cx = nx - 1;
+	int cy = ftol(fdiv_m(fsub_m(fld_m(&outPos[1]), &low[1]), size_y));
+	if (cy > ny - 1)
+		cy = ny - 1;
+	u16 root = FIELD(u16 *, grid, 0x54)[(nz * cy + cz) * nx + cx];
+	if (root == 0xffff)
+		return 0;
+	u8 *node = (u8 *)FUN_0046cbc0(root, FIELD(int, grid, 0x44), 0x50);
+	float box[6];   /* low x, y, z, then high */
+	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
+	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
+	box[1] = f32(fadd_m(fld_m(&by), &low[1]));
+	box[2] = f32(fadd_m(fld_m(&bz), &low[2]));
+	box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
+	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
+	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
+	const float *half = (const float *)0x4a942c;
+	while (node) {
+		if (!FIELD(int, node, 0x24))
+			return FIELD(int, grid, 0x98) = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
+		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
+		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
+		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
+		int xu = !(mx > outPos[0]), yu = outPos[1] >= my, zu = outPos[2] >= mz;
+		node = FIELD(u8 *, node, 0x28 + xu * 4 + zu * 8 + yu * 0x10);
+		box[xu ? 0 : 3] = f32(mx);
+		box[yu ? 1 : 4] = my;
+		box[zu ? 2 : 5] = mz;
+	}
+	return 0;
+}
+
+/* a new block for octant i of the box low .. high (x by bit 0, z by bit 1, y by bit 2), sized as the original works
+   it out (the x half kept at full precision) */
+static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
+{
+	const float *half = (const float *)0x4a942c;
+	int bx = i % 2, by = i / 4, bz = i / 2 % 2;
+	float box[6];
+	box[0] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[0]), &low[0]) * bx, half), &low[0]));
+	box[1] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[1]), &low[1]) * by, half), &low[1]));
+	box[2] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[2]), &low[2]) * bz, half), &low[2]));
+	long double dx = fsub_m(fld_m(&high[0]), &low[0]);
+	float dy = f32(fsub_m(fld_m(&high[1]), &low[1])), dz = f32(fsub_m(fld_m(&high[2]), &low[2]));
+	float hy = f32(fmul_m(fld_m(&dy), half)), hz = f32(fmul_m(fld_m(&dz), half));
+	box[3] = f32(fadd_m(fmul_m(dx, half), &box[0]));
+	box[4] = f32(fadd_m(fld_m(&box[1]), &hy));
+	box[5] = f32(fadd_m(fld_m(&box[2]), &hz));
+	return space_getNextFreeBlockPtrBy(space, box, box + 3);
+}
+
+/* a child block that ended up with no items and no children given back (load_481980) and forgotten */
+static void drop_if_empty(u8 *space, u8 **child)
+{
+	if (FIELD(int, *child, 0x1c) <= 0 && FIELD(int, *child, 0x24) == 0) {
+		load_481980(space, *child);
+		*child = NULL;
+	}
+}
+
+/* 0x481ae0 (thiscall on the collision space): item put into block's part of the octree, depth levels more allowed.
+   Nothing (0) when it misses the block's box (load_47fce0, widened by the margin +0x8c) or is already first in its
+   list. A leaf (+0x24 0) gets a node for it (item, block; linked in first at +0x18, +0x1c counting them); holding more
+   than +0x90 with depth left it splits: eight child blocks (+0x28 ..), every item put into each of them a level
+   down, its nodes freed (load_481730), the children left empty dropped. An inner block puts the item into each
+   child (made when missing) a level down, dropping those left empty. Otherwise 1 */
+int THISCALL (load_481ae0)(u8 *space, u8 *block, u8 *item, int depth)
+{
+	const float *low = (const float *)block, *high = (const float *)(block + 0xc);
+	if (!load_47fce0(item, low, high, FIELD(u32, space, 0x8c)))
+		return 0;
+	u32 *first = FIELD(u32 *, block, 0x18);
+	if (first && first[0] == (u32)item)
+		return 0;
+	u8 **child = (u8 **)(block + 0x28);
+	if (FIELD(int, block, 0x24)) {
+		for (int i = 0; i < 8; i++) {
+			if (!child[i])
+				child[i] = make_octant(space, low, high, i);
+			load_481ae0(space, child[i], item, depth - 1);
+			drop_if_empty(space, &child[i]);
+		}
+		return 1;
+	}
+	u32 *node = space_getNextFreeNodePtr(space);
+	node[0] = (u32)item;
+	node[1] = (u32)block;
+	node[3] = FIELD(u32, block, 0x18);
+	if (FIELD(u32 *, block, 0x18))
+		FIELD(u32 *, block, 0x18)[2] = (u32)node;
+	FIELD(u32 *, block, 0x18) = node;
+	if (++FIELD(int, block, 0x1c) <= FIELD(int, space, 0x90) || depth <= 0)
+		return 1;
+	for (int i = 0; i < 8; i++) {
+		child[i] = make_octant(space, low, high, i);
+		FIELD(int, block, 0x24) = 1;
+	}
+	for (u32 *n = FIELD(u32 *, block, 0x18); n;) {
+		for (int j = 0; j < 8; j++)
+			load_481ae0(space, child[j], (void *)n[0], depth - 1);
+		u32 *next = (u32 *)n[3];
+		load_481730(space, n);
+		n = next;
+	}
+	FIELD(u32, block, 0x18) = 0;
+	FIELD(int, block, 0x1c) = 0;
+	for (int j = 0; j < 8; j++)
+		drop_if_empty(space, &child[j]);
+	return 1;
+}
+
+/* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2) of a unit put into the space: nothing (0) when
+   its box misses the space's (+0x5c .. +0x70, widened by the margin +0x8c). Else a plane record (from the pool, set up
+   by load_47db60), and every grid cell its widened box covers (z, x, y as in space_walkNodes_482aa0) that the
+   triangle really meets (load_47fce0) gets it into its octree (load_481ae0, depth +0x94; the cell's root block made
+   when it has none). Returns the plane */
+u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
+                                 u32 i0, u32 i1, u32 i2)
+{
+	float low[3], high[3];
+	memcpy(low, v0, sizeof low);
+	memcpy(high, v0, sizeof high);
+	const float *others[2] = { v1, v2 };
+	for (int k = 0; k < 2; k++)
+		for (int c = 0; c < 3; c++) {
+			if (others[k][c] > high[c])
+				((u32 *)high)[c] = ((const u32 *)others[k])[c];
+			if (!(others[k][c] >= low[c]))
+				((u32 *)low)[c] = ((const u32 *)others[k])[c];
+		}
+	const float *grid_low = (const float *)(space + 0x5c), *grid_high = (const float *)(space + 0x68);
+	const float *margin = (const float *)(space + 0x8c);
+	const float *size_z = (const float *)(space + 0x80), *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	for (int c = 0; c < 3; c++)
+		if (!(fadd_m(fld_m(&grid_high[c]), margin) > low[c]))
+			return 0;
+	for (int c = 0; c < 3; c++)
+		if (fsub_m(fld_m(&grid_low[c]), margin) >= high[c])
+			return 0;
+	u8 *plane = space_getNextFreePlanePtr(space);
+	load_47db60(plane, id, v0, v1, v2, unit, part, i0, i1, i2);
+	int z0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[2]), margin), &grid_low[2]), size_z));
+	if (z0 < 0)
+		z0 = 0;
+	int z1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[2]), margin), &grid_low[2]), size_z));
+	if (z1 > FIELD(int, space, 0x74) - 1)
+		z1 = FIELD(int, space, 0x74) - 1;
+	int x0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[0]), margin), &grid_low[0]), size_x));
+	if (x0 < 0)
+		x0 = 0;
+	int x1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[0]), margin), &grid_low[0]), size_x));
+	if (x1 > FIELD(int, space, 0x78) - 1)
+		x1 = FIELD(int, space, 0x78) - 1;
+	int y0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[1]), margin), &grid_low[1]), size_y));
+	if (y0 < 0)
+		y0 = 0;
+	int y1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[1]), margin), &grid_low[1]), size_y));
+	if (y1 > FIELD(int, space, 0x7c) - 1)
+		y1 = FIELD(int, space, 0x7c) - 1;
+	for (int y = y0; y <= y1; y++)
+		for (int z = z0; z <= z1; z++) {
+			float fy = f32(y), fz = f32(z);   /* (the original keeps these two as floats) */
+			for (int x = x0; x <= x1; x++) {
+				float box[6];
+				box[0] = f32(fadd_m(fmul_m(x, size_x), &grid_low[0]));
+				box[1] = f32(fadd_m(fmul_m(fld_m(&fy), size_y), &grid_low[1]));
+				box[2] = f32(fadd_m(fmul_m(fld_m(&fz), size_z), &grid_low[2]));
+				box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
+				box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
+				box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
+				if (load_47fce0(plane, box, box + 3, *(const u32 *)margin) != 1)
+					continue;
+				int cell = (FIELD(int, space, 0x74) * y + z) * FIELD(int, space, 0x78) + x;
+				if (FIELD(u16 *, space, 0x54)[cell] == 0xffff) {
+					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
+					FIELD(u16 *, space, 0x54)[cell] = (u16)FUN_0046cba0(block, FIELD(int, space, 0x44), 0x50);
+				}
+				load_481ae0(space, FIELD(u8 *, space, 0x44) + FIELD(u16 *, space, 0x54)[cell] * 0x50, plane, FIELD(int, space, 0x94));
+			}
+		}
+	return plane;
+}

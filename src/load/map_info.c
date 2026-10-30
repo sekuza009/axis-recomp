@@ -1,6 +1,7 @@
 /* map_info.c: sections of a map's mission file read: a count and that many records, each record linked to its run
    in a shared table (the runs follow each other; the total must match the table's own count, else a fatal message). */
 #include "../game.h"
+#include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 #define fatal4(format, a, b) GAME_CDECL(0x46c710, void, char *, const char *, int, int)((char *)0xae2eb8, (const char *)(format), a, b)
@@ -163,4 +164,180 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 		}
 	}
 #undef crt_fread
+}
+
+/* an item point's kind changed by the game's options (+0x20f3ac0 .. +0x20f3ad0, each on at 1): the kinds 0 .. 9 to 0,
+   2, 3, 5 or none (-1); with the first, 10 .. 19 and 0x1e, 0x1f, 0x25 none too; with the third 15 .. 19 to 10 .. 14 */
+static void remap_item(u8 *scene, int *kind)
+{
+	if (FIELD(int, scene, 0x20f3ac0) == 1) {
+		if (*kind / 10 == 0)
+			*kind = 0;
+		else if (*kind / 10 == 1 || *kind == 0x1e || *kind == 0x1f || *kind == 0x25)
+			*kind = -1;
+	}
+	if (FIELD(int, scene, 0x20f3ac4) == 1 && *kind / 10 == 0)
+		*kind = 2;
+	if (FIELD(int, scene, 0x20f3ac8) == 1) {
+		if (*kind / 10 == 0)
+			*kind = 3;
+		else if (*kind >= 15 && *kind <= 19)
+			*kind -= 5;
+	}
+	if (FIELD(int, scene, 0x20f3acc) == 1 && *kind / 10 == 0)
+		*kind = 5;
+	if (FIELD(int, scene, 0x20f3ad0) == 1 && *kind / 10 == 0)
+		*kind = -1;
+}
+
+/* 0x4876b0 (thiscall on the scene): the map's play file (by 0x4c77f0 from +0x108 and name; none: a fatal message):
+   version 0x1201 (else a fatal message), the first section skipped (a scrambled size), a dword, then the count and
+   the 0x24-byte records (read scrambled 0x71c at a time): kind 0 the player start (+0x20fab60, its two angles x
+   0x4a9418 at +0x20fab6c), 1 a multiplayer start (0x14 bytes from +0x20fab74, at most 32: +0x20fadf4), 2 an item
+   point (0x28 bytes from +0x20fadf8, at most 200: +0x20fcd38; its kind remapped by the options). The start is the
+   default (0xa0e7a8) until then, +0x20fcd3c -1. Its caller ignores the eax it leaves */
+void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	const float *scale = (const float *)0x4a9418;
+	memcpy(scene + 0x20fab60, (const void *)0xa0e7a8, 12);
+	FIELD(int, scene, 0x20fab6c) = 0;
+	FIELD(int, scene, 0x20fab70) = 0;
+	FIELD(int, scene, 0x20fadf4) = 0;
+	FIELD(int, scene, 0x20fcd38) = 0;
+	FIELD(int, scene, 0x20fcd3c) = -1;
+	char path[0x100];
+	sprintf(path, (const char *)0x4c77f0, scene + 0x108, name);
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7c8c, (int)path);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	int version, value, count;
+	crt_fread(&version, 4, 1, f);
+	if (version != 0x1201)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
+	fread_scrambled(&value, 4, 1, f);
+	crt_fseek(f, value, 1);   /* SEEK_CUR */
+	fread_scrambled(&value, 4, 1, f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7c7c);
+	fread_scrambled(&count, 4, 1, f);
+	u32 records[0x71c][9];
+	for (int i = 0; i < count; i++) {
+		unsigned k = (unsigned)i % 0x71c;
+		if (k == 0)
+			fread_scrambled(records, 0x24, 0x71c, f);
+		u32 *r = records[k];
+		float *rf = (float *)r;
+		if (r[0] == 0) {
+			FIELD(float, scene, 0x20fab6c) = f32(fmul_m(fld_m(&rf[7]), scale));
+			FIELD(float, scene, 0x20fab70) = f32(fmul_m(fld_m(&rf[8]), scale));
+			memcpy(scene + 0x20fab60, &r[4], 12);
+		} else if (r[0] == 1) {
+			if (FIELD(int, scene, 0x20fadf4) >= 32)
+				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7c00, 0x20);
+			u8 *start = scene + 0x20fab74 + FIELD(int, scene, 0x20fadf4) * 0x14;
+			memcpy(start, &r[4], 12);
+			FIELD(float, start, 0xc) = f32(fmul_m(fld_m(&rf[7]), scale));
+			FIELD(float, start, 0x10) = f32(fmul_m(fld_m(&rf[8]), scale));
+			FIELD(int, scene, 0x20fadf4)++;
+		} else if (r[0] == 2) {
+			if (FIELD(int, scene, 0x20fcd38) >= 200)
+				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7c44, 0x20);
+			u8 *item = scene + 0x20fadf8 + FIELD(int, scene, 0x20fcd38) * 0x28;
+			FIELD(u32, item, 0) = r[1];
+			remap_item(scene, (int *)item);
+			FIELD(u32, item, 4) = r[2];
+			FIELD(u32, item, 8) = r[3];
+			memcpy(item + 0xc, &r[4], 12);
+			FIELD(float, item, 0x18) = f32(fmul_m(fld_m(&rf[7]), scale));
+			FIELD(float, item, 0x1c) = f32(fmul_m(fld_m(&rf[8]), scale));
+			FIELD(int, item, 0x20) = 0;
+			FIELD(int, item, 0x24) = 0;
+			FIELD(int, scene, 0x20fcd38)++;
+		}
+	}
+	fclose(f);
+#undef crt_fread
+}
+
+/* the ten colour schemes of the map's players: hue, saturation and value of a part's two colours (as float bits) */
+static const u32 k_schemeHue[10][2] = {
+	{ 0x43700000, 0x42200000 }, { 0, 0 }, { 0x42b40000, 0x43660000 }, { 0x43820000, 0x42340000 }, { 0x42340000, 0x42340000 },
+	{ 0x42c80000, 0x41200000 }, { 0x435c0000, 0x43390000 }, { 0x435c0000, 0x435c0000 }, { 0x43870000, 0x43af0000 }, { 0, 0 } };
+static const u32 k_schemeSat[10][2] = {
+	{ 0x3f4ccccd, 0x3f4ccccd }, { 0x3f4ccccd, 0x3f4ccccd }, { 0x3f000000, 0x3f000000 }, { 0x3f000000, 0x3f000000 },
+	{ 0x3f4ccccd, 0x3f4ccccd }, { 0x3f147ae1, 0x3f19999a }, { 0x3f147ae1, 0x3f19999a }, { 0x3f07ae15, 0x3f4ccccd },
+	{ 0x3f4ccccd, 0x3f4ccccd }, { 0, 0 } };
+static const u32 k_schemeVal[10][2] = {
+	{ 0x3f000000, 0x3f000000 }, { 0x3f000000, 0x3f000000 }, { 0x3f000000, 0x3f000000 }, { 0x3f4ccccd, 0x3f147ae1 },
+	{ 0x3e99999a, 0x3e4ccccd }, { 0x3e7fffff, 0x3e7fffff }, { 0x3f000000, 0x3f19999a }, { 0x3e99999a, 0x3f000000 },
+	{ 0x3f07ae15, 0x3f4ccccd }, { 0, 0 } };
+
+/* 0x474550 (thiscall on the scene): the map's players and actors (file by 0x4c77f0 from +0x108 and name; none, or a
+   version other than 0x1201, a fatal message): three sections skipped, a dword, then the player count (+0x1cd6fb0)
+   and their 0x58-byte records (+0x1cd6a30), the actor count (+0x1cd93a4) and their 0x5c-byte records (+0x1cd6fb4).
+   Every player but the first: its colour scheme (+4, now less one; when not negative) gives all five parts their
+   colours, the game type (2 .. 11, by pairs) fixes its first item (3, 5, 0x24, 0x19, 0x16; the last pair the second
+   too, 0x17), the other items but the fifth emptied (-1), and it is set up (load_4742f0). The player count also at
+   +0x19e1888, every actor but the first active (+0x18), the clan texture (by 0x4c7724 from +0x908) looked up into
+   +0x2104fe4, and each player's type record given +0x47fc6 1 and +0x47fce 0x180. Its caller ignores the eax it
+   leaves */
+void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define setPartColor(p, part, s) GAME_THISCALL(0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
+	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
+	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
+	char path[0x100];
+	sprintf(path, (const char *)0x4c77f0, scene + 0x108, name);
+	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c77c4, (int)path);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	int version, value;
+	crt_fread(&version, 4, 1, f);
+	if (version != 0x1201)
+		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
+	for (int k = 0; k < 3; k++) {
+		fread_scrambled(&value, 4, 1, f);
+		crt_fseek(f, value, 1);   /* SEEK_CUR */
+	}
+	fread_scrambled(&value, 4, 1, f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c774c);
+	fread_scrambled(scene + 0x1cd6fb0, 4, 1, f);
+	fread_scrambled(scene + 0x1cd6a30, 0x58, FIELD(u32, scene, 0x1cd6fb0), f);
+	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7734);
+	fread_scrambled(scene + 0x1cd93a4, 4, 1, f);
+	fread_scrambled(scene + 0x1cd6fb4, 0x5c, FIELD(u32, scene, 0x1cd93a4), f);
+	fclose(f);
+	for (int p = 1; p < FIELD(int, scene, 0x1cd6fb0); p++) {
+		u8 *rec = scene + 0x1cd6a30 + p * 0x58;
+		if (--FIELD(int, rec, 4) >= 0)
+			for (int part = 0; part < 5; part++)
+				setPartColor(p, part, FIELD(int, rec, 4));
+		int *items = (int *)(rec + 0x40);
+		unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
+		if (mode <= 9) {
+			items[0] = fixed[mode / 2];
+			for (int k = 1; k < 6; k++)
+				items[k] = -1;
+			if (mode / 2 == 4)
+				items[1] = 0x17;
+		}
+		for (int k = 1; k < 6; k++)
+			if (k != 4)
+				items[k] = -1;
+		load_4742f0(scene, p, rec);
+	}
+	FIELD(int, scene, 0x19e1888) = FIELD(int, scene, 0x1cd6fb0);
+	for (int i = 1; i < FIELD(int, scene, 0x1cd93a4); i++)
+		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
+	sprintf(path, (const char *)0x4c7724, scene + 0x908);
+	FIELD(int, scene, 0x2104fe4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), path, 0, 0, 0, 0, 0, 0, 0);
+	for (int p = 0; p < FIELD(int, scene, 0x1cd6fb0); p++) {
+		FIELD(int, scene, 0x15a9b2e + p * 0x47fd2) = 1;
+		FIELD(int, scene, 0x15a9b36 + p * 0x47fd2) = 0x180;
+	}
+#undef crt_fread
+#undef setPartColor
 }

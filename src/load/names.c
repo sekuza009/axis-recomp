@@ -248,3 +248,78 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 	return ok;
 #undef crt_fread
 }
+
+/* 0x455080 (thiscall on a texture manager): set up (twice is a fatal message): its directory (+8, upper-cased; none or
+   0x4b1304 empty), format, size and filtering (+0xc0114 .. +0xc0124). The dat format (0) opens its image file for
+   the size (Data\Image64.dat ..., by 0x4b3f20 for another size; none a fatal message: kept open at +0x110) and reads
+   its index (a count +0x108, then that many 0x44-byte entries at +0x10c; no memory a fatal message). Then up to 0x200
+   texture slots (+0xcd130 of them, 0x14 bytes at +0xcd12c: its index, id -1, a GL texture name, previous and next in a
+   ring), the oldest +0xcd134, the counts +0xcd128 / +0xcd138 .. cleared; set up (+4 1). Its callers ignore the eax
+   it leaves */
+void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+#define fatal(text, ...) GAME_CDECL(0x46c710, void, char *, const char *, ...)((char *)0xa0dff8, (const char *)(text), ##__VA_ARGS__)
+	static const u32 names[6][3] = { { 64, 64, 0x4b3f54 }, { 128, 64, 0x4b3f4c }, { 128, 128, 0x4b3f3c },
+	                                 { 256, 64, 0x4b3f44 }, { 256, 128, 0x4b3f34 }, { 256, 256, 0x4b3f2c } };
+	if (FIELD(int, tm, 4) == 1)
+		fatal(0x4b3f5c);
+	char *own = (char *)tm + 8;
+	if (dir && strcmp(dir, (const char *)0x4b1304) != 0)
+		strcpy(own, dir);
+	else
+		own[0] = 0;
+	FUN_0046cb60(own);
+	FIELD(int, tm, 0xc0124) = linear;
+	FIELD(int, tm, 0xc0114) = format;
+	FIELD(int, tm, 0xc0118) = w;
+	FIELD(int, tm, 0xc011c) = h;
+	FIELD(int, tm, 0xc0120) = mipmaps;
+	if (format == 0) {
+		char name[0x100], path[0x100];
+		int k = 0;
+		while (k < 6 && !(names[k][0] == (u32)w && names[k][1] == (u32)h))
+			k++;
+		if (k < 6)
+			strcpy(name, (const char *)names[k][2]);
+		else
+			sprintf(name, (const char *)0x4b3f20, w, h);
+		if (*own)
+			sprintf(path, (const char *)0x4b3f10, own, name);
+		else
+			sprintf(path, (const char *)0x4b3f04, name);
+		FIELD(void *, tm, 0x110) = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+		if (!FIELD(void *, tm, 0x110))
+			fatal(0x4b3ee4, path);
+		crt_fread(tm + 0x108, 4, 1, FIELD(void *, tm, 0x110));
+		FIELD(void *, tm, 0x10c) = operator_new(FIELD(u32, tm, 0x108) * 0x44);
+		if (!FIELD(void *, tm, 0x10c))
+			fatal(0x4b3eb4, FIELD(int, tm, 0x108));
+		crt_fread(FIELD(void *, tm, 0x10c), 0x44, FIELD(u32, tm, 0x108), FIELD(void *, tm, 0x110));
+	} else {
+		FIELD(int, tm, 0x108) = 0;
+		FIELD(void *, tm, 0x10c) = NULL;
+		FIELD(void *, tm, 0x110) = NULL;
+	}
+	FIELD(int, tm, 0xcd128) = 0;
+	FIELD(int, tm, 0xcd130) = slots > 0x200 ? 0x200 : slots;
+	FIELD(u8 *, tm, 0xcd12c) = operator_new(FIELD(int, tm, 0xcd130) * 0x14);
+	if (!FIELD(u8 *, tm, 0xcd12c))
+		fatal(0x4b3e84, FIELD(int, tm, 0xcd130));
+	for (int i = 0; i < FIELD(int, tm, 0xcd130); i++) {
+		u32 *slot = (u32 *)(FIELD(u8 *, tm, 0xcd12c) + i * 0x14);
+		slot[0] = i;
+		slot[1] = 0xffffffff;
+		IMPORT(0x4a925c, void, int, u32 *)(1, &slot[2]);   /* glGenTextures */
+		int n = FIELD(int, tm, 0xcd130);
+		slot[3] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (n + i - 1) % n * 0x14);
+		slot[4] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (i + 1) % FIELD(int, tm, 0xcd130) * 0x14);
+	}
+	FIELD(int, tm, 0xcd138) = 0;
+	FIELD(int, tm, 0xcd13c) = 0;
+	FIELD(int, tm, 0xcd140) = 0;
+	FIELD(u8 *, tm, 0xcd134) = FIELD(u8 *, tm, 0xcd12c);
+	FIELD(int, tm, 4) = 1;
+#undef crt_fread
+#undef fatal
+}

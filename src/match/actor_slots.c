@@ -431,3 +431,48 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	if (self == 0x40dc)
 		FIELD(int, actor, 0x4cc) = it ? FIELD(int, it, 0x2dc0) : -1;
 }
+
+#define K(address) ((const float *)(address))
+
+/* a hue as the colour code keeps it: wrapped (FUN_0046c100 of it x 0x4a9418, then x 0x4a93ec), brought down by
+   0x4a9460 when over 0x4a945c (*h updated); its byte ((h - 0x4aa418) x 0x4aa414 - 0x4aa264) */
+static u8 hue_byte(float *h)
+{
+	long double v = fmul_m(FUN_0046c100(f32(fmul_m(fld_m(h), K(0x4a9418)))), K(0x4a93ec));
+	*h = f32(v);
+	if (v > *K(0x4a945c))
+		*h = f32(fsub_m(fld_m(h), K(0x4a9460)));
+	return (u8)ftol(fsub_m(fmul_m(fsub_m(fld_m(h), K(0x4aa418)), K(0x4aa414)), K(0x4aa264)));
+}
+
+/* a saturation or value kept to -1 .. 0.999 (a NaN -1; *v updated); its byte (v x 0x4aa264) */
+static u8 level_byte(float *v)
+{
+	if (!(*v >= *K(0x4a9474)))
+		*(u32 *)v = 0xbf800000;   /* -1.0 */
+	else if (!(*v < *K(0x4a9424)))
+		*(u32 *)v = 0x3f7fbe77;   /* 0.999 */
+	return (u8)ftol(fmul_m(fld_m(v), K(0x4aa264)));
+}
+
+/* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
+   bytes in the part type record's colour table (+0x479a4 + part x 2: hue, +0xa saturation, +0x14 value; the second
+   set one byte on), then the part's shape (+0x338 .., 0x7f4c apart but the last) given textures from the player's
+   directory (by 0x4c77f8) tinted with them (shape_setTextureDir). Its callers ignore the eax it leaves */
+void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
+{
+	static const u32 shapes[5] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984, 0x15915d0 };
+	u8 *colours = scene + 0x15a950c + p * 0x47fd2 + part * 2;
+	colours[0] = hue_byte(&h1);
+	colours[0xa] = level_byte(&s1);
+	colours[0x14] = level_byte(&v1);
+	colours[1] = hue_byte(&h2);
+	colours[0xb] = level_byte(&s2);
+	colours[0x15] = level_byte(&v2);
+	char dir[0x100];
+	sprintf(dir, (const char *)0x4c77f8, p);
+	if ((unsigned)part <= 4)
+		shape_setTextureDir(scene + shapes[part] + p * 0x47fd2, dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
+		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
+}
+#undef K

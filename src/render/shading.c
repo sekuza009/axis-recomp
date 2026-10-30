@@ -199,3 +199,64 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 		}
 	}
 }
+
+/* a light's colour (bytes +4 .. +6) at intensity i: each (c x i) / 256, added to base (when given), at most 255 */
+static void light_mix(u8 *out, const u8 *light, int i, const u8 *base)
+{
+	for (int c = 0; c < 3; c++) {
+		int v = light[4 + c] * i / 256 + (base ? base[c] : 0);
+		out[c] = (u8)(v > 0xff ? 0xff : v);
+	}
+	out[3] = 0xff;
+}
+
+/* the intensity ((1 - d) x 0x4aa264, at least 0) of a light at the cosine d */
+static int light_level(long double d)
+{
+	int i = ftol(fmul_m(fld_m(K(0x4a9424)) - d, K(0x4aa264)));
+	return i < 0 ? 0 : i;
+}
+
+/* 0x472400 (thiscall on the scene): a ground layer's vertex colours (RGBA into cols) over rows r0 .. r1 and columns
+   c0 .. c1 of its grid (+0x20 + 1 wide; normals at +0x44): for each directional light (the scene's 0x2c-byte light
+   records from +0x9cd008, +0x9d8000 of them: kind 1; 0 and 2 are skipped, another kind is a fatal message) the
+   intensity from the normal against its direction (+0x14), the first written (first == 1), the rest added; a layer
+   with sky colours (+0x30 1) gets the light from straight above (1 for a layer of kind 1, else 0x4a9424) in its 12
+   colours at +0xfc too. A kind-2 layer only clears its light map (+0x48) and sky colours. Its caller ignores the
+   eax it leaves */
+void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
+{
+	if (GAME_VAR(int, layer) == 2) {
+		memset(GAME_VAR(void *, layer + 0x48), 0xff, (GAME_VAR(int, layer + 0x20) + 1) * (GAME_VAR(int, layer + 0x1c) + 1) * 4);
+		if (GAME_VAR(int, layer + 0x30) == 1)
+			memset(layer + 0xfc, 0xff, 12 * 4);
+		return;
+	}
+	for (int li = 0; li < GAME_VAR(int, scene + 0x9d8000); li++) {
+		u8 *light = scene + 0x9cd008 + li * 0x2c;
+		const float *dir = (const float *)(light + 0x14);
+		int kind = GAME_VAR(int, light);
+		if (kind == 0 || kind == 2)
+			continue;
+		if (kind != 1) {
+			sys_fatalError((char *)0xae2eb8, (const char *)0x4c74a8, kind);
+			continue;
+		}
+		for (int row = r0; row <= r1; row++)
+			for (int col = c0; col <= c1; col++) {
+				int v = (GAME_VAR(int, layer + 0x20) + 1) * row + col;
+				const float *n = GAME_VAR(const float *, layer + 0x44) + v * 3;
+				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
+				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
+			}
+		if (GAME_VAR(int, layer + 0x30) == 1) {
+			const float *above = GAME_VAR(int, layer) == 1 ? K(0x4a9474) : K(0x4a9424);
+			int i = light_level(MUL(above, &dir[1]));
+			u8 sky[4];
+			light_mix(sky, light, i, first == 1 ? NULL : layer + 0xfc);
+			for (int k = 0; k < 12; k++)
+				memcpy(layer + 0xfc + k * 4, sky, 4);
+		}
+		first = 0;
+	}
+}
