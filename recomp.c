@@ -4461,7 +4461,8 @@ void room_43adc0(void);
    0x4df9ed, hidden while edited: 0x9dd388 / 0x9dd568); unless a field is being edited (0x68039c) or the form is
    locked (0x907b2c) the hovered value (room_432380) gets a shadow and a highlight; three buttons (0x75a8a4, none
    bright while 0x4db508); then the custom option / map preview (room_drawCustomOption) */
-LIFT_PLAIN(room_drawGameSettings, 43bfe0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void room_drawGameSettings(void);
 /* batch 138 (lifted/grp84.c): the armour screen's colour editor */
 #include "lifted/grp84.c"
 /* 0x41a280 armc_41a280(): the colour editor (panels at 0x4dcc98 - 200, 0x4dcc94): two translucent boxes headed
@@ -6434,7 +6435,15 @@ static int g_mockMkdirFail, g_mockFindCount, g_mockFindPos;
 static void *g_exitJmp[5];
 static int g_inRun;
 static int g_exitRuns;   /* runs of the current state test that ended in exit (both sides counted) */
-static void __cdecl mock_exit(int code) { g_exitRuns++; mock_rec(0x49edac, 1, (DWORD)code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
+/* where the last exit() was called from (sys_fatalError 0x46c82d for a missing file or texture), named in the
+   test's exit line */
+static DWORD g_exitFrom;
+static void __cdecl __attribute__((noinline)) mock_exit(int code)
+{
+	g_exitRuns++; g_exitFrom = (DWORD)__builtin_return_address(0) - 5;
+	mock_rec(0x49edac, 1, (DWORD)code, 0, 0, 0);
+	if (g_inRun) __builtin_longjmp(g_exitJmp, 1);
+}
 /* a thread procedure's ExitThread ends the run as exit() does; WaitForMultipleObjects answers from g_mockWaits
    (then 1 for ever, so a wait loop ends) */
 static void WINAPI mstub_ExitThread(DWORD code) { mock_rec(0x4a9180, 1, code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
@@ -7441,7 +7450,8 @@ static void run_stest(const STest *t)
 	}
 	restore_data();
 	report(t->name, &st);
-	if (g_exitRuns) say("      (%s: %d of its %d runs ended in exit)\n", t->name, g_exitRuns, 2 * st.n);   /* a test that exits early covers less */
+	if (g_exitRuns) say("      (%s: %d of its %d runs ended in exit, the last called at %08lx)\n", t->name, g_exitRuns, 2 * st.n,
+	                    (unsigned long)g_exitFrom);   /* a test that exits early covers less */
 	if (GetTickCount() - t0 >= 400) say("      (%s took %lu ms)\n", t->name, GetTickCount() - t0);
 }
 
@@ -14054,8 +14064,8 @@ ST(room_43adc0, gamelist_setup();, (CALL_PLAIN(0x43adc0, 0, 0, 0, 0, 0), 0), (ro
 static void gamesettings_setup(void)
 {
 	textpass_setup();
-	if (!irnd(0, 3)) { mappreview_setup(0x4df9e8); G32(0x680cd0) = 1; *(char *)0x4df9ea = (char)irnd(1, 2); }
-	else { menutex_setup(); G32(0x680cd0) = 0; *(char *)0x4df9ea = irnd(0, 1) ? 0 : (char)irnd(1, 2); *(char *)0x4df9e8 = (char)irnd(0, 15); }
+	/* the map preview is stubbed (its own test): the test texture set always, the map and custom rules random */
+	menutex_setup(); G32(0x680cd0) = irnd(0, 1); *(char *)0x4df9ea = irnd(0, 1) ? 0 : (char)irnd(1, 2); *(char *)0x4df9e8 = (char)irnd(0, 15);
 	menutex_fonts(0);
 	int id = G32(0x9dae1c);
 	G32(0x9db0a4) = id; G32(0x4deb50) = id; G32(0x4deb4c) = id;
@@ -14077,7 +14087,17 @@ static void gamesettings_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x9dd1b8) + irnd(0x9f, 0x1a7); G32(0x4ded6c) = G32(0x9dd1bc) + irnd(0x2f, 0x133); }
 }
-T_PLAIN(room_drawGameSettings, 0x43bfe0, gamesettings_setup();, 0, 0, 0, 0, 0)
+/* the hit test (room_432380) and the map preview (room_drawCustomOption; it ends the game when its picture is
+   missing, in about a fifth of the runs) stubbed, each with its own test: any item or none */
+static void gamesettings_hover_setup(void)
+{
+	gamesettings_setup();
+	static const DWORD hit[] = { 0x432380, 2, 0x43bde0, 1, 0 };
+	callee_stubs(hit, 0);
+	callee_ret(0x432380, (DWORD)irnd(-1, 15));
+}
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(room_drawGameSettings, gamesettings_hover_setup();, (CALL_PLAIN(0x43bfe0, 0, 0, 0, 0, 0), 0), (room_drawGameSettings(), 0))
 /* batch 138 */
 /* the colour editor: menutex_setup's set (fonts and the slider texture), panel positions, slots 0..5, every slot's
    colours (hues -360..720 degrees, the rest -1..2 so the caps at 99 and the 180 wrap both show), the part names on
@@ -17693,7 +17713,7 @@ static const STest g_stests[] = {
 	/* batch 136 */
 	T(room_43adc0, 0, 300, 0),
 	/* batch 137 */
-	T(room_drawGameSettings, 0, 300, 0),
+	T(room_drawGameSettings, 0, 800, 0),
 	/* batch 138 */
 	T(armc_41a280, 0, 300, 0),
 	/* batch 139 */
