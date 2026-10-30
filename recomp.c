@@ -15723,7 +15723,20 @@ ST(room_43ea10, room43ea10_setup();, (CALL_PLAIN(0x43ea10, 0, g_a[0], g_a[1], g_
 static const DWORD g_gs_40cfd0[] = { 0x405690, 1, 0x406200, 1, 0x406640, 0, 0x406810, 0, 0x4091b0, 0, 0x40a070, 0, 0x41ee40, 0, 0x428c30, 4, 0x453260, 0, 0 };
 static const DWORD g_gi_40cfd0[] = { 0x4db520, 0x4b071c, 0x4dba80, 0x4dbaf0, 0x4dbaf8, 0x4db51c, 0x4db524, 0x4db70c, 0x4db714, 0x4db71c, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4db8c8, 0x4db8cc, 0x4db8d0, 0x4db8d4, 0x4dba90, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4df018, 0x5b1914, 0x68039c, 0x76d41c, 0x76d484, 0x907b2c, 0x90d1c4, 0xa0d7a0, 0 };
 static const DWORD g_gb_40cfd0[] = { 0x4dbbd4, 0x9dc92c, 0 };
-T_PLAIN(lobbyJoin_draw, 0x40cfd0, gen_setup(g_gs_40cfd0, g_gi_40cfd0, g_gb_40cfd0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* gen_setup, and now and then the search finishing (mode 2, searching, the answer in: the switch on 0x76d484 -1 .. 4)
+   or a typed password (0x9dc92c) for the game joined, equal to the game's (+0x3b of 0x76d41c's record) or not */
+static void lobbyjoin_setup(void)
+{
+	gen_setup(g_gs_40cfd0, g_gi_40cfd0, g_gb_40cfd0);
+	if (irnd(0, 2)) { G32(0x4dbb3c) = 2; G32(0x4db51c) = irnd(0, 4); G32(0x90d1c4) = 0; }
+	if (!irnd(0, 2)) { G32(0x4db858) = 1; G32(0x4df018) = 1; G32(0x76d484) = irnd(-2, 5); }
+	if (!irnd(0, 2)) {
+		G32(0x4dbbec) = 1; G32(0x4db8bc) = 1; G32(0x4db70c) = 1; G32(0x68039c) = 0;
+		G32(0x76d41c) = irnd(0, 15); ((char *)0x9dc92c)[irnd(0, 12)] = 0;
+		if (irnd(0, 2)) strcpy((char *)0x9087ff + G32(0x76d41c) * 0x4a, (char *)0x9dc92c);
+	}
+}
+T_PLAIN(lobbyJoin_draw, 0x40cfd0, lobbyjoin_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 /* batch 184: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_4076c0[] = { 0x4036c0, 0, 0x406950, 0, 0x406a60, 0, 0x406b60, 0, 0x406bd0, 0, 0x406c30, 0, 0x407270, 0, 0x407300, 0, 0x407410, 0, 0 };
 static const DWORD g_gi_4076c0[] = { 0x4db508, 0x4db51c, 0x4db55c, 0x4db8b4, 0x907b2c, 0 };
@@ -17672,7 +17685,7 @@ static const STest g_stests[] = {
 	T(lobby_connect, 0, 200, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_4355b0, 0, 200, 0), T(arena_405b80, 0, 200, 0),
 	/* batch 183 */
 	T(arena_createClick, 0, 200, 0), T(lobbyTop_connect, 0, 200, 0), T(arena_loadAndQuit, 0, 200, 0), T(room_43ea10, 0, 200, 0),
-	T(lobbyJoin_draw, 0, 200, 0),
+	T(lobbyJoin_draw, 0, 600, 0),
 	/* batch 184 */
 	T(lobby_onStateChange, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_onStateChange, 0, 200, 0), T(room_43e290, 0, 200, 0),
 	T(arena_launchFromFile, 0, 200, 0), T(menuState800_gameRoom, 0, 200, 0),
