@@ -17476,7 +17476,7 @@ static const STest g_stests[] = {
 	T(net_startThread, 1, 300, 0), T(net_452a30, 0, 300, 0), T(net_452bd0, 0, 300, 0), T(net_connect, 1, 300, 0),
 	T(lobby_openConnection, 1, 300, 0),
 	/* batch 99 */
-	T(net_recv, 0, 400, 0),
+	T(net_recv, 0, 1500, 0),
 	/* batch 100 */
 	T(armc_461250, 0, 300, 0), T(lobby_checkReservedName3, 0, 300, 0), T(lobby_checkReservedName2, 0, 300, 0),
 	/* batch 101 */
