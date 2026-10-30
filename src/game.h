@@ -222,6 +222,14 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define shape_findDatEntry(name) GAME_CDECL(0x466d60, void *, const char *)(name)   /* the shape's file in the shape dat */
 #define model_loadFrom(shape, path, mem, size) GAME_THISCALL(0x464bf0, void, void *, const char *, void *, int)(shape, path, mem, size)
 #define shape_bindTextureBy(shape, textures, a, b, c, d, e, f, g) GAME_THISCALL(0x466430, void, void *, void *, u32, u32, u32, u32, u32, u32, u32)(shape, textures, a, b, c, d, e, f, g)
+#define load_4723e0(scene) GAME_THISCALL(0x4723e0, void, void *)(scene)
+#define FUN_0047cfd0(scene) GAME_THISCALL(0x47cfd0, void, void *)(scene)
+#define load_479a60(scene) GAME_THISCALL(0x479a60, void, void *)(scene)
+#define load_48fe10(scene) GAME_THISCALL(0x48fe10, void, void *)(scene)
+#define load_48fc30(scene) GAME_THISCALL(0x48fc30, void, void *)(scene)
+#define load_471010(scene) GAME_THISCALL(0x471010, void, void *)(scene)
+#define tex_454e60(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
+#define tex_textureFileExist(tm, name) GAME_THISCALL(0x4557e0, int, void *, const char *)(tm, name)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

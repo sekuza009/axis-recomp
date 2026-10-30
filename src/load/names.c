@@ -323,3 +323,44 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 #undef crt_fread
 #undef fatal
 }
+
+/* 0x4555b0 (thiscall on a texture manager): the record for texture name (upper-cased; empty: -1) with flags and two
+   colours (h1 s1 v1, h2 s2 v2): among the +0xcd128 records (0x68 bytes from +0xc0128: the name, flags +0x44, the
+   colours +0x48 ..) a hit keeps it as it is when flags and colours match (a NaN matches anything, as fcom has it),
+   else takes them and is recoloured (tex_recolourMaterial). A miss whose file is there (tex_textureFileExist; else
+   -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below +0xcd130.
+   Returns the record's index */
+int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, float h1, float s1, float v1, float h2, float s2, float v2)
+{
+	char key[0x40];
+	strcpy(key, name);
+	FUN_0046cb60(key);
+	if (!key[0])
+		return -1;
+	int i = 0;
+	for (; i < FIELD(int, tm, 0xcd128); i++) {
+		u8 *rec = tm + 0xc0128 + i * 0x68;
+		if (strcmp((const char *)rec, key))
+			continue;
+		const float *c = (const float *)(rec + 0x48);
+#define SAME(a, b) (!((a) < (b)) && !((a) > (b)))
+		if (FIELD(u32, rec, 0x44) == flags && SAME(c[0], h1) && SAME(c[2], v1) && SAME(c[1], s1) && SAME(c[3], h2) &&
+		    SAME(c[5], v2) && SAME(c[4], s2))
+			return i;
+#undef SAME
+		FIELD(u32, rec, 0x44) = flags;
+		tex_recolourMaterial(tm, i, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1, *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
+		return i;
+	}
+	if (!tex_textureFileExist(tm, key))
+		return -1;
+	if (FIELD(int, tm, 0xcd128) < 0x200) {
+		i = FIELD(int, tm, 0xcd128);
+		tex_454e60(tm + 0xc0128 + i * 0x68, key, -1, flags, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1, *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
+		FIELD(int, tm, 0xcd128)++;
+	} else
+		sys_fatalErrorN((char *)0xa0dff8, (const char *)0x4b3fa8, FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
+	if (FIELD(int, tm, 0xcd128) < FIELD(int, tm, 0xcd130))
+		tex_bind(tm, i);
+	return i;
+}

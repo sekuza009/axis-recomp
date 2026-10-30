@@ -3398,7 +3398,8 @@ THISCALL void map_loadMissionInfoFrom(char *map, DWORD name);
 #include "lifted/grp11.c"
 /* 0x470ad0 (thiscall) scene_reset: reset the scene's subsystems (lists, effects, actors, particles, scripts, the
    level grid), the view to identity, start/item point counts to 0, the id tables to -1 */
-static THISCALL DWORD scene_reset(char *scene) { return run_lifted(lift_470ad0, (DWORD)scene, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void scene_reset(char *scene);
 /* 0x466120 (thiscall) shape_read(f, mem, memSize): release the old data, read the 0x34-byte header (data size +4,
    part count +0x10, version +0x30; an old version has 0x68-byte part records, 0x18 less each), the data memory from
    mem or allocated, the part records (0x80 apart), then per part its vertices, normals, colours, texture
@@ -3635,11 +3636,8 @@ THISCALL void tex_bind(char *tm, DWORD i);
    upper-cased ('/' -> '\'; empty gives -1) and looked up among the count +0xcd128 records: a hit with other flags or
    colours takes them and is recoloured (tex_recolourMaterial); a miss whose file exists adds a record (512 at most,
    else fatal), bound at once while the count is below +0xcd130; no file gives -1 */
-static THISCALL DWORD tex_allocIdBy(char *tm, DWORD name, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f)
-{
-	DWORD v[8] = { name, flags, a, b, c, d, e, f };
-	return run_lifted(lift_4555b0, (DWORD)tm, 8, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD tex_allocIdBy(char *tm, DWORD name, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* 0x456be0 (thiscall) tex_getIdByName(...the same): try the six managers (+4..+0x18, null ones skipped) in turn;
    manager k's index i gives k * 512 + i; none is fatal */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -11810,6 +11808,7 @@ static void texalloc_setup(void)
 	g_a[1] = S32(r, 0xc016c);
 	for (int k = 0; k < 6; k++) g_a[2 + k] = S32(r, 0xc0170 + k * 4);
 	if (irnd(0, 1)) { int k = irnd(1, 7); if (k == 1) g_a[1] = irnd(0, 3); else GF(&g_a[k]) = (float)irnd(-500, 500) / 100.0f; }
+	if (!irnd(0, 15)) { S32(tm, 0xcd128) = 0x200; nm[0] ^= 0x55; }   /* a full table (its own record renamed: a miss) */
 }
 ST(tex_allocIdBy, texalloc_setup();,
    TC(int, 0x4555b0, char *, int, int, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
@@ -17584,7 +17583,7 @@ static const STest g_stests[] = {
 	/* batch 63 */
 	T(map_loadPlayInfoFrom, 0, 400, 0), T(map_loadMissionInfoFrom, 0, 400, 0),
 	/* batch 64 */
-	T(scene_reset, 0, 40, 0), T(shape_read, 0, 40, 0),
+	T(scene_reset, 0, 400, 0), T(shape_read, 0, 40, 0),
 	/* batch 65 */
 	T(light_computeLayerLightBy, 0, 400, 0), T(render_processRenderingBy, 0, 200, 0),
 	/* batch 66 */
@@ -17620,7 +17619,7 @@ static const STest g_stests[] = {
 	/* batch 81 */
 	T(tex_bind, 0, 300, 0),
 	/* batch 82 */
-	T(tex_allocIdBy, 1, 300, 0), T(tex_getIdByName, 1, 300, 0),
+	T(tex_allocIdBy, 1, 400, 0), T(tex_getIdByName, 1, 300, 0),
 	/* batch 83 */
 	T(shape_bindTextureBy, 0, 300, 0), T(FUN_00466650, 0, 300, 0),
 	/* batch 84 */

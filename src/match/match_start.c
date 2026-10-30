@@ -229,3 +229,43 @@ void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
 	if (second[t])
 		FIELD(int, flags, second[t]) = 1;
 }
+
+/* a 4 x 4 identity matrix (floats, as their bits) */
+static void identity(u32 *m)
+{
+	for (int k = 0; k < 16; k++)
+		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
+}
+
+/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (load_4723e0; the 100 dwords at +0x202ea80 and
+   +0x202ef30 cleared; the object list, FUN_0047cfd0, load_479a60, load_48fe10), the camera at the origin looking down
+   -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
+   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (load_48fc30, script_reset) and load_471010. Its
+   callers ignore the eax it leaves */
+void THISCALL (scene_reset)(u8 *s)
+{
+	load_4723e0(s);
+	memset(s + 0x202ea80, 0, 0x64 * 4);
+	FIELD(int, s, 0x202ef30) = 0;
+	load_490d10(s);
+	FUN_0047cfd0(s);
+	load_479a60(s);
+	load_48fe10(s);
+	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */
+	memcpy(s + 0x20f3970, camera, sizeof camera);
+	memcpy(s + 0x20f3994, s + 0x20f3970, 12);
+	identity((u32 *)(s + 0x20f39a0));
+	identity((u32 *)(s + 0x20f39e0));
+	FIELD(int, s, 0x20f3adc) = 0;
+	FIELD(int, s, 0x20fadf4) = 0;
+	FIELD(int, s, 0x20fcd38) = 0;
+	FIELD(int, s, 0x20fcd3c) = -1;
+	FIELD(int, s, 0x20fcd40) = FIELD(int, s, 0x20fcd44) = FIELD(int, s, 0x20fcd48) = 0;
+	s[0x20fcd4c] = 0;
+	FIELD(int, s, 0x20fce4c) = -1;
+	memset(s + 0x20fce50, 0xff, 0x64 * 4);
+	load_48fc30(s);
+	script_reset((Stage *)s);
+	load_471010(s);
+	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
+}
