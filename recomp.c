@@ -10057,7 +10057,7 @@ ST(cfg_loadAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWOR
 ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
 ST(lobby_405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_405140()))
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
-T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 40);, 0, 0, 0, 0, 0)
+T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, 0, 0, 0, 0, 0)
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
 static void cfgread_setup(void) { vfs_content(95, 0x1000); g_vfsOpenFail = 0; g_paintStacks = 1; }
 T_PLAIN(cfg_parseKeyNames, 0x42e730, cfgread_setup();, 0, VFS_FILE(0), 0, 0, 0)
@@ -17327,7 +17327,7 @@ static const STest g_stests[] = {
 	T(actor_45ebc0, 0, 40, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(FUN_004050a0, 1, 40, 0), T(lobby_405140, 1, 40, 0),
-	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 40, 0), T(cfg_parseKeyNames, 1, 40, 0), T(cfg_videoModeNames, 1, 40, 0),
+	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 40, 0), T(cfg_videoModeNames, 1, 40, 0),
 	T(cfg_gameTypeNames, 1, 40, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 40, 0),
 	/* batch 53 */
 	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
