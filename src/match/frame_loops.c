@@ -653,3 +653,223 @@ void THISCALL (item_update)(u8 *s, float dt)
 }
 #undef A
 #undef I
+
+#define P(type, offset) GAME_VAR(type, p + (offset))
+#define K(address) ((const float *)(address))
+
+/* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
+static u32 table_rand_below(u32 n)
+{
+	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
+	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	return r;
+}
+
+/* the particle's direction (+0x10, from 0xa0e7a8 through its matrix +0x2c) */
+static void particle_heading(u8 *p)
+{
+	const float *m = (const float *)(p + 0x2c), *v = (const float *)0xa0e7a8;
+	for (int r = 0; r < 3; r++)
+		P(float, 0x10 + r * 4) = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
+		                                    &m[12 + r]));
+}
+
+/* a matrix from the particle's own (+0x28) turned by a random whole degree about z (its +0x2c), and the direction */
+static void particle_spin(u8 *p)
+{
+	glPushMatrix();
+	glLoadIdentity();
+	glLoadMatrixf(P(const float *, 0x28));
+	glRotatef((float)table_rand_below(360), 0.0f, 0.0f, 1.0f);
+	glGetFloatv(0xba6, (float *)(p + 0x2c));
+	glPopMatrix();
+	particle_heading(p);
+}
+
+/* the particle's +0x2c the inverse of a look from its position (+0x10) to its target (+0x1c), stretched by their
+   distance (z) and xy (1, or by size +0x80) */
+static void particle_aim(u8 *p, int by_size)
+{
+	float d[3];
+	for (int k = 0; k < 3; k++)
+		d[k] = f32(fsub_m(fld_m((const float *)(p + 0x1c) + k), (const float *)(p + 0x10) + k));
+	float len = f32(Vec3_normalize(d));
+	glPushMatrix();
+	glLoadIdentity();
+	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m((const float *)(p + 0x80)), K(0x4a9504)), K(0x4a9424))) : 1.0f;
+	float z = f32(fld_m(K(0x4a9424)) / fmul_m(fld_m(&len), K(0x4a9504)));
+	glScalef_bits(*(u32 *)&xy, *(u32 *)&xy, *(u32 *)&z);
+	gluLookAt(P(float, 0x10), P(float, 0x14), P(float, 0x18), P(float, 0x1c), P(float, 0x20), P(float, 0x24), 0.0, 1.0, 0.0);
+	float m[16];
+	glGetFloatv(0xba6, m);
+	Mat4_invert((float *)(p + 0x2c), m);
+	glPopMatrix();
+}
+
+/* a beam (kinds 25 / 26, its colour): its matrix looking back from the target (+0x1c) away from the position, and
+   unless it is a remote one (+0xc 1) small particles (kind 0, of its size) along it, one per 200 units */
+static void particle_beam(u8 *s, u8 *p, u32 colour)
+{
+	P(int, 0x70) = 0;
+	P(u32, 0x78) = colour;
+	glPushMatrix();
+	glLoadIdentity();
+	const float *at = (const float *)(p + 0x1c), *from = (const float *)(p + 0x10);
+	gluLookAt(at[0], at[1], at[2], (double)(fld_m(&at[0]) * 2 - fld_m(&from[0])), (double)(fld_m(&at[1]) * 2 - fld_m(&from[1])),
+	          (double)(fld_m(&at[2]) * 2 - fld_m(&from[2])), 0.0, 1.0, 0.0);
+	float m[16];
+	glGetFloatv(0xba6, m);
+	Mat4_invert((float *)(p + 0x2c), m);
+	glPopMatrix();
+	if (P(int, 0xc) == 1)
+		return;
+	float d[3];
+	for (int k = 0; k < 3; k++)
+		d[k] = f32(fsub_m(fld_m(&from[k]), &at[k]));
+	long double len = Vec3_normalize(d);
+	float step = f32(len);
+	if (!(len > 0))
+		return;
+	int n = ftol(fmul_m(fld_m(&step), K(0x4aa428)));
+	u32 rec[13];
+	if (n <= 1) {
+		memset(rec, 0, sizeof rec);
+		memcpy(&rec[2], at, 12);
+		memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+		float size = f32(fld_m((const float *)(p + 0x80)));
+		memcpy(&rec[11], &size, 4);
+		particle_spawn(s, rec);
+		return;
+	}
+	step = f32(fld_m(&step) / (long double)n);
+	for (int k = 0; k < n; k++) {
+		long double sx = fmul_m(fld_m(&d[0]), &step);
+		float sy = f32(fmul_m(fld_m(&d[1]), &step)), sz = f32(fmul_m(fld_m(&d[2]), &step));
+		float kf = f32((long double)k);
+		float y = f32(fmul_m(fld_m(&sy), &kf)), z = f32(fmul_m(fld_m(&sz), &kf));
+		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(fadd_m(fld_m(&y), &at[1])), f32(fadd_m(fld_m(&z), &at[2])) };
+		rec[0] = rec[1] = 0;
+		memcpy(&rec[2], pos, 12);
+		memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+		rec[8] = rec[9] = rec[10] = 0;
+		float size = f32(fld_m((const float *)(p + 0x80)));
+		memcpy(&rec[11], &size, 4);
+		rec[12] = 0;
+		particle_spawn(s, rec);
+	}
+}
+
+/* a trail particle (kinds 40 .. 49): its three points (from the descriptor's +0x24), and its two ends' widths and
+   lengths (+0xb4 ..) from the descriptor's +0x28 sizes, either as size x 0.005 + 0.5 or (by d, the particle's size
+   plus a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
+static void particle_trail(u8 *p, const u8 *desc, u32 margin)
+{
+	P(u32, 0x70) = 0x40000000;   /* 2 s */
+	memcpy(p + 0x84, GAME_VAR(const u8 *, desc + 0x24), 12);
+	memcpy(p + 0x90, GAME_VAR(const u8 *, desc + 0x24) + 0xc, 12);
+	memcpy(p + 0x9c, GAME_VAR(const u8 *, desc + 0x24) + 0x18, 12);
+	const float *q = GAME_VAR(const float *, desc + 0x28);
+	static const u8 from[5] = { 0, 2, 3, 4, 5 }, to[5] = { 0xb4, 0xbc, 0xc0, 0xc4, 0xc8 };
+	if (!margin) {
+		for (int k = 0; k < 5; k++) {
+			P(float, to[k]) = f32(fadd_m(fmul_m(fld_m(&q[from[k]]), K(0x4aa428)), K(0x4a942c)));
+			if (k == 0)
+				P(u32, 0xb8) = 0x3f000000;
+		}
+	} else {
+		long double d = fadd_m(fld_m((const float *)(p + 0x80)), K(margin));
+		for (int k = 0; k < 5; k++) {
+			P(float, to[k]) = f32(fmul_m(fadd_m(fld_m(&q[from[k]]) / d, K(0x4a9424)), K(0x4a942c)));
+			if (k == 0)
+				P(u32, 0xb8) = 0x3f000000;
+		}
+	}
+	P(u32, 0xd4) = P(u32, 0xd8) = P(u32, 0xdc) = GAME_VAR(u32, 0xa1f23c);
+}
+
+/* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from +0x20a99c0) set up from its descriptor: a
+   serial id, in use. A descriptor flagged +0x30 is a kind 50 effect (its 0x48 bytes from +0x34). Otherwise the
+   kind (+0), owner, position, target, a matrix to copy, the size (+0x2c); then by kind its life (+0x70) and: 2 / 3
+   a sound at the position; 4 its colour from +0x20; 9 a fade; 10 / 11 / 18 a random spin; 12 .. 17 the heading
+   through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 trails */
+void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
+{
+	u8 *p = s + 0x20a99c0 + slot * 0x12c;
+	P(int, 0) = GAME_VAR(int, s + 0x20f2da8)++;
+	P(int, 4) = 1;
+	if (GAME_VAR(int, desc + 0x30) == 1) {
+		P(int, 8) = 0x32;
+		memcpy(p + 0xe4, desc + 0x34, 0x18);
+		memcpy(p + 0xfc, desc + 0x4c, 12);
+		memcpy(p + 0x108, desc + 0x58, 12);
+		memcpy(p + 0x114, desc + 0x64, 12);
+		memcpy(p + 0x120, desc + 0x70, 12);
+		P(u32, 0x70) = 0x3c23d70a;   /* 0.01 */
+		P(int, 0x6c) = P(int, 0x74) = 0;
+		return;
+	}
+	P(u32, 8) = GAME_VAR(u32, desc);
+	P(u32, 0xc) = GAME_VAR(u32, desc + 4);
+	memcpy(p + 0x10, desc + 8, 12);
+	memcpy(p + 0x1c, desc + 0x14, 12);
+	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);
+	if (P(u32, 0x28))
+		FUN_0047d5a0(p + 0x2c, P(const void *, 0x28));
+	P(int, 0x6c) = 0;
+	P(u32, 0x70) = 0x3f800000;
+	P(int, 0x74) = 0;
+	P(u32, 0x78) = GAME_VAR(u32, 0xa1f23c);
+	P(int, 0x7c) = 0;
+	P(u32, 0x80) = GAME_VAR(u32, desc + 0x2c);
+	int kind = P(int, 8);
+	switch (kind) {
+	case 0: case 1: case 8: P(u32, 0x70) = 0x3f000000; break;   /* 0.5 s */
+	case 2:
+	case 3:
+		GAME_CDECL(0x456ed0, void, int, const float *, const float *, const float *, u32)(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
+		                                                                                (const float *)(p + 0x10), (const float *)(s + 0x20f397c),
+		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
+		break;
+	case 4:
+		P(int, 0x70) = 0;
+		P(u32, 0x78) = P(u32, 0x20);
+		break;
+	case 5: case 6: case 7: P(int, 0x70) = 0; break;
+	case 9:
+		P(u32, 0x70) = 0x40000000;
+		P(u32, 0x84) = 0x3dcccccd;
+		break;
+	case 10: case 11: case 18:
+		P(u32, 0x70) = 0x3c23d70a;
+		particle_spin(p);
+		break;
+	case 12: case 13: case 17:
+		P(u32, 0x70) = 0x3c23d70a;
+		particle_heading(p);
+		break;
+	case 14: case 15: case 16:
+		P(u32, 0x70) = 0x3f000000;
+		particle_heading(p);
+		break;
+	case 20: case 21:
+		P(u32, 0x70) = 0x3c23d70a;
+		particle_aim(p, 0);
+		break;
+	case 22: P(u32, 0x70) = 0x3c23d70a; break;
+	case 24:
+		P(u32, 0x70) = 0x3f000000;
+		particle_aim(p, 1);
+		break;
+	case 25: particle_beam(s, p, 0xffc4c4ff); break;   /* bytes ff c4 c4 ff */
+	case 26: particle_beam(s, p, 0xffffc4c4); break;   /* bytes c4 c4 ff ff */
+	case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38:
+		P(u32, 0x70) = 0x3f800000;
+		break;
+	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
+	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, 0x4a93f0); break;
+	case 45: particle_trail(p, desc, 0x4aa424); break;
+	}
+}
+#undef P
+#undef K

@@ -5392,7 +5392,8 @@ THISCALL DWORD particle_spawn(char *ps, DWORD desc);
 /* 0x475070 particle_init(slot, desc) (ret 8): the slot from the descriptor (kind +0x30, positions, velocities,
    colours, sizes, life), its matrix (Mat4_invert, real), the sound (sound_play3D) and child particles
    (particle_spawn) */
-static THISCALL DWORD particle_init(char *ps, DWORD slot, DWORD desc) { DWORD v[2] = { slot, desc }; return run_lifted(lift_475070, (DWORD)ps, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void particle_init(char *ps, DWORD slot, DWORD desc);
 /* batch 188 (lifted/grp143.c, grp144.c: split, bullet_spawn calls bullet_init): bullets */
 #include "lifted/grp143.c"
 #include "lifted/grp144.c"
@@ -16005,8 +16006,10 @@ static void particles_setup(const DWORD *stubs)
 	char *d = BUF + 0x100;
 	for (int k = 0; k < 0x30; k++) GF(d + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
 	S32(d, 0x30) = irnd(0, 2);
+	S32(d, 0) = irnd(-1, 52); S32(d, 4) = irnd(0, 2);   /* a kind (all of them, and past the last), a remote one now and then */
 	/* +0x20 a matrix or none, +0x24 / +0x28 vectors: pointers into BUF (the rest values, +0x58 / +0x64 inline vectors) */
 	S32(d, 0x20) = irnd(0, 2) ? (int)(BUF + 0x200) : 0; S32(d, 0x24) = (int)(BUF + 0x240); S32(d, 0x28) = (int)(BUF + 0x250);
+	if (S32(d, 0) == 10 || S32(d, 0) == 11 || S32(d, 0) == 18) S32(d, 0x20) = (int)(BUF + 0x200);   /* (they load their matrix: none crashes the original) */
 	for (int k = 0; k < 0x30; k++) GF(BUF + 0x200 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
 	S32(BUF, 0x230) = 0;
 	for (int k = 0; k < 3; k++) GF(0xa0e7a8 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
