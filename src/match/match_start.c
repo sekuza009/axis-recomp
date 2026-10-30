@@ -209,3 +209,23 @@ void THISCALL (game_processGameModeInit)(Scene *s)
 	else
 		first_round(s);
 }
+
+/* 0x4732f0 (thiscall on the scene): game type t (+0x20f3ab8) and its rule flags (+0x20f3abc .. +0x20f3ad8, cleared
+   first): the odd types 1 .. 13 set +0x20f3abc; types 2 .. 11 by pairs set one of +0x20f3ac0 .. +0x20f3ad0, 12 sets
+   +0x20f3ad4 and 13 +0x20f3ad8. Its callers ignore the eax it leaves */
+void THISCALL (game_setGameTypeFlags)(u8 *scene, int t)
+{
+	static const u16 second[14] = { 0, 0, 0x20f3ac0 - 0x20f3ab8, 0x20f3ac0 - 0x20f3ab8, 0x20f3ac4 - 0x20f3ab8, 0x20f3ac4 - 0x20f3ab8,
+		0x20f3ac8 - 0x20f3ab8, 0x20f3ac8 - 0x20f3ab8, 0x20f3acc - 0x20f3ab8, 0x20f3acc - 0x20f3ab8, 0x20f3ad0 - 0x20f3ab8,
+		0x20f3ad0 - 0x20f3ab8, 0x20f3ad4 - 0x20f3ab8, 0x20f3ad8 - 0x20f3ab8 };
+	u8 *flags = scene + 0x20f3ab8;
+	for (int k = 1; k <= 8; k++)
+		FIELD(int, flags, k * 4) = 0;
+	FIELD(int, flags, 0) = t;
+	if (t < 1 || t > 13)
+		return;
+	if (t % 2)
+		FIELD(int, flags, 4) = 1;
+	if (second[t])
+		FIELD(int, flags, second[t]) = 1;
+}

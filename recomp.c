@@ -2300,7 +2300,8 @@ __asm__(".text\n"
    the team slot table, killer/victim names and the weapon name of the killer). Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_playerJoinedTeam(void *scene, int player, int team);
-static THISCALL int msg_playerChangedTeam(char *scene, int a, int b) { DWORD v[2] = { (DWORD)a, (DWORD)b }; return (int)run_lifted(lift_462e30, (DWORD)scene, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void msg_playerChangedTeam(char *scene, int a, int b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_kill(void *scene, int victim, int killer);
 /* 0x482e30 (thiscall) space_testSphere(r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
@@ -2841,7 +2842,8 @@ int net_resolveHost(const char *host);
    0x48e0f0 match_48e0f0(player): packet 0x02, the player's name, team, colours and parts, sent once when flagged;
    0x48e680 match_48e680: packets 0x03..0x0d for the first pending match event (strings, team and score changes);
    0x48e2c0 match_48e2c0(player): the player's state (position, angles, flags) and five shot slots */
-static THISCALL DWORD match_48e990(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e990, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_48e990(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendState_48ead0(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2932,7 +2934,8 @@ void THISCALL hud_490b30(void *scene, int i, void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_490da0(void *scene, void *view);
 /* 0x4732f0 (thiscall) game_setGameTypeFlags(type): the rule flags of a game type */
-static THISCALL DWORD game_setGameTypeFlags(char *scene, DWORD type) { DWORD v[1] = { type }; return run_lifted(lift_4732f0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void game_setGameTypeFlags(char *scene, DWORD type);
 /* 0x42c9f0 cfg_parseGraphic(f) / 0x42c6f0 cfg_parseServer(f): write the graphic / server settings to axis.cfg;
    0x42e080 cfg_42e080(f): read the key bindings section */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -9161,7 +9164,8 @@ ST(msg_playerLeft, msgscene_setup();, (TC(int, 0x462bc0, char *, int)(BUF, g_a[0
 ST(msg_cheatUsed, msgscene_setup(); g_a[2] = irnd(0, 4);, (TC(int, 0x463030, char *, int, int)(BUF, g_a[0], g_a[2]), 0),
    (msg_cheatUsed(BUF, g_a[0], g_a[2]), 0))
 ST(msg_playerJoinedTeam, msgscene_setup();, (TC(int, 0x462d30, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_playerJoinedTeam(BUF, g_a[0], g_a[1]), 0))   /* eax: dead (tools/eaxuse.py) */
-ST(msg_playerChangedTeam, msgscene_setup();, TC(int, 0x462e30, char *, int, int)(BUF, g_a[0], g_a[1]), msg_playerChangedTeam(BUF, g_a[0], g_a[1]))
+ST(msg_playerChangedTeam, msgscene_setup(); if (!irnd(0, 3)) g_a[1] = -irnd(1, 3);,   /* (no team: its own message) */
+   (TC(void, 0x462e30, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_playerChangedTeam(BUF, g_a[0], g_a[1]), 0))
 ST(msg_kill, msgscene_setup(); if (!irnd(0, 9)) g_a[irnd(0, 1)] = irnd(-3, -1);, (TC(int, 0x4630c0, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (msg_kill(BUF, g_a[0], g_a[1]), 0))   /* eax: dead (tools/eaxuse.py) */
 static void tintmask_setup(void)
 {
@@ -17461,7 +17465,7 @@ static const STest g_stests[] = {
 	T(space_walkNodes_482aa0, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
 	/* batch 41 */
 	T(FUN_0046c100, 1, 4, 5000), T(FUN_00456de0, 1, 300, 0), T(msg_playerLeft, 1, 4, 2000), T(msg_cheatUsed, 1, 4, 2000),
-	T(msg_playerJoinedTeam, 1, 4, 2000), T(msg_playerChangedTeam, 1, 4, 2000), T(msg_kill, 1, 4, 2000), T(tex_applyTintMask, 1, 4, 2000),
+	T(msg_playerJoinedTeam, 1, 4, 2000), T(msg_playerChangedTeam, 0, 4, 2000), T(msg_kill, 1, 4, 2000), T(tex_applyTintMask, 1, 4, 2000),
 	T(space_testSphere, 1, 100, 10000),
 	/* batch 42 */
 	T(actor_46c140, 1, 4, 10000), T(actor_46c1c0, 1, 4, 10000), T(collision_moveActor, 1, 100, 8000),
@@ -17517,7 +17521,7 @@ static const STest g_stests[] = {
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 40, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
+	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 400, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
 	T(match_48e680, 0, 400, 0), T(match_48e2c0, 0, 40, 0),
 	/* batch 50 */
 	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 300, 0), T(ViewVolume_projectObject, 0, 300, 0),
@@ -17526,7 +17530,7 @@ static const STest g_stests[] = {
 	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(skel_ase_47d2f0, 0, 300, 0), T(skel_ase_47d320, 0, 300, 0),
 	T(input_setCursorPos, 1, 40, 0), T(input_asyncKeyDown, 1, 40, 0), T(input_getCursorPos, 1, 40, 0), T(net_ping, 1, 40, 0),
 	T(net_454650, 1, 40, 0), T(net_4545b0, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_41b300, 1, 40, 0),
-	T(app_43f640, 1, 40, 0), T(hud_490b30, 0, 300, 0), T(hud_490da0, 0, 300, 0), T(game_setGameTypeFlags, 0, 40, 0),
+	T(app_43f640, 1, 40, 0), T(hud_490b30, 0, 300, 0), T(hud_490da0, 0, 300, 0), T(game_setGameTypeFlags, 0, 400, 0),
 	T(cfg_parseGraphic, 1, 40, 0), T(cfg_parseServer, 1, 40, 0), T(cfg_42e080, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
 	T(actor_45ebc0, 0, 400, 0), T(room_435770, 1, 200, 0), T(armc_40f340, 1, 40, 0),
 	/* batch 52 */

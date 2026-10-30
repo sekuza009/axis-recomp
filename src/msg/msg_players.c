@@ -113,3 +113,21 @@ int THISCALL (chat_matchCheatCode)(Scene *scene, int actor, const char *text)
 	}
 	return -1;
 }
+
+/* 0x462e30: "%s has changed team to %s." with the team's name (16 bytes a slot, by scene_teamSide), or without a
+   team (negative) "%s becomes a spectator" (colour 0), in the game's language. Its callers ignore the eax it leaves */
+void THISCALL (msg_playerChangedTeam)(Scene *scene, int player, int team)
+{
+	const char *name = PLAYER_NAME(scene, player);
+	if (g_language == KOREAN) {
+		if (team >= 0)
+			msg_print(scene, 0, (const char *)0x4c4754, name, (const char *)(0x4a975c + scene_teamSide(scene, team) * 16));
+		else
+			msg_print(scene, 0, (const char *)0x4c4734, name);
+	} else if (g_language == ENGLISH) {
+		if (team >= 0)
+			msg_print(scene, 0, (const char *)0x4c4790, name, (const char *)(0x4a97ac + scene_teamSide(scene, team) * 16));
+		else
+			msg_print(scene, 0, (const char *)0x4c4778, name);
+	}
+}

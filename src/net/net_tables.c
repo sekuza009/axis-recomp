@@ -1523,3 +1523,26 @@ void THISCALL (match_48e680)(u8 *s)
 #undef FLAG
 #undef TAKE
 }
+
+/* 0x48e990 (thiscall on the scene): player p's colour ring sent (packet 0xc, p): when either of its flags is set
+   (its part type record +0x1755230 + p x 0x47fd2: +0x47fc6, +0x47fca) the ring's position (+0x47fce, a short) and
+   16 three-byte colours from there (4 bytes apart, from +0x479c2), the position then 16 on; else 0xffff and the
+   position back to 0x180. Sent by send_packet. Its caller ignores the eax it leaves */
+void THISCALL (match_48e990)(u8 *s, int p)
+{
+	u8 *r = s + p * 0x47fd2;
+	u8 packet[0x40];
+	packet[1] = 0xc;
+	packet[2] = (u8)p;
+	if (GAME_VAR(int, r + 0x179d1f6) == 1 || GAME_VAR(int, r + 0x179d1fa) == 1) {
+		int at = GAME_VAR(int, r + 0x179d1fe);
+		memcpy(packet + 3, &at, 2);
+		for (int k = 0; k < 16; k++)
+			memcpy(packet + 5 + k * 3, r + 0x179cbf2 + (at + k) * 4, 3);
+		GAME_VAR(int, r + 0x179d1fe) = at + 16;
+	} else {
+		packet[3] = packet[4] = 0xff;
+		GAME_VAR(int, r + 0x179d1fe) = 0x180;
+	}
+	send_packet(s, packet);
+}
