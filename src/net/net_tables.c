@@ -1167,3 +1167,98 @@ u32 (net_disconnect)(void)
 /* 0x450bb0, 0x4532e0: jumps to arena_450a60 and net_getLocalAddress (their eax passed on) */
 u32 (FUN_00450bb0)(void) { return arena_450a60(); }
 int (jmp_net_getLocalAddress_4532e0)(void) { return net_getLocalAddress(); }
+
+/* ---- packets to the lobby (socket 0xa055f8) and the game server (0xa05630): a kind word, then the kind's buffer ---- */
+#define LOBBY GAME_VAR(u32, 0xa055f8)
+#define SERVER GAME_VAR(u32, 0xa05630)
+
+/* the buffer at the pointer kept at `buffer` sent whole (size bytes) over the socket kept at `socket`, if both are
+   there */
+static void send_buffer(u32 socket, u32 buffer, int size)
+{
+	void *data = GAME_VAR(void *, buffer);
+	if (data && GAME_VAR(u32, socket))
+		((int (STDCALL *)(u32, const void *, int, int))0x4a82ce)(GAME_VAR(u32, socket), data, size, 0);   /* send */
+}
+
+/* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
+   itself): its kind word (in 0xa0b30c; none: nothing at all), then the kind's buffer: 10 .. 12 to the lobby (0x5b
+   bytes), 13 the hello (the game list cleared), 23 the name (0x10), 14 / 15 the address request (this machine's
+   address at +0x60), 17 .. 22 and 24 .. 29 to the game server (19 and 21 / 26 after clearing the server or player
+   tables, 22 with its first byte set). Most kinds are kept as the last request (0xa0b300). The callers ignore the
+   eax it leaves */
+void (net_send)(int kind, int to)
+{
+	u32 *word = GAME_VAR(u32 *, 0xa0b30c);
+	if (to == 100 || to == 101) {
+		if (!word)
+			return;
+		*word = (u32)kind;
+		u32 socket = to == 100 ? 0xa055f8 : 0xa05630;
+		if (GAME_VAR(u32, socket))
+			((int (STDCALL *)(u32, const void *, int, int))0x4a82ce)(GAME_VAR(u32, socket), GAME_VAR(void *, 0xa0b30c), 4, 0);
+	}
+	static const struct { u32 buffer; int size, lobby; } plain[30] = {
+		[10] = { 0xa0b310, 0x5b, 1 }, [11] = { 0xa0b318, 0x5b, 1 }, [12] = { 0xa0b314, 0x5b, 1 },
+		[17] = { 0xa0b338, 0x36, 0 }, [18] = { 0xa0b328, 0x79, 0 }, [20] = { 0xa0b32c, 0x79, 0 },
+		[25] = { 0xa0b33c, 0x1e, 0 }, [27] = { 0xa0b340, 0xb9, 0 }, [28] = { 0xa0b344, 0x5c, 0 }, [29] = { 0xa055e0, 0x1e, 0 } };
+	switch (kind) {
+	case 10: case 11: case 12: case 17: case 18: case 20: case 27: case 28: case 29:
+		GAME_VAR(int, 0xa0b300) = kind;
+		/* fall through */
+	case 25:
+		send_buffer(plain[kind].lobby ? 0xa055f8 : 0xa05630, plain[kind].buffer, plain[kind].size);
+		return;
+	case 13:
+		net_452e60();
+		GAME_VAR(int, 0xa0b300) = 13;
+		send_buffer(0xa055f8, 0xa0b31c, 4);
+		return;
+	case 23: {
+		char *name = GAME_VAR(char *, 0xa0b304);
+		const char *from = GAME_VAR(const char *, 0xa0b310);
+		if (!name || !from)
+			return;
+		strcpy(name, from + 0x33);
+		send_buffer(0xa055f8, 0xa0b304, 0x10);
+		return;
+	}
+	case 14: case 15:
+		GAME_VAR(int, 0xa0b300) = kind;
+		if (!GAME_VAR(void *, 0xa0b320))
+			return;
+		jmp_net_getLocalAddress_4532e0();
+		lstrcpyA(GAME_VAR(char *, 0xa0b320) + 0x60, (const char *)0xa0b43c);
+		send_buffer(0xa05630, 0xa0b320, 0x10b);
+		return;
+	case 19:
+		net_454690();
+		net_452e80();
+		GAME_VAR(int, 0xa0b300) = 0x13;
+		send_buffer(0xa05630, 0xa0b334, 4);
+		return;
+	case 21:
+	case 26:
+		net_452ea0();
+		if (kind == 21)
+			GAME_VAR(int, 0xa0b300) = 0x15;
+		send_buffer(0xa05630, kind == 21 ? 0xa0b324 : 0xa052e4, kind == 21 ? 8 : 1);
+		return;
+	case 22:
+		GAME_VAR(int, 0xa0b300) = 0x16;
+		if (!GAME_VAR(u8 *, 0xa0b330))
+			return;
+		*GAME_VAR(u8 *, 0xa0b330) = 1;
+		send_buffer(0xa05630, 0xa0b330, 0x79);
+		return;
+	case 24:
+		jmp_net_getLocalAddress_4532e0();
+		if (!GAME_VAR(char *, 0xa0b308))
+			return;
+		lstrcpyA(GAME_VAR(char *, 0xa0b308), (const char *)0xa0b43c);
+		send_buffer(0xa05630, 0xa0b308, 0x10);
+		return;
+	}
+}
+#undef LOBBY
+#undef SERVER

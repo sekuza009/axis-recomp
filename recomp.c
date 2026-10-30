@@ -3209,7 +3209,8 @@ DWORD hud_401e70(int x, int y, const char *s);
 #include "lifted/net2.c"
 /* 0x4521c0 net_send(msg, socket): send the 4-byte message code on socket 100 (lobby) / 101 (room), then the
    message's own packet (0x5b-byte player / room records and the like, from the packet buffers at 0xa0b304..) */
-LIFT_PLAIN(net_send, 4521c0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void net_send(int kind, int to);
 /* room / lobby state changes that end in net_send messages (what each step means is not all confirmed):
    0x434d00 room_434d00 (sets the room/match state globals, fills a packet buffer, message 0x13 to the room),
    0x4334c0 room_4334c0 (clears the room's player slot state, copies the player name into the room packet),
@@ -10484,7 +10485,7 @@ static void netstate_setup(void)
 	g_a[0] = irnd(0, 3) ? irnd(10, 29) : irnd(-5, 120); g_a[1] = irnd(0, 2) ? 100 : irnd(0, 1) ? 101 : irnd(0, 200);   /* kinds 10 .. 29 mostly */
 	g_paintStacks = 1;
 }
-T_PLAIN(net_send, 0x4521c0, netstate_setup();, 0, g_a[0], g_a[1], 0, 0)
+ST(net_send, netstate_setup();, (CALL_PLAIN(0x4521c0, 0, g_a[0], g_a[1], 0, 0), 0), (net_send(g_a[0], g_a[1]), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_434d00, netstate_setup();, CALL_PLAIN(0x434d00, 0, 0, 0, 0, 0), (DWORD)(room_434d00()))
 ST(room_4334c0, netstate_setup();, CALL_PLAIN(0x4334c0, 0, 0, 0, 0, 0), (DWORD)(room_4334c0()))
 ST(room_434b90, netstate_setup();, CALL_PLAIN(0x434b90, 0, 0, 0, 0, 0), (DWORD)(room_434b90()))
