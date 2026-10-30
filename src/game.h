@@ -134,6 +134,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define input_reacquireKeyboard() GAME_CDECL(0x4012c0, void, void)()
 #define input_updateMenuCursor() GAME_CDECL(0x445c60, void, void)()
 #define input_justPressed(key) GAME_CDECL(0x401600, int, int)(key)
+#define FUN_0042eed0(w, h, flags, bits) GAME_CDECL(0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
 #define armc_4101e0() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
 #define armc_410500() GAME_CDECL(0x410500, void, void)()   /* page 2 */
 #define armc_410810() GAME_CDECL(0x410810, void, void)()   /* page 3 */

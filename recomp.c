@@ -5891,7 +5891,8 @@ void gfx_setProjection2D3D(int mode);
 /* 0x42eed0 FUN_0042eed0(w, h, bpp, hz): the display mode: the cave 0x4a8e54 keeps the desktop mode (0x67eefc /
    0x76d430) as is (leaving a changed one, flag 0xb12a80, by ChangeDisplaySettingsA(0)) and remembers any other
    (0xb12a84 / 0xb12a88, flag set) before the original sets it with a DEVMODE (32 bits) */
-LIFT_PLAIN(FUN_0042eed0, 42eed0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's cave (0x4a8e54) done in C */
+int FUN_0042eed0(int w, int h, DWORD flags, int bits);
 #include "lifted/grp180.c"
 /* 0x43fcc0 app_init(inst, show): the checks (0x41e6d0 .. unless 0x76d410), the 640 x 480 default, paths and
    settings (0x43f580, 0x43f5a0, 0x42b3e0), in the cave 0x4a8e20 SetProcessDPIAware when user32 has it; the desktop's
@@ -17126,7 +17127,7 @@ static void displaymode_setup(void)
 	g_a[0] = w[j]; g_a[1] = irnd(0, 3) ? h[j] : h[irnd(0, 3)]; g_a[2] = irnd(0, 1) ? 32 : 16; g_a[3] = irnd(0, 2) * 60;
 	g_paintStacks = 1;
 }
-T_PLAIN(FUN_0042eed0, 0x42eed0, displaymode_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(FUN_0042eed0, displaymode_setup();, CALL_PLAIN(0x42eed0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)FUN_0042eed0(g_a[0], g_a[1], (DWORD)g_a[2], g_a[3]))
 /* the start-up: 0x76d410 either way, the checks and the CD load passing mostly (one time in eight not), the class
    registration's answer, the Windows version (old / new), user32 with or without SetProcessDPIAware, the screen
    size; every callee stubbed, the window calls mocked */

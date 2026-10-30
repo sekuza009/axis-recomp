@@ -195,6 +195,29 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	return 1;
 }
 
+/* 0x42eed0 (by use the display mode set; with the exe patch's cave at 0x4a8e54 done here): the desktop's own size
+   (0x67eefc x 0x76d430) is not switched to: a mode changed before (flag 0xb12a80) is left by
+   ChangeDisplaySettingsA(NULL), else nothing (0). Any other size is remembered (0xb12a84 / 0xb12a88, the flag set)
+   and set with 32 bits (the patch's choice, whatever bits asks), with ChangeDisplaySettingsA's flags. Returns its
+   answer. (The original's DEVMODE also has its word at 0x3c, dmColor, at 0x800.) */
+int (FUN_0042eed0)(int width, int height, u32 flags, int bits)
+{
+	(void)bits;
+	if (width == GAME_VAR(int, 0x67eefc) && height == GAME_VAR(int, 0x76d430)) {
+		if (!GAME_VAR(u8, 0xb12a80))
+			return 0;
+		GAME_VAR(u8, 0xb12a80) = 0;
+		return ChangeDisplaySettingsA(NULL, 0);
+	}
+	GAME_VAR(int, 0xb12a84) = width;
+	GAME_VAR(int, 0xb12a88) = height;
+	GAME_VAR(u8, 0xb12a80) = 1;
+	u8 mode[0x94];
+	display_mode(mode, width, height, 32, 0x1c0000);
+	*(u16 *)(mode + 0x3c) = 0x800;
+	return ChangeDisplaySettingsA(mode, flags);
+}
+
 /* 0x4314e0: the game shut down: the object at 0x9087b4 deleted (it stays set), the screen restored (0x42eed0 with
    the desktop's size), the arrow cursor back, 0x4014c0, the music stopped, the ten sounds at 0x4dd4d4 released,
    the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
@@ -203,7 +226,7 @@ u32 (wnd_setCursor)(void)
 	void *object = GAME_VAR(void *, 0x9087b4);
 	if (object)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
-	GAME_CDECL(0x42eed0, void, int, int, int, int)(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+	FUN_0042eed0(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	GAME_CDECL(0x4014c0, void, void)();
 	music_shutdown();
