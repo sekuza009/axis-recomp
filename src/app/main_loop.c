@@ -154,3 +154,60 @@ void (menu_frame)(void)
 }
 #undef F
 #undef D
+
+/* a countdown (a float in the scene) taken down by the frame's time while above 0, stopping at 0 */
+static void count_down(u8 *s, u32 offset, const float *dt)
+{
+	float *t = (float *)(s + offset);
+	const float *zero = (const float *)0x4a93e8;
+	if (*t > *zero) {
+		long double left = fsub_m(fld_m(t), dt);
+		*t = f32(left);
+		if (!(left >= *zero))
+			*(u32 *)t = 0;
+	}
+}
+
+/* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
+   (+0x233cc28 0: game_processGameModeInit); armc_461210 (its answer dropped); the frame's time (+0x44) added to the
+   second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (+0x233cc40, +0x2342f02,
+   +0x2340d39). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
+   (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
+   the input, the game mode and, in state 2, the HUD pass. A quit (+0x23432cf 1) stops the music and answers 0; else
+   the state (+0x233cc20) */
+int THISCALL (match_inputState2)(u8 *s)
+{
+#define FIELD(type, offset) GAME_VAR(type, s + (offset))
+	const float *dt = (const float *)(s + 0x44);
+	if (FIELD(int, 0x233cc28) == 0)
+		game_processGameModeInit(s);
+	(void)armc_461210(s);
+	long double second = fadd_m(fld_m(dt), (const float *)(s + 0x233cc34));
+	FIELD(float, 0x233cc34) = f32(second);
+	float window = f32(fadd_m(fld_m((const float *)(s + 0x2340c90)), dt));
+	FIELD(float, 0x2340c90) = window;
+	count_down(s, 0x233cc40, dt);
+	count_down(s, 0x2342f02, dt);
+	count_down(s, 0x2340d39, dt);
+	if (second > *(const float *)0x4a9424) {
+		int whole = ftol(second);
+		FIELD(int, 0x233cc30) += whole;
+		FIELD(float, 0x233cc34) = f32(second - whole);
+		if (window > *(const float *)0x4a93e8) {
+			FIELD(float, 0x2340c88) = f32((long double)FIELD(int, 0x2340c80) / window);
+			FIELD(float, 0x2340c8c) = f32((long double)FIELD(int, 0x2340c84) / window);
+		} else
+			FIELD(int, 0x2340c88) = FIELD(int, 0x2340c8c) = 0;
+		FIELD(int, 0x2340c90) = FIELD(int, 0x2340c80) = FIELD(int, 0x2340c84) = 0;
+	}
+	match_combatInput(s);
+	game_processGameMode(s);
+	if (FIELD(int, 0x233cc20) == 2)
+		hud_pass(s);
+	if (FIELD(int, 0x23432cf) == 1) {
+		music_shutdown();
+		return 0;
+	}
+	return FIELD(int, 0x233cc20);
+#undef FIELD
+}

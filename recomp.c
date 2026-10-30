@@ -5696,7 +5696,8 @@ void THISCALL hud_496240(void *scene);
    countdowns (+0x233cc40, +0x2342f02, +0x2340d39); the combat input (match_combatInput), the game mode
    (game_processGameMode), in state 2 the HUD pass (hud_pass: @0x48b386, the patch DLL's hud_pass_wrap); a pending
    quit (+0x23432cf) ends it (0x457310, 0), else the state +0x233cc20 */
-static THISCALL DWORD match_inputState2(char *s) { return run_lifted(lift_48b200, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD match_inputState2(char *scene);
 #include "lifted/grp168.c"
 /* 0x41fa40 menu_frame(): the menus' frame: the cursor blink 0x4dda44, the screen's music (0x41f970), the keys
    (0x445e40, menu_processKeys) unless 0x9da49c is 0x68 / 0x69; on screen 300 the launch fade (0x4e1870, 0x4df02c,
@@ -16793,6 +16794,7 @@ static void matchstate2_setup(void)
 	SF(BUF, 0x2340c90) = csu_fr(0, 150); S32(BUF, 0x2340c80) = irnd(0, 5000); S32(BUF, 0x2340c84) = irnd(0, 5000);
 	SF(BUF, 0x233cc40) = csu_fr(-50, 300); SF(BUF, 0x2342f02) = csu_fr(-50, 300); SF(BUF, 0x2340d39) = csu_fr(-50, 300);
 	S32(BUF, 0x233cc20) = irnd(0, 3); S32(BUF, 0x23432cf) = !irnd(0, 4);
+	if (!irnd(0, 5)) SF(BUF, 0x2340c90) = -1000.0f - csu_fr(0, 150);   /* an empty FPS window: its rates 0 */
 }
 ST(match_inputState2, matchstate2_setup();, TC(DWORD, 0x48b200, char *)(BUF), match_inputState2(BUF))
 /* the menus' frame: the screen among its handlers, 9999 and others, the music screen, the key block, the launch fade

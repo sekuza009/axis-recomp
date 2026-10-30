@@ -230,6 +230,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define load_471010(scene) GAME_THISCALL(0x471010, void, void *)(scene)
 #define tex_454e60(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISCALL(0x4557e0, int, void *, const char *)(tm, name)
+#define game_processGameModeInit(scene) GAME_THISCALL(0x49df10, void, void *)(scene)
+#define armc_461210(scene) GAME_THISCALL(0x461210, long double, void *)(scene)   /* (answers in ST0) */
+#define match_combatInput(scene) GAME_THISCALL(0x49d290, void, void *)(scene)
+#define game_processGameMode(scene) GAME_THISCALL(0x4988e0, void, void *)(scene)
+#define hud_pass(scene) GAME_THISCALL(0x4982f0, void, void *)(scene)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
