@@ -959,6 +959,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_asyncSelect(hwnd, socket) GAME_CDECL(0x452170, int, void *, int)(hwnd, socket)
 #define lobby_405140() GAME_CDECL(0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_433640() GAME_CDECL(0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
+#define arena_4091b0() GAME_CDECL(0x4091b0, void, void)()   /* the arena's tunnel */
+#define arena_453260() GAME_CDECL(0x453260, void, void)()   /* DirectPlay's session list polled */
+#define arena_406810() GAME_CDECL(0x406810, void, void)()
+#define arena_406640() GAME_CDECL(0x406640, void, void)()   /* the list of games asked for again */
+#define arena_40a070() GAME_CDECL(0x40a070, void, void)()   /* the arena's list of games drawn */
+#define arena_406200(i) GAME_CDECL(0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
+#define arena_405690(i) GAME_CDECL(0x405690, u32, int)(i)   /* session i joined */
 #define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */

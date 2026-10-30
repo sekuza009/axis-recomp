@@ -718,3 +718,113 @@ void (menu_4372f0)(void)
 		GAME_VAR(int, 0xa0b34c) = 0;
 	}
 }
+
+/* the searching message's blink clock (0x4dba80) run down, back to 1000 once below 0x4a9418 */
+static void blink_down(void)
+{
+	long double blink = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &GAME_VAR(float, 0x4dba80));
+	GAME_VAR(float, 0x4dba80) = f32(blink);
+	if (!(blink >= *(const float *)0x4a9418))
+		GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
+}
+
+/* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (0x4dbaf8, while 0x4db71c), the
+   arena tunnel; in lobby modes other than 0 / 1 and not on sub-screen 5: a message box (0x90d1c4) alone, else the
+   local network search (0x4dba90: DirectPlay polled ten times, ended once its clock 0x4dba80 runs out), the server
+   search's end (0x4db858 searching, 0x4df018 the answer in, 0x76d484 its result -1 .. 4: messages 0x40 / 0x46,
+   0x4db8b8 the list to fetch, 0x907b2c) and blink, the list's refresh (0x4db8b8: its timer 0x4dbaf0 against 0x5b1914,
+   a stop 0xa0d7a0); then the list; then a join (0x4dbbec: once typed, the password, 0x4db520, checked against the
+   game's, message 0x27 when wrong; or the join sent, 0x4db8bc clear), a typed game address (0x4db714: joined as
+   99999 when not empty) or a join confirmed (0x4dbbf0). The original leaves eax to callers that ignore it */
+void (lobbyJoin_draw)(void)
+{
+	if (GAME_VAR(int, 0x4db71c)) {
+		long double t = fadd_m(fld_m(&g_frameTime), &GAME_VAR(float, 0x4dbaf8));
+		GAME_VAR(float, 0x4dbaf8) = f32(t);
+		if (t > *(const float *)0x4a944c) {
+			GAME_VAR(int, 0x4db71c) = 0;
+			GAME_VAR(int, 0x4dbaf8) = 0;
+		}
+	}
+	arena_4091b0();
+	int mode = GAME_VAR(int, 0x4dbb3c);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
+		return;
+	if (GAME_VAR(int, 0x90d1c4)) {
+		menu_drawFrame(GAME_VAR(int, 0x4db8c8), GAME_VAR(int, 0x4db8cc), GAME_VAR(int, 0x4db8d0), GAME_VAR(int, 0x4db8d4));
+		return;
+	}
+	if (GAME_VAR(int, 0x4dba90)) {
+		for (int k = 0; k < 10; k++)
+			arena_453260();
+		long double t = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &GAME_VAR(float, 0x4dba80));
+		GAME_VAR(float, 0x4dba80) = f32(t);
+		if (!(t > *(const float *)0x4a93e8)) {
+			arena_406810();
+			GAME_VAR(int, 0x4dba90) = 0;
+		}
+	}
+	if (GAME_VAR(int, 0x4db858)) {
+		if (GAME_VAR(int, 0x4df018) == 1) {
+			int result = GAME_VAR(int, 0x76d484);
+			if (result != 2 && (u32)(result + 1) <= 5) {
+				GAME_VAR(int, 0x4db858) = 0;
+				GAME_VAR(int, 0x4df018) = 0;
+				GAME_VAR(int, 0x4db8b8) = result == 1;
+				if (result == 3)
+					GAME_VAR(int, 0x907b2c) = 1;
+				else if (result == 0)
+					FUN_0041ee40(0x40);
+				else if (result == 4)
+					FUN_0041ee40(0x46);
+			}
+		}
+		blink_down();
+	}
+	if (GAME_VAR(int, 0x4db8b8)) {
+		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x4dbaf0)), &g_frameTime);
+		GAME_VAR(float, 0x4dbaf0) = f32(t);
+		if (t > (long double)GAME_VAR(int, 0x5b1914)) {
+			arena_406640();
+			GAME_VAR(int, 0x4dbaf0) = 0;
+			GAME_VAR(int, 0x5b1914) = 5;
+		}
+		blink_down();
+		if (GAME_VAR(int, 0xa0d7a0)) {
+			arena_406640();
+			GAME_VAR(int, 0x4db858) = 0;
+			GAME_VAR(int, 0x4df018) = 0;
+			GAME_VAR(int, 0x4db8b8) = 0;
+		}
+	}
+	arena_40a070();
+	if (GAME_VAR(int, 0x4dbbec)) {
+		if (!GAME_VAR(int, 0x4db8bc)) {
+			arena_406200(g_localPlayer);
+			return;
+		}
+		if (!GAME_VAR(int, 0x4db70c) || g_paused)
+			return;
+		memset((void *)0x4db520, 0, 8);
+		GAME_VAR(int, 0x4db70c) = 0;
+		strcpy((char *)0x4db520, (const char *)0x9dc92c);
+		int wrong = strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x4db520) != 0;
+		if (wrong)
+			GAME_VAR(int, 0x4dbbec) = 0;
+		GAME_VAR(int, 0x4db8bc) = 0;
+		if (wrong)
+			FUN_0041ee40(0x27);
+		return;
+	}
+	if (GAME_VAR(int, 0x4db714)) {
+		if (g_paused)
+			return;
+		GAME_VAR(int, 0x4db714) = 0;
+		memset((void *)0x4dbbd4, 0, 6 * 4);
+		strcpy((char *)0x4dbbd4, (const char *)0x9dc92c);
+		if (*(const char *)0x4dbbd4)
+			arena_406200(99999);
+	}
+	if (GAME_VAR(int, 0x4dbbf0))
+		arena_405690(g_localPlayer);
+}

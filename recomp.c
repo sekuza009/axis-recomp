@@ -5419,7 +5419,8 @@ DWORD lobbyTop_connect(void);
 DWORD arena_loadAndQuit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43ea10(void);
-LIFT_PLAIN(lobbyJoin_draw, 40cfd0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void lobbyJoin_draw(void);
 /* batch 184 (lifted/grp135.c, grp136.c: menuState800_gameRoom on its own so its call to room_43e290 goes through
    the native address, where the test stubs it): the menu state dispatchers lobby_onStateChange, menuState400_frame,
    menu_onStateChange, menuState800_gameRoom, the room screen room_43e290, arena_launchFromFile (a match started
@@ -15736,7 +15737,7 @@ static void lobbyjoin_setup(void)
 		if (irnd(0, 2)) strcpy((char *)0x9087ff + G32(0x76d41c) * 0x4a, (char *)0x9dc92c);
 	}
 }
-T_PLAIN(lobbyJoin_draw, 0x40cfd0, lobbyjoin_setup();, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+ST(lobbyJoin_draw, lobbyjoin_setup();, (CALL_PLAIN(0x40cfd0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (lobbyJoin_draw(), 0))   /* its eax reaches only menu_frame, which ignores it */
 /* batch 184: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_4076c0[] = { 0x4036c0, 0, 0x406950, 0, 0x406a60, 0, 0x406b60, 0, 0x406bd0, 0, 0x406c30, 0, 0x407270, 0, 0x407300, 0, 0x407410, 0, 0 };
 static const DWORD g_gi_4076c0[] = { 0x4db508, 0x4db51c, 0x4db55c, 0x4db8b4, 0x907b2c, 0 };
