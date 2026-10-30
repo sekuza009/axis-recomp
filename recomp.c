@@ -10175,7 +10175,22 @@ static void gamepkt_setup(void)
 	vfs_content(0, 0x100); g_vfsOpenFail = 0; g_mockSendRet = 1; g_paintStacks = 1;
 }
 ST(net_sendGamePacket, gamepkt_setup();, (TC(void, 0x48dbf0, char *, int)(BUF, g_a[0]), 0), (net_sendGamePacket(BUF, (DWORD)g_a[0]), 0))
-T_PLAIN(setup_drawKeyBindingRows, 0x421680, G32(0x4ddce8) = irnd(0, 3) ? 0 : 1; g_a[0] = irnd(-1, 40);, 0, g_a[0], 0, 0, 0)
+/* setup_drawKeyBindingRows (by use the key pressed for the binding being edited): the page (0x4ddce8) and row
+   (0x4de040) in and out of range; the "none" code (0x4df8e4), the key, the excluded key (0x9da440) sometimes the
+   same; each binding's two slots (0x4de0c0, eight bytes a binding) none, the key or another; the clearing
+   (setup_420e50) and the row's redraw (setup_drawKeyBindingRow) stubbed, each with its own test */
+static void keyrow_setup(void)
+{
+	static const DWORD stubs[] = { 0x420e50, 1, 0x421350, 0, 0 };
+	callee_stubs(stubs, 0);
+	G32(0x4ddce8) = irnd(0, 4) ? irnd(0, 2) : irnd(-1, 3);
+	G32(0x4de040) = irnd(0, 4) ? irnd(0, 10) : irnd(-1, 12);
+	int none = irnd(0, 255), key = irnd(0, 9) ? irnd(0, 255) : none;
+	G32(0x4df8e4) = none; g_a[0] = key;
+	G32(0x9da440) = irnd(0, 5) ? irnd(0, 255) : key;
+	for (int k = 0; k < 64; k++) { int c = irnd(0, 3); G32(0x4de0c0 + k * 4) = c == 0 ? none : c == 1 ? key : irnd(0, 255); }
+}
+T_PLAIN(setup_drawKeyBindingRows, 0x421680, keyrow_setup();, 0, g_a[0], 0, 0, 0)
 /* batch 53: segments through the batch-40 grid + octree; the nodes get real boxes (root = the grid bounds, each
    child an octant of its parent: bit 0 x, bit 1 y, bit 2 z) so the splits and the child order are exercised */
 static void node_boxes(char *n, const float *mn, const float *mx)
@@ -17521,7 +17536,7 @@ static const STest g_stests[] = {
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(FUN_004050a0, 1, 40, 0), T(lobby_405140, 1, 40, 0),
 	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
-	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 40, 0),
+	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 3000, 0),
 	/* batch 53 */
 	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
