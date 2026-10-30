@@ -377,3 +377,219 @@ void THISCALL (match_combatInput)(u8 *s)
 }
 #undef S
 #undef KEY
+
+#define S(type, offset) GAME_VAR(type, s + (offset))
+
+/* (0, 10000, 0) turned about x by pitch, then about z by yaw (tenths of a degree) */
+static void far_point(float *v, int pitch, int yaw)
+{
+	v[0] = 0;
+	GAME_VAR(u32, &v[1]) = 0x461c4000;
+	v[2] = 0;
+	Vec3_rotateAxis(v, 1, pitch);
+	Vec3_rotateAxis(v, 2, yaw);
+}
+
+/* the point v about the actor's position (+0x154) */
+static void about(float *out, const float *v, const u8 *actor)
+{
+	for (int k = 0; k < 3; k++)
+		out[k] = f32(fadd_m(fld_m(&v[k]), (const float *)(actor + 0x154) + k));
+}
+
+/* the free-camera part steps: the flag (F1 .. F5 held), the player's part field, the setter, the table size */
+static const u32 k_partSteps[5][4] = { { 0x23432d3, 0x30c, 0x473b10, 0x15de6c8 }, { 0x23432d7, 0x310, 0x473c20, 0x15fff84 },
+                                       { 0x23432db, 0x314, 0x473d30, 0x163b588 }, { 0x23432df, 0x318, 0x473e40, 0x1679b34 },
+                                       { 0x23432e3, 0x31c, 0x473f50, 0x16c5178 } };
+/* the held keys and their flags: right button, A, D, W, S, Q, E, left button, shift */
+static const u32 k_freeKeys[9][2] = { { 2, 0x234325f }, { 0x41, 0x234326b }, { 0x44, 0x234326f }, { 0x57, 0x2343263 }, { 0x53, 0x2343267 },
+                                      { 0x51, 0x2343273 }, { 0x45, 0x2343277 }, { 1, 0x234327b }, { 0x10, 0x2343283 } };
+
+/* 0x48a370 (thiscall on the game object): the free camera / test mode's frame. On its first frame the camera
+   presets (+0x233ca30, ten of six fields) copied to the working set (+0x233cb20), the game clock read and the
+   cursor centred. The keys (Windows virtual keys) set the input flags; ctrl with up / down zooms, else up / down /
+   left / right turn the camera (+0x233ca28 pitch within +-890, +0x233ca2c heading wrapped at 3600); space resets it;
+   Z / X (or shift with them) step the local player's (+0x234240d) parts held by F1 .. F6 down / up through their
+   tables (the weapon slot by its item, selected again); the camera is placed behind the actor (camera_setupView);
+   unless replaying (+0x2340ce0) the actors, bullets and particles move and the actor's ammunition is halved; the
+   scene is drawn, with a 100 x 150 grid of lines about the actor when +0x2340cd0. Returns 0 once Esc was pressed,
+   else 3 (this mode again) */
+u32 THISCALL (match_inputState3)(u8 *s)
+{
+	u8 *stage = s + 0x1f36c8;
+	if (S(int, 0x233cc28) == 0) {
+		S(int, 0x234240d) = 0;
+		S(int, 0x233ca28) = S(int, 0x233ca2c) = 0;
+		for (S(int, 0x233cc10) = 0; S(int, 0x233cc10) < 10; S(int, 0x233cc10)++)
+			for (int f = 0; f < 6; f++)
+				S(u32, 0x233cb20 + f * 0x28 + S(int, 0x233cc10) * 4) = S(u32, 0x233ca30 + f * 0x28 + S(int, 0x233cc10) * 4);
+		S(int, 0x233cc10) = 0;
+		timer_getGameTime(s + 0xc);
+		int y = gfx_getHeight() / 2;
+		input_setCursorPos(gfx_getWidth() / 2, y);
+	}
+	u8 *actor = s + 0x1ecca70 + S(int, 0x234240d) * 0x8888;
+	u8 *player = s + 0x1755230 + GAME_VAR(int, actor + 0x10c) * 0x47fd2;
+	for (int k = 0; k < 9; k++)
+		S(int, k_freeKeys[k][1]) = input_asyncKeyDown(k_freeKeys[k][0]) ? 1 : 0;
+	S(int, 0x2343287) = -1;
+	for (int k = 0; k < 6; k++)
+		if (input_asyncKeyDown('1' + k))
+			S(int, 0x2343287) = k;
+	if (input_asyncKeyDown(0x11)) {
+		S(int, 0x23432ab) = input_asyncKeyDown(0x26) ? 1 : 0;
+		S(int, 0x23432af) = input_asyncKeyDown(0x28) ? 1 : 0;
+		S(int, 0x23432bb) = 0;
+		S(int, 0x23432bf) = 0;
+	} else {
+		S(int, 0x23432ab) = S(int, 0x23432af) = 0;
+		S(int, 0x23432bb) = input_asyncKeyDown(0x26) ? 1 : 0;
+		S(int, 0x23432bf) = input_asyncKeyDown(0x28) ? 1 : 0;
+	}
+	S(int, 0x23432b3) = input_asyncKeyDown(0x25) ? 1 : 0;
+	S(int, 0x23432b7) = input_asyncKeyDown(0x27) ? 1 : 0;
+	const int *cursor = input_getCursorPos();
+	S(int, 0x2343257) = cursor[0];
+	S(int, 0x234325b) = cursor[1];
+	S(float, 0x2343293) = f32((long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
+	S(float, 0x2343297) = f32(-(long double)(S(int, 0x2343257) - gfx_getWidth() / 2));
+	int y = gfx_getHeight() / 2;
+	input_setCursorPos(gfx_getWidth() / 2, y);
+	S(int, 0x23432cb) = input_asyncKeyPressed(0x20) ? 1 : 0;
+	S(int, 0x23432cf) = input_asyncKeyPressed(0x1b) ? 1 : 0;
+	for (int k = 0; k < 6; k++)
+		S(int, 0x23432d3 + k * 4) = input_asyncKeyDown(0x70 + k) ? 1 : 0;
+	S(int, 0x23432f3) = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
+	S(int, 0x23432f7) = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
+	armc_461210(s);
+	float slow = f32(fld_m((const float *)0x4a9424) - fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa488));
+	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa484));
+	long double look = fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4a93f4);
+	float yaw = f32(look * S(float, 0x2343297)), pitch = f32(look * S(float, 0x2343293));
+	match_45eb20(stage, 0, S(u32, 0x2343263), S(u32, 0x2343267), S(u32, 0x234326b), S(u32, 0x234326f), *(u32 *)&pitch, *(u32 *)&yaw,
+	             S(u32, 0x234327b), S(u32, 0x234325f), S(u32, 0x2343283), S(u32, 0x2343287), 0, 0);
+	if (S(int, 0x23432bb)) {
+		long double v = fsub_m(fld_m((const float *)(s + 0x233ca28)), &turn);
+		S(float, 0x233ca28) = f32(v);
+		if (!(v >= *(const float *)0x4a9728))
+			S(u32, 0x233ca28) = 0xc45e8000;   /* -890 */
+	}
+	if (S(int, 0x23432bf)) {
+		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca28));
+		S(float, 0x233ca28) = f32(v);
+		if (v > *(const float *)0x4a972c)
+			S(u32, 0x233ca28) = 0x445e8000;   /* 890 */
+	}
+	if (S(int, 0x23432b3)) {
+		long double v = fsub_m(fld_m((const float *)(s + 0x233ca2c)), &turn);
+		S(float, 0x233ca2c) = f32(v);
+		if (!(v >= 0))
+			S(float, 0x233ca2c) = f32(fadd_m(v, (const float *)0x4a94c8));
+	}
+	if (S(int, 0x23432b7)) {
+		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca2c));
+		S(float, 0x233ca2c) = f32(v);
+		if (v >= *(const float *)0x4a94c8)
+			S(float, 0x233ca2c) = f32(fsub_m(v, (const float *)0x4a94c8));
+	}
+	float *zoom = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
+	if (S(int, 0x23432ab)) {
+		*zoom = f32(fmul_m(fld_m(&slow), zoom));
+		if (!(*zoom >= *(const float *)0x4a9450))
+			GAME_VAR(u32, zoom) = 0x43fa0000;   /* 500 */
+	}
+	zoom = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
+	if (S(int, 0x23432af)) {
+		*zoom = f32(fdiv_m(fld_m(zoom), &slow));
+		if (*zoom > *(const float *)0x4a9708)
+			GAME_VAR(u32, zoom) = 0x461c4000;   /* 10000 */
+	}
+	if (S(int, 0x23432cb)) {
+		S(u32, 0x233cb70 + S(int, 0x233cc10) * 4) = 0x44fa0000;   /* 2000 */
+		S(int, 0x233ca28) = S(int, 0x233ca2c) = 0;
+		GAME_VAR(int, actor + 0x160) = GAME_VAR(int, actor + 0x164) = 0;
+		GAME_VAR(int, actor + 0x18c) = GAME_VAR(int, actor + 0x190) = 0;
+	}
+	int item = -1;
+	if (S(int, 0x23432f3) == 1) {
+		for (int k = 0; k < 5; k++)
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) > 0)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, GAME_VAR(int, actor + 0x10c), GAME_VAR(int, player + k_partSteps[k][1]) - 1);
+		if (S(int, 0x23432e7) == 1) {
+			int it = GAME_VAR(int, player + 0x320 + GAME_VAR(int, actor + 0x140) * 4);
+			if (it > 0)
+				item = it - 1;
+		}
+	} else if (S(int, 0x23432f7) == 1) {
+		for (int k = 0; k < 5; k++)
+			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, GAME_VAR(int, actor + 0x10c), GAME_VAR(int, player + k_partSteps[k][1]) + 1);
+		if (S(int, 0x23432e7) == 1) {
+			int it = GAME_VAR(int, player + 0x320 + GAME_VAR(int, actor + 0x140) * 4);
+			if (it < S(int, 0x175522c) - 1)
+				item = it + 1;
+		}
+	}
+	if (item >= 0) {
+		int slot = S(int, 0x16c7f38 + item * 0x2e18) ? 4 : 0;
+		actor_setActorTypeItemInfoBy((Stage *)stage, 0, slot, item);
+		actor_selectWeapon((Stage *)stage, 0, slot);
+	}
+	float *cam = (float *)(s + 0x233ca04), *dir = (float *)(s + 0x233ca10), *up = (float *)(s + 0x233ca1c);
+	cam[0] = cam[1] = 0;
+	cam[2] = f32(fld_m((const float *)(s + 0x233cb70) + S(int, 0x233cc10)));
+	Vec3_rotateAxis(cam, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(cam, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	for (int k = 0; k < 3; k++)
+		cam[k] = f32(fadd_m(fld_m((const float *)(actor + 0x180) + k), &cam[k]));
+	for (int k = 0; k < 3; k++)
+		dir[k] = f32(fsub_m(fld_m((const float *)(actor + 0x180) + k), &cam[k]));
+	up[0] = 0;
+	GAME_VAR(u32, &up[1]) = 0x3f800000;
+	up[2] = 0;
+	Vec3_rotateAxis(up, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(up, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	float far = hud_scale(), near = match_4686f0();
+	int h = gfx_getHeight(), w = gfx_getWidth();
+	float fov = game_clock();
+	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, cam, dir, up, *(u32 *)&fov, w, h,
+	                                                                                             *(u32 *)&near, *(u32 *)&far, S(u32, 0x44));   /* camera_setupView */
+	if (S(int, 0x2340ce0) == 0) {
+		actor_updateAll(stage, S(u32, 0x44));
+		bullet_updateAll(stage, S(u32, 0x44));
+		match_479a90(stage, S(u32, 0x44));
+		for (int k = 0; k < 4; k++) {
+			u8 *me = s + 0x1ecca70 + S(int, 0x234240d) * 0x8888;
+			GAME_VAR(int, me + 0x130 + k * 4) = GAME_VAR(int, me + 0x28 + k * 4) / 2;
+		}
+	}
+	S(int, 0x233cc28)++;
+	glClearColor_stored(((const u32[]){ 0x3dcccccd, 0x3f000000, 0x3f800000 }));
+	glClearDepth(1.0);
+	glClear(0x4100);
+	gfx_setProjectionHud(1, 1.0f);
+	ViewVolume_captureMatrices(s + 0x74, 0, s + 0x22e7068);
+	ViewVolume_reset(s + 0x74);
+	if (S(int, 0x2340cd0) == 1)
+		for (int pitch = 0; pitch < 0x708; pitch += 100)
+			for (int yaw = 0; yaw < 0xe10; yaw += 150) {
+				float a[3], b[3], pa[3], pb[3];
+				far_point(a, pitch, yaw);
+				far_point(b, pitch + 100, yaw);
+				about(pb, b, actor);
+				about(pa, a, actor);
+				ViewVolume_add_485120(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+				far_point(a, pitch, yaw);
+				far_point(b, pitch, yaw + 150);
+				about(pb, b, actor);
+				about(pa, a, actor);
+				ViewVolume_add_485120(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+			}
+	hud_45e170((Stage *)stage, s + 0x74, -1);
+	hud_47d060(stage, s + 0x74);
+	hud_479af0((Stage *)stage, s + 0x74);
+	render_drawObjects(s + 0x74, S(int, 0x1f1664), 0.0f);
+	gfx_setProjectionHud(0, 1.0f);
+	return S(int, 0x23432cf) == 1 ? 0 : 3;
+}
+#undef S

@@ -5539,7 +5539,8 @@ THISCALL void actor_updateAll(char *s, DWORD dt);
    unless replaying (actor_updateAll, bullets, particles), the scene is drawn (optionally a 100 x 150 grid of
    markers). Returns 3 after Esc, else 0. Callees stubbed except the screen / cursor / timer getters and the
    vector rotation */
-static THISCALL DWORD match_inputState3(char *s) { return run_lifted(lift_48a370, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD match_inputState3(char *s);
 /* batch 201 (lifted/grp160.c): the profile screen's key handlers, one per page (split out of profile_processInput
    in functions.csv: menu_44cdd0 reaches them through its jump table) */
 #include "lifted/grp160.c"

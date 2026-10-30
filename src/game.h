@@ -288,6 +288,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define skel_ase_47d320(out, a, b) GAME_CDECL(0x47d320, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
 #define skel_47d830(out, m) GAME_CDECL(0x47d830, void, float *, const float *)(out, m)   /* copied transposed */
 #define skel_ase_47d2f0(out, m) GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
+#define input_asyncKeyDown(vk) GAME_CDECL(0x487ba0, int, int)(vk)
+#define input_setCursorPos(x, y) GAME_CDECL(0x487c80, void, int, int)(x, y)
+#define input_getCursorPos() GAME_CDECL(0x487c30, const int *, void)()
+#define match_45eb20(stage, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISCALL(0x45eb20, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, a, b, c, d, e, f, g, h, i, j, k, l, m)   /* the local actor's controls */
+#define match_4686f0() GAME_CDECL(0x4686f0, float, void)()
+#define actor_updateAll(stage, dt) GAME_THISCALL(0x45e0c0, void, void *, u32)(stage, dt)
+#define bullet_updateAll(stage, dt) GAME_THISCALL(0x47d000, void, void *, u32)(stage, dt)
+#define match_479a90(stage, dt) GAME_THISCALL(0x479a90, void, void *, u32)(stage, dt)
+#define ViewVolume_add_485120(view, colour, p0, p1, a) GAME_THISCALL(0x485120, void, void *, const void *, const float *, const float *, int)(view, colour, p0, p1, a)   /* a line */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
