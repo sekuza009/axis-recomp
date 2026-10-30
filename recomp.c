@@ -15696,10 +15696,10 @@ static void lobbyconnect_setup(void)
 	callee_stubs(stubs, 0);
 	callee_ret(0x4044a0, irnd(-1, 0x11));
 	callee_ret(0x4060f0, irnd(0, 1));
-	G32(0x4dbb3c) = irnd(0, 3);
+	G32(0x4dbb3c) = irnd(0, 3) ? 2 : irnd(0, 3);
 	static const DWORD flags[] = { 0x4db8bc, 0x4db714, 0x90d1c4, 0x4db858, 0x4dba90, 0x4db8b8, 0x4db854, 0x4dba84, 0x4dbaac, 0x4db71c };
-	for (int k = 0; k < 10; k++) G32(flags[k]) = irnd(0, 4) ? 0 : 1;
-	G32(0x4ded8c) = irnd(0, 1); G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
+	for (int k = 0; k < 10; k++) G32(flags[k]) = irnd(0, 7) ? 0 : 1;
+	G32(0x4ded8c) = irnd(0, 4) ? 0 : 1; G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
 	G32(0x4ded68) = irnd(0, 800); G32(0x4ded6c) = irnd(0, 600);
 	G32(0x680bb0) = irnd(0, 3) ? irnd(0, 12) : irnd(-2, 40); G32(0x4df818) = irnd(0, 3) ? irnd(0, 9) : irnd(-2, 12);
 	G32(0x67ef30) = irnd(0, 3) ? irnd(0, 24) : irnd(-2, 40);
@@ -17725,7 +17725,7 @@ static const STest g_stests[] = {
 	T(arena_452ec0, 0, 200, 0), T(skirmish_445bc0, 0, 50, 0),
 	/* batch 182 */
 	T(room_434dd0, 0, 200, 0), T(arena_406200, 0, 200, 0), T(lobby_roomNameCheck, 0, 200, 0), T(lobby_checkReservedName, 0, 200, 0),
-	T(lobby_connect, 0, 200, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_4355b0, 0, 200, 0), T(arena_405b80, 0, 200, 0),
+	T(lobby_connect, 0, 2000, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_4355b0, 0, 200, 0), T(arena_405b80, 0, 200, 0),
 	/* batch 183 */
 	T(arena_createClick, 0, 200, 0), T(lobbyTop_connect, 0, 200, 0), T(arena_loadAndQuit, 0, 200, 0), T(room_43ea10, 0, 200, 0),
 	T(lobbyJoin_draw, 0, 600, 0),
