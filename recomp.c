@@ -12551,7 +12551,7 @@ static void netrecv_setup(void)
 	for (int k = 15; k < 0x79; k += 16) ((BYTE *)0xa0b280)[k] = 0;
 	G32(0xa055f8) = irnd(1, 99); G32(0xa05630) = irnd(1, 99);
 	G32(0xa055dc) = irnd(0, 4); G32(0xa0b248) = irnd(0, 4);
-	fill((void *)0xa05638, 0x10b); *(BYTE *)0xa05638 = (BYTE)(irnd(0, 2) ? 0x1e + irnd(0, 12) : irnd(0, 255));
+	fill((void *)0xa05638, 0x10b); G32(0xa05638) = irnd(0, 2) ? 0x1e + irnd(0, 12) : irnd(0, 255);   /* the answer code (a dword) */
 	fill((void *)0xa052c0, 0x22); if (irnd(0, 1)) *(BYTE *)0xa052c0 = 0;
 	fill((void *)0xa052e8, 0x40); fill((void *)0xa05330, 0x9b * 4 + 8);
 	fill((void *)0xa0b350, 8); fill((void *)0xa0b370, 0x10);
@@ -13153,6 +13153,8 @@ static void consoleinit_setup(void)
 	/* a failed open in the profile checks would exit: files fail only when they are skipped, or after them */
 	g_vfsFailMask = irnd(0, 2) ? 0 : 1u << irnd(G32(0x76d410) ? 0 : 5, 8);
 	g_paintStacks = 1;
+	static const DWORD pilots[] = { 0x42b590, 0, 0 };   /* data_loadPilotProfiles (its own test): with random files it ends the game */
+	callee_stubs(pilots, 0);
 }
 ST(console_init, consoleinit_setup();, (CD(void, 0x41fd40, void)(), 0), (console_init(0, 0, 0, 0, 0, 0, 0), 0))
 /* batch 115 */
