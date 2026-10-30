@@ -173,7 +173,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
    second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (+0x233cc40, +0x2342f02,
    +0x2340d39). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
    (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
-   the input, the game mode and, in state 2, the HUD pass. A quit (+0x23432cf 1) stops the music and answers 0; else
+   the input, the game mode and, in state 2, the HUD pass (through the call site the patch DLL retargets). A quit (+0x23432cf 1) stops the music and answers 0; else
    the state (+0x233cc20) */
 int THISCALL (match_inputState2)(u8 *s)
 {
@@ -203,7 +203,7 @@ int THISCALL (match_inputState2)(u8 *s)
 	match_combatInput(s);
 	game_processGameMode(s);
 	if (FIELD(int, 0x233cc20) == 2)
-		hud_pass(s);
+		PATCHED_THISCALL(0x48b386, void, void *)(s);   /* hud_pass; the patch DLL calls its hud_pass_wrap here */
 	if (FIELD(int, 0x23432cf) == 1) {
 		music_shutdown();
 		return 0;
