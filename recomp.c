@@ -3476,11 +3476,8 @@ THISCALL void collision_initVolume(char *stage, DWORD a, DWORD b, DWORD c, DWORD
    +0x1cd94c0, count +0x202e8c8) gets its screen position and depth; one other than the camera's own that is in view
    with a clear line of sight also gets its name-tag corners, its direction cosine checked against the cos table, a
    timer for enemies that are alive, and a tag size by the screen width (gfx_getWidth) */
-static THISCALL DWORD camera_setupView(char *scene, DWORD pos, DWORD dir, DWORD up, DWORD fov, DWORD w, DWORD h, DWORD nr, DWORD fr, DWORD dt)
-{
-	DWORD v[9] = { pos, dir, up, fov, w, h, nr, fr, dt };
-	return run_lifted(lift_4729b0, (DWORD)scene, 9, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void camera_setupView(char *scene, DWORD pos, DWORD dir, DWORD up, DWORD fov, DWORD w, DWORD h, DWORD nr, DWORD fr, DWORD dt);
 /* batch 70 (lifted/grp17.c) */
 #include "lifted/grp17.c"
 /* 0x463b80 shape_getShadingColorBufferBy(out, first, part, factors, matrix): a shape part's vertex colours (RGBA
@@ -3595,11 +3592,8 @@ int ptx_decode(void *f, char *out, int *fmt, int *width, int *height);
    format +0xc0114: 0 PTX items of the texture dat (name, name_ALPHA, name_COLOR; tables set up on first use),
    1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW, name_COLOR.RAW); a PTX of another size
    than +0xc0118 x +0xc011c is fatal */
-static THISCALL DWORD tex_loadColorMask(char *tm, DWORD i)
-{
-	DWORD v[1] = { i };
-	return run_lifted(lift_455aa0, (DWORD)tm, 1, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void tex_loadColorMask(char *tm, DWORD i);
 /* batch 81 (lifted/grp27.c) */
 #include "lifted/grp27.c"
 /* 0x4566c0 (thiscall) tex_bind(i): bind texture i through the cache of GL texture slots (0x14 bytes: slot number,
@@ -5456,7 +5450,8 @@ THISCALL void match_479a90(char *s, DWORD dt);
    timer +0x24, position +0xc): a taken item respawns after its type's time (+0x48, with its sound), a present one
    is taken by the first live actor near enough, by type: health, armour, ammo, weapons, power-ups, the message
    formatted (0x46c5f0 / 0x46c710, stubbed) and the pickup sound (sound_play3D, stubbed) */
-static THISCALL DWORD item_update(char *s, DWORD dt) { DWORD v[1] = { dt }; return run_lifted(lift_48ed90, (DWORD)s, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void item_update(char *s, DWORD dt);
 /* batch 193 (lifted/grp149.c): the objects' frame loop, the followed player's name, the sound table */
 #include "lifted/grp149.c"
 /* 0x490d40 match_490d40(dt) (thiscall on the scene, ret 4): unless the game is paused (+0x2149308 with +0x214930c ==
@@ -5492,7 +5487,8 @@ static THISCALL DWORD net_processGamePacket(char *s, DWORD from, DWORD type, DWO
    ground, objects, sky, sounds and actors loaded, then the game started (+0x233cc20 by the game mode +8). Each
    stage adds a line (the next stage depends on the mode); every step then draws the screen (the GL clear, the
    lines). Returns +0x233cc20. The loaders and the drawing are stubbed */
-static THISCALL DWORD game_processLoadingMode(char *s) { return run_lifted(lift_468750, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD game_processLoadingMode(char *s);
 /* batch 196 (lifted/grp152.c): the replay viewer's frame */
 #include "lifted/grp152.c"
 /* 0x487f00 replay_frame() (thiscall on the scene; 9.3 KB: functions.csv had its second part, from 0x4885a0, as
@@ -17610,7 +17606,7 @@ static const STest g_stests[] = {
 	/* batch 79 */
 	T(ptx_open, 0, 200, 0), T(ptx_decode, 0, 200, 0),
 	/* batch 80 */
-	T(tex_loadColorMask, 0, 200, 0),
+	T(tex_loadColorMask, 0, 400, 0),
 	/* batch 81 */
 	T(tex_bind, 0, 300, 0),
 	/* batch 82 */

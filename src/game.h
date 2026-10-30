@@ -258,6 +258,24 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define skel_applyPose(sk, out, bone, t) GAME_THISCALL(0x46ab30, void, void *, void *, int, u32)(sk, out, bone, t)
 #define space_tracePlanes_47fb80(rec, p0, p1, hit, t) GAME_THISCALL(0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
 #define hud_46fd20(list, vv, lights, tint, a4, a5, a6) GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
+#define tex_getItemFileBy(manager, name) GAME_THISCALL(0x455550, void *, void *, const char *)(manager, name)   /* the dat file at the item's data */
+#define ptx_initTables() GAME_CDECL(0x46ea00, void, void)()
+#define ptx_open(path, out, bpp, w, h) GAME_CDECL(0x46eb00, int, const char *, void *, int *, int *, int *)(path, out, bpp, w, h)
+#define ptx_decode(file, out, bpp, w, h) GAME_CDECL(0x46ed80, int, void *, void *, int *, int *, int *)(file, out, bpp, w, h)
+#define input_asyncKeyPressed(key) GAME_CDECL(0x487bd0, int, int)(key)
+#define net_sendGamePacket(scene, kind) GAME_THISCALL(0x48dbf0, void, void *, int)(scene, kind)
+#define net_processGamePacket(scene, from, size, data) GAME_THISCALL(0x48c830, void, void *, int, int, void *)(scene, from, size, data)
+#define FUN_004a8350() GAME_CDECL(0x4a8350, void, void)()   /* the network's incoming messages gathered */
+#define FUN_004a8450(from, size, data) GAME_CDECL(0x4a8450, int, int *, int *, void *)(from, size, data)   /* the next message: 0 none, 1 a game packet */
+#define FUN_004a86d0() GAME_CDECL(0x4a86d0, int, void)()   /* online as a client? */
+#define FUN_004a8730() GAME_CDECL(0x4a8730, int, void)()
+#define map_loadGroundInfoFrom(stage, name) GAME_THISCALL(0x48b9d0, int, void *, const char *)(stage, name)
+#define map_loadObjectInfoFrom(stage, name, a) GAME_THISCALL(0x48b710, void, void *, const char *, int)(stage, name, a)
+#define collision_initVolume(stage, x, y, z, cell, depth, a) GAME_THISCALL(0x471040, void, void *, u32, u32, u32, u32, int, int)(stage, x, y, z, cell, depth, a)
+#define map_loadPlayInfoFrom(stage, name) GAME_THISCALL(0x4876b0, void, void *, const char *)(stage, name)
+#define map_loadMissionInfoFrom(stage, name) GAME_THISCALL(0x48b5c0, void, void *, const char *)(stage, name)
+#define map_loadActorInfoFrom(stage, name) GAME_THISCALL(0x474550, void, void *, const char *)(stage, name)
+#define font_penDraw(x, y, a, text) GAME_CDECL(0x46bb00, void, int, int, int, const char *)(x, y, a, text)
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

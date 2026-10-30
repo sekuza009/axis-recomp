@@ -500,3 +500,156 @@ void THISCALL (match_476410)(u8 *s, int slot, float dt)
 	}
 	GAME_VAR(float, p + 0x74) = f32(fadd_m(fld_m(&dt), (const float *)(p + 0x74)));
 }
+
+#define A(type, offset) GAME_VAR(type, ac + (offset))
+#define I(type, offset) GAME_VAR(type, it + (offset))
+
+/* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (+0x3f0) that refuses them, the
+   count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
+   last big pickup (+0x20fcd3c) */
+static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
+	{ 0x10, 0x130, 0x28, 1, 0, 0x4c82f4 }, { 0x10, 0x130, 0x28, 40, 0, 0x4c82e4 }, { 0x20, 0x134, 0x2c, 40, 0, 0x4c82d4 },
+	{ 0x40, 0x138, 0x30, 40, 0, 0x4c82c0 }, { 0x80, 0x13c, 0x34, 15, 0, 0x4c82ac }, { 0x80, 0x13c, 0x34, 5, 0, 0x4c8298 },
+	{ 1, 0x128, 0x1c, 10, 0, 0x4c828c }, { 1, 0x128, 0x1c, 25, 0, 0x4c8280 }, { 1, 0x128, 0x1c, 50, 0, 0x4c8274 },
+	{ 1, 0x128, 0x1c, 100, 0, 0x4c8268 }, { 2, 0x128, 0x1c, 100, 100, 0x4c8254 }, { 4, 0x12c, 0x20, 10, 0, 0x4c8248 },
+	{ 4, 0x12c, 0x20, 25, 0, 0x4c823c }, { 4, 0x12c, 0x20, 50, 0, 0x4c8230 }, { 4, 0x12c, 0x20, 100, 0, 0x4c8224 },
+	{ 8, 0x12c, 0x20, 100, 100, 0x4c820c } };
+
+/* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
+static void item_sound(u8 *s, int sound, u8 *it)
+{
+	GAME_CDECL(0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
+	                                                                                (const float *)(it + 0xc), (const float *)(s + 0x20f397c), 0x47c35000);   /* (heard to 100000) */
+}
+
+/* actor ac touching item i (of kind type, its type record t): what it gives. Supplies the actor can use are taken;
+   power-ups (damage amp, cloak, booster, gravity armour: 30 s each) are taken; a warp zone (kind 24 / 34) sends the
+   local player, when not already warping and not just arrived from it, to the linked item's (+4) place and heading
+   without being taken; other kinds are an error message (0 .. 9: fatal) */
+static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
+{
+	u32 text, *timer = NULL;
+	int last = 0;
+	switch (type / 10) {
+	case 0:
+	case 1: {
+		if (type < 10 && type > 5) {
+			GAME_CDECL(0x46c710, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
+			return;
+		}
+		int k = type < 10 ? type : 6 + type % 10;
+		if (A(u8, 0x3f0) & k_supplies[k].flag)
+			return;
+		int limit = A(int, k_supplies[k].limit) + k_supplies[k].over;
+		A(int, k_supplies[k].count) += k_supplies[k].add;
+		if (A(int, k_supplies[k].count) > limit)
+			A(int, k_supplies[k].count) = limit;
+		text = k_supplies[k].text;
+		last = k_supplies[k].over != 0;
+		break;
+	}
+	case 2:
+	case 3:
+		switch (type % 10) {
+		case 0: timer = &A(u32, 0x3f4); text = 0x4c81c4; break;   /* DAMAGE AMP */
+		case 1: timer = &A(u32, 0x3f8); text = 0x4c81b4; break;   /* CLOAKING FIELD */
+		case 3: timer = &A(u32, 0x3fc); text = 0x4c81a4; break;   /* OVERED BOOSTER */
+		case 7: timer = &A(u32, 0x400); text = 0x4c8188; break;   /* GRAVITY ARMOR */
+		case 4: {
+			int warped = 0;
+			if (A(int, 0x110) == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
+				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
+				memcpy(ac + 0x180, to + 0xc, 12);
+				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)0x4a9418));
+				A(u32, 0x190) = GAME_VAR(u32, to + 0x1c);
+				A(int, 0x538) = I(int, 4);
+				strcpy((char *)ac + 0x4f4, (const char *)0x4c8198);   /* WARP ZONE */
+				A(int, 0x534) = 0;
+				A(u32, 0x548) = 0x3f800000;
+				A(u32, 0x540) = 0x40000000;
+				A(int, 0x104) = GAME_VAR(int, s + 0x202e8d0)++;
+				warped = 1;
+			}
+			A(int, 0x53c) = 1;
+			if (warped)
+				item_sound(s, GAME_VAR(int, t + 0x44), it);
+			return;
+		}
+		default:
+			return;
+		}
+		*timer = 0x41f00000;   /* 30 */
+		last = 1;
+		break;
+	default:
+		GAME_CDECL(0x46c5f0, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
+		return;
+	}
+	strcpy((char *)ac + 0x4f4, (const char *)text);
+	A(int, 0x534) = 0;
+	if (last)
+		GAME_VAR(int, s + 0x20fcd3c) = i;
+	item_sound(s, GAME_VAR(int, t + 0x44), it);
+	I(int, 0x20) = 1;
+	I(int, 0x24) = 0;
+}
+
+/* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (+0x53c) cleared; every item (0x28
+   bytes from +0x20fadf8, +0x20fcd38 of them; its kind +0 into the 0x90-byte types at +0x20f3ae0, state +0x20, timer
+   +0x24, position +0xc): a taken one comes back after its type's time (+0x48, with its sound +0x40); a present one
+   spins (+0x1c, 600 a second, but kind 0x22) and the first live actor within 1.5 of its radius (+0x3e8) on every
+   axis touches it (item_pickup). An actor touching no warp zone forgets the last one (+0x538 -1). Its callers ignore
+   the eax it leaves */
+void THISCALL (item_update)(u8 *s, float dt)
+{
+	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+		if (A(int, 0x14c) == 1)
+			A(int, 0x53c) = 0;
+	}
+	for (int i = 0; i < GAME_VAR(int, s + 0x20fcd38); i++) {
+		u8 *it = s + 0x20fadf8 + i * 0x28;
+		int type = I(int, 0);
+		if (type < 0)
+			continue;
+		u8 *t = s + 0x20f3ae0 + type * 0x90;
+		if (I(int, 0x20) == 1) {
+			if (I(float, 0x24) > GAME_VAR(float, t + 0x48)) {
+				item_sound(s, GAME_VAR(int, t + 0x40), it);
+				I(int, 0x20) = 0;
+				I(int, 0x24) = 0;
+			}
+		} else if (I(int, 0x20) == 0) {
+			if (type != 0x22)
+				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)0x4a94ac), (const float *)(it + 0x1c)));
+			int n = GAME_VAR(int, s + 0x202e8c8);
+			for (int k = 0; k < n; k++) {
+				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+				if (A(int, 0x14c) != 1)
+					continue;
+				float reach = 0;
+				int near = 1;
+				for (int a = 0; a < 3 && near; a++) {
+					long double d = fsub_m(fld_m((const float *)(ac + 0x154) + a), (const float *)(it + 0xc) + a);
+					if (!(d >= 0))
+						d = -d;
+					if (a == 0)
+						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), (const float *)0x4a974c));
+					near = !(d >= reach);
+				}
+				if (near) {
+					item_pickup(s, ac, it, i, t, type);
+					break;
+				}
+			}
+		}
+		I(float, 0x24) = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
+	}
+	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+		if (A(int, 0x53c) == 0)
+			A(int, 0x538) = -1;
+	}
+}
+#undef A
+#undef I

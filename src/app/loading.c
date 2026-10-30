@@ -321,3 +321,236 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(int, 0x5b1dac) = 0;
 	return 1;
 }
+
+#define G(type, offset) GAME_VAR(type, g + (offset))
+#define STAGE(g) ((g) + 0x1f36c8)
+
+/* the next stage: its line added to the loading screen (+0x233cc60, 0x100 a line, +0x2340c60 of them) */
+static void next_stage(u8 *g, int stage, u32 line)
+{
+	G(int, 0x233cc24) = stage;
+	strcpy((char *)g + 0x233cc60 + G(int, 0x2340c60)++ * 0x100, (const char *)line);
+}
+
+/* a game mode (+8) with no next stage: a fatal message */
+static void no_next(u8 *g)
+{
+	GAME_CDECL(0x46c710, void, char *, const char *, int, int, int)((char *)0xa0e778, (const char *)0x4c5060, G(int, 8), G(int, 0x233cc20),
+	                                                             G(int, 0x233cc24));
+}
+
+/* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
+static void keep_alive(u8 *g)
+{
+	if (G(int, 8) == 1 && G(int, 0x234240d) == 0 && FUN_004a86d0() == 1)
+		net_sendGamePacket(g, G(int, 0x234240d));
+}
+
+/* the map's file name (+0x1f35c8 with .bfd) */
+static char *bfd_name(u8 *g, char *out)
+{
+	sprintf(out, (const char *)0x4c5190, (const char *)g + 0x1f35c8);
+	return out;
+}
+
+/* 0x468750 (thiscall on the game object): one step of loading per call. The first (+0x233cc28 0) resets the
+   loading lines to the title. By the stage (+0x233cc24): 0 the replay file's header (mode 3: version 0x1201, the
+   map, the players' names, the type), the scene reset; 1 the map named (0x9dad94 into 0x907b30: none ends it, 0xa0ea94
+   set); 2 waiting for the stage's play information (the network drained into net_processGamePacket; a timeout
+   +0x2342395 against K 0x4a93d0, too many players or the stop keys 0x4defc8 / 0x4defcc stop it); 3 the ground; 4 the
+   objects; 5 the collision volume; 6 the crosshair and the play information; 7 the mission and (mode 0) the actors; 8
+   the game started (+0x233cc20 by the mode). Each stage adds a line (the next depends on the mode +8); every step but
+   the last draws the screen. Returns +0x233cc20, or 0 once Esc or the stop is seen or the map has no name */
+u32 THISCALL (game_processLoadingMode)(u8 *g)
+{
+	char name[0x100], path[0x100];
+	if (G(int, 0x233cc28) == 0) {
+		GAME_VAR(u8 *, 0xa0ea8c) = g;
+		GAME_VAR(u8, 0xa0e988) = 0;
+		G(int, 0x2340c60) = 1;
+		strcpy((char *)g + 0x233cc60, (const char *)0x4c52b0);
+		G(int, 0x233cc24) = 0;
+		G(int, 0x233cc2c) = 0;
+	}
+	int stop = input_asyncKeyPressed(0x1b) != 0;
+	int mode;
+	switch (G(int, 0x233cc24)) {
+	case 0:
+		keep_alive(g);
+		music_shutdown();
+		if (G(int, 8) == 3) {
+			sprintf(path, (const char *)0x4c52a4, (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
+			void *f = G(void *, 0x2340d08) = crt_fopen(path, (const char *)0x4ad170);
+			if (!f)
+				sys_fatalError((char *)0xa0e778, (const char *)0x4c5278, (int)path);
+			fread_scrambled(g + 0x1f35c4, 4, 1, G(void *, 0x2340d08));
+			if (G(int, 0x1f35c4) != 0x1201)
+				sys_fatalError((char *)0xa0e778, (const char *)0x4c5234, (int)path);
+			fread_scrambled((void *)0x5ae9c4, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x9dad94, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x67fb44, 1, 0x20, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x9da3e0, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x76d368, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x4df8e8, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)0x76d408, 4, 1, G(void *, 0x2340d08));
+			game_setGameTypeFlags((Stage *)STAGE(g), GAME_VAR(int, 0x76d368));
+		}
+		GAME_VAR(u32, 0xae2ec8) = 0x469730;
+		FUN_00470fc0((int)STAGE(g), -1, 0, (const char *)0x4c521c);
+		scene_reset(STAGE(g));
+		mode = G(int, 8);
+		if (mode == 3)
+			next_stage(g, 1, 0x4c520c);   /* .LOAD AUTO PLAY */
+		else if (mode >= 0 && mode <= 2)
+			next_stage(g, 2, 0x4c51e4);   /* .INIT PLAY INFO */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 1: {
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
+		GAME_VAR(int, 0xa0ea94) = 0;
+		const char *map = (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20;
+		if (!map[0]) {
+			GAME_VAR(int, 0xa0ea94) = 1;
+			return 0;
+		}
+		FUN_00461ec0((Scene *)g, map);
+		mode = G(int, 8);
+		if (mode >= 0 && mode <= 3)
+			next_stage(g, mode == 2 ? 6 : 2, 0x4c51e4);   /* .INIT PLAY INFO */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	}
+	case 2:
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c51c0);
+		keep_alive(g);
+		if (G(int, 0x1f1cb0) == 0) {
+			FUN_00461ec0((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+			mode = G(int, 8);
+			if (mode == 0 || mode == 1 || mode == 3)
+				next_stage(g, 3, 0x4c51b0);   /* .LOAD GROUND */
+			else
+				no_next(g);
+			G(int, 0x233cc2c) = 0;
+			break;
+		}
+		{
+			int from, size;
+			u8 data[0x230];   /* (the original's buffer runs on into its path and name buffers) */
+			int r;
+			FUN_004a8350();
+			while ((r = FUN_004a8450(&from, &size, data)) != 0) {
+				if (r == 1)
+					net_processGamePacket(g, from, size, data);
+				G(int, 0x2340c7c)++;
+				FUN_004a8350();
+			}
+		}
+		if (FUN_004a86d0() == 0) {
+			long double t = fadd_m(fld_m((const float *)(g + 0x44)), (const float *)(g + 0x2342395));
+			G(float, 0x2342395) = f32(t);
+			if (t > *(const float *)0x4a93d0)
+				stop = 1;
+		}
+		if (FUN_004a8730() >= 0x80)
+			stop = 1;
+		if (input_justPressed(GAME_VAR(int, 0x4defc8)) || input_justPressed(GAME_VAR(int, 0x4defcc)))
+			stop = 1;
+		break;
+	case 3:
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5198);
+		keep_alive(g);
+		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
+			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+		if (GAME_VAR(int, 0x9dad94) != G(int, 0xbe3000))
+			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+		mode = G(int, 8);
+		if (mode == 0 || mode == 1 || mode == 3)
+			next_stage(g, 4, 0x4c5180);   /* .LOAD OBJECT */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 4:
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5164);
+		keep_alive(g);
+		map_loadObjectInfoFrom(STAGE(g), bfd_name(g, path), 0);
+		mode = G(int, 8);
+		if (mode == 0 || mode == 1 || mode == 3)
+			next_stage(g, 5, 0x4c514c);   /* .SET COLLISION VOLUME */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 5:
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c512c);
+		keep_alive(g);
+		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* 20000 cubed, cells of 500 */
+		mode = G(int, 8);
+		if (mode == 0 || mode == 1 || mode == 3)
+			next_stage(g, 6, 0x4c511c);   /* .LOAD PLAY INFO */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 6:
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5104);
+		keep_alive(g);
+		sprintf(name, (const char *)0x4c50e4, GAME_VAR(int, 0x4df00c));
+		G(int, 0x233c9f8) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
+		mode = G(int, 8);
+		if (mode >= 0 && mode <= 3)
+			next_stage(g, mode <= 1 ? 7 : 8, 0x4c50a0);   /* END LOADING PROCESS */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 7:
+		keep_alive(g);
+		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c50c4);
+		map_loadMissionInfoFrom(STAGE(g), bfd_name(g, path));
+		if (G(int, 8) == 0) {
+			FUN_00470fc0((int)STAGE(g), 0, 0, (const char *)0x4c50b4);
+			map_loadActorInfoFrom(STAGE(g), bfd_name(g, path));
+		}
+		mode = G(int, 8);
+		if (mode >= 0 && mode <= 3)
+			next_stage(g, 8, 0x4c50a0);   /* END LOADING PROCESS */
+		else
+			no_next(g);
+		G(int, 0x233cc2c) = 0;
+		break;
+	case 8:
+		FUN_00470fc0((int)STAGE(g), -2, 0, (const char *)0x4c5048);
+		keep_alive(g);
+		music_playMatch((Scene *)g);
+		G(int, 0x233c9e8) = 1;
+		mode = G(int, 8);
+		if (mode >= 0 && mode <= 3)
+			G(int, 0x233cc20) = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
+		else
+			no_next(g);
+		G(int, 0x233cc28) = 0;
+		GAME_VAR(int, 0xae2ec8) = 0;
+		return G(u32, 0x233cc20);
+	}
+	G(int, 0x233cc28)++;
+	glClearColor_stored(((const u32[]){ 0, 0, 0 }));
+	glClearDepth(1.0);
+	glClear(0x4100);
+	gfx_setProjectionHud(1, 1.0f);
+	ViewVolume_captureMatrices(g + 0x74, 0, g + 0x22e7068);
+	ViewVolume_reset(g + 0x74);
+	render_drawObjects(g + 0x74, G(int, 0x1f1664), 0.0f);
+	gfx_setProjectionHud(0, 1.0f);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	for (int k = 0, y = 8; k < G(int, 0x2340c60); k += 2, y += 16)   /* (every other line from the second, as the original steps) */
+		font_penDraw(0x10, y, 0, (const char *)g + 0x233cc60 + (k + 1) * 0x100);
+	return stop == 1 ? 0 : G(u32, 0x233cc20);
+}
+#undef G
+#undef STAGE

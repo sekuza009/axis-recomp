@@ -364,3 +364,131 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, float h1, floa
 		tex_bind(tm, i);
 	return i;
 }
+
+#define W(m) GAME_VAR(int, (m) + 0xc0118)
+#define H(m) GAME_VAR(int, (m) + 0xc011c)
+
+/* path: the texture name in the given format, under the manager's directory (+8) when it has one */
+static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *name)
+{
+	if (m[8])
+		sprintf(path, (const char *)with_dir, (const char *)m + 8, name);
+	else
+		sprintf(path, (const char *)plain, name);
+}
+
+/* a decoded image of another size than the manager's is fatal */
+static void size_check(u8 *m, int w, int h)
+{
+	if (W(m) != w || H(m) != h)
+		GAME_CDECL(0x46c710, void, char *, const char *, int, int, int, int)((char *)0xa0dff8, (const char *)0x4b4104, W(m), H(m), w, h);
+}
+
+/* the image's alpha (the 4th bytes from +0x114): the grey of the ALPHA image at +0x40114, or opaque */
+static void alpha_from(u8 *m, int have)
+{
+	for (int y = 0; y < H(m); y++)
+		for (int x = 0; x < W(m); x++) {
+			u8 *px = m + (y * W(m) + x) * 4;
+			px[0x117] = have ? (u8)((px[0x40116] + px[0x40115] + px[0x40114]) / 3) : 0xff;
+		}
+}
+
+/* no colour mask: every pixel of +0x80114 the colour at 0xa1f238 */
+static void colour_fill(u8 *m)
+{
+	for (int y = 0; y < H(m); y++)
+		for (int x = 0; x < W(m); x++)
+			GAME_VAR(u32, m + 0x80114 + (y * W(m) + x) * 4) = GAME_VAR(u32, 0xa1f238);
+}
+
+/* 0x455aa0 (thiscall on the texture manager): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
+   +0x114, its alpha (alpha_from) and its colour mask at +0x80114 (or colour_fill), by the manager's format +0xc0114:
+   0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_4554c0 / tex_getItemFileBy, the decoder's tables set
+   up on first use, 0xa0e00c), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
+   name_COLOR.RAW); a PTX of another size than +0xc0118 x +0xc011c is fatal. (The original's SEH frame, for its BMP
+   objects, is not reproduced.) Its callers ignore the eax it leaves */
+void THISCALL (tex_loadColorMask)(u8 *m, int i)
+{
+	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */
+	for (int k = 0; k < 3; k++) {
+		bmp[k][0] = 0x4a96f8;
+		bmp[k][1] = 0;
+	}
+	char name[0x100], path[0x190];
+	int bpp, w, h;
+	strcpy(name, (const char *)m + 0xc0128 + i * 0x68);
+	crt_strtok(name, (const char *)0x4b12f4);
+	switch (GAME_VAR(int, m + 0xc0114)) {
+	case 0:
+		if (!GAME_VAR(int, 0xa0e00c)) {
+			ptx_initTables();
+			GAME_VAR(int, 0xa0e00c) = 1;
+		}
+		tex_path(m, path, 0x4b3fdc, 0x4b3fd8, name);
+		ptx_decode(tex_getItemFileBy(m, path), m + 0x114, &bpp, &w, &h);
+		size_check(m, w, h);
+		tex_path(m, path, 0x4b405c, 0x4b4050, name);
+		if (tex_4554c0(m, (const u8 *)path) >= 0) {
+			ptx_decode(tex_getItemFileBy(m, path), m + 0x40114, &bpp, &w, &h);
+			size_check(m, w, h);
+			alpha_from(m, 1);
+		} else
+			alpha_from(m, 0);
+		tex_path(m, path, 0x4b4044, 0x4b4038, name);
+		if (tex_4554c0(m, (const u8 *)path) >= 0) {
+			ptx_decode(tex_getItemFileBy(m, path), m + 0x80114, &bpp, &w, &h);
+			size_check(m, w, h);
+		} else
+			colour_fill(m);
+		break;
+	case 1:
+		tex_path(m, path, 0x4b3fec, 0x4b3fe4, name);
+		if (!image_initBy(bmp[0], path))
+			sys_fatalError((char *)0xa0dff8, (const char *)0x4b40a8, (int)path);
+		image_copyTo(bmp[0], m + 0x114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+		tex_path(m, path, 0x4b4098, 0x4b4088, name);
+		if (image_initBy(bmp[1], path)) {
+			image_copyTo(bmp[1], m + 0x40114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+			alpha_from(m, 1);
+			FUN_0046ce50(bmp[1]);
+		} else
+			alpha_from(m, 0);
+		tex_path(m, path, 0x4b4078, 0x4b4068, name);
+		if (image_initBy(bmp[2], path)) {
+			image_copyTo(bmp[2], m + 0x80114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+			FUN_0046ce50(bmp[2]);
+		} else
+			colour_fill(m);
+		break;
+	case 2: {
+		if (!GAME_VAR(int, 0xa0e00c)) {
+			ptx_initTables();
+			GAME_VAR(int, 0xa0e00c) = 1;
+		}
+		tex_path(m, path, 0x4b4000, 0x4b3ff8, name);
+		ptx_open(path, m + 0x114, &bpp, &w, &h);
+		size_check(m, w, h);
+		tex_path(m, path, 0x4b40f4, 0x4b40e4, name);
+		void *f = crt_fopen(path, (const char *)0x4ad170);
+		if (f) {
+			ptx_decode(f, m + 0x40114, &bpp, &w, &h);
+			size_check(m, w, h);
+			alpha_from(m, 1);
+		} else
+			alpha_from(m, 0);
+		tex_path(m, path, 0x4b40d4, 0x4b40c4, name);
+		f = crt_fopen(path, (const char *)0x4ad170);
+		if (f) {
+			ptx_decode(f, m + 0x80114, &bpp, &w, &h);
+			size_check(m, w, h);
+		} else
+			colour_fill(m);
+		break;
+	}
+	}
+	for (int k = 2; k >= 0; k--)
+		BMPRGBFile_ctor(bmp[k]);   /* (the reader's destructor) */
+}
+#undef W
+#undef H
