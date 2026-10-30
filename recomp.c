@@ -3944,7 +3944,8 @@ void THISCALL hud_495ed0(void *scene, int x0, int y0, int x1, int y1);
    coordinates) by its polygons (+0x60 count, +0x64 list of { mode, count, indices }); mode 1 draws wireframe. Then
    the transparent triangles (+0x9058, count +0x905c) and billboards (+0x906c, count +0x9070) are depth-sorted
    (+0x9060 / +0x9074 / +0x907c) and drawn back to front; the counters +0x90a4.. are updated */
-static THISCALL DWORD render_drawObjects(char *vv, DWORD mode, DWORD b) { DWORD v[2] = { mode, b }; return run_lifted(lift_485af0, (DWORD)vv, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void render_drawObjects(char *vv, DWORD mode, DWORD b);
 /* batch 109 (lifted/grp55.c) */
 #include "lifted/grp55.c"
 /* 0x45e170 (thiscall on the scene) hud_45e170(vv, draw): actor_updateAllParts for every active actor
@@ -17663,7 +17664,7 @@ static const STest g_stests[] = {
 	/* batch 107 */
 	T(hud_495ed0, 0, 300, 0),
 	/* batch 108 */
-	T(render_drawObjects, 0, 300, 0),
+	T(render_drawObjects, 0, 1000, 0),
 	/* batch 109 */
 	T(hud_45e170, 0, 300, 0), T(FUN_0045dc00, 1, 300, 0), T(match_45dd80, 0, 300, 0), T(armc_45ddc0, 0, 300, 0),
 	T(actor_applySpawnRecord, 0, 300, 0),

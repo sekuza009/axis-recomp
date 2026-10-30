@@ -336,3 +336,489 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		e[6] = 0;
 	}
 }
+
+/* ---- 0x485af0: drawing what was queued ---- */
+
+typedef void (STDCALL *ArrayFn)(int size, u32 type, int stride, int count, const void *p);   /* +0x14.. (an extension's) */
+
+/* the fog range (start, end) back with fog on, when it was on; else fog off */
+static void fog_set(u8 on, const float *range)
+{
+	if (on == 1) {
+		glFogf_stored(GL_FOG_START, BITS(range[0]));
+		glFogf_stored(GL_FOG_END, BITS(range[1]));
+		glEnable(GL_FOG);
+	} else
+		glDisable(GL_FOG);
+}
+
+static void load_matrices(const float *projection, const float *modelview)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(projection);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(modelview);
+}
+
+static void identity_matrices(void)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+/* texture t (an id: manager t / 512, slot t % 512) bound, counted in +0x90ac */
+static void bind(u8 *vv, int t)
+{
+	glEnable(GL_TEXTURE_2D);
+	tex_bind(g_textures->managers[t / 512], t % 512);
+	FIELD(int, vv, 0x90ac)++;
+}
+
+/* a queued record's texture: bound, or texturing off for none (< 0) or mode 2 (untextured) */
+static void use_texture(u8 *vv, int t, int mode)
+{
+	if (t >= 0 && mode != 2)
+		bind(vv, t);
+	else
+		glDisable(GL_TEXTURE_2D);
+}
+
+/* texture t's scrolling (its record's +0xc0188): 1 / 2 v / u up by b, 3 / 4 down, else none */
+static int tex_scroll(int t) { return FIELD(int, g_textures->managers[t / 512], 0xc0188 + t % 512 * 0x68); }
+
+static void scroll(float *uv, int n, int kind, const float *b)
+{
+	for (int i = 0; i < n; i++) {
+		float *c = &uv[2 * i + (kind == 1 || kind == 3)];
+		if (kind == 1 || kind == 2)
+			*c = (float)fadd_m(fld_m(b), c);
+		else if (kind == 3 || kind == 4)
+			*c = (float)fsub_m(fld_m(c), b);
+	}
+}
+
+/* the colour buffer (+0x904c, room for +0x9048 vertices) about to take the mesh's colours: 0 when they do not fit;
+   the most so far kept in +0x9050 */
+static int fits(u8 *vv, const u8 *mesh)
+{
+	int n = FIELD(int, mesh, 0x4c);
+	if (n > FIELD(int, vv, 0x9048))
+		return 0;
+	if (FIELD(int, vv, 0x9050) < n)
+		FIELD(int, vv, 0x9050) = n;
+	return 1;
+}
+
+/* the inverse of m, or the identity when it has none */
+static void invert(float *inv, const float *m)
+{
+	if (!Mat4_invert(inv, m)) {
+		memset(inv, 0, 64);
+		inv[0] = inv[5] = inv[10] = inv[15] = 1.0f;
+	}
+}
+
+/* an item's vertex colours: its own (+4), the mesh's (+0x58), or either lit by the factors (+8, through the inverse
+   of the item's matrix) and / or tinted (+0xc) in the colour buffer. NULL when the mesh does not fit the buffer */
+static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
+{
+	u8 *buf = FIELD(u8 *, vv, 0x904c);
+	const u8 *colours = (const u8 *)it[1], *factors = (const u8 *)it[2];
+	float inv[16];
+	if (colours) {
+		if (mesh[0] & 2)
+			return (const u32 *)colours;
+		if (factors) {
+			if (!fits(vv, mesh))
+				return NULL;
+			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
+			invert(inv, (const float *)it[4]);
+			shape_getShadingColorBufferBy(buf, 0, mesh, factors, inv);
+			if (it[3])
+				FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			return (const u32 *)buf;
+		}
+		if (it[3]) {
+			if (!fits(vv, mesh))
+				return NULL;
+			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
+			FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			return (const u32 *)buf;
+		}
+		return (const u32 *)colours;
+	}
+	if ((mesh[0] & 2) && !it[3])
+		return FIELD(const u32 *, mesh, 0x58);
+	if (factors) {
+		invert(inv, (const float *)it[4]);
+		if (!fits(vv, mesh))
+			return NULL;
+		shape_getShadingColorBufferBy(buf, 1, mesh, factors, inv);
+		if (it[3])
+			FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+		return (const u32 *)buf;
+	}
+	if (it[3]) {
+		if (!fits(vv, mesh))
+			return NULL;
+		FUN_00464a70(buf, 1, (const u32 *)mesh, (const u8 *)it[3]);
+		return (const u32 *)buf;
+	}
+	return FIELD(const u32 *, mesh, 0x58);
+}
+
+/* an opaque mesh from vertex arrays (an extension's array functions at +0x14 / +0x18 / +0x1c when set): positions,
+   colours, texture coordinates when textured (a copy in uvs when the texture scrolls), under the item's matrices;
+   culling by flags 4 (none) / 8 (front), flag 0x10 no depth test; its polygons (+0x60, +0x64: mode, count,
+   indices) counted as triangles in +0x90a4 */
+static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, int id, const float *b, float *uvs)
+{
+	ArrayFn fn;
+	glEnableClientState(0x8074);
+	if ((fn = FIELD(ArrayFn, vv, 0x14)))
+		fn(3, 0x1406, 0, FIELD(int, mesh, 0x4c), FIELD(void *, mesh, 0x50));
+	else
+		glVertexPointer(3, 0x1406, 0, FIELD(void *, mesh, 0x50));
+	glEnableClientState(0x8076);
+	if ((fn = FIELD(ArrayFn, vv, 0x18)))
+		fn(4, 0x1401, 0, FIELD(int, mesh, 0x4c), col);
+	else
+		glColorPointer(4, 0x1401, 0, col);
+	if (id > 0) {
+		const float *uv = FIELD(const float *, mesh, 0x5c);
+		int kind = tex_scroll(id - 1);
+		if (kind) {
+			memcpy(uvs, uv, (u32)FIELD(int, mesh, 0x4c) * 8);
+			scroll(uvs, FIELD(int, mesh, 0x4c), kind, b);
+			uv = uvs;
+		}
+		glEnableClientState(0x8078);
+		if ((fn = FIELD(ArrayFn, vv, 0x1c)))
+			fn(2, 0x1406, 0, FIELD(int, mesh, 0x4c), uv);
+		else
+			glTexCoordPointer(2, 0x1406, 0, uv);
+	} else
+		glDisableClientState(0x8078);
+	glPushMatrix();
+	glMultMatrixf((const float *)it[4]);
+	if (it[5])
+		glMultMatrixf((const float *)it[5]);
+	if (mesh[0] & 4)
+		glDisable(0xb44);
+	else {
+		glEnable(0xb44);
+		glCullFace(mesh[0] & 8 ? 0x404 : 0x405);
+	}
+	if (mesh[0] & 0x10)
+		glDisable(GL_DEPTH_TEST);
+	else
+		glEnable(GL_DEPTH_TEST);
+	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
+		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
+		glDrawElements(pg[0], pg[1], 0x1405, (const void *)pg[2]);
+		int c = (int)pg[1];
+		if (pg[0] == 4)
+			FIELD(int, vv, 0x90a4) += c / 3;
+		else if (pg[0] == 5 || pg[0] == 6)
+			FIELD(int, vv, 0x90a4) += c - 2;
+	}
+	glEnable(GL_DEPTH_TEST);
+	glDisable(0xb44);
+	glPopMatrix();
+}
+
+/* per point and coordinate (x, y, z), the order the original sums the three products in */
+static const char k_texturedOrder[] = "201201102" "201021210" "201021021";
+static const char k_plainOrder[] = "102021021" "021210210" "201210021";
+
+/* point p through M (columns) */
+static void through(float *out, const float *M, const float *p, const char *order)
+{
+	for (int r = 0; r < 3; r++, order += 3) {
+		int a = order[0] - '0', b = order[1] - '0', c = order[2] - '0';
+		out[r] = (float)row(LD(p[a]), &M[4 * a + r], LD(p[b]), &M[4 * b + r], LD(p[c]), &M[4 * c + r], &M[12 + r]);
+	}
+}
+
+/* a transparent mesh: its triangle lists (mode 4) one triangle at a time through the item's matrices (the product
+   of both when there are two) into the view volume's list, with texture coordinates (scrolled) when textured */
+static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, int id, const float *b)
+{
+	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
+		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
+		int count = (int)pg[1];
+		const u32 *idx = (const u32 *)pg[2];
+		float product[16];
+		const float *M = (const float *)it[4];
+		if (it[5]) {
+			Mat4_multiply(product, (const float *)it[4], (const float *)it[5]);
+			M = product;
+		}
+		if (pg[0] != 4 || count <= 0)
+			continue;
+		for (u32 t = ((u32)count + 2) / 3; t; t--, idx += 3) {
+			float uv[6], P[9];
+			u32 c[3];
+			const char *order = id > 0 ? k_texturedOrder : k_plainOrder;
+			if (id > 0) {
+				for (int k = 0; k < 3; k++)
+					memcpy(&uv[2 * k], FIELD(const float *, mesh, 0x5c) + idx[k] * 2, 8);
+				int kind = tex_scroll(id - 1);
+				if (kind)
+					scroll(uv, 3, kind, b);
+			}
+			for (int k = 0; k < 3; k++)
+				c[k] = col[idx[k]];
+			for (int k = 0; k < 3; k++)
+				through(P + 3 * k, M, FIELD(const float *, mesh, 0x50) + idx[k] * 3, order + 9 * k);
+			if (id > 0)
+				ViewVolume_transformObject(vv, id - 1, (const u32 *)uv, c, P, NULL, 2, 1);
+			else
+				ViewVolume_transformObject(vv, 0, NULL, c, P, NULL, 2, 1);
+		}
+	}
+}
+
+/* a queued triangle (0x60-byte record): colours (+0x1c), texture coordinates (+4) when textured, clip-space points
+   (+0x28, w used by four) */
+static void triangle(const u32 *r, int textured, int four)
+{
+	for (int k = 0; k < 3; k++) {
+		glColor4ubv(r + 7 + k);
+		if (textured)
+			glTexCoord2fv(r + 1 + 2 * k);
+		if (four)
+			glVertex4fv(r + 10 + 4 * k);
+		else
+			glVertex3fv((const float *)(r + 10 + 4 * k));
+	}
+}
+
+/* a queued billboard (0x5c-byte record): colour (+0x14), its four points (+0x48 back to +0x18) with the corners'
+   texture coordinates (from +4 and +0xc) when textured */
+static void billboard(const u32 *r, int textured)
+{
+	glColor4ubv(r + 5);
+	if (textured) {
+		glTexCoord2fv(r + 1);
+		glVertex4fv(r + 0x12);
+		glTexCoord2f_bits(r[3], r[2]);
+		glVertex4fv(r + 0xe);
+		glTexCoord2fv(r + 3);
+		glVertex4fv(r + 10);
+		glTexCoord2f_bits(r[1], r[4]);
+	} else {
+		glVertex4fv(r + 0x12);
+		glVertex4fv(r + 0xe);
+		glVertex4fv(r + 10);
+	}
+	glVertex4fv(r + 6);
+}
+
+static const float k_third = -0.33333334f, k_half = -0.5f;   /* the depth keys: minus the mean z */
+
+/* 0x485af0: draw what ViewVolume_projectObject queued (mode 1 wireframe, 2 untextured; b the texture scroll).
+   Under the view volume's matrices (+0x90b0 / +0x90f0) and the caller's fog: per material (count +0x3024, ids +0x20:
+   0 none, else the texture id + 1) its item chain (+0x3028 + id * 4: mesh, colours, factors, tint, matrix, second
+   matrix, next), opaque meshes drawn, transparent ones (flag 1, or a second matrix) queued as triangles. Then the
+   queued triangles with the first list kind (1) as they are, the lines (+0x9088), and the rest depth-sorted and
+   merged back to front with the billboards (kind 2), billboards of kind 3 last; the fog range mapped through the
+   projection (+0x90d8..) for the identity-matrix passes. A mesh too big for the colour buffer is retried forever,
+   as the original does */
+void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
+{
+	float projection[16], modelview[16], mapped[2] = { 0, 0 };
+	float range[17] = { 0, 0 };   /* the fog range; as in the original's frame, a whole matrix fits after each value */
+	float uvs[0x7cc];
+	u8 fog;
+	glGetFloatv(0xba7, projection);
+	glGetFloatv(0xba6, modelview);
+	if (mode == 1) {
+		glPolygonMode(0x408, 0x1b01);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	}
+	glGetBooleanv(GL_FOG, &fog);
+	if (fog == 1) {
+		glGetFloatv(GL_FOG_START, &range[0]);
+		glGetFloatv(GL_FOG_END, &range[1]);
+		for (int k = 0; k < 2; k++) {
+			X z = -fld_m(&range[k]);
+			float x = f32(fadd_m(fmul_m(z, &FIELD(float, vv, 0x90d8)), &FIELD(float, vv, 0x90e8)));
+			X w = fadd_m(fmul_m(z, &FIELD(float, vv, 0x90dc)), &FIELD(float, vv, 0x90ec));
+			mapped[k] = (float)(fld_m(&x) / w);
+		}
+	}
+	load_matrices(&FIELD(float, vv, 0x90b0), &FIELD(float, vv, 0x90f0));
+	fog_set(fog, range);
+	FIELD(int, vv, 0x9050) = 0;
+
+	for (int i = 0; i < FIELD(int, vv, 0x3024); i++) {
+		int id = FIELD(int, vv, 0x20 + i * 4);
+		const u32 *it = FIELD(const u32 *, vv, 0x3028 + id * 4);
+		if (id > 0 && mode != 2)
+			bind(vv, id - 1);
+		do {
+			FIELD(int, vv, 0x90a8)++;
+			const u8 *mesh = (const u8 *)it[0];
+			const u32 *col = item_colours(vv, it, mesh);
+			if (!col)
+				continue;
+			if (!(mesh[0] & 1) && !it[5])
+				draw_opaque(vv, it, mesh, col, id, &b, uvs);
+			else
+				draw_transparent(vv, it, mesh, col, id, &b);
+			it = (const u32 *)it[6];
+		} while (it);
+		if (id > 0)
+			glDisable(GL_TEXTURE_2D);
+	}
+
+	/* the queued triangles of kind 1, each under its own matrix (+0x58) */
+	load_matrices(&FIELD(float, vv, 0x90b0), &FIELD(float, vv, 0x90f0));
+	fog_set(fog, range);
+	int cur = -1;
+	glEnable(0xb44);
+	glCullFace(0x405);
+	glEnable(0x8037);
+	glPolygonOffset(-1.0f, -1.0f);
+	for (int i = 0; i < FIELD(int, vv, 0x905c); i++) {
+		const u32 *r = (const u32 *)(FIELD(u8 *, vv, 0x9058) + i * 0x60);
+		if (r[0x17] != 1)
+			continue;
+		glPushMatrix();
+		if (r[0x16])
+			glMultMatrixf((const float *)r[0x16]);
+		if ((int)r[0] != cur) {
+			cur = (int)r[0];
+			use_texture(vv, cur, mode);
+		}
+		glBegin(4);
+		triangle(r, cur >= 0, 0);
+		glEnd();
+		FIELD(int, vv, 0x90a4)++;
+		glPopMatrix();
+	}
+	glDisable(GL_TEXTURE_2D);
+	glDisable(0x8037);
+
+	/* the lines (0x24 bytes: colour, two points) */
+	identity_matrices();
+	fog_set(fog, mapped);
+	glBegin(GL_LINES);
+	glColor4ub(0xff, 0xff, 0xff, 0xff);
+	for (int i = 0; i < FIELD(int, vv, 0x908c); i++) {
+		const u8 *l = FIELD(u8 *, vv, 0x9088) + i * 0x24;
+		glColor3ub(l[0], l[1], l[2]);
+		glVertex4fv(l + 4);
+		glVertex4fv(l + 0x14);
+	}
+	glEnd();
+
+	/* the depth lists (record, key): triangles of kind 2, billboards of kinds 2 and 3 */
+	FIELD(int, vv, 0x9064) = 0;
+	for (int i = 0; i < FIELD(int, vv, 0x905c); i++) {
+		u8 *r = FIELD(u8 *, vv, 0x9058) + i * 0x60;
+		if (FIELD(int, r, 0x5c) != 2)
+			continue;
+		FIELD(u8 **, vv, 0x9060)[FIELD(int, vv, 0x9064) * 2] = r;
+		X z = fadd_m(fadd_m(fld_m(&FIELD(float, r, 0x50)), &FIELD(float, r, 0x40)), &FIELD(float, r, 0x30));
+		FIELD(float *, vv, 0x9060)[FIELD(int, vv, 0x9064) * 2 + 1] = (float)fmul_m(z, &k_third);
+		FIELD(int, vv, 0x9064)++;
+	}
+	FIELD(int, vv, 0x9078) = 0;
+	FIELD(int, vv, 0x9080) = 0;
+	for (int i = 0; i < FIELD(int, vv, 0x9070); i++) {
+		u8 *r = FIELD(u8 *, vv, 0x906c) + i * 0x5c;
+		int list = FIELD(int, r, 0x58) == 2 ? 0x9074 : FIELD(int, r, 0x58) == 3 ? 0x907c : 0;
+		if (!list)
+			continue;
+		FIELD(u8 **, vv, list)[FIELD(int, vv, list + 4) * 2] = r;
+		X z = fadd_m(fld_m(&FIELD(float, r, 0x30)), &FIELD(float, r, 0x20));
+		FIELD(float *, vv, list)[FIELD(int, vv, list + 4) * 2 + 1] = (float)fmul_m(z, &k_half);
+		FIELD(int, vv, list + 4)++;
+	}
+
+	/* triangles and billboards merged back to front (triangles fogged when fog is on, billboards never) */
+	identity_matrices();
+	fog_set(fog, mapped);
+	render_depthSort_490f80(FIELD(u32 *, vv, 0x9060), 0, FIELD(int, vv, 0x9064) - 1);
+	render_depthSort_491190(FIELD(u32 *, vv, 0x9074), 0, FIELD(int, vv, 0x9078) - 1);
+	int ia = 0, ib = 0, triangles = 0;
+	cur = -1;
+	glDisable(0xb44);
+	glDisable(GL_FOG);
+	glBegin(GL_QUADS);
+	const float *a = FIELD(int, vv, 0x9064) > 0 ? FIELD(const float *, vv, 0x9060) : NULL;
+	const float *q = FIELD(int, vv, 0x9078) > 0 ? FIELD(const float *, vv, 0x9074) : NULL;
+	while (a || q) {
+		if (a && (!q || !(fld_m(&a[1]) >= fld_m(&q[1])))) {
+			if (triangles != 1) {
+				glEnd();
+				if (fog)
+					glEnable(GL_FOG);
+				glBegin(4);
+				triangles = 1;
+			}
+			const u32 *r = *(const u32 *const *)a;
+			if ((int)r[0] != cur) {
+				glEnd();
+				cur = (int)r[0];
+				use_texture(vv, cur, mode);
+				glBegin(4);
+			}
+			triangle(r, cur >= 0, 1);
+			FIELD(int, vv, 0x90a4)++;
+			ia++;
+			a = ia < FIELD(int, vv, 0x9064) ? FIELD(const float *, vv, 0x9060) + ia * 2 : NULL;
+		} else {
+			if (triangles != 0) {
+				glEnd();
+				glDisable(GL_FOG);
+				glBegin(GL_QUADS);
+				triangles = 0;
+			}
+			const u32 *r = *(const u32 *const *)q;
+			if ((int)r[0] != cur) {
+				glEnd();
+				cur = (int)r[0];
+				use_texture(vv, cur, mode);
+				glBegin(GL_QUADS);
+			}
+			billboard(r, cur >= 0);
+			FIELD(int, vv, 0x90a4) += 2;
+			ib++;
+			q = ib < FIELD(int, vv, 0x9078) ? FIELD(const float *, vv, 0x9074) + ib * 2 : NULL;
+		}
+	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	identity_matrices();
+	glDisable(GL_FOG);
+
+	/* the billboards of kind 3, unfogged, without depth test */
+	render_depthSort_491190(FIELD(u32 *, vv, 0x907c), 0, FIELD(int, vv, 0x9080) - 1);
+	cur = -1;
+	glDisable(0xb44);
+	glDisable(GL_DEPTH_TEST);
+	glBegin(GL_QUADS);
+	for (int i = 0; i < FIELD(int, vv, 0x9080); i++) {
+		const u32 *r = FIELD(const u32 **, vv, 0x907c)[i * 2];
+		if ((int)r[0] != cur) {
+			glEnd();
+			cur = (int)r[0];
+			use_texture(vv, cur, mode);
+			glBegin(GL_QUADS);
+		}
+		billboard(r, cur >= 0);
+		FIELD(int, vv, 0x90a4) += 2;
+	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	fog_set(fog, range);
+	if (mode == 1)
+		glPolygonMode(0x408, 0x1b02);
+	load_matrices(projection, modelview);
+}

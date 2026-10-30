@@ -49,6 +49,24 @@
 #define glGetFloatv(pname, out) IMPORT(0x4a9270, void, u32, float *)(pname, out)
 #define glLoadMatrixf(m) IMPORT(0x4a926c, void, const float *)(m)
 #define glVertex3fv(v) IMPORT(0x4a9290, void, const float *)(v)
+/* (render/view_volume.c: drawing the queued objects; vectors and colours passed as pointers into memory) */
+#define glPolygonMode(face, mode) IMPORT(0x4a91c4, void, u32, u32)(face, mode)
+#define glGetBooleanv(pname, out) IMPORT(0x4a9250, void, u32, u8 *)(pname, out)
+#define glEnableClientState(array) IMPORT(0x4a9240, void, u32)(array)
+#define glDisableClientState(array) IMPORT(0x4a923c, void, u32)(array)
+#define glVertexPointer(size, type, stride, p) IMPORT(0x4a9248, void, int, u32, int, const void *)(size, type, stride, p)
+#define glColorPointer(size, type, stride, p) IMPORT(0x4a9244, void, int, u32, int, const void *)(size, type, stride, p)
+#define glTexCoordPointer(size, type, stride, p) IMPORT(0x4a9234, void, int, u32, int, const void *)(size, type, stride, p)
+#define glMultMatrixf(m) IMPORT(0x4a9238, void, const float *)(m)
+#define glCullFace(mode) IMPORT(0x4a91d0, void, u32)(mode)
+#define glDrawElements(mode, count, type, indices) IMPORT(0x4a92a8, void, u32, int, u32, const void *)(mode, count, type, indices)
+#define glPolygonOffset(factor, units) IMPORT(0x4a92a4, void, float, float)(factor, units)
+#define glColor4ub(r, g, b, a) IMPORT(0x4a929c, void, u8, u8, u8, u8)(r, g, b, a)
+#define glColor3ub(r, g, b) IMPORT(0x4a9298, void, u8, u8, u8)(r, g, b)
+#define glColor4ubv(c) IMPORT(0x4a92a0, void, const void *)(c)
+#define glTexCoord2fv(v) IMPORT(0x4a927c, void, const void *)(v)
+#define glVertex4fv(v) IMPORT(0x4a9294, void, const void *)(v)
+#define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
 /* a point kept in memory (three floats), passed on bit for bit */
 #define glVertex3f_stored(v) IMPORT(0x4a9210, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
 /* colours and translations given as float bits (see BITS) */
@@ -419,6 +437,10 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
 /* out = the inverse of m (4 x 4); returns 0 and leaves out untouched when m is singular */
 #define Mat4_invert(out, m) GAME_CDECL(0x47d740, int, float *, const float *)(out, m)
+#define ViewVolume_transformObject(vv, id, info6, info3, P, M, raw, cull) GAME_THISCALL(0x4842d0, int, void *, int, const u32 *, const u32 *, const float *, const float *, int, int)(vv, id, info6, info3, P, M, raw, cull)
+#define shape_getShadingColorBufferBy(out, first, part, factors, m) GAME_CDECL(0x463b80, void, u8 *, int, const void *, const u8 *, const float *)(out, first, part, factors, m)
+#define render_depthSort_490f80(e, lo, hi) GAME_CDECL(0x490f80, void, u32 *, int, int)(e, lo, hi)   /* (transparent triangles) */
+#define render_depthSort_491190(e, lo, hi) GAME_CDECL(0x491190, void, u32 *, int, int)(e, lo, hi)   /* (billboards) */
 /* a shape's shading colours from light factors (seen through inverse, the inverse of the shape's matrix), every part
    into its slice of out; first = 1 (0x466910) */
 #define shape_shadeParts(out, first, shape, factors, inverse) GAME_CDECL(0x466910, void, u32 *, int, Model *, const LightFactors *, \
