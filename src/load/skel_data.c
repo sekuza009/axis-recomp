@@ -755,3 +755,303 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 #undef TOKEN
 #undef SPACE
 #undef LINE_END
+
+#define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
+#define TOK(s, delims) crt_strtok(s, (const char *)(delims))
+#define SPACE 0x4ad5dc     /* " \t" */
+#define LINE_END 0x4b4310  /* " \t\n" */
+#define SLASH 0x4ad564     /* "/" */
+#define BAD_OBJ() sys_fatalError((char *)0xa0e790, (const char *)0x4c4c20, (int)line)
+
+/* a face's first corner token: a lone "\" continues the face on the next line */
+static char *face_start(char *line, void *f)
+{
+	char *t = TOK(NULL, LINE_END);
+	if (!strcmp(t, (const char *)0x4b1328)) {
+		crt_fgets(line, 0x100, f);
+		t = TOK(line, LINE_END);
+	}
+	return t;
+}
+
+/* corner "v[/a[/b]]" into part corner i: its position (v), and with a: texture a and normal b, or (no b) no
+   texture and normal a. Returns 0 when it is a bare position */
+static int obj_corner(u8 *part, int i, char *corner, const float *vs, const float *ns, const float *ts)
+{
+	memcpy(GAME_VAR(u8 *, part + 0x50) + i * 12, vs + (crt_atoi(TOK(corner, SLASH)) - 1) * 3, 12);
+	char *a = TOK(NULL, SLASH);
+	if (!a)
+		return 0;
+	int ai = crt_atoi(a) - 1;
+	char *b = TOK(NULL, SLASH);
+	float *uv = GAME_VAR(float *, part + 0x5c) + i * 2;
+	if (!b) {
+		GAME_VAR(int, uv) = GAME_VAR(int, uv + 1) = 0;
+		memcpy(GAME_VAR(u8 *, part + 0x54) + i * 12, ns + ai * 3, 12);
+	} else {
+		memcpy(uv, ts + ai * 2, 8);
+		memcpy(GAME_VAR(u8 *, part + 0x54) + i * 12, ns + (crt_atoi(b) - 1) * 3, 12);
+	}
+	return 1;
+}
+
+/* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (FUN_00464bc0);
+   pass 1 counts the parts (usemtl), positions (v), normals (vn), texture coordinates (vt) and the corners of the
+   faces (+0x18: a face of 3 or 4 corners, 3 or 6; fewer are fatal; +0x1c triangles); the data memory is taken
+   (allocated with three temporary arrays, or given: too small is fatal); pass 2 counts each part's corners and lays
+   out its arrays and its one triangle list; pass 3 reads the values, names the parts after the last "_" piece of
+   the material (its last character cut) and expands the faces into corners (bare positions get a flat normal). A
+   "3DS" comment flips y / z (the original's loop over that never moves on: a part with corners hangs it). Then the
+   colours, the temporaries freed, the parts' bounds (shape_relocate) and the shape's. As the original, a quad's
+   second triangle copies its corners into the temporary arrays rather than the part's. Its caller ignores the eax
+   it leaves */
+void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
+{
+	char line[0x100], last[0x100], c[4][0x20];
+	int nv = 0, nvn = 0, nvt = 0;
+	FUN_00464bc0(sh);
+	GAME_VAR(int, sh + 0x10) = 0;
+	while (crt_fgets(line, 0x100, f)) {
+		char *t = TOK(line, SPACE);
+		if (!strcmp(t, (const char *)0x4c4c64))
+			GAME_VAR(int, sh + 0x10)++;
+		else if (!strcmp(t, (const char *)0x4c4c60))
+			nv++;
+		else if (!strcmp(t, (const char *)0x4c4c5c))
+			nvn++;
+		else if (!strcmp(t, (const char *)0x4c4c58))
+			nvt++;
+		else if (!strcmp(t, (const char *)0x4c4c54)) {
+			if (!face_start(line, f))
+				BAD_OBJ();
+			for (int k = 0; k < 2; k++)
+				if (!TOK(NULL, LINE_END))
+					BAD_OBJ();
+			if (!TOK(NULL, LINE_END)) {
+				GAME_VAR(int, sh + 0x18) += 3;
+				GAME_VAR(int, sh + 0x1c) += 1;
+			} else {
+				GAME_VAR(int, sh + 0x18) += 6;
+				GAME_VAR(int, sh + 0x1c) += 2;
+			}
+		}
+	}
+	int parts = GAME_VAR(int, sh + 0x10);
+	if (parts <= 0)
+		return;
+	int size = GAME_VAR(int, sh + 4) = (GAME_VAR(int, sh + 0x18) * 3 + GAME_VAR(int, sh + 0x1c)) * 0xc + parts * 0x8c;
+	float *vs, *ns, *ts;
+	int allocated;
+	if (!mem) {
+		GAME_VAR(void *, sh + 8) = operator_new(size);
+		if (!GAME_VAR(void *, sh + 8))
+			sys_fatalError((char *)0xa0e790, (const char *)0x4c4bec, GAME_VAR(int, sh + 4));
+		GAME_VAR(int, sh + 0xc) = 1;
+		if (!(vs = operator_new(nv * 12)))
+			sys_fatalError((char *)0xa0e790, (const char *)0x4c4bb4, nv);
+		if (!(ns = operator_new(nvn * 12)))
+			sys_fatalError((char *)0xa0e790, (const char *)0x4c4b78, nvn);
+		if (!(ts = operator_new(nvt * 8)))
+			sys_fatalError((char *)0xa0e790, (const char *)0x4c4b38, nvt);
+		allocated = 1;
+	} else {
+		int need = nvt * 8 + (nvn + nv) * 0xc + size;
+		if (memSize < need)
+			sys_fatalErrorN((char *)0xa0e790, (const char *)0x4c4b08, need, memSize);
+		GAME_VAR(u8 *, sh + 8) = mem;
+		GAME_VAR(int, sh + 0xc) = 0;
+		vs = (float *)(mem + GAME_VAR(int, sh + 4));
+		ns = (float *)(mem + GAME_VAR(int, sh + 4) + nv * 0xc);
+		ts = (float *)(mem + GAME_VAR(int, sh + 4) + (nvn + nv) * 0xc);
+		allocated = 0;
+	}
+	u8 *all = GAME_VAR(u8 *, sh + 0x14) = GAME_VAR(u8 *, sh + 8);
+	int at = GAME_VAR(int, sh + 0x10) << 7;
+	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+		u8 *pt = all + k * 0x80;
+		GAME_VAR(int, pt) = 0;
+		GAME_VAR(int, pt + 0x44) = 0;
+		for (int o = 0x4c; o <= 0x64; o += 4)
+			GAME_VAR(int, pt + o) = 0;
+	}
+	crt_fseek(f, 0, 0);
+	int off = -0x80;
+	while (crt_fgets(line, 0x100, f)) {
+		char *t = TOK(line, SPACE);
+		if (!strcmp(t, (const char *)0x4c4c64)) {
+			off += 0x80;
+			GAME_VAR(int, GAME_VAR(u8 *, sh + 0x14) + 0x60 + off) = 1;
+		} else if (!strcmp(t, (const char *)0x4c4c54)) {
+			if (!face_start(line, f))
+				BAD_OBJ();
+			for (int k = 0; k < 2; k++)
+				if (!TOK(NULL, LINE_END))
+					BAD_OBJ();
+			GAME_VAR(int, GAME_VAR(u8 *, sh + 0x14) + 0x4c + off) += TOK(NULL, LINE_END) ? 6 : 3;
+		}
+	}
+	int corner = 0;
+	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80, *data = GAME_VAR(u8 *, sh + 8);
+		int n = GAME_VAR(int, pt + 0x4c);
+		GAME_VAR(u8 *, pt + 0x50) = data + at;
+		at += n * 12;
+		GAME_VAR(u8 *, pt + 0x54) = data + at;
+		at += n * 12;
+		GAME_VAR(u8 *, pt + 0x58) = data + at;
+		at += n * 4;
+		GAME_VAR(int, pt + 0x48) = corner;
+		corner += n;
+		GAME_VAR(u8 *, pt + 0x5c) = data + at;
+		at += n * 8;
+		GAME_VAR(int, pt + 0x60) = 1;
+		u32 *prim = GAME_VAR(u32 *, pt + 0x64) = (u32 *)(data + at);
+		at += 0xc;
+		prim[0] = 4;
+		prim[1] = GAME_VAR(u32, pt + 0x4c);
+		prim[2] = (u32)(GAME_VAR(u8 *, sh + 8) + at);
+		at += GAME_VAR(int, pt + 0x4c) * 4;
+	}
+	u8 *part = NULL;
+	int flip = 0, poff = 0;
+	float *vp = vs, *np = ns, *tp = ts;
+	crt_fseek(f, 0, 0);
+	while (crt_fgets(line, 0x100, f)) {
+		int next = corner;
+		if (line[0] == '#') {
+			const char *q = line + 2, *r;
+			do {
+				if (!q[-1] || !q[0])
+					break;
+				if (q[-2] == '3' && q[-1] == 'D' && q[0] == 'S') {
+					flip = 1;
+					break;
+				}
+				r = q - 1;
+				q++;
+			} while (*r);
+		} else {
+			char *t = TOK(line, SPACE);
+			if (!strcmp(t, (const char *)0x4c4c60)) {
+				vp[0] = f32(crt_atof(TOK(NULL, SPACE)));
+				vp[1] = f32(crt_atof(TOK(NULL, SPACE)));
+				vp[2] = f32(crt_atof(TOK(NULL, LINE_END)));
+				vp += 3;
+			} else if (!strcmp(t, (const char *)0x4c4c5c)) {
+				np[0] = f32(crt_atof(TOK(NULL, SPACE)));
+				np[1] = f32(crt_atof(TOK(NULL, SPACE)));
+				np[2] = f32(crt_atof(TOK(NULL, LINE_END)));
+				np += 3;
+			} else if (!strcmp(t, (const char *)0x4c4c58)) {
+				tp[0] = f32(crt_atof(TOK(NULL, SPACE)));
+				tp[1] = f32(crt_atof(TOK(NULL, LINE_END)));
+				tp += 2;
+			} else if (!strcmp(t, (const char *)0x4c4c64)) {
+				part = GAME_VAR(u8 *, sh + 0x14) + poff;
+				poff += 0x80;
+				for (char *piece = TOK(NULL, 0x4c4b04); piece; piece = TOK(NULL, 0x4c4b04))
+					strcpy(last, piece);
+				char *name = TOK(last, LINE_END);
+				strcpy((char *)part + 4, name);
+				part[(int)strlen(name) + 3] = 0;
+				GAME_VAR(int, part + 0x44) = -1;
+				next = 0;
+			} else if (!strcmp(t, (const char *)0x4c4c54)) {
+				strcpy(c[0], face_start(line, f));
+				strcpy(c[1], TOK(NULL, LINE_END));
+				strcpy(c[2], TOK(NULL, LINE_END));
+				char *t4 = TOK(NULL, LINE_END);
+				if (t4)
+					strcpy(c[3], t4);
+				else
+					c[3][0] = 0;
+				int b = corner;
+				float *pv = GAME_VAR(float *, part + 0x50), *pn;
+				obj_corner(part, b, c[0], vs, ns, ts);
+				obj_corner(part, b + 1, c[1], vs, ns, ts);
+				if (!obj_corner(part, b + 2, c[2], vs, ns, ts)) {
+					float tmp[3];
+					pv = GAME_VAR(float *, part + 0x50);
+					const float *nrm = FUN_004679a0(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
+					pn = GAME_VAR(float *, part + 0x54);
+					memcpy(pn + (b + 2) * 3, nrm, 12);
+					memcpy(pn + (b + 1) * 3, pn + (b + 2) * 3, 12);
+					memcpy(pn + b * 3, pn + (b + 2) * 3, 12);
+				}
+				next = b + 3;
+				if (c[3][0]) {
+					int q = b + 3;
+					memcpy(vs + q * 3, vs + (q - 1) * 3, 12);   /* (into the temporaries, as the original) */
+					memcpy(ns + q * 3, ns + (q - 1) * 3, 12);
+					memcpy(ts + q * 2, ts + (q - 1) * 2, 8);
+					memcpy(vs + (b + 5) * 3, vs + b * 3, 12);
+					memcpy(ns + (b + 5) * 3, ns + b * 3, 12);
+					memcpy(ts + (q + 2) * 2, ts + (q - 3) * 2, 8);
+					if (!obj_corner(part, b + 4, c[3], vs, ns, ts)) {
+						float tmp[3];
+						pv = GAME_VAR(float *, part + 0x50);
+						const float *nrm = FUN_004679a0(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
+						pn = GAME_VAR(float *, part + 0x54);
+						memcpy(pn + (b + 4) * 3, nrm, 12);
+						memcpy(pn + q * 3, pn + (b + 4) * 3, 12);
+						memcpy(pn + (b + 5) * 3, pn + (b + 4) * 3, 12);
+					}
+					next = b + 6;
+				}
+			}
+		}
+		corner = next;
+	}
+	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
+		for (int i = 0; i < GAME_VAR(int, pt + 0x4c); i++)
+			GAME_VAR(u32 *, GAME_VAR(u8 *, pt + 0x64) + 8)[i] = i;
+	}
+	if (flip)
+		for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+			u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
+			while (GAME_VAR(int, pt + 0x4c) > 0) {   /* (never moves on, as the original) */
+				k++;
+				float *v = GAME_VAR(float *, pt + 0x50), *n = GAME_VAR(float *, pt + 0x54);
+				long double y = fld_m(&v[2]);
+				v[2] = f32(-fld_m(&v[1]));
+				v[1] = f32(y);
+				y = fld_m(&n[2]);
+				n[2] = f32(-fld_m(&n[1]));
+				n[1] = f32(y);
+				for (int c3 = 0; c3 < 3; c3++)
+					n[c3] = f32(fmul_m(fld_m(&n[c3]), (const float *)0x4a9474));
+			}
+		}
+	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
+		for (int i = 0; i < GAME_VAR(int, pt + 0x4c); i++)
+			GAME_VAR(u32 *, pt + 0x58)[i] = GAME_VAR(u32, 0xa1f23c);
+	}
+	if (allocated == 1) {
+		if (nv > 0)
+			operator_delete(vs);
+		if (nvn > 0)
+			operator_delete(ns);
+		if (nvt > 0)
+			operator_delete(ts);
+	}
+	shape_relocate(sh);
+	memcpy(sh + 0x34, sh + 0x20, 12);
+	memcpy(sh + 0x40, sh + 0x20, 12);
+	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
+		for (int a = 0; a < 3; a++)   /* (the values copied as bits: a NaN stays as it is) */
+			if (fld_m((const float *)(sh + 0x34) + a) > *((const float *)(pt + 0x68) + a))
+				memcpy(sh + 0x34 + a * 4, pt + 0x68 + a * 4, 4);
+		for (int a = 0; a < 3; a++)
+			if (!(fld_m((const float *)(sh + 0x40) + a) >= *((const float *)(pt + 0x74) + a)))
+				memcpy(sh + 0x40 + a * 4, pt + 0x74 + a * 4, 4);
+	}
+}
+#undef crt_fgets
+#undef TOK
+#undef SPACE
+#undef LINE_END
+#undef SLASH
+#undef BAD_OBJ

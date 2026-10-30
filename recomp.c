@@ -3539,11 +3539,8 @@ THISCALL void skel_loadFrom(char *sk, DWORD path, DWORD mem, DWORD size);
    is fatal) and lay out each part's vertex, normal, colour and texture arrays and its one triangle-list primitive;
    then read the values (y and z kept as written), name the parts after the last "_" piece of the material name, and
    expand the faces into per-corner vertices; finally the parts' bounds (shape_relocate) */
-static THISCALL DWORD model_loadObjFormatFrom(char *shape, DWORD f, DWORD mem, DWORD size)
-{
-	DWORD v[3] = { f, mem, size };
-	return run_lifted(lift_464db0, (DWORD)shape, 3, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void model_loadObjFormatFrom(char *shape, DWORD f, DWORD mem, DWORD size);
 /* batch 76 (lifted/grp23.c) */
 #include "lifted/grp23.c"
 /* 0x464bf0 (thiscall) model_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
@@ -17594,7 +17591,7 @@ static const STest g_stests[] = {
 	/* batch 74 */
 	T(skel_loadFrom, 0, 400, 0),
 	/* batch 75 */
-	T(model_loadObjFormatFrom, 0, 200, 0),
+	T(model_loadObjFormatFrom, 0, 400, 0),
 	/* batch 76 */
 	T(model_loadFrom, 0, 400, 0),
 	/* batch 77 */
