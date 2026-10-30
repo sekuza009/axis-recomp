@@ -15701,7 +15701,7 @@ static void lobbyconnect_setup(void)
 	for (int k = 0; k < 10; k++) G32(flags[k]) = irnd(0, 7) ? 0 : 1;
 	G32(0x4ded8c) = irnd(0, 4) ? 0 : 1; G32(0x4ded88) = irnd(0, 3) ? 1 : 0; G32(0x4ded94) = irnd(0, 3) ? 1 : 0;
 	G32(0x4ded68) = irnd(0, 800); G32(0x4ded6c) = irnd(0, 600);
-	G32(0x680bb0) = irnd(0, 3) ? irnd(0, 12) : irnd(-2, 40); G32(0x4df818) = irnd(0, 3) ? irnd(0, 9) : irnd(-2, 12);
+	G32(0x680bb0) = irnd(0, 3) ? irnd(0, 12) : irnd(-2, 40); G32(0x4df818) = irnd(0, 2) ? irnd(0, 9) : irnd(0, 1) ? 8 : irnd(-2, 12);   /* the bottom row (8) often */
 	G32(0x67ef30) = irnd(0, 3) ? irnd(0, 24) : irnd(-2, 40);
 	static const float held[] = { 0, 4.9f, 5, 5.1f, 30 }; GF(0x4dda44) = held[irnd(0, 4)];
 	fill((void *)0x4dbbec, 8); fill((void *)0x76d41c, 4); fill((void *)0x4df018, 4); fill((void *)0xa0d7a0, 4);
