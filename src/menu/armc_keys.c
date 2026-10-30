@@ -240,3 +240,23 @@ leave:
 	sound_playMenu(0);
 	armc_exit(0);
 }
+
+/* 0x410ab0: the arm screen's keys (in its modes other than 0 / 1, without a message box): the keys 0x6803a8 and
+   0x9da4a0 held with 0x4e1508 pressed switch 0x4dd078; else the page's own keys (0x4dc798: 1 .. 3; page 4's are
+   an empty function). The caller ignores the eax it leaves */
+void (armc_processInput)(void)
+{
+	int mode = GAME_VAR(int, 0x4dc790);
+	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
+		return;
+	if (input_isDown(GAME_VAR(int, 0x6803a8)) && input_isDown(GAME_VAR(int, 0x9da4a0)) && input_justPressed(GAME_VAR(int, 0x4e1508))) {
+		GAME_VAR(int, 0x4dd078) = 1 - GAME_VAR(int, 0x4dd078);
+		return;
+	}
+	switch (GAME_VAR(int, 0x4dc798)) {
+	case 1: armc_4101e0(); break;
+	case 2: armc_410500(); break;
+	case 3: armc_410810(); break;
+	case 4: nullsub_48b420(GAME_VAR(Scene *, 0x4dc798)); break;   /* (its ecx: the original jumps there with the page in ecx) */
+	}
+}

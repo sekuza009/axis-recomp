@@ -5026,7 +5026,8 @@ DWORD armc_onStateEnter(void);
    and projection set up, the camera eased in), the page's keys (armc_4101e0 / armc_410500 / armc_410810), the
    held rotation keys turning the camera, leaving (state 3: the camera eased out, then armc_433360 or the arena's
    load-and-quit when the main menu page is 0x67) */
-LIFT_PLAIN(armc_processInput, 410ab0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_processInput(void);
 /* batch 171 (lifted/grp121.c): small menu, room and connection functions */
 #include "lifted/grp121.c"
 /* 0x453770 arena_453770(): DirectPlay up again: arena_4509e0, dplay_create, dplay_release when it worked; 0 */
@@ -14965,7 +14966,8 @@ ST(armc_4101e0, armcstate_setup(g_stubArmcMainKeys);, (CALL_PLAIN(0x4101e0, 0, 0
 ST(armc_410500, armcstate_setup(g_stubArmcPartKeys);, (CALL_PLAIN(0x410500, 0, 0, 0, 0, 0), 0), (armc_410500(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_410810, armcstate_setup(g_stubArmcColourKeys);, (CALL_PLAIN(0x410810, 0, 0, 0, 0, 0), 0), (armc_410810(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_onStateEnter, armcstate_setup(g_stubArmcState);, CALL_PLAIN(0x410190, 0, 0, 0, 0, 0), (DWORD)(armc_onStateEnter()))
-T_PLAIN(armc_processInput, 0x410ab0, armcstate_setup(g_stubArmcInput);, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(armc_processInput, armcstate_setup(g_stubArmcInput);, (CALL_PLAIN(0x410ab0, 0, 0, 0, 0, 0), 0), (armc_processInput(), 0))
 /* batch 171 */
 /* small functions with every callee stubbed (callee_stubs, the key test in key mode over the bindings' codes, the
    others answering 0 / a random value); their flags random, counts small, DirectInput a fake object or none */
