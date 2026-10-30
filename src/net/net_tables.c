@@ -1546,3 +1546,91 @@ void THISCALL (match_48e990)(u8 *s, int p)
 	}
 	send_packet(s, packet);
 }
+
+/* a float in memory times a constant, truncated (the original's __ftol) */
+static int scaled(const void *v, u32 k)
+{
+	return ftol(fmul_m(fld_m((const float *)v), (const float *)k));
+}
+
+/* an angle wrapped into a turn (FUN_0046c100, given the float's bits) times 0x4aa49c, truncated */
+static int angle_byte(const void *v)
+{
+	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)v), (const float *)0x4aa49c));
+}
+
+/* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at +0x1ecca70 + p x 0x8888): its
+   flags word (+0x3f0), a byte of p and its mode (+0x3ec: 0 with +0x140, 1, 2; bit 0 in play +0x14c), the position
+   (+0x180, x 0x4a93ec, words), two angles (+0x18c, +0x190) and two tilts (+0x194, +0x198), two nibbles (+0x19c,
+   +0x1a4), a third angle (+0x1a0); a pending hit (+0x8850: cleared) as 0x80 alive / 0xc0 dead with the attacker
+   (+0x4c0) and value (+0x4c4); then its five shot slots (+0x360, nine bytes each): a slot whose shot (0x4e8 bytes
+   from +0x22225fc) is gone is cleared (-1); else flags (1, 3 for a new one: +0x1fc + slot x 0x20 cleared; 4 aimed
+   at an actor, 8 still flying), the target (+0xb8, or the object's index + 1, or 0) and the position (+0x60 while
+   it flies at an object, else +0x84). Sent by send_packet. Its caller ignores the eax it leaves */
+void THISCALL (match_48e2c0)(u8 *g, int p)
+{
+	u8 *a = g + 0x1ecca70 + p * 0x8888;
+	u8 packet[0x40];
+	u16 w;
+	packet[1] = 0;
+	memcpy(packet + 2, a + 0x3f0, 2);
+	switch (GAME_VAR(int, a + 0x3ec)) {
+	case 0: packet[4] = (u8)((((u8)p << 3) | a[0x140]) << 1); break;
+	case 1: packet[4] = (u8)(p << 4 | 0xc); break;
+	case 2: packet[4] = (u8)(p << 4 | 0xe); break;
+	}
+	if (GAME_VAR(int, a + 0x14c) == 1)
+		packet[4] |= 1;
+	for (int c = 0; c < 3; c++) {
+		w = (u16)scaled(a + 0x180 + c * 4, 0x4a93ec);
+		memcpy(packet + 5 + c * 2, &w, 2);
+	}
+	packet[0xb] = (u8)angle_byte(a + 0x18c);
+	packet[0xc] = (u8)angle_byte(a + 0x190);
+	packet[0xd] = (u8)scaled(a + 0x194, 0x4a9418);
+	packet[0xe] = (u8)scaled(a + 0x198, 0x4a9418);
+	packet[0xf] = (u8)(scaled(a + 0x19c, 0x4aa498) << 4) | (u8)scaled(a + 0x1a4, 0x4aa498);
+	packet[0x10] = (u8)angle_byte(a + 0x1a0);
+	packet[0x11] = 0;
+	if (GAME_VAR(int, a + 0x8850) == 1) {
+		u8 state = GAME_VAR(int, a + 0x128) > 0 ? 0x80 : 0xc0;
+		GAME_VAR(int, a + 0x8850) = 0;
+		packet[0x11] = state | a[0x4c0];
+		packet[0x12] = a[0x4c4];
+	}
+	for (int k = 0; k < 5; k++)
+		packet[0x13 + k * 9] = 0;
+	for (int k = 0; k < 5; k++) {
+		int *slot = (int *)(a + 0x360 + k * 4), *fresh = (int *)(a + 0x1fc + k * 0x20);
+		u8 *o = packet + 0x13 + k * 9;
+		if (*slot < 0)
+			continue;
+		u8 *shot = g + 0x22225fc + *slot * 0x4e8;
+		if (GAME_VAR(int, shot + 4) != 1) {
+			*slot = -1;
+			continue;
+		}
+		if (*fresh == 1) {
+			o[0] |= 3;
+			*fresh = 0;
+		} else
+			o[0] |= 1;
+		if (GAME_VAR(int, shot + 0xb8) >= 0) {
+			o[0] |= 4;
+			w = (u16)GAME_VAR(int, shot + 0xb8);
+		} else if (GAME_VAR(void *, shot + 0x6c))
+			w = (u16)(FUN_0046cba0(GAME_VAR(void *, shot + 0x6c), GAME_VAR(int, g + 0x1f40ec), 0xac) + 1);
+		else
+			w = 0;
+		memcpy(o + 1, &w, 2);
+		int flying = GAME_VAR(float, shot + 0x70) > GAME_VAR(float, shot + 0x74);
+		if (flying)
+			o[0] |= 8;
+		u8 *at = flying && GAME_VAR(void *, shot + 0x6c) ? shot + 0x60 : shot + 0x84;
+		for (int c = 0; c < 3; c++) {
+			w = (u16)scaled(at + c * 4, 0x4a93ec);
+			memcpy(o + 3 + c * 2, &w, 2);
+		}
+	}
+	send_packet(g, packet);
+}

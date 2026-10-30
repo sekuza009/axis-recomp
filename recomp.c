@@ -2850,7 +2850,8 @@ THISCALL void net_sendState_48ead0(char *scene);
 THISCALL void match_48e0f0(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_48e680(char *scene);
-static THISCALL DWORD match_48e2c0(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48e2c0, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_48e2c0(char *scene, DWORD p);
 /* batch 50 */
 /* the CRT's x87 acos (0x49ffc0, _CIacos): argument and result in ST0 */
 /* 0x47d260 (thiscall) skel_ase_47d260(q): quaternion q = (x, y, z, w) -> out = (angle, axis): angle = -2 acos(w)
@@ -2865,7 +2866,8 @@ THISCALL void skel_ase_47d260(float *out, const float *q);
    angle-axis (or the rotation keys: the key's base rotation and its fraction of the step rotation, radians to
    degrees); the result is read back into the bone with two transformed points. Then the modelview is restored.
    Lifted */
-static THISCALL DWORD actor_46f8c0(char *self, DWORD base) { DWORD v[1] = { base }; return run_lifted(lift_46f8c0, (DWORD)self, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_46f8c0(char *self, DWORD base);
 /* 0x4853c0 (thiscall) ViewVolume_projectObject(obj, extra, matrix, a4, a5, cull, material, a8): queue every mesh of
    obj (0x80-byte meshes, those with geometry) for drawing: the matrix (given, else the current modelview copied into
    the matrix pool) times the view-projection; with cull = 1 the mesh's bounding box corners are projected and a
@@ -9592,8 +9594,12 @@ ST(profile_create, vfs_content(0, 0x2000); g_mockMkdirFail = !irnd(0, 4);, CALL_
    the entry count and its 0x5c-byte entries (sometimes shorter than 10000 bytes) */
 static void mapinfo_setup(void)
 {
+	g_paintStacks = 1;   /* (a file shorter than the header leaves the header buffer as it was: the same paint for both) */
 	vfs_content(0, 0x2000);
-	if (irnd(0, 1)) return;
+	if (irnd(0, 1)) {   /* (random content: its record count kept small, as a runaway count runs the original off its tables) */
+		if (g_vfsSize >= 0x84) *(int *)((char *)g_vfsData + 0x80) = irnd(-3, 40);
+		return;
+	}
 	BYTE *d = (BYTE *)(BUF + 0x200000); int n = irnd(0, 9) ? irnd(0, 40) : irnd(-3, 0);
 	memset(d, 0, 0x80); strcpy((char *)d, "AXIS MAP INFOMATION DATA FILE"); d[0x32] = irnd(0, 5) ? 0x1a : 0x1b;
 	*(int *)(d + 0x80) = n;
@@ -10032,7 +10038,7 @@ ST(cfg_parseGraphic, cfgw_setup();, CALL_PLAIN(0x42c9f0, 0, VFS_FILE(0), 0, 0, 0
 ST(cfg_parseServer, cfgw_setup();, CALL_PLAIN(0x42c6f0, 0, VFS_FILE(0), 0, 0, 0), cfg_parseServer((void *)VFS_FILE(0)))
 /* four lines of key bindings (words of the config vocabulary); at the end of the file fgets leaves the stack
    buffer as it was, so the stack is painted */
-ST(cfg_42e080, vfs_content(95, 0x200); g_vfsOpenFail = 0; g_paintStacks = 1;, (CALL_PLAIN(0x42e080, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_42e080((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(cfg_42e080, vfs_content(95, 0x200); for (int k = 0; k < 5; k++) ((char *)g_vfsData)[g_vfsSize++] = '\n'; g_vfsOpenFail = 0; g_paintStacks = 1;,   /* (five lines at least: a value line past the end leaves the painted buffer unended, and strcat runs it over the stack) */ (CALL_PLAIN(0x42e080, 0, VFS_FILE(0), 0, 0, 0), 0), (cfg_42e080((void *)VFS_FILE(0)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_saveSelection, vfs_content(0, 0); g_mockMkdirFail = !irnd(0, 4); G32(0x4dc760) = irnd(0, 0x14); G32(0x4dc76c) = irnd(0, 0x14);, CALL_PLAIN(0x40e7a0, 0, 0, 0, 0, 0), (DWORD)(armc_saveSelection()))
 ST(actor_45ebc0, g_a[0] = irnd(0, 7); S32(SCENE, 0x1cd94b0 + g_a[0] * 0x8888) = irnd(0, 2) ? 1 : 0; S32(SCENE, 0x20f3ab8) = irnd(-1, 14);,
    (TC(void, 0x45ebc0, char *, int)(SCENE, g_a[0]), 0), (actor_45ebc0(SCENE, (DWORD)g_a[0]), 0))
@@ -17525,9 +17531,9 @@ static const STest g_stests[] = {
 	/* batch 49 */
 	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(FUN_004520e0, 1, 40, 0),
 	T(net_resolveHost, 1, 40, 0), T(match_48e990, 0, 400, 0), T(net_sendState_48ead0, 0, 400, 0), T(match_48e0f0, 0, 400, 0),
-	T(match_48e680, 0, 400, 0), T(match_48e2c0, 0, 40, 0),
+	T(match_48e680, 0, 400, 0), T(match_48e2c0, 0, 400, 0),
 	/* batch 50 */
-	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 300, 0), T(ViewVolume_projectObject, 0, 300, 0),
+	T(skel_ase_47d260, 0, 300, 0), T(actor_46f8c0, 0, 400, 0), T(ViewVolume_projectObject, 0, 300, 0),
 	/* batch 51 */
 	T(app_checkFile_profkor, 1, 40, 0), T(app_checkFile_skirmish, 1, 40, 0), T(app_checkFile_axisgame, 1, 40, 0), T(app_checkFile_game, 1, 40, 0),
 	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(skel_ase_47d2f0, 0, 300, 0), T(skel_ase_47d320, 0, 300, 0),

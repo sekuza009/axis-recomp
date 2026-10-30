@@ -479,3 +479,73 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 				((u32 *)high)[c] = ((const u32 *)box)[3 + c];
 	}
 }
+
+/* point p (x, y, z; at stride step) through the 4 x 4 matrix m (column-major), each row summed as the original does:
+   z and y terms first, then x, then the translation */
+static void transform(float *out, const float *m, const float *px, const float *py, const float *pz)
+{
+	for (int r = 0; r < 3; r++)
+		out[r] = f32(fadd_m(fmul_m(fld_m(pz), &m[8 + r]) + fmul_m(fld_m(py), &m[4 + r]) + fmul_m(fld_m(px), &m[r]), &m[12 + r]));
+}
+
+/* 0x46f8c0 (thiscall on an object's skeleton pose): its skeleton (the pointer at +0x20, entry +0x24; none: nothing)
+   posed at frame +0x28 (modulo the skeleton's frames +0x20 + 1) for each of its bones (0x70 bytes from its +0x14;
+   at most the object's +0x10): on the GL modelview matrix (saved and put back) the parent bone's matrix is loaded
+   (its record +0xc; none: base, or the matrix there was), the position translated (the bone's +0x44, or its keys as
+   in skel_applyPose; times the bone record's scale +4), the rotation as in skel_applyPose; the result read back
+   into the bone's 0x64-byte record (+0xc), with two points carried through it: 0xa0e7a8 (to +0x4c) and the record's
+   own point (+0, its +0x20 ..; none: the first again, to +0x58). Its callers ignore the eax it leaves */
+void THISCALL (actor_46f8c0)(u8 *pose, const float *base)
+{
+	if (AT(int, pose, 0x1c) <= 0)
+		return;
+	float saved[16], root[16];
+	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
+	FUN_0047d5a0(root, base ? base : saved);
+	u8 **entry = AT(u8 **, pose, 0x20) + AT(int, pose, 0x24);
+	if (!*entry)
+		return;
+	const float *unit = (const float *)0x4aa270, *point = (const float *)0xa0e7a8;
+	for (int i = 0; i < AT(int, pose, 0x10); i++) {
+		u8 *sk = *entry;
+		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
+		u8 *b = AT(u8 *, sk, 0x14) + i * 0x70;
+		int frame = AT(int, pose, 0x28) % (AT(int, sk, 0x20) + 1);
+		if (i >= AT(int, sk, 0x10))
+			break;
+		int parent = AT(int, b, 0x40);
+		glLoadMatrixf(parent < 0 ? root : (const float *)(AT(u8 *, pose, 0x14) + parent * 0x64 + 0xc));
+		const float *scale = (const float *)(out + 4);
+		if (AT(int, b, 0x60) > 0) {
+			int at = frame;
+			float *key = (float *)key_at(AT(u8 *, b, 0x64), AT(int, b, 0x60), 0x20, &at);
+			int length = ((int *)key)[1];
+			long double f = length > 0 ? (long double)(at - ((int *)key)[0]) / length : fld_m((const float *)0x4a93e8);
+			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key[5]), &key[2]), scale), fmul_m(fadd_m(fmul_m(f, &key[6]), &key[3]), scale),
+			             fmul_m(fadd_m(fmul_m(f, &key[7]), &key[4]), scale));
+		} else
+			glTranslatef(fmul_m(fld_m((const float *)(b + 0x44)), scale), fmul_m(fld_m((const float *)(b + 0x48)), scale),
+			             fmul_m(fld_m((const float *)(b + 0x4c)), scale));
+		if (AT(int, b, 0x68) > 0) {
+			int at = frame;
+			float *key = (float *)key_at(AT(u8 *, b, 0x6c), AT(int, b, 0x68), 0x28, &at);
+			int length = ((int *)key)[1];
+			float f = length > 0 ? f32((long double)(at - ((int *)key)[0]) / length) : 0;
+			rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
+			rotate(fmul_m(fmul_m(fld_m(&f), &key[6]), unit), &key[7]);
+		} else
+			rotate(fmul_m(fld_m((const float *)(b + 0x50)), unit), (const float *)(b + 0x54));
+		float *m = (float *)(out + 0xc);
+		glGetFloatv(0xba6, m);
+		transform((float *)(out + 0x4c), m, &point[0], &point[1], &point[2]);
+		const float *own = AT(const float *, out, 0);
+		if (own) {
+			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
+				((float *)(out + 0x58))[r] = r == 0
+					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own[10]) + fmul_m(fld_m(&m[4]), &own[9]) + fmul_m(fld_m(&m[0]), &own[8]), &m[12]))
+					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own[10]) + fmul_m(fld_m(&m[r]), &own[8]) + fmul_m(fld_m(&m[4 + r]), &own[9]), &m[12 + r]));
+		} else
+			memcpy(out + 0x58, out + 0x4c, 12);
+	}
+	glLoadMatrixf(saved);
+}
