@@ -235,6 +235,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_combatInput(scene) GAME_THISCALL(0x49d290, void, void *)(scene)
 #define game_processGameMode(scene) GAME_THISCALL(0x4988e0, void, void *)(scene)
 #define hud_pass(scene) GAME_THISCALL(0x4982f0, void, void *)(scene)
+#define collision_rayTrace(scene, from, to, out) GAME_THISCALL(0x471740, int, void *, const float *, const float *, void *)(scene, from, to, out)   /* 0: nothing in the way */
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

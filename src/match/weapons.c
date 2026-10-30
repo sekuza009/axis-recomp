@@ -72,3 +72,127 @@ void THISCALL (actor_45edb0)(Stage *stage, int i)
 	FIELD(int, actor, 0x8828) = FIELD(int, actor, 0x90);
 	FIELD(int, actor, 0x882c) = FIELD(int, actor, 0x94);
 }
+
+/* 0x460000 (thiscall on the scene): actor target (0x8888-byte actors from +0x1cd93a8) hit by actor attacker, when
+   it is in play (+0x14c 1) and not invulnerable (+0x880c 1). The damage: for weapon kinds 0 .. 9 scaled by the
+   attacker's player's level in the kind's group (the 0x4c-byte levels at 0x9f9068: +0, 4, 8, 12; (level + 100) x
+   damage x 0x4a9420, rounded by 0x4a942c; no player: -1), doubled by the attacker's flag 0x100 (+0x3f0) and halved
+   by the target's 0x800. Unless both are on the same team (+0x118) and not the same actor, it comes off (mode 0)
+   the armour (+0x12c), what is left off the energy (+0x128), or (mode 1) the shield, the energy losing 0x4a9758 of
+   it, and once the shield is gone the rest; neither below 0; the hit recorded (+0x4bc mode, +0x4c0 attacker, +0x4c4
+   value, +0x8850 1). The hit flash (+0x8854) 0.5 either way, and a sound when the target is the local player. Its
+   callers ignore the eax it leaves */
+void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
+{
+#define ACTOR(i) (scene + 0x1cd93a8 + (i) * 0x8888)
+	static const u8 group[10] = { 0, 0, 4, 4, 4, 8, 8, 4, 12, 12 };
+	u8 *t = ACTOR(target), *a = ACTOR(attacker);
+	if (FIELD(int, t, 0x14c) != 1 || FIELD(int, t, 0x880c) == 1)
+		return;
+	int player = FIELD(int, a, 0x108) == 1 ? FIELD(int, a, 0x114) : -1;
+	if ((unsigned)kind <= 9) {
+		int level = GAME_VAR(int, 0x9f9068 + player * 0x4c + group[kind]) + 100;
+		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)0x4a9420), (const float *)0x4a942c));
+	}
+	if (FIELD(u32, a, 0x3f0) & 0x100)
+		damage *= 2;
+	if (FIELD(u32, t, 0x3f0) & 0x800)
+		damage /= 2;
+	if (FIELD(int, t, 0x118) != FIELD(int, a, 0x118) || target == attacker) {
+		if (mode == 0) {
+			if ((FIELD(int, t, 0x12c) -= damage) < 0) {
+				FIELD(int, t, 0x128) += FIELD(int, t, 0x12c);
+				FIELD(int, t, 0x12c) = 0;
+			}
+		} else if (mode == 1) {
+			int shield = FIELD(int, t, 0x12c);
+			if (shield >= damage) {
+				FIELD(int, t, 0x12c) = shield - damage;
+				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)0x4a9758), (const float *)0x4a942c));
+			} else {
+				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)0x4a9758), (const float *)0x4a942c));
+				FIELD(int, t, 0x128) += shield - lost - damage;
+				FIELD(int, t, 0x12c) = 0;
+			}
+		}
+		if (FIELD(int, t, 0x128) < 0)
+			FIELD(int, t, 0x128) = 0;
+		if (FIELD(int, t, 0x12c) < 0)
+			FIELD(int, t, 0x12c) = 0;
+		FIELD(int, t, 0x4bc) = mode;
+		FIELD(int, t, 0x4c0) = attacker;
+		FIELD(u32, t, 0x4c4) = value;
+		FIELD(int, t, 0x8850) = 1;
+	}
+	FIELD(u32, t, 0x8854) = 0x3f000000;   /* 0.5 */
+	if (target == FIELD(int, scene, 0x202e8d4))
+		sound_playVolume(0xc, 100);
+#undef ACTOR
+}
+
+/* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
+static u32 table_rand(void)
+{
+	u32 at = GAME_VAR(u32, 0xa1efb8);
+	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
+}
+
+/* is |p - from| within range (as fcom has it: a NaN is) */
+static int within(const float *p, const float *from, const float *range)
+{
+	long double d = fsub_m(fld_m(p), from);
+	if (!(d >= *(const float *)0x4a93e8))
+		d = -d;
+	return !(d > *range);
+}
+
+/* 0x460270 (thiscall on the scene): a new target for actor p (0x8888-byte actors from +0x1cd93a8): the points (0x14
+   bytes) of every point list (0x1c-byte records from +0xe3b038: a count, the points; +0xe3c938 lists) but the one
+   it follows (+0x8870) within its range (+0x8848) on each axis of it (+0x154) are candidates. The first five are
+   kept, marked whether the line to them is clear (collision_rayTrace); after that a clear one takes the place of a
+   random one that is not clear (two tries), and that list is left. One of the candidates picked at random: the
+   target (+0x87f8 list, +0x87fc point, +0x8800 a random side), +0x8870 none, the range 1500. With none the range
+   grows (x 0x4a974c). Its caller ignores the eax it leaves */
+void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
+{
+	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
+	const float *from = (const float *)(a + 0x154), *range = (const float *)(a + 0x8848);
+	int lists[5], points[5], clear[5], n = 0;
+	u8 out[12];
+	for (int i = 0; i < FIELD(int, scene, 0xe3c938); i++) {
+		if (i == FIELD(int, a, 0x8870))
+			continue;
+		u8 *list = scene + 0xe3b038 + i * 0x1c;
+		for (int j = 0; j < FIELD(int, list, 0); j++) {
+			const float *pt = (const float *)(FIELD(u8 *, list, 4) + j * 0x14);
+			if (!within(&pt[0], &from[0], range) || !within(&pt[1], &from[1], range) || !within(&pt[2], &from[2], range))
+				continue;
+			if (n < 5) {
+				points[n] = j;
+				lists[n] = i;
+				clear[n] = collision_rayTrace(scene, from, pt, out) == 0;
+				n++;
+				continue;
+			}
+			if (collision_rayTrace(scene, from, pt, out) != 0)
+				continue;
+			int k = table_rand() % n;
+			if (clear[k] && clear[k = table_rand() % n])
+				continue;
+			lists[k] = i;
+			points[k] = j;
+			clear[k] = 1;
+			break;
+		}
+	}
+	if (n > 0) {
+		int k = table_rand() % n;
+		FIELD(int, a, 0x87f8) = lists[k];
+		FIELD(int, a, 0x87fc) = points[k];
+		FIELD(int, a, 0x8800) = table_rand() & 1;
+		FIELD(int, a, 0x8870) = -1;
+		FIELD(u32, a, 0x8848) = 0x44bb8000;   /* 1500.0 */
+	} else
+		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), (const float *)0x4a974c));
+}

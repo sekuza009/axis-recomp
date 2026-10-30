@@ -3027,7 +3027,8 @@ void cfg_writeDefaultAxisCfg(void);
    points, 0x1c-byte list records) within range on each axis that the line of sight (collision_rayTrace) reaches is
    a candidate (up to 5 kept, later ones replace a random one); one is picked at random as the new target (list,
    point, side); none: the range grows by half */
-static THISCALL DWORD actor_checkLineOfSight(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_460270, (DWORD)scene, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_checkLineOfSight(char *scene, DWORD p);
 /* 0x41cf20 armc_41cf20 / 0x41d280 armc_41d280: tint the customise screen's model parts (the scene at 0x9087b4, the
    player's part shapes) with the chosen colours: the current colour slot / all slots after a change, then the
    current part */
@@ -5292,11 +5293,8 @@ void THISCALL msg_newKing(void *scene);
 /* 0x460000 bullet_playImpactSound(target, attacker, damage, kind, a5, a6) (thiscall on the scene, ret 0x18): an active
    target's damage scaled by the attacker's weapon kind (0..9: the player's levels at 0x9f9068) and their flags
    (+0x1cd9798), taken from its shield and armour (+0x1cd94d0 / +0x1cd94d4), the hit recorded, a sound */
-static THISCALL DWORD bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWORD d, DWORD k, DWORD a5, DWORD a6)
-{
-	DWORD v[6] = { t, a, d, k, a5, a6 };
-	return run_lifted(lift_460000, (DWORD)scene, 6, v);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWORD d, DWORD k, DWORD a5, DWORD a6);
 /* batch 180 (lifted/grp130.c): menu_drawBackground (the menus' animated background: the list 0x67fb3c's camera,
    the projection, its draw), the arena slots' connect (a fresh DirectPlay for that kind, dplay_initConnection,
    the slot open or released), room_435c20, with their callees stubbed (tools/gentests.py); match_4620e0 and
@@ -11867,7 +11865,7 @@ static void shapetex_setup(void)
 		fill(pt, 0x80);
 		for (int j = irnd(0, 5); j; j--) sl = (char *)S32(sl, 0xc);       /* a slot of the ring */
 		t = c < 6 ? S32(sl, 4) : c < 9 ? i : -1;
-		S32(pt, 0x44) = t >= 0 ? k * 512 + t : -irnd(1, 600);
+		S32(pt, 0x44) = t >= 0 ? k * 512 + (t & 0x1ff) : -irnd(1, 600);   /* (an index past the manager's 512 records names an empty manager: the original crashes) */
 	}
 }
 ST(FUN_00466650, shapetex_setup();, (TC(void, 0x466650, char *)(BUF + 0x500000), 0), (FUN_00466650(BUF + 0x500000), 0))
@@ -15698,7 +15696,14 @@ static void newking_setup(void)
 	callee_ret(0x463740, (DWORD)irnd(0, 2));
 }
 ST(msg_newKing, newking_setup();, (TC(void, 0x462150, char *)(BUF), 0), (msg_newKing(BUF), 0))
-ST(bullet_playImpactSound, rankactors_setup(g_stubImpact);,
+/* the damage modes (0, 1, another), weapon kinds 0 .. 9 half the time, damage up to 600 and both teams */
+static void impact_setup(void)
+{
+	rankactors_setup(g_stubImpact);
+	g_a[2] = irnd(0, 2); g_a[3] = irnd(0, 600); if (irnd(0, 1)) g_a[4] = irnd(0, 9);
+	for (int i = 0; i < 16; i++) S32(BUF + i * 0x8888, 0x1cd94c0) = irnd(0, 1);
+}
+ST(bullet_playImpactSound, impact_setup();,
    (TC(void, 0x460000, char *, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
    (bullet_playImpactSound(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
 /* batch 180: generated tests (tools/gentests.py, gen_setup from batch 172) plus two by hand */
