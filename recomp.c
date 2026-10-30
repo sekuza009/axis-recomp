@@ -15652,11 +15652,11 @@ ST(arena_406200, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, CALL_PLAIN(0
 static const DWORD g_gs_4052c0[] = { 0x405140, 0, 0x452ec0, 2, 0x452fe0, 0, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4052c0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4052c0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(lobby_roomNameCheck, 0x4052c0, gen_setup(g_gs_4052c0, g_gi_4052c0, g_gb_4052c0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(lobby_roomNameCheck, 0x4052c0, gen_setup(g_gs_4052c0, g_gi_4052c0, g_gb_4052c0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_4057a0[] = { 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4057a0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4057a0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-T_PLAIN(lobby_checkReservedName, 0x4057a0, gen_setup(g_gs_4057a0, g_gi_4057a0, g_gb_4057a0);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+T_PLAIN(lobby_checkReservedName, 0x4057a0, gen_setup(g_gs_4057a0, g_gi_4057a0, g_gb_4057a0); reserved_name((char *)0x4ded20);   /* now and then a special room's name */, 0, g_a[0], g_a[1], g_a[2], g_a[3])
 static const DWORD g_gs_406c30[] = { 0x4044a0, 2, 0x405200, 0, 0x405230, 0, 0x4060f0, 0, 0x41e760, 1, 0x451e60, 0, 0x452ec0, 2, 0x452fe0, 0, 0 };
 static const DWORD g_gi_406c30[] = { 0x4dda44, 0x4db714, 0x4db718, 0x4db71c, 0x4db854, 0x4db858, 0x4db8b8, 0x4db8bc, 0x4dba80, 0x4dba84, 0x4dba90, 0x4dbaac, 0x4dbaf8, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x4ded94, 0x4df018, 0x4df818, 0x67ef30, 0x680bb0, 0x680bb8, 0x76d41c, 0x76d484, 0x90d1c4, 0xa0b368, 0xa0b36c, 0xa0d7a0, 0 };
 static const DWORD g_gb_406c30[] = { 0 };
