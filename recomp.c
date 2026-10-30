@@ -14342,7 +14342,8 @@ static void statspanel_setup(void)
 	G32(0x4dcc90) = irnd(-30, 200); G32(0x4dcc94) = irnd(-30, 60); G32(0x4dcc98) = irnd(300, 640); G32(0x4dcc9c) = irnd(300, 480);
 	fill((void *)0x4dbc58, 16); fill((void *)0x4dc1d0, 16);
 	G32(0x4dbc6c) = irnd(0, 9) ? irnd(0, 5) : irnd(-1, 7); G32(0x9dae74) = irnd(0, 2); G32(0x4dbc68) = irnd(0, 1);
-	for (int k = 0; k < (int)(sizeof fl / 4); k++) GF(fl[k]) = (float)irnd(-99999, 99999) / 10.0f;
+	/* each figure 0 a quarter of the time: a stat that comes to exactly 0 is shown differently */
+	for (int k = 0; k < (int)(sizeof fl / 4); k++) GF(fl[k]) = irnd(0, 3) ? (float)irnd(-99999, 99999) / 10.0f : 0.0f;
 	for (int k = 0; k < (int)(sizeof in / 4); k++) G32(in[k]) = irnd(-9999, 999999);
 	G32(0x4dce80) = irnd(0, 3); G32(0x4dceac) = irnd(0, 1);
 	for (int k = 0; k < (int)(sizeof st / 4); k++) fill_str((char *)st[k], 6, 32, 126);
@@ -14350,6 +14351,8 @@ static void statspanel_setup(void)
 	for (int k = 0; k < 4; k++) fill_str((char *)0x7623a4 + k * 0x80, 6, 32, 126);
 	for (int k = 0; k < 2; k++) fill_str((char *)0x751924 + k * 0x80, 4, 32, 126);
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
+	int pilot = G32(0x9f1818);   /* the pilot's skills (19-dword records from 0x9f9078) 0 now and then too */
+	if ((unsigned)pilot < 64) for (int k = 0; k < 5; k++) if (!irnd(0, 3)) G32(0x9f9078 + pilot * 0x4c + k * 4) = 0;
 }
 T_PLAIN(armc_drawStatsPanel, 0x412650, statspanel_setup();, 0, 0, 0, 0, 0)
 /* batch 145 */
@@ -17791,7 +17794,7 @@ static const STest g_stests[] = {
 	/* batch 143 */
 	T(setup_crosshairScreen, 0, 1000, 0),
 	/* batch 144 */
-	T(armc_drawStatsPanel, 0, 300, 0),
+	T(armc_drawStatsPanel, 0, 2000, 0),
 	/* batch 145 */
 	T(armc_461540, 0, 300, 0),
 	/* batch 146 */
