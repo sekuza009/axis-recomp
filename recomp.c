@@ -15559,7 +15559,21 @@ static void rankactors_setup(const DWORD *stubs)
 	g_a[4] = irnd(0, 1000); g_a[5] = irnd(0, 1000);
 	callee_stubs(stubs, (DWORD)irnd(0, 1));
 }
-T_PLAIN(msg_newKing, 0x462150, rankactors_setup(g_stubNewKing);, BUF, 0, 0, 0, 0)
+/* rankactors_setup, and the two mark modes (0x22e719c: the king by rank; 0x22e71a0: per team by time played +
+   0x100) on now and then, each player's flags +0x4d8 / +0x4dc, time played +0xfc and +0x100 (a float), the
+   local player 0..15, stubs answering a team slot 0 / 1 or the "no team" test (0x4a8700) 0 / 1 */
+static void newking_setup(void)
+{
+	rankactors_setup(g_stubNewKing);
+	S32(BUF, 0x22e719c) = irnd(0, 1); S32(BUF, 0x22e71a0) = irnd(0, 1); S32(BUF, 0x234240d) = irnd(-1, 15);
+	for (int i = 0; i < 16; i++) {
+		char *a = BUF + i * 0x8888;
+		S32(a, 0x1eccf48) = irnd(0, 2) ? 0 : 1; S32(a, 0x1eccf4c) = irnd(0, 2) ? 0 : 1;
+		S32(a, 0x1eccb6c) = irnd(0, 3) ? irnd(0, 600) : 0; SF(a, 0x1eccb70) = (float)irnd(0, 6000) / 10.0f;
+	}
+	callee_ret(0x463740, (DWORD)irnd(0, 2));
+}
+T_PLAIN(msg_newKing, 0x462150, newking_setup();, BUF, 0, 0, 0, 0)
 ST(bullet_playImpactSound, rankactors_setup(g_stubImpact);,
    (TC(void, 0x460000, char *, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
    (bullet_playImpactSound(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
@@ -17640,7 +17654,7 @@ static const STest g_stests[] = {
 	/* batch 178 */
 	T(game_postMatch, 0, 200, 0), T(dplay_initConnection, 0, 400, 0),
 	/* batch 179 */
-	T(msg_newKing, 0, 300, 0), T(bullet_playImpactSound, 0, 400, 0),
+	T(msg_newKing, 0, 1000, 0), T(bullet_playImpactSound, 0, 400, 0),
 	/* batch 180 */
 	T(menu_drawBackground, 0, 200, 0), T(arena_454940, 0, 200, 0), T(arena_454a50, 0, 200, 0), T(arena_454b70, 0, 200, 0),
 	T(arena_454c80, 0, 200, 0), T(room_435c20, 0, 200, 0), T(match_4620e0, 0, 200, 0), T(arena_453090, 0, 200, 0),
