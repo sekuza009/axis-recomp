@@ -103,6 +103,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define arena_drawCustomOption(map) GAME_CDECL(0x40b550, u32, int)(map)   /* its map preview (the map passed, unused) */
 #define room_432380(x, y) GAME_CDECL(0x432380, int, int, int)(x, y)   /* the room's settings form: the item under (x, y), -1 none */
 #define room_drawCustomOption(map) GAME_CDECL(0x43bde0, u32, int)(map)   /* the room form's map preview (the map passed, unused) */
+#define setup_420e50(key) GAME_CDECL(0x420e50, void, int)(key)   /* the key taken off the other bindings */
+#define setup_drawKeyBindingRow() GAME_CDECL(0x421350, void, void)()
 #define setup_4206b0(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)

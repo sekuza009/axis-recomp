@@ -530,3 +530,35 @@ void (setup_drawControlTab)(void)
 	if (g_mouseHeld && g_cursorBlink > *(const float *)0x4a9424 && setup_4206f0(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
 		setup_drawControlSlider();
 }
+
+/* the binding (two key slots, eight bytes from 0x4de0c0) each row of the three key pages edits; -1: none */
+static const signed char page_bindings[3][11] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 },
+	{ 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20 },
+	{ 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, -1 },
+};
+
+/* 0x421680 (named setup_drawKeyBindingRows; by use the key pressed for the binding being edited, the page 0x4ddce8's
+   row 0x4de040): unless it is the excluded key (0x9da440), the key is taken off the other bindings (setup_420e50) and
+   set in the row's binding: with its second slot set, the key in the first and the second cleared (0x4df8e4: none);
+   else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
+   callers ignore the eax it leaves */
+void (setup_drawKeyBindingRows)(int key)
+{
+	if (key == GAME_VAR(int, 0x9da440))
+		return;
+	setup_420e50(key);
+	int page = GAME_VAR(int, 0x4ddce8), row = GAME_VAR(int, 0x4de040);
+	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
+	if (binding >= 0) {
+		int *slot = (int *)(0x4de0c0 + binding * 8), none = GAME_VAR(int, 0x4df8e4);
+		if (slot[1] != none) {
+			slot[0] = key;
+			slot[1] = none;
+		} else if (slot[0] == none)
+			slot[0] = key;
+		else if (slot[0] != key)
+			slot[1] = key;
+	}
+	setup_drawKeyBindingRow();
+}

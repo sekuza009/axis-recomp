@@ -2994,7 +2994,8 @@ void cfg_gameTypeNames(void *f);
    (index from a rolling counter) and the pending event bits */
 static THISCALL DWORD net_sendGamePacket(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_48dbf0, (DWORD)scene, 1, v); }
 /* 0x421680 setup_drawKeyBindingRows(key): redraw the key-binding row being edited */
-LIFT_PLAIN(setup_drawKeyBindingRows, 421680)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void setup_drawKeyBindingRows(int key);
 /* batch 53: the ray trace chain (lifted/trace.c) */
 #include "lifted/trace.c"
 /* 0x4809f0 (thiscall) space_traceUnit_4809f0(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
@@ -10190,7 +10191,8 @@ static void keyrow_setup(void)
 	G32(0x9da440) = irnd(0, 5) ? irnd(0, 255) : key;
 	for (int k = 0; k < 64; k++) { int c = irnd(0, 3); G32(0x4de0c0 + k * 4) = c == 0 ? none : c == 1 ? key : irnd(0, 255); }
 }
-T_PLAIN(setup_drawKeyBindingRows, 0x421680, keyrow_setup();, 0, g_a[0], 0, 0, 0)
+/* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(setup_drawKeyBindingRows, keyrow_setup();, (CALL_PLAIN(0x421680, 0, g_a[0], 0, 0, 0), 0), (setup_drawKeyBindingRows(g_a[0]), 0))
 /* batch 53: segments through the batch-40 grid + octree; the nodes get real boxes (root = the grid bounds, each
    child an octant of its parent: bit 0 x, bit 1 y, bit 2 z) so the splits and the child order are exercised */
 static void node_boxes(char *n, const float *mn, const float *mx)
