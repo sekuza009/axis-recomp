@@ -5335,7 +5335,8 @@ int dplay_initConnection(int kind, const char *address);
 /* 0x462150 msg_newKing() (thiscall on the scene, BUF in the tests): the teams' counts from the 16 player records
    (+0x1eccb88, stride 0x8888; empty slots by the player table 0x9f9840), the ranking of the players by frags
    (+0x1eccb54) and deaths (+0x1eccb58) into the tables +0x23428f6 / +0x2342936, a new leader announced */
-LIFT_PLAIN(msg_newKing, 462150)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void THISCALL msg_newKing(void *scene);
 /* 0x460000 bullet_playImpactSound(target, attacker, damage, kind, a5, a6) (thiscall on the scene, ret 0x18): an active
    target's damage scaled by the attacker's weapon kind (0..9: the player's levels at 0x9f9068) and their flags
    (+0x1cd9798), taken from its shield and armour (+0x1cd94d0 / +0x1cd94d4), the hit recorded, a sound */
@@ -15573,7 +15574,7 @@ static void newking_setup(void)
 	}
 	callee_ret(0x463740, (DWORD)irnd(0, 2));
 }
-T_PLAIN(msg_newKing, 0x462150, newking_setup();, BUF, 0, 0, 0, 0)
+ST(msg_newKing, newking_setup();, (TC(void, 0x462150, char *)(BUF), 0), (msg_newKing(BUF), 0))
 ST(bullet_playImpactSound, rankactors_setup(g_stubImpact);,
    (TC(void, 0x460000, char *, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
    (bullet_playImpactSound(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))

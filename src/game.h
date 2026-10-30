@@ -424,7 +424,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define msg_playerJoinedTeam(scene, player, team) GAME_THISCALL(0x462d30, void, Scene *, int, int)(scene, player, team)
 #define match_463610(scene, a, b, text) GAME_THISCALL(0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
 #define match_4635b0(scene, a, b, text) GAME_THISCALL(0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
-#define vsprintf_wrap_463450(scene, text) GAME_CDECL(0x463450, int, Scene *, const char *)(scene, text)   /* a HUD notice */
+#define vsprintf_wrap_463450(scene, ...) GAME_CDECL(0x463450, int, Scene *, const char *, ...)(scene, __VA_ARGS__)   /* a HUD notice (a format and its arguments) */
 #define match_44ac90(x, y, maxLength) GAME_CDECL(0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
 #define match_44ace0() GAME_CDECL(0x44ace0, void, void)()
 #define match_487ed0(scene) GAME_THISCALL(0x487ed0, void, Scene *)(scene)   /* the recording stopped */
