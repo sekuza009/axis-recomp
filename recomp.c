@@ -13698,7 +13698,14 @@ static void options_setup(void)
 	G32(0x4ddba0) = irnd(0, 7);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dddd0) + irnd(0xe0, 0x160); G32(0x4ded6c) = G32(0x4dddd4) + 0x40 + irnd(0, 6) * 0x28 + irnd(0, 12); }
 }
-T_PLAIN(setup_425460, 0x425460, options_setup();, 0, 0, 0, 0, 0)
+static void options_hover_setup(void)   /* the hit test (setup_4206b0, its own test) stubbed: each row, both buttons or none */
+{
+	options_setup();
+	static const DWORD hit[] = { 0x4206b0, 2, 0 };
+	callee_stubs(hit, 0);
+	callee_ret(0x4206b0, (DWORD)irnd(-1, 9));
+}
+T_PLAIN(setup_425460, 0x425460, options_hover_setup();, 0, 0, 0, 0, 0)
 /* batch 124 */
 /* the tunnel: menutex_setup's set with every texture it binds bindable (0x4e0cd0, 0x5b197c, 0x5b1978), modes 0..3,
    the animation values anywhere in (and now and then at the edges of) their ranges, the step 0x4b071c */
@@ -17654,7 +17661,7 @@ static const STest g_stests[] = {
 	/* batch 122 */
 	T(room_4392c0, 0, 200, 0), T(profile_44cf70, 0, 200, 0),
 	/* batch 123 */
-	T(setup_425460, 0, 300, 0),
+	T(setup_425460, 0, 600, 0),
 	/* batch 124 */
 	T(setup_423e50, 0, 200, 0), T(setup_423330, 0, 200, 0),
 	/* batch 125 */
