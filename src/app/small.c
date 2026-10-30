@@ -524,7 +524,82 @@ int (app_42ef30)(int code)
 	return MessageBoxA(GAME_VAR(void *, 0x4ded18), (const char *)text, (const char *)0x751024, 0);
 }
 
+
 #define RegQueryValueExA(key, name, reserved, type, data, size) IMPORT(0x4a9008, int, u32, const char *, u32, u32 *, void *, u32 *)(key, name, reserved, type, data, size)
+
+/* the six choices (0x5b1b50 ..) in the order the registry keeps them, with their value names; the fourth and fifth
+   (the flag and time limits) are unsigned */
+static const u8 choice_order[6] = { 0, 1, 3, 4, 5, 2 };
+static const u32 choice_names[6] = { 0x4b1784, 0x4b1778, 0x4b176c, 0x4b1760, 0x4b1754, 0x4b1748 };
+static u32 choice_dword(int k)
+{
+	const signed char *choice = (const signed char *)0x5b1b50;
+	return (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
+}
+
+/* a string value read into dest (size bytes, cleared first); a missing one gets dest written as it is */
+static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *type, char *buf)
+{
+	u32 got = size;
+	if (!RegQueryValueExA(key, name, 0, type, buf, &got)) {
+		memset(dest, 0, size);
+		strcpy(dest, buf);
+	} else
+		RegSetValueExA(key, name, 0, 1, dest, size);   /* REG_SZ */
+}
+
+/* 0x42bee0: the player's name and character read back (reg_writeCharacterSettings' mirror). First the defaults: the
+   name "AxisPlayer" (0x9dd570), the game "Axis Ladder Game" (0x5b1b30), the choices 0, 8, 0, 0, 10, 10. Under
+   HKCU\SOFTWARE\AxisArena\Character, created when missing: a new key gets them all written; an existing one has
+   each read, and one it lacks written as the default. Then the limits kept within 5 .. 30, the map within 0 .. 21
+   (else 0), the players 0 .. 16 (else 8), the game type 0 .. 11 (else 0), and the key closed. The caller ignores
+   the eax it leaves */
+void (reg_readCharacterSettings)(void)
+{
+	strcpy((char *)0x9dd570, (const char *)0x4b17d0);
+	strcpy((char *)0x5b1b30, (const char *)0x4b17bc);
+	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
+	memcpy((void *)0x5b1b50, defaults, 6);
+	u32 key, disposition, type, value;
+	char buf[0x400];
+	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
+	IMPORT(0x4a9010, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
+		(0x80000001, (const char *)0x4b179c, 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
+	signed char *choice = (signed char *)0x5b1b50;
+	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
+		RegSetValueExA(key, (const char *)0x4b1794, 0, 1, (const void *)0x9dd570, 0x1e);
+		RegSetValueExA(key, (const char *)0x4b1788, 0, 1, (const void *)0x5b1b30, 0x20);
+		for (int i = 0; i < 6; i++) {
+			value = choice_dword(choice_order[i]);
+			RegSetValueExA(key, (const char *)choice_names[i], 0, 4, &value, 4);
+		}
+	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
+		read_string(key, (const char *)0x4b1794, (char *)0x9dd570, 0x1e, &type, buf);
+		read_string(key, (const char *)0x4b1788, (char *)0x5b1b30, 0x20, &type, buf);
+		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
+		value = 0;
+		for (int i = 0; i < 6; i++) {
+			int k = choice_order[i];
+			if (!RegQueryValueExA(key, (const char *)choice_names[i], 0, &type, &value, &size))
+				choice[k] = (signed char)value;
+			else {
+				value = choice_dword(k);
+				RegSetValueExA(key, (const char *)choice_names[i], 0, 4, &value, 4);
+			}
+		}
+	} else
+		return;
+	u8 *limit = (u8 *)0x5b1b54;
+	for (int k = 0; k < 2; k++)
+		limit[k] = limit[k] < 5 ? 5 : limit[k] > 30 ? 30 : limit[k];
+	if (choice[0] < 0 || choice[0] > 0x15)
+		choice[0] = 0;
+	if (choice[1] < 0 || choice[1] > 0x10)
+		choice[1] = 8;
+	if (choice[3] < 0 || choice[3] > 0xb)
+		choice[3] = 0;
+	RegCloseKey(key);
+}
 
 /* 0x42bde0: the server settings read from HKCU\<0x4b1728>: the server name (0xa0b24c, 50 bytes), two more values
    (0xa055fc, 0xa05634; their size is what the read before left) and the port (0xa055f4, 4 bytes). Without the key a

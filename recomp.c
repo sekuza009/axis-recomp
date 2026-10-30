@@ -3312,7 +3312,8 @@ static THISCALL DWORD match_49d150(char *scene) { return run_lifted(lift_49d150,
 int chat_createEdit(int chars);
 /* 0x42bee0 reg_readCharacterSettings: player name and character choices from the registry (created with the
    defaults if missing) */
-LIFT_PLAIN(reg_readCharacterSettings, 42bee0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void reg_readCharacterSettings(void);
 /* 0x4734d0 (thiscall) gfx_saveScreenshot(p): load player p's emblem picture (Save\<name>.BMP, at least 23 x 15)
    into the player record as 24 x 16 RGBA, black = transparent */
 static THISCALL DWORD gfx_saveScreenshot(char *scene, DWORD p) { DWORD v[1] = { p }; return run_lifted(lift_4734d0, (DWORD)scene, 1, v); }
@@ -6672,10 +6673,14 @@ static void WINAPI mstub_glTexCoord2d(DWORD s0, DWORD s1, DWORD t0, DWORD t1) { 
 static void WINAPI mstub_glVertex3f(DWORD x, DWORD y, DWORD z) { mock_rec(0x4a9210, 3, x, y, z, 0); }
 static void WINAPI mstub_glVertex3fv(const DWORD *v) { mock_rec(0x4a9290, 3, v[0], v[1], v[2], 0); }
 /* registry values: the value name's hash decides the bytes, the length is honoured */
+/* g_mockQueryFail: bit k makes the run's k-th RegQueryValueExA fail (the value missing; g_mockQueryN counts them) */
+static DWORD g_mockQueryFail; static int g_mockQueryN;
 static LONG WINAPI mstub_RegQueryValueExA(DWORD key, const char *name, DWORD *res, DWORD *type, BYTE *data, DWORD *len)
 {
 	DWORD h = mock_hashstr(name);
 	mock_rec(0x4a9008, 3, key, h, len ? *len : 0, 0);
+	int k = g_mockQueryN++;
+	if (k < 32 && (g_mockQueryFail >> k & 1)) return 2;   /* ERROR_FILE_NOT_FOUND */
 	(void)res;
 	if (type) *type = 1;
 	if (data && len) for (DWORD i = 0; i < *len; i++) data[i] = (BYTE)(i + 1 < *len ? 'a' + (h >> (i % 24)) % 26 : 0);
@@ -6808,12 +6813,13 @@ static DWORD WINAPI mstub_CreateWindowExA(DWORD ex, const char *cls, const char 
 }
 static LONG WINAPI mstub_SetWindowLongA(DWORD w, int i, LONG v) { mock_rec(0x4a9354, 3, w, (DWORD)i, (DWORD)v, 0); return 0x1234; }
 static DWORD WINAPI mstub_SetFocus(DWORD w) { mock_rec(0x4a935c, 1, w, 0, 0, 0); return 0; }
+static DWORD g_mockRegDisp = 2;   /* the disposition RegCreateKeyExA reports: 2 the key existed, 1 created */
 static LONG WINAPI mstub_RegCreateKeyExA(DWORD key, const char *sub, DWORD res, char *cls, DWORD opt, DWORD sam, void *sa, DWORD *out, DWORD *disp)
 {
 	mock_rec(0x4a9010, 3, key, mock_hashstr(sub), opt ^ sam, 0);
 	(void)res; (void)cls; (void)sa;
 	if (g_mockRegFail) return 2;
-	if (out) *out = 0x5000; if (disp) *disp = 2;
+	if (out) *out = 0x5000; if (disp) *disp = g_mockRegDisp;
 	return 0;
 }
 static void WINAPI mstub_glGenTextures(int n, DWORD *t) { mock_rec(0x4a925c, 1, (DWORD)n, 0, 0, 0); for (int i = 0; i < n && i < 64; i++) t[i] = 100 + i; }
@@ -7206,7 +7212,7 @@ static void callee_key(DWORD addr, int key) { int k = callee_index(addr); if (k 
 /* the scripted values a test may change in its setup, back to their defaults before each run */
 static void mock_defaults(void)
 {
-	g_mockRecvHeadLen = 0; g_mockMallocFail = 0; g_vfsOpenFail = 0; g_vfsFailMask = 0; g_vfsData = NULL; g_vfsSize = 0;
+	g_mockRegDisp = 2; g_mockQueryFail = 0; g_mockRecvHeadLen = 0; g_mockMallocFail = 0; g_vfsOpenFail = 0; g_vfsFailMask = 0; g_vfsData = NULL; g_vfsSize = 0;
 	g_vfsAltName = NULL; g_vfsAltData = NULL; g_vfsAltSize = 0; g_vfsAltName2 = NULL; g_vfsAltData2 = NULL; g_vfsAltSize2 = 0;
 	g_mockMkdirFail = 0; g_mockFindCount = 0; g_mockRegFail = 0; g_mockPixelFormat = 7; g_mockTextLen = 5; g_mockQpc = 0x1000;
 	g_mockQpf[0] = 3579545; g_mockQpf[1] = 0; g_mockQpfFail = 0; g_mockDeleteOk = 1;
@@ -7225,6 +7231,7 @@ static void mock_defaults(void)
 }
 static void mock_reset(void)
 {
+	g_mockQueryN = 0;
 	g_ncalls = 0; g_mockOverflow = 0; g_mockHeap = (DWORD)g_fake + MOCK_HEAP_OFF;
 	g_vfsFiles = VFS_PREOPEN; g_vfsTries = 0; for (int k = 0; k < VFS_PREOPEN; k++) { g_vfsPos[k] = 0; g_vfsAlt[k] = 0; }
 }
@@ -10626,7 +10633,8 @@ static void hits_setup(void)
 }
 ST(match_49d150, hits_setup();, (TC(void, 0x49d150, char *)(SCENE), 0), (match_49d150(SCENE), 0))
 ST(chat_createEdit, G32(0x9dae74) = irnd(0, 2);, CALL_PLAIN(0x43f460, 0, 0x10010, 0, 0, 0), (DWORD)(chat_createEdit((DWORD)(0x10010))))
-T_PLAIN(reg_readCharacterSettings, 0x42bee0, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1;, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(reg_readCharacterSettings, g_mockRegFail = !irnd(0, 4); g_paintStacks = 1; g_mockRegDisp = irnd(0, 2) ? 2 : 1; g_mockQueryFail = irnd(0, 1) ? rnd32() : 0;   /* values missing now and then */, (CALL_PLAIN(0x42bee0, 0, 0, 0, 0, 0), 0), (reg_readCharacterSettings(), 0))
 /* player p's record: name at +4; the emblem BMP (header sizes varied around the 23 x 15 minimum) from the VFS */
 static void emblem_setup(void)
 {
@@ -17392,7 +17400,7 @@ static const STest g_stests[] = {
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 40, 0), T(tex_upload2, 0, 40, 0),
 	/* batch 60 */
-	T(match_49d150, 0, 40, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 40, 0), T(gfx_saveScreenshot, 1, 40, 0),
+	T(match_49d150, 0, 40, 0), T(chat_createEdit, 0, 40, 0), T(reg_readCharacterSettings, 0, 1000, 0), T(gfx_saveScreenshot, 1, 40, 0),
 	T(catalogue_loadComponents, 1, 40, 0),
 	/* batch 61 */
 	T(space_initBy, 0, 40, 0), T(space_setBy, 0, 40, 0), T(load_471010, 0, 40, 0), T(factor_initBy, 0, 40, 0),
