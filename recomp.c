@@ -15806,7 +15806,35 @@ ST(room_43e290, gen_setup(g_gs_43e290, g_gi_43e290, g_gb_43e290); if (irnd(0, 3)
 static const DWORD g_gs_410b50[] = { 0x40d840, 0, 0x433360, 0, 0 };
 static const DWORD g_gi_410b50[] = { 0x4df870, 0x4df874, 0x4df878, 0x4e1870, 0x76d388, 0x76d38c, 0x76d390, 0x4b071c, 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380, 0x76d3f8, 0x76d3fc, 0x76d400, 0x9db090, 0x9db094, 0x9db098, 0x4db840, 0x4db844, 0x4db848, 0x4dbab8, 0x4dbabc, 0x4dbac0, 0x4dc24c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dda44, 0x4e045c, 0x5b1998, 0x67ef0c, 0x67ef20, 0x76d3e8, 0x76d410, 0x90d1c4, 0x9da49c, 0 };
 static const DWORD g_gb_410b50[] = { 0 };
-T_PLAIN(arena_launchFromFile, 0x410b50, gen_setup(g_gs_410b50, g_gi_410b50, g_gb_410b50);, 0, g_a[0], g_a[1], g_a[2], g_a[3])
+/* arena_launchFromFile (by use the arm screen's camera): mode 1 out to the first menu point, 0 back home (2 there),
+   from the main menu / the arena lobby / the room / the network (0x4dc24c 1 .. 3); the camera's depth and its two
+   targets' near where it snaps (-1 / -1101 going out, -550 / -1650 coming home), the frame time over its limit
+   now and then, a NaN rarely */
+static float near_snap(void)
+{
+	static const float at[] = { -1, -1101, -550, -1650, -549, -1649, -549.99f, -1649.99f };
+	return at[irnd(0, 7)] + (irnd(0, 2) ? (float)irnd(-300, 300) / 10.0f : (float)irnd(-20, 20) / 1000.0f);
+}
+static void armccam_setup(void)
+{
+	static const DWORD stubs[] = { 0x40d840, 0, 0x433360, 0, 0 };
+	callee_stubs(stubs, 0);
+	G32(0x4dc790) = irnd(0, 3) ? irnd(0, 1) : irnd(-1, 3);
+	G32(0x4dc24c) = irnd(0, 3) ? irnd(1, 3) : irnd(-1, 4);
+	if (irnd(0, 5)) GF(0x4b071c) = (float)irnd(1, 100) / 10.0f; else if (irnd(0, 1)) GF(0x4b071c) = 20.0f; else G32(0x4b071c) = 0x7fc00000;
+	static const DWORD vec[] = { 0x4df870, 0x4df874, 0x76d388, 0x76d38c, 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c,
+		0x9db090, 0x9db094, 0x9db098, 0x76d3f8, 0x76d3fc, 0x4df878 };
+	for (int k = 0; k < 15; k++) GF(vec[k]) = (float)irnd(-20000, 20000) / 10.0f;
+	GF(0x680380) = near_snap(); GF(0x76d390) = near_snap(); GF(0x76d400) = near_snap();
+	if (!irnd(0, 30)) G32(0x680380) = 0x7fc00000;   /* a NaN depth */
+	GF(0x4e1870) = (float)irnd(0, 300) / 100.0f;
+	G32(0x5b1998) = irnd(320, 1920); G32(0x4e045c) = irnd(200, 1200);
+	G32(0x76d410) = irnd(0, 1); G32(0x9da49c) = irnd(0, 1) ? 0x67 : 0x66;
+	fill((void *)0x4db840, 12); fill((void *)0x4dbab8, 12);
+	fill((void *)0x4dc798, 4); fill((void *)0x4dc868, 4); fill((void *)0x90d1c4, 4); fill((void *)0x4dda44, 4);
+	fill((void *)0x76d3e8, 4); fill((void *)0x67ef0c, 4); fill((void *)0x67ef20, 4);
+}
+T_PLAIN(arena_launchFromFile, 0x410b50, armccam_setup();, 0, 0, 0, 0, 0)
 static const DWORD g_gs_43ef70[] = { 0x437a10, 0, 0x437e00, 0, 0x4392c0, 0, 0x4399c0, 0, 0x439e00, 0, 0x43df00, 0, 0x43df80, 0, 0x43e290, 0, 0x43e610, 0, 0x43e720, 0, 0x43e7b0, 0, 0x43ea10, 0, 0x43ed20, 0, 0x43ede0, 0, 0x441740, 0, 0 };
 static const DWORD g_gi_43ef70[] = { 0x4b071c, 0x680bc0, 0x4ded68, 0x4ded6c, 0x67ef14, 0x67ef34, 0x67fb38, 0x76d42c, 0x9dce48, 0x9dd834, 0 };
 static const DWORD g_gb_43ef70[] = { 0 };
@@ -17737,7 +17765,7 @@ static const STest g_stests[] = {
 	T(lobbyJoin_draw, 0, 600, 0),
 	/* batch 184 */
 	T(lobby_onStateChange, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_onStateChange, 0, 200, 0), T(room_43e290, 0, 200, 0),
-	T(arena_launchFromFile, 0, 200, 0), T(menuState800_gameRoom, 0, 200, 0),
+	T(arena_launchFromFile, 0, 2000, 0), T(menuState800_gameRoom, 0, 200, 0),
 	/* batch 185 */
 	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 1000, 0), T(armc_41d8a0, 0, 1000, 0), T(armc_41dfe0, 0, 200, 0),
 	T(armc_41e010, 0, 200, 0), T(armc_41dfb0, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
