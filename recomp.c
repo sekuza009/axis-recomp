@@ -2980,7 +2980,8 @@ DWORD lobby_405140(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44f6c0(void);
 /* 0x41dcf0 armc_41dcf0: reset the customise screen's state and set the camera for the current page */
-LIFT_PLAIN(armc_41dcf0, 41dcf0)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void armc_41dcf0(void);
 /* 0x42e730 cfg_parseKeyNames(f) / 0x42e240 cfg_videoModeNames(f) / 0x42da70 cfg_gameTypeNames(f): read a fixed
    number of axis.cfg lines (68 / 7 / 7) and take the values named in them */
 LIFT_PLAIN(cfg_parseKeyNames, 42e730)
@@ -10057,7 +10058,7 @@ ST(cfg_loadAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWOR
 ST(FUN_004050a0, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (FUN_004050a0(), 0))
 ST(lobby_405140, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_405140()))
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
-T_PLAIN(armc_41dcf0, 0x41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, 0, 0, 0, 0, 0)
+ST(armc_41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_41dcf0(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
 static void cfgread_setup(void) { vfs_content(95, 0x1000); g_vfsOpenFail = 0; g_paintStacks = 1; }
 T_PLAIN(cfg_parseKeyNames, 0x42e730, cfgread_setup();, 0, VFS_FILE(0), 0, 0, 0)

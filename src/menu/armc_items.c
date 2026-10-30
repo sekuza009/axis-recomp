@@ -182,3 +182,33 @@ u32 (armc_40fd30)(void)
 	}
 	return button;
 }
+
+/* 0x41dcf0: the bonuses of the mech's two extra items (slots 5 and 4, 0x4dcb1c / 0x4dcb18): items 27 .. 35 each
+   raise a flag of their own (0x4dcb10 ...); the flags set, their values (as floats): 27 0x4dbc70 0.3; 28, 29, 30
+   100 into 0x4dc248, 0x4dcc6c, 0x4dc548; 31 0x4dcb34 50; 32 0x4dbc78 100, 0x4dc898 0.5, 0x4dceb4 3, 0x4dc88c 1;
+   33 0x4dcca0 0.5, 0x4dc894 -0.1; 34 0x4dceb0 0.2; 35 0x4dcc68 0.3, 0x4dbc74 1. Every flag and value is cleared
+   first. The caller ignores the eax it leaves */
+void (armc_41dcf0)(void)
+{
+	static const u32 flag[9] = { 0x4dcb10, 0x4dcea8, 0x4dcc5c, 0x4dbc54, 0x4dbe44, 0x4dc794, 0x4dbd78, 0x4dc774, 0x4dcf30 };
+	static const u32 value[14] = { 0x4dbc70, 0x4dc248, 0x4dcc6c, 0x4dc548, 0x4dcb34, 0x4dbc78, 0x4dc898, 0x4dceb4, 0x4dc88c,
+	                               0x4dcca0, 0x4dc894, 0x4dceb0, 0x4dcc68, 0x4dbc74 };
+	static const struct { u8 item; u32 at, bits; } bonus[14] = {
+		{ 0, 0x4dbc70, 0x3e99999a }, { 1, 0x4dc248, 0x42c80000 }, { 2, 0x4dcc6c, 0x42c80000 }, { 3, 0x4dc548, 0x42c80000 },
+		{ 4, 0x4dcb34, 0x42480000 }, { 5, 0x4dbc78, 0x42c80000 }, { 5, 0x4dc898, 0x3f000000 }, { 5, 0x4dceb4, 0x40400000 },
+		{ 5, 0x4dc88c, 0x3f800000 }, { 6, 0x4dcca0, 0x3f000000 }, { 6, 0x4dc894, 0xbdcccccd }, { 7, 0x4dceb0, 0x3e4ccccd },
+		{ 8, 0x4dcc68, 0x3e99999a }, { 8, 0x4dbc74, 0x3f800000 } };
+	for (int k = 0; k < 9; k++)
+		GAME_VAR(int, flag[k]) = 0;
+	for (int k = 0; k < 14; k++)
+		GAME_VAR(u32, value[k]) = 0;
+	static const u32 items[2] = { 0x4dcb1c, 0x4dcb18 };
+	for (int k = 0; k < 2; k++) {
+		u32 bonusItem = (u32)(GAME_VAR(int, items[k]) - 27);
+		if (bonusItem <= 8)
+			GAME_VAR(int, flag[bonusItem]) = 1;
+	}
+	for (int k = 0; k < 14; k++)
+		if (GAME_VAR(int, flag[bonus[k].item]) == 1)
+			GAME_VAR(u32, bonus[k].at) = bonus[k].bits;
+}
