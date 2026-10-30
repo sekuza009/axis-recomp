@@ -4509,7 +4509,8 @@ void arena_40a070(void);
    (arena_drawCustomOption), its arrows and the custom button (0x75d8a4, bright for custom rules); the confirmation
    box (0x4db55c: 0x753224 / 0x7532a4 and two buttons by arena_4045a0) and the lock box (0x907b2c: 0x74dfa4 /
    0x74e024); the border */
-LIFT_PLAIN(arena_createDraw, 40b750)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void arena_createDraw(void);
 /* batch 142 (lifted/grp88.c): two more screen dispatchers */
 #include "lifted/grp88.c"
 /* 0x44f810 profile_44f810(): the pilot-select dialog (profile_44e640), its colours refreshed first when asked
@@ -14227,7 +14228,8 @@ static void createarena_hover_setup(void)
 	callee_ret(0x404520, (DWORD)irnd(-1, 22));
 	callee_ret(0x4045a0, (DWORD)irnd(-1, 3));
 }
-T_PLAIN(arena_createDraw, 0x40b750, createarena_hover_setup();, 0, 0, 0, 0, 0)
+/* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(arena_createDraw, createarena_hover_setup();, (CALL_PLAIN(0x40b750, 0, 0, 0, 0, 0), 0), (arena_createDraw(), 0))
 /* batch 142 */
 /* the pilot-select dispatcher: profcol_setup's colour data, then pilotselect_setup (which keeps the pilot 0..8),
    the refresh flag, a message open now and then */
