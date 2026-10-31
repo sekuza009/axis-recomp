@@ -10,7 +10,7 @@ int (net_pingServer)(const char *address, int slot)
 {
 	GAME_VAR(int, 0xa0bf14) = 0;
 	GAME_VAR(int, 0xa0bf18) = 0;
-	GAME_VAR(int, 0xa0d798) = 0;
+	(*(int *)&g_pingTime) = 0;
 	g_serverPing[slot] = 0;
 	return net_ping(net_inetAddr(address), 1000) != 0;
 }

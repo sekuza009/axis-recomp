@@ -449,9 +449,9 @@ static void section5(Panel *p)
    then the stats box (taller for Korean, 0x9dae74) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {
-	int slot = GAME_VAR(int, 0x4dbc6c), korean = GAME_VAR(int, 0x9dae74) == 1;
+	int slot = g_armcPartSlot, korean = g_language == 1;
 	const u32 *bright = (const u32 *)0x4dbc58, *dim = (const u32 *)0x4dc1d0;
-	int hovered = armcMain_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = armcMain_hitTest(g_mouseX, g_mouseY);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -502,7 +502,7 @@ void (armc_drawStatsPanel)(void)
 	memset(p->t.line, 0, 50);
 	strcpy(p->t.line, (const char *)0x756da4);
 	append(p->t.line, FMT(0x4b035c));   /* " " */
-	append(p->t.line, (const char *)(0x751924 + GAME_VAR(int, 0x4dceac) * 0x80));
+	append(p->t.line, (const char *)(0x751924 + g_armcSpin * 0x80));
 	text_drawBox16(PANEL_X1 - 0xa0, PANEL_Y1 - 0x18, PANEL_X1, p->t.line);
 	colour(bright);
 	text_drawBox16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)0x7568a4);

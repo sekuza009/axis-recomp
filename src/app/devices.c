@@ -230,7 +230,7 @@ int *(input_getCursorPos)(void)
 		int p[2];
 		GetCursorPos(p);
 		g_cursorPos = p[0];
-		GAME_VAR(int, 0xae2f1c) = p[1];
+		g_cursorPosY = p[1];
 	}
 	return (int *)0xae2f18;
 }
@@ -258,11 +258,11 @@ int (input_isDown)(int key)
 {
 	switch (key) {
 	case 0xfa:
-		return GAME_VAR(int, 0x4ded94);
+		return g_mouseHeld;
 	case 0xfb:
 		return g_mouse2Down;
 	case 0xfc:
-		return GAME_VAR(int, 0x4ded9c);
+		return g_mouse3Down;
 	case 0xfd:
 		return g_mouseWheel < 0;
 	case 0xfe:

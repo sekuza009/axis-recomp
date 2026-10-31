@@ -1029,7 +1029,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
 		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
 		for (int i = 0; i < GAME_VAR(int, pt + 0x4c); i++)
-			GAME_VAR(u32 *, pt + 0x58)[i] = GAME_VAR(u32, 0xa1f23c);
+			GAME_VAR(u32 *, pt + 0x58)[i] = g_white;
 	}
 	if (allocated == 1) {
 		if (nv > 0)

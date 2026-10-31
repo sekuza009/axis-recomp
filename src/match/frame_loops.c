@@ -76,7 +76,7 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 	script_processTriggers(s);
 	long double t = (long double)dt + FIELD(float, s, 0x20fcd44);
 	FIELD(float, s, 0x20fcd44) = (float)t;
-	if (t > GAME_VAR(float, 0x4a9424)) {   /* 1 */
+	if (t > k_1f) {   /* 1 */
 		int whole = ftol(t);
 		FIELD(int, s, 0x20fcd40) += whole;
 		FIELD(float, s, 0x20fcd44) = (float)(t - whole);
@@ -785,7 +785,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 				P(u32, 0xb8) = 0x3f000000;
 		}
 	}
-	P(u32, 0xd4) = P(u32, 0xd8) = P(u32, 0xdc) = GAME_VAR(u32, 0xa1f23c);
+	P(u32, 0xd4) = P(u32, 0xd8) = P(u32, 0xdc) = g_white;
 }
 
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from +0x20a99c0) set up from its descriptor: a
@@ -819,7 +819,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	P(int, 0x6c) = 0;
 	P(u32, 0x70) = 0x3f800000;
 	P(int, 0x74) = 0;
-	P(u32, 0x78) = GAME_VAR(u32, 0xa1f23c);
+	P(u32, 0x78) = g_white;
 	P(int, 0x7c) = 0;
 	P(u32, 0x80) = GAME_VAR(u32, desc + 0x2c);
 	int kind = P(int, 8);

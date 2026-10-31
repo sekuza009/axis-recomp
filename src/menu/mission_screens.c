@@ -9,9 +9,8 @@
 #define X1 GAME_VAR(int, 0x9f6310)
 #define Y1 GAME_VAR(int, 0x9f6314)
 #define K(addr) ((const float *)(addr))
-#define g_mission GAME_VAR(int, 0x9f63b4)
-#define record ((const int *)(0x9db99c + g_mission * 0x5c))
-#define map_name ((const char *)(0x907b30 + g_mission * 0x20))
+#define record ((const int *)(0x9db99c + g_missionShown * 0x5c))
+#define map_name ((const char *)(0x907b30 + g_missionShown * 0x20))
 
 static void white_text(void)
 {
@@ -50,9 +49,9 @@ static void mission_screen(int hovered)
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	/* "<n>ST <0x75f1a4>  [ <map> ]" */
 	char title[256];
-	itoa(g_mission + 1, title, 10);
+	itoa(g_missionShown + 1, title, 10);
 	static const u32 suffix[4] = { 0x4b2b20, 0x4b2b24, 0x4b2b28, 0x4b2b2c };   /* "ST " "ND " "RD " "TH " */
-	strcat(title, (const char *)suffix[(unsigned)g_mission < 3 ? g_mission : 3]);
+	strcat(title, (const char *)suffix[(unsigned)g_missionShown < 3 ? g_missionShown : 3]);
 	strcat(title, (const char *)0x75f1a4);
 	strcat(title, (const char *)0x4b2b18);
 	strcat(title, map_name);
@@ -89,9 +88,9 @@ static void mission_screen(int hovered)
 	bind(g_buttonTexture);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_mission > 0 && hovered == 2);
+	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_missionShown > 0 && hovered == 2);
 	menu_drawSmallButton2(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
-	                        g_mission < GAME_VAR(int, 0x9f181c) && hovered == 3 && g_mission < 14);
+	                        g_missionShown < g_progress && hovered == 3 && g_missionShown < 14);
 	white_text();
 	/* the kind and the two values */
 	char line[128] = { 0 };
@@ -152,14 +151,14 @@ static void mission_screen(int hovered)
    original leaves eax to callers that ignore it */
 void (missionsel_drawSettingsScreen)(void)
 {
-	mission_screen(GAME_CDECL(0x447710, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c)));   /* missionsel_hitTest */
+	mission_screen(GAME_CDECL(0x447710, int, int, int)(g_mouseX, g_mouseY));   /* missionsel_hitTest */
 }
 
 /* 0x449a50: the same with nothing lit (the pointer is still asked), under a dimmed screen with the message
    0x75f7a4 / 0x74de24. The original leaves eax to callers that ignore it */
 void (missionsel_drawScreen)(void)
 {
-	GAME_CDECL(0x447710, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* missionsel_hitTest */
+	GAME_CDECL(0x447710, int, int, int)(g_mouseX, g_mouseY);   /* missionsel_hitTest */
 	mission_screen(-1);
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3f000000);
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);

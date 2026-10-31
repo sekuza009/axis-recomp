@@ -7,9 +7,9 @@
 void (input_resetKeys)(void)
 {
 	memset((void *)0x4d1a98, 0, 0x100 * 4);
-	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5.0 */
+	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5.0 */
 	g_typedLength = 0;
-	GAME_VAR(int, 0x9dbf10) = 0;
+	g_chatLength = 0;
 }
 
 /* 0x401780: the second key table (0x4d1fc4) and its state cleared */
@@ -45,12 +45,12 @@ void (mapSelect_allOut)(void)
 void (messageBox_clickClose)(void)
 {
 	if (g_keyEnter) {
-		GAME_VAR(int, 0x4dda44) = 0;
-		GAME_VAR(int, 0x4df900) = 0;
+		(*(int *)&g_cursorBlink) = 0;
+		g_dialogPending = 0;
 	}
-	if (GAME_VAR(int, 0x4ded88)) {
-		GAME_VAR(int, 0x4dda44) = 0;
-		GAME_VAR(int, 0x4df900) = 0;
+	if (g_mouseClick) {
+		(*(int *)&g_cursorBlink) = 0;
+		g_dialogPending = 0;
 	}
 }
 

@@ -69,12 +69,12 @@ void (armc_loadSavedMech)(void)
 	g_workParts[3] = g_savedParts[3];
 	g_workParts[2] = g_savedParts[2];
 	g_workParts[4] = g_savedParts[4];
-	GAME_VAR(u32, 0x4dcb24) = GAME_VAR(u32, 0x4dcf24);
-	GAME_VAR(u32, 0x4dcb20) = GAME_VAR(u32, 0x4dcf20);
-	GAME_VAR(u32, 0x4dcb28) = GAME_VAR(u32, 0x4dcf28);
-	GAME_VAR(u32, 0x4dcb1c) = GAME_VAR(u32, 0x4dcf1c);
-	GAME_VAR(u32, 0x4dcb2c) = GAME_VAR(u32, 0x4dcf2c);
-	GAME_VAR(u32, 0x4dcb18) = GAME_VAR(u32, 0x4dcf18);
+	GAME_VAR(u32, 0x4dcb24) = (*(u32 *)&g_savedMechItem3);
+	GAME_VAR(u32, 0x4dcb20) = (*(u32 *)&g_savedMechItem2);
+	GAME_VAR(u32, 0x4dcb28) = (*(u32 *)&g_savedMechItem4);
+	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItem1);
+	GAME_VAR(u32, 0x4dcb2c) = (*(u32 *)&g_savedMechItem5);
+	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechWeapons);
 	copy(g_armcColourBits, (const u32 *)0x4dcfe0, 0x90 / 4);
 }
 

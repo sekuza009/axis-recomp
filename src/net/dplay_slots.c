@@ -121,7 +121,7 @@ int (dplay_check)(void)
    unknown kind */
 int (dplay_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
-	u32 kind = GAME_VAR(u32, 0xa0b418);
+	u32 kind = (*(u32 *)&g_connectionKind);
 	if (kind > 3)
 		return 0;
 	return dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8);
@@ -136,7 +136,7 @@ int (dplay_join)(int session, int a2, int a3, int a4)
 		return 0x1f7;
 	if (*(const int *)(rec + 0x2a) == rec[0x26])
 		return 0x1f5;
-	u32 kind = GAME_VAR(u32, 0xa0b418);
+	u32 kind = (*(u32 *)&g_connectionKind);
 	if (kind > 3)
 		return 0;
 	return dplay_slotJoin(kind, a2, a3, a4, rec[0x27]);
@@ -154,13 +154,13 @@ u32 (arena_leaveSession)(void)
 		g_hostResultFlag = 1;
 		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
 	}
-	u32 kind = GAME_VAR(u32, 0xa0b418);
-	GAME_VAR(u32, 0xa0b418) = 4;
+	u32 kind = (*(u32 *)&g_connectionKind);
+	(*(u32 *)&g_connectionKind) = 4;
 	if (kind <= 3)
 		GAME_CDECL(close[kind], int, void)();
 	u32 r = GAME_CDECL(0x454130, u32, void)();   /* net_freeSessionList */
 	g_dplaySessionList = 0;
-	GAME_VAR(int, 0xa0b388) = 0;
+	g_netQueueOnline = 0;
 	g_arenaSessionOpen = 0;
 	return r;
 }
@@ -180,23 +180,23 @@ int (arena_openSession)(u32 kind, const char *host)
 		strcpy(address, (const char *)0xa0d320);
 	}
 	if (g_dplaySessionList) {
-		if (GAME_VAR(u32, 0xa0b418) == kind) {
+		if ((*(u32 *)&g_connectionKind) == kind) {
 			GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
 			g_dplaySessionList = 0;
 		} else
 			GAME_CDECL(0x452fe0, void, void)();
 	}
-	GAME_VAR(u32, 0xa0b418) = kind;
+	(*(u32 *)&g_connectionKind) = kind;
 	g_dplaySessionCount = 0;
 	GAME_VAR(int, 0xa0b420) = 0;
-	GAME_VAR(int, 0xa0b424) = 0;
-	GAME_VAR(int, 0xa0b428) = 0;
+	(*(int *)&g_localPlayerId) = 0;
+	(*(int *)&g_localPlayerData) = 0;
 	if (kind > 3)
 		return 0;
 	int r = kind == 0 ? GAME_CDECL(open[0], int, const char *)(address) : GAME_CDECL(open[kind], int, int)(0);
 	if (!r)
 		return 0;
 	g_dplaySessionList = 1;
-	GAME_VAR(int, 0xa0b388) = 1;
+	g_netQueueOnline = 1;
 	return r;
 }

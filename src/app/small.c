@@ -24,7 +24,7 @@ u32 (reg_readStartMode)(void) { return 1; }
 /* ---- setters of single globals (they return the value) ---- */
 int (text_setWrapX)(int v) { g_textWrapX = v; return v; }
 int (text_setBottom)(int v) { g_textBottom = v; return v; }
-int (view_setAngle)(int v) { GAME_VAR(int, 0x4c4dec) = v; return v; }
+int (view_setAngle)(int v) { (*(int *)&g_viewFov) = v; return v; }
 
 /* ---- index <-> pointer in an array of records ---- */
 /* 0x46cbc0: record i (base + i * stride), 0 for a negative index */
@@ -145,7 +145,7 @@ int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, 0xa0bae0 + 
 void (mapSelect_toggle)(int i) { int *f = (int *)(0x9ddac8 + i * 0x44); *f = 1 - *f; }
 void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_VAR(int, 0x9ddac8 + i * 0x44) = 1; }
 /* 0x447af0: a click closes the mission briefing */
-void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) GAME_VAR(int, 0x9f62e0) = 0; }
+void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
 u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)0x67fb3c); }
 /* 0x44ad30: the text colour */
@@ -424,7 +424,7 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 	typedef long double X;
 	if (FIELD(int, stage, 0x2149308) && FIELD(int, stage, 0x214930c) == 1)
 		return;
-	X d = (X)dt * k_clockRate, one = GAME_VAR(float, 0x4a9424);
+	X d = (X)dt * k_clockRate, one = k_1f;
 	for (int k = 0; k < 2; k++) {
 		X a = d + FIELD(float, stage, 0x9ef0a8 + k * 4);
 		FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)a;
@@ -531,7 +531,7 @@ u32 (chat_keepLastLine)(void)
 		memcpy((void *)0x9f63e4, (const void *)0x9dc92c, 0x400);
 		g_chatTyping = 0;
 	}
-	GAME_VAR(int, 0x68039c) = 0;
+	g_paused = 0;
 	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys: the key state */
 	return (u32)input_initKeyboard(g_hWndMain);
 }
@@ -638,7 +638,7 @@ int (reg_readServerSettings)(void)
 {
 	u32 key, type, size;
 	if (RegOpenKeyExA(0x80000001, (const char *)0x4b1728, 0, 0xf003f, &key)) {
-		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b16a4 : 0x4b1660));   /* sys_messageBox */
+		GAME_CDECL(0x41edf0, int, const char *)((const char *)(g_language == 1 ? 0x4b16a4 : 0x4b1660));   /* sys_messageBox */
 		RegCloseKey(key);
 		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
@@ -660,13 +660,13 @@ int (app_screenSizeForMode)(void)
 	                                 { 3840, 2160 }, { 1024, 768 } };
 	u32 mode = g_videoMode;
 	if (mode < 7) {
-		GAME_VAR(int, 0x5b1998) = sizes[mode][0];
-		GAME_VAR(int, 0x4e045c) = sizes[mode][1];
+		g_screenW = sizes[mode][0];
+		g_screenH = sizes[mode][1];
 	} else if (mode == 7) {
-		GAME_VAR(int, 0x5b1998) = g_desktopWidth;
-		GAME_VAR(int, 0x4e045c) = g_desktopHeight;
+		g_screenW = g_desktopWidth;
+		g_screenH = g_desktopHeight;
 	}
-	return GAME_VAR(int, 0x9da494) = g_cfgSimpleMenu;
+	return g_texturesOff = g_cfgSimpleMenu;
 }
 
 #define GetSystemTime(st) IMPORT(0x4a910c, void, void *)(st)
@@ -681,15 +681,15 @@ int (sys_checkClockTampering)(void)
 	const u16 *now = (const u16 *)0x9dd8d0, *last = (const u16 *)0x9dd878;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
 	GetSystemTime((void *)0x9dd8d0);
 	u32 tick = timeGetTime();
-	GAME_VAR(u32, 0x9dd8e0) = tick;
+	g_clockCheckTick = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
 	int seconds = minutes > last[5] ? (int)(minutes * 60 - last[5] * 60 - last[6] + now[6]) : (int)(now[6] - last[6]);
 	u32 tickSeconds = (tick - g_startTicks) / 1000;
-	GAME_VAR(int, 0x9dd860) = seconds;
-	GAME_VAR(u32, 0x9dd8ec) = tickSeconds;
+	g_clockCheckSeconds = seconds;
+	g_clockCheckTickSeconds = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
-	if (ticked * GAME_VAR(double, 0x4a9598) + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
-		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
+	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
+		GAME_CDECL(0x41edf0, int, const char *)((const char *)(g_language == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
 		if (g_clockCheckClosed) {
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;

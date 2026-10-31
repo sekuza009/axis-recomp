@@ -611,7 +611,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		memcpy(P, p, 36);
 	}
 	effect(s, r, W(int, 0x2dfc) + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
-	if (!(*B(const u8 *, 0x6c) & 0x10) && GAME_VAR(int, 0x83a9c8) == 1)
+	if (!(*B(const u8 *, 0x6c) & 0x10) && g_items3D == 1)
 		decal(s, b, w, r, B(const u8 *, 0x6c), N, P);
 	if (W(int, 0x2e04) >= 0)
 		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);

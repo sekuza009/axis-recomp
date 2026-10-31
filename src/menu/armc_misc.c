@@ -4,11 +4,8 @@
 #include "../wide.h"
 #include <string.h>
 
-#define g_armcModeShown GAME_VAR(int, 0x4dc24c)       /* (unclear) 3: the part lists are left as they are */
 #define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
-#define g_armcSpin GAME_VAR(int, 0x4dceac)
 #define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
-#define g_armcZoom GAME_VAR(float, 0x4dcfd8)          /* (by use) 1 when the part in view changes; each frame lowers it until it is below a limit, then -2 */
 
 /* 0x41dfb0: the parts page: the preview, the part lists (armc_resetSeraphimParts, a no-op in the patched game) and, unless the
    interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
@@ -16,7 +13,7 @@ void (armc_drawPartsPage)(void)
 {
 	if (g_armcPreview != 0)
 		armc_updatePartsPreview();
-	if (g_armcModeShown != 3)
+	if (g_armcFrom != 3)
 		armc_resetSeraphimParts();
 	if (g_armcHideInterface == 0) {
 		armc_drawModeTabs();
@@ -91,9 +88,6 @@ void THISCALL (stage_remakePlayerActor)(Stage *stage)
 	stage_claimPlayerActor(stage, slot, -1, slot, &spawn);
 }
 
-#define g_armcCamHeight GAME_VAR(float, 0x4df028)     /* the preview camera's height */
-#define g_armcCamDistance GAME_VAR(float, 0x4df02c)   /* and distance (1600 at rest) */
-#define g_armcFrom GAME_VAR(int, 0x4dc24c)            /* where the screen was entered from: 1, 2 the lobby, 3 the room */
 
 /* 0x40f0f0: leaving the screen; confirmed: keep the mech (saved with the profile, or sent to the room's players
    when entered from the room). The front end's 3D background and camera are reset and the Netsphere music starts */
@@ -124,7 +118,7 @@ void (armc_exit)(int confirmed)
 	}
 	g_armcCamHeight = 0.0f;
 	g_armcCamDistance = 1600.0f;
-	GAME_VAR(int, 0x68037c) = 0;
+	(*(int *)&g_menuCameraLookY) = 0;
 	g_menuCameraHeight = 0;
 	g_armcLeaving = 1;
 	g_flareSizeB = 10.0f;
@@ -242,7 +236,7 @@ void (armc_updatePartsPreview)(void)
 		case 4: armc_setBoosterIndex(g_scene, parts[4]); break;
 		}
 		armc_drawPartPanels();
-		armc_giveShownActorWeapon(g_scene, GAME_VAR(int, 0x4dbe48));
+		armc_giveShownActorWeapon(g_scene, g_armcSlot);
 		armc_readMechStats();
 		g_mechChanged = 0;
 		armc_retintParts();
@@ -273,7 +267,7 @@ void (armc_updateColourPreview)(void)
 	switch (g_armcMode) {
 	case 1: preview(1, part_in_view()); break;
 	case 2:
-		slot = GAME_VAR(int, 0x4dbe48);
+		slot = g_armcSlot;
 		if (GAME_VAR(int, 0x4dbe90 + slot * 0x80) == -1)
 			preview(1, -1);
 		else
@@ -304,7 +298,7 @@ void (menuState700_armCenter)(void)
 	if (state == 1 || state == 0)
 		return;
 	if (g_dialogOpen) {
-		menu_drawFrame(GAME_VAR(int, 0x4dcc90), GAME_VAR(int, 0x4dcc94), GAME_VAR(int, 0x4dcc98), GAME_VAR(int, 0x4dcc9c));
+		menu_drawFrame(GAME_VAR(int, 0x4dcc90), GAME_VAR(int, 0x4dcc94), g_armcSliderLeft, GAME_VAR(int, 0x4dcc9c));
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
@@ -340,7 +334,7 @@ void (menuState700_armCenter)(void)
 	}
 	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a93ec), &g_armcZoom);
 	g_armcZoom = zoom;
-	if (!(zoom >= GAME_VAR(float, 0x4a94a8)))
+	if (!(zoom >= k_m2f))
 		g_armcZoom = -2.0f;
 }
 
@@ -354,7 +348,7 @@ void (menuState700_armCenter)(void)
 u32 (menu_enterMenus)(void)
 {
 	g_armcHideInterface = 0;
-	GAME_VAR(int, 0x4dbe48) = 0;
+	g_armcSlot = 0;
 	armc_initCameraPoints();
 	music_play((const char *)0x4b01b0);
 	g_armcPartSlot = 5;
@@ -365,14 +359,14 @@ u32 (menu_enterMenus)(void)
 	g_armcUnusedFlag = 0;
 	g_menuEye[0] = 0;
 	g_menuEye[1] = 0;
-	u32 distance = fromRoom ? GAME_VAR(u32, 0x4a9458) : GAME_VAR(u32, 0x4a9454);   /* -1550, -450 */
+	u32 distance = fromRoom ? k_armcDistanceRoom : k_armcDistance;   /* -1550, -450 */
 	g_menuAt[0] = 0;
 	g_menuAt[1] = 0;
 	g_menuEye[2] = distance;
 	g_menuAt[2] = fromRoom ? 0xc4ce4000 : 0xc4098000;                                /* -1650, -550 */
 	GAME_VAR(int, 0x4dcc90) = 10;
 	GAME_VAR(int, 0x4dcc94) = 10;
-	GAME_VAR(int, 0x4dcc98) = 0x276;
+	g_armcSliderLeft = 0x276;
 	GAME_VAR(int, 0x4dcc9c) = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
@@ -393,7 +387,7 @@ u32 (menu_enterMenus)(void)
 	} else {
 		point[2] = 0x42c80000;    /* 100 */
 		pointAt[2] = 0;
-		if (GAME_VAR(int, 0x9f181c) > g_bestProgressSolo)
+		if (g_progress > g_bestProgressSolo)
 			g_progressWentUp = 1;
 	}
 	u32 *home = (u32 *)0x9db090, *homeAt = (u32 *)0x76d3f8;
@@ -436,7 +430,7 @@ u32 (menu_enterMenus)(void)
 			g_bestLevelNet = money;
 		return money;
 	}
-	int money = GAME_VAR(int, 0x9f181c);
+	int money = g_progress;
 	if (money > g_bestProgressSolo)
 		g_bestProgressSolo = money;
 	return money;
@@ -603,10 +597,10 @@ void (armc_initPartBoxes)(void)
 	GAME_VAR(u32, 0x4dc6ac) = 0x3fc00000;   /* 1.5 */
 	GAME_VAR(u32, 0x4dc704) = 0xbe3851ec;   /* -0.18 */
 	GAME_VAR(u32, 0x4dc75c) = 0x3e3851ec;   /* 0.18 */
-	GAME_VAR(u32, 0x4b0704) = 0x43480000;   /* 200 */
-	GAME_VAR(u32, 0x4b0708) = 0x44160000;   /* 600 */
-	GAME_VAR(u32, 0x4b070c) = 0x40000000;   /* 2 */
-	GAME_VAR(u32, 0x4b0710) = 0xc0000000;   /* -2 */
+	(*(u32 *)&g_panelSize3) = 0x43480000;   /* 200 */
+	(*(u32 *)&g_panelSize2) = 0x44160000;   /* 600 */
+	(*(u32 *)&g_panelRate3) = 0x40000000;   /* 2 */
+	(*(u32 *)&g_panelRate2) = 0xc0000000;   /* -2 */
 }
 
 /* 0x410190: the ARM CENTER's mouse, on pages 1 .. 4 (0x4dc798) in a state past 1 (0x4dc790) with no dialog open.
@@ -618,7 +612,7 @@ u32 (armc_onStateEnter)(void)
 		return state;
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	u32 page = GAME_VAR(u32, 0x4dc798) - 1;
+	u32 page = (*(u32 *)&g_armcMode) - 1;
 	switch (page) {
 	case 0:
 		return armc_mainPageClicks();
@@ -648,7 +642,7 @@ void (armc_snapshot)(int i)
 	strcat(path, (const char *)0x4ad564);   /* "/" */
 	strcat(path, (const char *)0x4b0360);   /* "snapshot" */
 	strcpy(copy, path);
-	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
+	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcChanged = 0;
 }
 
@@ -663,7 +657,7 @@ void (armc_drawWeightLine)(void)
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	int length = (int)strlen((const char *)0x7573a4);
-	text_draw16(0x27c - length * (GAME_VAR(int, 0x9dae74) == 1 ? 8 : 14), y, (const char *)0x7573a4);
+	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)0x7573a4);
 	long double sum = fld_m((const float *)weights[0]);
 	for (int k = 1; k < 10; k++)
 		sum = fadd_m(sum, (const float *)weights[k]);
@@ -695,13 +689,13 @@ int (armc_drawModeTabs)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	for (int i = 0; i < 3; i++) {
-		glColor4f(1.0f, 1.0f, 1.0f, GAME_VAR(int, 0x4dc798) == i + 1 ? 0.8f : 0.4f);
+		glColor4f(1.0f, 1.0f, 1.0f, g_armcMode == i + 1 ? 0.8f : 0.4f);
 		int x = GAME_VAR(int, 0x4dcc90), y = GAME_VAR(int, 0x4dcc94);
 		menu_drawWideButton(x + i * 100 + 0x10, y - 8, x + i * 100 + 0x70, y + 0x18, 1);
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
-		const u32 *c = (const u32 *)(GAME_VAR(int, 0x4dc798) == i + 1 ? 0x4dbc58 : 0x4dc1d0);
+		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? 0x4dbc58 : 0x4dc1d0);
 		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
 		int x = GAME_VAR(int, 0x4dcc90);
 		text_drawBox16(x + i * 100 + 0x10, GAME_VAR(int, 0x4dcc94), x + i * 100 + 0x70, (const char *)(0x7565a4 + i * 0x80));
@@ -749,7 +743,7 @@ void (armc_sendSelectionToNet)(void)
 	room[6] = (u8)g_itemSlot5;
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
-	u8 *packet = GAME_VAR(u8 *, 0xa0b340);
+	u8 *packet = g_netSelectionPacket;
 	strcpy((char *)packet, (const char *)0x9dd570);
 	memcpy(packet + 0x1e, room, 11);
 	memcpy(packet + 0x29, (const void *)0x9dd603, 0x90);
@@ -762,18 +756,18 @@ void (armc_sendSelectionToNet)(void)
    16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
 u32 (armc_mainPageClicks)(void)
 {
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e450, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcMain_hitTest */
-	int view = GAME_VAR(int, 0x4dbc6c);
+	u32 button = GAME_CDECL(0x40e450, u32, int, int)(g_mouseX, g_mouseY);   /* armcMain_hitTest */
+	int view = g_armcPartSlot;
 	switch (button) {
 	case 1:
-		if (GAME_VAR(int, 0x4dc798) == 2)
+		if (g_armcMode == 2)
 			return 2;
 		sound_playMenu(2);
 		return GAME_CDECL(0x40f220, u32, void)();
 	case 2:
-		if (GAME_VAR(int, 0x4dc798) == 3)
+		if (g_armcMode == 3)
 			return 1;
 		sound_playMenu(2);
 		return GAME_CDECL(0x40f320, u32, void)();
@@ -785,19 +779,19 @@ u32 (armc_mainPageClicks)(void)
 			return button == 7 || button == 11 ? button - 1 : button - 6;
 		{
 			u32 r = GAME_CDECL(0x41e760, u32, int)(2);
-			GAME_VAR(int, 0x4dbc6c) = button - 6;
-			GAME_VAR(float, 0x4dcfd8) = 1.0f;
+			g_armcPartSlot = button - 6;
+			g_armcZoom = 1.0f;
 			return r;
 		}
 	case 14: case 15:
 		if (view == 5)
 			return button - 1;
 		sound_playMenu(8);
-		return GAME_CDECL(0x40f340, u32, int, int)(GAME_VAR(int, 0x4dbc6c), button == 14 ? 1 : 2);
+		return GAME_CDECL(0x40f340, u32, int, int)(g_armcPartSlot, button == 14 ? 1 : 2);
 	case 16:
 		sound_playMenu(2);
-		view = GAME_VAR(int, 0x4dceac);
-		GAME_VAR(int, 0x4dceac) = 1 - view;
+		view = g_armcSpin;
+		g_armcSpin = 1 - view;
 		return view;
 	}
 	return button - 1;
@@ -809,15 +803,15 @@ u32 (armc_mainPageClicks)(void)
    rotation toggle. Returns what the original leaves in eax */
 u32 (armc_colourScreenInput)(void)
 {
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcColour_hitTest */
+	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	static const u32 page[3] = { 0x40f200, 0x40f220, 0x40f320 };
 	static const u32 control[6] = { 0x40f5d0, 0x40f670, 0x40f6b0, 0x40f6f0, 0x40f790, 0x40f7e0 };
 	u32 r;
 	switch (button) {
 	case 0: case 1: case 2:
-		if (GAME_VAR(u32, 0x4dc798) == button + 1)
+		if ((*(u32 *)&g_armcMode) == button + 1)
 			return button == 1 ? 2 : button;
 		sound_playMenu(2);
 		return GAME_CDECL(page[button], u32, void)();
@@ -825,17 +819,17 @@ u32 (armc_colourScreenInput)(void)
 		sound_playMenu(2);
 		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
 	case 5: case 6: case 7: case 8: case 9: case 10:
-		if (GAME_VAR(u32, 0x4dc4b0) == button - 5)
+		if ((*(u32 *)&g_armcColourSlot) == button - 5)
 			return button - 5;
 		r = GAME_CDECL(0x41e760, u32, int)(2);
-		GAME_VAR(u32, 0x4dc4b0) = button - 5;
+		(*(u32 *)&g_armcColourSlot) = button - 5;
 		return button == 10 ? GAME_CDECL(0x40f590, u32, void)() : r;
 	case 11: case 12: case 13: case 14: case 15: case 16:
 		return GAME_CDECL(control[button - 11], u32, void)();
 	case 17:
 		sound_playMenu(2);
-		r = GAME_VAR(u32, 0x4dceac);
-		GAME_VAR(u32, 0x4dceac) = 1 - r;
+		r = (*(u32 *)&g_armcSpin);
+		(*(u32 *)&g_armcSpin) = 1 - r;
 		return r;
 	}
 	return button;

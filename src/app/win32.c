@@ -21,8 +21,8 @@ int (sys_messageBoxOverActive)(const char *title, const char *text)
 /* 0x46c540: the MCI device (the CD audio) paused, notifying the window kept in its parameters */
 u32 (mci_pause)(void)
 {
-	u32 params[3] = { GAME_VAR(u32, 0xa1efc8), GAME_VAR(u32, 0xa1efcc), GAME_VAR(u32, 0xa1efd0) };
-	return mciSendCommandA(GAME_VAR(u32, 0xa1efd8), MCI_PAUSE, MCI_NOTIFY, params);
+	u32 params[3] = { g_mciCallback, g_mciFrom, g_mciTo };
+	return mciSendCommandA(g_mciDevice, MCI_PAUSE, MCI_NOTIFY, params);
 }
 
 /* 0x41edf0: a printf-formatted message box titled "User Message" (the arguments' address kept in 0x4dd0b4 while
@@ -31,9 +31,9 @@ int (sys_messageBox)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	GAME_VAR(va_list, 0x4dd0b4) = args;
+	g_messageBoxArgs = args;
 	vsprintf((char *)0x4dd0d0, format, args);
-	GAME_VAR(void *, 0x4dd0b4) = NULL;
+	(*(void **)&g_messageBoxArgs) = NULL;
 	int answer = MessageBoxA(GetActiveWindow(), (const char *)0x4dd0d0, (const char *)0x4b043c, 0);
 	va_end(args);
 	return answer;
@@ -87,7 +87,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	}
 	strcpy(g_glTitle, title);
 	g_glColourBits = colourBits;
-	GAME_VAR(int, 0xa0e924) = depthBits;
+	(*(int *)&g_glDepthBits) = depthBits;
 	g_fullScreen = fullscreen;
 	g_glWidth = width;
 	g_glHeight = height;
@@ -125,7 +125,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_glWindowMade = 1;
 	} else {
 		g_glWindow = window;
-		GAME_VAR(void *, 0xa0e938) = other;
+		g_hdc = other;   /* the GL window's DC (g_hdc below) */
 		glWindow_resize(width, height);
 	}
 	GAME_CDECL(0x4684c0, void, void)();   /* gfx_resetState */
@@ -223,7 +223,7 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
    the sound table released (0x456cd0) and DirectSound ended (0x467b70, whose eax it returns) */
 u32 (wnd_setCursor)(void)
 {
-	void *object = GAME_VAR(void *, 0x9087b4);
+	void *object = (*(void **)&g_scene);
 	if (object)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
@@ -250,7 +250,7 @@ int (glWindow_setupPixelFormat)(void *dc)
 	*(u16 *)pfd = 0x28;                  /* nSize */
 	*(u16 *)(pfd + 2) = 1;               /* nVersion */
 	*(u32 *)(pfd + 4) = 0x21;            /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
-	pfd[9] = GAME_VAR(u8, 0xa0e818);     /* cColorBits */
+	pfd[9] = (*(u8 *)&g_glColourBits);     /* cColorBits */
 	pfd[0x17] = g_glDepthBits;  /* cDepthBits */
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
@@ -276,7 +276,7 @@ int (gfx_setPixelFormat)(void *dc)
 	u8 *pfd = (u8 *)0x4b1020;
 	if (!(g_pixelFormatFilled & 1)) {
 		g_pixelFormatFilled |= 1;
-		pfd[9] = (u8)((GAME_VAR(u8, 0x83a9c4) + 1) << 4);   /* cColorBits */
+		pfd[9] = (u8)(((*(u8 *)&g_videoDepth) + 1) << 4);   /* cColorBits */
 		memset(pfd + 0xa, 0, 0x17 - 0xa);
 		pfd[0x17] = 0x10;                                    /* cDepthBits */
 		memset(pfd + 0x18, 0, 0x28 - 0x18);
@@ -301,21 +301,21 @@ int (chat_createEdit)(int chars)
 	font.height = -12;
 	font.charSet = 1;   /* DEFAULT_CHARSET */
 	strcpy(font.face, (const char *)0x4b29b0);
-	GAME_VAR(int, 0x76d418) = chars;
+	g_chatEditLength = chars;
 	g_inputFont = IMPORT(0x4a9038, void *, const void *)(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
-		0, (const char *)0x4b29a8, NULL, 0x40000400, GAME_VAR(int, 0x9da3d8) - 5, GAME_VAR(int, 0x9da3dc) + 0x21,
+		0, (const char *)0x4b29a8, NULL, 0x40000400, g_chatCaretX - 5, g_chatCaretY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
-	GAME_VAR(void *, 0x9dd888) = edit;
+	g_hChatEdit = edit;
 	if (edit) {
-		SendMessageA(edit, 0x30, GAME_VAR(u32, 0x9dd8e4), 0);   /* WM_SETFONT */
-		edit = GAME_VAR(void *, 0x9dd888);
+		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
+		edit = g_hChatEdit;
 	}
 	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, 0x440840);   /* SetWindowLongA(GWL_WNDPROC) */
-	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x9dd888));   /* SetFocus */
+	IMPORT(0x4a935c, void *, void *)(g_hChatEdit);   /* SetFocus */
 	u32 length = strlen((const char *)0x9dc92c);
-	SendMessageA(GAME_VAR(void *, 0x9dd888), 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
-	return SendMessageA(GAME_VAR(void *, 0x9dd888), 0xb1, length, length);   /* EM_SETSEL */
+	SendMessageA(g_hChatEdit, 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
+	return SendMessageA(g_hChatEdit, 0xb1, length, length);   /* EM_SETSEL */
 }
 
 /* ---- the start-up ---- */
@@ -397,7 +397,7 @@ int (app_init)(void *inst, int show)
 	if (!g_hWndMain)
 		return 0;
 	g_hInstance = inst;
-	GAME_VAR(int, 0x4deb54) = show;
+	g_showCmd = show;
 	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
 	for (int k = 0; k < 3; k++)
 		IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
@@ -475,7 +475,7 @@ static void chat_close(void *edit, int sent)
 	if (sent)
 		SendMessageA(edit, 0xd, 0x80, 0x9dc92c);   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
-	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 	GAME_CDECL(0x431600, u32, int)(sent);   /* chat_closeLine */
 	g_chatLineDone = 1;
@@ -491,7 +491,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 	if (msg == 0x100) {   /* WM_KEYDOWN */
 		switch (w) {
 		case 0xd:   /* Enter */
-			if (!(GAME_VAR(float, 0x9da434) > GAME_VAR(float, 0x4a93e8))) {
+			if (!(g_menuFade > k_0f)) {
 				chat_close(wnd, 1);
 				GAME_VAR(int, 0x9dc428) = 0x14;
 			}
@@ -500,8 +500,8 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			chat_close(wnd, 0);
 			break;
 		case 9:   /* Tab */
-			if (GAME_VAR(int, 0x76d3e8) == 0x320) {
-				IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+			if (g_menuState == 0x320) {
+				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 				GAME_VAR(int, 0x9dc428) = 0x14;
@@ -552,13 +552,13 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		return 0;
 	}
 	u16 language = IMPORT(0x4a9100, u16, void)();   /* GetSystemDefaultLangID */
-	GAME_VAR(u16, 0x9dd858) = language;
+	g_languageId = language;
 	if (language == 0x412 || language == 0x812) {
-		GAME_VAR(int, 0x9dae74) = 1;
-		GAME_VAR(u32, 0x9dd8c8) = 0x4b2794;
+		g_language = 1;
+		(*(u32 *)&g_launchMessage) = 0x4b2794;
 	} else {
-		GAME_VAR(int, 0x9dae74) = 2;
-		GAME_VAR(u32, 0x9dd8c8) = 0x4b27e4;
+		g_language = 2;
+		(*(u32 *)&g_launchMessage) = 0x4b27e4;
 	}
 	sys_checkClockTampering();
 	if (!g_startedFromLobby) {
@@ -586,7 +586,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	while (g_gameRunning) {
 		while (IMPORT(0x4a92d4, int, void *, void *, u32, u32, u32)(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
 			if (IMPORT(0x4a92d8, int, void *, void *, u32, u32)(msg, NULL, 0, 0)) {   /* GetMessageA */
-				if (GAME_VAR(int, 0x68039c))
+				if (g_paused)
 					IMPORT(0x4a9348, int, const void *)(msg);   /* TranslateMessage */
 				IMPORT(0x4a934c, long, const void *)(msg);       /* DispatchMessageA */
 			}
@@ -730,20 +730,20 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		if (w) {
 			while (ShowCursor(0) >= 0)
 				;
-			if (!GAME_VAR(u8, 0xb12a80))
+			if (!g_displayModeChanged)
 				ShowWindow(g_hWndMain, 9);   /* SW_RESTORE */
 			if (g_displayModeLeft) {
 				g_displayModeLeft = 0;
-				app_setDisplayMode(GAME_VAR(int, 0xb12a84), g_otherModeHeight, 4, 0x20);
+				app_setDisplayMode(g_otherModeWidth, g_otherModeHeight, 4, 0x20);
 				ShowWindow(g_hWndMain, 9);
 			}
 		} else {
 			while (ShowCursor(1) < 0)
 				;
-			if (GAME_VAR(u8, 0xb12a80)) {
+			if (g_displayModeChanged) {
 				ShowWindow(g_hWndMain, 7);   /* SW_SHOWMINNOACTIVE */
 				IMPORT(0x4a9314, int, void *, u32)(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
-				GAME_VAR(u8, 0xb12a80) = 0;
+				g_displayModeChanged = 0;
 				g_displayModeLeft = 1;
 			}
 		}
@@ -791,7 +791,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		}
 		GAME_CDECL(0x452620, void, void)();   /* net_recv */
-		switch (GAME_VAR(int, 0xa0b370)) {
+		switch (g_lobbyStatus) {
 		case 0x29: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;
 		case 0x67: g_connectStep = 3; break;
@@ -811,7 +811,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		}
 		GAME_CDECL(0x452620, void, void)();
-		switch (GAME_VAR(int, 0xa0b374)) {
+		switch (g_gameServerStatus) {
 		case 0x28: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;
 		case 0x67: g_connectStep = 3; break;

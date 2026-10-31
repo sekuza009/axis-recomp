@@ -29,10 +29,8 @@ void (setup_drawSoundPage)(void)
 #define Y0 GAME_VAR(int, 0x4ddad4)
 #define X1 GAME_VAR(int, 0x4ddad8)
 #define Y1 GAME_VAR(int, 0x4ddadc)
-#define g_pressedClock GAME_VAR(float, 0x4ddb98)
-#define g_pressed GAME_VAR(int, 0x4dde90)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = GAME_CDECL(0x420670, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setupSound_hitTest */
+	int hovered = GAME_CDECL(0x420670, int, int, int)(g_mouseX, g_mouseY);   /* setupSound_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -53,18 +51,18 @@ void (setup_drawSoundPage)(void)
 	int x = X0 - ftol(fmul_m(volume, (const float *)0x4a9500)) + 0x90;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x90, Y0 + 0x50, x, Y0 + 0x70);                  /* the bar */
 	const float *zero = (const float *)0x4a93e8;
-	if (g_pressedClock > *zero) {
-		switch (g_pressed) {
+	if (g_setupPressedClock > *zero) {
+		switch (g_setupPressed) {
 		case 0: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70); break;
 		case 1: tex_quad(0.75f, 0.25f, 1.0f, 0.375f, X0 + 0x190, Y0 + 0x50, X0 + 0x1d0, Y0 + 0x70); break;
 		case 2: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x8c, X0 + 0x90, Y0 + 0xac); break;
 		case 3: tex_quad(0.75f, 0.25f, 1.0f, 0.375f, X0 + 0x190, Y0 + 0x8c, X0 + 0x1d0, Y0 + 0xac); break;
 		}
-		long double left = fsub_m(fld_m(&g_pressedClock), (const float *)0x4b071c);
-		g_pressedClock = f32(left);
+		long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)0x4b071c);
+		g_setupPressedClock = f32(left);
 		if (!(left >= *zero)) {
-			g_pressedClock = 0;
-			g_pressed = -1;
+			g_setupPressedClock = 0;
+			g_setupPressed = -1;
 		}
 	}
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
@@ -100,8 +98,6 @@ void (setup_drawSoundPage)(void)
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
-#undef g_pressed
-#undef g_pressedClock
 #undef X0
 #undef Y0
 #undef X1
@@ -121,7 +117,7 @@ void (setup_drawOptionsDialog)(void)
 #define Y1 GAME_VAR(int, 0x4ddddc)
 	static const u32 names[6] = { 0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 };
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = setupOptions_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = setupOptions_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -224,8 +220,6 @@ static void settings_tab(void)
 {
 #define X0 GAME_VAR(int, 0x4dde80)
 #define Y0 GAME_VAR(int, 0x4dde84)
-#define g_pressedClock GAME_VAR(float, 0x4ddb98)
-#define g_pressed GAME_VAR(int, 0x4dde90)
 	const u32 *bright = (const u32 *)0x4de048;
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)0x7544a4);
@@ -246,10 +240,10 @@ static void settings_tab(void)
 	int x = X0 - ftol(fmul_m(sensitivity, (const float *)0x4a94a8)) + 0x108;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x108, Y0 + 0x88, x, Y0 + 0xa0);           /* the bar */
 	const float *zero = (const float *)0x4a93e8;
-	if (g_pressedClock > *zero) {
-		if (g_pressed == 0)
+	if (g_setupPressedClock > *zero) {
+		if (g_setupPressed == 0)
 			menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
-		else if (g_pressed == 1)
+		else if (g_setupPressed == 1)
 			menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
 	int crosshair = g_crosshair;
@@ -273,14 +267,12 @@ static void settings_tab(void)
 	glTexCoord2i(0, 1);
 	menu_vertex(X0 + 0xc8, Y0 + 0xd0);
 	glEnd();
-	long double left = fsub_m(fld_m(&g_pressedClock), (const float *)0x4b071c);
-	g_pressedClock = f32(left);
+	long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)0x4b071c);
+	g_setupPressedClock = f32(left);
 	if (!(left >= *zero)) {
-		g_pressedClock = 0;
-		g_pressed = -1;
+		g_setupPressedClock = 0;
+		g_setupPressed = -1;
 	}
-#undef g_pressed
-#undef g_pressedClock
 #undef X0
 #undef Y0
 }
@@ -297,9 +289,8 @@ void (setup_crosshairScreen)(void)
 #define Y0 GAME_VAR(int, 0x4dde84)
 #define X1 GAME_VAR(int, 0x4dde88)
 #define Y1 GAME_VAR(int, 0x4dde8c)
-#define g_row GAME_VAR(int, 0x4de040)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = setupControl_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = setupControl_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -319,16 +310,16 @@ void (setup_crosshairScreen)(void)
 	int editing = g_bindWaiting, tab = g_bindPage;
 	int over_row = hovered > 6 && hovered < 18;
 	if (over_row && !editing) {
-		g_row = hovered - 7;
+		g_bindRow = hovered - 7;
 		if ((tab == 0 && hovered > 16) || (tab == 2 && (hovered > 15 || hovered == 11)) || (tab == 3 && hovered > 8))
-			g_row = -1;
+			g_bindRow = -1;
 		else {
 			set_colour_bits(g_rectColour, 0, 0x3f000000, 0x3f800000, 0x3e99999a);   /* 0, 0.5, 1, 0.3 */
-			menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_row * 0x18, X1 - 0x24, Y0 + 0x6e + g_row * 0x18, 1);
+			menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_bindRow * 0x18, X1 - 0x24, Y0 + 0x6e + g_bindRow * 0x18, 1);
 		}
 	} else if (editing) {
 		set_colour_bits(g_rectColour, 0x3f800000, 0, 0x3f800000, 0x3e99999a);   /* 1, 0, 1, 0.3 */
-		menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_row * 0x18, X1 - 0x24, Y0 + 0x6e + g_row * 0x18, 1);
+		menu_drawRect(X0 + 0x24, Y0 + 0x58 + g_bindRow * 0x18, X1 - 0x24, Y0 + 0x6e + g_bindRow * 0x18, 1);
 	}
 	if (tab >= 0 && tab <= 2)
 		key_tab(tab);
@@ -353,7 +344,6 @@ void (setup_crosshairScreen)(void)
 		text_drawBox16(0, 0x1bc, 0x280, (const char *)0x7548a4);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
-#undef g_row
 #undef X0
 #undef Y0
 #undef X1
@@ -363,7 +353,6 @@ void (setup_crosshairScreen)(void)
 
 /* ---- the tunnel behind the setup pages ---- */
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
-#define g_tunnelAlpha GAME_VAR(float, 0x4de038)
 #define g_tunnelPulse GAME_VAR(float, 0x9db978)       /* bounces 0 .. 100 */
 #define g_scroll GAME_VAR(float, 0x4e14fc)      /* runs 0 .. 200 */
 
@@ -460,12 +449,12 @@ void (setup_drawTunnel)(void)
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
 	if (g_setupPage == 1)
-		g_tunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_tunnelAlpha), (const float *)0x4a94fc), frame),
-		                                   (const float *)0x4a93ec), &g_tunnelAlpha));
+		g_setupTunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_setupTunnelAlpha), (const float *)0x4a94fc), frame),
+		                                   (const float *)0x4a93ec), &g_setupTunnelAlpha));
 	else if (g_setupPage == 0)
-		g_tunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)0x4a942c), &g_tunnelAlpha), frame),
-		                                  (const float *)0x4a93ec), &g_tunnelAlpha));
-	glColor4f(1.0f, 1.0f, 1.0f, g_tunnelAlpha);
+		g_setupTunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)0x4a942c), &g_setupTunnelAlpha), frame),
+		                                  (const float *)0x4a93ec), &g_setupTunnelAlpha));
+	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
 	for (int layer = 0; layer < 4; layer++) {
 		/* the strip of the texture: s from s_near (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
@@ -473,13 +462,13 @@ void (setup_drawTunnel)(void)
 			s0 = 0.5f, ds = 0, t0 = 0.5f, t1 = 0.75f, s_far = 1.0f;
 		int texture;
 		if (layer == 0) {
-			glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), &g_tunnelAlpha)));
+			glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), &g_setupTunnelAlpha)));
 			texture = g_menuTunnelTexture;
 		} else if (layer == 1) {
 			glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
 			texture = g_menuTunnelTexture;
 		} else if (layer == 3) {
-			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_tunnelAlpha), (const float *)0x4a94f8)));
+			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_setupTunnelAlpha), (const float *)0x4a94f8)));
 			texture = GAME_VAR(int, 0x5b1984 - layer * 4);
 		} else
 			continue;
@@ -487,7 +476,7 @@ void (setup_drawTunnel)(void)
 		for (int wall = 0; wall < 4; wall++) {
 			int parity = wall % 2, far = wall >= 2;
 			gfx_setMenuCamera();
-			glTranslatef_bits(0, 0, GAME_VAR(u32, 0x4ddd90));
+			glTranslatef_bits(0, 0, (*(u32 *)&g_setupTunnelDepth));
 			float turn = ((const float *)0x4b04c4)[parity];
 			if (far)
 				turn = -turn;
@@ -696,7 +685,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	if (!h->keep_texture)
 		glDisable(GL_TEXTURE_2D);
 	if (g_panelHovered) {
-		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &g_panelGlow);
+		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &(*(float *)&g_panelGlowStep)), &g_panelGlow);
 		g_panelGlow = f32(glow);
 		if (!clamp) {
 			if (!(glow > *(const float *)0x4a93fc))
@@ -704,10 +693,10 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 			if (glow >= *(const float *)0x4a93f8)
 				g_panelGlowStep = 0xbf800000;   /* -1 */
 		} else if (!(glow > *(const float *)0x4a93fc)) {
-			GAME_VAR(u32, 0x680ccc) = 0x40000000;   /* 2 */
+			(*(u32 *)&g_panelGlow) = 0x40000000;   /* 2 */
 			g_panelGlowStep = 0x3f800000;
 		} else if (g_panelGlow >= *(const float *)0x4a93f8) {
-			GAME_VAR(u32, 0x680ccc) = 0x42180000;   /* 38 */
+			(*(u32 *)&g_panelGlow) = 0x42180000;   /* 38 */
 			g_panelGlowStep = 0xbf800000;
 		}
 	}
@@ -756,14 +745,14 @@ static int hovered_panel(u32 outlines, int count, int locked)
 {
 	int on = -1;
 	for (int k = 0; k < count && !locked; k++)
-		if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), *(const Outline *)(outlines + k * 0x2c)) == 1) {
+		if (point_in_outline(g_mouseX, g_mouseY, *(const Outline *)(outlines + k * 0x2c)) == 1) {
 			on = k;
 			break;
 		}
 	g_panelHovered = on != -1;
 	if (on != -1 && g_lastPanel != on) {
 		g_lastPanel = on;
-		GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
+		(*(u32 *)&g_panelGlow) = 0x42200000;   /* 40 */
 		g_panelGlowStep = 0xbf800000;   /* -1 */
 	}
 	return on;
@@ -790,7 +779,7 @@ void (lobbyTop_drawTitle)(void)
 	Highlight h = { hovered_panel(0x5b1cf8, 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_arenaLobbyMode == 2 && !GAME_VAR(int, 0x680370))
+	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_keysBlocked)
 		caption(0x750924, h.on);
 }
 
@@ -800,9 +789,9 @@ void (lobbyTop_drawTitle)(void)
 void (setup_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(0x4df918, 4, g_setupPanelMoving), white, 1, 0, 0 };
-	Tunnel t = { GAME_VAR(u32, 0x4ddd90), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && g_setupPage == 2 && !GAME_VAR(int, 0x680370))
+	if (h.on != -1 && g_setupPage == 2 && !g_keysBlocked)
 		caption(0x7506a4, h.on);
 }
 /* 0x442050: the main menu: the panel under the pointer (six, 0x4deb80; none while the tunnel flies in, 0x9eeaa8, or
@@ -820,7 +809,7 @@ void (menu_mainMenu)(void)
 	const float *frame = (const float *)0x4b071c;
 	int on = -1;
 	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
-		if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), *(const Outline *)(0x4deb80 + k * 0x2c)) == 1) {
+		if (point_in_outline(g_mouseX, g_mouseY, *(const Outline *)(0x4deb80 + k * 0x2c)) == 1) {
 			on = k;
 			break;
 		}
@@ -836,27 +825,27 @@ void (menu_mainMenu)(void)
 			on = -1;
 		else if (g_lastPanel != on) {
 			g_lastPanel = on;
-			GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
+			(*(u32 *)&g_panelGlow) = 0x42200000;   /* 40 */
 			g_panelGlowStep = 0xbf800000;   /* -1 */
 		}
 	}
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
 		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)0x4a9498), frame), (const float *)0x4a93ec);
-		GAME_VAR(int, 0x9eeab0)++;
+		g_mainMenuFrames++;
 		if (g_depth > *(const float *)0x4a95d0)
 			g_depth = f32(fld_m(&g_depth) - step);
 		else {
 			g_tunnelFlyingIn = 0;
-			GAME_VAR(u32, 0x9eea90) = 0xc4098000;   /* -550 */
+			(*(u32 *)&g_depth) = 0xc4098000;   /* -550 */
 		}
 	}
 	Highlight h = { on, white, 1, 1, 1 };
-	Tunnel t = { GAME_VAR(u32, 0x9eea90), 0x76d484, 0, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_depth), 0x76d484, 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
-		if (!GAME_VAR(int, 0x680370))
+		if (!g_keysBlocked)
 			caption(0x7501a4, on);
-	} else if (!GAME_VAR(int, 0x680370) && !g_mainMenuPicked && g_idle > *(const float *)0x4a95cc) {
+	} else if (!g_keysBlocked && !g_mainMenuPicked && g_idle > *(const float *)0x4a95cc) {
 		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
 		g_hint = f32(hint);
 		if (hint > *(const float *)0x4a9534) {
@@ -883,7 +872,6 @@ void (menu_mainMenu)(void)
 #undef FOUR_WALLS
 #undef g_scroll
 #undef g_tunnelPulse
-#undef g_tunnelAlpha
 
 /* 0x4277c0: the setup panel eased in (0x4dda60 while it moves): its position (0x4de03c) moves the rest of the
    way to 0x4a9448 times 0x4b071c x 0x4a93ec; the distance left (0x4ddd90) runs down by the same step, and once it
@@ -893,11 +881,11 @@ void (setup_easePanel)(void)
 	typedef long double X;
 	if (!g_setupPanelMoving)
 		return;
-	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * k_tenthsToDegrees;
+	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * g_frameTime * k_tenthsToDegrees;
 	g_setupPanelPos = (float)((X)g_setupPanelPos + d);
 	if (!((X)g_setupTunnelDepth > (X)k_setupPanelEnd)) {
 		g_setupPanelMoving = 0;
-		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;
+		(*(u32 *)&g_setupTunnelDepth) = 0xc4ce4000;
 		return;
 	}
 	g_setupTunnelDepth = (float)((X)g_setupTunnelDepth - d);

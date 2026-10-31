@@ -110,18 +110,18 @@ void (lobbyJoin_keys)(void) { leave_keys(&g_arenaLeaving); }
    selection 0x9f16a4), 9 leaves. Returns the last call's eax */
 int (skirmish_saveSettings)(void)
 {
-	int r = GAME_VAR(int, 0x90d1c4);
+	int r = g_dialogOpen;
 	if (r)
 		return r;
 	if (g_keyEnter)
 		GAME_CDECL(0x443c80, int, void)();
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	int row = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmishSettings_hitTest */
+	int row = GAME_CDECL(0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	if ((u32)row <= 7)
 		return GAME_CDECL(0x443d50, int, int)(row);
 	if (row == 8)
-		return GAME_CDECL(0x443af0, int, int)(GAME_VAR(int, 0x9f16a4));
+		return GAME_CDECL(0x443af0, int, int)(g_missionPicked);
 	if (row == 9)
 		return GAME_CDECL(0x443c80, int, void)();
 	return row;
@@ -151,7 +151,7 @@ u32 (room_keys)(void)
 	if (key_hit(0x4e151c))
 		return GAME_CDECL(0x433800, u32, void)();   /* room_enterRoomList */
 	if (key_hit(0x4e0cd4)) {
-		GAME_VAR(int, 0x4dc24c) = 3;
+		g_armcFrom = 3;
 		return GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus */
 	}
 	if (key_hit(0x4e153c))
@@ -164,16 +164,16 @@ u32 (room_keys)(void)
    menu (the keyboard taken back if it was let go, the connection closed), 4 0x4338c0. Returns the action's eax */
 u32 (room_leftClicks)(void)
 {
-	u32 open = GAME_VAR(u32, 0x9dd1c8);
+	u32 open = (*(u32 *)&g_roomLoginDue);
 	if (open)
 		return open;
-	if ((open = GAME_VAR(u32, 0x9dd838)))
+	if ((open = (*(u32 *)&g_roomRequestOut)))
 		return open;
-	if ((open = GAME_VAR(u32, 0x4ded8c)))
+	if ((open = (*(u32 *)&g_keyEnter)))
 		return open;
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x432200, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	u32 button = GAME_CDECL(0x432200, u32, int, int)(g_mouseX, g_mouseY);
 	u32 r;
 	switch (button) {
 	case 0:
@@ -187,7 +187,7 @@ u32 (room_leftClicks)(void)
 		g_typingRoomPassword = 1;
 		return r;
 	case 2:
-		if ((open = GAME_VAR(u32, 0x9dd1c8)))
+		if ((open = (*(u32 *)&g_roomLoginDue)))
 			return open;
 		sound_playMenu(0);
 		g_loginToSend = 1;
@@ -195,8 +195,8 @@ u32 (room_leftClicks)(void)
 		g_roomLeaveDialog = 0;
 		return 1;
 	case 3:
-		if (GAME_VAR(int, 0x68039c)) {
-			GAME_VAR(int, 0x68039c) = 0;
+		if (g_paused) {
+			g_paused = 0;
 			GAME_CDECL(0x431590, void, void)();      /* input_resetKeys */
 			GAME_CDECL(0x401310, void, void *)(g_mainWindow);   /* input_initKeyboard */
 		}
@@ -204,7 +204,7 @@ u32 (room_leftClicks)(void)
 		input_setKeysBlocked(4);
 		g_roomState = 0x63;
 		g_nextScreen = 300;
-		GAME_VAR(int, 0x4e1868) = 0;
+		g_chatFieldFlag = 0;
 		GAME_CDECL(0x48b420, void, void)();          /* debug_traceStripped */
 		return GAME_CDECL(0x451e60, u32, void)();    /* net_disconnect */
 	case 4:
@@ -220,19 +220,19 @@ u32 (room_leftClicks)(void)
 u32 (room_pageClicks)(void)
 {
 	static const u32 actions[6] = { 0x4334c0, 0x433590, 0x433790, 0, 0x433800, 0x435a40 };
-	u32 page = GAME_VAR(u32, 0x9dce48);
+	u32 page = (*(u32 *)&g_roomMode);
 	if (page == 1 || page == 0)
 		return page;
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (GAME_VAR(int, 0x4ded88)) {
+	if (g_mouseClick) {
 		const Outline *buttons = (const Outline *)0x9daf88;
 		for (int i = 0; i < 6; i++) {
-			if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
 			sound_playMenu(0);
 			if (i == 3) {   /* the arm center */
-				GAME_VAR(int, 0x4dc24c) = 3;
+				g_armcFrom = 3;
 				GAME_CDECL(0x40ee20, void, void)();   /* menu_enterMenus */
 				g_enteringMenus = 0;
 			} else
@@ -262,7 +262,7 @@ static void load_map_preview(u32 selected)
 	strcat(path, (const char *)0x4ad564);   /* "/" */
 	strcat(path, name);
 	strcpy(copy, path);
-	g_mapPreviewTexture = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
+	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_mapPreviewChanged = 0;
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
@@ -277,9 +277,9 @@ void (arena_loadMapPreview)(void) { load_map_preview(0x4db548); }
    closed (chat_closeLine); returns that call's eax, or 0 */
 static u32 typing_end(void)
 {
-	if (!GAME_VAR(int, 0x68039c))
+	if (!g_paused)
 		return 0;
-	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 	return GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 }
@@ -307,7 +307,7 @@ u32 (account_endTyping)(void)
 u32 (room_hostingStep)(void)
 {
 	const u8 *room = (const u8 *)0x5b1b30;
-	u32 step = GAME_VAR(u32, 0x4ded60);
+	u32 step = (*(u32 *)&g_connectStep);
 	if (step == 2)
 		return 2;
 	if (step == 1) {
@@ -320,13 +320,13 @@ u32 (room_hostingStep)(void)
 		GAME_CDECL(0x453090, int, const void *, const char *, int, int, int, int, int, int)(
 			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
-		GAME_VAR(int, 0x9dad94) = (signed char)room[0x20];
+		g_missionStage = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
 		memcpy((void *)0x67fb44, room, 32);
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
-		step = GAME_VAR(u32, 0x4ded60);
+		step = (*(u32 *)&g_connectStep);
 		g_arenaGameSetUp = 1;
 	}
 	switch (step) {
@@ -364,9 +364,9 @@ u32 (app_onClose)(void)
 	}
 	if (!g_arenaJoinPending)
 		return 0;
-	u32 row = GAME_VAR(u32, 0x4db710) * 0x4a;
+	u32 row = (*(u32 *)&g_arenaJoinRow) * 0x4a;
 	u8 *game = (u8 *)0x9087c0 + row;
-	*(u32 *)game = *GAME_VAR(u32 *, 0x4dbbf8);
+	*(u32 *)game = *(*(u32 **)&g_receivedSession);
 	g_roomRecFragLimit = game[0x2d];
 	g_roomRecTimeLimit = game[0x2e];
 	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
@@ -387,7 +387,7 @@ u32 (app_onClose)(void)
 	g_arenaSearchTicks = 0;
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
-	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
+	g_missionStage = (signed char)game[0x25];
 	memcpy((void *)0x67fb44, game + 4, 32);
 	g_mapRotation = (signed char)game[0x24];
 	g_chosenGameMode = (signed char)game[0x2c];
@@ -402,7 +402,7 @@ u32 (app_onClose)(void)
 u32 (account_checkForm)(void)
 {
 	GAME_CDECL(0x433d30, void, void)();   /* account_endTyping */
-	GAME_VAR(int, 0x68039c) = 0;
+	g_paused = 0;
 	GAME_VAR(int, 0x9dc428) = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int message, reopen;
@@ -439,7 +439,7 @@ int (account_sendChange)(void)
 			g_roomLoginDue = 0;
 			return 0;
 		}
-	char *out = GAME_VAR(char *, 0xa0b344);
+	char *out = g_netAccountBuffer;
 	strcpy(out, (const char *)0x9dd1d8);
 	strcpy(out + 0x1e, (const char *)0x9dd1f6);
 	strcpy(out + 0x2a, (const char *)0x9dd20e);
@@ -467,13 +467,13 @@ static u32 call_keeping_ebp(u32 address)
 u32 (ranking_page)(void)
 {
 	if (g_rankingRequestPending) {
-		u32 column = GAME_VAR(u32, 0x9dd1d0);
+		u32 column = (*(u32 *)&g_rankingSort);
 		static const int code[3] = { 0x25, 0x23, 0x26 };
 		if (column == 3) {
 			g_rankingRequestPending = 0;
 			return 3;
 		}
-		int *out = GAME_VAR(int *, 0xa0b324);
+		int *out = g_netRankingBuffer;
 		if (column < 3)
 			out[0] = code[column];
 		int page = g_roomListPage;
@@ -489,11 +489,11 @@ u32 (ranking_page)(void)
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
-	if (GAME_VAR(int, 0x90d1c4)) {
+	if (g_dialogOpen) {
 		const int *box = (const int *)0x9dced8;
 		GAME_CDECL(0x428c30, void, int, int, int, int)(box[0], box[1], box[2], box[3]);   /* the message box */
-		if (GAME_VAR(int, 0x90d1c4))
-			return GAME_VAR(u32, 0x90d1c4);
+		if (g_dialogOpen)
+			return (*(u32 *)&g_dialogOpen);
 		g_rankingRequestPending = 1;
 		return 0;
 	}
@@ -523,8 +523,8 @@ u32 (login_send)(void)
 	typing_end();
 	g_typingGameName = 0;
 	g_typingGamePassword = 0;
-	GAME_VAR(int, 0x4e1868) = 0;
-	GAME_VAR(int, 0x68039c) = 0;
+	g_chatFieldFlag = 0;
+	g_paused = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int bad = GAME_CDECL(0x434400, int, const char *)(name) == 1 ? 0x15a
 	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
@@ -536,11 +536,11 @@ u32 (login_send)(void)
 	memset((void *)0x9dd570, 0, 30 + 12);
 	strcpy((char *)0x9dd570, name);
 	strcpy((char *)0x9dd58e, password);
-	memset(GAME_VAR(u8 *, 0xa0b320) + 4, 0, 30);
-	memset(GAME_VAR(u8 *, 0xa0b320) + 0x22, 0, 12);
+	memset((*(u8 **)&g_accountPacket) + 4, 0, 30);
+	memset((*(u8 **)&g_accountPacket) + 0x22, 0, 12);
 	strcpy(g_accountPacket + 4, name);
 	strcpy(g_accountPacket + 0x22, password);
-	GAME_VAR(int *, 0xa0b320)[0] = 0x18;
+	(*(int **)&g_accountPacket)[0] = 0x18;
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xe, 0x65);   /* net_send */
 	g_roomRequestOut = 1;
 	return r;
@@ -553,15 +553,15 @@ u32 (login_send)(void)
    put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
 u32 (ranking_clicks)(void)
 {
-	u32 mode = GAME_VAR(u32, 0x9dce48);
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
+	u32 mode = (*(u32 *)&g_roomMode);
+	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
 	int waiting = g_rankingWaiting;
 	if (g_keyEnter && !waiting)
 		g_roomMode = 0;
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return mode;
-	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
+	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* the click sound */
@@ -575,14 +575,14 @@ u32 (ranking_clicks)(void)
 		g_rankingWaiting = 0;
 		g_roomListWaiting = 0;
 		g_rankingSort = g_roomListPrev;
-		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
+		return (*(u32 *)&g_roomListPage) = (*(u32 *)&g_roomListPrevPage);
 	case 4:
 		g_roomMode = 0;
 		return r;
 	}
 	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
-	u32 old = GAME_VAR(u32, 0x9dd1d0);
-	GAME_VAR(u32, 0x9dd300) = old;
+	u32 old = (*(u32 *)&g_rankingSort);
+	(*(u32 *)&g_roomListPrev) = old;
 	g_rankingSort = column;
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
@@ -604,16 +604,16 @@ u32 (room_settingsClicks)(void)
 	for (int k = 0; k < 4; k++)
 		if (GAME_VAR(int, typing[k]))
 			return GAME_VAR(u32, typing[k]);
-	u32 mode = GAME_VAR(u32, 0x9dce48);
+	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0)
 		return mode;
-	if (GAME_VAR(int, 0x90d1c4))
-		return GAME_VAR(u32, 0x90d1c4);
+	if (g_dialogOpen)
+		return (*(u32 *)&g_dialogOpen);
 	if (g_keyEnter)
 		g_roomMode = 0;
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x432380, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* roomSettings_hitTest */
+	u32 button = GAME_CDECL(0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
 	u8 *players = (u8 *)0x4df9e9, *type = (u8 *)0x4df9eb, *frags = (u8 *)0x4df9ec, *time = (u8 *)0x4df9ed;
 	u32 r;
 	switch (button) {
@@ -661,7 +661,7 @@ u32 (room_settingsClicks)(void)
 		return r;
 	case 8:
 		if (g_arenaGameSetUp)
-			return GAME_VAR(u32, 0x4ded54);
+			return (*(u32 *)&g_arenaGameSetUp);
 		sound_playMenu(0);
 		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
 	case 9:
@@ -682,8 +682,8 @@ u32 (room_settingsClicks)(void)
    in eax */
 u32 (room_settingsAfterTyping)(void)
 {
-	if (GAME_VAR(int, 0x90d1c4))
-		return GAME_VAR(u32, 0x90d1c4);
+	if (g_dialogOpen)
+		return (*(u32 *)&g_dialogOpen);
 	if (g_paused)
 		return 0;
 	const char *line = (const char *)0x9dc92c;
@@ -701,7 +701,7 @@ u32 (room_settingsAfterTyping)(void)
 	if (g_editingRoomPassword) {   /* the password */
 		memset((void *)0x4df9ee, 0, 8);
 		g_editingRoomPassword = 0;
-		GAME_VAR(int, 0x4e1868) = 0;
+		g_chatFieldFlag = 0;
 		strcpy((char *)0x4df9ee, line);
 		return 0;
 	}
@@ -788,7 +788,7 @@ u32 (account_page)(void)
 		{ 0x9dd69c, 0x9dd6d8, 12, 0, 0x4340e0 }, { 0x9dd37c, 0x9dd1f6, 12, 0x434020, 0x4341a0 },
 		{ 0x9dd378, 0x9dd202, 12, 0x4340e0, 0x434260 }, { 0x9dd304, 0x9dd20e, 50, 0x4341a0, 0 } };
 	GAME_CDECL(0x4388e0, void, void)();   /* room_drawTunnel: the tunnel */
-	u32 mode = GAME_VAR(u32, 0x9dce48);
+	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
@@ -806,7 +806,7 @@ u32 (account_page)(void)
 			return r;
 		memset((void *)fields[k].field, 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
-		GAME_VAR(int, 0x4e1868) = 0;
+		g_chatFieldFlag = 0;
 		strcpy((char *)fields[k].field, (const char *)0x9dc92c);
 		u32 key = GAME_VAR(u32, 0x9dc428);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
@@ -829,11 +829,11 @@ u32 (account_page)(void)
 static void login_field(int to, int x, int y)
 {
 	g_loginField = to;
-	GAME_VAR(int, 0x76d42c) = 1;
-	GAME_VAR(u32, 0x680bc0) = 0x41a00000;   /* 20 */
-	GAME_VAR(u32, 0x9da4a4) = 0x3ecccccd;   /* 0.4 */
-	GAME_VAR(int, 0x67ef34) = x;
-	GAME_VAR(int, 0x67fb38) = y;
+	g_highlightShown = 1;
+	(*(u32 *)&g_highlightSize) = 0x41a00000;   /* 20 */
+	(*(u32 *)&g_highlightAlpha) = 0x3ecccccd;   /* 0.4 */
+	g_highlightX = x;
+	g_highlightY = y;
 	g_tabDirection = 0;
 }
 
@@ -843,7 +843,7 @@ static int login_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(g_dikEnter) == 1)
-		button = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* loginForm_hitTest */
+		button = GAME_CDECL(0x432240, int, int, int)(g_mouseX, g_mouseY);   /* loginForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;
@@ -852,7 +852,7 @@ static int login_buttons(void)
 		else
 			return 0;
 	}
-	if (!GAME_VAR(int, 0x68039c)) {
+	if (!g_paused) {
 		sound_playMenu(0);
 		if (button == 4)
 			GAME_CDECL(0x4346c0, void, void)();   /* account_checkForm */
@@ -869,7 +869,7 @@ void (loginDialog_keys)(void)
 {
 	if (login_buttons())
 		return;
-	if (input_justPressed(g_dikTab) != 1 || GAME_VAR(int, 0x68039c))
+	if (input_justPressed(g_dikTab) != 1 || g_paused)
 		return;
 	g_tabDirection = 20;
 	if (input_isDown(g_dikLShift) == 1 || input_isDown(g_dikRShift) == 1)

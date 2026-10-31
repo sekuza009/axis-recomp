@@ -19,8 +19,8 @@ static void dialog_opened(int state)
 	g_dialogOpen = 1;
 	g_typingGameName = 0;
 	g_typingGamePassword = 0;
-	GAME_VAR(int, 0x4e1868) = 0;
-	GAME_VAR(int, 0x68039c) = 0;
+	g_chatFieldFlag = 0;
+	g_paused = 0;
 }
 
 /* 0x433980: dialog 0x58 */
@@ -76,7 +76,7 @@ void (room_start)(void)
    list's keys when open), 66 and 88 (a message box 0x9dd850 first), 77. Returns what the handler leaves in eax */
 u32 (room_mouse)(void)
 {
-	u32 state = GAME_VAR(u32, 0x9dd834);
+	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : CALL(0x437240);   /* room_readyKeys */
@@ -99,8 +99,8 @@ u32 (room_mouse)(void)
    leave the screen (0x9dce48 = 0). Returns what the original leaves in eax */
 u32 (room_readyKeys)(void)
 {
-	if (GAME_VAR(int, 0x68039c))
-		return GAME_VAR(u32, 0x68039c);
+	if (g_paused)
+		return (*(u32 *)&g_paused);
 	if (g_roomAwaitingServer == 1) {
 		if (!input_justPressed(g_dikEscape_2))
 			return 0;
@@ -162,7 +162,7 @@ u32 (room_joinSession)(int i)
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
 	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
-	GAME_VAR(u32, 0xa0bad0) = timer;
+	g_arenaJoinTimer = timer;
 	return timer;
 }
 
@@ -177,10 +177,10 @@ int (gameList_open)(void)
 	g_roomSearching = 1;
 	g_gameServerState = 0;
 	GAME_VAR(int, 0x9087b0) = 0;
-	GAME_VAR(int, 0x67ef30) = 0;
+	g_gameCount = 0;
 	g_gameListLoaded = 1;
-	GAME_VAR(int, 0x76d41c) = 0;
-	GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
+	g_localPlayer = 0;
+	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	GAME_VAR(int, 0x680bb0) = 0;
 	GAME_VAR(int, 0x4df818) = 0;
 	CALL(0x4045e0);   /* arena_clearChatRecord */
@@ -212,7 +212,7 @@ u32 (arena_joinListed)(int i)
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
 	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
-	GAME_VAR(u32, 0xa0bad0) = timer;
+	g_arenaJoinTimer = timer;
 	return timer;
 }
 
@@ -220,7 +220,7 @@ u32 (arena_joinListed)(int i)
    the join's wait while it runs, 0x4db8b4). Returns what the handler leaves in eax */
 u32 (room_processKeys)(void)
 {
-	u32 state = GAME_VAR(u32, 0x9dd834);
+	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : CALL(0x435e70);   /* room_openClicks */
@@ -251,8 +251,8 @@ u32 (room_openClicks)(void)
 		return (u32)mode;
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
-	if (GAME_VAR(int, 0x68039c))
-		return GAME_VAR(u32, 0x68039c);
+	if (g_paused)
+		return (*(u32 *)&g_paused);
 	if (!g_keyEnter) {
 		if (!g_mouseClick)
 			return 0;
@@ -289,16 +289,16 @@ u32 (room_draw)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 0x63)
 		return (u32)mode;
 	if (g_dialogOpen)
-		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd1b8), GAME_VAR(int, 0x9dd1bc),
-		                                                     GAME_VAR(int, 0x9dd1c0), GAME_VAR(int, 0x9dd1c4));   /* menu_drawFrame */
-	signed char players = GAME_VAR(signed char, 0x5b1b51);
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_roomFormLeft, g_roomFormTop,
+		                                                     g_roomFormRight, g_roomFormBottom);   /* menu_drawFrame */
+	signed char players = (*(signed char *)&g_roomRecPlayers);
 	if (players < 0 || players > 0x10)
 		g_roomRecPlayers = 8;
 	if (g_roomRecFragLimit > 0x32)
 		g_roomRecFragLimit = 0x1e;
 	if (g_roomRecTimeLimit > 0x3c)
 		g_roomRecTimeLimit = 0x1e;
-	signed char map = GAME_VAR(signed char, 0x5b1b53);
+	signed char map = (*(signed char *)&g_roomRecGameMode);
 	if (map < 0 || map > 0xb)
 		g_roomRecGameMode = 0;
 	CALL(0x43bfe0);   /* room_drawGameSettings */
@@ -314,7 +314,7 @@ u32 (room_draw)(void)
    Returns what the original leaves in eax */
 u32 (chat_closeEdit)(void)
 {
-	IMPORT(0x4a9344, u32, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
+	IMPORT(0x4a9344, u32, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
 	GAME_CDECL(0x431600, u32, int)(1);                           /* chat_closeLine: the line sent */
 	if (g_typingRoomName == 1) {
@@ -325,12 +325,12 @@ u32 (chat_closeEdit)(void)
 	}
 	if (g_typingRoomPassword == 1) {
 		memset((void *)0x9dd1f6, 0, 12);
-		GAME_VAR(int, 0x4e1868) = 0;
+		g_chatFieldFlag = 0;
 		strcpy((char *)0x9dd1f6, (const char *)0x9dc92c);
 		g_typingRoomPassword = 0;
 		return 0;
 	}
-	return GAME_VAR(u32, 0x9dd1cc);
+	return (*(u32 *)&g_typingRoomName);
 }
 
 /* the dialog's button choice (g_dialogChoice) highlighted at (x, y) */
@@ -338,8 +338,8 @@ static void highlight_choice(int choice, int x, int y)
 {
 	g_dialogChoice = choice;
 	g_highlightShown = 1;
-	GAME_VAR(u32, 0x680bc0) = 0x41a00000;   /* g_highlightSize 20 */
-	GAME_VAR(u32, 0x9da4a4) = 0x3ecccccd;   /* g_highlightAlpha 0.4 */
+	(*(u32 *)&g_highlightSize) = 0x41a00000;   /* g_highlightSize 20 */
+	(*(u32 *)&g_highlightAlpha) = 0x3ecccccd;   /* g_highlightAlpha 0.4 */
 	g_highlightX = x;
 	g_highlightY = y;
 }
@@ -406,7 +406,7 @@ void (createDialog_draw)(void)
 	}
 	if (!g_roomRequestOut)
 		return;
-	u32 answer = GAME_VAR(u32, 0xa0b378);
+	u32 answer = (*(u32 *)&g_gameServerAnswer);
 	if (answer == 0)
 		return;
 	g_roomRequestOut = 0;
@@ -442,7 +442,7 @@ void (loginForm_update)(void)
 		g_openLoginName = 0;
 		return;
 	}
-	if (GAME_VAR(int, 0x4df900) || g_paused)
+	if (g_dialogPending || g_paused)
 		return;
 	int key = GAME_VAR(int, 0x9dc428);
 	if (key == 20 || key == 10) {
@@ -488,7 +488,7 @@ void (loginForm_update)(void)
    state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
 u32 (room_networkEvents)(void)
 {
-	u32 r = GAME_VAR(u32, 0x9dd6c4) - 2;   /* (what the original's compare chain leaves) */
+	u32 r = (*(u32 *)&g_roomPopup) - 2;   /* (what the original's compare chain leaves) */
 	if (g_roomPopup == 1) {
 		r = CALL(0x434820);   /* room_host */
 		g_roomPopup = 0;
@@ -499,7 +499,7 @@ u32 (room_networkEvents)(void)
 	}
 	if (!g_roomAnswerAwaited)
 		return r;
-	u32 answer = GAME_VAR(u32, 0xa0b37c);
+	u32 answer = (*(u32 *)&g_gameServerAnswer15);
 	switch (answer) {
 	case 0:
 		return 0;
@@ -547,7 +547,7 @@ u32 (roomList_passwordKeys)(void)
 	}
 	if (input_justPressed(g_dikC)) {
 		if (g_rankingWaiting)
-			return GAME_VAR(u32, 0x9dd6b8);
+			return (*(u32 *)&g_rankingWaiting);
 		r = sound(0);
 		g_rankingWaiting = 0;
 		g_rankingHaveList = 0;
@@ -558,7 +558,7 @@ u32 (roomList_passwordKeys)(void)
 	if (!input_justPressed(g_dikEscape_2))
 		return 0;
 	if (g_rankingWaiting)
-		return GAME_VAR(u32, 0x9dd6b8);
+		return (*(u32 *)&g_rankingWaiting);
 	r = sound(0);
 	g_roomMode = 0;
 	return r;
@@ -577,7 +577,7 @@ u32 (room_requestJoin)(void)
 	static const u32 cleared2[] = { 0x9dd69c, 0x9dd37c, 0x9dd378, 0x9dd304, 0x9dd6d0, 0x9dd1fe, 0x9dd6e0 };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
-	char *message = GAME_VAR(char *, 0xa055e0);
+	char *message = g_netJoinMessage;
 	memset(message, 0, 30);
 	strcpy(message, (const char *)0x9dd570);
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0x1d, 0x65);   /* net_send */
@@ -609,7 +609,7 @@ u32 (loginDialog_draw)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = GAME_CDECL(0x432240, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -657,7 +657,7 @@ u32 (loginDialog_draw)(void)
    its two buttons (0x7517a4; the one under the pointer, by leaveDialog_hitTest, in cyan) */
 static void confirm_box(void)
 {
-	int hovered = leaveDialog_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = leaveDialog_hitTest(g_mouseX, g_mouseY);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f000000);   /* 0.1, 0.1, 0.1, 0.5 */
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);   /* 0.1, 0.1, 0.1, 0.8 */
@@ -695,7 +695,7 @@ u32 (serverDialog_draw)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = popup_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = popup_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -749,7 +749,7 @@ u32 (roomLogin_draw)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = GAME_CDECL(0x432200, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* createDialog_hitTest */
+	int hovered = GAME_CDECL(0x432200, int, int, int)(g_mouseX, g_mouseY);   /* createDialog_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -841,7 +841,7 @@ void (account_drawPanel)(void)
 #define Y1 GAME_VAR(int, 0x9dd374)
 #define K(addr) ((const float *)(addr))
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = GAME_CDECL(0x4322c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* account_hitTest */
+	int hovered = GAME_CDECL(0x4322c0, int, int, int)(g_mouseX, g_mouseY);   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (g_roomAwaitingServer == 1) {
@@ -885,7 +885,7 @@ void (account_drawPanel)(void)
 	text_draw8(X0 + 0x98, Y0 + 0xbe, text);
 	/* the rank badge */
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x76d448);
+	int texture = g_fontAscii;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	rank_badge(g_pilotLevel, X0 + 0xc0, Y0 + 0xbe);
@@ -899,9 +899,9 @@ void (account_drawPanel)(void)
 		itoa(g_accountClan, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)0x4b0268, (double)GAME_VAR(float, 0x9dd5e4));
+	sprintf(text, (const char *)0x4b0268, (double)(*(float *)&g_pilotRating));
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
-	sprintf(text, (const char *)0x4b0268, (double)GAME_VAR(float, 0x9dd5f4));
+	sprintf(text, (const char *)0x4b0268, (double)g_pilotWinRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
 	static const u32 counts[3] = { 0x9dd5ec, 0x9dd5f0, 0x9dd5dc };
 	for (int k = 0; k < 3; k++) {
@@ -912,7 +912,7 @@ void (account_drawPanel)(void)
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
-		int lit = hovered == k + 4 && !GAME_VAR(int, 0x68039c);
+		int lit = hovered == k + 4 && !g_paused;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
@@ -949,7 +949,7 @@ u32 (ranking_drawTable)(void)
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
-	int hovered = GAME_CDECL(0x4323c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
+	int hovered = GAME_CDECL(0x4323c0, int, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1019,7 +1019,7 @@ u32 (ranking_drawTable)(void)
 			text_draw8(X0 + 0x18, y, text);
 			text_draw8(X0 + 0x48, y, (const char *)row);
 			glEnable(GL_TEXTURE_2D);
-			texture = GAME_VAR(int, 0x76d448);
+			texture = g_fontAscii;
 			tex_bind(g_textures->managers[texture / 512], texture % 512);
 			rank_badge(ROW(int, 0x32), X0 + 0xd2, y);
 			glDisable(GL_TEXTURE_2D);
@@ -1087,7 +1087,7 @@ static void creategame_close(void)
 {
 	input_setKeysBlocked(4);
 	g_roomState = 99;
-	GAME_VAR(int, 0x67ef20) = 300;
+	g_nextScreen = 300;
 	GAME_CDECL(0x48b420, void, void)();   /* debug_traceStripped */
 }
 

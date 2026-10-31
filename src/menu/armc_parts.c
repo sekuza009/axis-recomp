@@ -67,11 +67,11 @@ static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld
 
 u8 *(armc_readMechStats)(void)
 {
-	u8 *g = GAME_VAR(u8 *, 0x9087b4);
+	u8 *g = (*(u8 **)&g_scene);
 	u8 *A = g + FIELD(int, g, 0x234240d) * 0x8888;
 	X s = fld_m(&FIELD(float, A, 0x1ecca70));
 	__asm__("fsqrt" : "+t"(s));
-	s = s * GAME_VAR(double, 0x4a94c0);
+	s = s * k_0_01;
 	GAME_VAR(float, 0x4dcaa0) = (float)s;
 	mulf(0x4dcaa4, &FIELD(float, A, 0x1ecca74), (const float *)0x4a93ec);
 	GAME_VAR(int, 0x4dcaa8) = FIELD(int, A, 0x1ecca78);
@@ -124,7 +124,7 @@ static void panel_name(u32 dst, const char *name)
    weapon's index */
 int (armc_drawPartPanels)(void)
 {
-	u8 *g = GAME_VAR(u8 *, 0x9087b4);
+	u8 *g = (*(u8 **)&g_scene);
 	u8 *player = g + FIELD(int, g + FIELD(int, g, 0x234240d) * 0x8888, 0x1eccb7c) * 0x47fd2;
 	u8 *p = g + FIELD(int, player, 0x175553c) * 0xaa8;   /* head */
 	panel_name(0x4dceb8, (const char *)p + 0x15bd1f8);
@@ -161,7 +161,7 @@ int (armc_drawPartPanels)(void)
 		mulf(0x4dce84 + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)0x4a94bc);
 	for (int i = 0; i < 4; i++)
 		mulf(0x4dce90 + i * 4, &FIELD(float, p, 0x167b348 + i * 4), (const float *)0x4a94b8);
-	GAME_VAR(u32, 0x4dcfd8) = 0x3f800000;
+	(*(u32 *)&g_armcZoom) = 0x3f800000;
 	copyf(0x4dcea0, &FIELD(float, p, 0x167b330));
 	return weapon;
 }
@@ -228,9 +228,9 @@ static int unlocked_level(int network)
    original does (a list long enough to run over them would change them); the caller ignores the eax it leaves */
 void (armc_buildPartLists)(void)
 {
-	int network = GAME_VAR(int, 0x4dc24c) == 3;
+	int network = g_armcFrom == 3;
 	int level = unlocked_level(network);
-	GAME_VAR(int, 0x4dc870) = level;
+	g_armcLevel = level;
 	g_unlockedLevel = level;
 	static const u32 lists[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7c };
 	static const u32 lengths[5] = { 0x4dc780, 0x4dcc60, 0x4dca90, 0x4dca94, 0x4dc890 };
@@ -245,7 +245,7 @@ void (armc_buildPartLists)(void)
 				GAME_VAR(int, lengths[k]) = append_parts(TABLE(k, lv), lists[k], GAME_VAR(int, lengths[k]));
 			last = append_parts(TABLE(4, lv), lists[4], last);
 		}
-		GAME_VAR(int, 0x4dc890) = last;
+		g_armcLastPart = last;
 	}
 	/* the two lists that start with -1; their lengths too stored once at the end */
 	static const u32 extra[2] = { 0x4dc79c, 0x4dcca4 }, extra_len[2] = { 0x4dc244, 0x4dc778 };

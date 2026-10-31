@@ -14,7 +14,7 @@ static int key_repeat(int key, float *wait, void (*step)(void))
 	if (input_isDown(key) != 1)
 		return 0;
 	g_cursorBlink = 0;
-	if (*wait > GAME_VAR(float, 0x4a93e8)) {
+	if (*wait > k_0f) {
 		*wait = fsub_m(fld_m(wait), &g_frameTime);
 		return 1;
 	}

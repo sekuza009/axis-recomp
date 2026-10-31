@@ -42,16 +42,16 @@ int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); 
    constant at 0x4a9560; the preview reset (distance 40, -1, not turning) */
 static void load_colour(int i)
 {
-	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
+	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
-	GAME_VAR(int, 0x9f8d68) = 0;
+	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(float, 0x9f8ec0 + k * 4) =
-			(float)((long double)GAME_VAR(int, 0x9f9068 + i * 76 + k * 4) + GAME_VAR(float, 0x4a9560));
+			(float)((long double)GAME_VAR(int, 0x9f9068 + i * 76 + k * 4) + k_50f);
 }
 
 /* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
-void (profile_loadSelectedColours)(void) { load_colour(GAME_VAR(int, 0x9f8d30)); }
+void (profile_loadSelectedColours)(void) { load_colour(g_emblemCursor); }
 void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 72)); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
@@ -97,8 +97,8 @@ void (profile_resetPreview)(void)
 {
 	memset((void *)0x9f8ec0, 0, 36);
 	memset((void *)0x9f8d34, 0, 36);
-	GAME_VAR(int, 0x9f8d68) = 1;
-	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
+	g_emblemMoved = 1;
+	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 }
 
@@ -106,21 +106,21 @@ void (profile_resetPreview)(void)
 void (profile_resetSelection)(void)
 {
 	profile_resetPreview();
-	GAME_VAR(int, 0x9f8d30) = 0;
-	GAME_VAR(int, 0x9f8ee4) = 0;
-	GAME_VAR(int, 0x9f6828) = 0;
+	g_emblemCursor = 0;
+	g_profile9f8ee4 = 0;
+	g_profile9f6828 = 0;
 }
 
 /* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
 void (profile_resetCamera)(void)
 {
-	GAME_VAR(int, 0x9f8e54) = 0;
-	GAME_VAR(int, 0x9f6838) = 1;
+	g_profileIntroState = 0;
+	g_profileIntro = 1;
 	GAME_VAR(int, 0x9f6800) = -1;
-	GAME_VAR(u32, 0x9f8f14) = 0x42a00000;   /* 80.0 */
-	GAME_VAR(int, 0x9f8f30) = 0;
-	GAME_VAR(u32, 0x9f8e50) = 0x3dcccccd;   /* 0.1 */
-	GAME_VAR(int, 0x9f8f10) = 1;
+	(*(u32 *)&g_profileIntroZoom) = 0x42a00000;   /* 80.0 */
+	g_profileIntroTime = 0;
+	(*(u32 *)&g_profileIntroSpeed) = 0x3dcccccd;   /* 0.1 */
+	g_profilePage = 1;
 }
 
 /* 0x44b870: does a profile with the typed name (0x9dc92c) exist, ignoring case? (The original's trailing-space trim
@@ -149,27 +149,27 @@ int (profile_nameExists)(void)
 /* 0x44c390: "delete this profile?" */
 int (profile_openDeleteQuestion)(void)
 {
-	GAME_VAR(int, 0x4dda44) = 0;
+	(*(int *)&g_cursorBlink) = 0;
 	if (g_mouseClick) {
 		int button = GAME_CDECL(0x44b320, int, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
 		if (button == 0) {
 			sound_playMenu(0);
 			profile_deleteFiles();
-			GAME_VAR(int, 0x9f8f10) = 1;
+			g_profilePage = 1;
 		} else if (button == 1) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9f8f10) = 1;
+			g_profilePage = 1;
 		}
 	}
 	if (g_keyEnter)
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profilePage = 1;
 	return g_keyEnter;
 }
 
 /* 0x44c400: the second dialog: its first button runs profile_resetCamera, the second closes it (and clears 0x76d42c) */
 int (profile_secondDialogClicks)(void)
 {
-	GAME_VAR(int, 0x4dda44) = 0;
+	(*(int *)&g_cursorBlink) = 0;
 	if (g_mouseClick) {
 		int button = GAME_CDECL(0x44b360, int, int, int)(g_mouseX, g_mouseY);
 		if (button == 0) {
@@ -177,12 +177,12 @@ int (profile_secondDialogClicks)(void)
 			profile_resetCamera();
 		} else if (button == 1) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9f8f10) = 1;
-			GAME_VAR(int, 0x76d42c) = 0;
+			g_profilePage = 1;
+			g_highlightShown = 0;
 		}
 	}
 	if (g_keyEnter)
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profilePage = 1;
 	return g_keyEnter;
 }
 
@@ -197,8 +197,8 @@ u32 (profile_logIn)(void)
 		g_lobbyReply = 0x65;
 	GAME_CDECL(0x446a10, void, void)();   /* profile_save */
 	g_menuState = 300;
-	GAME_VAR(int, 0x67ef20) = 300;
-	GAME_VAR(int, 0x680370) = 2;
+	g_nextScreen = 300;
+	g_keysBlocked = 2;
 	GAME_VAR(int, 0x4df8e0) = 0;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)0x4dedb0,
 	                                                        (const char *)(0x9f684c + g_currentProfile * 0x48), 0x20);   /* strncpy */
@@ -215,9 +215,9 @@ u32 (profile_frame)(void)
 	if (g_profileRowClicked) {
 		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
 		g_profileMessageTime = (float)t;
-		if (t > GAME_VAR(float, 0x4a944c)) {
+		if (t > k_20f) {
 			g_profileRowClicked = 0;
-			GAME_VAR(int, 0x9f8f18) = 0;
+			(*(int *)&g_profileMessageTime) = 0;
 		}
 	}
 	if (g_dialogOpen) {
@@ -228,9 +228,9 @@ u32 (profile_frame)(void)
 			return 0;
 		return CALL(0x44b600);
 	}
-	if (GAME_VAR(int, 0x9f8d68))
+	if (g_emblemMoved)
 		CALL(0x44bd20);
-	GAME_VAR(int, 0x9f8f10) = 1;
+	g_profilePage = 1;
 	return CALL(0x44d720);
 }
 
@@ -239,20 +239,20 @@ u32 (profile_frame)(void)
    dialogs, 6 the profile list's clicks. Returns what the original leaves in eax */
 u32 (profile_processInput)(void)
 {
-	int intro = GAME_VAR(int, 0x9f6838);
-	if (intro && GAME_VAR(int, 0x9f8e54) != 5) {
-		u32 r = g_mouseClick ? (u32)g_mouseClick : GAME_VAR(u32, 0x4ded8c);
+	int intro = g_profileIntro;
+	if (intro && g_profileIntroState != 5) {
+		u32 r = g_mouseClick ? (u32)g_mouseClick : (*(u32 *)&g_keyEnter);
 		if (r) {
-			GAME_VAR(int, 0x9f8e54) = 5;
-			GAME_VAR(int, 0x9f8f30) = 0;
-			GAME_VAR(u32, 0x9f8f14) = 0x42c80000;   /* 100 */
-			GAME_VAR(u32, 0x9f8e50) = 0x3d4ccccd;   /* 0.05 */
+			g_profileIntroState = 5;
+			g_profileIntroTime = 0;
+			(*(u32 *)&g_profileIntroZoom) = 0x42c80000;   /* 100 */
+			(*(u32 *)&g_profileIntroSpeed) = 0x3d4ccccd;   /* 0.05 */
 		}
 		return r;
 	}
 	if (g_dialogOpen || intro)
 		return (u32)intro;
-	u32 page = GAME_VAR(u32, 0x9f8f10) - 1;
+	u32 page = (*(u32 *)&g_profilePage) - 1;
 	switch (page) {
 	case 0: return CALL(0x44be00);
 	case 1: return CALL(0x44c190);
@@ -268,29 +268,29 @@ u32 (profile_processInput)(void)
    state (the original's eax) */
 int (profileList_clicks)(void)
 {
-	GAME_VAR(int, 0x4dda44) = 0;
+	(*(int *)&g_cursorBlink) = 0;
 	if (g_mouseClick) {
 		u32 row = GAME_CDECL(0x44b3e0, u32, int, int)(g_mouseX, g_mouseY);   /* the list's hit test */
 		if (row <= 8) {
-			if (GAME_VAR(u32, 0x9f8d30) != row) {
-				GAME_VAR(u32, 0x9f8d30) = row;
-				GAME_VAR(int, 0x9f8d68) = 1;
+			if ((*(u32 *)&g_emblemCursor) != row) {
+				(*(u32 *)&g_emblemCursor) = row;
+				g_emblemMoved = 1;
 				sound_playMenu(2);
-				GAME_VAR(int, 0x9f8ee4) = 0;
-				GAME_VAR(int, 0x9f6828) = 0;
+				g_profile9f8ee4 = 0;
+				g_profile9f6828 = 0;
 			}
 		} else if (row == 9) {
 			sound_playMenu(0);
 			CALL(0x44b990);   /* profile_selectAndLoad */
-			GAME_VAR(int, 0x9f8f10) = 1;
+			g_profilePage = 1;
 		} else if (row == 10) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9f8f10) = 1;
-			GAME_VAR(int, 0x76d42c) = 0;
+			g_profilePage = 1;
+			g_highlightShown = 0;
 		}
 	}
 	if (g_keyEnter)
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profilePage = 1;
 	return g_keyEnter;
 }
 
@@ -304,7 +304,7 @@ u32 (profile_selectAndLoad)(void)
 {
 	int n = g_profileCount;
 	strcpy((char *)(0x9f684c + n * 0x48), (const char *)0x9dc92c);
-	GAME_VAR(int, 0x9f688c + n * 0x48) = GAME_VAR(int, 0x9f8d30);
+	GAME_VAR(int, 0x9f688c + n * 0x48) = g_emblemCursor;
 	if (chdir_((const char *)0x4b2adc)) {
 		mkdir_((const char *)0x4b2adc);
 		chdir_((const char *)0x4b2adc);
@@ -329,15 +329,15 @@ u32 (profile_selectAndLoad)(void)
    dialog's frame (at frame: x0, y0, x1, y1) if one is open, else the panel. Returns what the original leaves in eax */
 static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 {
-	if (GAME_VAR(int, 0x76d42c)) {
-		int step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67ef34) - g_mouseX), &g_frameTime), rate));
+	if (g_highlightShown) {
+		int step = ftol(fmul_m(fmul_m((long double)(g_highlightX - g_mouseX), &g_frameTime), rate));
 		g_mouseX += step;
-		step = ftol(fmul_m(fmul_m((long double)(GAME_VAR(int, 0x67fb38) - g_mouseY), &g_frameTime), rate));
+		step = ftol(fmul_m(fmul_m((long double)(g_highlightY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
 		long double t = fsub_m(fld_m((const float *)0x680bc0), &g_frameTime);
-		GAME_VAR(float, 0x680bc0) = (float)t;
-		if (!(t >= GAME_VAR(float, 0x4a93e8)))
-			GAME_VAR(int, 0x76d42c) = 0;
+		g_highlightSize = (float)t;
+		if (!(t >= k_0f))
+			g_highlightShown = 0;
 	}
 	CALL(0x44d720);   /* mainmenu_drawScreen */
 	if (g_dialogOpen)
@@ -365,11 +365,11 @@ u32 (profileList_drawNames)(void)
 {
 	u32 r = 0;
 	for (int i = 0; i < 13 && i < g_profileCount; i++) {
-		int page1 = GAME_VAR(int, 0x9f8f10) == 1;
+		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
 		GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
 		if (GAME_VAR(int, 0x9f8c4c) + i == GAME_VAR(int, 0x9f8d74)) {
-			shade = GAME_VAR(int, 0x9f8f10) == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
+			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
 			GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
 		}
 		r = GAME_CDECL(0x402620, u32, int, int, const char *)(GAME_VAR(int, 0x9f8e48) + 0x28, GAME_VAR(int, 0x9f8e4c) + 0x24 + i * 0x14,
@@ -390,37 +390,37 @@ u32 (profile_nameEntryStep)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f8eac), GAME_VAR(int, 0x9f8ea8),
 		                                                     GAME_VAR(int, 0x9f8f20), GAME_VAR(int, 0x9f8f24));
-	if (GAME_VAR(int, 0x9f8f34))
+	if (g_profileMessage)
 		return GAME_CDECL(0x44dc60, u32, void)();
-	if (GAME_VAR(int, 0x68039c))
+	if (g_paused)
 		return GAME_CDECL(0x44de00, u32, void)();
 	if (!strlen(typed)) {
 		g_dialogOpen = 0;
-		GAME_VAR(int, 0x9f8f34) = 0;
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profileMessage = 0;
+		g_profilePage = 1;
 		return GAME_CDECL(0x44de00, u32, void)();
 	}
 	if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1) {   /* name_isBlank */
 		u32 r = GAME_CDECL(0x41e760, u32, int)(6);              /* sound_playMenu */
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profilePage = 1;
 		g_dialogOpen = 0;
-		GAME_VAR(int, 0x9f8f34) = 0;
+		g_profileMessage = 0;
 		return r;
 	}
 	if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar */
 		sound_playMenu(6);
 		g_dialogOpen = 0;
-		GAME_VAR(int, 0x9f8f34) = 0;
-		GAME_VAR(int, 0x9f8f10) = 1;
+		g_profileMessage = 0;
+		g_profilePage = 1;
 		return GAME_CDECL(0x41ee40, u32, int)(0x81);             /* the message */
 	}
 	if (GAME_CDECL(0x44b870, int, void)()) {                     /* profile_nameExists */
 		sound_playMenu(6);
-		GAME_VAR(int, 0x9f8f34) = 1;
+		g_profileMessage = 1;
 		g_dialogOpen = 1;
 		return GAME_CDECL(0x44de00, u32, void)();
 	}
-	GAME_VAR(int, 0x9f8f10) = 6;
+	g_profilePage = 6;
 	GAME_CDECL(0x44b750, void, void)();
 	return GAME_CDECL(0x44de00, u32, void)();
 }
@@ -492,25 +492,25 @@ static void line_wipe(void)
 u32 (profile_newNameDialog)(void)
 {
 	const char *typed = (const char *)0x9dc92c;
-	GAME_VAR(float, 0x4dda44) = 0.0f;
+	g_cursorBlink = 0.0f;
 	u32 r = 0;
-	if (GAME_VAR(int, 0x9f8f34)) {
-		if (GAME_VAR(int, 0x4ded88) &&
-		    GAME_CDECL(0x44b2e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {   /* profile_inDialogBox */
+	if (g_profileMessage) {
+		if (g_mouseClick &&
+		    GAME_CDECL(0x44b2e0, int, int, int)(g_mouseX, g_mouseY)) {   /* profile_inDialogBox */
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9f8f34) = 0;
+			g_profileMessage = 0;
 			g_paused = 1;
 			r = GAME_CDECL(0x44b600, u32, void)();   /* profile_typeNewName: typing starts */
 		}
 		if (!g_keyEnter)
 			return r;
-		GAME_VAR(int, 0x9f8f34) = 0;
+		g_profileMessage = 0;
 		r = GAME_CDECL(0x44b600, u32, void)();
 		g_paused = 1;
 		return r;
 	}
-	if (GAME_VAR(int, 0x4ded88)) {
-		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* newNameDialog_hitTest */
+	if (g_mouseClick) {
+		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(g_mouseX, g_mouseY);   /* newNameDialog_hitTest */
 		r = button - 1;
 		if (button == 0) {
 			if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1)   /* name_isBlank: blank */
@@ -518,15 +518,15 @@ u32 (profile_newNameDialog)(void)
 			if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
 				sound_playMenu(6);
 				g_dialogOpen = 0;
-				GAME_VAR(int, 0x9f8f34) = 0;
-				GAME_VAR(int, 0x9f8f10) = 1;
+				g_profileMessage = 0;
+				g_profilePage = 1;
 				GAME_CDECL(0x41ee40, void, int)(0x81);
 				g_paused = 0;
 				return keyboard_back();
 			}
 			if (GAME_CDECL(0x44b870, int, void)()) {   /* profile_nameExists: taken */
 				sound_playMenu(6);
-				GAME_VAR(int, 0x9f8f34) = 1;
+				g_profileMessage = 1;
 				g_dialogOpen = 1;
 			} else
 				sound_playMenu(0);
@@ -541,7 +541,7 @@ u32 (profile_newNameDialog)(void)
 	}
 	if (!g_keyEnter)
 		return r;
-	GAME_VAR(int, 0x9f8f10) = 1;
+	g_profilePage = 1;
 	g_paused = 0;
 	line_wipe();
 	return keyboard_back();
@@ -555,7 +555,7 @@ u32 (profile_newNameDialog)(void)
 static void list_moved(void)
 {
 	GAME_VAR(int, 0x9f8d74) = g_listTop + g_listRow;
-	GAME_VAR(int, 0x9f8d68) = 1;
+	g_emblemMoved = 1;
 	sound_playMenu(2);
 }
 
@@ -614,7 +614,7 @@ void (profileList_keys)(void)
 			return;
 		}
 		g_profileDialogOpen = 1;
-		GAME_VAR(int, 0x9f8f10) = 4;
+		g_profilePage = 4;
 	}
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
 		GAME_CDECL(0x44b6e0, void, void)();   /* profile_askSecond */
@@ -629,7 +629,7 @@ void (profileList_mouse)(void)
 {
 #define g_mouseX GAME_VAR(int, 0x4ded68)
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
-	if (GAME_VAR(int, 0x4ded88)) {
+	if (g_mouseClick) {
 		g_cursorBlink = 0;
 		switch (GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */
 		case 0:
@@ -648,7 +648,7 @@ void (profileList_mouse)(void)
 				return;
 			}
 			g_profileDialogOpen = 1;
-			GAME_VAR(int, 0x9f8f10) = 4;
+			g_profilePage = 4;
 			break;
 		case 3:
 			GAME_CDECL(0x44b6e0, void, void)();   /* profile_askSecond */
@@ -661,17 +661,17 @@ void (profileList_mouse)(void)
 			if (row == g_listRow && g_profileRowClicked) {
 				g_cursorBlink = 0;
 				g_profileDialogOpen = 1;
-				GAME_VAR(int, 0x9f8f10) = 4;
+				g_profilePage = 4;
 				g_profileRowClicked = 0;
-				GAME_VAR(int, 0x9f8f18) = 0;
+				(*(int *)&g_profileMessageTime) = 0;
 				break;
 			}
 			g_listRow = row;
 			g_profileRowClicked = 1;
-			GAME_VAR(int, 0x9f8f18) = 0;
+			(*(int *)&g_profileMessageTime) = 0;
 			if (GAME_VAR(int, 0x9f8d74) != g_listTop + row) {
 				GAME_VAR(int, 0x9f8d74) = g_listTop + row;
-				GAME_VAR(int, 0x9f8d68) = 1;
+				g_emblemMoved = 1;
 			}
 			break;
 		}
@@ -684,7 +684,7 @@ void (profileList_mouse)(void)
 			break;
 		}
 	}
-	if (!GAME_VAR(int, 0x4ded94))
+	if (!g_mouseHeld)
 		return;
 	int held = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);   /* profilePage_hitTest */
 	if (held != 5 && held != 6)

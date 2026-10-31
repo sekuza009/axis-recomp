@@ -202,9 +202,9 @@ void (room_drawGameSettings)(void)
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int editing = GAME_VAR(int, 0x68039c), open = editing || g_arenaLeaving;
+	int editing = g_paused, open = editing || g_arenaLeaving;
 	char text[20];
-	int hovered = roomSettings_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = roomSettings_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -254,10 +254,10 @@ void (arena_createDraw)(void)
 	                           0, 0x4dbba4, 10 };
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)0x4dba98, *dim = (const u32 *)0x4db8a0;
-	int editing = GAME_VAR(int, 0x68039c), confirming = g_createQuitDialog, leaving = g_arenaLeaving;
+	int editing = g_paused, confirming = g_createQuitDialog, leaving = g_arenaLeaving;
 	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];
-	int hovered = createArena_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = createArena_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -292,7 +292,7 @@ void (arena_createDraw)(void)
 		GAME_CDECL(0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (leaving) {
-		int choice = arenaCreate_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+		int choice = arenaCreate_hitTest(g_mouseX, g_mouseY);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.4: the screen dimmed */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);

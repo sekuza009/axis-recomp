@@ -6,8 +6,8 @@
 
 typedef long double X;
 
-#define ONE GAME_VAR(float, 0x4a9424)
-#define HALF GAME_VAR(float, 0x4a942c)
+#define ONE k_1f
+#define HALF k_0_5f
 
 static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 static float as_float(u32 bits) { float f; memcpy(&f, &bits, 4); return f; }
@@ -24,7 +24,7 @@ void THISCALL (shape_relocate)(u8 *shape)
 		FIELD(int, shape, 0x2c) = 0;
 		return;
 	}
-	u32 min[3] = { 0, 0, GAME_VAR(u32, 0x4a93e8) }, max[3] = { 0, 0, 0 };
+	u32 min[3] = { 0, 0, (*(u32 *)&k_0f) }, max[3] = { 0, 0, 0 };
 	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
 		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
 		for (int k = 0; k < 6; k++)

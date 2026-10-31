@@ -156,9 +156,9 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		shape_shadeParts(F(u32 *, obj, 0x284), 0, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9d8010),
 		                 (const float *)(obj + 0x134));
 	}
-	if ((obj[0xc] & 1) && GAME_VAR(int, 0x83a9c8) == 1) {
+	if ((obj[0xc] & 1) && g_items3D == 1) {
 		object_glow(s, obj, dt);
-		if ((obj[0xc] & 1) && GAME_VAR(int, 0x83a9c8) == 1 && F(float, obj, 0x2a8) > *K(0x4a93e8)) {
+		if ((obj[0xc] & 1) && g_items3D == 1 && F(float, obj, 0x2a8) > *K(0x4a93e8)) {
 			volatile u32 flare[13];   /* (its eighth dword is never set, as in the original) */
 			flare[0] = 4;
 			flare[1] = ftol(fmul_m(fld_m((const float *)(obj + 0x2a8)), K(0x4a9744)));

@@ -25,7 +25,7 @@ static void mode_box(void)
 	char text[50] = { 0 };
 	strcpy(text, (const char *)0x756da4);
 	strcat(text, (const char *)0x4b035c);   /* " " */
-	strcat(text, (const char *)(0x751924 + GAME_VAR(int, 0x4dceac) * 0x80));
+	strcat(text, (const char *)(0x751924 + g_armcSpin * 0x80));
 	text_drawBox16(X1 - 0xa0, Y1 - 0x18, X1, text);
 }
 
@@ -110,7 +110,7 @@ static void marker(float pos, int y)
    that ignore it */
 void (armc_drawColourEditor)(void)
 {
-	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcColour_hitTest */
+	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	for (int box = 0; box < 2; box++) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
@@ -208,7 +208,6 @@ void (armc_drawColourEditor)(void)
 }
 
 /* ---- the build screen ---- */
-#define g_buildSlot GAME_VAR(int, 0x4dbe48)
 #define SLOT_NAME(k) ((const char *)0x4dbe50 + (k) * 0x80)
 #define STAT(type, offset) GAME_VAR(type, 0x4dc190 + (offset))
 
@@ -259,7 +258,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawBuildScreen)(void)
 {
-	int hovered = GAME_CDECL(0x40e490, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcParts_hitTest */
+	int hovered = GAME_CDECL(0x40e490, int, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	for (int k = 0; k < 2; k++) {
@@ -278,11 +277,11 @@ void (armc_drawBuildScreen)(void)
 	bind_texture(g_buttonTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
-		glColor4f(1.0f, 1.0f, 1.0f, g_buildSlot == k ? 1.0f : 0.4f);
+		glColor4f(1.0f, 1.0f, 1.0f, g_armcSlot == k ? 1.0f : 0.4f);
 		menu_drawWideButton(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
 	}
 	if (g_armcChanged)
-		armc_snapshot(g_buildSlot);
+		armc_snapshot(g_armcSlot);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++)
@@ -312,12 +311,12 @@ void (armc_drawBuildScreen)(void)
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		bind_texture(GAME_VAR(int, 0x4dcc88));
+		bind_texture(g_armcBuildTexture);
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x158, (const char *)0x4dc150);
-		int part = GAME_VAR(int, 0x4dc77c);
-		int type = g_buildSlot > 3 ? ((const int *)0x4dcca4)[part] : ((const int *)0x4dc79c)[part];
+		int part = g_armcCursor;
+		int type = g_armcSlot > 3 ? ((const int *)0x4dcca4)[part] : ((const int *)0x4dc79c)[part];
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x16a, (const char *)(0x7641a4 + type * 0x80));
 	}
@@ -388,4 +387,3 @@ void (armc_drawBuildScreen)(void)
 }
 #undef STAT
 #undef SLOT_NAME
-#undef g_buildSlot

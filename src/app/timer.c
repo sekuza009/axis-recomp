@@ -5,9 +5,9 @@
 #define g_timerFrequency GAME_VAR(u64, 0x4df030)     /* QueryPerformanceFrequency's result */
 #define g_timerShift GAME_VAR(int, 0x67ef1c)         /* how far the counter is shifted right */
 #define g_timerTick GAME_VAR(double, 0x4ded58)       /* seconds per (shifted) tick */
-#define TIMER_MAX_FREQUENCY GAME_VAR(double, 0x4a9580)
-#define ONE GAME_VAR(double, 0x4a94e0)
-#define FRAME_RATE GAME_VAR(double, 0x4a94d0)        /* 60: timer_now's seconds to 1/60 s frames */
+#define TIMER_MAX_FREQUENCY k_2000000
+#define ONE k_1
+#define FRAME_RATE k_60        /* 60: timer_now's seconds to 1/60 s frames */
 
 /* 0x4302d0: the frequency (a message box when there is none), halved until it is at most 2 MHz, the shift count
    kept; the time's state (0x9db980, two doubles) cleared and the tick length 1 / f */
@@ -48,8 +48,8 @@ long double (timer_now)(void)
 #define g_lastCount GAME_VAR(u32, 0x9dbf08)
 	u32 counter[2];
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
-	int shift = GAME_VAR(int, 0x67ef1c);
-	GAME_VAR(u32, 0x5ae9cc) = counter[1];
+	int shift = g_timerShift;
+	g_timerHigh = counter[1];
 	g_perfCounter = counter[0];
 	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
 	if (g_timerFirstCall) {
@@ -65,12 +65,12 @@ long double (timer_now)(void)
 		return t;
 	}
 	g_lastCount = count;
-	long double t = (long double)(count - last) * GAME_VAR(double, 0x4ded58) + g_time;
+	long double t = (long double)(count - last) * g_timerTick + g_time;
 	g_time = (double)t;
 	long double before = g_lastTime;
 	if (t == before || t != t || before != before) {   /* (fcom: equal or unordered) */
 		if (++g_timerRepeatCount > 100000) {
-			t += GAME_VAR(double, 0x4a94e0);
+			t += k_1;
 			g_time = (double)t;
 			g_timerRepeatCount = 0;
 		}
@@ -137,7 +137,7 @@ long double THISCALL (frameTimer_average)(u8 *t)
 	long double now = timer_getGameTime(t + 0xc);
 	FIELD(float, 0x48 + FIELD(int, 0x70) * 4) = (float)now;
 	FIELD(int, 0x70) = (FIELD(int, 0x70) + 1) % 10;
-	long double sum = GAME_VAR(float, 0x4a93e8);   /* 0 */
+	long double sum = k_0f;   /* 0 */
 	for (int i = 0; i < 10; i++)
 		sum += FIELD(float, 0x48 + i * 4);
 	sum *= k_tenth;

@@ -214,9 +214,9 @@ void (menuState800_enterGameRoom)(void)
 u32 (menu_onStateChange)(void)
 {
 	CALL(0x445c60);
-	if (GAME_VAR(int, 0x680370))
-		return GAME_VAR(u32, 0x680370);
-	if (GAME_VAR(int, 0x4df900))
+	if (g_keysBlocked)
+		return (*(u32 *)&g_keysBlocked);
+	if (g_dialogPending)
 		return CALL(0x445e10);   /* the message box */
 	int state = g_menuState;
 	switch (state) {
@@ -258,7 +258,7 @@ u32 (menu_enterState)(void)
 	case 900: CALL(0x443950); break;   /* menuState900_enterSkirmish */
 	case 9999: CALL(0x41fd40); break;  /* console_init */
 	}
-	GAME_VAR(int, 0x67ef0c) = g_menuState;
+	g_lastScreen = g_menuState;
 	return (u32)g_menuState;
 }
 
@@ -389,27 +389,27 @@ static void match_name(const char *name)
    ignores the eax it leaves */
 void (console_init)(void)
 {
-	while (GAME_VAR(TunnelRing *, 0x67fb3c))   /* the menus' tunnel, ring by ring */
+	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
 		tunnel_removeLastRing((TunnelRing **)0x67fb3c);
 	if (!g_startedFromLobby)
 		check_profiles();
 	g_matchRunning = 1;
-	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
+	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
+	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;
 		app_requireCd(scene, 0, 3);
 		return;
 	}
-	int loaded = console_loadFile(GAME_VAR(int, 0x9dad94));
+	int loaded = console_loadFile(g_missionStage);
 	int kind = g_matchMode;   /* (after the load, as the original reads it) */
 	if (!loaded) {
 		if (kind == 1)
-			GAME_VAR(int, 0x76d3e8) = 400;
+			g_menuState = 400;
 		else if (kind == 2)
-			GAME_VAR(int, 0x76d3e8) = 800;
+			g_menuState = 800;
 		menu_showMessage(6);
 		return;
 	}
@@ -433,6 +433,6 @@ void (console_init)(void)
 		app_requireCd(scene, 0, 0);
 		break;
 	}
-	scene_setTextureFolder(scene, (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setTextureFolder(scene, (const char *)(0x907b30 + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

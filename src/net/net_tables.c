@@ -30,7 +30,7 @@ void (net_takePlayerSlot)(u32 slot, int id)
 	GAME_VAR(int, r) = 1;
 	GAME_VAR(int, r + 4) = id;
 	memcpy((void *)(r + 0x10), init, sizeof init);
-	GAME_VAR(short, r + 0x32) = GAME_VAR(short, 0xa0b428);
+	GAME_VAR(short, r + 0x32) = (*(short *)&g_localPlayerData);
 }
 
 /* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
@@ -58,7 +58,7 @@ int (net_claimLocalSlot)(void)
 	if (!g_isHost)
 		return 0;
 	u8 slot = net_claimPlayerSlot();
-	net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
+	net_takePlayerSlot(slot, (*(int *)&g_localPlayerId));
 	g_watchedSlot = slot;
 	g_slotTakenFlag = 1;
 	return 1;
@@ -80,7 +80,7 @@ u32 (net_freeSessionList)(void)
 		rec[0] = 0;
 		rec[1] = 0;
 	}
-	u32 r = GAME_VAR(u32, 0xa0b41c);
+	u32 r = (*(u32 *)&g_dplaySessionCount);
 	g_dplaySessionCount = 0;
 	return r;
 }
@@ -206,7 +206,7 @@ int (net_asyncSelect)(void *wnd, int which)
 		sock = g_lobbySocket;
 		message = 0x40a;
 	} else if (which == 101) {
-		sock = GAME_VAR(u32, 0xa05630);
+		sock = (*(u32 *)&g_gameServerSocket);
 		message = 0x40c;
 	} else
 		return 1;
@@ -263,11 +263,11 @@ void (net_receiveServerReply)(void)
 	u32 start = GetTickCount();
 	u32 got = 0;
 	do {
-		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, 0xa05630), reply, 0x3e, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
-	switch (GAME_VAR(int, 0xa05306)) {
+	switch (g_serverReplyKind) {
 	case 0:
 		net_addPlayerRecord(reply);
 		break;
@@ -340,7 +340,7 @@ void (net_closeAll)(int kind)
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
 	memset((void *)0xa052c0, 0, 0x22);
-	GAME_VAR(void *, 0xa0b33c) = alloc_clear(0x1e);
+	(*(void **)&g_netLeaveBuffer) = alloc_clear(0x1e);
 	memset((void *)0xa05260, 0, 0x5b);
 	memset((void *)0xa0b280, 0, 0x79);
 	GAME_VAR(int, 0xa05328) = 0;
@@ -623,16 +623,16 @@ int (dplay_getPlayerName)(u32 id, void **out)
    then done, and the events reset (0x454740, whose eax it returns) */
 u32 (net_pingAllServers)(void)
 {
-	GAME_VAR(int, 0xa0d798) = 0;
+	(*(int *)&g_pingTime) = 0;
 	if (g_serverPingCount > 0) {
 		for (int i = 0; i < g_serverPingCount && g_netListDone != 1; i++) {
 			const char *name = (const char *)(0xa0bf20 + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
 			if (GAME_CDECL(0x454650, int, const char *, int)(name, i)) {   /* net_pingServer */
-				int time = GAME_VAR(int, 0xa0d798);
+				int time = (*(int *)&g_pingTime);
 				if (time > 1000)
-					GAME_VAR(int, 0xa0d798) = time -= 400;
+					(*(int *)&g_pingTime) = time -= 400;
 				GAME_VAR(int, 0xa0d384 + i * 4) = time;
 			} else
 				GAME_VAR(int, 0xa0d384 + i * 4) = 0;
@@ -662,7 +662,7 @@ static void reply_read(u32 socket, void *buf, u32 size)
 void (net_receiveLobbyReply)(void)
 {
 	reply_read(0xa055f8, (void *)0xa05260, 0x5b);
-	switch (GAME_VAR(u32, 0xa052aa)) {
+	switch (g_lobbyReplyKind) {
 	case 0:
 		GAME_CDECL(0x452af0, int, void *)((void *)0xa05260);   /* net_addServerRecord */
 		break;
@@ -688,7 +688,7 @@ void (net_receiveLobbyReply)(void)
 void (net_receiveGameServerReply)(void)
 {
 	reply_read(0xa05630, (void *)0xa0b280, 0x79);
-	switch (GAME_VAR(u32, 0xa0b2e8)) {
+	switch (g_gameServerReplyKind) {
 	case 0:
 		GAME_CDECL(0x452c80, int, void *)((void *)0xa0b280);   /* net_addRoomRecord */
 		break;
@@ -855,7 +855,7 @@ static void dplay_lobbyConnect(void)
 	lobby = g_dplayLobby;
 	if (COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, conn, &size) < 0)   /* GetConnectionSettings */
 		return;
-	u32 *session = *(u32 **)(GAME_VAR(u8 *, 0xa0baf4) + 8);
+	u32 *session = *(u32 **)((*(u8 **)&g_lobbyConnectionBlock) + 8);
 	session[1] = 0x44;    /* dwFlags */
 	session[10] = 16;     /* dwMaxPlayers */
 	lobby = g_dplayLobby;
@@ -866,10 +866,10 @@ static void dplay_lobbyConnect(void)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = g_dplay;   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
-	if (COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, &id, *(void **)(GAME_VAR(u8 *, 0xa0baf4) + 0xc),
+	if (COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, &id, *(void **)((*(u8 **)&g_lobbyConnectionBlock) + 0xc),
 			NULL, NULL, 0, 0) < 0)
 		return;
-	u32 flags = *(u32 *)(GAME_VAR(u8 *, 0xa0baf4) + 4);
+	u32 flags = *(u32 *)((*(u8 **)&g_lobbyConnectionBlock) + 4);
 	if (flags & 2)
 		g_isHost = 1;
 	else if (flags & 1)
@@ -917,11 +917,11 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 			g_chatLogged = 1;
 		return r;
 	case 2:
-		GAME_VAR(u32, 0x9fd94c) = *(const u32 *)(message + 4);
+		(*(u32 *)&g_netHostGone) = *(const u32 *)(message + 4);
 		GAME_CDECL(0x454130, void, void)();
 		return GAME_CDECL(0x4515a0, u32, void)();
 	case 6:
-		net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
+		net_takePlayerSlot(slot, (*(int *)&g_localPlayerId));
 		*(int *)player = 1;
 		g_slotTakenFlag = 1;
 		g_watchedSlot = (u8)slot;
@@ -957,8 +957,8 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	static const u32 provider[4] = { 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8 };
 	if ((u32)kind <= 3) {
-		GAME_VAR(u32, 0xa0bad8) = provider[kind];
-		GAME_VAR(u32, 0xa0badc) = GAME_VAR(u32, 0xa0bae0 + kind * 4);
+		(*(u32 *)&g_instanceGuid) = provider[kind];
+		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, 0xa0bae0 + kind * 4);
 	}
 	if (kind == 0) {
 		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
@@ -990,9 +990,9 @@ int (dplay_initConnection)(int kind, const char *address)
 	play = g_dplay;
 	if (COM(play, 0x38, int, u32 *, u32)(play, caps, 0))   /* GetCaps */
 		return 0;
-	GAME_VAR(u32, 0xa0bb00) = caps[9];   /* dwTimeout */
-	GAME_VAR(u32, 0xa0bb04) = caps[2];   /* dwMaxBufferSize */
-	GAME_VAR(u32, 0xa0bb08) = caps[3];   /* dwMaxQueueSize */
+	g_dpTimeout = caps[9];   /* dwTimeout */
+	g_dpMaxBufferSize = caps[2];   /* dwMaxBufferSize */
+	g_dpMaxQueueSize = caps[3];   /* dwMaxQueueSize */
 	return 1;
 }
 
@@ -1036,7 +1036,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 static void room_info(u8 *dst, u8 first, u8 count)
 {
-	const u8 *src = GAME_VAR(const u8 *, 0xa0b310);
+	const u8 *src = (*(const u8 **)&g_roomPacket);
 	dst[0] = first;
 	static const u8 bytes[] = { 0x49, 0x47, 0x48, 0x46 };
 	for (int k = 0; k < 4; k++)
@@ -1053,7 +1053,7 @@ static void room_info(u8 *dst, u8 first, u8 count)
 
 static void arena_info(u8 *dst, u8 first, u8 count)
 {
-	const u8 *src = GAME_VAR(const u8 *, 0xa0b328);
+	const u8 *src = (*(const u8 **)&g_arenaPacket);
 	dst[0] = first;
 	dst[0x67] = src[0x67];
 	dst[0x65] = src[0x65];
@@ -1084,7 +1084,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 	} else if (msg[0] == 3) {
 		if (!g_isHost)
 			return;
-		GAME_VAR(u8, 0x9f9424) = net_claimPlayerSlot();
+		(*(u8 *)&g_netClaimedSlot) = net_claimPlayerSlot();
 		GAME_CDECL(0x451270, void, void *, u32, int)((void *)0x9f9420, msg[2], 0);   /* net_sendMessage */
 		gone = 1;
 	} else
@@ -1102,16 +1102,16 @@ void (net_sendLocalInfo)(const u32 *msg)
 		if (gone)
 			arena_info(g_arenaInfoPacket, 1, (u8)g_playerCount);
 		else
-			arena_info(g_arenaInfoPacket, GAME_VAR(const u8 *, 0xa0b328)[0], (u8)(g_playerCount - 1));
+			arena_info(g_arenaInfoPacket, (*(const u8 **)&g_arenaPacket)[0], (u8)(g_playerCount - 1));
 		break;
 	case 200:
-		if (g_lobbyPending || !GAME_VAR(int, 0xa055f8))
+		if (g_lobbyPending || !(*(int *)&g_lobbySocket))
 			return;
 		if (gone)
 			g_playerCount = msg[3];
-		if (!GAME_VAR(u8 *, 0xa0b314))
+		if (!g_netInfoPacket)
 			return;
-		room_info(GAME_VAR(u8 *, 0xa0b314), GAME_VAR(const u8 *, 0xa0b310)[0], (u8)(g_playerCount - !gone));
+		room_info(g_netInfoPacket, (*(const u8 **)&g_roomPacket)[0], (u8)(g_playerCount - !gone));
 		break;
 	}
 }
@@ -1185,9 +1185,9 @@ u32 (net_disconnect)(void)
 	static const u8 lobbyBytes[9] = { 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 }, lobbyNames[3] = { 0x53, 0x33, 1 };
 	static const u8 roomBytes[9] = { 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 }, roomNames[3] = { 0x71, 0x43, 0x33 };
 	if (g_netConnected != 1)
-		return GAME_VAR(u32, 0xa0b2fc);
+		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
-	if (GAME_VAR(int, 0xa055f8)) {
+	if ((*(int *)&g_lobbySocket)) {
 		if (!g_lobbyPending && !send_leave(0xa0b310, 0xa0b318, lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
 			return 0;
 		r = socket_close(0xa055f8);
@@ -1226,14 +1226,14 @@ static void send_buffer(u32 socket, u32 buffer, int size)
    eax it leaves */
 void (net_send)(int kind, int to)
 {
-	u32 *word = GAME_VAR(u32 *, 0xa0b30c);
+	u32 *word = g_netKindWord;
 	if (to == 100 || to == 101) {
 		if (!word)
 			return;
 		*word = (u32)kind;
 		u32 socket = to == 100 ? 0xa055f8 : 0xa05630;
 		if (GAME_VAR(u32, socket))
-			((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), GAME_VAR(void *, 0xa0b30c), 4, 0);
+			((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
 		[10] = { 0xa0b310, 0x5b, 1 }, [11] = { 0xa0b318, 0x5b, 1 }, [12] = { 0xa0b314, 0x5b, 1 },
@@ -1252,8 +1252,8 @@ void (net_send)(int kind, int to)
 		send_buffer(0xa055f8, 0xa0b31c, 4);
 		return;
 	case 23: {
-		char *name = GAME_VAR(char *, 0xa0b304);
-		const char *from = GAME_VAR(const char *, 0xa0b310);
+		char *name = g_netSendName;
+		const char *from = (*(const char **)&g_roomPacket);
 		if (!name || !from)
 			return;
 		strcpy(name, from + 0x33);
@@ -1262,7 +1262,7 @@ void (net_send)(int kind, int to)
 	}
 	case 14: case 15:
 		g_netLastRequest = kind;
-		if (!GAME_VAR(void *, 0xa0b320))
+		if (!(*(void **)&g_accountPacket))
 			return;
 		jmp_net_getLocalAddress();
 		lstrcpyA(g_accountPacket + 0x60, (const char *)0xa0b43c);
@@ -1290,9 +1290,9 @@ void (net_send)(int kind, int to)
 		return;
 	case 24:
 		jmp_net_getLocalAddress();
-		if (!GAME_VAR(char *, 0xa0b308))
+		if (!g_netSendBuffer)
 			return;
-		lstrcpyA(GAME_VAR(char *, 0xa0b308), (const char *)0xa0b43c);
+		lstrcpyA(g_netSendBuffer, (const char *)0xa0b43c);
 		send_buffer(0xa05630, 0xa0b308, 0x10);
 		return;
 	}
@@ -1974,12 +1974,12 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			G(u32, 0x22f0408) = *(const u32 *)(pkt + 9);
 			G(u32, 0x22f040c) = *(const u32 *)(pkt + 0xd);
 			if (pkt[3] >= 0) {
-				int round = GAME_VAR(int, 0x9dad94);
+				int round = g_missionStage;
 				if (round != pkt[3] && (round < 0 || G(int, 0x1f1cb0) == 1 || G(int, 0x22f0408) > 0x1e)) {
-					GAME_VAR(int, 0x9dad94) = pkt[3];
+					g_missionStage = pkt[3];
 					G(int, 0x1f1cb4) = pkt[4];
 					G(int, 0x1f1cb8) = pkt[6];
-					scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+					scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + g_missionStage * 0x20);
 					G(int, 0x233cc20) = 1;
 					G(int, 0x233cc28) = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
@@ -1988,7 +1988,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				}
 				G(int, 0x1f1cb4) = pkt[4];
 				G(int, 0x1f1cb8) = pkt[6];
-				if (GAME_VAR(int, 0x9dad94) == pkt[3] && G(int, 0xbe3000) != *(const short *)(pkt + 7)) {
+				if (g_missionStage == pkt[3] && G(int, 0xbe3000) != *(const short *)(pkt + 7)) {
 					G(int, 0x23423fd) = 1;
 					G(int, 0x2342401) = 1;
 				}

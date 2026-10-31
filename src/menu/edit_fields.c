@@ -63,7 +63,7 @@ void (arena_editName)(void)
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	GAME_VAR(int, 0x4dbbd0) = 1;
+	g_typingArenaName = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x10);
 }
@@ -76,7 +76,7 @@ void (arena_editComment)(void)
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	GAME_VAR(int, 0x4dbab0) = 1;
+	g_editingNewArenaName = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x1e);
 }
@@ -113,7 +113,7 @@ void (arena_editPassword)(void)
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x54);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	GAME_VAR(int, 0x4dbacc) = 1;
+	g_typingArenaPassword = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(8);
 }
@@ -142,7 +142,7 @@ void (field_editComment)(void)
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	GAME_VAR(int, 0x9dd380) = 1;
+	g_editingRoomName = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x1e);
 }
@@ -154,7 +154,7 @@ void (field_editPassword)(void)
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x54);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	GAME_VAR(int, 0x9dd6a8) = 1;
+	g_editingRoomPassword = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(8);
 }
@@ -236,8 +236,8 @@ void (chat_textField)(int x, int y, int maxLength)
 	g_paused = 1;
 	g_chatTyping = 1;
 	menu_clearInputBuffer(maxLength);
-	GAME_VAR(int, 0x9f63c8) = x;
-	GAME_VAR(int, 0x9f63c4) = y;
+	g_matchChatCaretX = x;
+	g_matchChatCaretY = y;
 	g_menuFade = 20.0f;
 	chat_createEdit(maxLength);
 }

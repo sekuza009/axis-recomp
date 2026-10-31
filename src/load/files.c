@@ -388,7 +388,7 @@ static void *profiles_create(void)
 {
 	char path[0x184];
 	profiles_path(path);
-	GAME_VAR(u32, 0x9f8c58) = GAME_VAR(u32, 0x9f8d74);
+	(*(u32 *)&g_currentProfile) = GAME_VAR(u32, 0x9f8d74);
 	void *f = crt_fopen(path, (const char *)0x4b2ab0);
 	if (!f)
 		g_profileCount = 0;
@@ -418,7 +418,7 @@ u32 (profile_loadList)(int count)
 	if (!f)
 		return 0;
 	g_profileCount = count;
-	GAME_VAR(u32, 0x9f8c58) = 0;
+	(*(u32 *)&g_currentProfile) = 0;
 	GAME_VAR(u32, 0x9f8c4c) = 0;
 	GAME_VAR(u32, 0x9f8c5c) = 0;
 	return profiles_write(f);
@@ -463,10 +463,10 @@ u32 (mission_loadAxisMis)(void)
 	static const struct { int offset, size; } part[8] = {
 		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
 	u8 *mission = (u8 *)0x9ef2d0;
-	for (int i = 0; i < GAME_VAR(int, 0x9ef2c0); i++)
+	for (int i = 0; i < g_missionCount; i++)
 		for (int k = 0; k < 8; k++)
 			crt_fread(mission + i * 0xfc + part[k].offset, part[k].size, 1, f);
-	for (int i = 0; i < GAME_VAR(int, 0x9ef2c0); i++)
+	for (int i = 0; i < g_missionCount; i++)
 		crt_fread(mission + i * 0xfc + 0xf4, 4, 1, f);
 	return fclose(f);
 }
@@ -484,25 +484,25 @@ u32 (mission_saveAxisMis)(int k)
 	int offset = 0;
 	for (int i = 0; i < k; i++)
 		offset += size[i * 63];
-	crt_fseek(f, offset + GAME_VAR(int, 0x9ef2c0) * 0xf8 + 0x1a, 0);
-	if (GAME_VAR(void *, 0x9ef1ec))
-		crt_free(GAME_VAR(void *, 0x9ef1ec));
+	crt_fseek(f, offset + g_missionCount * 0xf8 + 0x1a, 0);
+	if ((*(void **)&g_briefingSource))
+		crt_free((*(void **)&g_briefingSource));
 	void *block = crt_malloc(size[k * 63]);
-	GAME_VAR(void *, 0x9ef1ec) = block;
+	(*(void **)&g_briefingSource) = block;
 	crt_fread(block, size[k * 63], 1, f);
 	fclose(f);
 	memset((void *)0x9eeadc, 0, 0xc8);
 	GAME_VAR(int, 0x9ef218) = 0;
 	memset((void *)0x9f1064, 0, 0x640);
 	memset((void *)0x9eebac, 0, 0x640);
-	GAME_VAR(int, 0x9ef1f4) = 0;
+	g_briefingShown = 0;
 	g_briefingDone = 0;
-	GAME_VAR(int, 0x9eeba4) = 0;
-	GAME_VAR(int, 0x4d7348) = 0;
+	g_briefingStart = 0;
+	g_briefingSkipped = 0;
 	g_undoDepth = 0;
 	g_settingsPage = 20;
 	g_briefingEnd = size[k * 63];
-	GAME_VAR(int, 0x9f16b8) = 0;
+	(*(int *)&g_briefingClock) = 0;
 	return 0;
 }
 
@@ -521,7 +521,7 @@ u32 (cfg_parseGraphic)(void *f)
 	FPUTS(0x4b1b00);   /* "set_graphic colordepth " */
 	FPUTS(g_videoDepth ? 0x4b1af8 : 0x4b1afc);
 	FPUTS(0x4b1adc);   /* "set_graphic polygondetail " */
-	FPUTS(GAME_VAR(int, 0x83a9c8) ? 0x4b1acc : 0x4b1ad4);
+	FPUTS(g_items3D ? 0x4b1acc : 0x4b1ad4);
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
 		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? 0x4b17e4 : 0x4b17dc);
@@ -590,7 +590,7 @@ u32 (arena_readLaunchFile)(char *line)
 	} while (word);
 	g_startedFromLobby = 0;
 	g_startedByLauncher = 0;
-	u32 r = GAME_VAR(u32, 0x9dd88c);
+	u32 r = (*(u32 *)&g_argCount);
 	if (r == 1) {
 		r = (u32)str_order(args[0], (const char *)0x4b2880);   /* "-net" */
 		if (r)
@@ -642,7 +642,7 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {
-	void *f = data_open(0x9dae7c, GAME_VAR(int, 0x9dae74) == 1 ? 0x4b1430 : 0x4b1424, 0x4ad5e0,   /* "msgkor.dat" / "msgeng.dat", "rt" */
+	void *f = data_open(0x9dae7c, g_language == 1 ? 0x4b1430 : 0x4b1424, 0x4ad5e0,   /* "msgkor.dat" / "msgeng.dat", "rt" */
 	                    0x4b13f8);   /* "Text Message Data File Not Found" */
 	char *message = (char *)0x74de24;
 	for (;;) {
@@ -720,7 +720,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
-	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -735,8 +735,8 @@ static void campaign_new(void)
 	strcpy((char *)g_campaign, (const char *)0x4b0fa0);
 	memset((void *)0x9f1798, 0, 0x80);
 	memcpy((void *)0x9f1798, pilot_name(g_pilot), 0x80);
-	GAME_VAR(u32, 0x9f1818) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
-	GAME_VAR(int, 0x9f181c) = 0;
+	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	g_progress = 0;
 	memset((void *)0x9f1820, 0, 0x190);
 	memset((void *)0x9f19b0, 0, 0x40);
 	static const u32 cleared[6] = { 0x9f19f0, 0x9f1a0c, 0x9f19f4, 0x9f1a10, 0x9f1a2c, 0x9f1a30 };
@@ -831,8 +831,8 @@ u32 (profile_save)(void)
 	crt_chdir((const char *)0x4b2a80);
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
-	GAME_VAR(int, 0x9f62e0) = 0;
-	GAME_VAR(int, 0x9f62fc) = GAME_VAR(int, 0x9f181c);
+	g_missionStarted = 0;
+	g_profileProgressSaved = g_progress;
 	return r;
 }
 
@@ -894,7 +894,7 @@ u32 (data_loadSkirmishInfo)(void)
 	}
 	crt_fseek(f, 25000, 1);
 	crt_fread((void *)0x90d1d8, 4, 1, f);
-	for (int i = 0; i < GAME_VAR(int, 0x90d1d8); i++)
+	for (int i = 0; i < g_skirmishInfoCount; i++)
 		crt_fread((void *)(0x9db998 + i * 0x5c), 0x5c, 1, f);
 	return fclose(f);
 }
@@ -906,7 +906,7 @@ u32 (data_loadSkirmishInfo)(void)
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
 void (data_loadPilotProfiles)(void)
 {
-	void *f = data_open(0x9dae7c, GAME_VAR(int, 0x9dae74) == 1 ? 0x4b14b4 : 0x4b14a8, 0x4ad170,   /* "profkor.dat" / "profeng.dat", "rb" */
+	void *f = data_open(0x9dae7c, g_language == 1 ? 0x4b14b4 : 0x4b14a8, 0x4ad170,   /* "profkor.dat" / "profeng.dat", "rb" */
 	                    0x4b1480);   /* "Character Profile Data File Not Found" */
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
@@ -1156,7 +1156,7 @@ void (cfg_gameTypeNames)(void *f)
 			break;
 		case 2:
 			v = (signed char)crt_atoi(b.value);
-			GAME_VAR(signed char, 0x4ded41) = v < 0 || v > 0x10 ? 8 : v;
+			(*(signed char *)&g_arenaPlayers) = v < 0 || v > 0x10 ? 8 : v;
 			break;
 		case 3:
 			g_arenaCustomize = IS_ON(b.value);
@@ -1186,11 +1186,11 @@ void (cfg_videoModeNames)(void *f)
 	for (int n = 0; n < 7; n++) {
 		read_into(f, &b, 0);
 		if (n == 0)
-			GAME_VAR(int, 0x83a9c0) = named(b.value, sizes, 7);
+			(*(int *)&g_videoMode) = named(b.value, sizes, 7);
 		else if (n == 1)
 			g_videoDepth = !strcmp(b.value, (const char *)0x4b22d4);   /* "32" */
 		else if (n == 2)
-			GAME_VAR(int, 0x83a9c8) = !strcmp(b.value, (const char *)0x4b22cc);   /* "HIGH" */
+			g_items3D = !strcmp(b.value, (const char *)0x4b22cc);   /* "HIGH" */
 		else
 			GAME_VAR(int, 0x83a9cc + (n - 3) * 4) = IS_ON(b.value);
 	}
@@ -1267,8 +1267,8 @@ void (cfg_writeDefaultAxisCfg)(void)
 	}
 	g_sound3D = 0;
 	g_videoDepth = 0;
-	GAME_VAR(int, 0x83a9c0) = 0;
-	GAME_VAR(int, 0x83a9d4) = 0;
+	(*(int *)&g_videoMode) = 0;
+	g_showFps = 0;
 	g_cfgSimpleMenu = 0;
 	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
 	g_playerCorporation = 0;
@@ -1279,9 +1279,9 @@ void (cfg_writeDefaultAxisCfg)(void)
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)0x4ded40, server, 6);
 	g_soundSwitch1 = 1;
-	GAME_VAR(int, 0x83a9c8) = 1;
-	GAME_VAR(int, 0x83a9d0) = 1;
-	GAME_VAR(int, 0x83a9cc) = 1;
+	g_items3D = 1;
+	(*(int *)&g_textureSetHeight) = 1;
+	(*(int *)&g_textureSetWidth) = 1;
 	input_applyKeyBindings();
 	cfg_loadAxisCfg();
 }

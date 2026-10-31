@@ -22,12 +22,12 @@
 0x9dd5e4,int,g_pilotRating
 0x4de71e,int,g_titleLevel
 # the ARM CENTER's camera: where it is and where it looks
-0x4df870,int,g_armcCameraX
-0x4df874,int,g_armcCameraY
-0x4df878,int,g_armcCameraZ
-0x76d388,int,g_armcLookAtX
-0x76d38c,int,g_armcLookAtY
-0x76d390,int,g_armcLookAtZ
+0x4df870,int,g_camPoint0X
+0x4df874,int,g_camPoint0Y
+0x4df878,int,g_camPoint0Z
+0x76d388,int,g_camAim0X
+0x76d38c,int,g_camAim0Y
+0x76d390,int,g_camAim0Z
 0x4dc868,int,g_armcEntered
 0x4db85c,int,g_lobbyPanelsOff
 0x4db510,int,g_mapListMade

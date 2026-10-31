@@ -189,7 +189,7 @@ static void later_round(Scene *s)
 	scene_resetScores(s);
 	events_clear(s, 60.0f);
 	s->chatMode = 0;
-	if (GAME_VAR(int, 0x68039c))
+	if (g_paused)
 		chat_keepLastLine();
 	s->roundClear5 = 0;
 	s->matchOver = 0;
@@ -297,7 +297,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
 		sprintf(name, (const char *)0x4c7410, sky, i);
-		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, i > 7, 0, 0, 0, 0, 0, 0);
+		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts(s + 0x9ccffc);
 	factors_addConstant(s + 0x9ccffc, (const void *)0xa1f23c);
@@ -407,7 +407,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	static const u32 names[3] = { 0x4c73f4, 0x4c73d8, 0x4c73bc };
 	for (int k = 0; k < 3; k++) {
 		sprintf(name, (const char *)names[k]);
-		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {
 		FIELD(u32, s, 0x20f2f48 + k * 4) = k % 5 == 0 ? 0x3f800000 : 0;
@@ -415,7 +415,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	IMPORT(0x4a925c, void, int, void *)(1, s + 0x20fcfe0);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
-		FIELD(u32, s, 0x20fcfe4 + k * 4) = GAME_VAR(u32, 0xa1f220);
+		FIELD(u32, s, 0x20fcfe4 + k * 4) = (*(u32 *)&g_defaultColour);
 	FIELD(int, s, 0x20f3ab4) = 0;
 	game_setGameTypeFlags((Stage *)s, 0);
 	scene_resetActors(s);

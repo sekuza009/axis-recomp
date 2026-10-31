@@ -1,0 +1,43 @@
+# the menus' camera points (0x4df870 + 0x10 k: where the camera goes; 0x76d388 + 0x10 k: where it looks), see globals12
+0x4df880,u32,g_camPoint1X
+0x4df888,int,g_camPoint1Z
+0x76d398,u32,g_camAim1X
+0x76d39c,u32,g_camAim1Y
+0x76d3a0,int,g_camAim1Z
+0x4df890,u32,g_camPoint2X
+0x4df894,int,g_camPoint2Y
+0x4df898,int,g_camPoint2Z
+0x76d3a8,u32,g_camAim2X
+0x76d3ac,u32,g_camAim2Y
+0x76d3b0,int,g_camAim2Z
+# the room menu's slide (room_slideMenu): from the near point to the far one
+0x9dd918,u32,g_roomSlideNearX
+0x9dd91c,u32,g_roomSlideNearY
+0x9dd920,u32,g_roomSlideNearZ
+0x9dd930,u32,g_roomSlideFarX
+0x9dd934,u32,g_roomSlideFarY
+0x9dd938,u32,g_roomSlideFarZ
+# the new arena's settings record (0x4db528: name, map, players, kind, mode, ..., password)
+0x4db548,signed char,g_newArenaMap
+0x4db549,u8,g_newArenaPlayers
+0x4db54a,u8,g_newArenaKind
+0x4db54b,u8,g_newArenaMode
+0x4db54e,int,g_newArenaPassword
+# the launcher's arena settings (axiswl.dat, arena_loadSettings)
+0x5b1944,u8,g_arenaFileMap
+0x5b1948,u8,g_arenaFilePlayers
+0x5b194c,u8,g_arenaFileGameType
+0x5b1950,u8,g_arenaFileFragLimit
+# the rest
+0x9f63c8,int,g_matchChatCaretX
+0x9f63c4,int,g_matchChatCaretY
+0x4dcc88,int,g_armcBuildTexture
+0x9eeab0,int,g_mainMenuFrames
+0x4a9458,u32,k_armcDistanceRoom
+0x4a9454,u32,k_armcDistance
+0x4def00,int,g_keyFreeCam0
+0x4def08,int,g_keyFreeCam1
+0x4def10,int,g_keyFreeCam2
+0x4def18,int,g_keyFreeCam3
+0x9dd5e8,int,g_pilotScore
+0x9dd250,int,g_pilotScoreKept

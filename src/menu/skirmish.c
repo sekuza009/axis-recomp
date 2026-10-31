@@ -11,7 +11,7 @@ static void list_down(void) { skirmish_cursorDown(); }
 void (skirmish_processKeys)(void)
 {
 	if (input_justPressed(g_dikA) == 1 || input_justPressed(g_keyClick) == 1) {
-		mission_saveAxisMis(GAME_VAR(int, 0x9f16a4));
+		mission_saveAxisMis(g_missionPicked);
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1 || input_justPressed(g_keyCancel2) == 1) {
@@ -24,27 +24,20 @@ void (skirmish_processKeys)(void)
 
 /* ---- the briefing: the text block 0x9ef1ec (read by mission_saveAxisMis), from offset 0x9eeba4 up to 0x9ef200;
    0x9ef1f4 characters of it shown so far, copied to 0x9f1064 ---- */
-#define g_briefing GAME_VAR(u8 *, 0x9ef1ec)
-#define g_briefingStart GAME_VAR(int, 0x9eeba4)
-#define g_briefingShown GAME_VAR(int, 0x9ef1f4)
-#define g_briefingSkipped GAME_VAR(int, 0x4d7348)
-#define g_briefingClock GAME_VAR(float, 0x9f16b8)
 #define g_briefingText ((char *)0x9f1064)
-#define g_briefingX GAME_VAR(int, 0x9f16a8)         /* the briefing window */
-#define g_briefingY GAME_VAR(int, 0x9f16ac)
 
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one
    more character (a CR LF or a double-byte character at once); drawn in the briefing window (wrapping at 0x23e,
    bottom 0x76), with a cursor bar (half bright on its left) at its end while still typing */
 void (briefing_typeOut)(void)
 {
-	u8 *text = g_briefing;
+	u8 *text = g_briefingSource;
 	if (!text)
 		return;
 	if (!g_briefingDone && !g_briefingSkipped) {
 		long double clock = fadd_m(fld_m(&g_frameTime), &g_briefingClock);
 		g_briefingClock = clock;
-		if (clock > GAME_VAR(double, 0x4a95e0)) {
+		if (clock > k_1_4) {
 			int n = ++g_briefingShown;
 			int start = g_briefingStart;
 			if (text[start + n] == '\r' && text[start + n + 1] == '\n')
@@ -103,9 +96,7 @@ static void bind_button_texture(void)
 /* ---- the mission list: 0xfc-byte records from 0x9ef2d4 (count 0x9ef2c0): the name, +0x40 a text, +0x60 the
    description, +0xe0 a number, +0xe8 the kind (a 0x75dda4 string) ---- */
 #define mission(i) ((const u8 *)0x9ef2d4 + (i) * 0xfc)
-#define g_missionCount GAME_VAR(int, 0x9ef2c0)
 #define g_missionTop GAME_VAR(int, 0x9f16bc)      /* the first row shown */
-#define g_missionPicked GAME_VAR(int, 0x9f16a4)
 
 /* the columns' left (and right) x from the window's left */
 static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 0x154, 0x1ae, 0x208, 0x25d };
@@ -116,7 +107,7 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
    lit). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenA)(void)
 {
-	int hovered = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmishSettings_hitTest */
+	int hovered = GAME_CDECL(0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
@@ -168,7 +159,7 @@ void (skirmish_drawScreenA)(void)
    undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenB)(void)
 {
-	int hovered = briefing_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = briefing_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
@@ -189,7 +180,7 @@ void (skirmish_drawScreenB)(void)
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x = BX0 + k * 0x8c;
-		int usable = k == 0 ? GAME_VAR(int, 0x4d7348) != 0 : g_undoDepth > 0;
+		int usable = k == 0 ? g_briefingSkipped != 0 : g_undoDepth > 0;
 		int lit = usable && hovered == k + 2;
 		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
 		                (const char *)(0x75e3a4 + k * 0x80));

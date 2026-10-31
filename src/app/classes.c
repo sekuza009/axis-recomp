@@ -94,9 +94,9 @@ float (view_farPlane)(void) { return g_viewFar; }
 /* ---- setters ---- */
 void (armc_showPartsPage)(void) { g_armcMode = 1; g_armcUnusedFlag = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
-void (ptx_startBitReader)(int v) { GAME_VAR(int, 0xa61708) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
+void (ptx_startBitReader)(int v) { (*(int *)&g_bitStream) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (input_setKeysBlocked)(int v) { g_keysBlocked = v; return v; }
-int (music_setVolumeSetting)(int v) { GAME_VAR(int, 0x4b42dc) = v; return v; }
+int (music_setVolumeSetting)(int v) { g_musicVolumeSetting = v; return v; }
 
 /* three-float vectors at 0xa0e7a8 ..: zero or a unit axis (bits of 1.0) */
 static void set3(u32 addr, u32 x, u32 y, u32 z)

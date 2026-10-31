@@ -3,7 +3,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_sessionCount GAME_VAR(int, 0x67ef30)
 #define SESSION(k) ((u8 *)0x9087c4 + (k) * 0x4a)
 
 /* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
@@ -25,7 +24,7 @@ static void merge(const Received *g)
 			const u8 *s = (const u8 *)(g->base + i * g->stride);
 			int players = GAME_VAR(int, 0xa0d384 + i * 4);
 			if (players > 0) {
-				int k = g_sessionCount;
+				int k = g_gameCount;
 				u8 *e = SESSION(k);
 				memset(e, 0, 32);
 				strcpy((char *)e, (const char *)s + g->nameOff);
@@ -45,7 +44,7 @@ static void merge(const Received *g)
 				memset(e + 0x2b, 0, 16);
 				strcpy((char *)e + 0x2b, (const char *)s + g->str2Off);
 				GAME_VAR(int, g->total) += (signed char)e[0x23];
-				g_sessionCount = k + 1;
+				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */
 			}
 			GAME_VAR(int, 0xa0bb14 + i * 4) = 0;
@@ -76,16 +75,16 @@ void (arena_mergeReceivedSessions)(void)
    start 4 bytes before each record (from 0x9087c0): a record's last 4 bytes travel with the record after it */
 void (sessionList_sort)(void)
 {
-	for (int pass = 0; g_sessionCount - 1 > 0; ) {
+	for (int pass = 0; g_gameCount - 1 > 0; ) {
 		int swapped = 0;
-		for (int j = 0; j < g_sessionCount - 1; j++) {
+		for (int j = 0; j < g_gameCount - 1; j++) {
 			u8 *e = SESSION(j);
 			if (GAME_VAR(int, e + 0x24) > GAME_VAR(int, e + 0x4a + 0x24)) {
 				record_swap(e - 4, e + 0x4a - 4);
 				swapped = 1;
 			}
 		}
-		if (!swapped || ++pass >= g_sessionCount - 1)
+		if (!swapped || ++pass >= g_gameCount - 1)
 			break;
 	}
 }
@@ -95,9 +94,9 @@ void (sessionList_sort)(void)
 void (arenaList_rebuild)(void)
 {
 	int n = net_sessionCount();
-	g_sessionCount = n;
+	g_gameCount = n;
 	g_lobbyListPage = n;
-	for (int i = 0; i < g_sessionCount; i++) {
+	for (int i = 0; i < g_gameCount; i++) {
 		const u8 *s = (const u8 *)net_sessionValue(i);
 		u8 *e = SESSION(i);
 		memset(e, 0, 32);
@@ -113,7 +112,7 @@ void (arenaList_rebuild)(void)
 		GAME_VAR(int, e + 0x24) = 0;
 	}
 	g_arenaHaveList = 1;
-	GAME_VAR(int, 0x76d41c) = 0;
+	g_localPlayer = 0;
 	g_arenaListFull = 0;
 	sessionList_sort();
 }

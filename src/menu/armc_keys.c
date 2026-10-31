@@ -2,8 +2,6 @@
    slot directly; up / down step through the six with wrap-around. */
 #include "../game.h"
 
-#define g_armcZoom GAME_VAR(float, 0x4dcfd8)          /* the view's zoom, back to 1 when the part in view changes */
-#define g_armcSpin GAME_VAR(int, 0x4dceac)            /* the preview spins */
 
 /* the keys of slots 0 .. 4 */
 static const u32 slot_keys[5] = { 0x4e14f0, 0x4e10e4, 0x4e1524, 0x4e14ec, 0x4e0cd8 };
@@ -85,8 +83,6 @@ void (armc_partsPageKeys)(void)
 	}
 }
 
-#define g_armcSlot GAME_VAR(int, 0x4dbe48)            /* the item slot being picked */
-#define g_armcCursor GAME_VAR(int, 0x4dc77c)          /* the cursor in that slot's list */
 #define g_weaponCount GAME_VAR(int, 0x4dc244)
 
 /* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; 0x4e1514 / 0x4e1504 to the parts / third page
@@ -247,16 +243,16 @@ leave:
 void (armc_processInput)(void)
 {
 	int mode = g_armcState;
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
+	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return;
 	if (input_isDown(g_dikLCtrl) && input_isDown(g_dikLAlt) && input_justPressed(g_dikM)) {
-		GAME_VAR(int, 0x4dd078) = 1 - GAME_VAR(int, 0x4dd078);
+		g_armcHideInterface = 1 - g_armcHideInterface;
 		return;
 	}
-	switch (GAME_VAR(int, 0x4dc798)) {
+	switch (g_armcMode) {
 	case 1: armc_partsPageKeys(); break;
 	case 2: armc_weaponsPageKeys(); break;
 	case 3: armc_colourPageKeys(); break;
-	case 4: debug_traceStripped(GAME_VAR(Scene *, 0x4dc798)); break;   /* (its ecx: the original jumps there with the page in ecx) */
+	case 4: debug_traceStripped((*(Scene **)&g_armcMode)); break;   /* (its ecx: the original jumps there with the page in ecx) */
 	}
 }

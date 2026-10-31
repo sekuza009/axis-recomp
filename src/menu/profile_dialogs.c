@@ -18,7 +18,7 @@ void (profile_typeNewName)(void)
 	g_menuFade = 5.0f;
 	g_profileDialog = 2;
 	g_dialogOpen = 1;
-	GAME_VAR(int, 0x9f8f34) = 0;
+	g_profileMessage = 0;
 	chat_createEdit(0x10);
 }
 
@@ -31,15 +31,15 @@ static void ask(int kind, int x, int y)
 	g_profileDialog = kind;
 	g_cursorBlink = 0.0f;
 	g_dialogChoice = 0;
-	GAME_VAR(float, 0x680bc0) = 20.0f;
-	GAME_VAR(float, 0x9da4a4) = 0.2f;
+	g_highlightSize = 20.0f;
+	g_highlightAlpha = 0.2f;
 	g_questionX = x + 0x9c;
 	g_questionY = y + 0x4a;
 }
 
 /* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 over the second panel */
-void (profile_askDelete)(void) { ask(3, GAME_VAR(int, 0x9f8f1c), GAME_VAR(int, 0x9f8f0c)); }
-void (profile_askSecond)(void) { ask(5, GAME_VAR(int, 0x9f6834), GAME_VAR(int, 0x9f683c)); }
+void (profile_askDelete)(void) { ask(3, g_profileDialogX, g_profileDialogY); }
+void (profile_askSecond)(void) { ask(5, g_profileDialog2X, g_profileDialog2Y); }
 
 /* 0x44f810: the profile screen: only its frame while a dialog is up, else the pilot preview (when shown) and the
    screen */
@@ -49,7 +49,7 @@ void (profile_drawScreen)(void)
 		menu_drawFrame(GAME_VAR(int, 0x9f8c54), GAME_VAR(int, 0x9f8c50), GAME_VAR(int, 0x9f6830), GAME_VAR(int, 0x9f682c));
 		return;
 	}
-	if (GAME_VAR(int, 0x9f8d68) != 0)
+	if (g_emblemMoved != 0)
 		profile_loadSelectedColours();
 	profile_drawPilotSelect();
 }
@@ -101,7 +101,7 @@ static u32 two_buttons(const TwoButtons *d)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(d->hit, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = GAME_CDECL(d->hit, int, int, int)(g_mouseX, g_mouseY);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
@@ -150,7 +150,7 @@ u32 (profile_drawNewDialog)(void)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(0x44b2a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = GAME_CDECL(0x44b2a0, int, int, int)(g_mouseX, g_mouseY);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
@@ -201,7 +201,7 @@ void (mainmenu_drawScreen)(void)
 #define PAGE GAME_VAR(int, 0x9f8f10)
 	float *panel = (float *)0x9f8eb0;
 	const u32 *bright = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
-	int hovered = GAME_CDECL(0x44b260, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (PAGE == 1) {
@@ -339,12 +339,11 @@ void (profile_drawPilotSelect)(void)
 #define K(addr) ((const float *)(addr))
 #define g_pilot GAME_VAR(int, 0x9f8d30)
 #define g_reveal GAME_VAR(int, 0x9f6828)
-#define g_frameAlpha GAME_VAR(float, 0x9f8f08)
 #define g_revealClock GAME_VAR(float, 0x9f8ee4)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* pilotSelect_hitTest */
+	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
@@ -392,9 +391,9 @@ void (profile_drawPilotSelect)(void)
 	glDisable(GL_TEXTURE_2D);
 	/* its pulsing frame: 5 outside the cell's corner, 90 beyond it */
 	glEnable(GL_TEXTURE_2D);
-	texture = GAME_VAR(int, 0x9dad90);
+	texture = g_fontAsciiLarge;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_frameAlpha), K(0x4a9428)), K(0x4a9424))));
+	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_profileFrameAlpha), K(0x4a9428)), K(0x4a9424))));
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.5f);
 	y0 = ftol(fsub_m(fadd_m((long double)(Y0 + 0x4c), &y), K(0x4a93d0)));
@@ -409,8 +408,8 @@ void (profile_drawPilotSelect)(void)
 	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a9550)));
 	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y1);
 	glEnd();
-	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_profileFrameStep), &g_frameAlpha);
-	g_frameAlpha = f32(pulse);
+	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
+	g_profileFrameAlpha = f32(pulse);
 	if (!(pulse > *K(0x4a93fc)))
 		g_profileFrameStep = 0x3f800000;   /* 1 */
 	if (pulse >= *K(0x4a93f8))
@@ -453,7 +452,6 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef g_revealClock
-#undef g_frameAlpha
 #undef g_reveal
 #undef g_pilot
 #undef K
@@ -475,7 +473,7 @@ void (profile_drawChosenPilot)(void)
 		return;
 	int pilot = *(const int *)(0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
 	g_chosenPilot = pilot;
-	int focus = GAME_VAR(int, 0x9f8f10) == 1;
+	int focus = g_profileDialog == 1;
 	float *panel = (float *)0x9f8eb0;
 	if (focus)
 		set_colour_bits((Colour *)0x76d438, BITS(panel[0]), BITS(panel[1]), BITS(panel[2]), BITS(panel[3]));

@@ -9,10 +9,10 @@
 
 typedef long double X;
 
-#define ZERO GAME_VAR(float, 0x4a93e8)
-#define ONE GAME_VAR(float, 0x4a9424)
-#define TURN GAME_VAR(float, 0x4a9460)       /* 360 degrees */
-#define TINY GAME_VAR(float, 0x4aa268)       /* 1e-8 */
+#define ZERO k_0f
+#define ONE k_1f
+#define TURN k_360f       /* 360 degrees */
+#define TINY k_1em8f       /* 1e-8 */
 
 /* 0x464a70: a colour c added to the image's pixels (count img[0x13]), each channel at most 255 and the alpha at most
    c's; mode 1, or an image with flag 2, fills them with c instead */
@@ -56,10 +56,10 @@ void (tex_rgbToHsv)(float r, float g, float b, float *h, float *s, float *v)
 	if (EQ_OR_NAN((X)r, max))
 		*h = f32(((X)g - b) / delta);
 	else if (EQ_OR_NAN((X)g, max))
-		*h = f32(((X)b - r) / delta + GAME_VAR(float, 0x4a93fc));   /* + 2 */
+		*h = f32(((X)b - r) / delta + k_2f);   /* + 2 */
 	else if (EQ_OR_NAN((X)b, max))
-		*h = f32(((X)r - g) / delta + GAME_VAR(float, 0x4a947c));   /* + 4 */
-	X d = (X)*h * GAME_VAR(float, 0x4a94dc);                         /* * 60 */
+		*h = f32(((X)r - g) / delta + k_4f);   /* + 4 */
+	X d = (X)*h * k_60f;                         /* * 60 */
 	*h = (float)d;
 	if (!(d >= ZERO))
 		*h = (float)(d + TURN);

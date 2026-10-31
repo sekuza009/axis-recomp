@@ -26,12 +26,12 @@ void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)0xae2f00, (const char
 void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)0xae3328, (const char *)0x4c7d18, 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
-void (static_initTex64x64)(void) { GAME_VAR(u32, 0x4e1878) = 0x4a956c; GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
-void (static_initTex128x64)(void) { GAME_VAR(u32, 0x5b1db8) = 0x4a956c; GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
-void (static_initTex256x64)(void) { GAME_VAR(u32, 0x680cd8) = 0x4a956c; GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
-void (static_initTex128x128)(void) { GAME_VAR(u32, 0x76d498) = 0x4a956c; GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
-void (static_initTex256x128)(void) { GAME_VAR(u32, 0x90d1e0) = 0x4a956c; GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
-void (static_initTex256x256)(void) { GAME_VAR(u32, 0x83a9e0) = 0x4a956c; GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
+void (static_initTex64x64)(void) { g_staticTex64x64 = 0x4a956c; GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
+void (static_initTex128x64)(void) { g_staticTex128x64 = 0x4a956c; GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
+void (static_initTex256x64)(void) { g_staticTex256x64 = 0x4a956c; GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
+void (static_initTex128x128)(void) { g_staticTex128x128 = 0x4a956c; GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
+void (static_initTex256x128)(void) { g_staticTex256x128 = 0x4a956c; GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
+void (static_initTex256x256)(void) { g_staticTex256x256 = 0x4a956c; GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
 int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))0x42b180); }

@@ -41,7 +41,7 @@ void (app_setDataPaths)(void)
 void (menu_clearInputBuffer)(int mode)
 {
 	memset((void *)0x9dc92c, 0, 0x400);
-	GAME_VAR(int, 0x9dbf10) = 0;
+	g_chatLength = 0;
 	g_typedLength = mode;
 }
 
@@ -56,7 +56,7 @@ void (chat_pushHistory)(void)
 /* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
 void (menu_showMessage)(int i)
 {
-	GAME_VAR(int, 0x4df900) = 1;
+	g_dialogPending = 1;
 	memset((void *)0x4df81c, 0, 0x50);
 	g_lobbyReply = 0;
 	strcpy((char *)0x4df81c, (const char *)(0x74de24 + i * 0x80));
@@ -75,7 +75,7 @@ void (record_swap)(void *a, void *b)
 /* 0x4045e0: chat record 0x67ef30 (from 0x9087c4) cleared; the original does it 256 times over without moving on */
 void (arena_clearChatRecord)(void)
 {
-	u32 r = 0x9087c4 + GAME_VAR(int, 0x67ef30) * 0x4a;
+	u32 r = 0x9087c4 + g_gameCount * 0x4a;
 	memset((void *)r, 0, 32);
 	GAME_VAR(u8, r + 0x21) = 0;
 	GAME_VAR(u8, r + 0x28) = 0;
@@ -161,20 +161,20 @@ void (mech_storeToProfile)(void)
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
-	GAME_VAR(int, 0x4df024) = g_armcCameraX;
-	GAME_VAR(int, 0x4df028) = g_armcCameraY;
-	GAME_VAR(int, 0x4df02c) = g_armcCameraZ;
-	GAME_VAR(int, 0x680378) = g_armcLookAtX;
-	GAME_VAR(int, 0x68037c) = g_armcLookAtY;
-	g_menuCameraHeight = g_armcLookAtZ;
+	(*(int *)&g_menuCameraPos) = g_camPoint0X;
+	(*(int *)&g_armcCamHeight) = g_camPoint0Y;
+	(*(int *)&g_armcCamDistance) = g_camPoint0Z;
+	(*(int *)&g_menuCameraLook) = g_camAim0X;
+	(*(int *)&g_menuCameraLookY) = g_camAim0Y;
+	g_menuCameraHeight = g_camAim0Z;
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
 void (menu_clickStartFade)(void)
 {
-	if ((GAME_VAR(int, 0x4ded88) || g_keyEnter) && !GAME_VAR(int, 0x4df01c)) {
-		GAME_VAR(int, 0x4df01c) = 1;
-		GAME_VAR(int, 0x4e0458) = 0;
+	if ((g_mouseClick || g_keyEnter) && !g_titleShown) {
+		g_titleShown = 1;
+		g_titleFrames = 0;
 	}
 }
 
@@ -268,7 +268,7 @@ void (roomList_fillPage)(void)
 			*(u32 *)(row + dst[k]) = *(const u32 *)(player + src[k]);
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
-			before = GAME_VAR(float, 0x9dd384);
+			before = (*(float *)&g_roomListDistanceLimit);
 			rank = g_roomListPrevRank;
 		} else {
 			long double v;
@@ -280,7 +280,7 @@ void (roomList_fillPage)(void)
 		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
 			*(int *)(row + 4) = rank;
 	}
-	GAME_VAR(float, 0x9dd384) = f32(value);
+	(*(float *)&g_roomListDistanceLimit) = f32(value);
 	g_roomListPrevRank = *(const int *)(rows + (i - 1) * 0x44 + 4);
 }
 
@@ -390,10 +390,10 @@ void (skirmish_settingsArrowClick)(void)
 static u32 leave_settings(u32 state)
 {
 	GAME_VAR(int, state) = 0;
-	GAME_VAR(u32, 0x4e1870) = 0x3dcccccd;   /* g_viewAspect = 0.1 */
-	GAME_VAR(int, 0x4df028) = 0;
-	GAME_VAR(u32, 0x4df02c) = 0x44c80000;   /* 1600 */
-	GAME_VAR(int, 0x68037c) = 0;
+	(*(u32 *)&g_viewAspect) = 0x3dcccccd;   /* g_viewAspect = 0.1 */
+	(*(int *)&g_armcCamHeight) = 0;
+	(*(u32 *)&g_armcCamDistance) = 0x44c80000;   /* 1600 */
+	(*(int *)&g_menuCameraLookY) = 0;
 	g_menuCameraHeight = 0;
 	sound_playMenu(4);
 	return put_camera_back();
@@ -433,7 +433,7 @@ u32 (menuState900_skirmishSetup)(void)
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
-		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f16a8), GAME_VAR(int, 0x9f16ac),
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_briefingX, g_briefingY,
 		                                                     GAME_VAR(int, 0x9f16b0), GAME_VAR(int, 0x9f16b4));   /* menu_drawFrame */
 	int screen = g_settingsPage;
 	if (screen == 10)
@@ -466,9 +466,9 @@ u32 (skirmish_settingsKeys)(void)
    0x5c-byte table at 0x9db9e4, the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
 u32 (mission_choose)(void)
 {
-	int sel = GAME_VAR(int, 0x9f63b4);
+	int sel = g_missionShown;
 	u32 t = (u32)sel * 0x5c;
-	GAME_VAR(int, 0x9dad94) = sel;
+	g_missionStage = sel;
 	memcpy((void *)0x67fb44, (const void *)(0x907b30 + sel * 32), 32);
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
 	g_mapRotation = 0;
@@ -492,7 +492,7 @@ u32 (missionsel_clicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = GAME_CDECL(0x447710, u32, int, int)(g_mouseX, g_mouseY);   /* the screen's hit test */
-	int sel = GAME_VAR(int, 0x9f63b4);
+	int sel = g_missionShown;
 	switch (button) {
 	case 0:
 		return GAME_CDECL(0x4479d0, u32, void)();   /* mission_choose */
@@ -501,12 +501,12 @@ u32 (missionsel_clicks)(void)
 	case 2:
 		if (sel <= 0)
 			return (u32)sel;
-		GAME_VAR(int, 0x9f63b4) = --sel;
+		g_missionShown = --sel;
 		return GAME_CDECL(0x4479b0, u32, int)(sel);   /* mission_chosen */
 	case 3:
-		if (sel >= GAME_VAR(int, 0x9f181c) || sel >= 0xe)
+		if (sel >= g_progress || sel >= 0xe)
 			return (u32)sel;
-		GAME_VAR(int, 0x9f63b4) = ++sel;
+		g_missionShown = ++sel;
 		return GAME_CDECL(0x4479b0, u32, int)(sel);
 	}
 	return button;
@@ -517,7 +517,7 @@ u32 (missionsel_clicks)(void)
 u32 (chat_closeLine)(int ok)
 {
 	u32 r;
-	GAME_VAR(int, 0x68039c) = 0;
+	g_paused = 0;
 	if (ok) {
 		GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
 		input_initKeyboard(g_hWndMain);
@@ -529,8 +529,8 @@ u32 (chat_closeLine)(int ok)
 		r = (u32)input_initKeyboard(g_hWndMain);
 	}
 	g_typedLength = 0;
-	GAME_VAR(int, 0x9dbf10) = 0;
-	GAME_VAR(u32, 0x9da434) = 0x41200000;   /* 10 */
+	g_chatLength = 0;
+	(*(u32 *)&g_menuFade) = 0x41200000;   /* 10 */
 	return r;
 }
 
@@ -542,8 +542,8 @@ u32 (messageBox_keyClose)(void)
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
 		if (r == 1) {
-			GAME_VAR(int, 0x4dda44) = 0;
-			GAME_VAR(int, 0x4df900) = 0;
+			(*(int *)&g_cursorBlink) = 0;
+			g_dialogPending = 0;
 		}
 	}
 	return r;
@@ -558,10 +558,10 @@ u32 (menu_keyStartFade)(void)
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
 		if (r == 1) {
-			if (GAME_VAR(int, 0x4df01c))
-				return GAME_VAR(u32, 0x4df01c);
-			GAME_VAR(int, 0x4df01c) = 1;
-			GAME_VAR(int, 0x4e0458) = 0;
+			if (g_titleShown)
+				return (*(u32 *)&g_titleShown);
+			g_titleShown = 1;
+			g_titleFrames = 0;
 		}
 	}
 	return r;
@@ -595,7 +595,7 @@ static u32 leave_game(void)
 {
 	input_setKeysBlocked(4);
 	g_enteringMenus = 1;
-	GAME_VAR(int, 0x67ef20) = 210;
+	g_nextScreen = 210;
 	GAME_CDECL(0x447010, void, void)();   /* profile_saveProgress */
 	return GAME_CDECL(0x48b420, u32, void)();
 }
@@ -608,7 +608,7 @@ static int menu_choice(int i, u32 *r)
 {
 	sound_playMenu(0);
 	if (i)
-		GAME_VAR(float, 0x4dda44) = 0.0f;
+		g_cursorBlink = 0.0f;
 	int result;
 	switch (i) {
 	case 0:
@@ -626,10 +626,10 @@ static int menu_choice(int i, u32 *r)
 	case 1: case 3:
 		*r = GAME_CDECL(0x441250, u32, int)(2);   /* input_setKeysBlocked */
 		g_enteringMenus = 0;
-		GAME_VAR(int, 0x67ef20) = i == 1 ? 400 : i == 2 ? 800 : 600;
+		g_nextScreen = i == 1 ? 400 : i == 2 ? 800 : 600;
 		return 0;
 	case 4:
-		GAME_VAR(int, 0x4dc24c) = 1;
+		g_armcFrom = 1;
 		*r = GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus: the armour centre */
 		g_enteringMenus = 0;
 		return 0;
@@ -648,11 +648,11 @@ u32 (mainmenu_startNetGame)(void)
 		return 1;
 	if (g_mainMenuPicked)
 		return GAME_CDECL(0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
-	if (GAME_VAR(int, 0x4ded88)) {
-		GAME_VAR(float, 0x4dda44) = 0.0f;
+	if (g_mouseClick) {
+		g_cursorBlink = 0.0f;
 		const Outline *buttons = (const Outline *)0x4deb80;
 		int i = 0;
-		while (i < 6 && point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+		while (i < 6 && point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 			i++;
 		u32 r;
 		if (i < 6 && menu_choice(i, &r))
@@ -663,7 +663,7 @@ u32 (mainmenu_startNetGame)(void)
 	int launched = g_tunnelRings;
 	if (launched <= 0)
 		return launched;
-	GAME_VAR(float, 0x4dda44) = 0.0f;
+	g_cursorBlink = 0.0f;
 	return leave_game();
 }
 
@@ -684,10 +684,10 @@ u32 (mainmenu_processKeys)(void)
 			return r;
 		}
 	if (input_justPressed(g_dikEscape_2) && g_tunnelRings > 0) {
-		GAME_VAR(float, 0x4dda44) = 0.0f;
+		g_cursorBlink = 0.0f;
 		input_setKeysBlocked(4);
 		g_enteringMenus = 1;
-		GAME_VAR(int, 0x67ef20) = 210;
+		g_nextScreen = 210;
 		return GAME_CDECL(0x48b420, u32, void)();
 	}
 	u32 r = (u32)input_justPressed(g_excludedKey);

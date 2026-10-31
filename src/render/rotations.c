@@ -9,9 +9,9 @@ typedef long double X;
 static X fsin(X x) { __asm__("fsin" : "+t"(x)); return x; }
 static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
 
-#define MINUS_HALF GAME_VAR(float, 0x4a94f4)   /* -0.5 */
-#define HALF GAME_VAR(float, 0x4a942c)         /* 0.5 */
-#define ONE GAME_VAR(float, 0x4a9424)
+#define MINUS_HALF k_m0_5f   /* -0.5 */
+#define HALF k_0_5f         /* 0.5 */
+#define ONE k_1f
 
 /* 0x47d0b0: q = the quaternion of {angle, axis x, y, z}: sin(-angle / 2) times the axis, then cos(angle / 2) (the
    angle read again for it) */
@@ -66,7 +66,7 @@ void THISCALL (vec3_scaleCopy)(float *v, float *out, float s)
    negative or NaN); returned unrounded */
 #define TURN ((const float *)0x4a94c8)        /* 3600 */
 #define PER_TURN ((const float *)0x4aa284)    /* 1 / 3600 */
-#define ZERO GAME_VAR(float, 0x4a93e8)
+#define ZERO k_0f
 long double (angle_wrap)(float a)
 {
 	int turns = ftol(fmul_m(fld_m(&a), PER_TURN));
@@ -78,7 +78,7 @@ long double (angle_wrap)(float a)
 
 /* 0x46c140: the turn from angle a to angle b (tenths of a degree, as bits), both wrapped first (rounded to floats):
    the shorter way, -1800 .. 1800; returned unrounded */
-#define HALF_TURN GAME_VAR(float, 0x4aa288)   /* 1800 */
+#define HALF_TURN k_1800f   /* 1800 */
 long double (angle_turn)(u32 a, u32 b)
 {
 	float B = (float)FUN_0046c100_bits(b), A = (float)FUN_0046c100_bits(a);
@@ -173,9 +173,9 @@ static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
    positive, else from the largest diagonal element */
 void THISCALL (quat_fromMatrix)(float *q, const float *m)
 {
-	X one = ONE, half = HALF, quarter = GAME_VAR(float, 0x4a941c);
+	X one = ONE, half = HALF, quarter = k_0_25f;
 	X t = (X)m[5] + m[0] + m[10] + one;
-	if (t > GAME_VAR(float, 0x4a93e8)) {
+	if (t > k_0f) {
 		X s = half / fsqrt(t);
 		q[3] = (float)(quarter / s);
 		q[0] = (float)(((X)m[9] - m[6]) * s);
@@ -226,7 +226,7 @@ void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 {
 	if (q[3] >= ONE)
 		out[0] = 0;
-	else if (q[3] > GAME_VAR(float, 0x4a9474))
+	else if (q[3] > k_m1f)
 		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), (const float *)0x4a94a8);   /* * -2 */
 	else
 		BITS(out[0]) = 0xc0c90fdb;   /* -2 pi */
@@ -234,7 +234,7 @@ void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 	X s = fsubr_m(w * w, (const float *)0x4a9424), a;
 	__asm__("fsqrt" : "+t"(s));
 	__asm__("fabs" : "=t"(a) : "0"(s));
-	if (!(a >= GAME_VAR(double, 0x4aa458)))
+	if (!(a >= k_1em8))
 		s = fld_m((const float *)0x4a9424);
 	out[1] = (float)(fld_m(&q[0]) / s);
 	out[2] = (float)(fld_m(&q[1]) / s);

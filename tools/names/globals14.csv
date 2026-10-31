@@ -1,0 +1,89 @@
+# input, the screen
+0x4ded9c,int,g_mouse3Down
+0xae2f1c,int,g_cursorPosY
+0x4e1520,int,g_screenCentreX
+0x680394,int,g_screenCentreY
+0x4defc8,int,g_keyLoadingSkip
+0x4defcc,int,g_keyLoadingSkip2
+0x4defa8,int,g_keyWatchChat
+0x4ddea0,int,g_soundToggle6
+0x4ddea4,int,g_soundToggle7
+0x4b42dc,int,g_musicVolumeSetting
+0x76d418,int,g_chatEditLength
+0x4deb54,int,g_showCmd
+0x9dd858,u16,g_languageId
+0x4dd0b4,va_list,g_messageBoxArgs
+# the clock check (sys_checkClockTampering)
+0x9dd8e0,u32,g_clockCheckTick
+0x9dd860,int,g_clockCheckSeconds
+0x9dd8ec,u32,g_clockCheckTickSeconds
+0x5ae9cc,u32,g_timerHigh
+# MCI (the CD music)
+0xa1efc8,u32,g_mciCallback
+0xa1efcc,u32,g_mciFrom
+0xa1efd0,u32,g_mciTo
+0xa1efd8,u32,g_mciDevice
+0xa0e01c,int,g_musicEndHigh
+# the static textures' objects (their vtable words)
+0x4e1878,u32,g_staticTex64x64
+0x5b1db8,u32,g_staticTex128x64
+0x680cd8,u32,g_staticTex256x64
+0x76d498,u32,g_staticTex128x128
+0x90d1e0,u32,g_staticTex256x128
+0x83a9e0,u32,g_staticTex256x256
+# Hangul glyphs (the last one composed)
+0x4d60e0,int,g_hangulLeadGlyph
+0x4d23d4,int,g_hangulVowelGlyph
+0x4d23dc,int,g_hangulTailGlyph
+# the pilot's record (see globals11): the server's and the kept copy
+0x9dd5f0,int,g_pilotLosses
+0x9dd5f4,float,g_pilotWinRate
+0x9dd24c,int,g_pilotRatingKept
+0x9dd258,int,g_pilotLossesKept
+# forms' windows (left, top, right, bottom)
+0x4dbb00,int,g_newArenaFormLeft
+0x4dbb04,int,g_newArenaFormTop
+0x4dbb08,int,g_newArenaFormRight
+0x4dbb0c,int,g_newArenaFormBottom
+0x9dd1b8,int,g_roomFormLeft
+0x9dd1bc,int,g_roomFormTop
+0x9dd1c0,int,g_roomFormRight
+0x9dd1c4,int,g_roomFormBottom
+# the menus' camera points
+0x9db090,int,g_menuCameraX
+0x9db094,int,g_menuCameraY
+0x9db098,int,g_menuCameraZ
+0x76d3f8,int,g_menuLookAtX
+0x76d3fc,int,g_menuLookAtY
+0x76d400,int,g_menuLookAtZ
+# the network: buffers, replies, DirectPlay caps
+0xa0b33c,char *,g_netLeaveBuffer
+0xa0b314,u8 *,g_netInfoPacket
+0xa0b30c,u32 *,g_netKindWord
+0xa0b308,char *,g_netSendBuffer
+0xa0b304,char *,g_netSendName
+0xa0b31c,u32 *,g_netLobbyMessage
+0xa0b338,u8 *,g_netPlayerRecordPacket
+0xa0b340,u8 *,g_netSelectionPacket
+0xa0b344,char *,g_netAccountBuffer
+0xa0b324,int *,g_netRankingBuffer
+0xa055e0,char *,g_netJoinMessage
+0xa05306,int,g_serverReplyKind
+0xa052aa,u32,g_lobbyReplyKind
+0xa0b2e8,u32,g_gameServerReplyKind
+0xa0b370,int,g_lobbyStatus
+0xa0b374,int,g_gameServerStatus
+0xa0bb00,u32,g_dpTimeout
+0xa0bb04,u32,g_dpMaxBufferSize
+0xa0bb08,u32,g_dpMaxQueueSize
+0xa0bad0,u32,g_arenaJoinTimer
+0x9f9424,int,g_netClaimedSlot
+# the ARM CENTER, the profile, missions
+0x4dc870,int,g_armcLevel
+0x4dc890,int,g_armcLastPart
+0x4b2a74,int,g_armcEnterStep
+0x4b2a78,float,g_armcEnterStepF
+0x9f62fc,int,g_profileProgressSaved
+0x9f6328,int,g_missionChosen
+0x90d1d8,int,g_skirmishInfoCount
+0x9dd4bc,int,g_gameListJoinClicked

@@ -112,7 +112,7 @@ void (menu_frame)(void)
 	if (g_dialogPending)
 		menu_drawMessageBox();
 	if (g_paused)
-		menu_drawInputLine(GAME_VAR(int, 0x9da3d8), GAME_VAR(int, 0x9da3dc));
+		menu_drawInputLine(g_chatCaretX, g_chatCaretY);
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileIntro)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
@@ -1009,7 +1009,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	for (int k = 0; k < 7; k++)
 		if (held2(k_replayHeld[k][0], k_replayHeld[k][1]))
 			S(int, k_replayHeld[k][2]) = 1;
-	if (GAME_VAR(int, 0x4ded88)) {
+	if (g_mouseClick) {
 		S(int, 0x234331b) = 1;
 		S(int, 0x2340c68) = 1;
 	}
@@ -1049,8 +1049,8 @@ u32 THISCALL (replay_frame)(u8 *s)
 		notice_printCentre((Scene *)s, mode);
 	}
 	/* the mouse: its offset from the centre (y inverted with 0x4df000), scaled by the sensitivity, unless slow */
-	S(int, 0x2343257) = GAME_VAR(int, 0x4ded68);
-	S(int, 0x234325b) = GAME_VAR(int, 0x4ded6c);
+	S(int, 0x2343257) = g_mouseX;
+	S(int, 0x234325b) = g_mouseY;
 	if (!(S(float, 0x44) >= 0.2f)) {
 		if (g_mouseInvert == 0)
 			S(float, 0x2343293) = f32((long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
@@ -1063,8 +1063,8 @@ u32 THISCALL (replay_frame)(u8 *s)
 	sens = fmul_m(fadd_m(sens * sens, K(0x4a9424)), K(0x4a942c));
 	S(float, 0x2343293) = f32(fmul_m(sens, (const float *)(s + 0x2343293)));
 	S(float, 0x2343297) = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
-	GAME_VAR(int, 0x4ded68) = gfx_getWidth() / 2;
-	GAME_VAR(int, 0x4ded6c) = gfx_getHeight() / 2;
+	g_mouseX = gfx_getWidth() / 2;
+	g_mouseY = gfx_getHeight() / 2;
 	if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0)) {
 		g_mainMenuFadingIn = 0;
 		S(int, 0x23432cf) = 1;
@@ -1276,7 +1276,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)0x4b21b8, (const char *)0x4b21b0, (const char *)0x4d06ec };   /* NOTEAM */
 	void *f = crt_fopen((const char *)0x4d06e0, (const char *)0x4b21a4);   /* "axiswl.log" */
-	crt_fprintf(f, format, (const char *)0x67fb44, GAME_VAR(int, 0x9dad94), g_fragLimit, g_timeLimit, (const char *)0x4dedd8);
+	crt_fprintf(f, format, (const char *)0x67fb44, g_missionStage, g_fragLimit, g_timeLimit, (const char *)0x4dedd8);
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;
@@ -1564,7 +1564,7 @@ static void chat_keys(u8 *s)
 		}
 		return;
 	}
-	if ((mode != 1 && mode != 2) || GAME_VAR(int, 0x68039c) != 0)
+	if ((mode != 1 && mode != 2) || g_paused != 0)
 		return;
 	S(int, 0x2340d35) = 0;
 	chat_keepLastLine();
@@ -2012,7 +2012,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			stage_deactivateActors(stage);
 			S(int, 0x233cb20 + S(int, 0x233cc10) * 4) = 0;
 			S(int, 0x233cb48 + S(int, 0x233cc10) * 4) = 0;
-			if (S(int, 8) == 0 && S(int, 0x23423a9) == 1 && GAME_VAR(int, 0x9dad94) == 14) {
+			if (S(int, 8) == 0 && S(int, 0x23423a9) == 1 && g_missionStage == 14) {
 				S(int, 0x233c9ec) = 1;   /* the last mission won */
 				S(int, 0x23423a1) = 1;
 				S(int, 0x23423a5) = 0;
@@ -2043,12 +2043,12 @@ void THISCALL (game_processGameMode)(u8 *s)
 				} else {
 					if (S(int, 0x1f1ca8) > 0) {   /* the server's map rotation (+0x1f1668: map, mode) */
 						S(int, 0x1f1cac) = (S(int, 0x1f1cac) + 1) % S(int, 0x1f1ca8);
-						GAME_VAR(int, 0x9dad94) = S(int, 0x1f1668 + S(int, 0x1f1cac) * 16);
+						g_missionStage = S(int, 0x1f1668 + S(int, 0x1f1cac) * 16);
 						S(int, 0x1f1cb4) = S(int, 0x1f1668 + (S(int, 0x1f1cac) + 1) % S(int, 0x1f1ca8) * 16);
 						S(int, 0x1f1cb8) = S(int, 0x1f166c + (S(int, 0x1f1cac) + 1) % S(int, 0x1f1ca8) * 16);
 						game_setGameTypeFlags((Stage *)stage, S(int, 0x1f166c + S(int, 0x1f1cac) * 16));
 					} else {
-						GAME_VAR(int, 0x9dad94) = S(int, 0x1f1cb4);
+						g_missionStage = S(int, 0x1f1cb4);
 						S(int, 0x1f1cb4) = -1;
 						game_setGameTypeFlags((Stage *)stage, S(int, 0x1f1cb8));
 						S(int, 0x1f1cb8) = -1;
@@ -2087,13 +2087,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 					winning_team(s);
 					round_over(s, 0);
 					if (S(int, 8) == 0 && S(int, 0x2221fb8 + S(int, 0x234243e) * 4) >= S(int, 0x23423ad)
-					    && GAME_VAR(int, 0x9dad94) == GAME_VAR(int, 0x9f181c))
+					    && g_missionStage == g_progress)
 						S(int, 0x23423a9) = 1;
 				}
 			} else if (S(int, 0x2342976) > 0 && A_INT(S(int, 0x23428f6), 0x1eccb54) >= limit) {
 				round_over(s, 0);
 				if (S(int, 8) == 0 && A_INT(S(int, 0x234240d), 0x1eccb54) >= S(int, 0x23423ad)
-				    && GAME_VAR(int, 0x9dad94) == GAME_VAR(int, 0x9f181c))
+				    && g_missionStage == g_progress)
 					S(int, 0x23423a9) = 1;
 			}
 		}
@@ -2103,8 +2103,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 			round_over(s, 1);
 		}
 	}
-	if (S(int, 0x23423a9) == 1 && GAME_VAR(int, 0x9dad94) == GAME_VAR(int, 0x9f181c)) {   /* the campaign's progress */
-		GAME_VAR(int, 0x9f181c)++;
+	if (S(int, 0x23423a9) == 1 && g_missionStage == g_progress) {   /* the campaign's progress */
+		g_progress++;
 		profile_saveProgress();
 	}
 	/* the camera */
@@ -2252,7 +2252,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				          1, 0);
 			replay_closeRecording((Scene *)s);
 			music_shutdown();
-			if (S(int, 0x2340d35) != 0 && GAME_VAR(int, 0x68039c) == 0) {
+			if (S(int, 0x2340d35) != 0 && g_paused == 0) {
 				S(int, 0x2340d35) = 0;
 				chat_keepLastLine();
 			}

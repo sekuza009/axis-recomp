@@ -302,7 +302,7 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
    the others by 0x4aa420), given to actor_setPartColor. Its caller ignores the eax it leaves */
 void THISCALL (actor_applyRemoteColours)(void *scene, int p, int part, int a, int b, int c, int d, int e, int f)
 {
-	long double k1 = GAME_VAR(float, 0x4aa41c), k2 = GAME_VAR(float, 0x4aa420);
+	long double k1 = k_1_40625f, k2 = k_0_0078125f;
 	actor_setPartColor(scene, p, part, (float)((signed char)a * k1), (float)((signed char)b * k2), (float)((signed char)c * k2),
 	                   (float)((signed char)d * k1), (float)((signed char)e * k2), (float)((signed char)f * k2));
 }
@@ -372,7 +372,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	A(u32, 0x20) = R(u32, 0x24);
 	A(u32, 0x128) = R(u32, 0x20);
 	A(u32, 0x12c) = R(u32, 0x24);
-	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)GAME_VAR(float, 0x4a9750));
+	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)k_27_7778f);
 	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
 	A(float, 0) = (float)(radius * radius * k_10000f);
@@ -577,7 +577,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 		f = A(u32, 0x3f0);
 		int lists = 1;
 		if (f & 0xd00) {
-			if (GAME_VAR(int, 0x83a9c8) == 0)
+			if (g_items3D == 0)
 				lists = 0;
 			else {
 				float size = f32(fsub_m(fld_m((const float *)(ac + 0x87d4)), (const float *)(ac + 0x87c8)));
@@ -585,7 +585,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 					lists = 0;
 			}
 		}
-		if (lists && GAME_VAR(int, 0x83a9c8) != 1 && tint && tint[3] <= 0x10)
+		if (lists && g_items3D != 1 && tint && tint[3] <= 0x10)
 			lists = 0;
 		if (lists) {
 			int n = A(int, 0x54c);

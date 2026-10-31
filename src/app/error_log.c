@@ -41,7 +41,7 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 /* the cleanup hook, if any, then exit(1) */
 static void terminate(void)
 {
-	Cleanup cleanup = GAME_VAR(Cleanup, 0xa1efe8);
+	Cleanup cleanup = (*(Cleanup *)&g_errorCleanupHook);
 	if (cleanup)
 		cleanup();
 	GAME_CDECL(0x49edac, void, int)(1);   /* exit */

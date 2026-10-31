@@ -8,7 +8,7 @@
 #define g_loadText ((char *)0xa0e988)
 #define g_loadTexture GAME_VAR(int, 0xa0e980)         /* the backdrop's texture id */
 #define g_loadFade GAME_VAR(float, 0xa0e984)          /* the fade's time, 0 .. 1 s */
-#define ONE GAME_VAR(float, 0x4a9424)
+#define ONE k_1f
 
 /* one frame of a fade: the screen at its progress, under a black quad (alpha 1 - time fading in, time fading out),
    the fade's time advanced */
@@ -87,7 +87,7 @@ void (loading_draw)(u32 progress)
 	glClear(0x4100);   /* GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT */
 	GAME_CDECL(0x4685f0, void, int, u32)(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0xa0e980);
+	int texture = g_loadTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
 	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)0x4a9418));   /* progress + 10 */
@@ -119,7 +119,7 @@ void (loading_draw)(u32 progress)
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
 		sprintf(line, (const char *)0x4c531c);
 	else
-		sprintf(line, (const char *)0x4c5310, (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 32));   /* "ZONE : %s" */
+		sprintf(line, (const char *)0x4c5310, (const char *)(0x907b30 + g_missionStage * 32));   /* "ZONE : %s" */
 	info_line(row, line);
 	row += 2;
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
@@ -227,7 +227,7 @@ int (app_checkCdAndLoad)(void *instance)
 	font_initHudGrids();
 	text_setWrapX(0x280);
 	text_setBottom(0x1e0);
-	GAME_VAR(int, 0x4d7348) = 0;
+	g_briefingSkipped = 0;
 	timer_init();
 	g_convertHangul = 1;
 	g_quitAsked = 0;
@@ -251,11 +251,11 @@ int (app_checkCdAndLoad)(void *instance)
 		g_soundOn = 1;
 		sound_loadMenuSounds();
 	}
-	GAME_VAR(int, 0x4ded68) = 0x136;
-	GAME_VAR(int, 0x4ded6c) = 0xe6;
+	g_mouseX = 0x136;
+	g_mouseY = 0xe6;
 	input_initVkTable();
 	input_clearKeyTable2();
-	GAME_VAR(u32, 0x68038c) = 0x42340000;   /* 45 */
+	(*(u32 *)&g_viewAngle) = 0x42340000;   /* 45 */
 	if (!cd_findDrive()) {
 		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);
 		return 0;
@@ -277,45 +277,45 @@ int (app_checkCdAndLoad)(void *instance)
 	                (void *)0x90d1e0, (void *)0x83a9e0);
 	g_textures = (TextureSets *)0x83a5e0;
 	pen_init((const char *)0x4b2514);
-	GAME_VAR(int, 0x76d448) = texture_named((const char *)0x4b24c4);
-	GAME_VAR(int, 0x9dad90) = texture_named((const char *)0x4b24b4);
-	GAME_VAR(int, 0x9dae1c) = texture_named((const char *)0x4b24a4);
-	GAME_VAR(int, 0x76d360) = texture_named((const char *)0x4b2490);
+	g_fontAscii = texture_named((const char *)0x4b24c4);
+	g_fontAsciiLarge = texture_named((const char *)0x4b24b4);
+	g_fontHanCho = texture_named((const char *)0x4b24a4);
+	g_fontHanJungJong = texture_named((const char *)0x4b2490);
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
-	GAME_VAR(void *, 0x9087b4) = scene ? game_loadAllData(scene) : NULL;
+	(*(void **)&g_scene) = scene ? game_loadAllData(scene) : NULL;
 	sound_initSoundTable((const char *)0x4b2504, 0x64);
 	char logo[64];
 	strcpy(logo, (const char *)0x4b24f0);
-	GAME_VAR(u32, 0x4df028) = 0;
+	(*(u32 *)&g_armcCamHeight) = 0;
 	g_menuCameraPos = 0;
-	GAME_VAR(u32, 0x4df02c) = 0x43fa0000;   /* 500 */
+	(*(u32 *)&g_armcCamDistance) = 0x43fa0000;   /* 500 */
 	g_menuCameraLook = 0;
 	g_menuCameraLookY = 0;
-	GAME_VAR(u32, 0x680380) = 0x43c80000;   /* 400 */
+	(*(u32 *)&g_menuCameraHeight) = 0x43c80000;   /* 400 */
 	g_menuFrameCount = 0;
-	GAME_VAR(int, 0x76d3f0) = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
+	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
 	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits((Colour *)0x76d350, 0, 0, 0, 0x3f800000);
-	int width = GAME_VAR(int, 0x5b1998), height = GAME_VAR(int, 0x4e045c);
-	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5 */
+	int width = g_screenW, height = g_screenH;
+	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
 	g_menuScaleX = f32(fmul_m((long double)width, (const float *)0x4a9578));
-	GAME_VAR(int, 0x4e1520) = width / 2;
+	g_screenCentreX = width / 2;
 	GAME_VAR(int, 0x76d474) = 0;
 	g_menuScaleY = f32(fmul_m((long double)height, (const float *)0x4a9574));
-	GAME_VAR(int, 0x4df900) = 0;
-	GAME_VAR(int, 0x680394) = height / 2;
+	g_dialogPending = 0;
+	g_screenCentreY = height / 2;
 	GAME_VAR(u32, 0x4dd96c) = 0;
 	GAME_VAR(int, 0x4dd0b8) = 0;
-	GAME_VAR(u32, 0x4de1e0) = 0x3dcccccd;   /* 0.1 */
-	GAME_VAR(u32, 0x4de1d8) = 0x3ca3d70a;   /* 0.02 */
-	GAME_VAR(u32, 0x4de1e8) = 0;
-	GAME_VAR(int, 0x4df03c) = 0;
-	GAME_VAR(u32, 0x4df910) = 0;
-	GAME_VAR(int, 0x4e1868) = 0;
+	(*(u32 *)&g_emblemAlpha) = 0x3dcccccd;   /* 0.1 */
+	(*(u32 *)&g_emblemPulse) = 0x3ca3d70a;   /* 0.02 */
+	(*(u32 *)&g_logoFade) = 0;
+	g_cursorFrame = 0;
+	(*(u32 *)&g_cursorFrameTime) = 0;
+	g_chatFieldFlag = 0;
 	g_matchMode = 0;
-	GAME_VAR(int, 0x4dd984) = (g_soundVolume * 5 - 0x1f4) * 4;
+	g_menuVolume = (g_soundVolume * 5 - 0x1f4) * 4;
 	g_matchRunning = 0;
 	return 1;
 }
@@ -363,7 +363,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];
 	if (G(int, 0x233cc28) == 0) {
-		GAME_VAR(u8 *, 0xa0ea8c) = g;
+		g_loadGame = g;
 		g_statusLine = 0;
 		G(int, 0x2340c60) = 1;
 		strcpy((char *)g + 0x233cc60, (const char *)0x4c52b0);
@@ -393,7 +393,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled((void *)0x76d408, 4, 1, G(void *, 0x2340d08));
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
-		GAME_VAR(u32, 0xae2ec8) = 0x469730;
+		(*(u32 *)&g_logHook) = 0x469730;
 		log_message((int)STAGE(g), -1, 0, (const char *)0x4c521c);
 		scene_reset(STAGE(g));
 		mode = G(int, 8);
@@ -408,7 +408,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
 		g_mapMissing = 0;
-		const char *map = (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20;
+		const char *map = (const char *)0x907b30 + g_missionStage * 0x20;
 		if (!map[0]) {
 			g_mapMissing = 1;
 			return 0;
@@ -426,7 +426,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51c0);
 		keep_alive(g);
 		if (G(int, 0x1f1cb0) == 0) {
-			scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+			scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + g_missionStage * 0x20);
 			mode = G(int, 8);
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, 0x4c51b0);   /* .LOAD GROUND */
@@ -455,7 +455,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		}
 		if (netq_resends() >= 0x80)
 			stop = 1;
-		if (input_justPressed(GAME_VAR(int, 0x4defc8)) || input_justPressed(GAME_VAR(int, 0x4defcc)))
+		if (input_justPressed(g_keyLoadingSkip) || input_justPressed(g_keyLoadingSkip2))
 			stop = 1;
 		break;
 	case 3:
@@ -463,7 +463,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
 			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
-		if (GAME_VAR(int, 0x9dad94) != G(int, 0xbe3000))
+		if (g_missionStage != G(int, 0xbe3000))
 			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
@@ -498,7 +498,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5104);
 		keep_alive(g);
 		sprintf(name, (const char *)0x4c50e4, g_crosshairSetting);
-		G(int, 0x233c9f8) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+		G(int, 0x233c9f8) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
 		mode = G(int, 8);
 		if (mode >= 0 && mode <= 3)
@@ -533,7 +533,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		else
 			no_next(g);
 		G(int, 0x233cc28) = 0;
-		GAME_VAR(int, 0xae2ec8) = 0;
+		(*(int *)&g_logHook) = 0;
 		return G(u32, 0x233cc20);
 	}
 	G(int, 0x233cc28)++;

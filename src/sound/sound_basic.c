@@ -86,19 +86,19 @@ int (sound_setVolume)(int v)
    bits). Returns what the original leaves in eax */
 u32 (music_loopIfEnded)(void)
 {
-	void *segment = GAME_VAR(void *, 0xa0e670);
+	void *segment = g_music;
 	if (!segment)
 		return 0;
 	u32 pos[2];
 	COM(segment, 0x20, u32, u32 *)(segment, pos);   /* the play position */
-	int hi = (int)pos[1], end_hi = GAME_VAR(int, 0xa0e01c);
+	int hi = (int)pos[1], end_hi = g_musicEndHigh;
 	if (hi < end_hi)
 		return (u32)hi;
 	if (hi == end_hi && pos[0] < g_musicLength)
 		return g_musicLength;
-	segment = GAME_VAR(void *, 0xa0e670);
+	segment = g_music;
 	COM(segment, 0x28, u32, u32, u32)(segment, 0, 0);
-	segment = GAME_VAR(void *, 0xa0e670);
+	segment = g_music;
 	return COM(segment, 0x1c, u32, u32)(segment, 1);
 }
 
@@ -194,7 +194,7 @@ int (sound_initSoundTable)(const char *file, int volume)
    eax, or what the original leaves when there is nothing to play */
 u32 (sound_playVolume)(int index, int volume)
 {
-	u32 on = GAME_VAR(u32, 0xa0e80c);
+	u32 on = (*(u32 *)&g_soundOn);
 	if (!on)
 		return 0;
 	void *sound = GAME_VAR(void *, 0xa0e02c + index * 4);

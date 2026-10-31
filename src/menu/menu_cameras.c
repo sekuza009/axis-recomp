@@ -152,8 +152,8 @@ static void menu_camera2(const MenuCam2 *m)
 			return;
 		X full = SCREEN_ASPECT;
 		I(0x4df024) = 0;
-		GAME_VAR(u32, 0x4df028) = 0xc3480000;   /* -200 */
-		GAME_VAR(u32, 0x4df02c) = 0x44bb8000;   /* 1500 */
+		(*(u32 *)&g_armcCamHeight) = 0xc3480000;   /* -200 */
+		(*(u32 *)&g_armcCamDistance) = 0x44bb8000;   /* 1500 */
 		I(0x680378) = 0;
 		g_menuCameraLookY = 0xc3480000;
 		I(0x680380) = 0;
@@ -222,8 +222,8 @@ void (arena_launchFromFile)(void)
 		if (!(last > F(network ? 0x4a9470 : 0x4a9474)))   /* (the depth before its rounding) */
 			return;
 		I(0x4df024) = 0;
-		GAME_VAR(u32, 0x4df028) = 0xc3480000;   /* -200 */
-		GAME_VAR(u32, 0x4df02c) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
+		(*(u32 *)&g_armcCamHeight) = 0xc3480000;   /* -200 */
+		(*(u32 *)&g_armcCamDistance) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
 		g_dialogOpen = 1;
 		I(0x680378) = 0;
 		g_menuCameraLookY = 0xc3480000;
@@ -266,10 +266,10 @@ void (arena_launchFromFile)(void)
 		I(0x680380) = I(0x4dbac0);
 		I(0x9db090) = 0;
 		I(0x9db094) = 0;
-		GAME_VAR(u32, 0x9db098) = 0xc4c1c000;   /* -1550 */
+		(*(u32 *)&g_menuCameraZ) = 0xc4c1c000;   /* -1550 */
 		I(0x76d3f8) = 0;
 		I(0x76d3fc) = 0;
-		GAME_VAR(u32, 0x76d400) = 0xc4ce4000;   /* -1650 */
+		(*(u32 *)&g_menuLookAtZ) = 0xc4ce4000;   /* -1650 */
 		break;
 	case 3:
 		state = 800;
@@ -457,30 +457,30 @@ void (match_debugHandler)(void)
 {
 	const float *frame = (const float *)0x4b071c, *speed = (const float *)0x4a9534;
 	if (g_watchChatOpen) {
-		if (GAME_VAR(int, 0x68039c))
+		if (g_paused)
 			return;
 		if (strlen((const char *)0x9dc92c)) {
 			net_sendChat((const char *)0x9dc92c);
 			g_watchChatOpen = 0;
 			g_chatLogged = 1;
-			GAME_VAR(u32, 0x9fd948) = 0x9dc92c;
+			(*(u32 *)&g_chatLog) = 0x9dc92c;
 		} else {
 			g_watchChatOpen = 0;
 			g_chatLogged = 0;
 		}
-		GAME_VAR(int, 0x68039c) = 0;
+		g_paused = 0;
 		input_resetKeys();
 		input_initKeyboard(g_mainWindow);
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4defa8))) {
+	if (input_justPressed(g_keyWatchChat)) {
 		input_releaseKeyboard();
-		GAME_VAR(int, 0x68039c) = 1;
+		g_paused = 1;
 		menu_clearInputBuffer(0x32);
 		g_watchChatOpen = 1;
-		GAME_VAR(u32, 0x9da434) = 0x41a00000;   /* 20 */
-		GAME_VAR(int, 0x9da3d8) = 0x32;
-		GAME_VAR(int, 0x9da3dc) = 0x1cc;
+		(*(u32 *)&g_menuFade) = 0x41a00000;   /* 20 */
+		g_chatCaretX = 0x32;
+		g_chatCaretY = 0x1cc;
 		return;
 	}
 	if (input_justPressed(g_keyCancel2)) {
@@ -493,7 +493,7 @@ void (match_debugHandler)(void)
 		game_returnToMainMenu();
 		return;
 	}
-	if (input_isDown(GAME_VAR(int, 0x4def00)) == 1) {
+	if (input_isDown(g_keyFreeCam0) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &F(0x4de6c0)), speed);
 		F(0x4de344) = f32(fadd_m(a, &F(0x4de344)));
 		long double b = fmul_m(fmul_m(fld_m(&F(0x4de6c8)), frame), speed);
@@ -502,7 +502,7 @@ void (match_debugHandler)(void)
 		F(0x4df024) = f32(fadd_m(a, &F(0x4df024)));
 		F(0x4df02c) = f32(fadd_m(fld_m(&bf), &F(0x4df02c)));
 	}
-	if (input_isDown(GAME_VAR(int, 0x4def08)) == 1) {
+	if (input_isDown(g_keyFreeCam1) == 1) {
 		long double a = fmul_m(fmul_m(fld_m(frame), &F(0x4de6c0)), speed);
 		F(0x4de344) = f32(fld_m(&F(0x4de344)) - a);
 		float bf = f32(fmul_m(fmul_m(fld_m(&F(0x4de6c8)), frame), speed));
@@ -510,12 +510,12 @@ void (match_debugHandler)(void)
 		F(0x4df024) = f32(fld_m(&F(0x4df024)) - a);
 		F(0x4df02c) = f32(fsub_m(fld_m(&F(0x4df02c)), &bf));
 	}
-	if (input_isDown(GAME_VAR(int, 0x4def10)) == 1)
+	if (input_isDown(g_keyFreeCam2) == 1)
 		menuCamera_forward();
-	if (input_isDown(GAME_VAR(int, 0x4def18)) == 1)
+	if (input_isDown(g_keyFreeCam3) == 1)
 		menuCamera_back();
 	g_menuCameraLook = g_menuCamX;
-	GAME_VAR(u32, 0x680380) = g_menuCamZ;
+	(*(u32 *)&g_menuCameraHeight) = g_menuCamZ;
 	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));
 	F(0x4df028) = f32(fadd_m(fld_m(&F(0x4de348)), (const float *)0x4a9418));
 	u32 *slot = (u32 *)(0x4dfa1c + g_watchedSlot * 0x58);

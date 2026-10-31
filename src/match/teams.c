@@ -79,7 +79,7 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {
 		u8 *p = (u8 *)&stage->projectiles[i];
-		if (stage->projectiles[i].active == 1 && *(const float *)(p + 0x7c) > GAME_VAR(float, 0x4a93e8))
+		if (stage->projectiles[i].active == 1 && *(const float *)(p + 0x7c) > k_0f)
 			GAME_THISCALL(0x483f00, int, void *, u32, u32, void *)(pool, 0xa1f23c, GAME_VAR(u32, p + 0x7c), p + 0x10);
 	}
 }

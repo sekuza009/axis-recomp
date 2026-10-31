@@ -7,9 +7,8 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_netClient GAME_VAR(int, 0x9f9838)           /* the packet layer is on (as a client) */
-#define g_netOnline GAME_VAR(int, 0xa0b388)
-#define g_localSlot GAME_VAR(u8, 0x9fd954)            /* the local player's slot */
+#define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
+#define g_localSlot g_watchedSlot            /* the local player's slot */
 #define g_nextNumber ((int *)0xb116a0)                /* each player's next packet number (-1: none yet) */
 #define g_ahead ((int *)0xb0f6a0)                     /* [player * 128 + number]: arrived ahead of its turn */
 #define g_history ((u8 *)0xaef6a0)                    /* [player][number]: 64 bytes */
@@ -34,7 +33,7 @@ u32 (netq_reset)(int host)
 /* 0x4a8350: online, the network's incoming messages gathered (net_receiveAll, through its jump) */
 u32 (netq_poll)(void)
 {
-	if (!g_netOnline)
+	if (!g_netQueueOnline)
 		return 0;
 	return GAME_CDECL(0x450bb0, u32, void)();
 }
@@ -129,7 +128,7 @@ int (netq_receive)(int *from, int *size, void *data)
 }
 
 /* 0x4a86c0 .. 0x4a8730: the layer's flags and counters */
-int (netq_online)(void) { return g_netOnline; }
+int (netq_online)(void) { return g_netQueueOnline; }
 int (net_isClient)(void) { return g_netClient; }
 int (net_matchOver)(void) { return g_netHostGone; }
 int (net_localSlot)(void) { return g_localSlot; }

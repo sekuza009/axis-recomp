@@ -150,11 +150,11 @@ void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)0
 static void tab_opened(void)
 {
 	g_setupPage = 1;
-	GAME_VAR(u32, 0x4de038) = 0x3f333333;   /* 0.7 */
-	GAME_VAR(int, 0x4ddb98) = 0;
-	GAME_VAR(int, 0x4dde90) = -1;
+	(*(u32 *)&g_setupTunnelAlpha) = 0x3f333333;   /* 0.7 */
+	(*(int *)&g_setupPressedClock) = 0;
+	g_setupPressed = -1;
 	g_setupPanelMoving = 0;
-	GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;   /* -1650.0 */
+	(*(u32 *)&g_setupTunnelDepth) = 0xc4ce4000;   /* -1650.0 */
 }
 
 /* 0x420ad0, 0x420b40, 0x420ba0: the sound, graphics and controls tabs opened, each on a copy of its settings in
@@ -178,7 +178,7 @@ void (setup_selectControlTab)(void)
 	memcpy((void *)0x4de0c0, (void *)0x4def00, 0x44 * 4);   /* the key bindings */
 	g_setupTab = TAB_CONTROL;
 	g_bindPage = 0;
-	GAME_VAR(int, 0x4de040) = -1;
+	g_bindRow = -1;
 	g_bindWaiting = 0;
 	g_lastCrosshair = -1;
 	tab_opened();
@@ -226,10 +226,10 @@ void (setup_unbindKey)(int k)
    back too. Returns what the original leaves in eax */
 u32 (setup_drawTopPage)(void)
 {
-	if (GAME_VAR(int, 0x4ded88)) {
+	if (g_mouseClick) {
 		const Outline *buttons = (const Outline *)0x4df918;
 		for (int i = 0; i < 4; i++) {
-			if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), buttons[i]) != 1)
+			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
 			switch (i) {
 			case 0: sound_playMenu(0); GAME_CDECL(0x420ad0, void, void)(); break;   /* the sound tab */
@@ -239,7 +239,7 @@ u32 (setup_drawTopPage)(void)
 				input_setKeysBlocked(4);
 				sound_playMenu(0);
 				g_nextScreen = 300;
-				GAME_VAR(int, 0x4dda44) = 0;
+				(*(int *)&g_cursorBlink) = 0;
 				GAME_CDECL(0x48b420, void, void)();   /* debug_traceStripped */
 				break;
 			}
@@ -255,7 +255,7 @@ u32 (setup_drawTopPage)(void)
 	sound_playMenu(0);
 	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* input_setKeysBlocked */
 	g_nextScreen = 300;
-	GAME_VAR(int, 0x4dda44) = 0;
+	(*(int *)&g_cursorBlink) = 0;
 	GAME_CDECL(0x48b420, void, void)();
 	return r;
 }
@@ -266,14 +266,14 @@ u32 (setup_drawTopPage)(void)
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_drawGraphicTab)(void)
 {
-	u32 page = GAME_VAR(u32, 0x4ddcec);
-	if (page == 1 || page == 0 || GAME_VAR(int, 0x90d1c4))
+	u32 page = (*(u32 *)&g_setupPage);
+	if (page == 1 || page == 0 || g_dialogOpen)
 		return page;
 	if (g_keyEnter)
 		g_setupPage = 0;
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return page;
-	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setupOptions_hitTest */
+	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(g_mouseX, g_mouseY);   /* setupOptions_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
 	case 0:
@@ -289,9 +289,9 @@ u32 (setup_drawGraphicTab)(void)
 		return button == 2 || button == 5 ? 1 - old : old;   /* the original's eax held one or the other */
 	case 6:
 		sound_playMenu(2);
-		old = GAME_VAR(u32, 0x9da494);
+		old = (*(u32 *)&g_texturesOff);
 		edited[6] = 1 - edited[6];
-		GAME_VAR(u32, 0x9da494) = 1 - old;
+		(*(u32 *)&g_texturesOff) = 1 - old;
 		return old;
 	case 7:
 		return graphics_apply();
@@ -309,18 +309,18 @@ u32 (setup_drawGraphicTab)(void)
 static void volume_down(void)
 {
 	if (g_volumeSetting > 0) {
-		GAME_VAR(int, 0x4dde90) = 0;
+		g_setupPressed = 0;
 		g_volumeSetting--;
-		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;   /* 5 */
+		(*(u32 *)&g_setupPressedClock) = 0x40a00000;   /* 5 */
 	}
 }
 
 static void volume_up(void)
 {
 	if (g_volumeSetting < 100) {
-		GAME_VAR(int, 0x4dde90) = 1;
+		g_setupPressed = 1;
 		g_volumeSetting++;
-		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;
+		(*(u32 *)&g_setupPressedClock) = 0x40a00000;
 	}
 }
 
@@ -336,7 +336,7 @@ static void volume_at_pointer(void)
    restarts it). The original leaves eax to callers that ignore it */
 void (setup_drawSoundTab)(void)
 {
-	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
+	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
 	if (g_keyEnter)
 		g_setupPage = 0;
@@ -349,11 +349,11 @@ void (setup_drawSoundTab)(void)
 		case 5: g_effectsVolume = g_effectsVolume >= 50 ? 0 : 100; break;
 		case 6:
 			sound_playMenu(2);
-			GAME_VAR(int, 0x4ddea0) = 1 - GAME_VAR(int, 0x4ddea0);
+			g_soundToggle6 = 1 - g_soundToggle6;
 			break;
 		case 7:
 			sound_playMenu(2);
-			GAME_VAR(int, 0x4ddea4) = 1 - GAME_VAR(int, 0x4ddea4);
+			g_soundToggle7 = 1 - g_soundToggle7;
 			break;
 		case 8: sound_ok(); break;
 		case 9:
@@ -373,7 +373,6 @@ void (setup_drawSoundTab)(void)
 }
 
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
-#define g_bindRow GAME_VAR(int, 0x4de040)
 #define g_bindRows ((const int *)0x4b04ec)            /* rows per page */
 #define g_bindToggle GAME_VAR(int, 0x4de1c0)          /* row 10's setting (on / off) */
 
@@ -463,7 +462,7 @@ void (setup_controlTabKeys)(void)
    callers that ignore it */
 void (setup_drawControlTab)(void)
 {
-	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
+	if (g_setupPage == 1 || g_setupPage == 0 || g_dialogOpen)
 		return;
 	int waiting = g_bindWaiting;
 	if (g_keyEnter) {
@@ -543,7 +542,7 @@ void (setup_drawKeyBindingRows)(int key)
 	if (key == g_excludedKey)
 		return;
 	setup_unbindKey(key);
-	int page = g_bindPage, row = GAME_VAR(int, 0x4de040);
+	int page = g_bindPage, row = g_bindRow;
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
 		int *slot = (int *)(0x4de0c0 + binding * 8), none = g_dikNone;
@@ -563,23 +562,23 @@ void (setup_drawKeyBindingRows)(int key)
 static void slider_press(void)
 {
 #define VALUE GAME_VAR(int, 0x4de1c8)
-	switch (setupSlider_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {
+	switch (setupSlider_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		if (VALUE > 0) {
-			GAME_VAR(int, 0x4dde90) = 0;
+			g_setupPressed = 0;
 			VALUE--;
-			GAME_VAR(u32, 0x4ddb98) = 0x40a00000;   /* 5.0f */
+			(*(u32 *)&g_setupPressedClock) = 0x40a00000;   /* 5.0f */
 		}
 		break;
 	case 1:
 		if (VALUE < 100) {
-			GAME_VAR(int, 0x4dde90) = 1;
+			g_setupPressed = 1;
 			VALUE++;
-			GAME_VAR(u32, 0x4ddb98) = 0x40a00000;
+			(*(u32 *)&g_setupPressedClock) = 0x40a00000;
 		}
 		break;
 	case 2:
-		VALUE = 1 - ftol((GAME_VAR(int, 0x4ded68) - GAME_VAR(int, 0x4dde80) - 0x108) * (long double)GAME_VAR(float, 0x4a94f4));
+		VALUE = 1 - ftol((g_mouseX - GAME_VAR(int, 0x4dde80) - 0x108) * (long double)k_m0_5f);
 		break;
 	}
 #undef VALUE
@@ -591,11 +590,11 @@ static void slider_press(void)
 void (setup_drawControlSlider)(void)
 {
 #define TIMER GAME_VAR(float, 0x4dda44)
-	if (GAME_VAR(int, 0x4ded88)) {
+	if (g_mouseClick) {
 		TIMER = 0;
 		slider_press();
 	}
-	if (GAME_VAR(int, 0x4ded94) && TIMER > GAME_VAR(float, 0x4a9424)) {
+	if (g_mouseHeld && TIMER > k_1f) {
 		TIMER = 0;
 		slider_press();
 	}

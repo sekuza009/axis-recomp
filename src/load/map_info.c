@@ -333,7 +333,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	for (int i = 1; i < FIELD(int, scene, 0x1cd93a4); i++)
 		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
 	sprintf(path, (const char *)0x4c7724, scene + 0x908);
-	FIELD(int, scene, 0x2104fe4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), path, 0, 0, 0, 0, 0, 0, 0);
+	FIELD(int, scene, 0x2104fe4) = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < FIELD(int, scene, 0x1cd6fb0); p++) {
 		FIELD(int, scene, 0x15a9b2e + p * 0x47fd2) = 1;
 		FIELD(int, scene, 0x15a9b36 + p * 0x47fd2) = 0x180;
@@ -359,7 +359,7 @@ static u8 *pool_take(u8 *s, int n)
 static u32 ground_tex(const char *dir, u32 fmt, int n, char *name)
 {
 	sprintf(name, (const char *)fmt, dir, n);
-	return tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+	return tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* the grey value of a height-map pixel (r = g = b), or -1 */

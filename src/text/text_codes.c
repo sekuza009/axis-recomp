@@ -19,9 +19,9 @@ int (hangul_glyphs)(u32 hi, u32 lo)
 		leadSet = SC(0x4ad464 + lead);
 		vowelSet = SC(0x4ad43a + vowel);
 	}
-	GAME_VAR(int, 0x4d60e0) = lead + vowelSet * 20;
-	GAME_VAR(int, 0x4d23d4) = vowel + leadSet * 22;
-	return GAME_VAR(int, 0x4d23dc) = tail + tailSet * 28;
+	g_hangulLeadGlyph = lead + vowelSet * 20;
+	g_hangulVowelGlyph = vowel + leadSet * 22;
+	return g_hangulTailGlyph = tail + tailSet * 28;
 }
 
 /* 0x402590: the printable characters of a chat line (spaces not counted): outside a match "|x" is a code ("||" a
@@ -74,7 +74,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	for (u8 c = *s; c; c = *s) {
 		glColor4f_stored((const u32 *)0x76d438);
 		s++;
-		if (GAME_VAR(int, 0x76d3e8) != 9999 && c == '|') {
+		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += 10;
 				x = left;
@@ -121,7 +121,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 	int left = x, kept = 0, colour = 0;
 	glBegin(7);   /* GL_QUADS */
 	for (u8 c = *s; c; c = *s) {
-		int screen = GAME_VAR(int, 0x76d3e8), special = pass->sticky && (screen == 9999 || screen == 400);
+		int screen = g_menuState, special = pass->sticky && (screen == 9999 || screen == 400);
 		s++;
 		if (special && c == '$' && s[0] == '#' && s[2]) {
 			colour = (signed char)s[1] - '0';
@@ -130,7 +130,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			s += 3;
 		}
 		glColor4f_stored(special && kept ? (const u32 *)(0x9dada0 + colour * 16) : (const u32 *)0x76d438);
-		if (GAME_VAR(int, 0x76d3e8) != 9999 && c == '|') {
+		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += pass->line;
 				x = left;
@@ -157,7 +157,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		}
 		if (y >= g_textBottom) {
 			if (!pass->korean)
-				GAME_VAR(int, 0x4d7348) = 1;
+				g_briefingSkipped = 1;
 			break;
 		}
 		if (!pass->korean) {
@@ -171,7 +171,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			continue;
 		}
 		if (!(c & 0x80)) {
-			x += c == ' ' ? pass->space : GAME_VAR(int, 0x4d23d8);
+			x += c == ' ' ? pass->space : g_textCharWidth;
 			continue;
 		}
 		u8 hi = c, lo = *s++;
@@ -182,9 +182,9 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		}
 		GAME_CDECL(0x4017d0, int, u32, u32)(hi, lo);   /* hangul_glyphs */
 		if (pass->layered)
-			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, GAME_VAR(int, 0x4d23d4), GAME_VAR(int, 0x4d23dc));
+			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, g_hangulVowelGlyph, g_hangulTailGlyph);
 		else
-			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, GAME_VAR(int, 0x4d60e0));
+			GAME_CDECL(pass->glyph, void, int, int, int)(x, y, g_hangulLeadGlyph);
 		x += pass->wide;
 	}
 	if (!pass->korean) {

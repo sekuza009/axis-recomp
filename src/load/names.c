@@ -109,7 +109,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 			strcat(name, (const char *)0x4b12f4);
 			strcat(name, suffix);
 		}
-		GAME_VAR(int, part + 0x44) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, flags, a, b, c, d, e, f);
+		GAME_VAR(int, part + 0x44) = tex_getIdByName((*(void **)&g_textures), name, flags, a, b, c, d, e, f);
 	}
 }
 

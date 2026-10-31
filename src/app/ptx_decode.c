@@ -6,7 +6,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_bitStream GAME_VAR(const u8 *, 0xa61708)
 #define g_table GAME_VAR(int, 0xaa2e94)           /* the Huffman table set in use */
 #define g_zigzag ((const int *)0x4c59ec)
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
@@ -267,7 +266,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	int pos = 0, bits = 0;
 	for (int p = 0; p < planes; p++) {
 		if (p <= 3)
-			GAME_VAR(int, 0xaa2e94) = p == 1 || p == 2;
+			g_table = p == 1 || p == 2;
 		u8 *plane = (u8 *)0xa6228c + (p << 16);
 		ptx_startBitReader(data + pos);
 		if (w * h > 0)

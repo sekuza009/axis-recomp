@@ -245,7 +245,6 @@ void (menu_drawBackground3D)(TunnelRing *first)
 	glDisable(GL_TEXTURE_2D);
 }
 
-#define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)   /* the first ring */
 
 /* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
 u32 (tunnel_removeLastRing)(TunnelRing **head)
@@ -266,8 +265,8 @@ u32 (tunnel_removeLastRing)(TunnelRing **head)
 TunnelRing *(tunnel_addRing)(void)
 {
 	g_tunnelRings += 1;
-	tunnel_appendRing(&g_tunnel);
-	TunnelRing *ring = g_tunnel;
+	tunnel_appendRing(&g_menuTunnel);
+	TunnelRing *ring = g_menuTunnel;
 	for (; ring->next != NULL; ring = ring->next)
 		BITS(ring->alpha) = 0x3f800000;
 	return ring;
@@ -285,11 +284,11 @@ void (intro_cameraPath)(u8 *o, int h)
 	X H = h;
 	FIELD(int, o, 0) = 0;
 	FIELD(int, o, 4) = 0;
-	FIELD(float, o, 8) = (float)(H * GAME_VAR(float, 0x4a95c0) + H * GAME_VAR(float, 0x4a95bc));
+	FIELD(float, o, 8) = (float)(H * k_m1000f + H * k_m100f);
 	FIELD(int, o, 0x3528) = 100;
 	for (int pass = 0; pass < 2; pass++) {
 		u32 base = 0x10;
-		X radius = pass ? GAME_VAR(double, 0x4a95a8) : GAME_VAR(double, 0x4a95b0);
+		X radius = pass ? k_23 : k_25;
 		if (pass) {   /* the second circle after the path's four fields */
 			FIELD(int, o, 0x1930) = 0;
 			if (FIELD(int, o, 0x3530))
@@ -303,7 +302,7 @@ void (intro_cameraPath)(u8 *o, int h)
 				break;
 		}
 		for (int i = 0; ; ) {
-			X a = (X)i * GAME_VAR(float, 0x4a95b8) * k_pi * k_oneOver180;
+			X a = (X)i * k_3_6f * k_pi * k_oneOver180;
 			u8 *r = o + base + i * 16;
 			float s = f32(fsin_(a) * radius), c = f32(fcos_(a) * radius);
 			FIELD(float, r, 0xc90) = s;
@@ -328,9 +327,9 @@ void (intro_cameraPath)(u8 *o, int h)
 		{ 0x32c8, 0x42480000 }, { 0x32cc, 0x42480000 }, { 0x32d8, 0x42480000 }, { 0x32dc, 0xc2480000 },
 		{ 0x32e8, 0xc2480000 }, { 0x32ec, 0xc2480000 }, { 0x32f8, 0 }, { 0x32fc, 0 }, { 0x3308, 0 },
 		{ 0x330c, 0xbdcccccd } };   /* (+-50, +-49 ...) */
-	X y = H * GAME_VAR(float, 0x4a95a4) - GAME_VAR(float, 0x4a9498);
+	X y = H * k_m1100f - k_550f;
 	FIELD(float, o, 0x3300) = (float)y;
-	y -= GAME_VAR(float, 0x4a95a0);
+	y -= k_49f;
 	for (unsigned i = 0; i < sizeof box / sizeof box[0]; i++)
 		FIELD(u32, o, box[i].offset) = box[i].value;
 	static const struct { signed char offset; u8 kind; } corner[] = {   /* 0: 0.0, 1: +50, 2: -50 */
@@ -340,7 +339,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		u8 *r = o + 0x3314 + j * 0x58;
 		for (unsigned i = 0; i < sizeof corner / sizeof corner[0]; i++)
 			FIELD(u32, r, corner[i].offset) = corner[i].kind == 1 ? 0x42480000 : corner[i].kind == 2 ? 0xc2480000 : 0;
-		FIELD(float, r, 0x44) = (float)(y - ((X)GAME_VAR(float, 0x4a9424) - (X)j * k_tenthsToDegrees));
+		FIELD(float, r, 0x44) = (float)(y - ((X)k_1f - (X)j * k_tenthsToDegrees));
 	}
 	static const struct { short offset; u32 value; } rest[] = {
 		{ 0x3364, 0x3e19999a }, { 0x33bc, 0xbeb33333 }, { 0x3414, 0xbfc00000 }, { 0x346c, 0x3fc00000 },
@@ -401,8 +400,8 @@ void (armc_enter)(TunnelRing *ring)
 		BITS(g_frameTime) = 0x40000000;   /* 2 */
 	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)0x4a940c));
 	int ringLength = 0x44c;
-	GAME_VAR(int, 0x4b2a74) = step;
-	GAME_VAR(float, 0x4b2a78) = (float)step;
+	g_armcEnterStep = step;
+	g_armcEnterStepF = (float)step;
 	if (g_enteringMenus) {
 		ringLength = 0x3b6;
 		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
@@ -423,7 +422,7 @@ void (armc_enter)(TunnelRing *ring)
 			g_keepCameraAsked = 0;
 		}
 		if (g_startedFromLobby == 1 && g_lobbyReply == 0x65) {
-			GAME_VAR(int, 0x4dc24c) = 1;
+			g_armcFrom = 1;
 			menu_enterMenus();
 			g_enteringMenus = 0;
 			g_lobbyReply = 0x66;
@@ -462,9 +461,9 @@ void (armc_enter)(TunnelRing *ring)
 				tunnel_addRing();
 			else {
 				g_tunnelRings--;
-				tunnel_removeLastRing(&g_tunnel);
+				tunnel_removeLastRing(&g_menuTunnel);
 			}
-			GAME_VAR(int, 0x76d3e8) = GAME_VAR(int, 0x67ef20);
+			g_menuState = g_nextScreen;
 			g_tunnelFlyingIn = 1;
 			g_keepCameraAsked = 1;
 			camera_keep();

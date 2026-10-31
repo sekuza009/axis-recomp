@@ -4,7 +4,6 @@
 #include <string.h>
 
 #define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
-#define g_gameCount GAME_VAR(int, 0x67ef30)
 #define g_listTop GAME_VAR(int, 0x680bb0)
 #define g_searching (g_lanSearch || g_lobbySearching)
 
@@ -41,7 +40,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 		const u8 *game = (const u8 *)0x9087c4 + (g_listTop + i) * 0x4a;
 		if (locks && game[0x43]) {
 			glEnable(GL_TEXTURE_2D);
-			int texture = GAME_VAR(int, 0x76d448);
+			int texture = g_fontAscii;
 			tex_bind(g_textures->managers[texture / 512], texture % 512);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			glBegin(GL_QUADS);
@@ -57,7 +56,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 			glDisable(GL_TEXTURE_2D);
 		}
 		set_colour_bits((Colour *)0x76d438, 0, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);   /* 0, 0.8, 0.8, 1 */
-		if (GAME_VAR(int, 0x76d41c) == g_listTop + i)
+		if (g_localPlayer == g_listTop + i)
 			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		memset(text, 0, sizeof text);
 		crt_strncpy(text, (const char *)game, 0x20);
@@ -126,7 +125,7 @@ static void info_box(u32 line, int named)
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
 {
-	int hovered = GAME_CDECL(0x4044a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaGameList_hitTest */
+	int hovered = GAME_CDECL(0x4044a0, int, int, int)(g_mouseX, g_mouseY);   /* arenaGameList_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
@@ -191,7 +190,7 @@ void (arena_drawGameList)(void)
 	if (g_arenaFull)
 		info_box(0x74f624, 0);
 	if (g_arenaConfirming) {
-		int on = GAME_CDECL(0x4044e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaDialogBox_hitTest */
+		int on = GAME_CDECL(0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -205,7 +204,7 @@ void (arena_drawGameList)(void)
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)0x751824);
 	}
 	if (g_arenaLeaving) {
-		GAME_CDECL(0x4045a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaCreate_hitTest (unused) */
+		GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.1, 0.1, 0.4 */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);
@@ -257,7 +256,7 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
    0x752b24, its button 0x751824 by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
-	int hovered = GAME_CDECL(0x432300, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* gameList_hitTest */
+	int hovered = GAME_CDECL(0x432300, int, int, int)(g_mouseX, g_mouseY);   /* gameList_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -320,7 +319,7 @@ void (gameList_draw)(void)
 	}
 	if (g_arenaConfirming) {
 		glDisable(GL_TEXTURE_2D);
-		int on = GAME_CDECL(0x432340, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* gameListStop_hitTest */
+		int on = GAME_CDECL(0x432340, int, int, int)(g_mouseX, g_mouseY);   /* gameListStop_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -357,14 +356,14 @@ void (gameList_drawPage)(void)
 		g_gameListClickTimer = f32(t);
 		if (t > *(const float *)0x4a944c) {
 			g_gameListClickArmed = 0;
-			GAME_VAR(int, 0x9dcd40) = 0;
+			(*(int *)&g_gameListClickTimer) = 0;
 		}
 	}
 	room_drawTunnel();
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
-	if (GAME_VAR(int, 0x90d1c4)) {
+	if (g_dialogOpen) {
 		menu_drawFrame(GAME_VAR(int, 0x9dd4a8), GAME_VAR(int, 0x9dd4ac), GAME_VAR(int, 0x9dd4b0), GAME_VAR(int, 0x9dd4b4));
 		return;
 	}
@@ -389,20 +388,20 @@ void (gameList_drawPage)(void)
 		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
-			GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
+			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	}
 	if (g_roomRefreshing) {
 		long double t = fadd_m(fld_m(&g_roomListRefreshTimer), &g_frameTime);
 		g_roomListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			room_mergeReceivedSessions();
-			GAME_VAR(int, 0x9dd6c0) = 0;
+			(*(int *)&g_roomListRefreshTimer) = 0;
 			g_listRefreshPeriod = 5;
 		}
 		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
-			GAME_VAR(u32, 0x4dba80) = 0x447a0000;
+			(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;
 		if (g_netListDone) {
 			room_mergeReceivedSessions();
 			g_roomSearching = 0;
@@ -511,7 +510,7 @@ static int games_down(void)
 static void games_stop(void)
 {
 	sound_playMenu(0);
-	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
 	g_gameServerState = 0;
 	g_roomSearchAnswerIn = 1;
 	if (g_roomRefreshing == 1) {
@@ -546,7 +545,7 @@ static int games_leave(void)
 void (gameList_mouse)(void)
 {
 	int mode = g_roomMode;
-	if (mode == 1 || mode == 0 || g_roomChatting || GAME_VAR(int, 0x90d1c4))
+	if (mode == 1 || mode == 0 || g_roomChatting || g_dialogOpen)
 		return;
 	if (g_keyEnter) {
 		if (g_roomSearching)
@@ -581,7 +580,7 @@ void (gameList_mouse)(void)
 			if (gameList_open() == 1) {
 				sound_playMenu(0);
 				g_roomSearching = 1;
-				GAME_VAR(int, 0x9dd4bc) = 1;
+				g_gameListJoinClicked = 1;
 			}
 		} else if (on == 2)
 			games_stop();
@@ -608,13 +607,13 @@ void (gameList_mouse)(void)
 					return;
 				sound_playMenu(0);
 				g_gameListClickArmed = 0;
-				GAME_VAR(int, 0x9dcd40) = 0;
+				(*(int *)&g_gameListClickTimer) = 0;
 				g_roomJoined = 1;
 				room_startChat();
 			} else {
 				sound_playMenu(0);
 				g_gameListClickArmed = 1;
-				GAME_VAR(int, 0x9dcd40) = 0;
+				(*(int *)&g_gameListClickTimer) = 0;
 				GAME_VAR(int, 0x4df818) = row;
 				g_localPlayer = g_listTop + row;
 			}
@@ -673,7 +672,7 @@ void (room_gameListKeys)(void)
 		g_lobbyListPage = 0;
 		if (gameList_open() == 1) {
 			g_roomSearching = 1;
-			GAME_VAR(int, 0x9dd4bc) = 1;
+			g_gameListJoinClicked = 1;
 			sound_playMenu(0);
 		}
 		return;
@@ -715,7 +714,7 @@ static void blink_down(void)
 	long double blink = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &g_lobbyBlinkClock);
 	g_lobbyBlinkClock = f32(blink);
 	if (!(blink >= *(const float *)0x4a9418))
-		GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
+		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 }
 
 /* 0x40cfd0: the arena lobby's page of games: the "searching" message's clock (0x4dbaf8, while 0x4db71c), the
@@ -733,14 +732,14 @@ void (lobbyJoin_draw)(void)
 		g_arenaSearchClock = f32(t);
 		if (t > *(const float *)0x4a944c) {
 			g_arenaListClickArmed = 0;
-			GAME_VAR(int, 0x4dbaf8) = 0;
+			(*(int *)&g_arenaSearchClock) = 0;
 		}
 	}
 	arena_drawTunnel();
 	int mode = g_arenaLobbyMode;
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
+	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return;
-	if (GAME_VAR(int, 0x90d1c4)) {
+	if (g_dialogOpen) {
 		menu_drawFrame(GAME_VAR(int, 0x4db8c8), GAME_VAR(int, 0x4db8cc), GAME_VAR(int, 0x4db8d0), GAME_VAR(int, 0x4db8d4));
 		return;
 	}
@@ -776,7 +775,7 @@ void (lobbyJoin_draw)(void)
 		g_arenaListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			arena_mergeReceivedSessions();
-			GAME_VAR(int, 0x4dbaf0) = 0;
+			(*(int *)&g_arenaListRefreshTimer) = 0;
 			g_listRefreshPeriod = 5;
 		}
 		blink_down();
@@ -847,7 +846,7 @@ static void lobby_leave(void)
 {
 	g_serverConnectionState = 0;
 	sound_playMenu(0);
-	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
+	(*(u32 *)&g_lobbyBlinkClock) = 0x3f800000;   /* 1 */
 	g_serverAnswerIn = 1;
 }
 
@@ -861,7 +860,7 @@ static void lobby_leave(void)
 void (lobby_connect)(void)
 {
 	int mode = g_arenaLobbyMode;
-	if (mode == 1 || mode == 0 || g_arenaJoining || g_arenaFull || GAME_VAR(int, 0x90d1c4))
+	if (mode == 1 || mode == 0 || g_arenaJoining || g_arenaFull || g_dialogOpen)
 		return;
 	if (g_keyEnter) {
 		if (g_lobbySearching || g_lanSearch)
@@ -896,7 +895,7 @@ void (lobby_connect)(void)
 				arena_openSession(1, NULL);
 				g_lobbyListPage = 0;
 				g_lanSearch = 1;
-				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
+				(*(u32 *)&g_lobbyBlinkClock) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
 				g_serverConnected = 0;
 				g_arenaSearchStarted = 1;
@@ -996,7 +995,7 @@ void (lobby_connect)(void)
 				GAME_VAR(int, 0x4df818) = row;
 				g_localPlayer = g_listTop + row;
 			}
-			GAME_VAR(int, 0x4dbaf8) = 0;
+			(*(int *)&g_arenaSearchClock) = 0;
 			break;
 		}
 	}

@@ -40,7 +40,7 @@ void (arena_initOptionTexts)(void)
    -1) emptied */
 void (skirmish_clearPlayerRows)(void)
 {
-	GAME_VAR(int, 0x9ef2c0) = 0;
+	g_missionCount = 0;
 	GAME_VAR(int, 0x9ef2c4) = 0;
 	GAME_VAR(int, 0x9ef2c8) = 0;
 	GAME_VAR(int, 0x9ef2cc) = 0;
@@ -67,7 +67,7 @@ void (net_resetState)(void)
 	GAME_VAR(int, 0x9f9420) = 0;
 	memset((void *)0x9f9428, 0, 0x103 * 4);
 	GAME_VAR(int, 0x9f93d4) = 0;
-	GAME_VAR(int, 0x9f9424) = 0;
+	g_netClaimedSlot = 0;
 	GAME_VAR(int, 0x9f93c8) = 1;
 	g_resultMessage = 2;
 	g_hostResultFlag = 0;
@@ -107,15 +107,15 @@ void (menuCamera_initPoints)(void)
 		GAME_VAR(int, 0x4df878 + i * 0x10) = z;
 		GAME_VAR(int, 0x76d390 + i * 0x10) = z;
 	}
-	GAME_VAR(int, 0x9db090) = GAME_VAR(int, 0x4df024);
-	GAME_VAR(int, 0x9db094) = GAME_VAR(int, 0x4df028);
-	GAME_VAR(int, 0x9db098) = GAME_VAR(int, 0x4df02c);
-	int lx = GAME_VAR(int, 0x680378), ly = GAME_VAR(int, 0x68037c), lz = g_menuCameraHeight;
+	g_menuCameraX = (*(int *)&g_menuCameraPos);
+	g_menuCameraY = (*(int *)&g_armcCamHeight);
+	g_menuCameraZ = (*(int *)&g_armcCamDistance);
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraHeight;
 	for (unsigned i = 0; i < sizeof point / sizeof point[0]; i++)
 		GAME_VAR(u32, point[i][0]) = point[i][1];
-	GAME_VAR(int, 0x76d3f8) = lx;
-	GAME_VAR(int, 0x76d3fc) = ly;
-	GAME_VAR(int, 0x76d400) = lz;
+	g_menuLookAtX = lx;
+	g_menuLookAtY = ly;
+	g_menuLookAtZ = lz;
 	g_roomAwaitingServer = 0;
 }
 

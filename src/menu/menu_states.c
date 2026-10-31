@@ -3,11 +3,9 @@
 #include "../game.h"
 #include "key_repeat.h"
 
-#define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)      /* the background tunnel's first ring */
 #define g_missionState GAME_VAR(int, 0x9f62f8)        /* (by use) the mission select: 0 and 1 not up */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionBriefing GAME_VAR(int, 0x9f62e0)     /* (by use) a mission's briefing is shown */
-#define g_mission GAME_VAR(int, 0x9f63b4)             /* the mission chosen, 0 .. 14 */
 
 /* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
    0x76d350, blended ---- */
@@ -25,7 +23,7 @@ static void draw_logo(int first)
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	int texture = GAME_VAR(int, 0x76d3f0);
+	int texture = g_logoTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
@@ -96,8 +94,8 @@ int (frontEnd_drawProgress)(void)
    (310, 230), the Netsphere music and the frame clocks cleared */
 void (menuState100_intro)(void)
 {
-	GAME_VAR(int, 0x4df01c) = 0;
-	GAME_VAR(int, 0x4e0458) = 0;
+	g_titleShown = 0;
+	g_titleFrames = 0;
 	g_loadStep = 0;
 	draw_logo(1);
 	glFinish();
@@ -124,8 +122,8 @@ void (menuState100_intro)(void)
 		GAME_VAR(u32, cleared[i]) = 0;
 	GAME_VAR(u32, 0x4deda8) = 0x3f800000;   /* 1.0 */
 	g_tunnelPulseStep = 0x3f800000;
-	GAME_VAR(int, 0x4ded68) = 0x136;
-	GAME_VAR(int, 0x4ded6c) = 0xe6;
+	g_mouseX = 0x136;
+	g_mouseY = 0xe6;
 	music_play((const char *)0x4b01cc);   /* "music/Netsphere.mp3" */
 	static const u32 clocks[] = { 0x4dd560, 0x4dd0a8, 0x4dd080, 0x4dd0c8 };   /* four doubles */
 	for (int i = 0; i < 4; i++) {
@@ -137,9 +135,9 @@ void (menuState100_intro)(void)
 /* 0x441740: the 3D background behind the menus: the tunnel's rings moved on (armc_enter) and drawn */
 void (menu_drawBackground)(void)
 {
-	armc_enter(g_tunnel);
+	armc_enter(g_menuTunnel);
 	gfx_setProjection2D3D(1);
-	menu_drawBackground3D(g_tunnel);
+	menu_drawBackground3D(g_menuTunnel);
 }
 
 /* 0x442e10: the map-select dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
@@ -154,7 +152,7 @@ void (mapSelect_drawDialog)(void)
 #define X1 GAME_VAR(int, 0x9dd910)
 #define Y1 GAME_VAR(int, 0x9dd914)
 	const u32 *bright = (const u32 *)0x9eea98, *dim = (const u32 *)0x9dda70;
-	int hovered = GAME_CDECL(0x440b70, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = GAME_CDECL(0x440b70, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -257,7 +255,7 @@ void (settingsPage_keys)(void)
 /* 0x4479b0: mission chosen (sound 2) */
 void (mission_chosen)(int mission)
 {
-	GAME_VAR(int, 0x9f6328) = mission;
+	g_missionChosen = mission;
 	g_missionPreviewDue = 1;
 	sound_playMenu(2);
 }
@@ -296,12 +294,12 @@ void (missionList_keys)(void)
 		missionSettings_leave();
 		return;
 	}
-	if (input_justPressed(g_keyLeft) == 1 && g_mission > 0)
-		mission_chosen(--g_mission);
-	if (input_justPressed(g_keyRight) == 1 && g_mission < g_progress) {
-		if (g_mission >= 14)
+	if (input_justPressed(g_keyLeft) == 1 && g_missionShown > 0)
+		mission_chosen(--g_missionShown);
+	if (input_justPressed(g_keyRight) == 1 && g_missionShown < g_progress) {
+		if (g_missionShown >= 14)
 			return;
-		mission_chosen(++g_mission);
+		mission_chosen(++g_missionShown);
 	}
 	if (input_isDown(g_keyLeftCtrl) && input_isDown(g_dikRAlt) && input_justPressed(g_dikPageUp))
 		g_progress = 16;
@@ -322,8 +320,8 @@ void (missionsel_keys)(void)
    entered again, state 300 */
 void (menu_returnToMain)(void)
 {
-	while (g_tunnel != NULL)
-		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
+	while (g_menuTunnel != NULL)
+		armc_freeRing(&g_menuTunnel);
 	game_returnToScreen400();
 	g_screen = 300;
 }
@@ -332,8 +330,8 @@ void (menu_returnToMain)(void)
    room's state cleared, state 300 */
 void (menu_returnToMainFromRoom)(void)
 {
-	while (g_tunnel != NULL)
-		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
+	while (g_menuTunnel != NULL)
+		armc_freeRing(&g_menuTunnel);
 	game_returnToMainMenu();
 	g_roomRequestOut = 0;
 	g_roomAnswerAwaited = 0;
@@ -464,7 +462,7 @@ void (menuState210_frame)(void)
 		return;
 	}
 	menu_drawBackground();
-	if (g_introZoom > GAME_VAR(float, 0x4a93e8))
+	if (g_introZoom > k_0f)
 		return;
 	static const signed char fields[9] = { -8, 0, 4, -4, 12, 8, 16, 24, 20 };   /* in the order checked */
 	for (u32 rec = 0x9f9070; rec < 0x9f931c; rec += 0x4c)
@@ -472,7 +470,7 @@ void (menuState210_frame)(void)
 			if (GAME_VAR(int, rec + fields[f]) > (fields[f] == 20 ? 50 : 30))
 				data_loadPilotProfiles();
 	static const u32 pages[6] = { 0x44f410, 0x44f4b0, 0x44f5f0, 0x44f6c0, 0x44f740, 0x44f810 };
-	u32 page = GAME_VAR(u32, 0x9f8f10) - 1;
+	u32 page = (*(u32 *)&g_profilePage) - 1;
 	if (page <= 5)
 		GAME_CDECL(pages[page], void, void)();   /* profile_frame .. profile_drawScreen */
 }
@@ -539,7 +537,7 @@ int (room_slideMenu)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
 static void leave_game(u32 lobby, int disconnect)
 {
 	g_quitAsked = 0;
-	GAME_VAR(u32, 0x5ae9c4) = lobby;
+	(*(u32 *)&g_matchMode) = lobby;
 	GAME_CDECL(0x452fe0, void, void)();       /* arena_leaveSession */
 	if (disconnect)
 		GAME_CDECL(0x451e60, void, void)();   /* net_disconnect */
@@ -554,30 +552,30 @@ static void leave_game(u32 lobby, int disconnect)
    what the original leaves in eax: input_initKeyboard's, or 0x68039c's value */
 static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e1868)
 {
-	u32 typing = GAME_VAR(u32, 0x68039c);
-	GAME_VAR(u32, 0x4df028) = 0;
+	u32 typing = (*(u32 *)&g_paused);
+	(*(u32 *)&g_armcCamHeight) = 0;
 	g_menuCameraPos = 0;
-	GAME_VAR(u32, 0x4df02c) = farZ;
+	(*(u32 *)&g_armcCamDistance) = farZ;
 	g_menuCameraLook = 0;
 	g_menuCameraLookY = 0;
-	GAME_VAR(u32, 0x680380) = nearZ;
-	GAME_VAR(int, 0x680370) = blocked;
+	(*(u32 *)&g_menuCameraHeight) = nearZ;
+	g_keysBlocked = blocked;
 	GAME_VAR(int, 0x4df8e0) = 0;
-	GAME_VAR(u32, 0x9dd930) = 0;
-	GAME_VAR(u32, 0x9dd934) = 0;
-	GAME_VAR(u32, 0x9dd938) = farZ;
-	GAME_VAR(u32, 0x9dd918) = 0;
-	GAME_VAR(u32, 0x9dd91c) = 0;
-	GAME_VAR(u32, 0x9dd920) = nearZ;
+	g_roomSlideFarX = 0;
+	g_roomSlideFarY = 0;
+	g_roomSlideFarZ = farZ;
+	g_roomSlideNearX = 0;
+	g_roomSlideNearY = 0;
+	g_roomSlideNearZ = nearZ;
 	g_enteringMenus = deb48;
 	g_replayRunning = 0;
-	GAME_VAR(int, 0x4dda44) = 0;
-	GAME_VAR(int, 0x4dda48) = 0;
+	(*(int *)&g_cursorBlink) = 0;
+	(*(int *)&g_introZoom) = 0;
 	if (clear_4e1868)
-		GAME_VAR(int, 0x4e1868) = 0;
+		g_chatFieldFlag = 0;
 	if (typing != 1)
 		return typing;
-	GAME_VAR(int, 0x68039c) = 0;
+	g_paused = 0;
 	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
 	return GAME_CDECL(0x401310, u32, void *)(g_mainWindow);   /* input_initKeyboard */
 }
@@ -588,7 +586,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 u32 (game_returnToScreen500)(void)
 {
 	leave_game(0, 1);
-	GAME_VAR(int, 0x76d3e8) = 500;
+	g_menuState = 500;
 	g_nextScreen = 500;
 	GAME_CDECL(0x4411e0, void, void)();
 	GAME_CDECL(0x441200, void, void)();
@@ -600,10 +598,10 @@ u32 (game_returnToScreen500)(void)
 u32 (game_returnToMainMenu)(void)
 {
 	leave_game(0, 1);
-	GAME_VAR(int, 0x76d3e8) = 300;
+	g_menuState = 300;
 	g_nextScreen = 300;
 	GAME_CDECL(0x4411e0, void, void)();
-	u32 typing = GAME_VAR(u32, 0x68039c);
+	u32 typing = (*(u32 *)&g_paused);
 	u32 r = reset_menus(0x43fa0000, 0x43c80000, 2, 1, 1);
 	return typing == 1 ? r : 1;
 }
@@ -613,8 +611,8 @@ u32 (game_returnToScreen400)(void)
 {
 	leave_game(0, 1);
 	g_nextScreen = 400;
-	GAME_VAR(int, 0x76d3e8) = 300;
-	GAME_VAR(int, 0x67ef0c) = 300;
+	g_menuState = 300;
+	g_lastScreen = 300;
 	GAME_CDECL(0x4411e0, void, void)();
 	GAME_CDECL(0x441200, void, void)();
 	return reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
@@ -625,9 +623,9 @@ u32 (game_returnToGameRoom)(void)
 {
 	leave_game(2, 0);
 	g_roomState = 0x63;
-	GAME_VAR(int, 0x76d3e8) = 800;
+	g_menuState = 800;
 	g_nextScreen = 800;
-	GAME_VAR(int, 0x67ef0c) = 800;
+	g_lastScreen = 800;
 	GAME_CDECL(0x4411e0, void, void)();
 	GAME_CDECL(0x441200, void, void)();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
@@ -654,7 +652,7 @@ u32 (menuState800_gameRoom)(void)
 			g_highlightShown = 0;
 	}
 #define CALL(addr) GAME_CDECL(addr, u32, void)()
-	u32 page = GAME_VAR(u32, 0x9dd834);
+	u32 page = (*(u32 *)&g_roomState);
 	switch (page) {
 	case 0: case 1: case 2: case 4:
 		menu_drawBackground();
@@ -713,7 +711,7 @@ u32 (game_postMatch)(void)
 	g_matchRunning = 0;
 	if (g_startedFromLobby == 1) {
 		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */
-		GAME_VAR(int, 0x76d3e8) = -1;
+		g_menuState = -1;
 		return r;
 	}
 	if (g_replayRunning)
@@ -728,7 +726,7 @@ u32 (game_postMatch)(void)
 	case 2:
 		if (g_isHost) {
 			send_result();
-			char *to = GAME_VAR(char *, 0xa0b330), *from = GAME_VAR(char *, 0xa0b328);
+			char *to = (*(char **)&g_roomRecordPacket), *from = (*(char **)&g_arenaPacket);
 			lstrcpyA(to + 0x43, from + 0x43);
 			lstrcpyA(to + 0x33, from + 0x33);
 			GAME_CDECL(0x4521c0, int, int, int)(0x16, 0x65);   /* net_send */
@@ -740,9 +738,9 @@ u32 (game_postMatch)(void)
 			game_returnToMainMenu();
 		break;
 	case 3:
-		mission = GAME_VAR(int, 0x9f181c);
+		mission = g_progress;
 		if (mission == 15) {
-			GAME_VAR(int, 0x9f181c) = 16;
+			g_progress = 16;
 			GAME_CDECL(0x447010, void, void)();     /* profile_saveProgress */
 			GAME_CDECL(0x41f880, u32, u32)(1);      /* reg_writeEndMode */
 			music_shutdown();

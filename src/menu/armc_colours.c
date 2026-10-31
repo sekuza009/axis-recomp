@@ -5,11 +5,10 @@
 #include "../game.h"
 
 #define g_armcColours ((float *)0x4dc4b8)       /* six values per slot */
-#define g_sliderLeft GAME_VAR(int, 0x4dcc98)
 
 static long double slider_pos(void)
 {
-	return (long double)(g_mouseX - g_sliderLeft + 0xb8) * 0.00625f;
+	return (long double)(g_mouseX - g_armcSliderLeft + 0xb8) * 0.00625f;
 }
 
 /* a hue: 0 .. 360 degrees (clamped to 359, not 360), stored shifted by half a turn into -180 .. 180, then back into

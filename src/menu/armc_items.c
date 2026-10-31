@@ -2,8 +2,6 @@
    from its list with a cursor; the chosen items go to the mech (mech_setAll) and the preview. */
 #include "../game.h"
 
-#define g_armcSlot GAME_VAR(int, 0x4dbe48)            /* the slot being picked (-1 none) */
-#define g_armcCursor GAME_VAR(int, 0x4dc77c)          /* the cursor in that slot's list */
 #define g_weaponList ((const int *)0x4dc79c)          /* the weapons on offer */
 #define g_weaponCount GAME_VAR(int, 0x4dc244)
 #define g_extraList ((const int *)0x4dcca4)           /* the other items on offer */
@@ -141,14 +139,14 @@ void (armc_drawPartScreen)(void)
    what the original leaves in eax */
 u32 (armc_partScreenClicks)(void)
 {
-	if (!GAME_VAR(int, 0x4ded88))
+	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e490, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcParts_hitTest */
+	u32 button = GAME_CDECL(0x40e490, u32, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
 	u32 r;
 	int step;
 	switch (button) {
 	case 0: case 2:
-		if (GAME_VAR(int, 0x4dc798) == (button == 0 ? 1 : 3))
+		if (g_armcMode == (button == 0 ? 1 : 3))
 			return button;
 		sound_playMenu(2);
 		GAME_CDECL(0x40f870, void, int)(0);
@@ -174,8 +172,8 @@ u32 (armc_partScreenClicks)(void)
 		return GAME_CDECL(0x40f9e0, u32, void)();    /* armc_takeCursorItem: and taken */
 	case 14:
 		sound_playMenu(2);
-		r = 1 - GAME_VAR(u32, 0x4dceac);
-		GAME_VAR(u32, 0x4dceac) = r;
+		r = 1 - (*(u32 *)&g_armcSpin);
+		(*(u32 *)&g_armcSpin) = r;
 		return r;
 	}
 	return button;

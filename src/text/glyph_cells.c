@@ -16,7 +16,7 @@ typedef struct {
 static void glyph_grid(const Grid *g)
 {
 	typedef long double X;
-	const float texel = GAME_VAR(float, 0x4a957c);
+	const float texel = k_0_00390625f;
 	int idx = 0;
 	for (int r = g->r0; r < g->rend; r += g->rstep) {
 		float lo = (float)((X)(r + g->rLo) * texel), hi = (float)((X)(r + g->rHi) * texel);
@@ -79,7 +79,7 @@ int (pen_init)(const char *name)
 		GAME_CDECL(0x46c840, void, const char *)((const char *)0x4c56fc);   /* "pen duplicate initialization" */
 		return 0;
 	}
-	g_penFontTexture = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
 		GAME_VAR(int, 0xa0fb28 + i * 4) = 8;
 	int g = 1;

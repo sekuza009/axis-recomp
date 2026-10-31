@@ -75,7 +75,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const float *p1, float *hit, float *dist)
 {
 	const float *n = (const float *)(self + 0x4c);
-	X zero = GAME_VAR(float, 0x4a93e8);
+	X zero = k_0f;
 	X d0 = (X)n[1] * p0[1] + (X)p0[2] * n[2] + (X)n[0] * p0[0] - n[3];
 	X d1 = (X)p1[2] * n[2] + (X)n[0] * p1[0] + (X)n[1] * p1[1] - n[3];
 	if (d1 * d0 >= zero)   /* both on one side (or touching): no crossing */
@@ -155,7 +155,7 @@ int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S
 	const float corner[8][3] = { { lo[0], lo[1], lo[2] }, { hi[0], lo[1], lo[2] }, { lo[0], lo[1], hi[2] },
 	                             { hi[0], lo[1], hi[2] }, { lo[0], hi[1], lo[2] }, { hi[0], hi[1], lo[2] },
 	                             { lo[0], hi[1], hi[2] }, { hi[0], hi[1], hi[2] } };
-	X zero = GAME_VAR(float, 0x4a93e8);
+	X zero = k_0f;
 	int side = -1;
 	for (int k = 0; ; k++) {   /* the corners against the face plane */
 		X d = fmul_m(fld_m(&corner[k][2]), &T[0x15]) + fmul_m(fld_m(&corner[k][0]), &T[0x13]);
