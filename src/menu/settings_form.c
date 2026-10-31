@@ -243,7 +243,7 @@ static void box_buttons(int hovered, int lit_from)
 /* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for 0x4db528: the title 0x752c24, the
    labels (0x752ca4), the values (the kind's name from 0x4dbba4, the modes at 0x75c9a4; hidden while edited: 0x4dbab0,
    0x4dbacc, 0x4db850, 0x4db518). Unless a field is being edited, the confirmation (0x4db55c) or "leave?" box (0x907b2c)
-   or the map list (0x4db508) is up, the value under the pointer (arena_404520) highlighted. Two buttons (0x7530a4, lit
+   or the map list (0x4db508) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (0x7530a4, lit
    from 8 at 0.9) and below the second of the next pair (0x753224, 11), the map preview (arena_drawCustomOption), its
    arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (0x753224 / 0x7532a4, its buttons
    15 / 16) and the "leave?" box over the whole screen (0x74dfa4 / 0x74e024, its buttons by arena_4045a0); the border.
@@ -257,7 +257,7 @@ void (arena_createDraw)(void)
 	int editing = GAME_VAR(int, 0x68039c), confirming = GAME_VAR(int, 0x4db55c), leaving = GAME_VAR(int, 0x907b2c);
 	int open = editing || confirming || leaving, blocked = open || GAME_VAR(int, 0x4db508);
 	char text[20];
-	int hovered = arena_404520(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = createArena_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

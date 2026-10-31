@@ -140,7 +140,7 @@ void (net_clearSlots)(void) { for (u32 p = 0x9f9840; p < 0x9fd940; p += 0x410) G
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
-int (arena_453a30)(u32 i) { return i < 4 && GAME_VAR(int, 0xa0bae0 + i * 4) ? 1 : 0; }
+int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, 0xa0bae0 + i * 4) ? 1 : 0; }
 /* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
 void (mapSelect_toggle)(int i) { int *f = (int *)(0x9ddac8 + i * 0x44); *f = 1 - *f; }
 void (mapSelect_allIn)(void) { for (int i = 0; i < GAME_VAR(int, 0x9dd928); i++) GAME_VAR(int, 0x9ddac8 + i * 0x44) = 1; }
@@ -324,7 +324,7 @@ void (armc_40d990)(void) {}
 /* ---- more small methods ---- */
 void THISCALL (nullsub_483ce0)(void *self, int a) { (void)self; (void)a; }
 /* 0x45dfe0: the stage's +0x202e8dc set (returned) */
-int THISCALL (armc_45dfe0)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
+int THISCALL (stage_setValue202e8dc)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
 void *(load_487430_wrap_468720)(void) { return TimeSync_ctor((void *)0xa0e948); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */

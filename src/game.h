@@ -116,7 +116,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define text_setColor(r, g, b, a) GAME_CDECL(0x44ad30, void, float, float, float, float)(r, g, b, a)
 #define text_draw5(x, y, s) GAME_CDECL(0x403170, void, int, int, const char *)(x, y, s)
 #define text_draw8(x, y, s) GAME_CDECL(0x402620, void, int, int, const char *)(x, y, s)
-#define arena_404520(x, y) GAME_CDECL(0x404520, int, int, int)(x, y)   /* the new-arena form: the item under (x, y), -1 none */
+#define createArena_hitTest(x, y) GAME_CDECL(0x404520, int, int, int)(x, y)   /* the new-arena form: the item under (x, y), -1 none */
 #define arena_4045a0(x, y) GAME_CDECL(0x4045a0, int, int, int)(x, y)   /* its "leave?" box: the button under (x, y) */
 #define arena_drawCustomOption(map) GAME_CDECL(0x40b550, u32, int)(map)   /* its map preview (the map passed, unused) */
 #define room_432380(x, y) GAME_CDECL(0x432380, int, int, int)(x, y)   /* the room's settings form: the item under (x, y), -1 none */
@@ -302,7 +302,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define tex_454e60(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISCALL(0x4557e0, int, void *, const char *)(tm, name)
 #define game_processGameModeInit(scene) GAME_THISCALL(0x49df10, void, void *)(scene)
-#define armc_461210(scene) GAME_THISCALL(0x461210, long double, void *)(scene)   /* (answers in ST0) */
+#define frameTimer_average(scene) GAME_THISCALL(0x461210, long double, void *)(scene)   /* (answers in ST0) */
 #define match_combatInput(scene) GAME_THISCALL(0x49d290, void, void *)(scene)
 #define game_processGameMode(scene) GAME_THISCALL(0x4988e0, void, void *)(scene)
 #define hud_pass(scene) GAME_THISCALL(0x4982f0, void, void *)(scene)
@@ -437,9 +437,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define app_42ef30(code) GAME_CDECL(0x42ef30, int, int)(code)   /* a start-up problem reported */
 #define GetCurrentDirectoryA_wrap_43f580() GAME_CDECL(0x43f580, u32, void)()
 #define app_setDisplayMode(w, h, flags, bits) GAME_CDECL(0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
-#define armc_4101e0() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
-#define armc_410500() GAME_CDECL(0x410500, void, void)()   /* page 2 */
-#define armc_410810() GAME_CDECL(0x410810, void, void)()   /* page 3 */
+#define armc_partsPageKeys() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
+#define armc_weaponsPageKeys() GAME_CDECL(0x410500, void, void)()   /* page 2 */
+#define armc_colourPageKeys() GAME_CDECL(0x410810, void, void)()   /* page 3 */
 
 /* ---- menus: the screens' frames and key handlers ---- */
 #define menu_frame() GAME_CDECL(0x41fa40, void, void)()
@@ -663,7 +663,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 #define profile_44bc50() GAME_CDECL(0x44bc50, void, void)()
 #define profile_44e640() GAME_CDECL(0x44e640, void, void)()
-#define arena_452fe0() GAME_CDECL(0x452fe0, void, void)()
+#define arena_leaveSession() GAME_CDECL(0x452fe0, void, void)()
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
 #define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */
 #define g_cursorFrameTime GAME_VAR(float, 0x4df910)  /* frame time collected towards the next frame (5 units) */
@@ -699,7 +699,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
 #define g_dplaySlots ((int *)0xa0d7a4)               /* four connection slots: 1 while open */
 #define dplay_coInit() GAME_CDECL(0x453720, int, void)()                     /* 0 when COM is up */
-#define dplay_connectionAvailable(kind) GAME_CDECL(0x453a30, int, int)(kind)  /* arena_453a30 */
+#define dplay_connectionAvailable(kind) GAME_CDECL(0x453a30, int, int)(kind)  /* net_connectionAvailable */
 #define dplay_initConnection(kind, address) GAME_CDECL(0x453a90, int, int, int)(kind, address)
 #define dplay_release() GAME_CDECL(0x453920, int, void)()
 #define dplay_enumSessions() GAME_CDECL(0x453fd0, int, void)()
@@ -707,11 +707,11 @@ typedef struct { float r, g, b, a; } Colour;
 	(a1, a2, a3, a4, a5, a6, a7, a8)
 #define dplay_joinSession(a1, a2, a3, a4) GAME_CDECL(0x453e60, int, int, int, int, int)(a1, a2, a3, a4)
 #define dplay_create() GAME_CDECL(0x453790, int, void)()
-#define arena_4509e0() GAME_CDECL(0x4509e0, void, void)()
-#define arena_4549a0() GAME_CDECL(0x4549a0, int, void)()   /* close slot 0 .. 3 */
-#define arena_454ac0() GAME_CDECL(0x454ac0, int, void)()
-#define arena_454bd0() GAME_CDECL(0x454bd0, int, void)()
-#define arena_454ce0() GAME_CDECL(0x454ce0, int, void)()
+#define net_resetState() GAME_CDECL(0x4509e0, void, void)()
+#define dplaySlot0_close() GAME_CDECL(0x4549a0, int, void)()   /* close slot 0 .. 3 */
+#define dplaySlot1_close() GAME_CDECL(0x454ac0, int, void)()
+#define dplaySlot2_close() GAME_CDECL(0x454bd0, int, void)()
+#define dplaySlot3_close() GAME_CDECL(0x454ce0, int, void)()
 
 /* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
 #define player_setName(stage, p, name) GAME_THISCALL(0x473940, void, Stage *, int, const char *)(stage, p, name)
@@ -725,8 +725,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define actor_setActorTypeItemInfoBy(stage, p, slot, item) GAME_THISCALL(0x474060, void, Stage *, int, int, int)(stage, p, slot, item)
 #define player_markUsed(stage, p) GAME_THISCALL(0x474390, void, Stage *, int)(stage, p)   /* playerRecord_markUsed */
 /* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
-#define armc_461320(scene, name) GAME_THISCALL(0x461320, void, Scene *, const char *)(scene, name)
-#define armc_461370(scene, v) GAME_THISCALL(0x461370, void, Scene *, int)(scene, v)
+#define mech_setName(scene, name) GAME_THISCALL(0x461320, void, Scene *, const char *)(scene, name)
+#define mech_setValue(scene, v) GAME_THISCALL(0x461370, void, Scene *, int)(scene, v)
 #define match_4613a0(scene, team) GAME_THISCALL(0x4613a0, void, Scene *, int)(scene, team)
 #define escMenu_open(scene, page, item) GAME_THISCALL(0x49ca20, void, Scene *, int, int)(scene, page, item)   /* the Esc menu opened on page */
 #define sound_updateListener(scene) GAME_THISCALL(0x49d150, void, Scene *)(scene)
@@ -745,55 +745,55 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_setArmIndex(scene, i) GAME_THISCALL(0x461450, void, Scene *, int)(scene, i)
 #define armc_setLegIndex(scene, i) GAME_THISCALL(0x461490, void, Scene *, int)(scene, i)
 #define armc_setBoosterIndex(scene, i) GAME_THISCALL(0x4614d0, void, Scene *, int)(scene, i)
-#define armc_461510(scene, slot, item) GAME_THISCALL(0x461510, void, Scene *, int, int)(scene, slot, item)
+#define mech_setItem(scene, slot, item) GAME_THISCALL(0x461510, void, Scene *, int, int)(scene, slot, item)
 
 /* ---- the ARM CENTER (menu/armc_*.c) ---- */
 #define g_armcHideInterface GAME_VAR(int, 0x4dd078)  /* Ctrl+Alt+M: the screen without its interface */
 #define g_language GAME_VAR(int, 0x9dae74)           /* 2: the small font for labels */
-#define armc_41d600() GAME_CDECL(0x41d600, void, void)()      /* the mech preview */
-#define armc_41d8a0() GAME_CDECL(0x41d8a0, void, void)()      /* the colour page's preview */
+#define armc_updatePartsPreview() GAME_CDECL(0x41d600, void, void)()      /* the mech preview */
+#define armc_updateColourPreview() GAME_CDECL(0x41d8a0, void, void)()      /* the colour page's preview */
 #define armc_411ab0() GAME_CDECL(0x411ab0, void, void)()      /* the screen's state entered from the room */
 #define armc_411110() GAME_CDECL(0x411110, void, void)()      /* and from the main menu */
 #define arena_launchFromFile() GAME_CDECL(0x410b50, void, void)()
-#define armc_40e5d0() GAME_CDECL(0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
-#define armc_41b710() GAME_CDECL(0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
-#define armc_41b400() GAME_CDECL(0x41b400, void, void)()
-#define armc_41dcf0() GAME_CDECL(0x41dcf0, void, void)()
-#define armc_41dfb0() GAME_CDECL(0x41dfb0, void, void)()      /* the pages' draw passes (menu/armc_misc.c) */
-#define armc_41dfe0() GAME_CDECL(0x41dfe0, void, void)()
-#define armc_41e010() GAME_CDECL(0x41e010, void, void)()
-#define armc_41dab0() GAME_CDECL(0x41dab0, void, void)()
+#define armc_enterScreen() GAME_CDECL(0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
+#define armc_setup3DView() GAME_CDECL(0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
+#define armc_drawPanels() GAME_CDECL(0x41b400, void, void)()
+#define armc_extraItemBonuses() GAME_CDECL(0x41dcf0, void, void)()
+#define armc_drawPartsPage() GAME_CDECL(0x41dfb0, void, void)()      /* the pages' draw passes (menu/armc_misc.c) */
+#define armc_drawColourPage() GAME_CDECL(0x41dfe0, void, void)()
+#define armc_drawThirdPage() GAME_CDECL(0x41e010, void, void)()
+#define armc_drawWeightLine() GAME_CDECL(0x41dab0, void, void)()
 #define armc_exit(confirmed) GAME_CDECL(0x40f0f0, void, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
 #define set_4dc798_40f200() GAME_CDECL(0x40f200, void, void)()   /* to the parts page */
 #define set_4dc798_40f320() GAME_CDECL(0x40f320, void, void)()   /* to the third page */
 #define armc_drawPartScreen() GAME_CDECL(0x40f220, void, void)()   /* to the weapons page (menu/armc_items.c) */
 #define armc_backupColours() GAME_CDECL(0x40f590, void, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
-#define armc_40f340(part, dir) GAME_CDECL(0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
-#define armc_41b750() GAME_CDECL(0x41b750, void, void)()
-#define armc_41d280() GAME_CDECL(0x41d280, void, void)()
-#define armc_41cf20() GAME_CDECL(0x41cf20, void, void)()
-#define armc_41ced0() GAME_CDECL(0x41ced0, void, void)()   /* the undo buffer into colour slots 0 .. 4 (menu/armc_state.c) */
+#define armc_stepPart(part, dir) GAME_CDECL(0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
+#define armc_drawPartPanels() GAME_CDECL(0x41b750, void, void)()
+#define armc_retintParts() GAME_CDECL(0x41d280, void, void)()
+#define armc_applyColourSlot() GAME_CDECL(0x41cf20, void, void)()
+#define armc_restoreColourUndo() GAME_CDECL(0x41ced0, void, void)()   /* the undo buffer into colour slots 0 .. 4 (menu/armc_state.c) */
 #define gl_rotateXYZ(x, y, z) GAME_CDECL(0x41ef20, void, u32, u32, u32)(x, y, z)   /* turned about x, y, z (degrees as float bits; render/gl_helpers.c) */
 #define armc_rotateFromCursor(scene, eye, forward, up, part, angle, w, h) \
 	GAME_THISCALL(0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)
 #define armc_40d990() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
-#define armc_412450() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
+#define armc_drawModeTabs() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
 #define armc_drawStatsPanel() GAME_CDECL(0x412650, void, void)()
-#define armc_419160() GAME_CDECL(0x419160, void, void)()
-#define armc_41a280() GAME_CDECL(0x41a280, void, void)()
+#define armc_drawBuildScreen() GAME_CDECL(0x419160, void, void)()
+#define armc_drawColourEditor() GAME_CDECL(0x41a280, void, void)()
 #define g_startPos ((const u32 *)0xa0e7a8)          /* (by use) where the player's actor starts (three floats) */
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define stage_claimPlayerActor(stage, a, x, y, spawn) GAME_THISCALL(0x45dd80, void, Stage *, int, int, int, void *)(stage, a, x, y, spawn)
 
-#define armc_461250(scene, name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5) GAME_THISCALL(0x461250, void, \
+#define mech_setAll(scene, name, v, team, head, chest, arm, leg, booster, i0, i1, i2, i3, i4, i5) GAME_THISCALL(0x461250, void, \
 	Scene *, const char *, int, int, int, int, int, int, int, int, int, int, int, int, int)(scene, name, v, team, head, chest, arm, leg, \
 	booster, i0, i1, i2, i3, i4, i5)
-#define armc_45ddc0(stage) GAME_THISCALL(0x45ddc0, void, Stage *)(stage)
-#define armc_461540(scene, slot) GAME_THISCALL(0x461540, void, Scene *, int)(scene, slot)   /* re-equip the preview mech */
-#define armc_40f870(slot) GAME_CDECL(0x40f870, void, int)(slot)
-#define armc_40f950() GAME_CDECL(0x40f950, void, void)()
-#define armc_40f9e0() GAME_CDECL(0x40f9e0, void, void)()   /* the item slots given to the mech (menu/armc_items.c) */
-#define armc_40f830(i) GAME_CDECL(0x40f830, int, int)(i)   /* item list entry i is a colour part already in a slot */
+#define stage_remakePlayerActor(stage) GAME_THISCALL(0x45ddc0, void, Stage *)(stage)
+#define armc_giveShownActorWeapon(scene, slot) GAME_THISCALL(0x461540, void, Scene *, int)(scene, slot)   /* re-equip the preview mech */
+#define armc_pickSlot(slot) GAME_CDECL(0x40f870, void, int)(slot)
+#define armc_showCursorItem() GAME_CDECL(0x40f950, void, void)()
+#define armc_takeCursorItem() GAME_CDECL(0x40f9e0, void, void)()   /* the item slots given to the mech (menu/armc_items.c) */
+#define armc_colourPartEquipped(i) GAME_CDECL(0x40f830, int, int)(i)   /* item list entry i is a colour part already in a slot */
 #define armc_initCameraPoints() GAME_CDECL(0x40e510, void, void)()
 #define armc_40e060() GAME_CDECL(0x40e060, void, void)()   /* the part lists made (heads, chests, arms...) */
 #define armc_40e1c0() GAME_CDECL(0x40e1c0, void, void)()
@@ -801,13 +801,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_buildPartLists() GAME_CDECL(0x40da40, void, void)()
 #define mech_loadFromProfile() GAME_CDECL(0x4463a0, u32, void)()   /* the saved mech read (from the profile) */
 #define armc_loadSavedMech() GAME_CDECL(0x40e6c0, void, void)()
-#define armc_40de80() GAME_CDECL(0x40de80, void, void)()
-#define armc_40dfa0() GAME_CDECL(0x40dfa0, void, void)()
-#define armc_40ed20() GAME_CDECL(0x40ed20, void, void)()
-#define armc_41cca0(item) GAME_CDECL(0x41cca0, void, int)(item)   /* the item shown on the preview */
-#define armc_41ca50(slot, item) GAME_CDECL(0x41ca50, void, int, int)(slot, item)
+#define armc_initCameraBox() GAME_CDECL(0x40de80, void, void)()
+#define armc_initPartBoxes() GAME_CDECL(0x40dfa0, void, void)()
+#define armc_syncPartCursors() GAME_CDECL(0x40ed20, void, void)()
+#define armc_viewedPartRecord(item) GAME_CDECL(0x41cca0, void, int)(item)   /* the item shown on the preview */
+#define armc_weaponSlotRecord(slot, item) GAME_CDECL(0x41ca50, void, int, int)(slot, item)
 #define armc_snapshot(which) GAME_CDECL(0x419000, void, int)(which)
-#define armc_4125c0(x, y, s) GAME_CDECL(0x4125c0, void, int, int, const char *)(x, y, s)
+#define armc_drawText(x, y, s) GAME_CDECL(0x4125c0, void, int, int, const char *)(x, y, s)
 #define armc_drawStatLabel(x, y, s) GAME_CDECL(0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
 #define armc_41c510() GAME_CDECL(0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISCALL(0x45e880, void, Stage *, int, int)(stage, actor, slot)
@@ -817,10 +817,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_armcPartSlot GAME_VAR(int, 0x4dbc6c)       /* 0 head, 1 chest, 2 arm, 3 leg, 4 booster, 5 weapons */
 #define g_armcColourSlot GAME_VAR(int, 0x4dc4b0)     /* the colour slot being edited */
 #define g_lobbySubState GAME_VAR(int, 0x4db51c)      /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
-#define armc_40e670() GAME_CDECL(0x40e670, void, void)()
+#define armc_restoreMenuCamera() GAME_CDECL(0x40e670, void, void)()
 #define armc_saveSelection() GAME_CDECL(0x40e7a0, void, void)()       /* keep the mech, save the progress */
 #define armc_sendSelectionToNet() GAME_CDECL(0x40e930, void, void)()
-#define armc_41b300() GAME_CDECL(0x41b300, void, void)()               /* the camera towards the page's target */
+#define armc_easeCamera() GAME_CDECL(0x41b300, void, void)()               /* the camera towards the page's target */
 #define music_play(path) GAME_CDECL(0x457150, void, const char *)(path)
 
 /* ---- messages ---- */
@@ -855,7 +855,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define cfg_parseKeyNames(f) GAME_CDECL(0x42e730, void, void *)(f)      /* its key bindings */
 #define input_applyKeyBindings() GAME_CDECL(0x42c410, void, void)()     /* the default key bindings */
 #define menu_enterMenus() GAME_CDECL(0x40ee20, u32, void)()
-#define arena_453180(session, id, name, colour) GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
+#define dplay_join(session, id, name, colour) GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
 #define tunnel_addRing() GAME_CDECL(0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define tunnel_removeLastRing(head) GAME_CDECL(0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
 #define profile_42b3c0(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
@@ -899,10 +899,10 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- DirectPlay calls (net/dplay_calls.c) ---- */
 #define CoCreateInstance(clsid, outer, context, iid, out) IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)(clsid, outer, context, iid, out)
-#define arena_4549c0() GAME_CDECL(0x4549c0, int, void)()   /* list the sessions through slot 0 .. 3 */
-#define arena_454ae0() GAME_CDECL(0x454ae0, int, void)()
-#define arena_454bf0() GAME_CDECL(0x454bf0, int, void)()
-#define arena_454d00() GAME_CDECL(0x454d00, int, void)()
+#define dplaySlot0_enum() GAME_CDECL(0x4549c0, int, void)()   /* list the sessions through slot 0 .. 3 */
+#define dplaySlot1_enum() GAME_CDECL(0x454ae0, int, void)()
+#define dplaySlot2_enum() GAME_CDECL(0x454bf0, int, void)()
+#define dplaySlot3_enum() GAME_CDECL(0x454d00, int, void)()
 
 /* ---- the game's own network code (net/net_servers.c) ---- */
 #define net_ping(ip, timeout) GAME_CDECL(0x4548b0, int, u32, int)(ip, timeout)   /* ICMP echo: the round trip time, 0 when none */
@@ -972,7 +972,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define app_430390() GAME_CDECL(0x430390, void, void)()
 #define data_loadMapInfo() GAME_CDECL(0x42b830, u32, void)()
 #define data_loadSkirmishInfo() GAME_CDECL(0x42ba40, u32, void)()
-#define arena_42bc00() GAME_CDECL(0x42bc00, void, void)()
+#define arena_initOptionTexts() GAME_CDECL(0x42bc00, void, void)()
 #define profile_scanSaves() GAME_CDECL(0x4460d0, void, void)()
 #define app_42f940() GAME_CDECL(0x42f940, void, void)()
 #define hud_42fb40() GAME_CDECL(0x42fb40, void, void)()
@@ -1130,7 +1130,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- batch: front-end records, objects, video tables ---- */
 #define net_claimPlayerSlot() GAME_CDECL(0x451450, u8, void)()   /* a free network player slot claimed (0xff: none) */
-#define arena_4514a0(slot, id) GAME_CDECL(0x4514a0, void, u32, int)(slot, id)   /* player slot taken by id */
+#define net_takePlayerSlot(slot, id) GAME_CDECL(0x4514a0, void, u32, int)(slot, id)   /* player slot taken by id */
 #define space_disableUnit(unit) GAME_THISCALL(0x480460, void, void *)(unit)
 #define space_enableUnit(unit) GAME_THISCALL(0x480480, void, void *)(unit)
 #define tex_markMaterialChanged(self, m) GAME_THISCALL(0x456820, void, void *, int)(self, m)   /* material m marked changed */
@@ -1173,7 +1173,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define mem_free(p) GAME_CDECL(0x467d60, u32, void *)(p)   /* p deleted (0 for none) */
 
 #define g_menuState GAME_VAR(int, 0x76d3e8)          /* the front end's screen (300 the main menu) */
-#define arena_4065e0() GAME_CDECL(0x4065e0, void, void)()   /* the session list sorted */
+#define sessionList_sort() GAME_CDECL(0x4065e0, void, void)()   /* the session list sorted */
 
 /* ---- the projection switch and the menus' 2D (menu_2d.c) ---- */
 #define GL_LINES 1
@@ -1221,14 +1221,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define ptx_internal_46f2a0(out, run) GAME_CDECL(0x46f2a0, void, int *, int *)(out, run)   /* an AC symbol */
 
 /* ---- (net/net_sessions.c, render/rotations.c) ---- */
-#define arena_4065a0(a, b) GAME_CDECL(0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */
+#define record_swap(a, b) GAME_CDECL(0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */
 #define Vec3_normalize(v) GAME_THISCALL(0x467760, long double, float *)(v)   /* returns the length, unrounded */
 
 /* ---- (load/lists.c, render/shape_colours.c, net/net_tables.c, match/map_objects.c, menu/lobby_states.c) ---- */
 #define crt_malloc(size) GAME_CDECL(0x49eeb0, void *, u32)(size)
 #define net_clearServers() GAME_CDECL(0x454690, void, void)()                  /* the server table cleared */
 #define net_resolveHost(host) GAME_CDECL(0x4547d0, int, const char *)(host)   /* 1: resolved (into 0xa0d320) */
-#define arena_4519b0() GAME_CDECL(0x4519b0, u32, void)()
+#define arena_freeBuffers() GAME_CDECL(0x4519b0, u32, void)()
 #define net_clearServerList() GAME_CDECL(0x452e60, void, void)()   /* the game list table cleared */
 #define net_receiveLobbyReply() GAME_CDECL(0x452a30, void, void)()   /* the list of games received */
 #define net_receiveGameServerReply() GAME_CDECL(0x452bd0, void, void)()   /* the server list received */
@@ -1249,8 +1249,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define tex_46de20(rgba, dh, ds, dv) GAME_THISCALL(0x46de20, int, u8 *, u32, u32, u32)(rgba, dh, ds, dv)   /* an RGBA byte colour tinted */
 
 /* ---- (net/net_sessions.c) ---- */
-#define arena_4532a0() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
-#define arena_4532b0(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
+#define net_sessionCount() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
+#define net_sessionValue(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
 
 #define room_copyJoinedSettings() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
 #define room_takeReceivedSettings() GAME_CDECL(0x432db0, void, void)()   /* a received game's settings into the room */
@@ -1268,31 +1268,31 @@ typedef struct { float r, g, b, a; } Colour;
 #define gameList_open() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define room_432200(x, y) GAME_CDECL(0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
 #define room_openDialog4d() GAME_CDECL(0x4338c0, void, void)()
-#define arena_453090(name, player, map, a, b, c, d, corp) GAME_CDECL(0x453090, int, const char *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
+#define dplay_host(name, player, map, a, b, c, d, corp) GAME_CDECL(0x453090, int, const char *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_CDECL(0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_CDECL(0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_keepSettings() GAME_CDECL(0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
-#define arena_4091b0() GAME_CDECL(0x4091b0, void, void)()   /* the arena's tunnel */
-#define arena_453260() GAME_CDECL(0x453260, void, void)()   /* DirectPlay's session list polled */
-#define arena_406810() GAME_CDECL(0x406810, void, void)()
+#define arena_drawTunnel() GAME_CDECL(0x4091b0, void, void)()   /* the arena's tunnel */
+#define dplay_listSessions() GAME_CDECL(0x453260, void, void)()   /* DirectPlay's session list polled */
+#define arenaList_rebuild() GAME_CDECL(0x406810, void, void)()
 #define arena_406640() GAME_CDECL(0x406640, void, void)()   /* the list of games asked for again */
-#define arena_40a070() GAME_CDECL(0x40a070, void, void)()   /* the arena's list of games drawn */
-#define arena_406200(i) GAME_CDECL(0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
-#define arena_405690(i) GAME_CDECL(0x405690, u32, int)(i)   /* session i joined */
+#define arena_drawGameList() GAME_CDECL(0x40a070, void, void)()   /* the arena's list of games drawn */
+#define arena_joinListed(i) GAME_CDECL(0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
+#define arena_joinSession(i) GAME_CDECL(0x405690, u32, int)(i)   /* session i joined */
 #define sys_checkClockTampering() GAME_CDECL(0x43f300, void, void)()
 #define glWindow_init(title, w, h, bits, depth, full, hwnd, flag) GAME_CDECL(0x468250, void, const char *, int, int, int, int, int, void *, int)(title, w, h, bits, depth, full, hwnd, flag)
 #define console_loadFile(map) GAME_CDECL(0x41e7c0, int, int)(map)   /* the map's files loaded: 0 failed */
 #define console_41e390() GAME_CDECL(0x41e390, void, void)()
 #define scene_setTextureFolder(scene, map) GAME_THISCALL(0x461ec0, void, Scene *, const char *)(scene, map)
 #define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
-#define arena_450a60() GAME_CDECL(0x450a60, u32, void)()
+#define net_receiveAll() GAME_CDECL(0x450a60, u32, void)()
 #define net_getLocalAddress() GAME_CDECL(0x454220, int, void)()   /* this machine's address as text (0xa0b43c) */
 #define missionsel_drawSettingsScreen() GAME_CDECL(0x448ac0, void, void)()
 #define missionsel_drawScreen() GAME_CDECL(0x449a50, void, void)()
 #define skirmish_drawScreenA() GAME_CDECL(0x444f40, void, void)()
 #define skirmish_drawScreenB() GAME_CDECL(0x4456b0, void, void)()
 #define arena_404460(x, y) GAME_CDECL(0x404460, int, int, int)(x, y)   /* the arena name dialog's control at (x, y) */
-#define arena_452ec0(kind, host) GAME_CDECL(0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
+#define arena_openSession(kind, host) GAME_CDECL(0x452ec0, int, u32, const char *)(kind, host)   /* a DirectPlay slot opened */
 #define lobby_openConnection() GAME_CDECL(0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
 #define arena_4044a0(x, y) GAME_CDECL(0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
 #define arena_chatLine() GAME_CDECL(0x405200, void, void)()   /* the arena screen's chat line opened */
@@ -1301,7 +1301,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define reg_writeCharacterSettings() GAME_CDECL(0x432400, void, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
-#define arena_4045e0() GAME_CDECL(0x4045e0, void, void)()
+#define arena_clearChatRecord() GAME_CDECL(0x4045e0, void, void)()
 #define arena_403f30() GAME_CDECL(0x403f30, void, void)()
 #define arena_403f80() GAME_CDECL(0x403f80, void, void)()
 #define arena_404010() GAME_CDECL(0x404010, void, void)()
@@ -1329,8 +1329,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define dplay_send(from, to, flags, data, size) GAME_CDECL(0x450bf0, int, u32, u32, u32, const void *, u32)(from, to, flags, data, size)   /* a DirectPlay message sent */
 #define space_setBy(space, lo, hi, nx, ny, nz, a, b, depth) GAME_THISCALL(0x4819b0, u32, void *, void *, void *, int, int, int, int, int, int)(space, lo, hi, nx, ny, nz, a, b, depth)
 #define shape_bindPartTextures(shape) GAME_THISCALL(0x466650, u32, void *)(shape)   /* a shape's textures bound */
-#define armc_40fb20() GAME_CDECL(0x40fb20, u32, void)()
-#define armc_40fd30() GAME_CDECL(0x40fd30, u32, void)()
+#define armc_mainPageClicks() GAME_CDECL(0x40fb20, u32, void)()
+#define armc_partScreenClicks() GAME_CDECL(0x40fd30, u32, void)()
 #define armc_colourScreenInput() GAME_CDECL(0x40ff40, u32, void)()
 
 #define Mat4_fromAxisAngle(m, rotation) GAME_CDECL(0x47d9a0, void, float *, const float *)(m, rotation)   /* (angle, axis) -> matrix */

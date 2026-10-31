@@ -46,7 +46,7 @@ static void merge(const Received *g)
 				strcpy((char *)e + 0x2b, (const char *)s + g->str2Off);
 				GAME_VAR(int, g->total) += (signed char)e[0x23];
 				g_sessionCount = k + 1;
-				arena_4065e0();   /* the list sorted again */
+				sessionList_sort();   /* the list sorted again */
 			}
 			GAME_VAR(int, 0xa0bb14 + i * 4) = 0;
 			GAME_VAR(int, 0x680bb8)++;
@@ -74,14 +74,14 @@ void (arena_406640)(void)
 
 /* 0x4065e0: the session list sorted by player count (+0x24, bubble sort). The original swaps 0x4a-byte blocks that
    start 4 bytes before each record (from 0x9087c0): a record's last 4 bytes travel with the record after it */
-void (arena_4065e0)(void)
+void (sessionList_sort)(void)
 {
 	for (int pass = 0; g_sessionCount - 1 > 0; ) {
 		int swapped = 0;
 		for (int j = 0; j < g_sessionCount - 1; j++) {
 			u8 *e = SESSION(j);
 			if (GAME_VAR(int, e + 0x24) > GAME_VAR(int, e + 0x4a + 0x24)) {
-				arena_4065a0(e - 4, e + 0x4a - 4);
+				record_swap(e - 4, e + 0x4a - 4);
 				swapped = 1;
 			}
 		}
@@ -92,13 +92,13 @@ void (arena_4065e0)(void)
 
 /* 0x406810: the arena list rebuilt from the session list (0x4a-byte records: name, id before it, settings), then
    sorted */
-void (arena_406810)(void)
+void (arenaList_rebuild)(void)
 {
-	int n = arena_4532a0();
+	int n = net_sessionCount();
 	g_sessionCount = n;
 	GAME_VAR(int, 0x680bb8) = n;
 	for (int i = 0; i < g_sessionCount; i++) {
-		const u8 *s = (const u8 *)arena_4532b0(i);
+		const u8 *s = (const u8 *)net_sessionValue(i);
 		u8 *e = SESSION(i);
 		memset(e, 0, 32);
 		strcpy((char *)e, (const char *)s + 0x2e);
@@ -115,5 +115,5 @@ void (arena_406810)(void)
 	GAME_VAR(int, 0x4dbac8) = 1;
 	GAME_VAR(int, 0x76d41c) = 0;
 	GAME_VAR(int, 0x4dbaa8) = 0;
-	arena_4065e0();
+	sessionList_sort();
 }

@@ -131,7 +131,7 @@ long double THISCALL (timer_getGameTime)(u8 *t)
 /* 0x461210 (thiscall on a frame timer): the frame's time (timer_getGameTime of the timer at +0xc) kept in a ring of
    ten (+0x48, next at +0x70), their average (the sum times 0x4a955c, 0.1) in +0x44; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
-long double THISCALL (armc_461210)(u8 *t)
+long double THISCALL (frameTimer_average)(u8 *t)
 {
 #define FIELD(type, offset) GAME_VAR(type, t + (offset))
 	long double now = timer_getGameTime(t + 0xc);

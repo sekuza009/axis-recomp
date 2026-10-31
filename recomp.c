@@ -379,7 +379,7 @@ int profile_44b3a0(int x, int y);
 int profile_44b3e0(int x, int y);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_404520(int x, int y);
+int createArena_hitTest(int x, int y);
 
 /* 0x445ee0 save_cryptRecord(rec, key): XOR the 0x3ac-byte profile record with key, key+1, ...
    The original meant to wrap the key at 0xa5 back to 0x7e, but compares the sign-extended byte with the
@@ -403,9 +403,9 @@ int profile_4343b0(const char *name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_toggle(int i);
 
-/* 0x40f830 armc_40f830(i): 1 if list entry i (>= 27) is one of the two colour-part selections */
+/* 0x40f830 armc_colourPartEquipped(i): 1 if list entry i (>= 27) is one of the two colour-part selections */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int armc_40f830(int i);
+int armc_colourPartEquipped(int i);
 
 /* 0x46cbc0 array_recordAt(i, base, stride): base + i * stride, or 0 for a negative index */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -447,26 +447,26 @@ void armc_40d990(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mech_unpackFromRecord(void);
 
-/* 0x40e670 armc_40e670: restore the menu camera from its saved copy */
+/* 0x40e670 armc_restoreMenuCamera: restore the menu camera from its saved copy */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40e670(void);
+void armc_restoreMenuCamera(void);
 
 /* 0x40e6c0 armc_loadSavedMech: load the saved mech (parts, weapons, colours) into the ARM CENTER working copy */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_loadSavedMech(void);
 
-/* 0x40ed20 armc_40ed20: position of each selected part in its unlocked list (0 if not listed) */
+/* 0x40ed20 armc_syncPartCursors: position of each selected part in its unlocked list (0 if not listed) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40ed20(void);
+void armc_syncPartCursors(void);
 
 /* 0x40f590 armc_backupColours: copy slot 1 to the undo buffer. The fifth value is copied from the
    second (0x4dc4d4), not from 0x4dc4e0 - kept as in the original */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_backupColours(void);
 
-/* 0x41ced0 armc_41ced0: copy the undo buffer into colour slots 0..4 */
+/* 0x41ced0 armc_restoreColourUndo: copy the undo buffer into colour slots 0..4 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41ced0(void);
+void armc_restoreColourUndo(void);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_dragPrimaryHue(void);
@@ -501,9 +501,9 @@ void menu_clearInputBuffer(int mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void chat_pushHistory(void);
 
-/* 0x4065a0 arena_4065a0(a, b): swap two 0x4a-byte session records */
+/* 0x4065a0 record_swap(a, b): swap two 0x4a-byte session records */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4065a0(void *a, void *b);
+void record_swap(void *a, void *b);
 
 
 /* 0x4050f0 cfg_defaultPlayerName: player name "PLAYER" (string 0x4ad4b0), the two fields after it 0 */
@@ -599,7 +599,7 @@ void mech_loadFromProfile(void);
 /* 0x4464b0 mech_storeToProfile: store the mech into the profile record (inverse of mech_loadFromProfile) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mech_storeToProfile(void);
-/* 0x447910 menu_restoreCamera: restore the menu camera (armc_40e670 without the flag) */
+/* 0x447910 menu_restoreCamera: restore the menu camera (armc_restoreMenuCamera without the flag) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_restoreCamera(void);
 
@@ -612,26 +612,26 @@ int profile_44b2e0(int x, int y);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 unsigned char net_claimPlayerSlot(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4514a0(unsigned slot, int id);
+void net_takePlayerSlot(unsigned slot, int id);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4515a0(void);
+void net_freeAllSlots(void);
 
-/* 0x4532b0 arena_4532b0(i): value of session i (8-byte records at 0xa0b470: used, value; last index 0xa0b41c) */
+/* 0x4532b0 net_sessionValue(i): value of session i (8-byte records at 0xa0b470: used, value; last index 0xa0b41c) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4532b0(int i);
-/* 0x453a30 arena_453a30(i): 1 if connection type i (0..3) is available (flags at 0xa0bae0) */
+int net_sessionValue(int i);
+/* 0x453a30 net_connectionAvailable(i): 1 if connection type i (0..3) is available (flags at 0xa0bae0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_453a30(DWORD i);
+int net_connectionAvailable(DWORD i);
 
 /* 0x4554c0 (thiscall) tex_4554c0(name): binary search of the sorted 0x44-byte name records (pointer at
    this+0x10c, count at this+0x108); index or -1. The upper bound starts at count, not count - 1, as in the original */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int tex_4554c0(void *self, const unsigned char *name);
 
-/* 0x4045e0 arena_4045e0: clear chat record 0x67ef30 (0x4a bytes at 0x9087c4). The original loops 256 times
+/* 0x4045e0 arena_clearChatRecord: clear chat record 0x67ef30 (0x4a bytes at 0x9087c4). The original loops 256 times
    without advancing, so the same record is cleared repeatedly */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4045e0(void);
+void arena_clearChatRecord(void);
 
 /* ---- batch 5: scene-object methods (actors, match messages, materials) ----------------------
    "self" is the scene sub-object (GUIDE.txt section 5): actor slots at +0x1cd93a8 (stride 0x8888),
@@ -899,7 +899,7 @@ int cfg_44ac70(char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL ErrorLog_ctor(void *self, const char *name, int b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_410160(void);
+void armc_rightClickLeave(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44b7a0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -913,10 +913,10 @@ void mapList_startEdit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_settingsArrowClick(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_451410(void);
+int net_claimLocalSlot(void);
 /* bubble sort of the 0x4a-byte records at 0x9087c0 by their int at +0x28 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4065e0(void);
+void sessionList_sort(void);
 
 /* PTX (video) tables */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1003,7 +1003,7 @@ void room_start(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_openDialog42(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4509e0(void);
+void net_resetState(void);
 /* clear the 32 skirmish player rows (0xfc bytes each) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_clearPlayerRows(void);
@@ -1022,7 +1022,7 @@ static void map_step(int dir, DWORD lock, DWORD sel)
 	G32(0x680cd0) = 1;
 }
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4068d0(int dir);
+void arena_stepMap(int dir);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4356f0(int dir);
 
@@ -1096,7 +1096,7 @@ THISCALL void space_resetUnits(char *self);
 /* ---- batch 9: menu resets, PTX video decoding helpers, weapon cycling ------------------------- */
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL armc_461370(void *scene, int v);
+void THISCALL mech_setValue(void *scene, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL match_4613a0(void *scene, int team);
 
@@ -1129,7 +1129,7 @@ void menuState300_enter(void);
 void armc_initCameraPoints(void);
 /* six part bounding boxes (+-600) and camera limits */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40dfa0(void);
+void armc_initPartBoxes(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_openDialog4d(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1187,7 +1187,7 @@ void lobby_setSubState1(void);
 void lobby_ladderGameName(void);
 /* ARM CENTER camera box corners (+-700) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40de80(void);
+void armc_initCameraBox(void);
 /* seven RGBA colours (1.0 / 0.0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_initColours(void);
@@ -1259,11 +1259,11 @@ void mapList_init(void);
 void lobby_drawArenaTitle(void);
 /* copy the arena option texts into the menu tables */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_42bc00(void);
+void arena_initOptionTexts(void);
 
 /* scene objects */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL armc_461320(void *scene, const char *name);
+void THISCALL mech_setName(void *scene, const char *name);
 /* colour every part's pixels */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void shape_colourPixels(BYTE *px, int mode, const char *shape, const BYTE *c);
@@ -1396,7 +1396,7 @@ void room_enterGameList(void);
 void lobby_setSubState2(void);
 /* menu camera/light positions (5 x 2 vectors) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_433360(void);
+void menuCamera_initPoints(void);
 
 /* ---- batch 13: game-room / arena list copies ---------------------------------------------------- */
 /* copy the joined game's settings into the room screen */
@@ -1599,9 +1599,9 @@ void menuState800_enterGameRoom(void);
 /* ---- batch 19: ARM CENTER part-info records, font-atlas cell tables ------------------------------ */
 /* part-info record (0x80 bytes) for weapon/part idx: file name without its folder, copied values, scaled floats */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41ca50(int slot, int idx);
+void armc_weaponSlotRecord(int slot, int idx);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41cca0(int idx);
+void armc_viewedPartRecord(int idx);
 /* font-atlas cell tables: rows r = r0, r0+rstep, ... < rend; each row has a low and a high edge (filled across the row's
    `cols` entries) and each column a low and a high edge; every value is n * (1/256-ish constant at 0x4a957c) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1692,7 +1692,7 @@ THISCALL void viewVolume_addQuad(char *vv, int id, const DWORD *uv0, const DWORD
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_camera(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_408270(void);
+void arena_camera(void);
 
 /* skirmish / mission-select camera: mode 1 flies to the fixed menu point and counts the fade value (0x4e1870) down,
    then snaps to the launch view; mode 0 flies home (fast or slow depending on height), counts the fade up towards
@@ -1746,7 +1746,7 @@ void static_initObject_90d1e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_initObject_83a9e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4532a0(void);
+int net_sessionCount(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_getWidth(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1788,7 +1788,7 @@ void THISCALL TimeSync_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL Scene_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int armc_45dfe0(void *self, int v);
+THISCALL int stage_setValue202e8dc(void *self, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL this_get_0x2342381_463780(void *scene, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1953,10 +1953,10 @@ int lobbyTop_draw(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int room_43e720(void);
 
-/* 0x406810 arena_406810: copy the session list into the 0x4a-byte arena records at 0x9087c4 (name, id, settings),
+/* 0x406810 arenaList_rebuild: copy the session list into the 0x4a-byte arena records at 0x9087c4 (name, id, settings),
    then sort them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_406810(void);
+void arenaList_rebuild(void);
 /* batch 32 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TextureManager_dtor(void *self);
@@ -1985,12 +1985,12 @@ void TextureManager_dtor_wrap_42b380(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 char *armc_41c510(void);
 /* batch 34 */
-/* 0x41b750 armc_41b750: the ARM CENTER part readout for the shown mech. For each of the 5 part slots of its player
+/* 0x41b750 armc_drawPartPanels: the ARM CENTER part readout for the shown mech. For each of the 5 part slots of its player
    (body 0x175553c, ... weapon 0x175554c) the part's name goes into a 64-byte field with '\' and '/' turned into '-'
    (via a zeroed 128-byte buffer; no terminator is copied, the field is zeroed first), then that part's stats, some
    scaled (one 80-bit product rounded on store), the float copies via fld/fstp. Returns the weapon index */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int armc_41b750(void);
+int armc_drawPartPanels(void);
 /* batch 35 */
 /* 0x47fce0 (thiscall) space_itemMeetsBox(lo, hi, r): does collision triangle `this` (collisionTri_setup layout) touch the box
    [lo - r, hi + r]? 1 = yes, 0 = no.
@@ -2069,12 +2069,12 @@ THISCALL void anim_setFrame(void *self, int i, DWORD scale);
    -> __ftol back into the bytes (all four channels, alpha too). Returns the last __ftol result */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int tex_46de20(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv);
-/* 0x4542a0 arena_4542a0(): the dotted address string at 0xa0b43c (strtok at "." - it is cut up in place) -> 4 bytes
+/* 0x4542a0 net_parseAddress(): the dotted address string at 0xa0b43c (strtok at "." - it is cut up in place) -> 4 bytes
    a.b.c.d packed as (a << 24) | b << 16 | c << 8 | d (a not masked, as in the original). Each token goes into a
    4-byte slot of a zeroed 20-byte buffer (longer tokens run into the next slot); more than 4 tokens would overrun
    the original's stack, and a string without any token makes it copy from NULL */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4542a0(void);
+int net_parseAddress(void);
 /* 0x454390 dplay_formatSessionEntry(addr): "a.b.c.d" (bytes high to low, _itoa base 10) into 0xa0b460; returns the
    copied length + 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2247,14 +2247,14 @@ int THISCALL SkeletonManager_release(void *self);
 int THISCALL partList_release(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL CollisionVolume_release(void *self);
-/* 0x4519b0 arena_4519b0(): free the arena's 19 allocated buffers (in the original's order) and null the pointers;
+/* 0x4519b0 arena_freeBuffers(): free the arena's 19 allocated buffers (in the original's order) and null the pointers;
    EAX = free's return for the last one, or 0 when it was null */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_4519b0(void);
-/* 0x454130 arena_454130(): with a session list (0xa0b384), free every used session record (8-byte slots at 0xa0b470:
+DWORD arena_freeBuffers(void);
+/* 0x454130 net_freeSessionList(): with a session list (0xa0b384), free every used session record (8-byte slots at 0xa0b470:
    used, malloc'd copy) and empty the list (count 0xa0b41c). EAX as the original leaves it: the count, or 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_454130(void);
+DWORD net_freeSessionList(void);
 /* 0x4540b0 net_addSession(desc): add a DirectPlay session description (0x85 bytes, by value) to the session list,
    unless its bytes 4..19 equal the GUID at 0x4aae70 (then 0) or no slot is free (then the slot finder's -1): a
    malloc'd copy goes into the free slot, count + 1. Returns the copy */
@@ -2478,9 +2478,9 @@ DWORD GetCurrentDirectoryA_wrap_43f580(void);
 /* 0x4685d0 gfx_swapBuffers: glFinish + SwapBuffers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_swapBuffers(void);
-/* 0x4539f0 arena_4539f0: create the DirectPlay lobby object (CoCreateInstance) */
+/* 0x4539f0 dplay_createLobby: create the DirectPlay lobby object (CoCreateInstance) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-long arena_4539f0(void **out);
+long dplay_createLobby(void **out);
 /* 0x454740 net_wakePingThread: reset/set the network events */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_wakePingThread(void);
@@ -2716,9 +2716,9 @@ DWORD net_pingAllServers(void);
 /* 0x41f050 gfx_setMenuCamera: gluLookAt from the menu camera position to its target */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD gfx_setMenuCamera(void);
-/* 0x41b300 armc_41b300: move the customise-screen camera part of the way towards the target for the mode/slot */
+/* 0x41b300 armc_easeCamera: move the customise-screen camera part of the way towards the target for the mode/slot */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41b300(void);
+void armc_easeCamera(void);
 /* 0x43f640 app_43f640: screen size from the video mode */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_43f640(void);
@@ -2748,9 +2748,9 @@ THISCALL void actor_startingValues(char *scene, DWORD p);
 /* 0x435770 roomList_fillPage: rebuild the room's 10 game slots (0x44 bytes at 0x9dcef0) from the listed games at 0xa05330 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void roomList_fillPage(void);
-/* 0x40f340 armc_40f340(part, dir): previous/next choice for a part (wrapping) */
+/* 0x40f340 armc_stepPart(part, dir): previous/next choice for a part (wrapping) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_40f340(DWORD part, int dir);
+DWORD armc_stepPart(DWORD part, int dir);
 /* batch 52: more tools/closure.py groups (lifted/grp2.c) */
 /* 0x401000 cd_findDrive: patched (no-CD build) to return 1 at once */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2767,9 +2767,9 @@ DWORD lobby_keepArenaSettings(void);
    axis.cfg */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44f6c0(void);
-/* 0x41dcf0 armc_41dcf0: reset the customise screen's state and set the camera for the current page */
+/* 0x41dcf0 armc_extraItemBonuses: reset the customise screen's state and set the camera for the current page */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41dcf0(void);
+void armc_extraItemBonuses(void);
 /* 0x42e730 cfg_parseKeyNames(f) / 0x42e240 cfg_videoModeNames(f) / 0x42da70 cfg_gameTypeNames(f): read a fixed
    number of axis.cfg lines (68 / 7 / 7) and take the values named in them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2813,13 +2813,13 @@ void cfg_writeDefaultAxisCfg(void);
    point, side); none: the range grows by half */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_checkLineOfSight(char *scene, DWORD p);
-/* 0x41cf20 armc_41cf20 / 0x41d280 armc_41d280: tint the customise screen's model parts (the scene at 0x9087b4, the
+/* 0x41cf20 armc_applyColourSlot / 0x41d280 armc_retintParts: tint the customise screen's model parts (the scene at 0x9087b4, the
    player's part shapes) with the chosen colours: the current colour slot / all slots after a change, then the
    current part */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41cf20(void);
+void armc_applyColourSlot(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41d280(void);
+void armc_retintParts(void);
 /* batch 55 (lifted/grp4.c) */
 /* 0x474b50 (thiscall) actor_setPartColor(p, part, h1, s1, v1, h2, s2, v2): player p's part colours: hues wrapped to
    -180..180 degrees (angle_wrap), the other values clamped to -1..0.999, stored as bytes, then the part's shape
@@ -3025,9 +3025,9 @@ void net_closeAll(int kind);
 /* batch 59 (lifted/grp7.c): menu frame/overlay drawing (calling the patched projection switch natively), GL window
    and display mode, dat/image file opening, the game timer, the clock check, profile deletion, the character
    settings in the registry and their room users, GL state, texture uploads */
-/* 0x41b710 armc_41b710: 3D projection, white, texturing, the menu camera */
+/* 0x41b710 armc_setup3DView: 3D projection, white, texturing, the menu camera */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41b710(void);
+void armc_setup3DView(void);
 /* 0x40ce70 menu_drawDimOverlay / 0x43df00 room_drawWhiteFade: fade a dark rectangle in over the screen */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_drawDimOverlay(void);
@@ -3058,11 +3058,11 @@ DWORD shapeDat_initBy(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD skelDat_initBy(void);
 /* 0x487490 (thiscall) timer_getGameTime: frame time from the performance counter (initialised on first use),
-   returned in ST0; 0x461210 (thiscall) armc_461210: its average over the last 10 frames */
+   returned in ST0; 0x461210 (thiscall) frameTimer_average: its average over the last 10 frames */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL long double timer_getGameTime(char *t);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL long double armc_461210(char *t);
+THISCALL long double frameTimer_average(char *t);
 /* 0x43f300 sys_checkClockTampering: compare the system time with the last one seen; a clock set back ends the
    game with a message */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3491,9 +3491,9 @@ void THISCALL armc_setArmIndex(void *scene, int index);
 void THISCALL armc_setLegIndex(void *scene, int index);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL armc_setBoosterIndex(void *scene, int index);
-/* 0x461510 (thiscall) armc_461510(slot, item): the same for an item slot (+0x234245e + slot * 4) */
+/* 0x461510 (thiscall) mech_setItem(slot, item): the same for an item slot (+0x234245e + slot * 4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL armc_461510(void *scene, int slot, int item);
+void THISCALL mech_setItem(void *scene, int slot, int item);
 /* 0x46fed0 (thiscall) partList_bindTextures(): bind the textures of every shape in an object list (count +0x10, 100-byte
    entries at +0x14, shape first; shape_bindPartTextures) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3561,13 +3561,13 @@ void room_loadMapPreview(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int pen_init(const char *name);
 /* batch 97 (lifted/grp43.c) */
-/* 0x41b400 armc_41b400(): the arm-customise screen's five spinning part panels: for k = 1..5, under the menu camera
+/* 0x41b400 armc_drawPanels(): the arm-customise screen's five spinning part panels: for k = 1..5, under the menu camera
    (gfx_setMenuCamera) scaled 0.8, texture 0x9da470 - k * 4 bound, panel k's quad (corners 0x4dc550 + k * 0x58, x
    offset +0x40, its spin angle +0x50 about y; panels 2 and 3 resized from 0x4b0708 / 0x4b0704 first) drawn at height
    k * 5 + 0x4dcfc4 + 1 - 105, depth 0x4dcfc8; the angle then advances by its speed (+0x54) times 0x4b071c and wraps
    at +-360 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41b400(void);
+void armc_drawPanels(void);
 /* batch 98 (lifted/grp44.c) */
 /* 0x4546d0 net_startThread(): the network worker: two events (0xa0bb10 / 0xa0bf1c) and a thread running net_pingThreadProc
    (handle 0xa0d788, id 0xa0d784), the first event set; 0 if any of them cannot be made */
@@ -3600,11 +3600,11 @@ int lobby_openConnection(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
-/* 0x461250 (thiscall on the scene) armc_461250(name, v, team, head, chest, arm, leg, booster, item0..5): the
-   arm-customise screen's whole mech at once (armc_461320 / armc_461370 / match_4613a0, the five part pickers, the six
+/* 0x461250 (thiscall on the scene) mech_setAll(name, v, team, head, chest, arm, leg, booster, item0..5): the
+   arm-customise screen's whole mech at once (mech_setName / mech_setValue / match_4613a0, the five part pickers, the six
    item slots), and the edited player marked used (playerRecord_markUsed) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL armc_461250(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
+void THISCALL mech_setAll(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
 	int item1, int item2, int item3, int item4, int item5);
 /* 0x4351c0 lobby_checkReservedName3() / 0x405cf0 lobby_checkReservedName2(): the player name the lobby sends
    (0x5b1b30 / 0x4ded20) against the reserved names (the developer's, 0x4ad4b8..0x4ad554): a reserved one gives
@@ -3696,14 +3696,14 @@ void THISCALL stage_drawActors(void *stage, void *view, int pass);
 /* 0x45dc00 (thiscall) stage_setupActorSlot(actor, a, b, &player): claim actor slot `actor` (100 or more: -1): slots past the
    count are cleared and the count grows to cover it; the first free slot is noted (+0x202e8cc); the mech is built
    (actor_setupFromParts); returns the slot. 0x45dd80 stage_claimPlayerActor(the same): also makes it the player's actor
-   (+0x202e8d4) with weapon slot 0 (actor_setWeaponSlot). 0x45ddc0 armc_45ddc0(): the player's actor again, from its own
+   (+0x202e8d4) with weapon slot 0 (actor_setWeaponSlot). 0x45ddc0 stage_remakePlayerActor(): the player's actor again, from its own
    player and the start position (0xa0e7a8..) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD stage_setupActorSlot(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL stage_claimPlayerActor(void *stage, int a, int x, int y, void *spawn);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL armc_45ddc0(void *stage);
+void THISCALL stage_remakePlayerActor(void *stage);
 /* 0x45de20 (thiscall) actor_applySpawnRecord(actor, rec): build the actor's mech for the player's actor slot
    (+0x202e8d4; negative is fatal) from a spawn record (player, position...), then override its stats from the
    record's ints (+0x1c..: scaled to floats) and reset two fields to -NaN */
@@ -3783,9 +3783,9 @@ void console_init(void);
 THISCALL void item_initTextures(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
 /* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawBox16, gfx_setProjection2D3D and menu_drawRect
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
-/* 0x4125c0 armc_4125c0(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
+/* 0x4125c0 armc_drawText(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_4125c0(int x, int y, const char *text);
+void armc_drawText(int x, int y, const char *text);
 /* 0x4125f0 armc_drawStatLabel(x, y, s): the same, right-aligned at x (8 / 6 units a character) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawStatLabel(int x, int y, const char *text);
@@ -3805,10 +3805,10 @@ DWORD profile_44ce90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mapSelect_drawNames(void);
 /* batch 117 (lifted/grp63.c): more menu screens over the native text passes */
-/* 0x412450 armc_412450(): the armour screen's three mode tabs: a textured tab each (texture 0x9db0a4), the current
+/* 0x412450 armc_drawModeTabs(): the armour screen's three mode tabs: a textured tab each (texture 0x9db0a4), the current
    mode (0x4dc798) brighter, and their labels (0x7565a4, 0x80 apart) in the selected / normal colours */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int armc_412450(void);
+int armc_drawModeTabs(void);
 /* 0x445520 briefing_typeOut(): the briefing typewriter: while text is shown (offset 0x9ef1ec into 0x9eeba4) and not
    finished (0x9f105c) or skipped (0x4d7348), every 1.4 of the timer 0x9f16b8 shows one more character (a CR LF or a
    double-byte character at once) by copying the text so far to 0x9f1064; drawn in the briefing window, with a
@@ -3838,11 +3838,11 @@ DWORD profile_44e3e0(void);
    buttons (the first dimmed while the name 0x9dc92c is empty), the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44de00(void);
-/* 0x41dab0 armc_41dab0(): the armour screen's weight line: the label 0x7573a4 right-aligned (8 or 14 units a
+/* 0x41dab0 armc_drawWeightLine(): the armour screen's weight line: the label 0x7573a4 right-aligned (8 or 14 units a
    character by language), the total of the ten part weights (stored at 0x4dc78c) " / " the limit 0x4dcb0c, the
    total red when over the limit, else green */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41dab0(void);
+void armc_drawWeightLine(void);
 /* batch 119 (lifted/grp65.c): the loading screen and two dialogs */
 /* 0x41f100 frontEnd_drawProgress(): the loading screen: clear to 0x76d350, the loading picture (texture 0x76d3f0) in the
    middle, the progress bar (0x4dda34 * 16 one-unit columns in three colour ramps: red to blue, green to blue, red
@@ -3855,11 +3855,11 @@ int frontEnd_drawProgress(void);
    0x9dd564 / 0x9dd6cc with 0x68039c), two buttons (the one under the cursor bright) and the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD loginDialog_draw(void);
-/* 0x409bc0 arena_409bc0(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
+/* 0x409bc0 arena_drawNameDialog(): the arena name dialog: frame, a cyan box, title 0x751fa4, two labels and the name
    0x4db560 (hidden while edited, 0x68039c); without a message (0x4dbbd0) the label under the cursor gets a shadow
    and a highlight; three buttons (0x7521a4, 0x80 apart), the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_409bc0(void);
+void arena_drawNameDialog(void);
 /* batch 120 (lifted/grp66.c): the room's server dialog and the two skirmish briefing screens */
 /* 0x439e00 serverDialog_draw(): the room's server dialog (only its frame while a message is open): title 0x758da4, an
    underline, the server name 0x9dd1d8 in a green-framed box, a note 0x758e24, two buttons (0x758f24, the one under
@@ -3879,12 +3879,12 @@ void skirmish_drawScreenB(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_drawScreenA(void);
 /* batch 121 (lifted/grp67.c): the arena slot list and the map-select dialog */
-/* 0x4038e0 arena_4038e0(): the arena's slot list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up
+/* 0x4038e0 mapList_draw(): the arena's slot list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up
    to 10 rows from slot 0x4d7350 (count 0x67ef00; slots 22..24 skipped): the number, the map name (0x907b30, 0x20
    apart) and the kind (0x4db8d8, 5 apart, by the slot's +4), on red bars when the slot is taken (0x4d7358, 8
    apart); the row under the cursor highlighted; scroll arrows; two pairs of buttons (0x75db24, 0x75da24) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4038e0(void);
+void mapList_draw(void);
 /* 0x442e10 mapSelect_drawDialog(): the map-select dialog: frame, title 0x74e8a4, the list box with its scroll arrows,
    two checkboxes (0x4b2a7c / 0x9eeac0 ticked: 0x74e924 / 0x74e9a4), two button rows (0x74ea24, 0x74eb24), the
    hovered list row highlighted, the map list (mapSelect_drawNames), the border */
@@ -3949,12 +3949,12 @@ void skirmish_4445a0(void);
 /* 0x411ab0 armc_411ab0(): the same deeper (depth 1650), textures 0x4df908 / 0x4df904, dimmer stripes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_411ab0(void);
-/* 0x4388e0 room_4388e0() / 0x4091b0 arena_4091b0(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
+/* 0x4388e0 room_4388e0() / 0x4091b0 arena_drawTunnel(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
    textures 0x4df908 / 0x4df904 and 0x4df044 / 0x4df040 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4388e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_4091b0(void);
+void arena_drawTunnel(void);
 /* batch 127 (lifted/grp73.c): the room's player-info panel */
 /* 0x43a420 account_drawPanel(): while waiting (0x9dd6d4 == 1) only a box with two lines (0x75b1a4, 0x74f724); else the
    panel (window 0x9dd368..): line, title 0x7592a4, labels (0x759324 five, 0x7595a4 seven, 0x80 apart), four field
@@ -3990,8 +3990,8 @@ void setup_drawSoundPage(void);
 /* 0x4434f0 mainmenu_drawMapSelect(): the map-select dialog (mapSelect_drawDialog), or only its frame while a message is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_drawMapSelect(void);
-/* 0x40cf80 lobbyPlayer_draw(): the arena tunnel (arena_4091b0), then in modes other than 0 / 1 (0x4dbb3c) and
-   outside sub-state 5 (0x4db51c) the arena name dialog (arena_409bc0) or, while a message is open, its frame */
+/* 0x40cf80 lobbyPlayer_draw(): the arena tunnel (arena_drawTunnel), then in modes other than 0 / 1 (0x4dbb3c) and
+   outside sub-state 5 (0x4db51c) the arena name dialog (arena_drawNameDialog) or, while a message is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyPlayer_draw(void);
 /* 0x427830 setup_427830() / 0x427880 setup_427880(): the setup tunnel (setup_drawTunnel), then in modes other than
@@ -4072,16 +4072,16 @@ void gameList_draw(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_drawGameSettings(void);
 /* batch 138 (lifted/grp84.c): the armour screen's colour editor */
-/* 0x41a280 armc_41a280(): the colour editor (panels at 0x4dcc98 - 200, 0x4dcc94): two translucent boxes headed
+/* 0x41a280 armc_drawColourEditor(): the colour editor (panels at 0x4dcc98 - 200, 0x4dcc94): two translucent boxes headed
    0x75d3a4 / 0x75d424, each with three lines "<0x75d4a4 label> [<value>]" for the current slot's colours
    (0x4dc4b8, six floats a slot: hue * k, then saturation and value scaled and capped at 99; the second colour's
    offset by one first); the slot list (texture 0x9db0a4, five slots and a sixth box 0x756d24, labels 0x756aa4, the
    current slot 0x4dc4b0 bright) with the parts' names when 0x4dbc68 is set; the hue / saturation / value sliders
    for both colours (hue wrapped by 180 into 0..1) and their knobs; the hovered control (armc_40e4d0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41a280(void);
+void armc_drawColourEditor(void);
 /* batch 139 (lifted/grp85.c): the armour build screen */
-/* 0x419160 armc_419160(): the armour build screen: three buttons (0x7517a4; the hovered one, armc_40e490, bright),
+/* 0x419160 armc_drawBuildScreen(): the armour build screen: three buttons (0x7517a4; the hovered one, armc_40e490, bright),
    six part slots (texture 0x9db0a4, the selected one 0x4dbe48 bright), the snapshot when asked (0x4dcc64:
    armc_snapshot), each named slot's picture (texture 0x4dcc70 + k * 4) and label (0x756fa4) with its name
    (0x4dbe50, 0x80 apart; one character or none: 0x757da4); the part box: name 0x4dc150 and its type (0x7641a4,
@@ -4090,9 +4090,9 @@ void armc_41a280(void);
    the 16 stats (0x4dc190..0x4dc1cc) with labels 0x7574a4: counts, a pilot-scaled bonus " +%d" / " %d" (skill of
    pilot 0x9f1818 by kind 0x4dc194), "%.0f" / "%.1f" values with units (0x765624..0x7657a4), right-aligned */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_419160(void);
+void armc_drawBuildScreen(void);
 /* batch 140 (lifted/grp86.c): the arena's game list */
-/* 0x40a070 arena_40a070(): gameList_draw's game list for the arena (window 0x4db8c8..): frame, a line, title 0x7524a4;
+/* 0x40a070 arena_drawGameList(): gameList_draw's game list for the arena (window 0x4db8c8..): frame, a line, title 0x7524a4;
    three tabs (0x752524; the hovered one, arena_4044a0, bright unless a box is open: 0x4db8b4, 0x907b2c, 0x4db714,
    0x4db8bc); five column heads; with a list (0x4dbac8, or 0x4dbaa8 which also shows locks and the last column)
    nine rows of the 0x4a-byte game records from 0x680bb0 (the mode as a 0x4db8d8 kind string), the page
@@ -4102,7 +4102,7 @@ void armc_419160(void);
    the full box (0x4db714: 0x74f624), the confirmation (0x4db8b4: 0x752aa4 / 0x752b24, its button 0x751824 by
    arena_4044e0); the border */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_40a070(void);
+void arena_drawGameList(void);
 /* batch 141 (lifted/grp87.c): the create-arena screen */
 /* 0x40b750 arena_createDraw(): room_drawGameSettings' form for a new arena (window 0x4dbb00..): title 0x752c24,
    labels 0x752ca4.., the arena name 0x4db528 and the password 0x4db54e as '*' (into a 10-byte buffer; each hidden
@@ -4143,7 +4143,7 @@ DWORD ranking_page(void);
 void setup_crosshairScreen(void);
 /* batch 144 (lifted/grp90.c): the armour screen's stats panel, the largest function in the game */
 /* 0x412650 armc_drawStatsPanel(): the armour screen with the stats of the part in slot 0x4dbc6c (0..5): the
-   preview arrows, the slot buttons and their labels (as armc_41a280, part names when 0x4dbc68), three buttons, the
+   preview arrows, the slot buttons and their labels (as armc_drawColourEditor, part names when 0x4dbc68), three buttons, the
    weight button, the "detail" button 0x7568a4; then a panel of the part's stats (taller in Korean, 0x9dae74): one
    section per slot type, each line "<label> <value>" built with sprintf from the part's numbers (floats such as
    0x4dce84..0x4dcf0c and 0x4dc228..0x4dc248, counts such as 0x4dcab4..0x4dcacc), several scaled by the pilot's
@@ -4152,13 +4152,13 @@ void setup_crosshairScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawStatsPanel(void);
 /* batch 145 (lifted/grp91.c): re-equipping the current player's armour part */
-/* 0x461540 (thiscall on the game) armc_461540(slot): for the player in lobby slot +0x234240d (none when negative):
+/* 0x461540 (thiscall on the game) armc_giveShownActorWeapon(slot): for the player in lobby slot +0x234240d (none when negative):
    keep the actor's part slot fields (+0x1eccbf0..+0x1eccc00 of its 0x8888-byte record at +0x1eccbb0; a negative
    slot means the actor's current one, +0x1eccbb0), mark whether it is the local player (+0x1eccf0c against
-   +0x2221fa0), rebuild the actor's lists (armc_45ddc0 on the scene +0x1f36c8), put the kept fields back, and for
+   +0x2221fa0), rebuild the actor's lists (stage_remakePlayerActor on the scene +0x1f36c8), put the kept fields back, and for
    slots above 3 first re-apply the stored slot +0x1eccbb4, then the slot (actor_setWeaponSlot, actor_updatePart) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void armc_461540(char *game, DWORD slot);
+THISCALL void armc_giveShownActorWeapon(char *game, DWORD slot);
 /* batch 146 (lifted/grp92.c): the armour screen's part lists */
 /* 0x40da40 armc_buildPartLists(): the unlocked part lists up to a level (0x4dc784, also 0x4dc870): in network mode
    (0x4dc24c == 3) the player level 0x9dd5d8 - 1, else the progress (our patch's helper at 0xb68e80 reads 0x9f181c,
@@ -4257,24 +4257,24 @@ int dplay_release(void);
 int dplay_enumSessions(void);
 /* the arena's connection slots 0xa0d7a4 .. 0xa0d7b0: release (clearing the slot) or enumerate when it is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4549a0(void);
+int dplaySlot0_close(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4549c0(void);
+int dplaySlot0_enum(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454ac0(void);
+int dplaySlot1_close(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454ae0(void);
+int dplaySlot1_enum(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454bd0(void);
+int dplaySlot2_close(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454bf0(void);
+int dplaySlot2_enum(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454ce0(void);
+int dplaySlot3_close(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454d00(void);
-/* 0x453260 arena_453260(): enumerates through the slot of the connection kind 0xa0b418 (0..3), else 0 */
+int dplaySlot3_enum(void);
+/* 0x453260 dplay_listSessions(): enumerates through the slot of the connection kind 0xa0b418 (0..3), else 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_453260(void);
+int dplay_listSessions(void);
 /* batch 157 (lifted/grp103.c): DirectPlay create, host, join and player names */
 /* 0x454190 dplay_getPlayerName(id, out): asks the DPNAME size (GetPlayerName with no buffer), allocates and locks a
    global block of it and fetches the name into it (*out = the block, 0); on a failure frees the block and returns the
@@ -4284,12 +4284,12 @@ int dplay_getPlayerName(DWORD id, void **out);
 /* 0x453790 dplay_create(): through the lobby (CoCreateInstance into 0xa0b398): the connection settings (size query,
    then into the global block 0xa0baf4; session flags 0x44, max players 16), SetConnectionSettings, ConnectEx into
    0xa0b404, CreatePlayer, host or client by the session flags (0xa0baf8); then (also when the lobby part fails)
-   a plain DirectPlay object (arena_4539f0) and EnumConnections with dplay_enumConnections; frees the block */
+   a plain DirectPlay object (dplay_createLobby) and EnumConnections with dplay_enumConnections; frees the block */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_create(void);
 /* 0x453cf0 dplay_hostSession(max, name, a3, a4, a5, c6, c7, data): fills the session description 0xa0b3b0 (the
-   connection kind 0's address from net_getLocalAddress / arena_4542a0), Open as host, CreatePlayer named name;
-   the player id into 0xa0b424, data into 0xa0b428, host flag 0xa0baf8, then claims a player slot (arena_451410).
+   connection kind 0's address from net_getLocalAddress / net_parseAddress), Open as host, CreatePlayer named name;
+   the player id into 0xa0b424, data into 0xa0b428, host flag 0xa0baf8, then claims a player slot (net_claimLocalSlot).
    0 without a DirectPlay object or on a failure, else 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_hostSession(const char *session, const char *player, DWORD user1, DWORD maxPlayers, DWORD user2, signed char hi, signed char lo, DWORD data);
@@ -4517,10 +4517,10 @@ DWORD profile_44c190(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_processInput(void);
 /* batch 167 (lifted/grp113.c): receiving DirectPlay messages */
-/* 0x450bc0 arena_450bc0(from*, to*, flags, data, size*) / 0x450bf0 dplay_send(from, to, flags, data, size):
+/* 0x450bc0 dplay_receive(from*, to*, flags, data, size*) / 0x450bf0 dplay_send(from, to, flags, data, size):
    DirectPlay Receive / Send through 0xa0b404 (0 without it) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-long arena_450bc0(DWORD *from, DWORD *to, DWORD flags, void *data, DWORD *size);
+long dplay_receive(DWORD *from, DWORD *to, DWORD flags, void *data, DWORD *size);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 long dplay_send(DWORD from, DWORD to, DWORD flags, const void *data, DWORD size);
 /* 0x451270 net_sendMessage(msg, to, size): send msg from the local player 0xa0b424; types 2 and 6 guaranteed (flag 1,
@@ -4531,23 +4531,23 @@ int net_sendMessage(const int *message, DWORD to, DWORD size);
    NULL) in a new global block (*out); the error from the name lookup or 0x8007000e */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_logMessage(DWORD from, const char *text, char **out);
-/* 0x451090 arena_451090(msg, size, from): a game packet by type (1..7): 1 a chat line (net_logMessage into
+/* 0x451090 net_handleMessage(msg, size, from): a game packet by type (1..7): 1 a chat line (net_logMessage into
    0x9fd948, flag 0x9fd95c), 2 the host's id (0x9fd94c) and the room reset (0x454130, 0x4515a0), 3..7 a player slot
    (byte +4: 0x9f9840 + 0x410 * slot) claimed or updated with up to 0x40 bytes of its data (+5 size, +9 data) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_451090(const void *message, DWORD size, DWORD from);
+DWORD net_handleMessage(const void *message, DWORD size, DWORD from);
 /* 0x450c20 net_sendLocalInfo(sysmsg): DirectPlay system messages: 5 (create player): the host's slot (0x451530),
    and when hosting over TCP/IP the room or arena info sent to the newcomer (by 0xa0b380: 200 room, 201 arena; the
    packets 0xa0b310 / 0xa0b314 or 0xa0b328 / 0xa0b32c, net_send); 3 (destroy player): its slot freed (0x451450,
    net_sendMessage with 0x9f9420) and the info sent again */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_sendLocalInfo(const void *msg);
-/* 0x450a60 arena_450a60(): every waiting DirectPlay message: the buffer (a global block of 0x9fd940 bytes) grown when
+/* 0x450a60 net_receiveAll(): every waiting DirectPlay message: the buffer (a global block of 0x9fd940 bytes) grown when
    too small, system messages (sender 0) to net_sendLocalInfo, a type 7 of more than 0x49 bytes ends the loop, others
-   to arena_451090; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
+   to net_handleMessage; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_450a60(void);
-/* 0x450bb0 FUN_00450bb0: jump to arena_450a60 */
+DWORD net_receiveAll(void);
+/* 0x450bb0 FUN_00450bb0: jump to net_receiveAll */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_00450bb0(void);
 /* batch 168 (lifted/grp114.c): the mission settings screen */
@@ -4565,68 +4565,68 @@ void missionsel_44aa20(void);
 /* the armour centre: the part kind being chosen 0x4dbe48 (0..3 armour parts from the list 0x4dc79c (count
    0x4dc244), 4 / 5 the others from 0x4dcca4 (count 0x4dc778), -1 none), the list position 0x4dc77c, the chosen
    parts 0x4dcb20 / 24 / 28 / 2c (armour) and 0x4dcb18 / 0x4dcb1c.
-   0x40f950 armc_40f950(): the position wrapped into its list, that part previewed (armc_41cca0), the snapshot 6
-   (armc_snapshot), the lobby player's part re-applied (armc_461540 on the game 0x9087b4), then armc_41c510 */
+   0x40f950 armc_showCursorItem(): the position wrapped into its list, that part previewed (armc_viewedPartRecord), the snapshot 6
+   (armc_snapshot), the lobby player's part re-applied (armc_giveShownActorWeapon on the game 0x9087b4), then armc_41c510 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40f950(void);
-/* 0x40f870 armc_40f870(kind): switch to part kind: the position of the kind's chosen part in its list; for the
-   armour kinds the weapon / part shown on the scene's actor (actor_selectWeapon), then armc_40f950 */
+void armc_showCursorItem(void);
+/* 0x40f870 armc_pickSlot(kind): switch to part kind: the position of the kind's chosen part in its list; for the
+   armour kinds the weapon / part shown on the scene's actor (actor_selectWeapon), then armc_showCursorItem */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40f870(int slot);
-/* 0x40f9e0 armc_40f9e0(): take the part under the position as the kind's choice, the slot redrawn (armc_41ca50),
-   its snapshot, all six choices sent to the lobby player (armc_461250, 14 arguments), back to no kind */
+void armc_pickSlot(int slot);
+/* 0x40f9e0 armc_takeCursorItem(): take the part under the position as the kind's choice, the slot redrawn (armc_weaponSlotRecord),
+   its snapshot, all six choices sent to the lobby player (mech_setAll, 14 arguments), back to no kind */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40f9e0(void);
-/* 0x40f220 armc_drawPartScreen(): enter the part screen (page 2): the six slots drawn (armc_41ca50), the armour
-   choice previewed, the seven snapshots, no kind, the panel (armc_41b300) */
+void armc_takeCursorItem(void);
+/* 0x40f220 armc_drawPartScreen(): enter the part screen (page 2): the six slots drawn (armc_weaponSlotRecord), the armour
+   choice previewed, the seven snapshots, no kind, the panel (armc_easeCamera) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawPartScreen(void);
-/* 0x40f0f0 armc_exit(save): leave the armour centre by how it was entered (0x4dc24c: 1 / 3 with armc_40e670, 2 back
+/* 0x40f0f0 armc_exit(save): leave the armour centre by how it was entered (0x4dc24c: 1 / 3 with armc_restoreMenuCamera, 2 back
    to the lobby page 0): with save the selection kept (armc_saveSelection) or sent (armc_sendSelectionToNet); the
    camera and light back, menu sound 4, the menu music, the main menu page 0x66 -> 0x67 when 0x76d410 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_exit(int confirmed);
 /* batch 170 (lifted/grp118.c, grp119.c, grp120.c: split so the calls between these go through their native
    addresses, where the tests stub them): the armour centre's states and input */
-/* the armour centre's pages (0x4dc798): 0x40fb20 armc_40fb20(): the mouse on the main page (armc_40e450's buttons:
-   parts, colours, the part screen (armc_drawPartScreen), back (armc_exit) ...); 0x4101e0 armc_4101e0(): the main
+/* the armour centre's pages (0x4dc798): 0x40fb20 armc_mainPageClicks(): the mouse on the main page (armc_40e450's buttons:
+   parts, colours, the part screen (armc_drawPartScreen), back (armc_exit) ...); 0x4101e0 armc_partsPageKeys(): the main
    page's keys (one binding after another: parts, colours, the rotation toggle 0x4dceac, back); 0x410500
-   armc_410500(): the part screen's keys (kinds armc_40f870, positions 0x4dc77c with armc_40f950, take
-   armc_40f9e0, back); 0x410810 armc_410810(): the colour page's keys (armc_backupColours, back) */
+   armc_weaponsPageKeys(): the part screen's keys (kinds armc_pickSlot, positions 0x4dc77c with armc_showCursorItem, take
+   armc_takeCursorItem, back); 0x410810 armc_colourPageKeys(): the colour page's keys (armc_backupColours, back) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_40fb20(void);
+DWORD armc_mainPageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_4101e0(void);
+void armc_partsPageKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_410500(void);
+void armc_weaponsPageKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_410810(void);
+void armc_colourPageKeys(void);
 /* 0x410190 armc_onStateEnter(): in a state past 1 (0x4dc790), no dialog: the mouse of page 0x4dc798 (1..4) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_onStateEnter(void);
 /* 0x410ab0 armc_processInput(): the armour centre's frame input: entering (state 0x4dc790 0 / 1: the menu camera
-   and projection set up, the camera eased in), the page's keys (armc_4101e0 / armc_410500 / armc_410810), the
-   held rotation keys turning the camera, leaving (state 3: the camera eased out, then armc_433360 or the arena's
+   and projection set up, the camera eased in), the page's keys (armc_partsPageKeys / armc_weaponsPageKeys / armc_colourPageKeys), the
+   held rotation keys turning the camera, leaving (state 3: the camera eased out, then menuCamera_initPoints or the arena's
    load-and-quit when the main menu page is 0x67) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_processInput(void);
 /* batch 171 (lifted/grp121.c): small menu, room and connection functions */
-/* 0x453770 arena_453770(): DirectPlay up again: arena_4509e0, dplay_create, dplay_release when it worked; 0 */
+/* 0x453770 dplay_check(): DirectPlay up again: net_resetState, dplay_create, dplay_release when it worked; 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_453770(void);
+int dplay_check(void);
 /* 0x4014c0 wnd_4014c0(): keyboard and mouse released, then DirectInput 0x4d1e98 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void wnd_4014c0(void);
 /* the arena's connection slots 0xa0d7a4 / 0xa0d7a8: host (dplay_hostSession, 8 arguments: 0x4549e0 / 0x454b00) or
    join (dplay_joinSession: 0x454a20 / 0x454b40; 0x1f4 when the slot is closed) through them */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_4549e0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+int dplaySlot0_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454a20(int a1, int a2, int a3, int a4);
+int dplaySlot0_join(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454b00(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+int dplaySlot1_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454b40(int a1, int a2, int a3, int a4);
+int dplaySlot1_join(int a1, int a2, int a3, int a4);
 /* 0x403530 mapList_chooseNone() / 0x4034e0 mapList_chooseAll(): menu sound 0, the room's 0x67ef00 entries (8 bytes from
    0x4d7358) cleared / all set */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4661,7 +4661,7 @@ void popup_clicks(void);
    arena / lobby / room text and number field editors (the field's text into the edit line 0x9dc92c, the edit box
    at the field, typing on: input_releaseKeyboard, input clear, chat_createEdit), room and menu key pages, the sound
    helpers sound_playVolume / sound_playFile / sound_loadMenuSounds, net_sendChat (a chat line logged and sent),
-   arena_452fe0, chat_closeLine (typing off), the setup page's sound tab keys */
+   arena_leaveSession, chat_closeLine (typing off), the setup page's sound tab keys */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editTextField_404f90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4681,7 +4681,7 @@ DWORD lobby_editTextField_405230(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_keyStartFade(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_452fe0(void);
+DWORD arena_leaveSession(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editTextField_404cd0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4736,9 +4736,9 @@ void THISCALL msg_fragLimitReached(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_timeLimitReached(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454c50(int a1, int a2, int a3, int a4);
+int dplaySlot2_join(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454d60(int a1, int a2, int a3, int a4);
+int dplaySlot3_join(int a1, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_coInit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4814,7 +4814,7 @@ void menu_returnToMain(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_returnToMainFromRoom(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_453180(int session, int a2, int a3, int a4);
+int dplay_join(int session, int a2, int a3, int a4);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_enterState(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4824,7 +4824,7 @@ DWORD account_checkForm(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD ranking_clicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD armc_40fd30(void);
+DWORD armc_partScreenClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD armc_colourScreenInput(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4854,7 +4854,7 @@ void gameList_mouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void createDialog_keys(void);
 /* batch 176 (lifted/grp126.c): menu, room and lobby pages tested with their callees stubbed (tools/gentests.py):
-   lobby_playerScreenClicks, room_keys, arena_405690, room_pageClicks, loginForm_openField, mainmenu_startNetGame,
+   lobby_playerScreenClicks, room_keys, arena_joinSession, room_pageClicks, loginForm_openField, mainmenu_startNetGame,
    mainmenu_processKeys, loginDialog_keys, armc_enter (a list node's camera and fade, then it is freed),
    match_debugHandler (the debug keys); the arena slots 3 / 4 host wrappers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4862,7 +4862,7 @@ DWORD lobby_playerScreenClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_405690(int session);
+DWORD arena_joinSession(int session);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_pageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4878,9 +4878,9 @@ void armc_enter(void *ring);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void match_debugHandler(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454c10(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+int dplaySlot2_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454d20(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+int dplaySlot3_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* batch 177 (lifted/grp127.c): app_onClose / app_shutdown (leaving the game: the room / arena left, DirectPlay and
    the music shut down) and menuState100_intro (the intro: logo fades, the menu music, then the main menu), with
    their callees stubbed (tools/gentests.py); chat_editSubclass and sound_play3D by hand */
@@ -4922,27 +4922,27 @@ THISCALL void bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWORD d, DWO
 /* batch 180 (lifted/grp130.c): menu_drawBackground (the menus' animated background: the list 0x67fb3c's camera,
    the projection, its draw), the arena slots' connect (a fresh DirectPlay for that kind, dplay_initConnection,
    the slot open or released), settingsDialog_clicks, with their callees stubbed (tools/gentests.py); scene_resetScores and
-   arena_453090 by hand */
+   dplay_host by hand */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawBackground(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454940(int address);
+int dplaySlot0_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454a50(int address);
+int dplaySlot1_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454b70(int address);
+int dplaySlot2_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_454c80(int address);
+int dplaySlot3_open(int address);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD settingsDialog_clicks(void);
 /* 0x4620e0 scene_resetScores() (thiscall on the scene): every player's scores cleared, the actors reset, the ranking */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL scene_resetScores(void *scene);
-/* 0x453090 arena_453090(8 arguments): host through the slot of connection kind 0xa0b418 (0 otherwise) */
+/* 0x453090 dplay_host(8 arguments): host through the slot of connection kind 0xa0b418 (0 otherwise) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_453090(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+int dplay_host(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8);
 /* batch 181 (lifted/grp131.c): the menu state frames that draw the background (menuState300_frame, menuState600_setup,
-   menuState900_skirmishSetup, menuState210_frame) and arena_452ec0 (connect by kind: the host
+   menuState900_skirmishSetup, menuState210_frame) and arena_openSession (connect by kind: the host
    address resolved, that kind's slot connected, the player id), with their callees stubbed (tools/gentests.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState300_frame(void);
@@ -4953,17 +4953,17 @@ DWORD menuState900_skirmishSetup(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState210_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int arena_452ec0(DWORD kind, const char *host);
+int arena_openSession(DWORD kind, const char *host);
 /* 0x445bc0 skirmish_445bc0: jump to skirmish_drawScreenA (a 5-byte stub missing from functions.csv, added) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_445bc0(void);
-/* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_joinSession, arena_406200), the lobby's
-   room-name and reserved-name checks, lobby_connect, lobbyJoin_keysChat, room_hostingStep, arena_405b80 (the room /
+/* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_joinSession, arena_joinListed), the lobby's
+   room-name and reserved-name checks, lobby_connect, lobbyJoin_keysChat, room_hostingStep, arena_connectionOutcome (the room /
    arena settings checked and the game hosted or joined), with their callees stubbed (tools/gentests.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_joinSession(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_406200(int i);
+DWORD arena_joinListed(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobby_roomNameCheck(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4975,7 +4975,7 @@ void lobbyJoin_keysChat(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_hostingStep(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD arena_405b80(void);
+DWORD arena_connectionOutcome(void);
 /* batch 183 (lifted/grp134.c): the arena create page's mouse (arena_createClick), lobbyTop_connect,
    arena_loadAndQuit, gameList_drawPage, lobbyJoin_draw, with their callees stubbed (tools/gentests.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5005,22 +5005,22 @@ void arena_launchFromFile(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menuState800_gameRoom(void);
 /* batch 185 (lifted/grp137-139.c: split so the calls among these go through their native addresses, where the
-   tests stub them): armc_40e5d0 (an armour-centre session: the lobby player made, his parts given, the actor
-   reset), the main page / part screen frames armc_41d600 / armc_41d8a0 (the mech turned by the cursor:
+   tests stub them): armc_enterScreen (an armour-centre session: the lobby player made, his parts given, the actor
+   reset), the main page / part screen frames armc_updatePartsPreview / armc_updateColourPreview (the mech turned by the cursor:
    armc_rotateFromCursor, stubbed: it builds C++ objects under an SEH frame the lifter does not handle yet), their
-   wrappers armc_41dfe0 / armc_41e010 / armc_41dfb0 and menuState700_armCenter, callees stubbed */
+   wrappers armc_drawColourPage / armc_drawThirdPage / armc_drawPartsPage and menuState700_armCenter, callees stubbed */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40e5d0(void);
+void armc_enterScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41d600(void);
+void armc_updatePartsPreview(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41d8a0(void);
+void armc_updateColourPreview(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41dfe0(void);
+void armc_drawColourPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41e010(void);
+void armc_drawThirdPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_41dfb0(void);
+void armc_drawPartsPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState700_armCenter(void);
 /* batch 186 (lifted/grp140.c): game_processGameModeInit (a match's start: modes, teams, items, music),
@@ -5281,7 +5281,7 @@ void THISCALL hud_drawTeamScores(void *scene);
 /* batch 206 (lifted/grp167.c .. grp170.c): functions whose call sites the patch DLL retargets; those calls are lifted
    with lift.py "@site" (the target read from the live instruction) and the rel32 bytes listed in g_patchOk */
 /* 0x48b200 match_inputState2() (thiscall on the scene): the match's frame: the round start (0x49df10) until
-   +0x233cc28, the frame timer (armc_461210 -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
+   +0x233cc28, the frame timer (frameTimer_average -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
    +0x2340c90 with the per-second rates +0x2340c88 / +0x2340c8c from the counters +0x2340c80 / +0x2340c84), three
    countdowns (+0x233cc40, +0x2342f02, +0x2340d39); the combat input (match_combatInput), the game mode
    (game_processGameMode), in state 2 the HUD pass (hud_pass: @0x48b386, the patch DLL's hud_pass_wrap); a pending
@@ -6142,7 +6142,7 @@ static int WINAPI mstub_SetCursorPos(int x, int y) { mock_rec(0x4a9304, 2, (DWOR
 static short WINAPI mstub_GetAsyncKeyState(int k) { mock_rec(0x4a92f8, 1, (DWORD)k, 0, 0, 0); return (short)g_mockKeyState; }
 /* GetKeyState answers g_mockKeyState too; CallWindowProcA (a subclass passing a message on) answers g_mockWndRet */
 static DWORD g_mockWndRet;
-/* SetTimer / KillTimer: a real timer on the game's window (room_joinSession / arena_406200 started one) got a new id each
+/* SetTimer / KillTimer: a real timer on the game's window (room_joinSession / arena_joinListed started one) got a new id each
    run; SetTimer answers the requested id + 0x100 (0 when it is 0), KillTimer 1 */
 static DWORD WINAPI mstub_SetTimer(DWORD w, DWORD id, DWORD ms, DWORD proc)
 {
@@ -6790,7 +6790,7 @@ static void mock_reset(void)
    downwards from just below its own return address (page by page, as a stack probe must). */
 /* the large and Hangul fonts (ids 0x9dad90, 0x9dae1c, 0x76d360) are not loaded yet when the game is frozen: the
    first text drawn with one loads it, the mocked file is no PTX image and ptx_error exits, both runs alike, so a
-   test checked nothing after its first text (armc_41dab0 exited in all its runs). The small ASCII font (0x76d448)
+   test checked nothing after its first text (armc_drawWeightLine exited in all its runs). The small ASCII font (0x76d448)
    is loaded: before each setup the other ids point at it (a setup that sets them overrides this) */
 static void fonts_loaded(void) { G32(0x9dad90) = G32(0x9dae1c) = G32(0x76d360) = G32(0x76d448); }
 void __cdecl paint_below(DWORD bytes);
@@ -6805,7 +6805,7 @@ static inline __attribute__((always_inline)) void paint_stacks(void)   /* inline
 	paint_below(0x8000);                        /* last: any call after it would leave its frame in the paint */
 }
 /* run one side of a test; an exit() inside it ends the run. The FPU environment is put back as it was after every
-   run: some originals leave values on the x87 stack (armc_461210 one per call), and a stack left full turns the next
+   run: some originals leave values on the x87 stack (frameTimer_average one per call), and a stack left full turns the next
    setups' x87 maths into NaNs (a space_insertItem setup once built a different triangle for each side). So is the
    thread's SEH chain (fs:[0]): an exit() longjmps past functions that registered a handler on the stack, which
    stays in the chain pointing into dead stack; a later run paints that stack, and the next exception (even one
@@ -7009,10 +7009,10 @@ static DWORD nw_hit(void) { return (DWORD)g_hitNew(g_a[0], g_a[1]); }
 	static DWORD nw_##name(void) { return (DWORD)(NEW); }
 #define BUF ((char *)g_fake)
 
-ST(arena_404520,
+ST(createArena_hitTest,
    G32(0x4db55c) = irnd(0, 1); if (irnd(0, 1)) { rect_table(0x4db5f0, 0x4db6f0); rect_table(0x4db6f0, 0x4db710); }
    point_in_table(G32(0x4db55c) ? 0x4db6f0 : 0x4db5f0, G32(0x4db55c) ? 0x4db710 : 0x4db6f0);,
-   CD(int, 0x404520, int, int)(g_a[0], g_a[1]), arena_404520(g_a[0], g_a[1]))
+   CD(int, 0x404520, int, int)(g_a[0], g_a[1]), createArena_hitTest(g_a[0], g_a[1]))
 ST(save_cryptRecord, fill(BUF, 0x3ac); g_a[0] = irnd(0, 255);,
    (CD(void, 0x445ee0, char *, int)(BUF, g_a[0]), 0), (save_cryptRecord((unsigned char *)BUF, (unsigned char)g_a[0]), 0))
 ST(profile_42b3c0, fill(BUF, 0x4c); g_a[0] = irnd(0, 255);,
@@ -7021,9 +7021,9 @@ ST(data_42b390, fill_str(BUF, 60, 1, 255);, CD(int, 0x42b390, char *)(BUF), data
 ST(profile_4343b0, fill_str(BUF, 12, 1, irnd(0, 3) ? 0x20 : 255);, CD(int, 0x4343b0, char *)(BUF), profile_4343b0(BUF))
 ST(mapList_toggle, for (int i = 0; i < 31; i++) G32(0x4d7358 + i * 8) = irnd(-1, 2); g_a[0] = irnd(0, 30);,
    (CD(void, 0x403560, int)(g_a[0]), 0), (mapList_toggle(g_a[0]), 0))
-ST(armc_40f830, for (int i = 0; i <= 40; i++) G32(0x4dcca4 + i * 4) = irnd(0, 40);
+ST(armc_colourPartEquipped, for (int i = 0; i <= 40; i++) G32(0x4dcca4 + i * 4) = irnd(0, 40);
    G32(0x4dcb18) = irnd(20, 40); G32(0x4dcb1c) = irnd(20, 40); g_a[0] = irnd(0, 40);,
-   CD(int, 0x40f830, int)(g_a[0]), armc_40f830(g_a[0]))
+   CD(int, 0x40f830, int)(g_a[0]), armc_colourPartEquipped(g_a[0]))
 ST(array_recordAt, g_a[0] = irnd(0, 3) ? irnd(-3, 1000) : -1; g_a[1] = irnd(-100000, 100000); g_a[2] = irnd(-5000, 5000);,
    CD(int, 0x46cbc0, int, int, int)(g_a[0], g_a[1], g_a[2]), array_recordAt(g_a[0], g_a[1], g_a[2]))
 ST(net_findFreeSession, for (DWORD p = 0xa0b470; p < 0xa0bab0; p += 8) G32(p) = 1;
@@ -7048,15 +7048,15 @@ static const DWORD k_list[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7
 ST(armc_40d990, for (int i = 0; i < 10; i++) G32(k_armcParts[i]) = irnd(0, 20);,
    (CD(void, 0x40d990, void)(), 0), (armc_40d990(), 0))
 ST(mech_unpackFromRecord, fill((void *)0x9dd5f8, 0x9b);, (CD(void, 0x40ddb0, void)(), 0), (mech_unpackFromRecord(), 0))
-ST(armc_40e670, fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);, (CD(void, 0x40e670, void)(), 0), (armc_40e670(), 0))
+ST(armc_restoreMenuCamera, fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);, (CD(void, 0x40e670, void)(), 0), (armc_restoreMenuCamera(), 0))
 ST(armc_loadSavedMech, fill((void *)0x4dc878, 0x14); fill((void *)0x4dcf18, 0x18); fill((void *)0x4dcfe0, 0x90);,
    (CD(void, 0x40e6c0, void)(), 0), (armc_loadSavedMech(), 0))
-ST(armc_40ed20,
+ST(armc_syncPartCursors,
    for (int j = 0; j < 5; j++) { G32(k_listCount[j]) = irnd(-1, 10); for (int i = 0; i < 10; i++) G32(k_list[j] + i * 4) = irnd(0, 20); }
    for (int i = 0; i < 5; i++) G32(0x4dc760 + i * 4) = irnd(0, 20);,
-   (CD(void, 0x40ed20, void)(), 0), (armc_40ed20(), 0))
+   (CD(void, 0x40ed20, void)(), 0), (armc_syncPartCursors(), 0))
 ST(armc_backupColours, fill((void *)0x4dc4b8, 0x90);, (CD(void, 0x40f590, void)(), 0), (armc_backupColours(), 0))
-ST(armc_41ced0, fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc530, 24);, (CD(void, 0x41ced0, void)(), 0), (armc_41ced0(), 0))
+ST(armc_restoreColourUndo, fill((void *)0x4dc4b8, 0x90); fill((void *)0x4dc530, 24);, (CD(void, 0x41ced0, void)(), 0), (armc_restoreColourUndo(), 0))
 #define SLIDER(name, addr) \
 	ST(name, g_menuCursorX = g_a[0] = irnd(-20, 660); G32(0x4dcc98) = g_a[1] = irnd(0, 640); \
 	   g_armcColourSlot = g_a[2] = irnd(0, 5); \
@@ -7071,8 +7071,8 @@ ST(net_clearSlots, for (DWORD p = 0x9f9840; p < 0x9fd940; p += 0x410) G32(p) = i
 ST(menu_clearInputBuffer, fill((void *)0x9dc92c, 0x400); g_a[0] = irnd(-5, 5);,
    (CD(void, 0x431560, int)(g_a[0]), 0), (menu_clearInputBuffer(g_a[0]), 0))
 ST(chat_pushHistory, fill((void *)0x67ef38, 0xc00); fill((void *)0x9dc92c, 0x400);, (CD(void, 0x4315c0, void)(), 0), (chat_pushHistory(), 0))
-ST(arena_4065a0, fill(BUF, 0x300); g_a[0] = irnd(0, 8) * 0x50; g_a[1] = irnd(0, 8) * 0x50;,
-   (CD(void, 0x4065a0, char *, char *)(BUF + g_a[0], BUF + g_a[1]), 0), (arena_4065a0(BUF + g_a[0], BUF + g_a[1]), 0))
+ST(record_swap, fill(BUF, 0x300); g_a[0] = irnd(0, 8) * 0x50; g_a[1] = irnd(0, 8) * 0x50;,
+   (CD(void, 0x4065a0, char *, char *)(BUF + g_a[0], BUF + g_a[1]), 0), (record_swap(BUF + g_a[0], BUF + g_a[1]), 0))
 ST(cfg_defaultPlayerName, fill((void *)0x4db560, 0x28);, (CD(void, 0x4050f0, void)(), 0), (cfg_defaultPlayerName(), 0))
 ST(lobby_404930, fill((void *)0x4db560, 0x28); fill_str(GSTR(0x4dedb0), 31, 32, 126); fill((void *)0x4dedd0, 8);,
    (CD(void, 0x404930, void)(), 0), (lobby_404930(), 0))
@@ -7127,16 +7127,16 @@ ST(profile_44b2e0, rect_table(0x9f9018, 0x9f9028); point_in_table(0x9f9018, 0x9f
    CD(int, 0x44b2e0, int, int)(g_a[0], g_a[1]), profile_44b2e0(g_a[0], g_a[1]))
 static void slot_flags(void) { int full = !irnd(0, 3); for (int i = 0; i < 16; i++) G32(0x9f93d8 + i * 4) = full ? 1 : irnd(0, 1); }
 ST(net_claimPlayerSlot, slot_flags();, CD(int, 0x451450, void)(), net_claimPlayerSlot())
-ST(arena_4514a0, g_a[0] = irnd(0, 15) | (irnd(0, 3) << 8); g_a[1] = irnd(-1000, 1000); fill((void *)0xa0b428, 2);
+ST(net_takePlayerSlot, g_a[0] = irnd(0, 15) | (irnd(0, 3) << 8); g_a[1] = irnd(-1000, 1000); fill((void *)0xa0b428, 2);
    fill((void *)(0x9f9840 + (g_a[0] & 0xff) * 0x410), 0x40);,
-   (CD(void, 0x4514a0, int, int)(g_a[0], g_a[1]), 0), (arena_4514a0(g_a[0], g_a[1]), 0))
-ST(arena_4515a0, fill((void *)0x9f93d8, 0x40); for (DWORD r = 0x9f9840; r < 0x9fd940; r += 0x410) fill((void *)r, 20);,
-   (CD(void, 0x4515a0, void)(), 0), (arena_4515a0(), 0))
-ST(arena_4532b0, G32(0xa0b41c) = irnd(-1, 20);
+   (CD(void, 0x4514a0, int, int)(g_a[0], g_a[1]), 0), (net_takePlayerSlot(g_a[0], g_a[1]), 0))
+ST(net_freeAllSlots, fill((void *)0x9f93d8, 0x40); for (DWORD r = 0x9f9840; r < 0x9fd940; r += 0x410) fill((void *)r, 20);,
+   (CD(void, 0x4515a0, void)(), 0), (net_freeAllSlots(), 0))
+ST(net_sessionValue, G32(0xa0b41c) = irnd(-1, 20);
    for (int i = 0; i < 26; i++) { G32(0xa0b470 + i * 8) = irnd(0, 1); G32(0xa0b474 + i * 8) = irnd(-9999, 9999); }
-   g_a[0] = irnd(-3, 25);, CD(int, 0x4532b0, int)(g_a[0]), arena_4532b0(g_a[0]))
-ST(arena_453a30, for (int i = 0; i < 4; i++) G32(0xa0bae0 + i * 4) = irnd(0, 1); g_a[0] = irnd(-2, 6);,
-   CD(int, 0x453a30, int)(g_a[0]), arena_453a30((unsigned)g_a[0]))
+   g_a[0] = irnd(-3, 25);, CD(int, 0x4532b0, int)(g_a[0]), net_sessionValue(g_a[0]))
+ST(net_connectionAvailable, for (int i = 0; i < 4; i++) G32(0xa0bae0 + i * 4) = irnd(0, 1); g_a[0] = irnd(-2, 6);,
+   CD(int, 0x453a30, int)(g_a[0]), net_connectionAvailable((unsigned)g_a[0]))
 static void put_name(char *s, int v, int tail) { s[0] = 'n'; s[1] = (char)('0' + v / 100 % 10); s[2] = (char)('0' + v / 10 % 10); s[3] = (char)('0' + v % 10); s[4] = (char)tail; s[5] = 0; }
 static void tex_setup(void)            /* fake TextureManager: sorted names "nNNN" (one record past count too) */
 {
@@ -7147,8 +7147,8 @@ static void tex_setup(void)            /* fake TextureManager: sorted names "nNN
 	else put_name(BUF + 0x100, irnd(0, 400), irnd(0, 3) ? 0 : 'x');
 }
 ST(tex_4554c0, tex_setup();, TC(int, 0x4554c0, char *, char *)(BUF, BUF + 0x100), tex_4554c0(BUF, (unsigned char *)BUF + 0x100))
-ST(arena_4045e0, G32(0x67ef30) = irnd(0, 10); fill((void *)0x9087c4, 11 * 0x4a + 0x30);,
-   (CD(void, 0x4045e0, void)(), 0), (arena_4045e0(), 0))
+ST(arena_clearChatRecord, G32(0x67ef30) = irnd(0, 10); fill((void *)0x9087c4, 11 * 0x4a + 0x30);,
+   (CD(void, 0x4045e0, void)(), 0), (arena_clearChatRecord(), 0))
 
 /* batch 5: the scratch area is the scene object (this = BUF) */
 static void put_float_or_nan(char *p) { if (!irnd(0, 9)) { if (g_nanAudit) put_nan(p); else G32(p) = 0x7fc00000; } else GF(p) = (float)irnd(-500, 500) / 100.0f; }
@@ -7357,7 +7357,7 @@ ST(text_setColor, fill((void *)0x76d438, 16); fill(g_a, 16);,
 ST(cfg_44ac70, fill(BUF + 0xf0, 0x10); fill_str(BUF + 0x100, 60, 1, 255);, CD(int, 0x44ac70, char *)(BUF + 0x100), cfg_44ac70(BUF + 0x100))
 ST(ErrorLog_ctor, fill(BUF + 0x100, 8); fill((void *)0xa1efe8, 4); g_a[0] = irnd(-9999, 9999); g_a[1] = irnd(-9999, 9999);,
    TC(void *, 0x46c5a0, char *, int, int)(BUF + 0x100, g_a[0], g_a[1]), ErrorLog_ctor((DWORD *)(BUF + 0x100), (const char *)g_a[0], g_a[1]))
-V0(armc_410160, 0x410160, g_mouseClick2 = irnd(0, 1); fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);
+V0(armc_rightClickLeave, 0x410160, g_mouseClick2 = irnd(0, 1); fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);
    fill((void *)0x4dc790, 4); fill((void *)0x4e1870, 4);)
 #define PROFILE_VARS fill((void *)0x9f8c48, 4); fill((void *)0x9f8d30, 0x48); fill((void *)0x9f8e50, 8); fill((void *)0x9f8ec0, 0x28); \
 	fill((void *)0x9f8ee4, 4); fill((void *)0x9f8f08, 0x30); fill((void *)0x9f6800, 4); fill((void *)0x9f6828, 4); fill((void *)0x9f6838, 4);
@@ -7371,9 +7371,9 @@ V0(mapList_startEdit, 0x403490, G32(0x67ef00) = irnd(-2, 22); fill((void *)0x4d9
 V0(skirmish_settingsArrowClick, 0x443ea0, g_menuDialogOpen = !irnd(0, 4); g_mouseClick1 = irnd(0, 1); g_mouseClick2 = !irnd(0, 3);
    if (irnd(0, 1)) rect_table(0x9f16c8, 0x9f1708); point_in_table(0x9f16c8, 0x9f1708);
    G32(0x4ded68) = g_a[0]; G32(0x4ded6c) = g_a[1]; fill((void *)0x9ef1f8, 4);)
-ST(arena_451410, su_net_claimPlayerSlot(); G32(0xa0baf8) = irnd(0, 3) ? 1 : 0; fill((void *)0xa0b424, 4); fill((void *)0x9fd954, 1);
-   fill((void *)0x9f9838, 4);, CD(int, 0x451410, void)(), arena_451410())
-V0(arena_4065e0, 0x4065e0, G32(0x67ef30) = irnd(-1, 17); fill((void *)0x9087c0, 18 * 0x4a);
+ST(net_claimLocalSlot, su_net_claimPlayerSlot(); G32(0xa0baf8) = irnd(0, 3) ? 1 : 0; fill((void *)0xa0b424, 4); fill((void *)0x9fd954, 1);
+   fill((void *)0x9f9838, 4);, CD(int, 0x451410, void)(), net_claimLocalSlot())
+V0(sessionList_sort, 0x4065e0, G32(0x67ef30) = irnd(-1, 17); fill((void *)0x9087c0, 18 * 0x4a);
    for (int j = 0; j < 18; j++) G32(0x9087e8 + j * 0x4a) = irnd(0, 3) ? irnd(-5, 5) : irnd(-99999, 99999);)
 ST(ptx_46e9b0, g_a[0] = irnd(0, 9) ? irnd(1, 3000) * (irnd(0, 4) ? 1 : -1) : G32(0x4c59e8); if (g_a[0] == -1) g_a[0] = 7;
    if (irnd(0, 1)) fill((void *)0x4c6db0, 0x200); else for (int j = 0; j < 128; j++) G32(0x4c6db0 + j * 4) = irnd(0, 255);
@@ -7456,7 +7456,7 @@ V0(room_start, 0x433590, fill((void *)0x9dd3fc, 4); fill((void *)0x9dd6a0, 0x24)
 V0(room_openDialog42, 0x434640, fill((void *)0x9dd1d0, 0x40); fill_str(GSTR(0x9dd570), 40, 1, 255); fill((void *)0x9dd834, 4);
    fill((void *)0x9dced0, 4); fill((void *)0x9dd348, 4); fill((void *)0x9dd32c, 4); fill((void *)0x9dd3f8, 4); fill((void *)0x9dd564, 4);
    fill((void *)0x9dd6cc, 4); fill((void *)0x4e1868, 4); fill((void *)0x68039c, 4);)
-V0(arena_4509e0, 0x4509e0, fill((void *)0x9f93c8, 0x470); fill((void *)0x9fd94c, 4);)
+V0(net_resetState, 0x4509e0, fill((void *)0x9f93c8, 0x470); fill((void *)0x9fd94c, 4);)
 V0(skirmish_clearPlayerRows, 0x443570, fill((void *)0x9ef2c0, 0x1de0);)
 static void mapstep_setup(DWORD lock, DWORD sel)
 {
@@ -7464,7 +7464,7 @@ static void mapstep_setup(DWORD lock, DWORD sel)
 	G32(0x67ef00) = irnd(0, 3) ? irnd(1, 32) : irnd(-3, 300);
 	*(signed char *)sel = (signed char)(irnd(0, 3) ? irnd(-1, 33) : irnd(-128, 127)); fill((void *)0x680cd0, 4);
 }
-ST(arena_4068d0, mapstep_setup(0x4db54a, 0x4db548);, (CD(void, 0x4068d0, int)(g_a[0]), 0), (arena_4068d0(g_a[0]), 0))
+ST(arena_stepMap, mapstep_setup(0x4db54a, 0x4db548);, (CD(void, 0x4068d0, int)(g_a[0]), 0), (arena_stepMap(g_a[0]), 0))
 ST(room_4356f0, mapstep_setup(0x4df9ea, 0x4df9e8);, (CD(void, 0x4356f0, int)(g_a[0]), 0), (room_4356f0(g_a[0]), 0))
 static void slots_setup(void)
 {
@@ -7590,7 +7590,7 @@ static void scene_players_setup(void)
 	S32(SCENE, 0x234240d) = irnd(-2, 7); fill(SCENE + 0x234243a, 8); g_a[1] = irnd(-3, 5);
 	fill(BUF + (S32(SCENE, 0x234240d) & 7) * 0x47fd2 + 0x1561b68 + 0x44, 8);
 }
-ST(armc_461370, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (armc_461370(SCENE, g_a[1]), 0))
+ST(mech_setValue, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setValue(SCENE, g_a[1]), 0))
 ST(match_4613a0, scene_players_setup();, (TC(void, 0x4613a0, char *, int)(SCENE, g_a[1]), 0), (match_4613a0(SCENE, g_a[1]), 0))
 ST(hangul_glyphs, fill(g_a, 8); fill((void *)0x4d60e0, 4); fill((void *)0x4d23d4, 12);,
    CD(int, 0x4017d0, int, int)(g_a[0], g_a[1]), hangul_glyphs(g_a[0], g_a[1]))
@@ -7624,7 +7624,7 @@ ST(ptx_internal_46ea30, fill(BUF + 0x10000, 0x2800); g_a[0] = irnd(-2, 40); g_a[
 V0(menuState300_enter, 0x440bb0, fill((void *)0x9eea8c, 0x2c); fill((void *)0x4b0704, 16); fill((void *)0x4dda44, 4);
    fill((void *)0x9dda70, 0x14); fill((void *)0x9dd948, 4); fill((void *)0x5ae9c4, 4);)
 V0(armc_initCameraPoints, 0x40e510, fill((void *)0x4dca30, 0x60);)
-V0(armc_40dfa0, 0x40dfa0, fill((void *)0x4dc550, 0x218); fill((void *)0x4b0704, 16);)
+V0(armc_initPartBoxes, 0x40dfa0, fill((void *)0x4dc550, 0x218); fill((void *)0x4b0704, 16);)
 V0(room_openDialog4d, 0x4338c0, fill((void *)0x9dd1d0, 0x60); fill((void *)0x9dd6e8, 16); fill((void *)0x9dce50, 0x60); fill((void *)0x9dd834, 4);
    fill((void *)0x90d1c4, 4); fill((void *)0x9dd830, 4); fill((void *)0x9dd38c, 4); fill((void *)0x4e1868, 4); fill((void *)0x68039c, 4);
    fill((void *)0x9dd4a0, 4); fill((void *)0x9dd850, 4);)
@@ -7677,7 +7677,7 @@ static void lobby1_setup(void)
 V0(lobby_setSubState1, 0x404b30, lobby1_setup();)
 V0(lobby_ladderGameName, 0x432620, fill_str(GSTR(0x4b17bc), 30, 32, 126); fill_str(GSTR(0x9dd570), 30, 1, 255);
    fill((void *)0x4df9c8, 0x28); fill((void *)0x76d450, 0x40); fill((void *)0x5b1b30, 0x28);)
-V0(armc_40de80, 0x40de80, fill((void *)0x4dcf40, 0x98);)
+V0(armc_initCameraBox, 0x40de80, fill((void *)0x4dcf40, 0x98);)
 V0(menu_initColours, 0x430ab0, fill((void *)0x9dada0, 0x70);)
 static void profiles_setup(void)
 {
@@ -7739,10 +7739,10 @@ static void arena_texts_setup(void)
 	for (DWORD s = 0x75c224; s < 0x75c9a4; s += 0x80) fill_str(GSTR(s), 18, 32, 126);
 	fill((void *)0x4db860, 0x40); fill((void *)0x4db8d8, 0x130); fill((void *)0x4dbb14, 0x28); fill((void *)0x4dbba4, 0x28);
 }
-V0(arena_42bc00, 0x42bc00, arena_texts_setup();)
+V0(arena_initOptionTexts, 0x42bc00, arena_texts_setup();)
 static void scene_names_setup(void) { scene_players_setup(); fill_str(BUF + 0x400, 30, 1, 255); fill(SCENE + 0x2342429, 0x20);
 	for (int a = 0; a < 17; a++) fill(BUF + 0x1cd9440 + a * 0x8888, 0x30); }
-ST(armc_461320, scene_names_setup();, (TC(void, 0x461320, char *, char *)(SCENE, BUF + 0x400), 0), (armc_461320(SCENE, BUF + 0x400), 0))
+ST(mech_setName, scene_names_setup();, (TC(void, 0x461320, char *, char *)(SCENE, BUF + 0x400), 0), (mech_setName(SCENE, BUF + 0x400), 0))
 static void parts_px_setup(void)
 {
 	S32(BUF, 0x10) = irnd(-1, 4); S32(BUF, 0x14) = (int)(BUF + 0x1000);
@@ -7771,7 +7771,7 @@ V0(room_enterGameList, 0x433790, fill((void *)0x9dd834, 4); fill((void *)0x9dce4
 V0(lobby_setSubState2, 0x404c20, arena_title_setup(); lobby1_setup(); fill((void *)0x4df890, 12); fill((void *)0x76d3a8, 12);
    fill((void *)0x4dbbf4, 4); fill((void *)0x4dba88, 4); fill((void *)0x4db55c, 4); fill((void *)0x4ded54, 4); fill((void *)0x4dbab0, 4);
    fill((void *)0x4db850, 4); fill((void *)0x4db518, 4); fill((void *)0x4dbacc, 4); G32(0x4db510) = irnd(0, 1); G32(0x67ef00) = irnd(-2, 40);)
-V0(armc_433360, 0x433360, fill((void *)0x4df870, 0x50); fill((void *)0x76d388, 0x50); fill((void *)0x76d3f8, 12); fill((void *)0x9db090, 12);
+V0(menuCamera_initPoints, 0x433360, fill((void *)0x4df870, 0x50); fill((void *)0x76d388, 0x50); fill((void *)0x76d3f8, 12); fill((void *)0x9db090, 12);
    fill((void *)0x4df024, 12); fill((void *)0x680378, 12); fill((void *)0x9dd6d4, 4);)
 
 /* batch 13 */
@@ -7924,7 +7924,7 @@ static void setup600_setup(void)
 V0(menuState600_enterSetup, 0x420770, setup600_setup();)
 static void room800_setup(void)
 {
-	su_arena_4045e0(); su_room_copyJoinedSettings();
+	su_arena_clearChatRecord(); su_room_copyJoinedSettings();
 	fill((void *)0x9dd1b0, 0x20); fill((void *)0x9dd338, 0x10); fill((void *)0x9dd358, 0x20); fill((void *)0x9dd4a8, 0x14);
 	fill((void *)0x9dced8, 0x10); fill((void *)0x9dcec0, 0x14); fill((void *)0x4df870, 0x50); fill((void *)0x76d388, 0x50);
 	fill((void *)0x76d3f8, 12); fill((void *)0x9db090, 12); fill((void *)0x4df024, 12); fill((void *)0x680378, 12);
@@ -7950,8 +7950,8 @@ static void partinfo_setup(void)
 	}
 	g_a[0] = irnd(0, 5); fill((void *)0x4dbe50, 0x380);
 }
-ST(armc_41ca50, partinfo_setup();, (CD(void, 0x41ca50, int, int)(g_a[0], g_a[1]), 0), (armc_41ca50(g_a[0], g_a[1]), 0))
-ST(armc_41cca0, partinfo_setup();, (CD(void, 0x41cca0, int)(g_a[1]), 0), (armc_41cca0(g_a[1]), 0))
+ST(armc_weaponSlotRecord, partinfo_setup();, (CD(void, 0x41ca50, int, int)(g_a[0], g_a[1]), 0), (armc_weaponSlotRecord(g_a[0], g_a[1]), 0))
+ST(armc_viewedPartRecord, partinfo_setup();, (CD(void, 0x41cca0, int)(g_a[1]), 0), (armc_viewedPartRecord(g_a[1]), 0))
 V0(app_42f940, 0x42f940, fill((void *)0x9da4a8, 0x10a0); fill((void *)0x67fb60, 0xc60); fill((void *)0x4e0ce4, 0x620);
    fill((void *)0x5b1114, 0x600);)
 V0(hud_42fb40, 0x42fb40, fill((void *)0x4e0474, 0x800); fill((void *)0x5b0910, 0x800); fill((void *)0x5b1b64, 0x200);
@@ -7961,7 +7961,7 @@ V0(hud_42fb40, 0x42fb40, fill((void *)0x4e0474, 0x800); fill((void *)0x5b0910, 0
 /* batch 20 */
 static void lobby400_setup(void)
 {
-	su_arena_4045e0();
+	su_arena_clearChatRecord();
 	fill((void *)0x4db510, 0x700); fill((void *)0x4df870, 0x50); fill((void *)0x76d388, 0x50); fill((void *)0x76d3f8, 12);
 	fill((void *)0x9db090, 12); fill((void *)0x4df024, 12); fill((void *)0x680378, 12); fill((void *)0x4dda44, 4);
 	fill((void *)0x76d41c, 4); fill((void *)0x680bb0, 4); fill((void *)0x4df818, 4); fill((void *)0x907b24, 12);
@@ -8160,7 +8160,7 @@ static void menucam_setup(DWORD modev, DWORD idxv, DWORD v150)
 	fill((void *)0x4db840, 12); fill((void *)0x4dbab8, 12);
 }
 V0(room_camera, 0x437a10, menucam_setup(0x9dce48, 0x9dd834, 0x9dd848);)
-V0(arena_408270, 0x408270, menucam_setup(0x4dbb3c, 0x4db51c, 0x4dbaf4);)
+V0(arena_camera, 0x408270, menucam_setup(0x4dbb3c, 0x4db51c, 0x4dbaf4);)
 
 static void menucam2_setup(DWORD modev, DWORD flagv, DWORD minus1)
 {
@@ -8238,7 +8238,7 @@ V0(static_initObject_680cd8, 0x42b1f0, fill((void *)0x680cd8, 8);)
 V0(static_initObject_76d498, 0x42b240, fill((void *)0x76d498, 8);)
 V0(static_initObject_90d1e0, 0x42b290, fill((void *)0x90d1e0, 8);)
 V0(static_initObject_83a9e0, 0x42b2e0, fill((void *)0x83a9e0, 8);)
-ST(arena_4532a0, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), arena_4532a0())
+ST(net_sessionCount, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), net_sessionCount())
 ST(gfx_getWidth, fill((void *)0xa0e810, 4);, CD(int, 0x4685b0, void)(), gfx_getWidth())
 ST(gfx_getHeight, fill((void *)0xa0e928, 4);, CD(int, 0x4685c0, void)(), gfx_getHeight())
 ST(FUN_004686d0, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(FUN_004686d0()))
@@ -8259,7 +8259,7 @@ ST(stage_clearMapItemCounts, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, cha
 ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (ErrorLog_dtor((DWORD *)(BUF + 4)), 0))
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
-ST(armc_45dfe0, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), armc_45dfe0(BUF, g_a[0]))
+ST(stage_setValue202e8dc, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), stage_setValue202e8dc(BUF, g_a[0]))
 ST(this_get_0x2342381_463780, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
    TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), this_get_0x2342381_463780(BUF + 0x180 - 0x2342381, g_a[0]))
 ST(match_45fff0, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), match_45fff0((void *)g_a[0]))
@@ -8346,13 +8346,13 @@ static void slide_setup(DWORD flag, DWORD eased, DWORD slid)
 ST(lobbyTop_draw, slide_setup(0x4db85c, 0x4dbb60, 0x4dba68);, CD(int, 0x40cef0, void)(), lobbyTop_draw())
 ST(room_43e720, slide_setup(0x9dd7d8, 0x9dd560, 0x9dd698);, CD(int, 0x43e720, void)(), room_43e720())
 /* sessions: n records, each pointing into BUF; the arena table gets random old contents */
-ST(arena_406810, int n = irnd(0, 5) ? irnd(1, 17) : irnd(-1, 0); G32(0xa0b41c) = n;
+ST(arenaList_rebuild, int n = irnd(0, 5) ? irnd(1, 17) : irnd(-1, 0); G32(0xa0b41c) = n;
    for (int i = 0; i < 26; i++) { G32(0xa0b470 + i * 8) = 1; G32(0xa0b474 + i * 8) = (int)(BUF + 0x1000 + i * 0x100); }
    fill(BUF + 0x1000, 26 * 0x100);
    for (int i = 0; i < 26; i++) fill_str(BUF + 0x1000 + i * 0x100 + 0x2e, 40, 32, 126);
    fill((void *)0x9087c0, 19 * 0x4a); fill((void *)0x67ef30, 4); fill((void *)0x680bb8, 4);
    fill((void *)0x4dbac8, 4); fill((void *)0x76d41c, 4); fill((void *)0x4dbaa8, 4);,
-   (CD(void, 0x406810, void)(), 0), (arena_406810(), 0))
+   (CD(void, 0x406810, void)(), 0), (arenaList_rebuild(), 0))
 /* batch 32 */
 ST(TextureManager_dtor, fill(BUF, 0x40);, TC(int, 0x456990, char *)(BUF + 0x10), TextureManager_dtor((DWORD *)(BUF + 0x10)))
 ST(load_487430_wrap_468720, fill((void *)0xa0e948, 0x48);, CD(void *, 0x468720, void)(), load_487430_wrap_468720())
@@ -8427,7 +8427,7 @@ static void armpart_setup(void)
 	}
 	fill((void *)0x4dbc08, 0x50); fill((void *)0x4dc1e8, 0xc0); fill((void *)0x4dce40, 0xd0); fill((void *)0x4dcfd8, 4);
 }
-ST(armc_41b750, armpart_setup();, CD(int, 0x41b750, void)(), armc_41b750())
+ST(armc_drawPartPanels, armpart_setup();, CD(int, 0x41b750, void)(), armc_drawPartPanels())
 /* batch 35 */
 static int g_tbHits;
 static void tribox_setup(void)
@@ -8638,7 +8638,7 @@ static void ipstr_setup(void)
 	fill((void *)0xa0b43c, 0x24);
 	strcpy((char *)0xa0b43c, s);
 }
-ST(arena_4542a0, ipstr_setup();, CD(int, 0x4542a0, void)(), arena_4542a0())
+ST(net_parseAddress, ipstr_setup();, CD(int, 0x4542a0, void)(), net_parseAddress())
 ST(dplay_formatSessionEntry, g_a[0] = (int)((DWORD)irnd(0, 0xffff) << 16 | (DWORD)irnd(0, 0xffff)); fill((void *)0xa0b460, 16);,
    CD(int, 0x454390, DWORD)((DWORD)g_a[0]), dplay_formatSessionEntry((DWORD)g_a[0]))
 /* batch 40: the walk gets a grid + octree (up to 2 levels, leaves with the scene's list or none) around a scu_build
@@ -8874,13 +8874,13 @@ static void arenabufs_setup(void)
 	                             0xa0b334, 0xa0b324, 0xa0b308, 0xa0b340, 0xa0b344, 0xa0b338, 0xa052e4, 0xa0b33c, 0xa055e0 };
 	for (int i = 0; i < 19; i++) G32(k[i]) = irnd(0, 2) ? (int)(BUF + 0x1000 + i * 0x40) : 0;
 }
-ST(arena_4519b0, arenabufs_setup();, CD(DWORD, 0x4519b0, void)(), arena_4519b0())
+ST(arena_freeBuffers, arenabufs_setup();, CD(DWORD, 0x4519b0, void)(), arena_freeBuffers())
 static void sessions_setup(void)
 {
 	G32(0xa0b384) = irnd(0, 4) ? 1 : 0; G32(0xa0b41c) = irnd(-1, 20);
 	for (int i = 0; i < 26; i++) { G32(0xa0b470 + i * 8) = irnd(0, 2) ? 1 : irnd(0, 1) * 2; G32(0xa0b474 + i * 8) = irnd(0, 3) ? (int)(BUF + 0x2000 + i * 0x100) : 0; }
 }
-ST(arena_454130, sessions_setup();, CD(DWORD, 0x454130, void)(), arena_454130())
+ST(net_freeSessionList, sessions_setup();, CD(DWORD, 0x454130, void)(), net_freeSessionList())
 /* a session description: random bytes, sometimes the excluded GUID; the slot finder sees a random number of used slots */
 static void sessdesc_setup(void)
 {
@@ -9134,7 +9134,7 @@ static void strs_setup(void)
 }
 ST(GetCurrentDirectoryA_wrap_43f580, , CALL_PLAIN(0x43f580, 0, 0, 0, 0, 0), (DWORD)(GetCurrentDirectoryA_wrap_43f580()))
 ST(gfx_swapBuffers, , CALL_PLAIN(0x4685d0, 0, 0, 0, 0, 0), (DWORD)gfx_swapBuffers())
-ST(arena_4539f0, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(arena_4539f0((void **)(DWORD)(BUF + 0x100))))
+ST(dplay_createLobby, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(dplay_createLobby((void **)(DWORD)(BUF + 0x100))))
 ST(net_wakePingThread, , CALL_PLAIN(0x454740, 0, 0, 0, 0, 0), (DWORD)net_wakePingThread())
 ST(sys_messageBoxOverActive, strs_setup();, CALL_PLAIN(0x46c580, 0, BUF + 0x100, BUF + 0x200, 0, 0), (DWORD)(sys_messageBoxOverActive((const char *)(DWORD)(BUF + 0x100), (const char *)(DWORD)(BUF + 0x200))))
 ST(profile_41e7a0, g_a[0] = irnd(-5, 5);, CALL_PLAIN(0x41e7a0, 0, g_a[0], 0, 0, 0), (DWORD)profile_41e7a0(g_a[0]))
@@ -9576,8 +9576,8 @@ static void armcam_setup(void)
 {
 	lookat_setup(); G32(0x4dc798) = irnd(0, 4); G32(0x4dbc6c) = irnd(-1, 7); G32(0x4dc4b0) = irnd(-1, 7);
 }
-/* armc_41b300 leaves the mode or slot in eax; its callers return it up to menu_frame, which never reads it */
-ST(armc_41b300, armcam_setup();, (CALL_PLAIN(0x41b300, 0, 0, 0, 0, 0), 0), (armc_41b300(), 0))
+/* armc_easeCamera leaves the mode or slot in eax; its callers return it up to menu_frame, which never reads it */
+ST(armc_easeCamera, armcam_setup();, (CALL_PLAIN(0x41b300, 0, 0, 0, 0, 0), 0), (armc_easeCamera(), 0))
 ST(app_43f640, G32(0x83a9c0) = irnd(-1, 9);, CALL_PLAIN(0x43f640, 0, 0, 0, 0, 0), (DWORD)(app_43f640()))
 #define HUDSCENE BUF
 /* the scene here starts at the scratch area itself (these functions use fields from +0xa08 on, below SCENE's
@@ -9633,7 +9633,7 @@ static void roomlist_setup(void)
 	G32(0x9dd1d0) = irnd(0, 2) ? irnd(0, 3) : irnd(-1, 4);   /* the column sorted by */
 }
 ST(roomList_fillPage, roomlist_setup();, (CALL_PLAIN(0x435770, 0, 0, 0, 0, 0), 0), (roomList_fillPage(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(armc_40f340, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_40f340((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
+ST(armc_stepPart, g_a[0] = irnd(-1, 8); g_a[1] = irnd(0, 2);, CALL_PLAIN(0x40f340, 0, g_a[0], g_a[1], 0, 0), (DWORD)(armc_stepPart((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 /* batch 52 */
 ST(cd_findDrive, , ((DWORD (__cdecl *)(void))0x401000)(), cd_findDrive())
 static void axiscfg_setup(void) { vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); g_mockMkdirFail = !irnd(0, 4); }
@@ -9641,7 +9641,7 @@ ST(cfg_loadAxisCfg, axiscfg_setup();, CALL_PLAIN(0x42d730, 0, 0, 0, 0, 0), (DWOR
 ST(arena_saveSettings, axiscfg_setup(); fill_str((char *)0x4db560, 30, 32, 126);, CALL_PLAIN(0x4050a0, 0, 0, 0, 0, 0), (arena_saveSettings(), 0))
 ST(lobby_keepArenaSettings, axiscfg_setup(); fill_str((char *)0x4db528, 30, 32, 126); fill_str((char *)0x4db54e, 8, 32, 126);, CALL_PLAIN(0x405140, 0, 0, 0, 0, 0), (DWORD)(lobby_keepArenaSettings()))
 ST(profile_44f6c0, axiscfg_setup(); G32(0x9f6840) = irnd(0, 2) ? 1 : 0; G32(0x76d410) = irnd(0, 2); G32(0x9f8c58) = irnd(0, 13);, CALL_PLAIN(0x44f6c0, 0, 0, 0, 0, 0), (DWORD)(profile_44f6c0()))
-ST(armc_41dcf0, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_41dcf0(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(armc_extraItemBonuses, G32(0x4dcb1c) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60); G32(0x4dcb18) = irnd(0, 3) ? irnd(25, 37) : irnd(-5, 60);   /* the two item slots: bonus items 27 .. 35 mostly */, (CALL_PLAIN(0x41dcf0, 0, 0, 0, 0, 0), 0), (armc_extraItemBonuses(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* config lines from the config vocabulary; past the end fgets leaves the stack buffer as it was (stack painted) */
 /* axis.cfg text for the three cfg readers (BUF + 0x200000): lines "KEYn = value" (the readers skip the first two
    words and join the rest), as many as the reader takes and a few more, or fewer (the file ending early). A value is
@@ -9871,8 +9871,8 @@ static void armctint_setup(void)
 	G32(0x4dc4b0) = irnd(-1, 6); G32(0x4dd074) = irnd(0, 1); G32(0x4dbc6c) = irnd(-1, 6);
 	for (int i = 0; i < 36; i++) GF(0x4dc4b8 + i * 4) = csu_fr(-100, 400);
 }
-ST(armc_41cf20, armctint_setup();, (CALL_PLAIN(0x41cf20, 0, 0, 0, 0, 0), 0), (armc_41cf20(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(armc_41d280, armctint_setup();, (CALL_PLAIN(0x41d280, 0, 0, 0, 0, 0), 0), (armc_41d280(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_applyColourSlot, armctint_setup();, (CALL_PLAIN(0x41cf20, 0, 0, 0, 0, 0), 0), (armc_applyColourSlot(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_retintParts, armctint_setup();, (CALL_PLAIN(0x41d280, 0, 0, 0, 0, 0), 0), (armc_retintParts(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 55: the five part shapes of player p (scene + 0x1561ea0 ... + p * 0x47fd2) are fake shapes sharing the part
    list of shapes_setup; colour values in and outside the clamp ranges (or NaN) */
 static void partcolor_setup(void)
@@ -10161,7 +10161,7 @@ ST(armc_sendSelectionToNet, netstate_setup(); fill((void *)0x4dc4b8, 0x90); fill
 ST(net_disconnect, netstate_setup();, CALL_PLAIN(0x451e60, 0, 0, 0, 0, 0), (DWORD)(net_disconnect()))
 ST(net_closeAll, netstate_setup(); g_a[0] = irnd(0, 3) ? 100 + irnd(0, 1) : irnd(0, 2);   /* the lobby (100) or game server (101) */, (CALL_PLAIN(0x451600, 0, g_a[0], 0, 0, 0), 0), (net_closeAll(g_a[0]), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* batch 59 */
-ST(armc_41b710, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_41b710(), 0))
+ST(armc_setup3DView, lookat_setup();, CALL_PLAIN(0x41b710, 0, 0, 0, 0, 0), (armc_setup3DView(), 0))
 ST(menu_drawDimOverlay, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x40ce70, 0, 0, 0, 0, 0), (DWORD)(menu_drawDimOverlay()))
 ST(room_drawWhiteFade, GF(0x4deb74) = csu_fr(-50, 120);, CALL_PLAIN(0x43df00, 0, 0, 0, 0, 0), (room_drawWhiteFade(), 0))
 ST(menu_drawTextCursor, G32(0x9da908) = irnd(0, 45); GF(0x4de1f0) = csu_fr(-10, 100); g_a[0] = irnd(-50, 700); g_a[1] = irnd(-50, 500);, CALL_PLAIN(0x428890, 0, g_a[0], g_a[1], 0, 0), (DWORD)(menu_drawTextCursor((DWORD)(g_a[0]), (DWORD)(g_a[1]))))
@@ -10220,7 +10220,7 @@ static void gametimer_setup(void)
 	qpf_setup(); g_mockQpc = (DWORD)irnd(0, 0x7fffffff);
 }
 ST(timer_getGameTime, gametimer_setup();, ld_hash(((long double (THISCALL *)(char *))0x487490)(BUF + 0x100)), ld_hash(timer_getGameTime(BUF + 0x100)))
-ST(armc_461210, gametimer_setup();, (TC(void, 0x461210, char *)(BUF + 0x100), 0), (armc_461210(BUF + 0x100), 0))
+ST(frameTimer_average, gametimer_setup();, (TC(void, 0x461210, char *)(BUF + 0x100), 0), (frameTimer_average(BUF + 0x100), 0))
 /* the stored time (0x9dd880..) and the mocked system time with small random fields */
 static void clock_setup(void)
 {
@@ -11956,7 +11956,7 @@ static void armcitem_setup(void)
 	setitem_setup();
 	S32(SCENE, 0x234240d) = irnd(0, 4) ? g_a[0] : -1;
 }
-ST(armc_461510, armcitem_setup();, (TC(void, 0x461510, char *, int, int)(SCENE, g_a[1], g_a[2]), 0), (armc_461510(SCENE, g_a[1], g_a[2]), 0))
+ST(mech_setItem, armcitem_setup();, (TC(void, 0x461510, char *, int, int)(SCENE, g_a[1], g_a[2]), 0), (mech_setItem(SCENE, g_a[1], g_a[2]), 0))
 /* an object list of 0..4 entries whose shapes are shapetex_setup's shape (textures with GL slots or texture i) or none */
 static void listbind_setup(void)
 {
@@ -12143,7 +12143,7 @@ static void panels_setup(void)
 	}
 	GF(0x4dcfc4) = (float)irnd(-500, 500) / 10.0f; GF(0x4dcfc8) = (float)irnd(-500, 500) / 10.0f;
 }
-ST(armc_41b400, panels_setup();, (CD(void, 0x41b400, void)(), 0), (armc_41b400(), 0))
+ST(armc_drawPanels, panels_setup();, (CD(void, 0x41b400, void)(), 0), (armc_drawPanels(), 0))
 /* batch 98 */
 /* the network mocks: events and threads that fail now and then, recv returning 0..0x80 bytes or an error, Winsock
    versions 2.2 or other, sockets, bind and connect that fail or are refused, a host name that is no dotted address */
@@ -12218,10 +12218,10 @@ static void armcmech_setup(void)
 	for (int k = 3; k < 8; k++) g_am[k] = irnd(-6, 6);
 	for (int k = 8; k < 14; k++) g_am[k] = irnd(-1, 3);
 }
-ST(armc_461250, armcmech_setup();,
+ST(mech_setAll, armcmech_setup();,
    (TC(void, 0x461250, char *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD)(SCENE,
      g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11], g_am[12], g_am[13]), 0),
-   (armc_461250(SCENE, (const char *)g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11],
+   (mech_setAll(SCENE, (const char *)g_am[0], g_am[1], g_am[2], g_am[3], g_am[4], g_am[5], g_am[6], g_am[7], g_am[8], g_am[9], g_am[10], g_am[11],
      g_am[12], g_am[13]), 0))
 /* the name: one of the reserved names (as stored, so a byte-exact match) or a random one; the mech bytes, the
    version strings and the address strings the packet takes; the send buffer; the network mocks */
@@ -12578,7 +12578,7 @@ ST(stage_setupActorSlot, slot_setup();, TC(int, 0x45dc00, char *, int, int, int,
    stage_setupActorSlot(BUF, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2], (DWORD)g_a[3]))
 ST(stage_claimPlayerActor, slot_setup();, (TC(void, 0x45dd80, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0),
    (stage_claimPlayerActor(BUF, g_a[0], g_a[1], g_a[2], (void *)g_a[3]), 0))
-/* the player's actor is the player's own index (armc_45ddc0 passes it as both): that actor's lists constructed */
+/* the player's actor is the player's own index (stage_remakePlayerActor passes it as both): that actor's lists constructed */
 static void ownslot_setup(void)
 {
 	slot_setup();
@@ -12587,7 +12587,7 @@ static void ownslot_setup(void)
 	ResourceSet_init_463a40(ac); S32(ac, 0x10c) = g_spf; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
 	fill((void *)0xa0e7a8, 12);
 }
-ST(armc_45ddc0, ownslot_setup();, (TC(void, 0x45ddc0, char *)(BUF), 0), (armc_45ddc0(BUF), 0))
+ST(stage_remakePlayerActor, ownslot_setup();, (TC(void, 0x45ddc0, char *)(BUF), 0), (stage_remakePlayerActor(BUF), 0))
 /* a spawn record: the player (mechsetup_setup's), then ints for the stats; the player's actor slot, now and then -1 */
 static void spawnrec_setup(void)
 {
@@ -12919,7 +12919,7 @@ static void menutext_setup(void)
 	G32(0x9dae74) = irnd(0, 2);
 	fill((void *)0x76d438, 16); fill((void *)0x9da480, 16);
 }
-ST(armc_4125c0, menutext_setup();, CALL_PLAIN(0x4125c0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_4125c0((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
+ST(armc_drawText, menutext_setup();, CALL_PLAIN(0x4125c0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawText((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
 ST(armc_drawStatLabel, menutext_setup();, CALL_PLAIN(0x4125f0, 0, g_a[0], g_a[1], BUF + 0x400, 0), (armc_drawStatLabel((DWORD)(g_a[0]), (DWORD)(g_a[1]), (const char *)(DWORD)(BUF + 0x400)), 0))
 /* the two message lines (up to 80 characters) */
 static void msgbox_setup(void)
@@ -12977,7 +12977,7 @@ static void armctabs_setup(void)
 	fill((void *)0x4dc1d0, 16); fill((void *)0x4dbc58, 16);
 	for (int k = 0; k < 3; k++) fill_str((char *)0x7565a4 + k * 0x80, 60, 32, 126);
 }
-ST(armc_412450, armctabs_setup();, CALL_PLAIN(0x412450, 0, 0, 0, 0, 0), (DWORD)(armc_412450()))
+ST(armc_drawModeTabs, armctabs_setup();, CALL_PLAIN(0x412450, 0, 0, 0, 0, 0), (DWORD)(armc_drawModeTabs()))
 /* the briefing text: a random text (CR LF pairs, double-byte characters) of up to 160 bytes at BUF + 0x10000,
    shown from offset 0..20, the typing position somewhere in it, the end; the timer near its step */
 static void typewriter_setup(void)
@@ -13056,7 +13056,7 @@ static void weight_setup(void)
 	G32(0x9dae74) = irnd(0, 2); G32(0x4dcc94) = irnd(-50, 400);
 	fill_str((char *)0x7573a4, 30, 32, 126);
 }
-ST(armc_41dab0, weight_setup();, (CALL_PLAIN(0x41dab0, 0, 0, 0, 0, 0), 0), (armc_41dab0(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
+ST(armc_drawWeightLine, weight_setup();, (CALL_PLAIN(0x41dab0, 0, 0, 0, 0, 0), 0), (armc_drawWeightLine(), 0))   /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 /* batch 119 */
 /* the loading screen: menutex_setup's set with a bindable picture, a clear colour, progress 0..28 (16 columns
    each, the three ramps start at 200 and 400 columns; more would overflow the 4096-call log) */
@@ -13118,7 +13118,7 @@ static void arenaname_setup(void)
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb68) + irnd(0x40, 0x120); G32(0x4ded6c) = G32(0x4dbb6c) + irnd(0x60, 0xa0); }
 	pointer_on(0x4db588, 6);   /* arena_404460's rectangles */
 }
-ST(arena_409bc0, arenaname_setup();, (CALL_PLAIN(0x409bc0, 0, 0, 0, 0, 0), 0), (arena_409bc0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
+ST(arena_drawNameDialog, arenaname_setup();, (CALL_PLAIN(0x409bc0, 0, 0, 0, 0, 0), 0), (arena_drawNameDialog(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 /* batch 120 */
 /* the server dialog: dlgwin_setup's window at 0x9dd1a0, its texts, the confirmation open now and then (the cursor
    then sometimes over one of its buttons) */
@@ -13192,7 +13192,7 @@ static void slotlist_setup(void)
 	for (int k = 0; k < 4; k++) fill_str((char *)0x75da24 + k * 0x80, 10, 32, 126);
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-ST(arena_4038e0, slotlist_setup();, (CALL_PLAIN(0x4038e0, 0, 0, 0, 0, 0), 0), (arena_4038e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(mapList_draw, slotlist_setup();, (CALL_PLAIN(0x4038e0, 0, 0, 0, 0, 0), 0), (mapList_draw(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the map-select dialog: maplist_setup's list (positions overwritten by the window), dlgwin_setup's window at
    0x9dd908 with its textures and cursor, the two checkboxes, titles, short button labels */
 static void mapselect_setup(void)
@@ -13354,7 +13354,7 @@ ST(armc_411110, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (arm
 ST(skirmish_4445a0, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_4445a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_411ab0, tunnels_setup();, (CALL_PLAIN(0x411ab0, 0, 0, 0, 0, 0), 0), (armc_411ab0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(room_4388e0, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_4388e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(arena_4091b0, tunnels_setup();, (CALL_PLAIN(0x4091b0, 0, 0, 0, 0, 0), 0), (arena_4091b0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(arena_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4091b0, 0, 0, 0, 0, 0), 0), (arena_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 127 */
 /* the info panel: dlgwin_setup's window at 0x9dd368, short labels, the password fields at most 11 characters (the
    '*' buffer, also used for the numbers, holds 20), ratios below a million ("%.2f" goes into it too), counts and
@@ -13681,7 +13681,7 @@ static void colour_setup(void)
 	for (int k = 0; k < 5; k++) fill_str((char *)nm[k], 10, 32, 126);
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-ST(armc_41a280, colour_setup();, (CALL_PLAIN(0x41a280, 0, 0, 0, 0, 0), 0), (armc_41a280(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_drawColourEditor, colour_setup();, (CALL_PLAIN(0x41a280, 0, 0, 0, 0, 0), 0), (armc_drawColourEditor(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 139 */
 /* the build screen: menutex_setup's set (every texture it binds from it), positions, the selected slot, slot names
    empty / one character / short, the part box's indexes in range, the stats panel in its three states with values
@@ -13722,7 +13722,7 @@ static void armcbuild_setup(void)
 	}
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 }
-ST(armc_419160, armcbuild_setup();, (CALL_PLAIN(0x419160, 0, 0, 0, 0, 0), 0), (armc_419160(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_drawBuildScreen, armcbuild_setup();, (CALL_PLAIN(0x419160, 0, 0, 0, 0, 0), 0), (armc_drawBuildScreen(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 140 */
 /* the arena's game list: dlgwin_setup's window at 0x4db8c8 (lock icons from its set), the game records as
    gamelist_setup's (maps 0..15, modes 0..4 as kind strings), the list kinds, the box / searching flags, short texts */
@@ -13742,7 +13742,7 @@ static void arenalist_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4db8c8) + irnd(0x23, 0x23e); G32(0x4ded6c) = G32(0x4db8cc) + irnd(0x30, 0x50); }
 }
-ST(arena_40a070, arenalist_setup();, (CALL_PLAIN(0x40a070, 0, 0, 0, 0, 0), 0), (arena_40a070(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(arena_drawGameList, arenalist_setup();, (CALL_PLAIN(0x40a070, 0, 0, 0, 0, 0), 0), (arena_drawGameList(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 141 */
 /* the create-arena screen: gamesettings_setup's approach for the arena (texture set and preview first, through
    mappreview_setup for custom rules, the window at 0x4dbb00 after), the fields in range (map 0..15, kind 0..4,
@@ -13776,7 +13776,7 @@ static void createarena_setup(void)
 	G32(0x4ded68) = irnd(0, 640); G32(0x4ded6c) = irnd(0, 480);
 	if (irnd(0, 1)) { G32(0x4ded68) = G32(0x4dbb00) + irnd(0x9f, 0x1a7); G32(0x4ded6c) = G32(0x4dbb04) + irnd(0x2f, 0x133); }
 }
-/* the form's hit test (arena_404520), the confirmation box's (arena_4045a0) and the map preview (0x40b550; its
+/* the form's hit test (createArena_hitTest), the confirmation box's (arena_4045a0) and the map preview (0x40b550; its
    missing picture ends the game) stubbed, each with its own test: any item or none */
 static void createarena_hover_setup(void)
 {
@@ -13896,7 +13896,7 @@ static void statspanel_setup(void)
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 ST(armc_drawStatsPanel, statspanel_setup();, (CALL_PLAIN(0x412650, 0, 0, 0, 0, 0), 0), (armc_drawStatsPanel(), 0))
 /* batch 145 */
-/* armc_45ddc0's player and actor (ownslot_setup: the actor is the player's own index), the game's lobby slot that
+/* stage_remakePlayerActor's player and actor (ownslot_setup: the actor is the player's own index), the game's lobby slot that
    player (sometimes none), local or not, and an item record for the slot asked (-1..7) and for the actor's stored
    slot, as itempart_setup builds them */
 static void reequip_part(char *ac, int slot)
@@ -13925,7 +13925,7 @@ static void reequip_setup(void)
 	reequip_part(ac, g_a[0] < 0 ? S32(ac, 0x140) : g_a[0]);
 	reequip_part(ac, S32(ac, 0x144));
 }
-ST(armc_461540, reequip_setup();, (TC(void, 0x461540, char *, int)(SCENE, g_a[0]), 0), (armc_461540(SCENE, (DWORD)g_a[0]), 0))
+ST(armc_giveShownActorWeapon, reequip_setup();, (TC(void, 0x461540, char *, int)(SCENE, g_a[0]), 0), (armc_giveShownActorWeapon(SCENE, (DWORD)g_a[0]), 0))
 /* batch 146 */
 /* network mode or not, player levels 0..16, progress values 0..20 and now and then above 0x7f, the current
    choices and list areas random */
@@ -14143,15 +14143,15 @@ static void dplay_setup(void)
 }
 ST(dplay_release, dplay_setup();, CALL_PLAIN(0x453920, 0, 0, 0, 0, 0), (DWORD)(dplay_release()))
 ST(dplay_enumSessions, dplay_setup();, CALL_PLAIN(0x453fd0, 0, 0, 0, 0, 0), (DWORD)(dplay_enumSessions()))
-ST(arena_4549a0, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (DWORD)arena_4549a0())
-ST(arena_4549c0, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (DWORD)arena_4549c0())
-ST(arena_454ac0, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (DWORD)arena_454ac0())
-ST(arena_454ae0, dplay_setup();, CALL_PLAIN(0x454ae0, 0, 0, 0, 0, 0), (DWORD)arena_454ae0())
-ST(arena_454bd0, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (DWORD)arena_454bd0())
-ST(arena_454bf0, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (DWORD)arena_454bf0())
-ST(arena_454ce0, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (DWORD)arena_454ce0())
-ST(arena_454d00, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (DWORD)arena_454d00())
-ST(arena_453260, dplay_setup();, CALL_PLAIN(0x453260, 0, 0, 0, 0, 0), (DWORD)(arena_453260()))
+ST(dplaySlot0_close, dplay_setup();, CALL_PLAIN(0x4549a0, 0, 0, 0, 0, 0), (DWORD)dplaySlot0_close())
+ST(dplaySlot0_enum, dplay_setup();, CALL_PLAIN(0x4549c0, 0, 0, 0, 0, 0), (DWORD)dplaySlot0_enum())
+ST(dplaySlot1_close, dplay_setup();, CALL_PLAIN(0x454ac0, 0, 0, 0, 0, 0), (DWORD)dplaySlot1_close())
+ST(dplaySlot1_enum, dplay_setup();, CALL_PLAIN(0x454ae0, 0, 0, 0, 0, 0), (DWORD)dplaySlot1_enum())
+ST(dplaySlot2_close, dplay_setup();, CALL_PLAIN(0x454bd0, 0, 0, 0, 0, 0), (DWORD)dplaySlot2_close())
+ST(dplaySlot2_enum, dplay_setup();, CALL_PLAIN(0x454bf0, 0, 0, 0, 0, 0), (DWORD)dplaySlot2_enum())
+ST(dplaySlot3_close, dplay_setup();, CALL_PLAIN(0x454ce0, 0, 0, 0, 0, 0), (DWORD)dplaySlot3_close())
+ST(dplaySlot3_enum, dplay_setup();, CALL_PLAIN(0x454d00, 0, 0, 0, 0, 0), (DWORD)dplaySlot3_enum())
+ST(dplay_listSessions, dplay_setup();, CALL_PLAIN(0x453260, 0, 0, 0, 0, 0), (DWORD)(dplay_listSessions()))
 /* batch 157 */
 static LONG dp_err(void)   /* a success, or one of the DirectPlay results the callers tell apart */
 {
@@ -14165,7 +14165,7 @@ static LONG dp_err(void)   /* a success, or one of the DirectPlay results the ca
 static void dplayconn_setup(void)
 {
 	slot_flags(); host_setup(); ipstr_setup();
-	g_mockHostNameFail = g_mockHostFail = 0;   /* a failed lookup leaves the address empty: arena_4542a0 then reads strtok's NULL (in the original too) */
+	g_mockHostNameFail = g_mockHostFail = 0;   /* a failed lookup leaves the address empty: net_parseAddress then reads strtok's NULL (in the original too) */
 	dplay_setup();
 	FakeCom *d = (FakeCom *)fakecom_new(1, 1, g_nargsDplay, 0);
 	G32(0xa0b404) = irnd(0, 7) ? (int)d : 0;
@@ -14551,17 +14551,17 @@ static void dpmsg_setup(void)
 	for (int i = 0; i < 4; i++) g_a[i] = irnd(0, 3) ? irnd(0, 0x7fff) : irnd(-5, 5);
 }
 static DWORD g_rcvOut[4];
-ST(arena_450bc0, dpmsg_setup(); g_rcvOut[2] = (DWORD)irnd(0, 0x100); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
+ST(dplay_receive, dpmsg_setup(); g_rcvOut[2] = (DWORD)irnd(0, 0x100); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD *, DWORD *, DWORD, void *, DWORD *))0x450bc0)(&g_rcvOut[0], &g_rcvOut[1], g_a[2], BUF + 0x3a00, &g_rcvOut[2]),
-   (DWORD)arena_450bc0(&g_rcvOut[0], &g_rcvOut[1], g_a[2], BUF + 0x3a00, &g_rcvOut[2]))
+   (DWORD)dplay_receive(&g_rcvOut[0], &g_rcvOut[1], g_a[2], BUF + 0x3a00, &g_rcvOut[2]))
 ST(dplay_send, dpmsg_setup(); if (!irnd(0, 7)) G32(0xa0b404) = 0;,
    ((DWORD (__cdecl *)(DWORD, DWORD, DWORD, void *, DWORD))0x450bf0)(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]),
    (DWORD)dplay_send(g_a[0], g_a[1], g_a[2], BUF + 0x3800, g_a[4]))
 ST(net_sendMessage, dpmsg_setup();, CALL_PLAIN(0x451270, 0, BUF + 0x3800, g_a[0], g_a[4], 0), (DWORD)(net_sendMessage((const int *)(DWORD)(BUF + 0x3800), (DWORD)(g_a[0]), (DWORD)(g_a[4]))))
 ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900, BUF + 0x3a00, 0), (DWORD)(net_logMessage((DWORD)(g_a[5]), (const char *)(DWORD)(BUF + 0x3900), (char **)(DWORD)(BUF + 0x3a00))))
-ST(arena_451090, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(arena_451090(BUF + 0x3800, g_a[4], g_a[5])))
+ST(net_handleMessage, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(net_handleMessage(BUF + 0x3800, g_a[4], g_a[5])))
 ST(net_sendLocalInfo, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_sendLocalInfo((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(arena_450a60, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(arena_450a60()))
+ST(net_receiveAll, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(net_receiveAll()))
 ST(FUN_00450bb0, dpmsg_setup();, CALL_PLAIN(0x450bb0, 0, 0, 0, 0, 0), (DWORD)FUN_00450bb0())
 /* batch 168 */
 /* the mission settings screen: missionscreen_setup's state (missions, preview, textures, texts, records), the
@@ -14595,9 +14595,9 @@ static void armcsel_setup(void)
 	G32(0x4dc24c) = irnd(0, 4); G32(0x76d410) = irnd(0, 1); G32(0x9da49c) = irnd(0, 2) ? 0x66 : irnd(0x60, 0x70);
 	g_a[0] = irnd(-1, 7); g_a[1] = irnd(0, 1);
 }
-ST(armc_40f950, armcsel_setup(); callee_stubs(g_stubArmcView, 0);, CALL_PLAIN(0x40f950, 0, 0, 0, 0, 0), (armc_40f950(), 0))
-ST(armc_40f870, armcsel_setup(); callee_stubs(g_stubArmcKind, 0);, CALL_PLAIN(0x40f870, 0, g_a[0], 0, 0, 0), (armc_40f870((DWORD)(g_a[0])), 0))
-ST(armc_40f9e0, armcsel_setup(); callee_stubs(g_stubArmcTake, 0);, CALL_PLAIN(0x40f9e0, 0, 0, 0, 0, 0), (armc_40f9e0(), 0))
+ST(armc_showCursorItem, armcsel_setup(); callee_stubs(g_stubArmcView, 0);, CALL_PLAIN(0x40f950, 0, 0, 0, 0, 0), (armc_showCursorItem(), 0))
+ST(armc_pickSlot, armcsel_setup(); callee_stubs(g_stubArmcKind, 0);, CALL_PLAIN(0x40f870, 0, g_a[0], 0, 0, 0), (armc_pickSlot((DWORD)(g_a[0])), 0))
+ST(armc_takeCursorItem, armcsel_setup(); callee_stubs(g_stubArmcTake, 0);, CALL_PLAIN(0x40f9e0, 0, 0, 0, 0, 0), (armc_takeCursorItem(), 0))
 ST(armc_drawPartScreen, armcsel_setup(); callee_stubs(g_stubArmcScreen, 0);, CALL_PLAIN(0x40f220, 0, 0, 0, 0, 0), (armc_drawPartScreen(), 0))
 ST(armc_exit, armcsel_setup(); callee_stubs(g_stubArmcExit, 0);, CALL_PLAIN(0x40f0f0, 0, g_a[1], 0, 0, 0), (armc_exit((DWORD)(g_a[1])), 0))
 /* batch 170 */
@@ -14634,10 +14634,10 @@ static void armcstate_setup(const DWORD *stubs)
 	callee_key(0x401590, irnd(0, 1) ? 0x10 + irnd(0, 17) : -1);
 	callee_ret(0x40e450, (DWORD)irnd(-1, 12));
 }
-ST(armc_40fb20, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_40fb20()))
-ST(armc_4101e0, armcstate_setup(g_stubArmcMainKeys);, (CALL_PLAIN(0x4101e0, 0, 0, 0, 0, 0), 0), (armc_4101e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(armc_410500, armcstate_setup(g_stubArmcPartKeys);, (CALL_PLAIN(0x410500, 0, 0, 0, 0, 0), 0), (armc_410500(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(armc_410810, armcstate_setup(g_stubArmcColourKeys);, (CALL_PLAIN(0x410810, 0, 0, 0, 0, 0), 0), (armc_410810(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_mainPageClicks, armcstate_setup(g_stubArmcMouse);, CALL_PLAIN(0x40fb20, 0, 0, 0, 0, 0), (DWORD)(armc_mainPageClicks()))
+ST(armc_partsPageKeys, armcstate_setup(g_stubArmcMainKeys);, (CALL_PLAIN(0x4101e0, 0, 0, 0, 0, 0), 0), (armc_partsPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_weaponsPageKeys, armcstate_setup(g_stubArmcPartKeys);, (CALL_PLAIN(0x410500, 0, 0, 0, 0, 0), 0), (armc_weaponsPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_colourPageKeys, armcstate_setup(g_stubArmcColourKeys);, (CALL_PLAIN(0x410810, 0, 0, 0, 0, 0), 0), (armc_colourPageKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_onStateEnter, armcstate_setup(g_stubArmcState);, CALL_PLAIN(0x410190, 0, 0, 0, 0, 0), (DWORD)(armc_onStateEnter()))
 /* its caller ignores the eax it leaves (tools/eaxuse.py) */
 ST(armc_processInput, armcstate_setup(g_stubArmcInput);, (CALL_PLAIN(0x410ab0, 0, 0, 0, 0, 0), 0), (armc_processInput(), 0))
@@ -14672,16 +14672,16 @@ static void small_setup(const DWORD *stubs)
 	callee_key(0x401600, irnd(0, 2) ? 0x21 + irnd(0, 1) : -1);
 	callee_ret(0x432280, (DWORD)irnd(-1, 2));
 }
-ST(arena_453770, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (DWORD)arena_453770())
+ST(dplay_check, small_setup(g_stubConnUp);, CALL_PLAIN(0x453770, 0, 0, 0, 0, 0), (DWORD)dplay_check())
 ST(wnd_4014c0, small_setup(g_stubInputOff);, CALL_PLAIN(0x4014c0, 0, 0, 0, 0, 0), (wnd_4014c0(), 0))
-ST(arena_4549e0, small_setup(g_stubHost);,
+ST(dplaySlot0_host, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x4549e0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_4549e0(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-ST(arena_454b00, small_setup(g_stubHost);,
+   dplaySlot0_host(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+ST(dplaySlot1_host, small_setup(g_stubHost);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454b00)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454b00(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-ST(arena_454a20, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454a20((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
-ST(arena_454b40, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454b40((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
+   dplaySlot1_host(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+ST(dplaySlot0_join, small_setup(g_stubJoin);, CALL_PLAIN(0x454a20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot0_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
+ST(dplaySlot1_join, small_setup(g_stubJoin);, CALL_PLAIN(0x454b40, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot1_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 ST(mapList_chooseNone, small_setup(g_stubSound);, CALL_PLAIN(0x403530, 0, 0, 0, 0, 0), (mapList_chooseNone(), 0))
 ST(mapList_chooseAll, small_setup(g_stubSound);, CALL_PLAIN(0x4034e0, 0, 0, 0, 0, 0), (mapList_chooseAll(), 0))
 ST(lobbyJoin_keys, small_setup(g_stubKeyClose);, CALL_PLAIN(0x407970, 0, 0, 0, 0, 0), (lobbyJoin_keys(), 0))
@@ -14743,7 +14743,7 @@ ST(menu_keyStartFade, gen_setup(g_gs_4318b0, g_gi_4318b0, g_gb_4318b0);, CALL_PL
 static const DWORD g_gs_452fe0[] = { 0x451270, 3, 0x454130, 0, 0x4549a0, 0, 0x454ac0, 0, 0x454bd0, 0, 0x454ce0, 0, 0 };
 static const DWORD g_gi_452fe0[] = { 0x9f941c, 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0baf8, 0 };
 static const DWORD g_gb_452fe0[] = { 0x9f9418, 0 };
-ST(arena_452fe0, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0);, CALL_PLAIN(0x452fe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_452fe0()))
+ST(arena_leaveSession, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0);, CALL_PLAIN(0x452fe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_leaveSession()))
 static const DWORD g_gs_404cd0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404cd0[] = { 0x4dbb68, 0x4dbb6c, 0x4dbbd0, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404cd0[] = { 0x4db560, 0x9dc92c, 0 };
@@ -14844,11 +14844,11 @@ ST(msg_timeLimitReached, gen_setup(g_gs_462fd0, g_gi_462fd0, g_gb_462fd0); fill(
 static const DWORD g_gs_454c50[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454c50[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454c50[] = { 0 };
-ST(arena_454c50, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, CALL_PLAIN(0x454c50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454c50((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
+ST(dplaySlot2_join, gen_setup(g_gs_454c50, g_gi_454c50, g_gb_454c50);, CALL_PLAIN(0x454c50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot2_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 static const DWORD g_gs_454d60[] = { 0x453e60, 4, 0 };
 static const DWORD g_gi_454d60[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454d60[] = { 0 };
-ST(arena_454d60, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0x454d60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454d60((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
+ST(dplaySlot3_join, gen_setup(g_gs_454d60, g_gi_454d60, g_gb_454d60);, CALL_PLAIN(0x454d60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot3_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3])))
 static const DWORD g_gs_453720[] = { 0x453770, 0, 0x453920, 0, 0 };
 static const DWORD g_gi_453720[] = { 0xa0b42c, 0xa0b430, 0xa0b434, 0xa0b438, 0 };
 static const DWORD g_gb_453720[] = { 0xa0b470, 0 };
@@ -14994,7 +14994,7 @@ ST(menu_returnToMainFromRoom, freelist_setup(g_gs_41ed70, g_gi_41ed70, g_gb_41ed
 static const DWORD g_gs_453180[] = { 0x4532b0, 1, 0x454a20, 4, 0x454b40, 4, 0x454c50, 4, 0x454d60, 4, 0 };
 static const DWORD g_gi_453180[] = { 0xa0b418, 0 };
 static const DWORD g_gb_453180[] = { 0 };
-ST(arena_453180, gen_setup(g_gs_453180, g_gi_453180, g_gb_453180); /* 0x4532b0 gives a session record */ fill(BUF + 0x5000, 0x40); callee_ret(0x4532b0, irnd(0, 3) ? (DWORD)(BUF + 0x5000) : 0); G32(0xa0b418) = irnd(0, 4);, CALL_PLAIN(0x453180, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_453180((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
+ST(dplay_join, gen_setup(g_gs_453180, g_gi_453180, g_gb_453180); /* 0x4532b0 gives a session record */ fill(BUF + 0x5000, 0x40); callee_ret(0x4532b0, irnd(0, 3) ? (DWORD)(BUF + 0x5000) : 0); G32(0xa0b418) = irnd(0, 4);, CALL_PLAIN(0x453180, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(dplay_join((DWORD)(g_a[0]), (DWORD)(g_a[1]), (DWORD)(g_a[2]), (DWORD)(g_a[3]))))
 static const DWORD g_gs_41f970[] = { 0x404640, 0, 0x41fd40, 0, 0x420770, 0, 0x432ff0, 0, 0x440bb0, 0, 0x443950, 0, 0x447750, 0, 0x44b420, 0, 0 };
 static const DWORD g_gi_41f970[] = { 0x4deb48, 0x67ef0c, 0x76d3e8, 0 };
 static const DWORD g_gb_41f970[] = { 0 };
@@ -15014,7 +15014,7 @@ ST(ranking_clicks, gen_setup(g_gs_436620, g_gi_436620, g_gb_436620);, CALL_PLAIN
 static const DWORD g_gs_40fd30[] = { 0x40e490, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f320, 0, 0x40f830, 1, 0x40f870, 1, 0x40f950, 0, 0x40f9e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40fd30[] = { 0x4dbe48, 0x4dc244, 0x4dc77c, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40fd30[] = { 0 };
-ST(armc_40fd30, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, CALL_PLAIN(0x40fd30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_40fd30()))
+ST(armc_partScreenClicks, gen_setup(g_gs_40fd30, g_gi_40fd30, g_gb_40fd30);, CALL_PLAIN(0x40fd30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(armc_partScreenClicks()))
 static const DWORD g_gs_40ff40[] = { 0x40e4d0, 2, 0x40f0f0, 1, 0x40f200, 0, 0x40f220, 0, 0x40f320, 0, 0x40f590, 0, 0x40f5d0, 0, 0x40f670, 0, 0x40f6b0, 0, 0x40f6f0, 0, 0x40f790, 0, 0x40f7e0, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_40ff40[] = { 0x4dc4b0, 0x4dc798, 0x4dceac, 0x4ded68, 0x4ded6c, 0x4ded88, 0 };
 static const DWORD g_gb_40ff40[] = { 0 };
@@ -15112,7 +15112,7 @@ ST(room_keys, gen_setup(g_gs_437140, g_gi_437140, g_gb_437140);, CALL_PLAIN(0x43
 static const DWORD g_gs_405690[] = { 0x41ee40, 1, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_405690[] = { 0x4db54c, 0x4db54d, 0x4ded44, 0x4ded45, 0x4db8b4, 0x4dbb3c, 0x4dbbec, 0x4dbbf0, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405690[] = { 0x4dedb0, 0x67fb44, 0 };
-ST(arena_405690, gen_setup(g_gs_405690, g_gi_405690, g_gb_405690); /* (player: 0x4a bytes from 0x9087b4) */ g_a[0] = irnd(0, 15);, CALL_PLAIN(0x405690, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_405690((DWORD)(g_a[0]))))
+ST(arena_joinSession, gen_setup(g_gs_405690, g_gi_405690, g_gb_405690); /* (player: 0x4a bytes from 0x9087b4) */ g_a[0] = irnd(0, 15);, CALL_PLAIN(0x405690, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_joinSession((DWORD)(g_a[0]))))
 static const DWORD g_gs_435d30[] = { 0x40ee20, 0, 0x41e760, 1, 0x41eea0, 2, 0x4334c0, 0, 0x433590, 0, 0x433790, 0, 0x433800, 0, 0x435a40, 0, 0 };
 static const DWORD g_gi_435d30[] = { 0x4dc24c, 0x4deb48, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x90d1c4, 0x9dae10, 0x9dce48, 0 };
 static const DWORD g_gb_435d30[] = { 0x9daf88, 0 };
@@ -15158,12 +15158,12 @@ static const DWORD g_gb_42ada0[] = { 0x9dc92c, 0x9f9418, 0 };
 ST(match_debugHandler, gen_setup(g_gs_42ada0, g_gi_42ada0, g_gb_42ada0);, (CALL_PLAIN(0x42ada0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (match_debugHandler(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* the arena's connection slots 3 / 4 (0xa0d7ac / 0xa0d7b0): host through them (dplay_hostSession, 8 arguments) */
 static const DWORD g_stubHost34[] = { 0x453cf0, 8, 0 };
-ST(arena_454c10, small_setup(g_stubHost34); G32(0xa0d7ac) = irnd(0, 1);,
+ST(dplaySlot2_host, small_setup(g_stubHost34); G32(0xa0d7ac) = irnd(0, 1);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454c10)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454c10(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
-ST(arena_454d20, small_setup(g_stubHost34); G32(0xa0d7b0) = irnd(0, 1);,
+   dplaySlot2_host(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+ST(dplaySlot3_host, small_setup(g_stubHost34); G32(0xa0d7b0) = irnd(0, 1);,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x454d20)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_454d20(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   dplaySlot3_host(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 /* batch 177: generated tests (tools/gentests.py, gen_setup from batch 172) plus two by hand */
 static const DWORD g_gs_434e70[] = { 0x41ee40, 0, 0x452fe0, 0, 0x453180, 4, 0x457310, 0, 0 };
 static const DWORD g_gi_434e70[] = { 0x5b1b54, 0x5b1b55, 0x4db708, 0x4db710, 0x4db8b4, 0x4dbb10, 0x4dbb78, 0x4dbbf8, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0x9dce48, 0 };
@@ -15218,7 +15218,7 @@ ST(game_postMatch, gen_setup(g_gs_420100, g_gi_420100, g_gb_420100); netstate_se
 /* dplay_initConnection(kind, address): the old DirectPlay object closed (dplay_closeSession, real: a fake object or
    none), the connection by kind (0 TCP/IP: a compound address for the host name built by the fake lobby, size
    query then fill; 1..3 the stored connections 0xa0bae4 .. 0xa0baec, some empty; others), a new DirectPlay object
-   (arena_4539f0, real: CoCreateInstance giving a fake or failing), InitializeConnection and GetCaps succeeding or
+   (dplay_createLobby, real: CoCreateInstance giving a fake or failing), InitializeConnection and GetCaps succeeding or
    not; a host name or none */
 static void dpinit_setup(void)
 {
@@ -15296,35 +15296,35 @@ ST(menu_drawBackground, gen_setup(g_gs_441740, g_gi_441740, g_gb_441740);, CALL_
 static const DWORD g_gs_454940[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x4549a0, 0, 0 };
 static const DWORD g_gi_454940[] = { 0xa0d7a4, 0 };
 static const DWORD g_gb_454940[] = { 0 };
-ST(arena_454940, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, CALL_PLAIN(0x454940, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454940((DWORD)(g_a[0])))
+ST(dplaySlot0_open, gen_setup(g_gs_454940, g_gi_454940, g_gb_454940);, CALL_PLAIN(0x454940, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot0_open((DWORD)(g_a[0])))
 static const DWORD g_gs_454a50[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ac0, 0, 0 };
 static const DWORD g_gi_454a50[] = { 0xa0d7a8, 0 };
 static const DWORD g_gb_454a50[] = { 0 };
-ST(arena_454a50, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, CALL_PLAIN(0x454a50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454a50((DWORD)(g_a[0])))
+ST(dplaySlot1_open, gen_setup(g_gs_454a50, g_gi_454a50, g_gb_454a50);, CALL_PLAIN(0x454a50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot1_open((DWORD)(g_a[0])))
 static const DWORD g_gs_454b70[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454bd0, 0, 0 };
 static const DWORD g_gi_454b70[] = { 0xa0d7ac, 0 };
 static const DWORD g_gb_454b70[] = { 0 };
-ST(arena_454b70, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, CALL_PLAIN(0x454b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454b70((DWORD)(g_a[0])))
+ST(dplaySlot2_open, gen_setup(g_gs_454b70, g_gi_454b70, g_gb_454b70);, CALL_PLAIN(0x454b70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot2_open((DWORD)(g_a[0])))
 static const DWORD g_gs_454c80[] = { 0x453720, 0, 0x453a30, 1, 0x453a90, 2, 0x454ce0, 0, 0 };
 static const DWORD g_gi_454c80[] = { 0xa0d7b0, 0 };
 static const DWORD g_gb_454c80[] = { 0 };
-ST(arena_454c80, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAIN(0x454c80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)arena_454c80((DWORD)(g_a[0])))
+ST(dplaySlot3_open, gen_setup(g_gs_454c80, g_gi_454c80, g_gb_454c80);, CALL_PLAIN(0x454c80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)dplaySlot3_open((DWORD)(g_a[0])))
 static const DWORD g_gs_435c20[] = { 0x41e760, 1, 0x432240, 2, 0x433d30, 0, 0x433e60, 1, 0x434640, 0, 0x4346c0, 0, 0 };
 static const DWORD g_gi_435c20[] = { 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0 };
 static const DWORD g_gb_435c20[] = { 0 };
 ST(settingsDialog_clicks, gen_setup(g_gs_435c20, g_gi_435c20, g_gb_435c20);, CALL_PLAIN(0x435c20, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(settingsDialog_clicks()))
 /* scene_resetScores (thiscall on the scene): the 16 player records' scores cleared (and their team slots in team games,
    +8 == 1), then the actor reset (0x45df90 on the actor table +0x1f36c8) and the ranking (msg_newKing), both
-   stubbed and thiscall; arena_453090: by connection kind 0xa0b418 (0..3, others) host through that kind's slot
+   stubbed and thiscall; dplay_host: by connection kind 0xa0b418 (0..3, others) host through that kind's slot
    (8 arguments passed on) */
 static const DWORD g_stubResetScores[] = { 0x45df90, 0 | CS_THIS, 0x462150, 0 | CS_THIS, 0 };
 static const DWORD g_stubHostKind[] = { 0x4549e0, 8, 0x454b00, 8, 0x454c10, 8, 0x454d20, 8, 0 };
 ST(scene_resetScores, for (int i = 0; i < 16; i++) fill(BUF + 0x1eccb40 + i * 0x8888, 0x50); S32(BUF, 8) = irnd(0, 2);
    callee_stubs(g_stubResetScores, 0);, CALL_PLAIN(0x4620e0, BUF, 0, 0, 0, 0), (scene_resetScores((void *)BUF), 0))
-ST(arena_453090, G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); for (int i = 0; i < 8; i++) g_a[i] = irnd(-5, 1000);
+ST(dplay_host, G32(0xa0b418) = irnd(0, 9) ? irnd(0, 3) : irnd(-1, 6); for (int i = 0; i < 8; i++) g_a[i] = irnd(-5, 1000);
    callee_stubs(g_stubHostKind, (DWORD)irnd(0, 1));,
    ((DWORD (__cdecl *)(int, int, int, int, int, int, int, int))0x453090)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]),
-   arena_453090(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
+   dplay_host(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]))
 /* batch 181: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_443530[] = { 0x40ce70, 0, 0x441250, 1, 0x441740, 0, 0x442050, 0, 0x4434f0, 0, 0 };
 static const DWORD g_gi_443530[] = { 0x67ef14, 0x67ef20, 0x9eeab4, 0 };
@@ -15345,7 +15345,7 @@ ST(menuState210_frame, gen_setup(g_gs_44f860, g_gi_44f860, g_gb_44f860);, (CALL_
 static const DWORD g_gs_452ec0[] = { 0x4515a0, 0, 0x452fe0, 0, 0x4547d0, 1, 0x454940, 1, 0x454a50, 1, 0x454b70, 1, 0x454c80, 1, 0 };
 static const DWORD g_gi_452ec0[] = { 0xa0b384, 0xa0b388, 0xa0b390, 0xa0b418, 0xa0b41c, 0xa0b420, 0xa0b424, 0xa0b428, 0 };
 static const DWORD g_gb_452ec0[] = { 0xa0d320, 0 };
-ST(arena_452ec0, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_452ec0((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
+ST(arena_openSession, gen_setup(g_gs_452ec0, g_gi_452ec0, g_gb_452ec0); /* the stored address 0xa0d320 is copied into a 16-byte buffer (an IP address fits) */ fill_str((char *)0xa0d320, 15, '0', '9');, CALL_PLAIN(0x452ec0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_openSession((DWORD)(g_a[0]), (const char *)(DWORD)(g_a[1]))))
 /* skirmish_445bc0: a jump stub (to skirmish_drawScreenA), its target stubbed */
 static const DWORD g_stubSkirmishA[] = { 0x444f40, 0, 0 };
 ST(skirmish_445bc0, callee_stubs(g_stubSkirmishA, 0);, (CALL_PLAIN(0x445bc0, 0, 0, 0, 0, 0), 0), (skirmish_445bc0(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
@@ -15357,7 +15357,7 @@ ST(room_joinSession, gen_setup(g_gs_434dd0, g_gi_434dd0, g_gb_434dd0);, CALL_PLA
 static const DWORD g_gs_406200[] = { 0x41ee40, 1, 0x452ec0, 1, 0x452fe0, 0, 0x453260, 0, 0 };
 static const DWORD g_gi_406200[] = { 0x4db708, 0x4db710, 0x4db8b4, 0x4dba84, 0x4dbb10, 0x4dbb78, 0x4dbbec, 0x4dbbf0, 0x4ded18, 0xa0bad0, 0 };
 static const DWORD g_gb_406200[] = { 0x4dbbd4, 0 };
-ST(arena_406200, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, CALL_PLAIN(0x406200, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_406200((DWORD)(g_a[0]))))
+ST(arena_joinListed, gen_setup(g_gs_406200, g_gi_406200, g_gb_406200);, CALL_PLAIN(0x406200, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_joinListed((DWORD)(g_a[0]))))
 static const DWORD g_gs_4052c0[] = { 0x405140, 0, 0x452ec0, 2, 0x452fe0, 0, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_4052c0[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4ded45, 0x4db55c, 0x4dbb3c, 0x4dbbf4, 0x4ded44, 0x4ded54, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_4052c0[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
@@ -15415,7 +15415,7 @@ ST(room_hostingStep, gen_setup(g_gs_4355b0, g_gi_4355b0, g_gb_4355b0);, CALL_PLA
 static const DWORD g_gs_405b80[] = { 0x41ee40, 1, 0x451e60, 0, 0x452ec0, 2, 0x453090, 8, 0x457310, 0, 0 };
 static const DWORD g_gi_405b80[] = { 0x4ded40, 0x4ded41, 0x4ded42, 0x4ded43, 0x4dba88, 0x4dbb3c, 0x4ded44, 0x4ded54, 0x4ded60, 0x4dedd0, 0x4df8e8, 0x67ef04, 0x67ef14, 0x76d368, 0x76d408, 0x907b2c, 0x9da3e0, 0x9dad94, 0 };
 static const DWORD g_gb_405b80[] = { 0x4ded20, 0x4dedb0, 0x67fb44, 0 };
-ST(arena_405b80, gen_setup(g_gs_405b80, g_gi_405b80, g_gb_405b80);, CALL_PLAIN(0x405b80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_405b80()))
+ST(arena_connectionOutcome, gen_setup(g_gs_405b80, g_gi_405b80, g_gb_405b80);, CALL_PLAIN(0x405b80, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_connectionOutcome()))
 /* batch 183: generated tests (tools/gentests.py, gen_setup from batch 172) */
 static const DWORD g_gs_407410[] = { 0x401590, 1, 0x403490, 0, 0x404520, 2, 0x404d70, 0, 0x404e10, 0, 0x404ed0, 0, 0x404f90, 0, 0x4052c0, 0, 0x4057a0, 0, 0x405cf0, 0, 0x4068d0, 1, 0x41e760, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_407410[] = { 0x4db549, 0x4db54a, 0x4db54b, 0x4db518, 0x4db850, 0x4dbab0, 0x4dbacc, 0x4dbb3c, 0x4ded54, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded8c, 0x67ef24, 0x6803a8, 0x90d1c4, 0x9dad8c, 0x9db0ac, 0 };
@@ -15520,27 +15520,27 @@ ST(menuState800_gameRoom, gen_setup(g_gs_43ef70, g_gi_43ef70, g_gb_43ef70);, CAL
 static const DWORD g_gs_40e5d0[] = { 0x45ddc0, 0, 0x460cb0, 2 | CS_POP | CS_THIS, 0x461250, 14 | CS_POP | CS_THIS, 0 };
 static const DWORD g_gi_40e5d0[] = { 0x4dbc68, 0x4dc54c, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dd074, 0x9087b4, 0x9f1818, 0 };
 static const DWORD g_gb_40e5d0[] = { 0x4dedb0, 0 };
-ST(armc_40e5d0, gen_setup(g_gs_40e5d0, g_gi_40e5d0, g_gb_40e5d0);, CALL_PLAIN(0x40e5d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_40e5d0(), 0))
+ST(armc_enterScreen, gen_setup(g_gs_40e5d0, g_gi_40e5d0, g_gb_40e5d0);, CALL_PLAIN(0x40e5d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_enterScreen(), 0))
 static const DWORD g_gs_41d600[] = { 0x41b750, 0, 0x41c510, 0, 0x41cf20, 0, 0x41d280, 0, 0x41ef20, 3, 0x41ef90, 1, 0x4613d0, 1 | CS_POP | CS_THIS, 0x461410, 1 | CS_POP | CS_THIS, 0x461450, 1 | CS_POP | CS_THIS, 0x461490, 1 | CS_POP | CS_THIS, 0x4614d0, 1 | CS_POP | CS_THIS, 0x461540, 1 | CS_POP | CS_THIS, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d600[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dc798, 0x4dca98, 0x4dcc58, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d600[] = { 0 };
-ST(armc_41d600, gen_setup(g_gs_41d600, g_gi_41d600, g_gb_41d600);, (CALL_PLAIN(0x41d600, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_41d600(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_updatePartsPreview, gen_setup(g_gs_41d600, g_gi_41d600, g_gb_41d600);, (CALL_PLAIN(0x41d600, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_updatePartsPreview(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_41d8a0[] = { 0x41ca50, 2, 0x41ef20, 3, 0x41ef90, 1, 0x461850, 7 | CS_POP | CS_THIS /* ret 7 */, 0 };
 static const DWORD g_gi_41d8a0[] = { 0x4b071c, 0x4e1870, 0x68038c, 0x4dbc04, 0x4dbc6c, 0x4dbc80, 0x4dbe48, 0x4dc798, 0x4dceac, 0x4e045c, 0x5b1998, 0x9087b4, 0xa0e7a8, 0xa0e7ac, 0xa0e7b0, 0 };
 static const DWORD g_gb_41d8a0[] = { 0 };
-ST(armc_41d8a0, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, (CALL_PLAIN(0x41d8a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_41d8a0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(armc_updateColourPreview, gen_setup(g_gs_41d8a0, g_gi_41d8a0, g_gb_41d8a0);, (CALL_PLAIN(0x41d8a0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (armc_updateColourPreview(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 static const DWORD g_gs_41dfe0[] = { 0x412450, 0, 0x419160, 0, 0x41d8a0, 0, 0 };
 static const DWORD g_gi_41dfe0[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41dfe0[] = { 0 };
-ST(armc_41dfe0, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, CALL_PLAIN(0x41dfe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41dfe0(), 0))
+ST(armc_drawColourPage, gen_setup(g_gs_41dfe0, g_gi_41dfe0, g_gb_41dfe0);, CALL_PLAIN(0x41dfe0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawColourPage(), 0))
 static const DWORD g_gs_41e010[] = { 0x412450, 0, 0x41a280, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41e010[] = { 0x4dbc68, 0x4dd078, 0 };
 static const DWORD g_gb_41e010[] = { 0 };
-ST(armc_41e010, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, CALL_PLAIN(0x41e010, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41e010(), 0))
+ST(armc_drawThirdPage, gen_setup(g_gs_41e010, g_gi_41e010, g_gb_41e010);, CALL_PLAIN(0x41e010, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawThirdPage(), 0))
 static const DWORD g_gs_41dfb0[] = { 0x40d990, 0, 0x412450, 0, 0x412650, 0, 0x41d600, 0, 0 };
 static const DWORD g_gi_41dfb0[] = { 0x4dbc68, 0x4dc24c, 0x4dd078, 0 };
 static const DWORD g_gb_41dfb0[] = { 0 };
-ST(armc_41dfb0, gen_setup(g_gs_41dfb0, g_gi_41dfb0, g_gb_41dfb0);, CALL_PLAIN(0x41dfb0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_41dfb0(), 0))
+ST(armc_drawPartsPage, gen_setup(g_gs_41dfb0, g_gi_41dfb0, g_gb_41dfb0);, CALL_PLAIN(0x41dfb0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (armc_drawPartsPage(), 0))
 static const DWORD g_gs_41e040[] = { 0x4029d0, 4, 0x40e5d0, 0, 0x410b50, 0, 0x411110, 0, 0x411ab0, 0, 0x41b300, 0, 0x41b400, 0, 0x41b710, 0, 0x41ca50, 2, 0x41dab0, 0, 0x41dcf0, 0, 0x41dfb0, 0, 0x41dfe0, 0, 0x41e010, 0, 0x41f0e0, 5, 0x427970, 5, 0x428c30, 4, 0x441740, 0, 0 };
 static const DWORD g_gi_41e040[] = { 0x4b071c, 0x4dcfd8, 0x4dbc68, 0x4dc24c, 0x4dc54c, 0x4dc790, 0x4dc798, 0x4dc868, 0x4dc86c, 0x4dcb18, 0x4dcb1c, 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcc90, 0x4dcc94, 0x4dcc98, 0x4dcc9c, 0x4dcf10, 0x90d1c4, 0 };
 static const DWORD g_gb_41e040[] = { 0x7572a4, 0x757324, 0x76d438, 0x9da480, 0 };
@@ -16381,7 +16381,7 @@ static void teambox_setup(void)
 }
 ST(hud_drawTeamScores, teambox_setup(); screen_random();, TC(DWORD, 0x496240, char *)(BUF), (hud_drawTeamScores(BUF), 0))
 /* batch 206 */
-/* the scene's frame timer (armc_461210 on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
+/* the scene's frame timer (frameTimer_average on the scene: the timer at +0xc, the ring +0x48, index +0x70, dt into +0x44) */
 static void scenetimer_setup(void)
 {
 	S32(BUF, 0x10) = irnd(0, 1); S32(BUF, 0x70) = irnd(0, 9);
@@ -16936,16 +16936,16 @@ static void appinit_setup(void)
 ST(app_init, appinit_setup();, CALL_PLAIN(0x43fcc0, 0, g_a[0], g_a[1], 0, 0), (DWORD)app_init((void *)g_a[0], g_a[1]))
 #define T(name, ret, nfull, nfast) { #name, su_##name, or_##name, nw_##name, ret, nfull, nfast }
 static const STest g_stests[] = {
-	T(arena_404520, 1, 4, 3000), T(save_cryptRecord, 0, 4, 500), T(profile_42b3c0, 1, 4, 500), T(data_42b390, 1, 4, 2000),
-	T(profile_4343b0, 1, 4, 3000), T(mapList_toggle, 0, 60, 0), T(armc_40f830, 1, 4, 3000), T(array_recordAt, 1, 4, 3000),
+	T(createArena_hitTest, 1, 4, 3000), T(save_cryptRecord, 0, 4, 500), T(profile_42b3c0, 1, 4, 500), T(data_42b390, 1, 4, 2000),
+	T(profile_4343b0, 1, 4, 3000), T(mapList_toggle, 0, 60, 0), T(armc_colourPartEquipped, 1, 4, 3000), T(array_recordAt, 1, 4, 3000),
 	T(net_findFreeSession, 1, 4, 2000), T(FUN_00463710, 1, 4, 3000), T(stage_selectActor, 0, 40, 0), T(playerRecord_markUsed, 0, 30, 0),
 	T(Skeleton_clear, 0, 4, 500), T(partList_clear, 0, 4, 500), T(load_480440, 0, 4, 500), T(armc_40d990, 0, 60, 0),
-	T(mech_unpackFromRecord, 0, 30, 0), T(armc_40e670, 0, 20, 0), T(armc_loadSavedMech, 0, 30, 0), T(armc_40ed20, 0, 60, 0),
-	T(armc_backupColours, 0, 20, 0), T(armc_41ced0, 0, 20, 0),
+	T(mech_unpackFromRecord, 0, 30, 0), T(armc_restoreMenuCamera, 0, 20, 0), T(armc_loadSavedMech, 0, 30, 0), T(armc_syncPartCursors, 0, 60, 0),
+	T(armc_backupColours, 0, 20, 0), T(armc_restoreColourUndo, 0, 20, 0),
 	T(armc_dragPrimaryHue, 0, 100, 0), T(armc_dragPrimaryChroma, 0, 60, 0), T(armc_dragPrimaryValue, 0, 60, 0),
 	T(armc_dragSecondaryHue, 0, 100, 0), T(armc_dragSecondaryChroma, 0, 60, 0), T(armc_dragSecondaryValue, 0, 60, 0),
 	T(app_430390, 0, 20, 0), T(menu_initKeyRepeat, 0, 20, 0), T(net_clearSlots, 0, 20, 0), T(menu_clearInputBuffer, 0, 20, 0),
-	T(chat_pushHistory, 0, 20, 0), T(arena_4065a0, 0, 4, 1000), T(cfg_defaultPlayerName, 0, 20, 0), T(lobby_404930, 0, 40, 0),
+	T(chat_pushHistory, 0, 20, 0), T(record_swap, 0, 4, 1000), T(cfg_defaultPlayerName, 0, 20, 0), T(lobby_404930, 0, 40, 0),
 	T(menu_showMessage, 0, 40, 0), T(room_loadSettingsRecord, 0, 60, 0),
 	/* batch 4 */
 	T(profile_445f10, 0, 4, 500), T(profile_445f40, 0, 4, 500), T(room_nameHasBadChar, 1, 4, 3000), T(profile_44b7e0, 1, 4, 3000),
@@ -16954,8 +16954,8 @@ static const STest g_stests[] = {
 	T(skirmish_cursorUp, 0, 40, 0), T(skirmish_cursorDown, 0, 40, 0), T(skirmish_clickRow, 0, 40, 0),
 	T(undo_push, 0, 40, 0), T(undo_pop, 0, 40, 0), T(menu_clickStartFade, 0, 30, 0), T(briefing_clickClose, 0, 30, 0),
 	T(mech_loadFromProfile, 0, 60, 0), T(mech_storeToProfile, 0, 20, 0), T(menu_restoreCamera, 0, 20, 0), T(profile_44b2e0, 1, 4, 3000),
-	T(net_claimPlayerSlot, 2, 40, 0), T(arena_4514a0, 0, 30, 0), T(arena_4515a0, 0, 20, 0), T(arena_4532b0, 1, 4, 3000),
-	T(arena_453a30, 1, 4, 3000), T(tex_4554c0, 1, 4, 3000), T(arena_4045e0, 0, 20, 0),
+	T(net_claimPlayerSlot, 2, 40, 0), T(net_takePlayerSlot, 0, 30, 0), T(net_freeAllSlots, 0, 20, 0), T(net_sessionValue, 1, 4, 3000),
+	T(net_connectionAvailable, 1, 4, 3000), T(tex_4554c0, 1, 4, 3000), T(arena_clearChatRecord, 0, 20, 0),
 	/* batch 5 */
 	T(tex_markMaterialChanged, 0, 4, 300), T(tex_recolourMaterial, 0, 4, 1000), T(hud_456b50, 0, 4, 300),
 	T(actor_deactivate, 0, 4, 600), T(camera_setTarget, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
@@ -16981,10 +16981,10 @@ static const STest g_stests[] = {
 	T(arena_404120, 0, 8, 0), T(room_431db0, 0, 8, 0), T(profile_44b080, 0, 8, 0), T(arena_404150, 0, 8, 0),
 	T(room_431aa0, 0, 8, 0), T(profile_44b0b0, 0, 8, 0), T(profile_44b100, 0, 8, 0), T(profile_44b150, 0, 8, 0),
 	T(profile_44b030, 0, 8, 0), T(room_431c00, 0, 8, 0), T(arena_403f30, 0, 8, 0), T(text_setColor, 0, 8, 0),
-	T(armc_410160, 0, 10, 0), T(profile_44b7a0, 0, 6, 0), T(profile_44b750, 0, 6, 0), T(profile_44bc00, 0, 6, 0),
-	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(arena_4065e0, 0, 30, 0),
+	T(armc_rightClickLeave, 0, 10, 0), T(profile_44b7a0, 0, 6, 0), T(profile_44b750, 0, 6, 0), T(profile_44bc00, 0, 6, 0),
+	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_46e9b0, 0, 30, 0), T(ptx_46e320, 0, 4, 0), T(ptx_46e7c0, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
-	T(arena_451410, 1, 40, 0), T(cfg_44ac70, 1, 4, 1000), T(FUN_00463740, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
+	T(net_claimLocalSlot, 1, 40, 0), T(cfg_44ac70, 1, 4, 1000), T(FUN_00463740, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushEvent, 0, 4, 1000), T(shape_466560, 0, 4, 300),
 	T(collision_4803c0, 0, 4, 2000), T(hud_467700, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
@@ -16992,35 +16992,35 @@ static const STest g_stests[] = {
 	T(setup_420480, 0, 8, 0), T(room_431b70, 0, 8, 0), T(arena_403f80, 0, 8, 0), T(room_431ae0, 0, 8, 0),
 	T(skirmish_4437b0, 0, 8, 0), T(room_431c50, 0, 8, 0), T(skirmish_443840, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_setSubState0, 0, 10, 0), T(room_openDialog58, 0, 6, 0), T(room_start, 0, 6, 0),
-	T(room_openDialog42, 0, 20, 0), T(arena_4509e0, 0, 4, 0), T(skirmish_clearPlayerRows, 0, 4, 0), T(arena_4068d0, 0, 200, 0),
+	T(room_openDialog42, 0, 20, 0), T(net_resetState, 0, 4, 0), T(skirmish_clearPlayerRows, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
 	T(room_4356f0, 0, 200, 0), T(net_451530, 2, 40, 0), T(ptx_46f230, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
 	T(menu_pointInPolygon, 1, 4, 3000), T(shape_466ce0, 1, 4, 2000), T(skelDat_46b0c0, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
 	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(skel_47d830, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
 	T(scene_setTextureFolder, 0, 4, 300), T(FUN_00473a10, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
 	T(shape_4675f0, 0, 4, 300), T(shape_4665c0, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
 	/* batch 9 */
-	T(armc_461370, 0, 4, 600), T(match_4613a0, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_internal_46f190, 0, 150, 0),
+	T(mech_setValue, 0, 4, 600), T(match_4613a0, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_internal_46f190, 0, 150, 0),
 	T(ptx_internal_46f2a0, 0, 150, 0), T(ptx_internal_46e830, 0, 4, 300), T(ptx_initTable_46efd0, 0, 4, 0), T(ptx_internal_46ea30, 0, 4, 600),
-	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_40dfa0, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
+	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPartBoxes, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
 	T(room_enterRoomList, 0, 4, 0), T(missionsel_447660, 0, 8, 0), T(profile_44b1a0, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
 	T(actor_clearTargetRefs, 0, 4, 1000), T(stage_resetPlayerRecords, 0, 4, 30), T(actor_nextWeapon, 0, 4, 1000), T(actor_prevWeapon, 0, 4, 1000),
 	T(shape_setTint, 0, 4, 300),
 	/* batch 10 */
 	T(room_431ce0, 0, 8, 0), T(arena_404010, 0, 8, 0), T(profile_44af30, 0, 8, 0), T(room_403300, 0, 4, 0),
-	T(lobby_setSubState1, 0, 4, 0), T(lobby_ladderGameName, 0, 20, 0), T(armc_40de80, 0, 4, 0), T(menu_initColours, 0, 4, 0),
+	T(lobby_setSubState1, 0, 4, 0), T(lobby_ladderGameName, 0, 20, 0), T(armc_initCameraBox, 0, 4, 0), T(menu_initColours, 0, 4, 0),
 	T(profile_44b870, 1, 40, 0), T(ptx_internal_46e8e0, 0, 4, 300), T(ptx_internal_46f0b0, 1, 150, 0), T(ResourceSet_init_463a40, 1, 4, 200),
 	T(shape_setTextureDir, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
 	T(scene_resetActors, 0, 4, 20),
 	/* batch 11 */
 	T(armc_40e1c0, 0, 8, 0), T(armc_40e300, 0, 8, 0), T(armc_40e060, 0, 8, 0), T(mainmenu_440a20, 0, 8, 0),
 	T(setup_420510, 0, 8, 0), T(setup_420300, 0, 8, 0), T(room_432040, 0, 8, 0), T(mapList_init, 0, 20, 0),
-	T(lobby_drawArenaTitle, 0, 40, 0), T(arena_42bc00, 0, 8, 0), T(armc_461320, 0, 4, 400), T(shape_colourPixels, 0, 4, 1000),
+	T(lobby_drawArenaTitle, 0, 40, 0), T(arena_initOptionTexts, 0, 8, 0), T(mech_setName, 0, 4, 400), T(shape_colourPixels, 0, 4, 1000),
 	T(match_resetInputState, 0, 4, 50), T(stage_newRound, 0, 4, 20),
 	/* batch 12 */
 	T(color_initDefaultColours, 0, 4, 0), T(intro_42f500, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(replay_46d4d0, 0, 4, 0),
 	T(intro_42f2b0, 0, 4, 0), T(intro_42f690, 0, 4, 0), T(input_setDefaultKeyBindings, 0, 4, 0),
 	/* batch 12 */
-	T(room_enterGameList, 0, 20, 0), T(lobby_setSubState2, 0, 20, 0), T(armc_433360, 0, 6, 0),
+	T(room_enterGameList, 0, 20, 0), T(lobby_setSubState2, 0, 20, 0), T(menuCamera_initPoints, 0, 6, 0),
 	/* batch 13 */
 	T(room_copyJoinedSettings, 0, 20, 0), T(room_434ff0, 0, 60, 0),
 	/* batch 14 */
@@ -17037,7 +17037,7 @@ static const STest g_stests[] = {
 	/* batch 18 */
 	T(arena_404190, 0, 8, 0), T(menuState600_enterSetup, 0, 8, 0), T(menuState800_enterGameRoom, 0, 20, 0),
 	/* batch 19 */
-	T(armc_41ca50, 0, 100, 0), T(armc_41cca0, 0, 100, 0), T(app_42f940, 0, 4, 0), T(hud_42fb40, 0, 4, 0),
+	T(armc_weaponSlotRecord, 0, 100, 0), T(armc_viewedPartRecord, 0, 100, 0), T(app_42f940, 0, 4, 0), T(hud_42fb40, 0, 4, 0),
 	/* batch 20 */
 	T(menuState400_enter, 0, 10, 0), T(room_takeReceivedSettings, 0, 30, 0), T(setup_drawKeyBindingRow, 0, 40, 0),
 	/* batch 21 */
@@ -17051,7 +17051,7 @@ static const STest g_stests[] = {
 	/* batch 25 */
 	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(viewVolume_addQuad, 0, 4, 3000),
 	/* batch 26 */
-	T(room_camera, 0, 250, 0), T(arena_408270, 0, 250, 0), T(skirmish_camera, 0, 250, 0), T(missionsel_camera, 0, 250, 0),
+	T(room_camera, 0, 250, 0), T(arena_camera, 0, 250, 0), T(skirmish_camera, 0, 250, 0), T(missionsel_camera, 0, 250, 0),
 	/* batch 27 */
 	T(bullet_drawTrail, 0, 4, 1500),
 	/* batch 28 */
@@ -17061,13 +17061,13 @@ static const STest g_stests[] = {
 	/* batch 30 */
 	T(skirmish_4017b0, 1, 4, 300), T(skirmish_4017c0, 1, 4, 300), T(set_680370_441250, 1, 4, 300), T(set_4b42dc_457140, 1, 4, 300),
 	T(match_4686e0, 1, 4, 300), T(static_initObject_4e1878, 0, 4, 0), T(static_initObject_5b1db8, 0, 4, 0), T(static_initObject_680cd8, 0, 4, 0),
-	T(static_initObject_76d498, 0, 4, 0), T(static_initObject_90d1e0, 0, 4, 0), T(static_initObject_83a9e0, 0, 4, 0), T(arena_4532a0, 1, 4, 300),
+	T(static_initObject_76d498, 0, 4, 0), T(static_initObject_90d1e0, 0, 4, 0), T(static_initObject_83a9e0, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
 	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(FUN_004686d0, 1, 4, 300), T(match_4686f0, 1, 4, 300),
 	T(FUN_00468700, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(load_47db50, 1, 4, 300), T(load_4804a0, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(load_483fc0, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(load_480430, 1, 4, 300), T(this_set_483d60, 1, 4, 300),
 	T(stage_clearMapItemCounts, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
-	T(armc_45dfe0, 1, 4, 300), T(this_get_0x2342381_463780, 1, 4, 300), T(match_45fff0, 1, 4, 300), T(match_48b440, 1, 4, 300),
+	T(stage_setValue202e8dc, 1, 4, 300), T(this_get_0x2342381_463780, 1, 4, 300), T(match_45fff0, 1, 4, 300), T(match_48b440, 1, 4, 300),
 	T(match_48b430, 0, 4, 0), T(hud_48b450, 0, 4, 0), T(nullsub_483ce0, 0, 4, 0), T(nullsub_46b860, 0, 4, 0),
 	T(nullsub_46b880, 0, 4, 0), T(nullsub_46b8a0, 0, 4, 0), T(nullsub_46b8c0, 0, 4, 0), T(nullsub_46b8e0, 0, 4, 0),
 	T(nullsub_46b900, 0, 4, 0), T(nullsub_46b920, 0, 4, 0), T(nullsub_46b940, 0, 4, 0), T(nullsub_487b70, 0, 4, 0),
@@ -17087,13 +17087,13 @@ static const STest g_stests[] = {
 	T(Model_ctor, 1, 4, 300), T(CollisionVolume_ctor, 1, 4, 300), T(Scene_ctor, 1, 4, 300), T(TimeSync_ctor, 1, 4, 300),
 	T(Light_dtor, 1, 4, 100), T(stage_resetLights, 1, 4, 300), T(ResourceSet_ctor_463850, 1, 4, 20), T(space_resetPlanes, 1, 4, 1000),
 	T(space_resetNodes, 1, 4, 1000), T(space_resetBlocks, 1, 4, 1000), T(script_reset, 1, 4, 300), T(script_notifyObject, 1, 4, 1000),
-	T(lobbyTop_draw, 1, 40, 0), T(room_43e720, 1, 40, 0), T(arena_406810, 0, 40, 0),
+	T(lobbyTop_draw, 1, 40, 0), T(room_43e720, 1, 40, 0), T(arenaList_rebuild, 0, 40, 0),
 	/* batch 32 */
 	T(TextureManager_dtor, 1, 4, 300), T(load_487430_wrap_468720, 1, 4, 0), T(script_runScpFile, 1, 4, 2000), T(collisionTri_setup, 1, 4, 5000),
 	/* batch 33 */
 	T(TextureManager_dtor_wrap_42b380, 0, 4, 0), T(armc_41c510, 1, 60, 0),
 	/* batch 34 */
-	T(armc_41b750, 1, 60, 0),
+	T(armc_drawPartPanels, 1, 60, 0),
 	/* batch 35 */
 	T(space_itemMeetsBox, 1, 4, 20000),
 	/* batch 36 */
@@ -17104,7 +17104,7 @@ static const STest g_stests[] = {
 	T(space_collideUnit, 1, 10, 20000),
 	/* batch 39 */
 	T(vsprintf_wrap_473450, 1, 4, 2000), T(vsprintf_wrap_463450, 1, 4, 2000), T(msg_4629f0, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
-	T(tex_46de20, 1, 4, 3000), T(arena_4542a0, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
+	T(tex_46de20, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
 	/* batch 40 */
 	T(space_walkNodes_482aa0, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
 	/* batch 41 */
@@ -17123,8 +17123,8 @@ static const STest g_stests[] = {
 	T(static_registerDtor_483d20, 1, 2, 0), T(static_registerDtor_483f80, 1, 2, 0), T(static_registerDtor_487400, 1, 2, 0), T(static_registerDtor_48b3e0, 1, 2, 0),
 	T(TextureManager_deletingDtor, 1, 4, 300), T(Light_deletingDtor, 1, 4, 300), T(Scene_deletingDtor, 1, 4, 300), T(ErrorLog_deletingDtor, 1, 4, 300),
 	T(TimeSync_deletingDtor, 1, 4, 300), T(Model_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
-	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(arena_4519b0, 1, 300, 0),
-	T(arena_454130, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
+	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(arena_freeBuffers, 1, 300, 0),
+	T(net_freeSessionList, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
 	/* batch 44 */
 	T(static_startTexture_4e1878, 1, 2, 0), T(static_startTexture_5b1db8, 1, 2, 0), T(static_startTexture_680cd8, 1, 2, 0), T(static_startTexture_76d498, 1, 2, 0),
 	T(static_startTexture_90d1e0, 1, 2, 0), T(static_startTexture_83a9e0, 1, 2, 0), T(static_startTextureManager, 1, 2, 0), T(static_startTextureRtti, 1, 2, 0),
@@ -17150,7 +17150,7 @@ static const STest g_stests[] = {
 	T(sound_freeAll, 1, 40, 0), T(load_48b460, 1, 4, 1000), T(load_483d70, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
 	T(ResourceSet_dtor_463960, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
 	/* batch 47 */
-	T(GetCurrentDirectoryA_wrap_43f580, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(arena_4539f0, 1, 40, 0), T(net_wakePingThread, 1, 40, 0),
+	T(GetCurrentDirectoryA_wrap_43f580, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(dplay_createLobby, 1, 40, 0), T(net_wakePingThread, 1, 40, 0),
 	T(sys_messageBoxOverActive, 1, 40, 0), T(profile_41e7a0, 1, 40, 0), T(menu_vertex, 1, 400, 0), T(mci_pause, 1, 40, 0),
 	T(editField_readTyping, 1, 40, 0), T(sys_messageBox, 1, 40, 0), T(ptx_error, 1, 40, 0), T(ptx_crtlError, 1, 40, 0),
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
@@ -17173,18 +17173,18 @@ static const STest g_stests[] = {
 	T(app_checkFile_profkor, 1, 40, 0), T(app_checkFile_skirmish, 1, 40, 0), T(app_checkFile_axisgame, 1, 40, 0), T(app_checkFile_game, 1, 40, 0),
 	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(skel_ase_47d2f0, 0, 300, 0), T(skel_ase_47d320, 0, 300, 0),
 	T(input_setCursorPos, 1, 40, 0), T(input_asyncKeyDown, 1, 40, 0), T(input_getCursorPos, 1, 40, 0), T(net_ping, 1, 40, 0),
-	T(net_pingServer, 1, 40, 0), T(net_pingAllServers, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_41b300, 1, 40, 0),
+	T(net_pingServer, 1, 40, 0), T(net_pingAllServers, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_easeCamera, 1, 40, 0),
 	T(app_43f640, 1, 40, 0), T(stage_drawObject, 0, 300, 0), T(stage_drawObjects, 0, 300, 0), T(game_setGameTypeFlags, 0, 400, 0),
 	T(cfg_parseGraphic, 1, 40, 0), T(cfg_parseServer, 1, 40, 0), T(cfg_42e080, 1, 40, 0), T(armc_saveSelection, 1, 40, 0),
-	T(actor_startingValues, 0, 400, 0), T(roomList_fillPage, 1, 200, 0), T(armc_40f340, 1, 40, 0),
+	T(actor_startingValues, 0, 400, 0), T(roomList_fillPage, 1, 200, 0), T(armc_stepPart, 1, 40, 0),
 	/* batch 52 */
 	T(cd_findDrive, 1, 40, 0), T(cfg_loadAxisCfg, 1, 40, 0), T(arena_saveSettings, 1, 40, 0), T(lobby_keepArenaSettings, 1, 40, 0),
-	T(profile_44f6c0, 1, 40, 0), T(armc_41dcf0, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
+	T(profile_44f6c0, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
 	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 3000, 0),
 	/* batch 53 */
 	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
-	T(cfg_writeDefaultAxisCfg, 1, 200, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_41cf20, 1, 300, 0), T(armc_41d280, 1, 300, 0),
+	T(cfg_writeDefaultAxisCfg, 1, 200, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_applyColourSlot, 1, 300, 0), T(armc_retintParts, 1, 300, 0),
 	/* batch 55 */
 	T(actor_setPartColor, 0, 400, 0), T(actor_applyRemoteColours, 0, 300, 0),
 	/* batch 56 */
@@ -17210,10 +17210,10 @@ static const STest g_stests[] = {
 	T(room_host, 0, 40, 0), T(room_leaveGame, 0, 40, 0), T(room_keepText, 0, 40, 0), T(profile_checkAndSendRecord, 0, 400, 0),
 	T(armc_sendSelectionToNet, 0, 200, 0), T(net_disconnect, 0, 40, 0), T(net_closeAll, 0, 200, 0),
 	/* batch 59 */
-	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_drawWhiteFade, 0, 40, 0), T(menu_drawTextCursor, 0, 40, 0),
+	T(armc_setup3DView, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_drawWhiteFade, 0, 40, 0), T(menu_drawTextCursor, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
-	T(timer_getGameTime, 1, 1000, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
+	T(timer_getGameTime, 1, 1000, 0), T(frameTimer_average, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_keepSettings, 0, 40, 0), T(room_networkEvents, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 400, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */
@@ -17285,7 +17285,7 @@ static const STest g_stests[] = {
 	T(actor_setActorTypeBoosterInfoBy, 1, 300, 0), T(actor_setActorTypeItemInfoBy, 0, 300, 0),
 	/* batch 91 */
 	T(armc_setHeadIndex, 0, 300, 0), T(armc_setChestIndex, 0, 300, 0), T(armc_setArmIndex, 0, 300, 0), T(armc_setLegIndex, 0, 300, 0),
-	T(armc_setBoosterIndex, 0, 300, 0), T(armc_461510, 0, 300, 0), T(partList_bindTextures, 0, 300, 0), T(playerRecord_set, 0, 300, 0),
+	T(armc_setBoosterIndex, 0, 300, 0), T(mech_setItem, 0, 300, 0), T(partList_bindTextures, 0, 300, 0), T(playerRecord_set, 0, 300, 0),
 	T(playerRecord_setFromActorRecord, 0, 300, 0),
 	/* batch 92 */
 	T(menu_drawTexturedRect_427a90, 0, 300, 0), T(menu_drawTexturedRect_427b60, 0, 300, 0), T(menu_drawTexturedRect_428a00, 0, 300, 0), T(menu_drawTexturedRect_428b50, 0, 300, 0),
@@ -17298,14 +17298,14 @@ static const STest g_stests[] = {
 	/* batch 96 */
 	T(pen_init, 1, 300, 0),
 	/* batch 97 */
-	T(armc_41b400, 0, 300, 0),
+	T(armc_drawPanels, 0, 300, 0),
 	/* batch 98 */
 	T(net_startThread, 1, 300, 0), T(net_receiveLobbyReply, 0, 300, 0), T(net_receiveGameServerReply, 0, 300, 0), T(net_connect, 1, 300, 0),
 	T(lobby_openConnection, 1, 300, 0),
 	/* batch 99 */
 	T(net_recv, 0, 1500, 0),
 	/* batch 100 */
-	T(armc_461250, 0, 300, 0), T(lobby_checkReservedName3, 0, 300, 0), T(lobby_checkReservedName2, 0, 300, 0),
+	T(mech_setAll, 0, 300, 0), T(lobby_checkReservedName3, 0, 300, 0), T(lobby_checkReservedName2, 0, 300, 0),
 	/* batch 101 */
 	T(actor_updateAllParts, 0, 300, 0),
 	/* batch 102 */
@@ -17323,7 +17323,7 @@ static const STest g_stests[] = {
 	/* batch 108 */
 	T(render_drawObjects, 0, 1000, 0),
 	/* batch 109 */
-	T(stage_drawActors, 0, 300, 0), T(stage_setupActorSlot, 1, 300, 0), T(stage_claimPlayerActor, 0, 300, 0), T(armc_45ddc0, 0, 300, 0),
+	T(stage_drawActors, 0, 300, 0), T(stage_setupActorSlot, 1, 300, 0), T(stage_claimPlayerActor, 0, 300, 0), T(stage_remakePlayerActor, 0, 300, 0),
 	T(actor_applySpawnRecord, 0, 300, 0),
 	/* batch 110 */
 	T(projectile_draw, 0, 300, 0), T(stage_drawProjectiles, 0, 300, 0),
@@ -17338,19 +17338,19 @@ static const STest g_stests[] = {
 	/* batch 115 */
 	T(item_initTextures, 0, 100, 0),
 	/* batch 116 */
-	T(armc_4125c0, 0, 300, 0), T(armc_drawStatLabel, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
+	T(armc_drawText, 0, 300, 0), T(armc_drawStatLabel, 0, 300, 0), T(menu_drawMessageBox, 0, 200, 0), T(menu_drawInputLine, 0, 300, 0),
 	T(profile_44ce90, 0, 200, 0), T(mapSelect_drawNames, 0, 200, 0),
 	/* batch 117 */
-	T(armc_412450, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_44dc60, 0, 200, 0), T(arena_drawCustomOption, 0, 200, 0),
+	T(armc_drawModeTabs, 0, 200, 0), T(briefing_typeOut, 0, 300, 0), T(profile_44dc60, 0, 200, 0), T(arena_drawCustomOption, 0, 200, 0),
 	T(room_drawCustomOption, 0, 200, 0),
 	/* batch 118 */
-	T(profile_44e180, 0, 200, 0), T(profile_44e3e0, 0, 200, 0), T(profile_44de00, 0, 200, 0), T(armc_41dab0, 0, 300, 0),
+	T(profile_44e180, 0, 200, 0), T(profile_44e3e0, 0, 200, 0), T(profile_44de00, 0, 200, 0), T(armc_drawWeightLine, 0, 300, 0),
 	/* batch 119 */
-	T(frontEnd_drawProgress, 0, 200, 0), T(loginDialog_draw, 0, 200, 0), T(arena_409bc0, 0, 200, 0),
+	T(frontEnd_drawProgress, 0, 200, 0), T(loginDialog_draw, 0, 200, 0), T(arena_drawNameDialog, 0, 200, 0),
 	/* batch 120 */
 	T(serverDialog_draw, 0, 200, 0), T(skirmish_drawScreenB, 0, 200, 0), T(skirmish_drawScreenA, 0, 200, 0),
 	/* batch 121 */
-	T(arena_4038e0, 0, 200, 0), T(mapSelect_drawDialog, 0, 200, 0),
+	T(mapList_draw, 0, 200, 0), T(mapSelect_drawDialog, 0, 200, 0),
 	/* batch 122 */
 	T(roomLogin_draw, 0, 200, 0), T(profile_44cf70, 0, 200, 0),
 	/* batch 123 */
@@ -17361,7 +17361,7 @@ static const STest g_stests[] = {
 	T(missionsel_448140, 0, 200, 0), T(mainmenu_drawScreen, 0, 300, 0),
 	/* batch 126 */
 	T(armc_411110, 0, 150, 0), T(skirmish_4445a0, 0, 150, 0), T(armc_411ab0, 0, 150, 0), T(room_4388e0, 0, 150, 0),
-	T(arena_4091b0, 0, 150, 0),
+	T(arena_drawTunnel, 0, 150, 0),
 	/* batch 127 */
 	T(account_drawPanel, 0, 300, 0),
 	/* batch 128 */
@@ -17386,11 +17386,11 @@ static const STest g_stests[] = {
 	/* batch 137 */
 	T(room_drawGameSettings, 0, 800, 0),
 	/* batch 138 */
-	T(armc_41a280, 0, 300, 0),
+	T(armc_drawColourEditor, 0, 300, 0),
 	/* batch 139 */
-	T(armc_419160, 0, 300, 0),
+	T(armc_drawBuildScreen, 0, 300, 0),
 	/* batch 140 */
-	T(arena_40a070, 0, 300, 0),
+	T(arena_drawGameList, 0, 300, 0),
 	/* batch 141 */
 	T(arena_createDraw, 0, 1000, 0),
 	/* batch 142 */
@@ -17400,7 +17400,7 @@ static const STest g_stests[] = {
 	/* batch 144 */
 	T(armc_drawStatsPanel, 0, 4000, 0),
 	/* batch 145 */
-	T(armc_461540, 0, 300, 0),
+	T(armc_giveShownActorWeapon, 0, 300, 0),
 	/* batch 146 */
 	T(armc_buildPartLists, 0, 300, 0),
 	/* batch 147 */
@@ -17422,9 +17422,9 @@ static const STest g_stests[] = {
 	/* batch 155 */
 	T(hud_drawEscMenu, 0, 300, 0),
 	/* batch 156 */
-	T(dplay_release, 0, 300, 0), T(dplay_enumSessions, 0, 300, 0), T(arena_4549a0, 0, 200, 0), T(arena_4549c0, 0, 200, 0),
-	T(arena_454ac0, 0, 200, 0), T(arena_454ae0, 0, 200, 0), T(arena_454bd0, 0, 200, 0), T(arena_454bf0, 0, 200, 0),
-	T(arena_454ce0, 0, 200, 0), T(arena_454d00, 0, 200, 0), T(arena_453260, 0, 300, 0),
+	T(dplay_release, 0, 300, 0), T(dplay_enumSessions, 0, 300, 0), T(dplaySlot0_close, 0, 200, 0), T(dplaySlot0_enum, 0, 200, 0),
+	T(dplaySlot1_close, 0, 200, 0), T(dplaySlot1_enum, 0, 200, 0), T(dplaySlot2_close, 0, 200, 0), T(dplaySlot2_enum, 0, 200, 0),
+	T(dplaySlot3_close, 0, 200, 0), T(dplaySlot3_enum, 0, 200, 0), T(dplay_listSessions, 0, 300, 0),
 	/* batch 157 */
 	T(dplay_getPlayerName, 0, 300, 0), T(dplay_create, 0, 400, 0), T(dplay_hostSession, 0, 300, 0), T(dplay_joinSession, 0, 300, 0),
 	/* batch 158 */
@@ -17454,33 +17454,33 @@ static const STest g_stests[] = {
 	/* batch 166 */
 	T(profile_44be00, 0, 400, 0), T(profile_44c190, 0, 400, 0), T(profile_processInput, 0, 500, 0),
 	/* batch 167 */
-	T(arena_450bc0, 0, 300, 0), T(dplay_send, 0, 300, 0), T(net_sendMessage, 0, 300, 0), T(net_logMessage, 0, 300, 0),
-	T(arena_451090, 0, 400, 0), T(net_sendLocalInfo, 0, 400, 0), T(arena_450a60, 0, 400, 0), T(FUN_00450bb0, 0, 100, 0),
+	T(dplay_receive, 0, 300, 0), T(dplay_send, 0, 300, 0), T(net_sendMessage, 0, 300, 0), T(net_logMessage, 0, 300, 0),
+	T(net_handleMessage, 0, 400, 0), T(net_sendLocalInfo, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(FUN_00450bb0, 0, 100, 0),
 	/* batch 168 */
 	T(missionsel_drawSettingsScreen, 0, 300, 0), T(missionsel_44aa20, 0, 50, 0),
 	/* batch 169 */
-	T(armc_40f950, 0, 300, 0), T(armc_40f870, 0, 300, 0), T(armc_40f9e0, 0, 300, 0), T(armc_drawPartScreen, 0, 300, 0),
+	T(armc_showCursorItem, 0, 300, 0), T(armc_pickSlot, 0, 300, 0), T(armc_takeCursorItem, 0, 300, 0), T(armc_drawPartScreen, 0, 300, 0),
 	T(armc_exit, 0, 300, 0),
 	/* batch 170 */
-	T(armc_40fb20, 0, 300, 0), T(armc_4101e0, 0, 400, 0), T(armc_410500, 0, 400, 0), T(armc_410810, 0, 400, 0),
+	T(armc_mainPageClicks, 0, 300, 0), T(armc_partsPageKeys, 0, 400, 0), T(armc_weaponsPageKeys, 0, 400, 0), T(armc_colourPageKeys, 0, 400, 0),
 	T(armc_onStateEnter, 0, 200, 0), T(armc_processInput, 0, 400, 0),
 	/* batch 171 */
-	T(arena_453770, 0, 200, 0), T(wnd_4014c0, 0, 200, 0), T(arena_4549e0, 0, 200, 0), T(arena_454b00, 0, 200, 0),
-	T(arena_454a20, 0, 200, 0), T(arena_454b40, 0, 200, 0), T(mapList_chooseNone, 0, 200, 0), T(mapList_chooseAll, 0, 200, 0),
+	T(dplay_check, 0, 200, 0), T(wnd_4014c0, 0, 200, 0), T(dplaySlot0_host, 0, 200, 0), T(dplaySlot1_host, 0, 200, 0),
+	T(dplaySlot0_join, 0, 200, 0), T(dplaySlot1_join, 0, 200, 0), T(mapList_chooseNone, 0, 200, 0), T(mapList_chooseAll, 0, 200, 0),
 	T(lobbyJoin_keys, 0, 200, 0), T(menu_436940, 0, 200, 0), T(lobby_keysBack, 0, 200, 0), T(room_leaveKeys, 0, 200, 0),
 	T(chat_textField, 0, 200, 0), T(chat_keepLastLine, 0, 200, 0), T(mapSelect_ok, 0, 200, 0), T(popup_clicks, 0, 200, 0),
 	/* batch 172 */
 	T(arena_editTextField_404f90, 0, 200, 0), T(field_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(chat_closeLine, 0, 200, 0),
 	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(lobby_editTextField_405230, 0, 200, 0),
-	T(menu_keyStartFade, 0, 200, 0), T(arena_452fe0, 0, 200, 0), T(arena_editTextField_404cd0, 0, 200, 0), T(arena_editTextField_404d70, 0, 200, 0),
+	T(menu_keyStartFade, 0, 200, 0), T(arena_leaveSession, 0, 200, 0), T(arena_editTextField_404cd0, 0, 200, 0), T(arena_editTextField_404d70, 0, 200, 0),
 	T(field_editComment, 0, 200, 0), T(sound_loadMenuSounds, 0, 200, 0), T(room_readyKeys, 0, 200, 0), T(mapList_stepGameType, 0, 200, 0),
 	T(field_editGameName, 0, 200, 0), T(arena_editNumberField_404ed0, 0, 200, 0), T(setup_soundTabKeys, 0, 200, 0), T(arena_editNumberField_404e10, 0, 200, 0),
 	T(room_434260, 0, 200, 0), T(sound_playFile, 0, 200, 0), T(room_434020, 0, 200, 0), T(room_4340e0, 0, 200, 0),
 	T(room_4341a0, 0, 200, 0), T(field_editGamePassword, 0, 200, 0), T(roomList_passwordKeys, 0, 200, 0),
 	/* batch 173 */
 	T(msg_connectionLost, 0, 200, 0), T(msg_networkUnstable, 0, 200, 0), T(msg_serverEndsGame, 0, 200, 0), T(msg_userEndsGame, 0, 200, 0),
-	T(msg_dataLoss, 0, 200, 0), T(msg_fragLimitReached, 0, 200, 0), T(msg_timeLimitReached, 0, 200, 0), T(arena_454c50, 0, 200, 0),
-	T(arena_454d60, 0, 200, 0), T(dplay_coInit, 0, 200, 0), T(lobby_close, 0, 200, 0), T(room_mapListKeys, 0, 200, 0),
+	T(msg_dataLoss, 0, 200, 0), T(msg_fragLimitReached, 0, 200, 0), T(msg_timeLimitReached, 0, 200, 0), T(dplaySlot2_join, 0, 200, 0),
+	T(dplaySlot3_join, 0, 200, 0), T(dplay_coInit, 0, 200, 0), T(lobby_close, 0, 200, 0), T(room_mapListKeys, 0, 200, 0),
 	T(room_stopArenaSetup, 0, 200, 0), T(room_openClicks, 0, 200, 0), T(chat_closeEdit, 0, 200, 0), T(lobby_keysQuit, 0, 200, 0),
 	T(setup_topPageKeys, 0, 200, 0), T(setup_graphicTabKeys, 0, 200, 0), T(lobbyTop_keys, 0, 200, 0), T(setup_drawTopPage, 0, 200, 0),
 	T(lobby_topPageClicks, 0, 200, 0), T(lobby_pageClicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(room_433d30, 0, 200, 0),
@@ -17491,16 +17491,16 @@ static const STest g_stests[] = {
 	T(menuState500_enter, 0, 200, 0), T(msg_playerConnected, 0, 200, 0), T(msg_chatLine, 0, 300, 0), T(music_playMatch, 0, 300, 0),
 	T(dplay_closeSession, 0, 100, 0),
 	/* batch 175 */
-	T(menu_returnToMain, 0, 200, 0), T(menu_returnToMainFromRoom, 0, 200, 0), T(arena_453180, 0, 200, 0), T(menu_enterState, 0, 200, 0),
-	T(room_leftClicks, 0, 200, 0), T(account_checkForm, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_40fd30, 0, 200, 0),
+	T(menu_returnToMain, 0, 200, 0), T(menu_returnToMainFromRoom, 0, 200, 0), T(dplay_join, 0, 200, 0), T(menu_enterState, 0, 200, 0),
+	T(room_leftClicks, 0, 200, 0), T(account_checkForm, 0, 200, 0), T(ranking_clicks, 0, 200, 0), T(armc_partScreenClicks, 0, 200, 0),
 	T(armc_colourScreenInput, 0, 200, 0), T(room_settingsClicks, 0, 200, 0), T(room_settingsAfterTyping, 0, 200, 0), T(mapSelect_keys, 0, 200, 0),
 	T(setup_drawGraphicTab, 0, 200, 0), T(account_page, 0, 200, 0), T(setup_drawSoundTab, 0, 200, 0), T(setup_controlTabKeys, 0, 200, 0),
 	T(setup_drawControlTab, 0, 200, 0), T(createDialog_draw, 0, 1000, 0), T(menu_enterMenus, 0, 200, 0), T(room_gameListKeys, 0, 1000, 0),
 	T(gameList_mouse, 0, 1000, 0), T(createDialog_keys, 0, 1000, 0),
 	/* batch 176 */
-	T(lobby_playerScreenClicks, 0, 200, 0), T(room_keys, 0, 200, 0), T(arena_405690, 0, 200, 0), T(room_pageClicks, 0, 200, 0),
+	T(lobby_playerScreenClicks, 0, 200, 0), T(room_keys, 0, 200, 0), T(arena_joinSession, 0, 200, 0), T(room_pageClicks, 0, 200, 0),
 	T(loginForm_openField, 0, 200, 0), T(mainmenu_startNetGame, 0, 200, 0), T(mainmenu_processKeys, 0, 200, 0), T(loginDialog_keys, 0, 200, 0),
-	T(armc_enter, 0, 200, 0), T(match_debugHandler, 0, 200, 0), T(arena_454c10, 0, 200, 0), T(arena_454d20, 0, 200, 0),
+	T(armc_enter, 0, 200, 0), T(match_debugHandler, 0, 200, 0), T(dplaySlot2_host, 0, 200, 0), T(dplaySlot3_host, 0, 200, 0),
 	/* batch 177 */
 	T(app_onClose, 0, 200, 0), T(app_shutdown, 0, 200, 0), T(menuState100_intro, 0, 200, 0), T(chat_editSubclass, 0, 400, 0),
 	T(sound_play3D, 0, 400, 0),
@@ -17509,14 +17509,14 @@ static const STest g_stests[] = {
 	/* batch 179 */
 	T(msg_newKing, 0, 1000, 0), T(bullet_playImpactSound, 0, 400, 0),
 	/* batch 180 */
-	T(menu_drawBackground, 0, 200, 0), T(arena_454940, 0, 200, 0), T(arena_454a50, 0, 200, 0), T(arena_454b70, 0, 200, 0),
-	T(arena_454c80, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(arena_453090, 0, 200, 0),
+	T(menu_drawBackground, 0, 200, 0), T(dplaySlot0_open, 0, 200, 0), T(dplaySlot1_open, 0, 200, 0), T(dplaySlot2_open, 0, 200, 0),
+	T(dplaySlot3_open, 0, 200, 0), T(settingsDialog_clicks, 0, 200, 0), T(scene_resetScores, 0, 200, 0), T(dplay_host, 0, 200, 0),
 	/* batch 181 */
 	T(menuState300_frame, 0, 200, 0), T(menuState600_setup, 0, 200, 0), T(menuState900_skirmishSetup, 0, 200, 0), T(menuState210_frame, 0, 200, 0),
-	T(arena_452ec0, 0, 200, 0), T(skirmish_445bc0, 0, 50, 0),
+	T(arena_openSession, 0, 200, 0), T(skirmish_445bc0, 0, 50, 0),
 	/* batch 182 */
-	T(room_joinSession, 0, 200, 0), T(arena_406200, 0, 200, 0), T(lobby_roomNameCheck, 0, 200, 0), T(lobby_checkReservedName, 0, 200, 0),
-	T(lobby_connect, 0, 2000, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_hostingStep, 0, 200, 0), T(arena_405b80, 0, 200, 0),
+	T(room_joinSession, 0, 200, 0), T(arena_joinListed, 0, 200, 0), T(lobby_roomNameCheck, 0, 200, 0), T(lobby_checkReservedName, 0, 200, 0),
+	T(lobby_connect, 0, 2000, 0), T(lobbyJoin_keysChat, 0, 1000, 0), T(room_hostingStep, 0, 200, 0), T(arena_connectionOutcome, 0, 200, 0),
 	/* batch 183 */
 	T(arena_createClick, 0, 200, 0), T(lobbyTop_connect, 0, 200, 0), T(arena_loadAndQuit, 0, 200, 0), T(gameList_drawPage, 0, 200, 0),
 	T(lobbyJoin_draw, 0, 600, 0),
@@ -17524,8 +17524,8 @@ static const STest g_stests[] = {
 	T(lobby_onStateChange, 0, 200, 0), T(menuState400_frame, 0, 200, 0), T(menu_onStateChange, 0, 200, 0), T(loginForm_update, 0, 200, 0),
 	T(arena_launchFromFile, 0, 2000, 0), T(menuState800_gameRoom, 0, 200, 0),
 	/* batch 185 */
-	T(armc_40e5d0, 0, 200, 0), T(armc_41d600, 0, 1000, 0), T(armc_41d8a0, 0, 1000, 0), T(armc_41dfe0, 0, 200, 0),
-	T(armc_41e010, 0, 200, 0), T(armc_41dfb0, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
+	T(armc_enterScreen, 0, 200, 0), T(armc_updatePartsPreview, 0, 1000, 0), T(armc_updateColourPreview, 0, 1000, 0), T(armc_drawColourPage, 0, 200, 0),
+	T(armc_drawThirdPage, 0, 200, 0), T(armc_drawPartsPage, 0, 200, 0), T(menuState700_armCenter, 0, 200, 0),
 	/* batch 186 */
 	T(game_processGameModeInit, 0, 1500, 0), T(match_escMenu, 0, 1000, 0), T(wnd_setCursor, 0, 200, 0), T(scene_loadPath, 0, 200, 0),
 	/* batch 187 */
@@ -17778,23 +17778,23 @@ static void hook(DWORD addr, void *fn, const char *name)
 
 /* batch 3 (state harness) hooks */
 static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
-	{ 0x404520, (void *)arena_404520, "arena_404520" }, { 0x445ee0, (void *)save_cryptRecord, "save_cryptRecord" },
+	{ 0x404520, (void *)createArena_hitTest, "createArena_hitTest" }, { 0x445ee0, (void *)save_cryptRecord, "save_cryptRecord" },
 	{ 0x42b3c0, (void *)profile_42b3c0, "profile_42b3c0" }, { 0x42b390, (void *)data_42b390, "data_42b390" },
 	{ 0x4343b0, (void *)profile_4343b0, "profile_4343b0" }, { 0x403560, (void *)mapList_toggle, "mapList_toggle" },
-	{ 0x40f830, (void *)armc_40f830, "armc_40f830" }, { 0x46cbc0, (void *)array_recordAt, "array_recordAt" },
+	{ 0x40f830, (void *)armc_colourPartEquipped, "armc_colourPartEquipped" }, { 0x46cbc0, (void *)array_recordAt, "array_recordAt" },
 	{ 0x454110, (void *)net_findFreeSession, "net_findFreeSession" }, { 0x463710, (void *)FUN_00463710, "FUN_00463710" },
 	{ 0x45dfb0, (void *)stage_selectActor, "stage_selectActor" }, { 0x474390, (void *)playerRecord_markUsed, "playerRecord_markUsed" },
 	{ 0x469980, (void *)Skeleton_clear, "Skeleton_clear" }, { 0x46f480, (void *)partList_clear, "partList_clear" },
 	{ 0x480440, (void *)load_480440, "load_480440" }, { 0x40d990, (void *)armc_40d990, "armc_40d990" },
-	{ 0x40ddb0, (void *)mech_unpackFromRecord, "mech_unpackFromRecord" }, { 0x40e670, (void *)armc_40e670, "armc_40e670" },
-	{ 0x40e6c0, (void *)armc_loadSavedMech, "armc_loadSavedMech" }, { 0x40ed20, (void *)armc_40ed20, "armc_40ed20" },
-	{ 0x40f590, (void *)armc_backupColours, "armc_backupColours" }, { 0x41ced0, (void *)armc_41ced0, "armc_41ced0" },
+	{ 0x40ddb0, (void *)mech_unpackFromRecord, "mech_unpackFromRecord" }, { 0x40e670, (void *)armc_restoreMenuCamera, "armc_restoreMenuCamera" },
+	{ 0x40e6c0, (void *)armc_loadSavedMech, "armc_loadSavedMech" }, { 0x40ed20, (void *)armc_syncPartCursors, "armc_syncPartCursors" },
+	{ 0x40f590, (void *)armc_backupColours, "armc_backupColours" }, { 0x41ced0, (void *)armc_restoreColourUndo, "armc_restoreColourUndo" },
 	{ 0x40f5d0, (void *)armc_dragPrimaryHue, "armc_dragPrimaryHue" }, { 0x40f670, (void *)armc_dragPrimaryChroma, "armc_dragPrimaryChroma" },
 	{ 0x40f6b0, (void *)armc_dragPrimaryValue, "armc_dragPrimaryValue" }, { 0x40f6f0, (void *)armc_dragSecondaryHue, "armc_dragSecondaryHue" },
 	{ 0x40f790, (void *)armc_dragSecondaryChroma, "armc_dragSecondaryChroma" }, { 0x40f7e0, (void *)armc_dragSecondaryValue, "armc_dragSecondaryValue" },
 	{ 0x430390, (void *)app_430390, "app_430390" }, { 0x42f8e0, (void *)menu_initKeyRepeat, "menu_initKeyRepeat" },
 	{ 0x430bd0, (void *)net_clearSlots, "net_clearSlots" }, { 0x431560, (void *)menu_clearInputBuffer, "menu_clearInputBuffer" },
-	{ 0x4315c0, (void *)chat_pushHistory, "chat_pushHistory" }, { 0x4065a0, (void *)arena_4065a0, "arena_4065a0" },
+	{ 0x4315c0, (void *)chat_pushHistory, "chat_pushHistory" }, { 0x4065a0, (void *)record_swap, "record_swap" },
 	{ 0x4050f0, (void *)cfg_defaultPlayerName, "cfg_defaultPlayerName" }, { 0x404930, (void *)lobby_404930, "lobby_404930" },
 	{ 0x41ee40, (void *)menu_showMessage, "menu_showMessage" }, { 0x433700, (void *)room_loadSettingsRecord, "room_loadSettingsRecord" },
 	/* batch 4 */
@@ -17809,9 +17809,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x447af0, (void *)briefing_clickClose, "briefing_clickClose" }, { 0x4463a0, (void *)mech_loadFromProfile, "mech_loadFromProfile" },
 	{ 0x4464b0, (void *)mech_storeToProfile, "mech_storeToProfile" }, { 0x447910, (void *)menu_restoreCamera, "menu_restoreCamera" },
 	{ 0x44b2e0, (void *)profile_44b2e0, "profile_44b2e0" }, { 0x451450, (void *)net_claimPlayerSlot, "net_claimPlayerSlot" },
-	{ 0x4514a0, (void *)arena_4514a0, "arena_4514a0" }, { 0x4515a0, (void *)arena_4515a0, "arena_4515a0" },
-	{ 0x4532b0, (void *)arena_4532b0, "arena_4532b0" }, { 0x453a30, (void *)arena_453a30, "arena_453a30" },
-	{ 0x4554c0, (void *)tex_4554c0, "tex_4554c0" }, { 0x4045e0, (void *)arena_4045e0, "arena_4045e0" },
+	{ 0x4514a0, (void *)net_takePlayerSlot, "net_takePlayerSlot" }, { 0x4515a0, (void *)net_freeAllSlots, "net_freeAllSlots" },
+	{ 0x4532b0, (void *)net_sessionValue, "net_sessionValue" }, { 0x453a30, (void *)net_connectionAvailable, "net_connectionAvailable" },
+	{ 0x4554c0, (void *)tex_4554c0, "tex_4554c0" }, { 0x4045e0, (void *)arena_clearChatRecord, "arena_clearChatRecord" },
 	/* batch 5 */
 	{ 0x456820, (void *)tex_markMaterialChanged, "tex_markMaterialChanged" }, { 0x456860, (void *)tex_recolourMaterial, "tex_recolourMaterial" },
 	{ 0x456b50, (void *)hud_456b50, "hud_456b50" }, { 0x45dca0, (void *)actor_deactivate, "actor_deactivate" },
@@ -17858,13 +17858,13 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44b100, (void *)profile_44b100, "profile_44b100" }, { 0x44b150, (void *)profile_44b150, "profile_44b150" },
 	{ 0x44b030, (void *)profile_44b030, "profile_44b030" }, { 0x431c00, (void *)room_431c00, "room_431c00" },
 	{ 0x403f30, (void *)arena_403f30, "arena_403f30" }, { 0x44ad30, (void *)text_setColor, "text_setColor" },
-	{ 0x410160, (void *)armc_410160, "armc_410160" }, { 0x44b7a0, (void *)profile_44b7a0, "profile_44b7a0" },
+	{ 0x410160, (void *)armc_rightClickLeave, "armc_rightClickLeave" }, { 0x44b7a0, (void *)profile_44b7a0, "profile_44b7a0" },
 	{ 0x44b750, (void *)profile_44b750, "profile_44b750" }, { 0x44bc00, (void *)profile_44bc00, "profile_44bc00" },
 	{ 0x420b40, (void *)setup_selectGraphicTab, "setup_selectGraphicTab" }, { 0x403490, (void *)mapList_startEdit, "mapList_startEdit" },
-	{ 0x443ea0, (void *)skirmish_settingsArrowClick, "skirmish_settingsArrowClick" }, { 0x4065e0, (void *)arena_4065e0, "arena_4065e0" },
+	{ 0x443ea0, (void *)skirmish_settingsArrowClick, "skirmish_settingsArrowClick" }, { 0x4065e0, (void *)sessionList_sort, "sessionList_sort" },
 	{ 0x46e9b0, (void *)ptx_46e9b0, "ptx_46e9b0" }, { 0x46e320, (void *)ptx_46e320, "ptx_46e320" },
 	{ 0x46e7c0, (void *)ptx_46e7c0, "ptx_46e7c0" }, { 0x46c5a0, (void *)ErrorLog_ctor, "ErrorLog_ctor" },
-	{ 0x451410, (void *)arena_451410, "arena_451410" }, { 0x44ac70, (void *)cfg_44ac70, "cfg_44ac70" },
+	{ 0x451410, (void *)net_claimLocalSlot, "net_claimLocalSlot" }, { 0x44ac70, (void *)cfg_44ac70, "cfg_44ac70" },
 	{ 0x463740, (void *)FUN_00463740, "FUN_00463740" }, { 0x470f80, (void *)object_setTextureFolder, "object_setTextureFolder" },
 	{ 0x45e1c0, (void *)stage_deactivateActors, "stage_deactivateActors" }, { 0x4636d0, (void *)teams_setup, "teams_setup" },
 	{ 0x49ca20, (void *)escMenu_open, "escMenu_open" }, { 0x490ee0, (void *)object_activate, "object_activate" },
@@ -17879,8 +17879,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x443840, (void *)skirmish_443840, "skirmish_443840" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
 	{ 0x420ba0, (void *)setup_selectControlTab, "setup_selectControlTab" }, { 0x404ac0, (void *)lobby_setSubState0, "lobby_setSubState0" },
 	{ 0x433980, (void *)room_openDialog58, "room_openDialog58" }, { 0x433590, (void *)room_start, "room_start" },
-	{ 0x434640, (void *)room_openDialog42, "room_openDialog42" }, { 0x4509e0, (void *)arena_4509e0, "arena_4509e0" },
-	{ 0x443570, (void *)skirmish_clearPlayerRows, "skirmish_clearPlayerRows" }, { 0x4068d0, (void *)arena_4068d0, "arena_4068d0" },
+	{ 0x434640, (void *)room_openDialog42, "room_openDialog42" }, { 0x4509e0, (void *)net_resetState, "net_resetState" },
+	{ 0x443570, (void *)skirmish_clearPlayerRows, "skirmish_clearPlayerRows" }, { 0x4068d0, (void *)arena_stepMap, "arena_stepMap" },
 	{ 0x4356f0, (void *)room_4356f0, "room_4356f0" }, { 0x451530, (void *)net_451530, "net_451530" },
 	{ 0x46f230, (void *)ptx_46f230, "ptx_46f230" }, { 0x45edb0, (void *)actor_pickRandomWeapon, "actor_pickRandomWeapon" },
 	{ 0x41eea0, (void *)menu_pointInPolygon, "menu_pointInPolygon" }, { 0x466ce0, (void *)shape_466ce0, "shape_466ce0" },
@@ -17892,12 +17892,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4675f0, (void *)shape_4675f0, "shape_4675f0" }, { 0x4665c0, (void *)shape_4665c0, "shape_4665c0" },
 	{ 0x484260, (void *)ViewVolume_reset, "ViewVolume_reset" }, { 0x481760, (void *)space_resetUnits, "space_resetUnits" },
 	/* batch 9 */
-	{ 0x461370, (void *)armc_461370, "armc_461370" }, { 0x4613a0, (void *)match_4613a0, "match_4613a0" },
+	{ 0x461370, (void *)mech_setValue, "mech_setValue" }, { 0x4613a0, (void *)match_4613a0, "match_4613a0" },
 	{ 0x4017d0, (void *)hangul_glyphs, "hangul_glyphs" }, { 0x46f190, (void *)ptx_internal_46f190, "ptx_internal_46f190" },
 	{ 0x46f2a0, (void *)ptx_internal_46f2a0, "ptx_internal_46f2a0" }, { 0x46e830, (void *)ptx_internal_46e830, "ptx_internal_46e830" },
 	{ 0x46efd0, (void *)ptx_initTable_46efd0, "ptx_initTable_46efd0" }, { 0x46ea30, (void *)ptx_internal_46ea30, "ptx_internal_46ea30" },
 	{ 0x440bb0, (void *)menuState300_enter, "menuState300_enter" }, { 0x40e510, (void *)armc_initCameraPoints, "armc_initCameraPoints" },
-	{ 0x40dfa0, (void *)armc_40dfa0, "armc_40dfa0" }, { 0x4338c0, (void *)room_openDialog4d, "room_openDialog4d" },
+	{ 0x40dfa0, (void *)armc_initPartBoxes, "armc_initPartBoxes" }, { 0x4338c0, (void *)room_openDialog4d, "room_openDialog4d" },
 	{ 0x433800, (void *)room_enterRoomList, "room_enterRoomList" }, { 0x447660, (void *)missionsel_447660, "missionsel_447660" },
 	{ 0x44b1a0, (void *)profile_44b1a0, "profile_44b1a0" }, { 0x4743e0, (void *)actor_resetSlot, "actor_resetSlot" },
 	{ 0x47cf10, (void *)actor_clearTargetRefs, "actor_clearTargetRefs" }, { 0x474480, (void *)stage_resetPlayerRecords, "stage_resetPlayerRecords" },
@@ -17907,7 +17907,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x431ce0, (void *)room_431ce0, "room_431ce0" }, { 0x404010, (void *)arena_404010, "arena_404010" },
 	{ 0x44af30, (void *)profile_44af30, "profile_44af30" }, { 0x403300, (void *)room_403300, "room_403300" },
 	{ 0x404b30, (void *)lobby_setSubState1, "lobby_setSubState1" }, { 0x432620, (void *)lobby_ladderGameName, "lobby_ladderGameName" },
-	{ 0x40de80, (void *)armc_40de80, "armc_40de80" }, { 0x430ab0, (void *)menu_initColours, "menu_initColours" },
+	{ 0x40de80, (void *)armc_initCameraBox, "armc_initCameraBox" }, { 0x430ab0, (void *)menu_initColours, "menu_initColours" },
 	{ 0x44b870, (void *)profile_44b870, "profile_44b870" }, { 0x46e8e0, (void *)ptx_internal_46e8e0, "ptx_internal_46e8e0" },
 	{ 0x46f0b0, (void *)ptx_internal_46f0b0, "ptx_internal_46f0b0" }, { 0x463a40, (void *)ResourceSet_init_463a40, "ResourceSet_init_463a40" },
 	{ 0x467580, (void *)shape_setTextureDir, "shape_setTextureDir" }, { 0x464a70, (void *)image_addColour, "image_addColour" },
@@ -17918,8 +17918,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x40e060, (void *)armc_40e060, "armc_40e060" }, { 0x440a20, (void *)mainmenu_440a20, "mainmenu_440a20" },
 	{ 0x420510, (void *)setup_420510, "setup_420510" }, { 0x420300, (void *)setup_420300, "setup_420300" },
 	{ 0x432040, (void *)room_432040, "room_432040" }, { 0x403420, (void *)mapList_init, "mapList_init" },
-	{ 0x404980, (void *)lobby_drawArenaTitle, "lobby_drawArenaTitle" }, { 0x42bc00, (void *)arena_42bc00, "arena_42bc00" },
-	{ 0x461320, (void *)armc_461320, "armc_461320" }, { 0x466960, (void *)shape_colourPixels, "shape_colourPixels" },
+	{ 0x404980, (void *)lobby_drawArenaTitle, "lobby_drawArenaTitle" }, { 0x42bc00, (void *)arena_initOptionTexts, "arena_initOptionTexts" },
+	{ 0x461320, (void *)mech_setName, "mech_setName" }, { 0x466960, (void *)shape_colourPixels, "shape_colourPixels" },
 	{ 0x461f10, (void *)match_resetInputState, "match_resetInputState" }, { 0x470cb0, (void *)stage_newRound, "stage_newRound" },
 	/* batch 12 */
 	{ 0x46dc50, (void *)color_initDefaultColours, "color_initDefaultColours" }, { 0x42f500, (void *)intro_42f500, "intro_42f500" },
@@ -17928,7 +17928,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42fd40, (void *)input_setDefaultKeyBindings, "input_setDefaultKeyBindings" },
 	/* batch 12 */
 	{ 0x433790, (void *)room_enterGameList, "room_enterGameList" }, { 0x404c20, (void *)lobby_setSubState2, "lobby_setSubState2" },
-	{ 0x433360, (void *)armc_433360, "armc_433360" },
+	{ 0x433360, (void *)menuCamera_initPoints, "menuCamera_initPoints" },
 	/* batch 13 */
 	{ 0x432be0, (void *)room_copyJoinedSettings, "room_copyJoinedSettings" }, { 0x434ff0, (void *)room_434ff0, "room_434ff0" },
 	/* batch 14 */
@@ -17950,7 +17950,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x404190, (void *)arena_404190, "arena_404190" }, { 0x420770, (void *)menuState600_enterSetup, "menuState600_enterSetup" },
 	{ 0x432ff0, (void *)menuState800_enterGameRoom, "menuState800_enterGameRoom" },
 	/* batch 19 */
-	{ 0x41ca50, (void *)armc_41ca50, "armc_41ca50" }, { 0x41cca0, (void *)armc_41cca0, "armc_41cca0" },
+	{ 0x41ca50, (void *)armc_weaponSlotRecord, "armc_weaponSlotRecord" }, { 0x41cca0, (void *)armc_viewedPartRecord, "armc_viewedPartRecord" },
 	{ 0x42f940, (void *)app_42f940, "app_42f940" }, { 0x42fb40, (void *)hud_42fb40, "hud_42fb40" },
 	/* batch 20 */
 	{ 0x404640, (void *)menuState400_enter, "menuState400_enter" }, { 0x432db0, (void *)room_takeReceivedSettings, "room_takeReceivedSettings" },
@@ -17969,7 +17969,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x47d9a0, (void *)Mat4_fromAxisAngle, "Mat4_fromAxisAngle" }, { 0x46d950, (void *)tex_tintHsv, "tex_tintHsv" },
 	{ 0x4848e0, (void *)viewVolume_addQuad, "viewVolume_addQuad" },
 	/* batch 26 */
-	{ 0x437a10, (void *)room_camera, "room_camera" }, { 0x408270, (void *)arena_408270, "arena_408270" },
+	{ 0x437a10, (void *)room_camera, "room_camera" }, { 0x408270, (void *)arena_camera, "arena_camera" },
 	{ 0x444130, (void *)skirmish_camera, "skirmish_camera" }, { 0x447cb0, (void *)missionsel_camera, "missionsel_camera" },
 	/* batch 27 */
 	{ 0x47ca70, (void *)bullet_drawTrail, "bullet_drawTrail" },
@@ -17983,7 +17983,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4686e0, (void *)match_4686e0, "match_4686e0" }, { 0x42b130, (void *)static_initObject_4e1878, "static_initObject_4e1878" },
 	{ 0x42b1a0, (void *)static_initObject_5b1db8, "static_initObject_5b1db8" }, { 0x42b1f0, (void *)static_initObject_680cd8, "static_initObject_680cd8" },
 	{ 0x42b240, (void *)static_initObject_76d498, "static_initObject_76d498" }, { 0x42b290, (void *)static_initObject_90d1e0, "static_initObject_90d1e0" },
-	{ 0x42b2e0, (void *)static_initObject_83a9e0, "static_initObject_83a9e0" }, { 0x4532a0, (void *)arena_4532a0, "arena_4532a0" },
+	{ 0x42b2e0, (void *)static_initObject_83a9e0, "static_initObject_83a9e0" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
 	{ 0x4686d0, (void *)FUN_004686d0, "FUN_004686d0" }, { 0x4686f0, (void *)match_4686f0, "match_4686f0" },
 	{ 0x468700, (void *)FUN_00468700, "FUN_00468700" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
@@ -17994,7 +17994,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x480430, (void *)load_480430, "load_480430" }, { 0x483d60, (void *)this_set_483d60, "this_set_483d60" },
 	{ 0x48fc30, (void *)stage_clearMapItemCounts, "stage_clearMapItemCounts" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
-	{ 0x45dfe0, (void *)armc_45dfe0, "armc_45dfe0" }, { 0x463780, (void *)this_get_0x2342381_463780, "this_get_0x2342381_463780" },
+	{ 0x45dfe0, (void *)stage_setValue202e8dc, "stage_setValue202e8dc" }, { 0x463780, (void *)this_get_0x2342381_463780, "this_get_0x2342381_463780" },
 	{ 0x45fff0, (void *)match_45fff0, "match_45fff0" }, { 0x48b440, (void *)match_48b440, "match_48b440" },
 	{ 0x48b430, (void *)match_48b430, "match_48b430" }, { 0x48b450, (void *)hud_48b450, "hud_48b450" },
 	{ 0x483ce0, (void *)nullsub_483ce0, "nullsub_483ce0" }, { 0x46b860, (void *)nullsub_46b860, "nullsub_46b860" },
@@ -18033,14 +18033,14 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x481630, (void *)space_resetNodes, "space_resetNodes" }, { 0x481860, (void *)space_resetBlocks, "space_resetBlocks" },
 	{ 0x48fca0, (void *)script_reset, "script_reset" }, { 0x48fde0, (void *)script_notifyObject, "script_notifyObject" },
 	{ 0x40cef0, (void *)lobbyTop_draw, "lobbyTop_draw" }, { 0x43e720, (void *)room_43e720, "room_43e720" },
-	{ 0x406810, (void *)arena_406810, "arena_406810" },
+	{ 0x406810, (void *)arenaList_rebuild, "arenaList_rebuild" },
 	/* batch 32 */
 	{ 0x456990, (void *)TextureManager_dtor, "TextureManager_dtor" }, { 0x468720, (void *)load_487430_wrap_468720, "load_487430_wrap_468720" },
 	{ 0x48fce0, (void *)script_runScpFile, "script_runScpFile" }, { 0x47db60, (void *)collisionTri_setup, "collisionTri_setup" },
 	/* batch 33 */
 	{ 0x42b380, (void *)TextureManager_dtor_wrap_42b380, "TextureManager_dtor_wrap_42b380" }, { 0x41c510, (void *)armc_41c510, "armc_41c510" },
 	/* batch 34 */
-	{ 0x41b750, (void *)armc_41b750, "armc_41b750" },
+	{ 0x41b750, (void *)armc_drawPartPanels, "armc_drawPartPanels" },
 	/* batch 35 */
 	{ 0x47fce0, (void *)space_itemMeetsBox, "space_itemMeetsBox" },
 	/* batch 36 */
@@ -18052,7 +18052,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 39 */
 	{ 0x473450, (void *)vsprintf_wrap_473450, "vsprintf_wrap_473450" }, { 0x463450, (void *)vsprintf_wrap_463450, "vsprintf_wrap_463450" },
 	{ 0x4629f0, (void *)msg_4629f0, "msg_4629f0" }, { 0x46f770, (void *)anim_setFrame, "anim_setFrame" },
-	{ 0x46de20, (void *)tex_46de20, "tex_46de20" }, { 0x4542a0, (void *)arena_4542a0, "arena_4542a0" },
+	{ 0x46de20, (void *)tex_46de20, "tex_46de20" }, { 0x4542a0, (void *)net_parseAddress, "net_parseAddress" },
 	{ 0x454390, (void *)dplay_formatSessionEntry, "dplay_formatSessionEntry" },
 	/* batch 40 */
 	{ 0x482aa0, (void *)space_walkNodes_482aa0, "space_walkNodes_482aa0" }, { 0x4226b0, (void *)setup_drawControlSlider, "setup_drawControlSlider" },
@@ -18085,8 +18085,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Model_release, "Model_release" },
 	{ 0x466a30, (void *)ShapeManager_release, "ShapeManager_release" }, { 0x4699a0, (void *)Skeleton_release, "Skeleton_release" },
 	{ 0x46ae80, (void *)SkeletonManager_release, "SkeletonManager_release" }, { 0x46f4b0, (void *)partList_release, "partList_release" },
-	{ 0x4813b0, (void *)CollisionVolume_release, "CollisionVolume_release" }, { 0x4519b0, (void *)arena_4519b0, "arena_4519b0" },
-	{ 0x454130, (void *)arena_454130, "arena_454130" }, { 0x4540b0, (void *)net_addSession, "net_addSession" },
+	{ 0x4813b0, (void *)CollisionVolume_release, "CollisionVolume_release" }, { 0x4519b0, (void *)arena_freeBuffers, "arena_freeBuffers" },
+	{ 0x454130, (void *)net_freeSessionList, "net_freeSessionList" }, { 0x4540b0, (void *)net_addSession, "net_addSession" },
 	{ 0x441190, (void *)tunnel_removeLastRing, "tunnel_removeLastRing" }, { 0x441120, (void *)tunnel_appendRing, "tunnel_appendRing" },
 	/* batch 44 */
 	{ 0x42b120, (void *)static_startTexture_4e1878, "static_startTexture_4e1878" }, { 0x42b190, (void *)static_startTexture_5b1db8, "static_startTexture_5b1db8" },
@@ -18133,7 +18133,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4617f0, (void *)chat_saveMacros, "chat_saveMacros" }, { 0x462740, (void *)chat_macro, "chat_macro" },
 	/* batch 47 */
 	{ 0x43f580, (void *)GetCurrentDirectoryA_wrap_43f580, "GetCurrentDirectoryA_wrap_43f580" }, { 0x4685d0, (void *)gfx_swapBuffers, "gfx_swapBuffers" },
-	{ 0x4539f0, (void *)arena_4539f0, "arena_4539f0" }, { 0x454740, (void *)net_wakePingThread, "net_wakePingThread" },
+	{ 0x4539f0, (void *)dplay_createLobby, "dplay_createLobby" }, { 0x454740, (void *)net_wakePingThread, "net_wakePingThread" },
 	{ 0x46c580, (void *)sys_messageBoxOverActive, "sys_messageBoxOverActive" }, { 0x41e7a0, (void *)profile_41e7a0, "profile_41e7a0" },
 	{ 0x41ef60, (void *)menu_vertex, "menu_vertex" }, { 0x46c540, (void *)mci_pause, "mci_pause" },
 	{ 0x43f980, (void *)editField_readTyping, "editField_readTyping" }, { 0x41edf0, (void *)sys_messageBox, "sys_messageBox" },
@@ -18173,17 +18173,17 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x487c80, (void *)input_setCursorPos, "input_setCursorPos" }, { 0x487ba0, (void *)input_asyncKeyDown, "input_asyncKeyDown" },
 	{ 0x487c30, (void *)input_getCursorPos, "input_getCursorPos" }, { 0x4548b0, (void *)net_ping, "net_ping" },
 	{ 0x454650, (void *)net_pingServer, "net_pingServer" }, { 0x4545b0, (void *)net_pingAllServers, "net_pingAllServers" },
-	{ 0x41f050, (void *)gfx_setMenuCamera, "gfx_setMenuCamera" }, { 0x41b300, (void *)armc_41b300, "armc_41b300" },
+	{ 0x41f050, (void *)gfx_setMenuCamera, "gfx_setMenuCamera" }, { 0x41b300, (void *)armc_easeCamera, "armc_easeCamera" },
 	{ 0x43f640, (void *)app_43f640, "app_43f640" }, { 0x490b30, (void *)stage_drawObject, "stage_drawObject" },
 	{ 0x490da0, (void *)stage_drawObjects, "stage_drawObjects" }, { 0x4732f0, (void *)game_setGameTypeFlags, "game_setGameTypeFlags" },
 	{ 0x42c9f0, (void *)cfg_parseGraphic, "cfg_parseGraphic" }, { 0x42c6f0, (void *)cfg_parseServer, "cfg_parseServer" },
 	{ 0x42e080, (void *)cfg_42e080, "cfg_42e080" }, { 0x40e7a0, (void *)armc_saveSelection, "armc_saveSelection" },
 	{ 0x45ebc0, (void *)actor_startingValues, "actor_startingValues" }, { 0x435770, (void *)roomList_fillPage, "roomList_fillPage" },
-	{ 0x40f340, (void *)armc_40f340, "armc_40f340" },
+	{ 0x40f340, (void *)armc_stepPart, "armc_stepPart" },
 	/* batch 52 */
 	{ 0x401000, (void *)cd_findDrive, "cd_findDrive" }, { 0x42d730, (void *)cfg_loadAxisCfg, "cfg_loadAxisCfg" },
 	{ 0x4050a0, (void *)arena_saveSettings, "arena_saveSettings" }, { 0x405140, (void *)lobby_keepArenaSettings, "lobby_keepArenaSettings" },
-	{ 0x44f6c0, (void *)profile_44f6c0, "profile_44f6c0" }, { 0x41dcf0, (void *)armc_41dcf0, "armc_41dcf0" },
+	{ 0x44f6c0, (void *)profile_44f6c0, "profile_44f6c0" }, { 0x41dcf0, (void *)armc_extraItemBonuses, "armc_extraItemBonuses" },
 	{ 0x42e730, (void *)cfg_parseKeyNames, "cfg_parseKeyNames" }, { 0x42e240, (void *)cfg_videoModeNames, "cfg_videoModeNames" },
 	{ 0x42da70, (void *)cfg_gameTypeNames, "cfg_gameTypeNames" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
 	{ 0x421680, (void *)setup_drawKeyBindingRows, "setup_drawKeyBindingRows" },
@@ -18192,7 +18192,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x471740, (void *)collision_rayTrace, "collision_rayTrace" },
 	/* batch 54 */
 	{ 0x42eca0, (void *)cfg_writeDefaultAxisCfg, "cfg_writeDefaultAxisCfg" }, { 0x460270, (void *)actor_checkLineOfSight, "actor_checkLineOfSight" },
-	{ 0x41cf20, (void *)armc_41cf20, "armc_41cf20" }, { 0x41d280, (void *)armc_41d280, "armc_41d280" },
+	{ 0x41cf20, (void *)armc_applyColourSlot, "armc_applyColourSlot" }, { 0x41d280, (void *)armc_retintParts, "armc_retintParts" },
 	/* batch 55 */
 	{ 0x474b50, (void *)actor_setPartColor, "actor_setPartColor" }, { 0x474fd0, (void *)actor_applyRemoteColours, "actor_applyRemoteColours" },
 	/* batch 56 */
@@ -18236,13 +18236,13 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x40e930, (void *)armc_sendSelectionToNet, "armc_sendSelectionToNet" }, { 0x451e60, (void *)net_disconnect, "net_disconnect" },
 	{ 0x451600, (void *)net_closeAll, "net_closeAll" },
 	/* batch 59 */
-	{ 0x41b710, (void *)armc_41b710, "armc_41b710" }, { 0x40ce70, (void *)menu_drawDimOverlay, "menu_drawDimOverlay" },
+	{ 0x41b710, (void *)armc_setup3DView, "armc_setup3DView" }, { 0x40ce70, (void *)menu_drawDimOverlay, "menu_drawDimOverlay" },
 	{ 0x43df00, (void *)room_drawWhiteFade, "room_drawWhiteFade" }, { 0x428890, (void *)menu_drawTextCursor, "menu_drawTextCursor" },
 	{ 0x428c30, (void *)menu_drawFrame, "menu_drawFrame" }, { 0x468050, (void *)glWindow_restoreDisplayMode, "glWindow_restoreDisplayMode" },
 	{ 0x467f20, (void *)glWindow_setDisplayModeBy, "glWindow_setDisplayModeBy" }, { 0x467e60, (void *)glWindow_setupPixelFormat, "glWindow_setupPixelFormat" },
 	{ 0x468450, (void *)glWindow_resize, "glWindow_resize" }, { 0x46cd00, (void *)image_initBy, "image_initBy" },
 	{ 0x466c00, (void *)shapeDat_initBy, "shapeDat_initBy" }, { 0x46afe0, (void *)skelDat_initBy, "skelDat_initBy" },
-	{ 0x487490, (void *)timer_getGameTime, "timer_getGameTime" }, { 0x461210, (void *)armc_461210, "armc_461210" },
+	{ 0x487490, (void *)timer_getGameTime, "timer_getGameTime" }, { 0x461210, (void *)frameTimer_average, "frameTimer_average" },
 	{ 0x43f300, (void *)sys_checkClockTampering, "sys_checkClockTampering" }, { 0x44ba60, (void *)profile_deleteFiles, "profile_deleteFiles" },
 	{ 0x432400, (void *)reg_writeCharacterSettings, "reg_writeCharacterSettings" }, { 0x433640, (void *)room_keepSettings, "room_keepSettings" },
 	{ 0x43e610, (void *)room_networkEvents, "room_networkEvents" }, { 0x42f150, (void *)gfx_initGLState, "gfx_initGLState" },
@@ -18324,7 +18324,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 91 */
 	{ 0x4613d0, (void *)armc_setHeadIndex, "armc_setHeadIndex" }, { 0x461410, (void *)armc_setChestIndex, "armc_setChestIndex" },
 	{ 0x461450, (void *)armc_setArmIndex, "armc_setArmIndex" }, { 0x461490, (void *)armc_setLegIndex, "armc_setLegIndex" },
-	{ 0x4614d0, (void *)armc_setBoosterIndex, "armc_setBoosterIndex" }, { 0x461510, (void *)armc_461510, "armc_461510" },
+	{ 0x4614d0, (void *)armc_setBoosterIndex, "armc_setBoosterIndex" }, { 0x461510, (void *)mech_setItem, "mech_setItem" },
 	{ 0x46fed0, (void *)partList_bindTextures, "partList_bindTextures" }, { 0x474210, (void *)playerRecord_set, "playerRecord_set" },
 	{ 0x4742f0, (void *)playerRecord_setFromActorRecord, "playerRecord_setFromActorRecord" },
 	/* batch 92 */
@@ -18341,7 +18341,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 96 */
 	{ 0x46b950, (void *)pen_init, "pen_init" },
 	/* batch 97 */
-	{ 0x41b400, (void *)armc_41b400, "armc_41b400" },
+	{ 0x41b400, (void *)armc_drawPanels, "armc_drawPanels" },
 	/* batch 98 */
 	{ 0x4546d0, (void *)net_startThread, "net_startThread" }, { 0x452a30, (void *)net_receiveLobbyReply, "net_receiveLobbyReply" },
 	{ 0x452bd0, (void *)net_receiveGameServerReply, "net_receiveGameServerReply" }, { 0x451b80, (void *)net_connect, "net_connect" },
@@ -18349,7 +18349,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 99 */
 	{ 0x452620, (void *)net_recv, "net_recv" },
 	/* batch 100 */
-	{ 0x461250, (void *)armc_461250, "armc_461250" }, { 0x4351c0, (void *)lobby_checkReservedName3, "lobby_checkReservedName3" },
+	{ 0x461250, (void *)mech_setAll, "mech_setAll" }, { 0x4351c0, (void *)lobby_checkReservedName3, "lobby_checkReservedName3" },
 	{ 0x405cf0, (void *)lobby_checkReservedName2, "lobby_checkReservedName2" },
 	/* batch 101 */
 	{ 0x45d3e0, (void *)actor_updateAllParts, "actor_updateAllParts" },
@@ -18369,7 +18369,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x485af0, (void *)render_drawObjects, "render_drawObjects" },
 	/* batch 109 */
 	{ 0x45e170, (void *)stage_drawActors, "stage_drawActors" }, { 0x45dc00, (void *)stage_setupActorSlot, "stage_setupActorSlot" },
-	{ 0x45dd80, (void *)stage_claimPlayerActor, "stage_claimPlayerActor" }, { 0x45ddc0, (void *)armc_45ddc0, "armc_45ddc0" },
+	{ 0x45dd80, (void *)stage_claimPlayerActor, "stage_claimPlayerActor" }, { 0x45ddc0, (void *)stage_remakePlayerActor, "stage_remakePlayerActor" },
 	{ 0x45de20, (void *)actor_applySpawnRecord, "actor_applySpawnRecord" },
 	/* batch 110 */
 	{ 0x476890, (void *)projectile_draw, "projectile_draw" }, { 0x479af0, (void *)stage_drawProjectiles, "stage_drawProjectiles" },
@@ -18384,24 +18384,24 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 115 */
 	{ 0x4700a0, (void *)item_initTextures, "item_initTextures" },
 	/* batch 116 */
-	{ 0x4125c0, (void *)armc_4125c0, "armc_4125c0" }, { 0x4125f0, (void *)armc_drawStatLabel, "armc_drawStatLabel" },
+	{ 0x4125c0, (void *)armc_drawText, "armc_drawText" }, { 0x4125f0, (void *)armc_drawStatLabel, "armc_drawStatLabel" },
 	{ 0x4290d0, (void *)menu_drawMessageBox, "menu_drawMessageBox" }, { 0x428940, (void *)menu_drawInputLine, "menu_drawInputLine" },
 	{ 0x44ce90, (void *)profile_44ce90, "profile_44ce90" }, { 0x442d10, (void *)mapSelect_drawNames, "mapSelect_drawNames" },
 	/* batch 117 */
-	{ 0x412450, (void *)armc_412450, "armc_412450" }, { 0x445520, (void *)briefing_typeOut, "briefing_typeOut" },
+	{ 0x412450, (void *)armc_drawModeTabs, "armc_drawModeTabs" }, { 0x445520, (void *)briefing_typeOut, "briefing_typeOut" },
 	{ 0x44dc60, (void *)profile_44dc60, "profile_44dc60" }, { 0x40b550, (void *)arena_drawCustomOption, "arena_drawCustomOption" },
 	{ 0x43bde0, (void *)room_drawCustomOption, "room_drawCustomOption" },
 	/* batch 118 */
 	{ 0x44e180, (void *)profile_44e180, "profile_44e180" }, { 0x44e3e0, (void *)profile_44e3e0, "profile_44e3e0" },
-	{ 0x44de00, (void *)profile_44de00, "profile_44de00" }, { 0x41dab0, (void *)armc_41dab0, "armc_41dab0" },
+	{ 0x44de00, (void *)profile_44de00, "profile_44de00" }, { 0x41dab0, (void *)armc_drawWeightLine, "armc_drawWeightLine" },
 	/* batch 119 */
 	{ 0x41f100, (void *)frontEnd_drawProgress, "frontEnd_drawProgress" }, { 0x4399c0, (void *)loginDialog_draw, "loginDialog_draw" },
-	{ 0x409bc0, (void *)arena_409bc0, "arena_409bc0" },
+	{ 0x409bc0, (void *)arena_drawNameDialog, "arena_drawNameDialog" },
 	/* batch 120 */
 	{ 0x439e00, (void *)serverDialog_draw, "serverDialog_draw" }, { 0x4456b0, (void *)skirmish_drawScreenB, "skirmish_drawScreenB" },
 	{ 0x444f40, (void *)skirmish_drawScreenA, "skirmish_drawScreenA" },
 	/* batch 121 */
-	{ 0x4038e0, (void *)arena_4038e0, "arena_4038e0" }, { 0x442e10, (void *)mapSelect_drawDialog, "mapSelect_drawDialog" },
+	{ 0x4038e0, (void *)mapList_draw, "mapList_draw" }, { 0x442e10, (void *)mapSelect_drawDialog, "mapSelect_drawDialog" },
 	/* batch 122 */
 	{ 0x4392c0, (void *)roomLogin_draw, "roomLogin_draw" }, { 0x44cf70, (void *)profile_44cf70, "profile_44cf70" },
 	/* batch 123 */
@@ -18413,7 +18413,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 126 */
 	{ 0x411110, (void *)armc_411110, "armc_411110" }, { 0x4445a0, (void *)skirmish_4445a0, "skirmish_4445a0" },
 	{ 0x411ab0, (void *)armc_411ab0, "armc_411ab0" }, { 0x4388e0, (void *)room_4388e0, "room_4388e0" },
-	{ 0x4091b0, (void *)arena_4091b0, "arena_4091b0" },
+	{ 0x4091b0, (void *)arena_drawTunnel, "arena_drawTunnel" },
 	/* batch 127 */
 	{ 0x43a420, (void *)account_drawPanel, "account_drawPanel" },
 	/* batch 128 */
@@ -18439,11 +18439,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 137 */
 	{ 0x43bfe0, (void *)room_drawGameSettings, "room_drawGameSettings" },
 	/* batch 138 */
-	{ 0x41a280, (void *)armc_41a280, "armc_41a280" },
+	{ 0x41a280, (void *)armc_drawColourEditor, "armc_drawColourEditor" },
 	/* batch 139 */
-	{ 0x419160, (void *)armc_419160, "armc_419160" },
+	{ 0x419160, (void *)armc_drawBuildScreen, "armc_drawBuildScreen" },
 	/* batch 140 */
-	{ 0x40a070, (void *)arena_40a070, "arena_40a070" },
+	{ 0x40a070, (void *)arena_drawGameList, "arena_drawGameList" },
 	/* batch 141 */
 	{ 0x40b750, (void *)arena_createDraw, "arena_createDraw" },
 	/* batch 142 */
@@ -18453,7 +18453,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 144 */
 	{ 0x412650, (void *)armc_drawStatsPanel, "armc_drawStatsPanel" },
 	/* batch 145 */
-	{ 0x461540, (void *)armc_461540, "armc_461540" },
+	{ 0x461540, (void *)armc_giveShownActorWeapon, "armc_giveShownActorWeapon" },
 	/* batch 146 */
 	{ 0x40da40, (void *)armc_buildPartLists, "armc_buildPartLists" },
 	/* batch 147 */
@@ -18477,11 +18477,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x495610, (void *)hud_drawEscMenu, "hud_drawEscMenu" },
 	/* batch 156 */
 	{ 0x453920, (void *)dplay_release, "dplay_release" }, { 0x453fd0, (void *)dplay_enumSessions, "dplay_enumSessions" },
-	{ 0x4549a0, (void *)arena_4549a0, "arena_4549a0" }, { 0x4549c0, (void *)arena_4549c0, "arena_4549c0" },
-	{ 0x454ac0, (void *)arena_454ac0, "arena_454ac0" }, { 0x454ae0, (void *)arena_454ae0, "arena_454ae0" },
-	{ 0x454bd0, (void *)arena_454bd0, "arena_454bd0" }, { 0x454bf0, (void *)arena_454bf0, "arena_454bf0" },
-	{ 0x454ce0, (void *)arena_454ce0, "arena_454ce0" }, { 0x454d00, (void *)arena_454d00, "arena_454d00" },
-	{ 0x453260, (void *)arena_453260, "arena_453260" },
+	{ 0x4549a0, (void *)dplaySlot0_close, "dplaySlot0_close" }, { 0x4549c0, (void *)dplaySlot0_enum, "dplaySlot0_enum" },
+	{ 0x454ac0, (void *)dplaySlot1_close, "dplaySlot1_close" }, { 0x454ae0, (void *)dplaySlot1_enum, "dplaySlot1_enum" },
+	{ 0x454bd0, (void *)dplaySlot2_close, "dplaySlot2_close" }, { 0x454bf0, (void *)dplaySlot2_enum, "dplaySlot2_enum" },
+	{ 0x454ce0, (void *)dplaySlot3_close, "dplaySlot3_close" }, { 0x454d00, (void *)dplaySlot3_enum, "dplaySlot3_enum" },
+	{ 0x453260, (void *)dplay_listSessions, "dplay_listSessions" },
 	/* batch 157 */
 	{ 0x454190, (void *)dplay_getPlayerName, "dplay_getPlayerName" }, { 0x453790, (void *)dplay_create, "dplay_create" },
 	{ 0x453cf0, (void *)dplay_hostSession, "dplay_hostSession" }, { 0x453e60, (void *)dplay_joinSession, "dplay_joinSession" },
@@ -18526,24 +18526,24 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44be00, (void *)profile_44be00, "profile_44be00" }, { 0x44c190, (void *)profile_44c190, "profile_44c190" },
 	{ 0x44c560, (void *)profile_processInput, "profile_processInput" },
 	/* batch 167 */
-	{ 0x450bc0, (void *)arena_450bc0, "arena_450bc0" }, { 0x450bf0, (void *)dplay_send, "dplay_send" },
+	{ 0x450bc0, (void *)dplay_receive, "dplay_receive" }, { 0x450bf0, (void *)dplay_send, "dplay_send" },
 	{ 0x451270, (void *)net_sendMessage, "net_sendMessage" }, { 0x451350, (void *)net_logMessage, "net_logMessage" },
-	{ 0x451090, (void *)arena_451090, "arena_451090" }, { 0x450c20, (void *)net_sendLocalInfo, "net_sendLocalInfo" },
-	{ 0x450a60, (void *)arena_450a60, "arena_450a60" }, { 0x450bb0, (void *)FUN_00450bb0, "FUN_00450bb0" },
+	{ 0x451090, (void *)net_handleMessage, "net_handleMessage" }, { 0x450c20, (void *)net_sendLocalInfo, "net_sendLocalInfo" },
+	{ 0x450a60, (void *)net_receiveAll, "net_receiveAll" }, { 0x450bb0, (void *)FUN_00450bb0, "FUN_00450bb0" },
 	/* batch 168 */
 	{ 0x448ac0, (void *)missionsel_drawSettingsScreen, "missionsel_drawSettingsScreen" }, { 0x44aa20, (void *)missionsel_44aa20, "missionsel_44aa20" },
 	/* batch 169 */
-	{ 0x40f950, (void *)armc_40f950, "armc_40f950" }, { 0x40f870, (void *)armc_40f870, "armc_40f870" },
-	{ 0x40f9e0, (void *)armc_40f9e0, "armc_40f9e0" }, { 0x40f220, (void *)armc_drawPartScreen, "armc_drawPartScreen" },
+	{ 0x40f950, (void *)armc_showCursorItem, "armc_showCursorItem" }, { 0x40f870, (void *)armc_pickSlot, "armc_pickSlot" },
+	{ 0x40f9e0, (void *)armc_takeCursorItem, "armc_takeCursorItem" }, { 0x40f220, (void *)armc_drawPartScreen, "armc_drawPartScreen" },
 	{ 0x40f0f0, (void *)armc_exit, "armc_exit" },
 	/* batch 170 */
-	{ 0x40fb20, (void *)armc_40fb20, "armc_40fb20" }, { 0x4101e0, (void *)armc_4101e0, "armc_4101e0" },
-	{ 0x410500, (void *)armc_410500, "armc_410500" }, { 0x410810, (void *)armc_410810, "armc_410810" },
+	{ 0x40fb20, (void *)armc_mainPageClicks, "armc_mainPageClicks" }, { 0x4101e0, (void *)armc_partsPageKeys, "armc_partsPageKeys" },
+	{ 0x410500, (void *)armc_weaponsPageKeys, "armc_weaponsPageKeys" }, { 0x410810, (void *)armc_colourPageKeys, "armc_colourPageKeys" },
 	{ 0x410190, (void *)armc_onStateEnter, "armc_onStateEnter" }, { 0x410ab0, (void *)armc_processInput, "armc_processInput" },
 	/* batch 171 */
-	{ 0x453770, (void *)arena_453770, "arena_453770" }, { 0x4014c0, (void *)wnd_4014c0, "wnd_4014c0" },
-	{ 0x4549e0, (void *)arena_4549e0, "arena_4549e0" }, { 0x454b00, (void *)arena_454b00, "arena_454b00" },
-	{ 0x454a20, (void *)arena_454a20, "arena_454a20" }, { 0x454b40, (void *)arena_454b40, "arena_454b40" },
+	{ 0x453770, (void *)dplay_check, "dplay_check" }, { 0x4014c0, (void *)wnd_4014c0, "wnd_4014c0" },
+	{ 0x4549e0, (void *)dplaySlot0_host, "dplaySlot0_host" }, { 0x454b00, (void *)dplaySlot1_host, "dplaySlot1_host" },
+	{ 0x454a20, (void *)dplaySlot0_join, "dplaySlot0_join" }, { 0x454b40, (void *)dplaySlot1_join, "dplaySlot1_join" },
 	{ 0x403530, (void *)mapList_chooseNone, "mapList_chooseNone" }, { 0x4034e0, (void *)mapList_chooseAll, "mapList_chooseAll" },
 	{ 0x407970, (void *)lobbyJoin_keys, "lobbyJoin_keys" }, { 0x436940, (void *)menu_436940, "menu_436940" },
 	{ 0x4080c0, (void *)lobby_keysBack, "lobby_keysBack" }, { 0x4370e0, (void *)room_leaveKeys, "room_leaveKeys" },
@@ -18554,7 +18554,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x456e50, (void *)sound_playVolume, "sound_playVolume" }, { 0x431600, (void *)chat_closeLine, "chat_closeLine" },
 	{ 0x431950, (void *)messageBox_keyClose, "messageBox_keyClose" }, { 0x403640, (void *)mapList_ok, "mapList_ok" },
 	{ 0x4512c0, (void *)net_sendChat, "net_sendChat" }, { 0x405230, (void *)lobby_editTextField_405230, "lobby_editTextField_405230" },
-	{ 0x4318b0, (void *)menu_keyStartFade, "menu_keyStartFade" }, { 0x452fe0, (void *)arena_452fe0, "arena_452fe0" },
+	{ 0x4318b0, (void *)menu_keyStartFade, "menu_keyStartFade" }, { 0x452fe0, (void *)arena_leaveSession, "arena_leaveSession" },
 	{ 0x404cd0, (void *)arena_editTextField_404cd0, "arena_editTextField_404cd0" }, { 0x404d70, (void *)arena_editTextField_404d70, "arena_editTextField_404d70" },
 	{ 0x4339e0, (void *)field_editComment, "field_editComment" }, { 0x42bd40, (void *)sound_loadMenuSounds, "sound_loadMenuSounds" },
 	{ 0x437240, (void *)room_readyKeys, "room_readyKeys" }, { 0x403590, (void *)mapList_stepGameType, "mapList_stepGameType" },
@@ -18568,8 +18568,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x463390, (void *)msg_connectionLost, "msg_connectionLost" }, { 0x4633c0, (void *)msg_networkUnstable, "msg_networkUnstable" },
 	{ 0x462f30, (void *)msg_serverEndsGame, "msg_serverEndsGame" }, { 0x462f60, (void *)msg_userEndsGame, "msg_userEndsGame" },
 	{ 0x4633f0, (void *)msg_dataLoss, "msg_dataLoss" }, { 0x462f90, (void *)msg_fragLimitReached, "msg_fragLimitReached" },
-	{ 0x462fd0, (void *)msg_timeLimitReached, "msg_timeLimitReached" }, { 0x454c50, (void *)arena_454c50, "arena_454c50" },
-	{ 0x454d60, (void *)arena_454d60, "arena_454d60" }, { 0x453720, (void *)dplay_coInit, "dplay_coInit" },
+	{ 0x462fd0, (void *)msg_timeLimitReached, "msg_timeLimitReached" }, { 0x454c50, (void *)dplaySlot2_join, "dplaySlot2_join" },
+	{ 0x454d60, (void *)dplaySlot3_join, "dplaySlot3_join" }, { 0x453720, (void *)dplay_coInit, "dplay_coInit" },
 	{ 0x406b60, (void *)lobby_close, "lobby_close" }, { 0x403870, (void *)room_mapListKeys, "room_mapListKeys" },
 	{ 0x435f40, (void *)room_stopArenaSetup, "room_stopArenaSetup" }, { 0x435e70, (void *)room_openClicks, "room_openClicks" },
 	{ 0x433c70, (void *)chat_closeEdit, "chat_closeEdit" }, { 0x408110, (void *)lobby_keysQuit, "lobby_keysQuit" },
@@ -18588,9 +18588,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x453a10, (void *)dplay_closeSession, "dplay_closeSession" },
 	/* batch 175 */
 	{ 0x41edc0, (void *)menu_returnToMain, "menu_returnToMain" }, { 0x41ed70, (void *)menu_returnToMainFromRoom, "menu_returnToMainFromRoom" },
-	{ 0x453180, (void *)arena_453180, "arena_453180" }, { 0x41f970, (void *)menu_enterState, "menu_enterState" },
+	{ 0x453180, (void *)dplay_join, "dplay_join" }, { 0x41f970, (void *)menu_enterState, "menu_enterState" },
 	{ 0x435b00, (void *)room_leftClicks, "room_leftClicks" }, { 0x4346c0, (void *)account_checkForm, "account_checkForm" },
-	{ 0x436620, (void *)ranking_clicks, "ranking_clicks" }, { 0x40fd30, (void *)armc_40fd30, "armc_40fd30" },
+	{ 0x436620, (void *)ranking_clicks, "ranking_clicks" }, { 0x40fd30, (void *)armc_partScreenClicks, "armc_partScreenClicks" },
 	{ 0x40ff40, (void *)armc_colourScreenInput, "armc_colourScreenInput" }, { 0x436400, (void *)room_settingsClicks, "room_settingsClicks" },
 	{ 0x437630, (void *)room_settingsAfterTyping, "room_settingsAfterTyping" }, { 0x441c00, (void *)mapSelect_keys, "mapSelect_keys" },
 	{ 0x422480, (void *)setup_drawGraphicTab, "setup_drawGraphicTab" }, { 0x43e7b0, (void *)account_page, "account_page" },
@@ -18600,11 +18600,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x435fc0, (void *)gameList_mouse, "gameList_mouse" }, { 0x436990, (void *)createDialog_keys, "createDialog_keys" },
 	/* batch 176 */
 	{ 0x406a60, (void *)lobby_playerScreenClicks, "lobby_playerScreenClicks" }, { 0x437140, (void *)room_keys, "room_keys" },
-	{ 0x405690, (void *)arena_405690, "arena_405690" }, { 0x435d30, (void *)room_pageClicks, "room_pageClicks" },
+	{ 0x405690, (void *)arena_joinSession, "arena_joinSession" }, { 0x435d30, (void *)room_pageClicks, "room_pageClicks" },
 	{ 0x433e60, (void *)loginForm_openField, "loginForm_openField" }, { 0x4419d0, (void *)mainmenu_startNetGame, "mainmenu_startNetGame" },
 	{ 0x441e00, (void *)mainmenu_processKeys, "mainmenu_processKeys" }, { 0x436e10, (void *)loginDialog_keys, "loginDialog_keys" },
 	{ 0x441260, (void *)armc_enter, "armc_enter" }, { 0x42ada0, (void *)match_debugHandler, "match_debugHandler" },
-	{ 0x454c10, (void *)arena_454c10, "arena_454c10" }, { 0x454d20, (void *)arena_454d20, "arena_454d20" },
+	{ 0x454c10, (void *)dplaySlot2_host, "dplaySlot2_host" }, { 0x454d20, (void *)dplaySlot3_host, "dplaySlot3_host" },
 	/* batch 177 */
 	{ 0x434e70, (void *)app_onClose, "app_onClose" }, { 0x4062b0, (void *)app_shutdown, "app_shutdown" },
 	{ 0x41f540, (void *)menuState100_intro, "menuState100_intro" }, { 0x440840, (void *)chat_editSubclass, "chat_editSubclass" },
@@ -18614,19 +18614,19 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 179 */
 	{ 0x462150, (void *)msg_newKing, "msg_newKing" }, { 0x460000, (void *)bullet_playImpactSound, "bullet_playImpactSound" },
 	/* batch 180 */
-	{ 0x441740, (void *)menu_drawBackground, "menu_drawBackground" }, { 0x454940, (void *)arena_454940, "arena_454940" },
-	{ 0x454a50, (void *)arena_454a50, "arena_454a50" }, { 0x454b70, (void *)arena_454b70, "arena_454b70" },
-	{ 0x454c80, (void *)arena_454c80, "arena_454c80" }, { 0x435c20, (void *)settingsDialog_clicks, "settingsDialog_clicks" },
-	{ 0x4620e0, (void *)scene_resetScores, "scene_resetScores" }, { 0x453090, (void *)arena_453090, "arena_453090" },
+	{ 0x441740, (void *)menu_drawBackground, "menu_drawBackground" }, { 0x454940, (void *)dplaySlot0_open, "dplaySlot0_open" },
+	{ 0x454a50, (void *)dplaySlot1_open, "dplaySlot1_open" }, { 0x454b70, (void *)dplaySlot2_open, "dplaySlot2_open" },
+	{ 0x454c80, (void *)dplaySlot3_open, "dplaySlot3_open" }, { 0x435c20, (void *)settingsDialog_clicks, "settingsDialog_clicks" },
+	{ 0x4620e0, (void *)scene_resetScores, "scene_resetScores" }, { 0x453090, (void *)dplay_host, "dplay_host" },
 	/* batch 181 */
 	{ 0x443530, (void *)menuState300_frame, "menuState300_frame" }, { 0x427920, (void *)menuState600_setup, "menuState600_setup" },
 	{ 0x445be0, (void *)menuState900_skirmishSetup, "menuState900_skirmishSetup" }, { 0x44f860, (void *)menuState210_frame, "menuState210_frame" },
-	{ 0x452ec0, (void *)arena_452ec0, "arena_452ec0" }, { 0x445bc0, (void *)skirmish_445bc0, "skirmish_445bc0" },
+	{ 0x452ec0, (void *)arena_openSession, "arena_openSession" }, { 0x445bc0, (void *)skirmish_445bc0, "skirmish_445bc0" },
 	/* batch 182 */
-	{ 0x434dd0, (void *)room_joinSession, "room_joinSession" }, { 0x406200, (void *)arena_406200, "arena_406200" },
+	{ 0x434dd0, (void *)room_joinSession, "room_joinSession" }, { 0x406200, (void *)arena_joinListed, "arena_joinListed" },
 	{ 0x4052c0, (void *)lobby_roomNameCheck, "lobby_roomNameCheck" }, { 0x4057a0, (void *)lobby_checkReservedName, "lobby_checkReservedName" },
 	{ 0x406c30, (void *)lobby_connect, "lobby_connect" }, { 0x4079c0, (void *)lobbyJoin_keysChat, "lobbyJoin_keysChat" },
-	{ 0x4355b0, (void *)room_hostingStep, "room_hostingStep" }, { 0x405b80, (void *)arena_405b80, "arena_405b80" },
+	{ 0x4355b0, (void *)room_hostingStep, "room_hostingStep" }, { 0x405b80, (void *)arena_connectionOutcome, "arena_connectionOutcome" },
 	/* batch 183 */
 	{ 0x407410, (void *)arena_createClick, "arena_createClick" }, { 0x407e40, (void *)lobbyTop_connect, "lobbyTop_connect" },
 	{ 0x40d840, (void *)arena_loadAndQuit, "arena_loadAndQuit" }, { 0x43ea10, (void *)gameList_drawPage, "gameList_drawPage" },
@@ -18636,9 +18636,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x445e40, (void *)menu_onStateChange, "menu_onStateChange" }, { 0x43e290, (void *)loginForm_update, "loginForm_update" },
 	{ 0x410b50, (void *)arena_launchFromFile, "arena_launchFromFile" }, { 0x43ef70, (void *)menuState800_gameRoom, "menuState800_gameRoom" },
 	/* batch 185 */
-	{ 0x40e5d0, (void *)armc_40e5d0, "armc_40e5d0" }, { 0x41d600, (void *)armc_41d600, "armc_41d600" },
-	{ 0x41d8a0, (void *)armc_41d8a0, "armc_41d8a0" }, { 0x41dfe0, (void *)armc_41dfe0, "armc_41dfe0" },
-	{ 0x41e010, (void *)armc_41e010, "armc_41e010" }, { 0x41dfb0, (void *)armc_41dfb0, "armc_41dfb0" },
+	{ 0x40e5d0, (void *)armc_enterScreen, "armc_enterScreen" }, { 0x41d600, (void *)armc_updatePartsPreview, "armc_updatePartsPreview" },
+	{ 0x41d8a0, (void *)armc_updateColourPreview, "armc_updateColourPreview" }, { 0x41dfe0, (void *)armc_drawColourPage, "armc_drawColourPage" },
+	{ 0x41e010, (void *)armc_drawThirdPage, "armc_drawThirdPage" }, { 0x41dfb0, (void *)armc_drawPartsPage, "armc_drawPartsPage" },
 	{ 0x41e040, (void *)menuState700_armCenter, "menuState700_armCenter" },
 	/* batch 186 */
 	{ 0x49df10, (void *)game_processGameModeInit, "game_processGameModeInit" }, { 0x49ca70, (void *)match_escMenu, "match_escMenu" },

@@ -73,7 +73,7 @@ static void tint_part(int part, int slot)
 
 /* 0x41cf20: the colour slot being edited applied to its part; slot 5 (all) puts the undo buffer back first and
    tints every part with it */
-void (armc_41cf20)(void)
+void (armc_applyColourSlot)(void)
 {
 	int slot = g_armcColourSlot;
 	if (slot < 0 || slot > 5)
@@ -82,14 +82,14 @@ void (armc_41cf20)(void)
 		tint_part(slot, slot);
 		return;
 	}
-	armc_41ced0();
+	armc_restoreColourUndo();
 	for (int part = 0; part < 5; part++)
 		tint_part(part, g_armcColourSlot);
 }
 
 /* 0x41d280: after a change (0x4dd074) every part takes its own slot's colours; then the part in view is tinted
    again with its slot */
-void (armc_41d280)(void)
+void (armc_retintParts)(void)
 {
 	if (GAME_VAR(int, 0x4dd074)) {
 		for (int part = 0; part < 5; part++)

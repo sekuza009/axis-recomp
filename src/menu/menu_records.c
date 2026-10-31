@@ -64,7 +64,7 @@ void (menu_showMessage)(int i)
 
 /* ---- session records (0x4a bytes) ---- */
 /* 0x4065a0: records a and b swapped */
-void (arena_4065a0)(void *a, void *b)
+void (record_swap)(void *a, void *b)
 {
 	u8 t[0x4a];
 	memcpy(t, a, 0x4a);
@@ -73,7 +73,7 @@ void (arena_4065a0)(void *a, void *b)
 }
 
 /* 0x4045e0: chat record 0x67ef30 (from 0x9087c4) cleared; the original does it 256 times over without moving on */
-void (arena_4045e0)(void)
+void (arena_clearChatRecord)(void)
 {
 	u32 r = 0x9087c4 + GAME_VAR(int, 0x67ef30) * 0x4a;
 	memset((void *)r, 0, 32);
@@ -158,7 +158,7 @@ void (mech_storeToProfile)(void)
 	memcpy((void *)0x9f1a34, (void *)0x4dcfe0, 0x90);
 }
 
-/* 0x447910: the menu camera put back (armc_40e670 without its flag) */
+/* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
 	GAME_VAR(int, 0x4df024) = GAME_VAR(int, 0x4df870);

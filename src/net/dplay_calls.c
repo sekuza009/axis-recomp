@@ -10,9 +10,9 @@
 #define g_dplay GAME_VAR(void *, 0xa0b404)            /* IDirectPlay4A */
 #define g_connectionKind GAME_VAR(int, 0xa0b418)      /* the connection kind in use: its slot (0 .. 3) */
 
-/* 0x450bc0 (arena_450bc0): the next message (from, to: player ids out; data and *size in / out); 0 without
+/* 0x450bc0 (dplay_receive): the next message (from, to: player ids out; data and *size in / out); 0 without
    DirectPlay */
-long (arena_450bc0)(u32 *from, u32 *to, u32 flags, void *data, u32 *size)
+long (dplay_receive)(u32 *from, u32 *to, u32 flags, void *data, u32 *size)
 {
 	if (g_dplay == NULL)
 		return 0;
@@ -37,19 +37,19 @@ long (dplay_closeSession)(void *dplay)
 }
 
 /* 0x4539f0: the DirectPlay lobby object (class 0x4a9668, interface 0x4a9678) into *out */
-long (arena_4539f0)(void **out)
+long (dplay_createLobby)(void **out)
 {
 	return CoCreateInstance((const void *)0x4a9668, NULL, CLSCTX_INPROC_SERVER, (const void *)0x4a9678, out);
 }
 
 /* 0x453260: list the sessions through the slot of the connection kind in use */
-int (arena_453260)(void)
+int (dplay_listSessions)(void)
 {
 	switch (g_connectionKind) {
-	case 0: return arena_4549c0();
-	case 1: return arena_454ae0();
-	case 2: return arena_454bf0();
-	case 3: return arena_454d00();
+	case 0: return dplaySlot0_enum();
+	case 1: return dplaySlot1_enum();
+	case 2: return dplaySlot2_enum();
+	case 3: return dplaySlot3_enum();
 	}
 	return 0;
 }

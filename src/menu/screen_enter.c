@@ -85,7 +85,7 @@ void (menuState400_enter)(void)
 		{ 0x4db8a0, 0x3e99999a }, { 0x4db8a4, 0x3f333333 }, { 0x4db8a8, 0x3f333333 }, { 0x4db8ac, ONE }, { 0x9fd958, 0xf },
 		{ 0x4dc24c, 1 } };
 	I(0x5ae9c4) = 1;
-	arena_4045e0();
+	arena_clearChatRecord();
 	I(0x4dbb68) = 0x64;
 	I(0x4dbb6c) = 0x64;
 	I(0x4dda44) = 0;
@@ -174,7 +174,7 @@ void (menuState800_enterGameRoom)(void)
 	static const u32 cleared[] = { 0x9dd838, 0x9dd6a4, 0x9dd1b0, 0x4ded54, 0x9dd1c8, 0x9dd350, 0x9dd84c, 0x9dd6d4,
 	                               0x9dd850 };
 	I(0x5ae9c4) = 2;
-	arena_4045e0();
+	arena_clearChatRecord();
 	STORE_ALL(layout);
 	room_431ae0();
 	room_431c50();

@@ -25,7 +25,7 @@ void (armc_initCameraPoints)(void)
 }
 
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
-void (arena_42bc00)(void)
+void (arena_initOptionTexts)(void)
 {
 	static const u32 copies[7][2] = { { 0x4db860, 0x75baa4 }, { 0x4db874, 0x75bb24 }, { 0x4db888, 0x75bba4 },
 	                                  { 0x4dbb14, 0x75bc24 }, { 0x4dbb28, 0x75bca4 }, { 0x4dbba4, 0x75bc24 },
@@ -57,7 +57,7 @@ void (skirmish_clearPlayerRows)(void)
 }
 
 /* 0x4509e0: the network state's start (the cleared values then set: 1, 2, 0, 6 and 7) */
-void (arena_4509e0)(void)
+void (net_resetState)(void)
 {
 	GAME_VAR(int, 0x9f93c8) = 0;
 	GAME_VAR(int, 0x9f9418) = 0;
@@ -94,7 +94,7 @@ void (menu_initKeyRepeat)(void)
 
 /* 0x433360: the menu camera's five target points and look-at points (all at the camera's height), the home point
    from where the camera is now */
-void (armc_433360)(void)
+void (menuCamera_initPoints)(void)
 {
 	static const u32 point[][2] = {
 		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },

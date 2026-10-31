@@ -120,7 +120,7 @@ void (room_camera)(void)
 }
 
 /* 0x408270: the arena lobby's camera */
-void (arena_408270)(void)
+void (arena_camera)(void)
 {
 	static const MenuCam arena = { 0x4dbb3c, 0x4db51c, 0x4dbaf4, 5, 1 };
 	menu_camera(&arena);
@@ -202,7 +202,7 @@ static void menu_camera2(const MenuCam2 *m)
    up. Coming home it eases fast while its depth is past -549 (-1649), else slowly, the aspect widening back, and
    snaps home once within 0.01 of -550 (-1650); then on to where it came from (0x4dc24c): 1 the main menu (300), 2 the
    arena lobby (400; the camera to its saved place, the home moved to (0, 0, -1550) looking at (0, 0, -1650)), 3 the
-   game room (800, armc_433360); a lobby game with a reply 0x67 (0x9da49c) then leaves (arena_loadAndQuit). The caller
+   game room (800, menuCamera_initPoints); a lobby game with a reply 0x67 (0x9da49c) then leaves (arena_loadAndQuit). The caller
    ignores the eax it leaves */
 void (arena_launchFromFile)(void)
 {
@@ -286,7 +286,7 @@ void (arena_launchFromFile)(void)
 		g_nextScreen = state;
 		I(0x4dc24c) = 0;
 		if (state == 800)
-			GAME_CDECL(0x433360, void, void)();   /* armc_433360 */
+			GAME_CDECL(0x433360, void, void)();   /* menuCamera_initPoints */
 	}
 	if (I(0x76d410) == 1 && I(0x9da49c) == 0x67)
 		GAME_CDECL(0x40d840, void, void)();   /* arena_loadAndQuit */

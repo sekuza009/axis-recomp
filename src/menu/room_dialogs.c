@@ -143,7 +143,7 @@ u32 (settingsDialog_clicks)(void)
 	return button;
 }
 
-/* 0x434dd0: joining session i of the list: its DirectPlay connection (0x452ec0) and the join (arena_453260); a failure
+/* 0x434dd0: joining session i of the list: its DirectPlay connection (0x452ec0) and the join (dplay_listSessions); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
 u32 (room_joinSession)(int i)
@@ -151,10 +151,10 @@ u32 (room_joinSession)(int i)
 	GAME_VAR(int, 0x9dd56c) = 0;
 	if (!GAME_CDECL(0x452ec0, int, int, void *)(0, (void *)(0x9087ef + i * 0x4a))) {
 		GAME_CDECL(0x41ee40, void, int)(0x3f);
-		return CALL(0x452fe0);   /* arena_452fe0 */
+		return CALL(0x452fe0);   /* arena_leaveSession */
 	}
 	GAME_VAR(int, 0x4db710) = i;
-	if (!CALL(0x453260)) {        /* arena_453260 */
+	if (!CALL(0x453260)) {        /* dplay_listSessions */
 		GAME_CDECL(0x41ee40, void, int)(0x40);
 		return CALL(0x452fe0);
 	}
@@ -184,7 +184,7 @@ int (gameList_open)(void)
 	GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
 	GAME_VAR(int, 0x680bb0) = 0;
 	GAME_VAR(int, 0x4df818) = 0;
-	CALL(0x4045e0);   /* arena_4045e0 */
+	CALL(0x4045e0);   /* arena_clearChatRecord */
 	GAME_VAR(u32, GAME_VAR(u32, 0xa0b334)) = 0x180001;
 	GAME_CDECL(0x4521c0, int, int, int)(0x13, 0x65);   /* net_send */
 	GAME_VAR(int, 0x9dd840) = 0;
@@ -193,9 +193,9 @@ int (gameList_open)(void)
 }
 
 /* 0x406200: joining arena i of the list (99999: the one typed in, 0x4dbbd4): the search stopped first if it runs,
-   the connection made (0x452ec0; message 0x3f and the search stopped on a failure), the join (arena_453260, not
+   the connection made (0x452ec0; message 0x3f and the search stopped on a failure), the join (dplay_listSessions, not
    checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
-u32 (arena_406200)(int i)
+u32 (arena_joinListed)(int i)
 {
 	GAME_VAR(int, 0x4dbbec) = 0;
 	GAME_VAR(int, 0x4dbbf0) = 0;
@@ -304,7 +304,7 @@ u32 (room_draw)(void)
 		GAME_VAR(u8, 0x5b1b53) = 0;
 	CALL(0x43bfe0);   /* room_drawGameSettings */
 	if (GAME_VAR(int, 0x4db508) == 1)
-		CALL(0x4038e0);   /* arena_4038e0: the map list */
+		CALL(0x4038e0);   /* mapList_draw: the map list */
 	if (!GAME_VAR(int, 0x4dba88))
 		return 0;
 	return CALL(0x4355b0);   /* room_hostingStep */

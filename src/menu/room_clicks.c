@@ -53,7 +53,7 @@ void (room_startChat)(void)
 }
 
 /* 0x435f40: in room state 2, the button (room_432340) that stops the arena being set up: its flags off, the
-   arena's connection closed (arena_452fe0) and its timer (0x378) killed */
+   arena's connection closed (arena_leaveSession) and its timer (0x378) killed */
 void (room_stopArenaSetup)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0 || GAME_VAR(int, 0x9dce48) != 2)
@@ -63,7 +63,7 @@ void (room_stopArenaSetup)(void)
 		sound_playMenu(0);
 		GAME_VAR(int, 0x4dbb10) = 0;
 		GAME_VAR(int, 0x4dbb78) = 0;
-		arena_452fe0();
+		arena_leaveSession();
 		GAME_VAR(int, 0x4db8b4) = 0;
 		KillTimer(g_hWndMain, 0x378);
 	}
@@ -305,7 +305,7 @@ u32 (room_433d30)(void)
 }
 
 /* 0x4355b0: the game room's hosting step (0x4ded60): 1 hosts the room's session (the music stopped, 0x452ec0, then
-   arena_453090 with the room's settings record 0x5b1b30 and name 0x9dd570) and takes its settings (the 32-byte
+   dplay_host with the room's settings record 0x5b1b30 and name 0x9dd570) and takes its settings (the 32-byte
    rules, +0x20 .. +0x25); then 0 or 3 (3 also sets 0x907b2c) move on to 2, and 4 does too with message 0x2a.
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
@@ -320,10 +320,10 @@ u32 (room_hostingStep)(void)
 		GAME_VAR(int, 0x67ef04) = 1;
 		music_shutdown();
 		GAME_VAR(int, 0x9dce48) = 0;
-		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_452ec0 */
+		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		GAME_CDECL(0x453090, int, const void *, const char *, int, int, int, int, int, int)(
 			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
-			room[0x24], room[0x25], 0);   /* arena_453090: host */
+			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		GAME_VAR(int, 0x9dad94) = (signed char)room[0x20];
 		GAME_VAR(int, 0x76d368) = (signed char)room[0x23];
 		memcpy((void *)0x67fb44, room, 32);
@@ -361,7 +361,7 @@ u32 (app_onClose)(void)
 	if (GAME_VAR(int, 0x4dbb78)) {
 		GAME_VAR(int, 0x4dbb10) = 0;
 		GAME_VAR(int, 0x4dbb78) = 0;
-		GAME_CDECL(0x452fe0, void, void)();   /* arena_452fe0 */
+		GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
 		GAME_VAR(int, 0x4db8b4) = 0;
 		return r;
@@ -373,7 +373,7 @@ u32 (app_onClose)(void)
 	*(u32 *)game = *GAME_VAR(u32 *, 0x4dbbf8);
 	GAME_VAR(u8, 0x5b1b54) = game[0x2d];
 	GAME_VAR(u8, 0x5b1b55) = game[0x2e];
-	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* arena_453180 */
+	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)

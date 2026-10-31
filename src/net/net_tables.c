@@ -14,7 +14,7 @@ int (net_findFreeSession)(void)
 }
 
 /* 0x4532b0: session i's value, 0 when out of range or unused */
-int (arena_4532b0)(int i)
+int (net_sessionValue)(int i)
 {
 	if (i > -1 && i <= GAME_VAR(int, 0xa0b41c) && GAME_VAR(int, 0xa0b470 + i * 8))
 		return GAME_VAR(int, 0xa0b474 + i * 8);
@@ -23,7 +23,7 @@ int (arena_4532b0)(int i)
 
 /* 0x4514a0: player slot (its low byte) taken by player id: the shorts at +0x10 .. +0x22 reset (two of them -1),
    +0x32 the current value of 0xa0b428 */
-void (arena_4514a0)(u32 slot, int id)
+void (net_takePlayerSlot)(u32 slot, int id)
 {
 	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };
 	u32 r = 0x9f9840 + (slot & 0xff) * 0x410;
@@ -34,7 +34,7 @@ void (arena_4514a0)(u32 slot, int id)
 }
 
 /* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
-void (arena_4515a0)(void)
+void (net_freeAllSlots)(void)
 {
 	memset((void *)0x9f93d8, 0, 0x40);
 	for (u32 r = 0x9f9840; r < 0x9fd940; r += 0x410)
@@ -53,12 +53,12 @@ u8 (net_claimPlayerSlot)(void)
 }
 
 /* 0x451410: a slot claimed for the local player (id 0xa0b424) when the session is up; 1 when done */
-int (arena_451410)(void)
+int (net_claimLocalSlot)(void)
 {
 	if (!GAME_VAR(int, 0xa0baf8))
 		return 0;
 	u8 slot = net_claimPlayerSlot();
-	arena_4514a0(slot, GAME_VAR(int, 0xa0b424));
+	net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
 	GAME_VAR(u8, 0x9fd954) = slot;
 	GAME_VAR(int, 0x9f9838) = 1;
 	return 1;
@@ -66,7 +66,7 @@ int (arena_451410)(void)
 
 /* 0x454130: with a session list (0xa0b384), every used session record (8 bytes from 0xa0b470: used, a malloc'd copy)
    freed and the list emptied (count 0xa0b41c). Returns the count, or 0 without a list */
-u32 (arena_454130)(void)
+u32 (net_freeSessionList)(void)
 {
 	if (!GAME_VAR(int, 0xa0b384))
 		return 0;
@@ -88,7 +88,7 @@ u32 (arena_454130)(void)
 /* 0x4542a0: the address typed as "a.b.c.d" (0xa0b43c, cut up in place by strtok) as (a << 24) | b << 16 | c << 8 | d
    (a not masked). Each part goes into a 4-byte slot of a zeroed 20-byte buffer (a longer part runs into the next
    slot); more than four parts would overrun the original's stack, and a string with none makes it copy from NULL */
-int (arena_4542a0)(void)
+int (net_parseAddress)(void)
 {
 	char buf[20];
 	memset(buf, 0, sizeof buf);
@@ -218,7 +218,7 @@ int (net_asyncSelect)(void *wnd, int which)
 }
 
 /* 0x453720: DirectPlay's start: its state and the session table cleared, COM started, the DirectPlay objects made
-   (arena_453770); on a failure everything released again and the error returned, else 0 */
+   (dplay_check); on a failure everything released again and the error returned, else 0 */
 int (dplay_coInit)(void)
 {
 	GAME_VAR(int, 0xa0b42c) = 0;
@@ -228,7 +228,7 @@ int (dplay_coInit)(void)
 	GAME_VAR(int, 0xa0b438) = 0;
 	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
 	if (hr >= 0) {
-		hr = GAME_CDECL(0x453770, int, void)();      /* arena_453770 */
+		hr = GAME_CDECL(0x453770, int, void)();      /* dplay_check */
 		if (hr >= 0)
 			return 0;
 	}
@@ -279,7 +279,7 @@ void (net_receiveServerReply)(void)
 }
 
 /* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
-   the connection's state reset (arena_4519b0); then the connection flags cleared. Returns what the original leaves
+   the connection's state reset (arena_freeBuffers); then the connection flags cleared. Returns what the original leaves
    in eax */
 u32 (net_closeSockets)(void)
 {
@@ -293,7 +293,7 @@ u32 (net_closeSockets)(void)
 		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
-		r = GAME_CDECL(0x4519b0, u32, void)();                                   /* arena_4519b0 */
+		r = GAME_CDECL(0x4519b0, u32, void)();                                   /* arena_freeBuffers */
 	}
 	GAME_VAR(int, 0xa0b300) = 0;
 	GAME_VAR(int, 0xa0b380) = 0;
@@ -309,7 +309,7 @@ static void *alloc_clear(u32 n)
 }
 
 /* 0x451600: the connection to `kind` (100 the lobby, 101 the game server) started afresh: the server table cleared,
-   both sockets closed (a blocking call cancelled, sending shut down; arena_4519b0 after each), the server's address
+   both sockets closed (a blocking call cancelled, sending shut down; arena_freeBuffers after each), the server's address
    taken (its host name, or what net_resolveHost made of it, into 0xa055e4) with its port (0xa05326); then every
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
 void (net_closeAll)(int kind)
@@ -323,7 +323,7 @@ void (net_closeAll)(int kind)
 		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
-		arena_4519b0();
+		arena_freeBuffers();
 	}
 	if (kind == 100 || kind == 101) {
 		const char *host = (const char *)(kind == 100 ? 0xa0b24c : 0xa055fc);
@@ -715,9 +715,9 @@ static u32 global_free_r(void *p)
 
 /* 0x450a60: every waiting DirectPlay message received (0x450bc0) into a global block of 0x9fd940 bytes, grown when
    too small: system messages (from 0) go to 0x450c20 and the next is read; the first player message goes to
-   arena_451090 (a type 7 one longer than 0x49 bytes is dropped). The block is freed at the end (its size reset).
+   net_handleMessage (a type 7 one longer than 0x49 bytes is dropped). The block is freed at the end (its size reset).
    Returns what the original leaves in eax */
-u32 (arena_450a60)(void)
+u32 (net_receiveAll)(void)
 {
 	u8 *buf = NULL;
 	u32 size = GAME_VAR(u32, 0x9fd940), r;
@@ -743,7 +743,7 @@ u32 (arena_450a60)(void)
 		}
 		if (*(u32 *)buf == 7 && GAME_VAR(u32, 0x9fd940) > 0x49)
 			return global_free_r(buf);
-		r = GAME_CDECL(0x451090, u32, void *, u32, u32)(buf, GAME_VAR(u32, 0x9fd940), from);   /* arena_451090 */
+		r = GAME_CDECL(0x451090, u32, void *, u32, u32)(buf, GAME_VAR(u32, 0x9fd940), from);   /* net_handleMessage */
 		break;
 	}
 	if (!buf)
@@ -775,7 +775,7 @@ static int create_player(void *play, u32 *id, const char *name)
 /* 0x453cf0: a session hosted (Open with DPOPEN_CREATE): flags 0x44, the instance GUID from *0xa0bad8, the session
    name, at most maxPlayers, the user words (user3 = hi << 8 | lo, sign-extended bytes; user4 the local address,
    unless 0xa0b418), then the local player `player`: its id into 0xa0b424, data into 0xa0b428, the host flag
-   0xa0baf8 set and a player slot claimed (arena_451410). 0 without DirectPlay or on a failure, else 1 */
+   0xa0baf8 set and a player slot claimed (net_claimLocalSlot). 0 without DirectPlay or on a failure, else 1 */
 int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 maxPlayers, u32 user2,
                         signed char hi, signed char lo, u32 data)
 {
@@ -791,7 +791,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	desc[18] = (u32)((int)hi << 8 | (int)lo);
 	if (!GAME_VAR(int, 0xa0b418)) {
 		GAME_CDECL(0x454220, void, void)();                 /* net_getLocalAddress */
-		desc[19] = GAME_CDECL(0x4542a0, u32, void)();       /* arena_4542a0 */
+		desc[19] = GAME_CDECL(0x4542a0, u32, void)();       /* net_parseAddress */
 		play = GAME_VAR(void *, 0xa0b404);
 	}
 	if (COM(play, 0x60, int, void *, u32)(play, desc, 2) < 0)   /* Open(DPOPEN_CREATE) */
@@ -802,7 +802,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	GAME_VAR(u32, 0xa0b428) = data;
 	GAME_VAR(u32, 0xa0b424) = id;
 	GAME_VAR(int, 0xa0baf8) = 1;
-	GAME_CDECL(0x451410, void, void)();   /* arena_451410 */
+	GAME_CDECL(0x451410, void, void)();   /* net_claimLocalSlot */
 	return 1;
 }
 
@@ -877,13 +877,13 @@ static void dplay_lobbyConnect(void)
 }
 
 /* 0x453790: DirectPlay made: first through a lobby that started the game (dplay_lobbyConnect), then (either way) a plain
-   DirectPlay object (arena_4539f0; its failure returned) and the connections listed (EnumConnections of the game's
+   DirectPlay object (dplay_createLobby; its failure returned) and the connections listed (EnumConnections of the game's
    application with dplay_enumConnections). The lobby's settings block is freed (but 0xa0baf4 kept). Returns the
    listing's failure, else 0 */
 int (dplay_create)(void)
 {
 	dplay_lobbyConnect();
-	int r = GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404);   /* arena_4539f0 */
+	int r = GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404);   /* dplay_createLobby */
 	if (r < 0)
 		return r;
 	void *play = GAME_VAR(void *, 0xa0b404);
@@ -901,7 +901,7 @@ int (dplay_create)(void)
    noted in 0x9fd954 and 0x9f9838 raised; 7 another player's slot data: the slot taken by `from` if it was free,
    then a 0x40-byte block (size +5, data +9) stored when the size is right. Returns what the original leaves in
    eax */
-u32 (arena_451090)(const u8 *message, u32 size, u32 from)
+u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 {
 	(void)size;
 	u32 type = *(const u32 *)message;
@@ -921,14 +921,14 @@ u32 (arena_451090)(const u8 *message, u32 size, u32 from)
 		GAME_CDECL(0x454130, void, void)();
 		return GAME_CDECL(0x4515a0, u32, void)();
 	case 6:
-		arena_4514a0(slot, GAME_VAR(int, 0xa0b424));
+		net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
 		*(int *)player = 1;
 		GAME_VAR(int, 0x9f9838) = 1;
 		GAME_VAR(u8, 0x9fd954) = (u8)slot;
 		return slot;
 	case 7:
 		if (*(int *)player != 1) {
-			arena_4514a0(slot, from);
+			net_takePlayerSlot(slot, from);
 			*(int *)player = 1;
 			*(u32 *)(player + 4) = from;
 		} else if (length != 0x40)
@@ -947,7 +947,7 @@ u32 (arena_451090)(const u8 *message, u32 size, u32 from)
    the service provider (0xa0bad8: 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and its stored connection (0xa0badc from
    0xa0bae0 + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
    host `address` (or 0xa0bb0c), size query then fill, into a new block 0xa0baf0. Then (when there is a connection) a
-   new DirectPlay object (arena_4539f0) initialised with it and its caps kept (timeout, buffer and queue sizes into
+   new DirectPlay object (dplay_createLobby) initialised with it and its caps kept (timeout, buffer and queue sizes into
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
 int (dplay_initConnection)(int kind, const char *address)
 {
@@ -981,7 +981,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	if (!GAME_VAR(void *, 0xa0badc))
 		return 1;
-	if (GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404) < 0 || !GAME_VAR(void *, 0xa0b404))   /* arena_4539f0 */
+	if (GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404) < 0 || !GAME_VAR(void *, 0xa0b404))   /* dplay_createLobby */
 		return 0;
 	void *play = GAME_VAR(void *, 0xa0b404);
 	if (COM(play, 0x98, int, void *, u32)(play, GAME_VAR(void *, 0xa0badc), 0) < 0)   /* InitializeConnection */
@@ -1203,8 +1203,8 @@ u32 (net_disconnect)(void)
 	return r;
 }
 
-/* 0x450bb0, 0x4532e0: jumps to arena_450a60 and net_getLocalAddress (their eax passed on) */
-u32 (FUN_00450bb0)(void) { return arena_450a60(); }
+/* 0x450bb0, 0x4532e0: jumps to net_receiveAll and net_getLocalAddress (their eax passed on) */
+u32 (FUN_00450bb0)(void) { return net_receiveAll(); }
 int (jmp_net_getLocalAddress_4532e0)(void) { return net_getLocalAddress(); }
 
 /* ---- packets to the lobby (socket 0xa055f8) and the game server (0xa05630): a kind word, then the kind's buffer ---- */

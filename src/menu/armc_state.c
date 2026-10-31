@@ -27,7 +27,7 @@ void (armc_backupColours)(void)
 }
 
 /* 0x41ced0: the undo buffer into colour slots 0 .. 4 */
-void (armc_41ced0)(void)
+void (armc_restoreColourUndo)(void)
 {
 	for (int s = 0; s < 5; s++)
 		copy(g_armcColourBits + s * 6, g_colourUndo, 6);
@@ -35,7 +35,7 @@ void (armc_41ced0)(void)
 
 /* 0x40ed20: each part list's cursor onto the chosen part (its first place in the unlocked list; 0 when not
    listed) */
-void (armc_40ed20)(void)
+void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
 		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8, 0x4dc760 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c, 0x4dc764 },
@@ -54,7 +54,7 @@ void (armc_40ed20)(void)
 }
 
 /* 0x40e670: the menu camera put back as it was before the screen (angles and position), the preview off */
-void (armc_40e670)(void)
+void (armc_restoreMenuCamera)(void)
 {
 	copy((u32 *)0x4df024, (const u32 *)0x4df870, 3);
 	copy((u32 *)0x680378, (const u32 *)0x76d388, 3);
@@ -79,7 +79,7 @@ void (armc_loadSavedMech)(void)
 }
 
 /* 0x40f830: 1 if item list entry i is a colour part (27 and up) already in one of the two item slots */
-int (armc_40f830)(int i)
+int (armc_colourPartEquipped)(int i)
 {
 	int item = ((const int *)0x4dcca4)[i];
 	return item >= 0x1b && (item == GAME_VAR(int, 0x4dcb18) || item == GAME_VAR(int, 0x4dcb1c));

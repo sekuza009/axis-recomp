@@ -108,7 +108,7 @@ static void marker(float pos, int y)
    when 0x4dbc68 is set; the sliders' tracks, bars and hue markers; two buttons (0x7517a4; 3 / 4 under the pointer,
    by armc_40e4d0, lit) and the box "<0x756da4> <0x751924 name of 0x4dceac>". The original leaves eax to callers
    that ignore it */
-void (armc_41a280)(void)
+void (armc_drawColourEditor)(void)
 {
 	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e4d0 */
 	for (int box = 0; box < 2; box++) {
@@ -257,7 +257,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    0x757e24 without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: 0x757da4), a part type only
    (0x4dc194 = -1: 0x765fa4 and its kind 0x7652a4), or the 16 stats under their labels (0x7574a4), the sixth with
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
-void (armc_419160)(void)
+void (armc_drawBuildScreen)(void)
 {
 	int hovered = GAME_CDECL(0x40e490, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e490 */
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
@@ -315,11 +315,11 @@ void (armc_419160)(void)
 		bind_texture(GAME_VAR(int, 0x4dcc88));
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
-		armc_4125c0(x + 5, y + 0x158, (const char *)0x4dc150);
+		armc_drawText(x + 5, y + 0x158, (const char *)0x4dc150);
 		int part = GAME_VAR(int, 0x4dc77c);
 		int type = g_buildSlot > 3 ? ((const int *)0x4dcca4)[part] : ((const int *)0x4dc79c)[part];
 		TEXT(white);
-		armc_4125c0(x + 5, y + 0x16a, (const char *)(0x7641a4 + type * 0x80));
+		armc_drawText(x + 5, y + 0x16a, (const char *)(0x7641a4 + type * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(GAME_VAR(int, 0x9db0a4));
@@ -342,13 +342,13 @@ void (armc_419160)(void)
 		TEXT(yellow);
 		text_draw8(x + 8, y + 0x10, (const char *)0x765fa4);
 		TEXT(white);
-		armc_4125c0(x + 8, y + 0x28, (const char *)(0x7652a4 + STAT(int, 8) * 0x80));
+		armc_drawText(x + 8, y + 0x28, (const char *)(0x7652a4 + STAT(int, 8) * 0x80));
 		return;
 	}
 	TEXT(bright);
 	TEXT(white);
 	for (int k = 0; k < 16; k++)
-		armc_4125c0(x + 8, y + 8 + k * 0x10, (const char *)(0x7574a4 + k * 0x80));
+		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(0x7574a4 + k * 0x80));
 	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };

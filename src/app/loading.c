@@ -223,7 +223,7 @@ int (app_checkCdAndLoad)(void *instance)
 	data_loadPilotProfiles();
 	data_loadMapInfo();
 	data_loadSkirmishInfo();
-	arena_42bc00();
+	arena_initOptionTexts();
 	profile_scanSaves();
 	app_42f940();
 	hud_42fb40();

@@ -4,7 +4,7 @@
 #include "../game.h"
 
 /* 0x461320: the name (copied with its terminator) */
-void THISCALL (armc_461320)(Scene *scene, const char *name)
+void THISCALL (mech_setName)(Scene *scene, const char *name)
 {
 	int i = 0;
 	do
@@ -15,7 +15,7 @@ void THISCALL (armc_461320)(Scene *scene, const char *name)
 }
 
 /* 0x461370: (unclear) a value kept with the player (its record's +0x44 and its actors') */
-void THISCALL (armc_461370)(Scene *scene, int v)
+void THISCALL (mech_setValue)(Scene *scene, int v)
 {
 	scene->mechValue = v;
 	if (scene->localPlayer >= 0)
@@ -73,7 +73,7 @@ void THISCALL (armc_setBoosterIndex)(Scene *scene, int index)
 }
 
 /* 0x461510: item slot slot (0 .. 5) */
-void THISCALL (armc_461510)(Scene *scene, int slot, int item)
+void THISCALL (mech_setItem)(Scene *scene, int slot, int item)
 {
 	scene->mechItems[slot] = item;
 	if (scene->localPlayer >= 0)
@@ -81,32 +81,32 @@ void THISCALL (armc_461510)(Scene *scene, int slot, int item)
 }
 
 /* 0x461250: the whole mech at once; the player's record then marked used */
-void THISCALL (armc_461250)(Scene *scene, const char *name, int v, int team, int head, int chest, int arm, int leg,
+void THISCALL (mech_setAll)(Scene *scene, const char *name, int v, int team, int head, int chest, int arm, int leg,
                             int booster, int item0, int item1, int item2, int item3, int item4, int item5)
 {
-	armc_461320(scene, name);
-	armc_461370(scene, v);
+	mech_setName(scene, name);
+	mech_setValue(scene, v);
 	match_4613a0(scene, team);
 	armc_setHeadIndex(scene, head);
 	armc_setChestIndex(scene, chest);
 	armc_setArmIndex(scene, arm);
 	armc_setLegIndex(scene, leg);
 	armc_setBoosterIndex(scene, booster);
-	armc_461510(scene, 0, item0);
-	armc_461510(scene, 1, item1);
-	armc_461510(scene, 2, item2);
-	armc_461510(scene, 3, item3);
-	armc_461510(scene, 4, item4);
-	armc_461510(scene, 5, item5);
+	mech_setItem(scene, 0, item0);
+	mech_setItem(scene, 1, item1);
+	mech_setItem(scene, 2, item2);
+	mech_setItem(scene, 3, item3);
+	mech_setItem(scene, 4, item4);
+	mech_setItem(scene, 5, item5);
 	if (scene->localPlayer >= 0)
 		player_markUsed(STAGE(scene), scene->localPlayer);
 }
 
 /* 0x461540 (thiscall on the game): the shown actor (+0x234240d; none when negative) given a weapon slot (none given,
-   negative: its current one, +0x1eccbb0) through the stage's refresh (armc_45ddc0), its position and two angles kept
+   negative: its current one, +0x1eccbb0) through the stage's refresh (stage_remakePlayerActor), its position and two angles kept
    across that; its +0x1eccf0c set unless it is the stage's own (+0x2221fa0). A slot over 3 first selects and updates
    its +0x1eccbb4 one. Its callers ignore the eax it leaves */
-void THISCALL (armc_461540)(u8 *game, int slot)
+void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 {
 #define I GAME_VAR(int, game + 0x234240d)
 #define ACTOR(type, offset) GAME_VAR(type, game + I * 0x8888 + (offset))
@@ -118,7 +118,7 @@ void THISCALL (armc_461540)(u8 *game, int slot)
 	int chosen = slot >= 0 ? slot : ACTOR(int, 0x1eccbb0);
 	ACTOR(int, 0x1eccf0c) = I != GAME_VAR(int, game + 0x2221fa0);
 	Stage *stage = (Stage *)(game + 0x1f36c8);
-	armc_45ddc0(stage);
+	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)
 		ACTOR(u32, 0x1eccbf0 + k * 4) = at[k];
 	ACTOR(float, 0x1eccbfc) = f32(fld_m((const float *)&angle0));

@@ -84,7 +84,7 @@ int THISCALL (SkeletonManager_release)(void *self) { free_owned(self); SkeletonM
 int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); CollisionVolume_clear(self); return 0; }
 
 /* ---- getters ---- */
-int (arena_4532a0)(void) { return GAME_VAR(int, 0xa0b41c); }
+int (net_sessionCount)(void) { return GAME_VAR(int, 0xa0b41c); }
 int (gfx_getWidth)(void) { return GAME_VAR(int, 0xa0e810); }
 int (gfx_getHeight)(void) { return GAME_VAR(int, 0xa0e928); }
 float (FUN_004686d0)(void) { return GAME_VAR(float, 0x4c4dec); }
@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_resetActors(s);
 	scene_reset(s);
 	if (GAME_VAR(int, g + 8) == 2) {
-		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* armc_45dfe0 */
+		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* stage_setValue202e8dc */
 		GAME_VAR(int, g + 0x2221f9c) = 0;
 		for (int k = 0; k < 3; k++) {
 			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;

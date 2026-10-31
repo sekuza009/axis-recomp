@@ -47,10 +47,10 @@ static void part_info(u8 *rec, int idx)
 }
 
 /* 0x41ca50: the record of weapon slot slot (0x4dbe50, 0x80 apart) */
-void (armc_41ca50)(int slot, int idx) { part_info((u8 *)0x4dbe50 + slot * 0x80, idx); }
+void (armc_weaponSlotRecord)(int slot, int idx) { part_info((u8 *)0x4dbe50 + slot * 0x80, idx); }
 
 /* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in 0x4dc198 */
-void (armc_41cca0)(int idx)
+void (armc_viewedPartRecord)(int idx)
 {
 	part_info((u8 *)0x4dc150, idx);
 	if (idx != -1 && GAME_VAR(int, 0x4dc194) == -1)
@@ -122,7 +122,7 @@ static void panel_name(u32 dst, const char *name)
 /* 0x41b750: the ARM CENTER's part panels for the local player's mech: for its head, chest, arm, leg and weapon (the
    player record's indices +0x175553c ..) the part's name and stats, some scaled by the game's constants. Returns the
    weapon's index */
-int (armc_41b750)(void)
+int (armc_drawPartPanels)(void)
 {
 	u8 *g = GAME_VAR(u8 *, 0x9087b4);
 	u8 *player = g + FIELD(int, g + FIELD(int, g, 0x234240d) * 0x8888, 0x1eccb7c) * 0x47fd2;
@@ -170,7 +170,7 @@ int (armc_41b750)(void)
    (wrapping at both ends): its cursor, the list's count and entries, the chosen part (0x4dc760 + 4 * part), and
    the mech marked changed (0x4dcc58). Returns what the original leaves in eax: the new part on the even steps back
    and odd steps on, else the cursor (another part: the part number) */
-u32 (armc_40f340)(u32 part, int dir)
+u32 (armc_stepPart)(u32 part, int dir)
 {
 	static const struct { u32 cursor, count, list; } parts[5] = {
 		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c }, { 0x4dbc7c, 0x4dca90, 0x4dc964 },

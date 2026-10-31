@@ -734,7 +734,7 @@ void (room_4388e0)(void)
 	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
-void (arena_4091b0)(void)
+void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };

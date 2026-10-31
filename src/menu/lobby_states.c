@@ -363,16 +363,16 @@ u32 (lobby_keysBack)(void)
 }
 
 /* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (0x4dbb3c) and not on
-   sub-screen 5, the player panel (arena_409bc0), or with a dialog open just its frame. Returns what the original
+   sub-screen 5, the player panel (arena_drawNameDialog), or with a dialog open just its frame. Returns what the original
    leaves in eax */
 u32 (lobbyPlayer_draw)(void)
 {
-	GAME_CDECL(0x4091b0, void, void)();   /* arena_4091b0: the tunnel */
+	GAME_CDECL(0x4091b0, void, void)();   /* arena_drawTunnel: the tunnel */
 	int mode = GAME_VAR(int, 0x4dbb3c);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
 		return mode;
 	if (!g_dialogOpen)
-		return GAME_CDECL(0x409bc0, u32, void)();   /* arena_409bc0 */
+		return GAME_CDECL(0x409bc0, u32, void)();   /* arena_drawNameDialog */
 	return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x4dbb68), GAME_VAR(int, 0x4dbb6c),
 	                                                     GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74));   /* menu_drawFrame */
 }
@@ -444,7 +444,7 @@ u32 (menuState400_frame)(void)
 		return CALL(0x408680);       /* lobbyTop_drawTitle */
 	case 0:
 		menu_drawBackground();
-		CALL(0x408270);              /* arena_408270: the lobby's camera */
+		CALL(0x408270);              /* arena_camera: the lobby's camera */
 		return CALL(0x40cf80);       /* lobbyPlayer_draw */
 	case 1:
 		menu_drawBackground();
@@ -488,7 +488,7 @@ u32 (lobby_onStateChange)(void)
 }
 
 /* 0x406b60: a click on the arena list's close button (mode 2, no dialog open): the list closed, the session search
-   stopped (arena_452fe0) and its timer (0x378) killed. Returns what the original leaves in eax */
+   stopped (arena_leaveSession) and its timer (0x378) killed. Returns what the original leaves in eax */
 u32 (lobby_close)(void)
 {
 	if (g_dialogOpen)
@@ -501,7 +501,7 @@ u32 (lobby_close)(void)
 		return hit;
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4dbb78) = 0;
-	CALL(0x452fe0);   /* arena_452fe0 */
+	CALL(0x452fe0);   /* arena_leaveSession */
 	GAME_VAR(int, 0x4db8b4) = 0;
 	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
 }
@@ -619,7 +619,7 @@ u32 (room_keepSettings)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b
    the original leaves in eax */
 u32 (lobbyCreate_draw)(void)
 {
-	CALL(0x4091b0);   /* arena_4091b0: the tunnel */
+	CALL(0x4091b0);   /* arena_drawTunnel: the tunnel */
 	int mode = GAME_VAR(int, 0x4dbb3c);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
 		return (u32)mode;
@@ -638,10 +638,10 @@ u32 (lobbyCreate_draw)(void)
 		GAME_VAR(u8, 0x4ded43) = 0;
 	CALL(0x40b750);   /* arena_createDraw */
 	if (GAME_VAR(int, 0x4db508) == 1)
-		CALL(0x4038e0);   /* arena_4038e0: the map list */
+		CALL(0x4038e0);   /* mapList_draw: the map list */
 	if (!GAME_VAR(int, 0x4dba88))
 		return 0;
-	return CALL(0x405b80);   /* arena_405b80 */
+	return CALL(0x405b80);   /* arena_connectionOutcome */
 }
 
 /* 0x408110: the create screen's quit dialog keys (no other dialog open): one closes it, the other starts the arena:
@@ -733,7 +733,7 @@ static void take_session(const u8 *rec)
    (+0x2d, +0x2e) and the join's argument (+0); a refused join shows message 0x36 (full) or 0x35. Joined, the music
    stops and the session's settings are taken: the 32-byte rules (+4), +0x24, +0x25, +0x2c, the colours. Returns the
    message's eax, or the colour +0x2e */
-u32 (arena_405690)(int session)
+u32 (arena_joinSession)(int session)
 {
 	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
 	GAME_VAR(int, 0x4dbbec) = 0;
@@ -741,7 +741,7 @@ u32 (arena_405690)(int session)
 	GAME_VAR(u8, 0x4ded45) = GAME_VAR(u8, 0x4db54d) = rec[0x2e];
 	GAME_VAR(u8, 0x4ded44) = GAME_VAR(u8, 0x4db54c) = rec[0x2d];
 	int r = GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, *(const u32 *)rec, (const char *)0x4dedb0,
-	                                                               GAME_VAR(int, 0x4dedd0));   /* arena_453180: join */
+	                                                               GAME_VAR(int, 0x4dedd0));   /* dplay_join: join */
 	if (r != 0x1f4)
 		return GAME_CDECL(0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
 	take_session(rec);
@@ -752,7 +752,7 @@ u32 (arena_405690)(int session)
 /* 0x4062b0 (named app_shutdown; by use the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
    message 0x44 and the connection closed; else a pending join (0x4db708) of the game picked (0x4db710: 99999 for
    the one received at 0x4dbbf8, copied into a session record at 0x9dae20, otherwise its row of the list, which
-   takes the received id) is answered (arena_453180): joined, the session's settings are taken and the lobby
+   takes the received id) is answered (dplay_join): joined, the session's settings are taken and the lobby
    connection closed; refused, messages 0x43 (501), 0x42 (502, 503), 0x44 (504), 0x45 (505) and the connection
    closed. The caller ignores the eax it leaves */
 void (app_shutdown)(void)
@@ -760,7 +760,7 @@ void (app_shutdown)(void)
 	if (GAME_VAR(int, 0x4dbb78)) {
 		GAME_VAR(int, 0x4dbb10) = 0;
 		GAME_VAR(int, 0x4dbb78) = 0;
-		arena_452fe0();
+		arena_leaveSession();
 		menu_showMessage(0x44);
 		GAME_VAR(int, 0x4db8b4) = 0;
 		return;
@@ -788,7 +788,7 @@ void (app_shutdown)(void)
 		GAME_VAR(u8, 0x4ded44) = rec[0x2d];
 		GAME_VAR(u8, 0x4ded45) = rec[0x2e];
 	}
-	int r = arena_453180(0, *(const u32 *)rec, (const char *)0x4dedb0, GAME_VAR(int, 0x4dedd0));
+	int r = dplay_join(0, *(const u32 *)rec, (const char *)0x4dedb0, GAME_VAR(int, 0x4dedd0));
 	if (r == 0x1f4) {
 		take_session(rec);
 		net_disconnect();
@@ -796,7 +796,7 @@ void (app_shutdown)(void)
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };   /* 501 .. 505 */
 		if ((u32)(r - 0x1f5) <= 4)
 			menu_showMessage(message[r - 0x1f5]);
-		arena_452fe0();
+		arena_leaveSession();
 	}
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4db708) = 0;
@@ -973,7 +973,7 @@ u32 (arena_loadAndQuit)(void)
 		GAME_CDECL(0x404b30, void, void)();   /* lobby_setSubState1 */
 		memset((void *)0x4dbbd4, 0, 24);
 		strcpy((char *)0x4dbbd4, (const char *)0x4de748);
-		u32 r = GAME_CDECL(0x406200, u32, int)(99999);   /* arena_406200 */
+		u32 r = GAME_CDECL(0x406200, u32, int)(99999);   /* arena_joinListed */
 		GAME_VAR(int, 0x9da49c) = 0x69;
 		return r;
 	}
@@ -1015,7 +1015,7 @@ u32 (lobby_pageClicks)(void)
 	}
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	int button = GAME_CDECL(0x404520, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_404520 */
+	int button = GAME_CDECL(0x404520, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* createArena_hitTest */
 	if (button == 0x11) {
 		GAME_VAR(int, 0x4db55c) = 0;
 		return 0;
@@ -1038,11 +1038,11 @@ u32 (lobby_pageClicks)(void)
 }
 
 /* 0x405b80: the arena connection's outcome (0x4ded60; 2 nothing to do). 1 connected: the music stopped, the player
-   slot opened (arena_452ec0), the arena hosted with the player's record (0x4ded20: name, 0x4dedb0, colours,
+   slot opened (arena_openSession), the arena hosted with the player's record (0x4ded20: name, 0x4dedb0, colours,
    corporation; 0x4dedd0) and its settings taken for the game, 0x4ded54 set; then (as the state stands after) 0
    closed, 3 closed for a ladder game (0x907b2c), 4 refused (message 0x46): the connection closed (net_451e60) and
    the state back to 2. Returns what the original leaves in eax */
-u32 (arena_405b80)(void)
+u32 (arena_connectionOutcome)(void)
 {
 	int state = GAME_VAR(int, 0x4ded60);
 	if (state == 2)
@@ -1054,10 +1054,10 @@ u32 (arena_405b80)(void)
 		GAME_VAR(int, 0x67ef04) = 1;
 		music_shutdown();
 		GAME_VAR(int, 0x4dbb3c) = 0;
-		GAME_CDECL(0x452ec0, void, int, int)(0, 0);   /* arena_452ec0 */
+		GAME_CDECL(0x452ec0, void, int, int)(0, 0);   /* arena_openSession */
 		GAME_CDECL(0x453090, void, const void *, const void *, int, int, int, int, int, u32)(me, (const void *)0x4dedb0,
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
-			me[0x24], me[0x25], GAME_VAR(u32, 0x4dedd0));   /* arena_453090: host */
+			me[0x24], me[0x25], GAME_VAR(u32, 0x4dedd0));   /* dplay_host: host */
 		GAME_VAR(int, 0x9dad94) = (signed char)me[0x20];
 		memcpy((void *)0x67fb44, me, 32);
 		GAME_VAR(int, 0x9da3e0) = (signed char)me[0x22];
@@ -1144,7 +1144,7 @@ u32 (lobbyTop_connect)(void)
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
-			GAME_CDECL(0x452fe0, void, void)();   /* arena_452fe0: the arena left */
+			GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession: the arena left */
 			GAME_VAR(int, 0x4dbb3c) = 0;
 			r = GAME_CDECL(0x41e760, u32, int)(0);
 		}
@@ -1153,7 +1153,7 @@ u32 (lobbyTop_connect)(void)
 }
 
 /* 0x407410: the "create arena" page clicked (no field being typed, page state 2, no message box; a right click leaves
-   the arena). Buttons (arena_404520): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
+   the arena). Buttons (createArena_hitTest): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
    14 the map on and 13 back (lobby_4068d0), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
    create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; mapList_startEdit). Returns what
@@ -1169,13 +1169,13 @@ u32 (arena_createClick)(void)
 		return mode;
 	if (GAME_VAR(int, 0x4ded8c)) {
 		sound_playMenu(0);
-		u32 r = GAME_CDECL(0x452fe0, u32, void)();   /* arena_452fe0: the arena left */
+		u32 r = GAME_CDECL(0x452fe0, u32, void)();   /* arena_leaveSession: the arena left */
 		GAME_VAR(int, 0x4dbb3c) = 0;
 		return r;
 	}
 	if (!GAME_VAR(int, 0x4ded88) || mode != 2)
 		return mode;
-	u32 button = GAME_CDECL(0x404520, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_404520 */
+	u32 button = GAME_CDECL(0x404520, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* createArena_hitTest */
 	u8 *players = (u8 *)0x4db549, *custom = (u8 *)0x4db54a, *type = (u8 *)0x4db54b;
 	u32 r;
 	u8 old;
@@ -1266,7 +1266,7 @@ void (lobbyJoin_keysChat)(void)
 		if (input_justPressed(g_keyBack)) {
 			GAME_VAR(int, 0x4dbb10) = 0;
 			GAME_VAR(int, 0x4dbb78) = 0;
-			arena_452fe0();
+			arena_leaveSession();
 			GAME_VAR(int, 0x4db8b4) = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
@@ -1312,7 +1312,7 @@ void (lobbyJoin_keysChat)(void)
 	}
 	if (input_justPressed(g_keyCancel2)) {
 		GAME_VAR(int, 0xa0b36c) = 0;
-		arena_452fe0();
+		arena_leaveSession();
 		net_disconnect();
 		GAME_VAR(int, 0x4df018) = 1;
 		GAME_VAR(int, 0x4dbb3c) = 0;
@@ -1325,7 +1325,7 @@ void (lobbyJoin_keysChat)(void)
 		GAME_VAR(int, 0x4df018) = 1;
 		GAME_VAR(int, 0x76d484) = -1;
 		GAME_VAR(int, 0x4db718) = 0;
-		arena_452fe0();
+		arena_leaveSession();
 		net_disconnect();
 		if (GAME_VAR(int, 0x4db8b8) == 1) {
 			GAME_VAR(int, 0x4db8b8) = 0;
@@ -1341,7 +1341,7 @@ void (lobbyJoin_keysChat)(void)
 		GAME_VAR(int, 0xa0b36c) = 0;
 		GAME_VAR(u32, 0x4dba80) = 0x3f800000;
 		GAME_VAR(int, 0x4df018) = 1;
-		arena_452fe0();
+		arena_leaveSession();
 		net_disconnect();
 		GAME_VAR(int, 0x4dbb3c) = 0;
 		return;
@@ -1354,9 +1354,9 @@ void (lobbyJoin_keysChat)(void)
 			net_disconnect();
 		}
 		if (GAME_VAR(int, 0x4dba84))
-			arena_452fe0();
+			arena_leaveSession();
 		GAME_VAR(int, 0xa0b368) = 0;
-		arena_452ec0(1, NULL);
+		arena_openSession(1, NULL);
 		GAME_VAR(int, 0x4dba90) = 1;
 		GAME_VAR(int, 0x4dba84) = 1;
 		GAME_VAR(int, 0x680bb8) = 0;
@@ -1371,7 +1371,7 @@ void (lobbyJoin_keysChat)(void)
 			return;
 		GAME_VAR(int, 0x4db718) = 0;
 		net_disconnect();
-		arena_452fe0();
+		arena_leaveSession();
 		GAME_VAR(int, 0xa0b368) = 0;
 		if (lobby_openConnection() == 1) {
 			GAME_VAR(int, 0x4dbaac) = 1;
@@ -1506,10 +1506,10 @@ static void special_map(const char *name, u8 *map)
 
 #define ARENA(off) GAME_VAR(signed char, 0x4ded20 + (off))   /* the arena's settings: the name, then the map (+0x20) .. */
 
-/* the arena hosted with its settings (arena_453090): 0 when that failed */
+/* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)
 {
-	return arena_453090((const char *)0x4ded20, (const char *)0x4dedb0, ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
+	return dplay_host((const char *)0x4ded20, (const char *)0x4dedb0, ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
 	                    ARENA(0x21), ARENA(0x23), (u8)ARENA(0x24), (u8)ARENA(0x25), GAME_VAR(int, 0x4dedd0));
 }
 
@@ -1534,7 +1534,7 @@ void (lobby_roomNameCheck)(void)
 	GAME_VAR(int, 0x67ef14) = 1;
 	GAME_VAR(int, 0x67ef04) = 1;
 	lobby_keepArenaSettings();
-	int hosted = arena_452ec0(1, NULL);
+	int hosted = arena_openSession(1, NULL);
 	if (hosted) {
 		special_map((const char *)0x4ded20, (u8 *)0x4ded40);
 		hosted = host_arena();
@@ -1543,7 +1543,7 @@ void (lobby_roomNameCheck)(void)
 		GAME_VAR(int, 0x4db55c) = 1;
 		GAME_VAR(int, 0x67ef14) = 0;
 		GAME_VAR(int, 0x67ef04) = was;
-		arena_452fe0();
+		arena_leaveSession();
 		return;
 	}
 	music_shutdown();
@@ -1561,7 +1561,7 @@ void (lobby_checkReservedName)(void)
 	GAME_VAR(int, 0x67ef04) = 1;
 	music_shutdown();
 	GAME_VAR(int, 0x4dbb3c) = 0;
-	arena_452ec0(0, NULL);
+	arena_openSession(0, NULL);
 	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
 	host_arena();
 	take_arena();

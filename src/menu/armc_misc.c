@@ -14,42 +14,42 @@
 
 /* 0x41dfb0: the parts page: the preview, the part lists (armc_40d990, a no-op in the patched game) and, unless the
    interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
-void (armc_41dfb0)(void)
+void (armc_drawPartsPage)(void)
 {
 	if (g_armcPreview != 0)
-		armc_41d600();
+		armc_updatePartsPreview();
 	if (g_armcModeShown != 3)
 		armc_40d990();
 	if (g_armcHideInterface == 0) {
-		armc_412450();
+		armc_drawModeTabs();
 		armc_drawStatsPanel();
 	}
 }
 
 /* 0x41dfe0: the colour page (its own preview) */
-void (armc_41dfe0)(void)
+void (armc_drawColourPage)(void)
 {
 	if (g_armcPreview != 0)
-		armc_41d8a0();
+		armc_updateColourPreview();
 	if (g_armcHideInterface == 0) {
-		armc_412450();
-		armc_419160();
+		armc_drawModeTabs();
+		armc_drawBuildScreen();
 	}
 }
 
 /* 0x41e010: the third page */
-void (armc_41e010)(void)
+void (armc_drawThirdPage)(void)
 {
 	if (g_armcPreview != 0)
-		armc_41d600();
+		armc_updatePartsPreview();
 	if (g_armcHideInterface == 0) {
-		armc_412450();
-		armc_41a280();
+		armc_drawModeTabs();
+		armc_drawColourEditor();
 	}
 }
 
 /* 0x41b710: the 3D view: projection, white, textures on, the menu camera */
-void (armc_41b710)(void)
+void (armc_setup3DView)(void)
 {
 	gfx_setProjection2D3D(1);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -58,7 +58,7 @@ void (armc_41b710)(void)
 }
 
 /* 0x4125c0: text in the font that suits the language (language 2 uses the small 5-pixel font) */
-void (armc_4125c0)(int x, int y, const char *text)
+void (armc_drawText)(int x, int y, const char *text)
 {
 	if (g_language == 2)
 		text_draw5(x, y, text);
@@ -79,7 +79,7 @@ void (armc_drawStatLabel)(int x, int y, const char *text)
 }
 
 /* 0x45ddc0 (thiscall on the stage): the player's actor made again in its own slot, at the start position */
-void THISCALL (armc_45ddc0)(Stage *stage)
+void THISCALL (stage_remakePlayerActor)(Stage *stage)
 {
 	struct { i32 slot, zero; u32 pos[3]; i32 zero2, zero3; } spawn;
 	int slot = stage->playerActor;
@@ -103,7 +103,7 @@ void (armc_exit)(int confirmed)
 {
 	switch (g_armcFrom) {
 	case 1:
-		armc_40e670();
+		armc_restoreMenuCamera();
 		GAME_VAR(int, 0x4dc790) = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
@@ -117,7 +117,7 @@ void (armc_exit)(int confirmed)
 			armc_saveSelection();
 		break;
 	case 3:
-		armc_40e670();
+		armc_restoreMenuCamera();
 		GAME_VAR(int, 0x4dc790) = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
@@ -172,7 +172,7 @@ static int part_in_view(void)
 
 /* 0x41d600: the parts page's preview: a part changed (0x4dcc58) is put on the preview mech first (the item slots
    too), a pending colour change (0x4dca98) applied */
-void (armc_41d600)(void)
+void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (GAME_VAR(int, 0x4dcc58) == 1) {
@@ -184,16 +184,16 @@ void (armc_41d600)(void)
 		case 3: armc_setLegIndex(g_scene, parts[3]); break;
 		case 4: armc_setBoosterIndex(g_scene, parts[4]); break;
 		}
-		armc_41b750();
-		armc_461540(g_scene, GAME_VAR(int, 0x4dbe48));
+		armc_drawPartPanels();
+		armc_giveShownActorWeapon(g_scene, GAME_VAR(int, 0x4dbe48));
 		armc_41c510();
 		GAME_VAR(int, 0x4dcc58) = 0;
-		armc_41d280();
+		armc_retintParts();
 	}
 	if (GAME_VAR(int, 0x4dbc80) == 1)
 		GAME_VAR(int, 0x4dbc80) = 0;
 	if (GAME_VAR(int, 0x4dca98)) {
-		armc_41cf20();
+		armc_applyColourSlot();
 		GAME_VAR(int, 0x4dca98) = 0;
 	}
 	switch (g_armcMode) {
@@ -205,11 +205,11 @@ void (armc_41d600)(void)
 
 /* 0x41d8a0: the colour page's preview: item slot 0 emptied first when asked (0x4dbc80). The second page poses the
    item slot being picked (slots 4 / 5 as 6 / 7, the weapon slots as 5; none when that slot's record is empty) */
-void (armc_41d8a0)(void)
+void (armc_updateColourPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (GAME_VAR(int, 0x4dbc80) == 1) {
-		armc_41ca50(0, 0);
+		armc_weaponSlotRecord(0, 0);
 		GAME_VAR(int, 0x4dbc80) = 0;
 	}
 	int slot;
@@ -252,25 +252,25 @@ void (menuState700_armCenter)(void)
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
 		static const u32 items[6] = { 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcb18, 0x4dcb1c };
-		armc_40e5d0();
+		armc_enterScreen();
 		for (int slot = 0; slot < 6; slot++)
-			armc_41ca50(slot, GAME_VAR(int, items[slot]));
+			armc_weaponSlotRecord(slot, GAME_VAR(int, items[slot]));
 		state = g_armcState;
 	}
 	if (state == 2 && !GAME_VAR(int, 0x4dcf10)) {
-		armc_41b300();
-		armc_41b710();
-		armc_41b400();
+		armc_easeCamera();
+		armc_setup3DView();
+		armc_drawPanels();
 	}
-	armc_41dcf0();
+	armc_extraItemBonuses();
 	switch (g_armcMode) {
-	case 1: armc_41dfb0(); break;
-	case 2: armc_41dfe0(); break;
-	case 3: armc_41e010(); break;
+	case 1: armc_drawPartsPage(); break;
+	case 2: armc_drawColourPage(); break;
+	case 3: armc_drawThirdPage(); break;
 	}
 	int box = 1;
 	if (g_armcPreview) {
-		armc_41dab0();
+		armc_drawWeightLine();
 		box = !g_armcPreview;
 	}
 	if (box && !g_armcSessionMade) {
@@ -369,9 +369,9 @@ u32 (menu_enterMenus)(void)
 	else
 		mech_loadFromProfile();
 	armc_loadSavedMech();
-	armc_40de80();
-	armc_40dfa0();
-	armc_40ed20();
+	armc_initCameraBox();
+	armc_initPartBoxes();
+	armc_syncPartCursors();
 	sound_playMenu(4);
 	if (g_armcFrom == 3) {
 		int money = GAME_VAR(int, 0x9dd5d8);
@@ -417,7 +417,7 @@ static void panel_resize(Panel *p, float *size)
 /* 0x41b400: the panels drawn: each under the menu camera scaled 0.8, its texture (0x9da470 - k * 4), at height
    k * 5 + 0x4dcfc4 + 1 - 105 and depth 0x4dcfc8, turned by its angle; the angle advances by its speed. Then
    panels 2 / 3 breathe */
-void (armc_41b400)(void)
+void (armc_drawPanels)(void)
 {
 	glEnable(GL_TEXTURE_2D);
 	for (int k = 1; k < 6; k++) {
@@ -477,7 +477,7 @@ static void approach(float *v, float target)
 
 /* 0x41b300: the preview camera eases towards the part being edited (on the parts and colour pages, by their part
    slot: head, chest, arm, leg, booster, weapons) or the weapons (on the weapons page) */
-void (armc_41b300)(void)
+void (armc_easeCamera)(void)
 {
 	static const float height[6] = { 500.0f, 100.0f, -200.0f, -400.0f, -200.0f, 550.0f };
 	static const float distance[6] = { 1300.0f, 1300.0f, 1500.0f, 1300.0f, 1500.0f, 1300.0f };
@@ -505,17 +505,17 @@ void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int x, int y, void *
 }
 
 /* 0x410160: a right click leaves the ARM CENTER's page, the menu camera put back */
-void (armc_410160)(void)
+void (armc_rightClickLeave)(void)
 {
 	if (GAME_VAR(int, 0x4ded8c)) {
-		armc_40e670();
+		armc_restoreMenuCamera();
 		GAME_VAR(int, 0x4dc790) = 0;
 		BITS(g_viewAspect) = 0;
 	}
 }
 
 /* 0x40de80: the ARM CENTER camera box's corners (each +-700 or 0, as floats) */
-void (armc_40de80)(void)
+void (armc_initCameraBox)(void)
 {
 	static const struct { u8 offset; signed char sign; } corner[] = {
 		{ 0x40, -1 }, { 0x44, 1 }, { 0x48, 1 }, { 0x50, 1 }, { 0x58, 1 }, { 0x60, 1 }, { 0x64, -1 }, { 0x68, 1 },
@@ -528,7 +528,7 @@ void (armc_40de80)(void)
 
 /* 0x40dfa0: the six parts' bounding boxes (+-600, 0x58 bytes each from 0x4dc550), their offsets, and the camera's
    limits (200, 600, 2, -2) */
-void (armc_40dfa0)(void)
+void (armc_initPartBoxes)(void)
 {
 	for (u32 p = 0x4dc554; p < 0x4dc764; p += 0x58) {
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
@@ -564,13 +564,13 @@ u32 (armc_onStateEnter)(void)
 	u32 page = GAME_VAR(u32, 0x4dc798) - 1;
 	switch (page) {
 	case 0:
-		return armc_40fb20();
+		return armc_mainPageClicks();
 	case 1:
-		return armc_40fd30();
+		return armc_partScreenClicks();
 	case 2:
 		return armc_colourScreenInput();
 	case 3:
-		return GAME_CDECL(0x410160, u32, void)();   /* armc_410160 (its eax) */
+		return GAME_CDECL(0x410160, u32, void)();   /* armc_rightClickLeave (its eax) */
 	}
 	return page;
 }
@@ -599,7 +599,7 @@ void (armc_snapshot)(int i)
    character in mode 1, 0x9dae74, else 14); below it the total weight (the ten parts' weights summed into 0x4dc78c)
    in red when above the most the legs carry (0x4dcb0c), else green, then "/most" in white, both as "%.0f" and
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
-void (armc_41dab0)(void)
+void (armc_drawWeightLine)(void)
 {
 	static const u32 weights[10] = { 0x4dc14c, 0x4dc0cc, 0x4dc04c, 0x4dbfcc, 0x4dbf4c, 0x4dbecc, 0x4dcea0, 0x4dc240, 0x4dc2a4, 0x4dcf0c };
 	int y = GAME_VAR(int, 0x4dcc94);
@@ -629,7 +629,7 @@ void (armc_41dab0)(void)
 /* 0x412450: the three mode tabs across the top (0x4dcc90 / 0x4dcc94, 100 apart): the tab texture (0x9db0a4), the
    chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (0x7565a4, 0x80 a slot) in its colour (0x4dbc58
    chosen, else 0x4dc1d0). Returns 3 (the original's eax) */
-int (armc_412450)(void)
+int (armc_drawModeTabs)(void)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -701,9 +701,9 @@ void (armc_sendSelectionToNet)(void)
 
 /* 0x40fb20: the armour centre's main page clicked (armc_40e450's buttons 1 .. 16): 1 / 2 the part and colour pages
    (armc_40f220 / 40f320, unless already there), 3 / 4 the part screen's two sides (armc_40f0f0), 6 .. 11 the mech
-   view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_40f340; not in view 5),
+   view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
    16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
-u32 (armc_40fb20)(void)
+u32 (armc_mainPageClicks)(void)
 {
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;

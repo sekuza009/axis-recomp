@@ -170,7 +170,7 @@ static void count_down(u8 *s, u32 offset, const float *dt)
 }
 
 /* 0x48b200 (thiscall on the scene): the playing state's frame. The match set up first when it is not yet
-   (+0x233cc28 0: game_processGameModeInit); armc_461210 (its answer dropped); the frame's time (+0x44) added to the
+   (+0x233cc28 0: game_processGameModeInit); frameTimer_average (its answer dropped); the frame's time (+0x44) added to the
    second's fraction (+0x233cc34) and to the FPS window (+0x2340c90); three countdowns (+0x233cc40, +0x2342f02,
    +0x2340d39). Past a whole second the seconds (+0x233cc30) take it, and the frame and packet counts of the window
    (+0x2340c80 / +0x2340c84) become rates (+0x2340c88 / +0x2340c8c; 0 for an empty window), the window cleared. Then
@@ -182,7 +182,7 @@ int THISCALL (match_inputState2)(u8 *s)
 	const float *dt = (const float *)(s + 0x44);
 	if (FIELD(int, 0x233cc28) == 0)
 		game_processGameModeInit(s);
-	(void)armc_461210(s);
+	(void)frameTimer_average(s);
 	long double second = fadd_m(fld_m(dt), (const float *)(s + 0x233cc34));
 	FIELD(float, 0x233cc34) = f32(second);
 	float window = f32(fadd_m(fld_m((const float *)(s + 0x2340c90)), dt));
@@ -461,7 +461,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		S(int, 0x23432d3 + k * 4) = input_asyncKeyDown(0x70 + k) ? 1 : 0;
 	S(int, 0x23432f3) = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	S(int, 0x23432f7) = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
-	armc_461210(s);
+	frameTimer_average(s);
 	float slow = f32(fld_m((const float *)0x4a9424) - fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa488));
 	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa484));
 	long double look = fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4a93f4);
@@ -998,7 +998,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		S(int, 0x2340d29) = S(int, 0x2340d2d) = 0;
 		events_clear((Scene *)s, 60.0f);
 	}
-	armc_461210(s);
+	frameTimer_average(s);
 	/* the replay clock (+0x233cc30 whole seconds, +0x233cc34 the fraction) */
 	long double t = fadd_m(fld_m((const float *)(s + 0x233cc34)), (const float *)(s + 0x44));
 	S(float, 0x233cc34) = (float)t;

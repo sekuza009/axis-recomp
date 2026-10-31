@@ -3,7 +3,7 @@
 #include "../game.h"
 
 /* 0x4519b0: the arena's 19 buffers freed (in the original's order) and their pointers cleared */
-u32 (arena_4519b0)(void)
+u32 (arena_freeBuffers)(void)
 {
 	static const u32 buffers[19] = { 0xa0b310, 0xa0b314, 0xa0b318, 0xa0b30c, 0xa0b31c, 0xa0b304, 0xa0b320, 0xa0b328,
 	                                 0xa0b32c, 0xa0b330, 0xa0b334, 0xa0b324, 0xa0b308, 0xa0b340, 0xa0b344, 0xa0b338,

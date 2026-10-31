@@ -48,7 +48,7 @@ int (profile_44b3a0)(int x, int y) { return hit(x, y, (const int *)0x9f8d78, 13)
 int (profile_44b3e0)(int x, int y) { return hit(x, y, (const int *)0x9f8f38, 11); }   /* 0x44b3e0 */
 
 /* 0x404520: the create-arena screen: its second set of buttons (numbered from 16) while 0x4db55c is set */
-int (arena_404520)(int x, int y)
+int (createArena_hitTest)(int x, int y)
 {
 	if (GAME_VAR(int, 0x4db55c) != 0) {
 		int i = hit(x, y, (const int *)0x4db6e8, 2);

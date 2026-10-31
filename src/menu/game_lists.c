@@ -128,7 +128,7 @@ static void info_box(u32 line, int named)
    searching or 0x4db8b8; the joining and full boxes, the join confirmation (0x752aa4 / 0x752b24, its button
    0x751824 by arena_4044e0) and the "leave?" box (the original asks arena_4045a0 but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
-void (arena_40a070)(void)
+void (arena_drawGameList)(void)
 {
 	int hovered = GAME_CDECL(0x4044a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4044a0 */
 	gfx_setProjection2D3D(2);
@@ -448,7 +448,7 @@ static void shadowed(int x, int y, const char *text)
    and the name 0x4db560 (hidden while it is typed in, g_paused); without a message (0x4dbbd0) the name or the
    second label under the pointer (arena_404460's 0 / 2) shadowed in yellow; three buttons (0x7521a4, 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
-void (arena_409bc0)(void)
+void (arena_drawNameDialog)(void)
 {
 	int x0 = GAME_VAR(int, 0x4dbb68), y0 = GAME_VAR(int, 0x4dbb6c);
 	int hovered = arena_404460(g_mouseX, g_mouseY);
@@ -656,7 +656,7 @@ void (room_gameListKeys)(void)
 			sound_playMenu(0);
 			GAME_VAR(int, 0x4dbb10) = 0;
 			GAME_VAR(int, 0x4dbb78) = 0;
-			arena_452fe0();
+			arena_leaveSession();
 			g_confirming = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
@@ -746,7 +746,7 @@ void (lobbyJoin_draw)(void)
 			GAME_VAR(int, 0x4dbaf8) = 0;
 		}
 	}
-	arena_4091b0();
+	arena_drawTunnel();
 	int mode = GAME_VAR(int, 0x4dbb3c);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
 		return;
@@ -756,11 +756,11 @@ void (lobbyJoin_draw)(void)
 	}
 	if (GAME_VAR(int, 0x4dba90)) {
 		for (int k = 0; k < 10; k++)
-			arena_453260();
+			dplay_listSessions();
 		long double t = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &GAME_VAR(float, 0x4dba80));
 		GAME_VAR(float, 0x4dba80) = f32(t);
 		if (!(t > *(const float *)0x4a93e8)) {
-			arena_406810();
+			arenaList_rebuild();
 			GAME_VAR(int, 0x4dba90) = 0;
 		}
 	}
@@ -797,10 +797,10 @@ void (lobbyJoin_draw)(void)
 			GAME_VAR(int, 0x4db8b8) = 0;
 		}
 	}
-	arena_40a070();
+	arena_drawGameList();
 	if (GAME_VAR(int, 0x4dbbec)) {
 		if (!GAME_VAR(int, 0x4db8bc)) {
-			arena_406200(g_localPlayer);
+			arena_joinListed(g_localPlayer);
 			return;
 		}
 		if (!GAME_VAR(int, 0x4db70c) || g_paused)
@@ -823,10 +823,10 @@ void (lobbyJoin_draw)(void)
 		memset((void *)0x4dbbd4, 0, 6 * 4);
 		strcpy((char *)0x4dbbd4, (const char *)0x9dc92c);
 		if (*(const char *)0x4dbbd4)
-			arena_406200(99999);
+			arena_joinListed(99999);
 	}
 	if (GAME_VAR(int, 0x4dbbf0))
-		arena_405690(g_localPlayer);
+		arena_joinSession(g_localPlayer);
 }
 
 /* ---- the arena lobby's list of games: its mouse ---- */
@@ -877,7 +877,7 @@ void (lobby_connect)(void)
 		if (GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4dba90))
 			return;
 		GAME_VAR(int, 0xa0b36c) = 0;
-		arena_452fe0();
+		arena_leaveSession();
 		net_disconnect();
 		sound_playMenu(0);
 		GAME_VAR(int, 0x4dbb3c) = mode = 0;
@@ -901,9 +901,9 @@ void (lobby_connect)(void)
 					net_disconnect();
 				}
 				if (GAME_VAR(int, 0x4dba84))
-					arena_452fe0();
+					arena_leaveSession();
 				GAME_VAR(int, 0xa0b368) = 0;
-				arena_452ec0(1, NULL);
+				arena_openSession(1, NULL);
 				GAME_VAR(int, 0x680bb8) = 0;
 				GAME_VAR(int, 0x4dba90) = 1;
 				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
@@ -914,7 +914,7 @@ void (lobby_connect)(void)
 			} else {
 				GAME_VAR(int, 0x4db718) = 0;
 				net_disconnect();
-				arena_452fe0();
+				arena_leaveSession();
 				GAME_VAR(int, 0xa0b368) = 0;
 				if (lobby_openConnection() == 1) {
 					GAME_VAR(int, 0x4dbaac) = 1;
@@ -950,7 +950,7 @@ void (lobby_connect)(void)
 			lobby_leave();
 			GAME_VAR(int, 0x76d484) = -1;
 			GAME_VAR(int, 0x4db718) = 0;
-			arena_452fe0();
+			arena_leaveSession();
 			net_disconnect();
 			if (GAME_VAR(int, 0x4db8b8) == 1) {
 				GAME_VAR(int, 0x4db8b8) = 0;
@@ -967,7 +967,7 @@ void (lobby_connect)(void)
 			if (g_full)
 				return;
 			lobby_leave();
-			arena_452fe0();
+			arena_leaveSession();
 			net_disconnect();
 			GAME_VAR(int, 0x4dbb3c) = 0;
 			GAME_VAR(int, 0xa0d7a0) = 1;

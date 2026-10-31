@@ -127,7 +127,7 @@ static void map_step(int dir, u32 lock, u32 choice)
 }
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
-void (arena_4068d0)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
+void (arena_stepMap)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
 void (room_4356f0)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
 
 /* ---- the map list's drawing ---- */
@@ -169,7 +169,7 @@ static void map_buttons(int hovered, int first, int y, int label)
    (22 .. 24 left out): the number, the name (0x907b30, 0x20 apart) and the game type's name (0x4db8d8, 20 apart),
    the row under the pointer (by arena_4033e0) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
    (0x75db24 from 0x16, 0x75da24 from 0x18). The original leaves eax to callers that ignore it */
-void (arena_4038e0)(void)
+void (mapList_draw)(void)
 {
 	int hovered = GAME_CDECL(0x4033e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4033e0 */
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3e99999a);   /* 0.3 */

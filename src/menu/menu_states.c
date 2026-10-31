@@ -544,7 +544,7 @@ static void leave_game(u32 lobby, int disconnect)
 {
 	GAME_VAR(int, 0x67ef14) = 0;
 	GAME_VAR(u32, 0x5ae9c4) = lobby;
-	GAME_CDECL(0x452fe0, void, void)();       /* arena_452fe0 */
+	GAME_CDECL(0x452fe0, void, void)();       /* arena_leaveSession */
 	if (disconnect)
 		GAME_CDECL(0x451e60, void, void)();   /* net_disconnect */
 	GAME_VAR(int, 0x4dbbf4) = 0;
