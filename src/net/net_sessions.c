@@ -49,7 +49,7 @@ static void merge(const Received *g)
 				sessionList_sort();   /* the list sorted again */
 			}
 			GAME_VAR(int, 0xa0bb14 + i * 4) = 0;
-			GAME_VAR(int, 0x680bb8)++;
+			g_lobbyListPage++;
 		}
 		if (!g_netListDone)
 			return;
@@ -96,7 +96,7 @@ void (arenaList_rebuild)(void)
 {
 	int n = net_sessionCount();
 	g_sessionCount = n;
-	GAME_VAR(int, 0x680bb8) = n;
+	g_lobbyListPage = n;
 	for (int i = 0; i < g_sessionCount; i++) {
 		const u8 *s = (const u8 *)net_sessionValue(i);
 		u8 *e = SESSION(i);

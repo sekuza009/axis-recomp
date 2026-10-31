@@ -16,16 +16,16 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 void (cfg_defaultPlayerName)(void)
 {
 	copy_name(0x4db560, 32, (const char *)0x4ad4b0);
-	GAME_VAR(int, 0x4db580) = 0;
-	GAME_VAR(int, 0x4db584) = 0;
+	g_arenaCorporation = 0;
+	g_arenaSex = 0;
 }
 
 /* 0x404930: the profile's name and fields (0x4dedb0) */
 void (lobby_404930)(void)
 {
-	GAME_VAR(int, 0x4db584) = g_playerSex;
+	g_arenaSex = g_playerSex;
 	copy_name(0x4db560, 32, (const char *)0x4dedb0);
-	GAME_VAR(int, 0x4db580) = g_playerCorporation;
+	g_arenaCorporation = g_playerCorporation;
 }
 
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
@@ -91,11 +91,11 @@ void (arena_clearChatRecord)(void)
 void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
-	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x4dcf2c) =
-		g_savedMechWeapons = GAME_VAR(int, 0x4dcf1c) = -1;
-	g_savedMechParts = GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x4dc880) =
-		GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x4dc888) = 0;
-	GAME_VAR(int, 0x4dcf20) = 0;
+	g_savedMechItem3 = g_savedMechItem4 = g_savedMechItem5 =
+		g_savedMechWeapons = g_savedMechItem1 = -1;
+	g_savedMechParts = g_savedMechChest = g_savedMechArm =
+		g_savedMechLeg = g_savedMechBooster = 0;
+	g_savedMechItem2 = 0;
 	for (u32 p = 0x4dcfe0; p < 0x4dd058; p += 24)
 		memcpy((void *)p, colour, 24);
 }
@@ -106,13 +106,13 @@ void (mech_unpackFromRecord)(void)
 {
 	const signed char *rec = (const signed char *)0x9dd5f8;
 	g_savedMechParts = rec[0];
-	GAME_VAR(int, 0x4dc87c) = rec[1];
-	GAME_VAR(int, 0x4dc880) = rec[2];
-	GAME_VAR(int, 0x4dc884) = rec[3];
-	GAME_VAR(int, 0x4dc888) = rec[4];
+	g_savedMechChest = rec[1];
+	g_savedMechArm = rec[2];
+	g_savedMechLeg = rec[3];
+	g_savedMechBooster = rec[4];
 	for (int i = 0; i < 4; i++)
 		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
-	GAME_VAR(int, 0x4dcf1c) = rec[6];
+	g_savedMechItem1 = rec[6];
 	g_savedMechWeapons = rec[5];
 	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
 }
@@ -121,17 +121,17 @@ void (mech_unpackFromRecord)(void)
    negative or NaN chroma or value becomes 0 in the record first) */
 void (mech_loadFromProfile)(void)
 {
-	GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x9f19fc);
+	g_savedMechChest = GAME_VAR(int, 0x9f19fc);
 	g_savedMechParts = g_profileMechRecord;
-	GAME_VAR(int, 0x4dc880) = GAME_VAR(int, 0x9f1a00);
-	GAME_VAR(int, 0x4dc888) = GAME_VAR(int, 0x9f1a08);
-	GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x9f1a04);
-	GAME_VAR(int, 0x4dcf20) = GAME_VAR(int, 0x9f1a1c);
-	GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x9f1a24);
-	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x9f1a20);
-	GAME_VAR(int, 0x4dcf2c) = GAME_VAR(int, 0x9f1a28);
-	g_savedMechWeapons = GAME_VAR(int, 0x9f1a14);
-	GAME_VAR(int, 0x4dcf1c) = GAME_VAR(int, 0x9f1a18);
+	g_savedMechArm = GAME_VAR(int, 0x9f1a00);
+	g_savedMechBooster = GAME_VAR(int, 0x9f1a08);
+	g_savedMechLeg = GAME_VAR(int, 0x9f1a04);
+	g_savedMechItem2 = g_profileMechItem2;
+	g_savedMechItem4 = g_profileMechItem4;
+	g_savedMechItem3 = g_profileMechItem3;
+	g_savedMechItem5 = g_profileMechItem5;
+	g_savedMechWeapons = g_profileMechItem0;
+	g_savedMechItem1 = g_profileMechItem1;
 	for (int o = 0; o < 0x90; o += 0x18) {
 		if (!(GAME_VAR(float, 0x9f1a38 + o) >= 0.0f))
 			GAME_VAR(int, 0x9f1a38 + o) = 0;
@@ -145,16 +145,16 @@ void (mech_loadFromProfile)(void)
 void (mech_storeToProfile)(void)
 {
 	g_profileMechRecord = g_savedMechParts;
-	GAME_VAR(int, 0x9f19fc) = GAME_VAR(int, 0x4dc87c);
-	GAME_VAR(int, 0x9f1a04) = GAME_VAR(int, 0x4dc884);
-	GAME_VAR(int, 0x9f1a00) = GAME_VAR(int, 0x4dc880);
-	GAME_VAR(int, 0x9f1a08) = GAME_VAR(int, 0x4dc888);
-	GAME_VAR(int, 0x9f1a20) = GAME_VAR(int, 0x4dcf24);
-	GAME_VAR(int, 0x9f1a1c) = GAME_VAR(int, 0x4dcf20);
-	GAME_VAR(int, 0x9f1a24) = GAME_VAR(int, 0x4dcf28);
-	GAME_VAR(int, 0x9f1a18) = GAME_VAR(int, 0x4dcf1c);
-	GAME_VAR(int, 0x9f1a28) = GAME_VAR(int, 0x4dcf2c);
-	GAME_VAR(int, 0x9f1a14) = g_savedMechWeapons;
+	GAME_VAR(int, 0x9f19fc) = g_savedMechChest;
+	GAME_VAR(int, 0x9f1a04) = g_savedMechLeg;
+	GAME_VAR(int, 0x9f1a00) = g_savedMechArm;
+	GAME_VAR(int, 0x9f1a08) = g_savedMechBooster;
+	g_profileMechItem3 = g_savedMechItem3;
+	g_profileMechItem2 = g_savedMechItem2;
+	g_profileMechItem4 = g_savedMechItem4;
+	g_profileMechItem1 = g_savedMechItem1;
+	g_profileMechItem5 = g_savedMechItem5;
+	g_profileMechItem0 = g_savedMechWeapons;
 	memcpy((void *)0x9f1a34, (void *)0x4dcfe0, 0x90);
 }
 
@@ -216,7 +216,7 @@ void (roomList_cycleMode)(void)
 	g_roomListPrev = mode;
 	room_pageChanged();
 	g_roomListPrevRank = 0;
-	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0f */
+	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0f */
 	GAME_VAR(int, 0x9dd1d0) = (mode + 1) % 3;
 }
 
@@ -647,7 +647,7 @@ u32 (mainmenu_startNetGame)(void)
 {
 	if (g_mainMenuFadingIn == 1)
 		return 1;
-	if (GAME_VAR(int, 0x9eeab4))
+	if (g_mainMenuPicked)
 		return GAME_CDECL(0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
 	if (GAME_VAR(int, 0x4ded88)) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
@@ -676,7 +676,7 @@ u32 (mainmenu_processKeys)(void)
 	static const u32 key[6] = { 0x4e1500, 0x4e1508, 0x4e1504, 0x4e1524, 0x4e0cd4, 0x4e153c };
 	if (g_mainMenuFadingIn == 1)
 		return 1;
-	if (GAME_VAR(int, 0x9eeab4))
+	if (g_mainMenuPicked)
 		return GAME_CDECL(0x441c00, u32, void)();   /* mapSelect_keys */
 	for (int i = 0; i < 6; i++)
 		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
@@ -695,6 +695,6 @@ u32 (mainmenu_processKeys)(void)
 	if (r != 1)
 		return r;
 	r = GAME_CDECL(0x440d70, u32, void)();
-	GAME_VAR(int, 0x9eeab4) = 1;
+	g_mainMenuPicked = 1;
 	return r;
 }

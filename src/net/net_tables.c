@@ -359,10 +359,10 @@ static void global_free(void *p)
    released, the session buffers freed (0xa0bab0 is freed but not cleared), COM ended. Returns 0 */
 int (dplay_release)(void)
 {
-	void *lobby = GAME_VAR(void *, 0xa0b398);
+	void *lobby = g_dplayLobby;
 	if (lobby) {
 		COM(lobby, COM_RELEASE, u32)(lobby);
-		GAME_VAR(void *, 0xa0b398) = 0;
+		g_dplayLobby = 0;
 	}
 	void *play = GAME_VAR(void *, 0xa0b404);
 	if (play) {
@@ -844,7 +844,7 @@ static void dplay_lobbyConnect(void)
 	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4a9648, NULL, 1,
 			(const void *)0x4a9658, (void **)0xa0b398) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
 		return;
-	void *lobby = GAME_VAR(void *, 0xa0b398);
+	void *lobby = g_dplayLobby;
 	u32 size;
 	if ((u32)COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return;
@@ -852,16 +852,16 @@ static void dplay_lobbyConnect(void)
 	g_lobbyConnectionBlock = conn;
 	if (!conn)
 		return;
-	lobby = GAME_VAR(void *, 0xa0b398);
+	lobby = g_dplayLobby;
 	if (COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, conn, &size) < 0)   /* GetConnectionSettings */
 		return;
 	u32 *session = *(u32 **)(GAME_VAR(u8 *, 0xa0baf4) + 8);
 	session[1] = 0x44;    /* dwFlags */
 	session[10] = 16;     /* dwMaxPlayers */
-	lobby = GAME_VAR(void *, 0xa0b398);
+	lobby = g_dplayLobby;
 	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, g_lobbyConnectionBlock) < 0)   /* SetConnectionSettings */
 		return;
-	lobby = GAME_VAR(void *, 0xa0b398);
+	lobby = g_dplayLobby;
 	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)0x4a9678, (void **)0xa0b404, NULL) < 0)
 		return;   /* ConnectEx */
 	u32 id;
@@ -971,11 +971,11 @@ int (dplay_initConnection)(int kind, const char *address)
 		memcpy(element[1].guid, (const void *)0x4a9628, 16);   /* DPAID_INet */
 		element[1].size = strlen(host) + 1;
 		element[1].data = host;
-		void *lobby = GAME_VAR(void *, 0xa0b398);
+		void *lobby = g_dplayLobby;
 		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, NULL, &size);   /* CreateCompoundAddress */
 		void *block = crt_malloc(size);
 		g_hostAddressBlock = block;
-		lobby = GAME_VAR(void *, 0xa0b398);
+		lobby = g_dplayLobby;
 		COM(lobby, 0x38, int, void *, u32, void *, u32 *)(lobby, element, 2, block, &size);
 		g_storedConnection = g_hostAddressBlock;
 	}
@@ -1265,7 +1265,7 @@ void (net_send)(int kind, int to)
 		if (!GAME_VAR(void *, 0xa0b320))
 			return;
 		jmp_net_getLocalAddress_4532e0();
-		lstrcpyA(GAME_VAR(char *, 0xa0b320) + 0x60, (const char *)0xa0b43c);
+		lstrcpyA(g_accountPacket + 0x60, (const char *)0xa0b43c);
 		send_buffer(0xa05630, 0xa0b320, 0x10b);
 		return;
 	case 19:

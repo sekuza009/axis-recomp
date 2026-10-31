@@ -69,13 +69,13 @@ long double (timer_now)(void)
 	g_time = (double)t;
 	long double before = g_lastTime;
 	if (t == before || t != t || before != before) {   /* (fcom: equal or unordered) */
-		if (++GAME_VAR(int, 0x9dbf00) > 100000) {
+		if (++g_timerRepeatCount > 100000) {
 			t += GAME_VAR(double, 0x4a94e0);
 			g_time = (double)t;
-			GAME_VAR(int, 0x9dbf00) = 0;
+			g_timerRepeatCount = 0;
 		}
 	} else
-		GAME_VAR(int, 0x9dbf00) = 0;
+		g_timerRepeatCount = 0;
 	g_lastTime = (double)t;
 	return t;
 #undef g_time

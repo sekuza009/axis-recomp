@@ -94,14 +94,14 @@ void (mapList_ok)(void)
 /* 0x4050a0 (arena_saveSettings): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
 void (arena_saveSettings)(void)
 {
-	g_playerSex = GAME_VAR(int, 0x4db584);
+	g_playerSex = g_arenaSex;
 	const char *name = (const char *)0x4db560;
 	char *kept = (char *)0x4dedb0;
 	int i = 0;
 	do
 		kept[i] = name[i];
 	while (name[i++] != '\0');
-	g_playerCorporation = GAME_VAR(int, 0x4db580);
+	g_playerCorporation = g_arenaCorporation;
 	cfg_loadAxisCfg();
 }
 

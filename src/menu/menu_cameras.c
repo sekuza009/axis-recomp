@@ -527,13 +527,13 @@ void (match_debugHandler)(void)
 	if (input_justPressed(GAME_VAR(int, 0x680388)) == 1)
 		GAME_VAR(int, 0x4e0464) = GAME_VAR(int, 0x4e0464) == 1 ? 2 : 1;
 	if (input_justPressed(GAME_VAR(int, 0x4e0468)) == 1)
-		GAME_VAR(int, 0x4de6e0)++;
+		g_debugValue++;
 	if (input_justPressed(GAME_VAR(int, 0x4e046c)) == 1)
-		GAME_VAR(int, 0x4de6e0) += 10;
+		g_debugValue += 10;
 	if (input_justPressed(GAME_VAR(int, 0x4e0470)) == 1)
-		GAME_VAR(int, 0x4de6e0)--;
+		g_debugValue--;
 	if (input_justPressed(GAME_VAR(int, 0x4e0874)) == 1)
-		GAME_VAR(int, 0x4de6e0) -= 10;
-	if (GAME_VAR(int, 0x4de6e0) < 1)
-		GAME_VAR(int, 0x4de6e0) = 1;
+		g_debugValue -= 10;
+	if (g_debugValue < 1)
+		g_debugValue = 1;
 }

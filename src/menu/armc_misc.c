@@ -331,12 +331,12 @@ u32 (menu_enterMenus)(void)
 	if (fromRoom) {
 		point[2] = 0xc47a0000;    /* -1000 */
 		pointAt[2] = 0xc4898000;  /* -1100 */
-		if (GAME_VAR(int, 0x9dd5d8) > GAME_VAR(int, 0x4dc4b4))
+		if (GAME_VAR(int, 0x9dd5d8) > g_mostMoneyNet)
 			GAME_VAR(int, 0x4dcf34) = 1;
 	} else {
 		point[2] = 0x42c80000;    /* 100 */
 		pointAt[2] = 0;
-		if (GAME_VAR(int, 0x9f181c) > GAME_VAR(int, 0x4dc1e0))
+		if (GAME_VAR(int, 0x9f181c) > g_mostMoneySolo)
 			GAME_VAR(int, 0x4dcf34) = 1;
 	}
 	u32 *home = (u32 *)0x9db090, *homeAt = (u32 *)0x76d3f8;
@@ -375,13 +375,13 @@ u32 (menu_enterMenus)(void)
 	sound_playMenu(4);
 	if (g_armcFrom == 3) {
 		int money = GAME_VAR(int, 0x9dd5d8);
-		if (money > GAME_VAR(int, 0x4dc4b4))
-			GAME_VAR(int, 0x4dc4b4) = money;
+		if (money > g_mostMoneyNet)
+			g_mostMoneyNet = money;
 		return money;
 	}
 	int money = GAME_VAR(int, 0x9f181c);
-	if (money > GAME_VAR(int, 0x4dc1e0))
-		GAME_VAR(int, 0x4dc1e0) = money;
+	if (money > g_mostMoneySolo)
+		g_mostMoneySolo = money;
 	return money;
 }
 

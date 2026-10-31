@@ -241,7 +241,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	Vec3_normalize(c);
 	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
 	across = across + fmul_m(fld_m(&c[0]), &side[0]);
-	int pan = ftol(fmul_m(across, (const float *)(GAME_VAR(int, 0x4e0c9c) ? 0x4a96fc : 0x4a9700)));
+	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? 0x4a96fc : 0x4a9700)));
 	GAME_CDECL(0x467db0, void, void *, int)(GAME_VAR(void *, 0xa0e02c + index * 4), volume);   /* dsbuf_setVolume */
 	sound_467dd0(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
 }
@@ -386,7 +386,7 @@ u32 THISCALL (music_playMatch)(u8 *stage)
    stopped and 1. Any failing step: 0 (the stream let go of nothing). Otherwise 1 */
 int (music_play)(const char *name)
 {
-	if (GAME_VAR(int, 0x4e0c94) < 50) {
+	if (g_musicVolume < 50) {
 		GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
 		return 1;
 	}

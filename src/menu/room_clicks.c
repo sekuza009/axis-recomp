@@ -317,7 +317,7 @@ u32 (room_hostingStep)(void)
 	if (step == 1) {
 		GAME_VAR(int, 0x4dba88) = 0;
 		GAME_VAR(int, 0x67ef14) = 1;
-		GAME_VAR(int, 0x67ef04) = 1;
+		g_netRole = 1;
 		music_shutdown();
 		g_roomMode = 0;
 		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
@@ -366,13 +366,13 @@ u32 (app_onClose)(void)
 		GAME_VAR(int, 0x4db8b4) = 0;
 		return r;
 	}
-	if (!GAME_VAR(int, 0x4db708))
+	if (!g_arenaJoinPending)
 		return 0;
 	u32 row = GAME_VAR(u32, 0x4db710) * 0x4a;
 	u8 *game = (u8 *)0x9087c0 + row;
 	*(u32 *)game = *GAME_VAR(u32 *, 0x4dbbf8);
-	GAME_VAR(u8, 0x5b1b54) = game[0x2d];
-	GAME_VAR(u8, 0x5b1b55) = game[0x2e];
+	g_roomRecFragLimit = game[0x2d];
+	g_roomRecTimeLimit = game[0x2e];
 	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
@@ -380,16 +380,16 @@ u32 (app_onClose)(void)
 			GAME_CDECL(0x41ee40, void, int)(message[r - 0x1f5]);
 		u32 e = GAME_CDECL(0x452fe0, u32, void)();
 		GAME_VAR(int, 0x4dbb10) = 0;
-		GAME_VAR(int, 0x4db708) = 0;
+		g_arenaJoinPending = 0;
 		GAME_VAR(int, 0x4db8b4) = 0;
 		return e;
 	}
 	GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 2;
+	g_netRole = 2;
 	g_roomMode = 0;
 	GAME_VAR(int, 0x4dbb10) = 0;
-	GAME_VAR(int, 0x4db708) = 0;
+	g_arenaJoinPending = 0;
 	GAME_VAR(int, 0x4db8b4) = 0;
 	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
 	memcpy((void *)0x67fb44, game + 4, 32);
@@ -487,7 +487,7 @@ u32 (ranking_page)(void)
 		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
 		g_rankingRequestPending = 0;
 		g_lobbyBlinkClock = 1000.0f;
-		GAME_VAR(int, 0x9dd6b8) = 1;
+		g_rankingWaiting = 1;
 	}
 	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
 	int mode = g_roomMode;
@@ -501,10 +501,10 @@ u32 (ranking_page)(void)
 		g_rankingRequestPending = 1;
 		return 0;
 	}
-	if (GAME_VAR(int, 0x9dd6b8)) {
+	if (g_rankingWaiting) {
 		if (g_roomListWaiting) {
 			GAME_CDECL(0x435770, void, void)();   /* roomList_fillPage: the list filled */
-			GAME_VAR(int, 0x9dd6b8) = 0;
+			g_rankingWaiting = 0;
 			g_rankingHaveList = 1;
 			g_roomListWaiting = 0;
 			g_roomListPrev = GAME_VAR(int, 0x9dd1d0);
@@ -542,8 +542,8 @@ u32 (login_send)(void)
 	strcpy((char *)0x9dd58e, password);
 	memset(GAME_VAR(u8 *, 0xa0b320) + 4, 0, 30);
 	memset(GAME_VAR(u8 *, 0xa0b320) + 0x22, 0, 12);
-	strcpy(GAME_VAR(char *, 0xa0b320) + 4, name);
-	strcpy(GAME_VAR(char *, 0xa0b320) + 0x22, password);
+	strcpy(g_accountPacket + 4, name);
+	strcpy(g_accountPacket + 0x22, password);
 	GAME_VAR(int *, 0xa0b320)[0] = 0x18;
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xe, 0x65);   /* net_send */
 	g_roomRequestOut = 1;
@@ -560,13 +560,13 @@ u32 (ranking_clicks)(void)
 	u32 mode = GAME_VAR(u32, 0x9dce48);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
 		return mode;
-	int waiting = GAME_VAR(int, 0x9dd6b8);
+	int waiting = g_rankingWaiting;
 	if (g_keyEnter && !waiting)
 		g_roomMode = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return mode;
 	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
-	if (button > 8 || button == 6 || (button == 3 ? !GAME_VAR(int, 0x9dd6b8) : GAME_VAR(int, 0x9dd6b8) != 0))
+	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* the click sound */
 	static const u32 page[3] = { 0x435970, 0x4359b0, 0x4359f0 };
@@ -576,7 +576,7 @@ u32 (ranking_clicks)(void)
 		return GAME_CDECL(page[button], u32, void)();
 	case 3:
 		g_rankingHaveList = 1;
-		GAME_VAR(int, 0x9dd6b8) = 0;
+		g_rankingWaiting = 0;
 		g_roomListWaiting = 0;
 		GAME_VAR(int, 0x9dd1d0) = g_roomListPrev;
 		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);

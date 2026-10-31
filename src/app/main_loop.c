@@ -135,12 +135,12 @@ void (menu_frame)(void)
 	D(0x9db980) = now;
 	if (g_showFps) {
 		D(0x4dd550) = now;
-		int frames = ++GAME_VAR(int, 0x4dd0b0);
+		int frames = ++g_menuFrameCount;
 		long double second = now - D(0x4dd0a0);
 		double secondStored = f64(second);
 		D(0x4dd978) = secondStored;
 		if (second >= D(0x4a94e0)) {
-			GAME_VAR(int, 0x4dd0b0) = 0;
+			g_menuFrameCount = 0;
 			F(0x4dd980) = (long double)frames / secondStored;
 			D(0x4dd0a0) = now;
 		}

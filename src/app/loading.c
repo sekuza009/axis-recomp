@@ -263,17 +263,17 @@ int (app_checkCdAndLoad)(void *instance)
 		return 0;
 	}
 	const char *dir = (const char *)0x4b1304;
-	u32 w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	u32 w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x4e1878, dir, 0x28, 0, 0x40, 0x40, w, h);
-	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x5b1db8, dir, 0x28, 0, 0x80, 0x40, w, h);
-	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x680cd8, dir, 0x28, 0, 0x100, 0x40, w, h);
-	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x76d498, dir, 0x28, 0, 0x80, 0x80, w, h);
-	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x90d1e0, dir, 0x50, 0, 0x100, 0x80, w, h);
-	w = GAME_VAR(u32, 0x83a9cc), h = GAME_VAR(u32, 0x83a9d0);
+	w = g_textureSetWidth, h = g_textureSetHeight;
 	tex_initBy((void *)0x83a9e0, dir, 0x28, 0, 0x100, 0x100, w, h);
 	texSmall_initBy((void *)0x83a5e0, (void *)0x4e1878, (void *)0x5b1db8, (void *)0x680cd8, (void *)0x76d498,
 	                (void *)0x90d1e0, (void *)0x83a9e0);
@@ -296,7 +296,7 @@ int (app_checkCdAndLoad)(void *instance)
 	g_menuCameraLook = 0;
 	GAME_VAR(u32, 0x68037c) = 0;
 	GAME_VAR(u32, 0x680380) = 0x43c80000;   /* 400 */
-	GAME_VAR(int, 0x4dd0b0) = 0;
+	g_menuFrameCount = 0;
 	GAME_VAR(int, 0x76d3f0) = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
 	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits((Colour *)0x76d350, 0, 0, 0, 0x3f800000);

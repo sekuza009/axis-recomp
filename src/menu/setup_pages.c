@@ -737,7 +737,7 @@ void (room_4388e0)(void)
 void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
-	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { g_arenaTunnelDepth, 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 }
 
@@ -789,7 +789,7 @@ void (room_drawMenu)(void)
 void (lobbyTop_drawTitle)(void)
 {
 	Highlight h = { hovered_panel(0x5b1cf8, 4, GAME_VAR(int, 0x4db85c)), white, 1, 0, 0 };
-	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { g_arenaTunnelDepth, 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaLobbyMode == 2 && !GAME_VAR(int, 0x680370))
 		caption(0x750924, h.on);
@@ -829,11 +829,11 @@ void (menu_mainMenu)(void)
 		g_idle = f32(fadd_m(fld_m(frame), &g_idle));
 		g_panelHovered = 0;
 	} else {
-		g_panelHovered = !GAME_VAR(int, 0x9eeab4);
+		g_panelHovered = !g_mainMenuPicked;
 		g_idle = 0;
 		g_hint = 0;
 		g_hintStep = 0x3d4ccccd;   /* 0.05 */
-		if (GAME_VAR(int, 0x9eeab4))
+		if (g_mainMenuPicked)
 			on = -1;
 		else if (g_lastPanel != on) {
 			g_lastPanel = on;
@@ -857,7 +857,7 @@ void (menu_mainMenu)(void)
 	if (on != -1) {
 		if (!GAME_VAR(int, 0x680370))
 			caption(0x7501a4, on);
-	} else if (!GAME_VAR(int, 0x680370) && !GAME_VAR(int, 0x9eeab4) && g_idle > *(const float *)0x4a95cc) {
+	} else if (!GAME_VAR(int, 0x680370) && !g_mainMenuPicked && g_idle > *(const float *)0x4a95cc) {
 		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
 		g_hint = f32(hint);
 		if (hint > *(const float *)0x4a9534) {

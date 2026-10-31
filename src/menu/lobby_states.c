@@ -26,10 +26,10 @@ void (lobby_setSubState0)(void)
 	lobby_404930();
 	g_arenaLobbyMode = 1;
 	GAME_VAR(int, 0x4db51c) = 0;
-	GAME_VAR(u32, 0x4dbba0) = 0x3f333333;
+	g_arenaPanelBrightness = 0x3f333333;
 	GAME_VAR(int, 0x4dc24c) = 0;
 	GAME_VAR(int, 0x4db85c) = 0;
-	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;   /* -1650.0 */
+	g_arenaTunnelDepth = 0xc4ce4000;   /* -1650.0 */
 }
 
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
@@ -46,11 +46,11 @@ void (lobby_setSubState1)(void)
 	GAME_VAR(u32, 0x76d39c) = 0xc20c0000;   /* -35.0 */
 	GAME_VAR(int, 0x4db51c) = 1;
 	g_arenaLobbyMode = 1;
-	GAME_VAR(u32, 0x4dbba0) = 0x3f333333;
+	g_arenaPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_lastPanel = 999;
 	g_lobbyPending = 1;
-	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;
+	g_arenaTunnelDepth = 0xc4ce4000;
 	g_listRefreshPeriod = 30;
 }
 
@@ -119,9 +119,9 @@ void (lobby_setSubState2)(void)
 	lobby_drawArenaTitle();
 	GAME_VAR(int, 0x4db51c) = 2;
 	g_arenaLobbyMode = 1;
-	GAME_VAR(u32, 0x4dbba0) = 0x3f333333;
+	g_arenaPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
-	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;
+	g_arenaTunnelDepth = 0xc4ce4000;
 	g_mapPreviewChanged = 1;
 	mapList_init();
 }
@@ -130,16 +130,16 @@ void (lobby_setSubState2)(void)
    22 .. 24 become 0 */
 void (room_loadSettingsRecord)(void)
 {
-	if (GAME_VAR(signed char, 0x5b1b50) > 0x15 && GAME_VAR(signed char, 0x5b1b50) < 0x19)
+	if (g_roomRecMap > 0x15 && g_roomRecMap < 0x19)
 		GAME_VAR(u8, 0x5b1b50) = 0;
 	g_roomMap = GAME_VAR(u8, 0x5b1b50);
 	memset((void *)0x4df9c8, 0, 32);
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);   /* stored before the name is copied, as in the original */
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
-	GAME_VAR(u8, 0x4df9e9) = GAME_VAR(u8, 0x5b1b51);
+	GAME_VAR(u8, 0x4df9e9) = g_roomRecPlayers;
 	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
-	g_roomFragLimit = GAME_VAR(u8, 0x5b1b54);
-	g_roomTimeLimit = GAME_VAR(u8, 0x5b1b55);
+	g_roomFragLimit = g_roomRecFragLimit;
+	g_roomTimeLimit = g_roomRecTimeLimit;
 }
 
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
@@ -150,7 +150,7 @@ void (room_enterGameList)(void)
 	room_loadSettingsRecord();
 	GAME_VAR(int, 0x9dd834) = 2;
 	g_roomMode = 1;
-	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
+	g_roomPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_mapPreviewChanged = 1;
 	GAME_VAR(char, 0x4df9ea) = 0;
@@ -171,9 +171,9 @@ void (room_enterRoomList)(void)
 	g_roomMode = 1;
 	g_rankingFirst = 1;
 	GAME_VAR(int, 0x9dd834) = 4;
-	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
+	g_roomPanelBrightness = 0x3f333333;
 	g_rankingLast = 10;
-	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0 */
+	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0 */
 	g_roomListPages = 999;
 }
 
@@ -205,14 +205,14 @@ void (room_copyJoinedSettings)(void)
 {
 	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
 	strcpy((char *)0x9dd20e, (const char *)0x9dd5a6);
-	u8 map = GAME_VAR(u8, 0x5b1b51);
+	u8 map = g_roomRecPlayers;
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
 	GAME_VAR(u8, 0x4df9e9) = map;
 	g_roomMap = GAME_VAR(u8, 0x5b1b50);
 	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);
-	g_roomFragLimit = GAME_VAR(u8, 0x5b1b54);
-	g_roomTimeLimit = GAME_VAR(u8, 0x5b1b55);
+	g_roomFragLimit = g_roomRecFragLimit;
+	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)0x9dd260, (void *)0x9dd5f8, 11);
 	memcpy((void *)0x9dd26b, (void *)0x9dd603, 0x90);
 	static const u32 copy[6][2] = { { 0x9dd240, 0x9dd5d8 }, { 0x9dd244, 0x9dd5dc }, { 0x9dd25c, 0x9dd5f4 },
@@ -295,7 +295,7 @@ void (room_takeReceivedSettings)(void)
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
-	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
+	g_mostMoneyNet = GAME_VAR(int, 0x9dd5d8);
 	g_roomConnected = 1;
 }
 
@@ -332,12 +332,12 @@ u32 (room_host)(void)
 	static const u32 zero2[] = { 0x4de722, 0x4de72e, 0x4de732, 0x4de72a };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
-	strcpy(GAME_VAR(char *, 0xa0b320) + 4, (const char *)0x9dd1d8);
-	strcpy(GAME_VAR(char *, 0xa0b320) + 0x22, (const char *)0x9dd1f6);
-	strcpy(GAME_VAR(char *, 0xa0b320) + 0x2e, (const char *)0x9dd20e);
+	strcpy(g_accountPacket + 4, (const char *)0x9dd1d8);
+	strcpy(g_accountPacket + 0x22, (const char *)0x9dd1f6);
+	strcpy(g_accountPacket + 0x2e, (const char *)0x9dd20e);
 	u8 *record = GAME_VAR(u8 *, 0xa0b320);
 	default_mech(record + 0x70, record + 0x7b);
-	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
+	g_mostMoneyNet = GAME_VAR(int, 0x9dd5d8);
 	*(int *)record = 0x18;
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xf, 0x65);   /* net_send */
 	g_roomAnswerAwaited = 1;
@@ -373,7 +373,7 @@ u32 (lobbyPlayer_draw)(void)
 		return mode;
 	if (!g_dialogOpen)
 		return GAME_CDECL(0x409bc0, u32, void)();   /* arena_drawNameDialog */
-	return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_arenaNameDialogLeft, GAME_VAR(int, 0x4dbb6c),
+	return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_arenaNameDialogLeft, g_arenaNameDialogTop,
 	                                                     g_arenaNameDialogRight, g_arenaNameDialogBottom);   /* menu_drawFrame */
 }
 
@@ -659,7 +659,7 @@ u32 (lobby_keysQuit)(void)
 	if (!input_justPressed(GAME_VAR(int, 0x4e1510)))
 		return 0;
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 1;
+	g_netRole = 1;
 	CALL(0x457310);   /* music_shutdown */
 	u32 limits = GAME_VAR(u32, 0x4ded44);
 	g_mapRotation = GAME_VAR(signed char, 0x4ded42);
@@ -723,7 +723,7 @@ static void take_session(const u8 *rec)
 	g_mapRotation = (signed char)rec[0x24];
 	g_arenaLobbyMode = 0;
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 2;
+	g_netRole = 2;
 	g_chosenGameMode = (signed char)rec[0x2c];
 	g_fragLimit = rec[0x2d];
 	g_timeLimit = rec[0x2e];
@@ -769,7 +769,7 @@ void (app_shutdown)(void)
 	u8 *rec;
 	if (pick == 99999) {
 		g_arenaJoinRow = 0;
-		if (!GAME_VAR(int, 0x4db708))
+		if (!g_arenaJoinPending)
 			return;
 		const u8 *in = GAME_VAR(const u8 *, 0x4dbbf8);
 		rec = (u8 *)0x9dae20;
@@ -781,7 +781,7 @@ void (app_shutdown)(void)
 		rec[0x24] = in[0x25];
 		strcpy((char *)rec + 4, (const char *)in + 0x2e);
 	} else {
-		if (!GAME_VAR(int, 0x4db708))
+		if (!g_arenaJoinPending)
 			return;
 		rec = (u8 *)(0x9087c0 + pick * 0x4a);
 		*(u32 *)rec = *GAME_VAR(const u32 *, 0x4dbbf8);
@@ -799,7 +799,7 @@ void (app_shutdown)(void)
 		arena_leaveSession();
 	}
 	GAME_VAR(int, 0x4dbb10) = 0;
-	GAME_VAR(int, 0x4db708) = 0;
+	g_arenaJoinPending = 0;
 	GAME_VAR(int, 0x4db8b4) = 0;
 }
 
@@ -943,7 +943,7 @@ int (lobby_openConnection)(void)
 	g_lobbyRefreshing = 0;
 	g_lobbySearching = 1;
 	g_searchResult = 0;
-	GAME_VAR(int, 0x680bb8) = 0;
+	g_lobbyListPage = 0;
 	GAME_VAR(int, 0x4dba8c) = 0;
 	g_serverConnectionState = 0;
 	GAME_VAR(int, 0x9087b0) = 0;
@@ -1023,7 +1023,7 @@ u32 (lobby_pageClicks)(void)
 	if (button != 0x10)
 		return button - 0x11;
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 1;
+	g_netRole = 1;
 	music_shutdown();
 	g_mapRotation = (signed char)g_arenaCustomize;
 	GAME_VAR(int, 0x9dad94) = (signed char)GAME_VAR(u8, 0x4ded40);
@@ -1051,7 +1051,7 @@ u32 (arena_connectionOutcome)(void)
 	if (state == 1) {
 		GAME_VAR(int, 0x4dba88) = 0;
 		GAME_VAR(int, 0x67ef14) = 1;
-		GAME_VAR(int, 0x67ef04) = 1;
+		g_netRole = 1;
 		music_shutdown();
 		g_arenaLobbyMode = 0;
 		GAME_CDECL(0x452ec0, void, int, int)(0, 0);   /* arena_openSession */
@@ -1359,7 +1359,7 @@ void (lobbyJoin_keysChat)(void)
 		arena_openSession(1, NULL);
 		g_lanSearch = 1;
 		GAME_VAR(int, 0x4dba84) = 1;
-		GAME_VAR(int, 0x680bb8) = 0;
+		g_lobbyListPage = 0;
 		g_gameCount = 0;
 		g_serverConnected = 0;
 		GAME_VAR(int, 0x4db854) = 0;
@@ -1530,9 +1530,9 @@ static void take_arena(void)
    settings taken (0x4dbbf4 1, back to lobby mode 0). The callers ignore the eax it leaves */
 void (lobby_roomNameCheck)(void)
 {
-	int was = GAME_VAR(int, 0x67ef04);
+	int was = g_netRole;
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 1;
+	g_netRole = 1;
 	lobby_keepArenaSettings();
 	int hosted = arena_openSession(1, NULL);
 	if (hosted) {
@@ -1542,7 +1542,7 @@ void (lobby_roomNameCheck)(void)
 	if (!hosted) {
 		GAME_VAR(int, 0x4db55c) = 1;
 		GAME_VAR(int, 0x67ef14) = 0;
-		GAME_VAR(int, 0x67ef04) = was;
+		g_netRole = was;
 		arena_leaveSession();
 		return;
 	}
@@ -1558,7 +1558,7 @@ void (lobby_checkReservedName)(void)
 {
 	GAME_VAR(int, 0x4dbbf4) = 2;
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x67ef04) = 1;
+	g_netRole = 1;
 	music_shutdown();
 	g_arenaLobbyMode = 0;
 	arena_openSession(0, NULL);
@@ -1588,7 +1588,7 @@ int (lobby_checkReservedName2)(void)
 	}
 	GAME_VAR(int, 0x4ded54) = 1;
 	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
-	u8 *packet = GAME_VAR(u8 *, 0xa0b310);
+	u8 *packet = g_roomPacket;
 	packet[0] = 0x18;
 	packet[0x49] = ARENA(0x22);
 	packet[0x48] = ARENA(0x25);
@@ -1599,9 +1599,9 @@ int (lobby_checkReservedName2)(void)
 	packet[0x44] = ARENA(0x21);
 	packet[0x52] = ARENA(0x2e);
 	lstrcpyA((char *)packet + 0x53, (const char *)0x4ded46);
-	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b310) + 1, (const char *)0x4ded20);
+	lstrcpyA((char *)g_roomPacket + 1, (const char *)0x4ded20);
 	jmp_net_getLocalAddress_4532e0();
-	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b310) + 0x33, (const char *)0xa0b43c);
+	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)0xa0b43c);
 	GAME_VAR(int, 0x4dba88) = 1;
 	g_connectStep = 2;
 	net_send(0xa, 0x64);
@@ -1617,9 +1617,9 @@ void (lobby_checkReservedName3)(void)
 {
 	room_keepSettings();
 	special_map((const char *)0x5b1b30, (u8 *)0x5b1b50);
-	u8 *packet = GAME_VAR(u8 *, 0xa0b328);
+	u8 *packet = g_arenaPacket;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)0x9dd570, 0x1e);   /* strncpy */
-	packet = GAME_VAR(u8 *, 0xa0b328);
+	packet = g_arenaPacket;
 	const u8 *room = (const u8 *)0x5b1b30;
 	packet[0] = 0x18;
 	packet[0x67] = room[0x22];
@@ -1631,9 +1631,9 @@ void (lobby_checkReservedName3)(void)
 	packet[0x62] = room[0x21];
 	packet[0x70] = room[0x2e];
 	lstrcpyA((char *)packet + 0x71, (const char *)0x5b1b56);
-	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b328) + 1, (const char *)0x5b1b30);
+	lstrcpyA((char *)g_arenaPacket + 1, (const char *)0x5b1b30);
 	jmp_net_getLocalAddress_4532e0();
-	lstrcpyA((char *)GAME_VAR(u8 *, 0xa0b328) + 0x33, (const char *)0xa0b43c);
+	lstrcpyA((char *)g_arenaPacket + 0x33, (const char *)0xa0b43c);
 	GAME_VAR(int, 0x4dba88) = 1;
 	g_connectStep = 2;
 	net_send(0x12, 0x65);

@@ -59,7 +59,7 @@ void (room_selectJoinedSession)(void)
 {
 	int v = g_joinedSessionFlag != 1 ? GAME_VAR(int, 0xa052d6) : 0;
 	GAME_VAR(int, 0x9dd5e0) = v;
-	GAME_VAR(int, 0x9dd248) = v;
+	g_accountClan = v;
 	GAME_VAR(int, 0xa0b354) = 0;
 	GAME_VAR(int, 0x9dd354) = 0;
 	GAME_VAR(int, 0x9dd6d4) = 0;

@@ -563,7 +563,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	sys_checkClockTampering();
 	if (!g_startedFromLobby) {
 		if (!app_checkLauncherRunning()) {
-			sys_messageBox(GAME_VAR(const char *, 0x9dd8c8));
+			sys_messageBox(g_launchMessage);
 			return 0;
 		}
 		if (!reg_readStartMode()) {

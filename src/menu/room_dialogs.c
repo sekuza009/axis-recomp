@@ -61,7 +61,7 @@ void (room_start)(void)
 {
 	static const u32 cleared[] = { 0x9dd3fc, 0x9dd6a0, 0x9dd330, 0x9da498, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0,
 	                               0x4df818, 0x9dd4bc, 0x9dd56c, 0x9dd6c0, 0x9dd34c, 0x9dcd40, 0x9dd840 };
-	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;   /* 0.7 */
+	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomMode = 1;
 	g_lastPanel = 999;
@@ -161,7 +161,7 @@ u32 (room_joinSession)(int i)
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4db8b4) = 1;
 	g_arenaJoinWaiting = 0;
-	GAME_VAR(int, 0x4db708) = 0;
+	g_arenaJoinPending = 0;
 	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	GAME_VAR(u32, 0xa0bad0) = timer;
 	return timer;
@@ -211,7 +211,7 @@ u32 (arena_joinListed)(int i)
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4db8b4) = 1;
 	g_arenaJoinWaiting = 0;
-	GAME_VAR(int, 0x4db708) = 0;
+	g_arenaJoinPending = 0;
 	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	GAME_VAR(u32, 0xa0bad0) = timer;
 	return timer;
@@ -294,11 +294,11 @@ u32 (room_draw)(void)
 		                                                     GAME_VAR(int, 0x9dd1c0), GAME_VAR(int, 0x9dd1c4));   /* menu_drawFrame */
 	signed char players = GAME_VAR(signed char, 0x5b1b51);
 	if (players < 0 || players > 0x10)
-		GAME_VAR(u8, 0x5b1b51) = 8;
-	if (GAME_VAR(u8, 0x5b1b54) > 0x32)
-		GAME_VAR(u8, 0x5b1b54) = 0x1e;
-	if (GAME_VAR(u8, 0x5b1b55) > 0x3c)
-		GAME_VAR(u8, 0x5b1b55) = 0x1e;
+		g_roomRecPlayers = 8;
+	if (g_roomRecFragLimit > 0x32)
+		g_roomRecFragLimit = 0x1e;
+	if (g_roomRecTimeLimit > 0x3c)
+		g_roomRecTimeLimit = 0x1e;
 	signed char map = GAME_VAR(signed char, 0x5b1b53);
 	if (map < 0 || map > 0xb)
 		GAME_VAR(u8, 0x5b1b53) = 0;
@@ -536,10 +536,10 @@ u32 (roomList_passwordKeys)(void)
 {
 	u32 r;
 	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
-		if (!GAME_VAR(int, 0x9dd6b8))
+		if (!g_rankingWaiting)
 			return 0;
 		r = sound(0);
-		GAME_VAR(int, 0x9dd6b8) = 0;
+		g_rankingWaiting = 0;
 		g_roomListWaiting = 0;
 		g_roomListPage = g_roomListPrevPage;
 		GAME_VAR(int, 0x9dd1d0) = g_roomListPrev;
@@ -547,10 +547,10 @@ u32 (roomList_passwordKeys)(void)
 		return r;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0cdc))) {
-		if (GAME_VAR(int, 0x9dd6b8))
+		if (g_rankingWaiting)
 			return GAME_VAR(u32, 0x9dd6b8);
 		r = sound(0);
-		GAME_VAR(int, 0x9dd6b8) = 0;
+		g_rankingWaiting = 0;
 		g_rankingHaveList = 0;
 		g_roomListWaiting = 0;
 		g_roomMode = 0;
@@ -558,7 +558,7 @@ u32 (roomList_passwordKeys)(void)
 	}
 	if (!input_justPressed(GAME_VAR(int, 0x76d48c)))
 		return 0;
-	if (GAME_VAR(int, 0x9dd6b8))
+	if (g_rankingWaiting)
 		return GAME_VAR(u32, 0x9dd6b8);
 	r = sound(0);
 	g_roomMode = 0;
@@ -574,7 +574,7 @@ u32 (room_requestJoin)(void)
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
-	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
+	g_roomPanelBrightness = 0x3f333333;
 	static const u32 cleared2[] = { 0x9dd69c, 0x9dd37c, 0x9dd378, 0x9dd304, 0x9dd6d0, 0x9dd1fe, 0x9dd6e0 };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
@@ -894,10 +894,10 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
-	if (!GAME_VAR(int, 0x9dd248))
+	if (!g_accountClan)
 		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)0x759924);
 	else {
-		itoa(GAME_VAR(int, 0x9dd248), text, 10);
+		itoa(g_accountClan, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
 	sprintf(text, (const char *)0x4b0268, (double)GAME_VAR(float, 0x9dd5e4));
@@ -1059,7 +1059,7 @@ u32 (ranking_drawTable)(void)
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
-		int lit = hovered == k + 3 && !(hovered == 3 && !GAME_VAR(int, 0x9dd6b8));
+		int lit = hovered == k + 3 && !(hovered == 3 && !g_rankingWaiting);
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xc8;
 		menu_drawTexQuad_4282f0(x + 0x7d, Y1 - 0x30, x + 0x11d, Y1 - 0x10, 1);
@@ -1069,7 +1069,7 @@ u32 (ranking_drawTable)(void)
 			TEXT(dim);
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(0x75b0a4 + k * 0x80));
 	}
-	if (GAME_VAR(int, 0x9dd6b8)) {   /* loading: blinking in ten steps */
+	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
 		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)0x4a93ec), (const float *)0x4a9424));
 		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, BITS(alpha));

@@ -187,9 +187,9 @@ int (input_isDown)(int key)
 	case 0xfc:
 		return GAME_VAR(int, 0x4ded9c);
 	case 0xfd:
-		return GAME_VAR(int, 0x4ded7c) < 0;
+		return g_mouseWheel < 0;
 	case 0xfe:
-		return GAME_VAR(int, 0x4ded7c) > 0;
+		return g_mouseWheel > 0;
 	}
 	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* input_keyHeldChecked: held */
 }

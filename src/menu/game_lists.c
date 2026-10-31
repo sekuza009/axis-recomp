@@ -92,7 +92,7 @@ static void game_page(int x1, int y, int pages_count)
 {
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	char page[50] = { 0 }, pages[10] = { 0 };
-	itoa(GAME_VAR(int, 0x680bb8), page, 10);
+	itoa(g_lobbyListPage, page, 10);
 	strcat(page, (const char *)0x4ad564);   /* "/" */
 	itoa(pages_count, pages, 10);
 	strcat(page, pages);
@@ -450,7 +450,7 @@ static void shadowed(int x, int y, const char *text)
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (arena_drawNameDialog)(void)
 {
-	int x0 = g_arenaNameDialogLeft, y0 = GAME_VAR(int, 0x4dbb6c);
+	int x0 = g_arenaNameDialogLeft, y0 = g_arenaNameDialogTop;
 	int hovered = arenaNameDialog_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -474,14 +474,14 @@ void (arena_drawNameDialog)(void)
 			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)0x752124);
 	}
 	for (int k = 0; k < 3; k++) {
-		int x = g_arenaNameDialogLeft + k * 0x78, y = GAME_VAR(int, 0x4dbb6c);
+		int x = g_arenaNameDialogLeft + k * 0x78, y = g_arenaNameDialogTop;
 		bind_buttons();
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(hovered == k + 3 && !g_typingArenaName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
-		text_drawBox16(x + 0x32, GAME_VAR(int, 0x4dbb6c) + 0xe4, x + 0x96, (const char *)(0x7521a4 + k * 0x80));
+		text_drawBox16(x + 0x32, g_arenaNameDialogTop + 0xe4, x + 0x96, (const char *)(0x7521a4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(g_arenaNameDialogLeft, GAME_VAR(int, 0x4dbb6c), g_arenaNameDialogRight, g_arenaNameDialogBottom);
+	menu_drawTexturedRect_428a00(g_arenaNameDialogLeft, g_arenaNameDialogTop, g_arenaNameDialogRight, g_arenaNameDialogBottom);
 }
 
 /* ---- the game room's list of games: its mouse ---- */
@@ -584,7 +584,7 @@ void (gameList_mouse)(void)
 			if (g_joined)
 				return;
 			g_roomListCount = 0;
-			GAME_VAR(int, 0x680bb8) = 0;
+			g_lobbyListPage = 0;
 			if (gameList_open() == 1) {
 				sound_playMenu(0);
 				g_searching = 1;
@@ -680,7 +680,7 @@ void (room_gameListKeys)(void)
 			return;
 		}
 		g_roomListCount = 0;
-		GAME_VAR(int, 0x680bb8) = 0;
+		g_lobbyListPage = 0;
 		if (gameList_open() == 1) {
 			GAME_VAR(int, 0x9dd6a0) = 1;
 			GAME_VAR(int, 0x9dd4bc) = 1;
@@ -904,7 +904,7 @@ void (lobby_connect)(void)
 					arena_leaveSession();
 				g_serverListCount = 0;
 				arena_openSession(1, NULL);
-				GAME_VAR(int, 0x680bb8) = 0;
+				g_lobbyListPage = 0;
 				g_lanSearch = 1;
 				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 				g_gameCount = 0;

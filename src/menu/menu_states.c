@@ -226,7 +226,7 @@ void (menuState300_frame)(void)
 {
 	menu_drawBackground();
 	menu_mainMenu();
-	if (GAME_VAR(int, 0x9eeab4) != 0)
+	if (g_mainMenuPicked != 0)
 		mainmenu_drawMapSelect();
 	if (g_quitAsked == 1) {
 		input_setKeysBlocked(1);
@@ -355,7 +355,7 @@ void (mapSelect_ok)(void)
 			sound_playMenu(0);
 			g_mapListFlaggedCount = g_mapSelectCount;
 			g_mainMenuFadingIn = 1;
-			GAME_VAR(int, 0x9eeab4) = 0;
+			g_mainMenuPicked = 0;
 			return;
 		}
 }
@@ -384,7 +384,7 @@ void (mapSelect_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9eeab4) = 0;
+		g_mainMenuPicked = 0;
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
@@ -393,7 +393,7 @@ void (mapSelect_keys)(void)
 	}
 	if (input_justPressed(g_keyBack) == 1) {
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9eeab4) = 0;
+		g_mainMenuPicked = 0;
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e151c)) == 1) {
@@ -439,7 +439,7 @@ void (mapSelect_mouse)(void)
 		else if (on == 6)
 			mapSelect_ok();
 		else if (on == 7)
-			GAME_VAR(int, 0x9eeab4) = 0;
+			g_mainMenuPicked = 0;
 		else if (on >= 8 && on < 18) {
 			sound_playMenu(2);
 			mapSelect_toggle(g_mapFirst + on - 8);

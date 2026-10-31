@@ -177,7 +177,7 @@ static void later_round(Scene *s)
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	sound_setVolume(g_soundVolume);
-	set_4b42dc_457140(GAME_VAR(int, 0x4e0c94));
+	set_4b42dc_457140(g_musicVolume);
 	s->roundClear4 = 0;
 	s->teamAsked = 0;
 	if (s->localPlayer >= 0)

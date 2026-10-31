@@ -418,7 +418,7 @@ void (console_init)(void)
 		data_loadPilotProfiles();
 		match_name((const char *)0x4dedb0);
 		armc_40d990();
-		app_requireCd(scene, GAME_VAR(int, 0x67ef04) == 1 ? 0 : 1, 1);
+		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 2:
 		console_41e390();
@@ -426,7 +426,7 @@ void (console_init)(void)
 			armc_40d990();
 		data_loadPilotProfiles();
 		match_name((const char *)0x9dd570);
-		app_requireCd(scene, GAME_VAR(int, 0x67ef04) == 1 ? 0 : 1, 1);
+		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
 		match_name((const char *)0x9f1798);

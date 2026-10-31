@@ -480,7 +480,7 @@ void (setup_drawControlTab)(void)
 		g_setupPage = 0;
 	}
 	if (GAME_VAR(int, 0x4ded70) && waiting) {
-		int wheel = GAME_VAR(int, 0x4ded7c);
+		int wheel = g_mouseWheel;
 		if (wheel < 0)
 			setup_drawKeyBindingRows(GAME_VAR(int, 0x9da490));
 		else if (wheel > 0)

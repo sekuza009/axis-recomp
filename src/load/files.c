@@ -299,14 +299,14 @@ u32 (cfg_parseSound)(void *f)
 	FPUTS(0x4b1a4c);
 	FPUTS(number);
 	FPUTS(0x4b182c);
-	itoa(GAME_VAR(int, 0x4e0c94), number, 10);
+	itoa(g_musicVolume, number, 10);
 	FPUTS(0x4b1a34);
 	FPUTS(number);
 	FPUTS(0x4b182c);
 	FPUTS(0x4b1a20);
 	FPUTS(g_soundSwitch1 == 1 ? 0x4b17e4 : 0x4b17dc);
 	FPUTS(0x4b1a04);
-	FPUTS(GAME_VAR(int, 0x4e0c9c) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(g_sound3D == 1 ? 0x4b17e4 : 0x4b17dc);
 	return FPUTS(0x4b182c);
 #undef FPUTS
 }
@@ -745,14 +745,14 @@ static void campaign_new(void)
 	strcpy((char *)0x9f19f0, (const char *)0x4b2af4);
 	strcpy((char *)0x9f1a0c, (const char *)0x4b2aec);
 	strcpy((char *)0x9f1a2c, (const char *)0x4b2ae4);
-	GAME_VAR(int, 0x9f1a28) = -1;
-	GAME_VAR(int, 0x9f1a14) = -1;
+	g_profileMechItem5 = -1;
+	g_profileMechItem0 = -1;
 	for (u32 a = 0x9f19f8; a <= 0x9f1a08; a += 4)
 		GAME_VAR(int, a) = 0;
-	GAME_VAR(int, 0x9f1a1c) = 0;
-	GAME_VAR(int, 0x9f1a20) = 2;
-	GAME_VAR(int, 0x9f1a24) = 8;
-	GAME_VAR(int, 0x9f1a18) = 0x11;
+	g_profileMechItem2 = 0;
+	g_profileMechItem3 = 2;
+	g_profileMechItem4 = 8;
+	g_profileMechItem1 = 0x11;
 	for (u32 *t = (u32 *)0x9f1a34; t < (u32 *)0x9f1ac4; t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
@@ -1090,11 +1090,11 @@ void (cfg_readAudioLines)(void *f)
 	read_value(f, value, 0);
 	g_soundVolume = crt_atoi(value);
 	read_value(f, value, 0);
-	GAME_VAR(int, 0x4e0c94) = crt_atoi(value);
+	g_musicVolume = crt_atoi(value);
 	read_value(f, value, 0);
 	g_soundSwitch1 = !strcmp(value, (const char *)0x4b21bc);   /* ON */
 	read_value(f, value, 0);
-	GAME_VAR(int, 0x4e0c9c) = !strcmp(value, (const char *)0x4b21bc);
+	g_sound3D = !strcmp(value, (const char *)0x4b21bc);
 	skip_line(f);
 }
 
@@ -1265,7 +1265,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 		}
 		fclose(f);
 	}
-	GAME_VAR(int, 0x4e0c9c) = 0;
+	g_sound3D = 0;
 	g_videoDepth = 0;
 	GAME_VAR(int, 0x83a9c0) = 0;
 	GAME_VAR(int, 0x83a9d4) = 0;
@@ -1275,7 +1275,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	g_playerSex = 0;
 	strcpy((char *)0x4ded20, (const char *)0x4ad4a4);   /* "AXIS ARENA" */
 	g_soundVolume = 100;
-	GAME_VAR(int, 0x4e0c94) = 100;
+	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)0x4ded40, server, 6);
 	g_soundSwitch1 = 1;
