@@ -733,6 +733,55 @@ void THISCALL (match_474210)(Stage *stage, int p, const char *name, int v, int t
 	player_markUsed(stage, p);
 }
 
+/* a part kind as actor_setActorType*InfoBy set it: the player's field, the stage's type count, the fatal message, the
+   player's shape and skeleton caches, the types' names (+stride each) and the player's copy, the actors' reload */
+typedef struct {
+	u16 field;
+	u32 count, message, shapes, skels, names, stride;
+	u16 name;
+	u32 reload;
+} PartKind;
+static const PartKind part_kinds[5] = {
+	{ 0x30c, 0x13eb000, 0x4c75f0, 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, 0x45e1f0 },     /* head */
+	{ 0x310, 0x140c8bc, 0x4c7624, 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, 0x45e2c0 },    /* chest (actor_updateBody) */
+	{ 0x314, 0x1447ec0, 0x4c7658, 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, 0x45e390 },  /* arms */
+	{ 0x318, 0x148646c, 0x4c7688, 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, 0x45e460 }, /* legs */
+	{ 0x31c, 0x14d1ab0, 0x4c76b8, 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, 0x45e530 }, /* booster */
+};
+
+/* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
+   the player count (+0x19e1888) grows to cover p; the same type again is 1 at once. A type past the count is a fatal
+   message (the game exits); then the player's caches emptied, the type's name copied, the type
+   stored, and each of the player's actors reloads the part; 1 */
+static int set_part(u8 *scene, int p, int type, const PartKind *k)
+{
+	if (type < 0)
+		return 0;
+	u8 *pl = scene + 0x1561b68 + p * 0x47fd2;
+	if (p > GAME_VAR(int, scene + 0x19e1888) - 1)
+		GAME_VAR(int, scene + 0x19e1888) = p + 1;
+	if (GAME_VAR(int, pl + k->field) == type)
+		return 1;
+	if (type >= GAME_VAR(int, scene + k->count))
+		sys_fatalError((char *)0xae2eb8, (const char *)(uintptr_t)k->message, type);
+	FUN_00467520(pl + k->shapes);
+	FUN_0046b7f0(pl + k->skels);
+	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
+	GAME_VAR(int, pl + k->field) = type;
+	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
+		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
+			GAME_THISCALL(k->reload, void, void *, int)(scene, i);
+	return 1;
+}
+
+/* 0x473b10, 0x473c20, 0x473d30, 0x473e40, 0x473f50 (thiscall on the stage): player p's head, chest, arms, legs and
+   booster type */
+int THISCALL (actor_setActorTypeHeadInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[0]); }
+int THISCALL (actor_setActorTypeChestInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[1]); }
+int THISCALL (actor_setActorTypeArmInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[2]); }
+int THISCALL (actor_setActorTypeLegInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[3]); }
+int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[4]); }
+
 /* 0x474060 (thiscall on the stage): player p's item in slot set (its part type record at +0x1561b68, 0x47fd2 bytes
    each: the item at +0x320 + slot x 4, its name at +0x18c + slot x 0x40). Game types 2 .. 11 (+0x20f3ab8) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else

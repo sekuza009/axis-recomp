@@ -3704,12 +3704,12 @@ THISCALL void actor_updatePart(char *sc, DWORD a, DWORD slot, DWORD var);
    released, the type's name copied to the player (+0x4c), the type stored (+0x30c..+0x31c), and every actor of the
    player (count +0x202e8c8) reloads that part (FUN_0045e1f0 / actor_updateBody / FUN_0045e390 / FUN_0045e460 /
    FUN_0045e530); 1 */
-#define SET_TYPE(name, addr) static THISCALL DWORD name(char *sc, DWORD p, DWORD t) { DWORD v[2] = { p, t }; return run_lifted(lift_##addr, (DWORD)sc, 2, v); }
-SET_TYPE(actor_setActorTypeHeadInfoBy, 473b10)
-SET_TYPE(actor_setActorTypeChestInfoBy, 473c20)
-SET_TYPE(actor_setActorTypeArmInfoBy, 473d30)
-SET_TYPE(actor_setActorTypeLegInfoBy, 473e40)
-SET_TYPE(actor_setActorTypeBoosterInfoBy, 473f50)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int actor_setActorTypeHeadInfoBy(char *sc, DWORD p, DWORD t);
+THISCALL int actor_setActorTypeChestInfoBy(char *sc, DWORD p, DWORD t);
+THISCALL int actor_setActorTypeArmInfoBy(char *sc, DWORD p, DWORD t);
+THISCALL int actor_setActorTypeLegInfoBy(char *sc, DWORD p, DWORD t);
+THISCALL int actor_setActorTypeBoosterInfoBy(char *sc, DWORD p, DWORD t);
 /* 0x474060 (thiscall) actor_setActorTypeItemInfoBy(player, slot, item): the item for a player's slot; the game mode
    (+0x20f3ab8) 2..11 fixes slot 0's item (3, 5, 0x24, 0x19, 0x16; mode 10/11 also slot 1: 0x17) and empties the
    other slots; otherwise a negative item empties the slot. The item's name goes to the player (+0x18c + slot * 0x40,
