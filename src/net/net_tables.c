@@ -1403,6 +1403,20 @@ void (net_recv)(void)
 	}
 }
 
+/* The six match packets are built where the original builds them: in the 0x40 bytes straight below the return
+   address, which its "sub esp, 0x40" (0x44, 0x48) reserves without writing, so the bytes a packet does not set go
+   out as the stack had them. A C local cannot sit there (the saved registers come first), so each sender is an
+   entry stub that reserves those bytes the same way and hands them to the C body (thiscall: ecx kept, the
+   function's own argument passed on, the packet last). The body's eax is passed back. */
+#define PACKET_ENTRY(name, nargs) \
+	__asm__(".text\n.globl _" #name "\n_" #name ":\n" \
+	        "\tsubl $0x40, %esp\n"                      /* the packet: [entry - 0x40, entry), left as it was */ \
+	        "\tpushl %esp\n"                            /* (the value before the push: the packet) */ \
+	        ".if " #nargs "\n\tpushl 0x48(%esp)\n.endif\n"   /* the argument, from above the packet */ \
+	        "\tcalll _" #name "_body\n" \
+	        "\taddl $0x40, %esp\n" \
+	        "\tretl $(" #nargs " * 4)\n")
+
 /* a match packet (0x40 bytes) sent and counted (+0x2340c78); while recording (+0x2340d1d 1) the frame (+0x2340d29),
    the camera's actor (+0x234240d), the packet's size and the packet written to the recording (+0x2340d08) */
 static void send_packet(u8 *s, u8 *packet)
@@ -1425,9 +1439,8 @@ static void send_packet(u8 *s, u8 *packet)
    (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
    (+0x2340d08). Its caller ignores the eax it leaves */
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
-void THISCALL (net_sendPlayerLevels)(u8 *s)
+static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *packet)
 {
-	u8 packet[0x40];
 	packet[1] = 0xe;
 	for (int i = 0; i < FIELD(int, s, 0x22f0400) && i < 0x7c; i++) {
 		u8 *player = s + 0x22ee4c0 + i * 0x28;
@@ -1442,6 +1455,7 @@ void THISCALL (net_sendPlayerLevels)(u8 *s)
 	}
 	send_packet(s, packet);
 }
+PACKET_ENTRY(net_sendPlayerLevels, 0);
 #undef FIELD
 
 /* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
@@ -1449,13 +1463,12 @@ void THISCALL (net_sendPlayerLevels)(u8 *s)
    then +0x13 its +0x44, +0x14 its +0x48, the actor's team byte (+0x1eccb4c), p, the five parts and six items (each
    + 1), the 30 colour bytes (+0x479a4). Sent by send_packet. Its caller ignores the eax it
    leaves */
-void THISCALL (net_sendPlayerInfo)(u8 *s, int p)
+static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p, u8 *packet)
 {
 	int *flag = (int *)(s + 0x234300a + p * 0x10);
 	if (!*flag)
 		return;
 	u8 *r = s + 0x1755230 + p * 0x47fd2;
-	u8 packet[0x40];
 	packet[1] = 2;
 	strcpy((char *)packet + 2, (const char *)r + 4);
 	packet[0x14] = r[0x48];
@@ -1470,6 +1483,7 @@ void THISCALL (net_sendPlayerInfo)(u8 *s, int p)
 	*flag = 0;
 	send_packet(s, packet);
 }
+PACKET_ENTRY(net_sendPlayerInfo, 1);
 
 /* 0x4532f0: DirectPlay's EnumConnections callback: the service provider's short name kept upper-cased (the 0x80-byte
    slot of the count 0xa0bac8, which counts up to 9), and by its kind (the name containing "TCP", "IPX", "MODEM" or
@@ -1512,12 +1526,11 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
    bytes and a line (+0x23431e7: +0x234319f, +0x23431a3, +0x23431a7); 11 the camera's actor, a byte and a line
    (+0x2343233: +0x23431ef, +0x23431f3); 13 (+0x2343243). With none pending any more the events are done
    (+0x2343106 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
-void THISCALL (net_sendMatchEvent)(u8 *s)
+static void THISCALL __attribute__((used)) net_sendMatchEvent_body(u8 *s, u8 *packet)
 {
 #define FLAG(offset) GAME_VAR(int, s + (offset))
 #define TAKE(offset) (FLAG(offset) == 1 && (FLAG(offset) = 0, 1))
 	static const u32 flags[10] = { 0x234319b, 0x234314e, 0x2343156, 0x23431e7, 0x2343233, 0x2343237, 0x234323b, 0x234323f, 0x234324f, 0x2343243 };
-	u8 packet[0x40];
 	if (TAKE(0x2343237))
 		packet[1] = 3, packet[2] = 0x6b;
 	else if (TAKE(0x234323b))
@@ -1562,15 +1575,15 @@ void THISCALL (net_sendMatchEvent)(u8 *s)
 #undef FLAG
 #undef TAKE
 }
+PACKET_ENTRY(net_sendMatchEvent, 0);
 
 /* 0x48e990 (thiscall on the scene): player p's colour ring sent (packet 0xc, p): when either of its flags is set
    (its part type record +0x1755230 + p x 0x47fd2: +0x47fc6, +0x47fca) the ring's position (+0x47fce, a short) and
    16 three-byte colours from there (4 bytes apart, from +0x479c2), the position then 16 on; else 0xffff and the
    position back to 0x180. Sent by send_packet. Its caller ignores the eax it leaves */
-void THISCALL (net_sendColourRing)(u8 *s, int p)
+static void THISCALL __attribute__((used)) net_sendColourRing_body(u8 *s, int p, u8 *packet)
 {
 	u8 *r = s + p * 0x47fd2;
-	u8 packet[0x40];
 	packet[1] = 0xc;
 	packet[2] = (u8)p;
 	if (GAME_VAR(int, r + 0x179d1f6) == 1 || GAME_VAR(int, r + 0x179d1fa) == 1) {
@@ -1585,6 +1598,7 @@ void THISCALL (net_sendColourRing)(u8 *s, int p)
 	}
 	send_packet(s, packet);
 }
+PACKET_ENTRY(net_sendColourRing, 1);
 
 /* a float in memory times a constant, truncated (the original's __ftol) */
 static int scaled(const void *v, u32 k)
@@ -1606,10 +1620,9 @@ static int angle_byte(const void *v)
    from +0x22225fc) is gone is cleared (-1); else flags (1, 3 for a new one: +0x1fc + slot x 0x20 cleared; 4 aimed
    at an actor, 8 still flying), the target (+0xb8, or the object's index + 1, or 0) and the position (+0x60 while
    it flies at an object, else +0x84). Sent by send_packet. Its caller ignores the eax it leaves */
-void THISCALL (net_sendPlayerState)(u8 *g, int p)
+static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
 	u8 *a = g + 0x1ecca70 + p * 0x8888;
-	u8 packet[0x40];
 	u16 w;
 	packet[1] = 0;
 	memcpy(packet + 2, a + 0x3f0, 2);
@@ -1673,6 +1686,7 @@ void THISCALL (net_sendPlayerState)(u8 *g, int p)
 	}
 	send_packet(g, packet);
 }
+PACKET_ENTRY(net_sendPlayerState, 1);
 
 /* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
 static u32 table_rand(void)
@@ -1702,7 +1716,7 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
    bc), the kill notice (+0x22f0404, set back to -1), then two random checks of the level: one of the five geometry
    tables in turn (+0x23423c9 counting; its number in byte 0x2b) and the sixth, each a position and the entry there.
    Sent by send_packet. Its caller ignores the eax it leaves */
-void THISCALL (net_sendGamePacket)(u8 *s, int p)
+static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p, u8 *packet)
 {
 	static const struct { u32 per_row, rows; int row_len; u32 base; } tables[5] = {
 		{ 0x23423e5, 0x15de6c8, 682, 0x15bd1f8 }, { 0x23423e9, 0x15fff84, 687, 0x15de6cc },
@@ -1712,7 +1726,6 @@ void THISCALL (net_sendGamePacket)(u8 *s, int p)
 	if (!*flag)
 		return;
 	u8 *a = s + p * 0x8888;
-	u8 packet[0x40];
 	packet[1] = 1;
 	packet[2] = (u8)p;
 	if (GAME_VAR(int, s + 0x1f1ca8) > 0 && !(GAME_VAR(float, s + 0x234239d) > *(const float *)0x4a93e8)) {
@@ -1759,6 +1772,7 @@ void THISCALL (net_sendGamePacket)(u8 *s, int p)
 	*flag = 0;
 	send_packet(s, packet);
 }
+PACKET_ENTRY(net_sendGamePacket, 1);
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
 #define K(address) ((const float *)(address))
