@@ -2214,6 +2214,7 @@ __declspec(dllexport) int AxisNetVersion(void) { return 2; }
 static volatile int g_menufix;   /* menu_vtx / rect_wrap / trans_wrap installed (menu43) */
 static volatile int g_pressedfix;   /* pressed_wrap installed at 0x401600 */
 static volatile int g_clampfix;     /* cursor_clamp_wrap installed at 0x445cd8 */
+static volatile int g_rotfix;       /* the ARM CENTER rotation range fix (0x461962 ..) installed */
 /* (the later fields serve the rebuilds of the functions this DLL patches in memory: what each patch is, and the
    state it keeps, so that the rebuild can do the same; state/stateSize: this DLL's writable data, which the
    harness restores before each run and compares after, as it does the game's own .data) */
@@ -2225,8 +2226,9 @@ static struct {
     BYTE *state; DWORD stateSize;
     const volatile int *pressedFix; int (__cdecl *mousePressed)(int code); int *mouseLatch;
     const volatile int *cursorClampFix; void (__cdecl *cursorClamp)(void);
+    const volatile int *rotFix;
 } g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full,
-             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp };
+             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp, &g_rotfix };
 
 /* g_wide.state: this module's writable data section (none in the standalone exe, which runs no harness) */
 static void wide_state_range(void) {
@@ -2307,6 +2309,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
             FlushInstructionCache(GetCurrentProcess(), (void *)rot[i].at, 7);
         }
     }
+    g_rotfix = rot_ok;
     logf("ARM CENTER rotation range fix %s", rot_ok ? "ok" : "NOT INSTALLED (unknown exe)");
     if (g_watch) {
         g_mainthread = GetCurrentThreadId();

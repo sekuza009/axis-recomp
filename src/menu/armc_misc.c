@@ -1,6 +1,7 @@
 /* armc_misc.c: small pieces of the ARM CENTER screen: its per-mode draw passes, the 3D view's setup, the text
    helpers that follow the language, and re-making the player's actor. */
 #include "../game.h"
+#include "../wide.h"
 #include <string.h>
 
 #define g_armcModeShown GAME_VAR(int, 0x4dc24c)       /* (unclear) 3: the part lists are left as they are */
@@ -139,6 +140,65 @@ void (armc_exit)(int confirmed)
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
    while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
 #define g_armcEye ((const u32 *)0xa0e7a8)              /* (by use) the preview camera's position */
+
+/* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
+   while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
+   (+0x2343293 y, +0x2343297 x) and the heading becomes x / w * 3600 less the preview's angle. The actor's pitch is
+   y / (h / 2) * 89 degrees. The mech is posed (actor_processFrame), lit by one light from the view direction, and
+   its eight part lists queued: with no part chosen (part < 0) all under that light, else the chosen one white and
+   the rest a dim violet, unlit; then drawn. The cursor is in 640 x 480 units while w and h are screen pixels, so
+   above 640 x 480 the mech turned only part of the way; the patch DLL's fix (wide.h: rotFix; its four changes at
+   0x461962, 0x461982, 0x4619bb, 0x4619e1) uses 640 x 480 there. (The original's SEH frame, for unwinding the local
+   light set, is not reproduced.) */
+void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *forward, const u32 *up, int part, int angle,
+                                      int w, int h)
+{
+	static const u32 lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };   /* (in the actor) */
+	u8 *s = (u8 *)scene, *stage = s + 0x1f36c8, *vv = s + 0x74;
+	u32 light[0xb00c / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts */
+	for (int i = 0; i < 0x400; i++)
+		GAME_THISCALL(0x45fff0, void *, void *)((u8 *)light + 4 + i * 0x2c);
+	light[0] = 0x4aa248;
+	GAME_THISCALL(0x483d60, int, void *)(light);   /* Light_clearCounts */
+	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
+	frameTimer_average(scene);
+	u32 x44 = GAME_VAR(u32, s + 0x44);
+	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
+	GAME_THISCALL(0x4729b0, void, void *, const u32 *, const u32 *, const u32 *, u32, int, int, u32, u32, u32)(stage, eye, forward, up,
+	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
+	ViewVolume_captureMatrices(vv, 0, s + 0x22e7068);
+	ViewVolume_reset(vv);
+	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
+	if (GAME_VAR(int, 0x4ded98)) {   /* the right button held */
+		GAME_VAR(int, s + 0x234325b) = g_mouseY;
+		GAME_VAR(int, s + 0x2343257) = g_mouseX;
+		int dy = GAME_VAR(int, s + 0x234325b) - H / 2, dx = GAME_VAR(int, s + 0x2343257) - W / 2;
+		GAME_VAR(float, s + 0x2343293) = (float)dy;
+		long double x = (long double)dx;
+		GAME_VAR(float, s + 0x2343297) = (float)x;
+		long double turn = x / W * GAME_VAR(float, 0x4a94c8);   /* 3600 */
+		GAME_VAR(float, s + 0x2342409) = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
+	}
+	int a = GAME_VAR(int, s + 0x234240d);
+	u8 *actor = s + 0x1ecca70 + a * 0x8888;
+	GAME_VAR(float, actor + 0x18c) = (float)fmul_m(fld_m((const float *)(s + 0x2343293)) / (long double)(H / 2),
+	                                               (const float *)0x4a972c);   /* 890: tenths of a degree */
+	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);
+	actor_processFrame(stage, GAME_VAR(int, s + 0x234240d), GAME_VAR(float, s + 0x3c));
+	GAME_THISCALL(0x483d60, int, void *)(light);   /* Light_clearCounts */
+	u32 dir[3] = { forward[0], forward[1], forward[2] };
+	Vec3_normalize((float *)dir);
+	factors_addPoint(light, (const void *)0xa1f23c, dir);
+	for (int k = 0; k < 8; k++) {
+		u8 *list = s + 0x1ecca70 + GAME_VAR(int, s + 0x234240d) * 0x8888 + lists[k];
+		if (part < 0)
+			partList_queue(list, vv, light, NULL, 1, (u32)-1, 0);
+		else
+			partList_queue(list, vv, NULL, k == part ? white : dim, 1, (u32)-1, 0);
+	}
+	render_drawObjects(vv, 0, 0.0f);
+	Light_dtor(light);
+}
 
 static void preview(int posed, int part)   /* posed: the mech posed for part */
 {

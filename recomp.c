@@ -4158,6 +4158,8 @@ int input_justPressed(int key);
 int input_readMouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void input_updateMenuCursor(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void sound_playMenu(int id);
@@ -6486,6 +6488,9 @@ static BYTE g_stubSaved[MAXSTUBS][5];
 /* callee_out: data a stub writes through one of its pointer arguments, as the real callee fills an output buffer
    (else both sides go on with whatever their stacks held there) */
 static int g_stubOutArg[MAXSTUBS]; static DWORD g_stubOutLen[MAXSTUBS]; static BYTE g_stubOutData[MAXSTUBS][64];
+/* callee_deref: arguments (a mask, bit 0 = the first) that point at data the stub records too (up to 4 dwords each;
+   a stack address is otherwise only recorded as STACK_ARG, which tells two locals apart by nothing) */
+static DWORD g_stubDerefMask[MAXSTUBS], g_stubDerefN[MAXSTUBS];
 /* the argument count may carry CS_POP (the callee pops its arguments: stdcall / thiscall, ret N) and CS_THIS (ecx,
    thiscall's object, is recorded first); more than four arguments are recorded four at a time */
 #define CS_POP 0x100
@@ -6497,6 +6502,13 @@ static DWORD __cdecl callee_dispatch(DWORD *f)   /* f[0] ecx, f[1] stub index, f
 	if (fl & CS_THIS) mock_rec(g_stubAddr[k] | 0x80000000u, 0, f[0], 0, 0, 0);
 	for (int i = 0; i == 0 || i < n; i += 4)
 		mock_rec(g_stubAddr[k] + (DWORD)i, n, n > i ? f[3 + i] : 0, n > i + 1 ? f[4 + i] : 0, n > i + 2 ? f[5 + i] : 0, n > i + 3 ? f[6 + i] : 0);
+	for (int i = 0; i < n && i < 32; i++)
+		if (g_stubDerefMask[k] >> i & 1) {
+			const DWORD *p = (const DWORD *)f[3 + i];
+			DWORD v[4] = { 0 };
+			for (DWORD j = 0; p && j < g_stubDerefN[k] && j < 4; j++) v[j] = p[j];
+			mock_rec(g_stubAddr[k] | 0x40000000u, i, v[0], v[1], v[2], v[3]);
+		}
 	if (g_stubOutLen[k]) memcpy((void *)f[3 + g_stubOutArg[k]], g_stubOutData[k], g_stubOutLen[k]);
 	g_stubPop = fl & CS_POP ? 4u * (DWORD)n : 0;
 	if (g_stubKey[k] != -1) return f[3] == (DWORD)g_stubKey[k];   /* callee_key: a key test answering for one key */
@@ -6539,7 +6551,7 @@ static void callee_stubs(const DWORD *list, DWORD ret)
 	g_nstubs = 0;
 	for (; *list && g_nstubs < MAXSTUBS; list += 2) {
 		g_stubAddr[g_nstubs] = list[0]; g_stubArgs[g_nstubs] = (int)list[1];
-		g_stubRetK[g_nstubs] = ret; g_stubOutLen[g_nstubs] = 0; g_stubKey[g_nstubs++] = -1;
+		g_stubRetK[g_nstubs] = ret; g_stubOutLen[g_nstubs] = 0; g_stubDerefMask[g_nstubs] = 0; g_stubKey[g_nstubs++] = -1;
 	}
 	g_stubRet = ret;
 	callee_patch(1);
@@ -6553,6 +6565,7 @@ static void callee_out(DWORD addr, int arg, const void *data, DWORD len)
 	int k = callee_index(addr);
 	if (k >= 0 && len <= sizeof g_stubOutData[0]) { g_stubOutArg[k] = arg; g_stubOutLen[k] = len; memcpy(g_stubOutData[k], data, len); }
 }
+static void callee_deref(DWORD addr, DWORD mask, DWORD n) { int k = callee_index(addr); if (k >= 0) { g_stubDerefMask[k] = mask; g_stubDerefN[k] = n; } }
 /* the stub at addr (a key test taking the key first) answers 1 for key, 0 for any other (-1: none pressed) */
 static void callee_key(DWORD addr, int key) { int k = callee_index(addr); if (k >= 0) g_stubKey[k] = key < 0 ? -2 : key; }
 /* the scripted values a test may change in its setup, back to their defaults before each run */
@@ -14202,6 +14215,34 @@ static void menuCursor_setup(void)
 	G32(0x4d1fac) = irnd(0, 1); G32(0x4ad17c) = irnd(0, 1);
 }
 ST(input_updateMenuCursor, menuCursor_setup();, (CALL_PLAIN(0x445c60, 0, 0, 0, 0, 0), 0), (input_updateMenuCursor(), 0))
+/* armc_rotateFromCursor: the scene's 3D calls stubbed (the camera, the view volume, posing, the light, the part lists
+   with their light set / tint recorded, drawing); the plane and angle getters, Vec3_normalize and the light set's own
+   methods real. The right button held or not, the cursor anywhere, any part (-2 .. 8), angle and screen size */
+static const DWORD g_stubRotate[] = { 0x461210, 0 | CS_POP | CS_THIS, 0x4729b0, 9 | CS_POP | CS_THIS, 0x4841f0, 2 | CS_POP | CS_THIS,
+	0x484260, 0 | CS_POP | CS_THIS, 0x4580b0, 2 | CS_POP | CS_THIS, 0x483ec0, 2 | CS_POP | CS_THIS, 0x46fd20, 6 | CS_POP | CS_THIS,
+	0x485af0, 2 | CS_POP | CS_THIS, 0 };
+static void rotate_setup(void)
+{
+	char *s = BUF;
+	callee_stubs(g_stubRotate, 0);
+	callee_deref(0x483ec0, 2, 3); callee_deref(0x46fd20, 6, 1);
+	G32(s + 0x234240d) = irnd(0, 15); G32(s + 0x44) = irnd(0, 100); G32(s + 0x3c) = 0x3c888889;
+	fill(s + 0x234325b, 4); fill(s + 0x2343257, 4); fill(s + 0x2343293, 4); fill(s + 0x2343297, 4); fill(s + 0x2342409, 4);
+	G32(0x4ded98) = irnd(0, 2) ? 1 : 0; G32(0x4ded68) = irnd(-100, 800); G32(0x4ded6c) = irnd(-100, 600);
+	for (int i = 0; i < 9; i++) GF(BUF + 0x200 + 4 * i) = (float)irnd(-1000, 1000) / (float)irnd(1, 7);
+	g_a[0] = irnd(-2, 8); g_a[1] = irnd(-8000, 8000); g_a[2] = irnd(0, 3) ? irnd(1, 4000) : irnd(-2, 2); g_a[3] = irnd(0, 3) ? irnd(1, 3000) : irnd(-2, 2);
+}
+static DWORD rotate_orig(void)
+{
+	DWORD a[7] = { (DWORD)(BUF + 0x200), (DWORD)(BUF + 0x20c), (DWORD)(BUF + 0x218), g_a[0], g_a[1], g_a[2], g_a[3] };
+	__asm__ volatile("pushl 24(%0)\n\tpushl 20(%0)\n\tpushl 16(%0)\n\tpushl 12(%0)\n\tpushl 8(%0)\n\tpushl 4(%0)\n\tpushl (%0)\n\t"
+	                 "movl %1, %%ecx\n\tmovl $0x461850, %%eax\n\tcalll *%%eax"
+	                 :: "r"(a), "r"(BUF) : "eax", "ecx", "edx", "memory");
+	return 0;
+}
+ST(armc_rotateFromCursor, rotate_setup();, rotate_orig(),
+   (armc_rotateFromCursor(BUF, (const DWORD *)(BUF + 0x200), (const DWORD *)(BUF + 0x20c), (const DWORD *)(BUF + 0x218),
+                          g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 ST(skirmishSettings_leave, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmishSettings_leave()))
 ST(missionSettings_leave, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(missionSettings_leave()))
@@ -17302,7 +17343,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18369,7 +18410,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 161 */
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
-	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */
@@ -18651,8 +18692,8 @@ static DWORD WINAPI worker(LPVOID unused)
 			memcpy(g_patchSnap, g_patchData, g_patchSize);
 			say("recomp: the patch DLL's data (%u bytes at %p) is restored and compared with the game's\n", g_patchSize, g_patchData);
 			{ int wide_fixes(void); int f = wide_fixes();
-			  say("recomp: patch DLL changes the rebuilds carry: menu fix %s, mouse-button latch %s, cursor clamp %s\n",
-			      f & 1 ? "on" : "off", f & 2 ? "on" : "off", f & 4 ? "on" : "off"); }
+			  say("recomp: patch DLL changes the rebuilds carry: menu fix %s, mouse-button latch %s, cursor clamp %s, ARM CENTER turn %s\n",
+			      f & 1 ? "on" : "off", f & 2 ? "on" : "off", f & 4 ? "on" : "off", f & 8 ? "on" : "off"); }
 		}
 		run_state_tests();
 		restore_data();                        /* the game resumes exactly where it was frozen */

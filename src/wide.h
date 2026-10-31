@@ -28,6 +28,7 @@ typedef struct {
 	int *mouseLatch;                   /* (its latches, 3, for the tests) */
 	const volatile int *cursorClampFix;   /* input_updateMenuCursor (0x445c60): its clamp (0x445cd8) replaced by ... */
 	void (CDECL *cursorClamp)(void);      /* ... this (the pointer over the whole width of a wide screen) */
+	const volatile int *rotFix;        /* armc_rotateFromCursor (0x461850): the cursor's turn in 640 x 480 units */
 } Wide;
 
 /* what the main HUD's vertices are anchored to on a screen wider than 4:3 (hudPart) */

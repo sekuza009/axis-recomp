@@ -10,7 +10,7 @@ static int no_mousePressed(int key) { (void)key; return 0; }
 static int no_latch[3];
 static void CDECL no_cursorClamp(void) {}
 static const Wide none = { sizeof(Wide), &off, &off, &off, &off, &off, &off, &off, &unused, no_fullScreen,
-                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp };
+                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off };
 const Wide *g_wide = &none;
 
 /* called by the patch DLL (test build) right after it loads recomp.dll */
@@ -46,6 +46,8 @@ int wide_carries(u32 addr)
 	case 0x445c60:                  /* input_updateMenuCursor: the mouse read's call retargeted (followed live), the
 	                                   clamp replaced (cursorClampFix): both carried */
 		return 1;
+	case 0x461850:                  /* armc_rotateFromCursor: four instructions of the turn (rotFix) */
+		return 1;
 	}
 	return 0;
 }
@@ -66,5 +68,5 @@ void wide_testMouseLatch(int i, int on)
 /* for the harness's log: which of the patch DLL's in-memory changes are installed */
 int wide_fixes(void)
 {
-	return wide_menuFix() | *g_wide->pressedFix << 1 | *g_wide->cursorClampFix << 2;
+	return wide_menuFix() | *g_wide->pressedFix << 1 | *g_wide->cursorClampFix << 2 | *g_wide->rotFix << 3;
 }
