@@ -177,7 +177,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 #undef crt_strncpy
 
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
-u32 (net_inetAddr)(const char *text) { return ((u32 (STDCALL *)(const char *))0x4a82b0)(text); }
+u32 (net_inetAddr)(const char *text) { return ((u32 (STDCALL *)(const char *))*(const u32 *)0x4a9370)(text); }
 
 /* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
@@ -212,7 +212,7 @@ int (net_asyncSelect)(void *wnd, int which)
 		return 1;
 	if (!sock)
 		return 1;
-	if (((int (STDCALL *)(u32, void *, u32, u32))0x4a82c8)(sock, wnd, message, 0x21) == -1)
+	if (((int (STDCALL *)(u32, void *, u32, u32))*(const u32 *)0x4a9388)(sock, wnd, message, 0x21) == -1)
 		return 0;
 	return 1;
 }
@@ -263,7 +263,7 @@ void (net_receiveServerReply)(void)
 	u32 start = GetTickCount();
 	u32 got = 0;
 	do {
-		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, 0xa05630), reply, 0x3e, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, 0xa05630), reply, 0x3e, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
@@ -289,9 +289,9 @@ u32 (net_closeSockets)(void)
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
 		GAME_VAR(int, 0x9fd94c) = 1;
-		((int (STDCALL *)(void))0x4a8292)();                                     /* WSACancelBlockingCall */
-		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
-		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))*(const u32 *)0x4a938c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))*(const u32 *)0x4a9390)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
 		r = GAME_CDECL(0x4519b0, u32, void)();                                   /* arena_freeBuffers */
 	}
@@ -319,9 +319,9 @@ void (net_closeAll)(int kind)
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
-		((int (STDCALL *)(void))0x4a8292)();                                     /* WSACancelBlockingCall */
-		((int (STDCALL *)(u32, int))0x4a828c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
-		((int (STDCALL *)(u32))0x4a8286)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))*(const u32 *)0x4a938c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))*(const u32 *)0x4a9390)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
 		arena_freeBuffers();
 	}
@@ -397,21 +397,21 @@ int (net_resolveHost)(const char *host)
 {
 	u8 wsa[0x190];
 	memset((void *)0xa0d320, 0, 0x64);
-	if (((int (STDCALL *)(u32, void *))0x4a82c2)(0x202, wsa))             /* WSAStartup */
+	if (((int (STDCALL *)(u32, void *))*(const u32 *)0x4a9378)(0x202, wsa))             /* WSAStartup */
 		return 0;
-	int sock = ((int (STDCALL *)(int, int, int))0x4a82bc)(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
+	int sock = ((int (STDCALL *)(int, int, int))*(const u32 *)0x4a937c)(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
 	if (sock == -1)
 		return 0;
-	u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(host);           /* gethostbyname */
+	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(host);           /* gethostbyname */
 	if (!entry)
 		return 0;
 	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
-	strcpy((char *)0xa0d320, ((const char *(STDCALL *)(u32))0x4a82da)(address));   /* inet_ntoa */
+	strcpy((char *)0xa0d320, ((const char *(STDCALL *)(u32))*(const u32 *)0x4a939c)(address));   /* inet_ntoa */
 	if (!strlen((const char *)0xa0d320))
 		return 0;
 	if (sock) {
-		((int (STDCALL *)(void))0x4a8292)();      /* WSACancelBlockingCall */
-		((int (STDCALL *)(int))0x4a8286)(sock);   /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();      /* WSACancelBlockingCall */
+		((int (STDCALL *)(int))*(const u32 *)0x4a9390)(sock);   /* closesocket */
 	}
 	return 1;
 }
@@ -551,11 +551,11 @@ int (net_getLocalAddress)(void)
 {
 	char name[0xc8];
 	memset((void *)0xa0b43c, 0, 16);
-	if (((int (STDCALL *)(char *, int))0x4a82e0)(name, 0xc8) == -1)   /* gethostname */
+	if (((int (STDCALL *)(char *, int))*(const u32 *)0x4a93a0)(name, 0xc8) == -1)   /* gethostname */
 		return -1;
-	u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(name);     /* gethostbyname */
+	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(name);     /* gethostbyname */
 	if (entry)
-		strcpy((char *)0xa0b43c, ((const char *(STDCALL *)(u32))0x4a82da)(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+		strcpy((char *)0xa0b43c, ((const char *(STDCALL *)(u32))*(const u32 *)0x4a939c)(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
 	return 0;
 }
 
@@ -650,7 +650,7 @@ static void reply_read(u32 socket, void *buf, u32 size)
 	u32 start = IMPORT(0x4a9184, u32, void)();   /* GetTickCount */
 	u32 got = 0;
 	do {
-		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (IMPORT(0x4a9184, u32, void)() - start <= 3000 && got < size);
@@ -1000,9 +1000,9 @@ int (dplay_initConnection)(int kind, const char *address)
    0x4519b0. Returns its eax */
 static u32 socket_close(u32 socket)
 {
-	((int (STDCALL *)(void))0x4a8292)();                                  /* WSACancelBlockingCall */
-	((int (STDCALL *)(int, int))0x4a828c)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
-	((int (STDCALL *)(int))0x4a8286)(GAME_VAR(int, socket));              /* closesocket */
+	((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                  /* WSACancelBlockingCall */
+	((int (STDCALL *)(int, int))*(const u32 *)0x4a938c)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
+	((int (STDCALL *)(int))*(const u32 *)0x4a9390)(GAME_VAR(int, socket));              /* closesocket */
 	GAME_VAR(int, socket) = 0;
 	return GAME_CDECL(0x4519b0, u32, void)();
 }
@@ -1028,7 +1028,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	return 1;
 }
 
-#define WSACancelBlockingCall() ((int (STDCALL *)(void))0x4a8292)()
+#define WSACancelBlockingCall() ((int (STDCALL *)(void))*(const u32 *)0x4a93ac)()
 
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
    the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */
@@ -1124,13 +1124,13 @@ static int connect_socket(int *sock, int status)
 {
 	const char *host = (const char *)0xa055e4;
 	u8 wsa[0x190];
-	if (((int (STDCALL *)(u32, void *))0x4a82c2)(0x202, wsa))                /* WSAStartup */
+	if (((int (STDCALL *)(u32, void *))*(const u32 *)0x4a9378)(0x202, wsa))                /* WSAStartup */
 		return 0;
 	if (wsa[0] != 2 || wsa[1] != wsa[0]) {
 		WSACancelBlockingCall();
 		return 0;
 	}
-	*sock = ((int (STDCALL *)(int, int, int))0x4a82bc)(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
+	*sock = ((int (STDCALL *)(int, int, int))*(const u32 *)0x4a937c)(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
 	if (*sock == -1) {
 		WSACancelBlockingCall();
 		net_disconnect();
@@ -1139,20 +1139,20 @@ static int connect_socket(int *sock, int status)
 	struct { u16 family, port; u32 address; u8 zero[8]; } where;          /* sockaddr_in */
 	memset(&where, 0, sizeof where);
 	where.family = 2;
-	if (((int (STDCALL *)(int, void *, int))0x4a82b6)(*sock, &where, 16) == -1)   /* bind */
+	if (((int (STDCALL *)(int, void *, int))*(const u32 *)0x4a9384)(*sock, &where, 16) == -1)   /* bind */
 		return 0;
 	where.family = 2;
-	where.address = ((u32 (STDCALL *)(const char *))0x4a82b0)(host);      /* inet_addr */
-	where.port = ((u16 (STDCALL *)(u32))0x4a82aa)(g_serverPort); /* htons */
+	where.address = ((u32 (STDCALL *)(const char *))*(const u32 *)0x4a9370)(host);      /* inet_addr */
+	where.port = ((u16 (STDCALL *)(u32))*(const u32 *)0x4a9374)(g_serverPort); /* htons */
 	if (where.address == 0xffffffff) {
-		u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(host);       /* gethostbyname */
+		u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(host);       /* gethostbyname */
 		if (!entry) {
-			((void (STDCALL *)(int))0x4a8298)(0x2726);                     /* WSASetLastError(WSAEINVAL) */
+			((void (STDCALL *)(int))*(const u32 *)0x4a9380)(0x2726);                     /* WSASetLastError(WSAEINVAL) */
 			return 0;
 		}
 		where.address = ***(u32 ***)(entry + 0xc);                          /* h_addr_list[0] */
 	}
-	int r = ((int (STDCALL *)(int, void *, int))0x4a829e)(*sock, &where, 16);   /* connect */
+	int r = ((int (STDCALL *)(int, void *, int))*(const u32 *)0x4a93a4)(*sock, &where, 16);   /* connect */
 	if (r == 10061 || r == -1) {
 		WSACancelBlockingCall();
 		net_disconnect();
@@ -1215,7 +1215,7 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 {
 	void *data = GAME_VAR(void *, buffer);
 	if (data && GAME_VAR(u32, socket))
-		((int (STDCALL *)(u32, const void *, int, int))0x4a82ce)(GAME_VAR(u32, socket), data, size, 0);   /* send */
+		((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), data, size, 0);   /* send */
 }
 
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
@@ -1233,7 +1233,7 @@ void (net_send)(int kind, int to)
 		*word = (u32)kind;
 		u32 socket = to == 100 ? 0xa055f8 : 0xa05630;
 		if (GAME_VAR(u32, socket))
-			((int (STDCALL *)(u32, const void *, int, int))0x4a82ce)(GAME_VAR(u32, socket), GAME_VAR(void *, 0xa0b30c), 4, 0);
+			((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), GAME_VAR(void *, 0xa0b30c), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
 		[10] = { 0xa0b310, 0x5b, 1 }, [11] = { 0xa0b318, 0x5b, 1 }, [12] = { 0xa0b314, 0x5b, 1 },
@@ -1306,7 +1306,7 @@ static int recv_all(u32 socket, void *buf, int size, u32 start)
 {
 	u32 got = 0;
 	for (;;) {
-		int n = ((int (STDCALL *)(u32, void *, int, int))0x4a82d4)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
 		if (GetTickCount() - start > 3000)

@@ -16,6 +16,25 @@ for x, fn, n in re.findall(r'\thook\((0x[0-9a-f]+), \(void \*\)(\w+), "(\w+)"\);
 	assert fn == n, n
 	hooks.append((int(x, 16), n))
 assert len({x for x, _ in hooks}) == len(hooks) and len({n for _, n in hooks}) == len(hooks), 'duplicate hook'
+# the compiler's jump stubs ("jmp <a rebuilt function>") that the game's data points at (the static constructor table
+# 0x4ad000 has 30 of them): entries of the same rebuilt function, so the loader puts its own jump there
+b = open('installed.exe', 'rb').read()
+pe = struct.unpack_from('<I', b, 0x3c)[0]; nsec = struct.unpack_from('<H', b, pe + 6)[0]; opt = struct.unpack_from('<H', b, pe + 20)[0]
+secs = {}
+for i in range(nsec):
+	nm, vs, va, rs, rp = struct.unpack_from('<8sIIII', b, pe + 24 + opt + 40 * i)
+	secs[nm.rstrip(b'\0')] = (0x400000 + va, vs, rs, rp)
+tbase, tvs, trs, trp = secs[b'.text']
+by_addr = dict(hooks)
+stubs = []
+for name in (b'.rdata', b'.data'):
+	base, vs, rs, rp = secs[name]
+	for o in range(0, min(rs, vs) - 3, 4):
+		v = struct.unpack_from('<I', b, rp + o)[0]
+		if tbase <= v < tbase + tvs - 5 and v not in by_addr and b[trp + v - tbase] == 0xE9:
+			to = v + 5 + struct.unpack_from('<i', b, trp + v - tbase + 1)[0]
+			if to in by_addr and (v, by_addr[to]) not in stubs:
+				stubs.append((v, by_addr[to]))
 a = t.index('static const DWORD g_patchOk[][2] = {'); b = t.index('\n};', a)
 patch_ok = t[t.index('{', a + 30) + 1:b].strip('\n')
 
@@ -67,6 +86,7 @@ out += ['', 'const unsigned g_saKeep[][2] = {'] + ['\t{ 0x%06x, 0x%06x },' % (lo
         'const int g_saNkeep = sizeof g_saKeep / sizeof g_saKeep[0];']
 out += ['', 'const SaHook g_saHooks[] = {']
 out += ['\t{ 0x%06x, (void *)%s, "%s" },' % (x, n, n) for x, n in sorted(hooks)]
+out += ['	{ 0x%06x, (void *)%s, "%s (jump stub)" },' % (x, n, n) for x, n in sorted(stubs)]
 out += ['};', 'const int g_saNhooks = sizeof g_saHooks / sizeof g_saHooks[0];', '',
         'const unsigned g_saPatchOk[][2] = {', patch_ok, '};',
         'const int g_saNpatchOk = sizeof g_saPatchOk / sizeof g_saPatchOk[0];', '']

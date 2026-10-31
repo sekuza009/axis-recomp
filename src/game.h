@@ -76,7 +76,7 @@
 #define glScalef_bits(x, y, z) IMPORT(0x4a9200, void, u32, u32, u32)(x, y, z)
 /* GLU, through the game's jump to its import */
 #define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
-	double, double))0x4509d2)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
+	double, double))*(const u32 *)0x4a904c)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT(0x4a9258, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
 #define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
@@ -1023,7 +1023,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_frameCrosshairPage() GAME_CDECL(0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
-#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))0x4509c0)(instance, version, out, outer)
+#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))*(const u32 *)0x4a9018)(instance, version, out, outer)
 #define input_initKeyboard(window) GAME_CDECL(0x401310, int, void *)(window)
 #define input_createMouse(window) GAME_CDECL(0x4013a0, int, void *)(window)   /* the mouse */
 
@@ -1186,8 +1186,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define GL_PROJECTION 0x1701
 #define glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
 #define glMatrixMode(mode) IMPORT(0x4a91fc, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))0x4509c6)(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))0x4509cc)(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)0x4a9048)(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)0x4a9050)(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, load/space_pools.c, render/rotations.c) ---- */
 #define path_normalize(path) GAME_CDECL(0x46cb60, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */

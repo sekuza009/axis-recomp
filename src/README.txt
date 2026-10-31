@@ -36,8 +36,12 @@ The game's C runtime (Visual C++ 6, 0x49e000 ..) is replaced too (standalone/crt
 jump to msvcrt.dll's, its start-up is done in C (the C++ static constructors from the table at 0x4ad000, WinMain,
 exit), and crt/ makes the two results that differ come out as VC6's: printf's -0.0 and signalling NaNs
 (crt_format.c), and atof's rounding (crt_atof.c: VC6's 96-bit conversion rebuilt). recomp.c's "C runtime" tests
-compare each with the game's own (AXISRC_GAMECRT=1 keeps the game's runtime). What still comes from AxisGL.exe is
-data. AXISRC_POISON=1 checks this: every byte of the game's functions and runtime, except their entry jumps (and the
+compare each with the game's own (AXISRC_GAMECRT=1 keeps the game's runtime). AxisGL.exe is not read at all: its
+data is built into AxisRC.exe (build/gamedata.bin, tools/mkgamedata.py: the header, .rdata, the initialised .data,
+and of .text only the bytes something reads: dinput's object formats, the call sites rebuilds follow and the
+instructions the patch layer checks; AXISRC_IMAGE=1 maps the exe file instead, to compare). The compiler's jump
+stubs that data points at are entries of their rebuilt function (tools/mkhooks.py), and rebuilds call imports
+through their slots, not the game's jump stubs. AXISRC_POISON=1 checks this: every byte of the game's functions and runtime, except their entry jumps (and the
 code bytes rebuilds read, tools/mkhooks.py), becomes int3, so any original code reached stops the game at its
 address (logged). Data inside .text stays (the DirectInput object formats at 0x44f950 are read by dinput).
 standalone.log (next to the exe) lists every function; RECOMP_SKIP=name,... keeps some on the original.
