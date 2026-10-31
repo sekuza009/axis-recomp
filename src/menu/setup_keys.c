@@ -346,7 +346,7 @@ void (setup_drawSoundTab)(void)
 		case 0: volume_down(); break;
 		case 1: volume_up(); break;
 		case 2: volume_at_pointer(); break;
-		case 5: GAME_VAR(int, 0x4dde9c) = GAME_VAR(int, 0x4dde9c) >= 50 ? 0 : 100; break;
+		case 5: g_effectsVolume = g_effectsVolume >= 50 ? 0 : 100; break;
 		case 6:
 			sound_playMenu(2);
 			GAME_VAR(int, 0x4ddea0) = 1 - GAME_VAR(int, 0x4ddea0);

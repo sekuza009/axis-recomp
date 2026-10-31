@@ -316,7 +316,7 @@ static X heading(void)
 	X v = (X)F(0x90d1cc) + F(0x4a9550);
 	if (v > F(0x4a9460))
 		v -= F(0x4a9460);
-	return v * (X)GAME_VAR(double, 0x4a9548) * (X)GAME_VAR(double, 0x4a9540);
+	return v * (X)k_pi * (X)k_oneOver180;
 }
 #define SPEED F(0x4a9534)
 
@@ -353,7 +353,7 @@ void (menuCamera_back)(void)
    0x4dfa1c) */
 static void turn_update(int slot)
 {
-	X a = (X)F(0x90d1cc) * GAME_VAR(double, 0x4a9548) * GAME_VAR(double, 0x4a9540);
+	X a = (X)F(0x90d1cc) * k_pi * k_oneOver180;
 	F(0x4de6c0) = (float)fsin(a);
 	F(0x4de6c8) = (float)fcos(a);
 	volatile X t = F(0x90d1cc);

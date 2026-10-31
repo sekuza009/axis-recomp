@@ -71,7 +71,7 @@ void (setup_drawSoundPage)(void)
 	text_draw16(X0 + 0x50, Y0 + 0x3c, (const char *)0x753424);
 	for (int k = 0; k < 3; k++)
 		text_draw8(X0 + 0x8c, Y0 + 0x9c + k * 0x28, (const char *)(0x7534a4 + k * 0x80));
-	int on = GAME_VAR(int, 0x4dde9c) > 0;
+	int on = g_effectsVolume > 0;
 	for (int k = 0; k < 3; k++) {
 		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? 0x4ddea0 : 0x4ddea4);
 		const char *name = (const char *)(0x753624 + value * 0x80);
@@ -893,7 +893,7 @@ void (setup_easePanel)(void)
 	typedef long double X;
 	if (!g_setupPanelMoving)
 		return;
-	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
+	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * k_tenthsToDegrees;
 	g_setupPanelPos = (float)((X)g_setupPanelPos + d);
 	if (!((X)g_setupTunnelDepth > (X)k_setupPanelEnd)) {
 		g_setupPanelMoving = 0;

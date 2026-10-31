@@ -1097,12 +1097,12 @@ void (net_sendLocalInfo)(const u32 *msg)
 			return;
 		if (gone)
 			g_playerCount = msg[3];
-		if (!GAME_VAR(u8 *, 0xa0b32c))
+		if (!g_arenaInfoPacket)
 			return;
 		if (gone)
-			arena_info(GAME_VAR(u8 *, 0xa0b32c), 1, (u8)g_playerCount);
+			arena_info(g_arenaInfoPacket, 1, (u8)g_playerCount);
 		else
-			arena_info(GAME_VAR(u8 *, 0xa0b32c), GAME_VAR(const u8 *, 0xa0b328)[0], (u8)(g_playerCount - 1));
+			arena_info(g_arenaInfoPacket, GAME_VAR(const u8 *, 0xa0b328)[0], (u8)(g_playerCount - 1));
 		break;
 	case 200:
 		if (g_lobbyPending || !GAME_VAR(int, 0xa055f8))
@@ -1283,9 +1283,9 @@ void (net_send)(int kind, int to)
 		return;
 	case 22:
 		g_netLastRequest = 0x16;
-		if (!GAME_VAR(u8 *, 0xa0b330))
+		if (!g_roomRecordPacket)
 			return;
-		*GAME_VAR(u8 *, 0xa0b330) = 1;
+		*g_roomRecordPacket = 1;
 		send_buffer(0xa05630, 0xa0b330, 0x79);
 		return;
 	case 24:

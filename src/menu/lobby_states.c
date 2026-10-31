@@ -770,7 +770,7 @@ void (app_shutdown)(void)
 		g_arenaJoinRow = 0;
 		if (!g_arenaJoinPending)
 			return;
-		const u8 *in = GAME_VAR(const u8 *, 0x4dbbf8);
+		const u8 *in = g_receivedSession;
 		rec = (u8 *)0x9dae20;
 		*(u32 *)rec = *(const u32 *)in;
 		rec[0x2d] = in[0x28];

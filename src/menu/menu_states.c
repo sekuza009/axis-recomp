@@ -511,7 +511,7 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 	if (GAME_VAR(int, flag)) {
 		volatile long double d = (long double)k_setupPanelTarget - GAME_VAR(float, eased);
 		d = d * g_frameTime;
-		d = d * GAME_VAR(float, 0x4a93ec);
+		d = d * k_tenthsToDegrees;
 		volatile long double e = (long double)GAME_VAR(float, eased) + d;
 		GAME_VAR(float, eased) = (float)e;
 		long double s = GAME_VAR(float, slid);

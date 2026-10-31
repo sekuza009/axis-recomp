@@ -303,7 +303,7 @@ void (intro_cameraPath)(u8 *o, int h)
 				break;
 		}
 		for (int i = 0; ; ) {
-			X a = (X)i * GAME_VAR(float, 0x4a95b8) * GAME_VAR(double, 0x4a9548) * GAME_VAR(double, 0x4a9540);
+			X a = (X)i * GAME_VAR(float, 0x4a95b8) * k_pi * k_oneOver180;
 			u8 *r = o + base + i * 16;
 			float s = f32(fsin_(a) * radius), c = f32(fcos_(a) * radius);
 			FIELD(float, r, 0xc90) = s;
@@ -340,7 +340,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		u8 *r = o + 0x3314 + j * 0x58;
 		for (unsigned i = 0; i < sizeof corner / sizeof corner[0]; i++)
 			FIELD(u32, r, corner[i].offset) = corner[i].kind == 1 ? 0x42480000 : corner[i].kind == 2 ? 0xc2480000 : 0;
-		FIELD(float, r, 0x44) = (float)(y - ((X)GAME_VAR(float, 0x4a9424) - (X)j * GAME_VAR(float, 0x4a93ec)));
+		FIELD(float, r, 0x44) = (float)(y - ((X)GAME_VAR(float, 0x4a9424) - (X)j * k_tenthsToDegrees));
 	}
 	static const struct { short offset; u32 value; } rest[] = {
 		{ 0x3364, 0x3e19999a }, { 0x33bc, 0xbeb33333 }, { 0x3414, 0xbfc00000 }, { 0x346c, 0x3fc00000 },
