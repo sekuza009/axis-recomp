@@ -4,7 +4,7 @@
 /* 0x4620e0 (thiscall on the scene): every player's kills, deaths, time and the other counts cleared and the team
    unset (and, in a network game, the player's flag-record slot 0x1755278 + i * 0x47fd2 set to -1); then the actor
    reset and the ranking */
-void THISCALL (match_4620e0)(Scene *scene)
+void THISCALL (scene_resetScores)(Scene *scene)
 {
 	for (int i = 0; i < 16; i++) {
 		Player *p = &scene->players[i];

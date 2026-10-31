@@ -88,8 +88,8 @@ static long read_keys(void)
 	return r;
 }
 
-/* 0x4014f0 (load_4014f0): 1 while key (a DIK code) is held */
-int (load_4014f0)(int key)
+/* 0x4014f0 (input_keyHeld): 1 while key (a DIK code) is held */
+int (input_keyHeld)(int key)
 {
 	if (g_keyboardActive == 0)
 		return 0;
@@ -98,8 +98,8 @@ int (load_4014f0)(int key)
 	return (g_keyState[key] & 0x80) ? 1 : 0;
 }
 
-/* 0x401540 (load_401540): the same, 0 when reading the keyboard did not fully succeed */
-int (load_401540)(int key)
+/* 0x401540 (input_keyHeldChecked): the same, 0 when reading the keyboard did not fully succeed */
+int (input_keyHeldChecked)(int key)
 {
 	if (g_keyboardActive == 0)
 		return 0;
@@ -191,7 +191,7 @@ int (input_isDown)(int key)
 	case 0xfe:
 		return GAME_VAR(int, 0x4ded7c) > 0;
 	}
-	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* load_401540: held */
+	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* input_keyHeldChecked: held */
 }
 
 /* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at 0x4a9698), its data format (c_dfDIMouse,

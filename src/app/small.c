@@ -51,14 +51,14 @@ int (cfg_44ac70)(char *s)
 
 /* ---- the scene's and stage's flags and lists ---- */
 /* 0x463670, 0x463690, 0x4636b0: one of three requests raised (and the "something requested" flag) */
-void THISCALL (match_463670)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; FIELD(int, scene, 0x2343106) = 1; }
-void THISCALL (match_463690)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; FIELD(int, scene, 0x2343106) = 1; }
-void THISCALL (match_4636b0)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; FIELD(int, scene, 0x2343106) = 1; }
+void THISCALL (event_raise3)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; FIELD(int, scene, 0x2343106) = 1; }
+void THISCALL (event_raise4)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; FIELD(int, scene, 0x2343106) = 1; }
+void THISCALL (event_raise5)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; FIELD(int, scene, 0x2343106) = 1; }
 /* 0x463780: team slot i's id */
 int THISCALL (this_get_0x2342381_463780)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
 void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 1; }
-void THISCALL (net_4743b0)(Stage *stage, int p)
+void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 {
 	FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 0;
 	playerRecord_resetColourGrid(stage, p);
@@ -66,13 +66,13 @@ void THISCALL (net_4743b0)(Stage *stage, int p)
 /* 0x45df90: the stage's 100 actor references cleared */
 void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage + 0x202e8f0, 100); }
 /* 0x45e1c0: every actor in use switched off */
-void THISCALL (match_45e1c0)(Stage *stage)
+void THISCALL (stage_deactivateActors)(Stage *stage)
 {
 	for (int i = 0; i < stage->actorCount; i++)
 		actor_deactivate(stage, i);
 }
 /* 0x4723e0: the stage's lights reset */
-int THISCALL (load_4723e0)(Stage *stage)
+int THISCALL (stage_resetLights)(Stage *stage)
 {
 	FIELD(int, stage, 0x9d800c) = 0;
 	return this_set_483d60((u8 *)stage + 0x9d8010);
@@ -96,16 +96,16 @@ static void free_owned(void *self)
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
 int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
 /* 0x46f470: UnitPoseInfo's destructor (vtable 0x4a9754) */
-int THISCALL (match_46f470)(u32 *self) { self[0] = 0x4a9754; return partList_release(self); }
+int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = 0x4a9754; return partList_release(self); }
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
 u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)self[1]) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
 u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
-void (net_452e60)(void) { clear((void *)0xa05748, 0x16c0); }
-void (net_452e80)(void) { clear((void *)0x9fd960, 0x1e40); }
-void (net_452ea0)(void) { clear((void *)0xa05330, 0x9b); }
+void (net_clearServerList)(void) { clear((void *)0xa05748, 0x16c0); }
+void (net_clearRoomList)(void) { clear((void *)0x9fd960, 0x1e40); }
+void (net_clearPlayerList)(void) { clear((void *)0xa05330, 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
 char *(path_normalize)(char *s)
 {
@@ -233,7 +233,7 @@ void THISCALL (FUN_00473a10)(Stage *stage, int p, int v)
 			FIELD(int, &stage->actors[i], 0x114) = v;
 }
 /* 0x48fe10: the stage's identity matrix, 200 points at the origin (0xa0e7a8), the colour at 0xa1f220 */
-void THISCALL (load_48fe10)(Stage *stage)
+void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 {
 	for (int k = 0; k < 16; k++)
 		FIELD(u32, stage, 0x20f2fc8 + k * 4) = k % 5 ? 0 : 0x3f800000;
@@ -360,7 +360,7 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 
 /* 0x46f770: an animation's frame i chosen (when it has a frame table, +0x20, and i is below the count +0x1c), and its
    length (the frame's int at +0x20) times scale */
-void THISCALL (actor_46f770)(u8 *anim, int i, float scale)
+void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
 {
 	if (!FIELD(int, anim, 0x20) || i >= FIELD(int, anim, 0x1c))
 		return;
@@ -370,7 +370,7 @@ void THISCALL (actor_46f770)(u8 *anim, int i, float scale)
 }
 
 /* 0x4722e0: a view's distance set (+0xa08, the float's bits copied) and its depth -v * a + b from the stage's pair */
-void THISCALL (match_4722e0)(u8 *view, u32 vBits)
+void THISCALL (view_setDistance)(u8 *view, u32 vBits)
 {
 	float v;
 	FIELD(u32, view, 0xa08) = vBits;   /* the float's bits copied, never through the FPU (which quiets a signalling NaN) */
@@ -419,7 +419,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 /* 0x496e40: the stage's animation clocks advanced by dt (unless a script runs in mode 1): two at dt * the rate at
    0x4a9428, wrapping at 1 and counting the turns; in game mode 2 a third at dt * the rate at 0x4aa498, counting turns
    0 .. 15 */
-void THISCALL (match_496e40)(Stage *stage, float dt)
+void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 {
 	typedef long double X;
 	if (FIELD(int, stage, 0x2149308) && FIELD(int, stage, 0x214930c) == 1)
@@ -444,7 +444,7 @@ void THISCALL (match_496e40)(Stage *stage, float dt)
 }
 
 /* 0x470de0: nine names (+8, 0x100 bytes apart), each upper-cased with back slashes */
-void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
+void THISCALL (object_setNames)(u8 *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5,
                             const char *s6, const char *s7, const char *s8, const char *s9)
 {
 	const char *name[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
@@ -455,7 +455,7 @@ void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char
 }
 
 /* 0x471010: the scene's level grid (+0xa10) set up as one cell over the level's bounds (+0x9ef904 .. +0x9ef910) */
-void THISCALL (load_471010)(u8 *scene)
+void THISCALL (scene_initLevelGrid)(u8 *scene)
 {
 	space_setBy(scene + 0xa10, scene + 0x9ef904, scene + 0x9ef910, 1, 1, 1, 0, 0, 0);
 }
@@ -524,7 +524,7 @@ u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)0x4b
 
 /* 0x44ace0: the typed chat line (0x9dc92c) kept as the match's last line (0x9f63e4, 0x400 bytes; cleared when there
    is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
-u32 (match_44ace0)(void)
+u32 (chat_keepLastLine)(void)
 {
 	memset((void *)0x9f63e4, 0, 0x400);
 	if (strlen((const char *)0x9dc92c)) {
@@ -532,7 +532,7 @@ u32 (match_44ace0)(void)
 		GAME_VAR(int, 0x9f67e8) = 0;
 	}
 	GAME_VAR(int, 0x68039c) = 0;
-	GAME_CDECL(0x431590, void, void)();   /* match_431590: the key state */
+	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys: the key state */
 	return (u32)input_initKeyboard(g_hWndMain);
 }
 
@@ -726,7 +726,7 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 /* 0x4742f0 (thiscall on the stage): player p set from an actor record: its name (+8), value (+4), team (+0x28), the
    parts (head, chest, arm, leg, booster: +0x2c .. +0x3c), the six items (+0x40 ..), then marked in use. Its caller
    ignores the eax it leaves */
-void THISCALL (load_4742f0)(Stage *stage, int p, const u8 *rec)
+void THISCALL (playerRecord_setFromActorRecord)(Stage *stage, int p, const u8 *rec)
 {
 #define R(offset) GAME_VAR(int, rec + (offset))
 	player_setName(stage, p, (const char *)(rec + 8));
@@ -744,8 +744,8 @@ void THISCALL (load_4742f0)(Stage *stage, int p, const u8 *rec)
 }
 
 /* 0x474210 (thiscall on the stage): player p set from its pieces: name, value, team, the five parts, the six items,
-   then marked in use (as load_4742f0 does from a record). Its caller ignores the eax it leaves */
-void THISCALL (match_474210)(Stage *stage, int p, const char *name, int v, int team, int head, int chest, int arm, int leg,
+   then marked in use (as playerRecord_setFromActorRecord does from a record). Its caller ignores the eax it leaves */
+void THISCALL (playerRecord_set)(Stage *stage, int p, const char *name, int v, int team, int head, int chest, int arm, int leg,
                              int booster, int i0, int i1, int i2, int i3, int i4, int i5)
 {
 	player_setName(stage, p, name);

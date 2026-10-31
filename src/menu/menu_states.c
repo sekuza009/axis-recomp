@@ -493,8 +493,8 @@ void (menuState600_setup)(void)
 	}
 }
 
-/* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and match_4327f0 when it is not empty */
-void (match_44aee0)(void)
+/* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and profile_checkAndSendRecord when it is not empty */
+void (room_keepText)(void)
 {
 	const char *from = (const char *)0x9dd570;
 	char *to = (char *)0x4de700;
@@ -503,7 +503,7 @@ void (match_44aee0)(void)
 		to[i] = from[i];
 	while (from[i++] != '\0');
 	if (to[0] != '\0')
-		match_4327f0();
+		profile_checkAndSendRecord();
 }
 
 /* a panel sliding in: while flag is set, eased moves a tenth of the way to the constant at 0x4a9448 per time unit
@@ -582,7 +582,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	if (typing != 1)
 		return typing;
 	GAME_VAR(int, 0x68039c) = 0;
-	GAME_CDECL(0x431590, void, void)();   /* match_431590 */
+	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
 	return GAME_CDECL(0x401310, u32, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
 }
 #define FAR_BACK 0xc3e10000u    /* -450 */

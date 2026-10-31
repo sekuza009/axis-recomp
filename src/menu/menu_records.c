@@ -142,7 +142,7 @@ void (mech_loadFromProfile)(void)
 }
 
 /* 0x4464b0: the mech stored into the profile record (the inverse of mech_loadFromProfile) */
-void (match_4464b0)(void)
+void (mech_storeToProfile)(void)
 {
 	GAME_VAR(int, 0x9f19f8) = GAME_VAR(int, 0x4dc878);
 	GAME_VAR(int, 0x9f19fc) = GAME_VAR(int, 0x4dc87c);
@@ -520,7 +520,7 @@ u32 (room_431600)(int ok)
 	u32 r;
 	GAME_VAR(int, 0x68039c) = 0;
 	if (ok) {
-		GAME_CDECL(0x431590, void, void)();   /* match_431590 */
+		GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
 		input_initKeyboard(g_hWndMain);
 		r = GAME_CDECL(0x4315c0, u32, void)();   /* room_4315c0: into the history */
 	} else {

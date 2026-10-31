@@ -104,7 +104,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 /* 0x482320 (thiscall on the space): a unit's planes built (space_buildPlanes) and, when there are any, linked at the
    end of the owner's list (owner +4 its last; +0xa0 / +0xa4 next / previous) and given a node (space_getNextFreeNode
    Ptr: +0 the planes, +8 / +0xc next / previous; owner +8 its last node). Its callers ignore the eax it leaves */
-void THISCALL (load_482320)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
+void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
 #define AT(type, p, offset) GAME_VAR(type, (u8 *)(p) + (offset))
 	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
@@ -174,7 +174,7 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int blocks, int cells, void *mem, int size)
 {
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
-	load_4813b0(space);
+	CollisionVolume_release(space);
 	FIELD(int, 0x30) = units;
 	FIELD(int, 0x40) = blocks;
 	FIELD(int, 0x10) = planes;
@@ -327,25 +327,25 @@ static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 	return space_getNextFreeBlockPtrBy(space, box, box + 3);
 }
 
-/* a child block that ended up with no items and no children given back (load_481980) and forgotten */
+/* a child block that ended up with no items and no children given back (space_freeBlock) and forgotten */
 static void drop_if_empty(u8 *space, u8 **child)
 {
 	if (FIELD(int, *child, 0x1c) <= 0 && FIELD(int, *child, 0x24) == 0) {
-		load_481980(space, *child);
+		space_freeBlock(space, *child);
 		*child = NULL;
 	}
 }
 
 /* 0x481ae0 (thiscall on the collision space): item put into block's part of the octree, depth levels more allowed.
-   Nothing (0) when it misses the block's box (load_47fce0, widened by the margin +0x8c) or is already first in its
+   Nothing (0) when it misses the block's box (space_itemMeetsBox, widened by the margin +0x8c) or is already first in its
    list. A leaf (+0x24 0) gets a node for it (item, block; linked in first at +0x18, +0x1c counting them); holding more
    than +0x90 with depth left it splits: eight child blocks (+0x28 ..), every item put into each of them a level
-   down, its nodes freed (load_481730), the children left empty dropped. An inner block puts the item into each
+   down, its nodes freed (space_freeNode), the children left empty dropped. An inner block puts the item into each
    child (made when missing) a level down, dropping those left empty. Otherwise 1 */
-int THISCALL (load_481ae0)(u8 *space, u8 *block, u8 *item, int depth)
+int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 {
 	const float *low = (const float *)block, *high = (const float *)(block + 0xc);
-	if (!load_47fce0(item, low, high, FIELD(u32, space, 0x8c)))
+	if (!space_itemMeetsBox(item, low, high, FIELD(u32, space, 0x8c)))
 		return 0;
 	u32 *first = FIELD(u32 *, block, 0x18);
 	if (first && first[0] == (u32)item)
@@ -355,7 +355,7 @@ int THISCALL (load_481ae0)(u8 *space, u8 *block, u8 *item, int depth)
 		for (int i = 0; i < 8; i++) {
 			if (!child[i])
 				child[i] = make_octant(space, low, high, i);
-			load_481ae0(space, child[i], item, depth - 1);
+			space_insertItem(space, child[i], item, depth - 1);
 			drop_if_empty(space, &child[i]);
 		}
 		return 1;
@@ -375,9 +375,9 @@ int THISCALL (load_481ae0)(u8 *space, u8 *block, u8 *item, int depth)
 	}
 	for (u32 *n = FIELD(u32 *, block, 0x18); n;) {
 		for (int j = 0; j < 8; j++)
-			load_481ae0(space, child[j], (void *)n[0], depth - 1);
+			space_insertItem(space, child[j], (void *)n[0], depth - 1);
 		u32 *next = (u32 *)n[3];
-		load_481730(space, n);
+		space_freeNode(space, n);
 		n = next;
 	}
 	FIELD(u32, block, 0x18) = 0;
@@ -389,8 +389,8 @@ int THISCALL (load_481ae0)(u8 *space, u8 *block, u8 *item, int depth)
 
 /* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2) of a unit put into the space: nothing (0) when
    its box misses the space's (+0x5c .. +0x70, widened by the margin +0x8c). Else a plane record (from the pool, set up
-   by load_47db60), and every grid cell its widened box covers (z, x, y as in space_walkNodes_482aa0) that the
-   triangle really meets (load_47fce0) gets it into its octree (load_481ae0, depth +0x94; the cell's root block made
+   by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_walkNodes_482aa0) that the
+   triangle really meets (space_itemMeetsBox) gets it into its octree (space_insertItem, depth +0x94; the cell's root block made
    when it has none). Returns the plane */
 u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
                                  u32 i0, u32 i1, u32 i2)
@@ -416,7 +416,7 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 		if (fsub_m(fld_m(&grid_low[c]), margin) >= high[c])
 			return 0;
 	u8 *plane = space_getNextFreePlanePtr(space);
-	load_47db60(plane, id, v0, v1, v2, unit, part, i0, i1, i2);
+	collisionTri_setup(plane, id, v0, v1, v2, unit, part, i0, i1, i2);
 	int z0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[2]), margin), &grid_low[2]), size_z));
 	if (z0 < 0)
 		z0 = 0;
@@ -446,14 +446,14 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 				box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 				box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 				box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
-				if (load_47fce0(plane, box, box + 3, *(const u32 *)margin) != 1)
+				if (space_itemMeetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
 					continue;
 				int cell = (FIELD(int, space, 0x74) * y + z) * FIELD(int, space, 0x78) + x;
 				if (FIELD(u16 *, space, 0x54)[cell] == 0xffff) {
 					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
 					FIELD(u16 *, space, 0x54)[cell] = (u16)array_indexOf(block, FIELD(int, space, 0x44), 0x50);
 				}
-				load_481ae0(space, FIELD(u8 *, space, 0x44) + FIELD(u16 *, space, 0x54)[cell] * 0x50, plane, FIELD(int, space, 0x94));
+				space_insertItem(space, FIELD(u8 *, space, 0x44) + FIELD(u16 *, space, 0x54)[cell] * 0x50, plane, FIELD(int, space, 0x94));
 			}
 		}
 	return plane;
@@ -498,7 +498,7 @@ static void through(float *out, const float *m, const float *v, Rows rows)
 /* 0x4823c0 (thiscall on the collision space): a unit for shape (from the pool, its id first) with every part not
    flagged 0x20 (flag 1: its triangles' id 0x10, else 0) turned into triangles: its primitives (12 bytes: type, index
    count, indices) as lists (4), strips (5) or fans (6) of its vertices (+0x50) through the matrix (the current GL
-   modelview when none is given), each added with load_482320. Returns the unit */
+   modelview when none is given), each added with space_addUnitPlanes. Returns the unit */
 u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matrix)
 {
 	float own[16];
@@ -526,10 +526,10 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 					u32 i0 = IDX(0);
 					through(a, matrix, verts + i0 * 3, k_fanFirst);
 					u32 i1 = IDX(k - 1);
-					load_482a40(b, matrix, VERT(k - 1));
+					space_transformPoint(b, matrix, VERT(k - 1));
 					u32 i2 = IDX(k);
-					load_482a40(c, matrix, VERT(k));
-					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_transformPoint(c, matrix, VERT(k));
+					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 5:   /* a strip */
@@ -548,7 +548,7 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 						i1 = IDX(k - 1);
 						through(b, matrix, VERT(k - 1), k_oddNext);
 					}
-					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			case 4:   /* a list */
@@ -559,7 +559,7 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 					through(b, matrix, VERT(k + 1), k_listNext);
 					u32 i2 = IDX(k + 2);
 					through(c, matrix, VERT(k + 2), k_listLast);
-					load_482320(space, kind, unit, i, i0, i1, i2, a, b, c);
+					space_addUnitPlanes(space, kind, unit, i, i0, i1, i2, a, b, c);
 				}
 				break;
 			}

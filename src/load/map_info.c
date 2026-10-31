@@ -102,8 +102,8 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 }
 
 /* 0x48b710 (thiscall on the scene): the map's objects. The caches emptied (+0xe3c93c shapes, +0x13016d0 skeletons,
-   the object list: load_490d10), the shading not loaded (+0x13016cc 0). Mode 0: the shading file (named by 0x4c7e90
-   from +0x108 and the name's base, load_46cad0) read when there (a count, +0x13016c8, then that many dwords at
+   the object list: stage_clearMapObjects), the shading not loaded (+0x13016cc 0). Mode 0: the shading file (named by 0x4c7e90
+   from +0x108 and the name's base, path_stripExtension) read when there (a count, +0x13016c8, then that many dwords at
    +0xf30dc8; the count cleared, +0x13016cc 1). The objects file (by 0x4c77f0; none: a fatal message): version
    0x1201 (else a fatal message), a dword, the count, then the 0xb0-byte object types in blocks of 56, each added
    (object_addObjectBy) until one fails; every second one logged. Mode 1 without shading loaded: the shading file
@@ -116,10 +116,10 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	FIELD(int, scene, 0x131ae40) = 0;
 	ShapeManager_releaseModels(scene + 0xe3c93c);
 	SkeletonManager_releaseSkeletons(scene + 0x13016d0);
-	load_490d10(scene);
+	stage_clearMapObjects(scene);
 	FIELD(int, scene, 0x13016cc) = 0;
 	if (mode == 0) {
-		load_46cad0(name, base);
+		path_stripExtension(name, base);
 		sprintf(path, (const char *)0x4c7e90, scene + 0x108, base);
 		void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 		if (f) {
@@ -152,7 +152,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 			break;
 	}
 	fclose(f);
-	load_46cad0(name, base);
+	path_stripExtension(name, base);
 	sprintf(path, (const char *)0x4c7e90, scene + 0x108, base);
 	if (mode == 1 && FIELD(int, scene, 0x13016cc) == 0) {
 		f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
@@ -278,7 +278,7 @@ static const u32 k_schemeVal[10][2] = {
    and their 0x58-byte records (+0x1cd6a30), the actor count (+0x1cd93a4) and their 0x5c-byte records (+0x1cd6fb4).
    Every player but the first: its colour scheme (+4, now less one; when not negative) gives all five parts their
    colours, the game type (2 .. 11, by pairs) fixes its first item (3, 5, 0x24, 0x19, 0x16; the last pair the second
-   too, 0x17), the other items but the fifth emptied (-1), and it is set up (load_4742f0). The player count also at
+   too, 0x17), the other items but the fifth emptied (-1), and it is set up (playerRecord_setFromActorRecord). The player count also at
    +0x19e1888, every actor but the first active (+0x18), the clan texture (by 0x4c7724 from +0x908) looked up into
    +0x2104fe4, and each player's type record given +0x47fc6 1 and +0x47fce 0x180. Its caller ignores the eax it
    leaves */
@@ -327,7 +327,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 		for (int k = 1; k < 6; k++)
 			if (k != 4)
 				items[k] = -1;
-		load_4742f0(scene, p, rec);
+		playerRecord_setFromActorRecord(scene, p, rec);
 	}
 	FIELD(int, scene, 0x19e1888) = FIELD(int, scene, 0x1cd6fb0);
 	for (int i = 1; i < FIELD(int, scene, 0x1cd93a4); i++)
@@ -376,8 +376,8 @@ static int grey(const u8 *px)
    height scale +0x28, texture size +0x2c): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
    (grey pixels are heights) giving, in the pool, its heights (+0x38), flat cells (+0x3c), vertices (+0x40), normals
    (+0x44: the four triangles about each inner vertex, flipped by +0 1; the border the default 0xa0e7d8), light map
-   (+0x48, load_4728e0), texture coordinates (+0x50), index (+0x54 / +0x58) and primitive (+0x60 / +0x64) heaps;
-   last the layer meshes (load_497a90). Returns 1 */
+   (+0x48, ground_computeLighting), texture coordinates (+0x50), index (+0x54 / +0x58) and primitive (+0x60 / +0x64) heaps;
+   last the layer meshes (stage_buildMeshDrawRecords). Returns 1 */
 int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 {
 	u8 image[0x30000];   /* (on the stack, as the original's: the file reads log its address) */
@@ -508,7 +508,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		GAME_VAR(int, s + 0xdc0240) += size;
 		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 4;
 		GAME_VAR(u8 *, l + 0x48) = pool_take(s, size);
-		load_4728e0(s, l);
+		ground_computeLighting(s, l);
 		GAME_VAR(int, s + 0xdc0240) += size;
 		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 8;
 		float *uv = GAME_VAR(float *, l + 0x50) = (float *)pool_take(s, size);
@@ -532,7 +532,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		GAME_VAR(u8 *, l + 0x64) = heap;
 		GAME_VAR(int, s + 0xdc0240) += prims * 12;
 	}
-	load_497a90(s);
+	stage_buildMeshDrawRecords(s);
 	fclose(f);
 	return 1;
 }

@@ -1465,7 +1465,7 @@ static void record_send(u32 rate, int name)
    then 0x9dd240) taken back when the record's wins are more than 300 above it; the record sent and kept; then, when
    the points are more than 150 a win, they are cut to 2 a win and the record is sent and kept again. The caller
    ignores the eax it leaves */
-void (match_4327f0)(void)
+void (profile_checkAndSendRecord)(void)
 {
 	u32 rate = win_rate(R_WINS, R_LOSSES, 1);
 	rate_points(rate);

@@ -201,7 +201,7 @@ u32 (room_435b00)(void)
 	case 3:
 		if (GAME_VAR(int, 0x68039c)) {
 			GAME_VAR(int, 0x68039c) = 0;
-			GAME_CDECL(0x431590, void, void)();      /* match_431590 */
+			GAME_CDECL(0x431590, void, void)();      /* input_resetKeys */
 			GAME_CDECL(0x401310, void, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
 		}
 		sound_playMenu(0);

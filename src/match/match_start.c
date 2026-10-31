@@ -148,7 +148,7 @@ static int random_below(u32 n)
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (0x4e0c90, 0x4e0c94) set
    again, the local player's statD8 cleared, the teams (match_4613a0), the camera and its slot, a typed chat line
-   kept (match_44ace0) and the round's flags cleared */
+   kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
 {
 	static const u32 counts[6] = { 0x15de6c8, 0x15fff84, 0x163b588, 0x1679b34, 0x16c5178, 0x175522c };
@@ -186,17 +186,17 @@ static void later_round(Scene *s)
 	s->startCameraMode = s->cameraMode;
 	s->cameraSlot = -1;   /* (the -1 still in a register since dataLossCode) */
 	s->rankShown = -1;
-	match_4620e0(s);
-	match_4629c0(s, 60.0f);
+	scene_resetScores(s);
+	events_clear(s, 60.0f);
 	s->chatMode = 0;
 	if (GAME_VAR(int, 0x68039c))
-		match_44ace0();
+		chat_keepLastLine();
 	s->roundClear5 = 0;
 	s->matchOver = 0;
 	s->roundClear6 = 0;
 	s->roundOver = 0;
 	s->roundClear7 = 0;
-	match_4636d0(s);
+	teams_setup(s);
 	BITS(s->msgFade) = 0;
 }
 
@@ -237,20 +237,20 @@ static void identity(u32 *m)
 		m[k] = k % 5 == 0 ? 0x3f800000 : 0;
 }
 
-/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (load_4723e0; the 100 dwords at +0x202ea80 and
-   +0x202ef30 cleared; the object list, stage_clearBullets, load_479a60, load_48fe10), the camera at the origin looking down
+/* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (stage_resetLights; the 100 dwords at +0x202ea80 and
+   +0x202ef30 cleared; the object list, stage_clearBullets, stage_clearProjectiles, stage_resetMatrixAndPoints), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
-   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (load_48fc30, script_reset) and load_471010. Its
+   id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (stage_clearMapItemCounts, script_reset) and scene_initLevelGrid. Its
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
-	load_4723e0(s);
+	stage_resetLights(s);
 	memset(s + 0x202ea80, 0, 0x64 * 4);
 	FIELD(int, s, 0x202ef30) = 0;
-	load_490d10(s);
+	stage_clearMapObjects(s);
 	stage_clearBullets(s);
-	load_479a60(s);
-	load_48fe10(s);
+	stage_clearProjectiles(s);
+	stage_resetMatrixAndPoints(s);
 	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */
 	memcpy(s + 0x20f3970, camera, sizeof camera);
 	memcpy(s + 0x20f3994, s + 0x20f3970, 12);
@@ -264,9 +264,9 @@ void THISCALL (scene_reset)(u8 *s)
 	s[0x20fcd4c] = 0;
 	FIELD(int, s, 0x20fce4c) = -1;
 	memset(s + 0x20fce50, 0xff, 0x64 * 4);
-	load_48fc30(s);
+	stage_clearMapItemCounts(s);
 	script_reset((Stage *)s);
-	load_471010(s);
+	scene_initLevelGrid(s);
 	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
 }
 
@@ -280,7 +280,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 	skel_loadFrom_46aeb0(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 
-/* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to load_470de0): the collision space (in its
+/* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to object_setNames): the collision space (in its
    block +0xb04), the ten sky textures (by 0x4c7410 from the third name; the last two flagged), the light factors and
    the default light (grey, from (-1, -1, -1)). The sky box (+0x9ee080: six faces of 7 x 7 points, a cube of side
    1 / sqrt(0x4aa408) turned to each face), the dome (+0x9eee54: 7 x 7 points of the up vector turned by two angles),
@@ -292,7 +292,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4, const char *skel_dir, u32 a6, u32 a7, u32 a8,
                                   u32 a9)
 {
-	load_470de0(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
+	object_setNames(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
 	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
@@ -300,13 +300,13 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	this_set_483d60(s + 0x9ccffc);
-	load_483e90(s + 0x9ccffc, (const void *)0xa1f23c);
-	load_4723e0(s);
+	factors_addConstant(s + 0x9ccffc, (const void *)0xa1f23c);
+	stage_resetLights(s);
 	this_set_483d60(s + 0x9e3020);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
-	load_483e90(s + 0x9e3020, grey);
+	factors_addConstant(s + 0x9e3020, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	load_483ec0(s + 0x9e3020, (const void *)0xa1f23c, down);
+	factors_addPoint(s + 0x9e3020, (const void *)0xa1f23c, down);
 	long double root = 1;
 	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(*(const double *)0x4aa408));
 	memset(s + 0x9ee030, 0, 14 * 4);

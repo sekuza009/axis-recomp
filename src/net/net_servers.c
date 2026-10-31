@@ -6,7 +6,7 @@
 #define g_serverNames ((u32 *)0xa0bf20)               /* 256 names of 0x14 bytes */
 
 /* 0x454650: ping the server named address (dotted) and keep its time in slot; 1 when it answered within a second */
-int (net_454650)(const char *address, int slot)
+int (net_pingServer)(const char *address, int slot)
 {
 	GAME_VAR(int, 0xa0bf14) = 0;
 	GAME_VAR(int, 0xa0bf18) = 0;
@@ -16,7 +16,7 @@ int (net_454650)(const char *address, int slot)
 }
 
 /* 0x454690: the server table cleared and the threads' handles closed */
-void (net_454690)(void)
+void (net_clearServers)(void)
 {
 	for (int i = 0; i < 0x100; i++)
 		g_serverUsed[i] = 0;
@@ -26,25 +26,25 @@ void (net_454690)(void)
 		g_serverNames[i] = 0;
 	GAME_VAR(int, 0xa0d79c) = 0;
 	GAME_VAR(int, 0xa0d7a0) = 0;
-	net_454760();
+	net_closeThreadHandles();
 }
 
 /* 0x454560: the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop): data pings the
    listed servers and waits again, stop ends the thread, anything else waits again */
-void (net_454560)(void)
+void (net_pingThreadProc)(void)
 {
 	void *events[2] = { GAME_VAR(void *, 0xa0bb10), GAME_VAR(void *, 0xa0bf1c) };
 	for (;;) {
 		u32 r = WaitForMultipleObjects(2, events, 0, 0xffffffff);
 		if (r == 0)
-			net_4545b0();
+			net_pingAllServers();
 		else if (r == 1)
 			ExitThread(0);
 	}
 }
 
 /* 0x454740: the network thread told to go on (one event reset, the other set; SetEvent's result) */
-int (net_454740)(void)
+int (net_wakePingThread)(void)
 {
 	ResetEvent(GAME_VAR(void *, 0xa0bb10));
 	return SetEvent(GAME_VAR(void *, 0xa0bf1c));

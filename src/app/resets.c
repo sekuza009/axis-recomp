@@ -4,7 +4,7 @@
 #include <string.h>
 
 /* 0x431590: no key down (the 256 key states at 0x4d1a98), the key repeat delay 5, no input line */
-void (match_431590)(void)
+void (input_resetKeys)(void)
 {
 	memset((void *)0x4d1a98, 0, 0x100 * 4);
 	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5.0 */

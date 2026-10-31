@@ -230,7 +230,7 @@ void (room_434320)(void)
 /* ---- the match ---- */
 
 /* 0x44ac90: a text field in the match (the chat line), its caret at (x, y) */
-void (match_44ac90)(int x, int y, int maxLength)
+void (chat_textField)(int x, int y, int maxLength)
 {
 	input_releaseKeyboard();
 	g_paused = 1;

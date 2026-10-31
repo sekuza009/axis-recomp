@@ -11,7 +11,7 @@ static const int input_fields[12] = { 0x44c, 0x450, 0x454, 0x458, 0x464, 0x468, 
                                       0x480 };
 
 /* 0x45eab0: actor i's input cleared */
-void THISCALL (actor_45eab0)(Stage *stage, int i)
+void THISCALL (actor_clearInput)(Stage *stage, int i)
 {
 	Player *a = &stage->actors[i];
 	for (int k = 0; k < 12; k++)
@@ -19,7 +19,7 @@ void THISCALL (actor_45eab0)(Stage *stage, int i)
 }
 
 /* 0x45eb20: actor i's input set */
-void THISCALL (match_45eb20)(Stage *stage, int i, int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7,
+void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7,
                              int v8, int v9, int v10, int v11)
 {
 	Player *a = &stage->actors[i];
@@ -44,7 +44,7 @@ void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
 
 /* ---- the pools emptied (each slot's "in use" cleared, the counters zeroed) ---- */
 /* 0x490d10: the 1000 map objects */
-void THISCALL (load_490d10)(Stage *stage)
+void THISCALL (stage_clearMapObjects)(Stage *stage)
 {
 	FIELD(int, stage, 0x13016c8) = 0;
 	stage->objectCount = 0;
@@ -55,7 +55,7 @@ void THISCALL (load_490d10)(Stage *stage)
 }
 
 /* 0x479a60: the 1000 projectiles */
-void THISCALL (load_479a60)(Stage *stage)
+void THISCALL (stage_clearProjectiles)(Stage *stage)
 {
 	stage->projectileCount = 0;
 	FIELD(int, stage, 0x20f2da4) = 0;
@@ -66,7 +66,7 @@ void THISCALL (load_479a60)(Stage *stage)
 
 /* 0x4799f0: projectile slot i freed: the first-free hint (+0x20f2da4) moved down to it, and when it was the last
    in use the used range (projectileCount) shrinks past every free slot at its end */
-void THISCALL (match_4799f0)(Stage *stage, int i)
+void THISCALL (stage_freeProjectile)(Stage *stage, int i)
 {
 	if (!stage->projectiles[i].active)
 		return;
@@ -133,7 +133,7 @@ void THISCALL (scene_resetActors)(Stage *stage)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
 	FIELD(int, stage, 0x202e8ec) = 1;
 	stage_clearActorRefs(stage);
-	load_474480(stage);
+	stage_resetPlayerRecords(stage);
 	stage_clearActorSlots(stage);
 	for (int i = 0; i < 100; i++)
 		actor_resetSlot(stage, i);
@@ -205,7 +205,7 @@ static void player_clear(u8 *e)
 }
 
 /* 0x474480: the 16 player records reset (unused, no name, no actor) with their colour grids; none seen */
-void THISCALL (load_474480)(Stage *stage)
+void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 {
 	for (int p = 0; p < 16; p++) {
 		u8 *e = (u8 *)stage + 0x1561bac + p * 0x47fd2;
@@ -221,7 +221,7 @@ void THISCALL (load_474480)(Stage *stage)
 
 /* 0x470cb0: a new round: the actor slot numbers (-1), the scores, the 16 player records (their names kept), the
    actor slots, then each actor's round state */
-void THISCALL (match_470cb0)(Stage *stage)
+void THISCALL (stage_newRound)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
@@ -393,7 +393,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
    11 (+0x20f3ab8) by pairs: the energy (+0x1c, +0x20, +0x128) 10 then 150, +0x12c 0, the four weapon slots
    (+0x130 ..) empty but one (the pair's: 10 the first, else 50, its +0x28 .. 100; the last pair none). Otherwise
    +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
-void THISCALL (actor_45ebc0)(u8 *scene, int p)
+void THISCALL (actor_startingValues)(u8 *scene, int p)
 {
 	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
 	if (FIELD(int, a, 0x108) != 1)
@@ -772,7 +772,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
    overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
    fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (actor_setWeaponSlot),
-   the starting values (actor_45ebc0), the position history, timers and flags reset, its lists loaded and parts
+   the starting values (actor_startingValues), the position history, timers and flags reset, its lists loaded and parts
    placed (actor_updateHead .. actor_updateBooster, actor_updatePart; viewed by another than itself +0x49c), and the scene told
    an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
@@ -798,7 +798,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x140) = -1;
 	A(int, 0x144) = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
-	GAME_THISCALL(0x45ebc0, void, void *, int)(s, a);   /* actor_45ebc0 */
+	GAME_THISCALL(0x45ebc0, void, void *, int)(s, a);   /* actor_startingValues */
 	A(int, 0x14c) = 1;
 	A(int, 0x150) = 0;
 	memcpy(ac + 0x154, pp + 2, 12);
@@ -954,7 +954,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
 	int ok = A(int, 0x14c) != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
-		GAME_THISCALL(0x46f470, void, void *)(me + k_listAt[k]);   /* match_46f470: a part list released */
+		GAME_THISCALL(0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
 	return ok;
 }
 #undef A

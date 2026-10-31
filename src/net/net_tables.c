@@ -238,7 +238,7 @@ int (dplay_coInit)(void)
 
 /* 0x454760: the network thread's three handles closed (0xa0d788, 0xa0bf1c, 0xa0bb10) and the running flag cleared.
    Returns what the original leaves in eax (the last close's answer, or 0) */
-u32 (net_454760)(void)
+u32 (net_closeThreadHandles)(void)
 {
 	static const u32 handles[3] = { 0xa0d788, 0xa0bf1c, 0xa0bb10 };
 	u32 r = 0;
@@ -255,9 +255,9 @@ u32 (net_454760)(void)
 }
 
 /* 0x452d70: the server's 62-byte reply received into 0xa052e8 (recv on 0xa05630 until 62 bytes have come or 3 s
-   have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_452de0), 1
+   have passed; each call reads to the start of the buffer), then by its kind (+0x1e): 0 accepted (net_addPlayerRecord), 1
    refused (0xa0b350 set, 0xa0b300 cleared) */
-void (net_452d70)(void)
+void (net_receiveServerReply)(void)
 {
 	u8 *reply = (u8 *)0xa052e8;
 	u32 start = GetTickCount();
@@ -269,7 +269,7 @@ void (net_452d70)(void)
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
 	switch (GAME_VAR(int, 0xa05306)) {
 	case 0:
-		net_452de0(reply);
+		net_addPlayerRecord(reply);
 		break;
 	case 1:
 		GAME_VAR(int, 0xa0b350) = 1;
@@ -314,7 +314,7 @@ static void *alloc_clear(u32 n)
    network table cleared and the packet buffers allocated anew, cleared. The caller ignores the eax it leaves */
 void (net_closeAll)(int kind)
 {
-	net_454690();
+	net_clearServers();
 	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
@@ -459,14 +459,14 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 	return i * size;
 }
 /* 0x452af0: a server record (0x5b bytes) into the list at 0xa05748 (count 0xa0b368) */
-int (net_452af0)(const u8 *rec)
+int (net_addServerRecord)(const u8 *rec)
 {
 	static const u8 strings[3] = { 0x33, 0x01, 0x53 };
 	static const u8 bytes[9] = { 0x00, 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 };
 	return list_append(0xa0b368, 0xa05748, 0x5b, rec, strings, 3, 0x33, bytes, 9);
 }
 /* 0x452c80: a room record (0x79 bytes) into the list at 0x9fd960 (count 0xa0b358) */
-int (net_452c80)(const u8 *rec)
+int (net_addRoomRecord)(const u8 *rec)
 {
 	static const u8 strings[4] = { 0x43, 0x33, 0x01, 0x71 };
 	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
@@ -533,7 +533,7 @@ int (net_startThread)(void)
 
 /* 0x452de0: a player record appended to the list at 0xa05330 (62 bytes a slot, count 0xa0b35c): its name and seven
    dwords (+0x22 .. +0x3a). Returns the slot's offset (the original's eax) */
-int (net_452de0)(const u8 *rec)
+int (net_addPlayerRecord)(const u8 *rec)
 {
 	static const u8 fields[7] = { 0x2a, 0x26, 0x22, 0x2e, 0x36, 0x3a, 0x32 };
 	lstrcpyA((char *)(0xa05330 + GAME_VAR(int, 0xa0b35c) * 62), (const char *)rec);
@@ -561,7 +561,7 @@ int (net_getLocalAddress)(void)
 
 /* 0x4512c0: a chat line sent: logged for this player (net_logMessage into 0x9fd944), then a message (type 1, from
    the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
-int (match_4512c0)(const char *text)
+int (net_sendChat)(const char *text)
 {
 	if (GAME_CDECL(0x451350, int, u32, const char *, char **)(GAME_VAR(u32, 0xa0b424), text, (char **)0x9fd944) < 0)   /* net_logMessage */
 		return 0;
@@ -618,10 +618,10 @@ int (dplay_getPlayerName)(u32 id, void **out)
 	return r;
 }
 
-/* 0x4545b0: every server in the list pinged (net_454650 by name, 20 bytes a slot at 0xa0bf20) until done
+/* 0x4545b0: every server in the list pinged (net_pingServer by name, 20 bytes a slot at 0xa0bf20) until done
    (0xa0d7a0): its time in 0xa0d384 (above 1000 ms less 400; 0 when it did not answer) and marked pinged (0xa0bb14);
    then done, and the events reset (0x454740, whose eax it returns) */
-u32 (net_4545b0)(void)
+u32 (net_pingAllServers)(void)
 {
 	GAME_VAR(int, 0xa0d798) = 0;
 	if (GAME_VAR(int, 0xa0d79c) > 0) {
@@ -629,7 +629,7 @@ u32 (net_4545b0)(void)
 			const char *name = (const char *)(0xa0bf20 + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
-			if (GAME_CDECL(0x454650, int, const char *, int)(name, i)) {   /* net_454650 */
+			if (GAME_CDECL(0x454650, int, const char *, int)(name, i)) {   /* net_pingServer */
 				int time = GAME_VAR(int, 0xa0d798);
 				if (time > 1000)
 					GAME_VAR(int, 0xa0d798) = time -= 400;
@@ -640,7 +640,7 @@ u32 (net_4545b0)(void)
 		}
 	}
 	GAME_VAR(int, 0xa0d7a0) = 1;
-	return GAME_CDECL(0x454740, u32, void)();   /* net_454740 */
+	return GAME_CDECL(0x454740, u32, void)();   /* net_wakePingThread */
 }
 
 /* ---- a reply of size bytes read from socket into buf, waiting up to 3 s. Each recv lands at buf's start (as in the
@@ -657,14 +657,14 @@ static void reply_read(u32 socket, void *buf, u32 size)
 }
 
 /* 0x452a30: a lobby reply (0x5b bytes into 0xa05260, socket 0xa055f8), by its type (0xa052aa): 0 a server for the
-   list (net_452af0), 1 the list is complete (its count to 0xa0d79c, the ping thread started), 2 / 3 the connection
+   list (net_addServerRecord), 1 the list is complete (its count to 0xa0d79c, the ping thread started), 2 / 3 the connection
    state 0xa0b36c set (0xcb / 0x29); 1..3 also end the wait (0xa0b300) */
-void (net_452a30)(void)
+void (net_receiveLobbyReply)(void)
 {
 	reply_read(0xa055f8, (void *)0xa05260, 0x5b);
 	switch (GAME_VAR(u32, 0xa052aa)) {
 	case 0:
-		GAME_CDECL(0x452af0, int, void *)((void *)0xa05260);   /* net_452af0 */
+		GAME_CDECL(0x452af0, int, void *)((void *)0xa05260);   /* net_addServerRecord */
 		break;
 	case 1:
 		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b368);
@@ -684,13 +684,13 @@ void (net_452a30)(void)
 }
 
 /* 0x452bd0: a game server's reply (0x79 bytes into 0xa0b280, socket 0xa05630), by its type (0xa0b2e8): 0 a room for
-   the list (net_452c80), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
-void (net_452bd0)(void)
+   the list (net_addRoomRecord), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
+void (net_receiveGameServerReply)(void)
 {
 	reply_read(0xa05630, (void *)0xa0b280, 0x79);
 	switch (GAME_VAR(u32, 0xa0b2e8)) {
 	case 0:
-		GAME_CDECL(0x452c80, int, void *)((void *)0xa0b280);   /* net_452c80 */
+		GAME_CDECL(0x452c80, int, void *)((void *)0xa0b280);   /* net_addRoomRecord */
 		break;
 	case 1:
 		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b358);
@@ -1247,7 +1247,7 @@ void (net_send)(int kind, int to)
 		send_buffer(plain[kind].lobby ? 0xa055f8 : 0xa05630, plain[kind].buffer, plain[kind].size);
 		return;
 	case 13:
-		net_452e60();
+		net_clearServerList();
 		GAME_VAR(int, 0xa0b300) = 13;
 		send_buffer(0xa055f8, 0xa0b31c, 4);
 		return;
@@ -1269,14 +1269,14 @@ void (net_send)(int kind, int to)
 		send_buffer(0xa05630, 0xa0b320, 0x10b);
 		return;
 	case 19:
-		net_454690();
-		net_452e80();
+		net_clearServers();
+		net_clearRoomList();
 		GAME_VAR(int, 0xa0b300) = 0x13;
 		send_buffer(0xa05630, 0xa0b334, 4);
 		return;
 	case 21:
 	case 26:
-		net_452ea0();
+		net_clearPlayerList();
 		if (kind == 21)
 			GAME_VAR(int, 0xa0b300) = 0x15;
 		send_buffer(0xa05630, kind == 21 ? 0xa0b324 : 0xa052e4, kind == 21 ? 8 : 1);
@@ -1371,7 +1371,7 @@ void (net_recv)(void)
 		status_reply(0xa055f8, 0xa055dc, 0xa0b370, 0x29, start);
 		break;
 	case 13:
-		net_452a30();
+		net_receiveLobbyReply();
 		break;
 	case 14:
 		answer_reply(0xa0b378, answers14, 6, start);
@@ -1383,13 +1383,13 @@ void (net_recv)(void)
 		status_reply(0xa05630, 0xa0b248, 0xa0b374, 0x28, start);
 		break;
 	case 19:
-		net_452bd0();
+		net_receiveGameServerReply();
 		break;
 	case 21:
-		net_452d70();
+		net_receiveServerReply();
 		break;
 	case 26:
-		net_452ea0();
+		net_clearPlayerList();
 		GAME_VAR(int, 0xa0b350) = 1;
 		GAME_VAR(int, 0xa0b300) = 0;
 		break;
@@ -1449,7 +1449,7 @@ void THISCALL (net_sendState_48ead0)(u8 *s)
    then +0x13 its +0x44, +0x14 its +0x48, the actor's team byte (+0x1eccb4c), p, the five parts and six items (each
    + 1), the 30 colour bytes (+0x479a4). Sent by send_packet. Its caller ignores the eax it
    leaves */
-void THISCALL (match_48e0f0)(u8 *s, int p)
+void THISCALL (net_sendPlayerInfo)(u8 *s, int p)
 {
 	int *flag = (int *)(s + 0x234300a + p * 0x10);
 	if (!*flag)
@@ -1512,7 +1512,7 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
    bytes and a line (+0x23431e7: +0x234319f, +0x23431a3, +0x23431a7); 11 the camera's actor, a byte and a line
    (+0x2343233: +0x23431ef, +0x23431f3); 13 (+0x2343243). With none pending any more the events are done
    (+0x2343106 0). Sent by send_packet (even with nothing pending). Its callers ignore the eax it leaves */
-void THISCALL (match_48e680)(u8 *s)
+void THISCALL (net_sendMatchEvent)(u8 *s)
 {
 #define FLAG(offset) GAME_VAR(int, s + (offset))
 #define TAKE(offset) (FLAG(offset) == 1 && (FLAG(offset) = 0, 1))
@@ -1567,7 +1567,7 @@ void THISCALL (match_48e680)(u8 *s)
    (its part type record +0x1755230 + p x 0x47fd2: +0x47fc6, +0x47fca) the ring's position (+0x47fce, a short) and
    16 three-byte colours from there (4 bytes apart, from +0x479c2), the position then 16 on; else 0xffff and the
    position back to 0x180. Sent by send_packet. Its caller ignores the eax it leaves */
-void THISCALL (match_48e990)(u8 *s, int p)
+void THISCALL (net_sendColourRing)(u8 *s, int p)
 {
 	u8 *r = s + p * 0x47fd2;
 	u8 packet[0x40];
@@ -1606,7 +1606,7 @@ static int angle_byte(const void *v)
    from +0x22225fc) is gone is cleared (-1); else flags (1, 3 for a new one: +0x1fc + slot x 0x20 cleared; 4 aimed
    at an actor, 8 still flying), the target (+0xb8, or the object's index + 1, or 0) and the position (+0x60 while
    it flies at an object, else +0x84). Sent by send_packet. Its caller ignores the eax it leaves */
-void THISCALL (match_48e2c0)(u8 *g, int p)
+void THISCALL (net_sendPlayerState)(u8 *g, int p)
 {
 	u8 *a = g + 0x1ecca70 + p * 0x8888;
 	u8 packet[0x40];
@@ -2095,7 +2095,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	case 8:
 		if (b[2] > 0x10 || strlen(pkt + 3) >= 0x11)
 			break;
-		CALL1(0x4743b0, b[2]);   /* net_4743b0 */
+		CALL1(0x4743b0, b[2]);   /* playerRecord_markFree */
 		GAME_THISCALL(0x473940, void, void *, int, const char *)(STAGE, b[2], pkt + 3);   /* player_setName */
 		CALL1(0x4743e0, b[2]);   /* actor_resetSlot */
 		actor_name(g, b[2], pkt + 3);

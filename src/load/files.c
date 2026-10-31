@@ -58,7 +58,7 @@ int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
 }
 
 /* 0x487ed0: the replay being recorded closed (fclose's result; 0 when none) */
-u32 THISCALL (match_487ed0)(Scene *scene)
+u32 THISCALL (replay_closeRecording)(Scene *scene)
 {
 	if (!scene->recording)
 		return 0;
@@ -707,7 +707,7 @@ static void pilot_write(void *f)
 }
 
 /* 0x447010: the campaign progress saved: axisuser.dat written (no file: nothing more), then the pilot's file with
-   the profile's record (gathered by match_4464b0); 0x9f1818 = the pilot's value. Returns the last chdir's eax */
+   the profile's record (gathered by mech_storeToProfile); 0x9f1818 = the pilot's value. Returns the last chdir's eax */
 int (profile_saveProgress)(void)
 {
 	void *f = profiles_create();
@@ -715,7 +715,7 @@ int (profile_saveProgress)(void)
 		return 0;
 	set_current_name();
 	profiles_write(f);
-	match_4464b0();
+	mech_storeToProfile();
 	enter_save_folder();
 	char path[0x80];
 	pilot_path(path);
@@ -761,7 +761,7 @@ static void campaign_new(void)
 }
 
 /* 0x446590: a new campaign for the chosen pilot: axisuser.dat written (no file: nothing more), the profile's record
-   gathered (match_4464b0), then a new record made and the pilot's file written with it. Returns the last chdir's
+   gathered (mech_storeToProfile), then a new record made and the pilot's file written with it. Returns the last chdir's
    eax */
 int (profile_load)(void)
 {
@@ -770,7 +770,7 @@ int (profile_load)(void)
 		return 0;
 	set_current_name();
 	profiles_write(f);
-	match_4464b0();
+	mech_storeToProfile();
 	enter_save_folder();
 	char path[0x80];
 	pilot_path(path);
@@ -1368,7 +1368,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	return 1;
 }
 
-/* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: match_487ed0): the file
+/* 0x487cb0 (thiscall on the scene): a recording started (one going is stopped first: replay_closeRecording): the file
    AutoPlay\name.ape, or without a name the first of AutoPlay000 .. AutoPlay999 not there yet (the name kept at
    +0x2340d0c; none free, or the file not made: nothing more). Recording (+0x2340d1d 1, the clock +0x2340d29 0), the
    header written: version 0x1201, the settings (0x5ae9c4, 0x9dad94, the 32 bytes at 0x67fb44, 0x9da3e0), the map
@@ -1379,7 +1379,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 {
 	char *kept = (char *)s + 0x2340d0c, path[0x100];
 	if (FIELD(int, s, 0x2340d1d) == 1)
-		match_487ed0((Scene *)s);
+		replay_closeRecording((Scene *)s);
 	if (name) {
 		strcpy(kept, name);
 		sprintf(path, (const char *)0x4c7cc8, kept);   /* "AutoPlay\%s.ape" */

@@ -79,7 +79,7 @@ long double (angle_wrap)(float a)
 /* 0x46c140: the turn from angle a to angle b (tenths of a degree, as bits), both wrapped first (rounded to floats):
    the shorter way, -1800 .. 1800; returned unrounded */
 #define HALF_TURN GAME_VAR(float, 0x4aa288)   /* 1800 */
-long double (actor_46c140)(u32 a, u32 b)
+long double (angle_turn)(u32 a, u32 b)
 {
 	float B = (float)FUN_0046c100_bits(b), A = (float)FUN_0046c100_bits(a);
 	if (B > A) {
@@ -96,7 +96,7 @@ long double (actor_46c140)(u32 a, u32 b)
 
 /* 0x46c1c0: angle a moved part t of the shorter way to b (b wrapped and rounded, a wrapped and kept unrounded),
    wrapped back into 0 .. 3600; returned unrounded */
-long double (actor_46c1c0)(u32 a, u32 b, float t)
+long double (angle_stepTowards)(u32 a, u32 b, float t)
 {
 	float B = (float)FUN_0046c100_bits(b);
 	X A = FUN_0046c100_bits(a);
@@ -119,7 +119,7 @@ long double (actor_46c1c0)(u32 a, u32 b, float t)
 
 /* 0x482a40: out = the point p transformed by the matrix m (columns, the translation at 12 .. 14), each row summed in
    the original's order */
-void (load_482a40)(float *out, const float *m, const float *p)
+void (space_transformPoint)(float *out, const float *m, const float *p)
 {
 	out[0] = (float)((X)m[8] * p[2] + (X)m[4] * p[1] + (X)m[0] * p[0] + m[12]);
 	out[1] = (float)((X)m[9] * p[2] + (X)m[1] * p[0] + (X)m[5] * p[1] + m[13]);

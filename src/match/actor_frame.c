@@ -286,7 +286,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		return;
 	}
 	if (AI(0x110) != GAME_VAR(int, s + 0x202e8d4) || AI(0x11c) != 0)
-		actor_45eab0(s, i);
+		actor_clearInput(s, i);
 	u8 *head = s + 0x13eb004 + GAME_VAR(int, player + 0x310) * 0xabc;
 	u8 *body = s + 0x140c8c0 + GAME_VAR(int, player + 0x314) * 0x1300;
 	u8 *arms = s + 0x1447ec4 + GAME_VAR(int, player + 0x318) * 0x13f4;
@@ -303,15 +303,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u8 *weapon = item >= 0 ? s + 0x14d1ab4 + item * 0x2e18 : NULL;
 	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && weapon && AI(0x130 + GAME_VAR(int, weapon + 0x2dc0) * 4) < GAME_VAR(int, weapon + 0x2dc4)
 	    && !(AF(0x490) < 1.0f)) {   /* out of ammunition: the next weapon */
-		actor_45e9e0(s, i);
+		actor_nextWeapon(s, i);
 		weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AI(0x140) * 4) * 0x2e18;
 	}
 	if (AI(0x478) >= 0)
 		actor_selectWeapon((Stage *)s, i, AI(0x478));
 	if (AI(0x47c) == 1)
-		actor_45e910(s, i);
+		actor_prevWeapon(s, i);
 	if (AI(0x480) == 1)
-		actor_45e9e0(s, i);
+		actor_nextWeapon(s, i);
 	if (i == GAME_VAR(int, s + 0x202e8d8)) {
 		if (AI(0x49c) != 0) {
 			AI(0x49c) = 0;
@@ -364,7 +364,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (OI(t, 0x1cd94c0) != AI(0x118) && OI(t, 0x1cd94f4) == 1 && (!(OI(t, 0x1cd9798) & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
 					AI(0x8820) = t;
 					AU(0x8858) = 0x41280000;   /* 10.5 */
-					actor_45edb0(s, i);
+					actor_pickRandomWeapon(s, i);
 				}
 			}
 			break;
@@ -393,7 +393,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			    && (!(OI(k, 0x1cd9798) & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
 				AI(0x8820) = k;
 				AU(0x8858) = 0x41280000;
-				actor_45edb0(s, i);
+				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AI(0x8820) < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
@@ -412,7 +412,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						}
 					}
 					if (AI(0x8820) >= 0)
-						actor_45edb0(s, i);
+						actor_pickRandomWeapon(s, i);
 				} else {
 					int t = AI(0x8820);
 					if (collision_rayTrace(s, &AF(0x154), &OF(t, 0x1cd94fc), v28) != 0
@@ -426,7 +426,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 									continue;
 								if (collision_rayTrace(s, &AF(0x154), &OF(j, 0x1cd94fc), v28) == 0) {
 									AI(0x8820) = j;
-									actor_45edb0(s, i);
+									actor_pickRandomWeapon(s, i);
 									break;
 								}
 							}
@@ -612,7 +612,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			/* the turns towards the view, at most the turn rate (+0x6c) a second */
 			float rate = f32(fmul_m(fld_m(dt), &AF(0x6c)));
 			for (int c = 0; c < 2; c++) {
-				long double r = actor_46c140(AU(0x160 + c * 4), AU(0x1e0 + c * 4));
+				long double r = angle_turn(AU(0x160 + c * 4), AU(0x1e0 + c * 4));
 				float rr = (float)r;
 				AF(0x464 + c * 4) = rr;
 				if (r > rate)
@@ -786,7 +786,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AF(0x184) = f32(fadd_m(fld_m(&y), &AF(0x158)));
 		AF(0x188) = f32(fadd_m(fld_m(&z), &AF(0x15c)));
 		AF(0x18c) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x1b8)), &AF(0x160)), &k), &AF(0x160)));
-		AF(0x190) = f32(actor_46c1c0(AU(0x190), AU(0x1bc), BITS(k)));
+		AF(0x190) = f32(angle_stepTowards(AU(0x190), AU(0x1bc), BITS(k)));
 		for (int c = 0; c < 5; c++)   /* +0x194..+0x1a4 */
 			AF(0x194 + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x1c0 + c * 4)), &AF(0x168 + c * 4)), &k), &AF(0x168 + c * 4)));
 	}
@@ -829,45 +829,45 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	long double side = !(AF(0x168) >= -1.0f) ? -1.0L : AF(0x168) > 1.0f ? 1.0L : fld_m(&AF(0x168));
 	AF(0x3a0) = f32(fmul_m(fsubr_m(fmul_m(fadd_m(fld_m(&AF(0x178)), K(0x4a9424)), K(0x4a942c)) * fsub_m(fld_m(K(0x4a9424)), &AF(0x170)) * side, K(0x4a9424)), K(0x4a942c)));
 	AU(0x3a4) = AU(0x178);
-	actor_46f770(a + 0x554, 0, AU(0x39c));
-	actor_46f770(a + 0xd54, 0, AU(0x39c));
-	actor_46f770(a + 0x1554, 0, AU(0x39c));
-	actor_46f770(a + 0x2524, 0, AU(0x3a0));
-	actor_46f770(a + 0x34f4, 0, AU(0x3a4));
-	actor_46f770(model, 0, AU(0x17c));
+	anim_setFrame(a + 0x554, 0, AU(0x39c));
+	anim_setFrame(a + 0xd54, 0, AU(0x39c));
+	anim_setFrame(a + 0x1554, 0, AU(0x39c));
+	anim_setFrame(a + 0x2524, 0, AU(0x3a0));
+	anim_setFrame(a + 0x34f4, 0, AU(0x3a4));
+	anim_setFrame(model, 0, AU(0x17c));
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(AU(0x154), AU(0x158), AU(0x15c));
 	glRotatef(f32(fmul_m(fld_m(&AF(0x164)), K(0x4a93ec))), 0, 1, 0);
 	glRotatef(f32(fmul_m(fld_m(&AF(0x174)), K(0x4a93ec))), 1, 0, 0);
 	glGetFloatv(0xba6, (float *)(a + 0x3a8));
-	actor_46f8c0(a + 0xd54, a + 0x3a8);
+	skel_poseBones(a + 0xd54, a + 0x3a8);
 	glLoadMatrixf((const float *)(uintptr_t)(AU(0xd68) + GAME_VAR(int, head + 0xa98 + AI(0x484) * 4) * 100 + 0xc));
 	glRotatef(f32(fmul_m(fld_m(&AF(0x398)), K(0x4a93ec))), 0, 1, 0);
-	actor_46f8c0(a + 0x2524, 0);
+	skel_poseBones(a + 0x2524, 0);
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xa90, AI(0x484)));
-	actor_46f8c0(a + 0x1554, 0);
+	skel_poseBones(a + 0x1554, 0);
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xaa0, AI(0x484)));
 	if (AU(0x3f0) & 0x1000)
 		glScalef_bits(0x40a00000, 0x40a00000, 0x40a00000);   /* 5 */
-	actor_46f8c0(a + 0x554, 0);
+	skel_poseBones(a + 0x554, 0);
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xaa8, AI(0x484)));
 	glRotatef(f32(fmul_m(fld_m(&AF(0x390)), K(0x4a9468))), 0, 0, 1);
 	glRotatef(f32(fmul_m(fld_m(&AF(0x394)), K(0x4a93ec))), 1, 0, 0);
-	actor_46f8c0(a + 0x34f4, 0);
+	skel_poseBones(a + 0x34f4, 0);
 	memcpy(grip, &GAME_VAR(float, 0xa0e7e8), 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d0, AI(0x484)));
 	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) <= 3)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
-	actor_46f8c0(a + 0x40dc, 0);
+	skel_poseBones(a + 0x40dc, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d8, AI(0x484)));
 	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) == 4)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
-	actor_46f8c0(a + 0x587c, 0);
+	skel_poseBones(a + 0x587c, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12e0, AI(0x484)));
 	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) == 5)
 		hold(grip, weapon + 0x2d94 + AI(0x49c) * 12, 1, &AF(0x490));
-	actor_46f8c0(a + 0x701c, 0);
+	skel_poseBones(a + 0x701c, 0);
 	glPopMatrix();
 	if (i == GAME_VAR(int, s + 0x202e8d4)) {   /* the lock-on warnings (s+0x202ea80 per actor), sorted longest first */
 		float *lock = &GAME_VAR(float, s + 0x202ea80);
@@ -981,7 +981,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						sound_playVolume(0xa5, 0x64);
 					}
 					if (AI(0x4a0) == 0)
-						actor_45e9e0(s, i);
+						actor_nextWeapon(s, i);
 					break;
 				}
 				if (w >= 0) {
@@ -1271,7 +1271,7 @@ timers:
 	static const u16 parts[7] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c };
 	if (AI(0x54c) < 7) {   /* the parts' break-up, one a frame */
 		if (AI(0x54c) >= 0)
-			actor_46fed0(a + parts[AI(0x54c)]);
+			partList_bindTextures(a + parts[AI(0x54c)]);
 		AI(0x54c)++;
 	}
 }

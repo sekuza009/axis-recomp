@@ -53,7 +53,7 @@ void THISCALL (skel_loadFrom_46aa10)(u8 *self, void *f, void *mem, int size)
    rest (+0x128). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFrom_46aeb0)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
-	load_46ae80(self);
+	SkeletonManager_release(self);
 	strcpy((char *)self + 0x10, dir ? dir : (const char *)0x4b1304);
 	AT(u32, self, 0x110) = a;
 	AT(int, self, 0x114) = n;
@@ -77,7 +77,7 @@ void THISCALL (skel_loadFrom_46aeb0)(u8 *self, const char *dir, int n, u32 a, in
    eax it leaves */
 void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
-	load_466a30(self);
+	ShapeManager_release(self);
 	if (dir && strcmp(dir, (const char *)0x4b1304) != 0)
 		strcpy((char *)self + 0x10, dir);
 	else
@@ -498,7 +498,7 @@ static void transform(float *out, const float *m, const float *px, const float *
    in skel_applyPose; times the bone record's scale +4), the rotation as in skel_applyPose; the result read back
    into the bone's 0x64-byte record (+0xc), with two points carried through it: 0xa0e7a8 (to +0x4c) and the record's
    own point (+0, its +0x20 ..; none: the first again, to +0x58). Its callers ignore the eax it leaves */
-void THISCALL (actor_46f8c0)(u8 *pose, const float *base)
+void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 {
 	if (AT(int, pose, 0x1c) <= 0)
 		return;

@@ -18,13 +18,13 @@ static int clear(void *p, int dwords)
 /* ---- member blocks cleared, each the size of its class ---- */
 int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureManager */
 int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
-int THISCALL (load_466a20)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
-int THISCALL (load_46ae70)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
+int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
+int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
 int THISCALL (load_47db50)(void *self) { return clear(self, 0x2b); }
 int THISCALL (load_4804a0)(void *self) { return clear(self, 0x14); }
-int THISCALL (load_4813a0)(void *self) { return clear(self, 0x3d); }       /* CollisionVolume */
+int THISCALL (CollisionVolume_clear)(void *self) { return clear(self, 0x3d); }       /* CollisionVolume */
 int THISCALL (load_483fc0)(void *self) { return clear(self, 0x245c); }
-int THISCALL (load_487480)(void *self) { return clear(self, 0xe); }        /* TimeSync */
+int THISCALL (TimeSync_clear)(void *self) { return clear(self, 0xe); }        /* TimeSync */
 int THISCALL (load_480430)(void *self) { return clear(self, 0x4); }
 
 /* 0x483d60: Light's two counters cleared */
@@ -36,7 +36,7 @@ int THISCALL (this_set_483d60)(void *self)
 }
 
 /* 0x48fc30: two counters of the stage's map items cleared */
-int THISCALL (load_48fc30)(void *self)
+int THISCALL (stage_clearMapItemCounts)(void *self)
 {
 	FIELD(int, self, 0x2148ed0) = 0;
 	FIELD(int, self, 0x2148ed4) = 0;
@@ -79,9 +79,9 @@ static void free_owned(void *self)
 
 /* 0x464bc0, 0x466a30, 0x46ae80, 0x4813b0: the buffer freed, then the members cleared */
 int THISCALL (Model_release)(void *self) { free_owned(self); Model_clear(self); return 0; }
-int THISCALL (load_466a30)(void *self) { free_owned(self); load_466a20(self); return 0; }
-int THISCALL (load_46ae80)(void *self) { free_owned(self); load_46ae70(self); return 0; }
-int THISCALL (load_4813b0)(void *self) { free_owned(self); load_4813a0(self); return 0; }
+int THISCALL (ShapeManager_release)(void *self) { free_owned(self); ShapeManager_clear(self); return 0; }
+int THISCALL (SkeletonManager_release)(void *self) { free_owned(self); SkeletonManager_clear(self); return 0; }
+int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); CollisionVolume_clear(self); return 0; }
 
 /* ---- getters ---- */
 int (arena_4532a0)(void) { return GAME_VAR(int, 0xa0b41c); }
@@ -143,7 +143,7 @@ u32 (Texture_ctor_wrap_42b2c0)(void) { return Texture_ctor((u32 *)0x90d1e0); }
 u32 (Texture_ctor_wrap_42b310)(void) { return Texture_ctor((u32 *)0x83a9e0); }
 
 /* TimeSync (vtable 0x4aa46c) */
-void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = 0x4aa46c; load_487480(self); return self; }
+void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = 0x4aa46c; TimeSync_clear(self); return self; }
 void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = 0x4aa46c; }
 DELETING(TimeSync, TimeSync_dtor)
 void (TimeSync_dtor_wrap_468740)(void) { TimeSync_dtor((u32 *)0xa0e948); }
@@ -165,8 +165,8 @@ int THISCALL (Light_dtor)(u32 *self) { self[0] = 0x4aa248; return this_set_483d6
 DELETING(Light, Light_dtor)
 
 /* CollisionVolume (vtable 0x4aa254) */
-void *THISCALL (CollisionVolume_ctor)(u32 *self) { self[0] = 0x4aa254; load_4813a0(self); return self; }
-int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = 0x4aa254; return load_4813b0(self); }
+void *THISCALL (CollisionVolume_ctor)(u32 *self) { self[0] = 0x4aa254; CollisionVolume_clear(self); return self; }
+int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = 0x4aa254; return CollisionVolume_release(self); }
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Model (vtable 0x4aa250) */
@@ -175,9 +175,9 @@ int THISCALL (Model_dtor)(u32 *self) { self[0] = 0x4aa250; return Model_release(
 DELETING(Model, Model_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
-int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = 0x4aa244; return load_466a30(self); }
+int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = 0x4aa244; return ShapeManager_release(self); }
 DELETING(ShapeManager, ShapeManager_dtor)
-int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = 0x4aa240; return load_46ae80(self); }
+int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = 0x4aa240; return SkeletonManager_release(self); }
 DELETING(SkeletonManager, SkeletonManager_dtor)
 
 /* BMPRGBFile (vtable 0x4a96f8): 0x46ce60 (named BMPRGBFile_ctor, in fact its destructor) closes its file */
@@ -204,11 +204,11 @@ void *THISCALL (ResourceSet_ctor_463850)(u8 *self)
 	static const u32 skels[5] = { 0x43534, 0x43e34, 0x44734, 0x45804, 0x468d4 };
 	for (int i = 0; i < 5; i++) {
 		*(u32 *)(self + shapes[i]) = 0x4aa244;
-		load_466a20(self + shapes[i]);
+		ShapeManager_clear(self + shapes[i]);
 	}
 	for (int i = 0; i < 5; i++) {
 		*(u32 *)(self + skels[i]) = 0x4aa240;
-		load_46ae70(self + skels[i]);
+		SkeletonManager_clear(self + skels[i]);
 	}
 	return self;
 }
@@ -236,7 +236,7 @@ int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
 int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
 
-/* 0x45ff30: an object's eight member lists destroyed (match_46f470, the last member first: +0x701c .. +0x554).
+/* 0x45ff30: an object's eight member lists destroyed (UnitPoseInfo_dtor, the last member first: +0x701c .. +0x554).
    Returns the last call's eax */
 u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
@@ -313,7 +313,7 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 
 /* 0x46cdc0 (thiscall on an image): as image_initBy, without the fatal messages: the file, or 0 when it can't be
    opened, a header is short, or it isn't 24 bits uncompressed (the file then stays open at +4) */
-void *THISCALL (match_46cdc0)(u8 *image, const char *path)
+void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	if (GAME_VAR(void *, image + 4))
@@ -341,7 +341,7 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 	char path[0x100];
 	sprintf(path, (const char *)0x4c74e8, type + 4);
 	int ok = 0;
-	if (match_46cdc0(image, path)) {
+	if (image_tryOpen(image, path)) {
 		if (GAME_VAR(int, image + 0x3e) >= 23 && GAME_VAR(int, image + 0x42) >= 15) {
 			u8 *pixel = type + 0x479c2;
 			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
@@ -588,7 +588,7 @@ static void zero_dwords(u8 *at, int n)
    records, 0x9eeab8 of them) copied to +0x1f1cbc (0x40 each, count +0x1f35bc); actors and scene reset; mode 2 also
    clears the armour cache, the view box (+0xbe2fcc: -100000 .. 100000, twice), and sets the game type flags for type
    0; the camera from 0xa0e7a8.. (direction negated), the HUD mode +0x233cc20 (mode 2 -> 3, 3 -> 1, else 2) and its
-   defaults, the match state (match_4636d0), the notices (match_463480) and the lobby slots (+0x234240d -1 in modes 1
+   defaults, the match state (teams_setup), the notices (notices_clearAll) and the lobby slots (+0x234240d -1 in modes 1
    and 3). Its callers ignore the eax it leaves */
 void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
@@ -639,7 +639,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GAME_VAR(int, g + 0x2340cd0) = 1;
 	zero_dwords(g + 0x2340cd4, 13);
 	zero_dwords(g + 0x2340d1d, 7);
-	match_4636d0((Scene *)g);
+	teams_setup((Scene *)g);
 	zero_dwords(g + 0x2342395, 8);
 	GAME_VAR(int, g + 0x23423b5) = -1;
 	zero_dwords(g + 0x23423c9, 7);
@@ -648,7 +648,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GAME_VAR(int, g + 0x2343287) = -1;
 	zero_dwords(g + 0x234328b, 31);
 	zero_dwords(g + 0x234330b, 4);
-	GAME_THISCALL(0x463480, void, void *)(g);   /* match_463480 */
+	GAME_THISCALL(0x463480, void, void *)(g);   /* notices_clearAll */
 	GAME_VAR(int, g + 0x234240d) = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
 	zero_dwords(g + 0x2342411, 3);
 	GAME_VAR(int, g + 0x234241d) = -1;

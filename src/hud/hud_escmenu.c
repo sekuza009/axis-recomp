@@ -191,7 +191,7 @@ void THISCALL (hud_495ed0)(Scene *scene, int x0, int y0, int x1, int y1)
 
 /* 0x49ca20: the in-match menu opened on page with item under the cursor (a spectator's page 4 first, overwritten:
    the original stores both) */
-void THISCALL (match_49ca20)(Scene *scene, int page, int item)
+void THISCALL (escMenu_open)(Scene *scene, int page, int item)
 {
 	if (scene->localPlayer < 0) {
 		scene->escPage = 4;
@@ -238,7 +238,7 @@ static void esc_pairCursor(Scene *scene)
 static void esc_resetScore(Scene *scene)
 {
 	if (scene->showEmblems == 1)
-		match_49d150(scene);
+		sound_updateListener(scene);
 	scene->players[scene->localPlayer].statF0 = 0;
 	scene->players[scene->localPlayer].kills = 0;
 	scene->players[scene->localPlayer].deaths++;
@@ -278,26 +278,26 @@ static int esc_main(Scene *scene)
 			return 1;
 		}
 		if (scene->chosenTeam >= 0 && scene->network)   /* JOIN: the team page, on the team asked for before */
-			match_49ca20(scene, 1, scene_teamSide(scene, scene->chosenTeam) != 0);
+			escMenu_open(scene, 1, scene_teamSide(scene, scene->chosenTeam) != 0);
 		else
-			match_49ca20(scene, 1, scene->counterRed > scene->counterBlue);
+			escMenu_open(scene, 1, scene->counterRed > scene->counterBlue);
 		return 0;
 	case 1:
-		match_49ca20(scene, 1, scene->counterRed > scene->counterBlue);
+		escMenu_open(scene, 1, scene->counterRed > scene->counterBlue);
 		return 0;
 	case 2:
 		if (scene->recording) {
-			match_487ed0(scene);
+			replay_closeRecording(scene);
 			return 1;
 		}
-		match_49ca20(scene, 2, 0);   /* the replay's name typed */
-		match_44ac90(0, 0, 16);
+		escMenu_open(scene, 2, 0);   /* the replay's name typed */
+		chat_textField(0, 0, 16);
 		return 0;
 	case 3:
 		scene->consoleOpen = 1;
 		return 1;
 	case 4:
-		match_49ca20(scene, 4, 0);
+		escMenu_open(scene, 4, 0);
 		return 0;
 	}
 	return 0;
@@ -345,7 +345,7 @@ static int esc_name(Scene *scene)
 {
 	if (g_paused)
 		return scene->menuKeys[KEY_ESC] == 1;
-	match_44ace0();
+	chat_keepLastLine();
 	if (*(const char *)0x9f63e4)
 		autoplay_startRecording(scene, (const char *)0x9f63e4);
 	return 1;

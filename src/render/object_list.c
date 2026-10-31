@@ -67,7 +67,7 @@ int THISCALL (hud_46fd20)(ObjectList *list, void *view, const LightFactors *fact
 /* 0x497a90: the draw records of the stage's meshes (0x20c bytes each from +0xdc0278): for mesh i a vertex record B
    (at *(+0xdc0a8c) + i * 0x80) and a box record A (*(+0xdc0cd8) + i * 0x80), the vertex and index counts summed, and
    each mesh's fixed six-face index lists written into it (with their pointers) */
-void THISCALL (load_497a90)(u8 *stage)
+void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {
 	int n = FIELD(int, stage, 0xdc0a74);
 	FIELD(int, stage, 0xdc0a88) = n;
@@ -131,7 +131,7 @@ void THISCALL (load_497a90)(u8 *stage)
 
 /* 0x46fed0: the textures of every shape in an object list bound (count +0x10, 100-byte entries from *(+0x14), the
    shape first) */
-void THISCALL (actor_46fed0)(u8 *list)
+void THISCALL (partList_bindTextures)(u8 *list)
 {
 	for (int i = 0; i < FIELD(int, list, 0x10); i++) {
 		void *shape = FIELD(void *, FIELD(u8 *, list, 0x14) + i * 0x64, 0);

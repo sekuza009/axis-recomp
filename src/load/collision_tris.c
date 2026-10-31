@@ -18,7 +18,7 @@ static X mul(X a, const float *m) { return fmul_m(a, m); }
 static void copy_through_fpu(float *dst, const float *src) { *dst = (float)fld_m(src); }
 
 /* 0x47db60: triangle (v0, v1, v2) set up in the record, with its id and the map's five values; returns d */
-int THISCALL (load_47db60)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d,
+int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float *v1, const float *v2, int a, int b, int c, int d,
                            int e)
 {
 	float *f = (float *)self;
@@ -127,7 +127,7 @@ static int edges_cross(const float *T, const float *at, int a, int b, int c, con
 	return 0;
 }
 
-int THISCALL (load_47fce0)(const float *T, const float *P, const float *S, float r)
+int THISCALL (space_itemMeetsBox)(const float *T, const float *P, const float *S, float r)
 {
 	float lo[3];
 	for (int a = 0; a < 3; a++)

@@ -17,9 +17,9 @@ static void push_front(void *self, u8 *node, int link, int head)
 }
 
 /* 0x481730: links at +8 / +0xc, head and count at +0x28 / +0x2c */
-void THISCALL (load_481730)(void *self, u8 *node) { push_front(self, node, 8, 0x28); }
+void THISCALL (space_freeNode)(void *self, u8 *node) { push_front(self, node, 8, 0x28); }
 /* 0x481980: links at +0x48 / +0x4c, head and count at +0x48 / +0x4c */
-void THISCALL (load_481980)(void *self, u8 *node) { push_front(self, node, 0x48, 0x48); }
+void THISCALL (space_freeBlock)(void *self, u8 *node) { push_front(self, node, 0x48, 0x48); }
 
 /* 0x441120: a new 0x3538-byte node (malloc'd; prev +0x3530, next +0x3534) appended to the list at *head, and set up
    by 0x440e20 with the value at 0x9dae10 (returns what that leaves in eax; 0 without memory) */

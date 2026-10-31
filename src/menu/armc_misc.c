@@ -90,7 +90,7 @@ void THISCALL (armc_45ddc0)(Stage *stage)
 	spawn.zero = 0;
 	spawn.zero2 = 0;
 	spawn.zero3 = 0;
-	match_45dd80(stage, slot, -1, slot, &spawn);
+	stage_claimPlayerActor(stage, slot, -1, slot, &spawn);
 }
 
 #define g_armcCamHeight GAME_VAR(float, 0x4df028)     /* the preview camera's height */
@@ -497,7 +497,7 @@ void (armc_41b300)(void)
 }
 
 /* 0x45dd80 (thiscall on the stage): actor slot a claimed (stage_setupActorSlot) and made the player's, with weapon slot 0 */
-void THISCALL (match_45dd80)(Stage *stage, int a, int x, int y, void *spawn)
+void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int x, int y, void *spawn)
 {
 	stage_setupActorSlot(stage, a, x, y, spawn);
 	stage->playerActor = a;

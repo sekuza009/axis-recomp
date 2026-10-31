@@ -29,7 +29,7 @@ int (shape_466ce0)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, na
 int (skelDat_46b0c0)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
-void (load_46cad0)(const char *src, char *dst)
+void (path_stripExtension)(const char *src, char *dst)
 {
 	char buf[256];
 	strcpy(buf, src);

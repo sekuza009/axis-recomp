@@ -11,14 +11,14 @@
 #define RECORD_NAME(scene, k) ((char *)(scene) + 0x1755234 + (k) * 0x47fd2)
 
 /* 0x4616e0: the 16 players' names saved into the name table */
-void THISCALL (match_4616e0)(Scene *scene)
+void THISCALL (scene_saveNames)(Scene *scene)
 {
 	for (int k = 0; k < 16; k++)
 		strcpy(scene->playerNames[k], scene->players[k].name);
 }
 
 /* 0x461730: the names put back from the table, into the player records and the players */
-void THISCALL (match_461730)(Scene *scene)
+void THISCALL (scene_restoreNames)(Scene *scene)
 {
 	for (int k = 0; k < 16; k++) {
 		strcpy(RECORD_NAME(scene, k), scene->playerNames[k]);
@@ -27,7 +27,7 @@ void THISCALL (match_461730)(Scene *scene)
 }
 
 /* 0x4629c0: the event list emptied, new lines stamped with time; the message box and "ready" faded out */
-void THISCALL (match_4629c0)(Scene *scene, u32 time)
+void THISCALL (events_clear)(Scene *scene, u32 time)
 {
 	scene->eventCount = 0;
 	scene->eventFirst = 0;
@@ -37,7 +37,7 @@ void THISCALL (match_4629c0)(Scene *scene, u32 time)
 }
 
 /* 0x463480: every notice cleared */
-void THISCALL (match_463480)(Scene *scene)
+void THISCALL (notices_clearAll)(Scene *scene)
 {
 	static const int flags[] = { 0x2343106, 0x234314e, 0x2343156, 0x234319b, 0x23431e7, 0x2343233, 0x2343237,
 	                             0x234323b, 0x234323f, 0x234324f };
@@ -111,7 +111,7 @@ int (vsprintf_wrap_473450)(u8 *obj, const char *format, ...)
 }
 
 /* 0x462ac0: the event lines shown age by dt; the oldest is dropped once its time has run out (<= 0 or NaN) */
-void THISCALL (match_462ac0)(Scene *scene, float dt)
+void THISCALL (events_age)(Scene *scene, float dt)
 {
 	for (u32 u = scene->eventFirst; u < scene->eventCount; u++) {
 		float *t = (float *)&scene->events[u % 5].time;

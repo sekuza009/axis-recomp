@@ -321,7 +321,7 @@ static X heading(void)
 #define SPEED F(0x4a9534)
 
 /* 0x42aa30: forward (the camera's position 0x4de344 / 0x4de34c and the menu camera's) */
-void (match_42aa30)(void)
+void (menuCamera_forward)(void)
 {
 	X a = heading();
 	float s = (float)fsin(a);
@@ -336,7 +336,7 @@ void (match_42aa30)(void)
 }
 
 /* 0x42aad0: back (here every use of the sideways step is rounded) */
-void (match_42aad0)(void)
+void (menuCamera_back)(void)
 {
 	X a = heading();
 	float s = (float)fsin(a);
@@ -446,10 +446,10 @@ void (setup_4230e0)(void)
 }
 
 /* 0x42ada0: the free camera's keys (while watching): typing a chat line (0x4de6fc) until it is closed (0x68039c
-   clear): then sent (match_4512c0, 0x9fd95c / 0x9fd948) unless empty and the keyboard taken back; 0x4defa8 opens the
+   clear): then sent (net_sendChat, 0x9fd95c / 0x9fd948) unless empty and the keyboard taken back; 0x4defa8 opens the
    chat line (50 characters); the second cancel key leaves (a hosted game, 0xa0baf8, told first); the turn keys
    (0x4def00 / 0x4def08) slide the camera and the menu camera sideways (0x4de6c0, 0x4de6c8 at 0x4a9534 a frame),
-   the move keys step it (match_42aa30 / match_42aad0); then the menu camera follows (0x680378 .. 0x680380 and the
+   the move keys step it (menuCamera_forward / menuCamera_back); then the menu camera follows (0x680378 .. 0x680380 and the
    look-at 0x4df024 ..) and the camera's position is kept in the watched slot (0x4dfa1c, 0x58 bytes, by 0x9fd954);
    0x680388 toggles 0x4e0464 between 1 and 2, and four keys step 0x4de6e0 by 1 / 10 (not below 1). The original
    leaves eax to callers that ignore it */
@@ -460,7 +460,7 @@ void (match_debugHandler)(void)
 		if (GAME_VAR(int, 0x68039c))
 			return;
 		if (strlen((const char *)0x9dc92c)) {
-			match_4512c0((const char *)0x9dc92c);
+			net_sendChat((const char *)0x9dc92c);
 			GAME_VAR(int, 0x4de6fc) = 0;
 			GAME_VAR(int, 0x9fd95c) = 1;
 			GAME_VAR(u32, 0x9fd948) = 0x9dc92c;
@@ -469,7 +469,7 @@ void (match_debugHandler)(void)
 			GAME_VAR(int, 0x9fd95c) = 0;
 		}
 		GAME_VAR(int, 0x68039c) = 0;
-		match_431590();
+		input_resetKeys();
 		input_initKeyboard(GAME_VAR(void *, 0x4ded18));
 		return;
 	}
@@ -511,9 +511,9 @@ void (match_debugHandler)(void)
 		F(0x4df02c) = f32(fsub_m(fld_m(&F(0x4df02c)), &bf));
 	}
 	if (input_isDown(GAME_VAR(int, 0x4def10)) == 1)
-		match_42aa30();
+		menuCamera_forward();
 	if (input_isDown(GAME_VAR(int, 0x4def18)) == 1)
-		match_42aad0();
+		menuCamera_back();
 	GAME_VAR(u32, 0x680378) = GAME_VAR(u32, 0x4de344);
 	GAME_VAR(u32, 0x680380) = GAME_VAR(u32, 0x4de34c);
 	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));

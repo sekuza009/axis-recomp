@@ -469,7 +469,7 @@ u32 (profile_deleteFiles)(void)
 	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
 }
 
-/* typing over: the key state reset (match_431590) and the keyboard taken again; returns input_initKeyboard's eax */
+/* typing over: the key state reset (input_resetKeys) and the keyboard taken again; returns input_initKeyboard's eax */
 static u32 keyboard_back(void)
 {
 	GAME_CDECL(0x431590, void, void)();

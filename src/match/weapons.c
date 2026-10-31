@@ -25,8 +25,8 @@ static void weapon_cycle(Stage *stage, int i, int step)
 }
 
 /* 0x45e9e0, 0x45e910: actor i's next and previous weapon */
-void THISCALL (actor_45e9e0)(Stage *stage, int i) { weapon_cycle(stage, i, 1); }
-void THISCALL (actor_45e910)(Stage *stage, int i) { weapon_cycle(stage, i, 5); }
+void THISCALL (actor_nextWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 1); }
+void THISCALL (actor_prevWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 5); }
 
 /* 0x45e810: actor i's weapon slot changed to slot (slots 0 .. 3 also remembered as the last ordinary one), with the
    weapon its player record holds there */
@@ -59,7 +59,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 
 /* 0x45edb0: actor i (when +0x14c is 1) picks slot 0 four times in five, else slot 4, from the game's random table
    (0xa106f8, 4096 values, position 0xa1efb8), and its aim is set back to its own point */
-void THISCALL (actor_45edb0)(Stage *stage, int i)
+void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
 	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
 	if (FIELD(int, actor, 0x14c) != 1)

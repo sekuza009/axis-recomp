@@ -19,17 +19,17 @@ void THISCALL (bullet_updateAll)(void *s, int dt)
 }
 
 /* 0x479a90: the effects (0x12c-byte slots from +0x20a99c4, +0x20f2da0 of them) */
-void THISCALL (match_479a90)(void *s, int dt)
+void THISCALL (stage_updateEffects)(void *s, int dt)
 {
 	if (paused(s))
 		return;
 	for (int i = 0; i < FIELD(int, s, 0x20f2da0); i++)
 		if (FIELD(int, s, 0x20a99c4 + i * 0x12c) == 1)
-			match_476410(s, i, dt);
+			particle_update(s, i, dt);
 }
 
 /* 0x490d40: the objects (0x2cc-byte slots from +0x131ae48, +0x13c9b24 of them) */
-void THISCALL (match_490d40)(void *s, int dt)
+void THISCALL (stage_updateObjects)(void *s, int dt)
 {
 	if (paused(s))
 		return;
@@ -180,8 +180,8 @@ void THISCALL (script_processTriggers)(u8 *s)
 /* 0x49d150 (thiscall on the scene): the camera's actor (+0x234240d, none when negative): how far it moved since the
    last frame (its position +0x1eccb54 .., the last one +0x1eccb60 ..) added to the listener's position (0x4de72e,
    0x4de732, 0x4de722), and the last position brought up to date; outside the menus' text mode (+0x23423a1 0) the
-   room's text kept (match_44aee0); the view distance (+0x233cc50) 300. Its callers ignore the eax it leaves */
-void THISCALL (match_49d150)(u8 *s)
+   room's text kept (room_keepText); the view distance (+0x233cc50) 300. Its callers ignore the eax it leaves */
+void THISCALL (sound_updateListener)(u8 *s)
 {
 #define ACTOR FIELD(int, s, 0x234240d)
 #define NOW(k) FIELD(int, s, 0x1eccb54 + ACTOR * 0x8888 + (k) * 4)
@@ -194,7 +194,7 @@ void THISCALL (match_49d150)(u8 *s)
 			LAST(k) = NOW(k);
 	}
 	if (!FIELD(int, s, 0x23423a1))
-		match_44aee0();
+		room_keepText();
 	FIELD(u32, s, 0x233cc50) = 0x43960000;   /* 300.0f */
 #undef ACTOR
 #undef NOW
@@ -464,7 +464,7 @@ static void spark(u8 *s, u8 *p, float dt)
    past its life (+0x70) frees it (0x4799f0); otherwise sparks move (spark), and puffs and flashes (kinds 2, 3, 25,
    26, 30 .. 38) shrink with age, (1 - age / life)^2 times their size (+0x7c); the age moves on by dt. Its caller
    ignores the eax it leaves */
-void THISCALL (match_476410)(u8 *s, int slot, float dt)
+void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
 	u8 *p = s + 0x20a99c0 + slot * 0x12c;
 	float age = GAME_VAR(float, p + 0x74);
