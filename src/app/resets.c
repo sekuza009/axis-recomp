@@ -44,7 +44,7 @@ void (mapSelect_allOut)(void)
 /* 0x445e10: a click (either button) closes the message box */
 void (messageBox_clickClose)(void)
 {
-	if (GAME_VAR(int, 0x4ded8c)) {
+	if (g_keyEnter) {
 		GAME_VAR(int, 0x4dda44) = 0;
 		GAME_VAR(int, 0x4df900) = 0;
 	}

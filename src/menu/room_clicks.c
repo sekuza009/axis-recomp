@@ -56,13 +56,13 @@ void (room_startChat)(void)
    arena's connection closed (arena_leaveSession) and its timer (0x378) killed */
 void (room_stopArenaSetup)(void)
 {
-	if (g_dialogOpen != 0 || g_mouseClick == 0 || GAME_VAR(int, 0x9dce48) != 2)
+	if (g_dialogOpen != 0 || g_mouseClick == 0 || g_roomMode != 2)
 		return;
 	g_cursorBlink = 0.0f;
 	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
 		sound_playMenu(0);
 		GAME_VAR(int, 0x4dbb10) = 0;
-		GAME_VAR(int, 0x4dbb78) = 0;
+		g_arenaJoinWaiting = 0;
 		arena_leaveSession();
 		GAME_VAR(int, 0x4db8b4) = 0;
 		KillTimer(g_hWndMain, 0x378);
@@ -117,7 +117,7 @@ int (skirmish_saveSettings)(void)
 	int r = GAME_VAR(int, 0x90d1c4);
 	if (r)
 		return r;
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		GAME_CDECL(0x443c80, int, void)();
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
@@ -183,7 +183,7 @@ u32 (room_leftClicks)(void)
 	case 0:
 		GAME_CDECL(0x433c70, void, void)();          /* chat_closeEdit */
 		r = GAME_CDECL(0x433b00, u32, void)();       /* field_editGameName */
-		GAME_VAR(int, 0x9dd1cc) = 1;
+		g_typingRoomName = 1;
 		return r;
 	case 1:
 		GAME_CDECL(0x433c70, void, void)();
@@ -195,7 +195,7 @@ u32 (room_leftClicks)(void)
 			return open;
 		sound_playMenu(0);
 		GAME_VAR(int, 0x9dd198) = 1;
-		GAME_VAR(int, 0x9dd1c8) = 1;
+		g_roomLoginDue = 1;
 		GAME_VAR(int, 0x9dd850) = 0;
 		return 1;
 	case 3:
@@ -238,13 +238,13 @@ u32 (room_pageClicks)(void)
 			if (i == 3) {   /* the arm center */
 				GAME_VAR(int, 0x4dc24c) = 3;
 				GAME_CDECL(0x40ee20, void, void)();   /* menu_enterMenus */
-				GAME_VAR(int, 0x4deb48) = 0;
+				g_enteringMenus = 0;
 			} else
 				GAME_CDECL(actions[i], void, void)();
 			break;
 		}
 	}
-	int right = GAME_VAR(int, 0x4ded8c);
+	int right = g_keyEnter;
 	if (!right)
 		return 0;
 	int allowed = GAME_VAR(int, 0x9dae10);
@@ -319,15 +319,15 @@ u32 (room_hostingStep)(void)
 		GAME_VAR(int, 0x67ef14) = 1;
 		GAME_VAR(int, 0x67ef04) = 1;
 		music_shutdown();
-		GAME_VAR(int, 0x9dce48) = 0;
+		g_roomMode = 0;
 		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		GAME_CDECL(0x453090, int, const void *, const char *, int, int, int, int, int, int)(
 			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		GAME_VAR(int, 0x9dad94) = (signed char)room[0x20];
-		GAME_VAR(int, 0x76d368) = (signed char)room[0x23];
+		g_chosenGameMode = (signed char)room[0x23];
 		memcpy((void *)0x67fb44, room, 32);
-		GAME_VAR(int, 0x9da3e0) = (signed char)room[0x22];
+		g_mapRotation = (signed char)room[0x22];
 		GAME_VAR(int, 0x4df8e8) = room[0x24];
 		GAME_VAR(int, 0x76d408) = room[0x25];
 		step = GAME_VAR(u32, 0x4ded60);
@@ -340,11 +340,11 @@ u32 (room_hostingStep)(void)
 	case 0:
 		GAME_VAR(int, 0x4dba88) = 0;
 		GAME_VAR(int, 0x4ded54) = 0;
-		GAME_VAR(int, 0x4ded60) = 2;
+		g_connectStep = 2;
 		return step;
 	case 4:
 		GAME_VAR(int, 0x4dba88) = 0;
-		GAME_VAR(int, 0x4ded60) = 2;
+		g_connectStep = 2;
 		GAME_VAR(int, 0x4ded54) = 0;
 		return GAME_CDECL(0x41ee40, u32, int)(0x2a);   /* the message */
 	}
@@ -358,9 +358,9 @@ u32 (room_hostingStep)(void)
    Returns what the original leaves in eax */
 u32 (app_onClose)(void)
 {
-	if (GAME_VAR(int, 0x4dbb78)) {
+	if (g_arenaJoinWaiting) {
 		GAME_VAR(int, 0x4dbb10) = 0;
-		GAME_VAR(int, 0x4dbb78) = 0;
+		g_arenaJoinWaiting = 0;
 		GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
 		GAME_VAR(int, 0x4db8b4) = 0;
@@ -387,14 +387,14 @@ u32 (app_onClose)(void)
 	GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
 	GAME_VAR(int, 0x67ef14) = 1;
 	GAME_VAR(int, 0x67ef04) = 2;
-	GAME_VAR(int, 0x9dce48) = 0;
+	g_roomMode = 0;
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4db708) = 0;
 	GAME_VAR(int, 0x4db8b4) = 0;
 	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
 	memcpy((void *)0x67fb44, game + 4, 32);
-	GAME_VAR(int, 0x9da3e0) = (signed char)game[0x24];
-	GAME_VAR(int, 0x76d368) = (signed char)game[0x2c];
+	g_mapRotation = (signed char)game[0x24];
+	g_chosenGameMode = (signed char)game[0x2c];
 	GAME_VAR(int, 0x4df8e8) = game[0x2d];
 	GAME_VAR(int, 0x76d408) = game[0x2e];
 	return row;
@@ -440,7 +440,7 @@ int (account_sendChange)(void)
 	for (int i = 0; i < 4; i++)
 		if (GAME_CDECL(0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_nameHasBadChar */
 			GAME_CDECL(0x41ee40, void, int)(0x81);
-			GAME_VAR(int, 0x9dd1c8) = 0;
+			g_roomLoginDue = 0;
 			return 0;
 		}
 	char *out = GAME_VAR(char *, 0xa0b344);
@@ -480,17 +480,17 @@ u32 (ranking_page)(void)
 		int *out = GAME_VAR(int *, 0xa0b324);
 		if (column < 3)
 			out[0] = code[column];
-		int page = GAME_VAR(int, 0x9dd6ac);
+		int page = g_roomListPage;
 		GAME_VAR(int, 0x9dd83c) = page * 10 + 1;
 		GAME_VAR(int, 0x9dd7dc) = page * 10 + 10;
 		out[1] = page * 10 + 1;
 		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
 		GAME_VAR(int, 0x9dd350) = 0;
-		GAME_VAR(float, 0x4dba80) = 1000.0f;
+		g_lobbyBlinkClock = 1000.0f;
 		GAME_VAR(int, 0x9dd6b8) = 1;
 	}
 	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
-	int mode = GAME_VAR(int, 0x9dce48);
+	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
 		return mode;
 	if (GAME_VAR(int, 0x90d1c4)) {
@@ -508,12 +508,12 @@ u32 (ranking_page)(void)
 			GAME_VAR(int, 0x9dd3b0) = 1;
 			GAME_VAR(int, 0x76d40c) = 0;
 			GAME_VAR(int, 0x9dd300) = GAME_VAR(int, 0x9dd1d0);
-			GAME_VAR(int, 0x9dd1b4) = GAME_VAR(int, 0x9dd6ac);
+			GAME_VAR(int, 0x9dd1b4) = g_roomListPage;
 		}
 		long double blink = fld_m((const float *)0x4dba80) - fmul_m(fld_m((const float *)0x4b071c), (const float *)0x4ad498);
-		GAME_VAR(float, 0x4dba80) = f32(blink);
+		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= 0))
-			GAME_VAR(float, 0x4dba80) = 1000.0f;
+			g_lobbyBlinkClock = 1000.0f;
 	}
 	return call_keeping_ebp(0x43d060);   /* ranking_drawTable: the table */
 }
@@ -534,7 +534,7 @@ u32 (login_send)(void)
 	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(bad);
-		GAME_VAR(int, 0x9dd1c8) = 0;
+		g_roomLoginDue = 0;
 		return r;
 	}
 	memset((void *)0x9dd570, 0, 30 + 12);
@@ -546,7 +546,7 @@ u32 (login_send)(void)
 	strcpy(GAME_VAR(char *, 0xa0b320) + 0x22, password);
 	GAME_VAR(int *, 0xa0b320)[0] = 0x18;
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xe, 0x65);   /* net_send */
-	GAME_VAR(int, 0x9dd838) = 1;
+	g_roomRequestOut = 1;
 	return r;
 }
 
@@ -561,8 +561,8 @@ u32 (ranking_clicks)(void)
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
 		return mode;
 	int waiting = GAME_VAR(int, 0x9dd6b8);
-	if (GAME_VAR(int, 0x4ded8c) && !waiting)
-		GAME_VAR(int, 0x9dce48) = 0;
+	if (g_keyEnter && !waiting)
+		g_roomMode = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return mode;
 	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
@@ -581,7 +581,7 @@ u32 (ranking_clicks)(void)
 		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
 		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
 	case 4:
-		GAME_VAR(int, 0x9dce48) = 0;
+		g_roomMode = 0;
 		return r;
 	}
 	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
@@ -613,8 +613,8 @@ u32 (room_settingsClicks)(void)
 		return mode;
 	if (GAME_VAR(int, 0x90d1c4))
 		return GAME_VAR(u32, 0x90d1c4);
-	if (GAME_VAR(int, 0x4ded8c))
-		GAME_VAR(int, 0x9dce48) = 0;
+	if (g_keyEnter)
+		g_roomMode = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
 	u32 button = GAME_CDECL(0x432380, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* roomSettings_hitTest */
@@ -670,7 +670,7 @@ u32 (room_settingsClicks)(void)
 		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
 	case 9:
 		r = GAME_CDECL(0x41e760, u32, int)(0);
-		GAME_VAR(int, 0x9dce48) = 0;
+		g_roomMode = 0;
 		return r;
 	case 13:
 		sound_playMenu(0);
@@ -729,7 +729,7 @@ u32 (room_settingsAfterTyping)(void)
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
 			r = GAME_CDECL(0x41e760, u32, int)(0);
-			GAME_VAR(int, 0x9dce48) = 0;
+			g_roomMode = 0;
 		}
 	}
 	return r;

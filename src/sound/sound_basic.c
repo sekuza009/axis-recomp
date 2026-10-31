@@ -71,15 +71,15 @@ int (sound_setVolume)(int v)
 		return 0;
 	int p = ftol(fmul_m((long double)GAME_VAR(int, 0x4e0c90) * v, (const float *)0x4a9504));
 	if (p < 0) {
-		GAME_VAR(int, 0xa0e66c) = -1000;
+		g_soundBaseVolume = -1000;
 		return p;
 	}
 	if (p > 100) {
-		GAME_VAR(int, 0xa0e66c) = 0;
+		g_soundBaseVolume = 0;
 		return p;
 	}
 	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)0x4a93ec));
-	GAME_VAR(int, 0xa0e66c) = r;
+	g_soundBaseVolume = r;
 	return r;
 }
 
@@ -157,9 +157,9 @@ u32 (sound_playFile)(const char *name, int volume)
 	if (volume < 0)
 		attenuation = -1000;
 	else if (volume > 100)
-		attenuation = GAME_VAR(int, 0xa0e66c);
+		attenuation = g_soundBaseVolume;
 	else
-		attenuation = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
+		attenuation = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (g_soundBaseVolume + 10000)) - 10000;
 	GAME_CDECL(0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
 	GAME_CDECL(0x467d70, void, void *)(sound);                     /* dsbuf_play */
 	return GAME_CDECL(0x467d60, u32, void *)(sound);               /* mem_free */
@@ -205,9 +205,9 @@ u32 (sound_playVolume)(int index, int volume)
 	if (volume < 0)
 		level = -1000;
 	else if (volume > 100)
-		level = GAME_VAR(int, 0xa0e66c);
+		level = g_soundBaseVolume;
 	else
-		level = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (long double)(GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
+		level = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	GAME_CDECL(0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
 	return GAME_CDECL(0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
 }
@@ -231,7 +231,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 		return;
 	if (!(range > 0.0f))
 		return;
-	int base = GAME_VAR(int, 0xa0e66c) + 10000;
+	int base = g_soundBaseVolume + 10000;
 	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)0x4a9424) * (long double)base) - 10000;
 	if (volume > 0)
 		volume = 0;
@@ -367,14 +367,14 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	u32 n;
 	switch (kind) {
 	case 0:
-		n = GAME_VAR(u32, 0xa1efb8)++;
+		n = g_randPos++;
 		return GAME_CDECL(0x457150, u32, const char *)((const char *)kind1[random[n & 0xfff] & 3]);   /* music_play */
 	case 1:
-		GAME_VAR(u32, 0xa1efb8)++;
+		g_randPos++;
 		return GAME_CDECL(0x457150, u32, const char *)((const char *)0x4b4f6c);   /* darkness */
 	case 2:
 	case 3:
-		n = ++GAME_VAR(u32, 0xa1efb8);
+		n = ++g_randPos;
 		return GAME_CDECL(0x457150, u32, const char *)((const char *)(kind == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
 	}
 	return kind;

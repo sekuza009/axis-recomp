@@ -80,7 +80,7 @@ void (menu_frame)(void)
 		g_cursorBlink = 100.0f;
 	if (g_screen != g_lastScreen)
 		menu_enterState();
-	if (GAME_VAR(int, 0x9da49c) != 0x69 && GAME_VAR(int, 0x9da49c) != 0x68) {
+	if (g_lobbyReply != 0x69 && g_lobbyReply != 0x68) {
 		menu_onStateChange();
 		menu_processKeys();
 	}
@@ -626,8 +626,8 @@ static void unfollow(u8 *s)
 /* the game's next random number below n (its table 0xa106f8 by the counter 0xa1efb8) */
 static u32 rand_below(u32 n)
 {
-	u32 r = GAME_VAR(u32, 0xa106f8 + (GAME_VAR(u32, 0xa1efb8) & 0xfff) * 4) % n;
-	GAME_VAR(u32, 0xa1efb8)++;
+	u32 r = GAME_VAR(u32, 0xa106f8 + (g_randPos & 0xfff) * 4) % n;
+	g_randPos++;
 	return r;
 }
 
@@ -1015,7 +1015,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		S(int, 0x234331b) = 1;
 		S(int, 0x2340c68) = 1;
 	}
-	if (GAME_VAR(int, 0x4ded8c)) {
+	if (g_keyEnter) {
 		S(int, 0x234331f) = 1;
 		S(int, 0x2340c6c) = 1;
 		S(int, 0x23432cb) = 1;
@@ -1267,7 +1267,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 /* the team games (odd modes up to 11) */
 static int team_game(void)
 {
-	int m = GAME_VAR(int, 0x76d368);
+	int m = g_chosenGameMode;
 	return m == 1 || m == 3 || m == 5 || m == 7 || m == 9 || m == 11;
 }
 
@@ -1608,7 +1608,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
-	if (GAME_VAR(int, 0x9f67ec) != 0 && GAME_VAR(int, 0x76d410) != 0) {
+	if (GAME_VAR(int, 0x9f67ec) != 0 && g_startedFromLobby != 0) {
 		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? 0x4d0658 : 0x4d069c), 0, *(volatile int *)&from);
 		GAME_VAR(int, 0x9f67ec) = 0;
 		GAME_VAR(int, 0x9f67f0) = 1;
@@ -1999,7 +1999,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		long double v = fsub_m(fld_m((const float *)(s + 0x234239d)), (const float *)(s + 0x44));
 		S(float, 0x234239d) = (float)v;
 		if (!(v >= 0)) {
-			if (GAME_VAR(int, 0x76d410) != 0) {
+			if (g_startedFromLobby != 0) {
 				S(int, 0x23432cf) = 1;
 				S(int, 0x2340cf4) = 0;
 			}
@@ -2038,7 +2038,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					S(int, 0x23423a9) = 0;
 					return;
 				}
-				if (GAME_VAR(int, 0x9da3e0) == 0) {
+				if (g_mapRotation == 0) {
 					S(int, 0x22f0408) = S(int, 0x22f040c) = 0;
 					start_view(s);
 					music_playMatch((Scene *)s);
@@ -2249,7 +2249,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423a5)), (const float *)(s + 0x44));
 		S(float, 0x23423a5) = (float)v;
 		if (!(v > 0)) {
-			if (GAME_VAR(int, 0x9f67f0) == 0 && GAME_VAR(int, 0x76d410) != 0)
+			if (GAME_VAR(int, 0x9f67f0) == 0 && g_startedFromLobby != 0)
 				write_log(s, (const char *)(GAME_VAR(int, 0x9f67f8) == 1 || (GAME_VAR(int, 0x9f67f4) == 1 && S(int, 0x2342976) <= 1) ? 0x4d069c : 0x4d05a8),
 				          1, 0);
 			replay_closeRecording((Scene *)s);

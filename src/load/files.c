@@ -159,7 +159,7 @@ u32 (cfg_parsePlayer)(void *f)
 	FPUTS(0x4dedb0);
 	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)0x4b182c);   /* fprintf */
 	FPUTS(0x4b1818);
-	int corp = GAME_VAR(int, 0x4dedd0);
+	int corp = g_playerCorporation;
 	FPUTS(corp == 1 ? 0x4b1808 : corp == 2 ? 0x4b1810 : 0x4b1800);
 	FPUTS(0x4b17e8);
 	FPUTS(GAME_VAR(int, 0x4dedd4) == 1 ? 0x4b17e4 : 0x4b17dc);
@@ -347,11 +347,11 @@ int (autoplay_listFiles)(void)
 	int search = crt_findfirst((const char *)0x4b2a84, &found);
 	if (search < 0)
 		return crt_chdir((const char *)0x4b2a80);
-	strcpy((char *)(0x9dda88 + GAME_VAR(int, 0x9dd928) * 0x44), found.name);
-	GAME_VAR(int, 0x9dd928)++;
+	strcpy((char *)(0x9dda88 + g_mapSelectCount * 0x44), found.name);
+	g_mapSelectCount++;
 	while (!crt_findnext(search, &found)) {
-		strcpy((char *)(0x9dda88 + GAME_VAR(int, 0x9dd928) * 0x44), found.name);
-		if (++GAME_VAR(int, 0x9dd928) > 0x3fe)
+		strcpy((char *)(0x9dda88 + g_mapSelectCount * 0x44), found.name);
+		if (++g_mapSelectCount > 0x3fe)
 			break;
 	}
 	crt_findclose(search);
@@ -432,7 +432,7 @@ u32 (profile_delete)(void)
 	if (!f)
 		return 0;
 	memset((void *)0x9f8fe8, 0, 0x20);
-	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48));
+	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + g_currentProfile * 0x48));
 	return profiles_write(f);
 }
 
@@ -577,7 +577,7 @@ u32 (arena_readLaunchFile)(char *line)
 	size_t length = strlen(line);
 	if (length > 0x400 || length <= 1) {
 		GAME_VAR(int, 0x9dd88c) = 0;
-		GAME_VAR(int, 0x76d410) = 0;
+		g_startedFromLobby = 0;
 		GAME_VAR(int, 0x76d364) = 0;
 		return 0;
 	}
@@ -588,7 +588,7 @@ u32 (arena_readLaunchFile)(char *line)
 		args[GAME_VAR(int, 0x9dd88c)++] = word;
 		word = crt_strtok(NULL, (const char *)0x4b035c);
 	} while (word);
-	GAME_VAR(int, 0x76d410) = 0;
+	g_startedFromLobby = 0;
 	GAME_VAR(int, 0x76d364) = 0;
 	u32 r = GAME_VAR(u32, 0x9dd88c);
 	if (r == 1) {
@@ -597,7 +597,7 @@ u32 (arena_readLaunchFile)(char *line)
 			return r;
 		void *f = crt_fopen((const char *)0x4ad5e4, (const char *)0x4ad5e0);   /* "axiswl.dat", "rt" */
 		if (f) {
-			GAME_VAR(int, 0x76d410) = 1;
+			g_startedFromLobby = 1;
 			GAME_VAR(int, 0x76d364) = 1;
 			r = fclose(f);
 		}
@@ -607,7 +607,7 @@ u32 (arena_readLaunchFile)(char *line)
 	r = (u32)str_order(args[1], (const char *)0x4b287c);   /* "-ip" */
 	if (r)
 		return r;
-	GAME_VAR(int, 0x76d410) = 1;
+	g_startedFromLobby = 1;
 	memset((void *)0x4de748, 0, 0x400);
 	GAME_VAR(int, 0x76d364) = 0;
 	strcpy((char *)0x4de748, args[2]);
@@ -672,7 +672,7 @@ u32 (data_loadMessages)(void)
 static void set_current_name(void)
 {
 	memset((void *)0x9f8fe8, 0, 0x20);
-	strcpy((char *)0x9f8fe8, pilot_name(GAME_VAR(int, 0x9f8c58)));
+	strcpy((char *)0x9f8fe8, pilot_name(g_currentProfile));
 }
 
 static void enter_save_folder(void)
@@ -868,7 +868,7 @@ u32 (profile_create)(void)
 	crt_chdir((const char *)0x4b2a80);   /* ".." */
 	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
 		if (str_order((const char *)(0x9f684c + i * 0x48), (const char *)0x9f8fe8) == 0) {
-			GAME_VAR(int, 0x9f8c58) = i;
+			g_currentProfile = i;
 			break;
 		}
 	return fclose(f);
@@ -1072,11 +1072,11 @@ void (cfg_readLines)(void *f)
 	strcpy((char *)0x4dedb0, value);
 	read_value(f, value, 0);
 	if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
-		GAME_VAR(int, 0x4dedd0) = 0;
+		g_playerCorporation = 0;
 	else if (!strcmp(value, (const char *)0x4b21b0))   /* BLUE */
-		GAME_VAR(int, 0x4dedd0) = 1;
+		g_playerCorporation = 1;
 	else
-		GAME_VAR(int, 0x4dedd0) = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
+		g_playerCorporation = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
 	read_value(f, value, 0);
 	GAME_VAR(int, 0x4dedd4) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
 	skip_line(f);
@@ -1271,7 +1271,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	GAME_VAR(int, 0x83a9d4) = 0;
 	GAME_VAR(int, 0x83a9d8) = 0;
 	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
-	GAME_VAR(int, 0x4dedd0) = 0;
+	g_playerCorporation = 0;
 	GAME_VAR(int, 0x4dedd4) = 0;
 	strcpy((char *)0x4ded20, (const char *)0x4ad4a4);   /* "AXIS ARENA" */
 	GAME_VAR(int, 0x4e0c90) = 100;
@@ -1338,7 +1338,7 @@ void (profile_scanSaves)(void)
 	profile_loadList(valid);
 	for (int i = 0; i < count; i++)
 		if (!strcmp((const char *)0x9f684c + i * 0x48, (const char *)0x9f8fe8)) {
-			GAME_VAR(int, 0x9f8c58) = i;
+			g_currentProfile = i;
 			return;
 		}
 }

@@ -16,7 +16,7 @@ int (net_findFreeSession)(void)
 /* 0x4532b0: session i's value, 0 when out of range or unused */
 int (net_sessionValue)(int i)
 {
-	if (i > -1 && i <= GAME_VAR(int, 0xa0b41c) && GAME_VAR(int, 0xa0b470 + i * 8))
+	if (i > -1 && i <= g_dplaySessionCount && GAME_VAR(int, 0xa0b470 + i * 8))
 		return GAME_VAR(int, 0xa0b474 + i * 8);
 	return 0;
 }
@@ -55,7 +55,7 @@ u8 (net_claimPlayerSlot)(void)
 /* 0x451410: a slot claimed for the local player (id 0xa0b424) when the session is up; 1 when done */
 int (net_claimLocalSlot)(void)
 {
-	if (!GAME_VAR(int, 0xa0baf8))
+	if (!g_isHost)
 		return 0;
 	u8 slot = net_claimPlayerSlot();
 	net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
@@ -70,7 +70,7 @@ u32 (net_freeSessionList)(void)
 {
 	if (!GAME_VAR(int, 0xa0b384))
 		return 0;
-	for (int i = 0; i < GAME_VAR(int, 0xa0b41c); i++) {
+	for (int i = 0; i < g_dplaySessionCount; i++) {
 		u32 *rec = (u32 *)(0xa0b470 + i * 8);
 		if (rec[0] != 1)
 			continue;
@@ -81,7 +81,7 @@ u32 (net_freeSessionList)(void)
 		rec[1] = 0;
 	}
 	u32 r = GAME_VAR(u32, 0xa0b41c);
-	GAME_VAR(int, 0xa0b41c) = 0;
+	g_dplaySessionCount = 0;
 	return r;
 }
 
@@ -133,7 +133,7 @@ u32 (net_addSession)(SessionDesc d)
 	GAME_VAR(void *, 0xa0b474 + i * 8) = copy;
 	GAME_VAR(int, 0xa0b470 + i * 8) = 1;
 	memcpy(GAME_VAR(void *, 0xa0b474 + i * 8), d.b, 0x85);
-	GAME_VAR(int, 0xa0b41c) += 1;
+	g_dplaySessionCount += 1;
 	return (u32)copy;
 }
 
@@ -152,7 +152,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	const u8 *guid = desc + 8;
 	if (!memcmp(guid, (const void *)0x4aae70, 16))
 		return 1;
-	for (int k = 0; k < GAME_VAR(int, 0xa0b41c); k++)
+	for (int k = 0; k < g_dplaySessionCount; k++)
 		if (!memcmp(guid, GAME_VAR(u8 *, 0xa0b474 + k * 8) + 4, 16))
 			return 0;
 	u8 *block = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
@@ -194,7 +194,7 @@ int (net_sendMessage)(const int *message, u32 to, u32 size)
 		length = size;
 		break;
 	}
-	return dplay_send(GAME_VAR(u32, 0xa0b424), to, flags, message, length);
+	return dplay_send(g_localPlayerId, to, flags, message, length);
 }
 
 /* 0x452170: socket 100 (message 0x40a) or 101 (0x40c) set to tell the window wnd about reads and closes
@@ -273,7 +273,7 @@ void (net_receiveServerReply)(void)
 		break;
 	case 1:
 		GAME_VAR(int, 0xa0b350) = 1;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		break;
 	}
 }
@@ -295,7 +295,7 @@ u32 (net_closeSockets)(void)
 		GAME_VAR(u32, sockets[k]) = 0;
 		r = GAME_CDECL(0x4519b0, u32, void)();                                   /* arena_freeBuffers */
 	}
-	GAME_VAR(int, 0xa0b300) = 0;
+	g_netLastRequest = 0;
 	GAME_VAR(int, 0xa0b380) = 0;
 	return r;
 }
@@ -366,10 +366,10 @@ int (dplay_release)(void)
 	}
 	void *play = GAME_VAR(void *, 0xa0b404);
 	if (play) {
-		if (GAME_VAR(u32, 0xa0b424)) {
-			COM(play, 0x24, u32, u32)(play, GAME_VAR(u32, 0xa0b424));   /* DestroyPlayer */
+		if (g_localPlayerId) {
+			COM(play, 0x24, u32, u32)(play, g_localPlayerId);   /* DestroyPlayer */
 			play = GAME_VAR(void *, 0xa0b404);
-			GAME_VAR(u32, 0xa0b424) = 0;
+			g_localPlayerId = 0;
 		}
 		COM(play, 0x10, u32)(play);   /* Close */
 		play = GAME_VAR(void *, 0xa0b404);
@@ -382,9 +382,9 @@ int (dplay_release)(void)
 	}
 	if (GAME_VAR(void *, 0xa0bab0))
 		global_free(GAME_VAR(void *, 0xa0bab0));
-	if (GAME_VAR(void *, 0xa0baf4)) {
-		global_free(GAME_VAR(void *, 0xa0baf4));
-		GAME_VAR(void *, 0xa0baf4) = 0;
+	if (g_lobbyConnectionBlock) {
+		global_free(g_lobbyConnectionBlock);
+		g_lobbyConnectionBlock = 0;
 	}
 	IMPORT(0x4a93b8, void, void)();   /* CoUninitialize */
 	return 0;
@@ -563,16 +563,16 @@ int (net_getLocalAddress)(void)
    the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
 int (net_sendChat)(const char *text)
 {
-	if (GAME_CDECL(0x451350, int, u32, const char *, char **)(GAME_VAR(u32, 0xa0b424), text, (char **)0x9fd944) < 0)   /* net_logMessage */
+	if (GAME_CDECL(0x451350, int, u32, const char *, char **)(g_localPlayerId, text, (char **)0x9fd944) < 0)   /* net_logMessage */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
 	u8 *message = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!message)
 		return 0;
 	*(u32 *)message = 1;
-	*(u32 *)(message + 8) = GAME_VAR(u32, 0xa0b424);
+	*(u32 *)(message + 8) = g_localPlayerId;
 	lstrcpyA((char *)message + 0xc, text);
-	return GAME_CDECL(0x450bf0, int, u32, u32, u32, void *, int)(GAME_VAR(u32, 0xa0b424), 0, 0, message, size) >= 0;
+	return GAME_CDECL(0x450bf0, int, u32, u32, u32, void *, int)(g_localPlayerId, 0, 0, message, size) >= 0;
 }
 
 /* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in 0xa0d798:
@@ -580,20 +580,20 @@ int (net_sendChat)(const char *text)
 u32 (net_ping)(u32 ip, u32 timeout)
 {
 	u32 reply[9];   /* ICMP_ECHO_REPLY; [2] the round trip time */
-	GAME_VAR(u32, 0xa0d798) = 0;
+	g_pingTime = 0;
 	void *icmp = ((void *(STDCALL *)(void))0x454e4c)();   /* IcmpCreateFile */
 	memset(reply, 0, sizeof reply);
 	reply[2] = 0xffffffff;
 	u32 sent = ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))0x454e46)(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
 	u32 rtt = reply[2];
 	if (!sent) {
-		GAME_VAR(u32, 0xa0d798) = rtt;
+		g_pingTime = rtt;
 		((int (STDCALL *)(void *))0x454e40)(icmp);   /* IcmpCloseHandle */
-		return rtt ? GAME_VAR(u32, 0xa0d798) : 0;
+		return rtt ? g_pingTime : 0;
 	}
-	GAME_VAR(u32, 0xa0d798) = rtt ? rtt : 1;
+	g_pingTime = rtt ? rtt : 1;
 	((int (STDCALL *)(void *))0x454e40)(icmp);
-	return GAME_VAR(u32, 0xa0d798);
+	return g_pingTime;
 }
 
 /* 0x454190: player id's name (a DPNAME) fetched into a new global block (*out): its size asked first (GetPlayerName
@@ -625,7 +625,7 @@ u32 (net_pingAllServers)(void)
 {
 	GAME_VAR(int, 0xa0d798) = 0;
 	if (GAME_VAR(int, 0xa0d79c) > 0) {
-		for (int i = 0; i < GAME_VAR(int, 0xa0d79c) && GAME_VAR(int, 0xa0d7a0) != 1; i++) {
+		for (int i = 0; i < GAME_VAR(int, 0xa0d79c) && g_netListDone != 1; i++) {
 			const char *name = (const char *)(0xa0bf20 + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
@@ -639,7 +639,7 @@ u32 (net_pingAllServers)(void)
 			GAME_VAR(int, 0xa0bb14 + i * 4) = 1;
 		}
 	}
-	GAME_VAR(int, 0xa0d7a0) = 1;
+	g_netListDone = 1;
 	return GAME_CDECL(0x454740, u32, void)();   /* net_wakePingThread */
 }
 
@@ -669,16 +669,16 @@ void (net_receiveLobbyReply)(void)
 	case 1:
 		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b368);
 		GAME_CDECL(0x4546d0, int, void)();   /* net_startThread */
-		GAME_VAR(int, 0xa0b36c) = 0xca;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_serverConnectionState = 0xca;
+		g_netLastRequest = 0;
 		break;
 	case 2:
-		GAME_VAR(int, 0xa0b36c) = 0xcb;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_serverConnectionState = 0xcb;
+		g_netLastRequest = 0;
 		break;
 	case 3:
-		GAME_VAR(int, 0xa0b36c) = 0x29;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_serverConnectionState = 0x29;
+		g_netLastRequest = 0;
 		break;
 	}
 }
@@ -696,12 +696,12 @@ void (net_receiveGameServerReply)(void)
 		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b358);
 		GAME_CDECL(0x4546d0, int, void)();
 		GAME_VAR(int, 0xa0b34c) = 0xca;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		break;
 	case 2:
 	case 3:
 		GAME_VAR(int, 0xa0b34c) = 0x28;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		break;
 	}
 }
@@ -800,8 +800,8 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	if (create_player(GAME_VAR(void *, 0xa0b404), &id, player) < 0)
 		return 0;
 	GAME_VAR(u32, 0xa0b428) = data;
-	GAME_VAR(u32, 0xa0b424) = id;
-	GAME_VAR(int, 0xa0baf8) = 1;
+	g_localPlayerId = id;
+	g_isHost = 1;
 	GAME_CDECL(0x451410, void, void)();   /* net_claimLocalSlot */
 	return 1;
 }
@@ -829,8 +829,8 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 		return 0x1fa;
 	case 0:
 		GAME_VAR(u32, 0xa0b428) = data;
-		GAME_VAR(u32, 0xa0b424) = id;
-		GAME_VAR(int, 0xa0baf8) = 0;
+		g_localPlayerId = id;
+		g_isHost = 0;
 	}
 	return 0x1f4;
 }
@@ -849,7 +849,7 @@ static void dplay_lobbyConnect(void)
 	if ((u32)COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return;
 	u8 *conn = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc) */
-	GAME_VAR(void *, 0xa0baf4) = conn;
+	g_lobbyConnectionBlock = conn;
 	if (!conn)
 		return;
 	lobby = GAME_VAR(void *, 0xa0b398);
@@ -859,7 +859,7 @@ static void dplay_lobbyConnect(void)
 	session[1] = 0x44;    /* dwFlags */
 	session[10] = 16;     /* dwMaxPlayers */
 	lobby = GAME_VAR(void *, 0xa0b398);
-	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, GAME_VAR(void *, 0xa0baf4)) < 0)   /* SetConnectionSettings */
+	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, g_lobbyConnectionBlock) < 0)   /* SetConnectionSettings */
 		return;
 	lobby = GAME_VAR(void *, 0xa0b398);
 	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)0x4a9678, (void **)0xa0b404, NULL) < 0)
@@ -871,9 +871,9 @@ static void dplay_lobbyConnect(void)
 		return;
 	u32 flags = *(u32 *)(GAME_VAR(u8 *, 0xa0baf4) + 4);
 	if (flags & 2)
-		GAME_VAR(int, 0xa0baf8) = 1;
+		g_isHost = 1;
 	else if (flags & 1)
-		GAME_VAR(int, 0xa0baf8) = 0;
+		g_isHost = 0;
 }
 
 /* 0x453790: DirectPlay made: first through a lobby that started the game (dplay_lobbyConnect), then (either way) a plain
@@ -890,8 +890,8 @@ int (dplay_create)(void)
 	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)0x4a96e8, (void *)0x4532f0, NULL, 0);
 	if (r >= 0)
 		r = 0;
-	if (GAME_VAR(void *, 0xa0baf4))
-		global_free(GAME_VAR(void *, 0xa0baf4));
+	if (g_lobbyConnectionBlock)
+		global_free(g_lobbyConnectionBlock);
 	return r;
 }
 
@@ -1082,14 +1082,14 @@ void (net_sendLocalInfo)(const u32 *msg)
 			GAME_CDECL(0x451530, void, u32)(msg[2]);   /* net_451530 */
 		gone = 0;
 	} else if (msg[0] == 3) {
-		if (!GAME_VAR(int, 0xa0baf8))
+		if (!g_isHost)
 			return;
 		GAME_VAR(u8, 0x9f9424) = net_claimPlayerSlot();
 		GAME_CDECL(0x451270, void, void *, u32, int)((void *)0x9f9420, msg[2], 0);   /* net_sendMessage */
 		gone = 1;
 	} else
 		return;
-	if (!GAME_VAR(int, 0xa0baf8) || GAME_VAR(int, 0xa0b418))
+	if (!g_isHost || GAME_VAR(int, 0xa0b418))
 		return;
 	switch (GAME_VAR(int, 0xa0b380)) {
 	case 201:
@@ -1197,7 +1197,7 @@ u32 (net_disconnect)(void)
 			return 0;
 		r = socket_close(0xa05630);
 	}
-	GAME_VAR(int, 0xa0b300) = 0;
+	g_netLastRequest = 0;
 	GAME_VAR(int, 0xa0b380) = 0;
 	GAME_VAR(int, 0xa0b2fc) = 0;
 	return r;
@@ -1241,14 +1241,14 @@ void (net_send)(int kind, int to)
 		[25] = { 0xa0b33c, 0x1e, 0 }, [27] = { 0xa0b340, 0xb9, 0 }, [28] = { 0xa0b344, 0x5c, 0 }, [29] = { 0xa055e0, 0x1e, 0 } };
 	switch (kind) {
 	case 10: case 11: case 12: case 17: case 18: case 20: case 27: case 28: case 29:
-		GAME_VAR(int, 0xa0b300) = kind;
+		g_netLastRequest = kind;
 		/* fall through */
 	case 25:
 		send_buffer(plain[kind].lobby ? 0xa055f8 : 0xa05630, plain[kind].buffer, plain[kind].size);
 		return;
 	case 13:
 		net_clearServerList();
-		GAME_VAR(int, 0xa0b300) = 13;
+		g_netLastRequest = 13;
 		send_buffer(0xa055f8, 0xa0b31c, 4);
 		return;
 	case 23: {
@@ -1261,7 +1261,7 @@ void (net_send)(int kind, int to)
 		return;
 	}
 	case 14: case 15:
-		GAME_VAR(int, 0xa0b300) = kind;
+		g_netLastRequest = kind;
 		if (!GAME_VAR(void *, 0xa0b320))
 			return;
 		jmp_net_getLocalAddress_4532e0();
@@ -1271,18 +1271,18 @@ void (net_send)(int kind, int to)
 	case 19:
 		net_clearServers();
 		net_clearRoomList();
-		GAME_VAR(int, 0xa0b300) = 0x13;
+		g_netLastRequest = 0x13;
 		send_buffer(0xa05630, 0xa0b334, 4);
 		return;
 	case 21:
 	case 26:
 		net_clearPlayerList();
 		if (kind == 21)
-			GAME_VAR(int, 0xa0b300) = 0x15;
+			g_netLastRequest = 0x15;
 		send_buffer(0xa05630, kind == 21 ? 0xa0b324 : 0xa052e4, kind == 21 ? 8 : 1);
 		return;
 	case 22:
-		GAME_VAR(int, 0xa0b300) = 0x16;
+		g_netLastRequest = 0x16;
 		if (!GAME_VAR(u8 *, 0xa0b330))
 			return;
 		*GAME_VAR(u8 *, 0xa0b330) = 1;
@@ -1322,20 +1322,20 @@ static void status_reply(u32 socket, u32 reply, u32 status, u32 timeout, u32 sta
 {
 	if (!recv_all(socket, (void *)reply, 4, start)) {
 		GAME_VAR(int, status) = timeout;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 	}
 	switch (GAME_VAR(int, reply)) {
 	case 1:
 		GAME_VAR(int, status) = 0x67;
 		net_disconnect();
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		break;
 	case 0:
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		GAME_VAR(int, status) = 0x66;
 		break;
 	case 3:
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		GAME_VAR(int, status) = timeout;
 		break;
 	}
@@ -1347,12 +1347,12 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 {
 	if (!recv_all(0xa05630, (void *)0xa05638, 0x10b, start)) {
 		GAME_VAR(int, answer) = 0x28;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 	}
 	int code = GAME_VAR(int, 0xa05638);
 	for (int k = 0; k < count; k++)
 		if (code == codes[k]) {
-			GAME_VAR(int, 0xa0b300) = 0;
+			g_netLastRequest = 0;
 			GAME_VAR(int, answer) = code;
 			return;
 		}
@@ -1366,7 +1366,7 @@ void (net_recv)(void)
 {
 	u32 start = GetTickCount();
 	static const u8 answers14[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a }, answers15[4] = { 0x1e, 0x21, 0x28, 0x2a };
-	switch (GAME_VAR(int, 0xa0b300)) {
+	switch (g_netLastRequest) {
 	case 10:
 		status_reply(0xa055f8, 0xa055dc, 0xa0b370, 0x29, start);
 		break;
@@ -1391,13 +1391,13 @@ void (net_recv)(void)
 	case 26:
 		net_clearPlayerList();
 		GAME_VAR(int, 0xa0b350) = 1;
-		GAME_VAR(int, 0xa0b300) = 0;
+		g_netLastRequest = 0;
 		break;
 	case 29:
 		recv_all(0xa05630, (void *)0xa052c0, 0x22, start);
 		if (*(const u8 *)0xa052c0) {
 			GAME_VAR(int, 0xa0b354) = 1;
-			GAME_VAR(int, 0xa0b300) = 0;
+			g_netLastRequest = 0;
 		}
 		break;
 	}
@@ -1677,8 +1677,8 @@ void THISCALL (net_sendPlayerState)(u8 *g, int p)
 /* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
 static u32 table_rand(void)
 {
-	u32 at = GAME_VAR(u32, 0xa1efb8);
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	u32 at = g_randPos;
+	g_randPos = at + 1;
 	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
 }
 

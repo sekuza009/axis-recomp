@@ -10,7 +10,7 @@
 #define g_leaving GAME_VAR(int, 0x907b2c)        /* the "leave?" box */
 #define g_full GAME_VAR(int, 0x4db714)           /* the "arena full" box */
 #define g_joining GAME_VAR(int, 0x4db8bc)        /* the "joining" box */
-#define g_searching (GAME_VAR(int, 0x4dba90) || GAME_VAR(int, 0x4db858))
+#define g_searching (g_lanSearch || g_lobbySearching)
 
 static const u32 *const bright = (const u32 *)0x4dba98, *const dim = (const u32 *)0x4db8a0;
 #define TEXT(c) set_colour_bits((Colour *)0x76d438, (c)[0], (c)[1], (c)[2], (c)[3])
@@ -19,7 +19,7 @@ static const u32 *const bright = (const u32 *)0x4dba98, *const dim = (const u32 
 static void bind_buttons(void)
 {
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 }
 
@@ -134,7 +134,7 @@ void (arena_drawGameList)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
@@ -178,12 +178,12 @@ void (arena_drawGameList)(void)
 		text_drawBox16(x, Y1 - 0x24, x + 0x78, (const char *)(0x7528a4 + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4286b0(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
 	menu_drawTexQuad_4287a0(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
-	if (g_searching || GAME_VAR(int, 0x4db8b8)) {   /* blinking in fifteen steps */
+	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)0x4a9434));
 		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, BITS(alpha));
@@ -202,7 +202,7 @@ void (arena_drawGameList)(void)
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)0x752aa4);
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)0x752b24);
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
@@ -265,7 +265,7 @@ void (gameList_draw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(room_bright);
@@ -298,7 +298,7 @@ void (gameList_draw)(void)
 		text_drawBox16(x, Y1 - 0x2a, x + 0x78, (const char *)(0x759fa4 + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4286b0(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
@@ -331,7 +331,7 @@ void (gameList_draw)(void)
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)0x752aa4);
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)0x752b24);
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		room_button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
@@ -365,7 +365,7 @@ void (gameList_drawPage)(void)
 		}
 	}
 	room_4388e0();
-	int mode = GAME_VAR(int, 0x9dce48);
+	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
 		return;
 	if (GAME_VAR(int, 0x90d1c4)) {
@@ -376,9 +376,9 @@ void (gameList_drawPage)(void)
 		if (GAME_VAR(int, 0x9da498) == 1) {
 			int result = GAME_VAR(int, 0x76d484);
 			if (result != 2 && (u32)(result + 1) <= 5) {
-				GAME_VAR(int, 0x4db858) = 0;
-				GAME_VAR(int, 0x4df018) = 0;
-				GAME_VAR(int, 0x4db8b8) = result == 1;
+				g_lobbySearching = 0;
+				g_serverAnswerIn = 0;
+				g_lobbyRefreshing = result == 1;
 				if (result == 3)
 					GAME_VAR(int, 0x907b2c) = 1;
 				else if (result == 0)
@@ -390,24 +390,24 @@ void (gameList_drawPage)(void)
 			GAME_VAR(int, 0x9da498) = 0;
 			GAME_VAR(int, 0x9dd3fc) = 1;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &GAME_VAR(float, 0x4dba80));
-		GAME_VAR(float, 0x4dba80) = f32(blink);
+		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
+		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
 			GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
 	}
 	if (GAME_VAR(int, 0x9dd3fc)) {
 		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x9dd6c0)), &g_frameTime);
 		GAME_VAR(float, 0x9dd6c0) = f32(t);
-		if (t > (long double)GAME_VAR(int, 0x5b1914)) {
+		if (t > (long double)g_listRefreshPeriod) {
 			room_434ff0();
 			GAME_VAR(int, 0x9dd6c0) = 0;
-			GAME_VAR(int, 0x5b1914) = 5;
+			g_listRefreshPeriod = 5;
 		}
-		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &GAME_VAR(float, 0x4dba80));
-		GAME_VAR(float, 0x4dba80) = f32(blink);
+		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
+		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= *blinkFloor))
 			GAME_VAR(u32, 0x4dba80) = 0x447a0000;
-		if (GAME_VAR(int, 0xa0d7a0)) {
+		if (g_netListDone) {
 			room_434ff0();
 			GAME_VAR(int, 0x9dd6a0) = 0;
 			GAME_VAR(int, 0x9da498) = 0;
@@ -455,7 +455,7 @@ void (arena_drawNameDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(x0, y0, GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74), GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(x0, y0, GAME_VAR(int, 0x4dbb70), GAME_VAR(int, 0x4dbb74), g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x0 + 0x20, y0 + 0x30, GAME_VAR(int, 0x4dbb70) - 0x20, GAME_VAR(int, 0x4dbb74) - 0x20, 0);
 	TEXT(bright);
@@ -523,7 +523,7 @@ static void games_stop(void)
 		GAME_VAR(int, 0x9dd6a0) = 0;
 		GAME_VAR(int, 0x9da498) = 0;
 	}
-	GAME_VAR(int, 0xa0d7a0) = 1;
+	g_netListDone = 1;
 }
 
 /* leave the list; 0 (sound 6) while searching or refreshing */
@@ -535,9 +535,9 @@ static int games_leave(void)
 	}
 	sound_playMenu(0);
 	GAME_VAR(int, 0xa0b34c) = 0;
-	GAME_VAR(int, 0x9dce48) = 0;
+	g_roomMode = 0;
 	GAME_VAR(int, 0xa0b364) = 0;
-	GAME_VAR(int, 0xa0d7a0) = 1;
+	g_netListDone = 1;
 	return 1;
 }
 
@@ -552,15 +552,15 @@ void (gameList_mouse)(void)
 #define g_searching GAME_VAR(int, 0x9dd6a0)
 #define g_refreshing GAME_VAR(int, 0x9dd3fc)
 #define g_joined GAME_VAR(int, 0x9dd56c)
-	int mode = GAME_VAR(int, 0x9dce48);
+	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd6b4) || GAME_VAR(int, 0x90d1c4))
 		return;
-	if (GAME_VAR(int, 0x4ded8c)) {
+	if (g_keyEnter) {
 		if (g_searching)
 			return;
 		sound_playMenu(0);
 		GAME_VAR(int, 0xa0b34c) = 0;
-		GAME_VAR(int, 0x9dce48) = 0;
+		g_roomMode = 0;
 		GAME_VAR(int, 0xa0b364) = 0;
 		return;
 	}
@@ -655,7 +655,7 @@ void (room_gameListKeys)(void)
 		if (input_justPressed(g_keyBack)) {
 			sound_playMenu(0);
 			GAME_VAR(int, 0x4dbb10) = 0;
-			GAME_VAR(int, 0x4dbb78) = 0;
+			g_arenaJoinWaiting = 0;
 			arena_leaveSession();
 			g_confirming = 0;
 			KillTimer(g_hWndMain, 0x378);
@@ -714,7 +714,7 @@ void (room_gameListKeys)(void)
 	}
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9dce48) = 0;
+		g_roomMode = 0;
 		GAME_VAR(int, 0xa0b34c) = 0;
 	}
 }
@@ -722,8 +722,8 @@ void (room_gameListKeys)(void)
 /* the searching message's blink clock (0x4dba80) run down, back to 1000 once below 0x4a9418 */
 static void blink_down(void)
 {
-	long double blink = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &GAME_VAR(float, 0x4dba80));
-	GAME_VAR(float, 0x4dba80) = f32(blink);
+	long double blink = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &g_lobbyBlinkClock);
+	g_lobbyBlinkClock = f32(blink);
 	if (!(blink >= *(const float *)0x4a9418))
 		GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
 }
@@ -747,30 +747,30 @@ void (lobbyJoin_draw)(void)
 		}
 	}
 	arena_drawTunnel();
-	int mode = GAME_VAR(int, 0x4dbb3c);
+	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x4db51c) == 5)
 		return;
 	if (GAME_VAR(int, 0x90d1c4)) {
 		menu_drawFrame(GAME_VAR(int, 0x4db8c8), GAME_VAR(int, 0x4db8cc), GAME_VAR(int, 0x4db8d0), GAME_VAR(int, 0x4db8d4));
 		return;
 	}
-	if (GAME_VAR(int, 0x4dba90)) {
+	if (g_lanSearch) {
 		for (int k = 0; k < 10; k++)
 			dplay_listSessions();
-		long double t = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &GAME_VAR(float, 0x4dba80));
-		GAME_VAR(float, 0x4dba80) = f32(t);
+		long double t = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &g_lobbyBlinkClock);
+		g_lobbyBlinkClock = f32(t);
 		if (!(t > *(const float *)0x4a93e8)) {
 			arenaList_rebuild();
-			GAME_VAR(int, 0x4dba90) = 0;
+			g_lanSearch = 0;
 		}
 	}
-	if (GAME_VAR(int, 0x4db858)) {
-		if (GAME_VAR(int, 0x4df018) == 1) {
+	if (g_lobbySearching) {
+		if (g_serverAnswerIn == 1) {
 			int result = GAME_VAR(int, 0x76d484);
 			if (result != 2 && (u32)(result + 1) <= 5) {
-				GAME_VAR(int, 0x4db858) = 0;
-				GAME_VAR(int, 0x4df018) = 0;
-				GAME_VAR(int, 0x4db8b8) = result == 1;
+				g_lobbySearching = 0;
+				g_serverAnswerIn = 0;
+				g_lobbyRefreshing = result == 1;
 				if (result == 3)
 					GAME_VAR(int, 0x907b2c) = 1;
 				else if (result == 0)
@@ -781,20 +781,20 @@ void (lobbyJoin_draw)(void)
 		}
 		blink_down();
 	}
-	if (GAME_VAR(int, 0x4db8b8)) {
+	if (g_lobbyRefreshing) {
 		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x4dbaf0)), &g_frameTime);
 		GAME_VAR(float, 0x4dbaf0) = f32(t);
-		if (t > (long double)GAME_VAR(int, 0x5b1914)) {
+		if (t > (long double)g_listRefreshPeriod) {
 			arena_406640();
 			GAME_VAR(int, 0x4dbaf0) = 0;
-			GAME_VAR(int, 0x5b1914) = 5;
+			g_listRefreshPeriod = 5;
 		}
 		blink_down();
-		if (GAME_VAR(int, 0xa0d7a0)) {
+		if (g_netListDone) {
 			arena_406640();
-			GAME_VAR(int, 0x4db858) = 0;
-			GAME_VAR(int, 0x4df018) = 0;
-			GAME_VAR(int, 0x4db8b8) = 0;
+			g_lobbySearching = 0;
+			g_serverAnswerIn = 0;
+			g_lobbyRefreshing = 0;
 		}
 	}
 	arena_drawGameList();
@@ -834,7 +834,7 @@ void (lobbyJoin_draw)(void)
 /* the lobby busy: searching, connecting (0x4db858) or refreshing (0x4db8b8) */
 static int lobby_busy(void)
 {
-	return GAME_VAR(int, 0x4dba90) || GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4db8b8);
+	return g_lanSearch || g_lobbySearching || g_lobbyRefreshing;
 }
 
 /* the selected game joined: connected to the server (0x4dbaac) its chat line opened (0x4dbbec), else the join
@@ -855,10 +855,10 @@ static void lobby_join(void)
 /* the lobby left for the arena screen's first page (0x4dba80 1; 0x4df018 set) */
 static void lobby_leave(void)
 {
-	GAME_VAR(int, 0xa0b36c) = 0;
+	g_serverConnectionState = 0;
 	sound_playMenu(0);
 	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
-	GAME_VAR(int, 0x4df018) = 1;
+	g_serverAnswerIn = 1;
 }
 
 /* 0x406c30 (named lobby_connect; by use the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
@@ -870,17 +870,17 @@ static void lobby_leave(void)
    arrows scrolls once the blink clock reaches 5. The caller ignores the eax it leaves */
 void (lobby_connect)(void)
 {
-	int mode = GAME_VAR(int, 0x4dbb3c);
+	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || g_joining || g_full || GAME_VAR(int, 0x90d1c4))
 		return;
-	if (GAME_VAR(int, 0x4ded8c)) {
-		if (GAME_VAR(int, 0x4db858) || GAME_VAR(int, 0x4dba90))
+	if (g_keyEnter) {
+		if (g_lobbySearching || g_lanSearch)
 			return;
-		GAME_VAR(int, 0xa0b36c) = 0;
+		g_serverConnectionState = 0;
 		arena_leaveSession();
 		net_disconnect();
 		sound_playMenu(0);
-		GAME_VAR(int, 0x4dbb3c) = mode = 0;
+		g_arenaLobbyMode = mode = 0;
 	}
 	if (g_mouseClick && mode == 2) {
 		g_cursorBlink = 0.0f;
@@ -897,7 +897,7 @@ void (lobby_connect)(void)
 			sound_playMenu(0);
 			if (on == 0) {
 				if (GAME_VAR(int, 0x4db854)) {
-					GAME_VAR(int, 0x4db718) = 0;
+					g_lobbyConnectionOpen = 0;
 					net_disconnect();
 				}
 				if (GAME_VAR(int, 0x4dba84))
@@ -905,23 +905,23 @@ void (lobby_connect)(void)
 				GAME_VAR(int, 0xa0b368) = 0;
 				arena_openSession(1, NULL);
 				GAME_VAR(int, 0x680bb8) = 0;
-				GAME_VAR(int, 0x4dba90) = 1;
+				g_lanSearch = 1;
 				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
 				GAME_VAR(int, 0x4dbaac) = 0;
 				GAME_VAR(int, 0x4dba84) = 1;
 				GAME_VAR(int, 0x4db854) = 0;
 			} else {
-				GAME_VAR(int, 0x4db718) = 0;
+				g_lobbyConnectionOpen = 0;
 				net_disconnect();
 				arena_leaveSession();
 				GAME_VAR(int, 0xa0b368) = 0;
 				if (lobby_openConnection() == 1) {
 					GAME_VAR(int, 0x4dbaac) = 1;
-					GAME_VAR(int, 0x4db858) = 1;
+					g_lobbySearching = 1;
 					GAME_VAR(int, 0x4db854) = 1;
 					GAME_VAR(int, 0x4dba84) = 0;
-					GAME_VAR(int, 0x4db718) = 1;
+					g_lobbyConnectionOpen = 1;
 				}
 			}
 			break;
@@ -949,15 +949,15 @@ void (lobby_connect)(void)
 				return;
 			lobby_leave();
 			GAME_VAR(int, 0x76d484) = -1;
-			GAME_VAR(int, 0x4db718) = 0;
+			g_lobbyConnectionOpen = 0;
 			arena_leaveSession();
 			net_disconnect();
-			if (GAME_VAR(int, 0x4db8b8) == 1) {
-				GAME_VAR(int, 0x4db8b8) = 0;
-				GAME_VAR(int, 0x4db858) = 0;
-				GAME_VAR(int, 0x4df018) = 0;
+			if (g_lobbyRefreshing == 1) {
+				g_lobbyRefreshing = 0;
+				g_lobbySearching = 0;
+				g_serverAnswerIn = 0;
 			}
-			GAME_VAR(int, 0xa0d7a0) = 1;
+			g_netListDone = 1;
 			break;
 		case 5:
 			if (lobby_busy()) {
@@ -969,8 +969,8 @@ void (lobby_connect)(void)
 			lobby_leave();
 			arena_leaveSession();
 			net_disconnect();
-			GAME_VAR(int, 0x4dbb3c) = 0;
-			GAME_VAR(int, 0xa0d7a0) = 1;
+			g_arenaLobbyMode = 0;
+			g_netListDone = 1;
 			break;
 		case 15:
 			if (g_full)
@@ -1010,7 +1010,7 @@ void (lobby_connect)(void)
 			break;
 		}
 	}
-	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2 || g_full)
+	if (!g_mouseHeld || g_arenaLobbyMode != 2 || g_full)
 		return;
 	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 	if ((on != 15 && on != 16) || !(g_cursorBlink >= *(const float *)0x4a93d0))

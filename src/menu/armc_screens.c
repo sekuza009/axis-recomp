@@ -129,7 +129,7 @@ void (armc_drawColourEditor)(void)
 	}
 	/* the slots */
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
@@ -154,7 +154,7 @@ void (armc_drawColourEditor)(void)
 	}
 	/* the sliders' tracks: the hue's rainbow, saturation and value plain */
 	glEnable(GL_TEXTURE_2D);
-	texture = GAME_VAR(int, 0x9db0a4);
+	texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
@@ -202,7 +202,7 @@ void (armc_drawColourEditor)(void)
 		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(0x7517a4 + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
-	texture = GAME_VAR(int, 0x9db0a4);
+	texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	mode_box();
 }
@@ -264,7 +264,7 @@ void (armc_drawBuildScreen)(void)
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		bind_texture(GAME_VAR(int, 0x9db0a4));
+		bind_texture(g_buttonTexture);
 		int lit = hovered == k + 3, x = X0 + k * 0x64;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		menu_drawTexQuad_4282f0(x + 0x10, Y1 - 0x20, x + 0x70, Y1, 1);
@@ -275,7 +275,7 @@ void (armc_drawBuildScreen)(void)
 		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(0x7517a4 + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
-	bind_texture(GAME_VAR(int, 0x9db0a4));
+	bind_texture(g_buttonTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_buildSlot == k ? 1.0f : 0.4f);
@@ -322,7 +322,7 @@ void (armc_drawBuildScreen)(void)
 		armc_drawText(x + 5, y + 0x16a, (const char *)(0x7641a4 + type * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
-	bind_texture(GAME_VAR(int, 0x9db0a4));
+	bind_texture(g_buttonTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4284d0(x - 0x28, y + 0x13a, x, y + 0x15a, hovered == 0xc);
 	menu_drawTexQuad_4285c0(x + 0xa0, y + 0x13a, x + 0xc8, y + 0x15a, hovered != 0xc && hovered == 0xd);

@@ -150,7 +150,7 @@ u32 (arena_leaveSession)(void)
 	static const u32 close[4] = { 0x4549a0, 0x454ac0, 0x454bd0, 0x454ce0 };
 	if (GAME_VAR(int, 0xa0b390) != 1 || !GAME_VAR(int, 0xa0b384))
 		return 1;
-	if (GAME_VAR(int, 0xa0baf8)) {
+	if (g_isHost) {
 		GAME_VAR(int, 0x9f941c) = 1;
 		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
 	}
@@ -187,7 +187,7 @@ int (arena_openSession)(u32 kind, const char *host)
 			GAME_CDECL(0x452fe0, void, void)();
 	}
 	GAME_VAR(u32, 0xa0b418) = kind;
-	GAME_VAR(int, 0xa0b41c) = 0;
+	g_dplaySessionCount = 0;
 	GAME_VAR(int, 0xa0b420) = 0;
 	GAME_VAR(int, 0xa0b424) = 0;
 	GAME_VAR(int, 0xa0b428) = 0;

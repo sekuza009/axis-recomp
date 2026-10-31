@@ -59,7 +59,7 @@ static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 }
 
 static void bind_buttons(void)
 {
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 }
 
@@ -208,7 +208,7 @@ void (room_drawGameSettings)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75a424);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -261,7 +261,7 @@ void (arena_createDraw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x752c24);
 	for (int k = 0; k < 8; k++) {
@@ -283,7 +283,7 @@ void (arena_createDraw)(void)
 	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->kind == 1 && !blocked, dim);
 	if (confirming) {
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
-		menu_drawTexturedRect_427b60(0x64, 0xb4, 0x21c, 0x140, GAME_VAR(int, 0x4deb50));
+		menu_drawTexturedRect_427b60(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
 		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)0x753224);
 		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x7532a4);

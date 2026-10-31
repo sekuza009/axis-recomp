@@ -343,7 +343,7 @@ static int files_present(void)
    screen 100, the cursor hidden, the clock check. Returns 1, or 0 on any failure */
 int (app_init)(void *inst, int show)
 {
-	if (!GAME_VAR(int, 0x76d410) && !files_present())
+	if (!g_startedFromLobby && !files_present())
 		return 0;
 	g_screenW = 640;
 	g_screenH = 480;
@@ -366,7 +366,7 @@ int (app_init)(void *inst, int show)
 	cfg_writeDefaultAxisCfg();
 	app_screenSizeForMode();
 	app_reportStartupProblem(app_setDisplayMode(g_screenW, g_screenH, 4, (GAME_VAR(int, 0x83a9c4) + 1) * 16));   /* CDS_FULLSCREEN */
-	if (!GAME_VAR(int, 0x76d410) && !files_present())
+	if (!g_startedFromLobby && !files_present())
 		return 0;
 
 	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
@@ -561,7 +561,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		GAME_VAR(u32, 0x9dd8c8) = 0x4b27e4;
 	}
 	sys_checkClockTampering();
-	if (!GAME_VAR(int, 0x76d410)) {
+	if (!g_startedFromLobby) {
 		if (!app_checkLauncherRunning()) {
 			sys_messageBox(GAME_VAR(const char *, 0x9dd8c8));
 			return 0;

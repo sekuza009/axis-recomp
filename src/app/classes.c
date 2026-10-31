@@ -84,7 +84,7 @@ int THISCALL (SkeletonManager_release)(void *self) { free_owned(self); SkeletonM
 int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); CollisionVolume_clear(self); return 0; }
 
 /* ---- getters ---- */
-int (net_sessionCount)(void) { return GAME_VAR(int, 0xa0b41c); }
+int (net_sessionCount)(void) { return g_dplaySessionCount; }
 int (gfx_getWidth)(void) { return GAME_VAR(int, 0xa0e810); }
 int (gfx_getHeight)(void) { return GAME_VAR(int, 0xa0e928); }
 float (FUN_004686d0)(void) { return GAME_VAR(float, 0x4c4dec); }

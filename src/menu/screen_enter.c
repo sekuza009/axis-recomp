@@ -248,7 +248,7 @@ u32 (menu_enterState)(void)
 	switch (g_menuState) {
 	case 210: CALL(0x44b420); break;   /* menuState210_enter */
 	case 300:
-		GAME_VAR(int, 0x4deb48) = 1;
+		g_enteringMenus = 1;
 		CALL(0x440bb0);                 /* menuState300_enter */
 		break;
 	case 400: CALL(0x404640); break;   /* menuState400_enter */
@@ -391,7 +391,7 @@ void (console_init)(void)
 {
 	while (GAME_VAR(TunnelRing *, 0x67fb3c))   /* the menus' tunnel, ring by ring */
 		tunnel_removeLastRing((TunnelRing **)0x67fb3c);
-	if (!GAME_VAR(int, 0x76d410))
+	if (!g_startedFromLobby)
 		check_profiles();
 	GAME_VAR(int, 0x5b1dac) = 1;
 	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
@@ -399,12 +399,12 @@ void (console_init)(void)
 	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, GAME_VAR(int, 0x83a9c4), 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (GAME_VAR(int, 0x9db990)) {
-		GAME_VAR(int, 0x5ae9c4) = 0;
+		g_matchMode = 0;
 		app_requireCd(scene, 0, 3);
 		return;
 	}
 	int loaded = console_loadFile(GAME_VAR(int, 0x9dad94));
-	int kind = GAME_VAR(int, 0x5ae9c4);   /* (after the load, as the original reads it) */
+	int kind = g_matchMode;   /* (after the load, as the original reads it) */
 	if (!loaded) {
 		if (kind == 1)
 			GAME_VAR(int, 0x76d3e8) = 400;

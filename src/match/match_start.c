@@ -40,20 +40,20 @@ static void make_rotation(Scene *s)
 		s->rotationOff = 1;
 		return;
 	}
-	if (GAME_VAR(int, 0x9da3e0) == 1) {
+	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
 		for (int k = 0; k < GAME_VAR(int, 0x67ef00); k++) {
 			u32 entry = 0x4d9508 + k * 8;
 			if (GAME_VAR(int, entry) != 1)
 				continue;
-			int mode = GAME_VAR(int, 0x76d368);
+			int mode = g_chosenGameMode;
 			if (mode >= 14)
 				mode = GAME_VAR(int, entry + 4);
 			set_round(&s->rotation[s->rotationCount++], k, mode, GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408));
 		}
 	} else {
 		s->rotationCount = 1;
-		set_round(&s->rotation[0], g_mapIndex, GAME_VAR(int, 0x76d368), GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408));
+		set_round(&s->rotation[0], g_mapIndex, g_chosenGameMode, GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408));
 	}
 	s->rotationAt = 0;
 	g_mapIndex = s->rotation[0].map;
@@ -69,7 +69,7 @@ static void make_rotation(Scene *s)
    machine that joined has none yet, and a solo game makes player 0 with rotation on (0x9da3e0) */
 static void first_round(Scene *s)
 {
-	s->showEmblems = GAME_VAR(int, 0x5ae9c4) == 2;
+	s->showEmblems = g_matchMode == 2;
 	if (s->showEmblems == 1) {
 		BITS(s->emblemTime) = 0x43960000;   /* 300 */
 		GAME_VAR(int, 0x4de72a)++;
@@ -126,7 +126,7 @@ static void first_round(Scene *s)
 		s->localPlayer = 0;
 		player_setName(STAGE(s), 0, s->mechName);
 		s->soloClear = 0;
-		GAME_VAR(int, 0x9da3e0) = 1;
+		g_mapRotation = 1;
 		s->rankingShown = 0;
 	}
 	s->startClear = 0;
@@ -138,9 +138,9 @@ static int random_below(u32 n)
 {
 	if ((int)n <= 0)
 		return 0;
-	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	g_randPos = at + 1;
 	return (int)(r % n);
 }
 

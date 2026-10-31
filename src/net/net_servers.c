@@ -25,7 +25,7 @@ void (net_clearServers)(void)
 	for (int i = 0; i < 0x500; i++)
 		g_serverNames[i] = 0;
 	GAME_VAR(int, 0xa0d79c) = 0;
-	GAME_VAR(int, 0xa0d7a0) = 0;
+	g_netListDone = 0;
 	net_closeThreadHandles();
 }
 

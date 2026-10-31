@@ -101,7 +101,7 @@ void (arena_saveSettings)(void)
 	do
 		kept[i] = name[i];
 	while (name[i++] != '\0');
-	GAME_VAR(int, 0x4dedd0) = GAME_VAR(int, 0x4db580);
+	g_playerCorporation = GAME_VAR(int, 0x4db580);
 	cfg_loadAxisCfg();
 }
 
@@ -150,7 +150,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 {
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		int texture = GAME_VAR(int, 0x9db0a4);
+		int texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		int x = 0xaa + k * 0xa0;
 		if (hovered == first + k) {
@@ -204,7 +204,7 @@ void (mapList_draw)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4286b0(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
@@ -247,7 +247,7 @@ void (mapList_mouse)(void)
 			g_mapListOpen = 0;
 		}
 	}
-	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2)
+	if (!g_mouseHeld || g_arenaLobbyMode != 2)
 		return;
 	int on = mapList_hitTest(g_mouseX, g_mouseY);
 	if (on == 20 && g_cursorBlink >= *repeat) {

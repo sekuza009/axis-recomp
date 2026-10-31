@@ -51,7 +51,7 @@ static void merge(const Received *g)
 			GAME_VAR(int, 0xa0bb14 + i * 4) = 0;
 			GAME_VAR(int, 0x680bb8)++;
 		}
-		if (!GAME_VAR(int, 0xa0d7a0))
+		if (!g_netListDone)
 			return;
 	}
 	for (int k = 0; k < 3; k++)

@@ -1,0 +1,42 @@
+# globals, batch 1: the most-used unnamed globals whose meaning the comments make clear (address,type,name)
+0xa1efb8,u32,g_randPos
+0x9db0a4,int,g_buttonTexture
+0x4deb50,int,g_dialogFrameTexture
+0x4ded8c,int,g_keyEnter
+0x76d410,int,g_startedFromLobby
+0x76d368,int,g_chosenGameMode
+0x5ae9c4,int,g_matchMode
+0x9da3e0,int,g_mapRotation
+0x9dd928,int,g_mapSelectCount
+0x4deb48,int,g_enteringMenus
+0x680ccc,float,g_panelGlow
+0xa0e66c,int,g_soundBaseVolume
+0x9f8c58,int,g_currentProfile
+0x4dedd0,int,g_playerCorporation
+# the arena lobby
+0x4dbb3c,int,g_arenaLobbyMode
+0x4dba80,float,g_lobbyBlinkClock
+0x4db858,int,g_lobbySearching
+0x4db8b8,int,g_lobbyRefreshing
+0x4dba90,int,g_lanSearch
+0x4db718,int,g_lobbyConnectionOpen
+0x4dbb78,int,g_arenaJoinWaiting
+0x4df018,int,g_serverAnswerIn
+0x9da49c,int,g_lobbyReply
+0x4ded60,int,g_connectStep
+0x5b1914,int,g_listRefreshPeriod
+# the game room
+0x9dce48,int,g_roomMode
+0x9dd838,int,g_roomRequestOut
+0x9dd1c8,int,g_roomLoginDue
+0x9dd1cc,int,g_typingRoomName
+0x9dd6ac,int,g_roomListPage
+# the network
+0xa0b300,int,g_netLastRequest
+0xa0b424,u32,g_localPlayerId
+0xa0baf8,int,g_isHost
+0xa0b36c,int,g_serverConnectionState
+0xa0d7a0,int,g_netListDone
+0xa0d798,u32,g_pingTime
+0xa0b41c,int,g_dplaySessionCount
+0xa0baf4,void *,g_lobbyConnectionBlock

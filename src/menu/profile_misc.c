@@ -161,9 +161,9 @@ int (profile_openDeleteQuestion)(void)
 			GAME_VAR(int, 0x9f8f10) = 1;
 		}
 	}
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		GAME_VAR(int, 0x9f8f10) = 1;
-	return GAME_VAR(int, 0x4ded8c);
+	return g_keyEnter;
 }
 
 /* 0x44c400: the second dialog: its first button runs profile_resetCamera, the second closes it (and clears 0x76d42c) */
@@ -181,9 +181,9 @@ int (profile_secondDialogClicks)(void)
 			GAME_VAR(int, 0x76d42c) = 0;
 		}
 	}
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		GAME_VAR(int, 0x9f8f10) = 1;
-	return GAME_VAR(int, 0x4ded8c);
+	return g_keyEnter;
 }
 
 /* 0x44f6c0: logging in with the selected profile (when 0x9f6840): the profile saved, the main menu (state 300), the
@@ -192,16 +192,16 @@ u32 (profile_logIn)(void)
 {
 	if (!GAME_VAR(int, 0x9f6840))
 		return 0;
-	GAME_VAR(int, 0x9da49c) = 0;
-	if (GAME_VAR(int, 0x76d410) == 1)
-		GAME_VAR(int, 0x9da49c) = 0x65;
+	g_lobbyReply = 0;
+	if (g_startedFromLobby == 1)
+		g_lobbyReply = 0x65;
 	GAME_CDECL(0x446a10, void, void)();   /* profile_save */
 	g_menuState = 300;
 	GAME_VAR(int, 0x67ef20) = 300;
 	GAME_VAR(int, 0x680370) = 2;
 	GAME_VAR(int, 0x4df8e0) = 0;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)0x4dedb0,
-	                                                        (const char *)(0x9f684c + GAME_VAR(int, 0x9f8c58) * 0x48), 0x20);   /* strncpy */
+	                                                        (const char *)(0x9f684c + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 }
 
@@ -289,9 +289,9 @@ int (profileList_clicks)(void)
 			GAME_VAR(int, 0x76d42c) = 0;
 		}
 	}
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		GAME_VAR(int, 0x9f8f10) = 1;
-	return GAME_VAR(int, 0x4ded8c);
+	return g_keyEnter;
 }
 
 #define chdir_(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
@@ -502,7 +502,7 @@ u32 (profile_newNameDialog)(void)
 			g_paused = 1;
 			r = GAME_CDECL(0x44b600, u32, void)();   /* profile_typeNewName: typing starts */
 		}
-		if (!GAME_VAR(int, 0x4ded8c))
+		if (!g_keyEnter)
 			return r;
 		GAME_VAR(int, 0x9f8f34) = 0;
 		r = GAME_CDECL(0x44b600, u32, void)();
@@ -539,7 +539,7 @@ u32 (profile_newNameDialog)(void)
 			r = keyboard_back();
 		}
 	}
-	if (!GAME_VAR(int, 0x4ded8c))
+	if (!g_keyEnter)
 		return r;
 	GAME_VAR(int, 0x9f8f10) = 1;
 	g_paused = 0;

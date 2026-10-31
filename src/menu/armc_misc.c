@@ -135,8 +135,8 @@ void (armc_exit)(int confirmed)
 	g_flareStepA = -0.2f;
 	sound_playMenu(4);
 	music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3", the game's own string */
-	if (GAME_VAR(int, 0x76d410) == 1 && GAME_VAR(int, 0x9da49c) == 0x66)
-		GAME_VAR(int, 0x9da49c) = 0x67;
+	if (g_startedFromLobby == 1 && g_lobbyReply == 0x66)
+		g_lobbyReply = 0x67;
 }
 
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
@@ -507,7 +507,7 @@ void THISCALL (stage_claimPlayerActor)(Stage *stage, int a, int x, int y, void *
 /* 0x410160: a right click leaves the ARM CENTER's page, the menu camera put back */
 void (armc_rightClickLeave)(void)
 {
-	if (GAME_VAR(int, 0x4ded8c)) {
+	if (g_keyEnter) {
 		armc_restoreMenuCamera();
 		GAME_VAR(int, 0x4dc790) = 0;
 		BITS(g_viewAspect) = 0;
@@ -635,7 +635,7 @@ int (armc_drawModeTabs)(void)
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	for (int i = 0; i < 3; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, GAME_VAR(int, 0x4dc798) == i + 1 ? 0.8f : 0.4f);

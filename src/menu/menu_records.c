@@ -25,7 +25,7 @@ void (lobby_404930)(void)
 {
 	GAME_VAR(int, 0x4db584) = GAME_VAR(int, 0x4dedd4);
 	copy_name(0x4db560, 32, (const char *)0x4dedb0);
-	GAME_VAR(int, 0x4db580) = GAME_VAR(int, 0x4dedd0);
+	GAME_VAR(int, 0x4db580) = g_playerCorporation;
 }
 
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
@@ -58,7 +58,7 @@ void (menu_showMessage)(int i)
 {
 	GAME_VAR(int, 0x4df900) = 1;
 	memset((void *)0x4df81c, 0, 0x50);
-	GAME_VAR(int, 0x9da49c) = 0;
+	g_lobbyReply = 0;
 	strcpy((char *)0x4df81c, (const char *)(0x74de24 + i * 0x80));
 }
 
@@ -172,7 +172,7 @@ void (menu_restoreCamera)(void)
 /* 0x445de0: a click (either button) starts the menu fade, once */
 void (menu_clickStartFade)(void)
 {
-	if ((GAME_VAR(int, 0x4ded88) || GAME_VAR(int, 0x4ded8c)) && !GAME_VAR(int, 0x4df01c)) {
+	if ((GAME_VAR(int, 0x4ded88) || g_keyEnter) && !GAME_VAR(int, 0x4df01c)) {
 		GAME_VAR(int, 0x4df01c) = 1;
 		GAME_VAR(int, 0x4e0458) = 0;
 	}
@@ -191,7 +191,7 @@ static void room_pageChanged(void)
 /* 0x435970, 0x4359b0: the previous and the next page */
 void (roomList_prevPage)(void)
 {
-	int *page = &GAME_VAR(int, 0x9dd6ac);
+	int *page = &g_roomListPage;
 	if (*page > 0) {
 		GAME_VAR(int, 0x9dd1b4) = *page;
 		(*page)--;
@@ -201,7 +201,7 @@ void (roomList_prevPage)(void)
 
 void (roomList_nextPage)(void)
 {
-	int *page = &GAME_VAR(int, 0x9dd6ac);
+	int *page = &g_roomListPage;
 	if (*page < GAME_VAR(int, 0x9dd4b8) && *page < 99) {
 		GAME_VAR(int, 0x9dd1b4) = *page;
 		(*page)++;
@@ -262,7 +262,7 @@ void (roomList_fillPage)(void)
 		if (!*player)
 			break;
 		u8 *row = rows + i * 0x44;
-		*(int *)(row + 4) = i + GAME_VAR(int, 0x9dd6ac) * 10 + 1;
+		*(int *)(row + 4) = i + g_roomListPage * 10 + 1;
 		strcpy((char *)(row + 8), (const char *)player);
 		for (int k = 0; k < 7; k++)
 			*(u32 *)(row + dst[k]) = *(const u32 *)(player + src[k]);
@@ -365,7 +365,7 @@ void (skirmish_settingsArrowClick)(void)
 {
 	if (g_dialogOpen)
 		return;
-	if (!GAME_VAR(int, 0x4ded8c)) {
+	if (!g_keyEnter) {
 		if (!g_mouseClick)
 			return;
 		switch (briefing_hitTest(g_mouseX, g_mouseY)) {
@@ -472,13 +472,13 @@ u32 (mission_choose)(void)
 	GAME_VAR(int, 0x9dad94) = sel;
 	memcpy((void *)0x67fb44, (const void *)(0x907b30 + sel * 32), 32);
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
-	GAME_VAR(int, 0x9da3e0) = 0;
-	GAME_VAR(int, 0x76d368) = a;
+	g_mapRotation = 0;
+	g_chosenGameMode = a;
 	GAME_VAR(int, 0x4df8e8) = b;
 	GAME_VAR(int, 0x76d408) = c;
 	u32 r = GAME_CDECL(0x447960, u32, void)();   /* FUN_00447960: the settings left */
 	GAME_VAR(int, 0x67ef14) = 1;
-	GAME_VAR(int, 0x5ae9c4) = 3;
+	g_matchMode = 3;
 	return r;
 }
 
@@ -488,7 +488,7 @@ u32 (missionsel_clicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		GAME_CDECL(0x447960, u32, void)();
 	if (!g_mouseClick)
 		return 0;
@@ -574,7 +574,7 @@ u32 (menu_keyStartFade)(void)
 u32 (mapSelect_drawNames)(void)
 {
 	u32 r = 0;
-	for (int i = 0, dy = 0; i < GAME_VAR(int, 0x9dd928) && dy < 200; i++, dy += 20) {
+	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
 		set_colour_bits((Colour *)0x76d438, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
 		int map = GAME_VAR(int, 0x9dd92c) + i;
 		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
@@ -595,7 +595,7 @@ u32 (mapSelect_drawNames)(void)
 static u32 leave_game(void)
 {
 	set_680370_441250(4);
-	GAME_VAR(int, 0x4deb48) = 1;
+	g_enteringMenus = 1;
 	GAME_VAR(int, 0x67ef20) = 210;
 	GAME_CDECL(0x447010, void, void)();   /* profile_saveProgress */
 	return GAME_CDECL(0x48b420, u32, void)();
@@ -614,7 +614,7 @@ static int menu_choice(int i, u32 *r)
 	switch (i) {
 	case 0:
 		*r = GAME_CDECL(0x447750, u32, void)();   /* menuState500_enter */
-		GAME_VAR(int, 0x4deb48) = 0;
+		g_enteringMenus = 0;
 		return 0;
 	case 2:
 		result = GAME_CDECL(0x451b80, int, int)(0x65);   /* net_connect */
@@ -626,13 +626,13 @@ static int menu_choice(int i, u32 *r)
 		/* fall through */
 	case 1: case 3:
 		*r = GAME_CDECL(0x441250, u32, int)(2);   /* set_680370_441250 */
-		GAME_VAR(int, 0x4deb48) = 0;
+		g_enteringMenus = 0;
 		GAME_VAR(int, 0x67ef20) = i == 1 ? 400 : i == 2 ? 800 : 600;
 		return 0;
 	case 4:
 		GAME_VAR(int, 0x4dc24c) = 1;
 		*r = GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus: the armour centre */
-		GAME_VAR(int, 0x4deb48) = 0;
+		g_enteringMenus = 0;
 		return 0;
 	default:
 		*r = leave_game();
@@ -659,7 +659,7 @@ u32 (mainmenu_startNetGame)(void)
 		if (i < 6 && menu_choice(i, &r))
 			return r;
 	}
-	if (!GAME_VAR(int, 0x4ded8c))
+	if (!g_keyEnter)
 		return 0;
 	int launched = GAME_VAR(int, 0x9dae10);
 	if (launched <= 0)
@@ -687,7 +687,7 @@ u32 (mainmenu_processKeys)(void)
 	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && GAME_VAR(int, 0x9dae10) > 0) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
 		set_680370_441250(4);
-		GAME_VAR(int, 0x4deb48) = 1;
+		g_enteringMenus = 1;
 		GAME_VAR(int, 0x67ef20) = 210;
 		return GAME_CDECL(0x48b420, u32, void)();
 	}

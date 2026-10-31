@@ -453,7 +453,7 @@ void (armc_drawStatsPanel)(void)
 	const u32 *bright = (const u32 *)0x4dbc58, *dim = (const u32 *)0x4dc1d0;
 	int hovered = armcMain_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int i = 0; i < 6; i++) {

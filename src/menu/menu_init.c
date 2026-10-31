@@ -123,7 +123,7 @@ void (menuCamera_initPoints)(void)
    from 0x9dda88) cleared, the layout and the replay files listed. Returns the listing's eax */
 u32 (replayList_open)(void)
 {
-	GAME_VAR(int, 0x9dd928) = 0;
+	g_mapSelectCount = 0;
 	GAME_VAR(int, 0x9dd92c) = 0;
 	GAME_VAR(int, 0x9dd944) = 0;
 	GAME_VAR(int, 0x9eea88) = 0;

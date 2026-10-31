@@ -46,7 +46,7 @@ static void mission_screen(int hovered)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	/* "<n>ST <0x75f1a4>  [ <map> ]" */
 	char title[256];
@@ -86,7 +86,7 @@ static void mission_screen(int hovered)
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	menu_drawRect(X0 + 0xd8, Y0 + 0x20, X0 + 0x158, Y0 + 0xa0, 0);
 	/* the arrows: back from the first mission, on up to the last unlocked (0x9f181c) and 14 */
-	bind(GAME_VAR(int, 0x9db0a4));
+	bind(g_buttonTexture);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4284d0(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_mission > 0 && hovered == 2);
@@ -135,7 +135,7 @@ static void mission_screen(int hovered)
 		menu_drawRect(x0 + i * 0x40, Y0 + 0x154, x0 + i * 0x40 + 0x30, Y0 + 0x184, 0);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		bind(GAME_VAR(int, 0x9db0a4));
+		bind(g_buttonTexture);
 		int lit = hovered == k;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0x8c;

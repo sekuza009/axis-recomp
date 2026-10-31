@@ -240,7 +240,7 @@ int (app_checkCdAndLoad)(void *instance)
 		}
 		GAME_VAR(int, 0x9dbf0c) = 1;
 	}
-	if (!GAME_VAR(int, 0x76d410)) {
+	if (!g_startedFromLobby) {
 		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
 		    || !app_checkFile_game()) {
 			sys_messageBox((const char *)0x4b04b0);
@@ -316,7 +316,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(int, 0x4df03c) = 0;
 	GAME_VAR(u32, 0x4df910) = 0;
 	GAME_VAR(int, 0x4e1868) = 0;
-	GAME_VAR(int, 0x5ae9c4) = 0;
+	g_matchMode = 0;
 	GAME_VAR(int, 0x4dd984) = (GAME_VAR(int, 0x4e0c90) * 5 - 0x1f4) * 4;
 	GAME_VAR(int, 0x5b1dac) = 0;
 	return 1;
@@ -393,7 +393,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled((void *)0x76d368, 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)0x4df8e8, 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)0x76d408, 4, 1, G(void *, 0x2340d08));
-			game_setGameTypeFlags((Stage *)STAGE(g), GAME_VAR(int, 0x76d368));
+			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
 		GAME_VAR(u32, 0xae2ec8) = 0x469730;
 		log_message((int)STAGE(g), -1, 0, (const char *)0x4c521c);

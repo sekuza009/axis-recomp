@@ -451,9 +451,9 @@ static void spark(u8 *s, u8 *p, float dt)
 	GAME_VAR(float, p + 0x84) = f32(wait);
 	if (wait > 0)
 		return;
-	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % 10;
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
 	GAME_VAR(u32, p + 0x84) = 0x3dcccccd;
 	if (!r)
@@ -660,9 +660,9 @@ void THISCALL (item_update)(u8 *s, float dt)
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
 static u32 table_rand_below(u32 n)
 {
-	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	g_randPos = at + 1;
 	return r;
 }
 

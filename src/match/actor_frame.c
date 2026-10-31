@@ -26,8 +26,8 @@ static long double arctan2(long double y, long double x)
 
 static u32 rand_below(u32 n)
 {
-	u32 r = GAME_VAR(u32, 0xa106f8 + (GAME_VAR(u32, 0xa1efb8) & 0xfff) * 4) % n;
-	GAME_VAR(u32, 0xa1efb8)++;
+	u32 r = GAME_VAR(u32, 0xa106f8 + (g_randPos & 0xfff) * 4) % n;
+	g_randPos++;
 	return r;
 }
 
@@ -123,8 +123,8 @@ static void emit(u8 *s, u8 *a, const int *joint, const int *count, const u8 *mx,
 	for (int k = 0; k < *count; k++) {
 		if (joint[k + 0x20] == 1 && !(AF(0x178) > 0))
 			continue;
-		u32 r = GAME_VAR(u32, 0xa106f8 + (GAME_VAR(u32, 0xa1efb8) & 0xfff) * 4) & 7;
-		GAME_VAR(u32, 0xa1efb8)++;
+		u32 r = GAME_VAR(u32, 0xa106f8 + (g_randPos & 0xfff) * 4) & 7;
+		g_randPos++;
 		u8 *m = (u8 *)(uintptr_t)GAME_VAR(u32, mx) + joint[k] * 100;
 		fx[0] = GAME_VAR(u32, legs + 0x17fc) + 5;
 		fx[1] = r;

@@ -404,7 +404,7 @@ void (armc_enter)(TunnelRing *ring)
 	int ringLength = 0x44c;
 	GAME_VAR(int, 0x4b2a74) = step;
 	GAME_VAR(float, 0x4b2a78) = (float)step;
-	if (GAME_VAR(int, 0x4deb48)) {
+	if (g_enteringMenus) {
 		ringLength = 0x3b6;
 		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
 	}
@@ -423,11 +423,11 @@ void (armc_enter)(TunnelRing *ring)
 			camera_keep();
 			GAME_VAR(int, 0x4b2a70) = 0;
 		}
-		if (GAME_VAR(int, 0x76d410) == 1 && GAME_VAR(int, 0x9da49c) == 0x65) {
+		if (g_startedFromLobby == 1 && g_lobbyReply == 0x65) {
 			GAME_VAR(int, 0x4dc24c) = 1;
 			menu_enterMenus();
-			GAME_VAR(int, 0x4deb48) = 0;
-			GAME_VAR(int, 0x9da49c) = 0x66;
+			g_enteringMenus = 0;
+			g_lobbyReply = 0x66;
 		}
 		return;
 	case 1:
@@ -470,7 +470,7 @@ void (armc_enter)(TunnelRing *ring)
 			GAME_VAR(int, 0x4b2a70) = 1;
 			camera_keep();
 			if (state == 1) {
-				GAME_VAR(int, 0x4deb48) = 0;
+				g_enteringMenus = 0;
 				return;
 			}
 		} else if (state == 1)

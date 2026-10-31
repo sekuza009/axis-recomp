@@ -67,12 +67,12 @@ u32 (profile_drawMessageWindow)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	int button = X0 + (X1 - X0) / 2 - 0x32;
 	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 	text_drawBox16(X0, Y0 + 0x20, X1, (const char *)0x751d24);
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4282f0(button, Y0 + 0x50, button + 0x60, Y0 + 0x70, 1);
@@ -103,12 +103,12 @@ static u32 two_buttons(const TwoButtons *d)
 	glLoadIdentity();
 	int hovered = GAME_CDECL(d->hit, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
 	text_drawBox16(X0, Y0 + 0x10, X1, (const char *)d->question);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		int texture = GAME_VAR(int, 0x9db0a4);
+		int texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		const u32 *colour = k == hovered ? panel : dim;
@@ -152,19 +152,19 @@ u32 (profile_drawNewDialog)(void)
 	glLoadIdentity();
 	int hovered = GAME_CDECL(0x44b2a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
 	text_draw16(X0 + 0x14, Y0 + 0x10, (const char *)0x751ca4);
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	profile_drawButton(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
 	for (int k = 0; k < 2; k++) {
 		int x = X0 + k * 0x78;
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		const u32 *colour = k == hovered ? panel : dim;
@@ -211,7 +211,7 @@ void (mainmenu_drawScreen)(void)
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0, 0x3e99999a, 0x3f000000);   /* 0.1, 0, 0.3, 0.5 */
 		glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
 	}
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	if (PAGE == 1)
 		set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);
 	else
@@ -242,14 +242,14 @@ void (mainmenu_drawScreen)(void)
 			set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
 		}
 		glEnable(GL_TEXTURE_2D);
-		int texture = GAME_VAR(int, 0x9db0a4);
+		int texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		menu_drawTexQuad_4282f0(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
 		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(0x751aa4 + k * 0x80));
 	}
 	GAME_CDECL(0x44ce90, void, void)();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4286b0(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
@@ -298,7 +298,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	float *bar = (float *)0x9f8d34;
 	const float *target = (const float *)0x9f8ec0;
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 9; k++) {
@@ -347,7 +347,7 @@ void (profile_drawPilotSelect)(void)
 	glLoadIdentity();
 	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* pilotSelect_hitTest */
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75e7a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -440,7 +440,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 	stat_bars(X0 + 0x1bc, Y0 + 0x9f, 0x15, K(0x4a95f4), 1.0f);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int lit = hovered == k + 9;

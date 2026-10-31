@@ -161,13 +161,13 @@ void (mapSelect_drawDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x74e8a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexQuad_4286b0(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
@@ -188,7 +188,7 @@ void (mapSelect_drawDialog)(void)
 	for (int row = 0; row < 2; row++)
 		for (int k = 0; k < 2; k++) {
 			glEnable(GL_TEXTURE_2D);
-			texture = GAME_VAR(int, 0x9db0a4);
+			texture = g_buttonTexture;
 			tex_bind(g_textures->managers[texture / 512], texture % 512);
 			int lit = hovered == 4 + row * 2 + k;
 			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
@@ -338,7 +338,7 @@ void (menu_returnToMainFromRoom)(void)
 	while (g_tunnel != NULL)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
 	game_returnToMenus_41e8b0();
-	GAME_VAR(int, 0x9dd838) = 0;
+	g_roomRequestOut = 0;
 	GAME_VAR(int, 0x9dd6a4) = 0;
 	GAME_VAR(int, 0x9dd1b0) = 0;
 	GAME_VAR(int, 0x9dd6d4) = 0;
@@ -349,11 +349,11 @@ void (menu_returnToMainFromRoom)(void)
    the choice is kept */
 void (mapSelect_ok)(void)
 {
-	int count = GAME_VAR(int, 0x9dd928);
+	int count = g_mapSelectCount;
 	for (int i = 0; i < count; i++)
 		if (GAME_VAR(int, 0x9ddac8 + i * 0x44) == 1) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9eeab8) = GAME_VAR(int, 0x9dd928);
+			GAME_VAR(int, 0x9eeab8) = g_mapSelectCount;
 			GAME_VAR(int, 0x9db994) = 1;
 			GAME_VAR(int, 0x9eeab4) = 0;
 			return;
@@ -371,7 +371,7 @@ static void maps_up(void)
 }
 static void maps_down(void)
 {
-	if (g_mapFirst + 10 < GAME_VAR(int, 0x9dd928)) {
+	if (g_mapFirst + 10 < g_mapSelectCount) {
 		g_mapFirst++;
 		sound_playMenu(2);
 	}
@@ -573,7 +573,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	GAME_VAR(u32, 0x9dd918) = 0;
 	GAME_VAR(u32, 0x9dd91c) = 0;
 	GAME_VAR(u32, 0x9dd920) = nearZ;
-	GAME_VAR(int, 0x4deb48) = deb48;
+	g_enteringMenus = deb48;
 	GAME_VAR(int, 0x9db990) = 0;
 	GAME_VAR(int, 0x4dda44) = 0;
 	GAME_VAR(int, 0x4dda48) = 0;
@@ -637,7 +637,7 @@ u32 (game_returnToMenus_41eb00)(void)
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 	GAME_VAR(int, 0x9dced0) = 0;
 	GAME_VAR(int, 0x4ded54) = 0;
-	GAME_VAR(int, 0x9dd1c8) = 0;
+	g_roomLoginDue = 0;
 	GAME_VAR(int, 0x9dd350) = 0;
 	return r;
 }
@@ -684,7 +684,7 @@ u32 (menuState800_gameRoom)(void)
 	case 99:
 		CALL(0x43e720);
 		menu_drawBackground();
-		if (g_quitAsked == 1 && GAME_VAR(int, 0x9dce48) == 2)
+		if (g_quitAsked == 1 && g_roomMode == 2)
 			return CALL(0x43df00);
 		return CALL(0x437e00);
 	}
@@ -698,7 +698,7 @@ u32 (menuState800_gameRoom)(void)
    while it goes out (net_sendMessage) */
 static void send_result(void)
 {
-	if (!GAME_VAR(int, 0xa0baf8))
+	if (!g_isHost)
 		return;
 	GAME_VAR(int, 0x9f941c) = 1;
 	GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);
@@ -715,22 +715,22 @@ u32 (game_postMatch)(void)
 {
 	GAME_VAR(int, 0x4de6f8) = 1;
 	GAME_VAR(int, 0x5b1dac) = 0;
-	if (GAME_VAR(int, 0x76d410) == 1) {
+	if (g_startedFromLobby == 1) {
 		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */
 		GAME_VAR(int, 0x76d3e8) = -1;
 		return r;
 	}
 	if (GAME_VAR(int, 0x9db990))
-		GAME_VAR(int, 0x5ae9c4) = 0;
+		g_matchMode = 0;
 	u32 r;
 	int mission;
-	switch (GAME_VAR(int, 0x5ae9c4)) {
+	switch (g_matchMode) {
 	case 1:
 		send_result();
 		game_returnToMenus_41e9d0();
 		break;
 	case 2:
-		if (GAME_VAR(int, 0xa0baf8)) {
+		if (g_isHost) {
 			send_result();
 			char *to = GAME_VAR(char *, 0xa0b330), *from = GAME_VAR(char *, 0xa0b328);
 			lstrcpyA(to + 0x43, from + 0x43);

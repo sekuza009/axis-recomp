@@ -36,12 +36,12 @@ void (setup_drawSoundPage)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y1 - 0x20, 0);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x7533a4);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -88,7 +88,7 @@ void (setup_drawSoundPage)(void)
 	}
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		int lit = hovered == k + 8;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
@@ -125,11 +125,11 @@ void (setup_drawOptionsDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x7538a4);
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 7; k++)
@@ -151,7 +151,7 @@ void (setup_drawOptionsDialog)(void)
 	}
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
-		texture = GAME_VAR(int, 0x9db0a4);
+		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		int lit = hovered == k + 7;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
@@ -234,7 +234,7 @@ static void settings_tab(void)
 	text_draw8(X0 + 0x30, Y0 + 0xb0, (const char *)0x756224);
 	for (int k = 0; k < 2; k++)
 		text_draw8(X0 + 0xc8, Y0 + 0x5c + k * 0x18, (const char *)(GAME_VAR(int, 0x4de1c0 + k * 4) == 1 ? 0x7519a4 : 0x751924));
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -303,7 +303,7 @@ void (setup_crosshairScreen)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
+	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -336,7 +336,7 @@ void (setup_crosshairScreen)(void)
 		settings_tab();
 	for (int k = 0; k < 3; k++) {
 		glEnable(GL_TEXTURE_2D);
-		int texture = GAME_VAR(int, 0x9db0a4);
+		int texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		int lit = hovered == k + 4 && !editing;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
@@ -626,13 +626,13 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				if (!t->layer2)
 					continue;
 				if (wall == hovered)
-					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9428), (const float *)0x4a9424)));
+					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)0x4a9428), (const float *)0x4a9424)));
 				else
 					glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 			} else if (!h->layer3)
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 			else if (wall == hovered)
-				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&GAME_VAR(float, 0x680ccc)), (const float *)0x4a9420), (const float *)0x4a9424)));
+				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)0x4a9420), (const float *)0x4a9424)));
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
 			float x = f32(fmul_m(fld_m(&s0), (const float *)0x4a9418));   /* 10 s0 */
@@ -697,8 +697,8 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	if (!h->keep_texture)
 		glDisable(GL_TEXTURE_2D);
 	if (GAME_VAR(int, 0x680398)) {
-		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &GAME_VAR(float, 0x680ccc));
-		GAME_VAR(float, 0x680ccc) = f32(glow);
+		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &g_panelGlow);
+		g_panelGlow = f32(glow);
 		if (!clamp) {
 			if (!(glow > *(const float *)0x4a93fc))
 				GAME_VAR(u32, 0x4df454) = 0x3f800000;   /* 1 */
@@ -707,7 +707,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		} else if (!(glow > *(const float *)0x4a93fc)) {
 			GAME_VAR(u32, 0x680ccc) = 0x40000000;   /* 2 */
 			GAME_VAR(u32, 0x4df454) = 0x3f800000;
-		} else if (GAME_VAR(float, 0x680ccc) >= *(const float *)0x4a93f8) {
+		} else if (g_panelGlow >= *(const float *)0x4a93f8) {
 			GAME_VAR(u32, 0x680ccc) = 0x42180000;   /* 38 */
 			GAME_VAR(u32, 0x4df454) = 0xbf800000;
 		}
@@ -779,7 +779,7 @@ void (room_drawMenu)(void)
 	Highlight h = { hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8)), glow, 0, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && GAME_VAR(int, 0x9dce48) == 2)
+	if (h.on != -1 && g_roomMode == 2)
 		caption(0x750ba4, h.on);
 }
 
@@ -791,7 +791,7 @@ void (lobbyTop_drawTitle)(void)
 	Highlight h = { hovered_panel(0x5b1cf8, 4, GAME_VAR(int, 0x4db85c)), white, 1, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4dba68), 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && GAME_VAR(int, 0x4dbb3c) == 2 && !GAME_VAR(int, 0x680370))
+	if (h.on != -1 && g_arenaLobbyMode == 2 && !GAME_VAR(int, 0x680370))
 		caption(0x750924, h.on);
 }
 

@@ -5,6 +5,7 @@
 #define GAME_H
 #include "axis.h"
 #include "scene.h"
+#include "globals.h"
 
 /* ---- OpenGL, through the import table ---- */
 #define GL_TEXTURE_2D 0x0de1

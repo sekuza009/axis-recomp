@@ -64,9 +64,9 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
 	if (FIELD(int, actor, 0x14c) != 1)
 		return;
-	u32 r = GAME_VAR(u32, 0xa1efb8);
+	u32 r = g_randPos;
 	u32 v = GAME_VAR(u32, 0xa106f8 + (r & 0xfff) * 4);
-	GAME_VAR(u32, 0xa1efb8) = r + 1;
+	g_randPos = r + 1;
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
 	FIELD(int, actor, 0x8830) = 0;
 	FIELD(int, actor, 0x8834) = 0;
@@ -134,8 +134,8 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 /* the next value of the game's table of rand() values (0xa106f8, 4096 of them; the position 0xa1efb8 moves on) */
 static u32 table_rand(void)
 {
-	u32 at = GAME_VAR(u32, 0xa1efb8);
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	u32 at = g_randPos;
+	g_randPos = at + 1;
 	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
 }
 
@@ -206,9 +206,9 @@ static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
 static u32 next_rand(u32 n)
 {
-	u32 at = GAME_VAR(u32, 0xa1efb8);
+	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
-	GAME_VAR(u32, 0xa1efb8) = at + 1;
+	g_randPos = at + 1;
 	return r;
 }
 

@@ -247,7 +247,7 @@ u32 (setup_drawTopPage)(void)
 			break;
 		}
 	}
-	int right = GAME_VAR(int, 0x4ded8c);
+	int right = g_keyEnter;
 	if (!right)
 		return 0;
 	int allowed = GAME_VAR(int, 0x9dae10);
@@ -270,7 +270,7 @@ u32 (setup_drawGraphicTab)(void)
 	u32 page = GAME_VAR(u32, 0x4ddcec);
 	if (page == 1 || page == 0 || GAME_VAR(int, 0x90d1c4))
 		return page;
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		g_setupPage = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return page;
@@ -340,7 +340,7 @@ void (setup_drawSoundTab)(void)
 {
 	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
 		return;
-	if (GAME_VAR(int, 0x4ded8c))
+	if (g_keyEnter)
 		g_setupPage = 0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
@@ -471,7 +471,7 @@ void (setup_drawControlTab)(void)
 	if (g_setupPage == 1 || g_setupPage == 0 || GAME_VAR(int, 0x90d1c4))
 		return;
 	int waiting = g_bindWaiting;
-	if (GAME_VAR(int, 0x4ded8c)) {
+	if (g_keyEnter) {
 		if (waiting) {
 			setup_drawKeyBindingRows(GAME_VAR(int, 0x76d424));
 			g_bindWaiting = 0;

@@ -99,7 +99,7 @@ static void briefing_button(int x0, int x1, int lit, const u32 *colour, const ch
 static void bind_button_texture(void)
 {
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x9db0a4);
+	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
