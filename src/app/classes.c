@@ -311,6 +311,23 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 #undef fatal
 }
 
+/* 0x46cdc0 (thiscall on an image): as image_initBy, without the fatal messages: the file, or 0 when it can't be
+   opened, a header is short, or it isn't 24 bits uncompressed (the file then stays open at +4) */
+void *THISCALL (match_46cdc0)(u8 *image, const char *path)
+{
+#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
+	if (GAME_VAR(void *, image + 4))
+		fclose(GAME_VAR(void *, image + 4));
+	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	if (!f || crt_fread(image + 8, 0xe, 1, f) < 1 || crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1
+	    || GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
+		return 0;
+	GAME_VAR(u32, image + 0x3e) = GAME_VAR(u32, image + 0x1a);
+	GAME_VAR(u32, image + 0x42) = GAME_VAR(u32, image + 0x1e);
+	return GAME_VAR(void *, image + 4);
+#undef crt_fread
+}
+
 /* 0x4734d0 (named gfx_saveScreenshot; by use a part type's emblem loaded): the BMP named after type p (its record at
    +0x1561b68, 0x47fd2 bytes each; the name from +4 by 0x4c74e8) read into a local image; at least 23 x 15 of it: its
    24 x 16 corner copied as RGBA into the record (+0x479c2), black pixels made clear and the rest opaque, and 1

@@ -76,6 +76,47 @@ long double (FUN_0046c100)(float a)
 	return r;
 }
 
+/* 0x46c140: the turn from angle a to angle b (tenths of a degree, as bits), both wrapped first (rounded to floats):
+   the shorter way, -1800 .. 1800; returned unrounded */
+#define HALF_TURN GAME_VAR(float, 0x4aa288)   /* 1800 */
+long double (actor_46c140)(u32 a, u32 b)
+{
+	float B = (float)FUN_0046c100_bits(b), A = (float)FUN_0046c100_bits(a);
+	if (B > A) {
+		X d = fsub_m(fld_m(&B), &A);
+		if (d > HALF_TURN)
+			return fsubr_m(fadd_m(fld_m(&A), TURN), &B);
+		return d;
+	}
+	X b2 = fld_m(&B);
+	if (fsub_m(fld_m(&A), &B) > HALF_TURN)
+		b2 = fadd_m(b2, TURN);
+	return fsub_m(b2, &A);
+}
+
+/* 0x46c1c0: angle a moved part t of the shorter way to b (b wrapped and rounded, a wrapped and kept unrounded),
+   wrapped back into 0 .. 3600; returned unrounded */
+long double (actor_46c1c0)(u32 a, u32 b, float t)
+{
+	float B = (float)FUN_0046c100_bits(b);
+	X A = FUN_0046c100_bits(a);
+	if (B > A) {
+		X d = fld_m(&B) - A;
+		if (!(d > HALF_TURN))
+			return fmul_m(d, &t) + A;
+		X v = fmul_m(fsub_m(fld_m(&B), TURN) - A, &t) + A;
+		if (!(v >= ZERO))
+			v = fadd_m(v, TURN);
+		return v;
+	}
+	if (!(A - fld_m(&B) > HALF_TURN))
+		return fmul_m(fld_m(&B) - A, &t) + A;
+	X v = fmul_m(fadd_m(fld_m(&B), TURN) - A, &t) + A;
+	if (v >= *TURN)
+		v = fsub_m(v, TURN);
+	return v;
+}
+
 /* 0x482a40: out = the point p transformed by the matrix m (columns, the translation at 12 .. 14), each row summed in
    the original's order */
 void (load_482a40)(float *out, const float *m, const float *p)

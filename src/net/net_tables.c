@@ -137,6 +137,45 @@ u32 (FUN_004540b0)(SessionDesc d)
 	return (u32)copy;
 }
 
+/* 0x453560 (stdcall; DirectPlay's session enumeration callback): a found session (desc: its GUID at +8, name at
+   +0x30 ..) put into the list (FUN_004540b0, by value) unless it is the game's own or already listed (0, which
+   ends the enumeration). With no description (the enumeration timed out) it stops in modes 0 and 1. The copy's
+   first word is a GlobalAlloc'd block holding the GUID; in mode 0 (+0x74) the session's address as text. 1 */
+#define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
+int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flags, void *context)
+{
+	int mode = GAME_VAR(int, 0xa0b418);
+	if ((mode == 1 || mode == 0) && !desc)
+		return 0;
+	SessionDesc d;
+	memset(d.b, 0, sizeof d.b);
+	const u8 *guid = desc + 8;
+	if (!memcmp(guid, (const void *)0x4aae70, 16))
+		return 1;
+	for (int k = 0; k < GAME_VAR(int, 0xa0b41c); k++)
+		if (!memcmp(guid, GAME_VAR(u8 *, 0xa0b474 + k * 8) + 4, 16))
+			return 0;
+	u8 *block = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
+	GAME_VAR(u8 *, d.b) = block;
+	crt_strncpy((char *)d.b + 0x2e, GAME_VAR(const char *, desc + 0x30), 0x46);
+	memcpy(d.b + 0x2a, desc + 0x2c, 4);
+	memcpy(block, guid, 16);
+	memcpy(d.b + 4, guid, 16);
+	memcpy(d.b + 0x14, desc + 0x18, 16);
+	d.b[0x27] = desc[0x44];
+	d.b[0x26] = desc[0x28];
+	memcpy(d.b + 0x24, desc + 0x40, 2);
+	d.b[0x28] = desc[0x49];
+	d.b[0x29] = desc[0x48];
+	if (GAME_VAR(int, 0xa0b418) == 0) {
+		GAME_CDECL(0x454390, int, u32)(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry */
+		crt_strncpy((char *)d.b + 0x74, (const char *)0xa0b460, 0x10);
+	}
+	GAME_CDECL(0x4540b0, u32, SessionDesc)(d);
+	return 1;
+}
+#undef crt_strncpy
+
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
 u32 (inet_addr_wrap_4547c0)(const char *text) { return ((u32 (STDCALL *)(const char *))0x4a82b0)(text); }
 

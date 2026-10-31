@@ -2325,8 +2325,10 @@ static long double run_lifted_fp(void (*f)(X86 *), DWORD ecx, int nargs, const D
 /* 0x46c140 actor_46c140(a, b): the shortest signed angle from a to b (1/10 degrees, both wrapped to 0..3600 by
    FUN_0046c100); 0x46c1c0 actor_46c1c0(a, b, t): a moved the fraction t of that way towards b, wrapped. Both return
    in ST0. Lifted */
-static long double __cdecl actor_46c140(DWORD a, DWORD b) { DWORD v[2] = { a, b }; return run_lifted_fp(lift_46c140, 0, 2, v); }
-static long double __cdecl actor_46c1c0(DWORD a, DWORD b, DWORD step) { DWORD v[3] = { a, b, step }; return run_lifted_fp(lift_46c1c0, 0, 3, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long double actor_46c140(DWORD a, DWORD b);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long double actor_46c1c0(DWORD a, DWORD b, DWORD step);
 /* 0x471400 (thiscall) collision_moveActor(r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis): an actor's
    move for this frame on the stage: pos + vel is clamped to the world box (+0x9ef91c min, +0x9ef928 max; the velocity
    is shortened to match), the map objects (count +0x13c9b24, 0x2cc-byte records at +0x131ae48: active, solid, a
@@ -2608,7 +2610,8 @@ int arena_loadSettings(const char *path);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_keyBindings(void *f);
 /* 0x46cdc0 (thiscall) match_46cdc0(name): open a 24-bit BMP (file kept at +4), read its headers; the file, or 0. Lifted */
-static THISCALL DWORD match_46cdc0(char *self, DWORD name) { DWORD v[1] = { name }; return run_lifted_regs(lift_46cdc0, 0, (DWORD)self, 0, 1, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int match_46cdc0(char *self, DWORD name);
 /* batch 46 */
 /* deleting destructors: destroy, free the object when flags bit 0 is set, return this */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2661,7 +2664,8 @@ THISCALL DWORD Stage_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD chat_saveMacros(void *scene);
 /* 0x462740 (thiscall) chat_macro(in, out): "/N=text" stores macro N, "/N" expands it into out; returns 1 when handled. Lifted */
-static THISCALL DWORD chat_macro(char *self, DWORD in, DWORD out) { DWORD v[2] = { in, out }; return run_lifted_regs(lift_462740, 0, (DWORD)self, 0, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int chat_macro(char *self, DWORD in, DWORD out);
 /* batch 47: functions calling Win32 / OpenGL / GDI / registry / more CRT - in the game the real ones, in the tests the
    IAT and CRT mocks. All lifted (lifted/win.c); the comments say what each does */
 #include "lifted/win.c"
@@ -2762,7 +2766,8 @@ long double timer_now(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Stage_deletingDtor(void *stage, int flags);
 /* 0x453560 dplay_enumSessionsCallback(desc, timeout, flags, context) (stdcall): copy one found session into the list */
-static THISCALL DWORD dplay_enumSessionsCallback(DWORD ecx_, DWORD a, DWORD b, DWORD c, DWORD d) { DWORD v[4] = { a, b, c, d }; return run_lifted_regs(lift_453560, 0, ecx_, 0, 4, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int WINAPI dplay_enumSessionsCallback(DWORD desc, DWORD timeout, DWORD flags, DWORD context);
 /* batch 48: menu input handlers, screen setups, rect/line drawing, the timer setup, the save scan, the autoplay
    recorder and the DirectPlay connection callback. All lifted (lifted/menu2.c); the comments say what each does */
 #include "lifted/menu2.c"
@@ -3271,7 +3276,8 @@ DWORD shapeDat_initBy(void);
 DWORD skelDat_initBy(void);
 /* 0x487490 (thiscall) timer_getGameTime: frame time from the performance counter (initialised on first use),
    returned in ST0; 0x461210 (thiscall) armc_461210: its average over the last 10 frames */
-static THISCALL long double timer_getGameTime(char *t) { return run_lifted_fp(lift_487490, (DWORD)t, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL long double timer_getGameTime(char *t);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL long double armc_461210(char *t);
 /* 0x43f300 sys_checkClockTampering: compare the system time with the last one seen; a clock set back ends the
@@ -9633,7 +9639,7 @@ static void sessdesc2_setup(void)
 }
 ST(dplay_enumSessionsCallback, sessdesc2_setup();,
    ((DWORD (WINAPI *)(char *, char *, DWORD, DWORD))0x453560)(BUF + 0x200, BUF + 0x300, (DWORD)g_a[0], 0),
-   dplay_enumSessionsCallback(0, (DWORD)(BUF + 0x200), (DWORD)(BUF + 0x300), (DWORD)g_a[0], 0))
+   (DWORD)dplay_enumSessionsCallback((DWORD)(BUF + 0x200), (DWORD)(BUF + 0x300), (DWORD)g_a[0], 0))
 /* batch 48 */
 /* the yes/no dialog's two button rectangles (x0, y0, x1, y1) at `table`, the cursor inside one of them or anywhere,
    random clicks and dialog/other-dialog flags */
@@ -17547,7 +17553,7 @@ static const STest g_stests[] = {
 	T(net_452de0, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_42ef30, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
 	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
-	T(profile_save, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 40, 0),
+	T(profile_save, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 400, 0),
 	/* batch 48 */
 	T(profile_44f850, 1, 40, 0), T(intro_41e730, 0, 40, 0), T(room_435ab0, 1, 40, 0), T(lobby_406bd0, 1, 40, 0),
 	T(lobby_407270, 1, 40, 0), T(FUN_00427a40, 1, 40, 0), T(mainmenu_440d70, 1, 40, 0), T(timer_init, 0, 40, 0),
@@ -17603,7 +17609,7 @@ static const STest g_stests[] = {
 	T(armc_41b710, 0, 40, 0), T(menu_drawDimOverlay, 0, 40, 0), T(room_43df00, 0, 40, 0), T(menu_428890, 0, 40, 0),
 	T(menu_drawFrame, 0, 400, 0), T(glWindow_restoreDisplayMode, 1, 40, 0), T(glWindow_setDisplayModeBy, 1, 40, 0), T(glWindow_setupPixelFormat, 1, 40, 0),
 	T(glWindow_resize, 1, 40, 0), T(image_initBy, 1, 400, 0), T(shapeDat_initBy, 0, 40, 0), T(skelDat_initBy, 0, 40, 0),
-	T(timer_getGameTime, 1, 40, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
+	T(timer_getGameTime, 1, 1000, 0), T(armc_461210, 0, 400, 0), T(sys_checkClockTampering, 1, 40, 0), T(profile_deleteFiles, 0, 40, 0),
 	T(reg_writeCharacterSettings, 0, 40, 0), T(room_433640, 0, 40, 0), T(room_43e610, 0, 40, 0), T(gfx_initGLState, 0, 40, 0),
 	T(tex_upload, 0, 400, 0), T(tex_upload2, 0, 400, 0),
 	/* batch 60 */

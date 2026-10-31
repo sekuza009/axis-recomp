@@ -34,6 +34,29 @@ u32 THISCALL (chat_loadMacros)(Scene *scene)
 	return fclose(f);
 }
 
+/* 0x462740 (thiscall on the scene): a chat line as a macro. "/N=text" (N one digit) stores text as macro N and saves
+   them (-1); "/N" or "/NN" puts macro N into out (1); anything else is not a macro (0) */
+int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
+{
+	char line[0x100];
+	if (in[0] != '/')
+		return 0;
+	strcpy(line, in + 1);
+	if (line[0] < '0' || line[0] > '9')
+		return 0;
+	int n = line[0] - '0';
+	if (line[1] >= '0' && line[1] <= '9')
+		n = n * 10 + line[1] - '0';
+	char *macro = (char *)scene + 0x2340d3d + n * 0x39;
+	if (line[1] == '=') {
+		strcpy(macro, line + 2);
+		GAME_THISCALL(0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros: saves them */
+		return -1;
+	}
+	strcpy(out, macro);
+	return 1;
+}
+
 /* 0x487ed0: the replay being recorded closed (fclose's result; 0 when none) */
 u32 THISCALL (match_487ed0)(Scene *scene)
 {

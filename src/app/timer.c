@@ -82,6 +82,52 @@ long double (timer_now)(void)
 #undef g_lastCount
 }
 
+/* 0x487490 (thiscall on a frame timer): the frame time in seconds. On first use the counter's frequency (+0xc) and
+   start (+0x14) are read (a fatal message if either fails) and the longest frame (+0x34) set to 1/15 s unless
+   positive. Each call counts the frame (+8), takes the counter's rise (+0x1c) and adds it up (+0x24); once that
+   passes a second the frames per second go to +0x2c (0 if the sum is not positive) and the count and sum restart.
+   The frame time (+0x30) is the rise over the frequency, at most +0x34; returned as stored */
+long double THISCALL (timer_getGameTime)(u8 *t)
+{
+#define FIELD(type, offset) GAME_VAR(type, t + (offset))
+#define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
+#define fatal() GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xae2f00, (const char *)0x4c7b80)
+	if (FIELD(int, 4) == 0) {
+		if (!QueryPerformanceFrequency(&FIELD(u64, 0xc)))
+			fatal();
+		if (!QueryPerformanceCounter(&FIELD(u64, 0x14)))
+			fatal();
+		if (!(FIELD(float, 0x34) > 0))
+			FIELD(u32, 0x34) = 0x3d888889;   /* 1/15 */
+		FIELD(int, 4) = 1;
+	}
+	FIELD(int, 8)++;
+	u64 now;
+	QueryPerformanceCounter(&now);
+	int64_t rise = (int64_t)(now - FIELD(u64, 0x14));
+	FIELD(int64_t, 0x1c) = rise;
+	FIELD(u64, 0x14) = now;
+	FIELD(int64_t, 0x24) += rise;
+	int64_t sum = FIELD(int64_t, 0x24), freq = FIELD(int64_t, 0xc);
+	if (sum > freq) {
+		if (sum > 0)
+			FIELD(float, 0x2c) = (float)((long double)freq * FIELD(int, 8) / (long double)sum);
+		else
+			FIELD(int, 0x2c) = 0;
+		FIELD(u32, 0x24) = 0;   /* (the low half only, then the high half below) */
+		FIELD(int, 8) = 0;
+		FIELD(u32, 0x28) = 0;
+	}
+	long double dt = (long double)rise / (long double)freq;
+	FIELD(float, 0x30) = (float)dt;
+	if (dt > FIELD(float, 0x34))
+		FIELD(u32, 0x30) = FIELD(u32, 0x34);
+	return FIELD(float, 0x30);
+#undef FIELD
+#undef QueryPerformanceCounter
+#undef fatal
+}
+
 /* 0x461210 (thiscall on a frame timer): the frame's time (timer_getGameTime of the timer at +0xc) kept in a ring of
    ten (+0x48, next at +0x70), their average (the sum times 0x4a955c, 0.1) in +0x44; the average is also left on the
    FPU stack, as the original leaves it (its callers pop it) */
