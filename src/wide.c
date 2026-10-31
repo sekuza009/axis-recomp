@@ -10,7 +10,7 @@ static int no_mousePressed(int key) { (void)key; return 0; }
 static int no_latch[3];
 static void CDECL no_cursorClamp(void) {}
 static const Wide none = { sizeof(Wide), &off, &off, &off, &off, &off, &off, &off, &unused, no_fullScreen,
-                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off };
+                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off, &unused };
 const Wide *g_wide = &none;
 
 /* called by the patch DLL (test build) right after it loads recomp.dll */

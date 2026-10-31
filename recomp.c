@@ -4165,6 +4165,8 @@ DWORD gfx_fillRect(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD hud_drawDigits(int x, int y, DWORD scale, int value, int count, int padded);   /* (scale: a float's bits) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD font_penDraw(int x, int y, int font, const char *format, ...);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16854,6 +16856,21 @@ static void digits_setup(void)
 }
 static DWORD digits_orig(void) { return ((DWORD (__cdecl *)(int, int, int, int, int, int))0x46bdc0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]); }
 ST(hud_drawDigits, digits_setup();, digits_orig(), hud_drawDigits(g_a[0], g_a[1], (DWORD)g_a[2], g_a[3], g_a[4], g_a[5]))
+/* the pen font: digits_setup's texture, either font, text with newlines, tabs, characters outside ' ' .. '~' and a
+   "%d" or not, any position */
+static void penDraw_setup(void)
+{
+	static const char set[] = "AZaz09 .:/%\n\t\x7f\x80\xff\x1f~";
+	digits_setup();
+	char *f = BUF + 0x2000;
+	int n = irnd(0, 40), pct = irnd(0, 2) == 0;
+	for (int i = 0; i < n; i++) { char c = set[irnd(0, sizeof set - 2)]; f[i] = c == '%' ? '#' : c; }
+	f[n] = 0;
+	if (pct) strcat(f, irnd(0, 1) ? "%d" : "%2d s");
+	g_a[2] = irnd(-1, 2);
+}
+ST(font_penDraw, penDraw_setup();, ((DWORD (__cdecl *)(int, int, int, const char *, ...))0x46bb00)(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]),
+   font_penDraw(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
    ChangeDisplaySettingsA's answer; the DEVMODE's unset bytes painted alike */
 static void displaymode_setup(void)
@@ -17388,7 +17405,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18459,7 +18476,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
 	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
 	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" },
-	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x46bb00, (void *)font_penDraw, "font_penDraw" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */

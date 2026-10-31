@@ -2,6 +2,8 @@
    (the same across the row) and a column's left and right. Every value is a texel number times the constant at
    0x4a957c (1/256). */
 #include "../game.h"
+#include "../wide.h"
+#include <stdarg.h>
 
 typedef struct {
 	int r0, rstep, rend;   /* the rows' first texel, the step between rows, the end */
@@ -151,6 +153,59 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		tc(0x3f2f0000, 0x3f0b0000);
 		glVertex2i(left, gfx_getHeight() - top - h);
 	}
+	glEnd();
+	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
+}
+
+/* 0x46bb00: text in the pen font (the HUD's small text: the power-up countdown, the ranking...), printf-style, at
+   (x, y) (y down from the top): font 1 the proportional set (14 tall, widths from 0x4c5558), else the fixed one (8 x
+   8). A newline goes back to x one line lower, a tab moves 64 right, other characters outside ' ' .. '~' are left
+   out. Each glyph's four corners take their texture coordinates from the font's four cell tables (glyph 1 = ' ').
+   While it draws, the patch DLL is told (wide.h: penDraw): its vertex hook scales the power-up countdown's glyphs
+   about their start, which it used to recognise by return addresses in here. Returns glDisable's eax */
+u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
+{
+	char text[0x400];
+	va_list args;
+	va_start(args, format);
+	vsprintf(text, format, args);
+	va_end(args);
+	const u8 *topLeft, *bottomLeft, *bottomRight, *topRight;   /* (the tables, from glyph 1) */
+	const int *widths;
+	int height;
+	if (font) {
+		topLeft = (const u8 *)0xa0eac0; topRight = (const u8 *)0xa10360; bottomRight = (const u8 *)0xa0ee08;
+		bottomLeft = (const u8 *)0xa0f7e0; widths = (const int *)0x4c5558; height = 14;
+	} else {
+		topLeft = (const u8 *)0xa0f498; topRight = (const u8 *)0xa10018; bottomRight = (const u8 *)0xa0f150;
+		bottomLeft = (const u8 *)0xa0fcd0; widths = (const int *)0xa0fb28; height = 8;
+	}
+	int left = x;
+	glEnable(GL_TEXTURE_2D);
+	tex_bind(g_textures->managers[GAME_VAR(int, 0xa106ac) / 512], GAME_VAR(int, 0xa106ac) % 512);
+	glBegin(GL_QUADS);
+	*g_wide->penDraw = 1;
+	for (const char *p = text; *p; p++) {
+		int c = (signed char)*p;
+		if (c == '\n') {
+			x = left;
+			y += height;
+		} else if (c == '\t') {
+			x += 0x40;
+		} else if (c >= 0x20 && c <= 0x7e) {
+			int g = c - 0x20;
+			glTexCoord2fv(topLeft + g * 8);
+			glVertex2i(x, gfx_getHeight() - y);
+			glTexCoord2fv(bottomLeft + g * 8);
+			glVertex2i(x, gfx_getHeight() - y - height);
+			glTexCoord2fv(bottomRight + g * 8);
+			glVertex2i(widths[g] + x, gfx_getHeight() - y - height);
+			glTexCoord2fv(topRight + g * 8);
+			glVertex2i(widths[g] + x, gfx_getHeight() - y);
+			x += widths[g];
+		}
+	}
+	*g_wide->penDraw = 0;
 	glEnd();
 	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
 }

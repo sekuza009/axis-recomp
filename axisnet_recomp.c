@@ -1909,9 +1909,10 @@ static int stack_scan_words(const DWORD *sp) {
     DWORD n = top > (DWORD)sp ? (top - (DWORD)sp) / 4 : 0;
     return n > 16384 ? 16384 : (int)n;
 }
+static volatile int g_pendraw;   /* RECOMP: the rebuilt font_penDraw (0x46bb00) is drawing */
 __attribute__((noinline)) static void WINAPI hook_glVertex2i(int x, int y) {
     void *ret = __builtin_return_address(0), *site = NULL;
-    if (g_txt && (DWORD)ret >= 0x46bb00 && (DWORD)ret < 0x46bcf2) {
+    if (g_txt && (((DWORD)ret >= 0x46bb00 && (DWORD)ret < 0x46bcf2) || g_pendraw)) {   /* (or its rebuild drawing) */
         int w = AXGL_W, h = AXGL_H, ay = h - g_txty;
         if (w > 0 && h > 480) {
             x = g_txtx + (int)((x - g_txtx) * (w / 640.0) + 0.5);
@@ -2227,8 +2228,9 @@ static struct {
     const volatile int *pressedFix; int (__cdecl *mousePressed)(int code); int *mouseLatch;
     const volatile int *cursorClampFix; void (__cdecl *cursorClamp)(void);
     const volatile int *rotFix;
+    volatile int *penDraw;
 } g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full,
-             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp, &g_rotfix };
+             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp, &g_rotfix, &g_pendraw };
 
 /* g_wide.state: this module's writable data section (none in the standalone exe, which runs no harness) */
 static void wide_state_range(void) {
