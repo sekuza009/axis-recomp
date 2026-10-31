@@ -66,11 +66,11 @@ static void mission_screen(int hovered)
 		strcat(path, (const char *)0x4ad564);
 		strcat(path, map_name);
 		strcpy(name, path);
-		GAME_VAR(int, 0x9da324) = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
+		g_mapPreviewTexture = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
 		GAME_VAR(int, 0x9f63b0) = 0;
 	}
 	glEnable(GL_TEXTURE_2D);
-	bind(GAME_VAR(int, 0x9da324));
+	bind(g_mapPreviewTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
@@ -106,7 +106,7 @@ static void mission_screen(int hovered)
 		white_text();
 		text_drawBox16(X0, Y0 + 0xf2, X1, (const char *)0x75f524);
 		glEnable(GL_TEXTURE_2D);
-		bind(GAME_VAR(int, 0x4dfa00));
+		bind(g_characterTexture);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int x0 = 0x146 - record[0x24 / 4] * 0x20;
 		for (int i = 0; i < record[0x24 / 4]; i++)
@@ -122,7 +122,7 @@ static void mission_screen(int hovered)
 	int x0 = 0x146 - record[0] * 0x20;
 	for (int i = 0; i < record[0]; i++) {
 		int face = record[1 + i], x = x0 + i * 0x40;
-		bind(GAME_VAR(int, 0x4dfa00));
+		bind(g_characterTexture);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		if (face >= 0 && face <= 8)
 			portrait(face, x, Y0 + 0x154, 0x30);

@@ -291,7 +291,7 @@ int (app_checkCdAndLoad)(void *instance)
 	char logo[64];
 	strcpy(logo, (const char *)0x4b24f0);
 	GAME_VAR(u32, 0x4df028) = 0;
-	GAME_VAR(u32, 0x4df024) = 0;
+	g_menuCameraPos = 0;
 	GAME_VAR(u32, 0x4df02c) = 0x43fa0000;   /* 500 */
 	g_menuCameraLook = 0;
 	GAME_VAR(u32, 0x68037c) = 0;

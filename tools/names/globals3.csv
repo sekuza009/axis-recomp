@@ -1,0 +1,54 @@
+# globals, batch 3 (address,type,name)
+0x4ded42,u8,g_arenaCustomize
+0x4dc878,int,g_savedMechParts
+0x4dcf18,int,g_savedMechWeapons
+0x4dcc58,int,g_mechChanged
+0x4dbc80,int,g_emptyItemSlot0
+0x680cd0,int,g_mapPreviewChanged
+0x9da324,int,g_mapPreviewTexture
+0x4dfa00,int,g_characterTexture
+0x680398,int,g_panelHovered
+0x9eeaa8,int,g_tunnelFlyingIn
+0x4dda60,int,g_setupPanelMoving
+0x9da440,int,g_excludedKey
+0x4df024,u32,g_menuCameraPos
+0x9db990,int,g_replayRunning
+0x4b2a7c,int,g_replayWrap
+0x9dd8e8,u32,g_startTicks
+0xa0e920,int,g_fullScreen
+0xa0e00c,int,g_ptxTablesReady
+# arena lobby
+0x76d484,int,g_searchResult
+0x4dbbd0,int,g_typingArenaName
+0x4dbacc,int,g_typingArenaPassword
+0x4db710,int,g_arenaJoinRow
+0x4dbac8,int,g_arenaHaveList
+0x4dbaa8,int,g_arenaListFull
+0x4dbaf8,float,g_arenaSearchClock
+0x4dbb68,int,g_arenaNameDialogLeft
+0x4dbb70,int,g_arenaNameDialogRight
+0x4dbb74,int,g_arenaNameDialogBottom
+# game room
+0x9dced0,int,g_retypePassword
+0x9dd1b4,int,g_roomListPrevPage
+0x9dd300,int,g_roomListPrev
+0x9dd198,int,g_loginToSend
+0x9dd830,int,g_typingGameName
+0x9dd38c,int,g_typingGamePassword
+0x9dd7dc,int,g_rankingLast
+0x9f900c,int,g_profileRowClicked
+# network
+0xa055f8,u32,g_lobbySocket
+0xa05630,int,g_gameServerSocket
+0xa0b35c,int,g_playerListCount
+0xa0b358,int,g_roomListCount
+0xa0b350,int,g_playerListRefused
+0xa0b364,int,g_gameServerPending
+0xa0b380,int,g_lobbyConnectStatus
+0xa0b428,u32,g_localPlayerData
+0x9fd954,u8,g_watchedSlot
+0xa0baf0,void *,g_hostAddressBlock
+0xa0bab0,void *,g_connectionCopy
+0xa0bad8,const void *,g_instanceGuid
+0xa0badc,void *,g_storedConnection
+0xa0bb10,void *,g_pingDataEvent

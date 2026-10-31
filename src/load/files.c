@@ -1159,7 +1159,7 @@ void (cfg_gameTypeNames)(void *f)
 			GAME_VAR(signed char, 0x4ded41) = v < 0 || v > 0x10 ? 8 : v;
 			break;
 		case 3:
-			GAME_VAR(u8, 0x4ded42) = IS_ON(b.value);
+			g_arenaCustomize = IS_ON(b.value);
 			break;
 		case 4:
 			str_dropLast(b.value);

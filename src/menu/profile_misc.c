@@ -212,11 +212,11 @@ u32 (profile_logIn)(void)
    Returns what the original leaves in eax */
 u32 (profile_frame)(void)
 {
-	if (GAME_VAR(int, 0x9f900c)) {
+	if (g_profileRowClicked) {
 		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
 		GAME_VAR(float, 0x9f8f18) = (float)t;
 		if (t > GAME_VAR(float, 0x4a944c)) {
-			GAME_VAR(int, 0x9f900c) = 0;
+			g_profileRowClicked = 0;
 			GAME_VAR(int, 0x9f8f18) = 0;
 		}
 	}
@@ -659,16 +659,16 @@ void (profileList_mouse)(void)
 			int row = GAME_CDECL(0x44b3a0, int, int, int)(g_mouseX, g_mouseY);   /* profileList_hitTest */
 			if (row == -1 || g_listTop + row >= g_profileCount)
 				return;
-			if (row == g_listRow && GAME_VAR(int, 0x9f900c)) {
+			if (row == g_listRow && g_profileRowClicked) {
 				g_cursorBlink = 0;
 				GAME_VAR(int, 0x9f6840) = 1;
 				GAME_VAR(int, 0x9f8f10) = 4;
-				GAME_VAR(int, 0x9f900c) = 0;
+				g_profileRowClicked = 0;
 				GAME_VAR(int, 0x9f8f18) = 0;
 				break;
 			}
 			g_listRow = row;
-			GAME_VAR(int, 0x9f900c) = 1;
+			g_profileRowClicked = 1;
 			GAME_VAR(int, 0x9f8f18) = 0;
 			if (GAME_VAR(int, 0x9f8d74) != g_listTop + row) {
 				GAME_VAR(int, 0x9f8d74) = g_listTop + row;

@@ -696,7 +696,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	}
 	if (!h->keep_texture)
 		glDisable(GL_TEXTURE_2D);
-	if (GAME_VAR(int, 0x680398)) {
+	if (g_panelHovered) {
 		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &GAME_VAR(float, 0x4df454)), &g_panelGlow);
 		g_panelGlow = f32(glow);
 		if (!clamp) {
@@ -761,7 +761,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 			on = k;
 			break;
 		}
-	GAME_VAR(int, 0x680398) = on != -1;
+	g_panelHovered = on != -1;
 	if (on != -1 && g_lastPanel != on) {
 		g_lastPanel = on;
 		GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
@@ -800,7 +800,7 @@ void (lobbyTop_drawTitle)(void)
    leaves eax to callers that ignore it */
 void (setup_drawMenu)(void)
 {
-	Highlight h = { hovered_panel(0x4df918, 4, GAME_VAR(int, 0x4dda60)), white, 1, 0, 0 };
+	Highlight h = { hovered_panel(0x4df918, 4, g_setupPanelMoving), white, 1, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4ddd90), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && GAME_VAR(int, 0x4ddcec) == 2 && !GAME_VAR(int, 0x680370))
@@ -820,16 +820,16 @@ void (menu_mainMenu)(void)
 #define g_hintStep GAME_VAR(u32, 0x9dd948)
 	const float *frame = (const float *)0x4b071c;
 	int on = -1;
-	for (int k = 0; k < 6 && !GAME_VAR(int, 0x9eeaa8); k++)
+	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
 		if (point_in_outline(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c), *(const Outline *)(0x4deb80 + k * 0x2c)) == 1) {
 			on = k;
 			break;
 		}
 	if (on == -1) {
 		g_idle = f32(fadd_m(fld_m(frame), &g_idle));
-		GAME_VAR(int, 0x680398) = 0;
+		g_panelHovered = 0;
 	} else {
-		GAME_VAR(int, 0x680398) = !GAME_VAR(int, 0x9eeab4);
+		g_panelHovered = !GAME_VAR(int, 0x9eeab4);
 		g_idle = 0;
 		g_hint = 0;
 		g_hintStep = 0x3d4ccccd;   /* 0.05 */
@@ -841,13 +841,13 @@ void (menu_mainMenu)(void)
 			g_panelGlowStep = 0xbf800000;   /* -1 */
 		}
 	}
-	if (GAME_VAR(int, 0x9eeaa8)) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
+	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
 		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)0x4a9498), frame), (const float *)0x4a93ec);
 		GAME_VAR(int, 0x9eeab0)++;
 		if (g_depth > *(const float *)0x4a95d0)
 			g_depth = f32(fld_m(&g_depth) - step);
 		else {
-			GAME_VAR(int, 0x9eeaa8) = 0;
+			g_tunnelFlyingIn = 0;
 			GAME_VAR(u32, 0x9eea90) = 0xc4098000;   /* -550 */
 		}
 	}
@@ -893,12 +893,12 @@ void (menu_mainMenu)(void)
 void (setup_easePanel)(void)
 {
 	typedef long double X;
-	if (!GAME_VAR(int, 0x4dda60))
+	if (!g_setupPanelMoving)
 		return;
 	X d = ((X)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, 0x4de03c)) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
 	GAME_VAR(float, 0x4de03c) = (float)((X)GAME_VAR(float, 0x4de03c) + d);
 	if (!((X)g_setupTunnelDepth > (X)GAME_VAR(double, 0x4a9440))) {
-		GAME_VAR(int, 0x4dda60) = 0;
+		g_setupPanelMoving = 0;
 		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;
 		return;
 	}

@@ -94,7 +94,7 @@ void (menu_frame)(void)
 		if (zoom >= F(0x4a93f4)) {
 			g_screen = 9999;
 			g_nextScreen = 9999;
-			GAME_VAR(int, 0x9db990) = 1;
+			g_replayRunning = 1;
 			BITS(g_cursorBlink) = 0;
 		}
 	}
@@ -658,7 +658,7 @@ static int replay_next(u8 *s)
 		S(u32, 0x1f35c0) = S(int, 0x1f35bc) > 0 ? rand_below(S(u32, 0x1f35bc)) : 0;
 	} else {
 		if (++S(int, 0x1f35c0) >= S(int, 0x1f35bc)) {
-			if (GAME_VAR(int, 0x4b2a7c) != 1) {
+			if (g_replayWrap != 1) {
 				S(int, 0x23432cf) = 1;
 				return 0;
 			}

@@ -354,7 +354,7 @@ void (profile_drawPilotSelect)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	/* the portraits */
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x4dfa00);
+	int texture = g_characterTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
@@ -490,7 +490,7 @@ void (profile_drawChosenPilot)(void)
 	for (int k = 0; k < 13; k++)
 		text_draw8(X0 + 0x10c, Y0 + k * 0x14 + 0x24, (const char *)(0x75e824 + k * 0x80));
 	glEnable(GL_TEXTURE_2D);
-	int texture = GAME_VAR(int, 0x4dfa00);
+	int texture = g_characterTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	float grey = focus ? 1.0f : 0.5f;
 	glColor4f(grey, grey, grey, 1.0f);

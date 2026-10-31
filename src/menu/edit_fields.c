@@ -179,7 +179,7 @@ void (field_editGamePassword)(void)
 {
 	edit_start(0xc);
 	line_clear();
-	if (GAME_VAR(int, 0x9dced0) == 0)
+	if (g_retypePassword == 0)
 		line_set((const char *)0x9dd1f6);
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();

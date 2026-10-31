@@ -368,7 +368,7 @@ void (armc_mouseLook)(void)
 	if (I(0x4de6fc))
 		return;
 	int dx = 0x140 - g_mouseX, dy = 0xf0 - g_mouseY;
-	int slot = GAME_VAR(u8, 0x9fd954);
+	int slot = g_watchedSlot;
 	if (dx > 0) {
 		X a = (X)dx * F(0x4a9564) * g_frameTime + F(0x90d1cc);
 		F(0x90d1cc) = (float)a;
@@ -518,7 +518,7 @@ void (match_debugHandler)(void)
 	GAME_VAR(u32, 0x680380) = GAME_VAR(u32, 0x4de34c);
 	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));
 	F(0x4df028) = f32(fadd_m(fld_m(&F(0x4de348)), (const float *)0x4a9418));
-	u32 *slot = (u32 *)(0x4dfa1c + GAME_VAR(u8, 0x9fd954) * 0x58);
+	u32 *slot = (u32 *)(0x4dfa1c + g_watchedSlot * 0x58);
 	slot[0] = GAME_VAR(u32, 0x4de344);
 	slot[1] = GAME_VAR(u32, 0x4de348);
 	slot[2] = GAME_VAR(u32, 0x4de34c);

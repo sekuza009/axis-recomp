@@ -466,7 +466,7 @@ void (armc_enter)(TunnelRing *ring)
 				tunnel_removeLastRing(&g_tunnel);
 			}
 			GAME_VAR(int, 0x76d3e8) = GAME_VAR(int, 0x67ef20);
-			GAME_VAR(int, 0x9eeaa8) = 1;
+			g_tunnelFlyingIn = 1;
 			GAME_VAR(int, 0x4b2a70) = 1;
 			camera_keep();
 			if (state == 1) {

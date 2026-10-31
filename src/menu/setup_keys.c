@@ -154,7 +154,7 @@ static void tab_opened(void)
 	GAME_VAR(u32, 0x4de038) = 0x3f333333;   /* 0.7 */
 	GAME_VAR(int, 0x4ddb98) = 0;
 	GAME_VAR(int, 0x4dde90) = -1;
-	GAME_VAR(int, 0x4dda60) = 0;
+	g_setupPanelMoving = 0;
 	GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;   /* -1650.0 */
 }
 
@@ -389,12 +389,12 @@ void (setup_drawSoundTab)(void)
    ignore it) */
 void (setup_controlTabKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x9da440))) {
+	if (input_justPressed(g_excludedKey)) {
 		sound_playMenu(6);
 		return;
 	}
 	if (g_bindWaiting) {
-		if (input_justPressed(GAME_VAR(int, 0x9da440))) {
+		if (input_justPressed(g_excludedKey)) {
 			sound_playMenu(6);
 			return;
 		}
@@ -545,7 +545,7 @@ static const signed char page_bindings[3][11] = {
    callers ignore the eax it leaves */
 void (setup_drawKeyBindingRows)(int key)
 {
-	if (key == GAME_VAR(int, 0x9da440))
+	if (key == g_excludedKey)
 		return;
 	setup_unbindKey(key);
 	int page = GAME_VAR(int, 0x4ddce8), row = GAME_VAR(int, 0x4de040);

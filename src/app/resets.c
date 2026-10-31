@@ -36,7 +36,7 @@ void (mapSelect_allOut)(void)
 {
 	for (u32 p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
 		GAME_VAR(int, p) = 0;
-	GAME_VAR(int, 0x4b2a7c) = 1;
+	g_replayWrap = 1;
 	GAME_VAR(int, 0x9eeabc) = 0;
 	g_replayRandomOrder = 0;
 }

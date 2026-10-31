@@ -427,9 +427,9 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 	crt_strtok(name, (const char *)0x4b12f4);
 	switch (GAME_VAR(int, m + 0xc0114)) {
 	case 0:
-		if (!GAME_VAR(int, 0xa0e00c)) {
+		if (!g_ptxTablesReady) {
 			ptx_initTables();
-			GAME_VAR(int, 0xa0e00c) = 1;
+			g_ptxTablesReady = 1;
 		}
 		tex_path(m, path, 0x4b3fdc, 0x4b3fd8, name);
 		ptx_decode(tex_getItemFileBy(m, path), m + 0x114, &bpp, &w, &h);
@@ -468,9 +468,9 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 			colour_fill(m);
 		break;
 	case 2: {
-		if (!GAME_VAR(int, 0xa0e00c)) {
+		if (!g_ptxTablesReady) {
 			ptx_initTables();
-			GAME_VAR(int, 0xa0e00c) = 1;
+			g_ptxTablesReady = 1;
 		}
 		tex_path(m, path, 0x4b4000, 0x4b3ff8, name);
 		ptx_open(path, m + 0x114, &bpp, &w, &h);

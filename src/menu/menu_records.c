@@ -92,8 +92,8 @@ void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
 	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x4dcf2c) =
-		GAME_VAR(int, 0x4dcf18) = GAME_VAR(int, 0x4dcf1c) = -1;
-	GAME_VAR(int, 0x4dc878) = GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x4dc880) =
+		g_savedMechWeapons = GAME_VAR(int, 0x4dcf1c) = -1;
+	g_savedMechParts = GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x4dc880) =
 		GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x4dc888) = 0;
 	GAME_VAR(int, 0x4dcf20) = 0;
 	for (u32 p = 0x4dcfe0; p < 0x4dd058; p += 24)
@@ -105,7 +105,7 @@ void (mech_setEmpty)(void)
 void (mech_unpackFromRecord)(void)
 {
 	const signed char *rec = (const signed char *)0x9dd5f8;
-	GAME_VAR(int, 0x4dc878) = rec[0];
+	g_savedMechParts = rec[0];
 	GAME_VAR(int, 0x4dc87c) = rec[1];
 	GAME_VAR(int, 0x4dc880) = rec[2];
 	GAME_VAR(int, 0x4dc884) = rec[3];
@@ -113,7 +113,7 @@ void (mech_unpackFromRecord)(void)
 	for (int i = 0; i < 4; i++)
 		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
 	GAME_VAR(int, 0x4dcf1c) = rec[6];
-	GAME_VAR(int, 0x4dcf18) = rec[5];
+	g_savedMechWeapons = rec[5];
 	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
 }
 
@@ -122,7 +122,7 @@ void (mech_unpackFromRecord)(void)
 void (mech_loadFromProfile)(void)
 {
 	GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x9f19fc);
-	GAME_VAR(int, 0x4dc878) = GAME_VAR(int, 0x9f19f8);
+	g_savedMechParts = GAME_VAR(int, 0x9f19f8);
 	GAME_VAR(int, 0x4dc880) = GAME_VAR(int, 0x9f1a00);
 	GAME_VAR(int, 0x4dc888) = GAME_VAR(int, 0x9f1a08);
 	GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x9f1a04);
@@ -130,7 +130,7 @@ void (mech_loadFromProfile)(void)
 	GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x9f1a24);
 	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x9f1a20);
 	GAME_VAR(int, 0x4dcf2c) = GAME_VAR(int, 0x9f1a28);
-	GAME_VAR(int, 0x4dcf18) = GAME_VAR(int, 0x9f1a14);
+	g_savedMechWeapons = GAME_VAR(int, 0x9f1a14);
 	GAME_VAR(int, 0x4dcf1c) = GAME_VAR(int, 0x9f1a18);
 	for (int o = 0; o < 0x90; o += 0x18) {
 		if (!(GAME_VAR(float, 0x9f1a38 + o) >= 0.0f))
@@ -144,7 +144,7 @@ void (mech_loadFromProfile)(void)
 /* 0x4464b0: the mech stored into the profile record (the inverse of mech_loadFromProfile) */
 void (mech_storeToProfile)(void)
 {
-	GAME_VAR(int, 0x9f19f8) = GAME_VAR(int, 0x4dc878);
+	GAME_VAR(int, 0x9f19f8) = g_savedMechParts;
 	GAME_VAR(int, 0x9f19fc) = GAME_VAR(int, 0x4dc87c);
 	GAME_VAR(int, 0x9f1a04) = GAME_VAR(int, 0x4dc884);
 	GAME_VAR(int, 0x9f1a00) = GAME_VAR(int, 0x4dc880);
@@ -154,7 +154,7 @@ void (mech_storeToProfile)(void)
 	GAME_VAR(int, 0x9f1a24) = GAME_VAR(int, 0x4dcf28);
 	GAME_VAR(int, 0x9f1a18) = GAME_VAR(int, 0x4dcf1c);
 	GAME_VAR(int, 0x9f1a28) = GAME_VAR(int, 0x4dcf2c);
-	GAME_VAR(int, 0x9f1a14) = GAME_VAR(int, 0x4dcf18);
+	GAME_VAR(int, 0x9f1a14) = g_savedMechWeapons;
 	memcpy((void *)0x9f1a34, (void *)0x4dcfe0, 0x90);
 }
 
@@ -184,8 +184,8 @@ static void room_pageChanged(void)
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
 	g_roomListWaiting = 0;
-	GAME_VAR(int, 0xa0b350) = 0;
-	GAME_VAR(int, 0xa0b35c) = 0;
+	g_playerListRefused = 0;
+	g_playerListCount = 0;
 }
 
 /* 0x435970, 0x4359b0: the previous and the next page */
@@ -193,7 +193,7 @@ void (roomList_prevPage)(void)
 {
 	int *page = &g_roomListPage;
 	if (*page > 0) {
-		GAME_VAR(int, 0x9dd1b4) = *page;
+		g_roomListPrevPage = *page;
 		(*page)--;
 		room_pageChanged();
 	}
@@ -203,7 +203,7 @@ void (roomList_nextPage)(void)
 {
 	int *page = &g_roomListPage;
 	if (*page < GAME_VAR(int, 0x9dd4b8) && *page < 99) {
-		GAME_VAR(int, 0x9dd1b4) = *page;
+		g_roomListPrevPage = *page;
 		(*page)++;
 		room_pageChanged();
 	}
@@ -213,7 +213,7 @@ void (roomList_nextPage)(void)
 void (roomList_cycleMode)(void)
 {
 	int mode = GAME_VAR(int, 0x9dd1d0);
-	GAME_VAR(int, 0x9dd300) = mode;
+	g_roomListPrev = mode;
 	room_pageChanged();
 	GAME_VAR(int, 0x9dd328) = 0;
 	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0f */
@@ -691,7 +691,7 @@ u32 (mainmenu_processKeys)(void)
 		GAME_VAR(int, 0x67ef20) = 210;
 		return GAME_CDECL(0x48b420, u32, void)();
 	}
-	u32 r = (u32)input_justPressed(GAME_VAR(int, 0x9da440));
+	u32 r = (u32)input_justPressed(g_excludedKey);
 	if (r != 1)
 		return r;
 	r = GAME_CDECL(0x440d70, u32, void)();

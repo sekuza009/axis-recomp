@@ -175,7 +175,7 @@ static int part_in_view(void)
 void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
-	if (GAME_VAR(int, 0x4dcc58) == 1) {
+	if (g_mechChanged == 1) {
 		const int *parts = (const int *)0x4dc760;    /* the mech's head, chest, arm, leg, booster */
 		switch (g_armcPartSlot) {
 		case 0: armc_setHeadIndex(g_scene, parts[0]); break;
@@ -187,11 +187,11 @@ void (armc_updatePartsPreview)(void)
 		armc_drawPartPanels();
 		armc_giveShownActorWeapon(g_scene, GAME_VAR(int, 0x4dbe48));
 		armc_41c510();
-		GAME_VAR(int, 0x4dcc58) = 0;
+		g_mechChanged = 0;
 		armc_retintParts();
 	}
-	if (GAME_VAR(int, 0x4dbc80) == 1)
-		GAME_VAR(int, 0x4dbc80) = 0;
+	if (g_emptyItemSlot0 == 1)
+		g_emptyItemSlot0 = 0;
 	if (GAME_VAR(int, 0x4dca98)) {
 		armc_applyColourSlot();
 		GAME_VAR(int, 0x4dca98) = 0;
@@ -208,9 +208,9 @@ void (armc_updatePartsPreview)(void)
 void (armc_updateColourPreview)(void)
 {
 	gfx_setProjection2D3D(1);
-	if (GAME_VAR(int, 0x4dbc80) == 1) {
+	if (g_emptyItemSlot0 == 1) {
 		armc_weaponSlotRecord(0, 0);
-		GAME_VAR(int, 0x4dbc80) = 0;
+		g_emptyItemSlot0 = 0;
 	}
 	int slot;
 	switch (g_armcMode) {
@@ -356,7 +356,7 @@ u32 (menu_enterMenus)(void)
 	armc_buildPartLists();
 	GAME_VAR(int, 0x4dc868) = 1;
 	g_armcSpin = 1;
-	GAME_VAR(int, 0x4dcc58) = 1;
+	g_mechChanged = 1;
 	g_armcPreview = 0;
 	g_armcSessionDue = 0;
 	g_armcSessionMade = 0;

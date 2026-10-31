@@ -112,8 +112,8 @@ void (arenaList_rebuild)(void)
 		e[0x2a] = s[0x29];
 		GAME_VAR(int, e + 0x24) = 0;
 	}
-	GAME_VAR(int, 0x4dbac8) = 1;
+	g_arenaHaveList = 1;
 	GAME_VAR(int, 0x76d41c) = 0;
-	GAME_VAR(int, 0x4dbaa8) = 0;
+	g_arenaListFull = 0;
 	sessionList_sort();
 }

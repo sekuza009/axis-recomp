@@ -175,7 +175,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 	static const struct { u32 cursor, count, list; } parts[5] = {
 		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c }, { 0x4dbc7c, 0x4dca90, 0x4dc964 },
 		{ 0x4dcea4, 0x4dca94, 0x4dc89c }, { 0x4dcb30, 0x4dc890, 0x4dbd7c } };
-	GAME_VAR(int, 0x4dcc58) = 1;
+	g_mechChanged = 1;
 	if (part > 4)
 		return part;
 	int *cursor = (int *)parts[part].cursor, count = GAME_VAR(int, parts[part].count);

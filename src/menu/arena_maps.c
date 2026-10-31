@@ -123,7 +123,7 @@ static void map_step(int dir, u32 lock, u32 choice)
 		if (*c == 0x18)
 			*c = 0x15;
 	}
-	GAME_VAR(int, 0x680cd0) = 1;
+	g_mapPreviewChanged = 1;
 }
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */

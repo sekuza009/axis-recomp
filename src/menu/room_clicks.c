@@ -194,7 +194,7 @@ u32 (room_leftClicks)(void)
 		if ((open = GAME_VAR(u32, 0x9dd1c8)))
 			return open;
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9dd198) = 1;
+		g_loginToSend = 1;
 		g_roomLoginDue = 1;
 		GAME_VAR(int, 0x9dd850) = 0;
 		return 1;
@@ -266,8 +266,8 @@ static void load_map_preview(u32 selected)
 	strcat(path, (const char *)0x4ad564);   /* "/" */
 	strcat(path, name);
 	strcpy(copy, path);
-	GAME_VAR(int, 0x9da324) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
-	GAME_VAR(int, 0x680cd0) = 0;
+	g_mapPreviewTexture = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
+	g_mapPreviewChanged = 0;
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
 void (room_loadMapPreview)(void) { load_map_preview(0x4df9e8); }
@@ -482,7 +482,7 @@ u32 (ranking_page)(void)
 			out[0] = code[column];
 		int page = g_roomListPage;
 		GAME_VAR(int, 0x9dd83c) = page * 10 + 1;
-		GAME_VAR(int, 0x9dd7dc) = page * 10 + 10;
+		g_rankingLast = page * 10 + 10;
 		out[1] = page * 10 + 1;
 		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
 		g_rankingRequestPending = 0;
@@ -507,8 +507,8 @@ u32 (ranking_page)(void)
 			GAME_VAR(int, 0x9dd6b8) = 0;
 			g_rankingHaveList = 1;
 			g_roomListWaiting = 0;
-			GAME_VAR(int, 0x9dd300) = GAME_VAR(int, 0x9dd1d0);
-			GAME_VAR(int, 0x9dd1b4) = g_roomListPage;
+			g_roomListPrev = GAME_VAR(int, 0x9dd1d0);
+			g_roomListPrevPage = g_roomListPage;
 		}
 		long double blink = fld_m((const float *)0x4dba80) - fmul_m(fld_m((const float *)0x4b071c), (const float *)0x4ad498);
 		g_lobbyBlinkClock = f32(blink);
@@ -525,8 +525,8 @@ u32 (ranking_page)(void)
 u32 (login_send)(void)
 {
 	typing_end();
-	GAME_VAR(int, 0x9dd830) = 0;
-	GAME_VAR(int, 0x9dd38c) = 0;
+	g_typingGameName = 0;
+	g_typingGamePassword = 0;
 	GAME_VAR(int, 0x4e1868) = 0;
 	GAME_VAR(int, 0x68039c) = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
@@ -578,7 +578,7 @@ u32 (ranking_clicks)(void)
 		g_rankingHaveList = 1;
 		GAME_VAR(int, 0x9dd6b8) = 0;
 		g_roomListWaiting = 0;
-		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
+		GAME_VAR(int, 0x9dd1d0) = g_roomListPrev;
 		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
 	case 4:
 		g_roomMode = 0;
@@ -591,8 +591,8 @@ u32 (ranking_clicks)(void)
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
 	g_roomListWaiting = 0;
-	GAME_VAR(int, 0xa0b350) = 0;
-	GAME_VAR(int, 0xa0b35c) = 0;
+	g_playerListRefused = 0;
+	g_playerListCount = 0;
 	return button == 8 ? old : r;
 }
 
@@ -744,7 +744,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 #define X1 (panel[1] - 0x16)
 #define Y0 (panel[0] + 0x50)
 #define Y1 (panel[0] + 0xd0)
-	if (GAME_VAR(int, 0x680cd0))
+	if (g_mapPreviewChanged)
 		GAME_CDECL(reload, void, void)();
 	if (GAME_VAR(u8, custom)) {
 		Color4_set((Colour *)0x9da480, 0.0f, 0.0f, 0.0f, 0.4f);
@@ -753,7 +753,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)0x4ad56c);
 	} else {
 		glEnable(GL_TEXTURE_2D);
-		int texture = GAME_VAR(int, 0x9da324);
+		int texture = g_mapPreviewTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(7);   /* GL_QUADS */

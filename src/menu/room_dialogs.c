@@ -18,8 +18,8 @@ static void dialog_opened(int state)
 {
 	g_roomState = state;
 	g_dialogOpen = 1;
-	GAME_VAR(int, 0x9dd830) = 0;
-	GAME_VAR(int, 0x9dd38c) = 0;
+	g_typingGameName = 0;
+	g_typingGamePassword = 0;
 	GAME_VAR(int, 0x4e1868) = 0;
 	GAME_VAR(int, 0x68039c) = 0;
 }
@@ -52,7 +52,7 @@ void (room_openDialog42)(void)
 		GAME_VAR(int, cleared[k]) = 0;
 	memset((void *)0x9dd1d8, 0, 7 * 4 + 2 + 12);
 	g_roomState = 0x42;
-	GAME_VAR(int, 0x9dced0) = 1;
+	g_retypePassword = 1;
 	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
 }
 
@@ -153,7 +153,7 @@ u32 (room_joinSession)(int i)
 		GAME_CDECL(0x41ee40, void, int)(0x3f);
 		return CALL(0x452fe0);   /* arena_leaveSession */
 	}
-	GAME_VAR(int, 0x4db710) = i;
+	g_arenaJoinRow = i;
 	if (!CALL(0x453260)) {        /* dplay_listSessions */
 		GAME_CDECL(0x41ee40, void, int)(0x40);
 		return CALL(0x452fe0);
@@ -206,7 +206,7 @@ u32 (arena_joinListed)(int i)
 		GAME_CDECL(0x41ee40, void, int)(0x3f);
 		return CALL(0x452fe0);
 	}
-	GAME_VAR(int, 0x4db710) = i;
+	g_arenaJoinRow = i;
 	CALL(0x453260);
 	GAME_VAR(int, 0x4dbb10) = 0;
 	GAME_VAR(int, 0x4db8b4) = 1;
@@ -354,22 +354,22 @@ static void highlight_choice(int choice, int x, int y)
 void (createDialog_draw)(void)
 {
 #define g_editKey GAME_VAR(int, 0x9dc428)
-	if (GAME_VAR(int, 0x9dced0)) {
+	if (g_retypePassword) {
 		room_copyJoinedSettings();
 		field_editGamePassword();
-		GAME_VAR(int, 0x9dced0) = 0;
+		g_retypePassword = 0;
 		return;
 	}
-	if (GAME_VAR(int, 0x9dd198) == 1) {
+	if (g_loginToSend == 1) {
 		chat_closeEdit();
 		login_send();
-		GAME_VAR(int, 0x9dd198) = 0;
+		g_loginToSend = 0;
 		return;
 	}
-	if (GAME_VAR(int, 0x9dd830)) {
+	if (g_typingGameName) {
 		if (g_paused)
 			return;
-		GAME_VAR(int, 0x9dd830) = 0;
+		g_typingGameName = 0;
 		memset((void *)0x9dd1d8, 0, 30);
 		strcpy((char *)0x9dd1d8, g_chatLine);
 		if (g_editKey == 10) {
@@ -385,11 +385,11 @@ void (createDialog_draw)(void)
 		}
 		return;
 	}
-	if (GAME_VAR(int, 0x9dd38c)) {
+	if (g_typingGamePassword) {
 		if (g_paused)
 			return;
 		memset((void *)0x9dd1f6, 0, 12);
-		GAME_VAR(int, 0x9dd38c) = 0;
+		g_typingGamePassword = 0;
 		strcpy((char *)0x9dd1f6, g_chatLine);
 		g_chatFieldFlag = 0;
 		if (g_editKey == 10) {
@@ -541,8 +541,8 @@ u32 (roomList_passwordKeys)(void)
 		r = sound(0);
 		GAME_VAR(int, 0x9dd6b8) = 0;
 		g_roomListWaiting = 0;
-		g_roomListPage = GAME_VAR(int, 0x9dd1b4);
-		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
+		g_roomListPage = g_roomListPrevPage;
+		GAME_VAR(int, 0x9dd1d0) = g_roomListPrev;
 		g_rankingHaveList = 1;
 		return r;
 	}
@@ -768,9 +768,9 @@ u32 (roomLogin_draw)(void)
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 0);
 	}
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	if (!GAME_VAR(int, 0x9dd830))
+	if (!g_typingGameName)
 		text_draw8(X0 + 0xc8, Y0 + 0x58, (const char *)0x9dd1d8);
-	if (!GAME_VAR(int, 0x9dd38c)) {
+	if (!g_typingGamePassword) {
 		char hidden[30];
 		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
 		text_draw8(X0 + 0xc8, Y0 + 0x88, hidden);
@@ -968,9 +968,9 @@ u32 (ranking_drawTable)(void)
 	char page[64], last[64];
 	int first = g_roomListPage * 10 + 1;
 	GAME_VAR(int, 0x9dd83c) = first;
-	GAME_VAR(int, 0x9dd7dc) = (g_roomListPage * 5 + 5) * 2;
+	g_rankingLast = (g_roomListPage * 5 + 5) * 2;
 	itoa(first, page, 10);
-	itoa(GAME_VAR(int, 0x9dd7dc), last, 10);
+	itoa(g_rankingLast, last, 10);
 	strcat(page, (const char *)0x4b278c);   /* " ~ " */
 	strcat(page, last);
 	menu_drawTexQuad_4282f0(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
@@ -1125,7 +1125,7 @@ void (createDialog_keys)(void)
 				return;
 			sound_playMenu(0);
 			g_highlightShown = 0;
-			GAME_VAR(int, 0x9dd198) = 1;
+			g_loginToSend = 1;
 			g_roomLoginDue = 1;
 			return;
 		}
@@ -1150,7 +1150,7 @@ void (createDialog_keys)(void)
 		if (g_paused || g_roomLoginDue)
 			return;
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9dd198) = 1;
+		g_loginToSend = 1;
 		g_roomLoginDue = 1;
 		return;
 	}

@@ -429,7 +429,7 @@ void (mapSelect_mouse)(void)
 		else if (on == 1)
 			maps_down();
 		else if (on == 2)
-			GAME_VAR(int, 0x4b2a7c) = 1 - GAME_VAR(int, 0x4b2a7c);
+			g_replayWrap = 1 - g_replayWrap;
 		else if (on == 3)
 			g_replayRandomOrder = 1 - g_replayRandomOrder;
 		else if (on == 4)
@@ -560,7 +560,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 {
 	u32 typing = GAME_VAR(u32, 0x68039c);
 	GAME_VAR(u32, 0x4df028) = 0;
-	GAME_VAR(u32, 0x4df024) = 0;
+	g_menuCameraPos = 0;
 	GAME_VAR(u32, 0x4df02c) = farZ;
 	g_menuCameraLook = 0;
 	GAME_VAR(u32, 0x68037c) = 0;
@@ -574,7 +574,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	GAME_VAR(u32, 0x9dd91c) = 0;
 	GAME_VAR(u32, 0x9dd920) = nearZ;
 	g_enteringMenus = deb48;
-	GAME_VAR(int, 0x9db990) = 0;
+	g_replayRunning = 0;
 	GAME_VAR(int, 0x4dda44) = 0;
 	GAME_VAR(int, 0x4dda48) = 0;
 	if (clear_4e1868)
@@ -635,7 +635,7 @@ u32 (game_returnToMenus_41eb00)(void)
 	GAME_CDECL(0x4411e0, void, void)();
 	GAME_CDECL(0x441200, void, void)();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
-	GAME_VAR(int, 0x9dced0) = 0;
+	g_retypePassword = 0;
 	GAME_VAR(int, 0x4ded54) = 0;
 	g_roomLoginDue = 0;
 	g_rankingRequestPending = 0;
@@ -720,7 +720,7 @@ u32 (game_postMatch)(void)
 		GAME_VAR(int, 0x76d3e8) = -1;
 		return r;
 	}
-	if (GAME_VAR(int, 0x9db990))
+	if (g_replayRunning)
 		g_matchMode = 0;
 	u32 r;
 	int mission;
@@ -737,7 +737,7 @@ u32 (game_postMatch)(void)
 			lstrcpyA(to + 0x33, from + 0x33);
 			GAME_CDECL(0x4521c0, int, int, int)(0x16, 0x65);   /* net_send */
 		}
-		if (GAME_VAR(int, 0xa05630)) {
+		if (g_gameServerSocket) {
 			GAME_CDECL(0x44aee0, void, void)();   /* the room's text kept */
 			GAME_CDECL(0x41eb00, void, void)();   /* game_returnToMenus_41eb00: the room */
 		} else

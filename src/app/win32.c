@@ -59,7 +59,7 @@ int (glWindow_resize)(int width, int height)
 	g_glWidth = width;
 	g_glHeight = height;
 	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
-	if (GAME_VAR(int, 0xa0e920) == 1 &&
+	if (g_fullScreen == 1 &&
 	    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
 		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
 		return 0;
@@ -88,7 +88,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	strcpy(g_glTitle, title);
 	GAME_VAR(int, 0xa0e818) = colourBits;
 	GAME_VAR(int, 0xa0e924) = depthBits;
-	GAME_VAR(int, 0xa0e920) = fullscreen;
+	g_fullScreen = fullscreen;
 	g_glWidth = width;
 	g_glHeight = height;
 	if (window == NULL && other == NULL) {
@@ -107,10 +107,10 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4fa4);
 			return NULL;
 		}
-		if (GAME_VAR(int, 0xa0e920) == 1 &&
+		if (g_fullScreen == 1 &&
 		    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, GAME_VAR(int, 0xa0e818))) {
 			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
-			GAME_VAR(int, 0xa0e920) = 0;
+			g_fullScreen = 0;
 		}
 		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
@@ -541,7 +541,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		Sleep(500);
 	}
 	IMPORT(0x4a910c, void, void *)((void *)0x9dd878);              /* GetSystemTime */
-	GAME_VAR(u32, 0x9dd8e8) = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
+	g_startTicks = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
 	Sleep(2000);
 	if (FindWindowA((const char *)0x4b0714, NULL)) {
 		MessageBoxA(NULL, (const char *)0x4b2a00, (const char *)0x4b2554, 0);

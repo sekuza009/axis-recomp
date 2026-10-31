@@ -684,7 +684,7 @@ int (sys_checkClockTampering)(void)
 	GAME_VAR(u32, 0x9dd8e0) = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
 	int seconds = minutes > last[5] ? (int)(minutes * 60 - last[5] * 60 - last[6] + now[6]) : (int)(now[6] - last[6]);
-	u32 tickSeconds = (tick - GAME_VAR(u32, 0x9dd8e8)) / 1000;
+	u32 tickSeconds = (tick - g_startTicks) / 1000;
 	GAME_VAR(int, 0x9dd860) = seconds;
 	GAME_VAR(u32, 0x9dd8ec) = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
@@ -695,11 +695,11 @@ int (sys_checkClockTampering)(void)
 			return 1;
 		}
 		GetSystemTime((void *)0x9dd878);
-		GAME_VAR(u32, 0x9dd8e8) = timeGetTime();
+		g_startTicks = timeGetTime();
 		return 0;
 	}
 	GetSystemTime((void *)0x9dd878);
-	GAME_VAR(u32, 0x9dd8e8) = timeGetTime();
+	g_startTicks = timeGetTime();
 	return 1;
 }
 

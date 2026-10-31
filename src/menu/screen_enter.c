@@ -398,7 +398,7 @@ void (console_init)(void)
 	sys_checkClockTampering();
 	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
-	if (GAME_VAR(int, 0x9db990)) {
+	if (g_replayRunning) {
 		g_matchMode = 0;
 		app_requireCd(scene, 0, 3);
 		return;
