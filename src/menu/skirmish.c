@@ -61,8 +61,8 @@ void (briefing_typeOut)(void)
 				g_briefingDone = 1;
 		}
 	}
-	skirmish_4017b0(0x23e);
-	skirmish_4017c0(0x76);
+	text_setWrapX(0x23e);
+	text_setBottom(0x76);
 	text_draw8(g_briefingX + 0x20, g_briefingY + 0x40, g_briefingText);
 	if (!g_briefingDone && !g_briefingSkipped) {
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -70,8 +70,8 @@ void (briefing_typeOut)(void)
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f000000);
 		menu_drawRect(g_textEndX - 8, g_textEndY - 1, g_textEndX, g_textEndY + 0x11, 1);
 	}
-	skirmish_4017b0(0x280);
-	skirmish_4017c0(0x1e0);
+	text_setWrapX(0x280);
+	text_setBottom(0x1e0);
 }
 
 /* ---- the briefing window (0x9f16a8 .. 0x9f16b4) ---- */
@@ -150,10 +150,10 @@ void (skirmish_drawScreenA)(void)
 		text_draw8b(BX0 + column_x0[3], y, BX0 + column_x1[3],
 		            (const char *)(0x75dda4 + *(const int *)(mission(g_missionTop + i) + 0xe8) * 0x80));
 	}
-	skirmish_4017b0(BX1 - 0x38);
+	text_setWrapX(BX1 - 0x38);
 	set_colour_bits((Colour *)0x76d438, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
 	text_draw8(BX0 + 0xf0, BY1 - 0x8c, (const char *)mission(g_missionPicked) + 0x60);
-	skirmish_4017b0(0x280);
+	text_setWrapX(0x280);
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x0 = BX1 + k * 0x8c - 0x12c, x1 = BX1 + k * 0x8c - 0xb4;

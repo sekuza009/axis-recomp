@@ -610,14 +610,14 @@ void (armc_drawWeightLine)(void)
 	long double sum = fld_m((const float *)weights[0]);
 	for (int k = 1; k < 10; k++)
 		sum = fadd_m(sum, (const float *)weights[k]);
-	GAME_VAR(float, 0x4dc78c) = f32(sum);
+	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
 	strcpy(s.most, (const char *)0x4ad564);   /* "/" */
 	sprintf(s.total, (const char *)0x4b0354, (double)GAME_VAR(float, 0x4dcb0c));   /* "%.0f" */
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
-	sprintf(s.total, (const char *)0x4b0354, (double)GAME_VAR(float, 0x4dc78c));
-	if (GAME_VAR(float, 0x4dc78c) > GAME_VAR(float, 0x4dcb0c))
+	sprintf(s.total, (const char *)0x4b0354, (double)g_totalWeight);
+	if (g_totalWeight > GAME_VAR(float, 0x4dcb0c))
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);
 	else
 		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
@@ -688,8 +688,8 @@ void (armc_sendSelectionToNet)(void)
 	const int *parts = (const int *)0x4dc878, *settings = (const int *)0x4dcf18;
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)settings[2 + i];
-	room[5] = (u8)GAME_VAR(int, 0x4dcb18);
-	room[6] = (u8)GAME_VAR(int, 0x4dcb1c);
+	room[5] = (u8)g_itemSlot4;
+	room[6] = (u8)g_itemSlot5;
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
 	u8 *packet = GAME_VAR(u8 *, 0xa0b340);

@@ -22,9 +22,9 @@ void THISCALL (hud_48b450)(void *self, int a0, int a1, int a2, int a3) { (void)s
 u32 (reg_readStartMode)(void) { return 1; }
 
 /* ---- setters of single globals (they return the value) ---- */
-int (skirmish_4017b0)(int v) { GAME_VAR(int, 0x4ad490) = v; return v; }
-int (skirmish_4017c0)(int v) { GAME_VAR(int, 0x4ad494) = v; return v; }
-int (match_4686e0)(int v) { GAME_VAR(int, 0x4c4dec) = v; return v; }
+int (text_setWrapX)(int v) { g_textWrapX = v; return v; }
+int (text_setBottom)(int v) { g_textBottom = v; return v; }
+int (view_setAngle)(int v) { GAME_VAR(int, 0x4c4dec) = v; return v; }
 
 /* ---- index <-> pointer in an array of records ---- */
 /* 0x46cbc0: record i (base + i * stride), 0 for a negative index */
@@ -185,7 +185,7 @@ void THISCALL (hud_456b50)(void *self)
 void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
 	u8 *rec = (u8 *)stage + 0x1561b68 + p * 0x47fd2;
-	int colour = GAME_VAR(int, 0xa1f220);
+	int colour = g_defaultColour;
 	for (int k = 0; k < 16 * 24; k++)
 		FIELD(int, rec, 0x479c2 + k * 4) = colour;
 	FIELD(int, rec, 0x47fc6) = 0;
@@ -241,7 +241,7 @@ void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 		for (int j = 0; j < 3; j++)
 			FIELD(int, stage, 0x20f300c + k * 12 + j * 4) = GAME_VAR(int, 0xa0e7a8 + j * 4);
 	FIELD(int, stage, 0x20f3008) = 0;
-	FIELD(int, stage, 0x20f396c) = GAME_VAR(int, 0xa1f220);
+	FIELD(int, stage, 0x20f396c) = g_defaultColour;
 }
 
 /* ---- matrices (16 dwords) ---- */
@@ -465,7 +465,7 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 {
 	char text[0x400];
 	(void)a;
-	void (CDECL *hook)(int, int, const char *) = GAME_VAR(void *, 0xae2ec8);
+	void (CDECL *hook)(int, int, const char *) = g_logHook;
 	if (!hook)
 		return;
 	va_list args;
@@ -690,7 +690,7 @@ int (sys_checkClockTampering)(void)
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * GAME_VAR(double, 0x4a9598) + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
 		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
-		if (GAME_VAR(int, 0x9dd904)) {
+		if (g_clockCheckClosed) {
 			PostMessageA(GAME_VAR(void *, 0x4ded18), 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}

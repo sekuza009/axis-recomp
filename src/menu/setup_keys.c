@@ -181,7 +181,7 @@ void (setup_selectControlTab)(void)
 	GAME_VAR(int, 0x4ddce8) = 0;
 	GAME_VAR(int, 0x4de040) = -1;
 	GAME_VAR(int, 0x4dddc8) = 0;
-	GAME_VAR(int, 0x4b04f8) = -1;
+	g_lastCrosshair = -1;
 	tab_opened();
 }
 
@@ -518,8 +518,8 @@ void (setup_drawControlTab)(void)
 			setup_drawControlSlider();
 			return;
 		} else if ((on == 10 || on == 11) && g_bindPage == 3) {
-			if (++GAME_VAR(int, 0x4de1cc) > 7)
-				GAME_VAR(int, 0x4de1cc) = 0;
+			if (++g_crosshair > 7)
+				g_crosshair = 0;
 			sound_playMenu(0);
 			return;
 		} else if (on >= 7 && on <= 17 && row >= 0) {

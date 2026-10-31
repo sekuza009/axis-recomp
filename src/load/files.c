@@ -215,15 +215,15 @@ u32 (cfg_keyBindings)(void *f)
 		FPUTS(0x4b182c);
 	}
 	FPUTS(0x4b1bd8);
-	FPUTS(GAME_VAR(int, 0x4df000) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(g_mouseInvert == 1 ? 0x4b17e4 : 0x4b17dc);
 	FPUTS(0x4b1bc0);
 	FPUTS(GAME_VAR(int, 0x4df004) == 1 ? 0x4b17e4 : 0x4b17dc);
 	char number[12];
-	itoa(GAME_VAR(int, 0x4df008), number, 10);
+	itoa(g_mouseSensitivity, number, 10);
 	FPUTS(0x4b1ba8);
 	FPUTS(number);
 	FPUTS(0x4b182c);
-	itoa(GAME_VAR(int, 0x4df00c), number, 10);
+	itoa(g_crosshairSetting, number, 10);
 	FPUTS(0x4b1b90);
 	FPUTS(number);
 	return FPUTS(0x4b182c);
@@ -304,7 +304,7 @@ u32 (cfg_parseSound)(void *f)
 	FPUTS(number);
 	FPUTS(0x4b182c);
 	FPUTS(0x4b1a20);
-	FPUTS(GAME_VAR(int, 0x4e0c98) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(g_soundSwitch1 == 1 ? 0x4b17e4 : 0x4b17dc);
 	FPUTS(0x4b1a04);
 	FPUTS(GAME_VAR(int, 0x4e0c9c) == 1 ? 0x4b17e4 : 0x4b17dc);
 	return FPUTS(0x4b182c);
@@ -1092,7 +1092,7 @@ void (cfg_readAudioLines)(void *f)
 	read_value(f, value, 0);
 	GAME_VAR(int, 0x4e0c94) = crt_atoi(value);
 	read_value(f, value, 0);
-	GAME_VAR(int, 0x4e0c98) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	g_soundSwitch1 = !strcmp(value, (const char *)0x4b21bc);   /* ON */
 	read_value(f, value, 0);
 	GAME_VAR(int, 0x4e0c9c) = !strcmp(value, (const char *)0x4b21bc);
 	skip_line(f);
@@ -1278,7 +1278,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	GAME_VAR(int, 0x4e0c94) = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)0x4ded40, server, 6);
-	GAME_VAR(int, 0x4e0c98) = 1;
+	g_soundSwitch1 = 1;
 	GAME_VAR(int, 0x83a9c8) = 1;
 	GAME_VAR(int, 0x83a9d0) = 1;
 	GAME_VAR(int, 0x83a9cc) = 1;

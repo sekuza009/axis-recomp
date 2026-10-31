@@ -151,11 +151,11 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			x = left;
 			continue;
 		}
-		if (x >= GAME_VAR(int, 0x4ad490)) {
+		if (x >= g_textWrapX) {
 			x = left;
 			y += pass->line;
 		}
-		if (y >= GAME_VAR(int, 0x4ad494)) {
+		if (y >= g_textBottom) {
 			if (!pass->korean)
 				GAME_VAR(int, 0x4d7348) = 1;
 			break;
@@ -175,7 +175,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			continue;
 		}
 		u8 hi = c, lo = *s++;
-		if (GAME_VAR(int, 0x4d23d0) == 1) {
+		if (g_convertHangul == 1) {
 			u32 code = GAME_CDECL(0x44aac0, u32, u32)((u32)hi << 8 | lo);
 			hi = (u8)(code >> 8);
 			lo = (u8)code;

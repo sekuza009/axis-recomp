@@ -202,7 +202,7 @@ void (roomList_prevPage)(void)
 void (roomList_nextPage)(void)
 {
 	int *page = &g_roomListPage;
-	if (*page < GAME_VAR(int, 0x9dd4b8) && *page < 99) {
+	if (*page < g_roomListPages && *page < 99) {
 		g_roomListPrevPage = *page;
 		(*page)++;
 		room_pageChanged();
@@ -215,7 +215,7 @@ void (roomList_cycleMode)(void)
 	int mode = GAME_VAR(int, 0x9dd1d0);
 	g_roomListPrev = mode;
 	room_pageChanged();
-	GAME_VAR(int, 0x9dd328) = 0;
+	g_roomListPrevRank = 0;
 	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0f */
 	GAME_VAR(int, 0x9dd1d0) = (mode + 1) % 3;
 }
@@ -269,7 +269,7 @@ void (roomList_fillPage)(void)
 		int mode = GAME_VAR(int, 0x9dd1d0), rank;
 		if (i == 0) {
 			before = GAME_VAR(float, 0x9dd384);
-			rank = GAME_VAR(int, 0x9dd328);
+			rank = g_roomListPrevRank;
 		} else {
 			long double v;
 			rank = *(const int *)(row - 0x44 + 4);
@@ -281,7 +281,7 @@ void (roomList_fillPage)(void)
 			*(int *)(row + 4) = rank;
 	}
 	GAME_VAR(float, 0x9dd384) = f32(value);
-	GAME_VAR(int, 0x9dd328) = *(const int *)(rows + (i - 1) * 0x44 + 4);
+	g_roomListPrevRank = *(const int *)(rows + (i - 1) * 0x44 + 4);
 }
 
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */

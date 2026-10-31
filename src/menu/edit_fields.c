@@ -98,12 +98,12 @@ static void edit_limit(int value, int y, int *editing)
 
 void (arena_editNumberField_404e10)(void)
 {
-	edit_limit(GAME_VAR(u8, 0x4db54c), 0xfe, &EDITING(0x4db850));
+	edit_limit(g_arenaFragLimitTyped, 0xfe, &EDITING(0x4db850));
 }
 
 void (arena_editNumberField_404ed0)(void)
 {
-	edit_limit(GAME_VAR(u8, 0x4db54d), 0x120, &EDITING(0x4db518));
+	edit_limit(g_arenaTimeLimitTyped, 0x120, &EDITING(0x4db518));
 }
 
 /* 0x404f90: the password (8), from what the line holds */

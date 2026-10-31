@@ -339,7 +339,7 @@ void (menu_returnToMainFromRoom)(void)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
 	game_returnToMenus_41e8b0();
 	g_roomRequestOut = 0;
-	GAME_VAR(int, 0x9dd6a4) = 0;
+	g_roomAnswerAwaited = 0;
 	GAME_VAR(int, 0x9dd1b0) = 0;
 	GAME_VAR(int, 0x9dd6d4) = 0;
 	g_screen = 300;
@@ -353,7 +353,7 @@ void (mapSelect_ok)(void)
 	for (int i = 0; i < count; i++)
 		if (GAME_VAR(int, 0x9ddac8 + i * 0x44) == 1) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x9eeab8) = g_mapSelectCount;
+			g_mapListFlaggedCount = g_mapSelectCount;
 			g_mainMenuFadingIn = 1;
 			GAME_VAR(int, 0x9eeab4) = 0;
 			return;

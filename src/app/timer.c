@@ -52,10 +52,10 @@ long double (timer_now)(void)
 	GAME_VAR(u32, 0x5ae9cc) = counter[1];
 	GAME_VAR(u32, 0x5ae9c8) = counter[0];
 	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
-	if (GAME_VAR(int, 0x4b1048)) {
+	if (g_timerFirstCall) {
 		long double t = g_time;
 		g_lastCount = count;
-		GAME_VAR(int, 0x4b1048) = 0;
+		g_timerFirstCall = 0;
 		return t;
 	}
 	u32 last = g_lastCount;
@@ -67,7 +67,7 @@ long double (timer_now)(void)
 	g_lastCount = count;
 	long double t = (long double)(count - last) * GAME_VAR(double, 0x4ded58) + g_time;
 	g_time = (double)t;
-	long double before = GAME_VAR(double, 0x9db988);
+	long double before = g_lastTime;
 	if (t == before || t != t || before != before) {   /* (fcom: equal or unordered) */
 		if (++GAME_VAR(int, 0x9dbf00) > 100000) {
 			t += GAME_VAR(double, 0x4a94e0);
@@ -76,7 +76,7 @@ long double (timer_now)(void)
 		}
 	} else
 		GAME_VAR(int, 0x9dbf00) = 0;
-	GAME_VAR(double, 0x9db988) = (double)t;
+	g_lastTime = (double)t;
 	return t;
 #undef g_time
 #undef g_lastCount

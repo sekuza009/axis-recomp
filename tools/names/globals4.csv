@@ -1,0 +1,55 @@
+# globals, batch 4 (address,type,name)
+0xa0b2fc,int,g_netConnected
+0xae2ec8,void *,g_logHook
+0x9f67ec,int,g_writeMatchLog
+0xa1f220,int,g_defaultColour
+0xa0e818,int,g_glColourBits
+0xa0e924,u8,g_glDepthBits
+0xb12a80,u8,g_displayModeChanged
+0x76d3ec,int,g_desktopDepth
+0x4e0c98,int,g_soundSwitch1
+0x4dd074,int,g_colourChanged
+0x4dc78c,float,g_totalWeight
+0x4dcb18,int,g_itemSlot4
+0x4dcb1c,int,g_itemSlot5
+0x4db54c,u8,g_arenaFragLimitTyped
+0x4db54d,u8,g_arenaTimeLimitTyped
+0x9dd6c0,float,g_roomListRefreshTimer
+0x4dbaf0,float,g_arenaListRefreshTimer
+0xa0b360,int,g_lobbyPending
+0x4df9e8,u8,g_roomMap
+0x4df9ec,u8,g_roomFragLimit
+0x4df9ed,u8,g_roomTimeLimit
+0x9dd83c,int,g_rankingFirst
+0x9dd4b8,int,g_roomListPages
+0x9dd328,int,g_roomListPrevRank
+0x9dd6a4,int,g_roomAnswerAwaited
+0x9da908,int,g_frameCounter40
+0x9fd948,int,g_chatLog
+0x9fd95c,int,g_chatLogged
+0x4b2a70,int,g_keepCameraAsked
+0x9dd380,int,g_editingRoomName
+0x9dd4a0,int,g_openLoginName
+0x9dd7d8,int,g_roomDialogOpen
+0xa0b378,int,g_gameServerAnswer
+0x4de1cc,int,g_crosshair
+0x4b04f8,int,g_lastCrosshair
+0x4e0cd0,int,g_menuTunnelTexture
+0x4de03c,float,g_setupPanelPos
+0xa0b390,int,g_arenaSessionOpen
+0xa0bf1c,void *,g_pingStopEvent
+0xa0bac8,int,g_serviceProviderCount
+0x9eeab8,int,g_mapListFlaggedCount
+0x4d23d0,int,g_convertHangul
+0x9dbf0c,int,g_directInputMade
+0x4df000,int,g_mouseInvert
+0x4df008,int,g_mouseSensitivity
+0x4df00c,int,g_crosshairSetting
+0x4ad490,int,g_textWrapX
+0x4ad494,int,g_textBottom
+0x9dd904,int,g_clockCheckClosed
+0x4b1048,int,g_timerFirstCall
+0x9db988,double,g_lastTime
+0x4c4de8,int,g_glCachedState
+0x9dbefc,u8,g_pixelFormatFilled
+0x9dd8e4,void *,g_inputFont

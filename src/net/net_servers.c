@@ -33,7 +33,7 @@ void (net_clearServers)(void)
    listed servers and waits again, stop ends the thread, anything else waits again */
 void (net_pingThreadProc)(void)
 {
-	void *events[2] = { g_pingDataEvent, GAME_VAR(void *, 0xa0bf1c) };
+	void *events[2] = { g_pingDataEvent, g_pingStopEvent };
 	for (;;) {
 		u32 r = WaitForMultipleObjects(2, events, 0, 0xffffffff);
 		if (r == 0)
@@ -47,5 +47,5 @@ void (net_pingThreadProc)(void)
 int (net_wakePingThread)(void)
 {
 	ResetEvent(g_pingDataEvent);
-	return SetEvent(GAME_VAR(void *, 0xa0bf1c));
+	return SetEvent(g_pingStopEvent);
 }

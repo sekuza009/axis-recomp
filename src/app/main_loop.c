@@ -636,14 +636,14 @@ static void zoom_view(u8 *s, const float *step)
 {
 	if (S(int, 0x234328b)) {
 		float a = f32(fsub_m((long double)game_clock(), step));
-		match_4686e0(BITS(a));
+		view_setAngle(BITS(a));
 		if (!(game_clock() >= 10.0f))
-			match_4686e0(0x41200000);   /* 10 */
+			view_setAngle(0x41200000);   /* 10 */
 	} else {
 		float a = f32(fadd_m((long double)game_clock(), step));
-		match_4686e0(BITS(a));
+		view_setAngle(BITS(a));
 		if (game_clock() > 60.0f)
-			match_4686e0(0x42700000);   /* 60 */
+			view_setAngle(0x42700000);   /* 60 */
 	}
 }
 
@@ -1054,14 +1054,14 @@ u32 THISCALL (replay_frame)(u8 *s)
 	S(int, 0x2343257) = GAME_VAR(int, 0x4ded68);
 	S(int, 0x234325b) = GAME_VAR(int, 0x4ded6c);
 	if (!(S(float, 0x44) >= 0.2f)) {
-		if (GAME_VAR(int, 0x4df000) == 0)
+		if (g_mouseInvert == 0)
 			S(float, 0x2343293) = f32((long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
 		else
 			S(float, 0x2343293) = f32(-(long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
 		S(float, 0x2343297) = f32(-(long double)(S(int, 0x2343257) - gfx_getWidth() / 2));
 	} else
 		S(int, 0x2343293) = S(int, 0x2343297) = 0;
-	long double sens = fmul_m((long double)GAME_VAR(int, 0x4df008), K(0x4aa480));
+	long double sens = fmul_m((long double)g_mouseSensitivity, K(0x4aa480));
 	sens = fmul_m(fadd_m(sens * sens, K(0x4a9424)), K(0x4a942c));
 	S(float, 0x2343293) = f32(fmul_m(sens, (const float *)(s + 0x2343293)));
 	S(float, 0x2343297) = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
@@ -1545,7 +1545,7 @@ static void round_over(u8 *s, int time_limit)
 		msg_fragLimitReached(s);
 	S(int, 0x23423b5) = time_limit;
 	S(int, 0x23423b9) = 0;
-	GAME_VAR(int, 0x9f67ec) = 1;
+	g_writeMatchLog = 1;
 }
 
 /* the local player's camera chat keys: T (all, +0x23432fb) / Y (team, +0x23432ff) open the line, its end sends it
@@ -1608,9 +1608,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
-	if (GAME_VAR(int, 0x9f67ec) != 0 && g_startedFromLobby != 0) {
+	if (g_writeMatchLog != 0 && g_startedFromLobby != 0) {
 		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? 0x4d0658 : 0x4d069c), 0, *(volatile int *)&from);
-		GAME_VAR(int, 0x9f67ec) = 0;
+		g_writeMatchLog = 0;
 		GAME_VAR(int, 0x9f67f0) = 1;
 	}
 	if (S(int, 0x233c9e8) == 0) {

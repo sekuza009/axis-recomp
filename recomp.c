@@ -1724,15 +1724,15 @@ THISCALL void stage_drawBullets(char *self, char *vv);
 
 /* batch 30: the small leftovers - setters, getters, clears, vtable-only dtors, nullsubs, static ErrorLog objects */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int skirmish_4017b0(int v);
+int text_setWrapX(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int skirmish_4017c0(int v);
+int text_setBottom(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_setKeysBlocked(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int set_4b42dc_457140(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int match_4686e0(int v);
+int view_setAngle(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_initObject_4e1878(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1752,7 +1752,7 @@ int gfx_getWidth(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_getHeight(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-float FUN_004686d0(void);
+float view_angle(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 float match_4686f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8227,11 +8227,11 @@ ST(stage_drawBullets, trails_setup();, (TC(void, 0x47d060, char *, char *)(BUF, 
 static DWORD ld_hash(long double x) { DWORD w[3] = { 0, 0, 0 }; memcpy(w, &x, 10); return w[0] ^ (w[1] * 0x9e3779b1u) ^ (w[2] * 0x85ebca6bu); }
 static DWORD rnd32(void) { DWORD v; fill(&v, 4); return v; }
 #define V0R(name, addr, SETUP) ST(name, SETUP, CD(void *, addr, void)(), name())
-ST(skirmish_4017b0, g_a[0] = (int)rnd32(); fill((void *)0x4ad490, 4);, CD(int, 0x4017b0, int)(g_a[0]), skirmish_4017b0(g_a[0]))
-ST(skirmish_4017c0, g_a[0] = (int)rnd32(); fill((void *)0x4ad494, 4);, CD(int, 0x4017c0, int)(g_a[0]), skirmish_4017c0(g_a[0]))
+ST(text_setWrapX, g_a[0] = (int)rnd32(); fill((void *)0x4ad490, 4);, CD(int, 0x4017b0, int)(g_a[0]), text_setWrapX(g_a[0]))
+ST(text_setBottom, g_a[0] = (int)rnd32(); fill((void *)0x4ad494, 4);, CD(int, 0x4017c0, int)(g_a[0]), text_setBottom(g_a[0]))
 ST(input_setKeysBlocked, g_a[0] = (int)rnd32(); fill((void *)0x680370, 4);, CD(int, 0x441250, int)(g_a[0]), input_setKeysBlocked(g_a[0]))
 ST(set_4b42dc_457140, g_a[0] = (int)rnd32(); fill((void *)0x4b42dc, 4);, CD(int, 0x457140, int)(g_a[0]), set_4b42dc_457140(g_a[0]))
-ST(match_4686e0, g_a[0] = (int)rnd32(); fill((void *)0x4c4dec, 4);, CD(int, 0x4686e0, int)(g_a[0]), match_4686e0(g_a[0]))
+ST(view_setAngle, g_a[0] = (int)rnd32(); fill((void *)0x4c4dec, 4);, CD(int, 0x4686e0, int)(g_a[0]), view_setAngle(g_a[0]))
 V0(static_initObject_4e1878, 0x42b130, fill((void *)0x4e1878, 8);)
 V0(static_initObject_5b1db8, 0x42b1a0, fill((void *)0x5b1db8, 8);)
 V0(static_initObject_680cd8, 0x42b1f0, fill((void *)0x680cd8, 8);)
@@ -8241,7 +8241,7 @@ V0(static_initObject_83a9e0, 0x42b2e0, fill((void *)0x83a9e0, 8);)
 ST(net_sessionCount, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), net_sessionCount())
 ST(gfx_getWidth, fill((void *)0xa0e810, 4);, CD(int, 0x4685b0, void)(), gfx_getWidth())
 ST(gfx_getHeight, fill((void *)0xa0e928, 4);, CD(int, 0x4685c0, void)(), gfx_getHeight())
-ST(FUN_004686d0, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(FUN_004686d0()))
+ST(view_angle, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(view_angle()))
 ST(match_4686f0, fill((void *)0x4c4df0, 4);, ld_hash(CD(long double, 0x4686f0, void)()), ld_hash(match_4686f0()))
 ST(FUN_00468700, fill((void *)0x4c4df4, 4);, ld_hash(CD(long double, 0x468700, void)()), ld_hash(FUN_00468700()))
 ST(TextureManager_clear, fill(BUF, 0x40);, TC(int, 0x4569a0, char *)(BUF + 0x10), TextureManager_clear(BUF + 0x10))
@@ -17059,10 +17059,10 @@ static const STest g_stests[] = {
 	/* batch 29 */
 	T(stage_drawBullets, 0, 4, 600),
 	/* batch 30 */
-	T(skirmish_4017b0, 1, 4, 300), T(skirmish_4017c0, 1, 4, 300), T(input_setKeysBlocked, 1, 4, 300), T(set_4b42dc_457140, 1, 4, 300),
-	T(match_4686e0, 1, 4, 300), T(static_initObject_4e1878, 0, 4, 0), T(static_initObject_5b1db8, 0, 4, 0), T(static_initObject_680cd8, 0, 4, 0),
+	T(text_setWrapX, 1, 4, 300), T(text_setBottom, 1, 4, 300), T(input_setKeysBlocked, 1, 4, 300), T(set_4b42dc_457140, 1, 4, 300),
+	T(view_setAngle, 1, 4, 300), T(static_initObject_4e1878, 0, 4, 0), T(static_initObject_5b1db8, 0, 4, 0), T(static_initObject_680cd8, 0, 4, 0),
 	T(static_initObject_76d498, 0, 4, 0), T(static_initObject_90d1e0, 0, 4, 0), T(static_initObject_83a9e0, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
-	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(FUN_004686d0, 1, 4, 300), T(match_4686f0, 1, 4, 300),
+	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_angle, 1, 4, 300), T(match_4686f0, 1, 4, 300),
 	T(FUN_00468700, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(load_47db50, 1, 4, 300), T(load_4804a0, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(load_483fc0, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(load_480430, 1, 4, 300), T(this_set_483d60, 1, 4, 300),
@@ -17978,14 +17978,14 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 29 */
 	{ 0x47d060, (void *)stage_drawBullets, "stage_drawBullets" },
 	/* batch 30 */
-	{ 0x4017b0, (void *)skirmish_4017b0, "skirmish_4017b0" }, { 0x4017c0, (void *)skirmish_4017c0, "skirmish_4017c0" },
+	{ 0x4017b0, (void *)text_setWrapX, "text_setWrapX" }, { 0x4017c0, (void *)text_setBottom, "text_setBottom" },
 	{ 0x441250, (void *)input_setKeysBlocked, "input_setKeysBlocked" }, { 0x457140, (void *)set_4b42dc_457140, "set_4b42dc_457140" },
-	{ 0x4686e0, (void *)match_4686e0, "match_4686e0" }, { 0x42b130, (void *)static_initObject_4e1878, "static_initObject_4e1878" },
+	{ 0x4686e0, (void *)view_setAngle, "view_setAngle" }, { 0x42b130, (void *)static_initObject_4e1878, "static_initObject_4e1878" },
 	{ 0x42b1a0, (void *)static_initObject_5b1db8, "static_initObject_5b1db8" }, { 0x42b1f0, (void *)static_initObject_680cd8, "static_initObject_680cd8" },
 	{ 0x42b240, (void *)static_initObject_76d498, "static_initObject_76d498" }, { 0x42b290, (void *)static_initObject_90d1e0, "static_initObject_90d1e0" },
 	{ 0x42b2e0, (void *)static_initObject_83a9e0, "static_initObject_83a9e0" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
-	{ 0x4686d0, (void *)FUN_004686d0, "FUN_004686d0" }, { 0x4686f0, (void *)match_4686f0, "match_4686f0" },
+	{ 0x4686d0, (void *)view_angle, "view_angle" }, { 0x4686f0, (void *)match_4686f0, "match_4686f0" },
 	{ 0x468700, (void *)FUN_00468700, "FUN_00468700" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
 	{ 0x464bb0, (void *)Model_clear, "Model_clear" }, { 0x466a20, (void *)ShapeManager_clear, "ShapeManager_clear" },
 	{ 0x46ae70, (void *)SkeletonManager_clear, "SkeletonManager_clear" }, { 0x47db50, (void *)load_47db50, "load_47db50" },

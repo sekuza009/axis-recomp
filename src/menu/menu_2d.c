@@ -302,12 +302,12 @@ u32 (menu_drawMessageBox)(void)
 u32 (menu_drawTextCursor)(int x, int y)
 {
 	long double t = fmul_m(fld_m(&g_frameTime), (const float *)0x4a950c);
-	int frames = GAME_VAR(int, 0x9da908) + 1;
+	int frames = g_frameCounter40 + 1;
 	t = fadd_m(t, (const float *)0x4de1f0);
-	GAME_VAR(int, 0x9da908) = frames;
+	g_frameCounter40 = frames;
 	GAME_VAR(float, 0x4de1f0) = (float)t;
 	if (frames > 0x28)
-		GAME_VAR(int, 0x9da908) = 0;
+		g_frameCounter40 = 0;
 	if (t > GAME_VAR(float, 0x4a9508))
 		GAME_VAR(int, 0x4de1f0) = 0;
 	gfx_setProjection2D3D(2);

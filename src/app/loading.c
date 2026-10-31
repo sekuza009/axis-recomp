@@ -227,18 +227,18 @@ int (app_checkCdAndLoad)(void *instance)
 	profile_scanSaves();
 	app_42f940();
 	hud_42fb40();
-	skirmish_4017b0(0x280);
-	skirmish_4017c0(0x1e0);
+	text_setWrapX(0x280);
+	text_setBottom(0x1e0);
 	GAME_VAR(int, 0x4d7348) = 0;
 	timer_init();
-	GAME_VAR(int, 0x4d23d0) = 1;
+	g_convertHangul = 1;
 	GAME_VAR(int, 0x67ef14) = 0;
-	if (!GAME_VAR(int, 0x9dbf0c)) {
+	if (!g_directInputMade) {
 		if (!input_createDirectInput(g_mainWindow, instance)) {
 			MessageBoxA(g_mainWindow, (const char *)0x751624, (const char *)0x7510a4, 0);
 			return 0;
 		}
-		GAME_VAR(int, 0x9dbf0c) = 1;
+		g_directInputMade = 1;
 	}
 	if (!g_startedFromLobby) {
 		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
@@ -499,7 +499,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 6:
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5104);
 		keep_alive(g);
-		sprintf(name, (const char *)0x4c50e4, GAME_VAR(int, 0x4df00c));
+		sprintf(name, (const char *)0x4c50e4, g_crosshairSetting);
 		G(int, 0x233c9f8) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
 		mode = G(int, 8);

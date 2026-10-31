@@ -108,7 +108,7 @@ void (armc_enterScreen)(void)
 	stage_remakePlayerActor(STAGE(g_scene));
 	GAME_VAR(int, 0x4dbc68) = 1;
 	GAME_VAR(int, 0x4dc54c) = 1;
-	GAME_VAR(int, 0x4dd074) = 1;
+	g_colourChanged = 1;
 }
 
 /* 0x40f220: the weapons page: every slot's item handed to the parts list, the cursor on slot 0's weapon (its first

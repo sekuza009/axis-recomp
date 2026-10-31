@@ -396,8 +396,8 @@ void (gameList_drawPage)(void)
 			GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
 	}
 	if (GAME_VAR(int, 0x9dd3fc)) {
-		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x9dd6c0)), &g_frameTime);
-		GAME_VAR(float, 0x9dd6c0) = f32(t);
+		long double t = fadd_m(fld_m(&g_roomListRefreshTimer), &g_frameTime);
+		g_roomListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			room_434ff0();
 			GAME_VAR(int, 0x9dd6c0) = 0;
@@ -782,8 +782,8 @@ void (lobbyJoin_draw)(void)
 		blink_down();
 	}
 	if (g_lobbyRefreshing) {
-		long double t = fadd_m(fld_m(&GAME_VAR(float, 0x4dbaf0)), &g_frameTime);
-		GAME_VAR(float, 0x4dbaf0) = f32(t);
+		long double t = fadd_m(fld_m(&g_arenaListRefreshTimer), &g_frameTime);
+		g_arenaListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
 			arena_406640();
 			GAME_VAR(int, 0x4dbaf0) = 0;

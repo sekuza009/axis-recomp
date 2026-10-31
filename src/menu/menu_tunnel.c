@@ -419,9 +419,9 @@ void (armc_enter)(TunnelRing *ring)
 	case 0:
 		BITS(r->alpha) = 0x3f800000;
 		lower_view(NULL);
-		if (GAME_VAR(int, 0x4b2a70)) {
+		if (g_keepCameraAsked) {
 			camera_keep();
-			GAME_VAR(int, 0x4b2a70) = 0;
+			g_keepCameraAsked = 0;
 		}
 		if (g_startedFromLobby == 1 && g_lobbyReply == 0x65) {
 			GAME_VAR(int, 0x4dc24c) = 1;
@@ -467,7 +467,7 @@ void (armc_enter)(TunnelRing *ring)
 			}
 			GAME_VAR(int, 0x76d3e8) = GAME_VAR(int, 0x67ef20);
 			g_tunnelFlyingIn = 1;
-			GAME_VAR(int, 0x4b2a70) = 1;
+			g_keepCameraAsked = 1;
 			camera_keep();
 			if (state == 1) {
 				g_enteringMenus = 0;

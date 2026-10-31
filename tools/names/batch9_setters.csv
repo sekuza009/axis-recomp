@@ -1,0 +1,5 @@
+# naming pass, batch 9: setters and getters of now-named globals (old,new)
+skirmish_4017b0,text_setWrapX
+skirmish_4017c0,text_setBottom
+match_4686e0,view_setAngle
+FUN_004686d0,view_angle

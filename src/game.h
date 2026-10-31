@@ -176,7 +176,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define FUN_004a8720() GAME_CDECL(0x4a8720, void, void)()
 #define actor_setPartColor_bits(stage, p, part, a, b, c, d, e, f) GAME_THISCALL(0x474b50, u32, void *, int, int, u32, u32, u32, \
 	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
-#define match_4686e0(v) GAME_CDECL(0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
+#define view_setAngle(v) GAME_CDECL(0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) GAME_THISCALL(0x4630c0, void, void *, int, int)(scene, victim, killer)
 #define tex_upload2(scene) GAME_THISCALL(0x473610, void, void *)(scene)
 #define item_update(s, dt) GAME_THISCALL(0x48ed90, void, void *, u32)(s, dt)
@@ -557,7 +557,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_drawDigits(x, y, scale, value, digits, flag) GAME_CDECL(0x46bdc0, void, int, int, float, int, int, int)(x, y, scale, value, digits, flag)
 #define tex_getIdByName(textures, name, a, b, c, d, e, f, g) GAME_THISCALL(0x456be0, int, void *, const char *, int, int, int, int, int, int, int)(textures, name, a, b, c, d, e, f, g)
 #define vec_rotate(v, angle) GAME_THISCALL(0x467700, void, float *, int)(v, angle)   /* turns (x, y) by angle (tenths of a degree) */
-#define game_clock() GAME_CDECL(0x4686d0, float, void)()                          /* FUN_004686d0: the float at 0x4c4dec */
+#define game_clock() GAME_CDECL(0x4686d0, float, void)()                          /* view_angle: the float at 0x4c4dec */
 #define hud_drawPressFire(scene) GAME_THISCALL(0x495140, void, Scene *)(scene)
 #define hud_drawClock(scene) GAME_THISCALL(0x496610, void, Scene *)(scene)
 #define hud_drawMatchResult(scene) GAME_THISCALL(0x496a30, void, Scene *)(scene)
@@ -946,8 +946,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define skirmish_cursorUp() GAME_CDECL(0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_cursorDown() GAME_CDECL(0x443d10, void, void)()   /* and down */
 #define briefing_typeOut() GAME_CDECL(0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
-#define skirmish_4017b0(v) GAME_CDECL(0x4017b0, int, int)(v)   /* the text wrap x (0x4ad490) */
-#define skirmish_4017c0(v) GAME_CDECL(0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
+#define text_setWrapX(v) GAME_CDECL(0x4017b0, int, int)(v)   /* the text wrap x (0x4ad490) */
+#define text_setBottom(v) GAME_CDECL(0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
 #define timer_now() GAME_CDECL(0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
 #define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
 #define msg_newKing(scene) GAME_THISCALL(0x462150, void, Scene *)(scene)   /* the ranking and its "new king" message */

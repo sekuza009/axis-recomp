@@ -481,7 +481,7 @@ u32 (ranking_page)(void)
 		if (column < 3)
 			out[0] = code[column];
 		int page = g_roomListPage;
-		GAME_VAR(int, 0x9dd83c) = page * 10 + 1;
+		g_rankingFirst = page * 10 + 1;
 		g_rankingLast = page * 10 + 10;
 		out[1] = page * 10 + 1;
 		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
@@ -691,13 +691,13 @@ u32 (room_settingsAfterTyping)(void)
 	if (g_paused)
 		return 0;
 	const char *line = (const char *)0x9dc92c;
-	if (GAME_VAR(int, 0x9dd380)) {   /* the room's name */
+	if (g_editingRoomName) {   /* the room's name */
 		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
-			GAME_VAR(int, 0x9dd380) = 0;
+			g_editingRoomName = 0;
 			return r;
 		}
-		GAME_VAR(int, 0x9dd380) = 0;
+		g_editingRoomName = 0;
 		memset((void *)0x4df9c8, 0, 32);
 		strcpy((char *)0x4df9c8, line);
 		return strlen(line) + 1;

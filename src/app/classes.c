@@ -87,7 +87,7 @@ int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); Collision
 int (net_sessionCount)(void) { return g_dplaySessionCount; }
 int (gfx_getWidth)(void) { return g_glWidth; }
 int (gfx_getHeight)(void) { return g_glHeight; }
-float (FUN_004686d0)(void) { return GAME_VAR(float, 0x4c4dec); }
+float (view_angle)(void) { return GAME_VAR(float, 0x4c4dec); }
 float (match_4686f0)(void) { return GAME_VAR(float, 0x4c4df0); }
 float (FUN_00468700)(void) { return GAME_VAR(float, 0x4c4df4); }
 
@@ -601,7 +601,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords(g + 0x233c9e8, 3);
 	GAME_VAR(int, g + 0x1f35bc) = 0;
 	if (GAME_VAR(int, g + 8) == 3)
-		for (int k = 0; k < GAME_VAR(int, 0x9eeab8); k++) {
+		for (int k = 0; k < g_mapListFlaggedCount; k++) {
 			const char *e = (const char *)0x9dda88 + k * 0x44;
 			if (GAME_VAR(int, e + 0x40) == 1)
 				strcpy((char *)g + 0x1f1cbc + GAME_VAR(int, g + 0x1f35bc)++ * 0x40, e);

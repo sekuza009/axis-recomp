@@ -462,11 +462,11 @@ void (match_debugHandler)(void)
 		if (strlen((const char *)0x9dc92c)) {
 			net_sendChat((const char *)0x9dc92c);
 			GAME_VAR(int, 0x4de6fc) = 0;
-			GAME_VAR(int, 0x9fd95c) = 1;
+			g_chatLogged = 1;
 			GAME_VAR(u32, 0x9fd948) = 0x9dc92c;
 		} else {
 			GAME_VAR(int, 0x4de6fc) = 0;
-			GAME_VAR(int, 0x9fd95c) = 0;
+			g_chatLogged = 0;
 		}
 		GAME_VAR(int, 0x68039c) = 0;
 		input_resetKeys();

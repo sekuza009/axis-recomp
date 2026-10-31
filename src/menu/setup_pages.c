@@ -252,12 +252,12 @@ static void settings_tab(void)
 		else if (g_pressed == 1)
 			menu_drawTexQuad_4285c0(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
-	int crosshair = GAME_VAR(int, 0x4de1cc);
-	if (crosshair != GAME_VAR(int, 0x4b04f8)) {
+	int crosshair = g_crosshair;
+	if (crosshair != g_lastCrosshair) {
 		if ((u32)crosshair <= 7)
 			strcpy((char *)0x4ddb58, (const char *)(0x4b063c - crosshair * 0x20));
 		GAME_VAR(int, 0x4e0c8c) = tex_getIdByName(g_textures, (const char *)0x4ddb58, 0, 0, 0, 0, 0, 0, 0);
-		GAME_VAR(int, 0x4b04f8) = crosshair;
+		g_lastCrosshair = crosshair;
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = GAME_VAR(int, 0x4e0c8c);
@@ -475,10 +475,10 @@ void (setup_drawTunnel)(void)
 		int texture;
 		if (layer == 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), &g_tunnelAlpha)));
-			texture = GAME_VAR(int, 0x4e0cd0);
+			texture = g_menuTunnelTexture;
 		} else if (layer == 1) {
 			glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
-			texture = GAME_VAR(int, 0x4e0cd0);
+			texture = g_menuTunnelTexture;
 		} else if (layer == 3) {
 			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_tunnelAlpha), (const float *)0x4a94f8)));
 			texture = GAME_VAR(int, 0x5b1984 - layer * 4);
@@ -597,7 +597,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		float s0 = 0, ds = 0.5f, t0 = 0, t1 = 0.25f, s_far = 0.5f;
 		if (layer > 1)
 			s0 = 0.5f, ds = 0, t0 = t->t0, t1 = t->t1, s_far = 1.0f;
-		int texture = layer < 2 ? GAME_VAR(int, 0x4e0cd0) : GAME_VAR(int, t->textures - layer * 4);
+		int texture = layer < 2 ? g_menuTunnelTexture : GAME_VAR(int, t->textures - layer * 4);
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		for (int wall = 0; wall < t->walls; wall++) {
 			int place = wall % places, far = wall >= places;
@@ -776,7 +776,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
-	Highlight h = { hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8)), glow, 0, 0, 0 };
+	Highlight h = { hovered_panel(0x9daf88, 6, g_roomDialogOpen), glow, 0, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomMode == 2)
@@ -895,8 +895,8 @@ void (setup_easePanel)(void)
 	typedef long double X;
 	if (!g_setupPanelMoving)
 		return;
-	X d = ((X)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, 0x4de03c)) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
-	GAME_VAR(float, 0x4de03c) = (float)((X)GAME_VAR(float, 0x4de03c) + d);
+	X d = ((X)GAME_VAR(float, 0x4a9448) - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
+	g_setupPanelPos = (float)((X)g_setupPanelPos + d);
 	if (!((X)g_setupTunnelDepth > (X)GAME_VAR(double, 0x4a9440))) {
 		g_setupPanelMoving = 0;
 		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;

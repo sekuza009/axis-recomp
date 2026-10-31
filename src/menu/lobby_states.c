@@ -49,7 +49,7 @@ void (lobby_setSubState1)(void)
 	GAME_VAR(u32, 0x4dbba0) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_lastPanel = 999;
-	GAME_VAR(int, 0xa0b360) = 1;
+	g_lobbyPending = 1;
 	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;
 	g_listRefreshPeriod = 30;
 }
@@ -76,8 +76,8 @@ void (lobby_drawArenaTitle)(void)
 	GAME_VAR(u8, 0x4db549) = b1;
 	GAME_VAR(u8, 0x4db54a) = b2;
 	GAME_VAR(int, 0x4db54e) = 0;
-	GAME_VAR(u8, 0x4db54c) = b4;
-	GAME_VAR(u8, 0x4db54d) = b5;
+	g_arenaFragLimitTyped = b4;
+	g_arenaTimeLimitTyped = b5;
 	GAME_VAR(int, 0x4db552) = 0;
 }
 
@@ -132,14 +132,14 @@ void (room_loadSettingsRecord)(void)
 {
 	if (GAME_VAR(signed char, 0x5b1b50) > 0x15 && GAME_VAR(signed char, 0x5b1b50) < 0x19)
 		GAME_VAR(u8, 0x5b1b50) = 0;
-	GAME_VAR(u8, 0x4df9e8) = GAME_VAR(u8, 0x5b1b50);
+	g_roomMap = GAME_VAR(u8, 0x5b1b50);
 	memset((void *)0x4df9c8, 0, 32);
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);   /* stored before the name is copied, as in the original */
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
 	GAME_VAR(u8, 0x4df9e9) = GAME_VAR(u8, 0x5b1b51);
 	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
-	GAME_VAR(u8, 0x4df9ec) = GAME_VAR(u8, 0x5b1b54);
-	GAME_VAR(u8, 0x4df9ed) = GAME_VAR(u8, 0x5b1b55);
+	g_roomFragLimit = GAME_VAR(u8, 0x5b1b54);
+	g_roomTimeLimit = GAME_VAR(u8, 0x5b1b55);
 }
 
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
@@ -169,12 +169,12 @@ void (room_enterRoomList)(void)
 	}
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_roomMode = 1;
-	GAME_VAR(int, 0x9dd83c) = 1;
+	g_rankingFirst = 1;
 	GAME_VAR(int, 0x9dd834) = 4;
 	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
 	g_rankingLast = 10;
 	GAME_VAR(u32, 0x9dd384) = 0x4b189680;   /* 10000000.0 */
-	GAME_VAR(int, 0x9dd4b8) = 999;
+	g_roomListPages = 999;
 }
 
 /* 0x432620: the ladder's fixed game: its name (0x4b17bc) and the player's (0x9dd570), map 8, limits 10 and 10, in
@@ -208,11 +208,11 @@ void (room_copyJoinedSettings)(void)
 	u8 map = GAME_VAR(u8, 0x5b1b51);
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
 	GAME_VAR(u8, 0x4df9e9) = map;
-	GAME_VAR(u8, 0x4df9e8) = GAME_VAR(u8, 0x5b1b50);
+	g_roomMap = GAME_VAR(u8, 0x5b1b50);
 	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);
-	GAME_VAR(u8, 0x4df9ec) = GAME_VAR(u8, 0x5b1b54);
-	GAME_VAR(u8, 0x4df9ed) = GAME_VAR(u8, 0x5b1b55);
+	g_roomFragLimit = GAME_VAR(u8, 0x5b1b54);
+	g_roomTimeLimit = GAME_VAR(u8, 0x5b1b55);
 	memcpy((void *)0x9dd260, (void *)0x9dd5f8, 11);
 	memcpy((void *)0x9dd26b, (void *)0x9dd603, 0x90);
 	static const u32 copy[6][2] = { { 0x9dd240, 0x9dd5d8 }, { 0x9dd244, 0x9dd5dc }, { 0x9dd25c, 0x9dd5f4 },
@@ -340,7 +340,7 @@ u32 (room_host)(void)
 	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
 	*(int *)record = 0x18;
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xf, 0x65);   /* net_send */
-	GAME_VAR(int, 0x9dd6a4) = 1;
+	g_roomAnswerAwaited = 1;
 	return r;
 }
 
@@ -738,8 +738,8 @@ u32 (arena_joinSession)(int session)
 	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
 	GAME_VAR(int, 0x4dbbec) = 0;
 	g_lobbyJoinRequest = 0;
-	g_arenaTimeLimit = GAME_VAR(u8, 0x4db54d) = rec[0x2e];
-	g_arenaFragLimit = GAME_VAR(u8, 0x4db54c) = rec[0x2d];
+	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec[0x2e];
+	g_arenaFragLimit = g_arenaFragLimitTyped = rec[0x2d];
 	int r = GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, *(const u32 *)rec, (const char *)0x4dedb0,
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)

@@ -40,7 +40,7 @@ void (room_openDialog4d)(void)
 	loginDialog_layout();
 	memset((void *)0x9dd1d8, 0, 0x54);
 	dialog_opened(0x4d);
-	GAME_VAR(int, 0x9dd4a0) = 1;
+	g_openLoginName = 1;
 	GAME_VAR(int, 0x9dd850) = 0;
 }
 
@@ -78,7 +78,7 @@ void (room_start)(void)
 u32 (room_mouse)(void)
 {
 	u32 state = GAME_VAR(u32, 0x9dd834);
-	int dialog = GAME_VAR(int, 0x9dd7d8);
+	int dialog = g_roomDialogOpen;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : CALL(0x437240);   /* room_readyKeys */
 	case 1: return dialog ? (u32)dialog : CALL(0x4372f0);
@@ -222,7 +222,7 @@ u32 (arena_joinListed)(int i)
 u32 (room_processKeys)(void)
 {
 	u32 state = GAME_VAR(u32, 0x9dd834);
-	int dialog = GAME_VAR(int, 0x9dd7d8);
+	int dialog = g_roomDialogOpen;
 	switch (state) {
 	case 0: return dialog ? (u32)dialog : CALL(0x435e70);   /* room_openClicks */
 	case 1:
@@ -423,7 +423,7 @@ void (createDialog_draw)(void)
 		menu_showMessage(0x23);
 	else
 		menu_showMessage(0x2a);
-	GAME_VAR(int, 0xa0b378) = 0;
+	g_gameServerAnswer = 0;
 	g_roomLoginDue = 0;
 #undef g_editKey
 }
@@ -438,9 +438,9 @@ void (loginForm_update)(void)
 	static const struct { u32 editing, text; int size; } field[4] = {
 		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
-	if (GAME_VAR(int, 0x9dd4a0)) {
+	if (g_openLoginName) {
 		loginForm_openField(0);
-		GAME_VAR(int, 0x9dd4a0) = 0;
+		g_openLoginName = 0;
 		return;
 	}
 	if (GAME_VAR(int, 0x4df900) || g_paused)
@@ -498,7 +498,7 @@ u32 (room_networkEvents)(void)
 		GAME_VAR(int, 0x9dd834) = 0x4d;
 		GAME_VAR(int, 0x9dd6c4) = 0;
 	}
-	if (!GAME_VAR(int, 0x9dd6a4))
+	if (!g_roomAnswerAwaited)
 		return r;
 	u32 answer = GAME_VAR(u32, 0xa0b37c);
 	switch (answer) {
@@ -967,7 +967,7 @@ u32 (ranking_drawTable)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	char page[64], last[64];
 	int first = g_roomListPage * 10 + 1;
-	GAME_VAR(int, 0x9dd83c) = first;
+	g_rankingFirst = first;
 	g_rankingLast = (g_roomListPage * 5 + 5) * 2;
 	itoa(first, page, 10);
 	itoa(g_rankingLast, last, 10);
@@ -1012,7 +1012,7 @@ u32 (ranking_drawTable)(void)
 			const u8 *row = (const u8 *)0x9dcef4 + i * 0x44;
 #define ROW(type, offset) (*(const type *)(row + (offset)))
 			if (!*row) {
-				GAME_VAR(int, 0x9dd4b8) = g_roomListPage;
+				g_roomListPages = g_roomListPage;
 				break;
 			}
 			int y = Y0 + i * 0x16 + 0x78;
@@ -1108,7 +1108,7 @@ void (createDialog_keys)(void)
 	if (g_roomRequestOut || g_roomLoginDue) {
 		if (input_justPressed(g_keyCancel2)) {
 			g_roomRequestOut = 0;
-			GAME_VAR(int, 0xa0b378) = 0;
+			g_gameServerAnswer = 0;
 			g_roomLoginDue = 0;
 			g_chatFieldFlag = 0;
 			g_paused = 0;

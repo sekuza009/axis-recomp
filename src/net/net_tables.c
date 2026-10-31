@@ -522,7 +522,7 @@ int (net_startThread)(void)
 {
 	if (!(g_pingDataEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))   /* CreateEventA */
 		return 0;
-	if (!(GAME_VAR(void *, 0xa0bf1c) = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
+	if (!(g_pingStopEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
 		return 0;
 	GAME_VAR(void *, 0xa0d788) = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)0x454560, NULL, 0, (u32 *)0xa0d784);   /* CreateThread */
 	if (!GAME_VAR(void *, 0xa0d788))
@@ -910,11 +910,11 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	int r;
 	switch (type) {
 	case 1:
-		if (GAME_VAR(int, 0x9fd948))
-			GAME_VAR(int, 0x9fd948) = 0;
+		if (g_chatLog)
+			g_chatLog = 0;
 		r = GAME_CDECL(0x451350, int, u32, const u8 *, char **)(from, message + 0xc, (char **)0x9fd948);   /* net_logMessage */
 		if (r >= 0)
-			GAME_VAR(int, 0x9fd95c) = 1;
+			g_chatLogged = 1;
 		return r;
 	case 2:
 		GAME_VAR(u32, 0x9fd94c) = *(const u32 *)(message + 4);
@@ -1105,7 +1105,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 			arena_info(GAME_VAR(u8 *, 0xa0b32c), GAME_VAR(const u8 *, 0xa0b328)[0], (u8)(g_playerCount - 1));
 		break;
 	case 200:
-		if (GAME_VAR(int, 0xa0b360) || !GAME_VAR(int, 0xa055f8))
+		if (g_lobbyPending || !GAME_VAR(int, 0xa055f8))
 			return;
 		if (gone)
 			g_playerCount = msg[3];
@@ -1168,7 +1168,7 @@ static int connect_socket(int *sock, int status)
 int (net_connect)(int mode)
 {
 	net_closeAll(mode);
-	GAME_VAR(int, 0xa0b2fc) = 1;
+	g_netConnected = 1;
 	if (mode == 100)
 		return connect_socket((int *)0xa055f8, 200);
 	if (mode == 0x65)
@@ -1184,11 +1184,11 @@ u32 (net_disconnect)(void)
 {
 	static const u8 lobbyBytes[9] = { 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 }, lobbyNames[3] = { 0x53, 0x33, 1 };
 	static const u8 roomBytes[9] = { 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 }, roomNames[3] = { 0x71, 0x43, 0x33 };
-	if (GAME_VAR(int, 0xa0b2fc) != 1)
+	if (g_netConnected != 1)
 		return GAME_VAR(u32, 0xa0b2fc);
 	u32 r = g_lobbySocket;
 	if (GAME_VAR(int, 0xa055f8)) {
-		if (!GAME_VAR(int, 0xa0b360) && !send_leave(0xa0b310, 0xa0b318, lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+		if (!g_lobbyPending && !send_leave(0xa0b310, 0xa0b318, lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
 			return 0;
 		r = socket_close(0xa055f8);
 	}
@@ -1199,7 +1199,7 @@ u32 (net_disconnect)(void)
 	}
 	g_netLastRequest = 0;
 	g_lobbyConnectStatus = 0;
-	GAME_VAR(int, 0xa0b2fc) = 0;
+	g_netConnected = 0;
 	return r;
 }
 
@@ -1481,7 +1481,7 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 		{ { 0x4b3e64 }, 0xa0b3a0, 0xa0bae0 }, { { 0x4b3e60 }, 0xa0b450, 0xa0bae4 },
 		{ { 0x4b3e58, 0x4b3e50 }, 0xa0b408, 0xa0bae8 }, { { 0x4b3e48, 0x4b3e40 }, 0xa0bab8, 0xa0baec } };
 	char names[10][0x80];
-	char *own = names[GAME_VAR(int, 0xa0bac8)];
+	char *own = names[g_serviceProviderCount];
 	strcpy(own, (const char *)name[2]);   /* lpszShortNameA */
 	crt_strupr(own);
 	u32 *id = operator_new(0x10);
@@ -1500,8 +1500,8 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 			break;
 		}
 	operator_delete(id);
-	if (GAME_VAR(int, 0xa0bac8) < 9)
-		GAME_VAR(int, 0xa0bac8)++;
+	if (g_serviceProviderCount < 9)
+		g_serviceProviderCount++;
 	return 1;
 }
 

@@ -82,5 +82,5 @@ void (armc_loadSavedMech)(void)
 int (armc_colourPartEquipped)(int i)
 {
 	int item = ((const int *)0x4dcca4)[i];
-	return item >= 0x1b && (item == GAME_VAR(int, 0x4dcb18) || item == GAME_VAR(int, 0x4dcb1c));
+	return item >= 0x1b && (item == g_itemSlot4 || item == g_itemSlot5);
 }

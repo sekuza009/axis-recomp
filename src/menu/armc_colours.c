@@ -91,10 +91,10 @@ void (armc_applyColourSlot)(void)
    again with its slot */
 void (armc_retintParts)(void)
 {
-	if (GAME_VAR(int, 0x4dd074)) {
+	if (g_colourChanged) {
 		for (int part = 0; part < 5; part++)
 			tint_part(part, part);
-		GAME_VAR(int, 0x4dd074) = 0;
+		g_colourChanged = 0;
 	}
 	int slot = g_armcPartSlot;
 	if (slot >= 0 && slot <= 4)
