@@ -5554,6 +5554,10 @@ static int thread_inside(DWORD addr, DWORD n)   /* is a frozen thread executing 
 unsigned char *wide_state(unsigned *size);
 static BYTE *g_patchData, *g_patchSnap, *g_patchRes;
 static unsigned g_patchSize;
+/* set by a test's setup: also compare the patch DLL's data after the runs (for the rebuilds that share its state:
+   latches, carried fractions, counters). Not for every test: the patch DLL also records its callers' return
+   addresses (its call-site heuristics), which differ between an original and a rebuilt caller by construction */
+static int g_patchCompare;
 static void restore_data(void)
 {
 	memcpy(g_data, g_snapData, g_dataSize);
@@ -6587,7 +6591,7 @@ static void mock_defaults(void)
 	g_vfsAltName = NULL; g_vfsAltData = NULL; g_vfsAltSize = 0; g_vfsAltName2 = NULL; g_vfsAltData2 = NULL; g_vfsAltSize2 = 0;
 	g_mockMkdirFail = 0; g_mockFindCount = 0; g_mockRegFail = 0; g_mockPixelFormat = 7; g_mockTextLen = 5; g_mockQpc = 0x1000;
 	g_mockQpf[0] = 3579545; g_mockQpf[1] = 0; g_mockQpfFail = 0; g_mockDeleteOk = 1;
-	g_paintStacks = 0; g_postRun = NULL;
+	g_paintStacks = 0; g_postRun = NULL; g_patchCompare = 0;
 	g_mockWsaFail = 0; g_mockSocket = 0x1234; g_mockHostFail = 0; g_mockHostNameFail = 0; g_mockAsyncFail = 0;
 	g_mockWsaVer = 0; g_mockBindFail = 0; g_mockConnectRet = 0; g_mockEventFail = 0; g_mockThreadFail = 0; g_mockHandles = 0;
 	g_mockInetNone = 0; g_mockGlBool = 0; g_mockGlrc = 0x6c0; g_mockAtom = 0xc001;
@@ -6716,7 +6720,7 @@ static int run_one(const STest *t, int full, int log)
 		if (same && log) first_diff(t->name, g_resData, g_data, g_dataSize, (DWORD)g_data);
 		same = 0;
 	}
-	if (full && g_patchSnap && memcmp(g_patchData, g_patchRes, g_patchSize)) {
+	if (full && g_patchSnap && g_patchCompare && memcmp(g_patchData, g_patchRes, g_patchSize)) {
 		if (same && log) first_diff(t->name, g_patchRes, g_patchData, g_patchSize, (DWORD)g_patchData);
 		same = 0;
 	}
@@ -14188,6 +14192,7 @@ ST(input_isDown, keys_setup();, CALL_PLAIN(0x401590, 0, g_a[0], 0, 0, 0), (DWORD
 void wide_testMouseLatch(int i, int on);
 static void pressed_setup(void)
 {
+	g_patchCompare = 1;
 	keys_setup();
 	for (int i = 0; i < 3; i++) { G32(0x4ded88 + 4 * i) = irnd(0, 2) < 2 ? irnd(0, 1) : irnd(-9, 9); wide_testMouseLatch(i, irnd(0, 1)); }
 	for (int k = 0; k < 0x100; k++) G32(0x4d1a98 + 4 * k) = irnd(0, 1);
@@ -14205,6 +14210,7 @@ static LONG fc_mouseState(FakeCom *o, DWORD *a)
 }
 static void readMouse_setup(void)
 {
+	g_patchCompare = 1;
 	static const LONG res[] = { 0, 1, (LONG)0x8007001e, (LONG)0x8007001e, (LONG)0x80004005 };
 	FakeCom *m = (FakeCom *)fakecom_new(0, 0x33, g_nargsDidev, 0);
 	m->fn[9] = fc_mouseState; m->val[9] = (DWORD)(BUF + 0x3000);
@@ -14219,6 +14225,7 @@ ST(input_readMouse, readMouse_setup();, CALL_PLAIN(0x401730, 0, 0, 0, 0, 0), (DW
    buttons' last states; small movements and wheel notches as well as random ones */
 static void menuCursor_setup(void)
 {
+	g_patchCompare = 1;
 	readMouse_setup();
 	if (irnd(0, 1)) for (int i = 0; i < 3; i++) ((int *)(BUF + 0x3000))[i] = irnd(-300, 300);
 	G32(0x4ded68) = irnd(-100, 800); G32(0x4ded6c) = irnd(-100, 600);
@@ -16849,6 +16856,7 @@ ST(gfx_fillRect, fillrect_setup();, CALL_PLAIN(0x46bd60, 0, g_a[0], g_a[1], g_a[
 static const DWORD g_stubDigits[] = { 0x4566c0, 1 | CS_POP | CS_THIS, 0 };
 static void digits_setup(void)
 {
+	g_patchCompare = 1;
 	callee_stubs(g_stubDigits, 0);
 	G32(0xa0e928) = irnd(0, 3) ? 1080 : irnd(0, 3000); G32(0xa106ac) = irnd(0, 3) ? irnd(0, 2047) : irnd(-3000, 3000);
 	G32(0xa0e010) = (int)(BUF + 0x1000); for (int i = 0; i < 16; i++) G32(BUF + 0x1004 + 4 * i) = 0x1000 * (i + 1);
@@ -18795,7 +18803,7 @@ static DWORD WINAPI worker(LPVOID unused)
 		if ((g_patchData = wide_state(&g_patchSize)) && (g_patchSnap = VirtualAlloc(NULL, 2 * g_patchSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 			g_patchRes = g_patchSnap + g_patchSize;
 			memcpy(g_patchSnap, g_patchData, g_patchSize);
-			say("recomp: the patch DLL's data (%u bytes at %p) is restored and compared with the game's\n", g_patchSize, g_patchData);
+			say("recomp: the patch DLL's data (%u bytes at %p) is restored before each run (and compared where a test asks)\n", g_patchSize, g_patchData);
 			{ int wide_fixes(void); int f = wide_fixes();
 			  say("recomp: patch DLL changes the rebuilds carry: menu fix %s, mouse-button latch %s, cursor clamp %s, ARM CENTER turn %s\n",
 			      f & 1 ? "on" : "off", f & 2 ? "on" : "off", f & 4 ? "on" : "off", f & 8 ? "on" : "off"); }

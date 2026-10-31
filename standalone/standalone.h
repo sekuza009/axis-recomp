@@ -10,5 +10,8 @@ extern const int g_saNhooks;
    the rebuild reads the live target (PATCHED_CALL), so such a change does not keep the original */
 extern const unsigned g_saPatchOk[][2];
 extern const int g_saNpatchOk;
+/* the game's code bytes the rebuilds read (AXISRC_POISON keeps them) */
+extern const unsigned g_saKeep[][2];
+extern const int g_saNkeep;
 
 #endif

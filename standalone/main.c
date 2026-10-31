@@ -20,6 +20,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "standalone.h"
 #include "../fnsizes.h"
 
@@ -160,6 +161,99 @@ static int install_hooks(void)
 	return n;
 }
 
+/* AXISRC_POISON=1 (a check): every byte of the game's own code (its functions from 0x401000 to the MSVC runtime at
+   0x49e000, by fnsizes.h, and the installed exe's patch code at 0x4a8e20 ..) becomes int3, except the jumps at the rebuilt functions' entries (and
+   the patch layer's at movie_playEnding's), and the bytes the rebuilds read (g_saKeep). Any original game code still
+   reached then stops the game at once, at its address. */
+static char g_logPath[MAX_PATH];
+/* where poisoned code was reached: its address and the stack's return-address-like values, into standalone.log */
+static LONG CALLBACK poison_hit(EXCEPTION_POINTERS *e)
+{
+	DWORD at = (DWORD)e->ExceptionRecord->ExceptionAddress, code = e->ExceptionRecord->ExceptionCode;
+	int hit = code == EXCEPTION_BREAKPOINT && at >= 0x401000 && at < 0x4a9000;
+	if (!hit && code != EXCEPTION_ACCESS_VIOLATION && code != EXCEPTION_ILLEGAL_INSTRUCTION && code != EXCEPTION_PRIV_INSTRUCTION)
+		return EXCEPTION_CONTINUE_SEARCH;
+	FILE *f = fopen(g_logPath, "a");
+	if (f) {
+		const DWORD *sp = (const DWORD *)e->ContextRecord->Esp;
+		if (hit)
+			fprintf(f, "POISONED CODE REACHED at %06lx (esp %08lx); on the stack:", at, (DWORD)sp);
+		else
+			fprintf(f, "EXCEPTION %08lx at %08lx (data %08lx, esp %08lx); on the stack:", code, at,
+			        (DWORD)e->ExceptionRecord->ExceptionInformation[1], (DWORD)sp);
+		for (int i = 0; i < 64; i++)
+			if ((sp[i] >= 0x401000 && sp[i] < 0x4a9000) || (sp[i] >= 0x10000 && sp[i] < 0x400000))
+				fprintf(f, " [%d]%08lx", i, sp[i]);
+		fprintf(f, "\n");
+		fclose(f);
+	}
+	TerminateProcess(GetCurrentProcess(), 3);
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
+/* (poison mode) the game's ExitProcess, logged with the return addresses on the stack */
+static void (WINAPI *g_realExit)(UINT);
+static void WINAPI poison_exit(UINT code)
+{
+	FILE *f = fopen(g_logPath, "a");
+	if (f) {
+		const DWORD *sp = (const DWORD *)&code - 1;
+		fprintf(f, "ExitProcess(%u); on the stack:", code);
+		for (int i = 0; i < 400; i++)
+			if ((sp[i] >= 0x401000 && sp[i] < 0x4a9000) || (sp[i] >= 0x10000 && sp[i] < 0x400000))
+				fprintf(f, " [%d]%08lx", i, sp[i]);
+		fprintf(f, "\n");
+		fclose(f);
+	}
+	g_realExit(code);
+}
+
+static int poison(void)
+{
+	AddVectoredExceptionHandler(1, poison_hit);
+	g_realExit = *(void (WINAPI **)(UINT))0x4a90f8;
+	*(void (WINAPI **)(UINT))0x4a90f8 = poison_exit;
+	static const unsigned ranges[][2] = { { 0x401000, 0x49e000 }, { 0x4a8e20, 0x4a9000 } };
+	static BYTE keep[0xa8000];   /* (0x401000 .. 0x4a9000) */
+	for (int i = 0; i < g_saNhooks; i++)
+		memset(keep + g_saHooks[i].addr - 0x401000, 1, 5);
+	memset(keep + 0x46c420 - 0x401000, 1, 5);   /* movie_playEnding: the patch layer's jump to its own player */
+	for (int i = 0; i < g_saNkeep; i++)
+		memset(keep + g_saKeep[i][0] - 0x401000, 1, g_saKeep[i][1] - g_saKeep[i][0]);
+	/* the compiler's jump thunks (the runtime's static-initializer table points at some: 0x467880 jmp 0x467890):
+	   a jmp straight to a rebuilt function's entry only hands over, so it stays */
+	static BYTE entry[0xa8000];
+	for (int i = 0; i < g_saNhooks; i++)
+		entry[g_saHooks[i].addr - 0x401000] = 1;
+	int thunks = 0;
+	for (unsigned a = 0x401000; a + 5 <= 0x49e000; a++) {
+		unsigned to = a + 5 + *(const int *)(a + 1);
+		if (*(const BYTE *)a == 0xE9 && !entry[a - 0x401000] && to >= 0x401000 && to < 0x4a9000 && entry[to - 0x401000]) {
+			memset(keep + a - 0x401000, 1, 5);
+			thunks++;
+		}
+	}
+	fprintf(g_log, "AXISRC_POISON: %d jumps to rebuilt entries kept\n", thunks);
+	int n = 0;
+	unsigned lo = 0, hi = 0xffffffff;   /* AXISRC_POISON=lo-hi (hex): only that part (for narrowing a problem down) */
+	{ char v[64]; if (GetEnvironmentVariableA("AXISRC_POISON", v, sizeof v) && strchr(v, '-')) { lo = strtoul(v, NULL, 16); hi = strtoul(strchr(v, '-') + 1, NULL, 16); } }
+	/* only inside the game's functions (fnsizes.h): .text also holds data between them, e.g. the DirectInput
+	   object formats at 0x44f950 that dinput reads (its keyboard set-up failed when they were poisoned) */
+	static BYTE code[0xa8000];
+	for (int i = 0; i < (int)(sizeof g_fnSizes / sizeof g_fnSizes[0]); i++)
+		if (g_fnSizes[i][0] >= ranges[0][0] && g_fnSizes[i][0] + g_fnSizes[i][1] <= ranges[0][1])
+			memset(code + g_fnSizes[i][0] - 0x401000, 1, g_fnSizes[i][1]);
+	memset(code + ranges[1][0] - 0x401000, 1, ranges[1][1] - ranges[1][0]);
+	for (int r = 0; r < 2; r++)
+		for (unsigned a = ranges[r][0]; a < ranges[r][1]; a++)
+			if (code[a - 0x401000] && !keep[a - 0x401000] && a >= lo && a < hi) {
+				*(BYTE *)a = 0xCC;
+				n++;
+			}
+	FlushInstructionCache(GetCurrentProcess(), (void *)0x401000, 0xa8000);
+	return n;
+}
+
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 {
 	char dir[MAX_PATH], path[MAX_PATH];
@@ -167,6 +261,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	GetModuleFileNameA(NULL, dir, sizeof dir);
 	*(strrchr(dir, '\\') + 1) = 0;
 	snprintf(path, sizeof path, "%sstandalone.log", dir);
+	strcpy(g_logPath, path);
 	g_log = fopen(path, "w");
 	if (!g_log) fail("cannot write %s", path);
 	snprintf(path, sizeof path, "%sAxisGL.exe", dir);
@@ -176,6 +271,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	fprintf(g_log, "patch layer started (widescreen state %s)\n", wide_present() ? "handed over" : "MISSING");
 	int n = install_hooks();
 	fprintf(g_log, "%d of %d rebuilt functions switched in; starting the game\n", n, g_saNhooks);
+	if (GetEnvironmentVariableA("AXISRC_POISON", NULL, 0))
+		fprintf(g_log, "AXISRC_POISON: %d bytes of the game's own code made int3\n", poison());
 	fclose(g_log);
 	g_log = NULL;
 	((void (*)(void))(GAME_BASE + file_nt()->OptionalHeader.AddressOfEntryPoint))();

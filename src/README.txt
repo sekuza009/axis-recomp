@@ -28,12 +28,14 @@ game as a program of its own: no injection, no change to the installed exe. Put 
 it reads AxisGL.exe there as data and does the loader's work itself (standalone/main.c): the game's sections at
 0x400000 (inside AxisRC.exe's own .bss), its imports, the patch layer (../axisnet_recomp.c compiled in with
 AXIS_STANDALONE), then every rebuilt function switched in at its original's address (the table is generated from
-recomp.c by tools/mkhooks.py), then the game's entry point. What still runs from AxisGL.exe: its data, the MSVC
-runtime (0x49e000..) and 10 game functions never rebuilt (~6 KB): 9 that the patch layer patches or replaces in
-memory (mouse/cursor input, the ARM CENTER rotation, the font pen, HUD digits and rectangles, the HUD projection, the
-ending movie) and WndProc, which jumps into patch code on disk (functions.csv's 11th, save_loadColours, is only the
-tail of a rebuilt function). standalone.log (next to the exe) lists where
-each function runs from; RECOMP_SKIP=name,... keeps some on the original. standalone/play.sh is the play test.
+recomp.c by tools/mkhooks.py), then the game's entry point. Every game function is rebuilt; the ones the patch
+layer or the installed exe's patches change carry those changes (wide.h, wide_carries; the on-disk patch code in
+.axnet and at 0x4a8e20.. is written into the rebuilds). What still runs from AxisGL.exe is its data and the MSVC
+runtime (0x49e000..); movie_playEnding is replaced whole by the patch layer's player. AXISRC_POISON=1 checks this:
+every byte of the game's functions except their entry jumps (and the code bytes rebuilds read, tools/mkhooks.py)
+becomes int3, so any original game code reached stops the game at its address (logged). Data inside .text stays
+(the DirectInput object formats at 0x44f950 are read by dinput). standalone.log (next to the exe) lists every
+function; RECOMP_SKIP=name,... keeps some on the original. standalone/play.sh is the play test.
 
 Adding a function
   1. Read it: the disassembly (python tools/disx.py 0xADDR), Ghidra's pseudo-C (../decomp/out/src) and the lifted
