@@ -5713,7 +5713,8 @@ THISCALL void match_combatInput(char *s);
    0x471400 / 0x471740), the parts' animation (0x45e1f0 .. 0x45e530), lock-on (0x473450), the camera vectors
    (0x46f770 / 0x46f8c0, Vec3_normalize, fpatan for the heading), sounds (0x46c140 ..), the scripts (0x483770),
    the KYRIE parts' lookup (@0x45c638: 0x473780, the patch DLL's cat_wrap) */
-static THISCALL DWORD actor_processFrame(char *s, DWORD i, DWORD dt) { DWORD v[2] = { i, dt }; return run_lifted(lift_4580b0, (DWORD)s, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void actor_processFrame(char *s, DWORD i, DWORD dt);
 /* batch 210 (lifted/grp174.c): the game mode's frame */
 #include "lifted/grp174.c"
 /* 0x4988e0 game_processGameMode() (thiscall on the scene; 16.7 KB): with a log (0x9f67ec, 0x76d410) the ranking
@@ -17014,6 +17015,40 @@ static void actorframe_setup(void)
 	for (int j = -1; j < 4; j++) S32(BUF, 0x202ef38 + j * 0x4e8) = irnd(0, 1);
 	for (int k = 0; k < 16; k++) S32(BUF, 0x1cd94b8 + k * 0x8888) = irnd(0, 1) ? S32(BUF, 0x202e8d4) : irnd(-1, 15);
 	for (int k = 0; k < 4; k++) { int o = g_afActF[irnd(0, 99)]; SF(ac, o) = csu_fr(-500000, 500000); }
+	/* half the tests steered into the deep paths: an actor in play and not held (+0x884c), armour left, the firing
+	   conditions met (+0x46c, +0x490 = 1, +0x17c = 0 ..), weapons with short cycles and bursts, small joint and muzzle
+	   indices (the models' matrices stay in their 4 KB), the arms' and legs' emitters, the scoring modes, levels and
+	   victims' levels small (they index 0x4b4314), a bot's attention fields */
+	if (irnd(0, 1)) {
+		S32(ac, 0x884c) = 0; S32(ac, 0x14c) = 1; S32(ac, 0x110) = S32(BUF, 0x202e8d4); S32(ac, 0x11c) = irnd(0, 2);
+		SF(ac, 0x120) = (float)irnd(0, 10); SF(ac, 0x124) = 20.0f; S32(ac, 0x128) = irnd(-1, 100); S32(ac, 0x46c) = irnd(0, 3) ? 1 : 0;
+		SF(ac, 0x17c) = irnd(0, 3) ? 0.0f : 0.25f; SF(ac, 0x490) = 1.0f; S32(ac, 0x48c) = 0; S32(ac, 0x550) = 0;
+		SF(ac, 0x4a8) = irnd(0, 1) ? 0.5f : 0.0f; SF(ac, 0x8804) = 0.0f; S32(ac, 0x8808) = -1; S32(ac, 0x8810) = irnd(-3, 3);
+		S32(ac, 0x8814) = irnd(-3, 3); S32(ac, 0x8818) = irnd(0, 3); S32(ac, 0x1f0) = irnd(0, 3); SF(ac, 0x1f4) = csu_fr(0, 2);
+		SF(ac, 0x8844) = irnd(0, 1) ? 0.0f : 1.0f; S32(ac, 0x140) = irnd(0, 5); S32(ac, 0x4a0) = irnd(0, 1);
+		for (int k = 0; k < 6; k++) S32(pl, 0x320 + 4 * k) = irnd(0, 3);
+		for (int k = 0; k < 4; k++) S32(ac, 0x130 + 4 * k) = irnd(0, 3) ? 100 : 0;
+		for (int w = 0; w < 4; w++) {
+			char *wp = BUF + 0x14d1ab4 + w * 0x2e18;
+			SF(wp, 0x2e08) = csu_fr(1, 20); S32(wp, 0x2dc8) = irnd(1, 3); SF(wp, 0x2dcc) = irnd(0, 1) ? 0.0f : 0.004f;
+			S32(wp, 0x2dc0) = irnd(-1, 3); S32(wp, 0x2dc4) = irnd(0, 2); SF(wp, 0x2e10) = irnd(0, 1) ? 0.0f : 1.0f;
+			SF(wp, 0x2df4) = csu_fr(0, 8000);
+			for (int k = 0; k < 6; k++) { S32(wp, 0x15e8 + k * 64) = irnd(0, 30); S32(wp, 0x2ca4 + k * 64) = irnd(0, 30); }
+		}
+		for (int k = 0; k < 4; k++) {
+			char *ar = BUF + 0x1447ec4 + k * 0x13f4, *lg = BUF + 0x1486470 + k * 0x1820;
+			S32(ar, 0x13d0) = irnd(0, 3); S32(lg, 0x17f0) = irnd(0, 3); S32(lg, 0x17fc) = irnd(0, 3);
+			for (int j = 0; j < 4; j++) { S32(ar, 0x12d0 + 4 * j) = irnd(0, 30); S32(ar, 0x1350 + 4 * j) = irnd(0, 1);
+				S32(lg, 0x16f0 + 4 * j) = irnd(0, 30); S32(lg, 0x1770 + 4 * j) = irnd(0, 1); }
+		}
+		S32(BUF, 0x20f3ad4) = irnd(0, 1); S32(BUF, 0x20f3ad8) = irnd(0, 1); S32(ac, 0x4d8) = irnd(0, 1); S32(ac, 0x4dc) = irnd(0, 1);
+		S32(ac, 0xdc) = irnd(0, 5); S32(ac, 0x4c0) = irnd(0, 3) ? irnd(0, 15) : a;
+		for (int k = 0; k < 16; k++) { S32(BUF, 0x1cd9484 + k * 0x8888) = irnd(0, 5); SF(BUF, 0x1ce1b90 + k * 0x8888) = csu_fr(0, 5000); }
+
+		/* the slide round another actor (a hit on its sphere, there), and the line traces now and then blocked */
+		static float hitp[3]; for (int c = 0; c < 3; c++) hitp[c] = csu_fr(-5000, 5000);
+		callee_ret(0x47d9d0, irnd(0, 1)); callee_out(0x47d9d0, 5, hitp, 12); callee_ret(0x471740, irnd(0, 3) == 0);
+	}
 	g_a[0] = a; GF(&g_a[1]) = (float)irnd(1, 100) / 1000.0f;
 	g_paintStacks = 1;
 }

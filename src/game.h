@@ -330,6 +330,23 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define actor_clearTargetRefs(stage, b) GAME_THISCALL(0x47cf10, void, void *, int)(stage, b)
 #define math_segmentSphere(p0, p1, dir, centre, radius, hit, t) GAME_CDECL(0x47d9d0, int, const float *, const float *, const float *, const float *, float, float *, float *)(p0, p1, dir, centre, radius, hit, t)   /* 1: the segment meets the sphere */
 #define skel_applyPose(sk, out, bone, t) GAME_THISCALL(0x46ab30, void, void *, void *, int, u32)(sk, out, bone, t)
+/* (match/actor_frame.c: an actor's frame) */
+#define FUN_0045e1f0(stage, i) GAME_THISCALL(0x45e1f0, void, void *, int)(stage, i)
+#define actor_updateBody(stage, i) GAME_THISCALL(0x45e2c0, void, void *, int)(stage, i)
+#define FUN_0045e390(stage, i) GAME_THISCALL(0x45e390, void, void *, int)(stage, i)
+#define FUN_0045e460(stage, i) GAME_THISCALL(0x45e460, void, void *, int)(stage, i)
+#define FUN_0045e530(stage, i) GAME_THISCALL(0x45e530, void, void *, int)(stage, i)
+#define actor_45e910(stage, i) GAME_THISCALL(0x45e910, void, void *, int)(stage, i)   /* the previous weapon */
+#define actor_45e9e0(stage, i) GAME_THISCALL(0x45e9e0, void, void *, int)(stage, i)   /* the next weapon */
+#define actor_45eab0(stage, i) GAME_THISCALL(0x45eab0, void, void *, int)(stage, i)   /* the input cleared */
+#define actor_45edb0(stage, i) GAME_THISCALL(0x45edb0, void, void *, int)(stage, i)
+#define actor_checkLineOfSight(stage, i) GAME_THISCALL(0x460270, void, void *, int)(stage, i)
+#define actor_46c140(from, to) GAME_CDECL(0x46c140, long double, u32, u32)(from, to)   /* the turn from one angle to another */
+#define actor_46c1c0(from, to, t) GAME_CDECL(0x46c1c0, long double, u32, u32, u32)(from, to, t)   /* an angle part way */
+#define actor_46f770(part, k, value) GAME_THISCALL(0x46f770, void, void *, int, u32)(part, k, value)
+#define actor_46f8c0(part, m) GAME_THISCALL(0x46f8c0, void, void *, void *)(part, m)
+#define actor_46fed0(part) GAME_THISCALL(0x46fed0, void, void *)(part)
+#define bullet_spawn(stage, slot, owner, target, rec, n) GAME_THISCALL(0x47ce50, int, void *, int, int, int, void *, int)(stage, slot, owner, target, rec, n)
 #define space_tracePlanes_47fb80(rec, p0, p1, hit, t) GAME_THISCALL(0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
 #define hud_46fd20(list, vv, lights, tint, a4, a5, a6) GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
 #define tex_getItemFileBy(manager, name) GAME_THISCALL(0x455550, void *, void *, const char *)(manager, name)   /* the dat file at the item's data */
