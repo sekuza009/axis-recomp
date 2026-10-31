@@ -593,3 +593,645 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	return S(int, 0x23432cf) == 1 ? 0 : 3;
 }
 #undef S
+
+#define S(type, offset) GAME_VAR(type, s + (offset))
+#define K(address) ((const float *)(address))
+#define ACTOR(i, offset) GAME_VAR(float, s + 0x1eccbc4 + (i) * 0x8888 + (offset))   /* an actor's field, from its position */
+#define ACTOR_INT(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)
+
+/* the camera back at the map's start view (+0x22ee228: position, pitch, heading) */
+static void start_view(u8 *s)
+{
+	memcpy(s + 0x233ca04, s + 0x22ee228, 12);
+	S(u32, 0x233ca28) = S(u32, 0x22ee234);
+	S(u32, 0x233ca2c) = S(u32, 0x22ee238);
+}
+
+/* the current camera preset (+0x233cc10) back from its stored one: six fields of ten */
+static void preset_reset(u8 *s)
+{
+	for (int f = 0; f < 6; f++)
+		S(u32, 0x233cb20 + f * 0x28 + S(int, 0x233cc10) * 4) = S(u32, 0x233ca30 + f * 0x28 + S(int, 0x233cc10) * 4);
+}
+
+/* following no one: the free camera from the start view */
+static void unfollow(u8 *s)
+{
+	S(int, 0x2340c64) = -1;
+	S(int, 0x233c9fc) = 0;
+	S(int, 0x2340c70) = 1;
+	start_view(s);
+}
+
+/* the game's next random number below n (its table 0xa106f8 by the counter 0xa1efb8) */
+static u32 rand_below(u32 n)
+{
+	u32 r = GAME_VAR(u32, 0xa106f8 + (GAME_VAR(u32, 0xa1efb8) & 0xfff) * 4) % n;
+	GAME_VAR(u32, 0xa1efb8)++;
+	return r;
+}
+
+/* the view angle by step (narrower with +0x234328b), kept within 10 .. 60 */
+static void zoom_view(u8 *s, const float *step)
+{
+	if (S(int, 0x234328b)) {
+		float a = f32(fsub_m((long double)game_clock(), step));
+		match_4686e0(BITS(a));
+		if (!(game_clock() >= 10.0f))
+			match_4686e0(0x41200000);   /* 10 */
+	} else {
+		float a = f32(fadd_m((long double)game_clock(), step));
+		match_4686e0(BITS(a));
+		if (game_clock() > 60.0f)
+			match_4686e0(0x42700000);   /* 60 */
+	}
+}
+
+/* the end of the replay file (or the skip key): the next replay (a random one with +0x9eeac0, else the next in
+   order, the list wrapping round with +0x4b2a7c) with the scene reset; 0 when the list is done (the viewer quits) */
+static int replay_next(u8 *s)
+{
+	u8 *stage = s + 0x1f36c8;
+	if (GAME_VAR(int, 0x9eeac0) == 1) {
+		scene_resetActors(stage);
+		scene_reset(stage);
+		S(u32, 0x1f35c0) = S(int, 0x1f35bc) > 0 ? rand_below(S(u32, 0x1f35bc)) : 0;
+	} else {
+		if (++S(int, 0x1f35c0) >= S(int, 0x1f35bc)) {
+			if (GAME_VAR(int, 0x4b2a7c) != 1) {
+				S(int, 0x23432cf) = 1;
+				return 0;
+			}
+			S(int, 0x1f35c0) = 0;
+		}
+		scene_resetActors(stage);
+		scene_reset(stage);
+	}
+	S(int, 0x233cc20) = 1;
+	S(int, 0x233cc28) = 0;
+	return 1;
+}
+
+/* the player followed: a number key (f, 0 ..), the next live player (+0x234331b), or a random one now and then
+   (none yet, gone, or followed 14 s); then the camera preset: the next one (+0x234331f) or a random one after 7 s */
+static void choose_followed(u8 *s, int f)
+{
+	int n = S(int, 0x2221f90);
+	if (n <= 0) {
+		S(int, 0x2340c64) = -1;
+		return;
+	}
+	if (f >= 0) {
+		if (ACTOR_INT(f, 0x1eccb88) >= 0) {
+			S(int, 0x2340c64) = f;
+			S(int, 0x2340c70) = 0;
+			S(int, 0x2340c68) = 1;
+		}
+	} else if (S(int, 0x234331b) == 1) {
+		int cur = S(int, 0x2340c64), next = cur + 1;
+		if (next == n)
+			unfollow(s);
+		else
+			for (;;) {
+				if (ACTOR_INT(next, 0x1eccb48) == 1) {
+					S(int, 0x2340c64) = next;
+					S(int, 0x2340c70) = 0;
+					break;
+				}
+				if (++next >= n) {
+					unfollow(s);
+					break;
+				}
+				if (next == cur)
+					break;
+			}
+	} else if ((S(int, 0x2340c70) == 0 && S(int, 0x2340c64) < 0) || S(int, 0x2340c64) >= n || S(float, 0x233cc38) > 14.0f) {
+		u32 r = rand_below(n);
+		S(u32, 0x2340c64) = r;
+		if (ACTOR_INT(r, 0x1eccb78) == 1)
+			S(int, 0x233cc38) = 0;
+		else
+			S(int, 0x2340c64) = -1;
+	}
+	if (S(int, 0x234331f) == 1)
+		S(int, 0x233cc10) = (S(int, 0x233cc10) + 1) % 10;
+	else if (S(float, 0x233cc3c) > 7.0f) {
+		u32 r = rand_below(100);
+		S(int, 0x233cc10) = r < 5 ? 0 : r < 35 ? 1 : r < 45 ? 2 : r < 50 ? 3 : r < 55 ? 4 : r < 60 ? 5 : r < 65 ? 6 : r < 70 ? 7 : 8 + (r >= 75);
+		S(int, 0x233cc3c) = 0;
+	}
+}
+
+/* the free camera's move (mv, from the keys) through the world, kept in the map's box (+0xbe2fcc .. +0xbe2fd8);
+   facing (0, 0, -1) */
+static void free_camera(u8 *s, const float *mv)
+{
+	float *cam = (float *)(s + 0x233ca04), out[3], delta[3], dist, plane[4];
+	int hit = collision_moveActor(s + 0x1f36c8, 500.0f, cam, mv, 0x43fa0000, 0, out, delta, &dist, plane, S(int, 0x234325f) ? 0xa0e7d8 : 0);
+	memcpy(cam, out, 12);
+	if (hit == 1) {
+		cam[0] = f32(fadd_m(fld_m(&delta[0]), &cam[0]));
+		cam[2] = f32(fadd_m(fld_m(&delta[2]), &cam[2]));
+		cam[1] = f32(fadd_m(fld_m(&delta[1]), &cam[1]));
+	}
+	for (int k = 0; k < 3; k++) {
+		if (!(cam[k] >= S(float, 0xbe2fcc + k * 4)))
+			BITS(cam[k]) = S(u32, 0xbe2fcc + k * 4);
+		else if (cam[k] > S(float, 0xbe2fd8 + k * 4))
+			BITS(cam[k]) = S(u32, 0xbe2fd8 + k * 4);
+	}
+	float *dir = (float *)(s + 0x233ca10);
+	dir[0] = dir[1] = 0;
+	BITS(dir[2]) = 0xbf800000;
+}
+
+/* preset orbiting the followed player (i, the preset's angles added to the player's own unless fixed): the camera
+   pulled back by the zoom from 0.85 of the player's height, short of what is in the way, at most 300 off; facing
+   (0, 0, 1) */
+static void orbit_camera(u8 *s, int i)
+{
+	float *cam = (float *)(s + 0x233ca04), a[3], b[3], to[3], d[3];
+	S(float, 0x233ca28) = (float)fld_m((const float *)(s + 0x233cb20) + i);
+	if (S(int, 0x233cbc0 + S(int, 0x233cc10) * 4) == 0)
+		S(float, 0x233ca28) = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), &ACTOR(S(int, 0x2340c64), 0xc)));
+	if (S(float, 0x233ca28) > 890.0f)
+		S(u32, 0x233ca28) = 0x445e8000;
+	if (!(S(float, 0x233ca28) >= -890.0f))
+		S(u32, 0x233ca28) = 0xc45e8000;
+	i = S(int, 0x233cc10);
+	S(float, 0x233ca2c) = (float)fld_m((const float *)(s + 0x233cb48) + i);
+	if (S(int, 0x233cbe8 + S(int, 0x233cc10) * 4) == 0)
+		S(float, 0x233ca2c) = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), &ACTOR(S(int, 0x2340c64), 0x10)));
+	int me = S(int, 0x2340c64);
+	a[0] = a[2] = 0;
+	a[1] = f32(fmul_m(fld_m(&ACTOR(me, 0x294)), K(0x4aa478)));   /* 0.85 */
+	Vec3_rotateAxis(a, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(a, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	b[0] = b[1] = 0;
+	b[2] = f32(fsub_m(-fld_m((const float *)(s + 0x233cb70) + S(int, 0x233cc10)), K(0x4aa440)));   /* - zoom - 300 */
+	Vec3_rotateAxis(b, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(b, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	me = S(int, 0x2340c64);
+	for (int k = 0; k < 3; k++)
+		a[k] = f32(fadd_m(fld_m(&a[k]), &ACTOR(me, k * 4)));
+	to[0] = f32(fadd_m(fld_m(&b[0]), &a[0]));
+	to[1] = f32(fadd_m(fld_m(&a[1]), &b[1]));
+	to[2] = f32(fadd_m(fld_m(&a[2]), &b[2]));
+	if (collision_rayTrace(s + 0x1f36c8, a, to, cam) == 0)
+		memcpy(cam, to, 12);
+	for (int k = 0; k < 3; k++)
+		d[k] = f32(fsub_m(fld_m(&cam[k]), &a[k]));
+	if (Vec3_normalize(d) > 300.0f) {
+		long double dx = fmul_m(fld_m(&d[0]), K(0x4aa440));
+		float dy = f32(fmul_m(fld_m(&d[1]), K(0x4aa440))), dz = f32(fmul_m(fld_m(&d[2]), K(0x4aa440)));
+		cam[0] = f32(fld_m(&cam[0]) - dx);
+		cam[1] = f32(fsub_m(fld_m(&cam[1]), &dy));
+		cam[2] = f32(fsub_m(fld_m(&cam[2]), &dz));
+	}
+	float *dir = (float *)(s + 0x233ca10);
+	dir[0] = dir[1] = 0;
+	BITS(dir[2]) = 0x3f800000;
+}
+
+/* preset 1: the followed player and the nearest other live one, the camera on the line through both beyond the
+   followed one (the angle by their distance); alone, a point 5 heights ahead. Looks at their middle (+0x233cc14) */
+static void pair_camera(u8 *s)
+{
+	int me = S(int, 0x2340c64), best = -1, n = S(int, 0x2221f90);
+	float *mid = (float *)(s + 0x233cc14), *cam = (float *)(s + 0x233ca04), *dir = (float *)(s + 0x233ca10), d[3], t[3];
+	float nearest;
+	BITS(nearest) = 0x7f7fffff;
+	for (int j = 0; j < n; j++)
+		if (ACTOR_INT(j, 0x1eccb78) == 1 && j != me) {
+			for (int k = 0; k < 3; k++)
+				d[k] = f32(fsub_m(fld_m(&ACTOR(me, k * 4)), &ACTOR(j, k * 4)));
+			long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
+			dist = dist + fmul_m(fld_m(&d[0]), &d[0]);
+			if (!(dist >= nearest)) {
+				nearest = (float)dist;
+				best = j;
+			}
+		}
+	if (best >= 0) {
+		long double x = fadd_m(fld_m(&ACTOR(best, 0)), &ACTOR(me, 0));
+		float y = f32(fadd_m(fld_m(&ACTOR(best, 4)), &ACTOR(me, 4))), z = f32(fadd_m(fld_m(&ACTOR(best, 8)), &ACTOR(me, 8)));
+		mid[0] = f32(fmul_m(x, K(0x4a942c)));
+		mid[1] = f32(fmul_m(fld_m(&y), K(0x4a942c)));
+		mid[2] = f32(fmul_m(fld_m(&z), K(0x4a942c)));
+	} else {
+		float e[3] = { 0, 0, f32(fmul_m(fld_m(&ACTOR(me, 0x294)), K(0x4a93d0))) };   /* 5 heights */
+		Vec3_rotateAxis(e, 2, 100 - ftol(fld_m(&ACTOR(me, 0x10))));
+		me = S(int, 0x2340c64);
+		for (int k = 0; k < 3; k++)
+			mid[k] = f32(fadd_m(fld_m(&e[k]), &ACTOR(me, k * 4)));
+	}
+	for (int k = 0; k < 3; k++)
+		t[k] = dir[k] = f32(fsub_m(fld_m(&ACTOR(me, k * 4)), &mid[k]));
+	long double len = Vec3_normalize(dir);
+	long double three = fmul_m(fld_m(&ACTOR(S(int, 0x2340c64), 0x294)), K(0x4a9534));
+	for (int k = 0; k < 3; k++)
+		dir[k] = f32(fmul_m(three, &dir[k]));
+	for (int k = 0; k < 3; k++)
+		t[k] = f32(fadd_m(fld_m(&t[k]), &dir[k]));
+	Vec3_rotateAxis(t, 2, ftol(fmul_m(fsub_m(len, K(0x4aa474)), K(0x4aa470))));   /* (len - 30000) * -0.002 */
+	for (int k = 0; k < 3; k++)
+		cam[k] = f32(fadd_m(fld_m(&t[k]), &mid[k]));
+}
+
+/* the other presets: the look point (+0x233cc14) moved half way to the followed player; when the view to it is
+   blocked, the camera goes behind the player's head (its height back along its own heading and pitch) */
+static void watch_camera(u8 *s)
+{
+	int me = S(int, 0x2340c64);
+	float *mid = (float *)(s + 0x233cc14), *cam = (float *)(s + 0x233ca04), hit[3];
+	long double dx = fsub_m(fld_m(&ACTOR(me, 0)), &mid[0]);
+	float dy = f32(fsub_m(fld_m(&ACTOR(me, 4)), &mid[1])), dz = f32(fsub_m(fld_m(&ACTOR(me, 8)), &mid[2]));
+	long double hx = fmul_m(dx, K(0x4a942c));
+	float hy = f32(fmul_m(fld_m(&dy), K(0x4a942c))), hz = f32(fmul_m(fld_m(&dz), K(0x4a942c)));
+	mid[0] = f32(fadd_m(hx, &mid[0]));
+	mid[1] = f32(fadd_m(fld_m(&hy), &mid[1]));
+	mid[2] = f32(fadd_m(fld_m(&hz), &mid[2]));
+	if (collision_rayTrace(s + 0x1f36c8, cam, mid, hit)) {
+		me = S(int, 0x2340c64);
+		float e[3] = { 0, 0, f32(-fld_m(&ACTOR(me, 0x294))) };
+		Vec3_rotateAxis(e, 1, ftol(fld_m(&ACTOR(me, 0xc))));
+		me = S(int, 0x2340c64);
+		Vec3_rotateAxis(e, 2, ftol(fld_m(&ACTOR(me, 0x10))));
+		me = S(int, 0x2340c64);
+		for (int k = 0; k < 3; k++)
+			cam[k] = f32(fadd_m(fld_m(&e[k]), &ACTOR(me, k * 4)));
+	}
+}
+
+/* the direction and up vectors turned by the camera's pitch (+0x233ca28) and heading (+0x233ca2c) */
+static void turn_view(u8 *s)
+{
+	float *dir = (float *)(s + 0x233ca10), *up = (float *)(s + 0x233ca1c);
+	Vec3_rotateAxis(dir, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(dir, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	up[0] = 0;
+	BITS(up[1]) = 0x3f800000;
+	up[2] = 0;
+	Vec3_rotateAxis(up, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+	Vec3_rotateAxis(up, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+}
+
+/* the free camera's keys: the move (mv) by speed along the view, turned for the held direction keys; up / down,
+   three times as fast with +0x2343283; the mouse turns the view (pitch within +-890, heading wrapped at 3600) */
+static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
+{
+	memcpy(mv, (const void *)0xa0e7e8, 12);
+	int bits = S(int, 0x234326b) ? 1 : 0;
+	if (S(int, 0x234326f))
+		bits |= 0x10;
+	if (S(int, 0x234325f) == 0) {
+		if (S(int, 0x2343263))
+			bits |= 0x100;
+		if (S(int, 0x2343267))
+			bits |= 0x1000;
+	}
+	if (bits) {
+		mv[2] = f32(-fld_m(speed));
+		mv[0] = mv[1] = 0;
+		int a = bits == 0x110 ? -450 : bits == 1 ? -2700 : bits == 0x10 ? -900 : bits == 0x101 ? -3150 : bits == 0x1000 ? -1800
+		      : bits == 0x1001 ? -2250 : bits == 0x1010 ? -1350 : 0;
+		if (a)
+			Vec3_rotateAxis(mv, 2, a);
+		Vec3_rotateAxis(mv, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
+		Vec3_rotateAxis(mv, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
+	}
+	if ((S(int, 0x234325f) && S(int, 0x2343263)) || S(int, 0x2343273))
+		mv[1] = f32(fadd_m(fld_m(&mv[1]), speed));
+	if ((S(int, 0x234325f) && S(int, 0x2343267)) || S(int, 0x2343277))
+		mv[1] = f32(fsub_m(fld_m(&mv[1]), speed));
+	if (S(int, 0x2343283))
+		for (int k = 0; k < 3; k++)
+			mv[k] = f32(fmul_m(fld_m(&mv[k]), K(0x4a9534)));
+	long double v = fsubr_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343293)), (const float *)(s + 0x233ca28));
+	S(float, 0x233ca28) = (float)v;
+	if (v > 890.0f)
+		S(u32, 0x233ca28) = 0x445e8000;
+	if (!(S(float, 0x233ca28) >= -890.0f))
+		S(u32, 0x233ca28) = 0xc45e8000;
+	v = fadd_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343297)), (const float *)(s + 0x233ca2c));
+	S(float, 0x233ca2c) = (float)v;
+	if (v >= 3600.0f)
+		S(float, 0x233ca2c) = f32(fsub_m(v, K(0x4a94c8)));
+	if (!(S(float, 0x233ca2c) >= 0))
+		S(float, 0x233ca2c) = f32(fadd_m(fld_m((const float *)(s + 0x233ca2c)), K(0x4a94c8)));
+}
+
+/* a count-down (seconds at +offset) by dt when running; 1 when it ran out this frame */
+static int run_down(u8 *s, u32 offset)
+{
+	if (!(S(float, offset) > 0))
+		return 0;
+	long double v = fsub_m(fld_m((const float *)(s + offset)), (const float *)(s + 0x44));
+	S(float, offset) = (float)v;
+	return !(v >= 0);
+}
+
+/* the free camera / follow keys: held pairs and the flag each sets */
+static const u32 k_replayHeld[7][3] = { { 0x4def30, 0x4def34, 0x234325f }, { 0x4def10, 0x4def14, 0x234326b }, { 0x4def18, 0x4def1c, 0x234326f },
+                                        { 0x4def00, 0x4def04, 0x2343263 }, { 0x4def08, 0x4def0c, 0x2343267 }, { 0x4def40, 0x4def44, 0x2343273 },
+                                        { 0x4def48, 0x4def4c, 0x2343277 } };
+/* the camera preset keys (presets 1 .. 9, 0) */
+static const u32 k_presetKeys[10] = { 0x4dec90, 0x4dec8c, 0x4deb5c, 0x4deb58, 0x4deb64, 0x4deb60, 0x4deb6c, 0x4deb68, 0x4deb70, 0x4deb78 };
+/* the eight lines of a debug marker's star: the far corner's signs */
+static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 1 }, { -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { -1, -1, 1 }, { 1, 1, -1 } };
+
+/* 0x487f00 (thiscall on the game object): the replay viewer's frame. On its first frame (+0x233cc28 0) the camera
+   from the start view and its presets reset, the cursor centred. The keys: the free camera's moves, presets 1 .. 9
+   and 0, following a player (the follow keys; the mouse buttons for the next player / preset), slow motion
+   (+0x2340d21), skip (+0x2340d25), the ranking, the HUD modes, quit; the mouse turns the view. Unless paused
+   (+0x2340ce0) the replay file (+0x2340d08) is read up to the replay's time (+0x2340d2d): records of time, sender,
+   length and packet handed to net_processGamePacket; at its end the next replay starts (returns 1) or the viewer
+   quits. Then the scene's frame (clocks, objects, actors, bullets, particles, items), kill messages, the camera
+   (free, or one of the presets about the followed player), the scene drawn (with debug markers for the map's
+   points when +0x2340cd4) and the overlay: icons for the followed player's preset and the replay clock, names,
+   the ranking, the start count. Returns 0 when the viewer quits (the file closed, the music stopped), else 4 */
+u32 THISCALL (replay_frame)(u8 *s)
+{
+	u8 *stage = s + 0x1f36c8;
+	float mv[3];   /* the free camera's move: set by its keys, which a camera now following no one may not have read
+	                  this frame (the original then moves by whatever its stack held) */
+	if (S(int, 0x233cc28) == 0) {
+		start_view(s);
+		for (S(int, 0x233cc10) = 0; S(int, 0x233cc10) < 10; S(int, 0x233cc10)++)
+			preset_reset(s);
+		S(int, 0x233cc10) = 1;
+		FUN_0045dfb0((Stage *)stage, -1);
+		S(int, 0x2340c64) = -1;
+		S(int, 0x2340c68) = S(int, 0x2340c6c) = S(int, 0x2340c70) = 0;
+		timer_getGameTime(s + 0xc);
+		int y = gfx_getHeight() / 2;
+		input_setCursorPos(gfx_getWidth() / 2, y);
+		S(int, 0x233cc38) = S(int, 0x233cc3c) = S(int, 0x2342425) = 0;
+		S(int, 0x233cc30) = S(int, 0x233cc34) = 0;
+		S(int, 0x2340d29) = S(int, 0x2340d2d) = 0;
+		match_4629c0((Scene *)s, 60.0f);
+	}
+	armc_461210(s);
+	/* the replay clock (+0x233cc30 whole seconds, +0x233cc34 the fraction) */
+	long double t = fadd_m(fld_m((const float *)(s + 0x233cc34)), (const float *)(s + 0x44));
+	S(float, 0x233cc34) = (float)t;
+	if (t > 1.0f) {
+		S(int, 0x233cc30) += ftol(t);
+		int whole = ftol(fld_m((const float *)(s + 0x233cc34)));
+		S(float, 0x233cc34) = f32(fsubr_m((long double)whole, (const float *)(s + 0x233cc34)));
+	}
+	match_resetInputState(s);
+	for (int k = 0; k < 7; k++)
+		if (held2(k_replayHeld[k][0], k_replayHeld[k][1]))
+			S(int, k_replayHeld[k][2]) = 1;
+	if (GAME_VAR(int, 0x4ded88)) {
+		S(int, 0x234331b) = 1;
+		S(int, 0x2340c68) = 1;
+	}
+	if (GAME_VAR(int, 0x4ded8c)) {
+		S(int, 0x234331f) = 1;
+		S(int, 0x2340c6c) = 1;
+		S(int, 0x23432cb) = 1;
+	}
+	for (int k = 0; k < 10; k++)
+		if (input_justPressed(GAME_VAR(int, k_presetKeys[k]))) {
+			S(int, 0x233cc10) = (k + 1) % 10;
+			S(int, 0x2340c6c) = 1;
+			S(int, 0x23432cb) = 1;
+		}
+	/* the follow keys (all ten read the same key; with 0x67ef24 the players 11 .. 16) */
+	int follow = 0;
+	for (int k = 1; k <= 10; k++)
+		if (input_justPressed(GAME_VAR(int, 0x4e0468)))
+			follow = k <= 6 && input_justPressed(GAME_VAR(int, 0x67ef24)) ? k + 10 : k;
+	follow--;
+	S(int, 0x2340d21) = input_isDown(GAME_VAR(int, 0x5b1da8)) ? 1 : 0;
+	S(int, 0x2340d25) = input_isDown(GAME_VAR(int, 0x9dae70)) ? 1 : 0;
+	if (held2(0x4defe0, 0x4defe4))
+		S(int, 0x234328f) = 1;
+	if (input_justPressed(GAME_VAR(int, 0x4df8d0))) {
+		const char *mode;
+		if (S(int, 0x2340ce8) == 0) {
+			S(int, 0x2340ce8) = 1;
+			mode = (const char *)0x4c7d00;   /* "HIDDEN MESSAGE BOX MODE" */
+		} else if (S(int, 0x2340ce4) == 0) {
+			S(int, 0x2340ce4) = 1;
+			mode = (const char *)0x4c7cf0;   /* "SCREENSHOT MODE" */
+		} else {
+			S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
+			mode = (const char *)0x4c7ce4;   /* "NORMAL MODE" */
+		}
+		vsprintf_wrap_463450((Scene *)s, mode);
+	}
+	/* the mouse: its offset from the centre (y inverted with 0x4df000), scaled by the sensitivity, unless slow */
+	S(int, 0x2343257) = GAME_VAR(int, 0x4ded68);
+	S(int, 0x234325b) = GAME_VAR(int, 0x4ded6c);
+	if (!(S(float, 0x44) >= 0.2f)) {
+		if (GAME_VAR(int, 0x4df000) == 0)
+			S(float, 0x2343293) = f32((long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
+		else
+			S(float, 0x2343293) = f32(-(long double)(S(int, 0x234325b) - gfx_getHeight() / 2));
+		S(float, 0x2343297) = f32(-(long double)(S(int, 0x2343257) - gfx_getWidth() / 2));
+	} else
+		S(int, 0x2343293) = S(int, 0x2343297) = 0;
+	long double sens = fmul_m((long double)GAME_VAR(int, 0x4df008), K(0x4aa480));
+	sens = fmul_m(fadd_m(sens * sens, K(0x4a9424)), K(0x4a942c));
+	S(float, 0x2343293) = f32(fmul_m(sens, (const float *)(s + 0x2343293)));
+	S(float, 0x2343297) = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
+	GAME_VAR(int, 0x4ded68) = gfx_getWidth() / 2;
+	GAME_VAR(int, 0x4ded6c) = gfx_getHeight() / 2;
+	if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0)) {
+		GAME_VAR(int, 0x9db994) = 0;
+		S(int, 0x23432cf) = 1;
+	}
+	if (run_down(s, 0x233cc40))
+		S(int, 0x233cc40) = 0;
+	if (run_down(s, 0x2342f02))
+		S(int, 0x2342f02) = 0;
+	if (run_down(s, 0x2342425)) {
+		tex_upload2(stage);
+		S(int, 0x2342425) = 0;
+	}
+	long double sp = fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9554));   /* 2000 a second, at most +0x1f4164 */
+	float speed = (float)sp;
+	if (sp > S(float, 0x1f4164))
+		BITS(speed) = S(u32, 0x1f4164);
+	float turn = f32(fmul_m(fmul_m(fmul_m((long double)game_clock(), K(0x4aa2a8)), (const float *)(s + 0x44)), K(0x4a9560)));
+	float step = f32(fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a945c)));
+	/* the zoom keys: the preset's distance by (1 - 0.9 dt) */
+	if (S(int, 0x23432ab) == 1) {
+		long double m = !(S(float, 0x44) >= 1.0f) ? fld_m((const float *)(s + 0x44)) : fld_m(K(0x4a9424));
+		float *z = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
+		*z = f32(fmul_m(fsubr_m(fmul_m(m, K(0x4a9508)), K(0x4a9424)), z));
+	}
+	if (S(int, 0x23432af) == 1) {
+		long double m = !(S(float, 0x44) >= 1.0f) ? fld_m((const float *)(s + 0x44)) : fld_m(K(0x4a9424));
+		float *z = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
+		*z = f32(fdivr_m(fsubr_m(fmul_m(m, K(0x4a9508)), K(0x4a9424)), z));
+	}
+	if (S(int, 0x23432cb) == 1)
+		preset_reset(s);
+	if (S(int, 0x233c9fc) == 0)
+		free_keys(s, mv, &speed, &turn);
+	else if (S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) != 2) {
+		int i = S(int, 0x233cc10);
+		S(float, 0x233cb48 + i * 4) = f32(fadd_m(fld_m((const float *)(s + 0x2343297)), (const float *)(s + 0x233cb48) + i));
+		i = S(int, 0x233cc10);
+		S(float, 0x233cb20 + i * 4) = f32(fadd_m(fld_m((const float *)(s + 0x2343293)), (const float *)(s + 0x233cb20) + i));
+	}
+	zoom_view(s, &step);
+	float dt;   /* slow motion: a twentieth */
+	if (S(int, 0x2340d21) == 1)
+		dt = f32(fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9468)));
+	else
+		BITS(dt) = S(u32, 0x44);
+
+	if (S(int, 0x2340ce0) == 0) {
+		if (!(S(float, 0x2340d29) > S(float, 0x2340d2d)))
+			do {
+				int from, len;
+				u8 packet[0x130];
+				if (fread_scrambled(s + 0x2340d29, 4, 1, S(void *, 0x2340d08)) == 0 || S(int, 0x2340d25) == 1) {
+					if (replay_next(s))
+						return 1;
+					break;
+				}
+				fread_scrambled(&from, 4, 1, S(void *, 0x2340d08));
+				fread_scrambled(&len, 4, 1, S(void *, 0x2340d08));
+				fread_scrambled(packet, 1, len, S(void *, 0x2340d08));
+				net_processGamePacket(s, from, len, packet);
+			} while (!(S(float, 0x2340d29) > S(float, 0x2340d2d)));
+		match_496e40(stage, BITS(dt));
+		match_490d40(stage, BITS(dt));
+		actor_updateAll(stage, BITS(dt));
+		bullet_updateAll(stage, BITS(dt));
+		match_479a90(stage, BITS(dt));
+		item_update(stage, BITS(dt));
+		choose_followed(s, follow);
+		if (S(int, 0x2340c68) == 0)
+			S(float, 0x233cc38) = f32(fadd_m(fld_m(&dt), (const float *)(s + 0x233cc38)));
+		if (S(int, 0x2340c6c) == 0)
+			S(float, 0x233cc3c) = f32(fadd_m(fld_m(&dt), (const float *)(s + 0x233cc3c)));
+		S(float, 0x2340d2d) = f32(fadd_m(fld_m(&dt), (const float *)(s + 0x2340d2d)));
+	}
+	for (int i = 0; i < S(int, 0x2221f90); i++)
+		if (ACTOR_INT(i, 0x1ed52d8) == 1) {
+			msg_kill(s, i, ACTOR_INT(i, 0x1ed52d8 - 0x83a8));
+			ACTOR_INT(i, 0x1ed52d8) = 0;
+		}
+	match_462ac0(s, S(u32, 0x44));
+	if (S(int, 0x234328f) == 1)
+		S(u32, 0x233cc40) = 0x40a00000;   /* the ranking shown 5 s */
+
+	/* the camera */
+	S(int, 0x233c9fc) = S(int, 0x2340c64) >= 0;
+	if (S(int, 0x233c9fc) == 0) {
+		free_camera(s, mv);
+		turn_view(s);
+	} else {
+		int i = S(int, 0x233cc10);
+		if (S(int, 0x233cb98 + i * 4) == 0 && i != 1) {
+			orbit_camera(s, i);
+			turn_view(s);
+		} else {
+			if (i == 1)
+				pair_camera(s);
+			else
+				watch_camera(s);
+			float *dir = (float *)(s + 0x233ca10), *up = (float *)(s + 0x233ca1c);
+			for (int k = 0; k < 3; k++)
+				dir[k] = f32(fsub_m(fld_m((const float *)(s + 0x233cc14) + k), (const float *)(s + 0x233ca04) + k));
+			Vec3_normalize(dir);
+			BITS(up[1]) = 0x3f800000;
+			up[0] = up[2] = 0;
+		}
+	}
+	float far = hud_scale(), near = match_4686f0();
+	int h = gfx_getHeight(), w = gfx_getWidth();
+	float fov = game_clock();
+	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
+	              (float *)(s + 0x233ca1c), BITS(fov), w, h, BITS(near), BITS(far), S(u32, 0x44));   /* camera_setupView */
+	S(int, 0x233cc28)++;
+
+	/* the scene */
+	hud_456b50(g_textures);
+	if (S(int, 0xbe16f8) == 1) {
+		glClearColor_stored((const u32 *)(s + 0xbe16fc));
+		glClearDepth(1.0);
+		glClear(0x4100);
+	} else {
+		glClearDepth(1.0);
+		glClear(0x100);
+	}
+	gfx_setProjectionHud(1, 1.0f);
+	u8 *view = s + 0x74;
+	ViewVolume_captureMatrices(view, 0, s + 0x22e7068);
+	ViewVolume_reset(view);
+	if (S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) == 2 && S(int, 0x2340c64) >= 0)
+		ACTOR_INT(S(int, 0x2340c64), 0x1eccfc0) = 1;   /* (the followed player seen from inside) */
+	hud_496f20((Stage *)stage, hud_scale());
+	render_processRenderingBy(stage, view, hud_scale());
+	hud_490da0((Stage *)stage, view);
+	hud_45e170((Stage *)stage, view, -1);
+	hud_47d060(stage, view);
+	hud_479af0((Stage *)stage, view);
+	hud_48f970(stage, view);
+	if (S(int, 0x2340cd4) == 1)
+		for (int i = 0; i < S(int, 0xbcb6c8); i++) {
+			const u8 *r = s + 0xbc06cc + i * 0x2c;
+			if (GAME_VAR(int, r) != 1)
+				continue;
+			float p[3], q[3];
+			memcpy(p, r + 0xc, 12);
+			for (int l = 0; l < 8; l++) {
+				for (int k = 0; k < 3; k++)
+					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), K(0x4a93f4)) : fsub_m(fld_m(&p[k]), K(0x4a93f4)));
+				ViewVolume_add_485120(view, (const void *)0xa1f208, p, q, 1);
+			}
+		}
+	if (S(int, 0xbe170c) == 1) {
+		hud_472900((Stage *)stage, stage + 0x9ee048, GAME_VAR(u32, stage + 0x9ee058), GAME_VAR(u32, stage + 0x9ee05c), GAME_VAR(u32, stage + 0x9ee060));
+		glEnable(GL_FOG);
+	}
+	render_drawObjects(view, S(int, 0x1f1664), S(float, 0x22f040c));
+	glDisable(GL_FOG);
+	gfx_setProjectionHud(0, 1.0f);
+
+	/* the overlay */
+	if (S(int, 0x2340ce4) == 0) {
+		char text[0xf0];
+		/* (the patch DLL retargets these calls for wide screens) */
+		PATCHED_THISCALL(0x48a19c, void, void *)(s);                                 /* hud_drawPlayerMarkers */
+		if (S(int, 0x2340ce8) == 0 && S(float, 0x233cc40) > 0)
+			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* replay_drawMessage */
+		if (S(int, 0x2340c64) >= 0) {
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* replay_drawIcon */
+			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+			int n = S(int, 0x233cc10);
+			sprintf(text, (const char *)0x4b0320, n > 0 ? n : n + 10);   /* "%d" */
+			PATCHED_CALL(0x48a259, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
+		}
+		if (!(S(float, 0x233cc34) >= 0.5f)) {
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* replay_drawIcon */
+			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
+			sprintf(text, (const char *)0x4c7cd8, S(int, 0x233cc30) / 60, S(int, 0x233cc30) % 60);   /* "%02d:%02d" */
+			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
+		}
+		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* replay_drawFollowedName */
+		if (S(int, 0x234328f) == 1)
+			PATCHED_THISCALL(0x48a318, void, void *)(s);                             /* hud_drawRanking */
+	}
+	if (S(float, 0x2342f02) > 0)
+		hud_drawReadyStart((Scene *)s);
+	if (S(int, 0x23432cf) != 1)
+		return 4;
+	fclose(S(void *, 0x2340d08));
+	music_shutdown();
+	return 0;
+}
+#undef S
+#undef K
+#undef ACTOR
+#undef ACTOR_INT

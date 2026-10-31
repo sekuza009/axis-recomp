@@ -131,6 +131,15 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define set_4b42dc_457140(v) GAME_CDECL(0x457140, void, int)(v)
 #define match_4620e0(scene) GAME_THISCALL(0x4620e0, void, Scene *)(scene)
 #define match_4629c0(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
+/* (app/main_loop.c: the replay's frame) */
+#define match_462ac0(scene, dt) GAME_THISCALL(0x462ac0, void, void *, u32)(scene, dt)
+#define match_4686e0(v) GAME_CDECL(0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
+#define msg_kill(scene, victim, killer) GAME_THISCALL(0x4630c0, void, void *, int, int)(scene, victim, killer)
+#define tex_upload2(scene) GAME_THISCALL(0x473610, void, void *)(scene)
+#define item_update(s, dt) GAME_THISCALL(0x48ed90, void, void *, u32)(s, dt)
+#define match_490d40(s, dt) GAME_THISCALL(0x490d40, void, void *, u32)(s, dt)
+#define match_496e40(stage, dt) GAME_THISCALL(0x496e40, void, void *, u32)(stage, dt)
+#define collision_moveActor(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis) GAME_THISCALL(0x471400, int, void *, float, const float *, const float *, u32, u32, float *, float *, float *, float *, u32)(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis)
 #define match_4636d0(scene) GAME_THISCALL(0x4636d0, void, Scene *)(scene)
 #define armc_40e450(x, y) GAME_CDECL(0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
 #define skel_ase_47d0f0(q, m) GAME_THISCALL(0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */

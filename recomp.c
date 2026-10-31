@@ -5492,7 +5492,8 @@ THISCALL DWORD game_processLoadingMode(char *s);
    to the menu (returns 0 early); otherwise the scene's frame (objects, bullets, particles, items), the followed
    player's camera, the scene drawn and the HUD texts. Returns 1, or 4 when the viewer quits. Callees stubbed except
    the timers, the float getters, the vector rotation and the file reader */
-static THISCALL DWORD replay_frame(char *s) { return run_lifted(lift_487f00, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL DWORD replay_frame(char *s);
 /* batch 198 (lifted/grp153.c): the help screen, the loading screen's cylinder */
 #include "lifted/grp153.c"
 /* 0x4955a0 hud_4955a0() (thiscall on the scene; with "help_draw" at 0x4955c0, which functions.csv listed apart: the
@@ -16406,6 +16407,9 @@ static void replay_setup(void)
 	for (int k = 0; k < pos; k++) { BYTE x = d[k]; d[k] = (BYTE)((x >> 1 | x << 7) ^ 0x59); }
 	g_vfsData = d; g_vfsSize = (DWORD)pos;
 	S32(BUF, 0x2340d08) = (int)VFS_FILE(0);
+	{ float to[3]; for (int k = 0; k < 3; k++) to[k] = (float)irnd(-1000, 1000) / 10.0f;   /* the free camera's move: where it ends */
+	  callee_out(0x471400, 5, to, sizeof to); }
+	g_paintStacks = 1;   /* the original moves the free camera by stack it never wrote when the camera stopped following this frame */
 }
 ST(replay_frame, replay_setup();, TC(DWORD, 0x487f00, char *)(BUF), replay_frame(BUF))
 /* batch 198 */
