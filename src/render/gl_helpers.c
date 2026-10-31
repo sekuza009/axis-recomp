@@ -9,6 +9,41 @@ void (gl_rotateXYZ)(u32 x, u32 y, u32 z)
 	glRotatef_bits(z, 0, 0, 0x3f800000u);
 }
 
+/* 0x4685f0: the in-match projection switch (the HUD's): the model view reset, then, unless mode is the one set
+   already (0x4c4de8), the 3D projection (1: the view's angle, an aspect of width * scale / height, the near and far
+   planes) or the HUD's 2D one (0: width * scale x height units). As the installed exe has it (hudfix.py: code in
+   the .axnet section's tail, entered at 0x468671 and 0x4686af), the 3D projection takes the full screen and the 2D
+   one the centred 16:9 box, unless the screen is at most 8 pixels wider; both make the menus' switch (g_projMode)
+   set its viewport again next time */
+void (gfx_setProjectionHud)(int mode, float scale)
+{
+	glLoadIdentity();
+	if (mode == g_glCachedState)
+		return;
+	g_glCachedState = mode;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (g_glCachedState == 1) {
+		gluPerspective(GAME_VAR(float, 0x4c4dec), (double)(fmul_m((long double)g_glWidth, &scale) / g_glHeight),
+		               GAME_VAR(float, 0x4c4df0), GAME_VAR(float, 0x4c4df4));
+		glViewport(0, 0, g_glWidth, g_glHeight);
+		g_projMode = -1;
+		glEnable(GL_DEPTH_TEST);
+	} else if (g_glCachedState == 0) {
+		gluOrtho2D(0.0, (double)fmul_m((long double)g_glWidth, &scale), 0.0, (double)g_glHeight);
+		int h = g_glHeight, w = g_glWidth, x = 0;
+		u32 box = ((u32)h << 4) / 9;
+		if ((int)(box + 8) < w) {
+			x = (w - (int)box) >> 1;
+			w = (int)box;
+		}
+		glViewport(x, 0, w, h);
+		g_projMode = -1;
+		glDisable(GL_DEPTH_TEST);
+	}
+	glMatrixMode(GL_MODELVIEW);
+}
+
 /* 0x4685d0: the frame finished and shown (SwapBuffers' result) */
 int (gfx_swapBuffers)(void)
 {

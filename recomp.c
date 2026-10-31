@@ -4159,6 +4159,8 @@ int input_readMouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void input_updateMenuCursor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void gfx_setProjectionHud(int mode, DWORD scale);   /* (scale: a float's bits) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16809,6 +16811,18 @@ static void proj2d_setup(void)
 	g_a[0] = irnd(0, 2);
 }
 ST(gfx_setProjection2D3D, proj2d_setup();, (CALL_PLAIN(0x41ef90, 0, g_a[0], 0, 0, 0), 0), (gfx_setProjection2D3D((DWORD)(g_a[0])), 0))
+/* the HUD's projection switch: the cached and wanted modes -1 .. 2, screen sizes 4:3 .. 32:9 (and a few odd ones),
+   the scale 1 or another, the view's angle and planes; GL and GLU mocked */
+static void projhud_setup(void)
+{
+	static const int w[] = { 640, 1024, 1280, 1920, 2560, 3440, 5120, 7, 0 }, h[] = { 480, 768, 1024, 1080, 1440, 1440, 1440, 3, 0 };
+	int k = irnd(0, 8);
+	G32(0xa0e810) = w[k]; G32(0xa0e928) = h[k]; G32(0x4c4de8) = irnd(-1, 2); G32(0x5ae9bc) = irnd(-1, 2);
+	GF(0x4c4dec) = csu_fr(10, 120); GF(0x4c4df0) = csu_fr(1, 100); GF(0x4c4df4) = csu_fr(1000, 30000);
+	g_a[0] = irnd(-1, 2);
+	float sc = irnd(0, 2) ? 1.0f : csu_fr(1, 300) / 100.0f; g_a[1] = *(int *)&sc;
+}
+ST(gfx_setProjectionHud, projhud_setup();, (CALL_PLAIN(0x4685f0, 0, g_a[0], g_a[1], 0, 0), 0), (gfx_setProjectionHud(g_a[0], (DWORD)g_a[1]), 0))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
    ChangeDisplaySettingsA's answer; the DEVMODE's unset bytes painted alike */
 static void displaymode_setup(void)
@@ -17343,7 +17357,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18410,7 +18424,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 161 */
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
-	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
+	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */
