@@ -214,11 +214,15 @@ static int poison(void)
 	AddVectoredExceptionHandler(1, poison_hit);
 	g_realExit = *(void (WINAPI **)(UINT))0x4a90f8;
 	*(void (WINAPI **)(UINT))0x4a90f8 = poison_exit;
-	static const unsigned ranges[][2] = { { 0x401000, 0x49e000 }, { 0x4a8e20, 0x4a9000 }, { 0x4a8300, 0x4a8740 } };
+	static const unsigned ranges[][2] = { { 0x401000, 0x49e000 }, { 0x4a8e20, 0x4a9000 }, { 0x4a8300, 0x4a8740 },
+	                                      { 0x49e000, 0x4a8300 } };   /* (the last: the C runtime, once replaced) */
+	int nranges = g_ncrtEntries ? 4 : 3;
 	static BYTE keep[0xa8000];   /* (0x401000 .. 0x4a9000) */
 	for (int i = 0; i < g_saNhooks; i++)
 		memset(keep + g_saHooks[i].addr - 0x401000, 1, 5);
 	memset(keep + 0x46c420 - 0x401000, 1, 5);   /* movie_playEnding: the patch layer's jump to its own player */
+	for (int i = 0; i < g_ncrtEntries; i++)
+		memset(keep + g_crtEntries[i] - 0x401000, 1, 5);   /* the runtime entries' jumps to msvcrt.dll */
 	for (int i = 0; i < g_saNkeep; i++)
 		memset(keep + g_saKeep[i][0] - 0x401000, 1, g_saKeep[i][1] - g_saKeep[i][0]);
 	/* the compiler's jump thunks (the runtime's static-initializer table points at some: 0x467880 jmp 0x467890):
@@ -227,7 +231,7 @@ static int poison(void)
 	for (int i = 0; i < g_saNhooks; i++)
 		entry[g_saHooks[i].addr - 0x401000] = 1;
 	int thunks = 0;
-	for (unsigned a = 0x401000; a + 5 <= 0x49e000; a++) {
+	for (unsigned a = 0x401000; a + 5 <= (g_ncrtEntries ? 0x4a8300u : 0x49e000u); a++) {
 		unsigned to = a + 5 + *(const int *)(a + 1);
 		if (*(const BYTE *)a == 0xE9 && !entry[a - 0x401000] && to >= 0x401000 && to < 0x4a9000 && entry[to - 0x401000]) {
 			memset(keep + a - 0x401000, 1, 5);
@@ -243,10 +247,11 @@ static int poison(void)
 	static BYTE code[0xa8000];
 	for (int i = 0; i < (int)(sizeof g_fnSizes / sizeof g_fnSizes[0]); i++)
 		if ((g_fnSizes[i][0] >= ranges[0][0] && g_fnSizes[i][0] + g_fnSizes[i][1] <= ranges[0][1]) ||
-		    (g_fnSizes[i][0] >= 0x4a8300 && g_fnSizes[i][0] + g_fnSizes[i][1] <= 0x4a8740))   /* (the packet layer, after the runtime) */
+		    (g_fnSizes[i][0] >= 0x4a8300 && g_fnSizes[i][0] + g_fnSizes[i][1] <= 0x4a8740) ||   /* (the packet layer, after the runtime) */
+		    (g_ncrtEntries && g_fnSizes[i][0] >= 0x49e000 && g_fnSizes[i][0] + g_fnSizes[i][1] <= 0x4a8300))   /* (the runtime) */
 			memset(code + g_fnSizes[i][0] - 0x401000, 1, g_fnSizes[i][1]);
 	memset(code + ranges[1][0] - 0x401000, 1, ranges[1][1] - ranges[1][0]);
-	for (int r = 0; r < 3; r++)
+	for (int r = 0; r < nranges; r++)
 		for (unsigned a = ranges[r][0]; a < ranges[r][1]; a++)
 			if (code[a - 0x401000] && !keep[a - 0x401000] && a >= lo && a < hi) {
 				*(BYTE *)a = 0xCC;
@@ -273,6 +278,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	fprintf(g_log, "patch layer started (widescreen state %s)\n", wide_present() ? "handed over" : "MISSING");
 	int n = install_hooks();
 	fprintf(g_log, "%d of %d rebuilt functions switched in; starting the game\n", n, g_saNhooks);
+	if (!GetEnvironmentVariableA("AXISRC_GAMECRT", NULL, 0)) {
+		int n = 0;
+		const char *missing = crt_install(&n);
+		if (missing)
+			fail("msvcrt.dll has no %s (needed for the game's C runtime)", missing);
+		fprintf(g_log, "the game's C runtime replaced by msvcrt.dll's (%d entries)\n", n);
+	}
 	if (GetEnvironmentVariableA("AXISRC_POISON", NULL, 0))
 		fprintf(g_log, "AXISRC_POISON: %d bytes of the game's own code made int3\n", poison());
 	{	/* the x87 control word the game runs with: Windows starts every thread at 0x027f (53-bit precision), and the
@@ -285,6 +297,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	}
 	fclose(g_log);
 	g_log = NULL;
-	((void (*)(void))(GAME_BASE + file_nt()->OptionalHeader.AddressOfEntryPoint))();
+	if (g_ncrtEntries)
+		crt_start();
+	else
+		((void (*)(void))(GAME_BASE + file_nt()->OptionalHeader.AddressOfEntryPoint))();   /* the game's own runtime start-up */
 	return 0;   /* (the game's runtime ends the process itself) */
 }

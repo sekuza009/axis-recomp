@@ -13,5 +13,10 @@ extern const int g_saNpatchOk;
 /* the game's code bytes the rebuilds read (AXISRC_POISON keeps them) */
 extern const unsigned g_saKeep[][2];
 extern const int g_saNkeep;
+/* crt.c: the game's C runtime replaced by msvcrt.dll's */
+const char *crt_install(int *count);
+void crt_start(void);
+extern unsigned g_crtEntries[];
+extern int g_ncrtEntries;
 
 #endif

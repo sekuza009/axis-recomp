@@ -20,6 +20,7 @@ Layout (by subsystem)
   load/         loading: name lookups
   sound/        DirectSound buffers, the menu sounds
   render/       the stage (scene.fields: Stage, the scene's own object at +0x1f36c8): fog, the lists drawn each pass, the sky
+  crt/          the game's C runtime where msvcrt.dll's differs from it (the standalone build): printf, atof
 
 Building: ../build.sh (src/ is compiled as its own translation unit with x87 maths and linked into recomp.dll).
 
@@ -27,15 +28,20 @@ Standalone build: ../standalone/build.sh (after ../build.sh) links the same obje
 game as a program of its own: no injection, no change to the installed exe. Put it in the game folder and run it;
 it reads AxisGL.exe there as data and does the loader's work itself (standalone/main.c): the game's sections at
 0x400000 (inside AxisRC.exe's own .bss), its imports, the patch layer (../axisnet_recomp.c compiled in with
-AXIS_STANDALONE), then every rebuilt function switched in at its original's address (the table is generated from
-recomp.c by tools/mkhooks.py), then the game's entry point. Every game function is rebuilt; the ones the patch
-layer or the installed exe's patches change carry those changes (wide.h, wide_carries; the on-disk patch code in
-.axnet and at 0x4a8e20.. is written into the rebuilds). What still runs from AxisGL.exe is its data and the MSVC
-runtime (0x49e000..); movie_playEnding is replaced whole by the patch layer's player. AXISRC_POISON=1 checks this:
-every byte of the game's functions except their entry jumps (and the code bytes rebuilds read, tools/mkhooks.py)
-becomes int3, so any original game code reached stops the game at its address (logged). Data inside .text stays
-(the DirectInput object formats at 0x44f950 are read by dinput). standalone.log (next to the exe) lists every
-function; RECOMP_SKIP=name,... keeps some on the original. standalone/play.sh is the play test.
+AXIS_STANDALONE), every rebuilt function switched in at its original's address (the table is generated from
+recomp.c by tools/mkhooks.py), the x87 control word Windows gives the game (0x027f; MinGW's start-up left 0x037f),
+then the game's own start-up. Every game function is rebuilt (also the packet layer after the runtime, 0x4a8300 ..);
+the ones the patch layer or the installed exe's patches change carry those changes (wide.h, wide_carries).
+The game's C runtime (Visual C++ 6, 0x49e000 ..) is replaced too (standalone/crt.c): its entries the rebuilds use
+jump to msvcrt.dll's, its start-up is done in C (the C++ static constructors from the table at 0x4ad000, WinMain,
+exit), and crt/ makes the two results that differ come out as VC6's: printf's -0.0 and signalling NaNs
+(crt_format.c), and atof's rounding (crt_atof.c: VC6's 96-bit conversion rebuilt). recomp.c's "C runtime" tests
+compare each with the game's own (AXISRC_GAMECRT=1 keeps the game's runtime). What still comes from AxisGL.exe is
+data. AXISRC_POISON=1 checks this: every byte of the game's functions and runtime, except their entry jumps (and the
+code bytes rebuilds read, tools/mkhooks.py), becomes int3, so any original code reached stops the game at its
+address (logged). Data inside .text stays (the DirectInput object formats at 0x44f950 are read by dinput).
+standalone.log (next to the exe) lists every function; RECOMP_SKIP=name,... keeps some on the original.
+standalone/play.sh is the play test.
 
 Adding a function
   1. Read it: the disassembly (python tools/disx.py 0xADDR), Ghidra's pseudo-C (../decomp/out/src) and the lifted

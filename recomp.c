@@ -16926,6 +16926,177 @@ static void gameWndProc_setup(void)
 	fill((void *)0x9087b8, 4); fill((void *)0xa0b360, 4); fill((void *)0x4dbb78, 4); fill((void *)0x4dbbf8, 4); fill((void *)0x4db708, 4);
 }
 static DWORD gameWndProc_orig(void) { return ((DWORD (WINAPI *)(DWORD, DWORD, DWORD, DWORD))0x440070)(g_a[0], g_a[1], g_a[2], g_a[3]); }
+/* ---- the C runtime: the standalone build (standalone/crt.c) replaces the game's (Visual C++ 6, linked in at
+   0x49e000 ..) by Windows' msvcrt.dll. Each test runs the game's function (orig) and msvcrt's (new) on the same
+   inputs: the formatting, number parsing, tokens, rand's sequence, __ftol and acos must come out the same ---- */
+static HMODULE g_msvcrt;
+/* the game's runtime keeps its own state in the game's data (strtok's place, errno, its conversion buffers, the
+   streams, rand's seed); msvcrt keeps the same inside msvcrt.dll. CRT_ORIG puts the game runtime's data back after
+   the original's run, so the runs are compared on what the caller sees */
+static const DWORD g_crtData[][2] = { { 0x4d0700, 0x4d0d20 }, { 0xaef300, 0xaef660 }, { 0xb11900, 0xb11a60 }, { 0xb12a60, 0xb12a80 } };
+static BYTE g_crtSave[0x620 + 0x360 + 0x160 + 0x20];
+static void crt_data(int save)
+{
+	BYTE *p = g_crtSave;
+	for (int i = 0; i < 4; i++) {
+		DWORD n = g_crtData[i][1] - g_crtData[i][0];
+		if (save) memcpy(p, (void *)g_crtData[i][0], n); else memcpy((void *)g_crtData[i][0], p, n);
+		p += n;
+	}
+}
+#define CRT_ORIG(expr) ({ crt_data(1); DWORD r_ = (DWORD)(expr); crt_data(0); r_; })
+static FARPROC msv(const char *name) { if (!g_msvcrt) g_msvcrt = LoadLibraryA("msvcrt.dll"); return GetProcAddress(g_msvcrt, name); }
+static double crt_double(void)
+{
+	static const DWORD special[][2] = { { 0, 0 }, { 0, 0x80000000 }, { 0, 0x7ff00000 }, { 0, 0xfff00000 }, { 0, 0x7ff80000 },
+		{ 1, 0x7ff00000 }, { 1, 0 }, { 0xffffffff, 0x000fffff }, { 0xffffffff, 0x7fefffff } };
+	double d;
+	int k = irnd(0, 9);
+	if (k == 0) { int s = irnd(0, 8); memcpy(&d, special[s], 8); return d; }
+	if (k == 1) { DWORD w[2] = { (DWORD)irnd(0, 0x7fffffff) * 2u + (DWORD)irnd(0, 1), (DWORD)irnd(0, 0x7fffffff) * 2u + (DWORD)irnd(0, 1) }; memcpy(&d, w, 8); return d; }
+	d = (double)irnd(-1000000, 1000000) / (double)irnd(1, 1000);
+	if (k == 2) d *= 1e15;
+	if (k == 3) d /= 1e9;
+	if (k == 4) d = (double)irnd(-100, 100) + 0.5;   /* (rounding ties) */
+	if (k == 5) d = (double)irnd(-100000, 100000) / 100.0 + 0.005;
+	return d;
+}
+static int g_cwSaid;
+/* vsprintf: a format of 0..6 conversions (flags, width, precision, every type but %n) and its arguments, built in
+   BUF; written to BUF + 0x1000 */
+static void vsprintf_setup(void)
+{
+	static const char types[] = "diuxXocsfeEgGp%";
+	char *f = BUF + 0x100; DWORD *a = (DWORD *)(BUF + 0x400);
+	int na = 0, n = irnd(0, 6);
+	fill_str(BUF + 0x200, 20, 32, 126);
+	for (int i = 0; i < n; i++) {
+		if (irnd(0, 2) == 0) { *f++ = (char)irnd('a', 'z'); *f++ = ' '; }
+		*f++ = '%';
+		for (int k = irnd(0, 2); k > 0; k--) *f++ = "-+ #0"[irnd(0, 4)];
+		if (irnd(0, 1)) f += sprintf(f, "%d", irnd(1, 14));
+		if (irnd(0, 2) == 0) f += sprintf(f, ".%d", irnd(0, 10));
+		char c = types[irnd(0, sizeof types - 2)];
+		if (irnd(0, 9) == 0 && strchr("diuxXo", c)) *f++ = irnd(0, 1) ? 'h' : 'l';
+		*f++ = c;
+		if (strchr("diuxXocp", c)) a[na++] = irnd(0, 3) ? (DWORD)irnd(-100000, 100000) : (DWORD)irnd(0, 0x7fffffff) * 2u + (DWORD)irnd(0, 1);
+		else if (c == 's') a[na++] = irnd(0, 9) ? (DWORD)(BUF + 0x200 + irnd(0, 20)) : 0;
+		else if (c != '%') { double d = crt_double(); memcpy(a + na, &d, 8); na += 2; }
+	}
+	*f = 0;
+	memset(BUF + 0x1000, 0x55, 0x400);
+	/* the x87 control word the game runs at (Windows' 0x027f): the game runtime's float formatting computes with the
+	   FPU, so its digits depend on it (the harness thread had another one) */
+	unsigned short cw = 0x027f, was;
+	__asm__ volatile("fnstcw %0" : "=m"(was));
+	if (was != cw && !g_cwSaid) { g_cwSaid = 1; say("      (crt_vsprintf: the harness thread's x87 control word was %04x; the tests use 027f)\n", was); }
+	__asm__ volatile("fldcw %0" : : "m"(cw));
+}
+/* (a difference is logged with its format and arguments: the game's output made again in a buffer of its own) */
+static int g_fmtSaid;
+/* readable rebuild in src/ (src/crt/crt_format.c: VC6's vsprintf on msvcrt's) */
+int crt_vsprintf(char *out, const char *format, void *args);
+/* readable rebuild in src/ (src/crt/crt_format.c) */
+int crt_sprintf(char *out, const char *format, ...);
+void crt_setLib(const void *lib);
+static DWORD vsprintf_msvcrt(void)
+{
+	static void *lib[1];
+	if (!lib[0]) { lib[0] = (void *)msv("vsprintf"); crt_setLib(lib); }
+	int r = crt_vsprintf(BUF + 0x1000, BUF + 0x100, BUF + 0x400);
+	static char game[0x400];
+	crt_data(1);
+	CD(int, 0x49ed2e, char *, const char *, void *)(game, BUF + 0x100, BUF + 0x400);
+	crt_data(0);
+	if (strcmp(game, BUF + 0x1000) && g_fmtSaid < 8) {
+		g_fmtSaid++;
+		const DWORD *a = (const DWORD *)(BUF + 0x400);
+		say("      (crt_vsprintf: \"%s\" %08lx %08lx %08lx %08lx: game \"%s\", msvcrt \"%s\")\n", BUF + 0x100, a[0], a[1], a[2], a[3], game, BUF + 0x1000);
+	}
+	return (DWORD)r;
+}
+ST(crt_vsprintf, vsprintf_setup();, CRT_ORIG(CD(int, 0x49ed2e, char *, const char *, void *)(BUF + 0x1000, BUF + 0x100, BUF + 0x400)),
+   vsprintf_msvcrt())
+/* atoi, atof: a number with spaces, a sign, digits (up to 15 before and after the point, more now and then), an
+   exponent, junk after (or none of it). atof is compared with its rebuild (src/crt/crt_atof.c): msvcrt's rounds
+   correctly where VC6's is one unit off now and then */
+static void number_setup(void)
+{
+	char *s = BUF + 0x100;
+	for (int k = irnd(0, 2); k > 0; k--) *s++ = " \t\n"[irnd(0, 2)];
+	if (irnd(0, 2) == 0) *s++ = irnd(0, 1) ? '-' : '+';
+	int left = irnd(0, 9) ? irnd(0, 15) : irnd(15, 30), right = irnd(0, 9) ? irnd(0, 15) : irnd(15, 30);
+	if (irnd(0, 9) == 0) for (int k = irnd(1, 6); k > 0; k--) *s++ = '0';   /* (leading zeros do not count) */
+	for (int k = left; k > 0; k--) *s++ = (char)irnd('0', '9');
+	if (irnd(0, 1)) { *s++ = '.'; for (int k = right; k > 0; k--) *s++ = (char)irnd('0', '9'); }
+	if (irnd(0, 2) == 0) { *s++ = irnd(0, 1) ? 'e' : 'E'; if (irnd(0, 1)) *s++ = irnd(0, 1) ? '-' : '+'; for (int k = irnd(0, 4); k > 0; k--) *s++ = (char)irnd('0', '9'); }
+	if (irnd(0, 3) == 0) *s++ = (char)irnd(33, 126);
+	*s = 0;
+}
+ST(crt_atoi, number_setup();, CD(int, 0x49ec09, const char *)(BUF + 0x100), ((int (__cdecl *)(const char *))msv("atoi"))(BUF + 0x100))
+static DWORD atof_game(void) { double d = CD(double, 0x49fe7a, const char *)(BUF + 0x100); memcpy(BUF + 0x800, &d, 8); return 0; }
+/* readable rebuild in src/ (src/crt/crt_atof.c: VC6's atof) */
+double crt_atof(const char *s);
+static DWORD atof_msvcrt(void) { double d = crt_atof(BUF + 0x100); memcpy(BUF + 0x800, &d, 8); return 0; }
+ST(crt_atof, number_setup();, CRT_ORIG(atof_game()), atof_msvcrt())
+/* strtok: a whole string taken apart (the tokens' offsets kept), with 1..4 delimiters */
+static void strtok_setup(void)
+{
+	fill_str(BUF + 0x100, 60, 'a', 'h');
+	char *d = BUF + 0x200; int n = irnd(1, 4);
+	for (int i = 0; i < n; i++) d[i] = (char)irnd('a', 'h');
+	d[n] = 0;
+}
+static DWORD tokens(char *(__cdecl *tok)(char *, const char *))
+{
+	int *out = (int *)(BUF + 0x800), n = 0;
+	for (char *p = tok(BUF + 0x100, BUF + 0x200); p && n < 60; p = tok(NULL, BUF + 0x200)) out[n++] = (int)(p - BUF);
+	return (DWORD)n;
+}
+ST(crt_strtok, strtok_setup();, CRT_ORIG(tokens((char *(__cdecl *)(char *, const char *))0x49ec3b)), tokens((char *(__cdecl *)(char *, const char *))msv("strtok")))
+/* _itoa (radix 2..36), tolower (-1..255), _strupr, strstr, strncmp, _strnicmp, strncpy */
+static void str_setup(void)
+{
+	g_a[0] = irnd(0, 3) ? irnd(-100000, 100000) : irnd(-0x7fffffff, 0x7fffffff); g_a[1] = irnd(2, 36); g_a[2] = irnd(-1, 255); g_a[3] = irnd(0, 40);
+	fill_str(BUF + 0x100, 30, 1, 255); fill_str(BUF + 0x200, 30, 'A', 'f');
+	strcpy(BUF + 0x300, BUF + 0x200); for (char *s = BUF + 0x300; *s; s++) if (irnd(0, 1)) *s ^= 0x20 * (*s >= 'A' && *s <= 'Z' ? 1 : *s >= 'a' && *s <= 'z');
+	if (irnd(0, 1)) { int o = irnd(0, 10); memcpy(BUF + 0x400, BUF + 0x200 + o, 3); BUF[0x403] = 0; } else fill_str(BUF + 0x400, 4, 'A', 'f');
+	memset(BUF + 0x800, 0x55, 0x80);
+}
+ST(crt_itoa, str_setup();, (DWORD)(CD(char *, 0x49fb53, int, char *, int)(g_a[0], BUF + 0x800, g_a[1]) - BUF),
+   (DWORD)(((char *(__cdecl *)(int, char *, int))msv("_itoa"))(g_a[0], BUF + 0x800, g_a[1]) - BUF))
+ST(crt_tolower, str_setup();, CD(int, 0x49fdaf, int)(g_a[2]), ((int (__cdecl *)(int))msv("tolower"))(g_a[2]))
+ST(crt_strupr, str_setup();, (DWORD)(CD(char *, 0x49fab5, char *)(BUF + 0x100) - BUF), (DWORD)(((char *(__cdecl *)(char *))msv("_strupr"))(BUF + 0x100) - BUF))
+ST(crt_strstr, str_setup();, (DWORD)CD(char *, 0x4a0090, const char *, const char *)(BUF + 0x200, BUF + 0x400),
+   (DWORD)((char *(__cdecl *)(const char *, const char *))msv("strstr"))(BUF + 0x200, BUF + 0x400))
+ST(crt_strncmp, str_setup();, (DWORD)(CD(int, 0x49fbe0, const char *, const char *, int)(BUF + 0x200, BUF + 0x300, g_a[3]) > 0) - (CD(int, 0x49fbe0, const char *, const char *, int)(BUF + 0x200, BUF + 0x300, g_a[3]) < 0),
+   (DWORD)(((int (__cdecl *)(const char *, const char *, int))msv("strncmp"))(BUF + 0x200, BUF + 0x300, g_a[3]) > 0) - (((int (__cdecl *)(const char *, const char *, int))msv("strncmp"))(BUF + 0x200, BUF + 0x300, g_a[3]) < 0))
+ST(crt_strnicmp, str_setup();, CD(int, 0x4a8740, const char *, const char *, int)(BUF + 0x200, BUF + 0x300, g_a[3]),
+   ((int (__cdecl *)(const char *, const char *, int))msv("_strnicmp"))(BUF + 0x200, BUF + 0x300, g_a[3]))
+ST(crt_strncpy, str_setup();, (DWORD)(CD(char *, 0x49ea80, char *, const char *, int)(BUF + 0x800, BUF + 0x100, g_a[3]) - BUF),
+   (DWORD)(((char *(__cdecl *)(char *, const char *, int))msv("strncpy"))(BUF + 0x800, BUF + 0x100, g_a[3]) - BUF))
+/* rand: the same seed in both (the game's in 0x4d0770, msvcrt's by srand), 20 numbers; the game's seed put back */
+static DWORD rands(int game)
+{
+	DWORD seed = (DWORD)g_a[0], keep = G32(0x4d0770), h = 0;
+	if (game) G32(0x4d0770) = (int)seed; else ((void (__cdecl *)(unsigned))msv("srand"))(seed);
+	for (int i = 0; i < 20; i++) h = h * 31 + (DWORD)(game ? CD(int, 0x49f92c, void)() : ((int (__cdecl *)(void))msv("rand"))());
+	G32(0x4d0770) = (int)keep;
+	return h;
+}
+ST(crt_rand, g_a[0] = irnd(0, 3) ? irnd(0, 0x7fffffff) : irnd(0, 3);, rands(1), rands(0))
+/* __ftol (the low 32 bits of the 64-bit truncation) and _CIacos, on long doubles of every kind */
+static long double crt_ld(void) { long double x = crt_double(); if (irnd(0, 3) == 0) x *= (long double)irnd(1, 1000) / 7; return x; }
+static DWORD ftol_by(DWORD f) { long double x = crt_ld(); long long r; __asm__ volatile("call *%1" : "=A"(r) : "r"(f), "t"(x) : "ecx", "st", "memory"); G32(BUF + 0x800) = (int)(r >> 32); return (DWORD)r; }
+ST(crt_ftol, , ftol_by(0x49ec14), ftol_by((DWORD)msv("_ftol")))
+static DWORD acos_by(DWORD f)
+{
+	long double x = irnd(0, 3) ? (long double)irnd(-1000, 1000) / 1000 : crt_ld();
+	__asm__ volatile("call *%1" : "+t"(x) : "r"(f) : "eax", "ecx", "edx", "memory");
+	memcpy(BUF + 0x800, &x, 10);
+	return 0;
+}
+ST(crt_acos, , CRT_ORIG(acos_by(0x49ffc0)), acos_by((DWORD)msv("_CIacos")))
 /* the match's packet layer (0x4a8300 ..): its flags, each player's next number (-1 .. 127), the arrived-ahead flags,
    the player table (in use, a packet waiting, its first bytes a number or a resend request, sometimes for the local
    player), the history; the message sender, the error message and net_receiveAll stubbed */
@@ -17501,7 +17672,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(crt_vsprintf, 0, 20000, 0), T(crt_atoi, 0, 5000, 0), T(crt_atof, 0, 5000, 0), T(crt_strtok, 0, 3000, 0), T(crt_itoa, 0, 3000, 0), T(crt_tolower, 0, 2000, 0), T(crt_strupr, 0, 2000, 0), T(crt_strstr, 0, 2000, 0), T(crt_strncmp, 0, 2000, 0), T(crt_strnicmp, 0, 2000, 0), T(crt_strncpy, 0, 2000, 0), T(crt_rand, 0, 2000, 0), T(crt_ftol, 0, 10000, 0), T(crt_acos, 0, 5000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
