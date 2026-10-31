@@ -4152,6 +4152,12 @@ int input_keyHeld(int key);
    > 0), else the key */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_isDown(int key);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_justPressed(int key);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int input_readMouse(void);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void input_updateMenuCursor(void);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void sound_playMenu(int id);
@@ -5531,7 +5537,16 @@ static int thread_inside(DWORD addr, DWORD n)   /* is a frozen thread executing 
 	return 0;
 }
 
-static void restore_data(void) { memcpy(g_data, g_snapData, g_dataSize); }
+/* the patch DLL's writable data (wide.h: state): its own state (latches, carried fractions...) that a rebuild of a
+   function it patches shares, restored and compared with the game's .data */
+unsigned char *wide_state(unsigned *size);
+static BYTE *g_patchData, *g_patchSnap, *g_patchRes;
+static unsigned g_patchSize;
+static void restore_data(void)
+{
+	memcpy(g_data, g_snapData, g_dataSize);
+	if (g_patchSnap) memcpy(g_patchData, g_patchSnap, g_patchSize);
+}
 /* scratch pages written since the last call (and reset the tracking) */
 static ULONG_PTR written(void **pages)
 {
@@ -6649,6 +6664,7 @@ static int run_one(const STest *t, int full, int log)
 	g_crumb[2] = 1; mock_defaults(); fonts_loaded(); t->setup(); mock_reset(); DWORD r1 = run_guarded(t->o);
 	g_ncalls1 = g_ncalls; memcpy(g_calls1, g_calls, g_ncalls * sizeof(MockCall)); int ovf1 = g_mockOverflow;
 	if (full) memcpy(g_resData, g_data, g_dataSize);
+	if (full && g_patchSnap) memcpy(g_patchRes, g_patchData, g_patchSize);
 	g_nw1 = written(g_w1);                          /* save the original's scratch pages, clear them */
 	for (ULONG_PTR i = 0; i < g_nw1; i++) memcpy(g_resFake + ((BYTE *)g_w1[i] - g_fake), g_w1[i], PAGE);
 	zero_pages(g_fake, g_w1, g_nw1);
@@ -6673,6 +6689,10 @@ static int run_one(const STest *t, int full, int log)
 	}
 	if (full && !same_mem(g_data, g_resData, g_dataSize)) {
 		if (same && log) first_diff(t->name, g_resData, g_data, g_dataSize, (DWORD)g_data);
+		same = 0;
+	}
+	if (full && g_patchSnap && memcmp(g_patchData, g_patchRes, g_patchSize)) {
+		if (same && log) first_diff(t->name, g_patchRes, g_patchData, g_patchSize, (DWORD)g_patchData);
 		same = 0;
 	}
 	for (int pass = 0; pass < 2; pass++) {          /* every page either run wrote */
@@ -14138,6 +14158,50 @@ static void menusnd_setup(void)
 ST(input_keyHeldChecked, keys_setup();, CALL_PLAIN(0x401540, 0, g_a[0], 0, 0, 0), (DWORD)(input_keyHeldChecked((DWORD)(g_a[0]))))
 ST(input_keyHeld, keys_setup();, CALL_PLAIN(0x4014f0, 0, g_a[0], 0, 0, 0), (DWORD)(input_keyHeld((DWORD)(g_a[0]))))
 ST(input_isDown, keys_setup();, CALL_PLAIN(0x401590, 0, g_a[0], 0, 0, 0), (DWORD)(input_isDown((DWORD)(g_a[0]))))
+/* input_justPressed: the keyboard as keys_setup has it, each key's latch (0x4d1a98 + key * 4; 0xfa .. 0xfd are the
+   mouse buttons' flags and the wheel's latch), the click pulses (0 / 1 / anything) and the patch DLL's latches */
+void wide_testMouseLatch(int i, int on);
+static void pressed_setup(void)
+{
+	keys_setup();
+	for (int i = 0; i < 3; i++) { G32(0x4ded88 + 4 * i) = irnd(0, 2) < 2 ? irnd(0, 1) : irnd(-9, 9); wide_testMouseLatch(i, irnd(0, 1)); }
+	for (int k = 0; k < 0x100; k++) G32(0x4d1a98 + 4 * k) = irnd(0, 1);
+}
+ST(input_justPressed, pressed_setup();, CALL_PLAIN(0x401600, 0, g_a[0], 0, 0, 0), (DWORD)(input_justPressed((DWORD)(g_a[0]))))
+/* input_readMouse: the mouse (a fake device, or none) whose first and second reads each succeed, lose the input or
+   fail, Acquire succeeding or not, the game window in front or not (or none) */
+static LONG g_mouseRead2;
+static int g_mouseReads;
+static LONG fc_mouseState(FakeCom *o, DWORD *a)
+{
+	LONG r = g_mouseReads++ ? g_mouseRead2 : o->ret[9];
+	if (r >= 0) memcpy((void *)a[1], (const void *)o->val[9], a[0]);
+	return r;
+}
+static void readMouse_setup(void)
+{
+	static const LONG res[] = { 0, 1, (LONG)0x8007001e, (LONG)0x8007001e, (LONG)0x80004005 };
+	FakeCom *m = (FakeCom *)fakecom_new(0, 0x33, g_nargsDidev, 0);
+	m->fn[9] = fc_mouseState; m->val[9] = (DWORD)(BUF + 0x3000);
+	m->ret[9] = res[irnd(0, 4)]; g_mouseRead2 = res[irnd(0, 4)]; g_mouseReads = 0;
+	m->ret[7] = irnd(0, 2) ? 0 : (LONG)0x80004005;
+	fill(BUF + 0x3000, 16); fill((void *)0x4d1a88, 16);
+	G32(0x4d1fa4) = irnd(0, 5) ? (int)m : 0;
+	G32(0x4ded18) = irnd(0, 3) ? 0x10010 : 0; g_mockFgWnd = irnd(0, 3) ? 0x10010 : 0x20020;
+}
+ST(input_readMouse, readMouse_setup();, CALL_PLAIN(0x401730, 0, 0, 0, 0, 0), (DWORD)(input_readMouse()))
+/* input_updateMenuCursor: readMouse_setup's mouse, the pointer anywhere around the screen, in a match or a menu, the
+   buttons' last states; small movements and wheel notches as well as random ones */
+static void menuCursor_setup(void)
+{
+	readMouse_setup();
+	if (irnd(0, 1)) for (int i = 0; i < 3; i++) ((int *)(BUF + 0x3000))[i] = irnd(-300, 300);
+	G32(0x4ded68) = irnd(-100, 800); G32(0x4ded6c) = irnd(-100, 600);
+	G32(0x76d3e8) = irnd(0, 2) ? 300 : 0x270f;
+	for (int i = 0; i < 3; i++) G32(0x9f1704 + 4 * i) = irnd(0, 1);
+	G32(0x4d1fac) = irnd(0, 1); G32(0x4ad17c) = irnd(0, 1);
+}
+ST(input_updateMenuCursor, menuCursor_setup();, (CALL_PLAIN(0x445c60, 0, 0, 0, 0, 0), 0), (input_updateMenuCursor(), 0))
 ST(sound_playMenu, menusnd_setup();, CALL_PLAIN(0x41e760, 0, g_a[4], 0, 0, 0), (sound_playMenu((DWORD)(g_a[4])), 0))
 ST(skirmishSettings_leave, menusnd_setup();, CALL_PLAIN(0x443c80, 0, 0, 0, 0, 0), (DWORD)(skirmishSettings_leave()))
 ST(missionSettings_leave, menusnd_setup();, CALL_PLAIN(0x447960, 0, 0, 0, 0, 0), (DWORD)(missionSettings_leave()))
@@ -17238,7 +17302,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -17515,8 +17579,10 @@ static int patched_in_memory(DWORD addr)
 		}
 	return -1;
 }
-/* src/wide.c: the patch DLL handed over its widescreen state (and installed its menu fix) */
+/* src/wide.c: the patch DLL handed over its widescreen state (and installed its menu fix); the rebuild at addr
+   carries the patch DLL's in-memory change to that function */
 int wide_present(void);
+int wide_carries(DWORD addr);
 int wide_menuFix(void);
 /* the functions hooked, for recomp.passed (the list RECOMP_EARLY=1 hooks at start-up) */
 static const char *g_hooked[MAXRESULT];
@@ -17541,9 +17607,10 @@ static void hook(DWORD addr, void *fn, const char *name)
 		for (unsigned i = 0; i < sizeof keep / sizeof keep[0] && !wide_present(); i++)
 			if (keep[i] == addr) { say("  KEPT ORIGINAL %08lx %s (the patch DLL checks its return address)\n", addr, name); return; }
 	}
-	{	/* menu_vertex and menu_drawRect: the patch DLL's menu43 replaces their entries with jumps to its own versions;
-		   the rebuilds carry that fix (src/menu/menu_2d.c), so they take over from the patch DLL's jump */
-		int folded = (addr == 0x41ef60 || addr == 0x427970) && wide_menuFix() && p[0] == 0xE9;
+	{	/* functions the patch DLL patches in memory whose rebuild carries the change (wide_carries: menu_vertex and
+		   menu_drawRect, which menu43 replaces with its own versions; input_justPressed, whose entry jumps to the
+		   mouse-button latch), so they take over from the patch DLL's jump */
+		int folded = wide_carries(addr);
 		int pm = folded ? 0 : patched_in_memory(addr);
 		if (pm > 0 && p[0] == 0xE9) {   /* a jump into recomp.dll itself: a test's stub left in place, a harness bug */
 			HMODULE self = NULL; DWORD to = (DWORD)p + 5 + *(DWORD *)(p + 1);
@@ -18301,7 +18368,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x467b90, (void *)sound_loadWav, "sound_loadWav" },
 	/* batch 161 */
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
-	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
+	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */
@@ -18578,6 +18646,14 @@ static DWORD WINAPI worker(LPVOID unused)
 	if (state_ok) {
 		DWORD t0 = GetTickCount();
 		memcpy(g_snapData, g_data, g_dataSize);
+		if ((g_patchData = wide_state(&g_patchSize)) && (g_patchSnap = VirtualAlloc(NULL, 2 * g_patchSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
+			g_patchRes = g_patchSnap + g_patchSize;
+			memcpy(g_patchSnap, g_patchData, g_patchSize);
+			say("recomp: the patch DLL's data (%u bytes at %p) is restored and compared with the game's\n", g_patchSize, g_patchData);
+			{ int wide_fixes(void); int f = wide_fixes();
+			  say("recomp: patch DLL changes the rebuilds carry: menu fix %s, mouse-button latch %s, cursor clamp %s\n",
+			      f & 1 ? "on" : "off", f & 2 ? "on" : "off", f & 4 ? "on" : "off"); }
+		}
 		run_state_tests();
 		restore_data();                        /* the game resumes exactly where it was frozen */
 		say("recomp: state tests took %lu ms\n", GetTickCount() - t0);

@@ -2212,12 +2212,33 @@ __declspec(dllexport) int AxisNetVersion(void) { return 2; }
    menu_drawRect, gfx_setProjection2D3D, hud_drawMain; recomp.dll src/wide.h has the same layout), handed over
    when recomp.dll is loaded */
 static volatile int g_menufix;   /* menu_vtx / rect_wrap / trans_wrap installed (menu43) */
-static const struct {
+static volatile int g_pressedfix;   /* pressed_wrap installed at 0x401600 */
+static volatile int g_clampfix;     /* cursor_clamp_wrap installed at 0x445cd8 */
+/* (the later fields serve the rebuilds of the functions this DLL patches in memory: what each patch is, and the
+   state it keeps, so that the rebuild can do the same; state/stateSize: this DLL's writable data, which the
+   harness restores before each run and compares after, as it does the game's own .data) */
+static struct {
     int size;
     const volatile int *menuFix, *menu43, *inHud, *hudArea, *cursorOn, *cursorX, *cursorW;
     volatile int *hudPart;
     void (__cdecl *fullScreen)(int on);
-} g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full };
+    BYTE *state; DWORD stateSize;
+    const volatile int *pressedFix; int (__cdecl *mousePressed)(int code); int *mouseLatch;
+    const volatile int *cursorClampFix; void (__cdecl *cursorClamp)(void);
+} g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full,
+             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp };
+
+/* g_wide.state: this module's writable data section (none in the standalone exe, which runs no harness) */
+static void wide_state_range(void) {
+#ifndef AXIS_STANDALONE
+    extern IMAGE_DOS_HEADER __ImageBase;
+    BYTE *base = (BYTE *)&__ImageBase;
+    IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + __ImageBase.e_lfanew);
+    IMAGE_SECTION_HEADER *s = IMAGE_FIRST_SECTION(nt);
+    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++)
+        if (!memcmp(s[i].Name, ".data", 6)) { g_wide.state = base + s[i].VirtualAddress; g_wide.stateSize = s[i].Misc.VirtualSize; }
+#endif
+}
 
 static HMODULE g_recomp;   /* RECOMP TEST BUILD ONLY: recomp.dll, when loaded */
 
@@ -2230,6 +2251,7 @@ void recomp_setWide(const void *wide);
 BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
     (void)inst;
+    wide_state_range();
     recomp_setWide(&g_wide);
 #else
 #define GetModuleHandleA_exe() GetModuleHandleA(NULL)
@@ -2242,6 +2264,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
       char rp[MAX_PATH]; GetModuleFileNameA(NULL, rp, MAX_PATH); strcpy(strrchr(rp, '\\') + 1, "recomp.dll");
       HMODULE rm = g_recomp = GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES ? LoadLibraryA(rp) : NULL;
       void (*set_wide)(const void *) = rm ? (void (*)(const void *))GetProcAddress(rm, "recomp_setWide") : NULL;
+      wide_state_range();
       if (set_wide) set_wide(&g_wide); }
 #endif
     /* The game renders at the monitor's real resolution (DESKTOP mode), but with display scaling Windows
@@ -2471,6 +2494,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         pcl[0] = 0xe9; *(INT32 *)(pcl + 1) = (INT32)((BYTE *)cursor_clamp_wrap - (pcl + 5)); pcl[5] = 0x90;
         VirtualProtect(pcl, 6, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pcl, 6);
+        g_clampfix = 1;
         logf("menus: cursor reaches the whole screen");
     }
     static const BYTE sig_pressed[] ={0x56, 0x8b, 0x74, 0x24, 0x08, 0x81, 0xfe, 0xfa, 0x00, 0x00, 0x00};
@@ -2481,6 +2505,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         pjp[0] = 0xe9; *(INT32 *)(pjp + 1) = (INT32)((BYTE *)pressed_wrap - (pjp + 5));
         VirtualProtect(pjp, 5, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pjp, 5);
+        g_pressedfix = 1;
         logf("input: mouse clicks in key bindings counted every time");
     }
     logf("proportional HUD %s (max aspect %.3f)", hud && g_hud43 ? "on" : "off", g_hudaspect);

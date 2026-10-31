@@ -1,6 +1,7 @@
 /* devices.c: DirectInput's keyboard and mouse (taken while the window is active, let go when it is not) and the
    objects released when the game closes. */
 #include "../game.h"
+#include "../wide.h"
 #include <string.h>
 
 #define DI_ACQUIRE 0x1c
@@ -124,6 +125,83 @@ int (input_createDirectInput)(void *window, void *instance)
 #define GetCursorPos(p) IMPORT(0x4a9300, u32, int *)(p)
 #define SetCursorPos(x, y) IMPORT(0x4a9304, u32, int, int)(x, y)
 
+/* 0x401730: the mouse read into the DIMOUSESTATE at 0x4d1a88 (16 bytes: movement x, y, wheel, 4 buttons), once per
+   frame; when the input was lost the mouse is taken again and read again. As the installed exe has it (mousefix.py
+   replaced the routine with code in the .axnet section's tail): while another window is in front, or the read or
+   the re-take fails, the state is cleared instead of left as it was (a button down at an alt-tab stayed "held").
+   1: read (or no mouse), 0: cleared */
+#define DI_GETDEVICESTATE_MOUSE 0x24
+#define DIERR_INPUTLOST_MOUSE 0x8007001e
+int (input_readMouse)(void)
+{
+	void *state = (void *)0x4d1a88;
+	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
+		goto clear;
+	if (g_mouse) {
+		long r = COM(g_mouse, DI_GETDEVICESTATE_MOUSE, long, u32, void *)(g_mouse, 0x10, state);
+		if (r == (long)DIERR_INPUTLOST_MOUSE) {
+			if (COM(g_mouse, DI_ACQUIRE, long)(g_mouse) < 0)
+				goto clear;
+			r = COM(g_mouse, DI_GETDEVICESTATE_MOUSE, long, u32, void *)(g_mouse, 0x10, state);
+		}
+		if (r < 0)
+			goto clear;
+	}
+	return 1;
+clear:
+	memset(state, 0, 16);
+	return 0;
+}
+
+/* 0x445c60: the frame's mouse input. The mouse is taken again and read (input_readMouse; the patch DLL retargets
+   this call to its own read around it: buttons after alt-tab, the menu cursor's speed); the pointer moves by the
+   read's movement, the wheel gives g_mouseWheel (one notch of 120 = 1, down positive) and 0x4ded70 (turned at all).
+   Outside a match (screen 0x270f) the pointer is kept to 0..630 x 0..474, or by the patch DLL's clamp (it replaces the block at 0x445cd8), which lets it
+   reach the whole width of a wide screen (wide.h: cursorClampFix). Each button gives its held state (0 / 0x80) and
+   a click pulse (0x4ded88 + i * 4) on the frame it went down (0x9f1704 + i * 4: down last frame). */
+void (input_updateMenuCursor)(void)
+{
+	const int *state = (const int *)0x4d1a88;   /* DIMOUSESTATE: x, y, wheel, buttons */
+	GAME_CDECL(0x4012e0, int, void)();          /* input_reacquireMouse */
+	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
+	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
+	GAME_VAR(int, 0x4ded70) = 0;
+	g_mouseX = x;
+	g_mouseY = y;
+	if (z != 0)
+		GAME_VAR(int, 0x4ded70) = 1;
+	g_mouseWheel = z / -120;
+	if (g_screen != 0x270f) {
+		if (*g_wide->cursorClampFix) {
+			g_wide->cursorClamp();
+		} else {
+			if (x > 630)
+				g_mouseX = x = 630;
+			if (y > 474)
+				g_mouseY = y = 474;
+			if (x < 0)
+				g_mouseX = 0;
+			if (y < 0)
+				g_mouseY = 0;
+		}
+	}
+	const u8 *buttons = (const u8 *)0x4d1a94;
+	for (int i = 0; i < 3; i++) {
+		int held = buttons[i] & 0x80;
+		int *pulse = (int *)(0x4ded88 + i * 4), *was = (int *)(0x9f1704 + i * 4);
+		GAME_VAR(int, 0x4ded94 + i * 4) = held;
+		if (!held) {
+			*pulse = 0;
+			*was = 0;
+		} else if (*was == 0) {
+			*pulse = 1;
+			*was = 1;
+		} else {
+			*pulse = 0;
+		}
+	}
+}
+
 /* 0x487c80: the cursor put at (x, y) (screen pixels). Returns what the original leaves in eax: SetCursorPos's
    answer, or the window in front when it isn't the game's */
 u32 (input_setCursorPos)(int x, int y)
@@ -191,6 +269,48 @@ int (input_isDown)(int key)
 		return g_mouseWheel > 0;
 	}
 	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* input_keyHeldChecked: held */
+}
+
+/* 0x401600: was the key bound to an action just pressed (true once per press)? A key latches in 0x4d1a98 + key * 4
+   until it is seen released; the wheel (0xfd down) latches in 0x4d1e8c; 0xfe is the wheel turned up. The mouse
+   buttons (0xfa .. 0xfc) answer the frame's click pulse (0x4ded88 + i * 4) only when their flag (0x4d1e80 + i * 4),
+   which flips on every call, was 0 - so with one test per frame about every other click was lost. The patch DLL
+   (wide.h: pressedFix) makes the buttons latch like keys instead; with it installed they are its answer. */
+int (input_justPressed)(int key)
+{
+	if (key >= 0xfa && key <= 0xfc) {
+		if (*g_wide->pressedFix)
+			return g_wide->mousePressed(key);
+		int *flag = (int *)(0x4d1e80 + (key - 0xfa) * 4);
+		if (*flag) {
+			*flag = 0;
+			return 0;
+		}
+		*flag = 1;
+		return GAME_VAR(int, 0x4ded88 + (key - 0xfa) * 4);
+	}
+	if (key == 0xfd) {
+		int *latch = (int *)0x4d1e8c;
+		if (g_mouseWheel >= 0) {
+			*latch = 0;
+			return 0;
+		}
+		if (*latch)
+			return 0;
+		*latch = 1;
+		return 1;
+	}
+	if (key == 0xfe)
+		return g_mouseWheel > 0;
+	int *seen = (int *)(0x4d1a98 + key * 4);
+	if (!GAME_CDECL(0x4014f0, int, int)(key))   /* input_keyHeld */
+		*seen = 0;
+	if (*seen)
+		return 0;
+	if (!GAME_CDECL(0x401540, int, int)(key))   /* input_keyHeldChecked */
+		return 0;
+	*seen = 1;
+	return 1;
 }
 
 /* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at 0x4a9698), its data format (c_dfDIMouse,

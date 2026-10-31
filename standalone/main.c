@@ -27,7 +27,7 @@
 
 BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved);   /* axisnet_recomp.c */
 int wide_present(void);    /* src/wide.c: the patch layer handed over its widescreen state */
-int wide_menuFix(void);
+int wide_carries(unsigned addr);   /* the rebuild carries the patch layer's change to that function */
 
 static BYTE g_space[0xb80000 - 0x10000] __attribute__((aligned(4096)));   /* covers GAME_BASE.., see 1. above */
 static BYTE *g_file;       /* AxisGL.exe as read */
@@ -142,7 +142,7 @@ static int install_hooks(void)
 			fprintf(g_log, "  original %06x %s (the patch layer checks its return address)\n", h->addr, h->name);
 			continue;
 		}
-		int folded = (h->addr == 0x41ef60 || h->addr == 0x427970) && wide_menuFix() && p[0] == 0xE9;
+		int folded = wide_carries(h->addr);
 		if (!folded && patched_in_memory(h->addr)) {
 			fprintf(g_log, "  original %06x %s (changed in memory by the patch layer)\n", h->addr, h->name);
 			continue;

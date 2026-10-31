@@ -20,6 +20,14 @@ typedef struct {
 	const volatile int *cursorX, *cursorW;   /* ... placed as in this viewport (left edge, width; pixels) */
 	volatile int *hudPart;             /* the main HUD's part being drawn (HUD_*), for the patch DLL's vertex hook */
 	void (CDECL *fullScreen)(int on);  /* 1: the full-screen viewport until the matching 0, then the menu box again */
+	/* the functions the patch DLL patches in memory, rebuilt with its change (wide_carries): */
+	u8 *state;                         /* the patch DLL's writable data (the harness restores and compares it) */
+	u32 stateSize;
+	const volatile int *pressedFix;    /* input_justPressed (0x401600): mouse buttons latch like keys ... */
+	int (CDECL *mousePressed)(int key);   /* ... answered by this */
+	int *mouseLatch;                   /* (its latches, 3, for the tests) */
+	const volatile int *cursorClampFix;   /* input_updateMenuCursor (0x445c60): its clamp (0x445cd8) replaced by ... */
+	void (CDECL *cursorClamp)(void);      /* ... this (the pointer over the whole width of a wide screen) */
 } Wide;
 
 /* what the main HUD's vertices are anchored to on a screen wider than 4:3 (hudPart) */
@@ -34,5 +42,9 @@ enum {
 };
 
 extern const Wide *g_wide;
+
+/* 1 when the rebuild at addr carries the patch DLL's in-memory change to that function (so it replaces the
+   patched original); both hook installers (recomp.c, standalone/main.c) ask this */
+int wide_carries(u32 addr);
 
 #endif
