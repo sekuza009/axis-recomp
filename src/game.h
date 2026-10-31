@@ -133,6 +133,48 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_4629c0(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
 /* (app/main_loop.c: the replay's frame) */
 #define match_462ac0(scene, dt) GAME_THISCALL(0x462ac0, void, void *, u32)(scene, dt)
+/* (app/main_loop.c: the match's frame) */
+#define profile_saveProgress() GAME_CDECL(0x447010, void, void)()
+#define match_45e1c0(stage) GAME_THISCALL(0x45e1c0, void, void *)(stage)
+#define armc_computeTotals(stage, a) GAME_THISCALL(0x45ee40, u32, void *, int)(stage, a)   /* 0: the parts' data was changed */
+#define match_4616e0(scene) GAME_THISCALL(0x4616e0, void, void *)(scene)
+#define match_461730(scene) GAME_THISCALL(0x461730, void, void *)(scene)
+#define chat_matchCheatCode(scene, p, text) GAME_THISCALL(0x462650, int, void *, int, const char *)(scene, p, text)
+#define chat_macro(scene, text, out) GAME_THISCALL(0x462740, int, void *, const char *, char *)(scene, text, out)
+#define msg_playerConnected(scene, p) GAME_THISCALL(0x462b50, void, void *, int)(scene, p)
+#define msg_chatLine(scene, p, text, team) GAME_THISCALL(0x462c30, void, void *, int, const char *, int)(scene, p, text, team)
+#define msg_serverEndsGame(scene) GAME_THISCALL(0x462f30, void, void *)(scene)
+#define msg_userEndsGame(scene) GAME_THISCALL(0x462f60, void, void *)(scene)
+#define msg_fragLimitReached(scene) GAME_THISCALL(0x462f90, void, void *)(scene)
+#define msg_timeLimitReached(scene) GAME_THISCALL(0x462fd0, void, void *)(scene)
+#define msg_cheatUsed(scene, p, code) GAME_THISCALL(0x463030, void, void *, int, int)(scene, p, code)
+#define msg_connectionLost(scene) GAME_THISCALL(0x463390, void, void *)(scene)
+#define msg_networkUnstable(scene) GAME_THISCALL(0x4633c0, void, void *)(scene)
+#define msg_dataLoss(scene) GAME_THISCALL(0x4633f0, void, void *)(scene)
+#define match_463480(scene) GAME_THISCALL(0x463480, void, void *)(scene)
+#define match_4634e0(scene, p, rec) GAME_THISCALL(0x4634e0, void, void *, int, void *)(scene, p, rec)
+#define match_463530(scene, p) GAME_THISCALL(0x463530, void, void *, int)(scene, p)
+#define match_463550(scene, p, text, team) GAME_THISCALL(0x463550, void, void *, int, const char *, int)(scene, p, text, team)
+#define match_463670(scene) GAME_THISCALL(0x463670, void, void *)(scene)
+#define match_463690(scene) GAME_THISCALL(0x463690, void, void *)(scene)
+#define match_4636b0(scene) GAME_THISCALL(0x4636b0, void, void *)(scene)
+#define match_470cb0(stage) GAME_THISCALL(0x470cb0, void, void *)(stage)
+#define match_4722e0(stage, x) GAME_THISCALL(0x4722e0, void, void *, u32)(stage, x)
+#define match_472310(stage) GAME_THISCALL(0x472310, void, void *)(stage)
+#define gfx_saveScreenshot(stage, p) GAME_THISCALL(0x4734d0, int, void *, int)(stage, p)
+#define match_474210(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISCALL(0x474210, void, void *, int, \
+	const char *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, p, name, a, b, c, d, e, f, g, h, i, j, k, l, m)
+#define match_48e0f0(scene, p) GAME_THISCALL(0x48e0f0, void, void *, int)(scene, p)
+#define match_48e2c0(scene, p) GAME_THISCALL(0x48e2c0, void, void *, int)(scene, p)
+#define match_48e680(scene) GAME_THISCALL(0x48e680, void, void *)(scene)
+#define match_48e990(scene, p) GAME_THISCALL(0x48e990, void, void *, int)(scene, p)
+#define scene_loadPath(stage, dt) GAME_THISCALL(0x48fd50, void, void *, u32)(stage, dt)
+#define match_escMenu(scene) GAME_THISCALL(0x49ca70, void, void *)(scene)
+#define crt_fprintf(...) GAME_CDECL(0x49f135, int, void *, const char *, ...)(__VA_ARGS__)
+#define FUN_004a86f0() GAME_CDECL(0x4a86f0, int, void)()   /* the local player's slot */
+#define FUN_004a8720() GAME_CDECL(0x4a8720, void, void)()
+#define actor_setPartColor_bits(stage, p, part, a, b, c, d, e, f) GAME_THISCALL(0x474b50, u32, void *, int, int, u32, u32, u32, \
+	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
 #define match_4686e0(v) GAME_CDECL(0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
 #define msg_kill(scene, victim, killer) GAME_THISCALL(0x4630c0, void, void *, int, int)(scene, victim, killer)
 #define tex_upload2(scene) GAME_THISCALL(0x473610, void, void *)(scene)

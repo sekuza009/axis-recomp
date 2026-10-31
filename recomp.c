@@ -5721,7 +5721,8 @@ static THISCALL DWORD actor_processFrame(char *s, DWORD i, DWORD dt) { DWORD v[2
    round's clock, frags and the ranking tables (+0x23428f6 / +0x2342936), respawns and team changes, the end of
    the round and of the match, the camera and the replay; the scene's parts loaded and updated (@0x498dd8 /
    @0x49a54f: 0x473780, the patch DLL's cat_wrap); messages, sounds and the network packets of each event */
-static THISCALL DWORD game_processGameMode(char *s) { return run_lifted(lift_4988e0, (DWORD)s, 0, NULL); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void game_processGameMode(char *s);
 /* batch 211 (lifted/grp175.c, grp176.c): native until now; their only in-memory change is a call the patch DLL
    retargets (lift.py "@site", g_patchOk), or none */
 #include "lifted/grp175.c"
@@ -17104,7 +17105,7 @@ static void gamemode_setup(void)
 	g_vfsOpenFail = irnd(0, 1);
 	g_paintStacks = 1;
 }
-ST(game_processGameMode, gamemode_setup();, TC(DWORD, 0x4988e0, char *)(BUF), game_processGameMode(BUF))
+ST(game_processGameMode, gamemode_setup();, (TC(void, 0x4988e0, char *)(BUF), 0), (game_processGameMode(BUF), 0))   /* (its caller ignores eax) */
 /* batch 211 */
 /* the text passes: a point on or off the 640 x 480 screen, a printable text (0..40 characters), a width, the colour
    and the font textures' ids; the texture set's table zero (the bind stub records a null object); every callee
