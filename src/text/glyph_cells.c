@@ -91,3 +91,66 @@ int (pen_init)(const char *name)
 			pen_cell(proportional, g, x, x + *width, y, y + 14);
 	return 1;
 }
+
+/* 0x46bdc0: the number value drawn with the HUD's digits (the armor / shield / ammo counters), right to left in
+   count slots ending at x + count * w / 2: each slot w = scale * 28 wide, each digit h = scale * 26 tall (centred
+   on y) and widened by pad (scale * the float at 0x4a9534) on both sides. Unless padded, the slots beyond the
+   value's own digits are left out. A negative value is drawn by its size with a minus sign to the left, on the slot
+   where the next digit would go - over the last digit when all count slots were drawn. The
+   cells are 35 x 27 texels of the HUD texture (0xa106ac; digit d at column d % 5, row d / 5 from row 112, the minus
+   at 175, 112). Two of the patch DLL's changes are followed as they stand in the code: the height's factor (26, the
+   operand of the fmul at 0x46bdda) may be its height-based one, and the texture coordinates' function (loaded at
+   0x46be96) may be its half-texel inset. Returns glDisable's eax */
+u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded)
+{
+	const float *texel = (const float *)0x4a957c;                         /* 1/256 */
+	const float *heightFactor = *(const float *const *)0x46bddc;          /* (the fmul's operand) */
+	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))0x46be98;   /* (mov ebx, [..]) */
+	int w = ftol(fmul_m(fld_m(&scale), (const float *)0x4aa280));       /* 28 */
+	int h = ftol(fmul_m(fld_m(&scale), heightFactor));
+	int pad = ftol(fmul_m(fld_m(&scale), (const float *)0x4a9534));
+	x += (int)((u32)w * (u32)count) / 2;
+	int top = y - h / 2, negative = 0;
+	if (value < 0) {
+		value = -value;
+		negative = 1;
+	}
+	glEnable(GL_TEXTURE_2D);
+	tex_bind(g_textures->managers[GAME_VAR(int, 0xa106ac) / 512], GAME_VAR(int, 0xa106ac) % 512);
+	glBegin(GL_QUADS);
+	void (STDCALL *tc)(u32, u32) = *texCoord;
+	int place = 10;
+	for (int i = 0; i < count; i++) {
+		x -= w;
+		int unit = place / 10, digit = (value % place) / unit;
+		if (!padded && i > 0 && value < unit)
+			break;
+		int row = digit / 5, col = digit % 5;
+		float t0 = f32(fmul_m((long double)(row * 27 + 0x70), texel)), s0 = f32(fmul_m((long double)(col * 35), texel));
+		tc(BITS(s0), BITS(t0));
+		glVertex2i(x - pad, gfx_getHeight() - top);
+		float s1 = f32(fmul_m((long double)((col + 1) * 35), texel));
+		tc(BITS(s1), BITS(t0));
+		int right = x + pad + w;
+		glVertex2i(right, gfx_getHeight() - top);
+		float t1 = f32(fmul_m((long double)(row * 27 + 0x8b), texel));
+		tc(BITS(s1), BITS(t1));
+		glVertex2i(right, gfx_getHeight() - top - h);
+		tc(BITS(s0), BITS(t1));
+		glVertex2i(x - pad, gfx_getHeight() - top - h);
+		place = (int)((u32)place * 10);
+	}
+	if (negative) {
+		int left = x - pad, right = x + pad + w;
+		tc(0x3f2f0000, 0x3ee00000);   /* (175, 112) / 256 */
+		glVertex2i(left, gfx_getHeight() - top);
+		tc(0x3f520000, 0x3ee00000);
+		glVertex2i(right, gfx_getHeight() - top);
+		tc(0x3f520000, 0x3f0b0000);
+		glVertex2i(right, gfx_getHeight() - top - h);
+		tc(0x3f2f0000, 0x3f0b0000);
+		glVertex2i(left, gfx_getHeight() - top - h);
+	}
+	glEnd();
+	return IMPORT(0x4a922c, u32, u32)(GL_TEXTURE_2D);   /* glDisable */
+}

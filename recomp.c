@@ -4163,6 +4163,8 @@ void gfx_setProjectionHud(int mode, DWORD scale);   /* (scale: a float's bits) *
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD gfx_fillRect(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD hud_drawDigits(int x, int y, DWORD scale, int value, int count, int padded);   /* (scale: a float's bits) */
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -16835,6 +16837,23 @@ static void fillrect_setup(void)
 	else for (int i = 0; i < 4; i++) g_a[i] = irnd(0, 3) ? irnd(-10, 2000) : 0;
 }
 ST(gfx_fillRect, fillrect_setup();, CALL_PLAIN(0x46bd60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)gfx_fillRect(g_a[0], g_a[1], g_a[2], g_a[3]))
+/* the HUD's digits: any position, scale (0.5 .. 4, or odd), value (negative too, or huge), 0 .. 9 slots, padded
+   or not; the texture id any (its manager from a fake table), tex_bind stubbed; the patch DLL's digit height and
+   texture-coordinate inset (when installed) as they are */
+static const DWORD g_stubDigits[] = { 0x4566c0, 1 | CS_POP | CS_THIS, 0 };
+static void digits_setup(void)
+{
+	callee_stubs(g_stubDigits, 0);
+	G32(0xa0e928) = irnd(0, 3) ? 1080 : irnd(0, 3000); G32(0xa106ac) = irnd(0, 3) ? irnd(0, 2047) : irnd(-3000, 3000);
+	G32(0xa0e010) = (int)(BUF + 0x1000); for (int i = 0; i < 16; i++) G32(BUF + 0x1004 + 4 * i) = 0x1000 * (i + 1);
+	G32(BUF + 0x1004 - 0x18) = 0x777;
+	float sc = irnd(0, 3) ? csu_fr(50, 400) : csu_fr(-100, 1000); g_a[2] = *(int *)&sc;
+	g_a[0] = irnd(-100, 2000); g_a[1] = irnd(-100, 1200);
+	g_a[3] = irnd(0, 2) ? irnd(-999, 9999) : irnd(0, 1) ? irnd(-2000000000, 2000000000) : (int)0x80000000;
+	g_a[4] = irnd(0, 9); g_a[5] = irnd(0, 1);
+}
+static DWORD digits_orig(void) { return ((DWORD (__cdecl *)(int, int, int, int, int, int))0x46bdc0)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]); }
+ST(hud_drawDigits, digits_setup();, digits_orig(), hud_drawDigits(g_a[0], g_a[1], (DWORD)g_a[2], g_a[3], g_a[4], g_a[5]))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
    ChangeDisplaySettingsA's answer; the DEVMODE's unset bytes painted alike */
 static void displaymode_setup(void)
@@ -17369,7 +17388,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -17577,6 +17596,8 @@ static void run_state_tests(void)
    rel32 (lift.py "@site": the lifted call reads its target from the live instruction) is { site + 1, 4 }; a
    rewritten block the lifted code tests for and runs either way is { start, length }. Ignored by the compare */
 static const DWORD g_patchOk[][2] = {
+	/* hud_drawDigits (the digit height's factor, the texture coordinates' function: both read from the code) */
+	{ 0x46bddc, 4 }, { 0x46be98, 4 },
 	/* replay_frame (the auto play overlay: ov_icon_left .. ov_rank) */
 	{ 0x48a19d, 4 }, { 0x48a1c1, 4 }, { 0x48a1f8, 4 }, { 0x48a25a, 4 }, { 0x48a29a, 4 }, { 0x48a300, 4 },
 	{ 0x48a30a, 4 }, { 0x48a319, 4 },
@@ -18437,7 +18458,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
 	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
-	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" },
+	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */
