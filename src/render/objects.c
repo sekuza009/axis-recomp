@@ -333,3 +333,378 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 }
 #undef K
 #undef A
+
+/* ---- 0x476890: a projectile drawn ---- */
+
+#define K(address) ((const float *)(address))
+#define P(type, offset) GAME_VAR(type, p + (offset))
+#define TEX(k) GAME_VAR(int, s + 0x9ccfd4 + (k) * 4)   /* the effect textures */
+
+static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
+
+/* a camera-facing quad (hud_484ca0): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
+static void quad(void *vv, int tex, const float *uv, float dz, u8 *p, const float *ab, const float *at, int kind)
+{
+	hud_484ca0(vv, tex, uv, uv + 2, dz, p + 0x78, ab, ab + 2, at, kind, 1);
+}
+
+/* offsets +-h, each corner rounded */
+static void square(float *ab, long double h)
+{
+	ab[0] = ab[1] = (float)-h;
+	ab[2] = ab[3] = (float)h;
+}
+
+/* one of the effect shapes about the projectile's matrix (+0x2c) */
+static void shape(void *vv, u8 *p, void *model, const void *colour, int cull)
+{
+	ViewVolume_projectObject(vv, model, 0, (const float *)(p + 0x2c), 0, colour, cull, -1, 0);
+}
+
+static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = { 0.875f, 0.125f, 1.0f, 0.25f };
+
+/* the glow: faded by a squared (a = 1 - t), +-big, or +-small for the viewing actor's own (+0x202e8d8) */
+static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
+{
+	float ab[4];
+	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
+	square(ab, P(int, 0xc) == GAME_VAR(int, s + 0x202e8d8) ? small : big);
+	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
+}
+
+/* the glow sized by the projectile's radius (+0x80) plus add, halved for the viewing actor's own */
+static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
+{
+	float ab[4];
+	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
+	long double size = fadd_m(fld_m(&P(float, 0x80)), add);
+	square(ab, size);
+	if (P(int, 0xc) == GAME_VAR(int, s + 0x202e8d8)) {
+		ab[0] = f32(fmul_m(fld_m(&ab[0]), K(0x4a942c)));
+		ab[1] = f32(fmul_m(fld_m(&ab[1]), K(0x4a942c)));
+		ab[2] = ab[3] = (float)fmul_m(size, K(0x4a942c));
+	}
+	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
+}
+
+/* a bright core (+-h, faded by (1 - t) squared) under the glow (faded the same, rounded) */
+static void core(u8 *s, u8 *p, void *vv, const float *t, float h, float big, float small)
+{
+	float ab[4];
+	long double a = fsub_m(fld_m(K(0x4a9424)), t);
+	float a_rounded = (float)a;
+	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4a9744))));   /* 255 */
+	square(ab, h);
+	quad(vv, TEX(0), k_coreUV, 0, p, ab, (const float *)(p + 0x10), 2);
+	glow(s, p, vv, fld_m(&a_rounded), big, small);
+}
+
+/* a flare: the core sized by the fade squared times the radius plus 200 (dz 200), then the radius glow */
+static void flare(u8 *s, u8 *p, void *vv, float *t)
+{
+	float ab[4];
+	long double a = fsub_m(fld_m(K(0x4a9424)), t);
+	float a_rounded = (float)a;
+	long double a2 = a * a;
+	P(u8, 0x7b) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
+	*t = f32(fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f0)));   /* (the original reuses t's slot) */
+	square(ab, fmul_m(a2, t));
+	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, (const float *)(p + 0x10), 2);
+	sized_glow(s, p, vv, fld_m(&a_rounded), K(0x4a93d0));
+}
+
+/* a bolt: one of 8 frames by t on the strip at 0.9375, risen 100 t, +-100 (or the radius + 100), then the radius
+   glow (+2) */
+static void bolt(u8 *s, u8 *p, void *vv, const float *t, int sized)
+{
+	float uv[4], ab[4], at[3];
+	int n = ftol(fmul_m(fld_m(t), K(0x4a94cc)));
+	if (n > 7)
+		n = 7;
+	uv[0] = f32(fmul_m((long double)(n << 4), K(0x4a957c)));
+	uv[1] = 0.9375f;
+	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
+	uv[3] = 1.0f;
+	P(u8, 0x7b) = 0xff;
+	memcpy(at, p + 0x10, 12);
+	at[1] = f32(fadd_m(fmul_m(fld_m(t), K(0x4a93f4)), &at[1]));
+	if (sized)
+		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f4)));
+	else
+		square(ab, 100.0f);
+	quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
+	sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), t), K(0x4a93fc));
+}
+
+/* one of 16 frames (4 x 4, a quarter of the texture each) by t */
+static void frame16(float *uv, const float *t)
+{
+	int n = ftol(fmul_m(fld_m(t), K(0x4aa43c)));
+	if (n > 15)
+		n = 15;
+	uv[0] = f32(fmul_m((long double)((n % 4) << 6), K(0x4a957c)));
+	uv[1] = f32(fmul_m((long double)((n / 4) << 6), K(0x4a957c)));
+	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a941c)));
+	uv[3] = f32(fadd_m(fld_m(&uv[1]), K(0x4a941c)));
+}
+
+/* one of 16 frames (8 x 2 from the fourth row) by t, turned by the projectile's index (i % 4) */
+static void frame16_turned(float *uv, const float *t, int i)
+{
+	int n = ftol(fmul_m(fld_m(t), K(0x4aa43c)));
+	if (n > 15)
+		n = 15;
+	long double u = fmul_m((long double)((n % 8) << 5), K(0x4a957c));
+	float v = f32(fmul_m((long double)((n / 8 + 3) << 5), K(0x4a957c)));
+	float u1 = f32(fadd_m(u, K(0x4aa274))), v1 = f32(fadd_m(fld_m(&v), K(0x4aa274)));
+	switch (i % 4) {
+	case 0: uv[0] = (float)u; uv[1] = v; uv[2] = u1; uv[3] = v1; break;
+	case 1: uv[0] = (float)u; uv[1] = v1; uv[2] = u1; uv[3] = v; break;
+	case 2: uv[0] = u1; uv[1] = v1; uv[2] = (float)u; uv[3] = v; break;
+	case 3: uv[0] = u1; uv[1] = v; uv[2] = (float)u; uv[3] = v1; break;
+	}
+}
+
+/* smoke (texture 5, the row v0..v1): ten puffs along the projectile's backward direction (its matrix's rows by the
+   world's 0xa0e7c8 * -50, scaled by +0x1c), each 1.1 times the last and farther out, fading by +0x20 */
+static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
+{
+	int tex = TEX(5), phase = i % 8;
+	long double gx = fmul_m(fld_m(K(0xa0e7c8)), K(0x4a9558)), gy = fmul_m(fld_m(K(0xa0e7cc)), K(0x4a9558)),
+	            gz = fmul_m(fld_m(K(0xa0e7d0)), K(0x4a9558));
+	float v[3], at[3], uv[4], ab[4];
+	v[0] = f32((fmul_m(gz, &P(float, 0x4c)) + fmul_m(gy, &P(float, 0x3c))) + fmul_m(gx, &P(float, 0x2c)));
+	v[1] = f32((fmul_m(gz, &P(float, 0x50)) + fmul_m(gy, &P(float, 0x40))) + fmul_m(gx, &P(float, 0x30)));
+	long double v2 = (fmul_m(gz, &P(float, 0x54)) + fmul_m(gy, &P(float, 0x44))) + fmul_m(gx, &P(float, 0x34));
+	long double h = fld_m(&P(float, 0x1c));
+	v[0] = f32(fmul_m(h, &v[0]));
+	v[1] = f32(fmul_m(h, &v[1]));
+	v[2] = f32(v2 * h);
+	long double size = root((fmul_m(fld_m(&v[0]), &v[0]) + fmul_m(fld_m(&v[2]), &v[2])) + fmul_m(fld_m(&v[1]), &v[1]));
+	float last = (float)size;
+	for (int k = 0; k < 3; k++)
+		at[k] = f32(fadd_m(fld_m(&v[k]), &P(float, 0x10 + k * 4)));
+	for (int k = 0; k < 10; k++) {
+		uv[0] = f32(fmul_m((long double)(((k + phase) % 8) << 5), K(0x4a957c)));
+		uv[1] = v0;
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		uv[3] = v1;
+		P(u8, 0x7b) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &P(float, 0x20)), K(0x4a9744)));
+		square(ab, size);
+		quad(vv, tex, uv, 0, p, ab, at, 2);
+		for (int j = 0; j < 3; j++)
+			v[j] = f32(fmul_m(fld_m(&v[j]), K(0x4aa438)));   /* 1.1 */
+		size = fmul_m(fld_m(&last), K(0x4aa438));
+		last = (float)size;
+		long double d0 = fmul_m(fld_m(&v[0]), K(0x4a94fc));   /* 0.3 */
+		float d1 = f32(fmul_m(fld_m(&v[1]), K(0x4a94fc))), d2 = f32(fmul_m(fld_m(&v[2]), K(0x4a94fc)));
+		at[0] = f32(fadd_m(d0, &at[0]));
+		at[1] = f32(fadd_m(fld_m(&d1), &at[1]));
+		at[2] = f32(fadd_m(fld_m(&at[2]), &d2));
+	}
+}
+
+/* 0x476890 (thiscall on the scene): projectile i (0x12c-byte records from +0x20a99c0: frame +0, type +8, owner
+   +0xc, position +0x10, matrix +0x2c, timer +0x6c of +0x70, colour +0x78 with its alpha +0x7b, radius +0x80).
+   Below type 50 it must lie in the box of +0xa08 about the camera (+0x20f3970). By type: billboards from the effect
+   textures (+0x9ccfd4..) by the fraction t of the timer gone, the effect shapes (+0x20f2e74..; the owner's part
+   shapes for debris), a trail (types 40-49: triangles through ViewVolume_transformObject) or a quad (type 50) */
+void THISCALL (hud_476890)(u8 *s, int i, void *vv)
+{
+	u8 *p = s + 0x20a99c0 + i * 0x12c;
+	const float *at = (const float *)(p + 0x10), *cam = (const float *)(s + 0x20f3970), *range = (const float *)(s + 0xa08);
+	int type = P(int, 8);
+	float uv[4], ab[4], t;
+	if (type < 50) {
+		for (int k = 0; k < 3; k++)
+			if (fsub_m(fld_m(&cam[k]), range) > at[k])
+				return;
+		for (int k = 0; k < 3; k++)
+			if (!(fadd_m(fld_m(range), &cam[k]) >= at[k]))
+				return;
+	}
+	if (P(float, 0x70) > 0)
+		t = f32(fdiv_m(fld_m(&P(float, 0x6c)), &P(float, 0x70)));
+	else
+		t = 0;
+	switch (type) {
+	case 0: {   /* one of 8 frames by the frame count, growing and fading */
+		uv[0] = f32(fmul_m((long double)((P(int, 0) % 8) << 5), K(0x4a957c)));
+		uv[1] = 0;
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		uv[3] = 0.125f;
+		int a = ftol(fmul_m(fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9744)));
+		P(u8, 0x7b) = (u8)(a > 0xff ? 0xff : a);
+		square(ab, fmul_m(fadd_m(fld_m(&t), K(0x4a9424)), K(0x4a93f4)));
+		quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
+		return;
+	}
+	case 1:
+	case 8: {   /* one of 8 frames by t; 1 rising 300 a second, 8 on the second strip (its own texture with an owner) */
+		int n = ftol(fmul_m(fld_m(&t), K(0x4a94cc)));
+		if (n > 7)
+			n = 7;
+		int tex = type == 8 && P(int, 0xc) != 0 ? TEX(4) : TEX(0);
+		float pos[3];
+		uv[0] = f32(fmul_m((long double)(n << 5), K(0x4a957c)));
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
+		memcpy(pos, at, 12);
+		if (type == 1) {
+			uv[1] = 0;
+			uv[3] = 0.125f;
+			pos[1] = f32(fadd_m(fmul_m(fld_m(&P(float, 0x6c)), K(0x4aa440)), &pos[1]));
+		} else {
+			uv[1] = 0.625f;
+			uv[3] = 0.75f;
+		}
+		square(ab, 300.0f);
+		quad(vv, tex, uv, 300.0f, p, ab, type == 1 ? pos : at, 2);
+		return;
+	}
+	case 2:
+		if (!(P(float, 0x6c) >= *K(0x4a9420)))
+			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
+		frame16_turned(uv, &t, i);
+		square(ab, 300.0f);
+		quad(vv, TEX(0), uv, 300.0f, p, ab, at, 2);
+		return;
+	case 3:
+		if (!(P(float, 0x6c) >= *K(0x4a9420)))
+			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 1600.0f, 800.0f);
+		frame16(uv, &t);
+		square(ab, 800.0f);
+		quad(vv, TEX(2), uv, 800.0f, p, ab, at, 2);
+		return;
+	case 4:   /* a marker the owner's colour index shows through */
+		ab[0] = ab[1] = (float)-fld_m(&P(float, 0x1c));
+		ab[2] = ab[3] = (float)fld_m(&P(float, 0x1c));
+		P(u8, 0x7b) = P(u8, 0xc);
+		uv[0] = uv[1] = 0.75f;
+		uv[2] = uv[3] = 1.0f;
+		quad(vv, TEX(0), uv, 0, p, ab, at, 3);
+		return;
+	case 5:
+		smoke(s, p, vv, i, 0, 0.125f);
+		return;
+	case 6:
+		smoke(s, p, vv, i, 0.125f, 0.25f);
+		return;
+	case 7:
+		smoke(s, p, vv, i, 0.25f, 0.375f);
+		return;
+	case 9: {   /* debris: one of the owner's part shapes (the part by i % 5) */
+		static const u32 k_parts[4] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984 };
+		int part = i % 5;
+		u8 *cache = s + (part >= 0 && part < 4 ? k_parts[part] : 0x15915d0) + P(int, 0xc) * 0x47fd2;
+		shape(vv, p, GAME_VAR(u8 *, cache + 0x11c) + i % GAME_VAR(int, cache + 0x120) * 0x4c, 0, 1);
+		return;
+	}
+	case 10:
+	case 11:
+	case 18:
+		shape(vv, p, GAME_VAR(void *, s + (type == 10 ? 0x20f2e74 : type == 11 ? 0x20f2e7c : 0x20f2e80)), 0, 1);
+		glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
+		return;
+	case 12:
+		core(s, p, vv, &t, 50.0f, 200.0f, 100.0f);
+		return;
+	case 13:
+	case 14:
+		core(s, p, vv, &t, 100.0f, 600.0f, 300.0f);
+		return;
+	case 15:
+	case 16: {   /* a glow and a rising flame (8 frames on the strip at 0.9375) */
+		glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
+		int n = ftol(fmul_m(fld_m(&t), K(0x4a94cc)));
+		if (n > 7)
+			n = 7;
+		float pos[3];
+		memcpy(pos, at, 12);
+		uv[0] = f32(fmul_m((long double)(n << 4), K(0x4a957c)));
+		uv[1] = 0.9375f;
+		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
+		uv[3] = 1.0f;
+		pos[1] = f32(fadd_m(fmul_m(fld_m(&P(float, 0x6c)), K(0x4a93f4)), &pos[1]));
+		square(ab, 100.0f);
+		quad(vv, TEX(0), uv, 0, p, ab, pos, 2);
+		return;
+	}
+	case 20:
+	case 21:
+		if (P(int, 0xc) != GAME_VAR(int, s + 0x202e8d8))
+			shape(vv, p, GAME_VAR(void *, s + (type == 20 ? 0x20f2e78 : 0x20f2e84)), p + 0x78, 0);
+		return;
+	case 22:
+		if (P(int, 0xc) == 1)
+			return;
+		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f4)));
+		uv[0] = 0.875f;
+		uv[1] = 0.25f;
+		uv[2] = 1.0f;
+		uv[3] = 0.375f;
+		quad(vv, TEX(0), uv, 0, p, ab, at, 2);
+		return;
+	case 24: {
+		long double a = fsub_m(fld_m(K(0x4a9424)), &t);
+		P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
+		shape(vv, p, GAME_VAR(void *, s + 0x20f2e88), p + 0x78, 0);
+		return;
+	}
+	case 25:
+		if (P(int, 0xc) == 1)
+			return;
+		shape(vv, p, GAME_VAR(void *, s + 0x20f2e8c), 0, 1);
+		square(ab, 500.0f);
+		quad(vv, TEX(0), k_glowUV, 0, p, ab, at, 2);
+		return;
+	case 26:
+		if (P(int, 0xc) == 1)
+			return;
+		shape(vv, p, GAME_VAR(void *, s + 0x20f2e90), 0, 1);
+		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9450));
+		return;
+	case 30:
+		bolt(s, p, vv, &t, 0);
+		return;
+	case 31:
+	case 39:
+		bolt(s, p, vv, &t, 1);
+		return;
+	case 32:
+	case 33:
+	case 34:
+	case 37:
+	case 38:
+		flare(s, p, vv, &t);
+		return;
+	case 35:   /* an explosion: 16 frames, the radius + 2000, then the radius glow (+4000) */
+		frame16(uv, &t);
+		P(u8, 0x7b) = 0xff;
+		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a9554)));
+		quad(vv, TEX(2), uv, 2000.0f, p, ab, at, 2);
+		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4aa434));
+		return;
+	case 36:
+		frame16_turned(uv, &t, i);
+		P(u8, 0x7b) = 0xff;
+		square(ab, 1000.0f);
+		quad(vv, TEX(0), uv, 1000.0f, p, ab, at, 2);
+		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9554));
+		return;
+	case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: {
+		/* a trail's triangle (texture 8), its three colours fading over its last second */
+		int tex = TEX(8);
+		if (P(float, 0x6c) > 1.0f)
+			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &P(float, 0x6c)), K(0x4aa260))));
+		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), (const float *)(p + 0x84),
+		                           P(const float *, 0x28), 1, 1);
+		return;
+	}
+	case 50:
+		hud_4848e0(vv, P(int, 0xe4), (const u32 *)(p + 0xe8), (const u32 *)(p + 0xf0), (const u32 *)(p + 0xf8), (const float *)(p + 0xfc), 2, 1);
+		return;
+	}
+}
+#undef K
+#undef P
+#undef TEX

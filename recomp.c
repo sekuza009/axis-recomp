@@ -3977,7 +3977,8 @@ THISCALL void actor_applySpawnRecord(char *sc, DWORD a, DWORD rec);
    (ViewVolume_transformObject) or the effect shapes (+0x20f2e74..; ViewVolume_projectObject), sized and faded by
    the timer, smaller for the viewing actor's own (+0x202e8d8). 0x479af0 hud_479af0(vv): every active projectile
    (count +0x20f2da0) */
-static THISCALL DWORD hud_476890(char *sc, DWORD i, DWORD vv) { DWORD v[2] = { i, vv }; return run_lifted(lift_476890, (DWORD)sc, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void hud_476890(char *sc, DWORD i, DWORD vv);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_479af0(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
