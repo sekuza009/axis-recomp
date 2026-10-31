@@ -292,7 +292,7 @@ int (app_checkCdAndLoad)(void *instance)
 	g_menuCameraPos = 0;
 	GAME_VAR(u32, 0x4df02c) = 0x43fa0000;   /* 500 */
 	g_menuCameraLook = 0;
-	GAME_VAR(u32, 0x68037c) = 0;
+	g_menuCameraLookY = 0;
 	GAME_VAR(u32, 0x680380) = 0x43c80000;   /* 400 */
 	g_menuFrameCount = 0;
 	GAME_VAR(int, 0x76d3f0) = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);

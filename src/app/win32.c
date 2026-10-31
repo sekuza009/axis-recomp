@@ -514,7 +514,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 	} else if (msg == 0x113) {   /* WM_TIMER */
 		if (w == 0x29a) {
-			if (GAME_VAR(int, 0x4dbbf4) == 2)
+			if (g_arenaLobbyState == 2)
 				net_send(0x17, 100);
 		} else if (w == 0x115c && g_roomConnected)
 			net_send(0x18, 0x65);

@@ -311,7 +311,7 @@ u32 (room_hostingStep)(void)
 	if (step == 2)
 		return 2;
 	if (step == 1) {
-		GAME_VAR(int, 0x4dba88) = 0;
+		g_connectionAwaited = 0;
 		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
@@ -327,21 +327,21 @@ u32 (room_hostingStep)(void)
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
 		step = GAME_VAR(u32, 0x4ded60);
-		GAME_VAR(int, 0x4ded54) = 1;
+		g_arenaGameSetUp = 1;
 	}
 	switch (step) {
 	case 3:
 		g_arenaLeaving = 1;
 		/* fall through */
 	case 0:
-		GAME_VAR(int, 0x4dba88) = 0;
-		GAME_VAR(int, 0x4ded54) = 0;
+		g_connectionAwaited = 0;
+		g_arenaGameSetUp = 0;
 		g_connectStep = 2;
 		return step;
 	case 4:
-		GAME_VAR(int, 0x4dba88) = 0;
+		g_connectionAwaited = 0;
 		g_connectStep = 2;
-		GAME_VAR(int, 0x4ded54) = 0;
+		g_arenaGameSetUp = 0;
 		return GAME_CDECL(0x41ee40, u32, int)(0x2a);   /* the message */
 	}
 	return step;
@@ -660,7 +660,7 @@ u32 (room_settingsClicks)(void)
 			*time = 5;
 		return r;
 	case 8:
-		if (GAME_VAR(int, 0x4ded54))
+		if (g_arenaGameSetUp)
 			return GAME_VAR(u32, 0x4ded54);
 		sound_playMenu(0);
 		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
@@ -715,7 +715,7 @@ u32 (room_settingsAfterTyping)(void)
 			GAME_VAR(u8, limit[k][1]) = (u8)r;
 		return r;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1510)) && !GAME_VAR(int, 0x4ded54)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e1510)) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
 		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
 	}

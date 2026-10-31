@@ -170,7 +170,7 @@ u32 (room_joinSession)(int i)
    room list sent (message 0x13, 0x65 bytes), 30 seconds. Returns 1 */
 int (gameList_open)(void)
 {
-	GAME_VAR(int, 0x4dba88) = 1;
+	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	g_roomSearchAnswerIn = 0;
 	g_roomRefreshing = 0;
@@ -196,9 +196,9 @@ int (gameList_open)(void)
    checked), the join's wait (timer 0x378, 2 s). Returns what the original leaves in eax */
 u32 (arena_joinListed)(int i)
 {
-	GAME_VAR(int, 0x4dbbec) = 0;
+	g_lobbyJoinStarted = 0;
 	g_lobbyJoinRequest = 0;
-	if (GAME_VAR(int, 0x4dba84))
+	if (g_arenaSearchStarted)
 		CALL(0x452fe0);
 	void *session = i == 99999 ? (void *)0x4dbbd4 : (void *)(0x9087ef + i * 0x4a);
 	if (!GAME_CDECL(0x452ec0, int, int, void *)(0, session)) {
@@ -304,7 +304,7 @@ u32 (room_draw)(void)
 	CALL(0x43bfe0);   /* room_drawGameSettings */
 	if (g_mapListOpen == 1)
 		CALL(0x4038e0);   /* mapList_draw: the map list */
-	if (!GAME_VAR(int, 0x4dba88))
+	if (!g_connectionAwaited)
 		return 0;
 	return CALL(0x4355b0);   /* room_hostingStep */
 }

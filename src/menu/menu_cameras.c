@@ -155,7 +155,7 @@ static void menu_camera2(const MenuCam2 *m)
 		GAME_VAR(u32, 0x4df028) = 0xc3480000;   /* -200 */
 		GAME_VAR(u32, 0x4df02c) = 0x44bb8000;   /* 1500 */
 		I(0x680378) = 0;
-		GAME_VAR(u32, 0x68037c) = 0xc3480000;
+		g_menuCameraLookY = 0xc3480000;
 		I(0x680380) = 0;
 		I(m->mode) = 2;
 		I(m->flag) = 0;
@@ -226,7 +226,7 @@ void (arena_launchFromFile)(void)
 		GAME_VAR(u32, 0x4df02c) = network ? 0x43c80000 : 0x44bb8000;   /* 400 / 1500 */
 		g_dialogOpen = 1;
 		I(0x680378) = 0;
-		GAME_VAR(u32, 0x68037c) = 0xc3480000;
+		g_menuCameraLookY = 0xc3480000;
 		I(0x680380) = 0;
 		I(0x4dc790) = 2;
 		I(0x4dc868) = 0;

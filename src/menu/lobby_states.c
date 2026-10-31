@@ -638,7 +638,7 @@ u32 (lobbyCreate_draw)(void)
 	CALL(0x40b750);   /* arena_createDraw */
 	if (g_mapListOpen == 1)
 		CALL(0x4038e0);   /* mapList_draw: the map list */
-	if (!GAME_VAR(int, 0x4dba88))
+	if (!g_connectionAwaited)
 		return 0;
 	return CALL(0x405b80);   /* arena_connectionOutcome */
 }
@@ -668,7 +668,7 @@ u32 (lobby_keysQuit)(void)
 	GAME_VAR(u32, 0x4df8e8) = limits & 0xff;
 	GAME_VAR(u32, 0x76d408) = (limits >> 8) & 0xff;
 	g_arenaLobbyMode = 0;
-	GAME_VAR(int, 0x4dbbf4) = 1;
+	g_arenaLobbyState = 1;
 	GAME_VAR(int, 0x4db55c) = 0;
 	return limits;
 }
@@ -735,7 +735,7 @@ static void take_session(const u8 *rec)
 u32 (arena_joinSession)(int session)
 {
 	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
-	GAME_VAR(int, 0x4dbbec) = 0;
+	g_lobbyJoinStarted = 0;
 	g_lobbyJoinRequest = 0;
 	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec[0x2e];
 	g_arenaFragLimit = g_arenaFragLimitTyped = rec[0x2d];
@@ -936,7 +936,7 @@ int (lobby_openConnection)(void)
 	}
 	g_lobbyConnectionOpen = 1;
 	g_serverConnected = 1;
-	GAME_VAR(int, 0x4dba88) = 1;
+	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	g_serverAnswerIn = 0;
 	g_lobbyRefreshing = 0;
@@ -1031,7 +1031,7 @@ u32 (lobby_pageClicks)(void)
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
 	g_arenaLobbyMode = 0;
-	GAME_VAR(int, 0x4dbbf4) = 1;
+	g_arenaLobbyState = 1;
 	GAME_VAR(int, 0x4db55c) = 0;
 	return GAME_VAR(u32, 0x4ded44);
 }
@@ -1048,7 +1048,7 @@ u32 (arena_connectionOutcome)(void)
 		return 2;
 	const u8 *me = (const u8 *)0x4ded20;
 	if (state == 1) {
-		GAME_VAR(int, 0x4dba88) = 0;
+		g_connectionAwaited = 0;
 		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
@@ -1064,7 +1064,7 @@ u32 (arena_connectionOutcome)(void)
 		g_fragLimit = me[0x24];
 		g_timeLimit = me[0x25];
 		state = g_connectStep;
-		GAME_VAR(int, 0x4ded54) = 1;
+		g_arenaGameSetUp = 1;
 	}
 	if (state != 0 && state != 3 && state != 4)
 		return state;
@@ -1072,8 +1072,8 @@ u32 (arena_connectionOutcome)(void)
 	g_connectStep = 2;
 	if (state == 3)
 		g_arenaLeaving = 1;
-	GAME_VAR(int, 0x4dba88) = 0;
-	GAME_VAR(int, 0x4ded54) = 0;
+	g_connectionAwaited = 0;
+	g_arenaGameSetUp = 0;
 	if (state == 4)
 		r = GAME_CDECL(0x41ee40, u32, int)(0x46);   /* the message */
 	return r;
@@ -1129,11 +1129,11 @@ u32 (lobbyTop_connect)(void)
 		GAME_VAR(u8, limit[k][1]) = (u8)v;
 		return (u32)v;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) && !GAME_VAR(int, 0x4ded54)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
 		return GAME_CDECL(0x4052c0, u32, void)();   /* lobby_4052c0: create */
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1528)) && !GAME_VAR(int, 0x4ded54)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e1528)) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
 		u32 r = GAME_CDECL(0x405cf0, u32, void)();
 		return r ? r : GAME_CDECL(0x4057a0, u32, void)();   /* lobby_checkReservedName */
@@ -1222,12 +1222,12 @@ u32 (arena_createClick)(void)
 		}
 		return r;
 	case 8:
-		if (GAME_VAR(int, 0x4ded54))
+		if (g_arenaGameSetUp)
 			return 8;
 		sound_playMenu(0);
 		return GAME_CDECL(0x4052c0, u32, void)();   /* lobby_4052c0: create */
 	case 9:
-		if (GAME_VAR(int, 0x4ded54))
+		if (g_arenaGameSetUp)
 			return 9;
 		sound_playMenu(0);
 		r = GAME_CDECL(0x405cf0, u32, void)();
@@ -1300,12 +1300,12 @@ void (lobbyJoin_keysChat)(void)
 		if (busy || g_gameCount <= 0)
 			return;
 		if (g_serverConnected) {
-			GAME_VAR(int, 0x4dbbec) = 1;
+			g_lobbyJoinStarted = 1;
 			g_lobbyJoinRequest = 0;
 			arena_chatLine();
 		} else {
 			g_lobbyJoinRequest = 1;
-			GAME_VAR(int, 0x4dbbec) = 0;
+			g_lobbyJoinStarted = 0;
 		}
 		return;
 	}
@@ -1348,20 +1348,20 @@ void (lobbyJoin_keysChat)(void)
 	if (input_justPressed(GAME_VAR(int, 0x4e14f4))) {
 		if (busy)
 			return;
-		if (GAME_VAR(int, 0x4db854)) {
+		if (g_serverSearching) {
 			g_lobbyConnectionOpen = 0;
 			net_disconnect();
 		}
-		if (GAME_VAR(int, 0x4dba84))
+		if (g_arenaSearchStarted)
 			arena_leaveSession();
 		g_serverListCount = 0;
 		arena_openSession(1, NULL);
 		g_lanSearch = 1;
-		GAME_VAR(int, 0x4dba84) = 1;
+		g_arenaSearchStarted = 1;
 		g_lobbyListPage = 0;
 		g_gameCount = 0;
 		g_serverConnected = 0;
-		GAME_VAR(int, 0x4db854) = 0;
+		g_serverSearching = 0;
 		GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 		return;
 	}
@@ -1375,9 +1375,9 @@ void (lobbyJoin_keysChat)(void)
 		if (lobby_openConnection() == 1) {
 			g_serverConnected = 1;
 			g_lobbySearching = 1;
-			GAME_VAR(int, 0x4db854) = 1;
+			g_serverSearching = 1;
 			g_lobbyConnectionOpen = 1;
-			GAME_VAR(int, 0x4dba84) = 0;
+			g_arenaSearchStarted = 0;
 		}
 		return;
 	}
@@ -1521,7 +1521,7 @@ static void take_arena(void)
 	g_chosenGameMode = ARENA(0x23);
 	g_fragLimit = (u8)ARENA(0x24);
 	g_timeLimit = (u8)ARENA(0x25);
-	GAME_VAR(int, 0x4ded54) = 1;
+	g_arenaGameSetUp = 1;
 }
 
 /* 0x4052c0: the arena hosted on the local network (a slot opened, kind 1): the settings kept, a special room's map;
@@ -1546,7 +1546,7 @@ void (lobby_roomNameCheck)(void)
 		return;
 	}
 	music_shutdown();
-	GAME_VAR(int, 0x4dbbf4) = 1;
+	g_arenaLobbyState = 1;
 	take_arena();
 	g_arenaLobbyMode = 0;
 }
@@ -1555,7 +1555,7 @@ void (lobby_roomNameCheck)(void)
    map, the arena hosted and its settings taken whatever the answer. The callers ignore the eax it leaves */
 void (lobby_checkReservedName)(void)
 {
-	GAME_VAR(int, 0x4dbbf4) = 2;
+	g_arenaLobbyState = 2;
 	g_quitAsked = 1;
 	g_netRole = 1;
 	music_shutdown();
@@ -1585,7 +1585,7 @@ int (lobby_checkReservedName2)(void)
 		menu_showMessage(0x3e);
 		return 0;
 	}
-	GAME_VAR(int, 0x4ded54) = 1;
+	g_arenaGameSetUp = 1;
 	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
 	u8 *packet = g_roomPacket;
 	packet[0] = 0x18;
@@ -1601,10 +1601,10 @@ int (lobby_checkReservedName2)(void)
 	lstrcpyA((char *)g_roomPacket + 1, (const char *)0x4ded20);
 	jmp_net_getLocalAddress_4532e0();
 	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)0xa0b43c);
-	GAME_VAR(int, 0x4dba88) = 1;
+	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0xa, 0x64);
-	GAME_VAR(int, 0x4dbbf4) = 2;
+	g_arenaLobbyState = 2;
 	return 1;
 }
 #undef ARENA
@@ -1633,9 +1633,9 @@ void (lobby_checkReservedName3)(void)
 	lstrcpyA((char *)g_arenaPacket + 1, (const char *)0x5b1b30);
 	jmp_net_getLocalAddress_4532e0();
 	lstrcpyA((char *)g_arenaPacket + 0x33, (const char *)0xa0b43c);
-	GAME_VAR(int, 0x4dba88) = 1;
+	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0x12, 0x65);
-	GAME_VAR(int, 0x4dbbf4) = 2;
+	g_arenaLobbyState = 2;
 }
 #undef lstrcpyA

@@ -352,11 +352,11 @@ void (gameList_draw)(void)
 void (gameList_drawPage)(void)
 {
 	const float *step = (const float *)0x4ad498, *blinkFloor = (const float *)0x4a9418;
-	if (GAME_VAR(int, 0x9dd34c)) {
-		long double t = fadd_m(fld_m(&g_frameTime), &GAME_VAR(float, 0x9dcd40));
-		GAME_VAR(float, 0x9dcd40) = f32(t);
+	if (g_gameListClickArmed) {
+		long double t = fadd_m(fld_m(&g_frameTime), &g_gameListClickTimer);
+		g_gameListClickTimer = f32(t);
 		if (t > *(const float *)0x4a944c) {
-			GAME_VAR(int, 0x9dd34c) = 0;
+			g_gameListClickArmed = 0;
 			GAME_VAR(int, 0x9dcd40) = 0;
 		}
 	}
@@ -597,7 +597,7 @@ void (gameList_mouse)(void)
 			int row = on - 4;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == GAME_VAR(int, 0x4df818) && GAME_VAR(int, 0x9dd34c)) {
+			if (row == GAME_VAR(int, 0x4df818) && g_gameListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (g_roomSearching || g_roomRefreshing) {
@@ -607,13 +607,13 @@ void (gameList_mouse)(void)
 				if (g_roomJoined)
 					return;
 				sound_playMenu(0);
-				GAME_VAR(int, 0x9dd34c) = 0;
+				g_gameListClickArmed = 0;
 				GAME_VAR(int, 0x9dcd40) = 0;
 				g_roomJoined = 1;
 				room_startChat();
 			} else {
 				sound_playMenu(0);
-				GAME_VAR(int, 0x9dd34c) = 1;
+				g_gameListClickArmed = 1;
 				GAME_VAR(int, 0x9dcd40) = 0;
 				GAME_VAR(int, 0x4df818) = row;
 				g_localPlayer = g_listTop + row;
@@ -728,11 +728,11 @@ static void blink_down(void)
    99999 when not empty) or a join confirmed (0x4dbbf0). The original leaves eax to callers that ignore it */
 void (lobbyJoin_draw)(void)
 {
-	if (GAME_VAR(int, 0x4db71c)) {
+	if (g_arenaListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_arenaSearchClock);
 		g_arenaSearchClock = f32(t);
 		if (t > *(const float *)0x4a944c) {
-			GAME_VAR(int, 0x4db71c) = 0;
+			g_arenaListClickArmed = 0;
 			GAME_VAR(int, 0x4dbaf8) = 0;
 		}
 	}
@@ -788,7 +788,7 @@ void (lobbyJoin_draw)(void)
 		}
 	}
 	arena_drawGameList();
-	if (GAME_VAR(int, 0x4dbbec)) {
+	if (g_lobbyJoinStarted) {
 		if (!g_arenaJoining) {
 			arena_joinListed(g_localPlayer);
 			return;
@@ -800,7 +800,7 @@ void (lobbyJoin_draw)(void)
 		strcpy((char *)0x4db520, (const char *)0x9dc92c);
 		int wrong = strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x4db520) != 0;
 		if (wrong)
-			GAME_VAR(int, 0x4dbbec) = 0;
+			g_lobbyJoinStarted = 0;
 		g_arenaJoining = 0;
 		if (wrong)
 			menu_showMessage(0x27);
@@ -833,12 +833,12 @@ static void lobby_join(void)
 {
 	sound_playMenu(0);
 	if (g_serverConnected) {
-		GAME_VAR(int, 0x4dbbec) = 1;
+		g_lobbyJoinStarted = 1;
 		g_lobbyJoinRequest = 0;
 		arena_chatLine();
 	} else {
 		g_lobbyJoinRequest = 1;
-		GAME_VAR(int, 0x4dbbec) = 0;
+		g_lobbyJoinStarted = 0;
 	}
 }
 
@@ -886,11 +886,11 @@ void (lobby_connect)(void)
 				return;
 			sound_playMenu(0);
 			if (on == 0) {
-				if (GAME_VAR(int, 0x4db854)) {
+				if (g_serverSearching) {
 					g_lobbyConnectionOpen = 0;
 					net_disconnect();
 				}
-				if (GAME_VAR(int, 0x4dba84))
+				if (g_arenaSearchStarted)
 					arena_leaveSession();
 				g_serverListCount = 0;
 				arena_openSession(1, NULL);
@@ -899,8 +899,8 @@ void (lobby_connect)(void)
 				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
 				g_serverConnected = 0;
-				GAME_VAR(int, 0x4dba84) = 1;
-				GAME_VAR(int, 0x4db854) = 0;
+				g_arenaSearchStarted = 1;
+				g_serverSearching = 0;
 			} else {
 				g_lobbyConnectionOpen = 0;
 				net_disconnect();
@@ -909,8 +909,8 @@ void (lobby_connect)(void)
 				if (lobby_openConnection() == 1) {
 					g_serverConnected = 1;
 					g_lobbySearching = 1;
-					GAME_VAR(int, 0x4db854) = 1;
-					GAME_VAR(int, 0x4dba84) = 0;
+					g_serverSearching = 1;
+					g_arenaSearchStarted = 0;
 					g_lobbyConnectionOpen = 1;
 				}
 			}
@@ -981,7 +981,7 @@ void (lobby_connect)(void)
 			int row = on - 6;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == GAME_VAR(int, 0x4df818) && GAME_VAR(int, 0x4db71c)) {
+			if (row == GAME_VAR(int, 0x4df818) && g_arenaListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (lobby_busy()) {
@@ -989,10 +989,10 @@ void (lobby_connect)(void)
 					return;
 				}
 				lobby_join();
-				GAME_VAR(int, 0x4db71c) = 0;
+				g_arenaListClickArmed = 0;
 			} else {
 				sound_playMenu(0);
-				GAME_VAR(int, 0x4db71c) = 1;
+				g_arenaListClickArmed = 1;
 				GAME_VAR(int, 0x4df818) = row;
 				g_localPlayer = g_listTop + row;
 			}

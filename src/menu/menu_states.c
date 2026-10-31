@@ -543,7 +543,7 @@ static void leave_game(u32 lobby, int disconnect)
 	GAME_CDECL(0x452fe0, void, void)();       /* arena_leaveSession */
 	if (disconnect)
 		GAME_CDECL(0x451e60, void, void)();   /* net_disconnect */
-	GAME_VAR(int, 0x4dbbf4) = 0;
+	g_arenaLobbyState = 0;
 	for (u32 p = 0x9f9844; p < 0x9fd944; p += 0x410) {
 		GAME_VAR(int, p - 4) = 0;
 		GAME_VAR(int, p) = 0;
@@ -559,7 +559,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	g_menuCameraPos = 0;
 	GAME_VAR(u32, 0x4df02c) = farZ;
 	g_menuCameraLook = 0;
-	GAME_VAR(u32, 0x68037c) = 0;
+	g_menuCameraLookY = 0;
 	GAME_VAR(u32, 0x680380) = nearZ;
 	GAME_VAR(int, 0x680370) = blocked;
 	GAME_VAR(int, 0x4df8e0) = 0;
@@ -632,7 +632,7 @@ u32 (game_returnToMenus_41eb00)(void)
 	GAME_CDECL(0x441200, void, void)();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 	g_retypePassword = 0;
-	GAME_VAR(int, 0x4ded54) = 0;
+	g_arenaGameSetUp = 0;
 	g_roomLoginDue = 0;
 	g_rankingRequestPending = 0;
 	return r;
