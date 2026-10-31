@@ -91,7 +91,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 			s++;
 			x += 16;
 		} else {
-			GAME_CDECL(0x428240, void, int, int, int)(x, y, c);   /* text_quad5 */
+			GAME_FN(text_quad5, 0x428240, void, int, int, int)(x, y, c);   /* text_quad5 */
 			x += 6;
 		}
 	}
@@ -176,11 +176,11 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		}
 		u8 hi = c, lo = *s++;
 		if (g_convertHangul == 1) {
-			u32 code = GAME_CDECL(0x44aac0, u32, u32)((u32)hi << 8 | lo);
+			u32 code = GAME_FN(text_hangulConvert, 0x44aac0, u32, u32)((u32)hi << 8 | lo);
 			hi = (u8)(code >> 8);
 			lo = (u8)code;
 		}
-		GAME_CDECL(0x4017d0, int, u32, u32)(hi, lo);   /* hangul_glyphs */
+		GAME_FN(hangul_glyphs, 0x4017d0, int, u32, u32)(hi, lo);   /* hangul_glyphs */
 		if (pass->layered)
 			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, g_hangulVowelGlyph, g_hangulTailGlyph);
 		else
@@ -196,13 +196,13 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 }
 
 /*                              line  wide  sticky glyph     korean layered space narrow other untexture */
-static const TextPass ascii8 =  { 0x11, 0x10, 1, 0x428030, 0, 0, 8,    8,    8,    0 };   /* text_quad8 */
-static const TextPass ascii16 = { 0x11, 0x10, 1, 0x4280e0, 0, 0, 8,    0xb,  0xd,  1 };   /* text_quad16 */
-static const TextPass ascii32 = { 0x21, 0x20, 0, 0x428190, 0, 0, 0x10, 0x10, 0x16, 1 };   /* text_quad32 */
-static const TextPass han13 =   { 0x11, 0x10, 1, 0x427c30, 1, 0, 8,    0,    0,    0 };   /* glyph_drawHud13 */
-static const TextPass han13b =  { 0x11, 0x10, 1, 0x427ce0, 1, 1, 8,    0,    0,    0 };   /* glyph_drawHud13Layered */
-static const TextPass han31 =   { 0x21, 0x20, 0, 0x427e30, 1, 0, 0x10, 0,    0,    0 };   /* glyph_drawHud31 */
-static const TextPass han31b =  { 0x21, 0x20, 0, 0x427ee0, 1, 1, 0x10, 0,    0,    0 };   /* glyph_drawHud31Layered */
+static const TextPass ascii8 =  { 0x11, 0x10, 1, FN_ADDR(text_quad8, 0x428030), 0, 0, 8,    8,    8,    0 };
+static const TextPass ascii16 = { 0x11, 0x10, 1, FN_ADDR(text_quad16, 0x4280e0), 0, 0, 8,    0xb,  0xd,  1 };
+static const TextPass ascii32 = { 0x21, 0x20, 0, FN_ADDR(text_quad32, 0x428190), 0, 0, 0x10, 0x10, 0x16, 1 };
+static const TextPass han13 =   { 0x11, 0x10, 1, FN_ADDR(glyph_drawHud13, 0x427c30), 1, 0, 8,    0,    0,    0 };
+static const TextPass han13b =  { 0x11, 0x10, 1, FN_ADDR(glyph_drawHud13Layered, 0x427ce0), 1, 1, 8,    0,    0,    0 };
+static const TextPass han31 =   { 0x21, 0x20, 0, FN_ADDR(glyph_drawHud31, 0x427e30), 1, 0, 0x10, 0,    0,    0 };
+static const TextPass han31b =  { 0x21, 0x20, 0, FN_ADDR(glyph_drawHud31Layered, 0x427ee0), 1, 1, 0x10, 0,    0,    0 };
 
 /* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
    end overwrites) */

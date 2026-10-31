@@ -286,10 +286,10 @@ void (arena_launchFromFile)(void)
 		g_nextScreen = state;
 		g_armcFrom = 0;
 		if (state == 800)
-			GAME_CDECL(0x433360, void, void)();   /* menuCamera_initPoints */
+			GAME_FN(menuCamera_initPoints, 0x433360, void, void)();   /* menuCamera_initPoints */
 	}
 	if (g_startedFromLobby == 1 && g_lobbyReply == 0x67)
-		GAME_CDECL(0x40d840, void, void)();   /* arena_loadAndQuit */
+		GAME_FN(arena_loadAndQuit, 0x40d840, void, void)();   /* arena_loadAndQuit */
 }
 
 /* 0x444130: the skirmish screen's camera */

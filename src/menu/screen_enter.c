@@ -213,23 +213,23 @@ void (menuState800_enterGameRoom)(void)
    handler leaves in eax (or the original's leftover of its compares) */
 u32 (menu_onStateChange)(void)
 {
-	CALL(0x445c60);
+	GAME_FN(input_updateMenuCursor, 0x445c60, u32, void)();
 	if (g_keysBlocked)
 		return (*(u32 *)&g_keysBlocked);
 	if (g_dialogPending)
-		return CALL(0x445e10);   /* the message box */
+		return GAME_FN(messageBox_clickClose, 0x445e10, u32, void)();   /* the message box */
 	int state = g_menuState;
 	switch (state) {
-	case 200: return CALL(0x445de0);
-	case 210: return CALL(0x44c560);   /* profile_processInput */
-	case 300: return CALL(0x4419d0);
-	case 400: return CALL(0x4076c0);   /* lobby_onStateChange */
-	case 500: return CALL(0x447b10);
-	case 600: return CALL(0x422b30);
-	case 700: return CALL(0x410190);   /* armc_onStateEnter */
-	case 800: return CALL(0x436800);   /* room_processKeys */
-	case 900: return CALL(0x443ef0);
-	case 9999: return CALL(0x42ab70);  /* armc_mouseLook */
+	case 200: return GAME_FN(menu_clickStartFade, 0x445de0, u32, void)();
+	case 210: return GAME_FN(profile_processInput, 0x44c560, u32, void)();   /* profile_processInput */
+	case 300: return GAME_FN(mainmenu_startNetGame, 0x4419d0, u32, void)();
+	case 400: return GAME_FN(lobby_onStateChange, 0x4076c0, u32, void)();   /* lobby_onStateChange */
+	case 500: return GAME_FN(mission_unlockCheat, 0x447b10, u32, void)();
+	case 600: return GAME_FN(setup_drawTab, 0x422b30, u32, void)();
+	case 700: return GAME_FN(armc_onStateEnter, 0x410190, u32, void)();   /* armc_onStateEnter */
+	case 800: return GAME_FN(room_processKeys, 0x436800, u32, void)();   /* room_processKeys */
+	case 900: return GAME_FN(settingsPage_draw, 0x443ef0, u32, void)();
+	case 9999: return GAME_FN(armc_mouseLook, 0x42ab70, u32, void)();  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
 	if (state > 900)
@@ -246,17 +246,17 @@ u32 (menu_onStateChange)(void)
 u32 (menu_enterState)(void)
 {
 	switch (g_menuState) {
-	case 210: CALL(0x44b420); break;   /* menuState210_enter */
+	case 210: GAME_FN(menuState210_enter, 0x44b420, u32, void)(); break;   /* menuState210_enter */
 	case 300:
 		g_enteringMenus = 1;
-		CALL(0x440bb0);                 /* menuState300_enter */
+		GAME_FN(menuState300_enter, 0x440bb0, u32, void)();                 /* menuState300_enter */
 		break;
-	case 400: CALL(0x404640); break;   /* menuState400_enter */
-	case 500: CALL(0x447750); break;   /* menuState500_enter */
-	case 600: CALL(0x420770); break;   /* menuState600_enterSetup */
-	case 800: CALL(0x432ff0); break;   /* menuState800_enterGameRoom */
-	case 900: CALL(0x443950); break;   /* menuState900_enterSkirmish */
-	case 9999: CALL(0x41fd40); break;  /* console_init */
+	case 400: GAME_FN(menuState400_enter, 0x404640, u32, void)(); break;   /* menuState400_enter */
+	case 500: GAME_FN(menuState500_enter, 0x447750, u32, void)(); break;   /* menuState500_enter */
+	case 600: GAME_FN(menuState600_enterSetup, 0x420770, u32, void)(); break;   /* menuState600_enterSetup */
+	case 800: GAME_FN(menuState800_enterGameRoom, 0x432ff0, u32, void)(); break;   /* menuState800_enterGameRoom */
+	case 900: GAME_FN(menuState900_enterSkirmish, 0x443950, u32, void)(); break;   /* menuState900_enterSkirmish */
+	case 9999: GAME_FN(console_init, 0x41fd40, u32, void)(); break;  /* console_init */
 	}
 	g_lastScreen = g_menuState;
 	return (u32)g_menuState;
@@ -284,12 +284,12 @@ int (menuState900_enterSkirmish)(void)
 	static const u32 cleared[] = { 0x9f16bc, 0x9f1058, 0x9f16a4, 0x680bb4, 0x76d37c };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	GAME_CDECL(0x4437b0, void, void)();   /* skirmish_layout */
-	GAME_CDECL(0x443840, void, void)();   /* skirmishButtons_layout */
+	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
+	GAME_FN(skirmishButtons_layout, 0x443840, void, void)();   /* skirmishButtons_layout */
 	g_skirmishDrawBackground = 1;
 	g_settingsPage = 10;
 	sound_playMenu(4);
-	GAME_CDECL(0x4435f0, void, void)();   /* mission_loadAxisMis */
+	GAME_FN(mission_loadAxisMis, 0x4435f0, void, void)();   /* mission_loadAxisMis */
 	CLEAR_ALL(cleared);
 	return 0;
 }
@@ -306,7 +306,7 @@ int (menuState500_enter)(void)
 		{ 0x67ef20, 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	GAME_CDECL(0x447660, void, void)();   /* mission_447660 */
+	GAME_FN(missionsel_layout, 0x447660, void, void)();   /* mission_447660 */
 	g_missionShowBackground = 1;
 	g_missionBusy = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
@@ -339,10 +339,10 @@ u32 (menuState210_enter)(void)
 		{ 0x9f8eb0, 0 }, { 0x9f8eb4, ONE }, { 0x9f8eb8, ONE }, { 0x9f8ebc, ONE }, { 0x9f8d58, 0 },
 		{ 0x9f8d5c, 0x3f19999a }, { 0x9f8d60, 0x3f19999a }, { 0x9f8d64, ONE }, { 0x4dda44, 0 }, { 0x4dda48, 0 },
 		{ 0x9f6838, 0 }, { 0x9f900c, 0 }, { 0x9f8f18, 0 } };
-	static const u32 rects[7] = { 0x44af30, 0x44b030, 0x44b080, 0x44b0b0, 0x44b100, 0x44b150, 0x44b1a0 };
+	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
-	GAME_CDECL(0x4474a0, u32, void)();   /* profile_create: the header read back */
+	profile_create();   /* profile_create: the header read back */
 	int current = g_currentProfile;
 	g_pilotChosen = current;
 	g_profileListRow = current;
@@ -359,7 +359,7 @@ u32 (menuState210_enter)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
 	STORE_ALL(colours);
-	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_resetPreview */
+	return GAME_FN(profile_resetPreview, 0x44b7a0, u32, void)();   /* profile_resetPreview */
 }
 
 /* the profile files checked (the English one, then four times the Korean one): a missing one ends the game with

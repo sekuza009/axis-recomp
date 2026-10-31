@@ -289,7 +289,7 @@ void (arena_createDraw)(void)
 		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x7532a4);
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GAME_CDECL(0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
+		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (leaving) {
 		int choice = arenaCreate_hitTest(g_mouseX, g_mouseY);

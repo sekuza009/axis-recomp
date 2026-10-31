@@ -59,7 +59,7 @@ void (loading_drawCylinder)(int mode, int unused, const char *text)
 }
 
 #define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
-#define Vec3_rotateAxis(v, axis, angle) GAME_THISCALL(0x4677c0, void, float *, int, int)(v, axis, angle)   /* angle in tenths of a degree */
+#define Vec3_rotateAxis(v, axis, angle) GAME_THISFN(Vec3_rotateAxis, 0x4677c0, void, float *, int, int)(v, axis, angle)   /* angle in tenths of a degree */
 #define g_loadGame GAME_VAR(u8 *, 0xa0ea8c)            /* the game being loaded */
 
 /* a point of the cylinder: radius 400 about the z axis at angle (tenths of a degree), at depth z */
@@ -85,7 +85,7 @@ void (loading_draw)(u32 progress)
 	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(0x3f000000, 0x3f000000, 0x3f800000, 0x3f800000);   /* glClearColor(0.5, 0.5, 1, 1) */
 	glClearDepth(1.0);
 	glClear(0x4100);   /* GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT */
-	GAME_CDECL(0x4685f0, void, int, u32)(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
+	GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(1, 0x3f800000);   /* gfx_setProjectionHud(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -106,7 +106,7 @@ void (loading_draw)(u32 progress)
 		glEnd();
 	}
 	glDisable(GL_TEXTURE_2D);
-	GAME_CDECL(0x4685f0, void, int, u32)(0, 0x3f800000);
+	GAME_FN(gfx_setProjectionHud, 0x4685f0, void, int, u32)(0, 0x3f800000);
 	text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
 	char line[0x100];
 	int row = 2;
@@ -333,7 +333,7 @@ static void next_stage(u8 *g, int stage, u32 line)
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	GAME_CDECL(0x46c710, void, char *, const char *, int, int, int)((char *)0xa0e778, (const char *)0x4c5060, G(int, 8), G(int, 0x233cc20),
+	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)0xa0e778, (const char *)0x4c5060, G(int, 8), G(int, 0x233cc20),
 	                                                             G(int, 0x233cc24));
 }
 
@@ -393,7 +393,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled((void *)0x76d408, 4, 1, G(void *, 0x2340d08));
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
-		(*(u32 *)&g_logHook) = 0x469730;
+		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawCylinder, 0x469730);
 		log_message((int)STAGE(g), -1, 0, (const char *)0x4c521c);
 		scene_reset(STAGE(g));
 		mode = G(int, 8);
@@ -462,9 +462,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5198);
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
-			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
 		if (g_missionStage != G(int, 0xbe3000))
-			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, 0x4c5180);   /* .LOAD OBJECT */

@@ -12,6 +12,8 @@
 #include "standalone.h"
 #undef CDECL   /* (windows.h's; axis.h has its own) */
 #include "../src/crt/crt.h"
+/* the rebuilt WinMain (src/app/win32.c; the u32 return and the game's own types as it is defined there) */
+unsigned __stdcall game_WinMain(void *inst, void *prev, const char *cmd, int show);
 
 /* the runtime functions the rebuilds call, by their msvcrt.dll export */
 static const struct { unsigned addr; const char *name; } k_msvcrt[] = {
@@ -145,6 +147,6 @@ void crt_start(void)
 	si.dwFlags = 0;
 	GetStartupInfoA(&si);
 	int show = si.dwFlags & STARTF_USESHOWWINDOW ? si.wShowWindow : SW_SHOWDEFAULT;
-	int r = ((int (__stdcall *)(HINSTANCE, HINSTANCE, char *, int))0x43f9d0)(GetModuleHandleA(NULL), NULL, cmd, show);   /* game_WinMain */
+	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
 	((void (__cdecl *)(int))0x49edac)(r);   /* exit (msvcrt's) */
 }

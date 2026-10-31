@@ -307,7 +307,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 {
 	*added = 0;
 	if (AT(int, cache, 0x114) == 0)
-		GAME_CDECL(0x46c710, void, char *, const char *)(out, (const char *)no_room);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)(out, (const char *)no_room);
 	u8 *nodes = AT(u8 *, cache, 0x118), *node = nodes;
 	u8 **link = NULL;
 	if (AT(int, cache, 0x120) != 0)

@@ -134,8 +134,8 @@ u32 (replayList_open)(void)
 	g_mapSelectBottom = 0x1b8;
 	for (u32 r = 0x9ddac8; r < 0x9eeac8; r += 0x44)
 		memset((void *)(r - 0x40), 0, 0x44);
-	GAME_CDECL(0x440a20, void, void)();          /* mapSelect_layout: the layout */
-	return GAME_CDECL(0x440c60, u32, void)();    /* autoplay_listFiles */
+	GAME_FN(mapSelect_layout, 0x440a20, void, void)();          /* mapSelect_layout: the layout */
+	return GAME_FN(autoplay_listFiles, 0x440c60, u32, void)();    /* autoplay_listFiles */
 }
 
 /* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
@@ -143,16 +143,16 @@ u32 (replayList_open)(void)
    wait. Returns the last progress drawing's eax */
 u32 (frontEnd_startUp)(void)
 {
-	static const u32 steps[5] = { 0x42f2b0, 0x42f500, 0x42f690, 0x42f8e0, 0x430bd0 };
+	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(menu_initKeyRepeat, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
 	memset((void *)0x67ef38, 0, 0x300 * 4);
-	GAME_CDECL(0x430ab0, void, void)();   /* menu_initColours: the colours */
+	GAME_FN(menu_initColours, 0x430ab0, void, void)();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {
 		g_loadStep++;
-		r = GAME_CDECL(0x41f100, u32, void)();   /* frontEnd_drawProgress: the progress drawn */
+		r = GAME_FN(frontEnd_drawProgress, 0x41f100, u32, void)();   /* frontEnd_drawProgress: the progress drawn */
 		if (k == 5)
 			break;
-		GAME_CDECL(0x41e730, void, double)(2.0);   /* timer_waitFrames: wait */
+		timer_waitFrames(2.0);   /* timer_waitFrames: wait */
 		GAME_CDECL(steps[k], void, void)();
 	}
 	return r;

@@ -27,6 +27,17 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+/* a rebuilt game function the patch layer calls: in AxisRC.exe (AXIS_STANDALONE) the C function itself (its
+   symbol from build/fn_syms.h, the address checked at compile time), in the patch DLL its address in AxisGL.exe;
+   GAMEFN_ASM is the same as an operand of inline assembly */
+#ifdef AXIS_STANDALONE
+#include "fn_syms.h"
+#define GAMEFN(name, addr) ((DWORD)(void *)FN_##name + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
+#define GAMEFN_ASM(name, addr) "_" #name
+#else
+#define GAMEFN(name, addr) ((DWORD)(addr))
+#define GAMEFN_ASM(name, addr) #addr
+#endif
 #include <objbase.h>
 #include <oleauto.h>
 #include <mmsystem.h>
@@ -1289,14 +1300,14 @@ enum { A_NONE, A_LEFT, A_CENTER, A_RIGHT };
    loading text jump between two widths. The call is routed through hud_pass_wrap, which counts depth. */
 volatile int g_inhud __asm__("axis_inhud");
 volatile DWORD g_scene __asm__("axis_scene");
-void *g_hudpass_fn __asm__("axis_hudpass") = (void *)0x4982f0;
+void *g_hudpass_fn __asm__("axis_hudpass") = (void *)GAMEFN(hud_pass, 0x4982f0);
 /* which part of the HUD pass is drawing: 1 = player markers (0x4913a0), 2 = main HUD (0x4926f0) */
 volatile int g_area __asm__("axis_area");
-void *g_markers_fn __asm__("axis_markers_fn") = (void *)0x4913a0;
-void *g_mainhud_fn __asm__("axis_mainhud_fn") = (void *)0x4926f0;
+void *g_markers_fn __asm__("axis_markers_fn") = (void *)GAMEFN(hud_drawPlayerMarkers, 0x4913a0);
+void *g_mainhud_fn __asm__("axis_mainhud_fn") = (void *)GAMEFN(hud_drawMain, 0x4926f0);
 /* 5 = lock-on overlay (0x491f50, the square that closes in on the target). Both marker routines run between
    marker_begin/marker_end (see there); the scene pointer in ecx is kept across the C call. */
-void *g_lockon_fn __asm__("axis_lockon_fn") = (void *)0x491f50;
+void *g_lockon_fn __asm__("axis_lockon_fn") = (void *)GAMEFN(hud_drawLockOn, 0x491f50);
 __attribute__((naked)) static void markers_wrap(void) {
     __asm__ volatile("pushl axis_area\n\tmovl $1, axis_area\n\tpushl %ecx\n\tcall axis_marker_begin\n\tpopl %ecx\n\t"
                      "call *axis_markers_fn\n\tcall axis_marker_end\n\tpopl axis_area\n\tret");
@@ -1309,8 +1320,8 @@ __attribute__((naked)) static void mainhud_wrap(void) {
     __asm__ volatile("pushl axis_area\n\tmovl $2, axis_area\n\tcall *axis_mainhud_fn\n\tpopl axis_area\n\tret");
 }
 /* 3 = FPS counter (0x495510, right edge), 4 = "1/4" counter + ranking table (0x494930) */
-void *g_fps_fn __asm__("axis_fps_fn") = (void *)0x495510;
-void *g_rank_fn __asm__("axis_rank_fn") = (void *)0x494930;
+void *g_fps_fn __asm__("axis_fps_fn") = (void *)GAMEFN(hud_drawFps, 0x495510);
+void *g_rank_fn __asm__("axis_rank_fn") = (void *)GAMEFN(hud_drawRanking, 0x494930);
 __attribute__((naked)) static void fps_wrap(void) {
     __asm__ volatile("pushl axis_area\n\tmovl $3, axis_area\n\tcall *axis_fps_fn\n\tpopl axis_area\n\tret");
 }
@@ -1334,16 +1345,16 @@ int g_ov_area __asm__("axis_ov_area") __attribute__((used));
     __attribute__((naked)) static void name(void) { \
         __asm__ volatile("popl axis_ov_ret\n\tmovl axis_area, %eax\n\tmovl %eax, axis_ov_area\n\t" \
                          "movl $" #area ", axis_area\n\tincl axis_inhud\n\tpushl %ecx\n\tcall axis_ov_begin\n\tpopl %ecx\n\t" \
-                         "movl $" #fn ", %eax\n\tcall *%eax\n\tpushl %eax\n\tcall axis_ov_end\n\t" \
+                         "movl $" fn ", %eax\n\tcall *%eax\n\tpushl %eax\n\tcall axis_ov_end\n\t" \
                          "decl axis_inhud\n\tmovl axis_ov_area, %eax\n\tmovl %eax, axis_area\n\t" \
                          "popl %eax\n\tpushl axis_ov_ret\n\tret"); }
-OV_WRAP(ov_icon_left, 6, 0x496820)
-OV_WRAP(ov_text_left, 6, 0x44ad60)
-OV_WRAP(ov_icon_right, 7, 0x496820)
-OV_WRAP(ov_text_right, 7, 0x44ad60)
-OV_WRAP(ov_message, 8, 0x495190)
-OV_WRAP(ov_name, 8, 0x496b80)
-OV_WRAP(ov_rank, 4, 0x494930)
+OV_WRAP(ov_icon_left, 6, GAMEFN_ASM(replay_drawIcon, 0x496820))
+OV_WRAP(ov_text_left, 6, GAMEFN_ASM(text_drawSized, 0x44ad60))
+OV_WRAP(ov_icon_right, 7, GAMEFN_ASM(replay_drawIcon, 0x496820))
+OV_WRAP(ov_text_right, 7, GAMEFN_ASM(text_drawSized, 0x44ad60))
+OV_WRAP(ov_message, 8, GAMEFN_ASM(replay_drawMessage, 0x495190))
+OV_WRAP(ov_name, 8, GAMEFN_ASM(replay_drawFollowedName, 0x496b80))
+OV_WRAP(ov_rank, 4, GAMEFN_ASM(hud_drawRanking, 0x494930))
 #define AXGL_W (*(volatile int *)0xa0e810)   /* render width / height the HUD scales by */
 #define AXGL_H (*(volatile int *)0xa0e928)
 /* Markers that follow players (reticles, lock-on square, team/leader icons, name labels) are placed at the
@@ -1487,7 +1498,7 @@ static void __cdecl label_text(int x1, int y, int x2, const char *s, int size) {
        the right edge is past 640 and the name was drawn one letter per line (vertical). Labels never wrap. */
     int lim_x = *(int *)0x4ad490, lim_y = *(int *)0x4ad494;
     *(int *)0x4ad490 = 0x7fffffff; *(int *)0x4ad494 = 0x7fffffff;
-    ((HUDTEXT)0x44ae10)(x1, y, x2, s, size);
+    ((HUDTEXT)GAMEFN(text_drawCentred, 0x44ae10))(x1, y, x2, s, size);
     *(int *)0x4ad490 = lim_x; *(int *)0x4ad494 = lim_y;
     AXGL_W = fw;
     g_label = 0;
@@ -1542,7 +1553,7 @@ static void __cdecl menu_full(int mode) {
 }
 /* 0x429170 (emblem/transition): called from 0x41f903; wrapped. Not re-entrant (one caller). */
 void *g_trans_ret __asm__("axis_trans_ret") __attribute__((used));
-void *g_trans_fn __asm__("axis_trans_fn") = (void *)0x429170;
+void *g_trans_fn __asm__("axis_trans_fn") = (void *)GAMEFN(menu_titleEmblemTransition, 0x429170);
 __attribute__((naked)) static void trans_wrap(void) {
     __asm__ volatile("popl axis_trans_ret\n\tpushl $1\n\tcall %P0\n\taddl $4, %%esp\n\tcall *axis_trans_fn\n\t"
                      "pushl %%eax\n\tpushl $0\n\tcall %P0\n\taddl $4, %%esp\n\tpopl %%eax\n\tpushl axis_trans_ret\n\tret" :: "i"(menu_full));
@@ -1613,10 +1624,10 @@ static void text_pass(DWORD fn, int a, int b, int c) {
     ((void (__cdecl *)(int, int, int))fn)(a, b, c);
     if (on) { p_glTexParameteri(0x0de1, 0x2800, mag); p_glTexParameteri(0x0de1, 0x2801, min); }
 }
-static void __cdecl text_e8(int a, int b, int c) { text_pass(0x402010, a, b, c); }
-static void __cdecl text_e16(int a, int b, int c) { text_pass(0x402210, a, b, c); }
-static void __cdecl text_e32(int a, int b, int c) { text_pass(0x402420, a, b, c); }
-static void __cdecl text_e5(int a, int b, int c) { text_pass(0x403060, a, b, c); }
+static void __cdecl text_e8(int a, int b, int c) { text_pass(GAMEFN(text_ascii8Pass, 0x402010), a, b, c); }
+static void __cdecl text_e16(int a, int b, int c) { text_pass(GAMEFN(text_ascii16Pass, 0x402210), a, b, c); }
+static void __cdecl text_e32(int a, int b, int c) { text_pass(GAMEFN(text_ascii32Pass, 0x402420), a, b, c); }
+static void __cdecl text_e5(int a, int b, int c) { text_pass(GAMEFN(text_ascii5Pass, 0x403060), a, b, c); }
 static void hook_sharptext(void) {
     static const struct { DWORD at, from; void *to; } calls[] = {
         {0x402720, 0x402010, text_e8}, {0x40288c, 0x402010, text_e8}, {0x4029b0, 0x402210, text_e16},
@@ -1690,13 +1701,13 @@ __attribute__((naked)) static void cursor_clamp_wrap(void) {   /* replaces 0x445
     __asm__ volatile("pushal\n\tcall %P0\n\tpopal\n\tpushl $0x445d12\n\tret" :: "i"(cursor_clamp));
 }
 static void __cdecl cursor_draw(void) {
-    ((void (__cdecl *)(int))0x41ef90)(2);
+    ((void (__cdecl *)(int))GAMEFN(gfx_setProjection2D3D, 0x41ef90))(2);
     float sx = *(float *)0x680bac;
     int W = (int)(640.0f * sx + 0.5f), vx = g_vpx, vw = g_vpw, vy = g_vpy, vh = g_vph;
-    if (!real_glViewport || vw <= 1 || vh <= 0 || vw >= W) { ((void (__cdecl *)(void))0x429bc0)(); return; }
+    if (!real_glViewport || vw <= 1 || vh <= 0 || vw >= W) { ((void (__cdecl *)(void))GAMEFN(menu_drawCursor, 0x429bc0))(); return; }
     g_cur_vx = vx; g_cur_vw = vw; g_cur_on = 1;
     real_glViewport(0, vy, W, vh);
-    ((void (__cdecl *)(void))0x429bc0)();
+    ((void (__cdecl *)(void))GAMEFN(menu_drawCursor, 0x429bc0))();
     real_glViewport(vx, vy, vw, vh);
     g_cur_on = 0;
 }
@@ -1853,7 +1864,7 @@ __attribute__((naked)) static void pressed_wrap(void) {   /* 0x401600 entry: "pu
                      "1:\n\tpushl %%esi\n\tmovl 8(%%esp), %%esi\n\tjmp *axis_pressed_cont" :: "i"(mouse_pressed));
 }
 static int __cdecl input_read(void) {
-    int r = ((int (__cdecl *)(void))0x401730)();
+    int r = ((int (__cdecl *)(void))GAMEFN(input_readMouse, 0x401730))();
     HWND w = *(HWND *)0x4ded18;
     BYTE *btn = (BYTE *)0x4d1a94;    /* DIMOUSESTATE.rgbButtons */
     if (w && GetForegroundWindow() != w) g_btnmask = 0x0f;
@@ -1897,7 +1908,7 @@ static void __cdecl pu_text(int x, int y, int font, const char *fmt, int v) {
         if (vis) x += 11 - (int)((lead + vis / 2.0) * sc + 0.5);
     }
     g_txtx = x; g_txty = y; g_txt = g_hud43;
-    ((SMALLTEXT)0x46bb00)(x, y, font, fmt, v);
+    ((SMALLTEXT)GAMEFN(font_penDraw, 0x46bb00))(x, y, font, fmt, v);
     g_txt = 0;
 }
 /* How far the HUD call-site scans below look: up to the top of this thread's stack (the HUD routine's frame is
@@ -2061,7 +2072,7 @@ static void __cdecl mk_catalog(BYTE *self) {
         logf("KYRIE parts: %s added as part %d", mk_slots[s].slot, n);
     }
 }
-void *g_cat_fn __asm__("axis_cat_fn") = (void *)0x473780;
+void *g_cat_fn __asm__("axis_cat_fn") = (void *)GAMEFN(catalogue_loadComponents, 0x473780);
 __attribute__((naked)) static void cat_wrap(void) {   /* replaces "call 0x473780" (thiscall, 1 arg) */
     __asm__ volatile("pushl %%ecx\n\tpushl 8(%%esp)\n\tcall *axis_cat_fn\n\tpopl %%ecx\n\tpushl %%eax\n\tpushl %%ecx\n\t"
                      "call %P0\n\taddl $4, %%esp\n\tpopl %%eax\n\tret $4" :: "i"(mk_catalog));
@@ -2070,7 +2081,7 @@ __attribute__((naked)) static void cat_wrap(void) {   /* replaces "call 0x473780
 static int g_mk_pending;   /* the model being read was asked for with the MARKED\ prefix */
 static void *__cdecl mk_find(const char *name) {   /* replaces "call 0x466d60" (cdecl: Shape.dat entry by name) */
     g_mk_pending = !_strnicmp(name, MK_PREFIX, 7);
-    return ((void *(__cdecl *)(const char *))0x466d60)(g_mk_pending ? name + 7 : name);
+    return ((void *(__cdecl *)(const char *))GAMEFN(shape_findDatEntry, 0x466d60))(g_mk_pending ? name + 7 : name);
 }
 static void __cdecl mk_retex(BYTE *shp) {
     if (!g_mk_pending) return;
@@ -2085,7 +2096,7 @@ static void __cdecl mk_retex(BYTE *shp) {
         memcpy(t + 14, "MARK\\", 5);
     }
 }
-void *g_shpread_fn __asm__("axis_shpread_fn") = (void *)0x466120;
+void *g_shpread_fn __asm__("axis_shpread_fn") = (void *)GAMEFN(shape_read, 0x466120);
 __attribute__((naked)) static void shpread_wrap(void) {   /* replaces "call 0x466120" (thiscall, 3 args) */
     __asm__ volatile("pushl %%ecx\n\tpushl 16(%%esp)\n\tpushl 16(%%esp)\n\tpushl 16(%%esp)\n\tcall *axis_shpread_fn\n\t"
                      "popl %%ecx\n\tpushl %%eax\n\tpushl %%ecx\n\tcall %P0\n\taddl $4, %%esp\n\tpopl %%eax\n\tret $12"
@@ -2099,7 +2110,7 @@ static char *__cdecl mk_altmask(char *name) {
     memmove(name + 14, name + 19, len - 19 + 1);
     return name;
 }
-void *g_texfind_fn __asm__("axis_texfind_fn") = (void *)0x4554c0;
+void *g_texfind_fn __asm__("axis_texfind_fn") = (void *)GAMEFN(tex_findByName, 0x4554c0);
 __attribute__((naked)) static void maskfind_wrap(void) {   /* replaces "call 0x4554c0" (thiscall, 1 arg) at 0x45636e */
     __asm__ volatile("pushl %%ecx\n\tpushl 8(%%esp)\n\tcall *axis_texfind_fn\n\tpopl %%ecx\n\ttestl %%eax, %%eax\n\tjns 1f\n\t"
                      "pushl %%ecx\n\tpushl 8(%%esp)\n\tcall %P0\n\taddl $4, %%esp\n\tpopl %%ecx\n\ttestl %%eax, %%eax\n\tjz 2f\n\t"

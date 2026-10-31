@@ -164,8 +164,8 @@ u32 (menu_drawDimOverlay)(void)
 		BITS(alpha) = 0x3f800000;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
-	return GAME_CDECL(0x427970, u32, int, int, int, int, int)(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
+	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));   /* the menu colour (1, 1, 1, alpha) */
+	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(0, 0, 640, 480, 1);   /* menu_drawRect, filled */
 }
 
 /* 0x41f050: the menu camera: the scene moved by minus the camera's position (0x4df024), then the view from it towards
@@ -287,11 +287,11 @@ u32 (menu_drawMessageBox)(void)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
+	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x9da480, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
-	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	GAME_CDECL(0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, (const char *)0x4df81c);
-	return GAME_CDECL(0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)0x74de24);
+	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, (const char *)0x4df81c);
+	return GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)0x74de24);
 }
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (0x4de1f0: grows by the
@@ -324,14 +324,14 @@ u32 (menu_drawInputLine)(int x, int y)
 {
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
-	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
-	GAME_CDECL(0x428890, u32, int, int)(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
+	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
+	GAME_FN(menu_drawTextCursor, 0x428890, u32, int, int)(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_chatFieldFlag)
-		return GAME_CDECL(0x402620, u32, int, int, const char *)(x, y, (const char *)0x9dc92c);   /* text_draw8 */
+		return GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, (const char *)0x9dc92c);   /* text_draw8 */
 	char stars[0x30];   /* the original zeroes 30 bytes of its frame here: a longer password (the fields take 20) would run over */
 	int n = (int)strlen((const char *)0x9dc92c);
 	memset(stars, 0, 30);
 	if (n > 0)
 		memset(stars, '*', n);
-	return GAME_CDECL(0x402620, u32, int, int, const char *)(x, y, stars);
+	return GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, stars);
 }

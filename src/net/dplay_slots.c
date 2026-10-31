@@ -147,18 +147,18 @@ int (dplay_join)(int session, int a2, int a3, int a4)
    freed (0x454130, whose eax it returns) and the session state cleared. 1 when there is no session */
 u32 (arena_leaveSession)(void)
 {
-	static const u32 close[4] = { 0x4549a0, 0x454ac0, 0x454bd0, 0x454ce0 };
+	static const u32 close[4] = { FN_ADDR(dplaySlot0_close, 0x4549a0), FN_ADDR(dplaySlot1_close, 0x454ac0), FN_ADDR(dplaySlot2_close, 0x454bd0), FN_ADDR(dplaySlot3_close, 0x454ce0) };
 	if (g_arenaSessionOpen != 1 || !g_dplaySessionList)
 		return 1;
 	if (g_isHost) {
 		g_hostResultFlag = 1;
-		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
+		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = (*(u32 *)&g_connectionKind);
 	(*(u32 *)&g_connectionKind) = 4;
 	if (kind <= 3)
 		GAME_CDECL(close[kind], int, void)();
-	u32 r = GAME_CDECL(0x454130, u32, void)();   /* net_freeSessionList */
+	u32 r = GAME_FN(net_freeSessionList, 0x454130, u32, void)();   /* net_freeSessionList */
 	g_dplaySessionList = 0;
 	g_netQueueOnline = 0;
 	g_arenaSessionOpen = 0;
@@ -170,21 +170,21 @@ u32 (arena_leaveSession)(void)
    0x454a50 / 0x454b70 / 0x454c80). The slot's answer (and the session marked open), or 0 */
 int (arena_openSession)(u32 kind, const char *host)
 {
-	static const u32 open[4] = { 0x454940, 0x454a50, 0x454b70, 0x454c80 };
+	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };
 	char address[16] = { 0 };
-	GAME_CDECL(0x4515a0, void, void)();
+	GAME_FN(net_freeAllSlots, 0x4515a0, void, void)();
 	g_arenaSessionOpen = 1;
 	if (host) {
-		if (!GAME_CDECL(0x4547d0, int, const char *)(host))   /* net_resolveHost */
+		if (!net_resolveHost(host))   /* net_resolveHost */
 			return 0;
 		strcpy(address, (const char *)0xa0d320);
 	}
 	if (g_dplaySessionList) {
 		if ((*(u32 *)&g_connectionKind) == kind) {
-			GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
+			arena_leaveSession();
 			g_dplaySessionList = 0;
 		} else
-			GAME_CDECL(0x452fe0, void, void)();
+			arena_leaveSession();
 	}
 	(*(u32 *)&g_connectionKind) = kind;
 	g_dplaySessionCount = 0;

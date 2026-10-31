@@ -79,7 +79,7 @@ u32 (profile_drawMessageWindow)(void)
 	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 	text_drawBox16(button, Y0 + 0x58, button + 0x60, (const char *)0x7517a4);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -118,7 +118,7 @@ static u32 two_buttons(const TwoButtons *d)
 		text_drawBox16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(0x7517a4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -129,12 +129,12 @@ static u32 two_buttons(const TwoButtons *d)
    question 0x751e24) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28, 0x44b320, 0x751da4 };
+	static const TwoButtons d = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28, FN_ADDR(deleteDialog_hitTest, 0x44b320), 0x751da4 };
 	return two_buttons(&d);
 }
 u32 (profile_drawSecondDialog)(void)
 {
-	static const TwoButtons d = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0, 0x44b360, 0x751e24 };
+	static const TwoButtons d = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0, FN_ADDR(secondDialog_hitTest, 0x44b360), 0x751e24 };
 	return two_buttons(&d);
 }
 
@@ -150,7 +150,7 @@ u32 (profile_drawNewDialog)(void)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(0x44b2a0, int, int, int)(g_mouseX, g_mouseY);
+	int hovered = GAME_FN(newNameDialog_hitTest, 0x44b2a0, int, int, int)(g_mouseX, g_mouseY);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
@@ -179,7 +179,7 @@ u32 (profile_drawNewDialog)(void)
 		text_drawBox16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(0x7517a4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	return GAME_CDECL(0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
+	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
 #undef Y0
 #undef X1
@@ -201,7 +201,7 @@ void (mainmenu_drawScreen)(void)
 #define PAGE GAME_VAR(int, 0x9f8f10)
 	float *panel = (float *)0x9f8eb0;
 	const u32 *bright = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
-	int hovered = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);
+	int hovered = GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (PAGE == 1) {
@@ -247,7 +247,7 @@ void (mainmenu_drawScreen)(void)
 		menu_drawWideButton(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
 		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(0x751aa4 + k * 0x80));
 	}
-	GAME_CDECL(0x44ce90, void, void)();   /* the pilot list */
+	GAME_FN(profileList_drawNames, 0x44ce90, void, void)();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -255,7 +255,7 @@ void (mainmenu_drawScreen)(void)
 	menu_drawSmallButton3(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
 	menu_drawSmallButton4(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
 	glDisable(GL_TEXTURE_2D);
-	GAME_CDECL(0x44cf70, void, void)();   /* the details */
+	GAME_FN(profile_drawChosenPilot, 0x44cf70, void, void)();   /* the details */
 	if (PAGE == 1)
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	else
@@ -343,7 +343,7 @@ void (profile_drawPilotSelect)(void)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
+	int hovered = GAME_FN(pilotSelect_hitTest, 0x44b3e0, int, int, int)(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);

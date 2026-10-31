@@ -151,14 +151,14 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	u8 *s = (u8 *)scene, *stage = s + 0x1f36c8, *vv = s + 0x74;
 	u32 light[0xb00c / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts */
 	for (int i = 0; i < 0x400; i++)
-		GAME_THISCALL(0x45fff0, void *, void *)((u8 *)light + 4 + i * 0x2c);
+		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)light + 4 + i * 0x2c);
 	light[0] = 0x4aa248;
-	GAME_THISCALL(0x483d60, int, void *)(light);   /* Light_clearCounts */
+	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
 	u32 x44 = GAME_VAR(u32, s + 0x44);
 	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
-	GAME_THISCALL(0x4729b0, void, void *, const u32 *, const u32 *, const u32 *, u32, int, int, u32, u32, u32)(stage, eye, forward, up,
+	GAME_THISFN(camera_setupView, 0x4729b0, void, void *, const u32 *, const u32 *, const u32 *, u32, int, int, u32, u32, u32)(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
 	ViewVolume_captureMatrices(vv, 0, s + 0x22e7068);
 	ViewVolume_reset(vv);
@@ -179,7 +179,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	                                               (const float *)0x4a972c);   /* 890: tenths of a degree */
 	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);
 	actor_processFrame(stage, GAME_VAR(int, s + 0x234240d), GAME_VAR(float, s + 0x3c));
-	GAME_THISCALL(0x483d60, int, void *)(light);   /* Light_clearCounts */
+	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
 	Vec3_normalize((float *)dir);
 	factors_addPoint(light, (const void *)0xa1f23c, dir);
@@ -621,7 +621,7 @@ u32 (armc_onStateEnter)(void)
 	case 2:
 		return armc_colourScreenInput();
 	case 3:
-		return GAME_CDECL(0x410160, u32, void)();   /* armc_rightClickLeave (its eax) */
+		return GAME_FN(armc_rightClickLeave, 0x410160, u32, void)();   /* armc_rightClickLeave (its eax) */
 	}
 	return page;
 }
@@ -709,12 +709,12 @@ int (armc_drawModeTabs)(void)
    progress saved; returns profile_saveProgress's eax */
 u32 (armc_saveSelection)(void)
 {
-	GAME_CDECL(0x40d990, void, void)();
+	armc_resetSeraphimParts();
 	memcpy((void *)0x4dcfe0, (const void *)0x4dc4b8, 0x90);
 	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
 	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
-	GAME_CDECL(0x40d990, void, void)();
-	return GAME_CDECL(0x447010, u32, void)();   /* profile_saveProgress */
+	armc_resetSeraphimParts();
+	return GAME_FN(profile_saveProgress, 0x447010, u32, void)();   /* profile_saveProgress */
 }
 
 /* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from 0x4dc4b8, through the
@@ -758,27 +758,27 @@ u32 (armc_mainPageClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e450, u32, int, int)(g_mouseX, g_mouseY);   /* armcMain_hitTest */
+	u32 button = GAME_FN(armcMain_hitTest, 0x40e450, u32, int, int)(g_mouseX, g_mouseY);   /* armcMain_hitTest */
 	int view = g_armcPartSlot;
 	switch (button) {
 	case 1:
 		if (g_armcMode == 2)
 			return 2;
 		sound_playMenu(2);
-		return GAME_CDECL(0x40f220, u32, void)();
+		return GAME_FN(armc_drawPartScreen, 0x40f220, u32, void)();
 	case 2:
 		if (g_armcMode == 3)
 			return 1;
 		sound_playMenu(2);
-		return GAME_CDECL(0x40f320, u32, void)();
+		return GAME_FN(armc_showColourPage, 0x40f320, u32, void)();
 	case 3: case 4:
 		sound_playMenu(0);
-		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
 	case 6: case 7: case 8: case 9: case 10: case 11:
 		if (view == (int)button - 6)
 			return button == 7 || button == 11 ? button - 1 : button - 6;
 		{
-			u32 r = GAME_CDECL(0x41e760, u32, int)(2);
+			u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
 			g_armcPartSlot = button - 6;
 			g_armcZoom = 1.0f;
 			return r;
@@ -787,7 +787,7 @@ u32 (armc_mainPageClicks)(void)
 		if (view == 5)
 			return button - 1;
 		sound_playMenu(8);
-		return GAME_CDECL(0x40f340, u32, int, int)(g_armcPartSlot, button == 14 ? 1 : 2);
+		return GAME_FN(armc_stepPart, 0x40f340, u32, int, int)(g_armcPartSlot, button == 14 ? 1 : 2);
 	case 16:
 		sound_playMenu(2);
 		view = g_armcSpin;
@@ -805,9 +805,9 @@ u32 (armc_colourScreenInput)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
-	static const u32 page[3] = { 0x40f200, 0x40f220, 0x40f320 };
-	static const u32 control[6] = { 0x40f5d0, 0x40f670, 0x40f6b0, 0x40f6f0, 0x40f790, 0x40f7e0 };
+	u32 button = GAME_FN(armcColour_hitTest, 0x40e4d0, u32, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
+	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_drawPartScreen, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
+	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimaryChroma, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondaryChroma, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
 	u32 r;
 	switch (button) {
 	case 0: case 1: case 2:
@@ -817,13 +817,13 @@ u32 (armc_colourScreenInput)(void)
 		return GAME_CDECL(page[button], u32, void)();
 	case 3: case 4:
 		sound_playMenu(2);
-		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
 	case 5: case 6: case 7: case 8: case 9: case 10:
 		if ((*(u32 *)&g_armcColourSlot) == button - 5)
 			return button - 5;
-		r = GAME_CDECL(0x41e760, u32, int)(2);
+		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
 		(*(u32 *)&g_armcColourSlot) = button - 5;
-		return button == 10 ? GAME_CDECL(0x40f590, u32, void)() : r;
+		return button == 10 ? GAME_FN(armc_backupColours, 0x40f590, u32, void)() : r;
 	case 11: case 12: case 13: case 14: case 15: case 16:
 		return GAME_CDECL(control[button - 11], u32, void)();
 	case 17:

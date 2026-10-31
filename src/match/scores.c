@@ -51,7 +51,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 				scene->counterRed++;
 			else if (scene_teamSide(scene, p->team) == 1)
 				scene->counterBlue++;
-		} else if (GAME_CDECL(0x4a8700, int, int)(i) == 1 && p->team < 0)   /* the player's 0x9f9840 flag */
+		} else if (net_playerInUse(i) == 1 && p->team < 0)   /* the player's 0x9f9840 flag */
 			scene->counterGreen++;
 	}
 	for (int k = 0; k < 16; k++)

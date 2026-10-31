@@ -114,16 +114,16 @@ int (skirmish_saveSettings)(void)
 	if (r)
 		return r;
 	if (g_keyEnter)
-		GAME_CDECL(0x443c80, int, void)();
+		GAME_FN(skirmishSettings_leave, 0x443c80, int, void)();
 	if (!g_mouseClick)
 		return 0;
-	int row = GAME_CDECL(0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
+	int row = GAME_FN(skirmishSettings_hitTest, 0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	if ((u32)row <= 7)
-		return GAME_CDECL(0x443d50, int, int)(row);
+		return GAME_FN(skirmish_clickRow, 0x443d50, int, int)(row);
 	if (row == 8)
-		return GAME_CDECL(0x443af0, int, int)(g_missionPicked);
+		return GAME_FN(mission_saveAxisMis, 0x443af0, int, int)(g_missionPicked);
 	if (row == 9)
-		return GAME_CDECL(0x443c80, int, void)();
+		return GAME_FN(skirmishSettings_leave, 0x443c80, int, void)();
 	return row;
 }
 
@@ -141,21 +141,21 @@ static int key_hit(u32 binding)
 u32 (room_keys)(void)
 {
 	if (key_hit(0x76d48c))
-		return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
+		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
 	if (key_hit(0x4e1514))
-		return GAME_CDECL(0x4334c0, u32, void)();   /* room_requestJoin */
+		return GAME_FN(room_requestJoin, 0x4334c0, u32, void)();   /* room_requestJoin */
 	if (key_hit(0x4e14f8))
-		return GAME_CDECL(0x433590, u32, void)();   /* room_start */
+		return GAME_FN(room_start, 0x433590, u32, void)();   /* room_start */
 	if (key_hit(0x4e0cdc))
-		return GAME_CDECL(0x433790, u32, void)();   /* room_enterGameList */
+		return GAME_FN(room_enterGameList, 0x433790, u32, void)();   /* room_enterGameList */
 	if (key_hit(0x4e151c))
-		return GAME_CDECL(0x433800, u32, void)();   /* room_enterRoomList */
+		return GAME_FN(room_enterRoomList, 0x433800, u32, void)();   /* room_enterRoomList */
 	if (key_hit(0x4e0cd4)) {
 		g_armcFrom = 3;
-		return GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus */
+		return menu_enterMenus();
 	}
 	if (key_hit(0x4e153c))
-		return GAME_CDECL(0x435a40, u32, void)();
+		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();
 	return 0;
 }
 
@@ -173,17 +173,17 @@ u32 (room_leftClicks)(void)
 		return open;
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x432200, u32, int, int)(g_mouseX, g_mouseY);
+	u32 button = GAME_FN(createDialog_hitTest, 0x432200, u32, int, int)(g_mouseX, g_mouseY);
 	u32 r;
 	switch (button) {
 	case 0:
-		GAME_CDECL(0x433c70, void, void)();          /* chat_closeEdit */
-		r = GAME_CDECL(0x433b00, u32, void)();       /* field_editGameName */
+		chat_closeEdit();
+		r = GAME_FN(field_editGameName, 0x433b00, u32, void)();       /* field_editGameName */
 		g_typingRoomName = 1;
 		return r;
 	case 1:
-		GAME_CDECL(0x433c70, void, void)();
-		r = GAME_CDECL(0x433bb0, u32, void)();       /* field_editGamePassword */
+		chat_closeEdit();
+		r = GAME_FN(field_editGamePassword, 0x433bb0, u32, void)();       /* field_editGamePassword */
 		g_typingRoomPassword = 1;
 		return r;
 	case 2:
@@ -197,19 +197,19 @@ u32 (room_leftClicks)(void)
 	case 3:
 		if (g_paused) {
 			g_paused = 0;
-			GAME_CDECL(0x431590, void, void)();      /* input_resetKeys */
-			GAME_CDECL(0x401310, void, void *)(g_mainWindow);   /* input_initKeyboard */
+			input_resetKeys();
+			GAME_FN(input_initKeyboard, 0x401310, void, void *)(g_mainWindow);   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
 		input_setKeysBlocked(4);
 		g_roomState = 0x63;
 		g_nextScreen = 300;
 		g_chatFieldFlag = 0;
-		GAME_CDECL(0x48b420, void, void)();          /* debug_traceStripped */
-		return GAME_CDECL(0x451e60, u32, void)();    /* net_disconnect */
+		GAME_FN(debug_traceStripped, 0x48b420, void, void)();          /* debug_traceStripped */
+		return net_disconnect();
 	case 4:
 		sound_playMenu(0);
-		return GAME_CDECL(0x4338c0, u32, void)();    /* room_openDialog4d */
+		return GAME_FN(room_openDialog4d, 0x4338c0, u32, void)();    /* room_openDialog4d */
 	}
 	return button;
 }
@@ -219,7 +219,7 @@ u32 (room_leftClicks)(void)
    allows) leaves too. Returns what the original leaves in eax */
 u32 (room_pageClicks)(void)
 {
-	static const u32 actions[6] = { 0x4334c0, 0x433590, 0x433790, 0, 0x433800, 0x435a40 };
+	static const u32 actions[6] = { FN_ADDR(room_requestJoin, 0x4334c0), FN_ADDR(room_start, 0x433590), FN_ADDR(room_enterGameList, 0x433790), 0, FN_ADDR(room_enterRoomList, 0x433800), FN_ADDR(room_leaveGame, 0x435a40) };
 	u32 page = (*(u32 *)&g_roomMode);
 	if (page == 1 || page == 0)
 		return page;
@@ -233,7 +233,7 @@ u32 (room_pageClicks)(void)
 			sound_playMenu(0);
 			if (i == 3) {   /* the arm center */
 				g_armcFrom = 3;
-				GAME_CDECL(0x40ee20, void, void)();   /* menu_enterMenus */
+				GAME_FN(menu_enterMenus, 0x40ee20, void, void)();   /* menu_enterMenus */
 				g_enteringMenus = 0;
 			} else
 				GAME_CDECL(actions[i], void, void)();
@@ -247,7 +247,7 @@ u32 (room_pageClicks)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
+	return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
 }
 
 /* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at 0x907b30) loaded as a
@@ -281,7 +281,7 @@ static u32 typing_end(void)
 		return 0;
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-	return GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
+	return GAME_FN(chat_closeLine, 0x431600, u32, int)(1);   /* chat_closeLine */
 }
 
 u32 (account_endTyping)(void)
@@ -316,8 +316,8 @@ u32 (room_hostingStep)(void)
 		g_netRole = 1;
 		music_shutdown();
 		g_roomMode = 0;
-		GAME_CDECL(0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
-		GAME_CDECL(0x453090, int, const void *, const char *, int, int, int, int, int, int)(
+		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
+		GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(
 			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_missionStage = (signed char)room[0x20];
@@ -342,7 +342,7 @@ u32 (room_hostingStep)(void)
 		g_connectionAwaited = 0;
 		g_connectStep = 2;
 		g_arenaGameSetUp = 0;
-		return GAME_CDECL(0x41ee40, u32, int)(0x2a);   /* the message */
+		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x2a);   /* the message */
 	}
 	return step;
 }
@@ -357,8 +357,8 @@ u32 (app_onClose)(void)
 	if (g_arenaJoinWaiting) {
 		g_arenaSearchTicks = 0;
 		g_arenaJoinWaiting = 0;
-		GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
-		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
+		arena_leaveSession();
+		u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x44);   /* the message */
 		g_arenaConfirming = 0;
 		return r;
 	}
@@ -369,18 +369,18 @@ u32 (app_onClose)(void)
 	*(u32 *)game = *(*(u32 **)&g_receivedSession);
 	g_roomRecFragLimit = game[0x2d];
 	g_roomRecTimeLimit = game[0x2e];
-	int r = GAME_CDECL(0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
+	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
-			GAME_CDECL(0x41ee40, void, int)(message[r - 0x1f5]);
-		u32 e = GAME_CDECL(0x452fe0, u32, void)();
+			menu_showMessage(message[r - 0x1f5]);
+		u32 e = GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
 		g_arenaSearchTicks = 0;
 		g_arenaJoinPending = 0;
 		g_arenaConfirming = 0;
 		return e;
 	}
-	GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
+	music_shutdown();
 	g_quitAsked = 1;
 	g_netRole = 2;
 	g_roomMode = 0;
@@ -401,26 +401,26 @@ u32 (app_onClose)(void)
    their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
 u32 (account_checkForm)(void)
 {
-	GAME_CDECL(0x433d30, void, void)();   /* account_endTyping */
+	GAME_FN(account_endTyping, 0x433d30, void, void)();   /* account_endTyping */
 	g_paused = 0;
 	g_fieldTabKey = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int message, reopen;
-	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
+	if (strlen(name) == 0 || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
 		message = 0x24, reopen = 0x9dd348;
-	else if (GAME_CDECL(0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
+	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
 		message = 0x15a, reopen = 0x9dd348;
 	else if (strlen(password) == 0)
 		message = 0x25, reopen = 0x9dd3f8;
 	else if (strcmp(password, (const char *)0x9dd202))
 		message = 0x21, reopen = 0x9dd3f8;
-	else if (GAME_CDECL(0x434400, int, const char *)(password) == 1)
+	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1)
 		message = 0x15b, reopen = 0x9dd3f8;
-	else if (GAME_CDECL(0x434400, int, const char *)((const char *)0x9dd20e) == 1)
+	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)0x9dd20e) == 1)
 		message = 0x81, reopen = 0x9dd6cc;
 	else
-		return GAME_CDECL(0x433980, u32, void)();   /* the next dialog */
-	u32 r = GAME_CDECL(0x41ee40, u32, int)(message);
+		return GAME_FN(room_openDialog58, 0x433980, u32, void)();   /* the next dialog */
+	u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(message);
 	GAME_VAR(int, reopen) = 1;
 	return r;
 }
@@ -434,8 +434,8 @@ int (account_sendChange)(void)
 		return 0;
 	static const u32 fields[4] = { 0x9dd6d8, 0x9dd1f6, 0x9dd202, 0x9dd20e };
 	for (int i = 0; i < 4; i++)
-		if (GAME_CDECL(0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_nameHasBadChar */
-			GAME_CDECL(0x41ee40, void, int)(0x81);
+		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_nameHasBadChar */
+			menu_showMessage(0x81);
 			g_roomLoginDue = 0;
 			return 0;
 		}
@@ -443,7 +443,7 @@ int (account_sendChange)(void)
 	strcpy(out, (const char *)0x9dd1d8);
 	strcpy(out + 0x1e, (const char *)0x9dd1f6);
 	strcpy(out + 0x2a, (const char *)0x9dd20e);
-	GAME_CDECL(0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
+	GAME_FN(net_send, 0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
 	return 1;
 }
 
@@ -480,18 +480,18 @@ u32 (ranking_page)(void)
 		g_rankingFirst = page * 10 + 1;
 		g_rankingLast = page * 10 + 10;
 		out[1] = page * 10 + 1;
-		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
+		GAME_FN(net_send, 0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
 		g_rankingRequestPending = 0;
 		g_lobbyBlinkClock = 1000.0f;
 		g_rankingWaiting = 1;
 	}
-	GAME_CDECL(0x4388e0, void, void)();   /* room_drawTunnel: the tunnel */
+	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen) {
 		const int *box = (const int *)0x9dced8;
-		GAME_CDECL(0x428c30, void, int, int, int, int)(box[0], box[1], box[2], box[3]);   /* the message box */
+		menu_drawFrame(box[0], box[1], box[2], box[3]);   /* the message box */
 		if (g_dialogOpen)
 			return (*(u32 *)&g_dialogOpen);
 		g_rankingRequestPending = 1;
@@ -499,7 +499,7 @@ u32 (ranking_page)(void)
 	}
 	if (g_rankingWaiting) {
 		if (g_roomListWaiting) {
-			GAME_CDECL(0x435770, void, void)();   /* roomList_fillPage: the list filled */
+			GAME_FN(roomList_fillPage, 0x435770, void, void)();   /* roomList_fillPage: the list filled */
 			g_rankingWaiting = 0;
 			g_rankingHaveList = 1;
 			g_roomListWaiting = 0;
@@ -511,7 +511,7 @@ u32 (ranking_page)(void)
 		if (!(blink >= 0))
 			g_lobbyBlinkClock = 1000.0f;
 	}
-	return call_keeping_ebp(0x43d060);   /* ranking_drawTable: the table */
+	return call_keeping_ebp(FN_ADDR(ranking_drawTable, 0x43d060));   /* ranking_drawTable: the table */
 }
 
 /* 0x434490: the login sent: typing closed and the form's flags cleared; a name or password with a character the
@@ -526,10 +526,10 @@ u32 (login_send)(void)
 	g_chatFieldFlag = 0;
 	g_paused = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
-	int bad = GAME_CDECL(0x434400, int, const char *)(name) == 1 ? 0x15a
-	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
+	int bad = GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1 ? 0x15a
+	        : GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
-		u32 r = GAME_CDECL(0x41ee40, u32, int)(bad);
+		u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(bad);
 		g_roomLoginDue = 0;
 		return r;
 	}
@@ -541,7 +541,7 @@ u32 (login_send)(void)
 	strcpy(g_accountPacket + 4, name);
 	strcpy(g_accountPacket + 0x22, password);
 	(*(int **)&g_accountPacket)[0] = 0x18;
-	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0xe, 0x65);   /* net_send */
+	u32 r = net_send(0xe, 0x65);
 	g_roomRequestOut = 1;
 	return r;
 }
@@ -561,11 +561,11 @@ u32 (ranking_clicks)(void)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return mode;
-	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
+	u32 button = GAME_FN(ranking_hitTest, 0x4323c0, u32, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
-	u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* the click sound */
-	static const u32 page[3] = { 0x435970, 0x4359b0, 0x4359f0 };
+	u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);   /* the click sound */
+	static const u32 page[3] = { FN_ADDR(roomList_prevPage, 0x435970), FN_ADDR(roomList_nextPage, 0x4359b0), FN_ADDR(roomList_cycleMode, 0x4359f0) };
 	int column;
 	switch (button) {
 	case 0: case 1: case 2:
@@ -613,18 +613,18 @@ u32 (room_settingsClicks)(void)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
+	u32 button = GAME_FN(roomSettings_hitTest, 0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
 	u8 *players = (u8 *)0x4df9e9, *type = (u8 *)0x4df9eb, *frags = (u8 *)0x4df9ec, *time = (u8 *)0x4df9ed;
 	u32 r;
 	switch (button) {
 	case 0:
-		return GAME_CDECL(0x4339e0, u32, void)();   /* field_editComment */
+		return GAME_FN(field_editComment, 0x4339e0, u32, void)();   /* field_editComment */
 	case 1:
-		return GAME_CDECL(0x433a80, u32, void)();   /* field_editPassword */
+		return GAME_FN(field_editPassword, 0x433a80, u32, void)();   /* field_editPassword */
 	case 2: case 10: case 12:
-		return GAME_CDECL(0x4356f0, u32, int)(1);   /* room_stepMap: the next map */
+		return GAME_FN(room_stepMap, 0x4356f0, u32, int)(1);   /* room_stepMap: the next map */
 	case 11:
-		return GAME_CDECL(0x4356f0, u32, int)(0);
+		return GAME_FN(room_stepMap, 0x4356f0, u32, int)(0);
 	case 3:
 		*players += 2;
 		r = *players;
@@ -634,13 +634,13 @@ u32 (room_settingsClicks)(void)
 	case 5:
 		if (input_isDown(g_dikLShift) || input_isDown(g_dikRShift) ||
 		    input_isDown(g_dikLCtrl) || input_isDown(g_dikRCtrl)) {
-			r = GAME_CDECL(0x41e760, u32, int)(2);
+			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
 			*type -= 1;
 			r = (r & ~0xffu) | *type;
 			if ((signed char)*type < 0)
 				*type = 9;
 		} else {
-			r = GAME_CDECL(0x41e760, u32, int)(2);
+			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
 			*type += 1;
 			r = (r & ~0xffu) | *type;
 			if ((signed char)*type > 9)
@@ -663,14 +663,14 @@ u32 (room_settingsClicks)(void)
 		if (g_arenaGameSetUp)
 			return (*(u32 *)&g_arenaGameSetUp);
 		sound_playMenu(0);
-		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
+		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
 	case 9:
-		r = GAME_CDECL(0x41e760, u32, int)(0);
+		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
 		g_roomMode = 0;
 		return r;
 	case 13:
 		sound_playMenu(0);
-		return GAME_CDECL(0x403490, u32, int)(2);   /* mapList_startEdit: the map list (the original pushes a 2 it ignores) */
+		return GAME_FN(mapList_startEdit, 0x403490, u32, int)(2);   /* mapList_startEdit: the map list (the original pushes a 2 it ignores) */
 	}
 	return button;
 }
@@ -688,8 +688,8 @@ u32 (room_settingsAfterTyping)(void)
 		return 0;
 	const char *line = (const char *)0x9dc92c;
 	if (g_editingRoomName) {   /* the room's name */
-		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
-			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
+		if (!strlen(line) || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
+			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
 			g_editingRoomName = 0;
 			return r;
 		}
@@ -717,14 +717,14 @@ u32 (room_settingsAfterTyping)(void)
 	}
 	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
+		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { 0x4e0cdc, 0x76d48c };
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
-			r = GAME_CDECL(0x41e760, u32, int)(0);
+			r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
 			g_roomMode = 0;
 		}
 	}
@@ -765,7 +765,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		glDisable(GL_TEXTURE_2D);
 	}
 	Color4_set((Colour *)0x9da480, 1.0f, 1.0f, 0.0f, 1.0f);
-	return GAME_CDECL(0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
+	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
 #undef X0
 #undef X1
 #undef Y0
@@ -774,8 +774,8 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 
 /* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
    (0x4dbb04, 0x4db54a, arena_loadMapPreview) */
-u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, 0x43bcb0); }
-u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, 0x40b420); }
+u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
+u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
    frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
@@ -785,18 +785,18 @@ u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb0
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ 0x9dd69c, 0x9dd6d8, 12, 0, 0x4340e0 }, { 0x9dd37c, 0x9dd1f6, 12, 0x434020, 0x4341a0 },
-		{ 0x9dd378, 0x9dd202, 12, 0x4340e0, 0x434260 }, { 0x9dd304, 0x9dd20e, 50, 0x4341a0, 0 } };
-	GAME_CDECL(0x4388e0, void, void)();   /* room_drawTunnel: the tunnel */
+		{ 0x9dd69c, 0x9dd6d8, 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { 0x9dd37c, 0x9dd1f6, 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
+		{ 0x9dd378, 0x9dd202, 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { 0x9dd304, 0x9dd20e, 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
+	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
-		return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_accountPanelLeft, g_accountPanelTop,
+		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
-		GAME_CDECL(0x433610, void, void)();
-	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* account_drawPanel: the page */
+		GAME_FN(room_selectJoinedSession, 0x433610, void, void)();
+	u32 r = GAME_FN(account_drawPanel, 0x43a420, u32, void)();   /* account_drawPanel: the page */
 	if (g_roomAwaitingServer == 1)
 		return r;
 	for (int k = 0; k < 4; k++) {
@@ -843,7 +843,7 @@ static int login_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(g_dikEnter) == 1)
-		button = GAME_CDECL(0x432240, int, int, int)(g_mouseX, g_mouseY);   /* loginForm_hitTest */
+		button = GAME_FN(loginForm_hitTest, 0x432240, int, int, int)(g_mouseX, g_mouseY);   /* loginForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;
@@ -855,9 +855,9 @@ static int login_buttons(void)
 	if (!g_paused) {
 		sound_playMenu(0);
 		if (button == 4)
-			GAME_CDECL(0x4346c0, void, void)();   /* account_checkForm */
+			GAME_FN(account_checkForm, 0x4346c0, void, void)();   /* account_checkForm */
 		else
-			GAME_CDECL(0x434640, void, void)();   /* room_openDialog42 */
+			GAME_FN(room_openDialog42, 0x434640, void, void)();   /* room_openDialog42 */
 	}
 	return 1;
 }

@@ -151,14 +151,14 @@ static void mission_screen(int hovered)
    original leaves eax to callers that ignore it */
 void (missionsel_drawSettingsScreen)(void)
 {
-	mission_screen(GAME_CDECL(0x447710, int, int, int)(g_mouseX, g_mouseY));   /* missionsel_hitTest */
+	mission_screen(GAME_FN(missionsel_hitTest, 0x447710, int, int, int)(g_mouseX, g_mouseY));   /* missionsel_hitTest */
 }
 
 /* 0x449a50: the same with nothing lit (the pointer is still asked), under a dimmed screen with the message
    0x75f7a4 / 0x74de24. The original leaves eax to callers that ignore it */
 void (missionsel_drawScreen)(void)
 {
-	GAME_CDECL(0x447710, int, int, int)(g_mouseX, g_mouseY);   /* missionsel_hitTest */
+	GAME_FN(missionsel_hitTest, 0x447710, int, int, int)(g_mouseX, g_mouseY);   /* missionsel_hitTest */
 	mission_screen(-1);
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3f000000);
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);

@@ -35,7 +35,7 @@ u32 (netq_poll)(void)
 {
 	if (!g_netQueueOnline)
 		return 0;
-	return GAME_CDECL(0x450bb0, u32, void)();
+	return GAME_FN(jmp_net_receiveAll, 0x450bb0, u32, void)();
 }
 
 /* 0x4a8360: a packet (size bytes, 64 expected: else an error message) numbered and sent to every player, a copy kept

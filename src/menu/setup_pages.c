@@ -30,7 +30,7 @@ void (setup_drawSoundPage)(void)
 #define X1 g_setupSoundRight
 #define Y1 GAME_VAR(int, 0x4ddadc)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = GAME_CDECL(0x420670, int, int, int)(g_mouseX, g_mouseY);   /* setupSound_hitTest */
+	int hovered = setupSound_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

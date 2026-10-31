@@ -64,6 +64,22 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 /* a game function at its original address, as a callable expression */
 #define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(addr))
 #define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(addr))
+/* a rebuilt game function, by its C name and original address: in the harness (recomp.dll) a call to the address,
+   where the harness's tests can stand a mock or the original in for it; in AxisRC.exe (built with AXIS_DIRECT) a
+   direct call to the C function, its address checked against the hook table at compile time (build/fn_syms.h,
+   tools/hooktable.py) */
+#ifdef AXIS_DIRECT
+#include "fn_syms.h"
+#define FN_CHECK(name, addr) (void)sizeof(char[(addr) == FNADDR_##name ? 1 : -1])
+#define GAME_FN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (CDECL *)(__VA_ARGS__))(void *)FN_##name)
+#define GAME_THISFN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (THISCALL *)(__VA_ARGS__))(void *)FN_##name)
+/* a rebuilt function's address as a value (a callback, a table of handlers), constant enough for static data */
+#define FN_ADDR(name, addr) ((u32)(void *)FN_##name + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
+#else
+#define GAME_FN(name, addr, ret, ...) GAME_CDECL(addr, ret, __VA_ARGS__)
+#define GAME_THISFN(name, addr, ret, ...) GAME_THISCALL(addr, ret, __VA_ARGS__)
+#define FN_ADDR(name, addr) (addr)
+#endif
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would */
 #define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))

@@ -107,9 +107,9 @@ static u32 graphics_apply(void)
 	sound_playMenu(0);
 	for (int i = 0; i < 7; i++)
 		g_graphicSettings[i] = g_graphicEdited[i];
-	u32 r = GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
+	u32 r = GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 	if (!same)
-		return GAME_CDECL(0x41e7a0, u32, int)(1);   /* app_closeWindow */
+		return GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(1);   /* app_closeWindow */
 	g_setupPage = 0;
 	return r;
 }
@@ -232,15 +232,15 @@ u32 (setup_drawTopPage)(void)
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
 			switch (i) {
-			case 0: sound_playMenu(0); GAME_CDECL(0x420ad0, void, void)(); break;   /* the sound tab */
-			case 1: sound_playMenu(0); GAME_CDECL(0x420b40, void, void)(); break;   /* graphics */
-			case 2: sound_playMenu(0); GAME_CDECL(0x420ba0, void, void)(); break;   /* controls */
+			case 0: sound_playMenu(0); setup_selectSoundTab(); break;   /* the sound tab */
+			case 1: sound_playMenu(0); setup_selectGraphicTab(); break;   /* graphics */
+			case 2: sound_playMenu(0); setup_selectControlTab(); break;   /* controls */
 			case 3:
 				input_setKeysBlocked(4);
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				(*(int *)&g_cursorBlink) = 0;
-				GAME_CDECL(0x48b420, void, void)();   /* debug_traceStripped */
+				GAME_FN(debug_traceStripped, 0x48b420, void, void)();   /* debug_traceStripped */
 				break;
 			}
 			break;
@@ -253,10 +253,10 @@ u32 (setup_drawTopPage)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* input_setKeysBlocked */
+	u32 r = GAME_FN(input_setKeysBlocked, 0x441250, u32, int)(4);   /* input_setKeysBlocked */
 	g_nextScreen = 300;
 	(*(int *)&g_cursorBlink) = 0;
-	GAME_CDECL(0x48b420, void, void)();
+	GAME_FN(debug_traceStripped, 0x48b420, void, void)();
 	return r;
 }
 
@@ -273,7 +273,7 @@ u32 (setup_drawGraphicTab)(void)
 		g_setupPage = 0;
 	if (!g_mouseClick)
 		return page;
-	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(g_mouseX, g_mouseY);   /* setupOptions_hitTest */
+	u32 button = GAME_FN(setupOptions_hitTest, 0x4206b0, u32, int, int)(g_mouseX, g_mouseY);   /* setupOptions_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
 	case 0:
@@ -296,7 +296,7 @@ u32 (setup_drawGraphicTab)(void)
 	case 7:
 		return graphics_apply();
 	case 8:
-		old = GAME_CDECL(0x41e760, u32, int)(0);
+		old = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
 		g_setupPage = 0;
 		return old;
 	}

@@ -8,6 +8,14 @@ cd "$(dirname "$0")/.."
 CC="python -m ziglang cc -target x86-windows-gnu"
 test -n "$(ls build/obj/*.o 2>/dev/null)" || { echo "no build/obj: run build.sh first"; exit 1; }
 python tools/mkhooks.py build/standalone_hooks.c
+# src/ again with AXIS_DIRECT: calls between rebuilt functions direct, not through their original addresses (GAME_FN
+# in src/axis.h; build/fn_syms.h gives each one's symbol and address). build/obj stays the harness's.
+python tools/hooktable.py build/fn_syms.h
+mkdir -p build/obj_direct
+for f in $(find src -name '*.c' | sort); do
+	o="build/obj_direct/$(echo "${f#src/}" | tr '/' '_' | sed 's/\.c$/.o/')"
+	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT -Ibuild -o "$o" "$f"
+done
 python tools/mkgamedata.py build/gamedata.bin
 # (the blob's hash in the source: zig caches objects by their source text, and .incbin's file is not part of it, so a
 # new blob would otherwise link the old one)
@@ -17,11 +25,11 @@ $CC -c -o build/gamedata.o build/gamedata.s
 $CC -c -O2 -Wall -o build/standalone_main.o standalone/main.c
 $CC -c -O2 -Wall -o build/standalone_crt.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
-$CC -c -O2 -DAXIS_STANDALONE -fno-omit-frame-pointer -I../axisnet -w -o build/standalone_axisnet.o axisnet_recomp.c
+$CC -c -O2 -DAXIS_STANDALONE -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet.o axisnet_recomp.c
 IV=../axisnet/iv32
 # (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
 $CC -O2 -Wl,--subsystem,windows -Wl,--image-base=0x10000 -Wl,--stack=0x100000 -o build/AxisRC.exe \
-	build/standalone_main.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet.o build/obj/*.o \
+	build/standalone_main.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet.o build/obj_direct/*.o \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
 python - build/AxisRC.exe <<'EOF'
 import sys, struct, pefile

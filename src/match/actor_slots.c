@@ -611,11 +611,11 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	A(int, 0x550) = 0;
 	if (ok)
 		return;
-	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* actor_updateHead */
-	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
-	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* actor_updateArms */
-	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* actor_updateLegs */
-	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* actor_updateBooster */
+	actor_updateHead(s, a);
+	actor_updateBody(s, a);
+	actor_updateArms(s, a);
+	actor_updateLegs(s, a);
+	actor_updateBooster(s, a);
 	for (int k = 0; k < 6; k++)
 		actor_updatePart(s, a, k, A(u32, 0x49c));
 }
@@ -798,7 +798,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x140) = -1;
 	A(int, 0x144) = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
-	GAME_THISCALL(0x45ebc0, void, void *, int)(s, a);   /* actor_startingValues */
+	GAME_THISFN(actor_startingValues, 0x45ebc0, void, void *, int)(s, a);   /* actor_startingValues */
 	A(int, 0x14c) = 1;
 	A(int, 0x150) = 0;
 	memcpy(ac + 0x154, pp + 2, 12);
@@ -847,11 +847,11 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x53c, 3, 0);
 	A(u32, 0x548) = 0x3f800000;
 	A(int, 0x54c) = 0;
-	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* actor_updateHead */
-	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
-	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* actor_updateArms */
-	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* actor_updateLegs */
-	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* actor_updateBooster */
+	actor_updateHead(s, a);
+	actor_updateBody(s, a);
+	actor_updateArms(s, a);
+	actor_updateLegs(s, a);
+	actor_updateBooster(s, a);
 	for (int k = 5; k >= 0; k--)
 		actor_updatePart(s, a, k, A(u32, 0x49c));
 	fill_dwords(ac + 0x87bc, 10, 0);
@@ -946,7 +946,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 {
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		GAME_THISCALL(0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
+		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = 0x4a9754;
 		partList_clear(me + k_listAt[k]);
@@ -954,7 +954,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
 	int ok = A(int, 0x14c) != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
-		GAME_THISCALL(0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
+		GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
 	return ok;
 }
 #undef A

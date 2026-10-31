@@ -60,8 +60,8 @@ int (glWindow_resize)(int width, int height)
 	g_glHeight = height;
 	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
 	if (g_fullScreen == 1 &&
-	    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
+	    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_glCachedState = -1;
@@ -82,7 +82,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
                       void *window, void *other)
 {
 	if (g_glWindowMade == 1) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4fd8);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4fd8);   /* sys_errorMessageNoName */
 		return NULL;
 	}
 	strcpy(g_glTitle, title);
@@ -94,7 +94,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	if (window == NULL && other == NULL) {
 		u32 wc[10];   /* WNDCLASSA */
 		wc[0] = 0;                 /* style */
-		wc[1] = 0x4680d0;          /* glWindow_wndProc */
+		wc[1] = FN_ADDR(glWindow_wndProc, 0x4680d0);
 		wc[2] = 0;
 		wc[3] = 0;
 		wc[4] = (u32)GetModuleHandleA(NULL);
@@ -104,19 +104,19 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		wc[8] = (u32)g_glTitle;    /* menu name */
 		wc[9] = (u32)g_glTitle;    /* class name */
 		if (!(IMPORT(0x4a92b8, u16, const u32 *)(wc))) {                                               /* RegisterClassA */
-			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4fa4);
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4fa4);
 			return NULL;
 		}
 		if (g_fullScreen == 1 &&
-		    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, g_glColourBits)) {
-			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
+		    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, g_glColourBits)) {
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
 			g_fullScreen = 0;
 		}
 		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 		if (g_glWindow == NULL) {
-			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f14);
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4f14);
 			return NULL;
 		}
 		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
@@ -128,7 +128,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_hdc = other;   /* the GL window's DC (g_hdc below) */
 		glWindow_resize(width, height);
 	}
-	GAME_CDECL(0x4684c0, void, void)();   /* gfx_resetState */
+	GAME_FN(gfx_resetState, 0x4684c0, void, void)();   /* gfx_resetState */
 	g_glCachedState = -1;
 	return g_glWindow;
 }
@@ -161,7 +161,7 @@ int (glWindow_restoreDisplayMode)(void)
 	u8 mode[0x94];
 	display_mode(mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4ed4);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4ed4);   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_modeChanged = 0;
@@ -188,7 +188,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	u8 mode[0x94];
 	display_mode(mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e94);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e94);
 		return 0;
 	}
 	g_modeChanged = 1;
@@ -228,12 +228,12 @@ u32 (wnd_setCursor)(void)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
-	GAME_CDECL(0x4014c0, void, void)();
+	GAME_FN(input_releaseAll, 0x4014c0, void, void)();
 	music_shutdown();
 	for (u32 p = 0x4dd4d4; p < 0x4dd4fc; p += 4)
 		mem_free(GAME_VAR(void *, p));
-	GAME_CDECL(0x456cd0, void, void)();
-	return GAME_CDECL(0x467b70, u32, void)();
+	GAME_FN(sound_freeAll, 0x456cd0, void, void)();
+	return GAME_FN(sound_releaseDirectSound, 0x467b70, u32, void)();
 }
 
 #define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
@@ -254,15 +254,15 @@ int (glWindow_setupPixelFormat)(void *dc)
 	pfd[0x17] = g_glDepthBits;  /* cDepthBits */
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e5c);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e5c);   /* sys_errorMessageNoName */
 		return 0;
 	}
 	if (pfd[4] & 0x80) {   /* PFD_NEED_PALETTE */
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4e30);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e30);
 		return 0;
 	}
 	if (!SetPixelFormat(dc, format, pfd)) {
-		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4df8);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4df8);
 		return 0;
 	}
 	return 1;
@@ -311,7 +311,7 @@ int (chat_createEdit)(int chars)
 		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
 		edit = g_hChatEdit;
 	}
-	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, 0x440840);   /* SetWindowLongA(GWL_WNDPROC) */
+	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
 	IMPORT(0x4a935c, void *, void *)(g_hChatEdit);   /* SetFocus */
 	u32 length = strlen((const char *)0x9dc92c);
 	SendMessageA(g_hChatEdit, 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
@@ -371,7 +371,7 @@ int (app_init)(void *inst, int show)
 
 	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
 	wc.style = 0;
-	wc.proc = 0x440070;   /* WndProc */
+	wc.proc = FN_ADDR(game_wndProc, 0x440070);   /* WndProc */
 	wc.cls_extra = wc.wnd_extra = 0;
 	wc.inst = inst;
 	wc.icon = IMPORT(0x4a92c4, void *, void *, const char *)(inst, NULL);   /* LoadIconA */
@@ -477,7 +477,7 @@ static void chat_close(void *edit, int sent)
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-	GAME_CDECL(0x431600, u32, int)(sent);   /* chat_closeLine */
+	GAME_FN(chat_closeLine, 0x431600, u32, int)(sent);   /* chat_closeLine */
 	g_chatLineDone = 1;
 }
 
@@ -503,7 +503,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			if (g_menuState == 0x320) {
 				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
+				GAME_FN(chat_closeLine, 0x431600, u32, int)(1);   /* chat_closeLine */
 				g_fieldTabKey = 0x14;
 				g_chatLineDone = 1;
 				g_fieldTabKey = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
@@ -649,7 +649,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	switch (msg) {
 	case 1:   /* WM_CREATE */
 		g_desktopDC = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
-		if (!GAME_CDECL(0x42f000, int, void *)(g_desktopDC)) {   /* gfx_setPixelFormat */
+		if (!GAME_FN(gfx_setPixelFormat, 0x42f000, int, void *)(g_desktopDC)) {   /* gfx_setPixelFormat */
 			PostQuitMessage(0);
 			return 1;
 		}
@@ -657,7 +657,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		IMPORT(0x4a9254, int, void *, void *)(g_desktopDC, g_glContext);   /* wglMakeCurrent */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
-		GAME_CDECL(0x42f150, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
+		GAME_FN(gfx_initGLState, 0x42f150, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
 		g_mouseX = 0x140;
 		g_mouseY = 0xf0;
 		g_mouseWheelTurned = 0;
@@ -669,7 +669,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	case 5:   /* WM_SIZE */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
-		GAME_CDECL(0x42f0f0, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
+		GAME_FN(gfx_setup3DView, 0x42f0f0, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
 		return 1;
 	case 0x10:   /* WM_CLOSE */
 		if (g_desktopDC)
@@ -683,7 +683,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		KillTimer(g_hWndMain, 0x115c);
 		KillTimer(g_hWndMain, 0x309);
 		g_lobbyPending = 1;
-		GAME_CDECL(0x4314e0, u32, void)();   /* wnd_setCursor */
+		GAME_FN(wnd_setCursor, 0x4314e0, u32, void)();   /* wnd_setCursor */
 		DestroyWindow(wnd);
 		return 1;
 	case 2:   /* WM_DESTROY */
@@ -696,30 +696,30 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		PostQuitMessage(0);
 		switch (g_exitMode) {
 		case 0:
-			GAME_CDECL(0x43f7f0, u32, u32)(0);   /* reg_writeStartMode */
-			GAME_CDECL(0x43f8b0, u32, void)();   /* app_deleteDataFiles */
+			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);   /* reg_writeStartMode */
+			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();   /* app_deleteDataFiles */
 			g_gameRunning = 0;
 			ExitProcess(0);
 			return 0;
 		case 1:
-			GAME_CDECL(0x43f7f0, u32, u32)(1);
+			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(1);
 			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a64, NULL, NULL, 10);   /* "open" "AxisGL.exe" */
 			ExitProcess(0);
 			return 0;
 		case 2:
-			GAME_CDECL(0x43f7f0, u32, u32)(0);
-			GAME_CDECL(0x43f8b0, u32, void)();
+			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
+			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
 			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a44, (const char *)0x4b2a54, NULL, 10);   /* "axispatch.exe" "nstower" */
 			ExitProcess(0);
 			return 0;
 		case 3:
-			GAME_CDECL(0x43f7f0, u32, u32)(0);
-			GAME_CDECL(0x43f8b0, u32, void)();
+			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
+			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
 			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a38, (const char *)0x4b13ec, NULL, 10);   /* "DServer.exe" */
 			ExitProcess(0);
 			return 0;
 		case 99:
-			GAME_CDECL(0x43f8b0, u32, void)();
+			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
 			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)0x4b2a24, g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
 			ExitProcess(0);
 		}
@@ -775,9 +775,9 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			}
 			KillTimer(wnd, 0x378);
 			if (g_screen == 800)
-				GAME_CDECL(0x434e70, u32, void)();   /* app_onClose */
+				GAME_FN(app_onClose, 0x434e70, u32, void)();   /* app_onClose */
 			else
-				GAME_CDECL(0x4062b0, void, void)();   /* app_shutdown */
+				GAME_FN(app_shutdown, 0x4062b0, void, void)();   /* app_shutdown */
 		} else if (w == 0x115c) {
 			if (g_roomConnected)
 				net_send(0x18, 0x65);
@@ -785,12 +785,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		return 1;
 	case 0x40a:   /* the game server's socket */
 		if ((u16)l == 0x20) {   /* FD_CLOSE */
-			GAME_CDECL(0x4520e0, u32, void)();   /* net_closeSockets */
+			GAME_FN(net_closeSockets, 0x4520e0, u32, void)();   /* net_closeSockets */
 			if (g_screen != 0x270f)
-				GAME_CDECL(0x41edc0, void, void)();   /* menu_returnToMain */
+				GAME_FN(menu_returnToMain, 0x41edc0, void, void)();   /* menu_returnToMain */
 			return 0;
 		}
-		GAME_CDECL(0x452620, void, void)();   /* net_recv */
+		GAME_FN(net_recv, 0x452620, void, void)();   /* net_recv */
 		switch (g_lobbyStatus) {
 		case 0x29: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;
@@ -805,12 +805,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		return 1;
 	case 0x40c:   /* the lobby's socket */
 		if ((u16)l == 0x20) {
-			GAME_CDECL(0x4520e0, u32, void)();
+			GAME_FN(net_closeSockets, 0x4520e0, u32, void)();
 			if (g_screen != 0x270f)
-				GAME_CDECL(0x41ed70, void, void)();   /* menu_returnToMainFromRoom */
+				GAME_FN(menu_returnToMainFromRoom, 0x41ed70, void, void)();   /* menu_returnToMainFromRoom */
 			return 0;
 		}
-		GAME_CDECL(0x452620, void, void)();
+		GAME_FN(net_recv, 0x452620, void, void)();
 		switch (g_gameServerStatus) {
 		case 0x28: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;

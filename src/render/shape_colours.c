@@ -105,7 +105,7 @@ int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int 
 {
 	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
 		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
-		GAME_CDECL(0x463b80, void, float *, int, void *, void *, int)(out + FIELD(int, part, 0x48), first, part, factors,
+		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + FIELD(int, part, 0x48), first, part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
 	return FIELD(int, shape, 0x10);

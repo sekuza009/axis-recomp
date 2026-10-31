@@ -46,7 +46,7 @@ int (math_initMathFunction)(void)
 {
 	void *f = crt_fopen(TABLE_FILE, (const char *)0x4ad170);
 	if (!f)
-		GAME_CDECL(0x46c340, u32, void)();   /* math_makeMathFunctionTableFile */
+		GAME_FN(math_makeMathFunctionTableFile, 0x46c340, u32, void)();   /* math_makeMathFunctionTableFile */
 	f = crt_fopen(TABLE_FILE, (const char *)0x4ad170);
 	if (!f)
 		sys_errorTerminate((const char *)0x4c5728);

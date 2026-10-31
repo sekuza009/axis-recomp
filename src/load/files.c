@@ -50,7 +50,7 @@ int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
 	char *macro = (char *)scene + 0x2340d3d + n * 0x39;
 	if (line[1] == '=') {
 		strcpy(macro, line + 2);
-		GAME_THISCALL(0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros: saves them */
+		GAME_THISFN(chat_loadMacros, 0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros: saves them */
 		return -1;
 	}
 	strcpy(out, macro);
@@ -100,7 +100,7 @@ u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
 {
 	if (index < 0) {
-		GAME_CDECL(0x46c710, void, void *, const char *, const char *)((void *)log, (const char *)0x4b3f80, name);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)log, (const char *)0x4b3f80, name);   /* sys_fatalError */
 		return 0;
 	}
 	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
@@ -109,12 +109,12 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shape_findDatEntry)(const char *name)
 {
-	return dat_entry(GAME_CDECL(0x466ce0, int, const char *)(name), name, 0xa0e7a0, 0xa0e7a4, 0xa0e788);
+	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, 0xa0e7a0, 0xa0e7a4, 0xa0e788);
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(GAME_CDECL(0x46b0c0, int, const char *)(name), name, 0xa0eab8, 0xa0eabc, 0xa0eaa0);
+	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, 0xa0eab8, 0xa0eabc, 0xa0eaa0);
 }
 
 /* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
@@ -128,7 +128,7 @@ u32 THISCALL (chat_saveMacros)(Scene *scene)
 	}
 	for (int k = 0; k < 100; k++)
 		((u8 *)scene)[0x2340d3d + k * 0x39] = 0;
-	return GAME_THISCALL(0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros */
+	return GAME_THISFN(chat_loadMacros, 0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros */
 }
 
 /* 0x46cc30: count records of size bytes written scrambled (each byte rotated right by one, xor 0x59), then put back
@@ -240,7 +240,7 @@ u32 (cfg_loadAxisCfg)(void)
 	void *f = crt_fopen(path, (const char *)0x4b21a4);
 	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b0f50, f);   /* fputs */
 	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b182c, f);
-	static const u32 sections[5] = { 0x42c650, 0x42c6f0, 0x42c910, 0x42c9f0, 0x42cba0 };   /* player .. key bindings */
+	static const u32 sections[5] = { FN_ADDR(cfg_parsePlayer, 0x42c650), FN_ADDR(cfg_parseServer, 0x42c6f0), FN_ADDR(cfg_parseSound, 0x42c910), FN_ADDR(cfg_parseGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
 	return fclose(f);
@@ -277,11 +277,11 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	GAME_CDECL(0x49e9dd, int, char *, const char *)(path, format);   /* sprintf */
 	GAME_VAR(void *, file) = crt_fopen(path, (const char *)0x4ad170);
 	if (!GAME_VAR(void *, file))
-		GAME_CDECL(0x46c710, void, void *, const char *, const char *)(log, (const char *)0x4b3ee4, path);
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)0x4b3ee4, path);
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)count, 4, 1, GAME_VAR(void *, file));   /* fread */
 	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
 	if (!GAME_VAR(void *, table))
-		GAME_CDECL(0x46c710, void, void *, const char *, int)(log, (const char *)0x4b3eb4, GAME_VAR(int, count));
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)0x4b3eb4, GAME_VAR(int, count));
 	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }
@@ -456,8 +456,8 @@ u32 (mission_loadAxisMis)(void)
 {
 	void *f = mis_open();
 	if (!f)
-		return GAME_CDECL(0x41ee40, u32, int)(0xb);
-	GAME_CDECL(0x443570, void, void)();   /* skirmish_clearPlayerRows */
+		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
+	GAME_FN(skirmish_clearPlayerRows, 0x443570, void, void)();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(0x9ef2c0 + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
@@ -479,7 +479,7 @@ u32 (mission_saveAxisMis)(int k)
 {
 	void *f = mis_open();
 	if (!f)
-		return GAME_CDECL(0x41ee40, u32, int)(0xb);
+		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
 	const int *size = (const int *)0x9ef3c4;   /* size[i * 63] */
 	int offset = 0;
 	for (int i = 0; i < k; i++)
@@ -967,9 +967,9 @@ u32 (data_loadMapInfo)(void)
 	for (int i = 0; i < g_arenaMapCount; i++) {
 		char *name = (char *)(0x907b30 + i * 0x20), *about = (char *)(0x5ae9d0 + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
-		GAME_CDECL(0x42b390, int, char *)(name);    /* str_invert: decoded */
+		GAME_FN(str_invert, 0x42b390, int, char *)(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);
-		GAME_CDECL(0x42b390, int, char *)(about);
+		GAME_FN(str_invert, 0x42b390, int, char *)(about);
 	}
 	fclose(f);
 	int count = g_arenaMapCount;

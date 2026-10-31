@@ -104,7 +104,7 @@ void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 }
 
 /* the width correction of a line for the special characters it holds (counted by text_printableLength), in units of 3 */
-#define text_specialCount(s) GAME_CDECL(0x402590, int, const char *)(s)
+#define text_specialCount(s) GAME_FN(text_printableLength, 0x402590, int, const char *)(s)
 
 /* text_drawBox16 / text_drawCentred32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */

@@ -247,8 +247,8 @@ u32 (axisAngle_combine)(float *out, const float *a, const float *b)
 	float ma[16], mb[16], m[16];
 	Mat4_fromAxisAngle(ma, a);
 	Mat4_fromAxisAngle(mb, b);
-	GAME_CDECL(0x47d380, void, float *, const float *, const float *)(m, ma, mb);   /* Mat4_multiply */
-	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* axisAngle_fromMatrix: matrix -> (angle, axis) */
+	Mat4_multiply(m, ma, mb);
+	return axisAngle_fromMatrix(out, m);       /* axisAngle_fromMatrix: matrix -> (angle, axis) */
 }
 
 /* 0x47d2f0: out (a rotation) set from the matrix m by way of its quaternion (quat_fromMatrix, then quat_toAxisAngle).

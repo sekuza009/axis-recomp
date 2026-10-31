@@ -169,7 +169,7 @@ static void map_buttons(int hovered, int first, int y, int label)
    (0x75db24 from 0x16, 0x75da24 from 0x18). The original leaves eax to callers that ignore it */
 void (mapList_draw)(void)
 {
-	int hovered = GAME_CDECL(0x4033e0, int, int, int)(g_mouseX, g_mouseY);   /* mapList_hitTest */
+	int hovered = mapList_hitTest(g_mouseX, g_mouseY);
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3e99999a);   /* 0.3 */
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3f333333);   /* 0.7 */

@@ -125,7 +125,7 @@ static void info_box(u32 line, int named)
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
 {
-	int hovered = GAME_CDECL(0x4044a0, int, int, int)(g_mouseX, g_mouseY);   /* arenaGameList_hitTest */
+	int hovered = arenaGameList_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
@@ -190,7 +190,7 @@ void (arena_drawGameList)(void)
 	if (g_arenaFull)
 		info_box(0x74f624, 0);
 	if (g_arenaConfirming) {
-		int on = GAME_CDECL(0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
+		int on = GAME_FN(arenaDialogBox_hitTest, 0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -204,7 +204,7 @@ void (arena_drawGameList)(void)
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)0x751824);
 	}
 	if (g_arenaLeaving) {
-		GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
+		arenaCreate_hitTest(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.1, 0.1, 0.4 */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);
@@ -256,7 +256,7 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
    0x752b24, its button 0x751824 by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
-	int hovered = GAME_CDECL(0x432300, int, int, int)(g_mouseX, g_mouseY);   /* gameList_hitTest */
+	int hovered = gameList_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -319,7 +319,7 @@ void (gameList_draw)(void)
 	}
 	if (g_arenaConfirming) {
 		glDisable(GL_TEXTURE_2D);
-		int on = GAME_CDECL(0x432340, int, int, int)(g_mouseX, g_mouseY);   /* gameListStop_hitTest */
+		int on = gameListStop_hitTest(g_mouseX, g_mouseY);
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);

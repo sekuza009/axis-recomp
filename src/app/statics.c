@@ -34,34 +34,34 @@ void (static_initTex256x128)(void) { g_staticTex256x128 = 0x4a956c; GAME_VAR(u32
 void (static_initTex256x256)(void) { g_staticTex256x256 = 0x4a956c; GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
-int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))0x42b180); }
-int (static_registerTex128x64Dtor)(void) { return atexit((void (*)(void))0x42b1d0); }
-int (static_registerTex256x64Dtor)(void) { return atexit((void (*)(void))0x42b220); }
-int (static_registerTex128x128Dtor)(void) { return atexit((void (*)(void))0x42b270); }
-int (static_registerTex256x128Dtor)(void) { return atexit((void (*)(void))0x42b2c0); }
-int (static_registerTex256x256Dtor)(void) { return atexit((void (*)(void))0x42b310); }
-int (static_registerTextureManagerDtor)(void) { return atexit((void (*)(void))0x42b380); }
-int (static_registerTextureRttiDtor)(void) { return atexit((void (*)(void))0x455010); }
-int (static_registerTextureManagerRttiDtor)(void) { return atexit((void (*)(void))0x456970); }
-int (static_registerSoundRttiDtor)(void) { return atexit((void (*)(void))0x456cc0); }
-int (static_registerConsoleRttiDtor)(void) { return atexit((void (*)(void))0x460550); }
-int (static_registerShapeRttiDtor)(void) { return atexit((void (*)(void))0x463b60); }
-int (static_registerShapeManagerRttiDtor)(void) { return atexit((void (*)(void))0x4669f0); }
-int (static_registerTimeSyncDtor)(void) { return atexit((void (*)(void))0x468740); }
-int (static_registerSkeletonRttiDtor)(void) { return atexit((void (*)(void))0x469960); }
-int (static_registerSkeletonManagerRttiDtor)(void) { return atexit((void (*)(void))0x46ae40); }
-int (static_registerBMPRGBFileRttiDtor)(void) { return atexit((void (*)(void))0x46cce0); }
-int (static_registerRealColorRttiDtor)(void) { return atexit((void (*)(void))0x46d2a0); }
-int (static_registerPackedColorRttiDtor)(void) { return atexit((void (*)(void))0x46daa0); }
-int (static_registerUnitPartInfoRttiDtor)(void) { return atexit((void (*)(void))0x46f390); }
-int (static_registerUnitPoseInfoRttiDtor)(void) { return atexit((void (*)(void))0x46f3f0); }
-int (static_registerUnitRttiDtor)(void) { return atexit((void (*)(void))0x46f450); }
-int (static_registerStageRttiDtor)(void) { return atexit((void (*)(void))0x46ff50); }
-int (static_registerCollisionVolumeRttiDtor)(void) { return atexit((void (*)(void))0x481370); }
-int (static_registerLightRttiDtor)(void) { return atexit((void (*)(void))0x483d30); }
-int (static_registerViewVolumeRttiDtor)(void) { return atexit((void (*)(void))0x483f90); }
-int (static_registerTimeSyncRttiDtor)(void) { return atexit((void (*)(void))0x487410); }
-int (static_registerSceneRttiDtor)(void) { return atexit((void (*)(void))0x48b3f0); }
+int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex64x64, 0x42b180)); }
+int (static_registerTex128x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex128x64, 0x42b1d0)); }
+int (static_registerTex256x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex256x64, 0x42b220)); }
+int (static_registerTex128x128Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex128x128, 0x42b270)); }
+int (static_registerTex256x128Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex256x128, 0x42b2c0)); }
+int (static_registerTex256x256Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex256x256, 0x42b310)); }
+int (static_registerTextureManagerDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endTextureManager, 0x42b380)); }
+int (static_registerTextureRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endTextureRtti, 0x455010)); }
+int (static_registerTextureManagerRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endTextureManagerRtti, 0x456970)); }
+int (static_registerSoundRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endSoundRtti, 0x456cc0)); }
+int (static_registerConsoleRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endConsoleRtti, 0x460550)); }
+int (static_registerShapeRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endShapeRtti, 0x463b60)); }
+int (static_registerShapeManagerRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endShapeManagerRtti, 0x4669f0)); }
+int (static_registerTimeSyncDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endTimeSync, 0x468740)); }
+int (static_registerSkeletonRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endSkeletonRtti, 0x469960)); }
+int (static_registerSkeletonManagerRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endSkeletonManagerRtti, 0x46ae40)); }
+int (static_registerBMPRGBFileRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endBMPRGBFileRtti, 0x46cce0)); }
+int (static_registerRealColorRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endRealColorRtti, 0x46d2a0)); }
+int (static_registerPackedColorRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endPackedColorRtti, 0x46daa0)); }
+int (static_registerUnitPartInfoRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endUnitPartInfoRtti, 0x46f390)); }
+int (static_registerUnitPoseInfoRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endUnitPoseInfoRtti, 0x46f3f0)); }
+int (static_registerUnitRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endUnitRtti, 0x46f450)); }
+int (static_registerStageRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endStageRtti, 0x46ff50)); }
+int (static_registerCollisionVolumeRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endCollisionVolumeRtti, 0x481370)); }
+int (static_registerLightRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endLightRtti, 0x483d30)); }
+int (static_registerViewVolumeRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endViewVolumeRtti, 0x483f90)); }
+int (static_registerTimeSyncRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endTimeSyncRtti, 0x487410)); }
+int (static_registerSceneRttiDtor)(void) { return atexit((void (*)(void))FN_ADDR(static_endSceneRtti, 0x48b3f0)); }
 
 /* ---- empty functions ---- */
 void (static_emptyCtorSkelData1)(void) { }   /* 0x46b860 */

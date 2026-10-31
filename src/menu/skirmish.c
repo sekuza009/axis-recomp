@@ -107,7 +107,7 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
    lit). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenA)(void)
 {
-	int hovered = GAME_CDECL(0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
+	int hovered = GAME_FN(skirmishSettings_hitTest, 0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */

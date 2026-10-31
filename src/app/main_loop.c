@@ -396,9 +396,9 @@ static void about(float *out, const float *v, const u8 *actor)
 }
 
 /* the free-camera part steps: the flag (F1 .. F5 held), the player's part field, the setter, the table size */
-static const u32 k_partSteps[5][4] = { { 0x23432d3, 0x30c, 0x473b10, 0x15de6c8 }, { 0x23432d7, 0x310, 0x473c20, 0x15fff84 },
-                                       { 0x23432db, 0x314, 0x473d30, 0x163b588 }, { 0x23432df, 0x318, 0x473e40, 0x1679b34 },
-                                       { 0x23432e3, 0x31c, 0x473f50, 0x16c5178 } };
+static const u32 k_partSteps[5][4] = { { 0x23432d3, 0x30c, FN_ADDR(actor_setActorTypeHeadInfoBy, 0x473b10), 0x15de6c8 }, { 0x23432d7, 0x310, FN_ADDR(actor_setActorTypeChestInfoBy, 0x473c20), 0x15fff84 },
+                                       { 0x23432db, 0x314, FN_ADDR(actor_setActorTypeArmInfoBy, 0x473d30), 0x163b588 }, { 0x23432df, 0x318, FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), 0x1679b34 },
+                                       { 0x23432e3, 0x31c, FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50), 0x16c5178 } };
 /* the held keys and their flags: right button, A, D, W, S, Q, E, left button, shift */
 static const u32 k_freeKeys[9][2] = { { 2, 0x234325f }, { 0x41, 0x234326b }, { 0x44, 0x234326f }, { 0x57, 0x2343263 }, { 0x53, 0x2343267 },
                                       { 0x51, 0x2343273 }, { 0x45, 0x2343277 }, { 1, 0x234327b }, { 0x10, 0x2343283 } };
@@ -550,7 +550,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
-	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, cam, dir, up, *(u32 *)&fov, w, h,
+	GAME_THISFN(camera_setupView, 0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, cam, dir, up, *(u32 *)&fov, w, h,
 	                                                                                             *(u32 *)&near, *(u32 *)&far, S(u32, 0x44));   /* camera_setupView */
 	if (S(int, 0x2340ce0) == 0) {
 		actor_updateAll(stage, S(u32, 0x44));
@@ -1174,7 +1174,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
-	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
+	GAME_THISFN(camera_setupView, 0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
 	              (float *)(s + 0x233ca1c), BITS(fov), w, h, BITS(near), BITS(far), S(u32, 0x44));   /* camera_setupView */
 	S(int, 0x233cc28)++;
 
@@ -2166,7 +2166,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
-	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
+	GAME_THISFN(camera_setupView, 0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
 	              (float *)(s + 0x233ca1c), BITS(fov), w, h, BITS(near), BITS(far), S(u32, 0x44));   /* camera_setupView */
 	view_setDistance(stage, GAME_VAR(u32, stage + 0xa08));
 	if (S(int, 0x234240d) >= 0)

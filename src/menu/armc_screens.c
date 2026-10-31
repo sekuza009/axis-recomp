@@ -110,7 +110,7 @@ static void marker(float pos, int y)
    that ignore it */
 void (armc_drawColourEditor)(void)
 {
-	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
+	int hovered = GAME_FN(armcColour_hitTest, 0x40e4d0, int, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	for (int box = 0; box < 2; box++) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
@@ -258,7 +258,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawBuildScreen)(void)
 {
-	int hovered = GAME_CDECL(0x40e490, int, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
+	int hovered = GAME_FN(armcParts_hitTest, 0x40e490, int, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	for (int k = 0; k < 2; k++) {

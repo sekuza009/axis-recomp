@@ -136,7 +136,7 @@ static void emit(u8 *s, u8 *a, const int *joint, const int *count, const u8 *mx,
 	}
 }
 
-#define stage_print(...) GAME_CDECL(0x473450, int, void *, const char *, ...)(__VA_ARGS__)
+#define stage_print(...) GAME_FN(stage_printText, 0x473450, int, void *, const char *, ...)(__VA_ARGS__)
 #define FRAG_POINTS(level) GAME_VAR(int, 0x4b4314 + (level) * 4)   /* a kill's points by the victim's level */
 
 /* the killer's points and level (the level shown for the local team only) */

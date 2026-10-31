@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
-#define fatal4(format, a, b) GAME_CDECL(0x46c710, void, char *, const char *, int, int)((char *)0xae2eb8, (const char *)(format), a, b)
+#define fatal4(format, a, b) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int)((char *)0xae2eb8, (const char *)(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (+0xe3b034) and 0x14-byte records (+0xe36214), each
    given its run of 0x30-byte points (+0x10: from +0xdc0f10; +0xc: its length); the points' total against +0xe36210.
@@ -52,11 +52,11 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 	if (!f)
-		GAME_CDECL(0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7bd4, path);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7bd4, path);
 	u32 version;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		GAME_CDECL(0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7b94, path);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)0xae2eb8, (const char *)0x4c7b94, path);
 	int *count = (int *)(scene + 0x20f3adc);
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
@@ -285,7 +285,7 @@ static const u32 k_schemeVal[10][2] = {
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define setPartColor(p, part, s) GAME_THISCALL(0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
+#define setPartColor(p, part, s) GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	char path[0x100];

@@ -259,7 +259,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text, ...) GAME_CDECL(0x46c710, void, char *, const char *, ...)((char *)0xa0dff8, (const char *)(text), ##__VA_ARGS__)
+#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)0xa0dff8, (const char *)(text), ##__VA_ARGS__)
 	static const u32 names[6][3] = { { 64, 64, 0x4b3f54 }, { 128, 64, 0x4b3f4c }, { 128, 128, 0x4b3f3c },
 	                                 { 256, 64, 0x4b3f44 }, { 256, 128, 0x4b3f34 }, { 256, 256, 0x4b3f2c } };
 	if (FIELD(int, tm, 4) == 1)
@@ -387,7 +387,7 @@ static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *nam
 static void size_check(u8 *m, int w, int h)
 {
 	if (W(m) != w || H(m) != h)
-		GAME_CDECL(0x46c710, void, char *, const char *, int, int, int, int)((char *)0xa0dff8, (const char *)0x4b4104, W(m), H(m), w, h);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)0xa0dff8, (const char *)0x4b4104, W(m), H(m), w, h);
 }
 
 /* the image's alpha (the 4th bytes from +0x114): the grey of the ALPHA image at +0x40114, or opaque */

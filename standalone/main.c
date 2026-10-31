@@ -261,6 +261,41 @@ static int poison(void)
 		}
 	}
 	fprintf(g_log, "AXISRC_POISON: %d jumps to rebuilt entries kept\n", thunks);
+	/* AXISRC_POISON=2: the rebuilt functions' entry jumps poisoned too, but for the entries something of the
+	   original still points at: a word of its data (.rdata, .data: vtables, the start-up tables), a call or jump
+	   kept for the patch layer (g_saKeep: the call sites it retargets), a compiler thunk. src/ calls the rebuilt
+	   functions directly (AXIS_DIRECT), so any call still made through an original address stops the game there */
+	{
+		char v[8];
+		if (GetEnvironmentVariableA("AXISRC_POISON", v, sizeof v) && !strcmp(v, "2")) {
+			static BYTE needed[0xa8000];
+			for (unsigned a = 0x4a9000; a + 4 <= 0x4d2000; a += 4) {   /* (the data as built in) */
+				unsigned w = *(const unsigned *)(g_before + (a - GAME_BASE));
+				if (w >= 0x401000 && w < 0x4a9000)
+					needed[w - 0x401000] = 1;
+			}
+			for (int i = 0; i < g_saNkeep; i++)
+				for (unsigned a = g_saKeep[i][0]; a + 5 <= g_saKeep[i][1]; a++)
+					if (*(const BYTE *)a == 0xE8 || *(const BYTE *)a == 0xE9) {
+						unsigned to = a + 5 + *(const int *)(a + 1);
+						if (to >= 0x401000 && to < 0x4a9000)
+							needed[to - 0x401000] = 1;
+					}
+			for (unsigned a = 0x401000; a + 5 <= 0x4a8300; a++)
+				if (keep[a - 0x401000] && !entry[a - 0x401000] && *(const BYTE *)a == 0xE9) {
+					unsigned to = a + 5 + *(const int *)(a + 1);
+					if (to >= 0x401000 && to < 0x4a9000)
+						needed[to - 0x401000] = 1;
+				}
+			int dropped = 0;
+			for (int i = 0; i < g_saNhooks; i++)
+				if (!needed[g_saHooks[i].addr - 0x401000]) {
+					memset(keep + g_saHooks[i].addr - 0x401000, 0, 5);
+					dropped++;
+				}
+			fprintf(g_log, "AXISRC_POISON=2: %d rebuilt entries' jumps poisoned too (nothing of the original points there)\n", dropped);
+		}
+	}
 	int n = 0;
 	unsigned lo = 0, hi = 0xffffffff;   /* AXISRC_POISON=lo-hi (hex): only that part (for narrowing a problem down) */
 	{ char v[64]; if (GetEnvironmentVariableA("AXISRC_POISON", v, sizeof v) && strchr(v, '-')) { lo = strtoul(v, NULL, 16); hi = strtoul(strchr(v, '-') + 1, NULL, 16); } }

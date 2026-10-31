@@ -470,7 +470,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	float age = GAME_VAR(float, p + 0x74);
 	GAME_VAR(float, p + 0x6c) = age;
 	if (age > GAME_VAR(float, p + 0x70)) {
-		GAME_THISCALL(0x4799f0, void, void *, int)(s, slot);
+		GAME_THISFN(stage_freeProjectile, 0x4799f0, void, void *, int)(s, slot);
 		return;
 	}
 	float t = GAME_VAR(float, p + 0x70) > 0 ? f32(fdiv_m(fld_m(&age), (const float *)(p + 0x70))) : 0.0f;
@@ -518,7 +518,7 @@ static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_sup
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
 {
-	GAME_CDECL(0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
+	GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
 	                                                                                (const float *)(it + 0xc), (const float *)(s + 0x20f397c), 0x47c35000);   /* (heard to 100000) */
 }
 
@@ -534,7 +534,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 0:
 	case 1: {
 		if (type < 10 && type > 5) {
-			GAME_CDECL(0x46c710, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
+			sys_fatalError((char *)0xae2eb8, (const char *)0x4c81d0, type);
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
@@ -582,7 +582,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		last = 1;
 		break;
 	default:
-		GAME_CDECL(0x46c5f0, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
+		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
 		return;
 	}
 	strcpy((char *)ac + 0x4f4, (const char *)text);
@@ -827,7 +827,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 0: case 1: case 8: P(u32, 0x70) = 0x3f000000; break;   /* 0.5 s */
 	case 2:
 	case 3:
-		GAME_CDECL(0x456ed0, void, int, const float *, const float *, const float *, u32)(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
+		GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
 		                                                                                (const float *)(p + 0x10), (const float *)(s + 0x20f397c),
 		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
 		break;

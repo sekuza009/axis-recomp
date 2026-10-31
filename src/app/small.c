@@ -532,7 +532,7 @@ u32 (chat_keepLastLine)(void)
 		g_chatTyping = 0;
 	}
 	g_paused = 0;
-	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys: the key state */
+	input_resetKeys();   /* input_resetKeys: the key state */
 	return (u32)input_initKeyboard(g_hWndMain);
 }
 
@@ -638,7 +638,7 @@ int (reg_readServerSettings)(void)
 {
 	u32 key, type, size;
 	if (RegOpenKeyExA(0x80000001, (const char *)0x4b1728, 0, 0xf003f, &key)) {
-		GAME_CDECL(0x41edf0, int, const char *)((const char *)(g_language == 1 ? 0x4b16a4 : 0x4b1660));   /* sys_messageBox */
+		sys_messageBox((const char *)(g_language == 1 ? 0x4b16a4 : 0x4b1660));
 		RegCloseKey(key);
 		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
@@ -689,7 +689,7 @@ int (sys_checkClockTampering)(void)
 	g_clockCheckTickSeconds = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
-		GAME_CDECL(0x41edf0, int, const char *)((const char *)(g_language == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
+		sys_messageBox((const char *)(g_language == 1 ? 0x4b2914 : 0x4b2888));
 		if (g_clockCheckClosed) {
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
@@ -771,11 +771,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ 0x30c, 0x13eb000, 0x4c75f0, 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, 0x45e1f0 },     /* head */
-	{ 0x310, 0x140c8bc, 0x4c7624, 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, 0x45e2c0 },    /* chest (actor_updateBody) */
-	{ 0x314, 0x1447ec0, 0x4c7658, 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, 0x45e390 },  /* arms */
-	{ 0x318, 0x148646c, 0x4c7688, 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, 0x45e460 }, /* legs */
-	{ 0x31c, 0x14d1ab0, 0x4c76b8, 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, 0x45e530 }, /* booster */
+	{ 0x30c, 0x13eb000, 0x4c75f0, 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
+	{ 0x310, 0x140c8bc, 0x4c7624, 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
+	{ 0x314, 0x1447ec0, 0x4c7658, 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
+	{ 0x318, 0x148646c, 0x4c7688, 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
+	{ 0x31c, 0x14d1ab0, 0x4c76b8, 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);

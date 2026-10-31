@@ -232,7 +232,7 @@ void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 		FIELD(void *, view, 8) = 0;
 		FIELD(int, view, 0xc) = 0;
 	}
-	GAME_THISCALL(0x483fc0, void, void *)(view);   /* ViewVolume_clear */
+	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(view);   /* ViewVolume_clear */
 	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
 	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)0x4c7b5c))   /* strstr */
 		return;

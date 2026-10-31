@@ -15,7 +15,7 @@ void (timer_init)(void)
 {
 	u64 f;
 	if (!QueryPerformanceFrequency(&f))
-		GAME_CDECL(0x41edf0, int, const char *)((const char *)0x4b24d4);   /* sys_messageBox */
+		sys_messageBox((const char *)0x4b24d4);
 	g_timerFrequency = f;
 	int shift = 0;
 	g_timerShift = 0;
@@ -91,7 +91,7 @@ long double THISCALL (timer_getGameTime)(u8 *t)
 {
 #define FIELD(type, offset) GAME_VAR(type, t + (offset))
 #define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
-#define fatal() GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xae2f00, (const char *)0x4c7b80)
+#define fatal() GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xae2f00, (const char *)0x4c7b80)
 	if (FIELD(int, 4) == 0) {
 		if (!QueryPerformanceFrequency(&FIELD(u64, 0xc)))
 			fatal();

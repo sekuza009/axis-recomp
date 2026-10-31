@@ -50,7 +50,7 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 {
 	u8 *r = FIELD(u8 *, space, head);
 	if (!r) {
-		GAME_CDECL(0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
 			(void *)0xae2ed0, (const char *)format, FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
 			FIELD(int, space, 0x20), FIELD(int, space, 0x3c), FIELD(int, space, 0x30), FIELD(int, space, 0x4c),
 			FIELD(int, space, 0x40));
@@ -81,7 +81,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
 	u32 *block = FIELD(u32 *, 0x48);
 	if (!block) {
-		GAME_CDECL(0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)0xae2ed0, (const char *)0x4c7924,
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)0xae2ed0, (const char *)0x4c7924,
 			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
 		return 0;
 	}

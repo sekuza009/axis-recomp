@@ -141,7 +141,7 @@ u32 (armc_partScreenClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_CDECL(0x40e490, u32, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
+	u32 button = GAME_FN(armcParts_hitTest, 0x40e490, u32, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
 	u32 r;
 	int step;
 	switch (button) {
@@ -149,14 +149,14 @@ u32 (armc_partScreenClicks)(void)
 		if (g_armcMode == (button == 0 ? 1 : 3))
 			return button;
 		sound_playMenu(2);
-		GAME_CDECL(0x40f870, void, int)(0);
-		return GAME_CDECL(button == 0 ? 0x40f200 : 0x40f320, u32, void)();
+		armc_pickSlot(0);
+		return GAME_CDECL(button == 0 ? FN_ADDR(armc_showPartsPage, 0x40f200) : FN_ADDR(armc_showColourPage, 0x40f320), u32, void)();
 	case 3: case 4:
 		sound_playMenu(0);
-		return GAME_CDECL(0x40f0f0, u32, int)(button == 3);
+		return GAME_FN(armc_exit, 0x40f0f0, u32, int)(button == 3);
 	case 6: case 7: case 8: case 9: case 10: case 11:
-		GAME_CDECL(0x40f870, void, int)(button - 6);   /* armc_pickSlot: the slot picked */
-		return GAME_CDECL(0x41e760, u32, int)(2);
+		armc_pickSlot(button - 6);   /* armc_pickSlot: the slot picked */
+		return GAME_FN(sound_playMenu, 0x41e760, u32, int)(2);
 	case 12: case 13:
 		step = button == 12 ? -1 : 1;
 		g_armcCursor += step;
@@ -165,11 +165,11 @@ u32 (armc_partScreenClicks)(void)
 				g_armcCursor = g_weaponCount - 1;
 			else if (step > 0 && g_armcCursor >= g_weaponCount)
 				g_armcCursor = 1;
-		} else if (g_armcSlot > 3 && GAME_CDECL(0x40f830, int, int)(g_armcCursor) == 1)   /* armc_colourPartEquipped */
+		} else if (g_armcSlot > 3 && armc_colourPartEquipped(g_armcCursor) == 1)   /* armc_colourPartEquipped */
 			g_armcCursor += step;
 		sound_playMenu(8);
-		GAME_CDECL(0x40f950, void, void)();          /* armc_showCursorItem: the item shown */
-		return GAME_CDECL(0x40f9e0, u32, void)();    /* armc_takeCursorItem: and taken */
+		armc_showCursorItem();          /* armc_showCursorItem: the item shown */
+		return GAME_FN(armc_takeCursorItem, 0x40f9e0, u32, void)();    /* armc_takeCursorItem: and taken */
 	case 14:
 		sound_playMenu(2);
 		r = 1 - (*(u32 *)&g_armcSpin);

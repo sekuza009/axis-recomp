@@ -243,7 +243,7 @@ u32 THISCALL (actor_destroyPartLists)(u8 *self)
 	static const u32 members[8] = { 0x701c, 0x587c, 0x40dc, 0x34f4, 0x2524, 0x1554, 0xd54, 0x554 };
 	u32 r = 0;
 	for (int k = 0; k < 8; k++)
-		r = GAME_THISCALL(0x46f470, u32, void *)(self + members[k]);
+		r = GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, u32, void *)(self + members[k]);
 	return r;
 }
 
@@ -255,9 +255,9 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 	static const u32 shapes[5] = { 0x2fa68, 0x1fe1c, 0x101d0, 0x8284, 0x338 };
 	u32 r = 0;
 	for (int k = 0; k < 5; k++)
-		GAME_THISCALL(0x46ae60, u32, void *)(self + skeletons[k]);   /* SkeletonManager_dtor */
+		GAME_THISFN(SkeletonManager_dtor, 0x46ae60, u32, void *)(self + skeletons[k]);   /* SkeletonManager_dtor */
 	for (int k = 0; k < 5; k++)
-		r = GAME_THISCALL(0x466a10, u32, void *)(self + shapes[k]);  /* ShapeManager_dtor */
+		r = GAME_THISFN(ShapeManager_dtor, 0x466a10, u32, void *)(self + shapes[k]);  /* ShapeManager_dtor */
 	return r;
 }
 
@@ -271,19 +271,19 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
 	*(u32 *)self = 0x4aa23c;   /* the vtable */
-	GAME_THISCALL(0x48b410, void, void *)(self + 0x2148ed8);
-	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, 0x45ff30);
-	GAME_THISCALL(0x46ae60, void, void *)(self + 0x1cbe198);   /* SkeletonManager_dtor */
-	GAME_THISCALL(0x466a10, void, void *)(self + 0x19e188c);   /* ShapeManager_dtor */
-	eh_vector_destructor(self + 0x1561b68, 0x47fd2, 16, 0x463960);
-	GAME_THISCALL(0x46ae60, void, void *)(self + 0x13016d0);
-	GAME_THISCALL(0x466a10, void, void *)(self + 0xe3c93c);
-	GAME_THISCALL(0x464ba0, void, void *)(self + 0xdc0cc4);
-	GAME_THISCALL(0x464ba0, void, void *)(self + 0xdc0a78);
-	GAME_THISCALL(0x483d50, void, void *)(self + 0x9e3020);
-	GAME_THISCALL(0x483d50, void, void *)(self + 0x9d8010);
-	GAME_THISCALL(0x483d50, void, void *)(self + 0x9ccffc);
-	return GAME_THISCALL(0x481390, u32, void *)(self + 0xa10);
+	Scene_dtor(self + 0x2148ed8);
+	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
+	GAME_THISFN(SkeletonManager_dtor, 0x46ae60, void, void *)(self + 0x1cbe198);   /* SkeletonManager_dtor */
+	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)(self + 0x19e188c);   /* ShapeManager_dtor */
+	eh_vector_destructor(self + 0x1561b68, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
+	GAME_THISFN(SkeletonManager_dtor, 0x46ae60, void, void *)(self + 0x13016d0);
+	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)(self + 0xe3c93c);
+	GAME_THISFN(Model_dtor, 0x464ba0, void, void *)(self + 0xdc0cc4);
+	GAME_THISFN(Model_dtor, 0x464ba0, void, void *)(self + 0xdc0a78);
+	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9e3020);
+	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9d8010);
+	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9ccffc);
+	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)(self + 0xa10);
 }
 
 /* 0x46cd00 (thiscall on an image): a 24-bit BMP opened (the last one closed first): its file header (14 bytes, +8)
@@ -292,7 +292,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text) GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)(text))
+#define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)(text))
 	if (GAME_VAR(void *, image + 4))
 		fclose(GAME_VAR(void *, image + 4));
 	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
@@ -434,7 +434,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	if (w <= 0 || h <= 0)
 		return;
 	if (w > 0x400)
-		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5984);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5984);
 	crt_fseek(f, GAME_VAR(int, image + 0x12) + ((GAME_VAR(int, image + 0x42) - sy - h) * GAME_VAR(int, image + 0x3e) + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
@@ -455,7 +455,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 				p4[k * 4 + 3] = 0xff;
 			}
 		else
-			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5964);
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa1f0f0, (const char *)0x4c5964);
 		crt_fseek(f, (GAME_VAR(int, image + 0x3e) - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
@@ -483,65 +483,65 @@ static const u32 k_cameraPresets[6][10] = {
 u8 *THISCALL (game_loadAllData)(u8 *g)
 {
 #define CALL(addr, at) GAME_THISCALL(addr, void, void *)(at)
-#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))0x401290)(at, size, count, 0x45fff0)   /* (the CRT's iterators are stdcall) */
+#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = g + 0x1f36c8;
-	CALL(0x487430, g + 0xc);   /* TimeSync_ctor */
+	GAME_THISFN(TimeSync_ctor, 0x487430, void, void *)(g + 0xc);   /* TimeSync_ctor */
 	VTABLE(g + 0x74, 0x4aa24c);
-	CALL(0x483fc0, g + 0x74);
-	CALL(0x463790, s + 0xa10);   /* CollisionVolume_ctor */
+	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(g + 0x74);
+	GAME_THISFN(CollisionVolume_ctor, 0x463790, void, void *)(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
 	VTABLE(s + 0x9ccffc, 0x4aa248);
-	CALL(0x483d60, s + 0x9ccffc);
+	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9ccffc);
 	VECTOR(s + 0x9d8014, 0x2c, 0x400);
 	VTABLE(s + 0x9d8010, 0x4aa248);
-	CALL(0x483d60, s + 0x9d8010);
-	CALL(0x462560, s + 0x9e3020);   /* Light_ctor */
+	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9d8010);
+	GAME_THISFN(Light_ctor, 0x462560, void, void *)(s + 0x9e3020);   /* Light_ctor */
 	VECTOR(s + 0x9ee080, 0xc, 0x126);
 	VECTOR(s + 0x9eee54, 0xc, 0x31);
 	VECTOR(s + 0x9ef0cc, 0xc, 0x30);
 	VECTOR(s + 0x9ef350, 0xc, 0x79);
 	VECTOR(s + 0xdc0244, 0x20c, 4);
-	CALL(0x462cf0, s + 0xdc0a78);   /* Model_ctor */
-	CALL(0x462cf0, s + 0xdc0cc4);
+	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0a78);   /* Model_ctor */
+	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0cc4);
 	VECTOR(s + 0xe36214, 0x14, 0x3e8);
 	VTABLE(s + 0xe3c93c, 0x4aa244);
-	CALL(0x466a20, s + 0xe3c93c);
+	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0xe3c93c);
 	VECTOR(s + 0xf30dc8, 4, 1000000);
 	VTABLE(s + 0x13016d0, 0x4aa240);
-	CALL(0x46ae70, s + 0x13016d0);
+	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x13016d0);
 	VECTOR(s + 0x131ae44, 0x2cc, 0x3e8);
 	VECTOR(s + 0x14d1ab4, 0x2e18, 0x32);
-	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1561b68, 0x47fd2, 0x10, 0x463850, 0x463960);
+	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1561b68, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
 	VTABLE(s + 0x19e188c, 0x4aa244);
-	CALL(0x466a20, s + 0x19e188c);
+	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0x19e188c);
 	VTABLE(s + 0x1cbe198, 0x4aa240);
-	CALL(0x46ae70, s + 0x1cbe198);
+	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x1cbe198);
 	VECTOR(s + 0x1cd6fb4, 0x5c, 0x64);
-	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1cd93a8, 0x8888, 0x64, 0x463a40, 0x45ff30);
+	((void (STDCALL *)(void *, int, int, u32, u32))0x49fd2d)(s + 0x1cd93a8, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	VECTOR(s + 0x202ef34, 0x4e8, 0x190);
 	VECTOR(s + 0x20a99c0, 0x12c, 0x3e8);
 	VECTOR(s + 0x20f300c, 0xc, 0xc8);
 	VECTOR(s + 0x20fab74, 0x14, 0x20);
 	VECTOR(s + 0x20fadf8, 0x28, 0xc8);
 	VECTOR(s + 0x20fcfe4, 4, 0x2000);
-	CALL(0x4637f0, s + 0x2148ed8);   /* Scene_ctor */
+	GAME_THISFN(Scene_ctor, 0x4637f0, void, void *)(s + 0x2148ed8);   /* Scene_ctor */
 	VTABLE(s, 0x4aa23c);
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, 0x4aa238);
 	GAME_VAR(int, g + 4) = GAME_VAR(int, g + 8) = -1;
-	CALL(0x487480, g + 0xc);
+	GAME_THISFN(TimeSync_clear, 0x487480, void, void *)(g + 0xc);
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
 	GAME_VAR(int, g + 0x70) = 0;
-	GAME_THISCALL(0x484050, void, void *, int, int, int, int, int, int, void *, int)(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
+	GAME_THISFN(factor_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
-	GAME_THISCALL(0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, 0x4c45a8, 0x4b1784, 0x4c45b0, 0x4c45b8,
+	GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, 0x4c45a8, 0x4b1784, 0x4c45b0, 0x4c45b8,
 	                                                                                  0x4c45c0, 0x4c45cc, 0x4c45d4, 0x4c45dc, 0x4c45e4);   /* item_initTextures */
-	if (!GAME_THISCALL(0x473780, int, void *, const char *)(s, (const char *)0x4b4418))   /* catalogue_loadComponents */
-		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
-	if (!GAME_THISCALL(0x4875d0, int, void *, const char *)(s, (const char *)0x4c4588))   /* map_loadItemInfoFrom */
-		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+	if (!GAME_THISFN(catalogue_loadComponents, 0x473780, int, void *, const char *)(s, (const char *)0x4b4418))   /* catalogue_loadComponents */
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+	if (!GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(s, (const char *)0x4c4588))   /* map_loadItemInfoFrom */
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
 	GAME_VAR(int, g + 0x233cc10) = 1;
 	stage_selectActor((Stage *)s, -1);
@@ -569,7 +569,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 		char *m = macros + k * 0x40;
 		m[(int)strlen(m) - 1] = 0;
 	}
-	CALL(0x4617f0, g);   /* chat_saveMacros */
+	GAME_THISFN(chat_saveMacros, 0x4617f0, void, void *)(g);   /* chat_saveMacros */
 	return g;
 #undef CALL
 #undef VECTOR
@@ -593,7 +593,7 @@ static void zero_dwords(u8 *at, int n)
 void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
-		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, g_insertCdMessage);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, g_insertCdMessage);
 	GAME_VAR(u32, g + 4) = a;
 	GAME_VAR(int, g + 8) = mode;
 	GAME_VAR(int, g + 0x1f1664) = 0;
@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_resetActors(s);
 	scene_reset(s);
 	if (GAME_VAR(int, g + 8) == 2) {
-		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* stage_setSilentActor */
+		GAME_THISFN(stage_setSilentActor, 0x45dfe0, void, void *, int)(s, 0);   /* stage_setSilentActor */
 		GAME_VAR(int, g + 0x2221f9c) = 0;
 		for (int k = 0; k < 3; k++) {
 			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;
@@ -648,7 +648,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GAME_VAR(int, g + 0x2343287) = -1;
 	zero_dwords(g + 0x234328b, 31);
 	zero_dwords(g + 0x234330b, 4);
-	GAME_THISCALL(0x463480, void, void *)(g);   /* notices_clearAll */
+	notices_clearAll(g);
 	GAME_VAR(int, g + 0x234240d) = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
 	zero_dwords(g + 0x2342411, 3);
 	GAME_VAR(int, g + 0x234241d) = -1;

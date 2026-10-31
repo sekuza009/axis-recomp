@@ -162,7 +162,7 @@ clear:
 void (input_updateMenuCursor)(void)
 {
 	const int *state = (const int *)0x4d1a88;   /* DIMOUSESTATE: x, y, wheel, buttons */
-	GAME_CDECL(0x4012e0, int, void)();          /* input_reacquireMouse */
+	GAME_FN(input_reacquireMouse, 0x4012e0, int, void)();          /* input_reacquireMouse */
 	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
 	g_mouseWheelTurned = 0;
@@ -268,7 +268,7 @@ int (input_isDown)(int key)
 	case 0xfe:
 		return g_mouseWheel > 0;
 	}
-	return GAME_CDECL(0x401540, int, int)(key) != 0;   /* input_keyHeldChecked: held */
+	return GAME_FN(input_keyHeldChecked, 0x401540, int, int)(key) != 0;   /* input_keyHeldChecked: held */
 }
 
 /* 0x401600: was the key bound to an action just pressed (true once per press)? A key latches in 0x4d1a98 + key * 4
@@ -303,11 +303,11 @@ int (input_justPressed)(int key)
 	if (key == 0xfe)
 		return g_mouseWheel > 0;
 	int *seen = (int *)(0x4d1a98 + key * 4);
-	if (!GAME_CDECL(0x4014f0, int, int)(key))   /* input_keyHeld */
+	if (!GAME_FN(input_keyHeld, 0x4014f0, int, int)(key))   /* input_keyHeld */
 		*seen = 0;
 	if (*seen)
 		return 0;
-	if (!GAME_CDECL(0x401540, int, int)(key))   /* input_keyHeldChecked */
+	if (!GAME_FN(input_keyHeldChecked, 0x401540, int, int)(key))   /* input_keyHeldChecked */
 		return 0;
 	*seen = 1;
 	return 1;
