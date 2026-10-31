@@ -52,7 +52,7 @@ lits = set()
 for f in glob.glob('src/**/*.[ch]', recursive=True):
 	for m in re.findall(r'0x(4[0-9a-f]{5})\b', open(f, encoding='latin-1').read()):
 		a = int(m, 16)
-		if (0x401000 <= a < 0x49e000 or 0x4a8e20 <= a < 0x4a9000) and a not in entries:
+		if (0x401000 <= a < 0x49e000 or 0x4a8300 <= a < 0x4a8740 or 0x4a8e20 <= a < 0x4a9000) and a not in entries:
 			lits.add(a)
 keep = []
 for a in sorted(lits):

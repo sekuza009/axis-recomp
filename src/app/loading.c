@@ -340,7 +340,7 @@ static void no_next(u8 *g)
 /* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
 static void keep_alive(u8 *g)
 {
-	if (G(int, 8) == 1 && G(int, 0x234240d) == 0 && FUN_004a86d0() == 1)
+	if (G(int, 8) == 1 && G(int, 0x234240d) == 0 && net_isClient() == 1)
 		net_sendGamePacket(g, G(int, 0x234240d));
 }
 
@@ -439,21 +439,21 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			int from, size;
 			u8 data[0x230];   /* (the original's buffer runs on into its path and name buffers) */
 			int r;
-			FUN_004a8350();
-			while ((r = FUN_004a8450(&from, &size, data)) != 0) {
+			netq_poll();
+			while ((r = netq_receive(&from, &size, data)) != 0) {
 				if (r == 1)
 					net_processGamePacket(g, from, size, data);
 				G(int, 0x2340c7c)++;
-				FUN_004a8350();
+				netq_poll();
 			}
 		}
-		if (FUN_004a86d0() == 0) {
+		if (net_isClient() == 0) {
 			long double t = fadd_m(fld_m((const float *)(g + 0x44)), (const float *)(g + 0x2342395));
 			G(float, 0x2342395) = f32(t);
 			if (t > *(const float *)0x4a93d0)
 				stop = 1;
 		}
-		if (FUN_004a8730() >= 0x80)
+		if (netq_resends() >= 0x80)
 			stop = 1;
 		if (input_justPressed(GAME_VAR(int, 0x4defc8)) || input_justPressed(GAME_VAR(int, 0x4defcc)))
 			stop = 1;

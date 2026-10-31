@@ -162,7 +162,8 @@ static int install_hooks(void)
 }
 
 /* AXISRC_POISON=1 (a check): every byte of the game's own code (its functions from 0x401000 to the MSVC runtime at
-   0x49e000, by fnsizes.h, and the installed exe's patch code at 0x4a8e20 ..) becomes int3, except the jumps at the rebuilt functions' entries (and
+   0x49e000 and its packet layer at 0x4a8300 .. 0x4a8740, by fnsizes.h, and the installed exe's patch code at
+   0x4a8e20 ..) becomes int3, except the jumps at the rebuilt functions' entries (and
    the patch layer's at movie_playEnding's), and the bytes the rebuilds read (g_saKeep). Any original game code still
    reached then stops the game at once, at its address. */
 static char g_logPath[MAX_PATH];
@@ -213,7 +214,7 @@ static int poison(void)
 	AddVectoredExceptionHandler(1, poison_hit);
 	g_realExit = *(void (WINAPI **)(UINT))0x4a90f8;
 	*(void (WINAPI **)(UINT))0x4a90f8 = poison_exit;
-	static const unsigned ranges[][2] = { { 0x401000, 0x49e000 }, { 0x4a8e20, 0x4a9000 } };
+	static const unsigned ranges[][2] = { { 0x401000, 0x49e000 }, { 0x4a8e20, 0x4a9000 }, { 0x4a8300, 0x4a8740 } };
 	static BYTE keep[0xa8000];   /* (0x401000 .. 0x4a9000) */
 	for (int i = 0; i < g_saNhooks; i++)
 		memset(keep + g_saHooks[i].addr - 0x401000, 1, 5);
@@ -241,10 +242,11 @@ static int poison(void)
 	   object formats at 0x44f950 that dinput reads (its keyboard set-up failed when they were poisoned) */
 	static BYTE code[0xa8000];
 	for (int i = 0; i < (int)(sizeof g_fnSizes / sizeof g_fnSizes[0]); i++)
-		if (g_fnSizes[i][0] >= ranges[0][0] && g_fnSizes[i][0] + g_fnSizes[i][1] <= ranges[0][1])
+		if ((g_fnSizes[i][0] >= ranges[0][0] && g_fnSizes[i][0] + g_fnSizes[i][1] <= ranges[0][1]) ||
+		    (g_fnSizes[i][0] >= 0x4a8300 && g_fnSizes[i][0] + g_fnSizes[i][1] <= 0x4a8740))   /* (the packet layer, after the runtime) */
 			memset(code + g_fnSizes[i][0] - 0x401000, 1, g_fnSizes[i][1]);
 	memset(code + ranges[1][0] - 0x401000, 1, ranges[1][1] - ranges[1][0]);
-	for (int r = 0; r < 2; r++)
+	for (int r = 0; r < 3; r++)
 		for (unsigned a = ranges[r][0]; a < ranges[r][1]; a++)
 			if (code[a - 0x401000] && !keep[a - 0x401000] && a >= lo && a < hi) {
 				*(BYTE *)a = 0xCC;

@@ -106,14 +106,14 @@ static void first_round(Scene *s)
 		}
 	if (s->network == 1) {
 		if (!s->client) {
-			FUN_004a8300(1);
+			netq_reset(1);
 			s->localPlayer = 0;
 			actor_resetSlot(STAGE(s), 0);
 			player_setName(STAGE(s), s->localPlayer, s->mechName);
 			strcpy(s->players[s->localPlayer].name, s->mechName);
 			s->players[s->localPlayer].flagOwner = s->localPlayer;
 		} else {
-			FUN_004a8300(0);
+			netq_reset(0);
 			s->localPlayer = -1;
 			g_mapIndex = -1;
 			s->nextMap = -1;

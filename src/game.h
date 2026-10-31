@@ -126,7 +126,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define setup_drawKeyBindingRow() GAME_CDECL(0x421350, void, void)()
 #define game_setGameTypeFlags(stage, mode) GAME_THISCALL(0x4732f0, void, Stage *, int)(stage, mode)
 #define sys_fatalError(out, format, value) GAME_CDECL(0x46c710, void, char *, const char *, int)(out, format, value)   /* (one value) a message, then exit */
-#define FUN_004a8300(host) GAME_CDECL(0x4a8300, void, int)(host)
+#define netq_reset(host) GAME_CDECL(0x4a8300, void, int)(host)
 #define stage_selectActor(stage, i) GAME_THISCALL(0x45dfb0, void, Stage *, int)(stage, i)
 #define sound_setVolume(v) GAME_CDECL(0x456de0, void, int)(v)
 #define music_setVolumeSetting(v) GAME_CDECL(0x457140, void, int)(v)
@@ -172,8 +172,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define scene_loadPath(stage, dt) GAME_THISCALL(0x48fd50, void, void *, u32)(stage, dt)
 #define match_escMenu(scene) GAME_THISCALL(0x49ca70, void, void *)(scene)
 #define crt_fprintf(...) GAME_CDECL(0x49f135, int, void *, const char *, ...)(__VA_ARGS__)
-#define FUN_004a86f0() GAME_CDECL(0x4a86f0, int, void)()   /* the local player's slot */
-#define FUN_004a8720() GAME_CDECL(0x4a8720, void, void)()
+#define net_localSlot() GAME_CDECL(0x4a86f0, int, void)()   /* the local player's slot */
+#define netq_clearResends() GAME_CDECL(0x4a8720, void, void)()
 #define actor_setPartColor_bits(stage, p, part, a, b, c, d, e, f) GAME_THISCALL(0x474b50, u32, void *, int, int, u32, u32, u32, \
 	u32, u32, u32)(stage, p, part, a, b, c, d, e, f)   /* (the six as a float's bits) */
 #define view_setAngle(v) GAME_CDECL(0x4686e0, int, u32)(v)   /* the view angle (0x4c4dec) set, a float's bits */
@@ -359,10 +359,11 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define input_asyncKeyPressed(key) GAME_CDECL(0x487bd0, int, int)(key)
 #define net_sendGamePacket(scene, kind) GAME_THISCALL(0x48dbf0, void, void *, int)(scene, kind)
 #define net_processGamePacket(scene, from, size, data) GAME_THISCALL(0x48c830, void, void *, int, int, void *)(scene, from, size, data)
-#define FUN_004a8350() GAME_CDECL(0x4a8350, void, void)()   /* the network's incoming messages gathered */
-#define FUN_004a8450(from, size, data) GAME_CDECL(0x4a8450, int, int *, int *, void *)(from, size, data)   /* the next message: 0 none, 1 a game packet */
-#define FUN_004a86d0() GAME_CDECL(0x4a86d0, int, void)()   /* online as a client? */
-#define FUN_004a8730() GAME_CDECL(0x4a8730, int, void)()
+#define netq_poll() GAME_CDECL(0x4a8350, void, void)()   /* the network's incoming messages gathered */
+#define netq_receive(from, size, data) GAME_CDECL(0x4a8450, int, int *, int *, void *)(from, size, data)   /* the next message: 0 none, 1 a game packet */
+#define net_isClient() GAME_CDECL(0x4a86d0, int, void)()   /* online as a client? */
+#define netq_online() GAME_CDECL(0x4a86c0, int, void)()   /* (g_netOnline) */
+#define netq_resends() GAME_CDECL(0x4a8730, int, void)()
 #define map_loadGroundInfoFrom(stage, name) GAME_THISCALL(0x48b9d0, int, void *, const char *)(stage, name)
 #define map_loadObjectInfoFrom(stage, name, a) GAME_THISCALL(0x48b710, void, void *, const char *, int)(stage, name, a)
 #define collision_initVolume(stage, x, y, z, cell, depth, a) GAME_THISCALL(0x471040, void, void *, u32, u32, u32, u32, int, int)(stage, x, y, z, cell, depth, a)
@@ -372,7 +373,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define font_penDraw(x, y, a, text) GAME_CDECL(0x46bb00, void, int, int, int, const char *)(x, y, a, text)
 #define space_traceNodes(grid, p0, p1, hit, subs, nsubs) GAME_THISCALL(0x483060, u32, void *, const float *, const float *, void *, void *, int)(grid, p0, p1, hit, subs, nsubs)
 #define match_resetInputState(scene) GAME_THISCALL(0x461f10, void, void *)(scene)
-#define FUN_004a86e0() GAME_CDECL(0x4a86e0, int, void)()   /* the network says the match is over? */
+#define net_matchOver() GAME_CDECL(0x4a86e0, int, void)()   /* the network says the match is over? */
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define Light_read(lights, f) GAME_THISCALL(0x483d70, void, void *, void *)(lights, f)   /* the lights read */
 #define math_triangleNormal(out, a, b, c) GAME_CDECL(0x4679a0, float *, float *, const float *, const float *, const float *)(out, a, b, c)   /* a triangle's normal */

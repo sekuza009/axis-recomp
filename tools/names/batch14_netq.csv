@@ -1,0 +1,8 @@
+FUN_004a8300,netq_reset
+FUN_004a8350,netq_poll
+FUN_004a8450,netq_receive
+FUN_004a86d0,net_isClient
+FUN_004a86e0,net_matchOver
+FUN_004a86f0,net_localSlot
+FUN_004a8720,netq_clearResends
+FUN_004a8730,netq_resends

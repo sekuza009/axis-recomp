@@ -4168,6 +4168,18 @@ DWORD hud_drawDigits(int x, int y, DWORD scale, int value, int count, int padded
 DWORD font_penDraw(int x, int y, int font, const char *format, ...);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 long WINAPI game_wndProc(void *wnd, DWORD msg, DWORD w, DWORD l);
+/* readable rebuilds in src/net/net_packets.c */
+unsigned netq_reset(int host);
+unsigned netq_poll(void);
+unsigned net_sendPacketData(int size, const void *data);
+int netq_receive(int *from, int *size, void *data);
+int netq_online(void);
+int net_isClient(void);
+int net_matchOver(void);
+int net_localSlot(void);
+int net_playerInUse(int i);
+void netq_clearResends(void);
+int netq_resends(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
@@ -16914,6 +16926,44 @@ static void gameWndProc_setup(void)
 	fill((void *)0x9087b8, 4); fill((void *)0xa0b360, 4); fill((void *)0x4dbb78, 4); fill((void *)0x4dbbf8, 4); fill((void *)0x4db708, 4);
 }
 static DWORD gameWndProc_orig(void) { return ((DWORD (WINAPI *)(DWORD, DWORD, DWORD, DWORD))0x440070)(g_a[0], g_a[1], g_a[2], g_a[3]); }
+/* the match's packet layer (0x4a8300 ..): its flags, each player's next number (-1 .. 127), the arrived-ahead flags,
+   the player table (in use, a packet waiting, its first bytes a number or a resend request, sometimes for the local
+   player), the history; the message sender, the error message and net_receiveAll stubbed */
+static const DWORD g_stubNetq[] = { 0x451270, 3, 0x46c950, 3, 0x450bb0, 0, 0 };
+static void netq_setup(void)
+{
+	callee_stubs(g_stubNetq, (DWORD)irnd(0, 5));
+	G32(0x9f9838) = irnd(0, 3) ? 1 : irnd(0, 2); G32(0xa0b388) = irnd(0, 3) ? 1 : 0; G32(0x9fd94c) = irnd(0, 2);
+	G8(0x9fd954) = (char)irnd(0, 15); G32(0xb116e0) = irnd(0, 15); G32(0xb116e4) = irnd(0, 200);
+	for (int i = 0; i < 16; i++) G32(0xb116a0 + 4 * i) = irnd(0, 4) ? irnd(0, 127) : -1;
+	for (int i = 0; i < 0x800; i++) G32(0xb0f6a0 + 4 * i) = irnd(0, 9) ? 0 : irnd(0, 3) ? 1 : 2;
+	fill((void *)0xaef660, 0x40); fill((void *)0xaef6a0, 0x20000); fill((void *)0x9f9428, 0x50);
+	for (int i = 0; i < 16; i++) {
+		BYTE *r = (BYTE *)(0x9f9840 + i * 0x410);
+		fill(r, 0x50);
+		G32(r) = irnd(0, 2) ? 1 : irnd(0, 1) ? 0 : 7; G32(r + 8) = irnd(0, 2) ? 0 : irnd(0, 3) ? 1 : 3;
+		r[0x10] = (BYTE)(irnd(0, 3) ? irnd(0, 127) : 0x80 | irnd(0, 127)); r[0x11] = (BYTE)(irnd(0, 1) ? G8(0x9fd954) : irnd(0, 15));
+	}
+	fill(BUF, 0x80); g_a[0] = irnd(0, 9) ? 0x40 : irnd(1, 0x48); g_a[1] = irnd(-2, 3); g_a[2] = irnd(-3, 20);
+}
+ST(netq_reset, netq_setup();, (CALL_PLAIN(0x4a8300, 0, g_a[1], 0, 0, 0)), (DWORD)netq_reset(g_a[1]))
+ST(netq_poll, netq_setup();, CALL_PLAIN(0x4a8350, 0, 0, 0, 0, 0), (DWORD)netq_poll())
+/* (0x4a8360 carries the harness's mock of the sender for the other tests: the original is entered past it, its first
+   instruction "call 0x4a86d0" done here) */
+__attribute__((naked)) static void orig_sendPacketData(void)
+{
+	__asm__ volatile("movl $0x4a86d0, %eax\n\tcalll *%eax\n\tmovl $0x4a8365, %ecx\n\tjmpl *%ecx");
+}
+ST(net_sendPacketData, netq_setup();, ((DWORD (__cdecl *)(int, const void *))orig_sendPacketData)(g_a[0], BUF), (DWORD)net_sendPacketData(g_a[0], BUF))
+ST(netq_receive, netq_setup();, CALL_PLAIN(0x4a8450, 0, (int)(BUF + 0x100), (int)(BUF + 0x104), (int)(BUF + 0x200), 0),
+   (DWORD)netq_receive((int *)(BUF + 0x100), (int *)(BUF + 0x104), BUF + 0x200))
+ST(netq_online, netq_setup();, CALL_PLAIN(0x4a86c0, 0, 0, 0, 0, 0), (DWORD)netq_online())
+ST(net_isClient, netq_setup();, CALL_PLAIN(0x4a86d0, 0, 0, 0, 0, 0), (DWORD)net_isClient())
+ST(net_matchOver, netq_setup();, CALL_PLAIN(0x4a86e0, 0, 0, 0, 0, 0), (DWORD)net_matchOver())
+ST(net_localSlot, netq_setup();, CALL_PLAIN(0x4a86f0, 0, 0, 0, 0, 0), (DWORD)net_localSlot())
+ST(net_playerInUse, netq_setup();, CALL_PLAIN(0x4a8700, 0, g_a[2] & 15, 0, 0, 0), (DWORD)net_playerInUse(g_a[2] & 15))
+ST(netq_clearResends, netq_setup();, (CALL_PLAIN(0x4a8720, 0, 0, 0, 0, 0), 0), (netq_clearResends(), 0))
+ST(netq_resends, netq_setup();, CALL_PLAIN(0x4a8730, 0, 0, 0, 0, 0), (DWORD)netq_resends())
 ST(game_wndProc, gameWndProc_setup();, gameWndProc_orig(), (DWORD)game_wndProc((void *)g_a[0], g_a[1], g_a[2], g_a[3]))
 ST(font_penDraw, penDraw_setup();, ((DWORD (__cdecl *)(int, int, int, const char *, ...))0x46bb00)(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]),
    font_penDraw(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]))
@@ -17451,7 +17501,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(netq_reset, 0, 300, 0), T(netq_poll, 0, 300, 0), T(net_sendPacketData, 0, 600, 0), T(netq_receive, 0, 3000, 0), T(netq_online, 0, 100, 0), T(net_isClient, 0, 100, 0), T(net_matchOver, 0, 100, 0), T(net_localSlot, 0, 100, 0), T(net_playerInUse, 0, 100, 0), T(netq_clearResends, 0, 100, 0), T(netq_resends, 0, 100, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18523,7 +18573,13 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
 	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" },
 	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x46bb00, (void *)font_penDraw, "font_penDraw" },
-	{ 0x440070, (void *)game_wndProc, "game_wndProc" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x440070, (void *)game_wndProc, "game_wndProc" },
+	{ 0x4a8300, (void *)netq_reset, "netq_reset" }, { 0x4a8350, (void *)netq_poll, "netq_poll" },
+	{ 0x4a8360, (void *)net_sendPacketData, "net_sendPacketData" }, { 0x4a8450, (void *)netq_receive, "netq_receive" },
+	{ 0x4a86c0, (void *)netq_online, "netq_online" }, { 0x4a86d0, (void *)net_isClient, "net_isClient" },
+	{ 0x4a86e0, (void *)net_matchOver, "net_matchOver" }, { 0x4a86f0, (void *)net_localSlot, "net_localSlot" },
+	{ 0x4a8700, (void *)net_playerInUse, "net_playerInUse" }, { 0x4a8720, (void *)netq_clearResends, "netq_clearResends" },
+	{ 0x4a8730, (void *)netq_resends, "netq_resends" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */

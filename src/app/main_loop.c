@@ -260,7 +260,7 @@ static const u32 k_viewKeys[6] = { 0x4def78, 0x4def80, 0x4def88, 0x4def90, 0x4de
    over), the chat keys, the camera mode cycle (+0x233cc10), the scoreboard keys, the message log toggle cycle
    (+0x2340ce8 / ce4 with their notices). In the in-match menu (+0x2340cf4 1) the mouse moves the selection (the
    original's +-50 step, or the patch DLL's menu_nav where it replaced that block), and its keys choose. A network
-   end (FUN_004a86e0) quits. Its caller ignores the eax it leaves */
+   end (net_matchOver) quits. Its caller ignores the eax it leaves */
 void THISCALL (match_combatInput)(u8 *s)
 {
 	match_resetInputState(s);
@@ -370,7 +370,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (input_justPressed(KEY(0x6803a0)))
 			S(int, 0x2343317) = 1;
 	}
-	if (FUN_004a86e0())
+	if (net_matchOver())
 		S(int, 0x23432cf) = 1;
 }
 #undef S
@@ -1685,9 +1685,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(int, 0x2342425) = 0;
 	}
 	/* joining: the network's slot for the local player */
-	if (S(int, 0x234240d) < 0 && FUN_004a86d0()) {
+	if (S(int, 0x234240d) < 0 && net_isClient()) {
 		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, GAME_VAR(const char *, 0x4d05a4));   /* catalogue_loadComponents */
-		S(int, 0x234240d) = FUN_004a86f0();
+		S(int, 0x234240d) = net_localSlot();
 		actor_resetSlot((Stage *)stage, S(int, 0x234240d));
 		player_setName((Stage *)stage, S(int, 0x234240d), (const char *)(s + 0x2342429));
 		strcpy((char *)ACTOR_AT(S(int, 0x234240d)) + 0x98, (const char *)(s + 0x2342429));
@@ -1753,7 +1753,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		} else
 			free_keys(s, mv, &speed, &turn);
-	} else if (S(int, 0x233c9fc) == 1 && (S(int, 8) == 0 || FUN_004a86d0())) {
+	} else if (S(int, 0x233c9fc) == 1 && (S(int, 8) == 0 || net_isClient())) {
 		if (S(int, 0x2342399) == 1 || S(int, 0x23423a1) == 1) {
 			if (S(int, 0x2342399) == 1 && S(int, 0x23428f6) != S(int, 0x234240d)) {   /* the round's end: the camera turns */
 				float *v = (float *)(s + 0x233cb20) + S(int, 0x233cc10);
@@ -1784,12 +1784,12 @@ void THISCALL (game_processGameMode)(u8 *s)
 	S(int, 0x2340c84) += S(int, 0x2340c7c);
 	S(int, 0x2340c78) = S(int, 0x2340c7c) = 0;
 	if (S(int, 0x23423a1) == 0) {
-		FUN_004a8350();
-		for (int r = FUN_004a8450(&from, &size, packet); r != 0; r = FUN_004a8450(&from, &size, packet)) {
+		netq_poll();
+		for (int r = netq_receive(&from, &size, packet); r != 0; r = netq_receive(&from, &size, packet)) {
 			if (r == 1)
 				net_processGamePacket(s, from, size, packet);
 			S(int, 0x2340c7c)++;
-			FUN_004a8350();
+			netq_poll();
 		}
 	}
 	if (S(int, 0x233cc20) == 1)
@@ -2182,7 +2182,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the connection (a client's) */
 	if (S(int, 8) == 1) {
 		if (S(int, 0x23423a1) == 0) {
-			if (FUN_004a86d0() == 0) {
+			if (net_isClient() == 0) {
 				if (S(float, 0x2342395) > 5.0f) {
 					msg_connectionLost(s);
 					S(int, 0x23423a1) = 1;
@@ -2191,16 +2191,16 @@ void THISCALL (game_processGameMode)(u8 *s)
 				} else
 					S(float, 0x2342395) = f32(fadd_m(fld_m((const float *)(s + 0x2342395)), (const float *)(s + 0x44)));
 			}
-			if (S(int, 0x23423a1) == 0 && FUN_004a8730() >= 0x80) {
-				FUN_004a8720();
+			if (S(int, 0x23423a1) == 0 && netq_resends() >= 0x80) {
+				netq_clearResends();
 				msg_networkUnstable(s);
 				S(int, 0x23423a1) = 1;
 				S(u32, 0x23423a5) = 0x40400000;
 				music_shutdown();
 			}
 		}
-		if (FUN_004a8730() > 0) {
-			FUN_004a8720();
+		if (netq_resends() > 0) {
+			netq_clearResends();
 			S(u32, 0x2340c94) = 0x3f800000;
 		} else if (run_down(s, 0x2340c94))
 			S(int, 0x2340c94) = 0;
