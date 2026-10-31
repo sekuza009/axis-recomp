@@ -4161,6 +4161,8 @@ void input_updateMenuCursor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void gfx_setProjectionHud(int mode, DWORD scale);   /* (scale: a float's bits) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+DWORD gfx_fillRect(int x0, int y0, int x1, int y1);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5859,7 +5861,7 @@ static LONG WINAPI mstub_RegSetValueExA(DWORD k, const char *n, DWORD r, DWORD t
 static LONG WINAPI mstub_RegCloseKey(DWORD k) { mock_rec(0x4a900c, 1, k, 0, 0, 0); return 0; }
 static void WINAPI mstub_glColor4f(DWORD r, DWORD g, DWORD b, DWORD a) { mock_rec(0x4a9228, 4, r, g, b, a); }
 static void WINAPI mstub_glVertex2i(DWORD x, DWORD y) { mock_rec(0x4a91f4, 2, x, y, 0, 0); }
-static void WINAPI mstub_glGetFloatv(DWORD pname, DWORD *out) { mock_rec(0x4a9270, 1, pname, 0, 0, 0); memcpy(out, g_glFloats, 64); }
+static void WINAPI mstub_glGetFloatv(DWORD pname, DWORD *out) { mock_rec(0x4a9270, 1, pname, 0, 0, 0); memcpy(out, g_glFloats, pname == 0xba2 ? 16 : 64); }   /* (GL_VIEWPORT: 4) */
 static void WINAPI mstub_glLoadMatrixf(const DWORD *m) { mock_rec(0x4a926c, 1, mock_hash(m, 64), 0, 0, 0); }
 static void WINAPI mstub_glRotatef(DWORD a, DWORD x, DWORD y, DWORD z) { mock_rec(0x4a91f8, 4, a, x, y, z); }
 static void WINAPI mstub_glTranslatef(DWORD x, DWORD y, DWORD z) { mock_rec(0x4a9214, 3, x, y, z, 0); }
@@ -16823,6 +16825,16 @@ static void projhud_setup(void)
 	float sc = irnd(0, 2) ? 1.0f : csu_fr(1, 300) / 100.0f; g_a[1] = *(int *)&sc;
 }
 ST(gfx_setProjectionHud, projhud_setup();, (CALL_PLAIN(0x4685f0, 0, g_a[0], g_a[1], 0, 0), 0), (gfx_setProjectionHud(g_a[0], (DWORD)g_a[1]), 0))
+/* a filled rectangle: any corners, or the whole screen (projhud_setup's sizes) about a third of the time, the
+   viewport read back as pixel counts or other floats */
+static void fillrect_setup(void)
+{
+	projhud_setup();
+	for (int i = 0; i < 4; i++) GF(&g_glFloats[i]) = irnd(0, 2) ? (float)irnd(0, 4000) : csu_fr(-500000, 500000);
+	if (irnd(0, 2)) { g_a[0] = g_a[1] = 0; g_a[2] = G32(0xa0e810); g_a[3] = G32(0xa0e928); }
+	else for (int i = 0; i < 4; i++) g_a[i] = irnd(0, 3) ? irnd(-10, 2000) : 0;
+}
+ST(gfx_fillRect, fillrect_setup();, CALL_PLAIN(0x46bd60, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)gfx_fillRect(g_a[0], g_a[1], g_a[2], g_a[3]))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
    ChangeDisplaySettingsA's answer; the DEVMODE's unset bytes painted alike */
 static void displaymode_setup(void)
@@ -17357,7 +17369,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18425,7 +18437,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x401540, (void *)input_keyHeldChecked, "input_keyHeldChecked" }, { 0x4014f0, (void *)input_keyHeld, "input_keyHeld" },
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
 	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
-	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */

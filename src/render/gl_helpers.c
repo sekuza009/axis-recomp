@@ -44,6 +44,30 @@ void (gfx_setProjectionHud)(int mode, float scale)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+/* 0x46bd60: the rectangle from (x0, y0) to (x1, y1) (inclusive, y down) filled in the current colour. As the installed
+   exe has it (hudfix.py: its entry jumps to code in the .axnet section's tail), the whole screen (0, 0, width, height),
+   a flash or fade, is filled over the full window, the viewport (the HUD's 16:9 box) put back after. Returns the eax
+   the last GL call leaves */
+static u32 fill_rect(int x0, int y0, int x1, int y1)
+{
+	glBegin(GL_QUADS);
+	glVertex2i(x0, gfx_getHeight() - y0);
+	glVertex2i(x1 + 1, gfx_getHeight() - y0);
+	glVertex2i(x1 + 1, gfx_getHeight() - y1 - 1);
+	glVertex2i(x0, gfx_getHeight() - y1 - 1);
+	return IMPORT(0x4a9220, u32, void)();   /* glEnd */
+}
+u32 (gfx_fillRect)(int x0, int y0, int x1, int y1)
+{
+	if ((x0 | y0) != 0 || x1 != g_glWidth || y1 != g_glHeight)
+		return fill_rect(x0, y0, x1, y1);
+	float vp[4];
+	glGetFloatv(0x0ba2, vp);   /* GL_VIEWPORT */
+	glViewport(0, 0, g_glWidth, g_glHeight);
+	fill_rect(x0, y0, x1, y1);
+	return IMPORT(0x4a91d4, u32, int, int, int, int)((int)vp[0], (int)vp[1], (int)vp[2], (int)vp[3]);   /* glViewport */
+}
+
 /* 0x4685d0: the frame finished and shown (SwapBuffers' result) */
 int (gfx_swapBuffers)(void)
 {
