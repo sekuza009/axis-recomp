@@ -351,7 +351,7 @@ void (profile_44e640)(void)
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75e7a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	/* the portraits */
 	glEnable(GL_TEXTURE_2D);
 	int texture = GAME_VAR(int, 0x4dfa00);

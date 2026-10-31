@@ -27,7 +27,7 @@ int (hud_4017d0)(u32 hi, u32 lo)
 /* 0x402590: the printable characters of a chat line (spaces not counted): outside a match "|x" is a code ("||" a
    '|'), "$[c]" before a character colours it, and in a match or the game room "$#c" too; a double-byte character's
    second byte is skipped */
-int (FUN_00402590)(const char *s)
+int (text_printableLength)(const char *s)
 {
 	int n = 0, state = g_menuState;
 	char c = *s;

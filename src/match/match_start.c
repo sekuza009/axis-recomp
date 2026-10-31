@@ -169,14 +169,14 @@ static void later_round(Scene *s)
 		for (int t = 0; t < 6; t++)
 			s->roundArrays[t][s->cameraMode] = s->restartArrays[t][s->cameraMode];
 	s->cameraMode = 1;
-	FUN_0045dfb0(STAGE(s), -1);
+	stage_selectActor(STAGE(s), -1);
 	s->watchedPlayer = -1;
 	memset(s->watchClear, 0, sizeof s->watchClear);
 	s->playing = 0;
 	(void)timer_getGameTime((u8 *)s + 0xc);
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	FUN_00456de0(GAME_VAR(int, 0x4e0c90));
+	sound_setVolume(GAME_VAR(int, 0x4e0c90));
 	set_4b42dc_457140(GAME_VAR(int, 0x4e0c94));
 	s->roundClear4 = 0;
 	s->teamAsked = 0;
@@ -238,7 +238,7 @@ static void identity(u32 *m)
 }
 
 /* 0x470ad0 (thiscall on the scene): the scene's subsystems reset (load_4723e0; the 100 dwords at +0x202ea80 and
-   +0x202ef30 cleared; the object list, FUN_0047cfd0, load_479a60, load_48fe10), the camera at the origin looking down
+   +0x202ef30 cleared; the object list, stage_clearBullets, load_479a60, load_48fe10), the camera at the origin looking down
    -z (+0x20f3970 .. +0x20f399c) with identity matrices (+0x20f39a0, +0x20f39e0), the start and item points none, the
    id tables (+0x20fce50, +0x1cd6968) all -1, then the scripts (load_48fc30, script_reset) and load_471010. Its
    callers ignore the eax it leaves */
@@ -248,7 +248,7 @@ void THISCALL (scene_reset)(u8 *s)
 	memset(s + 0x202ea80, 0, 0x64 * 4);
 	FIELD(int, s, 0x202ef30) = 0;
 	load_490d10(s);
-	FUN_0047cfd0(s);
+	stage_clearBullets(s);
 	load_479a60(s);
 	load_48fe10(s);
 	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */

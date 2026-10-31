@@ -82,7 +82,7 @@ void THISCALL (match_4799f0)(Stage *stage, int i)
 }
 
 /* 0x47cfd0: the 400 bullets (0x4e8-byte records from 0x202ef34) */
-void THISCALL (FUN_0047cfd0)(Stage *stage)
+void THISCALL (stage_clearBullets)(Stage *stage)
 {
 	FIELD(int, stage, 0x20a99b4) = 0;
 	FIELD(int, stage, 0x20a99b8) = 0;
@@ -132,15 +132,15 @@ void THISCALL (scene_resetActors)(Stage *stage)
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
 	FIELD(int, stage, 0x202e8ec) = 1;
-	FUN_0045df90(stage);
+	stage_clearActorRefs(stage);
 	load_474480(stage);
-	FUN_0045e070(stage);
+	stage_clearActorSlots(stage);
 	for (int i = 0; i < 100; i++)
 		actor_resetSlot(stage, i);
 }
 
 /* 0x45e070: the 100 actor slots emptied (none in use, each free with no player), with the counts */
-void THISCALL (FUN_0045e070)(Stage *stage)
+void THISCALL (stage_clearActorSlots)(Stage *stage)
 {
 	FIELD(int, stage, 0x202e8c8) = 0;
 	FIELD(int, stage, 0x202e8cc) = 0;
@@ -214,7 +214,7 @@ void THISCALL (load_474480)(Stage *stage)
 		FIELD(int, e, 0) = 0;
 		FIELD(int, e, 4) = -1;
 		player_clear(e);
-		FUN_00473470(stage, p);
+		playerRecord_resetColourGrid(stage, p);
 	}
 	FIELD(int, stage, 0x19e1888) = 0;
 }
@@ -226,7 +226,7 @@ void THISCALL (match_470cb0)(Stage *stage)
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
 	FIELD(int, stage, 0x202e8ec) = 1;
-	FUN_0045df90(stage);
+	stage_clearActorRefs(stage);
 	for (int p = 0; p < 16; p++) {
 		u8 *e = (u8 *)stage + 0x1561bac + p * 0x47fd2;
 		FIELD(int, e, -0x44) = 0;
@@ -234,7 +234,7 @@ void THISCALL (match_470cb0)(Stage *stage)
 		player_clear(e);
 	}
 	FIELD(int, stage, 0x19e1888) = 0;
-	FUN_0045e070(stage);
+	stage_clearActorSlots(stage);
 	static const short cleared[] = { 0, 0xc, 0x10, 0x18, 0x1c, 0x24, 0x28, 0x74, 0x3fc, 0x400, 0x404 };
 	for (int i = 0; i < 100; i++) {
 		u8 *a = (u8 *)stage + 0x1cd9480 + i * 0x8888;
@@ -276,7 +276,7 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
    slots up to it are added first (each new one marked free, +0x108), and the first free slot (searched up to and
    including the count, as the original does) kept as the next free (+0x202e8cc). Returns i, or -1 */
-int THISCALL (FUN_0045dc00)(u8 *scene, int i, u32 x, u32 y, u32 parts)
+int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
 {
 #define COUNT GAME_VAR(int, scene + 0x202e8c8)
 #define USED(k) GAME_VAR(int, scene + 0x1cd94b0 + (k) * 0x8888)
@@ -342,14 +342,14 @@ static const PartModel g_parts[5] = {
 };
 
 /* (thiscall on the scene; their callers ignore the eax they leave) */
-void THISCALL (FUN_0045e1f0)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
+void THISCALL (actor_updateHead)(u8 *scene, int a) { part_load(scene, a, &g_parts[0]); }
 void THISCALL (actor_updateBody)(u8 *scene, int a) { part_load(scene, a, &g_parts[1]); }
-void THISCALL (FUN_0045e390)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
-void THISCALL (FUN_0045e460)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
-void THISCALL (FUN_0045e530)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
+void THISCALL (actor_updateArms)(u8 *scene, int a) { part_load(scene, a, &g_parts[2]); }
+void THISCALL (actor_updateLegs)(u8 *scene, int a) { part_load(scene, a, &g_parts[3]); }
+void THISCALL (actor_updateBooster)(u8 *scene, int a) { part_load(scene, a, &g_parts[4]); }
 
 /* 0x45de20 (thiscall on the scene): actor a spawned from a map record for the player (+0x202e8d4; none: a fatal
-   message): set up from its parts (FUN_0045dc00, with the record's position, angle and parts picked out), then given
+   message): set up from its parts (stage_setupActorSlot, with the record's position, angle and parts picked out), then given
    the record's settings: team and two values (kept twice), ranges and speeds scaled, its radius squared (scaled), a
    count from a scaled value, and the rest copied; no targets (+0x87f8, +0x87fc -1). Its callers ignore the eax it
    leaves */
@@ -362,7 +362,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
 	((float *)spawn)[5] = f32(fld_m(&R(float, 0x10)));
 	((float *)spawn)[6] = f32(fld_m(&R(float, 0x14)));
-	FUN_0045dc00((Stage *)scene, a, -1, GAME_VAR(int, scene + 0x202e8d4), spawn);
+	stage_setupActorSlot((Stage *)scene, a, -1, GAME_VAR(int, scene + 0x202e8d4), spawn);
 	if (a < 0)
 		return;
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
@@ -421,7 +421,7 @@ void THISCALL (actor_45ebc0)(u8 *scene, int p)
 /* 0x45e600 (thiscall on the scene): actor a's item in slot (its player type record's +0x320 + slot x 4; negative:
    none) loaded, in the given variant, into the slot's loader: slots 4 and 5 their own (+0x587c; +0x701c, from the
    item's second set of tables), any other only when it is the selected one (+0x140: +0x40dc, and +0x4cc the item's
-   +0x2dc0, -1 without). Without an item the loader is emptied (FUN_0046f4b0). Its callers ignore the eax it leaves */
+   +0x2dc0, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
 void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
@@ -445,18 +445,18 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 		                     it + bones + variant * 0x330, FIELD(u32, it, counts + variant * 4), it + frames + variant * 0x80,
 		                     0, 0, 0, actor + self + 0x30, 0x1770);
 	else
-		FUN_0046f4b0(actor + self);
+		partList_release(actor + self);
 	if (self == 0x40dc)
 		FIELD(int, actor, 0x4cc) = it ? FIELD(int, it, 0x2dc0) : -1;
 }
 
 #define K(address) ((const float *)(address))
 
-/* a hue as the colour code keeps it: wrapped (FUN_0046c100 of it x 0x4a9418, then x 0x4a93ec), brought down by
+/* a hue as the colour code keeps it: wrapped (angle_wrap of it x 0x4a9418, then x 0x4a93ec), brought down by
    0x4a9460 when over 0x4a945c (*h updated); its byte ((h - 0x4aa418) x 0x4aa414 - 0x4aa264) */
 static u8 hue_byte(float *h)
 {
-	long double v = fmul_m(FUN_0046c100(f32(fmul_m(fld_m(h), K(0x4a9418)))), K(0x4a93ec));
+	long double v = fmul_m(angle_wrap(f32(fmul_m(fld_m(h), K(0x4a9418)))), K(0x4a93ec));
 	*h = f32(v);
 	if (v > *K(0x4a945c))
 		*h = f32(fsub_m(fld_m(h), K(0x4a9460)));
@@ -520,8 +520,8 @@ static u8 *weapon_list(u8 *ac)
    faint tint lights it with +0x20f2f48. The viewing actor (+0x202e8d8), when draw is set, shows only the weapon in
    hand; others, when draw is not 1, all their lists up to the count +0x54c (the fifth unless +0x550; flags 0xd00 skip
    them without flares 0x83a9c8 or when too small on screen; faint ones only with flares); flags 0x100 / 0xc00 add a
-   lit pass. A list that would not draw has them all reloaded (FUN_0045e1f0 / actor_updateBody / FUN_0045e390 /
-   FUN_0045e460 / FUN_0045e530 / actor_updatePart). Its caller ignores the eax it leaves */
+   lit pass. A list that would not draw has them all reloaded (actor_updateHead / actor_updateBody / actor_updateArms /
+   actor_updateLegs / actor_updateBooster / actor_updatePart). Its caller ignores the eax it leaves */
 void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 {
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
@@ -611,11 +611,11 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	A(int, 0x550) = 0;
 	if (ok)
 		return;
-	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* FUN_0045e1f0 */
+	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* actor_updateHead */
 	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
-	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* FUN_0045e390 */
-	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* FUN_0045e460 */
-	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* FUN_0045e530 */
+	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* actor_updateArms */
+	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* actor_updateLegs */
+	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* actor_updateBooster */
 	for (int k = 0; k < 6; k++)
 		actor_updatePart(s, a, k, A(u32, 0x49c));
 }
@@ -771,9 +771,9 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    bend the defaults (+0x404 ..: armour, shields, power, cooling, mobility); then the stats: health and energy (the
    head with the level), the weight against the limit (any items' weight unless the game type is 2 .. 11) giving an
    overload r that slows the legs and booster (speed, turn, jump, gravity, fall), the arms' ammunition, and the
-   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (FUN_0045e810),
+   fixed values; its id (a2, or the next serial +0x202e8d0), the player's details, the weapon slot (actor_setWeaponSlot),
    the starting values (actor_45ebc0), the position history, timers and flags reset, its lists loaded and parts
-   placed (FUN_0045e1f0 .. FUN_0045e530, actor_updatePart; viewed by another than itself +0x49c), and the scene told
+   placed (actor_updateHead .. actor_updateBooster, actor_updatePart; viewed by another than itself +0x49c), and the scene told
    an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
 {
@@ -797,7 +797,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x130, 4, 0);
 	A(int, 0x140) = -1;
 	A(int, 0x144) = 0;
-	FUN_0045e810((Stage *)s, a, 0);
+	actor_setWeaponSlot((Stage *)s, a, 0);
 	GAME_THISCALL(0x45ebc0, void, void *, int)(s, a);   /* actor_45ebc0 */
 	A(int, 0x14c) = 1;
 	A(int, 0x150) = 0;
@@ -847,11 +847,11 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x53c, 3, 0);
 	A(u32, 0x548) = 0x3f800000;
 	A(int, 0x54c) = 0;
-	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* FUN_0045e1f0 */
+	GAME_THISCALL(0x45e1f0, void, void *, int)(s, a);   /* actor_updateHead */
 	GAME_THISCALL(0x45e2c0, void, void *, int)(s, a);   /* actor_updateBody */
-	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* FUN_0045e390 */
-	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* FUN_0045e460 */
-	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* FUN_0045e530 */
+	GAME_THISCALL(0x45e390, void, void *, int)(s, a);   /* actor_updateArms */
+	GAME_THISCALL(0x45e460, void, void *, int)(s, a);   /* actor_updateLegs */
+	GAME_THISCALL(0x45e530, void, void *, int)(s, a);   /* actor_updateBooster */
 	for (int k = 5; k >= 0; k--)
 		actor_updatePart(s, a, k, A(u32, 0x49c));
 	fill_dwords(ac + 0x87bc, 10, 0);
@@ -949,7 +949,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 		GAME_THISCALL(0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* match_45fff0: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = 0x4a9754;
-		FUN_0046f480(me + k_listAt[k]);
+		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
 	int ok = A(int, 0x14c) != 1 || totals_agree(s, ac, me);

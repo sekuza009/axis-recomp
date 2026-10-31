@@ -20,7 +20,7 @@ u32 (arena_4519b0)(void)
 }
 
 /* 0x456cd0: with sound on (0xa0e80c), every loaded sound buffer (0xa0e02c .. 0xa0e66c) deleted */
-u32 (FUN_00456cd0)(void)
+u32 (sound_freeAll)(void)
 {
 	if (!GAME_VAR(int, 0xa0e80c))
 		return 0;
@@ -28,7 +28,7 @@ u32 (FUN_00456cd0)(void)
 	for (u32 p = 0xa0e02c; p < 0xa0e66c; p += 4) {
 		r = GAME_VAR(u32, p);
 		if (r) {
-			r = FUN_00467d60((void *)r);
+			r = mem_free((void *)r);
 			GAME_VAR(u32, p) = 0;
 		}
 	}

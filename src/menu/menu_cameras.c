@@ -486,7 +486,7 @@ void (match_debugHandler)(void)
 	if (input_justPressed(g_keyCancel2)) {
 		if (GAME_VAR(int, 0xa0baf8)) {
 			GAME_VAR(int, 0x9f941c) = 1;
-			FUN_00451270((void *)0x9f9418, 0, 0);
+			net_sendMessage((void *)0x9f9418, 0, 0);
 			GAME_VAR(int, 0x9f941c) = 0;
 		}
 		GAME_VAR(int, 0x4de6f8) = 1;

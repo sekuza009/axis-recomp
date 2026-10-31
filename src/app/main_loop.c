@@ -1,10 +1,10 @@
-/* main_loop.c: one frame of the game. WinMain's message loop calls FUN_004202d0 whenever no window message is
+/* main_loop.c: one frame of the game. WinMain's message loop calls app_frame whenever no window message is
    waiting; it runs either a match frame or the front end's menus. */
 #include "../game.h"
 #include <string.h>
 
-/* 0x4202d0 (FUN_004202d0): the frame: the music, the menus' fade-in counted down, then main_loop */
-void (FUN_004202d0)(void)
+/* 0x4202d0 (app_frame): the frame: the music, the menus' fade-in counted down, then main_loop */
+void (app_frame)(void)
 {
 	music_4572b0();
 	if (g_menuFade > 0.0f)
@@ -987,7 +987,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		for (S(int, 0x233cc10) = 0; S(int, 0x233cc10) < 10; S(int, 0x233cc10)++)
 			preset_reset(s);
 		S(int, 0x233cc10) = 1;
-		FUN_0045dfb0((Stage *)stage, -1);
+		stage_selectActor((Stage *)stage, -1);
 		S(int, 0x2340c64) = -1;
 		S(int, 0x2340c68) = S(int, 0x2340c6c) = S(int, 0x2340c70) = 0;
 		timer_getGameTime(s + 0xc);
@@ -1733,7 +1733,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		local_spawn(s);
 	if (S(int, 8) == 0 && S(int, 0x234240d) >= 0 && A_INT(S(int, 0x234240d), 0x1eccb48) == 1 && S(int, 0x2342399) == 0)
 		bot_spawns(s);
-	FUN_0045dfb0((Stage *)stage, S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) == 1 ? S(int, 0x234240d) : -1);
+	stage_selectActor((Stage *)stage, S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) == 1 ? S(int, 0x234240d) : -1);
 	/* the keys' rates */
 	long double sp = fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9554));
 	float speed = (float)sp;
@@ -1810,7 +1810,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		match_496e40(stage, BITS(dt));
 		actor_updateAll(stage, BITS(dt));
 		if (S(int, 0x2342399) == 1 || S(int, 0x23423a1) == 1)
-			FUN_0047cfd0(stage);
+			stage_clearBullets(stage);
 		bullet_updateAll(stage, BITS(dt));
 		match_479a90(stage, BITS(dt));
 		item_update(stage, BITS(dt));
@@ -2230,7 +2230,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				A_INT(i, 0x1eccb54) = A_INT(i, 0x1eccb58) = A_INT(i, 0x1eccb60) = 0;
 				A_INT(i, 0x1eccb64) = A_INT(i, 0x1eccb6c) = A_INT(i, 0x1eccb70) = 0;
 			}
-			FUN_0045df90((Stage *)stage);
+			stage_clearActorRefs((Stage *)stage);
 			msg_newKing((Scene *)s);
 			S(int, 0x234297a) = -1;
 			match_4629c0((Scene *)s, 60.0f);

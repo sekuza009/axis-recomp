@@ -60,11 +60,11 @@ void THISCALL (ViewVolume_captureMatrices)(u8 *view, const float *projection, co
 {
 	float *p = (float *)(view + 0x90b0), *m = (float *)(view + 0x90f0);
 	if (projection)
-		FUN_0047d5a0(p, projection);
+		Mat4_copy(p, projection);
 	else
 		glGetFloatv(0xba7, p);   /* GL_PROJECTION_MATRIX */
 	if (modelview)
-		FUN_0047d5a0(m, modelview);
+		Mat4_copy(m, modelview);
 	else
 		glGetFloatv(0xba6, m);   /* GL_MODELVIEW_MATRIX */
 	Mat4_multiply((float *)(view + 0x9130), p, m);

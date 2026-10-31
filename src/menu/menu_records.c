@@ -54,7 +54,7 @@ void (room_4315c0)(void)
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
-void (FUN_0041ee40)(int i)
+void (menu_showMessage)(int i)
 {
 	GAME_VAR(int, 0x4df900) = 1;
 	memset((void *)0x4df81c, 0, 0x50);
@@ -102,7 +102,7 @@ void (app_430390)(void)
 
 /* 0x40ddb0: the mech unpacked from the network / profile record at 0x9dd5f8 (signed bytes: five parts, the weapons,
    then the colours) */
-void (FUN_0040ddb0)(void)
+void (mech_unpackFromRecord)(void)
 {
 	const signed char *rec = (const signed char *)0x9dd5f8;
 	GAME_VAR(int, 0x4dc878) = rec[0];
@@ -119,7 +119,7 @@ void (FUN_0040ddb0)(void)
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
    negative or NaN chroma or value becomes 0 in the record first) */
-void (FUN_004463a0)(void)
+void (mech_loadFromProfile)(void)
 {
 	GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x9f19fc);
 	GAME_VAR(int, 0x4dc878) = GAME_VAR(int, 0x9f19f8);
@@ -141,7 +141,7 @@ void (FUN_004463a0)(void)
 	}
 }
 
-/* 0x4464b0: the mech stored into the profile record (the inverse of FUN_004463a0) */
+/* 0x4464b0: the mech stored into the profile record (the inverse of mech_loadFromProfile) */
 void (match_4464b0)(void)
 {
 	GAME_VAR(int, 0x9f19f8) = GAME_VAR(int, 0x4dc878);
@@ -333,7 +333,7 @@ void (skirmish_443d50)(int row)
 #define undo_pending GAME_VAR(int, 0x4d7348)
 
 /* 0x443d80: the pending step pushed (value = the top - 1 + step) */
-void (FUN_00443d80)(void)
+void (undo_push)(void)
 {
 	if (undo_pending) {
 		int d = undo_depth;
@@ -347,7 +347,7 @@ void (FUN_00443d80)(void)
 }
 
 /* 0x443de0: one step undone */
-void (FUN_00443de0)(void)
+void (undo_pop)(void)
 {
 	if (undo_depth > 0) {
 		undo_depth--;
@@ -372,10 +372,10 @@ void (menu_443ea0)(void)
 		case 1:
 			break;
 		case 2:
-			FUN_00443d80();
+			undo_push();
 			return;
 		case 3:
-			FUN_00443de0();
+			undo_pop();
 			return;
 		default:
 			return;
@@ -455,10 +455,10 @@ u32 (menu_444070)(void)
 		return 1;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1)
-		return GAME_CDECL(0x443d80, u32, void)();   /* FUN_00443d80: the pending step pushed */
+		return GAME_CDECL(0x443d80, u32, void)();   /* undo_push: the pending step pushed */
 	u32 r = input_justPressed(GAME_VAR(int, 0x4e1514));
 	if (r == 1)
-		return GAME_CDECL(0x443de0, u32, void)();   /* FUN_00443de0: one step undone */
+		return GAME_CDECL(0x443de0, u32, void)();   /* undo_pop: one step undone */
 	return r;
 }
 

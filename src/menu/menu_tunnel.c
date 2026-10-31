@@ -249,7 +249,7 @@ void (menu_drawBackground3D)(TunnelRing *first)
 #define g_tunnelRings GAME_VAR(int, 0x9dae10)
 
 /* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
-u32 (FUN_00441190)(TunnelRing **head)
+u32 (tunnel_removeLastRing)(TunnelRing **head)
 {
 	TunnelRing *first = *head, *last = first, *prev = first;
 	while (last->next != NULL) {
@@ -264,10 +264,10 @@ u32 (FUN_00441190)(TunnelRing **head)
 }
 
 /* 0x441200: one more ring added; every ring but the new last one at full alpha; the last ring */
-TunnelRing *(FUN_00441200)(void)
+TunnelRing *(tunnel_addRing)(void)
 {
 	g_tunnelRings += 1;
-	FUN_00441120(&g_tunnel);
+	tunnel_appendRing(&g_tunnel);
 	TunnelRing *ring = g_tunnel;
 	for (; ring->next != NULL; ring = ring->next)
 		BITS(ring->alpha) = 0x3f800000;
@@ -460,10 +460,10 @@ void (armc_enter)(TunnelRing *ring)
 			g_keysBlocked = 0;
 			BITS(r->alpha) = 0x3f800000;
 			if (state == 1)
-				FUN_00441200();
+				tunnel_addRing();
 			else {
 				g_tunnelRings--;
-				FUN_00441190(&g_tunnel);
+				tunnel_removeLastRing(&g_tunnel);
 			}
 			GAME_VAR(int, 0x76d3e8) = GAME_VAR(int, 0x67ef20);
 			GAME_VAR(int, 0x9eeaa8) = 1;

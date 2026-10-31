@@ -30,7 +30,7 @@ void THISCALL (actor_45e910)(Stage *stage, int i) { weapon_cycle(stage, i, 5); }
 
 /* 0x45e810: actor i's weapon slot changed to slot (slots 0 .. 3 also remembered as the last ordinary one), with the
    weapon its player record holds there */
-void THISCALL (FUN_0045e810)(Stage *stage, int i, int slot)
+void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 {
 	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
 	int player = FIELD(int, actor, 0x10c);
@@ -683,7 +683,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 		rot[0] = f32(fmul_m(fld_m(&rate), K(0x4aa44c)));   /* in radians */
 		for (int k = 0; k < 3; k++)
 			rot[1 + k] = (float)fld_m(&axis[k]);
-		FUN_0047d9a0(m, rot);
+		Mat4_fromAxisAngle(m, rot);
 		T[0] = f32((fmul_m(fld_m(&m[8]), &vel[2]) + fmul_m(fld_m(&m[4]), &vel[1])) + fmul_m(fld_m(&m[0]), &vel[0]));
 		T[1] = f32((fmul_m(fld_m(&m[1]), &vel[0]) + fmul_m(fld_m(&m[9]), &vel[2])) + fmul_m(fld_m(&m[5]), &vel[1]));
 		T[2] = f32((fmul_m(fld_m(&m[2]), &vel[0]) + fmul_m(fld_m(&m[10]), &vel[2])) + fmul_m(fld_m(&m[6]), &vel[1]));

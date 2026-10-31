@@ -29,7 +29,7 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
    0x20 bytes at +0x64, +0x68 frames of 0x28 bytes at +0x6c). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFrom_46aa10)(u8 *self, void *f, void *mem, int size)
 {
-	FUN_004699a0(self);
+	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
 	take_block(self, mem, size, (char *)0xa0eaa8, 0x4c4bec, 0x4c4b08, 1);
 	u8 *bones = AT(u8 *, self, 0x14) = AT(u8 *, self, 8);
@@ -64,8 +64,8 @@ void THISCALL (skel_loadFrom_46aeb0)(u8 *self, const char *dir, int n, u32 a, in
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
 	for (int i = 0; i < AT(int, self, 0x114); i++) {
-		FUN_00469980(AT(u8 *, self, 0x11c) + i * 0x24);
-		FUN_004699a0(AT(u8 *, self, 0x11c) + i * 0x24);
+		Skeleton_clear(AT(u8 *, self, 0x11c) + i * 0x24);
+		Skeleton_release(AT(u8 *, self, 0x11c) + i * 0x24);
 	}
 	AT(u8 *, self, 0x128) = AT(u8 *, self, 8) + n * 0x70;
 }
@@ -82,7 +82,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 		strcpy((char *)self + 0x10, dir);
 	else
 		self[0x10] = 0;
-	FUN_0046cb60((char *)self + 0x10);
+	path_normalize((char *)self + 0x10);
 	AT(u32, self, 0x110) = a;
 	AT(int, self, 0x114) = n;
 	AT(int, self, 0x124) = extra;
@@ -92,8 +92,8 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
 	for (int i = 0; i < AT(int, self, 0x114); i++) {
-		FUN_00464bb0(AT(u8 *, self, 0x11c) + i * 0x4c);
-		FUN_00464bc0(AT(u8 *, self, 0x11c) + i * 0x4c);
+		Model_clear(AT(u8 *, self, 0x11c) + i * 0x4c);
+		Model_release(AT(u8 *, self, 0x11c) + i * 0x4c);
 	}
 	self[0x130] = 0;
 	AT(u8 *, self, 0x128) = AT(u8 *, self, 8) + n * 0x98;
@@ -162,7 +162,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 	fclose(f);
 }
 
-/* 0x46f4e0 (thiscall on an object list): emptied (FUN_0046f4b0), then ns shapes (by the names 0x44 apart, each with
+/* 0x46f4e0 (thiscall on an object list): emptied (partList_release), then ns shapes (by the names 0x44 apart, each with
    an int at +0x40; looked up in the shape cache, the first 64 once, any later ones again when the entries are
    filled) with their element counts summed (+0x18), and nk skeletons (by the names 0x40 apart). Its block (+8, size
    +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, +0xc 1; none a fatal
@@ -172,7 +172,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
                                      int lit, u32 factors, u32 lights, void *mem, int size)
 {
-	FUN_0046f4b0(list);
+	partList_release(list);
 	AT(int, list, 0x10) = ns;
 	AT(int, list, 0x1c) = nk;
 	AT(int, list, 0x2c) = lit;
@@ -359,7 +359,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 {
 	char key[0x100];
 	strcpy(key, name);
-	FUN_0046cb60(key);
+	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)0xa0eaa0, 0x4c5528, 0x4c54c8, &added);
@@ -386,12 +386,12 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 /* 0x466dc0 (thiscall on a shape cache): the shape named name, as skel_getSkeletonPtrBy does it for skeletons: shape
    i (0x4c bytes each from +0x11c) loaded from the shape dat (shape_findDatEntry, shape_read) or a "shp" / "obj" file
    (model_loadFrom), its textures looked up (shape_bindTextureBy with the cache's texture sets +0x130 and seven values
-   +0x230 ..); bound (FUN_00466650) when bind is 1, found or added */
+   +0x230 ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {
 	char key[0x100];
 	strcpy(key, name);
-	FUN_0046cb60(key);
+	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)0xa0e788, 0x4c4d98, 0x4c4d30, &added);
@@ -415,11 +415,11 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		AT(int, cache, 0x120)++;
 	}
 	if (bind == 1)
-		FUN_00466650(shape);
+		shape_bindPartTextures(shape);
 	return shape;
 }
 
-/* 0x466120 (thiscall on a shape): read from f. Its old data released (FUN_00464bc0), the 0x34-byte header (block size
+/* 0x466120 (thiscall on a shape): read from f. Its old data released (Model_release), the 0x34-byte header (block size
    +4, part count +0x10, a point +0x20, the version +0x30: 0x71110300 the current format; an older file has a 0x30-byte
    header and 0x68-byte parts, its block grown by 0x18 a part, the position put back as it was), the block (+8, as
    take_block). The 0x80-byte parts (+0x14) at the block's start, then each part's tables after them: vertices,
@@ -429,7 +429,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
    callers ignore the eax it leaves */
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
-	FUN_00464bc0(shape);
+	Model_release(shape);
 	crt_fread(shape, 0x34, 1, f);
 	int current = AT(u32, shape, 0x30) == 0x71110300;
 	if (!current) {
@@ -504,7 +504,7 @@ void THISCALL (actor_46f8c0)(u8 *pose, const float *base)
 		return;
 	float saved[16], root[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
-	FUN_0047d5a0(root, base ? base : saved);
+	Mat4_copy(root, base ? base : saved);
 	u8 **entry = AT(u8 **, pose, 0x20) + AT(int, pose, 0x24);
 	if (!*entry)
 		return;
@@ -581,7 +581,7 @@ static void translation(float *m, const float *p)
 }
 
 /* 0x469b90 (thiscall on a skeleton): a skeleton from a 3ds Max ASE text file. The old one released
-   (FUN_004699a0); pass 1 counts GEOMOBJECTs (bones, 0x70 bytes), TCB / Bezier position keys (0x20) and TCB rotation
+   (Skeleton_release); pass 1 counts GEOMOBJECTs (bones, 0x70 bytes), TCB / Bezier position keys (0x20) and TCB rotation
    keys (0x28) and takes the data memory (allocated, +0xc 1; or given: too small is fatal); pass 2 (from the top)
    reads SCENE_LASTFRAME / FRAMESPEED (+0x20 the length in ms) / TICKSPERFRAME, and per bone (cameras skipped) its
    NODE_NAME, NODE_PARENT (among the earlier bones; missing is fatal), TM_POS / TM_ROTAXIS / TM_ROTANGLE (y and z
@@ -591,7 +591,7 @@ static void translation(float *m, const float *p)
 void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 {
 	char line[0x100], parent[0x40];
-	FUN_004699a0(sk);
+	Skeleton_release(sk);
 	GAME_VAR(int, sk + 0x10) = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		const char *t = crt_strtok(line, (const char *)0x4c5498);
@@ -712,11 +712,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		u8 *up = all + GAME_VAR(int, bone + 0x40) * 0x70;
 		float t[16], r[16], m[16], inv[16], local[16], rel[16];
 		translation(t, (const float *)(up + 0x44));
-		FUN_0047d9a0(r, (const float *)(up + 0x50));
+		Mat4_fromAxisAngle(r, (const float *)(up + 0x50));
 		Mat4_multiply(m, t, r);
 		Mat4_invert(inv, m);
 		translation(t, (const float *)(bone + 0x44));
-		FUN_0047d9a0(r, (const float *)(bone + 0x50));
+		Mat4_fromAxisAngle(r, (const float *)(bone + 0x50));
 		Mat4_multiply(local, t, r);
 		Mat4_multiply(rel, inv, local);
 		for (int k = 0; k < 3; k++)
@@ -741,9 +741,9 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			u8 *key = GAME_VAR(u8 *, bone + 0x6c) + k * 0x28;
 			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x28) - GAME_VAR(int, key);
 			float r[16], back[16], next[16], step[16];
-			FUN_0047d9a0(r, (const float *)(key + 8));
+			Mat4_fromAxisAngle(r, (const float *)(key + 8));
 			skel_47d830(back, r);
-			FUN_0047d9a0(next, (const float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x30));
+			Mat4_fromAxisAngle(next, (const float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x30));
 			Mat4_multiply(step, back, next);
 			skel_ase_47d2f0((float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x18), step);
 		}
@@ -798,7 +798,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
 	return 1;
 }
 
-/* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (FUN_00464bc0);
+/* 0x464db0 (thiscall on a shape): a shape from a Wavefront OBJ text file. The old one released (Model_release);
    pass 1 counts the parts (usemtl), positions (v), normals (vn), texture coordinates (vt) and the corners of the
    faces (+0x18: a face of 3 or 4 corners, 3 or 6; fewer are fatal; +0x1c triangles); the data memory is taken
    (allocated with three temporary arrays, or given: too small is fatal); pass 2 counts each part's corners and lays
@@ -812,7 +812,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 {
 	char line[0x100], last[0x100], c[4][0x20];
 	int nv = 0, nvn = 0, nvt = 0;
-	FUN_00464bc0(sh);
+	Model_release(sh);
 	GAME_VAR(int, sh + 0x10) = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
@@ -975,7 +975,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				if (!obj_corner(part, b + 2, c[2], vs, ns, ts)) {
 					float tmp[3];
 					pv = GAME_VAR(float *, part + 0x50);
-					const float *nrm = FUN_004679a0(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
+					const float *nrm = math_triangleNormal(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
 					pn = GAME_VAR(float *, part + 0x54);
 					memcpy(pn + (b + 2) * 3, nrm, 12);
 					memcpy(pn + (b + 1) * 3, pn + (b + 2) * 3, 12);
@@ -993,7 +993,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					if (!obj_corner(part, b + 4, c[3], vs, ns, ts)) {
 						float tmp[3];
 						pv = GAME_VAR(float *, part + 0x50);
-						const float *nrm = FUN_004679a0(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
+						const float *nrm = math_triangleNormal(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
 						pn = GAME_VAR(float *, part + 0x54);
 						memcpy(pn + (b + 4) * 3, nrm, 12);
 						memcpy(pn + q * 3, pn + (b + 4) * 3, 12);

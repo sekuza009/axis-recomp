@@ -129,7 +129,7 @@ void (skirmish_drawScreenA)(void)
 	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)0x75dda4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
-	FUN_00427a40(BX0 + 0x18, BY1 - 0xa0, BX1 - 0x18, BY1 - 0xa0);
+	menu_drawLine(BX0 + 0x18, BY1 - 0xa0, BX1 - 0x18, BY1 - 0xa0);
 	set_colour_bits(g_rectColour, 0, 0x3e4ccccd, 0x3f19999a, 0x3f4ccccd);   /* 0, 0.2, 0.6, 0.8 */
 	for (int c = 0; c < 4; c++)
 		menu_drawRect(BX0 + column_x0[c], BY0 + 0x24, BX0 + column_x1[c], BY0 + 0x3c, 1);
@@ -181,7 +181,7 @@ void (skirmish_drawScreenB)(void)
 	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)0x75e024);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
-	FUN_00427a40(BX0 + 0x18, BY1 - 0x40, BX1 - 0x18, BY1 - 0x40);
+	menu_drawLine(BX0 + 0x18, BY1 - 0x40, BX1 - 0x18, BY1 - 0x40);
 	set_colour_bits((Colour *)0x76d438, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
 	skirmish_445520();
 	for (int k = 0; k < 2; k++) {

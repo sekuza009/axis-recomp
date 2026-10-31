@@ -59,7 +59,7 @@ int (arena_404520)(int x, int y)
 
 /* 0x41eea0: is the point (x, y) (menu units) inside the convex polygon of n edges whose corners follow on the stack
    (5 xs, then 5 ys, centred: x - 320, 240 - y), every edge turning the same way? */
-int (FUN_0041eea0)(int x, int y, int n, ...)
+int (menu_pointInPolygon)(int x, int y, int n, ...)
 {
 	va_list args;
 	va_start(args, n);

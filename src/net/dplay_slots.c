@@ -152,7 +152,7 @@ u32 (arena_452fe0)(void)
 		return 1;
 	if (GAME_VAR(int, 0xa0baf8)) {
 		GAME_VAR(int, 0x9f941c) = 1;
-		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* FUN_00451270: send */
+		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = GAME_VAR(u32, 0xa0b418);
 	GAME_VAR(u32, 0xa0b418) = 4;

@@ -283,7 +283,7 @@ int THISCALL (space_walkNodes_482aa0)(u8 *grid, u32 r, const float *pos, const f
 	u16 root = FIELD(u16 *, grid, 0x54)[(nz * cy + cz) * nx + cx];
 	if (root == 0xffff)
 		return 0;
-	u8 *node = (u8 *)FUN_0046cbc0(root, FIELD(int, grid, 0x44), 0x50);
+	u8 *node = (u8 *)array_recordAt(root, FIELD(int, grid, 0x44), 0x50);
 	float box[6];   /* low x, y, z, then high */
 	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
 	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
@@ -451,7 +451,7 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 				int cell = (FIELD(int, space, 0x74) * y + z) * FIELD(int, space, 0x78) + x;
 				if (FIELD(u16 *, space, 0x54)[cell] == 0xffff) {
 					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
-					FIELD(u16 *, space, 0x54)[cell] = (u16)FUN_0046cba0(block, FIELD(int, space, 0x44), 0x50);
+					FIELD(u16 *, space, 0x54)[cell] = (u16)array_indexOf(block, FIELD(int, space, 0x44), 0x50);
 				}
 				load_481ae0(space, FIELD(u8 *, space, 0x44) + FIELD(u16 *, space, 0x54)[cell] * 0x50, plane, FIELD(int, space, 0x94));
 			}

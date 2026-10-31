@@ -15,7 +15,7 @@ static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
 
 /* 0x47d0b0: q = the quaternion of {angle, axis x, y, z}: sin(-angle / 2) times the axis, then cos(angle / 2) (the
    angle read again for it) */
-void THISCALL (FUN_0047d0b0)(float *q, const float *rotation)
+void THISCALL (quat_fromAxisAngle)(float *q, const float *rotation)
 {
 	X s = fsin((X)rotation[0] * MINUS_HALF);
 	q[0] = (float)(s * rotation[1]);
@@ -25,11 +25,11 @@ void THISCALL (FUN_0047d0b0)(float *q, const float *rotation)
 }
 
 /* 0x47d9a0: m = the matrix of {angle, axis x, y, z}, through its quaternion */
-void (FUN_0047d9a0)(float *m, const float *rotation)
+void (Mat4_fromAxisAngle)(float *m, const float *rotation)
 {
 	float q[4];
-	FUN_0047d0b0(q, rotation);
-	FUN_0047d8a0(m, q);
+	quat_fromAxisAngle(q, rotation);
+	Mat4_fromQuat(m, q);
 }
 
 /* 0x480230: v = -v (each component loaded and stored again: a signalling NaN comes out quiet) */
@@ -67,7 +67,7 @@ void THISCALL (collision_4803c0)(float *v, float *out, float s)
 #define TURN ((const float *)0x4a94c8)        /* 3600 */
 #define PER_TURN ((const float *)0x4aa284)    /* 1 / 3600 */
 #define ZERO GAME_VAR(float, 0x4a93e8)
-long double (FUN_0046c100)(float a)
+long double (angle_wrap)(float a)
 {
 	int turns = ftol(fmul_m(fld_m(&a), PER_TURN));
 	X r = fsubr_m(fmul_m((X)turns, TURN), &a);
@@ -128,7 +128,7 @@ void (load_482a40)(float *out, const float *m, const float *p)
 
 /* 0x4679a0: out = the unit normal of the triangle p0, p1, p2 ((p1 - p0) x (p2 - p0)); of p1 - p0, x and y are
    rounded to floats and z is not */
-void (FUN_004679a0)(float *out, const float *p1, const float *p0, const float *p2)
+void (math_triangleNormal)(float *out, const float *p1, const float *p0, const float *p2)
 {
 	X ux = (X)p2[0] - p0[0], uy = (X)p2[1] - p0[1], uz = (X)p2[2] - p0[2];
 	float vx = f32((X)p1[0] - p0[0]), vy = f32((X)p1[1] - p0[1]);
@@ -145,7 +145,7 @@ void (FUN_004679a0)(float *out, const float *p1, const float *p0, const float *p
 
 /* 0x47d8a0: m = the rotation matrix (columns) of the quaternion q = (x, y, z, w). xx, xy and w * z stay unrounded;
    the other products are rounded to floats first, as the original keeps them */
-void (FUN_0047d8a0)(float *m, const float *q)
+void (Mat4_fromQuat)(float *m, const float *q)
 {
 	X x = q[0], y = q[1], z = q[2], w = q[3], one = ONE;
 	X xx = x * x, xy = y * x;
@@ -245,8 +245,8 @@ void THISCALL (skel_ase_47d260)(float *out, const float *q)
 u32 (skel_ase_47d320)(float *out, const float *a, const float *b)
 {
 	float ma[16], mb[16], m[16];
-	FUN_0047d9a0(ma, a);
-	FUN_0047d9a0(mb, b);
+	Mat4_fromAxisAngle(ma, a);
+	Mat4_fromAxisAngle(mb, b);
 	GAME_CDECL(0x47d380, void, float *, const float *, const float *)(m, ma, mb);   /* Mat4_multiply */
 	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* skel_ase_47d2f0: matrix -> (angle, axis) */
 }

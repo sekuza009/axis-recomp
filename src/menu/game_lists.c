@@ -136,7 +136,7 @@ void (arena_40a070)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
 	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x7524a4);
 	int boxed = g_confirming || g_leaving || g_full || g_joining;
@@ -153,15 +153,15 @@ void (arena_40a070)(void)
 	for (int c = 0; c < 5; c++)
 		text_draw8(X0 + heads[c].x, Y0 + 0x5a, (const char *)heads[c].text);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
+	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
+	menu_drawLine(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
 	if (GAME_VAR(int, 0x4dbac8) || GAME_VAR(int, 0x4dbaa8)) {
 		int full = GAME_VAR(int, 0x4dbaa8);
 		game_rows(X0, Y0, 0x78, 0x150, full, 0x4db8d8, 20, full);
 		game_page(X1, Y1 - 0x4c, GAME_VAR(int, 0x4dbac8) ? g_gameCount : GAME_VAR(int, 0xa0b368));
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x32, X1 - 0x10, Y1 - 0x32);
+	menu_drawLine(X0 + 0x10, Y1 - 0x32, X1 - 0x10, Y1 - 0x32);
 	for (int k = 0; k < 3; k++) {
 		bind_buttons();
 		int x = X0 + k * 0x96 + 0x5a;
@@ -267,21 +267,21 @@ void (room_43adc0)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(room_bright);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x759ca4);
 	static const int heads[5] = { 0x10, 0x114, 0x164, 0x1b4, 0x1fc };
 	for (int c = 0; c < 5; c++)
 		text_draw8(X0 + heads[c], Y0 + 0x38, (const char *)(0x759d24 + c * 0x80));
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x50, X1 - 0x10, Y0 + 0x50);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
+	menu_drawLine(X0 + 0x10, Y0 + 0x50, X1 - 0x10, Y0 + 0x50);
+	menu_drawLine(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
 	if (GAME_VAR(int, 0x9dd330) && g_gameCount) {
 		game_rows(X0, Y0, 0x60, 0x138, 1, 0x7673a4, 0x80, 1);
 		game_page(X1, Y1 - 0x58, GAME_VAR(int, 0xa0b358));
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
+	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
 	for (int k = 0; k < 4; k++) {
 		bind_buttons();
 		int x = X0 + k * 0x8c + 0x20;
@@ -382,9 +382,9 @@ void (room_43ea10)(void)
 				if (result == 3)
 					GAME_VAR(int, 0x907b2c) = 1;
 				else if (result == 0)
-					FUN_0041ee40(0x40);
+					menu_showMessage(0x40);
 				else if (result == 4)
-					FUN_0041ee40(0x2a);
+					menu_showMessage(0x2a);
 			}
 			GAME_VAR(int, 0x9dd6a0) = 0;
 			GAME_VAR(int, 0x9da498) = 0;
@@ -427,7 +427,7 @@ void (room_43ea10)(void)
 	memset((void *)0x9dcee8, 0, 8);
 	strcpy((char *)0x9dcee8, g_chatLine);
 	if (strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x9dcee8) != 0) {
-		FUN_0041ee40(0x27);
+		menu_showMessage(0x27);
 		GAME_VAR(int, 0x9dd56c) = 0;
 	}
 	GAME_VAR(int, 0x9dd6b4) = 0;
@@ -774,9 +774,9 @@ void (lobbyJoin_draw)(void)
 				if (result == 3)
 					GAME_VAR(int, 0x907b2c) = 1;
 				else if (result == 0)
-					FUN_0041ee40(0x40);
+					menu_showMessage(0x40);
 				else if (result == 4)
-					FUN_0041ee40(0x46);
+					menu_showMessage(0x46);
 			}
 		}
 		blink_down();
@@ -813,7 +813,7 @@ void (lobbyJoin_draw)(void)
 			GAME_VAR(int, 0x4dbbec) = 0;
 		GAME_VAR(int, 0x4db8bc) = 0;
 		if (wrong)
-			FUN_0041ee40(0x27);
+			menu_showMessage(0x27);
 		return;
 	}
 	if (GAME_VAR(int, 0x4db714)) {
@@ -845,7 +845,7 @@ static void lobby_join(void)
 	if (GAME_VAR(int, 0x4dbaac)) {
 		GAME_VAR(int, 0x4dbbec) = 1;
 		GAME_VAR(int, 0x4dbbf0) = 0;
-		FUN_00405200();
+		arena_chatLine();
 	} else {
 		GAME_VAR(int, 0x4dbbf0) = 1;
 		GAME_VAR(int, 0x4dbbec) = 0;

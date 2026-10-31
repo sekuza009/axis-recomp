@@ -124,7 +124,7 @@ void (gfx_setProjection2D3D)(int mode)
 }
 
 /* 0x427a40: a line in the menu colour from (x0, y0) to (x1, y1). Returns glEnd's eax */
-u32 (FUN_00427a40)(int x0, int y0, int x1, int y1)
+u32 (menu_drawLine)(int x0, int y0, int x1, int y1)
 {
 	glColor4f_stored(g_menuColour);
 	glBegin(GL_LINES);
@@ -135,7 +135,7 @@ u32 (FUN_00427a40)(int x0, int y0, int x1, int y1)
 
 /* 0x42f0f0: the 3D view over w x h pixels (from the corner): the projection from the view's angle and aspect.
    Returns the last glMatrixMode's eax */
-u32 (FUN_0042f0f0)(int w, int h)
+u32 (gfx_setup3DView)(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);

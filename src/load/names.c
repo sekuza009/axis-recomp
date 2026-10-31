@@ -171,7 +171,7 @@ void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 
 	static const u32 sizes[6][3] = { { 64, 64, 0x4b4278 }, { 128, 64, 0x4b423c }, { 256, 64, 0x4b4200 },
 	                                 { 128, 128, 0x4b41c4 }, { 256, 128, 0x4b4188 }, { 256, 256, 0x4b414c } };
 	u8 *managers[6] = { a, b, c, d, e, f };
-	FUN_004569b0(sets);
+	TextureManager_reset(sets);
 	for (int k = 0; k < 6; k++) {
 		u8 *m = managers[k];
 		if (m && (GAME_VAR(u32, m + 0xc0118) != sizes[k][0] || GAME_VAR(u32, m + 0xc011c) != sizes[k][1]))
@@ -229,7 +229,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 			if (file_exists_46ca70(path)) {
 				image_initBy(image, path);
 				int w = FIELD(int, image, 0x3e), h = FIELD(int, image, 0x42);
-				FUN_0046ce50(image);
+				BMPRGBFile_close(image);
 				ok = w == FIELD(int, tm, 0xc0118) && h == FIELD(int, tm, 0xc011c);
 			}
 		} else {
@@ -269,7 +269,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		strcpy(own, dir);
 	else
 		own[0] = 0;
-	FUN_0046cb60(own);
+	path_normalize(own);
 	FIELD(int, tm, 0xc0124) = linear;
 	FIELD(int, tm, 0xc0114) = format;
 	FIELD(int, tm, 0xc0118) = w;
@@ -340,7 +340,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 	(void)s1, (void)v1, (void)h2, (void)s2, (void)v2;
 	char key[0x40];
 	strcpy(key, name);
-	FUN_0046cb60(key);
+	path_normalize(key);
 	if (!key[0])
 		return -1;
 	int i = 0;
@@ -457,13 +457,13 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 		if (image_initBy(bmp[1], path)) {
 			image_copyTo(bmp[1], m + 0x40114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 			alpha_from(m, 1);
-			FUN_0046ce50(bmp[1]);
+			BMPRGBFile_close(bmp[1]);
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, 0x4b4078, 0x4b4068, name);
 		if (image_initBy(bmp[2], path)) {
 			image_copyTo(bmp[2], m + 0x80114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
-			FUN_0046ce50(bmp[2]);
+			BMPRGBFile_close(bmp[2]);
 		} else
 			colour_fill(m);
 		break;

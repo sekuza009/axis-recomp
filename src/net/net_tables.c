@@ -4,7 +4,7 @@
 #include <string.h>
 
 /* 0x454110: the first free session record, -1 when all 200 are used */
-int (FUN_00454110)(void)
+int (net_findFreeSession)(void)
 {
 	int i = 0;
 	for (u32 p = 0xa0b470; p < 0xa0bab0; p += 8, i++)
@@ -42,7 +42,7 @@ void (arena_4515a0)(void)
 }
 
 /* 0x451450: a free player slot claimed (its flag in the sixteen at 0x9f93d8 set); 0xff when none is free */
-u8 (FUN_00451450)(void)
+u8 (net_claimPlayerSlot)(void)
 {
 	for (u8 i = 0; i < 0x10; i++)
 		if (GAME_VAR(int, 0x9f93d8 + i * 4) == 0) {
@@ -57,7 +57,7 @@ int (arena_451410)(void)
 {
 	if (!GAME_VAR(int, 0xa0baf8))
 		return 0;
-	u8 slot = FUN_00451450();
+	u8 slot = net_claimPlayerSlot();
 	arena_4514a0(slot, GAME_VAR(int, 0xa0b424));
 	GAME_VAR(u8, 0x9fd954) = slot;
 	GAME_VAR(int, 0x9f9838) = 1;
@@ -122,11 +122,11 @@ typedef struct { u8 b[0x85]; } SessionDesc;
 /* 0x4540b0: a session found: unless it is the game's own (its GUID, bytes 4 .. 19, the one at 0x4aae70), a copy
    (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for the game's
    own, or -1 when the table is full */
-u32 (FUN_004540b0)(SessionDesc d)
+u32 (net_addSession)(SessionDesc d)
 {
 	if (!memcmp(d.b + 4, (const void *)0x4aae70, 16))
 		return 0;
-	int i = FUN_00454110();
+	int i = net_findFreeSession();
 	if (i < 0)
 		return (u32)i;
 	void *copy = crt_malloc(0x85);
@@ -138,7 +138,7 @@ u32 (FUN_004540b0)(SessionDesc d)
 }
 
 /* 0x453560 (stdcall; DirectPlay's session enumeration callback): a found session (desc: its GUID at +8, name at
-   +0x30 ..) put into the list (FUN_004540b0, by value) unless it is the game's own or already listed (0, which
+   +0x30 ..) put into the list (net_addSession, by value) unless it is the game's own or already listed (0, which
    ends the enumeration). With no description (the enumeration timed out) it stops in modes 0 and 1. The copy's
    first word is a GlobalAlloc'd block holding the GUID; in mode 0 (+0x74) the session's address as text. 1 */
 #define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
@@ -181,7 +181,7 @@ u32 (inet_addr_wrap_4547c0)(const char *text) { return ((u32 (STDCALL *)(const c
 
 /* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
-int (FUN_00451270)(const int *message, u32 to, u32 size)
+int (net_sendMessage)(const int *message, u32 to, u32 size)
 {
 	u32 flags = 0, length = 0;
 	switch (message[0]) {
@@ -194,7 +194,7 @@ int (FUN_00451270)(const int *message, u32 to, u32 size)
 		length = size;
 		break;
 	}
-	return FUN_00450bf0(GAME_VAR(u32, 0xa0b424), to, flags, message, length);
+	return dplay_send(GAME_VAR(u32, 0xa0b424), to, flags, message, length);
 }
 
 /* 0x452170: socket 100 (message 0x40a) or 101 (0x40c) set to tell the window wnd about reads and closes
@@ -281,7 +281,7 @@ void (net_452d70)(void)
 /* 0x4520e0: both sockets (0xa055f8, 0xa05630) closed: a blocking call cancelled, sending shut down, the socket closed,
    the connection's state reset (arena_4519b0); then the connection flags cleared. Returns what the original leaves
    in eax */
-u32 (FUN_004520e0)(void)
+u32 (net_closeSockets)(void)
 {
 	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
 	u32 r = GAME_VAR(u32, 0xa055f8);
@@ -1069,8 +1069,8 @@ static void arena_info(u8 *dst, u8 first, u8 count)
 }
 
 /* 0x450c20 (DirectPlay system message): 5, a player created: its slot taken by the host (net_451530, unless
-   0x9fd94c), then the info sent with the count less one; 3, a player gone: a slot freed (FUN_00451450 into
-   0x9f9424, FUN_00451270), the message's count kept and the info sent (an arena's then starts with 1). Only while
+   0x9fd94c), then the info sent with the count less one; 3, a player gone: a slot freed (net_claimPlayerSlot into
+   0x9f9424, net_sendMessage), the message's count kept and the info sent (an arena's then starts with 1). Only while
    hosting (0xa0baf8) over TCP/IP (0xa0b418 = 0) with the right socket open (200: the room on the lobby's, 201: the
    arena on the game server's) and nothing pending (0xa0b360 / 0xa0b364). The original leaves eax to callers that
    ignore it */
@@ -1084,8 +1084,8 @@ void (net_sendLocalInfo)(const u32 *msg)
 	} else if (msg[0] == 3) {
 		if (!GAME_VAR(int, 0xa0baf8))
 			return;
-		GAME_VAR(u8, 0x9f9424) = FUN_00451450();
-		GAME_CDECL(0x451270, void, void *, u32, int)((void *)0x9f9420, msg[2], 0);   /* FUN_00451270 */
+		GAME_VAR(u8, 0x9f9424) = net_claimPlayerSlot();
+		GAME_CDECL(0x451270, void, void *, u32, int)((void *)0x9f9420, msg[2], 0);   /* net_sendMessage */
 		gone = 1;
 	} else
 		return;
@@ -1411,10 +1411,10 @@ static void send_packet(u8 *s, u8 *packet)
 	GAME_VAR(int, s + 0x2340c78)++;
 	if (GAME_VAR(int, s + 0x2340d1d) == 1) {
 		int size = 0x40;
-		FUN_0046cc30(s + 0x2340d29, 4, 1, GAME_VAR(void *, s + 0x2340d08));
-		FUN_0046cc30(s + 0x234240d, 4, 1, GAME_VAR(void *, s + 0x2340d08));
-		FUN_0046cc30(&size, 4, 1, GAME_VAR(void *, s + 0x2340d08));
-		FUN_0046cc30(packet, 1, size, GAME_VAR(void *, s + 0x2340d08));
+		file_writeScrambled(s + 0x2340d29, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		file_writeScrambled(s + 0x234240d, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		file_writeScrambled(&size, 4, 1, GAME_VAR(void *, s + 0x2340d08));
+		file_writeScrambled(packet, 1, size, GAME_VAR(void *, s + 0x2340d08));
 	}
 }
 
@@ -1592,7 +1592,7 @@ static int scaled(const void *v, u32 k)
 	return ftol(fmul_m(fld_m((const float *)v), (const float *)k));
 }
 
-/* an angle wrapped into a turn (FUN_0046c100, given the float's bits) times 0x4aa49c, truncated */
+/* an angle wrapped into a turn (angle_wrap, given the float's bits) times 0x4aa49c, truncated */
 static int angle_byte(const void *v)
 {
 	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)v), (const float *)0x4aa49c));
@@ -1658,7 +1658,7 @@ void THISCALL (match_48e2c0)(u8 *g, int p)
 			o[0] |= 4;
 			w = (u16)GAME_VAR(int, shot + 0xb8);
 		} else if (GAME_VAR(void *, shot + 0x6c))
-			w = (u16)(FUN_0046cba0(GAME_VAR(void *, shot + 0x6c), GAME_VAR(int, g + 0x1f40ec), 0xac) + 1);
+			w = (u16)(array_indexOf(GAME_VAR(void *, shot + 0x6c), GAME_VAR(int, g + 0x1f40ec), 0xac) + 1);
 		else
 			w = 0;
 		memcpy(o + 1, &w, 2);
@@ -1901,7 +1901,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_VAR(int, ac + 0x3ec) = 2;
 		else {
 			GAME_VAR(int, ac + 0x3ec) = 0;
-			GAME_THISCALL(0x45e810, void, void *, int, int)(STAGE, i, weapon);   /* FUN_0045e810 */
+			GAME_THISCALL(0x45e810, void, void *, int, int)(STAGE, i, weapon);   /* actor_setWeaponSlot */
 		}
 		GAME_VAR(float, ac + 0x1ac) = x;
 		GAME_VAR(float, ac + 0x1b0) = y;
@@ -1965,7 +1965,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					GAME_VAR(int, 0x9dad94) = pkt[3];
 					G(int, 0x1f1cb4) = pkt[4];
 					G(int, 0x1f1cb8) = pkt[6];
-					FUN_00461ec0((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+					scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
 					G(int, 0x233cc20) = 1;
 					G(int, 0x233cc28) = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);

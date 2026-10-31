@@ -19,8 +19,8 @@ long (arena_450bc0)(u32 *from, u32 *to, u32 flags, void *data, u32 *size)
 	return COM(g_dplay, DP_RECEIVE, long, u32 *, u32 *, u32, void *, u32 *)(g_dplay, from, to, flags, data, size);
 }
 
-/* 0x450bf0 (FUN_00450bf0): send data (size bytes) from one player to another; 0 without DirectPlay */
-long (FUN_00450bf0)(u32 from, u32 to, u32 flags, const void *data, u32 size)
+/* 0x450bf0 (dplay_send): send data (size bytes) from one player to another; 0 without DirectPlay */
+long (dplay_send)(u32 from, u32 to, u32 flags, const void *data, u32 size)
 {
 	if (g_dplay == NULL)
 		return 0;

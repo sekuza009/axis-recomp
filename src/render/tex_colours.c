@@ -16,7 +16,7 @@ typedef long double X;
 
 /* 0x464a70: a colour c added to the image's pixels (count img[0x13]), each channel at most 255 and the alpha at most
    c's; mode 1, or an image with flag 2, fills them with c instead */
-void (FUN_00464a70)(u8 *px, int mode, const u32 *img, const u8 *c)
+void (image_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
 {
 	if (mode == 1 || (img[0] & 2)) {
 		for (int i = 0; i < (int)img[0x13]; i++)

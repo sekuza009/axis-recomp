@@ -45,7 +45,7 @@ void THISCALL (match_4636d0)(Scene *scene)
 
 /* 0x4625a0: the actor the camera follows: in a team match (+0x22e7184) the first listed actor of the team that is
    behind (else the local player's), otherwise the first listed one */
-void *THISCALL (FUN_004625a0)(Scene *scene)
+void *THISCALL (scene_followedActor)(Scene *scene)
 {
 	u8 *s = (u8 *)scene;
 	int i;

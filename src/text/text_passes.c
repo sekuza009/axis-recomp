@@ -103,7 +103,7 @@ void (hud_403210)(int x0, int y, int x1, const char *text)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* the width correction of a line for the special characters it holds (counted by FUN_00402590), in units of 3 */
+/* the width correction of a line for the special characters it holds (counted by text_printableLength), in units of 3 */
 #define text_specialCount(s) GAME_CDECL(0x402590, int, const char *)(s)
 
 /* text_drawBox16 / hud_402db0: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain

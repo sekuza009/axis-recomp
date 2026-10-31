@@ -84,8 +84,8 @@ void (room_43df00)(void)
 	menu_drawRect(0, 0, g_screenW, g_screenH, 1);
 }
 
-/* 0x405200 (FUN_00405200): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
-void (FUN_00405200)(void)
+/* 0x405200 (arena_chatLine): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
+void (arena_chatLine)(void)
 {
 	GAME_VAR(int, 0x4db8bc) = 0;
 	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {

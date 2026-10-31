@@ -151,7 +151,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
 	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)0x4a93ec));
-	FUN_0041ef20(0, BITS(turn), 0);
+	gl_rotateXYZ(0, BITS(turn), 0);
 	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
 	if (posed)
@@ -365,9 +365,9 @@ u32 (menu_enterMenus)(void)
 	BITS(g_armcAngle) = 0;
 	g_armcZoom = 1.0f;
 	if (g_armcFrom == 3)
-		FUN_0040ddb0();
+		mech_unpackFromRecord();
 	else
-		FUN_004463a0();
+		mech_loadFromProfile();
 	menu_40e6c0();
 	armc_40de80();
 	armc_40dfa0();
@@ -434,7 +434,7 @@ void (armc_41b400)(void)
 		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(0x4dcfc4)), F(0x4a9424)), F(0x4a94b4)));
 		glTranslatef_bits(p->x, BITS(y), GAME_VAR(u32, 0x4dcfc8));
 		glPushMatrix();
-		FUN_0041ef20(0, BITS(p->angle), 0);
+		gl_rotateXYZ(0, BITS(p->angle), 0);
 		glBegin(GL_QUADS);
 		static const float uv[4][2] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
 		for (int c = 0; c < 4; c++) {
@@ -496,12 +496,12 @@ void (armc_41b300)(void)
 	approach(&g_armcCamDistance, distance[part]);
 }
 
-/* 0x45dd80 (thiscall on the stage): actor slot a claimed (FUN_0045dc00) and made the player's, with weapon slot 0 */
+/* 0x45dd80 (thiscall on the stage): actor slot a claimed (stage_setupActorSlot) and made the player's, with weapon slot 0 */
 void THISCALL (match_45dd80)(Stage *stage, int a, int x, int y, void *spawn)
 {
-	FUN_0045dc00(stage, a, x, y, spawn);
+	stage_setupActorSlot(stage, a, x, y, spawn);
 	stage->playerActor = a;
-	FUN_0045e810(stage, a, 0);
+	actor_setWeaponSlot(stage, a, 0);
 }
 
 /* 0x410160: a right click leaves the ARM CENTER's page, the menu camera put back */

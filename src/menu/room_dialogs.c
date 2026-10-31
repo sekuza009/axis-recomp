@@ -108,7 +108,7 @@ u32 (menu_437240)(void)
 	} else if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
 		if (CALL(0x434b90) != 1) {   /* not ready */
 			sound(6);
-			return GAME_CDECL(0x41ee40, u32, int)(5);   /* FUN_0041ee40: the message */
+			return GAME_CDECL(0x41ee40, u32, int)(5);   /* menu_showMessage: the message */
 		}
 	} else if (!input_justPressed(GAME_VAR(int, 0x4e0cdc)) && !input_justPressed(GAME_VAR(int, 0x76d48c)))
 		return 0;
@@ -418,11 +418,11 @@ void (room_43df80)(void)
 	} else if (answer == 0x2a)
 		GAME_VAR(int, 0x9dd850) = 1;
 	else if (answer == 0x1f || answer == 0x20)
-		FUN_0041ee40(answer);
+		menu_showMessage(answer);
 	else if (answer == 0x22)
-		FUN_0041ee40(0x23);
+		menu_showMessage(0x23);
 	else
-		FUN_0041ee40(0x2a);
+		menu_showMessage(0x2a);
 	GAME_VAR(int, 0xa0b378) = 0;
 	GAME_VAR(int, 0x9dd1c8) = 0;
 #undef g_editKey
@@ -620,7 +620,7 @@ u32 (room_4399c0)(void)
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	for (int k = 0; k < 4; k++) {
 		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(0x758924 + k * 0x80));
-		FUN_00427a40(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
+		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
 	if (!GAME_VAR(int, 0x9dd348) || !g_paused)
@@ -705,7 +705,7 @@ u32 (room_439e00)(void)
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x758da4);
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x20, Y0 + 0x20, X1 - 0x20, Y0 + 0x20);
+	menu_drawLine(X0 + 0x20, Y0 + 0x20, X1 - 0x20, Y0 + 0x20);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f800000);   /* 0.1, 0.1, 0.1, 1 */
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0, 0x3f800000);
@@ -758,7 +758,7 @@ u32 (room_4392c0)(void)
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7583a4);
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
-	FUN_00427a40(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
+	menu_drawLine(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + k * 0x30;
 		text_draw16(X0 + 0x40, y + 0x58, (const char *)(0x758424 + k * 0x80));
@@ -856,7 +856,7 @@ void (room_43a420)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x7592a4);
 	for (int k = 0; k < 5; k++)
@@ -922,7 +922,7 @@ void (room_43a420)(void)
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(0x7517a4 + k * 0x80));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
+	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
 #undef K
@@ -986,8 +986,8 @@ u32 (room_43d060)(void)
 	if ((unsigned)g_sort <= 3)
 		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)sorted_by[g_sort]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
+	menu_drawLine(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
+	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	/* the column heads, the numbers' right-aligned (8 a character) */
 	TEXT(bright);
 	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)0x75aca4);
@@ -1054,7 +1054,7 @@ u32 (room_43d060)(void)
 		}
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
+	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = GAME_VAR(int, 0x9db0a4);

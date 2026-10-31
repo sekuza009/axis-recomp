@@ -646,12 +646,12 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 {
 	u8 *grid = stage + 0xa10;
 	const float *low = (const float *)(stage + 0x9ef904), *high = (const float *)(stage + 0x9ef910);
-	FUN_00470fc0((int)stage, 0, 0, (const char *)0x4c7490);
+	log_message((int)stage, 0, 0, (const char *)0x4c7490);
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
 	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
 	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, a, b, depth);
-	FUN_00470fc0((int)stage, 0, 0, (const char *)0x4c747c);
+	log_message((int)stage, 0, 0, (const char *)0x4c747c);
 	if (FIELD(int, stage, 0x9ef30c)) {
 #define F(v) f32(fld_m(&(v)))
 		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
@@ -668,7 +668,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (kind != 0 && kind != 1)
 			continue;
 		for (int r = 0; r < FIELD(int, layer, 0x1c); r++) {
-			FUN_00470fc0((int)stage, 0, r, (const char *)(kind ? 0x4c7430 : 0x4c7458), r);
+			log_message((int)stage, 0, r, (const char *)(kind ? 0x4c7430 : 0x4c7458), r);
 			for (int c = 0; c < FIELD(int, layer, 0x20); c++) {
 				int w = FIELD(int, layer, 0x20) + 1;
 				const float *v = FIELD(const float *, layer, 0x40);
@@ -688,7 +688,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
 			continue;
 		if (i % 2 == 0)
-			FUN_00470fc0((int)stage, 0, i, (const char *)0x4c7418, i);
+			log_message((int)stage, 0, i, (const char *)0x4c7418, i);
 		FIELD(u32, obj, 0x28c) = space_buildUnits(grid, i, FIELD(void *, obj, 0x27c), (const float *)(obj + 0xf4));
 	}
 }

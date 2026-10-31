@@ -390,7 +390,7 @@ static void match_name(const char *name)
 void (console_init)(void)
 {
 	while (GAME_VAR(TunnelRing *, 0x67fb3c))   /* the menus' tunnel, ring by ring */
-		FUN_00441190((TunnelRing **)0x67fb3c);
+		tunnel_removeLastRing((TunnelRing **)0x67fb3c);
 	if (!GAME_VAR(int, 0x76d410))
 		check_profiles();
 	GAME_VAR(int, 0x5b1dac) = 1;
@@ -410,7 +410,7 @@ void (console_init)(void)
 			GAME_VAR(int, 0x76d3e8) = 400;
 		else if (kind == 2)
 			GAME_VAR(int, 0x76d3e8) = 800;
-		FUN_0041ee40(6);
+		menu_showMessage(6);
 		return;
 	}
 	switch (kind) {
@@ -433,6 +433,6 @@ void (console_init)(void)
 		app_requireCd(scene, 0, 0);
 		break;
 	}
-	FUN_00461ec0(scene, (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setTextureFolder(scene, (const char *)(0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

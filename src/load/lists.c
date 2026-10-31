@@ -23,7 +23,7 @@ void THISCALL (load_481980)(void *self, u8 *node) { push_front(self, node, 0x48,
 
 /* 0x441120: a new 0x3538-byte node (malloc'd; prev +0x3530, next +0x3534) appended to the list at *head, and set up
    by 0x440e20 with the value at 0x9dae10 (returns what that leaves in eax; 0 without memory) */
-u32 (FUN_00441120)(u8 **head)
+u32 (tunnel_appendRing)(u8 **head)
 {
 	u8 *first = *head;
 	u8 *node = crt_malloc(0x3538);

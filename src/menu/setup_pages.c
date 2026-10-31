@@ -305,14 +305,14 @@ void (setup_crosshairScreen)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
+	menu_drawLine(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_draw8(X0 + 0x30, Y0 + 0x3c, (const char *)0x754524);
 	text_draw8(X0 + 0xc8, Y0 + 0x3c, (const char *)0x7545a4);
 	text_draw8(X0 + 0x14a, Y0 + 0x3c, (const char *)0x754624);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x20, Y0 + 0x50, X1 - 0x20, Y0 + 0x50);
-	FUN_00427a40(X0 + 0x20, Y1 - 0x38, X1 - 0x20, Y1 - 0x38);
+	menu_drawLine(X0 + 0x20, Y0 + 0x50, X1 - 0x20, Y0 + 0x50);
+	menu_drawLine(X0 + 0x20, Y1 - 0x38, X1 - 0x20, Y1 - 0x38);
 	set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
 	for (int k = 0; k < 4; k++)
 		text_draw16(X0 + 0x46 + k * 0x78, Y0 + 0x12, (const char *)(0x754324 + k * 0x80));
@@ -492,7 +492,7 @@ void (setup_423e50)(void)
 			float turn = ((const float *)0x4b04c4)[parity];
 			if (far)
 				turn = -turn;
-			FUN_0041ef20(0, 0, BITS(turn));
+			gl_rotateXYZ(0, 0, BITS(turn));
 			if (layer == 1) {
 				stripes(far, 12.0f);
 				continue;
@@ -606,7 +606,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 			float turn = turns[place];
 			if (far)
 				turn = -turn;
-			FUN_0041ef20(0, 0, BITS(turn));
+			gl_rotateXYZ(0, 0, BITS(turn));
 			if (layer == 0) {
 				float a = f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)0x4a9430), (const float *)0x4a942c));
 				if (deep)
@@ -750,7 +750,7 @@ static void caption(u32 captions, int on)
 	text_drawBox16(0, 0x1bc, 0x280, (const char *)(captions + on * 0x80));
 }
 
-/* the menu panel under the pointer: the first of count outlines (FUN_0041eea0's, 0x2c bytes apart from outlines)
+/* the menu panel under the pointer: the first of count outlines (menu_pointInPolygon's, 0x2c bytes apart from outlines)
    holding it, none (-1) while locked; 0x680398 tells whether there is one, and a new one restarts the glow (0x907b24
    the last, 0x680ccc 40, 0x4df454 -1) */
 static int hovered_panel(u32 outlines, int count, int locked)

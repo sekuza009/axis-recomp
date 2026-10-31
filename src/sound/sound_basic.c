@@ -65,7 +65,7 @@ void (music_shutdown)(void)
 /* 0x456de0: with sound on (0xa0e80c), v times the volume setting (0x4e0c90) as 0 .. 100 becomes the attenuation
    (0xa0e66c): below 0 -1000, above 100 0, else (p * 5 - 500) * 20 * the factor at 0x4a93ec. Returns what the
    original leaves in eax */
-int (FUN_00456de0)(int v)
+int (sound_setVolume)(int v)
 {
 	if (!GAME_VAR(int, 0xa0e80c))
 		return 0;
@@ -162,7 +162,7 @@ u32 (sound_playFile)(const char *name, int volume)
 		attenuation = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (GAME_VAR(int, 0xa0e66c) + 10000)) - 10000;
 	GAME_CDECL(0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
 	GAME_CDECL(0x467d70, void, void *)(sound);                     /* dsbuf_play */
-	return GAME_CDECL(0x467d60, u32, void *)(sound);               /* FUN_00467d60 */
+	return GAME_CDECL(0x467d60, u32, void *)(sound);               /* mem_free */
 }
 
 /* 0x456d10: the sound table loaded (with sound on): the old one released (0x456cd0), the volume set, then from the
@@ -172,8 +172,8 @@ int (sound_initSoundTable)(const char *file, int volume)
 {
 	if (!GAME_VAR(int, 0xa0e80c))
 		return 0;
-	GAME_CDECL(0x456cd0, void, void)();   /* FUN_00456cd0 */
-	GAME_CDECL(0x456de0, int, int)(volume);   /* FUN_00456de0 */
+	GAME_CDECL(0x456cd0, void, void)();   /* sound_freeAll */
+	GAME_CDECL(0x456de0, int, int)(volume);   /* sound_setVolume */
 	void *f = crt_fopen(file, (const char *)0x4ad170);
 	if (!f)
 		GAME_CDECL(0x46c710, void, void *, const char *, const char *)((void *)0xa0e020, (const char *)0x4b42e8, file);   /* sys_fatalError */

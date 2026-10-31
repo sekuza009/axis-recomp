@@ -22,7 +22,7 @@ void THISCALL (shape_466560)(void *shape)
 		int m = FIELD(int, PART(shape, i), 0x44);
 		if (m < 0)
 			continue;
-		FUN_00456820(MATERIAL_SET(m), m % 512);
+		tex_markMaterialChanged(MATERIAL_SET(m), m % 512);
 	}
 }
 
@@ -61,12 +61,12 @@ void THISCALL (shape_4675f0)(void *model)
 		shape_466560(SHAPE(model, i));
 }
 
-/* 0x466960: every part's pixels coloured (FUN_00464a70 on the part's place in px) */
-void (FUN_00466960)(u8 *px, int mode, const void *shape, const u8 *colour)
+/* 0x466960: every part's pixels coloured (image_addColour on the part's place in px) */
+void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		const u32 *part = (const u32 *)PART(shape, i);
-		FUN_00464a70(px + part[0x12] * 4, mode, part, colour);
+		image_addColour(px + part[0x12] * 4, mode, part, colour);
 	}
 }
 
@@ -101,7 +101,7 @@ int THISCALL (tex_46de20)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 
 /* 0x466910: every part's shading colours (shape_getShadingColorBufferBy) into out at the part's index (+0x48),
    with the factors and the matrix. Returns the part count */
-int (FUN_00466910)(float *out, int first, u8 *shape, void *factors, int matrix)
+int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
 {
 	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
 		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;

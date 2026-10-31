@@ -437,14 +437,14 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 			invert(inv, (const float *)it[4]);
 			shape_getShadingColorBufferBy(buf, 0, mesh, factors, inv);
 			if (it[3])
-				FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+				image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
 			return (const u32 *)buf;
 		}
 		if (it[3]) {
 			if (!fits(vv, mesh))
 				return NULL;
 			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
-			FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
 			return (const u32 *)buf;
 		}
 		return (const u32 *)colours;
@@ -457,13 +457,13 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 			return NULL;
 		shape_getShadingColorBufferBy(buf, 1, mesh, factors, inv);
 		if (it[3])
-			FUN_00464a70(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
 		return (const u32 *)buf;
 	}
 	if (it[3]) {
 		if (!fits(vv, mesh))
 			return NULL;
-		FUN_00464a70(buf, 1, (const u32 *)mesh, (const u8 *)it[3]);
+		image_addColour(buf, 1, (const u32 *)mesh, (const u8 *)it[3]);
 		return (const u32 *)buf;
 	}
 	return FIELD(const u32 *, mesh, 0x58);

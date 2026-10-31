@@ -124,10 +124,10 @@ void THISCALL (armc_461540)(u8 *game, int slot)
 	ACTOR(float, 0x1eccbfc) = f32(fld_m((const float *)&angle0));
 	ACTOR(float, 0x1eccc00) = f32(fld_m((const float *)&angle1));
 	if (slot > 3) {
-		FUN_0045e810(stage, I, other);
+		actor_setWeaponSlot(stage, I, other);
 		actor_updatePart(stage, I, other, ACTOR(u32, 0x1eccf0c));
 	}
-	FUN_0045e810(stage, I, chosen);
+	actor_setWeaponSlot(stage, I, chosen);
 	actor_updatePart(stage, I, chosen, ACTOR(u32, 0x1eccf0c));
 #undef I
 #undef ACTOR

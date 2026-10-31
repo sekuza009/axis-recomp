@@ -91,8 +91,8 @@ void (room_403640)(void)
 	g_mapListKept = 1;
 }
 
-/* 0x4050a0 (FUN_004050a0): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
-void (FUN_004050a0)(void)
+/* 0x4050a0 (arena_saveSettings): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
+void (arena_saveSettings)(void)
 {
 	GAME_VAR(int, 0x4dedd4) = GAME_VAR(int, 0x4db584);
 	const char *name = (const char *)0x4db560;
@@ -183,7 +183,7 @@ void (arena_4038e0)(void)
 	cyan_text(0x3f800000);
 	text_draw8(0x168, 0x32, (const char *)0x75d9a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
-	FUN_00427a40(0x96, 0x4b, 0x1ea, 0x4b);
+	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
 	for (int i = 0; i < g_mapCount && i < 10; i++) {
 		int y = 0x57 + i * 0x18;
 		if (hovered == i) {
@@ -202,7 +202,7 @@ void (arena_4038e0)(void)
 		text_draw8(0x17c, y + 3, (const char *)(0x4db8d8 + g_mapChoices[g_mapTop + i].type * 20));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
-	FUN_00427a40(0x96, 0x14f, 0x1ea, 0x14f);
+	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);
 	glEnable(GL_TEXTURE_2D);
 	int texture = GAME_VAR(int, 0x9db0a4);
 	tex_bind(g_textures->managers[texture / 512], texture % 512);

@@ -396,7 +396,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			game_setGameTypeFlags((Stage *)STAGE(g), GAME_VAR(int, 0x76d368));
 		}
 		GAME_VAR(u32, 0xae2ec8) = 0x469730;
-		FUN_00470fc0((int)STAGE(g), -1, 0, (const char *)0x4c521c);
+		log_message((int)STAGE(g), -1, 0, (const char *)0x4c521c);
 		scene_reset(STAGE(g));
 		mode = G(int, 8);
 		if (mode == 3)
@@ -408,14 +408,14 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 1: {
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
 		GAME_VAR(int, 0xa0ea94) = 0;
 		const char *map = (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20;
 		if (!map[0]) {
 			GAME_VAR(int, 0xa0ea94) = 1;
 			return 0;
 		}
-		FUN_00461ec0((Scene *)g, map);
+		scene_setTextureFolder((Scene *)g, map);
 		mode = G(int, 8);
 		if (mode >= 0 && mode <= 3)
 			next_stage(g, mode == 2 ? 6 : 2, 0x4c51e4);   /* .INIT PLAY INFO */
@@ -425,10 +425,10 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		break;
 	}
 	case 2:
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c51c0);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51c0);
 		keep_alive(g);
 		if (G(int, 0x1f1cb0) == 0) {
-			FUN_00461ec0((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
+			scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20);
 			mode = G(int, 8);
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, 0x4c51b0);   /* .LOAD GROUND */
@@ -461,7 +461,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			stop = 1;
 		break;
 	case 3:
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5198);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5198);
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
 			GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
@@ -475,7 +475,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 4:
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5164);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5164);
 		keep_alive(g);
 		map_loadObjectInfoFrom(STAGE(g), bfd_name(g, path), 0);
 		mode = G(int, 8);
@@ -486,7 +486,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 5:
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c512c);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c512c);
 		keep_alive(g);
 		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* 20000 cubed, cells of 500 */
 		mode = G(int, 8);
@@ -497,7 +497,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 6:
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c5104);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5104);
 		keep_alive(g);
 		sprintf(name, (const char *)0x4c50e4, GAME_VAR(int, 0x4df00c));
 		G(int, 0x233c9f8) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
@@ -511,10 +511,10 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		break;
 	case 7:
 		keep_alive(g);
-		FUN_00470fc0((int)STAGE(g), 1, 0, (const char *)0x4c50c4);
+		log_message((int)STAGE(g), 1, 0, (const char *)0x4c50c4);
 		map_loadMissionInfoFrom(STAGE(g), bfd_name(g, path));
 		if (G(int, 8) == 0) {
-			FUN_00470fc0((int)STAGE(g), 0, 0, (const char *)0x4c50b4);
+			log_message((int)STAGE(g), 0, 0, (const char *)0x4c50b4);
 			map_loadActorInfoFrom(STAGE(g), bfd_name(g, path));
 		}
 		mode = G(int, 8);
@@ -525,7 +525,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 8:
-		FUN_00470fc0((int)STAGE(g), -2, 0, (const char *)0x4c5048);
+		log_message((int)STAGE(g), -2, 0, (const char *)0x4c5048);
 		keep_alive(g);
 		music_playMatch((Scene *)g);
 		G(int, 0x233c9e8) = 1;

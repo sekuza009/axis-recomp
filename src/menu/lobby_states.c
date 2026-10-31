@@ -196,7 +196,7 @@ void (lobby_ladderGameName)(void)
 	GAME_VAR(char, 0x5b1b54) = 10;
 	GAME_VAR(char, 0x5b1b55) = 10;
 	GAME_VAR(char, 0x5b1b52) = 0;
-	FUN_0040ddb0();
+	mech_unpackFromRecord();
 }
 
 /* 0x432be0: the joined game's settings (0x9dd570: its name, its host's, the room record 0x5b1b30, the mech and the
@@ -294,7 +294,7 @@ void (room_432db0)(void)
 	                                 { 0x4de732, 0x9dd5f0 }, { 0x4de72a, 0x9dd5e8 }, { 0x4de726, 0x9dd5e4 } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
-	FUN_0040ddb0();
+	mech_unpackFromRecord();
 	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
 	GAME_VAR(int, 0x9dd84c) = 1;
 }
@@ -508,7 +508,7 @@ u32 (lobby_close)(void)
 
 /* 0x403870: the map list's keys: the first key toggles the map (room_403640) - or, read a second time, closes the
    list with a sound -, the others move the cursor up and down */
-u32 (FUN_00403870)(void)
+u32 (room_mapListKeys)(void)
 {
 	if (input_justPressed(GAME_VAR(int, 0x4e1510)))
 		return CALL(0x403640);   /* room_403640 */
@@ -537,7 +537,7 @@ u32 (room_leaveGame)(void)
 	GAME_CDECL(0x48b420, void, void)();                 /* nullsub_48b420 */
 	GAME_CDECL(0x451e60, void, void)();                 /* net_disconnect */
 	GAME_VAR(int, 0x9dd84c) = 0;
-	return CALL(0x4463a0);                              /* FUN_004463a0 */
+	return CALL(0x4463a0);                              /* mech_loadFromProfile */
 }
 
 /* 0x407270: the create screen's quit dialog clicks, only with none of its other panels (and no dialog) open: as
@@ -699,7 +699,7 @@ u32 (lobby_406a60)(void)
 		return CALL(0x40ee20);   /* menu_enterMenus: the ARM CENTER */
 	case 3:
 		sound_playMenu(0);
-		r = CALL(0x4050a0);      /* FUN_004050a0 */
+		r = CALL(0x4050a0);      /* arena_saveSettings */
 		GAME_VAR(int, 0x4dbb3c) = 0;
 		return r;
 	case 4:
@@ -761,7 +761,7 @@ void (app_shutdown)(void)
 		GAME_VAR(int, 0x4dbb10) = 0;
 		GAME_VAR(int, 0x4dbb78) = 0;
 		arena_452fe0();
-		FUN_0041ee40(0x44);
+		menu_showMessage(0x44);
 		GAME_VAR(int, 0x4db8b4) = 0;
 		return;
 	}
@@ -795,7 +795,7 @@ void (app_shutdown)(void)
 	} else {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };   /* 501 .. 505 */
 		if ((u32)(r - 0x1f5) <= 4)
-			FUN_0041ee40(message[r - 0x1f5]);
+			menu_showMessage(message[r - 0x1f5]);
 		arena_452fe0();
 	}
 	GAME_VAR(int, 0x4dbb10) = 0;
@@ -1303,7 +1303,7 @@ void (lobbyJoin_keysChat)(void)
 		if (GAME_VAR(int, 0x4dbaac)) {
 			GAME_VAR(int, 0x4dbbec) = 1;
 			GAME_VAR(int, 0x4dbbf0) = 0;
-			FUN_00405200();
+			arena_chatLine();
 		} else {
 			GAME_VAR(int, 0x4dbbf0) = 1;
 			GAME_VAR(int, 0x4dbbec) = 0;
@@ -1575,15 +1575,15 @@ int (lobby_checkReservedName2)(void)
 	lobby_405140();
 	int r = net_connect(100);
 	if (r == 0) {
-		FUN_0041ee40(0x3d);
+		menu_showMessage(0x3d);
 		return 0;
 	}
 	if (r == 2) {
-		FUN_0041ee40(0x46);
+		menu_showMessage(0x46);
 		return 0;
 	}
 	if (!net_asyncSelect(g_hWndMain, 100)) {
-		FUN_0041ee40(0x3e);
+		menu_showMessage(0x3e);
 		return 0;
 	}
 	GAME_VAR(int, 0x4ded54) = 1;

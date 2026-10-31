@@ -212,7 +212,7 @@ void (room_drawGameSettings)(void)
 	colour(bright);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75a424);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
-	FUN_00427a40(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
+	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	for (int k = 0; k < 8; k++)   /* (the original would grey labels past the eighth: there are none) */
 		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(0x75a4a4 + k * 0x80));
 	draw_values(f, text);

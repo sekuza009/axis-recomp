@@ -372,11 +372,11 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		((float *)move)[12 + c] = f32(fld_m((const float *)(obj + 0x58) + c));
 	memcpy(obj + 0x64, type + 0x98, 16);
 	float turn[16];
-	FUN_0047d8a0(turn, (const float *)(obj + 0x64));
+	Mat4_fromQuat(turn, (const float *)(obj + 0x64));
 	float *m = (float *)(obj + 0xf4);
 	Mat4_multiply((float *)(obj + 0x74), (const float *)move, turn);
 	Mat4_invert((float *)(obj + 0xb4), (const float *)(obj + 0x74));
-	FUN_0047d5a0(m, obj + 0x74);
+	Mat4_copy(m, obj + 0x74);
 	Mat4_invert((float *)(obj + 0x134), m);
 	identity4((u32 *)(obj + 0x174));
 	identity4((u32 *)(obj + 0x1b4));
@@ -815,7 +815,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	memcpy(p + 0x1c, desc + 0x14, 12);
 	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);
 	if (P(u32, 0x28))
-		FUN_0047d5a0(p + 0x2c, P(const void *, 0x28));
+		Mat4_copy(p + 0x2c, P(const void *, 0x28));
 	P(int, 0x6c) = 0;
 	P(u32, 0x70) = 0x3f800000;
 	P(int, 0x74) = 0;

@@ -28,9 +28,9 @@ int (match_4686e0)(int v) { GAME_VAR(int, 0x4c4dec) = v; return v; }
 
 /* ---- index <-> pointer in an array of records ---- */
 /* 0x46cbc0: record i (base + i * stride), 0 for a negative index */
-int (FUN_0046cbc0)(int i, int base, int stride) { return i < 0 ? 0 : i * stride + base; }
+int (array_recordAt)(int i, int base, int stride) { return i < 0 ? 0 : i * stride + base; }
 /* 0x46cba0: the index of record p, -1 for none */
-int (FUN_0046cba0)(int p, int base, int stride) { return p == 0 ? -1 : (p - base) / stride; }
+int (array_indexOf)(int p, int base, int stride) { return p == 0 ? -1 : (p - base) / stride; }
 
 /* ---- strings ---- */
 /* 0x44ac50: the length of s */
@@ -57,14 +57,14 @@ void THISCALL (match_4636b0)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; F
 /* 0x463780: team slot i's id */
 int THISCALL (this_get_0x2342381_463780)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
-void THISCALL (FUN_00474390)(Stage *stage, int p) { FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 1; }
+void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 1; }
 void THISCALL (net_4743b0)(Stage *stage, int p)
 {
 	FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 0;
-	FUN_00473470(stage, p);
+	playerRecord_resetColourGrid(stage, p);
 }
 /* 0x45df90: the stage's 100 actor references cleared */
-void THISCALL (FUN_0045df90)(Stage *stage) { clear((u8 *)stage + 0x202e8f0, 100); }
+void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage + 0x202e8f0, 100); }
 /* 0x45e1c0: every actor in use switched off */
 void THISCALL (match_45e1c0)(Stage *stage)
 {
@@ -82,8 +82,8 @@ int THISCALL (load_4723e0)(Stage *stage)
 /* 0x480440: an empty slot: -1 and four zeros */
 void THISCALL (load_480440)(int *self) { self[1] = self[2] = self[3] = self[4] = 0; self[0] = -1; }
 /* 0x469980, 0x46f480: members cleared (0x46f480 keeps the sixth) */
-void THISCALL (FUN_00469980)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
-void THISCALL (FUN_0046f480)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
+void THISCALL (Skeleton_clear)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
+void THISCALL (partList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
 /* 0x4699a0, 0x46f4b0: the owned buffer (+8 while +0xc is 1) freed, then the members cleared */
 static void free_owned(void *self)
 {
@@ -93,21 +93,21 @@ static void free_owned(void *self)
 		FIELD(int, self, 0xc) = 0;
 	}
 }
-int THISCALL (FUN_004699a0)(void *self) { free_owned(self); FUN_00469980(self); return 0; }
-int THISCALL (FUN_0046f4b0)(void *self) { free_owned(self); FUN_0046f480(self); return 0; }
+int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
+int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
 /* 0x46f470: UnitPoseInfo's destructor (vtable 0x4a9754) */
-int THISCALL (match_46f470)(u32 *self) { self[0] = 0x4a9754; return FUN_0046f4b0(self); }
+int THISCALL (match_46f470)(u32 *self) { self[0] = 0x4a9754; return partList_release(self); }
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
-u32 THISCALL (FUN_0046ce50)(u32 *self) { return self[1] ? fclose((void *)self[1]) : 0; }
+u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)self[1]) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
-u32 (FUN_00467d60)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
+u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
 void (net_452e60)(void) { clear((void *)0xa05748, 0x16c0); }
 void (net_452e80)(void) { clear((void *)0x9fd960, 0x1e40); }
 void (net_452ea0)(void) { clear((void *)0xa05330, 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
-char *(FUN_0046cb60)(char *s)
+char *(path_normalize)(char *s)
 {
 	if (s)
 		for (char *p = s; *p; p++) {
@@ -146,8 +146,8 @@ void (mainmenu_4417c0)(int i) { int *f = (int *)(0x9ddac8 + i * 0x44); *f = 1 - 
 void (mainmenu_4417f0)(void) { for (int i = 0; i < GAME_VAR(int, 0x9dd928); i++) GAME_VAR(int, 0x9ddac8 + i * 0x44) = 1; }
 /* 0x447af0: a click closes the mission briefing */
 void (mission_447af0)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) GAME_VAR(int, 0x9f62e0) = 0; }
-/* 0x4411e0: the background tunnel's rings made again (FUN_00441120) */
-u32 (intro_4411e0)(void) { GAME_VAR(int, 0x9dae10) = 0; return FUN_00441120((void *)0x67fb3c); }
+/* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
+u32 (intro_4411e0)(void) { GAME_VAR(int, 0x9dae10) = 0; return tunnel_appendRing((void *)0x67fb3c); }
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)0x76d438, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
@@ -155,14 +155,14 @@ void (arena_404120)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x4dbad0
 void (room_431db0)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x9dd308); }
 void (profile_44b080)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)0x9f9010); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
-void THISCALL (FUN_0045dfb0)(Stage *stage, int i)
+void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
 	if (i < 0 || FIELD(int, stage, 0x1cd94f4 + i * 0x8888) == 1)
 		FIELD(int, stage, 0x202e8d8) = i;
 }
 /* 0x456820: material m (0x68-byte records at +0xc016c) marked changed, its flags kept to the bits 0x11111113 (the
    original's guard, flags | 2, is always true) */
-void THISCALL (FUN_00456820)(void *self, int m)
+void THISCALL (tex_markMaterialChanged)(void *self, int m)
 {
 	u8 *r = (u8 *)self + m * 0x68;
 	u32 f = FIELD(u32, r, 0xc016c);
@@ -182,7 +182,7 @@ void THISCALL (hud_456b50)(void *self)
 	}
 }
 /* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
-void THISCALL (FUN_00473470)(Stage *stage, int p)
+void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
 	u8 *rec = (u8 *)stage + 0x1561b68 + p * 0x47fd2;
 	int colour = GAME_VAR(int, 0xa1f220);
@@ -246,7 +246,7 @@ void THISCALL (load_48fe10)(Stage *stage)
 
 /* ---- matrices (16 dwords) ---- */
 /* 0x47d5a0: copied (column by column) */
-void (FUN_0047d5a0)(u32 *d, const u32 *s)
+void (Mat4_copy)(u32 *d, const u32 *s)
 {
 	for (int c = 0; c < 4; c++)
 		for (int r = 0; r < 4; r++)
@@ -266,7 +266,7 @@ void *THISCALL (ResourceSet_init_463a40)(u8 *self)
 	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
 	for (int k = 0; k < 8; k++) {
 		FIELD(u32, self, lists[k]) = 0x4a9754;
-		FUN_0046f480(self + lists[k]);
+		partList_clear(self + lists[k]);
 	}
 	return self;
 }
@@ -328,16 +328,16 @@ int THISCALL (armc_45dfe0)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) =
 /* 0x468720: the time sync object at 0xa0e948 constructed */
 void *(load_487430_wrap_468720)(void) { return TimeSync_ctor((void *)0xa0e948); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
-char *THISCALL (FUN_00470f80)(void *self, const char *folder)
+char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 {
 	strcpy((char *)self + 0x908, folder);
-	return FUN_0046cb60((char *)self + 0x908);
+	return path_normalize((char *)self + 0x908);
 }
 /* 0x461ec0: the scene's texture folder (+0x1f35c8) and its stage's */
-void THISCALL (FUN_00461ec0)(Scene *scene, const char *folder)
+void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)
 {
 	strcpy((char *)scene + 0x1f35c8, folder);
-	FUN_00470f80(STAGE(scene), folder);
+	object_setTextureFolder(STAGE(scene), folder);
 }
 
 /* 0x48fce0: a script file started: the script state reset, its name and mode kept; modes 0 and 2 clear the running
@@ -450,7 +450,7 @@ void THISCALL (load_470de0)(u8 *self, const char *s1, const char *s2, const char
 	const char *name[9] = { s1, s2, s3, s4, s5, s6, s7, s8, s9 };
 	for (int k = 0; k < 9; k++) {
 		strcpy((char *)self + 8 + k * 0x100, name[k]);
-		FUN_0046cb60((char *)self + 8 + k * 0x100);
+		path_normalize((char *)self + 8 + k * 0x100);
 	}
 }
 
@@ -461,7 +461,7 @@ void THISCALL (load_471010)(u8 *scene)
 }
 
 /* 0x470fc0: a message formatted and handed to the log hook (0xae2ec8) if one is set, with b and c (a unused) */
-void (FUN_00470fc0)(int a, int b, int c, const char *format, ...)
+void (log_message)(int a, int b, int c, const char *format, ...)
 {
 	char text[0x400];
 	(void)a;
@@ -793,8 +793,8 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 		return 1;
 	if (type >= GAME_VAR(int, scene + k->count))
 		sys_fatalError((char *)0xae2eb8, (const char *)(uintptr_t)k->message, type);
-	FUN_00467520(pl + k->shapes);
-	FUN_0046b7f0(pl + k->skels);
+	ShapeManager_releaseModels(pl + k->shapes);
+	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
 	GAME_VAR(int, pl + k->field) = type;
 	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)

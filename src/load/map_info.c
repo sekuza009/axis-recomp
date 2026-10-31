@@ -81,7 +81,7 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 	if (!f)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7dec, (int)path);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	log_message((int)scene, 0, 0, (const char *)0x4c77b4);
 	u32 version, skip;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
@@ -91,11 +91,11 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 		crt_fseek(f, skip, 1);   /* SEEK_CUR */
 	}
 	fread_scrambled(&skip, 4, 1, f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7ddc);
+	log_message((int)scene, 0, 0, (const char *)0x4c7ddc);
 	load_48b460(scene, f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7dcc);
+	log_message((int)scene, 0, 0, (const char *)0x4c7dcc);
 	map_loadWayPointInfoFrom(scene, f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7dbc);
+	log_message((int)scene, 0, 0, (const char *)0x4c7dbc);
 	map_loadTriggerInfoFrom(scene, f);
 	fclose(f);
 #undef crt_fread
@@ -114,8 +114,8 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	char path[0x100], base[0x100];
 	u8 objects[56][0xb0];
 	FIELD(int, scene, 0x131ae40) = 0;
-	FUN_00467520(scene + 0xe3c93c);
-	FUN_0046b7f0(scene + 0x13016d0);
+	ShapeManager_releaseModels(scene + 0xe3c93c);
+	SkeletonManager_releaseSkeletons(scene + 0x13016d0);
 	load_490d10(scene);
 	FIELD(int, scene, 0x13016cc) = 0;
 	if (mode == 0) {
@@ -123,7 +123,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 		sprintf(path, (const char *)0x4c7e90, scene + 0x108, base);
 		void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 		if (f) {
-			FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7e74);
+			log_message((int)scene, 0, 0, (const char *)0x4c7e74);
 			fread_scrambled(scene + 0x13016c8, 4, 1, f);
 			fread_scrambled(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
 			fclose(f);
@@ -135,7 +135,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	void *f = crt_fopen(path, (const char *)0x4ad170);
 	if (!f)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7e48, (int)path);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	log_message((int)scene, 0, 0, (const char *)0x4c77b4);
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
@@ -144,7 +144,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	fread_scrambled(&count, 4, 1, f);
 	for (int i = 0; i < count; i++) {
 		if (i % 2 == 0)
-			FUN_00470fc0((int)scene, 0, i, (const char *)0x4c7e38, i);
+			log_message((int)scene, 0, i, (const char *)0x4c7e38, i);
 		unsigned k = (unsigned)i % 56;
 		if (k == 0)
 			fread_scrambled(objects, 0xb0, 56, f);
@@ -157,9 +157,9 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	if (mode == 1 && FIELD(int, scene, 0x13016cc) == 0) {
 		f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
 		if (f) {
-			FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7e1c);
-			FUN_0046cc30(scene + 0x13016c8, 4, 1, f);
-			FUN_0046cc30(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
+			log_message((int)scene, 0, 0, (const char *)0x4c7e1c);
+			file_writeScrambled(scene + 0x13016c8, 4, 1, f);
+			file_writeScrambled(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
 			fclose(f);
 		}
 	}
@@ -211,7 +211,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 	if (!f)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7c8c, (int)path);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	log_message((int)scene, 0, 0, (const char *)0x4c77b4);
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
@@ -219,7 +219,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	fread_scrambled(&value, 4, 1, f);
 	crt_fseek(f, value, 1);   /* SEEK_CUR */
 	fread_scrambled(&value, 4, 1, f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7c7c);
+	log_message((int)scene, 0, 0, (const char *)0x4c7c7c);
 	fread_scrambled(&count, 4, 1, f);
 	u32 records[0x71c][9];
 	for (int i = 0; i < count; i++) {
@@ -293,7 +293,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 	if (!f)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c77c4, (int)path);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c77b4);
+	log_message((int)scene, 0, 0, (const char *)0x4c77b4);
 	int version, value;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
@@ -303,10 +303,10 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 		crt_fseek(f, value, 1);   /* SEEK_CUR */
 	}
 	fread_scrambled(&value, 4, 1, f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c774c);
+	log_message((int)scene, 0, 0, (const char *)0x4c774c);
 	fread_scrambled(scene + 0x1cd6fb0, 4, 1, f);
 	fread_scrambled(scene + 0x1cd6a30, 0x58, FIELD(u32, scene, 0x1cd6fb0), f);
-	FUN_00470fc0((int)scene, 0, 0, (const char *)0x4c7734);
+	log_message((int)scene, 0, 0, (const char *)0x4c7734);
 	fread_scrambled(scene + 0x1cd93a4, 4, 1, f);
 	fread_scrambled(scene + 0x1cd6fb4, 0x5c, FIELD(u32, scene, 0x1cd93a4), f);
 	fclose(f);
@@ -387,7 +387,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	void *f = crt_fopen(path, (const char *)0x4ad170);
 	if (!f)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c806c, (int)path);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c77b4);
+	log_message((int)s, 0, 0, (const char *)0x4c77b4);
 	crt_fread(&n, 4, 1, f);
 	if (n != 0x1201)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7768, (int)name);
@@ -396,20 +396,20 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		crt_fseek(f, n, 1);
 	}
 	fread_scrambled(dir, 1, 0x100, f);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c804c);
+	log_message((int)s, 0, 0, (const char *)0x4c804c);
 	fread_scrambled(s + 0xa08, 4, 1, f);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c8040);
+	log_message((int)s, 0, 0, (const char *)0x4c8040);
 	load_483d70(s + 0x9ccffc, f);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c802c);
+	log_message((int)s, 0, 0, (const char *)0x4c802c);
 	fread_scrambled(s + 0x9ee030, 4, 1, f);
 	fread_scrambled(s + 0x9ee034, 0x10, 1, f);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c801c);
+	log_message((int)s, 0, 0, (const char *)0x4c801c);
 	fread_scrambled(s + 0x9ee044, 4, 1, f);
 	fread_scrambled(s + 0x9ee048, 0x10, 1, f);
 	static const u32 fog_and_modes[] = { 0x9ee058, 0x9ee05c, 0x9ee060, 0x9ee064, 0x9eee48, 0x9ef0b0, 0x9ef30c };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(s + fog_and_modes[k], 4, 1, f);
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c8004);
+	log_message((int)s, 0, 0, (const char *)0x4c8004);
 	int mode = GAME_VAR(int, s + 0x9ee064);
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
@@ -418,22 +418,22 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		for (int k = 0; k < 5; k++)
 			GAME_VAR(u32, s + 0x9ee068 + k * 4) = ground_tex(dir, sphere[k], 0, tex);
 	}
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f8c);
+	log_message((int)s, 0, 0, (const char *)0x4c7f8c);
 	mode = GAME_VAR(int, s + 0x9eee48);
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
 			GAME_VAR(u32, s + 0x9eee50) = ground_tex(dir, 0x4c7f78, 0, tex);   /* SkyInnerLayer */
 		GAME_VAR(u32, s + 0x9eee4c) = ground_tex(dir, 0x4c7f64, 0, tex);       /* SkyOuterLayer */
 	}
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f4c);
+	log_message((int)s, 0, 0, (const char *)0x4c7f4c);
 	if (GAME_VAR(int, s + 0x9ef0b0) > 0 && GAME_VAR(int, s + 0x9ef0b0) <= 2)
 		for (int k = 0; k < 6; k++)
 			GAME_VAR(u32, s + 0x9ef0b4 + k * 4) = ground_tex(dir, 0x4c7f3c, k + 1, tex);   /* SideLayer<n> */
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f24);
+	log_message((int)s, 0, 0, (const char *)0x4c7f24);
 	if (GAME_VAR(int, s + 0x9ef30c) > 0 && GAME_VAR(int, s + 0x9ef30c) <= 2)
 		for (int k = 0; k < 16; k++)
 			GAME_VAR(u32, s + 0x9ef310 + k * 4) = ground_tex(dir, 0x4c7f14, k + 1, tex);   /* FloorAni<nn> */
-	FUN_00470fc0((int)s, 0, 0, (const char *)0x4c7f04);
+	log_message((int)s, 0, 0, (const char *)0x4c7f04);
 	static const u8 limits[7][2] = { { 0x04, 0xc }, { 0x10, 0xc }, { 0x1c, 0xc }, { 0x28, 0xc }, { 0x34, 4 }, { 0x38, 4 }, { 0x3c, 4 } };
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(s + 0x9ef900 + limits[k][0], limits[k][1], 1, f);
@@ -441,7 +441,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	GAME_VAR(int, s + 0xdc0240) = 0;
 	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
 		u8 *l = s + 0xdc0244 + i * 0x20c;
-		FUN_00470fc0((int)s, 0, i, (const char *)0x4c7ef4, i);
+		log_message((int)s, 0, i, (const char *)0x4c7ef4, i);
 		fread_scrambled(l, 0x20c, 1, f);
 		GAME_VAR(u32, l + 0x34) = ground_tex(dir, 0x4c7ee4, i, tex);
 		fread_scrambled(image, 0x300, 0x100, f);
@@ -494,10 +494,10 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				const float *p = vs + (w * r + c) * 3, *up = vs + (w * (r - 1) + c) * 3, *down = vs + (w * (r + 1) + c) * 3;
 				const float *right = p + 3, *left = p - 3;
 				float t[3], n1[3], n2[3], n3[3], n4[3];
-				memcpy(n1, FUN_004679a0(t, left, p, up), 12);
-				memcpy(n2, FUN_004679a0(t, up, p, right), 12);
-				memcpy(n3, FUN_004679a0(t, right, p, down), 12);
-				memcpy(n4, FUN_004679a0(t, down, p, left), 12);
+				memcpy(n1, math_triangleNormal(t, left, p, up), 12);
+				memcpy(n2, math_triangleNormal(t, up, p, right), 12);
+				memcpy(n3, math_triangleNormal(t, right, p, down), 12);
+				memcpy(n4, math_triangleNormal(t, down, p, left), 12);
 				float *out = (float *)(GAME_VAR(u8 *, l + 0x44) + (w * r + c) * 12);
 				for (int k = 0; k < 3; k++)
 					out[k] = f32(fadd_m(fadd_m(fadd_m(fld_m(&n4[k]), &n3[k]), &n2[k]), &n1[k]));

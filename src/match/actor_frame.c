@@ -292,11 +292,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u8 *arms = s + 0x1447ec4 + GAME_VAR(int, player + 0x318) * 0x13f4;
 	u8 *legs = s + 0x1486470 + GAME_VAR(int, player + 0x31c) * 0x1820;
 	if (AI(0x484) != AI(0x488)) {
-		FUN_0045e1f0(s, i);
+		actor_updateHead(s, i);
 		actor_updateBody(s, i);
-		FUN_0045e390(s, i);
-		FUN_0045e460(s, i);
-		FUN_0045e530(s, i);
+		actor_updateArms(s, i);
+		actor_updateLegs(s, i);
+		actor_updateBooster(s, i);
 		AI(0x488) = AI(0x484);
 	}
 	int item = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
@@ -808,7 +808,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AI(0x48c) = AI(0x490) = 0;
 	} else if (AI(0x48c) == 0) {   /* the next one coming up */
 		if (!(AF(0x490) > 0)) {
-			FUN_0045e810((Stage *)s, i, AI(0x498));
+			actor_setWeaponSlot((Stage *)s, i, AI(0x498));
 			actor_updatePart(s, i, AI(0x498), AI(0x49c));
 			weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AI(0x140) * 4) * 0x2e18;
 			model = AI(0x140) == 4 ? a + 0x587c : AI(0x140) == 5 ? a + 0x701c : a + 0x40dc;
@@ -1112,7 +1112,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (GAME_VAR(int, b + 4) != 1)
 				continue;
 			GAME_VAR(u32, b + 0xb8) = f[1];
-			GAME_VAR(int, b + 0x6c) = FUN_0046cbc0(f[2], GAME_VAR(u32, s + 0xa24), 0xac);
+			GAME_VAR(int, b + 0x6c) = array_recordAt(f[2], GAME_VAR(u32, s + 0xa24), 0xac);
 			if (f[3] == 1)
 				GAME_VAR(float, b + 0x74) = f32(fsub_m(fld_m(&GAME_VAR(float, b + 0x70)), dt));
 			memcpy(b + 0x90, f + 4, 12);

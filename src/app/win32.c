@@ -13,7 +13,7 @@ u32 (GetCurrentDirectoryA_wrap_43f580)(void)
 }
 
 /* 0x46c580: a message box over the active window (title, text); MessageBox's answer */
-int (FUN_0046c580)(const char *title, const char *text)
+int (sys_messageBoxOverActive)(const char *title, const char *text)
 {
 	return MessageBoxA(GetActiveWindow(), text, title, 0);
 }
@@ -200,7 +200,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
    ChangeDisplaySettingsA(NULL), else nothing (0). Any other size is remembered (0xb12a84 / 0xb12a88, the flag set)
    and set with 32 bits (the patch's choice, whatever bits asks), with ChangeDisplaySettingsA's flags. Returns its
    answer. (The original's DEVMODE also has its word at 0x3c, dmColor, at 0x800.) */
-int (FUN_0042eed0)(int width, int height, u32 flags, int bits)
+int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 {
 	(void)bits;
 	if (width == GAME_VAR(int, 0x67eefc) && height == GAME_VAR(int, 0x76d430)) {
@@ -226,12 +226,12 @@ u32 (wnd_setCursor)(void)
 	void *object = GAME_VAR(void *, 0x9087b4);
 	if (object)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
-	FUN_0042eed0(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+	app_setDisplayMode(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	GAME_CDECL(0x4014c0, void, void)();
 	music_shutdown();
 	for (u32 p = 0x4dd4d4; p < 0x4dd4fc; p += 4)
-		FUN_00467d60(GAME_VAR(void *, p));
+		mem_free(GAME_VAR(void *, p));
 	GAME_CDECL(0x456cd0, void, void)();
 	return GAME_CDECL(0x467b70, u32, void)();
 }
@@ -365,7 +365,7 @@ int (app_init)(void *inst, int show)
 	input_setDefaultKeyBindings();
 	cfg_writeDefaultAxisCfg();
 	app_43f640();
-	app_42ef30(FUN_0042eed0(g_screenW, g_screenH, 4, (GAME_VAR(int, 0x83a9c4) + 1) * 16));   /* CDS_FULLSCREEN */
+	app_42ef30(app_setDisplayMode(g_screenW, g_screenH, 4, (GAME_VAR(int, 0x83a9c4) + 1) * 16));   /* CDS_FULLSCREEN */
 	if (!GAME_VAR(int, 0x76d410) && !files_present())
 		return 0;
 
@@ -404,7 +404,7 @@ int (app_init)(void *inst, int show)
 	IMPORT(0x4a92bc, int, void *, int)(g_hWndMain, show);   /* ShowWindow */
 	IMPORT(0x4a92c0, int, void *)(g_hWndMain);   /* UpdateWindow */
 	if (!app_checkCdAndLoad(inst)) {
-		FUN_0042eed0(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+		app_setDisplayMode(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
 		return 0;
 	}
 	g_menuState = 100;
@@ -590,8 +590,8 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 					IMPORT(0x4a9348, int, const void *)(msg);   /* TranslateMessage */
 				IMPORT(0x4a934c, long, const void *)(msg);       /* DispatchMessageA */
 			}
-		FUN_0043f980();
-		FUN_004202d0();
+		editField_readTyping();
+		app_frame();
 	}
 	return 1;
 #undef FindWindowA

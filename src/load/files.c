@@ -68,7 +68,7 @@ u32 THISCALL (match_487ed0)(Scene *scene)
 }
 
 /* 0x46ca70: does the file named by the formatted path exist (opens for reading)? */
-int (FUN_0046ca70)(const char *format, ...)
+int (file_existsf)(const char *format, ...)
 {
 	char path[256];
 	va_list args;
@@ -84,7 +84,7 @@ int (FUN_0046ca70)(const char *format, ...)
 
 /* 0x46cbe0: count records of size bytes read, each byte unscrambled: xor 0x59, rotated left by one. Returns fread's
    count */
-u32 (FUN_0046cbe0)(u8 *p, u32 size, u32 count, void *f)
+u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 {
 	int n = (int)(size * count);
 	u32 r = GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f);   /* fread */
@@ -133,7 +133,7 @@ u32 THISCALL (chat_saveMacros)(Scene *scene)
 
 /* 0x46cc30: count records of size bytes written scrambled (each byte rotated right by one, xor 0x59), then put back
    as they were. Returns fwrite's count */
-u32 (FUN_0046cc30)(u8 *p, u32 size, u32 count, void *f)
+u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
 {
 	int n = (int)(size * count);
 	for (int i = 0; i < n; i++) {
@@ -799,7 +799,7 @@ static int campaign_signed(const char *path)
 
 /* 0x446a10: the chosen pilot made current: axisuser.dat written (no file: nothing more); the pilot's file read
    into 0x9f1718 (its name from the list at +0x80) when it is there and signed, else a new record made and written;
-   then the mech read, 0x4dcf34 / 0x9f62e0 cleared, 0x9f62fc = the progress. Returns FUN_004463a0's eax */
+   then the mech read, 0x4dcf34 / 0x9f62e0 cleared, 0x9f62fc = the progress. Returns mech_loadFromProfile's eax */
 u32 (profile_save)(void)
 {
 	set_current_name();
@@ -829,7 +829,7 @@ u32 (profile_save)(void)
 	}
 	fclose(f);
 	crt_chdir((const char *)0x4b2a80);
-	u32 r = FUN_004463a0();
+	u32 r = mech_loadFromProfile();
 	GAME_VAR(int, 0x4dcf34) = 0;
 	GAME_VAR(int, 0x9f62e0) = 0;
 	GAME_VAR(int, 0x9f62fc) = GAME_VAR(int, 0x9f181c);
@@ -1360,7 +1360,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	if (version != 0x1204)
 		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7570, (int)path);
 	for (int k = 0; k < 6; k++) {
-		FUN_00470fc0((int)scene, 0, 0, (const char *)tables[k][0]);
+		log_message((int)scene, 0, 0, (const char *)tables[k][0]);
 		fread_scrambled(scene + tables[k][1], 4, 1, f);
 		fread_scrambled(scene + tables[k][2], tables[k][3], FIELD(u32, scene, tables[k][1]), f);
 	}
@@ -1400,15 +1400,15 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	FIELD(int, s, 0x2340d1d) = 1;
 	FIELD(int, s, 0x2340d29) = 0;
 	int value = 0x1201;
-	FUN_0046cc30(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x5ae9c4, 4, 1, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x9dad94, 4, 1, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x67fb44, 1, 0x20, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x9da3e0, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x5ae9c4, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x9dad94, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x67fb44, 1, 0x20, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x9da3e0, 4, 1, FIELD(void *, s, 0x2340d08));
 	value = FIELD(int, s, 0x22e7180);
-	FUN_0046cc30(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x4df8e8, 4, 1, FIELD(void *, s, 0x2340d08));
-	FUN_0046cc30((void *)0x76d408, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x4df8e8, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)0x76d408, 4, 1, FIELD(void *, s, 0x2340d08));
 	for (int i = 0; i < 16; i++)
 		if (net_playerInUse(i) == 1) {
 			FIELD(int, s, 0x234300e + i * 0x10) = 1;

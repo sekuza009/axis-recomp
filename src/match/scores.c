@@ -19,7 +19,7 @@ void THISCALL (match_4620e0)(Scene *scene)
 		if (scene->network == 1)
 			GAME_VAR(int, (u8 *)scene + 0x1755278 + i * 0x47fd2) = -1;
 	}
-	FUN_0045df90(STAGE(scene));
+	stage_clearActorRefs(STAGE(scene));
 	msg_newKing(scene);
 }
 

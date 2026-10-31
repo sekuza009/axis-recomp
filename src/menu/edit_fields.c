@@ -243,7 +243,7 @@ void (match_44ac90)(int x, int y, int maxLength)
 }
 
 /* 0x43f980: while typing, the line taken from the hidden EDIT control */
-void (FUN_0043f980)(void)
+void (editField_readTyping)(void)
 {
 	if (g_paused == 0)
 		return;

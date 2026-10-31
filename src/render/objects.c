@@ -240,7 +240,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 {
 	float *cam = (float *)(s + 0x20f3970), *mv = (float *)(s + 0x20f39a0), *pr = (float *)(s + 0x20f3a34);
 	memcpy(s + 0x20f3994, cam, 12);
-	FUN_0047d5a0(s + 0x20f39e0, mv);
+	Mat4_copy(s + 0x20f39e0, mv);
 	memcpy(cam, pos, 12);
 	memcpy(s + 0x20f397c, dir, 12);
 	memcpy(s + 0x20f3988, up, 12);

@@ -321,9 +321,9 @@ void (menu_447c70)(void)
 		menu_447b40();
 }
 
-/* 0x41edc0 (FUN_0041edc0): back to the main menu: the background tunnel freed ring by ring (last first), the menus
+/* 0x41edc0 (menu_returnToMain): back to the main menu: the background tunnel freed ring by ring (last first), the menus
    entered again, state 300 */
-void (FUN_0041edc0)(void)
+void (menu_returnToMain)(void)
 {
 	while (g_tunnel != NULL)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
@@ -333,7 +333,7 @@ void (FUN_0041edc0)(void)
 
 /* 0x41ed70: back to the main menu from the game room: the background tunnel freed, the menus entered again, the
    room's state cleared, state 300 */
-void (FUN_0041ed70)(void)
+void (menu_returnToMainFromRoom)(void)
 {
 	while (g_tunnel != NULL)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
@@ -695,7 +695,7 @@ u32 (menuState800_gameRoom)(void)
 #define lstrcpyA(dst, src) IMPORT(0x4a911c, char *, char *, const char *)(dst, src)
 
 /* the match's result sent to the others (the host only): message 0x9f9418 with its flag word 0x9f941c raised
-   while it goes out (FUN_00451270) */
+   while it goes out (net_sendMessage) */
 static void send_result(void)
 {
 	if (!GAME_VAR(int, 0xa0baf8))

@@ -16,8 +16,8 @@ static int clear(void *p, int dwords)
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
 /* ---- member blocks cleared, each the size of its class ---- */
-int THISCALL (FUN_004569a0)(void *self) { return clear(self, 0x8); }       /* TextureManager */
-int THISCALL (FUN_00464bb0)(void *self) { return clear(self, 0x13); }      /* Model */
+int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureManager */
+int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
 int THISCALL (load_466a20)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (load_46ae70)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
 int THISCALL (load_47db50)(void *self) { return clear(self, 0x2b); }
@@ -60,9 +60,9 @@ void THISCALL (this_set_480210)(int *p, int a, int b, int c)
 }
 
 /* 0x4569b0: TextureManager's members cleared, and its count */
-int THISCALL (FUN_004569b0)(void *self)
+int THISCALL (TextureManager_reset)(void *self)
 {
-	FUN_004569a0(self);
+	TextureManager_clear(self);
 	FIELD(int, self, 0x1c) = 0;
 	return 0;
 }
@@ -78,7 +78,7 @@ static void free_owned(void *self)
 }
 
 /* 0x464bc0, 0x466a30, 0x46ae80, 0x4813b0: the buffer freed, then the members cleared */
-int THISCALL (FUN_00464bc0)(void *self) { free_owned(self); FUN_00464bb0(self); return 0; }
+int THISCALL (Model_release)(void *self) { free_owned(self); Model_clear(self); return 0; }
 int THISCALL (load_466a30)(void *self) { free_owned(self); load_466a20(self); return 0; }
 int THISCALL (load_46ae80)(void *self) { free_owned(self); load_46ae70(self); return 0; }
 int THISCALL (load_4813b0)(void *self) { free_owned(self); load_4813a0(self); return 0; }
@@ -149,8 +149,8 @@ DELETING(TimeSync, TimeSync_dtor)
 void (TimeSync_dtor_wrap_468740)(void) { TimeSync_dtor((u32 *)0xa0e948); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
-int (TextureManager_ctor)(void) { GAME_VAR(u32, 0x83a5e0) = 0x4a9570; return FUN_004569a0((void *)0x83a5e0); }
-int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = 0x4a9570; return FUN_004569b0(self); }
+int (TextureManager_ctor)(void) { GAME_VAR(u32, 0x83a5e0) = 0x4a9570; return TextureManager_clear((void *)0x83a5e0); }
+int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = 0x4a9570; return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
 void (TextureManager_dtor_wrap_42b380)(void) { TextureManager_dtor((u32 *)0x83a5e0); }
 
@@ -170,8 +170,8 @@ int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = 0x4aa254; return load
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Model (vtable 0x4aa250) */
-void *THISCALL (Model_ctor)(u32 *self) { self[0] = 0x4aa250; FUN_00464bb0(self); return self; }
-int THISCALL (Model_dtor)(u32 *self) { self[0] = 0x4aa250; return FUN_00464bc0(self); }
+void *THISCALL (Model_ctor)(u32 *self) { self[0] = 0x4aa250; Model_clear(self); return self; }
+int THISCALL (Model_dtor)(u32 *self) { self[0] = 0x4aa250; return Model_release(self); }
 DELETING(Model, Model_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
@@ -229,16 +229,16 @@ static int release_all(u8 *self, int stride, Release release)
 		*(int *)(self + 0x12c) = 0;
 	return r;
 }
-static int THISCALL release_model(void *e) { return FUN_00464bc0(e); }
-static int THISCALL release_skeleton(void *e) { return FUN_004699a0(e); }
+static int THISCALL release_model(void *e) { return Model_release(e); }
+static int THISCALL release_skeleton(void *e) { return Skeleton_release(e); }
 /* 0x467520: a shape manager's models (0x4c bytes) */
-int THISCALL (FUN_00467520)(u8 *self) { return release_all(self, 0x4c, release_model); }
+int THISCALL (ShapeManager_releaseModels)(u8 *self) { return release_all(self, 0x4c, release_model); }
 /* 0x46b7f0: a skeleton manager's skeletons (0x24 bytes) */
-int THISCALL (FUN_0046b7f0)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
+int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(self, 0x24, release_skeleton); }
 
 /* 0x45ff30: an object's eight member lists destroyed (match_46f470, the last member first: +0x701c .. +0x554).
    Returns the last call's eax */
-u32 THISCALL (FUN_0045ff30)(u8 *self)
+u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
 	static const u32 members[8] = { 0x701c, 0x587c, 0x40dc, 0x34f4, 0x2524, 0x1554, 0xd54, 0x554 };
 	u32 r = 0;
@@ -349,7 +349,7 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
 			ok = 1;
 		}
-		FUN_0046ce50(image);
+		BMPRGBFile_close(image);
 	}
 	BMPRGBFile_ctor(image);   /* (by use its destructor) */
 	return ok;
@@ -476,7 +476,7 @@ static const u32 k_cameraPresets[6][10] = {
    stage (+0x1f36c8) with all its member arrays built (the CRT's vector constructors 0x401290 / 0x49fd2d with their
    element constructors) and vtables set; the factor tables sized (factor_initBy into the block at +0x91e4); the
    parts (item_initTextures with nine names), the component catalogue and the items loaded (failing: a fatal
-   message); the ten camera presets, the stage's player slots reset (FUN_0045dfb0 -1), the geometry check sizes; the
+   message); the ten camera presets, the stage's player slots reset (stage_selectActor -1), the geometry check sizes; the
    30 chat macros (63 characters each, 0x40 apart from +0x234334b) read from their file, each with its line end cut
    (an empty one cuts the byte before it), and saved back (chat_saveMacros). (The original's SEH frame, for
    unwinding a failed construction, is not reproduced.) Returns the object */
@@ -544,7 +544,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
 	GAME_VAR(int, g + 0x233cc10) = 1;
-	FUN_0045dfb0((Stage *)s, -1);
+	stage_selectActor((Stage *)s, -1);
 	GAME_VAR(int, g + 0x23423e5) = 6;
 	GAME_VAR(int, g + 0x23423ed) = 6;
 	GAME_VAR(int, g + 0x2340c64) = -1;
