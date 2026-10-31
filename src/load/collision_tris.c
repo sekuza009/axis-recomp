@@ -278,6 +278,96 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	                        stage + 0x9ca0f4, count);
 }
 
+/* an affine point (with the translation) or a direction through a 4x4 matrix (columns), each row summed z, y, x */
+static float row_point(const float *m, const float *p, int i)
+{
+	return f32(fadd_m(mul(fld_m(&p[2]), &m[8 + i]) + mul(fld_m(&p[1]), &m[4 + i]) + mul(fld_m(&p[0]), &m[i]), &m[12 + i]));
+}
+static float row_dir(const float *m, const float *p, int i)
+{
+	return f32(mul(fld_m(&p[2]), &m[8 + i]) + mul(fld_m(&p[1]), &m[4 + i]) + mul(fld_m(&p[0]), &m[i]));
+}
+
+#define collision_sphereVsUnit(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) 	GAME_THISCALL(0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
+
+/* 0x4804b0 (thiscall on a space object): the sphere of radius r moving from pos by vel against the triangles of the
+   object's list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)
+   and of nsubs sub-models (subs: {list, model-to-world matrix, world-to-model matrix}; pos and vel are taken into
+   the model, the contact back out; an empty sub-model list crashes the original, as it would here). The farthest
+   contact along the move wins (collision_sphereVsUnit's outDist), the record that gave it is skipped next time;
+   then the move slides on: up to 6 passes, ending when a pass's distance is under r / 10, or (contact, outVel the
+   0xa0e7e8 axis, outDist 0) when the response turns back against vel. outPos starts as pos + vel. Returns 1 when
+   anything was hit */
+int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const float *vel, u32 k, float *outPos,
+                                 float *outVel, float *outDist, float *outPlane, u32 axis, const u32 *subs, int nsubs)
+{
+	float at[3], move[3], from[3], step[3], hitPos[3], hitVel[3], plane[4], dist, best;
+	for (int c = 0; c < 3; c++)
+		outPos[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
+	memcpy(step, vel, 12);
+	memcpy(from, pos, 12);
+	int result = 0;
+	u8 *last = 0;
+	for (int pass = 0;; pass++) {
+		memcpy(at, from, 12);
+		u8 *node = FIELD(u8 *, self, 0x18);
+		int sub = -1, hit = 0;
+		FIELD(u32, &best, 0) = 0xff7fffff;   /* -FLT_MAX */
+		memcpy(move, step, 12);
+		for (;;) {
+			if (!node) {
+				if (++sub >= nsubs)
+					break;
+				const float *in = (const float *)subs[sub * 3 + 2];
+				node = (u8 *)subs[sub * 3];
+				for (int i = 0; i < 3; i++)
+					at[i] = row_point(in, from, i);
+				for (int i = 0; i < 3; i++)
+					move[i] = row_dir(in, step, i);
+			}
+			if (node != last && (sub >= 0 || !(*FIELD(u8 *, node, 0) & 1))
+			    && collision_sphereVsUnit(FIELD(void *, node, 0), r, at, move, k, hitPos, hitVel, &dist, plane, axis) == 1) {
+				hit = 1;
+				if (dist > best) {
+					if (sub < 0) {
+						memcpy(outPos, hitPos, 12);
+						memcpy(outVel, hitVel, 12);
+						memcpy(outPlane, plane, 16);
+					} else {
+						const float *out = (const float *)subs[sub * 3 + 1];
+						for (int i = 0; i < 3; i++)
+							outPos[i] = row_point(out, hitPos, i);
+						for (int i = 0; i < 3; i++)
+							outVel[i] = row_dir(out, hitVel, i);
+						for (int i = 0; i < 4; i++)
+							outPlane[i] = f32(mul(fld_m(&plane[3]), &out[12 + i]) + mul(fld_m(&plane[2]), &out[8 + i])
+							                  + mul(fld_m(&plane[1]), &out[4 + i]) + mul(fld_m(&plane[0]), &out[i]));
+					}
+					last = node;
+					FIELD(u32, &best, 0) = FIELD(u32, &dist, 0);
+				}
+			}
+			node = FIELD(u8 *, node, 0xc);
+		}
+		const float *tiny = (const float *)0x4aa268;   /* 1e-8 */
+		if (!(hit == 1 && best > *tiny))
+			return result;
+		if (!(mul(fld_m(&outVel[2]), &vel[2]) + mul(fld_m(&outVel[1]), &vel[1]) + mul(fld_m(&outVel[0]), &vel[0]) > *tiny)) {
+			memcpy(outVel, (const void *)0xa0e7e8, 12);
+			FIELD(u32, outDist, 0) = 0;
+			return 1;
+		}
+		result = 1;
+		memcpy(from, outPos, 12);
+		memcpy(step, outVel, 12);
+		FIELD(u32, outDist, 0) = FIELD(u32, &best, 0);
+		if (pass != 0 && mul(fld_m(&r), (const float *)0x4a93ec) > best)
+			return result;
+		if (pass + 1 > 5)
+			return result;
+	}
+}
+
 /* a triangle of the stage's ground or bounds put into the collision space (no unit, part or indices) */
 static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, const void *c)
 {

@@ -2139,16 +2139,9 @@ static THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD
    the first pass) or the response points back into the velocity (then outVel = the 0xa0e7e8 axis, outDist = 0).
    Returns 1 if anything was hit. Lifted (tools/lift.py) like collision_sphereVsUnit, which it calls; an empty
    sub-model list crashes the original (it follows the null head's next pointer), so the game never passes one. */
-static THISCALL int space_collideUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
-                                      DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs)
-{
-	DWORD args[11] = { r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs };
-	LSTK_BEGIN(mm, 11, args)
-	mm.ecx = (DWORD)self;
-	lift_4804b0(&mm);
-	LSTK_END();
-	return (int)mm.eax;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int space_collideUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
+                                 DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* batch 39: game functions that call the MSVC CRT (library code, called at its own addresses: pure functions only
    here - vsprintf 0x49ed2e, __ftol 0x49ec14, strtok 0x49ec3b, atoi 0x49ec09, _itoa 0x49fb53) */
 #define CRT_vsprintf ((int (__cdecl *)(char *, const char *, va_list))0x49ed2e)
