@@ -59,7 +59,7 @@ static void mission_screen(int hovered)
 	strcat(title, (const char *)0x4b2b14);
 	text_drawBox16(X0, Y0 + 8, X1, title);
 	/* the preview, looked up when asked for: "<0x680bc4><map>/<map>" */
-	if (GAME_VAR(int, 0x9f63b0)) {
+	if (g_missionPreviewDue) {
 		char path[128] = { 0 }, name[64];
 		strcpy(path, (const char *)0x680bc4);
 		strcat(path, map_name);
@@ -67,7 +67,7 @@ static void mission_screen(int hovered)
 		strcat(path, map_name);
 		strcpy(name, path);
 		g_mapPreviewTexture = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
-		GAME_VAR(int, 0x9f63b0) = 0;
+		g_missionPreviewDue = 0;
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind(g_mapPreviewTexture);

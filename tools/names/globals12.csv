@@ -1,0 +1,39 @@
+# text fields being typed in (edit_fields.c)
+0x4db850,int,g_editingNewArenaFragLimit
+0x4db518,int,g_editingNewArenaTimeLimit
+0x4db70c,int,g_editingArenaMessage
+0x9dd830,int,g_editingGameName
+0x9dd38c,int,g_editingGamePassword
+0x9dd69c,int,g_editingOldPassword
+0x9dd37c,int,g_editingAccountPassword
+0x9dd378,int,g_editingPasswordRepeat
+0x9dd304,int,g_editingEmail
+0x9dd6c8,int,g_editingRoomMessage
+0x9dd348,int,g_editingLoginName
+0x9dd3f8,int,g_editingLoginPassword
+0x9dd564,int,g_editingLoginRepeat
+0x9dd6cc,int,g_editingLoginEmail
+# the pen font, the mouse
+0xa106ac,int,g_penFontTexture
+0x4ded70,int,g_mouseWheelTurned
+0x4ded98,int,g_mouse2Down
+0x9dd900,int,g_chatLineDone
+# the pilot's record (see globals11)
+0x9dd5e4,int,g_pilotRating
+0x4de71e,int,g_titleLevel
+# the ARM CENTER's camera: where it is and where it looks
+0x4df870,int,g_armcCameraX
+0x4df874,int,g_armcCameraY
+0x4df878,int,g_armcCameraZ
+0x76d388,int,g_armcLookAtX
+0x76d38c,int,g_armcLookAtY
+0x76d390,int,g_armcLookAtZ
+0x4dc868,int,g_armcEntered
+0x4db85c,int,g_lobbyPanelsOff
+0x4db510,int,g_mapListMade
+# constants (.rdata)
+0x4a9708,float,k_10000f
+0x4a9418,float,k_10f
+0x4a93f4,float,k_100f
+0x4a94c8,float,k_3600f
+0x4a93e0,double,k_69_9

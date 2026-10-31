@@ -10,7 +10,7 @@ static void list_down(void) { skirmish_cursorDown(); }
    or cancel leaves, up / down move the cursor with a key repeat (the original leaves eax to callers that ignore it) */
 void (skirmish_processKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1 || input_justPressed(g_keyClick) == 1) {
+	if (input_justPressed(g_dikA) == 1 || input_justPressed(g_keyClick) == 1) {
 		mission_saveAxisMis(GAME_VAR(int, 0x9f16a4));
 		return;
 	}

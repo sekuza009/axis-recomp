@@ -1027,14 +1027,14 @@ u32 THISCALL (replay_frame)(u8 *s)
 	/* the follow keys (all ten read the same key; with 0x67ef24 the players 11 .. 16) */
 	int follow = 0;
 	for (int k = 1; k <= 10; k++)
-		if (input_justPressed(GAME_VAR(int, 0x4e0468)))
-			follow = k <= 6 && input_justPressed(GAME_VAR(int, 0x67ef24)) ? k + 10 : k;
+		if (input_justPressed(g_dik1))
+			follow = k <= 6 && input_justPressed(g_dikLShift) ? k + 10 : k;
 	follow--;
-	S(int, 0x2340d21) = input_isDown(GAME_VAR(int, 0x5b1da8)) ? 1 : 0;
-	S(int, 0x2340d25) = input_isDown(GAME_VAR(int, 0x9dae70)) ? 1 : 0;
+	S(int, 0x2340d21) = input_isDown(g_dikSpace) ? 1 : 0;
+	S(int, 0x2340d25) = input_isDown(g_dikEnter) ? 1 : 0;
 	if (held2(0x4defe0, 0x4defe4))
 		S(int, 0x234328f) = 1;
-	if (input_justPressed(GAME_VAR(int, 0x4df8d0))) {
+	if (input_justPressed(g_dikF11)) {
 		const char *mode;
 		if (S(int, 0x2340ce8) == 0) {
 			S(int, 0x2340ce8) = 1;
@@ -1609,7 +1609,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (g_writeMatchLog != 0 && g_startedFromLobby != 0) {
 		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? 0x4d0658 : 0x4d069c), 0, *(volatile int *)&from);
 		g_writeMatchLog = 0;
-		GAME_VAR(int, 0x9f67f0) = 1;
+		g_matchLogWritten = 1;
 	}
 	if (S(int, 0x233c9e8) == 0) {
 		S(int, 0x233cc20) = 1;
@@ -1647,13 +1647,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 				music_shutdown();
 				if (S(int, 8) == 0) {
 					msg_userEndsGame(s);
-					GAME_VAR(int, 0x9f67f4) = 1;
+					g_matchEndedByUser = 1;
 				} else {
 					msg_serverEndsGame(s);
 					event_raise3(s);
 					S(int, 0x23423b5) = 2;
 					S(int, 0x23423b9) = 0;
-					GAME_VAR(int, 0x9f67f4) = 1;
+					g_matchEndedByUser = 1;
 				}
 			}
 		} else {
@@ -1662,7 +1662,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			music_shutdown();
 			if (S(int, 0x234240d) >= 0)
 				notice_raise2(s, S(int, 0x234240d));
-			GAME_VAR(int, 0x9f67f4) = 0;
+			g_matchEndedByUser = 0;
 		}
 		S(int, 0x23432cf) = 0;
 	}
@@ -1686,7 +1686,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	/* joining: the network's slot for the local player */
 	if (S(int, 0x234240d) < 0 && net_isClient()) {
-		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, GAME_VAR(const char *, 0x4d05a4));   /* catalogue_loadComponents */
+		PATCHED_THISCALL(0x498dd8, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		S(int, 0x234240d) = net_localSlot();
 		actor_resetSlot((Stage *)stage, S(int, 0x234240d));
 		player_setName((Stage *)stage, S(int, 0x234240d), (const char *)(s + 0x2342429));
@@ -1980,7 +1980,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	/* the round's end */
 	if (S(float, 0x234239d) > 0) {
-		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, GAME_VAR(const char *, 0x4d05a4));   /* catalogue_loadComponents */
+		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		if (S(int, 8) == 1 && S(int, 4) == 0) {   /* the server's end notices, every half second */
 			if (S(float, 0x23423b9) > 0.5f) {
 				S(int, 0x23423b9) = 0;
@@ -2247,8 +2247,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423a5)), (const float *)(s + 0x44));
 		S(float, 0x23423a5) = (float)v;
 		if (!(v > 0)) {
-			if (GAME_VAR(int, 0x9f67f0) == 0 && g_startedFromLobby != 0)
-				write_log(s, (const char *)(GAME_VAR(int, 0x9f67f8) == 1 || (GAME_VAR(int, 0x9f67f4) == 1 && S(int, 0x2342976) <= 1) ? 0x4d069c : 0x4d05a8),
+			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
+				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && S(int, 0x2342976) <= 1) ? 0x4d069c : 0x4d05a8),
 				          1, 0);
 			replay_closeRecording((Scene *)s);
 			music_shutdown();

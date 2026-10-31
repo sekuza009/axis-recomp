@@ -122,7 +122,7 @@ static void first_round(Scene *s)
 		memset(s->firstRoundClear, 0, sizeof s->firstRoundClear);
 		s->rankingShown = 1;
 	} else {
-		GAME_VAR(int, 0x9fd94c) = 0;
+		g_netHostGone = 0;
 		s->localPlayer = 0;
 		player_setName(STAGE(s), 0, s->mechName);
 		s->soloClear = 0;

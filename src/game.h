@@ -631,20 +631,20 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
 #define g_profilePage GAME_VAR(int, 0x9f8f10)        /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
 /* key bindings (key codes), named by their use in the menus */
-#define g_keyClick GAME_VAR(int, 0x9dae70)           /* fire / click: the button under the pointer */
-#define g_keyOk GAME_VAR(int, 0x4e1510)              /* confirms a page */
-#define g_keyCancel GAME_VAR(int, 0x6803a0)          /* leaves a page */
-#define g_keyBack GAME_VAR(int, 0x4e0cdc)
-#define g_keyCancel2 GAME_VAR(int, 0x76d48c)
-#define g_keyLeft GAME_VAR(int, 0x9dae14)
-#define g_keyRight GAME_VAR(int, 0x9db974)
-#define g_keyUp GAME_VAR(int, 0x9db0a0)
-#define g_keyDown GAME_VAR(int, 0x76d330)
-#define g_keyToggle GAME_VAR(int, 0x680390)          /* switches a two-button dialog's highlight */
-#define g_keyLeftShift GAME_VAR(int, 0x67ef24)       /* the modifier keys (DIK codes 0x2a, 0x36, 0x1d, 0x9d) */
-#define g_keyRightShift GAME_VAR(int, 0x9db0ac)
-#define g_keyLeftCtrl GAME_VAR(int, 0x6803a8)
-#define g_keyRightCtrl GAME_VAR(int, 0x9dad8c)
+#define g_keyClick g_dikEnter           /* fire / click: the button under the pointer */
+#define g_keyOk g_dikO              /* confirms a page */
+#define g_keyCancel g_dikEscape          /* leaves a page */
+#define g_keyBack g_dikC
+#define g_keyCancel2 g_dikEscape_2
+#define g_keyLeft g_dikLeft
+#define g_keyRight g_dikRight
+#define g_keyUp g_dikUp
+#define g_keyDown g_dikDown
+#define g_keyToggle g_dikTab          /* switches a two-button dialog's highlight */
+#define g_keyLeftShift g_dikLShift       /* the modifier keys (DIK codes 0x2a, 0x36, 0x1d, 0x9d) */
+#define g_keyRightShift g_dikRShift
+#define g_keyLeftCtrl g_dikLCtrl
+#define g_keyRightCtrl g_dikRCtrl
 #define input_isDown(key) GAME_CDECL(0x401590, int, int)(key)   /* the key (code) is held */
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)

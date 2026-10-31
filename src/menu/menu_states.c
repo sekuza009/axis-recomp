@@ -258,7 +258,7 @@ void (settingsPage_keys)(void)
 void (mission_chosen)(int mission)
 {
 	GAME_VAR(int, 0x9f6328) = mission;
-	GAME_VAR(int, 0x9f63b0) = 1;
+	g_missionPreviewDue = 1;
 	sound_playMenu(2);
 }
 
@@ -303,7 +303,7 @@ void (missionList_keys)(void)
 			return;
 		mission_chosen(++g_mission);
 	}
-	if (input_isDown(g_keyLeftCtrl) && input_isDown(GAME_VAR(int, 0x4df9fc)) && input_justPressed(GAME_VAR(int, 0x4df90c)))
+	if (input_isDown(g_keyLeftCtrl) && input_isDown(g_dikRAlt) && input_justPressed(g_dikPageUp))
 		g_progress = 16;
 }
 
@@ -338,7 +338,7 @@ void (menu_returnToMainFromRoom)(void)
 	g_roomRequestOut = 0;
 	g_roomAnswerAwaited = 0;
 	GAME_VAR(int, 0x9dd1b0) = 0;
-	GAME_VAR(int, 0x9dd6d4) = 0;
+	g_roomAwaitingServer = 0;
 	g_screen = 300;
 }
 
@@ -392,17 +392,17 @@ void (mapSelect_keys)(void)
 		g_mainMenuPicked = 0;
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e151c)) == 1) {
+	if (input_justPressed(g_dikR) == 1) {
 		sound_playMenu(0);
 		g_replayRandomOrder = 1 - g_replayRandomOrder;
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
+	if (input_justPressed(g_dikD) == 1) {
 		sound_playMenu(0);
 		mapSelect_allOut();
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1) {
+	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
 		mapSelect_allIn();
 		return;
@@ -710,7 +710,7 @@ static void send_result(void)
 u32 (game_postMatch)(void)
 {
 	GAME_VAR(int, 0x4de6f8) = 1;
-	GAME_VAR(int, 0x5b1dac) = 0;
+	g_matchRunning = 0;
 	if (g_startedFromLobby == 1) {
 		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */
 		GAME_VAR(int, 0x76d3e8) = -1;
@@ -758,9 +758,9 @@ u32 (game_postMatch)(void)
 	}
 	r = GAME_CDECL(0x457150, u32, const char *)((const char *)0x4b01cc);   /* music_play */
 message:
-	if (GAME_VAR(int, 0xa0ea94)) {
+	if (g_mapMissing) {
 		r = GAME_CDECL(0x41ee40, u32, int)(6);
-		GAME_VAR(int, 0xa0ea94) = 0;
+		g_mapMissing = 0;
 	}
 	return r;
 }

@@ -126,7 +126,7 @@ void (armc_exit)(int confirmed)
 	g_armcCamDistance = 1600.0f;
 	GAME_VAR(int, 0x68037c) = 0;
 	g_menuCameraHeight = 0;
-	GAME_VAR(int, 0x4dcf10) = 1;
+	g_armcLeaving = 1;
 	g_flareSizeB = 10.0f;
 	g_flareSizeA = 48.0f;
 	g_flareStepB = 0.2f;
@@ -169,14 +169,14 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	ViewVolume_captureMatrices(vv, 0, s + 0x22e7068);
 	ViewVolume_reset(vv);
 	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
-	if (GAME_VAR(int, 0x4ded98)) {   /* the right button held */
+	if (g_mouse2Down) {   /* the right button held */
 		GAME_VAR(int, s + 0x234325b) = g_mouseY;
 		GAME_VAR(int, s + 0x2343257) = g_mouseX;
 		int dy = GAME_VAR(int, s + 0x234325b) - H / 2, dx = GAME_VAR(int, s + 0x2343257) - W / 2;
 		GAME_VAR(float, s + 0x2343293) = (float)dy;
 		long double x = (long double)dx;
 		GAME_VAR(float, s + 0x2343297) = (float)x;
-		long double turn = x / W * GAME_VAR(float, 0x4a94c8);   /* 3600 */
+		long double turn = x / W * k_3600f;   /* 3600 */
 		GAME_VAR(float, s + 0x2342409) = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
 	}
 	int a = GAME_VAR(int, s + 0x234240d);
@@ -216,7 +216,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	if (g_armcSpin) {
 		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a94cc), &g_armcAngle);
 		g_armcAngle = angle;
-		if (angle >= GAME_VAR(float, 0x4a94c8))
+		if (angle >= k_3600f)
 			BITS(g_armcAngle) = 0;
 	}
 }
@@ -291,7 +291,7 @@ void (armc_updateColourPreview)(void)
    preview nor a session. The original leaves eax to callers that ignore it */
 void (menuState700_armCenter)(void)
 {
-	if (GAME_VAR(int, 0x4dc868) && g_armcFrom != 2)
+	if (g_armcEntered && g_armcFrom != 2)
 		menu_drawBackground();
 	if (g_armcState != 2) {
 		if (g_armcFrom == 3)
@@ -314,7 +314,7 @@ void (menuState700_armCenter)(void)
 			armc_weaponSlotRecord(slot, GAME_VAR(int, items[slot]));
 		state = g_armcState;
 	}
-	if (state == 2 && !GAME_VAR(int, 0x4dcf10)) {
+	if (state == 2 && !g_armcLeaving) {
 		armc_easeCamera();
 		armc_setup3DView();
 		armc_drawPanels();
@@ -349,8 +349,8 @@ void (menuState700_armCenter)(void)
 
 /* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
-   lists built and the mech read (from the room's session or the profile), a sound; 0x4dcf34 set when the money
-   (0x9dd5d8 from the room, 0x9f181c otherwise) went up since last time, the new amount kept and returned */
+   lists built and the mech read (from the room's session or the profile), a sound; g_progressWentUp set when the level
+   (0x9dd5d8 from the room, 0x9f181c otherwise) went up since last time (new parts to show), the new value kept and returned */
 u32 (menu_enterMenus)(void)
 {
 	g_armcHideInterface = 0;
@@ -362,7 +362,7 @@ u32 (menu_enterMenus)(void)
 	g_armcColourSlot = 5;
 	int fromRoom = g_armcFrom == 3;
 	g_armcMode = 1;
-	GAME_VAR(int, 0x4dc788) = 0;
+	g_armcUnusedFlag = 0;
 	g_menuEye[0] = 0;
 	g_menuEye[1] = 0;
 	u32 distance = fromRoom ? GAME_VAR(u32, 0x4a9458) : GAME_VAR(u32, 0x4a9454);   /* -1550, -450 */
@@ -379,7 +379,7 @@ u32 (menu_enterMenus)(void)
 		GAME_VAR(u32, 0x4dbc58 + i * 4) = colourA[i];
 		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
 	}
-	GAME_VAR(int, 0x4dcf34) = 0;
+	g_progressWentUp = 0;
 	u32 *point = (u32 *)0x4df870, *pointAt = (u32 *)0x76d388;   /* the ARM CENTER's camera point */
 	point[0] = 0;
 	point[1] = 0;
@@ -388,13 +388,13 @@ u32 (menu_enterMenus)(void)
 	if (fromRoom) {
 		point[2] = 0xc47a0000;    /* -1000 */
 		pointAt[2] = 0xc4898000;  /* -1100 */
-		if (GAME_VAR(int, 0x9dd5d8) > g_mostMoneyNet)
-			GAME_VAR(int, 0x4dcf34) = 1;
+		if (g_pilotLevel > g_bestLevelNet)
+			g_progressWentUp = 1;
 	} else {
 		point[2] = 0x42c80000;    /* 100 */
 		pointAt[2] = 0;
-		if (GAME_VAR(int, 0x9f181c) > g_mostMoneySolo)
-			GAME_VAR(int, 0x4dcf34) = 1;
+		if (GAME_VAR(int, 0x9f181c) > g_bestProgressSolo)
+			g_progressWentUp = 1;
 	}
 	u32 *home = (u32 *)0x9db090, *homeAt = (u32 *)0x76d3f8;
 	home[2] = distance;
@@ -411,13 +411,13 @@ u32 (menu_enterMenus)(void)
 	armcParts_layout();
 	armcColour_layout();
 	armc_buildPartLists();
-	GAME_VAR(int, 0x4dc868) = 1;
+	g_armcEntered = 1;
 	g_armcSpin = 1;
 	g_mechChanged = 1;
 	g_armcPreview = 0;
 	g_armcSessionDue = 0;
 	g_armcSessionMade = 0;
-	GAME_VAR(int, 0x4dcf10) = 0;
+	g_armcLeaving = 0;
 	GAME_VAR(int, 0x4dbc00) = 0;
 	BITS(g_armcAngle) = 0;
 	g_armcZoom = 1.0f;
@@ -431,14 +431,14 @@ u32 (menu_enterMenus)(void)
 	armc_syncPartCursors();
 	sound_playMenu(4);
 	if (g_armcFrom == 3) {
-		int money = GAME_VAR(int, 0x9dd5d8);
-		if (money > g_mostMoneyNet)
-			g_mostMoneyNet = money;
+		int money = g_pilotLevel;
+		if (money > g_bestLevelNet)
+			g_bestLevelNet = money;
 		return money;
 	}
 	int money = GAME_VAR(int, 0x9f181c);
-	if (money > g_mostMoneySolo)
-		g_mostMoneySolo = money;
+	if (money > g_bestProgressSolo)
+		g_bestProgressSolo = money;
 	return money;
 }
 
@@ -737,7 +737,7 @@ void (armc_sendSelectionToNet)(void)
 		((float *)0x4dcfe0)[i] = v;
 		((float *)0x9dd603)[i] = v;
 	}
-	if (GAME_VAR(int, 0x9dd5d8) != 0x14)
+	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
 	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
 	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);

@@ -71,7 +71,7 @@ void (net_resetState)(void)
 	GAME_VAR(int, 0x9f93c8) = 1;
 	g_resultMessage = 2;
 	g_hostResultFlag = 0;
-	GAME_VAR(int, 0x9fd94c) = 0;
+	g_netHostGone = 0;
 	GAME_VAR(int, 0x9f9420) = 6;
 	GAME_VAR(int, 0x9f9428) = 7;
 }
@@ -116,7 +116,7 @@ void (menuCamera_initPoints)(void)
 	GAME_VAR(int, 0x76d3f8) = lx;
 	GAME_VAR(int, 0x76d3fc) = ly;
 	GAME_VAR(int, 0x76d400) = lz;
-	GAME_VAR(int, 0x9dd6d4) = 0;
+	g_roomAwaitingServer = 0;
 }
 
 /* 0x440d70: the main menu's replay list opened: its state, a dialog open, its frame, the 1024 records (0x44 bytes

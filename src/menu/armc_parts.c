@@ -211,7 +211,7 @@ static int append_parts(const Unlock *entry, u32 list, int len)
 static int unlocked_level(int network)
 {
 	if (network)
-		return GAME_VAR(int, 0x9dd5d8) - 1;
+		return g_pilotLevel - 1;
 	int level = g_progress;
 	if (level >= 15)
 		level = level < 16 ? 14 : 15;

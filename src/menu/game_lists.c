@@ -644,7 +644,7 @@ void (room_gameListKeys)(void)
 	if (g_arenaConfirming) {
 		if (input_justPressed(g_keyBack)) {
 			sound_playMenu(0);
-			GAME_VAR(int, 0x4dbb10) = 0;
+			g_arenaSearchTicks = 0;
 			g_arenaJoinWaiting = 0;
 			arena_leaveSession();
 			g_arenaConfirming = 0;
@@ -652,7 +652,7 @@ void (room_gameListKeys)(void)
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e14f8)) || input_justPressed(g_keyClick)) {
+	if (input_justPressed(g_dikJ) || input_justPressed(g_keyClick)) {
 		if (g_roomJoined)
 			return;
 		if (g_roomSearching || g_roomRefreshing || g_gameCount <= 0) {
@@ -664,7 +664,7 @@ void (room_gameListKeys)(void)
 		room_startChat();
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
+	if (input_justPressed(g_dikR)) {
 		if (g_roomSearching || g_roomRefreshing) {
 			sound_playMenu(6);
 			return;
@@ -678,7 +678,7 @@ void (room_gameListKeys)(void)
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
+	if (input_justPressed(g_dikS)) {
 		games_stop();
 		return;
 	}
@@ -793,10 +793,10 @@ void (lobbyJoin_draw)(void)
 			arena_joinListed(g_localPlayer);
 			return;
 		}
-		if (!GAME_VAR(int, 0x4db70c) || g_paused)
+		if (!g_editingArenaMessage || g_paused)
 			return;
 		memset((void *)0x4db520, 0, 8);
-		GAME_VAR(int, 0x4db70c) = 0;
+		g_editingArenaMessage = 0;
 		strcpy((char *)0x4db520, (const char *)0x9dc92c);
 		int wrong = strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x4db520) != 0;
 		if (wrong)

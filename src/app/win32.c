@@ -210,7 +210,7 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 		return ChangeDisplaySettingsA(NULL, 0);
 	}
 	g_otherModeWidth = width;
-	GAME_VAR(int, 0xb12a88) = height;
+	g_otherModeHeight = height;
 	g_displayModeChanged = 1;
 	u8 mode[0x94];
 	display_mode(mode, width, height, 32, 0x1c0000);
@@ -478,7 +478,7 @@ static void chat_close(void *edit, int sent)
 	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 	GAME_CDECL(0x431600, u32, int)(sent);   /* chat_closeLine */
-	GAME_VAR(int, 0x9dd900) = 1;
+	g_chatLineDone = 1;
 }
 
 /* 0x440840: the chat edit's window procedure (set by chat_createEdit). Keys: Enter, once the open delay (0x9da434)
@@ -505,7 +505,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 				GAME_VAR(int, 0x9dc428) = 0x14;
-				GAME_VAR(int, 0x9dd900) = 1;
+				g_chatLineDone = 1;
 				GAME_VAR(int, 0x9dc428) = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
 			}
 			break;
@@ -580,10 +580,10 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		MessageBoxA(g_hWndMain, (const char *)0x4b29ec, (const char *)0x4b141c, 0);
 		return 0;
 	}
-	GAME_VAR(int, 0x4b2790) = 1;
+	g_gameRunning = 1;
 	IMPORT(0x4a92d0, int, u32, u32, void *, u32)(0x61, 1, NULL, 0);   /* SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING) */
 	u32 msg[7];   /* MSG */
-	while (GAME_VAR(int, 0x4b2790)) {
+	while (g_gameRunning) {
 		while (IMPORT(0x4a92d4, int, void *, void *, u32, u32, u32)(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
 			if (IMPORT(0x4a92d8, int, void *, void *, u32, u32)(msg, NULL, 0, 0)) {   /* GetMessageA */
 				if (GAME_VAR(int, 0x68039c))
@@ -660,7 +660,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		GAME_CDECL(0x42f150, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
 		g_mouseX = 0x140;
 		g_mouseY = 0xf0;
-		GAME_VAR(int, 0x4ded70) = 0;
+		g_mouseWheelTurned = 0;
 		return 1;
 	case 0xf:   /* WM_PAINT */
 		IMPORT(0x4a9308, void *, void *, u32 *)(wnd, paint);   /* BeginPaint */
@@ -698,7 +698,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		case 0:
 			GAME_CDECL(0x43f7f0, u32, u32)(0);   /* reg_writeStartMode */
 			GAME_CDECL(0x43f8b0, u32, void)();   /* app_deleteDataFiles */
-			GAME_VAR(int, 0x4b2790) = 0;
+			g_gameRunning = 0;
 			ExitProcess(0);
 			return 0;
 		case 1:
@@ -732,9 +732,9 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				;
 			if (!GAME_VAR(u8, 0xb12a80))
 				ShowWindow(g_hWndMain, 9);   /* SW_RESTORE */
-			if (GAME_VAR(u8, 0xb12a81)) {
-				GAME_VAR(u8, 0xb12a81) = 0;
-				app_setDisplayMode(GAME_VAR(int, 0xb12a84), GAME_VAR(int, 0xb12a88), 4, 0x20);
+			if (g_displayModeLeft) {
+				g_displayModeLeft = 0;
+				app_setDisplayMode(GAME_VAR(int, 0xb12a84), g_otherModeHeight, 4, 0x20);
 				ShowWindow(g_hWndMain, 9);
 			}
 		} else {
@@ -744,7 +744,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				ShowWindow(g_hWndMain, 7);   /* SW_SHOWMINNOACTIVE */
 				IMPORT(0x4a9314, int, void *, u32)(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
 				GAME_VAR(u8, 0xb12a80) = 0;
-				GAME_VAR(u8, 0xb12a81) = 1;
+				g_displayModeLeft = 1;
 			}
 		}
 		return 1;
@@ -765,7 +765,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				net_send(0x17, 100);
 		} else if (w == 0x378) {
 			dplay_listSessions();
-			if (++GAME_VAR(int, 0x4dbb10) > 30) {
+			if (++g_arenaSearchTicks > 30) {
 				g_arenaJoinWaiting = 1;
 			} else {
 				g_receivedSession = (const u8 *)net_sessionValue(0);
@@ -824,8 +824,8 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		}
 		if (g_playerListRefused)
 			g_roomListWaiting = 1;
-		if (GAME_VAR(int, 0xa0b354))
-			GAME_VAR(int, 0x9dd354) = 1;
+		if (g_netNoticeIn)
+			g_accountNotice = 1;
 		return 1;
 	}
 	return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, msg, w, l);   /* DefWindowProcA */

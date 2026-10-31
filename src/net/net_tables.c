@@ -288,7 +288,7 @@ u32 (net_closeSockets)(void)
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
-		GAME_VAR(int, 0x9fd94c) = 1;
+		g_netHostGone = 1;
 		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                     /* WSACancelBlockingCall */
 		((int (STDCALL *)(u32, int))*(const u32 *)0x4a938c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		((int (STDCALL *)(u32))*(const u32 *)0x4a9390)(GAME_VAR(u32, sockets[k]));           /* closesocket */
@@ -1078,7 +1078,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 {
 	int gone;
 	if (msg[0] == 5) {
-		if (!GAME_VAR(int, 0x9fd94c))
+		if (!g_netHostGone)
 			GAME_CDECL(0x451530, void, u32)(msg[2]);   /* net_freeSlotsOf */
 		gone = 0;
 	} else if (msg[0] == 3) {
@@ -1396,7 +1396,7 @@ void (net_recv)(void)
 	case 29:
 		recv_all(0xa05630, (void *)0xa052c0, 0x22, start);
 		if (*(const u8 *)0xa052c0) {
-			GAME_VAR(int, 0xa0b354) = 1;
+			g_netNoticeIn = 1;
 			g_netLastRequest = 0;
 		}
 		break;
@@ -2084,7 +2084,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			return;
 		G(int, 0x23423a1) = 1;
 		G(u32, 0x23423a5) = 0x40400000;
-		GAME_VAR(int, 0x9f67f8) = 1;
+		g_matchEndedByServer = 1;
 		return;
 	case 4:
 		if (pkt[2] != 'k')

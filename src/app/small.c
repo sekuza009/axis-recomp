@@ -130,7 +130,7 @@ u8 (net_freeSlotsOf)(int id)
 		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
 		GAME_VAR(int, 0x9f93d8 + s * 4) = 0;
 		if (s == 0)
-			GAME_VAR(int, 0x9fd94c) = 1;
+			g_netHostGone = 1;
 	}
 	return 0xff;
 }
@@ -529,7 +529,7 @@ u32 (chat_keepLastLine)(void)
 	memset((void *)0x9f63e4, 0, 0x400);
 	if (strlen((const char *)0x9dc92c)) {
 		memcpy((void *)0x9f63e4, (const void *)0x9dc92c, 0x400);
-		GAME_VAR(int, 0x9f67e8) = 0;
+		g_chatTyping = 0;
 	}
 	GAME_VAR(int, 0x68039c) = 0;
 	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys: the key state */
@@ -666,7 +666,7 @@ int (app_screenSizeForMode)(void)
 		GAME_VAR(int, 0x5b1998) = g_desktopWidth;
 		GAME_VAR(int, 0x4e045c) = g_desktopHeight;
 	}
-	return GAME_VAR(int, 0x9da494) = GAME_VAR(int, 0x83a9d8);
+	return GAME_VAR(int, 0x9da494) = g_cfgSimpleMenu;
 }
 
 #define GetSystemTime(st) IMPORT(0x4a910c, void, void *)(st)

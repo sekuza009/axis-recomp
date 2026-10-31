@@ -101,15 +101,15 @@ u32 (room_readyKeys)(void)
 {
 	if (GAME_VAR(int, 0x68039c))
 		return GAME_VAR(u32, 0x68039c);
-	if (GAME_VAR(int, 0x9dd6d4) == 1) {
-		if (!input_justPressed(GAME_VAR(int, 0x76d48c)))
+	if (g_roomAwaitingServer == 1) {
+		if (!input_justPressed(g_dikEscape_2))
 			return 0;
-	} else if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
+	} else if (input_justPressed(g_dikO)) {
 		if (CALL(0x434b90) != 1) {   /* not ready */
 			sound(6);
 			return GAME_CDECL(0x41ee40, u32, int)(5);   /* menu_showMessage: the message */
 		}
-	} else if (!input_justPressed(GAME_VAR(int, 0x4e0cdc)) && !input_justPressed(GAME_VAR(int, 0x76d48c)))
+	} else if (!input_justPressed(g_dikC) && !input_justPressed(g_dikEscape_2))
 		return 0;
 	u32 r = sound(0);
 	g_roomMode = 0;
@@ -157,7 +157,7 @@ u32 (room_joinSession)(int i)
 		GAME_CDECL(0x41ee40, void, int)(0x40);
 		return CALL(0x452fe0);
 	}
-	GAME_VAR(int, 0x4dbb10) = 0;
+	g_arenaSearchTicks = 0;
 	g_arenaConfirming = 1;
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
@@ -207,7 +207,7 @@ u32 (arena_joinListed)(int i)
 	}
 	g_arenaJoinRow = i;
 	CALL(0x453260);
-	GAME_VAR(int, 0x4dbb10) = 0;
+	g_arenaSearchTicks = 0;
 	g_arenaConfirming = 1;
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
@@ -247,7 +247,7 @@ u32 (room_processKeys)(void)
 u32 (room_openClicks)(void)
 {
 	int mode = g_roomMode;
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd6d4) == 1)
+	if (mode == 1 || mode == 0 || g_roomAwaitingServer == 1)
 		return (u32)mode;
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
@@ -300,7 +300,7 @@ u32 (room_draw)(void)
 		g_roomRecTimeLimit = 0x1e;
 	signed char map = GAME_VAR(signed char, 0x5b1b53);
 	if (map < 0 || map > 0xb)
-		GAME_VAR(u8, 0x5b1b53) = 0;
+		g_roomRecGameMode = 0;
 	CALL(0x43bfe0);   /* room_drawGameSettings */
 	if (g_mapListOpen == 1)
 		CALL(0x4038e0);   /* mapList_draw: the map list */
@@ -508,23 +508,23 @@ u32 (room_networkEvents)(void)
 		g_roomRequestOut = 0;
 		CALL(0x432620);   /* lobby_ladderGameName */
 		r = CALL(0x432400);   /* reg_writeCharacterSettings */
-		GAME_VAR(int, 0xa0b37c) = 0;
+		g_gameServerAnswer15 = 0;
 		g_roomConnected = 1;
 		return r;
 	case 30:
 		g_roomRequestOut = 0;
 		r = GAME_CDECL(0x41ee40, u32, int)(0x22);
-		GAME_VAR(int, 0xa0b37c) = 0;
+		g_gameServerAnswer15 = 0;
 		return r;
 	case 42:
 		g_roomRequestOut = 0;
-		GAME_VAR(int, 0xa0b37c) = 0;
+		g_gameServerAnswer15 = 0;
 		g_roomLeaveDialog = 1;
 		return answer;
 	}
 	g_roomRequestOut = 0;
 	r = GAME_CDECL(0x41ee40, u32, int)(0x2a);
-	GAME_VAR(int, 0xa0b37c) = 0;
+	g_gameServerAnswer15 = 0;
 	return r;
 }
 
@@ -534,7 +534,7 @@ u32 (room_networkEvents)(void)
 u32 (roomList_passwordKeys)(void)
 {
 	u32 r;
-	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
+	if (input_justPressed(g_dikS)) {
 		if (!g_rankingWaiting)
 			return 0;
 		r = sound(0);
@@ -545,7 +545,7 @@ u32 (roomList_passwordKeys)(void)
 		g_rankingHaveList = 1;
 		return r;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e0cdc))) {
+	if (input_justPressed(g_dikC)) {
 		if (g_rankingWaiting)
 			return GAME_VAR(u32, 0x9dd6b8);
 		r = sound(0);
@@ -555,7 +555,7 @@ u32 (roomList_passwordKeys)(void)
 		g_roomMode = 0;
 		return r;
 	}
-	if (!input_justPressed(GAME_VAR(int, 0x76d48c)))
+	if (!input_justPressed(g_dikEscape_2))
 		return 0;
 	if (g_rankingWaiting)
 		return GAME_VAR(u32, 0x9dd6b8);
@@ -581,8 +581,8 @@ u32 (room_requestJoin)(void)
 	memset(message, 0, 30);
 	strcpy(message, (const char *)0x9dd570);
 	u32 r = GAME_CDECL(0x4521c0, u32, int, int)(0x1d, 0x65);   /* net_send */
-	GAME_VAR(int, 0x9dd354) = 0;
-	GAME_VAR(int, 0x9dd6d4) = 1;
+	g_accountNotice = 0;
+	g_roomAwaitingServer = 1;
 	return r;
 }
 
@@ -844,7 +844,7 @@ void (account_drawPanel)(void)
 	int hovered = GAME_CDECL(0x4322c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	if (GAME_VAR(int, 0x9dd6d4) == 1) {
+	if (g_roomAwaitingServer == 1) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -879,16 +879,16 @@ void (account_drawPanel)(void)
 			stars(text, sizeof text, (const char *)hidden[k].password);
 			text_draw8(X0 + 0x98, Y0 + hidden[k].y, text);
 		}
-	if (!GAME_VAR(int, 0x9dd304))
+	if (!g_editingEmail)
 		text_draw8(X0 + 0x98, Y0 + 0xa4, (const char *)0x9dd20e);
-	itoa(GAME_VAR(int, 0x9dd5d8), text, 10);
+	itoa(g_pilotLevel, text, 10);
 	text_draw8(X0 + 0x98, Y0 + 0xbe, text);
 	/* the rank badge */
 	glEnable(GL_TEXTURE_2D);
 	int texture = GAME_VAR(int, 0x76d448);
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	rank_badge(GAME_VAR(int, 0x9dd5d8), X0 + 0xc0, Y0 + 0xbe);
+	rank_badge(g_pilotLevel, X0 + 0xc0, Y0 + 0xbe);
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
@@ -1143,7 +1143,7 @@ void (createDialog_keys)(void)
 			return;
 		}
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) == 1) {
+	if (input_justPressed(g_dikI) == 1) {
 		if (g_paused || g_roomLoginDue)
 			return;
 		sound_playMenu(0);
@@ -1159,7 +1159,7 @@ void (createDialog_keys)(void)
 		creategame_close();
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
+	if (input_justPressed(g_dikN) == 1) {
 		if (g_paused)
 			return;
 		sound_playMenu(0);

@@ -316,7 +316,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(int, 0x4e1868) = 0;
 	g_matchMode = 0;
 	GAME_VAR(int, 0x4dd984) = (g_soundVolume * 5 - 0x1f4) * 4;
-	GAME_VAR(int, 0x5b1dac) = 0;
+	g_matchRunning = 0;
 	return 1;
 }
 
@@ -407,10 +407,10 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		break;
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
-		GAME_VAR(int, 0xa0ea94) = 0;
+		g_mapMissing = 0;
 		const char *map = (const char *)0x907b30 + GAME_VAR(int, 0x9dad94) * 0x20;
 		if (!map[0]) {
-			GAME_VAR(int, 0xa0ea94) = 1;
+			g_mapMissing = 1;
 			return 0;
 		}
 		scene_setTextureFolder((Scene *)g, map);

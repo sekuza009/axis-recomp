@@ -50,7 +50,7 @@ int (pilotSelect_hitTest)(int x, int y) { return hit(x, y, (const int *)0x9f8f38
 /* 0x404520: the create-arena screen: its second set of buttons (numbered from 16) while 0x4db55c is set */
 int (createArena_hitTest)(int x, int y)
 {
-	if (GAME_VAR(int, 0x4db55c) != 0) {
+	if (g_createQuitDialog != 0) {
 		int i = hit(x, y, (const int *)0x4db6e8, 2);
 		return i < 0 ? -1 : i + 16;
 	}

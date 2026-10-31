@@ -53,7 +53,7 @@ static void menu_camera(const MenuCam *m)
 		F(0x68037c) = (float)(((X)F(i + 0x76d38c) - F(0x68037c)) * k * c + F(0x68037c));
 		if (!(look >= F(0x4a93e8)))
 			look = -look;
-		if (!(look > GAME_VAR(double, 0x4a93e0)))
+		if (!(look > k_69_9))
 			return;
 		/* there: snapped to the point */
 		if (!m->arena) {
@@ -417,7 +417,7 @@ void (setup_camera)(void)
 		F(0x68037c) = (float)(((X)F(i + 0x76d38c) - F(0x68037c)) * k * c + F(0x68037c));
 		if (!(look >= F(0x4a93e8)))
 			look = -look;
-		if (!(look > GAME_VAR(double, 0x4a93e0)))
+		if (!(look > k_69_9))
 			return;
 		for (int a = 0; a < 3; a++) {
 			I(0x4df024 + a * 4) = I(i + 0x4df870 + a * 4);
@@ -456,16 +456,16 @@ void (setup_camera)(void)
 void (match_debugHandler)(void)
 {
 	const float *frame = (const float *)0x4b071c, *speed = (const float *)0x4a9534;
-	if (GAME_VAR(int, 0x4de6fc)) {
+	if (g_watchChatOpen) {
 		if (GAME_VAR(int, 0x68039c))
 			return;
 		if (strlen((const char *)0x9dc92c)) {
 			net_sendChat((const char *)0x9dc92c);
-			GAME_VAR(int, 0x4de6fc) = 0;
+			g_watchChatOpen = 0;
 			g_chatLogged = 1;
 			GAME_VAR(u32, 0x9fd948) = 0x9dc92c;
 		} else {
-			GAME_VAR(int, 0x4de6fc) = 0;
+			g_watchChatOpen = 0;
 			g_chatLogged = 0;
 		}
 		GAME_VAR(int, 0x68039c) = 0;
@@ -477,7 +477,7 @@ void (match_debugHandler)(void)
 		input_releaseKeyboard();
 		GAME_VAR(int, 0x68039c) = 1;
 		menu_clearInputBuffer(0x32);
-		GAME_VAR(int, 0x4de6fc) = 1;
+		g_watchChatOpen = 1;
 		GAME_VAR(u32, 0x9da434) = 0x41a00000;   /* 20 */
 		GAME_VAR(int, 0x9da3d8) = 0x32;
 		GAME_VAR(int, 0x9da3dc) = 0x1cc;
@@ -524,15 +524,15 @@ void (match_debugHandler)(void)
 	slot[2] = g_menuCamZ;
 	F(0x4df02c) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c8)), (const float *)0x4a9560), &F(0x4de34c)));
 	F(0x68037c) = f32(fadd_m(fld_m(&F(0x4de6c4)), &F(0x4de348)));
-	if (input_justPressed(GAME_VAR(int, 0x680388)) == 1)
+	if (input_justPressed(g_dikZ_2) == 1)
 		g_fovKeys = g_fovKeys == 1 ? 2 : 1;
-	if (input_justPressed(GAME_VAR(int, 0x4e0468)) == 1)
+	if (input_justPressed(g_dik1) == 1)
 		g_debugValue++;
-	if (input_justPressed(GAME_VAR(int, 0x4e046c)) == 1)
+	if (input_justPressed(g_dik2) == 1)
 		g_debugValue += 10;
-	if (input_justPressed(GAME_VAR(int, 0x4e0470)) == 1)
+	if (input_justPressed(g_dik3) == 1)
 		g_debugValue--;
-	if (input_justPressed(GAME_VAR(int, 0x4e0874)) == 1)
+	if (input_justPressed(g_dik4) == 1)
 		g_debugValue -= 10;
 	if (g_debugValue < 1)
 		g_debugValue = 1;

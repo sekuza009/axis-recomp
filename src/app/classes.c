@@ -87,12 +87,12 @@ int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); Collision
 int (net_sessionCount)(void) { return g_dplaySessionCount; }
 int (gfx_getWidth)(void) { return g_glWidth; }
 int (gfx_getHeight)(void) { return g_glHeight; }
-float (view_angle)(void) { return GAME_VAR(float, 0x4c4dec); }
-float (view_nearPlane)(void) { return GAME_VAR(float, 0x4c4df0); }
-float (view_farPlane)(void) { return GAME_VAR(float, 0x4c4df4); }
+float (view_angle)(void) { return g_viewFov; }
+float (view_nearPlane)(void) { return g_viewNear; }
+float (view_farPlane)(void) { return g_viewFar; }
 
 /* ---- setters ---- */
-void (armc_showPartsPage)(void) { g_armcMode = 1; GAME_VAR(int, 0x4dc788) = 0; }   /* the ARM CENTER's parts page */
+void (armc_showPartsPage)(void) { g_armcMode = 1; g_armcUnusedFlag = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
 void (ptx_startBitReader)(int v) { GAME_VAR(int, 0xa61708) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (input_setKeysBlocked)(int v) { g_keysBlocked = v; return v; }
@@ -192,7 +192,7 @@ void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 {
 	self[0] = 0x4aa2a0;
 	self[1] = (u32)name;
-	GAME_VAR(int, 0xa1efe8) = b;
+	g_errorCleanupHook = b;
 	return self;
 }
 

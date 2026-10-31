@@ -46,8 +46,8 @@
 0x4db708,int,g_arenaJoinPending
 0x9eeab4,int,g_mainMenuPicked
 0x9dd6b8,int,g_rankingWaiting
-0x4dc4b4,int,g_mostMoneyNet
-0x4dc1e0,int,g_mostMoneySolo
+0x4dc4b4,int,g_bestLevelNet
+0x4dc1e0,int,g_bestProgressSolo
 0x9dd248,int,g_accountClan
 0x4de6e0,int,g_debugValue
 0x4ded7c,int,g_mouseWheel

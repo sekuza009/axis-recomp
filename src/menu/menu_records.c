@@ -161,12 +161,12 @@ void (mech_storeToProfile)(void)
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
 void (menu_restoreCamera)(void)
 {
-	GAME_VAR(int, 0x4df024) = GAME_VAR(int, 0x4df870);
-	GAME_VAR(int, 0x4df028) = GAME_VAR(int, 0x4df874);
-	GAME_VAR(int, 0x4df02c) = GAME_VAR(int, 0x4df878);
-	GAME_VAR(int, 0x680378) = GAME_VAR(int, 0x76d388);
-	GAME_VAR(int, 0x68037c) = GAME_VAR(int, 0x76d38c);
-	g_menuCameraHeight = GAME_VAR(int, 0x76d390);
+	GAME_VAR(int, 0x4df024) = g_armcCameraX;
+	GAME_VAR(int, 0x4df028) = g_armcCameraY;
+	GAME_VAR(int, 0x4df02c) = g_armcCameraZ;
+	GAME_VAR(int, 0x680378) = g_armcLookAtX;
+	GAME_VAR(int, 0x68037c) = g_armcLookAtY;
+	g_menuCameraHeight = g_armcLookAtZ;
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
@@ -405,13 +405,13 @@ u32 (missionSettings_leave)(void) { return leave_settings(0x9f62f8); }
    menu sound. Returns what the original leaves in eax */
 u32 (room_leaveKeys)(void)
 {
-	u32 r = input_justPressed(GAME_VAR(int, 0x4e1510));
+	u32 r = input_justPressed(g_dikO);
 	if (r == 1) {
 		r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
 		g_roomPopup = 1;
 		return r;
 	}
-	r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
+	r = input_justPressed(g_dikC);
 	if (r == 1) {
 		r = GAME_CDECL(0x41e760, u32, int)(0);
 		g_roomPopup = 2;
@@ -447,15 +447,15 @@ u32 (menuState900_skirmishSetup)(void)
    settings forward and back. Returns what the original leaves in eax */
 u32 (skirmish_settingsKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1)
+	if (input_justPressed(g_dikA) == 1)
 		return 1;
-	if (input_justPressed(GAME_VAR(int, 0x4e0cdc)) == 1 || input_justPressed(GAME_VAR(int, 0x76d48c)) == 1) {
+	if (input_justPressed(g_dikC) == 1 || input_justPressed(g_dikEscape_2) == 1) {
 		g_settingsPage = 10;
 		return 1;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1)
+	if (input_justPressed(g_dikN) == 1)
 		return GAME_CDECL(0x443d80, u32, void)();   /* undo_push: the pending step pushed */
-	u32 r = input_justPressed(GAME_VAR(int, 0x4e1514));
+	u32 r = input_justPressed(g_dikP);
 	if (r == 1)
 		return GAME_CDECL(0x443de0, u32, void)();   /* undo_pop: one step undone */
 	return r;
@@ -683,7 +683,7 @@ u32 (mainmenu_processKeys)(void)
 			menu_choice(i, &r);
 			return r;
 		}
-	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && g_tunnelRings > 0) {
+	if (input_justPressed(g_dikEscape_2) && g_tunnelRings > 0) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
 		input_setKeysBlocked(4);
 		g_enteringMenus = 1;

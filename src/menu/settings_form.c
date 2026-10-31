@@ -254,7 +254,7 @@ void (arena_createDraw)(void)
 	                           0, 0x4dbba4, 10 };
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)0x4dba98, *dim = (const u32 *)0x4db8a0;
-	int editing = GAME_VAR(int, 0x68039c), confirming = GAME_VAR(int, 0x4db55c), leaving = g_arenaLeaving;
+	int editing = GAME_VAR(int, 0x68039c), confirming = g_createQuitDialog, leaving = g_arenaLeaving;
 	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];
 	int hovered = createArena_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));

@@ -165,11 +165,11 @@ void (input_updateMenuCursor)(void)
 	GAME_CDECL(0x4012e0, int, void)();          /* input_reacquireMouse */
 	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
-	GAME_VAR(int, 0x4ded70) = 0;
+	g_mouseWheelTurned = 0;
 	g_mouseX = x;
 	g_mouseY = y;
 	if (z != 0)
-		GAME_VAR(int, 0x4ded70) = 1;
+		g_mouseWheelTurned = 1;
 	g_mouseWheel = z / -120;
 	if (g_screen != 0x270f) {
 		if (*g_wide->cursorClampFix) {
@@ -260,7 +260,7 @@ int (input_isDown)(int key)
 	case 0xfa:
 		return GAME_VAR(int, 0x4ded94);
 	case 0xfb:
-		return GAME_VAR(int, 0x4ded98);
+		return g_mouse2Down;
 	case 0xfc:
 		return GAME_VAR(int, 0x4ded9c);
 	case 0xfd:

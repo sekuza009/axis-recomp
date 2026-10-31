@@ -57,7 +57,7 @@ void (room_stopArenaSetup)(void)
 	g_cursorBlink = 0.0f;
 	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
 		sound_playMenu(0);
-		GAME_VAR(int, 0x4dbb10) = 0;
+		g_arenaSearchTicks = 0;
 		g_arenaJoinWaiting = 0;
 		arena_leaveSession();
 		g_arenaConfirming = 0;
@@ -355,7 +355,7 @@ u32 (room_hostingStep)(void)
 u32 (app_onClose)(void)
 {
 	if (g_arenaJoinWaiting) {
-		GAME_VAR(int, 0x4dbb10) = 0;
+		g_arenaSearchTicks = 0;
 		g_arenaJoinWaiting = 0;
 		GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
@@ -375,7 +375,7 @@ u32 (app_onClose)(void)
 		if ((u32)(r - 0x1f5) <= 4)
 			GAME_CDECL(0x41ee40, void, int)(message[r - 0x1f5]);
 		u32 e = GAME_CDECL(0x452fe0, u32, void)();
-		GAME_VAR(int, 0x4dbb10) = 0;
+		g_arenaSearchTicks = 0;
 		g_arenaJoinPending = 0;
 		g_arenaConfirming = 0;
 		return e;
@@ -384,7 +384,7 @@ u32 (app_onClose)(void)
 	g_quitAsked = 1;
 	g_netRole = 2;
 	g_roomMode = 0;
-	GAME_VAR(int, 0x4dbb10) = 0;
+	g_arenaSearchTicks = 0;
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
 	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
@@ -632,8 +632,8 @@ u32 (room_settingsClicks)(void)
 			*players = 2;
 		return r;
 	case 5:
-		if (input_isDown(GAME_VAR(int, 0x67ef24)) || input_isDown(GAME_VAR(int, 0x9db0ac)) ||
-		    input_isDown(GAME_VAR(int, 0x6803a8)) || input_isDown(GAME_VAR(int, 0x9dad8c))) {
+		if (input_isDown(g_dikLShift) || input_isDown(g_dikRShift) ||
+		    input_isDown(g_dikLCtrl) || input_isDown(g_dikRCtrl)) {
 			r = GAME_CDECL(0x41e760, u32, int)(2);
 			*type -= 1;
 			r = (r & ~0xffu) | *type;
@@ -715,7 +715,7 @@ u32 (room_settingsAfterTyping)(void)
 			GAME_VAR(u8, limit[k][1]) = (u8)r;
 		return r;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1510)) && !g_arenaGameSetUp) {
+	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
 		return GAME_CDECL(0x4351c0, u32, void)();   /* room_4351c0: start */
 	}
@@ -794,10 +794,10 @@ u32 (account_page)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd368), GAME_VAR(int, 0x9dd36c),
 		                                                     GAME_VAR(int, 0x9dd370), GAME_VAR(int, 0x9dd374));
-	if (GAME_VAR(int, 0x9dd354))
+	if (g_accountNotice)
 		GAME_CDECL(0x433610, void, void)();
 	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* account_drawPanel: the page */
-	if (GAME_VAR(int, 0x9dd6d4) == 1)
+	if (g_roomAwaitingServer == 1)
 		return r;
 	for (int k = 0; k < 4; k++) {
 		if (!GAME_VAR(int, fields[k].editing))
@@ -842,12 +842,12 @@ static void login_field(int to, int x, int y)
 static int login_buttons(void)
 {
 	int button = -1;
-	if (input_justPressed(GAME_VAR(int, 0x9dae70)) == 1)
+	if (input_justPressed(g_dikEnter) == 1)
 		button = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* loginForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;
-		else if (input_justPressed(GAME_VAR(int, 0x4e0cdc)) == 1)
+		else if (input_justPressed(g_dikC) == 1)
 			button = 5;
 		else
 			return 0;
@@ -869,10 +869,10 @@ void (loginDialog_keys)(void)
 {
 	if (login_buttons())
 		return;
-	if (input_justPressed(GAME_VAR(int, 0x680390)) != 1 || GAME_VAR(int, 0x68039c))
+	if (input_justPressed(g_dikTab) != 1 || GAME_VAR(int, 0x68039c))
 		return;
 	g_tabDirection = 20;
-	if (input_isDown(GAME_VAR(int, 0x67ef24)) == 1 || input_isDown(GAME_VAR(int, 0x9db0ac)) == 1)
+	if (input_isDown(g_dikLShift) == 1 || input_isDown(g_dikRShift) == 1)
 		g_tabDirection = 10;
 	if (g_tabDirection == 20) {
 		if (g_loginField == 1)

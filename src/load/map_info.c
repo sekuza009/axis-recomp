@@ -38,7 +38,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 		long double radius = FIELD(float, r, 0x14);
 		FIELD(u8 *, r, 4) = scene + 0xe36214 + total * 0x14;
 		total += FIELD(int, r, 0);
-		FIELD(float, r, 0x14) = (float)(radius * radius * GAME_VAR(float, 0x4a9708));
+		FIELD(float, r, 0x14) = (float)(radius * radius * k_10000f);
 	}
 	if (total != FIELD(int, scene, 0xe3b034))
 		fatal4(0x4c7d74, total, FIELD(int, scene, 0xe3b034));

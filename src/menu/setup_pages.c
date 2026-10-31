@@ -190,7 +190,7 @@ static void key_tab(int tab)
 	static const int rows[3] = { 10, 11, 10 };
 	const u32 *bright = (const u32 *)0x4de048;
 	const char *const *key_name = (const char *const *)0x4b0750;
-	int none = GAME_VAR(int, 0x4df8e4);
+	int none = g_dikNone;
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x46 + tab * 0x78, Y0 + 0x12, (const char *)(0x754324 + tab * 0x80));
 	for (int r = 0; r < rows[tab]; r++)
@@ -787,7 +787,7 @@ void (room_drawMenu)(void)
    0x680370. The original leaves eax to callers that ignore it */
 void (lobbyTop_drawTitle)(void)
 {
-	Highlight h = { hovered_panel(0x5b1cf8, 4, GAME_VAR(int, 0x4db85c)), white, 1, 0, 0 };
+	Highlight h = { hovered_panel(0x5b1cf8, 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, 0x4df04c, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaLobbyMode == 2 && !GAME_VAR(int, 0x680370))

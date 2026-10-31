@@ -830,7 +830,7 @@ u32 (profile_save)(void)
 	fclose(f);
 	crt_chdir((const char *)0x4b2a80);
 	u32 r = mech_loadFromProfile();
-	GAME_VAR(int, 0x4dcf34) = 0;
+	g_progressWentUp = 0;
 	GAME_VAR(int, 0x9f62e0) = 0;
 	GAME_VAR(int, 0x9f62fc) = GAME_VAR(int, 0x9f181c);
 	return r;
@@ -1269,7 +1269,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	g_videoDepth = 0;
 	GAME_VAR(int, 0x83a9c0) = 0;
 	GAME_VAR(int, 0x83a9d4) = 0;
-	GAME_VAR(int, 0x83a9d8) = 0;
+	g_cfgSimpleMenu = 0;
 	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
 	g_playerCorporation = 0;
 	g_playerSex = 0;

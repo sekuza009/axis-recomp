@@ -393,7 +393,7 @@ void (console_init)(void)
 		tunnel_removeLastRing((TunnelRing **)0x67fb3c);
 	if (!g_startedFromLobby)
 		check_profiles();
-	GAME_VAR(int, 0x5b1dac) = 1;
+	g_matchRunning = 1;
 	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
 	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
@@ -422,7 +422,7 @@ void (console_init)(void)
 		break;
 	case 2:
 		room_fitWindowRects();
-		if (GAME_VAR(int, 0x9dd5d8) != 0x14)
+		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
 		match_name((const char *)0x9dd570);

@@ -54,16 +54,16 @@ void (setup_topPageKeys)(void)
 {
 	if (input_justPressed(g_keyCancel2) && g_tunnelRings > 0) {
 		leave();
-	} else if (input_justPressed(GAME_VAR(int, 0x4e1524)) == 1) {
+	} else if (input_justPressed(g_dikS) == 1) {
 		sound_playMenu(0);
 		setup_selectSoundTab();
-	} else if (input_justPressed(GAME_VAR(int, 0x4e14ec)) == 1) {
+	} else if (input_justPressed(g_dikG) == 1) {
 		sound_playMenu(0);
 		setup_selectGraphicTab();
 	} else if (input_justPressed(g_keyBack) == 1) {
 		sound_playMenu(0);
 		setup_selectControlTab();
-	} else if (input_justPressed(GAME_VAR(int, 0x4e153c)) == 1) {
+	} else if (input_justPressed(g_dikX) == 1) {
 		sound_playMenu(0);
 		leave();
 	}
@@ -89,7 +89,7 @@ static void sound_ok(void)
 /* 0x422c60: the sound tab: OK (sound_ok); back or cancel closes the page */
 void (setup_soundTabKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
+	if (input_justPressed(g_dikA))
 		sound_ok();
 	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
@@ -117,7 +117,7 @@ static u32 graphics_apply(void)
 /* 0x422d20: the graphics tab's keys: OK (0x4e0cd4) as graphics_apply, back / cancel close the page */
 void (setup_graphicTabKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
+	if (input_justPressed(g_dikA))
 		graphics_apply();
 	else if (input_justPressed(g_keyBack) || input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
@@ -189,7 +189,7 @@ static const u32 bindings[32] = { 0x4de0c0, 0x4de0c8, 0x4de0d0, 0x4de0d8, 0x4de0
                                   0x4de100, 0x4de108, 0x4de110, 0x4de118, 0x4de120, 0x4de138, 0x4de140, 0x4de148,
                                   0x4de150, 0x4de128, 0x4de130, 0x4de158, 0x4de160, 0x4de168, 0x4de170, 0x4de178,
                                   0x4de180, 0x4de188, 0x4de190, 0x4de198, 0x4de1a0, 0x4de1a8, 0x4de1b0, 0x4de1b8 };
-#define KEY_NONE GAME_VAR(int, 0x4df8e4)
+#define KEY_NONE g_dikNone
 
 /* 0x421350: a pair with no primary key gets its secondary as the primary */
 void (setup_drawKeyBindingRow)(void)
@@ -434,7 +434,7 @@ void (setup_controlTabKeys)(void)
 			g_bindPage = page;
 			return;
 		}
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1) {
+	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
 		memcpy((void *)0x4def00, (const void *)0x4de0c0, 0x44 * 4);
 		cfg_loadAxisCfg();
@@ -442,7 +442,7 @@ void (setup_controlTabKeys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyBack) != 1) {
-		if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
+		if (input_justPressed(g_dikD) == 1) {
 			sound_playMenu(0);
 			setup_keepKeyBindings();
 			return;
@@ -468,24 +468,24 @@ void (setup_drawControlTab)(void)
 	int waiting = g_bindWaiting;
 	if (g_keyEnter) {
 		if (waiting) {
-			setup_drawKeyBindingRows(GAME_VAR(int, 0x76d424));
+			setup_drawKeyBindingRows(g_dikMouse2);
 			g_bindWaiting = 0;
 			return;
 		}
 		g_setupPage = 0;
 	}
-	if (GAME_VAR(int, 0x4ded70) && waiting) {
+	if (g_mouseWheelTurned && waiting) {
 		int wheel = g_mouseWheel;
 		if (wheel < 0)
-			setup_drawKeyBindingRows(GAME_VAR(int, 0x9da490));
+			setup_drawKeyBindingRows(g_dikWheelDown);
 		else if (wheel > 0)
-			setup_drawKeyBindingRows(GAME_VAR(int, 0x76d490));
+			setup_drawKeyBindingRows(g_dikWheelUp);
 		g_bindWaiting = 0;
 		return;
 	}
 	if (g_mouseClick) {
 		if (waiting) {
-			setup_drawKeyBindingRows(GAME_VAR(int, 0x4de73c));
+			setup_drawKeyBindingRows(g_dikMouse1);
 			g_bindWaiting = 0;
 			return;
 		}
@@ -546,7 +546,7 @@ void (setup_drawKeyBindingRows)(int key)
 	int page = g_bindPage, row = GAME_VAR(int, 0x4de040);
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
-		int *slot = (int *)(0x4de0c0 + binding * 8), none = GAME_VAR(int, 0x4df8e4);
+		int *slot = (int *)(0x4de0c0 + binding * 8), none = g_dikNone;
 		if (slot[1] != none) {
 			slot[0] = key;
 			slot[1] = none;

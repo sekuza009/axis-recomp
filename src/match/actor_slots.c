@@ -373,14 +373,14 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	A(u32, 0x128) = R(u32, 0x20);
 	A(u32, 0x12c) = R(u32, 0x24);
 	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)GAME_VAR(float, 0x4a9750));
-	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)GAME_VAR(float, 0x4a9418));
+	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
-	A(float, 0) = (float)(radius * radius * GAME_VAR(float, 0x4a9708));
+	A(float, 0) = (float)(radius * radius * k_10000f);
 	A(u32, 0x70) = R(u32, 0x34);
-	A(int, 0x74) = ftol(R(float, 0x38) * (long double)GAME_VAR(float, 0x4a9418));
+	A(int, 0x74) = ftol(R(float, 0x38) * (long double)k_10f);
 	A(u32, 0x78) = R(u32, 0x3c);
-	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)GAME_VAR(float, 0x4a93f4));
-	A(float, 0x80) = (float)(R(float, 0x44) * (long double)GAME_VAR(float, 0x4a93f4));
+	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)k_100f);
+	A(float, 0x80) = (float)(R(float, 0x44) * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
 		A(u32, 0x84 + k * 4) = R(u32, 0x48 + k * 4);
 	A(int, 0x87f8) = -1;

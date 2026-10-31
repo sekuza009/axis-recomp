@@ -190,7 +190,7 @@ int (profile_secondDialogClicks)(void)
    profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
 u32 (profile_logIn)(void)
 {
-	if (!GAME_VAR(int, 0x9f6840))
+	if (!g_profileDialogOpen)
 		return 0;
 	g_lobbyReply = 0;
 	if (g_startedFromLobby == 1)
@@ -214,7 +214,7 @@ u32 (profile_frame)(void)
 {
 	if (g_profileRowClicked) {
 		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
-		GAME_VAR(float, 0x9f8f18) = (float)t;
+		g_profileMessageTime = (float)t;
 		if (t > GAME_VAR(float, 0x4a944c)) {
 			g_profileRowClicked = 0;
 			GAME_VAR(int, 0x9f8f18) = 0;
@@ -597,23 +597,23 @@ void (profileList_keys)(void)
 {
 	if (key_repeat(g_keyUp, &g_repeatUp, key_up) || key_repeat(g_keyDown, &g_repeatDown, key_down))
 		return;
-	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
+	if (input_justPressed(g_dikN) == 1) {
 		sound_playMenu(0);
 		g_cursorBlink = 0;
 		profile_typeNewName();
 		return;
 	}
-	if ((input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1 || input_justPressed(GAME_VAR(int, 0x76d414)) == 1)
+	if ((input_justPressed(g_dikD) == 1 || input_justPressed(g_dikDelete) == 1)
 	    && g_profileCount > 0)
 		GAME_CDECL(0x44b670, void, void)();   /* profile_askDelete */
-	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) == 1) {
+	if (input_justPressed(g_dikI) == 1) {
 		sound_playMenu(0);
 		g_cursorBlink = 0;
 		if (g_profileCount <= 0) {
 			profile_typeNewName();
 			return;
 		}
-		GAME_VAR(int, 0x9f6840) = 1;
+		g_profileDialogOpen = 1;
 		GAME_VAR(int, 0x9f8f10) = 4;
 	}
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
@@ -647,7 +647,7 @@ void (profileList_mouse)(void)
 				profile_typeNewName();
 				return;
 			}
-			GAME_VAR(int, 0x9f6840) = 1;
+			g_profileDialogOpen = 1;
 			GAME_VAR(int, 0x9f8f10) = 4;
 			break;
 		case 3:
@@ -660,7 +660,7 @@ void (profileList_mouse)(void)
 				return;
 			if (row == g_listRow && g_profileRowClicked) {
 				g_cursorBlink = 0;
-				GAME_VAR(int, 0x9f6840) = 1;
+				g_profileDialogOpen = 1;
 				GAME_VAR(int, 0x9f8f10) = 4;
 				g_profileRowClicked = 0;
 				GAME_VAR(int, 0x9f8f18) = 0;

@@ -13,21 +13,21 @@ static const u32 slot_keys[5] = { 0x4e14f0, 0x4e10e4, 0x4e1524, 0x4e14ec, 0x4e0c
    mech, back or cancel leaves (the original leaves eax to callers that ignore it) */
 void (armc_partsPageKeys)(void)
 {
-	if (input_justPressed(GAME_VAR(int, 0x4e1538))) {
+	if (input_justPressed(g_dikW)) {
 		if (g_armcMode != 2) {
 			sound_playMenu(2);
 			armc_drawPartScreen();
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1504))) {
+	if (input_justPressed(g_dikL)) {
 		if (g_armcMode != 3) {
 			sound_playMenu(2);
 			armc_showColourPage();
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
+	if (input_justPressed(g_dikR)) {
 		sound_playMenu(2);
 		g_armcSpin = 1 - g_armcSpin;
 		return;
@@ -41,7 +41,7 @@ void (armc_partsPageKeys)(void)
 			}
 			return;
 		}
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
+	if (input_justPressed(g_dikA)) {
 		sound_playMenu(2);
 		g_armcPartSlot = 5;
 		return;
@@ -111,7 +111,7 @@ void (armc_weaponsPageKeys)(void)
 		armc_exit(0);
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1514))) {
+	if (input_justPressed(g_dikP)) {
 		if (g_armcMode != 1) {
 			armc_pickSlot(0);
 			sound_playMenu(2);
@@ -119,7 +119,7 @@ void (armc_weaponsPageKeys)(void)
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1504))) {
+	if (input_justPressed(g_dikL)) {
 		if (g_armcMode != 3) {
 			armc_pickSlot(0);
 			sound_playMenu(2);
@@ -127,7 +127,7 @@ void (armc_weaponsPageKeys)(void)
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
+	if (input_justPressed(g_dikR)) {
 		sound_playMenu(2);
 		g_armcSpin = 1 - g_armcSpin;
 		return;
@@ -189,12 +189,12 @@ void (armc_colourPageKeys)(void)
 	}
 	if (input_justPressed(g_keyBack))
 		goto leave;
-	if (input_justPressed(GAME_VAR(int, 0x4e1514))) {
+	if (input_justPressed(g_dikP)) {
 		sound_playMenu(2);
 		armc_showPartsPage();
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1538))) {
+	if (input_justPressed(g_dikW)) {
 		if (g_armcMode != 2) {
 			sound_playMenu(2);
 			armc_drawPartScreen();
@@ -209,13 +209,13 @@ void (armc_colourPageKeys)(void)
 			}
 			return;
 		}
-	if (input_justPressed(GAME_VAR(int, 0x4e0cd4))) {
+	if (input_justPressed(g_dikA)) {
 		sound_playMenu(2);
 		g_armcColourSlot = 5;
 		armc_backupColours();
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
+	if (input_justPressed(g_dikR)) {
 		sound_playMenu(2);
 		g_armcSpin = 1 - g_armcSpin;
 		return;
@@ -249,7 +249,7 @@ void (armc_processInput)(void)
 	int mode = g_armcState;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
 		return;
-	if (input_isDown(GAME_VAR(int, 0x6803a8)) && input_isDown(GAME_VAR(int, 0x9da4a0)) && input_justPressed(GAME_VAR(int, 0x4e1508))) {
+	if (input_isDown(g_dikLCtrl) && input_isDown(g_dikLAlt) && input_justPressed(g_dikM)) {
 		GAME_VAR(int, 0x4dd078) = 1 - GAME_VAR(int, 0x4dd078);
 		return;
 	}

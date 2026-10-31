@@ -1,0 +1,44 @@
+# the arena lobby / the room
+0x4dbb10,int,g_arenaSearchTicks
+0x4db55c,int,g_createQuitDialog
+0x9dd6d4,int,g_roomAwaitingServer
+0x4dbab0,int,g_editingNewArenaName
+0x5b1b53,u8,g_roomRecGameMode
+0x4df9eb,u8,g_roomGameMode
+# the pilot's network record: the server's copy (0x9dd5d8: level, points, clan, rating, ., wins, losses, win rate)
+# and the room's kept copy (0x9dd240, g_pilotLevelKept)
+0x9dd5d8,int,g_pilotLevel
+0x9dd5dc,int,g_pilotPoints
+0x9dd5ec,int,g_pilotWins
+0x9dd244,int,g_pilotPointsKept
+0x9dd254,int,g_pilotWinsKept
+# the network
+0x9fd94c,int,g_netHostGone
+0xa0b37c,int,g_gameServerAnswer15
+# loading, the match's end
+0xa0ea94,int,g_mapMissing
+0x9f67f4,int,g_matchEndedByUser
+0x9f67f0,int,g_matchLogWritten
+0x9f67f8,int,g_matchEndedByServer
+# the menus
+0x4dcf34,int,g_progressWentUp
+0x4de6fc,int,g_watchChatOpen
+0x9f6840,int,g_profileDialogOpen
+0x9f8f18,float,g_profileMessageTime
+0x9dd354,int,g_accountNotice
+0xa0b354,int,g_netNoticeIn
+0x5b1dac,int,g_matchRunning
+0x4b2790,int,g_gameRunning
+0x4dcf10,int,g_armcLeaving
+0x9f63b0,int,g_missionPreviewDue
+0x4dc788,int,g_armcUnusedFlag
+0x9f67e8,int,g_chatTyping
+0x83a9d8,int,g_cfgSimpleMenu
+0xa1efe8,int,g_errorCleanupHook
+0x4d05a4,const char *,g_catalogueFile
+0x4c4dec,float,g_viewFov
+0x4c4df0,float,g_viewNear
+0x4c4df4,float,g_viewFar
+# the display mode widefix keeps over an alt-tab (win32.c)
+0xb12a81,u8,g_displayModeLeft
+0xb12a88,int,g_otherModeHeight

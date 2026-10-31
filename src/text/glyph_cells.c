@@ -79,7 +79,7 @@ int (pen_init)(const char *name)
 		GAME_CDECL(0x46c840, void, const char *)((const char *)0x4c56fc);   /* "pen duplicate initialization" */
 		return 0;
 	}
-	GAME_VAR(int, 0xa106ac) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
+	g_penFontTexture = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
 		GAME_VAR(int, 0xa0fb28 + i * 4) = 8;
 	int g = 1;
@@ -118,7 +118,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		negative = 1;
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[GAME_VAR(int, 0xa106ac) / 512], GAME_VAR(int, 0xa106ac) % 512);
+	tex_bind(g_textures->managers[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	void (STDCALL *tc)(u32, u32) = *texCoord;
 	int place = 10;
@@ -182,7 +182,7 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(g_textures->managers[GAME_VAR(int, 0xa106ac) / 512], GAME_VAR(int, 0xa106ac) % 512);
+	tex_bind(g_textures->managers[g_penFontTexture / 512], g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	*g_wide->penDraw = 1;
 	for (const char *p = text; *p; p++) {

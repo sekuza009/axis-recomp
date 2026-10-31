@@ -24,8 +24,8 @@ void (gfx_setProjectionHud)(int mode, float scale)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	if (g_glCachedState == 1) {
-		gluPerspective(GAME_VAR(float, 0x4c4dec), (double)(fmul_m((long double)g_glWidth, &scale) / g_glHeight),
-		               GAME_VAR(float, 0x4c4df0), GAME_VAR(float, 0x4c4df4));
+		gluPerspective(g_viewFov, (double)(fmul_m((long double)g_glWidth, &scale) / g_glHeight),
+		               g_viewNear, g_viewFar);
 		glViewport(0, 0, g_glWidth, g_glHeight);
 		g_projMode = -1;
 		glEnable(GL_DEPTH_TEST);

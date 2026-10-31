@@ -63,7 +63,7 @@ void (arena_editName)(void)
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	EDITING(0x4dbbd0) = 1;
+	GAME_VAR(int, 0x4dbbd0) = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x10);
 }
@@ -76,7 +76,7 @@ void (arena_editComment)(void)
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	EDITING(0x4dbab0) = 1;
+	GAME_VAR(int, 0x4dbab0) = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x1e);
 }
@@ -98,12 +98,12 @@ static void edit_limit(int value, int y, int *editing)
 
 void (arena_editFragLimit)(void)
 {
-	edit_limit(g_arenaFragLimitTyped, 0xfe, &EDITING(0x4db850));
+	edit_limit(g_arenaFragLimitTyped, 0xfe, &g_editingNewArenaFragLimit);
 }
 
 void (arena_editTimeLimit)(void)
 {
-	edit_limit(g_arenaTimeLimitTyped, 0x120, &EDITING(0x4db518));
+	edit_limit(g_arenaTimeLimitTyped, 0x120, &g_editingNewArenaTimeLimit);
 }
 
 /* 0x404f90: the password (8), from what the line holds */
@@ -113,7 +113,7 @@ void (arena_editPassword)(void)
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x54);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	EDITING(0x4dbacc) = 1;
+	GAME_VAR(int, 0x4dbacc) = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(8);
 }
@@ -128,7 +128,7 @@ void (arena_editMessage)(void)
 	g_chatLength = line_length();
 	GAME_VAR(int, 0x4db524) = 0;
 	g_menuFade = 5.0f;
-	EDITING(0x4db70c) = 1;
+	g_editingArenaMessage = 1;
 	chat_createEdit(8);
 }
 
@@ -142,7 +142,7 @@ void (field_editComment)(void)
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	EDITING(0x9dd380) = 1;
+	GAME_VAR(int, 0x9dd380) = 1;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x1e);
 }
@@ -154,7 +154,7 @@ void (field_editPassword)(void)
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x54);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	EDITING(0x9dd6a8) = 1;
+	GAME_VAR(int, 0x9dd6a8) = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(8);
 }
@@ -168,8 +168,8 @@ void (field_editGameName)(void)
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x58);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	EDITING(0x9dd830) = 1;
-	EDITING(0x9dd38c) = 0;
+	g_editingGameName = 1;
+	g_editingGamePassword = 0;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x10);
 }
@@ -184,8 +184,8 @@ void (field_editGamePassword)(void)
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	EDITING(0x9dd830) = 0;
-	EDITING(0x9dd38c) = 1;
+	g_editingGameName = 0;
+	g_editingGamePassword = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(0xc);
 }
@@ -200,10 +200,10 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	caret(PANEL_X(ROOM_RULES) + 0x98, PANEL_Y(ROOM_RULES) + y);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	EDITING(0x9dd69c) = field == 0;
-	EDITING(0x9dd37c) = field == 1;
-	EDITING(0x9dd378) = field == 2;
-	EDITING(0x9dd304) = field == 3;
+	g_editingOldPassword = field == 0;
+	g_editingAccountPassword = field == 1;
+	g_editingPasswordRepeat = field == 2;
+	g_editingEmail = field == 3;
 	g_chatFieldFlag = flag;
 	chat_createEdit(maxLength);
 }
@@ -223,7 +223,7 @@ void (field_editMessage)(void)
 	g_chatLength = line_length();
 	GAME_VAR(int, 0x9dceec) = 0;
 	g_menuFade = 5.0f;
-	EDITING(0x9dd6c8) = 1;
+	g_editingRoomMessage = 1;
 	chat_createEdit(8);
 }
 
@@ -234,7 +234,7 @@ void (chat_textField)(int x, int y, int maxLength)
 {
 	input_releaseKeyboard();
 	g_paused = 1;
-	GAME_VAR(int, 0x9f67e8) = 1;
+	g_chatTyping = 1;
 	menu_clearInputBuffer(maxLength);
 	GAME_VAR(int, 0x9f63c8) = x;
 	GAME_VAR(int, 0x9f63c4) = y;
@@ -263,11 +263,11 @@ int (loginForm_openField)(int k)
 	input_releaseKeyboard();
 	line_clear();
 	g_paused = 1;
-	EDITING(0x9dd348) = 0;
+	g_editingLoginName = 0;
 	GAME_VAR(int, 0x9dd32c) = 0;
-	EDITING(0x9dd3f8) = 0;
-	EDITING(0x9dd564) = 0;
-	EDITING(0x9dd6cc) = 0;
+	g_editingLoginPassword = 0;
+	g_editingLoginRepeat = 0;
+	g_editingLoginEmail = 0;
 	g_chatFieldFlag = 0;
 	int row = 0;
 	if ((u32)k <= 3) {
