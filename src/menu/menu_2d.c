@@ -9,9 +9,6 @@
 #include "../wide.h"
 #include <string.h>
 
-#define g_menuScaleX GAME_VAR(float, 0x680bac)   /* pixels per menu unit across */
-#define g_menuScaleY GAME_VAR(float, 0x4df014)   /* and down */
-#define g_projMode GAME_VAR(int, 0x5ae9bc)       /* the projection set last (1 3D, 2 the menus' 2D) */
 #define g_menuColour ((const u32 *)0x9da480)     /* RGBA floats */
 
 /* the menu cursor's x (px = x * the scale, pixels) on the full screen, placed as it would be in the viewport it is
@@ -161,7 +158,7 @@ u32 (menu_frameBegin)(void)
 u32 (menu_drawDimOverlay)(void)
 {
 	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a943c), (const float *)0x4deb74);
-	GAME_VAR(float, 0x4deb74) = (float)a;
+	g_roomFade = (float)a;
 	float alpha = (float)a;
 	if (a > GAME_VAR(float, 0x4a9424))
 		BITS(alpha) = 0x3f800000;

@@ -58,6 +58,6 @@ u32 (gfx_initGLState)(int width, int height)
 		(double)fld_m((const float *)0x4e1870), 1.0, 20000.0);   /* gluPerspective */
 	IMPORT(0x4a91fc, void, u32)(0x1700);   /* glMatrixMode(GL_MODELVIEW) */
 	u32 r = GAME_CDECL(0x42f0f0, u32, int, int)(width, height);
-	GAME_VAR(int, 0x5ae9bc) = 1;
+	g_projMode = 1;
 	return r;
 }

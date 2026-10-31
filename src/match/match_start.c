@@ -42,7 +42,7 @@ static void make_rotation(Scene *s)
 	}
 	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
-		for (int k = 0; k < GAME_VAR(int, 0x67ef00); k++) {
+		for (int k = 0; k < g_arenaMapCount; k++) {
 			u32 entry = 0x4d9508 + k * 8;
 			if (GAME_VAR(int, entry) != 1)
 				continue;
@@ -82,7 +82,7 @@ static void first_round(Scene *s)
 	s->scoreLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
 	strcpy(s->mechName, (const char *)0x4dedd8);
-	s->mechValue = GAME_VAR(int, 0x9f1818);
+	s->mechValue = g_armcValue;
 	if (s->showEmblems == 1) {
 		s->levelPoints = GAME_VAR(int, 0x4de722);
 		s->level = actor_levelFromValue(s->levelPoints);

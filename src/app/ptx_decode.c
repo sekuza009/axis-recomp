@@ -6,10 +6,8 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_bitPos GAME_VAR(int, 0xa21704)          /* the stream position, in bits */
 #define g_bitStream GAME_VAR(const u8 *, 0xa61708)
 #define g_table GAME_VAR(int, 0xaa2e94)           /* the Huffman table set in use */
-#define g_lastDc GAME_VAR(int, 0xaa268c)          /* the block's DC is a difference from the one before */
 #define g_zigzag ((const int *)0x4c59ec)
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 
@@ -20,12 +18,12 @@ int (ptx_readBits)(int *out, int n)
 	if (n <= 0)
 		return n;
 	for (int k = n - 1; n > 0; n--, k--) {
-		int pos = g_bitPos;
+		int pos = g_ptxBitPos;
 		if (g_bitStream[pos >> 3] & (u8)(1 << (7 - (pos & 7))))
 			*out |= 1u << (k & 31);
-		g_bitPos = pos + 1;
+		g_ptxBitPos = pos + 1;
 	}
-	return g_bitPos;
+	return g_ptxBitPos;
 }
 
 /* a value of n bits: the top bit clear means negative (out - 2^n + 1) */
@@ -52,7 +50,7 @@ void (ptx_readDcDiff)(int *out)
 		if (v >> ((16 - len) & 31) == code[1])
 			break;
 	}
-	g_bitPos += len - 16;
+	g_ptxBitPos += len - 16;
 	huff_value(out, k);
 }
 
@@ -68,7 +66,7 @@ void (ptx_readAcSymbol)(int *out, int *run)
 			break;
 	}
 	*run = k >> 4;
-	g_bitPos += len - 16;
+	g_ptxBitPos += len - 16;
 	huff_value(out, k & 15);
 }
 
@@ -78,8 +76,8 @@ int (ptx_readBlock)(int *block)
 	int dc, value, run, k = 1;
 	memset(block, 0, 64 * 4);
 	ptx_readDcDiff(&dc);
-	block[0] = g_lastDc + dc;
-	g_lastDc += dc;
+	block[0] = g_ptxLastDc + dc;
+	g_ptxLastDc += dc;
 	do {
 		ptx_readAcSymbol(&value, &run);
 		if (!run && !value) {
@@ -91,7 +89,7 @@ int (ptx_readBlock)(int *block)
 			block[g_zigzag[k++]] = 0;
 		block[g_zigzag[k++]] = value;   /* (a run past 64 reads past the table, as in the original) */
 	} while (k < 64);
-	return g_bitPos;
+	return g_ptxBitPos;
 }
 
 /* the RGB of a pixel from its Y, Cb and Cr (16.16 tables for green) */

@@ -202,7 +202,7 @@ void (room_drawGameSettings)(void)
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int editing = GAME_VAR(int, 0x68039c), open = editing || GAME_VAR(int, 0x907b2c);
+	int editing = GAME_VAR(int, 0x68039c), open = editing || g_arenaLeaving;
 	char text[20];
 	int hovered = roomSettings_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
@@ -225,7 +225,7 @@ void (room_drawGameSettings)(void)
 	}
 	room_drawCustomOption(f->s->map);
 	preview_controls(f, hovered == 11 && !open, hovered == 12 && !open,
-	                 hovered == 13 && !editing && !GAME_VAR(int, 0x4db508), grey);
+	                 hovered == 13 && !editing && !g_mapListOpen, grey);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
 }
@@ -254,8 +254,8 @@ void (arena_createDraw)(void)
 	                           0, 0x4dbba4, 10 };
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)0x4dba98, *dim = (const u32 *)0x4db8a0;
-	int editing = GAME_VAR(int, 0x68039c), confirming = GAME_VAR(int, 0x4db55c), leaving = GAME_VAR(int, 0x907b2c);
-	int open = editing || confirming || leaving, blocked = open || GAME_VAR(int, 0x4db508);
+	int editing = GAME_VAR(int, 0x68039c), confirming = GAME_VAR(int, 0x4db55c), leaving = g_arenaLeaving;
+	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];
 	int hovered = createArena_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);

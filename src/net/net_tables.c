@@ -144,7 +144,7 @@ u32 (net_addSession)(SessionDesc d)
 #define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
 int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flags, void *context)
 {
-	int mode = GAME_VAR(int, 0xa0b418);
+	int mode = g_connectionKind;
 	if ((mode == 1 || mode == 0) && !desc)
 		return 0;
 	SessionDesc d;
@@ -167,7 +167,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	memcpy(d.b + 0x24, desc + 0x40, 2);
 	d.b[0x28] = desc[0x49];
 	d.b[0x29] = desc[0x48];
-	if (GAME_VAR(int, 0xa0b418) == 0) {
+	if (g_connectionKind == 0) {
 		GAME_CDECL(0x454390, int, u32)(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry */
 		crt_strncpy((char *)d.b + 0x74, (const char *)0xa0b460, 0x10);
 	}
@@ -364,17 +364,17 @@ int (dplay_release)(void)
 		COM(lobby, COM_RELEASE, u32)(lobby);
 		g_dplayLobby = 0;
 	}
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	if (play) {
 		if (g_localPlayerId) {
 			COM(play, 0x24, u32, u32)(play, g_localPlayerId);   /* DestroyPlayer */
-			play = GAME_VAR(void *, 0xa0b404);
+			play = g_dplay;
 			g_localPlayerId = 0;
 		}
 		COM(play, 0x10, u32)(play);   /* Close */
-		play = GAME_VAR(void *, 0xa0b404);
+		play = g_dplay;
 		COM(play, COM_RELEASE, u32)(play);
-		GAME_VAR(void *, 0xa0b404) = 0;
+		g_dplay = 0;
 	}
 	if (g_hostAddressBlock) {
 		crt_free(g_hostAddressBlock);
@@ -421,7 +421,7 @@ int (net_resolveHost)(const char *host)
    0 without DirectPlay or on a failure */
 int (dplay_enumSessions)(void)
 {
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	if (!play)
 		return 0;
 	u32 desc[0x14];
@@ -429,12 +429,12 @@ int (dplay_enumSessions)(void)
 	desc[0] = 0x50;                                                  /* dwSize */
 	memcpy(&desc[2], g_instanceGuid, 16);         /* guidInstance */
 	memcpy(&desc[6], (const void *)0x4a96e8, 16);                    /* guidApplication */
-	if (!GAME_VAR(int, 0xa0b418)) {
+	if (!g_connectionKind) {
 		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)0x453560, NULL, 0x12) < 0)
 			return 0;
-		play = GAME_VAR(void *, 0xa0b404);
+		play = g_dplay;
 	}
-	if (GAME_VAR(int, 0xa0b418) == 1 &&
+	if (g_connectionKind == 1 &&
 	    COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)0x453560, NULL, 0x12) < 0)
 		return 0;
 	return 1;
@@ -600,7 +600,7 @@ u32 (net_ping)(u32 ip, u32 timeout)
    with no buffer). 0, or the error (0x8007000e when the block cannot be had; the block is freed again on a failure) */
 int (dplay_getPlayerName)(u32 id, void **out)
 {
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	u32 size;
 	int r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, NULL, &size);
 	if (r != (int)0x8877001e)   /* DPERR_BUFFERTOOSMALL */
@@ -608,7 +608,7 @@ int (dplay_getPlayerName)(u32 id, void **out)
 	void *name = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!name)
 		return 0x8007000e;
-	play = GAME_VAR(void *, 0xa0b404);
+	play = g_dplay;
 	r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, name, &size);
 	if (r >= 0) {
 		*out = name;
@@ -779,7 +779,7 @@ static int create_player(void *play, u32 *id, const char *name)
 int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 maxPlayers, u32 user2,
                         signed char hi, signed char lo, u32 data)
 {
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	if (!play)
 		return 0;
 	u32 *desc = session_desc(g_instanceGuid);
@@ -789,15 +789,15 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	desc[16] = user1;
 	desc[17] = user2;
 	desc[18] = (u32)((int)hi << 8 | (int)lo);
-	if (!GAME_VAR(int, 0xa0b418)) {
+	if (!g_connectionKind) {
 		GAME_CDECL(0x454220, void, void)();                 /* net_getLocalAddress */
 		desc[19] = GAME_CDECL(0x4542a0, u32, void)();       /* net_parseAddress */
-		play = GAME_VAR(void *, 0xa0b404);
+		play = g_dplay;
 	}
 	if (COM(play, 0x60, int, void *, u32)(play, desc, 2) < 0)   /* Open(DPOPEN_CREATE) */
 		return 0;
 	u32 id;
-	if (create_player(GAME_VAR(void *, 0xa0b404), &id, player) < 0)
+	if (create_player(g_dplay, &id, player) < 0)
 		return 0;
 	g_localPlayerData = data;
 	g_localPlayerId = id;
@@ -812,7 +812,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
    refusing the player, 0x1fb without DirectPlay */
 int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 {
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	if (!play)
 		return 0x1fb;
 	int r = COM(play, 0x60, int, void *, u32)(play, session_desc(guid), 1);   /* Open(DPOPEN_JOIN) */
@@ -823,7 +823,7 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
 	if (r)
 		return 0x1f6;
 	u32 id;
-	r = create_player(GAME_VAR(void *, 0xa0b404), &id, player);
+	r = create_player(g_dplay, &id, player);
 	switch ((u32)r) {
 	case 0x88770078: case 0x80070057: case 0x88770028: case 0x8877003c: case 0x887700aa: case 0x88770168:
 		return 0x1fa;
@@ -865,7 +865,7 @@ static void dplay_lobbyConnect(void)
 	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)0x4a9678, (void **)0xa0b404, NULL) < 0)
 		return;   /* ConnectEx */
 	u32 id;
-	void *play = GAME_VAR(void *, 0xa0b404);   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
+	void *play = g_dplay;   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
 	if (COM(play, 0x18, int, u32 *, void *, void *, void *, u32, u32)(play, &id, *(void **)(GAME_VAR(u8 *, 0xa0baf4) + 0xc),
 			NULL, NULL, 0, 0) < 0)
 		return;
@@ -886,7 +886,7 @@ int (dplay_create)(void)
 	int r = GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404);   /* dplay_createLobby */
 	if (r < 0)
 		return r;
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)0x4a96e8, (void *)0x4532f0, NULL, 0);
 	if (r >= 0)
 		r = 0;
@@ -951,9 +951,9 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
 int (dplay_initConnection)(int kind, const char *address)
 {
-	if (GAME_VAR(void *, 0xa0b404)) {
-		GAME_CDECL(0x453a10, void, void *)(GAME_VAR(void *, 0xa0b404));   /* dplay_closeSession */
-		GAME_VAR(void *, 0xa0b404) = NULL;
+	if (g_dplay) {
+		GAME_CDECL(0x453a10, void, void *)(g_dplay);   /* dplay_closeSession */
+		g_dplay = NULL;
 	}
 	static const u32 provider[4] = { 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8 };
 	if ((u32)kind <= 3) {
@@ -981,13 +981,13 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	if (!g_storedConnection)
 		return 1;
-	if (GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404) < 0 || !GAME_VAR(void *, 0xa0b404))   /* dplay_createLobby */
+	if (GAME_CDECL(0x4539f0, int, void **)((void **)0xa0b404) < 0 || !g_dplay)   /* dplay_createLobby */
 		return 0;
-	void *play = GAME_VAR(void *, 0xa0b404);
+	void *play = g_dplay;
 	if (COM(play, 0x98, int, void *, u32)(play, g_storedConnection, 0) < 0)   /* InitializeConnection */
 		return 0;
 	u32 caps[10] = { 0x28 };   /* DPCAPS */
-	play = GAME_VAR(void *, 0xa0b404);
+	play = g_dplay;
 	if (COM(play, 0x38, int, u32 *, u32)(play, caps, 0))   /* GetCaps */
 		return 0;
 	GAME_VAR(u32, 0xa0bb00) = caps[9];   /* dwTimeout */
@@ -1089,7 +1089,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 		gone = 1;
 	} else
 		return;
-	if (!g_isHost || GAME_VAR(int, 0xa0b418))
+	if (!g_isHost || g_connectionKind)
 		return;
 	switch (g_lobbyConnectStatus) {
 	case 201:

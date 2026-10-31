@@ -27,15 +27,11 @@ void (skirmish_processKeys)(void)
 #define g_briefing GAME_VAR(u8 *, 0x9ef1ec)
 #define g_briefingStart GAME_VAR(int, 0x9eeba4)
 #define g_briefingShown GAME_VAR(int, 0x9ef1f4)
-#define g_briefingEnd GAME_VAR(int, 0x9ef200)
-#define g_briefingDone GAME_VAR(int, 0x9f105c)      /* the whole text is out */
 #define g_briefingSkipped GAME_VAR(int, 0x4d7348)
 #define g_briefingClock GAME_VAR(float, 0x9f16b8)
 #define g_briefingText ((char *)0x9f1064)
 #define g_briefingX GAME_VAR(int, 0x9f16a8)         /* the briefing window */
 #define g_briefingY GAME_VAR(int, 0x9f16ac)
-#define g_textEndX GAME_VAR(int, 0x4d23c8)          /* where the last text pass ended */
-#define g_textEndY GAME_VAR(int, 0x4d23cc)
 
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one
    more character (a CR LF or a double-byte character at once); drawn in the briefing window (wrapping at 0x23e,
@@ -193,7 +189,7 @@ void (skirmish_drawScreenB)(void)
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x = BX0 + k * 0x8c;
-		int usable = k == 0 ? GAME_VAR(int, 0x4d7348) != 0 : GAME_VAR(int, 0x9f1060) > 0;
+		int usable = k == 0 ? GAME_VAR(int, 0x4d7348) != 0 : g_undoDepth > 0;
 		int lit = usable && hovered == k + 2;
 		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
 		                (const char *)(0x75e3a4 + k * 0x80));

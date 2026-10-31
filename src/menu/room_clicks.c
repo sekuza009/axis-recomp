@@ -4,10 +4,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_roomPopup GAME_VAR(int, 0x9dd6c4)           /* (by use) the room's popup: 1 / 2 closed by its buttons */
-#define g_leaveDialog GAME_VAR(int, 0x9dd850)         /* the "leave" dialog is up */
-#define g_roomChatting GAME_VAR(int, 0x9dd6b4)        /* the chat line is being typed */
-#define g_roomFade GAME_VAR(float, 0x4deb74)          /* the white fade, rising to 1 */
 
 /* 0x435ab0: the "leave" dialog: yes (button 0) closes it and leaves (the game closes with exit code 2), no (button 1) only closes it */
 void (leaveDialog_clicks)(void)
@@ -16,11 +12,11 @@ void (leaveDialog_clicks)(void)
 		return;
 	switch (leaveDialog_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
-		g_leaveDialog = 0;
+		g_roomLeaveDialog = 0;
 		app_closeWindow(2);
 		break;
 	case 1:
-		g_leaveDialog = 0;
+		g_roomLeaveDialog = 0;
 		break;
 	}
 }
@@ -64,7 +60,7 @@ void (room_stopArenaSetup)(void)
 		GAME_VAR(int, 0x4dbb10) = 0;
 		g_arenaJoinWaiting = 0;
 		arena_leaveSession();
-		GAME_VAR(int, 0x4db8b4) = 0;
+		g_arenaConfirming = 0;
 		KillTimer(g_hWndMain, 0x378);
 	}
 }
@@ -87,9 +83,9 @@ void (room_drawWhiteFade)(void)
 /* 0x405200 (arena_chatLine): the arena screen's chat line, the same way (flag 0x4db8bc, its message field) */
 void (arena_chatLine)(void)
 {
-	GAME_VAR(int, 0x4db8bc) = 0;
+	g_arenaJoining = 0;
 	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
-		GAME_VAR(int, 0x4db8bc) = 1;
+		g_arenaJoining = 1;
 		arena_editTextField_405010();
 	}
 }
@@ -106,8 +102,8 @@ static void leave_keys(int *question)
 	}
 }
 
-void (leaveDialog_keys)(void) { leave_keys(&g_leaveDialog); }
-void (lobbyJoin_keys)(void) { leave_keys(&GAME_VAR(int, 0x907b2c)); }
+void (leaveDialog_keys)(void) { leave_keys(&g_roomLeaveDialog); }
+void (lobbyJoin_keys)(void) { leave_keys(&g_arenaLeaving); }
 
 /* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
    click on its buttons (skirmishSettings_hitTest): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
@@ -196,7 +192,7 @@ u32 (room_leftClicks)(void)
 		sound_playMenu(0);
 		g_loginToSend = 1;
 		g_roomLoginDue = 1;
-		GAME_VAR(int, 0x9dd850) = 0;
+		g_roomLeaveDialog = 0;
 		return 1;
 	case 3:
 		if (GAME_VAR(int, 0x68039c)) {
@@ -206,7 +202,7 @@ u32 (room_leftClicks)(void)
 		}
 		sound_playMenu(0);
 		input_setKeysBlocked(4);
-		GAME_VAR(int, 0x9dd834) = 0x63;
+		g_roomState = 0x63;
 		g_nextScreen = 300;
 		GAME_VAR(int, 0x4e1868) = 0;
 		GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
@@ -247,7 +243,7 @@ u32 (room_pageClicks)(void)
 	int right = g_keyEnter;
 	if (!right)
 		return 0;
-	int allowed = GAME_VAR(int, 0x9dae10);
+	int allowed = g_tunnelRings;
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
@@ -316,7 +312,7 @@ u32 (room_hostingStep)(void)
 		return 2;
 	if (step == 1) {
 		GAME_VAR(int, 0x4dba88) = 0;
-		GAME_VAR(int, 0x67ef14) = 1;
+		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
 		g_roomMode = 0;
@@ -335,7 +331,7 @@ u32 (room_hostingStep)(void)
 	}
 	switch (step) {
 	case 3:
-		GAME_VAR(int, 0x907b2c) = 1;
+		g_arenaLeaving = 1;
 		/* fall through */
 	case 0:
 		GAME_VAR(int, 0x4dba88) = 0;
@@ -363,7 +359,7 @@ u32 (app_onClose)(void)
 		g_arenaJoinWaiting = 0;
 		GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(0x44);   /* the message */
-		GAME_VAR(int, 0x4db8b4) = 0;
+		g_arenaConfirming = 0;
 		return r;
 	}
 	if (!g_arenaJoinPending)
@@ -381,16 +377,16 @@ u32 (app_onClose)(void)
 		u32 e = GAME_CDECL(0x452fe0, u32, void)();
 		GAME_VAR(int, 0x4dbb10) = 0;
 		g_arenaJoinPending = 0;
-		GAME_VAR(int, 0x4db8b4) = 0;
+		g_arenaConfirming = 0;
 		return e;
 	}
 	GAME_CDECL(0x457310, void, void)();   /* music_shutdown */
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 2;
 	g_roomMode = 0;
 	GAME_VAR(int, 0x4dbb10) = 0;
 	g_arenaJoinPending = 0;
-	GAME_VAR(int, 0x4db8b4) = 0;
+	g_arenaConfirming = 0;
 	GAME_VAR(int, 0x9dad94) = (signed char)game[0x25];
 	memcpy((void *)0x67fb44, game + 4, 32);
 	g_mapRotation = (signed char)game[0x24];
@@ -491,7 +487,7 @@ u32 (ranking_page)(void)
 	}
 	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
 	int mode = g_roomMode;
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
+	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (GAME_VAR(int, 0x90d1c4)) {
 		const int *box = (const int *)0x9dced8;
@@ -507,7 +503,7 @@ u32 (ranking_page)(void)
 			g_rankingWaiting = 0;
 			g_rankingHaveList = 1;
 			g_roomListWaiting = 0;
-			g_roomListPrev = GAME_VAR(int, 0x9dd1d0);
+			g_roomListPrev = g_rankingSort;
 			g_roomListPrevPage = g_roomListPage;
 		}
 		long double blink = fld_m((const float *)0x4dba80) - fmul_m(fld_m((const float *)0x4b071c), (const float *)0x4ad498);
@@ -578,7 +574,7 @@ u32 (ranking_clicks)(void)
 		g_rankingHaveList = 1;
 		g_rankingWaiting = 0;
 		g_roomListWaiting = 0;
-		GAME_VAR(int, 0x9dd1d0) = g_roomListPrev;
+		g_rankingSort = g_roomListPrev;
 		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
 	case 4:
 		g_roomMode = 0;
@@ -587,7 +583,7 @@ u32 (ranking_clicks)(void)
 	column = button == 5 ? 0 : button == 7 ? 1 : 2;   /* 5, 7, 8 */
 	u32 old = GAME_VAR(u32, 0x9dd1d0);
 	GAME_VAR(u32, 0x9dd300) = old;
-	GAME_VAR(int, 0x9dd1d0) = column;
+	g_rankingSort = column;
 	g_rankingRequestPending = 1;
 	g_rankingHaveList = 0;
 	g_roomListWaiting = 0;
@@ -793,7 +789,7 @@ u32 (account_page)(void)
 		{ 0x9dd378, 0x9dd202, 12, 0x4340e0, 0x434260 }, { 0x9dd304, 0x9dd20e, 50, 0x4341a0, 0 } };
 	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
 	u32 mode = GAME_VAR(u32, 0x9dce48);
-	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd834) == 99)
+	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd368), GAME_VAR(int, 0x9dd36c),

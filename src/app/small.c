@@ -147,7 +147,7 @@ void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_V
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) GAME_VAR(int, 0x9f62e0) = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
-u32 (tunnel_rebuild)(void) { GAME_VAR(int, 0x9dae10) = 0; return tunnel_appendRing((void *)0x67fb3c); }
+u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)0x67fb3c); }
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)0x76d438, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */

@@ -102,7 +102,7 @@ void (menuCamera_initPoints)(void)
 		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
 		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
 		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };   /* (+-20, +-10), (-+70, +-55) */
-	int z = GAME_VAR(int, 0x680380);
+	int z = g_menuCameraHeight;
 	for (int i = 0; i < 5; i++) {
 		GAME_VAR(int, 0x4df878 + i * 0x10) = z;
 		GAME_VAR(int, 0x76d390 + i * 0x10) = z;
@@ -110,7 +110,7 @@ void (menuCamera_initPoints)(void)
 	GAME_VAR(int, 0x9db090) = GAME_VAR(int, 0x4df024);
 	GAME_VAR(int, 0x9db094) = GAME_VAR(int, 0x4df028);
 	GAME_VAR(int, 0x9db098) = GAME_VAR(int, 0x4df02c);
-	int lx = GAME_VAR(int, 0x680378), ly = GAME_VAR(int, 0x68037c), lz = GAME_VAR(int, 0x680380);
+	int lx = GAME_VAR(int, 0x680378), ly = GAME_VAR(int, 0x68037c), lz = g_menuCameraHeight;
 	for (unsigned i = 0; i < sizeof point / sizeof point[0]; i++)
 		GAME_VAR(u32, point[i][0]) = point[i][1];
 	GAME_VAR(int, 0x76d3f8) = lx;
@@ -124,7 +124,7 @@ void (menuCamera_initPoints)(void)
 u32 (replayList_open)(void)
 {
 	g_mapSelectCount = 0;
-	GAME_VAR(int, 0x9dd92c) = 0;
+	g_mapSelectFirst = 0;
 	GAME_VAR(int, 0x9dd944) = 0;
 	GAME_VAR(int, 0x9eea88) = 0;
 	g_dialogOpen = 1;
@@ -148,7 +148,7 @@ u32 (frontEnd_startUp)(void)
 	GAME_CDECL(0x430ab0, void, void)();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {
-		GAME_VAR(int, 0x4dda34)++;
+		g_loadStep++;
 		r = GAME_CDECL(0x41f100, u32, void)();   /* frontEnd_drawProgress: the progress drawn */
 		if (k == 5)
 			break;

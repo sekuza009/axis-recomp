@@ -43,7 +43,7 @@ int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); 
 static void load_colour(int i)
 {
 	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
-	GAME_VAR(u32, 0x9f8c48) = 0xbf800000;   /* -1.0 */
+	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 	GAME_VAR(int, 0x9f8d68) = 0;
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(float, 0x9f8ec0 + k * 4) =
@@ -99,7 +99,7 @@ void (profile_resetPreview)(void)
 	memset((void *)0x9f8d34, 0, 36);
 	GAME_VAR(int, 0x9f8d68) = 1;
 	GAME_VAR(u32, 0x9f8f08) = 0x42200000;   /* 40.0 */
-	GAME_VAR(u32, 0x9f8c48) = 0xbf800000;   /* -1.0 */
+	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 }
 
 /* 0x44b750: the same, and no profile selected */
@@ -134,7 +134,7 @@ int (profile_nameExists)(void)
 	const char *s = (const char *)0x9dc92c;
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
-	for (int e = 0; e < GAME_VAR(int, 0x9f9008); e++) {
+	for (int e = 0; e < g_profileCount; e++) {
 		const char *p = (const char *)(0x9f684c + e * 0x48);
 		for (int i = 0, n = (int)strlen(p); i < n; i++)
 			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
@@ -302,7 +302,7 @@ int (profileList_clicks)(void)
    updated. Returns what that leaves in eax */
 u32 (profile_selectAndLoad)(void)
 {
-	int n = GAME_VAR(int, 0x9f9008);
+	int n = g_profileCount;
 	strcpy((char *)(0x9f684c + n * 0x48), (const char *)0x9dc92c);
 	GAME_VAR(int, 0x9f688c + n * 0x48) = GAME_VAR(int, 0x9f8d30);
 	if (chdir_((const char *)0x4b2adc)) {
@@ -311,7 +311,7 @@ u32 (profile_selectAndLoad)(void)
 	}
 	chdir_((const char *)0x4b2a80);
 	int count = n + 1;
-	GAME_VAR(int, 0x9f9008) = count;
+	g_profileCount = count;
 	if (count <= 0xd) {
 		GAME_VAR(int, 0x9f8c5c) = count - 1;
 		GAME_VAR(int, 0x9f8d74) = GAME_VAR(int, 0x9f8c4c) + count - 1;
@@ -364,7 +364,7 @@ u32 (profile_secondPanelPage)(void)
 u32 (profileList_drawNames)(void)
 {
 	u32 r = 0;
-	for (int i = 0; i < 13 && i < GAME_VAR(int, 0x9f9008); i++) {
+	for (int i = 0; i < 13 && i < g_profileCount; i++) {
 		int page1 = GAME_VAR(int, 0x9f8f10) == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
 		GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
@@ -443,20 +443,20 @@ u32 (profile_deleteFiles)(void)
 			IMPORT(0x4a9104, int, const char *)(path);
 		GAME_CDECL(0x49f8a6, int, const char *)((const char *)0x4b2a80);   /* chdir("..") */
 	}
-	int count = GAME_VAR(int, 0x9f9008) - 1, last = current;
+	int count = g_profileCount - 1, last = current;
 	for (; last < count; last++)
 		memcpy(records + last * 0x48, records + (last + 1) * 0x48, 0x48);
 	u8 *freed = records + last * 0x48;
 	memset(freed + 4, 0, 0x40);
 	*(int *)freed = 0;
 	*(int *)(freed + 0x44) = -1;
-	GAME_VAR(int, 0x9f9008) = count;
+	g_profileCount = count;
 	if (GAME_VAR(int, 0x9f8d74) >= count) {
 		if (count <= 0) {
 			GAME_VAR(int, 0x9f8c5c) = 0;
 			GAME_VAR(int, 0x9f8c4c) = 0;
 			GAME_VAR(int, 0x9f8d74) = 0;
-			GAME_VAR(int, 0x9f9008) = 0;
+			g_profileCount = 0;
 			return GAME_CDECL(0x447320, u32, void)();   /* profile_delete: the list written */
 		}
 		if (GAME_VAR(int, 0x9f8c5c) > 0)
@@ -551,7 +551,6 @@ u32 (profile_newNameDialog)(void)
    chosen (0x9f8d74) the one under it; there are 0x9f9008 profiles ---- */
 #define g_listTop GAME_VAR(int, 0x9f8c4c)
 #define g_listRow GAME_VAR(int, 0x9f8c5c)
-#define g_profileCount GAME_VAR(int, 0x9f9008)
 
 static void list_moved(void)
 {
@@ -701,6 +700,5 @@ void (profileList_mouse)(void)
 #undef g_mouseY
 }
 
-#undef g_profileCount
 #undef g_listRow
 #undef g_listTop

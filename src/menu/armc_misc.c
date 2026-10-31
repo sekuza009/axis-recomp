@@ -3,13 +3,10 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_armcPreview GAME_VAR(int, 0x4dbc68)         /* (by use) the mech preview is shown */
 #define g_armcModeShown GAME_VAR(int, 0x4dc24c)       /* (unclear) 3: the part lists are left as they are */
 #define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
 #define g_armcSpin GAME_VAR(int, 0x4dceac)
-#define g_armcState GAME_VAR(int, 0x4dc790)           /* (by use) 0 / 1: the screen is not up; 2: the preview camera is kept */
 #define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
-#define g_armcSessionMade GAME_VAR(int, 0x4dc54c)
 #define g_armcZoom GAME_VAR(float, 0x4dcfd8)          /* (by use) 1 when the part in view changes; each frame lowers it until it is below a limit, then -2 */
 
 /* 0x41dfb0: the parts page: the preview, the part lists (armc_40d990, a no-op in the patched game) and, unless the
@@ -104,13 +101,13 @@ void (armc_exit)(int confirmed)
 	switch (g_armcFrom) {
 	case 1:
 		armc_restoreMenuCamera();
-		GAME_VAR(int, 0x4dc790) = 0;
+		g_armcState = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
 			armc_saveSelection();
 		break;
 	case 2:
-		GAME_VAR(int, 0x4dc790) = 0;
+		g_armcState = 0;
 		g_viewAspect = 0.1f;
 		g_lobbySubState = 0;
 		if (confirmed)
@@ -118,7 +115,7 @@ void (armc_exit)(int confirmed)
 		break;
 	case 3:
 		armc_restoreMenuCamera();
-		GAME_VAR(int, 0x4dc790) = 0;
+		g_armcState = 0;
 		g_viewAspect = 0.1f;
 		if (confirmed)
 			armc_sendSelectionToNet();
@@ -127,7 +124,7 @@ void (armc_exit)(int confirmed)
 	g_armcCamHeight = 0.0f;
 	g_armcCamDistance = 1600.0f;
 	GAME_VAR(int, 0x68037c) = 0;
-	GAME_VAR(int, 0x680380) = 0;
+	g_menuCameraHeight = 0;
 	GAME_VAR(int, 0x4dcf10) = 1;
 	g_flareSizeB = 10.0f;
 	g_flareSizeA = 48.0f;
@@ -192,9 +189,9 @@ void (armc_updatePartsPreview)(void)
 	}
 	if (g_emptyItemSlot0 == 1)
 		g_emptyItemSlot0 = 0;
-	if (GAME_VAR(int, 0x4dca98)) {
+	if (g_coloursChanged) {
 		armc_applyColourSlot();
-		GAME_VAR(int, 0x4dca98) = 0;
+		g_coloursChanged = 0;
 	}
 	switch (g_armcMode) {
 	case 1: preview(1, part_in_view()); break;
@@ -509,7 +506,7 @@ void (armc_rightClickLeave)(void)
 {
 	if (g_keyEnter) {
 		armc_restoreMenuCamera();
-		GAME_VAR(int, 0x4dc790) = 0;
+		g_armcState = 0;
 		BITS(g_viewAspect) = 0;
 	}
 }
@@ -556,7 +553,7 @@ void (armc_initPartBoxes)(void)
    Returns what the original leaves in eax (the value it stopped at, or the page's handler's) */
 u32 (armc_onStateEnter)(void)
 {
-	int state = GAME_VAR(int, 0x4dc790);
+	int state = g_armcState;
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
@@ -581,7 +578,7 @@ void (armc_snapshot)(int i)
 {
 	const char *name = (const char *)(0x4dbe50 + i * 0x80);
 	if (strlen(name) <= 1) {
-		GAME_VAR(int, 0x4dcc64) = 0;
+		g_armcChanged = 0;
 		return;
 	}
 	char path[0x80], copy[0x40];
@@ -592,7 +589,7 @@ void (armc_snapshot)(int i)
 	strcat(path, (const char *)0x4b0360);   /* "snapshot" */
 	strcpy(copy, path);
 	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), copy, 0, 0, 0, 0, 0, 0, 0);
-	GAME_VAR(int, 0x4dcc64) = 0;
+	g_armcChanged = 0;
 }
 
 /* 0x41dab0: the armour screen's weight line at y (0x4dcc94): the label 0x7573a4 right-aligned at 0x27c (8 units a

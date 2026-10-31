@@ -58,7 +58,7 @@ void (armc_restoreMenuCamera)(void)
 {
 	copy((u32 *)0x4df024, (const u32 *)0x4df870, 3);
 	copy((u32 *)0x680378, (const u32 *)0x76d388, 3);
-	GAME_VAR(int, 0x4dbc68) = 0;
+	g_armcPreview = 0;
 }
 
 /* 0x40e6c0: the saved mech (parts, the six items, the colours) into the working copy */

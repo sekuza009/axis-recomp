@@ -12,7 +12,6 @@
 #define g_keyboardActive GAME_VAR(int, 0x4d1fa8)      /* (by use) the window is active: the keyboard may be taken */
 #define g_mouseActive GAME_VAR(int, 0x4d1fac)
 #define g_mouseTaken GAME_VAR(int, 0x4ad17c)          /* (by use) 0: the mouse is let go instead of taken */
-#define g_directSound GAME_VAR(void *, 0xa0e804)
 
 /* 0x4012c0: take the keyboard again */
 void (input_reacquireKeyboard)(void)

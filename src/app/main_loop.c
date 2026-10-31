@@ -61,8 +61,6 @@ static inline double f64(long double x)
 	return r;
 }
 
-#define g_introZoom GAME_VAR(float, 0x4dda48)        /* (by use) the main menu's zoom into a direct start, counted up */
-#define g_fovKeys GAME_VAR(int, 0x4e0464)            /* (by use) 1 / 2: the view angle narrows / widens by 5 a frame */
 #define F(addr) GAME_VAR(float, addr)
 #define D(addr) GAME_VAR(double, addr)
 

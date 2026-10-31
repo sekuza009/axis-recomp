@@ -391,7 +391,7 @@ static void *profiles_create(void)
 	GAME_VAR(u32, 0x9f8c58) = GAME_VAR(u32, 0x9f8d74);
 	void *f = crt_fopen(path, (const char *)0x4b2ab0);
 	if (!f)
-		GAME_VAR(int, 0x9f9008) = 0;
+		g_profileCount = 0;
 	return f;
 }
 
@@ -405,7 +405,7 @@ static u32 profiles_write(void *f)
 	crt_fwrite((void *)0x9f8c4c, 4, 1, f);
 	crt_fwrite((void *)0x9f8c5c, 4, 1, f);
 	crt_fwrite((void *)0x9f8fe8, 0x20, 1, f);
-	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
+	for (int i = 0; i < g_profileCount; i++)
 		crt_fwrite((void *)(0x9f6848 + i * 0x48), 0x48, 1, f);
 	return fclose(f);
 }
@@ -417,7 +417,7 @@ u32 (profile_loadList)(int count)
 	void *f = profiles_create();
 	if (!f)
 		return 0;
-	GAME_VAR(int, 0x9f9008) = count;
+	g_profileCount = count;
 	GAME_VAR(u32, 0x9f8c58) = 0;
 	GAME_VAR(u32, 0x9f8c4c) = 0;
 	GAME_VAR(u32, 0x9f8c5c) = 0;
@@ -496,12 +496,12 @@ u32 (mission_saveAxisMis)(int k)
 	memset((void *)0x9f1064, 0, 0x640);
 	memset((void *)0x9eebac, 0, 0x640);
 	GAME_VAR(int, 0x9ef1f4) = 0;
-	GAME_VAR(int, 0x9f105c) = 0;
+	g_briefingDone = 0;
 	GAME_VAR(int, 0x9eeba4) = 0;
 	GAME_VAR(int, 0x4d7348) = 0;
-	GAME_VAR(int, 0x9f1060) = 0;
-	GAME_VAR(int, 0x9ef1f8) = 20;
-	GAME_VAR(int, 0x9ef200) = size[k * 63];
+	g_undoDepth = 0;
+	g_settingsPage = 20;
+	g_briefingEnd = size[k * 63];
 	GAME_VAR(int, 0x9f16b8) = 0;
 	return 0;
 }
@@ -846,14 +846,14 @@ u32 (profile_create)(void)
 	profiles_path(path);
 	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 	if (!f) {
-		GAME_VAR(int, 0x9f9008) = 0;
+		g_profileCount = 0;
 		return 0;
 	}
 	u32 magic;
 	crt_fread(&magic, 4, 1, f);
 	if (magic != 0xfefefef7) {
 		u32 r = fclose(f);
-		GAME_VAR(int, 0x9f9008) = 0;
+		g_profileCount = 0;
 		return r;
 	}
 	crt_fread((void *)0x9f9008, 4, 1, f);
@@ -866,7 +866,7 @@ u32 (profile_create)(void)
 		crt_chdir((const char *)0x4b2adc);
 	}
 	crt_chdir((const char *)0x4b2a80);   /* ".." */
-	for (int i = 0; i < GAME_VAR(int, 0x9f9008); i++)
+	for (int i = 0; i < g_profileCount; i++)
 		if (str_order((const char *)(0x9f684c + i * 0x48), (const char *)0x9f8fe8) == 0) {
 			g_currentProfile = i;
 			break;
@@ -964,7 +964,7 @@ u32 (data_loadMapInfo)(void)
 		data_missing(0x4b14e0);
 	}
 	crt_fread((void *)0x67ef00, 4, 1, f);
-	for (int i = 0; i < GAME_VAR(int, 0x67ef00); i++) {
+	for (int i = 0; i < g_arenaMapCount; i++) {
 		char *name = (char *)(0x907b30 + i * 0x20), *about = (char *)(0x5ae9d0 + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
 		GAME_CDECL(0x42b390, int, char *)(name);    /* str_invert: decoded */
@@ -972,7 +972,7 @@ u32 (data_loadMapInfo)(void)
 		GAME_CDECL(0x42b390, int, char *)(about);
 	}
 	fclose(f);
-	int count = GAME_VAR(int, 0x67ef00);
+	int count = g_arenaMapCount;
 	if (count <= 0)
 		return count;
 	for (int i = 0; i < count; i++) {

@@ -10,7 +10,7 @@ typedef long double X;
 #define I(a) GAME_VAR(int, a)
 #define FMT(a) ((const char *)(a))
 /* the pilot's skill k (19-dword records from 0x9f9078, pilot 0x9f1818) */
-#define SKILL(k) ((X)GAME_VAR(int, 0x9f9078 + GAME_VAR(int, 0x9f1818) * 0x4c + (k) * 4))
+#define SKILL(k) ((X)GAME_VAR(int, 0x9f9078 + g_armcValue * 0x4c + (k) * 4))
 #define HUNDREDTH F(0x4a9420)   /* 0.01 */
 #define THOUSANDTH F(0x4a9480)  /* 0.001 */
 #define HUNDRED F(0x4a93f4)
@@ -488,7 +488,7 @@ void (armc_drawStatsPanel)(void)
 		else
 			text_draw8(PANEL_X0 + 0x18, PANEL_Y0 + 0x44 + i * 0x30, (const char *)(0x756aa4 + i * 0x80));
 	}
-	if (GAME_VAR(int, 0x4dbc68)) {
+	if (g_armcPreview) {
 		static const u32 names[5] = { 0x4dceb8, 0x4dbc08, 0x4dc250, 0x4dc1e8, 0x4dce40 };
 		colour(bright);
 		for (int i = 0; i < 5; i++)

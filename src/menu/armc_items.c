@@ -9,8 +9,6 @@
 #define g_extraList ((const int *)0x4dcca4)           /* the other items on offer */
 #define g_extraCount GAME_VAR(int, 0x4dc778)
 #define g_armcParts ((const int *)0x4dc760)           /* the mech's head, chest, arm, leg, booster */
-#define g_armcValue GAME_VAR(int, 0x9f1818)           /* (unclear) the mech's value (mech_setValue) */
-#define g_armcChanged GAME_VAR(int, 0x4dcc64)         /* (by use) the mech was changed */
 
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)
@@ -106,8 +104,8 @@ void (armc_enterScreen)(void)
 	app_requireCd(g_scene, 0, 2);
 	set_mech((const char *)0x4dedb0);
 	stage_remakePlayerActor(STAGE(g_scene));
-	GAME_VAR(int, 0x4dbc68) = 1;
-	GAME_VAR(int, 0x4dc54c) = 1;
+	g_armcPreview = 1;
+	g_armcSessionMade = 1;
 	g_colourChanged = 1;
 }
 

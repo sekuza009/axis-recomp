@@ -5,7 +5,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_cameraHeight GAME_VAR(int, 0x680380)   /* the menu camera's z, kept for every target point */
 
 static void clear_all(const u32 *addresses, int n)
 {
@@ -16,7 +15,7 @@ static void clear_all(const u32 *addresses, int n)
 /* 0x404ac0: sub-screen 0: the camera to (35, 0) looking at (-70, 35), the player's record from the profile */
 void (lobby_setSubState0)(void)
 {
-	int z = g_cameraHeight;
+	int z = g_menuCameraHeight;
 	GAME_VAR(u32, 0x4df870) = 0x420c0000;   /* 35.0 */
 	GAME_VAR(int, 0x4df874) = 0;
 	GAME_VAR(int, 0x4df878) = z;
@@ -38,7 +37,7 @@ void (lobby_setSubState1)(void)
 	static const u32 cleared[] = { 0x4df884, 0x4dbaac, 0x4db8b8, 0x4dba84, 0x4db854, 0x4dbbec, 0x4dbbf0, 0x4dba90,
 	                               0x4db858, 0x4dbac8, 0x4dbaa8, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0, 0x4df818,
 	                               0x4db71c, 0x4dbaf8, 0x4db85c, 0x4db8b4, 0x4db718, 0x907b2c, 0x4dbaf0, 0x4db714 };
-	int z = g_cameraHeight;
+	int z = g_menuCameraHeight;
 	GAME_VAR(u32, 0x4df880) = 0x420c0000;   /* 35.0 */
 	GAME_VAR(int, 0x4df888) = z;
 	GAME_VAR(int, 0x76d3a0) = z;
@@ -90,7 +89,7 @@ void (mapList_init)(void)
 			GAME_VAR(int, p - 4) = 0;
 			GAME_VAR(int, p) = 0;
 		}
-		for (int k = 0; k < GAME_VAR(int, 0x67ef00); k++) {
+		for (int k = 0; k < g_arenaMapCount; k++) {
 			GAME_VAR(int, 0x4d9508 + k * 8) = 1;
 			GAME_VAR(int, 0x4d950c + k * 8) = 0;
 		}
@@ -98,7 +97,7 @@ void (mapList_init)(void)
 	GAME_VAR(int, 0x4d95b8) = 0;
 	GAME_VAR(int, 0x4d95c0) = 0;
 	GAME_VAR(int, 0x4d95c8) = 0;
-	GAME_VAR(int, 0x4db508) = 0;
+	g_mapListOpen = 0;
 	mapList_layout();
 	GAME_VAR(int, 0x4db510) = 1;
 }
@@ -109,7 +108,7 @@ void (lobby_setSubState2)(void)
 {
 	static const u32 cleared[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4db55c, 0x4ded54, 0x4db85c, 0x907b2c, 0x4dbab0,
 	                               0x4db850, 0x4db518, 0x4dbacc };
-	int z = g_cameraHeight;
+	int z = g_menuCameraHeight;
 	GAME_VAR(u32, 0x4df890) = 0xc20c0000;   /* -35.0 */
 	GAME_VAR(int, 0x4df894) = 0;
 	GAME_VAR(int, 0x4df898) = z;
@@ -148,7 +147,7 @@ void (room_enterGameList)(void)
 	static const u32 cleared[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4ded54, 0x907b2c, 0x9dd380, 0x9dd388, 0x9dd568,
 	                               0x9dd6a8 };
 	room_loadSettingsRecord();
-	GAME_VAR(int, 0x9dd834) = 2;
+	g_roomState = 2;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
@@ -170,7 +169,7 @@ void (room_enterRoomList)(void)
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	g_roomMode = 1;
 	g_rankingFirst = 1;
-	GAME_VAR(int, 0x9dd834) = 4;
+	g_roomState = 4;
 	g_roomPanelBrightness = 0x3f333333;
 	g_rankingLast = 10;
 	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0 */
@@ -352,13 +351,13 @@ u32 (lobby_keysBack)(void)
 		return g_dialogOpen;
 	u32 r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
 	if (r) {
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 		return r;
 	}
 	r = input_justPressed(GAME_VAR(int, 0x4e1510));
 	if (!r)
 		return 0;
-	GAME_VAR(int, 0x907b2c) = 0;
+	g_arenaLeaving = 0;
 	return app_closeWindow(2);
 }
 
@@ -387,13 +386,13 @@ u32 (lobby_processKeys)(void)
 	case 0:
 		return GAME_CDECL(0x407840, u32, void)();   /* lobbyPlayer_keys */
 	case 1:
-		if (GAME_VAR(int, 0x907b2c))
+		if (g_arenaLeaving)
 			return GAME_CDECL(0x407970, u32, void)();   /* lobbyJoin_keys */
 		return GAME_CDECL(0x4079c0, u32, void)();       /* lobbyJoin_keysChat */
 	case 2:
-		if (GAME_VAR(int, 0x907b2c))
+		if (g_arenaLeaving)
 			return GAME_CDECL(0x4080c0, u32, void)();   /* lobby_keysBack */
-		if (GAME_VAR(int, 0x4db508))
+		if (g_mapListOpen)
 			return GAME_CDECL(0x403870, u32, void)();   /* the map list */
 		if (GAME_VAR(int, 0x4db55c))
 			return GAME_CDECL(0x408110, u32, void)();   /* lobby_keysQuit */
@@ -411,16 +410,16 @@ u32 (lobby_quitDialogClicks)(void)
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_keyEnter)
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 	if (!g_mouseClick)
 		return 0;
 	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
 	if (button == 0) {
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 		return 0;
 	}
 	return (u32)(button - 1);
@@ -439,7 +438,7 @@ u32 (menuState400_frame)(void)
 	case 5:
 		CALL(0x40cef0);   /* lobbyTop_draw */
 		menu_drawBackground();
-		if (GAME_VAR(int, 0x67ef14) == 1 && g_arenaLobbyMode == 2)
+		if (g_quitAsked == 1 && g_arenaLobbyMode == 2)
 			return CALL(0x40ce70);   /* menu_drawDimOverlay */
 		return CALL(0x408680);       /* lobbyTop_drawTitle */
 	case 0:
@@ -470,15 +469,15 @@ u32 (lobby_onStateChange)(void)
 	case 0:
 		return CALL(0x406a60);
 	case 1:
-		if (GAME_VAR(int, 0x4db8b4))
+		if (g_arenaConfirming)
 			return CALL(0x406b60);   /* lobby_close */
-		if (GAME_VAR(int, 0x907b2c))
+		if (g_arenaLeaving)
 			return CALL(0x406bd0);   /* lobby_quitDialogClicks */
 		return CALL(0x406c30);       /* lobby_connect */
 	case 2:
-		if (GAME_VAR(int, 0x907b2c))
+		if (g_arenaLeaving)
 			return CALL(0x407270);   /* create_quitDialogClicks */
-		if (GAME_VAR(int, 0x4db508))
+		if (g_mapListOpen)
 			return CALL(0x4036c0);   /* mapList_mouse: the map list */
 		if (GAME_VAR(int, 0x4db55c))
 			CALL(0x407300);          /* lobby_pageClicks */
@@ -502,7 +501,7 @@ u32 (lobby_close)(void)
 	GAME_VAR(int, 0x4dbb10) = 0;
 	g_arenaJoinWaiting = 0;
 	CALL(0x452fe0);   /* arena_leaveSession */
-	GAME_VAR(int, 0x4db8b4) = 0;
+	g_arenaConfirming = 0;
 	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
 }
 
@@ -514,7 +513,7 @@ u32 (room_mapListKeys)(void)
 		return CALL(0x403640);   /* mapList_ok */
 	if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
 		u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
-		GAME_VAR(int, 0x4db508) = 0;
+		g_mapListOpen = 0;
 		return r;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
@@ -549,16 +548,16 @@ u32 (create_quitDialogClicks)(void)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
 	if (g_keyEnter)
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 	if (!g_mouseClick)
 		return 0;
 	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);
 	if (button == 0) {
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
-		GAME_VAR(int, 0x907b2c) = 0;
+		g_arenaLeaving = 0;
 		return 0;
 	}
 	return (u32)(button - 1);
@@ -582,7 +581,7 @@ u32 (lobby_editTextField_405230)(void)
 	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
 	   argument */
 	u32 r = GAME_CDECL(0x43f460, u32, int, int)(0x14, 0x14);
-	GAME_VAR(int, 0x4db714) = 1;
+	g_arenaFull = 1;
 	return r;
 }
 
@@ -637,7 +636,7 @@ u32 (lobbyCreate_draw)(void)
 	if (map < 0 || map > 0xe)
 		g_arenaGameType = 0;
 	CALL(0x40b750);   /* arena_createDraw */
-	if (GAME_VAR(int, 0x4db508) == 1)
+	if (g_mapListOpen == 1)
 		CALL(0x4038e0);   /* mapList_draw: the map list */
 	if (!GAME_VAR(int, 0x4dba88))
 		return 0;
@@ -658,7 +657,7 @@ u32 (lobby_keysQuit)(void)
 	}
 	if (!input_justPressed(GAME_VAR(int, 0x4e1510)))
 		return 0;
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 1;
 	CALL(0x457310);   /* music_shutdown */
 	u32 limits = GAME_VAR(u32, 0x4ded44);
@@ -722,7 +721,7 @@ static void take_session(const u8 *rec)
 	memcpy((void *)0x67fb44, rec + 4, 32);
 	g_mapRotation = (signed char)rec[0x24];
 	g_arenaLobbyMode = 0;
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 2;
 	g_chosenGameMode = (signed char)rec[0x2c];
 	g_fragLimit = rec[0x2d];
@@ -745,7 +744,7 @@ u32 (arena_joinSession)(int session)
 	if (r != 0x1f4)
 		return GAME_CDECL(0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
 	take_session(rec);
-	GAME_VAR(int, 0x4db8b4) = 0;
+	g_arenaConfirming = 0;
 	return rec[0x2e];
 }
 
@@ -762,7 +761,7 @@ void (app_shutdown)(void)
 		g_arenaJoinWaiting = 0;
 		arena_leaveSession();
 		menu_showMessage(0x44);
-		GAME_VAR(int, 0x4db8b4) = 0;
+		g_arenaConfirming = 0;
 		return;
 	}
 	int pick = g_arenaJoinRow;
@@ -800,7 +799,7 @@ void (app_shutdown)(void)
 	}
 	GAME_VAR(int, 0x4dbb10) = 0;
 	g_arenaJoinPending = 0;
-	GAME_VAR(int, 0x4db8b4) = 0;
+	g_arenaConfirming = 0;
 }
 
 /* ---- a menu key: the key bound at `binding` was just pressed (the confirm sound played then) ---- */
@@ -826,9 +825,9 @@ u32 (lobbyTop_keys)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (GAME_VAR(int, 0x67ef14) == 1)
+	if (g_quitAsked == 1)
 		return 0;
-	if (input_justPressed(g_keyCancel2) && GAME_VAR(int, 0x9dae10) > 0) {
+	if (input_justPressed(g_keyCancel2) && g_tunnelRings > 0) {
 		sound_playMenu(0);
 		return to_main_menu();
 	}
@@ -850,7 +849,7 @@ u32 (lobby_topPageClicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
-	if (GAME_VAR(int, 0x67ef14) == 1)
+	if (g_quitAsked == 1)
 		return 0;
 	if (GAME_VAR(int, 0x4ded88)) {
 		const Outline *buttons = (const Outline *)0x5b1cf8;
@@ -870,7 +869,7 @@ u32 (lobby_topPageClicks)(void)
 	int right = g_keyEnter;
 	if (!right)
 		return 0;
-	int allowed = GAME_VAR(int, 0x9dae10);
+	int allowed = g_tunnelRings;
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
@@ -956,7 +955,7 @@ int (lobby_openConnection)(void)
 	GAME_VAR(int, 0x4df818) = 0;
 	*GAME_VAR(u32 *, 0xa0b31c) = 0x180001;   /* the message to send */
 	GAME_CDECL(0x4521c0, int, int, int)(0xd, 100);   /* net_send */
-	GAME_VAR(int, 0x4db8b4) = 0;
+	g_arenaConfirming = 0;
 	g_listRefreshPeriod = 30;
 	return 1;
 }
@@ -1022,7 +1021,7 @@ u32 (lobby_pageClicks)(void)
 	}
 	if (button != 0x10)
 		return button - 0x11;
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 1;
 	music_shutdown();
 	g_mapRotation = (signed char)g_arenaCustomize;
@@ -1050,7 +1049,7 @@ u32 (arena_connectionOutcome)(void)
 	const u8 *me = (const u8 *)0x4ded20;
 	if (state == 1) {
 		GAME_VAR(int, 0x4dba88) = 0;
-		GAME_VAR(int, 0x67ef14) = 1;
+		g_quitAsked = 1;
 		g_netRole = 1;
 		music_shutdown();
 		g_arenaLobbyMode = 0;
@@ -1072,7 +1071,7 @@ u32 (arena_connectionOutcome)(void)
 	u32 r = GAME_CDECL(0x451e60, u32, void)();   /* net_451e60: the connection closed */
 	g_connectStep = 2;
 	if (state == 3)
-		GAME_VAR(int, 0x907b2c) = 1;
+		g_arenaLeaving = 1;
 	GAME_VAR(int, 0x4dba88) = 0;
 	GAME_VAR(int, 0x4ded54) = 0;
 	if (state == 4)
@@ -1260,14 +1259,14 @@ void (lobbyJoin_keysChat)(void)
 #define g_gameCount GAME_VAR(int, 0x67ef30)
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
 	int mode = g_arenaLobbyMode;
-	if (GAME_VAR(int, 0x4db714) || mode == 1 || mode == 0 || GAME_VAR(int, 0x4db8bc) || GAME_VAR(int, 0x90d1c4))
+	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoining || GAME_VAR(int, 0x90d1c4))
 		return;
-	if (GAME_VAR(int, 0x4db8b4)) {
+	if (g_arenaConfirming) {
 		if (input_justPressed(g_keyBack)) {
 			GAME_VAR(int, 0x4dbb10) = 0;
 			g_arenaJoinWaiting = 0;
 			arena_leaveSession();
-			GAME_VAR(int, 0x4db8b4) = 0;
+			g_arenaConfirming = 0;
 			KillTimer(g_hWndMain, 0x378);
 		}
 		return;
@@ -1382,7 +1381,7 @@ void (lobbyJoin_keysChat)(void)
 		}
 		return;
 	}
-	if (input_justPressed(GAME_VAR(int, 0x4e1514)) && !GAME_VAR(int, 0x4db714)) {
+	if (input_justPressed(GAME_VAR(int, 0x4e1514)) && !g_arenaFull) {
 		sound_playMenu(0);
 		lobby_editTextField_405230();
 	}
@@ -1531,7 +1530,7 @@ static void take_arena(void)
 void (lobby_roomNameCheck)(void)
 {
 	int was = g_netRole;
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 1;
 	lobby_keepArenaSettings();
 	int hosted = arena_openSession(1, NULL);
@@ -1541,7 +1540,7 @@ void (lobby_roomNameCheck)(void)
 	}
 	if (!hosted) {
 		GAME_VAR(int, 0x4db55c) = 1;
-		GAME_VAR(int, 0x67ef14) = 0;
+		g_quitAsked = 0;
 		g_netRole = was;
 		arena_leaveSession();
 		return;
@@ -1557,7 +1556,7 @@ void (lobby_roomNameCheck)(void)
 void (lobby_checkReservedName)(void)
 {
 	GAME_VAR(int, 0x4dbbf4) = 2;
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_netRole = 1;
 	music_shutdown();
 	g_arenaLobbyMode = 0;

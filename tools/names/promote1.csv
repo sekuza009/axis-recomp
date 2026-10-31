@@ -1,0 +1,52 @@
+# globals promoted from a file's local define (address,type,local name,file,global name)
+0x4dcc64,int,g_armcChanged,src/menu/armc_items.c,g_armcChanged
+0x4dbc68,int,g_armcPreview,src/menu/armc_misc.c,g_armcPreview
+0x4dc54c,int,g_armcSessionMade,src/menu/armc_misc.c,g_armcSessionMade
+0x4dc790,int,g_armcState,src/menu/armc_misc.c,g_armcState
+0x9f1818,int,g_armcValue,src/menu/armc_items.c,g_armcValue
+0x4ddce8,int,g_bindPage,src/menu/setup_keys.c,g_bindPage
+0x4dddc8,int,g_bindWaiting,src/menu/setup_keys.c,g_bindWaiting
+0xa21704,int,g_bitPos,src/app/ptx_decode.c,g_ptxBitPos
+0xaa268c,int,g_lastDc,src/app/ptx_decode.c,g_ptxLastDc
+0x9f105c,int,g_briefingDone,src/menu/skirmish.c,g_briefingDone
+0x9ef200,int,g_briefingEnd,src/menu/skirmish.c,g_briefingEnd
+0x680380,int,g_cameraHeight,src/menu/lobby_states.c,g_menuCameraHeight
+0x4dca98,int,g_coloursChanged,src/menu/armc_colours.c,g_coloursChanged
+0x4db8b4,int,g_confirming,src/menu/game_lists.c,g_arenaConfirming
+0xa0b418,int,g_connectionKind,src/net/dplay_calls.c,g_connectionKind
+0xa0e804,void *,g_directSound,src/app/devices.c,g_directSound
+0xa0b404,void *,g_dplay,src/net/dplay_calls.c,g_dplay
+0x4e0464,int,g_fovKeys,src/app/main_loop.c,g_fovKeys
+0x9f8c48,u32,g_frameStep,src/menu/profile_dialogs.c,g_profileFrameStep
+0x4db714,int,g_full,src/menu/game_lists.c,g_arenaFull
+0x4dda48,float,g_introZoom,src/app/main_loop.c,g_introZoom
+0x9dd56c,int,g_joined,src/menu/game_lists.c,g_roomJoined
+0x4db8bc,int,g_joining,src/menu/game_lists.c,g_arenaJoining
+0x9dd850,int,g_leaveDialog,src/menu/room_clicks.c,g_roomLeaveDialog
+0x907b2c,int,g_leaving,src/menu/game_lists.c,g_arenaLeaving
+0x4dda34,int,g_loadStep,src/app/loading.c,g_loadStep
+0x67ef00,int,g_mapCount,src/menu/arena_maps.c,g_arenaMapCount
+0x9dd92c,int,g_mapFirst,src/menu/menu_states.c,g_mapSelectFirst
+0x4db508,int,g_mapListOpen,src/menu/arena_maps.c,g_mapListOpen
+0x680bac,float,g_menuScaleX,src/menu/menu_2d.c,g_menuScaleX
+0x4df014,float,g_menuScaleY,src/menu/menu_2d.c,g_menuScaleY
+0x9f9008,int,g_profileCount,src/menu/profile_misc.c,g_profileCount
+0x5ae9bc,int,g_projMode,src/menu/menu_2d.c,g_projMode
+0x67ef14,int,g_quitAsked,src/menu/menu_states.c,g_quitAsked
+0x9dd3fc,int,g_refreshing,src/menu/game_lists.c,g_roomRefreshing
+0x9dd6b4,int,g_roomChatting,src/menu/room_clicks.c,g_roomChatting
+0x4deb74,float,g_roomFade,src/menu/room_clicks.c,g_roomFade
+0x9dd6c4,int,g_roomPopup,src/menu/room_clicks.c,g_roomPopup
+0x9dd834,int,g_roomState,src/menu/room_dialogs.c,g_roomState
+0x9ef1f8,int,g_settingsPage,src/menu/menu_states.c,g_settingsPage
+0x9ef1f0,int,g_settingsState,src/menu/menu_states.c,g_settingsState
+0x4ddcec,int,g_setupPage,src/menu/setup_keys.c,g_setupPage
+0x9dd1d0,int,g_sort,src/menu/room_dialogs.c,g_rankingSort
+0xa0e80c,int,g_soundOn,src/sound/sound_basic.c,g_soundOn
+0x4d23c8,int,g_textEndX,src/menu/skirmish.c,g_textEndX
+0x4d23cc,int,g_textEndY,src/menu/skirmish.c,g_textEndY
+0x4df010,u32,g_tunnelPulseStep,src/menu/setup_pages.c,g_tunnelPulseStep
+0x9dae10,int,g_tunnelRings,src/menu/menu_tunnel.c,g_tunnelRings
+0x4dde98,int,g_volume,src/menu/setup_keys.c,g_volumeSetting
+0x9f1060,int,undo_depth,src/menu/menu_records.c,g_undoDepth
+# 0x9dd6a0 g_roomSearching: game_lists.c's second local g_searching (one section, #undef after), renamed by hand and added with name_globals.py --reuse

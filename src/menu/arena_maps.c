@@ -4,10 +4,8 @@
 #include <string.h>
 
 typedef struct { i32 chosen; i32 type; } MapChoice;
-#define g_mapCount GAME_VAR(int, 0x67ef00)
 #define g_mapChoices ((MapChoice *)0x4d7358)
 #define g_mapChoicesKept ((MapChoice *)0x4d9508)
-#define g_mapListOpen GAME_VAR(int, 0x4db508)         /* (by use) 1 while the list is being edited */
 #define g_mapListKept GAME_VAR(int, 0x4d94fc)         /* (by use) set once a list has been kept */
 
 /* the maps that are never offered */
@@ -21,7 +19,7 @@ static void clear_unused(void)
 /* 0x403490: start editing from the kept list */
 void (mapList_startEdit)(void)
 {
-	int n = g_mapCount;
+	int n = g_arenaMapCount;
 	for (int i = 0; i < n; i++) {
 		g_mapChoices[i].chosen = g_mapChoicesKept[i].chosen;
 		g_mapChoices[i].type = g_mapChoicesKept[i].type;
@@ -34,7 +32,7 @@ void (mapList_startEdit)(void)
 void (mapList_chooseAll)(void)
 {
 	sound_playMenu(0);
-	for (int i = 0; i < g_mapCount; i++)
+	for (int i = 0; i < g_arenaMapCount; i++)
 		g_mapChoices[i].chosen = 1;
 	clear_unused();
 }
@@ -43,7 +41,7 @@ void (mapList_chooseAll)(void)
 void (mapList_chooseNone)(void)
 {
 	sound_playMenu(0);
-	for (int i = 0; i < g_mapCount; i++) {
+	for (int i = 0; i < g_arenaMapCount; i++) {
 		g_mapChoices[i].chosen = 0;
 		g_mapChoices[i].type = 0;
 	}
@@ -76,14 +74,14 @@ void (mapList_stepGameType)(int i)
 void (mapList_ok)(void)
 {
 	int i = 0;
-	if (g_mapCount <= 0)
+	if (g_arenaMapCount <= 0)
 		return;
 	while (g_mapChoices[i].chosen != 1)
-		if (++i >= g_mapCount)
+		if (++i >= g_arenaMapCount)
 			return;
 	sound_playMenu(0);
 	clear_unused();
-	for (i = 0; i < g_mapCount; i++) {
+	for (i = 0; i < g_arenaMapCount; i++) {
 		g_mapChoicesKept[i].chosen = g_mapChoices[i].chosen;
 		g_mapChoicesKept[i].type = g_mapChoices[i].type;
 	}
@@ -105,7 +103,7 @@ void (arena_saveSettings)(void)
 	cfg_loadAxisCfg();
 }
 
-/* a map choice moved one on (dir > 0) or back, round the g_mapCount maps, skipping 22 .. 24; nothing while the
+/* a map choice moved one on (dir > 0) or back, round the g_arenaMapCount maps, skipping 22 .. 24; nothing while the
    lock byte is set; the change flagged (0x680cd0) */
 static void map_step(int dir, u32 lock, u32 choice)
 {
@@ -115,7 +113,7 @@ static void map_step(int dir, u32 lock, u32 choice)
 	if (dir > 0) {
 		if (++*c == 0x16)
 			*c = 0x19;
-		if (*c >= g_mapCount)
+		if (*c >= g_arenaMapCount)
 			*c = 0;
 	} else {
 		if (--*c < 0)
@@ -184,7 +182,7 @@ void (mapList_draw)(void)
 	text_draw8(0x168, 0x32, (const char *)0x75d9a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
-	for (int i = 0; i < g_mapCount && i < 10; i++) {
+	for (int i = 0; i < g_arenaMapCount && i < 10; i++) {
 		int y = 0x57 + i * 0x18;
 		if (hovered == i) {
 			set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f4ccccd, 0x3ecccccd);   /* 0.1, 0.2, 0.8, 0.4 */
@@ -234,7 +232,7 @@ void (mapList_mouse)(void)
 				g_mapTop--;
 		} else if (on == 21) {
 			sound_playMenu(2);
-			if (g_mapTop + 10 < g_mapCount)
+			if (g_mapTop + 10 < g_arenaMapCount)
 				g_mapTop++;
 		} else if (on == 22)
 			mapList_chooseNone();
@@ -255,7 +253,7 @@ void (mapList_mouse)(void)
 			g_mapTop--;
 		g_cursorBlink = 0.0f;
 	} else if (on == 21 && g_cursorBlink >= *repeat) {
-		if (g_mapTop + 10 < g_mapCount) {
+		if (g_mapTop + 10 < g_arenaMapCount) {
 			g_cursorBlink = 0.0f;
 			g_mapTop++;
 		} else

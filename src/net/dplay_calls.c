@@ -7,8 +7,6 @@
 #define DP_SEND 0x68
 #define CLSCTX_INPROC_SERVER 1
 
-#define g_dplay GAME_VAR(void *, 0xa0b404)            /* IDirectPlay4A */
-#define g_connectionKind GAME_VAR(int, 0xa0b418)      /* the connection kind in use: its slot (0 .. 3) */
 
 /* 0x450bc0 (dplay_receive): the next message (from, to: player ids out; data and *size in / out); 0 without
    DirectPlay */

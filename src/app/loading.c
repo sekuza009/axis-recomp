@@ -148,7 +148,6 @@ static int texture_named(const char *name)
 }
 
 /* ---- the menus' textures, loaded with the loading screen moved on a step (g_loadStep) between them ---- */
-#define g_loadStep GAME_VAR(int, 0x4dda34)
 #define T(addr) texture_named((const char *)(addr))
 
 static void next_step(void)
@@ -231,7 +230,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(int, 0x4d7348) = 0;
 	timer_init();
 	g_convertHangul = 1;
-	GAME_VAR(int, 0x67ef14) = 0;
+	g_quitAsked = 0;
 	if (!g_directInputMade) {
 		if (!input_createDirectInput(g_mainWindow, instance)) {
 			MessageBoxA(g_mainWindow, (const char *)0x751624, (const char *)0x7510a4, 0);
@@ -247,9 +246,9 @@ int (app_checkCdAndLoad)(void *instance)
 		}
 	}
 	if (!sound_init(g_mainWindow))
-		GAME_VAR(int, 0xa0e80c) = 0;
+		g_soundOn = 0;
 	else {
-		GAME_VAR(int, 0xa0e80c) = 1;
+		g_soundOn = 1;
 		sound_loadMenuSounds();
 	}
 	GAME_VAR(int, 0x4ded68) = 0x136;
@@ -301,10 +300,10 @@ int (app_checkCdAndLoad)(void *instance)
 	set_colour_bits((Colour *)0x76d350, 0, 0, 0, 0x3f800000);
 	int width = GAME_VAR(int, 0x5b1998), height = GAME_VAR(int, 0x4e045c);
 	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5 */
-	GAME_VAR(float, 0x680bac) = f32(fmul_m((long double)width, (const float *)0x4a9578));
+	g_menuScaleX = f32(fmul_m((long double)width, (const float *)0x4a9578));
 	GAME_VAR(int, 0x4e1520) = width / 2;
 	GAME_VAR(int, 0x76d474) = 0;
-	GAME_VAR(float, 0x4df014) = f32(fmul_m((long double)height, (const float *)0x4a9574));
+	g_menuScaleY = f32(fmul_m((long double)height, (const float *)0x4a9574));
 	GAME_VAR(int, 0x4df900) = 0;
 	GAME_VAR(int, 0x680394) = height / 2;
 	GAME_VAR(u32, 0x4dd96c) = 0;

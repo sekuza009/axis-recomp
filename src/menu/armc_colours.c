@@ -6,7 +6,6 @@
 
 #define g_armcColours ((float *)0x4dc4b8)       /* six values per slot */
 #define g_sliderLeft GAME_VAR(int, 0x4dcc98)
-#define g_coloursChanged GAME_VAR(int, 0x4dca98)
 
 static long double slider_pos(void)
 {

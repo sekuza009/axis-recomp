@@ -166,7 +166,7 @@ void (menu_restoreCamera)(void)
 	GAME_VAR(int, 0x4df02c) = GAME_VAR(int, 0x4df878);
 	GAME_VAR(int, 0x680378) = GAME_VAR(int, 0x76d388);
 	GAME_VAR(int, 0x68037c) = GAME_VAR(int, 0x76d38c);
-	GAME_VAR(int, 0x680380) = GAME_VAR(int, 0x76d390);
+	g_menuCameraHeight = GAME_VAR(int, 0x76d390);
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
@@ -212,12 +212,12 @@ void (roomList_nextPage)(void)
 /* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in 0x9dd300), its distance limit back to 10,000,000 */
 void (roomList_cycleMode)(void)
 {
-	int mode = GAME_VAR(int, 0x9dd1d0);
+	int mode = g_rankingSort;
 	g_roomListPrev = mode;
 	room_pageChanged();
 	g_roomListPrevRank = 0;
 	g_roomListDistanceLimit = 0x4b189680;   /* 10000000.0f */
-	GAME_VAR(int, 0x9dd1d0) = (mode + 1) % 3;
+	g_rankingSort = (mode + 1) % 3;
 }
 
 /* the value a row is ranked by in mode (0x9dd1d0): 0 a float at +0x3e, 1 an int at +0x2e, 2 an int at +0x26, 3 a
@@ -266,7 +266,7 @@ void (roomList_fillPage)(void)
 		strcpy((char *)(row + 8), (const char *)player);
 		for (int k = 0; k < 7; k++)
 			*(u32 *)(row + dst[k]) = *(const u32 *)(player + src[k]);
-		int mode = GAME_VAR(int, 0x9dd1d0), rank;
+		int mode = g_rankingSort, rank;
 		if (i == 0) {
 			before = GAME_VAR(float, 0x9dd384);
 			rank = g_roomListPrevRank;
@@ -326,7 +326,6 @@ void (skirmish_clickRow)(int row)
 
 /* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
    pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
-#define undo_depth GAME_VAR(int, 0x9f1060)
 #define undo_stack ((int *)0x9eeadc)
 #define undo_value GAME_VAR(int, 0x9eeba4)
 #define undo_step GAME_VAR(int, 0x9ef1f4)
@@ -336,8 +335,8 @@ void (skirmish_clickRow)(int row)
 void (undo_push)(void)
 {
 	if (undo_pending) {
-		int d = undo_depth;
-		undo_depth = d + 1;
+		int d = g_undoDepth;
+		g_undoDepth = d + 1;
 		undo_value = undo_stack[d] - 1 + undo_step;
 		undo_step = 0;
 		undo_stack[d + 1] = undo_value;
@@ -349,13 +348,13 @@ void (undo_push)(void)
 /* 0x443de0: one step undone */
 void (undo_pop)(void)
 {
-	if (undo_depth > 0) {
-		undo_depth--;
-		undo_value = undo_stack[undo_depth];
+	if (g_undoDepth > 0) {
+		g_undoDepth--;
+		undo_value = undo_stack[g_undoDepth];
 		memset((void *)0x9f1064, 0, 1600);
 		undo_step = 0;
 		undo_pending = 0;
-		GAME_VAR(int, 0x9f105c) = 0;
+		g_briefingDone = 0;
 	}
 }
 
@@ -381,7 +380,7 @@ void (skirmish_settingsArrowClick)(void)
 			return;
 		}
 	}
-	GAME_VAR(int, 0x9ef1f8) = 10;
+	g_settingsPage = 10;
 }
 
 /* ---- leaving the skirmish settings (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
@@ -395,7 +394,7 @@ static u32 leave_settings(u32 state)
 	GAME_VAR(int, 0x4df028) = 0;
 	GAME_VAR(u32, 0x4df02c) = 0x44c80000;   /* 1600 */
 	GAME_VAR(int, 0x68037c) = 0;
-	GAME_VAR(int, 0x680380) = 0;
+	g_menuCameraHeight = 0;
 	sound_playMenu(4);
 	return put_camera_back();
 }
@@ -409,13 +408,13 @@ u32 (room_leaveKeys)(void)
 	u32 r = input_justPressed(GAME_VAR(int, 0x4e1510));
 	if (r == 1) {
 		r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
-		GAME_VAR(int, 0x9dd6c4) = 1;
+		g_roomPopup = 1;
 		return r;
 	}
 	r = input_justPressed(GAME_VAR(int, 0x4e0cdc));
 	if (r == 1) {
 		r = GAME_CDECL(0x41e760, u32, int)(0);
-		GAME_VAR(int, 0x9dd6c4) = 2;
+		g_roomPopup = 2;
 	}
 	return r;
 }
@@ -427,16 +426,16 @@ u32 (menuState900_skirmishSetup)(void)
 {
 	if (GAME_VAR(int, 0x9eeba8))
 		menu_drawBackground();
-	if (GAME_VAR(int, 0x9ef1f0) != 2)
+	if (g_settingsState != 2)
 		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_drawTunnel */
 	GAME_CDECL(0x444130, void, void)();       /* skirmish_camera: the camera */
-	int state = GAME_VAR(int, 0x9ef1f0);
+	int state = g_settingsState;
 	if (state == 1 || state == 0)
 		return state;
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9f16a8), GAME_VAR(int, 0x9f16ac),
 		                                                     GAME_VAR(int, 0x9f16b0), GAME_VAR(int, 0x9f16b4));   /* menu_drawFrame */
-	int screen = GAME_VAR(int, 0x9ef1f8);
+	int screen = g_settingsPage;
 	if (screen == 10)
 		return GAME_CDECL(0x445bc0, u32, void)();   /* skirmish_drawScreenA */
 	if (screen == 20)
@@ -451,7 +450,7 @@ u32 (skirmish_settingsKeys)(void)
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1)
 		return 1;
 	if (input_justPressed(GAME_VAR(int, 0x4e0cdc)) == 1 || input_justPressed(GAME_VAR(int, 0x76d48c)) == 1) {
-		GAME_VAR(int, 0x9ef1f8) = 10;
+		g_settingsPage = 10;
 		return 1;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1)
@@ -477,7 +476,7 @@ u32 (mission_choose)(void)
 	g_fragLimit = b;
 	g_timeLimit = c;
 	u32 r = GAME_CDECL(0x447960, u32, void)();   /* missionSettings_leave: the settings left */
-	GAME_VAR(int, 0x67ef14) = 1;
+	g_quitAsked = 1;
 	g_matchMode = 3;
 	return r;
 }
@@ -576,14 +575,14 @@ u32 (mapSelect_drawNames)(void)
 	u32 r = 0;
 	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
 		set_colour_bits((Colour *)0x76d438, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
-		int map = GAME_VAR(int, 0x9dd92c) + i;
+		int map = g_mapSelectFirst + i;
 		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
 			set_colour_bits((Colour *)0x9da480, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
 			menu_drawRect(GAME_VAR(int, 0x9dd908) + 0x20, GAME_VAR(int, 0x9dd90c) + dy + 0x2b, GAME_VAR(int, 0x9dd910) - 0x50,
 			              GAME_VAR(int, 0x9dd90c) + dy + 0x3d, 1);
 			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
-		map = GAME_VAR(int, 0x9dd92c) + i;
+		map = g_mapSelectFirst + i;
 		r = GAME_CDECL(0x402620, u32, int, int, const char *)(GAME_VAR(int, 0x9dd908) + 0x28, GAME_VAR(int, 0x9dd90c) + dy + 0x2c,
 		                                                      (const char *)(0x9dda88 + map * 0x44));   /* text_draw8 */
 	}
@@ -661,7 +660,7 @@ u32 (mainmenu_startNetGame)(void)
 	}
 	if (!g_keyEnter)
 		return 0;
-	int launched = GAME_VAR(int, 0x9dae10);
+	int launched = g_tunnelRings;
 	if (launched <= 0)
 		return launched;
 	GAME_VAR(float, 0x4dda44) = 0.0f;
@@ -684,7 +683,7 @@ u32 (mainmenu_processKeys)(void)
 			menu_choice(i, &r);
 			return r;
 		}
-	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && GAME_VAR(int, 0x9dae10) > 0) {
+	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && g_tunnelRings > 0) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
 		input_setKeysBlocked(4);
 		g_enteringMenus = 1;

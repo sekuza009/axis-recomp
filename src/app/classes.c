@@ -94,7 +94,7 @@ float (FUN_00468700)(void) { return GAME_VAR(float, 0x4c4df4); }
 /* ---- setters ---- */
 void (armc_showPartsPage)(void) { g_armcMode = 1; GAME_VAR(int, 0x4dc788) = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
-void (set_a61708_46f090)(int v) { GAME_VAR(int, 0xa61708) = v; GAME_VAR(int, 0xa21704) = 0; GAME_VAR(int, 0xaa268c) = 0; }
+void (set_a61708_46f090)(int v) { GAME_VAR(int, 0xa61708) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (input_setKeysBlocked)(int v) { g_keysBlocked = v; return v; }
 int (set_4b42dc_457140)(int v) { GAME_VAR(int, 0x4b42dc) = v; return v; }
 

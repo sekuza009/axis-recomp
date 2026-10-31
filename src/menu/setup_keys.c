@@ -8,7 +8,6 @@
 #define TAB_CONTROL 2
 #define TAB_TOP 0x29a
 
-#define g_setupPage GAME_VAR(int, 0x4ddcec)           /* (by use) the open page's state: 0 and 1 closed */
 #define g_soundEdited ((const int *)0x4dde98)         /* the sound tab's values being edited (the menu sounds' volume first) */
 #define g_soundSettings ((int *)0x4e0c90)             /* the sound settings in use */
 #define g_graphicEdited ((const u32 *)0x4ddba0)       /* the graphics tab's seven values being edited */
@@ -53,7 +52,7 @@ static void leave(void)
    back to the main menu */
 void (setup_topPageKeys)(void)
 {
-	if (input_justPressed(g_keyCancel2) && GAME_VAR(int, 0x9dae10) > 0) {
+	if (input_justPressed(g_keyCancel2) && g_tunnelRings > 0) {
 		leave();
 	} else if (input_justPressed(GAME_VAR(int, 0x4e1524)) == 1) {
 		sound_playMenu(0);
@@ -178,9 +177,9 @@ void (setup_selectControlTab)(void)
 {
 	memcpy((void *)0x4de0c0, (void *)0x4def00, 0x44 * 4);   /* the key bindings */
 	g_setupTab = TAB_CONTROL;
-	GAME_VAR(int, 0x4ddce8) = 0;
+	g_bindPage = 0;
 	GAME_VAR(int, 0x4de040) = -1;
-	GAME_VAR(int, 0x4dddc8) = 0;
+	g_bindWaiting = 0;
 	g_lastCrosshair = -1;
 	tab_opened();
 }
@@ -250,7 +249,7 @@ u32 (setup_drawTopPage)(void)
 	int right = g_keyEnter;
 	if (!right)
 		return 0;
-	int allowed = GAME_VAR(int, 0x9dae10);
+	int allowed = g_tunnelRings;
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
@@ -306,22 +305,21 @@ u32 (setup_drawGraphicTab)(void)
 
 /* ---- the sound tab's mouse: the volume (g_soundEdited[0], 0 .. 100; 0x4dde90 the arrow last used, 0x4ddb98 its
    glow) ---- */
-#define g_volume GAME_VAR(int, 0x4dde98)
 
 static void volume_down(void)
 {
-	if (g_volume > 0) {
+	if (g_volumeSetting > 0) {
 		GAME_VAR(int, 0x4dde90) = 0;
-		g_volume--;
+		g_volumeSetting--;
 		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;   /* 5 */
 	}
 }
 
 static void volume_up(void)
 {
-	if (g_volume < 100) {
+	if (g_volumeSetting < 100) {
 		GAME_VAR(int, 0x4dde90) = 1;
-		g_volume++;
+		g_volumeSetting++;
 		GAME_VAR(u32, 0x4ddb98) = 0x40a00000;
 	}
 }
@@ -329,7 +327,7 @@ static void volume_up(void)
 /* the slider set where the pointer is (its track 0x90 in from the page, 0x4ddad0) */
 static void volume_at_pointer(void)
 {
-	g_volume = 1 - ftol(fmul_m((long double)(g_mouseX - GAME_VAR(int, 0x4ddad0) - 0x90), (const float *)0x4a94f0));
+	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - GAME_VAR(int, 0x4ddad0) - 0x90), (const float *)0x4a94f0));
 }
 
 /* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
@@ -373,12 +371,9 @@ void (setup_drawSoundTab)(void)
 	case 2: volume_at_pointer(); break;
 	}
 }
-#undef g_volume
 
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
-#define g_bindWaiting GAME_VAR(int, 0x4dddc8)         /* the selected row waits for its new key */
 #define g_bindRow GAME_VAR(int, 0x4de040)
-#define g_bindPage GAME_VAR(int, 0x4ddce8)
 #define g_bindRows ((const int *)0x4b04ec)            /* rows per page */
 #define g_bindToggle GAME_VAR(int, 0x4de1c0)          /* row 10's setting (on / off) */
 
@@ -548,7 +543,7 @@ void (setup_drawKeyBindingRows)(int key)
 	if (key == g_excludedKey)
 		return;
 	setup_unbindKey(key);
-	int page = GAME_VAR(int, 0x4ddce8), row = GAME_VAR(int, 0x4de040);
+	int page = g_bindPage, row = GAME_VAR(int, 0x4de040);
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
 		int *slot = (int *)(0x4de0c0 + binding * 8), none = GAME_VAR(int, 0x4df8e4);

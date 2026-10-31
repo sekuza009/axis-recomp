@@ -22,7 +22,7 @@ u32 (arena_freeBuffers)(void)
 /* 0x456cd0: with sound on (0xa0e80c), every loaded sound buffer (0xa0e02c .. 0xa0e66c) deleted */
 u32 (sound_freeAll)(void)
 {
-	if (!GAME_VAR(int, 0xa0e80c))
+	if (!g_soundOn)
 		return 0;
 	u32 r = 0;
 	for (u32 p = 0xa0e02c; p < 0xa0e66c; p += 4) {

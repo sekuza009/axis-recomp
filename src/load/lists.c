@@ -40,5 +40,5 @@ u32 (tunnel_appendRing)(u8 **head)
 		FIELD(u8 *, node, 0x3530) = last;
 	}
 	FIELD(u8 *, node, 0x3534) = 0;
-	return FUN_00440e20(node, GAME_VAR(int, 0x9dae10));
+	return FUN_00440e20(node, g_tunnelRings);
 }

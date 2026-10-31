@@ -188,8 +188,8 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		x += pass->wide;
 	}
 	if (!pass->korean) {
-		GAME_VAR(int, 0x4d23c8) = x;
-		GAME_VAR(int, 0x4d23cc) = y;
+		g_textEndX = x;
+		g_textEndY = y;
 	}
 	u32 r = IMPORT(0x4a9220, u32, void)();   /* glEnd */
 	return pass->untexture ? IMPORT(0x4a922c, u32, u32)(0xde1) : r;   /* glDisable(GL_TEXTURE_2D) */

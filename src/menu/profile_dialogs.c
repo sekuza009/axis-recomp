@@ -340,7 +340,6 @@ void (profile_drawPilotSelect)(void)
 #define g_pilot GAME_VAR(int, 0x9f8d30)
 #define g_reveal GAME_VAR(int, 0x9f6828)
 #define g_frameAlpha GAME_VAR(float, 0x9f8f08)
-#define g_frameStep GAME_VAR(u32, 0x9f8c48)
 #define g_revealClock GAME_VAR(float, 0x9f8ee4)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
@@ -410,12 +409,12 @@ void (profile_drawPilotSelect)(void)
 	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a9550)));
 	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y1);
 	glEnd();
-	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_frameStep), &g_frameAlpha);
+	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_profileFrameStep), &g_frameAlpha);
 	g_frameAlpha = f32(pulse);
 	if (!(pulse > *K(0x4a93fc)))
-		g_frameStep = 0x3f800000;   /* 1 */
+		g_profileFrameStep = 0x3f800000;   /* 1 */
 	if (pulse >= *K(0x4a93f8))
-		g_frameStep = 0xbf800000;   /* -1 */
+		g_profileFrameStep = 0xbf800000;   /* -1 */
 	if (g_reveal < 8) {
 		long double clock = fadd_m(fld_m(&g_revealClock), K(0x4b071c));
 		g_revealClock = f32(clock);
@@ -454,7 +453,6 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
 #undef g_revealClock
-#undef g_frameStep
 #undef g_frameAlpha
 #undef g_reveal
 #undef g_pilot
@@ -473,7 +471,7 @@ void (profile_drawChosenPilot)(void)
 {
 #define X0 GAME_VAR(int, 0x9f8e48)
 #define Y0 GAME_VAR(int, 0x9f8e4c)
-	if (GAME_VAR(int, 0x9f9008) <= 0)
+	if (g_profileCount <= 0)
 		return;
 	int pilot = *(const int *)(0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
 	g_chosenPilot = pilot;

@@ -48,7 +48,7 @@ void (setup_drawSoundPage)(void)
 	tex_quad(0.0f, 0.25f, 0.25f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70);      /* the arrows */
 	tex_quad(0.25f, 0.25f, 0.5f, 0.375f, X0 + 0x190, Y0 + 0x50, X0 + 0x1d0, Y0 + 0x70);
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x90, Y0 + 0x50, X0 + 0x190, Y0 + 0x70);       /* the track */
-	long double volume = (long double)GAME_VAR(int, 0x4dde98);
+	long double volume = (long double)g_volumeSetting;
 	float s = f32(fmul_m(volume, (const float *)0x4a9504));
 	int x = X0 - ftol(fmul_m(volume, (const float *)0x4a9500)) + 0x90;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x90, Y0 + 0x50, x, Y0 + 0x70);                  /* the bar */
@@ -316,7 +316,7 @@ void (setup_crosshairScreen)(void)
 	set_colour_bits((Colour *)0x76d438, dim[0], dim[1], dim[2], dim[3]);
 	for (int k = 0; k < 4; k++)
 		text_draw16(X0 + 0x46 + k * 0x78, Y0 + 0x12, (const char *)(0x754324 + k * 0x80));
-	int editing = GAME_VAR(int, 0x4dddc8), tab = GAME_VAR(int, 0x4ddce8);
+	int editing = g_bindWaiting, tab = g_bindPage;
 	int over_row = hovered > 6 && hovered < 18;
 	if (over_row && !editing) {
 		g_row = hovered - 7;
@@ -365,7 +365,6 @@ void (setup_crosshairScreen)(void)
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
 #define g_tunnelAlpha GAME_VAR(float, 0x4de038)
 #define g_tunnelPulse GAME_VAR(float, 0x9db978)       /* bounces 0 .. 100 */
-#define g_tunnelPulseStep GAME_VAR(u32, 0x4df010)
 #define g_scroll GAME_VAR(float, 0x4e14fc)      /* runs 0 .. 200 */
 
 /* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), h either side of the floor, two quads either
@@ -460,10 +459,10 @@ void (setup_drawTunnel)(void)
 	const float *frame = (const float *)0x4b071c;
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
-	if (GAME_VAR(int, 0x4ddcec) == 1)
+	if (g_setupPage == 1)
 		g_tunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_tunnelAlpha), (const float *)0x4a94fc), frame),
 		                                   (const float *)0x4a93ec), &g_tunnelAlpha));
-	else if (GAME_VAR(int, 0x4ddcec) == 0)
+	else if (g_setupPage == 0)
 		g_tunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)0x4a942c), &g_tunnelAlpha), frame),
 		                                  (const float *)0x4a93ec), &g_tunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_tunnelAlpha);
@@ -803,7 +802,7 @@ void (setup_drawMenu)(void)
 	Highlight h = { hovered_panel(0x4df918, 4, g_setupPanelMoving), white, 1, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4ddd90), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
-	if (h.on != -1 && GAME_VAR(int, 0x4ddcec) == 2 && !GAME_VAR(int, 0x680370))
+	if (h.on != -1 && g_setupPage == 2 && !GAME_VAR(int, 0x680370))
 		caption(0x7506a4, h.on);
 }
 /* 0x442050: the main menu: the panel under the pointer (six, 0x4deb80; none while the tunnel flies in, 0x9eeaa8, or
@@ -883,7 +882,6 @@ void (menu_mainMenu)(void)
 #undef SIX_WALLS
 #undef FOUR_WALLS
 #undef g_scroll
-#undef g_tunnelPulseStep
 #undef g_tunnelPulse
 #undef g_tunnelAlpha
 

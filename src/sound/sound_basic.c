@@ -15,7 +15,6 @@ typedef struct {
 	i32 slotB[8];
 } Sound;                 /* 100 bytes */
 
-#define g_soundOn GAME_VAR(int, 0xa0e80c)             /* (by use) 1: sound works */
 #define g_menuSounds ((Sound *const *)0x4dd4d4)
 #define g_music GAME_VAR(void *, 0xa0e670)            /* the music graph */
 
@@ -67,7 +66,7 @@ void (music_shutdown)(void)
    original leaves in eax */
 int (sound_setVolume)(int v)
 {
-	if (!GAME_VAR(int, 0xa0e80c))
+	if (!g_soundOn)
 		return 0;
 	int p = ftol(fmul_m((long double)g_soundVolume * v, (const float *)0x4a9504));
 	if (p < 0) {
@@ -146,7 +145,7 @@ u32 (sound_loadMenuSounds)(void)
    what the original leaves in eax */
 u32 (sound_playFile)(const char *name, int volume)
 {
-	if (!GAME_VAR(int, 0xa0e80c))
+	if (!g_soundOn)
 		return 0;
 	char copy[0x104];
 	strcpy(copy, name);
@@ -170,7 +169,7 @@ u32 (sound_playFile)(const char *name, int volume)
    until a negative index. A missing file is a fatal error. Returns 1 (0 with sound off) */
 int (sound_initSoundTable)(const char *file, int volume)
 {
-	if (!GAME_VAR(int, 0xa0e80c))
+	if (!g_soundOn)
 		return 0;
 	GAME_CDECL(0x456cd0, void, void)();   /* sound_freeAll */
 	GAME_CDECL(0x456de0, int, int)(volume);   /* sound_setVolume */
@@ -218,7 +217,7 @@ u32 (sound_playVolume)(int index, int volume)
    Nothing out of range or with sound off. The callers ignore the eax it leaves */
 void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
 {
-	if (!GAME_VAR(int, 0xa0e80c) || !GAME_VAR(void *, 0xa0e02c + index * 4))
+	if (!g_soundOn || !GAME_VAR(void *, 0xa0e02c + index * 4))
 		return;
 	const float *up = (const float *)0xa0e7d8;
 	float d[3], v[3], c[3];
@@ -294,7 +293,7 @@ Sound *(sound_loadWav)(const char *name)
 	Sound *sound = operator_new(100);
 	ReadFile(file, data, size, &done, NULL);
 	CloseHandle(file);
-	void *ds = GAME_VAR(void *, 0xa0e804);
+	void *ds = g_directSound;
 	if (COM(ds, DS_CREATESOUNDBUFFER, long, void *, void **, void *)(ds, &desc.size, &sound->buffers[0], NULL)) {
 		MessageBoxA(NULL, (const char *)0x4c4dc4, (const char *)0x4c4de0, 0);
 		return NULL;
@@ -309,7 +308,7 @@ Sound *(sound_loadWav)(const char *name)
 		sound->slotB[i] = 0;
 	}
 	for (int i = 0; i < 8; i++) {
-		ds = GAME_VAR(void *, 0xa0e804);
+		ds = g_directSound;
 		COM(ds, DS_DUPLICATESOUNDBUFFER, long, void *, void **)(ds, sound->buffers[0], &sound->buffers[i]);
 	}
 	operator_delete(data);
@@ -323,7 +322,7 @@ int (sound_init)(void *hwnd)
 {
 	if (((int (STDCALL *)(void *, void **, void *))0x4a82e6)(NULL, (void **)0xa0e804, NULL))   /* DirectSoundCreate */
 		return 0;
-	void *ds = GAME_VAR(void *, 0xa0e804);
+	void *ds = g_directSound;
 	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
 		return 0;
 	struct { u16 format, channels; u32 rate, bytesPerSecond; u16 blockAlign, bits, extra; } wave;   /* WAVEFORMATEX */
@@ -338,19 +337,19 @@ int (sound_init)(void *hwnd)
 	wave.blockAlign = 4;
 	wave.bits = 16;
 	wave.extra = 0;
-	ds = GAME_VAR(void *, 0xa0e804);
+	ds = g_directSound;
 	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)0xa0e808, NULL))   /* CreateSoundBuffer */
 		return 0;
 	void *primary = g_primarySoundBuffer;
 	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
 	primary = g_primarySoundBuffer;
 	if (COM(primary, 0x30, int, u32, u32, u32)(primary, 0, 0, 1)) {   /* Play, looping */
-		ds = GAME_VAR(void *, 0xa0e804);
+		ds = g_directSound;
 		COM(ds, COM_RELEASE, u32)(ds);
-		GAME_VAR(void *, 0xa0e804) = NULL;
+		g_directSound = NULL;
 		return 0;
 	}
-	GAME_VAR(int, 0xa0e80c) = 1;
+	g_soundOn = 1;
 	return 1;
 }
 

@@ -246,7 +246,7 @@ leave:
    an empty function). The caller ignores the eax it leaves */
 void (armc_processInput)(void)
 {
-	int mode = GAME_VAR(int, 0x4dc790);
+	int mode = g_armcState;
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
 		return;
 	if (input_isDown(GAME_VAR(int, 0x6803a8)) && input_isDown(GAME_VAR(int, 0x9da4a0)) && input_justPressed(GAME_VAR(int, 0x4e1508))) {

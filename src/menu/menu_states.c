@@ -4,13 +4,10 @@
 #include "key_repeat.h"
 
 #define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)      /* the background tunnel's first ring */
-#define g_settingsPage GAME_VAR(int, 0x9ef1f8)        /* (by use) 10 the skirmish settings, 20 the mission settings */
-#define g_settingsState GAME_VAR(int, 0x9ef1f0)       /* (by use) 0 and 1: the page is not up */
 #define g_missionState GAME_VAR(int, 0x9f62f8)        /* (by use) the mission select: 0 and 1 not up */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionBriefing GAME_VAR(int, 0x9f62e0)     /* (by use) a mission's briefing is shown */
 #define g_mission GAME_VAR(int, 0x9f63b4)             /* the mission chosen, 0 .. 14 */
-#define g_quitAsked GAME_VAR(int, 0x67ef14)           /* (by use) 1: the quit question is up */
 
 /* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
    0x76d350, blended ---- */
@@ -67,7 +64,7 @@ static void bar_column(int x, float r, float g, float b)
 int (frontEnd_drawProgress)(void)
 {
 	draw_logo(0);
-	int n = GAME_VAR(int, 0x4dda34) * 16;
+	int n = g_loadStep * 16;
 	for (int i = 0; i < n && i < 200; i++) {
 		long double f = (long double)i;
 		float r = f32(fsubr_m(fmul_m(f, K(0x4a9404)), K(0x4a9424)));   /* 1 - i * 0.005 */
@@ -101,24 +98,24 @@ void (menuState100_intro)(void)
 {
 	GAME_VAR(int, 0x4df01c) = 0;
 	GAME_VAR(int, 0x4e0458) = 0;
-	GAME_VAR(int, 0x4dda34) = 0;
+	g_loadStep = 0;
 	draw_logo(1);
 	glFinish();
 	SwapBuffers(g_desktopDC);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
-	GAME_VAR(int, 0x4dda34)++;
+	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(5.0);
 	tunnel_rebuild();
-	GAME_VAR(int, 0x4dda34)++;
+	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(2.0);
 	menu_loadIntroTextures();
 	frontEnd_startUp();
-	GAME_VAR(int, 0x4dda34)++;
+	g_loadStep++;
 	frontEnd_drawProgress();
 	nullsub_48b420(NULL);   /* (an empty function) */
-	GAME_VAR(int, 0x4dda34)++;
+	g_loadStep++;
 	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
@@ -126,7 +123,7 @@ void (menuState100_intro)(void)
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
 	GAME_VAR(u32, 0x4deda8) = 0x3f800000;   /* 1.0 */
-	GAME_VAR(u32, 0x4df010) = 0x3f800000;
+	g_tunnelPulseStep = 0x3f800000;
 	GAME_VAR(int, 0x4ded68) = 0x136;
 	GAME_VAR(int, 0x4ded6c) = 0xe6;
 	music_play((const char *)0x4b01cc);   /* "music/Netsphere.mp3" */
@@ -361,18 +358,17 @@ void (mapSelect_ok)(void)
 }
 
 /* ---- the map-select dialog's list: 10 rows shown from map 0x9dd92c of the 0x9dd928 ---- */
-#define g_mapFirst GAME_VAR(int, 0x9dd92c)
 static void maps_up(void)
 {
-	if (g_mapFirst > 0) {
-		g_mapFirst--;
+	if (g_mapSelectFirst > 0) {
+		g_mapSelectFirst--;
 		sound_playMenu(2);
 	}
 }
 static void maps_down(void)
 {
-	if (g_mapFirst + 10 < g_mapSelectCount) {
-		g_mapFirst++;
+	if (g_mapSelectFirst + 10 < g_mapSelectCount) {
+		g_mapSelectFirst++;
 		sound_playMenu(2);
 	}
 }
@@ -442,7 +438,7 @@ void (mapSelect_mouse)(void)
 			g_mainMenuPicked = 0;
 		else if (on >= 8 && on < 18) {
 			sound_playMenu(2);
-			mapSelect_toggle(g_mapFirst + on - 8);
+			mapSelect_toggle(g_mapSelectFirst + on - 8);
 		}
 	}
 	if (!g_mouseHeld)
@@ -468,7 +464,7 @@ void (menuState210_frame)(void)
 		return;
 	}
 	menu_drawBackground();
-	if (GAME_VAR(float, 0x4dda48) > GAME_VAR(float, 0x4a93e8))
+	if (g_introZoom > GAME_VAR(float, 0x4a93e8))
 		return;
 	static const signed char fields[9] = { -8, 0, 4, -4, 12, 8, 16, 24, 20 };   /* in the order checked */
 	for (u32 rec = 0x9f9070; rec < 0x9f931c; rec += 0x4c)
@@ -542,7 +538,7 @@ int (room_slideMenu)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
    the player slots (0x410 bytes from 0x9f9840) emptied ---- */
 static void leave_game(u32 lobby, int disconnect)
 {
-	GAME_VAR(int, 0x67ef14) = 0;
+	g_quitAsked = 0;
 	GAME_VAR(u32, 0x5ae9c4) = lobby;
 	GAME_CDECL(0x452fe0, void, void)();       /* arena_leaveSession */
 	if (disconnect)
@@ -628,7 +624,7 @@ u32 (game_returnToMenus_41e9d0)(void)
 u32 (game_returnToMenus_41eb00)(void)
 {
 	leave_game(2, 0);
-	GAME_VAR(int, 0x9dd834) = 0x63;
+	g_roomState = 0x63;
 	GAME_VAR(int, 0x76d3e8) = 800;
 	g_nextScreen = 800;
 	GAME_VAR(int, 0x67ef0c) = 800;

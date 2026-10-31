@@ -146,7 +146,7 @@ void (armc_drawColourEditor)(void)
 		else
 			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(0x756aa4 + k * 0x80));
 	}
-	if (GAME_VAR(int, 0x4dbc68)) {
+	if (g_armcPreview) {
 		static const u32 names[5] = { 0x4dceb8, 0x4dbc08, 0x4dc250, 0x4dc1e8, 0x4dce40 };
 		TEXT(bright);
 		for (int k = 0; k < 5; k++)
@@ -281,7 +281,7 @@ void (armc_drawBuildScreen)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, g_buildSlot == k ? 1.0f : 0.4f);
 		menu_drawTexQuad_4282f0(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
 	}
-	if (GAME_VAR(int, 0x4dcc64))
+	if (g_armcChanged)
 		armc_snapshot(g_buildSlot);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -367,7 +367,7 @@ void (armc_drawBuildScreen)(void)
 	itoa(STAT(int, 0x14), value, 10);
 	static const u32 skill[5] = { 0x9f9068, 0x9f9068, 0x9f906c, 0x9f9070, 0x9f9074 };   /* by kind; above 3 the last */
 	int kind_of = (unsigned)STAT(int, 4) <= 3 ? STAT(int, 4) : 4;
-	long double b = fmul_m((long double)*(const int *)(skill[kind_of] + GAME_VAR(int, 0x9f1818) * 0x4c), (const float *)0x4a9420);
+	long double b = fmul_m((long double)*(const int *)(skill[kind_of] + g_armcValue * 0x4c), (const float *)0x4a9420);
 	b *= (long double)STAT(int, 0x14);
 	if (b >= *(const float *)0x4a93e8)
 		sprintf(bonus, (const char *)0x4b02f0, ftol(b));   /* " +%d" */

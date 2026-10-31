@@ -246,7 +246,6 @@ void (menu_drawBackground3D)(TunnelRing *first)
 }
 
 #define g_tunnel GAME_VAR(TunnelRing *, 0x67fb3c)   /* the first ring */
-#define g_tunnelRings GAME_VAR(int, 0x9dae10)
 
 /* 0x441190: the last ring of the chain at *head taken off and freed (free's result) */
 u32 (tunnel_removeLastRing)(TunnelRing **head)
@@ -408,7 +407,7 @@ void (armc_enter)(TunnelRing *ring)
 		ringLength = 0x3b6;
 		EYE[0] = EYE[1] = LOOK[0] = LOOK[1] = 0.0f;
 	}
-	if (GAME_VAR(int, 0x67ef14))
+	if (g_quitAsked)
 		ringLength = 0x898;
 	TunnelRing *r = ring;
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
@@ -442,7 +441,7 @@ void (armc_enter)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(GAME_VAR(int, 0x67ef14) ? 0x4a95c8 : 0x4a95c4)));
+				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? 0x4a95c8 : 0x4a95c4)));
 			else
 				r->turn = f32(fadd_m(fld_m(&r->turn), (const float *)0x4a95c4));
 			r->moveSteps = 0;

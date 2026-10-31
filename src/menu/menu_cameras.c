@@ -525,7 +525,7 @@ void (match_debugHandler)(void)
 	F(0x4df02c) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c8)), (const float *)0x4a9560), &F(0x4de34c)));
 	F(0x68037c) = f32(fadd_m(fld_m(&F(0x4de6c4)), &F(0x4de348)));
 	if (input_justPressed(GAME_VAR(int, 0x680388)) == 1)
-		GAME_VAR(int, 0x4e0464) = GAME_VAR(int, 0x4e0464) == 1 ? 2 : 1;
+		g_fovKeys = g_fovKeys == 1 ? 2 : 1;
 	if (input_justPressed(GAME_VAR(int, 0x4e0468)) == 1)
 		g_debugValue++;
 	if (input_justPressed(GAME_VAR(int, 0x4e046c)) == 1)
