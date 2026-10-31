@@ -275,6 +275,14 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	fprintf(g_log, "%d of %d rebuilt functions switched in; starting the game\n", n, g_saNhooks);
 	if (GetEnvironmentVariableA("AXISRC_POISON", NULL, 0))
 		fprintf(g_log, "AXISRC_POISON: %d bytes of the game's own code made int3\n", poison());
+	{	/* the x87 control word the game runs with: Windows starts every thread at 0x027f (53-bit precision), and the
+		   game's runtime never changes it (only __ftol, for a moment); MinGW's start-up code in this exe set 0x037f
+		   (64-bit), which would round the game's x87 maths differently from the original */
+		unsigned short cw = 0x027f, now;
+		__asm__ volatile("fnstcw %0" : "=m"(now));
+		__asm__ volatile("fldcw %0" : : "m"(cw));
+		fprintf(g_log, "x87 control word %04x for the game (was %04x)\n", cw, now);
+	}
 	fclose(g_log);
 	g_log = NULL;
 	((void (*)(void))(GAME_BASE + file_nt()->OptionalHeader.AddressOfEntryPoint))();
