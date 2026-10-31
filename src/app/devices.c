@@ -45,7 +45,7 @@ void (input_releaseKeyboard)(void)
 }
 
 /* 0x401490: the same for the mouse */
-void (wnd_401490)(void)
+void (input_releaseMouse)(void)
 {
 	if (g_mouse != NULL) {
 		COM(g_mouse, DI_UNACQUIRE, long)(g_mouse);
@@ -56,10 +56,10 @@ void (wnd_401490)(void)
 }
 
 /* 0x4014c0: all of DirectInput released */
-void (wnd_4014c0)(void)
+void (input_releaseAll)(void)
 {
 	input_releaseKeyboard();
-	wnd_401490();
+	input_releaseMouse();
 	if (g_directInput != NULL) {
 		COM(g_directInput, COM_RELEASE, long)(g_directInput);
 		g_directInput = NULL;
@@ -67,7 +67,7 @@ void (wnd_4014c0)(void)
 }
 
 /* 0x467b70: DirectSound released */
-void (wnd_467b70)(void)
+void (sound_releaseDirectSound)(void)
 {
 	if (g_directSound != NULL) {
 		COM(g_directSound, COM_RELEASE, long)(g_directSound);

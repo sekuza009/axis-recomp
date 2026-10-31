@@ -25,7 +25,7 @@ static int name_search(u32 count, u32 table, const char *name)
 }
 
 /* 0x466ce0: a shape by name; 0x46b0c0: a skeleton data file by name */
-int (shape_466ce0)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
+int (shape_findByName)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
 int (skelDat_46b0c0)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
@@ -43,7 +43,7 @@ void (path_stripExtension)(const char *src, char *dst)
 
 /* 0x4554c0: a texture manager's name, by binary search of its sorted 0x44-byte records (+0x10c, count +0x108): the
    index or -1. The upper bound starts at the count, not count - 1, as in the original */
-int THISCALL (tex_4554c0)(u8 *self, const u8 *name)
+int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 {
 	int hi = FIELD(int, self, 0x108), lo = 0;
 	if (hi <= 0)
@@ -69,7 +69,7 @@ int THISCALL (tex_4554c0)(u8 *self, const u8 *name)
    0x44-byte record at +0x10c, +0x40); returns the file, or 0 after a fatal message when there is no such item */
 void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 {
-	int i = tex_4554c0(manager, name);
+	int i = tex_findByName(manager, name);
 	if (i < 0) {
 		sys_fatalError((char *)0xa0dff8, (const char *)0x4b3f80, (int)name);
 		return 0;
@@ -201,7 +201,7 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 }
 
 /* 0x4557e0 (thiscall on a texture manager): is the texture name (up to a '*') there in the manager's format (+0xc0114,
-   under its directory +8 when it has one) at its size (+0xc0118 x +0xc011c)? 0: in the dat index (tex_4554c0); 1: a
+   under its directory +8 when it has one) at its size (+0xc0118 x +0xc011c)? 0: in the dat index (tex_findByName); 1: a
    BMP of that size; 2: a RAW whose header (at 6, two shorts in 8-pixel units) gives it; else a fatal message. 1 or
    0, the local image (a BMPRGBFile) closed either way */
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
@@ -224,7 +224,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 		else
 			sprintf(path, (const char *)formats[format][1], base);
 		if (format == 0)
-			ok = tex_4554c0(tm, path) >= 0;
+			ok = tex_findByName(tm, path) >= 0;
 		else if (format == 1) {
 			if (file_exists_46ca70(path)) {
 				image_initBy(image, path);
@@ -410,7 +410,7 @@ static void colour_fill(u8 *m)
 
 /* 0x455aa0 (thiscall on the texture manager): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at
    +0x114, its alpha (alpha_from) and its colour mask at +0x80114 (or colour_fill), by the manager's format +0xc0114:
-   0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_4554c0 / tex_getItemFileBy, the decoder's tables set
+   0 items of the texture dat (name, name_ALPHA, name_COLOR: tex_findByName / tex_getItemFileBy, the decoder's tables set
    up on first use, 0xa0e00c), 1 BMP files (name.BMP must open), 2 PTX files (name.RAW, name_ALPHA.RAW,
    name_COLOR.RAW); a PTX of another size than +0xc0118 x +0xc011c is fatal. (The original's SEH frame, for its BMP
    objects, is not reproduced.) Its callers ignore the eax it leaves */
@@ -435,14 +435,14 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 		ptx_decode(tex_getItemFileBy(m, path), m + 0x114, &bpp, &w, &h);
 		size_check(m, w, h);
 		tex_path(m, path, 0x4b405c, 0x4b4050, name);
-		if (tex_4554c0(m, (const u8 *)path) >= 0) {
+		if (tex_findByName(m, (const u8 *)path) >= 0) {
 			ptx_decode(tex_getItemFileBy(m, path), m + 0x40114, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, 0x4b4044, 0x4b4038, name);
-		if (tex_4554c0(m, (const u8 *)path) >= 0) {
+		if (tex_findByName(m, (const u8 *)path) >= 0) {
 			ptx_decode(tex_getItemFileBy(m, path), m + 0x80114, &bpp, &w, &h);
 			size_check(m, w, h);
 		} else

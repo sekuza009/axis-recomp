@@ -457,14 +457,14 @@ void (mapSelect_mouse)(void)
 	}
 }
 
-/* 0x44f860: the profile screen's frame: while its intro (0x9f6838) runs, quit (profile_44f850); else the background and, once the zoom (0x4dda48)
+/* 0x44f860: the profile screen's frame: while its intro (0x9f6838) runs, quit (app_quitGame); else the background and, once the zoom (0x4dda48)
    is not above 0, the pilot list reloaded for every value of the nine 0x4c-byte pilot stat records (from 0x9f9068)
    that is out of range (above 30, the eighth above 50), then the page (0x9f8f10, 1 .. 6). The original leaves eax
    to callers that ignore it */
 void (menuState210_frame)(void)
 {
 	if (g_profileIntro) {
-		profile_44f850();
+		app_quitGame();
 		return;
 	}
 	menu_drawBackground();
@@ -478,7 +478,7 @@ void (menuState210_frame)(void)
 	static const u32 pages[6] = { 0x44f410, 0x44f4b0, 0x44f5f0, 0x44f6c0, 0x44f740, 0x44f810 };
 	u32 page = GAME_VAR(u32, 0x9f8f10) - 1;
 	if (page <= 5)
-		GAME_CDECL(pages[page], void, void)();   /* profile_44f410 .. profile_44f810 */
+		GAME_CDECL(pages[page], void, void)();   /* profile_frame .. profile_drawScreen */
 }
 
 /* 0x427920: the setup screen's frame: the background, then by tab the screen with its page, or the top page */
@@ -716,7 +716,7 @@ u32 (game_postMatch)(void)
 	GAME_VAR(int, 0x4de6f8) = 1;
 	GAME_VAR(int, 0x5b1dac) = 0;
 	if (GAME_VAR(int, 0x76d410) == 1) {
-		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* profile_41e7a0: quit */
+		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */
 		GAME_VAR(int, 0x76d3e8) = -1;
 		return r;
 	}

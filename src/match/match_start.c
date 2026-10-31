@@ -277,7 +277,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
                        int sextra, u8 *smem, int ssize)
 {
 	shape_initBy(shapes, dir, n, 2, extra, shapes + 0x24c, size);
-	skel_loadFrom_46aeb0(skels, skel_dir, sn, 2, sextra, smem, ssize);
+	skelSet_setup(skels, skel_dir, sn, 2, sextra, smem, ssize);
 }
 
 /* 0x4700a0 (thiscall on the stage): the stage built (its names passed on to object_setNames): the collision space (in its
@@ -385,7 +385,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	const char *dir = (const char *)s + 0x308;
 	shape_initBy(s + 0xe3c93c, dir, 0x190, 2, 0xe54c0, s + 0xe3cb88, 1000000);
 	FIELD(int, s, 0x13016c8) = 0;
-	skel_loadFrom_46aeb0(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
+	skelSet_setup(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
 	static const u32 zero[10] = { 0x131ae40, 0x13c9b24, 0x13c9b28, 0x13c9b2c, 0x13eb000, 0x140c8bc, 0x1447ec0, 0x148646c,
 	                              0x14d1ab0, 0x19e1888 };
 	for (int k = 0; k < 10; k++)
@@ -401,7 +401,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			           parts[k].sextra, type + parts[k].smem, parts[k].ssize);
 	}
 	shape_initBy(s + 0x19e188c, dir, 0x258, 2, 0x2c6280, s + 0x19e1ad8, 0x2dc6c0);
-	skel_loadFrom_46aeb0(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
+	skelSet_setup(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
 	nullsub_48b420((Scene *)s);
 	effect_initTextures(s);
 	static const u32 names[3] = { 0x4c73f4, 0x4c73d8, 0x4c73bc };

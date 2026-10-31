@@ -10,7 +10,7 @@
 #define g_ptxClamp GAME_VAR(u8 *, 0xa1f300)   /* clamp[v]: v limited to 0 .. 255 (v from -0x100) */
 
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
-void (ptx_46e320)(void)
+void (ptx_initClampTable)(void)
 {
 	memset((void *)0xa61b0c, 0, 0x100);
 	g_ptxClamp = (u8 *)0xa61c0c;
@@ -22,7 +22,7 @@ void (ptx_46e320)(void)
 }
 
 /* 0x46e7c0: YCbCr -> RGB, the four per-component tables (Cr to red, Cb and Cr to green, Cb to blue) */
-void (ptx_46e7c0)(void)
+void (ptx_initColourTables)(void)
 {
 	int c = 0x2c8d00, d = (int)0xff4d0b80, s = (int)0xff1daf00, e = 0x5b6900;
 	for (int k = 0; ; k += 4) {
@@ -64,7 +64,7 @@ void (ptx_initTable_46efd0)(void)
 }
 
 /* 0x46e9b0: the two 64-entry quantisation tables (luma, chroma) scaled for quality q */
-void (ptx_46e9b0)(int q)
+void (ptx_initQuantTables)(int q)
 {
 	if (g_ptxQuality == q)
 		return;
@@ -76,7 +76,7 @@ void (ptx_46e9b0)(int q)
 
 /* 0x46e2b0: the dequantisation tables for quality q, with the AAN inverse DCT's scale factors (eight doubles at
    0x4aa2b0) folded in */
-void (ptx_46e2b0)(int q)
+void (ptx_initDequantTables)(int q)
 {
 	typedef long double X;
 	if (g_ptxQuality == q)
@@ -94,9 +94,9 @@ void (ptx_46e2b0)(int q)
 void (ptx_initTables)(void)
 {
 	I32(0xaa2e94) = 0;
-	ptx_46e320();
+	ptx_initClampTable();
 	ptx_initTable_46efd0();
-	ptx_46e2b0(100);
-	ptx_46e7c0();
-	ptx_46e9b0(100);
+	ptx_initDequantTables(100);
+	ptx_initColourTables();
+	ptx_initQuantTables(100);
 }

@@ -34,7 +34,7 @@ void (menu_drawTexQuad_4282f0)(int x0, int y0, int x1, int y1, int lit)
 }
 
 /* 0x4283e0: the profile screen's button */
-void (profile_4283e0)(int x0, int y0, int x1, int y1, int lit)
+void (profile_drawButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.5f, 0.625f, 0.65625f }, lit_[4] = { 0.0f, 0.65625f, 0.625f, 0.8125f };
 	button(x0, y0, x1, y1, lit, plain, lit_);

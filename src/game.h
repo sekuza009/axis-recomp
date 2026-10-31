@@ -191,7 +191,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define bullet_update(scene, i, dt) GAME_THISCALL(0x47a2d0, void, void *, int, int)(scene, i, dt)
 #define particle_update(scene, i, dt) GAME_THISCALL(0x476410, void, void *, int, int)(scene, i, dt)   /* one effect updated */
 #define actor_render(scene, i, dt) GAME_THISCALL(0x490440, void, void *, int, int)(scene, i, dt)
-#define tex_4554c0(manager, name) GAME_THISCALL(0x4554c0, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
+#define tex_findByName(manager, name) GAME_THISCALL(0x4554c0, int, void *, const char *)(manager, name)   /* the item's index by name, < 0 none */
 #define crt_fseek(f, offset, origin) GAME_CDECL(0x49e91e, int, void *, long, int)(f, offset, origin)
 #define Mat4_copy(d, s) GAME_CDECL(0x47d5a0, void, void *, const void *)(d, s)   /* a 4 x 4 matrix copied */
 #define Mat4_multiply(out, a, b) GAME_CDECL(0x47d380, void, float *, const float *, const float *)(out, a, b)
@@ -241,7 +241,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define crt_tolower(c) GAME_CDECL(0x49fdaf, int, int)(c)
 #define shape_read(shape, f, mem, size) GAME_THISCALL(0x466120, void, void *, void *, void *, int)(shape, f, mem, size)
 #define model_loadObjFormatFrom(shape, f, mem, size) GAME_THISCALL(0x464db0, void, void *, void *, void *, int)(shape, f, mem, size)
-#define skel_loadFrom_46aa10(sk, f, mem, size) GAME_THISCALL(0x46aa10, void, void *, void *, void *, int)(sk, f, mem, size)
+#define skel_loadFromFile(sk, f, mem, size) GAME_THISCALL(0x46aa10, void, void *, void *, void *, int)(sk, f, mem, size)
 #define skel_loadAseFrom(sk, f, mem, size) GAME_THISCALL(0x469b90, void, void *, void *, void *, int)(sk, f, mem, size)
 #define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
 #define dplay_454d90(text, word, exact) GAME_CDECL(0x454d90, const char *, const char *, const char *, int)(text, word, exact)
@@ -320,7 +320,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define factors_addPoint(self, colour, dir) GAME_THISCALL(0x483ec0, void, void *, const void *, const void *)(self, colour, dir)
 #define space_initBy(space, planes, nodes, units, blocks, cells, mem, size) GAME_THISCALL(0x4813e0, void, void *, int, int, int, int, int, void *, int)(space, planes, nodes, units, blocks, cells, mem, size)
 #define shape_initBy(self, dir, n, a, extra, mem, size) GAME_THISCALL(0x466a60, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
-#define skel_loadFrom_46aeb0(self, dir, n, a, extra, mem, size) GAME_THISCALL(0x46aeb0, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
+#define skelSet_setup(self, dir, n, a, extra, mem, size) GAME_THISCALL(0x46aeb0, void, void *, const char *, int, u32, int, void *, int)(self, dir, n, a, extra, mem, size)
 #define scene_resetActors(scene) GAME_THISCALL(0x470a70, void, void *)(scene)
 #define scene_reset(scene) GAME_THISCALL(0x470ad0, void, void *)(scene)
 #define effect_initTextures(scene) GAME_THISCALL(0x48ec20, void, void *)(scene)
@@ -431,10 +431,10 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define data_loadMessages() GAME_CDECL(0x42b3e0, void, void)()
 #define input_setDefaultKeyBindings() GAME_CDECL(0x42fd40, void, void)()
 #define cfg_writeDefaultAxisCfg() GAME_CDECL(0x42eca0, void, void)()
-#define app_43f640() GAME_CDECL(0x43f640, void, void)()
+#define app_screenSizeForMode() GAME_CDECL(0x43f640, void, void)()
 #define app_registerWindowClassEx(wc) GAME_CDECL(0x43f840, int, void *)(wc)   /* the class registered on old Windows */
 #define app_checkCdAndLoad(inst) GAME_CDECL(0x430400, int, void *)(inst)
-#define app_42ef30(code) GAME_CDECL(0x42ef30, int, int)(code)   /* a start-up problem reported */
+#define app_reportStartupProblem(code) GAME_CDECL(0x42ef30, int, int)(code)   /* a start-up problem reported */
 #define GetCurrentDirectoryA_wrap_43f580() GAME_CDECL(0x43f580, u32, void)()
 #define app_setDisplayMode(w, h, flags, bits) GAME_CDECL(0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
 #define armc_partsPageKeys() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
@@ -464,7 +464,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define menu_drawFrame(x0, y0, x1, y1) GAME_CDECL(0x428c30, void, int, int, int, int)(x0, y0, x1, y1)
 /* textured quads (menu_quads.c): buttons from the bound sheet (lit == 1: the lit cell), whole textures, panel ornaments */
 #define menu_drawTexQuad_4282f0(x0, y0, x1, y1, lit) GAME_CDECL(0x4282f0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define profile_4283e0(x0, y0, x1, y1, lit) GAME_CDECL(0x4283e0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define profile_drawButton(x0, y0, x1, y1, lit) GAME_CDECL(0x4283e0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define menu_drawTexQuad_4284d0(x0, y0, x1, y1, lit) GAME_CDECL(0x4284d0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define menu_drawTexQuad_4285c0(x0, y0, x1, y1, lit) GAME_CDECL(0x4285c0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define menu_drawTexQuad_4286b0(x0, y0, x1, y1, lit) GAME_CDECL(0x4286b0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
@@ -485,18 +485,18 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define room_mouse() GAME_CDECL(0x4378e0, void, void)()
 #define settingsPage_keys() GAME_CDECL(0x4440f0, void, void)()
 #define match_debugHandler() GAME_CDECL(0x42ada0, void, void)()
-#define profile_44c600() GAME_CDECL(0x44c600, void, void)()
-#define profile_44c850() GAME_CDECL(0x44c850, void, void)()
-#define profile_44c8c0() GAME_CDECL(0x44c8c0, void, void)()
-#define profile_44ca90() GAME_CDECL(0x44ca90, void, void)()
-#define profile_44cc60() GAME_CDECL(0x44cc60, void, void)()
+#define profileList_keys() GAME_CDECL(0x44c600, void, void)()
+#define profile_messageKeys() GAME_CDECL(0x44c850, void, void)()
+#define profile_deleteKeys() GAME_CDECL(0x44c8c0, void, void)()
+#define profile_secondDialogKeys() GAME_CDECL(0x44ca90, void, void)()
+#define profile_emblemKeys() GAME_CDECL(0x44cc60, void, void)()
 #define missionsel_camera() GAME_CDECL(0x447cb0, void, void)()
 #define missionsel_448140() GAME_CDECL(0x448140, void, void)()
 #define missionsel_44aa20() GAME_CDECL(0x44aa20, void, void)()
 #define missionsel_44aa30() GAME_CDECL(0x44aa30, void, void)()
 #define sound_playMenu(id) GAME_CDECL(0x41e760, void, int)(id)          /* 0 confirm / back, 2 move */
-#define profile_44b600() GAME_CDECL(0x44b600, void, void)()
-#define profile_44bc00() GAME_CDECL(0x44bc00, void, void)()
+#define profile_typeNewName() GAME_CDECL(0x44b600, void, void)()
+#define profile_resetCamera() GAME_CDECL(0x44bc00, void, void)()
 #define profile_deleteFiles() GAME_CDECL(0x44ba60, void, void)()
 #define profile_selectAndLoad() GAME_CDECL(0x44b990, void, void)()
 #define profile_44b320(x, y) GAME_CDECL(0x44b320, int, int, int)(x, y)  /* the button at (x, y): 0 left, 1 right */
@@ -659,10 +659,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_432280(x, y) GAME_CDECL(0x432280, int, int, int)(x, y)
 #define room_432340(x, y) GAME_CDECL(0x432340, int, int, int)(x, y)
 #define field_editMessage() GAME_CDECL(0x434320, void, void)()   /* open the message field */
-#define profile_41e7a0(code) GAME_CDECL(0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
+#define app_closeWindow(code) GAME_CDECL(0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
-#define profile_44bc50() GAME_CDECL(0x44bc50, void, void)()
-#define profile_44e640() GAME_CDECL(0x44e640, void, void)()
+#define profile_loadSelectedColours() GAME_CDECL(0x44bc50, void, void)()
+#define profile_drawPilotSelect() GAME_CDECL(0x44e640, void, void)()
 #define arena_leaveSession() GAME_CDECL(0x452fe0, void, void)()
 #define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
 #define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */
@@ -850,7 +850,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_crosshairScreen() GAME_CDECL(0x425cd0, void, void)()
 #define cfg_readLines(f) GAME_CDECL(0x42d7f0, void, void *)(f)          /* axis.cfg's player section read back */
 #define cfg_gameTypeNames(f) GAME_CDECL(0x42da70, void, void *)(f)      /* its server section */
-#define cfg_42e080(f) GAME_CDECL(0x42e080, void, void *)(f)             /* its sound section */
+#define cfg_readAudioLines(f) GAME_CDECL(0x42e080, void, void *)(f)             /* its sound section */
 #define cfg_videoModeNames(f) GAME_CDECL(0x42e240, void, void *)(f)     /* its graphics section */
 #define cfg_parseKeyNames(f) GAME_CDECL(0x42e730, void, void *)(f)      /* its key bindings */
 #define input_applyKeyBindings() GAME_CDECL(0x42c410, void, void)()     /* the default key bindings */
@@ -858,7 +858,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define dplay_join(session, id, name, colour) GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, id, name, colour)   /* a join: 500 joined */
 #define tunnel_addRing() GAME_CDECL(0x441200, TunnelRing *, void)()   /* one more tunnel ring */
 #define tunnel_removeLastRing(head) GAME_CDECL(0x441190, u32, TunnelRing **)(head)   /* the last ring taken off and freed */
-#define profile_42b3c0(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
+#define crypt_countingKey(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
 #define setup_drawKeyBindingRows(key) GAME_CDECL(0x421680, void, int)(key)   /* (by use) the row being bound gets key */
 #define setup_controlTabHelper_420c10() GAME_CDECL(0x420c10, void, void)()   /* the default key bindings */
@@ -869,7 +869,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define dsbuf_play(sound) GAME_CDECL(0x467d70, void, void *)(sound)
 #define dsbuf_setVolume(sound, volume) GAME_CDECL(0x467db0, void, void *, int)(sound, volume)
 #define sound_467dd0(sound, mode, value) GAME_CDECL(0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
-#define wnd_401490() GAME_CDECL(0x401490, void, void)()   /* the mouse let go and released */
+#define input_releaseMouse() GAME_CDECL(0x401490, void, void)()   /* the mouse let go and released */
 #define glFinish() IMPORT(0x4a91f0, void, void)()
 #define SwapBuffers(hdc) IMPORT(0x4a9028, int, void *)(hdc)
 #define g_hdc GAME_VAR(void *, 0xa0e938)
@@ -919,7 +919,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define tunnel_rebuild() GAME_CDECL(0x4411e0, void, void)()
 #define frontEnd_startUp() GAME_CDECL(0x430bf0, void, void)()
 #define menu_loadIntroTextures() GAME_CDECL(0x430ca0, void, void)()
-#define profile_44f850() GAME_CDECL(0x44f850, void, void)()   /* quit (app/app_quit.c) */
+#define app_quitGame() GAME_CDECL(0x44f850, void, void)()   /* quit (app/app_quit.c) */
 #define net_closeAll(mode) GAME_CDECL(0x451600, void, int)(mode)   /* every socket closed before connecting */
 #define net_send(kind, socket) GAME_CDECL(0x4521c0, u32, int, int)(kind, socket)   /* a packet (0xc room, 0x14 arena...) to the lobby (100) / game server (0x65) */
 #define net_connect(mode) GAME_CDECL(0x451b80, int, int)(mode)   /* 100 the lobby, 0x65 the game server (net/net_tables.c) */
@@ -965,11 +965,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define MessageBoxA(hwnd, text, title, type) IMPORT(0x4a9324, int, void *, const char *, const char *, u32)(hwnd, text, title, type)
 #define sys_messageBox(text) GAME_CDECL(0x41edf0, int, const char *)(text)   /* (a format, then its arguments) */
 /* the start-up loaders (app_checkCdAndLoad's) */
-#define app_4515d0() GAME_CDECL(0x4515d0, void, void)()
+#define net_clearBuffers() GAME_CDECL(0x4515d0, void, void)()
 #define reg_readServerSettings() GAME_CDECL(0x42bde0, int, void)()
 #define math_initMathFunction() GAME_CDECL(0x46c270, int, void)()
 #define reg_readCharacterSettings() GAME_CDECL(0x42bee0, void, void)()
-#define app_430390() GAME_CDECL(0x430390, void, void)()
+#define mech_setEmpty() GAME_CDECL(0x430390, void, void)()
 #define data_loadMapInfo() GAME_CDECL(0x42b830, u32, void)()
 #define data_loadSkirmishInfo() GAME_CDECL(0x42ba40, u32, void)()
 #define arena_initOptionTexts() GAME_CDECL(0x42bc00, void, void)()
@@ -986,7 +986,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_init(hwnd) GAME_CDECL(0x467a50, int, void *)(hwnd)
 #define sound_loadMenuSounds() GAME_CDECL(0x42bd40, u32, void)()
 #define input_initVkTable() GAME_CDECL(0x431680, void, void)()
-#define app_401780() GAME_CDECL(0x401780, void, void)()
+#define input_clearKeyTable2() GAME_CDECL(0x401780, void, void)()
 #define cd_findDrive() GAME_CDECL(0x401000, u32, void)()
 #define tex_initBy(tm, dir, slots, fmt, w, h, a, b) GAME_THISCALL(0x455080, u32, void *, const char *, int, int, int, int, u32, u32)(tm, dir, slots, fmt, w, h, a, b)
 #define texSmall_initBy(t, a, b, c, d, e, f) GAME_THISCALL(0x4569d0, u32, void *, void *, void *, void *, void *, void *, void *)(t, a, b, c, d, e, f)
@@ -1034,7 +1034,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* ---- small classes (app/classes.c) ---- */
 #define fclose(f) GAME_CDECL(0x49e7e0, u32, void *)(f)
 #define arena_loadSettings(path) GAME_CDECL(0x40d4e0, int, const char *)(path)   /* an arena settings file; 0 if missing */
-#define cfg_44ac70(s) GAME_CDECL(0x44ac70, int, char *)(s)   /* s cut to its last character (app/small.c) */
+#define str_dropLast(s) GAME_CDECL(0x44ac70, int, char *)(s)   /* s cut to its last character (app/small.c) */
 #define TextureManager_clear(self) GAME_THISCALL(0x4569a0, int, void *)(self)
 #define Model_clear(self) GAME_THISCALL(0x464bb0, int, void *)(self)
 #define ShapeManager_clear(self) GAME_THISCALL(0x466a20, int, void *)(self)
@@ -1126,7 +1126,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define Skeleton_clear(self) GAME_THISCALL(0x469980, void, void *)(self)
 #define partList_clear(self) GAME_THISCALL(0x46f480, void, void *)(self)
 #define partList_release(self) GAME_THISCALL(0x46f4b0, int, void *)(self)
-#define cfg_44ac50(s) GAME_CDECL(0x44ac50, int, const char *)(s)
+#define str_length(s) GAME_CDECL(0x44ac50, int, const char *)(s)
 
 /* ---- batch: front-end records, objects, video tables ---- */
 #define net_claimPlayerSlot() GAME_CDECL(0x451450, u8, void)()   /* a free network player slot claimed (0xff: none) */
@@ -1134,20 +1134,20 @@ typedef struct { float r, g, b, a; } Colour;
 #define space_disableUnit(unit) GAME_THISCALL(0x480460, void, void *)(unit)
 #define space_enableUnit(unit) GAME_THISCALL(0x480480, void, void *)(unit)
 #define tex_markMaterialChanged(self, m) GAME_THISCALL(0x456820, void, void *, int)(self, m)   /* material m marked changed */
-#define profile_44b7a0() GAME_CDECL(0x44b7a0, void, void)()
-#define ptx_46e320() GAME_CDECL(0x46e320, void, void)()
+#define profile_resetPreview() GAME_CDECL(0x44b7a0, void, void)()
+#define ptx_initClampTable() GAME_CDECL(0x46e320, void, void)()
 #define ptx_initTable_46efd0() GAME_CDECL(0x46efd0, void, void)()
-#define ptx_46e2b0(q) GAME_CDECL(0x46e2b0, void, int)(q)
-#define ptx_46e7c0() GAME_CDECL(0x46e7c0, void, void)()
-#define ptx_46e9b0(q) GAME_CDECL(0x46e9b0, void, int)(q)
+#define ptx_initDequantTables(q) GAME_CDECL(0x46e2b0, void, int)(q)
+#define ptx_initColourTables() GAME_CDECL(0x46e7c0, void, void)()
+#define ptx_initQuantTables(q) GAME_CDECL(0x46e9b0, void, int)(q)
 #define ptx_error(...) ((int (CDECL *)(int, const char *, ...))0x46e260)(__VA_ARGS__)   /* app/ptx_decode.c */
 #define ptx_crtlError(...) ((int (CDECL *)(int, const char *, ...))0x46e1e0)(__VA_ARGS__)
 #define set_a61708_46f090(p) GAME_CDECL(0x46f090, void, const u8 *)(p)   /* the bit reader started at p */
-#define ptx_internal_46f0b0(block) GAME_CDECL(0x46f0b0, int, int *)(block)   /* one block's coefficients; the bit position */
+#define ptx_readBlock(block) GAME_CDECL(0x46f0b0, int, int *)(block)   /* one block's coefficients; the bit position */
 #define ptx_decodeBlock_46e380(in, out) GAME_CDECL(0x46e380, void, const int *, u8 *)(in, out)
-#define ptx_internal_46e830(y, dst, n) GAME_CDECL(0x46e830, void, const u8 *, u8 *, unsigned)(y, dst, n)
-#define ptx_internal_46e8e0(y, dst, n) GAME_CDECL(0x46e8e0, void, const u8 *, u8 *, unsigned)(y, dst, n)
-#define ptx_internal_46ea30(src, dst, w, h, bpp) GAME_CDECL(0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
+#define ptx_toRgb(y, dst, n) GAME_CDECL(0x46e830, void, const u8 *, u8 *, unsigned)(y, dst, n)
+#define ptx_toRgba(y, dst, n) GAME_CDECL(0x46e8e0, void, const u8 *, u8 *, unsigned)(y, dst, n)
+#define ptx_layoutBlocks(src, dst, w, h, bpp) GAME_CDECL(0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
 
 #define room_431c00() GAME_CDECL(0x431c00, void, void)()
 #define room_431b70() GAME_CDECL(0x431b70, void, void)()
@@ -1162,11 +1162,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define crt_fwrite(p, size, count, f) GAME_CDECL(0x49f58a, u32, const void *, u32, u32, void *)(p, size, count, f)
 #define crt_rand() GAME_CDECL(0x49f92c, int, void)()
 #define save_cryptRecord(rec, key) GAME_CDECL(0x445ee0, void, u8 *, u8)(rec, key)
-#define profile_445f10(rec, key) GAME_CDECL(0x445f10, void, u8 *, u8)(rec, key)   /* a 0x104-byte record (un)scrambled */
+#define crypt_record104(rec, key) GAME_CDECL(0x445f10, void, u8 *, u8)(rec, key)   /* a 0x104-byte record (un)scrambled */
 #define profile_loadList(count) GAME_CDECL(0x445f70, u32, int)(count)
 #define profile_create() GAME_CDECL(0x4474a0, u32, void)()   /* a 0x3ac-byte profile record scrambled (menu/profile_misc.c) */
 #define mech_storeToProfile() GAME_CDECL(0x4464b0, void, void)()   /* the current profile's record gathered (0x9f1718) */
-#define profile_445f40(p, key) GAME_CDECL(0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
+#define crypt_record80(p, key) GAME_CDECL(0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
 #define fread_scrambled(p, size, count, f) GAME_CDECL(0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */
 #define bullet_drawTrail(stage, i, view) GAME_THISCALL(0x47ca70, void, Stage *, int, void *)(stage, i, view)   /* bullet i's trail drawn */
 #define hud_48b450(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
@@ -1216,9 +1216,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_loadSettingsRecord() GAME_CDECL(0x433700, void, void)()   /* the room settings copied */
 
 /* ---- the PTX video decoder (app/ptx_decode.c) ---- */
-#define ptx_46f230(out, n) GAME_CDECL(0x46f230, int, int *, int)(out, n)   /* the next n bits of the stream */
-#define ptx_internal_46f190(out) GAME_CDECL(0x46f190, void, int *)(out)   /* a DC difference */
-#define ptx_internal_46f2a0(out, run) GAME_CDECL(0x46f2a0, void, int *, int *)(out, run)   /* an AC symbol */
+#define ptx_readBits(out, n) GAME_CDECL(0x46f230, int, int *, int)(out, n)   /* the next n bits of the stream */
+#define ptx_readDcDiff(out) GAME_CDECL(0x46f190, void, int *)(out)   /* a DC difference */
+#define ptx_readAcSymbol(out, run) GAME_CDECL(0x46f2a0, void, int *, int *)(out, run)   /* an AC symbol */
 
 /* ---- (net/net_sessions.c, render/rotations.c) ---- */
 #define record_swap(a, b) GAME_CDECL(0x4065a0, void, void *, void *)(a, b)   /* two session records swapped */

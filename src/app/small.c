@@ -34,7 +34,7 @@ int (array_indexOf)(int p, int base, int stride) { return p == 0 ? -1 : (p - bas
 
 /* ---- strings ---- */
 /* 0x44ac50: the length of s */
-int (cfg_44ac50)(const char *s)
+int (str_length)(const char *s)
 {
 	int n = 0;
 	while (*s++)
@@ -42,9 +42,9 @@ int (cfg_44ac50)(const char *s)
 	return n;
 }
 /* 0x44ac70: s without its last character (its old length) */
-int (cfg_44ac70)(char *s)
+int (str_dropLast)(char *s)
 {
-	int n = cfg_44ac50(s);
+	int n = str_length(s);
 	s[n - 1] = '\0';
 	return n;
 }
@@ -538,7 +538,7 @@ u32 (chat_keepLastLine)(void)
 
 /* 0x42ef30: a start-up problem reported: codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
    0x751024 over the main window; returns the box's answer, or the code itself when it has no message */
-int (app_42ef30)(int code)
+int (app_reportStartupProblem)(int code)
 {
 	u32 text;
 	switch (code) {
@@ -654,7 +654,7 @@ int (reg_readServerSettings)(void)
 /* 0x43f640: the screen size (0x5b1998 x 0x4e045c) for video mode 0x83a9c0: 640x480, 1280x720, 1600x900, 1920x1080,
    2560x1440, 3840x2160, 1024x768, or 7 the desktop's (0x67eefc x 0x76d430); any mode also sets 0x9da494 from
    0x83a9d8, which it returns */
-int (app_43f640)(void)
+int (app_screenSizeForMode)(void)
 {
 	static const int sizes[7][2] = { { 640, 480 }, { 1280, 720 }, { 1600, 900 }, { 1920, 1080 }, { 2560, 1440 },
 	                                 { 3840, 2160 }, { 1024, 768 } };

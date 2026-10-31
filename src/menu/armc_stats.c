@@ -458,7 +458,7 @@ void (armc_drawStatsPanel)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int i = 0; i < 6; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, slot == i ? 0.8f : 0.4f);
-		profile_4283e0(PANEL_X0 + 0x10, PANEL_Y0 + 0x40 + i * 0x30, PANEL_X0 + 0xb0, PANEL_Y0 + 0x6c + i * 0x30, 1);
+		profile_drawButton(PANEL_X0 + 0x10, PANEL_Y0 + 0x40 + i * 0x30, PANEL_X0 + 0xb0, PANEL_Y0 + 0x6c + i * 0x30, 1);
 	}
 	for (int i = 0; i < 2; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == i + 3 ? 0.8f : 0.4f);

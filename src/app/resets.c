@@ -13,7 +13,7 @@ void (input_resetKeys)(void)
 }
 
 /* 0x401780: the second key table (0x4d1fc4) and its state cleared */
-void (app_401780)(void)
+void (input_clearKeyTable2)(void)
 {
 	GAME_VAR(u16, 0x4d1fba) = 0x8000;
 	memset((void *)0x4d1fc4, 0, 0x100 * 4);
@@ -23,7 +23,7 @@ void (app_401780)(void)
 }
 
 /* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
-void (app_4515d0)(void)
+void (net_clearBuffers)(void)
 {
 	memset((void *)0xa0b24c, 0, 0xc * 4 + 2);
 	memset((void *)0xa055fc, 0, 0xc * 4 + 2);

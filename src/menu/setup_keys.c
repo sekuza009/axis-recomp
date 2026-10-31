@@ -110,7 +110,7 @@ static u32 graphics_apply(void)
 		g_graphicSettings[i] = g_graphicEdited[i];
 	u32 r = GAME_CDECL(0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 	if (!same)
-		return GAME_CDECL(0x41e7a0, u32, int)(1);   /* profile_41e7a0 */
+		return GAME_CDECL(0x41e7a0, u32, int)(1);   /* app_closeWindow */
 	g_setupPage = 0;
 	return r;
 }

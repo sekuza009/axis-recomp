@@ -359,7 +359,7 @@ u32 (lobby_keysBack)(void)
 	if (!r)
 		return 0;
 	GAME_VAR(int, 0x907b2c) = 0;
-	return profile_41e7a0(2);
+	return app_closeWindow(2);
 }
 
 /* 0x40cf80: the lobby's player screen: the arena tunnel, then in modes other than 0 and 1 (0x4dbb3c) and not on
@@ -417,7 +417,7 @@ u32 (lobby_quitDialogClicks)(void)
 	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
 	if (button == 0) {
 		GAME_VAR(int, 0x907b2c) = 0;
-		return (u32)profile_41e7a0(2);
+		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
 		GAME_VAR(int, 0x907b2c) = 0;
@@ -555,7 +555,7 @@ u32 (create_quitDialogClicks)(void)
 	int button = GAME_CDECL(0x4045a0, int, int, int)(g_mouseX, g_mouseY);
 	if (button == 0) {
 		GAME_VAR(int, 0x907b2c) = 0;
-		return (u32)profile_41e7a0(2);
+		return (u32)app_closeWindow(2);
 	}
 	if (button == 1) {
 		GAME_VAR(int, 0x907b2c) = 0;
@@ -1094,7 +1094,7 @@ u32 (lobbyTop_connect)(void)
 	if (GAME_VAR(int, 0x4dbab0)) {   /* the arena's name */
 		if (g_paused)
 			return mode;
-		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* profile_4343b0: blank */
+		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
 			GAME_VAR(int, 0x4dbab0) = 0;
 			return r;

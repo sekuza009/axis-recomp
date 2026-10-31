@@ -46,10 +46,10 @@ void (profile_screenKeys)(void)
 		return;
 	}
 	switch (g_profilePage) {
-	case 1: profile_44c600(); break;             /* the profile list */
-	case 2: profile_44c850(); break;
-	case 3: profile_44c8c0(); break;
-	case 5: profile_44ca90(); break;
-	case 6: profile_44cc60(); break;             /* the emblem grid */
+	case 1: profileList_keys(); break;             /* the profile list */
+	case 2: profile_messageKeys(); break;
+	case 3: profile_deleteKeys(); break;
+	case 5: profile_secondDialogKeys(); break;
+	case 6: profile_emblemKeys(); break;             /* the emblem grid */
 	}
 }

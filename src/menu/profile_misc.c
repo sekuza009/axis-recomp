@@ -17,8 +17,8 @@ static void crypt_bytes(u8 *p, int n, u8 key)
 }
 
 /* 0x445f10, 0x445f40: a 0x104-byte and a 0x80-byte record scrambled (or unscrambled: the same xor) */
-void (profile_445f10)(u8 *p, u8 key) { crypt_bytes(p, 0x104, key); }
-void (profile_445f40)(u8 *p, u8 key) { crypt_bytes(p, 0x80, key); }
+void (crypt_record104)(u8 *p, u8 key) { crypt_bytes(p, 0x104, key); }
+void (crypt_record80)(u8 *p, u8 key) { crypt_bytes(p, 0x80, key); }
 
 /* 1 if any character of s is one of bad */
 static int has_any(const char *s, const char *bad)
@@ -36,7 +36,7 @@ static int has_any(const char *s, const char *bad)
 /* 0x434400: a room name with a character the network messages cannot carry; 0x44b7e0: a pilot name that cannot be
    a file name */
 int (room_nameHasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
-int (profile_44b7e0)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
+int (profile_nameHasBadChar)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
 
 /* profile colour record i (nine ints, 76 bytes a record from 0x9f9068) into the preview's floats, each plus the
    constant at 0x4a9560; the preview reset (distance 40, -1, not turning) */
@@ -51,14 +51,14 @@ static void load_colour(int i)
 }
 
 /* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
-void (profile_44bc50)(void) { load_colour(GAME_VAR(int, 0x9f8d30)); }
-void (profile_44bd20)(void) { load_colour(GAME_VAR(int, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 72)); }
+void (profile_loadSelectedColours)(void) { load_colour(GAME_VAR(int, 0x9f8d30)); }
+void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, 0x9f688c + GAME_VAR(int, 0x9f8d74) * 72)); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
 
 /* 0x42b3c0: a 0x4c-byte record scrambled with a key that just counts up (no reset); returns the count */
-int (profile_42b3c0)(u8 *p, u8 key)
+int (crypt_countingKey)(u8 *p, u8 key)
 {
 	int i;
 	for (i = 0; i < 0x4c; i++)
@@ -67,7 +67,7 @@ int (profile_42b3c0)(u8 *p, u8 key)
 }
 
 /* 0x42b390: every byte of s inverted in place; its length */
-int (data_42b390)(char *s)
+int (str_invert)(char *s)
 {
 	int n = (int)strlen(s);
 	for (int i = 0; i < n; i++)
@@ -76,7 +76,7 @@ int (data_42b390)(char *s)
 }
 
 /* 0x4343b0: 1 when a name is blank (only spaces and control characters) */
-int (profile_4343b0)(const char *name)
+int (name_isBlank)(const char *name)
 {
 	int n = (int)strlen(name);
 	for (int i = 0; i < n; i++)
@@ -86,14 +86,14 @@ int (profile_4343b0)(const char *name)
 }
 
 /* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at 0x9f9010 (left, top, right, bottom), else -1 */
-int (profile_44b2e0)(int x, int y)
+int (profile_inDialogBox)(int x, int y)
 {
 	const int *r = (const int *)0x9f9010;
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
 /* 0x44b7a0: the colour preview reset: no colours, distance 40, -1, turning */
-void (profile_44b7a0)(void)
+void (profile_resetPreview)(void)
 {
 	memset((void *)0x9f8ec0, 0, 36);
 	memset((void *)0x9f8d34, 0, 36);
@@ -103,16 +103,16 @@ void (profile_44b7a0)(void)
 }
 
 /* 0x44b750: the same, and no profile selected */
-void (profile_44b750)(void)
+void (profile_resetSelection)(void)
 {
-	profile_44b7a0();
+	profile_resetPreview();
 	GAME_VAR(int, 0x9f8d30) = 0;
 	GAME_VAR(int, 0x9f8ee4) = 0;
 	GAME_VAR(int, 0x9f6828) = 0;
 }
 
 /* 0x44bc00: the profile screen's camera put to its start (distance 80, speed 0.1) */
-void (profile_44bc00)(void)
+void (profile_resetCamera)(void)
 {
 	GAME_VAR(int, 0x9f8e54) = 0;
 	GAME_VAR(int, 0x9f6838) = 1;
@@ -126,7 +126,7 @@ void (profile_44bc00)(void)
 /* 0x44b870: does a profile with the typed name (0x9dc92c) exist, ignoring case? (The original's trailing-space trim
    can't run: it is skipped whenever the length is >= 0. Its compare buffer keeps the tail of a longer earlier
    name, as here.) */
-int (profile_44b870)(void)
+int (profile_nameExists)(void)
 {
 	char typed[1024], name[1024];
 	memset(name, 0, sizeof name);
@@ -147,7 +147,7 @@ int (profile_44b870)(void)
 /* ---- the profile screen's confirmation dialogs: a click on the first button does the thing (with the menu sound),
    the second (or a right click) closes the dialog (0x9f8f10). Both return the right click state (the original's eax) */
 /* 0x44c390: "delete this profile?" */
-int (profile_44c390)(void)
+int (profile_openDeleteQuestion)(void)
 {
 	GAME_VAR(int, 0x4dda44) = 0;
 	if (g_mouseClick) {
@@ -166,15 +166,15 @@ int (profile_44c390)(void)
 	return GAME_VAR(int, 0x4ded8c);
 }
 
-/* 0x44c400: the second dialog: its first button runs profile_44bc00, the second closes it (and clears 0x76d42c) */
-int (profile_44c400)(void)
+/* 0x44c400: the second dialog: its first button runs profile_resetCamera, the second closes it (and clears 0x76d42c) */
+int (profile_secondDialogClicks)(void)
 {
 	GAME_VAR(int, 0x4dda44) = 0;
 	if (g_mouseClick) {
 		int button = GAME_CDECL(0x44b360, int, int, int)(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_44bc00();
+			profile_resetCamera();
 		} else if (button == 1) {
 			sound_playMenu(0);
 			GAME_VAR(int, 0x9f8f10) = 1;
@@ -188,7 +188,7 @@ int (profile_44c400)(void)
 
 /* 0x44f6c0: logging in with the selected profile (when 0x9f6840): the profile saved, the main menu (state 300), the
    profile's name as the player's (0x20 bytes), then axis.cfg loaded. Returns what the original leaves in eax */
-u32 (profile_44f6c0)(void)
+u32 (profile_logIn)(void)
 {
 	if (!GAME_VAR(int, 0x9f6840))
 		return 0;
@@ -210,7 +210,7 @@ u32 (profile_44f6c0)(void)
 /* 0x44f410: the profile screen's frame: the message's timer (0x9f8f18, to 0x4a944c; then the message goes), the
    dialog's frame and its page (0x44b600) while open, else the screen (an entry being edited first), the page shown.
    Returns what the original leaves in eax */
-u32 (profile_44f410)(void)
+u32 (profile_frame)(void)
 {
 	if (GAME_VAR(int, 0x9f900c)) {
 		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
@@ -256,9 +256,9 @@ u32 (profile_processInput)(void)
 	switch (page) {
 	case 0: return CALL(0x44be00);
 	case 1: return CALL(0x44c190);
-	case 2: return CALL(0x44c390);   /* profile_44c390 */
-	case 4: return CALL(0x44c400);   /* profile_44c400 */
-	case 5: return CALL(0x44c480);   /* profile_44c480 */
+	case 2: return CALL(0x44c390);   /* profile_openDeleteQuestion */
+	case 4: return CALL(0x44c400);   /* profile_secondDialogClicks */
+	case 5: return CALL(0x44c480);   /* profileList_clicks */
 	}
 	return page;
 }
@@ -266,7 +266,7 @@ u32 (profile_processInput)(void)
 /* 0x44c480: the profile list's clicks: rows 0 .. 8 select a profile (with sound 2, its pilot panel reset), 9 logs in
    with the typed name (profile_selectAndLoad), 10 cancels; a right click closes the page. Returns the right click
    state (the original's eax) */
-int (profile_44c480)(void)
+int (profileList_clicks)(void)
 {
 	GAME_VAR(int, 0x4dda44) = 0;
 	if (g_mouseClick) {
@@ -321,7 +321,7 @@ u32 (profile_selectAndLoad)(void)
 		GAME_VAR(int, 0x9f8d74) = count - 1;
 	}
 	CALL(0x446590);         /* profile_load (it writes the profile) */
-	return CALL(0x44b7a0);  /* profile_44b7a0 */
+	return CALL(0x44b7a0);  /* profile_resetPreview */
 }
 
 /* a profile screen page with a panel: while the pointer glides (0x76d42c) it is pulled towards its target (0x67ef34,
@@ -345,14 +345,14 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrame */
 	return CALL(panel);
 }
-/* 0x44f5f0: the pilot panel's page (profile_44e180) */
-u32 (profile_44f5f0)(void)
+/* 0x44f5f0: the pilot panel's page (profile_drawDeleteQuestion) */
+u32 (profile_pilotPanelPage)(void)
 {
 	static const u32 frame[4] = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28 };
 	return glide_page((const float *)0x4a941c, frame, 0x44e180);
 }
-/* 0x44f740: the second panel's page (profile_44e3e0), gliding at its own rate */
-u32 (profile_44f740)(void)
+/* 0x44f740: the second panel's page (profile_drawSecondDialog), gliding at its own rate */
+u32 (profile_secondPanelPage)(void)
 {
 	static const u32 frame[4] = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0 };
 	return glide_page((const float *)0x4a94f8, frame, 0x44e3e0);
@@ -361,7 +361,7 @@ u32 (profile_44f740)(void)
 /* 0x44ce90: the profile list's names drawn (13 rows from the top entry 0x9f8c4c, 20 units apart in the panel at
    0x9f8e48): grey-blue, the selected one brighter; dimmer while a dialog page is up (page other than 1). Returns the
    last text call's eax */
-u32 (profile_44ce90)(void)
+u32 (profileList_drawNames)(void)
 {
 	u32 r = 0;
 	for (int i = 0; i < 13 && i < GAME_VAR(int, 0x9f9008); i++) {
@@ -380,10 +380,10 @@ u32 (profile_44ce90)(void)
 
 /* 0x44f4b0: the profile screen's name entry step (after 0x44d720): with a dialog open its frame is drawn
    (0x428c30); while a profile is being made (0x9f8f34) 0x44dc60; once the typed name (0x9dc92c) is in (the keyboard
-   back): empty cancels, an existing name (profile_4343b0) or a bad one (profile_44b7e0, message 0x81) is refused
-   with sound 6, otherwise the profile is made (profile_44b870; failing that state 6 and 0x44b750). Returns the
+   back): empty cancels, an existing name (name_isBlank) or a bad one (profile_nameHasBadChar, message 0x81) is refused
+   with sound 6, otherwise the profile is made (profile_nameExists; failing that state 6 and 0x44b750). Returns the
    last call's eax */
-u32 (profile_44f4b0)(void)
+u32 (profile_nameEntryStep)(void)
 {
 	const char *typed = (const char *)0x9dc92c;
 	GAME_CDECL(0x44d720, void, void)();
@@ -400,21 +400,21 @@ u32 (profile_44f4b0)(void)
 		GAME_VAR(int, 0x9f8f10) = 1;
 		return GAME_CDECL(0x44de00, u32, void)();
 	}
-	if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1) {   /* profile_4343b0 */
+	if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1) {   /* name_isBlank */
 		u32 r = GAME_CDECL(0x41e760, u32, int)(6);              /* sound_playMenu */
 		GAME_VAR(int, 0x9f8f10) = 1;
 		g_dialogOpen = 0;
 		GAME_VAR(int, 0x9f8f34) = 0;
 		return r;
 	}
-	if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_44b7e0 */
+	if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar */
 		sound_playMenu(6);
 		g_dialogOpen = 0;
 		GAME_VAR(int, 0x9f8f34) = 0;
 		GAME_VAR(int, 0x9f8f10) = 1;
 		return GAME_CDECL(0x41ee40, u32, int)(0x81);             /* the message */
 	}
-	if (GAME_CDECL(0x44b870, int, void)()) {                     /* profile_44b870 */
+	if (GAME_CDECL(0x44b870, int, void)()) {                     /* profile_nameExists */
 		sound_playMenu(6);
 		GAME_VAR(int, 0x9f8f34) = 1;
 		g_dialogOpen = 1;
@@ -429,7 +429,7 @@ u32 (profile_44f4b0)(void)
    twice), the later profiles moved down a slot and the freed last slot cleared (colour -1), the count lowered.
    With none left everything is reset and the list written (profile_delete); otherwise, if the current one was the
    last, the selection steps back (the scrolled row 0x9f8c5c, else the list's top 0x9f8c4c), then the list is
-   written and shown again (profile_44b7a0). Returns the last call's eax */
+   written and shown again (profile_resetPreview). Returns the last call's eax */
 u32 (profile_deleteFiles)(void)
 {
 	int current = GAME_VAR(int, 0x9f8d74);
@@ -466,7 +466,7 @@ u32 (profile_deleteFiles)(void)
 		GAME_VAR(int, 0x9f8d74) = GAME_VAR(int, 0x9f8c4c) + GAME_VAR(int, 0x9f8c5c);
 	}
 	GAME_CDECL(0x447320, u32, void)();
-	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
+	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_resetPreview */
 }
 
 /* typing over: the key state reset (input_resetKeys) and the keyboard taken again; returns input_initKeyboard's eax */
@@ -484,23 +484,23 @@ static void line_wipe(void)
 		memset((void *)0x9dc92c, 0, n);
 }
 
-/* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_44b2e0) or
-   Enter starts it (profile_44b600). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
-   (message 0x81, the dialog shut) or takes it (profile_44b870; when that fails the dialog stays for another go),
+/* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_inDialogBox) or
+   Enter starts it (profile_typeNewName). While typing: OK (button 0) refuses a blank name (sound 6), refuses a bad one
+   (message 0x81, the dialog shut) or takes it (profile_nameExists; when that fails the dialog stays for another go),
    cancel (1) empties the line; Enter (0x4ded8c) leaves typing with the line emptied. Returns what the original
    leaves in eax */
-u32 (profile_44c190)(void)
+u32 (profile_newNameDialog)(void)
 {
 	const char *typed = (const char *)0x9dc92c;
 	GAME_VAR(float, 0x4dda44) = 0.0f;
 	u32 r = 0;
 	if (GAME_VAR(int, 0x9f8f34)) {
 		if (GAME_VAR(int, 0x4ded88) &&
-		    GAME_CDECL(0x44b2e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {   /* profile_44b2e0 */
+		    GAME_CDECL(0x44b2e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {   /* profile_inDialogBox */
 			sound_playMenu(0);
 			GAME_VAR(int, 0x9f8f34) = 0;
 			g_paused = 1;
-			r = GAME_CDECL(0x44b600, u32, void)();   /* profile_44b600: typing starts */
+			r = GAME_CDECL(0x44b600, u32, void)();   /* profile_typeNewName: typing starts */
 		}
 		if (!GAME_VAR(int, 0x4ded8c))
 			return r;
@@ -513,9 +513,9 @@ u32 (profile_44c190)(void)
 		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* profile_44b2a0 */
 		r = button - 1;
 		if (button == 0) {
-			if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1)   /* profile_4343b0: blank */
+			if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1)   /* name_isBlank: blank */
 				return GAME_CDECL(0x41e760, u32, int)(6);
-			if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_44b7e0: a bad character */
+			if (GAME_CDECL(0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
 				sound_playMenu(6);
 				g_dialogOpen = 0;
 				GAME_VAR(int, 0x9f8f34) = 0;
@@ -524,7 +524,7 @@ u32 (profile_44c190)(void)
 				g_paused = 0;
 				return keyboard_back();
 			}
-			if (GAME_CDECL(0x44b870, int, void)()) {   /* profile_44b870: taken */
+			if (GAME_CDECL(0x44b870, int, void)()) {   /* profile_nameExists: taken */
 				sound_playMenu(6);
 				GAME_VAR(int, 0x9f8f34) = 1;
 				g_dialogOpen = 1;
@@ -590,43 +590,43 @@ static void key_up(void) { list_up(); }
 static void key_down(void) { list_down(); }
 
 /* 0x44c600: the profile list's keys: up / down held (with the menu's key repeat) move the cursor, scrolling the list
-   at its ends (sound 2); Enter (0x4e150c) takes the profile (profile_44b600); 0x4e0ce0 / 0x76d414 delete it
-   (profile_44b670) when there is one; 0x4e14f4 opens the new-profile dialog (0x9f6840, page 4), or takes the
-   profile when there are none; OK / the second cancel key copy it (profile_44b6e0). The original leaves eax to
+   at its ends (sound 2); Enter (0x4e150c) takes the profile (profile_typeNewName); 0x4e0ce0 / 0x76d414 delete it
+   (profile_askDelete) when there is one; 0x4e14f4 opens the new-profile dialog (0x9f6840, page 4), or takes the
+   profile when there are none; OK / the second cancel key copy it (profile_askSecond). The original leaves eax to
    callers that ignore it */
-void (profile_44c600)(void)
+void (profileList_keys)(void)
 {
 	if (key_repeat(g_keyUp, &g_repeatUp, key_up) || key_repeat(g_keyDown, &g_repeatDown, key_down))
 		return;
 	if (input_justPressed(GAME_VAR(int, 0x4e150c)) == 1) {
 		sound_playMenu(0);
 		g_cursorBlink = 0;
-		profile_44b600();
+		profile_typeNewName();
 		return;
 	}
 	if ((input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1 || input_justPressed(GAME_VAR(int, 0x76d414)) == 1)
 	    && g_profileCount > 0)
-		GAME_CDECL(0x44b670, void, void)();   /* profile_44b670 */
+		GAME_CDECL(0x44b670, void, void)();   /* profile_askDelete */
 	if (input_justPressed(GAME_VAR(int, 0x4e14f4)) == 1) {
 		sound_playMenu(0);
 		g_cursorBlink = 0;
 		if (g_profileCount <= 0) {
-			profile_44b600();
+			profile_typeNewName();
 			return;
 		}
 		GAME_VAR(int, 0x9f6840) = 1;
 		GAME_VAR(int, 0x9f8f10) = 4;
 	}
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
-		GAME_CDECL(0x44b6e0, void, void)();   /* profile_44b6e0 */
+		GAME_CDECL(0x44b6e0, void, void)();   /* profile_askSecond */
 }
 /* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profile_44b260): 0 takes the profile
-   (profile_44b600), 1 deletes it (profile_44b670) when there is one, 2 opens the new-profile dialog (or takes the
-   profile when there are none), 3 copies it (profile_44b6e0), 4 the list: a row (profile_44b3a0) chosen, or the
+   (profile_typeNewName), 1 deletes it (profile_askDelete) when there is one, 2 opens the new-profile dialog (or takes the
+   profile when there are none), 3 copies it (profile_askSecond), 4 the list: a row (profile_44b3a0) chosen, or the
    chosen row clicked again (0x9f900c) opens the dialog; 5 / 6 a row up / down. Then with the button held
    (0x4ded94) on the arrows they step again once the blink clock (0x4dda44) reaches 5. The original leaves eax to
    callers that ignore it */
-void (profile_44be00)(void)
+void (profileList_mouse)(void)
 {
 #define g_mouseX GAME_VAR(int, 0x4ded68)
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
@@ -635,24 +635,24 @@ void (profile_44be00)(void)
 		switch (GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profile_44b260 */
 		case 0:
 			sound_playMenu(0);
-			profile_44b600();
+			profile_typeNewName();
 			break;
 		case 1:
 			if (g_profileCount > 0)
-				GAME_CDECL(0x44b670, void, void)();   /* profile_44b670 */
+				GAME_CDECL(0x44b670, void, void)();   /* profile_askDelete */
 			break;
 		case 2:
 			sound_playMenu(0);
 			g_cursorBlink = 0;
 			if (g_profileCount <= 0) {
-				profile_44b600();
+				profile_typeNewName();
 				return;
 			}
 			GAME_VAR(int, 0x9f6840) = 1;
 			GAME_VAR(int, 0x9f8f10) = 4;
 			break;
 		case 3:
-			GAME_CDECL(0x44b6e0, void, void)();   /* profile_44b6e0 */
+			GAME_CDECL(0x44b6e0, void, void)();   /* profile_askSecond */
 			break;
 		case 4: {
 			sound_playMenu(2);

@@ -14,7 +14,7 @@
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 
 /* 0x46f230: *out = the next n bits; returns the new position */
-int (ptx_46f230)(int *out, int n)
+int (ptx_readBits)(int *out, int n)
 {
 	*out = 0;
 	if (n <= 0)
@@ -35,17 +35,17 @@ static void huff_value(int *out, int n)
 		*out = 0;
 		return;
 	}
-	ptx_46f230(out, n);
+	ptx_readBits(out, n);
 	if (!(*out & (1 << (n - 1))))
 		*out = *out - (1 << n) + 1;
 }
 
 /* 0x46f190: a DC difference: 16 bits looked at, matched against the table's 16 codes (length, code), only the code's
    bits used, then the value of that many bits */
-void (ptx_internal_46f190)(int *out)
+void (ptx_readDcDiff)(int *out)
 {
 	int v, len = 0, k;
-	ptx_46f230(&v, 16);
+	ptx_readBits(&v, 16);
 	const int *code = (const int *)(0x4c5af0 + g_table * 96);
 	for (k = 0; k < 16; k++, code += 2) {
 		len = code[0];
@@ -57,10 +57,10 @@ void (ptx_internal_46f190)(int *out)
 }
 
 /* 0x46f2a0: an AC symbol (256 codes, empty ones skipped): the zeros before it (run) and the value's size */
-void (ptx_internal_46f2a0)(int *out, int *run)
+void (ptx_readAcSymbol)(int *out, int *run)
 {
 	int v, len = 0, k;
-	ptx_46f230(&v, 16);
+	ptx_readBits(&v, 16);
 	const int *code = (const int *)(0x4c5bb0 + (g_table << 11));
 	for (k = 0; k < 256; k++, code += 2) {
 		len = code[0];
@@ -73,15 +73,15 @@ void (ptx_internal_46f2a0)(int *out, int *run)
 }
 
 /* 0x46f0b0: one block's 64 coefficients, in zigzag order up to the end-of-block symbol; returns the position */
-int (ptx_internal_46f0b0)(int *block)
+int (ptx_readBlock)(int *block)
 {
 	int dc, value, run, k = 1;
 	memset(block, 0, 64 * 4);
-	ptx_internal_46f190(&dc);
+	ptx_readDcDiff(&dc);
 	block[0] = g_lastDc + dc;
 	g_lastDc += dc;
 	do {
-		ptx_internal_46f2a0(&value, &run);
+		ptx_readAcSymbol(&value, &run);
 		if (!run && !value) {
 			for (; k < 64; k++)
 				block[g_zigzag[k]] = 0;
@@ -100,7 +100,7 @@ int (ptx_internal_46f0b0)(int *block)
 #define BLUE(Y, Cb) g_clamp[GAME_VAR(int, 0xa1f304 + (Cb) * 4) + (Y)]
 
 /* 0x46e830: n pixels to RGB */
-void (ptx_internal_46e830)(const u8 *y, u8 *dst, unsigned n)
+void (ptx_toRgb)(const u8 *y, u8 *dst, unsigned n)
 {
 	const u8 *cb = y + 0x10000, *cr = y + 0x20000;
 	for (; n; n--) {
@@ -112,7 +112,7 @@ void (ptx_internal_46e830)(const u8 *y, u8 *dst, unsigned n)
 }
 
 /* 0x46e8e0: n pixels to RGBA (the alpha plane copied) */
-void (ptx_internal_46e8e0)(const u8 *y, u8 *dst, unsigned n)
+void (ptx_toRgba)(const u8 *y, u8 *dst, unsigned n)
 {
 	const u8 *cb = y + 0x10000, *cr = y + 0x20000, *alpha = y + 0x30000;
 	for (; n; n--) {
@@ -125,7 +125,7 @@ void (ptx_internal_46e8e0)(const u8 *y, u8 *dst, unsigned n)
 }
 
 /* 0x46ea30: the 8 x 8 blocks (one after another, bpp bytes a pixel) laid out as w x h image rows */
-void (ptx_internal_46ea30)(const u8 *src, u8 *dst, int w, int h, int bpp)
+void (ptx_layoutBlocks)(const u8 *src, u8 *dst, int w, int h, int bpp)
 {
 	if (h <= 0)
 		return;
@@ -263,7 +263,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		ptx_error(-1, (const char *)0x4c6fd8);
 		planes = -1;
 	}
-	ptx_46e9b0(head.quality);
+	ptx_initQuantTables(head.quality);
 	u8 *data = (u8 *)0xaa2e98;
 	ptx_fread(data, 1, 0x10000, f);
 	int pos = 0, bits = 0;
@@ -275,7 +275,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		if (w * h > 0)
 			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
 				int block[64];
-				bits = ptx_internal_46f0b0(block);
+				bits = ptx_readBlock(block);
 				ptx_decodeBlock_46e380(block, plane);
 				plane += 0x40;
 			}
@@ -284,10 +284,10 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	if (close)
 		fclose(f);
 	if (head.type == 0x81)
-		ptx_internal_46e830((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
+		ptx_toRgb((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
 	else if (head.type == 0x82)
-		ptx_internal_46e8e0((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
-	ptx_internal_46ea30((const u8 *)0xa21708, out, w, h, planes);
+		ptx_toRgba((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
+	ptx_layoutBlocks((const u8 *)0xa21708, out, w, h, planes);
 	*width = w;
 	*height = h;
 	if (head.type == 0x81) {

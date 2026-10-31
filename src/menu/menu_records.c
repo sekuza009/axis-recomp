@@ -88,7 +88,7 @@ void (arena_clearChatRecord)(void)
 
 /* ---- the saved mech (0x4dc878 parts, 0x4dcf18 weapons, 0x4dcfe0 colours) ---- */
 /* 0x430390: the empty mech: no weapons, part 0, colour pairs (0,1,0) (0,1,0) */
-void (app_430390)(void)
+void (mech_setEmpty)(void)
 {
 	static const float colour[6] = { 0, 1, 0, 0, 1, 0 };
 	GAME_VAR(int, 0x4dcf24) = GAME_VAR(int, 0x4dcf28) = GAME_VAR(int, 0x4dcf2c) =

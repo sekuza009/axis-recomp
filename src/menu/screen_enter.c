@@ -325,7 +325,7 @@ int (menuState500_enter)(void)
 /* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_create) with
    the current one selected and scrolled into the 13 visible rows, the new-pilot dialog up when there are none, the
    message box and the screen's rectangles (profile_44af30, 44b030 .. 44b1a0), its colours, then the list shown
-   (profile_44b7a0). Returns that call's eax */
+   (profile_resetPreview). Returns that call's eax */
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
@@ -359,7 +359,7 @@ u32 (menuState210_enter)(void)
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
 	STORE_ALL(colours);
-	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_44b7a0 */
+	return GAME_CDECL(0x44b7a0, u32, void)();   /* profile_resetPreview */
 }
 
 /* the profile files checked (the English one, then four times the Korean one): a missing one ends the game with

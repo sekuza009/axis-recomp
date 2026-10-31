@@ -215,11 +215,11 @@ int (app_checkCdAndLoad)(void *instance)
 	memset((void *)0x4d1688, 0, 0x400);
 	memset((void *)0x4d1a98, 0, 0x400);
 	GAME_VAR(int, 0x9dd84c) = 0;
-	app_4515d0();
+	net_clearBuffers();
 	reg_readServerSettings();
 	math_initMathFunction();
 	reg_readCharacterSettings();
-	app_430390();
+	mech_setEmpty();
 	data_loadPilotProfiles();
 	data_loadMapInfo();
 	data_loadSkirmishInfo();
@@ -256,7 +256,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(int, 0x4ded68) = 0x136;
 	GAME_VAR(int, 0x4ded6c) = 0xe6;
 	input_initVkTable();
-	app_401780();
+	input_clearKeyTable2();
 	GAME_VAR(u32, 0x68038c) = 0x42340000;   /* 45 */
 	if (!cd_findDrive()) {
 		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);

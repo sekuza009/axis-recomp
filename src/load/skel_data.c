@@ -27,7 +27,7 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
 /* 0x46aa10 (thiscall on a skeleton): read from f: the 0x24-byte header, the block (+8, its size +4), then the bones
    (0x70 bytes each, +0x10 of them, at the block's start: +0x14) and after them each bone's two tables (+0x60 keys of
    0x20 bytes at +0x64, +0x68 frames of 0x28 bytes at +0x6c). Its callers ignore the eax it leaves */
-void THISCALL (skel_loadFrom_46aa10)(u8 *self, void *f, void *mem, int size)
+void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
 	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
@@ -51,7 +51,7 @@ void THISCALL (skel_loadFrom_46aa10)(u8 *self, void *f, void *mem, int size)
    +0x110, n at +0x114, extra bytes (+0x124) after them: the block (+8, its size n x 0x70 + extra at +4) holds the
    skeletons' 0x4c-byte records (+0x118), then their 0x24-byte skeletons (+0x11c, each created and released), then the
    rest (+0x128). Its callers ignore the eax it leaves */
-void THISCALL (skel_loadFrom_46aeb0)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
+void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
 	SkeletonManager_release(self);
 	strcpy((char *)self + 0x10, dir ? dir : (const char *)0x4b1304);
@@ -142,7 +142,7 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 	fclose(f);
 }
 
-/* 0x4699d0 (thiscall on a skeleton): the same for skeletons: "ske" the binary format (skel_loadFrom_46aa10), "ase"
+/* 0x4699d0 (thiscall on a skeleton): the same for skeletons: "ske" the binary format (skel_loadFromFile), "ase"
    ASCII scene export (skel_loadAseFrom). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 {
@@ -151,7 +151,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 		sys_fatalError((char *)0xa0eaa8, (const char *)0x4c4ae4, (int)path);
 	switch (file_format(path, "ske", "ase")) {
 	case 0:
-		skel_loadFrom_46aa10(sk, f, mem, size);
+		skel_loadFromFile(sk, f, mem, size);
 		break;
 	case 1:
 		skel_loadAseFrom(sk, f, mem, size);
@@ -352,7 +352,7 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 
 /* 0x46b1a0 (thiscall on a skeleton cache): the skeleton named name (upper-cased; empty or starting with '.': none,
    0), found in the cache's name tree or added to it (tree_lookup) and loaded into skeleton i (0x24 bytes each from
-   +0x11c): from the skeleton dat (format +0x110 2: its item's file, skel_loadFrom_46aa10) or a "ske" / "ase" file
+   +0x11c): from the skeleton dat (format +0x110 2: its item's file, skel_loadFromFile) or a "ske" / "ase" file
    (skel_loadFrom), into the cache's data memory when it has one (+0x128, its size +0x124, +0x12c used: the
    skeleton's size added) */
 u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
@@ -371,7 +371,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	void *at = mem ? mem + AT(int, cache, 0x12c) : NULL;
 	int room = mem ? AT(int, cache, 0x124) - AT(int, cache, 0x12c) : 0;
 	if (AT(int, cache, 0x110) == 2)
-		skel_loadFrom_46aa10(sk, skelDat_getItemFileBy(key), at, room);
+		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
 		item_path(path, cache, own, 0x4c54f4, 0x4c54f8, (char *)0xa0eaa0, 0x4c54fc);   /* "ske" / "ase" */

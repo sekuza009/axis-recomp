@@ -642,7 +642,7 @@ u32 (loginDialog_draw)(void)
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		const u32 *colour = hovered == k + 4 ? bright : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
-		profile_4283e0(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
+		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(0x7517a4 + k * 0x80));
 	}

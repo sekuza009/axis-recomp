@@ -791,7 +791,7 @@ static int campaign_signed(const char *path)
 	crt_fseek(f, 20000, 0);
 	u8 head[0x80];
 	crt_fread(head, 0x80, 1, f);
-	profile_445f40(head, 0x7e);
+	crypt_record80(head, 0x7e);
 	int ok = str_order((const char *)head, (const char *)0x4b0fa0) == 0;
 	fclose(f);
 	return ok;
@@ -931,7 +931,7 @@ void (data_loadPilotProfiles)(void)
 	for (int i = 0; i < count; i++) {
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
-		profile_42b3c0(record, key++);
+		crypt_countingKey(record, key++);
 		memcpy((void *)(0x9f9040 + i * 0x4c), record, 0x4c);
 	}
 	fclose(f);
@@ -949,7 +949,7 @@ void (data_loadPilotProfiles)(void)
 /* 0x42b830: mapinfo.dat read (from the maps' folder 0x4dedf8): its header must start with "AXIS MAP INFOMATION DATA
    FILE" and have 0x1a at +0x32, else the game ends with "Map Infomation Data File Not Found"; then the map count
    (0x67ef00) and for each map its 32-byte name (0x907b30) and 0x50-byte description (0x5ae9d0), both decoded
-   (data_42b390), and the names' trailing spaces cut. Returns 0, or the count when there are none */
+   (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
 	void *f = data_open(0x4dedf8, 0x4b1504, 0x4ad170, 0x4b14e0);   /* "mapinfo.dat", "rb" */
@@ -967,7 +967,7 @@ u32 (data_loadMapInfo)(void)
 	for (int i = 0; i < GAME_VAR(int, 0x67ef00); i++) {
 		char *name = (char *)(0x907b30 + i * 0x20), *about = (char *)(0x5ae9d0 + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
-		GAME_CDECL(0x42b390, int, char *)(name);    /* data_42b390: decoded */
+		GAME_CDECL(0x42b390, int, char *)(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);
 		GAME_CDECL(0x42b390, int, char *)(about);
 	}
@@ -1061,14 +1061,14 @@ static void skip_line(void *f)
 }
 
 /* 0x42d7f0: the player's section read back (the lines cfg_parsePlayer writes): the name (its words joined by
-   spaces, then cut once more by cfg_44ac70, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
+   spaces, then cut once more by str_dropLast, into 0x4dedb0), the corporation (RED 0, BLUE 1, YELLOW 2, else 0;
    0x4dedd0) and the sex (ON: 1; 0x4dedd4); then one more line. The original leaves fgets's eax to callers that
    ignore it */
 void (cfg_readLines)(void *f)
 {
 	char value[0x84];
 	read_value(f, value, 1);
-	cfg_44ac70(value);
+	str_dropLast(value);
 	strcpy((char *)0x4dedb0, value);
 	read_value(f, value, 0);
 	if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
@@ -1084,7 +1084,7 @@ void (cfg_readLines)(void *f)
 
 /* 0x42e080: four lines read back: two numbers (0x4e0c90, 0x4e0c94) and two switches (ON: 1; 0x4e0c98, 0x4e0c9c),
    then one more line. The original leaves fgets's eax to callers that ignore it */
-void (cfg_42e080)(void *f)
+void (cfg_readAudioLines)(void *f)
 {
 	char value[0x84];
 	read_value(f, value, 0);
@@ -1101,7 +1101,7 @@ void (cfg_42e080)(void *f)
 /* ---- the server, graphics and key binding sections: their buffers laid out as the originals' are, the line
    straight after the joined value, kept across the lines. At the file's end fgets leaves the last line as it was,
    cut once more; cutting an empty one writes the byte before it, the value's last (cleared next anyway). A few bytes
-   lie before the value for cfg_44ac70's cut of an empty value (in the original the top byte of the caller's saved
+   lie before the value for str_dropLast's cut of an empty value (in the original the top byte of the caller's saved
    ebx, which is not reproduced) ---- */
 typedef struct { char before[4]; char value[0x84]; char line[0x78]; } CfgBuf;
 
@@ -1147,7 +1147,7 @@ void (cfg_gameTypeNames)(void *f)
 		signed char v;
 		switch (n) {
 		case 0:
-			cfg_44ac70(b.value);
+			str_dropLast(b.value);
 			strcpy((char *)0x4ded20, b.value);
 			break;
 		case 1:
@@ -1162,7 +1162,7 @@ void (cfg_gameTypeNames)(void *f)
 			GAME_VAR(u8, 0x4ded42) = IS_ON(b.value);
 			break;
 		case 4:
-			cfg_44ac70(b.value);
+			str_dropLast(b.value);
 			GAME_VAR(u8, 0x4ded43) = (u8)named(b.value, types, 14);
 			break;
 		default: {
@@ -1257,7 +1257,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 		if (!strcmp(s.line, (const char *)0x4b0f50)) {
 			cfg_readLines(f);
 			cfg_gameTypeNames(f);
-			cfg_42e080(f);
+			cfg_readAudioLines(f);
 			cfg_videoModeNames(f);
 			cfg_parseKeyNames(f);
 			fclose(f);
@@ -1320,7 +1320,7 @@ void (profile_scanSaves)(void)
 		crt_fseek(f, 20000, 0);
 		crt_fread(header, 0x104, 1, f);
 		fclose(f);
-		profile_445f10(header, 0x7e);
+		crypt_record104(header, 0x7e);
 		memcpy((void *)0x9f61d8, header, 0x104);
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);

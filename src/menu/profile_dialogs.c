@@ -8,7 +8,7 @@
 #define g_questionY GAME_VAR(int, 0x67fb38)
 
 /* 0x44b600: the new pilot's name (16 characters), typed into the panel at 0x9f8ea8 */
-void (profile_44b600)(void)
+void (profile_typeNewName)(void)
 {
 	input_releaseKeyboard();
 	g_paused = 1;
@@ -38,26 +38,26 @@ static void ask(int kind, int x, int y)
 }
 
 /* 0x44b670, 0x44b6e0: question 3 over the pilot panel, question 5 over the second panel */
-void (profile_44b670)(void) { ask(3, GAME_VAR(int, 0x9f8f1c), GAME_VAR(int, 0x9f8f0c)); }
-void (profile_44b6e0)(void) { ask(5, GAME_VAR(int, 0x9f6834), GAME_VAR(int, 0x9f683c)); }
+void (profile_askDelete)(void) { ask(3, GAME_VAR(int, 0x9f8f1c), GAME_VAR(int, 0x9f8f0c)); }
+void (profile_askSecond)(void) { ask(5, GAME_VAR(int, 0x9f6834), GAME_VAR(int, 0x9f683c)); }
 
 /* 0x44f810: the profile screen: only its frame while a dialog is up, else the pilot preview (when shown) and the
    screen */
-void (profile_44f810)(void)
+void (profile_drawScreen)(void)
 {
 	if (g_dialogOpen != 0) {
 		menu_drawFrame(GAME_VAR(int, 0x9f8c54), GAME_VAR(int, 0x9f8c50), GAME_VAR(int, 0x9f6830), GAME_VAR(int, 0x9f682c));
 		return;
 	}
 	if (GAME_VAR(int, 0x9f8d68) != 0)
-		profile_44bc50();
-	profile_44e640();
+		profile_loadSelectedColours();
+	profile_drawPilotSelect();
 }
 
 /* 0x44dc60: the profile message window (the panel 0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): its frame (texture
    0x4deb50), the message 0x751d24 across the top in the panel's colour (0x9f8eb0), the OK button (texture
    0x9db0a4, 0x60 wide, centred) with its label 0x7517a4, and the border. Returns the border call's eax */
-u32 (profile_44dc60)(void)
+u32 (profile_drawMessageWindow)(void)
 {
 #define X0 GAME_VAR(int, 0x9f8eac)
 #define Y0 GAME_VAR(int, 0x9f8ea8)
@@ -127,12 +127,12 @@ static u32 two_buttons(const TwoButtons *d)
 
 /* 0x44e180: the delete question (profile_44b320, question 0x751da4); 0x44e3e0: the second dialog (profile_44b360,
    question 0x751e24) */
-u32 (profile_44e180)(void)
+u32 (profile_drawDeleteQuestion)(void)
 {
 	static const TwoButtons d = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28, 0x44b320, 0x751da4 };
 	return two_buttons(&d);
 }
-u32 (profile_44e3e0)(void)
+u32 (profile_drawSecondDialog)(void)
 {
 	static const TwoButtons d = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0, 0x44b360, 0x751e24 };
 	return two_buttons(&d);
@@ -141,7 +141,7 @@ u32 (profile_44e3e0)(void)
 /* 0x44de00: the new-profile dialog (0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): the frame, the title 0x751ca4, the
    name field, the two buttons side by side (the hovered one, by profile_44b2a0, bright; OK dimmed while no name has
    been typed, 0x9dc92c) and the border. Returns the border call's eax */
-u32 (profile_44de00)(void)
+u32 (profile_drawNewDialog)(void)
 {
 #define X0 GAME_VAR(int, 0x9f8eac)
 #define Y0 GAME_VAR(int, 0x9f8ea8)
@@ -160,7 +160,7 @@ u32 (profile_44de00)(void)
 	int texture = GAME_VAR(int, 0x9db0a4);
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	profile_4283e0(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
+	profile_drawButton(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
 	for (int k = 0; k < 2; k++) {
 		int x = X0 + k * 0x78;
 		glEnable(GL_TEXTURE_2D);
@@ -189,8 +189,8 @@ u32 (profile_44de00)(void)
 /* 0x44d720: the profile screen (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
    page 0x9f8f10 = 1), the list's and the details' frames, the title 0x751a24, four buttons (0x751aa4, 0x80 apart:
    on the list page the one under the pointer, by profile_44b260, lit; on page k + 2 button k lit, in the panel
-   colour less 0.2 in green and blue), the pilot list (profile_44ce90), its scroll arrows (5 / 6 under the
-   pointer), the details (profile_44cf70), the border and the version string 0x4b0384 right-aligned at the bottom.
+   colour less 0.2 in green and blue), the pilot list (profileList_drawNames), its scroll arrows (5 / 6 under the
+   pointer), the details (profile_drawChosenPilot), the border and the version string 0x4b0384 right-aligned at the bottom.
    The original leaves eax to callers that ignore it */
 void (mainmenu_drawScreen)(void)
 {
@@ -330,7 +330,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
    name, title, class (0x75eea4), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (0x9f8d34,
    easing to 0x9f8ec0); two buttons (0x7517a4; 9 / 10 under the pointer by profile_44b3e0, bright) and the border.
    The original leaves eax to callers that ignore it */
-void (profile_44e640)(void)
+void (profile_drawPilotSelect)(void)
 {
 #define X0 GAME_VAR(int, 0x9f8c54)
 #define Y0 GAME_VAR(int, 0x9f8c50)
@@ -469,7 +469,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
    profile list, when there are profiles (0x9f9008): 13 labels (0x75e824), the portrait in a yellow frame, the name,
    title and class (the original places these two by the panel's x, 0x9f8e48, not its y), the level, the nine
    stats and their bars; all at half brightness while the list does not have the focus (0x9f8f10) */
-void (profile_44cf70)(void)
+void (profile_drawChosenPilot)(void)
 {
 #define X0 GAME_VAR(int, 0x9f8e48)
 #define Y0 GAME_VAR(int, 0x9f8e4c)

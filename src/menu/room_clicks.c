@@ -17,7 +17,7 @@ void (leaveDialog_clicks)(void)
 	switch (room_4321c0(g_mouseX, g_mouseY)) {
 	case 0:
 		g_leaveDialog = 0;
-		profile_41e7a0(2);
+		app_closeWindow(2);
 		break;
 	case 1:
 		g_leaveDialog = 0;
@@ -102,7 +102,7 @@ static void leave_keys(int *question)
 		*question = 0;
 	} else if (input_justPressed(g_keyOk)) {
 		*question = 0;
-		profile_41e7a0(2);
+		app_closeWindow(2);
 	}
 }
 
@@ -410,7 +410,7 @@ u32 (account_checkForm)(void)
 	GAME_VAR(int, 0x9dc428) = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int message, reopen;
-	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* profile_4343b0: blank */
+	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
 		message = 0x24, reopen = 0x9dd348;
 	else if (GAME_CDECL(0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
 		message = 0x15a, reopen = 0x9dd348;
@@ -692,7 +692,7 @@ u32 (room_settingsAfterTyping)(void)
 		return 0;
 	const char *line = (const char *)0x9dc92c;
 	if (GAME_VAR(int, 0x9dd380)) {   /* the room's name */
-		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* profile_4343b0: blank */
+		if (!strlen(line) || GAME_CDECL(0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_CDECL(0x41e760, u32, int)(6) : 0;
 			GAME_VAR(int, 0x9dd380) = 0;
 			return r;

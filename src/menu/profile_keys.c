@@ -32,8 +32,8 @@ static int dialog_keys(int x, int y)
 	return 0;
 }
 
-/* 0x44c850 (profile_44c850): page 2, a message: OK or a click closes it */
-void (profile_44c850)(void)
+/* 0x44c850 (profile_messageKeys): page 2, a message: OK or a click closes it */
+void (profile_messageKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (!g_profileMessage)
@@ -41,18 +41,18 @@ void (profile_44c850)(void)
 	if (input_justPressed(g_keyClick) == 1) {
 		g_profileMessage = 0;
 		g_paused = 1;
-		profile_44b600();
+		profile_typeNewName();
 	}
 	if (input_justPressed(g_keyOk) == 1) {
 		g_profileMessage = 0;
 		g_paused = 1;
-		profile_44b600();
+		profile_typeNewName();
 	}
 }
 
-/* 0x44c8c0 (profile_44c8c0): page 3, "delete this profile?": OK or a click on the left button deletes it, the
+/* 0x44c8c0 (profile_deleteKeys): page 3, "delete this profile?": OK or a click on the left button deletes it, the
    right button or a cancel key keeps it; either way back to the list */
-void (profile_44c8c0)(void)
+void (profile_deleteKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
@@ -79,14 +79,14 @@ void (profile_44c8c0)(void)
 	dialog_keys(g_profileDialogX, g_profileDialogY);
 }
 
-/* 0x44ca90 (profile_44ca90): page 5, the second two-button dialog: OK or a click on the left button confirms
-   (profile_44bc00), the right button or a cancel key goes back to the list */
-void (profile_44ca90)(void)
+/* 0x44ca90 (profile_secondDialogKeys): page 5, the second two-button dialog: OK or a click on the left button confirms
+   (profile_resetCamera), the right button or a cancel key goes back to the list */
+void (profile_secondDialogKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
 		sound_playMenu(0);
-		profile_44bc00();
+		profile_resetCamera();
 		return;
 	}
 	int button = -1;
@@ -94,7 +94,7 @@ void (profile_44ca90)(void)
 		button = profile_44b360(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
-			profile_44bc00();
+			profile_resetCamera();
 			return;
 		}
 	}
@@ -107,9 +107,9 @@ void (profile_44ca90)(void)
 	dialog_keys(g_profileDialog2X, g_profileDialog2Y);
 }
 
-/* 0x44cc60 (profile_44cc60): page 6, the emblem grid: OK takes the profile (profile_selectAndLoad), back or
+/* 0x44cc60 (profile_emblemKeys): page 6, the emblem grid: OK takes the profile (profile_selectAndLoad), back or
    cancel leaves; either way back to the list. The arrows move the cursor (0..8) and wrap within its row or column */
-void (profile_44cc60)(void)
+void (profile_emblemKeys)(void)
 {
 	g_cursorBlink = 0.0f;
 	if (input_justPressed(g_keyOk) == 1) {
