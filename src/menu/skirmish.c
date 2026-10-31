@@ -85,7 +85,7 @@ static void briefing_button(int x0, int x1, int lit, const u32 *colour, const ch
 	static const u32 grey[4] = { 0x3f19999a, 0x3f19999a, 0x3f19999a, 0x3f800000 };   /* 0.6, 0.6, 0.6, 1 */
 	if (!colour)
 		glColor4f(0.6f, 0.6f, 0.6f, 1.0f);
-	menu_drawTexQuad_4282f0(x0, BY1 - 0x30, x1, BY1 - 0x10, lit);
+	menu_drawWideButton(x0, BY1 - 0x30, x1, BY1 - 0x10, lit);
 	if (!colour)
 		colour = grey;
 	set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
@@ -154,7 +154,7 @@ void (skirmish_drawScreenA)(void)
 		bind_button_texture();
 		int x0 = BX1 + k * 0x8c - 0x12c, x1 = BX1 + k * 0x8c - 0xb4;
 		int lit = hovered == k + 8;
-		menu_drawTexQuad_4282f0(x0, BY1 - 0x40, x1, BY1 - 0x20, lit);
+		menu_drawWideButton(x0, BY1 - 0x40, x1, BY1 - 0x20, lit);
 		const u32 *colour = lit ? g_panelColour : g_dimColour;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x0, BY1 - 0x38, x1, (const char *)(0x75e0a4 + k * 0x80));

@@ -158,7 +158,7 @@ void (mapSelect_drawDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x74e8a4);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -167,8 +167,8 @@ void (mapSelect_drawDialog)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4286b0(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
-	menu_drawTexQuad_4287a0(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
+	menu_drawSmallButton3(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
+	menu_drawSmallButton4(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
 	glDisable(GL_TEXTURE_2D);
 	const int *ticked[2] = { (const int *)0x4b2a7c, (const int *)0x9eeac0 };
 	for (int k = 0; k < 2; k++) {
@@ -190,7 +190,7 @@ void (mapSelect_drawDialog)(void)
 			int lit = hovered == 4 + row * 2 + k;
 			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;
-			menu_drawTexQuad_4282f0(x + 0x64, y, x + 0xdc, y + 0x20, 1);
+			menu_drawWideButton(x + 0x64, y, x + 0xdc, y + 0x20, 1);
 			const u32 *colour = lit ? bright : dim;
 			set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(0x74ea24 + row * 0x100 + k * 0x80));
@@ -201,7 +201,7 @@ void (mapSelect_drawDialog)(void)
 	}
 	mapSelect_drawNames();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef X0
 #undef Y0
 #undef X1
@@ -324,7 +324,7 @@ void (menu_returnToMain)(void)
 {
 	while (g_tunnel != NULL)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
-	game_returnToMenus_41e9d0();
+	game_returnToScreen400();
 	g_screen = 300;
 }
 
@@ -334,7 +334,7 @@ void (menu_returnToMainFromRoom)(void)
 {
 	while (g_tunnel != NULL)
 		armc_freeRing(&GAME_VAR(TunnelRing *, 0x67fb3c));
-	game_returnToMenus_41e8b0();
+	game_returnToMainMenu();
 	g_roomRequestOut = 0;
 	g_roomAnswerAwaited = 0;
 	GAME_VAR(int, 0x9dd1b0) = 0;
@@ -585,7 +585,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 #define NEAR_BACK 0xc4098000u   /* -550 */
 
 /* 0x41ec50: to screen 500 */
-u32 (game_returnToMenus_41ec50)(void)
+u32 (game_returnToScreen500)(void)
 {
 	leave_game(0, 1);
 	GAME_VAR(int, 0x76d3e8) = 500;
@@ -597,7 +597,7 @@ u32 (game_returnToMenus_41ec50)(void)
 
 /* 0x41e8b0: to the main menu (300), the cameras in front (500, 400), 0x4deb48 set and 0x4e1868 cleared. Returns 1
    when the keyboard was not let go */
-u32 (game_returnToMenus_41e8b0)(void)
+u32 (game_returnToMainMenu)(void)
 {
 	leave_game(0, 1);
 	GAME_VAR(int, 0x76d3e8) = 300;
@@ -609,7 +609,7 @@ u32 (game_returnToMenus_41e8b0)(void)
 }
 
 /* 0x41e9d0: to screen 400, the previous screen 300 */
-u32 (game_returnToMenus_41e9d0)(void)
+u32 (game_returnToScreen400)(void)
 {
 	leave_game(0, 1);
 	g_nextScreen = 400;
@@ -621,7 +621,7 @@ u32 (game_returnToMenus_41e9d0)(void)
 }
 
 /* 0x41eb00: back to the game room (800; lobby state 2, the connection kept): the room's state cleared too */
-u32 (game_returnToMenus_41eb00)(void)
+u32 (game_returnToGameRoom)(void)
 {
 	leave_game(2, 0);
 	g_roomState = 0x63;
@@ -723,7 +723,7 @@ u32 (game_postMatch)(void)
 	switch (g_matchMode) {
 	case 1:
 		send_result();
-		game_returnToMenus_41e9d0();
+		game_returnToScreen400();
 		break;
 	case 2:
 		if (g_isHost) {
@@ -735,9 +735,9 @@ u32 (game_postMatch)(void)
 		}
 		if (g_gameServerSocket) {
 			GAME_CDECL(0x44aee0, void, void)();   /* the room's text kept */
-			GAME_CDECL(0x41eb00, void, void)();   /* game_returnToMenus_41eb00: the room */
+			GAME_CDECL(0x41eb00, void, void)();   /* game_returnToGameRoom: the room */
 		} else
-			game_returnToMenus_41e8b0();
+			game_returnToMainMenu();
 		break;
 	case 3:
 		mission = GAME_VAR(int, 0x9f181c);
@@ -751,10 +751,10 @@ u32 (game_postMatch)(void)
 		}
 		GAME_CDECL(0x41f880, u32, u32)(mission < 15 ? 0 : 1);
 		GAME_CDECL(0x447010, void, void)();
-		GAME_CDECL(0x41ec50, void, void)();         /* game_returnToMenus_41ec50 */
+		GAME_CDECL(0x41ec50, void, void)();         /* game_returnToScreen500 */
 		break;
 	default:
-		game_returnToMenus_41e8b0();
+		game_returnToMainMenu();
 	}
 	r = GAME_CDECL(0x457150, u32, const char *)((const char *)0x4b01cc);   /* music_play */
 message:

@@ -7,7 +7,7 @@
 #define MCI_NOTIFY 1
 
 /* 0x43f580: the current directory into the game's path buffer (0x76d224, 0x105 bytes) */
-u32 (GetCurrentDirectoryA_wrap_43f580)(void)
+u32 (app_readCurrentDirectory)(void)
 {
 	return GetCurrentDirectoryA(0x105, (char *)0x76d224);
 }
@@ -76,7 +76,7 @@ int (glWindow_resize)(int width, int height)
    colour / depth bits (0xa0e810, 0xa0e928, 0xa0e818, 0xa0e924) kept. Without a given window (window and other
    NULL): its class registered (glWindow_wndProc, the icon named as the title, arrow cursor), the display mode
    switched in full screen (failing that, a message and windowed), a pop-up window of that size made, shown and
-   focused; otherwise the given window (and other, 0xa0e938) taken and resized. Then the GL state (glWindow_4684c0);
+   focused; otherwise the given window (and other, 0xa0e938) taken and resized. Then the GL state (gfx_resetState);
    returns the window */
 void *(glWindow_init)(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen,
                       void *window, void *other)
@@ -128,7 +128,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		GAME_VAR(void *, 0xa0e938) = other;
 		glWindow_resize(width, height);
 	}
-	GAME_CDECL(0x4684c0, void, void)();   /* glWindow_4684c0 */
+	GAME_CDECL(0x4684c0, void, void)();   /* gfx_resetState */
 	g_glCachedState = -1;
 	return g_glWindow;
 }
@@ -347,7 +347,7 @@ int (app_init)(void *inst, int show)
 		return 0;
 	g_screenW = 640;
 	g_screenH = 480;
-	GetCurrentDirectoryA_wrap_43f580();
+	app_readCurrentDirectory();
 	app_setDataPaths();
 	data_loadMessages();
 	void *user32 = GetModuleHandleA((const char *)0x4ac820);

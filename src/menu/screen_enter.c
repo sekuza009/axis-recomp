@@ -103,7 +103,7 @@ void (menuState400_enter)(void)
 	I(0x76d3fc) = ly;
 	I(0x76d400) = lz;
 	CLEAR_ALL(cleared1);
-	arena_403f30();
+	lobbyTop_layout();
 	arenaNameDialog_layout();
 	arenaGameList_layout();
 	arenaDialogBox_layout();
@@ -272,7 +272,7 @@ static const Store briefing_camera[] = {
 	{ 0x76d3fc, 0 }, { 0x76d400, 0xc4098000 } };
 
 /* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
-   panels (skirmish_4437b0, skirmish_443840), the page set to 10 (skirmish settings) with a sound, the mission list
+   panels (skirmish_layout, skirmishButtons_layout), the page set to 10 (skirmish settings) with a sound, the mission list
    loaded (mission_loadAxisMis) and its state cleared. Returns 0 (the original's eax) */
 int (menuState900_enterSkirmish)(void)
 {
@@ -284,8 +284,8 @@ int (menuState900_enterSkirmish)(void)
 	static const u32 cleared[] = { 0x9f16bc, 0x9f1058, 0x9f16a4, 0x680bb4, 0x76d37c };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	GAME_CDECL(0x4437b0, void, void)();   /* skirmish_4437b0 */
-	GAME_CDECL(0x443840, void, void)();   /* skirmish_443840 */
+	GAME_CDECL(0x4437b0, void, void)();   /* skirmish_layout */
+	GAME_CDECL(0x443840, void, void)();   /* skirmishButtons_layout */
 	I(0x9eeba8) = 1;
 	I(0x9ef1f8) = 10;
 	sound_playMenu(4);
@@ -417,13 +417,13 @@ void (console_init)(void)
 	case 1:   /* (the selection's range checks are jumped over in the patched game) */
 		data_loadPilotProfiles();
 		match_name((const char *)0x4dedb0);
-		armc_40d990();
+		armc_resetSeraphimParts();
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 2:
-		console_41e390();
+		room_fitWindowRects();
 		if (GAME_VAR(int, 0x9dd5d8) != 0x14)
-			armc_40d990();
+			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
 		match_name((const char *)0x9dd570);
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);

@@ -47,7 +47,7 @@ void THISCALL (notices_clearAll)(Scene *scene)
 }
 
 /* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: one notice raised, with its values and text */
-void THISCALL (match_4634e0)(Scene *scene, int a, const char *text)
+void THISCALL (notice_raise1)(Scene *scene, int a, const char *text)
 {
 	FIELD(int, scene, 0x234310a) = a;
 	FIELD(int, scene, 0x234314e) = 1;
@@ -55,14 +55,14 @@ void THISCALL (match_4634e0)(Scene *scene, int a, const char *text)
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (match_463530)(Scene *scene, int a)
+void THISCALL (notice_raise2)(Scene *scene, int a)
 {
 	FIELD(int, scene, 0x2343156) = 1;
 	FIELD(int, scene, 0x2343152) = a;
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (match_463550)(Scene *scene, int a, const char *text, int b)
+void THISCALL (notice_raise3)(Scene *scene, int a, const char *text, int b)
 {
 	FIELD(int, scene, 0x234315a) = a;
 	FIELD(int, scene, 0x234319b) = 1;
@@ -71,7 +71,7 @@ void THISCALL (match_463550)(Scene *scene, int a, const char *text, int b)
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (match_4635b0)(Scene *scene, int a, int b, const char *text)
+void THISCALL (notice_raise4)(Scene *scene, int a, int b, const char *text)
 {
 	FIELD(int, scene, 0x234319f) = a;
 	FIELD(int, scene, 0x23431a3) = b;
@@ -80,7 +80,7 @@ void THISCALL (match_4635b0)(Scene *scene, int a, int b, const char *text)
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (match_463610)(Scene *scene, int a, int b, const char *text)
+void THISCALL (notice_raise5)(Scene *scene, int a, int b, const char *text)
 {
 	FIELD(int, scene, 0x23431eb) = a;
 	FIELD(int, scene, 0x23431ef) = b;
@@ -90,7 +90,7 @@ void THISCALL (match_463610)(Scene *scene, int a, int b, const char *text)
 }
 
 /* 0x463450: the centre-screen notice printed (shown for 2 seconds); vsprintf's count */
-int (vsprintf_wrap_463450)(Scene *scene, const char *format, ...)
+int (notice_printCentre)(Scene *scene, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -101,7 +101,7 @@ int (vsprintf_wrap_463450)(Scene *scene, const char *format, ...)
 }
 
 /* 0x473450: printed into the stage's text buffer (+0x20fcd4c) */
-int (vsprintf_wrap_473450)(u8 *obj, const char *format, ...)
+int (stage_printText)(u8 *obj, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);

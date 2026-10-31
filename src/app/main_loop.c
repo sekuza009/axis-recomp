@@ -6,13 +6,13 @@
 /* 0x4202d0 (app_frame): the frame: the music, the menus' fade-in counted down, then main_loop */
 void (app_frame)(void)
 {
-	music_4572b0();
+	music_loopIfEnded();
 	if (g_menuFade > 0.0f)
 		g_menuFade = g_menuFade - g_frameTime;
 	main_loop();
 }
 
-/* 0x420280: in a match the input and the match's frame (main_462050); a frame that answers 0 ends the match;
+/* 0x420280: in a match the input and the match's frame (match_frameByState); a frame that answers 0 ends the match;
    outside a match the menus' frame */
 void (main_loop)(void)
 {
@@ -26,13 +26,13 @@ void (main_loop)(void)
 		input_updateMenuCursor();
 		input_reacquireKeyboard();
 	}
-	if (main_462050(g_scene) == 0)
+	if (match_frameByState(g_scene) == 0)
 		game_postMatch();
 }
 
-/* 0x462050 (main_462050): the match's frame by its state; each state's handler answers the next state. The
+/* 0x462050 (match_frameByState): the match's frame by its state; each state's handler answers the next state. The
    playing, free-camera and replay states present the frame (playing only while frameFlag is 1). */
-int THISCALL (main_462050)(Scene *scene)
+int THISCALL (match_frameByState)(Scene *scene)
 {
 	switch (scene->inputState) {
 	case 1:
@@ -338,13 +338,13 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (input_justPressed(KEY(0x4df8d0))) {
 			if (S(int, 0x2340ce8) == 0) {
 				S(int, 0x2340ce8) = 1;
-				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7d00);
+				notice_printCentre((Scene *)s, (const char *)0x4c7d00);
 			} else if (S(int, 0x2340ce4) == 0) {
 				S(int, 0x2340ce4) = 1;
-				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7cf0);
+				notice_printCentre((Scene *)s, (const char *)0x4c7cf0);
 			} else {
 				S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
-				vsprintf_wrap_463450((Scene *)s, (const char *)0x4c7ce4);
+				notice_printCentre((Scene *)s, (const char *)0x4c7ce4);
 			}
 		}
 	} else if (S(int, 0x2340cf4) == 1) {
@@ -547,7 +547,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	up[2] = 0;
 	Vec3_rotateAxis(up, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
 	Vec3_rotateAxis(up, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
-	float far = hud_scale(), near = match_4686f0();
+	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
 	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, cam, dir, up, *(u32 *)&fov, w, h,
@@ -576,12 +576,12 @@ u32 THISCALL (match_inputState3)(u8 *s)
 				far_point(b, pitch + 100, yaw);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_add_485120(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+				ViewVolume_addSegment(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_add_485120(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+				ViewVolume_addSegment(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
 			}
 	stage_drawActors((Stage *)stage, s + 0x74, -1);
 	stage_drawBullets(stage, s + 0x74);
@@ -1046,7 +1046,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
 			mode = (const char *)0x4c7ce4;   /* "NORMAL MODE" */
 		}
-		vsprintf_wrap_463450((Scene *)s, mode);
+		notice_printCentre((Scene *)s, mode);
 	}
 	/* the mouse: its offset from the centre (y inverted with 0x4df000), scaled by the sensitivity, unless slow */
 	S(int, 0x2343257) = GAME_VAR(int, 0x4ded68);
@@ -1171,7 +1171,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			up[0] = up[2] = 0;
 		}
 	}
-	float far = hud_scale(), near = match_4686f0();
+	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
 	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),
@@ -1179,7 +1179,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	S(int, 0x233cc28)++;
 
 	/* the scene */
-	hud_456b50(g_textures);
+	tex_clearSetCounters(g_textures);
 	if (S(int, 0xbe16f8) == 1) {
 		glClearColor_stored((const u32 *)(s + 0xbe16fc));
 		glClearDepth(1.0);
@@ -1194,8 +1194,8 @@ u32 THISCALL (replay_frame)(u8 *s)
 	ViewVolume_reset(view);
 	if (S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) == 2 && S(int, 0x2340c64) >= 0)
 		ACTOR_INT(S(int, 0x2340c64), 0x1eccfc0) = 1;   /* (the followed player seen from inside) */
-	sky_draw((Stage *)stage, hud_scale());
-	render_processRenderingBy(stage, view, hud_scale());
+	sky_draw((Stage *)stage, view_farPlane());
+	render_processRenderingBy(stage, view, view_farPlane());
 	stage_drawObjects((Stage *)stage, view);
 	stage_drawActors((Stage *)stage, view, -1);
 	stage_drawBullets(stage, view);
@@ -1211,7 +1211,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), K(0x4a93f4)) : fsub_m(fld_m(&p[k]), K(0x4a93f4)));
-				ViewVolume_add_485120(view, (const void *)0xa1f208, p, q, 1);
+				ViewVolume_addSegment(view, (const void *)0xa1f208, p, q, 1);
 			}
 		}
 	if (S(int, 0xbe170c) == 1) {
@@ -1368,7 +1368,7 @@ static void local_spawn(u8 *s)
 	if (S(int, 0x2340d1d) == 1)
 		S(int, 0x234300a + S(int, 0x234240d) * 16) = 1;
 	S(int, 0x233c9fc) = 1;
-	vsprintf_wrap_463450((Scene *)s, (const char *)0x4d0618);
+	notice_printCentre((Scene *)s, (const char *)0x4d0618);
 	S(u32, 0x23423c1) = 0x40400000;   /* 3 */
 	S(int, 0x23423c5) = -1;
 	msg_newKing((Scene *)s);
@@ -1574,7 +1574,7 @@ static void chat_keys(u8 *s)
 		int code = mode == 1 ? chat_matchCheatCode(s, S(int, 0x234240d), typed) : -1;
 		if (code >= 0) {
 			msg_cheatUsed(s, S(int, 0x234240d), code);
-			match_48b430(s, (void *)S(int, 0x234240d), (const void *)code);
+			recorder_openStub(s, (void *)S(int, 0x234240d), (const void *)code);
 		} else {
 			int r = chat_macro(s, typed, line);
 			if (r == 0)
@@ -1583,7 +1583,7 @@ static void chat_keys(u8 *s)
 				int team = mode == 1 ? -1 : S(int, 0x234243e);
 				msg_chatLine(s, S(int, 0x234240d), line, team);
 				team = mode == 1 ? -1 : S(int, 0x234243e);
-				match_463550(s, S(int, 0x234240d), line, team);
+				notice_raise3(s, S(int, 0x234240d), line, team);
 			}
 		}
 	}
@@ -1661,7 +1661,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			S(int, 0x23423a5) = 0;
 			music_shutdown();
 			if (S(int, 0x234240d) >= 0)
-				match_463530(s, S(int, 0x234240d));
+				notice_raise2(s, S(int, 0x234240d));
 			GAME_VAR(int, 0x9f67f4) = 0;
 		}
 		S(int, 0x23432cf) = 0;
@@ -1693,7 +1693,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		strcpy((char *)ACTOR_AT(S(int, 0x234240d)) + 0x98, (const char *)(s + 0x2342429));
 		A_INT(S(int, 0x234240d), 0x1eccb7c) = S(int, 0x234240d);
 		msg_playerConnected(s, S(int, 0x234240d));
-		match_4634e0(s, S(int, 0x234240d), s + 0x1755234 + S(int, 0x234240d) * 0x47fd2);
+		notice_raise1(s, S(int, 0x234240d), s + 0x1755234 + S(int, 0x234240d) * 0x47fd2);
 		net_sendMatchEvent(s);
 	}
 	/* a team chosen (or a menu for it), then the spawn */
@@ -1707,9 +1707,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 				escMenu_open((Scene *)s, 1, S(int, 0x234297e) > S(int, 0x2342982) ? 1 : 0);
 		} else {
 			if (S(int, 0x234243e) < 0) {
-				match_4613a0((Scene *)s, S(int, 0x234240d));
+				scene_setLocalTeam((Scene *)s, S(int, 0x234240d));
 				msg_playerJoinedTeam((Scene *)s, S(int, 0x234240d), S(int, 0x234243e));
-				match_4635b0((Scene *)s, S(int, 0x234240d), S(int, 0x234243e), (const char *)(s + 0x2342429));
+				notice_raise4((Scene *)s, S(int, 0x234240d), S(int, 0x234243e), (const char *)(s + 0x2342429));
 			}
 			S(int, 0x2340d00) = 1;
 		}
@@ -1893,25 +1893,25 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(u32, 0x233cc40) = 0x40a00000;
 	me = S(int, 0x234240d);
 	if (me >= 0 && A_INT(me, 0x1eccbbc) == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
-		vsprintf_wrap_463450((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
+		notice_printCentre((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
 	/* the start count (3, 2, 1, go) */
 	if (S(float, 0x23423c1) > 0) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423c1)), (const float *)(s + 0x44));
 		S(float, 0x23423c1) = (float)v;
 		if (!(v >= 0)) {
 			S(int, 0x23423c1) = 0;
-			vsprintf_wrap_463450((Scene *)s, (const char *)0x4d0610);
+			notice_printCentre((Scene *)s, (const char *)0x4d0610);
 			sound_playVolume(0x17, 100);
 		} else {
 			int n = ftol(v);
 			if (S(int, 0x23423c5) != n) {
 				S(int, 0x23423c5) = n;
 				if (n == 0)
-					vsprintf_wrap_463450((Scene *)s, (const char *)0x4d05f8);
+					notice_printCentre((Scene *)s, (const char *)0x4d05f8);
 				else if (n == 1)
-					vsprintf_wrap_463450((Scene *)s, (const char *)0x4d0600);
+					notice_printCentre((Scene *)s, (const char *)0x4d0600);
 				else if (n == 2)
-					vsprintf_wrap_463450((Scene *)s, (const char *)0x4d0608);
+					notice_printCentre((Scene *)s, (const char *)0x4d0608);
 				sound_playVolume(9, 100);
 			}
 		}
@@ -1921,12 +1921,12 @@ void THISCALL (game_processGameMode)(u8 *s)
 		int a = A_INT(me, 0x1eccb4c);
 		if (a != A_INT(me, 0x1eccb50)) {
 			A_INT(me, 0x1eccb50) = a;
-			vsprintf_wrap_463450((Scene *)s, (const char *)0x4d05ec);
+			notice_printCentre((Scene *)s, (const char *)0x4d05ec);
 			sound_playVolume(0x18, 100);
 		}
 	}
 	if (S(u8, 0x22f0414)) {
-		vsprintf_wrap_463450((Scene *)s, (const char *)(s + 0x22f0414));
+		notice_printCentre((Scene *)s, (const char *)(s + 0x22f0414));
 		S(u8, 0x22f0414) = 0;
 	}
 	if (S(int, 0x2221fb4) == 1 || !(S(float, 0x233cc58) > 0)) {
@@ -2028,7 +2028,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				notices_clearAll(s);
 				if (S(int, 8) == 0) {
 					teams_setup((Scene *)s);
-					match_4613a0((Scene *)s, -1);
+					scene_setLocalTeam((Scene *)s, -1);
 					if (S(int, 0x23423a9) == 0)
 						escMenu_open((Scene *)s, 3, 0);
 					else
@@ -2065,7 +2065,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					S(int, 0x2342415) = 0;
 					if (S(int, 0x234240d) >= 0)
 						A_INT(S(int, 0x234240d), 0x1eccb48) = 0;
-					match_4613a0((Scene *)s, -1);
+					scene_setLocalTeam((Scene *)s, -1);
 				}
 				A_INT(S(int, 0x234240d), 0x1eccb60) = 0;
 				A_INT(S(int, 0x234240d), 0x1eccb54) = 0;
@@ -2163,7 +2163,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			turn_view(s);
 		}
 	}
-	float far = hud_scale(), near = match_4686f0();
+	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
 	float fov = game_clock();
 	GAME_THISCALL(0x4729b0, void, void *, float *, float *, float *, u32, int, int, u32, u32, u32)(stage, (float *)(s + 0x233ca04), (float *)(s + 0x233ca10),

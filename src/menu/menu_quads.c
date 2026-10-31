@@ -27,7 +27,7 @@ static void button(int x0, int y0, int x1, int y1, int lit, const float plainCel
 }
 
 /* 0x4282f0: the wide button (27 callers: the screens' text buttons) */
-void (menu_drawTexQuad_4282f0)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawWideButton)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.005f, 0.375f, 0.375f, 0.5f }, lit_[4] = { 0.38f, 0.375f, 0.75f, 0.5f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
@@ -41,25 +41,25 @@ void (profile_drawButton)(int x0, int y0, int x1, int y1, int lit)
 }
 
 /* 0x4284d0, 0x4285c0, 0x4286b0, 0x4287a0: the small buttons, two cells each */
-void (menu_drawTexQuad_4284d0)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawSmallButton1)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.0f, 0.25f, 0.25f, 0.375f }, lit_[4] = { 0.5f, 0.25f, 0.75f, 0.375f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawTexQuad_4285c0)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawSmallButton2)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.25f, 0.25f, 0.5f, 0.375f }, lit_[4] = { 0.75f, 0.25f, 1.0f, 0.375f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawTexQuad_4286b0)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawSmallButton3)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.75f, 0.375f, 0.875f, 0.625f }, lit_[4] = { 0.875f, 0.375f, 1.0f, 0.625f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
 }
 
-void (menu_drawTexQuad_4287a0)(int x0, int y0, int x1, int y1, int lit)
+void (menu_drawSmallButton4)(int x0, int y0, int x1, int y1, int lit)
 {
 	static const float plain[4] = { 0.75f, 0.625f, 0.875f, 0.875f }, lit_[4] = { 0.875f, 0.625f, 1.0f, 0.875f };
 	button(x0, y0, x1, y1, lit, plain, lit_);
@@ -74,7 +74,7 @@ static void bind(int texture)
 }
 
 /* 0x427a90: all of texture on the rectangle (a panel's background) */
-void (menu_drawTexturedRect_427a90)(int x0, int y0, int x1, int y1, int texture)
+void (menu_drawTexture)(int x0, int y0, int x1, int y1, int texture)
 {
 	bind(texture);
 	glBegin(GL_QUADS);
@@ -84,7 +84,7 @@ void (menu_drawTexturedRect_427a90)(int x0, int y0, int x1, int y1, int texture)
 }
 
 /* 0x427b60: the same, upside down */
-void (menu_drawTexturedRect_427b60)(int x0, int y0, int x1, int y1, int texture)
+void (menu_drawTextureFlipped)(int x0, int y0, int x1, int y1, int texture)
 {
 	bind(texture);
 	glBegin(GL_QUADS);
@@ -95,7 +95,7 @@ void (menu_drawTexturedRect_427b60)(int x0, int y0, int x1, int y1, int texture)
 
 /* 0x428a00: the ornaments on a panel's top left and bottom right corners (128-unit quarters of
    g_menuOrnamentTexture), placed around (x0, y0) and (x1, y1) */
-void (menu_drawTexturedRect_428a00)(int x0, int y0, int x1, int y1)
+void (menu_drawCornerOrnaments)(int x0, int y0, int x1, int y1)
 {
 	bind(g_menuOrnamentTexture);
 	glBegin(GL_QUADS);
@@ -108,7 +108,7 @@ void (menu_drawTexturedRect_428a00)(int x0, int y0, int x1, int y1)
 }
 
 /* 0x428b50: the ornament on a panel's top right corner (the third quarter); the first argument is unused */
-void (menu_drawTexturedRect_428b50)(int x0, int y0, int x1)
+void (menu_drawTopRightOrnament)(int x0, int y0, int x1)
 {
 	(void)x0;
 	bind(g_menuOrnamentTexture);

@@ -129,7 +129,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define FUN_004a8300(host) GAME_CDECL(0x4a8300, void, int)(host)
 #define stage_selectActor(stage, i) GAME_THISCALL(0x45dfb0, void, Stage *, int)(stage, i)
 #define sound_setVolume(v) GAME_CDECL(0x456de0, void, int)(v)
-#define set_4b42dc_457140(v) GAME_CDECL(0x457140, void, int)(v)
+#define music_setVolumeSetting(v) GAME_CDECL(0x457140, void, int)(v)
 #define scene_resetScores(scene) GAME_THISCALL(0x4620e0, void, Scene *)(scene)
 #define events_clear(scene, t) GAME_THISCALL(0x4629c0, void, Scene *, float)(scene, t)
 /* (app/main_loop.c: the replay's frame) */
@@ -153,9 +153,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define msg_networkUnstable(scene) GAME_THISCALL(0x4633c0, void, void *)(scene)
 #define msg_dataLoss(scene) GAME_THISCALL(0x4633f0, void, void *)(scene)
 #define notices_clearAll(scene) GAME_THISCALL(0x463480, void, void *)(scene)
-#define match_4634e0(scene, p, rec) GAME_THISCALL(0x4634e0, void, void *, int, void *)(scene, p, rec)
-#define match_463530(scene, p) GAME_THISCALL(0x463530, void, void *, int)(scene, p)
-#define match_463550(scene, p, text, team) GAME_THISCALL(0x463550, void, void *, int, const char *, int)(scene, p, text, team)
+#define notice_raise1(scene, p, rec) GAME_THISCALL(0x4634e0, void, void *, int, void *)(scene, p, rec)
+#define notice_raise2(scene, p) GAME_THISCALL(0x463530, void, void *, int)(scene, p)
+#define notice_raise3(scene, p, text, team) GAME_THISCALL(0x463550, void, void *, int, const char *, int)(scene, p, text, team)
 #define event_raise3(scene) GAME_THISCALL(0x463670, void, void *)(scene)
 #define event_raise4(scene) GAME_THISCALL(0x463690, void, void *)(scene)
 #define event_raise5(scene) GAME_THISCALL(0x4636b0, void, void *)(scene)
@@ -185,8 +185,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define collision_moveActor(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis) GAME_THISCALL(0x471400, int, void *, float, const float *, const float *, u32, u32, float *, float *, float *, float *, u32)(stage, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis)
 #define teams_setup(scene) GAME_THISCALL(0x4636d0, void, Scene *)(scene)
 #define armcMain_hitTest(x, y) GAME_CDECL(0x40e450, int, int, int)(x, y)   /* the ARM CENTER's item under (x, y), -1 none */
-#define skel_ase_47d0f0(q, m) GAME_THISCALL(0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
-#define skel_ase_47d260(out, q) GAME_THISCALL(0x47d260, void, float *, const float *)(out, q)
+#define quat_fromMatrix(q, m) GAME_THISCALL(0x47d0f0, void, float *, const float *)(q, m)   /* a rotation matrix to a quaternion */
+#define quat_toAxisAngle(out, q) GAME_THISCALL(0x47d260, void, float *, const float *)(out, q)
 #define factor_addFactorBy(pool, record) GAME_THISCALL(0x483dd0, void, void *, void *)(pool, record)   /* a 0x2c-byte factor record added */
 #define light_computeLayerLightBy(scene, layer, verts, a, b, c, rows, cols) GAME_THISCALL(0x472400, void, void *, const void *, u32, int, int, int, int, int)(scene, layer, verts, a, b, c, rows, cols)
 #define bullet_update(scene, i, dt) GAME_THISCALL(0x47a2d0, void, void *, int, int)(scene, i, dt)
@@ -198,8 +198,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define Mat4_multiply(out, a, b) GAME_CDECL(0x47d380, void, float *, const float *, const float *)(out, a, b)
 #define space_getNextFreeNodePtr(space) GAME_THISCALL(0x4816c0, void *, void *)(space)
 #define space_buildPlanes(space, id, v0, v1, v2, unit, part, i0, i1, i2) GAME_THISCALL(0x481eb0, u8 *, void *, u32, u32, u32, u32, void *, u32, u32, u32, u32)(space, id, v0, v1, v2, unit, part, i0, i1, i2)
-#define match_48b430(self, a0, a1) GAME_THISCALL(0x48b430, void, void *, void *, const void *)(self, a0, a1)   /* (an empty method) */
-#define match_48b440(self, a) GAME_THISCALL(0x48b440, int, void *, u32)(self, a)                             /* (answers 0) */
+#define recorder_openStub(self, a0, a1) GAME_THISCALL(0x48b430, void, void *, void *, const void *)(self, a0, a1)   /* (an empty method) */
+#define recorder_setPathStub(self, a) GAME_THISCALL(0x48b440, int, void *, u32)(self, a)                             /* (answers 0) */
 #define sound_playFile(name, volume) GAME_CDECL(0x457080, u32, const char *, int)(name, volume)
 #define actor_setupFromParts(scene, i, x, y, parts) GAME_THISCALL(0x457330, void, void *, int, u32, u32, u32)(scene, i, x, y, parts)
 #define particle_init(system, i, desc) GAME_THISCALL(0x475070, void, void *, int, u32)(system, i, desc)
@@ -225,7 +225,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define map_loadTriggerInfoFrom(scene, f) GAME_THISCALL(0x48b530, void, void *, void *)(scene, f)
 #define room_keepText() GAME_CDECL(0x44aee0, void, void)()   /* the room's text kept */
 #define log_message(a, b, c, ...) GAME_CDECL(0x470fc0, void, int, int, int, const char *, ...)(a, b, c, __VA_ARGS__)   /* a message to the log hook */
-#define load_48b460(self, f) GAME_THISCALL(0x48b460, u32, void *, void *)(self, f)
+#define map_readMissionRecords(self, f) GAME_THISCALL(0x48b460, u32, void *, void *)(self, f)
 #define file_writeScrambled(p, size, count, f) GAME_CDECL(0x46cc30, u32, const void *, u32, u32, void *)(p, size, count, f)   /* fwrite, scrambled */
 #define net_sendPacketData(size, data) GAME_CDECL(0x4a8360, u32, int, void *)(size, data)
 #define glWindow_setupPixelFormat(dc) GAME_CDECL(0x467e60, int, void *)(dc)
@@ -245,7 +245,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define skel_loadFromFile(sk, f, mem, size) GAME_THISCALL(0x46aa10, void, void *, void *, void *, int)(sk, f, mem, size)
 #define skel_loadAseFrom(sk, f, mem, size) GAME_THISCALL(0x469b90, void, void *, void *, void *, int)(sk, f, mem, size)
 #define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
-#define dplay_454d90(text, word, exact) GAME_CDECL(0x454d90, const char *, const char *, const char *, int)(text, word, exact)
+#define text_findWord(text, word, exact) GAME_CDECL(0x454d90, const char *, const char *, const char *, int)(text, word, exact)
 #define file_exists_46ca70(path) GAME_CDECL(0x46ca70, int, const char *)(path)
 #define space_walkNodes_482aa0(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISCALL(0x482aa0, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
@@ -255,7 +255,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define path_stripExtension(src, dst) GAME_CDECL(0x46cad0, void, const char *, char *)(src, dst)
 #define stage_clearMapObjects(stage) GAME_THISCALL(0x490d10, void, void *)(stage)
 #define object_addObjectBy(scene, type) GAME_THISCALL(0x490c50, int, void *, const void *)(scene, type)
-#define data_46f7a0(list, factors, lights) GAME_THISCALL(0x46f7a0, void, void *, u32, u32)(list, factors, lights)
+#define ObjectList_relight(list, factors, lights) GAME_THISCALL(0x46f7a0, void, void *, u32, u32)(list, factors, lights)
 #define glTranslatef(x, y, z) IMPORT(0x4a9214, void, float, float, float)(x, y, z)
 #define arena_readLaunchFile(cmd) GAME_CDECL(0x43f160, void, const char *)(cmd)
 #define app_checkLauncherRunning() GAME_CDECL(0x41e260, u32, void)()
@@ -300,7 +300,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define stage_resetMatrixAndPoints(scene) GAME_THISCALL(0x48fe10, void, void *)(scene)
 #define stage_clearMapItemCounts(scene) GAME_THISCALL(0x48fc30, void, void *)(scene)
 #define scene_initLevelGrid(scene) GAME_THISCALL(0x471010, void, void *)(scene)
-#define tex_454e60(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
+#define texRecord_init(record, name, id, flags, h1, s1, v1, h2, s2, v2) GAME_THISCALL(0x454e60, void, void *, const char *, int, u32, u32, u32, u32, u32, u32, u32)(record, name, id, flags, h1, s1, v1, h2, s2, v2)   /* a texture record set up */
 #define tex_textureFileExist(tm, name) GAME_THISCALL(0x4557e0, int, void *, const char *)(tm, name)
 #define game_processGameModeInit(scene) GAME_THISCALL(0x49df10, void, void *)(scene)
 #define frameTimer_average(scene) GAME_THISCALL(0x461210, long double, void *)(scene)   /* (answers in ST0) */
@@ -315,7 +315,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define space_getNextFreeUnitPtr(space) GAME_THISCALL(0x4817f0, u32 *, void *)(space)
 #define space_addUnitPlanes(space, id, unit, part, i0, i1, i2, v0, v1, v2) GAME_THISCALL(0x482320, void, void *, u32, void *, u32, u32, u32, u32, const float *, const float *, const float *)(space, id, unit, part, i0, i1, i2, v0, v1, v2)
 #define space_transformPoint(out, m, v) GAME_CDECL(0x482a40, void, float *, const float *, const float *)(out, m, v)   /* a point through a matrix */
-#define space_traceUnit_4809f0(node, p0, p1, hit, dist, subs, nsubs) GAME_THISCALL(0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
+#define space_traceUnit(node, p0, p1, hit, dist, subs, nsubs) GAME_THISCALL(0x4809f0, int, void *, const float *, const float *, u32, float *, u32, u32)(node, p0, p1, hit, dist, subs, nsubs)
 #define Vec3_rotateAxis(v, axis, angle) GAME_THISCALL(0x4677c0, void, float *, int, int)(v, axis, angle)   /* about axis 0 / 1 / 2 by tenths of a degree */
 #define factors_addConstant(self, colour) GAME_THISCALL(0x483e90, void, void *, const void *)(self, colour)
 #define factors_addPoint(self, colour, dir) GAME_THISCALL(0x483ec0, void, void *, const void *, const void *)(self, colour, dir)
@@ -350,7 +350,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define skel_poseBones(part, m) GAME_THISCALL(0x46f8c0, void, void *, void *)(part, m)
 #define partList_bindTextures(part) GAME_THISCALL(0x46fed0, void, void *)(part)
 #define bullet_spawn(stage, slot, owner, target, rec, n) GAME_THISCALL(0x47ce50, int, void *, int, int, int, void *, int)(stage, slot, owner, target, rec, n)
-#define space_tracePlanes_47fb80(rec, p0, p1, hit, t) GAME_THISCALL(0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
+#define collisionTri_traceSegment(rec, p0, p1, hit, t) GAME_THISCALL(0x47fb80, int, void *, const float *, const float *, float *, float *)(rec, p0, p1, hit, t)
 #define partList_queue(list, vv, lights, tint, a4, a5, a6) GAME_THISCALL(0x46fd20, int, void *, void *, void *, u8 *, int, u32, u32)(list, vv, lights, tint, a4, a5, a6)
 #define tex_getItemFileBy(manager, name) GAME_THISCALL(0x455550, void *, void *, const char *)(manager, name)   /* the dat file at the item's data */
 #define ptx_initTables() GAME_CDECL(0x46ea00, void, void)()
@@ -374,23 +374,23 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define match_resetInputState(scene) GAME_THISCALL(0x461f10, void, void *)(scene)
 #define FUN_004a86e0() GAME_CDECL(0x4a86e0, int, void)()   /* the network says the match is over? */
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define load_483d70(lights, f) GAME_THISCALL(0x483d70, void, void *, void *)(lights, f)   /* the lights read */
+#define Light_read(lights, f) GAME_THISCALL(0x483d70, void, void *, void *)(lights, f)   /* the lights read */
 #define math_triangleNormal(out, a, b, c) GAME_CDECL(0x4679a0, float *, float *, const float *, const float *, const float *)(out, a, b, c)   /* a triangle's normal */
 #define ground_computeLighting(scene, layer) GAME_THISCALL(0x4728e0, void, void *, void *)(scene, layer)   /* a layer's light map */
 #define stage_buildMeshDrawRecords(scene) GAME_THISCALL(0x497a90, void, void *)(scene)   /* the layer meshes */
 #define crt_atof(s) GAME_CDECL(0x49fe7a, double, const char *)(s)
-#define skel_ase_47d320(out, a, b) GAME_CDECL(0x47d320, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
-#define skel_47d830(out, m) GAME_CDECL(0x47d830, void, float *, const float *)(out, m)   /* copied transposed */
-#define skel_ase_47d2f0(out, m) GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
+#define axisAngle_combine(out, a, b) GAME_CDECL(0x47d320, float *, float *, const float *, const float *)(out, a, b)   /* two rotations combined */
+#define Mat4_transpose(out, m) GAME_CDECL(0x47d830, void, float *, const float *)(out, m)   /* copied transposed */
+#define axisAngle_fromMatrix(out, m) GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m)   /* matrix -> (angle, axis) */
 #define input_asyncKeyDown(vk) GAME_CDECL(0x487ba0, int, int)(vk)
 #define input_setCursorPos(x, y) GAME_CDECL(0x487c80, void, int, int)(x, y)
 #define input_getCursorPos() GAME_CDECL(0x487c30, const int *, void)()
 #define actor_setInput(stage, a, b, c, d, e, f, g, h, i, j, k, l, m) GAME_THISCALL(0x45eb20, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32)(stage, a, b, c, d, e, f, g, h, i, j, k, l, m)   /* the local actor's controls */
-#define match_4686f0() GAME_CDECL(0x4686f0, float, void)()
+#define view_nearPlane() GAME_CDECL(0x4686f0, float, void)()
 #define actor_updateAll(stage, dt) GAME_THISCALL(0x45e0c0, void, void *, u32)(stage, dt)
 #define bullet_updateAll(stage, dt) GAME_THISCALL(0x47d000, void, void *, u32)(stage, dt)
 #define stage_updateEffects(stage, dt) GAME_THISCALL(0x479a90, void, void *, u32)(stage, dt)
-#define ViewVolume_add_485120(view, colour, p0, p1, a) GAME_THISCALL(0x485120, void, void *, const void *, const float *, const float *, int)(view, colour, p0, p1, a)   /* a line */
+#define ViewVolume_addSegment(view, colour, p0, p1, a) GAME_THISCALL(0x485120, void, void *, const void *, const float *, const float *, int)(view, colour, p0, p1, a)   /* a line */
 #define setupOptions_hitTest(x, y) GAME_CDECL(0x4206b0, int, int, int)(x, y)   /* the options dialog's item under (x, y), -1 none */
 #define text_draw16(x, y, s) GAME_CDECL(0x4028b0, void, int, int, const char *)(x, y, s)
 #define text_draw32(x, y, s) GAME_CDECL(0x402c90, void, int, int, const char *)(x, y, s)
@@ -405,7 +405,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* ---- HUD ---- */
 #define hud_fillRect(x0, y0, x1, y1) GAME_CDECL(0x4950a0, void, int, int, int, int)(x0, y0, x1, y1)
 #define hud_drawRectOutline(x0, y0, x1, y1) GAME_CDECL(0x46bd00, void, int, int, int, int)(x0, y0, x1, y1)   /* a rectangle's outline */
-/* a team's slot in teamScores (this_get_0x2342381_463780) and which side of the box it is on (FUN_00463740) */
+/* a team's slot in teamScores (scene_teamSlot) and which side of the box it is on (FUN_00463740) */
 #define scene_teamSlot(scene, team) GAME_THISCALL(0x463780, int, Scene *, int)(scene, team)
 #define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)   /* the team's slot, given one if new */
 #define scene_findTeam(scene, team) GAME_THISCALL(0x463710, int, Scene *, int)(scene, team)   /* the team's slot or -1 */
@@ -416,9 +416,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* ---- main loop and match ---- */
 #define main_loop() GAME_CDECL(0x420280, void, void)()
 #define game_postMatch() GAME_CDECL(0x420100, void, void)()
-#define music_4572b0() GAME_CDECL(0x4572b0, void, void)()
+#define music_loopIfEnded() GAME_CDECL(0x4572b0, void, void)()
 #define gfx_swapBuffers() GAME_CDECL(0x4685d0, void, void)()
-#define main_462050(scene) GAME_THISCALL(0x462050, int, Scene *)(scene)
+#define match_frameByState(scene) GAME_THISCALL(0x462050, int, Scene *)(scene)
 #define game_processLoadingMode(scene) GAME_THISCALL(0x468750, int, Scene *)(scene)
 #define match_inputState2(scene) GAME_THISCALL(0x48b200, int, Scene *)(scene)
 #define match_inputState3(scene) GAME_THISCALL(0x48a370, int, Scene *)(scene)
@@ -436,7 +436,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define app_registerWindowClassEx(wc) GAME_CDECL(0x43f840, int, void *)(wc)   /* the class registered on old Windows */
 #define app_checkCdAndLoad(inst) GAME_CDECL(0x430400, int, void *)(inst)
 #define app_reportStartupProblem(code) GAME_CDECL(0x42ef30, int, int)(code)   /* a start-up problem reported */
-#define GetCurrentDirectoryA_wrap_43f580() GAME_CDECL(0x43f580, u32, void)()
+#define app_readCurrentDirectory() GAME_CDECL(0x43f580, u32, void)()
 #define app_setDisplayMode(w, h, flags, bits) GAME_CDECL(0x42eed0, int, int, int, u32, int)(w, h, flags, bits)   /* the display mode set (src/app/win32.c) */
 #define armc_partsPageKeys() GAME_CDECL(0x4101e0, void, void)()   /* the arm screen's keys, page 1 */
 #define armc_weaponsPageKeys() GAME_CDECL(0x410500, void, void)()   /* page 2 */
@@ -464,16 +464,16 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define menu_drawBackground() GAME_CDECL(0x441740, void, void)()
 #define menu_drawFrame(x0, y0, x1, y1) GAME_CDECL(0x428c30, void, int, int, int, int)(x0, y0, x1, y1)
 /* textured quads (menu_quads.c): buttons from the bound sheet (lit == 1: the lit cell), whole textures, panel ornaments */
-#define menu_drawTexQuad_4282f0(x0, y0, x1, y1, lit) GAME_CDECL(0x4282f0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawWideButton(x0, y0, x1, y1, lit) GAME_CDECL(0x4282f0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
 #define profile_drawButton(x0, y0, x1, y1, lit) GAME_CDECL(0x4283e0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define menu_drawTexQuad_4284d0(x0, y0, x1, y1, lit) GAME_CDECL(0x4284d0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define menu_drawTexQuad_4285c0(x0, y0, x1, y1, lit) GAME_CDECL(0x4285c0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define menu_drawTexQuad_4286b0(x0, y0, x1, y1, lit) GAME_CDECL(0x4286b0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define menu_drawTexQuad_4287a0(x0, y0, x1, y1, lit) GAME_CDECL(0x4287a0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
-#define menu_drawTexturedRect_427a90(x0, y0, x1, y1, tex) GAME_CDECL(0x427a90, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
-#define menu_drawTexturedRect_427b60(x0, y0, x1, y1, tex) GAME_CDECL(0x427b60, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
-#define menu_drawTexturedRect_428a00(x0, y0, x1, y1) GAME_CDECL(0x428a00, void, int, int, int, int)(x0, y0, x1, y1)
-#define menu_drawTexturedRect_428b50(x0, y0, x1) GAME_CDECL(0x428b50, void, int, int, int)(x0, y0, x1)
+#define menu_drawSmallButton1(x0, y0, x1, y1, lit) GAME_CDECL(0x4284d0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawSmallButton2(x0, y0, x1, y1, lit) GAME_CDECL(0x4285c0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawSmallButton3(x0, y0, x1, y1, lit) GAME_CDECL(0x4286b0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawSmallButton4(x0, y0, x1, y1, lit) GAME_CDECL(0x4287a0, void, int, int, int, int, int)(x0, y0, x1, y1, lit)
+#define menu_drawTexture(x0, y0, x1, y1, tex) GAME_CDECL(0x427a90, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
+#define menu_drawTextureFlipped(x0, y0, x1, y1, tex) GAME_CDECL(0x427b60, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
+#define menu_drawCornerOrnaments(x0, y0, x1, y1) GAME_CDECL(0x428a00, void, int, int, int, int)(x0, y0, x1, y1)
+#define menu_drawTopRightOrnament(x0, y0, x1) GAME_CDECL(0x428b50, void, int, int, int)(x0, y0, x1)
 #define g_menuOrnamentTexture GAME_VAR(int, 0x4deb4c)   /* the panel corner ornaments (texture id, four 128-unit quarters) */
 #define messageBox_keyClose() GAME_CDECL(0x431950, void, void)()
 #define menu_keyStartFade() GAME_CDECL(0x4318b0, void, void)()
@@ -506,9 +506,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 
 /* ---- the in-match 2D pass: the scene's view, its stage's overlay parts, the HUD elements ---- */
 #define gfx_setProjectionHud(mode, scale) GAME_CDECL(0x4685f0, void, int, float)(mode, scale)
-#define hud_scale() GAME_CDECL(0x468700, float, void)()             /* FUN_00468700: a float setting */
-#define hud_456b50(textures) GAME_THISCALL(0x456b50, void, void *)(textures)
-#define this_set_4841d0(view) GAME_THISCALL(0x4841d0, void, void *)(view)
+#define view_farPlane() GAME_CDECL(0x468700, float, void)()             /* view_farPlane: a float setting */
+#define tex_clearSetCounters(textures) GAME_THISCALL(0x456b50, void, void *)(textures)
+#define ViewVolume_clearDrawCounts(view) GAME_THISCALL(0x4841d0, void, void *)(view)
 #define ViewVolume_captureMatrices(view, a, b) GAME_THISCALL(0x4841f0, void, void *, void *, void *)(view, a, b)
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
 /* out = the inverse of m (4 x 4); returns 0 and leaves out untouched when m is singular */
@@ -716,7 +716,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
 #define player_setName(stage, p, name) GAME_THISCALL(0x473940, void, Stage *, int, const char *)(stage, p, name)
-#define player_setValue(stage, p, v) GAME_THISCALL(0x473a10, void, Stage *, int, int)(stage, p, v)   /* FUN_00473a10 */
+#define player_setValue(stage, p, v) GAME_THISCALL(0x473a10, void, Stage *, int, int)(stage, p, v)   /* player_setValue */
 #define player_setTeam(stage, p, team) GAME_THISCALL(0x473a80, void, Stage *, int, int)(stage, p, team)
 #define actor_setActorTypeHeadInfoBy(stage, p, i) GAME_THISCALL(0x473b10, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeChestInfoBy(stage, p, i) GAME_THISCALL(0x473c20, int, Stage *, int, int)(stage, p, i)
@@ -728,14 +728,14 @@ typedef struct { float r, g, b, a; } Colour;
 /* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
 #define mech_setName(scene, name) GAME_THISCALL(0x461320, void, Scene *, const char *)(scene, name)
 #define mech_setValue(scene, v) GAME_THISCALL(0x461370, void, Scene *, int)(scene, v)
-#define match_4613a0(scene, team) GAME_THISCALL(0x4613a0, void, Scene *, int)(scene, team)
+#define scene_setLocalTeam(scene, team) GAME_THISCALL(0x4613a0, void, Scene *, int)(scene, team)
 #define escMenu_open(scene, page, item) GAME_THISCALL(0x49ca20, void, Scene *, int, int)(scene, page, item)   /* the Esc menu opened on page */
 #define sound_updateListener(scene) GAME_THISCALL(0x49d150, void, Scene *)(scene)
 #define msg_playerChangedTeam(scene, player, team) GAME_THISCALL(0x462e30, void, Scene *, int, int)(scene, player, team)
 #define msg_playerJoinedTeam(scene, player, team) GAME_THISCALL(0x462d30, void, Scene *, int, int)(scene, player, team)
-#define match_463610(scene, a, b, text) GAME_THISCALL(0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
-#define match_4635b0(scene, a, b, text) GAME_THISCALL(0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
-#define vsprintf_wrap_463450(scene, ...) GAME_CDECL(0x463450, int, Scene *, const char *, ...)(scene, __VA_ARGS__)   /* a HUD notice (a format and its arguments) */
+#define notice_raise5(scene, a, b, text) GAME_THISCALL(0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define notice_raise4(scene, a, b, text) GAME_THISCALL(0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define notice_printCentre(scene, ...) GAME_CDECL(0x463450, int, Scene *, const char *, ...)(scene, __VA_ARGS__)   /* a HUD notice (a format and its arguments) */
 #define chat_textField(x, y, maxLength) GAME_CDECL(0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
 #define chat_keepLastLine() GAME_CDECL(0x44ace0, void, void)()
 #define replay_closeRecording(scene) GAME_THISCALL(0x487ed0, void, Scene *)(scene)   /* the recording stopped */
@@ -777,7 +777,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define gl_rotateXYZ(x, y, z) GAME_CDECL(0x41ef20, void, u32, u32, u32)(x, y, z)   /* turned about x, y, z (degrees as float bits; render/gl_helpers.c) */
 #define armc_rotateFromCursor(scene, eye, forward, up, part, angle, w, h) \
 	GAME_THISCALL(0x461850, void, Scene *, const u32 *, const u32 *, const u32 *, int, int, int, int)(scene, eye, forward, up, part, angle, w, h)
-#define armc_40d990() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
+#define armc_resetSeraphimParts() GAME_CDECL(0x40d990, void, void)()      /* the part lists (a no-op in the patched game) */
 #define armc_drawModeTabs() GAME_CDECL(0x412450, void, void)()      /* the screen's frame */
 #define armc_drawStatsPanel() GAME_CDECL(0x412650, void, void)()
 #define armc_drawBuildScreen() GAME_CDECL(0x419160, void, void)()
@@ -810,7 +810,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_snapshot(which) GAME_CDECL(0x419000, void, int)(which)
 #define armc_drawText(x, y, s) GAME_CDECL(0x4125c0, void, int, int, const char *)(x, y, s)
 #define armc_drawStatLabel(x, y, s) GAME_CDECL(0x4125f0, void, int, int, const char *)(x, y, s)   /* right-aligned at x */
-#define armc_41c510() GAME_CDECL(0x41c510, void, void)()
+#define armc_readMechStats() GAME_CDECL(0x41c510, void, void)()
 #define actor_selectWeapon(stage, actor, slot) GAME_THISCALL(0x45e880, void, Stage *, int, int)(stage, actor, slot)
 #define app_requireCd(scene, a, b) GAME_THISCALL(0x460cb0, void, Scene *, int, int)(scene, a, b)
 
@@ -862,14 +862,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define crypt_countingKey(p, key) GAME_CDECL(0x42b3c0, int, u8 *, u8)(p, key)   /* a 0x4c-byte record decoded (xor key, key + 1, ...) */
 #define cfg_loadAxisCfg() GAME_CDECL(0x42d730, void, void)()
 #define setup_drawKeyBindingRows(key) GAME_CDECL(0x421680, void, int)(key)   /* (by use) the row being bound gets key */
-#define setup_controlTabHelper_420c10() GAME_CDECL(0x420c10, void, void)()   /* the default key bindings */
+#define setup_keepKeyBindings() GAME_CDECL(0x420c10, void, void)()   /* the default key bindings */
 #define music_shutdown() GAME_CDECL(0x457310, void, void)()
 
 /* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */
 #define g_menuVolume GAME_VAR(int, 0x4dd984)          /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
 #define dsbuf_play(sound) GAME_CDECL(0x467d70, void, void *)(sound)
 #define dsbuf_setVolume(sound, volume) GAME_CDECL(0x467db0, void, void *, int)(sound, volume)
-#define sound_467dd0(sound, mode, value) GAME_CDECL(0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
+#define sound_playNextBuffer(sound, mode, value) GAME_CDECL(0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
 #define input_releaseMouse() GAME_CDECL(0x401490, void, void)()   /* the mouse let go and released */
 #define glFinish() IMPORT(0x4a91f0, void, void)()
 #define SwapBuffers(hdc) IMPORT(0x4a9028, int, void *)(hdc)
@@ -907,7 +907,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the game's own network code (net/net_servers.c) ---- */
 #define net_ping(ip, timeout) GAME_CDECL(0x4548b0, int, u32, int)(ip, timeout)   /* ICMP echo: the round trip time, 0 when none */
-#define inet_addr_wrap_4547c0(address) GAME_CDECL(0x4547c0, u32, const char *)(address)
+#define net_inetAddr(address) GAME_CDECL(0x4547c0, u32, const char *)(address)
 #define net_closeThreadHandles() GAME_CDECL(0x454760, void, void)()   /* the network threads' handles closed */
 #define net_pingAllServers() GAME_CDECL(0x4545b0, void, void)()   /* ping every listed server */
 #define WaitForMultipleObjects(n, handles, all, ms) IMPORT(0x4a917c, u32, u32, void *const *, int, u32)(n, handles, all, ms)
@@ -975,8 +975,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define data_loadSkirmishInfo() GAME_CDECL(0x42ba40, u32, void)()
 #define arena_initOptionTexts() GAME_CDECL(0x42bc00, void, void)()
 #define profile_scanSaves() GAME_CDECL(0x4460d0, void, void)()
-#define app_42f940() GAME_CDECL(0x42f940, void, void)()
-#define hud_42fb40() GAME_CDECL(0x42fb40, void, void)()
+#define font_initMenuGrids() GAME_CDECL(0x42f940, void, void)()
+#define font_initHudGrids() GAME_CDECL(0x42fb40, void, void)()
 #define timer_init() GAME_CDECL(0x4302d0, void, void)()
 #define input_createDirectInput(window, instance) GAME_CDECL(0x401410, int, void *, void *)(window, instance)
 #define app_checkFile_profeng() GAME_CDECL(0x41e6d0, u32, void)()
@@ -998,15 +998,15 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_initSoundTable(file, volume) GAME_CDECL(0x456d10, int, const char *, int)(file, volume)
 #define mciSendCommandA(device, msg, flags, params) IMPORT(0x4a9368, u32, u32, u32, u32, void *)(device, msg, flags, params)
 #define glRotatef_bits(angle, x, y, z) IMPORT(0x4a91f8, void, u32, u32, u32, u32)(angle, x, y, z)
-#define arena_editTextField_405010() GAME_CDECL(0x405010, void, void)()
+#define arena_editMessage() GAME_CDECL(0x405010, void, void)()
 #define armc_freeRing(first) GAME_CDECL(0x441190, void, void *)(first)   /* frees the last ring of the tunnel whose first is *first */
-#define game_returnToMenus_41e9d0() GAME_CDECL(0x41e9d0, void, void)()
+#define game_returnToScreen400() GAME_CDECL(0x41e9d0, void, void)()
 
 /* ---- more front end (menu/menu_states.c, menu/edit_fields.c) ---- */
 #define g_hChatEdit GAME_VAR(void *, 0x9dd888)        /* the hidden EDIT control typing goes to */
 #define GetWindowTextLengthA(hwnd) IMPORT(0x4a92e0, int, void *)(hwnd)
 #define GetWindowTextA(hwnd, out, size) IMPORT(0x4a92e4, int, void *, char *, int)(hwnd, out, size)
-#define game_returnToMenus_41e8b0() GAME_CDECL(0x41e8b0, void, void)()
+#define game_returnToMainMenu() GAME_CDECL(0x41e8b0, void, void)()
 #define net_sendChat(text) GAME_CDECL(0x4512c0, int, const char *)(text)   /* a chat line sent */
 #define input_resetKeys() GAME_CDECL(0x431590, void, void)()
 #define menuCamera_forward() GAME_CDECL(0x42aa30, void, void)()   /* the free camera forward */
@@ -1022,7 +1022,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* ---- DirectInput setup (app/devices.c) ---- */
 #define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))0x4509c0)(instance, version, out, outer)
 #define input_initKeyboard(window) GAME_CDECL(0x401310, int, void *)(window)
-#define input_4013a0(window) GAME_CDECL(0x4013a0, int, void *)(window)   /* the mouse */
+#define input_createMouse(window) GAME_CDECL(0x4013a0, int, void *)(window)   /* the mouse */
 
 #define stage_setupActorSlot(stage, a, x, y, spawn) GAME_THISCALL(0x45dc00, int, Stage *, int, int, int, void *)(stage, a, x, y, spawn)   /* claim actor slot a */
 #define actor_setWeaponSlot(stage, actor, slot) GAME_THISCALL(0x45e810, void, Stage *, int, int)(stage, actor, slot)   /* select a weapon slot */
@@ -1042,7 +1042,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define SkeletonManager_clear(self) GAME_THISCALL(0x46ae70, int, void *)(self)
 #define CollisionVolume_clear(self) GAME_THISCALL(0x4813a0, int, void *)(self)
 #define TimeSync_clear(self) GAME_THISCALL(0x487480, int, void *)(self)
-#define this_set_483d60(self) GAME_THISCALL(0x483d60, int, void *)(self)
+#define Light_clearCounts(self) GAME_THISCALL(0x483d60, int, void *)(self)
 #define TextureManager_reset(self) GAME_THISCALL(0x4569b0, int, void *)(self)
 #define ShapeManager_release(self) GAME_THISCALL(0x466a30, int, void *)(self)
 #define SkeletonManager_release(self) GAME_THISCALL(0x46ae80, int, void *)(self)
@@ -1137,15 +1137,15 @@ typedef struct { float r, g, b, a; } Colour;
 #define tex_markMaterialChanged(self, m) GAME_THISCALL(0x456820, void, void *, int)(self, m)   /* material m marked changed */
 #define profile_resetPreview() GAME_CDECL(0x44b7a0, void, void)()
 #define ptx_initClampTable() GAME_CDECL(0x46e320, void, void)()
-#define ptx_initTable_46efd0() GAME_CDECL(0x46efd0, void, void)()
+#define ptx_initYCbCrTables() GAME_CDECL(0x46efd0, void, void)()
 #define ptx_initDequantTables(q) GAME_CDECL(0x46e2b0, void, int)(q)
 #define ptx_initColourTables() GAME_CDECL(0x46e7c0, void, void)()
 #define ptx_initQuantTables(q) GAME_CDECL(0x46e9b0, void, int)(q)
 #define ptx_error(...) ((int (CDECL *)(int, const char *, ...))0x46e260)(__VA_ARGS__)   /* app/ptx_decode.c */
 #define ptx_crtlError(...) ((int (CDECL *)(int, const char *, ...))0x46e1e0)(__VA_ARGS__)
-#define set_a61708_46f090(p) GAME_CDECL(0x46f090, void, const u8 *)(p)   /* the bit reader started at p */
+#define ptx_startBitReader(p) GAME_CDECL(0x46f090, void, const u8 *)(p)   /* the bit reader started at p */
 #define ptx_readBlock(block) GAME_CDECL(0x46f0b0, int, int *)(block)   /* one block's coefficients; the bit position */
-#define ptx_decodeBlock_46e380(in, out) GAME_CDECL(0x46e380, void, const int *, u8 *)(in, out)
+#define ptx_inverseDct(in, out) GAME_CDECL(0x46e380, void, const int *, u8 *)(in, out)
 #define ptx_toRgb(y, dst, n) GAME_CDECL(0x46e830, void, const u8 *, u8 *, unsigned)(y, dst, n)
 #define ptx_toRgba(y, dst, n) GAME_CDECL(0x46e8e0, void, const u8 *, u8 *, unsigned)(y, dst, n)
 #define ptx_layoutBlocks(src, dst, w, h, bpp) GAME_CDECL(0x46ea30, void, const u8 *, u8 *, int, int, int)(src, dst, w, h, bpp)
@@ -1154,9 +1154,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define loginDialog_layout() GAME_CDECL(0x431b70, void, void)()
 #define tex_recolourMaterial(set, m, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x456860, void, void *, int, u32, u32, u32, u32, u32, u32)(set, m, h1, c1, v1, h2, c2, v2)
 #define image_addColour(px, mode, part, colour) GAME_CDECL(0x464a70, void, u8 *, int, const u32 *, const u8 *)(px, mode, part, colour)   /* a colour added to a part's RGBA pixels */
-#define load_480440(slot) GAME_THISCALL(0x480440, void, int *)(slot)
-#define shape_466560(shape) GAME_THISCALL(0x466560, void, void *)(shape)
-#define shape_4665c0(shape, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x4665c0, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, c1, v1, h2, c2, v2)
+#define spaceSlot_clear(slot) GAME_THISCALL(0x480440, void, int *)(slot)
+#define shape_markMaterialsChanged(shape) GAME_THISCALL(0x466560, void, void *)(shape)
+#define shape_recolourMaterials(shape, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x4665c0, void, void *, u32, u32, u32, u32, u32, u32)(shape, h1, c1, v1, h2, c2, v2)
 
 #define crt_free(p) GAME_CDECL(0x49ee81, u32, void *)(p)
 #define crt_fopen(name, mode) GAME_CDECL(0x49e9ca, void *, const char *, const char *)(name, mode)
@@ -1170,7 +1170,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define crypt_record80(p, key) GAME_CDECL(0x445f40, void, u8 *, u8)(p, key)   /* a 0x80-byte record unscrambled */
 #define fread_scrambled(p, size, count, f) GAME_CDECL(0x46cbe0, u32, void *, u32, u32, void *)(p, size, count, f)   /* fread, each byte unscrambled (rotated left, xor 0x59) */
 #define bullet_drawTrail(stage, i, view) GAME_THISCALL(0x47ca70, void, Stage *, int, void *)(stage, i, view)   /* bullet i's trail drawn */
-#define hud_48b450(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
+#define recorder_noteStub(self, a, b, c, d) GAME_THISCALL(0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
 #define mem_free(p) GAME_CDECL(0x467d60, u32, void *)(p)   /* p deleted (0 for none) */
 
 #define g_menuState GAME_VAR(int, 0x76d3e8)          /* the front end's screen (300 the main menu) */
@@ -1195,22 +1195,22 @@ typedef struct { float r, g, b, a; } Colour;
 #define stage_resetPlayerRecords(stage) GAME_THISCALL(0x474480, void, Stage *)(stage)   /* the 16 player records reset */
 #define stage_clearActorSlots(stage) GAME_THISCALL(0x45e070, void, Stage *)(stage)
 #define actor_resetSlot(stage, i) GAME_THISCALL(0x4743e0, void, Stage *, int)(stage, i)
-#define load_47db50(self) GAME_THISCALL(0x47db50, int, void *)(self)   /* a collision plane cleared */
-#define load_480430(self) GAME_THISCALL(0x480430, int, void *)(self)   /* a node */
-#define load_4804a0(self) GAME_THISCALL(0x4804a0, int, void *)(self)   /* a block */
+#define collisionPlane_clear(self) GAME_THISCALL(0x47db50, int, void *)(self)   /* a collision plane cleared */
+#define spaceNode_clear(self) GAME_THISCALL(0x480430, int, void *)(self)   /* a node */
+#define spaceBlock_clear(self) GAME_THISCALL(0x4804a0, int, void *)(self)   /* a block */
 #define quat_fromAxisAngle(q, rotation) GAME_THISCALL(0x47d0b0, void, float *, const float *)(q, rotation)
 #define Mat4_fromQuat(m, q) GAME_CDECL(0x47d8a0, void, float *, const float *)(m, q)   /* quaternion -> matrix */
 
 /* ---- (render/shape_colours.c, app/small.c, menu/menu_records.c callers) ---- */
 #define shape_setTint(model, h1, c1, v1, h2, c2, v2) GAME_THISCALL(0x467660, void, void *, u32, u32, u32, u32, u32, u32)(model, h1, c1, v1, h2, c2, v2)
-#define shape_4675f0(model) GAME_THISCALL(0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
+#define model_clearTint(model) GAME_THISCALL(0x4675f0, void, void *)(model)   /* the model's shapes' own colours back */
 #define script_reset(stage) GAME_THISCALL(0x48fca0, int, Stage *)(stage)
 #define briefing_hitTest(x, y) GAME_CDECL(0x443910, int, int, int)(x, y)   /* which skirmish settings arrow is at (x, y) */
 #define undo_push() GAME_CDECL(0x443d80, void, void)()   /* skirmish settings: the pending step pushed */
 #define undo_pop() GAME_CDECL(0x443de0, void, void)()   /* one step undone */
 
 /* ---- the lobby's and room's screens (menu/lobby_states.c) ---- */
-#define lobby_404930() GAME_CDECL(0x404930, void, void)()   /* the player's record from the profile */
+#define arena_copyProfile() GAME_CDECL(0x404930, void, void)()   /* the player's record from the profile */
 #define mapList_layout() GAME_CDECL(0x403300, void, void)()   /* the map list laid out */
 #define lobby_drawArenaTitle() GAME_CDECL(0x404980, void, void)()
 #define mapList_init() GAME_CDECL(0x403420, void, void)()   /* the map on/off list reset */
@@ -1236,7 +1236,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define net_receiveServerReply() GAME_CDECL(0x452d70, void, void)()   /* the player list received */
 #define net_clearRoomList() GAME_CDECL(0x452e80, void, void)()   /* the server table cleared */
 #define net_clearPlayerList() GAME_CDECL(0x452ea0, void, void)()   /* the player list cleared */
-#define jmp_net_getLocalAddress_4532e0() GAME_CDECL(0x4532e0, int, void)()   /* this machine's address (0xa0b43c) */
+#define jmp_net_getLocalAddress() GAME_CDECL(0x4532e0, int, void)()   /* this machine's address (0xa0b43c) */
 #define crt_strtok(s, delimiters) GAME_CDECL(0x49ec3b, char *, char *, const char *)(s, delimiters)   /* the game's CRT strtok */
 #define crt_atoi(s) GAME_CDECL(0x49ec09, int, const char *)(s)
 #define FUN_00440e20(node, value) GAME_CDECL(0x440e20, u32, void *, int)(node, value)
@@ -1245,9 +1245,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define mech_unpackFromRecord() GAME_CDECL(0x40ddb0, void, void)()   /* the mech unpacked */
 
 /* ---- (render/tex_colours.c) ---- */
-#define tex_46def0(r, g, b, h, s, v) GAME_CDECL(0x46def0, void, u32, u32, u32, float *, float *, float *)(r, g, b, h, s, v)   /* RGB -> HSV (r, g, b as float bits) */
+#define tex_rgbToHsv(r, g, b, h, s, v) GAME_CDECL(0x46def0, void, u32, u32, u32, float *, float *, float *)(r, g, b, h, s, v)   /* RGB -> HSV (r, g, b as float bits) */
 #define color_hsvToRgb(h, s, v, r, g, b) GAME_CDECL(0x46e050, void, u32, u32, u32, float *, float *, float *)(h, s, v, r, g, b)   /* (h, s, v as float bits) */
-#define tex_46de20(rgba, dh, ds, dv) GAME_THISCALL(0x46de20, int, u8 *, u32, u32, u32)(rgba, dh, ds, dv)   /* an RGBA byte colour tinted */
+#define tex_tintRgba(rgba, dh, ds, dv) GAME_THISCALL(0x46de20, int, u8 *, u32, u32, u32)(rgba, dh, ds, dv)   /* an RGBA byte colour tinted */
 
 /* ---- (net/net_sessions.c) ---- */
 #define net_sessionCount() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
@@ -1260,8 +1260,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define chat_closeEdit() GAME_CDECL(0x433c70, void, void)()   /* the chat edit control closed, the line taken */
 #define login_send() GAME_CDECL(0x434490, void, void)()   /* the login sent */
 #define loginForm_openField(k) GAME_CDECL(0x433e60, int, int)(k)   /* the login form's field k opened for typing */
-#define room_4388e0() GAME_CDECL(0x4388e0, void, void)()   /* the game room's tunnel */
-#define room_434ff0() GAME_CDECL(0x434ff0, void, void)()   /* the list of games asked for again */
+#define room_drawTunnel() GAME_CDECL(0x4388e0, void, void)()   /* the game room's tunnel */
+#define room_mergeReceivedSessions() GAME_CDECL(0x434ff0, void, void)()   /* the list of games asked for again */
 #define gameList_draw() GAME_CDECL(0x43adc0, void, void)()   /* the game room's list of games drawn */
 #define room_joinSession(i) GAME_CDECL(0x434dd0, u32, int)(i)   /* game i of the list joined */
 #define gameList_hitTest(x, y) GAME_CDECL(0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
@@ -1276,14 +1276,14 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_drawTunnel() GAME_CDECL(0x4091b0, void, void)()   /* the arena's tunnel */
 #define dplay_listSessions() GAME_CDECL(0x453260, void, void)()   /* DirectPlay's session list polled */
 #define arenaList_rebuild() GAME_CDECL(0x406810, void, void)()
-#define arena_406640() GAME_CDECL(0x406640, void, void)()   /* the list of games asked for again */
+#define arena_mergeReceivedSessions() GAME_CDECL(0x406640, void, void)()   /* the list of games asked for again */
 #define arena_drawGameList() GAME_CDECL(0x40a070, void, void)()   /* the arena's list of games drawn */
 #define arena_joinListed(i) GAME_CDECL(0x406200, void, int)(i)   /* game i joined (99999: the one typed) */
 #define arena_joinSession(i) GAME_CDECL(0x405690, u32, int)(i)   /* session i joined */
 #define sys_checkClockTampering() GAME_CDECL(0x43f300, void, void)()
 #define glWindow_init(title, w, h, bits, depth, full, hwnd, flag) GAME_CDECL(0x468250, void, const char *, int, int, int, int, int, void *, int)(title, w, h, bits, depth, full, hwnd, flag)
 #define console_loadFile(map) GAME_CDECL(0x41e7c0, int, int)(map)   /* the map's files loaded: 0 failed */
-#define console_41e390() GAME_CDECL(0x41e390, void, void)()
+#define room_fitWindowRects() GAME_CDECL(0x41e390, void, void)()
 #define scene_setTextureFolder(scene, map) GAME_THISCALL(0x461ec0, void, Scene *, const char *)(scene, map)
 #define actor_levelFromValue(points) GAME_CDECL(0x4326f0, int, int)(points)   /* the level (1 ..) the points reach */
 #define net_receiveAll() GAME_CDECL(0x450a60, u32, void)()
@@ -1297,13 +1297,13 @@ typedef struct { float r, g, b, a; } Colour;
 #define lobby_openConnection() GAME_CDECL(0x4060f0, int, void)()   /* the lobby server connection opened: 1 done */
 #define arenaGameList_hitTest(x, y) GAME_CDECL(0x4044a0, int, int, int)(x, y)   /* the arena lobby's button under (x, y), -1 none */
 #define arena_chatLine() GAME_CDECL(0x405200, void, void)()   /* the arena screen's chat line opened */
-#define lobby_editTextField_405230() GAME_CDECL(0x405230, void, void)()   /* the arena title's edit field opened */
+#define arena_editTitle() GAME_CDECL(0x405230, void, void)()   /* the arena title's edit field opened */
 #define menu_showMessage(i) GAME_CDECL(0x41ee40, void, int)(i)   /* message i in the message box */
 #define reg_writeCharacterSettings() GAME_CDECL(0x432400, void, void)()
 
 /* ---- the screens' set-ups (menu/screen_enter.c): rectangle builders and resets ---- */
 #define arena_clearChatRecord() GAME_CDECL(0x4045e0, void, void)()
-#define arena_403f30() GAME_CDECL(0x403f30, void, void)()
+#define lobbyTop_layout() GAME_CDECL(0x403f30, void, void)()
 #define arenaNameDialog_layout() GAME_CDECL(0x403f80, void, void)()
 #define arenaGameList_layout() GAME_CDECL(0x404010, void, void)()
 #define arenaDialogBox_layout() GAME_CDECL(0x404120, void, void)()

@@ -20,15 +20,15 @@ int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }    
 int THISCALL (Model_clear)(void *self) { return clear(self, 0x13); }      /* Model */
 int THISCALL (ShapeManager_clear)(void *self) { return clear(self, 0x93); }       /* ShapeManager */
 int THISCALL (SkeletonManager_clear)(void *self) { return clear(self, 0x4c); }       /* SkeletonManager */
-int THISCALL (load_47db50)(void *self) { return clear(self, 0x2b); }
-int THISCALL (load_4804a0)(void *self) { return clear(self, 0x14); }
+int THISCALL (collisionPlane_clear)(void *self) { return clear(self, 0x2b); }
+int THISCALL (spaceBlock_clear)(void *self) { return clear(self, 0x14); }
 int THISCALL (CollisionVolume_clear)(void *self) { return clear(self, 0x3d); }       /* CollisionVolume */
-int THISCALL (load_483fc0)(void *self) { return clear(self, 0x245c); }
+int THISCALL (ViewVolume_clear)(void *self) { return clear(self, 0x245c); }
 int THISCALL (TimeSync_clear)(void *self) { return clear(self, 0xe); }        /* TimeSync */
-int THISCALL (load_480430)(void *self) { return clear(self, 0x4); }
+int THISCALL (spaceNode_clear)(void *self) { return clear(self, 0x4); }
 
 /* 0x483d60: Light's two counters cleared */
-int THISCALL (this_set_483d60)(void *self)
+int THISCALL (Light_clearCounts)(void *self)
 {
 	FIELD(int, self, 0xb004) = 0;
 	FIELD(int, self, 0xb008) = 0;
@@ -44,7 +44,7 @@ int THISCALL (stage_clearMapItemCounts)(void *self)
 }
 
 /* 0x4841d0: a view volume's three draw counters cleared */
-void THISCALL (this_set_4841d0)(void *view)
+void THISCALL (ViewVolume_clearDrawCounts)(void *view)
 {
 	FIELD(int, view, 0x90a4) = 0;
 	FIELD(int, view, 0x90a8) = 0;
@@ -52,7 +52,7 @@ void THISCALL (this_set_4841d0)(void *view)
 }
 
 /* 0x480210: three ints set */
-void THISCALL (this_set_480210)(int *p, int a, int b, int c)
+void THISCALL (ints_set3)(int *p, int a, int b, int c)
 {
 	p[0] = a;
 	p[1] = b;
@@ -88,15 +88,15 @@ int (net_sessionCount)(void) { return g_dplaySessionCount; }
 int (gfx_getWidth)(void) { return g_glWidth; }
 int (gfx_getHeight)(void) { return g_glHeight; }
 float (view_angle)(void) { return GAME_VAR(float, 0x4c4dec); }
-float (match_4686f0)(void) { return GAME_VAR(float, 0x4c4df0); }
-float (FUN_00468700)(void) { return GAME_VAR(float, 0x4c4df4); }
+float (view_nearPlane)(void) { return GAME_VAR(float, 0x4c4df0); }
+float (view_farPlane)(void) { return GAME_VAR(float, 0x4c4df4); }
 
 /* ---- setters ---- */
 void (armc_showPartsPage)(void) { g_armcMode = 1; GAME_VAR(int, 0x4dc788) = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
-void (set_a61708_46f090)(int v) { GAME_VAR(int, 0xa61708) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
+void (ptx_startBitReader)(int v) { GAME_VAR(int, 0xa61708) = v; g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (input_setKeysBlocked)(int v) { g_keysBlocked = v; return v; }
-int (set_4b42dc_457140)(int v) { GAME_VAR(int, 0x4b42dc) = v; return v; }
+int (music_setVolumeSetting)(int v) { GAME_VAR(int, 0x4b42dc) = v; return v; }
 
 /* three-float vectors at 0xa0e7a8 ..: zero or a unit axis (bits of 1.0) */
 static void set3(u32 addr, u32 x, u32 y, u32 z)
@@ -160,8 +160,8 @@ void THISCALL (Scene_dtor)(u32 *self) { self[0] = 0x4aa258; }
 DELETING(Scene, Scene_dtor)
 
 /* Light (vtable 0x4aa248) */
-void *THISCALL (Light_ctor)(u32 *self) { self[0] = 0x4aa248; this_set_483d60(self); return self; }
-int THISCALL (Light_dtor)(u32 *self) { self[0] = 0x4aa248; return this_set_483d60(self); }
+void *THISCALL (Light_ctor)(u32 *self) { self[0] = 0x4aa248; Light_clearCounts(self); return self; }
+int THISCALL (Light_dtor)(u32 *self) { self[0] = 0x4aa248; return Light_clearCounts(self); }
 DELETING(Light, Light_dtor)
 
 /* CollisionVolume (vtable 0x4aa254) */
@@ -198,7 +198,7 @@ void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 
 /* 0x463850: a resource set: five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in
    place (the original's exception frame only matters if a constructor throws, and these cannot) */
-void *THISCALL (ResourceSet_ctor_463850)(u8 *self)
+void *THISCALL (ResourceSet_ctor)(u8 *self)
 {
 	static const u32 shapes[5] = { 0x338, 0x8284, 0x101d0, 0x1fe1c, 0x2fa68 };
 	static const u32 skels[5] = { 0x43534, 0x43e34, 0x44734, 0x45804, 0x468d4 };
@@ -248,8 +248,8 @@ u32 THISCALL (actor_destroyPartLists)(u8 *self)
 }
 
 /* 0x463960: a resource set destroyed: its five skeleton managers, then its five shape managers, the last member first
-   (as ResourceSet_ctor_463850 built them). Returns the last destructor's eax */
-u32 THISCALL (ResourceSet_dtor_463960)(u8 *self)
+   (as ResourceSet_ctor built them). Returns the last destructor's eax */
+u32 THISCALL (ResourceSet_dtor)(u8 *self)
 {
 	static const u32 skeletons[5] = { 0x468d4, 0x45804, 0x44734, 0x43e34, 0x43534 };
 	static const u32 shapes[5] = { 0x2fa68, 0x1fe1c, 0x101d0, 0x8284, 0x338 };
@@ -266,7 +266,7 @@ u32 THISCALL (ResourceSet_dtor_463960)(u8 *self)
 
 /* 0x46ff70: the stage destroyed, its members last first: 0x48b410 (+0x2148ed8), the 100 actors (+0x1cd93a8,
    0x8888 bytes each, 0x45ff30), the skeleton and shape managers, the 16 resource sets (+0x1561b68, 0x47fd2 bytes
-   each, ResourceSet_dtor_463960), two more managers, two 0x464ba0 tables, the three factor pools and +0xa10.
+   each, ResourceSet_dtor), two more managers, two 0x464ba0 tables, the three factor pools and +0xa10.
    Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {

@@ -42,7 +42,7 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 
 /* 0x485120: an object's two points p and q (into the 36-byte records of the list at +0x908c); the object's first
    word kept with them */
-void THISCALL (ViewVolume_add_485120)(u8 *vv, const u32 *object, const float *p, const float *q, int flag)
+void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p, const float *q, int flag)
 {
 	float *r = next_record(vv, 0x908c, 0x90a0, 36);
 	if (!r)
@@ -232,7 +232,7 @@ void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 		FIELD(void *, view, 8) = 0;
 		FIELD(int, view, 0xc) = 0;
 	}
-	GAME_THISCALL(0x483fc0, void, void *)(view);   /* load_483fc0 */
+	GAME_THISCALL(0x483fc0, void, void *)(view);   /* ViewVolume_clear */
 	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
 	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)0x4c7b5c))   /* strstr */
 		return;

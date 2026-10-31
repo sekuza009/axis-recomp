@@ -147,7 +147,7 @@ static int random_below(u32 n)
 /* a later round: a random position in each of the six geometry tables (their counts at +0x15de6c8 .., rows of
    0x2aa .. 0xb86 dwords), the restart point, the round's tables copied (cameraMode counting through them, as in the
    original), the camera back to mode 1, nobody watched, the pointer centred, the volumes (0x4e0c90, 0x4e0c94) set
-   again, the local player's statD8 cleared, the teams (match_4613a0), the camera and its slot, a typed chat line
+   again, the local player's statD8 cleared, the teams (scene_setLocalTeam), the camera and its slot, a typed chat line
    kept (chat_keepLastLine) and the round's flags cleared */
 static void later_round(Scene *s)
 {
@@ -177,12 +177,12 @@ static void later_round(Scene *s)
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
 	sound_setVolume(g_soundVolume);
-	set_4b42dc_457140(g_musicVolume);
+	music_setVolumeSetting(g_musicVolume);
 	s->roundClear4 = 0;
 	s->teamAsked = 0;
 	if (s->localPlayer >= 0)
 		s->players[s->localPlayer].statD8 = 0;
-	match_4613a0(s, -1);
+	scene_setLocalTeam(s, -1);
 	s->startCameraMode = s->cameraMode;
 	s->cameraSlot = -1;   /* (the -1 still in a register since dataLossCode) */
 	s->rankShown = -1;
@@ -299,10 +299,10 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		sprintf(name, (const char *)0x4c7410, sky, i);
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName(GAME_VAR(void *, 0xa0e010), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
-	this_set_483d60(s + 0x9ccffc);
+	Light_clearCounts(s + 0x9ccffc);
 	factors_addConstant(s + 0x9ccffc, (const void *)0xa1f23c);
 	stage_resetLights(s);
-	this_set_483d60(s + 0x9e3020);
+	Light_clearCounts(s + 0x9e3020);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
 	factors_addConstant(s + 0x9e3020, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };

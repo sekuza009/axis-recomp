@@ -84,7 +84,7 @@ int (sound_setVolume)(int v)
 
 /* 0x4572b0: the music segment (0xa0e670) restarted from the start once it has played to its length (0xa0e018, 64
    bits). Returns what the original leaves in eax */
-u32 (music_4572b0)(void)
+u32 (music_loopIfEnded)(void)
 {
 	void *segment = GAME_VAR(void *, 0xa0e670);
 	if (!segment)
@@ -105,7 +105,7 @@ u32 (music_4572b0)(void)
 /* 0x467dd0: the sound's next buffer (of eight, the turn at +0x20) played with a setting (mode 1 or 2: value, within
    +-10000, kept per buffer at +0x44; the mode at +0x24): the value applied (method 0x40), then played. Returns what
    the original leaves in eax: 0 without a sound, 1 for a value out of range, else the next turn (7 when wrapping) */
-u32 (sound_467dd0)(u32 *sound, int mode, int value)
+u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
 {
 	if (!sound)
 		return 0;
@@ -242,7 +242,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	across = across + fmul_m(fld_m(&c[0]), &side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? 0x4a96fc : 0x4a9700)));
 	GAME_CDECL(0x467db0, void, void *, int)(GAME_VAR(void *, 0xa0e02c + index * 4), volume);   /* dsbuf_setVolume */
-	sound_467dd0(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
+	sound_playNextBuffer(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
 }
 
 #define DS_CREATESOUNDBUFFER 0x0c

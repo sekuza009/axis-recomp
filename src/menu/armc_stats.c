@@ -462,14 +462,14 @@ void (armc_drawStatsPanel)(void)
 	}
 	for (int i = 0; i < 2; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == i + 3 ? 0.8f : 0.4f);
-		menu_drawTexQuad_4282f0(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x20, PANEL_X0 + 0x70 + i * 100, PANEL_Y1, 1);
+		menu_drawWideButton(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x20, PANEL_X0 + 0x70 + i * 100, PANEL_Y1, 1);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4282f0(PANEL_X0 + 0x114, PANEL_Y1 - 0x20, PANEL_X0 + 0x174, PANEL_Y1, 1);
-	menu_drawTexQuad_4284d0(PANEL_X0 + 0xe4, PANEL_Y1 - 0x1c, PANEL_X0 + 0x114, PANEL_Y1 - 4, hovered == 14);
-	menu_drawTexQuad_4285c0(PANEL_X0 + 0x174, PANEL_Y1 - 0x1c, PANEL_X0 + 0x1a4, PANEL_Y1 - 6, hovered == 15);
+	menu_drawWideButton(PANEL_X0 + 0x114, PANEL_Y1 - 0x20, PANEL_X0 + 0x174, PANEL_Y1, 1);
+	menu_drawSmallButton1(PANEL_X0 + 0xe4, PANEL_Y1 - 0x1c, PANEL_X0 + 0x114, PANEL_Y1 - 4, hovered == 14);
+	menu_drawSmallButton2(PANEL_X0 + 0x174, PANEL_Y1 - 0x1c, PANEL_X0 + 0x1a4, PANEL_Y1 - 6, hovered == 15);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
-	menu_drawTexQuad_4282f0(PANEL_X1 - 0xa0, PANEL_Y1 - 0x20, PANEL_X1, PANEL_Y1, 1);
+	menu_drawWideButton(PANEL_X1 - 0xa0, PANEL_Y1 - 0x20, PANEL_X1, PANEL_Y1, 1);
 	glDisable(GL_TEXTURE_2D);
 
 	/* the stats box: dark blue, a cyan border */

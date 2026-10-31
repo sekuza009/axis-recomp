@@ -115,7 +115,7 @@ int (input_createDirectInput)(void *window, void *instance)
 		return 0;
 	if (!input_initKeyboard(window))
 		return 0;
-	return input_4013a0(window) != 0;
+	return input_createMouse(window) != 0;
 }
 
 /* ---- the cursor and the keys through Win32, only while the game's window (if there is one) is in front ---- */
@@ -195,7 +195,7 @@ int (input_isDown)(int key)
 
 /* 0x4013a0: the DirectInput mouse made (once): the device (GUID_SysMouse at 0x4a9698), its data format (c_dfDIMouse,
    0x4a9610) and its cooperative level for the window (exclusive, foreground). 1 when ready, 0 on a failure */
-int (input_4013a0)(void *window)
+int (input_createMouse)(void *window)
 {
 	if (g_mouseActive)
 		return 1;

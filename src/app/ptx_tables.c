@@ -40,7 +40,7 @@ void (ptx_initColourTables)(void)
 }
 
 /* 0x46efd0: RGB -> YCbCr, eight tables of 256 (each component's share of Y, Cb and Cr) */
-void (ptx_initTable_46efd0)(void)
+void (ptx_initYCbCrTables)(void)
 {
 	int c = 0, d = 0, s = 0x8000, e = 0, b = 0, l10 = 0x807fff, l14 = 0, l18 = 0;
 	for (u32 p = 0xa1ff04; p <= 0xa20300; p += 4) {
@@ -95,7 +95,7 @@ void (ptx_initTables)(void)
 {
 	I32(0xaa2e94) = 0;
 	ptx_initClampTable();
-	ptx_initTable_46efd0();
+	ptx_initYCbCrTables();
 	ptx_initDequantTables(100);
 	ptx_initColourTables();
 	ptx_initQuantTables(100);

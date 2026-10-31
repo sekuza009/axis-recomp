@@ -444,7 +444,7 @@ void (setup_controlTabKeys)(void)
 	if (input_justPressed(g_keyBack) != 1) {
 		if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
 			sound_playMenu(0);
-			setup_controlTabHelper_420c10();
+			setup_keepKeyBindings();
 			return;
 		}
 		if (!input_justPressed(g_keyCancel2))
@@ -503,7 +503,7 @@ void (setup_drawControlTab)(void)
 			g_setupPage = 0;
 		} else if (on == 6) {
 			sound_playMenu(0);
-			setup_controlTabHelper_420c10();
+			setup_keepKeyBindings();
 		} else if ((on == 7 || on == 8) && row >= 0 && page == 3) {
 			int *setting = &GAME_VAR(int, on == 7 ? 0x4de1c0 : 0x4de1c4);
 			*setting = 1 - *setting;

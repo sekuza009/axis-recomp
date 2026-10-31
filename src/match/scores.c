@@ -27,10 +27,10 @@ void THISCALL (scene_resetScores)(Scene *scene)
 static void mark_notice(Scene *scene, int i, u32 local, u32 other)
 {
 	if (i == scene->localPlayer) {
-		vsprintf_wrap_463450(scene, (const char *)local);
+		notice_printCentre(scene, (const char *)local);
 		sound_playVolume(6, 100);
 	} else {
-		vsprintf_wrap_463450(scene, (const char *)other, scene->players[i].name);
+		notice_printCentre(scene, (const char *)other, scene->players[i].name);
 		sound_playVolume(7, 100);
 	}
 }

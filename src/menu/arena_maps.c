@@ -158,7 +158,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
 			set_colour_bits((Colour *)0x76d438, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		}
-		menu_drawTexQuad_4282f0(x, y, x + 0x8c, y + 0x20, 1);
+		menu_drawWideButton(x, y, x + 0x8c, y + 0x20, 1);
 		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(label + k * 0x80));
 	}
 }
@@ -205,8 +205,8 @@ void (mapList_draw)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4286b0(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
-	menu_drawTexQuad_4287a0(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
+	menu_drawSmallButton3(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
+	menu_drawSmallButton4(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
 	map_buttons(hovered, 0x16, 0x15e, 0x75db24);
 	map_buttons(hovered, 0x18, 0x186, 0x75da24);
 }

@@ -46,7 +46,7 @@ static void mission_screen(int hovered)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	/* "<n>ST <0x75f1a4>  [ <map> ]" */
 	char title[256];
@@ -89,8 +89,8 @@ static void mission_screen(int hovered)
 	bind(g_buttonTexture);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4284d0(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_mission > 0 && hovered == 2);
-	menu_drawTexQuad_4285c0(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
+	menu_drawSmallButton1(X0 + 0x98, Y0 + 0x4c, X0 + 0xd0, Y0 + 0x74, g_mission > 0 && hovered == 2);
+	menu_drawSmallButton2(X0 + 0x160, Y0 + 0x4c, X0 + 0x198, Y0 + 0x74,
 	                        g_mission < GAME_VAR(int, 0x9f181c) && hovered == 3 && g_mission < 14);
 	white_text();
 	/* the kind and the two values */
@@ -139,13 +139,13 @@ static void mission_screen(int hovered)
 		int lit = hovered == k;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0x8c;
-		menu_drawTexQuad_4282f0(x + 0x96, Y1 - 0x30, x + 0x10e, Y1 - 0x10, 1);
+		menu_drawWideButton(x + 0x96, Y1 - 0x30, x + 0x10e, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(0x75f6a4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 
 /* 0x448ac0: the mission settings screen, the button or arrow under the pointer (missionsel_hitTest) lit. The

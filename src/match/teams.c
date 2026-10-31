@@ -69,7 +69,7 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 {
 	u8 *pool = (u8 *)stage + 0x9d8010;
 	GAME_VAR(int, (u8 *)stage + 0x9d800c) = 1;
-	this_set_483d60(pool);
+	Light_clearCounts(pool);
 	for (int i = 0; i < stage->actorCount; i++) {
 		u8 *a = (u8 *)&stage->actors[i];
 		if (stage->actors[i].active == 1) {

@@ -223,8 +223,8 @@ int (app_checkCdAndLoad)(void *instance)
 	data_loadSkirmishInfo();
 	arena_initOptionTexts();
 	profile_scanSaves();
-	app_42f940();
-	hud_42fb40();
+	font_initMenuGrids();
+	font_initHudGrids();
 	text_setWrapX(0x280);
 	text_setBottom(0x1e0);
 	GAME_VAR(int, 0x4d7348) = 0;

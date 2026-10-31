@@ -22,7 +22,7 @@ void (lobby_setSubState0)(void)
 	GAME_VAR(u32, 0x76d388) = 0xc28c0000;   /* -70.0 */
 	GAME_VAR(u32, 0x76d38c) = 0x420c0000;   /* 35.0 */
 	GAME_VAR(int, 0x76d390) = z;
-	lobby_404930();
+	arena_copyProfile();
 	g_arenaLobbyMode = 1;
 	GAME_VAR(int, 0x4db51c) = 0;
 	g_arenaPanelBrightness = 0x3f333333;
@@ -230,7 +230,7 @@ static void rect_copy(u32 dst, u32 src)
 
 /* 0x41e390: the two window rectangles (the joined game's 0x9dd5d8 and the room's 0x9dd240) made the same when one
    reaches past the other, then each limited to the screen's (0x4de71e) */
-void (console_41e390)(void)
+void (room_fitWindowRects)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
 	if (GAME_VAR(int, 0x9dd5ec) > GAME_VAR(int, 0x9dd254) || GAME_VAR(int, 0x9dd5dc) > GAME_VAR(int, 0x9dd244)) {
@@ -566,7 +566,7 @@ u32 (create_quitDialogClicks)(void)
 /* 0x405230: the arena title's edit field opened: the keyboard released for typing, the input line emptied (20
    characters at most), placed at the panel's origin + (0xd8, 0xd0), the fade timer 5, the Windows edit control made.
    Returns what that leaves in eax */
-u32 (lobby_editTextField_405230)(void)
+u32 (arena_editTitle)(void)
 {
 	GAME_CDECL(0x401460, void, void)();   /* input_releaseKeyboard */
 	GAME_VAR(int, 0x68039c) = 1;
@@ -691,7 +691,7 @@ u32 (lobby_playerScreenClicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return CALL(0x404cd0);   /* arena_editTextField_404cd0 */
+		return CALL(0x404cd0);   /* arena_editName */
 	case 2:
 		sound_playMenu(0);
 		GAME_VAR(int, 0x4dc24c) = 2;
@@ -1383,7 +1383,7 @@ void (lobbyJoin_keysChat)(void)
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e1514)) && !g_arenaFull) {
 		sound_playMenu(0);
-		lobby_editTextField_405230();
+		arena_editTitle();
 	}
 #undef g_listTop
 #undef g_listRow
@@ -1599,7 +1599,7 @@ int (lobby_checkReservedName2)(void)
 	packet[0x52] = ARENA(0x2e);
 	lstrcpyA((char *)packet + 0x53, (const char *)0x4ded46);
 	lstrcpyA((char *)g_roomPacket + 1, (const char *)0x4ded20);
-	jmp_net_getLocalAddress_4532e0();
+	jmp_net_getLocalAddress();
 	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)0xa0b43c);
 	g_connectionAwaited = 1;
 	g_connectStep = 2;
@@ -1631,7 +1631,7 @@ void (lobby_checkReservedName3)(void)
 	packet[0x70] = room[0x2e];
 	lstrcpyA((char *)packet + 0x71, (const char *)0x5b1b56);
 	lstrcpyA((char *)g_arenaPacket + 1, (const char *)0x5b1b30);
-	jmp_net_getLocalAddress_4532e0();
+	jmp_net_getLocalAddress();
 	lstrcpyA((char *)g_arenaPacket + 0x33, (const char *)0xa0b43c);
 	g_connectionAwaited = 1;
 	g_connectStep = 2;

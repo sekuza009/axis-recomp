@@ -33,7 +33,7 @@ void (Mat4_fromAxisAngle)(float *m, const float *rotation)
 }
 
 /* 0x480230: v = -v (each component loaded and stored again: a signalling NaN comes out quiet) */
-void THISCALL (collision_480230)(float *v)
+void THISCALL (vec3_negate)(float *v)
 {
 	for (int i = 0; i < 3; i++) {
 		volatile X t = v[i];
@@ -44,7 +44,7 @@ void THISCALL (collision_480230)(float *v)
 /* 0x467700: (x, y) turned by angle tenths of a degree, from the game's cosine and sine tables */
 #define g_cos ((const float *)0xa17f38)
 #define g_sin ((const float *)0xa1b778)
-void THISCALL (hud_467700)(float *v, int angle)
+void THISCALL (vec_rotate)(float *v, int angle)
 {
 	int i = (angle % 3600 + 3600) % 3600;
 	X c = g_cos[i], s = g_sin[i];
@@ -54,7 +54,7 @@ void THISCALL (hud_467700)(float *v, int angle)
 }
 
 /* 0x4803c0: v scaled by s, and copied to out */
-void THISCALL (collision_4803c0)(float *v, float *out, float s)
+void THISCALL (vec3_scaleCopy)(float *v, float *out, float s)
 {
 	volatile X k = s;   /* x87 fmul: of two NaNs it keeps the larger payload */
 	for (int i = 0; i < 3; i++)
@@ -171,7 +171,7 @@ static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* 0x47d0f0: q = the quaternion (x, y, z, w) of the rotation in m's upper 3 x 3 (columns): from the trace when it is
    positive, else from the largest diagonal element */
-void THISCALL (skel_ase_47d0f0)(float *q, const float *m)
+void THISCALL (quat_fromMatrix)(float *q, const float *m)
 {
 	X one = ONE, half = HALF, quarter = GAME_VAR(float, 0x4a941c);
 	X t = (X)m[5] + m[0] + m[10] + one;
@@ -222,7 +222,7 @@ static X crt_acos(X x)
 
 /* 0x47d260: out = (angle, axis) of the quaternion q = (x, y, z, w): the angle -2 acos(w) (0 for w >= 1, -2 pi for
    w <= -1 or NaN), the axis (x, y, z) / sqrt(1 - w * w), a root below 1e-8 (or NaN) taken as 1 */
-void THISCALL (skel_ase_47d260)(float *out, const float *q)
+void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 {
 	if (q[3] >= ONE)
 		out[0] = 0;
@@ -242,20 +242,20 @@ void THISCALL (skel_ase_47d260)(float *out, const float *q)
 }
 
 /* 0x47d320: the two rotations a and b (angle, axis) combined: out = the (angle, axis) of matrix(a) * matrix(b) */
-u32 (skel_ase_47d320)(float *out, const float *a, const float *b)
+u32 (axisAngle_combine)(float *out, const float *a, const float *b)
 {
 	float ma[16], mb[16], m[16];
 	Mat4_fromAxisAngle(ma, a);
 	Mat4_fromAxisAngle(mb, b);
 	GAME_CDECL(0x47d380, void, float *, const float *, const float *)(m, ma, mb);   /* Mat4_multiply */
-	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* skel_ase_47d2f0: matrix -> (angle, axis) */
+	return GAME_THISCALL(0x47d2f0, u32, float *, const float *)(out, m);       /* axisAngle_fromMatrix: matrix -> (angle, axis) */
 }
 
-/* 0x47d2f0: out (a rotation) set from the matrix m by way of its quaternion (skel_ase_47d0f0, then skel_ase_47d260).
+/* 0x47d2f0: out (a rotation) set from the matrix m by way of its quaternion (quat_fromMatrix, then quat_toAxisAngle).
    Its callers ignore the eax it leaves */
-void THISCALL (skel_ase_47d2f0)(float *out, const float *m)
+void THISCALL (axisAngle_fromMatrix)(float *out, const float *m)
 {
 	float q[4];
-	skel_ase_47d0f0(q, m);
-	skel_ase_47d260(out, q);
+	quat_fromMatrix(q, m);
+	quat_toAxisAngle(out, q);
 }

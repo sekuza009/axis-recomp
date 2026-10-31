@@ -490,7 +490,7 @@ void (match_debugHandler)(void)
 			g_hostResultFlag = 0;
 		}
 		GAME_VAR(int, 0x4de6f8) = 1;
-		game_returnToMenus_41e8b0();
+		game_returnToMainMenu();
 		return;
 	}
 	if (input_isDown(GAME_VAR(int, 0x4def00)) == 1) {

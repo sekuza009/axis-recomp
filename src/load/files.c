@@ -7,7 +7,7 @@
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
 
 /* 0x48b460: a count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
-u32 THISCALL (load_48b460)(u8 *self, void *f)
+u32 THISCALL (map_readMissionRecords)(u8 *self, void *f)
 {
 	fread_scrambled(self + 0xe36210, 4, 1, f);
 	return fread_scrambled(self + 0xdc0f10, 0x30, FIELD(u32, self, 0xe36210), f);
@@ -15,7 +15,7 @@ u32 THISCALL (load_48b460)(u8 *self, void *f)
 
 /* 0x483d70: two counts (+0xb004, +0xb008), the first's number of 0x2c-byte records (+4), and one more value
    (+0xb00c) */
-u32 THISCALL (load_483d70)(u8 *self, void *f)
+u32 THISCALL (Light_read)(u8 *self, void *f)
 {
 	fread_scrambled(self + 0xb004, 4, 1, f);
 	fread_scrambled(self + 0xb008, 4, 1, f);

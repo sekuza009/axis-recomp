@@ -22,7 +22,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
                            int e)
 {
 	float *f = (float *)self;
-	load_47db50(self);
+	collisionPlane_clear(self);
 	FIELD(int, self, 0) = id;
 	memcpy(f + 1, v0, 12);
 	memcpy(f + 4, v1, 12);
@@ -72,7 +72,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int id, const float *v0, const float
 
 /* 0x47fb80: the segment p0 -> p1 against the triangle: crossing its face plane at a point inside its three edge
    planes. On a hit: the point in *hit, its distance to p1 in *dist, returns 1 */
-int THISCALL (space_tracePlanes_47fb80)(const u8 *self, const float *p0, const float *p1, float *hit, float *dist)
+int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const float *p1, float *hit, float *dist)
 {
 	const float *n = (const float *)(self + 0x4c);
 	X zero = GAME_VAR(float, 0x4a93e8);

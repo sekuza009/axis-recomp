@@ -23,7 +23,7 @@ void THISCALL (mech_setValue)(Scene *scene, int v)
 }
 
 /* 0x4613a0: the team */
-void THISCALL (match_4613a0)(Scene *scene, int team)
+void THISCALL (scene_setLocalTeam)(Scene *scene, int team)
 {
 	scene->localTeam = team;
 	if (scene->localPlayer >= 0)
@@ -86,7 +86,7 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int v, int team, int
 {
 	mech_setName(scene, name);
 	mech_setValue(scene, v);
-	match_4613a0(scene, team);
+	scene_setLocalTeam(scene, team);
 	armc_setHeadIndex(scene, head);
 	armc_setChestIndex(scene, chest);
 	armc_setArmIndex(scene, arm);

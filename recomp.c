@@ -434,14 +434,14 @@ void THISCALL Skeleton_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL partList_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL load_480440(void *self);
+void THISCALL spaceSlot_clear(void *self);
 
-/* 0x40d990 armc_40d990: in retail, resets SERAPHIM part indices (head 19, chest 13, arm 17, booster 15,
+/* 0x40d990 armc_resetSeraphimParts: in retail, resets SERAPHIM part indices (head 19, chest 13, arm 17, booster 15,
    leg 19) to 0 in the edited mech and the saved copy. The rebuild matches the game as built by
    patches\build_exes.py, where unlockfix.py turns all ten checks into jumps (SERAPHIM parts stay equipped),
    so the function does nothing. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void armc_40d990(void);
+void armc_resetSeraphimParts(void);
 
 /* 0x40ddb0 mech_unpackFromRecord: unpack the mech from the network/profile record at 0x9dd5f8 (signed bytes) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -510,9 +510,9 @@ void record_swap(void *a, void *b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void cfg_defaultPlayerName(void);
 
-/* 0x404930 lobby_404930: copy the profile name and its two fields into the lobby player record */
+/* 0x404930 arena_copyProfile: copy the profile name and its two fields into the lobby player record */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void lobby_404930(void);
+void arena_copyProfile(void);
 
 /* 0x41ee40 menu_showMessage(i): show message i (0x80-byte strings at 0x74de24; i << 7 in the original) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -654,9 +654,9 @@ THISCALL void tex_markMaterialChanged(char *self, int m);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_recolourMaterial(void *self, int m, DWORD h1, DWORD c1, DWORD v1, DWORD h2, DWORD c2, DWORD v2);
 
-/* 0x456b50 (thiscall) hud_456b50: clear three fields (+0xcd138..+0xcd140) in each of the 6 objects at this+4..+0x18 */
+/* 0x456b50 (thiscall) tex_clearSetCounters: clear three fields (+0xcd138..+0xcd140) in each of the 6 objects at this+4..+0x18 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void hud_456b50(char *self);
+THISCALL void tex_clearSetCounters(char *self);
 
 /* 0x45dca0 (thiscall) actor_deactivate(i) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -711,15 +711,15 @@ THISCALL void events_age(char *self, float dt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void notices_clearAll(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void match_4634e0(char *self, int a, const char *s);
+THISCALL void notice_raise1(char *self, int a, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void match_463530(char *self, int a);
+THISCALL void notice_raise2(char *self, int a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void match_463550(char *self, int a, const char *s, int b);
+THISCALL void notice_raise3(char *self, int a, const char *s, int b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void match_4635b0(char *self, int a, int b, const char *s);
+THISCALL void notice_raise4(char *self, int a, int b, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void match_463610(char *self, int a, int b, const char *s);
+THISCALL void notice_raise5(char *self, int a, int b, const char *s);
 
 /* ---- comparison harness -------------------------------------------------------------------- */
 
@@ -747,7 +747,7 @@ void armc_showPartsPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_showColourPage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void set_a61708_46f090(int v);
+void ptx_startBitReader(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void messageBox_clickClose(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -814,7 +814,7 @@ void THISCALL event_raise4(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL event_raise5(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL this_set_4841d0(void *view);
+void THISCALL ViewVolume_clearDrawCounts(void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_clearProjectiles(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -826,9 +826,9 @@ THISCALL void view_setDistance(void *self, float v);
 
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL this_set_480210(void *p, int a, int b, int c);
+void THISCALL ints_set3(void *p, int a, int b, int c);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void collision_480230(float *v);
+THISCALL void vec3_negate(float *v);
 static THISCALL long double SQRT_wrap_480400(const float *v)   /* Vec3 length, returned unrounded in ST0 */
 {
 	typedef long double X;
@@ -890,7 +890,7 @@ void newNameDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void popup_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_403f30(void);
+void lobbyTop_layout(void);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_setColor(DWORD r, DWORD g, DWORD b, DWORD a);
@@ -948,15 +948,15 @@ THISCALL void playerRecord_resetColourGrid(char *self, int p);
 THISCALL void script_pushEvent(char *self, int a, int b, int c, int d);
 /* apply each part's material (index/512 = set, %512 = entry) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void shape_466560(char *self);
+THISCALL void shape_markMaterialsChanged(char *self);
 
 /* small object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL char *object_setTextureFolder(void *self, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void collision_4803c0(float *v, float *out, float s);
+THISCALL void vec3_scaleCopy(float *v, float *out, float s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void hud_467700(float *v, int angle);
+THISCALL void vec_rotate(float *v, int angle);
 /* out = m * p + m[12..14], row by row */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void space_transformPoint(float *out, const float *m, const float *p);
@@ -983,11 +983,11 @@ void arenaNameDialog_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void roomLogin_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_4437b0(void);
+void skirmish_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void account_layout(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skirmish_443840(void);
+void skirmishButtons_layout(void);
 
 /* settings screen tabs (g_setupTab 0x4ddac8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1027,7 +1027,7 @@ void arena_stepMap(int dir);
 void room_stepMap(int dir);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-unsigned char __cdecl net_451530(int id);
+unsigned char __cdecl net_freeSlotsOf(int id);
 /* read n bits MSB-first from the bit stream; returns the new position */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_readBits(int *out, int n);
@@ -1056,7 +1056,7 @@ static int name_search(DWORD countp, DWORD tablep, const char *name)  /* binary 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int shape_findByName(const char *name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int skelDat_46b0c0(const char *name);
+int skelDat_findByName(const char *name);
 /* copy a file name without its extension */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void path_stripExtension(const char *src, char *dst);
@@ -1068,7 +1068,7 @@ int text_printableLength(const char *s);
 void Mat4_copy(DWORD *d, const DWORD *s);
 /* transpose copy */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void skel_47d830(DWORD *d, const DWORD *s);
+void Mat4_transpose(DWORD *d, const DWORD *s);
 
 /* scene-object methods */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1076,7 +1076,7 @@ void THISCALL playerRecord_markFree(void *stage, int p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_setTextureFolder(void *self, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void FUN_00473a10(char *self, int p, int v);
+THISCALL void player_setValue(char *self, int p, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void player_setTeam(void *self, int p, int team);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1084,9 +1084,9 @@ THISCALL void stage_freeProjectile(char *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_pickRandomWeapon(void *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void shape_4675f0(char *self);
+THISCALL void model_clearTint(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void shape_4665c0(char *self, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
+THISCALL void shape_recolourMaterials(char *self, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void ViewVolume_reset(char *self);
 /* reset the unit array and chain it into a doubly linked list */
@@ -1098,7 +1098,7 @@ THISCALL void space_resetUnits(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL mech_setValue(void *scene, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL match_4613a0(void *scene, int team);
+void THISCALL scene_setLocalTeam(void *scene, int team);
 
 /* Johab (Korean) syllable split: lead/vowel/tail indices from a 16-bit code given as two bytes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1116,7 +1116,7 @@ void ptx_readAcSymbol(int *out, int *run);
 void ptx_toRgb(const BYTE *y, BYTE *dst, unsigned n);
 /* RGB -> YCbCr tables, 8 x 256 entries (16.16 fixed point) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void ptx_initTable_46efd0(void);
+void ptx_initYCbCrTables(void);
 /* 8x8 blocks -> image rows */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ptx_layoutBlocks(const BYTE *src, BYTE *dst, int w, int h, int bpp);
@@ -1206,7 +1206,7 @@ int ptx_readBlock(int *blk);
 /* objects */
 /* construct the 8 resource lists */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void *ResourceSet_init_463a40(char *self);
+THISCALL void *ResourceSet_initLists(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_setTextureDir(void *self, const char *name, int flags, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* add a colour to RGBA pixels */
@@ -1294,7 +1294,7 @@ static const Store k_intro_42f500[44] = {
 	{ 0x5b1d7c, 0x4 }, { 0x5b1d80, 0x82 }, { 0x5b1d94, 0xffffffe2 }, { 0x5b1d88, 0x9b }, { 0x5b1d9c, 0xffffff1a },
 	{ 0x5b1d8c, 0x4b }, { 0x5b1da0, 0xffffff90 }, { 0x5b1d90, 0x82 }, { 0x5b1da4, 0xffffffe2 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void intro_42f500(void);
+void menu_initKeyRepeatDefaults(void);
 static const Store k_input_initVkTable[57] = {
 	{ 0x4df054, 0x1b }, { 0x4df058, 0x31 }, { 0x4df05c, 0x32 }, { 0x4df060, 0x33 }, { 0x4df064, 0x34 },
 	{ 0x4df068, 0x35 }, { 0x4df06c, 0x36 }, { 0x4df070, 0x37 }, { 0x4df074, 0x38 }, { 0x4df078, 0x39 },
@@ -1325,7 +1325,7 @@ static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f1dc, 0x3f800000 }, { 0xa1f1e0, 0x3e38b8b9 }, { 0xa1f1e4, 0x3e48c8c9 }, { 0xa1f1e8, 0x3e68e8e9 }, { 0xa1f1ec, 0x3f800000 },
 	{ 0xa1f1f0, 0x0 }, { 0xa1f1f4, 0x3f800000 }, { 0xa1f1f8, 0x3f22a2a3 }, { 0xa1f1fc, 0x3f800000 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void replay_46d4d0(void);
+void color_initTextColours(void);
 static const Store k_intro_42f2b0[66] = {
 	{ 0x4debb0, 0xfffffefc }, { 0x4debbc, 0xfffffefc }, { 0x4debc0, 0xfffffefc }, { 0x4debb4, 0xffffff81 }, { 0x4debb8, 0xffffff81 },
 	{ 0x4deb84, 0xffffff6f }, { 0x4deb94, 0xffffff6f }, { 0x4debe8, 0xffffff6f }, { 0x4deb80, 0x4 }, { 0x4deb98, 0xe8 },
@@ -1342,7 +1342,7 @@ static const Store k_intro_42f2b0[66] = {
 	{ 0x4dec64, 0xff }, { 0x4dec68, 0x92 }, { 0x4dec7c, 0xffffff1a }, { 0x4dec80, 0xffffff91 }, { 0x4dec70, 0x78 },
 	{ 0x4dec84, 0xffffffce } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void intro_42f2b0(void);
+void menu_initMainButtons(void);
 static const Store k_intro_42f690[66] = {
 	{ 0x9dafb8, 0xfffffefc }, { 0x9dafc4, 0xfffffefc }, { 0x9dafc8, 0xfffffefc }, { 0x9dafbc, 0xffffff81 }, { 0x9dafc0, 0xffffff81 },
 	{ 0x9daf8c, 0xffffff6f }, { 0x9daf9c, 0xffffff6f }, { 0x9daff0, 0xffffff6f }, { 0x9daf88, 0x4 }, { 0x9dafa0, 0xe8 },
@@ -1359,7 +1359,7 @@ static const Store k_intro_42f690[66] = {
 	{ 0x9db06c, 0xff }, { 0x9db070, 0x92 }, { 0x9db084, 0xffffff1a }, { 0x9db088, 0xffffff91 }, { 0x9db078, 0x78 },
 	{ 0x9db08c, 0xffffffce } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void intro_42f690(void);
+void room_initMenuButtons(void);
 static const Store k_input_setDefaultKeyBindings[118] = {
 	{ 0x4df8e4, 0x0 }, { 0x6803a0, 0x1 }, { 0x4e0468, 0x2 }, { 0x4e046c, 0x3 }, { 0x4e0470, 0x4 },
 	{ 0x4e0874, 0x5 }, { 0x4e0c78, 0x6 }, { 0x4e0c7c, 0x7 }, { 0x4e0c80, 0x8 }, { 0x4e0c84, 0x9 },
@@ -1406,10 +1406,10 @@ void room_copyJoinedSettings(void);
    name at s+nameOff, flags s[-6..0], player count s[9], strings at s+0xa and s+str2Off. `total` sums byte s[-4]. */
 /* game room: 0x79-byte records */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void room_434ff0(void);
+void room_mergeReceivedSessions(void);
 /* arena lobby: 0x5b-byte records */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_406640(void);
+void arena_mergeReceivedSessions(void);
 
 /* ---- batch 14: x87 camera/timer updates, profile colours, EUC-KR -> Johab ---------------------- */
 #define GD(a) (*(double *)(a))
@@ -1541,7 +1541,7 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de1b4, 0x4df8e4, 1 }, { 0x4de1bc, 0x4df8e4, 1 }, { 0x4de1b0, 0x4e1534, 1 }, { 0x4de1b8, 0x9da440, 1 },
 	{ 0x4de1c0, 0x0, 0 }, { 0x4de1c4, 0x0, 0 }, { 0x4de1c8, 0x32, 0 }, { 0x4de1cc, 0x0, 0 } };
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void setup_controlTabHelper_420c10(void);
+void setup_keepKeyBindings(void);
 /* quaternion from {angle, axis x, y, z} */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void quat_fromAxisAngle(float *q, const float *aa);
@@ -1555,7 +1555,7 @@ void ptx_initDequantTables(int q);
 void math_triangleNormal(float *out, const float *p1, const float *p0, const float *p2);
 /* console/room rectangles: A = 0x9dd5d8.., B = 0x9dd240.., C = 0x4de71e.. (fields +0, +4, +0xc, +0x10, +0x14, +0x18, +0x1c) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void console_41e390(void);
+void room_fitWindowRects(void);
 
 /* ---- batch 17: video table init, texture/mesh records, room layout ----------------------------- */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1564,7 +1564,7 @@ void ptx_initTables(void);
    -> 1..4 (another digit leaves +0x60 unchanged), anything else -> 0. (The original also builds an upper-cased stack copy
    of the name and never uses it; the suffix test is case-sensitive.) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void tex_454e60(void *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
+THISCALL void texRecord_init(void *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void object_setNames(void *self, const char *s1, const char *s2, const char *s3, const char *s4, const char *s5, const char *s6, const char *s7, const char *s8, const char *s9);
 /* the options panel shared by the game room and the arena lobby: 8 rows at rec, then (after the screen's own
@@ -1605,9 +1605,9 @@ void armc_viewedPartRecord(int idx);
 /* font-atlas cell tables: rows r = r0, r0+rstep, ... < rend; each row has a low and a high edge (filled across the row's
    `cols` entries) and each column a low and a high edge; every value is n * (1/256-ish constant at 0x4a957c) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void app_42f940(void);
+void font_initMenuGrids(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void hud_42fb40(void);
+void font_initHudGrids(void);
 
 /* ---- batch 20: arena lobby entry, received room settings, key-binding pairs --------------------- */
 /* the four menu camera points used by several screens (x/y at 0x4df870.., z at 0x76d388..) */
@@ -1631,7 +1631,7 @@ void setup_unbindKey(int k);
 /* libjpeg's jpeg_idct_ifast: 8x8 coefficients (ints) x quantisation table (ints at 0xaa2c94) -> 8x8 bytes, through the
    range-limit table at *(0xa1f300) + 0x80. Multiplies are (x * c) >> 8 in wrapping 32-bit ints, no rounding. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void ptx_decodeBlock_46e380(const int *in, BYTE *out);
+void ptx_inverseDct(const int *in, BYTE *out);
 
 /* ---- batch 22: quaternion <-> matrix, ray vs polygon, RGB -> HSV (x87, operation order from the disassembly) -- */
 /* quaternion (x, y, z, w) -> 4x4 rotation matrix (column-major). xx, xy and w*z stay in 80 bits; the other products
@@ -1640,14 +1640,14 @@ void ptx_decodeBlock_46e380(const int *in, BYTE *out);
 void Mat4_fromQuat(float *m, const float *q);
 /* 3x3 part of a rotation matrix -> quaternion (x, y, z, w) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void skel_ase_47d0f0(float *q, const float *m);
+THISCALL void quat_fromMatrix(float *q, const float *m);
 /* segment p0 -> p1 against a polygon: face plane (n at +0x4c, d at +0x58), then three edge planes from +0x5c (0x10
    apart). On a hit: hit point -> *hit, distance from the hit to p1 -> *dist, returns 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int space_tracePlanes_47fb80(const char *self, const float *p0, const float *p1, float *hit, float *dist);
+THISCALL int collisionTri_traceSegment(const char *self, const float *p0, const float *p1, float *hit, float *dist);
 /* r, g, b -> h (degrees; FLT_MAX when there is no saturation), s, v. NaN handling follows the original's compares */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void tex_46def0(float r, float g, float b, float *h, float *s, float *v);
+void tex_rgbToHsv(float r, float g, float b, float *h, float *s, float *v);
 
 /* ---- batch 23: shape bounds, settings camera ease, menu mouse-look (x87) ------------------------- */
 /* bounding box of all parts (per part at +0x68..+0x7c, overall box always includes the origin) and a bounding sphere
@@ -1672,7 +1672,7 @@ void intro_cameraPath(char *o, int h);
    (x, y, z, w) in record +4.. and +0x14..). flag 1: drop it again when both points are outside the same clip plane.
    List full: set +0x90a0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void ViewVolume_add_485120(char *vv, const DWORD *obj, const float *p, const float *q, int flag);
+THISCALL void ViewVolume_addSegment(char *vv, const DWORD *obj, const float *p, const float *q, int flag);
 
 /* ---- batch 25: axis-angle -> matrix, HSV tint, view-volume quad add (x87) ------------------------ */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1730,7 +1730,7 @@ int text_setBottom(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_setKeysBlocked(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int set_4b42dc_457140(int v);
+int music_setVolumeSetting(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int view_setAngle(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1754,9 +1754,9 @@ int gfx_getHeight(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 float view_angle(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-float match_4686f0(void);
+float view_nearPlane(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-float FUN_00468700(void);
+float view_farPlane(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TextureManager_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1766,19 +1766,19 @@ int THISCALL ShapeManager_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL SkeletonManager_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL load_47db50(void *self);
+int THISCALL collisionPlane_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL load_4804a0(void *self);
+int THISCALL spaceBlock_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL CollisionVolume_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL load_483fc0(void *self);
+int THISCALL ViewVolume_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL TimeSync_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL load_480430(void *self);
+int THISCALL spaceNode_clear(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL this_set_483d60(void *self);
+int THISCALL Light_clearCounts(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL stage_clearMapItemCounts(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1790,15 +1790,15 @@ void THISCALL Scene_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int stage_setValue202e8dc(void *self, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL this_get_0x2342381_463780(void *scene, int i);
+int THISCALL scene_teamSlot(void *scene, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void *THISCALL match_45fff0(void *self);
+void *THISCALL ResourceSet_trivialCtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL match_48b440(void *self, int a);
+int THISCALL recorder_setPathStub(void *self, int a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL match_48b430(void *self, int a0, int a1);
+void THISCALL recorder_openStub(void *self, int a0, int a1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL hud_48b450(void *self, int a0, int a1, int a2, int a3);
+void THISCALL recorder_noteStub(void *self, int a0, int a1, int a2, int a3);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void stage_triggerActionNone(void *self, int a0);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1911,7 +1911,7 @@ int THISCALL stage_resetLights(void *stage);
 /* 0x463850: five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) inside one object; the
    original's SEH frame only matters if a constructor throws, and these cannot */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void *ResourceSet_ctor_463850(char *self);
+THISCALL void *ResourceSet_ctor(char *self);
 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int space_resetPlanes(void *self);
@@ -1977,13 +1977,13 @@ THISCALL int collisionTri_setup(char *self, int id, const float *v0, const float
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void static_endTextureManager(void);
 
-/* 0x41c510 armc_41c510: copy the shown mech's stats into the ARM CENTER readout at 0x4dcaa0..0x4dcb0c (scaled by
+/* 0x41c510 armc_readMechStats: copy the shown mech's stats into the ARM CENTER readout at 0x4dcaa0..0x4dcb0c (scaled by
    the constants the original multiplies with). Scene at *0x9087b4; actor = scene index at +0x234240d (stride 0x8888,
    fields at +0x1ecca70..); its player slot (+0x1eccb7c, stride 0x47fd2) picks a part record (stride 0x13f4) and a
    weapon record (stride 0x1820). Every product is 80-bit, rounded once on store. Returns the scene pointer */
 /* dst = (float)(fld *a; fmul *b) - the second factor stays a memory operand (SNaN behaviour, see x87_mulm) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-char *armc_41c510(void);
+char *armc_readMechStats(void);
 /* batch 34 */
 /* 0x41b750 armc_drawPartPanels: the ARM CENTER part readout for the shown mech. For each of the 5 part slots of its player
    (body 0x175553c, ... weapon 0x175554c) the part's name goes into a 64-byte field with '\' and '/' turned into '-'
@@ -2050,25 +2050,25 @@ static int crt_ftol(long double x)
 	return r;
 }
 
-/* 0x473450 vsprintf_wrap_473450(obj, fmt, ...): print into obj + 0x20fcd4c; returns vsprintf's count */
+/* 0x473450 stage_printText(obj, fmt, ...): print into obj + 0x20fcd4c; returns vsprintf's count */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int vsprintf_wrap_473450(char *obj, const char *fmt, ...);
-/* 0x463450 vsprintf_wrap_463450(obj, fmt, ...): the centre-screen notice: text at obj + 0x2342f06, timer = 2.0 */
+int stage_printText(char *obj, const char *fmt, ...);
+/* 0x463450 notice_printCentre(obj, fmt, ...): the centre-screen notice: text at obj + 0x2342f06, timer = 2.0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int vsprintf_wrap_463450(char *obj, const char *fmt, ...);
-/* 0x4629f0 msg_4629f0(obj, colour, fmt, ...): append to the 5-line message feed (ring at obj + 0x23429ce, 0x108-byte
+int notice_printCentre(char *obj, const char *fmt, ...);
+/* 0x4629f0 msg_print(obj, colour, fmt, ...): append to the 5-line message feed (ring at obj + 0x23429ce, 0x108-byte
    lines: colour, text, time stamp from +0x2342efe); the read index (+0x2342efa) is pushed along when the ring is full;
    display timer = 5.0. Returns the new count / 5 (what the original leaves in EAX) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-unsigned msg_4629f0(void *scene, int colour, const char *fmt, ...);
+unsigned msg_print(void *scene, int colour, const char *fmt, ...);
 /* 0x46f770 (thiscall) anim_setFrame(frame, scale): select frame i (< count at +0x1c) of the frame table (+0x20): +0x24 =
    i, +0x28 = __ftol(frame's int at +0x20 * scale) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void anim_setFrame(void *self, int i, DWORD scale);
-/* 0x46de20 (thiscall) tex_46de20(dh, ds, dv): tint an RGBA byte colour: bytes / 255 -> floats, tex_tintHsv, * 255
+/* 0x46de20 (thiscall) tex_tintRgba(dh, ds, dv): tint an RGBA byte colour: bytes / 255 -> floats, tex_tintHsv, * 255
    -> __ftol back into the bytes (all four channels, alpha too). Returns the last __ftol result */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int tex_46de20(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv);
+THISCALL int tex_tintRgba(BYTE *rgba, DWORD dh, DWORD ds, DWORD dv);
 /* 0x4542a0 net_parseAddress(): the dotted address string at 0xa0b43c (strtok at "." - it is cut up in place) -> 4 bytes
    a.b.c.d packed as (a << 24) | b << 16 | c << 8 | d (a not masked, as in the original). Each token goes into a
    4-byte slot of a zeroed 20-byte buffer (longer tokens run into the next slot); more than 4 tokens would overrun
@@ -2116,7 +2116,7 @@ void THISCALL msg_playerLeft(void *scene, int actor);
 void THISCALL msg_cheatUsed(void *scene, int actor, int cheat);
 /* 0x456470 (thiscall) tex_applyTintMask(i): if texture slot i (0x68-byte records at +0xc0108) has flag 2 at +0x64,
    tint every pixel (RGBA at +0x114, w x h from +0xc0118/+0xc011c) whose mask byte (+0x80114: R, else G) is >= 200 with
-   the slot's first or second HSV tint (tex_46de20). Returns what the original leaves in EAX */
+   the slot's first or second HSV tint (tex_tintRgba). Returns what the original leaves in EAX */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int tex_applyTintMask(void *tex, int i);
 
@@ -2448,21 +2448,21 @@ DWORD static_destroyTex256x256(void);
    and null them. EAX as the original leaves it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD sound_freeAll(void);
-/* 0x48b460 (thiscall) load_48b460(f): read a scrambled count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
+/* 0x48b460 (thiscall) map_readMissionRecords(f): read a scrambled count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD load_48b460(char *self, DWORD f);
-/* 0x483d70 (thiscall) load_483d70(f): read two counts (+0xb004, +0xb008), +0xb004 x 0x2c-byte records (+4) and
+THISCALL DWORD map_readMissionRecords(char *self, DWORD f);
+/* 0x483d70 (thiscall) Light_read(f): read two counts (+0xb004, +0xb008), +0xb004 x 0x2c-byte records (+4) and
    one more dword (+0xb00c), all scrambled */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD load_483d70(char *self, DWORD f);
-/* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (UnitPoseInfo_dtor); 0x463960 ResourceSet_dtor_463960:
+THISCALL DWORD Light_read(char *self, DWORD f);
+/* 0x45ff30 (ECX) actor_destroyPartLists: destroy an actor's 8 sub-objects (UnitPoseInfo_dtor); 0x463960 ResourceSet_dtor:
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
    eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_saveMacros (it loads
    them): Chat.scp into the 100 chat macros, else empty them and write the file. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD actor_destroyPartLists(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD ResourceSet_dtor_463960(void *self);
+THISCALL DWORD ResourceSet_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD Stage_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2472,9 +2472,9 @@ THISCALL DWORD chat_saveMacros(void *scene);
 THISCALL int chat_macro(char *self, DWORD in, DWORD out);
 /* batch 47: functions calling Win32 / OpenGL / GDI / registry / more CRT - in the game the real ones, in the tests the
    IAT and CRT mocks. All lifted (lifted/win.c); the comments say what each does */
-/* 0x43f580 GetCurrentDirectoryA_wrap_43f580: the current directory into the game path buffer */
+/* 0x43f580 app_readCurrentDirectory: the current directory into the game path buffer */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD GetCurrentDirectoryA_wrap_43f580(void);
+DWORD app_readCurrentDirectory(void);
 /* 0x4685d0 gfx_swapBuffers: glFinish + SwapBuffers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int gfx_swapBuffers(void);
@@ -2523,9 +2523,9 @@ int net_addPlayerRecord(const void *rec);
 /* 0x46e1e0 ptx_crtlError: PTX video control error: print and exit */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_crtlError(int code, const char *format, ...);
-/* 0x454d90 dplay_454d90: DirectPlay name compare/copy helper */
+/* 0x454d90 text_findWord: DirectPlay name compare/copy helper */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-const char *dplay_454d90(const char *text, const char *word, int exact);
+const char *text_findWord(const char *text, const char *word, int exact);
 /* 0x42ef30 app_reportStartupProblem: startup checks with message boxes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_reportStartupProblem(int code);
@@ -2617,9 +2617,9 @@ THISCALL void autoplay_startRecording(char *scene, DWORD name);
 DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 49: Winsock users (in the tests the IAT mocks) and the match packet senders (net_sendPacketData is mocked
    in the tests: the size and a hash of each packet are logged). All lifted (lifted/net.c) */
-/* 0x4547c0 inet_addr_wrap_4547c0(str): inet_addr, result dropped */
+/* 0x4547c0 net_inetAddr(str): inet_addr, result dropped */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD inet_addr_wrap_4547c0(const char *text);
+DWORD net_inetAddr(const char *text);
 /* 0x452170 net_asyncSelect(wnd, which): WSAAsyncSelect of socket 100 (message 0x40a) or 101 (0x40c) for read and
    close events; 0 only when it fails */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2636,14 +2636,14 @@ int net_resolveHost(const char *host);
 /* match packet senders (thiscall on the scene): each builds a 64-byte packet, sends it with net_sendPacketData,
    counts it and, while recording an autoplay, writes it to the recording too.
    0x48e990 net_sendColourRing(player): packet 0x0c, the player's next 16 3-byte entries of a 0x180 ring (or -1);
-   0x48ead0 net_sendState_48ead0: packet 0x0e, a 4-bit level (value / 10 + 1, at most 15) per object, two per byte;
+   0x48ead0 net_sendPlayerLevels: packet 0x0e, a 4-bit level (value / 10 + 1, at most 15) per object, two per byte;
    0x48e0f0 net_sendPlayerInfo(player): packet 0x02, the player's name, team, colours and parts, sent once when flagged;
    0x48e680 net_sendMatchEvent: packets 0x03..0x0d for the first pending match event (strings, team and score changes);
    0x48e2c0 net_sendPlayerState(player): the player's state (position, angles, flags) and five shot slots */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendColourRing(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void net_sendState_48ead0(char *scene);
+THISCALL void net_sendPlayerLevels(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_sendPlayerInfo(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2652,11 +2652,11 @@ THISCALL void net_sendMatchEvent(char *scene);
 THISCALL void net_sendPlayerState(char *scene, DWORD p);
 /* batch 50 */
 /* the CRT's x87 acos (0x49ffc0, _CIacos): argument and result in ST0 */
-/* 0x47d260 (thiscall) skel_ase_47d260(q): quaternion q = (x, y, z, w) -> out = (angle, axis): angle = -2 acos(w)
+/* 0x47d260 (thiscall) quat_toAxisAngle(q): quaternion q = (x, y, z, w) -> out = (angle, axis): angle = -2 acos(w)
    (0 for w >= 1; -2 pi for w <= -1 or NaN), axis = (x, y, z) / sqrt(1 - w*w), where a root below 1e-8 (or NaN)
    is replaced by 1. All in 80-bit like the original; each result is rounded to float when stored. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void skel_ase_47d260(float *out, const float *q);
+THISCALL void quat_toAxisAngle(float *out, const float *q);
 /* 0x46f8c0 (thiscall) skel_poseBones(base): pose the skeleton for the current animation frame: per bone, the parent
    bone's matrix (or base, default the current modelview) is loaded, translated by the bone's position (or the
    position keys around the frame, binary search, linear in between) times the bone scale, rotated by the bone's
@@ -2690,13 +2690,13 @@ DWORD app_checkFile_game(void);
 DWORD app_checkFile_profeng(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD reg_readStartMode(void);
-/* 0x47d2f0 (thiscall) skel_ase_47d2f0(out, m): rotation matrix -> quaternion (skel_ase_47d0f0) -> angle-axis */
+/* 0x47d2f0 (thiscall) axisAngle_fromMatrix(out, m): rotation matrix -> quaternion (quat_fromMatrix) -> angle-axis */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void skel_ase_47d2f0(char *out, DWORD m);
-/* 0x47d320 skel_ase_47d320(out, a, b): the angle-axis of the product of the two rotations a and b (Mat4_fromAxisAngle
+THISCALL void axisAngle_fromMatrix(char *out, DWORD m);
+/* 0x47d320 axisAngle_combine(out, a, b): the angle-axis of the product of the two rotations a and b (Mat4_fromAxisAngle
    makes each a matrix) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD skel_ase_47d320(float *out, const float *a, const float *b);
+DWORD axisAngle_combine(float *out, const float *a, const float *b);
 /* 0x487c80 input_setCursorPos(x, y) / 0x487ba0 input_asyncKeyDown(key) / 0x487c30 input_getCursorPos(): only while
    the game window (0xae2f20, if set) is in front; the key state is 1 when down; the position is kept at 0xae2f18 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2786,13 +2786,13 @@ THISCALL void net_sendGamePacket(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawKeyBindingRows(int key);
 /* batch 53: the ray trace chain (lifted/trace.c) */
-/* 0x4809f0 (thiscall) space_traceUnit_4809f0(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
+/* 0x4809f0 (thiscall) space_traceUnit(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
    node `this` (0x50 bytes: box, list +0x18, inner flag +0x24, 8 children +0x28): an inner node splits the segment
    at the box midpoints and recurses into the children in the order the segment meets them, stopping at the first
-   hit; a leaf traces its triangle list (space_tracePlanes_47fb80; records flagged 1 are skipped) and every sub-model
+   hit; a leaf traces its triangle list (collisionTri_traceSegment; records flagged 1 are skipped) and every sub-model
    list (the segment taken into the model, the hit back out), keeping the nearest. Returns the hit record or 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL DWORD space_traceUnit_4809f0(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs);
+THISCALL DWORD space_traceUnit(char *node, DWORD p0, DWORD p1, DWORD hit, DWORD dist, DWORD subs, DWORD nsubs);
 /* 0x483060 (thiscall) space_traceNodes(p0, p1, hit, subs, nsubs): the segment through the grid's cells (3D DDA over
    the cells it crosses, nearest first), tracing the octree of each cell that has one; the first hit wins */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2893,15 +2893,15 @@ void glyph_drawHud31Layered(int x, int y, int i, int j);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_drawButton(int x0, int y0, int x1, int y1, int lit);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexQuad_4284d0(int x0, int y0, int x1, int y1, int lit);
+void menu_drawSmallButton1(int x0, int y0, int x1, int y1, int lit);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexQuad_4282f0(int x0, int y0, int x1, int y1, int lit);
+void menu_drawWideButton(int x0, int y0, int x1, int y1, int lit);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexQuad_4285c0(int x0, int y0, int x1, int y1, int lit);
+void menu_drawSmallButton2(int x0, int y0, int x1, int y1, int lit);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexQuad_4286b0(int x0, int y0, int x1, int y1, int lit);
+void menu_drawSmallButton3(int x0, int y0, int x1, int y1, int lit);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexQuad_4287a0(int x0, int y0, int x1, int y1, int lit);
+void menu_drawSmallButton4(int x0, int y0, int x1, int y1, int lit);
 /* error reporters (fmt, ...) / (object, fmt, ...): message with the time (and the object's name) into ERROR.TXT
    when enabled (0xa1efdc); sys_errorTerminate / sys_fatalError then run the cleanup hook and exit */
 /* readable rebuilds in src/app/error_log.c (their own translation unit, see src/axis.h) */
@@ -2965,9 +2965,9 @@ int net_addRoomRecord(const void *rec);
 DWORD math_makeMathFunctionTableFile(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int math_initMathFunction(void);
-/* 0x4684c0 glWindow_4684c0: the default GL state */
+/* 0x4684c0 gfx_resetState: the default GL state */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD glWindow_4684c0(void);
+DWORD gfx_resetState(void);
 /* 0x42bde0 reg_readServerSettings: server names and ports from the registry, or a message and quit */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int reg_readServerSettings(void);
@@ -3166,7 +3166,7 @@ THISCALL void skelSet_setup(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadPlayInfoFrom(char *map, DWORD name);
 /* 0x48b5c0 (thiscall) map_loadMissionInfoFrom(name): version 0x1201, skip two sections, then the actions
-   (load_48b460), waypoint lists and triggers */
+   (map_readMissionRecords), waypoint lists and triggers */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadMissionInfoFrom(char *map, DWORD name);
 /* batch 64 (lifted/grp11.c) */
@@ -3269,13 +3269,13 @@ void shape_getShadingColorBufferBy(BYTE *out, int first, const void *part, const
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int shape_shadingColours(float *out, int first, BYTE *shape, void *factors, int matrix);
 /* batch 71 (lifted/grp18.c) */
-/* 0x46f7a0 (thiscall) data_46f7a0(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
+/* 0x46f7a0 (thiscall) ObjectList_relight(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
    apart from +0x14: shape, -, colour buffer, matrix): with neither, the colours (shape +0x18 dwords) are cleared;
    factors through the inverted matrix (shape_shadingColours), pixel lights (shape_colourPixels) on top or alone */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void THISCALL data_46f7a0(void *list, const void *factors, const void *lights);
+void THISCALL ObjectList_relight(void *list, const void *factors, const void *lights);
 /* 0x46fd20 (thiscall) partList_queue(vv, factors, pixelLights, a, b, c): if the list has frames (+0x1c, the current one
-   +0x20[+0x24] set) and entries: each entry is lit as in data_46f7a0 when the list is pre-lit (+0x2c == 1; factors
+   +0x20[+0x24] set) and entries: each entry is lit as in ObjectList_relight when the list is pre-lit (+0x2c == 1; factors
    only when their pool's +0xb00c is 1) and then projected with its own colours, else projected with the lights
    passed on (ViewVolume_projectObject). Returns 1 if it ran, else 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3431,7 +3431,7 @@ THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
    an int at +0x40 each; the first 64 looked up once, later ones again when filled in) with their element counts
    summed (+0x18), the data memory (100 bytes per shape, 4 per skeleton, with lit == 1 the colour buffers too) from
    mem (too small is fatal) or operator new (none is fatal), then per shape its entry (shape, the int, colour
-   buffer when lit), the skeletons by name (0x40 apart) after them, and with lit == 1 the colours (data_46f7a0) */
+   buffer when lit), the skeletons by name (0x40 apart) after them, and with lit == 1 the colours (ObjectList_relight) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
                                   DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size);
@@ -3509,18 +3509,18 @@ THISCALL void playerRecord_set(char *eng, DWORD p, DWORD name, DWORD v, DWORD te
 THISCALL void playerRecord_setFromActorRecord(char *eng, DWORD p, DWORD rec);
 /* (hud_drawConsole: batch 198, lifted whole in lifted/grp153.c) */
 /* batch 92 (lifted/grp38.c) */
-/* menu_drawTexturedRect_427a90 / _427b60(x1, y1, x2, y2, tex): with GL_TEXTURE_2D, bind texture tex (set tex / 512
+/* menu_drawTexture / _427b60(x1, y1, x2, y2, tex): with GL_TEXTURE_2D, bind texture tex (set tex / 512
    of the global texture set 0xa0e010, index tex % 512; tex_bind) and draw the quad x1,y1 - x2,y2 through
    menu_vertex (0x41ef60), _427b60 with the texture flipped vertically; _428a00(x1, y1, x2, y2) / _428b50(-, y, x):
    the menu frame texture (0x4deb4c) as two quads (corner pieces at fixed offsets around the given points) / one */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexturedRect_427a90(int x0, int y0, int x1, int y1, int tex);
+void menu_drawTexture(int x0, int y0, int x1, int y1, int tex);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexturedRect_427b60(int x0, int y0, int x1, int y1, int tex);
+void menu_drawTextureFlipped(int x0, int y0, int x1, int y1, int tex);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexturedRect_428a00(int x0, int y0, int x1, int y1);
+void menu_drawCornerOrnaments(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void menu_drawTexturedRect_428b50(int x0, int y0, int x1);
+void menu_drawTopRightOrnament(int x0, int y0, int x1);
 /* batch 93 (lifted/grp39.c) */
 /* (thiscall) hud_drawNameIcon(n, x, y) / hud_drawLeaderIcon(i, x, y) / replay_drawIcon(x, y, i): a 2D icon from a HUD
    texture atlas at a screen position scaled to the window (gfx_getWidth / gfx_getHeight): the name icon n (1..;
@@ -3601,7 +3601,7 @@ int lobby_openConnection(void);
 void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
 /* 0x461250 (thiscall on the scene) mech_setAll(name, v, team, head, chest, arm, leg, booster, item0..5): the
-   arm-customise screen's whole mech at once (mech_setName / mech_setValue / match_4613a0, the five part pickers, the six
+   arm-customise screen's whole mech at once (mech_setName / mech_setValue / scene_setLocalTeam, the five part pickers, the six
    item slots), and the edited player marked used (playerRecord_markUsed) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL mech_setAll(void *scene, const char *name, int v, int team, int head, int chest, int arm, int leg, int booster, int item0,
@@ -3724,7 +3724,7 @@ void THISCALL stage_drawProjectiles(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
 /* 0x48b9d0 (thiscall on the scene) map_loadGroundInfoFrom(name): the map's ground from "dir/name" (dir +0x108; no
    file or a version other than 0x1201 is fatal), all scrambled after the version: four blocks skipped, the map's
-   directory name (0x100 bytes), the view range (+0xa08), the lights (load_483d70 into +0x9ccffc), clear colour
+   directory name (0x100 bytes), the view range (+0xa08), the lights (Light_read into +0x9ccffc), clear colour
    and fog (+0x9ee030..+0x9ee060), the sky sphere / sky layer / side layer / animated floor modes (+0x9ee064,
    +0x9eee48, +0x9ef0b0, +0x9ef30c) whose textures are then looked up by name ("<dir>/SphereFloor", ...,
    "SkyInnerLayer", "SideLayer1..6", "FloorAni01..16"), ground colours (+0x9ef904..), and the layers (count
@@ -3746,7 +3746,7 @@ LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l);
 /* 0x468250 glWindow_init(title, w, h, depth, a, fullscreen, parent, b): the game window, once (a second call gives
    a message and 0): the title (0xa0e81c) and the mode kept, the window class registered (failure: message, 0), the
    display mode switched for full screen (glWindow_setDisplayModeBy), the window created (a child of parent, or
-   pop-up), shown, focused and the GL state set (glWindow_4684c0); returns the window */
+   pop-up), shown, focused and the GL state set (gfx_resetState); returns the window */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *glWindow_init(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen, void *window, void *other);
 /* batch 113 (lifted/grp59.c) */
@@ -3771,7 +3771,7 @@ void console_init(void);
 /* batch 115 (lifted/grp61.c) */
 /* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
    kept (object_setNames); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
-   "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (this_set_483d60, factors_addConstant with
+   "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (Light_clearCounts, factors_addConstant with
    the colour 0xa1f23c, stage_resetLights, a grey ambient, factors_addPoint); fog and sky cleared, the sky-sphere directions
    (+0x9ee080, 6 faces of 7 x 7), the sky layer and side directions, the floor grid (+0x9ef350, 11 x 11), the ground
    bounds (+-100000) and layer count; the mesh headers; the shape caches and skeleton pools (the scene's at +0xe3c93c
@@ -3949,10 +3949,10 @@ void skirmish_drawTunnel(void);
 /* 0x411ab0 armc_drawPreviewTunnel(): the same deeper (depth 1650), textures 0x4df908 / 0x4df904, dimmer stripes */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawPreviewTunnel(void);
-/* 0x4388e0 room_4388e0() / 0x4091b0 arena_drawTunnel(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
+/* 0x4388e0 room_drawTunnel() / 0x4091b0 arena_drawTunnel(): the room's and the arena's tunnel, depth 0x9dd698 / 0x4dba68,
    textures 0x4df908 / 0x4df904 and 0x4df044 / 0x4df040 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void room_4388e0(void);
+void room_drawTunnel(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_drawTunnel(void);
 /* batch 127 (lifted/grp73.c): the room's player-info panel */
@@ -4122,7 +4122,7 @@ void arena_createDraw(void);
 void profile_drawScreen(void);
 /* 0x43ede0 ranking_page(): the ranking page: a pending request (0x9dd350) for sort column 0x9dd1d0 sends packet
    0x15 / 0x65 (code 0x25 / 0x23 / 0x26 and the first rank of page 0x9dd6ac, stored as in ranking_drawTable) and starts
-   waiting (0x9dd6b8, blink 1000), column 3 just clears it; the room tunnel (room_4388e0); then, in room modes
+   waiting (0x9dd6b8, blink 1000), column 3 just clears it; the room tunnel (room_drawTunnel); then, in room modes
    other than 0 / 1 (0x9dce48) and outside sub-state 99 (0x9dd834): with a message open only the ranking frame
    (and a request when it closes), else while waiting an answer (0x76d40c) fills the list (roomList_fillPage) and keeps
    the column and page (0x9dd300, 0x9dd1b4), the blink counts down (by 0x4b071c * 0x4ad498, from 1000 again below
@@ -4178,7 +4178,7 @@ void armc_buildPartLists(void);
 void menu_loadIntroTextures(void);
 /* batch 148 (lifted/grp94.c): the intro set-up */
 /* 0x430bf0 frontEnd_startUp(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (menu_initColours,
-   intro_42f2b0, intro_42f500, intro_42f690, menu_initKeyRepeat, net_clearSlots), each followed by a loading-screen frame
+   menu_initMainButtons, menu_initKeyRepeatDefaults, room_initMenuButtons, menu_initKeyRepeat, net_clearSlots), each followed by a loading-screen frame
    (frontEnd_drawProgress, progress 0x4dda34 + 1) and, but for the last, a wait of 2.0 (timer_waitFrames) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD frontEnd_startUp(void);
@@ -4305,34 +4305,34 @@ int dplay_joinSession(const void *guid, const char *player, DWORD data);
 int sound_init(void *hwnd);
 /* a sound: 8 DirectSound buffers (+0, rotated through by +0x20) with a volume or pan kind (+0x24) and value (+0x44)
    per buffer. 0x467d70 dsbuf_play(snd): plays the current buffer and moves to the next; 0x467db0
-   dsbuf_setVolume(snd, vol); 0x467dd0 sound_467dd0(snd, kind, value): value in -10000..10000 is stored as the
+   dsbuf_setVolume(snd, vol); 0x467dd0 sound_playNextBuffer(snd, kind, value): value in -10000..10000 is stored as the
    current buffer's kind 1 or 2 value, set as its pan, and the buffer played */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void dsbuf_play(void *sound);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void dsbuf_setVolume(void *sound, int volume);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD sound_467dd0(DWORD *sound, int mode, int value);
+DWORD sound_playNextBuffer(DWORD *sound, int mode, int value);
 /* the music stream 0xa0e670 (IAMMultiMediaStream). 0x457310 music_shutdown(): releases it, CoUninitialize;
-   0x4572b0 music_4572b0(): at the end (GetTime >= the duration 0xa0e018) seeks to 0 and runs it again (loop);
+   0x4572b0 music_loopIfEnded(): at the end (GetTime >= the duration 0xa0e018) seeks to 0 and runs it again (loop);
    0x457150 music_play(name): music volume 0x4e0c94 below 50 or no such file: stops; else CoInitialize, a
    multimedia stream (CoCreateInstance), Initialize, an audio stream, OpenFile, run, name into 0xa0e674 and the
    duration into 0xa0e018 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void music_shutdown(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD music_4572b0(void);
+DWORD music_loopIfEnded(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int music_play(const char *name);
 /* batch 159 (lifted/grp105.c): DirectInput keyboard and mouse, DirectSound release */
 /* DirectInput: the object 0x4d1e98, the keyboard 0x4d1fa0 (ready flag 0x4d1fa8, key states 0x4d1a98) and the mouse
-   0x4d1fa4 (ready flag 0x4d1fac). 0x401310 input_initKeyboard(hwnd) / 0x4013a0 input_4013a0(hwnd): once, create the
+   0x4d1fa4 (ready flag 0x4d1fac). 0x401310 input_initKeyboard(hwnd) / 0x4013a0 input_createMouse(hwnd): once, create the
    device, its data format (0x4a95f8 / 0x4a9610) and cooperative level (6: non-exclusive background / 5: exclusive
    foreground); the keyboard is acquired and its states cleared; 1 when ready, else 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_initKeyboard(void *window);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int input_4013a0(void *window);
+int input_createMouse(void *window);
 /* 0x401410 input_createDirectInput(hwnd, inst): DirectInputCreateA (version 0x700), then the keyboard and mouse */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int input_createDirectInput(void *window, void *instance);
@@ -4404,13 +4404,13 @@ DWORD skirmish_settingsKeys(void);
    the selection (skirmish_cursorUp / 443d10) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_processKeys(void);
-/* 0x434320 field_editMessage() / 0x405010 arena_editTextField_405010(): start typing in the chat line: keyboard
+/* 0x434320 field_editMessage() / 0x405010 arena_editMessage(): start typing in the chat line: keyboard
    released, the input buffer cleared, an empty line at 0x9dc92c, the edit box placed by the room / arena chat
    position (0x9dd4a8 / 0x4db8c8 + 0xd8, + 0xd0), typing on (0x9dd6c8 / 0x4db70c) and the edit window created */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void field_editMessage(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editTextField_405010(void);
+void arena_editMessage(void);
 /* 0x443ef0 settingsPage_draw() / 0x4440f0 settingsPage_keys(): no dialog open: the skirmish settings (page 0x9ef1f8 10) or undo
    screen (0x14) mouse / keys (0x4440f0 only while 0x9ef1f0 is past 1) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4470,13 +4470,13 @@ void missionList_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_keys(void);
 /* jump stubs: 0x44aa30 missionsel_frameScreen -> missionsel_drawScreen, 0x445bd0 skirmish_frameScreenB ->
-   skirmish_drawScreenB, 0x4532e0 jmp_net_getLocalAddress_4532e0 -> net_getLocalAddress */
+   skirmish_drawScreenB, 0x4532e0 jmp_net_getLocalAddress -> net_getLocalAddress */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_frameScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_frameScreenB(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int jmp_net_getLocalAddress_4532e0(void);
+int jmp_net_getLocalAddress(void);
 /* batch 165 (lifted/grp111.c): profile screen dialogs and mouse handlers */
 /* 0x44b600 profile_typeNewName(): start typing a profile name: keyboard released, input cleared, the edit box at the
    name field (0x9f8ea8 + 0x38, 0x9f8eac + 0x24), page 2, a dialog open, the edit window created */
@@ -4547,9 +4547,9 @@ void net_sendLocalInfo(const void *msg);
    to net_handleMessage; ends at DPERR_NOMESSAGES / DPERR_GENERIC-like 0x887703e8 or any other failure (size 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD net_receiveAll(void);
-/* 0x450bb0 FUN_00450bb0: jump to net_receiveAll */
+/* 0x450bb0 jmp_net_receiveAll: jump to net_receiveAll */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD FUN_00450bb0(void);
+DWORD jmp_net_receiveAll(void);
 /* batch 168 (lifted/grp114.c): the mission settings screen */
 /* 0x448ac0 missionsel_drawSettingsScreen(): the mission settings screen (the mission select's sibling): the frame and panels,
    the chosen mission's name, preview and texts (the strings at 0x75bfa4 .. 0x75f6a4), its record (0x9db99c +
@@ -4566,7 +4566,7 @@ void missionsel_frameSettings(void);
    0x4dc244), 4 / 5 the others from 0x4dcca4 (count 0x4dc778), -1 none), the list position 0x4dc77c, the chosen
    parts 0x4dcb20 / 24 / 28 / 2c (armour) and 0x4dcb18 / 0x4dcb1c.
    0x40f950 armc_showCursorItem(): the position wrapped into its list, that part previewed (armc_viewedPartRecord), the snapshot 6
-   (armc_snapshot), the lobby player's part re-applied (armc_giveShownActorWeapon on the game 0x9087b4), then armc_41c510 */
+   (armc_snapshot), the lobby player's part re-applied (armc_giveShownActorWeapon on the game 0x9087b4), then armc_readMechStats */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_showCursorItem(void);
 /* 0x40f870 armc_pickSlot(kind): switch to part kind: the position of the kind's chosen part in its list; for the
@@ -4663,7 +4663,7 @@ void popup_clicks(void);
    helpers sound_playVolume / sound_playFile / sound_loadMenuSounds, net_sendChat (a chat line logged and sent),
    arena_leaveSession, chat_closeLine (typing off), the setup page's sound tab keys */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editTextField_404f90(void);
+void arena_editPassword(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void field_editPassword(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4677,15 +4677,15 @@ void mapList_ok(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_sendChat(const char *text);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD lobby_editTextField_405230(void);
+DWORD arena_editTitle(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD menu_keyStartFade(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_leaveSession(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editTextField_404cd0(void);
+void arena_editName(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editTextField_404d70(void);
+void arena_editComment(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void field_editComment(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4697,11 +4697,11 @@ void mapList_stepGameType(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void field_editGameName(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editNumberField_404ed0(void);
+void arena_editTimeLimit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_soundTabKeys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void arena_editNumberField_404e10(void);
+void arena_editFragLimit(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void account_editEmail(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4768,7 +4768,7 @@ DWORD lobby_pageClicks(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyPlayer_keys(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD room_433d30(void);
+DWORD account_endTyping(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_nameEntryStep(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4778,13 +4778,13 @@ void mapSelect_mouse(void);
    sent), with their callees stubbed (tools/gentests.py); the in-match player messages (thiscall on the game),
    music_playMatch, dplay_closeSession */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD game_returnToMenus_41ec50(void);
+DWORD game_returnToScreen500(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD game_returnToMenus_41e8b0(void);
+DWORD game_returnToMainMenu(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD game_returnToMenus_41e9d0(void);
+DWORD game_returnToScreen400(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD game_returnToMenus_41eb00(void);
+DWORD game_returnToGameRoom(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mapList_mouse(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5221,11 +5221,11 @@ void menu_processKeys(void);
    its limit 0x4a93e8, then 0x420280 by tail call */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void app_frame(void);
-/* 0x462050 main_462050() (thiscall on the scene): the match's frame by input state +0x233cc20 (1..4: 0x468750,
+/* 0x462050 match_frameByState() (thiscall on the scene): the match's frame by input state +0x233cc20 (1..4: 0x468750,
    0x48b200, match_inputState3, 0x487f00), each returning the next state; after states 2 (when +0x233c9e8 == 1),
    3 and 4 the frame is presented (0x4685d0). Returns the state */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int THISCALL main_462050(void *scene);
+int THISCALL match_frameByState(void *scene);
 /* batch 203 (lifted/grp162.c): WinMain */
 /* 0x43f9d0 WinMain(inst, prev, cmd, show) (stdcall): the command line (0x43f160); a running copy's window (by
    class and title) is told to quit and given half a second; the start time (GetSystemTime into 0x9dd878,
@@ -5258,7 +5258,7 @@ int app_checkCdAndLoad(void *instance);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState500_missionSelect(void);
 /* 0x420280 main_loop(): one frame: in a match (screen 0x76d3e8 == 9999) 0x41f970 unless 0x67ef0c is 9999 too,
-   the input (0x445c60, 0x4012c0) unless 0x68039c, the match frame (main_462050 on the scene 0x9087b4); its 0 ends
+   the input (0x445c60, 0x4012c0) unless 0x68039c, the match frame (match_frameByState on the scene 0x9087b4); its 0 ends
    the match (game_postMatch by tail call); outside a match the menus' frame (menu_frame by tail call) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void main_loop(void);
@@ -7040,13 +7040,13 @@ ST(Skeleton_clear, fill(BUF, 0x200); g_a[0] = irnd(0, 64) * 4;,
    (TC(void, 0x469980, char *)(BUF + g_a[0]), 0), (Skeleton_clear((int *)(BUF + g_a[0])), 0))
 ST(partList_clear, fill(BUF, 0x200); g_a[0] = irnd(0, 64) * 4;,
    (TC(void, 0x46f480, char *)(BUF + g_a[0]), 0), (partList_clear((int *)(BUF + g_a[0])), 0))
-ST(load_480440, fill(BUF, 0x200); g_a[0] = irnd(0, 64) * 4;,
-   (TC(void, 0x480440, char *)(BUF + g_a[0]), 0), (load_480440((int *)(BUF + g_a[0])), 0))
+ST(spaceSlot_clear, fill(BUF, 0x200); g_a[0] = irnd(0, 64) * 4;,
+   (TC(void, 0x480440, char *)(BUF + g_a[0]), 0), (spaceSlot_clear((int *)(BUF + g_a[0])), 0))
 static const DWORD k_armcParts[10] = { 0x4dc760, 0x4dc764, 0x4dc768, 0x4dc76c, 0x4dc770, 0x4dc878, 0x4dc87c, 0x4dc880, 0x4dc884, 0x4dc888 };
 static const DWORD k_listCount[5] = { 0x4dc780, 0x4dcc60, 0x4dca90, 0x4dca94, 0x4dc890 };
 static const DWORD k_list[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7c };
-ST(armc_40d990, for (int i = 0; i < 10; i++) G32(k_armcParts[i]) = irnd(0, 20);,
-   (CD(void, 0x40d990, void)(), 0), (armc_40d990(), 0))
+ST(armc_resetSeraphimParts, for (int i = 0; i < 10; i++) G32(k_armcParts[i]) = irnd(0, 20);,
+   (CD(void, 0x40d990, void)(), 0), (armc_resetSeraphimParts(), 0))
 ST(mech_unpackFromRecord, fill((void *)0x9dd5f8, 0x9b);, (CD(void, 0x40ddb0, void)(), 0), (mech_unpackFromRecord(), 0))
 ST(armc_restoreMenuCamera, fill((void *)0x4df870, 12); fill((void *)0x76d388, 12);, (CD(void, 0x40e670, void)(), 0), (armc_restoreMenuCamera(), 0))
 ST(armc_loadSavedMech, fill((void *)0x4dc878, 0x14); fill((void *)0x4dcf18, 0x18); fill((void *)0x4dcfe0, 0x90);,
@@ -7074,8 +7074,8 @@ ST(chat_pushHistory, fill((void *)0x67ef38, 0xc00); fill((void *)0x9dc92c, 0x400
 ST(record_swap, fill(BUF, 0x300); g_a[0] = irnd(0, 8) * 0x50; g_a[1] = irnd(0, 8) * 0x50;,
    (CD(void, 0x4065a0, char *, char *)(BUF + g_a[0], BUF + g_a[1]), 0), (record_swap(BUF + g_a[0], BUF + g_a[1]), 0))
 ST(cfg_defaultPlayerName, fill((void *)0x4db560, 0x28);, (CD(void, 0x4050f0, void)(), 0), (cfg_defaultPlayerName(), 0))
-ST(lobby_404930, fill((void *)0x4db560, 0x28); fill_str(GSTR(0x4dedb0), 31, 32, 126); fill((void *)0x4dedd0, 8);,
-   (CD(void, 0x404930, void)(), 0), (lobby_404930(), 0))
+ST(arena_copyProfile, fill((void *)0x4db560, 0x28); fill_str(GSTR(0x4dedb0), 31, 32, 126); fill((void *)0x4dedd0, 8);,
+   (CD(void, 0x404930, void)(), 0), (arena_copyProfile(), 0))
 ST(menu_showMessage, g_a[0] = irnd(0, 10); fill((void *)0x4df81c, 0x50); fill_str(GSTR(0x74de24 + g_a[0] * 0x80), 60, 32, 126);,
    (CD(void, 0x41ee40, int)(g_a[0]), 0), (menu_showMessage(g_a[0]), 0))
 ST(room_loadSettingsRecord, fill((void *)0x4df9c8, 0x26); fill_str(GSTR(0x5b1b30), 31, 32, 126); fill((void *)0x5b1b50, 6);
@@ -7168,7 +7168,7 @@ static void hud_setup(void)
 {
 	for (int k = 1; k <= 6; k++) { char *o = BUF + 0x100000 + irnd(0, 7) * 0x1000; S32(BUF, k * 4) = (int)o; fill(o + 0xcd138, 12); }
 }
-ST(hud_456b50, hud_setup();, (TC(void, 0x456b50, char *)(BUF), 0), (hud_456b50(BUF), 0))
+ST(tex_clearSetCounters, hud_setup();, (TC(void, 0x456b50, char *)(BUF), 0), (tex_clearSetCounters(BUF), 0))
 static void actors_setup(void)
 {
 	for (int a = 0; a < 17; a++) {
@@ -7242,15 +7242,15 @@ static void notice_setup(void)
 	g_a[0] = irnd(-999, 999); g_a[1] = irnd(-999, 999);
 }
 ST(notices_clearAll, notice_setup();, (TC(void, 0x463480, char *)(BUF), 0), (notices_clearAll(BUF), 0))
-ST(match_4634e0, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
-   (match_4634e0(BUF, g_a[0], BUF + 0x80000), 0))
-ST(match_463530, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (match_463530(BUF, g_a[0]), 0))
-ST(match_463550, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
-   (match_463550(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
-ST(match_4635b0, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (match_4635b0(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
-ST(match_463610, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (match_463610(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(notice_raise1, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
+   (notice_raise1(BUF, g_a[0], BUF + 0x80000), 0))
+ST(notice_raise2, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (notice_raise2(BUF, g_a[0]), 0))
+ST(notice_raise3, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
+   (notice_raise3(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
+ST(notice_raise4, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (notice_raise4(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(notice_raise5, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (notice_raise5(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
 
 /* batch 6: setups fill the memory a function writes, so a missing or wrong store shows */
 #define V0(name, addr, SETUP) ST(name, SETUP, (CD(void, addr, void)(), 0), (name(), 0))
@@ -7265,8 +7265,8 @@ V0(mapSelect_allOut, 0x440df0, for (DWORD p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
    fill((void *)0x4b2a7c, 4); fill((void *)0x9eeabc, 8);)
 V0(armc_showPartsPage, 0x40f200, fill((void *)0x4dc798, 4); fill((void *)0x4dc788, 4);)
 V0(armc_showColourPage, 0x40f320, fill((void *)0x4dc798, 4); fill((void *)0x4dc4b0, 4);)
-ST(set_a61708_46f090, g_a[0] = irnd(-99999, 99999); fill((void *)0xa61708, 4); fill((void *)0xa21704, 4); fill((void *)0xaa268c, 4);,
-   (CD(void, 0x46f090, int)(g_a[0]), 0), (set_a61708_46f090(g_a[0]), 0))
+ST(ptx_startBitReader, g_a[0] = irnd(-99999, 99999); fill((void *)0xa61708, 4); fill((void *)0xa21704, 4); fill((void *)0xaa268c, 4);,
+   (CD(void, 0x46f090, int)(g_a[0]), 0), (ptx_startBitReader(g_a[0]), 0))
 V0(messageBox_clickClose, 0x445e10, g_mouseClick1 = irnd(0, 1) * irnd(-2, 2); g_mouseClick2 = irnd(0, 1) * irnd(-2, 2);
    fill((void *)0x4dda44, 4); fill((void *)0x4df900, 4);)
 V0(room_selectJoinedSession, 0x433610, *(BYTE *)0xa052c1 = (BYTE)(irnd(0, 1) ? irnd(0, 2) : irnd(0, 255)); fill((void *)0xa052d6, 4);
@@ -7285,7 +7285,7 @@ T0(stage_clearActorRefs, 0x45df90, fill(BUF + 0x202e8e0, 0x1b0);)
 T0(event_raise3, 0x463670, fill(BUF + 0x2343100, 0x150);)
 T0(event_raise4, 0x463690, fill(BUF + 0x2343100, 0x150);)
 T0(event_raise5, 0x4636b0, fill(BUF + 0x2343100, 0x150);)
-T0(this_set_4841d0, 0x4841d0, fill(BUF + 0x90a0, 0x10);)
+T0(ViewVolume_clearDrawCounts, 0x4841d0, fill(BUF + 0x90a0, 0x10);)
 T0(stage_clearProjectiles, 0x479a60, for (int i = 0; i < 1000; i++) S32(BUF, 0x20a99c4 + i * 0x12c) = irnd(-3, 3);
    fill(BUF + 0x20f2d9c, 0x10);)
 T0(stage_clearBullets, 0x47cfd0, for (int i = 0; i < 400; i++) S32(BUF, 0x202ef38 + i * 0x4e8) = irnd(-3, 3);
@@ -7295,9 +7295,9 @@ T0(stage_clearMapObjects, 0x490d10, for (int i = 0; i < 1000; i++) S32(BUF, 0x13
 ST(view_setDistance, put_float_or_nan(BUF + 0x20f3a9c); put_float_or_nan(BUF + 0x20f3aac); put_float_or_nan((char *)&g_a[0]);
    if (!irnd(0, 9)) fill(&g_a[0], 4);,
    (TC(void, 0x4722e0, char *, float)(BUF, GF(&g_a[0])), 0), (view_setDistance(BUF, GF(&g_a[0])), 0))
-ST(this_set_480210, fill(BUF + 0xf0, 0x20); for (int k = 0; k < 3; k++) g_a[k] = irnd(-99999, 99999);,
+ST(ints_set3, fill(BUF + 0xf0, 0x20); for (int k = 0; k < 3; k++) g_a[k] = irnd(-99999, 99999);,
    (TC(void, 0x480210, char *, int, int, int)(BUF + 0x100, g_a[0], g_a[1], g_a[2]), 0),
-   (this_set_480210((int *)(BUF + 0x100), g_a[0], g_a[1], g_a[2]), 0))
+   (ints_set3((int *)(BUF + 0x100), g_a[0], g_a[1], g_a[2]), 0))
 static void vec_raw_setup(void)
 {
 	for (int k = 0; k < 3; k++) {
@@ -7310,7 +7310,7 @@ static void vec_raw_setup(void)
 		}
 	}
 }
-ST(collision_480230, vec_raw_setup();, (TC(void, 0x480230, char *)(BUF + 0x100), 0), (collision_480230((float *)(BUF + 0x100)), 0))
+ST(vec3_negate, vec_raw_setup();, (TC(void, 0x480230, char *)(BUF + 0x100), 0), (vec3_negate((float *)(BUF + 0x100)), 0))
 static void list_setup(int link)
 {
 	fill(BUF + 0x20, 0x40); fill(BUF + 0x1000, 0x60); fill(BUF + 0x2000, 0x60);
@@ -7351,7 +7351,7 @@ V0(secondDialog_layout, 0x44b100, fill((void *)0x9f8ee8, 0x20); ORIGIN(0x9f6834,
 V0(profileList_layout, 0x44b150, fill((void *)0x9f8d78, 0xd0); ORIGIN(0x9f8e48, 0x9f8e4c))
 V0(newNameDialog_layout, 0x44b030, fill((void *)0x9f9020, 0x20); ORIGIN(0x9f8eac, 0x9f8ea8))
 V0(popup_layout, 0x431c00, fill((void *)0x9dd3b8, 0x20); ORIGIN(0x9dd1a0, 0x9dd1ac))
-V0(arena_403f30, 0x403f30, fill((void *)0x4dbb40, 0x20); ORIGIN(0x4dba70, 0x4dba74))
+V0(lobbyTop_layout, 0x403f30, fill((void *)0x4dbb40, 0x20); ORIGIN(0x4dba70, 0x4dba74))
 ST(text_setColor, fill((void *)0x76d438, 16); fill(g_a, 16);,
    (CD(void, 0x44ad30, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0), (text_setColor(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(str_dropLast, fill(BUF + 0xf0, 0x10); fill_str(BUF + 0x100, 60, 1, 255);, CD(int, 0x44ac70, char *)(BUF + 0x100), str_dropLast(BUF + 0x100))
@@ -7411,14 +7411,14 @@ static void shape_setup(void)
 		if (m >= 0) fill(BUF + 0x100000 + (m / 512) * 0x100000 + (m % 512) * 0x68 + 0xc016c, 0x24);
 	}
 }
-T0(shape_466560, 0x466560, shape_setup();)
+T0(shape_markMaterialsChanged, 0x466560, shape_setup();)
 ST(object_setTextureFolder, fill_str(BUF + 0x100, 60, 1, 255); fill(BUF + 0x1908, 0x50);,
    TC(char *, 0x470f80, char *, char *)(BUF + 0x1000, BUF + 0x100), object_setTextureFolder(BUF + 0x1000, BUF + 0x100))
-ST(collision_4803c0, vec_raw_setup(); fill(BUF + 0x200, 12); put_float_or_nan((char *)&g_a[0]); if (!irnd(0, 9)) fill(&g_a[0], 4);,
+ST(vec3_scaleCopy, vec_raw_setup(); fill(BUF + 0x200, 12); put_float_or_nan((char *)&g_a[0]); if (!irnd(0, 9)) fill(&g_a[0], 4);,
    (TC(void, 0x4803c0, char *, char *, float)(BUF + 0x100, BUF + 0x200, GF(&g_a[0])), 0),
-   (collision_4803c0((float *)(BUF + 0x100), (float *)(BUF + 0x200), GF(&g_a[0])), 0))
-ST(hud_467700, for (int k = 0; k < 2; k++) put_float_or_nan(BUF + 0x100 + k * 4); g_a[0] = irnd(-20000, 20000);,
-   (TC(void, 0x467700, char *, int)(BUF + 0x100, g_a[0]), 0), (hud_467700((float *)(BUF + 0x100), g_a[0]), 0))
+   (vec3_scaleCopy((float *)(BUF + 0x100), (float *)(BUF + 0x200), GF(&g_a[0])), 0))
+ST(vec_rotate, for (int k = 0; k < 2; k++) put_float_or_nan(BUF + 0x100 + k * 4); g_a[0] = irnd(-20000, 20000);,
+   (TC(void, 0x467700, char *, int)(BUF + 0x100, g_a[0]), 0), (vec_rotate((float *)(BUF + 0x100), g_a[0]), 0))
 static void xform_setup(void)
 {
 	for (int k = 0; k < 16; k++) GF(BUF + 0x100 + k * 4) = rnd() / 100.0f;
@@ -7436,9 +7436,9 @@ V0(setupOptions_layout, 0x420480, fill((void *)0x4ddde0, 0x90); ORIG4(0x4dddd0, 
 V0(loginDialog_layout, 0x431b70, fill((void *)0x9dce50, 0x60); ORIG4(0x9dd6e8, 0x9dd6ec, 0x9dd6f4, 0x9dd6f0))
 V0(arenaNameDialog_layout, 0x403f80, fill((void *)0x4db588, 0x60); ORIG4(0x4dbb68, 0x4dbb6c, 0x4dbb70, 0x4dbb64))
 V0(roomLogin_layout, 0x431ae0, fill((void *)0x9dd7e0, 0x50); ORIG4(0x9dd358, 0x9dd35c, 0x9dd364, 0x9dd360))
-V0(skirmish_4437b0, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
+V0(skirmish_layout, 0x4437b0, fill((void *)0x9ef220, 0xa0); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 V0(account_layout, 0x431c50, fill((void *)0x9dd400, 0x60); ORIG4(0x9dd368, 0x9dd36c, 0x9dd370, 0x9dd374))
-V0(skirmish_443840, 0x443840, fill((void *)0x9f16c0, 0x40); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
+V0(skirmishButtons_layout, 0x443840, fill((void *)0x9f16c0, 0x40); ORIG4(0x9f16a8, 0x9f16ac, 0x9f16b0, 0x9f16b4))
 #define SETUP_VARS fill((void *)0x4dda60, 4); fill((void *)0x4ddac8, 4); fill((void *)0x4ddb98, 4); fill((void *)0x4ddce8, 8); \
 	fill((void *)0x4ddd90, 4); fill((void *)0x4dddc8, 4); fill((void *)0x4dde90, 0x18); fill((void *)0x4de038, 0xc); \
 	fill((void *)0x4b04f8, 4); fill((void *)0x4e0c90, 16); fill((void *)0x4def00, 0x110); fill((void *)0x4de0c0, 0x110);
@@ -7472,7 +7472,7 @@ static void slots_setup(void)
 	for (int s = 0; s < 16; s++) { fill((void *)(0x9f9840 + s * 0x410), 16); if (irnd(0, 1)) G32(0x9f9844 + s * 0x410) = irnd(-1, 5); }
 	fill((void *)0x9f93d8, 64); fill((void *)0x9fd94c, 4);
 }
-ST(net_451530, slots_setup();, CD(int, 0x451530, int)(g_a[0]), net_451530(g_a[0]))
+ST(net_freeSlotsOf, slots_setup();, CD(int, 0x451530, int)(g_a[0]), net_freeSlotsOf(g_a[0]))
 static void bits_setup(void)
 {
 	fill(BUF + 0x1000, 0x100); G32(0xa61708) = (int)(BUF + 0x1000); G32(0xa21704) = irnd(0, 1500);
@@ -7506,7 +7506,7 @@ static void names_table_setup(DWORD countp, DWORD tablep)
 	else fill_str(BUF + 0x100, 12, 33, 255);
 }
 ST(shape_findByName, names_table_setup(0xa0e79c, 0xa0e7a0);, CD(int, 0x466ce0, char *)(BUF + 0x100), shape_findByName(BUF + 0x100))
-ST(skelDat_46b0c0, names_table_setup(0xa0eab4, 0xa0eab8);, CD(int, 0x46b0c0, char *)(BUF + 0x100), skelDat_46b0c0(BUF + 0x100))
+ST(skelDat_findByName, names_table_setup(0xa0eab4, 0xa0eab8);, CD(int, 0x46b0c0, char *)(BUF + 0x100), skelDat_findByName(BUF + 0x100))
 ST(path_stripExtension, if (irnd(0, 1)) fill_str(BUF + 0x100, 200, 1, 255); else { fill_str(BUF + 0x100, 20, 45, 47); strcat(BUF + 0x100, irnd(0, 1) ? ".bmp" : "a.b.c"); }
    fill(BUF + 0x400, 0x100);,
    (CD(void, 0x46cad0, char *, char *)(BUF + 0x100, BUF + 0x400), 0), (path_stripExtension(BUF + 0x100, BUF + 0x400), 0))
@@ -7520,8 +7520,8 @@ static void chat_text_setup(void)
 ST(text_printableLength, chat_text_setup();, CD(int, 0x402590, char *)(BUF + 0x100), text_printableLength(BUF + 0x100))
 ST(Mat4_copy, fill(BUF + 0x100, 0x80); g_a[0] = irnd(0, 2) ? 0x100 : 0x120;,
    (CD(void, 0x47d5a0, char *, char *)(BUF + g_a[0], BUF + 0x140), 0), (Mat4_copy((DWORD *)(BUF + g_a[0]), (DWORD *)(BUF + 0x140)), 0))
-ST(skel_47d830, fill(BUF + 0x100, 0x80); g_a[0] = irnd(0, 2) ? 0x100 : 0x140;,
-   (CD(void, 0x47d830, char *, char *)(BUF + g_a[0], BUF + 0x140), 0), (skel_47d830((DWORD *)(BUF + g_a[0]), (DWORD *)(BUF + 0x140)), 0))
+ST(Mat4_transpose, fill(BUF + 0x100, 0x80); g_a[0] = irnd(0, 2) ? 0x100 : 0x140;,
+   (CD(void, 0x47d830, char *, char *)(BUF + g_a[0], BUF + 0x140), 0), (Mat4_transpose((DWORD *)(BUF + g_a[0]), (DWORD *)(BUF + 0x140)), 0))
 ST(playerRecord_markFree, g_a[0] = irnd(0, 7); fill((void *)0xa1f220, 4); fill(BUF + g_a[0] * 0x47fd2 + 0x1561b68, 4);,
    (TC(void, 0x4743b0, char *, int)(BUF, g_a[0]), 0), (playerRecord_markFree(BUF, g_a[0]), 0))
 ST(scene_setTextureFolder, fill_str(BUF + 0x100, 60, 1, 255);, (TC(void, 0x461ec0, char *, char *)(BUF, BUF + 0x100), 0),
@@ -7533,7 +7533,7 @@ static void players_setup(void)
 	for (int a = 0; a < 17; a++) S32(BUF, 0x1cd94b4 + a * 0x8888) = irnd(-1, 8);
 	fill(BUF + g_a[0] * 0x47fd2 + 0x1561b68 + 0x44, 8); fill(BUF + 0x202e8ec, 4);
 }
-ST(FUN_00473a10, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (FUN_00473a10(BUF, g_a[0], g_a[1]), 0))
+ST(player_setValue, players_setup();, (TC(void, 0x473a10, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setValue(BUF, g_a[0], g_a[1]), 0))
 ST(player_setTeam, players_setup();, (TC(void, 0x473a80, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (player_setTeam(BUF, g_a[0], g_a[1]), 0))
 static void effects_setup(void)
 {
@@ -7561,7 +7561,7 @@ static void shapes_setup(void)
 		}
 	}
 }
-T0(shape_4675f0, 0x4675f0, shapes_setup();)
+T0(model_clearTint, 0x4675f0, shapes_setup();)
 static void recolour_many_setup(void)
 {
 	shape_setup();
@@ -7571,9 +7571,9 @@ static void recolour_many_setup(void)
 		if (m >= 0) fill(BUF + 0x100000 + (m / 512) * 0x100000 + (m % 512) * 0x68 + 0xc0170, 0x18);
 	}
 }
-ST(shape_4665c0, recolour_many_setup();,
+ST(shape_recolourMaterials, recolour_many_setup();,
    (TC(void, 0x4665c0, char *, int, int, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
-   (shape_4665c0(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
+   (shape_recolourMaterials(BUF, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0))
 T0(ViewVolume_reset, 0x484260, fill(BUF + 0x3020, 0x10); for (int k = 0; k < 0x1810; k += 97) S32(BUF, 0x3028 + k * 4) = irnd(1, 9);
    fill(BUF + 0x9030, 0x78);)
 static void unitarray_setup(void)
@@ -7591,7 +7591,7 @@ static void scene_players_setup(void)
 	fill(BUF + (S32(SCENE, 0x234240d) & 7) * 0x47fd2 + 0x1561b68 + 0x44, 8);
 }
 ST(mech_setValue, scene_players_setup();, (TC(void, 0x461370, char *, int)(SCENE, g_a[1]), 0), (mech_setValue(SCENE, g_a[1]), 0))
-ST(match_4613a0, scene_players_setup();, (TC(void, 0x4613a0, char *, int)(SCENE, g_a[1]), 0), (match_4613a0(SCENE, g_a[1]), 0))
+ST(scene_setLocalTeam, scene_players_setup();, (TC(void, 0x4613a0, char *, int)(SCENE, g_a[1]), 0), (scene_setLocalTeam(SCENE, g_a[1]), 0))
 ST(hangul_glyphs, fill(g_a, 8); fill((void *)0x4d60e0, 4); fill((void *)0x4d23d4, 12);,
    CD(int, 0x4017d0, int, int)(g_a[0], g_a[1]), hangul_glyphs(g_a[0], g_a[1]))
 static void huff_setup(int ac)
@@ -7617,7 +7617,7 @@ static void yuv_setup(void)
 }
 ST(ptx_toRgb, yuv_setup();, (CD(void, 0x46e830, char *, char *, unsigned)(BUF + 0x100000, BUF + 0x200000, g_a[0]), 0),
    (ptx_toRgb((BYTE *)(BUF + 0x100000), (BYTE *)(BUF + 0x200000), g_a[0]), 0))
-V0(ptx_initTable_46efd0, 0x46efd0, fill((void *)0xa1f704, 0x2000);)
+V0(ptx_initYCbCrTables, 0x46efd0, fill((void *)0xa1f704, 0x2000);)
 ST(ptx_layoutBlocks, fill(BUF + 0x10000, 0x2800); g_a[0] = irnd(-2, 40); g_a[1] = irnd(-2, 40); g_a[2] = irnd(1, 4);,
    (CD(void, 0x46ea30, char *, char *, int, int, int)(BUF + 0x10000, BUF + 0x20000, g_a[0], g_a[1], g_a[2]), 0),
    (ptx_layoutBlocks((BYTE *)(BUF + 0x10000), (BYTE *)(BUF + 0x20000), g_a[0], g_a[1], g_a[2]), 0))
@@ -7699,7 +7699,7 @@ static void block_setup(void)
 	fill(BUF + 0x200, 0x100); fill((void *)0xaa268c, 4);
 }
 ST(ptx_readBlock, block_setup();, CD(int, 0x46f0b0, char *)(BUF + 0x200), ptx_readBlock((int *)(BUF + 0x200)))
-ST(ResourceSet_init_463a40, fill(BUF, 0x7100);, TC(void *, 0x463a40, char *)(BUF), ResourceSet_init_463a40(BUF))
+ST(ResourceSet_initLists, fill(BUF, 0x7100);, TC(void *, 0x463a40, char *)(BUF), ResourceSet_initLists(BUF))
 ST(shape_setTextureDir, shapes_setup(); fill_str(BUF + 0x400, 40, 1, 255); fill(BUF + 0x130, 0x40); g_a[6] = irnd(0, 7);
    for (int k = 0; k < 6; k++) put_float_or_nan((char *)&g_a[k]);,
    (TC(void, 0x467580, char *, char *, int, int, int, int, int, int, int)(BUF, BUF + 0x400, g_a[6], g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5]), 0),
@@ -7757,11 +7757,11 @@ T0(stage_newRound, 0x470cb0, actors_setup(); fill(BUF + 0x202e8d0, 0x20); for (i
 /* batch 12 */
 static void fill_stores(const Store *s, int n) { for (int k = 0; k < n; k++) fill((void *)s[k].a, 4); }
 V0(color_initDefaultColours, 0x46dc50, fill_stores(k_color_initDefaultColours, 16);)
-V0(intro_42f500, 0x42f500, fill_stores(k_intro_42f500, 44);)
+V0(menu_initKeyRepeatDefaults, 0x42f500, fill_stores(k_intro_42f500, 44);)
 V0(input_initVkTable, 0x431680, fill_stores(k_input_initVkTable, 57);)
-V0(replay_46d4d0, 0x46d4d0, fill_stores(k_replay_46d4d0, 64);)
-V0(intro_42f2b0, 0x42f2b0, fill_stores(k_intro_42f2b0, 66);)
-V0(intro_42f690, 0x42f690, fill_stores(k_intro_42f690, 66);)
+V0(color_initTextColours, 0x46d4d0, fill_stores(k_replay_46d4d0, 64);)
+V0(menu_initMainButtons, 0x42f2b0, fill_stores(k_intro_42f2b0, 66);)
+V0(room_initMenuButtons, 0x42f690, fill_stores(k_intro_42f690, 66);)
 V0(input_setDefaultKeyBindings, 0x42fd40, fill_stores(k_input_setDefaultKeyBindings, 118);)
 
 V0(room_enterGameList, 0x433790, fill((void *)0x9dd834, 4); fill((void *)0x9dce48, 4); fill((void *)0x9dd6bc, 4); fill((void *)0x4dbbf4, 4);
@@ -7789,7 +7789,7 @@ static void netgames_setup(void)
 		fill_str(GSTR(s - 0x66), 25, 32, 126); fill_str(GSTR(s - 0x34), 20, 32, 126); fill_str(GSTR(s + 0xa), 8, 32, 126);
 	}
 }
-V0(room_434ff0, 0x434ff0, netgames_setup();)
+V0(room_mergeReceivedSessions, 0x434ff0, netgames_setup();)
 
 /* batch 14 */
 static void cam_setup(void)
@@ -7842,7 +7842,7 @@ ST(render_depthSortB, sortarr_setup();, (CD(void, 0x491190, char *, int, int)(BU
 /* batch 16 */
 static void fill_cstores(const CStore *s, int n) { for (int k = 0; k < n; k++) { fill((void *)s[k].a, 4); if (s[k].copy) fill((void *)s[k].v, 4); } }
 V0(input_applyKeyBindings, 0x42c410, fill_cstores(k_input_applyKeyBindings, 68);)
-V0(setup_controlTabHelper_420c10, 0x420c10, fill_cstores(k_setup_controlTabHelper_420c10, 68);)
+V0(setup_keepKeyBindings, 0x420c10, fill_cstores(k_setup_controlTabHelper_420c10, 68);)
 static void quat_setup(void)
 {
 	for (int k = 0; k < 4; k++) GF(BUF + 0x100 + k * 4) = rnd();
@@ -7864,7 +7864,7 @@ static void rects3_setup(void)
 	for (int k = 0; k < 7; k++) { G32(0x9dd5d8 + f[k]) = irnd(-50, 50); G32(0x9dd240 + f[k]) = irnd(-50, 50); }
 	for (int k = 0; k < 6; k++) G32(0x4de71e + k * 4) = irnd(-50, 50);
 }
-V0(console_41e390, 0x41e390, rects3_setup();)
+V0(room_fitWindowRects, 0x41e390, rects3_setup();)
 
 /* batch 17 */
 static void netgames2_setup(void)
@@ -7879,7 +7879,7 @@ static void netgames2_setup(void)
 		fill_str(GSTR(s - 0x48), 25, 32, 126); fill_str(GSTR(s - 0x16), 15, 32, 126); fill_str(GSTR(s + 0xa), 8, 32, 126);
 	}
 }
-V0(arena_406640, 0x406640, netgames2_setup();)
+V0(arena_mergeReceivedSessions, 0x406640, netgames2_setup();)
 V0(ptx_initTables, 0x46ea00, fill((void *)0xaa2e94, 4); G32(0x4c59e8) = irnd(0, 1) ? 100 : 7;
    for (int j = 0; j < 128; j++) GF(0x4c6bb0 + j * 4) = (float)irnd(1, 255);)
 static void texrec_setup(void)
@@ -7889,9 +7889,9 @@ static void texrec_setup(void)
 	if (!irnd(0, 9)) BUF[0x100] = 0;
 	fill(BUF + 0x1000, 0x70); fill(g_a, 32);
 }
-ST(tex_454e60, texrec_setup();,
+ST(texRecord_init, texrec_setup();,
    (TC(void, 0x454e60, char *, char *, int, int, int, int, int, int, int, int)(BUF + 0x1000, BUF + 0x100, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]), 0),
-   (tex_454e60(BUF + 0x1000, BUF + 0x100, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]), 0))
+   (texRecord_init(BUF + 0x1000, BUF + 0x100, g_a[0], g_a[1], g_a[2], g_a[3], g_a[4], g_a[5], g_a[6], g_a[7]), 0))
 static void names9_setup(void) { for (int k = 0; k < 9; k++) fill_str(BUF + 0x100 + k * 0x40, 40, 1, 255); fill(BUF + 0x2000, 0x908); }
 #define N9 BUF + 0x100, BUF + 0x140, BUF + 0x180, BUF + 0x1c0, BUF + 0x200, BUF + 0x240, BUF + 0x280, BUF + 0x2c0, BUF + 0x300
 ST(object_setNames, names9_setup();,
@@ -7952,9 +7952,9 @@ static void partinfo_setup(void)
 }
 ST(armc_weaponSlotRecord, partinfo_setup();, (CD(void, 0x41ca50, int, int)(g_a[0], g_a[1]), 0), (armc_weaponSlotRecord(g_a[0], g_a[1]), 0))
 ST(armc_viewedPartRecord, partinfo_setup();, (CD(void, 0x41cca0, int)(g_a[1]), 0), (armc_viewedPartRecord(g_a[1]), 0))
-V0(app_42f940, 0x42f940, fill((void *)0x9da4a8, 0x10a0); fill((void *)0x67fb60, 0xc60); fill((void *)0x4e0ce4, 0x620);
+V0(font_initMenuGrids, 0x42f940, fill((void *)0x9da4a8, 0x10a0); fill((void *)0x67fb60, 0xc60); fill((void *)0x4e0ce4, 0x620);
    fill((void *)0x5b1114, 0x600);)
-V0(hud_42fb40, 0x42fb40, fill((void *)0x4e0474, 0x800); fill((void *)0x5b0910, 0x800); fill((void *)0x5b1b64, 0x200);
+V0(font_initHudGrids, 0x42fb40, fill((void *)0x4e0474, 0x800); fill((void *)0x5b0910, 0x800); fill((void *)0x5b1b64, 0x200);
    fill((void *)0x5b1998, 0x1d0); fill((void *)0x4e1548, 0x1a0); fill((void *)0x4e16d8, 0x1a0); fill((void *)0x83a5fc, 0x3a0);
    fill((void *)0x4df454, 0x3a0);)
 
@@ -8002,8 +8002,8 @@ static void idct_setup(void)
 	}
 	fill(BUF + 0x400, 64);
 }
-ST(ptx_decodeBlock_46e380, idct_setup();, (CD(void, 0x46e380, char *, char *)(BUF + 0x100, BUF + 0x400), 0),
-   (ptx_decodeBlock_46e380((int *)(BUF + 0x100), (BYTE *)(BUF + 0x400)), 0))
+ST(ptx_inverseDct, idct_setup();, (CD(void, 0x46e380, char *, char *)(BUF + 0x100, BUF + 0x400), 0),
+   (ptx_inverseDct((int *)(BUF + 0x100), (BYTE *)(BUF + 0x400)), 0))
 
 /* batch 22 */
 static float unit_rnd(void) { return (float)irnd(-10000, 10000) / 10000.0f; }
@@ -8022,8 +8022,8 @@ static void m2q_setup(void)
 	if (!irnd(0, 9)) GF(BUF + 0x114) = GF(BUF + 0x100);
 	fill(BUF + 0x200, 16);
 }
-ST(skel_ase_47d0f0, m2q_setup();, (TC(void, 0x47d0f0, char *, char *)(BUF + 0x200, BUF + 0x100), 0),
-   (skel_ase_47d0f0((float *)(BUF + 0x200), (float *)(BUF + 0x100)), 0))
+ST(quat_fromMatrix, m2q_setup();, (TC(void, 0x47d0f0, char *, char *)(BUF + 0x200, BUF + 0x100), 0),
+   (quat_fromMatrix((float *)(BUF + 0x200), (float *)(BUF + 0x100)), 0))
 static void trace_setup(void)
 {
 	char *s = BUF + 0x1000;
@@ -8034,9 +8034,9 @@ static void trace_setup(void)
 	for (int k = 0; k < 3; k++) { GF(BUF + 0x100 + k * 4) = (float)irnd(-500, 500) / 10.0f; GF(BUF + 0x110 + k * 4) = (float)irnd(-500, 500) / 10.0f; }
 	fill(BUF + 0x200, 16);
 }
-ST(space_tracePlanes_47fb80, trace_setup();,
+ST(collisionTri_traceSegment, trace_setup();,
    TC(int, 0x47fb80, char *, char *, char *, char *, char *)(BUF + 0x1000, BUF + 0x100, BUF + 0x110, BUF + 0x200, BUF + 0x20c),
-   space_tracePlanes_47fb80(BUF + 0x1000, (float *)(BUF + 0x100), (float *)(BUF + 0x110), (float *)(BUF + 0x200), (float *)(BUF + 0x20c)))
+   collisionTri_traceSegment(BUF + 0x1000, (float *)(BUF + 0x100), (float *)(BUF + 0x110), (float *)(BUF + 0x200), (float *)(BUF + 0x20c)))
 static void hsv_setup(void)
 {
 	for (int k = 0; k < 3; k++) {
@@ -8048,9 +8048,9 @@ static void hsv_setup(void)
 	if (!irnd(0, 6)) g_a[2] = g_a[0];
 	fill(BUF + 0x100, 12);
 }
-ST(tex_46def0, hsv_setup();,
+ST(tex_rgbToHsv, hsv_setup();,
    (CD(void, 0x46def0, float, float, float, char *, char *, char *)(GF(&g_a[0]), GF(&g_a[1]), GF(&g_a[2]), BUF + 0x100, BUF + 0x104, BUF + 0x108), 0),
-   (tex_46def0(GF(&g_a[0]), GF(&g_a[1]), GF(&g_a[2]), (float *)(BUF + 0x100), (float *)(BUF + 0x104), (float *)(BUF + 0x108)), 0))
+   (tex_rgbToHsv(GF(&g_a[0]), GF(&g_a[1]), GF(&g_a[2]), (float *)(BUF + 0x100), (float *)(BUF + 0x104), (float *)(BUF + 0x108)), 0))
 
 /* batch 23 */
 static void bounds_setup(void)
@@ -8111,9 +8111,9 @@ static void vvadd_setup(void)
 	if (!irnd(0, 20)) G32(BUF + 0x100) = 0x7fc00000;
 	fill(BUF + 0x200, 4); g_a[0] = irnd(0, 2);
 }
-ST(ViewVolume_add_485120, vvadd_setup();,
+ST(ViewVolume_addSegment, vvadd_setup();,
    (TC(void, 0x485120, char *, char *, char *, char *, int)(BUF, BUF + 0x200, BUF + 0x100, BUF + 0x10c, g_a[0]), 0),
-   (ViewVolume_add_485120(BUF, (DWORD *)(BUF + 0x200), (float *)(BUF + 0x100), (float *)(BUF + 0x10c), g_a[0]), 0))
+   (ViewVolume_addSegment(BUF, (DWORD *)(BUF + 0x200), (float *)(BUF + 0x100), (float *)(BUF + 0x10c), g_a[0]), 0))
 
 /* batch 25 */
 static void aa2m_setup(void) { for (int k = 0; k < 4; k++) GF(BUF + 0x100 + k * 4) = unit_rnd() * 4.0f; fill(BUF + 0x200, 64); }
@@ -8230,7 +8230,7 @@ static DWORD rnd32(void) { DWORD v; fill(&v, 4); return v; }
 ST(text_setWrapX, g_a[0] = (int)rnd32(); fill((void *)0x4ad490, 4);, CD(int, 0x4017b0, int)(g_a[0]), text_setWrapX(g_a[0]))
 ST(text_setBottom, g_a[0] = (int)rnd32(); fill((void *)0x4ad494, 4);, CD(int, 0x4017c0, int)(g_a[0]), text_setBottom(g_a[0]))
 ST(input_setKeysBlocked, g_a[0] = (int)rnd32(); fill((void *)0x680370, 4);, CD(int, 0x441250, int)(g_a[0]), input_setKeysBlocked(g_a[0]))
-ST(set_4b42dc_457140, g_a[0] = (int)rnd32(); fill((void *)0x4b42dc, 4);, CD(int, 0x457140, int)(g_a[0]), set_4b42dc_457140(g_a[0]))
+ST(music_setVolumeSetting, g_a[0] = (int)rnd32(); fill((void *)0x4b42dc, 4);, CD(int, 0x457140, int)(g_a[0]), music_setVolumeSetting(g_a[0]))
 ST(view_setAngle, g_a[0] = (int)rnd32(); fill((void *)0x4c4dec, 4);, CD(int, 0x4686e0, int)(g_a[0]), view_setAngle(g_a[0]))
 V0(static_initTex64x64, 0x42b130, fill((void *)0x4e1878, 8);)
 V0(static_initTex128x64, 0x42b1a0, fill((void *)0x5b1db8, 8);)
@@ -8242,30 +8242,30 @@ ST(net_sessionCount, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), net_
 ST(gfx_getWidth, fill((void *)0xa0e810, 4);, CD(int, 0x4685b0, void)(), gfx_getWidth())
 ST(gfx_getHeight, fill((void *)0xa0e928, 4);, CD(int, 0x4685c0, void)(), gfx_getHeight())
 ST(view_angle, fill((void *)0x4c4dec, 4);, ld_hash(CD(long double, 0x4686d0, void)()), ld_hash(view_angle()))
-ST(match_4686f0, fill((void *)0x4c4df0, 4);, ld_hash(CD(long double, 0x4686f0, void)()), ld_hash(match_4686f0()))
-ST(FUN_00468700, fill((void *)0x4c4df4, 4);, ld_hash(CD(long double, 0x468700, void)()), ld_hash(FUN_00468700()))
+ST(view_nearPlane, fill((void *)0x4c4df0, 4);, ld_hash(CD(long double, 0x4686f0, void)()), ld_hash(view_nearPlane()))
+ST(view_farPlane, fill((void *)0x4c4df4, 4);, ld_hash(CD(long double, 0x468700, void)()), ld_hash(view_farPlane()))
 ST(TextureManager_clear, fill(BUF, 0x40);, TC(int, 0x4569a0, char *)(BUF + 0x10), TextureManager_clear(BUF + 0x10))
 ST(Model_clear, fill(BUF, 0x6c);, TC(int, 0x464bb0, char *)(BUF + 0x10), Model_clear(BUF + 0x10))
 ST(ShapeManager_clear, fill(BUF, 0x26c);, TC(int, 0x466a20, char *)(BUF + 0x10), ShapeManager_clear(BUF + 0x10))
 ST(SkeletonManager_clear, fill(BUF, 0x150);, TC(int, 0x46ae70, char *)(BUF + 0x10), SkeletonManager_clear(BUF + 0x10))
-ST(load_47db50, fill(BUF, 0xcc);, TC(int, 0x47db50, char *)(BUF + 0x10), load_47db50(BUF + 0x10))
-ST(load_4804a0, fill(BUF, 0x70);, TC(int, 0x4804a0, char *)(BUF + 0x10), load_4804a0(BUF + 0x10))
+ST(collisionPlane_clear, fill(BUF, 0xcc);, TC(int, 0x47db50, char *)(BUF + 0x10), collisionPlane_clear(BUF + 0x10))
+ST(spaceBlock_clear, fill(BUF, 0x70);, TC(int, 0x4804a0, char *)(BUF + 0x10), spaceBlock_clear(BUF + 0x10))
 ST(CollisionVolume_clear, fill(BUF, 0x114);, TC(int, 0x4813a0, char *)(BUF + 0x10), CollisionVolume_clear(BUF + 0x10))
-ST(load_483fc0, fill(BUF, 0x9190);, TC(int, 0x483fc0, char *)(BUF + 0x10), load_483fc0(BUF + 0x10))
+ST(ViewVolume_clear, fill(BUF, 0x9190);, TC(int, 0x483fc0, char *)(BUF + 0x10), ViewVolume_clear(BUF + 0x10))
 ST(TimeSync_clear, fill(BUF, 0x58);, TC(int, 0x487480, char *)(BUF + 0x10), TimeSync_clear(BUF + 0x10))
-ST(load_480430, fill(BUF, 0x30);, TC(int, 0x480430, char *)(BUF + 0x10), load_480430(BUF + 0x10))
-ST(this_set_483d60, fill(BUF + 0xb000, 0x10);, TC(int, 0x483d60, char *)(BUF), this_set_483d60(BUF))
+ST(spaceNode_clear, fill(BUF, 0x30);, TC(int, 0x480430, char *)(BUF + 0x10), spaceNode_clear(BUF + 0x10))
+ST(Light_clearCounts, fill(BUF + 0xb000, 0x10);, TC(int, 0x483d60, char *)(BUF), Light_clearCounts(BUF))
 ST(stage_clearMapItemCounts, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, char *)(BUF), stage_clearMapItemCounts(BUF))
 ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (ErrorLog_dtor((DWORD *)(BUF + 4)), 0))
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
 ST(stage_setValue202e8dc, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), stage_setValue202e8dc(BUF, g_a[0]))
-ST(this_get_0x2342381_463780, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
-   TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), this_get_0x2342381_463780(BUF + 0x180 - 0x2342381, g_a[0]))
-ST(match_45fff0, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), match_45fff0((void *)g_a[0]))
-ST(match_48b440, g_a[0] = (int)rnd32();, TC(int, 0x48b440, char *, int)(BUF, g_a[0]), match_48b440(BUF, g_a[0]))
-ST(match_48b430, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b430, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (match_48b430(BUF, g_a[0], g_a[1]), 0))
-ST(hud_48b450, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b450, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (hud_48b450(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
+ST(scene_teamSlot, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
+   TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), scene_teamSlot(BUF + 0x180 - 0x2342381, g_a[0]))
+ST(ResourceSet_trivialCtor, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), ResourceSet_trivialCtor((void *)g_a[0]))
+ST(recorder_setPathStub, g_a[0] = (int)rnd32();, TC(int, 0x48b440, char *, int)(BUF, g_a[0]), recorder_setPathStub(BUF, g_a[0]))
+ST(recorder_openStub, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b430, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (recorder_openStub(BUF, g_a[0], g_a[1]), 0))
+ST(recorder_noteStub, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b450, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (recorder_noteStub(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
 ST(stage_triggerActionNone, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x483ce0, char *, int)(BUF, g_a[0]), 0), (stage_triggerActionNone(BUF, g_a[0]), 0))
 V0(static_emptyCtorSkelData1, 0x46b860, )
 V0(static_emptyCtorSkelData2, 0x46b880, )
@@ -8320,7 +8320,7 @@ CT(Light_ctor, 0x462560, 0xb020) CT(Model_ctor, 0x462cf0, 0x80) CT(CollisionVolu
 CT(Scene_ctor, 0x4637f0, 0x20) CT(TimeSync_ctor, 0x487430, 0x60)
 ST(Light_dtor, fill(BUF, 0xb020);, TC(int, 0x483d50, char *)(BUF + 0x10), Light_dtor((DWORD *)(BUF + 0x10)))
 ST(stage_resetLights, fill(BUF + 0x9d8000, 0x20); fill(BUF + 0x9e3010, 0x10);, TC(int, 0x4723e0, char *)(BUF), stage_resetLights(BUF))
-ST(ResourceSet_ctor_463850, fill(BUF, 0x46a20);, TC(void *, 0x463850, char *)(BUF), ResourceSet_ctor_463850(BUF))
+ST(ResourceSet_ctor, fill(BUF, 0x46a20);, TC(void *, 0x463850, char *)(BUF), ResourceSet_ctor(BUF))
 /* pool resets: self at BUF, records at BUF + 0x1000 */
 #define POOL(name, addr, cnt, stride) ST(name, fill(BUF, 0x100); S32(BUF, cnt) = irnd(0, 4) ? irnd(0, 12) : irnd(-3, 1); \
    S32(BUF, (cnt) + 4) = (int)(BUF + 0x1000); fill(BUF + 0x1000, 13 * (stride));, \
@@ -8401,7 +8401,7 @@ static void armstat_setup(void)
 	fill(BUF + w * 0x1820 + 0x167b334, 4);
 	fill((void *)0x4dcaa0, 0x70);
 }
-ST(armc_41c510, armstat_setup();, CD(int, 0x41c510, void)(), (int)armc_41c510())
+ST(armc_readMechStats, armstat_setup();, CD(int, 0x41c510, void)(), (int)armc_readMechStats())
 /* batch 34 */
 static void armpart_name(char *s)
 {
@@ -8602,12 +8602,12 @@ static void vsp_setup(void)
 #define OBJ1 (BUF + 0x10000 - 0x20fcd4c)
 #define OBJ2 (BUF + 0x10000 - 0x233cc40)
 #define VA_REST g_a[1], k_words[g_a[2]], g_a[3], k_words[g_a[4]]
-ST(vsprintf_wrap_473450, vsp_setup();, CD(int, 0x473450, char *, const char *, ...)(OBJ1, BUF + 0x200, VA_REST),
-   vsprintf_wrap_473450(OBJ1, BUF + 0x200, VA_REST))
-ST(vsprintf_wrap_463450, vsp_setup();, CD(int, 0x463450, char *, const char *, ...)(OBJ2, BUF + 0x200, VA_REST),
-   vsprintf_wrap_463450(OBJ2, BUF + 0x200, VA_REST))
-ST(msg_4629f0, vsp_setup(); g_a[5] = irnd(-5, 5);, CD(int, 0x4629f0, char *, int, const char *, ...)(OBJ2, g_a[5], BUF + 0x200, VA_REST),
-   msg_4629f0(OBJ2, g_a[5], BUF + 0x200, VA_REST))
+ST(stage_printText, vsp_setup();, CD(int, 0x473450, char *, const char *, ...)(OBJ1, BUF + 0x200, VA_REST),
+   stage_printText(OBJ1, BUF + 0x200, VA_REST))
+ST(notice_printCentre, vsp_setup();, CD(int, 0x463450, char *, const char *, ...)(OBJ2, BUF + 0x200, VA_REST),
+   notice_printCentre(OBJ2, BUF + 0x200, VA_REST))
+ST(msg_print, vsp_setup(); g_a[5] = irnd(-5, 5);, CD(int, 0x4629f0, char *, int, const char *, ...)(OBJ2, g_a[5], BUF + 0x200, VA_REST),
+   msg_print(OBJ2, g_a[5], BUF + 0x200, VA_REST))
 static void frame_setup(void)
 {
 	fill(BUF, 0x400);
@@ -8619,9 +8619,9 @@ static void frame_setup(void)
 }
 ST(anim_setFrame, frame_setup();, (TC(void, 0x46f770, char *, int, DWORD)(BUF, g_a[0], (DWORD)g_a[1]), 0),
    (anim_setFrame(BUF, g_a[0], (DWORD)g_a[1]), 0))
-ST(tex_46de20, tint_setup(); fill(BUF + 0x300, 4);,
+ST(tex_tintRgba, tint_setup(); fill(BUF + 0x300, 4);,
    TC(int, 0x46de20, char *, DWORD, DWORD, DWORD)(BUF + 0x300, (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]),
-   tex_46de20((BYTE *)(BUF + 0x300), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]))
+   tex_tintRgba((BYTE *)(BUF + 0x300), (DWORD)g_a[0], (DWORD)g_a[1], (DWORD)g_a[2]))
 /* dotted strings with 1..4 tokens of 1..3 characters (the original overruns its stack with more, and copies from
    NULL with none) */
 static void ipstr_setup(void)
@@ -9096,15 +9096,15 @@ static void counted_file_setup(int nfirst)
 	for (int k = 0; k < nfirst; k++) scrambled_count(BUF + 0x200000 + 4 * k, (DWORD)irnd(0, 40));
 	g_vfsOpenFail = 0;
 }
-ST(load_48b460, fill(BUF + 0xe36200, 0x20); counted_file_setup(1);, TC(DWORD, 0x48b460, char *, DWORD)(BUF, VFS_FILE(0)), load_48b460(BUF, VFS_FILE(0)))
-ST(load_483d70, fill(BUF + 0xb000, 0x20); counted_file_setup(2);, TC(DWORD, 0x483d70, char *, DWORD)(BUF, VFS_FILE(1)), load_483d70(BUF, VFS_FILE(1)))
+ST(map_readMissionRecords, fill(BUF + 0xe36200, 0x20); counted_file_setup(1);, TC(DWORD, 0x48b460, char *, DWORD)(BUF, VFS_FILE(0)), map_readMissionRecords(BUF, VFS_FILE(0)))
+ST(Light_read, fill(BUF + 0xb000, 0x20); counted_file_setup(2);, TC(DWORD, 0x483d70, char *, DWORD)(BUF, VFS_FILE(1)), Light_read(BUF, VFS_FILE(1)))
 /* sub-object destructors over zeroed memory with a few owned buffers (release functions delete +8 when +0xc == 1) */
 static void owned_bits(char *base, DWORD span, int n)
 {
 	for (int k = 0; k < n; k++) { char *o = base + 4 * irnd(0, (int)(span / 4) - 4); S32(o, 0) = 1; S32(o, -4) = (int)(BUF + 0x100); }
 }
 ST(actor_destroyPartLists, memset(BUF, 0, 0x400); owned_bits(BUF + 0x10, 0x300, irnd(0, 4));, CALL_PLAIN(0x45ff30, BUF, 0, 0, 0, 0), (DWORD)(actor_destroyPartLists((void *)BUF)))
-ST(ResourceSet_dtor_463960, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, CALL_PLAIN(0x463960, BUF, 0, 0, 0, 0), (DWORD)(ResourceSet_dtor_463960((void *)BUF)))
+ST(ResourceSet_dtor, owned_bits(BUF + 0x300, 0x46a00, irnd(0, 6));, CALL_PLAIN(0x463960, BUF, 0, 0, 0, 0), (DWORD)(ResourceSet_dtor((void *)BUF)))
 ST(Stage_dtor, owned_bits(BUF + 0x100, 0x2300000, irnd(0, 12));, CALL_PLAIN(0x46ff70, BUF, 0, 0, 0, 0), (DWORD)(Stage_dtor((void *)BUF)))
 ST(chat_saveMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(50, 0x2000);, CALL_PLAIN(0x4617f0, BUF, 0, 0, 0, 0), (DWORD)(chat_saveMacros((void *)BUF)))
 /* chat lines: "/N=text", "/N", "/NN...", other text */
@@ -9132,7 +9132,7 @@ static void strs_setup(void)
 	for (char *p = BUF + 0x100; *p; p++) if (*p == '%') *p = '#';
 	for (char *p = BUF + 0x200; *p; p++) if (*p == '%') *p = '#';
 }
-ST(GetCurrentDirectoryA_wrap_43f580, , CALL_PLAIN(0x43f580, 0, 0, 0, 0, 0), (DWORD)(GetCurrentDirectoryA_wrap_43f580()))
+ST(app_readCurrentDirectory, , CALL_PLAIN(0x43f580, 0, 0, 0, 0, 0), (DWORD)(app_readCurrentDirectory()))
 ST(gfx_swapBuffers, , CALL_PLAIN(0x4685d0, 0, 0, 0, 0, 0), (DWORD)gfx_swapBuffers())
 ST(dplay_createLobby, fill(BUF + 0x100, 8);, CALL_PLAIN(0x4539f0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(dplay_createLobby((void **)(DWORD)(BUF + 0x100))))
 ST(net_wakePingThread, , CALL_PLAIN(0x454740, 0, 0, 0, 0, 0), (DWORD)net_wakePingThread())
@@ -9161,7 +9161,7 @@ ST(reg_writeStartMode, g_mockRegFail = !irnd(0, 4);, CALL_PLAIN(0x43f7f0, 0, 0x8
 ST(menu_frameBegin, , CALL_PLAIN(0x41f820, 0, 0, 0, 0, 0), (DWORD)(menu_frameBegin()))
 ST(app_registerWindowClassEx, fill(BUF + 0x100, 0x40);, CALL_PLAIN(0x43f840, 0, BUF + 0x100, 0, 0, 0), (DWORD)(app_registerWindowClassEx((const DWORD *)(DWORD)(BUF + 0x100))))
 ST(net_addPlayerRecord, strs_setup();, CALL_PLAIN(0x452de0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_addPlayerRecord((const void *)(DWORD)(BUF + 0x100))))
-ST(dplay_454d90, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)dplay_454d90((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
+ST(text_findWord, strs_setup(); fill(BUF + 0x300, 0x40); g_a[0] = irnd(0, 40);, CALL_PLAIN(0x454d90, 0, BUF + 0x300, BUF + 0x100, g_a[0], 0), (DWORD)((DWORD)text_findWord((const char *)(DWORD)(BUF + 0x300), (const char *)(DWORD)(BUF + 0x100), (DWORD)(g_a[0]))))
 ST(app_reportStartupProblem, g_a[0] = irnd(-1, 3);, CALL_PLAIN(0x42ef30, 0, g_a[0], 0, 0, 0), (DWORD)(app_reportStartupProblem((DWORD)(g_a[0]))))
 ST(gfx_setPixelFormat, g_mockPixelFormat = irnd(0, 9);, CALL_PLAIN(0x42f000, 0, 0xdc0, 0, 0, 0), (DWORD)(gfx_setPixelFormat((void *)(DWORD)(0xdc0))))
 ST(autoplay_listFiles, g_mockFindCount = irnd(0, 12);, CALL_PLAIN(0x440c60, 0, 0, 0, 0, 0), (DWORD)(autoplay_listFiles()))
@@ -9340,7 +9340,7 @@ ST(dplay_enumConnections, enumconn_setup();,
    ((DWORD (WINAPI *)(char *, char *, DWORD, char *, DWORD, DWORD))0x4532f0)(BUF + 0x100, BUF + 0x200, (DWORD)g_a[0], BUF + 0x300, 0, 0),
    dplay_enumConnections((DWORD)(BUF + 0x100), (DWORD)(BUF + 0x200), (DWORD)g_a[0], (DWORD)(BUF + 0x300), 0, 0))
 /* batch 49 */
-ST(inet_addr_wrap_4547c0, fill_str(BUF + 0x100, 20, '.', '9');, CALL_PLAIN(0x4547c0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(inet_addr_wrap_4547c0((const char *)(DWORD)(BUF + 0x100))))
+ST(net_inetAddr, fill_str(BUF + 0x100, 20, '.', '9');, CALL_PLAIN(0x4547c0, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_inetAddr((const char *)(DWORD)(BUF + 0x100))))
 static void sockets_setup(void)
 {
 	G32(0xa055f8) = irnd(0, 2) ? irnd(1, 0x7fff) : 0; G32(0xa05630) = irnd(0, 2) ? irnd(1, 0x7fff) : 0;
@@ -9391,7 +9391,7 @@ static void levels_setup(void)
 		SF(e, 0) = irnd(0, 9) ? (float)irnd(-100, 300) + irnd(0, 99) / 100.0f : (float)irnd(-0x7fffffff, 0x7fffffff);
 	}
 }
-ST(net_sendState_48ead0, levels_setup();, (TC(void, 0x48ead0, char *)(SCENE), 0), (net_sendState_48ead0(SCENE), 0))
+ST(net_sendPlayerLevels, levels_setup();, (TC(void, 0x48ead0, char *)(SCENE), 0), (net_sendPlayerLevels(SCENE), 0))
 static void playerinfo_setup(void)
 {
 	sendrec_setup();
@@ -9452,7 +9452,7 @@ static void axisangle_setup(void)
 	if (!irnd(0, 5)) SF(BUF + 0x100, irnd(0, 2) * 4) = 0;
 	fill(BUF + 0x200, 16);
 }
-ST(skel_ase_47d260, axisangle_setup();, (TC(void, 0x47d260, char *, char *)(BUF + 0x200, BUF + 0x100), 0), (skel_ase_47d260((float *)(BUF + 0x200), (const float *)(BUF + 0x100)), 0))
+ST(quat_toAxisAngle, axisangle_setup();, (TC(void, 0x47d260, char *, char *)(BUF + 0x200, BUF + 0x100), 0), (quat_toAxisAngle((float *)(BUF + 0x200), (const float *)(BUF + 0x100)), 0))
 /* a skeleton (this = BUF + 0x1000): bones (100 bytes) at BUF + 0x2000, the animation table at 0x3000, the animation at
    0x3100, its tracks (0x70 bytes) at 0x4000, per track position keys (32 bytes) at 0x10000 + t * 0x400 and rotation
    keys (40 bytes) at 0x20000 + t * 0x400, frames ascending; a bone's +0 points at an offset vector or is 0 */
@@ -9545,8 +9545,8 @@ static void rotmat(char *m)
 	}
 }
 static void rot2_setup(void) { rotmat(BUF + 0x100); rotmat(BUF + 0x200); for (int i = 0; i < 4; i++) SF(BUF + 0x300, i * 4) = unit_rnd(); fill(BUF + 0x400, 16); }
-ST(skel_ase_47d2f0, rot2_setup();, (TC(void, 0x47d2f0, char *, char *)(BUF + 0x400, BUF + 0x100), 0), (skel_ase_47d2f0(BUF + 0x400, (DWORD)(BUF + 0x100)), 0))
-ST(skel_ase_47d320, rot2_setup(); for (int i = 0; i < 4; i++) SF(BUF + 0x200, i * 4) = unit_rnd();, CALL_PLAIN(0x47d320, 0, BUF + 0x400, BUF + 0x300, BUF + 0x200, 0), (DWORD)(skel_ase_47d320((float *)(DWORD)(BUF + 0x400), (const float *)(DWORD)(BUF + 0x300), (const float *)(DWORD)(BUF + 0x200))))
+ST(axisAngle_fromMatrix, rot2_setup();, (TC(void, 0x47d2f0, char *, char *)(BUF + 0x400, BUF + 0x100), 0), (axisAngle_fromMatrix(BUF + 0x400, (DWORD)(BUF + 0x100)), 0))
+ST(axisAngle_combine, rot2_setup(); for (int i = 0; i < 4; i++) SF(BUF + 0x200, i * 4) = unit_rnd();, CALL_PLAIN(0x47d320, 0, BUF + 0x400, BUF + 0x300, BUF + 0x200, 0), (DWORD)(axisAngle_combine((float *)(DWORD)(BUF + 0x400), (const float *)(DWORD)(BUF + 0x300), (const float *)(DWORD)(BUF + 0x200))))
 static void input_setup(void)
 {
 	static const DWORD w[] = { 0, 0x10010, 0x20020 };
@@ -9787,8 +9787,8 @@ static int ray_orig(void)
 	g_traceHits[2] += GF(BUF + 0x206100) != -7.0f;   /* returns nothing: count tests where it wrote a hit point */
 	return r;
 }
-ST(space_traceUnit_4809f0, trace_build(BUF);, tru_orig(),
-   space_traceUnit_4809f0(BUF + 0x7800, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x6110), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
+ST(space_traceUnit, trace_build(BUF);, tru_orig(),
+   space_traceUnit(BUF + 0x7800, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x6110), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
 ST(space_traceNodes, trace_build(BUF);, trn_orig(),
    space_traceNodes(BUF + 0x7000, (DWORD)(BUF + 0x6200), (DWORD)(BUF + 0x6210), (DWORD)(BUF + 0x6100), (DWORD)(BUF + 0x400), (DWORD)g_traceSubs))
 /* the scene at the scratch area: the level grid copied to +0xa10 (its octree and triangles built at +0x200000), up to
@@ -9966,11 +9966,11 @@ ST(glyph_drawHud31Layered, glyph_setup(99);, (((void (__cdecl *)(int, int, int, 
 	(((void (__cdecl *)(int, int, int, int, int))addr)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0), \
 	(name(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
 TEXQUAD_TEST(profile_drawButton, 0x4283e0)
-TEXQUAD_TEST(menu_drawTexQuad_4284d0, 0x4284d0)
-TEXQUAD_TEST(menu_drawTexQuad_4282f0, 0x4282f0)
-TEXQUAD_TEST(menu_drawTexQuad_4285c0, 0x4285c0)
-TEXQUAD_TEST(menu_drawTexQuad_4286b0, 0x4286b0)
-TEXQUAD_TEST(menu_drawTexQuad_4287a0, 0x4287a0)
+TEXQUAD_TEST(menu_drawSmallButton1, 0x4284d0)
+TEXQUAD_TEST(menu_drawWideButton, 0x4282f0)
+TEXQUAD_TEST(menu_drawSmallButton2, 0x4285c0)
+TEXQUAD_TEST(menu_drawSmallButton3, 0x4286b0)
+TEXQUAD_TEST(menu_drawSmallButton4, 0x4287a0)
 ST(sys_errorMessageNoName, msgfmt_setup();, (((void (__cdecl *)(char *, int, int, int))0x46c840)(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
    (sys_errorMessageNoName(BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0))
 ST(sys_errorMessage, msgfmt_setup();, (((void (__cdecl *)(char *, char *, int, int, int))0x46c5f0)(BUF + 0x100, BUF + 0x200, g_a[0], g_a[1], g_a[2]), 0),
@@ -10089,7 +10089,7 @@ ST(net_addServerRecord, netrec_setup();, CALL_PLAIN(0x452af0, 0, BUF + 0x100, 0,
 ST(net_addRoomRecord, netrec_setup();, CALL_PLAIN(0x452c80, 0, BUF + 0x100, 0, 0, 0), (DWORD)(net_addRoomRecord((const void *)(DWORD)(BUF + 0x100))))
 ST(math_makeMathFunctionTableFile, vfs_content(0, 0); g_vfsOpenFail = !irnd(0, 5); fill((void *)0x4d0770, 4);, CALL_PLAIN(0x46c340, 0, 0, 0, 0, 0), (DWORD)(math_makeMathFunctionTableFile()))
 ST(math_initMathFunction, vfs_content(0, 0xe000); g_vfsOpenFail = !irnd(0, 4);, CALL_PLAIN(0x46c270, 0, 0, 0, 0, 0), (DWORD)(math_initMathFunction()))
-ST(glWindow_4684c0, , CALL_PLAIN(0x4684c0, 0, 0, 0, 0, 0), (DWORD)(glWindow_4684c0()))
+ST(gfx_resetState, , CALL_PLAIN(0x4684c0, 0, 0, 0, 0, 0), (DWORD)(gfx_resetState()))
 ST(reg_readServerSettings, g_mockRegFail = !irnd(0, 3); G32(0x9dae74) = irnd(0, 2); g_paintStacks = 1; /* a failed open closes the unset key */, CALL_PLAIN(0x42bde0, 0, 0, 0, 0, 0), (DWORD)(reg_readServerSettings()))
 /* text: printable ASCII with colour codes ("$#n", "$[n]"), '|' and CR LF, or Korean 2-byte characters; the menu
    state (9999 / 400 enable the codes) and the wrap limits varied */
@@ -10943,8 +10943,8 @@ static void objlist_setup(void)
 	g_ol[2] = irnd(0, 1) ? 1 : irnd(0, 2); g_ol[3] = irnd(0, 2) ? -1 : irnd(0, 40); g_ol[4] = 11;
 	g_paintStacks = 1;
 }
-ST(data_46f7a0, objlist_setup();, (TC(void, 0x46f7a0, char *, int, int)(BUF + 0x50000, g_ol[0], g_ol[1]), 0),
-   (data_46f7a0(BUF + 0x50000, (void *)g_ol[0], (void *)g_ol[1]), 0))
+ST(ObjectList_relight, objlist_setup();, (TC(void, 0x46f7a0, char *, int, int)(BUF + 0x50000, g_ol[0], g_ol[1]), 0),
+   (ObjectList_relight(BUF + 0x50000, (void *)g_ol[0], (void *)g_ol[1]), 0))
 ST(partList_queue, objlist_setup();,
    TC(int, 0x46fd20, char *, char *, int, int, int, int, int)(BUF + 0x50000, BUF + 0x100000, g_ol[0], g_ol[1], g_ol[2], g_ol[3], g_ol[4]),
    partList_queue(BUF + 0x50000, BUF + 0x100000, (void *)g_ol[0], (void *)g_ol[1], g_ol[2], g_ol[3], g_ol[4]))
@@ -12011,14 +12011,14 @@ static int menutex_setup(void)
 	for (int a = 0; a < 4; a++) g_a[a] = irnd(-100, 800);
 	return c < 6 ? k * 512 + (S32((char *)S32(BUF, 0xcd134), 4) & 0x1ff) : k * 512 + (i & 0x1ff);   /* (outside the manager's 512 records it names an empty one: the original crashes) */
 }
-ST(menu_drawTexturedRect_427a90, g_a[4] = menutex_setup();, (CD(void, 0x427a90, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
-   (menu_drawTexturedRect_427a90(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
-ST(menu_drawTexturedRect_427b60, g_a[4] = menutex_setup();, (CD(void, 0x427b60, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
-   (menu_drawTexturedRect_427b60(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
-ST(menu_drawTexturedRect_428a00, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428a00, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
-   (menu_drawTexturedRect_428a00(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
-ST(menu_drawTexturedRect_428b50, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428b50, int, int, int)(g_a[0], g_a[1], g_a[2]), 0),
-   (menu_drawTexturedRect_428b50(g_a[0], g_a[1], g_a[2]), 0))
+ST(menu_drawTexture, g_a[4] = menutex_setup();, (CD(void, 0x427a90, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
+   (menu_drawTexture(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
+ST(menu_drawTextureFlipped, g_a[4] = menutex_setup();, (CD(void, 0x427b60, int, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0),
+   (menu_drawTextureFlipped(g_a[0], g_a[1], g_a[2], g_a[3], g_a[4]), 0))
+ST(menu_drawCornerOrnaments, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428a00, int, int, int, int)(g_a[0], g_a[1], g_a[2], g_a[3]), 0),
+   (menu_drawCornerOrnaments(g_a[0], g_a[1], g_a[2], g_a[3]), 0))
+ST(menu_drawTopRightOrnament, G32(0x4deb4c) = menutex_setup();, (CD(void, 0x428b50, int, int, int)(g_a[0], g_a[1], g_a[2]), 0),
+   (menu_drawTopRightOrnament(g_a[0], g_a[1], g_a[2]), 0))
 /* batch 93 */
 /* menutex_setup's texture set; the HUD object is BUF (its texture fields set to the chosen id), screen positions */
 static void hudicon_setup(void)
@@ -12245,7 +12245,7 @@ ST(lobby_checkReservedName3, lobbylogin_setup(0x5b1b30, 0x5b1b50, 0xa0b328); res
 ST(lobby_checkReservedName2, lobbylogin_setup(0x4ded20, 0x4ded40, 0xa0b310); reserved_name((char *)0x4db528);   /* (lobby_keepArenaSettings copies the name from there) */, CD(DWORD, 0x405cf0, void)(),
    (DWORD)lobby_checkReservedName2())
 /* batch 101 */
-/* an actor (0..6) with empty, freshly constructed object lists (ResourceSet_init_463a40), every part table and item
+/* an actor (0..6) with empty, freshly constructed object lists (ResourceSet_initLists), every part table and item
    record ready (cleared names, see part_record), and its state at random: alive or not, near the camera or not, hit /
    damaged / cloaked, the viewing actor or not, the current weapon slot */
 static void updateparts_setup(void)
@@ -12264,7 +12264,7 @@ static void updateparts_setup(void)
 	}
 	for (int s = 0; s < 6; s++) S32(BUF + 0x1561b68 + p * 0x47fd2, 0x320 + s * 4) = irnd(-1, 3);
 	char *ac = sc + 0x1cd93a8 + a * 0x8888;
-	ResourceSet_init_463a40(ac);
+	ResourceSet_initLists(ac);
 	S32(ac, 0x108) = 1; S32(ac, 0x10c) = p; S32(ac, 8) = irnd(0, 9);
 	S32(ac, 0x14c) = irnd(0, 9) ? 1 : 0; S32(ac, 0x884c) = irnd(0, 9) ? 0 : 1;
 	for (int k = 0; k < 3; k++) { SF(sc + 0x20f3970, k * 4) = (float)irnd(-1000, 1000); SF(ac, 0x154 + k * 4) = SF(sc + 0x20f3970, k * 4) + (float)irnd(-300, 300); }
@@ -12355,7 +12355,7 @@ static void mechsetup_setup(void)
 	}
 	for (int s = 0; s < 6; s++) S32(pl, 0x320 + s * 4) = irnd(0, 2) ? items[irnd(0, 13)] : -1;
 	char *ac = BUF + 0x1cd93a8 + a * 0x8888;
-	ResourceSet_init_463a40(ac);
+	ResourceSet_initLists(ac);
 	S32(ac, 0x108) = 1; S32(ac, 0x10c) = p; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
 	fill(ac + 0x3f0, 0x100);
 	S32(BUF, 0x20f3ab8) = irnd(0, 13); S32(BUF, 0x1561b64) = 40;
@@ -12557,7 +12557,7 @@ static void allparts_setup(void)
 	updateparts_setup();
 	for (int a = 0; a < 7; a++) {
 		char *ac = BUF + 0x1cd93a8 + a * 0x8888;
-		if (a != g_a[0]) { ResourceSet_init_463a40(ac); S32(ac, 0x10c) = irnd(0, 7); S32(ac, 0x14c) = irnd(0, 1); S32(ac, 0x884c) = 0;
+		if (a != g_a[0]) { ResourceSet_initLists(ac); S32(ac, 0x10c) = irnd(0, 7); S32(ac, 0x14c) = irnd(0, 1); S32(ac, 0x884c) = 0;
 		                   for (int k = 0; k < 3; k++) SF(ac, 0x154 + k * 4) = SF(BUF + 0x20f3970, k * 4) + (float)irnd(-300, 300); }
 		S32(ac, 0x108) = irnd(0, 3) ? 1 : 0;
 	}
@@ -12584,7 +12584,7 @@ static void ownslot_setup(void)
 	slot_setup();
 	S32(BUF, 0x202e8d4) = g_spf;
 	char *ac = BUF + 0x1cd93a8 + g_spf * 0x8888;
-	ResourceSet_init_463a40(ac); S32(ac, 0x10c) = g_spf; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
+	ResourceSet_initLists(ac); S32(ac, 0x10c) = g_spf; S32(ac, 0x484) = irnd(0, 3); S32(ac, 0x49c) = irnd(0, 3); S32(ac, 0x140) = irnd(0, 5);
 	fill((void *)0xa0e7a8, 12);
 }
 ST(stage_remakePlayerActor, ownslot_setup();, (TC(void, 0x45ddc0, char *)(BUF), 0), (stage_remakePlayerActor(BUF), 0))
@@ -12689,7 +12689,7 @@ static void groundfile_setup(void)
 	for (int b = 0; b < 4; b++) { int n = irnd(0, 16); *(int *)(d + len) = n; len += 4; fill(d + len, n); len += n; }
 	memset(d + len, 0, 0x100); strcpy((char *)d + len, dir); len += 0x100;
 	SF(d, len) = (float)irnd(100, 5000); len += 4;
-	int nlight = irnd(0, 3);                                 /* load_483d70: two counts, the records, one more dword */
+	int nlight = irnd(0, 3);                                 /* Light_read: two counts, the records, one more dword */
 	*(int *)(d + len) = nlight; *(int *)(d + len + 4) = irnd(0, 3); len += 8;
 	for (int k = 0; k < nlight; k++) {
 		BYTE *f = d + len; fill(f, 0x2c);
@@ -13353,7 +13353,7 @@ static void tunnels_setup(void)
 ST(armc_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x411110, 0, 0, 0, 0, 0), 0), (armc_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(skirmish_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4445a0, 0, 0, 0, 0, 0), 0), (skirmish_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(armc_drawPreviewTunnel, tunnels_setup();, (CALL_PLAIN(0x411ab0, 0, 0, 0, 0, 0), 0), (armc_drawPreviewTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
-ST(room_4388e0, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_4388e0(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
+ST(room_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4388e0, 0, 0, 0, 0, 0), 0), (room_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(arena_drawTunnel, tunnels_setup();, (CALL_PLAIN(0x4091b0, 0, 0, 0, 0, 0), 0), (arena_drawTunnel(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 /* batch 127 */
 /* the info panel: dlgwin_setup's window at 0x9dd368, short labels, the password fields at most 11 characters (the
@@ -14256,9 +14256,9 @@ static void musicplay_setup(void)
 ST(sound_init, dsinit_setup();, CALL_PLAIN(0x467a50, 0, g_a[0], 0, 0, 0), (DWORD)(sound_init((void *)(DWORD)(g_a[0]))))
 ST(dsbuf_play, dsbuf_setup(0);, CALL_PLAIN(0x467d70, 0, g_a[2], 0, 0, 0), (dsbuf_play((void *)(DWORD)(g_a[2])), 0))
 ST(dsbuf_setVolume, dsbuf_setup(0);, CALL_PLAIN(0x467db0, 0, g_a[2], g_a[1], 0, 0), (dsbuf_setVolume((void *)(DWORD)(g_a[2]), (DWORD)(g_a[1])), 0))
-ST(sound_467dd0, dsbuf_setup(1);, CALL_PLAIN(0x467dd0, 0, g_a[2], g_a[0], g_a[1], 0), (DWORD)(sound_467dd0((DWORD *)(DWORD)(g_a[2]), (DWORD)(g_a[0]), (DWORD)(g_a[1]))))
+ST(sound_playNextBuffer, dsbuf_setup(1);, CALL_PLAIN(0x467dd0, 0, g_a[2], g_a[0], g_a[1], 0), (DWORD)(sound_playNextBuffer((DWORD *)(DWORD)(g_a[2]), (DWORD)(g_a[0]), (DWORD)(g_a[1]))))
 ST(music_shutdown, music_setup();, CALL_PLAIN(0x457310, 0, 0, 0, 0, 0), (music_shutdown(), 0))
-ST(music_4572b0, music_setup();, CALL_PLAIN(0x4572b0, 0, 0, 0, 0, 0), (DWORD)(music_4572b0()))
+ST(music_loopIfEnded, music_setup();, CALL_PLAIN(0x4572b0, 0, 0, 0, 0, 0), (DWORD)(music_loopIfEnded()))
 ST(music_play, musicplay_setup();, CALL_PLAIN(0x457150, 0, BUF + 0x1c0, 0, 0, 0), (DWORD)(music_play(BUF + 0x1c0)))
 /* batch 159 */
 /* DirectInput: a fake DirectInput (CreateDevice giving a fake device), DirectInputCreateA giving it or failing,
@@ -14279,7 +14279,7 @@ static void dinput_setup(void)
 	g_a[0] = irnd(0, 0xffff); g_a[1] = irnd(0, 0xffff);
 }
 ST(input_initKeyboard, dinput_setup();, CALL_PLAIN(0x401310, 0, g_a[0], 0, 0, 0), (DWORD)(input_initKeyboard((void *)(DWORD)(g_a[0]))))
-ST(input_4013a0, dinput_setup();, CALL_PLAIN(0x4013a0, 0, g_a[0], 0, 0, 0), (DWORD)(input_4013a0((void *)(DWORD)(g_a[0]))))
+ST(input_createMouse, dinput_setup();, CALL_PLAIN(0x4013a0, 0, g_a[0], 0, 0, 0), (DWORD)(input_createMouse((void *)(DWORD)(g_a[0]))))
 ST(input_createDirectInput, dinput_setup();, CALL_PLAIN(0x401410, 0, g_a[0], g_a[1], 0, 0), (DWORD)(input_createDirectInput((void *)(DWORD)(g_a[0]), (void *)(DWORD)(g_a[1]))))
 ST(input_reacquireKeyboard, dinput_setup();, CALL_PLAIN(0x4012c0, 0, 0, 0, 0, 0), (input_reacquireKeyboard(), 0))
 ST(input_reacquireMouse, dinput_setup();, CALL_PLAIN(0x4012e0, 0, 0, 0, 0, 0), (DWORD)(input_reacquireMouse()))
@@ -14376,7 +14376,7 @@ ST(mission_choose, menudisp_setup();, CALL_PLAIN(0x4479d0, 0, 0, 0, 0, 0), (DWOR
 ST(skirmish_settingsKeys, menudisp_setup();, CALL_PLAIN(0x444070, 0, 0, 0, 0, 0), (DWORD)(skirmish_settingsKeys()))
 ST(skirmish_processKeys, menudisp_setup();, (CALL_PLAIN(0x443f20, 0, 0, 0, 0, 0), 0), (skirmish_processKeys(), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(field_editMessage, menudisp_setup();, CALL_PLAIN(0x434320, 0, 0, 0, 0, 0), (field_editMessage(), 0))
-ST(arena_editTextField_405010, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editTextField_405010(), 0))
+ST(arena_editMessage, menudisp_setup();, CALL_PLAIN(0x405010, 0, 0, 0, 0, 0), (arena_editMessage(), 0))
 ST(settingsPage_draw, menudisp_setup();, CALL_PLAIN(0x443ef0, 0, 0, 0, 0, 0), (settingsPage_draw(), 0))
 ST(settingsPage_keys, menudisp_setup();, CALL_PLAIN(0x4440f0, 0, 0, 0, 0, 0), (settingsPage_keys(), 0))
 ST(mission_unlockCheat, menudisp_setup();, CALL_PLAIN(0x447b10, 0, 0, 0, 0, 0), (mission_unlockCheat(), 0))
@@ -14442,7 +14442,7 @@ ST(missionList_keys, missionkeys_setup();, CALL_PLAIN(0x447b40, 0, 0, 0, 0, 0), 
 ST(missionsel_keys, missionkeys_setup();, CALL_PLAIN(0x447c70, 0, 0, 0, 0, 0), (missionsel_keys(), 0))
 ST(missionsel_frameScreen, callee_stubs(g_stubMissionDraw, 0);, (CALL_PLAIN(0x44aa30, 0, 0, 0, 0, 0), 0), (missionsel_frameScreen(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
 ST(skirmish_frameScreenB, callee_stubs(g_stubSkirmishDraw, 0);, (CALL_PLAIN(0x445bd0, 0, 0, 0, 0, 0), 0), (skirmish_frameScreenB(), 0))   /* its eax goes up to menu_frame, which ignores it (tools/eaxuse.py) */
-ST(jmp_net_getLocalAddress_4532e0, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress_4532e0())
+ST(jmp_net_getLocalAddress, callee_stubs(g_stubLocalAddr, 0);, CALL_PLAIN(0x4532e0, 0, 0, 0, 0, 0), (DWORD)jmp_net_getLocalAddress())
 /* batch 165 */
 /* the profile screen: its variables (PROFILE_VARS), saves to load and delete (selectload_setup), the keyboard and
    menu sounds, the chat edit's state; the three button tables with the cursor often on a button, clicks */
@@ -14562,7 +14562,7 @@ ST(net_logMessage, dpmsg_setup();, CALL_PLAIN(0x451350, 0, g_a[5], BUF + 0x3900,
 ST(net_handleMessage, dpmsg_setup();, CALL_PLAIN(0x451090, 0, BUF + 0x3800, g_a[4], g_a[5], 0), (DWORD)(net_handleMessage(BUF + 0x3800, g_a[4], g_a[5])))
 ST(net_sendLocalInfo, dpmsg_setup();, (CALL_PLAIN(0x450c20, 0, BUF + 0x3800, 0, 0, 0), 0), (net_sendLocalInfo((const void *)(DWORD)(BUF + 0x3800)), 0))   /* its callers ignore the eax it leaves (tools/eaxuse.py) */
 ST(net_receiveAll, dpmsg_setup();, CALL_PLAIN(0x450a60, 0, 0, 0, 0, 0), (DWORD)(net_receiveAll()))
-ST(FUN_00450bb0, dpmsg_setup();, CALL_PLAIN(0x450bb0, 0, 0, 0, 0, 0), (DWORD)FUN_00450bb0())
+ST(jmp_net_receiveAll, dpmsg_setup();, CALL_PLAIN(0x450bb0, 0, 0, 0, 0, 0), (DWORD)jmp_net_receiveAll())
 /* batch 168 */
 /* the mission settings screen: missionscreen_setup's state (missions, preview, textures, texts, records), the
    unlocked count, the settings buttons with the cursor often on one */
@@ -14707,7 +14707,7 @@ static void gen_setup(const DWORD *gs, const DWORD *gi, const DWORD *gb)
 static const DWORD g_gs_404f90[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404f90[] = { 0x4dbacc, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404f90[] = { 0x9dc92c, 0 };
-ST(arena_editTextField_404f90, gen_setup(g_gs_404f90, g_gi_404f90, g_gb_404f90);, CALL_PLAIN(0x404f90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404f90(), 0))
+ST(arena_editPassword, gen_setup(g_gs_404f90, g_gi_404f90, g_gb_404f90);, CALL_PLAIN(0x404f90, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editPassword(), 0))
 static const DWORD g_gs_433a80[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_433a80[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd1b8, 0x9dd1bc, 0x9dd6a8, 0 };
 static const DWORD g_gb_433a80[] = { 0x9dc92c, 0 };
@@ -14735,7 +14735,7 @@ ST(net_sendChat, gen_setup(g_gs_4512c0, g_gi_4512c0, g_gb_4512c0);, CALL_PLAIN(0
 static const DWORD g_gs_405230[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_405230[] = { 0x4db714, 0x4db8c8, 0x4db8cc, 0x4dbbd4, 0x4dbbd8, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_405230[] = { 0x9dc92c, 0 };
-ST(lobby_editTextField_405230, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, CALL_PLAIN(0x405230, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(lobby_editTextField_405230()))
+ST(arena_editTitle, gen_setup(g_gs_405230, g_gi_405230, g_gb_405230);, CALL_PLAIN(0x405230, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(arena_editTitle()))
 static const DWORD g_gs_4318b0[] = { 0x401600, 1, 0 };
 static const DWORD g_gi_4318b0[] = { 0x4df01c, 0x4e0458, 0x5b1da8, 0x6803a0, 0x9dae70, 0 };
 static const DWORD g_gb_4318b0[] = { 0 };
@@ -14747,11 +14747,11 @@ ST(arena_leaveSession, gen_setup(g_gs_452fe0, g_gi_452fe0, g_gb_452fe0);, CALL_P
 static const DWORD g_gs_404cd0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404cd0[] = { 0x4dbb68, 0x4dbb6c, 0x4dbbd0, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404cd0[] = { 0x4db560, 0x9dc92c, 0 };
-ST(arena_editTextField_404cd0, gen_setup(g_gs_404cd0, g_gi_404cd0, g_gb_404cd0);, CALL_PLAIN(0x404cd0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404cd0(), 0))
+ST(arena_editName, gen_setup(g_gs_404cd0, g_gi_404cd0, g_gb_404cd0);, CALL_PLAIN(0x404cd0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editName(), 0))
 static const DWORD g_gs_404d70[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404d70[] = { 0x4dbab0, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404d70[] = { 0x4db528, 0x9dc92c, 0 };
-ST(arena_editTextField_404d70, gen_setup(g_gs_404d70, g_gi_404d70, g_gb_404d70);, CALL_PLAIN(0x404d70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTextField_404d70(), 0))
+ST(arena_editComment, gen_setup(g_gs_404d70, g_gi_404d70, g_gb_404d70);, CALL_PLAIN(0x404d70, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editComment(), 0))
 static const DWORD g_gs_4339e0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_4339e0[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd1b8, 0x9dd1bc, 0x9dd380, 0 };
 static const DWORD g_gb_4339e0[] = { 0x4df9c8, 0x9dc92c, 0 };
@@ -14775,7 +14775,7 @@ ST(field_editGameName, gen_setup(g_gs_433b00, g_gi_433b00, g_gb_433b00);, CALL_P
 static const DWORD g_gs_404ed0[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404ed0[] = { 0x4db54d, 0x4db518, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404ed0[] = { 0x9dc92c, 0 };
-ST(arena_editNumberField_404ed0, gen_setup(g_gs_404ed0, g_gi_404ed0, g_gb_404ed0);, CALL_PLAIN(0x404ed0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editNumberField_404ed0(), 0))
+ST(arena_editTimeLimit, gen_setup(g_gs_404ed0, g_gi_404ed0, g_gb_404ed0);, CALL_PLAIN(0x404ed0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editTimeLimit(), 0))
 static const DWORD g_gs_422c60[] = { 0x401600, 1, 0x41e760, 1, 0x42d730, 0, 0x457150, 1, 0x457310, 0, 0 };
 static const DWORD g_gi_422c60[] = { 0x4dd984, 0x4ddcec, 0x4dde98, 0x4dde9c, 0x4ddea0, 0x4ddea4, 0x4e0c90, 0x4e0c94, 0x4e0c98, 0x4e0c9c, 0x4e0cd4, 0x4e0cdc, 0x76d48c, 0 };
 static const DWORD g_gb_422c60[] = { 0 };
@@ -14783,7 +14783,7 @@ ST(setup_soundTabKeys, gen_setup(g_gs_422c60, g_gi_422c60, g_gb_422c60);, CALL_P
 static const DWORD g_gs_404e10[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_404e10[] = { 0x4db54c, 0x4db850, 0x4dbb00, 0x4dbb04, 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0 };
 static const DWORD g_gb_404e10[] = { 0x9dc92c, 0 };
-ST(arena_editNumberField_404e10, gen_setup(g_gs_404e10, g_gi_404e10, g_gb_404e10);, CALL_PLAIN(0x404e10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editNumberField_404e10(), 0))
+ST(arena_editFragLimit, gen_setup(g_gs_404e10, g_gi_404e10, g_gb_404e10);, CALL_PLAIN(0x404e10, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (arena_editFragLimit(), 0))
 static const DWORD g_gs_434260[] = { 0x401460, 0, 0x431560, 1, 0x43f460, 1, 0 };
 static const DWORD g_gi_434260[] = { 0x4e1868, 0x68039c, 0x9da3d8, 0x9da3dc, 0x9da434, 0x9dbf10, 0x9dd304, 0x9dd368, 0x9dd36c, 0x9dd378, 0x9dd37c, 0x9dd69c, 0 };
 static const DWORD g_gb_434260[] = { 0x9dc92c, 0x9dd20e, 0 };
@@ -14908,7 +14908,7 @@ ST(lobbyPlayer_keys, gen_setup(g_gs_407840, g_gi_407840, g_gb_407840);, CALL_PLA
 static const DWORD g_gs_433d30[] = { 0x431600, 1, 0 };
 static const DWORD g_gi_433d30[] = { 0x9dd1f6, 0x9dd202, 0x4ded18, 0x68039c, 0x9dd1fa, 0x9dd1fe, 0x9dd206, 0x9dd20a, 0x9dd348, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x9dd888, 0 };
 static const DWORD g_gb_433d30[] = { 0x9dc92c, 0x9dd1d8, 0x9dd20e, 0 };
-ST(room_433d30, gen_setup(g_gs_433d30, g_gi_433d30, g_gb_433d30);, CALL_PLAIN(0x433d30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(room_433d30()))
+ST(account_endTyping, gen_setup(g_gs_433d30, g_gi_433d30, g_gb_433d30);, CALL_PLAIN(0x433d30, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(account_endTyping()))
 static const DWORD g_gs_44f4b0[] = { 0x41e760, 1, 0x41ee40, 1, 0x428c30, 4, 0x4343b0, 1, 0x44b750, 0, 0x44b7e0, 1, 0x44b870, 0, 0x44d720, 0, 0x44dc60, 0, 0x44de00, 0, 0 };
 static const DWORD g_gi_44f4b0[] = { 0x68039c, 0x90d1c4, 0x9f8ea8, 0x9f8eac, 0x9f8f10, 0x9f8f20, 0x9f8f24, 0x9f8f34, 0 };
 static const DWORD g_gb_44f4b0[] = { 0x9dc92c, 0 };
@@ -14921,19 +14921,19 @@ ST(mapSelect_mouse, gen_setup(g_gs_441810, g_gi_441810, g_gb_441810); callee_ret
 static const DWORD g_gs_41ec50[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41ec50[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41ec50[] = { 0x9f9844, 0 };
-ST(game_returnToMenus_41ec50, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, CALL_PLAIN(0x41ec50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41ec50()))
+ST(game_returnToScreen500, gen_setup(g_gs_41ec50, g_gi_41ec50, g_gb_41ec50);, CALL_PLAIN(0x41ec50, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToScreen500()))
 static const DWORD g_gs_41e8b0[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41e8b0[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x4e1868, 0x5ae9c4, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41e8b0[] = { 0x9f9844, 0 };
-ST(game_returnToMenus_41e8b0, gen_setup(g_gs_41e8b0, g_gi_41e8b0, g_gb_41e8b0);, CALL_PLAIN(0x41e8b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41e8b0()))
+ST(game_returnToMainMenu, gen_setup(g_gs_41e8b0, g_gi_41e8b0, g_gb_41e8b0);, CALL_PLAIN(0x41e8b0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMainMenu()))
 static const DWORD g_gs_41e9d0[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x451e60, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41e9d0[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef0c, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41e9d0[] = { 0x9f9844, 0 };
-ST(game_returnToMenus_41e9d0, gen_setup(g_gs_41e9d0, g_gi_41e9d0, g_gb_41e9d0);, CALL_PLAIN(0x41e9d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41e9d0()))
+ST(game_returnToScreen400, gen_setup(g_gs_41e9d0, g_gi_41e9d0, g_gb_41e9d0);, CALL_PLAIN(0x41e9d0, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToScreen400()))
 static const DWORD g_gs_41eb00[] = { 0x401310, 1, 0x431590, 0, 0x4411e0, 0, 0x441200, 0, 0x452fe0, 0, 0 };
 static const DWORD g_gi_41eb00[] = { 0x4dbbf4, 0x4dda44, 0x4dda48, 0x4deb48, 0x4ded18, 0x4ded54, 0x4df024, 0x4df028, 0x4df02c, 0x4df8e0, 0x5ae9c4, 0x67ef0c, 0x67ef14, 0x67ef20, 0x680370, 0x680378, 0x68037c, 0x680380, 0x68039c, 0x76d3e8, 0x9db990, 0x9dced0, 0x9dd1c8, 0x9dd350, 0x9dd834, 0x9dd918, 0x9dd91c, 0x9dd920, 0x9dd930, 0x9dd934, 0x9dd938, 0 };
 static const DWORD g_gb_41eb00[] = { 0x9f9844, 0 };
-ST(game_returnToMenus_41eb00, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);, CALL_PLAIN(0x41eb00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToMenus_41eb00()))
+ST(game_returnToGameRoom, gen_setup(g_gs_41eb00, g_gi_41eb00, g_gb_41eb00);, CALL_PLAIN(0x41eb00, 0, g_a[0], g_a[1], g_a[2], g_a[3]), (DWORD)(game_returnToGameRoom()))
 static const DWORD g_gs_4036c0[] = { 0x4033e0, 2, 0x4034e0, 0, 0x403530, 0, 0x403560, 1, 0x403590, 1, 0x403640, 0, 0x41e760, 1, 0 };
 static const DWORD g_gi_4036c0[] = { 0x4dda44, 0x4d7350, 0x4db508, 0x4dbb3c, 0x4ded68, 0x4ded6c, 0x4ded88, 0x4ded94, 0x67ef00, 0 };
 static const DWORD g_gb_4036c0[] = { 0 };
@@ -16227,7 +16227,7 @@ static void matchframe_setup(void)
 	callee_ret(0x487f00, irnd(0, 5));
 	S32(BUF, 0x233cc20) = irnd(-1, 6); S32(BUF, 0x233c9e8) = irnd(0, 2);
 }
-ST(main_462050, matchframe_setup();, TC(DWORD, 0x462050, char *)(BUF), main_462050(BUF))
+ST(match_frameByState, matchframe_setup();, TC(DWORD, 0x462050, char *)(BUF), match_frameByState(BUF))
 /* batch 203 */
 /* WinMain: a running copy found now and then, the language among Korean (both ids) and others, the checks mostly
    passing (each fails one time in eight), 0x76d410 either way, app_init passing or not; the message loop answers by
@@ -16939,13 +16939,13 @@ static const STest g_stests[] = {
 	T(createArena_hitTest, 1, 4, 3000), T(save_cryptRecord, 0, 4, 500), T(crypt_countingKey, 1, 4, 500), T(str_invert, 1, 4, 2000),
 	T(name_isBlank, 1, 4, 3000), T(mapList_toggle, 0, 60, 0), T(armc_colourPartEquipped, 1, 4, 3000), T(array_recordAt, 1, 4, 3000),
 	T(net_findFreeSession, 1, 4, 2000), T(FUN_00463710, 1, 4, 3000), T(stage_selectActor, 0, 40, 0), T(playerRecord_markUsed, 0, 30, 0),
-	T(Skeleton_clear, 0, 4, 500), T(partList_clear, 0, 4, 500), T(load_480440, 0, 4, 500), T(armc_40d990, 0, 60, 0),
+	T(Skeleton_clear, 0, 4, 500), T(partList_clear, 0, 4, 500), T(spaceSlot_clear, 0, 4, 500), T(armc_resetSeraphimParts, 0, 60, 0),
 	T(mech_unpackFromRecord, 0, 30, 0), T(armc_restoreMenuCamera, 0, 20, 0), T(armc_loadSavedMech, 0, 30, 0), T(armc_syncPartCursors, 0, 60, 0),
 	T(armc_backupColours, 0, 20, 0), T(armc_restoreColourUndo, 0, 20, 0),
 	T(armc_dragPrimaryHue, 0, 100, 0), T(armc_dragPrimaryChroma, 0, 60, 0), T(armc_dragPrimaryValue, 0, 60, 0),
 	T(armc_dragSecondaryHue, 0, 100, 0), T(armc_dragSecondaryChroma, 0, 60, 0), T(armc_dragSecondaryValue, 0, 60, 0),
 	T(mech_setEmpty, 0, 20, 0), T(menu_initKeyRepeat, 0, 20, 0), T(net_clearSlots, 0, 20, 0), T(menu_clearInputBuffer, 0, 20, 0),
-	T(chat_pushHistory, 0, 20, 0), T(record_swap, 0, 4, 1000), T(cfg_defaultPlayerName, 0, 20, 0), T(lobby_404930, 0, 40, 0),
+	T(chat_pushHistory, 0, 20, 0), T(record_swap, 0, 4, 1000), T(cfg_defaultPlayerName, 0, 20, 0), T(arena_copyProfile, 0, 40, 0),
 	T(menu_showMessage, 0, 40, 0), T(room_loadSettingsRecord, 0, 60, 0),
 	/* batch 4 */
 	T(crypt_record104, 0, 4, 500), T(crypt_record80, 0, 4, 500), T(room_nameHasBadChar, 1, 4, 3000), T(profile_nameHasBadChar, 1, 4, 3000),
@@ -16957,50 +16957,50 @@ static const STest g_stests[] = {
 	T(net_claimPlayerSlot, 2, 40, 0), T(net_takePlayerSlot, 0, 30, 0), T(net_freeAllSlots, 0, 20, 0), T(net_sessionValue, 1, 4, 3000),
 	T(net_connectionAvailable, 1, 4, 3000), T(tex_findByName, 1, 4, 3000), T(arena_clearChatRecord, 0, 20, 0),
 	/* batch 5 */
-	T(tex_markMaterialChanged, 0, 4, 300), T(tex_recolourMaterial, 0, 4, 1000), T(hud_456b50, 0, 4, 300),
+	T(tex_markMaterialChanged, 0, 4, 300), T(tex_recolourMaterial, 0, 4, 1000), T(tex_clearSetCounters, 0, 4, 300),
 	T(actor_deactivate, 0, 4, 600), T(camera_setTarget, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
 	T(actor_setWeaponSlot, 0, 4, 600), T(actor_selectWeapon, 0, 4, 600), T(actor_clearInput, 0, 4, 200), T(actor_setInput, 0, 4, 200),
 	T(scene_saveNames, 0, 4, 100), T(scene_restoreNames, 0, 4, 100), T(scene_followedActor, 1, 4, 1000), T(chat_matchCheatCode, 1, 10, 1000),
-	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(notices_clearAll, 0, 4, 200), T(match_4634e0, 0, 4, 300),
-	T(match_463530, 0, 4, 200), T(match_463550, 0, 4, 300), T(match_4635b0, 0, 4, 300), T(match_463610, 0, 4, 300),
+	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(notices_clearAll, 0, 4, 200), T(notice_raise1, 0, 4, 300),
+	T(notice_raise2, 0, 4, 200), T(notice_raise3, 0, 4, 300), T(notice_raise4, 0, 4, 300), T(notice_raise5, 0, 4, 300),
 	/* batch 6 */
 	T(net_clearServerList, 0, 4, 0), T(net_clearRoomList, 0, 4, 0), T(net_clearPlayerList, 0, 4, 0), T(input_resetKeys, 0, 4, 0),
 	T(input_clearKeyTable2, 0, 4, 0), T(net_clearBuffers, 0, 4, 0), T(mapSelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
-	T(armc_showColourPage, 0, 4, 0), T(set_a61708_46f090, 0, 8, 0), T(messageBox_clickClose, 0, 8, 0), T(room_selectJoinedSession, 0, 8, 0),
+	T(armc_showColourPage, 0, 4, 0), T(ptx_startBitReader, 0, 8, 0), T(messageBox_clickClose, 0, 8, 0), T(room_selectJoinedSession, 0, 8, 0),
 	T(colour_initPackedBlue, 0, 4, 0), T(colour_initPackedGrey, 0, 4, 0), T(colour_initPackedYellow, 0, 4, 0), T(colour_initPackedClear, 0, 4, 0),
 	T(colour_initPackedRed, 0, 4, 0), T(colour_initPackedWhite, 0, 4, 0), T(colour_initPackedBlack, 0, 4, 0), T(colour_initPackedGreen, 0, 4, 0),
 	T(colour_initRealClear, 0, 4, 0), T(colour_initRealBlue, 0, 4, 0), T(colour_initRealWhite, 0, 4, 0), T(colour_initRealGreen, 0, 4, 0),
 	T(colour_initRealRed, 0, 4, 0), T(colour_initRealBlack, 0, 4, 0), T(colour_initRealYellow, 0, 4, 0), T(colour_initRealGrey, 0, 4, 0),
 	T(vec_initOrigin, 0, 4, 0), T(vec_initZero, 0, 4, 0), T(vec_initAxisZ, 0, 4, 0), T(vec_initUp, 0, 4, 0),
 	T(vec_initRest, 0, 4, 0), T(vec_initAxisX, 0, 4, 0), T(stage_clearActorRefs, 0, 4, 300), T(event_raise3, 0, 4, 300),
-	T(event_raise4, 0, 4, 300), T(event_raise5, 0, 4, 300), T(this_set_4841d0, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
-	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(view_setDistance, 0, 4, 2000), T(this_set_480210, 0, 4, 300),
-	T(collision_480230, 0, 4, 2000), T(space_freeNode, 0, 4, 300), T(space_freeBlock, 0, 4, 300), T(space_disableUnit, 0, 4, 300),
+	T(event_raise4, 0, 4, 300), T(event_raise5, 0, 4, 300), T(ViewVolume_clearDrawCounts, 0, 4, 300), T(stage_clearProjectiles, 0, 4, 300),
+	T(stage_clearBullets, 0, 4, 300), T(stage_clearMapObjects, 0, 4, 300), T(view_setDistance, 0, 4, 2000), T(ints_set3, 0, 4, 300),
+	T(vec3_negate, 0, 4, 2000), T(space_freeNode, 0, 4, 300), T(space_freeBlock, 0, 4, 300), T(space_disableUnit, 0, 4, 300),
 	T(space_enableUnit, 0, 4, 300), T(str_length, 1, 4, 3000), T(array_indexOf, 1, 4, 3000), T(path_normalize, 1, 4, 3000),
 	/* batch 7 */
 	T(arenaDialogBox_layout, 0, 8, 0), T(gameListStop_layout, 0, 8, 0), T(profileDialogBox_layout, 0, 8, 0), T(arenaCreate_layout, 0, 8, 0),
 	T(leaveDialog_layout, 0, 8, 0), T(deleteDialog_layout, 0, 8, 0), T(secondDialog_layout, 0, 8, 0), T(profileList_layout, 0, 8, 0),
-	T(newNameDialog_layout, 0, 8, 0), T(popup_layout, 0, 8, 0), T(arena_403f30, 0, 8, 0), T(text_setColor, 0, 8, 0),
+	T(newNameDialog_layout, 0, 8, 0), T(popup_layout, 0, 8, 0), T(lobbyTop_layout, 0, 8, 0), T(text_setColor, 0, 8, 0),
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
 	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
 	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(FUN_00463740, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
-	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushEvent, 0, 4, 1000), T(shape_466560, 0, 4, 300),
-	T(collision_4803c0, 0, 4, 2000), T(hud_467700, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
+	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushEvent, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
+	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
 	/* batch 8 */
 	T(setupOptions_layout, 0, 8, 0), T(loginDialog_layout, 0, 8, 0), T(arenaNameDialog_layout, 0, 8, 0), T(roomLogin_layout, 0, 8, 0),
-	T(skirmish_4437b0, 0, 8, 0), T(account_layout, 0, 8, 0), T(skirmish_443840, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
+	T(skirmish_layout, 0, 8, 0), T(account_layout, 0, 8, 0), T(skirmishButtons_layout, 0, 8, 0), T(setup_selectSoundTab, 0, 6, 0),
 	T(setup_selectControlTab, 0, 6, 0), T(lobby_setSubState0, 0, 10, 0), T(room_openDialog58, 0, 6, 0), T(room_start, 0, 6, 0),
 	T(room_openDialog42, 0, 20, 0), T(net_resetState, 0, 4, 0), T(skirmish_clearPlayerRows, 0, 4, 0), T(arena_stepMap, 0, 200, 0),
-	T(room_stepMap, 0, 200, 0), T(net_451530, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
-	T(menu_pointInPolygon, 1, 4, 3000), T(shape_findByName, 1, 4, 2000), T(skelDat_46b0c0, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
-	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(skel_47d830, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
-	T(scene_setTextureFolder, 0, 4, 300), T(FUN_00473a10, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
-	T(shape_4675f0, 0, 4, 300), T(shape_4665c0, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
+	T(room_stepMap, 0, 200, 0), T(net_freeSlotsOf, 2, 40, 0), T(ptx_readBits, 1, 60, 0), T(actor_pickRandomWeapon, 0, 40, 0),
+	T(menu_pointInPolygon, 1, 4, 3000), T(shape_findByName, 1, 4, 2000), T(skelDat_findByName, 1, 4, 2000), T(path_stripExtension, 0, 4, 2000),
+	T(text_printableLength, 1, 4, 3000), T(Mat4_copy, 0, 4, 300), T(Mat4_transpose, 0, 4, 300), T(playerRecord_markFree, 0, 4, 100),
+	T(scene_setTextureFolder, 0, 4, 300), T(player_setValue, 0, 4, 600), T(player_setTeam, 0, 4, 600), T(stage_freeProjectile, 0, 4, 1000),
+	T(model_clearTint, 0, 4, 300), T(shape_recolourMaterials, 0, 4, 300), T(ViewVolume_reset, 0, 4, 50), T(space_resetUnits, 0, 4, 500),
 	/* batch 9 */
-	T(mech_setValue, 0, 4, 600), T(match_4613a0, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
-	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initTable_46efd0, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
+	T(mech_setValue, 0, 4, 600), T(scene_setLocalTeam, 0, 4, 600), T(hangul_glyphs, 1, 60, 0), T(ptx_readDcDiff, 0, 150, 0),
+	T(ptx_readAcSymbol, 0, 150, 0), T(ptx_toRgb, 0, 4, 300), T(ptx_initYCbCrTables, 0, 4, 0), T(ptx_layoutBlocks, 0, 4, 600),
 	T(menuState300_enter, 0, 4, 0), T(armc_initCameraPoints, 0, 4, 0), T(armc_initPartBoxes, 0, 4, 0), T(room_openDialog4d, 0, 4, 0),
 	T(room_enterRoomList, 0, 4, 0), T(missionsel_layout, 0, 8, 0), T(pilotSelect_layout, 0, 8, 0), T(actor_resetSlot, 0, 4, 300),
 	T(actor_clearTargetRefs, 0, 4, 1000), T(stage_resetPlayerRecords, 0, 4, 30), T(actor_nextWeapon, 0, 4, 1000), T(actor_prevWeapon, 0, 4, 1000),
@@ -17008,7 +17008,7 @@ static const STest g_stests[] = {
 	/* batch 10 */
 	T(gameList_layout, 0, 8, 0), T(arenaGameList_layout, 0, 8, 0), T(profilePage_layout, 0, 8, 0), T(mapList_layout, 0, 4, 0),
 	T(lobby_setSubState1, 0, 4, 0), T(lobby_ladderGameName, 0, 20, 0), T(armc_initCameraBox, 0, 4, 0), T(menu_initColours, 0, 4, 0),
-	T(profile_nameExists, 1, 40, 0), T(ptx_toRgba, 0, 4, 300), T(ptx_readBlock, 1, 150, 0), T(ResourceSet_init_463a40, 1, 4, 200),
+	T(profile_nameExists, 1, 40, 0), T(ptx_toRgba, 0, 4, 300), T(ptx_readBlock, 1, 150, 0), T(ResourceSet_initLists, 1, 4, 200),
 	T(shape_setTextureDir, 0, 4, 300), T(image_addColour, 0, 4, 1000), T(stage_resetMatrixAndPoints, 0, 4, 100), T(player_setName, 0, 4, 600),
 	T(scene_resetActors, 0, 4, 20),
 	/* batch 11 */
@@ -17017,37 +17017,37 @@ static const STest g_stests[] = {
 	T(lobby_drawArenaTitle, 0, 40, 0), T(arena_initOptionTexts, 0, 8, 0), T(mech_setName, 0, 4, 400), T(shape_colourPixels, 0, 4, 1000),
 	T(match_resetInputState, 0, 4, 50), T(stage_newRound, 0, 4, 20),
 	/* batch 12 */
-	T(color_initDefaultColours, 0, 4, 0), T(intro_42f500, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(replay_46d4d0, 0, 4, 0),
-	T(intro_42f2b0, 0, 4, 0), T(intro_42f690, 0, 4, 0), T(input_setDefaultKeyBindings, 0, 4, 0),
+	T(color_initDefaultColours, 0, 4, 0), T(menu_initKeyRepeatDefaults, 0, 4, 0), T(input_initVkTable, 0, 4, 0), T(color_initTextColours, 0, 4, 0),
+	T(menu_initMainButtons, 0, 4, 0), T(room_initMenuButtons, 0, 4, 0), T(input_setDefaultKeyBindings, 0, 4, 0),
 	/* batch 12 */
 	T(room_enterGameList, 0, 20, 0), T(lobby_setSubState2, 0, 20, 0), T(menuCamera_initPoints, 0, 6, 0),
 	/* batch 13 */
-	T(room_copyJoinedSettings, 0, 20, 0), T(room_434ff0, 0, 60, 0),
+	T(room_copyJoinedSettings, 0, 20, 0), T(room_mergeReceivedSessions, 0, 60, 0),
 	/* batch 14 */
 	T(menuCamera_forward, 0, 300, 0), T(menuCamera_back, 0, 300, 0), T(profile_loadSelectedColours, 0, 60, 0), T(profile_loadCursorColours, 0, 60, 0),
 	T(stage_advanceClocks, 0, 4, 3000), T(text_hangulConvert, 1, 4, 5000),
 	/* batch 15 */
 	T(render_depthSortA, 0, 60, 0), T(render_depthSortB, 0, 60, 0),
 	/* batch 16 */
-	T(input_applyKeyBindings, 0, 6, 0), T(setup_controlTabHelper_420c10, 0, 6, 0), T(quat_fromAxisAngle, 0, 4, 3000), T(setup_easePanel, 0, 60, 0),
-	T(ptx_initDequantTables, 0, 30, 0), T(math_triangleNormal, 0, 4, 3000), T(console_41e390, 0, 100, 0),
+	T(input_applyKeyBindings, 0, 6, 0), T(setup_keepKeyBindings, 0, 6, 0), T(quat_fromAxisAngle, 0, 4, 3000), T(setup_easePanel, 0, 60, 0),
+	T(ptx_initDequantTables, 0, 30, 0), T(math_triangleNormal, 0, 4, 3000), T(room_fitWindowRects, 0, 100, 0),
 	/* batch 17 */
-	T(arena_406640, 0, 60, 0), T(ptx_initTables, 0, 4, 0), T(tex_454e60, 0, 4, 2000), T(object_setNames, 0, 4, 300),
+	T(arena_mergeReceivedSessions, 0, 60, 0), T(ptx_initTables, 0, 4, 0), T(texRecord_init, 0, 4, 2000), T(object_setNames, 0, 4, 300),
 	T(roomSettings_layout, 0, 8, 0), T(stage_buildMeshDrawRecords, 0, 4, 600),
 	/* batch 18 */
 	T(arenaOptions_layout, 0, 8, 0), T(menuState600_enterSetup, 0, 8, 0), T(menuState800_enterGameRoom, 0, 20, 0),
 	/* batch 19 */
-	T(armc_weaponSlotRecord, 0, 100, 0), T(armc_viewedPartRecord, 0, 100, 0), T(app_42f940, 0, 4, 0), T(hud_42fb40, 0, 4, 0),
+	T(armc_weaponSlotRecord, 0, 100, 0), T(armc_viewedPartRecord, 0, 100, 0), T(font_initMenuGrids, 0, 4, 0), T(font_initHudGrids, 0, 4, 0),
 	/* batch 20 */
 	T(menuState400_enter, 0, 10, 0), T(room_takeReceivedSettings, 0, 30, 0), T(setup_drawKeyBindingRow, 0, 40, 0),
 	/* batch 21 */
-	T(setup_unbindKey, 0, 60, 0), T(ptx_decodeBlock_46e380, 0, 4, 3000),
+	T(setup_unbindKey, 0, 60, 0), T(ptx_inverseDct, 0, 4, 3000),
 	/* batch 22 */
-	T(Mat4_fromQuat, 0, 4, 3000), T(skel_ase_47d0f0, 0, 4, 3000), T(space_tracePlanes_47fb80, 1, 4, 3000), T(tex_46def0, 0, 4, 3000),
+	T(Mat4_fromQuat, 0, 4, 3000), T(quat_fromMatrix, 0, 4, 3000), T(collisionTri_traceSegment, 1, 4, 3000), T(tex_rgbToHsv, 0, 4, 3000),
 	/* batch 23 */
 	T(shape_relocate, 0, 4, 2000), T(setup_camera, 0, 200, 0), T(armc_mouseLook, 0, 200, 0),
 	/* batch 24 */
-	T(intro_cameraPath, 0, 4, 300), T(ViewVolume_add_485120, 0, 4, 3000),
+	T(intro_cameraPath, 0, 4, 300), T(ViewVolume_addSegment, 0, 4, 3000),
 	/* batch 25 */
 	T(Mat4_fromAxisAngle, 0, 4, 2000), T(tex_tintHsv, 0, 4, 3000), T(viewVolume_addQuad, 0, 4, 3000),
 	/* batch 26 */
@@ -17059,16 +17059,16 @@ static const STest g_stests[] = {
 	/* batch 29 */
 	T(stage_drawBullets, 0, 4, 600),
 	/* batch 30 */
-	T(text_setWrapX, 1, 4, 300), T(text_setBottom, 1, 4, 300), T(input_setKeysBlocked, 1, 4, 300), T(set_4b42dc_457140, 1, 4, 300),
+	T(text_setWrapX, 1, 4, 300), T(text_setBottom, 1, 4, 300), T(input_setKeysBlocked, 1, 4, 300), T(music_setVolumeSetting, 1, 4, 300),
 	T(view_setAngle, 1, 4, 300), T(static_initTex64x64, 0, 4, 0), T(static_initTex128x64, 0, 4, 0), T(static_initTex256x64, 0, 4, 0),
 	T(static_initTex128x128, 0, 4, 0), T(static_initTex256x128, 0, 4, 0), T(static_initTex256x256, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
-	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_angle, 1, 4, 300), T(match_4686f0, 1, 4, 300),
-	T(FUN_00468700, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
-	T(SkeletonManager_clear, 1, 4, 300), T(load_47db50, 1, 4, 300), T(load_4804a0, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
-	T(load_483fc0, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(load_480430, 1, 4, 300), T(this_set_483d60, 1, 4, 300),
+	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_angle, 1, 4, 300), T(view_nearPlane, 1, 4, 300),
+	T(view_farPlane, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
+	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
+	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
 	T(stage_clearMapItemCounts, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
-	T(stage_setValue202e8dc, 1, 4, 300), T(this_get_0x2342381_463780, 1, 4, 300), T(match_45fff0, 1, 4, 300), T(match_48b440, 1, 4, 300),
-	T(match_48b430, 0, 4, 0), T(hud_48b450, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
+	T(stage_setValue202e8dc, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
+	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
 	T(static_emptyCtorSkelData6, 0, 4, 0), T(static_emptyCtorSkelData7, 0, 4, 0), T(static_emptyCtorSkelData8, 0, 4, 0), T(static_emptyCtorTimeSync1, 0, 4, 0),
 	T(static_emptyCtorTimeSync2, 0, 4, 0), T(debug_traceStripped, 0, 4, 0), T(Texture_rtti, 1, 4, 0), T(TextureManager_rtti, 1, 4, 0),
@@ -17085,13 +17085,13 @@ static const STest g_stests[] = {
 	T(static_endViewVolumeRtti, 0, 6, 0), T(static_endTimeSyncRtti, 0, 6, 0), T(static_endSceneRtti, 0, 6, 0), T(static_endSoundRtti, 0, 4, 0),
 	T(static_endTimeSync, 0, 4, 0), T(TextureManager_reset, 1, 4, 300), T(TextureManager_ctor, 1, 4, 0), T(Light_ctor, 1, 4, 100),
 	T(Model_ctor, 1, 4, 300), T(CollisionVolume_ctor, 1, 4, 300), T(Scene_ctor, 1, 4, 300), T(TimeSync_ctor, 1, 4, 300),
-	T(Light_dtor, 1, 4, 100), T(stage_resetLights, 1, 4, 300), T(ResourceSet_ctor_463850, 1, 4, 20), T(space_resetPlanes, 1, 4, 1000),
+	T(Light_dtor, 1, 4, 100), T(stage_resetLights, 1, 4, 300), T(ResourceSet_ctor, 1, 4, 20), T(space_resetPlanes, 1, 4, 1000),
 	T(space_resetNodes, 1, 4, 1000), T(space_resetBlocks, 1, 4, 1000), T(script_reset, 1, 4, 300), T(script_notifyObject, 1, 4, 1000),
 	T(lobbyTop_draw, 1, 40, 0), T(room_slideMenu, 1, 40, 0), T(arenaList_rebuild, 0, 40, 0),
 	/* batch 32 */
 	T(TextureManager_dtor, 1, 4, 300), T(static_initTimeSync, 1, 4, 0), T(script_runScpFile, 1, 4, 2000), T(collisionTri_setup, 1, 4, 5000),
 	/* batch 33 */
-	T(static_endTextureManager, 0, 4, 0), T(armc_41c510, 1, 60, 0),
+	T(static_endTextureManager, 0, 4, 0), T(armc_readMechStats, 1, 60, 0),
 	/* batch 34 */
 	T(armc_drawPartPanels, 1, 60, 0),
 	/* batch 35 */
@@ -17103,8 +17103,8 @@ static const STest g_stests[] = {
 	/* batch 38 */
 	T(space_collideUnit, 1, 10, 20000),
 	/* batch 39 */
-	T(vsprintf_wrap_473450, 1, 4, 2000), T(vsprintf_wrap_463450, 1, 4, 2000), T(msg_4629f0, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
-	T(tex_46de20, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
+	T(stage_printText, 1, 4, 2000), T(notice_printCentre, 1, 4, 2000), T(msg_print, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
+	T(tex_tintRgba, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
 	/* batch 40 */
 	T(space_walkNodes_482aa0, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
 	/* batch 41 */
@@ -17147,14 +17147,14 @@ static const STest g_stests[] = {
 	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Model_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(static_destroyTex64x64, 1, 30, 0), T(static_destroyTex128x64, 1, 30, 0),
 	T(static_destroyTex256x64, 1, 30, 0), T(static_destroyTex128x128, 1, 30, 0), T(static_destroyTex256x128, 1, 30, 0), T(static_destroyTex256x256, 1, 30, 0),
-	T(sound_freeAll, 1, 40, 0), T(load_48b460, 1, 4, 1000), T(load_483d70, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
-	T(ResourceSet_dtor_463960, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
+	T(sound_freeAll, 1, 40, 0), T(map_readMissionRecords, 1, 4, 1000), T(Light_read, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
+	T(ResourceSet_dtor, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
 	/* batch 47 */
-	T(GetCurrentDirectoryA_wrap_43f580, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(dplay_createLobby, 1, 40, 0), T(net_wakePingThread, 1, 40, 0),
+	T(app_readCurrentDirectory, 1, 40, 0), T(gfx_swapBuffers, 1, 40, 0), T(dplay_createLobby, 1, 40, 0), T(net_wakePingThread, 1, 40, 0),
 	T(sys_messageBoxOverActive, 1, 40, 0), T(app_closeWindow, 1, 40, 0), T(menu_vertex, 1, 400, 0), T(mci_pause, 1, 40, 0),
 	T(editField_readTyping, 1, 40, 0), T(sys_messageBox, 1, 40, 0), T(ptx_error, 1, 40, 0), T(ptx_crtlError, 1, 40, 0),
 	T(reg_writeEndMode, 1, 40, 0), T(reg_writeStartMode, 1, 40, 0), T(menu_frameBegin, 1, 40, 0), T(app_registerWindowClassEx, 1, 40, 0),
-	T(net_addPlayerRecord, 1, 40, 0), T(dplay_454d90, 1, 40, 0), T(app_reportStartupProblem, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
+	T(net_addPlayerRecord, 1, 40, 0), T(text_findWord, 1, 40, 0), T(app_reportStartupProblem, 1, 40, 0), T(gfx_setPixelFormat, 1, 40, 0),
 	T(autoplay_listFiles, 1, 40, 0), T(data_loadMessages, 1, 40, 0), T(profile_create, 1, 40, 0), T(data_loadSkirmishInfo, 1, 200, 0),
 	T(data_loadMapInfo, 1, 200, 0), T(data_loadPilotProfiles, 1, 200, 0), T(profile_saveProgress, 1, 40, 0), T(profile_load, 1, 40, 0),
 	T(profile_save, 1, 40, 0), T(timer_now, 1, 2000, 0), T(Stage_deletingDtor, 1, 40, 0), T(dplay_enumSessionsCallback, 1, 400, 0),
@@ -17164,14 +17164,14 @@ static const STest g_stests[] = {
 	T(profile_selectAndLoad, 1, 40, 0), T(menu_drawRect, 1, 400, 0), T(menuState210_enter, 1, 40, 0), T(profile_scanSaves, 1, 40, 0),
 	T(autoplay_startRecording, 1, 400, 0), T(dplay_enumConnections, 1, 400, 0),
 	/* batch 49 */
-	T(inet_addr_wrap_4547c0, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(net_closeSockets, 1, 40, 0),
-	T(net_resolveHost, 1, 40, 0), T(net_sendColourRing, 0, 400, 0), T(net_sendState_48ead0, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
+	T(net_inetAddr, 1, 40, 0), T(net_asyncSelect, 1, 40, 0), T(net_getLocalAddress, 1, 40, 0), T(net_closeSockets, 1, 40, 0),
+	T(net_resolveHost, 1, 40, 0), T(net_sendColourRing, 0, 400, 0), T(net_sendPlayerLevels, 0, 400, 0), T(net_sendPlayerInfo, 0, 400, 0),
 	T(net_sendMatchEvent, 0, 400, 0), T(net_sendPlayerState, 0, 400, 0),
 	/* batch 50 */
-	T(skel_ase_47d260, 0, 300, 0), T(skel_poseBones, 0, 400, 0), T(ViewVolume_projectObject, 0, 400, 0),
+	T(quat_toAxisAngle, 0, 300, 0), T(skel_poseBones, 0, 400, 0), T(ViewVolume_projectObject, 0, 400, 0),
 	/* batch 51 */
 	T(app_checkFile_profkor, 1, 40, 0), T(app_checkFile_skirmish, 1, 40, 0), T(app_checkFile_axisgame, 1, 40, 0), T(app_checkFile_game, 1, 40, 0),
-	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(skel_ase_47d2f0, 0, 300, 0), T(skel_ase_47d320, 0, 300, 0),
+	T(app_checkFile_profeng, 1, 40, 0), T(reg_readStartMode, 1, 40, 0), T(axisAngle_fromMatrix, 0, 300, 0), T(axisAngle_combine, 0, 300, 0),
 	T(input_setCursorPos, 1, 40, 0), T(input_asyncKeyDown, 1, 40, 0), T(input_getCursorPos, 1, 40, 0), T(net_ping, 1, 40, 0),
 	T(net_pingServer, 1, 40, 0), T(net_pingAllServers, 1, 40, 0), T(gfx_setMenuCamera, 1, 40, 0), T(armc_easeCamera, 1, 40, 0),
 	T(app_screenSizeForMode, 1, 40, 0), T(stage_drawObject, 0, 300, 0), T(stage_drawObjects, 0, 300, 0), T(game_setGameTypeFlags, 0, 400, 0),
@@ -17182,7 +17182,7 @@ static const STest g_stests[] = {
 	T(profile_logIn, 1, 40, 0), T(armc_extraItemBonuses, 1, 400, 0), T(cfg_parseKeyNames, 1, 1000, 0), T(cfg_videoModeNames, 1, 1000, 0),
 	T(cfg_gameTypeNames, 1, 1000, 0), T(net_sendGamePacket, 0, 300, 0), T(setup_drawKeyBindingRows, 1, 3000, 0),
 	/* batch 53 */
-	T(space_traceUnit_4809f0, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
+	T(space_traceUnit, 1, 600, 0), T(space_traceNodes, 1, 600, 0), T(collision_rayTrace, 0, 600, 0),
 	/* batch 54 */
 	T(cfg_writeDefaultAxisCfg, 1, 200, 0), T(actor_checkLineOfSight, 0, 400, 0), T(armc_applyColourSlot, 1, 300, 0), T(armc_retintParts, 1, 300, 0),
 	/* batch 55 */
@@ -17192,13 +17192,13 @@ static const STest g_stests[] = {
 	T(net_receiveServerReply, 0, 40, 0), T(gfx_setup3DView, 0, 40, 0), T(input_asyncKeyPressed, 1, 40, 0), T(hud_drawRectOutline, 0, 40, 0),
 	T(glyph_drawHud13, 0, 40, 0), T(glyph_drawHud31, 0, 40, 0), T(text_quad8, 0, 40, 0), T(text_quad16, 0, 40, 0),
 	T(text_quad32, 0, 40, 0), T(text_quad5, 0, 40, 0), T(glyph_drawHud13Layered, 0, 40, 0), T(glyph_drawHud31Layered, 0, 40, 0),
-	T(profile_drawButton, 0, 40, 0), T(menu_drawTexQuad_4284d0, 0, 40, 0), T(menu_drawTexQuad_4282f0, 0, 40, 0), T(menu_drawTexQuad_4285c0, 0, 40, 0),
-	T(menu_drawTexQuad_4286b0, 0, 40, 0), T(menu_drawTexQuad_4287a0, 0, 40, 0), T(sys_errorMessageNoName, 0, 40, 0), T(sys_errorMessage, 0, 40, 0),
+	T(profile_drawButton, 0, 40, 0), T(menu_drawSmallButton1, 0, 40, 0), T(menu_drawWideButton, 0, 40, 0), T(menu_drawSmallButton2, 0, 40, 0),
+	T(menu_drawSmallButton3, 0, 40, 0), T(menu_drawSmallButton4, 0, 40, 0), T(sys_errorMessageNoName, 0, 40, 0), T(sys_errorMessage, 0, 40, 0),
 	T(sys_errorTerminate, 0, 40, 0), T(sys_fatalError, 0, 40, 0), T(ViewVolume_captureMatrices, 0, 400, 0), T(gfx_initVertexArrayExt, 0, 40, 0),
 	T(ViewVolume_dtor, 0, 40, 0), T(ViewVolume_deletingDtor, 0, 40, 0), T(stage_setFog, 0, 40, 0), T(crt_arrayConstruct, 0, 40, 0),
 	/* batch 57 */
 	T(shape_findDatEntry, 1, 40, 0), T(skelDat_getItemFileBy, 1, 40, 0), T(app_deleteDataFiles, 0, 40, 0), T(net_addServerRecord, 0, 40, 0),
-	T(net_addRoomRecord, 0, 40, 0), T(math_makeMathFunctionTableFile, 0, 40, 0), T(math_initMathFunction, 0, 40, 0), T(glWindow_4684c0, 0, 40, 0),
+	T(net_addRoomRecord, 0, 40, 0), T(math_makeMathFunctionTableFile, 0, 40, 0), T(math_initMathFunction, 0, 40, 0), T(gfx_resetState, 0, 40, 0),
 	T(reg_readServerSettings, 0, 40, 0), T(text_ascii5Pass, 0, 40, 0), T(text_ascii8Pass, 0, 40, 0), T(text_ascii16Pass, 0, 40, 0),
 	T(text_ascii32Pass, 0, 40, 0), T(text_hanCho, 0, 40, 0), T(text_hanJungJong, 0, 40, 0), T(text_drawHangul31, 0, 40, 0),
 	T(text_drawHangul31b, 0, 40, 0), T(tex_getItemFileBy, 1, 400, 0), T(space_getNextFreePlanePtr, 1, 40, 0), T(space_getNextFreeNodePtr, 1, 40, 0),
@@ -17242,7 +17242,7 @@ static const STest g_stests[] = {
 	/* batch 70 */
 	T(shape_getShadingColorBufferBy, 0, 400, 0), T(shape_shadingColours, 0, 200, 0),
 	/* batch 71 */
-	T(data_46f7a0, 0, 200, 0), T(partList_queue, 1, 200, 0),
+	T(ObjectList_relight, 0, 200, 0), T(partList_queue, 1, 200, 0),
 	/* batch 72 */
 	T(armc_computeTotals, 1, 400, 0),
 	/* batch 73 */
@@ -17288,7 +17288,7 @@ static const STest g_stests[] = {
 	T(armc_setBoosterIndex, 0, 300, 0), T(mech_setItem, 0, 300, 0), T(partList_bindTextures, 0, 300, 0), T(playerRecord_set, 0, 300, 0),
 	T(playerRecord_setFromActorRecord, 0, 300, 0),
 	/* batch 92 */
-	T(menu_drawTexturedRect_427a90, 0, 300, 0), T(menu_drawTexturedRect_427b60, 0, 300, 0), T(menu_drawTexturedRect_428a00, 0, 300, 0), T(menu_drawTexturedRect_428b50, 0, 300, 0),
+	T(menu_drawTexture, 0, 300, 0), T(menu_drawTextureFlipped, 0, 300, 0), T(menu_drawCornerOrnaments, 0, 300, 0), T(menu_drawTopRightOrnament, 0, 300, 0),
 	/* batch 93 */
 	T(hud_drawNameIcon, 0, 300, 0), T(hud_drawLeaderIcon, 0, 300, 0), T(replay_drawIcon, 0, 300, 0),
 	/* batch 94 */
@@ -17360,7 +17360,7 @@ static const STest g_stests[] = {
 	/* batch 125 */
 	T(missionsel_drawTunnel, 0, 200, 0), T(mainmenu_drawScreen, 0, 300, 0),
 	/* batch 126 */
-	T(armc_drawTunnel, 0, 150, 0), T(skirmish_drawTunnel, 0, 150, 0), T(armc_drawPreviewTunnel, 0, 150, 0), T(room_4388e0, 0, 150, 0),
+	T(armc_drawTunnel, 0, 150, 0), T(skirmish_drawTunnel, 0, 150, 0), T(armc_drawPreviewTunnel, 0, 150, 0), T(room_drawTunnel, 0, 150, 0),
 	T(arena_drawTunnel, 0, 150, 0),
 	/* batch 127 */
 	T(account_drawPanel, 0, 300, 0),
@@ -17428,10 +17428,10 @@ static const STest g_stests[] = {
 	/* batch 157 */
 	T(dplay_getPlayerName, 0, 300, 0), T(dplay_create, 0, 400, 0), T(dplay_hostSession, 0, 300, 0), T(dplay_joinSession, 0, 300, 0),
 	/* batch 158 */
-	T(sound_init, 0, 300, 0), T(dsbuf_play, 0, 200, 0), T(dsbuf_setVolume, 0, 200, 0), T(sound_467dd0, 0, 300, 0),
-	T(music_shutdown, 0, 200, 0), T(music_4572b0, 0, 200, 0), T(music_play, 0, 300, 0),
+	T(sound_init, 0, 300, 0), T(dsbuf_play, 0, 200, 0), T(dsbuf_setVolume, 0, 200, 0), T(sound_playNextBuffer, 0, 300, 0),
+	T(music_shutdown, 0, 200, 0), T(music_loopIfEnded, 0, 200, 0), T(music_play, 0, 300, 0),
 	/* batch 159 */
-	T(input_initKeyboard, 0, 300, 0), T(input_4013a0, 0, 300, 0), T(input_createDirectInput, 0, 300, 0), T(input_reacquireKeyboard, 0, 200, 0),
+	T(input_initKeyboard, 0, 300, 0), T(input_createMouse, 0, 300, 0), T(input_createDirectInput, 0, 300, 0), T(input_reacquireKeyboard, 0, 200, 0),
 	T(input_reacquireMouse, 0, 200, 0), T(input_releaseKeyboard, 0, 200, 0), T(input_releaseMouse, 0, 200, 0), T(sound_releaseDirectSound, 0, 200, 0),
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
@@ -17440,14 +17440,14 @@ static const STest g_stests[] = {
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
-	T(skirmish_processKeys, 0, 400, 0), T(field_editMessage, 0, 200, 0), T(arena_editTextField_405010, 0, 200, 0), T(settingsPage_draw, 0, 300, 0),
+	T(skirmish_processKeys, 0, 400, 0), T(field_editMessage, 0, 200, 0), T(arena_editMessage, 0, 200, 0), T(settingsPage_draw, 0, 300, 0),
 	T(settingsPage_keys, 0, 300, 0), T(mission_unlockCheat, 0, 300, 0), T(arena_chatLine, 0, 200, 0), T(room_startChat, 0, 200, 0),
 	/* batch 163 */
 	T(setup_drawTab, 0, 200, 0), T(setup_processTabKeys, 0, 200, 0), T(lobby_processKeys, 0, 300, 0), T(room_mouse, 0, 400, 0),
 	T(room_processKeys, 0, 400, 0), T(profile_frame, 0, 300, 0), T(room_draw, 0, 300, 0), T(lobbyCreate_draw, 0, 300, 0),
 	/* batch 164 */
 	T(briefing_keys, 0, 300, 0), T(missionList_keys, 0, 400, 0), T(missionsel_keys, 0, 300, 0), T(missionsel_frameScreen, 0, 50, 0),
-	T(skirmish_frameScreenB, 0, 50, 0), T(jmp_net_getLocalAddress_4532e0, 0, 50, 0),
+	T(skirmish_frameScreenB, 0, 50, 0), T(jmp_net_getLocalAddress, 0, 50, 0),
 	/* batch 165 */
 	T(profile_typeNewName, 0, 200, 0), T(profile_askDelete, 0, 200, 0), T(profile_askSecond, 0, 200, 0), T(profile_openDeleteQuestion, 0, 300, 0),
 	T(profile_secondDialogClicks, 0, 300, 0), T(profileList_clicks, 0, 400, 0),
@@ -17455,7 +17455,7 @@ static const STest g_stests[] = {
 	T(profileList_mouse, 0, 400, 0), T(profile_newNameDialog, 0, 400, 0), T(profile_processInput, 0, 500, 0),
 	/* batch 167 */
 	T(dplay_receive, 0, 300, 0), T(dplay_send, 0, 300, 0), T(net_sendMessage, 0, 300, 0), T(net_logMessage, 0, 300, 0),
-	T(net_handleMessage, 0, 400, 0), T(net_sendLocalInfo, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(FUN_00450bb0, 0, 100, 0),
+	T(net_handleMessage, 0, 400, 0), T(net_sendLocalInfo, 0, 400, 0), T(net_receiveAll, 0, 400, 0), T(jmp_net_receiveAll, 0, 100, 0),
 	/* batch 168 */
 	T(missionsel_drawSettingsScreen, 0, 300, 0), T(missionsel_frameSettings, 0, 50, 0),
 	/* batch 169 */
@@ -17470,11 +17470,11 @@ static const STest g_stests[] = {
 	T(lobbyJoin_keys, 0, 200, 0), T(leaveDialog_keys, 0, 200, 0), T(lobby_keysBack, 0, 200, 0), T(room_leaveKeys, 0, 200, 0),
 	T(chat_textField, 0, 200, 0), T(chat_keepLastLine, 0, 200, 0), T(mapSelect_ok, 0, 200, 0), T(popup_clicks, 0, 200, 0),
 	/* batch 172 */
-	T(arena_editTextField_404f90, 0, 200, 0), T(field_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(chat_closeLine, 0, 200, 0),
-	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(lobby_editTextField_405230, 0, 200, 0),
-	T(menu_keyStartFade, 0, 200, 0), T(arena_leaveSession, 0, 200, 0), T(arena_editTextField_404cd0, 0, 200, 0), T(arena_editTextField_404d70, 0, 200, 0),
+	T(arena_editPassword, 0, 200, 0), T(field_editPassword, 0, 200, 0), T(sound_playVolume, 0, 200, 0), T(chat_closeLine, 0, 200, 0),
+	T(messageBox_keyClose, 0, 200, 0), T(mapList_ok, 0, 200, 0), T(net_sendChat, 0, 200, 0), T(arena_editTitle, 0, 200, 0),
+	T(menu_keyStartFade, 0, 200, 0), T(arena_leaveSession, 0, 200, 0), T(arena_editName, 0, 200, 0), T(arena_editComment, 0, 200, 0),
 	T(field_editComment, 0, 200, 0), T(sound_loadMenuSounds, 0, 200, 0), T(room_readyKeys, 0, 200, 0), T(mapList_stepGameType, 0, 200, 0),
-	T(field_editGameName, 0, 200, 0), T(arena_editNumberField_404ed0, 0, 200, 0), T(setup_soundTabKeys, 0, 200, 0), T(arena_editNumberField_404e10, 0, 200, 0),
+	T(field_editGameName, 0, 200, 0), T(arena_editTimeLimit, 0, 200, 0), T(setup_soundTabKeys, 0, 200, 0), T(arena_editFragLimit, 0, 200, 0),
 	T(account_editEmail, 0, 200, 0), T(sound_playFile, 0, 200, 0), T(account_editOldPassword, 0, 200, 0), T(account_editPassword, 0, 200, 0),
 	T(account_editPasswordRepeat, 0, 200, 0), T(field_editGamePassword, 0, 200, 0), T(roomList_passwordKeys, 0, 200, 0),
 	/* batch 173 */
@@ -17483,10 +17483,10 @@ static const STest g_stests[] = {
 	T(dplaySlot3_join, 0, 200, 0), T(dplay_coInit, 0, 200, 0), T(lobby_close, 0, 200, 0), T(room_mapListKeys, 0, 200, 0),
 	T(room_stopArenaSetup, 0, 200, 0), T(room_openClicks, 0, 200, 0), T(chat_closeEdit, 0, 200, 0), T(lobby_keysQuit, 0, 200, 0),
 	T(setup_topPageKeys, 0, 200, 0), T(setup_graphicTabKeys, 0, 200, 0), T(lobbyTop_keys, 0, 200, 0), T(setup_drawTopPage, 0, 200, 0),
-	T(lobby_topPageClicks, 0, 200, 0), T(lobby_pageClicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(room_433d30, 0, 200, 0),
+	T(lobby_topPageClicks, 0, 200, 0), T(lobby_pageClicks, 0, 200, 0), T(lobbyPlayer_keys, 0, 200, 0), T(account_endTyping, 0, 200, 0),
 	T(profile_nameEntryStep, 0, 200, 0), T(mapSelect_mouse, 0, 200, 0),
 	/* batch 174 */
-	T(game_returnToMenus_41ec50, 0, 200, 0), T(game_returnToMenus_41e8b0, 0, 200, 0), T(game_returnToMenus_41e9d0, 0, 200, 0), T(game_returnToMenus_41eb00, 0, 200, 0),
+	T(game_returnToScreen500, 0, 200, 0), T(game_returnToMainMenu, 0, 200, 0), T(game_returnToScreen400, 0, 200, 0), T(game_returnToGameRoom, 0, 200, 0),
 	T(mapList_mouse, 0, 1000, 0), T(menuState900_enterSkirmish, 0, 200, 0), T(login_send, 0, 200, 0),
 	T(menuState500_enter, 0, 200, 0), T(msg_playerConnected, 0, 200, 0), T(msg_chatLine, 0, 300, 0), T(music_playMatch, 0, 300, 0),
 	T(dplay_closeSession, 0, 100, 0),
@@ -17558,7 +17558,7 @@ static const STest g_stests[] = {
 	T(profileList_keys, 0, 400, 0), T(profile_messageKeys, 0, 400, 0), T(profile_deleteKeys, 0, 400, 0), T(profile_secondDialogKeys, 0, 400, 0),
 	T(profile_emblemKeys, 0, 400, 0), T(profile_screenKeys, 0, 400, 0), T(menu_processKeys, 0, 400, 0),
 	/* batch 202 */
-	T(app_frame, 0, 400, 0), T(main_462050, 1, 400, 0),
+	T(app_frame, 0, 400, 0), T(match_frameByState, 1, 400, 0),
 	/* batch 203 */
 	T(game_WinMain, 1, 400, 0),
 	/* batch 204 */
@@ -17593,7 +17593,7 @@ static const struct { DWORD addr, base, limit; int (__cdecl *fn)(int, int); cons
 
 /* harness self-check: a deliberately wrong rebuild (one extra scratch write far from the inputs, one off-by-one
    in .data) must be caught in fast and full mode; otherwise every result of this run is meaningless */
-static THISCALL void wrong_match_463530(char *self, int a) { match_463530(self, a); S32(self, 0x1000000) = 1; }
+static THISCALL void wrong_match_463530(char *self, int a) { notice_raise2(self, a); S32(self, 0x1000000) = 1; }
 static void wrong_menu_clearInputBuffer(int mode) { menu_clearInputBuffer(mode + 1); }
 ST(selfcheck_scratch, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (wrong_match_463530(BUF, g_a[0]), 0))
 ST(selfcheck_data, g_a[0] = irnd(-5, 5);, (CD(void, 0x431560, int)(g_a[0]), 0), (wrong_menu_clearInputBuffer(g_a[0]), 0))
@@ -17785,7 +17785,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x454110, (void *)net_findFreeSession, "net_findFreeSession" }, { 0x463710, (void *)FUN_00463710, "FUN_00463710" },
 	{ 0x45dfb0, (void *)stage_selectActor, "stage_selectActor" }, { 0x474390, (void *)playerRecord_markUsed, "playerRecord_markUsed" },
 	{ 0x469980, (void *)Skeleton_clear, "Skeleton_clear" }, { 0x46f480, (void *)partList_clear, "partList_clear" },
-	{ 0x480440, (void *)load_480440, "load_480440" }, { 0x40d990, (void *)armc_40d990, "armc_40d990" },
+	{ 0x480440, (void *)spaceSlot_clear, "spaceSlot_clear" }, { 0x40d990, (void *)armc_resetSeraphimParts, "armc_resetSeraphimParts" },
 	{ 0x40ddb0, (void *)mech_unpackFromRecord, "mech_unpackFromRecord" }, { 0x40e670, (void *)armc_restoreMenuCamera, "armc_restoreMenuCamera" },
 	{ 0x40e6c0, (void *)armc_loadSavedMech, "armc_loadSavedMech" }, { 0x40ed20, (void *)armc_syncPartCursors, "armc_syncPartCursors" },
 	{ 0x40f590, (void *)armc_backupColours, "armc_backupColours" }, { 0x41ced0, (void *)armc_restoreColourUndo, "armc_restoreColourUndo" },
@@ -17795,7 +17795,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x430390, (void *)mech_setEmpty, "mech_setEmpty" }, { 0x42f8e0, (void *)menu_initKeyRepeat, "menu_initKeyRepeat" },
 	{ 0x430bd0, (void *)net_clearSlots, "net_clearSlots" }, { 0x431560, (void *)menu_clearInputBuffer, "menu_clearInputBuffer" },
 	{ 0x4315c0, (void *)chat_pushHistory, "chat_pushHistory" }, { 0x4065a0, (void *)record_swap, "record_swap" },
-	{ 0x4050f0, (void *)cfg_defaultPlayerName, "cfg_defaultPlayerName" }, { 0x404930, (void *)lobby_404930, "lobby_404930" },
+	{ 0x4050f0, (void *)cfg_defaultPlayerName, "cfg_defaultPlayerName" }, { 0x404930, (void *)arena_copyProfile, "arena_copyProfile" },
 	{ 0x41ee40, (void *)menu_showMessage, "menu_showMessage" }, { 0x433700, (void *)room_loadSettingsRecord, "room_loadSettingsRecord" },
 	/* batch 4 */
 	{ 0x445f10, (void *)crypt_record104, "crypt_record104" }, { 0x445f40, (void *)crypt_record80, "crypt_record80" },
@@ -17814,22 +17814,22 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4554c0, (void *)tex_findByName, "tex_findByName" }, { 0x4045e0, (void *)arena_clearChatRecord, "arena_clearChatRecord" },
 	/* batch 5 */
 	{ 0x456820, (void *)tex_markMaterialChanged, "tex_markMaterialChanged" }, { 0x456860, (void *)tex_recolourMaterial, "tex_recolourMaterial" },
-	{ 0x456b50, (void *)hud_456b50, "hud_456b50" }, { 0x45dca0, (void *)actor_deactivate, "actor_deactivate" },
+	{ 0x456b50, (void *)tex_clearSetCounters, "tex_clearSetCounters" }, { 0x45dca0, (void *)actor_deactivate, "actor_deactivate" },
 	{ 0x45dff0, (void *)camera_setTarget, "camera_setTarget" }, { 0x45e070, (void *)stage_clearActorSlots, "stage_clearActorSlots" },
 	{ 0x45e810, (void *)actor_setWeaponSlot, "actor_setWeaponSlot" }, { 0x45e880, (void *)actor_selectWeapon, "actor_selectWeapon" },
 	{ 0x45eab0, (void *)actor_clearInput, "actor_clearInput" }, { 0x45eb20, (void *)actor_setInput, "actor_setInput" },
 	{ 0x4616e0, (void *)scene_saveNames, "scene_saveNames" }, { 0x461730, (void *)scene_restoreNames, "scene_restoreNames" },
 	{ 0x4625a0, (void *)scene_followedActor, "scene_followedActor" }, { 0x462650, (void *)chat_matchCheatCode, "chat_matchCheatCode" },
 	{ 0x4629c0, (void *)events_clear, "events_clear" }, { 0x462ac0, (void *)events_age, "events_age" },
-	{ 0x463480, (void *)notices_clearAll, "notices_clearAll" }, { 0x4634e0, (void *)match_4634e0, "match_4634e0" },
-	{ 0x463530, (void *)match_463530, "match_463530" }, { 0x463550, (void *)match_463550, "match_463550" },
-	{ 0x4635b0, (void *)match_4635b0, "match_4635b0" }, { 0x463610, (void *)match_463610, "match_463610" },
+	{ 0x463480, (void *)notices_clearAll, "notices_clearAll" }, { 0x4634e0, (void *)notice_raise1, "notice_raise1" },
+	{ 0x463530, (void *)notice_raise2, "notice_raise2" }, { 0x463550, (void *)notice_raise3, "notice_raise3" },
+	{ 0x4635b0, (void *)notice_raise4, "notice_raise4" }, { 0x463610, (void *)notice_raise5, "notice_raise5" },
 	/* batch 6 */
 	{ 0x452e60, (void *)net_clearServerList, "net_clearServerList" }, { 0x452e80, (void *)net_clearRoomList, "net_clearRoomList" },
 	{ 0x452ea0, (void *)net_clearPlayerList, "net_clearPlayerList" }, { 0x431590, (void *)input_resetKeys, "input_resetKeys" },
 	{ 0x401780, (void *)input_clearKeyTable2, "input_clearKeyTable2" }, { 0x4515d0, (void *)net_clearBuffers, "net_clearBuffers" },
 	{ 0x440df0, (void *)mapSelect_allOut, "mapSelect_allOut" }, { 0x40f200, (void *)armc_showPartsPage, "armc_showPartsPage" },
-	{ 0x40f320, (void *)armc_showColourPage, "armc_showColourPage" }, { 0x46f090, (void *)set_a61708_46f090, "set_a61708_46f090" },
+	{ 0x40f320, (void *)armc_showColourPage, "armc_showColourPage" }, { 0x46f090, (void *)ptx_startBitReader, "ptx_startBitReader" },
 	{ 0x445e10, (void *)messageBox_clickClose, "messageBox_clickClose" }, { 0x433610, (void *)room_selectJoinedSession, "room_selectJoinedSession" },
 	{ 0x46dbf0, (void *)colour_initPackedBlue, "colour_initPackedBlue" }, { 0x46db30, (void *)colour_initPackedGrey, "colour_initPackedGrey" },
 	{ 0x46dc20, (void *)colour_initPackedYellow, "colour_initPackedYellow" }, { 0x46dad0, (void *)colour_initPackedClear, "colour_initPackedClear" },
@@ -17844,10 +17844,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4678c0, (void *)vec_initRest, "vec_initRest" }, { 0x467920, (void *)vec_initAxisX, "vec_initAxisX" },
 	{ 0x45df90, (void *)stage_clearActorRefs, "stage_clearActorRefs" }, { 0x463670, (void *)event_raise3, "event_raise3" },
 	{ 0x463690, (void *)event_raise4, "event_raise4" }, { 0x4636b0, (void *)event_raise5, "event_raise5" },
-	{ 0x4841d0, (void *)this_set_4841d0, "this_set_4841d0" }, { 0x479a60, (void *)stage_clearProjectiles, "stage_clearProjectiles" },
+	{ 0x4841d0, (void *)ViewVolume_clearDrawCounts, "ViewVolume_clearDrawCounts" }, { 0x479a60, (void *)stage_clearProjectiles, "stage_clearProjectiles" },
 	{ 0x47cfd0, (void *)stage_clearBullets, "stage_clearBullets" }, { 0x490d10, (void *)stage_clearMapObjects, "stage_clearMapObjects" },
-	{ 0x4722e0, (void *)view_setDistance, "view_setDistance" }, { 0x480210, (void *)this_set_480210, "this_set_480210" },
-	{ 0x480230, (void *)collision_480230, "collision_480230" }, { 0x481730, (void *)space_freeNode, "space_freeNode" },
+	{ 0x4722e0, (void *)view_setDistance, "view_setDistance" }, { 0x480210, (void *)ints_set3, "ints_set3" },
+	{ 0x480230, (void *)vec3_negate, "vec3_negate" }, { 0x481730, (void *)space_freeNode, "space_freeNode" },
 	{ 0x481980, (void *)space_freeBlock, "space_freeBlock" }, { 0x480460, (void *)space_disableUnit, "space_disableUnit" },
 	{ 0x480480, (void *)space_enableUnit, "space_enableUnit" }, { 0x44ac50, (void *)str_length, "str_length" },
 	{ 0x46cba0, (void *)array_indexOf, "array_indexOf" }, { 0x46cb60, (void *)path_normalize, "path_normalize" },
@@ -17857,7 +17857,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x431aa0, (void *)leaveDialog_layout, "leaveDialog_layout" }, { 0x44b0b0, (void *)deleteDialog_layout, "deleteDialog_layout" },
 	{ 0x44b100, (void *)secondDialog_layout, "secondDialog_layout" }, { 0x44b150, (void *)profileList_layout, "profileList_layout" },
 	{ 0x44b030, (void *)newNameDialog_layout, "newNameDialog_layout" }, { 0x431c00, (void *)popup_layout, "popup_layout" },
-	{ 0x403f30, (void *)arena_403f30, "arena_403f30" }, { 0x44ad30, (void *)text_setColor, "text_setColor" },
+	{ 0x403f30, (void *)lobbyTop_layout, "lobbyTop_layout" }, { 0x44ad30, (void *)text_setColor, "text_setColor" },
 	{ 0x410160, (void *)armc_rightClickLeave, "armc_rightClickLeave" }, { 0x44b7a0, (void *)profile_resetPreview, "profile_resetPreview" },
 	{ 0x44b750, (void *)profile_resetSelection, "profile_resetSelection" }, { 0x44bc00, (void *)profile_resetCamera, "profile_resetCamera" },
 	{ 0x420b40, (void *)setup_selectGraphicTab, "setup_selectGraphicTab" }, { 0x403490, (void *)mapList_startEdit, "mapList_startEdit" },
@@ -17869,33 +17869,33 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x45e1c0, (void *)stage_deactivateActors, "stage_deactivateActors" }, { 0x4636d0, (void *)teams_setup, "teams_setup" },
 	{ 0x49ca20, (void *)escMenu_open, "escMenu_open" }, { 0x490ee0, (void *)object_activate, "object_activate" },
 	{ 0x490f30, (void *)object_deactivate, "object_deactivate" }, { 0x473470, (void *)playerRecord_resetColourGrid, "playerRecord_resetColourGrid" },
-	{ 0x48fc40, (void *)script_pushEvent, "script_pushEvent" }, { 0x466560, (void *)shape_466560, "shape_466560" },
-	{ 0x4803c0, (void *)collision_4803c0, "collision_4803c0" }, { 0x467700, (void *)hud_467700, "hud_467700" },
+	{ 0x48fc40, (void *)script_pushEvent, "script_pushEvent" }, { 0x466560, (void *)shape_markMaterialsChanged, "shape_markMaterialsChanged" },
+	{ 0x4803c0, (void *)vec3_scaleCopy, "vec3_scaleCopy" }, { 0x467700, (void *)vec_rotate, "vec_rotate" },
 	{ 0x482a40, (void *)space_transformPoint, "space_transformPoint" },
 	/* batch 8 */
 	{ 0x420480, (void *)setupOptions_layout, "setupOptions_layout" }, { 0x431b70, (void *)loginDialog_layout, "loginDialog_layout" },
 	{ 0x403f80, (void *)arenaNameDialog_layout, "arenaNameDialog_layout" }, { 0x431ae0, (void *)roomLogin_layout, "roomLogin_layout" },
-	{ 0x4437b0, (void *)skirmish_4437b0, "skirmish_4437b0" }, { 0x431c50, (void *)account_layout, "account_layout" },
-	{ 0x443840, (void *)skirmish_443840, "skirmish_443840" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
+	{ 0x4437b0, (void *)skirmish_layout, "skirmish_layout" }, { 0x431c50, (void *)account_layout, "account_layout" },
+	{ 0x443840, (void *)skirmishButtons_layout, "skirmishButtons_layout" }, { 0x420ad0, (void *)setup_selectSoundTab, "setup_selectSoundTab" },
 	{ 0x420ba0, (void *)setup_selectControlTab, "setup_selectControlTab" }, { 0x404ac0, (void *)lobby_setSubState0, "lobby_setSubState0" },
 	{ 0x433980, (void *)room_openDialog58, "room_openDialog58" }, { 0x433590, (void *)room_start, "room_start" },
 	{ 0x434640, (void *)room_openDialog42, "room_openDialog42" }, { 0x4509e0, (void *)net_resetState, "net_resetState" },
 	{ 0x443570, (void *)skirmish_clearPlayerRows, "skirmish_clearPlayerRows" }, { 0x4068d0, (void *)arena_stepMap, "arena_stepMap" },
-	{ 0x4356f0, (void *)room_stepMap, "room_stepMap" }, { 0x451530, (void *)net_451530, "net_451530" },
+	{ 0x4356f0, (void *)room_stepMap, "room_stepMap" }, { 0x451530, (void *)net_freeSlotsOf, "net_freeSlotsOf" },
 	{ 0x46f230, (void *)ptx_readBits, "ptx_readBits" }, { 0x45edb0, (void *)actor_pickRandomWeapon, "actor_pickRandomWeapon" },
 	{ 0x41eea0, (void *)menu_pointInPolygon, "menu_pointInPolygon" }, { 0x466ce0, (void *)shape_findByName, "shape_findByName" },
-	{ 0x46b0c0, (void *)skelDat_46b0c0, "skelDat_46b0c0" }, { 0x46cad0, (void *)path_stripExtension, "path_stripExtension" },
+	{ 0x46b0c0, (void *)skelDat_findByName, "skelDat_findByName" }, { 0x46cad0, (void *)path_stripExtension, "path_stripExtension" },
 	{ 0x402590, (void *)text_printableLength, "text_printableLength" }, { 0x47d5a0, (void *)Mat4_copy, "Mat4_copy" },
-	{ 0x47d830, (void *)skel_47d830, "skel_47d830" }, { 0x4743b0, (void *)playerRecord_markFree, "playerRecord_markFree" },
-	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)FUN_00473a10, "FUN_00473a10" },
+	{ 0x47d830, (void *)Mat4_transpose, "Mat4_transpose" }, { 0x4743b0, (void *)playerRecord_markFree, "playerRecord_markFree" },
+	{ 0x461ec0, (void *)scene_setTextureFolder, "scene_setTextureFolder" }, { 0x473a10, (void *)player_setValue, "player_setValue" },
 	{ 0x473a80, (void *)player_setTeam, "player_setTeam" }, { 0x4799f0, (void *)stage_freeProjectile, "stage_freeProjectile" },
-	{ 0x4675f0, (void *)shape_4675f0, "shape_4675f0" }, { 0x4665c0, (void *)shape_4665c0, "shape_4665c0" },
+	{ 0x4675f0, (void *)model_clearTint, "model_clearTint" }, { 0x4665c0, (void *)shape_recolourMaterials, "shape_recolourMaterials" },
 	{ 0x484260, (void *)ViewVolume_reset, "ViewVolume_reset" }, { 0x481760, (void *)space_resetUnits, "space_resetUnits" },
 	/* batch 9 */
-	{ 0x461370, (void *)mech_setValue, "mech_setValue" }, { 0x4613a0, (void *)match_4613a0, "match_4613a0" },
+	{ 0x461370, (void *)mech_setValue, "mech_setValue" }, { 0x4613a0, (void *)scene_setLocalTeam, "scene_setLocalTeam" },
 	{ 0x4017d0, (void *)hangul_glyphs, "hangul_glyphs" }, { 0x46f190, (void *)ptx_readDcDiff, "ptx_readDcDiff" },
 	{ 0x46f2a0, (void *)ptx_readAcSymbol, "ptx_readAcSymbol" }, { 0x46e830, (void *)ptx_toRgb, "ptx_toRgb" },
-	{ 0x46efd0, (void *)ptx_initTable_46efd0, "ptx_initTable_46efd0" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
+	{ 0x46efd0, (void *)ptx_initYCbCrTables, "ptx_initYCbCrTables" }, { 0x46ea30, (void *)ptx_layoutBlocks, "ptx_layoutBlocks" },
 	{ 0x440bb0, (void *)menuState300_enter, "menuState300_enter" }, { 0x40e510, (void *)armc_initCameraPoints, "armc_initCameraPoints" },
 	{ 0x40dfa0, (void *)armc_initPartBoxes, "armc_initPartBoxes" }, { 0x4338c0, (void *)room_openDialog4d, "room_openDialog4d" },
 	{ 0x433800, (void *)room_enterRoomList, "room_enterRoomList" }, { 0x447660, (void *)missionsel_layout, "missionsel_layout" },
@@ -17909,7 +17909,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x404b30, (void *)lobby_setSubState1, "lobby_setSubState1" }, { 0x432620, (void *)lobby_ladderGameName, "lobby_ladderGameName" },
 	{ 0x40de80, (void *)armc_initCameraBox, "armc_initCameraBox" }, { 0x430ab0, (void *)menu_initColours, "menu_initColours" },
 	{ 0x44b870, (void *)profile_nameExists, "profile_nameExists" }, { 0x46e8e0, (void *)ptx_toRgba, "ptx_toRgba" },
-	{ 0x46f0b0, (void *)ptx_readBlock, "ptx_readBlock" }, { 0x463a40, (void *)ResourceSet_init_463a40, "ResourceSet_init_463a40" },
+	{ 0x46f0b0, (void *)ptx_readBlock, "ptx_readBlock" }, { 0x463a40, (void *)ResourceSet_initLists, "ResourceSet_initLists" },
 	{ 0x467580, (void *)shape_setTextureDir, "shape_setTextureDir" }, { 0x464a70, (void *)image_addColour, "image_addColour" },
 	{ 0x48fe10, (void *)stage_resetMatrixAndPoints, "stage_resetMatrixAndPoints" }, { 0x473940, (void *)player_setName, "player_setName" },
 	{ 0x470a70, (void *)scene_resetActors, "scene_resetActors" },
@@ -17922,15 +17922,15 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x461320, (void *)mech_setName, "mech_setName" }, { 0x466960, (void *)shape_colourPixels, "shape_colourPixels" },
 	{ 0x461f10, (void *)match_resetInputState, "match_resetInputState" }, { 0x470cb0, (void *)stage_newRound, "stage_newRound" },
 	/* batch 12 */
-	{ 0x46dc50, (void *)color_initDefaultColours, "color_initDefaultColours" }, { 0x42f500, (void *)intro_42f500, "intro_42f500" },
-	{ 0x431680, (void *)input_initVkTable, "input_initVkTable" }, { 0x46d4d0, (void *)replay_46d4d0, "replay_46d4d0" },
-	{ 0x42f2b0, (void *)intro_42f2b0, "intro_42f2b0" }, { 0x42f690, (void *)intro_42f690, "intro_42f690" },
+	{ 0x46dc50, (void *)color_initDefaultColours, "color_initDefaultColours" }, { 0x42f500, (void *)menu_initKeyRepeatDefaults, "menu_initKeyRepeatDefaults" },
+	{ 0x431680, (void *)input_initVkTable, "input_initVkTable" }, { 0x46d4d0, (void *)color_initTextColours, "color_initTextColours" },
+	{ 0x42f2b0, (void *)menu_initMainButtons, "menu_initMainButtons" }, { 0x42f690, (void *)room_initMenuButtons, "room_initMenuButtons" },
 	{ 0x42fd40, (void *)input_setDefaultKeyBindings, "input_setDefaultKeyBindings" },
 	/* batch 12 */
 	{ 0x433790, (void *)room_enterGameList, "room_enterGameList" }, { 0x404c20, (void *)lobby_setSubState2, "lobby_setSubState2" },
 	{ 0x433360, (void *)menuCamera_initPoints, "menuCamera_initPoints" },
 	/* batch 13 */
-	{ 0x432be0, (void *)room_copyJoinedSettings, "room_copyJoinedSettings" }, { 0x434ff0, (void *)room_434ff0, "room_434ff0" },
+	{ 0x432be0, (void *)room_copyJoinedSettings, "room_copyJoinedSettings" }, { 0x434ff0, (void *)room_mergeReceivedSessions, "room_mergeReceivedSessions" },
 	/* batch 14 */
 	{ 0x42aa30, (void *)menuCamera_forward, "menuCamera_forward" }, { 0x42aad0, (void *)menuCamera_back, "menuCamera_back" },
 	{ 0x44bc50, (void *)profile_loadSelectedColours, "profile_loadSelectedColours" }, { 0x44bd20, (void *)profile_loadCursorColours, "profile_loadCursorColours" },
@@ -17938,33 +17938,33 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 15 */
 	{ 0x490f80, (void *)render_depthSortA, "render_depthSortA" }, { 0x491190, (void *)render_depthSortB, "render_depthSortB" },
 	/* batch 16 */
-	{ 0x42c410, (void *)input_applyKeyBindings, "input_applyKeyBindings" }, { 0x420c10, (void *)setup_controlTabHelper_420c10, "setup_controlTabHelper_420c10" },
+	{ 0x42c410, (void *)input_applyKeyBindings, "input_applyKeyBindings" }, { 0x420c10, (void *)setup_keepKeyBindings, "setup_keepKeyBindings" },
 	{ 0x47d0b0, (void *)quat_fromAxisAngle, "quat_fromAxisAngle" }, { 0x4277c0, (void *)setup_easePanel, "setup_easePanel" },
 	{ 0x46e2b0, (void *)ptx_initDequantTables, "ptx_initDequantTables" }, { 0x4679a0, (void *)math_triangleNormal, "math_triangleNormal" },
-	{ 0x41e390, (void *)console_41e390, "console_41e390" },
+	{ 0x41e390, (void *)room_fitWindowRects, "room_fitWindowRects" },
 	/* batch 17 */
-	{ 0x406640, (void *)arena_406640, "arena_406640" }, { 0x46ea00, (void *)ptx_initTables, "ptx_initTables" },
-	{ 0x454e60, (void *)tex_454e60, "tex_454e60" }, { 0x470de0, (void *)object_setNames, "object_setNames" },
+	{ 0x406640, (void *)arena_mergeReceivedSessions, "arena_mergeReceivedSessions" }, { 0x46ea00, (void *)ptx_initTables, "ptx_initTables" },
+	{ 0x454e60, (void *)texRecord_init, "texRecord_init" }, { 0x470de0, (void *)object_setNames, "object_setNames" },
 	{ 0x431de0, (void *)roomSettings_layout, "roomSettings_layout" }, { 0x497a90, (void *)stage_buildMeshDrawRecords, "stage_buildMeshDrawRecords" },
 	/* batch 18 */
 	{ 0x404190, (void *)arenaOptions_layout, "arenaOptions_layout" }, { 0x420770, (void *)menuState600_enterSetup, "menuState600_enterSetup" },
 	{ 0x432ff0, (void *)menuState800_enterGameRoom, "menuState800_enterGameRoom" },
 	/* batch 19 */
 	{ 0x41ca50, (void *)armc_weaponSlotRecord, "armc_weaponSlotRecord" }, { 0x41cca0, (void *)armc_viewedPartRecord, "armc_viewedPartRecord" },
-	{ 0x42f940, (void *)app_42f940, "app_42f940" }, { 0x42fb40, (void *)hud_42fb40, "hud_42fb40" },
+	{ 0x42f940, (void *)font_initMenuGrids, "font_initMenuGrids" }, { 0x42fb40, (void *)font_initHudGrids, "font_initHudGrids" },
 	/* batch 20 */
 	{ 0x404640, (void *)menuState400_enter, "menuState400_enter" }, { 0x432db0, (void *)room_takeReceivedSettings, "room_takeReceivedSettings" },
 	{ 0x421350, (void *)setup_drawKeyBindingRow, "setup_drawKeyBindingRow" },
 	/* batch 21 */
-	{ 0x420e50, (void *)setup_unbindKey, "setup_unbindKey" }, { 0x46e380, (void *)ptx_decodeBlock_46e380, "ptx_decodeBlock_46e380" },
+	{ 0x420e50, (void *)setup_unbindKey, "setup_unbindKey" }, { 0x46e380, (void *)ptx_inverseDct, "ptx_inverseDct" },
 	/* batch 22 */
-	{ 0x47d8a0, (void *)Mat4_fromQuat, "Mat4_fromQuat" }, { 0x47d0f0, (void *)skel_ase_47d0f0, "skel_ase_47d0f0" },
-	{ 0x47fb80, (void *)space_tracePlanes_47fb80, "space_tracePlanes_47fb80" }, { 0x46def0, (void *)tex_46def0, "tex_46def0" },
+	{ 0x47d8a0, (void *)Mat4_fromQuat, "Mat4_fromQuat" }, { 0x47d0f0, (void *)quat_fromMatrix, "quat_fromMatrix" },
+	{ 0x47fb80, (void *)collisionTri_traceSegment, "collisionTri_traceSegment" }, { 0x46def0, (void *)tex_rgbToHsv, "tex_rgbToHsv" },
 	/* batch 23 */
 	{ 0x4666d0, (void *)shape_relocate, "shape_relocate" }, { 0x4230e0, (void *)setup_camera, "setup_camera" },
 	{ 0x42ab70, (void *)armc_mouseLook, "armc_mouseLook" },
 	/* batch 24 */
-	{ 0x440e20, (void *)intro_cameraPath, "intro_cameraPath" }, { 0x485120, (void *)ViewVolume_add_485120, "ViewVolume_add_485120" },
+	{ 0x440e20, (void *)intro_cameraPath, "intro_cameraPath" }, { 0x485120, (void *)ViewVolume_addSegment, "ViewVolume_addSegment" },
 	/* batch 25 */
 	{ 0x47d9a0, (void *)Mat4_fromAxisAngle, "Mat4_fromAxisAngle" }, { 0x46d950, (void *)tex_tintHsv, "tex_tintHsv" },
 	{ 0x4848e0, (void *)viewVolume_addQuad, "viewVolume_addQuad" },
@@ -17979,24 +17979,24 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x47d060, (void *)stage_drawBullets, "stage_drawBullets" },
 	/* batch 30 */
 	{ 0x4017b0, (void *)text_setWrapX, "text_setWrapX" }, { 0x4017c0, (void *)text_setBottom, "text_setBottom" },
-	{ 0x441250, (void *)input_setKeysBlocked, "input_setKeysBlocked" }, { 0x457140, (void *)set_4b42dc_457140, "set_4b42dc_457140" },
+	{ 0x441250, (void *)input_setKeysBlocked, "input_setKeysBlocked" }, { 0x457140, (void *)music_setVolumeSetting, "music_setVolumeSetting" },
 	{ 0x4686e0, (void *)view_setAngle, "view_setAngle" }, { 0x42b130, (void *)static_initTex64x64, "static_initTex64x64" },
 	{ 0x42b1a0, (void *)static_initTex128x64, "static_initTex128x64" }, { 0x42b1f0, (void *)static_initTex256x64, "static_initTex256x64" },
 	{ 0x42b240, (void *)static_initTex128x128, "static_initTex128x128" }, { 0x42b290, (void *)static_initTex256x128, "static_initTex256x128" },
 	{ 0x42b2e0, (void *)static_initTex256x256, "static_initTex256x256" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
-	{ 0x4686d0, (void *)view_angle, "view_angle" }, { 0x4686f0, (void *)match_4686f0, "match_4686f0" },
-	{ 0x468700, (void *)FUN_00468700, "FUN_00468700" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
+	{ 0x4686d0, (void *)view_angle, "view_angle" }, { 0x4686f0, (void *)view_nearPlane, "view_nearPlane" },
+	{ 0x468700, (void *)view_farPlane, "view_farPlane" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
 	{ 0x464bb0, (void *)Model_clear, "Model_clear" }, { 0x466a20, (void *)ShapeManager_clear, "ShapeManager_clear" },
-	{ 0x46ae70, (void *)SkeletonManager_clear, "SkeletonManager_clear" }, { 0x47db50, (void *)load_47db50, "load_47db50" },
-	{ 0x4804a0, (void *)load_4804a0, "load_4804a0" }, { 0x4813a0, (void *)CollisionVolume_clear, "CollisionVolume_clear" },
-	{ 0x483fc0, (void *)load_483fc0, "load_483fc0" }, { 0x487480, (void *)TimeSync_clear, "TimeSync_clear" },
-	{ 0x480430, (void *)load_480430, "load_480430" }, { 0x483d60, (void *)this_set_483d60, "this_set_483d60" },
+	{ 0x46ae70, (void *)SkeletonManager_clear, "SkeletonManager_clear" }, { 0x47db50, (void *)collisionPlane_clear, "collisionPlane_clear" },
+	{ 0x4804a0, (void *)spaceBlock_clear, "spaceBlock_clear" }, { 0x4813a0, (void *)CollisionVolume_clear, "CollisionVolume_clear" },
+	{ 0x483fc0, (void *)ViewVolume_clear, "ViewVolume_clear" }, { 0x487480, (void *)TimeSync_clear, "TimeSync_clear" },
+	{ 0x480430, (void *)spaceNode_clear, "spaceNode_clear" }, { 0x483d60, (void *)Light_clearCounts, "Light_clearCounts" },
 	{ 0x48fc30, (void *)stage_clearMapItemCounts, "stage_clearMapItemCounts" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
-	{ 0x45dfe0, (void *)stage_setValue202e8dc, "stage_setValue202e8dc" }, { 0x463780, (void *)this_get_0x2342381_463780, "this_get_0x2342381_463780" },
-	{ 0x45fff0, (void *)match_45fff0, "match_45fff0" }, { 0x48b440, (void *)match_48b440, "match_48b440" },
-	{ 0x48b430, (void *)match_48b430, "match_48b430" }, { 0x48b450, (void *)hud_48b450, "hud_48b450" },
+	{ 0x45dfe0, (void *)stage_setValue202e8dc, "stage_setValue202e8dc" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
+	{ 0x45fff0, (void *)ResourceSet_trivialCtor, "ResourceSet_trivialCtor" }, { 0x48b440, (void *)recorder_setPathStub, "recorder_setPathStub" },
+	{ 0x48b430, (void *)recorder_openStub, "recorder_openStub" }, { 0x48b450, (void *)recorder_noteStub, "recorder_noteStub" },
 	{ 0x483ce0, (void *)stage_triggerActionNone, "stage_triggerActionNone" }, { 0x46b860, (void *)static_emptyCtorSkelData1, "static_emptyCtorSkelData1" },
 	{ 0x46b880, (void *)static_emptyCtorSkelData2, "static_emptyCtorSkelData2" }, { 0x46b8a0, (void *)static_emptyCtorSkelData3, "static_emptyCtorSkelData3" },
 	{ 0x46b8c0, (void *)static_emptyCtorSkelData4, "static_emptyCtorSkelData4" }, { 0x46b8e0, (void *)static_emptyCtorSkelData5, "static_emptyCtorSkelData5" },
@@ -18029,7 +18029,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x462cf0, (void *)Model_ctor, "Model_ctor" }, { 0x463790, (void *)CollisionVolume_ctor, "CollisionVolume_ctor" },
 	{ 0x4637f0, (void *)Scene_ctor, "Scene_ctor" }, { 0x487430, (void *)TimeSync_ctor, "TimeSync_ctor" },
 	{ 0x483d50, (void *)Light_dtor, "Light_dtor" }, { 0x4723e0, (void *)stage_resetLights, "stage_resetLights" },
-	{ 0x463850, (void *)ResourceSet_ctor_463850, "ResourceSet_ctor_463850" }, { 0x481520, (void *)space_resetPlanes, "space_resetPlanes" },
+	{ 0x463850, (void *)ResourceSet_ctor, "ResourceSet_ctor" }, { 0x481520, (void *)space_resetPlanes, "space_resetPlanes" },
 	{ 0x481630, (void *)space_resetNodes, "space_resetNodes" }, { 0x481860, (void *)space_resetBlocks, "space_resetBlocks" },
 	{ 0x48fca0, (void *)script_reset, "script_reset" }, { 0x48fde0, (void *)script_notifyObject, "script_notifyObject" },
 	{ 0x40cef0, (void *)lobbyTop_draw, "lobbyTop_draw" }, { 0x43e720, (void *)room_slideMenu, "room_slideMenu" },
@@ -18038,7 +18038,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x456990, (void *)TextureManager_dtor, "TextureManager_dtor" }, { 0x468720, (void *)static_initTimeSync, "static_initTimeSync" },
 	{ 0x48fce0, (void *)script_runScpFile, "script_runScpFile" }, { 0x47db60, (void *)collisionTri_setup, "collisionTri_setup" },
 	/* batch 33 */
-	{ 0x42b380, (void *)static_endTextureManager, "static_endTextureManager" }, { 0x41c510, (void *)armc_41c510, "armc_41c510" },
+	{ 0x42b380, (void *)static_endTextureManager, "static_endTextureManager" }, { 0x41c510, (void *)armc_readMechStats, "armc_readMechStats" },
 	/* batch 34 */
 	{ 0x41b750, (void *)armc_drawPartPanels, "armc_drawPartPanels" },
 	/* batch 35 */
@@ -18050,9 +18050,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 38 */
 	{ 0x4804b0, (void *)space_collideUnit, "space_collideUnit" },
 	/* batch 39 */
-	{ 0x473450, (void *)vsprintf_wrap_473450, "vsprintf_wrap_473450" }, { 0x463450, (void *)vsprintf_wrap_463450, "vsprintf_wrap_463450" },
-	{ 0x4629f0, (void *)msg_4629f0, "msg_4629f0" }, { 0x46f770, (void *)anim_setFrame, "anim_setFrame" },
-	{ 0x46de20, (void *)tex_46de20, "tex_46de20" }, { 0x4542a0, (void *)net_parseAddress, "net_parseAddress" },
+	{ 0x473450, (void *)stage_printText, "stage_printText" }, { 0x463450, (void *)notice_printCentre, "notice_printCentre" },
+	{ 0x4629f0, (void *)msg_print, "msg_print" }, { 0x46f770, (void *)anim_setFrame, "anim_setFrame" },
+	{ 0x46de20, (void *)tex_tintRgba, "tex_tintRgba" }, { 0x4542a0, (void *)net_parseAddress, "net_parseAddress" },
 	{ 0x454390, (void *)dplay_formatSessionEntry, "dplay_formatSessionEntry" },
 	/* batch 40 */
 	{ 0x482aa0, (void *)space_walkNodes_482aa0, "space_walkNodes_482aa0" }, { 0x4226b0, (void *)setup_drawControlSlider, "setup_drawControlSlider" },
@@ -18127,12 +18127,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b180, (void *)static_destroyTex64x64, "static_destroyTex64x64" }, { 0x42b1d0, (void *)static_destroyTex128x64, "static_destroyTex128x64" },
 	{ 0x42b220, (void *)static_destroyTex256x64, "static_destroyTex256x64" }, { 0x42b270, (void *)static_destroyTex128x128, "static_destroyTex128x128" },
 	{ 0x42b2c0, (void *)static_destroyTex256x128, "static_destroyTex256x128" }, { 0x42b310, (void *)static_destroyTex256x256, "static_destroyTex256x256" },
-	{ 0x456cd0, (void *)sound_freeAll, "sound_freeAll" }, { 0x48b460, (void *)load_48b460, "load_48b460" },
-	{ 0x483d70, (void *)load_483d70, "load_483d70" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
-	{ 0x463960, (void *)ResourceSet_dtor_463960, "ResourceSet_dtor_463960" }, { 0x46ff70, (void *)Stage_dtor, "Stage_dtor" },
+	{ 0x456cd0, (void *)sound_freeAll, "sound_freeAll" }, { 0x48b460, (void *)map_readMissionRecords, "map_readMissionRecords" },
+	{ 0x483d70, (void *)Light_read, "Light_read" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
+	{ 0x463960, (void *)ResourceSet_dtor, "ResourceSet_dtor" }, { 0x46ff70, (void *)Stage_dtor, "Stage_dtor" },
 	{ 0x4617f0, (void *)chat_saveMacros, "chat_saveMacros" }, { 0x462740, (void *)chat_macro, "chat_macro" },
 	/* batch 47 */
-	{ 0x43f580, (void *)GetCurrentDirectoryA_wrap_43f580, "GetCurrentDirectoryA_wrap_43f580" }, { 0x4685d0, (void *)gfx_swapBuffers, "gfx_swapBuffers" },
+	{ 0x43f580, (void *)app_readCurrentDirectory, "app_readCurrentDirectory" }, { 0x4685d0, (void *)gfx_swapBuffers, "gfx_swapBuffers" },
 	{ 0x4539f0, (void *)dplay_createLobby, "dplay_createLobby" }, { 0x454740, (void *)net_wakePingThread, "net_wakePingThread" },
 	{ 0x46c580, (void *)sys_messageBoxOverActive, "sys_messageBoxOverActive" }, { 0x41e7a0, (void *)app_closeWindow, "app_closeWindow" },
 	{ 0x41ef60, (void *)menu_vertex, "menu_vertex" }, { 0x46c540, (void *)mci_pause, "mci_pause" },
@@ -18140,7 +18140,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46e260, (void *)ptx_error, "ptx_error" }, { 0x46e1e0, (void *)ptx_crtlError, "ptx_crtlError" },
 	{ 0x41f880, (void *)reg_writeEndMode, "reg_writeEndMode" }, { 0x43f7f0, (void *)reg_writeStartMode, "reg_writeStartMode" },
 	{ 0x41f820, (void *)menu_frameBegin, "menu_frameBegin" }, { 0x43f840, (void *)app_registerWindowClassEx, "app_registerWindowClassEx" },
-	{ 0x452de0, (void *)net_addPlayerRecord, "net_addPlayerRecord" }, { 0x454d90, (void *)dplay_454d90, "dplay_454d90" },
+	{ 0x452de0, (void *)net_addPlayerRecord, "net_addPlayerRecord" }, { 0x454d90, (void *)text_findWord, "text_findWord" },
 	{ 0x42ef30, (void *)app_reportStartupProblem, "app_reportStartupProblem" }, { 0x42f000, (void *)gfx_setPixelFormat, "gfx_setPixelFormat" },
 	{ 0x440c60, (void *)autoplay_listFiles, "autoplay_listFiles" }, { 0x42b3e0, (void *)data_loadMessages, "data_loadMessages" },
 	{ 0x4474a0, (void *)profile_create, "profile_create" }, { 0x42ba40, (void *)data_loadSkirmishInfo, "data_loadSkirmishInfo" },
@@ -18157,19 +18157,19 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44b420, (void *)menuState210_enter, "menuState210_enter" }, { 0x4460d0, (void *)profile_scanSaves, "profile_scanSaves" },
 	{ 0x487cb0, (void *)autoplay_startRecording, "autoplay_startRecording" }, { 0x4532f0, (void *)dplay_enumConnections, "dplay_enumConnections" },
 	/* batch 49 */
-	{ 0x4547c0, (void *)inet_addr_wrap_4547c0, "inet_addr_wrap_4547c0" }, { 0x452170, (void *)net_asyncSelect, "net_asyncSelect" },
+	{ 0x4547c0, (void *)net_inetAddr, "net_inetAddr" }, { 0x452170, (void *)net_asyncSelect, "net_asyncSelect" },
 	{ 0x454220, (void *)net_getLocalAddress, "net_getLocalAddress" }, { 0x4520e0, (void *)net_closeSockets, "net_closeSockets" },
 	{ 0x4547d0, (void *)net_resolveHost, "net_resolveHost" }, { 0x48e990, (void *)net_sendColourRing, "net_sendColourRing" },
-	{ 0x48ead0, (void *)net_sendState_48ead0, "net_sendState_48ead0" }, { 0x48e0f0, (void *)net_sendPlayerInfo, "net_sendPlayerInfo" },
+	{ 0x48ead0, (void *)net_sendPlayerLevels, "net_sendPlayerLevels" }, { 0x48e0f0, (void *)net_sendPlayerInfo, "net_sendPlayerInfo" },
 	{ 0x48e680, (void *)net_sendMatchEvent, "net_sendMatchEvent" }, { 0x48e2c0, (void *)net_sendPlayerState, "net_sendPlayerState" },
 	/* batch 50 */
-	{ 0x47d260, (void *)skel_ase_47d260, "skel_ase_47d260" }, { 0x46f8c0, (void *)skel_poseBones, "skel_poseBones" },
+	{ 0x47d260, (void *)quat_toAxisAngle, "quat_toAxisAngle" }, { 0x46f8c0, (void *)skel_poseBones, "skel_poseBones" },
 	{ 0x4853c0, (void *)ViewVolume_projectObject, "ViewVolume_projectObject" },
 	/* batch 51 */
 	{ 0x41e550, (void *)app_checkFile_profkor, "app_checkFile_profkor" }, { 0x41e5b0, (void *)app_checkFile_skirmish, "app_checkFile_skirmish" },
 	{ 0x41e610, (void *)app_checkFile_axisgame, "app_checkFile_axisgame" }, { 0x41e670, (void *)app_checkFile_game, "app_checkFile_game" },
 	{ 0x41e6d0, (void *)app_checkFile_profeng, "app_checkFile_profeng" }, { 0x43f770, (void *)reg_readStartMode, "reg_readStartMode" },
-	{ 0x47d2f0, (void *)skel_ase_47d2f0, "skel_ase_47d2f0" }, { 0x47d320, (void *)skel_ase_47d320, "skel_ase_47d320" },
+	{ 0x47d2f0, (void *)axisAngle_fromMatrix, "axisAngle_fromMatrix" }, { 0x47d320, (void *)axisAngle_combine, "axisAngle_combine" },
 	{ 0x487c80, (void *)input_setCursorPos, "input_setCursorPos" }, { 0x487ba0, (void *)input_asyncKeyDown, "input_asyncKeyDown" },
 	{ 0x487c30, (void *)input_getCursorPos, "input_getCursorPos" }, { 0x4548b0, (void *)net_ping, "net_ping" },
 	{ 0x454650, (void *)net_pingServer, "net_pingServer" }, { 0x4545b0, (void *)net_pingAllServers, "net_pingAllServers" },
@@ -18188,7 +18188,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42da70, (void *)cfg_gameTypeNames, "cfg_gameTypeNames" }, { 0x48dbf0, (void *)net_sendGamePacket, "net_sendGamePacket" },
 	{ 0x421680, (void *)setup_drawKeyBindingRows, "setup_drawKeyBindingRows" },
 	/* batch 53 */
-	{ 0x4809f0, (void *)space_traceUnit_4809f0, "space_traceUnit_4809f0" }, { 0x483060, (void *)space_traceNodes, "space_traceNodes" },
+	{ 0x4809f0, (void *)space_traceUnit, "space_traceUnit" }, { 0x483060, (void *)space_traceNodes, "space_traceNodes" },
 	{ 0x471740, (void *)collision_rayTrace, "collision_rayTrace" },
 	/* batch 54 */
 	{ 0x42eca0, (void *)cfg_writeDefaultAxisCfg, "cfg_writeDefaultAxisCfg" }, { 0x460270, (void *)actor_checkLineOfSight, "actor_checkLineOfSight" },
@@ -18204,9 +18204,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x428030, (void *)text_quad8, "text_quad8" }, { 0x4280e0, (void *)text_quad16, "text_quad16" },
 	{ 0x428190, (void *)text_quad32, "text_quad32" }, { 0x428240, (void *)text_quad5, "text_quad5" },
 	{ 0x427ce0, (void *)glyph_drawHud13Layered, "glyph_drawHud13Layered" }, { 0x427ee0, (void *)glyph_drawHud31Layered, "glyph_drawHud31Layered" },
-	{ 0x4283e0, (void *)profile_drawButton, "profile_drawButton" }, { 0x4284d0, (void *)menu_drawTexQuad_4284d0, "menu_drawTexQuad_4284d0" },
-	{ 0x4282f0, (void *)menu_drawTexQuad_4282f0, "menu_drawTexQuad_4282f0" }, { 0x4285c0, (void *)menu_drawTexQuad_4285c0, "menu_drawTexQuad_4285c0" },
-	{ 0x4286b0, (void *)menu_drawTexQuad_4286b0, "menu_drawTexQuad_4286b0" }, { 0x4287a0, (void *)menu_drawTexQuad_4287a0, "menu_drawTexQuad_4287a0" },
+	{ 0x4283e0, (void *)profile_drawButton, "profile_drawButton" }, { 0x4284d0, (void *)menu_drawSmallButton1, "menu_drawSmallButton1" },
+	{ 0x4282f0, (void *)menu_drawWideButton, "menu_drawWideButton" }, { 0x4285c0, (void *)menu_drawSmallButton2, "menu_drawSmallButton2" },
+	{ 0x4286b0, (void *)menu_drawSmallButton3, "menu_drawSmallButton3" }, { 0x4287a0, (void *)menu_drawSmallButton4, "menu_drawSmallButton4" },
 	{ 0x46c840, (void *)sys_errorMessageNoName, "sys_errorMessageNoName" }, { 0x46c5f0, (void *)sys_errorMessage, "sys_errorMessage" },
 	{ 0x46c950, (void *)sys_errorTerminate, "sys_errorTerminate" }, { 0x46c710, (void *)sys_fatalError, "sys_fatalError" },
 	{ 0x4841f0, (void *)ViewVolume_captureMatrices, "ViewVolume_captureMatrices" }, { 0x483fd0, (void *)gfx_initVertexArrayExt, "gfx_initVertexArrayExt" },
@@ -18216,7 +18216,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x466d60, (void *)shape_findDatEntry, "shape_findDatEntry" }, { 0x46b140, (void *)skelDat_getItemFileBy, "skelDat_getItemFileBy" },
 	{ 0x43f8b0, (void *)app_deleteDataFiles, "app_deleteDataFiles" }, { 0x452af0, (void *)net_addServerRecord, "net_addServerRecord" },
 	{ 0x452c80, (void *)net_addRoomRecord, "net_addRoomRecord" }, { 0x46c340, (void *)math_makeMathFunctionTableFile, "math_makeMathFunctionTableFile" },
-	{ 0x46c270, (void *)math_initMathFunction, "math_initMathFunction" }, { 0x4684c0, (void *)glWindow_4684c0, "glWindow_4684c0" },
+	{ 0x46c270, (void *)math_initMathFunction, "math_initMathFunction" }, { 0x4684c0, (void *)gfx_resetState, "gfx_resetState" },
 	{ 0x42bde0, (void *)reg_readServerSettings, "reg_readServerSettings" }, { 0x403060, (void *)text_ascii5Pass, "text_ascii5Pass" },
 	{ 0x402010, (void *)text_ascii8Pass, "text_ascii8Pass" }, { 0x402210, (void *)text_ascii16Pass, "text_ascii16Pass" },
 	{ 0x402420, (void *)text_ascii32Pass, "text_ascii32Pass" }, { 0x401870, (void *)text_hanCho, "text_hanCho" },
@@ -18278,7 +18278,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 70 */
 	{ 0x463b80, (void *)shape_getShadingColorBufferBy, "shape_getShadingColorBufferBy" }, { 0x466910, (void *)shape_shadingColours, "shape_shadingColours" },
 	/* batch 71 */
-	{ 0x46f7a0, (void *)data_46f7a0, "data_46f7a0" }, { 0x46fd20, (void *)partList_queue, "partList_queue" },
+	{ 0x46f7a0, (void *)ObjectList_relight, "ObjectList_relight" }, { 0x46fd20, (void *)partList_queue, "partList_queue" },
 	/* batch 72 */
 	{ 0x45ee40, (void *)armc_computeTotals, "armc_computeTotals" },
 	/* batch 73 */
@@ -18328,8 +18328,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46fed0, (void *)partList_bindTextures, "partList_bindTextures" }, { 0x474210, (void *)playerRecord_set, "playerRecord_set" },
 	{ 0x4742f0, (void *)playerRecord_setFromActorRecord, "playerRecord_setFromActorRecord" },
 	/* batch 92 */
-	{ 0x427a90, (void *)menu_drawTexturedRect_427a90, "menu_drawTexturedRect_427a90" }, { 0x427b60, (void *)menu_drawTexturedRect_427b60, "menu_drawTexturedRect_427b60" },
-	{ 0x428a00, (void *)menu_drawTexturedRect_428a00, "menu_drawTexturedRect_428a00" }, { 0x428b50, (void *)menu_drawTexturedRect_428b50, "menu_drawTexturedRect_428b50" },
+	{ 0x427a90, (void *)menu_drawTexture, "menu_drawTexture" }, { 0x427b60, (void *)menu_drawTextureFlipped, "menu_drawTextureFlipped" },
+	{ 0x428a00, (void *)menu_drawCornerOrnaments, "menu_drawCornerOrnaments" }, { 0x428b50, (void *)menu_drawTopRightOrnament, "menu_drawTopRightOrnament" },
 	/* batch 93 */
 	{ 0x4922c0, (void *)hud_drawNameIcon, "hud_drawNameIcon" }, { 0x4924d0, (void *)hud_drawLeaderIcon, "hud_drawLeaderIcon" },
 	{ 0x496820, (void *)replay_drawIcon, "replay_drawIcon" },
@@ -18412,7 +18412,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x448140, (void *)missionsel_drawTunnel, "missionsel_drawTunnel" }, { 0x44d720, (void *)mainmenu_drawScreen, "mainmenu_drawScreen" },
 	/* batch 126 */
 	{ 0x411110, (void *)armc_drawTunnel, "armc_drawTunnel" }, { 0x4445a0, (void *)skirmish_drawTunnel, "skirmish_drawTunnel" },
-	{ 0x411ab0, (void *)armc_drawPreviewTunnel, "armc_drawPreviewTunnel" }, { 0x4388e0, (void *)room_4388e0, "room_4388e0" },
+	{ 0x411ab0, (void *)armc_drawPreviewTunnel, "armc_drawPreviewTunnel" }, { 0x4388e0, (void *)room_drawTunnel, "room_drawTunnel" },
 	{ 0x4091b0, (void *)arena_drawTunnel, "arena_drawTunnel" },
 	/* batch 127 */
 	{ 0x43a420, (void *)account_drawPanel, "account_drawPanel" },
@@ -18487,11 +18487,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x453cf0, (void *)dplay_hostSession, "dplay_hostSession" }, { 0x453e60, (void *)dplay_joinSession, "dplay_joinSession" },
 	/* batch 158 */
 	{ 0x467a50, (void *)sound_init, "sound_init" }, { 0x467d70, (void *)dsbuf_play, "dsbuf_play" },
-	{ 0x467db0, (void *)dsbuf_setVolume, "dsbuf_setVolume" }, { 0x467dd0, (void *)sound_467dd0, "sound_467dd0" },
-	{ 0x457310, (void *)music_shutdown, "music_shutdown" }, { 0x4572b0, (void *)music_4572b0, "music_4572b0" },
+	{ 0x467db0, (void *)dsbuf_setVolume, "dsbuf_setVolume" }, { 0x467dd0, (void *)sound_playNextBuffer, "sound_playNextBuffer" },
+	{ 0x457310, (void *)music_shutdown, "music_shutdown" }, { 0x4572b0, (void *)music_loopIfEnded, "music_loopIfEnded" },
 	{ 0x457150, (void *)music_play, "music_play" },
 	/* batch 159 */
-	{ 0x401310, (void *)input_initKeyboard, "input_initKeyboard" }, { 0x4013a0, (void *)input_4013a0, "input_4013a0" },
+	{ 0x401310, (void *)input_initKeyboard, "input_initKeyboard" }, { 0x4013a0, (void *)input_createMouse, "input_createMouse" },
 	{ 0x401410, (void *)input_createDirectInput, "input_createDirectInput" }, { 0x4012c0, (void *)input_reacquireKeyboard, "input_reacquireKeyboard" },
 	{ 0x4012e0, (void *)input_reacquireMouse, "input_reacquireMouse" }, { 0x401460, (void *)input_releaseKeyboard, "input_releaseKeyboard" },
 	{ 0x401490, (void *)input_releaseMouse, "input_releaseMouse" }, { 0x467b70, (void *)sound_releaseDirectSound, "sound_releaseDirectSound" },
@@ -18506,7 +18506,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x443e20, (void *)skirmish_saveSettings, "skirmish_saveSettings" }, { 0x447a50, (void *)missionsel_clicks, "missionsel_clicks" },
 	{ 0x4479d0, (void *)mission_choose, "mission_choose" }, { 0x444070, (void *)skirmish_settingsKeys, "skirmish_settingsKeys" },
 	{ 0x443f20, (void *)skirmish_processKeys, "skirmish_processKeys" }, { 0x434320, (void *)field_editMessage, "field_editMessage" },
-	{ 0x405010, (void *)arena_editTextField_405010, "arena_editTextField_405010" }, { 0x443ef0, (void *)settingsPage_draw, "settingsPage_draw" },
+	{ 0x405010, (void *)arena_editMessage, "arena_editMessage" }, { 0x443ef0, (void *)settingsPage_draw, "settingsPage_draw" },
 	{ 0x4440f0, (void *)settingsPage_keys, "settingsPage_keys" }, { 0x447b10, (void *)mission_unlockCheat, "mission_unlockCheat" },
 	{ 0x405200, (void *)arena_chatLine, "arena_chatLine" }, { 0x434da0, (void *)room_startChat, "room_startChat" },
 	/* batch 163 */
@@ -18517,7 +18517,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 164 */
 	{ 0x447c30, (void *)briefing_keys, "briefing_keys" }, { 0x447b40, (void *)missionList_keys, "missionList_keys" },
 	{ 0x447c70, (void *)missionsel_keys, "missionsel_keys" }, { 0x44aa30, (void *)missionsel_frameScreen, "missionsel_frameScreen" },
-	{ 0x445bd0, (void *)skirmish_frameScreenB, "skirmish_frameScreenB" }, { 0x4532e0, (void *)jmp_net_getLocalAddress_4532e0, "jmp_net_getLocalAddress_4532e0" },
+	{ 0x445bd0, (void *)skirmish_frameScreenB, "skirmish_frameScreenB" }, { 0x4532e0, (void *)jmp_net_getLocalAddress, "jmp_net_getLocalAddress" },
 	/* batch 165 */
 	{ 0x44b600, (void *)profile_typeNewName, "profile_typeNewName" }, { 0x44b670, (void *)profile_askDelete, "profile_askDelete" },
 	{ 0x44b6e0, (void *)profile_askSecond, "profile_askSecond" }, { 0x44c390, (void *)profile_openDeleteQuestion, "profile_openDeleteQuestion" },
@@ -18529,7 +18529,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x450bc0, (void *)dplay_receive, "dplay_receive" }, { 0x450bf0, (void *)dplay_send, "dplay_send" },
 	{ 0x451270, (void *)net_sendMessage, "net_sendMessage" }, { 0x451350, (void *)net_logMessage, "net_logMessage" },
 	{ 0x451090, (void *)net_handleMessage, "net_handleMessage" }, { 0x450c20, (void *)net_sendLocalInfo, "net_sendLocalInfo" },
-	{ 0x450a60, (void *)net_receiveAll, "net_receiveAll" }, { 0x450bb0, (void *)FUN_00450bb0, "FUN_00450bb0" },
+	{ 0x450a60, (void *)net_receiveAll, "net_receiveAll" }, { 0x450bb0, (void *)jmp_net_receiveAll, "jmp_net_receiveAll" },
 	/* batch 168 */
 	{ 0x448ac0, (void *)missionsel_drawSettingsScreen, "missionsel_drawSettingsScreen" }, { 0x44aa20, (void *)missionsel_frameSettings, "missionsel_frameSettings" },
 	/* batch 169 */
@@ -18550,16 +18550,16 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44ac90, (void *)chat_textField, "chat_textField" }, { 0x44ace0, (void *)chat_keepLastLine, "chat_keepLastLine" },
 	{ 0x441770, (void *)mapSelect_ok, "mapSelect_ok" }, { 0x435ce0, (void *)popup_clicks, "popup_clicks" },
 	/* batch 172 */
-	{ 0x404f90, (void *)arena_editTextField_404f90, "arena_editTextField_404f90" }, { 0x433a80, (void *)field_editPassword, "field_editPassword" },
+	{ 0x404f90, (void *)arena_editPassword, "arena_editPassword" }, { 0x433a80, (void *)field_editPassword, "field_editPassword" },
 	{ 0x456e50, (void *)sound_playVolume, "sound_playVolume" }, { 0x431600, (void *)chat_closeLine, "chat_closeLine" },
 	{ 0x431950, (void *)messageBox_keyClose, "messageBox_keyClose" }, { 0x403640, (void *)mapList_ok, "mapList_ok" },
-	{ 0x4512c0, (void *)net_sendChat, "net_sendChat" }, { 0x405230, (void *)lobby_editTextField_405230, "lobby_editTextField_405230" },
+	{ 0x4512c0, (void *)net_sendChat, "net_sendChat" }, { 0x405230, (void *)arena_editTitle, "arena_editTitle" },
 	{ 0x4318b0, (void *)menu_keyStartFade, "menu_keyStartFade" }, { 0x452fe0, (void *)arena_leaveSession, "arena_leaveSession" },
-	{ 0x404cd0, (void *)arena_editTextField_404cd0, "arena_editTextField_404cd0" }, { 0x404d70, (void *)arena_editTextField_404d70, "arena_editTextField_404d70" },
+	{ 0x404cd0, (void *)arena_editName, "arena_editName" }, { 0x404d70, (void *)arena_editComment, "arena_editComment" },
 	{ 0x4339e0, (void *)field_editComment, "field_editComment" }, { 0x42bd40, (void *)sound_loadMenuSounds, "sound_loadMenuSounds" },
 	{ 0x437240, (void *)room_readyKeys, "room_readyKeys" }, { 0x403590, (void *)mapList_stepGameType, "mapList_stepGameType" },
-	{ 0x433b00, (void *)field_editGameName, "field_editGameName" }, { 0x404ed0, (void *)arena_editNumberField_404ed0, "arena_editNumberField_404ed0" },
-	{ 0x422c60, (void *)setup_soundTabKeys, "setup_soundTabKeys" }, { 0x404e10, (void *)arena_editNumberField_404e10, "arena_editNumberField_404e10" },
+	{ 0x433b00, (void *)field_editGameName, "field_editGameName" }, { 0x404ed0, (void *)arena_editTimeLimit, "arena_editTimeLimit" },
+	{ 0x422c60, (void *)setup_soundTabKeys, "setup_soundTabKeys" }, { 0x404e10, (void *)arena_editFragLimit, "arena_editFragLimit" },
 	{ 0x434260, (void *)account_editEmail, "account_editEmail" }, { 0x457080, (void *)sound_playFile, "sound_playFile" },
 	{ 0x434020, (void *)account_editOldPassword, "account_editOldPassword" }, { 0x4340e0, (void *)account_editPassword, "account_editPassword" },
 	{ 0x4341a0, (void *)account_editPasswordRepeat, "account_editPasswordRepeat" }, { 0x433bb0, (void *)field_editGamePassword, "field_editGamePassword" },
@@ -18576,11 +18576,11 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x422b70, (void *)setup_topPageKeys, "setup_topPageKeys" }, { 0x422d20, (void *)setup_graphicTabKeys, "setup_graphicTabKeys" },
 	{ 0x407750, (void *)lobbyTop_keys, "lobbyTop_keys" }, { 0x4220c0, (void *)setup_drawTopPage, "setup_drawTopPage" },
 	{ 0x406950, (void *)lobby_topPageClicks, "lobby_topPageClicks" }, { 0x407300, (void *)lobby_pageClicks, "lobby_pageClicks" },
-	{ 0x407840, (void *)lobbyPlayer_keys, "lobbyPlayer_keys" }, { 0x433d30, (void *)room_433d30, "room_433d30" },
+	{ 0x407840, (void *)lobbyPlayer_keys, "lobbyPlayer_keys" }, { 0x433d30, (void *)account_endTyping, "account_endTyping" },
 	{ 0x44f4b0, (void *)profile_nameEntryStep, "profile_nameEntryStep" }, { 0x441810, (void *)mapSelect_mouse, "mapSelect_mouse" },
 	/* batch 174 */
-	{ 0x41ec50, (void *)game_returnToMenus_41ec50, "game_returnToMenus_41ec50" }, { 0x41e8b0, (void *)game_returnToMenus_41e8b0, "game_returnToMenus_41e8b0" },
-	{ 0x41e9d0, (void *)game_returnToMenus_41e9d0, "game_returnToMenus_41e9d0" }, { 0x41eb00, (void *)game_returnToMenus_41eb00, "game_returnToMenus_41eb00" },
+	{ 0x41ec50, (void *)game_returnToScreen500, "game_returnToScreen500" }, { 0x41e8b0, (void *)game_returnToMainMenu, "game_returnToMainMenu" },
+	{ 0x41e9d0, (void *)game_returnToScreen400, "game_returnToScreen400" }, { 0x41eb00, (void *)game_returnToGameRoom, "game_returnToGameRoom" },
 	{ 0x4036c0, (void *)mapList_mouse, "mapList_mouse" }, 
 	{ 0x443950, (void *)menuState900_enterSkirmish, "menuState900_enterSkirmish" }, { 0x434490, (void *)login_send, "login_send" },
 	{ 0x447750, (void *)menuState500_enter, "menuState500_enter" }, { 0x462b50, (void *)msg_playerConnected, "msg_playerConnected" },
@@ -18676,7 +18676,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x44cc60, (void *)profile_emblemKeys, "profile_emblemKeys" }, { 0x44cdd0, (void *)profile_screenKeys, "profile_screenKeys" },
 	{ 0x4319d0, (void *)menu_processKeys, "menu_processKeys" },
 	/* batch 202 */
-	{ 0x4202d0, (void *)app_frame, "app_frame" }, { 0x462050, (void *)main_462050, "main_462050" },
+	{ 0x4202d0, (void *)app_frame, "app_frame" }, { 0x462050, (void *)match_frameByState, "match_frameByState" },
 	/* batch 203 */
 	{ 0x43f9d0, (void *)game_WinMain, "game_WinMain" },
 	/* batch 204 */
@@ -18759,7 +18759,7 @@ static DWORD WINAPI worker(LPVOID unused)
 	/* everything the frozen phase needs is allocated before any thread is suspended; that includes the game CRT's
 	   per-thread data for this thread (strtok keeps its state there, allocated on first use under the heap lock) */
 	{ char s[8] = "1.2", t[16]; CRT_strtok(s, "."); CRT_itoa(CRT_atoi("7"), t, 10); crt_ftol(1.5L);
-	  vsprintf_wrap_473450(t - 0x20fcd4c, "%d", 1); }
+	  stage_printText(t - 0x20fcd4c, "%d", 1); }
 	g_fake = VirtualAlloc(NULL, FAKE_SIZE, MEM_COMMIT | MEM_RESERVE | MEM_WRITE_WATCH, PAGE_READWRITE);
 	g_resFake = VirtualAlloc(NULL, FAKE_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	state_ok = find_data_section() && g_fake && g_resFake &&

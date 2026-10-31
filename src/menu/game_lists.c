@@ -23,7 +23,7 @@ static void bind_buttons(void)
 static void button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : dim_alpha);
-	menu_drawTexQuad_4282f0(x0, y0, x1, y1, 1);
+	menu_drawWideButton(x0, y0, x1, y1, 1);
 	if (lit)
 		TEXT(bright);
 	else
@@ -130,7 +130,7 @@ void (arena_drawGameList)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
@@ -177,8 +177,8 @@ void (arena_drawGameList)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4286b0(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
-	menu_drawTexQuad_4287a0(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
+	menu_drawSmallButton3(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
+	menu_drawSmallButton4(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)0x4a9434));
@@ -223,7 +223,7 @@ void (arena_drawGameList)(void)
 		}
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 #undef X0
 #undef Y0
@@ -242,7 +242,7 @@ static const u32 *const room_bright = (const u32 *)0x9dcec0, *const room_dim = (
 static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : dim_alpha);
-	menu_drawTexQuad_4282f0(x0, y0, x1, y1, 1);
+	menu_drawWideButton(x0, y0, x1, y1, 1);
 	if (lit)
 		TEXT(room_bright);
 	else
@@ -261,7 +261,7 @@ void (gameList_draw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(room_bright);
@@ -297,8 +297,8 @@ void (gameList_draw)(void)
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4286b0(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
-	menu_drawTexQuad_4287a0(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
+	menu_drawSmallButton3(X0 + 0x226, Y0 + 0x6e, X0 + 0x246, Y0 + 0xae, hovered == 0xd);
+	menu_drawSmallButton4(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
 	glDisable(GL_TEXTURE_2D);
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 15;
@@ -335,7 +335,7 @@ void (gameList_draw)(void)
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)0x751824);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 #undef X0
 #undef Y0
@@ -360,7 +360,7 @@ void (gameList_drawPage)(void)
 			GAME_VAR(int, 0x9dcd40) = 0;
 		}
 	}
-	room_4388e0();
+	room_drawTunnel();
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
@@ -395,7 +395,7 @@ void (gameList_drawPage)(void)
 		long double t = fadd_m(fld_m(&g_roomListRefreshTimer), &g_frameTime);
 		g_roomListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
-			room_434ff0();
+			room_mergeReceivedSessions();
 			GAME_VAR(int, 0x9dd6c0) = 0;
 			g_listRefreshPeriod = 5;
 		}
@@ -404,7 +404,7 @@ void (gameList_drawPage)(void)
 		if (!(blink >= *blinkFloor))
 			GAME_VAR(u32, 0x4dba80) = 0x447a0000;
 		if (g_netListDone) {
-			room_434ff0();
+			room_mergeReceivedSessions();
 			g_roomSearching = 0;
 			g_roomSearchAnswerIn = 0;
 			g_roomRefreshing = 0;
@@ -451,7 +451,7 @@ void (arena_drawNameDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(x0, y0, g_arenaNameDialogRight, g_arenaNameDialogBottom, g_dialogFrameTexture);
+	menu_drawTexture(x0, y0, g_arenaNameDialogRight, g_arenaNameDialogBottom, g_dialogFrameTexture);
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x0 + 0x20, y0 + 0x30, g_arenaNameDialogRight - 0x20, g_arenaNameDialogBottom - 0x20, 0);
 	TEXT(bright);
@@ -477,7 +477,7 @@ void (arena_drawNameDialog)(void)
 		text_drawBox16(x + 0x32, g_arenaNameDialogTop + 0xe4, x + 0x96, (const char *)(0x7521a4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(g_arenaNameDialogLeft, g_arenaNameDialogTop, g_arenaNameDialogRight, g_arenaNameDialogBottom);
+	menu_drawCornerOrnaments(g_arenaNameDialogLeft, g_arenaNameDialogTop, g_arenaNameDialogRight, g_arenaNameDialogBottom);
 }
 
 /* ---- the game room's list of games: its mouse ---- */
@@ -775,13 +775,13 @@ void (lobbyJoin_draw)(void)
 		long double t = fadd_m(fld_m(&g_arenaListRefreshTimer), &g_frameTime);
 		g_arenaListRefreshTimer = f32(t);
 		if (t > (long double)g_listRefreshPeriod) {
-			arena_406640();
+			arena_mergeReceivedSessions();
 			GAME_VAR(int, 0x4dbaf0) = 0;
 			g_listRefreshPeriod = 5;
 		}
 		blink_down();
 		if (g_netListDone) {
-			arena_406640();
+			arena_mergeReceivedSessions();
 			g_lobbySearching = 0;
 			g_serverAnswerIn = 0;
 			g_lobbyRefreshing = 0;
@@ -919,7 +919,7 @@ void (lobby_connect)(void)
 			if (g_arenaFull)
 				return;
 			sound_playMenu(0);
-			lobby_editTextField_405230();
+			arena_editTitle();
 			break;
 		case 3:
 			if (lobby_busy()) {

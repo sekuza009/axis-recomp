@@ -21,7 +21,7 @@ void (cfg_defaultPlayerName)(void)
 }
 
 /* 0x404930: the profile's name and fields (0x4dedb0) */
-void (lobby_404930)(void)
+void (arena_copyProfile)(void)
 {
 	g_arenaSex = g_playerSex;
 	copy_name(0x4db560, 32, (const char *)0x4dedb0);

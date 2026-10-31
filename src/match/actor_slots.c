@@ -116,12 +116,12 @@ void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 			bullet_drawTrail(stage, i, view);
 }
 
-/* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (hud_48b450); returns b */
+/* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (recorder_noteStub); returns b */
 int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
 	if (!FIELD(int, stage, 0x2149308))
 		return 0;
-	hud_48b450((u8 *)stage + 0x2148ed8, a, b, c, d);
+	recorder_noteStub((u8 *)stage + 0x2148ed8, a, b, c, d);
 	return b;
 }
 
@@ -946,7 +946,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 {
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		GAME_THISCALL(0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* match_45fff0: a resource set */
+		GAME_THISCALL(0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = 0x4a9754;
 		partList_clear(me + k_listAt[k]);

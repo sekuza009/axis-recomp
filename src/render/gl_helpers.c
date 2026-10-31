@@ -44,7 +44,7 @@ static u32 default_gl_state(void)
 	IMPORT(0x4a91d0, void, u32)(0x405);                         /* glCullFace(GL_BACK) */
 	return IMPORT(0x4a922c, u32, u32)(0xb44);                   /* glDisable(GL_CULL_FACE) */
 }
-u32 (glWindow_4684c0)(void) { return default_gl_state(); }
+u32 (gfx_resetState)(void) { return default_gl_state(); }
 
 /* 0x42f150: a new window's GL state: the defaults, then the projection (field of view 0x68038c, the aspect
    width / height kept in 0x4e1870, depth 1 .. 20000) and the window's size (0x42f0f0); 0x5ae9bc set. Returns

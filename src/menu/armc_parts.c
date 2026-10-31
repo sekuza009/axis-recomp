@@ -65,7 +65,7 @@ typedef long double X;
 static void mulf(u32 dst, const float *a, const float *b) { GAME_VAR(float, dst) = (float)fmul_m(fld_m(a), b); }
 static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld_m(src); }   /* (an SNaN quieted) */
 
-u8 *(armc_41c510)(void)
+u8 *(armc_readMechStats)(void)
 {
 	u8 *g = GAME_VAR(u8 *, 0x9087b4);
 	u8 *A = g + FIELD(int, g, 0x234240d) * 0x8888;

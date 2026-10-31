@@ -26,7 +26,7 @@ static int name_search(u32 count, u32 table, const char *name)
 
 /* 0x466ce0: a shape by name; 0x46b0c0: a skeleton data file by name */
 int (shape_findByName)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
-int (skelDat_46b0c0)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
+int (skelDat_findByName)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
 void (path_stripExtension)(const char *src, char *dst)
@@ -362,7 +362,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		return -1;
 	if (FIELD(int, tm, 0xcd128) < 0x200) {
 		i = FIELD(int, tm, 0xcd128);
-		tex_454e60(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
+		texRecord_init(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		FIELD(int, tm, 0xcd128)++;
 	} else
 		sys_fatalErrorN((char *)0xa0dff8, (const char *)0x4b3fa8, FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);

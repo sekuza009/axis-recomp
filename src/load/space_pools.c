@@ -32,9 +32,9 @@ static int reset_pool(void *space, int count, int stride, Clear clear, int link)
 	return r;
 }
 
-static int THISCALL clear_plane(void *r) { return load_47db50(r); }
-static int THISCALL clear_node(void *r) { return load_480430(r); }
-static int THISCALL clear_block(void *r) { return load_4804a0(r); }
+static int THISCALL clear_plane(void *r) { return collisionPlane_clear(r); }
+static int THISCALL clear_node(void *r) { return spaceNode_clear(r); }
+static int THISCALL clear_block(void *r) { return spaceBlock_clear(r); }
 
 /* 0x481520: the planes (0xac bytes each) */
 int THISCALL (space_resetPlanes)(void *space) { return reset_pool(space, 0x10, 0xac, clear_plane, 0xa0); }
@@ -66,7 +66,7 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 	clear(r);
 	return r;
 }
-static int THISCALL clear_unit(void *r) { load_480440(r); return 0; }
+static int THISCALL clear_unit(void *r) { spaceSlot_clear(r); return 0; }
 
 /* 0x4815c0, 0x4816c0, 0x4817f0: a free plane, node or unit */
 void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, 0x4c7818); }
@@ -74,7 +74,7 @@ void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space,
 void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, 0x4c78cc); }
 
 /* 0x4818e0 (thiscall on the space): a block taken from the free list (+0x48; its next at +0x4c, the new head's back
-   link +0x48 cleared), counted (+0x4c), reset (load_4804a0) and given the bounds mn / mx (three dwords each);
+   link +0x48 cleared), counted (+0x4c), reset (spaceBlock_clear) and given the bounds mn / mx (three dwords each);
    returns it. With none free, a fatal message with the pools' sizes and 0 */
 void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32 *mx)
 {
@@ -92,7 +92,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 	} else
 		FIELD(u32 *, 0x48) = 0;
 	FIELD(int, 0x4c)++;
-	load_4804a0(block);
+	spaceBlock_clear(block);
 	for (int i = 0; i < 3; i++)
 		block[i] = mn[i];
 	for (int i = 0; i < 3; i++)
@@ -587,7 +587,7 @@ static long double cell_edge(int c, const float *size, const float *low)
    +0x84, +0x88; +0x74, +0x78, +0x7c of them), cell by cell from p0's towards p1's: y slabs, within each the z slabs,
    within those the x cells, the segment clipped to each (the y and x clips through a parameter rounded to a float,
    the z clip at full precision, as the original has them). Each cell with a root node (shorts at +0x54; 0xffff none)
-   has its octree traced (space_traceUnit_4809f0, the 0x50-byte nodes at +0x44); the first that reports a hit is the
+   has its octree traced (space_traceUnit, the 0x50-byte nodes at +0x44); the first that reports a hit is the
    answer. 0 when nothing is hit */
 int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
 {
@@ -650,7 +650,7 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 				}
 				u16 root = FIELD(u16 *, space, 0x54)[(cy * FIELD(int, space, 0x74) + cz) * FIELD(int, space, 0x78) + cx];
 				if (root != 0xffff) {
-					int r = space_traceUnit_4809f0(FIELD(u8 *, space, 0x44) + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
+					int r = space_traceUnit(FIELD(u8 *, space, 0x44) + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
 					if (r)
 						return r;
 				}
@@ -696,13 +696,13 @@ static void through_m(float *out, const float *m, const float *p, int yx)
 }
 
 /* 0x4809f0 (thiscall on an octree node: box low +0, high +0xc): the segment from -> to traced for the furthest hit
-   (by the t space_tracePlanes_47fb80 gives, from -FLT_MAX in dist; the hit point to hit). A split node (+0x24 1) walks
+   (by the t collisionTri_traceSegment gives, from -FLT_MAX in dist; the hit point to hit). A split node (+0x24 1) walks
    its eight children (+0x28, x by 1, z by 2, y by 4) the segment passes through in order, cut at each child's
    boundary planes (the z planes spaced by the x half and the x planes by the z half: the original's slip, harmless
    on cubes), and returns the first child's hit. A leaf traces its list (+0x18; nodes: record +0, next +0xc; records
    flagged 1 skipped) and then each of nsubs sub-model lists (subs: 3 dwords each, the list, the matrix out, the
    matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
-u32 THISCALL (space_traceUnit_4809f0)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
+u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
 	const float *low = (const float *)unit, *k = (const float *)0x4a942c;
 	if (GAME_VAR(int, unit + 0x24) == 1) {
@@ -752,7 +752,7 @@ u32 THISCALL (space_traceUnit_4809f0)(u8 *unit, const float *from, const float *
 						cut_at(r1, q0, dq, sx > 0 ? x + 1 : x, &half[2], &low[0], 0, 1);
 					u8 *child = GAME_VAR(u8 *, unit + 0x28 + (x + 2 * z + 4 * y) * 4);
 					if (child) {
-						u32 r = space_traceUnit_4809f0(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
+						u32 r = space_traceUnit(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
 						if (r)
 							return r;
 					}
@@ -779,7 +779,7 @@ u32 THISCALL (space_traceUnit_4809f0)(u8 *unit, const float *from, const float *
 		u8 *rec = (u8 *)node[0];
 		if (s >= 0 || !(rec[0] & 1)) {
 			float at[3], tt;
-			if (space_tracePlanes_47fb80(rec, f, t, at, &tt) == 1 && tt > *dist) {
+			if (collisionTri_traceSegment(rec, f, t, at, &tt) == 1 && tt > *dist) {
 				if (s < 0)
 					memcpy(hit, at, 12);
 				else {

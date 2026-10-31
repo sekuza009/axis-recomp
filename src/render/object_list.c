@@ -30,8 +30,8 @@ static void relight(ListedObject *e, const LightFactors *factors, const void *li
 	}
 }
 
-/* 0x46f7a0 (data_46f7a0): relight every entry that has a shape */
-void THISCALL (data_46f7a0)(ObjectList *list, const LightFactors *factors, const void *lights)
+/* 0x46f7a0 (ObjectList_relight): relight every entry that has a shape */
+void THISCALL (ObjectList_relight)(ObjectList *list, const LightFactors *factors, const void *lights)
 {
 	for (int i = 0; i < list->count; i++) {
 		ListedObject *e = &list->entries[i];

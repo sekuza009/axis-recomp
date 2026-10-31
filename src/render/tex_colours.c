@@ -38,7 +38,7 @@ void (image_addColour)(u8 *px, int mode, const u32 *img, const u8 *c)
 #define EQ_OR_NAN(a, b) (!((a) < (b)) && !((a) > (b)))
 
 /* 0x46def0: r, g, b -> hue (degrees; FLT_MAX without saturation), saturation, value */
-void (tex_46def0)(float r, float g, float b, float *h, float *s, float *v)
+void (tex_rgbToHsv)(float r, float g, float b, float *h, float *s, float *v)
 {
 	X max = r > g ? (r > b ? r : b) : (g > b ? g : b);
 	X min = !(r >= g) ? (!(r >= b) ? r : b) : (!(g >= b) ? g : b);
@@ -70,7 +70,7 @@ void (tex_46def0)(float r, float g, float b, float *h, float *s, float *v)
 void THISCALL (tex_tintHsv)(float *rgb, float dh, float ds, float dv)
 {
 	float h, s, v;
-	tex_46def0(BITS(rgb[0]), BITS(rgb[1]), BITS(rgb[2]), &h, &s, &v);
+	tex_rgbToHsv(BITS(rgb[0]), BITS(rgb[1]), BITS(rgb[2]), &h, &s, &v);
 	X d = dh;
 	if (!(d >= ZERO))
 		h = f32(d + TURN);
@@ -135,9 +135,9 @@ int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 			int k = FIELD(int, tex, 0xc0118) * y + x;
 			u8 *px = tex + k * 4 + 0x114, *mask = tex + k * 4 + 0x80114;
 			if (mask[0] >= 200)
-				tex_46de20(px, FIELD(u32, rec, 0xc0170), FIELD(u32, rec, 0xc0174), FIELD(u32, rec, 0xc0178));
+				tex_tintRgba(px, FIELD(u32, rec, 0xc0170), FIELD(u32, rec, 0xc0174), FIELD(u32, rec, 0xc0178));
 			else if (mask[1] >= 200)
-				tex_46de20(px, FIELD(u32, rec, 0xc017c), FIELD(u32, rec, 0xc0180), FIELD(u32, rec, 0xc0184));
+				tex_tintRgba(px, FIELD(u32, rec, 0xc017c), FIELD(u32, rec, 0xc0180), FIELD(u32, rec, 0xc0184));
 		}
 	return FIELD(int, tex, 0xc011c);
 }
@@ -145,7 +145,7 @@ int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 /* 0x454e60: a texture record: its name, eight parameters, and its animation from the name's suffix: "_ANI" 1,
    "_ANI0" .. "_ANI3" 1 .. 4 (another digit leaves +0x60 as it was), anything else 0. (The original also makes an
    upper-cased copy of the name it never uses; the suffix test is case-sensitive.) */
-void THISCALL (tex_454e60)(u8 *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+void THISCALL (texRecord_init)(u8 *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
 	strcpy((char *)self, name);
 	FIELD(int, self, 0x44) = a3;

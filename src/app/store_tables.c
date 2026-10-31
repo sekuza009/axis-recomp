@@ -37,7 +37,7 @@ static const Store k_intro_42f500[44] = {
 	{ 0x5b1d7c, 0x4 }, { 0x5b1d80, 0x82 }, { 0x5b1d94, 0xffffffe2 }, { 0x5b1d88, 0x9b }, { 0x5b1d9c, 0xffffff1a },
 	{ 0x5b1d8c, 0x4b }, { 0x5b1da0, 0xffffff90 }, { 0x5b1d90, 0x82 }, { 0x5b1da4, 0xffffffe2 } };
 
-void (intro_42f500)(void) { apply_stores(k_intro_42f500, 44); }   /* 0x42f500 intro table */
+void (menu_initKeyRepeatDefaults)(void) { apply_stores(k_intro_42f500, 44); }   /* 0x42f500 intro table */
 
 static const Store k_input_initVkTable[57] = {
 	{ 0x4df054, 0x1b }, { 0x4df058, 0x31 }, { 0x4df05c, 0x32 }, { 0x4df060, 0x33 }, { 0x4df064, 0x34 },
@@ -70,7 +70,7 @@ static const Store k_replay_46d4d0[64] = {
 	{ 0xa1f1dc, 0x3f800000 }, { 0xa1f1e0, 0x3e38b8b9 }, { 0xa1f1e4, 0x3e48c8c9 }, { 0xa1f1e8, 0x3e68e8e9 }, { 0xa1f1ec, 0x3f800000 },
 	{ 0xa1f1f0, 0x0 }, { 0xa1f1f4, 0x3f800000 }, { 0xa1f1f8, 0x3f22a2a3 }, { 0xa1f1fc, 0x3f800000 } };
 
-void (replay_46d4d0)(void) { apply_stores(k_replay_46d4d0, 64); }   /* 0x46d4d0 64-entry table */
+void (color_initTextColours)(void) { apply_stores(k_replay_46d4d0, 64); }   /* 0x46d4d0 64-entry table */
 
 static const Store k_intro_42f2b0[66] = {
 	{ 0x4debb0, 0xfffffefc }, { 0x4debbc, 0xfffffefc }, { 0x4debc0, 0xfffffefc }, { 0x4debb4, 0xffffff81 }, { 0x4debb8, 0xffffff81 },
@@ -88,7 +88,7 @@ static const Store k_intro_42f2b0[66] = {
 	{ 0x4dec64, 0xff }, { 0x4dec68, 0x92 }, { 0x4dec7c, 0xffffff1a }, { 0x4dec80, 0xffffff91 }, { 0x4dec70, 0x78 },
 	{ 0x4dec84, 0xffffffce } };
 
-void (intro_42f2b0)(void) { apply_stores(k_intro_42f2b0, 66); }   /* 0x42f2b0 intro table */
+void (menu_initMainButtons)(void) { apply_stores(k_intro_42f2b0, 66); }   /* 0x42f2b0 intro table */
 
 static const Store k_intro_42f690[66] = {
 	{ 0x9dafb8, 0xfffffefc }, { 0x9dafc4, 0xfffffefc }, { 0x9dafc8, 0xfffffefc }, { 0x9dafbc, 0xffffff81 }, { 0x9dafc0, 0xffffff81 },
@@ -106,7 +106,7 @@ static const Store k_intro_42f690[66] = {
 	{ 0x9db06c, 0xff }, { 0x9db070, 0x92 }, { 0x9db084, 0xffffff1a }, { 0x9db088, 0xffffff91 }, { 0x9db078, 0x78 },
 	{ 0x9db08c, 0xffffffce } };
 
-void (intro_42f690)(void) { apply_stores(k_intro_42f690, 66); }   /* 0x42f690 intro table */
+void (room_initMenuButtons)(void) { apply_stores(k_intro_42f690, 66); }   /* 0x42f690 intro table */
 
 static const Store k_input_setDefaultKeyBindings[118] = {
 	{ 0x4df8e4, 0x0 }, { 0x6803a0, 0x1 }, { 0x4e0468, 0x2 }, { 0x4e046c, 0x3 }, { 0x4e0470, 0x4 },
@@ -176,4 +176,4 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ 0x4de1b4, 0x4df8e4, 1 }, { 0x4de1bc, 0x4df8e4, 1 }, { 0x4de1b0, 0x4e1534, 1 }, { 0x4de1b8, 0x9da440, 1 },
 	{ 0x4de1c0, 0x0, 0 }, { 0x4de1c4, 0x0, 0 }, { 0x4de1c8, 0x32, 0 }, { 0x4de1cc, 0x0, 0 } };
 
-void (setup_controlTabHelper_420c10)(void) { apply_cstores(k_setup_controlTabHelper_420c10, 68); }
+void (setup_keepKeyBindings)(void) { apply_cstores(k_setup_controlTabHelper_420c10, 68); }

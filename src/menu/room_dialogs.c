@@ -284,7 +284,7 @@ u32 (room_openClicks)(void)
    Returns what the original leaves in eax */
 u32 (room_draw)(void)
 {
-	CALL(0x4388e0);   /* room_4388e0 */
+	CALL(0x4388e0);   /* room_drawTunnel */
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 0x63)
 		return (u32)mode;
@@ -613,7 +613,7 @@ u32 (loginDialog_draw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7588a4);
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
@@ -673,7 +673,7 @@ static void confirm_box(void)
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		int x = 0xb4 + k * 0xa0;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
-		menu_drawTexQuad_4282f0(x, 0x104, x + 0x78, 0x124, 1);
+		menu_drawWideButton(x, 0x104, x + 0x78, 0x124, 1);
 		if (hovered == k)
 			set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
@@ -699,7 +699,7 @@ u32 (serverDialog_draw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427b60(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x758da4);
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
@@ -719,7 +719,7 @@ u32 (serverDialog_draw)(void)
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
 		int x = X0 + k * 0xb4;
-		menu_drawTexQuad_4282f0(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
+		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(0x758f24 + k * 0x80));
@@ -753,7 +753,7 @@ u32 (roomLogin_draw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7583a4);
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
@@ -781,7 +781,7 @@ u32 (roomLogin_draw)(void)
 		int lit = hovered == k + 2 && !g_roomRequestOut;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
-		menu_drawTexQuad_4282f0(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
+		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(0x758524 + k * 0x80));
@@ -853,7 +853,7 @@ void (account_drawPanel)(void)
 		return;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
@@ -915,7 +915,7 @@ void (account_drawPanel)(void)
 		int lit = hovered == k + 4 && !GAME_VAR(int, 0x68039c);
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xa0;
-		menu_drawTexQuad_4282f0(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
+		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(0x7517a4 + k * 0x80));
@@ -923,7 +923,7 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef K
 #undef X0
 #undef Y0
@@ -953,15 +953,15 @@ u32 (ranking_drawTable)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	TEXT(bright);
 	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)0x75aba4);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4284d0(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
-	menu_drawTexQuad_4285c0(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
+	menu_drawSmallButton1(X0 + 0xb0, Y0 + 0x26, X0 + 0xe4, Y0 + 0x3e, hovered == 0);
+	menu_drawSmallButton2(X0 + 0x146, Y0 + 0x26, X0 + 0x17a, Y0 + 0x3e, hovered != 0 && hovered == 1);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	char page[64], last[64];
 	int first = g_roomListPage * 10 + 1;
@@ -971,14 +971,14 @@ u32 (ranking_drawTable)(void)
 	itoa(g_rankingLast, last, 10);
 	strcat(page, (const char *)0x4b278c);   /* " ~ " */
 	strcat(page, last);
-	menu_drawTexQuad_4282f0(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
+	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
 	text_draw8b(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
 	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)0x75ac24);
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, hovered == 2 ? 1.0f : 0.6f);
-	menu_drawTexQuad_4282f0(X1 - 0x78, Y0 + 0x24, X1 - 0x14, Y0 + 0x40, 1);
+	menu_drawWideButton(X1 - 0x78, Y0 + 0x24, X1 - 0x14, Y0 + 0x40, 1);
 	TEXT(yellow);
 	static const u32 sorted_by[4] = { 0x75ae24, 0x75af24, 0x75b024, 0x75aea4 };
 	if ((unsigned)g_rankingSort <= 3)
@@ -1060,7 +1060,7 @@ u32 (ranking_drawTable)(void)
 		int lit = hovered == k + 3 && !(hovered == 3 && !g_rankingWaiting);
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int x = X0 + k * 0xc8;
-		menu_drawTexQuad_4282f0(x + 0x7d, Y1 - 0x30, x + 0x11d, Y1 - 0x10, 1);
+		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0x11d, Y1 - 0x10, 1);
 		if (lit)
 			TEXT(bright);
 		else

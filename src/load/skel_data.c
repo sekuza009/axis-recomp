@@ -167,7 +167,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
    filled) with their element counts summed (+0x18), and nk skeletons (by the names 0x40 apart). Its block (+8, size
    +4: 100 bytes a shape, 4 a skeleton, lit == 1 a colour per element too): allocated (owned, +0xc 1; none a fatal
    message) without memory given, else that memory (too small: a fatal message). The entries (+0x14: shape, int,
-   colours when lit and found), the skeletons after them (+0x20), and lit, the colours worked out (data_46f7a0). Its
+   colours when lit and found), the skeletons after them (+0x20), and lit, the colours worked out (ObjectList_relight). Its
    callers ignore the eax it leaves */
 void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
                                      int lit, u32 factors, u32 lights, void *mem, int size)
@@ -217,7 +217,7 @@ void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns
 	for (int j = 0; j < AT(int, list, 0x1c); j++)
 		AT(void *, AT(u8 *, list, 0x20), j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
 	if (AT(int, list, 0x2c) == 1)
-		data_46f7a0(list, factors, lights);
+		ObjectList_relight(list, factors, lights);
 }
 
 /* the key for frame among a bone's n keys (size bytes each, their first dword the frame they start at): the last one
@@ -694,7 +694,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 					GAME_VAR(float, k + 8) = ase_float(SPACE, 1);
 					if (GAME_VAR(int, b + 0x68) > 0) {
 						float r[4];
-						skel_ase_47d320(r, (const float *)(k + 8), (const float *)(k + 8 - 0x28));
+						axisAngle_combine(r, (const float *)(k + 8), (const float *)(k + 8 - 0x28));
 						memcpy(k + 8, r, 16);
 					}
 					GAME_VAR(int, b + 0x68)++;
@@ -722,7 +722,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		for (int k = 0; k < 3; k++)
 			GAME_VAR(float, bone + 0x44 + k * 4) = f32(fld_m(&rel[12 + k]));
 		rel[12] = rel[13] = rel[14] = 0;
-		skel_ase_47d2f0((float *)(bone + 0x50), rel);
+		axisAngle_fromMatrix((float *)(bone + 0x50), rel);
 	}
 	for (int i = 0; i < GAME_VAR(int, sk + 0x10); i++) {
 		u8 *bone = GAME_VAR(u8 *, sk + 0x14) + i * 0x70;
@@ -742,10 +742,10 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x28) - GAME_VAR(int, key);
 			float r[16], back[16], next[16], step[16];
 			Mat4_fromAxisAngle(r, (const float *)(key + 8));
-			skel_47d830(back, r);
+			Mat4_transpose(back, r);
 			Mat4_fromAxisAngle(next, (const float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x30));
 			Mat4_multiply(step, back, next);
-			skel_ase_47d2f0((float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x18), step);
+			axisAngle_fromMatrix((float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x18), step);
 		}
 		if (GAME_VAR(int, bone + 0x68) > 0) {
 			u8 *last = GAME_VAR(u8 *, bone + 0x6c) + (GAME_VAR(int, bone + 0x68) - 1) * 0x28;

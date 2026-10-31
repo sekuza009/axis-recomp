@@ -14,10 +14,10 @@ static void clear(void *p, int dwords)
 }
 
 /* ---- empty methods (their arguments unused) and trivial returns ---- */
-void *THISCALL (match_45fff0)(void *self) { return self; }
-int THISCALL (match_48b440)(void *self, int a) { (void)self; (void)a; return 0; }
-void THISCALL (match_48b430)(void *self, int a0, int a1) { (void)self; (void)a0; (void)a1; }
-void THISCALL (hud_48b450)(void *self, int a0, int a1, int a2, int a3) { (void)self; (void)a0; (void)a1; (void)a2; (void)a3; }
+void *THISCALL (ResourceSet_trivialCtor)(void *self) { return self; }
+int THISCALL (recorder_setPathStub)(void *self, int a) { (void)self; (void)a; return 0; }
+void THISCALL (recorder_openStub)(void *self, int a0, int a1) { (void)self; (void)a0; (void)a1; }
+void THISCALL (recorder_noteStub)(void *self, int a0, int a1, int a2, int a3) { (void)self; (void)a0; (void)a1; (void)a2; (void)a3; }
 /* 0x43f770: the start mode from the registry - always 1 in this build */
 u32 (reg_readStartMode)(void) { return 1; }
 
@@ -55,7 +55,7 @@ void THISCALL (event_raise3)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; F
 void THISCALL (event_raise4)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; FIELD(int, scene, 0x2343106) = 1; }
 void THISCALL (event_raise5)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; FIELD(int, scene, 0x2343106) = 1; }
 /* 0x463780: team slot i's id */
-int THISCALL (this_get_0x2342381_463780)(Scene *scene, int i) { return scene->teamIds[i]; }
+int THISCALL (scene_teamSlot)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
 void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 1; }
 void THISCALL (playerRecord_markFree)(Stage *stage, int p)
@@ -75,12 +75,12 @@ void THISCALL (stage_deactivateActors)(Stage *stage)
 int THISCALL (stage_resetLights)(Stage *stage)
 {
 	FIELD(int, stage, 0x9d800c) = 0;
-	return this_set_483d60((u8 *)stage + 0x9d8010);
+	return Light_clearCounts((u8 *)stage + 0x9d8010);
 }
 
 /* ---- small objects ---- */
 /* 0x480440: an empty slot: -1 and four zeros */
-void THISCALL (load_480440)(int *self) { self[1] = self[2] = self[3] = self[4] = 0; self[0] = -1; }
+void THISCALL (spaceSlot_clear)(int *self) { self[1] = self[2] = self[3] = self[4] = 0; self[0] = -1; }
 /* 0x469980, 0x46f480: members cleared (0x46f480 keeps the sixth) */
 void THISCALL (Skeleton_clear)(int *self) { for (int i = 1; i <= 7; i++) self[i] = 0; }
 void THISCALL (partList_clear)(int *self) { for (int i = 1; i <= 11; i++) if (i != 6) self[i] = 0; }
@@ -121,7 +121,7 @@ char *(path_normalize)(char *s)
 
 /* 0x451530: every one of the 16 network slots (0x410 bytes from 0x9f9840: +4 the owner) owned by id emptied, its
    flag (0x9f93d8) too; slot 0 freed sets 0x9fd94c. Leaves 0xff in AL */
-u8 (net_451530)(int id)
+u8 (net_freeSlotsOf)(int id)
 {
 	for (int s = 0; s < 16; s++) {
 		u32 r = 0x9f9840 + s * 0x410;
@@ -172,7 +172,7 @@ void THISCALL (tex_markMaterialChanged)(void *self, int m)
 	}
 }
 /* 0x456b50: three fields cleared in each of the six objects the object points to (+4 .. +0x18) */
-void THISCALL (hud_456b50)(void *self)
+void THISCALL (tex_clearSetCounters)(void *self)
 {
 	for (int k = 1; k <= 6; k++) {
 		u8 *o = FIELD(u8 *, self, k * 4);
@@ -224,7 +224,7 @@ static void player_seen(Stage *stage, int p)
 #define PLAYER_RECORD(stage, p) ((u8 *)(stage) + 0x1561b68 + (p) * 0x47fd2)
 
 /* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
-void THISCALL (FUN_00473a10)(Stage *stage, int p, int v)
+void THISCALL (player_setValue)(Stage *stage, int p, int v)
 {
 	player_seen(stage, p);
 	FIELD(int, stage, 0x1561b68 + p * 0x47fd2 + 0x44) = v;
@@ -253,7 +253,7 @@ void (Mat4_copy)(u32 *d, const u32 *s)
 			d[r * 4 + c] = s[r * 4 + c];
 }
 /* 0x47d830: copied transposed */
-void (skel_47d830)(u32 *d, const u32 *s)
+void (Mat4_transpose)(u32 *d, const u32 *s)
 {
 	for (int k = 0; k < 16; k++)
 		d[(k & 3) * 4 + (k >> 2)] = s[k];
@@ -261,7 +261,7 @@ void (skel_47d830)(u32 *d, const u32 *s)
 
 /* ---- objects put to their start ---- */
 /* 0x463a40: a resource set's eight lists, each a UnitPoseInfo (vtable 0x4a9754) with its members cleared */
-void *THISCALL (ResourceSet_init_463a40)(u8 *self)
+void *THISCALL (ResourceSet_initLists)(u8 *self)
 {
 	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
 	for (int k = 0; k < 8; k++) {
@@ -280,12 +280,12 @@ void THISCALL (ViewVolume_reset)(u8 *self)
 	for (int k = 0; k < 10; k++)
 		FIELD(int, self, cleared[k]) = 0;
 }
-/* 0x481760: the collision space's units: count at +0x30, the 0x14-byte units at +0x34, each emptied (load_480440) and
+/* 0x481760: the collision space's units: count at +0x30, the 0x14-byte units at +0x34, each emptied (spaceSlot_clear) and
    chained (prev at +0xc, next at +0x10) */
 void THISCALL (space_resetUnits)(u8 *self)
 {
 	for (int i = 0; i < FIELD(int, self, 0x30); i++)
-		load_480440((int *)(FIELD(u8 *, self, 0x34) + i * 0x14));
+		spaceSlot_clear((int *)(FIELD(u8 *, self, 0x34) + i * 0x14));
 	for (int i = 1; i < FIELD(int, self, 0x30); i++) {
 		u8 *e = FIELD(u8 *, self, 0x34) + i * 0x14;
 		FIELD(u8 *, e, 0xc) = e - 0x14;
@@ -319,7 +319,7 @@ u32 (app_checkFile_game)(void) { return 1; }
 u32 (app_checkFile_profeng)(void) { return 1; }
 /* 0x40d990: the retail game reset the edited and saved mech's SERAPHIM parts (head 19, chest 13, arm 17, booster
    15, leg 19) to 0; unlockfix.py turns all ten checks into jumps (the parts stay equipped), leaving nothing */
-void (armc_40d990)(void) {}
+void (armc_resetSeraphimParts)(void) {}
 
 /* ---- more small methods ---- */
 void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a; }
@@ -704,7 +704,7 @@ int (sys_checkClockTampering)(void)
 }
 
 /* 0x48fd50 (thiscall on the scene): with a recording on (+0x2149308): the recorder (+0x2148ed8) opened when it is not
-   yet (+0x2148ee0; match_48b430 with +0x2149208 and 0x4c45e4) and the path given to it (match_48b440; failing, the
+   yet (+0x2148ee0; recorder_openStub with +0x2149208 and 0x4c45e4) and the path given to it (recorder_setPathStub; failing, the
    recording off); with a name for it (+0x2149108) a sound played (the name formatted by 0x4c8304) at volume 100.
    Its caller ignores the eax it leaves */
 void THISCALL (scene_loadPath)(u8 *scene, u32 path)
@@ -712,8 +712,8 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 	if (!GAME_VAR(int, scene + 0x2149308))
 		return;
 	if (!GAME_VAR(int, scene + 0x2148ee0))
-		match_48b430(scene + 0x2148ed8, scene + 0x2149208, (const void *)0x4c45e4);
-	if (!match_48b440(scene + 0x2148ed8, path))
+		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)0x4c45e4);
+	if (!recorder_setPathStub(scene + 0x2148ed8, path))
 		GAME_VAR(int, scene + 0x2149308) = 0;
 	const char *name = (const char *)(scene + 0x2149108);
 	if (*name) {

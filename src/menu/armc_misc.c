@@ -9,14 +9,14 @@
 #define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
 #define g_armcZoom GAME_VAR(float, 0x4dcfd8)          /* (by use) 1 when the part in view changes; each frame lowers it until it is below a limit, then -2 */
 
-/* 0x41dfb0: the parts page: the preview, the part lists (armc_40d990, a no-op in the patched game) and, unless the
+/* 0x41dfb0: the parts page: the preview, the part lists (armc_resetSeraphimParts, a no-op in the patched game) and, unless the
    interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
 void (armc_drawPartsPage)(void)
 {
 	if (g_armcPreview != 0)
 		armc_updatePartsPreview();
 	if (g_armcModeShown != 3)
-		armc_40d990();
+		armc_resetSeraphimParts();
 	if (g_armcHideInterface == 0) {
 		armc_drawModeTabs();
 		armc_drawStatsPanel();
@@ -183,7 +183,7 @@ void (armc_updatePartsPreview)(void)
 		}
 		armc_drawPartPanels();
 		armc_giveShownActorWeapon(g_scene, GAME_VAR(int, 0x4dbe48));
-		armc_41c510();
+		armc_readMechStats();
 		g_mechChanged = 0;
 		armc_retintParts();
 	}
@@ -637,7 +637,7 @@ int (armc_drawModeTabs)(void)
 	for (int i = 0; i < 3; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, GAME_VAR(int, 0x4dc798) == i + 1 ? 0.8f : 0.4f);
 		int x = GAME_VAR(int, 0x4dcc90), y = GAME_VAR(int, 0x4dcc94);
-		menu_drawTexQuad_4282f0(x + i * 100 + 0x10, y - 8, x + i * 100 + 0x70, y + 0x18, 1);
+		menu_drawWideButton(x + i * 100 + 0x10, y - 8, x + i * 100 + 0x70, y + 0x18, 1);
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
@@ -651,7 +651,7 @@ int (armc_drawModeTabs)(void)
 
 /* 0x40e7a0: the selection kept: the part choices (0x90 bytes from 0x4dc4b8 into 0x4dcfe0), the five colour
    choices (0x4dc760 into 0x4dc878) and six more settings (0x4dcb18 into 0x4dcf18), between two calls of the part
-   lists (armc_40d990); the original then checked the choices' ranges, which the patched game jumps over. Then the
+   lists (armc_resetSeraphimParts); the original then checked the choices' ranges, which the patched game jumps over. Then the
    progress saved; returns profile_saveProgress's eax */
 u32 (armc_saveSelection)(void)
 {
@@ -665,7 +665,7 @@ u32 (armc_saveSelection)(void)
 
 /* 0x40e930: the selection sent to the others in the room: the colour choices (0x90 bytes from 0x4dc4b8, through the
    FPU: a signalling NaN arrives quiet) kept (0x4dcfe0) and in the room's copy (0x9dd603); the part lists
-   (armc_40d990) unless 0x9dd5d8 is 0x14; the parts (0x4dc760) and six settings (0x4dcb18) kept as in
+   (armc_resetSeraphimParts) unless 0x9dd5d8 is 0x14; the parts (0x4dc760) and six settings (0x4dcb18) kept as in
    armc_saveSelection (the range checks jumped over again); their low bytes into the room's copy (0x9dd5f8: the five
    parts, then settings 4 / 5, then 0 .. 3); then the packet at 0xa0b340: the name (0x9dd570), those 11 bytes from
    +0x1e, the colours from +0x29; sent as kind 0x1b to the game server (0x65). The original returns net_send's eax
@@ -678,7 +678,7 @@ void (armc_sendSelectionToNet)(void)
 		((float *)0x9dd603)[i] = v;
 	}
 	if (GAME_VAR(int, 0x9dd5d8) != 0x14)
-		armc_40d990();
+		armc_resetSeraphimParts();
 	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
 	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
 	u8 *room = (u8 *)0x9dd5f8;

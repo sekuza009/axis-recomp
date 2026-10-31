@@ -262,15 +262,15 @@ static int esc_main(Scene *scene)
 				scene->localTeam = -1;
 			scene->playing = 0;
 			if (scene->network == 1) {
-				match_4613a0(scene, -1);
+				scene_setLocalTeam(scene, -1);
 				scene->players[scene->localPlayer].team = -1;
 				esc_resetScore(scene);
 				msg_playerChangedTeam(scene, scene->localPlayer, -1);
-				match_463610(scene, scene->localPlayer, -1, scene->mechName);
+				notice_raise5(scene, scene->localPlayer, -1, scene->mechName);
 				msg_newKing(scene);
 				scene->watchedPlayer = -1;
 			}
-			vsprintf_wrap_463450(scene, (const char *)0x4d06f4);
+			notice_printCentre(scene, (const char *)0x4d06f4);
 			return 1;
 		}
 		if (scene->teamGame != 1) {   /* START */
@@ -329,13 +329,13 @@ static int esc_team(Scene *scene)
 	}
 	if (TEAM_NOW < 0) {
 		msg_playerJoinedTeam(scene, scene->localPlayer, scene->localTeam);
-		match_4635b0(scene, scene->localPlayer, scene->localTeam, scene->mechName);
+		notice_raise4(scene, scene->localPlayer, scene->localTeam, scene->mechName);
 	} else if (TEAM_NOW != scene->localTeam) {
 		msg_playerChangedTeam(scene, scene->localPlayer, scene->localTeam);
-		match_463610(scene, scene->localPlayer, scene->localTeam, scene->mechName);
+		notice_raise5(scene, scene->localPlayer, scene->localTeam, scene->mechName);
 	}
 #undef TEAM_NOW
-	match_4613a0(scene, scene->localTeam);
+	scene_setLocalTeam(scene, scene->localTeam);
 	scene->teamChanged = 1;
 	return 1;
 }

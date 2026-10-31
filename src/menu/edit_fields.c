@@ -56,7 +56,7 @@ static void caret(int x, int y)
 /* ---- arena ---- */
 
 /* 0x404cd0: the arena's name (16 characters) */
-void (arena_editTextField_404cd0)(void)
+void (arena_editName)(void)
 {
 	edit_start(0x10);
 	line_set((const char *)0x4db560);
@@ -69,7 +69,7 @@ void (arena_editTextField_404cd0)(void)
 }
 
 /* 0x404d70: the arena's comment (30) */
-void (arena_editTextField_404d70)(void)
+void (arena_editComment)(void)
 {
 	edit_start(0x1e);
 	line_set((const char *)0x4db528);
@@ -96,18 +96,18 @@ static void edit_limit(int value, int y, int *editing)
 	chat_createEdit(3);
 }
 
-void (arena_editNumberField_404e10)(void)
+void (arena_editFragLimit)(void)
 {
 	edit_limit(g_arenaFragLimitTyped, 0xfe, &EDITING(0x4db850));
 }
 
-void (arena_editNumberField_404ed0)(void)
+void (arena_editTimeLimit)(void)
 {
 	edit_limit(g_arenaTimeLimitTyped, 0x120, &EDITING(0x4db518));
 }
 
 /* 0x404f90: the password (8), from what the line holds */
-void (arena_editTextField_404f90)(void)
+void (arena_editPassword)(void)
 {
 	edit_start(8);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x54);
@@ -119,7 +119,7 @@ void (arena_editTextField_404f90)(void)
 }
 
 /* 0x405010: a message (8), starting empty */
-void (arena_editTextField_405010)(void)
+void (arena_editMessage)(void)
 {
 	edit_start(8);
 	line_clear();

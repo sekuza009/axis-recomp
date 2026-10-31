@@ -36,7 +36,7 @@ void (setup_drawSoundPage)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y1 - 0x20, 0);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
@@ -93,13 +93,13 @@ void (setup_drawSoundPage)(void)
 		int lit = hovered == k + 8;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
-		menu_drawTexQuad_4282f0(bx + 0x90, Y0 + 0x113, bx + 0x108, Y0 + 0x133, 1);
+		menu_drawWideButton(bx + 0x90, Y0 + 0x113, bx + 0x108, Y0 + 0x133, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(bx + 0x90, Y0 + 0x11b, bx + 0x108, (const char *)(0x753724 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef g_pressed
 #undef g_pressedClock
 #undef X0
@@ -125,7 +125,7 @@ void (setup_drawOptionsDialog)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x7538a4);
 	glEnable(GL_TEXTURE_2D);
@@ -156,13 +156,13 @@ void (setup_drawOptionsDialog)(void)
 		int lit = hovered == k + 7;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + k * 0x8c;
-		menu_drawTexQuad_4282f0(bx + 0x64, Y1 - 0x40, bx + 0xdc, Y1 - 0x20, 1);
+		menu_drawWideButton(bx + 0x64, Y1 - 0x40, bx + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(bx + 0x64, Y1 - 0x38, bx + 0xdc, (const char *)(0x753ca4 + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef X0
 #undef Y0
 #undef X1
@@ -238,8 +238,8 @@ static void settings_tab(void)
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4284d0(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
-	menu_drawTexQuad_4285c0(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
+	menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
+	menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x108, Y0 + 0x88, X0 + 0x1d0, Y0 + 0xa0);   /* the track */
 	long double sensitivity = (long double)GAME_VAR(int, 0x4de1c8);
 	float s = f32(fmul_m(sensitivity, (const float *)0x4a9504));
@@ -248,9 +248,9 @@ static void settings_tab(void)
 	const float *zero = (const float *)0x4a93e8;
 	if (g_pressedClock > *zero) {
 		if (g_pressed == 0)
-			menu_drawTexQuad_4284d0(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
+			menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
 		else if (g_pressed == 1)
-			menu_drawTexQuad_4285c0(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
+			menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 1);
 	}
 	int crosshair = g_crosshair;
 	if (crosshair != g_lastCrosshair) {
@@ -303,7 +303,7 @@ void (setup_crosshairScreen)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -341,7 +341,7 @@ void (setup_crosshairScreen)(void)
 		int lit = hovered == k + 4 && !editing;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 		int bx = X0 + 0x50 + k * 0x8c;
-		menu_drawTexQuad_4282f0(bx, Y1 - 0x30, bx + 0x78, Y1 - 0x10, 1);
+		menu_drawWideButton(bx, Y1 - 0x30, bx + 0x78, Y1 - 0x10, 1);
 		const u32 *c = lit ? bright : dim;
 		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
 		text_drawBox16(bx, Y1 - 0x28, bx + 0x78, (const char *)(0x7546a4 + k * 0x80));
@@ -352,7 +352,7 @@ void (setup_crosshairScreen)(void)
 	if (editing)
 		text_drawBox16(0, 0x1bc, 0x280, (const char *)0x7548a4);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 #undef g_row
 #undef X0
 #undef Y0
@@ -725,7 +725,7 @@ void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d
 void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (room_4388e0)(void)
+void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	static const Highlight h = { -1, glow, 0, 0, 0 };

@@ -75,7 +75,7 @@ void (armc_showCursorItem)(void)
 	armc_viewedPartRecord(item);
 	armc_snapshot(6);
 	armc_giveShownActorWeapon(g_scene, g_armcSlot);
-	armc_41c510();
+	armc_readMechStats();
 }
 
 /* 0x40f9e0: take the item under the cursor into the slot being picked; the mech updated and the slot picked again

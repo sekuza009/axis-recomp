@@ -20,7 +20,7 @@ static const u32 *const bright = (const u32 *)0x4dbc58, *const dim = (const u32 
 static void mode_box(void)
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
-	menu_drawTexQuad_4282f0(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
+	menu_drawWideButton(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
 	TEXT(bright);
 	char text[50] = { 0 };
 	strcpy(text, (const char *)0x756da4);
@@ -192,7 +192,7 @@ void (armc_drawColourEditor)(void)
 	glEnd();
 	for (int k = 0; k < 2; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 3 ? 0.8f : 0.4f);
-		menu_drawTexQuad_4282f0(X0 + k * 0x64 + 0x10, Y1 - 0x20, X0 + k * 0x64 + 0x70, Y1, 1);
+		menu_drawWideButton(X0 + k * 0x64 + 0x10, Y1 - 0x20, X0 + k * 0x64 + 0x70, Y1, 1);
 	}
 	for (int k = 0; k < 2; k++) {
 		if (hovered == k + 3)
@@ -267,7 +267,7 @@ void (armc_drawBuildScreen)(void)
 		bind_texture(g_buttonTexture);
 		int lit = hovered == k + 3, x = X0 + k * 0x64;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
-		menu_drawTexQuad_4282f0(x + 0x10, Y1 - 0x20, x + 0x70, Y1, 1);
+		menu_drawWideButton(x + 0x10, Y1 - 0x20, x + 0x70, Y1, 1);
 		if (lit)
 			TEXT(bright);
 		else
@@ -279,7 +279,7 @@ void (armc_drawBuildScreen)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_buildSlot == k ? 1.0f : 0.4f);
-		menu_drawTexQuad_4282f0(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
+		menu_drawWideButton(X0 + 0x10, Y0 + k * 0x3f + 0x28, X0 + 0xa0, Y0 + k * 0x3f + 0x54, 1);
 	}
 	if (g_armcChanged)
 		armc_snapshot(g_buildSlot);
@@ -324,8 +324,8 @@ void (armc_drawBuildScreen)(void)
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4284d0(x - 0x28, y + 0x13a, x, y + 0x15a, hovered == 0xc);
-	menu_drawTexQuad_4285c0(x + 0xa0, y + 0x13a, x + 0xc8, y + 0x15a, hovered != 0xc && hovered == 0xd);
+	menu_drawSmallButton1(x - 0x28, y + 0x13a, x, y + 0x15a, hovered == 0xc);
+	menu_drawSmallButton2(x + 0xa0, y + 0x13a, x + 0xc8, y + 0x15a, hovered != 0xc && hovered == 0xd);
 	mode_box();
 	/* the stats panel */
 	glDisable(GL_TEXTURE_2D);

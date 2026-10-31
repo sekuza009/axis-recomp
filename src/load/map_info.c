@@ -92,7 +92,7 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	}
 	fread_scrambled(&skip, 4, 1, f);
 	log_message((int)scene, 0, 0, (const char *)0x4c7ddc);
-	load_48b460(scene, f);
+	map_readMissionRecords(scene, f);
 	log_message((int)scene, 0, 0, (const char *)0x4c7dcc);
 	map_loadWayPointInfoFrom(scene, f);
 	log_message((int)scene, 0, 0, (const char *)0x4c7dbc);
@@ -370,7 +370,7 @@ static int grey(const u8 *px)
 
 /* 0x48b9d0 (thiscall on the stage): the map's ground file name (under the map directory +0x108). No file or a
    version other than 0x1201 is fatal; then, scrambled, four blocks skipped, the map's directory (0x100), the view
-   range (+0xa08), the lights (load_483d70), the clear colour and fog (+0x9ee030 ..), the background modes (sphere
+   range (+0xa08), the lights (Light_read), the clear colour and fog (+0x9ee030 ..), the background modes (sphere
    +0x9ee064, sky +0x9eee48, sides +0x9ef0b0, floor +0x9ef30c) and their textures, the area limits (+0x9ef904 ..),
    and the layers (+0xdc0a74; 0x20c-byte records from +0xdc0244: rows +0x1c, columns +0x20, origin +4, cell +0x24,
    height scale +0x28, texture size +0x2c): each its texture "<dir>/Ground<i>Map" and a 256 x 256 RGB height map
@@ -399,7 +399,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)0x4c804c);
 	fread_scrambled(s + 0xa08, 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)0x4c8040);
-	load_483d70(s + 0x9ccffc, f);
+	Light_read(s + 0x9ccffc, f);
 	log_message((int)s, 0, 0, (const char *)0x4c802c);
 	fread_scrambled(s + 0x9ee030, 4, 1, f);
 	fread_scrambled(s + 0x9ee034, 0x10, 1, f);

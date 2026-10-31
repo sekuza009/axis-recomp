@@ -86,7 +86,7 @@ void (arena_chatLine)(void)
 	g_arenaJoining = 0;
 	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
 		g_arenaJoining = 1;
-		arena_editTextField_405010();
+		arena_editMessage();
 	}
 }
 
@@ -284,7 +284,7 @@ static u32 typing_end(void)
 	return GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 }
 
-u32 (room_433d30)(void)
+u32 (account_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
 		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
@@ -401,7 +401,7 @@ u32 (app_onClose)(void)
    their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
 u32 (account_checkForm)(void)
 {
-	GAME_CDECL(0x433d30, void, void)();   /* room_433d30 */
+	GAME_CDECL(0x433d30, void, void)();   /* account_endTyping */
 	GAME_VAR(int, 0x68039c) = 0;
 	GAME_VAR(int, 0x9dc428) = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
@@ -485,7 +485,7 @@ u32 (ranking_page)(void)
 		g_lobbyBlinkClock = 1000.0f;
 		g_rankingWaiting = 1;
 	}
-	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
+	GAME_CDECL(0x4388e0, void, void)();   /* room_drawTunnel: the tunnel */
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
@@ -787,7 +787,7 @@ u32 (account_page)(void)
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
 		{ 0x9dd69c, 0x9dd6d8, 12, 0, 0x4340e0 }, { 0x9dd37c, 0x9dd1f6, 12, 0x434020, 0x4341a0 },
 		{ 0x9dd378, 0x9dd202, 12, 0x4340e0, 0x434260 }, { 0x9dd304, 0x9dd20e, 50, 0x4341a0, 0 } };
-	GAME_CDECL(0x4388e0, void, void)();   /* room_4388e0: the tunnel */
+	GAME_CDECL(0x4388e0, void, void)();   /* room_drawTunnel: the tunnel */
 	u32 mode = GAME_VAR(u32, 0x9dce48);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;

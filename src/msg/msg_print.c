@@ -5,7 +5,7 @@
 /* 0x4629f0 (msg_print): a new line in colour, printf-formatted; the oldest line drops out when the ring is full,
    and the message box comes up (msgFade 5). Returns the new count / 5: what the original leaves in eax, and the
    message functions built on it pass it on */
-unsigned (msg_4629f0)(Scene *scene, int colour, const char *format, ...)
+unsigned (msg_print)(Scene *scene, int colour, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);

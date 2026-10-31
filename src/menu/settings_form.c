@@ -163,7 +163,7 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 	glEnable(GL_TEXTURE_2D);
 	bind_buttons();
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? a_lit : 0.4f);
-	menu_drawTexQuad_4282f0(x0, y0, x1, y1, 1);
+	menu_drawWideButton(x0, y0, x1, y1, 1);
 	colour(lit ? bright : dim);
 	text_drawBox16(x0, ty, x1, (const char *)text);
 }
@@ -174,8 +174,8 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 	bind_buttons();
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexQuad_4284d0(X1 - 0x8c, Y0 + 0xd7, X1 - 0x5c, Y0 + 0xef, left);
-	menu_drawTexQuad_4285c0(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
+	menu_drawSmallButton1(X1 - 0x8c, Y0 + 0xd7, X1 - 0x5c, Y0 + 0xef, left);
+	menu_drawSmallButton2(X1 - 0x50, Y0 + 0xd7, X1 - 0x20, Y0 + 0xef, right);
 	glEnable(GL_TEXTURE_2D);
 	bind_buttons();
 	if (custom) {
@@ -185,7 +185,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 		glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
 		colour(other);
 	}
-	menu_drawTexQuad_4282f0(X1 - 0x96, Y0 + 0xf5, X1 - 0x16, Y0 + 0x111, 1);
+	menu_drawWideButton(X1 - 0x96, Y0 + 0xf5, X1 - 0x16, Y0 + 0x111, 1);
 	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)0x75d8a4);
 }
 
@@ -208,7 +208,7 @@ void (room_drawGameSettings)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75a424);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -227,7 +227,7 @@ void (room_drawGameSettings)(void)
 	preview_controls(f, hovered == 11 && !open, hovered == 12 && !open,
 	                 hovered == 13 && !editing && !g_mapListOpen, grey);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 
 /* two buttons (0x7517a4, 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
@@ -261,7 +261,7 @@ void (arena_createDraw)(void)
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, g_dialogFrameTexture);
+	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x752c24);
 	for (int k = 0; k < 8; k++) {
@@ -283,13 +283,13 @@ void (arena_createDraw)(void)
 	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->kind == 1 && !blocked, dim);
 	if (confirming) {
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
-		menu_drawTexturedRect_427b60(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
+		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
 		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)0x753224);
 		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x7532a4);
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GAME_CDECL(0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTexturedRect_428b50 */
+		GAME_CDECL(0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
 	}
 	if (leaving) {
 		int choice = arenaCreate_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
@@ -305,7 +305,7 @@ void (arena_createDraw)(void)
 		box_buttons(choice, 0);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
+	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
 }
 #undef X0
 #undef Y0

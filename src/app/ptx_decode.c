@@ -146,7 +146,7 @@ void (ptx_layoutBlocks)(const u8 *src, u8 *dst, int w, int h, int bpp)
 static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 #define Q(i) ((u32)(i))
 
-void (ptx_decodeBlock_46e380)(const int *in, u8 *out)
+void (ptx_inverseDct)(const int *in, u8 *out)
 {
 	const int *quant = (const int *)0xaa2c94;
 	const u8 *limit = g_clamp + 0x80;
@@ -269,12 +269,12 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		if (p <= 3)
 			GAME_VAR(int, 0xaa2e94) = p == 1 || p == 2;
 		u8 *plane = (u8 *)0xa6228c + (p << 16);
-		set_a61708_46f090(data + pos);
+		ptx_startBitReader(data + pos);
 		if (w * h > 0)
 			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
 				int block[64];
 				bits = ptx_readBlock(block);
-				ptx_decodeBlock_46e380(block, plane);
+				ptx_inverseDct(block, plane);
 				plane += 0x40;
 			}
 		pos += (bits + 7) / 8;

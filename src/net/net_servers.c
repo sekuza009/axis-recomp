@@ -12,7 +12,7 @@ int (net_pingServer)(const char *address, int slot)
 	GAME_VAR(int, 0xa0bf18) = 0;
 	GAME_VAR(int, 0xa0d798) = 0;
 	g_serverPing[slot] = 0;
-	return net_ping(inet_addr_wrap_4547c0(address), 1000) != 0;
+	return net_ping(net_inetAddr(address), 1000) != 0;
 }
 
 /* 0x454690: the server table cleared and the threads' handles closed */

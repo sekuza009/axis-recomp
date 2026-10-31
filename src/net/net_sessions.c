@@ -59,14 +59,14 @@ static void merge(const Received *g)
 }
 
 /* 0x434ff0: the game room's (0x79-byte records) */
-void (room_434ff0)(void)
+void (room_mergeReceivedSessions)(void)
 {
 	static const Received room = { 0xa0b358, 0x9fd9c7, 0x79, -0x66, -0x34, 0x9dd840, { 0x9dd6a0, 0x9da498, 0x9dd3fc } };
 	merge(&room);
 }
 
 /* 0x406640: the arena lobby's (0x5b-byte records) */
-void (arena_406640)(void)
+void (arena_mergeReceivedSessions)(void)
 {
 	static const Received arena = { 0xa0b368, 0xa05791, 0x5b, -0x48, -0x16, 0x4dba8c, { 0x4db858, 0x4df018, 0x4db8b8 } };
 	merge(&arena);

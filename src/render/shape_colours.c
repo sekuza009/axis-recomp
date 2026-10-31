@@ -16,7 +16,7 @@
 #define SHAPE(model, i) (FIELD(u8 *, model, 0x11c) + (i) * 0x4c)
 
 /* 0x466560: each part's material marked changed */
-void THISCALL (shape_466560)(void *shape)
+void THISCALL (shape_markMaterialsChanged)(void *shape)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		int m = FIELD(int, PART(shape, i), 0x44);
@@ -27,7 +27,7 @@ void THISCALL (shape_466560)(void *shape)
 }
 
 /* 0x4665c0: each part's material recoloured (two hue, chroma, value triples) */
-void THISCALL (shape_4665c0)(void *shape, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
+void THISCALL (shape_recolourMaterials)(void *shape, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
 {
 	for (int i = 0; i < PART_COUNT(shape); i++) {
 		int m = FIELD(int, PART(shape, i), 0x44);
@@ -48,17 +48,17 @@ void THISCALL (shape_setTint)(void *model, u32 h1, u32 c1, u32 v1, u32 h2, u32 c
 	FIELD(u32, model, 0x244) = c2;
 	FIELD(u32, model, 0x248) = v2;
 	for (int i = 0; i < SHAPE_COUNT(model); i++)
-		shape_4665c0(SHAPE(model, i), h1, c1, v1, h2, c2, v2);
+		shape_recolourMaterials(SHAPE(model, i), h1, c1, v1, h2, c2, v2);
 }
 
 /* 0x4675f0: the tint taken off */
-void THISCALL (shape_4675f0)(void *model)
+void THISCALL (model_clearTint)(void *model)
 {
 	FIELD(u32, model, 0x230) &= ~2;
 	for (int k = 0; k < 6; k++)
 		FIELD(u32, model, 0x234 + k * 4) = 0;
 	for (int i = 0; i < SHAPE_COUNT(model); i++)
-		shape_466560(SHAPE(model, i));
+		shape_markMaterialsChanged(SHAPE(model, i));
 }
 
 /* 0x466960: every part's pixels coloured (image_addColour on the part's place in px) */
@@ -80,12 +80,12 @@ void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, 
 	if (flags & 2)
 		shape_setTint(model, h1, c1, v1, h2, c2, v2);
 	else
-		shape_4675f0(model);
+		model_clearTint(model);
 }
 
 /* 0x46de20: an RGBA byte colour tinted: to floats (/ 255), tex_tintHsv, back to bytes (* 255, all four channels,
    alpha too). Returns the last conversion */
-int THISCALL (tex_46de20)(u8 *rgba, u32 dh, u32 ds, u32 dv)
+int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 {
 	float c[4];
 	for (int i = 0; i < 4; i++)

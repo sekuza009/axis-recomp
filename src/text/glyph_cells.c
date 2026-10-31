@@ -30,7 +30,7 @@ static void glyph_grid(const Grid *g)
 }
 
 /* 0x42f940: the menu fonts' (16 x 8 of 16 texels, 32 x 16 of 8, and four extra rows) */
-void (app_42f940)(void)
+void (font_initMenuGrids)(void)
 {
 	static const Grid grids[3] = {
 		{ 0, 16, 0x80, 0, 15, 16, 16, 0, 15, 0x9db0b0, 0x9da4a8, 0x9da90c, 0x9db510 },
@@ -41,7 +41,7 @@ void (app_42f940)(void)
 }
 
 /* 0x42fb40: the HUD fonts' */
-void (hud_42fb40)(void)
+void (font_initHudGrids)(void)
 {
 	static const Grid grids[3] = {
 		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, 0x4e0474, 0x5b0910, 0x5b0d10, 0x4e0878 },

@@ -10,8 +10,8 @@ void THISCALL (hud_pass)(Scene *scene)
 	char text[256];
 	if (!scene->frameFlag)
 		return;
-	hud_456b50(g_textures);
-	this_set_4841d0(&scene->view);
+	tex_clearSetCounters(g_textures);
+	ViewVolume_clearDrawCounts(&scene->view);
 	if (scene->fogOn == 1) {
 		glClearColor_stored(scene->fogColour);
 		glClearDepth(1.0);
@@ -32,8 +32,8 @@ void THISCALL (hud_pass)(Scene *scene)
 		} else if (scene->playing == 1 && scene->cameraMode == 2 && scene->localPlayer >= 0) {
 			scene->players[scene->localPlayer].viewMarked = 1;
 		}
-		sky_draw(STAGE(scene), hud_scale());
-		render_processRenderingBy(STAGE(scene), &scene->view, hud_scale());
+		sky_draw(STAGE(scene), view_farPlane());
+		render_processRenderingBy(STAGE(scene), &scene->view, view_farPlane());
 		stage_drawObjects(STAGE(scene), &scene->view);
 		stage_drawActors(STAGE(scene), &scene->view, 0);
 		stage_drawBullets(STAGE(scene), &scene->view);

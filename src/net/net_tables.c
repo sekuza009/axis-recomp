@@ -177,7 +177,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 #undef crt_strncpy
 
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
-u32 (inet_addr_wrap_4547c0)(const char *text) { return ((u32 (STDCALL *)(const char *))0x4a82b0)(text); }
+u32 (net_inetAddr)(const char *text) { return ((u32 (STDCALL *)(const char *))0x4a82b0)(text); }
 
 /* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
@@ -501,7 +501,7 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 
 /* 0x454d90: the first place in text where word appears (strncmp at each position where the first letters match, or
    _strnicmp, ignoring case, when exact is 0); NULL when it does not */
-const char *(dplay_454d90)(const char *text, const char *word, int exact)
+const char *(text_findWord)(const char *text, const char *word, int exact)
 {
 	int length = strlen(word);
 	int positions = strlen(text) - length + 1;
@@ -1068,7 +1068,7 @@ static void arena_info(u8 *dst, u8 first, u8 count)
 	net_send(0x14, 0x65);
 }
 
-/* 0x450c20 (DirectPlay system message): 5, a player created: its slot taken by the host (net_451530, unless
+/* 0x450c20 (DirectPlay system message): 5, a player created: its slot taken by the host (net_freeSlotsOf, unless
    0x9fd94c), then the info sent with the count less one; 3, a player gone: a slot freed (net_claimPlayerSlot into
    0x9f9424, net_sendMessage), the message's count kept and the info sent (an arena's then starts with 1). Only while
    hosting (0xa0baf8) over TCP/IP (0xa0b418 = 0) with the right socket open (200: the room on the lobby's, 201: the
@@ -1079,7 +1079,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 	int gone;
 	if (msg[0] == 5) {
 		if (!GAME_VAR(int, 0x9fd94c))
-			GAME_CDECL(0x451530, void, u32)(msg[2]);   /* net_451530 */
+			GAME_CDECL(0x451530, void, u32)(msg[2]);   /* net_freeSlotsOf */
 		gone = 0;
 	} else if (msg[0] == 3) {
 		if (!g_isHost)
@@ -1204,8 +1204,8 @@ u32 (net_disconnect)(void)
 }
 
 /* 0x450bb0, 0x4532e0: jumps to net_receiveAll and net_getLocalAddress (their eax passed on) */
-u32 (FUN_00450bb0)(void) { return net_receiveAll(); }
-int (jmp_net_getLocalAddress_4532e0)(void) { return net_getLocalAddress(); }
+u32 (jmp_net_receiveAll)(void) { return net_receiveAll(); }
+int (jmp_net_getLocalAddress)(void) { return net_getLocalAddress(); }
 
 /* ---- packets to the lobby (socket 0xa055f8) and the game server (0xa05630): a kind word, then the kind's buffer ---- */
 
@@ -1264,7 +1264,7 @@ void (net_send)(int kind, int to)
 		g_netLastRequest = kind;
 		if (!GAME_VAR(void *, 0xa0b320))
 			return;
-		jmp_net_getLocalAddress_4532e0();
+		jmp_net_getLocalAddress();
 		lstrcpyA(g_accountPacket + 0x60, (const char *)0xa0b43c);
 		send_buffer(0xa05630, 0xa0b320, 0x10b);
 		return;
@@ -1289,7 +1289,7 @@ void (net_send)(int kind, int to)
 		send_buffer(0xa05630, 0xa0b330, 0x79);
 		return;
 	case 24:
-		jmp_net_getLocalAddress_4532e0();
+		jmp_net_getLocalAddress();
 		if (!GAME_VAR(char *, 0xa0b308))
 			return;
 		lstrcpyA(GAME_VAR(char *, 0xa0b308), (const char *)0xa0b43c);
@@ -1425,7 +1425,7 @@ static void send_packet(u8 *s, u8 *packet)
    (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
    (+0x2340d08). Its caller ignores the eax it leaves */
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
-void THISCALL (net_sendState_48ead0)(u8 *s)
+void THISCALL (net_sendPlayerLevels)(u8 *s)
 {
 	u8 packet[0x40];
 	packet[1] = 0xe;
@@ -1493,8 +1493,8 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 		return 1;
 	memcpy(data, connection, size);
 	for (int k = 0; k < 4; k++)
-		if (dplay_454d90(own, (const char *)kinds[k].words[0], 1) ||
-		    (kinds[k].words[1] && dplay_454d90(own, (const char *)kinds[k].words[1], 1))) {
+		if (text_findWord(own, (const char *)kinds[k].words[0], 1) ||
+		    (kinds[k].words[1] && text_findWord(own, (const char *)kinds[k].words[1], 1))) {
 			memcpy((void *)kinds[k].guid, id, 0x10);
 			GAME_VAR(void *, kinds[k].data) = g_connectionCopy;
 			break;
@@ -2102,7 +2102,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		G(int, 0x234300a + G(int, 0x234240d) * 0x10) = 1;
 		GAME_THISCALL(0x462b50, void, void *, int)(g, b[2]);   /* msg_playerConnected */
 		if (G(int, 4) == 0)
-			GAME_THISCALL(0x48ead0, void, void *)(g);   /* net_sendState_48ead0 */
+			GAME_THISCALL(0x48ead0, void, void *)(g);   /* net_sendPlayerLevels */
 		return;
 	case 9:
 		if (b[2] > 0x10)

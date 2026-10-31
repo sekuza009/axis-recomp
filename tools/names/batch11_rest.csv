@@ -1,0 +1,118 @@
+# function names, batch 11: the remaining placeholders (old,new[,merge]); "merge" lines give a game.h call macro's
+# name to the definition it calls
+# member blocks and small objects
+load_47db50,collisionPlane_clear
+load_4804a0,spaceBlock_clear
+load_483fc0,ViewVolume_clear
+load_480430,spaceNode_clear
+load_480440,spaceSlot_clear
+this_set_483d60,Light_clearCounts
+this_set_4841d0,ViewVolume_clearDrawCounts
+this_set_480210,ints_set3
+load_483d70,Light_read
+ResourceSet_ctor_463850,ResourceSet_ctor
+ResourceSet_dtor_463960,ResourceSet_dtor
+ResourceSet_init_463a40,ResourceSet_initLists
+match_45fff0,ResourceSet_trivialCtor
+# getters and setters
+match_4686f0,view_nearPlane
+hud_scale,view_farPlane
+FUN_00468700,view_farPlane,merge
+set_a61708_46f090,ptx_startBitReader
+set_4b42dc_457140,music_setVolumeSetting
+this_get_0x2342381_463780,scene_teamSlot,merge
+FUN_00473a10,player_setValue,merge
+match_4613a0,scene_setLocalTeam
+# the recorder's empty methods (one empty function each, shared by every caller)
+match_48b430,recorder_openStub
+match_48b440,recorder_setPathStub
+hud_48b450,recorder_noteStub
+# start-up
+input_4013a0,input_createMouse
+main_462050,match_frameByState
+GetCurrentDirectoryA_wrap_43f580,app_readCurrentDirectory
+intro_42f2b0,menu_initMainButtons
+intro_42f500,menu_initKeyRepeatDefaults
+intro_42f690,room_initMenuButtons
+replay_46d4d0,color_initTextColours
+app_42f940,font_initMenuGrids
+hud_42fb40,font_initHudGrids
+# picture decoding
+ptx_decodeBlock_46e380,ptx_inverseDct
+ptx_initTable_46efd0,ptx_initYCbCrTables
+# net
+net_451530,net_freeSlotsOf
+inet_addr_wrap_4547c0,net_inetAddr
+dplay_454d90,text_findWord
+FUN_00450bb0,jmp_net_receiveAll
+jmp_net_getLocalAddress_4532e0,jmp_net_getLocalAddress
+net_sendState_48ead0,net_sendPlayerLevels
+room_434ff0,room_mergeReceivedSessions
+arena_406640,arena_mergeReceivedSessions
+# match
+hud_456b50,tex_clearSetCounters
+match_4634e0,notice_raise1
+match_463530,notice_raise2
+match_463550,notice_raise3
+match_4635b0,notice_raise4
+match_463610,notice_raise5
+vsprintf_wrap_463450,notice_printCentre
+vsprintf_wrap_473450,stage_printText
+msg_4629f0,msg_print,merge
+load_48b460,map_readMissionRecords
+# collision and maths
+space_tracePlanes_47fb80,collisionTri_traceSegment
+space_traceUnit_4809f0,space_traceUnit
+skel_47d830,Mat4_transpose
+collision_480230,vec3_negate
+hud_467700,vec_rotate,merge
+collision_4803c0,vec3_scaleCopy
+skel_ase_47d0f0,quat_fromMatrix
+skel_ase_47d260,quat_toAxisAngle
+skel_ase_47d320,axisAngle_combine
+skel_ase_47d2f0,axisAngle_fromMatrix
+skelDat_46b0c0,skelDat_findByName
+# render
+data_46f7a0,ObjectList_relight
+shape_466560,shape_markMaterialsChanged
+shape_4665c0,shape_recolourMaterials
+shape_4675f0,model_clearTint
+tex_46de20,tex_tintRgba
+tex_46def0,tex_rgbToHsv
+tex_454e60,texRecord_init
+ViewVolume_add_485120,ViewVolume_addSegment
+glWindow_4684c0,gfx_resetState
+# sound
+music_4572b0,music_loopIfEnded
+sound_467dd0,sound_playNextBuffer
+# menus
+armc_40d990,armc_resetSeraphimParts
+armc_41c510,armc_readMechStats
+arena_editTextField_404cd0,arena_editName
+arena_editTextField_404d70,arena_editComment
+arena_editNumberField_404e10,arena_editFragLimit
+arena_editNumberField_404ed0,arena_editTimeLimit
+arena_editTextField_404f90,arena_editPassword
+arena_editTextField_405010,arena_editMessage
+lobby_editTextField_405230,arena_editTitle
+arena_403f30,lobbyTop_layout
+skirmish_4437b0,skirmish_layout
+skirmish_443840,skirmishButtons_layout
+console_41e390,room_fitWindowRects
+menu_drawTexQuad_4282f0,menu_drawWideButton
+menu_drawTexQuad_4284d0,menu_drawSmallButton1
+menu_drawTexQuad_4285c0,menu_drawSmallButton2
+menu_drawTexQuad_4286b0,menu_drawSmallButton3
+menu_drawTexQuad_4287a0,menu_drawSmallButton4
+menu_drawTexturedRect_427a90,menu_drawTexture
+menu_drawTexturedRect_427b60,menu_drawTextureFlipped
+menu_drawTexturedRect_428a00,menu_drawCornerOrnaments
+menu_drawTexturedRect_428b50,menu_drawTopRightOrnament
+lobby_404930,arena_copyProfile
+game_returnToMenus_41e8b0,game_returnToMainMenu
+game_returnToMenus_41e9d0,game_returnToScreen400
+game_returnToMenus_41ec50,game_returnToScreen500
+game_returnToMenus_41eb00,game_returnToGameRoom
+room_433d30,account_endTyping
+room_4388e0,room_drawTunnel
+setup_controlTabHelper_420c10,setup_keepKeyBindings
