@@ -6792,6 +6792,22 @@ static void mock_reset(void)
    is loaded: before each setup the other ids point at it (a setup that sets them overrides this) */
 static void fonts_loaded(void) { G32(0x9dad90) = G32(0x9dae1c) = G32(0x76d360) = G32(0x76d448); }
 void __cdecl paint_below(DWORD bytes);
+void __cdecl paint_below_addr(DWORD bytes, DWORD xorv);
+/* RECOMP_PAINTADDR=1: every test paints (as if its setup had asked), each dword holding its own address. Both runs
+   start at the same esp, so a function that reads stack it never wrote - itself, or a game callee under a rebuild -
+   reads the same value only when it reads at the original's depth: a rebuild whose frame depth differs where such a
+   read happens fails its test. (The values are valid stack pointers, so a stale pointer read stays in the paint.)
+   RECOMP_PAINTADDR=2 (a diagnostic): each run's paint is xored with a value that alternates from run to run, so
+   the two sides of a test see different stale bytes: the tests that fail are those whose results depend on
+   stack nobody wrote at all, whatever its depth. */
+static int g_paintAddr;
+__asm__(".text\n"
+        ".globl _paint_below_addr\n"
+        "_paint_below_addr:\n"
+        "\tmovl 4(%esp), %ecx\n\tmovl 8(%esp), %edx\n\tshrl $2, %ecx\n\tpushl %edi\n\tleal -4(%esp), %edi\n"
+        "1:\tmovl %edi, %eax\n\txorl %edx, %eax\n\tmovl %eax, (%edi)\n\tsubl $4, %edi\n\tdecl %ecx\n\tjnz 1b\n"
+        "\tpopl %edi\n\tret\n");
+static DWORD g_paintFlip;
 __asm__(".text\n"
         ".globl _paint_below\n"
         "_paint_below:\n"
@@ -6799,6 +6815,7 @@ __asm__(".text\n"
         "\tmovl $0xcdcdcdcd, %eax\n\tstd\n\trep stosl\n\tcld\n\tpopl %edi\n\tret\n");
 static inline __attribute__((always_inline)) void paint_stacks(void)   /* inlined: paint_below must start below run_guarded */
 {
+	if (g_paintAddr) { paint_below_addr(0x8000, g_paintAddr == 2 ? (g_paintFlip ^= 0x10) : 0); return; }   /* last, as below */
 	if (!g_paintStacks) return;
 	paint_below(0x8000);                        /* last: any call after it would leave its frame in the paint */
 }
@@ -10430,8 +10447,9 @@ static void texexist_setup(void)
 	*(short *)(d + 6) = (short)(irnd(0, 3) ? w / 8 : irnd(0, 40)); *(short *)(d + 8) = (short)(irnd(0, 3) ? h / 8 : irnd(0, 40));
 	*(int *)(d + 18) = irnd(0, 3) ? w : irnd(0, 300); *(int *)(d + 22) = irnd(0, 3) ? h : irnd(0, 300);
 	*(WORD *)(d + 28) = 24; *(DWORD *)(d + 30) = 0;
-	g_vfsData = d; g_vfsSize = 0x80; g_vfsOpenFail = !irnd(0, 5);
-	g_paintStacks = 1;
+	g_vfsData = d; g_vfsSize = irnd(0, 3) ? 0x80 : irnd(0, 0x40); g_vfsOpenFail = !irnd(0, 5);
+	g_paintStacks = 1;   /* a short file leaves the size words it freads as the stack had them (in play: a deeper
+	                        frame's leftovers - the reason tex_allocIdBy must keep the original's frame depth) */
 }
 ST(tex_textureFileExist, texexist_setup();, TC(DWORD, 0x4557e0, char *, char *)(BUF + 0x100, BUF + 0x300), tex_textureFileExist(BUF + 0x100, (DWORD)(BUF + 0x300)))
 /* a directory argument: none, the empty string the code compares with, or a path with lower case and slashes */
@@ -18749,6 +18767,7 @@ static DWORD WINAPI worker(LPVOID unused)
 	g_quick = GetEnvironmentVariableA("RECOMP_QUICK", NULL, 0) != 0;
 	{ char sb[16]; if (GetEnvironmentVariableA("RECOMP_SEED", sb, sizeof sb)) g_forceSeed = (unsigned)strtoul(sb, NULL, 16); }
 	g_nanAudit = GetEnvironmentVariableA("RECOMP_NANAUDIT", NULL, 0) != 0;
+	{ char pb[8]; if (GetEnvironmentVariableA("RECOMP_PAINTADDR", pb, sizeof pb)) g_paintAddr = atoi(pb); }
 	{ DWORD tid; HANDLE h = CreateThread(NULL, 0, watchdog, NULL, 0, &tid); if (h) { g_wdOwn = tid; CloseHandle(h); } }
 	Sleep(8000);                              /* let the game load MATHFUNC.TBL (sin/cos tables) */
 	say("recomp: comparing %d random inputs per function (original vs rebuilt)\n", N);

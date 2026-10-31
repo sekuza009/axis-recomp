@@ -8,7 +8,13 @@ Forward data flow over each function's control flow graph: the stack pointer is 
 the entry esp; a slot counts as written after a write to any of its bytes, after "lea reg, [esp + k]" (its address
 escapes: a callee may fill it), and for string instructions conservatively. At joins a slot is written only if it is
 on every incoming path. Functions using ebp as a frame pointer are handled through ebp = esp at "mov ebp, esp".
-Prints function, address of the read and the slot (offset from the entry esp)."""
+Prints function, address of the read and the slot (offset from the entry esp).
+
+--partial: a slot whose address goes to a callee that may fill less than the whole buffer (fread, fgets, _read,
+ReadFile, RegQueryValueExA, recv ...: PARTIAL below) stays unwritten - the reads of what a short read left behind.
+The escape is decided at the next call (or string instruction) after the lea.
+--unhooked: the functions that still run as the game's own code (not in recomp.c's hook table), the CRT included,
+instead of the game's code below 0x49e000."""
 import sys, csv, struct, capstone
 from capstone import x86 as X
 D = 'C:/Users/Alexander/Desktop/Axis/'
@@ -28,6 +34,29 @@ def retpop(t):
         if i.mnemonic == 'ret': return i.operands[0].imm if i.operands else 0
     return 0
 ESP, EBP = X.X86_REG_ESP, X.X86_REG_EBP
+# the import address table: "call [iat]" sites by name
+iat = {}
+_imp = struct.unpack_from('<I', b, pe + 24 + 104)[0]
+def _roff(rva):
+    for nm, vs, sva, rs, ro in secs:
+        if sva <= rva < sva + max(vs, rs): return rva - sva + ro
+_d = _roff(_imp)
+while struct.unpack_from('<I', b, _d + 12)[0]:
+    _oft, _ts, _fc, _nm, _ft = struct.unpack_from('<IIIII', b, _d)
+    _t, _k = _roff(_oft or _ft), 0
+    while struct.unpack_from('<I', b, _t + 4 * _k)[0]:
+        _v = struct.unpack_from('<I', b, _t + 4 * _k)[0]
+        iat[0x400000 + _ft + 4 * _k] = '#%d' % (_v & 0xffff) if _v & 0x80000000 else b[_roff(_v) + 2:b.index(b'\0', _roff(_v) + 2)].decode()
+        _k += 1
+    _d += 20
+PARTIAL = {'fread', 'fgets', '_read', 'ReadFile', 'RegQueryValueExA', 'GetWindowTextA', 'GetCurrentDirectoryA',
+           'GetModuleFileNameA', 'IcmpSendEcho', 'mciSendCommandA', 'glGetFloatv', 'glGetBooleanv', '#16', '#17'}
+partial = '--partial' in sys.argv
+def callee_name(i):
+    op = i.operands[0]
+    if op.type == X.X86_OP_IMM: return fs.get(op.imm, (0, '?'))[1]
+    if op.type == X.X86_OP_MEM and not op.mem.base and not op.mem.index: return iat.get(op.mem.disp, '?')
+    return '?'
 
 def analyse(a):
     sz, name = fs[a]
@@ -36,12 +65,12 @@ def analyse(a):
     idx = {i.address: k for k, i in enumerate(ins)}
     # state: (esp offset, ebp offset or None, frozenset of written slots)
     best = {}
-    work = [(0, (0, None, frozenset(), 0))]
+    work = [(0, (0, None, frozenset(), 0, frozenset()))]
     reports = set()
     steps = 0
     while work and steps < 200000:
         steps += 1
-        k, (sp, bp, wr, ab) = work.pop()        # ab: esp before the pending call's arguments
+        k, (sp, bp, wr, ab, pend) = work.pop()  # ab: esp before the pending call's arguments; pend: escaped slots
         while k < len(ins):
             i = ins[k]
             key = i.address
@@ -69,6 +98,8 @@ def analyse(a):
                 is_dest = j == 0 and m not in ('cmp', 'test', 'push') and not m.startswith('f') or m in ('fstp', 'fst', 'fistp', 'fist', 'fnstsw', 'fnstcw')
                 if m == 'lea': continue
                 pure_write = is_dest and m in ('mov', 'movzx', 'movsx', 'fstp', 'fst', 'fistp', 'fist', 'fnstsw', 'fnstcw', 'setne', 'sete') or m.startswith('set') and j == 0
+                if j == 0 and len(ops) == 2 and ops[1].type == X.X86_OP_IMM and (m == 'and' and ops[1].imm == 0 or m == 'or' and ops[1].imm in (-1, 0xffffffff)):
+                    pure_write = True                     # and [x], 0 / or [x], -1: the value does not depend on the old one
                 if pure_write: continue
                 if (s & ~3) not in wr and (s + op.size - 1) & ~3 not in wr:
                     reports.add((i.address, s))
@@ -81,12 +112,20 @@ def analyse(a):
             if m == 'lea' and ops[1].type == X.X86_OP_MEM:
                 s = slot(ops[1])
                 if s is not None and s < 0:                  # address escapes: assume the whole frame below may be filled
-                    wr = wr | frozenset(range(s & ~3, 0, 4))
+                    if partial: pend = pend | frozenset(range(s & ~3, 0, 4))
+                    else: wr = wr | frozenset(range(s & ~3, 0, 4))
             if m in ('rep stosd', 'rep movsd', 'stosd', 'movsd', 'rep stosb', 'rep movsb', 'stosb', 'movsb'):
-                pass
+                wr, pend = wr | pend, frozenset()
+            if m == 'call' and pend:
+                if callee_name(i) not in PARTIAL: wr = wr | pend
+                pend = frozenset()
             # esp/ebp tracking
             if m == 'push':
                 sp -= 4; wr = wr | {sp}
+                nx = ins[k + 1] if k + 1 < len(ins) else None
+                if (ops[0].type == X.X86_OP_REG and nx is not None and nx.mnemonic in ('mov', 'lea', 'xor')
+                        and nx.operands[0].type == X.X86_OP_REG and nx.operands[0].reg == ops[0].reg):
+                    ab = sp                                # push reg; mov reg, ...: a register saved, not an argument
             elif m == 'pop': sp += 4
             elif m == 'pushal': sp -= 32; wr = wr | frozenset(range(sp, sp + 32, 4))
             elif m == 'popal': sp += 32
@@ -107,13 +146,20 @@ def analyse(a):
                 ab = sp
             if m.startswith('j') and ops and ops[0].type == X.X86_OP_IMM:
                 t = ops[0].imm
-                if t in idx: work.append((idx[t], (sp, bp, wr, ab)))
+                if t in idx: work.append((idx[t], (sp, bp, wr, ab, pend)))
                 if m == 'jmp': break
             if m.startswith('ret') or (m == 'jmp'): break
             k += 1
     return sorted(reports)
 
-targets = [int(x, 16) for x in sys.argv[1:]] or sorted(x for x in fs if x < 0x49e000)
+args = [x for x in sys.argv[1:] if not x.startswith('--')]
+if '--unhooked' in sys.argv:
+    import re
+    r = open(D + 'recomp/recomp.c').read()
+    hooked = {int(x, 16) for x in re.findall(r'\{ 0x([0-9a-f]+), \(void \*\)\w+, "\w+" \}', r) + re.findall(r'hook\(0x([0-9a-f]+),', r)}
+    targets = sorted(x for x in fs if x not in hooked and not fs[x][1].startswith('Unwind@'))
+else:
+    targets = [int(x, 16) for x in args] or sorted(x for x in fs if x < 0x49e000)
 for a in targets:
     if a not in fs: continue
     try: r = analyse(a)
