@@ -533,7 +533,7 @@ u32 (room_leaveGame)(void)
 	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
 	GAME_CDECL(0x441250, void, int)(4);                 /* input_setKeysBlocked */
 	GAME_VAR(int, 0x67ef20) = 300;
-	GAME_CDECL(0x48b420, void, void)();                 /* nullsub_48b420 */
+	GAME_CDECL(0x48b420, void, void)();                 /* debug_traceStripped */
 	GAME_CDECL(0x451e60, void, void)();                 /* net_disconnect */
 	g_roomConnected = 0;
 	return CALL(0x4463a0);                              /* mech_loadFromProfile */
@@ -815,7 +815,7 @@ static u32 to_main_menu(void)
 {
 	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* input_setKeysBlocked: keys blocked */
 	g_nextScreen = 300;
-	GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
+	GAME_CDECL(0x48b420, void, void)();          /* debug_traceStripped */
 	return r;
 }
 

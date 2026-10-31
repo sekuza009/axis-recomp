@@ -257,6 +257,6 @@ void (armc_processInput)(void)
 	case 1: armc_partsPageKeys(); break;
 	case 2: armc_weaponsPageKeys(); break;
 	case 3: armc_colourPageKeys(); break;
-	case 4: nullsub_48b420(GAME_VAR(Scene *, 0x4dc798)); break;   /* (its ecx: the original jumps there with the page in ecx) */
+	case 4: debug_traceStripped(GAME_VAR(Scene *, 0x4dc798)); break;   /* (its ecx: the original jumps there with the page in ecx) */
 	}
 }

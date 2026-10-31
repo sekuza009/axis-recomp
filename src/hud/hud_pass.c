@@ -106,7 +106,7 @@ void THISCALL (hud_pass)(Scene *scene)
 		}
 		if (scene->teamGame == 1)
 			hud_drawTeamScores(scene);
-		nullsub_48b420(scene);
+		debug_traceStripped(scene);
 		if (g_showFps == 1)
 			PATCHED_THISCALL(0x498862, void, Scene *)(scene);                     /* hud_drawFps */
 		if (scene->consoleOpen == 1)

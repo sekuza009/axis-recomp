@@ -238,7 +238,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 0: TRIGGER(c[1], 4) = 1; break;
 		case 1: TRIGGER(c[1], 4) = 0; break;
 		case 2: TRIGGER(c[1], 0x14) = 1; break;
-		case 3: nullsub_483ce0(s, c[1]); break;
+		case 3: stage_triggerActionNone(s, c[1]); break;
 		case 4: if (actor) FIELD(u32, actor, 0x8804) = c[1]; break;
 		case 5: if (actor) FIELD(u32, actor, 0x8808) = c[1]; break;
 		case 7:
@@ -253,7 +253,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			break;
 		case 9:
 			if (actor && FIELD(int, actor, 0x8820) >= 0)
-				nullsub_483ce0(s, c[1]);
+				stage_triggerActionNone(s, c[1]);
 			break;
 		case 10: if (actor) FIELD(int, actor, 0x78) = 0; break;
 		case 11: if (actor) FIELD(int, actor, 0x78) = 1; break;

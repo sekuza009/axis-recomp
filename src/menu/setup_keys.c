@@ -45,7 +45,7 @@ static void leave(void)
 	input_setKeysBlocked(4);
 	g_nextScreen = 300;
 	g_cursorBlink = 0.0f;
-	nullsub_48b420(NULL);
+	debug_traceStripped(NULL);
 }
 
 /* 0x422b70: the top page: a tab key opens its tab; the back key (when 0x9dae10 allows) or the leave key goes
@@ -240,7 +240,7 @@ u32 (setup_drawTopPage)(void)
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				GAME_VAR(int, 0x4dda44) = 0;
-				GAME_CDECL(0x48b420, void, void)();   /* nullsub_48b420 */
+				GAME_CDECL(0x48b420, void, void)();   /* debug_traceStripped */
 				break;
 			}
 			break;

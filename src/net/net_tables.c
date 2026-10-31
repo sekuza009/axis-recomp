@@ -2174,7 +2174,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		G(int, 0x2343253) = 1;
 		return;
 	}
-	GAME_CDECL(0x48b420, void, const char *)(pkt);   /* nullsub_48b420 */
+	GAME_CDECL(0x48b420, void, const char *)(pkt);   /* debug_traceStripped */
 }
 #undef G
 #undef K

@@ -1088,7 +1088,7 @@ static void creategame_close(void)
 	input_setKeysBlocked(4);
 	g_roomState = 99;
 	GAME_VAR(int, 0x67ef20) = 300;
-	GAME_CDECL(0x48b420, void, void)();   /* nullsub_48b420 */
+	GAME_CDECL(0x48b420, void, void)();   /* debug_traceStripped */
 }
 
 /* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)

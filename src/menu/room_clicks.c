@@ -205,7 +205,7 @@ u32 (room_leftClicks)(void)
 		g_roomState = 0x63;
 		g_nextScreen = 300;
 		GAME_VAR(int, 0x4e1868) = 0;
-		GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
+		GAME_CDECL(0x48b420, void, void)();          /* debug_traceStripped */
 		return GAME_CDECL(0x451e60, u32, void)();    /* net_disconnect */
 	case 4:
 		sound_playMenu(0);

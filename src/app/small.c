@@ -209,7 +209,7 @@ void THISCALL (script_pushEvent)(Stage *stage, int a, int b, int c, int d)
 /* 0x48fca0: the script's six counters cleared */
 int THISCALL (script_reset)(Stage *stage)
 {
-	nullsub_48b420((Scene *)stage);   /* an empty method of the stage */
+	debug_traceStripped((Scene *)stage);   /* an empty method of the stage */
 	for (int i = 0; i < 6; i++)
 		FIELD(int, stage, 0x2149308 + i * 4) = 0;
 	return 0;
@@ -322,7 +322,7 @@ u32 (app_checkFile_profeng)(void) { return 1; }
 void (armc_40d990)(void) {}
 
 /* ---- more small methods ---- */
-void THISCALL (nullsub_483ce0)(void *self, int a) { (void)self; (void)a; }
+void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a; }
 /* 0x45dfe0: the stage's +0x202e8dc set (returned) */
 int THISCALL (stage_setValue202e8dc)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */

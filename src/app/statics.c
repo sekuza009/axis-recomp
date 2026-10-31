@@ -26,85 +26,85 @@ void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)0xae2f00, (const char
 void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)0xae3328, (const char *)0x4c7d18, 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
-void (static_initObject_4e1878)(void) { GAME_VAR(u32, 0x4e1878) = 0x4a956c; GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
-void (static_initObject_5b1db8)(void) { GAME_VAR(u32, 0x5b1db8) = 0x4a956c; GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
-void (static_initObject_680cd8)(void) { GAME_VAR(u32, 0x680cd8) = 0x4a956c; GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
-void (static_initObject_76d498)(void) { GAME_VAR(u32, 0x76d498) = 0x4a956c; GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
-void (static_initObject_90d1e0)(void) { GAME_VAR(u32, 0x90d1e0) = 0x4a956c; GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
-void (static_initObject_83a9e0)(void) { GAME_VAR(u32, 0x83a9e0) = 0x4a956c; GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
+void (static_initTex64x64)(void) { GAME_VAR(u32, 0x4e1878) = 0x4a956c; GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
+void (static_initTex128x64)(void) { GAME_VAR(u32, 0x5b1db8) = 0x4a956c; GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
+void (static_initTex256x64)(void) { GAME_VAR(u32, 0x680cd8) = 0x4a956c; GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
+void (static_initTex128x128)(void) { GAME_VAR(u32, 0x76d498) = 0x4a956c; GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
+void (static_initTex256x128)(void) { GAME_VAR(u32, 0x90d1e0) = 0x4a956c; GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
+void (static_initTex256x256)(void) { GAME_VAR(u32, 0x83a9e0) = 0x4a956c; GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
-int (static_registerDtor_42b170)(void) { return atexit((void (*)(void))0x42b180); }
-int (static_registerDtor_42b1c0)(void) { return atexit((void (*)(void))0x42b1d0); }
-int (static_registerDtor_42b210)(void) { return atexit((void (*)(void))0x42b220); }
-int (static_registerDtor_42b260)(void) { return atexit((void (*)(void))0x42b270); }
-int (static_registerDtor_42b2b0)(void) { return atexit((void (*)(void))0x42b2c0); }
-int (static_registerDtor_42b300)(void) { return atexit((void (*)(void))0x42b310); }
-int (static_registerDtor_42b370)(void) { return atexit((void (*)(void))0x42b380); }
-int (static_registerDtor_455000)(void) { return atexit((void (*)(void))0x455010); }
-int (static_registerDtor_456960)(void) { return atexit((void (*)(void))0x456970); }
-int (static_registerDtor_456cb0)(void) { return atexit((void (*)(void))0x456cc0); }
-int (static_registerDtor_460540)(void) { return atexit((void (*)(void))0x460550); }
-int (static_registerDtor_463b50)(void) { return atexit((void (*)(void))0x463b60); }
-int (static_registerDtor_4669e0)(void) { return atexit((void (*)(void))0x4669f0); }
-int (static_registerDtor_468730)(void) { return atexit((void (*)(void))0x468740); }
-int (static_registerDtor_469950)(void) { return atexit((void (*)(void))0x469960); }
-int (static_registerDtor_46ae30)(void) { return atexit((void (*)(void))0x46ae40); }
-int (static_registerDtor_46ccd0)(void) { return atexit((void (*)(void))0x46cce0); }
-int (static_registerDtor_46d290)(void) { return atexit((void (*)(void))0x46d2a0); }
-int (static_registerDtor_46da90)(void) { return atexit((void (*)(void))0x46daa0); }
-int (static_registerDtor_46f380)(void) { return atexit((void (*)(void))0x46f390); }
-int (static_registerDtor_46f3e0)(void) { return atexit((void (*)(void))0x46f3f0); }
-int (static_registerDtor_46f440)(void) { return atexit((void (*)(void))0x46f450); }
-int (static_registerDtor_46ff40)(void) { return atexit((void (*)(void))0x46ff50); }
-int (static_registerDtor_481360)(void) { return atexit((void (*)(void))0x481370); }
-int (static_registerDtor_483d20)(void) { return atexit((void (*)(void))0x483d30); }
-int (static_registerDtor_483f80)(void) { return atexit((void (*)(void))0x483f90); }
-int (static_registerDtor_487400)(void) { return atexit((void (*)(void))0x487410); }
-int (static_registerDtor_48b3e0)(void) { return atexit((void (*)(void))0x48b3f0); }
+int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))0x42b180); }
+int (static_registerTex128x64Dtor)(void) { return atexit((void (*)(void))0x42b1d0); }
+int (static_registerTex256x64Dtor)(void) { return atexit((void (*)(void))0x42b220); }
+int (static_registerTex128x128Dtor)(void) { return atexit((void (*)(void))0x42b270); }
+int (static_registerTex256x128Dtor)(void) { return atexit((void (*)(void))0x42b2c0); }
+int (static_registerTex256x256Dtor)(void) { return atexit((void (*)(void))0x42b310); }
+int (static_registerTextureManagerDtor)(void) { return atexit((void (*)(void))0x42b380); }
+int (static_registerTextureRttiDtor)(void) { return atexit((void (*)(void))0x455010); }
+int (static_registerTextureManagerRttiDtor)(void) { return atexit((void (*)(void))0x456970); }
+int (static_registerSoundRttiDtor)(void) { return atexit((void (*)(void))0x456cc0); }
+int (static_registerConsoleRttiDtor)(void) { return atexit((void (*)(void))0x460550); }
+int (static_registerShapeRttiDtor)(void) { return atexit((void (*)(void))0x463b60); }
+int (static_registerShapeManagerRttiDtor)(void) { return atexit((void (*)(void))0x4669f0); }
+int (static_registerTimeSyncDtor)(void) { return atexit((void (*)(void))0x468740); }
+int (static_registerSkeletonRttiDtor)(void) { return atexit((void (*)(void))0x469960); }
+int (static_registerSkeletonManagerRttiDtor)(void) { return atexit((void (*)(void))0x46ae40); }
+int (static_registerBMPRGBFileRttiDtor)(void) { return atexit((void (*)(void))0x46cce0); }
+int (static_registerRealColorRttiDtor)(void) { return atexit((void (*)(void))0x46d2a0); }
+int (static_registerPackedColorRttiDtor)(void) { return atexit((void (*)(void))0x46daa0); }
+int (static_registerUnitPartInfoRttiDtor)(void) { return atexit((void (*)(void))0x46f390); }
+int (static_registerUnitPoseInfoRttiDtor)(void) { return atexit((void (*)(void))0x46f3f0); }
+int (static_registerUnitRttiDtor)(void) { return atexit((void (*)(void))0x46f450); }
+int (static_registerStageRttiDtor)(void) { return atexit((void (*)(void))0x46ff50); }
+int (static_registerCollisionVolumeRttiDtor)(void) { return atexit((void (*)(void))0x481370); }
+int (static_registerLightRttiDtor)(void) { return atexit((void (*)(void))0x483d30); }
+int (static_registerViewVolumeRttiDtor)(void) { return atexit((void (*)(void))0x483f90); }
+int (static_registerTimeSyncRttiDtor)(void) { return atexit((void (*)(void))0x487410); }
+int (static_registerSceneRttiDtor)(void) { return atexit((void (*)(void))0x48b3f0); }
 
 /* ---- empty functions ---- */
-void (nullsub_46b860)(void) { }   /* 0x46b860 */
-void (nullsub_46b880)(void) { }   /* 0x46b880 */
-void (nullsub_46b8a0)(void) { }   /* 0x46b8a0 */
-void (nullsub_46b8c0)(void) { }   /* 0x46b8c0 */
-void (nullsub_46b8e0)(void) { }   /* 0x46b8e0 */
-void (nullsub_46b900)(void) { }   /* 0x46b900 */
-void (nullsub_46b920)(void) { }   /* 0x46b920 */
-void (nullsub_46b940)(void) { }   /* 0x46b940 */
-void (nullsub_487b70)(void) { }   /* 0x487b70 */
-void (nullsub_487b90)(void) { }   /* 0x487b90 */
-void (nullsub_48b420)(void) { }   /* 0x48b420 */
+void (static_emptyCtorSkelData1)(void) { }   /* 0x46b860 */
+void (static_emptyCtorSkelData2)(void) { }   /* 0x46b880 */
+void (static_emptyCtorSkelData3)(void) { }   /* 0x46b8a0 */
+void (static_emptyCtorSkelData4)(void) { }   /* 0x46b8c0 */
+void (static_emptyCtorSkelData5)(void) { }   /* 0x46b8e0 */
+void (static_emptyCtorSkelData6)(void) { }   /* 0x46b900 */
+void (static_emptyCtorSkelData7)(void) { }   /* 0x46b920 */
+void (static_emptyCtorSkelData8)(void) { }   /* 0x46b940 */
+void (static_emptyCtorTimeSync1)(void) { }   /* 0x487b70 */
+void (static_emptyCtorTimeSync2)(void) { }   /* 0x487b90 */
+void (debug_traceStripped)(void) { }   /* 0x48b420 */
 
 /* ---- start-up: one global object made (or a class-name record), its destructor registered (atexit's result) ---- */
-int (static_startTexture_4e1878)(void) { static_initObject_4e1878(); return static_registerDtor_42b170(); }   /* 0x42b120 */
-int (static_startTexture_5b1db8)(void) { static_initObject_5b1db8(); return static_registerDtor_42b1c0(); }   /* 0x42b190 */
-int (static_startTexture_680cd8)(void) { static_initObject_680cd8(); return static_registerDtor_42b210(); }   /* 0x42b1e0 */
-int (static_startTexture_76d498)(void) { static_initObject_76d498(); return static_registerDtor_42b260(); }   /* 0x42b230 */
-int (static_startTexture_90d1e0)(void) { static_initObject_90d1e0(); return static_registerDtor_42b2b0(); }   /* 0x42b280 */
-int (static_startTexture_83a9e0)(void) { static_initObject_83a9e0(); return static_registerDtor_42b300(); }   /* 0x42b2d0 */
-int (static_startTextureManager)(void) { TextureManager_ctor(); return static_registerDtor_42b370(); }   /* 0x42b320 */
-int (static_startTextureRtti)(void) { Texture_rtti(); return static_registerDtor_455000(); }   /* 0x454fd0 */
-int (static_startTextureManagerRtti)(void) { TextureManager_rtti(); return static_registerDtor_456960(); }   /* 0x456930 */
-int (static_startSoundRtti)(void) { Sound_rtti(); return static_registerDtor_456cb0(); }   /* 0x456c80 */
-int (static_startConsoleRtti)(void) { Console_rtti(); return static_registerDtor_460540(); }   /* 0x460510 */
-int (static_startShapeRtti)(void) { Shape_rtti(); return static_registerDtor_463b50(); }   /* 0x463b20 */
-int (static_startShapeManagerRtti)(void) { ShapeManager_rtti(); return static_registerDtor_4669e0(); }   /* 0x4669b0 */
-int (static_startTimeSync)(void) { static_initTimeSync(); return static_registerDtor_468730(); }   /* 0x468710 */
-int (static_startSkeletonRtti)(void) { Skeleton_rtti(); return static_registerDtor_469950(); }   /* 0x469920 */
-int (static_startSkeletonManagerRtti)(void) { SkeletonManager_rtti(); return static_registerDtor_46ae30(); }   /* 0x46ae00 */
-int (static_startBMPRGBFileRtti)(void) { BMPRGBFile_rtti(); return static_registerDtor_46ccd0(); }   /* 0x46cca0 */
-int (static_startRealColorRtti)(void) { RealColor_rtti(); return static_registerDtor_46d290(); }   /* 0x46d260 */
-int (static_startPackedColorRtti)(void) { PackedColor_rtti(); return static_registerDtor_46da90(); }   /* 0x46da60 */
-int (static_startUnitPartInfoRtti)(void) { UnitPartInfo_rtti(); return static_registerDtor_46f380(); }   /* 0x46f350 */
-int (static_startUnitPoseInfoRtti)(void) { UnitPoseInfo_rtti(); return static_registerDtor_46f3e0(); }   /* 0x46f3b0 */
-int (static_startUnitRtti)(void) { Unit_rtti(); return static_registerDtor_46f440(); }   /* 0x46f410 */
-int (static_startStageRtti)(void) { Stage_rtti(); return static_registerDtor_46ff40(); }   /* 0x46ff10 */
-int (static_startCollisionVolumeRtti)(void) { CollisionVolume_rtti(); return static_registerDtor_481360(); }   /* 0x481330 */
-int (static_startLightRtti)(void) { Light_rtti(); return static_registerDtor_483d20(); }   /* 0x483cf0 */
-int (static_startViewVolumeRtti)(void) { ViewVolume_rtti(); return static_registerDtor_483f80(); }   /* 0x483f50 */
-int (static_startTimeSyncRtti)(void) { TimeSync_rtti(); return static_registerDtor_487400(); }   /* 0x4873d0 */
-int (static_startSceneRtti)(void) { Scene_rtti(); return static_registerDtor_48b3e0(); }   /* 0x48b3b0 */
+int (static_startTex64x64)(void) { static_initTex64x64(); return static_registerTex64x64Dtor(); }   /* 0x42b120 */
+int (static_startTex128x64)(void) { static_initTex128x64(); return static_registerTex128x64Dtor(); }   /* 0x42b190 */
+int (static_startTex256x64)(void) { static_initTex256x64(); return static_registerTex256x64Dtor(); }   /* 0x42b1e0 */
+int (static_startTex128x128)(void) { static_initTex128x128(); return static_registerTex128x128Dtor(); }   /* 0x42b230 */
+int (static_startTex256x128)(void) { static_initTex256x128(); return static_registerTex256x128Dtor(); }   /* 0x42b280 */
+int (static_startTex256x256)(void) { static_initTex256x256(); return static_registerTex256x256Dtor(); }   /* 0x42b2d0 */
+int (static_startTextureManager)(void) { TextureManager_ctor(); return static_registerTextureManagerDtor(); }   /* 0x42b320 */
+int (static_startTextureRtti)(void) { Texture_rtti(); return static_registerTextureRttiDtor(); }   /* 0x454fd0 */
+int (static_startTextureManagerRtti)(void) { TextureManager_rtti(); return static_registerTextureManagerRttiDtor(); }   /* 0x456930 */
+int (static_startSoundRtti)(void) { Sound_rtti(); return static_registerSoundRttiDtor(); }   /* 0x456c80 */
+int (static_startConsoleRtti)(void) { Console_rtti(); return static_registerConsoleRttiDtor(); }   /* 0x460510 */
+int (static_startShapeRtti)(void) { Shape_rtti(); return static_registerShapeRttiDtor(); }   /* 0x463b20 */
+int (static_startShapeManagerRtti)(void) { ShapeManager_rtti(); return static_registerShapeManagerRttiDtor(); }   /* 0x4669b0 */
+int (static_startTimeSync)(void) { static_initTimeSync(); return static_registerTimeSyncDtor(); }   /* 0x468710 */
+int (static_startSkeletonRtti)(void) { Skeleton_rtti(); return static_registerSkeletonRttiDtor(); }   /* 0x469920 */
+int (static_startSkeletonManagerRtti)(void) { SkeletonManager_rtti(); return static_registerSkeletonManagerRttiDtor(); }   /* 0x46ae00 */
+int (static_startBMPRGBFileRtti)(void) { BMPRGBFile_rtti(); return static_registerBMPRGBFileRttiDtor(); }   /* 0x46cca0 */
+int (static_startRealColorRtti)(void) { RealColor_rtti(); return static_registerRealColorRttiDtor(); }   /* 0x46d260 */
+int (static_startPackedColorRtti)(void) { PackedColor_rtti(); return static_registerPackedColorRttiDtor(); }   /* 0x46da60 */
+int (static_startUnitPartInfoRtti)(void) { UnitPartInfo_rtti(); return static_registerUnitPartInfoRttiDtor(); }   /* 0x46f350 */
+int (static_startUnitPoseInfoRtti)(void) { UnitPoseInfo_rtti(); return static_registerUnitPoseInfoRttiDtor(); }   /* 0x46f3b0 */
+int (static_startUnitRtti)(void) { Unit_rtti(); return static_registerUnitRttiDtor(); }   /* 0x46f410 */
+int (static_startStageRtti)(void) { Stage_rtti(); return static_registerStageRttiDtor(); }   /* 0x46ff10 */
+int (static_startCollisionVolumeRtti)(void) { CollisionVolume_rtti(); return static_registerCollisionVolumeRttiDtor(); }   /* 0x481330 */
+int (static_startLightRtti)(void) { Light_rtti(); return static_registerLightRttiDtor(); }   /* 0x483cf0 */
+int (static_startViewVolumeRtti)(void) { ViewVolume_rtti(); return static_registerViewVolumeRttiDtor(); }   /* 0x483f50 */
+int (static_startTimeSyncRtti)(void) { TimeSync_rtti(); return static_registerTimeSyncRttiDtor(); }   /* 0x4873d0 */
+int (static_startSceneRtti)(void) { Scene_rtti(); return static_registerSceneRttiDtor(); }   /* 0x48b3b0 */
 
 /* ---- the game's constant colours: packed (four bytes r, g, b, a) and real (four floats, as bits) ---- */
 void (colour_initPackedBlue)(void) { u8 *c = (u8 *)0xa1f200; c[0] = 0; c[1] = 0; c[2] = 0xff; c[3] = 0xff; }   /* 0x46dbf0 */

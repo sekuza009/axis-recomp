@@ -1734,17 +1734,17 @@ int set_4b42dc_457140(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int view_setAngle(int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_4e1878(void);
+void static_initTex64x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_5b1db8(void);
+void static_initTex128x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_680cd8(void);
+void static_initTex256x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_76d498(void);
+void static_initTex128x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_90d1e0(void);
+void static_initTex256x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void static_initObject_83a9e0(void);
+void static_initTex256x256(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int net_sessionCount(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1800,29 +1800,29 @@ void THISCALL match_48b430(void *self, int a0, int a1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_48b450(void *self, int a0, int a1, int a2, int a3);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void nullsub_483ce0(void *self, int a0);
+THISCALL void stage_triggerActionNone(void *self, int a0);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b860(void);
+void static_emptyCtorSkelData1(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b880(void);
+void static_emptyCtorSkelData2(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b8a0(void);
+void static_emptyCtorSkelData3(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b8c0(void);
+void static_emptyCtorSkelData4(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b8e0(void);
+void static_emptyCtorSkelData5(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b900(void);
+void static_emptyCtorSkelData6(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b920(void);
+void static_emptyCtorSkelData7(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_46b940(void);
+void static_emptyCtorSkelData8(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_487b70(void);
+void static_emptyCtorTimeSync1(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_487b90(void);
+void static_emptyCtorTimeSync2(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-void nullsub_48b420(void);
+void debug_traceStripped(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *Texture_rtti(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2165,61 +2165,61 @@ THISCALL int collision_moveActor(char *stage, DWORD r, DWORD pos, DWORD vel, DWO
 #define CRT_malloc ((DWORD (__cdecl *)(DWORD))0x49eeb0)
 /* static_registerDtor_*: atexit(the static object's guarded destructor) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b170(void);
+int static_registerTex64x64Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b1c0(void);
+int static_registerTex128x64Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b210(void);
+int static_registerTex256x64Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b260(void);
+int static_registerTex128x128Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b2b0(void);
+int static_registerTex256x128Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b300(void);
+int static_registerTex256x256Dtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_42b370(void);
+int static_registerTextureManagerDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_455000(void);
+int static_registerTextureRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_456960(void);
+int static_registerTextureManagerRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_456cb0(void);
+int static_registerSoundRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_460540(void);
+int static_registerConsoleRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_463b50(void);
+int static_registerShapeRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_4669e0(void);
+int static_registerShapeManagerRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_468730(void);
+int static_registerTimeSyncDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_469950(void);
+int static_registerSkeletonRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46ae30(void);
+int static_registerSkeletonManagerRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46ccd0(void);
+int static_registerBMPRGBFileRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46d290(void);
+int static_registerRealColorRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46da90(void);
+int static_registerPackedColorRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46f380(void);
+int static_registerUnitPartInfoRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46f3e0(void);
+int static_registerUnitPoseInfoRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46f440(void);
+int static_registerUnitRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_46ff40(void);
+int static_registerStageRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_481360(void);
+int static_registerCollisionVolumeRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_483d20(void);
+int static_registerLightRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_483f80(void);
+int static_registerViewVolumeRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_487400(void);
+int static_registerTimeSyncRttiDtor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_registerDtor_48b3e0(void);
+int static_registerSceneRttiDtor(void);
 /* 0x467d60 mem_free(p): delete p unless null */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mem_free(void *p);
@@ -2271,17 +2271,17 @@ DWORD tunnel_appendRing(DWORD *head);
 /* batch 44 */
 /* static initialisers: construct the static object, then register its destructor (EAX from the registration) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_4e1878(void);
+int static_startTex64x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_5b1db8(void);
+int static_startTex128x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_680cd8(void);
+int static_startTex256x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_76d498(void);
+int static_startTex128x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_90d1e0(void);
+int static_startTex256x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-int static_startTexture_83a9e0(void);
+int static_startTex256x256(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int static_startTextureManager(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2365,10 +2365,10 @@ THISCALL DWORD replay_closeRecording(char *self);
 /* 0x4617b0 (thiscall) chat_loadMacros() (it saves them): the 100 chat macros (0x39 bytes each, +0x2340d3d) to "Chat.scp" */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD chat_loadMacros(char *self);
-/* 0x455030 (thiscall) Texture_ctor (really the destructor body): vtable 0x4a956c, delete the pixel buffer (+0x10c,
+/* 0x455030 (thiscall) Texture_dtor (really the destructor body): vtable 0x4a956c, delete the pixel buffer (+0x10c,
    when +0x108 >= 0), close the file (+0x110). EAX as the original leaves it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD THISCALL Texture_ctor(void *self);
+DWORD THISCALL Texture_dtor(void *self);
 /* 0x46ca70 file_existsf(fmt, ...): does the file named by the formatted path exist (fopen "rb" succeeds)? */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int file_existsf(const char *fmt, ...);
@@ -2433,17 +2433,17 @@ void *THISCALL CollisionVolume_deletingDtor(void *self, int flags);
 void *THISCALL SkeletonManager_deletingDtor(void *self, int flags);
 /* Texture_ctor_wrap_*: run the Texture destructor body on one static texture */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b180(void);
+DWORD static_destroyTex64x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b1d0(void);
+DWORD static_destroyTex128x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b220(void);
+DWORD static_destroyTex256x64(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b270(void);
+DWORD static_destroyTex128x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b2c0(void);
+DWORD static_destroyTex256x128(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-DWORD Texture_ctor_wrap_42b310(void);
+DWORD static_destroyTex256x256(void);
 /* 0x456cd0 sound_freeAll(): with sound on (0xa0e80c), delete every loaded sound buffer (pointers 0xa0e02c..0xa0e66c)
    and null them. EAX as the original leaves it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8232,12 +8232,12 @@ ST(text_setBottom, g_a[0] = (int)rnd32(); fill((void *)0x4ad494, 4);, CD(int, 0x
 ST(input_setKeysBlocked, g_a[0] = (int)rnd32(); fill((void *)0x680370, 4);, CD(int, 0x441250, int)(g_a[0]), input_setKeysBlocked(g_a[0]))
 ST(set_4b42dc_457140, g_a[0] = (int)rnd32(); fill((void *)0x4b42dc, 4);, CD(int, 0x457140, int)(g_a[0]), set_4b42dc_457140(g_a[0]))
 ST(view_setAngle, g_a[0] = (int)rnd32(); fill((void *)0x4c4dec, 4);, CD(int, 0x4686e0, int)(g_a[0]), view_setAngle(g_a[0]))
-V0(static_initObject_4e1878, 0x42b130, fill((void *)0x4e1878, 8);)
-V0(static_initObject_5b1db8, 0x42b1a0, fill((void *)0x5b1db8, 8);)
-V0(static_initObject_680cd8, 0x42b1f0, fill((void *)0x680cd8, 8);)
-V0(static_initObject_76d498, 0x42b240, fill((void *)0x76d498, 8);)
-V0(static_initObject_90d1e0, 0x42b290, fill((void *)0x90d1e0, 8);)
-V0(static_initObject_83a9e0, 0x42b2e0, fill((void *)0x83a9e0, 8);)
+V0(static_initTex64x64, 0x42b130, fill((void *)0x4e1878, 8);)
+V0(static_initTex128x64, 0x42b1a0, fill((void *)0x5b1db8, 8);)
+V0(static_initTex256x64, 0x42b1f0, fill((void *)0x680cd8, 8);)
+V0(static_initTex128x128, 0x42b240, fill((void *)0x76d498, 8);)
+V0(static_initTex256x128, 0x42b290, fill((void *)0x90d1e0, 8);)
+V0(static_initTex256x256, 0x42b2e0, fill((void *)0x83a9e0, 8);)
 ST(net_sessionCount, fill((void *)0xa0b41c, 4);, CD(int, 0x4532a0, void)(), net_sessionCount())
 ST(gfx_getWidth, fill((void *)0xa0e810, 4);, CD(int, 0x4685b0, void)(), gfx_getWidth())
 ST(gfx_getHeight, fill((void *)0xa0e928, 4);, CD(int, 0x4685c0, void)(), gfx_getHeight())
@@ -8266,18 +8266,18 @@ ST(match_45fff0, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), matc
 ST(match_48b440, g_a[0] = (int)rnd32();, TC(int, 0x48b440, char *, int)(BUF, g_a[0]), match_48b440(BUF, g_a[0]))
 ST(match_48b430, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b430, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (match_48b430(BUF, g_a[0], g_a[1]), 0))
 ST(hud_48b450, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x48b450, char *, int, int, int, int)(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0), (hud_48b450(BUF, g_a[0], g_a[1], g_a[2], g_a[3]), 0))
-ST(nullsub_483ce0, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x483ce0, char *, int)(BUF, g_a[0]), 0), (nullsub_483ce0(BUF, g_a[0]), 0))
-V0(nullsub_46b860, 0x46b860, )
-V0(nullsub_46b880, 0x46b880, )
-V0(nullsub_46b8a0, 0x46b8a0, )
-V0(nullsub_46b8c0, 0x46b8c0, )
-V0(nullsub_46b8e0, 0x46b8e0, )
-V0(nullsub_46b900, 0x46b900, )
-V0(nullsub_46b920, 0x46b920, )
-V0(nullsub_46b940, 0x46b940, )
-V0(nullsub_487b70, 0x487b70, )
-V0(nullsub_487b90, 0x487b90, )
-V0(nullsub_48b420, 0x48b420, )
+ST(stage_triggerActionNone, for (int i = 0; i < 4; i++) g_a[i] = (int)rnd32();, (TC(void, 0x483ce0, char *, int)(BUF, g_a[0]), 0), (stage_triggerActionNone(BUF, g_a[0]), 0))
+V0(static_emptyCtorSkelData1, 0x46b860, )
+V0(static_emptyCtorSkelData2, 0x46b880, )
+V0(static_emptyCtorSkelData3, 0x46b8a0, )
+V0(static_emptyCtorSkelData4, 0x46b8c0, )
+V0(static_emptyCtorSkelData5, 0x46b8e0, )
+V0(static_emptyCtorSkelData6, 0x46b900, )
+V0(static_emptyCtorSkelData7, 0x46b920, )
+V0(static_emptyCtorSkelData8, 0x46b940, )
+V0(static_emptyCtorTimeSync1, 0x487b70, )
+V0(static_emptyCtorTimeSync2, 0x487b90, )
+V0(debug_traceStripped, 0x48b420, )
 V0R(Texture_rtti, 0x454fe0, fill((void *)0xa0dff8, 8); fill((void *)0xa1efe8, 4);)
 V0R(TextureManager_rtti, 0x456940, fill((void *)0xa0e000, 8); fill((void *)0xa1efe8, 4);)
 V0R(Sound_rtti, 0x456c90, fill((void *)0xa0e020, 8); fill((void *)0xa1efe8, 4);)
@@ -8829,34 +8829,34 @@ ST(collision_moveActor, stage_setup();,
    MOVE_ARGS(collision_moveActor, DWORD))
 /* batch 43 */
 #define REGDTOR_T(name, addr) ST(name, , CD(DWORD, addr, void)(), name())
-REGDTOR_T(static_registerDtor_42b170, 0x42b170)
-REGDTOR_T(static_registerDtor_42b1c0, 0x42b1c0)
-REGDTOR_T(static_registerDtor_42b210, 0x42b210)
-REGDTOR_T(static_registerDtor_42b260, 0x42b260)
-REGDTOR_T(static_registerDtor_42b2b0, 0x42b2b0)
-REGDTOR_T(static_registerDtor_42b300, 0x42b300)
-REGDTOR_T(static_registerDtor_42b370, 0x42b370)
-REGDTOR_T(static_registerDtor_455000, 0x455000)
-REGDTOR_T(static_registerDtor_456960, 0x456960)
-REGDTOR_T(static_registerDtor_456cb0, 0x456cb0)
-REGDTOR_T(static_registerDtor_460540, 0x460540)
-REGDTOR_T(static_registerDtor_463b50, 0x463b50)
-REGDTOR_T(static_registerDtor_4669e0, 0x4669e0)
-REGDTOR_T(static_registerDtor_468730, 0x468730)
-REGDTOR_T(static_registerDtor_469950, 0x469950)
-REGDTOR_T(static_registerDtor_46ae30, 0x46ae30)
-REGDTOR_T(static_registerDtor_46ccd0, 0x46ccd0)
-REGDTOR_T(static_registerDtor_46d290, 0x46d290)
-REGDTOR_T(static_registerDtor_46da90, 0x46da90)
-REGDTOR_T(static_registerDtor_46f380, 0x46f380)
-REGDTOR_T(static_registerDtor_46f3e0, 0x46f3e0)
-REGDTOR_T(static_registerDtor_46f440, 0x46f440)
-REGDTOR_T(static_registerDtor_46ff40, 0x46ff40)
-REGDTOR_T(static_registerDtor_481360, 0x481360)
-REGDTOR_T(static_registerDtor_483d20, 0x483d20)
-REGDTOR_T(static_registerDtor_483f80, 0x483f80)
-REGDTOR_T(static_registerDtor_487400, 0x487400)
-REGDTOR_T(static_registerDtor_48b3e0, 0x48b3e0)
+REGDTOR_T(static_registerTex64x64Dtor, 0x42b170)
+REGDTOR_T(static_registerTex128x64Dtor, 0x42b1c0)
+REGDTOR_T(static_registerTex256x64Dtor, 0x42b210)
+REGDTOR_T(static_registerTex128x128Dtor, 0x42b260)
+REGDTOR_T(static_registerTex256x128Dtor, 0x42b2b0)
+REGDTOR_T(static_registerTex256x256Dtor, 0x42b300)
+REGDTOR_T(static_registerTextureManagerDtor, 0x42b370)
+REGDTOR_T(static_registerTextureRttiDtor, 0x455000)
+REGDTOR_T(static_registerTextureManagerRttiDtor, 0x456960)
+REGDTOR_T(static_registerSoundRttiDtor, 0x456cb0)
+REGDTOR_T(static_registerConsoleRttiDtor, 0x460540)
+REGDTOR_T(static_registerShapeRttiDtor, 0x463b50)
+REGDTOR_T(static_registerShapeManagerRttiDtor, 0x4669e0)
+REGDTOR_T(static_registerTimeSyncDtor, 0x468730)
+REGDTOR_T(static_registerSkeletonRttiDtor, 0x469950)
+REGDTOR_T(static_registerSkeletonManagerRttiDtor, 0x46ae30)
+REGDTOR_T(static_registerBMPRGBFileRttiDtor, 0x46ccd0)
+REGDTOR_T(static_registerRealColorRttiDtor, 0x46d290)
+REGDTOR_T(static_registerPackedColorRttiDtor, 0x46da90)
+REGDTOR_T(static_registerUnitPartInfoRttiDtor, 0x46f380)
+REGDTOR_T(static_registerUnitPoseInfoRttiDtor, 0x46f3e0)
+REGDTOR_T(static_registerUnitRttiDtor, 0x46f440)
+REGDTOR_T(static_registerStageRttiDtor, 0x46ff40)
+REGDTOR_T(static_registerCollisionVolumeRttiDtor, 0x481360)
+REGDTOR_T(static_registerLightRttiDtor, 0x483d20)
+REGDTOR_T(static_registerViewVolumeRttiDtor, 0x483f80)
+REGDTOR_T(static_registerTimeSyncRttiDtor, 0x487400)
+REGDTOR_T(static_registerSceneRttiDtor, 0x48b3e0)
 ST(TextureManager_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x42b350, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)TextureManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(Light_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x462580, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Light_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(Scene_deletingDtor, fill(BUF, 0x100); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x463810, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)Scene_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
@@ -8908,12 +8908,12 @@ static void nodes_setup(int allow_empty)
 ST(tunnel_removeLastRing, nodes_setup(0);, CD(DWORD, 0x441190, char *)(BUF + 0x100), tunnel_removeLastRing((DWORD *)(BUF + 0x100)))
 ST(tunnel_appendRing, nodes_setup(1);, CD(DWORD, 0x441120, char *)(BUF + 0x100), tunnel_appendRing((DWORD *)(BUF + 0x100)))
 /* batch 44 */
-ST(static_startTexture_4e1878, , CD(DWORD, 0x42b120, void)(), static_startTexture_4e1878())
-ST(static_startTexture_5b1db8, , CD(DWORD, 0x42b190, void)(), static_startTexture_5b1db8())
-ST(static_startTexture_680cd8, , CD(DWORD, 0x42b1e0, void)(), static_startTexture_680cd8())
-ST(static_startTexture_76d498, , CD(DWORD, 0x42b230, void)(), static_startTexture_76d498())
-ST(static_startTexture_90d1e0, , CD(DWORD, 0x42b280, void)(), static_startTexture_90d1e0())
-ST(static_startTexture_83a9e0, , CD(DWORD, 0x42b2d0, void)(), static_startTexture_83a9e0())
+ST(static_startTex64x64, , CD(DWORD, 0x42b120, void)(), static_startTex64x64())
+ST(static_startTex128x64, , CD(DWORD, 0x42b190, void)(), static_startTex128x64())
+ST(static_startTex256x64, , CD(DWORD, 0x42b1e0, void)(), static_startTex256x64())
+ST(static_startTex128x128, , CD(DWORD, 0x42b230, void)(), static_startTex128x128())
+ST(static_startTex256x128, , CD(DWORD, 0x42b280, void)(), static_startTex256x128())
+ST(static_startTex256x256, , CD(DWORD, 0x42b2d0, void)(), static_startTex256x256())
 ST(static_startTextureManager, , CD(DWORD, 0x42b320, void)(), static_startTextureManager())
 ST(static_startTextureRtti, , CD(DWORD, 0x454fd0, void)(), static_startTextureRtti())
 ST(static_startTextureManagerRtti, , CD(DWORD, 0x456930, void)(), static_startTextureManagerRtti())
@@ -8995,8 +8995,8 @@ ST(BMPRGBFile_ctor, fill(BUF, 0x20); S32(BUF + 0x10, 4) = irnd(0, 1) ? (int)VFS_
 ST(replay_closeRecording, fill(BUF + 0x2340d00, 0x40); S32(BUF, 0x2340d1d) = irnd(0, 1) * irnd(-3, 3); S32(BUF, 0x2340d08) = (int)VFS_FILE(irnd(0, 1));,
    TC(DWORD, 0x487ed0, char *)(BUF), replay_closeRecording(BUF))
 ST(chat_loadMacros, fill(BUF + 0x2340d3d, 0x39 * 100); vfs_content(0, 0);, TC(DWORD, 0x4617b0, char *)(BUF), chat_loadMacros(BUF))
-ST(Texture_ctor, fill(BUF, 0x200); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;,
-   TC(DWORD, 0x455030, char *)(BUF + 0x10), Texture_ctor((DWORD *)(BUF + 0x10)))
+ST(Texture_dtor, fill(BUF, 0x200); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;,
+   TC(DWORD, 0x455030, char *)(BUF + 0x10), Texture_dtor((DWORD *)(BUF + 0x10)))
 ST(file_existsf, vfs_content(0, 0); fill_str(BUF + 0x100, 40, 32, 126); for (char *p = BUF + 0x100; *p; p++) if (*p == '%') *p = 'x';
    strcat(BUF + 0x100, "%d_%s"); fill_str(BUF + 0x300, 20, 33, 126); g_a[0] = irnd(-999, 999);,
    CD(int, 0x46ca70, const char *, ...)(BUF + 0x100, g_a[0], BUF + 0x300), file_existsf(BUF + 0x100, g_a[0], BUF + 0x300))
@@ -9075,12 +9075,12 @@ ST(Model_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(
 ST(ShapeManager_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x463010, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)ShapeManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(CollisionVolume_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x4637b0, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)CollisionVolume_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(SkeletonManager_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); S32(BUF + 0x10, 0x108) = irnd(-2, 2); S32(BUF + 0x10, 4) = 0; S32(BUF + 0x10, 0x110) = 0; g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x4637d0, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)SkeletonManager_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
-ST(Texture_ctor_wrap_42b180, fill((void *)0x4e1878, 0x114); S32(0x4e1878, 0x108) = irnd(-2, 2); S32(0x4e1878, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b180, void)(), Texture_ctor_wrap_42b180())
-ST(Texture_ctor_wrap_42b1d0, fill((void *)0x5b1db8, 0x114); S32(0x5b1db8, 0x108) = irnd(-2, 2); S32(0x5b1db8, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b1d0, void)(), Texture_ctor_wrap_42b1d0())
-ST(Texture_ctor_wrap_42b220, fill((void *)0x680cd8, 0x114); S32(0x680cd8, 0x108) = irnd(-2, 2); S32(0x680cd8, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b220, void)(), Texture_ctor_wrap_42b220())
-ST(Texture_ctor_wrap_42b270, fill((void *)0x76d498, 0x114); S32(0x76d498, 0x108) = irnd(-2, 2); S32(0x76d498, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b270, void)(), Texture_ctor_wrap_42b270())
-ST(Texture_ctor_wrap_42b2c0, fill((void *)0x90d1e0, 0x114); S32(0x90d1e0, 0x108) = irnd(-2, 2); S32(0x90d1e0, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b2c0, void)(), Texture_ctor_wrap_42b2c0())
-ST(Texture_ctor_wrap_42b310, fill((void *)0x83a9e0, 0x114); S32(0x83a9e0, 0x108) = irnd(-2, 2); S32(0x83a9e0, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b310, void)(), Texture_ctor_wrap_42b310())
+ST(static_destroyTex64x64, fill((void *)0x4e1878, 0x114); S32(0x4e1878, 0x108) = irnd(-2, 2); S32(0x4e1878, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b180, void)(), static_destroyTex64x64())
+ST(static_destroyTex128x64, fill((void *)0x5b1db8, 0x114); S32(0x5b1db8, 0x108) = irnd(-2, 2); S32(0x5b1db8, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b1d0, void)(), static_destroyTex128x64())
+ST(static_destroyTex256x64, fill((void *)0x680cd8, 0x114); S32(0x680cd8, 0x108) = irnd(-2, 2); S32(0x680cd8, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b220, void)(), static_destroyTex256x64())
+ST(static_destroyTex128x128, fill((void *)0x76d498, 0x114); S32(0x76d498, 0x108) = irnd(-2, 2); S32(0x76d498, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b270, void)(), static_destroyTex128x128())
+ST(static_destroyTex256x128, fill((void *)0x90d1e0, 0x114); S32(0x90d1e0, 0x108) = irnd(-2, 2); S32(0x90d1e0, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b2c0, void)(), static_destroyTex256x128())
+ST(static_destroyTex256x256, fill((void *)0x83a9e0, 0x114); S32(0x83a9e0, 0x108) = irnd(-2, 2); S32(0x83a9e0, 0x110) = irnd(0, 1) ? (int)VFS_FILE(0) : 0;, CD(DWORD, 0x42b310, void)(), static_destroyTex256x256())
 static void sndbufs_setup(void)
 {
 	G32(0xa0e80c) = irnd(0, 4) ? 1 : 0;
@@ -17060,18 +17060,18 @@ static const STest g_stests[] = {
 	T(stage_drawBullets, 0, 4, 600),
 	/* batch 30 */
 	T(text_setWrapX, 1, 4, 300), T(text_setBottom, 1, 4, 300), T(input_setKeysBlocked, 1, 4, 300), T(set_4b42dc_457140, 1, 4, 300),
-	T(view_setAngle, 1, 4, 300), T(static_initObject_4e1878, 0, 4, 0), T(static_initObject_5b1db8, 0, 4, 0), T(static_initObject_680cd8, 0, 4, 0),
-	T(static_initObject_76d498, 0, 4, 0), T(static_initObject_90d1e0, 0, 4, 0), T(static_initObject_83a9e0, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
+	T(view_setAngle, 1, 4, 300), T(static_initTex64x64, 0, 4, 0), T(static_initTex128x64, 0, 4, 0), T(static_initTex256x64, 0, 4, 0),
+	T(static_initTex128x128, 0, 4, 0), T(static_initTex256x128, 0, 4, 0), T(static_initTex256x256, 0, 4, 0), T(net_sessionCount, 1, 4, 300),
 	T(gfx_getWidth, 1, 4, 300), T(gfx_getHeight, 1, 4, 300), T(view_angle, 1, 4, 300), T(match_4686f0, 1, 4, 300),
 	T(FUN_00468700, 1, 4, 300), T(TextureManager_clear, 1, 4, 300), T(Model_clear, 1, 4, 300), T(ShapeManager_clear, 1, 4, 300),
 	T(SkeletonManager_clear, 1, 4, 300), T(load_47db50, 1, 4, 300), T(load_4804a0, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(load_483fc0, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(load_480430, 1, 4, 300), T(this_set_483d60, 1, 4, 300),
 	T(stage_clearMapItemCounts, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
 	T(stage_setValue202e8dc, 1, 4, 300), T(this_get_0x2342381_463780, 1, 4, 300), T(match_45fff0, 1, 4, 300), T(match_48b440, 1, 4, 300),
-	T(match_48b430, 0, 4, 0), T(hud_48b450, 0, 4, 0), T(nullsub_483ce0, 0, 4, 0), T(nullsub_46b860, 0, 4, 0),
-	T(nullsub_46b880, 0, 4, 0), T(nullsub_46b8a0, 0, 4, 0), T(nullsub_46b8c0, 0, 4, 0), T(nullsub_46b8e0, 0, 4, 0),
-	T(nullsub_46b900, 0, 4, 0), T(nullsub_46b920, 0, 4, 0), T(nullsub_46b940, 0, 4, 0), T(nullsub_487b70, 0, 4, 0),
-	T(nullsub_487b90, 0, 4, 0), T(nullsub_48b420, 0, 4, 0), T(Texture_rtti, 1, 4, 0), T(TextureManager_rtti, 1, 4, 0),
+	T(match_48b430, 0, 4, 0), T(hud_48b450, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
+	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
+	T(static_emptyCtorSkelData6, 0, 4, 0), T(static_emptyCtorSkelData7, 0, 4, 0), T(static_emptyCtorSkelData8, 0, 4, 0), T(static_emptyCtorTimeSync1, 0, 4, 0),
+	T(static_emptyCtorTimeSync2, 0, 4, 0), T(debug_traceStripped, 0, 4, 0), T(Texture_rtti, 1, 4, 0), T(TextureManager_rtti, 1, 4, 0),
 	T(Sound_rtti, 1, 4, 0), T(Console_rtti, 1, 4, 0), T(Shape_rtti, 1, 4, 0), T(ShapeManager_rtti, 1, 4, 0),
 	T(Skeleton_rtti, 1, 4, 0), T(SkeletonManager_rtti, 1, 4, 0), T(BMPRGBFile_rtti, 1, 4, 0), T(RealColor_rtti, 1, 4, 0),
 	T(PackedColor_rtti, 1, 4, 0), T(UnitPartInfo_rtti, 1, 4, 0), T(UnitPoseInfo_rtti, 1, 4, 0), T(Unit_rtti, 1, 4, 0),
@@ -17114,20 +17114,20 @@ static const STest g_stests[] = {
 	/* batch 42 */
 	T(angle_turn, 1, 4, 10000), T(angle_stepTowards, 1, 4, 10000), T(collision_moveActor, 1, 100, 8000),
 	/* batch 43 */
-	T(static_registerDtor_42b170, 1, 2, 0), T(static_registerDtor_42b1c0, 1, 2, 0), T(static_registerDtor_42b210, 1, 2, 0), T(static_registerDtor_42b260, 1, 2, 0),
-	T(static_registerDtor_42b2b0, 1, 2, 0), T(static_registerDtor_42b300, 1, 2, 0), T(static_registerDtor_42b370, 1, 2, 0), T(static_registerDtor_455000, 1, 2, 0),
-	T(static_registerDtor_456960, 1, 2, 0), T(static_registerDtor_456cb0, 1, 2, 0), T(static_registerDtor_460540, 1, 2, 0), T(static_registerDtor_463b50, 1, 2, 0),
-	T(static_registerDtor_4669e0, 1, 2, 0), T(static_registerDtor_468730, 1, 2, 0), T(static_registerDtor_469950, 1, 2, 0), T(static_registerDtor_46ae30, 1, 2, 0),
-	T(static_registerDtor_46ccd0, 1, 2, 0), T(static_registerDtor_46d290, 1, 2, 0), T(static_registerDtor_46da90, 1, 2, 0), T(static_registerDtor_46f380, 1, 2, 0),
-	T(static_registerDtor_46f3e0, 1, 2, 0), T(static_registerDtor_46f440, 1, 2, 0), T(static_registerDtor_46ff40, 1, 2, 0), T(static_registerDtor_481360, 1, 2, 0),
-	T(static_registerDtor_483d20, 1, 2, 0), T(static_registerDtor_483f80, 1, 2, 0), T(static_registerDtor_487400, 1, 2, 0), T(static_registerDtor_48b3e0, 1, 2, 0),
+	T(static_registerTex64x64Dtor, 1, 2, 0), T(static_registerTex128x64Dtor, 1, 2, 0), T(static_registerTex256x64Dtor, 1, 2, 0), T(static_registerTex128x128Dtor, 1, 2, 0),
+	T(static_registerTex256x128Dtor, 1, 2, 0), T(static_registerTex256x256Dtor, 1, 2, 0), T(static_registerTextureManagerDtor, 1, 2, 0), T(static_registerTextureRttiDtor, 1, 2, 0),
+	T(static_registerTextureManagerRttiDtor, 1, 2, 0), T(static_registerSoundRttiDtor, 1, 2, 0), T(static_registerConsoleRttiDtor, 1, 2, 0), T(static_registerShapeRttiDtor, 1, 2, 0),
+	T(static_registerShapeManagerRttiDtor, 1, 2, 0), T(static_registerTimeSyncDtor, 1, 2, 0), T(static_registerSkeletonRttiDtor, 1, 2, 0), T(static_registerSkeletonManagerRttiDtor, 1, 2, 0),
+	T(static_registerBMPRGBFileRttiDtor, 1, 2, 0), T(static_registerRealColorRttiDtor, 1, 2, 0), T(static_registerPackedColorRttiDtor, 1, 2, 0), T(static_registerUnitPartInfoRttiDtor, 1, 2, 0),
+	T(static_registerUnitPoseInfoRttiDtor, 1, 2, 0), T(static_registerUnitRttiDtor, 1, 2, 0), T(static_registerStageRttiDtor, 1, 2, 0), T(static_registerCollisionVolumeRttiDtor, 1, 2, 0),
+	T(static_registerLightRttiDtor, 1, 2, 0), T(static_registerViewVolumeRttiDtor, 1, 2, 0), T(static_registerTimeSyncRttiDtor, 1, 2, 0), T(static_registerSceneRttiDtor, 1, 2, 0),
 	T(TextureManager_deletingDtor, 1, 4, 300), T(Light_deletingDtor, 1, 4, 300), T(Scene_deletingDtor, 1, 4, 300), T(ErrorLog_deletingDtor, 1, 4, 300),
 	T(TimeSync_deletingDtor, 1, 4, 300), T(Model_release, 1, 4, 300), T(ShapeManager_release, 1, 4, 300), T(Skeleton_release, 1, 4, 300),
 	T(SkeletonManager_release, 1, 4, 300), T(partList_release, 1, 4, 300), T(CollisionVolume_release, 1, 4, 300), T(arena_freeBuffers, 1, 300, 0),
 	T(net_freeSessionList, 1, 300, 0), T(net_addSession, 1, 300, 0), T(tunnel_removeLastRing, 1, 4, 1000), T(tunnel_appendRing, 1, 30, 0),
 	/* batch 44 */
-	T(static_startTexture_4e1878, 1, 2, 0), T(static_startTexture_5b1db8, 1, 2, 0), T(static_startTexture_680cd8, 1, 2, 0), T(static_startTexture_76d498, 1, 2, 0),
-	T(static_startTexture_90d1e0, 1, 2, 0), T(static_startTexture_83a9e0, 1, 2, 0), T(static_startTextureManager, 1, 2, 0), T(static_startTextureRtti, 1, 2, 0),
+	T(static_startTex64x64, 1, 2, 0), T(static_startTex128x64, 1, 2, 0), T(static_startTex256x64, 1, 2, 0), T(static_startTex128x128, 1, 2, 0),
+	T(static_startTex256x128, 1, 2, 0), T(static_startTex256x256, 1, 2, 0), T(static_startTextureManager, 1, 2, 0), T(static_startTextureRtti, 1, 2, 0),
 	T(static_startTextureManagerRtti, 1, 2, 0), T(static_startSoundRtti, 1, 2, 0), T(static_startConsoleRtti, 1, 2, 0), T(static_startShapeRtti, 1, 2, 0),
 	T(static_startShapeManagerRtti, 1, 2, 0), T(static_startTimeSync, 1, 2, 0), T(static_startSkeletonRtti, 1, 2, 0), T(static_startSkeletonManagerRtti, 1, 2, 0),
 	T(static_startBMPRGBFileRtti, 1, 2, 0), T(static_startRealColorRtti, 1, 2, 0), T(static_startPackedColorRtti, 1, 2, 0), T(static_startUnitPartInfoRtti, 1, 2, 0),
@@ -17138,15 +17138,15 @@ static const STest g_stests[] = {
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
 	/* batch 45 */
 	T(BMPRGBFile_close, 1, 4, 300), T(BMPRGBFile_ctor, 0, 4, 300), T(replay_closeRecording, 1, 4, 300), T(chat_loadMacros, 1, 4, 300),
-	T(Texture_ctor, 1, 4, 300), T(file_existsf, 1, 4, 300), T(file_readScrambled, 1, 4, 1000), T(file_writeScrambled, 1, 4, 1000),
+	T(Texture_dtor, 1, 4, 300), T(file_existsf, 1, 4, 300), T(file_readScrambled, 1, 4, 1000), T(file_writeScrambled, 1, 4, 1000),
 	T(cfg_parsePlayer, 1, 60, 0), T(cfg_parseSound, 1, 60, 0), T(cfg_keyBindings, 1, 60, 0), T(console_loadFile, 1, 100, 0),
 	T(app_checkLauncherRunning, 1, 100, 0), T(profile_loadList, 1, 100, 0), T(profile_delete, 1, 100, 0), T(mission_saveAxisMis, 1, 100, 0),
 	T(arena_readLaunchFile, 1, 100, 0), T(mission_loadAxisMis, 1, 100, 0), T(cfg_readLines, 1, 150, 0), T(arena_loadSettings, 1, 150, 0),
 	T(image_tryOpen, 1, 4, 1000), T(mem_free, 1, 4, 300),
 	/* batch 46 */
 	T(Texture_deletingDtor, 1, 4, 300), T(BMPRGBFile_deletingDtor, 1, 4, 300), T(Model_deletingDtor, 1, 4, 300), T(ShapeManager_deletingDtor, 1, 4, 300),
-	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(Texture_ctor_wrap_42b180, 1, 30, 0), T(Texture_ctor_wrap_42b1d0, 1, 30, 0),
-	T(Texture_ctor_wrap_42b220, 1, 30, 0), T(Texture_ctor_wrap_42b270, 1, 30, 0), T(Texture_ctor_wrap_42b2c0, 1, 30, 0), T(Texture_ctor_wrap_42b310, 1, 30, 0),
+	T(CollisionVolume_deletingDtor, 1, 4, 300), T(SkeletonManager_deletingDtor, 1, 4, 300), T(static_destroyTex64x64, 1, 30, 0), T(static_destroyTex128x64, 1, 30, 0),
+	T(static_destroyTex256x64, 1, 30, 0), T(static_destroyTex128x128, 1, 30, 0), T(static_destroyTex256x128, 1, 30, 0), T(static_destroyTex256x256, 1, 30, 0),
 	T(sound_freeAll, 1, 40, 0), T(load_48b460, 1, 4, 1000), T(load_483d70, 1, 4, 1000), T(actor_destroyPartLists, 1, 4, 300),
 	T(ResourceSet_dtor_463960, 1, 4, 100), T(Stage_dtor, 1, 4, 10), T(chat_saveMacros, 1, 30, 0), T(chat_macro, 1, 4, 2000),
 	/* batch 47 */
@@ -17980,10 +17980,10 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 30 */
 	{ 0x4017b0, (void *)text_setWrapX, "text_setWrapX" }, { 0x4017c0, (void *)text_setBottom, "text_setBottom" },
 	{ 0x441250, (void *)input_setKeysBlocked, "input_setKeysBlocked" }, { 0x457140, (void *)set_4b42dc_457140, "set_4b42dc_457140" },
-	{ 0x4686e0, (void *)view_setAngle, "view_setAngle" }, { 0x42b130, (void *)static_initObject_4e1878, "static_initObject_4e1878" },
-	{ 0x42b1a0, (void *)static_initObject_5b1db8, "static_initObject_5b1db8" }, { 0x42b1f0, (void *)static_initObject_680cd8, "static_initObject_680cd8" },
-	{ 0x42b240, (void *)static_initObject_76d498, "static_initObject_76d498" }, { 0x42b290, (void *)static_initObject_90d1e0, "static_initObject_90d1e0" },
-	{ 0x42b2e0, (void *)static_initObject_83a9e0, "static_initObject_83a9e0" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
+	{ 0x4686e0, (void *)view_setAngle, "view_setAngle" }, { 0x42b130, (void *)static_initTex64x64, "static_initTex64x64" },
+	{ 0x42b1a0, (void *)static_initTex128x64, "static_initTex128x64" }, { 0x42b1f0, (void *)static_initTex256x64, "static_initTex256x64" },
+	{ 0x42b240, (void *)static_initTex128x128, "static_initTex128x128" }, { 0x42b290, (void *)static_initTex256x128, "static_initTex256x128" },
+	{ 0x42b2e0, (void *)static_initTex256x256, "static_initTex256x256" }, { 0x4532a0, (void *)net_sessionCount, "net_sessionCount" },
 	{ 0x4685b0, (void *)gfx_getWidth, "gfx_getWidth" }, { 0x4685c0, (void *)gfx_getHeight, "gfx_getHeight" },
 	{ 0x4686d0, (void *)view_angle, "view_angle" }, { 0x4686f0, (void *)match_4686f0, "match_4686f0" },
 	{ 0x468700, (void *)FUN_00468700, "FUN_00468700" }, { 0x4569a0, (void *)TextureManager_clear, "TextureManager_clear" },
@@ -17997,12 +17997,12 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x45dfe0, (void *)stage_setValue202e8dc, "stage_setValue202e8dc" }, { 0x463780, (void *)this_get_0x2342381_463780, "this_get_0x2342381_463780" },
 	{ 0x45fff0, (void *)match_45fff0, "match_45fff0" }, { 0x48b440, (void *)match_48b440, "match_48b440" },
 	{ 0x48b430, (void *)match_48b430, "match_48b430" }, { 0x48b450, (void *)hud_48b450, "hud_48b450" },
-	{ 0x483ce0, (void *)nullsub_483ce0, "nullsub_483ce0" }, { 0x46b860, (void *)nullsub_46b860, "nullsub_46b860" },
-	{ 0x46b880, (void *)nullsub_46b880, "nullsub_46b880" }, { 0x46b8a0, (void *)nullsub_46b8a0, "nullsub_46b8a0" },
-	{ 0x46b8c0, (void *)nullsub_46b8c0, "nullsub_46b8c0" }, { 0x46b8e0, (void *)nullsub_46b8e0, "nullsub_46b8e0" },
-	{ 0x46b900, (void *)nullsub_46b900, "nullsub_46b900" }, { 0x46b920, (void *)nullsub_46b920, "nullsub_46b920" },
-	{ 0x46b940, (void *)nullsub_46b940, "nullsub_46b940" }, { 0x487b70, (void *)nullsub_487b70, "nullsub_487b70" },
-	{ 0x487b90, (void *)nullsub_487b90, "nullsub_487b90" }, { 0x48b420, (void *)nullsub_48b420, "nullsub_48b420" },
+	{ 0x483ce0, (void *)stage_triggerActionNone, "stage_triggerActionNone" }, { 0x46b860, (void *)static_emptyCtorSkelData1, "static_emptyCtorSkelData1" },
+	{ 0x46b880, (void *)static_emptyCtorSkelData2, "static_emptyCtorSkelData2" }, { 0x46b8a0, (void *)static_emptyCtorSkelData3, "static_emptyCtorSkelData3" },
+	{ 0x46b8c0, (void *)static_emptyCtorSkelData4, "static_emptyCtorSkelData4" }, { 0x46b8e0, (void *)static_emptyCtorSkelData5, "static_emptyCtorSkelData5" },
+	{ 0x46b900, (void *)static_emptyCtorSkelData6, "static_emptyCtorSkelData6" }, { 0x46b920, (void *)static_emptyCtorSkelData7, "static_emptyCtorSkelData7" },
+	{ 0x46b940, (void *)static_emptyCtorSkelData8, "static_emptyCtorSkelData8" }, { 0x487b70, (void *)static_emptyCtorTimeSync1, "static_emptyCtorTimeSync1" },
+	{ 0x487b90, (void *)static_emptyCtorTimeSync2, "static_emptyCtorTimeSync2" }, { 0x48b420, (void *)debug_traceStripped, "debug_traceStripped" },
 	{ 0x454fe0, (void *)Texture_rtti, "Texture_rtti" }, { 0x456940, (void *)TextureManager_rtti, "TextureManager_rtti" },
 	{ 0x456c90, (void *)Sound_rtti, "Sound_rtti" }, { 0x460520, (void *)Console_rtti, "Console_rtti" },
 	{ 0x463b30, (void *)Shape_rtti, "Shape_rtti" }, { 0x4669c0, (void *)ShapeManager_rtti, "ShapeManager_rtti" },
@@ -18066,20 +18066,20 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46c140, (void *)angle_turn, "angle_turn" }, { 0x46c1c0, (void *)angle_stepTowards, "angle_stepTowards" },
 	{ 0x471400, (void *)collision_moveActor, "collision_moveActor" },
 	/* batch 43 */
-	{ 0x42b170, (void *)static_registerDtor_42b170, "static_registerDtor_42b170" }, { 0x42b1c0, (void *)static_registerDtor_42b1c0, "static_registerDtor_42b1c0" },
-	{ 0x42b210, (void *)static_registerDtor_42b210, "static_registerDtor_42b210" }, { 0x42b260, (void *)static_registerDtor_42b260, "static_registerDtor_42b260" },
-	{ 0x42b2b0, (void *)static_registerDtor_42b2b0, "static_registerDtor_42b2b0" }, { 0x42b300, (void *)static_registerDtor_42b300, "static_registerDtor_42b300" },
-	{ 0x42b370, (void *)static_registerDtor_42b370, "static_registerDtor_42b370" }, { 0x455000, (void *)static_registerDtor_455000, "static_registerDtor_455000" },
-	{ 0x456960, (void *)static_registerDtor_456960, "static_registerDtor_456960" }, { 0x456cb0, (void *)static_registerDtor_456cb0, "static_registerDtor_456cb0" },
-	{ 0x460540, (void *)static_registerDtor_460540, "static_registerDtor_460540" }, { 0x463b50, (void *)static_registerDtor_463b50, "static_registerDtor_463b50" },
-	{ 0x4669e0, (void *)static_registerDtor_4669e0, "static_registerDtor_4669e0" }, { 0x468730, (void *)static_registerDtor_468730, "static_registerDtor_468730" },
-	{ 0x469950, (void *)static_registerDtor_469950, "static_registerDtor_469950" }, { 0x46ae30, (void *)static_registerDtor_46ae30, "static_registerDtor_46ae30" },
-	{ 0x46ccd0, (void *)static_registerDtor_46ccd0, "static_registerDtor_46ccd0" }, { 0x46d290, (void *)static_registerDtor_46d290, "static_registerDtor_46d290" },
-	{ 0x46da90, (void *)static_registerDtor_46da90, "static_registerDtor_46da90" }, { 0x46f380, (void *)static_registerDtor_46f380, "static_registerDtor_46f380" },
-	{ 0x46f3e0, (void *)static_registerDtor_46f3e0, "static_registerDtor_46f3e0" }, { 0x46f440, (void *)static_registerDtor_46f440, "static_registerDtor_46f440" },
-	{ 0x46ff40, (void *)static_registerDtor_46ff40, "static_registerDtor_46ff40" }, { 0x481360, (void *)static_registerDtor_481360, "static_registerDtor_481360" },
-	{ 0x483d20, (void *)static_registerDtor_483d20, "static_registerDtor_483d20" }, { 0x483f80, (void *)static_registerDtor_483f80, "static_registerDtor_483f80" },
-	{ 0x487400, (void *)static_registerDtor_487400, "static_registerDtor_487400" }, { 0x48b3e0, (void *)static_registerDtor_48b3e0, "static_registerDtor_48b3e0" },
+	{ 0x42b170, (void *)static_registerTex64x64Dtor, "static_registerTex64x64Dtor" }, { 0x42b1c0, (void *)static_registerTex128x64Dtor, "static_registerTex128x64Dtor" },
+	{ 0x42b210, (void *)static_registerTex256x64Dtor, "static_registerTex256x64Dtor" }, { 0x42b260, (void *)static_registerTex128x128Dtor, "static_registerTex128x128Dtor" },
+	{ 0x42b2b0, (void *)static_registerTex256x128Dtor, "static_registerTex256x128Dtor" }, { 0x42b300, (void *)static_registerTex256x256Dtor, "static_registerTex256x256Dtor" },
+	{ 0x42b370, (void *)static_registerTextureManagerDtor, "static_registerTextureManagerDtor" }, { 0x455000, (void *)static_registerTextureRttiDtor, "static_registerTextureRttiDtor" },
+	{ 0x456960, (void *)static_registerTextureManagerRttiDtor, "static_registerTextureManagerRttiDtor" }, { 0x456cb0, (void *)static_registerSoundRttiDtor, "static_registerSoundRttiDtor" },
+	{ 0x460540, (void *)static_registerConsoleRttiDtor, "static_registerConsoleRttiDtor" }, { 0x463b50, (void *)static_registerShapeRttiDtor, "static_registerShapeRttiDtor" },
+	{ 0x4669e0, (void *)static_registerShapeManagerRttiDtor, "static_registerShapeManagerRttiDtor" }, { 0x468730, (void *)static_registerTimeSyncDtor, "static_registerTimeSyncDtor" },
+	{ 0x469950, (void *)static_registerSkeletonRttiDtor, "static_registerSkeletonRttiDtor" }, { 0x46ae30, (void *)static_registerSkeletonManagerRttiDtor, "static_registerSkeletonManagerRttiDtor" },
+	{ 0x46ccd0, (void *)static_registerBMPRGBFileRttiDtor, "static_registerBMPRGBFileRttiDtor" }, { 0x46d290, (void *)static_registerRealColorRttiDtor, "static_registerRealColorRttiDtor" },
+	{ 0x46da90, (void *)static_registerPackedColorRttiDtor, "static_registerPackedColorRttiDtor" }, { 0x46f380, (void *)static_registerUnitPartInfoRttiDtor, "static_registerUnitPartInfoRttiDtor" },
+	{ 0x46f3e0, (void *)static_registerUnitPoseInfoRttiDtor, "static_registerUnitPoseInfoRttiDtor" }, { 0x46f440, (void *)static_registerUnitRttiDtor, "static_registerUnitRttiDtor" },
+	{ 0x46ff40, (void *)static_registerStageRttiDtor, "static_registerStageRttiDtor" }, { 0x481360, (void *)static_registerCollisionVolumeRttiDtor, "static_registerCollisionVolumeRttiDtor" },
+	{ 0x483d20, (void *)static_registerLightRttiDtor, "static_registerLightRttiDtor" }, { 0x483f80, (void *)static_registerViewVolumeRttiDtor, "static_registerViewVolumeRttiDtor" },
+	{ 0x487400, (void *)static_registerTimeSyncRttiDtor, "static_registerTimeSyncRttiDtor" }, { 0x48b3e0, (void *)static_registerSceneRttiDtor, "static_registerSceneRttiDtor" },
 	{ 0x42b350, (void *)TextureManager_deletingDtor, "TextureManager_deletingDtor" }, { 0x462580, (void *)Light_deletingDtor, "Light_deletingDtor" },
 	{ 0x463810, (void *)Scene_deletingDtor, "Scene_deletingDtor" }, { 0x46c5c0, (void *)ErrorLog_deletingDtor, "ErrorLog_deletingDtor" },
 	{ 0x487450, (void *)TimeSync_deletingDtor, "TimeSync_deletingDtor" }, { 0x464bc0, (void *)Model_release, "Model_release" },
@@ -18089,9 +18089,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x454130, (void *)net_freeSessionList, "net_freeSessionList" }, { 0x4540b0, (void *)net_addSession, "net_addSession" },
 	{ 0x441190, (void *)tunnel_removeLastRing, "tunnel_removeLastRing" }, { 0x441120, (void *)tunnel_appendRing, "tunnel_appendRing" },
 	/* batch 44 */
-	{ 0x42b120, (void *)static_startTexture_4e1878, "static_startTexture_4e1878" }, { 0x42b190, (void *)static_startTexture_5b1db8, "static_startTexture_5b1db8" },
-	{ 0x42b1e0, (void *)static_startTexture_680cd8, "static_startTexture_680cd8" }, { 0x42b230, (void *)static_startTexture_76d498, "static_startTexture_76d498" },
-	{ 0x42b280, (void *)static_startTexture_90d1e0, "static_startTexture_90d1e0" }, { 0x42b2d0, (void *)static_startTexture_83a9e0, "static_startTexture_83a9e0" },
+	{ 0x42b120, (void *)static_startTex64x64, "static_startTex64x64" }, { 0x42b190, (void *)static_startTex128x64, "static_startTex128x64" },
+	{ 0x42b1e0, (void *)static_startTex256x64, "static_startTex256x64" }, { 0x42b230, (void *)static_startTex128x128, "static_startTex128x128" },
+	{ 0x42b280, (void *)static_startTex256x128, "static_startTex256x128" }, { 0x42b2d0, (void *)static_startTex256x256, "static_startTex256x256" },
 	{ 0x42b320, (void *)static_startTextureManager, "static_startTextureManager" }, { 0x454fd0, (void *)static_startTextureRtti, "static_startTextureRtti" },
 	{ 0x456930, (void *)static_startTextureManagerRtti, "static_startTextureManagerRtti" }, { 0x456c80, (void *)static_startSoundRtti, "static_startSoundRtti" },
 	{ 0x460510, (void *)static_startConsoleRtti, "static_startConsoleRtti" }, { 0x463b20, (void *)static_startShapeRtti, "static_startShapeRtti" },
@@ -18111,7 +18111,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 45 */
 	{ 0x46ce50, (void *)BMPRGBFile_close, "BMPRGBFile_close" }, { 0x46ce60, (void *)BMPRGBFile_ctor, "BMPRGBFile_ctor" },
 	{ 0x487ed0, (void *)replay_closeRecording, "replay_closeRecording" }, { 0x4617b0, (void *)chat_loadMacros, "chat_loadMacros" },
-	{ 0x455030, (void *)Texture_ctor, "Texture_ctor" }, { 0x46ca70, (void *)file_existsf, "file_existsf" },
+	{ 0x455030, (void *)Texture_dtor, "Texture_dtor" }, { 0x46ca70, (void *)file_existsf, "file_existsf" },
 	{ 0x46cbe0, (void *)file_readScrambled, "file_readScrambled" }, { 0x46cc30, (void *)file_writeScrambled, "file_writeScrambled" },
 	{ 0x42c650, (void *)cfg_parsePlayer, "cfg_parsePlayer" }, { 0x42c910, (void *)cfg_parseSound, "cfg_parseSound" },
 	{ 0x42cba0, (void *)cfg_keyBindings, "cfg_keyBindings" }, { 0x41e7c0, (void *)console_loadFile, "console_loadFile" },
@@ -18124,9 +18124,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b150, (void *)Texture_deletingDtor, "Texture_deletingDtor" }, { 0x455a80, (void *)BMPRGBFile_deletingDtor, "BMPRGBFile_deletingDtor" },
 	{ 0x462d10, (void *)Model_deletingDtor, "Model_deletingDtor" }, { 0x463010, (void *)ShapeManager_deletingDtor, "ShapeManager_deletingDtor" },
 	{ 0x4637b0, (void *)CollisionVolume_deletingDtor, "CollisionVolume_deletingDtor" }, { 0x4637d0, (void *)SkeletonManager_deletingDtor, "SkeletonManager_deletingDtor" },
-	{ 0x42b180, (void *)Texture_ctor_wrap_42b180, "Texture_ctor_wrap_42b180" }, { 0x42b1d0, (void *)Texture_ctor_wrap_42b1d0, "Texture_ctor_wrap_42b1d0" },
-	{ 0x42b220, (void *)Texture_ctor_wrap_42b220, "Texture_ctor_wrap_42b220" }, { 0x42b270, (void *)Texture_ctor_wrap_42b270, "Texture_ctor_wrap_42b270" },
-	{ 0x42b2c0, (void *)Texture_ctor_wrap_42b2c0, "Texture_ctor_wrap_42b2c0" }, { 0x42b310, (void *)Texture_ctor_wrap_42b310, "Texture_ctor_wrap_42b310" },
+	{ 0x42b180, (void *)static_destroyTex64x64, "static_destroyTex64x64" }, { 0x42b1d0, (void *)static_destroyTex128x64, "static_destroyTex128x64" },
+	{ 0x42b220, (void *)static_destroyTex256x64, "static_destroyTex256x64" }, { 0x42b270, (void *)static_destroyTex128x128, "static_destroyTex128x128" },
+	{ 0x42b2c0, (void *)static_destroyTex256x128, "static_destroyTex256x128" }, { 0x42b310, (void *)static_destroyTex256x256, "static_destroyTex256x256" },
 	{ 0x456cd0, (void *)sound_freeAll, "sound_freeAll" }, { 0x48b460, (void *)load_48b460, "load_48b460" },
 	{ 0x483d70, (void *)load_483d70, "load_483d70" }, { 0x45ff30, (void *)actor_destroyPartLists, "actor_destroyPartLists" },
 	{ 0x463960, (void *)ResourceSet_dtor_463960, "ResourceSet_dtor_463960" }, { 0x46ff70, (void *)Stage_dtor, "Stage_dtor" },

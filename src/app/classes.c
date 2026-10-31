@@ -119,9 +119,9 @@ void (vec_initAxisX)(void) { set3(0xa0e7f8, 0x3f800000u, 0, 0); }
 #define DELETING(cls, dtor) \
 	void *THISCALL (cls##_deletingDtor)(void *self, int flags) { dtor(self); if (flags & 1) operator_delete(self); return self; }
 
-/* Texture (vtable 0x4a956c): 0x455030 (named Texture_ctor, in fact its destructor) frees the pixel buffer (+0x10c,
+/* Texture (vtable 0x4a956c): 0x455030 (named Texture_dtor, in fact its destructor) frees the pixel buffer (+0x10c,
    held while +0x108 is not negative) and closes its file (+0x110); the result is what the last call left */
-u32 THISCALL (Texture_ctor)(u32 *self)
+u32 THISCALL (Texture_dtor)(u32 *self)
 {
 	u32 r = self[0x42];
 	self[0] = 0x4a956c;
@@ -133,14 +133,14 @@ u32 THISCALL (Texture_ctor)(u32 *self)
 		r = fclose((void *)self[0x44]);
 	return r;
 }
-DELETING(Texture, Texture_ctor)
+DELETING(Texture, Texture_dtor)
 /* the six global Texture objects' destructors at exit */
-u32 (Texture_ctor_wrap_42b180)(void) { return Texture_ctor((u32 *)0x4e1878); }
-u32 (Texture_ctor_wrap_42b1d0)(void) { return Texture_ctor((u32 *)0x5b1db8); }
-u32 (Texture_ctor_wrap_42b220)(void) { return Texture_ctor((u32 *)0x680cd8); }
-u32 (Texture_ctor_wrap_42b270)(void) { return Texture_ctor((u32 *)0x76d498); }
-u32 (Texture_ctor_wrap_42b2c0)(void) { return Texture_ctor((u32 *)0x90d1e0); }
-u32 (Texture_ctor_wrap_42b310)(void) { return Texture_ctor((u32 *)0x83a9e0); }
+u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)0x4e1878); }
+u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)0x5b1db8); }
+u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)0x680cd8); }
+u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)0x76d498); }
+u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)0x90d1e0); }
+u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)0x83a9e0); }
 
 /* TimeSync (vtable 0x4aa46c) */
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = 0x4aa46c; TimeSync_clear(self); return self; }
@@ -155,7 +155,7 @@ DELETING(TextureManager, TextureManager_dtor)
 void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)0x83a5e0); }
 
 /* Scene (vtable 0x4aa258) */
-void *THISCALL (Scene_ctor)(u32 *self) { self[0] = 0x4aa258; nullsub_48b420(NULL); return self; }
+void *THISCALL (Scene_ctor)(u32 *self) { self[0] = 0x4aa258; debug_traceStripped(NULL); return self; }
 void THISCALL (Scene_dtor)(u32 *self) { self[0] = 0x4aa258; }
 DELETING(Scene, Scene_dtor)
 

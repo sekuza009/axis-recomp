@@ -114,7 +114,7 @@ void (menuState100_intro)(void)
 	frontEnd_startUp();
 	g_loadStep++;
 	frontEnd_drawProgress();
-	nullsub_48b420(NULL);   /* (an empty function) */
+	debug_traceStripped(NULL);   /* (an empty function) */
 	g_loadStep++;
 	frontEnd_drawProgress();
 	g_screen = 200;

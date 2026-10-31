@@ -402,7 +402,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	shape_initBy(s + 0x19e188c, dir, 0x258, 2, 0x2c6280, s + 0x19e1ad8, 0x2dc6c0);
 	skelSet_setup(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
-	nullsub_48b420((Scene *)s);
+	debug_traceStripped((Scene *)s);
 	effect_initTextures(s);
 	static const u32 names[3] = { 0x4c73f4, 0x4c73d8, 0x4c73bc };
 	for (int k = 0; k < 3; k++) {
