@@ -19,7 +19,8 @@ $CC -c -O2 -Wall -o build/standalone_crt.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE -fno-omit-frame-pointer -I../axisnet -w -o build/standalone_axisnet.o axisnet_recomp.c
 IV=../axisnet/iv32
-$CC -mwindows -O2 -Wl,--image-base=0x10000 -Wl,--stack=0x100000 -o build/AxisRC.exe \
+# (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
+$CC -O2 -Wl,--subsystem,windows -Wl,--image-base=0x10000 -Wl,--stack=0x100000 -o build/AxisRC.exe \
 	build/standalone_main.o build/standalone_crt.o build/gamedata.o build/standalone_hooks.o build/standalone_axisnet.o build/obj/*.o \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
 python - build/AxisRC.exe <<'EOF'
@@ -30,6 +31,7 @@ open(sys.argv[1], 'wb').write(b)
 pe = pefile.PE(sys.argv[1])
 o = pe.OPTIONAL_HEADER
 assert o.ImageBase == 0x10000 and not o.DllCharacteristics & 0x40, 'not at a fixed 0x10000'
+assert o.Subsystem == 2, 'not a GUI exe (subsystem %d): it would open a console window' % o.Subsystem
 sym = None
 for s in pe.sections:
     lo, hi = o.ImageBase + s.VirtualAddress, o.ImageBase + s.VirtualAddress + s.Misc_VirtualSize
