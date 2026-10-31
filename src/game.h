@@ -265,6 +265,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define space_testSphere(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISCALL(0x482e30, int, void *, u32, const float *, const float *, u32, u32, u32, u32, u32, u32, u32, void *, int)(grid, r, pos, vel, step, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define FUN_0046cbc0(i, base, stride) GAME_CDECL(0x46cbc0, int, int, int, int)(i, base, stride)   /* record i of an array (none when negative) */
+#define collision_sphereVsUnit(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) \
+	GAME_THISCALL(0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
 #define space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISCALL(0x4804b0, int, void *, u32, const float *, const float *, u32, float *, u32, u32, u32, u32, u32, u32)(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define load_47fce0(item, low, high, margin) GAME_THISCALL(0x47fce0, int, void *, const float *, const float *, u32)(item, low, high, margin)   /* the item meets the box (widened) */

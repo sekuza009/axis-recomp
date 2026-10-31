@@ -278,6 +278,269 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	                        stage + 0x9ca0f4, count);
 }
 
+/* ---- 0x47dd90: a moving sphere against one triangle ---- */
+#define TINY ((const float *)0x4aa268)    /* 1e-8 */
+#define ONE ((const float *)0x4a9424)
+#define MINUS_ONE ((const float *)0x4a9474)
+#define REST ((const float *)0xa0e7e8)    /* the axis a response falls back to */
+
+static void vset(float *o, float x, float y, float z) { o[0] = x; o[1] = y; o[2] = z; }
+/* a x b, each component's products in the original's order */
+static void cross3(float *o, const float *a, const float *b)
+{
+	vset(o, f32(mul(fld_m(&a[1]), &b[2]) - mul(fld_m(&a[2]), &b[1])), f32(mul(fld_m(&a[2]), &b[0]) - mul(fld_m(&a[0]), &b[2])),
+	     f32(mul(fld_m(&a[0]), &b[1]) - mul(fld_m(&a[1]), &b[0])));
+}
+/* Vec3_dot (0x4802b0): summed z, y, x; and summed x, y, z */
+static X dot_zyx(const float *a, const float *b) { return mul(fld_m(&b[2]), &a[2]) + mul(fld_m(&b[1]), &a[1]) + mul(fld_m(&b[0]), &a[0]); }
+static X dot_xyz(const float *a, const float *b) { return mul(fld_m(&a[0]), &b[0]) + mul(fld_m(&a[1]), &b[1]) + mul(fld_m(&a[2]), &b[2]); }
+static X absx(X x) { return !(x >= 0) ? -x : x; }
+/* |v| under 1e-8 (or NaN), its sign taken from x and its size from the float f */
+static int small(X x, float f) { return !((!(x >= 0) ? -fld_m(&f) : fld_m(&f)) >= *TINY); }
+/* a - b rounded, componentwise */
+static void vsub(float *o, const float *a, const float *b)
+{
+	vset(o, f32(fsub_m(fld_m(&a[0]), &b[0])), f32(fsub_m(fld_m(&a[1]), &b[1])), f32(fsub_m(fld_m(&a[2]), &b[2])));
+}
+static X len2(const float *u) { return mul(fld_m(&u[0]), &u[0]) + mul(fld_m(&u[1]), &u[1]) + mul(fld_m(&u[2]), &u[2]); }
+
+/* of the two roots the one nearer 0 (the rounded t1 when the magnitudes tie or are NaN), held to -1 .. 1 */
+static X nearer_root(float t1, X t2)
+{
+	X t = !(absx(fld_m(&t1)) >= absx(t2)) ? fld_m(&t1) : t2;
+	if (t > *ONE)
+		return fld_m(ONE);
+	if (!(t >= *MINUS_ONE))
+		return fld_m(MINUS_ONE);
+	return t;
+}
+
+/* the sphere's centre at the contact: pos + vel x t */
+static void contact_centre(float *c, const float *p, const float *v, X t)
+{
+	float s[3];
+	vset(s, f32(fmul_m(t, &v[0])), f32(fmul_m(t, &v[1])), f32(fmul_m(t, &v[2])));
+	vset(c, f32(fadd_m(fld_m(&s[0]), &p[0])), f32(fadd_m(fld_m(&p[1]), &s[1])), f32(fadd_m(fld_m(&p[2]), &s[2])));
+}
+
+/* the response along y (normalised by the game's Vec3_normalize; 0 when that is too short): y scaled by its dot
+   with the contact vector d, then outVel = y + (y - d) x k. Some of the original's copies keep y.z x dot unrounded
+   for the subtraction (keep_z) */
+static int slide_inline(float *outVel, float *y, const float *d, float k, int keep_z)
+{
+	if (!(Vec3_normalize(y) >= *TINY))
+		return 0;
+	X dd = mul(fld_m(&y[0]), &d[0]) + mul(fld_m(&d[2]), &y[2]) + mul(fld_m(&d[1]), &y[1]);
+	y[0] = f32(fmul_m(dd, &y[0]));
+	y[1] = f32(fmul_m(dd, &y[1]));
+	X z = fmul_m(dd, &y[2]);
+	y[2] = (float)z;
+	float zv[3], q[3];
+	vset(zv, f32(fsub_m(fld_m(&y[0]), &d[0])), f32(fsub_m(fld_m(&y[1]), &d[1])),
+	     f32(keep_z ? fsub_m(z, &d[2]) : fsub_m(fld_m(&y[2]), &d[2])));
+	vset(q, f32(fmul_m(fld_m(&zv[0]), &k)), f32(fmul_m(fld_m(&zv[1]), &k)), f32(fmul_m(fld_m(&zv[2]), &k)));
+	vset(outVel, f32(fadd_m(fld_m(&q[0]), &y[0])), f32(fadd_m(fld_m(&q[1]), &y[1])), f32(fadd_m(fld_m(&q[2]), &y[2])));
+	return 1;
+}
+
+/* the same through the vector helpers (the face's copy): the dot rounded to a float first */
+static int slide_helpers(float *outVel, float *y, const float *d, float k)
+{
+	if (!(Vec3_normalize(y) >= *TINY))
+		return 0;
+	float s = (float)dot_zyx(d, y), zv[3], q[3];
+	for (int i = 0; i < 3; i++)
+		y[i] = f32(fmul_m(fld_m(&s), &y[i]));
+	vsub(zv, y, d);
+	for (int i = 0; i < 3; i++)
+		q[i] = f32(fmul_m(fld_m(&k), &zv[i]));
+	vset(outVel, f32(fadd_m(fld_m(&q[0]), &y[0])), f32(fadd_m(fld_m(&q[1]), &y[1])), f32(fadd_m(fld_m(&q[2]), &y[2])));
+	return 1;
+}
+
+/* the response and plane of a corner or edge contact, w the contact normal (the centre less the feature). Without an
+   axis the response is along (v x w) x w and the plane's normal is w; with one, along w x axis, the normal w x that.
+   The edge's copy with an axis rounds y.z x dot (keep_z 0) and writes the plane through the helpers (no FPU) */
+static void respond(float *w, const float *v, const float *d, float k, const float *axis, float *outVel, float *plane,
+                    const float *o, int corner)
+{
+	float x[3], y[3];
+	if (!axis) {
+		cross3(x, v, w);
+		cross3(y, x, w);
+		if (!slide_inline(outVel, y, d, k, 1))
+			memcpy(outVel, REST, 12);
+	} else {
+		cross3(y, w, axis);
+		if (!slide_inline(outVel, y, d, k, corner))
+			memcpy(outVel, REST, 12);
+		cross3(w, w, y);
+		if (!corner) {
+			float dn = (float)dot_zyx(w, o);
+			memcpy(plane, w, 12);
+			plane[3] = dn;
+			return;
+		}
+	}
+	X dn = mul(fld_m(&w[0]), &o[0]) + mul(fld_m(&w[1]), &o[1]) + mul(fld_m(&w[2]), &o[2]);
+	for (int i = 0; i < 3; i++)
+		plane[i] = (float)fld_m(&w[i]);
+	plane[3] = (float)dn;
+}
+
+/* 0x47dd90 (thiscall on a triangle record, see the top of the file): the sphere of radius r moving from pos by vel
+   against the triangle. Misses (0): moving away from the face (vel . n > 1e-8), or pos + vel (outPos) r or more from
+   the face's plane or outside an edge plane by r. With no motion it is pushed back along -n by r. Then by where
+   pos + vel lies: outside an edge plane (the first), the nearest of that edge's start corner, its end corner or the
+   edge itself; else the face. Each solves for the fraction t (-1 .. 1) of the move that brings the sphere into
+   touch, puts the centre there (outPos), its distance from pos + vel (outDist), the response (outVel: the remaining
+   move slid along the contact, scaled by k, about axis when there is one) and the contact plane (normal and
+   distance). Returns 1 on a contact */
+int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const float *vel, float k, float *outPos,
+                                      float *outVel, float *outDist, float *plane, const float *axis)
+{
+	const float *n = (const float *)(tri + 0x4c), *dist = (const float *)(tri + 0x58);
+	float *o = outPos, edge[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
+	for (int i = 0; i < 3; i++)
+		o[i] = f32(fadd_m(fld_m(&pos[i]), &vel[i]));
+	if (mul(fld_m(&vel[2]), &n[2]) + mul(fld_m(&vel[1]), &n[1]) + mul(fld_m(&n[0]), &vel[0]) > *TINY)
+		return 0;
+	if (absx(fsub_m(mul(fld_m(&o[2]), &n[2]) + mul(fld_m(&o[1]), &n[1]) + mul(fld_m(&o[0]), &n[0]), dist)) >= r)
+		return 0;
+	for (int i = 0; i < 3; i++) {
+		const float *e = (const float *)(tri + 0x5c + i * 16);
+		X s = fsub_m(mul(fld_m(&e[0]), &o[0]) + mul(fld_m(&e[1]), &o[1]) + mul(fld_m(&e[2]), &o[2]), &e[3]);
+		edge[i] = (float)s;
+		if (s >= r)
+			return 0;
+	}
+	memcpy(p, pos, 12);
+	memcpy(v, vel, 12);
+	if (small(fld_m(&v[0]), v[0]) && small(fld_m(&v[1]), v[1]) && small(fld_m(&v[2]), v[2])) {   /* no motion */
+		X nx = -fld_m(&n[0]);
+		v[1] = f32(-fld_m(&n[1]));
+		v[2] = f32(-fld_m(&n[2]));
+		vset(o, f32(fadd_m(nx, &pos[0])), f32(fadd_m(fld_m(&v[1]), &pos[1])), f32(fadd_m(fld_m(&v[2]), &pos[2])));
+		v[0] = f32(fmul_m(nx, &r));
+		v[1] = f32(fmul_m(fld_m(&v[1]), &r));
+		v[2] = f32(fmul_m(fld_m(&v[2]), &r));
+	}
+	int i = 0;
+	while (i < 3 && !(edge[i] > 0))
+		i++;
+	if (i == 3) {   /* the face: the plane's equation solved along the move */
+		float nn[3], y[3], x[3], t;
+		memcpy(nn, n, 12);
+		a = f32(fsub_m(dot_zyx(nn, p), dist));
+		X dv = dot_zyx(nn, v);
+		float dvf = (float)dv;
+		if (small(dv, dvf))
+			return 0;
+		X t1 = -(fadd_m(fld_m(&a), &r) / fld_m(&dvf));
+		t = f32(-(fsub_m(fld_m(&a), &r) / fld_m(&dvf)));
+		if (!(absx(t1) >= absx(fld_m(&t))))
+			t = (float)t1;
+		if (t > *ONE)
+			FIELD(u32, &t, 0) = 0x3f800000;
+		else if (!(t >= *MINUS_ONE))
+			FIELD(u32, &t, 0) = 0xbf800000;
+		for (int j = 0; j < 3; j++)
+			u[j] = f32(fmul_m(fld_m(&t), &v[j]));
+		vset(c, f32(fadd_m(fld_m(&u[0]), &p[0])), f32(fadd_m(fld_m(&u[1]), &p[1])), f32(fadd_m(fld_m(&u[2]), &p[2])));
+		vsub(d, o, c);
+		*outDist = (float)fsqrt(len2(d));
+		memcpy(o, c, 12);
+		if (!(fsub_m(dot_zyx(nn, o), dist) >= 0))
+			for (int j = 0; j < 3; j++)
+				nn[j] = (float)-fld_m(&nn[j]);
+		if (!axis) {
+			cross3(x, v, nn);
+			cross3(y, x, nn);
+			if (!slide_helpers(outVel, y, d, k))
+				memcpy(outVel, REST, 12);
+		} else {
+			cross3(y, nn, axis);
+			if (!slide_helpers(outVel, y, d, k))
+				memcpy(outVel, REST, 12);
+			cross3(nn, nn, y);
+		}
+		float dn = (float)dot_zyx(nn, o);
+		memcpy(plane, nn, 12);
+		plane[3] = dn;
+		return 1;
+	}
+	int j = (i + 1) % 3, corner = 1;
+	const float *vi = (const float *)(tri + 4 + i * 12), *vj = (const float *)(tri + 4 + j * 12);
+	const float *e = (const float *)(tri + 0x28 + i * 12);
+	vsub(u, o, vi);
+	if (!(dot_zyx(e, u) >= 0)) {   /* before the edge's start: that corner */
+		r2 = f32(fmul_m(fld_m(&r), &r));
+		vsub(u, o, vi);
+		if (!(len2(u) < r2))
+			return 0;
+		vsub(pv, p, vi);
+		X aa = len2(v);
+		a = (float)aa;
+		if (small(aa, a))
+			return 0;
+		X b = dot_xyz(pv, v);
+		X disc = b * b - fmul_m(fsub_m(len2(pv), &r2), &a);
+		if (!(disc >= *TINY))
+			return 0;
+		X s = fsqrt(disc);
+		contact_centre(c, p, v, nearer_root(f32(fdiv_m(s - b, &a)), fdiv_m(-b - s, &a)));
+		vsub(d, o, c);
+	} else {
+		r2 = f32(fmul_m(fld_m(&r), &r));
+		vsub(u, o, vj);
+		if (dot_zyx(e, u) > 0) {   /* past the edge's end: the next corner */
+			vsub(u, o, vj);
+			if (!(len2(u) < r2))
+				return 0;
+			vsub(pv, p, vj);
+			X aa = len2(v), b = dot_xyz(pv, v);
+			X disc = b * b - fsub_m(len2(pv), &r2) * aa;
+			if (!(disc >= *TINY))
+				return 0;
+			X s = fsqrt(disc);
+			contact_centre(c, p, v, nearer_root((float)((s - b) / aa), (-b - s) / aa));
+			vi = vj;
+		} else {   /* along the edge: the sphere against the edge's line */
+			vsub(u, o, vi);
+			X de = dot_zyx(e, u);
+			if (!(len2(u) - de * de < r2))
+				return 0;
+			vsub(pv, p, vi);
+			X ve = mul(fld_m(&v[1]), &e[1]) + mul(fld_m(&v[2]), &e[2]) + mul(fld_m(&v[0]), &e[0]);
+			float pe = (float)dot_zyx(e, pv);
+			X aa = len2(v) - ve * ve;
+			a = (float)aa;
+			if (small(aa, a))
+				return 0;
+			X b = dot_xyz(pv, v) - fmul_m(ve, &pe);
+			X disc = b * b - fmul_m(fsub_m(len2(pv) - mul(fld_m(&pe), &pe), &r2), &a);
+			if (!(disc >= *TINY))
+				return 0;
+			X s = fsqrt(disc);
+			contact_centre(c, p, v, nearer_root(f32(fdiv_m(s - b, &a)), fdiv_m(-b - s, &a)));
+			corner = 0;
+		}
+		vsub(d, o, c);
+		if (!(dot_xyz(d, v) > 0))   /* the contact behind the move: the rest axis */
+			memcpy(d, REST, 12);
+	}
+	*outDist = (float)fsqrt(mul(fld_m(&d[1]), &d[1]) + mul(fld_m(&d[2]), &d[2]) + mul(fld_m(&d[0]), &d[0]));
+	memcpy(o, c, 12);
+	vsub(w, o, vi);
+	if (!corner) {   /* the normal from the edge's line: e x ((centre - start) x e) */
+		float t[3];
+		cross3(t, w, e);
+		cross3(w, e, t);
+	}
+	respond(w, v, d, k, axis, outVel, plane, o, corner);
+	return 1;
+}
+
 /* an affine point (with the translation) or a direction through a 4x4 matrix (columns), each row summed z, y, x */
 static float row_point(const float *m, const float *p, int i)
 {
@@ -287,8 +550,6 @@ static float row_dir(const float *m, const float *p, int i)
 {
 	return f32(mul(fld_m(&p[2]), &m[8 + i]) + mul(fld_m(&p[1]), &m[4 + i]) + mul(fld_m(&p[0]), &m[i]));
 }
-
-#define collision_sphereVsUnit(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis) 	GAME_THISCALL(0x47dd90, int, void *, float, const float *, const float *, u32, float *, float *, float *, float *, u32)(rec, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis)
 
 /* 0x4804b0 (thiscall on a space object): the sphere of radius r moving from pos by vel against the triangles of the
    object's list (+0x18: nodes {record, ., ., next +0xc}; records whose first byte has bit 0 set are skipped there)

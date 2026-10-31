@@ -2120,16 +2120,9 @@ static void lstk_leave(DWORD *top) { TlsSetValue(g_lstkTls, top); }
 	for (int i_ = 0; i_ < (nargs); i_++) *(DWORD *)(mm.esp + 4 + i_ * 4) = (args)[i_]; \
 	*(DWORD *)mm.esp = 0;
 #define LSTK_END() lstk_leave(lstk_)
-static THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
-                                           DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis)
-{
-	DWORD args[9] = { r, pos, vel, k, outPos, outVel, outDist, outPlane, axis };
-	LSTK_BEGIN(mm, 9, args)
-	mm.ecx = (DWORD)self;
-	lift_47dd90(&mm);
-	LSTK_END();
-	return (int)mm.eax;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
+                                     DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
 /* batch 38 */
 /* 0x4804b0 (thiscall) space_collideUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs): the
    moving sphere against every triangle of the space object's list (this+0x18; nodes {record, ., ., next at +0xc};
