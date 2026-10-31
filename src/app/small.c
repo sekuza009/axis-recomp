@@ -424,7 +424,7 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 	typedef long double X;
 	if (FIELD(int, stage, 0x2149308) && FIELD(int, stage, 0x214930c) == 1)
 		return;
-	X d = (X)dt * GAME_VAR(float, 0x4a9428), one = GAME_VAR(float, 0x4a9424);
+	X d = (X)dt * k_clockRate, one = GAME_VAR(float, 0x4a9424);
 	for (int k = 0; k < 2; k++) {
 		X a = d + FIELD(float, stage, 0x9ef0a8 + k * 4);
 		FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)a;
@@ -435,7 +435,7 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 	}
 	if (FIELD(int, stage, 0x9ef30c) != 2)
 		return;
-	X e = (X)dt * GAME_VAR(float, 0x4aa498) + FIELD(float, stage, 0x9ef900);
+	X e = (X)dt * k_clockRate3 + FIELD(float, stage, 0x9ef900);
 	FIELD(float, stage, 0x9ef900) = (float)e;
 	if (e >= one) {
 		FIELD(int, stage, 0x9ef8fc) = (FIELD(int, stage, 0x9ef8fc) + 1) % 16;

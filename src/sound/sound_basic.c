@@ -95,8 +95,8 @@ u32 (music_4572b0)(void)
 	int hi = (int)pos[1], end_hi = GAME_VAR(int, 0xa0e01c);
 	if (hi < end_hi)
 		return (u32)hi;
-	if (hi == end_hi && pos[0] < GAME_VAR(u32, 0xa0e018))
-		return GAME_VAR(u32, 0xa0e018);
+	if (hi == end_hi && pos[0] < g_musicLength)
+		return g_musicLength;
 	segment = GAME_VAR(void *, 0xa0e670);
 	COM(segment, 0x28, u32, u32, u32)(segment, 0, 0);
 	segment = GAME_VAR(void *, 0xa0e670);
@@ -341,9 +341,9 @@ int (sound_init)(void *hwnd)
 	ds = GAME_VAR(void *, 0xa0e804);
 	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)0xa0e808, NULL))   /* CreateSoundBuffer */
 		return 0;
-	void *primary = GAME_VAR(void *, 0xa0e808);
+	void *primary = g_primarySoundBuffer;
 	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
-	primary = GAME_VAR(void *, 0xa0e808);
+	primary = g_primarySoundBuffer;
 	if (COM(primary, 0x30, int, u32, u32, u32)(primary, 0, 0, 1)) {   /* Play, looping */
 		ds = GAME_VAR(void *, 0xa0e804);
 		COM(ds, COM_RELEASE, u32)(ds);

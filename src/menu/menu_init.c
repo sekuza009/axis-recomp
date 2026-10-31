@@ -60,7 +60,7 @@ void (skirmish_clearPlayerRows)(void)
 void (net_resetState)(void)
 {
 	GAME_VAR(int, 0x9f93c8) = 0;
-	GAME_VAR(int, 0x9f9418) = 0;
+	g_resultMessage = 0;
 	GAME_VAR(int, 0x9f93cc) = 0;
 	g_hostResultFlag = 0;
 	GAME_VAR(int, 0x9f93d0) = 0;
@@ -69,7 +69,7 @@ void (net_resetState)(void)
 	GAME_VAR(int, 0x9f93d4) = 0;
 	GAME_VAR(int, 0x9f9424) = 0;
 	GAME_VAR(int, 0x9f93c8) = 1;
-	GAME_VAR(int, 0x9f9418) = 2;
+	g_resultMessage = 2;
 	g_hostResultFlag = 0;
 	GAME_VAR(int, 0x9fd94c) = 0;
 	GAME_VAR(int, 0x9f9420) = 6;

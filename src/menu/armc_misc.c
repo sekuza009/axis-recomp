@@ -613,11 +613,11 @@ void (armc_drawWeightLine)(void)
 	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
 	strcpy(s.most, (const char *)0x4ad564);   /* "/" */
-	sprintf(s.total, (const char *)0x4b0354, (double)GAME_VAR(float, 0x4dcb0c));   /* "%.0f" */
+	sprintf(s.total, (const char *)0x4b0354, (double)g_legsMaxWeight);   /* "%.0f" */
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
 	sprintf(s.total, (const char *)0x4b0354, (double)g_totalWeight);
-	if (g_totalWeight > GAME_VAR(float, 0x4dcb0c))
+	if (g_totalWeight > g_legsMaxWeight)
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);
 	else
 		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);

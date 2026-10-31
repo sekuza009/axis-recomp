@@ -231,7 +231,7 @@ void (armc_buildPartLists)(void)
 	int network = GAME_VAR(int, 0x4dc24c) == 3;
 	int level = unlocked_level(network);
 	GAME_VAR(int, 0x4dc870) = level;
-	GAME_VAR(int, 0x4dc784) = level;
+	g_unlockedLevel = level;
 	static const u32 lists[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7c };
 	static const u32 lengths[5] = { 0x4dc780, 0x4dcc60, 0x4dca90, 0x4dca94, 0x4dc890 };
 	for (int k = 0; k < 5; k++)
@@ -252,7 +252,7 @@ void (armc_buildPartLists)(void)
 	for (int j = 0; j < 2; j++) {
 		GAME_VAR(int, extra[j]) = -1;
 		GAME_VAR(int, extra_len[j]) = 1;
-		int top = GAME_VAR(int, 0x4dc784), len = 1;
+		int top = g_unlockedLevel, len = 1;
 		if (top < 0)
 			continue;
 		for (int lv = 0; lv <= top; lv++)

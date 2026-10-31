@@ -89,7 +89,7 @@ static void menu_camera(const MenuCam *m)
 	X look = F(0x680378);
 	if (!(look >= F(0x4a93e8)))
 		look = -look;
-	if (!(look >= GAME_VAR(double, 0x4a93d8))) {   /* close enough: snapped home */
+	if (!(look >= k_cameraSnapDistance)) {   /* close enough: snapped home */
 		I(0x680378) = I(0x76d3f8);
 		I(0x68037c) = I(0x76d3fc);
 		I(0x680380) = I(0x76d400);
@@ -434,7 +434,7 @@ void (setup_camera)(void)
 		F(0x68037c) = (float)((X)F(0x68037c) - ((X)F(0x68037c) - F(0x76d3fc)) * k * c);
 		if (!(look >= F(0x4a93e8)))
 			look = -look;
-		if (look >= GAME_VAR(double, 0x4a93d8))
+		if (look >= k_cameraSnapDistance)
 			return;
 		for (int a = 0; a < 3; a++)
 			I(0x680378 + a * 4) = I(0x76d3f8 + a * 4);
@@ -514,14 +514,14 @@ void (match_debugHandler)(void)
 		menuCamera_forward();
 	if (input_isDown(GAME_VAR(int, 0x4def18)) == 1)
 		menuCamera_back();
-	g_menuCameraLook = GAME_VAR(u32, 0x4de344);
-	GAME_VAR(u32, 0x680380) = GAME_VAR(u32, 0x4de34c);
+	g_menuCameraLook = g_menuCamX;
+	GAME_VAR(u32, 0x680380) = g_menuCamZ;
 	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));
 	F(0x4df028) = f32(fadd_m(fld_m(&F(0x4de348)), (const float *)0x4a9418));
 	u32 *slot = (u32 *)(0x4dfa1c + g_watchedSlot * 0x58);
-	slot[0] = GAME_VAR(u32, 0x4de344);
+	slot[0] = g_menuCamX;
 	slot[1] = GAME_VAR(u32, 0x4de348);
-	slot[2] = GAME_VAR(u32, 0x4de34c);
+	slot[2] = g_menuCamZ;
 	F(0x4df02c) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c8)), (const float *)0x4a9560), &F(0x4de34c)));
 	F(0x68037c) = f32(fadd_m(fld_m(&F(0x4de6c4)), &F(0x4de348)));
 	if (input_justPressed(GAME_VAR(int, 0x680388)) == 1)

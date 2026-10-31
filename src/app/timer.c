@@ -50,7 +50,7 @@ long double (timer_now)(void)
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
 	int shift = GAME_VAR(int, 0x67ef1c);
 	GAME_VAR(u32, 0x5ae9cc) = counter[1];
-	GAME_VAR(u32, 0x5ae9c8) = counter[0];
+	g_perfCounter = counter[0];
 	u32 count = counter[1] << ((32 - shift) & 31) | counter[0] >> (shift & 31);   /* (x86 shift counts, mod 32) */
 	if (g_timerFirstCall) {
 		long double t = g_time;
@@ -140,7 +140,7 @@ long double THISCALL (frameTimer_average)(u8 *t)
 	long double sum = GAME_VAR(float, 0x4a93e8);   /* 0 */
 	for (int i = 0; i < 10; i++)
 		sum += FIELD(float, 0x48 + i * 4);
-	sum *= GAME_VAR(float, 0x4a955c);
+	sum *= k_tenth;
 	FIELD(float, 0x44) = (float)sum;
 	return sum;
 #undef FIELD

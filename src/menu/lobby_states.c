@@ -259,7 +259,7 @@ void (console_41e390)(void)
 	}
 	if (GAME_VAR(int, 0x9dd254) > e5 || b1 > e1) {
 		GAME_VAR(int, 0x9dd244) = e1;
-		GAME_VAR(int, 0x9dd240) = e0;
+		g_roomWindowRect = e0;
 		GAME_VAR(int, 0x9dd24c) = e3;
 		GAME_VAR(int, 0x9dd254) = e5;
 		GAME_VAR(int, 0x9dd258) = e6;
@@ -319,7 +319,7 @@ u32 (room_host)(void)
 	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
 	default_mech((u8 *)0x9dd260, (u8 *)0x9dd26b);
 	default_mech((u8 *)0x9dd5f8, (u8 *)0x9dd603);
-	GAME_VAR(int, 0x9dd240) = 1;
+	g_roomWindowRect = 1;
 	GAME_VAR(int, 0x9dd5d8) = 1;
 	memset((void *)0x4de700, 0, 7 * 4 + 2);
 	static const u32 zero[] = { 0x9dd5dc, 0x9dd5ec, 0x9dd5f0, 0x9dd5e8, 0x9dd5f4, 0x9dd244, 0x9dd254, 0x9dd258,

@@ -152,7 +152,7 @@ int *(input_getCursorPos)(void)
 	if (!g_hWndMain || GetForegroundWindow() == g_hWndMain) {
 		int p[2];
 		GetCursorPos(p);
-		GAME_VAR(int, 0xae2f18) = p[0];
+		g_cursorPos = p[0];
 		GAME_VAR(int, 0xae2f1c) = p[1];
 	}
 	return (int *)0xae2f18;

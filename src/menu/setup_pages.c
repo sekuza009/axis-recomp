@@ -256,11 +256,11 @@ static void settings_tab(void)
 	if (crosshair != g_lastCrosshair) {
 		if ((u32)crosshair <= 7)
 			strcpy((char *)0x4ddb58, (const char *)(0x4b063c - crosshair * 0x20));
-		GAME_VAR(int, 0x4e0c8c) = tex_getIdByName(g_textures, (const char *)0x4ddb58, 0, 0, 0, 0, 0, 0, 0);
+		g_crosshairTexture = tex_getIdByName(g_textures, (const char *)0x4ddb58, 0, 0, 0, 0, 0, 0, 0);
 		g_lastCrosshair = crosshair;
 	}
 	glEnable(GL_TEXTURE_2D);
-	texture = GAME_VAR(int, 0x4e0c8c);
+	texture = g_crosshairTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
@@ -730,7 +730,7 @@ void (room_4388e0)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	static const Highlight h = { -1, glow, 0, 0, 0 };
-	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { g_roomTunnelDepth, 0x4df910, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
@@ -777,7 +777,7 @@ void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
 	Highlight h = { hovered_panel(0x9daf88, 6, g_roomDialogOpen), glow, 0, 0, 0 };
-	Tunnel t = { GAME_VAR(u32, 0x9dd698), 0x4df910, 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { g_roomTunnelDepth, 0x4df910, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomMode == 2)
 		caption(0x750ba4, h.on);
@@ -895,9 +895,9 @@ void (setup_easePanel)(void)
 	typedef long double X;
 	if (!g_setupPanelMoving)
 		return;
-	X d = ((X)GAME_VAR(float, 0x4a9448) - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
+	X d = ((X)k_setupPanelTarget - g_setupPanelPos) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
 	g_setupPanelPos = (float)((X)g_setupPanelPos + d);
-	if (!((X)g_setupTunnelDepth > (X)GAME_VAR(double, 0x4a9440))) {
+	if (!((X)g_setupTunnelDepth > (X)k_setupPanelEnd)) {
 		g_setupPanelMoving = 0;
 		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;
 		return;

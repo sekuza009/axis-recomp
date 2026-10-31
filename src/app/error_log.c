@@ -26,7 +26,7 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 	else
 		sprintf_game(stamp, (const char *)timeFormat, st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	vsprintf_game(text, format, args);
-	if (GAME_VAR(int, 0xa1efdc) == 1) {
+	if (g_errorLogging == 1) {
 		void *f = crt_fopen((const char *)0x4c582c, (const char *)0x4c5838);   /* ERROR.TXT, appended */
 		if (f) {
 			fseek(f, 0, 2);
@@ -35,7 +35,7 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 			fclose(f);
 		}
 	}
-	return GAME_VAR(ErrorHook, 0x4c57cc)(stamp, text);
+	return g_errorHook(stamp, text);
 }
 
 /* the cleanup hook, if any, then exit(1) */

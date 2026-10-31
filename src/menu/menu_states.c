@@ -513,13 +513,13 @@ void (room_keepText)(void)
 static int menu_slide(u32 flag, u32 eased, u32 slid)
 {
 	if (GAME_VAR(int, flag)) {
-		volatile long double d = (long double)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, eased);
+		volatile long double d = (long double)k_setupPanelTarget - GAME_VAR(float, eased);
 		d = d * g_frameTime;
 		d = d * GAME_VAR(float, 0x4a93ec);
 		volatile long double e = (long double)GAME_VAR(float, eased) + d;
 		GAME_VAR(float, eased) = (float)e;
 		long double s = GAME_VAR(float, slid);
-		if (s > GAME_VAR(double, 0x4a9440)) {
+		if (s > k_setupPanelEnd) {
 			volatile long double t = s - d;
 			GAME_VAR(float, slid) = (float)t;
 		} else {

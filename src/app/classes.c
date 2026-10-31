@@ -149,7 +149,7 @@ DELETING(TimeSync, TimeSync_dtor)
 void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)0xa0e948); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
-int (TextureManager_ctor)(void) { GAME_VAR(u32, 0x83a5e0) = 0x4a9570; return TextureManager_clear((void *)0x83a5e0); }
+int (TextureManager_ctor)(void) { g_textureManager = 0x4a9570; return TextureManager_clear((void *)0x83a5e0); }
 int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = 0x4a9570; return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
 void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)0x83a5e0); }

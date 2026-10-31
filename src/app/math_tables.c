@@ -21,7 +21,7 @@ static inline long double x87_fptan(long double x) { __asm__("fptan\n\tfstp %%st
 u32 (math_makeMathFunctionTableFile)(void)
 {
 	for (int i = 0; i < 3600; i++) {
-		long double angle = (long double)i * GAME_VAR(double, 0x4aa298);   /* 0.1 degree in radians */
+		long double angle = (long double)i * k_tenthDegreeRad;   /* 0.1 degree in radians */
 		float s = f32(x87_fsin(angle));
 		SIN_TABLE[i] = s;
 		long double c = x87_fcos(angle);
@@ -58,7 +58,7 @@ int (math_initMathFunction)(void)
 	int degrees = 85;
 	float *out = TAN10_TABLE;
 	do {
-		*out++ = (float)x87_fptan((long double)degrees * GAME_VAR(double, 0x4aa290));   /* degrees in radians */
+		*out++ = (float)x87_fptan((long double)degrees * k_degToRad);   /* degrees in radians */
 		degrees -= 10;
 	} while (degrees > -95);
 	return degrees;

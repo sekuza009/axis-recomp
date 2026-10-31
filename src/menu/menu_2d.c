@@ -305,7 +305,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 	int frames = g_frameCounter40 + 1;
 	t = fadd_m(t, (const float *)0x4de1f0);
 	g_frameCounter40 = frames;
-	GAME_VAR(float, 0x4de1f0) = (float)t;
+	g_cursorBlinkTimer = (float)t;
 	if (frames > 0x28)
 		g_frameCounter40 = 0;
 	if (t > GAME_VAR(float, 0x4a9508))

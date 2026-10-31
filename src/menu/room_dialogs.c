@@ -179,7 +179,7 @@ int (gameList_open)(void)
 	g_gameServerState = 0;
 	GAME_VAR(int, 0x9087b0) = 0;
 	GAME_VAR(int, 0x67ef30) = 0;
-	GAME_VAR(int, 0x9dd330) = 1;
+	g_gameListLoaded = 1;
 	GAME_VAR(int, 0x76d41c) = 0;
 	GAME_VAR(u32, 0x4dba80) = 0x447a0000;   /* 1000 */
 	GAME_VAR(int, 0x680bb0) = 0;
@@ -623,17 +623,17 @@ u32 (loginDialog_draw)(void)
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
-	if (!GAME_VAR(int, 0x9dd348) || !g_paused)
+	if (!g_typingAccountName || !g_paused)
 		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)0x9dd1d8);
-	if (!GAME_VAR(int, 0x9dd3f8) || !g_paused) {
+	if (!g_typingAccountPassword || !g_paused) {
 		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
 		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
 	}
-	if (!GAME_VAR(int, 0x9dd564) || !g_paused) {
+	if (!g_typingAccountRepeat || !g_paused) {
 		stars(hidden, sizeof hidden, (const char *)0x9dd202);
 		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
 	}
-	if (!GAME_VAR(int, 0x9dd6cc) || !g_paused)
+	if (!g_typingAccountEmail || !g_paused)
 		text_draw8(X0 + 0x94, Y0 + 0xcc, (const char *)0x9dd20e);
 	for (int k = 0; k < 2; k++) {
 		int x = k * 0xc8;

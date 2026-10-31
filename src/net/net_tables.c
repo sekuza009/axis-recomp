@@ -60,7 +60,7 @@ int (net_claimLocalSlot)(void)
 	u8 slot = net_claimPlayerSlot();
 	net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
 	g_watchedSlot = slot;
-	GAME_VAR(int, 0x9f9838) = 1;
+	g_slotTakenFlag = 1;
 	return 1;
 }
 
@@ -249,8 +249,8 @@ u32 (net_closeThreadHandles)(void)
 			GAME_VAR(u32, handles[k]) = 0;
 		}
 	}
-	if (GAME_VAR(int, 0xa0d784))
-		GAME_VAR(int, 0xa0d784) = 0;
+	if (g_pingThreadId)
+		g_pingThreadId = 0;
 	return r;
 }
 
@@ -328,7 +328,7 @@ void (net_closeAll)(int kind)
 	if (kind == 100 || kind == 101) {
 		const char *host = (const char *)(kind == 100 ? 0xa0b24c : 0xa055fc);
 		strcpy((char *)0xa055e4, net_resolveHost(host) ? (const char *)0xa0d320 : host);
-		GAME_VAR(u16, 0xa05326) = GAME_VAR(u16, kind == 100 ? 0xa055f4 : 0xa05634);
+		g_serverPort = GAME_VAR(u16, kind == 100 ? 0xa055f4 : 0xa05634);
 	}
 	memset((void *)0x9fd960, 0, 0x1e40 * 4);
 	memset((void *)0xa05748, 0, 0x16c0 * 4);
@@ -524,8 +524,8 @@ int (net_startThread)(void)
 		return 0;
 	if (!(g_pingStopEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
 		return 0;
-	GAME_VAR(void *, 0xa0d788) = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)0x454560, NULL, 0, (u32 *)0xa0d784);   /* CreateThread */
-	if (!GAME_VAR(void *, 0xa0d788))
+	g_pingThread = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)0x454560, NULL, 0, (u32 *)0xa0d784);   /* CreateThread */
+	if (!g_pingThread)
 		return 0;
 	SetEvent(g_pingDataEvent);
 	return 1;
@@ -923,7 +923,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	case 6:
 		net_takePlayerSlot(slot, GAME_VAR(int, 0xa0b424));
 		*(int *)player = 1;
-		GAME_VAR(int, 0x9f9838) = 1;
+		g_slotTakenFlag = 1;
 		g_watchedSlot = (u8)slot;
 		return slot;
 	case 7:
@@ -1143,7 +1143,7 @@ static int connect_socket(int *sock, int status)
 		return 0;
 	where.family = 2;
 	where.address = ((u32 (STDCALL *)(const char *))0x4a82b0)(host);      /* inet_addr */
-	where.port = ((u16 (STDCALL *)(u32))0x4a82aa)(GAME_VAR(u16, 0xa05326)); /* htons */
+	where.port = ((u16 (STDCALL *)(u32))0x4a82aa)(g_serverPort); /* htons */
 	if (where.address == 0xffffffff) {
 		u8 *entry = ((u8 *(STDCALL *)(const char *))0x4a82a4)(host);       /* gethostbyname */
 		if (!entry) {

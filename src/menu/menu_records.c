@@ -122,7 +122,7 @@ void (mech_unpackFromRecord)(void)
 void (mech_loadFromProfile)(void)
 {
 	GAME_VAR(int, 0x4dc87c) = GAME_VAR(int, 0x9f19fc);
-	g_savedMechParts = GAME_VAR(int, 0x9f19f8);
+	g_savedMechParts = g_profileMechRecord;
 	GAME_VAR(int, 0x4dc880) = GAME_VAR(int, 0x9f1a00);
 	GAME_VAR(int, 0x4dc888) = GAME_VAR(int, 0x9f1a08);
 	GAME_VAR(int, 0x4dc884) = GAME_VAR(int, 0x9f1a04);
@@ -144,7 +144,7 @@ void (mech_loadFromProfile)(void)
 /* 0x4464b0: the mech stored into the profile record (the inverse of mech_loadFromProfile) */
 void (mech_storeToProfile)(void)
 {
-	GAME_VAR(int, 0x9f19f8) = g_savedMechParts;
+	g_profileMechRecord = g_savedMechParts;
 	GAME_VAR(int, 0x9f19fc) = GAME_VAR(int, 0x4dc87c);
 	GAME_VAR(int, 0x9f1a04) = GAME_VAR(int, 0x4dc884);
 	GAME_VAR(int, 0x9f1a00) = GAME_VAR(int, 0x4dc880);

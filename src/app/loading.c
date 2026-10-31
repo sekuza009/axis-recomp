@@ -366,7 +366,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	char name[0x100], path[0x100];
 	if (G(int, 0x233cc28) == 0) {
 		GAME_VAR(u8 *, 0xa0ea8c) = g;
-		GAME_VAR(u8, 0xa0e988) = 0;
+		g_statusLine = 0;
 		G(int, 0x2340c60) = 1;
 		strcpy((char *)g + 0x233cc60, (const char *)0x4c52b0);
 		G(int, 0x233cc24) = 0;

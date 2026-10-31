@@ -702,9 +702,9 @@ u32 (room_settingsAfterTyping)(void)
 		strcpy((char *)0x4df9c8, line);
 		return strlen(line) + 1;
 	}
-	if (GAME_VAR(int, 0x9dd6a8)) {   /* the password */
+	if (g_editingRoomPassword) {   /* the password */
 		memset((void *)0x4df9ee, 0, 8);
-		GAME_VAR(int, 0x9dd6a8) = 0;
+		g_editingRoomPassword = 0;
 		GAME_VAR(int, 0x4e1868) = 0;
 		strcpy((char *)0x4df9ee, line);
 		return 0;
@@ -882,14 +882,14 @@ void (loginDialog_keys)(void)
 		if (g_loginField == 1)
 			login_field(2, GAME_VAR(int, 0x9dd6e8) + 0x172, GAME_VAR(int, 0x9dd6f4) - 0x30);
 		else if (g_loginField == 2) {
-			GAME_VAR(int, 0x9dd348) = 1;
-			GAME_VAR(int, 0x9dd3f8) = 0;
+			g_typingAccountName = 1;
+			g_typingAccountPassword = 0;
 			login_field(2, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0x44);
 		}
 	} else {
 		if (g_loginField == 1) {
-			GAME_VAR(int, 0x9dd564) = 0;
-			GAME_VAR(int, 0x9dd6cc) = 1;
+			g_typingAccountRepeat = 0;
+			g_typingAccountEmail = 1;
 			login_field(0, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0xd4);
 		} else if (g_loginField == 2)
 			login_field(1, GAME_VAR(int, 0x9dd6e8) + 0xaa, GAME_VAR(int, 0x9dd6f4) - 0x30);

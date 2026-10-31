@@ -212,7 +212,7 @@ int (ptx_crtlError)(int code, const char *format, ...)
 {
 	void *err = (void *)0x4d0878;   /* stderr */
 	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4b182c);
-	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fc0, GAME_VAR(u32, 0x4d0780 + GAME_VAR(int, 0xaef35c) * 4));
+	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fc0, GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
 	if (format && strlen(format)) {
 		((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fb0);
 		va_list args;

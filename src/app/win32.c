@@ -209,7 +209,7 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 		g_displayModeChanged = 0;
 		return ChangeDisplaySettingsA(NULL, 0);
 	}
-	GAME_VAR(int, 0xb12a84) = width;
+	g_otherModeWidth = width;
 	GAME_VAR(int, 0xb12a88) = height;
 	g_displayModeChanged = 1;
 	u8 mode[0x94];
@@ -311,7 +311,7 @@ int (chat_createEdit)(int chars)
 		SendMessageA(edit, 0x30, GAME_VAR(u32, 0x9dd8e4), 0);   /* WM_SETFONT */
 		edit = GAME_VAR(void *, 0x9dd888);
 	}
-	GAME_VAR(u32, 0x9dd868) = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, 0x440840);   /* SetWindowLongA(GWL_WNDPROC) */
+	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, 0x440840);   /* SetWindowLongA(GWL_WNDPROC) */
 	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x9dd888));   /* SetFocus */
 	u32 length = strlen((const char *)0x9dc92c);
 	SendMessageA(GAME_VAR(void *, 0x9dd888), 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
@@ -519,7 +519,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		} else if (w == 0x115c && g_roomConnected)
 			net_send(0x18, 0x65);
 	}
-	return CallWindowProcA(GAME_VAR(u32, 0x9dd868), (u32)wnd, msg, w, l);
+	return CallWindowProcA(g_editOldProc, (u32)wnd, msg, w, l);
 }
 
 /* 0x43f9d0: the program. The launch file read (arena_readLaunchFile); a running launcher (window class 0x4b2834)

@@ -276,7 +276,7 @@ void (gameList_draw)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x50, X1 - 0x10, Y0 + 0x50);
 	menu_drawLine(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
-	if (GAME_VAR(int, 0x9dd330) && g_gameCount) {
+	if (g_gameListLoaded && g_gameCount) {
 		game_rows(X0, Y0, 0x60, 0x138, 1, 0x7673a4, 0x80, 1);
 		game_page(X1, Y1 - 0x58, g_roomListCount);
 	}
@@ -421,9 +421,9 @@ void (gameList_drawPage)(void)
 		room_joinSession(g_localPlayer);
 		return;
 	}
-	if (!GAME_VAR(int, 0x9dd6c8) || g_paused)
+	if (!g_joinPasswordTyped || g_paused)
 		return;
-	GAME_VAR(int, 0x9dd6c8) = 0;
+	g_joinPasswordTyped = 0;
 	memset((void *)0x9dcee8, 0, 8);
 	strcpy((char *)0x9dcee8, g_chatLine);
 	if (strcmp((const char *)(0x9087c4 + g_localPlayer * 0x4a + 0x3b), (const char *)0x9dcee8) != 0) {

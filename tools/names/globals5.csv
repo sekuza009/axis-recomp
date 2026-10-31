@@ -1,0 +1,44 @@
+# globals, batch 5 (address,type,name); k_ for constants in the exe's read-only data
+0x4aa298,double,k_tenthDegreeRad
+0x4aa290,double,k_degToRad
+0x4a955c,float,k_tenth
+0x4a9428,float,k_clockRate
+0x4aa498,float,k_clockRate3
+0x4a9448,float,k_setupPanelTarget
+0x4a9440,double,k_setupPanelEnd
+0x4a93d8,double,k_cameraSnapDistance
+0x9dd868,u32,g_editOldProc
+0x5b1958,int,g_cmdSecret
+0x5b1954,int,g_cmdTimeLimit
+0x4dcb0c,float,g_legsMaxWeight
+0x4dc784,int,g_unlockedLevel
+0x9dd330,int,g_gameListLoaded
+0x9dd6c8,int,g_joinPasswordTyped
+0x9dd240,int,g_roomWindowRect
+0x4de1f0,float,g_cursorBlinkTimer
+0x4de344,u32,g_menuCamX
+0x4de34c,u32,g_menuCamZ
+0x9f9418,int,g_resultMessage
+0x9f19f8,int,g_profileMechRecord
+0x9dd6a8,int,g_editingRoomPassword
+0x9dd348,int,g_typingAccountName
+0x9dd3f8,int,g_typingAccountPassword
+0x9dd564,int,g_typingAccountRepeat
+0x9dd6cc,int,g_typingAccountEmail
+0x4e0c8c,int,g_crosshairTexture
+0x9dd698,u32,g_roomTunnelDepth
+0x9f9838,int,g_slotTakenFlag
+0xa0d784,int,g_pingThreadId
+0xa0d788,void *,g_pingThread
+0xa05326,u16,g_serverPort
+0xa0e018,u32,g_musicLength
+0xa0e808,void *,g_primarySoundBuffer
+0x83a5e0,u32,g_textureManager
+0xae2f18,int,g_cursorPos
+0xa1efdc,int,g_errorLogging
+0x4c57cc,ErrorHook,g_errorHook
+0xa0e988,u8,g_statusLine
+0xaef35c,int,g_currentStageName
+0xa052c1,u8,g_joinedSessionFlag
+0x5ae9c8,u32,g_perfCounter
+0xb12a84,int,g_otherModeWidth

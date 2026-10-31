@@ -1013,7 +1013,7 @@ int (arena_loadSettings)(const char *path)
 			}
 			if (!strcmp(word, (const char *)0x4ad5c8)) {   /* secret */
 				word = crt_strtok(NULL, gaps);
-				GAME_VAR(int, 0x5b1958) = crt_atoi(word);
+				g_cmdSecret = crt_atoi(word);
 			}
 			if (!strcmp(word, (const char *)0x4ad5bc)) {   /* password */
 				word = crt_strtok(NULL, gaps);
@@ -1027,7 +1027,7 @@ int (arena_loadSettings)(const char *path)
 					GAME_VAR(int, numbers[k].into) = crt_atoi(word);
 				}
 			if (!strcmp(word, (const char *)0x4ad588))   /* timelimit */
-				GAME_VAR(int, 0x5b1954) = crt_atoi(crt_strtok(NULL, gaps));
+				g_cmdTimeLimit = crt_atoi(crt_strtok(NULL, gaps));
 			word = crt_strtok(NULL, gaps);
 		}
 	}
