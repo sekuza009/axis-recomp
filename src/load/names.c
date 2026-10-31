@@ -330,8 +330,14 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
    else takes them and is recoloured (tex_recolourMaterial). A miss whose file is there (tex_textureFileExist; else
    -1) gets a new record (at most 512: a fatal message), bound at once (tex_bind) while the count is below +0xcd130.
    Returns the record's index */
-int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, float h1, float s1, float v1, float h2, float s2, float v2)
+int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
+	/* the two colours (h1 s1 v1, h2 s2 v2) read where the caller put them, through a volatile pointer: clang would
+	   otherwise copy them into the frame. The frame then holds only the name and is as deep as the original's (0x50
+	   with the saved registers): tex_textureFileExist reads a short file's size words from stack it never wrote,
+	   and a deeper frame gave those reads other values now and then */
+	const volatile u32 *colour = &h1;
+	(void)s1, (void)v1, (void)h2, (void)s2, (void)v2;
 	char key[0x40];
 	strcpy(key, name);
 	FUN_0046cb60(key);
@@ -343,20 +349,20 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, float h1, floa
 		if (strcmp((const char *)rec, key))
 			continue;
 		const float *c = (const float *)(rec + 0x48);
-#define SAME(a, b) (!((a) < (b)) && !((a) > (b)))
-		if (FIELD(u32, rec, 0x44) == flags && SAME(c[0], h1) && SAME(c[2], v1) && SAME(c[1], s1) && SAME(c[3], h2) &&
-		    SAME(c[5], v2) && SAME(c[4], s2))
+#define SAME(a, k) (!((a) < fld_m((const float *)&colour[k])) && !((a) > fld_m((const float *)&colour[k])))
+		if (FIELD(u32, rec, 0x44) == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
+		    SAME(c[5], 5) && SAME(c[4], 4))
 			return i;
 #undef SAME
 		FIELD(u32, rec, 0x44) = flags;
-		tex_recolourMaterial(tm, i, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1, *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
+		tex_recolourMaterial(tm, i, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		return i;
 	}
 	if (!tex_textureFileExist(tm, key))
 		return -1;
 	if (FIELD(int, tm, 0xcd128) < 0x200) {
 		i = FIELD(int, tm, 0xcd128);
-		tex_454e60(tm + 0xc0128 + i * 0x68, key, -1, flags, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1, *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
+		tex_454e60(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		FIELD(int, tm, 0xcd128)++;
 	} else
 		sys_fatalErrorN((char *)0xa0dff8, (const char *)0x4b3fa8, FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
