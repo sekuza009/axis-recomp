@@ -211,7 +211,7 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 }
 
 /* 0x482e30 (thiscall on the collision space): a sphere of radius r swept from pos along vel in whole steps of length
-   step (n = |vel| / step; the walk down the nodes, space_walkNodes_482aa0, from pos + i steps, i = 0 .. n - 1), then
+   step (n = |vel| / step; the walk down the nodes, space_collideAt, from pos + i steps, i = 0 .. n - 1), then
    from pos + n steps over what is left of vel. 1 at the first hit, else what the last walk found (1 or 0); the
    outputs are the walks' */
 int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float *vel, float step, u32 k, u32 outPos,
@@ -228,7 +228,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 		p[0] = f32(fadd_m(fld_m(&x), &pos[0]));
 		p[1] = f32(fadd_m(fld_m(&y), &pos[1]));
 		p[2] = f32(fadd_m(fmul_m(li, &d[2]), &pos[2]));
-		if (space_walkNodes_482aa0(grid, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
+		if (space_collideAt(grid, r, p, d, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1)
 			return 1;
 	}
 	long double ln = n;
@@ -240,7 +240,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	rest[0] = f32(fsub_m(fld_m(&vel[0]), &x));
 	rest[1] = f32(fsub_m(fld_m(&vel[1]), &y));
 	rest[2] = f32(fld_m(&vel[2]) - fmul_m(ln, &d[2]));
-	return space_walkNodes_482aa0(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
+	return space_collideAt(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
@@ -252,7 +252,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
    nodes (+0x44). From the cell's box the walk goes down into the eighth (children +0x28 .., x upper +4, z upper +8,
    y upper +0x10) holding the point until a leaf (+0x24 0). 0 when there is none. The x middle is compared at full
    precision, the others as floats, as the original has them */
-int THISCALL (space_walkNodes_482aa0)(u8 *grid, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
+int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
                                       u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
 {
 	if (FIELD(int, grid, 0x74) <= 0 || FIELD(int, grid, 0x78) <= 0 || FIELD(int, grid, 0x7c) <= 0)
@@ -389,7 +389,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 
 /* 0x481eb0 (thiscall on the collision space): a triangle (v0, v1, v2) of a unit put into the space: nothing (0) when
    its box misses the space's (+0x5c .. +0x70, widened by the margin +0x8c). Else a plane record (from the pool, set up
-   by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_walkNodes_482aa0) that the
+   by collisionTri_setup), and every grid cell its widened box covers (z, x, y as in space_collideAt) that the
    triangle really meets (space_itemMeetsBox) gets it into its octree (space_insertItem, depth +0x94; the cell's root block made
    when it has none). Returns the plane */
 u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,

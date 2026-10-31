@@ -210,7 +210,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define bullet_init(scene, slot, a1, a2, a3, a4, a5) GAME_THISCALL(0x479b40, void, void *, int, u32, u32, u32, u32, u32)(scene, slot, a1, a2, a3, a4, a5)
 #define object_initObjectBy(scene, slot, type) GAME_THISCALL(0x48fee0, void, void *, int, u32)(scene, slot, type)
 #define sys_errorMessage(out, format, a, b) GAME_CDECL(0x46c5f0, void, char *, const char *, int, int)(out, format, a, b)
-#define data_loadFrom_46f4e0(self, a, b, c, d, e, f, g, h, i, j, limit) GAME_THISCALL(0x46f4e0, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(self, a, b, c, d, e, f, g, h, i, j, limit)
+#define ObjectList_load(self, a, b, c, d, e, f, g, h, i, j, limit) GAME_THISCALL(0x46f4e0, void, void *, void *, void *, u32, void *, u32, void *, u32, u32, u32, void *, u32)(self, a, b, c, d, e, f, g, h, i, j, limit)
 #define shape_getByName(cache, name, flag) GAME_THISCALL(0x466dc0, u32, void *, const char *, int)(cache, name, flag)
 #define sys_fatalErrorN(out, format, ...) GAME_CDECL(0x46c710, void, char *, const char *, ...)(out, format, __VA_ARGS__)   /* (several values) */
 #define script_processCommandBy(scene, a, i, b) GAME_THISCALL(0x483770, void, void *, int, int, int)(scene, a, i, b)
@@ -247,7 +247,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define crt_strupr(s) GAME_CDECL(0x49fab5, char *, char *)(s)
 #define text_findWord(text, word, exact) GAME_CDECL(0x454d90, const char *, const char *, const char *, int)(text, word, exact)
 #define file_exists_46ca70(path) GAME_CDECL(0x46ca70, int, const char *)(path)
-#define space_walkNodes_482aa0(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
+#define space_collideAt(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) \
 	GAME_THISCALL(0x482aa0, int, void *, u32, float *, float *, u32, u32, u32, u32, u32, u32, u32, u32)(grid, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs)
 #define image_initBy(image, path) GAME_THISCALL(0x46cd00, void *, void *, const char *)(image, path)   /* a 24-bit BMP opened */
 #define ShapeManager_releaseModels(models) GAME_THISCALL(0x467520, int, void *)(models)   /* the shape cache emptied */

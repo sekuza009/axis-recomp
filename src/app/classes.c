@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_resetActors(s);
 	scene_reset(s);
 	if (GAME_VAR(int, g + 8) == 2) {
-		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* stage_setValue202e8dc */
+		GAME_THISCALL(0x45dfe0, void, void *, int)(s, 0);   /* stage_setSilentActor */
 		GAME_VAR(int, g + 0x2221f9c) = 0;
 		for (int k = 0; k < 3; k++) {
 			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;

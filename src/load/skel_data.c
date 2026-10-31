@@ -169,7 +169,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
    message) without memory given, else that memory (too small: a fatal message). The entries (+0x14: shape, int,
    colours when lit and found), the skeletons after them (+0x20), and lit, the colours worked out (ObjectList_relight). Its
    callers ignore the eax it leaves */
-void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
+void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
                                      int lit, u32 factors, u32 lights, void *mem, int size)
 {
 	partList_release(list);

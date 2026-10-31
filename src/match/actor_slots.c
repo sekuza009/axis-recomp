@@ -328,7 +328,7 @@ static void part_load(u8 *scene, int a, const PartModel *m)
 	u8 *type = scene + 0x1561b68 + GAME_VAR(int, actor + 0x10c) * 0x47fd2;
 	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
 	int pose = GAME_VAR(int, actor + 0x484);
-	data_loadFrom_46f4e0(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
+	ObjectList_load(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
 	                     model + m->bones + pose * m->bone_size, GAME_VAR(u32, model + m->counts + pose * 4),
 	                     model + m->frames + pose * 0x80, 0, 0, 0, actor + m->self + 0x30, m->limit);
 }
@@ -441,7 +441,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	else
 		return;
 	if (it)
-		data_loadFrom_46f4e0(actor + self, scene + 0x19e188c, scene + 0x1cbe198, FIELD(u32, it, models + variant * 4),
+		ObjectList_load(actor + self, scene + 0x19e188c, scene + 0x1cbe198, FIELD(u32, it, models + variant * 4),
 		                     it + bones + variant * 0x330, FIELD(u32, it, counts + variant * 4), it + frames + variant * 0x80,
 		                     0, 0, 0, actor + self + 0x30, 0x1770);
 	else

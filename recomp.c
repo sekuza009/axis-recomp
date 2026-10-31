@@ -1788,7 +1788,7 @@ void THISCALL TimeSync_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL Scene_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int stage_setValue202e8dc(void *self, int v);
+THISCALL int stage_setSilentActor(void *self, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL scene_teamSlot(void *scene, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -2080,14 +2080,14 @@ int net_parseAddress(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_formatSessionEntry(DWORD addr);
 /* batch 40 */
-/* 0x482aa0 (thiscall) space_walkNodes_482aa0(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
+/* 0x482aa0 (thiscall) space_collideAt(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
    level collision through the grid + octree of grid object `this`: when the grid has cells and pos + vel lies in
    its bounds widened by the margin (+0x8c), the cell (__ftol of the offsets / cell sizes, clamped to the last cell)
    names a root node (short at +0x54 table; -1 = none; array_recordAt -> node array +0x44, 0x50-byte nodes); the walk
    goes down the octree by comparing with each node box's midpoints to a leaf (+0x24 == 0) and runs
    space_collideUnit on it; the result is kept at +0x98. Lifted (tools/lift.py) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL int space_walkNodes_482aa0(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
+THISCALL int space_collideAt(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos, DWORD outVel,
                                    DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* 0x4226b0 setup_drawControlSlider(): the mouse-sensitivity slider on the control setup page. A click (or a held
    button after 1.0 s, 0x4ded94/0x4dda44) on the minus/plus buttons (setupSlider_hitTest rects 0, 1) steps the value at
@@ -3426,20 +3426,20 @@ THISCALL void effect_initTextures(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
 /* batch 88 (lifted/grp34.c) */
-/* 0x46f4e0 (thiscall) data_loadFrom_46f4e0(shapeCache, skelCache, nShapes, shapeNames, nSkels, skelNames, lit,
+/* 0x46f4e0 (thiscall) ObjectList_load(shapeCache, skelCache, nShapes, shapeNames, nSkels, skelNames, lit,
    factors, pixelLights, mem, memSize): an object list (released first, partList_release): the shapes by name (0x44 apart,
    an int at +0x40 each; the first 64 looked up once, later ones again when filled in) with their element counts
    summed (+0x18), the data memory (100 bytes per shape, 4 per skeleton, with lit == 1 the colour buffers too) from
    mem (too small is fatal) or operator new (none is fatal), then per shape its entry (shape, the int, colour
    buffer when lit), the skeletons by name (0x40 apart) after them, and with lit == 1 the colours (ObjectList_relight) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
+THISCALL void ObjectList_load(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
                                   DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size);
 /* batch 89 (lifted/grp35.c) */
 /* (thiscall on the scene) actor_updateHead / actor_updateBody / actor_updateArms / actor_updateLegs / actor_updateBooster(actor):
    for an active actor (0x8888 bytes at +0x1cd93a8, +0x108), its player's (+0x10c; 0x47fd2 at +0x1561b68) head /
    chest / arm / leg / booster type (player +0x30c..+0x31c) in that part's type table, variant actor +0x484: load
-   the part's object list (data_loadFrom_46f4e0) with the player's own shape and skeleton caches, the variant's
+   the part's object list (ObjectList_load) with the player's own shape and skeleton caches, the variant's
    shape names and skeleton names, into the actor's memory (2000 / 2000 / 4000 / 4000 / 3000 bytes) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_updateHead(char *sc, DWORD a);
@@ -8259,7 +8259,7 @@ ST(stage_clearMapItemCounts, fill(BUF + 0x2148ecc, 0x10);, TC(int, 0x48fc30, cha
 ST(ErrorLog_dtor, fill(BUF, 0x10);, (TC(void, 0x46c5e0, char *)(BUF + 4), 0), (ErrorLog_dtor((DWORD *)(BUF + 4)), 0))
 ST(TimeSync_dtor, fill(BUF, 0x10);, (TC(void, 0x487470, char *)(BUF + 4), 0), (TimeSync_dtor((DWORD *)(BUF + 4)), 0))
 ST(Scene_dtor, fill(BUF, 0x10);, (TC(void, 0x48b410, char *)(BUF + 4), 0), (Scene_dtor((DWORD *)(BUF + 4)), 0))
-ST(stage_setValue202e8dc, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), stage_setValue202e8dc(BUF, g_a[0]))
+ST(stage_setSilentActor, g_a[0] = (int)rnd32(); fill(BUF + 0x202e8d8, 0x10);, TC(int, 0x45dfe0, char *, int)(BUF, g_a[0]), stage_setSilentActor(BUF, g_a[0]))
 ST(scene_teamSlot, fill(BUF + 0x100, 0x100); g_a[0] = irnd(-8, 56);,
    TC(int, 0x463780, char *, int)(BUF + 0x180 - 0x2342381, g_a[0]), scene_teamSlot(BUF + 0x180 - 0x2342381, g_a[0]))
 ST(ResourceSet_trivialCtor, g_a[0] = (int)rnd32();, TC(void *, 0x45fff0, int)(g_a[0]), ResourceSet_trivialCtor((void *)g_a[0]))
@@ -8686,7 +8686,7 @@ static DWORD walk_orig(void)
 	g_walkHits += r == 1;
 	return r;
 }
-ST(space_walkNodes_482aa0, walk_setup();, walk_orig(), WALK_ARGS(space_walkNodes_482aa0, DWORD))
+ST(space_collideAt, walk_setup();, walk_orig(), WALK_ARGS(space_collideAt, DWORD))
 #undef RND
 #undef MAKE_TRI
 static void slider_setup(void)
@@ -11814,10 +11814,10 @@ static void datalist_setup(void)
 	   frame was 4 bytes deeper than the original's, which gave those reads other values now and then (2 in 400 in the
 	   2026-10-31 play tests, the play test then keeping the original); its frame now matches (src/load/skel_data.c)) */
 }
-ST(data_loadFrom_46f4e0, datalist_setup();,
+ST(ObjectList_load, datalist_setup();,
    (TC(void, 0x46f4e0, char *, int, int, int, int, int, int, int, int, int, int, int)(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3],
      g_dl[4], g_dl[5], g_dl[6], g_dl[7], g_dl[8], g_dl[9], g_dl[10]), 0),
-   (data_loadFrom_46f4e0(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3], g_dl[4], g_dl[5], g_dl[6], g_dl[7], g_dl[8], g_dl[9], g_dl[10]), 0))
+   (ObjectList_load(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3], g_dl[4], g_dl[5], g_dl[6], g_dl[7], g_dl[8], g_dl[9], g_dl[10]), 0))
 /* batch 89 */
 /* an actor (0..15, active mostly) of a player (0..7) whose part type (0..3) record is cleared (empty names: the
    cache lookups give 0 at once, so no cache is set up) with random counts for its variant (0..3): mostly within
@@ -17067,7 +17067,7 @@ static const STest g_stests[] = {
 	T(SkeletonManager_clear, 1, 4, 300), T(collisionPlane_clear, 1, 4, 300), T(spaceBlock_clear, 1, 4, 300), T(CollisionVolume_clear, 1, 4, 300),
 	T(ViewVolume_clear, 1, 4, 300), T(TimeSync_clear, 1, 4, 300), T(spaceNode_clear, 1, 4, 300), T(Light_clearCounts, 1, 4, 300),
 	T(stage_clearMapItemCounts, 1, 4, 300), T(ErrorLog_dtor, 0, 4, 300), T(TimeSync_dtor, 0, 4, 300), T(Scene_dtor, 0, 4, 300),
-	T(stage_setValue202e8dc, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
+	T(stage_setSilentActor, 1, 4, 300), T(scene_teamSlot, 1, 4, 300), T(ResourceSet_trivialCtor, 1, 4, 300), T(recorder_setPathStub, 1, 4, 300),
 	T(recorder_openStub, 0, 4, 0), T(recorder_noteStub, 0, 4, 0), T(stage_triggerActionNone, 0, 4, 0), T(static_emptyCtorSkelData1, 0, 4, 0),
 	T(static_emptyCtorSkelData2, 0, 4, 0), T(static_emptyCtorSkelData3, 0, 4, 0), T(static_emptyCtorSkelData4, 0, 4, 0), T(static_emptyCtorSkelData5, 0, 4, 0),
 	T(static_emptyCtorSkelData6, 0, 4, 0), T(static_emptyCtorSkelData7, 0, 4, 0), T(static_emptyCtorSkelData8, 0, 4, 0), T(static_emptyCtorTimeSync1, 0, 4, 0),
@@ -17106,7 +17106,7 @@ static const STest g_stests[] = {
 	T(stage_printText, 1, 4, 2000), T(notice_printCentre, 1, 4, 2000), T(msg_print, 1, 4, 2000), T(anim_setFrame, 0, 4, 2000),
 	T(tex_tintRgba, 1, 4, 3000), T(net_parseAddress, 1, 300, 0), T(dplay_formatSessionEntry, 1, 300, 0),
 	/* batch 40 */
-	T(space_walkNodes_482aa0, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
+	T(space_collideAt, 1, 100, 20000), T(setup_drawControlSlider, 0, 400, 0),
 	/* batch 41 */
 	T(angle_wrap, 1, 4, 5000), T(sound_setVolume, 1, 300, 0), T(msg_playerLeft, 1, 4, 2000), T(msg_cheatUsed, 1, 4, 2000),
 	T(msg_playerJoinedTeam, 1, 4, 2000), T(msg_playerChangedTeam, 0, 4, 2000), T(msg_kill, 1, 4, 2000), T(tex_applyTintMask, 1, 4, 2000),
@@ -17276,7 +17276,7 @@ static const STest g_stests[] = {
 	/* batch 87 */
 	T(map_loadObjectInfoFrom, 0, 400, 0),
 	/* batch 88 */
-	T(data_loadFrom_46f4e0, 0, 400, 0),
+	T(ObjectList_load, 0, 400, 0),
 	/* batch 89 */
 	T(actor_updateHead, 0, 300, 0), T(actor_updateBody, 0, 300, 0), T(actor_updateArms, 0, 300, 0), T(actor_updateLegs, 0, 300, 0),
 	T(actor_updateBooster, 0, 300, 0), T(actor_updatePart, 0, 300, 0),
@@ -17994,7 +17994,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x480430, (void *)spaceNode_clear, "spaceNode_clear" }, { 0x483d60, (void *)Light_clearCounts, "Light_clearCounts" },
 	{ 0x48fc30, (void *)stage_clearMapItemCounts, "stage_clearMapItemCounts" }, { 0x46c5e0, (void *)ErrorLog_dtor, "ErrorLog_dtor" },
 	{ 0x487470, (void *)TimeSync_dtor, "TimeSync_dtor" }, { 0x48b410, (void *)Scene_dtor, "Scene_dtor" },
-	{ 0x45dfe0, (void *)stage_setValue202e8dc, "stage_setValue202e8dc" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
+	{ 0x45dfe0, (void *)stage_setSilentActor, "stage_setSilentActor" }, { 0x463780, (void *)scene_teamSlot, "scene_teamSlot" },
 	{ 0x45fff0, (void *)ResourceSet_trivialCtor, "ResourceSet_trivialCtor" }, { 0x48b440, (void *)recorder_setPathStub, "recorder_setPathStub" },
 	{ 0x48b430, (void *)recorder_openStub, "recorder_openStub" }, { 0x48b450, (void *)recorder_noteStub, "recorder_noteStub" },
 	{ 0x483ce0, (void *)stage_triggerActionNone, "stage_triggerActionNone" }, { 0x46b860, (void *)static_emptyCtorSkelData1, "static_emptyCtorSkelData1" },
@@ -18055,7 +18055,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46de20, (void *)tex_tintRgba, "tex_tintRgba" }, { 0x4542a0, (void *)net_parseAddress, "net_parseAddress" },
 	{ 0x454390, (void *)dplay_formatSessionEntry, "dplay_formatSessionEntry" },
 	/* batch 40 */
-	{ 0x482aa0, (void *)space_walkNodes_482aa0, "space_walkNodes_482aa0" }, { 0x4226b0, (void *)setup_drawControlSlider, "setup_drawControlSlider" },
+	{ 0x482aa0, (void *)space_collideAt, "space_collideAt" }, { 0x4226b0, (void *)setup_drawControlSlider, "setup_drawControlSlider" },
 	/* batch 41 */
 	{ 0x46c100, (void *)angle_wrap, "angle_wrap" }, { 0x456de0, (void *)sound_setVolume, "sound_setVolume" },
 	{ 0x462bc0, (void *)msg_playerLeft, "msg_playerLeft" }, { 0x463030, (void *)msg_cheatUsed, "msg_cheatUsed" },
@@ -18312,7 +18312,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	/* batch 87 */
 	{ 0x48b710, (void *)map_loadObjectInfoFrom, "map_loadObjectInfoFrom" },
 	/* batch 88 */
-	{ 0x46f4e0, (void *)data_loadFrom_46f4e0, "data_loadFrom_46f4e0" },
+	{ 0x46f4e0, (void *)ObjectList_load, "ObjectList_load" },
 	/* batch 89 */
 	{ 0x45e1f0, (void *)actor_updateHead, "actor_updateHead" }, { 0x45e2c0, (void *)actor_updateBody, "actor_updateBody" },
 	{ 0x45e390, (void *)actor_updateArms, "actor_updateArms" }, { 0x45e460, (void *)actor_updateLegs, "actor_updateLegs" },

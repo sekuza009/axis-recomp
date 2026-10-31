@@ -323,8 +323,8 @@ void (armc_resetSeraphimParts)(void) {}
 
 /* ---- more small methods ---- */
 void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a; }
-/* 0x45dfe0: the stage's +0x202e8dc set (returned) */
-int THISCALL (stage_setValue202e8dc)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
+/* 0x45dfe0: the stage's actor without footstep sounds (+0x202e8dc) set (returned) */
+int THISCALL (stage_setSilentActor)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
 void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)0xa0e948); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */

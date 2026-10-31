@@ -1,0 +1,4 @@
+# function names, batch 12: the last three placeholders
+stage_setValue202e8dc,stage_setSilentActor
+data_loadFrom_46f4e0,ObjectList_load
+space_walkNodes_482aa0,space_collideAt
