@@ -64,6 +64,23 @@ void THISCALL (load_479a60)(Stage *stage)
 		stage->projectiles[i].active = 0;
 }
 
+/* 0x4799f0: projectile slot i freed: the first-free hint (+0x20f2da4) moved down to it, and when it was the last
+   in use the used range (projectileCount) shrinks past every free slot at its end */
+void THISCALL (match_4799f0)(Stage *stage, int i)
+{
+	if (!stage->projectiles[i].active)
+		return;
+	stage->projectiles[i].active = 0;
+	if (i < FIELD(int, stage, 0x20f2da4))
+		FIELD(int, stage, 0x20f2da4) = i;
+	if (i != stage->projectileCount - 1 || stage->projectileCount <= 0)
+		return;
+	do {
+		if (stage->projectiles[stage->projectileCount - 1].active)
+			return;
+	} while (--stage->projectileCount > 0);
+}
+
 /* 0x47cfd0: the 400 bullets (0x4e8-byte records from 0x202ef34) */
 void THISCALL (FUN_0047cfd0)(Stage *stage)
 {

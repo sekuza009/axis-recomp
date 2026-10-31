@@ -886,3 +886,21 @@ void (menu_mainMenu)(void)
 #undef g_tunnelPulseStep
 #undef g_tunnelPulse
 #undef g_tunnelAlpha
+
+/* 0x4277c0: the setup panel eased in (0x4dda60 while it moves): its position (0x4de03c) moves the rest of the
+   way to 0x4a9448 times 0x4b071c x 0x4a93ec; the distance left (0x4ddd90) runs down by the same step, and once it
+   is no longer above the double at 0x4a9440 the motion stops and the distance is set to -1650 */
+void (setup_4277c0)(void)
+{
+	typedef long double X;
+	if (!GAME_VAR(int, 0x4dda60))
+		return;
+	X d = ((X)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, 0x4de03c)) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
+	GAME_VAR(float, 0x4de03c) = (float)((X)GAME_VAR(float, 0x4de03c) + d);
+	if (!((X)GAME_VAR(float, 0x4ddd90) > (X)GAME_VAR(double, 0x4a9440))) {
+		GAME_VAR(int, 0x4dda60) = 0;
+		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;
+		return;
+	}
+	GAME_VAR(float, 0x4ddd90) = (float)((X)GAME_VAR(float, 0x4ddd90) - d);
+}

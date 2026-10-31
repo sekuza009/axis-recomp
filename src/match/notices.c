@@ -109,3 +109,15 @@ int (vsprintf_wrap_473450)(u8 *obj, const char *format, ...)
 	va_end(args);
 	return n;
 }
+
+/* 0x462ac0: the event lines shown age by dt; the oldest is dropped once its time has run out (<= 0 or NaN) */
+void THISCALL (match_462ac0)(Scene *scene, float dt)
+{
+	for (u32 u = scene->eventFirst; u < scene->eventCount; u++) {
+		float *t = (float *)&scene->events[u % 5].time;
+		*t = (float)((long double)*t - dt);
+	}
+	u32 first = scene->eventFirst;
+	if (first < scene->eventCount && !(GAME_VAR(float, &scene->events[first % 5].time) > 0.0f))
+		scene->eventFirst = first + 1;
+}

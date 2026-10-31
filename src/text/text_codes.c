@@ -215,3 +215,42 @@ u32 (text_hanCho)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13)
 u32 (text_hanJungJong)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
 u32 (hud_401ce0)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
 u32 (hud_401e70)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
+
+/* a pair of KS X 1001 rows (first, first + 1, ...) to a Johab lead byte (from base) and trail byte */
+static int ks_row(int hi, int lo, int base, int first)
+{
+	int r = hi - first;
+	u8 b = (u8)lo;
+	if (!(r % 2)) {
+		b = (u8)(lo - 0x70);
+		if (b > 0x7e)
+			b += 0x12;
+	}
+	return (r / 2 + base) * 256 + b;
+}
+
+/* 0x44aac0: one EUC-KR (KS X 1001) character to Johab, 0 for none: the jamo row (0xa4) by the table at 0x4b3d8c
+   (its codes at 0x4b3ddc; the upper half of EAX is left at 0x004b, and a miss gives 0x4b8761), the symbol rows in
+   pairs, the syllables (0xb0 .. 0xc8) by the table at 0x4aa8ae, the hanja rows in pairs */
+int (text_hangulConvert)(u32 code)
+{
+	int hi = (code >> 8) & 0xff, lo = code & 0xff;
+	if (hi == 0xa4) {
+		for (int k = 0; k < 39; k++)
+			if ((u16)code == GAME_VAR(u16, 0x4b3d8c + k * 2))
+				return 0x4b0000 | GAME_VAR(u16, 0x4b3ddc + k * 2);
+		return 0x4b8761;
+	}
+	int ok = lo >= 0xa1 && lo <= 0xfe;
+	if (hi >= 0xa1 && hi <= 0xac)
+		return ok ? ks_row(hi, lo, 0xd9, 0xa1) : 0;
+	if (hi == 0xad)
+		return ok ? (u8)(lo - 0x21) + 0xd400 : 0;
+	if (hi == 0xae)
+		return lo >= 0xa1 && lo <= 0xc1 ? (u8)(lo + 0x3d) + 0xd400 : 0;
+	if (hi >= 0xb0 && hi <= 0xc8)
+		return ok ? GAME_VAR(u16, 0x4aa8ae + (lo + hi * 94) * 2) : 0;
+	if (hi >= 0xca && hi <= 0xfd)
+		return ok ? ks_row(hi, lo, 0xe0, 0xca) : 0;
+	return 0;
+}

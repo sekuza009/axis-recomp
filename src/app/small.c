@@ -106,6 +106,35 @@ u32 (FUN_00467d60)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 
 void (net_452e60)(void) { clear((void *)0xa05748, 0x16c0); }
 void (net_452e80)(void) { clear((void *)0x9fd960, 0x1e40); }
 void (net_452ea0)(void) { clear((void *)0xa05330, 0x9b); }
+/* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
+char *(FUN_0046cb60)(char *s)
+{
+	if (s)
+		for (char *p = s; *p; p++) {
+			if (*p >= 'a' && *p <= 'z')
+				*p -= 0x20;
+			else if (*p == '/')
+				*p = '\\';
+		}
+	return s;
+}
+
+/* 0x451530: every one of the 16 network slots (0x410 bytes from 0x9f9840: +4 the owner) owned by id emptied, its
+   flag (0x9f93d8) too; slot 0 freed sets 0x9fd94c. Leaves 0xff in AL */
+u8 (net_451530)(int id)
+{
+	for (int s = 0; s < 16; s++) {
+		u32 r = 0x9f9840 + s * 0x410;
+		if (GAME_VAR(int, r + 4) != id)
+			continue;
+		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
+		GAME_VAR(int, 0x9f93d8 + s * 4) = 0;
+		if (s == 0)
+			GAME_VAR(int, 0x9fd94c) = 1;
+	}
+	return 0xff;
+}
+
 /* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
 void (intro_430bd0)(void) { for (u32 p = 0x9f9840; p < 0x9fd940; p += 0x410) GAME_VAR(int, p) = 0; }
 

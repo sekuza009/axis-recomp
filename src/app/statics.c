@@ -123,3 +123,33 @@ void (FUN_0046d3d0)(void) { u32 *c = (u32 *)0xa1f268; c[0] = 0x3f800000u; c[1] =
 void (FUN_0046d310)(void) { u32 *c = (u32 *)0xa1f280; c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d310 */
 void (FUN_0046d490)(void) { u32 *c = (u32 *)0xa1f2d8; c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d490 */
 void (FUN_0046d350)(void) { u32 *c = (u32 *)0xa1f2f0; c[0] = 0x3f000000u; c[1] = 0x3f000000u; c[2] = 0x3f000000u; c[3] = 0x3f800000u; }   /* 0x46d350 */
+
+/* ---- a global object's destructor, run once (the guard byte's bit 0 set first): ErrorLog_dtor of the object ---- */
+#define GUARDED_DTOR(name, guard, obj) \
+	void (name)(void) \
+	{ \
+		if (!(GAME_VAR(u8, guard) & 1)) { \
+			GAME_VAR(u8, guard) |= 1; \
+			ErrorLog_dtor((void *)(obj)); \
+		} \
+	}
+GUARDED_DTOR(FUN_00455010, 0xa0e009, 0xa0dff8)
+GUARDED_DTOR(FUN_00456970, 0xa0e008, 0xa0e000)
+GUARDED_DTOR(FUN_00460550, 0xa0e780, 0xa0e778)
+GUARDED_DTOR(FUN_00463b60, 0xa0e798, 0xa0e790)
+GUARDED_DTOR(FUN_004669f0, 0xa0e799, 0xa0e788)
+GUARDED_DTOR(FUN_00469960, 0xa0eab0, 0xa0eaa8)
+GUARDED_DTOR(FUN_0046ae40, 0xa0eab1, 0xa0eaa0)
+GUARDED_DTOR(FUN_0046cce0, 0xa1f0f8, 0xa1f0f0)
+GUARDED_DTOR(FUN_0046d2a0, 0xa1f2e8, 0xa1f290)
+GUARDED_DTOR(FUN_0046daa0, 0xa1f2e9, 0xa1f250)
+GUARDED_DTOR(FUN_0046f390, 0xae2eb2, 0xae2ea0)
+GUARDED_DTOR(FUN_0046f3f0, 0xae2eb1, 0xae2ea8)
+GUARDED_DTOR(FUN_0046f450, 0xae2eb0, 0xae2e98)
+GUARDED_DTOR(FUN_0046ff50, 0xae2ec0, 0xae2eb8)
+GUARDED_DTOR(FUN_00481370, 0xae2ed8, 0xae2ed0)
+GUARDED_DTOR(FUN_00483d30, 0xae2ee0, 0xae2ee8)
+GUARDED_DTOR(FUN_00483f90, 0xae2ef8, 0xae2ef0)
+GUARDED_DTOR(FUN_00487410, 0xae2f08, 0xae2f00)
+GUARDED_DTOR(FUN_0048b3f0, 0xae3330, 0xae3328)
+#undef GUARDED_DTOR

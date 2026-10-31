@@ -704,17 +704,8 @@ THISCALL int chat_matchCheatCode(void *self, int actor, const char *text);
 /* match message feed: 5 timed lines (0x108 bytes each, timer float at +0x2342ad2), head/tail at +0x2342efa/+0x2342ef6 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_4629c0(char *self, int v);
-static THISCALL void match_462ac0(char *self, float dt)   /* 0x462ac0 age the lines; drop the oldest when expired */
-{
-	for (DWORD u = SU32(self, 0x2342efa); u < SU32(self, 0x2342ef6); ) {
-		float *t = &SF(self, 0x2342ad2 + (u % 5) * 0x108);
-		u++;
-		*t = (float)((long double)*t - dt);
-	}
-	DWORD h = SU32(self, 0x2342efa);
-	if (h < SU32(self, 0x2342ef6) && !(SF(self, 0x2342ad2 + (h % 5) * 0x108) > 0.0f))   /* <= 0 or NaN */
-		SU32(self, 0x2342efa) = h + 1;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_462ac0(char *self, float dt);
 
 /* HUD notices (+0x2343006..): 0x463480 clears them, the others set one notice and raise the "changed" flag +0x2343106 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -860,15 +851,8 @@ THISCALL void load_481980(char *self, char *node);
 int cfg_44ac50(const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int FUN_0046cba0(int p, int base, int stride);
-static char *__cdecl FUN_0046cb60(char *s)           /* upper-case a path in place, '/' -> '\'; returns s in EAX */
-{
-	if (!s) return s;
-	for (char *p = s; *p; p++) {
-		if (*p >= 'a' && *p <= 'z') *p -= 0x20;
-		else if (*p == '/') *p = '\\';
-	}
-	return s;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+char *__cdecl FUN_0046cb60(char *s);
 
 /* ---- batch 7: functions whose calls all go to rebuilt functions, plus larger leaves ----------- */
 
@@ -1042,16 +1026,8 @@ void arena_4068d0(int dir);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_4356f0(int dir);
 
-static unsigned char __cdecl net_451530(int id)  /* free every slot owned by id; returns 0xff in AL */
-{
-	for (int s = 0; s < 16; s++) {
-		DWORD r = 0x9f9840 + s * 0x410;
-		if (G32(r + 4) != id) continue;
-		G32(r) = 0; G32(r + 4) = 0; G32(r + 8) = 0; G32(r + 0xc) = 0; G32(0x9f93d8 + s * 4) = 0;
-		if (s == 0) G32(0x9fd94c) = 1;
-	}
-	return 0xff;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+unsigned char __cdecl net_451530(int id);
 /* read n bits MSB-first from the bit stream; returns the new position */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_46f230(int *out, int n);
@@ -1103,20 +1079,8 @@ THISCALL void FUN_00461ec0(void *self, const char *s);
 THISCALL void FUN_00473a10(char *self, int p, int v);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void player_setTeam(void *self, int p, int team);
-static THISCALL void match_4799f0(char *self, int i)   /* free effect slot i; shrink the used range */
-{
-	int *e = &S32(self, 0x20a99c4 + i * 300);
-	if (!*e) return;
-	*e = 0;
-	if (i < S32(self, 0x20f2da4)) S32(self, 0x20f2da4) = i;
-	int n = S32(self, 0x20f2da0);
-	if (i != n - 1 || n <= 0) return;
-	do {
-		n = S32(self, 0x20f2da0);
-		if (S32(self, 0x20a9898 + n * 300)) return;
-		S32(self, 0x20f2da0) = --n;
-	} while (n > 0);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void match_4799f0(char *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_45edb0(void *self, int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -1469,29 +1433,8 @@ void profile_44bd20(void);
 /* advance the animation timers (wrap at 1 unit) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_496e40(void *self, float dt);
-static int ks_row(int hi, int lo, int base, int first)   /* paired KS rows -> Johab lead byte + trail byte */
-{
-	int r = hi - first;
-	BYTE b = (BYTE)lo;
-	if (!(r % 2)) { b = (BYTE)(lo - 0x70); if (b > 0x7e) b += 0x12; }
-	return ((r / 2) + base) * 256 + b;
-}
-static int __cdecl text_hangulConvert(DWORD code)   /* one EUC-KR (KS X 1001) character -> Johab; 0 = none */
-{
-	int hi = (code >> 8) & 0xff, lo = code & 0xff;
-	if (hi == 0xa4) {                            /* jamo: table lookup; the upper half of EAX is left at 0x004b */
-		for (int k = 0; k < 39; k++)
-			if ((WORD)code == *(WORD *)(0x4b3d8c + k * 2)) return 0x4b0000 | *(WORD *)(0x4b3ddc + k * 2);
-		return 0x4b8761;
-	}
-	int ok = lo >= 0xa1 && lo <= 0xfe;
-	if (hi >= 0xa1 && hi <= 0xac) return ok ? ks_row(hi, lo, 0xd9, 0xa1) : 0;
-	if (hi == 0xad) return ok ? (BYTE)(lo - 0x21) + 0xd400 : 0;
-	if (hi == 0xae) return lo >= 0xa1 && lo <= 0xc1 ? (BYTE)(lo + 0x3d) + 0xd400 : 0;
-	if (hi >= 0xb0 && hi <= 0xc8) return ok ? *(WORD *)(0x4aa8ae + (lo + hi * 94) * 2) : 0;
-	if (hi >= 0xca && hi <= 0xfd) return ok ? ks_row(hi, lo, 0xe0, 0xca) : 0;
-	return 0;
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+int __cdecl text_hangulConvert(DWORD code);
 
 /* ---- batch 15: render depth sorts (iterative quicksort; its stack lives in globals) ------------- */
 typedef struct { DWORD sp, lo, hi, i, j, piv, tmp; } QsGlobals;   /* lo/hi/i/j/piv are arrays indexed by the stack depth */
@@ -1602,15 +1545,8 @@ void setup_controlTabHelper_420c10(void);
 /* quaternion from {angle, axis x, y, z} */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void FUN_0047d0b0(float *q, const float *aa);
-static void __cdecl setup_4277c0(void)            /* ease the setup panel in; stop at the end position */
-{
-	typedef long double X;
-	if (!G32(0x4dda60)) return;
-	X d = ((X)GF(0x4a9448) - GF(0x4de03c)) * GF(0x4b071c) * GF(0x4a93ec);
-	GF(0x4de03c) = (float)((X)GF(0x4de03c) + d);
-	if (!((X)GF(0x4ddd90) > (X)GD(0x4a9440))) { G32(0x4dda60) = 0; GU32(0x4ddd90) = 0xc4ce4000; return; }
-	GF(0x4ddd90) = (float)((X)GF(0x4ddd90) - d);
-}
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void __cdecl setup_4277c0(void);
 /* scaled dequantisation tables for quality q (AAN IDCT factors) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ptx_46e2b0(int q);
@@ -1928,18 +1864,26 @@ void *TimeSync_rtti(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *Scene_rtti(void);
 /* batch 31: callers unlocked by batch 30 - static-object destructors (atexit, guarded by a bit), ctors, list resets */
-#define GUARDED_DTOR(name, guard, obj) \
-	static void __cdecl name(void) { if (!(*(BYTE *)(guard) & 1)) { *(BYTE *)(guard) |= 1; ErrorLog_dtor((DWORD *)(obj)); } }
-GUARDED_DTOR(FUN_00455010, 0xa0e009, 0xa0dff8) GUARDED_DTOR(FUN_00456970, 0xa0e008, 0xa0e000)
-GUARDED_DTOR(FUN_00460550, 0xa0e780, 0xa0e778) GUARDED_DTOR(FUN_00463b60, 0xa0e798, 0xa0e790)
-GUARDED_DTOR(FUN_004669f0, 0xa0e799, 0xa0e788) GUARDED_DTOR(FUN_00469960, 0xa0eab0, 0xa0eaa8)
-GUARDED_DTOR(FUN_0046ae40, 0xa0eab1, 0xa0eaa0) GUARDED_DTOR(FUN_0046cce0, 0xa1f0f8, 0xa1f0f0)
-GUARDED_DTOR(FUN_0046d2a0, 0xa1f2e8, 0xa1f290) GUARDED_DTOR(FUN_0046daa0, 0xa1f2e9, 0xa1f250)
-GUARDED_DTOR(FUN_0046f390, 0xae2eb2, 0xae2ea0) GUARDED_DTOR(FUN_0046f3f0, 0xae2eb1, 0xae2ea8)
-GUARDED_DTOR(FUN_0046f450, 0xae2eb0, 0xae2e98) GUARDED_DTOR(FUN_0046ff50, 0xae2ec0, 0xae2eb8)
-GUARDED_DTOR(FUN_00481370, 0xae2ed8, 0xae2ed0) GUARDED_DTOR(FUN_00483d30, 0xae2ee0, 0xae2ee8)
-GUARDED_DTOR(FUN_00483f90, 0xae2ef8, 0xae2ef0) GUARDED_DTOR(FUN_00487410, 0xae2f08, 0xae2f00)
-GUARDED_DTOR(FUN_0048b3f0, 0xae3330, 0xae3328)
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void FUN_00455010(void);
+void FUN_00456970(void);
+void FUN_00460550(void);
+void FUN_00463b60(void);
+void FUN_004669f0(void);
+void FUN_00469960(void);
+void FUN_0046ae40(void);
+void FUN_0046cce0(void);
+void FUN_0046d2a0(void);
+void FUN_0046daa0(void);
+void FUN_0046f390(void);
+void FUN_0046f3f0(void);
+void FUN_0046f450(void);
+void FUN_0046ff50(void);
+void FUN_00481370(void);
+void FUN_00483d30(void);
+void FUN_00483f90(void);
+void FUN_00487410(void);
+void FUN_0048b3f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void ErrorLog_dtor_wrap_456cc0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
