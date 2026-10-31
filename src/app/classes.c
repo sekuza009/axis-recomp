@@ -92,10 +92,10 @@ float (match_4686f0)(void) { return GAME_VAR(float, 0x4c4df0); }
 float (FUN_00468700)(void) { return GAME_VAR(float, 0x4c4df4); }
 
 /* ---- setters ---- */
-void (set_4dc798_40f200)(void) { g_armcMode = 1; GAME_VAR(int, 0x4dc788) = 0; }   /* the ARM CENTER's parts page */
-void (set_4dc798_40f320)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
+void (armc_showPartsPage)(void) { g_armcMode = 1; GAME_VAR(int, 0x4dc788) = 0; }   /* the ARM CENTER's parts page */
+void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
 void (set_a61708_46f090)(int v) { GAME_VAR(int, 0xa61708) = v; GAME_VAR(int, 0xa21704) = 0; GAME_VAR(int, 0xaa268c) = 0; }
-int (set_680370_441250)(int v) { g_keysBlocked = v; return v; }
+int (input_setKeysBlocked)(int v) { g_keysBlocked = v; return v; }
 int (set_4b42dc_457140)(int v) { GAME_VAR(int, 0x4b42dc) = v; return v; }
 
 /* three-float vectors at 0xa0e7a8 ..: zero or a unit axis (bits of 1.0) */
@@ -106,12 +106,12 @@ static void set3(u32 addr, u32 x, u32 y, u32 z)
 	p[1] = y;
 	p[2] = z;
 }
-void (set_a0e7a8_4678f0)(void) { set3(0xa0e7a8, 0, 0, 0); }
-void (set_a0e7b8_467890)(void) { set3(0xa0e7b8, 0, 0, 0); }
-void (set_a0e7c8_467980)(void) { set3(0xa0e7c8, 0, 0, 0x3f800000u); }
-void (set_a0e7d8_467950)(void) { set3(0xa0e7d8, 0, 0x3f800000u, 0); }
-void (set_a0e7e8_4678c0)(void) { set3(0xa0e7e8, 0, 0, 0); }
-void (set_a0e7f8_467920)(void) { set3(0xa0e7f8, 0x3f800000u, 0, 0); }
+void (vec_initOrigin)(void) { set3(0xa0e7a8, 0, 0, 0); }
+void (vec_initZero)(void) { set3(0xa0e7b8, 0, 0, 0); }
+void (vec_initAxisZ)(void) { set3(0xa0e7c8, 0, 0, 0x3f800000u); }
+void (vec_initUp)(void) { set3(0xa0e7d8, 0, 0x3f800000u, 0); }
+void (vec_initRest)(void) { set3(0xa0e7e8, 0, 0, 0); }
+void (vec_initAxisX)(void) { set3(0xa0e7f8, 0x3f800000u, 0, 0); }
 
 /* ---- class lifecycles ---- */
 
@@ -146,13 +146,13 @@ u32 (Texture_ctor_wrap_42b310)(void) { return Texture_ctor((u32 *)0x83a9e0); }
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = 0x4aa46c; TimeSync_clear(self); return self; }
 void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = 0x4aa46c; }
 DELETING(TimeSync, TimeSync_dtor)
-void (TimeSync_dtor_wrap_468740)(void) { TimeSync_dtor((u32 *)0xa0e948); }
+void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)0xa0e948); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
 int (TextureManager_ctor)(void) { GAME_VAR(u32, 0x83a5e0) = 0x4a9570; return TextureManager_clear((void *)0x83a5e0); }
 int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = 0x4a9570; return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
-void (TextureManager_dtor_wrap_42b380)(void) { TextureManager_dtor((u32 *)0x83a5e0); }
+void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)0x83a5e0); }
 
 /* Scene (vtable 0x4aa258) */
 void *THISCALL (Scene_ctor)(u32 *self) { self[0] = 0x4aa258; nullsub_48b420(NULL); return self; }
@@ -187,7 +187,7 @@ DELETING(BMPRGBFile, BMPRGBFile_ctor)
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = 0x4aa2a0; }
 DELETING(ErrorLog, ErrorLog_dtor)
-void (ErrorLog_dtor_wrap_456cc0)(void) { ErrorLog_dtor((u32 *)0xa0e020); }
+void (static_endSoundRtti)(void) { ErrorLog_dtor((u32 *)0xa0e020); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 {
 	self[0] = 0x4aa2a0;

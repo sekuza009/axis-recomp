@@ -722,10 +722,10 @@ static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)0x4a9418, (const float *)0x4a9478, 0.46875f, 0.625f
 #define FOUR_WALLS 4, (const float *)0x4a9410, (const float *)0x4a941c, 0.5f, 0.75f
-void (missionsel_448140)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (skirmish_4445a0)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_411110)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_411ab0)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, 0x76d484, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, 0x4df910, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_4388e0)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */

@@ -128,7 +128,7 @@ static void map_step(int dir, u32 lock, u32 choice)
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
 void (arena_stepMap)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
-void (room_4356f0)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
+void (room_stepMap)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
 
 /* ---- the map list's drawing ---- */
 #define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */

@@ -492,9 +492,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define profile_secondDialogKeys() GAME_CDECL(0x44ca90, void, void)()
 #define profile_emblemKeys() GAME_CDECL(0x44cc60, void, void)()
 #define missionsel_camera() GAME_CDECL(0x447cb0, void, void)()
-#define missionsel_448140() GAME_CDECL(0x448140, void, void)()
-#define missionsel_44aa20() GAME_CDECL(0x44aa20, void, void)()
-#define missionsel_44aa30() GAME_CDECL(0x44aa30, void, void)()
+#define missionsel_drawTunnel() GAME_CDECL(0x448140, void, void)()
+#define missionsel_frameSettings() GAME_CDECL(0x44aa20, void, void)()
+#define missionsel_frameScreen() GAME_CDECL(0x44aa30, void, void)()
 #define sound_playMenu(id) GAME_CDECL(0x41e760, void, int)(id)          /* 0 confirm / back, 2 move */
 #define profile_typeNewName() GAME_CDECL(0x44b600, void, void)()
 #define profile_resetCamera() GAME_CDECL(0x44bc00, void, void)()
@@ -515,8 +515,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define Mat4_invert(out, m) GAME_CDECL(0x47d740, int, float *, const float *)(out, m)
 #define ViewVolume_transformObject(vv, id, info6, info3, P, M, raw, cull) GAME_THISCALL(0x4842d0, int, void *, int, const u32 *, const u32 *, const float *, const float *, int, int)(vv, id, info6, info3, P, M, raw, cull)
 #define shape_getShadingColorBufferBy(out, first, part, factors, m) GAME_CDECL(0x463b80, void, u8 *, int, const void *, const u8 *, const float *)(out, first, part, factors, m)
-#define render_depthSort_490f80(e, lo, hi) GAME_CDECL(0x490f80, void, u32 *, int, int)(e, lo, hi)   /* (transparent triangles) */
-#define render_depthSort_491190(e, lo, hi) GAME_CDECL(0x491190, void, u32 *, int, int)(e, lo, hi)   /* (billboards) */
+#define render_depthSortA(e, lo, hi) GAME_CDECL(0x490f80, void, u32 *, int, int)(e, lo, hi)   /* (transparent triangles) */
+#define render_depthSortB(e, lo, hi) GAME_CDECL(0x491190, void, u32 *, int, int)(e, lo, hi)   /* (billboards) */
 /* a shape's shading colours from light factors (seen through inverse, the inverse of the shape's matrix), every part
    into its slice of out; first = 1 (0x466910) */
 #define shape_shadeParts(out, first, shape, factors, inverse) GAME_CDECL(0x466910, void, u32 *, int, Model *, const LightFactors *, \
@@ -753,8 +753,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_language GAME_VAR(int, 0x9dae74)           /* 2: the small font for labels */
 #define armc_updatePartsPreview() GAME_CDECL(0x41d600, void, void)()      /* the mech preview */
 #define armc_updateColourPreview() GAME_CDECL(0x41d8a0, void, void)()      /* the colour page's preview */
-#define armc_411ab0() GAME_CDECL(0x411ab0, void, void)()      /* the screen's state entered from the room */
-#define armc_411110() GAME_CDECL(0x411110, void, void)()      /* and from the main menu */
+#define armc_drawPreviewTunnel() GAME_CDECL(0x411ab0, void, void)()      /* the screen's state entered from the room */
+#define armc_drawTunnel() GAME_CDECL(0x411110, void, void)()      /* and from the main menu */
 #define arena_launchFromFile() GAME_CDECL(0x410b50, void, void)()
 #define armc_enterScreen() GAME_CDECL(0x40e5d0, void, void)()      /* an ARM CENTER session made (menu/armc_items.c) */
 #define armc_setup3DView() GAME_CDECL(0x41b710, void, void)()      /* the 3D view set up (menu/armc_misc.c) */
@@ -765,8 +765,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawThirdPage() GAME_CDECL(0x41e010, void, void)()
 #define armc_drawWeightLine() GAME_CDECL(0x41dab0, void, void)()
 #define armc_exit(confirmed) GAME_CDECL(0x40f0f0, void, int)(confirmed)   /* leave the screen (menu/armc_misc.c) */
-#define set_4dc798_40f200() GAME_CDECL(0x40f200, void, void)()   /* to the parts page */
-#define set_4dc798_40f320() GAME_CDECL(0x40f320, void, void)()   /* to the third page */
+#define armc_showPartsPage() GAME_CDECL(0x40f200, void, void)()   /* to the parts page */
+#define armc_showColourPage() GAME_CDECL(0x40f320, void, void)()   /* to the third page */
 #define armc_drawPartScreen() GAME_CDECL(0x40f220, void, void)()   /* to the weapons page (menu/armc_items.c) */
 #define armc_backupColours() GAME_CDECL(0x40f590, void, void)()   /* the colour slot kept for undo (menu/armc_state.c) */
 #define armc_stepPart(part, dir) GAME_CDECL(0x40f340, u32, u32, int)(part, dir)   /* the part in view stepped (menu/armc_parts.c) */
@@ -830,7 +830,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- the setup screen (menu/setup_keys.c) ---- */
 #define g_setupTab GAME_VAR(int, 0x4ddac8)           /* 0 sound, 1 graphics, 2 controls, 0x29a the top page */
-#define set_680370_441250(v) GAME_CDECL(0x441250, void, int)(v)   /* g_keysBlocked = v */
+#define input_setKeysBlocked(v) GAME_CDECL(0x441250, void, int)(v)   /* g_keysBlocked = v */
 #define setup_drawTopPage() GAME_CDECL(0x4220c0, void, void)()
 #define setup_drawSoundTab() GAME_CDECL(0x4221d0, void, void)()
 #define setup_drawGraphicTab() GAME_CDECL(0x422480, void, void)()
@@ -894,7 +894,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define briefing_clickClose() GAME_CDECL(0x447af0, void, void)()
 #define missionsel_clicks() GAME_CDECL(0x447a50, void, void)()
 #define mission_choose() GAME_CDECL(0x4479d0, void, void)()
-#define FUN_00447960() GAME_CDECL(0x447960, void, void)()
+#define missionSettings_leave() GAME_CDECL(0x447960, void, void)()
 #define briefing_keys() GAME_CDECL(0x447c30, void, void)()
 #define missionList_keys() GAME_CDECL(0x447b40, void, void)()
 
@@ -942,7 +942,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define mapSelect_ok() GAME_CDECL(0x441770, void, void)()   /* the map-select dialog's OK */
 #define net_addPlayerRecord(reply) GAME_CDECL(0x452de0, void, void *)(reply)   /* the server's accept reply handled */
 #define mission_saveAxisMis(k) GAME_CDECL(0x443af0, u32, int)(k)   /* mission k's block read from axis.mis (load/files.c) */
-#define skirmish_443c80() GAME_CDECL(0x443c80, u32, void)()   /* leave the skirmish settings */
+#define skirmishSettings_leave() GAME_CDECL(0x443c80, u32, void)()   /* leave the skirmish settings */
 #define skirmish_cursorUp() GAME_CDECL(0x443cd0, void, void)()   /* the skirmish list's cursor up */
 #define skirmish_cursorDown() GAME_CDECL(0x443d10, void, void)()   /* and down */
 #define briefing_typeOut() GAME_CDECL(0x445520, void, void)()   /* the briefing typed out (menu/skirmish.c) */
@@ -1015,9 +1015,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_camera() GAME_CDECL(0x4230e0, void, void)()
 #define setup_easePanel() GAME_CDECL(0x4277c0, void, void)()
 #define setup_drawMenu() GAME_CDECL(0x423330, void, void)()
-#define setup_427830() GAME_CDECL(0x427830, void, void)()
-#define setup_427880() GAME_CDECL(0x427880, void, void)()
-#define setup_4278d0() GAME_CDECL(0x4278d0, void, void)()
+#define setup_frameSoundPage() GAME_CDECL(0x427830, void, void)()
+#define setup_frameOptionsPage() GAME_CDECL(0x427880, void, void)()
+#define setup_frameCrosshairPage() GAME_CDECL(0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
 #define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))0x4509c0)(instance, version, out, outer)
@@ -1082,7 +1082,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define UnitPoseInfo_rtti() GAME_CDECL(0x46f3c0, void *, void)()
 #define Unit_rtti() GAME_CDECL(0x46f420, void *, void)()
 #define ViewVolume_rtti() GAME_CDECL(0x483f60, void *, void)()
-#define load_487430_wrap_468720() GAME_CDECL(0x468720, void, void)()
+#define static_initTimeSync() GAME_CDECL(0x468720, void, void)()
 #define static_initObject_4e1878() GAME_CDECL(0x42b130, void, void)()
 #define static_initObject_5b1db8() GAME_CDECL(0x42b1a0, void, void)()
 #define static_initObject_680cd8() GAME_CDECL(0x42b1f0, void, void)()
@@ -1306,7 +1306,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_403f30() GAME_CDECL(0x403f30, void, void)()
 #define arenaNameDialog_layout() GAME_CDECL(0x403f80, void, void)()
 #define arenaGameList_layout() GAME_CDECL(0x404010, void, void)()
-#define arena_404120() GAME_CDECL(0x404120, void, void)()
+#define arenaDialogBox_layout() GAME_CDECL(0x404120, void, void)()
 #define arenaOptions_layout() GAME_CDECL(0x404190, void, void)()
 #define arenaCreate_layout() GAME_CDECL(0x404150, void, void)()
 #define setupSound_layout() GAME_CDECL(0x420300, void, void)()
@@ -1315,7 +1315,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define roomLogin_layout() GAME_CDECL(0x431ae0, void, void)()
 #define account_layout() GAME_CDECL(0x431c50, void, void)()
 #define gameList_layout() GAME_CDECL(0x431ce0, void, void)()
-#define room_431db0() GAME_CDECL(0x431db0, void, void)()
+#define gameListStop_layout() GAME_CDECL(0x431db0, void, void)()
 #define roomSettings_layout() GAME_CDECL(0x431de0, void, void)()
 #define ranking_layout() GAME_CDECL(0x432040, void, void)()
 #define leaveDialog_layout() GAME_CDECL(0x431aa0, void, void)()

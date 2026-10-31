@@ -23,7 +23,7 @@ void (armc_partsPageKeys)(void)
 	if (input_justPressed(GAME_VAR(int, 0x4e1504))) {
 		if (g_armcMode != 3) {
 			sound_playMenu(2);
-			set_4dc798_40f320();
+			armc_showColourPage();
 		}
 		return;
 	}
@@ -115,7 +115,7 @@ void (armc_weaponsPageKeys)(void)
 		if (g_armcMode != 1) {
 			armc_pickSlot(0);
 			sound_playMenu(2);
-			set_4dc798_40f200();
+			armc_showPartsPage();
 		}
 		return;
 	}
@@ -123,7 +123,7 @@ void (armc_weaponsPageKeys)(void)
 		if (g_armcMode != 3) {
 			armc_pickSlot(0);
 			sound_playMenu(2);
-			set_4dc798_40f320();
+			armc_showColourPage();
 		}
 		return;
 	}
@@ -191,7 +191,7 @@ void (armc_colourPageKeys)(void)
 		goto leave;
 	if (input_justPressed(GAME_VAR(int, 0x4e1514))) {
 		sound_playMenu(2);
-		set_4dc798_40f200();
+		armc_showPartsPage();
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e1538))) {

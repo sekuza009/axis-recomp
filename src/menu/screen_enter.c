@@ -106,7 +106,7 @@ void (menuState400_enter)(void)
 	arena_403f30();
 	arenaNameDialog_layout();
 	arenaGameList_layout();
-	arena_404120();
+	arenaDialogBox_layout();
 	arenaOptions_layout();
 	arenaCreate_layout();
 	CLEAR_ALL(cleared2);
@@ -179,7 +179,7 @@ void (menuState800_enterGameRoom)(void)
 	roomLogin_layout();
 	account_layout();
 	gameList_layout();
-	room_431db0();
+	gameListStop_layout();
 	roomSettings_layout();
 	ranking_layout();
 	leaveDialog_layout();

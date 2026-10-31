@@ -532,7 +532,7 @@ u32 (room_leaveGame)(void)
 	strcpy(GAME_VAR(char *, 0xa0b33c), (const char *)0x9dd570);
 	GAME_CDECL(0x4521c0, int, int, int)(0x19, 0x65);   /* net_send */
 	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
-	GAME_CDECL(0x441250, void, int)(4);                 /* set_680370_441250 */
+	GAME_CDECL(0x441250, void, int)(4);                 /* input_setKeysBlocked */
 	GAME_VAR(int, 0x67ef20) = 300;
 	GAME_CDECL(0x48b420, void, void)();                 /* nullsub_48b420 */
 	GAME_CDECL(0x451e60, void, void)();                 /* net_disconnect */
@@ -811,10 +811,10 @@ static int key_hit(u32 binding)
 	sound_playMenu(0);
 	return 1;
 }
-/* back to the main menu; returns set_680370_441250's eax (4) */
+/* back to the main menu; returns input_setKeysBlocked's eax (4) */
 static u32 to_main_menu(void)
 {
-	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* set_680370_441250: keys blocked */
+	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* input_setKeysBlocked: keys blocked */
 	g_nextScreen = 300;
 	GAME_CDECL(0x48b420, void, void)();          /* nullsub_48b420 */
 	return r;

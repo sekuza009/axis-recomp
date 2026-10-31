@@ -229,7 +229,7 @@ void (menuState300_frame)(void)
 	if (GAME_VAR(int, 0x9eeab4) != 0)
 		mainmenu_drawMapSelect();
 	if (g_quitAsked == 1) {
-		set_680370_441250(1);
+		input_setKeysBlocked(1);
 		g_nextScreen = 9999;
 		menu_drawDimOverlay();
 	}
@@ -288,7 +288,7 @@ void (briefing_keys)(void)
 void (missionList_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
-		FUN_00447960();
+		missionSettings_leave();
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
@@ -296,7 +296,7 @@ void (missionList_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
-		FUN_00447960();
+		missionSettings_leave();
 		return;
 	}
 	if (input_justPressed(g_keyLeft) == 1 && g_mission > 0)
@@ -486,9 +486,9 @@ void (menuState600_setup)(void)
 {
 	menu_drawBackground();
 	switch (g_setupTab) {
-	case 2: setup_camera(); setup_4278d0(); break;
-	case 0: setup_camera(); setup_427830(); break;
-	case 1: setup_camera(); setup_427880(); break;
+	case 2: setup_camera(); setup_frameCrosshairPage(); break;
+	case 0: setup_camera(); setup_frameSoundPage(); break;
+	case 1: setup_camera(); setup_frameOptionsPage(); break;
 	case 0x29a: setup_easePanel(); setup_drawMenu(); break;
 	}
 }
@@ -529,14 +529,14 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 	}
 	if (!g_quitAsked)
 		return 0;
-	set_680370_441250(1);
+	input_setKeysBlocked(1);
 	g_nextScreen = 9999;
 	return 1;
 }
 
 /* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
 int (lobbyTop_draw)(void) { return menu_slide(0x4db85c, 0x4dbb60, 0x4dba68); }
-int (room_43e720)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
+int (room_slideMenu)(void) { return menu_slide(0x9dd7d8, 0x9dd560, 0x9dd698); }
 
 /* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
    the player slots (0x410 bytes from 0x9f9840) emptied ---- */

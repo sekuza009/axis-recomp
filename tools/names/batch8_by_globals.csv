@@ -1,0 +1,48 @@
+# naming pass, batch 8: functions named by the globals and objects they act on (old,new)
+# the constant vectors: 0xa0e7a8 origin, 0xa0e7b8 zero, 0xa0e7c8 z axis, 0xa0e7d8 up, 0xa0e7e8 the rest axis, 0xa0e7f8 x axis
+set_a0e7a8_4678f0,vec_initOrigin
+set_a0e7b8_467890,vec_initZero
+set_a0e7c8_467980,vec_initAxisZ
+set_a0e7d8_467950,vec_initUp
+set_a0e7e8_4678c0,vec_initRest
+set_a0e7f8_467920,vec_initAxisX
+set_680370_441250,input_setKeysBlocked
+set_4dc798_40f200,armc_showPartsPage
+set_4dc798_40f320,armc_showColourPage
+# global objects made and destroyed
+load_487430_wrap_468720,static_initTimeSync
+FUN_00468710,static_startTimeSync
+TimeSync_dtor_wrap_468740,static_endTimeSync
+TextureManager_dtor_wrap_42b380,static_endTextureManager
+ErrorLog_dtor_wrap_456cc0,static_endSoundRtti
+# dialog rectangles
+arena_404120,arenaDialogBox_layout
+room_431db0,gameListStop_layout
+profile_44b080,profileDialogBox_layout
+# the account form's fields
+room_434020,account_editOldPassword
+room_4340e0,account_editPassword
+room_4341a0,account_editPasswordRepeat
+room_434260,account_editEmail
+# screens' frames, leaving and tunnels
+skirmish_443c80,skirmishSettings_leave
+FUN_00447960,missionSettings_leave
+missionsel_44aa20,missionsel_frameSettings
+missionsel_44aa30,missionsel_frameScreen
+skirmish_445bc0,skirmish_frameScreenA
+skirmish_445bd0,skirmish_frameScreenB
+setup_427830,setup_frameSoundPage
+setup_427880,setup_frameOptionsPage
+setup_4278d0,setup_frameCrosshairPage
+menu_436940,leaveDialog_keys
+arena_40b420,arena_loadMapPreview
+room_4356f0,room_stepMap
+room_43e720,room_slideMenu
+missionsel_448140,missionsel_drawTunnel
+skirmish_4445a0,skirmish_drawTunnel
+armc_411110,armc_drawTunnel
+armc_411ab0,armc_drawPreviewTunnel
+hud_401ce0,text_drawHangul31
+hud_401e70,text_drawHangul31b
+render_depthSort_490f80,render_depthSortA
+render_depthSort_491190,render_depthSortB

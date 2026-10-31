@@ -43,7 +43,7 @@ void (setup_processTabKeys)(void)
 /* back to the main menu */
 static void leave(void)
 {
-	set_680370_441250(4);
+	input_setKeysBlocked(4);
 	g_nextScreen = 300;
 	g_cursorBlink = 0.0f;
 	nullsub_48b420(NULL);
@@ -143,9 +143,9 @@ static void page_425460(void) { setup_drawOptionsDialog(); }
 static void page_crosshair(void) { setup_crosshairScreen(); }
 
 /* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
-void (setup_427830)(void) { with_page(page_424810, (const int *)0x4ddad0); }
-void (setup_427880)(void) { with_page(page_425460, (const int *)0x4dddd0); }
-void (setup_4278d0)(void) { with_page(page_crosshair, (const int *)0x4dde80); }
+void (setup_frameSoundPage)(void) { with_page(page_424810, (const int *)0x4ddad0); }
+void (setup_frameOptionsPage)(void) { with_page(page_425460, (const int *)0x4dddd0); }
+void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)0x4dde80); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
 static void tab_opened(void)
@@ -237,7 +237,7 @@ u32 (setup_drawTopPage)(void)
 			case 1: sound_playMenu(0); GAME_CDECL(0x420b40, void, void)(); break;   /* graphics */
 			case 2: sound_playMenu(0); GAME_CDECL(0x420ba0, void, void)(); break;   /* controls */
 			case 3:
-				set_680370_441250(4);
+				input_setKeysBlocked(4);
 				sound_playMenu(0);
 				g_nextScreen = 300;
 				GAME_VAR(int, 0x4dda44) = 0;
@@ -254,7 +254,7 @@ u32 (setup_drawTopPage)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* set_680370_441250 */
+	u32 r = GAME_CDECL(0x441250, u32, int)(4);   /* input_setKeysBlocked */
 	g_nextScreen = 300;
 	GAME_VAR(int, 0x4dda44) = 0;
 	GAME_CDECL(0x48b420, void, void)();

@@ -213,8 +213,8 @@ u32 (text_ascii32Pass)(int x, int y, const u8 *s) { return text_pass(x, y, s, &a
    same at 31 units */
 u32 (text_hanCho)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13); }
 u32 (text_hanJungJong)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han13b); }
-u32 (hud_401ce0)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
-u32 (hud_401e70)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
+u32 (text_drawHangul31)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31); }
+u32 (text_drawHangul31b)(int x, int y, const u8 *s) { return text_pass(x, y, s, &han31b); }
 
 /* a pair of KS X 1001 rows (first, first + 1, ...) to a Johab lead byte (from base) and trail byte */
 static int ks_row(int hi, int lo, int base, int first)

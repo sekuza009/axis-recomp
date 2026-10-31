@@ -10,7 +10,7 @@ void (menuState500_missionSelect)(void)
 	if (g_missionShowBackground)
 		menu_drawBackground();
 	if (g_missionPage != 2)
-		missionsel_448140();
+		missionsel_drawTunnel();
 	missionsel_camera();
 	if (g_missionPage == 1 || g_missionPage == 0)
 		return;
@@ -21,9 +21,9 @@ void (menuState500_missionSelect)(void)
 	if (g_missionBusy)
 		return;
 	if (g_missionStarted)
-		missionsel_44aa30();
+		missionsel_frameScreen();
 	else
-		missionsel_44aa20();
+		missionsel_frameSettings();
 }
 
 /* 0x41f8d0 (menu_drawVersion): the title screen's frame: after 19 frames of the title the profile screen follows

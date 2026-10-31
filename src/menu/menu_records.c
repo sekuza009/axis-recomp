@@ -399,8 +399,8 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (skirmish_443c80)(void) { return leave_settings(0x9ef1f0); }
-u32 (FUN_00447960)(void) { return leave_settings(0x9f62f8); }
+u32 (skirmishSettings_leave)(void) { return leave_settings(0x9ef1f0); }
+u32 (missionSettings_leave)(void) { return leave_settings(0x9f62f8); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
    menu sound. Returns what the original leaves in eax */
@@ -428,7 +428,7 @@ u32 (menuState900_skirmishSetup)(void)
 	if (GAME_VAR(int, 0x9eeba8))
 		menu_drawBackground();
 	if (GAME_VAR(int, 0x9ef1f0) != 2)
-		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_4445a0 */
+		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_drawTunnel */
 	GAME_CDECL(0x444130, void, void)();       /* skirmish_camera: the camera */
 	int state = GAME_VAR(int, 0x9ef1f0);
 	if (state == 1 || state == 0)
@@ -476,7 +476,7 @@ u32 (mission_choose)(void)
 	g_chosenGameMode = a;
 	g_fragLimit = b;
 	g_timeLimit = c;
-	u32 r = GAME_CDECL(0x447960, u32, void)();   /* FUN_00447960: the settings left */
+	u32 r = GAME_CDECL(0x447960, u32, void)();   /* missionSettings_leave: the settings left */
 	GAME_VAR(int, 0x67ef14) = 1;
 	g_matchMode = 3;
 	return r;
@@ -594,7 +594,7 @@ u32 (mapSelect_drawNames)(void)
    progress saved and 0x48b420. Returns its eax */
 static u32 leave_game(void)
 {
-	set_680370_441250(4);
+	input_setKeysBlocked(4);
 	g_enteringMenus = 1;
 	GAME_VAR(int, 0x67ef20) = 210;
 	GAME_CDECL(0x447010, void, void)();   /* profile_saveProgress */
@@ -625,7 +625,7 @@ static int menu_choice(int i, u32 *r)
 		}
 		/* fall through */
 	case 1: case 3:
-		*r = GAME_CDECL(0x441250, u32, int)(2);   /* set_680370_441250 */
+		*r = GAME_CDECL(0x441250, u32, int)(2);   /* input_setKeysBlocked */
 		g_enteringMenus = 0;
 		GAME_VAR(int, 0x67ef20) = i == 1 ? 400 : i == 2 ? 800 : 600;
 		return 0;
@@ -686,7 +686,7 @@ u32 (mainmenu_processKeys)(void)
 		}
 	if (input_justPressed(GAME_VAR(int, 0x76d48c)) && GAME_VAR(int, 0x9dae10) > 0) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
-		set_680370_441250(4);
+		input_setKeysBlocked(4);
 		g_enteringMenus = 1;
 		GAME_VAR(int, 0x67ef20) = 210;
 		return GAME_CDECL(0x48b420, u32, void)();

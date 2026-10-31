@@ -208,10 +208,10 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	chat_createEdit(maxLength);
 }
 
-void (room_434020)(void) { edit_rule(0, (const char *)0x9dd6d8, 0x50, 0xc, 1); }
-void (room_4340e0)(void) { edit_rule(1, (const char *)0x9dd1f6, 0x6c, 0xc, 1); }
-void (room_4341a0)(void) { edit_rule(2, (const char *)0x9dd202, 0x88, 0xc, 1); }
-void (room_434260)(void) { edit_rule(3, (const char *)0x9dd20e, 0xa4, 0x32, 0); }
+void (account_editOldPassword)(void) { edit_rule(0, (const char *)0x9dd6d8, 0x50, 0xc, 1); }
+void (account_editPassword)(void) { edit_rule(1, (const char *)0x9dd1f6, 0x6c, 0xc, 1); }
+void (account_editPasswordRepeat)(void) { edit_rule(2, (const char *)0x9dd202, 0x88, 0xc, 1); }
+void (account_editEmail)(void) { edit_rule(3, (const char *)0x9dd20e, 0xa4, 0x32, 0); }
 
 /* 0x434320: a message (8), starting empty */
 void (field_editMessage)(void)

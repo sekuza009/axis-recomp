@@ -61,8 +61,8 @@ static void depth_sort(const QsGlobals *q, u32 *e, int lo, int hi)
 
 static const QsGlobals k_sortA = { 0xae5338, 0x4c83c4, 0x4ca3c4, 0xae3338, 0xae7340, 0xaed350, 0xae9340 };
 
-void (render_depthSort_490f80)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
+void (render_depthSortA)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
 
 static const QsGlobals k_sortB = { 0xae533c, 0x4cc3c4, 0x4ce3c4, 0xaeb350, 0xae9350, 0xae5340, 0xae9348 };
 
-void (render_depthSort_491190)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }
+void (render_depthSortB)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }

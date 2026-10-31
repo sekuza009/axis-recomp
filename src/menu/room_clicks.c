@@ -106,7 +106,7 @@ static void leave_keys(int *question)
 	}
 }
 
-void (menu_436940)(void) { leave_keys(&g_leaveDialog); }
+void (leaveDialog_keys)(void) { leave_keys(&g_leaveDialog); }
 void (lobbyJoin_keys)(void) { leave_keys(&GAME_VAR(int, 0x907b2c)); }
 
 /* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
@@ -205,7 +205,7 @@ u32 (room_leftClicks)(void)
 			GAME_CDECL(0x401310, void, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
-		set_680370_441250(4);
+		input_setKeysBlocked(4);
 		GAME_VAR(int, 0x9dd834) = 0x63;
 		g_nextScreen = 300;
 		GAME_VAR(int, 0x4e1868) = 0;
@@ -271,7 +271,7 @@ static void load_map_preview(u32 selected)
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
 void (room_loadMapPreview)(void) { load_map_preview(0x4df9e8); }
-void (arena_40b420)(void) { load_map_preview(0x4db548); }
+void (arena_loadMapPreview)(void) { load_map_preview(0x4db548); }
 
 /* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
    0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
@@ -600,7 +600,7 @@ u32 (ranking_clicks)(void)
    box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
    (field_editComment / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_4351c0; not while connecting),
-   9 close, 11 / 2, 10, 12 the map back / on (room_4356f0), 13 the map list (mapList_startEdit). Returns what the original
+   9 close, 11 / 2, 10, 12 the map back / on (room_stepMap), 13 the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
 {
@@ -626,7 +626,7 @@ u32 (room_settingsClicks)(void)
 	case 1:
 		return GAME_CDECL(0x433a80, u32, void)();   /* field_editPassword */
 	case 2: case 10: case 12:
-		return GAME_CDECL(0x4356f0, u32, int)(1);   /* room_4356f0: the next map */
+		return GAME_CDECL(0x4356f0, u32, int)(1);   /* room_stepMap: the next map */
 	case 11:
 		return GAME_CDECL(0x4356f0, u32, int)(0);
 	case 3:
@@ -777,14 +777,14 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 }
 
 /* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
-   (0x4dbb04, 0x4db54a, arena_40b420) */
+   (0x4dbb04, 0x4db54a, arena_loadMapPreview) */
 u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, 0x43bcb0); }
 u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, 0x40b420); }
 
 /* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
    frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
    line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
-   (0x9dc428: 0xa back, 0x14 on) opening the field before or after (room_434020 .. 434260). Returns what the
+   (0x9dc428: 0xa back, 0x14 on) opening the field before or after (account_editOldPassword .. 434260). Returns what the
    original leaves in eax */
 u32 (account_page)(void)
 {

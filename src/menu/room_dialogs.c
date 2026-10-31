@@ -1088,7 +1088,7 @@ u32 (ranking_drawTable)(void)
 /* the create-game dialog closed, back to the room's page 99 (keys blocked, the room's state 300) */
 static void creategame_close(void)
 {
-	set_680370_441250(4);
+	input_setKeysBlocked(4);
 	GAME_VAR(int, 0x9dd834) = 99;
 	GAME_VAR(int, 0x67ef20) = 300;
 	GAME_CDECL(0x48b420, void, void)();   /* nullsub_48b420 */

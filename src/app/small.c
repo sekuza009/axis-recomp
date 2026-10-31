@@ -151,9 +151,9 @@ u32 (tunnel_rebuild)(void) { GAME_VAR(int, 0x9dae10) = 0; return tunnel_appendRi
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)0x76d438, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
-void (arena_404120)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x4dbad0); }
-void (room_431db0)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x9dd308); }
-void (profile_44b080)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)0x9f9010); }
+void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x4dbad0); }
+void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x9dd308); }
+void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)0x9f9010); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
@@ -326,7 +326,7 @@ void THISCALL (nullsub_483ce0)(void *self, int a) { (void)self; (void)a; }
 /* 0x45dfe0: the stage's +0x202e8dc set (returned) */
 int THISCALL (stage_setValue202e8dc)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
-void *(load_487430_wrap_468720)(void) { return TimeSync_ctor((void *)0xa0e948); }
+void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)0xa0e948); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
 char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 {

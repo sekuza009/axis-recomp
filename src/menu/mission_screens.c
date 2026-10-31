@@ -174,5 +174,5 @@ void (missionsel_drawScreen)(void)
 
 /* 0x44aa20, 0x44aa30: jumps to missionsel_drawSettingsScreen and missionsel_drawScreen (the mission select's states'
    frames; their callers ignore eax) */
-void (missionsel_44aa20)(void) { missionsel_drawSettingsScreen(); }
-void (missionsel_44aa30)(void) { missionsel_drawScreen(); }
+void (missionsel_frameSettings)(void) { missionsel_drawSettingsScreen(); }
+void (missionsel_frameScreen)(void) { missionsel_drawScreen(); }

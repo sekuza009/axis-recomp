@@ -7,10 +7,15 @@ import glob, os, struct, sys
 def sections(path):
     d = open(path, 'rb').read()
     n = struct.unpack_from('<H', d, 2)[0]
+    symptr, nsyms = struct.unpack_from('<II', d, 8)
+    strtab = symptr + nsyms * 18   # long section names ("/offset") live in the string table after the symbols
     out = {}
     for i in range(n):
         o = 20 + i * 40
         name = d[o:o + 8].rstrip(b'\0').decode('latin-1')
+        if name.startswith('/'):
+            s = strtab + int(name[1:])
+            name = d[s:d.index(b'\0', s)].decode('latin-1')
         size, ptr = struct.unpack_from('<II', d, o + 16)
         nrel, = struct.unpack_from('<H', d, o + 32)
         relptr, = struct.unpack_from('<I', d, o + 24)

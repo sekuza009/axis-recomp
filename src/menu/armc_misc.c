@@ -238,9 +238,9 @@ void (menuState700_armCenter)(void)
 		menu_drawBackground();
 	if (g_armcState != 2) {
 		if (g_armcFrom == 3)
-			armc_411ab0();
+			armc_drawPreviewTunnel();
 		if (g_armcFrom == 1)
-			armc_411110();
+			armc_drawTunnel();
 	}
 	arena_launchFromFile();
 	int state = g_armcState;

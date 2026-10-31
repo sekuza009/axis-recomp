@@ -15,7 +15,7 @@ void (skirmish_processKeys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1 || input_justPressed(g_keyCancel2) == 1) {
-		skirmish_443c80();
+		skirmishSettings_leave();
 		return;
 	}
 	if (!key_repeat(g_keyUp, &g_repeatUp, list_up))
@@ -202,5 +202,5 @@ void (skirmish_drawScreenB)(void)
 
 /* 0x445bc0, 0x445bd0: jumps to skirmish_drawScreenA and skirmish_drawScreenB (the skirmish setup's states'
    frames; their callers ignore eax) */
-void (skirmish_445bc0)(void) { skirmish_drawScreenA(); }
-void (skirmish_445bd0)(void) { skirmish_drawScreenB(); }
+void (skirmish_frameScreenA)(void) { skirmish_drawScreenA(); }
+void (skirmish_frameScreenB)(void) { skirmish_drawScreenB(); }

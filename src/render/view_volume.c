@@ -743,8 +743,8 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	/* triangles and billboards merged back to front (triangles fogged when fog is on, billboards never) */
 	identity_matrices();
 	fog_set(fog, mapped);
-	render_depthSort_490f80(FIELD(u32 *, vv, 0x9060), 0, FIELD(int, vv, 0x9064) - 1);
-	render_depthSort_491190(FIELD(u32 *, vv, 0x9074), 0, FIELD(int, vv, 0x9078) - 1);
+	render_depthSortA(FIELD(u32 *, vv, 0x9060), 0, FIELD(int, vv, 0x9064) - 1);
+	render_depthSortB(FIELD(u32 *, vv, 0x9074), 0, FIELD(int, vv, 0x9078) - 1);
 	int ia = 0, ib = 0, triangles = 0;
 	cur = -1;
 	glDisable(0xb44);
@@ -798,7 +798,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	glDisable(GL_FOG);
 
 	/* the billboards of kind 3, unfogged, without depth test */
-	render_depthSort_491190(FIELD(u32 *, vv, 0x907c), 0, FIELD(int, vv, 0x9080) - 1);
+	render_depthSortB(FIELD(u32 *, vv, 0x907c), 0, FIELD(int, vv, 0x9080) - 1);
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_DEPTH_TEST);
