@@ -356,7 +356,7 @@ int (app_init)(void *inst, int show)
 		if (dpi_aware)
 			dpi_aware();
 	}
-	GAME_VAR(int, 0x9dd8f8) = 0;
+	g_unusedInitWord = 0;
 	g_desktopWidth = GetSystemMetrics(0);   /* SM_CXSCREEN */
 	g_desktopHeight = GetSystemMetrics(1);
 	void *dc = IMPORT(0x4a9318, void *, void *)(NULL);   /* GetDC */
@@ -493,7 +493,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		case 0xd:   /* Enter */
 			if (!(g_menuFade > k_0f)) {
 				chat_close(wnd, 1);
-				GAME_VAR(int, 0x9dc428) = 0x14;
+				g_fieldTabKey = 0x14;
 			}
 			break;
 		case 0x1b:   /* Esc */
@@ -504,9 +504,9 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
-				GAME_VAR(int, 0x9dc428) = 0x14;
+				g_fieldTabKey = 0x14;
 				g_chatLineDone = 1;
-				GAME_VAR(int, 0x9dc428) = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
+				g_fieldTabKey = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
 			}
 			break;
 		case 0x24: case 0x25:   /* Home, Left */
@@ -726,7 +726,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		ExitProcess(0);
 		return 0;
 	case 0x1c: {   /* WM_ACTIVATEAPP */
-		GAME_VAR(u32, 0x9dd864) = w;
+		g_unusedLastWParam = w;
 		if (w) {
 			while (ShowCursor(0) >= 0)
 				;

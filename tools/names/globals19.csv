@@ -1,0 +1,76 @@
+# the ARM CENTER's stats (armc_stats.c; labels from msgeng.dat, tools/names/msgtext.py): head (slot 0)
+0x4dcef8,float,g_headDetectionRange
+0x4dcefc,float,g_headDetectionAngle
+0x4dcf04,float,g_headLockOnTime
+0x4dcf08,float,g_headTargetKeepTime
+0x4dcf0c,float,g_headWeight
+# chest (slot 1)
+0x4dbc48,float,g_chestWeightLimit
+# arms (slot 2): the fire control system's level, the weight
+0x4dc290,int,g_armsFcsLevel
+0x4dc2a4,float,g_armsWeight
+# legs (slot 3)
+0x4dc230,float,g_legsSpeedCorrection
+0x4dc240,float,g_legsWeight
+# booster (slot 4)
+0x4dce84,float,g_boosterActiveTime
+0x4dce88,float,g_boosterRechargeTime
+0x4dce8c,float,g_boosterRechargeDelay
+0x4dce90,float,g_boosterNormalSpeed
+0x4dcea0,float,g_boosterWeight
+# the whole mech (slot 5)
+0x4dcad0,float,g_mechMobility
+0x4dcaf8,float,g_mechNormalSpeed
+0x4dcaec,float,g_mechBoosterEnergy
+0x4dcaf0,float,g_mechBoosterRecharge
+# the items' bonuses (armc_items.c sets them by the items fitted)
+0x4dbc70,float,g_itemBonusCapacityPerLevel
+0x4dbc78,float,g_itemBonusDetectionRange
+0x4dc898,float,g_itemBonusLockOn
+0x4dceb4,float,g_itemBonusHacking
+0x4dc88c,float,g_itemBonusTargetKeep
+0x4dcca0,float,g_itemBonusActiveTime
+0x4dc894,float,g_itemBonusRechargeTime
+0x4dceb0,float,g_itemBonusWeightLimit
+0x4dcc68,float,g_itemBonusShield
+# the ARM CENTER's mouse look and its camera move to a part
+0x4de6c0,float,g_armcLookSin
+0x4de6c4,float,g_armcLookTilt
+0x4de6c8,float,g_armcLookCos
+0x4de340,int,g_armcMoveStarted
+0x4de6d0,int,g_armcMoveTargetX
+0x4de6d4,int,g_armcMoveTargetY
+0x4de6d8,int,g_armcMoveTargetZ
+0x4de350,float,g_armcMoveEyeX
+0x4de354,int,g_armcMoveEyeY
+0x4de358,float,g_armcMoveEyeZ
+# the arena screen's camera kept while away (menu_cameras.c)
+0x4db840,float,g_arenaKeptCamX
+0x4db844,int,g_arenaKeptCamY
+0x4db848,int,g_arenaKeptCamZ
+0x4dbab8,int,g_arenaKeptLookX
+0x4dbabc,int,g_arenaKeptLookY
+0x4dbac0,int,g_arenaKeptLookZ
+# menu_frame's clocks and the FPS counter
+0x4dd0a0,double,g_fpsSecondStart
+0x4dd0c8,double,g_lastFrameClock
+0x4dd550,double,g_fpsFrameClock
+0x4dd978,double,g_fpsSecondSoFar
+0x4dd980,float,g_fps
+0x4dd558,double,g_frameRate
+# the map-select dialog's button colours (lit / dim)
+0x9eea98,int,g_mapSelectLitR
+0x9eea9c,u32,g_mapSelectLitG
+0x9eeaa0,u32,g_mapSelectLitB
+0x9eeaa4,u32,g_mapSelectLitA
+0x9dda70,u32,g_mapSelectDimR
+0x9dda74,u32,g_mapSelectDimG
+0x9dda78,u32,g_mapSelectDimB
+0x9dda7c,u32,g_mapSelectDimA
+# the joined game's copy of its host's title record (0x9dd570, laid out as 0x4de700)
+0x9dd58e,int,g_joinedTitleLevel
+0x9dd592,int,g_joinedTitlePoints
+0x9dd596,int,g_joinedTitleRating
+# chat, the network
+0x9f63e4,char,g_keptChatLine
+0xa052c0,u8,g_netNotice

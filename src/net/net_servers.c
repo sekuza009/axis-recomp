@@ -8,8 +8,8 @@
 /* 0x454650: ping the server named address (dotted) and keep its time in slot; 1 when it answered within a second */
 int (net_pingServer)(const char *address, int slot)
 {
-	GAME_VAR(int, 0xa0bf14) = 0;
-	GAME_VAR(int, 0xa0bf18) = 0;
+	g_unusedPingWord1 = 0;
+	g_unusedPingWord2 = 0;
 	(*(int *)&g_pingTime) = 0;
 	g_serverPing[slot] = 0;
 	return net_ping(net_inetAddr(address), 1000) != 0;

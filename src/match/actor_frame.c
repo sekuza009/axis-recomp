@@ -855,7 +855,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glRotatef(f32(fmul_m(fld_m(&AF(0x390)), K(0x4a9468))), 0, 0, 1);
 	glRotatef(f32(fmul_m(fld_m(&AF(0x394)), K(0x4a93ec))), 1, 0, 0);
 	skel_poseBones(a + 0x34f4, 0);
-	memcpy(grip, &GAME_VAR(float, 0xa0e7e8), 12);   /* where the weapon is held, for the local player's view */
+	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d0, AI(0x484)));
 	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) <= 3)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
@@ -1006,7 +1006,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 					shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 					shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
-					memcpy(shot_dir, &GAME_VAR(float, 0xa0e7c8), 12);
+					memcpy(shot_dir, &g_vecUnitZ, 12);
 					if (AI(0x11c) == 0) {
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AF(0x160))));
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))));
@@ -1085,7 +1085,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				m0d0[14] = f32(-fld_m(&grip[2]));
 				Mat4_multiply(m230, m270, m0d0);
 				Mat4_multiply(m18c, m230, m1e0);
-				const float *o = &GAME_VAR(float, 0xa0e7a8);
+				const float *o = &g_vecOrigin;
 				long double x = ((fmul_m(fld_m(&m18c[8]), &o[2]) + fmul_m(fld_m(&m18c[4]), &o[1])) + fmul_m(fld_m(&m18c[0]), &o[0])) + m18c[12];
 				long double y = ((fmul_m(fld_m(&m18c[9]), &o[2]) + fmul_m(fld_m(&m18c[5]), &o[1])) + fmul_m(fld_m(&m18c[1]), &o[0])) + m18c[13];
 				long double z = ((fmul_m(fld_m(&m18c[10]), &o[2]) + fmul_m(fld_m(&m18c[6]), &o[1])) + fmul_m(fld_m(&m18c[2]), &o[0])) + m18c[14];
@@ -1189,7 +1189,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AI(0x14c) = 3;
 			AI(0x150) = 0;
 			if (i == GAME_VAR(int, s + 0x202e8d4))   /* the patch DLL's cat_wrap */
-				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, GAME_VAR(u32, 0x4b4414));
+				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
 	} else if (AI(0x14c) == 3)
 		AU(0x120) = AU(0x124);

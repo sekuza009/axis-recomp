@@ -593,7 +593,7 @@ static void zero_dwords(u8 *at, int n)
 void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
-		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, GAME_VAR(const char *, 0x4b4568));
+		GAME_CDECL(0x46c710, void, char *, const char *)((char *)0xa0e778, g_insertCdMessage);
 	GAME_VAR(u32, g + 4) = a;
 	GAME_VAR(int, g + 8) = mode;
 	GAME_VAR(int, g + 0x1f1664) = 0;

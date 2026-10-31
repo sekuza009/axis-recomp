@@ -53,8 +53,8 @@ void (armc_weaponSlotRecord)(int slot, int idx) { part_info((u8 *)0x4dbe50 + slo
 void (armc_viewedPartRecord)(int idx)
 {
 	part_info((u8 *)0x4dc150, idx);
-	if (idx != -1 && GAME_VAR(int, 0x4dc194) == -1)
-		GAME_VAR(int, 0x4dc198) = idx;
+	if (idx != -1 && g_viewedPartKind == -1)
+		g_viewedPartIndex = idx;
 }
 
 /* ---- 0x41c510: the ARM CENTER's stats panel from the local player's actor in the scene (*0x9087b4): a speed (the
@@ -72,9 +72,9 @@ u8 *(armc_readMechStats)(void)
 	X s = fld_m(&FIELD(float, A, 0x1ecca70));
 	__asm__("fsqrt" : "+t"(s));
 	s = s * k_0_01;
-	GAME_VAR(float, 0x4dcaa0) = (float)s;
+	g_mechDetectionRange = (float)s;
 	mulf(0x4dcaa4, &FIELD(float, A, 0x1ecca74), (const float *)0x4a93ec);
-	GAME_VAR(int, 0x4dcaa8) = FIELD(int, A, 0x1ecca78);
+	g_mechHackingLevel = FIELD(int, A, 0x1ecca78);
 	mulf(0x4dcaac, &FIELD(float, A, 0x1ecca7c), (const float *)0x4a93f4);
 	mulf(0x4dcab0, &FIELD(float, A, 0x1ecca80), (const float *)0x4a94bc);
 	for (int i = 0; i < 7; i++)
@@ -87,13 +87,13 @@ u8 *(armc_readMechStats)(void)
 	mulf(0x4dcadc, &FIELD(float, part, 0x163c974), (const float *)0x4a93f4);
 	mulf(0x4dcae0, &FIELD(float, part, 0x163c97c), (const float *)0x4a93f4);
 	mulf(0x4dcae4, &FIELD(float, part, 0x163c978), (const float *)0x4a93f4);
-	GAME_VAR(int, 0x4dcae8) = FIELD(int, g + FIELD(int, player, 0x175554c) * 0x1820, 0x167b334);
+	g_unusedMechStat = FIELD(int, g + FIELD(int, player, 0x175554c) * 0x1820, 0x167b334);
 	mulf(0x4dcaec, &FIELD(float, A, 0x1eccab4), (const float *)0x4a94bc);
 	mulf(0x4dcaf0, &FIELD(float, A, 0x1eccab8), (const float *)0x4a94bc);
 	mulf(0x4dcaf4, &FIELD(float, A, 0x1eccabc), (const float *)0x4a94bc);
 	mulf(0x4dcaf8, &FIELD(float, A, 0x1eccac0), (const float *)0x4a94b8);
 	mulf(0x4dcafc, (const float *)0x4dcaf8, &FIELD(float, A, 0x1eccac4));
-	GAME_VAR(float, 0x4dcb00) = (float)-fmul_m(fld_m((const float *)0x4dcaf8), &FIELD(float, A, 0x1eccac8));
+	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)0x4dcaf8), &FIELD(float, A, 0x1eccac8));
 	mulf(0x4dcb04, (const float *)0x4dcaf8, &FIELD(float, A, 0x1eccacc));
 	copyf(0x4dcb0c, &FIELD(float, A, 0x1ecca84));
 	copyf(0x4dcb08, &FIELD(float, A, 0x1ecca88));
@@ -130,15 +130,15 @@ int (armc_drawPartPanels)(void)
 	panel_name(0x4dceb8, (const char *)p + 0x15bd1f8);
 	mulf(0x4dcef8, &FIELD(float, p, 0x15bdc8c), (const float *)0x4a9420);
 	mulf(0x4dcefc, &FIELD(float, p, 0x15bdc90), (const float *)0x4a93ec);
-	GAME_VAR(int, 0x4dcf00) = FIELD(int, p, 0x15bdc94);
+	g_headHackingLevel = FIELD(int, p, 0x15bdc94);
 	mulf(0x4dcf04, &FIELD(float, p, 0x15bdc98), (const float *)0x4a93f4);
 	mulf(0x4dcf08, &FIELD(float, p, 0x15bdc9c), (const float *)0x4a94bc);
 	copyf(0x4dcf0c, &FIELD(float, p, 0x15bdc88));
 	p = g + FIELD(int, player, 0x1755540) * 0xabc;   /* chest */
 	panel_name(0x4dbc08, (const char *)p + 0x15de6cc);
 	copyf(0x4dbc48, &FIELD(float, p, 0x15df17c));
-	GAME_VAR(int, 0x4dbc4c) = FIELD(int, p, 0x15df180);
-	GAME_VAR(int, 0x4dbc50) = FIELD(int, p, 0x15df184);
+	g_chestMaxArmor = FIELD(int, p, 0x15df180);
+	g_chestMaxShield = FIELD(int, p, 0x15df184);
 	p = g + FIELD(int, player, 0x1755544) * 0x1300;   /* arm */
 	panel_name(0x4dc250, (const char *)p + 0x15fff88);
 	for (int i = 0; i < 5; i++)
@@ -156,7 +156,7 @@ int (armc_drawPartPanels)(void)
 	int weapon = FIELD(int, player, 0x175554c);
 	p = g + weapon * 0x1820;
 	panel_name(0x4dce40, (const char *)p + 0x1679b38);
-	GAME_VAR(int, 0x4dce80) = FIELD(int, p, 0x167b334);
+	g_boosterThrustType = FIELD(int, p, 0x167b334);
 	for (int i = 0; i < 3; i++)
 		mulf(0x4dce84 + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)0x4a94bc);
 	for (int i = 0; i < 4; i++)

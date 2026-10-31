@@ -298,7 +298,7 @@ void (menuState700_armCenter)(void)
 	if (state == 1 || state == 0)
 		return;
 	if (g_dialogOpen) {
-		menu_drawFrame(GAME_VAR(int, 0x4dcc90), GAME_VAR(int, 0x4dcc94), g_armcSliderLeft, GAME_VAR(int, 0x4dcc9c));
+		menu_drawFrame(g_armcStatsPanelLeft, g_armcStatsPanelTop, g_armcSliderLeft, g_armcStatsPanelBottom);
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
@@ -352,7 +352,7 @@ u32 (menu_enterMenus)(void)
 	armc_initCameraPoints();
 	music_play((const char *)0x4b01b0);
 	g_armcPartSlot = 5;
-	GAME_VAR(int, 0x4dce38) = 5;
+	g_unusedArmcWord3 = 5;
 	g_armcColourSlot = 5;
 	int fromRoom = g_armcFrom == 3;
 	g_armcMode = 1;
@@ -364,10 +364,10 @@ u32 (menu_enterMenus)(void)
 	g_menuAt[1] = 0;
 	g_menuEye[2] = distance;
 	g_menuAt[2] = fromRoom ? 0xc4ce4000 : 0xc4098000;                                /* -1650, -550 */
-	GAME_VAR(int, 0x4dcc90) = 10;
-	GAME_VAR(int, 0x4dcc94) = 10;
+	g_armcStatsPanelLeft = 10;
+	g_armcStatsPanelTop = 10;
 	g_armcSliderLeft = 0x276;
-	GAME_VAR(int, 0x4dcc9c) = 0x1d6;
+	g_armcStatsPanelBottom = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, 0x4dbc58 + i * 4) = colourA[i];
@@ -412,7 +412,7 @@ u32 (menu_enterMenus)(void)
 	g_armcSessionDue = 0;
 	g_armcSessionMade = 0;
 	g_armcLeaving = 0;
-	GAME_VAR(int, 0x4dbc00) = 0;
+	g_unusedArmcWord4 = 0;
 	BITS(g_armcAngle) = 0;
 	g_armcZoom = 1.0f;
 	if (g_armcFrom == 3)
@@ -483,7 +483,7 @@ void (armc_drawPanels)(void)
 		else if (k == 3)
 			panel_resize(p, &g_panelSize3);
 		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(0x4dcfc4)), F(0x4a9424)), F(0x4a94b4)));
-		glTranslatef_bits(p->x, BITS(y), GAME_VAR(u32, 0x4dcfc8));
+		glTranslatef_bits(p->x, BITS(y), g_armcPanelDepth);
 		glPushMatrix();
 		gl_rotateXYZ(0, BITS(p->angle), 0);
 		glBegin(GL_QUADS);
@@ -591,12 +591,12 @@ void (armc_initPartBoxes)(void)
 		GAME_VAR(int, p + 0x44) = 0;
 		GAME_VAR(int, p + 0x4c) = 0;
 	}
-	GAME_VAR(u32, 0x4dc5a4) = 0x3e19999a;   /* 0.15 */
-	GAME_VAR(u32, 0x4dc5fc) = 0xbeb33333;   /* -0.35 */
-	GAME_VAR(u32, 0x4dc654) = 0xbfc00000;   /* -1.5 */
-	GAME_VAR(u32, 0x4dc6ac) = 0x3fc00000;   /* 1.5 */
-	GAME_VAR(u32, 0x4dc704) = 0xbe3851ec;   /* -0.18 */
-	GAME_VAR(u32, 0x4dc75c) = 0x3e3851ec;   /* 0.18 */
+	g_partBox0Offset = 0x3e19999a;   /* 0.15 */
+	g_partBox1Offset = 0xbeb33333;   /* -0.35 */
+	g_partBox2Offset = 0xbfc00000;   /* -1.5 */
+	g_partBox3Offset = 0x3fc00000;   /* 1.5 */
+	g_partBox4Offset = 0xbe3851ec;   /* -0.18 */
+	g_partBox5Offset = 0x3e3851ec;   /* 0.18 */
 	(*(u32 *)&g_panelSize3) = 0x43480000;   /* 200 */
 	(*(u32 *)&g_panelSize2) = 0x44160000;   /* 600 */
 	(*(u32 *)&g_panelRate3) = 0x40000000;   /* 2 */
@@ -653,7 +653,7 @@ void (armc_snapshot)(int i)
 void (armc_drawWeightLine)(void)
 {
 	static const u32 weights[10] = { 0x4dc14c, 0x4dc0cc, 0x4dc04c, 0x4dbfcc, 0x4dbf4c, 0x4dbecc, 0x4dcea0, 0x4dc240, 0x4dc2a4, 0x4dcf0c };
-	int y = GAME_VAR(int, 0x4dcc94);
+	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	int length = (int)strlen((const char *)0x7573a4);
@@ -690,15 +690,15 @@ int (armc_drawModeTabs)(void)
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	for (int i = 0; i < 3; i++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_armcMode == i + 1 ? 0.8f : 0.4f);
-		int x = GAME_VAR(int, 0x4dcc90), y = GAME_VAR(int, 0x4dcc94);
+		int x = g_armcStatsPanelLeft, y = g_armcStatsPanelTop;
 		menu_drawWideButton(x + i * 100 + 0x10, y - 8, x + i * 100 + 0x70, y + 0x18, 1);
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
 		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? 0x4dbc58 : 0x4dc1d0);
 		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
-		int x = GAME_VAR(int, 0x4dcc90);
-		text_drawBox16(x + i * 100 + 0x10, GAME_VAR(int, 0x4dcc94), x + i * 100 + 0x70, (const char *)(0x7565a4 + i * 0x80));
+		int x = g_armcStatsPanelLeft;
+		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(0x7565a4 + i * 0x80));
 	}
 	return 3;
 }

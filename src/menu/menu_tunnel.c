@@ -370,7 +370,7 @@ static void swing(int next)
 {
 	long double angle = fadd_m(fld_m(&g_frameTime) + fld_m(&g_frameTime), &g_viewAngle);
 	g_viewAngle = f32(angle);
-	if (angle < *(const float *)0x4a9550 || __builtin_isnan(angle))
+	if (angle < k_90f || __builtin_isnan(angle))
 		return;
 	BITS(g_viewAngle) = 0x42b40000;   /* 90 */
 	g_keysBlocked = next;
@@ -380,7 +380,7 @@ static void swing(int next)
 /* the view lowered toward 45 (0x4a94e8) */
 static void lower_view(const float *rate)
 {
-	if (g_viewAngle > *(const float *)0x4a94e8)
+	if (g_viewAngle > k_45f)
 		g_viewAngle = rate ? f32(fsubr_m(fmul_m(fld_m(&g_frameTime), rate), &g_viewAngle))
 		                   : f32(fsub_m(fld_m(&g_viewAngle), &g_frameTime));
 }
@@ -396,7 +396,7 @@ static void lower_view(const float *rate)
    view up and start 1 / 3. The caller ignores the eax it leaves */
 void (armc_enter)(TunnelRing *ring)
 {
-	if (g_frameTime > *(const float *)0x4a9418)
+	if (g_frameTime > k_10f)
 		BITS(g_frameTime) = 0x40000000;   /* 2 */
 	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)0x4a940c));
 	int ringLength = 0x44c;

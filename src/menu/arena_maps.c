@@ -117,7 +117,7 @@ static void map_step(int dir, u32 lock, u32 choice)
 			*c = 0;
 	} else {
 		if (--*c < 0)
-			*c = (signed char)(*(char *)0x67ef00 - 1);
+			*c = (signed char)((*(char *)&g_arenaMapCount) - 1);
 		if (*c == 0x18)
 			*c = 0x15;
 	}

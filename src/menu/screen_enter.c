@@ -28,14 +28,14 @@ static void clear_all(const u32 *a, int n)
    and the current position as home (0x9db090) */
 static void camera_heights(int n)
 {
-	int z = I(0x680380);
+	int z = g_menuCameraHeight;
 	for (int i = 0; i < n; i++) {
 		I(0x4df878 + i * 0x10) = z;
 		I(0x76d390 + i * 0x10) = z;
 	}
-	I(0x9db090) = I(0x4df024);
-	I(0x9db094) = I(0x4df028);
-	I(0x9db098) = I(0x4df02c);
+	g_menuCameraX = (*(int *)&g_menuCameraPos);
+	g_menuCameraY = (*(int *)&g_armcCamHeight);
+	g_menuCameraZ = (*(int *)&g_armcCamDistance);
 }
 
 /* the four target and look-at points of the lobby and setup screens: (+-35, 0) looking at (-+70, +-35) */
@@ -48,26 +48,26 @@ static const Store camera4[] = {
 /* 0x440bb0: the main menu: its camera (-300), its limits, colours, fade */
 void (menuState300_enter)(void)
 {
-	U(0x9eea90) = 0xc3960000;   /* -300 */
-	I(0x9eeab0) = 0;
-	U(0x4b0704) = 0x41200000;   /* 10 */
-	U(0x4b0708) = 0x42400000;   /* 48 */
-	U(0x4b070c) = 0x3e4ccccd;   /* 0.2 */
-	U(0x4b0710) = 0xbe4ccccd;   /* -0.2 */
-	I(0x4dda44) = 0;
-	I(0x9dda80) = 0;
-	U(0x9dd948) = 0x3d4ccccd;   /* 0.05 */
-	I(0x9eea8c) = 0;
-	I(0x9eeab4) = 0;
-	I(0x9eea98) = 0;
-	U(0x9eea9c) = ONE;
-	U(0x9eeaa0) = ONE;
-	U(0x9eeaa4) = ONE;
-	U(0x9dda70) = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
-	U(0x9dda74) = 0x3f333333;
-	U(0x9dda78) = 0x3f333333;
-	U(0x9dda7c) = ONE;
-	I(0x5ae9c4) = 0;
+	g_mainMenuDepth = 0xc3960000;   /* -300 */
+	g_mainMenuFrames = 0;
+	(*(u32 *)&g_flareSizeB) = 0x41200000;   /* 10 */
+	(*(u32 *)&g_flareSizeA) = 0x42400000;   /* 48 */
+	(*(u32 *)&g_flareStepB) = 0x3e4ccccd;   /* 0.2 */
+	(*(u32 *)&g_flareStepA) = 0xbe4ccccd;   /* -0.2 */
+	(*(int *)&g_cursorBlink) = 0;
+	g_menuIdleTime = 0;
+	g_menuHintStep = 0x3d4ccccd;   /* 0.05 */
+	g_menuHintClock = 0;
+	g_mainMenuPicked = 0;
+	g_mapSelectLitR = 0;
+	g_mapSelectLitG = ONE;
+	g_mapSelectLitB = ONE;
+	g_mapSelectLitA = ONE;
+	g_mapSelectDimR = 0x3e99999a;   /* (0.3, 0.7, 0.7, 1) */
+	g_mapSelectDimG = 0x3f333333;
+	g_mapSelectDimB = 0x3f333333;
+	g_mapSelectDimA = ONE;
+	g_matchMode = 0;
 }
 
 /* 0x404640: the arena lobby */
@@ -84,24 +84,24 @@ void (menuState400_enter)(void)
 		{ 0x4dbb3c, 2 }, { 0x907b24, 999 }, { 0x4dba9c, ONE }, { 0x4dbaa0, ONE }, { 0x4dbaa4, ONE },
 		{ 0x4db8a0, 0x3e99999a }, { 0x4db8a4, 0x3f333333 }, { 0x4db8a8, 0x3f333333 }, { 0x4db8ac, ONE }, { 0x9fd958, 0xf },
 		{ 0x4dc24c, 1 } };
-	I(0x5ae9c4) = 1;
+	g_matchMode = 1;
 	arena_clearChatRecord();
-	I(0x4dbb68) = 0x64;
-	I(0x4dbb6c) = 0x64;
-	I(0x4dda44) = 0;
-	I(0x4db8c8) = 0x14;
-	I(0x4db8cc) = 0x14;
-	U(0x4dba68) = 0xc4af0000;   /* -1400 */
-	I(0x4db8d4) = 0x1c2;
-	I(0x4dbb0c) = 0x1c2;
-	I(0x4db85c) = 1;
+	g_arenaNameDialogLeft = 0x64;
+	g_arenaNameDialogTop = 0x64;
+	(*(int *)&g_cursorBlink) = 0;
+	g_arenaGameListLeft = 0x14;
+	g_arenaGameListTop = 0x14;
+	g_arenaTunnelDepth = 0xc4af0000;   /* -1400 */
+	g_arenaGameListBottom = 0x1c2;
+	g_newArenaFormBottom = 0x1c2;
+	g_lobbyPanelsOff = 1;
 	camera_heights(4);
-	int lx = I(0x680378), ly = I(0x68037c), lz = I(0x680380);
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraHeight;
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	I(0x76d3f8) = lx;
-	I(0x76d3fc) = ly;
-	I(0x76d400) = lz;
+	g_menuLookAtX = lx;
+	g_menuLookAtY = ly;
+	g_menuLookAtZ = lz;
 	CLEAR_ALL(cleared1);
 	lobbyTop_layout();
 	arenaNameDialog_layout();
@@ -125,17 +125,17 @@ void (menuState600_enterSetup)(void)
 		{ 0x4de048, 0 }, { 0x4de04c, ONE }, { 0x4de050, ONE }, { 0x4de054, ONE }, { 0x4ddae0, 0 },
 		{ 0x4ddae4, 0x3f19999a }, { 0x4ddae8, 0x3f19999a }, { 0x4ddaec, ONE }, { 0x4e14fc, 0 }, { 0x4deda8, ONE },
 		{ 0x9db978, 0 }, { 0x4df010, ONE } };
-	I(0x4dddd4) = 0x1e;
-	I(0x4dde84) = 0x1e;
-	I(0x4ddad8) = 0x24e;
-	I(0x4dde88) = 0x24e;
+	g_setupOptionsTop = 0x1e;
+	g_setupControlTop = 0x1e;
+	g_setupSoundRight = 0x24e;
+	g_setupControlRight = 0x24e;
 	camera_heights(4);
-	int lx = I(0x680378), ly = I(0x68037c), lz = I(0x680380);
+	int lx = (*(int *)&g_menuCameraLook), ly = (*(int *)&g_menuCameraLookY), lz = g_menuCameraHeight;
 	STORE_ALL(layout);
 	STORE_ALL(camera4);
-	I(0x76d3f8) = lx;
-	I(0x76d3fc) = ly;
-	I(0x76d400) = lz;
+	g_menuLookAtX = lx;
+	g_menuLookAtY = ly;
+	g_menuLookAtZ = lz;
 	setupSound_layout();
 	setupOptions_layout();
 	setupControl_layout();
@@ -173,7 +173,7 @@ void (menuState800_enterGameRoom)(void)
 		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };
 	static const u32 cleared[] = { 0x9dd838, 0x9dd6a4, 0x9dd1b0, 0x4ded54, 0x9dd1c8, 0x9dd350, 0x9dd84c, 0x9dd6d4,
 	                               0x9dd850 };
-	I(0x5ae9c4) = 2;
+	g_matchMode = 2;
 	arena_clearChatRecord();
 	STORE_ALL(layout);
 	roomLogin_layout();
@@ -185,23 +185,23 @@ void (menuState800_enterGameRoom)(void)
 	leaveDialog_layout();
 	STORE_ALL(colours_camera);
 	camera_heights(5);
-	I(0x76d3f8) = I(0x680378);
-	I(0x76d3fc) = I(0x68037c);
-	I(0x76d400) = I(0x680380);
+	g_menuLookAtX = (*(int *)&g_menuCameraLook);
+	g_menuLookAtY = (*(int *)&g_menuCameraLookY);
+	g_menuLookAtZ = g_menuCameraHeight;
 	memset((void *)0x9dd5a6, 0, 7 * 4 + 2);
-	I(0x9dd58e) = 0;
-	I(0x9dd592) = 0;
-	I(0x9dd596) = 0;
-	I(0x9dd830) = 0;
-	I(0x9dd38c) = 1;
+	g_joinedTitleLevel = 0;
+	g_joinedTitlePoints = 0;
+	g_joinedTitleRating = 0;
+	g_typingGameName = 0;
+	g_typingGamePassword = 1;
 	memset((void *)0x9dd5f8, 0, 5);
-	I(0x9dd6b0) = 1;
-	I(0x9dd1cc) = 0;
-	I(0x9dd198) = 0;
+	g_typingRoomPassword = 1;
+	g_typingRoomName = 0;
+	g_loginToSend = 0;
 	room_copyJoinedSettings();
-	I(0x9dced0) = 1;
+	g_retypePassword = 1;
 	CLEAR_ALL(cleared);
-	I(0x9dd4b8) = 999;
+	g_roomListPages = 999;
 }
 
 /* ---- the front end's per-frame dispatch ---- */
@@ -286,8 +286,8 @@ int (menuState900_enterSkirmish)(void)
 	STORE_ALL(setup);
 	GAME_CDECL(0x4437b0, void, void)();   /* skirmish_layout */
 	GAME_CDECL(0x443840, void, void)();   /* skirmishButtons_layout */
-	I(0x9eeba8) = 1;
-	I(0x9ef1f8) = 10;
+	g_skirmishDrawBackground = 1;
+	g_settingsPage = 10;
 	sound_playMenu(4);
 	GAME_CDECL(0x4435f0, void, void)();   /* mission_loadAxisMis */
 	CLEAR_ALL(cleared);
@@ -307,19 +307,19 @@ int (menuState500_enter)(void)
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_CDECL(0x447660, void, void)();   /* mission_447660 */
-	I(0x9f63b8) = 1;
-	I(0x9f6300) = 0;
-	int mission = I(0x9f181c) < 15 ? I(0x9f181c) : 14;
-	I(0x9f63b4) = mission;
-	I(0x9f6328) = mission;
-	I(0x9f63b0) = 1;
+	g_missionShowBackground = 1;
+	g_missionBusy = 0;
+	int mission = g_progress < 15 ? g_progress : 14;
+	g_missionShown = mission;
+	g_missionChosen = mission;
+	g_missionPreviewDue = 1;
 	sound_playMenu(4);
-	I(0x9f62e0) = 0;
-	if (I(0x9f181c) > I(0x9f62fc)) {
-		I(0x9f62e0) = 1;
-		I(0x9f62fc) = I(0x9f181c);
+	g_missionStarted = 0;
+	if (g_progress > g_profileProgressSaved) {
+		g_missionStarted = 1;
+		g_profileProgressSaved = g_progress;
 	}
-	return I(0x9f181c);
+	return g_progress;
 }
 
 /* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_create) with
@@ -343,19 +343,19 @@ u32 (menuState210_enter)(void)
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
 	GAME_CDECL(0x4474a0, u32, void)();   /* profile_create: the header read back */
-	int current = I(0x9f8c58);
-	I(0x9f8d74) = current;
-	I(0x9f8c5c) = current;
+	int current = g_currentProfile;
+	g_pilotChosen = current;
+	g_profileListRow = current;
 	if (current >= 13) {
-		I(0x9f8c5c) = 12;
-		I(0x9f8c4c) = current - 12;
+		g_profileListRow = 12;
+		g_profileListTop = current - 12;
 	}
-	if (I(0x9f9008) == 0)
-		I(0x9f8d70) = 1;
-	I(0x4de740) = 1;
-	I(0x76d428) = 0;
-	I(0x90d1c4) = 1;
-	I(0x9f8f10) = 1;
+	if (g_profileCount == 0)
+		g_profileScreenReady = 1;
+	g_menuFramePhase = 1;
+	g_menuFrameCounter = 0;
+	g_dialogOpen = 1;
+	g_profilePage = 1;
 	for (int k = 0; k < 7; k++)
 		GAME_CDECL(rects[k], void, void)();
 	STORE_ALL(colours);

@@ -6,7 +6,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_table GAME_VAR(int, 0xaa2e94)           /* the Huffman table set in use */
+#define g_table g_ptxTable           /* the Huffman table set in use */
 #define g_zigzag ((const int *)0x4c59ec)
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 

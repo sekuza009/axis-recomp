@@ -424,7 +424,7 @@ u32 (room_leaveKeys)(void)
    or B (20). Returns what the original leaves in eax */
 u32 (menuState900_skirmishSetup)(void)
 {
-	if (GAME_VAR(int, 0x9eeba8))
+	if (g_skirmishDrawBackground)
 		menu_drawBackground();
 	if (g_settingsState != 2)
 		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_drawTunnel */
@@ -434,7 +434,7 @@ u32 (menuState900_skirmishSetup)(void)
 		return state;
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_briefingX, g_briefingY,
-		                                                     GAME_VAR(int, 0x9f16b0), GAME_VAR(int, 0x9f16b4));   /* menu_drawFrame */
+		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
 	int screen = g_settingsPage;
 	if (screen == 10)
 		return GAME_CDECL(0x445bc0, u32, void)();   /* skirmish_drawScreenA */
@@ -578,12 +578,12 @@ u32 (mapSelect_drawNames)(void)
 		int map = g_mapSelectFirst + i;
 		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
 			set_colour_bits((Colour *)0x9da480, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
-			menu_drawRect(GAME_VAR(int, 0x9dd908) + 0x20, GAME_VAR(int, 0x9dd90c) + dy + 0x2b, GAME_VAR(int, 0x9dd910) - 0x50,
-			              GAME_VAR(int, 0x9dd90c) + dy + 0x3d, 1);
+			menu_drawRect(g_mapSelectLeft + 0x20, g_mapSelectTop + dy + 0x2b, g_mapSelectRight - 0x50,
+			              g_mapSelectTop + dy + 0x3d, 1);
 			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
 		map = g_mapSelectFirst + i;
-		r = GAME_CDECL(0x402620, u32, int, int, const char *)(GAME_VAR(int, 0x9dd908) + 0x28, GAME_VAR(int, 0x9dd90c) + dy + 0x2c,
+		r = GAME_CDECL(0x402620, u32, int, int, const char *)(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
 		                                                      (const char *)(0x9dda88 + map * 0x44));   /* text_draw8 */
 	}
 	return r;

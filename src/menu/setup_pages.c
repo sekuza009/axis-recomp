@@ -25,9 +25,9 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
    buttons (0x753724, lit from 8) and the border. The original leaves eax to callers that ignore it */
 void (setup_drawSoundPage)(void)
 {
-#define X0 GAME_VAR(int, 0x4ddad0)
+#define X0 g_setupSoundLeft
 #define Y0 GAME_VAR(int, 0x4ddad4)
-#define X1 GAME_VAR(int, 0x4ddad8)
+#define X1 g_setupSoundRight
 #define Y1 GAME_VAR(int, 0x4ddadc)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
 	int hovered = GAME_CDECL(0x420670, int, int, int)(g_mouseX, g_mouseY);   /* setupSound_hitTest */
@@ -112,7 +112,7 @@ void (setup_drawSoundPage)(void)
 void (setup_drawOptionsDialog)(void)
 {
 #define X0 GAME_VAR(int, 0x4dddd0)
-#define Y0 GAME_VAR(int, 0x4dddd4)
+#define Y0 g_setupOptionsTop
 #define X1 GAME_VAR(int, 0x4dddd8)
 #define Y1 GAME_VAR(int, 0x4ddddc)
 	static const u32 names[6] = { 0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 };
@@ -132,7 +132,7 @@ void (setup_drawOptionsDialog)(void)
 		text_draw8(X0 + 0x50, Y0 + 0x44 + k * 0x28, (const char *)(0x753924 + k * 0x80));
 	/* the values: the screen size's name, then each choice's */
 	const char *value[7];
-	value[0] = GAME_VAR(const char *, 0x4b04cc + GAME_VAR(int, 0x4ddba0) * 4);
+	value[0] = GAME_VAR(const char *, 0x4b04cc + g_setupResolution * 4);
 	for (int k = 1; k < 7; k++)
 		value[k] = (const char *)(names[k - 1] + GAME_VAR(int, 0x4ddba4 + (k - 1) * 4) * 0x32);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -180,8 +180,8 @@ static const signed char key_rows[3][11] = {
    value 0x4df8e4 shows nothing). A fixed row is red, its one key in large type in both columns */
 static void key_tab(int tab)
 {
-#define X0 GAME_VAR(int, 0x4dde80)
-#define Y0 GAME_VAR(int, 0x4dde84)
+#define X0 g_setupControlLeft
+#define Y0 g_setupControlTop
 	static const u32 labels[3] = { 0x754a24, 0x7551a4, 0x755924 };
 	static const int rows[3] = { 10, 11, 10 };
 	const u32 *bright = (const u32 *)0x4de048;
@@ -218,8 +218,8 @@ static void key_tab(int tab)
    "texture/crosshair/crosshair<n>"; others keep the path in 0x4ddb58) into 0x4e0c8c, drawn in a box */
 static void settings_tab(void)
 {
-#define X0 GAME_VAR(int, 0x4dde80)
-#define Y0 GAME_VAR(int, 0x4dde84)
+#define X0 g_setupControlLeft
+#define Y0 g_setupControlTop
 	const u32 *bright = (const u32 *)0x4de048;
 	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)0x7544a4);
@@ -235,7 +235,7 @@ static void settings_tab(void)
 	menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 0);   /* the arrows */
 	menu_drawSmallButton2(X0 + 0x1d0, Y0 + 0x88, X0 + 0x210, Y0 + 0xa0, 0);
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x108, Y0 + 0x88, X0 + 0x1d0, Y0 + 0xa0);   /* the track */
-	long double sensitivity = (long double)GAME_VAR(int, 0x4de1c8);
+	long double sensitivity = (long double)g_sensitivitySlider;
 	float s = f32(fmul_m(sensitivity, (const float *)0x4a9504));
 	int x = X0 - ftol(fmul_m(sensitivity, (const float *)0x4a94a8)) + 0x108;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x108, Y0 + 0x88, x, Y0 + 0xa0);           /* the bar */
@@ -285,9 +285,9 @@ static void settings_tab(void)
    the eax it leaves */
 void (setup_crosshairScreen)(void)
 {
-#define X0 GAME_VAR(int, 0x4dde80)
-#define Y0 GAME_VAR(int, 0x4dde84)
-#define X1 GAME_VAR(int, 0x4dde88)
+#define X0 g_setupControlLeft
+#define Y0 g_setupControlTop
+#define X1 g_setupControlRight
 #define Y1 GAME_VAR(int, 0x4dde8c)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
 	int hovered = setupControl_hitTest(g_mouseX, g_mouseY);
@@ -419,20 +419,20 @@ static void tunnel_advance(int turn_only)
 	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
 	g_tunnelPulse = f32(pulse);
 	if (turn_only) {
-		if (!(pulse > *(const float *)0x4a93e8))
+		if (!(pulse > k_0f))
 			g_tunnelPulseStep = 0x3f800000;
-		if (pulse >= *(const float *)0x4a93f4)
+		if (pulse >= k_100f)
 			g_tunnelPulseStep = 0xbf800000;
-	} else if (!(pulse > *(const float *)0x4a93e8)) {
+	} else if (!(pulse > k_0f)) {
 		g_tunnelPulse = 0;
 		g_tunnelPulseStep = 0x3f800000;   /* 1 */
-	} else if (g_tunnelPulse >= *(const float *)0x4a93f4) {
+	} else if (g_tunnelPulse >= k_100f) {
 		g_tunnelPulse = 100.0f;
 		g_tunnelPulseStep = 0xbf800000;   /* -1 */
 	}
 	long double scroll = fadd_m(fmul_m(fld_m((const float *)0x4deda8), frame), &g_scroll);
 	g_scroll = f32(scroll);
-	if (scroll >= *(const float *)0x4a93f0)
+	if (scroll >= k_200f)
 		g_scroll = 0;
 }
 
@@ -688,14 +688,14 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		long double glow = fadd_m(fmul_m(fld_m((const float *)0x4b071c), &(*(float *)&g_panelGlowStep)), &g_panelGlow);
 		g_panelGlow = f32(glow);
 		if (!clamp) {
-			if (!(glow > *(const float *)0x4a93fc))
+			if (!(glow > k_2f))
 				g_panelGlowStep = 0x3f800000;   /* 1 */
-			if (glow >= *(const float *)0x4a93f8)
+			if (glow >= k_38f)
 				g_panelGlowStep = 0xbf800000;   /* -1 */
-		} else if (!(glow > *(const float *)0x4a93fc)) {
+		} else if (!(glow > k_2f)) {
 			(*(u32 *)&g_panelGlow) = 0x40000000;   /* 2 */
 			g_panelGlowStep = 0x3f800000;
-		} else if (g_panelGlow >= *(const float *)0x4a93f8) {
+		} else if (g_panelGlow >= k_38f) {
 			(*(u32 *)&g_panelGlow) = 0x42180000;   /* 38 */
 			g_panelGlowStep = 0xbf800000;
 		}
@@ -805,7 +805,7 @@ void (menu_mainMenu)(void)
 #define g_depth GAME_VAR(float, 0x9eea90)
 #define g_idle GAME_VAR(float, 0x9dda80)
 #define g_hint GAME_VAR(float, 0x9eea8c)
-#define g_hintStep GAME_VAR(u32, 0x9dd948)
+#define g_hintStep g_menuHintStep
 	const float *frame = (const float *)0x4b071c;
 	int on = -1;
 	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
@@ -832,7 +832,7 @@ void (menu_mainMenu)(void)
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
 		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)0x4a9498), frame), (const float *)0x4a93ec);
 		g_mainMenuFrames++;
-		if (g_depth > *(const float *)0x4a95d0)
+		if (g_depth > k_m549_9f)
 			g_depth = f32(fld_m(&g_depth) - step);
 		else {
 			g_tunnelFlyingIn = 0;
@@ -845,20 +845,20 @@ void (menu_mainMenu)(void)
 	if (on != -1) {
 		if (!g_keysBlocked)
 			caption(0x7501a4, on);
-	} else if (!g_keysBlocked && !g_mainMenuPicked && g_idle > *(const float *)0x4a95cc) {
+	} else if (!g_keysBlocked && !g_mainMenuPicked && g_idle > k_120f) {
 		long double hint = fadd_m(fmul_m(fld_m((const float *)&g_hintStep), frame), &g_hint);
 		g_hint = f32(hint);
-		if (hint > *(const float *)0x4a9534) {
+		if (hint > k_3f) {
 			g_hint = 1.0f;
 			g_hintStep = 0xbd4ccccd;   /* -0.05 */
-		} else if (!(g_hint >= *(const float *)0x4a93e8)) {
+		} else if (!(g_hint >= k_0f)) {
 			g_hint = 0;
 			g_hintStep = 0x3d4ccccd;
 			g_idle = 0;
 		}
 		gfx_setProjection2D3D(2);
 		glLoadIdentity();
-		float alpha = g_hint > *(const float *)0x4a9424 ? 1.0f : g_hint;
+		float alpha = g_hint > k_1f ? 1.0f : g_hint;
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));
 		text_drawBox16(0, 0x1d0, 0x280, (const char *)0x4b2a98);
 	}

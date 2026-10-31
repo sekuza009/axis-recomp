@@ -15,11 +15,11 @@ void (input_resetKeys)(void)
 /* 0x401780: the second key table (0x4d1fc4) and its state cleared */
 void (input_clearKeyTable2)(void)
 {
-	GAME_VAR(u16, 0x4d1fba) = 0x8000;
+	g_unusedKeyTable2Flags = 0x8000;
 	memset((void *)0x4d1fc4, 0, 0x100 * 4);
-	GAME_VAR(int, 0x4d1fbc) = 0;
-	GAME_VAR(int, 0x4d1fb0) = 0;
-	GAME_VAR(int, 0x4d1fc0) = 0;
+	g_unusedKeyTable2Word1 = 0;
+	g_unusedKeyTable2Word0 = 0;
+	g_unusedKeyTable2Word2 = 0;
 }
 
 /* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
@@ -27,8 +27,8 @@ void (net_clearBuffers)(void)
 {
 	memset((void *)0xa0b24c, 0, 0xc * 4 + 2);
 	memset((void *)0xa055fc, 0, 0xc * 4 + 2);
-	GAME_VAR(int, 0xa055f4) = 0;
-	GAME_VAR(int, 0xa05634) = 0;
+	g_lobbyTcpPort = 0;
+	g_ladderPort = 0;
 }
 
 /* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
@@ -37,7 +37,7 @@ void (mapSelect_allOut)(void)
 	for (u32 p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
 		GAME_VAR(int, p) = 0;
 	g_replayWrap = 1;
-	GAME_VAR(int, 0x9eeabc) = 0;
+	g_unusedMainMenuWord = 0;
 	g_replayRandomOrder = 0;
 }
 
@@ -57,8 +57,8 @@ void (messageBox_clickClose)(void)
 /* 0x433610: the room screen's selection from the joined session (none unless its byte 0xa052c1 is 1) */
 void (room_selectJoinedSession)(void)
 {
-	int v = g_joinedSessionFlag != 1 ? GAME_VAR(int, 0xa052d6) : 0;
-	GAME_VAR(int, 0x9dd5e0) = v;
+	int v = g_joinedSessionFlag != 1 ? g_receivedClan : 0;
+	g_pilotClan = v;
 	g_accountClan = v;
 	g_netNoticeIn = 0;
 	g_accountNotice = 0;

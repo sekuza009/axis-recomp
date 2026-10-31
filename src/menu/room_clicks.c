@@ -403,7 +403,7 @@ u32 (account_checkForm)(void)
 {
 	GAME_CDECL(0x433d30, void, void)();   /* account_endTyping */
 	g_paused = 0;
-	GAME_VAR(int, 0x9dc428) = 0;
+	g_fieldTabKey = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int message, reopen;
 	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
@@ -792,8 +792,8 @@ u32 (account_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen)
-		return GAME_CDECL(0x428c30, u32, int, int, int, int)(GAME_VAR(int, 0x9dd368), GAME_VAR(int, 0x9dd36c),
-		                                                     GAME_VAR(int, 0x9dd370), GAME_VAR(int, 0x9dd374));
+		return GAME_CDECL(0x428c30, u32, int, int, int, int)(g_accountPanelLeft, g_accountPanelTop,
+		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
 		GAME_CDECL(0x433610, void, void)();
 	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* account_drawPanel: the page */
@@ -808,13 +808,13 @@ u32 (account_page)(void)
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_chatFieldFlag = 0;
 		strcpy((char *)fields[k].field, (const char *)0x9dc92c);
-		u32 key = GAME_VAR(u32, 0x9dc428);
+		u32 key = (*(u32 *)&g_fieldTabKey);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
 		if (!next)
 			return key;
 		r = GAME_CDECL(next, u32, void)();
 		if (!(k == 2 && key == 0xa))   /* (the original keeps the key there) */
-			GAME_VAR(int, 0x9dc428) = 0;
+			g_fieldTabKey = 0;
 		return r;
 	}
 	return r;
@@ -823,7 +823,7 @@ u32 (account_page)(void)
 /* ---- the server login dialog's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
    into (0x67ef34 / 0x67fb38) ---- */
 #define g_loginField GAME_VAR(int, 0x74de1c)
-#define g_tabDirection GAME_VAR(int, 0x9dc428)   /* 20 forward, 10 back (shift) */
+#define g_tabDirection g_fieldTabKey   /* 20 forward, 10 back (shift) */
 
 /* the cursor into field to at (x, y) */
 static void login_field(int to, int x, int y)
@@ -876,19 +876,19 @@ void (loginDialog_keys)(void)
 		g_tabDirection = 10;
 	if (g_tabDirection == 20) {
 		if (g_loginField == 1)
-			login_field(2, GAME_VAR(int, 0x9dd6e8) + 0x172, GAME_VAR(int, 0x9dd6f4) - 0x30);
+			login_field(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x30);
 		else if (g_loginField == 2) {
 			g_typingAccountName = 1;
 			g_typingAccountPassword = 0;
-			login_field(2, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0x44);
+			login_field(2, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0x44);
 		}
 	} else {
 		if (g_loginField == 1) {
 			g_typingAccountRepeat = 0;
 			g_typingAccountEmail = 1;
-			login_field(0, GAME_VAR(int, 0x9dd358) + 0x15c, GAME_VAR(int, 0x9dd35c) + 0xd4);
+			login_field(0, g_roomLoginLeft + 0x15c, g_roomLoginTop + 0xd4);
 		} else if (g_loginField == 2)
-			login_field(1, GAME_VAR(int, 0x9dd6e8) + 0xaa, GAME_VAR(int, 0x9dd6f4) - 0x30);
+			login_field(1, g_loginFormLeft + 0xaa, g_loginFormBottom - 0x30);
 	}
 }
 #undef g_tabDirection

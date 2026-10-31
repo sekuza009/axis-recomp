@@ -405,7 +405,7 @@ static void colour_fill(u8 *m)
 {
 	for (int y = 0; y < H(m); y++)
 		for (int x = 0; x < W(m); x++)
-			GAME_VAR(u32, m + 0x80114 + (y * W(m) + x) * 4) = GAME_VAR(u32, 0xa1f238);
+			GAME_VAR(u32, m + 0x80114 + (y * W(m) + x) * 4) = g_colourMaskRed;
 }
 
 /* 0x455aa0 (thiscall on the texture manager): texture i's image (its name +0xc0128 + i * 0x68 cut at '*') loaded at

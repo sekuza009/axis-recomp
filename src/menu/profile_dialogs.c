@@ -13,8 +13,8 @@ void (profile_typeNewName)(void)
 	input_releaseKeyboard();
 	g_paused = 1;
 	menu_clearInputBuffer(0x10);
-	g_chatCaretX = GAME_VAR(int, 0x9f8eac) + 0x24;
-	g_chatCaretY = GAME_VAR(int, 0x9f8ea8) + 0x38;
+	g_chatCaretX = g_newNameDialogLeft + 0x24;
+	g_chatCaretY = g_newNameDialogTop + 0x38;
 	g_menuFade = 5.0f;
 	g_profileDialog = 2;
 	g_dialogOpen = 1;
@@ -46,7 +46,7 @@ void (profile_askSecond)(void) { ask(5, g_profileDialog2X, g_profileDialog2Y); }
 void (profile_drawScreen)(void)
 {
 	if (g_dialogOpen != 0) {
-		menu_drawFrame(GAME_VAR(int, 0x9f8c54), GAME_VAR(int, 0x9f8c50), GAME_VAR(int, 0x9f6830), GAME_VAR(int, 0x9f682c));
+		menu_drawFrame(g_pilotSelectLeft, g_pilotSelectTop, g_pilotSelectRight, g_pilotSelectBottom);
 		return;
 	}
 	if (g_emblemMoved != 0)
@@ -59,10 +59,10 @@ void (profile_drawScreen)(void)
    0x9db0a4, 0x60 wide, centred) with its label 0x7517a4, and the border. Returns the border call's eax */
 u32 (profile_drawMessageWindow)(void)
 {
-#define X0 GAME_VAR(int, 0x9f8eac)
-#define Y0 GAME_VAR(int, 0x9f8ea8)
-#define X1 GAME_VAR(int, 0x9f8f20)
-#define Y1 GAME_VAR(int, 0x9f8f24)
+#define X0 g_newNameDialogLeft
+#define Y0 g_newNameDialogTop
+#define X1 g_newNameDialogRight
+#define Y1 g_newNameDialogBottom
 	const u32 *colour = (const u32 *)0x9f8eb0;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -143,10 +143,10 @@ u32 (profile_drawSecondDialog)(void)
    been typed, 0x9dc92c) and the border. Returns the border call's eax */
 u32 (profile_drawNewDialog)(void)
 {
-#define X0 GAME_VAR(int, 0x9f8eac)
-#define Y0 GAME_VAR(int, 0x9f8ea8)
-#define X1 GAME_VAR(int, 0x9f8f20)
-#define Y1 GAME_VAR(int, 0x9f8f24)
+#define X0 g_newNameDialogLeft
+#define Y0 g_newNameDialogTop
+#define X1 g_newNameDialogRight
+#define Y1 g_newNameDialogBottom
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -194,10 +194,10 @@ u32 (profile_drawNewDialog)(void)
    The original leaves eax to callers that ignore it */
 void (mainmenu_drawScreen)(void)
 {
-#define X0 GAME_VAR(int, 0x9f8e48)
-#define Y0 GAME_VAR(int, 0x9f8e4c)
-#define X1 GAME_VAR(int, 0x9f8ea0)
-#define Y1 GAME_VAR(int, 0x9f8ea4)
+#define X0 g_profilePageLeft
+#define Y0 g_profilePageTop
+#define X1 g_profilePageRight
+#define Y1 g_profilePageBottom
 #define PAGE GAME_VAR(int, 0x9f8f10)
 	float *panel = (float *)0x9f8eb0;
 	const u32 *bright = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
@@ -308,7 +308,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 		bar[k] = f32(eased);
 		long double end = fadd_m(fmul_m(eased, (const float *)0x4a9420), (const float *)0x4a9468);
 		float s = f32(end);
-		if (end > *(const float *)0x4a953c)
+		if (end > k_0_95f)
 			s = 0.95f;
 		glTexCoord2f(0.05f, 0.1875f);
 		menu_vertex(x, y + k * step);
@@ -332,10 +332,10 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
    The original leaves eax to callers that ignore it */
 void (profile_drawPilotSelect)(void)
 {
-#define X0 GAME_VAR(int, 0x9f8c54)
-#define Y0 GAME_VAR(int, 0x9f8c50)
-#define X1 GAME_VAR(int, 0x9f6830)
-#define Y1 GAME_VAR(int, 0x9f682c)
+#define X0 g_pilotSelectLeft
+#define Y0 g_pilotSelectTop
+#define X1 g_pilotSelectRight
+#define Y1 g_pilotSelectBottom
 #define K(addr) ((const float *)(addr))
 #define g_pilot GAME_VAR(int, 0x9f8d30)
 #define g_reveal GAME_VAR(int, 0x9f6828)
@@ -467,11 +467,11 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
    stats and their bars; all at half brightness while the list does not have the focus (0x9f8f10) */
 void (profile_drawChosenPilot)(void)
 {
-#define X0 GAME_VAR(int, 0x9f8e48)
-#define Y0 GAME_VAR(int, 0x9f8e4c)
+#define X0 g_profilePageLeft
+#define Y0 g_profilePageTop
 	if (g_profileCount <= 0)
 		return;
-	int pilot = *(const int *)(0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
+	int pilot = *(const int *)(0x9f688c + g_pilotChosen * 0x48);
 	g_chosenPilot = pilot;
 	int focus = g_profileDialog == 1;
 	float *panel = (float *)0x9f8eb0;

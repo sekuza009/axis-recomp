@@ -77,11 +77,11 @@ void (lobby_drawArenaTitle)(void)
 	g_newArenaPassword = 0;
 	g_arenaFragLimitTyped = b4;
 	g_arenaTimeLimitTyped = b5;
-	GAME_VAR(int, 0x4db552) = 0;
+	g_newArenaPassword4 = 0;
 }
 
 /* 0x403420: the map on/off list (8-byte entries from 0x4d9508): the first time all off, then the first n maps
-   (0x67ef00) on; four entries' second words cleared and the list laid out */
+   (0x67ef00) on; maps 22 .. 24 turned off (the last ones; the list's open flag cleared too) and the list laid out */
 void (mapList_init)(void)
 {
 	if (!g_mapListMade) {
@@ -94,9 +94,9 @@ void (mapList_init)(void)
 			GAME_VAR(int, 0x4d950c + k * 8) = 0;
 		}
 	}
-	GAME_VAR(int, 0x4d95b8) = 0;
-	GAME_VAR(int, 0x4d95c0) = 0;
-	GAME_VAR(int, 0x4d95c8) = 0;
+	g_mapEntry22On = 0;
+	g_mapEntry23On = 0;
+	g_mapEntry24On = 0;
 	g_mapListOpen = 0;
 	mapList_layout();
 	g_mapListMade = 1;
@@ -247,8 +247,8 @@ void (room_fitWindowRects)(void)
 			b1 = a1;
 		}
 	}
-	int e0 = g_titleLevel, e1 = GAME_VAR(int, 0x4de722), e3 = GAME_VAR(int, 0x4de726),
-	    e4 = GAME_VAR(int, 0x4de72a), e5 = GAME_VAR(int, 0x4de72e), e6 = GAME_VAR(int, 0x4de732);
+	int e0 = g_titleLevel, e1 = g_titlePoints, e3 = g_titleRating,
+	    e4 = g_titleScore, e5 = g_titleWins, e6 = g_titleLosses;
 	if (c5 > e5 || a1 > e1) {
 		g_pilotLevel = e0;
 		g_pilotPoints = e1;
@@ -327,7 +327,7 @@ u32 (room_host)(void)
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy((char *)0x4de700, (const char *)0x9dd570);
-	GAME_VAR(int, 0x4de726) = g_pilotRating;
+	g_titleRating = g_pilotRating;
 	g_titleLevel = 1;
 	static const u32 zero2[] = { 0x4de722, 0x4de72e, 0x4de732, 0x4de72a };
 	for (int k = 0; k < 4; k++)
@@ -573,11 +573,11 @@ u32 (arena_editTitle)(void)
 	g_paused = 1;
 	menu_clearInputBuffer(0x14);
 	memset((void *)0x9dc92c, 0, 0x400);
-	GAME_VAR(int, 0x4dbbd4) = 0;
-	g_chatCaretX = GAME_VAR(int, 0x4db8c8) + 0xd8;
-	g_chatCaretY = GAME_VAR(int, 0x4db8cc) + 0xd0;
+	(*(int *)&g_typedArenaName) = 0;
+	g_chatCaretX = g_arenaGameListLeft + 0xd8;
+	g_chatCaretY = g_arenaGameListTop + 0xd0;
 	g_chatLength = (int)strlen((const char *)0x9dc92c);
-	GAME_VAR(int, 0x4dbbd8) = 0;
+	g_typedArenaName4 = 0;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
 	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
 	   argument */
@@ -944,16 +944,16 @@ int (lobby_openConnection)(void)
 	g_lobbySearching = 1;
 	g_searchResult = 0;
 	g_lobbyListPage = 0;
-	GAME_VAR(int, 0x4dba8c) = 0;
+	g_arenaNameSum = 0;
 	g_serverConnectionState = 0;
-	GAME_VAR(int, 0x9087b0) = 0;
+	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
 	g_arenaListFull = 1;
 	g_arenaHaveList = 0;
 	g_localPlayer = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000.0f */
-	GAME_VAR(int, 0x680bb0) = 0;
-	GAME_VAR(int, 0x4df818) = 0;
+	g_gameListTop = 0;
+	g_lobbyListRow = 0;
 	*g_netLobbyMessage = 0x180001;   /* the message to send */
 	GAME_CDECL(0x4521c0, int, int, int)(0xd, 100);   /* net_send */
 	g_arenaConfirming = 0;
@@ -982,9 +982,9 @@ u32 (arena_loadAndQuit)(void)
 	memset((void *)0x4ded20, 0, 32);
 	strcpy((char *)0x4ded20, (const char *)0x5b191c);
 	u8 clan = (*(u8 *)&g_cmdSecret);
-	GAME_VAR(u32, 0x4ded46) = 0;
-	GAME_VAR(u8, 0x4ded4e) = clan;
-	GAME_VAR(u32, 0x4ded4a) = 0;
+	g_unusedPlayerRecord26 = 0;
+	g_playerHasClan = clan;
+	g_unusedPlayerRecord2a = 0;
 	if (clan == 1)
 		strcpy((char *)0x4ded46, (const char *)0x5b193c);
 	g_arenaFragLimit = g_arenaFileFragLimit;
@@ -1248,15 +1248,15 @@ u32 (arena_createClick)(void)
 
 /* 0x4079c0: the arena lobby's join screen keys (none while the "full" or "joining" box, a message box, or in modes
    0 / 1 (0x4dbb3c)). With the join confirmation up only back answers it (the timer 0x378 killed). Up / down held
-   move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from GAME_VAR(int, 0x680bb0), the
+   move along the list of games (once the blink clock reaches 5, restarting it; nine rows shown from g_gameListTop, the
    selection in 0x76d41c); while no search runs (0x4dba90, 0x4db858, the result box 0x4db8b8) the click key or fire
    joins the selected game (0x4dbbec; the chat line opened when connected, 0x4dbaac) or asks its password
    (0x4dbbf0); cancel2 and back leave (to mode 0), 0x4e1524 cancels the search; 0x4e14f4 searches the local network
    (a slot opened, 0x4dba80 150), 0x4e1528 the lobby server; 0x4e1514 edits the arena's title */
 void (lobbyJoin_keysChat)(void)
 {
-#define g_listTop GAME_VAR(int, 0x680bb0)
-#define g_listRow GAME_VAR(int, 0x4df818)
+#define g_listTop g_gameListTop
+#define g_listRow g_lobbyListRow
 #define busy (g_lanSearch || g_lobbySearching || g_lobbyRefreshing)
 	int mode = g_arenaLobbyMode;
 	if (g_arenaFull || mode == 1 || mode == 0 || g_arenaJoining || g_dialogOpen)
@@ -1272,7 +1272,7 @@ void (lobbyJoin_keysChat)(void)
 		return;
 	}
 	if (input_isDown(g_keyUp)) {
-		if (!(g_cursorBlink >= *(const float *)0x4a93d0))
+		if (!(g_cursorBlink >= k_5f))
 			return;
 		int row = g_listRow;
 		g_cursorBlink = 0.0f;
@@ -1284,7 +1284,7 @@ void (lobbyJoin_keysChat)(void)
 		return;
 	}
 	if (input_isDown(g_keyDown)) {
-		if (!(g_cursorBlink >= *(const float *)0x4a93d0))
+		if (!(g_cursorBlink >= k_5f))
 			return;
 		g_cursorBlink = 0.0f;
 		if (g_listTop + g_listRow >= g_gameCount - 1)
@@ -1393,11 +1393,11 @@ void (lobbyJoin_keysChat)(void)
 /* ---- the player's record (from 0x4de700: the name, +0x1e the level, +0x22 points, +0x26 rating, +0x2a 0x4de72a,
    +0x2e wins, +0x32 losses) and its two kept copies (0x9dd5d8 and 0x9dd240: +0 level, +4 points, +0xc rating,
    +0x10 0x4de72a's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
-#define R_POINTS GAME_VAR(int, 0x4de722)
+#define R_POINTS g_titlePoints
 #define R_RATING GAME_VAR(float, 0x4de726)
-#define R_OTHER GAME_VAR(int, 0x4de72a)
-#define R_WINS GAME_VAR(int, 0x4de72e)
-#define R_LOSSES GAME_VAR(int, 0x4de732)
+#define R_OTHER g_titleScore
+#define R_WINS g_titleWins
+#define R_LOSSES g_titleLosses
 
 /* the win rate in percent (as its float bits): 0 without games (and, when checked, with a total not above 0) */
 static u32 win_rate(int wins, int losses, int checked)

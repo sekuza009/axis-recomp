@@ -4,10 +4,10 @@
 #include "../game.h"
 #include <string.h>
 
-#define X0 GAME_VAR(int, 0x4dcc90)
-#define Y0 GAME_VAR(int, 0x4dcc94)
+#define X0 g_armcStatsPanelLeft
+#define Y0 g_armcStatsPanelTop
 #define X1 GAME_VAR(int, 0x4dcc98)
-#define Y1 GAME_VAR(int, 0x4dcc9c)
+#define Y1 g_armcStatsPanelBottom
 #define K(addr) ((const float *)(addr))
 #define g_slot GAME_VAR(int, 0x4dc4b0)
 #define SLOT ((const float *)0x4dc4b8 + g_slot * 6)
@@ -368,7 +368,7 @@ void (armc_drawBuildScreen)(void)
 	int kind_of = (unsigned)STAT(int, 4) <= 3 ? STAT(int, 4) : 4;
 	long double b = fmul_m((long double)*(const int *)(skill[kind_of] + g_armcValue * 0x4c), (const float *)0x4a9420);
 	b *= (long double)STAT(int, 0x14);
-	if (b >= *(const float *)0x4a93e8)
+	if (b >= k_0f)
 		sprintf(bonus, (const char *)0x4b02f0, ftol(b));   /* " +%d" */
 	else
 		sprintf(bonus, (const char *)0x4b02f8, ftol(b));   /* " %d" */

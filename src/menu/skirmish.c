@@ -66,8 +66,8 @@ void (briefing_typeOut)(void)
 /* ---- the briefing window (0x9f16a8 .. 0x9f16b4) ---- */
 #define BX0 GAME_VAR(int, 0x9f16a8)
 #define BY0 GAME_VAR(int, 0x9f16ac)
-#define BX1 GAME_VAR(int, 0x9f16b0)
-#define BY1 GAME_VAR(int, 0x9f16b4)
+#define BX1 g_briefingRight
+#define BY1 g_briefingBottom
 #define g_panelColour ((const u32 *)0x9ef208)
 #define g_dimColour ((const u32 *)0x9eeac8)
 

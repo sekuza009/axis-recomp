@@ -74,7 +74,7 @@ void (menu_frame)(void)
 {
 	long double blink = fadd_m(fld_m(&g_frameTime), &g_cursorBlink);
 	g_cursorBlink = blink;
-	if (blink > F(0x4a94ec))
+	if (blink > k_1000000f)
 		g_cursorBlink = 100.0f;
 	if (g_screen != g_lastScreen)
 		menu_enterState();
@@ -84,12 +84,12 @@ void (menu_frame)(void)
 	}
 	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a9468), &g_viewAspect));   /* 0.05 a frame */
-		F(0x4df02c) = fadd_m(fld_m((const float *)0x4df02c), (const float *)0x4a9418);                       /* the camera 10 back */
+		g_armcCamDistance = fadd_m(fld_m((const float *)0x4df02c), (const float *)0x4a9418);                       /* the camera 10 back */
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
 		g_introZoom = zoom;
-		if (!(g_viewAspect >= F(0x4a9420)))
+		if (!(g_viewAspect >= k_0_01f))
 			BITS(g_viewAspect) = 0x3c23d70a;   /* 0.01 */
-		if (zoom >= F(0x4a93f4)) {
+		if (zoom >= k_100f) {
 			g_screen = 9999;
 			g_nextScreen = 9999;
 			g_replayRunning = 1;
@@ -121,35 +121,35 @@ void (menu_frame)(void)
 	SwapBuffers(g_desktopDC);
 	switch (g_fovKeys) {
 	case 1:
-		if (g_viewAngle > F(0x4a93d0))
+		if (g_viewAngle > k_5f)
 			g_viewAngle = fsub_m(fld_m(&g_viewAngle), (const float *)0x4a93d0);
 		break;
 	case 2:
-		if (!(g_viewAngle >= F(0x4a94e8)))
+		if (!(g_viewAngle >= k_45f))
 			g_viewAngle = fadd_m(fld_m(&g_viewAngle), (const float *)0x4a93d0);
 		break;
 	}
 	long double now = timer_now();
-	D(0x9db980) = now;
+	g_clockNow = now;
 	if (g_showFps) {
-		D(0x4dd550) = now;
+		g_fpsFrameClock = now;
 		int frames = ++g_menuFrameCount;
-		long double second = now - D(0x4dd0a0);
+		long double second = now - g_fpsSecondStart;
 		double secondStored = f64(second);
-		D(0x4dd978) = secondStored;
-		if (second >= D(0x4a94e0)) {
+		g_fpsSecondSoFar = secondStored;
+		if (second >= k_1) {
 			g_menuFrameCount = 0;
-			F(0x4dd980) = (long double)frames / secondStored;
-			D(0x4dd0a0) = now;
+			g_fps = (long double)frames / secondStored;
+			g_fpsSecondStart = now;
 		}
 	}
-	long double rate = D(0x4a94e0) / (now - D(0x4dd0c8));
-	D(0x4dd558) = rate;
+	long double rate = k_1 / (now - g_lastFrameClock);
+	g_frameRate = rate;
 	long double frame = fdivr_m(rate, (const float *)0x4a94dc);   /* 60 / rate */
 	g_frameTime = frame;
-	if (frame > F(0x4a944c))
+	if (frame > k_20f)
 		g_frameTime = 1.0f;
-	D(0x4dd0c8) = now;
+	g_lastFrameClock = now;
 }
 #undef F
 #undef D
@@ -188,11 +188,11 @@ int THISCALL (match_inputState2)(u8 *s)
 	count_down(s, 0x233cc40, dt);
 	count_down(s, 0x2342f02, dt);
 	count_down(s, 0x2340d39, dt);
-	if (second > *(const float *)0x4a9424) {
+	if (second > k_1f) {
 		int whole = ftol(second);
 		FIELD(int, 0x233cc30) += whole;
 		FIELD(float, 0x233cc34) = f32(second - whole);
-		if (window > *(const float *)0x4a93e8) {
+		if (window > k_0f) {
 			FIELD(float, 0x2340c88) = f32((long double)FIELD(int, 0x2340c80) / window);
 			FIELD(float, 0x2340c8c) = f32((long double)FIELD(int, 0x2340c84) / window);
 		} else
@@ -223,20 +223,20 @@ static int held2(u32 a, u32 b) { return input_isDown(KEY(a)) || input_isDown(KEY
    pointer put back in the centre (0x4ded68 / 0x4ded6c) */
 static void mouse_offset(u8 *s, int steer)
 {
-	S(int, 0x2343257) = KEY(0x4ded68);
-	S(int, 0x234325b) = KEY(0x4ded6c);
+	S(int, 0x2343257) = g_mouseX;
+	S(int, 0x234325b) = g_mouseY;
 	long double dy = (long double)(S(int, 0x234325b) - gfx_getHeight() / 2);
-	S(float, 0x2343293) = f32(KEY(0x4df000) ? -dy : dy);
+	S(float, 0x2343293) = f32(g_mouseInvert ? -dy : dy);
 	long double dx = (long double)(S(int, 0x2343257) - gfx_getWidth() / 2);
 	if (steer)
 		dx = -dx;
 	S(float, 0x2343297) = f32(dx);
-	long double k = fmul_m((long double)KEY(0x4df008), (const float *)0x4aa480);
+	long double k = fmul_m((long double)g_mouseSensitivity, (const float *)0x4aa480);
 	long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
 	S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 	S(float, 0x2343297) = f32(steer ? fmul_m(f, (const float *)(s + 0x2343297)) : dx * f);
-	KEY(0x4ded68) = gfx_getWidth() / 2;
-	KEY(0x4ded6c) = gfx_getHeight() / 2;
+	g_mouseX = gfx_getWidth() / 2;
+	g_mouseY = gfx_getHeight() / 2;
 }
 
 /* the weapon slot keys: slot 1 .. 9, 0 (+0x23424f2), each also asking for the switch (+0x2340c6c, +0x23432cb) */
@@ -272,11 +272,11 @@ void THISCALL (match_combatInput)(u8 *s)
 				if (pressed2(0x4def50, 0x4def54))
 					S(int, 0x23432cf) = 1;
 			} else {
-				if (KEY(0x4ded88)) {
+				if (g_mouseClick) {
 					S(int, 0x234331b) = 1;
 					S(int, 0x2340c68) = 1;
 				}
-				if (S(int, 0x23424f2) >= 0 && KEY(0x4ded8c)) {
+				if (S(int, 0x23424f2) >= 0 && g_keyEnter) {
 					S(int, 0x234331f) = 1;
 					S(int, 0x2340c6c) = 1;
 					S(int, 0x23432cb) = 1;
@@ -290,7 +290,7 @@ void THISCALL (match_combatInput)(u8 *s)
 				S(int, 0x2343307) = 0;
 				for (int k = 0; k < 10; k++)
 					if (input_justPressed(KEY(k_radioKeys[k])))
-						S(int, 0x2343307) = k < 6 ? (input_justPressed(KEY(0x67ef24)) ? 10 : 0) + k + 1 : k + 1;
+						S(int, 0x2343307) = k < 6 ? (input_justPressed(g_dikLShift) ? 10 : 0) + k + 1 : k + 1;
 				S(int, 0x2343307)--;
 			}
 		} else {
@@ -306,20 +306,20 @@ void THISCALL (match_combatInput)(u8 *s)
 		for (int k = 0; k < 6; k++)
 			if (held2(k_viewKeys[k], k_viewKeys[k] + 4))
 				S(int, 0x2343287) = k;
-		if (!(S(float, 0x44) >= *(const float *)0x4a94f8)) {
-			S(int, 0x2343257) = KEY(0x4ded68);
-			S(int, 0x234325b) = KEY(0x4ded6c);
+		if (!(S(float, 0x44) >= k_0_2f)) {
+			S(int, 0x2343257) = g_mouseX;
+			S(int, 0x234325b) = g_mouseY;
 			mouse_offset(s, 1);
 		} else {
-			S(int, 0x2343257) = KEY(0x4ded68);
-			S(int, 0x234325b) = KEY(0x4ded6c);
+			S(int, 0x2343257) = g_mouseX;
+			S(int, 0x234325b) = g_mouseY;
 			S(int, 0x2343293) = S(int, 0x2343297) = 0;
-			long double k = fmul_m((long double)KEY(0x4df008), (const float *)0x4aa480);
+			long double k = fmul_m((long double)g_mouseSensitivity, (const float *)0x4aa480);
 			long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
 			S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 			S(float, 0x2343297) = f32(fmul_m(f, (const float *)(s + 0x2343297)));
-			KEY(0x4ded68) = gfx_getWidth() / 2;
-			KEY(0x4ded6c) = gfx_getHeight() / 2;
+			g_mouseX = gfx_getWidth() / 2;
+			g_mouseY = gfx_getHeight() / 2;
 		}
 		if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432cf) = 1;
@@ -335,7 +335,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			S(int, 0x23432ff) = 1;
 		if (pressed2(0x4deff8, 0x4deffc))
 			S(int, 0x2343303) = 1;
-		if (input_justPressed(KEY(0x4df8d0))) {
+		if (input_justPressed(g_dikF11)) {
 			if (S(int, 0x2340ce8) == 0) {
 				S(int, 0x2340ce8) = 1;
 				notice_printCentre((Scene *)s, (const char *)0x4c7d00);
@@ -361,13 +361,13 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (pressed2(0x4def50, 0x4def54))
 			S(int, 0x2343313) = 1;
 		S(int, 0x2343293) = S(int, 0x2343297) = 0;
-		if (input_justPressed(KEY(0x9dae14)) || input_justPressed(KEY(0x9db0a0)))
+		if (input_justPressed(g_dikLeft) || input_justPressed(g_dikUp))
 			S(int, 0x234330b) = 1;
-		if (input_justPressed(KEY(0x9db974)) || input_justPressed(KEY(0x76d330)))
+		if (input_justPressed(g_dikRight) || input_justPressed(g_dikDown))
 			S(int, 0x234330f) = 1;
-		if (input_justPressed(KEY(0x9dae70)) || input_justPressed(KEY(0x5b1da8)))
+		if (input_justPressed(g_dikEnter) || input_justPressed(g_dikSpace))
 			S(int, 0x2343313) = 1;
-		if (input_justPressed(KEY(0x6803a0)))
+		if (input_justPressed(g_dikEscape))
 			S(int, 0x2343317) = 1;
 	}
 	if (net_matchOver())
@@ -469,13 +469,13 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	if (S(int, 0x23432bb)) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca28)), &turn);
 		S(float, 0x233ca28) = f32(v);
-		if (!(v >= *(const float *)0x4a9728))
+		if (!(v >= k_m890f))
 			S(u32, 0x233ca28) = 0xc45e8000;   /* -890 */
 	}
 	if (S(int, 0x23432bf)) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca28));
 		S(float, 0x233ca28) = f32(v);
-		if (v > *(const float *)0x4a972c)
+		if (v > k_890f)
 			S(u32, 0x233ca28) = 0x445e8000;   /* 890 */
 	}
 	if (S(int, 0x23432b3)) {
@@ -487,19 +487,19 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	if (S(int, 0x23432b7)) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca2c));
 		S(float, 0x233ca2c) = f32(v);
-		if (v >= *(const float *)0x4a94c8)
+		if (v >= k_3600f)
 			S(float, 0x233ca2c) = f32(fsub_m(v, (const float *)0x4a94c8));
 	}
 	float *zoom = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
 	if (S(int, 0x23432ab)) {
 		*zoom = f32(fmul_m(fld_m(&slow), zoom));
-		if (!(*zoom >= *(const float *)0x4a9450))
+		if (!(*zoom >= k_500f))
 			GAME_VAR(u32, zoom) = 0x43fa0000;   /* 500 */
 	}
 	zoom = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
 	if (S(int, 0x23432af)) {
 		*zoom = f32(fdiv_m(fld_m(zoom), &slow));
-		if (*zoom > *(const float *)0x4a9708)
+		if (*zoom > k_10000f)
 			GAME_VAR(u32, zoom) = 0x461c4000;   /* 10000 */
 	}
 	if (S(int, 0x23432cb)) {
@@ -2019,7 +2019,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			} else {
 				/* the next round */
 				if (S(int, 0x233c9f0) == 1) {
-					GAME_VAR(int, 0x4de72a)++;
+					g_titleScore++;
 					sound_updateListener((Scene *)s);
 				}
 				scene_resetScores((Scene *)s);
@@ -2219,7 +2219,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			S(int, 0x2342399) = 0;
 			replay_closeRecording((Scene *)s);
 			if (S(int, 0x233c9f0) == 1) {
-				GAME_VAR(int, 0x4de72a)++;
+				g_titleScore++;
 				sound_updateListener((Scene *)s);
 			}
 			for (int i = 0; i < S(int, 0x22f0400); i++)

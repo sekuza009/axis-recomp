@@ -1,0 +1,26 @@
+# constants in .rdata, named by value
+0x4a93d0,float,k_5f
+0x4a93f0,float,k_200f
+0x4a93f8,float,k_38f
+0x4a9420,float,k_0_01f
+0x4a9450,float,k_500f
+0x4a946c,float,k_0_07f
+0x4a94e8,float,k_45f
+0x4a94ec,float,k_1000000f
+0x4a94f8,float,k_0_2f
+0x4a9510,float,k_640f
+0x4a9534,float,k_3f
+0x4a953c,float,k_0_95f
+0x4a9550,float,k_90f
+0x4a9554,float,k_2000f
+0x4a9558,float,k_m50f
+0x4a9564,float,k_0_28125f
+0x4a95cc,float,k_120f
+0x4a95d0,float,k_m549_9f
+0x4a95d4,float,k_m549_99f
+0x4a95d8,float,k_m549f
+0x4a9728,float,k_m890f
+0x4a972c,float,k_890f
+0x4aa3f0,double,k_8
+0x4aa3f8,double,k_100
+0x4aa408,double,k_27

@@ -346,7 +346,7 @@ static int esc_name(Scene *scene)
 	if (g_paused)
 		return scene->menuKeys[KEY_ESC] == 1;
 	chat_keepLastLine();
-	if (*(const char *)0x9f63e4)
+	if (g_keptChatLine)
 		autoplay_startRecording(scene, (const char *)0x9f63e4);
 	return 1;
 }
@@ -387,7 +387,7 @@ static int esc_quit(Scene *scene)
 void THISCALL (match_escMenu)(Scene *scene)
 {
 	static int (*const page[5])(Scene *) = { esc_main, esc_team, esc_name, esc_retry, esc_quit };
-	if (scene->escTimer >= *(const float *)0x4a941c) {
+	if (scene->escTimer >= k_0_25f) {
 		if ((u32)scene->escPage <= 4 && page[scene->escPage](scene))
 			scene->escMenuOpen = 0;
 		const int *keys = scene->menuKeys;

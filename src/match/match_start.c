@@ -72,7 +72,7 @@ static void first_round(Scene *s)
 	s->showEmblems = g_matchMode == 2;
 	if (s->showEmblems == 1) {
 		BITS(s->emblemTime) = 0x43960000;   /* 300 */
-		GAME_VAR(int, 0x4de72a)++;
+		g_titleScore++;
 		FIELD(int, s, 0x22e717c) = 1;        /* (in projection's last dword) */
 	} else
 		FIELD(int, s, 0x22e717c) = 0;
@@ -84,7 +84,7 @@ static void first_round(Scene *s)
 	strcpy(s->mechName, (const char *)0x4dedd8);
 	s->mechValue = g_armcValue;
 	if (s->showEmblems == 1) {
-		s->levelPoints = GAME_VAR(int, 0x4de722);
+		s->levelPoints = g_titlePoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
 			sys_fatalError((char *)0xa0e778, (const char *)0x4d0710, s->level);
@@ -308,7 +308,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
 	factors_addPoint(s + 0x9e3020, (const void *)0xa1f23c, down);
 	long double root = 1;
-	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(*(const double *)0x4aa408));
+	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(k_27));
 	memset(s + 0x9ee030, 0, 14 * 4);
 	long double inv = fld_m(K(0x4a9424)) / root;
 	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));

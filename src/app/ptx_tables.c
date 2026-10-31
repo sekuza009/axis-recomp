@@ -84,16 +84,16 @@ void (ptx_initDequantTables)(int q)
 	X qf = q;
 	const double *f = (const double *)0x4aa2b0;
 	for (int j = 0; j < 128; j++) {
-		X v = (X)F32(0x4c6bb0 + j * 4) * F64(0x4aa3f8);
-		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * F64(0x4aa3f0);
-		F32(0xaa2a90 + j * 4) = (float)((X)F64(0x4a94e0) / v);
+		X v = (X)F32(0x4c6bb0 + j * 4) * k_100;
+		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
+		F32(0xaa2a90 + j * 4) = (float)((X)k_1 / v);
 	}
 }
 
 /* 0x46ea00: every table, for quality 100 */
 void (ptx_initTables)(void)
 {
-	I32(0xaa2e94) = 0;
+	g_ptxTable = 0;
 	ptx_initClampTable();
 	ptx_initYCbCrTables();
 	ptx_initDequantTables(100);

@@ -217,7 +217,7 @@ u32 (cfg_keyBindings)(void *f)
 	FPUTS(0x4b1bd8);
 	FPUTS(g_mouseInvert == 1 ? 0x4b17e4 : 0x4b17dc);
 	FPUTS(0x4b1bc0);
-	FPUTS(GAME_VAR(int, 0x4df004) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(g_mouseSmooth == 1 ? 0x4b17e4 : 0x4b17dc);
 	char number[12];
 	itoa(g_mouseSensitivity, number, 10);
 	FPUTS(0x4b1ba8);
@@ -388,7 +388,7 @@ static void *profiles_create(void)
 {
 	char path[0x184];
 	profiles_path(path);
-	(*(u32 *)&g_currentProfile) = GAME_VAR(u32, 0x9f8d74);
+	(*(u32 *)&g_currentProfile) = (*(u32 *)&g_pilotChosen);
 	void *f = crt_fopen(path, (const char *)0x4b2ab0);
 	if (!f)
 		g_profileCount = 0;
@@ -419,8 +419,8 @@ u32 (profile_loadList)(int count)
 		return 0;
 	g_profileCount = count;
 	(*(u32 *)&g_currentProfile) = 0;
-	GAME_VAR(u32, 0x9f8c4c) = 0;
-	GAME_VAR(u32, 0x9f8c5c) = 0;
+	(*(u32 *)&g_profileListTop) = 0;
+	(*(u32 *)&g_profileListRow) = 0;
 	return profiles_write(f);
 }
 
@@ -492,7 +492,7 @@ u32 (mission_saveAxisMis)(int k)
 	crt_fread(block, size[k * 63], 1, f);
 	fclose(f);
 	memset((void *)0x9eeadc, 0, 0xc8);
-	GAME_VAR(int, 0x9ef218) = 0;
+	g_unusedMissionSaveWord = 0;
 	memset((void *)0x9f1064, 0, 0x640);
 	memset((void *)0x9eebac, 0, 0x640);
 	g_briefingShown = 0;
@@ -664,7 +664,7 @@ u32 (data_loadMessages)(void)
 /* ---- the pilot's campaign file (in the save folder: the pilot's name + 0x4b2afc): the 0x3ac-byte record 0x9f1718
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
-#define g_pilot GAME_VAR(int, 0x9f8d74)               /* the pilot chosen in the list */
+#define g_pilot g_pilotChosen               /* the pilot chosen in the list */
 #define pilot_name(i) ((const char *)(0x9f684c + (i) * 0x48))
 #define g_campaign ((u8 *)0x9f1718)
 
@@ -1017,8 +1017,8 @@ int (arena_loadSettings)(const char *path)
 			}
 			if (!strcmp(word, (const char *)0x4ad5bc)) {   /* password */
 				word = crt_strtok(NULL, gaps);
-				GAME_VAR(u32, 0x5b193c) = 0;
-				GAME_VAR(u32, 0x5b1940) = 0;
+				g_arenaFileClan = 0;
+				g_arenaFileClan4 = 0;
 				strcpy((char *)0x5b193c, word);
 			}
 			for (int k = 0; k < 4; k++)

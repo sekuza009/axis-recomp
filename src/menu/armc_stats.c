@@ -18,10 +18,10 @@ typedef long double X;
 #define HALF F(0x4a942c)
 #define ZERO F(0x4a93e8)
 
-#define PANEL_X0 GAME_VAR(int, 0x4dcc90)
-#define PANEL_Y0 GAME_VAR(int, 0x4dcc94)
+#define PANEL_X0 g_armcStatsPanelLeft
+#define PANEL_Y0 g_armcStatsPanelTop
 #define PANEL_X1 GAME_VAR(int, 0x4dcc98)
-#define PANEL_Y1 GAME_VAR(int, 0x4dcc9c)
+#define PANEL_Y1 g_armcStatsPanelBottom
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 static const u32 k_cyan[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -166,16 +166,16 @@ static void count_bonus(Panel *p, int dy, int n)
 /* the wear on a part (0x4dc78c over the limit 0x4dcb0c: the share over it, four times, of f taken off; else 0) */
 static X wear(float f)
 {
-	if (F(0x4dc78c) > F(0x4dcb0c))
-		return neg(((X)F(0x4dc78c) - F(0x4dcb0c)) / F(0x4dcb0c) * FOUR * f);
+	if (g_totalWeight > g_legsMaxWeight)
+		return neg(((X)g_totalWeight - g_legsMaxWeight) / g_legsMaxWeight * FOUR * f);
 	return ZERO;
 }
 
 /* the same for a speed: the share taken off the speed f with its bonus a */
 static X speed_wear(float f, X a)
 {
-	if (F(0x4dc78c) > F(0x4dcb0c))
-		return neg(((X)F(0x4dc78c) - F(0x4dcb0c)) / F(0x4dcb0c) * FOUR * ((X)f + a));
+	if (g_totalWeight > g_legsMaxWeight)
+		return neg(((X)g_totalWeight - g_legsMaxWeight) / g_legsMaxWeight * FOUR * ((X)f + a));
 	return ZERO;
 }
 
@@ -225,55 +225,55 @@ static void speed_change(char *out, X v, float f, int korean, int last)
 /* slot 0 */
 #define ROW(r) row(p, r)
 
-/* slot 0 (the head?): its six lines, with the pilot's skill 3 */
+/* slot 0, the head: its six lines, with the pilot's skill 3 */
 static void section0(Panel *p)
 {
 	label(p, ROW(0), 0x760aa4);
-	sprintf(p->t.line, FMT(0x4b0354), (double)F(0x4dcef8));
-	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * F(0x4dcef8) + F(0x4dbc78), 0, 0x7655a4, 0);
+	sprintf(p->t.line, FMT(0x4b0354), (double)g_headDetectionRange);
+	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * g_headDetectionRange + g_itemBonusDetectionRange, 0, 0x7655a4, 0);
 	label(p, ROW(1), 0x760b24);
-	sprintf(p->t.line, FMT(0x4b0334), (double)F(0x4dcefc));
-	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * F(0x4dcefc), 1, 0x765624, 0);
+	sprintf(p->t.line, FMT(0x4b0334), (double)g_headDetectionAngle);
+	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * g_headDetectionAngle, 1, 0x765624, 0);
 	label(p, ROW(2), 0x760ba4);
-	sprintf(p->t.line, FMT(0x4b0320), I(0x4dcf00));
-	level_bonus(p, ROW(2), F(0x4dceb4));
+	sprintf(p->t.line, FMT(0x4b0320), g_headHackingLevel);
+	level_bonus(p, ROW(2), g_itemBonusHacking);
 	label(p, ROW(3), 0x760c24);
-	X rate = (X)HUNDRED / F(0x4dcf04) * HUNDRED;
+	X rate = (X)HUNDRED / g_headLockOnTime * HUNDRED;
 	sprintf(p->t.line, FMT(0x4b0334), (double)rate);
-	bracket_bonus(p, ROW(3), (X)F(0x4dc898) * f32(rate), 1, 0x7656a4, 0);   /* (by the rate as a float) */
+	bracket_bonus(p, ROW(3), (X)g_itemBonusLockOn * f32(rate), 1, 0x7656a4, 0);   /* (by the rate as a float) */
 	label(p, ROW(4), 0x760ca4);
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)F(0x4dcf08) * THOUSANDTH));
-	bracket_bonus(p, ROW(4), (X)F(0x4dc88c) * F(0x4dcf08) * THOUSANDTH, 1, 0x765aa4, 0);
+	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_headTargetKeepTime * THOUSANDTH));
+	bracket_bonus(p, ROW(4), (X)g_itemBonusTargetKeep * g_headTargetKeepTime * THOUSANDTH, 1, 0x765aa4, 0);
 	label(p, ROW(5), 0x760d24);
-	value_unit(p, ROW(5), F(0x4dcf0c), 0x7657a4);
+	value_unit(p, ROW(5), g_headWeight, 0x7657a4);
 }
 
-/* slot 1: a figure with skill 4's bonus (Korean: yellow even when none), two counts rounded with skill 2 */
+/* slot 1, the chest: a figure with skill 4's bonus (Korean: yellow even when none), two counts rounded with skill 2 */
 static void section1(Panel *p)
 {
 	label(p, ROW(0), 0x760fa4);
-	sprintf(p->t.line, FMT(0x4b0334), (double)F(0x4dbc48));
-	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * F(0x4dbc48) + (X)F(0x4dceb0) * F(0x4dbc48), 1, 0x7657a4, 1);
+	sprintf(p->t.line, FMT(0x4b0334), (double)g_chestWeightLimit);
+	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * g_chestWeightLimit + (X)g_itemBonusWeightLimit * g_chestWeightLimit, 1, 0x7657a4, 1);
 	label(p, ROW(1), 0x761024);
-	sprintf(p->t.line, FMT(0x4b0320), I(0x4dbc4c));
-	count_bonus(p, ROW(1), ftol(SKILL(2) * HUNDREDTH * (X)I(0x4dbc4c) + HALF));
+	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxArmor);
+	count_bonus(p, ROW(1), ftol(SKILL(2) * HUNDREDTH * (X)g_chestMaxArmor + HALF));
 	label(p, ROW(2), 0x7610a4);
-	sprintf(p->t.line, FMT(0x4b0320), I(0x4dbc50));
-	count_bonus(p, ROW(2), ftol((SKILL(2) * HUNDREDTH + F(0x4dcc68)) * (X)I(0x4dbc50) + HALF));
+	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxShield);
+	count_bonus(p, ROW(2), ftol((SKILL(2) * HUNDREDTH + g_itemBonusShield) * (X)g_chestMaxShield + HALF));
 }
 
-/* slot 2: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
+/* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
 static void section2(Panel *p)
 {
 	static const u32 levels[4][3] = { { 0x761524, 0x4dc294, 0x4dcc6c }, { 0x7615a4, 0x4dc298, 0x4dc548 },
 	                                  { 0x761624, 0x4dc29c, 0x4dc248 }, { 0x7616a4, 0x4dc2a0, 0x4dcb34 } };
 	label(p, ROW(0), 0x7614a4);
-	sprintf(p->t.line, FMT(0x4b02e8), I(0x4dc290));   /* "%d(Lv)" */
+	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
 	value(p, ROW(0));
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), levels[k][0]);
 		int level = I(levels[k][1]);
-		int n = ftol((X)level * F(0x4dbc70) + F(levels[k][2]));
+		int n = ftol((X)level * g_itemBonusCapacityPerLevel + F(levels[k][2]));
 		if (n < 1)
 			sprintf(p->t.line, FMT(0x4b02dc), level);   /* "%d(" */
 		else {
@@ -287,10 +287,10 @@ static void section2(Panel *p)
 		value(p, ROW(k + 1));
 	}
 	label(p, ROW(5), 0x761724);
-	value_unit(p, ROW(5), F(0x4dc2a4), 0x7657a4);
+	value_unit(p, ROW(5), g_armsWeight, 0x7657a4);
 }
 
-/* slot 3: two figures with skill 0 less the wear, four signed figures, a figure */
+/* slot 3, the legs: two figures with skill 0 less the wear, four signed figures, a figure */
 static void section3(Panel *p)
 {
 	for (int k = 0; k < 2; k++) {
@@ -309,29 +309,29 @@ static void section3(Panel *p)
 		value(p, ROW(k + 2));
 	}
 	label(p, ROW(6), 0x761ca4);
-	value_unit(p, ROW(6), F(0x4dc240), 0x7657a4);
+	value_unit(p, ROW(6), g_legsWeight, 0x7657a4);
 }
 
-/* slot 4 (the legs?): the type's name, two figures, a third, the speed with skill 1 less the wear, the three speeds
+/* slot 4, the booster: the type's name, two figures, a third, the speed with skill 1 less the wear, the three speeds
    and their changes, the weight */
 static void section4(Panel *p)
 {
 	label(p, ROW(0), 0x761ea4);
-	append(p->t.line, (const char *)(0x7623a4 + I(0x4dce80) * 0x80));
+	append(p->t.line, (const char *)(0x7623a4 + g_boosterThrustType * 0x80));
 	value(p, ROW(0));
 	label(p, ROW(1), 0x761f24);
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)F(0x4dce84) * THOUSANDTH));
-	bracket_bonus(p, ROW(1), (X)F(0x4dcca0) * F(0x4dce84) * THOUSANDTH, 1, 0x765aa4, 0);
+	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterActiveTime * THOUSANDTH));
+	bracket_bonus(p, ROW(1), (X)g_itemBonusActiveTime * g_boosterActiveTime * THOUSANDTH, 1, 0x765aa4, 0);
 	label(p, ROW(2), 0x761fa4);
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)F(0x4dce88) * THOUSANDTH));
-	bracket_bonus(p, ROW(2), (X)F(0x4dce88) * F(0x4dc894) * THOUSANDTH, 1, 0x765aa4, 0);
+	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterRechargeTime * THOUSANDTH));
+	bracket_bonus(p, ROW(2), (X)g_boosterRechargeTime * g_itemBonusRechargeTime * THOUSANDTH, 1, 0x765aa4, 0);
 	label(p, ROW(3), 0x762024);
-	value_unit(p, ROW(3), (X)F(0x4dce8c) * THOUSANDTH, 0x765aa4);
+	value_unit(p, ROW(3), (X)g_boosterRechargeDelay * THOUSANDTH, 0x765aa4);
 
 	label(p, ROW(4), 0x7620a4);
-	float speed = F(0x4dce90);
+	float speed = g_boosterNormalSpeed;
 	sprintf(p->t.line, FMT(0x4b0354), (double)speed);
-	X a = SKILL(1) * HUNDREDTH * speed + (X)F(0x4dc230) * HUNDREDTH * speed;
+	X a = SKILL(1) * HUNDREDTH * speed + (X)g_legsSpeedCorrection * HUNDREDTH * speed;
 	X v = a + speed_wear(speed, a);
 	if (p->korean) {   /* rounded first; none for 0 */
 		value(p, ROW(4));
@@ -395,15 +395,15 @@ static void section4(Panel *p)
 	}
 	int dy = p->korean ? 0xd8 : ROW(7);
 	label(p, dy, 0x7621a4);
-	sprintf(p->t.line, FMT(0x4b027c), (double)F(0x4dcea0));   /* "%.1f(Ton)" */
+	sprintf(p->t.line, FMT(0x4b027c), (double)g_boosterWeight);   /* "%.1f(Ton)" */
 	value(p, dy);
 }
 
-/* slot 5: ten plain lines */
+/* slot 5, the whole mech: ten plain lines */
 static void section5(Panel *p)
 {
 	label(p, ROW(0), 0x762da4);
-	sprintf(p->t.line, FMT(0x4b0274), (double)F(0x4dcaa0));   /* "%.1f(m)" */
+	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
 	value(p, ROW(0));
 	static const u32 ints[4][2] = { { 0x4b02e8, 0x4dcaa8 }, { 0x4b0320, 0x4dcab4 }, { 0x4b0320, 0x4dcab8 }, { 0x4b02e8, 0x4dcabc } };
 	for (int k = 0; k < 4; k++) {
@@ -418,10 +418,10 @@ static void section5(Panel *p)
 	}
 	value(p, ROW(5));
 	label(p, ROW(6), 0x7630a4);
-	sprintf(p->t.line, FMT(0x4b0268), (double)F(0x4dcad0));   /* "%.2f" */
+	sprintf(p->t.line, FMT(0x4b0268), (double)g_mechMobility);   /* "%.2f" */
 	value(p, ROW(6));
 	label(p, ROW(7), 0x763124);
-	sprintf(p->t.line, FMT(p->korean ? 0x4b025c : 0x4b01e0), (double)F(0x4dcaf8));   /* "%.0f(km/h)" / "%.1f(km/h)" */
+	sprintf(p->t.line, FMT(p->korean ? 0x4b025c : 0x4b01e0), (double)g_mechNormalSpeed);   /* "%.0f(km/h)" / "%.1f(km/h)" */
 	value(p, ROW(7));
 	label(p, ROW(8), 0x7631a4);
 	static const u32 speeds[3] = { 0x4dcafc, 0x4dcb04, 0x4dcb00 };
@@ -432,9 +432,9 @@ static void section5(Panel *p)
 	}
 	value(p, ROW(8));
 	label(p, ROW(9), 0x763224);
-	sprintf(p->t.bonus, FMT(0x4b0254), (double)((X)F(0x4dcaec) * THOUSANDTH));   /* "%.1f/" */
+	sprintf(p->t.bonus, FMT(0x4b0254), (double)((X)g_mechBoosterEnergy * THOUSANDTH));   /* "%.1f/" */
 	append(p->t.line, p->t.bonus);
-	sprintf(p->t.bonus, FMT(0x4b02fc), (double)((X)F(0x4dcaf0) * THOUSANDTH));   /* "%.1f(" */
+	sprintf(p->t.bonus, FMT(0x4b02fc), (double)((X)g_mechBoosterRecharge * THOUSANDTH));   /* "%.1f(" */
 	append(p->t.bonus, (const char *)0x765aa4);
 	append(p->t.bonus, FMT(0x4b0340));
 	append(p->t.line, p->t.bonus);

@@ -4,8 +4,8 @@
 #include <string.h>
 #include "portrait.h"
 
-#define X0 GAME_VAR(int, 0x9f6308)
-#define Y0 GAME_VAR(int, 0x9f630c)
+#define X0 g_missionSelectLeft
+#define Y0 g_missionSelectTop
 #define X1 GAME_VAR(int, 0x9f6310)
 #define Y1 GAME_VAR(int, 0x9f6314)
 #define K(addr) ((const float *)(addr))

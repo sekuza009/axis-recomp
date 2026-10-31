@@ -139,15 +139,15 @@ void (missionsel_layout)(void)
 {
 	static const RArg a[4] = { RA(0x9f6308, 0x96, 1), RA(0x9f6314, -0x30, 0), RA(0x9f6308, 0x10e, 1), RA(0x9f6314, -0x10, 0) };
 	rect_spec(0x9f6330, 0x9f6350, 0x8c, a);
-	set4ints(GAME_I32(0x9f6308) + 0x98, GAME_I32(0x9f630c) + 0x4c, GAME_I32(0x9f6308) + 0xd0, GAME_I32(0x9f630c) + 0x74, (int *)0x9f6350);
-	set4ints(GAME_I32(0x9f6308) + 0x160, GAME_I32(0x9f630c) + 0x4c, GAME_I32(0x9f6308) + 0x198, GAME_I32(0x9f630c) + 0x74, (int *)0x9f6360);
+	set4ints(g_missionSelectLeft + 0x98, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0xd0, g_missionSelectTop + 0x74, (int *)0x9f6350);
+	set4ints(g_missionSelectLeft + 0x160, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0x198, g_missionSelectTop + 0x74, (int *)0x9f6360);
 }
 
 void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */
 {
 	u32 rec = 0x9f8f38;
 	for (int i = 0; rec < 0x9f8fc8; i++, rec += 16) {
-		int y = GAME_I32(0x9f8c50) + (i / 3) * 86, x = GAME_I32(0x9f8c54) + (i % 3) * 86;
+		int y = g_pilotSelectTop + (i / 3) * 86, x = g_pilotSelectLeft + (i % 3) * 86;
 		set4ints(x + 0x20, y + 0x4c, x + 0x74, y + 0xa0, (int *)rec);
 	}
 	static const RArg b[4] = { RA(0x9f8c54, 0xaa, 1), RA(0x9f682c, -0x40, 0), RA(0x9f8c54, 0x122, 1), RA(0x9f682c, -0x20, 0) };
@@ -179,7 +179,7 @@ void (profilePage_layout)(void)
 	                               { 0x1a4, 0x24, 0x1e4, 0x64 } };
 	rect_spec(0x9f8c60, 0x9f8ca0, 0x72, a);
 	for (int k = 0; k < 4; k++)
-		set4ints(GAME_I32(0x9f8e48) + r[k][0], GAME_I32(0x9f8e4c) + r[k][1], GAME_I32(0x9f8e48) + r[k][2], GAME_I32(0x9f8e4c) + r[k][3],
+		set4ints(g_profilePageLeft + r[k][0], g_profilePageTop + r[k][1], g_profilePageLeft + r[k][2], g_profilePageTop + r[k][3],
 		         (int *)(0x9f8ca0 + k * 16));
 }
 
@@ -280,7 +280,7 @@ void (arenaOptions_layout)(void)
 void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */
 {
 	for (u32 rec = 0x9f8d78, d = 0; rec < 0x9f8e48; rec += 16, d += 0x14) {
-		int y = GAME_I32(0x9f8e4c), x = GAME_I32(0x9f8e48);
+		int y = g_profilePageTop, x = g_profilePageLeft;
 		set4ints(x + 0x20, d + y + 0x23, x + 0xd4, d + y + 0x36, (int *)rec);
 	}
 }

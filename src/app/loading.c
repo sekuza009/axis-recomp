@@ -302,12 +302,12 @@ int (app_checkCdAndLoad)(void *instance)
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
 	g_menuScaleX = f32(fmul_m((long double)width, (const float *)0x4a9578));
 	g_screenCentreX = width / 2;
-	GAME_VAR(int, 0x76d474) = 0;
+	g_unusedStartupWord1 = 0;
 	g_menuScaleY = f32(fmul_m((long double)height, (const float *)0x4a9574));
 	g_dialogPending = 0;
 	g_screenCentreY = height / 2;
-	GAME_VAR(u32, 0x4dd96c) = 0;
-	GAME_VAR(int, 0x4dd0b8) = 0;
+	g_unusedStartupWord2 = 0;
+	g_unusedStartupWord3 = 0;
 	(*(u32 *)&g_emblemAlpha) = 0x3dcccccd;   /* 0.1 */
 	(*(u32 *)&g_emblemPulse) = 0x3ca3d70a;   /* 0.02 */
 	(*(u32 *)&g_logoFade) = 0;
@@ -450,7 +450,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		if (net_isClient() == 0) {
 			long double t = fadd_m(fld_m((const float *)(g + 0x44)), (const float *)(g + 0x2342395));
 			G(float, 0x2342395) = f32(t);
-			if (t > *(const float *)0x4a93d0)
+			if (t > k_5f)
 				stop = 1;
 		}
 		if (netq_resends() >= 0x80)

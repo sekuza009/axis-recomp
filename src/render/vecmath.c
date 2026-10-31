@@ -164,7 +164,7 @@ int (Mat4_invert)(float *out, const float *m)
 	X det = Mat4_determinant(m);
 	float detf = (float)det, n[9];
 	X mag = det < 0 ? -det : det;
-	if (!(mag >= *(const double *)0x4aa458))
+	if (!(mag >= k_1em8))
 		return 0;
 	for (int r = 0; r < 4; r++)
 		for (int c = 0; c < 4; c++) {

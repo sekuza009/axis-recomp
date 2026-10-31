@@ -113,7 +113,7 @@ void (armc_drawPartScreen)(void)
 {
 	g_armcMode = 2;
 	g_armcSlot = 0;
-	GAME_VAR(int, 0x4dc864) = 0;
+	g_unusedArmcWord1 = 0;
 	for (int slot = 0; slot < 6; slot++)
 		armc_weaponSlotRecord(slot, *slot_item(slot));
 	g_armcCursor = 0;
@@ -126,7 +126,7 @@ void (armc_drawPartScreen)(void)
 	for (int k = 0; k < 7; k++)
 		armc_snapshot(k);
 	g_armcChanged = 0;
-	GAME_VAR(int, 0x4dcf14) = 1;
+	g_unusedArmcWord2 = 1;
 	g_armcSlot = -1;
 	armc_pickSlot(0);
 	armc_easeCamera();

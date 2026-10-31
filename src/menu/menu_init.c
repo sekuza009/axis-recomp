@@ -19,9 +19,9 @@ void (armc_initCameraPoints)(void)
 		GAME_VAR(int, p + 4) = 0;
 		GAME_VAR(int, p + 8) = 0;
 	}
-	GAME_VAR(u32, 0x4dca34) = 0x43960000;   /* 300 */
-	GAME_VAR(u32, 0x4dca64) = 0xc3fa0000;   /* -500 */
-	GAME_VAR(u32, 0x4dca84) = 0x43af0000;   /* 350 */
+	g_armcViewPoint0Y = 0x43960000;   /* 300 */
+	g_armcViewPoint3Y = 0xc3fa0000;   /* -500 */
+	g_armcViewPoint5Y = 0x43af0000;   /* 350 */
 }
 
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
@@ -41,9 +41,9 @@ void (arena_initOptionTexts)(void)
 void (skirmish_clearPlayerRows)(void)
 {
 	g_missionCount = 0;
-	GAME_VAR(int, 0x9ef2c4) = 0;
-	GAME_VAR(int, 0x9ef2c8) = 0;
-	GAME_VAR(int, 0x9ef2cc) = 0;
+	g_misHeader1 = 0;
+	g_misHeader2 = 0;
+	g_misHeader3 = 0;
 	for (u32 e = 0x9ef314; e < 0x9f109c; e += 0xfc) {
 		memset((void *)(e - 0x40), 0, 0x40);
 		memset((void *)e, 0, 0xa0);
@@ -59,21 +59,21 @@ void (skirmish_clearPlayerRows)(void)
 /* 0x4509e0: the network state's start (the cleared values then set: 1, 2, 0, 6 and 7) */
 void (net_resetState)(void)
 {
-	GAME_VAR(int, 0x9f93c8) = 0;
+	g_netChatMessageKind = 0;
 	g_resultMessage = 0;
-	GAME_VAR(int, 0x9f93cc) = 0;
+	g_netChatMessageWord1 = 0;
 	g_hostResultFlag = 0;
-	GAME_VAR(int, 0x9f93d0) = 0;
-	GAME_VAR(int, 0x9f9420) = 0;
+	g_netChatMessageWord2 = 0;
+	g_netSlotMessageKind = 0;
 	memset((void *)0x9f9428, 0, 0x103 * 4);
-	GAME_VAR(int, 0x9f93d4) = 0;
+	g_netChatMessageText = 0;
 	g_netClaimedSlot = 0;
-	GAME_VAR(int, 0x9f93c8) = 1;
+	g_netChatMessageKind = 1;
 	g_resultMessage = 2;
 	g_hostResultFlag = 0;
 	g_netHostGone = 0;
-	GAME_VAR(int, 0x9f9420) = 6;
-	GAME_VAR(int, 0x9f9428) = 7;
+	g_netSlotMessageKind = 6;
+	g_netPacketMessageKind = 7;
 }
 
 /* 0x42f8e0: the key repeat records (four of 0x2c bytes, at 0x4df918 and again at 0x9da328): delay 4, then two rows of
@@ -125,13 +125,13 @@ u32 (replayList_open)(void)
 {
 	g_mapSelectCount = 0;
 	g_mapSelectFirst = 0;
-	GAME_VAR(int, 0x9dd944) = 0;
-	GAME_VAR(int, 0x9eea88) = 0;
+	g_unusedReplayListWord1 = 0;
+	g_unusedReplayListWord2 = 0;
 	g_dialogOpen = 1;
-	GAME_VAR(int, 0x9dd908) = 0x50;
-	GAME_VAR(int, 0x9dd90c) = 0x28;
-	GAME_VAR(int, 0x9dd910) = 0x230;
-	GAME_VAR(int, 0x9dd914) = 0x1b8;
+	g_mapSelectLeft = 0x50;
+	g_mapSelectTop = 0x28;
+	g_mapSelectRight = 0x230;
+	g_mapSelectBottom = 0x1b8;
 	for (u32 r = 0x9ddac8; r < 0x9eeac8; r += 0x44)
 		memset((void *)(r - 0x40), 0, 0x44);
 	GAME_CDECL(0x440a20, void, void)();          /* mapSelect_layout: the layout */

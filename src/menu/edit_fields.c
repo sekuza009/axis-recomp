@@ -123,10 +123,10 @@ void (arena_editMessage)(void)
 {
 	edit_start(8);
 	line_clear();
-	GAME_VAR(int, 0x4db520) = 0;
+	g_arenaMessageText = 0;
 	caret(PANEL_X(ARENA_MESSAGE) + 0xd8, PANEL_Y(ARENA_MESSAGE) + 0xd0);
 	g_chatLength = line_length();
-	GAME_VAR(int, 0x4db524) = 0;
+	g_arenaMessageText4 = 0;
 	g_menuFade = 5.0f;
 	g_editingArenaMessage = 1;
 	chat_createEdit(8);
@@ -168,8 +168,8 @@ void (field_editGameName)(void)
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x58);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
-	g_editingGameName = 1;
-	g_editingGamePassword = 0;
+	g_typingGameName = 1;
+	g_typingGamePassword = 0;
 	g_chatFieldFlag = 0;
 	chat_createEdit(0x10);
 }
@@ -184,8 +184,8 @@ void (field_editGamePassword)(void)
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
-	g_editingGameName = 0;
-	g_editingGamePassword = 1;
+	g_typingGameName = 0;
+	g_typingGamePassword = 1;
 	g_chatFieldFlag = 1;
 	chat_createEdit(0xc);
 }
@@ -218,12 +218,12 @@ void (field_editMessage)(void)
 {
 	edit_start(8);
 	line_clear();
-	GAME_VAR(int, 0x9dcee8) = 0;
+	g_roomMessageText = 0;
 	caret(PANEL_X(ROOM_MESSAGE) + 0xd8, PANEL_Y(ROOM_MESSAGE) + 0xd0);
 	g_chatLength = line_length();
-	GAME_VAR(int, 0x9dceec) = 0;
+	g_roomMessageText4 = 0;
 	g_menuFade = 5.0f;
-	g_editingRoomMessage = 1;
+	g_joinPasswordTyped = 1;
 	chat_createEdit(8);
 }
 
@@ -263,11 +263,11 @@ int (loginForm_openField)(int k)
 	input_releaseKeyboard();
 	line_clear();
 	g_paused = 1;
-	g_editingLoginName = 0;
-	GAME_VAR(int, 0x9dd32c) = 0;
-	g_editingLoginPassword = 0;
-	g_editingLoginRepeat = 0;
-	g_editingLoginEmail = 0;
+	g_typingAccountName = 0;
+	g_unusedLoginWord = 0;
+	g_typingAccountPassword = 0;
+	g_typingAccountRepeat = 0;
+	g_typingAccountEmail = 0;
 	g_chatFieldFlag = 0;
 	int row = 0;
 	if ((u32)k <= 3) {
@@ -279,7 +279,7 @@ int (loginForm_openField)(int k)
 		chat_createEdit(field[k].maxLength);
 		row = k;
 	}
-	caret(PANEL_X(0x9dd6e8) + 0x94, PANEL_Y(0x9dd6e8) + row * 0x30 + 0x3c);
+	caret(g_loginFormLeft + 0x94, PANEL_Y(0x9dd6e8) + row * 0x30 + 0x3c);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	return 0;

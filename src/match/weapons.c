@@ -143,7 +143,7 @@ static u32 table_rand(void)
 static int within(const float *p, const float *from, const float *range)
 {
 	long double d = fsub_m(fld_m(p), from);
-	if (!(d >= *(const float *)0x4a93e8))
+	if (!(d >= k_0f))
 		d = -d;
 	return !(d > *range);
 }

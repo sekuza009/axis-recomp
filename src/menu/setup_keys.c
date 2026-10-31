@@ -327,7 +327,7 @@ static void volume_up(void)
 /* the slider set where the pointer is (its track 0x90 in from the page, 0x4ddad0) */
 static void volume_at_pointer(void)
 {
-	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - GAME_VAR(int, 0x4ddad0) - 0x90), (const float *)0x4a94f0));
+	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), (const float *)0x4a94f0));
 }
 
 /* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the
@@ -362,7 +362,7 @@ void (setup_drawSoundTab)(void)
 			break;
 		}
 	}
-	if (!g_mouseHeld || !(g_cursorBlink > *(const float *)0x4a9424))
+	if (!g_mouseHeld || !(g_cursorBlink > k_1f))
 		return;
 	g_cursorBlink = 0.0f;
 	switch (setupSound_hitTest(g_mouseX, g_mouseY)) {
@@ -521,7 +521,7 @@ void (setup_drawControlTab)(void)
 			sound_playMenu(0);
 		}
 	}
-	if (g_mouseHeld && g_cursorBlink > *(const float *)0x4a9424 && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
+	if (g_mouseHeld && g_cursorBlink > k_1f && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
 		setup_drawControlSlider();
 }
 
@@ -561,7 +561,7 @@ void (setup_drawKeyBindingRows)(int key)
    within 0..100 (0x4dde90 which way) and start the 5.0 highlight timer (0x4ddb98); the bar sets it from the cursor x */
 static void slider_press(void)
 {
-#define VALUE GAME_VAR(int, 0x4de1c8)
+#define VALUE g_sensitivitySlider
 	switch (setupSlider_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		if (VALUE > 0) {
@@ -578,7 +578,7 @@ static void slider_press(void)
 		}
 		break;
 	case 2:
-		VALUE = 1 - ftol((g_mouseX - GAME_VAR(int, 0x4dde80) - 0x108) * (long double)k_m0_5f);
+		VALUE = 1 - ftol((g_mouseX - g_setupControlLeft - 0x108) * (long double)k_m0_5f);
 		break;
 	}
 #undef VALUE

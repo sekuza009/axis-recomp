@@ -188,7 +188,7 @@ int (arena_openSession)(u32 kind, const char *host)
 	}
 	(*(u32 *)&g_connectionKind) = kind;
 	g_dplaySessionCount = 0;
-	GAME_VAR(int, 0xa0b420) = 0;
+	g_unusedSessionWord = 0;
 	(*(int *)&g_localPlayerId) = 0;
 	(*(int *)&g_localPlayerData) = 0;
 	if (kind > 3)

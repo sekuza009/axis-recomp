@@ -187,9 +187,9 @@ void THISCALL (sound_updateListener)(u8 *s)
 #define NOW(k) FIELD(int, s, 0x1eccb54 + ACTOR * 0x8888 + (k) * 4)
 #define LAST(k) FIELD(int, s, 0x1eccb60 + ACTOR * 0x8888 + (k) * 4)
 	if (ACTOR >= 0) {
-		GAME_VAR(int, 0x4de72e) += NOW(0) - LAST(0);
-		GAME_VAR(int, 0x4de732) += NOW(1) - LAST(1);
-		GAME_VAR(int, 0x4de722) += NOW(2) - LAST(2);
+		g_titleWins += NOW(0) - LAST(0);
+		g_titleLosses += NOW(1) - LAST(1);
+		g_titlePoints += NOW(2) - LAST(2);
 		for (int k = 0; k < 3; k++)
 			LAST(k) = NOW(k);
 	}

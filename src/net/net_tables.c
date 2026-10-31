@@ -221,11 +221,11 @@ int (net_asyncSelect)(void *wnd, int which)
    (dplay_check); on a failure everything released again and the error returned, else 0 */
 int (dplay_coInit)(void)
 {
-	GAME_VAR(int, 0xa0b42c) = 0;
-	GAME_VAR(int, 0xa0b430) = 0;
-	GAME_VAR(int, 0xa0b434) = 0;
+	g_unusedDplayWord1 = 0;
+	g_unusedDplayWord2 = 0;
+	g_unusedDplayWord3 = 0;
 	memset((void *)0xa0b470, 0, 0x190 * 4);
-	GAME_VAR(int, 0xa0b438) = 0;
+	g_unusedDplayWord4 = 0;
 	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
 	if (hr >= 0) {
 		hr = GAME_CDECL(0x453770, int, void)();      /* dplay_check */
@@ -343,7 +343,7 @@ void (net_closeAll)(int kind)
 	(*(void **)&g_netLeaveBuffer) = alloc_clear(0x1e);
 	memset((void *)0xa05260, 0, 0x5b);
 	memset((void *)0xa0b280, 0, 0x79);
-	GAME_VAR(int, 0xa05328) = 0;
+	g_unusedNetCloseWord = 0;
 	memset((void *)0xa052e8, 0, 0x3e);
 	memset((void *)0xa05638, 0, 0x10b);
 }
@@ -490,7 +490,7 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 		if (!line)
 			r = 0x8007000e;
 		else {
-			((int (CDECL *)(char *, const char *, ...))GAME_VAR(void *, 0x4a92f0))(line, (const char *)0x4b3e30, shortName, text);   /* wsprintfA */
+			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, (const char *)0x4b3e30, shortName, text);   /* wsprintfA */
 			*out = line;
 		}
 	}
@@ -1349,7 +1349,7 @@ static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 		GAME_VAR(int, answer) = 0x28;
 		g_netLastRequest = 0;
 	}
-	int code = GAME_VAR(int, 0xa05638);
+	int code = g_netRecvBuffer;
 	for (int k = 0; k < count; k++)
 		if (code == codes[k]) {
 			g_netLastRequest = 0;
@@ -1395,7 +1395,7 @@ void (net_recv)(void)
 		break;
 	case 29:
 		recv_all(0xa05630, (void *)0xa052c0, 0x22, start);
-		if (*(const u8 *)0xa052c0) {
+		if (g_netNotice) {
 			g_netNoticeIn = 1;
 			g_netLastRequest = 0;
 		}
@@ -1728,7 +1728,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 	u8 *a = s + p * 0x8888;
 	packet[1] = 1;
 	packet[2] = (u8)p;
-	if (GAME_VAR(int, s + 0x1f1ca8) > 0 && !(GAME_VAR(float, s + 0x234239d) > *(const float *)0x4a93e8)) {
+	if (GAME_VAR(int, s + 0x1f1ca8) > 0 && !(GAME_VAR(float, s + 0x234239d) > k_0f)) {
 		int k = GAME_VAR(int, s + 0x1f1cac) * 16;
 		packet[3] = s[0x1f1668 + k];
 		packet[4] = s[0x1f1cb4];

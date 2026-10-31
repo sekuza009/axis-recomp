@@ -120,7 +120,7 @@ void (menuState100_intro)(void)
 	static const u32 cleared[] = { 0x4df01c, 0x4e0458, 0x680370, 0x4df8e0, 0x4df03c, 0x4df910, 0x4e14fc, 0x9db978, 0x4dda48 };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	GAME_VAR(u32, 0x4deda8) = 0x3f800000;   /* 1.0 */
+	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */
 	g_tunnelPulseStep = 0x3f800000;
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
@@ -147,10 +147,10 @@ void (menu_drawBackground)(void)
    ignore it */
 void (mapSelect_drawDialog)(void)
 {
-#define X0 GAME_VAR(int, 0x9dd908)
-#define Y0 GAME_VAR(int, 0x9dd90c)
-#define X1 GAME_VAR(int, 0x9dd910)
-#define Y1 GAME_VAR(int, 0x9dd914)
+#define X0 g_mapSelectLeft
+#define Y0 g_mapSelectTop
+#define X1 g_mapSelectRight
+#define Y1 g_mapSelectBottom
 	const u32 *bright = (const u32 *)0x9eea98, *dim = (const u32 *)0x9dda70;
 	int hovered = GAME_CDECL(0x440b70, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -210,7 +210,7 @@ void (mapSelect_drawDialog)(void)
 void (mainmenu_drawMapSelect)(void)
 {
 	if (g_dialogOpen != 0)
-		menu_drawFrame(GAME_VAR(int, 0x9dd908), GAME_VAR(int, 0x9dd90c), GAME_VAR(int, 0x9dd910), GAME_VAR(int, 0x9dd914));
+		menu_drawFrame(g_mapSelectLeft, g_mapSelectTop, g_mapSelectRight, g_mapSelectBottom);
 	else
 		mapSelect_drawDialog();
 }
@@ -335,7 +335,7 @@ void (menu_returnToMainFromRoom)(void)
 	game_returnToMainMenu();
 	g_roomRequestOut = 0;
 	g_roomAnswerAwaited = 0;
-	GAME_VAR(int, 0x9dd1b0) = 0;
+	g_unusedRoomWord = 0;
 	g_roomAwaitingServer = 0;
 	g_screen = 300;
 }
@@ -560,7 +560,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	g_menuCameraLookY = 0;
 	(*(u32 *)&g_menuCameraHeight) = nearZ;
 	g_keysBlocked = blocked;
-	GAME_VAR(int, 0x4df8e0) = 0;
+	g_unusedMenuReturnWord = 0;
 	g_roomSlideFarX = 0;
 	g_roomSlideFarY = 0;
 	g_roomSlideFarZ = farZ;
@@ -707,7 +707,7 @@ static void send_result(void)
    the menu music, and message 6 when 0xa0ea94 asks for it. Returns what the original leaves in eax */
 u32 (game_postMatch)(void)
 {
-	GAME_VAR(int, 0x4de6f8) = 1;
+	g_unusedPostMatchFlag = 1;
 	g_matchRunning = 0;
 	if (g_startedFromLobby == 1) {
 		u32 r = GAME_CDECL(0x41e7a0, u32, int)(0);   /* app_closeWindow: quit */

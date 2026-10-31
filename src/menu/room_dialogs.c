@@ -176,17 +176,17 @@ int (gameList_open)(void)
 	g_roomRefreshing = 0;
 	g_roomSearching = 1;
 	g_gameServerState = 0;
-	GAME_VAR(int, 0x9087b0) = 0;
+	g_unusedRoomListWord = 0;
 	g_gameCount = 0;
 	g_gameListLoaded = 1;
 	g_localPlayer = 0;
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
-	GAME_VAR(int, 0x680bb0) = 0;
-	GAME_VAR(int, 0x4df818) = 0;
+	g_gameListTop = 0;
+	g_lobbyListRow = 0;
 	CALL(0x4045e0);   /* arena_clearChatRecord */
-	GAME_VAR(u32, GAME_VAR(u32, 0xa0b334)) = 0x180001;
+	GAME_VAR(u32, g_netRequestWord) = 0x180001;
 	GAME_CDECL(0x4521c0, int, int, int)(0x13, 0x65);   /* net_send */
-	GAME_VAR(int, 0x9dd840) = 0;
+	g_roomNameSum = 0;
 	g_listRefreshPeriod = 0x1e;
 	return 1;
 }
@@ -352,7 +352,7 @@ static void highlight_choice(int choice, int x, int y)
    (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
 void (createDialog_draw)(void)
 {
-#define g_editKey GAME_VAR(int, 0x9dc428)
+#define g_editKey g_fieldTabKey
 	if (g_retypePassword) {
 		room_copyJoinedSettings();
 		field_editGamePassword();
@@ -372,7 +372,7 @@ void (createDialog_draw)(void)
 		memset((void *)0x9dd1d8, 0, 30);
 		strcpy((char *)0x9dd1d8, g_chatLine);
 		if (g_editKey == 10) {
-			highlight_choice(3, GAME_VAR(int, 0x9dd358) + 0x1a2, GAME_VAR(int, 0x9dd364) - 0x30);
+			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
 			g_editKey = 0;
 		} else if (g_editKey == 20) {
@@ -397,7 +397,7 @@ void (createDialog_draw)(void)
 			field_editGameName();
 			g_editKey = 0;
 		} else if (g_editKey == 20) {
-			highlight_choice(1, GAME_VAR(int, 0x9dd358) + 0x62, GAME_VAR(int, 0x9dd364) - 0x30);
+			highlight_choice(1, g_roomLoginLeft + 0x62, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
 			g_typingRoomPassword = 0;
 			g_editKey = 0;
@@ -444,7 +444,7 @@ void (loginForm_update)(void)
 	}
 	if (g_dialogPending || g_paused)
 		return;
-	int key = GAME_VAR(int, 0x9dc428);
+	int key = g_fieldTabKey;
 	if (key == 20 || key == 10) {
 		int k = 0;
 		while (k < 4 && EDITING(k) != 1)
@@ -453,7 +453,7 @@ void (loginForm_update)(void)
 			memset((void *)field[k].text, 0, field[k].size);
 			strcpy((char *)field[k].text, g_chatLine);
 			if (key == 10 && k == 0)
-				highlight_choice(2, GAME_VAR(int, 0x9dd6e8) + 0x172, GAME_VAR(int, 0x9dd6f4) - 0x2c);
+				highlight_choice(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x2c);
 			else {
 				EDITING(k) = 0;
 				if (key == 10)
@@ -462,11 +462,11 @@ void (loginForm_update)(void)
 					EDITING(k + 1) = 1;
 				else {
 					EDITING(0) = 0;
-					highlight_choice(1, GAME_VAR(int, 0x9dd6e8) + 0xaa, GAME_VAR(int, 0x9dd6f4) - 0x2c);
+					highlight_choice(1, g_loginFormLeft + 0xaa, g_loginFormBottom - 0x2c);
 				}
 			}
 		}
-		GAME_VAR(int, 0x9dc428) = 0;
+		g_fieldTabKey = 0;
 	}
 	if (EDITING(0) == 1) {
 		loginForm_openField(0);
@@ -602,10 +602,10 @@ static void stars(char *out, int size, const char *password)
    FUN_00432240, bright) and the border. Returns the frame's or the border's eax */
 u32 (loginDialog_draw)(void)
 {
-#define X0 GAME_VAR(int, 0x9dd6e8)
+#define X0 g_loginFormLeft
 #define Y0 GAME_VAR(int, 0x9dd6ec)
 #define X1 GAME_VAR(int, 0x9dd6f0)
-#define Y1 GAME_VAR(int, 0x9dd6f4)
+#define Y1 g_loginFormBottom
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
@@ -742,10 +742,10 @@ u32 (serverDialog_draw)(void)
    eax */
 u32 (roomLogin_draw)(void)
 {
-#define X0 GAME_VAR(int, 0x9dd358)
-#define Y0 GAME_VAR(int, 0x9dd35c)
+#define X0 g_roomLoginLeft
+#define Y0 g_roomLoginTop
 #define X1 GAME_VAR(int, 0x9dd360)
-#define Y1 GAME_VAR(int, 0x9dd364)
+#define Y1 g_roomLoginBottom
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
@@ -835,10 +835,10 @@ static void rank_badge(int rank, int x, int y)
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
 {
-#define X0 GAME_VAR(int, 0x9dd368)
-#define Y0 GAME_VAR(int, 0x9dd36c)
-#define X1 GAME_VAR(int, 0x9dd370)
-#define Y1 GAME_VAR(int, 0x9dd374)
+#define X0 g_accountPanelLeft
+#define Y0 g_accountPanelTop
+#define X1 g_accountPanelRight
+#define Y1 g_accountPanelBottom
 #define K(addr) ((const float *)(addr))
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
 	int hovered = GAME_CDECL(0x4322c0, int, int, int)(g_mouseX, g_mouseY);   /* account_hitTest */
@@ -1100,8 +1100,8 @@ static void creategame_close(void)
    leaves eax to callers that ignore it */
 void (createDialog_keys)(void)
 {
-#define g_editKey GAME_VAR(int, 0x9dc428)
-	int dialogX = GAME_VAR(int, 0x9dd358), dialogBottom = GAME_VAR(int, 0x9dd364) - 0x30;
+#define g_editKey g_fieldTabKey
+	int dialogX = g_roomLoginLeft, dialogBottom = g_roomLoginBottom - 0x30;
 	if (g_roomRequestOut || g_roomLoginDue) {
 		if (input_justPressed(g_keyCancel2)) {
 			g_roomRequestOut = 0;
@@ -1173,7 +1173,7 @@ void (createDialog_keys)(void)
 	if (input_isDown(g_keyLeftShift) == 1 || input_isDown(g_keyRightShift) == 1) {
 		g_editKey = 10;
 		if (choice == 1) {
-			highlight_choice(0, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
+			highlight_choice(0, dialogX + 0x180, g_roomLoginTop + 0x88);
 			field_editGamePassword();
 			g_typingRoomPassword = 1;
 			g_chatFieldFlag = 1;
@@ -1189,7 +1189,7 @@ void (createDialog_keys)(void)
 		else if (choice == 2)
 			highlight_choice(3, dialogX + 0x1a2, dialogBottom);
 		else if (choice == 3) {
-			highlight_choice(3, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
+			highlight_choice(3, dialogX + 0x180, g_roomLoginTop + 0x88);
 			field_editGameName();
 			g_editKey = 0;
 			g_typingRoomName = 1;

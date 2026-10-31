@@ -182,8 +182,8 @@ u32 (gfx_setMenuCamera)(void)
 }
 
 /* ---- a dialog frame opening on (x0, y0) .. (x1, y1) (phase 0x4de740, frame counter 0x76d428) ---- */
-#define g_framePhase GAME_VAR(int, 0x4de740)
-#define g_frameCount GAME_VAR(int, 0x76d428)
+#define g_framePhase g_menuFramePhase
+#define g_frameCount g_menuFrameCounter
 
 /* the counter's progress: frames x the frame time x scale (unrounded) */
 static long double frame_progress(const float *scale)
@@ -201,7 +201,7 @@ static int up_to(long double progress, int limit)
 static float fading(void)
 {
 	long double a = frame_progress((const float *)0x4a93ec);
-	return a > *(const float *)0x4a9424 ? 0.0f : f32(fsubr_m(a, (const float *)0x4a9424));   /* 1 - a */
+	return a > k_1f ? 0.0f : f32(fsubr_m(a, (const float *)0x4a9424));   /* 1 - a */
 }
 
 static void line(int xa, int ya, int xb, int yb)
@@ -216,7 +216,7 @@ static void line(int xa, int ya, int xb, int yb)
 static int phase_done(int next)
 {
 	g_frameCount++;
-	if (fmul_m((long double)(g_frameCount << 6), &g_frameTime) > *(const float *)0x4a9510) {
+	if (fmul_m((long double)(g_frameCount << 6), &g_frameTime) > k_640f) {
 		g_framePhase = next;
 		g_frameCount = 0;
 		return 1;

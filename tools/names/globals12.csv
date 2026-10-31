@@ -2,17 +2,10 @@
 0x4db850,int,g_editingNewArenaFragLimit
 0x4db518,int,g_editingNewArenaTimeLimit
 0x4db70c,int,g_editingArenaMessage
-0x9dd830,int,g_editingGameName
-0x9dd38c,int,g_editingGamePassword
 0x9dd69c,int,g_editingOldPassword
 0x9dd37c,int,g_editingAccountPassword
 0x9dd378,int,g_editingPasswordRepeat
 0x9dd304,int,g_editingEmail
-0x9dd6c8,int,g_editingRoomMessage
-0x9dd348,int,g_editingLoginName
-0x9dd3f8,int,g_editingLoginPassword
-0x9dd564,int,g_editingLoginRepeat
-0x9dd6cc,int,g_editingLoginEmail
 # the pen font, the mouse
 0xa106ac,int,g_penFontTexture
 0x4ded70,int,g_mouseWheelTurned

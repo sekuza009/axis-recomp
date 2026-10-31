@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
-#define g_listTop GAME_VAR(int, 0x680bb0)
+#define g_listTop g_gameListTop
 #define g_searching (g_lanSearch || g_lobbySearching)
 
 static const u32 *const bright = (const u32 *)0x4dba98, *const dim = (const u32 *)0x4db8a0;
@@ -95,10 +95,10 @@ static void game_page(int x1, int y, int pages_count)
 }
 
 /* ---- the arena lobby's ---- */
-#define X0 GAME_VAR(int, 0x4db8c8)
-#define Y0 GAME_VAR(int, 0x4db8cc)
-#define X1 GAME_VAR(int, 0x4db8d0)
-#define Y1 GAME_VAR(int, 0x4db8d4)
+#define X0 g_arenaGameListLeft
+#define Y0 g_arenaGameListTop
+#define X1 g_arenaGameListRight
+#define Y1 g_arenaGameListBottom
 
 /* a box over the list with a line (0x74f124 joining / 0x74f624 full) and a dark field (with the arena's name, 0x4db520,
    when joining) */
@@ -230,10 +230,10 @@ void (arena_drawGameList)(void)
 #undef Y1
 
 /* ---- the game room's ---- */
-#define X0 GAME_VAR(int, 0x9dd4a8)
-#define Y0 GAME_VAR(int, 0x9dd4ac)
-#define X1 GAME_VAR(int, 0x9dd4b0)
-#define Y1 GAME_VAR(int, 0x9dd4b4)
+#define X0 g_roomGameListLeft
+#define Y0 g_roomGameListTop
+#define X1 g_roomGameListRight
+#define Y1 g_roomGameListBottom
 
 static const u32 *const room_bright = (const u32 *)0x9dcec0, *const room_dim = (const u32 *)0x9dd338;
 
@@ -354,7 +354,7 @@ void (gameList_drawPage)(void)
 	if (g_gameListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
-		if (t > *(const float *)0x4a944c) {
+		if (t > k_20f) {
 			g_gameListClickArmed = 0;
 			(*(int *)&g_gameListClickTimer) = 0;
 		}
@@ -364,7 +364,7 @@ void (gameList_drawPage)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return;
 	if (g_dialogOpen) {
-		menu_drawFrame(GAME_VAR(int, 0x9dd4a8), GAME_VAR(int, 0x9dd4ac), GAME_VAR(int, 0x9dd4b0), GAME_VAR(int, 0x9dd4b4));
+		menu_drawFrame(g_roomGameListLeft, g_roomGameListTop, g_roomGameListRight, g_roomGameListBottom);
 		return;
 	}
 	if (g_roomSearching) {
@@ -484,9 +484,9 @@ void (arena_drawNameDialog)(void)
 /* the selection one row up (the list scrolls at the top row) */
 static void games_up(void)
 {
-	int row = GAME_VAR(int, 0x4df818);
+	int row = g_lobbyListRow;
 	if (row > 0)
-		GAME_VAR(int, 0x4df818) = --row;
+		g_lobbyListRow = --row;
 	else if (g_listTop > 0)
 		g_listTop--;
 	g_localPlayer = g_listTop + row;
@@ -495,11 +495,11 @@ static void games_up(void)
 /* one row down (nine rows shown), unless at the last game: 0 then */
 static int games_down(void)
 {
-	int row = GAME_VAR(int, 0x4df818);
+	int row = g_lobbyListRow;
 	if (g_listTop + row >= g_gameCount - 1)
 		return 0;
 	if (row < 8)
-		GAME_VAR(int, 0x4df818) = ++row;
+		g_lobbyListRow = ++row;
 	else
 		g_listTop++;
 	g_localPlayer = g_listTop + row;
@@ -596,7 +596,7 @@ void (gameList_mouse)(void)
 			int row = on - 4;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == GAME_VAR(int, 0x4df818) && g_gameListClickArmed) {
+			if (row == g_lobbyListRow && g_gameListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (g_roomSearching || g_roomRefreshing) {
@@ -614,7 +614,7 @@ void (gameList_mouse)(void)
 				sound_playMenu(0);
 				g_gameListClickArmed = 1;
 				(*(int *)&g_gameListClickTimer) = 0;
-				GAME_VAR(int, 0x4df818) = row;
+				g_lobbyListRow = row;
 				g_localPlayer = g_listTop + row;
 			}
 		}
@@ -622,7 +622,7 @@ void (gameList_mouse)(void)
 	if (!g_mouseHeld)
 		return;
 	int on = gameList_hitTest(g_mouseX, g_mouseY);
-	if ((on != 13 && on != 14) || !(g_cursorBlink >= *(const float *)0x4a93d0))
+	if ((on != 13 && on != 14) || !(g_cursorBlink >= k_5f))
 		return;
 	if (on == 13 || games_down()) {
 		if (on == 13)
@@ -686,7 +686,7 @@ void (room_gameListKeys)(void)
 		return;
 	}
 	if (input_isDown(g_keyUp)) {
-		if (g_cursorBlink >= *(const float *)0x4a93d0) {
+		if (g_cursorBlink >= k_5f) {
 			sound_playMenu(2);
 			g_cursorBlink = 0.0f;
 			games_up();
@@ -694,7 +694,7 @@ void (room_gameListKeys)(void)
 		return;
 	}
 	if (input_isDown(g_keyDown)) {
-		if (g_cursorBlink >= *(const float *)0x4a93d0) {
+		if (g_cursorBlink >= k_5f) {
 			sound_playMenu(2);
 			g_cursorBlink = 0.0f;
 			games_down();
@@ -713,7 +713,7 @@ static void blink_down(void)
 {
 	long double blink = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &g_lobbyBlinkClock);
 	g_lobbyBlinkClock = f32(blink);
-	if (!(blink >= *(const float *)0x4a9418))
+	if (!(blink >= k_10f))
 		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 }
 
@@ -730,7 +730,7 @@ void (lobbyJoin_draw)(void)
 	if (g_arenaListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_arenaSearchClock);
 		g_arenaSearchClock = f32(t);
-		if (t > *(const float *)0x4a944c) {
+		if (t > k_20f) {
 			g_arenaListClickArmed = 0;
 			(*(int *)&g_arenaSearchClock) = 0;
 		}
@@ -740,7 +740,7 @@ void (lobbyJoin_draw)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return;
 	if (g_dialogOpen) {
-		menu_drawFrame(GAME_VAR(int, 0x4db8c8), GAME_VAR(int, 0x4db8cc), GAME_VAR(int, 0x4db8d0), GAME_VAR(int, 0x4db8d4));
+		menu_drawFrame(g_arenaGameListLeft, g_arenaGameListTop, g_arenaGameListRight, g_arenaGameListBottom);
 		return;
 	}
 	if (g_lanSearch) {
@@ -748,7 +748,7 @@ void (lobbyJoin_draw)(void)
 			dplay_listSessions();
 		long double t = fsubr_m(fmul_m(fld_m((const float *)0x4ad498), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(t);
-		if (!(t > *(const float *)0x4a93e8)) {
+		if (!(t > k_0f)) {
 			arenaList_rebuild();
 			g_lanSearch = 0;
 		}
@@ -811,7 +811,7 @@ void (lobbyJoin_draw)(void)
 		g_arenaFull = 0;
 		memset((void *)0x4dbbd4, 0, 6 * 4);
 		strcpy((char *)0x4dbbd4, (const char *)0x9dc92c);
-		if (*(const char *)0x4dbbd4)
+		if (g_typedArenaName)
 			arena_joinListed(99999);
 	}
 	if (g_lobbyJoinRequest)
@@ -980,7 +980,7 @@ void (lobby_connect)(void)
 			int row = on - 6;
 			if (g_listTop + row >= g_gameCount)
 				return;
-			if (row == GAME_VAR(int, 0x4df818) && g_arenaListClickArmed) {
+			if (row == g_lobbyListRow && g_arenaListClickArmed) {
 				if (g_gameCount <= 0)
 					return;
 				if (lobby_busy()) {
@@ -992,7 +992,7 @@ void (lobby_connect)(void)
 			} else {
 				sound_playMenu(0);
 				g_arenaListClickArmed = 1;
-				GAME_VAR(int, 0x4df818) = row;
+				g_lobbyListRow = row;
 				g_localPlayer = g_listTop + row;
 			}
 			(*(int *)&g_arenaSearchClock) = 0;
@@ -1002,7 +1002,7 @@ void (lobby_connect)(void)
 	if (!g_mouseHeld || g_arenaLobbyMode != 2 || g_arenaFull)
 		return;
 	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
-	if ((on != 15 && on != 16) || !(g_cursorBlink >= *(const float *)0x4a93d0))
+	if ((on != 15 && on != 16) || !(g_cursorBlink >= k_5f))
 		return;
 	if (on == 15 || games_down()) {
 		if (on == 15)

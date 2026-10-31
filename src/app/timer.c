@@ -44,7 +44,7 @@ void (timer_waitFrames)(double frames)
    one before (0x9db988) 100000 calls in a row is moved on by 0x4a94e0 */
 long double (timer_now)(void)
 {
-#define g_time GAME_VAR(double, 0x9db980)
+#define g_time g_clockNow
 #define g_lastCount GAME_VAR(u32, 0x9dbf08)
 	u32 counter[2];
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
