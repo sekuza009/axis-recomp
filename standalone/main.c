@@ -52,6 +52,55 @@ static IMAGE_NT_HEADERS32 *nt_of(const BYTE *image) { return (IMAGE_NT_HEADERS32
 
 /* the game's image at 0x400000: from the data built into AxisRC.exe (its header, .rdata, .data and the few bytes of
    .text anything reads), or with path from that exe file (AXISRC_IMAGE=1: the whole file, to compare) */
+/* a piece of the game's data as C (src/data/data.h; tools/mkdatasrc.py) */
+typedef struct { DWORD address; const void *bytes; DWORD size; } DataPiece;
+extern const DataPiece g_rdataPieces[], g_dataPieces[], g_text_dataPieces[];
+
+/* AXISRC_DATACHECK=1 (a check): the image as mapped from the built-in data and src/data compared with the exe file
+   (path) over .rdata, .data and src/data's pieces in .text, before the patch layer changes anything. A word may
+   only differ where the file has a rebuilt function's address (or a jump stub's to one) and the image that
+   function's own address: src/data names the functions, AXIS_DIRECT makes them the C ones */
+static void data_check(const char *path)
+{
+	HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (h == INVALID_HANDLE_VALUE) { fprintf(g_log, "AXISRC_DATACHECK: cannot open %s\n", path); return; }
+	DWORD size = GetFileSize(h, NULL), got = 0;
+	BYTE *file = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	ReadFile(h, file, size, &got, NULL);
+	CloseHandle(h);
+	IMAGE_NT_HEADERS32 *nt = nt_of(file);
+	IMAGE_SECTION_HEADER *s = IMAGE_FIRST_SECTION(nt);
+	DWORD same = 0, functions = 0, bad = 0;
+	for (int i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+		DWORD va = GAME_BASE + s[i].VirtualAddress, n = s[i].SizeOfRawData < s[i].Misc.VirtualSize ? s[i].SizeOfRawData : s[i].Misc.VirtualSize;
+		if (!memcmp(s[i].Name, ".text", 6)) {   /* (of .text only src/data's pieces, byte by byte) */
+			for (const DataPiece *p = g_text_dataPieces; p->address; p++)
+				for (DWORD a = p->address; a < p->address + p->size; a++) {
+					if (*(const BYTE *)a == file[s[i].PointerToRawData + (a - va)]) { same++; continue; }
+					if (bad++ < 20)
+						fprintf(g_log, "AXISRC_DATACHECK: %08lx (.text) is %02x, the exe has %02x\n", a, *(const BYTE *)a,
+						        file[s[i].PointerToRawData + (a - va)]);
+				}
+			continue;
+		}
+		if (memcmp(s[i].Name, ".rdata", 7) && memcmp(s[i].Name, ".data", 6))
+			continue;
+		for (DWORD a = va; a < va + n; a += 4) {
+			DWORD want = *(const DWORD *)(file + s[i].PointerToRawData + (a - va)), have = *(const DWORD *)a;
+			if (have == want) { same++; continue; }
+			int ok = 0;
+			for (int k = 0; k < g_saNhooks && !ok; k++)
+				ok = g_saHooks[k].addr == want && (DWORD)g_saHooks[k].fn == have;
+			if (ok) { functions++; continue; }
+			if (bad++ < 20)
+				fprintf(g_log, "AXISRC_DATACHECK: %08lx is %08lx, the exe has %08lx\n", a, have, want);
+		}
+	}
+	fprintf(g_log, "AXISRC_DATACHECK: %lu words the same, %lu a rebuilt function's own address, %lu different\n",
+	        same, functions, bad);
+	VirtualFree(file, 0, MEM_RELEASE);
+}
+
 static void map_game(const char *path)
 {
 	BYTE *file = NULL;
@@ -91,8 +140,18 @@ static void map_game(const char *path)
 			memcpy((void *)at, c + 8, n);
 			total += n;
 		}
-		fprintf(g_log, "mapped the game's data built into AxisRC.exe at %#x (%lu bytes in %lu pieces; AxisGL.exe not read)\n",
+		fprintf(g_log, "mapped the game's header and code bytes built into AxisRC.exe at %#x (%lu bytes in %lu pieces; AxisGL.exe not read)\n",
 		        GAME_BASE, total, pieces);
+		/* the game's data, as C (src/data/, tools/mkdatasrc.py): .rdata, .data, the data kept in .text */
+		const DataPiece *tables[3] = { g_rdataPieces, g_dataPieces, g_text_dataPieces };
+		total = pieces = 0;
+		for (int t = 0; t < 3; t++)
+			for (const DataPiece *p = tables[t]; p->address; p++, pieces++) {
+				if (p->address < GAME_BASE || p->address + p->size > GAME_BASE + size) fail("src/data has a piece outside the image (%s)", "tools/mkdatasrc.py");
+				memcpy((void *)p->address, p->bytes, p->size);
+				total += p->size;
+			}
+		fprintf(g_log, "the game's data from src/data: %lu bytes in %lu pieces\n", total, pieces);
 	}
 	g_before = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!g_before) fail("out of memory (%s)", "the image's copy");
@@ -330,6 +389,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	if (!g_log) fail("cannot write %s", path);
 	snprintf(path, sizeof path, "%sAxisGL.exe", dir);
 	map_game(GetEnvironmentVariableA("AXISRC_IMAGE", NULL, 0) ? path : NULL);
+	if (GetEnvironmentVariableA("AXISRC_DATACHECK", NULL, 0) && !GetEnvironmentVariableA("AXISRC_IMAGE", NULL, 0))
+		data_check(path);
 	resolve_imports();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	{	/* what the patch layer changed in the game's code (to compare the built-in data with the exe file) */

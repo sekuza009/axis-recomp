@@ -75,10 +75,13 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 #define GAME_THISFN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (THISCALL *)(__VA_ARGS__))(void *)FN_##name)
 /* a rebuilt function's address as a value (a callback, a table of handlers), constant enough for static data */
 #define FN_ADDR(name, addr) ((u32)(void *)FN_##name + 0 * sizeof(char[(addr) == FNADDR_##name ? 1 : -1]))
+/* the same through a compiler jump stub at stub (the original's data points at the stub, which only jumps on) */
+#define FN_VIA(name, addr, stub) FN_ADDR(name, addr)
 #else
 #define GAME_FN(name, addr, ret, ...) GAME_CDECL(addr, ret, __VA_ARGS__)
 #define GAME_THISFN(name, addr, ret, ...) GAME_THISCALL(addr, ret, __VA_ARGS__)
 #define FN_ADDR(name, addr) (addr)
+#define FN_VIA(name, addr, stub) (stub)
 #endif
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would */

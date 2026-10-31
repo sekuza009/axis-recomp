@@ -7,7 +7,8 @@ python tools/mkscene.py >/dev/null
 CC="python -m ziglang cc -target x86-windows-gnu"
 mkdir -p build/obj
 objs=()
-for f in $(find src -name '*.c' | sort); do
+# (not src/data: the game's data as C is AxisRC.exe's; the harness runs inside the game's own image)
+for f in $(find src -name '*.c' -not -path 'src/data/*' | sort); do
 	o="build/obj/$(echo "${f#src/}" | tr '/' '_' | sed 's/\.c$/.o/')"
 	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -o "$o" "$f"
 	objs+=("$o")
