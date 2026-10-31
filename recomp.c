@@ -5425,7 +5425,8 @@ THISCALL void actor_render(char *s, DWORD i, DWORD dt);
    +0x202ef34): moved by its weapon's speed (the weapon record at +0x14d1ab4), aged, its homing towards its target,
    its trail particles, its hits found against the actors (math_segmentSphere and FUN_0047d9a0, real) and applied
    (bullet_playImpactSound, the damage: stubbed), its explosion; the hit sounds */
-static THISCALL DWORD bullet_update(char *s, DWORD slot, DWORD dt) { DWORD v[2] = { slot, dt }; return run_lifted(lift_47a2d0, (DWORD)s, 2, v); }
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+THISCALL void bullet_update(char *s, DWORD slot, DWORD dt);
 /* batch 191 (lifted/grp147.c): the bullets' and particles' frame loops */
 #include "lifted/grp147.c"
 /* 0x47d000 bullet_updateAll(dt) / 0x479a90 match_479a90(dt) (thiscall on the scene, ret 4): unless the game is paused
@@ -16117,6 +16118,11 @@ static void bulletframe_setup(void)
 	S32(b, 0xc) = irnd(0, 15); S32(b, 0xb4) = irnd(-1, 15); S32(b, 0x4e4) = irnd(0, 10);   /* owner actor, a second actor, the trail count (20 entries from +0x494) */
 	*(BYTE *)(BUF + 0x600) = (BYTE)irnd(0, 255); S32(b, 0x6c) = (int)(BUF + 0x600);
 	for (int w = 0; w < 8; w++) for (int k = 0; k < 0x80; k++) GF(BUF + 0x14d1ab4 + w * 0x2e18 + 4 * k) = (float)irnd(-1000, 1000) / 10.0f;
+	for (int w = 0; w < 8; w++) {   /* the kind (3 a trail, 7 a beam), the hit mode and damage, the hit sound (-1 none) as integers */
+		char *wr = BUF + 0x14d1ab4 + w * 0x2e18; static const int kinds[] = { 0, 1, 2, 3, 3, 4, 5, 6, 7, 7 };
+		S32(wr, 0x2dfc) = kinds[irnd(0, 9)]; S32(wr, 0x2ddc) = irnd(0, 3); S32(wr, 0x2de0) = irnd(0, 100); S32(wr, 0x2e04) = irnd(-1, 5);
+	}
+	S32(b, 0x9c) = irnd(0, 1);   /* moved this frame (another player's bullet: by the network) */
 	G32(0x83a9c8) = irnd(0, 1);
 	g_a[0] = slot; GF(&g_a[1]) = (float)irnd(1, 100) / 1000.0f;
 }
