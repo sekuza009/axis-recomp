@@ -485,9 +485,9 @@ void (match_debugHandler)(void)
 	}
 	if (input_justPressed(g_keyCancel2)) {
 		if (g_isHost) {
-			GAME_VAR(int, 0x9f941c) = 1;
+			g_hostResultFlag = 1;
 			net_sendMessage((void *)0x9f9418, 0, 0);
-			GAME_VAR(int, 0x9f941c) = 0;
+			g_hostResultFlag = 0;
 		}
 		GAME_VAR(int, 0x4de6f8) = 1;
 		game_returnToMenus_41e8b0();
@@ -514,7 +514,7 @@ void (match_debugHandler)(void)
 		menuCamera_forward();
 	if (input_isDown(GAME_VAR(int, 0x4def18)) == 1)
 		menuCamera_back();
-	GAME_VAR(u32, 0x680378) = GAME_VAR(u32, 0x4de344);
+	g_menuCameraLook = GAME_VAR(u32, 0x4de344);
 	GAME_VAR(u32, 0x680380) = GAME_VAR(u32, 0x4de34c);
 	F(0x4df024) = f32(fsubr_m(fmul_m(fld_m(&F(0x4de6c0)), (const float *)0x4a9560), &F(0x4de344)));
 	F(0x4df028) = f32(fadd_m(fld_m(&F(0x4de348)), (const float *)0x4a9418));

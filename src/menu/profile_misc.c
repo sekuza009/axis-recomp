@@ -479,7 +479,7 @@ static u32 keyboard_back(void)
 /* the typed line emptied (its length 0x9dcd30) */
 static void line_wipe(void)
 {
-	int n = GAME_VAR(int, 0x9dcd30);
+	int n = g_typedLength;
 	if (n > 0)
 		memset((void *)0x9dc92c, 0, n);
 }

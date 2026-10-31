@@ -49,11 +49,11 @@ static void make_rotation(Scene *s)
 			int mode = g_chosenGameMode;
 			if (mode >= 14)
 				mode = GAME_VAR(int, entry + 4);
-			set_round(&s->rotation[s->rotationCount++], k, mode, GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408));
+			set_round(&s->rotation[s->rotationCount++], k, mode, g_fragLimit, g_timeLimit);
 		}
 	} else {
 		s->rotationCount = 1;
-		set_round(&s->rotation[0], g_mapIndex, g_chosenGameMode, GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408));
+		set_round(&s->rotation[0], g_mapIndex, g_chosenGameMode, g_fragLimit, g_timeLimit);
 	}
 	s->rotationAt = 0;
 	g_mapIndex = s->rotation[0].map;
@@ -79,8 +79,8 @@ static void first_round(Scene *s)
 	make_rotation(s);
 	if (s->rotationCount > 0)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);
-	s->scoreLimit = GAME_VAR(int, 0x4df8e8);
-	s->timeLimit = GAME_VAR(int, 0x76d408);
+	s->scoreLimit = g_fragLimit;
+	s->timeLimit = g_timeLimit;
 	strcpy(s->mechName, (const char *)0x4dedd8);
 	s->mechValue = GAME_VAR(int, 0x9f1818);
 	if (s->showEmblems == 1) {
@@ -176,7 +176,7 @@ static void later_round(Scene *s)
 	(void)timer_getGameTime((u8 *)s + 0xc);
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	sound_setVolume(GAME_VAR(int, 0x4e0c90));
+	sound_setVolume(g_soundVolume);
 	set_4b42dc_457140(GAME_VAR(int, 0x4e0c94));
 	s->roundClear4 = 0;
 	s->teamAsked = 0;

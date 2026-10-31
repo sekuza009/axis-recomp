@@ -158,7 +158,7 @@ void (arena_drawGameList)(void)
 	if (GAME_VAR(int, 0x4dbac8) || GAME_VAR(int, 0x4dbaa8)) {
 		int full = GAME_VAR(int, 0x4dbaa8);
 		game_rows(X0, Y0, 0x78, 0x150, full, 0x4db8d8, 20, full);
-		game_page(X1, Y1 - 0x4c, GAME_VAR(int, 0x4dbac8) ? g_gameCount : GAME_VAR(int, 0xa0b368));
+		game_page(X1, Y1 - 0x4c, GAME_VAR(int, 0x4dbac8) ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x32, X1 - 0x10, Y1 - 0x32);
@@ -373,7 +373,7 @@ void (gameList_drawPage)(void)
 		return;
 	}
 	if (GAME_VAR(int, 0x9dd6a0)) {
-		if (GAME_VAR(int, 0x9da498) == 1) {
+		if (g_roomSearchAnswerIn == 1) {
 			int result = GAME_VAR(int, 0x76d484);
 			if (result != 2 && (u32)(result + 1) <= 5) {
 				g_lobbySearching = 0;
@@ -387,7 +387,7 @@ void (gameList_drawPage)(void)
 					menu_showMessage(0x2a);
 			}
 			GAME_VAR(int, 0x9dd6a0) = 0;
-			GAME_VAR(int, 0x9da498) = 0;
+			g_roomSearchAnswerIn = 0;
 			GAME_VAR(int, 0x9dd3fc) = 1;
 		}
 		long double blink = fsubr_m(fmul_m(fld_m(step), &g_frameTime), &g_lobbyBlinkClock);
@@ -410,7 +410,7 @@ void (gameList_drawPage)(void)
 		if (g_netListDone) {
 			room_434ff0();
 			GAME_VAR(int, 0x9dd6a0) = 0;
-			GAME_VAR(int, 0x9da498) = 0;
+			g_roomSearchAnswerIn = 0;
 			GAME_VAR(int, 0x9dd3fc) = 0;
 		}
 	}
@@ -516,12 +516,12 @@ static void games_stop(void)
 {
 	sound_playMenu(0);
 	GAME_VAR(u32, 0x4dba80) = 0x3f800000;   /* 1 */
-	GAME_VAR(int, 0xa0b34c) = 0;
-	GAME_VAR(int, 0x9da498) = 1;
+	g_gameServerState = 0;
+	g_roomSearchAnswerIn = 1;
 	if (GAME_VAR(int, 0x9dd3fc) == 1) {
 		GAME_VAR(int, 0x9dd3fc) = 0;
 		GAME_VAR(int, 0x9dd6a0) = 0;
-		GAME_VAR(int, 0x9da498) = 0;
+		g_roomSearchAnswerIn = 0;
 	}
 	g_netListDone = 1;
 }
@@ -534,7 +534,7 @@ static int games_leave(void)
 		return 0;
 	}
 	sound_playMenu(0);
-	GAME_VAR(int, 0xa0b34c) = 0;
+	g_gameServerState = 0;
 	g_roomMode = 0;
 	GAME_VAR(int, 0xa0b364) = 0;
 	g_netListDone = 1;
@@ -559,7 +559,7 @@ void (gameList_mouse)(void)
 		if (g_searching)
 			return;
 		sound_playMenu(0);
-		GAME_VAR(int, 0xa0b34c) = 0;
+		g_gameServerState = 0;
 		g_roomMode = 0;
 		GAME_VAR(int, 0xa0b364) = 0;
 		return;
@@ -715,7 +715,7 @@ void (room_gameListKeys)(void)
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
 		g_roomMode = 0;
-		GAME_VAR(int, 0xa0b34c) = 0;
+		g_gameServerState = 0;
 	}
 }
 
@@ -825,7 +825,7 @@ void (lobbyJoin_draw)(void)
 		if (*(const char *)0x4dbbd4)
 			arena_joinListed(99999);
 	}
-	if (GAME_VAR(int, 0x4dbbf0))
+	if (g_lobbyJoinRequest)
 		arena_joinSession(g_localPlayer);
 }
 
@@ -842,12 +842,12 @@ static int lobby_busy(void)
 static void lobby_join(void)
 {
 	sound_playMenu(0);
-	if (GAME_VAR(int, 0x4dbaac)) {
+	if (g_serverConnected) {
 		GAME_VAR(int, 0x4dbbec) = 1;
-		GAME_VAR(int, 0x4dbbf0) = 0;
+		g_lobbyJoinRequest = 0;
 		arena_chatLine();
 	} else {
-		GAME_VAR(int, 0x4dbbf0) = 1;
+		g_lobbyJoinRequest = 1;
 		GAME_VAR(int, 0x4dbbec) = 0;
 	}
 }
@@ -902,22 +902,22 @@ void (lobby_connect)(void)
 				}
 				if (GAME_VAR(int, 0x4dba84))
 					arena_leaveSession();
-				GAME_VAR(int, 0xa0b368) = 0;
+				g_serverListCount = 0;
 				arena_openSession(1, NULL);
 				GAME_VAR(int, 0x680bb8) = 0;
 				g_lanSearch = 1;
 				GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 				g_gameCount = 0;
-				GAME_VAR(int, 0x4dbaac) = 0;
+				g_serverConnected = 0;
 				GAME_VAR(int, 0x4dba84) = 1;
 				GAME_VAR(int, 0x4db854) = 0;
 			} else {
 				g_lobbyConnectionOpen = 0;
 				net_disconnect();
 				arena_leaveSession();
-				GAME_VAR(int, 0xa0b368) = 0;
+				g_serverListCount = 0;
 				if (lobby_openConnection() == 1) {
-					GAME_VAR(int, 0x4dbaac) = 1;
+					g_serverConnected = 1;
 					g_lobbySearching = 1;
 					GAME_VAR(int, 0x4db854) = 1;
 					GAME_VAR(int, 0x4dba84) = 0;

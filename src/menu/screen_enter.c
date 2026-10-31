@@ -396,7 +396,7 @@ void (console_init)(void)
 	GAME_VAR(int, 0x5b1dac) = 1;
 	GAME_VAR(float, 0x4e1870) = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, GAME_VAR(int, 0x83a9c4), 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
+	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, GAME_VAR(int, 0x76d480));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (GAME_VAR(int, 0x9db990)) {
 		g_matchMode = 0;

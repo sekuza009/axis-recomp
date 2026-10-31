@@ -84,7 +84,7 @@ void (menu_frame)(void)
 		menu_onStateChange();
 		menu_processKeys();
 	}
-	if (g_screen == 300 && GAME_VAR(int, 0x9db994) && !g_dialogPending) {
+	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a9468), &g_viewAspect));   /* 0.05 a frame */
 		F(0x4df02c) = fadd_m(fld_m((const float *)0x4df02c), (const float *)0x4a9418);                       /* the camera 10 back */
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
@@ -120,7 +120,7 @@ void (menu_frame)(void)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
-	SwapBuffers(GAME_VAR(void *, 0x76d480));
+	SwapBuffers(g_desktopDC);
 	switch (g_fovKeys) {
 	case 1:
 		if (g_viewAngle > F(0x4a93d0))
@@ -652,7 +652,7 @@ static void zoom_view(u8 *s, const float *step)
 static int replay_next(u8 *s)
 {
 	u8 *stage = s + 0x1f36c8;
-	if (GAME_VAR(int, 0x9eeac0) == 1) {
+	if (g_replayRandomOrder == 1) {
 		scene_resetActors(stage);
 		scene_reset(stage);
 		S(u32, 0x1f35c0) = S(int, 0x1f35bc) > 0 ? rand_below(S(u32, 0x1f35bc)) : 0;
@@ -1068,7 +1068,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	GAME_VAR(int, 0x4ded68) = gfx_getWidth() / 2;
 	GAME_VAR(int, 0x4ded6c) = gfx_getHeight() / 2;
 	if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0)) {
-		GAME_VAR(int, 0x9db994) = 0;
+		g_mainMenuFadingIn = 0;
 		S(int, 0x23432cf) = 1;
 	}
 	if (run_down(s, 0x233cc40))
@@ -1278,7 +1278,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)0x4b21b8, (const char *)0x4b21b0, (const char *)0x4d06ec };   /* NOTEAM */
 	void *f = crt_fopen((const char *)0x4d06e0, (const char *)0x4b21a4);   /* "axiswl.log" */
-	crt_fprintf(f, format, (const char *)0x67fb44, GAME_VAR(int, 0x9dad94), GAME_VAR(int, 0x4df8e8), GAME_VAR(int, 0x76d408), (const char *)0x4dedd8);
+	crt_fprintf(f, format, (const char *)0x67fb44, GAME_VAR(int, 0x9dad94), g_fragLimit, g_timeLimit, (const char *)0x4dedd8);
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;

@@ -23,7 +23,7 @@ void (cfg_defaultPlayerName)(void)
 /* 0x404930: the profile's name and fields (0x4dedb0) */
 void (lobby_404930)(void)
 {
-	GAME_VAR(int, 0x4db584) = GAME_VAR(int, 0x4dedd4);
+	GAME_VAR(int, 0x4db584) = g_playerSex;
 	copy_name(0x4db560, 32, (const char *)0x4dedb0);
 	GAME_VAR(int, 0x4db580) = g_playerCorporation;
 }
@@ -42,7 +42,7 @@ void (menu_clearInputBuffer)(int mode)
 {
 	memset((void *)0x9dc92c, 0, 0x400);
 	GAME_VAR(int, 0x9dbf10) = 0;
-	GAME_VAR(int, 0x9dcd30) = mode;
+	g_typedLength = mode;
 }
 
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
@@ -181,9 +181,9 @@ void (menu_clickStartFade)(void)
 /* ---- the room list's pages: page 0x9dd6ac of 0x9dd4b8 (at most 99), the page before in 0x9dd1b4 ---- */
 static void room_pageChanged(void)
 {
-	GAME_VAR(int, 0x9dd350) = 1;
-	GAME_VAR(int, 0x9dd3b0) = 0;
-	GAME_VAR(int, 0x76d40c) = 0;
+	g_rankingRequestPending = 1;
+	g_rankingHaveList = 0;
+	g_roomListWaiting = 0;
 	GAME_VAR(int, 0xa0b350) = 0;
 	GAME_VAR(int, 0xa0b35c) = 0;
 }
@@ -474,8 +474,8 @@ u32 (mission_choose)(void)
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
-	GAME_VAR(int, 0x4df8e8) = b;
-	GAME_VAR(int, 0x76d408) = c;
+	g_fragLimit = b;
+	g_timeLimit = c;
 	u32 r = GAME_CDECL(0x447960, u32, void)();   /* FUN_00447960: the settings left */
 	GAME_VAR(int, 0x67ef14) = 1;
 	g_matchMode = 3;
@@ -524,12 +524,12 @@ u32 (chat_closeLine)(int ok)
 		input_initKeyboard(g_hWndMain);
 		r = GAME_CDECL(0x4315c0, u32, void)();   /* chat_pushHistory: into the history */
 	} else {
-		if (GAME_VAR(int, 0x9dcd30) > 0)
-			memset((void *)0x9dc92c, 0, GAME_VAR(int, 0x9dcd30));
+		if (g_typedLength > 0)
+			memset((void *)0x9dc92c, 0, g_typedLength);
 		GAME_CDECL(0x431590, void, void)();
 		r = (u32)input_initKeyboard(g_hWndMain);
 	}
-	GAME_VAR(int, 0x9dcd30) = 0;
+	g_typedLength = 0;
 	GAME_VAR(int, 0x9dbf10) = 0;
 	GAME_VAR(u32, 0x9da434) = 0x41200000;   /* 10 */
 	return r;
@@ -645,7 +645,7 @@ static int menu_choice(int i, u32 *r)
    was started from the launcher (0x9dae10). Returns what the original leaves in eax */
 u32 (mainmenu_startNetGame)(void)
 {
-	if (GAME_VAR(int, 0x9db994) == 1)
+	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (GAME_VAR(int, 0x9eeab4))
 		return GAME_CDECL(0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
@@ -674,7 +674,7 @@ u32 (mainmenu_startNetGame)(void)
 u32 (mainmenu_processKeys)(void)
 {
 	static const u32 key[6] = { 0x4e1500, 0x4e1508, 0x4e1504, 0x4e1524, 0x4e0cd4, 0x4e153c };
-	if (GAME_VAR(int, 0x9db994) == 1)
+	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (GAME_VAR(int, 0x9eeab4))
 		return GAME_CDECL(0x441c00, u32, void)();   /* mapSelect_keys */

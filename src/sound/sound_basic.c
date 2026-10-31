@@ -69,7 +69,7 @@ int (sound_setVolume)(int v)
 {
 	if (!GAME_VAR(int, 0xa0e80c))
 		return 0;
-	int p = ftol(fmul_m((long double)GAME_VAR(int, 0x4e0c90) * v, (const float *)0x4a9504));
+	int p = ftol(fmul_m((long double)g_soundVolume * v, (const float *)0x4a9504));
 	if (p < 0) {
 		g_soundBaseVolume = -1000;
 		return p;

@@ -701,15 +701,15 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 		g_panelGlow = f32(glow);
 		if (!clamp) {
 			if (!(glow > *(const float *)0x4a93fc))
-				GAME_VAR(u32, 0x4df454) = 0x3f800000;   /* 1 */
+				g_panelGlowStep = 0x3f800000;   /* 1 */
 			if (glow >= *(const float *)0x4a93f8)
-				GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+				g_panelGlowStep = 0xbf800000;   /* -1 */
 		} else if (!(glow > *(const float *)0x4a93fc)) {
 			GAME_VAR(u32, 0x680ccc) = 0x40000000;   /* 2 */
-			GAME_VAR(u32, 0x4df454) = 0x3f800000;
+			g_panelGlowStep = 0x3f800000;
 		} else if (g_panelGlow >= *(const float *)0x4a93f8) {
 			GAME_VAR(u32, 0x680ccc) = 0x42180000;   /* 38 */
-			GAME_VAR(u32, 0x4df454) = 0xbf800000;
+			g_panelGlowStep = 0xbf800000;
 		}
 	}
 	tunnel_advance(t->turn_only);
@@ -762,10 +762,10 @@ static int hovered_panel(u32 outlines, int count, int locked)
 			break;
 		}
 	GAME_VAR(int, 0x680398) = on != -1;
-	if (on != -1 && GAME_VAR(int, 0x907b24) != on) {
-		GAME_VAR(int, 0x907b24) = on;
+	if (on != -1 && g_lastPanel != on) {
+		g_lastPanel = on;
 		GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
-		GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+		g_panelGlowStep = 0xbf800000;   /* -1 */
 	}
 	return on;
 }
@@ -835,10 +835,10 @@ void (menu_mainMenu)(void)
 		g_hintStep = 0x3d4ccccd;   /* 0.05 */
 		if (GAME_VAR(int, 0x9eeab4))
 			on = -1;
-		else if (GAME_VAR(int, 0x907b24) != on) {
-			GAME_VAR(int, 0x907b24) = on;
+		else if (g_lastPanel != on) {
+			g_lastPanel = on;
 			GAME_VAR(u32, 0x680ccc) = 0x42200000;   /* 40 */
-			GAME_VAR(u32, 0x4df454) = 0xbf800000;   /* -1 */
+			g_panelGlowStep = 0xbf800000;   /* -1 */
 		}
 	}
 	if (GAME_VAR(int, 0x9eeaa8)) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
@@ -897,10 +897,10 @@ void (setup_easePanel)(void)
 		return;
 	X d = ((X)GAME_VAR(float, 0x4a9448) - GAME_VAR(float, 0x4de03c)) * GAME_VAR(float, 0x4b071c) * GAME_VAR(float, 0x4a93ec);
 	GAME_VAR(float, 0x4de03c) = (float)((X)GAME_VAR(float, 0x4de03c) + d);
-	if (!((X)GAME_VAR(float, 0x4ddd90) > (X)GAME_VAR(double, 0x4a9440))) {
+	if (!((X)g_setupTunnelDepth > (X)GAME_VAR(double, 0x4a9440))) {
 		GAME_VAR(int, 0x4dda60) = 0;
 		GAME_VAR(u32, 0x4ddd90) = 0xc4ce4000;
 		return;
 	}
-	GAME_VAR(float, 0x4ddd90) = (float)((X)GAME_VAR(float, 0x4ddd90) - d);
+	g_setupTunnelDepth = (float)((X)g_setupTunnelDepth - d);
 }

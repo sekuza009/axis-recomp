@@ -94,7 +94,7 @@ void (mapList_ok)(void)
 /* 0x4050a0 (arena_saveSettings): the arena's name and two settings kept (0x4dedb0 ..) and the configuration written */
 void (arena_saveSettings)(void)
 {
-	GAME_VAR(int, 0x4dedd4) = GAME_VAR(int, 0x4db584);
+	g_playerSex = GAME_VAR(int, 0x4db584);
 	const char *name = (const char *)0x4db560;
 	char *kept = (char *)0x4dedb0;
 	int i = 0;

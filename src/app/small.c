@@ -658,13 +658,13 @@ int (app_screenSizeForMode)(void)
 {
 	static const int sizes[7][2] = { { 640, 480 }, { 1280, 720 }, { 1600, 900 }, { 1920, 1080 }, { 2560, 1440 },
 	                                 { 3840, 2160 }, { 1024, 768 } };
-	u32 mode = GAME_VAR(u32, 0x83a9c0);
+	u32 mode = g_videoMode;
 	if (mode < 7) {
 		GAME_VAR(int, 0x5b1998) = sizes[mode][0];
 		GAME_VAR(int, 0x4e045c) = sizes[mode][1];
 	} else if (mode == 7) {
-		GAME_VAR(int, 0x5b1998) = GAME_VAR(int, 0x67eefc);
-		GAME_VAR(int, 0x4e045c) = GAME_VAR(int, 0x76d430);
+		GAME_VAR(int, 0x5b1998) = g_desktopWidth;
+		GAME_VAR(int, 0x4e045c) = g_desktopHeight;
 	}
 	return GAME_VAR(int, 0x9da494) = GAME_VAR(int, 0x83a9d8);
 }

@@ -48,7 +48,7 @@ void (lobby_setSubState1)(void)
 	g_arenaLobbyMode = 1;
 	GAME_VAR(u32, 0x4dbba0) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
-	GAME_VAR(int, 0x907b24) = 999;
+	g_lastPanel = 999;
 	GAME_VAR(int, 0xa0b360) = 1;
 	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;
 	g_listRefreshPeriod = 30;
@@ -58,19 +58,19 @@ void (lobby_setSubState1)(void)
    can't be chosen (back to 0); a title still the default one becomes "<player name><suffix>" */
 void (lobby_drawArenaTitle)(void)
 {
-	signed char map = GAME_VAR(signed char, 0x4ded40);
+	signed char map = g_arenaMap;
 	if (map >= 0x16 && map <= 0x18)
-		GAME_VAR(signed char, 0x4ded40) = map = 0;
+		g_arenaMap = map = 0;
 	if (!strcmp((char *)0x4ded20, (const char *)0x4ad4a4)) {
 		memset((void *)0x4ded20, 0, 32);
 		strcpy((char *)0x4ded20, (const char *)0x4dedb0);
 		strcat((char *)0x4ded20, (const char *)0x4ad49c);
-		map = GAME_VAR(signed char, 0x4ded40);
+		map = g_arenaMap;
 	}
 	memset((void *)0x4db528, 0, 32);
 	strcpy((char *)0x4db528, (const char *)0x4ded20);
-	u8 b1 = GAME_VAR(u8, 0x4ded41), b2 = GAME_VAR(u8, 0x4ded42), b3 = GAME_VAR(u8, 0x4ded43), b4 = GAME_VAR(u8, 0x4ded44),
-	   b5 = GAME_VAR(u8, 0x4ded45);
+	u8 b1 = g_arenaPlayers, b2 = GAME_VAR(u8, 0x4ded42), b3 = g_arenaGameType, b4 = g_arenaFragLimit,
+	   b5 = g_arenaTimeLimit;
 	GAME_VAR(signed char, 0x4db548) = map;
 	GAME_VAR(u8, 0x4db54b) = b3;
 	GAME_VAR(u8, 0x4db549) = b1;
@@ -296,7 +296,7 @@ void (room_takeReceivedSettings)(void)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
 	GAME_VAR(int, 0x4dc4b4) = GAME_VAR(int, 0x9dd5d8);
-	GAME_VAR(int, 0x9dd84c) = 1;
+	g_roomConnected = 1;
 }
 
 /* the default mech settings (11 bytes) and six colour pairs (hue 0, chroma 1, value 0.6) at mech, colours */
@@ -536,7 +536,7 @@ u32 (room_leaveGame)(void)
 	GAME_VAR(int, 0x67ef20) = 300;
 	GAME_CDECL(0x48b420, void, void)();                 /* nullsub_48b420 */
 	GAME_CDECL(0x451e60, void, void)();                 /* net_disconnect */
-	GAME_VAR(int, 0x9dd84c) = 0;
+	g_roomConnected = 0;
 	return CALL(0x4463a0);                              /* mech_loadFromProfile */
 }
 
@@ -628,14 +628,14 @@ u32 (lobbyCreate_draw)(void)
 		                                                     GAME_VAR(int, 0x4dbb08), GAME_VAR(int, 0x4dbb0c));   /* menu_drawFrame */
 	signed char players = GAME_VAR(signed char, 0x4ded41);
 	if (players < 0 || players > 0x10)
-		GAME_VAR(u8, 0x4ded41) = 8;
-	if (GAME_VAR(u8, 0x4ded44) > 0xfa)
-		GAME_VAR(u8, 0x4ded44) = 0x1e;
-	if (GAME_VAR(u8, 0x4ded45) > 0xfa)
-		GAME_VAR(u8, 0x4ded45) = 0x1e;
+		g_arenaPlayers = 8;
+	if (g_arenaFragLimit > 0xfa)
+		g_arenaFragLimit = 0x1e;
+	if (g_arenaTimeLimit > 0xfa)
+		g_arenaTimeLimit = 0x1e;
 	signed char map = GAME_VAR(signed char, 0x4ded43);
 	if (map < 0 || map > 0xe)
-		GAME_VAR(u8, 0x4ded43) = 0;
+		g_arenaGameType = 0;
 	CALL(0x40b750);   /* arena_createDraw */
 	if (GAME_VAR(int, 0x4db508) == 1)
 		CALL(0x4038e0);   /* mapList_draw: the map list */
@@ -663,7 +663,7 @@ u32 (lobby_keysQuit)(void)
 	CALL(0x457310);   /* music_shutdown */
 	u32 limits = GAME_VAR(u32, 0x4ded44);
 	g_mapRotation = GAME_VAR(signed char, 0x4ded42);
-	GAME_VAR(int, 0x9dad94) = GAME_VAR(signed char, 0x4ded40);
+	GAME_VAR(int, 0x9dad94) = g_arenaMap;
 	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
 	g_chosenGameMode = GAME_VAR(signed char, 0x4ded43);
 	GAME_VAR(u32, 0x4df8e8) = limits & 0xff;
@@ -725,8 +725,8 @@ static void take_session(const u8 *rec)
 	GAME_VAR(int, 0x67ef14) = 1;
 	GAME_VAR(int, 0x67ef04) = 2;
 	g_chosenGameMode = (signed char)rec[0x2c];
-	GAME_VAR(int, 0x4df8e8) = rec[0x2d];
-	GAME_VAR(int, 0x76d408) = rec[0x2e];
+	g_fragLimit = rec[0x2d];
+	g_timeLimit = rec[0x2e];
 }
 
 /* 0x405690: arena session `session` joined: its record (0x4a bytes from 0x9087c0) gives the colours shown
@@ -737,9 +737,9 @@ u32 (arena_joinSession)(int session)
 {
 	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
 	GAME_VAR(int, 0x4dbbec) = 0;
-	GAME_VAR(int, 0x4dbbf0) = 0;
-	GAME_VAR(u8, 0x4ded45) = GAME_VAR(u8, 0x4db54d) = rec[0x2e];
-	GAME_VAR(u8, 0x4ded44) = GAME_VAR(u8, 0x4db54c) = rec[0x2d];
+	g_lobbyJoinRequest = 0;
+	g_arenaTimeLimit = GAME_VAR(u8, 0x4db54d) = rec[0x2e];
+	g_arenaFragLimit = GAME_VAR(u8, 0x4db54c) = rec[0x2d];
 	int r = GAME_CDECL(0x453180, int, int, u32, const char *, int)(session, *(const u32 *)rec, (const char *)0x4dedb0,
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)
@@ -785,8 +785,8 @@ void (app_shutdown)(void)
 			return;
 		rec = (u8 *)(0x9087c0 + pick * 0x4a);
 		*(u32 *)rec = *GAME_VAR(const u32 *, 0x4dbbf8);
-		GAME_VAR(u8, 0x4ded44) = rec[0x2d];
-		GAME_VAR(u8, 0x4ded45) = rec[0x2e];
+		g_arenaFragLimit = rec[0x2d];
+		g_arenaTimeLimit = rec[0x2e];
 	}
 	int r = dplay_join(0, *(const u32 *)rec, (const char *)0x4dedb0, g_playerCorporation);
 	if (r == 0x1f4) {
@@ -936,7 +936,7 @@ int (lobby_openConnection)(void)
 		}
 	}
 	g_lobbyConnectionOpen = 1;
-	GAME_VAR(int, 0x4dbaac) = 1;
+	g_serverConnected = 1;
 	GAME_VAR(int, 0x4dba88) = 1;
 	g_connectStep = 2;
 	g_serverAnswerIn = 0;
@@ -968,7 +968,7 @@ int (lobby_openConnection)(void)
    Returns the last call's eax */
 u32 (arena_loadAndQuit)(void)
 {
-	if (GAME_VAR(int, 0x76d364) != 1) {
+	if (g_startedByLauncher != 1) {
 		GAME_CDECL(0x404640, void, void)();   /* menuState400_enter */
 		GAME_CDECL(0x404b30, void, void)();   /* lobby_setSubState1 */
 		memset((void *)0x4dbbd4, 0, 24);
@@ -987,12 +987,12 @@ u32 (arena_loadAndQuit)(void)
 	GAME_VAR(u32, 0x4ded4a) = 0;
 	if (clan == 1)
 		strcpy((char *)0x4ded46, (const char *)0x5b193c);
-	GAME_VAR(u8, 0x4ded44) = GAME_VAR(u8, 0x5b1950);
-	GAME_VAR(u8, 0x4ded43) = GAME_VAR(u8, 0x5b194c);
+	g_arenaFragLimit = GAME_VAR(u8, 0x5b1950);
+	g_arenaGameType = GAME_VAR(u8, 0x5b194c);
 	GAME_VAR(u8, 0x4ded42) = 0;
 	GAME_VAR(u8, 0x4ded40) = GAME_VAR(u8, 0x5b1944);
-	GAME_VAR(u8, 0x4ded41) = GAME_VAR(u8, 0x5b1948);
-	GAME_VAR(u8, 0x4ded45) = GAME_VAR(u8, 0x5b1954);
+	g_arenaPlayers = GAME_VAR(u8, 0x5b1948);
+	g_arenaTimeLimit = GAME_VAR(u8, 0x5b1954);
 	GAME_CDECL(0x404640, void, void)();
 	GAME_CDECL(0x404b30, void, void)();
 	u32 r = GAME_CDECL(0x4057a0, u32, void)();   /* lobby_checkReservedName */
@@ -1028,9 +1028,9 @@ u32 (lobby_pageClicks)(void)
 	g_mapRotation = (signed char)GAME_VAR(u8, 0x4ded42);
 	GAME_VAR(int, 0x9dad94) = (signed char)GAME_VAR(u8, 0x4ded40);
 	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
-	g_chosenGameMode = (signed char)GAME_VAR(u8, 0x4ded43);
-	GAME_VAR(int, 0x4df8e8) = GAME_VAR(u8, 0x4ded44);
-	GAME_VAR(int, 0x76d408) = GAME_VAR(u8, 0x4ded45);
+	g_chosenGameMode = (signed char)g_arenaGameType;
+	g_fragLimit = g_arenaFragLimit;
+	g_timeLimit = g_arenaTimeLimit;
 	g_arenaLobbyMode = 0;
 	GAME_VAR(int, 0x4dbbf4) = 1;
 	GAME_VAR(int, 0x4db55c) = 0;
@@ -1062,8 +1062,8 @@ u32 (arena_connectionOutcome)(void)
 		memcpy((void *)0x67fb44, me, 32);
 		g_mapRotation = (signed char)me[0x22];
 		g_chosenGameMode = (signed char)me[0x23];
-		GAME_VAR(int, 0x4df8e8) = me[0x24];
-		GAME_VAR(int, 0x76d408) = me[0x25];
+		g_fragLimit = me[0x24];
+		g_timeLimit = me[0x25];
 		state = g_connectStep;
 		GAME_VAR(int, 0x4ded54) = 1;
 	}
@@ -1300,12 +1300,12 @@ void (lobbyJoin_keysChat)(void)
 	if (input_justPressed(GAME_VAR(int, 0x4e14f8)) || input_justPressed(g_keyClick)) {
 		if (busy || g_gameCount <= 0)
 			return;
-		if (GAME_VAR(int, 0x4dbaac)) {
+		if (g_serverConnected) {
 			GAME_VAR(int, 0x4dbbec) = 1;
-			GAME_VAR(int, 0x4dbbf0) = 0;
+			g_lobbyJoinRequest = 0;
 			arena_chatLine();
 		} else {
-			GAME_VAR(int, 0x4dbbf0) = 1;
+			g_lobbyJoinRequest = 1;
 			GAME_VAR(int, 0x4dbbec) = 0;
 		}
 		return;
@@ -1355,13 +1355,13 @@ void (lobbyJoin_keysChat)(void)
 		}
 		if (GAME_VAR(int, 0x4dba84))
 			arena_leaveSession();
-		GAME_VAR(int, 0xa0b368) = 0;
+		g_serverListCount = 0;
 		arena_openSession(1, NULL);
 		g_lanSearch = 1;
 		GAME_VAR(int, 0x4dba84) = 1;
 		GAME_VAR(int, 0x680bb8) = 0;
 		g_gameCount = 0;
-		GAME_VAR(int, 0x4dbaac) = 0;
+		g_serverConnected = 0;
 		GAME_VAR(int, 0x4db854) = 0;
 		GAME_VAR(u32, 0x4dba80) = 0x43160000;   /* 150 */
 		return;
@@ -1372,9 +1372,9 @@ void (lobbyJoin_keysChat)(void)
 		g_lobbyConnectionOpen = 0;
 		net_disconnect();
 		arena_leaveSession();
-		GAME_VAR(int, 0xa0b368) = 0;
+		g_serverListCount = 0;
 		if (lobby_openConnection() == 1) {
-			GAME_VAR(int, 0x4dbaac) = 1;
+			g_serverConnected = 1;
 			g_lobbySearching = 1;
 			GAME_VAR(int, 0x4db854) = 1;
 			g_lobbyConnectionOpen = 1;
@@ -1520,8 +1520,8 @@ static void take_arena(void)
 	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
 	g_mapRotation = ARENA(0x22);
 	g_chosenGameMode = ARENA(0x23);
-	GAME_VAR(int, 0x4df8e8) = (u8)ARENA(0x24);
-	GAME_VAR(int, 0x76d408) = (u8)ARENA(0x25);
+	g_fragLimit = (u8)ARENA(0x24);
+	g_timeLimit = (u8)ARENA(0x25);
 	GAME_VAR(int, 0x4ded54) = 1;
 }
 

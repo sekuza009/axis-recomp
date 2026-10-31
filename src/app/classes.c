@@ -85,8 +85,8 @@ int THISCALL (CollisionVolume_release)(void *self) { free_owned(self); Collision
 
 /* ---- getters ---- */
 int (net_sessionCount)(void) { return g_dplaySessionCount; }
-int (gfx_getWidth)(void) { return GAME_VAR(int, 0xa0e810); }
-int (gfx_getHeight)(void) { return GAME_VAR(int, 0xa0e928); }
+int (gfx_getWidth)(void) { return g_glWidth; }
+int (gfx_getHeight)(void) { return g_glHeight; }
 float (FUN_004686d0)(void) { return GAME_VAR(float, 0x4c4dec); }
 float (match_4686f0)(void) { return GAME_VAR(float, 0x4c4df0); }
 float (FUN_00468700)(void) { return GAME_VAR(float, 0x4c4df4); }

@@ -68,7 +68,7 @@ int (net_claimLocalSlot)(void)
    freed and the list emptied (count 0xa0b41c). Returns the count, or 0 without a list */
 u32 (net_freeSessionList)(void)
 {
-	if (!GAME_VAR(int, 0xa0b384))
+	if (!g_dplaySessionList)
 		return 0;
 	for (int i = 0; i < g_dplaySessionCount; i++) {
 		u32 *rec = (u32 *)(0xa0b470 + i * 8);
@@ -624,8 +624,8 @@ int (dplay_getPlayerName)(u32 id, void **out)
 u32 (net_pingAllServers)(void)
 {
 	GAME_VAR(int, 0xa0d798) = 0;
-	if (GAME_VAR(int, 0xa0d79c) > 0) {
-		for (int i = 0; i < GAME_VAR(int, 0xa0d79c) && g_netListDone != 1; i++) {
+	if (g_serverPingCount > 0) {
+		for (int i = 0; i < g_serverPingCount && g_netListDone != 1; i++) {
 			const char *name = (const char *)(0xa0bf20 + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
@@ -667,7 +667,7 @@ void (net_receiveLobbyReply)(void)
 		GAME_CDECL(0x452af0, int, void *)((void *)0xa05260);   /* net_addServerRecord */
 		break;
 	case 1:
-		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b368);
+		g_serverPingCount = g_serverListCount;
 		GAME_CDECL(0x4546d0, int, void)();   /* net_startThread */
 		g_serverConnectionState = 0xca;
 		g_netLastRequest = 0;
@@ -693,14 +693,14 @@ void (net_receiveGameServerReply)(void)
 		GAME_CDECL(0x452c80, int, void *)((void *)0xa0b280);   /* net_addRoomRecord */
 		break;
 	case 1:
-		GAME_VAR(int, 0xa0d79c) = GAME_VAR(int, 0xa0b358);
+		g_serverPingCount = GAME_VAR(int, 0xa0b358);
 		GAME_CDECL(0x4546d0, int, void)();
-		GAME_VAR(int, 0xa0b34c) = 0xca;
+		g_gameServerState = 0xca;
 		g_netLastRequest = 0;
 		break;
 	case 2:
 	case 3:
-		GAME_VAR(int, 0xa0b34c) = 0x28;
+		g_gameServerState = 0x28;
 		g_netLastRequest = 0;
 		break;
 	}
@@ -720,7 +720,7 @@ static u32 global_free_r(void *p)
 u32 (net_receiveAll)(void)
 {
 	u8 *buf = NULL;
-	u32 size = GAME_VAR(u32, 0x9fd940), r;
+	u32 size = g_netBlockSize, r;
 	for (;;) {
 		u32 from = 0, to = 0;
 		r = GAME_CDECL(0x450bc0, u32, u32 *, u32 *, int, void *, u32 *)(&from, &to, 1, buf, &size);
@@ -732,24 +732,24 @@ u32 (net_receiveAll)(void)
 			buf = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 			if (!buf)
 				return 0;
-			GAME_VAR(u32, 0x9fd940) = size;
+			g_netBlockSize = size;
 			continue;
 		}
-		if (r != 0 || GAME_VAR(u32, 0x9fd940) < 4)
+		if (r != 0 || g_netBlockSize < 4)
 			break;
 		if (!from) {
 			GAME_CDECL(0x450c20, void, void *)(buf);   /* a system message */
 			continue;
 		}
-		if (*(u32 *)buf == 7 && GAME_VAR(u32, 0x9fd940) > 0x49)
+		if (*(u32 *)buf == 7 && g_netBlockSize > 0x49)
 			return global_free_r(buf);
-		r = GAME_CDECL(0x451090, u32, void *, u32, u32)(buf, GAME_VAR(u32, 0x9fd940), from);   /* net_handleMessage */
+		r = GAME_CDECL(0x451090, u32, void *, u32, u32)(buf, g_netBlockSize, from);   /* net_handleMessage */
 		break;
 	}
 	if (!buf)
 		return r;
 	r = global_free_r(buf);
-	GAME_VAR(u32, 0x9fd940) = 0;
+	g_netBlockSize = 0;
 	return r;
 }
 

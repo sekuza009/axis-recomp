@@ -90,7 +90,7 @@ int (frontEnd_drawProgress)(void)
 		} while (i + 400 < n);
 	}
 	glFinish();
-	return SwapBuffers(GAME_VAR(void *, 0x76d480));
+	return SwapBuffers(g_desktopDC);
 }
 #undef K
 
@@ -104,7 +104,7 @@ void (menuState100_intro)(void)
 	GAME_VAR(int, 0x4dda34) = 0;
 	draw_logo(1);
 	glFinish();
-	SwapBuffers(GAME_VAR(void *, 0x76d480));
+	SwapBuffers(g_desktopDC);
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
 	GAME_VAR(int, 0x4dda34)++;
 	frontEnd_drawProgress();
@@ -354,7 +354,7 @@ void (mapSelect_ok)(void)
 		if (GAME_VAR(int, 0x9ddac8 + i * 0x44) == 1) {
 			sound_playMenu(0);
 			GAME_VAR(int, 0x9eeab8) = g_mapSelectCount;
-			GAME_VAR(int, 0x9db994) = 1;
+			g_mainMenuFadingIn = 1;
 			GAME_VAR(int, 0x9eeab4) = 0;
 			return;
 		}
@@ -398,7 +398,7 @@ void (mapSelect_keys)(void)
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e151c)) == 1) {
 		sound_playMenu(0);
-		GAME_VAR(int, 0x9eeac0) = 1 - GAME_VAR(int, 0x9eeac0);
+		g_replayRandomOrder = 1 - g_replayRandomOrder;
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
@@ -431,7 +431,7 @@ void (mapSelect_mouse)(void)
 		else if (on == 2)
 			GAME_VAR(int, 0x4b2a7c) = 1 - GAME_VAR(int, 0x4b2a7c);
 		else if (on == 3)
-			GAME_VAR(int, 0x9eeac0) = 1 - GAME_VAR(int, 0x9eeac0);
+			g_replayRandomOrder = 1 - g_replayRandomOrder;
 		else if (on == 4)
 			mapSelect_allIn();
 		else if (on == 5)
@@ -562,7 +562,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 	GAME_VAR(u32, 0x4df028) = 0;
 	GAME_VAR(u32, 0x4df024) = 0;
 	GAME_VAR(u32, 0x4df02c) = farZ;
-	GAME_VAR(u32, 0x680378) = 0;
+	g_menuCameraLook = 0;
 	GAME_VAR(u32, 0x68037c) = 0;
 	GAME_VAR(u32, 0x680380) = nearZ;
 	GAME_VAR(int, 0x680370) = blocked;
@@ -638,7 +638,7 @@ u32 (game_returnToMenus_41eb00)(void)
 	GAME_VAR(int, 0x9dced0) = 0;
 	GAME_VAR(int, 0x4ded54) = 0;
 	g_roomLoginDue = 0;
-	GAME_VAR(int, 0x9dd350) = 0;
+	g_rankingRequestPending = 0;
 	return r;
 }
 
@@ -700,9 +700,9 @@ static void send_result(void)
 {
 	if (!g_isHost)
 		return;
-	GAME_VAR(int, 0x9f941c) = 1;
+	g_hostResultFlag = 1;
 	GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);
-	GAME_VAR(int, 0x9f941c) = 0;
+	g_hostResultFlag = 0;
 }
 
 /* 0x420100: after a match. Started from outside (0x76d410 = 1): the game quits (code 0) and the text mode is reset.

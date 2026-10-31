@@ -56,11 +56,11 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
    0x4c4de8 is reset; returns 1 */
 int (glWindow_resize)(int width, int height)
 {
-	GAME_VAR(int, 0xa0e810) = width;
-	GAME_VAR(int, 0xa0e928) = height;
+	g_glWidth = width;
+	g_glHeight = height;
 	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
 	if (GAME_VAR(int, 0xa0e920) == 1 &&
-	    !GAME_CDECL(0x467f20, int, int, int, int)(GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), 0)) {
+	    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
 		GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
 		return 0;
 	}
@@ -89,8 +89,8 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	GAME_VAR(int, 0xa0e818) = colourBits;
 	GAME_VAR(int, 0xa0e924) = depthBits;
 	GAME_VAR(int, 0xa0e920) = fullscreen;
-	GAME_VAR(int, 0xa0e810) = width;
-	GAME_VAR(int, 0xa0e928) = height;
+	g_glWidth = width;
+	g_glHeight = height;
 	if (window == NULL && other == NULL) {
 		u32 wc[10];   /* WNDCLASSA */
 		wc[0] = 0;                 /* style */
@@ -108,12 +108,12 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			return NULL;
 		}
 		if (GAME_VAR(int, 0xa0e920) == 1 &&
-		    !GAME_CDECL(0x467f20, int, int, int, int)(GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), GAME_VAR(int, 0xa0e818))) {
+		    !GAME_CDECL(0x467f20, int, int, int, int)(g_glWidth, g_glHeight, GAME_VAR(int, 0xa0e818))) {
 			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
 			GAME_VAR(int, 0xa0e920) = 0;
 		}
 		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
-			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, GAME_VAR(int, 0xa0e810), GAME_VAR(int, 0xa0e928), NULL, NULL,
+			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 		if (g_glWindow == NULL) {
 			GAME_CDECL(0x46c840, int, const char *)((const char *)0x4c4f14);
@@ -203,7 +203,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
 {
 	(void)bits;
-	if (width == GAME_VAR(int, 0x67eefc) && height == GAME_VAR(int, 0x76d430)) {
+	if (width == g_desktopWidth && height == g_desktopHeight) {
 		if (!GAME_VAR(u8, 0xb12a80))
 			return 0;
 		GAME_VAR(u8, 0xb12a80) = 0;
@@ -226,7 +226,7 @@ u32 (wnd_setCursor)(void)
 	void *object = GAME_VAR(void *, 0x9087b4);
 	if (object)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
-	app_setDisplayMode(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, GAME_VAR(int, 0x76d3ec));
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	GAME_CDECL(0x4014c0, void, void)();
 	music_shutdown();
@@ -357,15 +357,15 @@ int (app_init)(void *inst, int show)
 			dpi_aware();
 	}
 	GAME_VAR(int, 0x9dd8f8) = 0;
-	GAME_VAR(int, 0x67eefc) = GetSystemMetrics(0);   /* SM_CXSCREEN */
-	GAME_VAR(int, 0x76d430) = GetSystemMetrics(1);
+	g_desktopWidth = GetSystemMetrics(0);   /* SM_CXSCREEN */
+	g_desktopHeight = GetSystemMetrics(1);
 	void *dc = IMPORT(0x4a9318, void *, void *)(NULL);   /* GetDC */
-	GAME_VAR(void *, 0x76d480) = dc;
+	g_desktopDC = dc;
 	GAME_VAR(int, 0x76d3ec) = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
 	input_setDefaultKeyBindings();
 	cfg_writeDefaultAxisCfg();
 	app_screenSizeForMode();
-	app_reportStartupProblem(app_setDisplayMode(g_screenW, g_screenH, 4, (GAME_VAR(int, 0x83a9c4) + 1) * 16));   /* CDS_FULLSCREEN */
+	app_reportStartupProblem(app_setDisplayMode(g_screenW, g_screenH, 4, (g_videoDepth + 1) * 16));   /* CDS_FULLSCREEN */
 	if (!g_startedFromLobby && !files_present())
 		return 0;
 
@@ -404,7 +404,7 @@ int (app_init)(void *inst, int show)
 	IMPORT(0x4a92bc, int, void *, int)(g_hWndMain, show);   /* ShowWindow */
 	IMPORT(0x4a92c0, int, void *)(g_hWndMain);   /* UpdateWindow */
 	if (!app_checkCdAndLoad(inst)) {
-		app_setDisplayMode(GAME_VAR(int, 0x67eefc), GAME_VAR(int, 0x76d430), 0, GAME_VAR(int, 0x76d3ec));
+		app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, GAME_VAR(int, 0x76d3ec));
 		return 0;
 	}
 	g_menuState = 100;
@@ -516,7 +516,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		if (w == 0x29a) {
 			if (GAME_VAR(int, 0x4dbbf4) == 2)
 				net_send(0x17, 100);
-		} else if (w == 0x115c && GAME_VAR(int, 0x9dd84c))
+		} else if (w == 0x115c && g_roomConnected)
 			net_send(0x18, 0x65);
 	}
 	return CallWindowProcA(GAME_VAR(u32, 0x9dd868), (u32)wnd, msg, w, l);

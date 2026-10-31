@@ -8,7 +8,7 @@ void (input_resetKeys)(void)
 {
 	memset((void *)0x4d1a98, 0, 0x100 * 4);
 	GAME_VAR(u32, 0x9da434) = 0x40a00000;   /* 5.0 */
-	GAME_VAR(int, 0x9dcd30) = 0;
+	g_typedLength = 0;
 	GAME_VAR(int, 0x9dbf10) = 0;
 }
 
@@ -38,7 +38,7 @@ void (mapSelect_allOut)(void)
 		GAME_VAR(int, p) = 0;
 	GAME_VAR(int, 0x4b2a7c) = 1;
 	GAME_VAR(int, 0x9eeabc) = 0;
-	GAME_VAR(int, 0x9eeac0) = 0;
+	g_replayRandomOrder = 0;
 }
 
 /* 0x445e10: a click (either button) closes the message box */

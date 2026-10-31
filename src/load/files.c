@@ -162,7 +162,7 @@ u32 (cfg_parsePlayer)(void *f)
 	int corp = g_playerCorporation;
 	FPUTS(corp == 1 ? 0x4b1808 : corp == 2 ? 0x4b1810 : 0x4b1800);
 	FPUTS(0x4b17e8);
-	FPUTS(GAME_VAR(int, 0x4dedd4) == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(g_playerSex == 1 ? 0x4b17e4 : 0x4b17dc);
 	return FPUTS(0x4b182c);
 #undef FPUTS
 }
@@ -295,7 +295,7 @@ u32 (cfg_parseSound)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
 	char number[12];
-	itoa(GAME_VAR(int, 0x4e0c90), number, 10);
+	itoa(g_soundVolume, number, 10);
 	FPUTS(0x4b1a4c);
 	FPUTS(number);
 	FPUTS(0x4b182c);
@@ -516,10 +516,10 @@ u32 (cfg_parseGraphic)(void *f)
 	static const u32 mode[8] = { 0x4b1b6c, 0x4ac84c, 0x4ac870, 0x4ac894, 0x4ac8b8, 0x4ac8dc, 0x4ac900, 0x4ac920 };
 	static const u32 switches[4] = { 0x4b1aac, 0x4b1a94, 0x4b1a7c, 0x4b1a64 };
 	FPUTS(0x4b1b78);   /* "set_graphic videomode " */
-	if (GAME_VAR(u32, 0x83a9c0) <= 7)
-		FPUTS(mode[GAME_VAR(u32, 0x83a9c0)]);
+	if (g_videoMode <= 7)
+		FPUTS(mode[g_videoMode]);
 	FPUTS(0x4b1b00);   /* "set_graphic colordepth " */
-	FPUTS(GAME_VAR(int, 0x83a9c4) ? 0x4b1af8 : 0x4b1afc);
+	FPUTS(g_videoDepth ? 0x4b1af8 : 0x4b1afc);
 	FPUTS(0x4b1adc);   /* "set_graphic polygondetail " */
 	FPUTS(GAME_VAR(int, 0x83a9c8) ? 0x4b1acc : 0x4b1ad4);
 	for (int i = 0; i < 4; i++) {
@@ -576,20 +576,20 @@ u32 (arena_readLaunchFile)(char *line)
 {
 	size_t length = strlen(line);
 	if (length > 0x400 || length <= 1) {
-		GAME_VAR(int, 0x9dd88c) = 0;
+		g_argCount = 0;
 		g_startedFromLobby = 0;
-		GAME_VAR(int, 0x76d364) = 0;
+		g_startedByLauncher = 0;
 		return 0;
 	}
 	char **args = (char **)0x9dd890;
 	char *word = crt_strtok(line, (const char *)0x4b035c);   /* " " */
-	GAME_VAR(int, 0x9dd88c) = 0;
+	g_argCount = 0;
 	do {
-		args[GAME_VAR(int, 0x9dd88c)++] = word;
+		args[g_argCount++] = word;
 		word = crt_strtok(NULL, (const char *)0x4b035c);
 	} while (word);
 	g_startedFromLobby = 0;
-	GAME_VAR(int, 0x76d364) = 0;
+	g_startedByLauncher = 0;
 	u32 r = GAME_VAR(u32, 0x9dd88c);
 	if (r == 1) {
 		r = (u32)str_order(args[0], (const char *)0x4b2880);   /* "-net" */
@@ -598,18 +598,18 @@ u32 (arena_readLaunchFile)(char *line)
 		void *f = crt_fopen((const char *)0x4ad5e4, (const char *)0x4ad5e0);   /* "axiswl.dat", "rt" */
 		if (f) {
 			g_startedFromLobby = 1;
-			GAME_VAR(int, 0x76d364) = 1;
+			g_startedByLauncher = 1;
 			r = fclose(f);
 		}
 	}
-	if (GAME_VAR(int, 0x9dd88c) != 3)
+	if (g_argCount != 3)
 		return r;
 	r = (u32)str_order(args[1], (const char *)0x4b287c);   /* "-ip" */
 	if (r)
 		return r;
 	g_startedFromLobby = 1;
 	memset((void *)0x4de748, 0, 0x400);
-	GAME_VAR(int, 0x76d364) = 0;
+	g_startedByLauncher = 0;
 	strcpy((char *)0x4de748, args[2]);
 	return strlen(args[2]) + 1;
 }
@@ -1078,7 +1078,7 @@ void (cfg_readLines)(void *f)
 	else
 		g_playerCorporation = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
 	read_value(f, value, 0);
-	GAME_VAR(int, 0x4dedd4) = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	g_playerSex = !strcmp(value, (const char *)0x4b21bc);   /* ON */
 	skip_line(f);
 }
 
@@ -1088,7 +1088,7 @@ void (cfg_readAudioLines)(void *f)
 {
 	char value[0x84];
 	read_value(f, value, 0);
-	GAME_VAR(int, 0x4e0c90) = crt_atoi(value);
+	g_soundVolume = crt_atoi(value);
 	read_value(f, value, 0);
 	GAME_VAR(int, 0x4e0c94) = crt_atoi(value);
 	read_value(f, value, 0);
@@ -1152,7 +1152,7 @@ void (cfg_gameTypeNames)(void *f)
 			break;
 		case 1:
 			v = (signed char)crt_atoi(b.value);
-			GAME_VAR(signed char, 0x4ded40) = v < 0 || v > 0x15 ? 0 : v;
+			g_arenaMap = v < 0 || v > 0x15 ? 0 : v;
 			break;
 		case 2:
 			v = (signed char)crt_atoi(b.value);
@@ -1163,7 +1163,7 @@ void (cfg_gameTypeNames)(void *f)
 			break;
 		case 4:
 			str_dropLast(b.value);
-			GAME_VAR(u8, 0x4ded43) = (u8)named(b.value, types, 14);
+			g_arenaGameType = (u8)named(b.value, types, 14);
 			break;
 		default: {
 			u8 limit = (u8)crt_atoi(b.value);
@@ -1188,7 +1188,7 @@ void (cfg_videoModeNames)(void *f)
 		if (n == 0)
 			GAME_VAR(int, 0x83a9c0) = named(b.value, sizes, 7);
 		else if (n == 1)
-			GAME_VAR(int, 0x83a9c4) = !strcmp(b.value, (const char *)0x4b22d4);   /* "32" */
+			g_videoDepth = !strcmp(b.value, (const char *)0x4b22d4);   /* "32" */
 		else if (n == 2)
 			GAME_VAR(int, 0x83a9c8) = !strcmp(b.value, (const char *)0x4b22cc);   /* "HIGH" */
 		else
@@ -1266,15 +1266,15 @@ void (cfg_writeDefaultAxisCfg)(void)
 		fclose(f);
 	}
 	GAME_VAR(int, 0x4e0c9c) = 0;
-	GAME_VAR(int, 0x83a9c4) = 0;
+	g_videoDepth = 0;
 	GAME_VAR(int, 0x83a9c0) = 0;
 	GAME_VAR(int, 0x83a9d4) = 0;
 	GAME_VAR(int, 0x83a9d8) = 0;
 	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
 	g_playerCorporation = 0;
-	GAME_VAR(int, 0x4dedd4) = 0;
+	g_playerSex = 0;
 	strcpy((char *)0x4ded20, (const char *)0x4ad4a4);   /* "AXIS ARENA" */
-	GAME_VAR(int, 0x4e0c90) = 100;
+	g_soundVolume = 100;
 	GAME_VAR(int, 0x4e0c94) = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
 	memcpy((void *)0x4ded40, server, 6);

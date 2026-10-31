@@ -128,10 +128,10 @@ void (loading_draw)(u32 progress)
 		sprintf(line, (const char *)0x4c52e8, (const char *)(0x4c7030 + *(int *)(g_loadGame + 0x22e7180) * 64));   /* "PLAY TYPE : %s" */
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)0x4c52d8, GAME_VAR(int, 0x4df8e8));   /* "FRAG LIMIT : %d" */
+	sprintf(line, (const char *)0x4c52d8, g_fragLimit);   /* "FRAG LIMIT : %d" */
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)0x4c52c8, GAME_VAR(int, 0x76d408));   /* "TIME LIMIT : %d" */
+	sprintf(line, (const char *)0x4c52c8, g_timeLimit);   /* "TIME LIMIT : %d" */
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
 	text_drawSized(0x96, row * 16 + 0x76, (const char *)0xa0e988, 0x10);
@@ -214,7 +214,7 @@ int (app_checkCdAndLoad)(void *instance)
 {
 	memset((void *)0x4d1688, 0, 0x400);
 	memset((void *)0x4d1a98, 0, 0x400);
-	GAME_VAR(int, 0x9dd84c) = 0;
+	g_roomConnected = 0;
 	net_clearBuffers();
 	reg_readServerSettings();
 	math_initMathFunction();
@@ -293,7 +293,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(u32, 0x4df028) = 0;
 	GAME_VAR(u32, 0x4df024) = 0;
 	GAME_VAR(u32, 0x4df02c) = 0x43fa0000;   /* 500 */
-	GAME_VAR(u32, 0x680378) = 0;
+	g_menuCameraLook = 0;
 	GAME_VAR(u32, 0x68037c) = 0;
 	GAME_VAR(u32, 0x680380) = 0x43c80000;   /* 400 */
 	GAME_VAR(int, 0x4dd0b0) = 0;
@@ -317,7 +317,7 @@ int (app_checkCdAndLoad)(void *instance)
 	GAME_VAR(u32, 0x4df910) = 0;
 	GAME_VAR(int, 0x4e1868) = 0;
 	g_matchMode = 0;
-	GAME_VAR(int, 0x4dd984) = (GAME_VAR(int, 0x4e0c90) * 5 - 0x1f4) * 4;
+	GAME_VAR(int, 0x4dd984) = (g_soundVolume * 5 - 0x1f4) * 4;
 	GAME_VAR(int, 0x5b1dac) = 0;
 	return 1;
 }

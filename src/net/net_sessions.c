@@ -19,7 +19,7 @@ typedef struct {
 static void merge(const Received *g)
 {
 	if (GAME_VAR(int, g->flag)) {
-		for (int i = 0; i < GAME_VAR(int, 0xa0d79c); i++) {
+		for (int i = 0; i < g_serverPingCount; i++) {
 			if (GAME_VAR(int, 0xa0bb14 + i * 4) != 1)   /* not new */
 				continue;
 			const u8 *s = (const u8 *)(g->base + i * g->stride);

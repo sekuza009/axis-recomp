@@ -188,7 +188,7 @@ u32 (room_leftClicks)(void)
 	case 1:
 		GAME_CDECL(0x433c70, void, void)();
 		r = GAME_CDECL(0x433bb0, u32, void)();       /* field_editGamePassword */
-		GAME_VAR(int, 0x9dd6b0) = 1;
+		g_typingRoomPassword = 1;
 		return r;
 	case 2:
 		if ((open = GAME_VAR(u32, 0x9dd1c8)))
@@ -328,8 +328,8 @@ u32 (room_hostingStep)(void)
 		g_chosenGameMode = (signed char)room[0x23];
 		memcpy((void *)0x67fb44, room, 32);
 		g_mapRotation = (signed char)room[0x22];
-		GAME_VAR(int, 0x4df8e8) = room[0x24];
-		GAME_VAR(int, 0x76d408) = room[0x25];
+		g_fragLimit = room[0x24];
+		g_timeLimit = room[0x25];
 		step = GAME_VAR(u32, 0x4ded60);
 		GAME_VAR(int, 0x4ded54) = 1;
 	}
@@ -395,8 +395,8 @@ u32 (app_onClose)(void)
 	memcpy((void *)0x67fb44, game + 4, 32);
 	g_mapRotation = (signed char)game[0x24];
 	g_chosenGameMode = (signed char)game[0x2c];
-	GAME_VAR(int, 0x4df8e8) = game[0x2d];
-	GAME_VAR(int, 0x76d408) = game[0x2e];
+	g_fragLimit = game[0x2d];
+	g_timeLimit = game[0x2e];
 	return row;
 }
 
@@ -470,11 +470,11 @@ static u32 call_keeping_ebp(u32 address)
    table is drawn (ranking_drawTable). Returns what the original leaves in eax */
 u32 (ranking_page)(void)
 {
-	if (GAME_VAR(int, 0x9dd350)) {
+	if (g_rankingRequestPending) {
 		u32 column = GAME_VAR(u32, 0x9dd1d0);
 		static const int code[3] = { 0x25, 0x23, 0x26 };
 		if (column == 3) {
-			GAME_VAR(int, 0x9dd350) = 0;
+			g_rankingRequestPending = 0;
 			return 3;
 		}
 		int *out = GAME_VAR(int *, 0xa0b324);
@@ -485,7 +485,7 @@ u32 (ranking_page)(void)
 		GAME_VAR(int, 0x9dd7dc) = page * 10 + 10;
 		out[1] = page * 10 + 1;
 		GAME_CDECL(0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
-		GAME_VAR(int, 0x9dd350) = 0;
+		g_rankingRequestPending = 0;
 		g_lobbyBlinkClock = 1000.0f;
 		GAME_VAR(int, 0x9dd6b8) = 1;
 	}
@@ -498,15 +498,15 @@ u32 (ranking_page)(void)
 		GAME_CDECL(0x428c30, void, int, int, int, int)(box[0], box[1], box[2], box[3]);   /* the message box */
 		if (GAME_VAR(int, 0x90d1c4))
 			return GAME_VAR(u32, 0x90d1c4);
-		GAME_VAR(int, 0x9dd350) = 1;
+		g_rankingRequestPending = 1;
 		return 0;
 	}
 	if (GAME_VAR(int, 0x9dd6b8)) {
-		if (GAME_VAR(int, 0x76d40c)) {
+		if (g_roomListWaiting) {
 			GAME_CDECL(0x435770, void, void)();   /* roomList_fillPage: the list filled */
 			GAME_VAR(int, 0x9dd6b8) = 0;
-			GAME_VAR(int, 0x9dd3b0) = 1;
-			GAME_VAR(int, 0x76d40c) = 0;
+			g_rankingHaveList = 1;
+			g_roomListWaiting = 0;
 			GAME_VAR(int, 0x9dd300) = GAME_VAR(int, 0x9dd1d0);
 			GAME_VAR(int, 0x9dd1b4) = g_roomListPage;
 		}
@@ -575,9 +575,9 @@ u32 (ranking_clicks)(void)
 	case 0: case 1: case 2:
 		return GAME_CDECL(page[button], u32, void)();
 	case 3:
-		GAME_VAR(int, 0x9dd3b0) = 1;
+		g_rankingHaveList = 1;
 		GAME_VAR(int, 0x9dd6b8) = 0;
-		GAME_VAR(int, 0x76d40c) = 0;
+		g_roomListWaiting = 0;
 		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
 		return GAME_VAR(u32, 0x9dd6ac) = GAME_VAR(u32, 0x9dd1b4);
 	case 4:
@@ -588,9 +588,9 @@ u32 (ranking_clicks)(void)
 	u32 old = GAME_VAR(u32, 0x9dd1d0);
 	GAME_VAR(u32, 0x9dd300) = old;
 	GAME_VAR(int, 0x9dd1d0) = column;
-	GAME_VAR(int, 0x9dd350) = 1;
-	GAME_VAR(int, 0x9dd3b0) = 0;
-	GAME_VAR(int, 0x76d40c) = 0;
+	g_rankingRequestPending = 1;
+	g_rankingHaveList = 0;
+	g_roomListWaiting = 0;
 	GAME_VAR(int, 0xa0b350) = 0;
 	GAME_VAR(int, 0xa0b35c) = 0;
 	return button == 8 ? old : r;

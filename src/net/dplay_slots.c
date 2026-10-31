@@ -148,10 +148,10 @@ int (dplay_join)(int session, int a2, int a3, int a4)
 u32 (arena_leaveSession)(void)
 {
 	static const u32 close[4] = { 0x4549a0, 0x454ac0, 0x454bd0, 0x454ce0 };
-	if (GAME_VAR(int, 0xa0b390) != 1 || !GAME_VAR(int, 0xa0b384))
+	if (GAME_VAR(int, 0xa0b390) != 1 || !g_dplaySessionList)
 		return 1;
 	if (g_isHost) {
-		GAME_VAR(int, 0x9f941c) = 1;
+		g_hostResultFlag = 1;
 		GAME_CDECL(0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = GAME_VAR(u32, 0xa0b418);
@@ -159,7 +159,7 @@ u32 (arena_leaveSession)(void)
 	if (kind <= 3)
 		GAME_CDECL(close[kind], int, void)();
 	u32 r = GAME_CDECL(0x454130, u32, void)();   /* net_freeSessionList */
-	GAME_VAR(int, 0xa0b384) = 0;
+	g_dplaySessionList = 0;
 	GAME_VAR(int, 0xa0b388) = 0;
 	GAME_VAR(int, 0xa0b390) = 0;
 	return r;
@@ -179,10 +179,10 @@ int (arena_openSession)(u32 kind, const char *host)
 			return 0;
 		strcpy(address, (const char *)0xa0d320);
 	}
-	if (GAME_VAR(int, 0xa0b384)) {
+	if (g_dplaySessionList) {
 		if (GAME_VAR(u32, 0xa0b418) == kind) {
 			GAME_CDECL(0x452fe0, void, void)();   /* arena_leaveSession */
-			GAME_VAR(int, 0xa0b384) = 0;
+			g_dplaySessionList = 0;
 		} else
 			GAME_CDECL(0x452fe0, void, void)();
 	}
@@ -196,7 +196,7 @@ int (arena_openSession)(u32 kind, const char *host)
 	int r = kind == 0 ? GAME_CDECL(open[0], int, const char *)(address) : GAME_CDECL(open[kind], int, int)(0);
 	if (!r)
 		return 0;
-	GAME_VAR(int, 0xa0b384) = 1;
+	g_dplaySessionList = 1;
 	GAME_VAR(int, 0xa0b388) = 1;
 	return r;
 }

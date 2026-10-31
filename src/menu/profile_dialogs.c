@@ -476,7 +476,7 @@ void (profile_drawChosenPilot)(void)
 	if (GAME_VAR(int, 0x9f9008) <= 0)
 		return;
 	int pilot = *(const int *)(0x9f688c + GAME_VAR(int, 0x9f8d74) * 0x48);
-	GAME_VAR(int, 0x9f8d6c) = pilot;
+	g_chosenPilot = pilot;
 	int focus = GAME_VAR(int, 0x9f8f10) == 1;
 	float *panel = (float *)0x9f8eb0;
 	if (focus)
@@ -494,19 +494,19 @@ void (profile_drawChosenPilot)(void)
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	float grey = focus ? 1.0f : 0.5f;
 	glColor4f(grey, grey, grey, 1.0f);
-	portrait(GAME_VAR(int, 0x9f8d6c), X0 + 0x1a4, Y0 + 0x24, 0x40);
+	portrait(g_chosenPilot, X0 + 0x1a4, Y0 + 0x24, 0x40);
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3f800000, 0x3f800000, 0, 0x3e99999a);   /* 1, 1, 0, 0.3 */
 	menu_drawRect(X0 + 0x1a4, Y0 + 0x24, X0 + 0x1e4, Y0 + 0x64, 0);
 	u32 text_grey = focus ? 0x3f800000 : 0x3f000000;
 	set_colour_bits((Colour *)0x76d438, text_grey, text_grey, text_grey, 0x3f800000);
-	text_draw8(X0 + 0x14e, Y0 + 0x24, (const char *)PILOT(GAME_VAR(int, 0x9f8d6c)));
-	text_draw8(X0 + 0x14e, X0 + 0x38, (const char *)PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x10);
-	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(0x75eea4 + *(const int *)(PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x20) * 0x80));
+	text_draw8(X0 + 0x14e, Y0 + 0x24, (const char *)PILOT(g_chosenPilot));
+	text_draw8(X0 + 0x14e, X0 + 0x38, (const char *)PILOT(g_chosenPilot) + 0x10);
+	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(0x75eea4 + *(const int *)(PILOT(g_chosenPilot) + 0x20) * 0x80));
 	char text[20];
-	itoa(*(const int *)(PILOT(GAME_VAR(int, 0x9f8d6c)) + 0x24), text, 10);
+	itoa(*(const int *)(PILOT(g_chosenPilot) + 0x24), text, 10);
 	text_draw8(X0 + 0x14e, Y0 + 0x60, text);
-	pilot_stats(GAME_VAR(int, 0x9f8d6c), X0 + 0x166, Y0 + 0x74, 0x14);
+	pilot_stats(g_chosenPilot, X0 + 0x166, Y0 + 0x74, 0x14);
 	stat_bars(X0 + 0x18a, Y0 + 0x78, 0x14, (const float *)0x4a95f0, grey);
 #undef X0
 #undef Y0

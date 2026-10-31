@@ -64,7 +64,7 @@ void (room_start)(void)
 	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomMode = 1;
-	GAME_VAR(int, 0x907b24) = 999;
+	g_lastPanel = 999;
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_listRefreshPeriod = 30;
@@ -173,10 +173,10 @@ int (gameList_open)(void)
 {
 	GAME_VAR(int, 0x4dba88) = 1;
 	g_connectStep = 2;
-	GAME_VAR(int, 0x9da498) = 0;
+	g_roomSearchAnswerIn = 0;
 	GAME_VAR(int, 0x9dd3fc) = 0;
 	GAME_VAR(int, 0x9dd6a0) = 1;
-	GAME_VAR(int, 0xa0b34c) = 0;
+	g_gameServerState = 0;
 	GAME_VAR(int, 0x9087b0) = 0;
 	GAME_VAR(int, 0x67ef30) = 0;
 	GAME_VAR(int, 0x9dd330) = 1;
@@ -198,7 +198,7 @@ int (gameList_open)(void)
 u32 (arena_joinListed)(int i)
 {
 	GAME_VAR(int, 0x4dbbec) = 0;
-	GAME_VAR(int, 0x4dbbf0) = 0;
+	g_lobbyJoinRequest = 0;
 	if (GAME_VAR(int, 0x4dba84))
 		CALL(0x452fe0);
 	void *session = i == 99999 ? (void *)0x4dbbd4 : (void *)(0x9087ef + i * 0x4a);
@@ -324,11 +324,11 @@ u32 (chat_closeEdit)(void)
 		strcpy((char *)0x9dd1d8, (const char *)0x9dc92c);
 		return 0;
 	}
-	if (GAME_VAR(int, 0x9dd6b0) == 1) {
+	if (g_typingRoomPassword == 1) {
 		memset((void *)0x9dd1f6, 0, 12);
 		GAME_VAR(int, 0x4e1868) = 0;
 		strcpy((char *)0x9dd1f6, (const char *)0x9dc92c);
-		GAME_VAR(int, 0x9dd6b0) = 0;
+		g_typingRoomPassword = 0;
 		return 0;
 	}
 	return GAME_VAR(u32, 0x9dd1cc);
@@ -379,7 +379,7 @@ void (createDialog_draw)(void)
 		} else if (g_editKey == 20) {
 			g_typingRoomName = 0;
 			field_editGamePassword();
-			GAME_VAR(int, 0x9dd6b0) = 1;
+			g_typingRoomPassword = 1;
 			g_chatFieldFlag = 1;
 			g_editKey = 0;
 		}
@@ -394,13 +394,13 @@ void (createDialog_draw)(void)
 		g_chatFieldFlag = 0;
 		if (g_editKey == 10) {
 			g_typingRoomName = 1;
-			GAME_VAR(int, 0x9dd6b0) = 0;
+			g_typingRoomPassword = 0;
 			field_editGameName();
 			g_editKey = 0;
 		} else if (g_editKey == 20) {
 			highlight_choice(1, GAME_VAR(int, 0x9dd358) + 0x62, GAME_VAR(int, 0x9dd364) - 0x30);
 			g_typingRoomName = 0;
-			GAME_VAR(int, 0x9dd6b0) = 0;
+			g_typingRoomPassword = 0;
 			g_editKey = 0;
 		}
 		return;
@@ -510,7 +510,7 @@ u32 (room_networkEvents)(void)
 		CALL(0x432620);   /* lobby_ladderGameName */
 		r = CALL(0x432400);   /* reg_writeCharacterSettings */
 		GAME_VAR(int, 0xa0b37c) = 0;
-		GAME_VAR(int, 0x9dd84c) = 1;
+		g_roomConnected = 1;
 		return r;
 	case 30:
 		g_roomRequestOut = 0;
@@ -540,10 +540,10 @@ u32 (roomList_passwordKeys)(void)
 			return 0;
 		r = sound(0);
 		GAME_VAR(int, 0x9dd6b8) = 0;
-		GAME_VAR(int, 0x76d40c) = 0;
+		g_roomListWaiting = 0;
 		g_roomListPage = GAME_VAR(int, 0x9dd1b4);
 		GAME_VAR(int, 0x9dd1d0) = GAME_VAR(int, 0x9dd300);
-		GAME_VAR(int, 0x9dd3b0) = 1;
+		g_rankingHaveList = 1;
 		return r;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0cdc))) {
@@ -551,8 +551,8 @@ u32 (roomList_passwordKeys)(void)
 			return GAME_VAR(u32, 0x9dd6b8);
 		r = sound(0);
 		GAME_VAR(int, 0x9dd6b8) = 0;
-		GAME_VAR(int, 0x9dd3b0) = 0;
-		GAME_VAR(int, 0x76d40c) = 0;
+		g_rankingHaveList = 0;
+		g_roomListWaiting = 0;
 		g_roomMode = 0;
 		return r;
 	}
@@ -1006,7 +1006,7 @@ u32 (ranking_drawTable)(void)
 		text_draw8(X0 + x + 0x18, Y0 + 0x52, (const char *)heads[c].text);
 	}
 	TEXT(white);
-	if (GAME_VAR(int, 0x9dd3b0)) {
+	if (g_rankingHaveList) {
 		char text[64];
 		for (int i = 0; i < 10; i++) {
 			const u8 *row = (const u8 *)0x9dcef4 + i * 0x44;
@@ -1178,7 +1178,7 @@ void (createDialog_keys)(void)
 		if (choice == 1) {
 			highlight_choice(0, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
 			field_editGamePassword();
-			GAME_VAR(int, 0x9dd6b0) = 1;
+			g_typingRoomPassword = 1;
 			g_chatFieldFlag = 1;
 		} else if (choice == 2)
 			highlight_choice(1, dialogX + 0x62, dialogBottom);

@@ -62,7 +62,7 @@ void (net_resetState)(void)
 	GAME_VAR(int, 0x9f93c8) = 0;
 	GAME_VAR(int, 0x9f9418) = 0;
 	GAME_VAR(int, 0x9f93cc) = 0;
-	GAME_VAR(int, 0x9f941c) = 0;
+	g_hostResultFlag = 0;
 	GAME_VAR(int, 0x9f93d0) = 0;
 	GAME_VAR(int, 0x9f9420) = 0;
 	memset((void *)0x9f9428, 0, 0x103 * 4);
@@ -70,7 +70,7 @@ void (net_resetState)(void)
 	GAME_VAR(int, 0x9f9424) = 0;
 	GAME_VAR(int, 0x9f93c8) = 1;
 	GAME_VAR(int, 0x9f9418) = 2;
-	GAME_VAR(int, 0x9f941c) = 0;
+	g_hostResultFlag = 0;
 	GAME_VAR(int, 0x9fd94c) = 0;
 	GAME_VAR(int, 0x9f9420) = 6;
 	GAME_VAR(int, 0x9f9428) = 7;
