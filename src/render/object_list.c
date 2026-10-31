@@ -40,11 +40,11 @@ void THISCALL (data_46f7a0)(ObjectList *list, const LightFactors *factors, const
 	}
 }
 
-/* 0x46fd20 (hud_46fd20): the list into the view volume, when it has frames and the current one is set (returns 1;
+/* 0x46fd20 (partList_queue): the list into the view volume, when it has frames and the current one is set (returns 1;
    else 0 and nothing done). A pre-lit list (preLit == 1) is relit here (factors only while factors->enabled when
    there are no point lights) and drawn with its own colours; any other list hands the factors and lights on. cull,
    material and a8 go to ViewVolume_projectObject. */
-int THISCALL (hud_46fd20)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
+int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *factors, const void *lights, int cull,
                           int material, int a8)
 {
 	if (list->frameCount <= 0 || list->count <= 0 || list->frames[list->frame] == 0)

@@ -93,8 +93,8 @@ void (text_draw8b)(int x0, int y, int x1, const char *text)
 	glDisable(GL_TEXTURE_2D);
 }
 
-/* 0x403210 (hud_403210): text in the 5-unit font centred between x0 and x1 (6 units per character) */
-void (hud_403210)(int x0, int y, int x1, const char *text)
+/* 0x403210 (text_drawCentred5): text in the 5-unit font centred between x0 and x1 (6 units per character) */
+void (text_drawCentred5)(int x0, int y, int x1, const char *text)
 {
 	int x = x0 + (x1 - x0) / 2 - text_visibleLength(text) * 3;
 	text_begin(6);
@@ -106,7 +106,7 @@ void (hud_403210)(int x0, int y, int x1, const char *text)
 /* the width correction of a line for the special characters it holds (counted by text_printableLength), in units of 3 */
 #define text_specialCount(s) GAME_CDECL(0x402590, int, const char *)(s)
 
-/* text_drawBox16 / hud_402db0: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
+/* text_drawBox16 / text_drawCentred32: text centred between x0 and x1, broken into lines at each "|" ("||" is a plain
    "|"; in a match no line breaks), one line under the other */
 static void text_drawBoxLines(int x0, int y, int x1, const char *text, int large)
 {
@@ -171,8 +171,8 @@ void (text_drawBox16)(int x0, int y, int x1, const char *text)
 	text_drawBoxLines(x0, y, x1, text, 0);
 }
 
-/* 0x402db0 (hud_402db0): the same in the 32-unit font (18 units per character, 0x21 apart) */
-void (hud_402db0)(int x0, int y, int x1, const char *text)
+/* 0x402db0 (text_drawCentred32): the same in the 32-unit font (18 units per character, 0x21 apart) */
+void (text_drawCentred32)(int x0, int y, int x1, const char *text)
 {
 	text_drawBoxLines(x0, y, x1, text, 1);
 }

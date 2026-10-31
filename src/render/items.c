@@ -7,11 +7,11 @@ static float texel(int n, float perTexel)
 	return (float)((long double)n * perTexel);
 }
 
-/* 0x48f970 (hud_48f970): every item that is not taken and lies within stage->cullMargin of the camera on each axis.
+/* 0x48f970 (stage_drawItems): every item that is not taken and lies within stage->cullMargin of the camera on each axis.
    In 3D (g_items3D, and always for type 34) its type's model at the item's place and turn; otherwise a 300-unit
    billboard with its 32-texel icon from the item atlas (eight a row). Items fading in or out (fade below 1, or NaN)
    are drawn white with alpha 255 * fade; whole billboards take g_white, whole models their own colours. */
-void THISCALL (hud_48f970)(Stage *stage, void *view)
+void THISCALL (stage_drawItems)(Stage *stage, void *view)
 {
 	for (int i = 0; i < stage->itemCount; i++) {
 		MapItem *item = &stage->items[i];
@@ -55,7 +55,7 @@ void THISCALL (hud_48f970)(Stage *stage, void *view)
 			float uv0[2] = { texel(type % 8 * 32, 1.0f / 256), texel(type / 8 * 32, 1.0f / 256) };
 			float uv1[2] = { uv0[0] + 0.125f, uv0[1] + 0.125f };
 			float a[2] = { -150.0f, -150.0f }, b[2] = { 150.0f, 150.0f };
-			hud_484ca0(view, stage->billboards, uv0, uv1, 150.0f, colour, a, b, item->pos, 2, 1);
+			viewVolume_addBillboard(view, stage->billboards, uv0, uv1, 150.0f, colour, a, b, item->pos, 2, 1);
 		}
 	}
 }

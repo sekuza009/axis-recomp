@@ -13,26 +13,26 @@ void (menu_processKeys)(void)
 	if (g_menuFade > 0.0f)
 		return;
 	if (g_dialogPending) {
-		menu_431950();
+		messageBox_keyClose();
 		return;
 	}
 	switch (g_screen) {
-	case 200: menu_4318b0(); break;              /* title */
-	case 210: menu_44cdd0(); break;              /* profiles */
+	case 200: menu_keyStartFade(); break;              /* title */
+	case 210: profile_screenKeys(); break;              /* profiles */
 	case 300: mainmenu_processKeys(); break;
 	case 400: lobby_processKeys(); break;
-	case 500: menu_447c70(); break;              /* missions */
+	case 500: missionsel_keys(); break;              /* missions */
 	case 600: setup_processTabKeys(); break;
 	case 700: armc_processInput(); break;        /* armour */
-	case 800: menu_4378e0(); break;              /* game room */
-	case 900: menu_4440f0(); break;              /* skirmish */
+	case 800: room_mouse(); break;              /* game room */
+	case 900: settingsPage_keys(); break;              /* skirmish */
 	case 9999: match_debugHandler(); break;
 	}
 }
 
-/* 0x44cdd0 (menu_44cdd0): the profile screen's keys: none with a dialog open; during the intro animation the cancel
+/* 0x44cdd0 (profile_screenKeys): the profile screen's keys: none with a dialog open; during the intro animation the cancel
    key or a click skips it to its end; else the current page's handler */
-void (menu_44cdd0)(void)
+void (profile_screenKeys)(void)
 {
 	if (g_dialogOpen)
 		return;

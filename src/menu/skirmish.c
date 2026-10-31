@@ -3,8 +3,8 @@
 #include <string.h>
 #include "key_repeat.h"
 
-static void list_up(void) { skirmish_443cd0(); }
-static void list_down(void) { skirmish_443d10(); }
+static void list_up(void) { skirmish_cursorUp(); }
+static void list_down(void) { skirmish_cursorDown(); }
 
 /* 0x443f20: the skirmish list's keys: 0x4e0cd4 or fire reads the chosen mission's block (mission_saveAxisMis), back
    or cancel leaves, up / down move the cursor with a key repeat (the original leaves eax to callers that ignore it) */
@@ -40,7 +40,7 @@ void (skirmish_processKeys)(void)
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one
    more character (a CR LF or a double-byte character at once); drawn in the briefing window (wrapping at 0x23e,
    bottom 0x76), with a cursor bar (half bright on its left) at its end while still typing */
-void (skirmish_445520)(void)
+void (briefing_typeOut)(void)
 {
 	u8 *text = g_briefing;
 	if (!text)
@@ -167,7 +167,7 @@ void (skirmish_drawScreenA)(void)
 #undef mission
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
-   typed out (skirmish_445520), two buttons at the right (0x75e2a4, 0x80 apart; lit under the pointer: 0 / 1 by
+   typed out (briefing_typeOut), two buttons at the right (0x75e2a4, 0x80 apart; lit under the pointer: 0 / 1 by
    skirmish_443910) and two at the left (0x75e3a4: 2 only once the text is out (0x4d7348), 3 only with something to
    undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenB)(void)
@@ -183,7 +183,7 @@ void (skirmish_drawScreenB)(void)
 	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
 	menu_drawLine(BX0 + 0x18, BY1 - 0x40, BX1 - 0x18, BY1 - 0x40);
 	set_colour_bits((Colour *)0x76d438, g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
-	skirmish_445520();
+	briefing_typeOut();
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
 		int x = BX1 + k * 0x8c;

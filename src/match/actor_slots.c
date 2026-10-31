@@ -108,16 +108,16 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	a->markTeam = 0;
 }
 
-/* 0x47d060: every bullet in use drawn (its trail, hud_47ca70) */
-void THISCALL (hud_47d060)(Stage *stage, void *view)
+/* 0x47d060: every bullet in use drawn (its trail, bullet_drawTrail) */
+void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 {
 	for (int i = 0; i < FIELD(int, stage, 0x20a99b4); i++)
 		if (FIELD(int, stage, 0x202ef38 + i * 0x4e8) == 1)
-			hud_47ca70(stage, i, view);
+			bullet_drawTrail(stage, i, view);
 }
 
 /* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (hud_48b450); returns b */
-int THISCALL (hud_48fde0)(Stage *stage, int a, int b, int c, int d)
+int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
 	if (!FIELD(int, stage, 0x2149308))
 		return 0;
@@ -568,10 +568,10 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	u32 f;
 	if (a == GAME_VAR(int, s + 0x202e8d8)) {
 		if (draw) {
-			ok = hud_46fd20(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
+			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
 			f = A(u32, 0x3f0);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= hud_46fd20(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)(s + 0x20f2f88));
+				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)(s + 0x20f2f88));
 		}
 	} else if (draw != 1) {
 		f = A(u32, 0x3f0);
@@ -596,7 +596,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 					return;
 				if (k == 4 && A(int, 0x550))
 					continue;
-				int r = hud_46fd20(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
+				int r = partList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
 				ok = k ? ok & r : r & 1;
 			}
 		}
@@ -605,7 +605,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			u32 lt = flag_light(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !A(int, 0x550))
-					ok &= hud_46fd20(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)(s + 0x20f2f88));
+					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)(s + 0x20f2f88));
 		}
 	}
 	A(int, 0x550) = 0;

@@ -150,7 +150,7 @@ static void mission_screen(int hovered)
 
 /* 0x448ac0: the mission settings screen, the button or arrow under the pointer (missionsel_447710) lit. The
    original leaves eax to callers that ignore it */
-void (missionsel_448ac0)(void)
+void (missionsel_drawSettingsScreen)(void)
 {
 	mission_screen(GAME_CDECL(0x447710, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c)));   /* missionsel_447710 */
 }
@@ -172,7 +172,7 @@ void (missionsel_drawScreen)(void)
 	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)0x74de24);
 }
 
-/* 0x44aa20, 0x44aa30: jumps to missionsel_448ac0 and missionsel_drawScreen (the mission select's states'
+/* 0x44aa20, 0x44aa30: jumps to missionsel_drawSettingsScreen and missionsel_drawScreen (the mission select's states'
    frames; their callers ignore eax) */
-void (missionsel_44aa20)(void) { missionsel_448ac0(); }
+void (missionsel_44aa20)(void) { missionsel_drawSettingsScreen(); }
 void (missionsel_44aa30)(void) { missionsel_drawScreen(); }

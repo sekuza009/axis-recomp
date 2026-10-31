@@ -7,7 +7,7 @@
 /* 0x4017d0: the two bytes of a Johab syllable (hi, lo; the original rebuilds the word over its first argument): its
    lead consonant, vowel and tail consonant (5 bits each) mapped to glyph indices, and each part's glyph set picked
    by the others (with or without a tail, by the vowel's shape). Returns the tail's glyph */
-int (hud_4017d0)(u32 hi, u32 lo)
+int (hangul_glyphs)(u32 hi, u32 lo)
 {
 	u32 v = (hi & 0xffff0000u) | (hi & 0xff) << 8 | (lo & 0xff);
 	int vowel = SC(0x4ad3e4 + ((v >> 5) & 31)), tail = SC(0x4ad404 + (v & 31)), lead = SC(0x4ad3c4 + ((v >> 10) & 31));
@@ -104,7 +104,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
    kept for the rest of the text, a later "$[c]" changing it. Lines are `line` apart, wrap at x 0x4ad490 and stop
    at y 0x4ad494. The ASCII passes draw the single-byte characters (a double-byte one is skipped, `wide` across),
    then keep where they ended (0x4d23c8 / 0x4d23cc; 0x4d7348 set when stopped). The Korean passes draw only the
-   double-byte syllables, each split by hud_4017d0 (after the conversion 0x44aac0 when 0x4d23d0 is 1): the lead
+   double-byte syllables, each split by hangul_glyphs (after the conversion 0x44aac0 when 0x4d23d0 is 1): the lead
    glyph alone (0x4d60e0) or the vowel and tail glyphs as two layers (0x4d23d4 / 0x4d23dc); other characters move
    `space` for a space, else 0x4d23d8. Returns glEnd's eax, or glDisable's for the passes that end texturing ---- */
 typedef struct {
@@ -180,7 +180,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			hi = (u8)(code >> 8);
 			lo = (u8)code;
 		}
-		GAME_CDECL(0x4017d0, int, u32, u32)(hi, lo);   /* hud_4017d0 */
+		GAME_CDECL(0x4017d0, int, u32, u32)(hi, lo);   /* hangul_glyphs */
 		if (pass->layered)
 			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, GAME_VAR(int, 0x4d23d4), GAME_VAR(int, 0x4d23dc));
 		else
@@ -199,10 +199,10 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 static const TextPass ascii8 =  { 0x11, 0x10, 1, 0x428030, 0, 0, 8,    8,    8,    0 };   /* text_quad8 */
 static const TextPass ascii16 = { 0x11, 0x10, 1, 0x4280e0, 0, 0, 8,    0xb,  0xd,  1 };   /* text_quad16 */
 static const TextPass ascii32 = { 0x21, 0x20, 0, 0x428190, 0, 0, 0x10, 0x10, 0x16, 1 };   /* text_quad32 */
-static const TextPass han13 =   { 0x11, 0x10, 1, 0x427c30, 1, 0, 8,    0,    0,    0 };   /* hud_427c30 */
-static const TextPass han13b =  { 0x11, 0x10, 1, 0x427ce0, 1, 1, 8,    0,    0,    0 };   /* hud_427ce0 */
-static const TextPass han31 =   { 0x21, 0x20, 0, 0x427e30, 1, 0, 0x10, 0,    0,    0 };   /* hud_427e30 */
-static const TextPass han31b =  { 0x21, 0x20, 0, 0x427ee0, 1, 1, 0x10, 0,    0,    0 };   /* hud_427ee0 */
+static const TextPass han13 =   { 0x11, 0x10, 1, 0x427c30, 1, 0, 8,    0,    0,    0 };   /* glyph_drawHud13 */
+static const TextPass han13b =  { 0x11, 0x10, 1, 0x427ce0, 1, 1, 8,    0,    0,    0 };   /* glyph_drawHud13Layered */
+static const TextPass han31 =   { 0x21, 0x20, 0, 0x427e30, 1, 0, 0x10, 0,    0,    0 };   /* glyph_drawHud31 */
+static const TextPass han31b =  { 0x21, 0x20, 0, 0x427ee0, 1, 1, 0x10, 0,    0,    0 };   /* glyph_drawHud31Layered */
 
 /* 0x402010, 0x402210, 0x402420: the 8, 16 and 32-pixel fonts (0x402010 also notes where it starts first, which the
    end overwrites) */

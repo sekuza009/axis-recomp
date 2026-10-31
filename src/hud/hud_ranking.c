@@ -12,7 +12,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 {
 	char name[64], score[32], time[32];
 	Player *player = &scene->players[p];
-	hud_4950a0(0x70, *y, 0x210, *y + 0x10);
+	hud_fillRect(0x70, *y, 0x210, *y + 0x10);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(name, player->name);
 	text_drawSized(0xf4 - (int)strlen(name) * 8, *y, name, 8);
@@ -39,10 +39,10 @@ void THISCALL (hud_drawRanking)(Scene *scene)
 	char title[64];
 	int y = 0x8c;
 	glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-	hud_4950a0(0x70, 0x70, 0x210, 0x80);
+	hud_fillRect(0x70, 0x70, 0x210, 0x80);
 	text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	sprintf(title, "%s RANKING", g_gameModeNames[scene->gameMode]);
-	hud_44ae10(0x140, 0x70, 0x140, title, 16);
+	text_drawCentred(0x140, 0x70, 0x140, title, 16);
 
 	if (scene->teamGame == 1) {
 		/* the leading team's side first (side 0 red, side 1 blue), a gap of 12 after a team with rows */

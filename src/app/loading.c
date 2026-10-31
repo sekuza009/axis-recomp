@@ -155,7 +155,7 @@ static int texture_named(const char *name)
 static void next_step(void)
 {
 	g_loadStep++;
-	intro_41f100();
+	frontEnd_drawProgress();
 }
 
 /* 0x430ca0: the menus' textures by name: the intro frames ("iftex/m_intro1" .. 4, "m2_intro1" .. 4 into 0x9dad6c),
@@ -171,7 +171,7 @@ void (menu_loadIntroTextures)(void)
 	static const u32 ctrlmenu[2] = { 0x4b23e4, 0x4b23d0 }, laddermenu[2] = { 0x4b240c, 0x4b23f8 };
 	static const u32 spiral[6] = { 0x4b23c0, 0x4b23b0, 0x4b23a0, 0x4b2390, 0x4b2380, 0x4b2370 };
 	next_step();
-	intro_41e730(2.0);
+	timer_waitFrames(2.0);
 	for (int k = 0; k < 8; k++) {
 		((int *)0x9dad6c)[k] = T(intro[k]);
 		next_step();

@@ -129,7 +129,7 @@ void (setup_graphicTabKeys)(void)
 /* the setup screen with an open page over it: the page, or just its frame while a dialog is up */
 static void with_page(void (*draw)(void), const int frame[4])
 {
-	setup_423e50();
+	setup_drawTunnel();
 	if (g_setupPage == 1 || g_setupPage == 0 || g_setupTab == TAB_TOP)
 		return;
 	if (g_dialogOpen == 0)
@@ -138,8 +138,8 @@ static void with_page(void (*draw)(void), const int frame[4])
 		menu_drawFrame(frame[0], frame[1], frame[2], frame[3]);
 }
 
-static void page_424810(void) { setup_424810(); }
-static void page_425460(void) { setup_425460(); }
+static void page_424810(void) { setup_drawSoundPage(); }
+static void page_425460(void) { setup_drawOptionsDialog(); }
 static void page_crosshair(void) { setup_crosshairScreen(); }
 
 /* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
@@ -207,7 +207,7 @@ void (setup_drawKeyBindingRow)(void)
 
 /* 0x420e50: key k unbound: the first pair holding it as its secondary keeps only its primary, moved to the secondary
    (and the scan stops); a primary equal to k before that becomes none */
-void (setup_420e50)(int k)
+void (setup_unbindKey)(int k)
 {
 	int none = KEY_NONE;
 	for (int i = 0; i < 32; i++) {
@@ -539,7 +539,7 @@ static const signed char page_bindings[3][11] = {
 };
 
 /* 0x421680 (named setup_drawKeyBindingRows; by use the key pressed for the binding being edited, the page 0x4ddce8's
-   row 0x4de040): unless it is the excluded key (0x9da440), the key is taken off the other bindings (setup_420e50) and
+   row 0x4de040): unless it is the excluded key (0x9da440), the key is taken off the other bindings (setup_unbindKey) and
    set in the row's binding: with its second slot set, the key in the first and the second cleared (0x4df8e4: none);
    else into an empty first slot; else, unless the first is this key, into the second. Then the row redrawn. The
    callers ignore the eax it leaves */
@@ -547,7 +547,7 @@ void (setup_drawKeyBindingRows)(int key)
 {
 	if (key == GAME_VAR(int, 0x9da440))
 		return;
-	setup_420e50(key);
+	setup_unbindKey(key);
 	int page = GAME_VAR(int, 0x4ddce8), row = GAME_VAR(int, 0x4de040);
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {

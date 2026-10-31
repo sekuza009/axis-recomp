@@ -67,7 +67,7 @@ void THISCALL (shape_relocate)(u8 *shape)
    slot's time at +0x494. Newest first, each live slot adds four quads joining it to the slot before; the first
    expired one (or one 18 behind) adds an end cap fanning to the previous slot's centre, and the trail ends. Only for
    bullets of weapon type 3 whose box (+0x78) is within the view's distance (+0xa08) of the camera (+0x20f3970) */
-void THISCALL (hud_47ca70)(Stage *stage, int b, void *view)
+void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
 	u8 *bullet = (u8 *)stage + 0x202ef34 + b * 0x4e8;
 	X r = FIELD(float, stage, 0xa08);
@@ -100,7 +100,7 @@ void THISCALL (hud_47ca70)(Stage *stage, int b, void *view)
 				memcpy(pts + 9, centre, 12);
 				memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
 				memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
-				hud_4848e0(view, texture, uv0, uv1, &colour, pts, 2, 1);
+				viewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
 			}
 			return;
 		}
@@ -109,7 +109,7 @@ void THISCALL (hud_47ca70)(Stage *stage, int b, void *view)
 			memcpy(pts + 3, ring + (cur * 4 + k - 1) * 3, 12);
 			memcpy(pts + 6, ring + (cur * 4 + k % 4) * 3, 12);
 			memcpy(pts + 9, ring + (prev * 4 + k % 4) * 3, 12);
-			hud_4848e0(view, texture, uv0, uv1, &colour, pts, 2, 1);
+			viewVolume_addQuad(view, texture, uv0, uv1, &colour, pts, 2, 1);
 		}
 		if (--i <= 0)
 			return;

@@ -28,7 +28,7 @@ void THISCALL (replay_drawMessage)(Scene *scene)
 	else
 		alpha = 0.0f;                                           /* NaN too */
 	glColor4f(0.0f, 0.0f, 0.0f, alpha * 0.5f);
-	hud_4950a0(0x1c, 0x24, 0x264, 0x6c);
+	hud_fillRect(0x1c, 0x24, 0x264, 0x6c);
 
 	if (scene->msgRead < scene->msgWrite) {
 		/* the next waiting message: four lines of its text block */

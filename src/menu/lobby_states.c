@@ -406,7 +406,7 @@ u32 (lobby_processKeys)(void)
 
 /* 0x406bd0: the lobby's quit dialog's clicks (unless another dialog is open): a right click closes it; on its first
    button the game quits (code 2), on its second the dialog closes. Returns what the original leaves in eax */
-u32 (lobby_406bd0)(void)
+u32 (lobby_quitDialogClicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
@@ -458,7 +458,7 @@ u32 (menuState400_frame)(void)
 	return screen;
 }
 
-/* 0x4076c0: the lobby's clicks: the top (lobby_406950), the player (lobby_406a60), the arena list (its close button
+/* 0x4076c0: the lobby's clicks: the top (lobby_topPageClicks), the player (lobby_playerScreenClicks), the arena list (its close button
    while closing, the quit dialog while open, else connecting), creating an arena (the list's dialog, the map list,
    else the quit dialog if open, then the screen's clicks) */
 u32 (lobby_onStateChange)(void)
@@ -473,15 +473,15 @@ u32 (lobby_onStateChange)(void)
 		if (GAME_VAR(int, 0x4db8b4))
 			return CALL(0x406b60);   /* lobby_close */
 		if (GAME_VAR(int, 0x907b2c))
-			return CALL(0x406bd0);   /* lobby_406bd0 */
+			return CALL(0x406bd0);   /* lobby_quitDialogClicks */
 		return CALL(0x406c30);       /* lobby_connect */
 	case 2:
 		if (GAME_VAR(int, 0x907b2c))
-			return CALL(0x407270);   /* lobby_407270 */
+			return CALL(0x407270);   /* create_quitDialogClicks */
 		if (GAME_VAR(int, 0x4db508))
 			return CALL(0x4036c0);   /* room_4036c0: the map list */
 		if (GAME_VAR(int, 0x4db55c))
-			CALL(0x407300);          /* lobby_407300 */
+			CALL(0x407300);          /* lobby_pageClicks */
 		return CALL(0x407410);       /* arena_createClick */
 	}
 	return screen;
@@ -541,8 +541,8 @@ u32 (room_leaveGame)(void)
 }
 
 /* 0x407270: the create screen's quit dialog clicks, only with none of its other panels (and no dialog) open: as
-   lobby_406bd0. Returns what the original leaves in eax */
-u32 (lobby_407270)(void)
+   lobby_quitDialogClicks. Returns what the original leaves in eax */
+u32 (create_quitDialogClicks)(void)
 {
 	static const u32 panels[5] = { 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, 0x90d1c4 };
 	for (int k = 0; k < 5; k++)
@@ -609,7 +609,7 @@ static u32 settings_store(u8 *from, u8 *to, u32 then)
 	return GAME_CDECL(then, u32, void)();
 }
 /* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
-u32 (lobby_405140)(void) { return settings_store((u8 *)0x4db528, (u8 *)0x4ded20, 0x42d730); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store((u8 *)0x4db528, (u8 *)0x4ded20, 0x42d730); }
 /* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
 u32 (room_433640)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b1b30, 0x432400); }
 
@@ -677,7 +677,7 @@ u32 (lobby_keysQuit)(void)
 /* 0x406a60: the lobby player screen's clicks (mode 2, no dialog or list open): a right click goes back; buttons: 0 the
    name field, 2 the ARM CENTER, 3 the profile's record kept, 4 back, 5 the default name. Returns what the original
    leaves in eax */
-u32 (lobby_406a60)(void)
+u32 (lobby_playerScreenClicks)(void)
 {
 	int mode = GAME_VAR(int, 0x4dbb3c);
 	if (mode == 1 || mode == 0 || g_dialogOpen || GAME_VAR(int, 0x4dbbd0))
@@ -846,7 +846,7 @@ u32 (lobbyTop_keys)(void)
 /* 0x406950: the lobby's top page clicks (no dialog open, not while 0x67ef14 is 1): a left click on one of its four
    buttons (outlines at 0x5b1cf8) picks sub-page 0, 1 or 2 or goes back to the main menu; a right click (when
    0x9dae10 allows) goes back too. Returns what the original leaves in eax */
-u32 (lobby_406950)(void)
+u32 (lobby_topPageClicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
@@ -1004,7 +1004,7 @@ u32 (arena_loadAndQuit)(void)
    click or button 0x11 closes the page (0x4db55c); button 0x10 starts the game with the player's settings (the
    32-byte record 0x4ded20 and its colour / corporation bytes), the music stopped. Returns what the original
    leaves in eax */
-u32 (lobby_407300)(void)
+u32 (lobby_pageClicks)(void)
 {
 	u32 busy = GAME_VAR(u32, 0x4dbab0);
 	if (busy || GAME_VAR(int, 0x4db850) || GAME_VAR(int, 0x4db518) || GAME_VAR(int, 0x4dbacc) || g_dialogOpen)
@@ -1533,7 +1533,7 @@ void (lobby_roomNameCheck)(void)
 	int was = GAME_VAR(int, 0x67ef04);
 	GAME_VAR(int, 0x67ef14) = 1;
 	GAME_VAR(int, 0x67ef04) = 1;
-	lobby_405140();
+	lobby_keepArenaSettings();
 	int hosted = arena_452ec0(1, NULL);
 	if (hosted) {
 		special_map((const char *)0x4ded20, (u8 *)0x4ded40);
@@ -1572,7 +1572,7 @@ void (lobby_checkReservedName)(void)
    arena's name, this machine's address) sent as kind 10. Returns 1 when sent */
 int (lobby_checkReservedName2)(void)
 {
-	lobby_405140();
+	lobby_keepArenaSettings();
 	int r = net_connect(100);
 	if (r == 0) {
 		menu_showMessage(0x3d);

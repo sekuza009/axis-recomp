@@ -30,7 +30,7 @@ void (timer_init)(void)
 }
 
 /* 0x41e730: busy-wait until `frames` 1/60 s have passed */
-void (intro_41e730)(double frames)
+void (timer_waitFrames)(double frames)
 {
 	volatile double start = timer_now();
 	while (!((timer_now() - start) * FRAME_RATE >= frames))

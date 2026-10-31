@@ -159,7 +159,7 @@ void (mech_storeToProfile)(void)
 }
 
 /* 0x447910: the menu camera put back (armc_40e670 without its flag) */
-void (skirmish_447910)(void)
+void (menu_restoreCamera)(void)
 {
 	GAME_VAR(int, 0x4df024) = GAME_VAR(int, 0x4df870);
 	GAME_VAR(int, 0x4df028) = GAME_VAR(int, 0x4df874);
@@ -170,7 +170,7 @@ void (skirmish_447910)(void)
 }
 
 /* 0x445de0: a click (either button) starts the menu fade, once */
-void (menu_445de0)(void)
+void (menu_clickStartFade)(void)
 {
 	if ((GAME_VAR(int, 0x4ded88) || GAME_VAR(int, 0x4ded8c)) && !GAME_VAR(int, 0x4df01c)) {
 		GAME_VAR(int, 0x4df01c) = 1;
@@ -291,7 +291,7 @@ void (room_435770)(void)
 #define sk_count GAME_VAR(int, 0x9ef2c0)
 
 /* 0x443cd0: cursor up (the list scrolls at the top row) */
-void (skirmish_443cd0)(void)
+void (skirmish_cursorUp)(void)
 {
 	if (sk_row > 0) {
 		sk_row--;
@@ -304,7 +304,7 @@ void (skirmish_443cd0)(void)
 }
 
 /* 0x443d10: cursor down (the list scrolls at the bottom row) */
-void (skirmish_443d10)(void)
+void (skirmish_cursorDown)(void)
 {
 	if (sk_top + sk_row < sk_count - 1) {
 		if (sk_row < 7)
@@ -316,7 +316,7 @@ void (skirmish_443d10)(void)
 }
 
 /* 0x443d50: a click on row */
-void (skirmish_443d50)(int row)
+void (skirmish_clickRow)(int row)
 {
 	if (sk_top + row < sk_count) {
 		sk_row = row;
@@ -361,7 +361,7 @@ void (undo_pop)(void)
 
 /* 0x443ea0: a click on the skirmish settings' arrows: 1 marks a change (0x9ef1f8 = 10, as a right click does), 2 adds
    the pending step, 3 undoes one */
-void (menu_443ea0)(void)
+void (skirmish_settingsArrowClick)(void)
 {
 	if (g_dialogOpen)
 		return;
@@ -387,7 +387,7 @@ void (menu_443ea0)(void)
 /* ---- leaving the skirmish settings (0x443c80) or the mission settings (0x447960): the screen's state cleared, the
    view squeezed (aspect 0.1) to open out again, the camera to (?, 0, 1600) looking ahead, a sound, the menu camera
    put back. Both return what that leaves in eax ---- */
-#define put_camera_back() GAME_CDECL(0x447910, u32, void)()   /* skirmish_447910 */
+#define put_camera_back() GAME_CDECL(0x447910, u32, void)()   /* menu_restoreCamera */
 static u32 leave_settings(u32 state)
 {
 	GAME_VAR(int, state) = 0;
@@ -404,7 +404,7 @@ u32 (FUN_00447960)(void) { return leave_settings(0x9f62f8); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
    menu sound. Returns what the original leaves in eax */
-u32 (menu_4370e0)(void)
+u32 (room_leaveKeys)(void)
 {
 	u32 r = input_justPressed(GAME_VAR(int, 0x4e1510));
 	if (r == 1) {
@@ -429,7 +429,7 @@ u32 (menuState900_skirmishSetup)(void)
 		menu_drawBackground();
 	if (GAME_VAR(int, 0x9ef1f0) != 2)
 		GAME_CDECL(0x4445a0, void, void)();   /* skirmish_4445a0 */
-	GAME_CDECL(0x444130, void, void)();       /* skirmish_444130: the camera */
+	GAME_CDECL(0x444130, void, void)();       /* skirmish_camera: the camera */
 	int state = GAME_VAR(int, 0x9ef1f0);
 	if (state == 1 || state == 0)
 		return state;
@@ -446,7 +446,7 @@ u32 (menuState900_skirmishSetup)(void)
 
 /* 0x444070: the skirmish settings' keys: two keys (and a third) switch to screen A (0x9ef1f8 = 10), two step the
    settings forward and back. Returns what the original leaves in eax */
-u32 (menu_444070)(void)
+u32 (skirmish_settingsKeys)(void)
 {
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1)
 		return 1;
@@ -465,7 +465,7 @@ u32 (menu_444070)(void)
 /* ---- the mission select (selection 0x9f63b4) ---- */
 /* 0x4479d0: mission sel chosen: its 32-byte record (0x907b30) as the current one (0x67fb44), its three values from the
    0x5c-byte table at 0x9db9e4, the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
-u32 (mission_4479d0)(void)
+u32 (mission_choose)(void)
 {
 	int sel = GAME_VAR(int, 0x9f63b4);
 	u32 t = (u32)sel * 0x5c;
@@ -484,7 +484,7 @@ u32 (mission_4479d0)(void)
 
 /* 0x447a50: the mission select's clicks (no dialog open): a right click leaves; buttons 0 choose, 1 leave, 2 and 3
    step the selection down and up (within 0 .. the count 0x9f181c and 14). Returns what the original leaves in eax */
-u32 (mission_447a50)(void)
+u32 (missionsel_clicks)(void)
 {
 	if (g_dialogOpen)
 		return g_dialogOpen;
@@ -496,14 +496,14 @@ u32 (mission_447a50)(void)
 	int sel = GAME_VAR(int, 0x9f63b4);
 	switch (button) {
 	case 0:
-		return GAME_CDECL(0x4479d0, u32, void)();   /* mission_4479d0 */
+		return GAME_CDECL(0x4479d0, u32, void)();   /* mission_choose */
 	case 1:
 		return GAME_CDECL(0x447960, u32, void)();
 	case 2:
 		if (sel <= 0)
 			return (u32)sel;
 		GAME_VAR(int, 0x9f63b4) = --sel;
-		return GAME_CDECL(0x4479b0, u32, int)(sel);   /* mission_4479b0 */
+		return GAME_CDECL(0x4479b0, u32, int)(sel);   /* mission_chosen */
 	case 3:
 		if (sel >= GAME_VAR(int, 0x9f181c) || sel >= 0xe)
 			return (u32)sel;
@@ -536,7 +536,7 @@ u32 (room_431600)(int ok)
 }
 
 /* 0x431950: any of three keys closes the message box (0x4df900). Returns the last key's state */
-u32 (menu_431950)(void)
+u32 (messageBox_keyClose)(void)
 {
 	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
 	u32 r = 0;
@@ -552,7 +552,7 @@ u32 (menu_431950)(void)
 
 /* 0x4318b0: any of three keys starts the menu's fade (0x4df01c, once; its timer 0x4e0458 from 0). Returns what the
    original leaves in eax */
-u32 (menu_4318b0)(void)
+u32 (menu_keyStartFade)(void)
 {
 	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
 	u32 r = 0;
@@ -571,7 +571,7 @@ u32 (menu_4318b0)(void)
 /* 0x442d10: the map list's visible names: up to 10 rows, 20 pixels apart, from the first shown (0x9dd92c) of the
    0x9dd928 maps (0x44-byte records from 0x9dda88): a flagged one (+0x40) on a red bar with yellow text, the others
    pale blue. Returns the last text_draw8's eax (0 with no rows) */
-u32 (mainmenu_442d10)(void)
+u32 (mapSelect_drawNames)(void)
 {
 	u32 r = 0;
 	for (int i = 0, dy = 0; i < GAME_VAR(int, 0x9dd928) && dy < 200; i++, dy += 20) {
@@ -648,7 +648,7 @@ u32 (mainmenu_startNetGame)(void)
 	if (GAME_VAR(int, 0x9db994) == 1)
 		return 1;
 	if (GAME_VAR(int, 0x9eeab4))
-		return GAME_CDECL(0x441810, u32, void)();   /* mainmenu_441810: the map-select dialog */
+		return GAME_CDECL(0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
 	if (GAME_VAR(int, 0x4ded88)) {
 		GAME_VAR(float, 0x4dda44) = 0.0f;
 		const Outline *buttons = (const Outline *)0x4deb80;
@@ -668,7 +668,7 @@ u32 (mainmenu_startNetGame)(void)
 	return leave_game();
 }
 
-/* 0x441e00: the main menu's keys (not while fading in; the map-select dialog's keys (mainmenu_441c00) when open):
+/* 0x441e00: the main menu's keys (not while fading in; the map-select dialog's keys (mapSelect_keys) when open):
    the six choices' keys as menu_choice, the back key quitting (without saving) when started from the launcher, and
    the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
@@ -677,7 +677,7 @@ u32 (mainmenu_processKeys)(void)
 	if (GAME_VAR(int, 0x9db994) == 1)
 		return 1;
 	if (GAME_VAR(int, 0x9eeab4))
-		return GAME_CDECL(0x441c00, u32, void)();   /* mainmenu_441c00 */
+		return GAME_CDECL(0x441c00, u32, void)();   /* mapSelect_keys */
 	for (int i = 0; i < 6; i++)
 		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
 			u32 r;

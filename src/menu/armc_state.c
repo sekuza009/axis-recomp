@@ -62,7 +62,7 @@ void (armc_40e670)(void)
 }
 
 /* 0x40e6c0: the saved mech (parts, the six items, the colours) into the working copy */
-void (menu_40e6c0)(void)
+void (armc_loadSavedMech)(void)
 {
 	g_workParts[0] = g_savedParts[0];
 	g_workParts[1] = g_savedParts[1];

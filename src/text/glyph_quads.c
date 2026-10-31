@@ -20,20 +20,20 @@ static void glyph_quad(int x, int y, int w, int h, int i, u32 u0, u32 v0, u32 u1
 }
 
 /* 0x427c30, 0x427e30: HUD glyph i, 13 and 31 units */
-void (hud_427c30)(int x, int y, int i) { glyph_quad(x, y, 0xd, 0xd, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
-void (hud_427e30)(int x, int y, int i) { glyph_quad(x, y, 0x1f, 0x1f, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
+void (glyph_drawHud13)(int x, int y, int i) { glyph_quad(x, y, 0xd, 0xd, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
+void (glyph_drawHud31)(int x, int y, int i) { glyph_quad(x, y, 0x1f, 0x1f, i, 0x5b0d10, 0x5b0910, 0x4e0878, 0x4e0474); }
 /* 0x428030, 0x4280e0, 0x428190, 0x428240: character c (1-based) of the 8, 16, 32 and 5-pixel fonts */
 void (text_quad8)(int x, int y, int c) { glyph_quad(x, y, 7, 0xf, c - 1, 0x6807ac, 0x6803ac, 0x67fb64, 0x67ff64); }
 void (text_quad16)(int x, int y, int c) { glyph_quad(x, y, 0xf, 0xf, c - 1, 0x9da90c, 0x9da4a8, 0x9db510, 0x9db0b0); }
 void (text_quad32)(int x, int y, int c) { glyph_quad(x, y, 0x17, 0x1f, c - 1, 0x9da90c, 0x9da4a8, 0x9db510, 0x9db0b0); }
 void (text_quad5)(int x, int y, int c) { glyph_quad(x, y, 7, 7, c - 1, 0x5b1514, 0x5b1114, 0x4e10e8, 0x4e0ce4); }
 /* 0x427ce0, 0x427ee0: two layers at once (glyph i from one set, j from another), 13 and 31 units */
-void (hud_427ce0)(int x, int y, int i, int j)
+void (glyph_drawHud13Layered)(int x, int y, int i, int j)
 {
 	glyph_quad(x, y, 0xd, 0xd, i, 0x4e1548, 0x4e16d8, 0x5b199c, 0x5b1b64);
 	glyph_quad(x, y, 0xd, 0xd, j, 0x4df458, 0x4df638, 0x83a600, 0x83a7e0);
 }
-void (hud_427ee0)(int x, int y, int i, int j)
+void (glyph_drawHud31Layered)(int x, int y, int i, int j)
 {
 	glyph_quad(x, y, 0x1f, 0x1f, i, 0x4e1548, 0x4e16d8, 0x5b199c, 0x5b1b64);
 	glyph_quad(x, y, 0x1f, 0x1f, j, 0x4df458, 0x4df638, 0x83a600, 0x83a7e0);

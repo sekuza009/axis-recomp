@@ -448,7 +448,7 @@ static void *mis_open(void)
 	return crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
 }
 
-/* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_443570), four header words (the
+/* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_clearPlayerRows), four header words (the
    count 0x9ef2c0, then 0x9ef2c4 .. 0x9ef2cc), each mission's 0xfc-byte entry from 0x9ef2d0 (a word, the 0x40-byte
    name, 0x20 and 0x80-byte texts, four words) and then all their block sizes (+0xf4). Without the file, message
    0xb and its eax; otherwise fclose's */
@@ -457,7 +457,7 @@ u32 (mission_loadAxisMis)(void)
 	void *f = mis_open();
 	if (!f)
 		return GAME_CDECL(0x41ee40, u32, int)(0xb);
-	GAME_CDECL(0x443570, void, void)();   /* skirmish_443570 */
+	GAME_CDECL(0x443570, void, void)();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(0x9ef2c0 + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {

@@ -140,7 +140,7 @@ static void sky_sides(Stage *stage)
    of its animation; the texture lies still on the ground (its coordinates follow the camera position) */
 static void sky_floor(Stage *stage, float scale)
 {
-	hud_472900(stage, stage->glFogColour, stage->glFogStart, stage->glFogEnd, stage->glFogDensity);
+	stage_setFog(stage, stage->glFogColour, stage->glFogStart, stage->glFogEnd, stage->glFogDensity);
 	glEnable(GL_FOG);
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_2D);
@@ -164,10 +164,10 @@ static void sky_floor(Stage *stage, float scale)
 	glDisable(GL_FOG);
 }
 
-/* 0x496f20 (hud_496f20): the sky, with the modelview saved and restored around it. The sphere and the layers are
+/* 0x496f20 (sky_draw): the sky, with the modelview saved and restored around it. The sphere and the layers are
    seen from the origin looking along the camera's direction; the side walls from the camera's height (scaled by
    10000 / scale); the floor from the camera's height */
-void THISCALL (hud_496f20)(Stage *stage, float scale)
+void THISCALL (sky_draw)(Stage *stage, float scale)
 {
 	float saved[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, saved);

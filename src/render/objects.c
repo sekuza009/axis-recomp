@@ -3,9 +3,9 @@
 #include "../game.h"
 #include <string.h>
 
-/* 0x490b30 (hud_490b30): object i, unless it is hidden or has no model, when its bounding sphere (the model's radius
+/* 0x490b30 (stage_drawObject): object i, unless it is hidden or has no model, when its bounding sphere (the model's radius
    plus stage->cullMargin) touches the box around stage->cameraPos: queued with its matrix and pose, culled per mesh */
-void THISCALL (hud_490b30)(Stage *stage, int i, void *view)
+void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 {
 	MapObject *o = &stage->objects[i];
 	if (o->flags & 2)
@@ -24,29 +24,29 @@ void THISCALL (hud_490b30)(Stage *stage, int i, void *view)
 	ViewVolume_projectObject(view, model, o->poseSide == 0 ? o->poseFrom : o->poseTo, o->matrix, 0, NULL, 1, -1, 0);
 }
 
-/* 0x490da0 (hud_490da0): every active object */
-void THISCALL (hud_490da0)(Stage *stage, void *view)
+/* 0x490da0 (stage_drawObjects): every active object */
+void THISCALL (stage_drawObjects)(Stage *stage, void *view)
 {
 	for (int i = 0; i < stage->objectCount; i++)
 		if (stage->objects[i].active == 1)
-			hud_490b30(stage, i, view);
+			stage_drawObject(stage, i, view);
 }
 
-/* 0x45e170 (hud_45e170): every active actor's parts; pass is handed on (hud_pass gives 0 and 1, the match's view
+/* 0x45e170 (stage_drawActors): every active actor's parts; pass is handed on (hud_pass gives 0 and 1, the match's view
    -1) */
-void THISCALL (hud_45e170)(Stage *stage, void *view, int pass)
+void THISCALL (stage_drawActors)(Stage *stage, void *view, int pass)
 {
 	for (int i = 0; i < stage->actorCount; i++)
 		if (stage->actors[i].active == 1)
 			actor_updateAllParts(stage, i, view, pass);
 }
 
-/* 0x479af0 (hud_479af0): every active projectile */
-void THISCALL (hud_479af0)(Stage *stage, void *view)
+/* 0x479af0 (stage_drawProjectiles): every active projectile */
+void THISCALL (stage_drawProjectiles)(Stage *stage, void *view)
 {
 	for (int i = 0; i < stage->projectileCount; i++)
 		if (stage->projectiles[i].active == 1)
-			hud_476890(stage, i, view);
+			projectile_draw(stage, i, view);
 }
 
 #define K(address) ((const float *)(address))
@@ -342,10 +342,10 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 
 static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
 
-/* a camera-facing quad (hud_484ca0): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
+/* a camera-facing quad (viewVolume_addBillboard): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
 static void quad(void *vv, int tex, const float *uv, float dz, u8 *p, const float *ab, const float *at, int kind)
 {
-	hud_484ca0(vv, tex, uv, uv + 2, dz, p + 0x78, ab, ab + 2, at, kind, 1);
+	viewVolume_addBillboard(vv, tex, uv, uv + 2, dz, p + 0x78, ab, ab + 2, at, kind, 1);
 }
 
 /* offsets +-h, each corner rounded */
@@ -509,7 +509,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
    Below type 50 it must lie in the box of +0xa08 about the camera (+0x20f3970). By type: billboards from the effect
    textures (+0x9ccfd4..) by the fraction t of the timer gone, the effect shapes (+0x20f2e74..; the owner's part
    shapes for debris), a trail (types 40-49: triangles through ViewVolume_transformObject) or a quad (type 50) */
-void THISCALL (hud_476890)(u8 *s, int i, void *vv)
+void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 {
 	u8 *p = s + 0x20a99c0 + i * 0x12c;
 	const float *at = (const float *)(p + 0x10), *cam = (const float *)(s + 0x20f3970), *range = (const float *)(s + 0xa08);
@@ -701,7 +701,7 @@ void THISCALL (hud_476890)(u8 *s, int i, void *vv)
 		return;
 	}
 	case 50:
-		hud_4848e0(vv, P(int, 0xe4), (const u32 *)(p + 0xe8), (const u32 *)(p + 0xf0), (const u32 *)(p + 0xf8), (const float *)(p + 0xfc), 2, 1);
+		viewVolume_addQuad(vv, P(int, 0xe4), (const u32 *)(p + 0xe8), (const u32 *)(p + 0xf0), (const u32 *)(p + 0xf8), (const float *)(p + 0xfc), 2, 1);
 		return;
 	}
 }

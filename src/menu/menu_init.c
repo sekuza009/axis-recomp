@@ -4,7 +4,7 @@
 #include <string.h>
 
 /* 0x430ab0: seven RGBA colours, each component 1.0 or 0 */
-void (intro_430ab0)(void)
+void (menu_initColours)(void)
 {
 	static const u8 on[28] = { 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1 };
 	for (int k = 0; k < 28; k++)
@@ -12,7 +12,7 @@ void (intro_430ab0)(void)
 }
 
 /* 0x40e510: three camera points (0, 300, 0), (0, -500, 0), (0, 350, 0) (16 bytes apart, the fourth word kept) */
-void (menu_40e510)(void)
+void (armc_initCameraPoints)(void)
 {
 	for (u32 p = 0x4dca30; p < 0x4dca90; p += 0x10) {
 		GAME_VAR(int, p) = 0;
@@ -38,7 +38,7 @@ void (arena_42bc00)(void)
 
 /* 0x443570: the skirmish list's 32 player rows (0xfc bytes: a 0x40-byte name, 0xa0 bytes of settings, the team
    -1) emptied */
-void (skirmish_443570)(void)
+void (skirmish_clearPlayerRows)(void)
 {
 	GAME_VAR(int, 0x9ef2c0) = 0;
 	GAME_VAR(int, 0x9ef2c4) = 0;
@@ -78,7 +78,7 @@ void (arena_4509e0)(void)
 
 /* 0x42f8e0: the key repeat records (four of 0x2c bytes, at 0x4df918 and again at 0x9da328): delay 4, then two rows of
    five values from the defaults at 0x5b1cfc */
-void (intro_42f8e0)(void)
+void (menu_initKeyRepeat)(void)
 {
 	for (int o = 0; o < 0xb0; o += 0x2c) {
 		GAME_VAR(int, 0x4df918 + o) = 4;
@@ -121,7 +121,7 @@ void (armc_433360)(void)
 
 /* 0x440d70: the main menu's replay list opened: its state, a dialog open, its frame, the 1024 records (0x44 bytes
    from 0x9dda88) cleared, the layout and the replay files listed. Returns the listing's eax */
-u32 (mainmenu_440d70)(void)
+u32 (replayList_open)(void)
 {
 	GAME_VAR(int, 0x9dd928) = 0;
 	GAME_VAR(int, 0x9dd92c) = 0;
@@ -141,18 +141,18 @@ u32 (mainmenu_440d70)(void)
 /* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
    repeat records, the menu's records), each counted on the progress bar (0x4dda34), drawn, and followed by a 2-second
    wait. Returns the last progress drawing's eax */
-u32 (intro_430bf0)(void)
+u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { 0x42f2b0, 0x42f500, 0x42f690, 0x42f8e0, 0x430bd0 };
 	memset((void *)0x67ef38, 0, 0x300 * 4);
-	GAME_CDECL(0x430ab0, void, void)();   /* intro_430ab0: the colours */
+	GAME_CDECL(0x430ab0, void, void)();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {
 		GAME_VAR(int, 0x4dda34)++;
-		r = GAME_CDECL(0x41f100, u32, void)();   /* intro_41f100: the progress drawn */
+		r = GAME_CDECL(0x41f100, u32, void)();   /* frontEnd_drawProgress: the progress drawn */
 		if (k == 5)
 			break;
-		GAME_CDECL(0x41e730, void, double)(2.0);   /* intro_41e730: wait */
+		GAME_CDECL(0x41e730, void, double)(2.0);   /* timer_waitFrames: wait */
 		GAME_CDECL(steps[k], void, void)();
 	}
 	return r;

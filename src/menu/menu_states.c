@@ -64,7 +64,7 @@ static void bar_column(int x, float r, float g, float b)
 /* 0x41f100: the start-up screen at progress 0x4dda34 (16 pixels a step): the logo, then a bar of that many columns
    below it, red to blue over the first 200, blue to green over the next 200, green to yellow after that. Returns
    SwapBuffers' answer */
-int (intro_41f100)(void)
+int (frontEnd_drawProgress)(void)
 {
 	draw_logo(0);
 	int n = GAME_VAR(int, 0x4dda34) * 16;
@@ -107,19 +107,19 @@ void (menuState100_intro)(void)
 	SwapBuffers(GAME_VAR(void *, 0x76d480));
 	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
 	GAME_VAR(int, 0x4dda34)++;
-	intro_41f100();
-	intro_41e730(5.0);
-	intro_4411e0();
+	frontEnd_drawProgress();
+	timer_waitFrames(5.0);
+	tunnel_rebuild();
 	GAME_VAR(int, 0x4dda34)++;
-	intro_41f100();
-	intro_41e730(2.0);
+	frontEnd_drawProgress();
+	timer_waitFrames(2.0);
 	menu_loadIntroTextures();
-	intro_430bf0();
+	frontEnd_startUp();
 	GAME_VAR(int, 0x4dda34)++;
-	intro_41f100();
+	frontEnd_drawProgress();
 	nullsub_48b420(NULL);   /* (an empty function) */
 	GAME_VAR(int, 0x4dda34)++;
-	intro_41f100();
+	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
 	static const u32 cleared[] = { 0x4df01c, 0x4e0458, 0x680370, 0x4df8e0, 0x4df03c, 0x4df910, 0x4e14fc, 0x9db978, 0x4dda48 };
@@ -148,9 +148,9 @@ void (menu_drawBackground)(void)
 /* 0x442e10: the map-select dialog (0x9dd908 .. 0x9dd914): the window, its title 0x74e8a4, the list's frame with
    its scroll arrows (0 / 1 under the pointer, by FUN_00440b70), two tick boxes (0x4b2a7c: 0x74e924, 0x9eeac0:
    0x74e9a4), two rows of two buttons (0x74ea24 lit from 4, 0x74eb24 from 6), the list row under the pointer
-   (8 .. 0x11) highlighted, the list (mainmenu_442d10) and the border. The original leaves eax to callers that
+   (8 .. 0x11) highlighted, the list (mapSelect_drawNames) and the border. The original leaves eax to callers that
    ignore it */
-void (mainmenu_442e10)(void)
+void (mapSelect_drawDialog)(void)
 {
 #define X0 GAME_VAR(int, 0x9dd908)
 #define Y0 GAME_VAR(int, 0x9dd90c)
@@ -202,7 +202,7 @@ void (mainmenu_442e10)(void)
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
 		menu_drawRect(X0 + 0x20, Y0 + hovered * 20 - 0x75, X1 - 0x50, Y0 + hovered * 20 - 0x63, 1);
 	}
-	mainmenu_442d10();
+	mapSelect_drawNames();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_428a00(X0, Y0, X1, Y1);
 #undef X0
@@ -212,12 +212,12 @@ void (mainmenu_442e10)(void)
 }
 
 /* 0x4434f0: the map-select dialog of the main menu (only its frame while a dialog is up) */
-void (mainmenu_4434f0)(void)
+void (mainmenu_drawMapSelect)(void)
 {
 	if (g_dialogOpen != 0)
 		menu_drawFrame(GAME_VAR(int, 0x9dd908), GAME_VAR(int, 0x9dd90c), GAME_VAR(int, 0x9dd910), GAME_VAR(int, 0x9dd914));
 	else
-		mainmenu_442e10();
+		mapSelect_drawDialog();
 }
 
 /* 0x443530: the main menu's frame: background, menu, the map-select dialog when open, and while the quit question
@@ -227,7 +227,7 @@ void (menuState300_frame)(void)
 	menu_drawBackground();
 	menu_mainMenu();
 	if (GAME_VAR(int, 0x9eeab4) != 0)
-		mainmenu_4434f0();
+		mainmenu_drawMapSelect();
 	if (g_quitAsked == 1) {
 		set_680370_441250(1);
 		g_nextScreen = 9999;
@@ -236,29 +236,29 @@ void (menuState300_frame)(void)
 }
 
 /* 0x443ef0: the settings page's draw pass (none while a dialog is up) */
-void (menu_443ef0)(void)
+void (settingsPage_draw)(void)
 {
 	if (g_dialogOpen != 0)
 		return;
 	if (g_settingsPage == 10)
 		skirmish_saveSettings();
 	else if (g_settingsPage == 20)
-		menu_443ea0();
+		skirmish_settingsArrowClick();
 }
 
 /* 0x4440f0: the settings page's keys */
-void (menu_4440f0)(void)
+void (settingsPage_keys)(void)
 {
 	if (g_settingsState == 1 || g_settingsState == 0 || g_dialogOpen != 0)
 		return;
 	if (g_settingsPage == 10)
 		skirmish_processKeys();
 	else if (g_settingsPage == 20)
-		menu_444070();
+		skirmish_settingsKeys();
 }
 
 /* 0x4479b0: mission chosen (sound 2) */
-void (mission_4479b0)(int mission)
+void (mission_chosen)(int mission)
 {
 	GAME_VAR(int, 0x9f6328) = mission;
 	GAME_VAR(int, 0x9f63b0) = 1;
@@ -271,13 +271,13 @@ void (mission_unlockCheat)(void)
 	if (g_dialogOpen != 0 || g_missionBusy != 0)
 		return;
 	if (g_missionBriefing != 0)
-		mission_447af0();
+		briefing_clickClose();
 	else
-		mission_447a50();
+		missionsel_clicks();
 }
 
 /* 0x447c30: the briefing's keys: Esc or Enter closes it */
-void (menu_447c30)(void)
+void (briefing_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1 || input_justPressed(g_keyClick) == 1)
 		g_missionBriefing = 0;
@@ -285,14 +285,14 @@ void (menu_447c30)(void)
 
 /* 0x447b40: the list's keys: Esc or back leaves, O starts the mission, left / right step through the missions
    unlocked so far (g_progress), and Left Ctrl + Right Alt + Page Up unlocks them all */
-void (menu_447b40)(void)
+void (missionList_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
 		FUN_00447960();
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
-		mission_4479d0();
+		mission_choose();
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
@@ -300,25 +300,25 @@ void (menu_447b40)(void)
 		return;
 	}
 	if (input_justPressed(g_keyLeft) == 1 && g_mission > 0)
-		mission_4479b0(--g_mission);
+		mission_chosen(--g_mission);
 	if (input_justPressed(g_keyRight) == 1 && g_mission < g_progress) {
 		if (g_mission >= 14)
 			return;
-		mission_4479b0(++g_mission);
+		mission_chosen(++g_mission);
 	}
 	if (input_isDown(g_keyLeftCtrl) && input_isDown(GAME_VAR(int, 0x4df9fc)) && input_justPressed(GAME_VAR(int, 0x4df90c)))
 		g_progress = 16;
 }
 
 /* 0x447c70: the mission select's keys (not while a dialog is up) */
-void (menu_447c70)(void)
+void (missionsel_keys)(void)
 {
 	if (g_missionState == 1 || g_missionState == 0 || g_dialogOpen != 0 || g_missionBusy != 0)
 		return;
 	if (g_missionBriefing != 0)
-		menu_447c30();
+		briefing_keys();
 	else
-		menu_447b40();
+		missionList_keys();
 }
 
 /* 0x41edc0 (menu_returnToMain): back to the main menu: the background tunnel freed ring by ring (last first), the menus
@@ -347,7 +347,7 @@ void (menu_returnToMainFromRoom)(void)
 
 /* 0x441770: the map-select dialog's OK: if a map is chosen (0x44-byte entries from 0x9ddac8), the dialog closes and
    the choice is kept */
-void (mainmenu_441770)(void)
+void (mapSelect_ok)(void)
 {
 	int count = GAME_VAR(int, 0x9dd928);
 	for (int i = 0; i < count; i++)
@@ -377,10 +377,10 @@ static void maps_down(void)
 	}
 }
 
-/* 0x441c00: the map-select dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (mainmenu_441770),
+/* 0x441c00: the map-select dialog's keys: cancel or back closes it (0x9eeab4), OK takes the choice (mapSelect_ok),
    0x4e151c toggles 0x9eeac0, 0x4e0ce0 / 0x4e0cd4 take every map out / in, up / down scroll the list with a key
    repeat (the original leaves eax to callers that ignore it) */
-void (mainmenu_441c00)(void)
+void (mapSelect_keys)(void)
 {
 	if (input_justPressed(g_keyCancel2) == 1) {
 		sound_playMenu(0);
@@ -388,7 +388,7 @@ void (mainmenu_441c00)(void)
 		return;
 	}
 	if (input_justPressed(g_keyOk) == 1) {
-		mainmenu_441770();
+		mapSelect_ok();
 		return;
 	}
 	if (input_justPressed(g_keyBack) == 1) {
@@ -403,12 +403,12 @@ void (mainmenu_441c00)(void)
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0ce0)) == 1) {
 		sound_playMenu(0);
-		mainmenu_440df0();
+		mapSelect_allOut();
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)) == 1) {
 		sound_playMenu(0);
-		mainmenu_4417f0();
+		mapSelect_allIn();
 		return;
 	}
 	if (!key_repeat(g_keyUp, &g_repeatUp, maps_up))
@@ -418,7 +418,7 @@ void (mainmenu_441c00)(void)
 /* 0x441810: the map-select dialog's mouse: a click (the blink clock restarted) on the arrows (0 / 1), the two
    toggles (0x4b2a7c, 0x9eeac0), every map in or out, OK, cancel (7), or a row's map (8 .. 17); holding an arrow
    scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore it */
-void (mainmenu_441810)(void)
+void (mapSelect_mouse)(void)
 {
 	const float *repeat = (const float *)0x4a93d0;
 	if (g_mouseClick) {
@@ -433,16 +433,16 @@ void (mainmenu_441810)(void)
 		else if (on == 3)
 			GAME_VAR(int, 0x9eeac0) = 1 - GAME_VAR(int, 0x9eeac0);
 		else if (on == 4)
-			mainmenu_4417f0();
+			mapSelect_allIn();
 		else if (on == 5)
-			mainmenu_440df0();
+			mapSelect_allOut();
 		else if (on == 6)
-			mainmenu_441770();
+			mapSelect_ok();
 		else if (on == 7)
 			GAME_VAR(int, 0x9eeab4) = 0;
 		else if (on >= 8 && on < 18) {
 			sound_playMenu(2);
-			mainmenu_4417c0(g_mapFirst + on - 8);
+			mapSelect_toggle(g_mapFirst + on - 8);
 		}
 	}
 	if (!g_mouseHeld)
@@ -486,10 +486,10 @@ void (menuState600_setup)(void)
 {
 	menu_drawBackground();
 	switch (g_setupTab) {
-	case 2: setup_4230e0(); setup_4278d0(); break;
-	case 0: setup_4230e0(); setup_427830(); break;
-	case 1: setup_4230e0(); setup_427880(); break;
-	case 0x29a: setup_4277c0(); setup_423330(); break;
+	case 2: setup_camera(); setup_4278d0(); break;
+	case 0: setup_camera(); setup_427830(); break;
+	case 1: setup_camera(); setup_427880(); break;
+	case 0x29a: setup_easePanel(); setup_drawMenu(); break;
 	}
 }
 

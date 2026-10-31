@@ -32,15 +32,15 @@ void THISCALL (hud_pass)(Scene *scene)
 		} else if (scene->playing == 1 && scene->cameraMode == 2 && scene->localPlayer >= 0) {
 			scene->players[scene->localPlayer].viewMarked = 1;
 		}
-		hud_496f20(STAGE(scene), hud_scale());
+		sky_draw(STAGE(scene), hud_scale());
 		render_processRenderingBy(STAGE(scene), &scene->view, hud_scale());
-		hud_490da0(STAGE(scene), &scene->view);
-		hud_45e170(STAGE(scene), &scene->view, 0);
-		hud_47d060(STAGE(scene), &scene->view);
-		hud_479af0(STAGE(scene), &scene->view);
-		hud_48f970(STAGE(scene), &scene->view);
+		stage_drawObjects(STAGE(scene), &scene->view);
+		stage_drawActors(STAGE(scene), &scene->view, 0);
+		stage_drawBullets(STAGE(scene), &scene->view);
+		stage_drawProjectiles(STAGE(scene), &scene->view);
+		stage_drawItems(STAGE(scene), &scene->view);
 		if (scene->fogInOverlay == 1) {
-			hud_472900(STAGE(scene), &scene->fogVolume, scene->fogVolumeArgs[0], scene->fogVolumeArgs[1], scene->fogVolumeArgs[2]);
+			stage_setFog(STAGE(scene), &scene->fogVolume, scene->fogVolumeArgs[0], scene->fogVolumeArgs[1], scene->fogVolumeArgs[2]);
 			glEnable(GL_FOG);
 		}
 		render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
@@ -48,7 +48,7 @@ void THISCALL (hud_pass)(Scene *scene)
 	}
 	glClear(GL_DEPTH_BUFFER_BIT);
 	ViewVolume_reset(&scene->view);
-	hud_45e170(STAGE(scene), &scene->view, 1);
+	stage_drawActors(STAGE(scene), &scene->view, 1);
 	render_drawObjects(&scene->view, scene->objectsMode, scene->timeFraction);
 	if (scene->viewMode != 0) {
 		if (scene->viewMode == 2) {
@@ -56,7 +56,7 @@ void THISCALL (hud_pass)(Scene *scene)
 			glClear(GL_DEPTH_BUFFER_BIT);
 		}
 		int height = gfx_getHeight();
-		hud_48fde0(STAGE(scene), 0, 0, gfx_getWidth(), height);
+		script_notifyObject(STAGE(scene), 0, 0, gfx_getWidth(), height);
 	}
 	gfx_setProjectionHud(0, 1.0f);
 
@@ -87,7 +87,7 @@ void THISCALL (hud_pass)(Scene *scene)
 			if (scene->messagesHidden == 0 && scene->msgFade > 0.0f)
 				replay_drawMessage(scene);
 			if (scene->chatMode != 0)
-				hud_4953d0(scene);
+				hud_drawChatInput(scene);
 			if (!scene->matchOver && !scene->roundOver)
 				hud_drawClock(scene);
 			if (scene->matchOver == 1 && scene->players[scene->ranking[0]].state == 1)
@@ -105,12 +105,12 @@ void THISCALL (hud_pass)(Scene *scene)
 			}
 		}
 		if (scene->teamGame == 1)
-			hud_496240(scene);
+			hud_drawTeamScores(scene);
 		nullsub_48b420(scene);
 		if (g_showFps == 1)
 			PATCHED_THISCALL(0x498862, void, Scene *)(scene);                     /* hud_drawFps */
 		if (scene->consoleOpen == 1)
-			hud_4955a0(scene);
+			hud_drawConsole(scene);
 		if (scene->escMenuOpen == 1)
 			hud_drawEscMenu(scene);
 		if (scene->recording == 1)

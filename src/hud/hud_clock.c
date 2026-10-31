@@ -50,7 +50,7 @@ void THISCALL (hud_drawMatchResult)(Scene *scene)
 	char text[256];
 	if (scene->teamGame == 1) {
 		glColor4f(0.6f, 0.6f, 0.6f, 0.5f);
-		hud_4950a0(0, 0x15e, 0x280, 0x192);
+		hud_fillRect(0, 0x15e, 0x280, 0x192);
 		switch (scene_teamSide(scene, scene->winnerTeam)) {
 		case 0:
 			sprintf(text, "RED TEAM WIN!");
@@ -65,11 +65,11 @@ void THISCALL (hud_drawMatchResult)(Scene *scene)
 			text_setColor(0.0f, 1.0f, 0.0f, 1.0f);
 			break;
 		}
-		hud_44ae10(0, 0x168, 0x280, text, 32);
+		text_drawCentred(0, 0x168, 0x280, text, 32);
 	} else if (scene_topPlayer(scene)->state == 1) {
 		text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		sprintf(text, "Top Player: %s", scene_topPlayer(scene)->name);
-		hud_44ae10(0, 0x192, 0x280, text, 16);
+		text_drawCentred(0, 0x192, 0x280, text, 16);
 	}
 }
 
@@ -88,6 +88,6 @@ void THISCALL (hud_drawRecordIndicator)(Scene *scene)
 		text_drawSized(0x122, 0x140, text, 16);
 		text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		sprintf(text, "\"AutoPlay\\%s\"", scene->recordName);
-		hud_44ae10(0x140, 0x128, 0x140, text, 16);
+		text_drawCentred(0x140, 0x128, 0x140, text, 16);
 	}
 }

@@ -13,13 +13,13 @@ void (text_drawSized)(int x, int y, const char *text, int size)
 	}
 }
 
-/* 0x44ae10 (hud_44ae10): draw text centred between x0 and x1 at y in the font of the given size */
-void (hud_44ae10)(int x0, int y, int x1, const char *text, int size)
+/* 0x44ae10 (text_drawCentred): draw text centred between x0 and x1 at y in the font of the given size */
+void (text_drawCentred)(int x0, int y, int x1, const char *text, int size)
 {
 	switch (size) {
-	case 5: hud_403210(x0, y, x1, text); break;
+	case 5: text_drawCentred5(x0, y, x1, text); break;
 	case 8: text_draw8b(x0, y, x1, text); break;
 	case 16: text_drawBox16(x0, y, x1, text); break;
-	case 32: hud_402db0(x0, y, x1, text); break;
+	case 32: text_drawCentred32(x0, y, x1, text); break;
 	}
 }

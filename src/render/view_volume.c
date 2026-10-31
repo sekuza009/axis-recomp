@@ -85,7 +85,7 @@ static int quad_outside(const float *r)
 }
 
 /* 0x4848e0: a quad of four points p (into the 92-byte records of the list at +0x9070) */
-void THISCALL (hud_4848e0)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
+void THISCALL (viewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, const float *p, u32 extra,
                            int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
@@ -109,7 +109,7 @@ void THISCALL (hud_4848e0)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, const
 /* 0x484ca0: a camera-facing quad at p: p to camera space (the matrix at +0x90f0; x and y rounded, z not), its corners
    (x + A.x, y + A.y), (x + B.x, y + A.y), (x + B.x, y + B.y), (x + A.x, y + B.y) at depth z + dz projected by the
    matrix at +0x90b0. Corners 0 and 3 are rounded to floats first, 1 and 2 are not, as in the original */
-void THISCALL (hud_484ca0)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
+void THISCALL (viewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u32 *uv1, float dz, const u32 *colour, const float *A,
                            const float *B, const float *p, u32 extra, int flag)
 {
 	float *r = next_record(vv, 0x9070, 0x909c, 92);

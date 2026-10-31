@@ -23,7 +23,7 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
    lit; the label 0x753424 and three switches (0x7534a4, 0x80 apart) with their on / off names (0x753624 + 0x80 x:
    the volume on, 0x4ddea0, 0x4ddea4), the one under the pointer (5 .. 7, by setup_420670) yellow with a shadow; two
    buttons (0x753724, lit from 8) and the border. The original leaves eax to callers that ignore it */
-void (setup_424810)(void)
+void (setup_drawSoundPage)(void)
 {
 #define X0 GAME_VAR(int, 0x4ddad0)
 #define Y0 GAME_VAR(int, 0x4ddad4)
@@ -113,7 +113,7 @@ void (setup_424810)(void)
    table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setup_4206b0) drawn
    again with a shadow, in yellow; two buttons (0x753ca4, lit from 7) and the border. The caller ignores the eax it
    leaves */
-void (setup_425460)(void)
+void (setup_drawOptionsDialog)(void)
 {
 #define X0 GAME_VAR(int, 0x4dddd0)
 #define Y0 GAME_VAR(int, 0x4dddd4)
@@ -455,7 +455,7 @@ static void tunnel_advance(int turn_only)
    strip of 0x5b1978 a tenth further out, brighter by 0.2. After, the pulse bounces between 0 and 100 (by 0x4df010)
    and the stripes scroll on (0x4deda8 a frame, back to 0 at 200). The original leaves eax to callers that ignore
    it */
-void (setup_423e50)(void)
+void (setup_drawTunnel)(void)
 {
 	const float *frame = (const float *)0x4b071c;
 	gfx_setProjection2D3D(1);
@@ -798,7 +798,7 @@ void (lobbyTop_drawTitle)(void)
 /* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / 0x5b1978, as deep as
    0x4ddd90): four panels (0x4df918; none while 0x4dda60), the caption (0x7506a4) in mode 2 (0x4ddcec). The original
    leaves eax to callers that ignore it */
-void (setup_423330)(void)
+void (setup_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(0x4df918, 4, GAME_VAR(int, 0x4dda60)), white, 1, 0, 0 };
 	Tunnel t = { GAME_VAR(u32, 0x4ddd90), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
@@ -890,7 +890,7 @@ void (menu_mainMenu)(void)
 /* 0x4277c0: the setup panel eased in (0x4dda60 while it moves): its position (0x4de03c) moves the rest of the
    way to 0x4a9448 times 0x4b071c x 0x4a93ec; the distance left (0x4ddd90) runs down by the same step, and once it
    is no longer above the double at 0x4a9440 the motion stops and the distance is set to -1650 */
-void (setup_4277c0)(void)
+void (setup_easePanel)(void)
 {
 	typedef long double X;
 	if (!GAME_VAR(int, 0x4dda60))

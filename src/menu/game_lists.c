@@ -647,7 +647,7 @@ void (room_435fc0)(void)
    refreshing, and only with games: else sound 6); 0x4e151c searches; 0x4e1524 stops; back leaves the list; up / down
    held move the selection (once the blink clock reaches 5, restarting it); cancel2 leaves the room's lists. The
    original leaves eax to callers that ignore it */
-void (menu_4372f0)(void)
+void (room_gameListKeys)(void)
 {
 	if (GAME_VAR(int, 0x9dd6b4))
 		return;

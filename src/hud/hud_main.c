@@ -376,7 +376,7 @@ static void main_energy(Player *player)
 	float b = hf();
 	b = f32(b - hy(22.0f));
 	int y0 = ftol(b - hy(ENERGY_HEIGHT));
-	hud_46bd00(ftol(wx(8.0f)), y0, x1, y1);
+	hud_drawRectOutline(ftol(wx(8.0f)), y0, x1, y1);
 }
 
 /* the crosshair at the centre: 64 units, 72 while aimBonus > 0 (then at alpha 0.75) */

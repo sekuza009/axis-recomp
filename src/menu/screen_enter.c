@@ -229,7 +229,7 @@ u32 (menu_onStateChange)(void)
 	case 700: return CALL(0x410190);   /* armc_onStateEnter */
 	case 800: return CALL(0x436800);   /* room_processKeys */
 	case 900: return CALL(0x443ef0);
-	case 9999: return CALL(0x42ab70);  /* menu_42ab70 */
+	case 9999: return CALL(0x42ab70);  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
 	if (state > 900)

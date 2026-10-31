@@ -1,4 +1,4 @@
-/* hud_escmenu.c: the in-match menu (Esc) and its boxes: its pages, each a grey title box and white item boxes (hud_495ed0),
+/* hud_escmenu.c: the in-match menu (Esc) and its boxes: its pages, each a grey title box and white item boxes (hud_drawMenuBox),
    fading in over its first quarter second. The item under the cursor (scene->escCursor) is drawn bright. */
 #include "../game.h"
 #include <string.h>
@@ -17,7 +17,7 @@ static void esc_itemColour(int selected, float alpha)
 static void esc_box(Scene *scene, float grey, float alpha, int y)
 {
 	glColor4f(grey, grey, grey, alpha);
-	hud_495ed0(scene, 0xe0, y, 0x1a0, y + 0x10);
+	hud_drawMenuBox(scene, 0xe0, y, 0x1a0, y + 0x10);
 }
 
 /* a page's title: a box (grey, at boxAlpha) and the title in white, centred */
@@ -27,7 +27,7 @@ static void esc_title(Scene *scene, float boxAlpha, float alpha, int y, const ch
 	esc_box(scene, 0.5f, boxAlpha, y);
 	sprintf(text, title);
 	text_setColor(1.0f, 1.0f, 1.0f, alpha);
-	hud_44ae10(0x140, y, 0x140, text, 16);
+	text_drawCentred(0x140, y, 0x140, text, 16);
 }
 
 /* one item of the main page at y: a white box and the label, bright when the cursor is on item number item */
@@ -37,7 +37,7 @@ static void esc_item(Scene *scene, float alpha, int y, const char *label, int it
 	esc_box(scene, 1.0f, alpha, y);
 	sprintf(text, label);
 	esc_itemColour(scene->escCursor == item, alpha);
-	hud_44ae10(0x140, y, 0x140, text, 16);
+	text_drawCentred(0x140, y, 0x140, text, 16);
 }
 
 /* the YES / NO pair under a question */
@@ -47,10 +47,10 @@ static void esc_yesNo(Scene *scene, float alpha)
 	esc_box(scene, 1.0f, alpha, 0xf0);
 	sprintf(text, "YES");
 	esc_itemColour(scene->escCursor == 0, alpha);
-	hud_44ae10(0x110, 0xf0, 0x110, text, 16);
+	text_drawCentred(0x110, 0xf0, 0x110, text, 16);
 	sprintf(text, "NO");
 	esc_itemColour(scene->escCursor == 1, alpha);
-	hud_44ae10(0x170, 0xf0, 0x170, text, 16);
+	text_drawCentred(0x170, 0xf0, 0x170, text, 16);
 }
 
 /* 0x495610: the menu's page scene->escPage:
@@ -107,20 +107,20 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 			text_setColor(1.0f, 0.0f, 0.0f, alpha);
 		else
 			text_setColor(0.5f, 0.5f, 0.5f, alpha);
-		hud_44ae10(0x110, 0xf0, 0x110, text, 16);
+		text_drawCentred(0x110, 0xf0, 0x110, text, 16);
 		sprintf(text, "BLUE");
 		if (scene->escCursor == 1)
 			text_setColor(0.0f, 0.0f, 1.0f, alpha);
 		else
 			text_setColor(0.5f, 0.5f, 0.5f, alpha);
-		hud_44ae10(0x170, 0xf0, 0x170, text, 16);
+		text_drawCentred(0x170, 0xf0, 0x170, text, 16);
 		break;
 	case 2:
 		esc_title(scene, 0.5f, alpha, 0xdc, "INPUT FILE NAME");
 		esc_box(scene, 1.0f, alpha, 0x104);
 		strcpy(text, g_chatLine);
 		text_setColor(1.0f, 1.0f, 1.0f, alpha);
-		hud_44ae10(0x140, 0x104, 0x140, text, 16);
+		text_drawCentred(0x140, 0x104, 0x140, text, 16);
 		break;
 	case 3:
 		esc_title(scene, 0.5f, alpha, 0xc8,
@@ -134,10 +134,10 @@ void THISCALL (hud_drawEscMenu)(Scene *scene)
 	}
 }
 
-/* 0x495ed0 (hud_495ed0): a menu box: the rectangle (x0, y0) - (x1, y1) in HUD units with a 32-unit border around
+/* 0x495ed0 (hud_drawMenuBox): a menu box: the rectangle (x0, y0) - (x1, y1) in HUD units with a 32-unit border around
    it, drawn as nine quads (corners, edges, middle) from the 3 x 3 cells of 32 texels at the top left of the menu
    texture (scene->menuBoxTexture) */
-void THISCALL (hud_495ed0)(Scene *scene, int x0, int y0, int x1, int y1)
+void THISCALL (hud_drawMenuBox)(Scene *scene, int x0, int y0, int x1, int y1)
 {
 	int left[9], top[9], right[9], bottom[9];
 	int sx0 = hud_toScreenX(x0), sy0 = hud_toScreenY(y0), sx1 = hud_toScreenX(x1), sy1 = hud_toScreenY(y1);

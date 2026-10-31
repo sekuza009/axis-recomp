@@ -298,7 +298,7 @@ u32 (menu_enterMenus)(void)
 {
 	g_armcHideInterface = 0;
 	GAME_VAR(int, 0x4dbe48) = 0;
-	menu_40e510();
+	armc_initCameraPoints();
 	music_play((const char *)0x4b01b0);
 	g_armcPartSlot = 5;
 	GAME_VAR(int, 0x4dce38) = 5;
@@ -368,7 +368,7 @@ u32 (menu_enterMenus)(void)
 		mech_unpackFromRecord();
 	else
 		mech_loadFromProfile();
-	menu_40e6c0();
+	armc_loadSavedMech();
 	armc_40de80();
 	armc_40dfa0();
 	armc_40ed20();

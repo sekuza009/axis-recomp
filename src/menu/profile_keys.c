@@ -1,4 +1,4 @@
-/* profile_keys.c: the profile screen's keys, one handler per page (menu_44cdd0 picks it). Pages 3 and 5 are
+/* profile_keys.c: the profile screen's keys, one handler per page (profile_screenKeys picks it). Pages 3 and 5 are
    two-button dialogs (yes on the left, no on the right) worked by the arrow keys, a toggle key or a click on a
    button; page 6 is the 3 x 3 emblem grid. Every handler first stops the text cursor's blink. */
 #include "../game.h"

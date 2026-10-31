@@ -112,9 +112,9 @@ void (menu_frame)(void)
 	case 900: menuState900_skirmishSetup(); break;
 	}
 	if (g_dialogPending)
-		menu_4290d0();
+		menu_drawMessageBox();
 	if (g_paused)
-		menu_428940(GAME_VAR(int, 0x9da3d8), GAME_VAR(int, 0x9da3dc));
+		menu_drawInputLine(GAME_VAR(int, 0x9da3d8), GAME_VAR(int, 0x9da3dc));
 	glLoadIdentity();
 	if (g_screen != 9999 && !g_profileIntro)
 		PATCHED_CALL(0x41fc28, void, void)();   /* menu_drawCursor; the patch DLL draws its own cursor here */
@@ -585,9 +585,9 @@ u32 THISCALL (match_inputState3)(u8 *s)
 				about(pa, a, actor);
 				ViewVolume_add_485120(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
 			}
-	hud_45e170((Stage *)stage, s + 0x74, -1);
-	hud_47d060(stage, s + 0x74);
-	hud_479af0((Stage *)stage, s + 0x74);
+	stage_drawActors((Stage *)stage, s + 0x74, -1);
+	stage_drawBullets(stage, s + 0x74);
+	stage_drawProjectiles((Stage *)stage, s + 0x74);
 	render_drawObjects(s + 0x74, S(int, 0x1f1664), 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	return S(int, 0x23432cf) == 1 ? 0 : 3;
@@ -1196,13 +1196,13 @@ u32 THISCALL (replay_frame)(u8 *s)
 	ViewVolume_reset(view);
 	if (S(int, 0x233c9fc) == 1 && S(int, 0x233cc10) == 2 && S(int, 0x2340c64) >= 0)
 		ACTOR_INT(S(int, 0x2340c64), 0x1eccfc0) = 1;   /* (the followed player seen from inside) */
-	hud_496f20((Stage *)stage, hud_scale());
+	sky_draw((Stage *)stage, hud_scale());
 	render_processRenderingBy(stage, view, hud_scale());
-	hud_490da0((Stage *)stage, view);
-	hud_45e170((Stage *)stage, view, -1);
-	hud_47d060(stage, view);
-	hud_479af0((Stage *)stage, view);
-	hud_48f970(stage, view);
+	stage_drawObjects((Stage *)stage, view);
+	stage_drawActors((Stage *)stage, view, -1);
+	stage_drawBullets(stage, view);
+	stage_drawProjectiles((Stage *)stage, view);
+	stage_drawItems(stage, view);
 	if (S(int, 0x2340cd4) == 1)
 		for (int i = 0; i < S(int, 0xbcb6c8); i++) {
 			const u8 *r = s + 0xbc06cc + i * 0x2c;
@@ -1217,7 +1217,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			}
 		}
 	if (S(int, 0xbe170c) == 1) {
-		hud_472900((Stage *)stage, stage + 0x9ee048, GAME_VAR(u32, stage + 0x9ee058), GAME_VAR(u32, stage + 0x9ee05c), GAME_VAR(u32, stage + 0x9ee060));
+		stage_setFog((Stage *)stage, stage + 0x9ee048, GAME_VAR(u32, stage + 0x9ee058), GAME_VAR(u32, stage + 0x9ee05c), GAME_VAR(u32, stage + 0x9ee060));
 		glEnable(GL_FOG);
 	}
 	render_drawObjects(view, S(int, 0x1f1664), S(float, 0x22f040c));

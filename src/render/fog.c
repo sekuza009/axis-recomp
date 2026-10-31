@@ -1,9 +1,9 @@
 /* fog.c: the stage's OpenGL fog. */
 #include "../game.h"
 
-/* 0x472900 (hud_472900): linear fog: keeps colour (four floats), start, end and density in the stage and hands
+/* 0x472900 (stage_setFog): linear fog: keeps colour (four floats), start, end and density in the stage and hands
    them to OpenGL (density too, though linear fog ignores it); all passed on bit for bit */
-void THISCALL (hud_472900)(Stage *stage, const u32 colour[4], u32 start, u32 end, u32 density)
+void THISCALL (stage_setFog)(Stage *stage, const u32 colour[4], u32 start, u32 end, u32 density)
 {
 	for (int i = 0; i < 4; i++)
 		stage->glFogColour[i] = colour[i];

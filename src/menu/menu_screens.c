@@ -11,7 +11,7 @@ void (menuState500_missionSelect)(void)
 		menu_drawBackground();
 	if (g_missionPage != 2)
 		missionsel_448140();
-	missionsel_447cb0();
+	missionsel_camera();
 	if (g_missionPage == 1 || g_missionPage == 0)
 		return;
 	if (g_dialogOpen) {

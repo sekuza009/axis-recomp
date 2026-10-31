@@ -75,12 +75,12 @@ void (room_433590)(void)
 
 /* 0x4378e0: the game room's mouse, by state (0x9dd834): 0 .. 2, 4 and 99 while no dialog is open (0x9dd7d8; 2: the map
    list's keys when open), 66 and 88 (a message box 0x9dd850 first), 77. Returns what the handler leaves in eax */
-u32 (menu_4378e0)(void)
+u32 (room_mouse)(void)
 {
 	u32 state = GAME_VAR(u32, 0x9dd834);
 	int dialog = GAME_VAR(int, 0x9dd7d8);
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : CALL(0x437240);   /* menu_437240 */
+	case 0: return dialog ? (u32)dialog : CALL(0x437240);   /* room_readyKeys */
 	case 1: return dialog ? (u32)dialog : CALL(0x4372f0);
 	case 2:
 		if (dialog)
@@ -98,7 +98,7 @@ u32 (menu_4378e0)(void)
 /* 0x437240: the game room's keys (unless typing): with the confirm box up (0x9dd6d4) one key closes it; else the
    first key starts the game when ready (0x434b90), or plays the refusal sound and shows message 5; two more keys
    leave the screen (0x9dce48 = 0). Returns what the original leaves in eax */
-u32 (menu_437240)(void)
+u32 (room_readyKeys)(void)
 {
 	if (GAME_VAR(int, 0x68039c))
 		return GAME_VAR(u32, 0x68039c);
@@ -217,7 +217,7 @@ u32 (arena_406200)(int i)
 	return timer;
 }
 
-/* 0x436800: the game room's keys, by state (0x9dd834): as menu_4378e0's mouse, with the room's own handlers (state 1:
+/* 0x436800: the game room's keys, by state (0x9dd834): as room_mouse's mouse, with the room's own handlers (state 1:
    the join's wait while it runs, 0x4db8b4). Returns what the handler leaves in eax */
 u32 (room_processKeys)(void)
 {
@@ -532,7 +532,7 @@ u32 (room_43e610)(void)
 /* 0x437810: the room list's keys while its password box is up (0x9dd6b8): one key cancels it (the list's page and
    mode put back), another cancels it or, without it, leaves the screen; a third leaves the screen. Returns what the
    original leaves in eax */
-u32 (menu_437810)(void)
+u32 (roomList_passwordKeys)(void)
 {
 	u32 r;
 	if (input_justPressed(GAME_VAR(int, 0x4e1524))) {
@@ -1101,7 +1101,7 @@ static void creategame_close(void)
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
-void (menu_436990)(void)
+void (createDialog_keys)(void)
 {
 #define g_editKey GAME_VAR(int, 0x9dc428)
 	int dialogX = GAME_VAR(int, 0x9dd358), dialogBottom = GAME_VAR(int, 0x9dd364) - 0x30;

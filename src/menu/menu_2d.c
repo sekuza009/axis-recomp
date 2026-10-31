@@ -286,7 +286,7 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 
 /* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (0x4df81c, then the
    message 0x74de24) in yellow. Returns the text call's eax */
-u32 (menu_4290d0)(void)
+u32 (menu_drawMessageBox)(void)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -299,7 +299,7 @@ u32 (menu_4290d0)(void)
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (0x4de1f0: grows by the
    frame time, back to 0 past 0x4a9508; a frame counter 0x9da908 wraps past 40). Returns glEnd's eax */
-u32 (menu_428890)(int x, int y)
+u32 (menu_drawTextCursor)(int x, int y)
 {
 	long double t = fmul_m(fld_m(&g_frameTime), (const float *)0x4a950c);
 	int frames = GAME_VAR(int, 0x9da908) + 1;
@@ -323,12 +323,12 @@ u32 (menu_428890)(int x, int y)
 
 /* 0x428940: the input line at (x, y) in green with its cursor after the typed characters (8 units each); a password
    (0x4e1868) shows as stars. Returns the text call's eax (or the dialog's state while one is open) */
-u32 (menu_428940)(int x, int y)
+u32 (menu_drawInputLine)(int x, int y)
 {
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
 	GAME_CDECL(0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
-	GAME_CDECL(0x428890, u32, int, int)(x + GAME_VAR(int, 0x9dbf10) * 8, y);   /* menu_428890: the cursor */
+	GAME_CDECL(0x428890, u32, int, int)(x + GAME_VAR(int, 0x9dbf10) * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!GAME_VAR(int, 0x4e1868))
 		return GAME_CDECL(0x402620, u32, int, int, const char *)(x, y, (const char *)0x9dc92c);   /* text_draw8 */
 	char stars[0x30];   /* the original zeroes 30 bytes of its frame here: a longer password (the fields take 20) would run over */

@@ -32,7 +32,7 @@ void (app_4515d0)(void)
 }
 
 /* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
-void (mainmenu_440df0)(void)
+void (mapSelect_allOut)(void)
 {
 	for (u32 p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
 		GAME_VAR(int, p) = 0;
@@ -42,7 +42,7 @@ void (mainmenu_440df0)(void)
 }
 
 /* 0x445e10: a click (either button) closes the message box */
-void (menu_445e10)(void)
+void (messageBox_clickClose)(void)
 {
 	if (GAME_VAR(int, 0x4ded8c)) {
 		GAME_VAR(int, 0x4dda44) = 0;

@@ -142,7 +142,7 @@ static int key_hit(u32 binding)
 
 /* 0x437140: the game room's keys: back or leave leaves the game; the others open the room's pages (0x4334c0,
    0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, menu_enterMenus). Returns the action's eax */
-u32 (menu_437140)(void)
+u32 (room_keys)(void)
 {
 	if (key_hit(0x76d48c))
 		return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
@@ -684,7 +684,7 @@ u32 (room_436400)(void)
    as numbers into the bytes 0x4df9ec / 0x4df9ed; an empty line changes nothing), else the keys: start (0x4e1510;
    room_4351c0, not while connecting) and the two close keys (0x4e0cdc, 0x76d48c). Returns what the original leaves
    in eax */
-u32 (menu_437630)(void)
+u32 (room_settingsAfterTyping)(void)
 {
 	if (GAME_VAR(int, 0x90d1c4))
 		return GAME_VAR(u32, 0x90d1c4);
@@ -869,7 +869,7 @@ static int login_buttons(void)
 /* 0x436e10: the server login dialog's keys: its two buttons, then Tab (0x680390) to the next field, or with shift
    (0x67ef24 / 0x9db0ac held) the one before (the original's path for "back" from the first field is never taken).
    The original leaves eax to callers that ignore it */
-void (menu_436e10)(void)
+void (loginDialog_keys)(void)
 {
 	if (login_buttons())
 		return;

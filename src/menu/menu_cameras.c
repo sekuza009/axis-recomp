@@ -293,14 +293,14 @@ void (arena_launchFromFile)(void)
 }
 
 /* 0x444130: the skirmish screen's camera */
-void (skirmish_444130)(void)
+void (skirmish_camera)(void)
 {
 	static const MenuCam2 skirmish = { 0x9ef1f0, 0x9eeba8, 0x9ef1f8, 0 };
 	menu_camera2(&skirmish);
 }
 
 /* 0x447cb0: the mission select's camera */
-void (missionsel_447cb0)(void)
+void (missionsel_camera)(void)
 {
 	static const MenuCam2 mission = { 0x9f62f8, 0x9f63b8, 0x9f6300, 1 };
 	menu_camera2(&mission);
@@ -363,7 +363,7 @@ static void turn_update(int slot)
 /* 0x42ab70: the ARM CENTER's mouse look (unless locked, 0x4de6fc): the pointer's distance from the centre turns
    the view (wrapping 0 .. 360) and tilts it (0x4de6c4, within its limits); a click starts the camera's move to the
    slot's point */
-void (menu_42ab70)(void)
+void (armc_mouseLook)(void)
 {
 	if (I(0x4de6fc))
 		return;
@@ -402,7 +402,7 @@ void (menu_42ab70)(void)
 
 /* 0x4230e0: the setup screen's camera: to the setup tab's menu point (mode 1; its height not eased), or home (mode
    0), then snapped and settled (mode 2) once close enough */
-void (setup_4230e0)(void)
+void (setup_camera)(void)
 {
 	if (g_frameTime > F(0x4a9418))
 		BITS(g_frameTime) = 0x3f800000;
