@@ -122,15 +122,15 @@ static void info_box(u32 line, int named)
 }
 
 /* 0x40a070: the arena's game list: the window, its title 0x7524a4, three tabs (0x752524; the one under the pointer,
-   by arena_4044a0, lit unless a box is up), five column heads; the rows and page when there is a list (0x4dbac8,
+   by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (0x4dbac8,
    or the full one 0x4dbaa8); three buttons (0x7528a4: join needs a game, and while searching only the second
    lights; all dimmed under the full / joining boxes); the scroll arrows (15 / 16); the blinking 0x752a24 while
    searching or 0x4db8b8; the joining and full boxes, the join confirmation (0x752aa4 / 0x752b24, its button
-   0x751824 by arena_4044e0) and the "leave?" box (the original asks arena_4045a0 but lights its buttons by the
+   0x751824 by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
 {
-	int hovered = GAME_CDECL(0x4044a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4044a0 */
+	int hovered = GAME_CDECL(0x4044a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaGameList_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
@@ -195,7 +195,7 @@ void (arena_drawGameList)(void)
 	if (g_full)
 		info_box(0x74f624, 0);
 	if (g_confirming) {
-		int on = GAME_CDECL(0x4044e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4044e0 */
+		int on = GAME_CDECL(0x4044e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -209,7 +209,7 @@ void (arena_drawGameList)(void)
 		text_drawBox16(0x104, 0x120, 0x17c, (const char *)0x751824);
 	}
 	if (g_leaving) {
-		GAME_CDECL(0x4045a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4045a0 (unused) */
+		GAME_CDECL(0x4045a0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arenaCreate_hitTest (unused) */
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.1, 0.1, 0.4 */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		RECT(0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);
@@ -255,13 +255,13 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
 
 /* 0x43adc0: the game room's list of games: the window, its title 0x759ca4, five column heads (0x759d24, 0x80
    apart), rules; with a list (0x9dd330) of games, the rows and "page / pages" (0xa0b358); four buttons (0x759fa4;
-   the one under the pointer, by room_432300, lit: the first only with games, and while searching (0x9dd6a0) only
+   the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (0x9dd6a0) only
    the third; all dimmed while joining, 0x9dd6b4); the scroll arrows (13 / 14); the blinking 0x75a1a4 while
    searching or 0x9dd3fc; the joining box (0x74f124 and the room's name 0x9dcee8); the join confirmation (0x752aa4 /
-   0x752b24, its button 0x751824 by room_432340); the border. The original leaves eax to callers that ignore it */
+   0x752b24, its button 0x751824 by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
-	int hovered = GAME_CDECL(0x432300, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432300 */
+	int hovered = GAME_CDECL(0x432300, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* gameList_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -324,7 +324,7 @@ void (gameList_draw)(void)
 	}
 	if (g_confirming) {
 		glDisable(GL_TEXTURE_2D);
-		int on = GAME_CDECL(0x432340, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432340 */
+		int on = GAME_CDECL(0x432340, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* gameListStop_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
@@ -446,12 +446,12 @@ static void shadowed(int x, int y, const char *text)
 
 /* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
    and the name 0x4db560 (hidden while it is typed in, g_paused); without a message (0x4dbbd0) the name or the
-   second label under the pointer (arena_404460's 0 / 2) shadowed in yellow; three buttons (0x7521a4, 0x80 apart;
+   second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (0x7521a4, 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (arena_drawNameDialog)(void)
 {
 	int x0 = GAME_VAR(int, 0x4dbb68), y0 = GAME_VAR(int, 0x4dbb6c);
-	int hovered = arena_404460(g_mouseX, g_mouseY);
+	int hovered = arenaNameDialog_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -542,7 +542,7 @@ static int games_leave(void)
 }
 
 /* 0x435fc0: the game room's list of games, its mouse (in room modes other than 0 / 1; not while joining, 0x9dd6b4,
-   or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (room_432300) on: 0
+   or with a message box): a right click leaves the list (unless searching, 0x9dd6a0). A click (gameList_hitTest) on: 0
    join (not while searching or refreshing, 0x9dd3fc, and only with games; else sound 6), 1 search, 2 stop or
    refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
    the double-click time (0x9dd34c) joins it. Holding the button on the arrows scrolls once the blink clock reaches
@@ -565,7 +565,7 @@ void (gameList_mouse)(void)
 		return;
 	}
 	if (g_mouseClick) {
-		int on = room_432300(g_mouseX, g_mouseY);
+		int on = gameList_hitTest(g_mouseX, g_mouseY);
 		if (on == 0) {
 			if (g_joined)
 				return;
@@ -629,7 +629,7 @@ void (gameList_mouse)(void)
 	}
 	if (!g_mouseHeld)
 		return;
-	int on = room_432300(g_mouseX, g_mouseY);
+	int on = gameList_hitTest(g_mouseX, g_mouseY);
 	if ((on != 13 && on != 14) || !(g_cursorBlink >= *(const float *)0x4a93d0))
 		return;
 	if (on == 13 || games_down()) {
@@ -863,7 +863,7 @@ static void lobby_leave(void)
 
 /* 0x406c30 (named lobby_connect; by use the arena lobby's list of games, its mouse: in mode 2 of 0x4dbb3c, not
    while joining, with the "full" box or a message box). A right click (not while searching or connecting) drops the
-   connection and the mode. A click (arena_4044a0) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
+   connection and the mode. A click (arenaGameList_hitTest) on: 0 search the network (DirectPlay, 0x452ec0), 1 connect to
    the lobby server (lobby_openConnection), 2 the arena's title, 3 join (with games; not while busy), 4 back (a
    refresh in progress ended), 5 leave the lobby (mode 0), 15 / 16 one row up / down, or a row (6 .. 14): selects
    it, or on the selected row again (0x4db71c) joins it. A busy lobby answers sound 6. Holding the button on the
@@ -884,7 +884,7 @@ void (lobby_connect)(void)
 	}
 	if (g_mouseClick && mode == 2) {
 		g_cursorBlink = 0.0f;
-		int on = arena_4044a0(g_mouseX, g_mouseY);
+		int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 		switch (on) {
 		case 0:
 		case 1:
@@ -1012,7 +1012,7 @@ void (lobby_connect)(void)
 	}
 	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2 || g_full)
 		return;
-	int on = arena_4044a0(g_mouseX, g_mouseY);
+	int on = arenaGameList_hitTest(g_mouseX, g_mouseY);
 	if ((on != 15 && on != 16) || !(g_cursorBlink >= *(const float *)0x4a93d0))
 		return;
 	if (on == 15 || games_down()) {

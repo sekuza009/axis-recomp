@@ -104,11 +104,11 @@ void (menuState400_enter)(void)
 	I(0x76d400) = lz;
 	CLEAR_ALL(cleared1);
 	arena_403f30();
-	arena_403f80();
-	arena_404010();
+	arenaNameDialog_layout();
+	arenaGameList_layout();
 	arena_404120();
-	arena_404190();
-	arena_404150();
+	arenaOptions_layout();
+	arenaCreate_layout();
 	CLEAR_ALL(cleared2);
 	STORE_ALL(state);
 }
@@ -136,9 +136,9 @@ void (menuState600_enterSetup)(void)
 	I(0x76d3f8) = lx;
 	I(0x76d3fc) = ly;
 	I(0x76d400) = lz;
-	setup_420300();
-	setup_420480();
-	setup_420510();
+	setupSound_layout();
+	setupOptions_layout();
+	setupControl_layout();
 	STORE_ALL(colours);
 	for (int k = 0; k < 2; k++) {
 		const char *text = (const char *)(0x75b7a4 + k * 0x80);
@@ -176,13 +176,13 @@ void (menuState800_enterGameRoom)(void)
 	I(0x5ae9c4) = 2;
 	arena_clearChatRecord();
 	STORE_ALL(layout);
-	room_431ae0();
-	room_431c50();
-	room_431ce0();
+	roomLogin_layout();
+	account_layout();
+	gameList_layout();
 	room_431db0();
-	room_431de0();
-	room_432040();
-	room_431aa0();
+	roomSettings_layout();
+	ranking_layout();
+	leaveDialog_layout();
 	STORE_ALL(colours_camera);
 	camera_heights(5);
 	I(0x76d3f8) = I(0x680378);
@@ -324,7 +324,7 @@ int (menuState500_enter)(void)
 
 /* 0x44b420: the pilot screen (state 210): its panels laid out, the profiles' header read back (profile_create) with
    the current one selected and scrolled into the 13 visible rows, the new-pilot dialog up when there are none, the
-   message box and the screen's rectangles (profile_44af30, 44b030 .. 44b1a0), its colours, then the list shown
+   message box and the screen's rectangles (profilePage_layout, 44b030 .. 44b1a0), its colours, then the list shown
    (profile_resetPreview). Returns that call's eax */
 u32 (menuState210_enter)(void)
 {

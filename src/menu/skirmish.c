@@ -116,11 +116,11 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
 
 /* 0x444f40: the mission list: the window and its title 0x75dda4, a cyan frame and rule, the column heads (0x75de24,
    0x80 apart) on blue bars, up to 8 rows from g_missionTop (the picked one bright), the picked one's description
-   (wrapped at the window's right less 0x38) and two buttons (0x75e0a4; 8 / 9 under the pointer by skirmish_4438d0,
+   (wrapped at the window's right less 0x38) and two buttons (0x75e0a4; 8 / 9 under the pointer by skirmishSettings_hitTest,
    lit). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenA)(void)
 {
-	int hovered = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmish_4438d0 */
+	int hovered = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmishSettings_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
@@ -168,11 +168,11 @@ void (skirmish_drawScreenA)(void)
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
    typed out (briefing_typeOut), two buttons at the right (0x75e2a4, 0x80 apart; lit under the pointer: 0 / 1 by
-   skirmish_443910) and two at the left (0x75e3a4: 2 only once the text is out (0x4d7348), 3 only with something to
+   briefing_hitTest) and two at the left (0x75e3a4: 2 only once the text is out (0x4d7348), 3 only with something to
    undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenB)(void)
 {
-	int hovered = skirmish_443910(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = briefing_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */

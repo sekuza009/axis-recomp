@@ -1,5 +1,5 @@
 /* room_clicks.c: the game room's small handlers: clicks on its popups' buttons, starting the chat line, and the
-   white fade over the screen. Buttons are hit-tested with the pointer (room_4321c0 and its kind: the index of the
+   white fade over the screen. Buttons are hit-tested with the pointer (leaveDialog_hitTest and its kind: the index of the
    button under it, or -1). */
 #include "../game.h"
 #include <string.h>
@@ -14,7 +14,7 @@ void (leaveDialog_clicks)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0)
 		return;
-	switch (room_4321c0(g_mouseX, g_mouseY)) {
+	switch (leaveDialog_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		g_leaveDialog = 0;
 		app_closeWindow(2);
@@ -25,12 +25,12 @@ void (leaveDialog_clicks)(void)
 	}
 }
 
-/* 0x435ce0: the popup's two buttons (room_432280) close it with 1 or 2 */
+/* 0x435ce0: the popup's two buttons (popup_hitTest) close it with 1 or 2 */
 void (popup_clicks)(void)
 {
 	if (g_mouseClick == 0)
 		return;
-	switch (room_432280(g_mouseX, g_mouseY)) {
+	switch (popup_hitTest(g_mouseX, g_mouseY)) {
 	case 0:
 		sound_playMenu(0);
 		g_roomPopup = 1;
@@ -52,14 +52,14 @@ void (room_startChat)(void)
 	}
 }
 
-/* 0x435f40: in room state 2, the button (room_432340) that stops the arena being set up: its flags off, the
+/* 0x435f40: in room state 2, the button (gameListStop_hitTest) that stops the arena being set up: its flags off, the
    arena's connection closed (arena_leaveSession) and its timer (0x378) killed */
 void (room_stopArenaSetup)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0 || GAME_VAR(int, 0x9dce48) != 2)
 		return;
 	g_cursorBlink = 0.0f;
-	if (room_432340(g_mouseX, g_mouseY) == 0) {
+	if (gameListStop_hitTest(g_mouseX, g_mouseY) == 0) {
 		sound_playMenu(0);
 		GAME_VAR(int, 0x4dbb10) = 0;
 		GAME_VAR(int, 0x4dbb78) = 0;
@@ -110,7 +110,7 @@ void (menu_436940)(void) { leave_keys(&g_leaveDialog); }
 void (lobbyJoin_keys)(void) { leave_keys(&GAME_VAR(int, 0x907b2c)); }
 
 /* 0x443e20: the skirmish settings screen's clicks (no dialog open, 0x90d1c4): a right click leaves (0x443c80); a left
-   click on its buttons (skirmish_4438d0): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
+   click on its buttons (skirmishSettings_hitTest): rows 0..7 change that setting (0x443d50), 8 saves (0x443af0 with the
    selection 0x9f16a4), 9 leaves. Returns the last call's eax */
 int (skirmish_saveSettings)(void)
 {
@@ -121,7 +121,7 @@ int (skirmish_saveSettings)(void)
 		GAME_CDECL(0x443c80, int, void)();
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	int row = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmish_4438d0 */
+	int row = GAME_CDECL(0x4438d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* skirmishSettings_hitTest */
 	if ((u32)row <= 7)
 		return GAME_CDECL(0x443d50, int, int)(row);
 	if (row == 8)
@@ -565,7 +565,7 @@ u32 (ranking_clicks)(void)
 		GAME_VAR(int, 0x9dce48) = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return mode;
-	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4323c0 */
+	u32 button = GAME_CDECL(0x4323c0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
 	if (button > 8 || button == 6 || (button == 3 ? !GAME_VAR(int, 0x9dd6b8) : GAME_VAR(int, 0x9dd6b8) != 0))
 		return button;
 	u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* the click sound */
@@ -597,7 +597,7 @@ u32 (ranking_clicks)(void)
 }
 
 /* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
-   box; a right click closes the page). Buttons (room_432380): 0 / 1 type the room's name or password
+   box; a right click closes the page). Buttons (roomSettings_hitTest): 0 / 1 type the room's name or password
    (field_editComment / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_4351c0; not while connecting),
    9 close, 11 / 2, 10, 12 the map back / on (room_4356f0), 13 the map list (mapList_startEdit). Returns what the original
@@ -617,7 +617,7 @@ u32 (room_settingsClicks)(void)
 		GAME_VAR(int, 0x9dce48) = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	u32 button = GAME_CDECL(0x432380, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432380 */
+	u32 button = GAME_CDECL(0x432380, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* roomSettings_hitTest */
 	u8 *players = (u8 *)0x4df9e9, *type = (u8 *)0x4df9eb, *frags = (u8 *)0x4df9ec, *time = (u8 *)0x4df9ed;
 	u32 r;
 	switch (button) {
@@ -847,7 +847,7 @@ static int login_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(GAME_VAR(int, 0x9dae70)) == 1)
-		button = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432240 */
+		button = GAME_CDECL(0x432240, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* loginForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;

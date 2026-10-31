@@ -134,7 +134,7 @@ u32 (replayList_open)(void)
 	GAME_VAR(int, 0x9dd914) = 0x1b8;
 	for (u32 r = 0x9ddac8; r < 0x9eeac8; r += 0x44)
 		memset((void *)(r - 0x40), 0, 0x44);
-	GAME_CDECL(0x440a20, void, void)();          /* mainmenu_440a20: the layout */
+	GAME_CDECL(0x440a20, void, void)();          /* mapSelect_layout: the layout */
 	return GAME_CDECL(0x440c60, u32, void)();    /* autoplay_listFiles */
 }
 

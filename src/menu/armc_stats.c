@@ -444,14 +444,14 @@ static void section5(Panel *p)
 
 /* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot 0x4dbc6c: the six slot
    buttons (the chosen one brighter) and their labels (0x756aa4 ..; the sixth boxed, 0x756d24), the part names
-   beside them when 0x4dbc68 is set, two buttons (0x7517a4, lit from 3 by armc_40e450), the weight button and its
+   beside them when 0x4dbc68 is set, two buttons (0x7517a4, lit from 3 by armcMain_hitTest), the weight button and its
    arrows (14 / 15), the on / off button (0x756da4 with 0x751924 + 0x80 x 0x4dceac) and the detail button (0x7568a4);
    then the stats box (taller for Korean, 0x9dae74) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {
 	int slot = GAME_VAR(int, 0x4dbc6c), korean = GAME_VAR(int, 0x9dae74) == 1;
 	const u32 *bright = (const u32 *)0x4dbc58, *dim = (const u32 *)0x4dc1d0;
-	int hovered = armc_40e450(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = armcMain_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	glEnable(GL_TEXTURE_2D);
 	int texture = GAME_VAR(int, 0x9db0a4);
 	tex_bind(g_textures->managers[texture / 512], texture % 512);

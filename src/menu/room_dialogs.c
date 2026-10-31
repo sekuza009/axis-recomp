@@ -28,7 +28,7 @@ static void dialog_opened(int state)
 void (room_openDialog58)(void)
 {
 	set_box(0x9dd1a0, 0x50, 0x78, 0x230, 0x168);
-	room_431c00();
+	popup_layout();
 	dialog_opened(0x58);
 	GAME_VAR(int, 0x9dd6c4) = 0;
 }
@@ -37,7 +37,7 @@ void (room_openDialog58)(void)
 void (room_openDialog4d)(void)
 {
 	set_box(0x9dd6e8, 0x1e, 0x32, 0x262, 0x1ae);
-	room_431b70();
+	loginDialog_layout();
 	memset((void *)0x9dd1d8, 0, 0x54);
 	dialog_opened(0x4d);
 	GAME_VAR(int, 0x9dd4a0) = 1;
@@ -655,10 +655,10 @@ u32 (loginDialog_draw)(void)
 }
 
 /* the confirmation over a room dialog (0x9dd850): the screen dimmed, a box with two lines (0x74dfa4, 0x74e024) and
-   its two buttons (0x7517a4; the one under the pointer, by room_4321c0, in cyan) */
+   its two buttons (0x7517a4; the one under the pointer, by leaveDialog_hitTest, in cyan) */
 static void confirm_box(void)
 {
-	int hovered = room_4321c0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = leaveDialog_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f000000);   /* 0.1, 0.1, 0.1, 0.5 */
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);   /* 0.1, 0.1, 0.1, 0.8 */
@@ -685,7 +685,7 @@ static void confirm_box(void)
 
 /* 0x439e00: the room's server dialog (0x9dd1a0 .. 0x9dd1ac; only its frame while a message box is open): the title
    0x758da4, a rule, the server name 0x9dd1d8 in a green-framed box, the note 0x758e24, two buttons (0x758f24, 0x80
-   apart; the one under the pointer by room_432280 bright), the confirmation (0x9dd850) and the border. Returns the
+   apart; the one under the pointer by popup_hitTest bright), the confirmation (0x9dd850) and the border. Returns the
    frame's or the border's eax */
 u32 (serverDialog_draw)(void)
 {
@@ -696,7 +696,7 @@ u32 (serverDialog_draw)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = room_432280(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = popup_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -738,7 +738,7 @@ u32 (serverDialog_draw)(void)
 /* 0x4392c0: the room login dialog (0x9dd358 .. 0x9dd364; only its frame while a message box is open): the title
    0x7583a4 and its rule, two labelled dark boxes (0x758424, 0x80 apart) with the name 0x9dd1d8 and the password
    0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (0x758524; the
-   one under the pointer, 2 .. 4 by room_432200, bright unless connecting), while connecting (0x9dd838) a box with
+   one under the pointer, 2 .. 4 by createDialog_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
    two lines (0x74f6a4, 0x74f724), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
    eax */
 u32 (roomLogin_draw)(void)
@@ -750,7 +750,7 @@ u32 (roomLogin_draw)(void)
 	if (g_dialogOpen)
 		return GAME_CDECL(0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = GAME_CDECL(0x432200, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432200 */
+	int hovered = GAME_CDECL(0x432200, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* createDialog_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -832,7 +832,7 @@ static void rank_badge(int rank, int x, int y)
    0x9dd1f6, 0x9dd202; each left out while it is being typed in: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (left
    out while 0x9dd304); the level 0x9dd5d8 with its rank badge (cell (level - 1) % 10, / 10 of the texture 0x76d448),
    the clan 0x9dd248 (0x759924 when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
-   0x9dd5f0, 0x9dd5dc); two buttons (0x7517a4; 4 / 5 under the pointer by room_4322c0, lit unless 0x68039c), a
+   0x9dd5f0, 0x9dd5dc); two buttons (0x7517a4; 4 / 5 under the pointer by account_hitTest, lit unless 0x68039c), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
 {
@@ -842,7 +842,7 @@ void (account_drawPanel)(void)
 #define Y1 GAME_VAR(int, 0x9dd374)
 #define K(addr) ((const float *)(addr))
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
-	int hovered = GAME_CDECL(0x4322c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4322c0 */
+	int hovered = GAME_CDECL(0x4322c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (GAME_VAR(int, 0x9dd6d4) == 1) {
@@ -933,7 +933,7 @@ void (account_drawPanel)(void)
 }
 
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
-   by room_4323c0, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
+   by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
    (0x75ac24; 2) with the sorted column's name; two rules and the column heads (0x75aca4 .., the sorted one in
    yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (the name at 0x9dcef4, its rank at -4) until an
    empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (+0x32) in a yellow frame, "%8.1f" (+0x36),
@@ -951,7 +951,7 @@ u32 (ranking_drawTable)(void)
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
-	int hovered = GAME_CDECL(0x4323c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_4323c0 */
+	int hovered = GAME_CDECL(0x4323c0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* ranking_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1096,7 +1096,7 @@ static void creategame_close(void)
 
 /* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
-   buttons (room_432200: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
+   buttons (createDialog_hitTest: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
    room_openDialog4d (none of these while typing, g_paused); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
@@ -1119,7 +1119,7 @@ void (createDialog_keys)(void)
 		return;
 	}
 	if (input_justPressed(g_keyClick) == 1) {
-		int on = room_432200(g_mouseX, g_mouseY);
+		int on = createDialog_hitTest(g_mouseX, g_mouseY);
 		if (on == 2) {
 			if (GAME_VAR(int, 0x9dd1c8))
 				return;

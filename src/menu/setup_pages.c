@@ -21,7 +21,7 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
    from the button texture (0x9db0a4): the two arrows, the track and the bar (the volume 0x4dde98 long); while
    0x4ddb98 runs down (by 0x4b071c, then -1 into 0x4dde90) the arrow pressed (0x4dde90: 0 / 1, or 2 / 3 a row lower)
    lit; the label 0x753424 and three switches (0x7534a4, 0x80 apart) with their on / off names (0x753624 + 0x80 x:
-   the volume on, 0x4ddea0, 0x4ddea4), the one under the pointer (5 .. 7, by setup_420670) yellow with a shadow; two
+   the volume on, 0x4ddea0, 0x4ddea4), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
    buttons (0x753724, lit from 8) and the border. The original leaves eax to callers that ignore it */
 void (setup_drawSoundPage)(void)
 {
@@ -32,7 +32,7 @@ void (setup_drawSoundPage)(void)
 #define g_pressedClock GAME_VAR(float, 0x4ddb98)
 #define g_pressed GAME_VAR(int, 0x4dde90)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = GAME_CDECL(0x420670, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setup_420670 */
+	int hovered = GAME_CDECL(0x420670, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setupSound_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -110,7 +110,7 @@ void (setup_drawSoundPage)(void)
 
 /* 0x425460: the options dialog (0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
    apart) and their values: the screen size (the names at 0x4b04cc by 0x4ddba0) and six choices, each from its own
-   table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setup_4206b0) drawn
+   table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupOptions_hitTest) drawn
    again with a shadow, in yellow; two buttons (0x753ca4, lit from 7) and the border. The caller ignores the eax it
    leaves */
 void (setup_drawOptionsDialog)(void)
@@ -121,7 +121,7 @@ void (setup_drawOptionsDialog)(void)
 #define Y1 GAME_VAR(int, 0x4ddddc)
 	static const u32 names[6] = { 0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 };
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = setup_4206b0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = setupOptions_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -287,7 +287,7 @@ static void settings_tab(void)
 
 /* 0x425cd0 (named setup_crosshairScreen; by use the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
    the column heads (0x754524 ..), the four tab titles (0x754324, 0x80 apart; dim, the current one, 0x4ddce8, bright
-   again). The row under the pointer (setup_4206f0: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
+   again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
    ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (0x7546a4, lit from 4
    unless editing); the help line (0x754824 over a row, 0x7548a4 while editing) and the border. The caller ignores
    the eax it leaves */
@@ -299,7 +299,7 @@ void (setup_crosshairScreen)(void)
 #define Y1 GAME_VAR(int, 0x4dde8c)
 #define g_row GAME_VAR(int, 0x4de040)
 	const u32 *bright = (const u32 *)0x4de048, *dim = (const u32 *)0x4ddae0;
-	int hovered = setup_4206f0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = setupControl_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

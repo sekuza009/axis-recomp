@@ -510,7 +510,7 @@ u32 (profile_newNameDialog)(void)
 		return r;
 	}
 	if (GAME_VAR(int, 0x4ded88)) {
-		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* profile_44b2a0 */
+		u32 button = GAME_CDECL(0x44b2a0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* newNameDialog_hitTest */
 		r = button - 1;
 		if (button == 0) {
 			if (GAME_CDECL(0x4343b0, int, const char *)(typed) == 1)   /* name_isBlank: blank */
@@ -620,9 +620,9 @@ void (profileList_keys)(void)
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
 		GAME_CDECL(0x44b6e0, void, void)();   /* profile_askSecond */
 }
-/* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profile_44b260): 0 takes the profile
+/* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profilePage_hitTest): 0 takes the profile
    (profile_typeNewName), 1 deletes it (profile_askDelete) when there is one, 2 opens the new-profile dialog (or takes the
-   profile when there are none), 3 copies it (profile_askSecond), 4 the list: a row (profile_44b3a0) chosen, or the
+   profile when there are none), 3 copies it (profile_askSecond), 4 the list: a row (profileList_hitTest) chosen, or the
    chosen row clicked again (0x9f900c) opens the dialog; 5 / 6 a row up / down. Then with the button held
    (0x4ded94) on the arrows they step again once the blink clock (0x4dda44) reaches 5. The original leaves eax to
    callers that ignore it */
@@ -632,7 +632,7 @@ void (profileList_mouse)(void)
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
 	if (GAME_VAR(int, 0x4ded88)) {
 		g_cursorBlink = 0;
-		switch (GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profile_44b260 */
+		switch (GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */
 		case 0:
 			sound_playMenu(0);
 			profile_typeNewName();
@@ -656,7 +656,7 @@ void (profileList_mouse)(void)
 			break;
 		case 4: {
 			sound_playMenu(2);
-			int row = GAME_CDECL(0x44b3a0, int, int, int)(g_mouseX, g_mouseY);   /* profile_44b3a0 */
+			int row = GAME_CDECL(0x44b3a0, int, int, int)(g_mouseX, g_mouseY);   /* profileList_hitTest */
 			if (row == -1 || g_listTop + row >= g_profileCount)
 				return;
 			if (row == g_listRow && GAME_VAR(int, 0x9f900c)) {
@@ -687,7 +687,7 @@ void (profileList_mouse)(void)
 	}
 	if (!GAME_VAR(int, 0x4ded94))
 		return;
-	int held = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);   /* profile_44b260 */
+	int held = GAME_CDECL(0x44b260, int, int, int)(g_mouseX, g_mouseY);   /* profilePage_hitTest */
 	if (held != 5 && held != 6)
 		return;
 	if (!(g_cursorBlink >= *(const float *)0x4a93d0))   /* 5 */

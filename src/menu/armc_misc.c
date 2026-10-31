@@ -350,9 +350,9 @@ u32 (menu_enterMenus)(void)
 	g_screen = 700;
 	g_lastScreen = 700;
 	g_nextScreen = 700;
-	armc_40e060();
-	armc_40e1c0();
-	armc_40e300();
+	armcMain_layout();
+	armcParts_layout();
+	armcColour_layout();
 	armc_buildPartLists();
 	GAME_VAR(int, 0x4dc868) = 1;
 	g_armcSpin = 1;
@@ -699,7 +699,7 @@ void (armc_sendSelectionToNet)(void)
 	net_send(0x1b, 0x65);
 }
 
-/* 0x40fb20: the armour centre's main page clicked (armc_40e450's buttons 1 .. 16): 1 / 2 the part and colour pages
+/* 0x40fb20: the armour centre's main page clicked (armcMain_hitTest's buttons 1 .. 16): 1 / 2 the part and colour pages
    (armc_40f220 / 40f320, unless already there), 3 / 4 the part screen's two sides (armc_40f0f0), 6 .. 11 the mech
    view 0 .. 5 (0x4dbc6c; its zoom 0x4dcfd8 back to 1), 14 / 15 the view's two turns (armc_stepPart; not in view 5),
    16 the rotation toggle (0x4dceac). Each with its sound. Returns what the original leaves in eax */
@@ -707,7 +707,7 @@ u32 (armc_mainPageClicks)(void)
 {
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	u32 button = GAME_CDECL(0x40e450, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e450 */
+	u32 button = GAME_CDECL(0x40e450, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcMain_hitTest */
 	int view = GAME_VAR(int, 0x4dbc6c);
 	switch (button) {
 	case 1:
@@ -746,7 +746,7 @@ u32 (armc_mainPageClicks)(void)
 	return button - 1;
 }
 
-/* 0x40ff40: the colour page clicked (armc_40e4d0's buttons 0 .. 17): 0 .. 2 the part screen, main and colour pages
+/* 0x40ff40: the colour page clicked (armcColour_hitTest's buttons 0 .. 17): 0 .. 2 the part screen, main and colour pages
    (armc_40f200 / 40f220 / 40f320, unless already there), 3 / 4 the two sides (armc_40f0f0), 5 .. 10 the colour slot
    0 .. 5 (0x4dc4b0; slot 5 also armc_40f590), 11 .. 16 the slider and swatch buttons (armc_40f5d0 .. 40f7e0), 17 the
    rotation toggle. Returns what the original leaves in eax */
@@ -754,7 +754,7 @@ u32 (armc_colourScreenInput)(void)
 {
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e4d0 */
+	u32 button = GAME_CDECL(0x40e4d0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcColour_hitTest */
 	static const u32 page[3] = { 0x40f200, 0x40f220, 0x40f320 };
 	static const u32 control[6] = { 0x40f5d0, 0x40f670, 0x40f6b0, 0x40f6f0, 0x40f790, 0x40f7e0 };
 	u32 r;

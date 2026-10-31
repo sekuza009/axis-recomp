@@ -192,7 +192,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 /* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for 0x4df9c8: the title 0x75a424, a cyan line, the
    labels (0x75a4a4, 0x80 apart), the values (the fifth row's text 0x74e6a4, the modes at 0x7669a4; hidden while
    edited: 0x9dd380, 0x9dd6a8, 0x9dd388, 0x9dd568). Unless a field is being edited (0x68039c) or the "leave?" box is up
-   (0x907b2c), the value under the pointer (room_432380) highlighted. Two buttons (0x75a8a4, lit from 8 unless
+   (0x907b2c), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (0x75a8a4, lit from 8 unless
    editing), the map preview (room_drawCustomOption), its arrows (11 / 12) and the custom rules button (13, not while
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
@@ -204,7 +204,7 @@ void (room_drawGameSettings)(void)
 	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
 	int editing = GAME_VAR(int, 0x68039c), open = editing || GAME_VAR(int, 0x907b2c);
 	char text[20];
-	int hovered = room_432380(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+	int hovered = roomSettings_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -246,7 +246,7 @@ static void box_buttons(int hovered, int lit_from)
    or the map list (0x4db508) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (0x7530a4, lit
    from 8 at 0.9) and below the second of the next pair (0x753224, 11), the map preview (arena_drawCustomOption), its
    arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (0x753224 / 0x7532a4, its buttons
-   15 / 16) and the "leave?" box over the whole screen (0x74dfa4 / 0x74e024, its buttons by arena_4045a0); the border.
+   15 / 16) and the "leave?" box over the whole screen (0x74dfa4 / 0x74e024, its buttons by arenaCreate_hitTest); the border.
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
@@ -292,7 +292,7 @@ void (arena_createDraw)(void)
 		GAME_CDECL(0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTexturedRect_428b50 */
 	}
 	if (leaving) {
-		int choice = arena_4045a0(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
+		int choice = arenaCreate_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3ecccccd);   /* 0.1, 0.4: the screen dimmed */
 		menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f4ccccd);

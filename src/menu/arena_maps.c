@@ -167,11 +167,11 @@ static void map_buttons(int hovered, int first, int y, int label)
 
 /* 0x4038e0: the map list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up to 10 rows from g_mapTop
    (22 .. 24 left out): the number, the name (0x907b30, 0x20 apart) and the game type's name (0x4db8d8, 20 apart),
-   the row under the pointer (by arena_4033e0) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
+   the row under the pointer (by mapList_hitTest) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
    (0x75db24 from 0x16, 0x75da24 from 0x18). The original leaves eax to callers that ignore it */
 void (mapList_draw)(void)
 {
-	int hovered = GAME_CDECL(0x4033e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* arena_4033e0 */
+	int hovered = GAME_CDECL(0x4033e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* mapList_hitTest */
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3e99999a);   /* 0.3 */
 	menu_drawRect(0, 0, 0x280, 0x1e0, 1);
 	set_colour_bits(g_rectColour, 0, 0, 0, 0x3f333333);   /* 0.7 */
@@ -223,7 +223,7 @@ void (mapList_mouse)(void)
 	const float *repeat = (const float *)0x4a93d0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		int on = arena_4033e0(g_mouseX, g_mouseY);
+		int on = mapList_hitTest(g_mouseX, g_mouseY);
 		if (on >= 0 && on < 10)
 			mapList_toggle(g_mapTop + on);
 		else if (on >= 10 && on < 20)
@@ -249,7 +249,7 @@ void (mapList_mouse)(void)
 	}
 	if (!g_mouseHeld || GAME_VAR(int, 0x4dbb3c) != 2)
 		return;
-	int on = arena_4033e0(g_mouseX, g_mouseY);
+	int on = mapList_hitTest(g_mouseX, g_mouseY);
 	if (on == 20 && g_cursorBlink >= *repeat) {
 		if (g_mapTop > 0)
 			g_mapTop--;

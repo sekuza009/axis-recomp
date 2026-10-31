@@ -423,7 +423,7 @@ void (mapSelect_mouse)(void)
 	const float *repeat = (const float *)0x4a93d0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		int on = mainmenu_440b70(g_mouseX, g_mouseY);
+		int on = mapSelect_hitTest(g_mouseX, g_mouseY);
 		if (on == 0)
 			maps_up();
 		else if (on == 1)
@@ -447,7 +447,7 @@ void (mapSelect_mouse)(void)
 	}
 	if (!g_mouseHeld)
 		return;
-	int on = mainmenu_440b70(g_mouseX, g_mouseY);
+	int on = mapSelect_hitTest(g_mouseX, g_mouseY);
 	if ((on == 0 || on == 1) && g_cursorBlink >= *repeat) {
 		if (on == 0)
 			maps_up();

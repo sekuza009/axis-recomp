@@ -125,7 +125,7 @@ static u32 two_buttons(const TwoButtons *d)
 #undef Y1
 }
 
-/* 0x44e180: the delete question (profile_44b320, question 0x751da4); 0x44e3e0: the second dialog (profile_44b360,
+/* 0x44e180: the delete question (deleteDialog_hitTest, question 0x751da4); 0x44e3e0: the second dialog (secondDialog_hitTest,
    question 0x751e24) */
 u32 (profile_drawDeleteQuestion)(void)
 {
@@ -139,7 +139,7 @@ u32 (profile_drawSecondDialog)(void)
 }
 
 /* 0x44de00: the new-profile dialog (0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): the frame, the title 0x751ca4, the
-   name field, the two buttons side by side (the hovered one, by profile_44b2a0, bright; OK dimmed while no name has
+   name field, the two buttons side by side (the hovered one, by newNameDialog_hitTest, bright; OK dimmed while no name has
    been typed, 0x9dc92c) and the border. Returns the border call's eax */
 u32 (profile_drawNewDialog)(void)
 {
@@ -188,7 +188,7 @@ u32 (profile_drawNewDialog)(void)
 
 /* 0x44d720: the profile screen (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
    page 0x9f8f10 = 1), the list's and the details' frames, the title 0x751a24, four buttons (0x751aa4, 0x80 apart:
-   on the list page the one under the pointer, by profile_44b260, lit; on page k + 2 button k lit, in the panel
+   on the list page the one under the pointer, by profilePage_hitTest, lit; on page k + 2 button k lit, in the panel
    colour less 0.2 in green and blue), the pilot list (profileList_drawNames), its scroll arrows (5 / 6 under the
    pointer), the details (profile_drawChosenPilot), the border and the version string 0x4b0384 right-aligned at the bottom.
    The original leaves eax to callers that ignore it */
@@ -328,7 +328,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
    growing by 2 a reveal step (0x9f6828, up to 8, one a 1.0 of 0x9f8ee4) under a pulsing frame (0x9dad90; its alpha
    by 0x9f8f08, which bounces between 2 and 38 at 0x9f8c48 a frame); the details: 13 labels (0x75e824), the pilot's
    name, title, class (0x75eea4), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (0x9f8d34,
-   easing to 0x9f8ec0); two buttons (0x7517a4; 9 / 10 under the pointer by profile_44b3e0, bright) and the border.
+   easing to 0x9f8ec0); two buttons (0x7517a4; 9 / 10 under the pointer by pilotSelect_hitTest, bright) and the border.
    The original leaves eax to callers that ignore it */
 void (profile_drawPilotSelect)(void)
 {
@@ -345,7 +345,7 @@ void (profile_drawPilotSelect)(void)
 	const u32 *panel = (const u32 *)0x9f8eb0, *dim = (const u32 *)0x9f8d58;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* profile_44b3e0 */
+	int hovered = GAME_CDECL(0x44b3e0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* pilotSelect_hitTest */
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexturedRect_427a90(X0, Y0, X1, Y1, GAME_VAR(int, 0x4deb50));
 	set_colour_bits((Colour *)0x76d438, panel[0], panel[1], panel[2], panel[3]);

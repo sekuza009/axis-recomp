@@ -99,7 +99,7 @@ void (mapList_init)(void)
 	GAME_VAR(int, 0x4d95c0) = 0;
 	GAME_VAR(int, 0x4d95c8) = 0;
 	GAME_VAR(int, 0x4db508) = 0;
-	room_403300();
+	mapList_layout();
 	GAME_VAR(int, 0x4db510) = 1;
 }
 

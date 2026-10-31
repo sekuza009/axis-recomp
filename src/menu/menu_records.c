@@ -368,7 +368,7 @@ void (skirmish_settingsArrowClick)(void)
 	if (!GAME_VAR(int, 0x4ded8c)) {
 		if (!g_mouseClick)
 			return;
-		switch (skirmish_443910(g_mouseX, g_mouseY)) {
+		switch (briefing_hitTest(g_mouseX, g_mouseY)) {
 		case 1:
 			break;
 		case 2:

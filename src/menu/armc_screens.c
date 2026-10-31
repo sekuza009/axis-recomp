@@ -106,11 +106,11 @@ static void marker(float pos, int y)
    (turned half round, as 0 .. 50 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
    the six slot buttons (the current one, 0x4dc4b0, bright; the sixth 0x756d24) with the parts' names beside them
    when 0x4dbc68 is set; the sliders' tracks, bars and hue markers; two buttons (0x7517a4; 3 / 4 under the pointer,
-   by armc_40e4d0, lit) and the box "<0x756da4> <0x751924 name of 0x4dceac>". The original leaves eax to callers
+   by armcColour_hitTest, lit) and the box "<0x756da4> <0x751924 name of 0x4dceac>". The original leaves eax to callers
    that ignore it */
 void (armc_drawColourEditor)(void)
 {
-	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e4d0 */
+	int hovered = GAME_CDECL(0x40e4d0, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcColour_hitTest */
 	for (int box = 0; box < 2; box++) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
@@ -250,7 +250,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 	armc_drawStatLabel(x, y, text);
 }
 
-/* 0x419160: the build screen: two buttons (0x7517a4; 3 / 4 under the pointer, by armc_40e490, lit), the six part
+/* 0x419160: the build screen: two buttons (0x7517a4; 3 / 4 under the pointer, by armcParts_hitTest, lit), the six part
    slots (the chosen one, 0x4dbe48, bright), a new snapshot of it when asked (0x4dcc64), each slot's picture
    (texture 0x4dcc70 + 4 k, when it has a name, 0x4dbe50) and label (0x756fa4) with its name (or 0x757da4); the part
    box: its picture (0x4dcc88), name (0x4dc150) and type (0x7641a4, by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
@@ -259,7 +259,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawBuildScreen)(void)
 {
-	int hovered = GAME_CDECL(0x40e490, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e490 */
+	int hovered = GAME_CDECL(0x40e490, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcParts_hitTest */
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	for (int k = 0; k < 2; k++) {

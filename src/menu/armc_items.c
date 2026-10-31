@@ -136,7 +136,7 @@ void (armc_drawPartScreen)(void)
 	armc_easeCamera();
 }
 
-/* 0x40fd30: the part screen clicked (armc_40e490's buttons 0 .. 14): 0 / 2 the main and colour pages (the slot
+/* 0x40fd30: the part screen clicked (armcParts_hitTest's buttons 0 .. 14): 0 / 2 the main and colour pages (the slot
    closed first; unless already there), 3 / 4 the screen's two sides (armc_40f0f0), 6 .. 11 slot 0 .. 5 picked,
    12 / 13 the cursor back / on (weapons wrap past the first entry; for the other items a step the slot cannot take
    (armc_colourPartEquipped) is skipped) with the item shown and taken, 14 the rotation toggle. Each with its sound. Returns
@@ -145,7 +145,7 @@ u32 (armc_partScreenClicks)(void)
 {
 	if (!GAME_VAR(int, 0x4ded88))
 		return 0;
-	u32 button = GAME_CDECL(0x40e490, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armc_40e490 */
+	u32 button = GAME_CDECL(0x40e490, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* armcParts_hitTest */
 	u32 r;
 	int step;
 	switch (button) {

@@ -262,7 +262,7 @@ u32 (setup_drawTopPage)(void)
 }
 
 /* 0x422480: the graphics tab clicked (the page open, no message box; a right click closes it). Buttons
-   (setup_4206b0): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
+   (setupOptions_hitTest): 0 the video mode on (0 .. 7, then 0), 1 .. 5 the colour depth, polygon detail, linear filtering,
    mipmapping and frame counter switched, 6 the simple menu (with 0x9da494), 7 OK (graphics_apply), 8 close. Each
    with its sound. Returns what the original leaves in eax (for a switch, its old or new value) */
 u32 (setup_drawGraphicTab)(void)
@@ -274,7 +274,7 @@ u32 (setup_drawGraphicTab)(void)
 		g_setupPage = 0;
 	if (!GAME_VAR(int, 0x4ded88))
 		return page;
-	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setup_4206b0 */
+	u32 button = GAME_CDECL(0x4206b0, u32, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* setupOptions_hitTest */
 	u32 *edited = (u32 *)g_graphicEdited, old, mode;
 	switch (button) {
 	case 0:
@@ -344,7 +344,7 @@ void (setup_drawSoundTab)(void)
 		g_setupPage = 0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		switch (setup_420670(g_mouseX, g_mouseY)) {
+		switch (setupSound_hitTest(g_mouseX, g_mouseY)) {
 		case 0: volume_down(); break;
 		case 1: volume_up(); break;
 		case 2: volume_at_pointer(); break;
@@ -367,7 +367,7 @@ void (setup_drawSoundTab)(void)
 	if (!g_mouseHeld || !(g_cursorBlink > *(const float *)0x4a9424))
 		return;
 	g_cursorBlink = 0.0f;
-	switch (setup_420670(g_mouseX, g_mouseY)) {
+	switch (setupSound_hitTest(g_mouseX, g_mouseY)) {
 	case 0: volume_down(); break;
 	case 1: volume_up(); break;
 	case 2: volume_at_pointer(); break;
@@ -494,7 +494,7 @@ void (setup_drawControlTab)(void)
 			g_bindWaiting = 0;
 			return;
 		}
-		int on = setup_4206f0(g_mouseX, g_mouseY), row = g_bindRow, page = g_bindPage;
+		int on = setupControl_hitTest(g_mouseX, g_mouseY), row = g_bindRow, page = g_bindPage;
 		if ((u32)on <= 3) {
 			sound_playMenu(2);
 			g_bindPage = on;
@@ -527,7 +527,7 @@ void (setup_drawControlTab)(void)
 			sound_playMenu(0);
 		}
 	}
-	if (g_mouseHeld && g_cursorBlink > *(const float *)0x4a9424 && setup_4206f0(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
+	if (g_mouseHeld && g_cursorBlink > *(const float *)0x4a9424 && setupControl_hitTest(g_mouseX, g_mouseY) == 9 && g_bindPage == 3)
 		setup_drawControlSlider();
 }
 
@@ -568,7 +568,7 @@ void (setup_drawKeyBindingRows)(int key)
 static void slider_press(void)
 {
 #define VALUE GAME_VAR(int, 0x4de1c8)
-	switch (setup_420730(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {
+	switch (setupSlider_hitTest(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c))) {
 	case 0:
 		if (VALUE > 0) {
 			GAME_VAR(int, 0x4dde90) = 0;

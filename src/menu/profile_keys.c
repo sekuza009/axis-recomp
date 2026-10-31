@@ -63,7 +63,7 @@ void (profile_deleteKeys)(void)
 	}
 	int button = -1;
 	if (input_justPressed(g_keyClick) == 1) {
-		button = profile_44b320(g_mouseX, g_mouseY);
+		button = deleteDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
 			profile_deleteFiles();
@@ -91,7 +91,7 @@ void (profile_secondDialogKeys)(void)
 	}
 	int button = -1;
 	if (input_justPressed(g_keyClick) == 1) {
-		button = profile_44b360(g_mouseX, g_mouseY);
+		button = secondDialog_hitTest(g_mouseX, g_mouseY);
 		if (button == 0) {
 			sound_playMenu(0);
 			profile_resetCamera();
