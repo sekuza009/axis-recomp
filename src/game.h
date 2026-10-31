@@ -513,6 +513,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define ViewVolume_reset(view) GAME_THISCALL(0x484260, void, void *)(view)
 /* out = the inverse of m (4 x 4); returns 0 and leaves out untouched when m is singular */
 #define Mat4_invert(out, m) GAME_CDECL(0x47d740, int, float *, const float *)(out, m)
+#define Mat4_minor(m, out, row, col) GAME_CDECL(0x47d610, void, const float *, float *, int, int)(m, out, row, col)   /* the 3x3 left without row and col */
+#define Mat4_determinant(m) GAME_CDECL(0x47d690, long double, const float *)(m)
 #define ViewVolume_transformObject(vv, id, info6, info3, P, M, raw, cull) GAME_THISCALL(0x4842d0, int, void *, int, const u32 *, const u32 *, const float *, const float *, int, int)(vv, id, info6, info3, P, M, raw, cull)
 #define shape_getShadingColorBufferBy(out, first, part, factors, m) GAME_CDECL(0x463b80, void, u8 *, int, const void *, const u8 *, const float *)(out, first, part, factors, m)
 #define render_depthSortA(e, lo, hi) GAME_CDECL(0x490f80, void, u32 *, int, int)(e, lo, hi)   /* (transparent triangles) */

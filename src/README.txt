@@ -23,6 +23,18 @@ Layout (by subsystem)
 
 Building: ../build.sh (src/ is compiled as its own translation unit with x87 maths and linked into recomp.dll).
 
+Standalone build: ../standalone/build.sh (after ../build.sh) links the same objects into build/AxisRC.exe, the
+game as a program of its own: no injection, no change to the installed exe. Put it in the game folder and run it;
+it reads AxisGL.exe there as data and does the loader's work itself (standalone/main.c): the game's sections at
+0x400000 (inside AxisRC.exe's own .bss), its imports, the patch layer (../axisnet_recomp.c compiled in with
+AXIS_STANDALONE), then every rebuilt function switched in at its original's address (the table is generated from
+recomp.c by tools/mkhooks.py), then the game's entry point. What still runs from AxisGL.exe: its data, the MSVC
+runtime (0x49e000..) and 10 game functions never rebuilt (~6 KB): 9 that the patch layer patches or replaces in
+memory (mouse/cursor input, the ARM CENTER rotation, the font pen, HUD digits and rectangles, the HUD projection, the
+ending movie) and WndProc, which jumps into patch code on disk (functions.csv's 11th, save_loadColours, is only the
+tail of a rebuilt function). standalone.log (next to the exe) lists where
+each function runs from; RECOMP_SKIP=name,... keeps some on the original. standalone/play.sh is the play test.
+
 Adding a function
   1. Read it: the disassembly (python tools/disx.py 0xADDR), Ghidra's pseudo-C (../decomp/out/src) and the lifted
      version (lifted/grpNN.c) with its notes in recomp.c / README.txt.

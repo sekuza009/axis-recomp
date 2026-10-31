@@ -2221,14 +2221,29 @@ static const struct {
 
 static HMODULE g_recomp;   /* RECOMP TEST BUILD ONLY: recomp.dll, when loaded */
 
+#ifdef AXIS_STANDALONE
+/* STANDALONE BUILD (recomp/standalone): this file is compiled into AxisRC.exe, which maps the game's image at
+   0x400000 itself; the exe module is AxisRC.exe, so the game image is named by its address, the rebuilt functions
+   are in the same exe, and AxisRC.exe switches them in itself once this returns */
+void recomp_setWide(const void *wide);
+#define GetModuleHandleA_exe() ((HMODULE)0x400000)
+BOOL WINAPI axisnet_attach(HINSTANCE inst, DWORD reason, LPVOID reserved) {
+    if (reason != DLL_PROCESS_ATTACH) return TRUE;
+    (void)inst;
+    recomp_setWide(&g_wide);
+#else
+#define GetModuleHandleA_exe() GetModuleHandleA(NULL)
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     if (reason != DLL_PROCESS_ATTACH) return TRUE;
     DisableThreadLibraryCalls(inst);
+#endif
+#ifndef AXIS_STANDALONE
     { /* RECOMP TEST BUILD ONLY: load rebuilt game functions (recomp.dll) from the game folder if present */
       char rp[MAX_PATH]; GetModuleFileNameA(NULL, rp, MAX_PATH); strcpy(strrchr(rp, '\\') + 1, "recomp.dll");
       HMODULE rm = g_recomp = GetFileAttributesA(rp) != INVALID_FILE_ATTRIBUTES ? LoadLibraryA(rp) : NULL;
       void (*set_wide)(const void *) = rm ? (void (*)(const void *))GetProcAddress(rm, "recomp_setWide") : NULL;
       if (set_wide) set_wide(&g_wide); }
+#endif
     /* The game renders at the monitor's real resolution (DESKTOP mode), but with display scaling Windows
        gives a DPI-unaware program a smaller, stretched window, so only part of the picture was visible
        (menus off-centre, top cut off). Declare DPI awareness before the game creates its window. */
@@ -2240,7 +2255,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     InitializeCriticalSection(&g_reccs); InitializeCriticalSection(&g_vmcs); InitializeCriticalSection(&hub.cs);
     hub.ls = hub.us = INVALID_SOCKET;
     load_config();
-    HMODULE exe = GetModuleHandleA(NULL);
+    HMODULE exe = GetModuleHandleA_exe();
     real_CoCreateInstance = hook_import(exe, "ole32.dll", "CoCreateInstance", hook_CoCreateInstance);
     real_IcmpSendEcho = hook_import(exe, "ICMP.dll", "IcmpSendEcho", hook_IcmpSendEcho);
     real_connect = hook_import_ex(exe, "WS2_32.dll", "connect", 4, hook_connect);  /* Axis imports Winsock by ordinal */
