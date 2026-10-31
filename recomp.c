@@ -418,7 +418,6 @@ int net_findFreeSession(void);
 /* 0x463710 (thiscall) index of id among the 5 ints at this+0x2342381, or -1 (also for negative ids) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL scene_findTeam(void *scene, int id);
-#define FUN_00463710 scene_findTeam
 
 /* 0x45dfb0 (thiscall) select actor i (stride 0x8888) if it is active (field 0x1cd94f4 == 1); i < 0 always */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -829,7 +828,7 @@ THISCALL void view_setDistance(void *self, float v);
 void THISCALL ints_set3(void *p, int a, int b, int c);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void vec3_negate(float *v);
-static THISCALL long double SQRT_wrap_480400(const float *v)   /* Vec3 length, returned unrounded in ST0 */
+static THISCALL long double vec3_length(const float *v)   /* Vec3 length, returned unrounded in ST0 */
 {
 	typedef long double X;
 	X x = v[0], y = v[1], z = v[2];
@@ -934,7 +933,6 @@ void THISCALL stage_deactivateActors(void *stage);
 THISCALL void teams_setup(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL scene_teamSide(void *scene, int id);
-#define FUN_00463740 scene_teamSide
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void escMenu_open(char *self, int a, int b);
 #define OBJ(self, i) ((self) + (i) * 0x2cc)
@@ -4223,7 +4221,7 @@ void THISCALL hud_drawReadyStart(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawRecordIndicator(void *scene);
 /* 0x496a30 (thiscall on the game) hud_drawMatchResult(): team games (+0x22e7184 == 1): a band and "RED TEAM WIN!" /
-   "BLUE TEAM WIN!" / "DRAW GAME!" by the winning team (FUN_00463740 of +0x23423bd); else, if the top player
+   "BLUE TEAM WIN!" / "DRAW GAME!" by the winning team (scene_teamSide of +0x23423bd); else, if the top player
    (scene_followedActor) has +0x14c set, "Top Player : %s" with its name +0x98 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawMatchResult(void *scene);
@@ -5640,8 +5638,8 @@ static void run_tests2(void)
 	  report("set4ints", &st); }
 	{ typedef THISCALL long double (*F)(const float *); F org = (F)0x480400; memset(&st, 0, sizeof st);
 	  for (int t = 0; t < N; t++) { float r1[3] = { 0 }, r2[3] = { 0 }; for (int i = 0; i < 3; i++) v[i] = rnd(); NA(v, 3);
-	    long double x1 = org(v), x2 = SQRT_wrap_480400(v); memcpy(r1, &x1, 10); memcpy(r2, &x2, 10); cmp(&st, r1, r2, 3); }
-	  report("SQRT_wrap_480400", &st); }
+	    long double x1 = org(v), x2 = vec3_length(v); memcpy(r1, &x1, 10); memcpy(r2, &x2, 10); cmp(&st, r1, r2, 3); }
+	  report("vec3_length", &st); }
 }
 
 /* ---- state harness: compare functions that touch game memory, on a frozen game -------------
@@ -7029,8 +7027,8 @@ ST(array_recordAt, g_a[0] = irnd(0, 3) ? irnd(-3, 1000) : -1; g_a[1] = irnd(-100
 ST(net_findFreeSession, for (DWORD p = 0xa0b470; p < 0xa0bab0; p += 8) G32(p) = 1;
    if (irnd(0, 3)) G32(0xa0b470 + 8 * irnd(0, 199)) = 0;,
    CD(int, 0x454110, void)(), net_findFreeSession())
-ST(FUN_00463710, for (int i = 0; i < 5; i++) G32(BUF + 0x100 + i * 4) = irnd(0, 8); g_a[0] = irnd(-2, 9);,
-   TC(int, 0x463710, char *, int)(BUF + 0x100 - 0x2342381, g_a[0]), FUN_00463710(BUF + 0x100 - 0x2342381, g_a[0]))
+ST(scene_findTeam, for (int i = 0; i < 5; i++) G32(BUF + 0x100 + i * 4) = irnd(0, 8); g_a[0] = irnd(-2, 9);,
+   TC(int, 0x463710, char *, int)(BUF + 0x100 - 0x2342381, g_a[0]), scene_findTeam(BUF + 0x100 - 0x2342381, g_a[0]))
 ST(stage_selectActor, for (int i = 0; i < 6; i++) G32(BUF + 0x40000 + i * 0x8888) = irnd(0, 2);
    G32(BUF + 0x3953e4) = 77; g_a[0] = irnd(-2, 5);,
    (TC(void, 0x45dfb0, char *, int)(BUF + 0x40000 - 0x1cd94f4, g_a[0]), 0), (stage_selectActor(BUF + 0x40000 - 0x1cd94f4, g_a[0]), 0))
@@ -7382,8 +7380,8 @@ V0(ptx_initClampTable, 0x46e320, fill((void *)0xa61b0c, 0x580); fill((void *)0xa
 V0(ptx_initColourTables, 0x46e7c0, fill((void *)0xa6170c, 0x404); fill((void *)0xaa228c, 0x404); fill((void *)0xa1f304, 0x404); fill((void *)0xaa2690, 0x404);)
 ST(stage_deactivateActors, actors_setup();, (TC(void, 0x45e1c0, char *)(BUF), 0), (stage_deactivateActors(BUF), 0))
 T0(teams_setup, 0x4636d0, S32(BUF, 8) = irnd(0, 3) ? 0 : 1; S32(BUF, 0x22e7184) = irnd(0, 2); fill(BUF + 0x2342381, 20);)
-ST(FUN_00463740, for (int k = 0; k < 5; k++) S32(BUF, 0x2342381 + k * 4) = irnd(-3, 8); g_a[0] = irnd(-2, 9);,
-   TC(int, 0x463740, char *, int)(BUF, g_a[0]), FUN_00463740(BUF, g_a[0]))
+ST(scene_teamSide, for (int k = 0; k < 5; k++) S32(BUF, 0x2342381 + k * 4) = irnd(-3, 8); g_a[0] = irnd(-2, 9);,
+   TC(int, 0x463740, char *, int)(BUF, g_a[0]), scene_teamSide(BUF, g_a[0]))
 ST(escMenu_open, S32(BUF, 0x234240d) = irnd(-3, 3); fill(BUF + 0x2340c9c, 0x64); g_a[0] = irnd(-99, 99); g_a[1] = irnd(-99, 99);,
    (TC(void, 0x49ca20, char *, int, int)(BUF, g_a[0], g_a[1]), 0), (escMenu_open(BUF, g_a[0], g_a[1]), 0))
 static void objects_setup(void)
@@ -14074,7 +14072,7 @@ static void recind_setup(void)
 	fill_str(BUF + 0x2340d0c, 20, 32, 126);
 }
 ST(hud_drawRecordIndicator, recind_setup(); screen_random();, (TC(void, 0x496d10, char *)(BUF), 0), (hud_drawRecordIndicator(BUF), 0))
-/* not a team game (see below), the teams' slots and the winner id (FUN_00463740's test values), follow_setup's top player,
+/* not a team game (see below), the teams' slots and the winner id (scene_teamSide's test values), follow_setup's top player,
    every record's flag and name */
 static const DWORD g_stubMatchResult[] = { 0x4950a0, 4, 0x463740, 1 | CS_POP | CS_THIS, 0 };
 static void matchresult_setup(void)
@@ -16938,7 +16936,7 @@ ST(app_init, appinit_setup();, CALL_PLAIN(0x43fcc0, 0, g_a[0], g_a[1], 0, 0), (D
 static const STest g_stests[] = {
 	T(createArena_hitTest, 1, 4, 3000), T(save_cryptRecord, 0, 4, 500), T(crypt_countingKey, 1, 4, 500), T(str_invert, 1, 4, 2000),
 	T(name_isBlank, 1, 4, 3000), T(mapList_toggle, 0, 60, 0), T(armc_colourPartEquipped, 1, 4, 3000), T(array_recordAt, 1, 4, 3000),
-	T(net_findFreeSession, 1, 4, 2000), T(FUN_00463710, 1, 4, 3000), T(stage_selectActor, 0, 40, 0), T(playerRecord_markUsed, 0, 30, 0),
+	T(net_findFreeSession, 1, 4, 2000), T(scene_findTeam, 1, 4, 3000), T(stage_selectActor, 0, 40, 0), T(playerRecord_markUsed, 0, 30, 0),
 	T(Skeleton_clear, 0, 4, 500), T(partList_clear, 0, 4, 500), T(spaceSlot_clear, 0, 4, 500), T(armc_resetSeraphimParts, 0, 60, 0),
 	T(mech_unpackFromRecord, 0, 30, 0), T(armc_restoreMenuCamera, 0, 20, 0), T(armc_loadSavedMech, 0, 30, 0), T(armc_syncPartCursors, 0, 60, 0),
 	T(armc_backupColours, 0, 20, 0), T(armc_restoreColourUndo, 0, 20, 0),
@@ -16984,7 +16982,7 @@ static const STest g_stests[] = {
 	T(armc_rightClickLeave, 0, 10, 0), T(profile_resetPreview, 0, 6, 0), T(profile_resetSelection, 0, 6, 0), T(profile_resetCamera, 0, 6, 0),
 	T(setup_selectGraphicTab, 0, 6, 0), T(mapList_startEdit, 0, 20, 0), T(skirmish_settingsArrowClick, 0, 40, 0), T(sessionList_sort, 0, 30, 0),
 	T(ptx_initQuantTables, 0, 30, 0), T(ptx_initClampTable, 0, 4, 0), T(ptx_initColourTables, 0, 4, 0), T(ErrorLog_ctor, 1, 10, 0),
-	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(FUN_00463740, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
+	T(net_claimLocalSlot, 1, 40, 0), T(str_dropLast, 1, 4, 1000), T(scene_teamSide, 1, 4, 1000), T(object_setTextureFolder, 1, 4, 500),
 	T(stage_deactivateActors, 0, 4, 300), T(teams_setup, 0, 4, 300), T(escMenu_open, 0, 4, 300), T(object_activate, 0, 4, 600),
 	T(object_deactivate, 0, 4, 600), T(playerRecord_resetColourGrid, 0, 4, 100), T(script_pushEvent, 0, 4, 1000), T(shape_markMaterialsChanged, 0, 4, 300),
 	T(vec3_scaleCopy, 0, 4, 2000), T(vec_rotate, 0, 4, 2000), T(space_transformPoint, 0, 4, 2000),
@@ -17782,7 +17780,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x42b3c0, (void *)crypt_countingKey, "crypt_countingKey" }, { 0x42b390, (void *)str_invert, "str_invert" },
 	{ 0x4343b0, (void *)name_isBlank, "name_isBlank" }, { 0x403560, (void *)mapList_toggle, "mapList_toggle" },
 	{ 0x40f830, (void *)armc_colourPartEquipped, "armc_colourPartEquipped" }, { 0x46cbc0, (void *)array_recordAt, "array_recordAt" },
-	{ 0x454110, (void *)net_findFreeSession, "net_findFreeSession" }, { 0x463710, (void *)FUN_00463710, "FUN_00463710" },
+	{ 0x454110, (void *)net_findFreeSession, "net_findFreeSession" }, { 0x463710, (void *)scene_findTeam, "scene_findTeam" },
 	{ 0x45dfb0, (void *)stage_selectActor, "stage_selectActor" }, { 0x474390, (void *)playerRecord_markUsed, "playerRecord_markUsed" },
 	{ 0x469980, (void *)Skeleton_clear, "Skeleton_clear" }, { 0x46f480, (void *)partList_clear, "partList_clear" },
 	{ 0x480440, (void *)spaceSlot_clear, "spaceSlot_clear" }, { 0x40d990, (void *)armc_resetSeraphimParts, "armc_resetSeraphimParts" },
@@ -17865,7 +17863,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x46e9b0, (void *)ptx_initQuantTables, "ptx_initQuantTables" }, { 0x46e320, (void *)ptx_initClampTable, "ptx_initClampTable" },
 	{ 0x46e7c0, (void *)ptx_initColourTables, "ptx_initColourTables" }, { 0x46c5a0, (void *)ErrorLog_ctor, "ErrorLog_ctor" },
 	{ 0x451410, (void *)net_claimLocalSlot, "net_claimLocalSlot" }, { 0x44ac70, (void *)str_dropLast, "str_dropLast" },
-	{ 0x463740, (void *)FUN_00463740, "FUN_00463740" }, { 0x470f80, (void *)object_setTextureFolder, "object_setTextureFolder" },
+	{ 0x463740, (void *)scene_teamSide, "scene_teamSide" }, { 0x470f80, (void *)object_setTextureFolder, "object_setTextureFolder" },
 	{ 0x45e1c0, (void *)stage_deactivateActors, "stage_deactivateActors" }, { 0x4636d0, (void *)teams_setup, "teams_setup" },
 	{ 0x49ca20, (void *)escMenu_open, "escMenu_open" }, { 0x490ee0, (void *)object_activate, "object_activate" },
 	{ 0x490f30, (void *)object_deactivate, "object_deactivate" }, { 0x473470, (void *)playerRecord_resetColourGrid, "playerRecord_resetColourGrid" },
@@ -18736,7 +18734,7 @@ static void install_hooks(int state_ok)
 	hook(0x4326f0, (void *)actor_levelFromValue, "actor_levelFromValue");
 	hook(0x41f0e0, (void *)Color4_set, "Color4_set");
 	hook(0x42eeb0, (void *)set4ints, "set4ints");
-	hook(0x480400, (void *)SQRT_wrap_480400, "SQRT_wrap_480400");
+	hook(0x480400, (void *)vec3_length, "vec3_length");
 }
 
 static DWORD WINAPI worker(LPVOID unused)

@@ -405,7 +405,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* ---- HUD ---- */
 #define hud_fillRect(x0, y0, x1, y1) GAME_CDECL(0x4950a0, void, int, int, int, int)(x0, y0, x1, y1)
 #define hud_drawRectOutline(x0, y0, x1, y1) GAME_CDECL(0x46bd00, void, int, int, int, int)(x0, y0, x1, y1)   /* a rectangle's outline */
-/* a team's slot in teamScores (scene_teamSlot) and which side of the box it is on (FUN_00463740) */
+/* a team's slot in teamScores (scene_teamSlot) and which side of the box it is on (scene_teamSide) */
 #define scene_teamSlot(scene, team) GAME_THISCALL(0x463780, int, Scene *, int)(scene, team)
 #define scene_teamSide(scene, team) GAME_THISCALL(0x463740, int, Scene *, int)(scene, team)   /* the team's slot, given one if new */
 #define scene_findTeam(scene, team) GAME_THISCALL(0x463710, int, Scene *, int)(scene, team)   /* the team's slot or -1 */

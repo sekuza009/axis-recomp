@@ -1,0 +1,4 @@
+# function names, batch 13: the harness's last address names
+FUN_00463710,scene_findTeam,merge
+FUN_00463740,scene_teamSide,merge
+SQRT_wrap_480400,vec3_length
