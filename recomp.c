@@ -4167,6 +4167,8 @@ DWORD hud_drawDigits(int x, int y, DWORD scale, int value, int count, int padded
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD font_penDraw(int x, int y, int font, const char *format, ...);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+long WINAPI game_wndProc(void *wnd, DWORD msg, DWORD w, DWORD l);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_rotateFromCursor(void *scene, const DWORD *eye, const DWORD *forward, const DWORD *up, int part, int angle, int w, int h);
 /* 0x41e760 sound_playMenu(i): with sound (0xa0e80c == 1) the menu sound i (0x4dd4d4) at the sound volume 0x4dd984 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5780,6 +5782,8 @@ static void __cdecl __attribute__((noinline)) mock_exit(int code)
 /* a thread procedure's ExitThread ends the run as exit() does; WaitForMultipleObjects answers from g_mockWaits
    (then 1 for ever, so a wait loop ends) */
 static void WINAPI mstub_ExitThread(DWORD code) { mock_rec(0x4a9180, 1, code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
+/* ExitProcess (the game window's WM_DESTROY) ends the run the same way */
+static void WINAPI mstub_ExitProcess(DWORD code) { g_exitRuns++; mock_rec(0x4a90f8, 1, code, 0, 0, 0); if (g_inRun) __builtin_longjmp(g_exitJmp, 1); }
 static DWORD g_mockWaits[16], g_mockNWaits, g_mockWaitPos;
 static DWORD WINAPI mstub_WaitForMultipleObjects(DWORD n, const DWORD *h, int all, DWORD ms)
 {
@@ -6401,7 +6405,7 @@ static struct { DWORD slot; void *stub; DWORD saved; } g_iatMocks[] = {
 	{ 0x4a9178, (void *)mstub_SetEvent }, { 0x4a9168, (void *)mstub_ResetEvent }, { 0x4a9070, (void *)mstub_GlobalAlloc },
 	{ 0x4a9198, (void *)mstub_GlobalLock }, { 0x4a9368, (void *)mstub_mciSendCommandA }, { 0x4a93b4, (void *)mstub_CoCreateInstance },
 	{ 0x4a913c, (void *)mstub_QueryPerformanceFrequency }, { 0x4a921c, (void *)mstub_glBegin }, { 0x4a9220, (void *)mstub_glEnd },
-	{ 0x4a9104, (void *)mstub_DeleteFileA }, { 0x4a9180, (void *)mstub_ExitThread }, { 0x4a917c, (void *)mstub_WaitForMultipleObjects },
+	{ 0x4a9104, (void *)mstub_DeleteFileA }, { 0x4a9180, (void *)mstub_ExitThread }, { 0x4a90f8, (void *)mstub_ExitProcess }, { 0x4a917c, (void *)mstub_WaitForMultipleObjects },
 	{ 0x4a9390, (void *)mstub_closesocket }, { 0x4a938c, (void *)mstub_shutdown }, { 0x4a93ac, (void *)mstub_WSACleanup },
 	{ 0x4a9384, (void *)mstub_bind }, { 0x4a93a4, (void *)mstub_connect }, { 0x4a9374, (void *)mstub_htons },
 	{ 0x4a9170, (void *)mstub_CreateEventA }, { 0x4a9174, (void *)mstub_CreateThread },
@@ -16869,6 +16873,40 @@ static void penDraw_setup(void)
 	if (pct) strcat(f, irnd(0, 1) ? "%d" : "%2d s");
 	g_a[2] = irnd(-1, 2);
 }
+/* the game window's procedure: each message it takes (and some it does not), with the values each one looks at:
+   the exit mode, the display-mode flags of the activation patch, the system commands, the timers with the arena's
+   search count near its limit, the socket events with each reply; every game function it calls stubbed (answering
+   0 or 1: the pixel format, the session found) */
+static const DWORD g_stubWndProc[] = { 0x42f000, 1, 0x42f150, 2, 0x42f0f0, 2, 0x452fe0, 0, 0x451e60, 0, 0x4314e0, 0, 0x43f7f0, 1,
+	0x43f8b0, 0, 0x46c420, 4, 0x42eed0, 4, 0x4521c0, 2, 0x453260, 0, 0x4532b0, 1, 0x434e70, 0, 0x4062b0, 0, 0x4520e0, 0,
+	0x41edc0, 0, 0x41ed70, 0, 0x452620, 0, 0 };
+static void gameWndProc_setup(void)
+{
+	static const DWORD msgs[] = { 0, 1, 2, 5, 0xf, 0x10, 0x1c, 0x112, 0x113, 0x40a, 0x40c, 0x400, 0x40b, 0x111, 3, 0x11, 0x1b, 0x1d };
+	static const DWORD cmds[] = { 0xf130, 0xf040, 0xf050, 0xf170, 0xf060, 0xf030, 0xf120, 0xf020, 0xf140, 0xf100, 0xf000, 0xf010 };
+	static const DWORD timers[] = { 0x29a, 0x378, 0x115c, 0x309, 1 };
+	static const int modes[] = { 0, 1, 2, 3, 99, 4, -1, 100 }, replies[] = { 0x28, 0x29, 0x66, 0x67, 0xca, 0xcb, 0, 5 };
+	callee_stubs(g_stubWndProc, (DWORD)irnd(0, 1));
+	DWORD m = msgs[irnd(0, sizeof msgs / 4 - 1)];
+	g_a[0] = 0x10010; g_a[1] = (int)m; g_a[2] = irnd(-5, 5); g_a[3] = irnd(-5, 5);
+	if (m == 0x112) g_a[2] = (int)(cmds[irnd(0, 11)] | (DWORD)irnd(0, 15) | (irnd(0, 3) ? 0 : 0x10000));
+	if (m == 0x113) g_a[2] = (int)timers[irnd(0, 4)];
+	if (m == 0x1c) g_a[2] = irnd(0, 1);
+	if (m == 0x40a || m == 0x40c) g_a[3] = (irnd(0, 2) ? 0x20 : irnd(0, 0x40)) | irnd(0, 3) << 16;
+	G32(0x4df048) = modes[irnd(0, 7)];
+	G8(0xb12a80) = irnd(0, 1); G8(0xb12a81) = irnd(0, 1); G32(0xb12a84) = irnd(640, 3840); G32(0xb12a88) = irnd(480, 2160);
+	G32(0x4e045c) = irnd(0, 1) ? 479 : 480; G32(0x5ae9bc) = irnd(-1, 2);
+	G32(0x76d480) = irnd(0, 3) ? 0x2020 : 0; G32(0x9dd888) = irnd(0, 1) ? 0x3030 : 0; G32(0x4ded18) = 0x10010;
+	G32(0x4dbb10) = irnd(25, 35); G32(0x4dbbf4) = irnd(0, 3); G32(0x9dd84c) = irnd(0, 1);
+	G32(0x76d3e8) = irnd(0, 2) == 0 ? 800 : irnd(0, 1) ? 0x270f : 300;
+	G32(0xa0b370) = replies[irnd(0, 7)]; G32(0xa0b36c) = replies[irnd(0, 7)]; G32(0xa0b374) = replies[irnd(0, 7)];
+	G32(0xa0b34c) = replies[irnd(0, 7)]; G32(0xa0b350) = irnd(0, 1); G32(0xa0b354) = irnd(0, 1);
+	fill((void *)0x4ded68, 12); fill((void *)0x4ded60, 4); fill((void *)0x4df018, 4); fill((void *)0x76d484, 4);
+	fill((void *)0x9da498, 4); fill((void *)0x76d40c, 4); fill((void *)0x9dd354, 4); fill((void *)0x9dd864, 4);
+	fill((void *)0x9087b8, 4); fill((void *)0xa0b360, 4); fill((void *)0x4dbb78, 4); fill((void *)0x4dbbf8, 4); fill((void *)0x4db708, 4);
+}
+static DWORD gameWndProc_orig(void) { return ((DWORD (WINAPI *)(DWORD, DWORD, DWORD, DWORD))0x440070)(g_a[0], g_a[1], g_a[2], g_a[3]); }
+ST(game_wndProc, gameWndProc_setup();, gameWndProc_orig(), (DWORD)game_wndProc((void *)g_a[0], g_a[1], g_a[2], g_a[3]))
 ST(font_penDraw, penDraw_setup();, ((DWORD (__cdecl *)(int, int, int, const char *, ...))0x46bb00)(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]),
    font_penDraw(g_a[0], g_a[1], g_a[2], BUF + 0x2000, g_a[3]))
 /* the display mode: the desktop's size, the one asked for equal or not, the changed-mode flag, the mocked
@@ -17405,7 +17443,7 @@ static const STest g_stests[] = {
 	/* batch 160 */
 	T(sound_loadWav, 0, 300, 0),
 	/* batch 161 */
-	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(sound_playMenu, 0, 200, 0),
+	T(input_keyHeldChecked, 0, 300, 0), T(input_keyHeld, 0, 300, 0), T(input_isDown, 0, 300, 0), T(input_justPressed, 0, 600, 0), T(input_readMouse, 0, 600, 0), T(input_updateMenuCursor, 0, 600, 0), T(armc_rotateFromCursor, 0, 600, 0), T(gfx_setProjectionHud, 0, 600, 0), T(gfx_fillRect, 0, 600, 0), T(hud_drawDigits, 0, 600, 0), T(font_penDraw, 0, 600, 0), T(game_wndProc, 0, 2000, 0), T(sound_playMenu, 0, 200, 0),
 	T(skirmishSettings_leave, 0, 200, 0), T(missionSettings_leave, 0, 200, 0), T(mission_chosen, 0, 200, 0),
 	/* batch 162 */
 	T(skirmish_saveSettings, 0, 300, 0), T(missionsel_clicks, 0, 300, 0), T(mission_choose, 0, 200, 0), T(skirmish_settingsKeys, 0, 300, 0),
@@ -18476,7 +18514,8 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x401590, (void *)input_isDown, "input_isDown" }, { 0x401600, (void *)input_justPressed, "input_justPressed" }, { 0x401730, (void *)input_readMouse, "input_readMouse" },
 	{ 0x445c60, (void *)input_updateMenuCursor, "input_updateMenuCursor" }, { 0x461850, (void *)armc_rotateFromCursor, "armc_rotateFromCursor" },
 	{ 0x4685f0, (void *)gfx_setProjectionHud, "gfx_setProjectionHud" }, { 0x46bd60, (void *)gfx_fillRect, "gfx_fillRect" },
-	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x46bb00, (void *)font_penDraw, "font_penDraw" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
+	{ 0x46bdc0, (void *)hud_drawDigits, "hud_drawDigits" }, { 0x46bb00, (void *)font_penDraw, "font_penDraw" },
+	{ 0x440070, (void *)game_wndProc, "game_wndProc" }, { 0x41e760, (void *)sound_playMenu, "sound_playMenu" },
 	{ 0x443c80, (void *)skirmishSettings_leave, "skirmishSettings_leave" }, { 0x447960, (void *)missionSettings_leave, "missionSettings_leave" },
 	{ 0x4479b0, (void *)mission_chosen, "mission_chosen" },
 	/* batch 162 */

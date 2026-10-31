@@ -597,3 +597,247 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 #undef FindWindowA
 #undef Sleep
 }
+
+/* 0x440070: the game window's messages (its class's procedure; the patch DLL subclasses it, see axisnet's input_read).
+   Returns 1 for the messages it takes (0 where noted), DefWindowProcA's answer for the rest.
+   - WM_CREATE: the window's DC (g_desktopDC) given a pixel format (failing: the game quits) and a GL context
+     (0x9087b8); the GL state for the client size; the pointer at the menus' centre.
+   - WM_SIZE: the 3D view for the client size (gfx_setup3DView).
+     As the installed exe has both (widefix.py: wrappers at 0x4a8f6a / 0x4a8f87, called from 0x440116 / 0x440186):
+     the client is one pixel taller than the game's height (the window starts at y -1, so the driver keeps it
+     composited), so that height is taken back to the game's, and the menus' projection switch sets its viewport
+     again next time (g_projMode -1).
+   - WM_PAINT: begun and ended. WM_CLOSE: the DC let go, the arena session left, the network closed, the three
+     network timers stopped, the cursor put back, the window destroyed.
+   - WM_DESTROY: the screen saver back on, the DC and the chat line let go, the cursor shown, the game quits; then,
+     by the exit mode (0x4df048): 0 the start mode 0 and the data files spoilt (and 0x4b2790 cleared), 1 the start
+     mode 1 and AxisGL.exe started again, 2 / 3 the start mode 0, the files spoilt and axispatch.exe ("nstower") /
+     DServer.exe started, 99 the files spoilt and the ending movie; the process ends.
+   - WM_ACTIVATEAPP: the activation kept (0x9dd864). As the installed exe has it (cursorfix.py, through 0x44037c ->
+     0x4a8ec1): the Windows cursor hidden while active and shown while not (counted down / up until it is), and the
+     window restored when the game comes back (borderless); then (widefix.py's handler at 0x4a8ecb) a display mode
+     the game had set (0xb12a80) is given up while it is in the background (the window minimised) and set again
+     (0xb12a84 x 0xb12a88) when it comes back.
+   - WM_SYSCOMMAND: moving, sizing, maximising, the screen saver, closing, the task list, the keyboard menu and
+     minimising are swallowed (0); SC_RESTORE goes to DefWindowProcA (cursorfix.py changed 0x44050c: the game
+     swallowed it), though as the command 0xf120 itself, not as WM_SYSCOMMAND; anything else 1.
+   - WM_TIMER: 0x29a in the arena's lobby a keep-alive (net_send 0x17), 0x115c in a room another (0x18); 0x378 the
+     arena's session search: the sessions listed; after 30 tries the join gives up, else a session found ends it
+     (none: try again next time); either way the timer stops and the room closes (app_onClose) or the arena's join
+     is answered (app_shutdown).
+   - 0x40a, 0x40c (the game server's and the lobby's sockets): closed, both sockets closed and the menus back at
+     the main menu (0), unless in a match; else the reply read and the connection's step and search result
+     taken from it. */
+long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
+{
+#define g_glContext GAME_VAR(void *, 0x9087b8)
+#define g_exitMode GAME_VAR(int, 0x4df048)
+#define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
+#define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
+#define ShowWindow(wnd, how) IMPORT(0x4a92bc, int, void *, int)(wnd, how)
+#define DestroyWindow(wnd) IMPORT(0x4a9344, int, void *)(wnd)
+#define ReleaseDC(wnd, dc) IMPORT(0x4a931c, int, void *, void *)(wnd, dc)
+#define GetClientRect(wnd, rect) IMPORT(0x4a9310, int, void *, int *)(wnd, rect)
+#define ExitProcess(code) IMPORT(0x4a90f8, void, u32)(code)
+#define ShellExecuteA(wnd, verb, file, args, dir, show) \
+	IMPORT(0x4a92b0, void *, void *, const char *, const char *, const char *, const char *, int)(wnd, verb, file, args, dir, show)
+#define GAME_HEIGHT(h) ((h) - 1 == g_screenH ? (h) - 1 : (h))   /* widefix.py: the client's extra row taken back */
+	u16 now[8];
+	int rect[4];
+	u32 paint[0x10];
+	IMPORT(0x4a90f4, void, u16 *)(now);   /* GetLocalTime (unused) */
+	switch (msg) {
+	case 1:   /* WM_CREATE */
+		g_desktopDC = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
+		if (!GAME_CDECL(0x42f000, int, void *)(g_desktopDC)) {   /* gfx_setPixelFormat */
+			PostQuitMessage(0);
+			return 1;
+		}
+		g_glContext = IMPORT(0x4a9230, void *, void *)(g_desktopDC);   /* wglCreateContext */
+		IMPORT(0x4a9254, int, void *, void *)(g_desktopDC, g_glContext);   /* wglMakeCurrent */
+		GetClientRect(wnd, rect);
+		g_projMode = -1;
+		GAME_CDECL(0x42f150, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
+		g_mouseX = 0x140;
+		g_mouseY = 0xf0;
+		GAME_VAR(int, 0x4ded70) = 0;
+		return 1;
+	case 0xf:   /* WM_PAINT */
+		IMPORT(0x4a9308, void *, void *, u32 *)(wnd, paint);   /* BeginPaint */
+		IMPORT(0x4a92dc, int, void *, u32 *)(wnd, paint);   /* EndPaint */
+		return 1;
+	case 5:   /* WM_SIZE */
+		GetClientRect(wnd, rect);
+		g_projMode = -1;
+		GAME_CDECL(0x42f0f0, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
+		return 1;
+	case 0x10:   /* WM_CLOSE */
+		if (g_desktopDC)
+			ReleaseDC(wnd, g_desktopDC);
+		g_glContext = NULL;
+		g_desktopDC = NULL;
+		g_lobbyPending = 1;
+		arena_leaveSession();
+		net_disconnect();
+		KillTimer(g_hWndMain, 0x29a);
+		KillTimer(g_hWndMain, 0x115c);
+		KillTimer(g_hWndMain, 0x309);
+		g_lobbyPending = 1;
+		GAME_CDECL(0x4314e0, u32, void)();   /* wnd_setCursor */
+		DestroyWindow(wnd);
+		return 1;
+	case 2:   /* WM_DESTROY */
+		IMPORT(0x4a92d0, int, u32, u32, void *, u32)(0x61, 0, NULL, 0);   /* SystemParametersInfoA: SPI_SETSCREENSAVERRUNNING off */
+		if (g_desktopDC)
+			ReleaseDC(wnd, g_desktopDC);
+		if (g_hChatEdit)
+			DestroyWindow(g_hChatEdit);
+		ShowCursor(1);
+		PostQuitMessage(0);
+		switch (g_exitMode) {
+		case 0:
+			GAME_CDECL(0x43f7f0, u32, u32)(0);   /* reg_writeStartMode */
+			GAME_CDECL(0x43f8b0, u32, void)();   /* app_deleteDataFiles */
+			GAME_VAR(int, 0x4b2790) = 0;
+			ExitProcess(0);
+			return 0;
+		case 1:
+			GAME_CDECL(0x43f7f0, u32, u32)(1);
+			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a64, NULL, NULL, 10);   /* "open" "AxisGL.exe" */
+			ExitProcess(0);
+			return 0;
+		case 2:
+			GAME_CDECL(0x43f7f0, u32, u32)(0);
+			GAME_CDECL(0x43f8b0, u32, void)();
+			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a44, (const char *)0x4b2a54, NULL, 10);   /* "axispatch.exe" "nstower" */
+			ExitProcess(0);
+			return 0;
+		case 3:
+			GAME_CDECL(0x43f7f0, u32, u32)(0);
+			GAME_CDECL(0x43f8b0, u32, void)();
+			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a38, (const char *)0x4b13ec, NULL, 10);   /* "DServer.exe" */
+			ExitProcess(0);
+			return 0;
+		case 99:
+			GAME_CDECL(0x43f8b0, u32, void)();
+			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)0x4b2a24, g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
+			ExitProcess(0);
+		}
+		ExitProcess(0);
+		return 0;
+	case 0x1c: {   /* WM_ACTIVATEAPP */
+		GAME_VAR(u32, 0x9dd864) = w;
+		if (w) {
+			while (ShowCursor(0) >= 0)
+				;
+			if (!GAME_VAR(u8, 0xb12a80))
+				ShowWindow(g_hWndMain, 9);   /* SW_RESTORE */
+			if (GAME_VAR(u8, 0xb12a81)) {
+				GAME_VAR(u8, 0xb12a81) = 0;
+				app_setDisplayMode(GAME_VAR(int, 0xb12a84), GAME_VAR(int, 0xb12a88), 4, 0x20);
+				ShowWindow(g_hWndMain, 9);
+			}
+		} else {
+			while (ShowCursor(1) < 0)
+				;
+			if (GAME_VAR(u8, 0xb12a80)) {
+				ShowWindow(g_hWndMain, 7);   /* SW_SHOWMINNOACTIVE */
+				IMPORT(0x4a9314, int, void *, u32)(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
+				GAME_VAR(u8, 0xb12a80) = 0;
+				GAME_VAR(u8, 0xb12a81) = 1;
+			}
+		}
+		return 1;
+	}
+	case 0x112: {   /* WM_SYSCOMMAND */
+		u32 command = w & 0xfff0;
+		if (command == 0xf120)   /* SC_RESTORE: DefWindowProcA, with the command where the message goes (cursorfix.py's
+		                            jump arrives with the command in eax, which the call passes as the message) */
+			return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, command, w, l);
+		if (command == 0xf130 || command == 0xf040 || command == 0xf050 || command == 0xf170 || command == 0xf060 ||
+		    command == 0xf030 || command == 0xf020 || command == 0xf140)
+			return 0;
+		return 1;
+	}
+	case 0x113:   /* WM_TIMER */
+		if (w == 0x29a) {
+			if (g_arenaLobbyState == 2)
+				net_send(0x17, 100);
+		} else if (w == 0x378) {
+			dplay_listSessions();
+			if (++GAME_VAR(int, 0x4dbb10) > 30) {
+				g_arenaJoinWaiting = 1;
+			} else {
+				g_receivedSession = (const u8 *)net_sessionValue(0);
+				if (!g_receivedSession)
+					return 1;
+				g_arenaJoinPending = 1;
+			}
+			KillTimer(wnd, 0x378);
+			if (g_screen == 800)
+				GAME_CDECL(0x434e70, u32, void)();   /* app_onClose */
+			else
+				GAME_CDECL(0x4062b0, void, void)();   /* app_shutdown */
+		} else if (w == 0x115c) {
+			if (g_roomConnected)
+				net_send(0x18, 0x65);
+		}
+		return 1;
+	case 0x40a:   /* the game server's socket */
+		if ((u16)l == 0x20) {   /* FD_CLOSE */
+			GAME_CDECL(0x4520e0, u32, void)();   /* net_closeSockets */
+			if (g_screen != 0x270f)
+				GAME_CDECL(0x41edc0, void, void)();   /* menu_returnToMain */
+			return 0;
+		}
+		GAME_CDECL(0x452620, void, void)();   /* net_recv */
+		switch (GAME_VAR(int, 0xa0b370)) {
+		case 0x29: g_connectStep = 4; break;
+		case 0x66: g_connectStep = 1; break;
+		case 0x67: g_connectStep = 3; break;
+		default: g_connectStep = 0; break;
+		}
+		switch (g_serverConnectionState) {
+		case 0x29: g_serverAnswerIn = 1; g_searchResult = 4; break;
+		case 0xca: g_serverAnswerIn = 1; g_searchResult = 1; break;
+		case 0xcb: g_serverAnswerIn = 1; g_searchResult = 3; break;
+		}
+		return 1;
+	case 0x40c:   /* the lobby's socket */
+		if ((u16)l == 0x20) {
+			GAME_CDECL(0x4520e0, u32, void)();
+			if (g_screen != 0x270f)
+				GAME_CDECL(0x41ed70, void, void)();   /* menu_returnToMainFromRoom */
+			return 0;
+		}
+		GAME_CDECL(0x452620, void, void)();
+		switch (GAME_VAR(int, 0xa0b374)) {
+		case 0x28: g_connectStep = 4; break;
+		case 0x66: g_connectStep = 1; break;
+		case 0x67: g_connectStep = 3; break;
+		default: g_connectStep = 0; break;
+		}
+		switch (g_gameServerState) {
+		case 0x28: g_roomSearchAnswerIn = 1; g_searchResult = 4; break;
+		case 0xca: g_roomSearchAnswerIn = 1; g_searchResult = 1; break;
+		case 0xcb: g_roomSearchAnswerIn = 1; g_searchResult = 3; break;
+		}
+		if (g_playerListRefused)
+			g_roomListWaiting = 1;
+		if (GAME_VAR(int, 0xa0b354))
+			GAME_VAR(int, 0x9dd354) = 1;
+		return 1;
+	}
+	return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, msg, w, l);   /* DefWindowProcA */
+#undef g_glContext
+#undef g_exitMode
+#undef ShowCursor
+#undef PostQuitMessage
+#undef ShowWindow
+#undef DestroyWindow
+#undef ReleaseDC
+#undef GetClientRect
+#undef ExitProcess
+#undef ShellExecuteA
+#undef GAME_HEIGHT
+}
