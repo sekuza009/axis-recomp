@@ -2070,56 +2070,13 @@ THISCALL int load_47fce0(const float *T, const float *P, const float *S, float r
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int ViewVolume_transformObject(char *vv, int id, const DWORD *info6, const DWORD *info3, const float *P, const float *M, int raw, int cull);
 /* batch 37 */
-#include "lifted/collision.c"         /* tools/lift.py: space_collideUnit, collision_sphereVsUnit + the 12 vector helpers they call */
 /* 0x47dd90 (thiscall) collision_sphereVsUnit(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis): the moving
    sphere (radius r at pos, moving by vel) against collision triangle `this` (load_47db60 layout). 0 = no contact;
    1 = contact: outPos = where the sphere stops, outDist = distance travelled, outVel = the slide response (scaled
    by k, along `axis` if given), outPlane = contact plane (normal, distance). Branches: behind/away from the face or
    outside an edge plane -> 0; inside all edge planes -> face contact; else the first edge plane the centre is
    outside of decides edge or vertex contact, each solving its quadratic and clamping the root to [-1, 1].
-   The body is lifted instruction by instruction (tools/lift.py, with the 12 vector helpers it calls), so every
-   rounding point and operand order is the original's; this wrapper sets up the emulated stack and registers. */
-/* Emulated stacks for lifted code live off the thread stack, in one reserved region: each thread that runs lifted
-   code takes an 8 MB slice and nested runs stack up in it (LSTK_DWORDS each). With the emulated stack on the thread
-   stack, every native callee (OpenGL, the CRT) ran 33 KB deeper than in the original; that alone changed what the
-   HUD text looked like in play (the lifted menu_vertex drew the FPS counter garbled although its results were
-   identical - tested by calling glVertex2i 2.5 KB deeper from a hand-written version). */
-#define LSTK_DWORDS 0x10000                /* 256 KB per run (map_loadPlayInfoFrom alone has a 64 KB frame) */
-#define LSTK_SLICE (8u << 20)
-#define LSTK_THREADS 16
-static DWORD g_lstkLo, g_lstkHi, g_lstkTls = TLS_OUT_OF_INDEXES;
-static volatile LONG g_lstkNext, g_lstkInit;
-static void lstk_init(void)
-{
-	if (InterlockedCompareExchange(&g_lstkInit, 1, 0) == 0) {
-		g_lstkLo = (DWORD)VirtualAlloc(NULL, LSTK_SLICE * LSTK_THREADS, MEM_RESERVE, PAGE_READWRITE);
-		g_lstkHi = g_lstkLo + LSTK_SLICE * LSTK_THREADS;
-		g_lstkTls = TlsAlloc();
-		InterlockedExchange(&g_lstkInit, 2);
-	}
-	while (g_lstkInit != 2) Sleep(0);
-}
-static DWORD *lstk_enter(void)
-{
-	if (g_lstkInit != 2) lstk_init();
-	DWORD *top = (DWORD *)TlsGetValue(g_lstkTls);
-	if (!top) {
-		LONG k = InterlockedIncrement(&g_lstkNext) - 1;
-		if (k >= LSTK_THREADS) RaiseException(0xe0157c00, EXCEPTION_NONCONTINUABLE, 0, NULL);
-		top = (DWORD *)VirtualAlloc((void *)(g_lstkLo + k * LSTK_SLICE), LSTK_SLICE, MEM_COMMIT, PAGE_READWRITE);
-	}
-	if (((DWORD)top - g_lstkLo) % LSTK_SLICE + 2 * LSTK_DWORDS * 4 > LSTK_SLICE)   /* the last run's worth stays unused */
-		RaiseException(0xe0157c01, EXCEPTION_NONCONTINUABLE, 0, NULL);           /* nested too deep */
-	TlsSetValue(g_lstkTls, top + LSTK_DWORDS);
-	return top;
-}
-static void lstk_leave(DWORD *top) { TlsSetValue(g_lstkTls, top); }
-/* an emulated machine with its stack in the arena: esp 192 dwords below the top of its LSTK_DWORDS, return address 0 */
-#define LSTK_BEGIN(mm, nargs, args) \
-	DWORD *lstk_ = lstk_enter(); X86 mm; memset(&mm, 0, sizeof mm); mm.esp = (DWORD)&lstk_[LSTK_DWORDS - 192]; \
-	for (int i_ = 0; i_ < (nargs); i_++) *(DWORD *)(mm.esp + 4 + i_ * 4) = (args)[i_]; \
-	*(DWORD *)mm.esp = 0;
-#define LSTK_END() lstk_leave(lstk_)
+   Rebuilt in src/load/collision_tris.c. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int collision_sphereVsUnit(void *self, DWORD r, DWORD pos, DWORD vel, DWORD k, DWORD outPos,
                                      DWORD outVel, DWORD outDist, DWORD outPlane, DWORD axis);
@@ -2179,22 +2136,6 @@ int arena_4542a0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_formatSessionEntry(DWORD addr);
 /* batch 40 */
-/* __ftol for lifted code: ST0 -> EDX:EAX, ST0 popped */
-static long long crt_ftol64(long double x)
-{
-	long long r;
-	__asm__ volatile("call *%1" : "=A"(r) : "r"(0x49ec14), "t"(x) : "ecx", "st", "memory");
-	return r;
-}
-#include "lifted/space.c"    /* tools/lift.py: space_walkNodes_482aa0 + FUN_0046cbc0 (calls the lifted space_collideUnit) */
-static DWORD run_lifted(void (*f)(X86 *), DWORD ecx, int nargs, const DWORD *args)
-{
-	LSTK_BEGIN(mm, nargs, args)
-	mm.ecx = ecx;
-	f(&mm);
-	LSTK_END();
-	return mm.eax;
-}
 /* 0x482aa0 (thiscall) space_walkNodes_482aa0(r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs):
    level collision through the grid + octree of grid object `this`: when the grid has cells and pos + vel lies in
    its bounds widened by the margin (+0x8c), the cell (__ftol of the offsets / cell sizes, clamped to the last cell)
@@ -2235,52 +2176,11 @@ void THISCALL msg_cheatUsed(void *scene, int actor, int cheat);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL int tex_applyTintMask(void *tex, int i);
 
-/* native_call(m, target): run real code (a rebuilt, library or system function) from lifted code. The callee runs on
-   the real thread stack (system and driver calls can use far more stack than the emulated one has, and the lifted
-   code's own frames lie just below it): the 256 bytes after the lifted call's return-address slot (m->esp + 4: the
-   arguments, more than any callee takes) are copied onto the real stack, eax/ecx/edx come from m, and afterwards
-   eax/ecx/edx go back into m and m->esp moves past the return-address slot and whatever the callee popped ("ret N").
-   Pointers into the emulated stack (the lifted function's locals, its va_list) stay valid. Callee-saved registers
-   belong to this function and are kept by the callee. The x87 stack is not passed: the lifter only uses native
-   calls where it is empty. The lifted call's return address (the original's, in the exe) is also stored just above
-   the copied arguments, where no callee reads: the patch DLL places some HUD text by finding its caller's return
-   address on the stack (hook_glVertex2i's scan), and must find it there for lifted callers too. */
-/* breadcrumbs (RECOMP_CRUMB=1): native_call stores its target in g_crumb[0], the test loop the test's iteration and
-   side in [1] / [2]; with RECOMP_CRUMB they live in a file mapping (recomp_crumb.bin in the game folder), which
-   keeps them when the process dies too hard for the crash handler (a callee that wrecks the stack) */
+/* breadcrumbs (RECOMP_CRUMB=1): the test loop keeps the test's iteration and side in g_crumb[1] / [2]; with
+   RECOMP_CRUMB they live in a file mapping (recomp_crumb.bin in the game folder), which keeps them when the
+   process dies too hard for the crash handler */
 static DWORD g_crumbDummy[4];
 DWORD *g_crumb = g_crumbDummy;
-void __cdecl native_call(X86 *m, DWORD target);
-/* the same call for a callee that returns a float in ST0: nothing in native_call touches the x87 stack after it */
-long double __cdecl native_call_fp(X86 *m, DWORD target) __asm__("_native_call");
-__asm__(".text\n"
-        ".globl _native_call\n"
-        "_native_call:\n"
-        "\tpushl %ebp\n\tpushl %ebx\n\tpushl %esi\n\tpushl %edi\n"
-        "\tmovl 20(%esp), %ebx\n"          /* m */
-        "\tmovl 24(%esp), %esi\n"          /* target */
-        "\tmovl %esp, %ebp\n"
-        "\tandl $-16, %esp\n"            /* the callee starts on a 16-byte aligned stack, whatever the caller's depth */
-        "\tsubl $272, %esp\n"            /* 256 + 16 */
-        "\tmovl 16(%ebx), %eax\n\taddl $4, %eax\n"   /* copy 64 dwords from m->esp + 4 */
-        "\tmovl %esp, %edx\n\tmovl $64, %ecx\n"
-        "1:\tmovl (%eax), %edi\n\tmovl %edi, (%edx)\n\taddl $4, %eax\n\taddl $4, %edx\n\tdecl %ecx\n\tjnz 1b\n"
-        "\tmovl 16(%ebx), %eax\n\tmovl (%eax), %eax\n\tmovl %eax, 256(%esp)\n"   /* the return address, above them */
-        "\tmovl 4(%ebx), %ecx\n\tmovl 8(%ebx), %edx\n\tmovl 0(%ebx), %eax\n"
-        "\tmovl _g_crumb, %eax\n\tmovl %esi, (%eax)\n"   /* breadcrumb: the target */
-        "\tmovl 0(%ebx), %eax\n"
-        "\tmovl %esp, %edi\n"              /* esp before the call (edi is kept by the callee) */
-        "\tmovl %ebp, 264(%esp)\n"         /* the frame pointer, also in the frame: see below */
-        "\tcall *%esi\n"
-        "\tmovl 264(%edi), %ebp\n"         /* not trusting the callee with ebp: room_43d060 (8-byte aligned frame)
-                                            overruns a local buffer by a few bytes on some inputs, into its saved
-                                            caller ebp when the alignment leaves no gap; it still returns, and the
-                                            original's caller (room_43ede0) never uses ebp, but this frame does */
-        "\tmovl %eax, 0(%ebx)\n\tmovl %ecx, 4(%ebx)\n\tmovl %edx, 8(%ebx)\n"
-        "\tmovl %esp, %eax\n\tsubl %edi, %eax\n\taddl $4, %eax\n\taddl %eax, 16(%ebx)\n"   /* m->esp += 4 + popped */
-        "\tmovl %ebp, %esp\n\tpopl %edi\n\tpopl %esi\n\tpopl %ebx\n\tpopl %ebp\n\tret\n");
-#include "lifted/msg.c"      /* tools/lift.py: msg_playerJoinedTeam, msg_playerChangedTeam, msg_kill (+0x463740 +0x4629f0 native) */
-#include "lifted/sphere.c"   /* tools/lift.py: space_testSphere (calls the lifted Vec3_normalize and space_walkNodes) */
 /* 0x462d30 / 0x462e30 / 0x4630c0 (thiscall) msg_playerJoinedTeam(player, team) / msg_playerChangedTeam(team, player)
    / msg_kill(killer, victim): the team and kill messages of the feed, in the language at 0x9dae74 (team names via
    the team slot table, killer/victim names and the weapon name of the killer). Lifted */
@@ -2297,17 +2197,6 @@ void THISCALL msg_kill(void *scene, int victim, int killer);
 THISCALL int space_testSphere(void *grid, DWORD r, DWORD pos, DWORD vel, DWORD step, DWORD k, DWORD outPos, DWORD outVel,
                               DWORD outDist, DWORD outPlane, DWORD axis, DWORD subs, DWORD nsubs);
 /* batch 42 */
-#include "lifted/actor.c"    /* tools/lift.py: actor_46c140, actor_46c1c0 + FUN_0046c100 (its ST0 result stays on the emulated stack) */
-#include "lifted/move.c"     /* tools/lift.py: collision_moveActor (calls the lifted space_testSphere) */
-/* run a lifted function that returns a float in ST0 */
-static long double run_lifted_fp(void (*f)(X86 *), DWORD ecx, int nargs, const DWORD *args)
-{
-	LSTK_BEGIN(mm, nargs, args)
-	mm.ecx = ecx;
-	f(&mm);
-	LSTK_END();
-	return mm.ft ? mm.fs[mm.ft - 1] : 0.0L;
-}
 /* 0x46c140 actor_46c140(a, b): the shortest signed angle from a to b (1/10 degrees, both wrapped to 0..3600 by
    FUN_0046c100); 0x46c1c0 actor_46c1c0(a, b, t): a moved the fraction t of that way towards b, wrapped. Both return
    in ST0. Lifted */
@@ -2539,20 +2428,6 @@ DWORD THISCALL Texture_ctor(void *self);
 /* 0x46ca70 FUN_0046ca70(fmt, ...): does the file named by the formatted path exist (fopen "rb" succeeds)? */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int FUN_0046ca70(const char *fmt, ...);
-#include "lifted/files.c"   /* tools/lift.py: 15 file functions, CRT and game callees as native calls */
-/* run a lifted function with eax/ecx/edx as given */
-static DWORD run_lifted_regs(void (*f)(X86 *), DWORD eax, DWORD ecx, DWORD edx, int nargs, const DWORD *args)
-{
-	LSTK_BEGIN(mm, nargs, args)
-	mm.eax = eax; mm.ecx = ecx; mm.edx = edx;
-	f(&mm);
-	LSTK_END();
-	return mm.eax;
-}
-/* wrappers for lifted functions that end with a plain "ret": regparm(3) receives eax/edx/ecx (the caller cleans the
-   stack, as for cdecl), and 4 stack slots are copied (more than any of these uses) */
-#define LIFT_PLAIN(name, a) static DWORD __attribute__((regparm(3))) name(DWORD eax_, DWORD edx_, DWORD ecx_, DWORD a1, DWORD a2, DWORD a3, DWORD a4) \
-	{ DWORD v[4] = { a1, a2, a3, a4 }; return run_lifted_regs(lift_##a, eax_, ecx_, edx_, 4, v); }
 /* 0x46cbe0 FUN_0046cbe0: fread + descramble (rotate left, xor 0x59) of size * count bytes. Lifted */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_0046cbe0(BYTE *p, DWORD size, DWORD count, void *f);
@@ -2636,7 +2511,6 @@ THISCALL DWORD load_48b460(char *self, DWORD f);
    one more dword (+0xb00c), all scrambled */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD load_483d70(char *self, DWORD f);
-#include "lifted/misc1.c"   /* tools/lift.py: FUN_0045ff30, ResourceSet_dtor_463960, chat_macro, Stage_dtor, chat_saveMacros */
 /* 0x45ff30 (ECX) FUN_0045ff30: destroy an actor's 8 sub-objects (match_46f470); 0x463960 ResourceSet_dtor_463960:
    a player's 5 skeleton and 5 shape managers; 0x46ff70 Stage_dtor: the stage (scene, 100 actors and 16 players via
    eh_vector_destructor_iterator, managers, models, lights, collision volume); 0x4617f0 chat_saveMacros (it loads
@@ -2654,11 +2528,6 @@ THISCALL DWORD chat_saveMacros(void *scene);
 THISCALL int chat_macro(char *self, DWORD in, DWORD out);
 /* batch 47: functions calling Win32 / OpenGL / GDI / registry / more CRT - in the game the real ones, in the tests the
    IAT and CRT mocks. All lifted (lifted/win.c); the comments say what each does */
-#include "lifted/win.c"
-/* like LIFT_PLAIN, for a function that returns a float in ST0 */
-#define LIFT_PLAIN_FP(name, a) static long double __attribute__((regparm(3))) name(DWORD eax_, DWORD edx_, DWORD ecx_, DWORD a1, DWORD a2, DWORD a3, DWORD a4) \
-	{ DWORD v[4] = { a1, a2, a3, a4 }; LSTK_BEGIN(mm, 4, v) mm.eax = eax_; mm.ecx = ecx_; mm.edx = edx_; \
-	  lift_##a(&mm); LSTK_END(); return mm.ft ? mm.fs[mm.ft - 1] : 0.0L; }
 /* 0x43f580 GetCurrentDirectoryA_wrap_43f580: the current directory into the game path buffer */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD GetCurrentDirectoryA_wrap_43f580(void);
@@ -2756,11 +2625,6 @@ void *THISCALL Stage_deletingDtor(void *stage, int flags);
 int WINAPI dplay_enumSessionsCallback(DWORD desc, DWORD timeout, DWORD flags, DWORD context);
 /* batch 48: menu input handlers, screen setups, rect/line drawing, the timer setup, the save scan, the autoplay
    recorder and the DirectPlay connection callback. All lifted (lifted/menu2.c); the comments say what each does */
-#include "lifted/menu2.c"
-/* like LIFT_PLAIN, with 8 stack slots copied (for functions with more than 4 arguments) */
-#define LIFT_PLAIN8(name, a) static DWORD __attribute__((regparm(3))) name(DWORD eax_, DWORD edx_, DWORD ecx_, DWORD a1, DWORD a2, DWORD a3, DWORD a4, \
-	DWORD a5, DWORD a6, DWORD a7, DWORD a8) \
-	{ DWORD v[8] = { a1, a2, a3, a4, a5, a6, a7, a8 }; return run_lifted_regs(lift_##a, eax_, ecx_, edx_, 8, v); }
 /* 0x44f850 profile_44f850: post message 0 to the main window */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44f850(void);
@@ -2809,7 +2673,6 @@ THISCALL void autoplay_startRecording(char *scene, DWORD name);
 DWORD WINAPI dplay_enumConnections(DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 49: Winsock users (in the tests the IAT mocks) and the match packet senders (net_sendPacketData is mocked
    in the tests: the size and a hash of each packet are logged). All lifted (lifted/net.c) */
-#include "lifted/net.c"
 /* 0x4547c0 inet_addr_wrap_4547c0(str): inet_addr, result dropped */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD inet_addr_wrap_4547c0(const char *text);
@@ -2850,7 +2713,6 @@ THISCALL void match_48e2c0(char *scene, DWORD p);
    is replaced by 1. All in 80-bit like the original; each result is rounded to float when stored. */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_ase_47d260(float *out, const float *q);
-#include "lifted/view.c"   /* tools/lift.py: actor_46f8c0, ViewVolume_projectObject */
 /* 0x46f8c0 (thiscall) actor_46f8c0(base): pose the skeleton for the current animation frame: per bone, the parent
    bone's matrix (or base, default the current modelview) is loaded, translated by the bone's position (or the
    position keys around the frame, binary search, linear in between) times the bone scale, rotated by the bone's
@@ -2884,7 +2746,6 @@ DWORD app_checkFile_game(void);
 DWORD app_checkFile_profeng(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD reg_readStartMode(void);
-#include "lifted/grp1.c"
 /* 0x47d2f0 (thiscall) skel_ase_47d2f0(out, m): rotation matrix -> quaternion (skel_ase_47d0f0) -> angle-axis */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_ase_47d2f0(char *out, DWORD m);
@@ -2950,7 +2811,6 @@ DWORD armc_40f340(DWORD part, int dir);
 /* 0x401000 cd_findDrive: patched (no-CD build) to return 1 at once */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cd_findDrive(void);
-#include "lifted/grp2.c"
 /* 0x42d730 cfg_loadAxisCfg: write axis.cfg (header, player, server, sound, graphic and key sections) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD cfg_loadAxisCfg(void);
@@ -2982,7 +2842,6 @@ THISCALL void net_sendGamePacket(char *scene, DWORD p);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_drawKeyBindingRows(int key);
 /* batch 53: the ray trace chain (lifted/trace.c) */
-#include "lifted/trace.c"
 /* 0x4809f0 (thiscall) space_traceUnit_4809f0(p0, p1, hit, dist, subs, nsubs): the segment p0 -> p1 through octree
    node `this` (0x50 bytes: box, list +0x18, inner flag +0x24, 8 children +0x28): an inner node splits the segment
    at the box midpoints and recurses into the children in the order the segment meets them, stopping at the first
@@ -3000,7 +2859,6 @@ THISCALL DWORD space_traceNodes(char *grid, DWORD p0, DWORD p1, DWORD hit, DWORD
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD collision_rayTrace(char *scene, DWORD p0, DWORD p1, DWORD hit);
 /* batch 54 (lifted/grp3.c) */
-#include "lifted/grp3.c"
 /* 0x42eca0 cfg_writeDefaultAxisCfg: read axis.cfg (key names, video modes, game types, key bindings and the rest)
    and apply the key bindings; without the file write the defaults (cfg_loadAxisCfg) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3019,7 +2877,6 @@ void armc_41cf20(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41d280(void);
 /* batch 55 (lifted/grp4.c) */
-#include "lifted/grp4.c"
 /* 0x474b50 (thiscall) actor_setPartColor(p, part, h1, s1, v1, h2, s2, v2): player p's part colours: hues wrapped to
    -180..180 degrees (FUN_0046c100), the other values clamped to -1..0.999, stored as bytes, then the part's shape
    gets the tinted textures of player p's texture directory (shape_setTextureDir) */
@@ -3031,7 +2888,6 @@ THISCALL void actor_setPartColor(char *scene, DWORD p, DWORD part, DWORD a, DWOR
 THISCALL void actor_applyRemoteColours(char *scene, DWORD p, DWORD part, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 56: small groups (lifted/grp5.c): glyph and textured quads, HUD helpers, GL view/fog setup, the view
    volume's setup and teardown, network helpers, and the error reporters (ERROR.TXT) */
-#include "lifted/grp5.c"
 /* 0x401290 load_401290(p, size, n, ctor) (stdcall): call ctor n times (an object-array constructor loop) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void WINAPI load_401290(void *first, int size, int count, void *construct);
@@ -3110,7 +2966,6 @@ int sys_errorMessage(const void *object, const char *format, ...);
 void sys_errorTerminate(const char *format, ...);
 void sys_fatalError(const void *object, const char *format, ...);
 /* batch 57: groups on top of the error reporters (lifted/grp6.c) */
-#include "lifted/grp6.c"
 /* 0x466d60 shape_findDatEntry(name) / 0x46b140 skelDat_getItemFileBy(name) / 0x455550 (thiscall)
    tex_getItemFileBy(name): find the item in the dat file's sorted index (0x44-byte entries: name, offset), seek the
    dat file to it and return the file; an unknown name is fatal */
@@ -3191,7 +3046,6 @@ DWORD hud_401ce0(int x, int y, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD hud_401e70(int x, int y, const char *s);
 /* batch 58: the lobby / room network senders (lifted/net2.c); Winsock send and Sleep are mocked in the tests */
-#include "lifted/net2.c"
 /* 0x4521c0 net_send(msg, socket): send the 4-byte message code on socket 100 (lobby) / 101 (room), then the
    message's own packet (0x5b-byte player / room records and the like, from the packet buffers at 0xa0b304..) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3227,7 +3081,6 @@ void net_closeAll(int kind);
 /* batch 59 (lifted/grp7.c): menu frame/overlay drawing (calling the patched projection switch natively), GL window
    and display mode, dat/image file opening, the game timer, the clock check, profile deletion, the character
    settings in the registry and their room users, GL state, texture uploads */
-#include "lifted/grp7.c"
 /* 0x41b710 armc_41b710: 3D projection, white, texturing, the menu camera */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41b710(void);
@@ -3291,7 +3144,6 @@ THISCALL void tex_upload(char *tex, DWORD name, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_upload2(char *scene);
 /* batch 60 (lifted/grp8.c) */
-#include "lifted/grp8.c"
 /* 0x49d150 (thiscall) match_49d150: add the local player's hits/shots/kills since the last call to the totals
    (0x4de72e..) and remember the new values; without a replay running, send the result (match_44aee0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3340,7 +3192,6 @@ THISCALL void texSmall_initBy(char *self, DWORD a, DWORD b, DWORD c, DWORD d, DW
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_loadFrom_46aa10(char *self, DWORD f, DWORD mem, DWORD size);
 /* batch 62: image / texture / data-memory initialisers (lifted/grp9.c) */
-#include "lifted/grp9.c"
 /* 0x46ce80 (thiscall) image_copyTo(dst, dstW, dstH, depth, sx, sy, dx, dy, w, h, topDown): copy a w x h block of
    the open 24-bit BMP (file +4, data offset +0x12, size +0x3e / +0x42) at (sx, sy) into the dstW x dstH buffer at
    (dx, dy), both clipped; BGR -> RGB (depth 3) or RGBA with alpha 0xff (depth 4); rows bottom-up unless topDown */
@@ -3364,7 +3215,6 @@ THISCALL void shape_initBy(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra,
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_loadFrom_46aeb0(char *self, DWORD dir, DWORD n, DWORD a, DWORD extra, DWORD mem, DWORD size);
 /* batch 63: the map's play and mission info loaders (lifted/grp10.c) */
-#include "lifted/grp10.c"
 /* 0x4876b0 (thiscall) map_loadPlayInfoFrom(name): <dir +0x108>\<name>, version 0x1201, skip the first section, then
    the play records (0x24 bytes, read 0x71c at a time into a 64 KB frame) through the descrambling reader: type 0
    the player start (+0x20fab60, angles x10), 1 a multiplayer start (at most 32), 2 an item point (at most 200; the
@@ -3376,7 +3226,6 @@ THISCALL void map_loadPlayInfoFrom(char *map, DWORD name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadMissionInfoFrom(char *map, DWORD name);
 /* batch 64 (lifted/grp11.c) */
-#include "lifted/grp11.c"
 /* 0x470ad0 (thiscall) scene_reset: reset the scene's subsystems (lists, effects, actors, particles, scripts, the
    level grid), the view to identity, start/item point counts to 0, the id tables to -1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3389,7 +3238,6 @@ THISCALL void scene_reset(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void shape_read(char *self, DWORD f, DWORD mem, DWORD size);
 /* batch 65 (lifted/grp12.c) */
-#include "lifted/grp12.c"
 /* 0x472400 (thiscall) light_computeLayerLightBy(layer, colours, first, row0, col0, row1, col1): a terrain layer's
    vertex colours over rows row0..row1, columns col0..col1 (grid (+0x20 + 1) wide): for each directional light
    factor (scene +0x9cd008, 0x2c apart, count +0x9d8000) the intensity (1 - normal . direction) * 128 (at least 0)
@@ -3406,7 +3254,6 @@ THISCALL void light_computeLayerLightBy(char *scene, DWORD layer, DWORD cols, DW
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void render_processRenderingBy(char *scene, DWORD vv, DWORD h);
 /* batch 66 (lifted/grp13.c) */
-#include "lifted/grp13.c"
 /* 0x4728e0 load_4728e0(layer): a terrain layer's whole light map from scratch (light_computeLayerLightBy with
    first = 1 over rows 0..+0x1c, columns 0..+0x20, into its own light map +0x48); ecx passes through (the scene) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3427,7 +3274,6 @@ THISCALL DWORD load_481ae0(char *sp, DWORD block, DWORD item, DWORD depth);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_applyPose(char *sk, DWORD out, DWORD bone, DWORD t);
 /* batch 67 (lifted/grp14.c) */
-#include "lifted/grp14.c"
 /* 0x481eb0 (thiscall) space_buildPlanes(id, v0, v1, v2, a..e): a collision triangle for the space object: nothing (0)
    if its box misses the grid's bounds (+0x5c / +0x68, widened by the margin +0x8c); else a plane record from the
    pool (load_47db60), then for every grid cell its box overlaps (cell sizes +0x84 / +0x88 / +0x80, dims +0x78 / +0x7c /
@@ -3446,7 +3292,6 @@ THISCALL void load_482320(char *sp, DWORD id, DWORD unit, DWORD part, DWORD i0, 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD space_buildUnits(char *sp, DWORD id, DWORD shape, DWORD mat);
 /* batch 68 (lifted/grp15.c) */
-#include "lifted/grp15.c"
 /* 0x471040 (thiscall) collision_initVolume(sizeZ, sizeX, sizeY, margin, perBlock, depth): set up the level grid
    (scene +0xa10, space_setBy) over the level bounds (+0x9ef904 / +0x9ef910) with extent / size cells per axis; if
    +0x9ef30c, two triangles of the bottom face; every floor (+4 == 0) / ceiling (1) terrain layer's cells as two
@@ -3456,7 +3301,6 @@ THISCALL DWORD space_buildUnits(char *sp, DWORD id, DWORD shape, DWORD mat);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void collision_initVolume(char *stage, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 69 (lifted/grp16.c) */
-#include "lifted/grp16.c"
 /* 0x4729b0 (thiscall) camera_setupView(pos, dir, up, fov, w, h, near, far, dt): keep the previous camera position
    and view matrix, store the new camera (+0x20f3970), its view matrix (gluLookAt read back from GL, +0x20f39a0) and
    projection (gluPerspective, +0x20f3a34) and their product (+0x20f3a74). Unless both mode flags (+0x2149308 /
@@ -3468,7 +3312,6 @@ THISCALL void collision_initVolume(char *stage, DWORD a, DWORD b, DWORD c, DWORD
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void camera_setupView(char *scene, DWORD pos, DWORD dir, DWORD up, DWORD fov, DWORD w, DWORD h, DWORD nr, DWORD fr, DWORD dt);
 /* batch 70 (lifted/grp17.c) */
-#include "lifted/grp17.c"
 /* 0x463b80 shape_getShadingColorBufferBy(out, first, part, factors, matrix): a shape part's vertex colours (RGBA
    bytes, count +0x4c) lit by the factor pool (count +0xb004, 0x2c-byte records from +4; colour +0xc): type 0 an
    ambient colour, 1 a directional light (normals +0x54 . direction, times the base colours +0x58), 2 / 3 point lights
@@ -3482,7 +3325,6 @@ void shape_getShadingColorBufferBy(BYTE *out, int first, const void *part, const
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int FUN_00466910(float *out, int first, BYTE *shape, void *factors, int matrix);
 /* batch 71 (lifted/grp18.c) */
-#include "lifted/grp18.c"
 /* 0x46f7a0 (thiscall) data_46f7a0(factors, pixelLights): relight an object list's entries (count +0x10, 100 bytes
    apart from +0x14: shape, -, colour buffer, matrix): with neither, the colours (shape +0x18 dwords) are cleared;
    factors through the inverted matrix (FUN_00466910), pixel lights (FUN_00466960) on top or alone */
@@ -3495,7 +3337,6 @@ void THISCALL data_46f7a0(void *list, const void *factors, const void *lights);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL hud_46fd20(void *list, void *view, const void *factors, const void *lights, int cull, int material, int a8);
 /* batch 72 (lifted/grp19.c) */
-#include "lifted/grp19.c"
 /* 0x45ee40 (thiscall) armc_computeTotals(actor): the "data loss" check game_processGameMode runs every 20 s on the
    local player's actor (0x8888 apart from +0x1cd93a8): an actor not in state 1 (+0x14c) passes; else its mech's stats
    are recomputed from the player record (+0x1561b68, 0x47fd2 apart: pilot +0x44 into the table at 0x9f9078, the
@@ -3506,7 +3347,6 @@ int THISCALL hud_46fd20(void *list, void *view, const void *factors, const void 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD armc_computeTotals(char *scene, DWORD actor);
 /* batch 73 (lifted/grp20.c) */
-#include "lifted/grp20.c"
 /* 0x469b90 (thiscall) skel_loadAseFrom(f, mem, memSize): a skeleton from a 3ds Max ASE text file. Pass 1 counts
    GEOMOBJECTs (bones, 0x70 bytes), TCB/Bezier position keys (0x20) and TCB rotation keys (0x28) and takes the data
    memory (allocated, or given: too small is fatal); pass 2 (fseek to 0) reads SCENE_LASTFRAME / FRAMESPEED /
@@ -3516,14 +3356,12 @@ THISCALL DWORD armc_computeTotals(char *scene, DWORD actor);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_loadAseFrom(char *sk, DWORD f, DWORD mem, DWORD size);
 /* batch 74 (lifted/grp21.c) */
-#include "lifted/grp21.c"
 /* 0x4699d0 (thiscall) skel_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
    extension (after the last '.', not past a '\' or '/'; case-insensitive): "ske" the binary format
    (skel_loadFrom_46aa10), "ase" the text format (skel_loadAseFrom), anything else is fatal; then close it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void skel_loadFrom(char *sk, DWORD path, DWORD mem, DWORD size);
 /* batch 75 (lifted/grp22.c) */
-#include "lifted/grp22.c"
 /* 0x464db0 (thiscall) model_loadObjFormatFrom(f, mem, memSize): a shape from a Wavefront OBJ text file in three
    passes: count the parts (usemtl), positions (v), normals (vn), texture coordinates (vt) and the triangles of the
    faces (f with 3 or 4 v/vt/vn corners, a 4-corner face is two triangles; a lone "\" continues the face on the next
@@ -3534,14 +3372,12 @@ THISCALL void skel_loadFrom(char *sk, DWORD path, DWORD mem, DWORD size);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void model_loadObjFormatFrom(char *shape, DWORD f, DWORD mem, DWORD size);
 /* batch 76 (lifted/grp23.c) */
-#include "lifted/grp23.c"
 /* 0x464bf0 (thiscall) model_loadFrom(path, mem, memSize): open the file (a failed open is fatal) and load it by its
    extension (after the last '.', not past a '\' or '/'; case-insensitive): "shp" the binary format (shape_read),
    "obj" Wavefront text (model_loadObjFormatFrom), anything else is fatal; then close it */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void model_loadFrom(char *shape, DWORD path, DWORD mem, DWORD size);
 /* batch 77 (lifted/grp24.c) */
-#include "lifted/grp24.c"
 /* 0x46b1a0 (thiscall) skel_getSkeletonPtrBy(name): the skeleton cache. The name is upper-cased with '/' -> '\'
    (an empty one or one starting with '.' gives 0); it is looked up in the binary tree of 0x4c-byte nodes at +0x118
    (name, skeleton index +0x40, left +0x44 / right +0x48, unsigned byte order), count +0x120, capacity +0x114 (0 is
@@ -3558,7 +3394,6 @@ THISCALL DWORD skel_getSkeletonPtrBy(char *self, DWORD name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void object_setAnimation(void *self, int i, DWORD name, float period, int mode);
 /* batch 79 (lifted/grp25.c) */
-#include "lifted/grp25.c"
 /* 0x46eb00 ptx_open(path, out, &fmt, &w, &h) / 0x46ed80 ptx_decode(f, out, &fmt, &w, &h): a PTX image. 16-byte
    header ("PTX\0", version 0x100, width / 8, height / 8, type 0x81 = YCbCr (3 planes, fmt 2) or 0x82 = YCbCrA
    (4 planes, fmt 3), quality), then up to 64 KB of Huffman-coded 8x8 DCT blocks, each plane byte-aligned (planes
@@ -3569,7 +3404,6 @@ int ptx_open(const char *path, char *out, int *fmt, int *width, int *height);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int ptx_decode(void *f, char *out, int *fmt, int *width, int *height);
 /* batch 80 (lifted/grp26.c) */
-#include "lifted/grp26.c"
 /* 0x455aa0 (thiscall) tex_loadColorMask(i): load texture i's image (name +0xc0128 + i * 0x68, cut at '*', under the
    dir +8 if any) at +0x114, its alpha into the image's 4th bytes (the average of the ALPHA image's RGB at +0x40114,
    or 0xff without one) and its colour mask at +0x80114 (or the colour at 0xa1f238 in every pixel), by the manager's
@@ -3579,7 +3413,6 @@ int ptx_decode(void *f, char *out, int *fmt, int *width, int *height);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_loadColorMask(char *tm, DWORD i);
 /* batch 81 (lifted/grp27.c) */
-#include "lifted/grp27.c"
 /* 0x4566c0 (thiscall) tex_bind(i): bind texture i through the cache of GL texture slots (0x14 bytes: slot number,
    owner texture, GL name, next, prev; a ring at +0xcd12c, +0xcd134 the slot reused next). A texture without a slot
    (+0xc0168 < 0) takes that one: loaded (tex_loadColorMask), tinted (flag 2), uploaded (flag 1: no mipmaps), the
@@ -3589,7 +3422,6 @@ THISCALL void tex_loadColorMask(char *tm, DWORD i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void tex_bind(char *tm, DWORD i);
 /* batch 82 (lifted/grp28.c) */
-#include "lifted/grp28.c"
 /* 0x4555b0 (thiscall) tex_allocIdBy(name, flags, 6 floats): the texture's index in this manager. The name is
    upper-cased ('/' -> '\'; empty gives -1) and looked up among the count +0xcd128 records: a hit with other flags or
    colours takes them and is recoloured (tex_recolourMaterial); a miss whose file exists adds a record (512 at most,
@@ -3601,7 +3433,6 @@ THISCALL DWORD tex_allocIdBy(char *tm, DWORD name, DWORD flags, DWORD a, DWORD b
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD tex_getIdByName(char *set, DWORD name, DWORD flags, DWORD a, DWORD b, DWORD c, DWORD d, DWORD e, DWORD f);
 /* batch 83 (lifted/grp29.c) */
-#include "lifted/grp29.c"
 /* 0x466430 (thiscall) shape_bindTextureBy(suffix, flags, 6 floats): for each of the shape's parts (count +0x10,
    0x80 bytes at +0x14, texture name +4): append "*" suffix to the name when the suffix is not empty (a result over
    63 characters is fatal), then look the texture up in the global set (0xa0e010, tex_getIdByName) into +0x44 */
@@ -3612,7 +3443,6 @@ THISCALL void shape_bindTextureBy(char *shape, DWORD sfx, DWORD flags, DWORD a, 
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void FUN_00466650(char *shape);
 /* batch 84 (lifted/grp30.c) */
-#include "lifted/grp30.c"
 /* 0x466dc0 (thiscall) shape_getByName(name, bind): the shape cache, as skel_getSkeletonPtrBy (upper-cased name,
    empty or ".x" gives 0, binary tree of 0x4c-byte nodes at +0x118, count +0x120, capacity +0x114), shapes 0x4c bytes
    at +0x11c. A miss loads by format +0x110: 0 "shp" / 1 "obj" files through model_loadFrom, 2 the item of the shape
@@ -3621,7 +3451,6 @@ THISCALL void FUN_00466650(char *shape);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD shape_getByName(char *self, DWORD name, DWORD bind);
 /* batch 85 (lifted/grp31.c) */
-#include "lifted/grp31.c"
 /* 0x48fee0 (thiscall) object_initObjectBy(i, type): set up map object i (0x2cc bytes at +0x131ae44) from a 0xb0-byte
    object type record (shape name, three ints +0x40, sub-dir +0x4c, position +0x8c, rotation +0x98, +0xa4, +0xa8,
    +0xac). The type's name joins the scene's list (+0x130b440, 0x40 each, count +0x131ae40; 1000 is fatal) unless it
@@ -3632,7 +3461,6 @@ THISCALL DWORD shape_getByName(char *self, DWORD name, DWORD bind);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void object_initObjectBy(char *scene, DWORD i, DWORD type);
 /* batch 86 (lifted/grp32.c) */
-#include "lifted/grp32.c"
 /* 0x490c50 (thiscall) object_addObjectBy(type): add a map object of this type in the first free slot (+0x13c9b28;
    past the highest used one, +0x13c9b24, that one grows and its slot is cleared) with object_initObjectBy, then move
    the free slot on to the next unused object (+0x131ae48 == 0) up to the highest. Returns the slot; with 1000 in
@@ -3645,7 +3473,6 @@ THISCALL DWORD object_addObjectBy(char *scene, DWORD type);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void effect_initTextures(char *self);
 /* batch 87 (lifted/grp33.c) */
-#include "lifted/grp33.c"
 /* 0x48b710 (thiscall) map_loadObjectInfoFrom(name, mode): a map's objects. Releases the shape and skeleton caches
    and the object pool; mode 0 first tries "dir/Temp-<name without extension>-objectShadingInfo.dat" (scrambled count
    + element colours into the pool at +0xf30dc8; read: no shading pass, +0x13016cc = 1). Then "dir/name" (dir +0x108;
@@ -3655,7 +3482,6 @@ THISCALL void effect_initTextures(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
 /* batch 88 (lifted/grp34.c) */
-#include "lifted/grp34.c"
 /* 0x46f4e0 (thiscall) data_loadFrom_46f4e0(shapeCache, skelCache, nShapes, shapeNames, nSkels, skelNames, lit,
    factors, pixelLights, mem, memSize): an object list (released first, FUN_0046f4b0): the shapes by name (0x44 apart,
    an int at +0x40 each; the first 64 looked up once, later ones again when filled in) with their element counts
@@ -3666,7 +3492,6 @@ THISCALL void map_loadObjectInfoFrom(char *scene, DWORD name, DWORD mode);
 THISCALL void data_loadFrom_46f4e0(char *list, DWORD sc, DWORD kc, DWORD ns, DWORD names, DWORD nk, DWORD knames,
                                   DWORD lit, DWORD fac, DWORD px, DWORD mem, DWORD size);
 /* batch 89 (lifted/grp35.c) */
-#include "lifted/grp35.c"
 /* (thiscall on the scene) FUN_0045e1f0 / actor_updateBody / FUN_0045e390 / FUN_0045e460 / FUN_0045e530(actor):
    for an active actor (0x8888 bytes at +0x1cd93a8, +0x108), its player's (+0x10c; 0x47fd2 at +0x1561b68) head /
    chest / arm / leg / booster type (player +0x30c..+0x31c) in that part's type table, variant actor +0x484: load
@@ -3689,7 +3514,6 @@ THISCALL void FUN_0045e530(char *sc, DWORD a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_updatePart(char *sc, DWORD a, DWORD slot, DWORD var);
 /* batch 90 (lifted/grp36.c) */
-#include "lifted/grp36.c"
 /* (thiscall on the scene) actor_setActorType{Head,Chest,Arm,Leg,Booster}InfoBy(player, type): a negative type
    gives 0; the player count (+0x19e1888) grows to cover the player; the same type as now gives 1; a type past the
    table's count (the dword before each table) is fatal. Otherwise the player's own shape and skeleton caches are
@@ -3710,7 +3534,6 @@ THISCALL int actor_setActorTypeBoosterInfoBy(char *sc, DWORD p, DWORD t);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_setActorTypeItemInfoBy(char *sc, DWORD p, DWORD slot, DWORD item);
 /* batch 91 (lifted/grp37.c) */
-#include "lifted/grp37.c"
 /* (thiscall on the scene; engine at +0x1f36c8) armc_set{Head,Chest,Arm,Leg,Booster}Index(i): the arm-customise
    screen's part choice, wrapped by the part table's count ((i % n + n) % n), kept at +0x234244a..+0x234245a and,
    with an edited player (+0x234240d >= 0), set on it (actor_setActorType...InfoBy) */
@@ -3742,7 +3565,6 @@ THISCALL void match_474210(char *eng, DWORD p, DWORD name, DWORD v, DWORD team, 
 THISCALL void load_4742f0(char *eng, DWORD p, DWORD rec);
 /* (hud_4955a0: batch 198, lifted whole in lifted/grp153.c) */
 /* batch 92 (lifted/grp38.c) */
-#include "lifted/grp38.c"
 /* menu_drawTexturedRect_427a90 / _427b60(x1, y1, x2, y2, tex): with GL_TEXTURE_2D, bind texture tex (set tex / 512
    of the global texture set 0xa0e010, index tex % 512; tex_bind) and draw the quad x1,y1 - x2,y2 through
    menu_vertex (0x41ef60), _427b60 with the texture flipped vertically; _428a00(x1, y1, x2, y2) / _428b50(-, y, x):
@@ -3756,7 +3578,6 @@ void menu_drawTexturedRect_428a00(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawTexturedRect_428b50(int x0, int y0, int x1);
 /* batch 93 (lifted/grp39.c) */
-#include "lifted/grp39.c"
 /* (thiscall) hud_drawNameIcon(n, x, y) / hud_drawLeaderIcon(i, x, y) / replay_drawIcon(x, y, i): a 2D icon from a HUD
    texture atlas at a screen position scaled to the window (gfx_getWidth / gfx_getHeight): the name icon n (1..;
    10 per row; texture +0xbc06b0), the leader icon i (texture +0x22f86ac, or the GL texture +0x22f06a8 when +8 is
@@ -3771,7 +3592,6 @@ void THISCALL replay_drawIcon(void *scene, int x, int y, int icon);
    texture corners half a texel into each digit cell (0x46be96) and the digit height for wide screens - so a copy of
    the code on disk would undo both fixes) */
 /* batch 94 (lifted/grp40.c) */
-#include "lifted/grp40.c"
 /* 0x4875d0 (thiscall on the scene) map_loadItemInfoFrom(path): the map's item types. The file must open and be
    version 0x1201 (else fatal); a scrambled count (+0x20f3adc) and that many 0x90-byte records (+0x20f3ae0) follow;
    each record with a non-empty name (+0) gets its shape (name +0x4c) from the cache at +0x19e188c, bound, into +0x8c
@@ -3779,7 +3599,6 @@ void THISCALL replay_drawIcon(void *scene, int x, int y, int icon);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD map_loadItemInfoFrom(char *scene, DWORD path);
 /* batch 95 (lifted/grp41.c) */
-#include "lifted/grp41.c"
 /* 0x419000 armc_snapshot(i): the snapshot texture of the arm-customise catalogue's item i (name 0x4dbe50 + i * 0x80;
    shorter than 2 characters: none): "Actor/item/<name>/snapshot" from the global texture set (tex_getIdByName) into
    0x4dcc70 + i * 4; the "loading" flag 0x4dcc64 cleared */
@@ -3792,14 +3611,12 @@ void arena_40b420(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43bcb0(void);
 /* batch 96 (lifted/grp42.c) */
-#include "lifted/grp42.c"
 /* 0x46b950 pen_init(name): the HUD pixel font. A second call (0xa106a8 == 1) gives a message and 0; otherwise the
    font texture by name from the global texture set (0xa106ac), the glyph widths (8) and the texture coordinates of
    the 8-pixel and 14-pixel glyph grids (21 per row) are filled in */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int pen_init(const char *name);
 /* batch 97 (lifted/grp43.c) */
-#include "lifted/grp43.c"
 /* 0x41b400 armc_41b400(): the arm-customise screen's five spinning part panels: for k = 1..5, under the menu camera
    (gfx_setMenuCamera) scaled 0.8, texture 0x9da470 - k * 4 bound, panel k's quad (corners 0x4dc550 + k * 0x58, x
    offset +0x40, its spin angle +0x50 about y; panels 2 and 3 resized from 0x4b0708 / 0x4b0704 first) drawn at height
@@ -3808,7 +3625,6 @@ int pen_init(const char *name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41b400(void);
 /* batch 98 (lifted/grp44.c) */
-#include "lifted/grp44.c"
 /* 0x4546d0 net_startThread(): the network worker: two events (0xa0bb10 / 0xa0bf1c) and a thread running net_454560
    (handle 0xa0d788, id 0xa0d784), the first event set; 0 if any of them cannot be made */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3831,7 +3647,6 @@ int net_connect(int mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int lobby_openConnection(void);
 /* batch 99 (lifted/grp45.c) */
-#include "lifted/grp45.c"
 /* 0x452620 net_recv(): the network state machine's receive step, by state 0xa0b300: 10 / 0x12 a 4-byte answer on the
    lobby / server socket (1 disconnect: 0x67, 0 accepted: 0x66, 3 refused; into 0xa0b370 / 0xa0b374), 0xe / 0xf a
    0x10b-byte server reply (its first byte a status into 0xa0b378 / 0xa0b37c), 0xd / 0x13 / 0x15 the reply readers
@@ -3841,7 +3656,6 @@ int lobby_openConnection(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_recv(void);
 /* batch 100 (lifted/grp46.c) */
-#include "lifted/grp46.c"
 /* 0x461250 (thiscall on the scene) armc_461250(name, v, team, head, chest, arm, leg, booster, item0..5): the
    arm-customise screen's whole mech at once (armc_461320 / armc_461370 / match_4613a0, the five part pickers, the six
    item slots), and the edited player marked used (FUN_00474390) */
@@ -3858,7 +3672,6 @@ void lobby_checkReservedName3(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int lobby_checkReservedName2(void);
 /* batch 101 (lifted/grp47.c) */
-#include "lifted/grp47.c"
 /* 0x45d3e0 (thiscall on the scene) actor_updateAllParts(actor, vv, draw): per frame for a live actor (+0x14c == 1,
    +0x884c != 1) near the camera (+0x154.. within the scene's range +0xa08 plus the actor's radius +0x3e8 of the
    camera +0x20f3970..): its tint (+0x4f0: hit flash from +0x120, damage glow from +0x4ec / +0x8854, a cloaked actor's
@@ -3869,7 +3682,6 @@ int lobby_checkReservedName2(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_updateAllParts(char *sc, DWORD a, DWORD vv, DWORD draw);
 /* batch 102 (lifted/grp48.c) */
-#include "lifted/grp48.c"
 /* 0x474550 (thiscall on the scene) map_loadActorInfoFrom(name): the map's players and actors from "dir/name" (dir
    +0x108; no file or a version other than 0x1201 is fatal): three blocks skipped (scrambled length, then fseek), a
    fourth value, then the scrambled player count (+0x1cd6fb0) and 0x58-byte player records (+0x1cd6a30), the actor
@@ -3881,7 +3693,6 @@ THISCALL void actor_updateAllParts(char *sc, DWORD a, DWORD vv, DWORD draw);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void map_loadActorInfoFrom(char *sc, DWORD name);
 /* batch 103 (lifted/grp49.c) */
-#include "lifted/grp49.c"
 /* 0x457330 (thiscall on the scene) actor_setupFromParts(actor, a, b, &player): build actor's mech from its player's
    (*player) parts: stat defaults, item bonuses for the special items (0x1b..: armour, energy ...) of item
    records with a negative kind (+0x2dc0), the stats summed / scaled from the head, chest, arm, leg and booster
@@ -3890,7 +3701,6 @@ THISCALL void map_loadActorInfoFrom(char *sc, DWORD name);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp);
 /* batch 104 (lifted/grp50.c) */
-#include "lifted/grp50.c"
 /* 0x48f970 (thiscall on the scene) hud_48f970(vv): draw the map's items (count +0x20fcd38, 0x28-byte entries from
    +0x20fadf8: type, position, angle, taken flag, fade) that are not taken and lie within the range +0xa08 of the
    camera (+0x20f3970..): in 3D mode (0x83a9c8 == 1, and always for type 34) the type's shape (+0x20f3ae0 + type *
@@ -3900,7 +3710,6 @@ THISCALL void actor_setupFromParts(char *sc, DWORD a, DWORD x, DWORD y, DWORD pp
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_48f970(void *stage, void *view);
 /* batch 105 (lifted/grp51.c) */
-#include "lifted/grp51.c"
 /* 0x429d70 menu_drawBackground3D(ring): the menu's 3D tunnel. The ring chain (+0x3534 next, +0x3530 back) is walked to its last
    ring, which is drawn first (at most two passes): under the menu camera at depth +8, turned by +0x1930, a quad
    strip through its +0x3528 vertices (from +0x10) in a pulsing blue (0x4b06fc), textured (0x4e186c) unless
@@ -3910,7 +3719,6 @@ void THISCALL hud_48f970(void *stage, void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawBackground3D(void *first);
 /* batch 106 (lifted/grp52.c) */
-#include "lifted/grp52.c"
 /* 0x496f20 (thiscall on the scene) hud_496f20(scale): the level's sky, looking along the camera's direction
    (+0x20f397c..; gluLookAt): by mode, the sky sphere's six faces (+0x9ee064; textures +0x9ee068..), the outer / inner
    sky layers scrolling by +0x9ef0a8 / +0x9ef0ac (+0x9eee48; textures +0x9eee4c / +0x9eee50), the six side layers
@@ -3920,12 +3728,10 @@ void menu_drawBackground3D(void *first);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_496f20(void *stage, DWORD scale);
 /* batch 107 (lifted/grp53.c) */
-#include "lifted/grp53.c"
 /* 0x495ed0 (thiscall) hud_495ed0(x, y, w, h): a HUD panel: the rectangle in 640 x 480 units scaled to the window
    (gfx_getWidth / gfx_getHeight), drawn as nine textured quads (texture +0xbc06b4) */
 void THISCALL hud_495ed0(void *scene, int x0, int y0, int x1, int y1);
 /* batch 108 (lifted/grp54.c) */
-#include "lifted/grp54.c"
 /* 0x485af0 (thiscall on a view volume) render_drawObjects(mode, b): draw what ViewVolume_projectObject queued. The
    projection / modelview are loaded from +0x90b0 / +0x90f0 and fog follows GL's fog state (glGetBooleanv; the
    fog range then maps through the projection, +0x90d8..). Per material (count +0x3024, ids +0x20; 0 none, else the
@@ -3939,7 +3745,6 @@ void THISCALL hud_495ed0(void *scene, int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void render_drawObjects(char *vv, DWORD mode, DWORD b);
 /* batch 109 (lifted/grp55.c) */
-#include "lifted/grp55.c"
 /* 0x45e170 (thiscall on the scene) hud_45e170(vv, draw): actor_updateAllParts for every active actor
    (+0x1cd94b0 == 1, count +0x202e8c8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -3961,7 +3766,6 @@ void THISCALL armc_45ddc0(void *stage);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_applySpawnRecord(char *sc, DWORD a, DWORD rec);
 /* batch 110 (lifted/grp56.c) */
-#include "lifted/grp56.c"
 /* 0x476890 (thiscall on the scene) hud_476890(i, vv): draw projectile i (0x12c-byte records at +0x20a99c0: frame,
    active, type, owner, position, ..., timer +0x6c / length +0x70): unless the type is 50 or more it must lie within
    the range +0xa08 of the camera; then by type (bullets, missiles, beams, explosions, shields, trails, ...) as
@@ -3974,7 +3778,6 @@ THISCALL void hud_476890(char *sc, DWORD i, DWORD vv);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_479af0(void *stage, void *view);
 /* batch 111 (lifted/grp57.c) */
-#include "lifted/grp57.c"
 /* 0x48b9d0 (thiscall on the scene) map_loadGroundInfoFrom(name): the map's ground from "dir/name" (dir +0x108; no
    file or a version other than 0x1201 is fatal), all scrambled after the version: four blocks skipped, the map's
    directory name (0x100 bytes), the view range (+0xa08), the lights (load_483d70 into +0x9ccffc), clear colour
@@ -3989,7 +3792,6 @@ void THISCALL hud_479af0(void *stage, void *view);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD map_loadGroundInfoFrom(char *sc, DWORD name);
 /* batch 112 (lifted/grp58.c) */
-#include "lifted/grp58.c"
 /* 0x4680d0 glWindow_wndProc(wnd, msg, w, l) (stdcall, the window class's procedure): WM_CREATE hides the cursor,
    takes the window's DC (0xa0e938), sets its pixel format (glWindow_setupPixelFormat; failure quits) and makes a GL
    context current (0xa0e93c); WM_SIZE resizes the GL view (glWindow_resize); WM_PAINT validates; WM_CLOSE destroys
@@ -4004,7 +3806,6 @@ LRESULT WINAPI glWindow_wndProc(DWORD wnd, DWORD msg, DWORD w, DWORD l);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *glWindow_init(const char *title, int width, int height, int colourBits, int depthBits, int fullscreen, void *window, void *other);
 /* batch 113 (lifted/grp59.c) */
-#include "lifted/grp59.c"
 /* 0x460cb0 (thiscall on the game) app_requireCd(a, mode): misnamed (the CD check is only its first step; the no-CD
    build's cd_findDrive always finds one): start a session of mode (+8; a kept at +4): counters cleared, in mode 3
    the names of the map list entries flagged +0x40 (0x9dda88, 0x44-byte records, count 0x9eeab8) copied to
@@ -4015,7 +3816,6 @@ void *glWindow_init(const char *title, int width, int height, int colourBits, in
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void app_requireCd(char *g, DWORD a, DWORD mode);
 /* batch 114 (lifted/grp60.c) */
-#include "lifted/grp60.c"
 /* 0x41fd40 console_init: the console's start: pending node list freed (0x67fb3c, FUN_00441190), the five profile
    files checked unless skipped (0x76d410; a missing one: "Run AxisPlay.exe" and exit), the aspect ratio, the clock
    check, the window ("Axis Console", glWindow_init, parent 0x4ded18); a direct start (0x9db990) starts mode 3
@@ -4025,7 +3825,6 @@ THISCALL void app_requireCd(char *g, DWORD a, DWORD mode);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void console_init(void);
 /* batch 115 (lifted/grp61.c) */
-#include "lifted/grp61.c"
 /* 0x4700a0 (thiscall on the scene) item_initTextures(nine names): misnamed: the scene's whole start-up. The names
    kept (load_470de0); the space object at +0xa10 sized into its own memory +0xb04 (space_initBy); the ten textures
    "<name 3>\00".."\09" (+0x9ccfd4, the last two with flags 1); the lights reset (this_set_483d60, load_483e90 with
@@ -4040,7 +3839,6 @@ void console_init(void);
 THISCALL void item_initTextures(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6, DWORD a7, DWORD a8, DWORD a9);
 /* batch 116 (lifted/grp62.c): menu text callers; text_draw8/5/drawBox16, gfx_setProjection2D3D and menu_drawRect
    run natively (the patch DLL rewrites them in memory, so they stay the originals) */
-#include "lifted/grp62.c"
 /* 0x4125c0 armc_4125c0(x, y, s): text in the language's small font (Korean 2: text_draw5, else text_draw8) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_4125c0(int x, int y, const char *text);
@@ -4063,7 +3861,6 @@ DWORD profile_44ce90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD mainmenu_442d10(void);
 /* batch 117 (lifted/grp63.c): more menu screens over the native text passes */
-#include "lifted/grp63.c"
 /* 0x412450 armc_412450(): the armour screen's three mode tabs: a textured tab each (texture 0x9db0a4), the current
    mode (0x4dc798) brighter, and their labels (0x7565a4, 0x80 apart) in the selected / normal colours */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4086,7 +3883,6 @@ DWORD arena_drawCustomOption(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_drawCustomOption(void);
 /* batch 118 (lifted/grp64.c): profile dialogs and the armour weight line */
-#include "lifted/grp64.c"
 /* 0x44e180 profile_44e180() / 0x44e3e0 profile_44e3e0(): two-button profile dialogs (window 0x9f8f1c.. /
    0x9f6834..; titles 0x751da4 / 0x751e24): frame, title, two textured buttons (texture 0x9db0a4) labelled 0x7517a4 /
    0x751824, the one under the cursor (profile_44b320 / profile_44b360) bright, the frame's border */
@@ -4104,7 +3900,6 @@ DWORD profile_44de00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41dab0(void);
 /* batch 119 (lifted/grp65.c): the loading screen and two dialogs */
-#include "lifted/grp65.c"
 /* 0x41f100 intro_41f100(): the loading screen: clear to 0x76d350, the loading picture (texture 0x76d3f0) in the
    middle, the progress bar (0x4dda34 * 16 one-unit columns in three colour ramps: red to blue, green to blue, red
    to yellow), glFinish and SwapBuffers on 0x76d480 */
@@ -4122,7 +3917,6 @@ DWORD room_4399c0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_409bc0(void);
 /* batch 120 (lifted/grp66.c): the room's server dialog and the two skirmish briefing screens */
-#include "lifted/grp66.c"
 /* 0x439e00 room_439e00(): the room's server dialog (only its frame while a message is open): title 0x758da4, an
    underline, the server name 0x9dd1d8 in a green-framed box, a note 0x758e24, two buttons (0x758f24, the one under
    the cursor bright); with the confirmation open (0x9dd850) a dimmed screen, a box with two lines (0x74dfa4,
@@ -4141,7 +3935,6 @@ void skirmish_drawScreenB(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void skirmish_drawScreenA(void);
 /* batch 121 (lifted/grp67.c): the arena slot list and the map-select dialog */
-#include "lifted/grp67.c"
 /* 0x4038e0 arena_4038e0(): the arena's slot list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up
    to 10 rows from slot 0x4d7350 (count 0x67ef00; slots 22..24 skipped): the number, the map name (0x907b30, 0x20
    apart) and the kind (0x4db8d8, 5 apart, by the slot's +4), on red bars when the slot is taken (0x4d7358, 8
@@ -4154,7 +3947,6 @@ void arena_4038e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_442e10(void);
 /* batch 122 (lifted/grp68.c): the room login dialog and the pilot stats panel */
-#include "lifted/grp68.c"
 /* 0x4392c0 room_4392c0(): the room login dialog (only its frame while a message is open): title 0x7583a4 and its
    line, two labelled dark boxes (0x758424), the name 0x9dd1d8 and the password 0x9dd1f6 as '*' (each hidden while
    edited: 0x9dd830 / 0x9dd38c), three buttons (0x758524; none bright while connecting, 0x9dd838, which shows a box
@@ -4169,7 +3961,6 @@ DWORD room_4392c0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44cf70(void);
 /* batch 123 (lifted/grp69.c): the video / sound options dialog */
-#include "lifted/grp69.c"
 /* 0x425460 setup_425460(): the options dialog (window 0x4dddd0..): frame, title 0x7538a4, seven labels (0x753924,
    0x80 apart) and the current values: the resolution name (0x4b04cc table by 0x4ddba0; the patch's eight modes)
    and six choices from 0x32-byte string tables (0x4ddbbc, 0x4dda64, 0x4ddc84, 0x4de058, 0x4ddc20, 0x4ddaf0 by
@@ -4178,7 +3969,6 @@ void profile_44cf70(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_425460(void);
 /* batch 124 (lifted/grp70.c): the setup screens' 3D tunnel */
-#include "lifted/grp70.c"
 /* 0x423e50 setup_423e50(): the tunnel behind the setup screens (3D projection): its alpha 0x4de038 eases to 0.3
    (mode 0x4ddcec 1) or 0.5 (mode 0); four layers of walls (camera gfx_setMenuCamera, pushed back 0x4ddd90, turned
    by 0x4b04c4 / FUN_0041ef20), the first two with texture 0x4e0cd0, the others 0x5b197c / 0x5b1978: layer 0 the
@@ -4194,7 +3984,6 @@ void setup_423e50(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_423330(void);
 /* batch 125 (lifted/grp71.c): the mission-select tunnel and the profile screen */
-#include "lifted/grp71.c"
 /* 0x448140 missionsel_448140(): the mission-select backdrop: the setup tunnel's layers (setup_423e50) with three
    panels a side (at -40 / 0 / 40, pushed back 550), textures 0x4e0cd0 and 0x76d47c / 0x76d478, the hovered panel's
    glow (0x680398, 0x680ccc) and the pulse / scroll advancing as there */
@@ -4207,7 +3996,6 @@ void missionsel_448140(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_drawScreen(void);
 /* batch 126 (lifted/grp72.c): five more screens' tunnel backdrops (missionsel_448140's layout) */
-#include "lifted/grp72.c"
 /* 0x411110 armc_411110() / 0x4445a0 skirmish_4445a0(): the armour and skirmish screens' tunnel, as
    missionsel_448140's (depth 550, textures 0x4e0cd0 and 0x76d47c / 0x76d478) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4224,7 +4012,6 @@ void room_4388e0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_4091b0(void);
 /* batch 127 (lifted/grp73.c): the room's player-info panel */
-#include "lifted/grp73.c"
 /* 0x43a420 room_43a420(): while waiting (0x9dd6d4 == 1) only a box with two lines (0x75b1a4, 0x74f724); else the
    panel (window 0x9dd368..): line, title 0x7592a4, labels (0x759324 five, 0x7595a4 seven, 0x80 apart), four field
    boxes, the name 0x9dd1d8, three password fields as '*' (0x9dd6d8 / 0x9dd1f6 / 0x9dd202, each hidden while
@@ -4234,7 +4021,6 @@ void arena_4091b0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43a420(void);
 /* batch 128 (lifted/grp74.c): the room menu's tunnel with hover panels */
-#include "lifted/grp74.c"
 /* 0x437e00 room_437e00(): the room menu: setup_423330's code for the room: the cursor tested against six panels
    (0x9daf88, 11 dwords each; none while 0x9dd7d8), the hovered one's glow restarted when it changes (0x907b24),
    the room tunnel (depth 0x9dd698, textures 0x4e0cd0 and 0x4df908 / 0x4df904) with the glowing panel, and in mode
@@ -4242,7 +4028,6 @@ void room_43a420(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_437e00(void);
 /* batch 129 (lifted/grp75.c): the arena menu's tunnel with hover panels */
-#include "lifted/grp75.c"
 /* 0x408680 lobbyTop_drawTitle(): the arena menu (misnamed): setup_423330's code for the arena: four panels
    (0x5b1cf8, 11 dwords each; none while 0x4db85c), the hover glow, the arena tunnel (depth 0x4dba68, two walls a
    side at -35 / 35, textures 0x4e0cd0 and 0x4df044 / 0x4df040), and in mode 2 (0x4dbb3c) without a message
@@ -4250,7 +4035,6 @@ void room_437e00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void lobbyTop_drawTitle(void);
 /* batch 130 (lifted/grp76.c): the sound settings dialog */
-#include "lifted/grp76.c"
 /* 0x424810 setup_424810(): the sound dialog (window 0x4ddad0..): frame, cyan box, title 0x7533a4; the volume slider
    (texture 0x9db0a4: arrow caps, track, and the bar 0x4dde98 % long); an arrow pressed (0x4dde90: 0..3) flashes
    while 0x4ddb98 counts down by 0x4b071c (then -1); label 0x753424 and three labelled switches (0x7534a4..):
@@ -4259,7 +4043,6 @@ void lobbyTop_drawTitle(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_424810(void);
 /* batch 131 (lifted/grp77.c): screen dispatchers over the rebuilt screens */
-#include "lifted/grp77.c"
 /* 0x4434f0 mainmenu_4434f0(): the map-select dialog (mainmenu_442e10), or only its frame while a message is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mainmenu_4434f0(void);
@@ -4283,7 +4066,6 @@ DWORD profile_44f5f0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_44f740(void);
 /* batch 132 (lifted/grp78.c): the main menu */
-#include "lifted/grp78.c"
 /* 0x442050 menu_mainMenu(): the main menu: unless it is flying in (0x9eeaa8) the cursor is tested against six
    panels (0x4deb80, 11 dwords each): a hit (unless locked, 0x9eeab4) lights the panel (0x680398, glow restarted
    when it changes, 0x907b24) and resets the idle time 0x9dda80 and the hint fade (0x9eea8c, 0x9dd948); no hit
@@ -4293,7 +4075,6 @@ DWORD profile_44f740(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_mainMenu(void);
 /* batch 133 (lifted/grp79.c): the mission-select screen */
-#include "lifted/grp79.c"
 /* 0x449a50 missionsel_drawScreen(): the mission-select screen for mission 0x9f63b4 (no direct callers: reached
    through a screen table): frame (window 0x9f6308..), the title "<n>ST / ND / RD / TH <0x75f1a4>  [ <map> ]" (map
    names 0x907b30, 0x20 apart); the map preview, looked up first ("<0x680bc4><map>/<map>", tex_getIdByName into
@@ -4305,7 +4086,6 @@ void menu_mainMenu(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void missionsel_drawScreen(void);
 /* batch 134 (lifted/grp80.c): the pilot-select dialog */
-#include "lifted/grp80.c"
 /* 0x44e640 profile_44e640(): the pilot-select dialog (window 0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): frame,
    title 0x75e7a4, a line; the portrait atlas (0x4dfa00) and the chosen pilot's cell (0x9f8d30: % 3, / 3 of 86
    texels) under a pulsing highlight (0x9dad90, alpha by 0x9f8f08 bouncing 2..38 by 0x9f8c48); the reveal count
@@ -4315,7 +4095,6 @@ void missionsel_drawScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44e640(void);
 /* batch 135 (lifted/grp81.c): the room's ranking table */
-#include "lifted/grp81.c"
 /* 0x43d060 room_43d060(): the ranking window (0x9dced8..): frame, title 0x75aba4; the page arrows (the hovered one,
    room_4323c0, lit) and "first - last" of page 0x9dd6ac (also stored: 0x9dd83c, 0x9dd7dc); the sort label 0x75ac24
    and the sort column (0x9dd1d0: 0..3, one of 0x75ae24 / 0x75af24 / 0x75b024 / 0x75aea4); two lines and the column
@@ -4327,7 +4106,6 @@ void profile_44e640(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_43d060(void);
 /* batch 136 (lifted/grp82.c): the room's game list */
-#include "lifted/grp82.c"
 /* 0x43adc0 room_43adc0(): the game list (window 0x9dd4a8..): frame, title 0x759ca4, five column heads
    (0x759d24..0x759f24), lines; with a list (0x9dd330) of 0x67ef30 games, nine rows from 0x680bb0 of the 0x4a-byte
    game records (0x9087c4): a lock icon (+0x43) from the font texture, the selected game (0x76d41c) highlighted, the
@@ -4340,7 +4118,6 @@ DWORD room_43d060(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_43adc0(void);
 /* batch 137 (lifted/grp83.c): the room's game settings form */
-#include "lifted/grp83.c"
 /* 0x43bfe0 room_drawGameSettings(): the game settings form (window 0x9dd1b8..): frame, title 0x75a424, a line,
    seven labels (0x75a4a4, 0x80 apart) and their boxes: the game name 0x4df9c8 and the password 0x4df9ee as '*'
    (each hidden while edited: 0x9dd380 / 0x9dd6a8), the map (0x4df9e8, a 0x5ae9d0 name, 0x50 apart; or, custom
@@ -4351,7 +4128,6 @@ void room_43adc0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void room_drawGameSettings(void);
 /* batch 138 (lifted/grp84.c): the armour screen's colour editor */
-#include "lifted/grp84.c"
 /* 0x41a280 armc_41a280(): the colour editor (panels at 0x4dcc98 - 200, 0x4dcc94): two translucent boxes headed
    0x75d3a4 / 0x75d424, each with three lines "<0x75d4a4 label> [<value>]" for the current slot's colours
    (0x4dc4b8, six floats a slot: hue * k, then saturation and value scaled and capped at 99; the second colour's
@@ -4361,7 +4137,6 @@ void room_drawGameSettings(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_41a280(void);
 /* batch 139 (lifted/grp85.c): the armour build screen */
-#include "lifted/grp85.c"
 /* 0x419160 armc_419160(): the armour build screen: three buttons (0x7517a4; the hovered one, armc_40e490, bright),
    six part slots (texture 0x9db0a4, the selected one 0x4dbe48 bright), the snapshot when asked (0x4dcc64:
    armc_snapshot), each named slot's picture (texture 0x4dcc70 + k * 4) and label (0x756fa4) with its name
@@ -4373,7 +4148,6 @@ void armc_41a280(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_419160(void);
 /* batch 140 (lifted/grp86.c): the arena's game list */
-#include "lifted/grp86.c"
 /* 0x40a070 arena_40a070(): room_43adc0's game list for the arena (window 0x4db8c8..): frame, a line, title 0x7524a4;
    three tabs (0x752524; the hovered one, arena_4044a0, bright unless a box is open: 0x4db8b4, 0x907b2c, 0x4db714,
    0x4db8bc); five column heads; with a list (0x4dbac8, or 0x4dbaa8 which also shows locks and the last column)
@@ -4386,7 +4160,6 @@ void armc_419160(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_40a070(void);
 /* batch 141 (lifted/grp87.c): the create-arena screen */
-#include "lifted/grp87.c"
 /* 0x40b750 arena_createDraw(): room_drawGameSettings' form for a new arena (window 0x4dbb00..): title 0x752c24,
    labels 0x752ca4.., the arena name 0x4db528 and the password 0x4db54e as '*' (into a 10-byte buffer; each hidden
    while edited: 0x4dbab0 / 0x4dbacc), the map (0x4db548, a 0x5ae9d0 name; or, custom 0x4db54a, set lower), players
@@ -4399,7 +4172,6 @@ void arena_40a070(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_createDraw(void);
 /* batch 142 (lifted/grp88.c): two more screen dispatchers */
-#include "lifted/grp88.c"
 /* 0x44f810 profile_44f810(): the pilot-select dialog (profile_44e640), its colours refreshed first when asked
    (0x9f8d68: profile_44bc50), or only its frame while a message is open */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4414,7 +4186,6 @@ void profile_44f810(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_43ede0(void);
 /* batch 143 (lifted/grp89.c): the controls / crosshair screen */
-#include "lifted/grp89.c"
 /* 0x425cd0 setup_crosshairScreen(): the controls dialog (window 0x4dde80..): frame, lines, column heads
    (0x754524..0x754624), four tab titles (0x754324, the current one 0x4ddce8 again brighter); the row under the
    cursor (setup_4206f0, rows 7..17 of the tab; 0x4de040) or the row being edited (0x4dddc8) highlighted; the tab's
@@ -4427,7 +4198,6 @@ DWORD room_43ede0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_crosshairScreen(void);
 /* batch 144 (lifted/grp90.c): the armour screen's stats panel, the largest function in the game */
-#include "lifted/grp90.c"
 /* 0x412650 armc_drawStatsPanel(): the armour screen with the stats of the part in slot 0x4dbc6c (0..5): the
    preview arrows, the slot buttons and their labels (as armc_41a280, part names when 0x4dbc68), three buttons, the
    weight button, the "detail" button 0x7568a4; then a panel of the part's stats (taller in Korean, 0x9dae74): one
@@ -4438,7 +4208,6 @@ void setup_crosshairScreen(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_drawStatsPanel(void);
 /* batch 145 (lifted/grp91.c): re-equipping the current player's armour part */
-#include "lifted/grp91.c"
 /* 0x461540 (thiscall on the game) armc_461540(slot): for the player in lobby slot +0x234240d (none when negative):
    keep the actor's part slot fields (+0x1eccbf0..+0x1eccc00 of its 0x8888-byte record at +0x1eccbb0; a negative
    slot means the actor's current one, +0x1eccbb0), mark whether it is the local player (+0x1eccf0c against
@@ -4447,7 +4216,6 @@ void armc_drawStatsPanel(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void armc_461540(char *game, DWORD slot);
 /* batch 146 (lifted/grp92.c): the armour screen's part lists */
-#include "lifted/grp92.c"
 /* 0x40da40 armc_buildPartLists(): the unlocked part lists up to a level (0x4dc784, also 0x4dc870): in network mode
    (0x4dc24c == 3) the player level 0x9dd5d8 - 1, else the progress (our patch's helper at 0xb68e80 reads 0x9f181c,
    clamped; 0x7f and above become 14): for each level up to it the five static tables (0x4aebd0.., 0x28 bytes a
@@ -4457,7 +4225,6 @@ THISCALL void armc_461540(char *game, DWORD slot);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's helper (0xb68e80) done in C */
 void armc_buildPartLists(void);
 /* batch 147 (lifted/grp93.c): the menu textures */
-#include "lifted/grp93.c"
 /* 0x430ca0 menu_loadIntroTextures(): the menu's textures by name ("iftex/m_intro1".."4", "m2_intro1".."4", the
    spirals, menu pairs, cursor, option, cylinder, corner, character, boxscreen, gameconnect, ...) into their globals
    (the intro frames, 0x9db0a4 the button texture, 0x4e0cd0 the tunnel, 0x4dfa00 the portraits, 0x76d36c, ...),
@@ -4466,14 +4233,12 @@ void armc_buildPartLists(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_loadIntroTextures(void);
 /* batch 148 (lifted/grp94.c): the intro set-up */
-#include "lifted/grp94.c"
 /* 0x430bf0 intro_430bf0(): clear 0xc00 bytes at 0x67ef38, then the intro tables one by one (intro_430ab0,
    intro_42f2b0, intro_42f500, intro_42f690, intro_42f8e0, intro_430bd0), each followed by a loading-screen frame
    (intro_41f100, progress 0x4dda34 + 1) and, but for the last, a wait of 2.0 (intro_41e730) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD intro_430bf0(void);
 /* batch 149 (lifted/grp95.c): the console's destructor */
-#include "lifted/grp95.c"
 /* 0x460c40 (thiscall) Console_ctor(): misnamed: the console's destructor: an SEH frame, the vtable 0x4aa238, then
    the members in reverse: the stage at +0x1f36c8 (Stage_dtor), the view volume at +0x74 (ViewVolume_dtor), the
    time sync at +0xc (TimeSync_dtor) */
@@ -4483,20 +4248,17 @@ THISCALL void Console_ctor(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *THISCALL Console_deletingDtor(void *console, int flags);
 /* batch 150 (lifted/grp96.c): the network receive thread */
-#include "lifted/grp96.c"
 /* 0x454560 net_454560(): the receive thread's procedure: wait on the two events (0xa0bb10 data, 0xa0bf1c stop):
    data handles the incoming packets (net_4545b0) and waits again, stop ends the thread (ExitThread 0), anything
    else waits again */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void net_454560(void);
 /* batch 151 (lifted/grp97.c): the controls screen dispatcher */
-#include "lifted/grp97.c"
 /* 0x4278d0 setup_4278d0(): the setup tunnel (setup_423e50), then in modes other than 0 / 1 (0x4ddcec) and not on
    tab 0x29a (0x4ddac8) the controls dialog (setup_crosshairScreen) or, while a message is open, its frame */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void setup_4278d0(void);
 /* batch 152 (lifted/grp98.c): the HUD clock */
-#include "lifted/grp98.c"
 /* 0x496610 (thiscall on the game) hud_drawClock(): with a score limit (+0x23423ad) the points still needed (team
    mode +0x22e7184 == 1: the better of +0x2221fbc / +0x2221fb8, else the leading player's +0x1eccb54 of record
    +0x23428f6 when there are any, +0x2342976), blinking red at 1 (by +0x22f040c), "%d" right-aligned with its icon
@@ -4505,7 +4267,6 @@ void setup_4278d0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawClock(void *scene);
 /* batch 153 (lifted/grp99.c): HUD messages */
-#include "lifted/grp99.c"
 /* 0x495140 hud_drawPressFire(): "Press fire button to start" centred low (hud_44ae10, patched: native) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawPressFire(void *scene);
@@ -4523,7 +4284,6 @@ void THISCALL hud_drawRecordIndicator(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawMatchResult(void *scene);
 /* batch 154 (lifted/grp100.c): the match loading screen */
-#include "lifted/grp100.c"
 /* 0x469320 loading_draw(scroll): the match loading screen: clear to blue, a textured cylinder (texture 0xa0e980,
    18 segments turned by Vec3_rotateAxis, its texture scrolled by scroll) in the HUD projection
    (gfx_setProjectionHud, patched: native), then in yellow "TITLE : %s" (0x67fb44, game modes 1 / 3 of the game
@@ -4533,7 +4293,6 @@ void THISCALL hud_drawMatchResult(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void loading_draw(DWORD progress);
 /* batch 155 (lifted/grp101.c): the in-match Esc menu */
-#include "lifted/grp101.c"
 /* 0x495610 (thiscall on the game) hud_drawEscMenu(): the in-match menu, fading in over its first 0.25 s (+0x2340c9c),
    by page (+0x2340cf8, 0..4): the title and the rows the mode allows (START / SPECTATOR for players without a slot
    +0x234243e, TEAM CHANGE in team games +0x22e7184, RECORD / STOP RECORD by +0x2340d1d, RETRY / EXIT ...), each on a
@@ -4542,7 +4301,6 @@ void loading_draw(DWORD progress);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawEscMenu(void *scene);
 /* batch 156 (lifted/grp102.c): DirectPlay release and session enumeration, the arena's four connection slots */
-#include "lifted/grp102.c"
 /* 0x453920 dplay_release(): releases the lobby (0xa0b398) and the DirectPlay object (0xa0b404: destroys the local
    player 0xa0b424, Close, Release), frees the session list 0xa0baf0, unlocks and frees the global blocks 0xa0bab0 /
    0xa0baf4 and calls CoUninitialize; returns 0 */
@@ -4574,7 +4332,6 @@ int arena_454d00(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_453260(void);
 /* batch 157 (lifted/grp103.c): DirectPlay create, host, join and player names */
-#include "lifted/grp103.c"
 /* 0x454190 dplay_getPlayerName(id, out): asks the DPNAME size (GetPlayerName with no buffer), allocates and locks a
    global block of it and fetches the name into it (*out = the block, 0); on a failure frees the block and returns the
    error (0x8007000e when the allocation fails) */
@@ -4597,7 +4354,6 @@ int dplay_hostSession(const char *session, const char *player, DWORD user1, DWOR
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_joinSession(const void *guid, const char *player, DWORD data);
 /* batch 158 (lifted/grp104.c): DirectSound set-up and buffers, the music stream */
-#include "lifted/grp104.c"
 /* 0x467a50 sound_init(hwnd): DirectSoundCreate into 0xa0e804, cooperative level 2 (priority), the primary buffer
    0xa0e808 set to 44.1 kHz 16-bit stereo and looping silently; 0xa0e80c = 1 and 1, else 0 (DirectSound released
    when the primary buffer does not play) */
@@ -4625,7 +4381,6 @@ DWORD music_4572b0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int music_play(const char *name);
 /* batch 159 (lifted/grp105.c): DirectInput keyboard and mouse, DirectSound release */
-#include "lifted/grp105.c"
 /* DirectInput: the object 0x4d1e98, the keyboard 0x4d1fa0 (ready flag 0x4d1fa8, key states 0x4d1a98) and the mouse
    0x4d1fa4 (ready flag 0x4d1fac). 0x401310 input_initKeyboard(hwnd) / 0x4013a0 input_4013a0(hwnd): once, create the
    device, its data format (0x4a95f8 / 0x4a9610) and cooperative level (6: non-exclusive background / 5: exclusive
@@ -4652,7 +4407,6 @@ void wnd_401490(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void wnd_467b70(void);
 /* batch 160 (lifted/grp106.c): loading a WAV sound */
-#include "lifted/grp106.c"
 /* 0x467b90 sound_loadWav(name): reads the 44-byte WAV header and the data (CreateFile / ReadFile), a static
    buffer of that size and format (CreateSoundBuffer, "SoundBuffer create error" box and NULL on a failure), the
    data copied in (Lock / Unlock), then the sound (100 bytes): 7 duplicates of the buffer, index and kinds 0;
@@ -4660,7 +4414,6 @@ void wnd_467b70(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void *sound_loadWav(const char *name);
 /* batch 161 (lifted/grp107.c): keyboard state, menu sounds, settings screens leaving */
-#include "lifted/grp107.c"
 /* the keyboard's state (GetDeviceState, 256 bytes into 0x4d1e9c) when ready (0x4d1fa8): 0x401540 load_401540(key):
    bit 7 of the key's byte, 0 on a failure (input lost: reacquire); 0x4014f0 load_4014f0(key): the same as 0 / 1 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4685,7 +4438,6 @@ DWORD FUN_00447960(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void mission_4479b0(int mission);
 /* batch 162 (lifted/grp108.c): skirmish / mission settings input, the room and arena text fields */
-#include "lifted/grp108.c"
 /* 0x443e20 skirmish_saveSettings(): no dialog open: a right click leaves (skirmish_443c80); a left click on the
    settings screen's buttons (skirmish_4438d0, 0x9ef228): rows 0..7 skirmish_443d50(row), 8 save (mission_saveAxisMis
    with the selection 0x9f16a4), 9 leave */
@@ -4733,7 +4485,6 @@ void FUN_00405200(void);
 void room_434da0(void);
 /* batch 163 (lifted/grp109.c): screen dispatchers (setup tabs, lobby / room / profile keys and
    draws) */
-#include "lifted/grp109.c"
 /* 0x422b30 setup_drawTab() / 0x4230a0 setup_processTabKeys(): no dialog open: the setup tab 0x4ddac8 (0..2, 0x29a)
    drawn / its keys */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4762,7 +4513,6 @@ DWORD room_43ed20(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobbyCreate_draw(void);
 /* batch 164 (lifted/grp110.c): mission settings keys, three jump stubs */
-#include "lifted/grp110.c"
 /* 0x447c30 menu_447c30(): on the unlock screen, cancel (0x76d48c) or back (0x9dae70) closes it (0x9f62e0 = 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_447c30(void);
@@ -4784,7 +4534,6 @@ void skirmish_445bd0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int jmp_net_getLocalAddress_4532e0(void);
 /* batch 165 (lifted/grp111.c): profile screen dialogs and mouse handlers */
-#include "lifted/grp111.c"
 /* 0x44b600 profile_44b600(): start typing a profile name: keyboard released, input cleared, the edit box at the
    name field (0x9f8ea8 + 0x38, 0x9f8eac + 0x24), page 2, a dialog open, the edit window created */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4807,7 +4556,6 @@ int profile_44c400(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int profile_44c480(void);
 /* batch 166 (lifted/grp112.c): the profile screen's input */
-#include "lifted/grp112.c"
 /* 0x44be00 profile_44be00(): the profile list page's mouse: a left click on the list (profile_44b3a0, 7 kinds:
    a profile, scroll, new / delete / load / back ...) or the bottom buttons (profile_44b260), sounds; opens the name
    edit (profile_44b600) or the delete / load confirmations (profile_44b670 / profile_44b6e0) */
@@ -4825,7 +4573,6 @@ DWORD profile_44c190(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD profile_processInput(void);
 /* batch 167 (lifted/grp113.c): receiving DirectPlay messages */
-#include "lifted/grp113.c"
 /* 0x450bc0 arena_450bc0(from*, to*, flags, data, size*) / 0x450bf0 FUN_00450bf0(from, to, flags, data, size):
    DirectPlay Receive / Send through 0xa0b404 (0 without it) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -4860,7 +4607,6 @@ DWORD arena_450a60(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD FUN_00450bb0(void);
 /* batch 168 (lifted/grp114.c): the mission settings screen */
-#include "lifted/grp114.c"
 /* 0x448ac0 missionsel_448ac0(): the mission settings screen (the mission select's sibling): the frame and panels,
    the chosen mission's name, preview and texts (the strings at 0x75bfa4 .. 0x75f6a4), its record (0x9db99c +
    0x5c * mission: allies and enemies with portraits, kind, values), the mission number with the arrows (greyed
@@ -4872,9 +4618,6 @@ void missionsel_448ac0(void);
 void missionsel_44aa20(void);
 /* batch 169 (lifted/grp115.c, grp116.c, grp117.c: split so that the calls between these go through their native
    addresses, where the tests stub them): the armour centre's part selection */
-#include "lifted/grp115.c"
-#include "lifted/grp116.c"
-#include "lifted/grp117.c"
 /* the armour centre: the part kind being chosen 0x4dbe48 (0..3 armour parts from the list 0x4dc79c (count
    0x4dc244), 4 / 5 the others from 0x4dcca4 (count 0x4dc778), -1 none), the list position 0x4dc77c, the chosen
    parts 0x4dcb20 / 24 / 28 / 2c (armour) and 0x4dcb18 / 0x4dcb1c.
@@ -4901,9 +4644,6 @@ void armc_drawPartScreen(void);
 void armc_exit(int confirmed);
 /* batch 170 (lifted/grp118.c, grp119.c, grp120.c: split so the calls between these go through their native
    addresses, where the tests stub them): the armour centre's states and input */
-#include "lifted/grp118.c"
-#include "lifted/grp119.c"
-#include "lifted/grp120.c"
 /* the armour centre's pages (0x4dc798): 0x40fb20 armc_40fb20(): the mouse on the main page (armc_40e450's buttons:
    parts, colours, the part screen (armc_drawPartScreen), back (armc_exit) ...); 0x4101e0 armc_4101e0(): the main
    page's keys (one binding after another: parts, colours, the rotation toggle 0x4dceac, back); 0x410500
@@ -4927,7 +4667,6 @@ DWORD armc_onStateEnter(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_processInput(void);
 /* batch 171 (lifted/grp121.c): small menu, room and connection functions */
-#include "lifted/grp121.c"
 /* 0x453770 arena_453770(): DirectPlay up again: arena_4509e0, dplay_create, dplay_release when it worked; 0 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int arena_453770(void);
@@ -4979,7 +4718,6 @@ void room_435ce0(void);
    at the field, typing on: input_releaseKeyboard, input clear, chat_createEdit), room and menu key pages, the sound
    helpers sound_playVolume / sound_playFile / sound_loadMenuSounds, match_4512c0 (a chat line logged and sent),
    arena_452fe0, room_431600 (typing off), the setup page's sound tab keys */
-#include "lifted/grp122.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void arena_editTextField_404f90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5039,7 +4777,6 @@ DWORD menu_437810(void);
    limit: a message by mode 0x9dae74 and a sound), the arena slots 3 / 4 join wrappers, dplay_coInit,
    lobby_close, the room / lobby / setup key and mouse pages, setup_drawTopPage, profile_44f4b0,
    mainmenu_441810 */
-#include "lifted/grp123.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL msg_connectionLost(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5096,7 +4833,6 @@ void mainmenu_441810(void);
    left or kept, keyboard back), the room's settings page mouse room_4036c0, the skirmish / mission state entries, room_434490 (a room request
    sent), with their callees stubbed (tools/gentests.py); the in-match player messages (thiscall on the game),
    music_playMatch, dplay_closeSession */
-#include "lifted/grp124.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD game_returnToMenus_41ec50(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5129,7 +4865,6 @@ long dplay_closeSession(void *dplay);
    return-to-menus entries, the arena's join by connection kind, menu_enterState, room pages and mouse / keys,
    the armour centre's part and colour screens, the main menu keys, the setup tabs' draws and control keys,
    menu_enterMenus */
-#include "lifted/grp125.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void FUN_0041edc0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5178,7 +4913,6 @@ void menu_436990(void);
    lobby_406a60, menu_437140, arena_405690, room_435d30, room_433e60, mainmenu_startNetGame,
    mainmenu_processKeys, menu_436e10, armc_enter (a list node's camera and fade, then it is freed),
    match_debugHandler (the debug keys); the arena slots 3 / 4 host wrappers */
-#include "lifted/grp126.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_406a60(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5206,7 +4940,6 @@ int arena_454d20(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 /* batch 177 (lifted/grp127.c): app_onClose / app_shutdown (leaving the game: the room / arena left, DirectPlay and
    the music shut down) and menuState100_intro (the intro: logo fades, the menu music, then the main menu), with
    their callees stubbed (tools/gentests.py); chat_editSubclass and sound_play3D by hand */
-#include "lifted/grp127.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD app_onClose(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5224,7 +4957,6 @@ LONG WINAPI chat_editSubclass(DWORD w, DWORD m, DWORD wp, DWORD lp);
 void sound_play3D(int index, const float *pos, const float *listener, const float *side, float range);
 /* batch 178 (lifted/grp128.c): game_postMatch (after a match: by mode back to the room, arena, lobby or menus,
    the result sent, the music) and dplay_initConnection */
-#include "lifted/grp128.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD game_postMatch(void);
 /* 0x453a90 dplay_initConnection(kind, address): a fresh DirectPlay object for connection kind 0..3 (TCP/IP: the
@@ -5233,7 +4965,6 @@ DWORD game_postMatch(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int dplay_initConnection(int kind, const char *address);
 /* batch 179 (lifted/grp129.c): the king-of-the-hill ranking and a bullet's damage, both on the scene's actor records */
-#include "lifted/grp129.c"
 /* 0x462150 msg_newKing() (thiscall on the scene, BUF in the tests): the teams' counts from the 16 player records
    (+0x1eccb88, stride 0x8888; empty slots by the player table 0x9f9840), the ranking of the players by frags
    (+0x1eccb54) and deaths (+0x1eccb58) into the tables +0x23428f6 / +0x2342936, a new leader announced */
@@ -5248,7 +4979,6 @@ THISCALL void bullet_playImpactSound(char *scene, DWORD t, DWORD a, DWORD d, DWO
    the projection, its draw), the arena slots' connect (a fresh DirectPlay for that kind, dplay_initConnection,
    the slot open or released), room_435c20, with their callees stubbed (tools/gentests.py); match_4620e0 and
    arena_453090 by hand */
-#include "lifted/grp130.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawBackground(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5270,8 +5000,6 @@ int arena_453090(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 /* batch 181 (lifted/grp131.c): the menu state frames that draw the background (menuState300_frame, menuState600_setup,
    menuState900_skirmishSetup, menuState210_frame) and arena_452ec0 (connect by kind: the host
    address resolved, that kind's slot connected, the player id), with their callees stubbed (tools/gentests.py) */
-#include "lifted/grp131.c"
-#include "lifted/grp132.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState300_frame(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5288,7 +5016,6 @@ void skirmish_445bc0(void);
 /* batch 182 (lifted/grp133.c): connecting from the room and the arena (room_434dd0, arena_406200), the lobby's
    room-name and reserved-name checks, lobby_connect, lobbyJoin_keysChat, room_4355b0, arena_405b80 (the room /
    arena settings checked and the game hosted or joined), with their callees stubbed (tools/gentests.py) */
-#include "lifted/grp133.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD room_434dd0(int i);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5307,7 +5034,6 @@ DWORD room_4355b0(void);
 DWORD arena_405b80(void);
 /* batch 183 (lifted/grp134.c): the arena create page's mouse (arena_createClick), lobbyTop_connect,
    arena_loadAndQuit, room_43ea10, lobbyJoin_draw, with their callees stubbed (tools/gentests.py) */
-#include "lifted/grp134.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD arena_createClick(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5322,8 +5048,6 @@ void lobbyJoin_draw(void);
    the native address, where the test stubs it): the menu state dispatchers lobby_onStateChange, menuState400_frame,
    menu_onStateChange, menuState800_gameRoom, the room screen room_43e290, arena_launchFromFile (a match started
    from a launch file), with their callees stubbed (tools/gentests.py) */
-#include "lifted/grp135.c"
-#include "lifted/grp136.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD lobby_onStateChange(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5341,9 +5065,6 @@ DWORD menuState800_gameRoom(void);
    reset), the main page / part screen frames armc_41d600 / armc_41d8a0 (the mech turned by the cursor:
    armc_rotateFromCursor, stubbed: it builds C++ objects under an SEH frame the lifter does not handle yet), their
    wrappers armc_41dfe0 / armc_41e010 / armc_41dfb0 and menuState700_armCenter, callees stubbed */
-#include "lifted/grp137.c"
-#include "lifted/grp138.c"
-#include "lifted/grp139.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void armc_40e5d0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5361,7 +5082,6 @@ void menuState700_armCenter(void);
 /* batch 186 (lifted/grp140.c): game_processGameModeInit (a match's start: modes, teams, items, music),
    match_escMenu (the in-match menu's input), wnd_setCursor (in fact the shutdown: the game object deleted, input,
    music and sounds released, the cursor back), scene_loadPath, with their callees stubbed */
-#include "lifted/grp140.c"
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void game_processGameModeInit(char *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5372,8 +5092,6 @@ DWORD wnd_setCursor(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void scene_loadPath(char *scene, DWORD path);
 /* batch 187 (lifted/grp141.c, grp142.c: split, they call each other): particles */
-#include "lifted/grp141.c"
-#include "lifted/grp142.c"
 /* the particle system (thiscall: its object, the scene at BUF in the tests): 1000 slots of 0x12c bytes from
    +0x20a99c0 (used flag +4), the next free +0x20f2da4, the highest used +0x20f2da0, a serial +0x20f2da8.
    0x479950 particle_spawn(desc) (ret 4): the first free slot from the next free one on (-1 when full), set up by
@@ -5386,8 +5104,6 @@ THISCALL DWORD particle_spawn(char *ps, DWORD desc);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void particle_init(char *ps, DWORD slot, DWORD desc);
 /* batch 188 (lifted/grp143.c, grp144.c: split, bullet_spawn calls bullet_init): bullets */
-#include "lifted/grp143.c"
-#include "lifted/grp144.c"
 /* the bullets (thiscall on the scene, BUF in the tests): 400 slots of 0x4e8 bytes from +0x202ef34 (used flag +4),
    the next free +0x20a99b8, the highest used +0x20a99b4, a serial +0x20a99bc.
    0x47ce50 bullet_spawn(a1, a2, a3, shot, a5) (ret 0x14): -1 for a shot without a weapon (+4 < 0) or with all slots
@@ -5400,7 +5116,6 @@ THISCALL DWORD bullet_spawn(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWO
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void bullet_init(char *s, DWORD a1, DWORD a2, DWORD a3, DWORD a4, DWORD a5, DWORD a6);
 /* batch 189 (lifted/grp145.c): a particle's frame and an object's */
-#include "lifted/grp145.c"
 /* 0x476410 match_476410(slot, a2) (thiscall on the particle system, ret 8): the slot (0x12c bytes from +0x20a99c0)
    aged (+0x6c from the clock against its life +0x70: freed at the end, 0x4799f0), moved, slowed, faded and turned
    by its kind; trail particles spawned (particle_spawn); callees stubbed */
@@ -5413,7 +5128,6 @@ THISCALL void match_476410(char *ps, DWORD slot, DWORD a2);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_render(char *s, DWORD i, DWORD dt);
 /* batch 190 (lifted/grp146.c): a bullet's frame */
-#include "lifted/grp146.c"
 /* 0x47a2d0 bullet_update(slot, dt) (thiscall on the scene, ret 8): bullet slot's flight (0x4e8 bytes from
    +0x202ef34): moved by its weapon's speed (the weapon record at +0x14d1ab4), aged, its homing towards its target,
    its trail particles, its hits found against the actors (math_segmentSphere and FUN_0047d9a0, real) and applied
@@ -5421,7 +5135,6 @@ THISCALL void actor_render(char *s, DWORD i, DWORD dt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void bullet_update(char *s, DWORD slot, DWORD dt);
 /* batch 191 (lifted/grp147.c): the bullets' and particles' frame loops */
-#include "lifted/grp147.c"
 /* 0x47d000 bullet_updateAll(dt) / 0x479a90 match_479a90(dt) (thiscall on the scene, ret 4): unless the game is paused
    (+0x2149308 with +0x214930c == 1), every bullet / particle slot in use up to the highest one (bullet_update /
    match_476410) */
@@ -5430,7 +5143,6 @@ THISCALL void bullet_updateAll(char *s, DWORD dt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_479a90(char *s, DWORD dt);
 /* batch 192 (lifted/grp148.c): item pickups */
-#include "lifted/grp148.c"
 /* 0x48ed90 item_update(dt) (thiscall on the scene, ret 4): the actors' pickup flags cleared; every item (0x28-byte
    records from +0x20fadf8, count +0x20fcd38; its type +0 into the 0x90-byte type table +0x20f3ae0, state +0x20,
    timer +0x24, position +0xc): a taken item respawns after its type's time (+0x48, with its sound), a present one
@@ -5439,7 +5151,6 @@ THISCALL void match_479a90(char *s, DWORD dt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void item_update(char *s, DWORD dt);
 /* batch 193 (lifted/grp149.c): the objects' frame loop, the followed player's name, the sound table */
-#include "lifted/grp149.c"
 /* 0x490d40 match_490d40(dt) (thiscall on the scene, ret 4): unless the game is paused (+0x2149308 with +0x214930c ==
    1), every object in use (0x2cc-byte records, flag +0x131ae48, count +0x13c9b24) gets its frame (0x490440, its
    index and dt) */
@@ -5455,7 +5166,6 @@ void THISCALL replay_drawFollowedName(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int sound_initSoundTable(const char *file, int volume);
 /* batch 194 (lifted/grp150.c): the in-match network packets */
-#include "lifted/grp150.c"
 /* 0x48c830 net_processGamePacket(from, type, packet) (thiscall on the scene, ret 0xc): only type 0x40; recorded to
    the replay file first when recording (+0x2340d1d, 0x46cc30); while waiting for the start (+0x233cc20) only kind
    1. By the kind (byte 1): 0 a player's state (position, aim, weapon, the five weapon slots), 1 the game state (time,
@@ -5465,7 +5175,6 @@ int sound_initSoundTable(const char *file, int volume);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void net_processGamePacket(char *s, DWORD from, DWORD type, DWORD pkt);
 /* batch 195 (lifted/grp151.c): the loading screen's state machine */
-#include "lifted/grp151.c"
 /* 0x468750 game_processLoadingMode() (thiscall on the scene): one step of loading per call. On the first call
    (+0x233cc28 == 0) the loading lines are reset (+0x2340c60 lines of 0x100 bytes at +0x233cc60, the title line).
    By the stage (+0x233cc24, 0..8): the replay file's header read (mode 3), the map named (0x9dad94 into 0x907b30;
@@ -5477,7 +5186,6 @@ THISCALL void net_processGamePacket(char *s, DWORD from, DWORD type, DWORD pkt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD game_processLoadingMode(char *s);
 /* batch 196 (lifted/grp152.c): the replay viewer's frame */
-#include "lifted/grp152.c"
 /* 0x487f00 replay_frame() (thiscall on the scene; 9.3 KB: functions.csv had its second part, from 0x4885a0, as
    "hud_cycleF11Mode"): on the first frame (+0x233cc28 == 0) the cameras reset from the start view; then the frame
    time, the viewer's keys (camera 0..9, follow a player / the next / a random one, pause, speed, the HUD toggles),
@@ -5489,7 +5197,6 @@ THISCALL DWORD game_processLoadingMode(char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD replay_frame(char *s);
 /* batch 198 (lifted/grp153.c): the help screen, the loading screen's cylinder */
-#include "lifted/grp153.c"
 /* 0x4955a0 hud_4955a0() (thiscall on the scene; with "help_draw" at 0x4955c0, which functions.csv listed apart: the
    head runs straight into it): a half-transparent black quad over the screen (0x46bd60), then the 30 help lines
    (0x40 bytes each from +0x234334b) in white at x 0xc0, y 0, 0x10 ... 0x1d0 (0x44ad60) */
@@ -5503,7 +5210,6 @@ void THISCALL hud_4955a0(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void loading_drawCylinder(int mode, int unused, const char *text);
 /* batch 199 (lifted/grp154.c): a script's commands */
-#include "lifted/grp154.c"
 /* 0x483770 script_processCommandBy(actor, trigger, entry) (thiscall on the scene, ret 0xc): the trigger's script
    (28-byte trigger records at +0xe3b03c, +0 their entry list), its entry (20 bytes: +0xc command count, +0x10 the
    commands): each 0x30-byte command by its type 0..0x1f: triggers on / off / armed, the acting actor's (-1: none;
@@ -5511,7 +5217,6 @@ void loading_drawCylinder(int mode, int unused, const char *text);
    messages, objects created from formatted names; the scene's handlers stubbed */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void script_processCommandBy(char *s, DWORD actor, DWORD trig, DWORD entry);
-#include "lifted/grp155.c"
 /* 0x483640 script_processTriggers() (thiscall on the scene): every armed trigger (+0xe3c938 of them, 28-byte records
    at +0xe3b03c: +0 its point / entry list, +4 armed, +8 flags, +0xc time, +0x10 squared radius, +0x14 fired) fires
    on the game time (flag 1: +0x20fcd40 + +0x20fcd44 past its time) or on the player's actor (+0x202e8d4) inside its
@@ -5520,13 +5225,11 @@ THISCALL void script_processCommandBy(char *s, DWORD actor, DWORD trig, DWORD en
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void script_processTriggers(char *s);
 /* batch 200 (lifted/grp156.c): the actors' frame loop */
-#include "lifted/grp156.c"
 /* 0x45e0c0 actor_updateAll(dt) (thiscall on the scene, ret 4): unless paused (+0x2149308 with +0x214930c == 1),
    each actor in use (+0x1cd94b0 == 1, +0x202e8c8 of them) gets its frame (actor_processFrame(i, dt)), the triggers
    run (script_processTriggers), and the game clock (+0x20fcd40 whole seconds, +0x20fcd44 the fraction) moves on */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_updateAll(char *s, DWORD dt);
-#include "lifted/grp157.c"
 /* 0x48a370 match_inputState3() (thiscall on the scene): the free camera / test mode. On its first frame the ten
    cameras reset and the cursor centred; then the keys (movement W/A/S/D/Q/E, speed, camera 1..6, zoom, the F1..F6
    setting cycles with shift, Esc) set the scene's input flags, the cursor's offset moves the view, the local
@@ -5539,7 +5242,6 @@ THISCALL void actor_updateAll(char *s, DWORD dt);
 THISCALL DWORD match_inputState3(char *s);
 /* batch 201 (lifted/grp160.c): the profile screen's key handlers, one per page (split out of profile_processInput
    in functions.csv: menu_44cdd0 reaches them through its jump table) */
-#include "lifted/grp160.c"
 /* 0x44c600 profile_44c600(): page 1, the profile list: up / down held with key repeat (0x76d37c / 0x680bb4) move
    the cursor 0x9f8d30 over the 3 x 3 grid (sound 2), Enter picks (profile_44b600), the delete / copy keys
    (profile_44b670, profile_44b6e0) */
@@ -5560,20 +5262,17 @@ void profile_44ca90(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void profile_44cc60(void);
 /* batch 201 (lifted/grp158.c, grp159.c): the menu's key dispatch */
-#include "lifted/grp158.c"
 /* 0x44cdd0 menu_44cdd0(): the profile screen's keys: none with a dialog (0x90d1c4); during the intro animation
    (0x9f6838, state 0x9f8e54 != 5) Enter / Esc skip it (state 5, the fade values set); else page 0x9f8f10 (1..6)
    picks its handler by an inline jump table (profile_44c600 .. profile_44cc60) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_44cdd0(void);
-#include "lifted/grp159.c"
 /* 0x4319d0 menu_processKeys(): the menus' keys: none while 0x68039c; the input poll (0x4012c0); none while
    0x680370 or the fade 0x9da434 above its limit; a pending dialog (0x4df900) takes them (0x431950); else the
    screen 0x76d3e8 (200, 210, 300, 400, 500, 600, 700, 800, 900, 9999) picks its key handler by tail call */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_processKeys(void);
 /* batch 202 (lifted/grp161.c): the fade step after a menu frame and the match's per-state frame */
-#include "lifted/grp161.c"
 /* 0x4202d0 FUN_004202d0(): a menu frame's end: 0x4572b0, then the fade 0x9da434 steps down by 0x4b071c while above
    its limit 0x4a93e8, then 0x420280 by tail call */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -5584,7 +5283,6 @@ void FUN_004202d0(void);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL main_462050(void *scene);
 /* batch 203 (lifted/grp162.c): WinMain */
-#include "lifted/grp162.c"
 /* 0x43f9d0 WinMain(inst, prev, cmd, show) (stdcall): the command line (0x43f160); a running copy's window (by
    class and title) is told to quit and given half a second; the start time (GetSystemTime into 0x9dd878,
    timeGetTime into 0x9dd8e8) and a two-second wait; another copy still running ends it with a message box, as does
@@ -5597,7 +5295,6 @@ int THISCALL main_462050(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* batch 204 (lifted/grp163.c): the game's start-up load */
-#include "lifted/grp163.c"
 /* 0x430400 app_checkCdAndLoad(inst): key tables 0x4d1688 / 0x4d1a98 cleared; the loaders (0x4515d0 .. 0x42fb40),
    the 640 x 480 cursor range, 0x4302d0; the CD check once (0x401410 with the main window; failure: a message box
    and 0); unless 0x76d410 the five checks (0x41e6d0 .. 0x41e670) each end it with their message; the window's
@@ -5610,20 +5307,17 @@ DWORD WINAPI game_WinMain(DWORD inst, DWORD prev, DWORD cmd, DWORD show);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int app_checkCdAndLoad(void *instance);
 /* batch 205 (lifted/grp164.c .. grp166.c): the mission-select state, the main loop's frame, two HUD panels */
-#include "lifted/grp164.c"
 /* 0x44aa40 menuState500_missionSelect(): the mission-select screen's frame (119 bytes; functions.csv said 4099):
    0x441740 while 0x9f63b8, 0x448140 unless page 0x9f62f8 is 2, the draw (0x447cb0); on pages other than 0 / 1 a
    dialog (0x90d1c4) draws its box (0x428c30 with 0x9f6308 .. 0x9f6314), else unless 0x9f6300 the input
    (0x44aa30 with 0x9f62e0, else 0x44aa20) by tail call */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menuState500_missionSelect(void);
-#include "lifted/grp165.c"
 /* 0x420280 main_loop(): one frame: in a match (screen 0x76d3e8 == 9999) 0x41f970 unless 0x67ef0c is 9999 too,
    the input (0x445c60, 0x4012c0) unless 0x68039c, the match frame (main_462050 on the scene 0x9087b4); its 0 ends
    the match (game_postMatch by tail call); outside a match the menus' frame (menu_frame by tail call) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void main_loop(void);
-#include "lifted/grp166.c"
 /* 0x494930 hud_drawRanking() (thiscall on the scene): the ranking panel: the mode's name ("%s RANKING" from the
    64-byte table 0x4c7030 by +0x22e7180); in team games (+0x22e7184 == 1) both teams in score order (0x463780,
    scores +0x2221fb8), each team's ranked players (+0x23428f6, +0x2342976 of them, by 0x463740 on their team)
@@ -5642,7 +5336,6 @@ void THISCALL hud_drawMain(void *scene);
 void THISCALL hud_496240(void *scene);
 /* batch 206 (lifted/grp167.c .. grp170.c): functions whose call sites the patch DLL retargets; those calls are lifted
    with lift.py "@site" (the target read from the live instruction) and the rel32 bytes listed in g_patchOk */
-#include "lifted/grp167.c"
 /* 0x48b200 match_inputState2() (thiscall on the scene): the match's frame: the round start (0x49df10) until
    +0x233cc28, the frame timer (armc_461210 -> dt at +0x44), the clocks (+0x233cc34 / +0x233cc30 whole seconds,
    +0x2340c90 with the per-second rates +0x2340c88 / +0x2340c8c from the counters +0x2340c80 / +0x2340c84), three
@@ -5651,7 +5344,6 @@ void THISCALL hud_496240(void *scene);
    quit (+0x23432cf) ends it (0x457310, 0), else the state +0x233cc20 */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD match_inputState2(char *scene);
-#include "lifted/grp168.c"
 /* 0x41fa40 menu_frame(): the menus' frame: the cursor blink 0x4dda44, the screen's music (0x41f970), the keys
    (0x445e40, menu_processKeys) unless 0x9da49c is 0x68 / 0x69; on screen 300 the launch fade (0x4e1870, 0x4df02c,
    0x4dda48) into a match (9999); 0x41f820; the screen's frame by 0x76d3e8 (100 .. 900); a dialog (0x4290d0); the
@@ -5660,7 +5352,6 @@ THISCALL DWORD match_inputState2(char *scene);
    every second (0x83a9d4), the frame's dt 0x4b071c (at most 1) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_frame(void);
-#include "lifted/grp169.c"
 /* 0x460570 game_loadAllData() (thiscall: the scene's constructor): the timers, every member array built (0x401290 /
    the CRT's vector constructor 0x49fd2d), vtables set, the parts loaded (0x4700a0 with nine names; @0x460920:
    0x473780, the patch DLL's cat_wrap; 0x4875d0; failure: 0x46c710 to the log), the ten camera presets, 0x45dfb0,
@@ -5668,7 +5359,6 @@ void menu_frame(void);
    cut, 0x4617f0. SEH frame emulated. Returns the scene */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL DWORD game_loadAllData(char *s);
-#include "lifted/grp170.c"
 /* 0x4982f0 hud_pass() (thiscall on the scene): the in-match 2D pass: GL state, the fog colour from +0xbe16f8 ..,
    clears, the HUD projection (0x4685f0), the scene parts drawn in order (0x4841f0 .., 0x496f20 / 0x497d20 with
    0x468700's scale), the overlays by the scene's flags and the local player's record: the player markers
@@ -5679,7 +5369,6 @@ THISCALL DWORD game_loadAllData(char *s);
 void THISCALL hud_pass(void *scene);
 /* batch 208 (lifted/grp171.c, grp172.c): functions where the patch DLL overwrites a block of code; lift.py
    "%addr=bytes" lifts the patched block too and the lifted code runs whichever is in memory (g_patchOk lists it) */
-#include "lifted/grp171.c"
 /* 0x4913a0 hud_drawPlayerMarkers() (thiscall on the scene): for each other player in play (+0x1eccbbc == 1 and the
    record's marker flag, stride 0x8888) at its projected screen point: the off-screen arrow and the target box
    (textures from the set 0xa0e010 by +0xbc06ac / +0xbc06a0, quads through glTexCoord2f / glVertex2i), team
@@ -5688,7 +5377,6 @@ void THISCALL hud_pass(void *scene);
    the patch DLL's label_halfw(name) in its 21-byte block) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void THISCALL hud_drawPlayerMarkers(void *scene);
-#include "lifted/grp172.c"
 /* 0x49d290 match_combatInput() (thiscall on the scene): the match's input: 0x461f10; unless paused, dead or in a
    menu the key bindings (0x4deb58 .., 0x4def00 .., 0x4e0460 .., tested pressed by 0x401600 / held by 0x401590)
    set the scene's input flags (+0x2343257 .. +0x234331f), weapon and view choices, chat and menu keys; the mouse
@@ -5697,7 +5385,6 @@ void THISCALL hud_drawPlayerMarkers(void *scene);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void match_combatInput(char *s);
 /* batch 209 (lifted/grp173.c): an actor's frame */
-#include "lifted/grp173.c"
 /* 0x4580b0 actor_processFrame(i, dt) (thiscall on the scene, ret 8; 21 KB): actor i (+0x1cd93a8, stride 0x8888) of
    player +0x10c (+0x1561b68, stride 0x47fd2) with its parts (head .. booster tables by the player's +0x30c ..
    +0x31c) and items: death (0x45dca0) once its armour is gone, the local player's view (0x45eab0), the movement,
@@ -5708,7 +5395,6 @@ THISCALL void match_combatInput(char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void actor_processFrame(char *s, DWORD i, DWORD dt);
 /* batch 210 (lifted/grp174.c): the game mode's frame */
-#include "lifted/grp174.c"
 /* 0x4988e0 game_processGameMode() (thiscall on the scene; 16.7 KB): with a log (0x9f67ec, 0x76d410) the ranking
    is written to a file; then by the mode (0x76d368: deathmatch, team, sudden death, arenas, gladiator ...) the
    round's clock, frags and the ranking tables (+0x23428f6 / +0x2342936), respawns and team changes, the end of
@@ -5718,7 +5404,6 @@ THISCALL void actor_processFrame(char *s, DWORD i, DWORD dt);
 THISCALL void game_processGameMode(char *s);
 /* batch 211 (lifted/grp175.c, grp176.c): native until now; their only in-memory change is a call the patch DLL
    retargets (lift.py "@site", g_patchOk), or none */
-#include "lifted/grp175.c"
 /* 0x403170 text_draw5 / 0x402620 text_draw8 / 0x4028b0 text_draw16 / 0x402c90 text_draw32 / 0x402740 text_draw8b /
    0x4029d0 text_drawBox16 / 0x403210 hud_403210 / 0x402db0 hud_402db0 (x, y, text[, w]): the text passes: the 2D
    projection (0x41ef90), the colour 0x76d438.., per font texture (ids 0x9dae1c, 0x76d360, 0x76d448, set 0xa0e010)
@@ -5745,7 +5430,6 @@ void hud_402db0(int x0, int y, int x1, const char *text);
    patch DLL's cursor_vtx */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawCursor(void);
-#include "lifted/grp176.c"
 /* 0x44ad60 text_drawSized(x, y, text, size): text_draw5 / 8 / 16 / 32 by the size */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void text_drawSized(int x, int y, const char *text, int size);
@@ -5761,7 +5445,6 @@ void hud_4950a0(int x0, int y0, int x1, int y1);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void menu_drawVersion(void);
 /* batch 212 (lifted/grp177.c): native until now, not changed in memory by the patch DLL (it wraps calls to them) */
-#include "lifted/grp177.c"
 /* 0x491f50 hud_drawLockOn() (thiscall on the scene): for each other player in play with a lock timer
    (+0x2222148, per player) the lock-on square at its screen point, the timer scaling it (textures from the set
    0xa0e010 by +0xbc06a0, quads through glTexCoord2f / glVertex2i) */
@@ -5786,20 +5469,17 @@ void THISCALL hud_4953d0(void *scene);
 void THISCALL replay_drawMessage(void *scene);
 /* batch 213 (lifted/grp178.c .. grp180.c): functions that jump into code caves of the installed exe (0x4a8e20.. at
    the end of .text): lift.py "&lo-hi" lifts each cave as part of the function that reaches it */
-#include "lifted/grp178.c"
 /* 0x41ef90 gfx_setProjection2D3D(mode): unless already in it (0x5ae9bc), the viewport (the cave 0x4a8fa4: in 2D a
    centred box of h * 16 / 9, or with the patch DLL's menu43 rewrite of the cave (%0x4a8fbb) h * 4 / 3, when the
    screen is wider), the projection (mode 1: gluPerspective from 0x68038c / 0x4e1870, depth on; else gluOrtho2D,
    depth off) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 void gfx_setProjection2D3D(int mode);
-#include "lifted/grp179.c"
 /* 0x42eed0 FUN_0042eed0(w, h, bpp, hz): the display mode: the cave 0x4a8e54 keeps the desktop mode (0x67eefc /
    0x76d430) as is (leaving a changed one, flag 0xb12a80, by ChangeDisplaySettingsA(0)) and remembers any other
    (0xb12a84 / 0xb12a88, flag set) before the original sets it with a DEVMODE (32 bits) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h); the exe patch's cave (0x4a8e54) done in C */
 int FUN_0042eed0(int w, int h, DWORD flags, int bits);
-#include "lifted/grp180.c"
 /* 0x43fcc0 app_init(inst, show): the checks (0x41e6d0 .. unless 0x76d410), the 640 x 480 default, paths and
    settings (0x43f580, 0x43f5a0, 0x42b3e0), in the cave 0x4a8e20 SetProcessDPIAware when user32 has it; the desktop's
    DC, size and depth (0x67eefc, 0x76d430, 0x76d3ec), 0x42fd40 / 0x42eca0 / 0x43f640, the display mode
@@ -6202,7 +5882,7 @@ static MockCall g_calls[MOCK_MAXCALLS], g_calls1[MOCK_MAXCALLS];
 /* dwords that are addresses in this thread's stack in both runs (a returned pointer into a dead frame, the CRT's
    strtok position in a caller's buffer) compare equal: the two runs' frames sit at different addresses */
 static DWORD g_stackLo, g_stackHi;
-static int stackish(DWORD v) { return (v >= g_stackLo && v < g_stackHi) || (v >= g_lstkLo && v < g_lstkHi); }
+static int stackish(DWORD v) { return v >= g_stackLo && v < g_stackHi; }
 static int same_mem(const BYTE *a, const BYTE *b, DWORD n)
 {
 	if (!memcmp(a, b, n)) return 1;
@@ -7178,8 +6858,6 @@ __asm__(".text\n"
 static inline __attribute__((always_inline)) void paint_stacks(void)   /* inlined: paint_below must start below run_guarded */
 {
 	if (!g_paintStacks) return;
-	DWORD *top = lstk_enter(); lstk_leave(top);
-	for (int i = LSTK_DWORDS - 0x10000 / 4; i < LSTK_DWORDS; i++) top[i] = 0xcdcdcdcdu;   /* the 64 KB below the start */
 	paint_below(0x8000);                        /* last: any call after it would leave its frame in the paint */
 }
 /* run one side of a test; an exit() inside it ends the run. The FPU environment is put back as it was after every
@@ -7194,15 +6872,12 @@ static DWORD __attribute__((noinline)) run_guarded(DWORD (*f)(void))
 	static BYTE env[28];
 	__asm__ volatile("fnstenv %0" : "=m"(env));
 	__asm__ volatile("fldenv %0" : : "m"(env));
-	static void *lstkTop;
 	static EXCEPTION_REGISTRATION_RECORD *seh;
 	NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
 	seh = tib->ExceptionList;
-	if (g_lstkInit == 2) lstkTop = TlsGetValue(g_lstkTls);
 	if (__builtin_setjmp(g_exitJmp)) {
 		((NT_TIB *)NtCurrentTeb())->ExceptionList = seh;
 		g_inRun = 0; g_wdTid = 0; __asm__ volatile("fldenv %0" : : "m"(env));
-		if (g_lstkInit == 2) TlsSetValue(g_lstkTls, lstkTop);
 		if (g_postRun) g_postRun();
 		return EXITED;
 	}
@@ -12191,10 +11866,9 @@ static void datalist_setup(void)
 		for (int k = 12; k < 15; k++) m[k] = (float)irnd(-500, 500) / 10.0f;
 	}
 	g_paintStacks = 1;
-	/* (about 1 test in 1000 differs in the skeleton cache's pool, 0x980000 on: 32 bytes the original's skeleton loading
-	   takes from stack it never wrote, which holds the earlier callees' leftovers 4 bytes apart in the two runs, since
-	   native_call realigns the callee's stack. Seen 2026-10-29 with 4 shapes, 3 skeletons, lit 2; the play test then
-	   keeps the original. Not the lifted code's doing) */
+	/* (the skeleton loading takes 32 bytes from stack it never wrote: the earlier callees' leftovers. The rebuild's
+	   frame was 4 bytes deeper than the original's, which gave those reads other values now and then (2 in 400 in the
+	   2026-10-31 play tests, the play test then keeping the original); its frame now matches (src/load/skel_data.c)) */
 }
 ST(data_loadFrom_46f4e0, datalist_setup();,
    (TC(void, 0x46f4e0, char *, int, int, int, int, int, int, int, int, int, int, int)(BUF + 0x8f0000, g_dl[0], g_dl[1], g_dl[2], g_dl[3],
@@ -17999,11 +17673,6 @@ static void run_state_tests(void)
 	say("recomp: game frozen (%d threads), comparing functions that use game memory (.data %lu bytes)\n",
 	    g_nthr, (unsigned long)g_dataSize);
 	mocks_install(1);                           /* library mocks for the whole frozen phase (see run_one) */
-	lstk_leave(lstk_enter());                   /* the arena and this thread's slice, before the first run: the arena's range
-	                                               counts as stack (mock_arg, stackish), and set up lazily a test's original run
-	                                               could see it unset and its rebuilt run set. The slice must exist too:
-	                                               run_guarded restores the thread's arena top after an exit, and a top saved
-	                                               as unset would make every later run take a new slice (16 at most) */
 	void *veh = AddVectoredExceptionHandler(1, crash_report);
 	if (harness_selfcheck()) {                  /* else nothing is recorded as passed, so nothing gets hooked */
 		for (unsigned i = 0; i < sizeof g_hits / sizeof g_hits[0]; i++) {

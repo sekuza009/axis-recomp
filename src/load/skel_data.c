@@ -177,7 +177,10 @@ void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns
 	AT(int, list, 0x1c) = nk;
 	AT(int, list, 0x2c) = lit;
 	AT(int, list, 0x18) = 0;
-	u32 found[64];
+	/* 65, and the entries walked by pointer: the frame is then as deep as the original's (0x11c with the saved
+	   registers), so the callees' frames lie where they did there. The skeleton loading reads stack it never wrote
+	   (the earlier callees' leftovers); a frame 4 bytes deeper gave those reads other values now and then */
+	u32 found[65];
 	for (int i = 0; i < AT(int, list, 0x10); i++) {
 		u32 shape = shape_getByName(shapes, (const char *)names + i * 0x44, 0);
 		if (i < 64)
@@ -200,8 +203,8 @@ void THISCALL (data_loadFrom_46f4e0)(u8 *list, void *shapes, void *skels, int ns
 	}
 	AT(u8 *, list, 0x14) = AT(u8 *, list, 8);
 	int colours = AT(int, list, 0x10) * 100;
-	for (int i = 0; i < AT(int, list, 0x10); i++) {
-		u32 *entry = (u32 *)(AT(u8 *, list, 0x14) + i * 100);
+	u32 *entry = (u32 *)AT(u8 *, list, 0x14);
+	for (int i = 0; i < AT(int, list, 0x10); i++, entry += 25) {
 		entry[0] = i < 64 ? found[i] : shape_getByName(shapes, (const char *)names + i * 0x44, 0);
 		entry[1] = AT(u32, names, i * 0x44 + 0x40);
 		if (AT(int, list, 0x2c) == 1 && entry[0]) {
