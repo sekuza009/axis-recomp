@@ -3,7 +3,8 @@ r"""name_globals.py mapping.csv [--dry]: name the game's global variables.
 Each mapping line is "address,type,name" ('#' starts a comment), e.g. "0xa1efb8,u32,g_randPos". The name is defined
 in src/globals.h as GAME_VAR(type, address), and every GAME_VAR(type, address) in src/ written with exactly that type
 becomes the name (uses with another type stay as they are, so the generated code does not change). A name already
-used anywhere, or an address src/ never uses with that type, stops the run before anything is written."""
+used anywhere, or an address src/ never uses with that type, stops the run before anything is written. --reuse
+allows names already used (to promote a file's local #define of the same global, removed first)."""
 import glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -26,7 +27,7 @@ def pattern(addr, typ):
 
 bad = 0
 for addr, typ, name in entries:
-    if re.search(r'\b%s\b' % name, allt):
+    if '--reuse' not in sys.argv and re.search(r'\b%s\b' % name, allt):
         print('already exists:', name); bad += 1
     if not any(pattern(addr, typ).search(t) for f, t in data.items() if f != HEADER.replace('/', os.sep)):
         print('no GAME_VAR(%s, 0x%x) in src' % (typ, addr)); bad += 1

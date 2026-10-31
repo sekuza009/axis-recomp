@@ -473,7 +473,7 @@ u32 (profile_deleteFiles)(void)
 static u32 keyboard_back(void)
 {
 	GAME_CDECL(0x431590, void, void)();
-	return GAME_CDECL(0x401310, u32, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+	return GAME_CDECL(0x401310, u32, void *)(g_mainWindow);   /* input_initKeyboard */
 }
 
 /* the typed line emptied (its length 0x9dcd30) */

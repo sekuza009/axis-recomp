@@ -550,7 +550,7 @@ int (app_reportStartupProblem)(int code)
 	case -3: text = 0x751424; break;
 	default: return code;
 	}
-	return MessageBoxA(GAME_VAR(void *, 0x4ded18), (const char *)text, (const char *)0x751024, 0);
+	return MessageBoxA(g_mainWindow, (const char *)text, (const char *)0x751024, 0);
 }
 
 
@@ -640,7 +640,7 @@ int (reg_readServerSettings)(void)
 	if (RegOpenKeyExA(0x80000001, (const char *)0x4b1728, 0, 0xf003f, &key)) {
 		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b16a4 : 0x4b1660));   /* sys_messageBox */
 		RegCloseKey(key);
-		return PostMessageA(GAME_VAR(void *, 0x4ded18), 0x10, 0, 0);   /* WM_CLOSE */
+		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
 	size = 50;
 	RegQueryValueExA(key, (const char *)0x4b1720, 0, &type, (void *)0xa0b24c, &size);
@@ -691,7 +691,7 @@ int (sys_checkClockTampering)(void)
 	if (ticked * GAME_VAR(double, 0x4a9598) + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
 		GAME_CDECL(0x41edf0, int, const char *)((const char *)(GAME_VAR(int, 0x9dae74) == 1 ? 0x4b2914 : 0x4b2888));   /* sys_messageBox */
 		if (g_clockCheckClosed) {
-			PostMessageA(GAME_VAR(void *, 0x4ded18), 0x10, 0, 0);   /* WM_CLOSE */
+			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}
 		GetSystemTime((void *)0x9dd878);

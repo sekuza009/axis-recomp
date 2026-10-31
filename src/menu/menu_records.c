@@ -121,11 +121,11 @@ void (mech_unpackFromRecord)(void)
    negative or NaN chroma or value becomes 0 in the record first) */
 void (mech_loadFromProfile)(void)
 {
-	g_savedMechChest = GAME_VAR(int, 0x9f19fc);
+	g_savedMechChest = g_profileMechChest;
 	g_savedMechParts = g_profileMechRecord;
-	g_savedMechArm = GAME_VAR(int, 0x9f1a00);
-	g_savedMechBooster = GAME_VAR(int, 0x9f1a08);
-	g_savedMechLeg = GAME_VAR(int, 0x9f1a04);
+	g_savedMechArm = g_profileMechArm;
+	g_savedMechBooster = g_profileMechBooster;
+	g_savedMechLeg = g_profileMechLeg;
 	g_savedMechItem2 = g_profileMechItem2;
 	g_savedMechItem4 = g_profileMechItem4;
 	g_savedMechItem3 = g_profileMechItem3;
@@ -145,10 +145,10 @@ void (mech_loadFromProfile)(void)
 void (mech_storeToProfile)(void)
 {
 	g_profileMechRecord = g_savedMechParts;
-	GAME_VAR(int, 0x9f19fc) = g_savedMechChest;
-	GAME_VAR(int, 0x9f1a04) = g_savedMechLeg;
-	GAME_VAR(int, 0x9f1a00) = g_savedMechArm;
-	GAME_VAR(int, 0x9f1a08) = g_savedMechBooster;
+	g_profileMechChest = g_savedMechChest;
+	g_profileMechLeg = g_savedMechLeg;
+	g_profileMechArm = g_savedMechArm;
+	g_profileMechBooster = g_savedMechBooster;
 	g_profileMechItem3 = g_savedMechItem3;
 	g_profileMechItem2 = g_savedMechItem2;
 	g_profileMechItem4 = g_savedMechItem4;
@@ -618,7 +618,7 @@ static int menu_choice(int i, u32 *r)
 		return 0;
 	case 2:
 		result = GAME_CDECL(0x451b80, int, int)(0x65);   /* net_connect */
-		if (result == 2 || result == 0 || GAME_CDECL(0x452170, int, void *, int)(GAME_VAR(void *, 0x4ded18), 0x65) == 0) {
+		if (result == 2 || result == 0 || GAME_CDECL(0x452170, int, void *, int)(g_mainWindow, 0x65) == 0) {
 			sound_playMenu(6);
 			*r = GAME_CDECL(0x41ee40, u32, int)(result == 2 ? 0x2a : 0x29);
 			return 1;

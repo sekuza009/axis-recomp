@@ -136,8 +136,8 @@ void (room_loadSettingsRecord)(void)
 	memset((void *)0x4df9c8, 0, 32);
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);   /* stored before the name is copied, as in the original */
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
-	GAME_VAR(u8, 0x4df9e9) = g_roomRecPlayers;
-	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
+	g_roomPlayers = g_roomRecPlayers;
+	g_roomCustom = g_roomRecCustom;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
 }
@@ -207,9 +207,9 @@ void (room_copyJoinedSettings)(void)
 	strcpy((char *)0x9dd20e, (const char *)0x9dd5a6);
 	u8 map = g_roomRecPlayers;
 	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
-	GAME_VAR(u8, 0x4df9e9) = map;
+	g_roomPlayers = map;
 	g_roomMap = GAME_VAR(u8, 0x5b1b50);
-	GAME_VAR(u8, 0x4df9ea) = GAME_VAR(u8, 0x5b1b52);
+	g_roomCustom = g_roomRecCustom;
 	GAME_VAR(u8, 0x4df9eb) = GAME_VAR(u8, 0x5b1b53);
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
@@ -930,7 +930,7 @@ int (lobby_openConnection)(void)
 			GAME_CDECL(0x41ee40, void, int)(r == 0 ? 0x3d : 0x46);   /* the message */
 			return 0;
 		}
-		if (!GAME_CDECL(0x452170, int, void *, int)(GAME_VAR(void *, 0x4ded18), 100)) {   /* net_asyncSelect */
+		if (!GAME_CDECL(0x452170, int, void *, int)(g_mainWindow, 100)) {   /* net_asyncSelect */
 			GAME_CDECL(0x41ee40, void, int)(0x3e);
 			return 0;
 		}

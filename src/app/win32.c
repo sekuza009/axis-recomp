@@ -305,7 +305,7 @@ int (chat_createEdit)(int chars)
 	g_inputFont = IMPORT(0x4a9038, void *, const void *)(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
 		0, (const char *)0x4b29a8, NULL, 0x40000400, GAME_VAR(int, 0x9da3d8) - 5, GAME_VAR(int, 0x9da3dc) + 0x21,
-		chars * 8, 0x18, GAME_VAR(void *, 0x4ded18), 0xca, GAME_VAR(void *, 0x67ef18), NULL);   /* CreateWindowExA("EDIT") */
+		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
 	GAME_VAR(void *, 0x9dd888) = edit;
 	if (edit) {
 		SendMessageA(edit, 0x30, GAME_VAR(u32, 0x9dd8e4), 0);   /* WM_SETFONT */
@@ -396,7 +396,7 @@ int (app_init)(void *inst, int show)
 		(0, (const char *)0x4b0714, (const char *)0x4b2874, 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
 	if (!g_hWndMain)
 		return 0;
-	GAME_VAR(void *, 0x67ef18) = inst;
+	g_hInstance = inst;
 	GAME_VAR(int, 0x4deb54) = show;
 	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
 	for (int k = 0; k < 3; k++)
@@ -476,7 +476,7 @@ static void chat_close(void *edit, int sent)
 		SendMessageA(edit, 0xd, 0x80, 0x9dc92c);   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
-	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 	GAME_CDECL(0x431600, u32, int)(sent);   /* chat_closeLine */
 	GAME_VAR(int, 0x9dd900) = 1;
 }
@@ -502,7 +502,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		case 9:   /* Tab */
 			if (GAME_VAR(int, 0x76d3e8) == 0x320) {
 				IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
-				IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 				GAME_VAR(int, 0x9dc428) = 0x14;
 				GAME_VAR(int, 0x9dd900) = 1;

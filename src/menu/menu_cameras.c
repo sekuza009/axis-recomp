@@ -470,7 +470,7 @@ void (match_debugHandler)(void)
 		}
 		GAME_VAR(int, 0x68039c) = 0;
 		input_resetKeys();
-		input_initKeyboard(GAME_VAR(void *, 0x4ded18));
+		input_initKeyboard(g_mainWindow);
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4defa8))) {

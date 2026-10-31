@@ -648,7 +648,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_mouseClick GAME_VAR(int, 0x4ded88)         /* a click this frame */
 #define g_mouseHeld GAME_VAR(int, 0x4ded94)          /* (by use) the button held down */
 #define g_localPlayer GAME_VAR(int, 0x76d41c)        /* (by use) the local player's index in the room's lists */
-#define g_hWndMain GAME_VAR(void *, 0x4ded18)
+#define g_hWndMain g_mainWindow
 #define g_screenW GAME_VAR(int, 0x5b1998)
 #define g_screenH GAME_VAR(int, 0x4e045c)
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)

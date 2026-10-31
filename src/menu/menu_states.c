@@ -583,7 +583,7 @@ static u32 reset_menus(u32 farZ, u32 nearZ, int blocked, int deb48, int clear_4e
 		return typing;
 	GAME_VAR(int, 0x68039c) = 0;
 	GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
-	return GAME_CDECL(0x401310, u32, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+	return GAME_CDECL(0x401310, u32, void *)(g_mainWindow);   /* input_initKeyboard */
 }
 #define FAR_BACK 0xc3e10000u    /* -450 */
 #define NEAR_BACK 0xc4098000u   /* -550 */

@@ -138,7 +138,6 @@ void (loading_draw)(u32 progress)
 }
 
 /* ---- the game's start-up load ---- */
-#define g_mainWindow GAME_VAR(void *, 0x4ded18)
 
 /* a texture's id by its name (copied to the stack first, as the original does) */
 static int texture_named(const char *name)

@@ -202,7 +202,7 @@ u32 (room_leftClicks)(void)
 		if (GAME_VAR(int, 0x68039c)) {
 			GAME_VAR(int, 0x68039c) = 0;
 			GAME_CDECL(0x431590, void, void)();      /* input_resetKeys */
-			GAME_CDECL(0x401310, void, void *)(GAME_VAR(void *, 0x4ded18));   /* input_initKeyboard */
+			GAME_CDECL(0x401310, void, void *)(g_mainWindow);   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
 		input_setKeysBlocked(4);
@@ -284,7 +284,7 @@ static u32 typing_end(void)
 	if (!GAME_VAR(int, 0x68039c))
 		return 0;
 	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
-	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
+	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
 	return GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 }
 
