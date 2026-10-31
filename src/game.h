@@ -658,7 +658,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define room_4321c0(x, y) GAME_CDECL(0x4321c0, int, int, int)(x, y)
 #define room_432280(x, y) GAME_CDECL(0x432280, int, int, int)(x, y)
 #define room_432340(x, y) GAME_CDECL(0x432340, int, int, int)(x, y)
-#define room_434320() GAME_CDECL(0x434320, void, void)()   /* open the message field */
+#define field_editMessage() GAME_CDECL(0x434320, void, void)()   /* open the message field */
 #define profile_41e7a0(code) GAME_CDECL(0x41e7a0, int, int)(code)   /* quit the game with exit code (app/app_quit.c) */
 #define PostMessageA(hwnd, msg, w, l) IMPORT(0x4a9328, int, void *, u32, u32, u32)(hwnd, msg, w, l)
 #define profile_44bc50() GAME_CDECL(0x44bc50, void, void)()
@@ -932,11 +932,11 @@ typedef struct { float r, g, b, a; } Colour;
 #define mapSelect_toggle(i) GAME_CDECL(0x4417c0, void, int)(i)   /* map i of the map-select list in or out */
 #define mainmenu_440b70(x, y) GAME_CDECL(0x440b70, int, int, int)(x, y)   /* the map-select control at (x, y), -1: none */
 #define arena_4033e0(x, y) GAME_CDECL(0x4033e0, int, int, int)(x, y)   /* the arena map list's control at (x, y) */
-#define room_403560(i) GAME_CDECL(0x403560, void, int)(i)     /* the arena list: map i in or out */
-#define room_403590(i) GAME_CDECL(0x403590, void, int)(i)     /* map i's game type stepped */
-#define room_403530() GAME_CDECL(0x403530, void, void)()      /* no map chosen */
-#define room_4034e0() GAME_CDECL(0x4034e0, void, void)()      /* every map chosen */
-#define room_403640() GAME_CDECL(0x403640, void, void)()      /* the list kept */
+#define mapList_toggle(i) GAME_CDECL(0x403560, void, int)(i)     /* the arena list: map i in or out */
+#define mapList_stepGameType(i) GAME_CDECL(0x403590, void, int)(i)     /* map i's game type stepped */
+#define mapList_chooseNone() GAME_CDECL(0x403530, void, void)()      /* no map chosen */
+#define mapList_chooseAll() GAME_CDECL(0x4034e0, void, void)()      /* every map chosen */
+#define mapList_ok() GAME_CDECL(0x403640, void, void)()      /* the list kept */
 #define mapSelect_allOut() GAME_CDECL(0x440df0, void, void)()   /* and out */
 #define mapSelect_ok() GAME_CDECL(0x441770, void, void)()   /* the map-select dialog's OK */
 #define net_addPlayerRecord(reply) GAME_CDECL(0x452de0, void, void *)(reply)   /* the server's accept reply handled */
@@ -1212,8 +1212,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define lobby_404930() GAME_CDECL(0x404930, void, void)()   /* the player's record from the profile */
 #define room_403300() GAME_CDECL(0x403300, void, void)()   /* the map list laid out */
 #define lobby_drawArenaTitle() GAME_CDECL(0x404980, void, void)()
-#define room_403420() GAME_CDECL(0x403420, void, void)()   /* the map on/off list reset */
-#define room_433700() GAME_CDECL(0x433700, void, void)()   /* the room settings copied */
+#define mapList_init() GAME_CDECL(0x403420, void, void)()   /* the map on/off list reset */
+#define room_loadSettingsRecord() GAME_CDECL(0x433700, void, void)()   /* the room settings copied */
 
 /* ---- the PTX video decoder (app/ptx_decode.c) ---- */
 #define ptx_46f230(out, n) GAME_CDECL(0x46f230, int, int *, int)(out, n)   /* the next n bits of the stream */
@@ -1252,26 +1252,26 @@ typedef struct { float r, g, b, a; } Colour;
 #define arena_4532a0() GAME_CDECL(0x4532a0, int, void)()   /* the session list's count */
 #define arena_4532b0(i) GAME_CDECL(0x4532b0, int, int)(i)   /* session i's record */
 
-#define room_432be0() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
-#define room_432db0() GAME_CDECL(0x432db0, void, void)()   /* a received game's settings into the room */
-#define room_433b00() GAME_CDECL(0x433b00, void, void)()   /* the game's name opened for typing */
-#define room_433bb0() GAME_CDECL(0x433bb0, void, void)()   /* the game's password opened for typing */
-#define room_433c70() GAME_CDECL(0x433c70, void, void)()   /* the chat edit control closed, the line taken */
-#define room_434490() GAME_CDECL(0x434490, void, void)()   /* the login sent */
-#define room_433e60(k) GAME_CDECL(0x433e60, int, int)(k)   /* the login form's field k opened for typing */
+#define room_copyJoinedSettings() GAME_CDECL(0x432be0, void, void)()   /* the joined game's settings into the room screen */
+#define room_takeReceivedSettings() GAME_CDECL(0x432db0, void, void)()   /* a received game's settings into the room */
+#define field_editGameName() GAME_CDECL(0x433b00, void, void)()   /* the game's name opened for typing */
+#define field_editGamePassword() GAME_CDECL(0x433bb0, void, void)()   /* the game's password opened for typing */
+#define chat_closeEdit() GAME_CDECL(0x433c70, void, void)()   /* the chat edit control closed, the line taken */
+#define login_send() GAME_CDECL(0x434490, void, void)()   /* the login sent */
+#define loginForm_openField(k) GAME_CDECL(0x433e60, int, int)(k)   /* the login form's field k opened for typing */
 #define room_4388e0() GAME_CDECL(0x4388e0, void, void)()   /* the game room's tunnel */
 #define room_434ff0() GAME_CDECL(0x434ff0, void, void)()   /* the list of games asked for again */
-#define room_43adc0() GAME_CDECL(0x43adc0, void, void)()   /* the game room's list of games drawn */
-#define room_434dd0(i) GAME_CDECL(0x434dd0, u32, int)(i)   /* game i of the list joined */
+#define gameList_draw() GAME_CDECL(0x43adc0, void, void)()   /* the game room's list of games drawn */
+#define room_joinSession(i) GAME_CDECL(0x434dd0, u32, int)(i)   /* game i of the list joined */
 #define room_432300(x, y) GAME_CDECL(0x432300, int, int, int)(x, y)   /* the game list's control at (x, y) */
-#define room_434da0() GAME_CDECL(0x434da0, void, void)()   /* the selected game joined */
-#define room_434d00() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
+#define room_startChat() GAME_CDECL(0x434da0, void, void)()   /* the selected game joined */
+#define gameList_open() GAME_CDECL(0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define room_432200(x, y) GAME_CDECL(0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
-#define room_4338c0() GAME_CDECL(0x4338c0, void, void)()
+#define room_openDialog4d() GAME_CDECL(0x4338c0, void, void)()
 #define arena_453090(name, player, map, a, b, c, d, corp) GAME_CDECL(0x453090, int, const char *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_CDECL(0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_CDECL(0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
-#define room_433640() GAME_CDECL(0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
+#define room_keepSettings() GAME_CDECL(0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */
 #define arena_4091b0() GAME_CDECL(0x4091b0, void, void)()   /* the arena's tunnel */
 #define arena_453260() GAME_CDECL(0x453260, void, void)()   /* DirectPlay's session list polled */
 #define arena_406810() GAME_CDECL(0x406810, void, void)()

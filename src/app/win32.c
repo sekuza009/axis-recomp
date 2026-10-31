@@ -469,7 +469,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 #define CallWindowProcA(proc, wnd, msg, w, l) IMPORT(0x4a930c, long, u32, u32, u32, u32, u32)(proc, wnd, msg, w, l)
 
 /* the chat line closed by a key: its text kept (Enter) or dropped, the edit destroyed, the main window focused again
-   and the line closed (room_431600, sent or not) */
+   and the line closed (chat_closeLine, sent or not) */
 static void chat_close(void *edit, int sent)
 {
 	if (sent)
@@ -477,7 +477,7 @@ static void chat_close(void *edit, int sent)
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
-	GAME_CDECL(0x431600, u32, int)(sent);   /* room_431600 */
+	GAME_CDECL(0x431600, u32, int)(sent);   /* chat_closeLine */
 	GAME_VAR(int, 0x9dd900) = 1;
 }
 
@@ -503,7 +503,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			if (GAME_VAR(int, 0x76d3e8) == 0x320) {
 				IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
 				IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
-				GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
+				GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 				GAME_VAR(int, 0x9dc428) = 0x14;
 				GAME_VAR(int, 0x9dd900) = 1;
 				GAME_VAR(int, 0x9dc428) = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */

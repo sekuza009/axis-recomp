@@ -113,7 +113,7 @@ static void menu_camera(const MenuCam *m)
 }
 
 /* 0x437a10: the game room's camera */
-void (room_437a10)(void)
+void (room_camera)(void)
 {
 	static const MenuCam room = { 0x9dce48, 0x9dd834, 0x9dd848, 0x63, 0 };
 	menu_camera(&room);

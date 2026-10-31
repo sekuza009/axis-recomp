@@ -35,7 +35,7 @@ static int has_any(const char *s, const char *bad)
 
 /* 0x434400: a room name with a character the network messages cannot carry; 0x44b7e0: a pilot name that cannot be
    a file name */
-int (room_434400)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
+int (room_nameHasBadChar)(const char *s) { return has_any(s, "`\"',/\\|~?"); }
 int (profile_44b7e0)(const char *s) { return has_any(s, "\\/:*?\"<>|"); }
 
 /* profile colour record i (nine ints, 76 bytes a record from 0x9f9068) into the preview's floats, each plus the

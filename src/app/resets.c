@@ -55,7 +55,7 @@ void (messageBox_clickClose)(void)
 }
 
 /* 0x433610: the room screen's selection from the joined session (none unless its byte 0xa052c1 is 1) */
-void (room_433610)(void)
+void (room_selectJoinedSession)(void)
 {
 	int v = GAME_VAR(u8, 0xa052c1) != 1 ? GAME_VAR(int, 0xa052d6) : 0;
 	GAME_VAR(int, 0x9dd5e0) = v;

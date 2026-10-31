@@ -135,7 +135,7 @@ void (arena_editTextField_405010)(void)
 /* ---- the game room ---- */
 
 /* 0x4339e0: the room's comment (30) */
-void (room_4339e0)(void)
+void (field_editComment)(void)
 {
 	edit_start(0x1e);
 	line_set((const char *)0x4df9c8);
@@ -148,7 +148,7 @@ void (room_4339e0)(void)
 }
 
 /* 0x433a80: the password (8), from what the line holds */
-void (room_433a80)(void)
+void (field_editPassword)(void)
 {
 	edit_start(8);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x54);
@@ -160,7 +160,7 @@ void (room_433a80)(void)
 }
 
 /* 0x433b00: the game's name (16) */
-void (room_433b00)(void)
+void (field_editGameName)(void)
 {
 	edit_start(0x10);
 	line_clear();
@@ -175,7 +175,7 @@ void (room_433b00)(void)
 }
 
 /* 0x433bb0: the game's password (12), kept unless 0x9dced0 */
-void (room_433bb0)(void)
+void (field_editGamePassword)(void)
 {
 	edit_start(0xc);
 	line_clear();
@@ -214,7 +214,7 @@ void (room_4341a0)(void) { edit_rule(2, (const char *)0x9dd202, 0x88, 0xc, 1); }
 void (room_434260)(void) { edit_rule(3, (const char *)0x9dd20e, 0xa4, 0x32, 0); }
 
 /* 0x434320: a message (8), starting empty */
-void (room_434320)(void)
+void (field_editMessage)(void)
 {
 	edit_start(8);
 	line_clear();
@@ -255,7 +255,7 @@ void (editField_readTyping)(void)
 /* 0x433e60: the login form's field k opened for typing: the name (16 typed, a 30-byte buffer), the password and
    its repeat (12; the short-field flag set) or the e-mail (40), its current text copied in, the caret by the form (0x9dd6e8; rows 0x30
    apart). Another k only clears the form's flags. Returns 0 (the original's eax) */
-int (room_433e60)(int k)
+int (loginForm_openField)(int k)
 {
 	static const struct { u32 editing, text; int bufferLength, maxLength, flag; } field[4] = {
 		{ 0x9dd348, 0x9dd1d8, 0x1e, 0x10, 0 }, { 0x9dd3f8, 0x9dd1f6, 0xc, 0xc, 1 }, { 0x9dd564, 0x9dd202, 0xc, 0xc, 1 },

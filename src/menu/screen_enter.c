@@ -198,7 +198,7 @@ void (menuState800_enterGameRoom)(void)
 	I(0x9dd6b0) = 1;
 	I(0x9dd1cc) = 0;
 	I(0x9dd198) = 0;
-	room_432be0();
+	room_copyJoinedSettings();
 	I(0x9dced0) = 1;
 	CLEAR_ALL(cleared);
 	I(0x9dd4b8) = 999;

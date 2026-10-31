@@ -46,7 +46,7 @@ void (menu_clearInputBuffer)(int mode)
 }
 
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
-void (room_4315c0)(void)
+void (chat_pushHistory)(void)
 {
 	memcpy((void *)0x67f738, (void *)0x67f338, 0x400);
 	memcpy((void *)0x67f338, (void *)0x67ef38, 0x400);
@@ -189,7 +189,7 @@ static void room_pageChanged(void)
 }
 
 /* 0x435970, 0x4359b0: the previous and the next page */
-void (room_435970)(void)
+void (roomList_prevPage)(void)
 {
 	int *page = &GAME_VAR(int, 0x9dd6ac);
 	if (*page > 0) {
@@ -199,7 +199,7 @@ void (room_435970)(void)
 	}
 }
 
-void (room_4359b0)(void)
+void (roomList_nextPage)(void)
 {
 	int *page = &GAME_VAR(int, 0x9dd6ac);
 	if (*page < GAME_VAR(int, 0x9dd4b8) && *page < 99) {
@@ -210,7 +210,7 @@ void (room_4359b0)(void)
 }
 
 /* 0x4359f0: the list's mode cycled 0 .. 2 (the one before kept in 0x9dd300), its distance limit back to 10,000,000 */
-void (room_4359f0)(void)
+void (roomList_cycleMode)(void)
 {
 	int mode = GAME_VAR(int, 0x9dd1d0);
 	GAME_VAR(int, 0x9dd300) = mode;
@@ -241,7 +241,7 @@ static int rank_value(const u8 *row, int mode, long double *value)
    records from 0xa05330, up to the first without a name): each row its rank (page 0x9dd6ac * 10 + its place) or,
    when its value (rank_value) equals the row's before, that row's rank; the page before's last value and rank
    (0x9dd384, 0x9dd328) start the comparison, and this page's are kept there for the next */
-void (room_435770)(void)
+void (roomList_fillPage)(void)
 {
 	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
 	u8 *rows = (u8 *)0x9dceec;
@@ -515,14 +515,14 @@ u32 (missionsel_clicks)(void)
 
 /* 0x431600: the chat line closed: sent (into the history) when ok, else emptied; typing off, the keyboard taken again,
    the fade timer 10. Returns what the original leaves in eax */
-u32 (room_431600)(int ok)
+u32 (chat_closeLine)(int ok)
 {
 	u32 r;
 	GAME_VAR(int, 0x68039c) = 0;
 	if (ok) {
 		GAME_CDECL(0x431590, void, void)();   /* input_resetKeys */
 		input_initKeyboard(g_hWndMain);
-		r = GAME_CDECL(0x4315c0, u32, void)();   /* room_4315c0: into the history */
+		r = GAME_CDECL(0x4315c0, u32, void)();   /* chat_pushHistory: into the history */
 	} else {
 		if (GAME_VAR(int, 0x9dcd30) > 0)
 			memset((void *)0x9dc92c, 0, GAME_VAR(int, 0x9dcd30));

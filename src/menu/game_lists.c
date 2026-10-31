@@ -259,7 +259,7 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
    the third; all dimmed while joining, 0x9dd6b4); the scroll arrows (13 / 14); the blinking 0x75a1a4 while
    searching or 0x9dd3fc; the joining box (0x74f124 and the room's name 0x9dcee8); the join confirmation (0x752aa4 /
    0x752b24, its button 0x751824 by room_432340); the border. The original leaves eax to callers that ignore it */
-void (room_43adc0)(void)
+void (gameList_draw)(void)
 {
 	int hovered = GAME_CDECL(0x432300, int, int, int)(GAME_VAR(int, 0x4ded68), GAME_VAR(int, 0x4ded6c));   /* room_432300 */
 	gfx_setProjection2D3D(2);
@@ -353,7 +353,7 @@ void (room_43adc0)(void)
    the list asked for again, the next in 5) and a stop (0xa0d7a0); then the list, and with a game joined (0x9dd56c)
    the join sent (0x9dd6b4 clear) or, once a password is typed (0x9dd6c8), it checked against the game's (+0x3b)
    (message 0x27 when wrong) */
-void (room_43ea10)(void)
+void (gameList_drawPage)(void)
 {
 	const float *step = (const float *)0x4ad498, *blinkFloor = (const float *)0x4a9418;
 	if (GAME_VAR(int, 0x9dd34c)) {
@@ -414,11 +414,11 @@ void (room_43ea10)(void)
 			GAME_VAR(int, 0x9dd3fc) = 0;
 		}
 	}
-	room_43adc0();
+	gameList_draw();
 	if (!GAME_VAR(int, 0x9dd56c))
 		return;
 	if (!GAME_VAR(int, 0x9dd6b4)) {
-		room_434dd0(g_localPlayer);
+		room_joinSession(g_localPlayer);
 		return;
 	}
 	if (!GAME_VAR(int, 0x9dd6c8) || g_paused)
@@ -547,7 +547,7 @@ static int games_leave(void)
    refresh, 3 leave, 13 / 14 one row up / down, or a row (4 .. 12): selects it, or on the selected row again within
    the double-click time (0x9dd34c) joins it. Holding the button on the arrows scrolls once the blink clock reaches
    5. The original leaves eax to callers that ignore it */
-void (room_435fc0)(void)
+void (gameList_mouse)(void)
 {
 #define g_searching GAME_VAR(int, 0x9dd6a0)
 #define g_refreshing GAME_VAR(int, 0x9dd3fc)
@@ -574,7 +574,7 @@ void (room_435fc0)(void)
 				return;
 			}
 			sound_playMenu(0);
-			room_434da0();
+			room_startChat();
 			g_joined = 1;
 		} else if (on == 1) {
 			if (g_searching || g_refreshing) {
@@ -585,7 +585,7 @@ void (room_435fc0)(void)
 				return;
 			GAME_VAR(int, 0xa0b358) = 0;
 			GAME_VAR(int, 0x680bb8) = 0;
-			if (room_434d00() == 1) {
+			if (gameList_open() == 1) {
 				sound_playMenu(0);
 				g_searching = 1;
 				GAME_VAR(int, 0x9dd4bc) = 1;
@@ -617,7 +617,7 @@ void (room_435fc0)(void)
 				GAME_VAR(int, 0x9dd34c) = 0;
 				GAME_VAR(int, 0x9dcd40) = 0;
 				g_joined = 1;
-				room_434da0();
+				room_startChat();
 			} else {
 				sound_playMenu(0);
 				GAME_VAR(int, 0x9dd34c) = 1;
@@ -671,7 +671,7 @@ void (room_gameListKeys)(void)
 		}
 		sound_playMenu(0);
 		GAME_VAR(int, 0x9dd56c) = 1;
-		room_434da0();
+		room_startChat();
 		return;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e151c))) {
@@ -681,7 +681,7 @@ void (room_gameListKeys)(void)
 		}
 		GAME_VAR(int, 0xa0b358) = 0;
 		GAME_VAR(int, 0x680bb8) = 0;
-		if (room_434d00() == 1) {
+		if (gameList_open() == 1) {
 			GAME_VAR(int, 0x9dd6a0) = 1;
 			GAME_VAR(int, 0x9dd4bc) = 1;
 			sound_playMenu(0);

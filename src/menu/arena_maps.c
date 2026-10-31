@@ -19,7 +19,7 @@ static void clear_unused(void)
 }
 
 /* 0x403490: start editing from the kept list */
-void (room_403490)(void)
+void (mapList_startEdit)(void)
 {
 	int n = g_mapCount;
 	for (int i = 0; i < n; i++) {
@@ -31,7 +31,7 @@ void (room_403490)(void)
 }
 
 /* 0x4034e0: choose every map */
-void (room_4034e0)(void)
+void (mapList_chooseAll)(void)
 {
 	sound_playMenu(0);
 	for (int i = 0; i < g_mapCount; i++)
@@ -40,7 +40,7 @@ void (room_4034e0)(void)
 }
 
 /* 0x403530: choose none (types back to 0) */
-void (room_403530)(void)
+void (mapList_chooseNone)(void)
 {
 	sound_playMenu(0);
 	for (int i = 0; i < g_mapCount; i++) {
@@ -50,7 +50,7 @@ void (room_403530)(void)
 }
 
 /* 0x403560: map i in or out */
-void (room_403560)(int i)
+void (mapList_toggle)(int i)
 {
 	g_mapChoices[i].chosen = 1 - g_mapChoices[i].chosen;
 	if (i >= 22 && i <= 24)
@@ -58,7 +58,7 @@ void (room_403560)(int i)
 }
 
 /* 0x403590: map i's game type one on (0 .. 13, round), or one back while a Shift or Ctrl key is held */
-void (room_403590)(int i)
+void (mapList_stepGameType)(int i)
 {
 	if (input_isDown(g_keyLeftShift) || input_isDown(g_keyRightShift) || input_isDown(g_keyLeftCtrl)
 	    || input_isDown(g_keyRightCtrl)) {
@@ -73,7 +73,7 @@ void (room_403590)(int i)
 }
 
 /* 0x403640: OK: keep the list, if at least one map is chosen (otherwise nothing happens) */
-void (room_403640)(void)
+void (mapList_ok)(void)
 {
 	int i = 0;
 	if (g_mapCount <= 0)
@@ -218,16 +218,16 @@ void (arena_4038e0)(void)
    19), the arrows (20 / 21: one row up / down), none, every map, OK, or close (25); in mode 2 (0x4dbb3c) holding an
    arrow scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore
    it */
-void (room_4036c0)(void)
+void (mapList_mouse)(void)
 {
 	const float *repeat = (const float *)0x4a93d0;
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		int on = arena_4033e0(g_mouseX, g_mouseY);
 		if (on >= 0 && on < 10)
-			room_403560(g_mapTop + on);
+			mapList_toggle(g_mapTop + on);
 		else if (on >= 10 && on < 20)
-			room_403590(g_mapTop + on - 10);
+			mapList_stepGameType(g_mapTop + on - 10);
 		else if (on == 20) {
 			sound_playMenu(2);
 			if (g_mapTop > 0)
@@ -237,11 +237,11 @@ void (room_4036c0)(void)
 			if (g_mapTop + 10 < g_mapCount)
 				g_mapTop++;
 		} else if (on == 22)
-			room_403530();
+			mapList_chooseNone();
 		else if (on == 23)
-			room_4034e0();
+			mapList_chooseAll();
 		else if (on == 24)
-			room_403640();
+			mapList_ok();
 		else if (on == 25) {
 			sound_playMenu(0);
 			g_mapListOpen = 0;

@@ -10,7 +10,7 @@
 #define g_roomFade GAME_VAR(float, 0x4deb74)          /* the white fade, rising to 1 */
 
 /* 0x435ab0: the "leave" dialog: yes (button 0) closes it and leaves (the game closes with exit code 2), no (button 1) only closes it */
-void (room_435ab0)(void)
+void (leaveDialog_clicks)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0)
 		return;
@@ -26,7 +26,7 @@ void (room_435ab0)(void)
 }
 
 /* 0x435ce0: the popup's two buttons (room_432280) close it with 1 or 2 */
-void (room_435ce0)(void)
+void (popup_clicks)(void)
 {
 	if (g_mouseClick == 0)
 		return;
@@ -43,18 +43,18 @@ void (room_435ce0)(void)
 }
 
 /* 0x434da0: start the chat line, if the local player may type (a flag in the player's 0x4a-byte record) */
-void (room_434da0)(void)
+void (room_startChat)(void)
 {
 	g_roomChatting = 0;
 	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
 		g_roomChatting = 1;
-		room_434320();
+		field_editMessage();
 	}
 }
 
 /* 0x435f40: in room state 2, the button (room_432340) that stops the arena being set up: its flags off, the
    arena's connection closed (arena_452fe0) and its timer (0x378) killed */
-void (room_435f40)(void)
+void (room_stopArenaSetup)(void)
 {
 	if (g_dialogOpen != 0 || g_mouseClick == 0 || GAME_VAR(int, 0x9dce48) != 2)
 		return;
@@ -71,7 +71,7 @@ void (room_435f40)(void)
 
 /* 0x43df00: the white fade over the whole screen, 0.015 per time unit (the stored value goes on past 1; the
    colour stops at 1) */
-void (room_43df00)(void)
+void (room_drawWhiteFade)(void)
 {
 	long double a = (long double)g_frameTime * 0.015f + g_roomFade;
 	g_roomFade = f32(a);
@@ -147,13 +147,13 @@ u32 (room_keys)(void)
 	if (key_hit(0x76d48c))
 		return GAME_CDECL(0x435a40, u32, void)();   /* room_leaveGame */
 	if (key_hit(0x4e1514))
-		return GAME_CDECL(0x4334c0, u32, void)();   /* room_4334c0 */
+		return GAME_CDECL(0x4334c0, u32, void)();   /* room_requestJoin */
 	if (key_hit(0x4e14f8))
-		return GAME_CDECL(0x433590, u32, void)();   /* room_433590 */
+		return GAME_CDECL(0x433590, u32, void)();   /* room_start */
 	if (key_hit(0x4e0cdc))
-		return GAME_CDECL(0x433790, u32, void)();   /* room_433790 */
+		return GAME_CDECL(0x433790, u32, void)();   /* room_enterGameList */
 	if (key_hit(0x4e151c))
-		return GAME_CDECL(0x433800, u32, void)();   /* room_433800 */
+		return GAME_CDECL(0x433800, u32, void)();   /* room_enterRoomList */
 	if (key_hit(0x4e0cd4)) {
 		GAME_VAR(int, 0x4dc24c) = 3;
 		return GAME_CDECL(0x40ee20, u32, void)();   /* menu_enterMenus */
@@ -166,7 +166,7 @@ u32 (room_keys)(void)
 /* 0x435b00: the game room's left clicks (nothing open: 0x9dd1c8, 0x9dd838; no right click) on its buttons
    (0x432200): 0 / 1 open the room's two lists (0x433b00, 0x433bb0), 2 opens the chat line, 3 leaves for the main
    menu (the keyboard taken back if it was let go, the connection closed), 4 0x4338c0. Returns the action's eax */
-u32 (room_435b00)(void)
+u32 (room_leftClicks)(void)
 {
 	u32 open = GAME_VAR(u32, 0x9dd1c8);
 	if (open)
@@ -181,13 +181,13 @@ u32 (room_435b00)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		GAME_CDECL(0x433c70, void, void)();          /* room_433c70 */
-		r = GAME_CDECL(0x433b00, u32, void)();       /* room_433b00 */
+		GAME_CDECL(0x433c70, void, void)();          /* chat_closeEdit */
+		r = GAME_CDECL(0x433b00, u32, void)();       /* field_editGameName */
 		GAME_VAR(int, 0x9dd1cc) = 1;
 		return r;
 	case 1:
 		GAME_CDECL(0x433c70, void, void)();
-		r = GAME_CDECL(0x433bb0, u32, void)();       /* room_433bb0 */
+		r = GAME_CDECL(0x433bb0, u32, void)();       /* field_editGamePassword */
 		GAME_VAR(int, 0x9dd6b0) = 1;
 		return r;
 	case 2:
@@ -213,7 +213,7 @@ u32 (room_435b00)(void)
 		return GAME_CDECL(0x451e60, u32, void)();    /* net_disconnect */
 	case 4:
 		sound_playMenu(0);
-		return GAME_CDECL(0x4338c0, u32, void)();    /* room_4338c0 */
+		return GAME_CDECL(0x4338c0, u32, void)();    /* room_openDialog4d */
 	}
 	return button;
 }
@@ -221,7 +221,7 @@ u32 (room_435b00)(void)
 /* 0x435d30: the game room's page clicks (page open, 0x9dce48 not 0 or 1; no dialog): its six buttons (outlines at
    0x9daf88) open the room's pages, the arm center (0x4dc24c = 3) or leave the game; a right click (when 0x9dae10
    allows) leaves too. Returns what the original leaves in eax */
-u32 (room_435d30)(void)
+u32 (room_pageClicks)(void)
 {
 	static const u32 actions[6] = { 0x4334c0, 0x433590, 0x433790, 0, 0x433800, 0x435a40 };
 	u32 page = GAME_VAR(u32, 0x9dce48);
@@ -270,7 +270,7 @@ static void load_map_preview(u32 selected)
 	GAME_VAR(int, 0x680cd0) = 0;
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
-void (room_43bcb0)(void) { load_map_preview(0x4df9e8); }
+void (room_loadMapPreview)(void) { load_map_preview(0x4df9e8); }
 void (arena_40b420)(void) { load_map_preview(0x4db548); }
 
 /* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
@@ -278,14 +278,14 @@ void (arena_40b420)(void) { load_map_preview(0x4db548); }
    (0x9dd1d8, 30 bytes), two short fields (0x9dd1f6, 0x9dd202, 12 bytes) or the comment (0x9dd20e, 50 bytes).
    Returns what the original leaves in eax */
 /* typing closed if it was on: the hidden EDIT control destroyed, the focus back to the game window and the line
-   closed (room_431600); returns that call's eax, or 0 */
+   closed (chat_closeLine); returns that call's eax, or 0 */
 static u32 typing_end(void)
 {
 	if (!GAME_VAR(int, 0x68039c))
 		return 0;
 	IMPORT(0x4a9344, int, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(GAME_VAR(void *, 0x4ded18));   /* SetFocus */
-	return GAME_CDECL(0x431600, u32, int)(1);   /* room_431600 */
+	return GAME_CDECL(0x431600, u32, int)(1);   /* chat_closeLine */
 }
 
 u32 (room_433d30)(void)
@@ -308,7 +308,7 @@ u32 (room_433d30)(void)
    arena_453090 with the room's settings record 0x5b1b30 and name 0x9dd570) and takes its settings (the 32-byte
    rules, +0x20 .. +0x25); then 0 or 3 (3 also sets 0x907b2c) move on to 2, and 4 does too with message 0x2a.
    Returns the step (or the message's eax) */
-u32 (room_4355b0)(void)
+u32 (room_hostingStep)(void)
 {
 	const u8 *room = (const u8 *)0x5b1b30;
 	u32 step = GAME_VAR(u32, 0x4ded60);
@@ -403,7 +403,7 @@ u32 (app_onClose)(void)
 /* 0x4346c0: the account form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
    a blank name, a bad name or password character, a missing or mismatched password and a bad e-mail each give
    their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
-u32 (room_4346c0)(void)
+u32 (account_checkForm)(void)
 {
 	GAME_CDECL(0x433d30, void, void)();   /* room_433d30 */
 	GAME_VAR(int, 0x68039c) = 0;
@@ -412,7 +412,7 @@ u32 (room_4346c0)(void)
 	int message, reopen;
 	if (strlen(name) == 0 || GAME_CDECL(0x4343b0, int, const char *)(name) == 1)   /* profile_4343b0: blank */
 		message = 0x24, reopen = 0x9dd348;
-	else if (GAME_CDECL(0x434400, int, const char *)(name) == 1)                  /* room_434400: a bad character */
+	else if (GAME_CDECL(0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
 		message = 0x15a, reopen = 0x9dd348;
 	else if (strlen(password) == 0)
 		message = 0x25, reopen = 0x9dd3f8;
@@ -432,13 +432,13 @@ u32 (room_4346c0)(void)
 /* 0x434b90: the account change sent: the old password (0x9dd6d8) right and the new one repeated, every field free
    of bad characters (else message 0x81 and 0x9dd1c8 cleared), the name, password and e-mail go out in message 0x1c.
    1 when sent */
-int (room_434b90)(void)
+int (account_sendChange)(void)
 {
 	if (strcmp((const char *)0x9dd58e, (const char *)0x9dd6d8) || strcmp((const char *)0x9dd1f6, (const char *)0x9dd202))
 		return 0;
 	static const u32 fields[4] = { 0x9dd6d8, 0x9dd1f6, 0x9dd202, 0x9dd20e };
 	for (int i = 0; i < 4; i++)
-		if (GAME_CDECL(0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_434400 */
+		if (GAME_CDECL(0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_nameHasBadChar */
 			GAME_CDECL(0x41ee40, void, int)(0x81);
 			GAME_VAR(int, 0x9dd1c8) = 0;
 			return 0;
@@ -451,7 +451,7 @@ int (room_434b90)(void)
 	return 1;
 }
 
-/* a no-argument cdecl game function called with ebp saved around it: room_43d060 overruns a local buffer into its
+/* a no-argument cdecl game function called with ebp saved around it: ranking_drawTable overruns a local buffer into its
    saved caller ebp at some stack alignments (see run_lifted in recomp.c); the original's caller never used ebp
    after it, compiled code may */
 static u32 call_keeping_ebp(u32 address)
@@ -465,10 +465,10 @@ static u32 call_keeping_ebp(u32 address)
    code (0x25 / 0x23 / 0x26) with the first rank of page 0x9dd6ac (ranks 0x9dd83c .. 0x9dd7dc) in message 0x15 and
    start waiting (0x9dd6b8, the blink at 1000); column 3 just clears the request. Then the room's tunnel; in room
    modes other than 0 / 1 (0x9dce48) and outside page 99: with a message box open (0x90d1c4) only it is drawn (a
-   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (room_435770) and
+   request made again once it closes), else while waiting an answer (0x76d40c) fills the list (roomList_fillPage) and
    keeps the column and page, the blink counts down by 0x4b071c * 0x4ad498 (from 1000 again below 0), and the
-   table is drawn (room_43d060). Returns what the original leaves in eax */
-u32 (room_43ede0)(void)
+   table is drawn (ranking_drawTable). Returns what the original leaves in eax */
+u32 (ranking_page)(void)
 {
 	if (GAME_VAR(int, 0x9dd350)) {
 		u32 column = GAME_VAR(u32, 0x9dd1d0);
@@ -503,7 +503,7 @@ u32 (room_43ede0)(void)
 	}
 	if (GAME_VAR(int, 0x9dd6b8)) {
 		if (GAME_VAR(int, 0x76d40c)) {
-			GAME_CDECL(0x435770, void, void)();   /* room_435770: the list filled */
+			GAME_CDECL(0x435770, void, void)();   /* roomList_fillPage: the list filled */
 			GAME_VAR(int, 0x9dd6b8) = 0;
 			GAME_VAR(int, 0x9dd3b0) = 1;
 			GAME_VAR(int, 0x76d40c) = 0;
@@ -515,14 +515,14 @@ u32 (room_43ede0)(void)
 		if (!(blink >= 0))
 			GAME_VAR(float, 0x4dba80) = 1000.0f;
 	}
-	return call_keeping_ebp(0x43d060);   /* room_43d060: the table */
+	return call_keeping_ebp(0x43d060);   /* ranking_drawTable: the table */
 }
 
 /* 0x434490: the login sent: typing closed and the form's flags cleared; a name or password with a character the
    messages cannot carry gives its message (0x15a / 0x15b, 0x9dd1c8 cleared); else the name and password are kept
    (0x9dd570, 30 bytes, and 0x9dd58e, 12) and sent as message 0x18 (net_send 0xe), then 0x9dd838 set. Returns the
    message's or the send's eax */
-u32 (room_434490)(void)
+u32 (login_send)(void)
 {
 	typing_end();
 	GAME_VAR(int, 0x9dd830) = 0;
@@ -531,7 +531,7 @@ u32 (room_434490)(void)
 	GAME_VAR(int, 0x68039c) = 0;
 	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
 	int bad = GAME_CDECL(0x434400, int, const char *)(name) == 1 ? 0x15a
-	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_434400 */
+	        : GAME_CDECL(0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
 		u32 r = GAME_CDECL(0x41ee40, u32, int)(bad);
 		GAME_VAR(int, 0x9dd1c8) = 0;
@@ -552,10 +552,10 @@ u32 (room_434490)(void)
 
 /* 0x436620: the ranking page's clicks (room modes other than 0 / 1, no message box open; a right click closes the
    page unless waiting for an answer). Not waiting (0x9dd6b8): buttons 0 .. 2 open the room's other pages
-   (room_435970 / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
+   (roomList_prevPage / 4359b0 / 4359f0), 4 closes the page, 5 / 7 / 8 sort by column 0 / 1 / 2 (the old column kept in
    0x9dd300 and a request made, the list's state cleared). While waiting, button 3 cancels it (the column and page
    put back from 0x9dd300 / 0x9dd1b4). Each with the click sound. Returns what the original leaves in eax */
-u32 (room_436620)(void)
+u32 (ranking_clicks)(void)
 {
 	u32 mode = GAME_VAR(u32, 0x9dce48);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x90d1c4))
@@ -598,11 +598,11 @@ u32 (room_436620)(void)
 
 /* 0x436400: the game room's settings page clicked (no field being typed in, room modes other than 0 / 1, no message
    box; a right click closes the page). Buttons (room_432380): 0 / 1 type the room's name or password
-   (room_4339e0 / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
+   (field_editComment / 433a80), 3 the players +2 (4 .. 16, then 2), 5 the game type on (with a turn key held back) through
    0 .. 9, 6 / 7 the frag and time limits +5 (up to 50 / 60, then 5), 8 start (room_4351c0; not while connecting),
-   9 close, 11 / 2, 10, 12 the map back / on (room_4356f0), 13 the map list (room_403490). Returns what the original
+   9 close, 11 / 2, 10, 12 the map back / on (room_4356f0), 13 the map list (mapList_startEdit). Returns what the original
    leaves in eax (for the byte settings, its low byte the new value) */
-u32 (room_436400)(void)
+u32 (room_settingsClicks)(void)
 {
 	static const u32 typing[4] = { 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8 };
 	for (int k = 0; k < 4; k++)
@@ -622,9 +622,9 @@ u32 (room_436400)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return GAME_CDECL(0x4339e0, u32, void)();   /* room_4339e0 */
+		return GAME_CDECL(0x4339e0, u32, void)();   /* field_editComment */
 	case 1:
-		return GAME_CDECL(0x433a80, u32, void)();   /* room_433a80 */
+		return GAME_CDECL(0x433a80, u32, void)();   /* field_editPassword */
 	case 2: case 10: case 12:
 		return GAME_CDECL(0x4356f0, u32, int)(1);   /* room_4356f0: the next map */
 	case 11:
@@ -674,7 +674,7 @@ u32 (room_436400)(void)
 		return r;
 	case 13:
 		sound_playMenu(0);
-		return GAME_CDECL(0x403490, u32, int)(2);   /* room_403490: the map list (the original pushes a 2 it ignores) */
+		return GAME_CDECL(0x403490, u32, int)(2);   /* mapList_startEdit: the map list (the original pushes a 2 it ignores) */
 	}
 	return button;
 }
@@ -776,17 +776,17 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 #undef Y1
 }
 
-/* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_43bcb0); 0x40b550: the arena screen's
+/* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
    (0x4dbb04, 0x4db54a, arena_40b420) */
 u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, 0x43bcb0); }
 u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, 0x40b420); }
 
 /* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
-   frame; else the page (0x433610 when 0x9dd354, then room_43a420) and, once a field's typing has ended, the typed
+   frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
    line taken into it (the name, password, its repeat (12 bytes each) or the e-mail (50)) and the key that ended it
    (0x9dc428: 0xa back, 0x14 on) opening the field before or after (room_434020 .. 434260). Returns what the
    original leaves in eax */
-u32 (room_43e7b0)(void)
+u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
 		{ 0x9dd69c, 0x9dd6d8, 12, 0, 0x4340e0 }, { 0x9dd37c, 0x9dd1f6, 12, 0x434020, 0x4341a0 },
@@ -800,7 +800,7 @@ u32 (room_43e7b0)(void)
 		                                                     GAME_VAR(int, 0x9dd370), GAME_VAR(int, 0x9dd374));
 	if (GAME_VAR(int, 0x9dd354))
 		GAME_CDECL(0x433610, void, void)();
-	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* room_43a420: the page */
+	u32 r = GAME_CDECL(0x43a420, u32, void)();   /* account_drawPanel: the page */
 	if (GAME_VAR(int, 0x9dd6d4) == 1)
 		return r;
 	for (int k = 0; k < 4; k++) {
@@ -841,7 +841,7 @@ static void login_field(int to, int x, int y)
 	g_tabDirection = 0;
 }
 
-/* OK (button 4 clicked, or the OK key) logs in (room_4346c0), cancel (button 5, or 0x4e0cdc) closes (room_434640);
+/* OK (button 4 clicked, or the OK key) logs in (account_checkForm), cancel (button 5, or 0x4e0cdc) closes (room_openDialog42);
    neither while a message is up (0x68039c) */
 static int login_buttons(void)
 {
@@ -859,9 +859,9 @@ static int login_buttons(void)
 	if (!GAME_VAR(int, 0x68039c)) {
 		sound_playMenu(0);
 		if (button == 4)
-			GAME_CDECL(0x4346c0, void, void)();   /* room_4346c0 */
+			GAME_CDECL(0x4346c0, void, void)();   /* account_checkForm */
 		else
-			GAME_CDECL(0x434640, void, void)();   /* room_434640 */
+			GAME_CDECL(0x434640, void, void)();   /* room_openDialog42 */
 	}
 	return 1;
 }

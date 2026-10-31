@@ -83,7 +83,7 @@ void (lobby_drawArenaTitle)(void)
 
 /* 0x403420: the map on/off list (8-byte entries from 0x4d9508): the first time all off, then the first n maps
    (0x67ef00) on; four entries' second words cleared and the list laid out */
-void (room_403420)(void)
+void (mapList_init)(void)
 {
 	if (!GAME_VAR(int, 0x4db510)) {
 		for (u32 p = 0x4d950c; p < 0x4db50c; p += 8) {
@@ -123,12 +123,12 @@ void (lobby_setSubState2)(void)
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	GAME_VAR(u32, 0x4dba68) = 0xc4ce4000;
 	GAME_VAR(int, 0x680cd0) = 1;
-	room_403420();
+	mapList_init();
 }
 
 /* 0x433700: the room settings record (0x5b1b30: a name and six bytes) copied to the room's (0x4df9c8); map types
    22 .. 24 become 0 */
-void (room_433700)(void)
+void (room_loadSettingsRecord)(void)
 {
 	if (GAME_VAR(signed char, 0x5b1b50) > 0x15 && GAME_VAR(signed char, 0x5b1b50) < 0x19)
 		GAME_VAR(u8, 0x5b1b50) = 0;
@@ -143,23 +143,23 @@ void (room_433700)(void)
 }
 
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
-void (room_433790)(void)
+void (room_enterGameList)(void)
 {
 	static const u32 cleared[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4ded54, 0x907b2c, 0x9dd380, 0x9dd388, 0x9dd568,
 	                               0x9dd6a8 };
-	room_433700();
+	room_loadSettingsRecord();
 	GAME_VAR(int, 0x9dd834) = 2;
 	GAME_VAR(int, 0x9dce48) = 1;
 	GAME_VAR(u32, 0x9dd6bc) = 0x3f333333;
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
 	GAME_VAR(int, 0x680cd0) = 1;
 	GAME_VAR(char, 0x4df9ea) = 0;
-	room_403420();
+	mapList_init();
 }
 
 /* 0x433800: the room list (state 4) entered: its ten 0x44-byte rows cleared (each marked empty), the paging and
    selection cleared, the distance limit 10,000,000, 999 rooms */
-void (room_433800)(void)
+void (room_enterRoomList)(void)
 {
 	static const u32 cleared[] = { 0x9dd6ac, 0x9dd350, 0x76d40c, 0x9dd6b8, 0x9dd3b0, 0xa0b350, 0xa0b35c, 0x9dd1b4,
 	                               0x9dd1d0, 0x9dd300, 0x9dd328 };
@@ -201,7 +201,7 @@ void (lobby_ladderGameName)(void)
 
 /* 0x432be0: the joined game's settings (0x9dd570: its name, its host's, the room record 0x5b1b30, the mech and the
    window rectangles) copied into the room screen's */
-void (room_432be0)(void)
+void (room_copyJoinedSettings)(void)
 {
 	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
 	strcpy((char *)0x9dd20e, (const char *)0x9dd5a6);
@@ -270,7 +270,7 @@ void (console_41e390)(void)
 /* 0x432db0: a received game's settings (0xa0563c) into the room: its names, the 11 mech bytes, the six colour pairs
    (a negative or NaN chroma or value becomes 0), the window rectangle; then the room screen, the lobby's title
    record and the mech */
-void (room_432db0)(void)
+void (room_takeReceivedSettings)(void)
 {
 	strcpy((char *)0x9dd570, (const char *)0xa0563c);
 	strcpy((char *)0x9dd5a6, (const char *)0xa0565a);
@@ -287,7 +287,7 @@ void (room_432db0)(void)
 	                                { 0x9dd5e8, 0xa0572b } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
-	room_432be0();
+	room_copyJoinedSettings();
 	memset((void *)0x4de700, 0, 7 * 4 + 2);
 	strcpy((char *)0x4de700, (const char *)0x9dd570);
 	static const u32 title[6][2] = { { 0x4de71e, 0x9dd5d8 }, { 0x4de722, 0x9dd5dc }, { 0x4de72e, 0x9dd5ec },
@@ -313,7 +313,7 @@ static void default_mech(u8 *mech, u8 *colours)
    the window rectangle reset (to 1, 0, ...) in both and the title record (0x4de700) set from it; the room record
    (0xa0b320: kind 0x18, the three names, the defaults) sent to the server (net_send 0xf, 0x65). Returns net_send's
    eax */
-u32 (room_434820)(void)
+u32 (room_host)(void)
 {
 	strcpy((char *)0x9dd570, (const char *)0x9dd1d8);
 	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
@@ -479,7 +479,7 @@ u32 (lobby_onStateChange)(void)
 		if (GAME_VAR(int, 0x907b2c))
 			return CALL(0x407270);   /* create_quitDialogClicks */
 		if (GAME_VAR(int, 0x4db508))
-			return CALL(0x4036c0);   /* room_4036c0: the map list */
+			return CALL(0x4036c0);   /* mapList_mouse: the map list */
 		if (GAME_VAR(int, 0x4db55c))
 			CALL(0x407300);          /* lobby_pageClicks */
 		return CALL(0x407410);       /* arena_createClick */
@@ -506,22 +506,22 @@ u32 (lobby_close)(void)
 	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
 }
 
-/* 0x403870: the map list's keys: the first key toggles the map (room_403640) - or, read a second time, closes the
+/* 0x403870: the map list's keys: the first key toggles the map (mapList_ok) - or, read a second time, closes the
    list with a sound -, the others move the cursor up and down */
 u32 (room_mapListKeys)(void)
 {
 	if (input_justPressed(GAME_VAR(int, 0x4e1510)))
-		return CALL(0x403640);   /* room_403640 */
+		return CALL(0x403640);   /* mapList_ok */
 	if (input_justPressed(GAME_VAR(int, 0x4e1510))) {
 		u32 r = GAME_CDECL(0x41e760, u32, int)(0);   /* sound_playMenu */
 		GAME_VAR(int, 0x4db508) = 0;
 		return r;
 	}
 	if (input_justPressed(GAME_VAR(int, 0x4e0cd4)))
-		return CALL(0x4034e0);   /* room_4034e0 */
+		return CALL(0x4034e0);   /* mapList_chooseAll */
 	u32 r = input_justPressed(GAME_VAR(int, 0x4e0ce0));
 	if (r)
-		return CALL(0x403530);   /* room_403530 */
+		return CALL(0x403530);   /* mapList_chooseNone */
 	return r;
 }
 
@@ -611,7 +611,7 @@ static u32 settings_store(u8 *from, u8 *to, u32 then)
 /* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
 u32 (lobby_keepArenaSettings)(void) { return settings_store((u8 *)0x4db528, (u8 *)0x4ded20, 0x42d730); }
 /* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
-u32 (room_433640)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b1b30, 0x432400); }
+u32 (room_keepSettings)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b1b30, 0x432400); }
 
 /* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
    dialog's frame if one is open, else the settings kept in range (players 0 .. 16 else 8, the two limits at most 250
@@ -1156,7 +1156,7 @@ u32 (lobbyTop_connect)(void)
    the arena). Buttons (arena_404520): 0 / 1 / 6 / 7 type a field (0x404d70, 0x404f90, 0x404e10, 0x404ed0), 2 / 12 /
    14 the map on and 13 back (lobby_4068d0), 3 the players +2 (to 16, then 2), 4 custom on / off (0x4db54a; the game
    type kept in range), 5 the game type on (with a turn key held back) through 0 .. 13 (0 .. 14 when custom), 8
-   create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; room_403490). Returns what
+   create and 9 join (unless connecting), 11 leave, 15 the custom map list (when custom; mapList_startEdit). Returns what
    the original leaves in eax (for the byte settings, its low byte the new value) */
 u32 (arena_createClick)(void)
 {
@@ -1241,7 +1241,7 @@ u32 (arena_createClick)(void)
 		if (*custom != 1)
 			return 15;
 		sound_playMenu(2);
-		return GAME_CDECL(0x403490, u32, int)(1);   /* room_403490: the map list (the original pushes a 1 it ignores) */
+		return GAME_CDECL(0x403490, u32, int)(1);   /* mapList_startEdit: the map list (the original pushes a 1 it ignores) */
 	}
 	return button;
 }
@@ -1615,7 +1615,7 @@ int (lobby_checkReservedName2)(void)
    this machine's address) sent as kind 0x12. The callers ignore the eax it leaves */
 void (lobby_checkReservedName3)(void)
 {
-	room_433640();
+	room_keepSettings();
 	special_map((const char *)0x5b1b30, (u8 *)0x5b1b50);
 	u8 *packet = GAME_VAR(u8 *, 0xa0b328);
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)0x9dd570, 0x1e);   /* strncpy */

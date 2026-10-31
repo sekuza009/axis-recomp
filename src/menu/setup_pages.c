@@ -773,7 +773,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 /* 0x437e00: the game room's menu: the panel under the pointer (six, 0x9daf88; none while 0x9dd7d8), the room's
    tunnel with that panel glowing, and in mode 2 (0x9dce48) its caption (0x750ba4, 0x80 apart) at the bottom. The
    original leaves eax to callers that ignore it */
-void (room_437e00)(void)
+void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
 	Highlight h = { hovered_panel(0x9daf88, 6, GAME_VAR(int, 0x9dd7d8)), glow, 0, 0, 0 };

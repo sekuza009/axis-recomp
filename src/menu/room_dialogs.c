@@ -25,7 +25,7 @@ static void dialog_opened(int state)
 }
 
 /* 0x433980: dialog 0x58 */
-void (room_433980)(void)
+void (room_openDialog58)(void)
 {
 	set_box(0x9dd1a0, 0x50, 0x78, 0x230, 0x168);
 	room_431c00();
@@ -34,7 +34,7 @@ void (room_433980)(void)
 }
 
 /* 0x4338c0: dialog 0x4d, its two 0x2a-byte name buffers emptied */
-void (room_4338c0)(void)
+void (room_openDialog4d)(void)
 {
 	set_box(0x9dd6e8, 0x1e, 0x32, 0x262, 0x1ae);
 	room_431b70();
@@ -45,7 +45,7 @@ void (room_4338c0)(void)
 }
 
 /* 0x434640: dialog 0x42, its name field filled from 0x9dd570 */
-void (room_434640)(void)
+void (room_openDialog42)(void)
 {
 	static const u32 cleared[] = { 0x9dd348, 0x9dd32c, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x4e1868, 0x68039c };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
@@ -57,7 +57,7 @@ void (room_434640)(void)
 }
 
 /* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
-void (room_433590)(void)
+void (room_start)(void)
 {
 	static const u32 cleared[] = { 0x9dd3fc, 0x9dd6a0, 0x9dd330, 0x9da498, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0,
 	                               0x4df818, 0x9dd4bc, 0x9dd56c, 0x9dd6c0, 0x9dd34c, 0x9dcd40, 0x9dd840 };
@@ -119,7 +119,7 @@ u32 (room_readyKeys)(void)
 
 /* 0x435c20: the game settings dialog's clicks: a right click (or button 5) closes it, buttons 0 .. 3 pick an option
    page, 4 applies. Returns what the original leaves in eax */
-u32 (room_435c20)(void)
+u32 (settingsDialog_clicks)(void)
 {
 	if (GAME_VAR(int, 0x4ded8c)) {
 		sound(0);
@@ -146,7 +146,7 @@ u32 (room_435c20)(void)
 /* 0x434dd0: joining session i of the list: its DirectPlay connection (0x452ec0) and the join (arena_453260); a failure
    shows message 0x3f or 0x40 and stops the search; on success the join's wait starts (timer 0x378, 2 s, its id
    kept). Returns what the original leaves in eax */
-u32 (room_434dd0)(int i)
+u32 (room_joinSession)(int i)
 {
 	GAME_VAR(int, 0x9dd56c) = 0;
 	if (!GAME_CDECL(0x452ec0, int, int, void *)(0, (void *)(0x9087ef + i * 0x4a))) {
@@ -169,7 +169,7 @@ u32 (room_434dd0)(int i)
 
 /* 0x434d00: the game room's list opened: its state reset, the session list cleared, the request for the server's
    room list sent (message 0x13, 0x65 bytes), 30 seconds. Returns 1 */
-int (room_434d00)(void)
+int (gameList_open)(void)
 {
 	GAME_VAR(int, 0x4dba88) = 1;
 	GAME_VAR(int, 0x4ded60) = 2;
@@ -224,7 +224,7 @@ u32 (room_processKeys)(void)
 	u32 state = GAME_VAR(u32, 0x9dd834);
 	int dialog = GAME_VAR(int, 0x9dd7d8);
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : CALL(0x435e70);   /* room_435e70 */
+	case 0: return dialog ? (u32)dialog : CALL(0x435e70);   /* room_openClicks */
 	case 1:
 		if (dialog)
 			return (u32)dialog;
@@ -235,7 +235,7 @@ u32 (room_processKeys)(void)
 		return GAME_VAR(int, 0x4db508) ? CALL(0x4036c0) : CALL(0x436400);
 	case 4: return dialog ? (u32)dialog : CALL(0x436620);
 	case 66: return GAME_VAR(int, 0x9dd850) ? CALL(0x435ab0) : CALL(0x435b00);
-	case 77: return CALL(0x435c20);   /* room_435c20 */
+	case 77: return CALL(0x435c20);   /* settingsDialog_clicks */
 	case 88: return GAME_VAR(int, 0x9dd850) ? CALL(0x435ab0) : CALL(0x435ce0);
 	case 99: return dialog ? (u32)dialog : CALL(0x435d30);
 	}
@@ -245,7 +245,7 @@ u32 (room_processKeys)(void)
 /* 0x435e70: the game room's clicks while it is open (0x9dce48 past 1; no confirm box, dialog or typing): buttons 0 .. 3
    edit the settings' fields, 4 starts the game when ready (else message 5 and the refusal sound), 5 (or a right click)
    leaves. Returns what the original leaves in eax */
-u32 (room_435e70)(void)
+u32 (room_openClicks)(void)
 {
 	int mode = GAME_VAR(int, 0x9dce48);
 	if (mode == 1 || mode == 0 || GAME_VAR(int, 0x9dd6d4) == 1)
@@ -283,7 +283,7 @@ u32 (room_435e70)(void)
    one is open, else the room settings kept in range (players 0 .. 16 else 8, the frag limit at most 50 and the time
    at most 60 else 30, the map 0 .. 11 else 0), the settings panel, the map list when open, the options when shown.
    Returns what the original leaves in eax */
-u32 (room_43ed20)(void)
+u32 (room_draw)(void)
 {
 	CALL(0x4388e0);   /* room_4388e0 */
 	int mode = GAME_VAR(int, 0x9dce48);
@@ -307,17 +307,17 @@ u32 (room_43ed20)(void)
 		CALL(0x4038e0);   /* arena_4038e0: the map list */
 	if (!GAME_VAR(int, 0x4dba88))
 		return 0;
-	return CALL(0x4355b0);   /* room_4355b0 */
+	return CALL(0x4355b0);   /* room_hostingStep */
 }
 
 /* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the room's name
    (0x9dd1cc set: up to 30 bytes at 0x9dd1d8) or its password (0x9dd6b0: 12 bytes at 0x9dd1f6, the stars off).
    Returns what the original leaves in eax */
-u32 (room_433c70)(void)
+u32 (chat_closeEdit)(void)
 {
 	IMPORT(0x4a9344, u32, void *)(GAME_VAR(void *, 0x9dd888));   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
-	GAME_CDECL(0x431600, u32, int)(1);                           /* room_431600: the line sent */
+	GAME_CDECL(0x431600, u32, int)(1);                           /* chat_closeLine: the line sent */
 	if (GAME_VAR(int, 0x9dd1cc) == 1) {
 		memset((void *)0x9dd1d8, 0, 30);
 		GAME_VAR(int, 0x9dd1cc) = 0;
@@ -351,18 +351,18 @@ static void highlight_choice(int choice, int x, int y)
    ended it (0x9dc428: 10 back, 20 on) moving to the other field or the dialog's buttons; else the server's answer
    to the request (0xa0b378, awaited: 0x9dd838): 33 accepted (state 99, the settings written and taken), 42 done
    (0x9dd850), 31 / 32 / 34 a message (31 / 32 / 35), anything else message 42 */
-void (room_43df80)(void)
+void (createDialog_draw)(void)
 {
 #define g_editKey GAME_VAR(int, 0x9dc428)
 	if (GAME_VAR(int, 0x9dced0)) {
-		room_432be0();
-		room_433bb0();
+		room_copyJoinedSettings();
+		field_editGamePassword();
 		GAME_VAR(int, 0x9dced0) = 0;
 		return;
 	}
 	if (GAME_VAR(int, 0x9dd198) == 1) {
-		room_433c70();
-		room_434490();
+		chat_closeEdit();
+		login_send();
 		GAME_VAR(int, 0x9dd198) = 0;
 		return;
 	}
@@ -378,7 +378,7 @@ void (room_43df80)(void)
 			g_editKey = 0;
 		} else if (g_editKey == 20) {
 			GAME_VAR(int, 0x9dd1cc) = 0;
-			room_433bb0();
+			field_editGamePassword();
 			GAME_VAR(int, 0x9dd6b0) = 1;
 			g_chatFieldFlag = 1;
 			g_editKey = 0;
@@ -395,7 +395,7 @@ void (room_43df80)(void)
 		if (g_editKey == 10) {
 			GAME_VAR(int, 0x9dd1cc) = 1;
 			GAME_VAR(int, 0x9dd6b0) = 0;
-			room_433b00();
+			field_editGameName();
 			g_editKey = 0;
 		} else if (g_editKey == 20) {
 			highlight_choice(1, GAME_VAR(int, 0x9dd358) + 0x62, GAME_VAR(int, 0x9dd364) - 0x30);
@@ -414,7 +414,7 @@ void (room_43df80)(void)
 	if (answer == 0x21) {
 		GAME_VAR(int, 0x9dd834) = 99;
 		reg_writeCharacterSettings();
-		room_432db0();
+		room_takeReceivedSettings();
 	} else if (answer == 0x2a)
 		GAME_VAR(int, 0x9dd850) = 1;
 	else if (answer == 0x1f || answer == 0x20)
@@ -433,13 +433,13 @@ void (room_43df80)(void)
    the key that ended it (0x9dc428: 20 on, 10 back) moving to the next or previous field; on from the e-mail
    highlights the right button, back from the name the left one (the name's flag left set). Then the flagged field
    opened again for typing (the password's before the repeat's) */
-void (room_43e290)(void)
+void (loginForm_update)(void)
 {
 	static const struct { u32 editing, text; int size; } field[4] = {
 		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
 	if (GAME_VAR(int, 0x9dd4a0)) {
-		room_433e60(0);
+		loginForm_openField(0);
 		GAME_VAR(int, 0x9dd4a0) = 0;
 		return;
 	}
@@ -470,28 +470,28 @@ void (room_43e290)(void)
 		GAME_VAR(int, 0x9dc428) = 0;
 	}
 	if (EDITING(0) == 1) {
-		room_433e60(0);
+		loginForm_openField(0);
 		return;
 	}
 	if (EDITING(1) == 1)
-		room_433e60(1);
+		loginForm_openField(1);
 	if (EDITING(2) == 1) {
-		room_433e60(2);
+		loginForm_openField(2);
 		return;
 	}
 	if (EDITING(3) == 1)
-		room_433e60(3);
+		loginForm_openField(3);
 #undef EDITING
 }
 
 /* 0x43e610: the game room's network events: a pending leave (0x9dd6c4: 1 leave now, 2 to state 0x4d), then the
    server's answer (0xa0b37c, when awaited: 0x9dd6a4): 33 accepted (the ladder game set up, the settings written, to
    state 99), 30 message 0x22, 42 a message box, anything else message 0x2a. Returns what the original leaves in eax */
-u32 (room_43e610)(void)
+u32 (room_networkEvents)(void)
 {
 	u32 r = GAME_VAR(u32, 0x9dd6c4) - 2;   /* (what the original's compare chain leaves) */
 	if (GAME_VAR(int, 0x9dd6c4) == 1) {
-		r = CALL(0x434820);   /* room_434820 */
+		r = CALL(0x434820);   /* room_host */
 		GAME_VAR(int, 0x9dd6c4) = 0;
 	} else if (GAME_VAR(int, 0x9dd6c4) == 2) {
 		r = 0;
@@ -568,7 +568,7 @@ u32 (roomList_passwordKeys)(void)
 /* 0x4334c0: the request to join the selected room sent: the room's password and state cleared, the room screen at
    state 0 (open, brightness 0.7), the room's name (0x9dd570, 30 bytes) as message 0x1d; then the confirm box up.
    Returns net_send's eax */
-u32 (room_4334c0)(void)
+u32 (room_requestJoin)(void)
 {
 	static const u32 cleared[] = { 0x9dd202, 0x9dd1f6, 0x9dd206, 0x9dd6d8, 0x9dd1fa, 0x9dd20a, 0x9dd6dc, 0x9dd834 };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
@@ -601,7 +601,7 @@ static void stars(char *out, int size, const char *password)
    passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
    0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
    FUN_00432240, bright) and the border. Returns the frame's or the border's eax */
-u32 (room_4399c0)(void)
+u32 (loginDialog_draw)(void)
 {
 #define X0 GAME_VAR(int, 0x9dd6e8)
 #define Y0 GAME_VAR(int, 0x9dd6ec)
@@ -687,7 +687,7 @@ static void confirm_box(void)
    0x758da4, a rule, the server name 0x9dd1d8 in a green-framed box, the note 0x758e24, two buttons (0x758f24, 0x80
    apart; the one under the pointer by room_432280 bright), the confirmation (0x9dd850) and the border. Returns the
    frame's or the border's eax */
-u32 (room_439e00)(void)
+u32 (serverDialog_draw)(void)
 {
 #define X0 GAME_VAR(int, 0x9dd1a0)
 #define Y0 GAME_VAR(int, 0x9dd1a4)
@@ -741,7 +741,7 @@ u32 (room_439e00)(void)
    one under the pointer, 2 .. 4 by room_432200, bright unless connecting), while connecting (0x9dd838) a box with
    two lines (0x74f6a4, 0x74f724), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
    eax */
-u32 (room_4392c0)(void)
+u32 (roomLogin_draw)(void)
 {
 #define X0 GAME_VAR(int, 0x9dd358)
 #define Y0 GAME_VAR(int, 0x9dd35c)
@@ -834,7 +834,7 @@ static void rank_badge(int rank, int x, int y)
    the clan 0x9dd248 (0x759924 when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
    0x9dd5f0, 0x9dd5dc); two buttons (0x7517a4; 4 / 5 under the pointer by room_4322c0, lit unless 0x68039c), a
    rule and the border. The original leaves eax to callers that ignore it */
-void (room_43a420)(void)
+void (account_drawPanel)(void)
 {
 #define X0 GAME_VAR(int, 0x9dd368)
 #define Y0 GAME_VAR(int, 0x9dd36c)
@@ -940,7 +940,7 @@ void (room_43a420)(void)
    "%3.2f" (+0x2e) and three counts (+0x26, +0x2a, +0x1e), the sorted value in yellow; a rule, two buttons
    (0x75b0a4; 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking 0x75b1a4; the
    border. Returns the border's eax */
-u32 (room_43d060)(void)
+u32 (ranking_drawTable)(void)
 {
 #define X0 GAME_VAR(int, 0x9dced8)
 #define Y0 GAME_VAR(int, 0x9dcedc)
@@ -1096,8 +1096,8 @@ static void creategame_close(void)
 
 /* 0x436990: the create-game dialog's keys. While its request is out (0x9dd838) or the login is due (0x9dd1c8)
    only cancel2 answers, closing the dialog (the answer dropped) and the lobby connection. Otherwise a click on its
-   buttons (room_432200: 2 send, 3 close and disconnect, 4 room_4338c0), 0x4e14f4 send, back close, 0x4e150c
-   room_4338c0 (none of these while typing, g_paused); the toggle key moves the highlight (g_dialogChoice) on: from
+   buttons (room_432200: 2 send, 3 close and disconnect, 4 room_openDialog4d), 0x4e14f4 send, back close, 0x4e150c
+   room_openDialog4d (none of these while typing, g_paused); the toggle key moves the highlight (g_dialogChoice) on: from
    the name (1) to the password field (2), to the OK button (3), then into the name field for typing; with shift,
    back: from OK (3) to the password field, to the name, then into the password field for typing. The original
    leaves eax to callers that ignore it */
@@ -1142,7 +1142,7 @@ void (createDialog_keys)(void)
 			g_paused = 0;
 			g_highlightShown = 0;
 			sound_playMenu(0);
-			room_4338c0();
+			room_openDialog4d();
 			return;
 		}
 	}
@@ -1166,7 +1166,7 @@ void (createDialog_keys)(void)
 		if (g_paused)
 			return;
 		sound_playMenu(0);
-		room_4338c0();
+		room_openDialog4d();
 		return;
 	}
 	if (input_justPressed(g_keyToggle) != 1)
@@ -1177,7 +1177,7 @@ void (createDialog_keys)(void)
 		g_editKey = 10;
 		if (choice == 1) {
 			highlight_choice(0, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
-			room_433bb0();
+			field_editGamePassword();
 			GAME_VAR(int, 0x9dd6b0) = 1;
 			g_chatFieldFlag = 1;
 		} else if (choice == 2)
@@ -1193,7 +1193,7 @@ void (createDialog_keys)(void)
 			highlight_choice(3, dialogX + 0x1a2, dialogBottom);
 		else if (choice == 3) {
 			highlight_choice(3, dialogX + 0x180, GAME_VAR(int, 0x9dd35c) + 0x88);
-			room_433b00();
+			field_editGameName();
 			g_editKey = 0;
 			GAME_VAR(int, 0x9dd1cc) = 1;
 			return;
