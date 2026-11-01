@@ -13,6 +13,7 @@ set -e
 cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from recomp/installed.exe - stop"; exit 1; }
 test ! -e "$G/recomp.dll" || { echo "a recomp.dll is in the game folder (a harness run?) - stop"; exit 1; }
 rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/standalone.log"
+cp -p "$G/initdata/axis.cfg" "$R/axis.cfg.bak"   # (the player's settings: put back after the run)
 cp "$R/build/AxisRC.exe" "$G/AxisRC.exe"
 set +e
 powershell -NoProfile -Command "Start-Process -FilePath 'C:\Users\Alexander\Desktop\Axis\AxisRC.exe' -WorkingDirectory 'C:\Users\Alexander\Desktop\Axis'"
@@ -27,10 +28,14 @@ shot match1
 sleep 30
 shot match2
 powershell -NoProfile -Command "if (Get-Process AxisRC -ErrorAction SilentlyContinue) { 'game still running' } else { 'GAME EXITED' }"
+python "$R/tools/inmatch.py" "$P-match1.png" | cut -d" " -f1-4   # (the HUD up: the player spawned, not the loading screen or the free camera)
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
 cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
 diff -r "$R/Save.bak" "$G/Save" >/dev/null && echo "saves unchanged" || echo "SAVES CHANGED"
+# axis.cfg as the run left it, compared (the settings read and written back unchanged), then the player's put back
+cmp -s "$R/axis.cfg.bak" "$G/initdata/axis.cfg" && echo "axis.cfg unchanged" || { echo "AXIS.CFG CHANGED:"; diff "$R/axis.cfg.bak" "$G/initdata/axis.cfg"; }
+cp -p "$R/axis.cfg.bak" "$G/initdata/axis.cfg"
 grep -v "^  rebuilt " "$G/standalone.log"; grep -c "^  rebuilt " "$G/standalone.log"
 mv "$G/standalone.log" "$P-standalone.log" 2>/dev/null
 ls "$G"/*.dmp 2>/dev/null && echo "CRASH DUMPS"
