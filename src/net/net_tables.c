@@ -7,7 +7,7 @@
 int (net_findFreeSession)(void)
 {
 	int i = 0;
-	for (u32 p = IMG(0xa0b470); p < ADDR(g_connectionCopy); p += 8, i++)
+	for (u32 p = IMG(0xa0b470); p < IMG(0xa0b470) + 200 * 8; p += 8, i++)   /* (200 entries) */
 		if (GAME_VAR(u32, p) == 0)
 			return i;
 	return -1;
@@ -37,7 +37,7 @@ void (net_takePlayerSlot)(u32 slot, int id)
 void (net_freeAllSlots)(void)
 {
 	memset((void *)IMG(0x9f93d8), 0, 0x40);
-	for (u32 r = OBJ(g_netSlots); r < ADDR(g_netBlockSize); r += 0x410)
+	for (u32 r = OBJ(g_netSlots); r < OBJ(g_netSlots) + 16 * 0x410; r += 0x410)
 		memset((void *)RELOC(r), 0, 16);
 }
 

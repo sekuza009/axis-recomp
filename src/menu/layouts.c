@@ -279,7 +279,7 @@ void (arenaOptions_layout)(void)
 
 void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */
 {
-	for (u32 rec = IMG(0x9f8d78), d = 0; rec < ADDR(g_profilePageLeft); rec += 16, d += 0x14) {
+	for (u32 rec = IMG(0x9f8d78), d = 0; rec < IMG(0x9f8d78) + 13 * 16; rec += 16, d += 0x14) {   /* (13 rectangles) */
 		int y = g_profilePageTop, x = g_profilePageLeft;
 		set4ints(x + 0x20, d + y + 0x23, x + 0xd4, d + y + 0x36, (int *)RELOC(rec));
 	}

@@ -183,19 +183,22 @@ void sa_log(const char *fmt, int arg)
 	if (f) { fprintf(f, fmt, arg); fprintf(f, "\n"); fclose(f); }
 }
 
-/* AXISRC_WATCH=<original address> (a check): every write to that word of the image logged with where it came from
-   (a hardware breakpoint, debug register 0, on the main thread) */
+/* AXISRC_WATCH=<original address> (a check): every write to those four words of the image logged with where it came from
+   (a hardware breakpoint, debug register 0, on the main thread); with AXISRC_WATCH_RW reads too - code still reading
+   a split object's old place, which its canary cannot show */
 static int g_watchHits;
 static LONG CALLBACK watch_hit(EXCEPTION_POINTERS *e)
 {
-	if (e->ExceptionRecord->ExceptionCode != EXCEPTION_SINGLE_STEP || !(e->ContextRecord->Dr6 & 1))
+	if (e->ExceptionRecord->ExceptionCode != EXCEPTION_SINGLE_STEP || !(e->ContextRecord->Dr6 & 0xf))
 		return EXCEPTION_CONTINUE_SEARCH;
+	DWORD hit = e->ContextRecord->Dr6 & 2 ? e->ContextRecord->Dr1 : e->ContextRecord->Dr6 & 4 ? e->ContextRecord->Dr2 :
+	            e->ContextRecord->Dr6 & 8 ? e->ContextRecord->Dr3 : e->ContextRecord->Dr0;
 	e->ContextRecord->Dr6 = 0;
 	if (g_watchHits++ < 12) {
 		FILE *f = fopen(g_logPath, "a");
 		if (f) {
-			fprintf(f, "WATCH: %08lx written (now %08lx) by the code before %08lx; on the stack:", original(e->ContextRecord->Dr0),
-			        *(DWORD *)e->ContextRecord->Dr0, original((DWORD)e->ExceptionRecord->ExceptionAddress));
+			fprintf(f, "WATCH: %08lx reached (now %08lx) by the code before %08lx; on the stack:", original(hit),
+			        *(DWORD *)hit, original((DWORD)e->ExceptionRecord->ExceptionAddress));
 			log_stack(f, (const DWORD *)e->ContextRecord->Esp, 48);
 			fprintf(f, "\n");
 			fclose(f);
@@ -203,17 +206,23 @@ static LONG CALLBACK watch_hit(EXCEPTION_POINTERS *e)
 	}
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
-static void watch(DWORD original_addr)
+static void watch(DWORD original_addr, int rw)
 {
 	CONTEXT c;
 	memset(&c, 0, sizeof c);
 	c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
 	GetThreadContext(GetCurrentThread(), &c);
+	/* the four words from the address: debug registers 0 .. 3 */
 	c.Dr0 = (DWORD)AT(original_addr);
-	c.Dr7 = (c.Dr7 & ~0xf0003u) | 1 | (1u << 16) | (3u << 18);   /* L0, write, 4 bytes */
+	c.Dr1 = c.Dr0 + 4;
+	c.Dr2 = c.Dr0 + 8;
+	c.Dr3 = c.Dr0 + 12;
+	c.Dr7 = 0x55;   /* L0 .. L3 */
+	for (int k = 0; k < 4; k++)
+		c.Dr7 |= ((rw ? 3u : 1u) | 3u << 2) << (16 + 4 * k);   /* write (or read / write), 4 bytes */
 	c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
 	AddVectoredExceptionHandler(1, watch_hit);
-	fprintf(g_log, "AXISRC_WATCH: writes to %08lx watched (%s)\n", original_addr,
+	fprintf(g_log, "AXISRC_WATCH: %s %08lx watched (%s)\n", rw ? "reads and writes of" : "writes to", original_addr,
 	        SetThreadContext(GetCurrentThread(), &c) ? "set" : "FAILED");
 }
 
@@ -607,7 +616,7 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	{
 		char v[16];
 		if (GetEnvironmentVariableA("AXISRC_WATCH", v, sizeof v))
-			watch(strtoul(v, NULL, 16));
+			watch(strtoul(v, NULL, 16), GetEnvironmentVariableA("AXISRC_WATCH_RW", NULL, 0) != 0);
 	}
 	{	/* the x87 control word the game runs with: Windows starts every thread at 0x027f (53-bit precision), and the
 		   game's runtime never changes it (only __ftol, for a moment); MinGW's start-up code in this exe set 0x037f

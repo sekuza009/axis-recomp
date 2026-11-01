@@ -581,7 +581,7 @@ void (armc_initCameraBox)(void)
    limits (200, 600, 2, -2) */
 void (armc_initPartBoxes)(void)
 {
-	for (u32 p = IMG(0x4dc554); p < (OBJ(g_armcParts) + 0x4); p += 0x58) {
+	for (u32 p = IMG(0x4dc554); p < IMG(0x4dc554) + 6 * 0x58; p += 0x58) {   /* (the six boxes) */
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
 		for (int k = 0; k < 15; k++)
 			if (corner[k])

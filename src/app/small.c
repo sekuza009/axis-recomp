@@ -136,7 +136,7 @@ u8 (net_freeSlotsOf)(int id)
 }
 
 /* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
-void (net_clearSlots)(void) { for (u32 p = OBJ(g_netSlots); p < ADDR(g_netBlockSize); p += 0x410) GAME_VAR(int, p) = 0; }
+void (net_clearSlots)(void) { for (u32 p = OBJ(g_netSlots); p < OBJ(g_netSlots) + 16 * 0x410; p += 0x410) GAME_VAR(int, p) = 0; }
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */

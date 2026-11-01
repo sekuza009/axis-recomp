@@ -25,7 +25,7 @@ u32 (sound_freeAll)(void)
 	if (!g_soundOn)
 		return 0;
 	u32 r = 0;
-	for (u32 p = IMG(0xa0e02c); p < ADDR(g_soundBaseVolume); p += 4) {
+	for (u32 p = IMG(0xa0e02c); p < IMG(0xa0e02c) + 400 * 4; p += 4) {   /* (400 entries) */
 		r = GAME_VAR(u32, p);
 		if (r) {
 			r = mem_free((void *)RELOC(r));

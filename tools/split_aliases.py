@@ -82,6 +82,31 @@ for f in sorted(glob.glob('src/**/*.c', recursive=True)):
 				if a < lo < a + 0x40 and not lo <= a < hi:
 					print('REVIEW %s:%d %s (0x%x) made a %s * runs into split %s' % (f, i + 1, m.group(2), a, m.group(1), s))
 					review += 1
+# a loop that starts in one place and ends at another (for (p = IMG(a); p < ADDR(g_x); ...)): once one of them is
+# split the two are no longer in one block - the bound must be written from the start (start + count * stride)
+def where(tok):
+	m = re.match(r'(?:IMG|RELOC)\((0x[0-9a-f]+)\)|(?:OBJ|ADDR)\((\w+)\)|0x([0-9a-f]{6})$', tok)
+	if not m:
+		return None
+	a = int(m.group(1) or '0x' + (m.group(3) or '0'), 16) if not m.group(2) else gaddr.get(m.group(2), oaddr.get(m.group(2)))
+	if a is None:
+		return None
+	for lo, hi, s in spans:
+		if lo <= a < hi:
+			return s
+	return 'g_data' if 0x4ad000 <= a < 0xb13000 else 'elsewhere'
+for f in sorted(glob.glob('src/**/*.c', recursive=True)):
+	if os.sep + 'data' + os.sep in f:
+		continue
+	text = open(f, 'rb').read().decode('latin-1')
+	for i, l in enumerate(text.split('\n')):
+		m = re.search(r'for \([^;]*?\b(\w+) = \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))[^;]*; \1 (?:<|<=|!=) \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))', l)
+		if not m:
+			continue
+		a, b = where(m.group(2)), where(m.group(3))
+		if a and b and a != b:
+			print('%s:%d a loop from %s (%s) to %s (%s): write its end from its start: %s' % (f, i + 1, m.group(2), a, m.group(3), b, l.strip()[:80]))
+			found += 1
 print('%d names reach a split object\'s old place; %d record bases to review (REVIEW: a pointer to one value, or a '
       'reach that stops short, is fine)' % (found, review))
 sys.exit(1 if found else 0)
