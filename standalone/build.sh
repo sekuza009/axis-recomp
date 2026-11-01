@@ -13,10 +13,11 @@ python tools/mkhooks.py build/standalone_hooks.c
 # in src/axis.h; build/fn_syms.h gives each one's symbol and address). build/obj stays the harness's.
 python tools/hooktable.py build/fn_syms.h
 mkdir -p build/obj_direct
-for f in $(find src -name '*.c' | sort); do
-	o="build/obj_direct/$(echo "${f#src/}" | tr '/' '_' | sed 's/\.c$/.o/')"
-	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f"
-done
+# (compiled in parallel, one job a core: zig's cache keeps each file's object by its source and flags)
+export CC FENCE
+find src -name '*.c' | sort | xargs -P "$(nproc)" -I{} sh -c '
+	f={}; o="build/obj_direct/$(echo "${f#src/}" | tr "/" "_" | sed "s/\.c$/.o/")"
+	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f" || exit 255'
 python tools/mkgamedata.py build/gamedata.bin
 # (the blob's hash in the source: zig caches objects by their source text, and .incbin's file is not part of it, so a
 # new blob would otherwise link the old one)
