@@ -1,6 +1,6 @@
 /* menu_cameras.c: the front end's camera moving between its home and a screen's menu point. The camera is a
    position (0x4df024) and a point it looks at (0x680378), three floats each; the menu points are 16 bytes apart
-   from 0x4df870 (positions) and 0x76d388 (look-at points), the home at 0x9db090 / 0x76d3f8. Each frame the camera
+   from OBJ(g_camPoints) (positions) and OBJ(g_camAims) (look-at points), the home at 0x9db090 / 0x76d3f8. Each frame the camera
    eases a share of the way (the frame's time times a rate) and snaps once close enough. The arithmetic is kept in
    the original's order and at x87 precision (long double). */
 #include "../game.h"
@@ -44,13 +44,13 @@ static void menu_camera(const MenuCam *m)
 	if (mode == 1) {
 		int i = I(m->idx) * 16;
 		X k = g_frameTime, c = RATE;
-		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + 0x4df870) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
+		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + OBJ(g_camPoints)) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
 		if (!m->arena)
-			g_armcCamHeight = (float)(((X)F(i + 0x4df874) - g_armcCamHeight) * k * c + g_armcCamHeight);
-		g_armcCamDistance = (float)(((X)F(i + 0x4df878) - g_armcCamDistance) * k * c + g_armcCamDistance);
-		X look = ((X)F(i + 0x76d388) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
+			g_armcCamHeight = (float)(((X)F(i + (OBJ(g_camPoints) + 0x4)) - g_armcCamHeight) * k * c + g_armcCamHeight);
+		g_armcCamDistance = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_armcCamDistance) * k * c + g_armcCamDistance);
+		X look = ((X)F(i + OBJ(g_camAims)) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
 		(*(float *)&g_menuCameraLook) = (float)look;
-		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + 0x76d38c) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
+		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))
@@ -58,24 +58,24 @@ static void menu_camera(const MenuCam *m)
 		/* there: snapped to the point */
 		if (!m->arena) {
 			I(m->mode) = 2;
-			(*(int *)&g_menuCameraPos) = I(i + 0x4df870);
-			(*(int *)&g_armcCamHeight) = I(i + 0x4df874);
-			(*(int *)&g_armcCamDistance) = I(i + 0x4df878);
-			(*(int *)&g_menuCameraLook) = I(i + 0x76d388);
-			(*(int *)&g_menuCameraLookY) = I(i + 0x76d38c);
-			g_menuCameraHeight = I(i + 0x76d390);
+			(*(int *)&g_menuCameraPos) = I(i + OBJ(g_camPoints));
+			(*(int *)&g_armcCamHeight) = I(i + (OBJ(g_camPoints) + 0x4));
+			(*(int *)&g_armcCamDistance) = I(i + (OBJ(g_camPoints) + 0x8));
+			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
+			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
+			g_menuCameraHeight = I(i + (OBJ(g_camAims) + 0x8));
 			g_dialogOpen = 1;
 		} else {
 			g_dialogOpen = 1;
-			(*(int *)&g_armcCamHeight) = I(i + 0x4df874);
-			(*(int *)&g_armcCamDistance) = I(i + 0x4df878);
-			volatile X x = F(i + 0x4df870);   /* fld / fst / fstp */
+			(*(int *)&g_armcCamHeight) = I(i + (OBJ(g_camPoints) + 0x4));
+			(*(int *)&g_armcCamDistance) = I(i + (OBJ(g_camPoints) + 0x8));
+			volatile X x = F(i + OBJ(g_camPoints));   /* fld / fst / fstp */
 			g_arenaKeptCamY = (*(int *)&g_armcCamHeight);
 			(*(float *)&g_menuCameraPos) = (float)x;
-			(*(int *)&g_menuCameraLook) = I(i + 0x76d388);
-			(*(int *)&g_menuCameraLookY) = I(i + 0x76d38c);
+			(*(int *)&g_menuCameraLook) = I(i + OBJ(g_camAims));
+			(*(int *)&g_menuCameraLookY) = I(i + (OBJ(g_camAims) + 0x4));
 			g_arenaKeptCamX = (float)x;
-			g_menuCameraHeight = I(i + 0x76d390);
+			g_menuCameraHeight = I(i + (OBJ(g_camAims) + 0x8));
 			g_arenaKeptCamZ = (*(int *)&g_armcCamDistance);
 			I(m->mode) = 2;
 			g_arenaKeptLookX = (*(int *)&g_menuCameraLook);
@@ -410,20 +410,20 @@ void (setup_camera)(void)
 	X k = g_frameTime, c = RATE;
 	if (mode == 1) {
 		int i = g_setupTab * 16;
-		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + 0x4df870) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
-		g_armcCamDistance = (float)(((X)F(i + 0x4df878) - g_armcCamDistance) * k * c + g_armcCamDistance);
-		X look = ((X)F(i + 0x76d388) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
+		(*(float *)&g_menuCameraPos) = (float)(((X)F(i + OBJ(g_camPoints)) - (*(float *)&g_menuCameraPos)) * k * c + (*(float *)&g_menuCameraPos));
+		g_armcCamDistance = (float)(((X)F(i + (OBJ(g_camPoints) + 0x8)) - g_armcCamDistance) * k * c + g_armcCamDistance);
+		X look = ((X)F(i + OBJ(g_camAims)) - (*(float *)&g_menuCameraLook)) * k * c + (*(float *)&g_menuCameraLook);
 		(*(float *)&g_menuCameraLook) = (float)look;
-		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + 0x76d38c) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
+		(*(float *)&g_menuCameraLookY) = (float)(((X)F(i + (OBJ(g_camAims) + 0x4)) - (*(float *)&g_menuCameraLookY)) * k * c + (*(float *)&g_menuCameraLookY));
 		if (!(look >= k_0f))
 			look = -look;
 		if (!(look > k_69_9))
 			return;
 		for (int a = 0; a < 3; a++) {
-			I(ADDR(g_menuCameraPos) + a * 4) = I(i + 0x4df870 + a * 4);
+			I(ADDR(g_menuCameraPos) + a * 4) = I(i + OBJ(g_camPoints) + a * 4);
 		}
 		for (int a = 0; a < 3; a++)
-			I(ADDR(g_menuCameraLook) + a * 4) = I(i + 0x76d388 + a * 4);
+			I(ADDR(g_menuCameraLook) + a * 4) = I(i + OBJ(g_camAims) + a * 4);
 		g_setupPage = 2;
 		g_dialogOpen = 1;
 	} else if (mode == 0) {

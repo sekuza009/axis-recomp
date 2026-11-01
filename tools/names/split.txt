@@ -352,3 +352,6 @@ g_armcTabColour
 g_legsStats
 g_armsStats
 g_dpConnections
+# the menu camera's point tables (objects7.csv), whole
+g_camPoints
+g_camAims

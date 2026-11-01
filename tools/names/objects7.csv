@@ -1,0 +1,4 @@
+# the menu camera's points (menu/menu_cameras.c, menuCamera_initPoints: five of 16 bytes - x, y, z and an unused
+# fourth); records of the g_camPoint* / g_camAim* globals (name_objects.py --records)
+0x4df870,float,20,g_camPoints,the menu camera's five target points (x y z, 16 bytes each; indexed by menu_camera)
+0x76d388,float,20,g_camAims,the menu camera's five look-at points (x y z, 16 bytes each)

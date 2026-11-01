@@ -151,3 +151,5 @@
 0x4dc228 float 2 g_legsStats
 0x4dc290 int 5 g_armsStats
 0xa0bae0 int 4 g_dpConnections
+0x4df870 float 20 g_camPoints
+0x76d388 float 20 g_camAims

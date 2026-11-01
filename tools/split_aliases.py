@@ -30,8 +30,16 @@ for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)) + sorted(glob.glob('
 		for m in re.finditer(r'(?<![\w.])0x0*([0-9a-f]{6})\b', l):
 			a = int(m.group(1), 16)
 			pre = l[:m.start()]
-			if re.search(r'[-+]\s*$', pre) or re.search(r'\b(S|A|G|R|P|U|AI|AU|AF|OF|FIELD\w*|PLAYER\w*|STAGE\w*)\([^()]*,\s*$', pre):
+			if re.search(r'\b(S|A|G|R|P|U|AI|AU|AF|OF|FIELD\w*|PLAYER\w*|STAGE\w*)\([^()]*,\s*$', pre):
 				continue   # (an offset, not an address)
+			if re.search(r'[-+]\s*$', pre):
+				# (after + or -: an offset from a base pointer (s + 0x9ee058: a Stage's) - or an address with an index
+				# in front of it (F(i + 0x4df870)): the latter reported to review unless the base is a known pointer)
+				if not re.search(r'\b(s|g|stage|scene|self|st|sc|rec|mesh|model|shape|actor|a|e|m|tm|vv|view|game|obj)\s*[-+]\s*$', pre):
+					for lo, hi, n in spans:
+						if lo <= a < hi:
+							print('REVIEW %s:%d 0x%x after +/- is in split %s: %s' % (f, i + 1, a, n, text.split('\n')[i].strip()[:90]))
+				continue
 			for lo, hi, n in spans:
 				if lo <= a < hi:
 					print('%s:%d 0x%x is in split %s at +0x%x: %s' % (f, i + 1, a, n, a - lo, text.split('\n')[i].strip()[:100]))

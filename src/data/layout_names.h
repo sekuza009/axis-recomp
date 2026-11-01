@@ -295,39 +295,43 @@ extern struct GameData g_data;
 #undef g_buttonTexture
 #define g_buttonTexture (g_data.g_buttonTexture_)
 #undef g_camAim0X
-#define g_camAim0X (g_data.g_camAim0X_)
+#define g_camAim0X (*(int *)((u8 *)g_camAims_v + 0x0))
 #undef g_camAim0Y
-#define g_camAim0Y (g_data.g_camAim0Y_)
+#define g_camAim0Y (*(int *)((u8 *)g_camAims_v + 0x4))
 #undef g_camAim0Z
-#define g_camAim0Z (g_data.g_camAim0Z_)
+#define g_camAim0Z (*(int *)((u8 *)g_camAims_v + 0x8))
 #undef g_camAim1X
-#define g_camAim1X (g_data.g_camAim1X_)
+#define g_camAim1X (*(u32 *)((u8 *)g_camAims_v + 0x10))
 #undef g_camAim1Y
-#define g_camAim1Y (g_data.g_camAim1Y_)
+#define g_camAim1Y (*(u32 *)((u8 *)g_camAims_v + 0x14))
 #undef g_camAim1Z
-#define g_camAim1Z (g_data.g_camAim1Z_)
+#define g_camAim1Z (*(int *)((u8 *)g_camAims_v + 0x18))
 #undef g_camAim2X
-#define g_camAim2X (g_data.g_camAim2X_)
+#define g_camAim2X (*(u32 *)((u8 *)g_camAims_v + 0x20))
 #undef g_camAim2Y
-#define g_camAim2Y (g_data.g_camAim2Y_)
+#define g_camAim2Y (*(u32 *)((u8 *)g_camAims_v + 0x24))
 #undef g_camAim2Z
-#define g_camAim2Z (g_data.g_camAim2Z_)
+#define g_camAim2Z (*(int *)((u8 *)g_camAims_v + 0x28))
+#undef g_camAims
+#define g_camAims ((float *)g_camAims_v)
 #undef g_camPoint0X
-#define g_camPoint0X (g_data.g_camPoint0X_)
+#define g_camPoint0X (*(int *)((u8 *)g_camPoints_v + 0x0))
 #undef g_camPoint0Y
-#define g_camPoint0Y (g_data.g_camPoint0Y_)
+#define g_camPoint0Y (*(int *)((u8 *)g_camPoints_v + 0x4))
 #undef g_camPoint0Z
-#define g_camPoint0Z (g_data.g_camPoint0Z_)
+#define g_camPoint0Z (*(int *)((u8 *)g_camPoints_v + 0x8))
 #undef g_camPoint1X
-#define g_camPoint1X (g_data.g_camPoint1X_)
+#define g_camPoint1X (*(u32 *)((u8 *)g_camPoints_v + 0x10))
 #undef g_camPoint1Z
-#define g_camPoint1Z (g_data.g_camPoint1Z_)
+#define g_camPoint1Z (*(int *)((u8 *)g_camPoints_v + 0x18))
 #undef g_camPoint2X
-#define g_camPoint2X (g_data.g_camPoint2X_)
+#define g_camPoint2X (*(u32 *)((u8 *)g_camPoints_v + 0x20))
 #undef g_camPoint2Y
-#define g_camPoint2Y (g_data.g_camPoint2Y_)
+#define g_camPoint2Y (*(int *)((u8 *)g_camPoints_v + 0x24))
 #undef g_camPoint2Z
-#define g_camPoint2Z (g_data.g_camPoint2Z_)
+#define g_camPoint2Z (*(int *)((u8 *)g_camPoints_v + 0x28))
+#undef g_camPoints
+#define g_camPoints ((float *)g_camPoints_v)
 #undef g_catalogueFile
 #define g_catalogueFile (*(const char * *)g_catalogueFile_v)
 #undef g_cfgPlayerName

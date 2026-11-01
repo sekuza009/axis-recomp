@@ -98,14 +98,14 @@ void (menuCamera_initPoints)(void)
 {
 	static const u32 point[][2] = {
 		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
-		{ ADDR(g_camPoint1X), 0x41a00000 }, { IMG(0x4df884), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
+		{ ADDR(g_camPoint1X), 0x41a00000 }, { (OBJ(g_camPoints) + 0x14), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
-		{ IMG(0x4df8a0), 0xc1a00000 }, { IMG(0x4df8a4), 0xc1200000 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0x425c0000 },
-		{ IMG(0x4df8b0), 0xc1a00000 }, { IMG(0x4df8b4), 0 }, { IMG(0x76d3c8), 0x428c0000 }, { IMG(0x76d3cc), 0 } };   /* (+-20, +-10), (-+70, +-55) */
+		{ (OBJ(g_camPoints) + 0x30), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x34), 0xc1200000 }, { (OBJ(g_camAims) + 0x30), 0x428c0000 }, { (OBJ(g_camAims) + 0x34), 0x425c0000 },
+		{ (OBJ(g_camPoints) + 0x40), 0xc1a00000 }, { (OBJ(g_camPoints) + 0x44), 0 }, { (OBJ(g_camAims) + 0x40), 0x428c0000 }, { (OBJ(g_camAims) + 0x44), 0 } };   /* (+-20, +-10), (-+70, +-55) */
 	int z = g_menuCameraHeight;
 	for (int i = 0; i < 5; i++) {
-		GAME_VAR(int, 0x4df878 + i * 0x10) = z;
-		GAME_VAR(int, 0x76d390 + i * 0x10) = z;
+		GAME_VAR(int, (OBJ(g_camPoints) + 0x8) + i * 0x10) = z;
+		GAME_VAR(int, (OBJ(g_camAims) + 0x8) + i * 0x10) = z;
 	}
 	g_menuCameraX = (*(int *)&g_menuCameraPos);
 	g_menuCameraY = (*(int *)&g_armcCamHeight);

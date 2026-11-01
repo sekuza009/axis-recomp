@@ -156,3 +156,5 @@
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[2]; two leg values (armc_stats' loop of 2) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */
+#define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target points (x y z */
+#define g_camAims ((float *)IMG(0x76d388))   /* float[20]; the menu camera's five look-at points (x y z */
