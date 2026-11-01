@@ -16,7 +16,7 @@ cmp -s "$G/AxisGL.exe" "$R/installed.exe" || { echo "installed exe differs from 
 test ! -e "$G/recomp.dll" || { echo "a recomp.dll is in the game folder (a harness run?) - stop"; exit 1; }
 rm -rf "$R/Save.bak"; cp -r "$G/Save" "$R/Save.bak"; rm -f "$G/standalone.log"
 cp -p "$G/initdata/axis.cfg" "$R/axis.cfg.bak"   # (the player's settings: put back after the run)
-cp "$R/build/AxisRC.exe" "$G/AxisRC.exe"
+cp "${RC_EXE:-$R/build/AxisRC.exe}" "$G/AxisRC.exe"   # (RC_EXE: another build)
 set +e
 powershell -NoProfile -Command "Start-Process -FilePath 'C:\Users\Alexander\Desktop\Axis\AxisRC.exe' -WorkingDirectory 'C:\Users\Alexander\Desktop\Axis'"
 sleep 12
