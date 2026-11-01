@@ -117,7 +117,7 @@ void (menuState100_intro)(void)
 	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
-	static const u32 cleared[] = { IMG(0x4df01c), IMG(0x4e0458), IMG(0x680370), IMG(0x4df8e0), IMG(0x4df03c), IMG(0x4df910), IMG(0x4e14fc), IMG(0x9db978), IMG(0x4dda48) };
+	static const u32 cleared[] = { IMG(0x4df01c), IMG(0x4e0458), IMG(0x680370), ADDR(g_unusedMenuReturnWord), IMG(0x4df03c), IMG(0x4df910), IMG(0x4e14fc), IMG(0x9db978), ADDR(g_introZoom) };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
 	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */
@@ -125,7 +125,7 @@ void (menuState100_intro)(void)
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
 	music_play((const char *)IMG(0x4b01cc));   /* "music/Netsphere.mp3" */
-	static const u32 clocks[] = { IMG(0x4dd560), IMG(0x4dd0a8), IMG(0x4dd080), IMG(0x4dd0c8) };   /* four doubles */
+	static const u32 clocks[] = { IMG(0x4dd560), IMG(0x4dd0a8), IMG(0x4dd080), ADDR(g_lastFrameClock) };   /* four doubles */
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, clocks[i]) = 0;
 		GAME_VAR(u32, clocks[i] + 4) = 0;
@@ -151,7 +151,7 @@ void (mapSelect_drawDialog)(void)
 #define Y0 g_mapSelectTop
 #define X1 g_mapSelectRight
 #define Y1 g_mapSelectBottom
-	const u32 *bright = (const u32 *)IMG(0x9eea98), *dim = (const u32 *)IMG(0x9dda70);
+	const u32 *bright = (const u32 *)ADDR(g_mapSelectLitR), *dim = (const u32 *)ADDR(g_mapSelectDimR);
 	int hovered = mapSelect_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -168,7 +168,7 @@ void (mapSelect_drawDialog)(void)
 	menu_drawSmallButton3(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
 	menu_drawSmallButton4(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
 	glDisable(GL_TEXTURE_2D);
-	const int *ticked[2] = { (const int *)IMG(0x4b2a7c), (const int *)IMG(0x9eeac0) };
+	const int *ticked[2] = { (const int *)ADDR(g_replayWrap), (const int *)ADDR(g_replayRandomOrder) };
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + 0xfe + k * 0x1e;
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -414,7 +414,7 @@ void (mapSelect_keys)(void)
    scrolls once the clock reaches 5 (0x4a93d0), restarting it. The original leaves eax to callers that ignore it */
 void (mapSelect_mouse)(void)
 {
-	const float *repeat = (const float *)IMG(0x4a93d0);
+	const float *repeat = (const float *)ADDR(k_5f);
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		int on = mapSelect_hitTest(g_mouseX, g_mouseY);
@@ -529,8 +529,8 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 }
 
 /* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
-int (lobbyTop_draw)(void) { return menu_slide(IMG(0x4db85c), IMG(0x4dbb60), IMG(0x4dba68)); }
-int (room_slideMenu)(void) { return menu_slide(IMG(0x9dd7d8), IMG(0x9dd560), IMG(0x9dd698)); }
+int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsOff), IMG(0x4dbb60), ADDR(g_arenaTunnelDepth)); }
+int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomDialogOpen), IMG(0x9dd560), ADDR(g_roomTunnelDepth)); }
 
 /* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
    the player slots (0x410 bytes from 0x9f9840) emptied ---- */
@@ -644,8 +644,8 @@ u32 (menuState800_gameRoom)(void)
 {
 	if (g_highlightShown) {
 		int *mouse = (int *)IMG(0x4ded68);
-		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)IMG(0x4b071c)), (const float *)IMG(0x4a941c)));
-		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)IMG(0x4b071c)), (const float *)IMG(0x4a941c)));
+		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)IMG(0x4b071c)), (const float *)ADDR(k_0_25f)));
+		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)IMG(0x4b071c)), (const float *)ADDR(k_0_25f)));
 		long double size = fsub_m(fld_m((const float *)IMG(0x680bc0)), (const float *)IMG(0x4b071c));
 		g_highlightSize = f32(size);
 		if (!(size >= 0))   /* below 0, or not a number */
@@ -695,7 +695,7 @@ static void send_result(void)
 	if (!g_isHost)
 		return;
 	g_hostResultFlag = 1;
-	GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)IMG(0x9f9418), 0, 0);
+	GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)ADDR(g_resultMessage), 0, 0);
 	g_hostResultFlag = 0;
 }
 

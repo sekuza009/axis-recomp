@@ -461,7 +461,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 			}
 			AU(0x886c) = 0x3f800000;
-			memcpy(a + 0x8874, (const void *)IMG(0xa0e7e8), 12);
+			memcpy(a + 0x8874, (const void *)ADDR(g_vecZero), 12);
 		}
 		if (AI(0x11c) == 1 && AI(0x87f8) < 0 && (AI(0x8820) < 0 || (AU8(0x87f4) & 3))) {
 			actor_checkLineOfSight(s, i);
@@ -816,7 +816,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 		if (!(AF(0x490) >= 1.0f)) {
 			int kind = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
-			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? IMG(0x4a9710) : kind == 3 ? IMG(0x4a970c) : IMG(0x4a9534))), &AF(0x490)));
+			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? IMG(0x4a9710) : kind == 3 ? IMG(0x4a970c) : ADDR(k_3f))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
 				AU(0x490) = 0x3f800000;
 		}

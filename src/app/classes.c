@@ -106,11 +106,11 @@ static void set3(u32 addr, u32 x, u32 y, u32 z)
 	p[1] = y;
 	p[2] = z;
 }
-void (vec_initOrigin)(void) { set3(IMG(0xa0e7a8), 0, 0, 0); }
+void (vec_initOrigin)(void) { set3(ADDR(g_vecOrigin), 0, 0, 0); }
 void (vec_initZero)(void) { set3(IMG(0xa0e7b8), 0, 0, 0); }
-void (vec_initAxisZ)(void) { set3(IMG(0xa0e7c8), 0, 0, 0x3f800000u); }
+void (vec_initAxisZ)(void) { set3(ADDR(g_vecUnitZ), 0, 0, 0x3f800000u); }
 void (vec_initUp)(void) { set3(IMG(0xa0e7d8), 0, 0x3f800000u, 0); }
-void (vec_initRest)(void) { set3(IMG(0xa0e7e8), 0, 0, 0); }
+void (vec_initRest)(void) { set3(ADDR(g_vecZero), 0, 0, 0); }
 void (vec_initAxisX)(void) { set3(IMG(0xa0e7f8), 0x3f800000u, 0, 0); }
 
 /* ---- class lifecycles ---- */
@@ -135,12 +135,12 @@ u32 THISCALL (Texture_dtor)(u32 *self)
 }
 DELETING(Texture, Texture_dtor)
 /* the six global Texture objects' destructors at exit */
-u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)IMG(0x4e1878)); }
-u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)IMG(0x5b1db8)); }
-u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)IMG(0x680cd8)); }
-u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)IMG(0x76d498)); }
-u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)IMG(0x90d1e0)); }
-u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)IMG(0x83a9e0)); }
+u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex64x64)); }
+u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex128x64)); }
+u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x64)); }
+u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex128x128)); }
+u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x128)); }
+u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x256)); }
 
 /* TimeSync (vtable 0x4aa46c) */
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = IMG(0x4aa46c); TimeSync_clear(self); return self; }
@@ -149,10 +149,10 @@ DELETING(TimeSync, TimeSync_dtor)
 void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)IMG(0xa0e948)); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
-int (TextureManager_ctor)(void) { g_textureManager = IMG(0x4a9570); return TextureManager_clear((void *)IMG(0x83a5e0)); }
+int (TextureManager_ctor)(void) { g_textureManager = IMG(0x4a9570); return TextureManager_clear((void *)ADDR(g_textureManager)); }
 int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = IMG(0x4a9570); return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
-void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)IMG(0x83a5e0)); }
+void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textureManager)); }
 
 /* Scene (vtable 0x4aa258) */
 void *THISCALL (Scene_ctor)(u32 *self) { self[0] = IMG(0x4aa258); debug_traceStripped(NULL); return self; }
@@ -623,9 +623,9 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
 	GAME_VAR(int, g + 0x233c9fc) = GAME_VAR(int, g + 0x233ca00) = 0;
-	memcpy(g + 0x233ca04, (const void *)IMG(0xa0e7a8), 12);
+	memcpy(g + 0x233ca04, (const void *)ADDR(g_vecOrigin), 12);
 	for (int k = 0; k < 3; k++)
-		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)IMG(0xa0e7c8) + k));
+		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
 	memcpy(g + 0x233ca1c, (const void *)IMG(0xa0e7d8), 12);
 	GAME_VAR(int, g + 0x233ca28) = GAME_VAR(int, g + 0x233ca2c) = 0;
 	GAME_VAR(int, g + 0x233cc20) = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;

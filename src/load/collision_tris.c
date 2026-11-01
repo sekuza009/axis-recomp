@@ -279,10 +279,10 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 }
 
 /* ---- 0x47dd90: a moving sphere against one triangle ---- */
-#define TINY ((const float *)IMG(0x4aa268))    /* 1e-8 */
-#define ONE ((const float *)IMG(0x4a9424))
-#define MINUS_ONE ((const float *)IMG(0x4a9474))
-#define REST ((const float *)IMG(0xa0e7e8))    /* the axis a response falls back to */
+#define TINY ((const float *)ADDR(k_1em8f))    /* 1e-8 */
+#define ONE ((const float *)ADDR(k_1f))
+#define MINUS_ONE ((const float *)ADDR(k_m1f))
+#define REST ((const float *)ADDR(g_vecZero))    /* the axis a response falls back to */
 
 static void vset(float *o, float x, float y, float z) { o[0] = x; o[1] = y; o[2] = z; }
 /* a x b, each component's products in the original's order */
@@ -610,11 +610,11 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 			}
 			node = FIELD(u8 *, node, 0xc);
 		}
-		const float *tiny = (const float *)IMG(0x4aa268);   /* 1e-8 */
+		const float *tiny = (const float *)ADDR(k_1em8f);   /* 1e-8 */
 		if (!(hit == 1 && best > *tiny))
 			return result;
 		if (!(mul(fld_m(&outVel[2]), &vel[2]) + mul(fld_m(&outVel[1]), &vel[1]) + mul(fld_m(&outVel[0]), &vel[0]) > *tiny)) {
-			memcpy(outVel, (const void *)IMG(0xa0e7e8), 12);
+			memcpy(outVel, (const void *)ADDR(g_vecZero), 12);
 			FIELD(u32, outDist, 0) = 0;
 			return 1;
 		}
@@ -622,7 +622,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 		memcpy(from, outPos, 12);
 		memcpy(step, outVel, 12);
 		FIELD(u32, outDist, 0) = FIELD(u32, &best, 0);
-		if (pass != 0 && mul(fld_m(&r), (const float *)IMG(0x4a93ec)) > best)
+		if (pass != 0 && mul(fld_m(&r), (const float *)ADDR(k_tenthsToDegrees)) > best)
 			return result;
 		if (pass + 1 > 5)
 			return result;

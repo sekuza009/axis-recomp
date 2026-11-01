@@ -428,8 +428,14 @@ with open(os.path.join(R, 'src', 'data', 'layout_names.h'), 'w', newline='\n') a
 	f.write('/* layout_names.h (tools/mkdatasrc.py): in AxisRC.exe (AXIS_DIRECT) the named globals that are members of\n'
 	        '   g_rdata / g_data (src/data/layout.h) as those members; the others stay GAME_VAR (src/globals.h), which IMG()\n'
 	        '   routes to the same place */\n#pragma once\n#include "layout.h"\nextern struct GameRdata g_rdata;\nextern struct GameData g_data;\n')
-	for n, m in sorted(list(named_r.items()) + list(named_d.items())):
+	members = dict(list(named_r.items()) + list(named_d.items()))
+	for n, m in sorted(members.items()):
 		f.write('#undef %s\n#define %s (%s)\n' % (n, n, m))
+	# the rest (no member of their own type, or outside .rdata / .data): their place through IMG(), a constant
+	f.write('/* names that are no member of their own type: at IMG()\'s place */\n')
+	for m in re.finditer(r'#define (\w+) GAME_VAR\(([\w \*]+), (0x[0-9a-f]+)\)', globals_h):
+		if m.group(1) not in members:
+			f.write('#undef %s\n#define %s (*(%s *)IMG(%s))\n' % (m.group(1), m.group(1), m.group(2).strip(), m.group(3)))
 total.append('layout: %d named globals as members' % (len(named_r) + len(named_d)))
 # .text's data, as one region per piece
 tl = ['/* text_data: data the game keeps in its .text between functions (DirectInput\'s object formats), and two words of',

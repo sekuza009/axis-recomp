@@ -284,7 +284,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	if (AT(int, b, 0x60) > 0) {
 		float *key = (float *)key_at(AT(u8 *, b, 0x64), AT(int, b, 0x60), 0x20, &frame);
 		int length = ((int *)key)[1];
-		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)IMG(0x4a93e8));
+		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
 		glTranslatef_bits(AT(u32, b, 0x44), AT(u32, b, 0x48), AT(u32, b, 0x4c));
@@ -508,7 +508,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 	u8 **entry = AT(u8 **, pose, 0x20) + AT(int, pose, 0x24);
 	if (!*entry)
 		return;
-	const float *unit = (const float *)IMG(0x4aa270), *point = (const float *)IMG(0xa0e7a8);
+	const float *unit = (const float *)IMG(0x4aa270), *point = (const float *)ADDR(g_vecOrigin);
 	for (int i = 0; i < AT(int, pose, 0x10); i++) {
 		u8 *sk = *entry;
 		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
@@ -523,7 +523,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			int at = frame;
 			float *key = (float *)key_at(AT(u8 *, b, 0x64), AT(int, b, 0x60), 0x20, &at);
 			int length = ((int *)key)[1];
-			long double f = length > 0 ? (long double)(at - ((int *)key)[0]) / length : fld_m((const float *)IMG(0x4a93e8));
+			long double f = length > 0 ? (long double)(at - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key[5]), &key[2]), scale), fmul_m(fadd_m(fmul_m(f, &key[6]), &key[3]), scale),
 			             fmul_m(fadd_m(fmul_m(f, &key[7]), &key[4]), scale));
 		} else
@@ -1023,7 +1023,7 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				n[2] = f32(-fld_m(&n[1]));
 				n[1] = f32(y);
 				for (int c3 = 0; c3 < 3; c3++)
-					n[c3] = f32(fmul_m(fld_m(&n[c3]), (const float *)IMG(0x4a9474)));
+					n[c3] = f32(fmul_m(fld_m(&n[c3]), (const float *)ADDR(k_m1f)));
 			}
 		}
 	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {

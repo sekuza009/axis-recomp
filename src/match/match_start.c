@@ -94,7 +94,7 @@ static void first_round(Scene *s)
 	}
 	for (int k = 0; k < 5; k++)
 		s->mechParts[k] = GAME_VAR(int, 0x4dc878 + k * 4);
-	static const u32 items[6] = { IMG(0x4dcf20), IMG(0x4dcf24), IMG(0x4dcf28), IMG(0x4dcf2c), IMG(0x4dcf18), IMG(0x4dcf1c) };
+	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechWeapons), ADDR(g_savedMechItem1) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
 	/* the five colour sets (six dwords each from 0x4dcfe0) into three tables of pairs (0x2342476, 0x234249e,

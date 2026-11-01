@@ -352,10 +352,10 @@ void (intro_cameraPath)(u8 *o, int h)
 /* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
    (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_keysBlocked (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
-#define EYE ((float *)IMG(0x4df024))
-#define LOOK ((float *)IMG(0x680378))
-#define EYE_KEPT ((float *)IMG(0x9dd930))
-#define LOOK_KEPT ((float *)IMG(0x9dd918))
+#define EYE ((float *)ADDR(g_menuCameraPos))
+#define LOOK ((float *)ADDR(g_menuCameraLook))
+#define EYE_KEPT ((float *)ADDR(g_roomSlideFarX))
+#define LOOK_KEPT ((float *)ADDR(g_roomSlideNearX))
 
 static void camera_keep(void)
 {
@@ -411,7 +411,7 @@ void (armc_enter)(TunnelRing *ring)
 	TunnelRing *r = ring;
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
 		r = last;
-	const float *stepF = (const float *)IMG(0x4b2a78);
+	const float *stepF = (const float *)ADDR(g_armcEnterStepF);
 	int state = g_keysBlocked;
 	switch (state) {
 	case 0:
@@ -473,7 +473,7 @@ void (armc_enter)(TunnelRing *ring)
 			}
 		} else if (state == 1)
 			return;
-		lower_view((const float *)IMG(0x4a942c));
+		lower_view((const float *)ADDR(k_0_5f));
 		return;
 	case 2:
 	case 4:

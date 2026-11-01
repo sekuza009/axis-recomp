@@ -34,9 +34,9 @@ void (lobby_setSubState0)(void)
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
 void (lobby_setSubState1)(void)
 {
-	static const u32 cleared[] = { IMG(0x4df884), IMG(0x4dbaac), IMG(0x4db8b8), IMG(0x4dba84), IMG(0x4db854), IMG(0x4dbbec), IMG(0x4dbbf0), IMG(0x4dba90),
-	                               IMG(0x4db858), IMG(0x4dbac8), IMG(0x4dbaa8), IMG(0x67ef30), IMG(0x4dba80), IMG(0x76d41c), IMG(0x680bb0), IMG(0x4df818),
-	                               IMG(0x4db71c), IMG(0x4dbaf8), IMG(0x4db85c), IMG(0x4db8b4), IMG(0x4db718), IMG(0x907b2c), IMG(0x4dbaf0), IMG(0x4db714) };
+	static const u32 cleared[] = { IMG(0x4df884), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
+	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaLeaving), ADDR(g_arenaListRefreshTimer), ADDR(g_arenaFull) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
 	g_camPoint1Z = z;
@@ -106,8 +106,8 @@ void (mapList_init)(void)
    list */
 void (lobby_setSubState2)(void)
 {
-	static const u32 cleared[] = { IMG(0x4dbbf4), IMG(0x4dba88), IMG(0xa0b360), IMG(0x4db55c), IMG(0x4ded54), IMG(0x4db85c), IMG(0x907b2c), IMG(0x4dbab0),
-	                               IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc) };
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_createQuitDialog), ADDR(g_arenaGameSetUp), ADDR(g_lobbyPanelsOff), ADDR(g_arenaLeaving), ADDR(g_editingNewArenaName),
+	                               ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword) };
 	int z = g_menuCameraHeight;
 	g_camPoint2X = 0xc20c0000;   /* -35.0 */
 	g_camPoint2Y = 0;
@@ -144,8 +144,8 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
 void (room_enterGameList)(void)
 {
-	static const u32 cleared[] = { IMG(0x4dbbf4), IMG(0x4dba88), IMG(0xa0b360), IMG(0x4ded54), IMG(0x907b2c), IMG(0x9dd380), IMG(0x9dd388), IMG(0x9dd568),
-	                               IMG(0x9dd6a8) };
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaLeaving), ADDR(g_editingRoomName), IMG(0x9dd388), IMG(0x9dd568),
+	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
 	g_roomMode = 1;
@@ -160,8 +160,8 @@ void (room_enterGameList)(void)
    selection cleared, the distance limit 10,000,000, 999 rooms */
 void (room_enterRoomList)(void)
 {
-	static const u32 cleared[] = { IMG(0x9dd6ac), IMG(0x9dd350), IMG(0x76d40c), IMG(0x9dd6b8), IMG(0x9dd3b0), IMG(0xa0b350), IMG(0xa0b35c), IMG(0x9dd1b4),
-	                               IMG(0x9dd1d0), IMG(0x9dd300), IMG(0x9dd328) };
+	static const u32 cleared[] = { ADDR(g_roomListPage), ADDR(g_rankingRequestPending), ADDR(g_roomListWaiting), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListRefused), ADDR(g_playerListCount), ADDR(g_roomListPrevPage),
+	                               ADDR(g_rankingSort), ADDR(g_roomListPrev), ADDR(g_roomListPrevRank) };
 	for (u32 e = IMG(0x9dcef4); e < IMG(0x9dd19c); e += 0x44) {
 		memset((void *)(RELOC(e) - 4), 0, 0x36);
 		GAME_VAR(int, e + 0x32) = 1;
@@ -214,8 +214,8 @@ void (room_copyJoinedSettings)(void)
 	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)IMG(0x9dd260), (void *)IMG(0x9dd5f8), 11);
 	memcpy((void *)IMG(0x9dd26b), (void *)IMG(0x9dd603), 0x90);
-	static const u32 copy[6][2] = { { IMG(0x9dd240), IMG(0x9dd5d8) }, { IMG(0x9dd244), IMG(0x9dd5dc) }, { IMG(0x9dd25c), IMG(0x9dd5f4) },
-	                                { IMG(0x9dd254), IMG(0x9dd5ec) }, { IMG(0x9dd258), IMG(0x9dd5f0) }, { IMG(0x9dd250), IMG(0x9dd5e8) } };
+	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { IMG(0x9dd25c), ADDR(g_pilotWinRate) },
+	                                { ADDR(g_pilotWinsKept), ADDR(g_pilotWins) }, { ADDR(g_pilotLossesKept), ADDR(g_pilotLosses) }, { ADDR(g_pilotScoreKept), ADDR(g_pilotScore) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
 }
@@ -235,7 +235,7 @@ void (room_fitWindowRects)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
 	if (g_pilotWins > g_pilotWinsKept || g_pilotPoints > g_pilotPointsKept) {
-		rect_copy(IMG(0x9dd5d8), IMG(0x9dd240));
+		rect_copy(ADDR(g_pilotLevel), ADDR(g_pilotLevelKept));
 		c5 = g_pilotWinsKept;
 		a1 = b1 = g_pilotPointsKept;
 	} else {
@@ -243,7 +243,7 @@ void (room_fitWindowRects)(void)
 		a1 = g_pilotPoints;
 		b1 = g_pilotPointsKept;
 		if (g_pilotWinsKept > c5 || b1 > a1) {
-			rect_copy(IMG(0x9dd240), IMG(0x9dd5d8));
+			rect_copy(ADDR(g_pilotLevelKept), ADDR(g_pilotLevel));
 			b1 = a1;
 		}
 	}
@@ -282,16 +282,16 @@ void (room_takeReceivedSettings)(void)
 		if (!(GAME_VAR(float, 0x9dd60b + k * 0x18) >= k_0f))
 			GAME_VAR(int, 0x9dd60b + k * 0x18) = 0;
 	}
-	static const u32 rect[7][2] = { { IMG(0x9dd5d8), IMG(0xa05727) }, { IMG(0x9dd5dc), IMG(0xa05737) }, { IMG(0x9dd5e4), IMG(0xa0573b) },
-	                                { IMG(0x9dd5f4), IMG(0xa0573f) }, { IMG(0x9dd5ec), IMG(0xa0572f) }, { IMG(0x9dd5f0), IMG(0xa05733) },
-	                                { IMG(0x9dd5e8), IMG(0xa0572b) } };
+	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), IMG(0xa05727) }, { ADDR(g_pilotPoints), IMG(0xa05737) }, { ADDR(g_pilotRating), IMG(0xa0573b) },
+	                                { ADDR(g_pilotWinRate), IMG(0xa0573f) }, { ADDR(g_pilotWins), IMG(0xa0572f) }, { ADDR(g_pilotLosses), IMG(0xa05733) },
+	                                { ADDR(g_pilotScore), IMG(0xa0572b) } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();
 	memset((void *)IMG(0x4de700), 0, 7 * 4 + 2);
 	strcpy((char *)IMG(0x4de700), (const char *)IMG(0x9dd570));
-	static const u32 title[6][2] = { { IMG(0x4de71e), IMG(0x9dd5d8) }, { IMG(0x4de722), IMG(0x9dd5dc) }, { IMG(0x4de72e), IMG(0x9dd5ec) },
-	                                 { IMG(0x4de732), IMG(0x9dd5f0) }, { IMG(0x4de72a), IMG(0x9dd5e8) }, { IMG(0x4de726), IMG(0x9dd5e4) } };
+	static const u32 title[6][2] = { { ADDR(g_titleLevel), ADDR(g_pilotLevel) }, { ADDR(g_titlePoints), ADDR(g_pilotPoints) }, { ADDR(g_titleWins), ADDR(g_pilotWins) },
+	                                 { ADDR(g_titleLosses), ADDR(g_pilotLosses) }, { ADDR(g_titleScore), ADDR(g_pilotScore) }, { ADDR(g_titleRating), ADDR(g_pilotRating) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
@@ -322,14 +322,14 @@ u32 (room_host)(void)
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
 	memset((void *)IMG(0x4de700), 0, 7 * 4 + 2);
-	static const u32 zero[] = { IMG(0x9dd5dc), IMG(0x9dd5ec), IMG(0x9dd5f0), IMG(0x9dd5e8), IMG(0x9dd5f4), IMG(0x9dd244), IMG(0x9dd254), IMG(0x9dd258),
-	                            IMG(0x9dd250), IMG(0x9dd25c) };
+	static const u32 zero[] = { ADDR(g_pilotPoints), ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotScore), ADDR(g_pilotWinRate), ADDR(g_pilotPointsKept), ADDR(g_pilotWinsKept), ADDR(g_pilotLossesKept),
+	                            ADDR(g_pilotScoreKept), IMG(0x9dd25c) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy((char *)IMG(0x4de700), (const char *)IMG(0x9dd570));
 	g_titleRating = g_pilotRating;
 	g_titleLevel = 1;
-	static const u32 zero2[] = { IMG(0x4de722), IMG(0x4de72e), IMG(0x4de732), IMG(0x4de72a) };
+	static const u32 zero2[] = { ADDR(g_titlePoints), ADDR(g_titleWins), ADDR(g_titleLosses), ADDR(g_titleScore) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
 	strcpy(g_accountPacket + 4, (const char *)IMG(0x9dd1d8));
@@ -544,7 +544,7 @@ u32 (room_leaveGame)(void)
    lobby_quitDialogClicks. Returns what the original leaves in eax */
 u32 (create_quitDialogClicks)(void)
 {
-	static const u32 panels[5] = { IMG(0x4dbab0), IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc), IMG(0x90d1c4) };
+	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), IMG(0x90d1c4) };
 	for (int k = 0; k < 5; k++)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
@@ -832,13 +832,13 @@ u32 (lobbyTop_keys)(void)
 		sound_playMenu(0);
 		return to_main_menu();
 	}
-	if (key_hit(IMG(0x4e0cdc)))
+	if (key_hit(ADDR(g_dikC)))
 		return GAME_FN(lobby_setSubState2, 0x404c20, u32, void)();   /* lobby_setSubState2 */
-	if (key_hit(IMG(0x4e1514)))
+	if (key_hit(ADDR(g_dikP)))
 		return GAME_FN(lobby_setSubState0, 0x404ac0, u32, void)();   /* lobby_setSubState0 */
-	if (key_hit(IMG(0x4e14f8)))
+	if (key_hit(ADDR(g_dikJ)))
 		return GAME_FN(lobby_setSubState1, 0x404b30, u32, void)();   /* lobby_setSubState1 */
-	if (key_hit(IMG(0x4e153c)))
+	if (key_hit(ADDR(g_dikX)))
 		return to_main_menu();
 	return 0;
 }
@@ -971,8 +971,8 @@ u32 (arena_loadAndQuit)(void)
 	if (g_startedByLauncher != 1) {
 		GAME_FN(menuState400_enter, 0x404640, void, void)();   /* menuState400_enter */
 		GAME_FN(lobby_setSubState1, 0x404b30, void, void)();   /* lobby_setSubState1 */
-		memset((void *)IMG(0x4dbbd4), 0, 24);
-		strcpy((char *)IMG(0x4dbbd4), (const char *)IMG(0x4de748));
+		memset((void *)ADDR(g_typedArenaName), 0, 24);
+		strcpy((char *)ADDR(g_typedArenaName), (const char *)IMG(0x4de748));
 		u32 r = GAME_FN(arena_joinListed, 0x406200, u32, int)(99999);   /* arena_joinListed */
 		g_lobbyReply = 0x69;
 		return r;
@@ -986,7 +986,7 @@ u32 (arena_loadAndQuit)(void)
 	g_playerHasClan = clan;
 	g_unusedPlayerRecord2a = 0;
 	if (clan == 1)
-		strcpy((char *)IMG(0x4ded46), (const char *)IMG(0x5b193c));
+		strcpy((char *)ADDR(g_unusedPlayerRecord26), (const char *)ADDR(g_arenaFileClan));
 	g_arenaFragLimit = g_arenaFileFragLimit;
 	g_arenaGameType = g_arenaFileGameType;
 	g_arenaCustomize = 0;
@@ -1107,13 +1107,13 @@ u32 (lobbyTop_connect)(void)
 	if (g_typingArenaPassword) {   /* the password */
 		if (g_paused)
 			return mode;
-		memset((void *)IMG(0x4db54e), 0, 8);
+		memset((void *)ADDR(g_newArenaPassword), 0, 8);
 		g_typingArenaPassword = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)IMG(0x4db54e), line);
+		strcpy((char *)ADDR(g_newArenaPassword), line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { IMG(0x4db850), IMG(0x4db54c) }, { IMG(0x4db518), IMG(0x4db54d) } };
+	static const u32 limit[2][2] = { { ADDR(g_editingNewArenaFragLimit), ADDR(g_arenaFragLimitTyped) }, { ADDR(g_editingNewArenaTimeLimit), ADDR(g_arenaTimeLimitTyped) } };
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
@@ -1140,7 +1140,7 @@ u32 (lobbyTop_connect)(void)
 		return r ? r : GAME_FN(lobby_checkReservedName, 0x4057a0, u32, void)();   /* lobby_checkReservedName */
 	}
 	u32 r = 0;
-	static const u32 close[2] = { IMG(0x4e0cdc), IMG(0x76d48c) };
+	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
@@ -1176,7 +1176,7 @@ u32 (arena_createClick)(void)
 	if (!g_mouseClick || mode != 2)
 		return mode;
 	u32 button = GAME_FN(createArena_hitTest, 0x404520, u32, int, int)(g_mouseX, g_mouseY);   /* createArena_hitTest */
-	u8 *players = (u8 *)IMG(0x4db549), *custom = (u8 *)IMG(0x4db54a), *type = (u8 *)IMG(0x4db54b);
+	u8 *players = (u8 *)ADDR(g_newArenaPlayers), *custom = (u8 *)ADDR(g_newArenaKind), *type = (u8 *)ADDR(g_newArenaMode);
 	u32 r;
 	u8 old;
 	switch (button) {
@@ -1407,7 +1407,7 @@ static u32 win_rate(int wins, int losses, int checked)
 	int total = wins + losses;
 	if (checked && total <= 0)
 		return 0;
-	float rate = f32(fmul_m((long double)wins, (const float *)IMG(0x4a93f4)) / (long double)total);   /* x 100 / total */
+	float rate = f32(fmul_m((long double)wins, (const float *)ADDR(k_100f)) / (long double)total);   /* x 100 / total */
 	return BITS(rate);
 }
 
@@ -1416,7 +1416,7 @@ static void rate_points(u32 rate)
 {
 	float r;
 	BITS(r) = rate;
-	R_RATING = f32(fmul_m(fld_m(&r), (const float *)IMG(0x4a9420)) * (long double)R_POINTS);
+	R_RATING = f32(fmul_m(fld_m(&r), (const float *)ADDR(k_0_01f)) * (long double)R_POINTS);
 }
 
 /* a kept copy taken back as the record, when the record's wins are more than 300 above it */
@@ -1446,7 +1446,7 @@ static void record_send(u32 rate, int name)
 	*(int *)(packet + 0x2a) = R_POINTS;
 	*(float *)(packet + 0x32) = f32(fld_m(&R_RATING));
 	*(int *)(packet + 0x2e) = actor_levelFromValue(R_POINTS);
-	static const u32 kept[2] = { IMG(0x9dd5d8), IMG(0x9dd240) };
+	static const u32 kept[2] = { ADDR(g_pilotLevel), ADDR(g_pilotLevelKept) };
 	for (int k = 0; k < 2; k++) {
 		GAME_VAR(int, kept[k] + 0x10) = R_OTHER;
 		GAME_VAR(int, kept[k] + 0x14) = R_WINS;
@@ -1467,8 +1467,8 @@ void (profile_checkAndSendRecord)(void)
 {
 	u32 rate = win_rate(R_WINS, R_LOSSES, 1);
 	rate_points(rate);
-	rate = take_back(IMG(0x9dd5d8), rate);
-	rate = take_back(IMG(0x9dd240), rate);
+	rate = take_back(ADDR(g_pilotLevel), rate);
+	rate = take_back(ADDR(g_pilotLevelKept), rate);
 	record_send(rate, 1);
 	if (R_WINS * 150 >= R_POINTS)
 		return;
@@ -1534,7 +1534,7 @@ void (lobby_roomNameCheck)(void)
 	lobby_keepArenaSettings();
 	int hosted = arena_openSession(1, NULL);
 	if (hosted) {
-		special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
+		special_map((const char *)IMG(0x4ded20), (u8 *)ADDR(g_arenaMap));
 		hosted = host_arena();
 	}
 	if (!hosted) {
@@ -1560,7 +1560,7 @@ void (lobby_checkReservedName)(void)
 	music_shutdown();
 	g_arenaLobbyMode = 0;
 	arena_openSession(0, NULL);
-	special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
+	special_map((const char *)IMG(0x4ded20), (u8 *)ADDR(g_arenaMap));
 	host_arena();
 	take_arena();
 }
@@ -1585,7 +1585,7 @@ int (lobby_checkReservedName2)(void)
 		return 0;
 	}
 	g_arenaGameSetUp = 1;
-	special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
+	special_map((const char *)IMG(0x4ded20), (u8 *)ADDR(g_arenaMap));
 	u8 *packet = g_roomPacket;
 	packet[0] = 0x18;
 	packet[0x49] = ARENA(0x22);
@@ -1596,7 +1596,7 @@ int (lobby_checkReservedName2)(void)
 	packet[0x43] = ARENA(0x20);
 	packet[0x44] = ARENA(0x21);
 	packet[0x52] = ARENA(0x2e);
-	lstrcpyA((char *)packet + 0x53, (const char *)IMG(0x4ded46));
+	lstrcpyA((char *)packet + 0x53, (const char *)ADDR(g_unusedPlayerRecord26));
 	lstrcpyA((char *)g_roomPacket + 1, (const char *)IMG(0x4ded20));
 	jmp_net_getLocalAddress();
 	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)IMG(0xa0b43c));
@@ -1614,7 +1614,7 @@ int (lobby_checkReservedName2)(void)
 void (lobby_checkReservedName3)(void)
 {
 	room_keepSettings();
-	special_map((const char *)IMG(0x5b1b30), (u8 *)IMG(0x5b1b50));
+	special_map((const char *)IMG(0x5b1b30), (u8 *)ADDR(g_roomRecMap));
 	u8 *packet = g_arenaPacket;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)IMG(0x9dd570), 0x1e);   /* strncpy */
 	packet = g_arenaPacket;

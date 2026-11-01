@@ -197,7 +197,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { IMG(0x9dd1b8), (GameSettings *)IMG(0x4df9c8), { IMG(0x9dd380), IMG(0x9dd6a8), IMG(0x9dd388), IMG(0x9dd568) }, IMG(0x7669a4),
+	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)IMG(0x4df9c8), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), IMG(0x9dd388), IMG(0x9dd568) }, IMG(0x7669a4),
 	                           IMG(0x74e6a4), 0, 20 };
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
@@ -250,7 +250,7 @@ static void box_buttons(int hovered, int lit_from)
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
-	static const Form form = { IMG(0x4dbb00), (GameSettings *)IMG(0x4db528), { IMG(0x4dbab0), IMG(0x4dbacc), IMG(0x4db850), IMG(0x4db518) }, IMG(0x75c9a4),
+	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)IMG(0x4db528), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, IMG(0x75c9a4),
 	                           0, IMG(0x4dbba4), 10 };
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);

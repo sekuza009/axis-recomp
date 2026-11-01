@@ -366,7 +366,7 @@ void (armc_drawBuildScreen)(void)
 	itoa(STAT(int, 0x14), value, 10);
 	static const u32 skill[5] = { 0x9f9068, 0x9f9068, 0x9f906c, 0x9f9070, 0x9f9074 };   /* by kind; above 3 the last */
 	int kind_of = (unsigned)STAT(int, 4) <= 3 ? STAT(int, 4) : 4;
-	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)IMG(0x4a9420));
+	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)ADDR(k_0_01f));
 	b *= (long double)STAT(int, 0x14);
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)IMG(0x4b02f0), ftol(b));   /* " +%d" */

@@ -347,7 +347,7 @@ static int esc_name(Scene *scene)
 		return scene->menuKeys[KEY_ESC] == 1;
 	chat_keepLastLine();
 	if (g_keptChatLine)
-		autoplay_startRecording(scene, (const char *)IMG(0x9f63e4));
+		autoplay_startRecording(scene, (const char *)ADDR(g_keptChatLine));
 	return 1;
 }
 

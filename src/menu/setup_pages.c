@@ -50,7 +50,7 @@ void (setup_drawSoundPage)(void)
 	float s = f32(fmul_m(volume, (const float *)IMG(0x4a9504)));
 	int x = X0 - ftol(fmul_m(volume, (const float *)IMG(0x4a9500))) + 0x90;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x90, Y0 + 0x50, x, Y0 + 0x70);                  /* the bar */
-	const float *zero = (const float *)IMG(0x4a93e8);
+	const float *zero = (const float *)ADDR(k_0f);
 	if (g_setupPressedClock > *zero) {
 		switch (g_setupPressed) {
 		case 0: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x50, X0 + 0x90, Y0 + 0x70); break;
@@ -71,7 +71,7 @@ void (setup_drawSoundPage)(void)
 		text_draw8(X0 + 0x8c, Y0 + 0x9c + k * 0x28, (const char *)(IMG(0x7534a4) + k * 0x80));
 	int on = g_effectsVolume > 0;
 	for (int k = 0; k < 3; k++) {
-		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? IMG(0x4ddea0) : IMG(0x4ddea4));
+		int value = k == 0 ? on : GAME_VAR(int, k == 1 ? ADDR(g_soundToggle6) : ADDR(g_soundToggle7));
 		const char *name = (const char *)(IMG(0x753624) + value * 0x80);
 		int y = Y0 + 0x9c + k * 0x28;
 		if (hovered == 5 + k) {
@@ -237,9 +237,9 @@ static void settings_tab(void)
 	tex_quad(0.0f, 0.0f, 1.0f, 0.125f, X0 + 0x108, Y0 + 0x88, X0 + 0x1d0, Y0 + 0xa0);   /* the track */
 	long double sensitivity = (long double)g_sensitivitySlider;
 	float s = f32(fmul_m(sensitivity, (const float *)IMG(0x4a9504)));
-	int x = X0 - ftol(fmul_m(sensitivity, (const float *)IMG(0x4a94a8))) + 0x108;
+	int x = X0 - ftol(fmul_m(sensitivity, (const float *)ADDR(k_m2f))) + 0x108;
 	tex_quad(0.0f, 0.125f, s, 0.25f, X0 + 0x108, Y0 + 0x88, x, Y0 + 0xa0);           /* the bar */
-	const float *zero = (const float *)IMG(0x4a93e8);
+	const float *zero = (const float *)ADDR(k_0f);
 	if (g_setupPressedClock > *zero) {
 		if (g_setupPressed == 0)
 			menu_drawSmallButton1(X0 + 0xc8, Y0 + 0x88, X0 + 0x108, Y0 + 0xa0, 1);
@@ -361,7 +361,7 @@ void (setup_crosshairScreen)(void)
 static void stripes(int right, float h)
 {
 #define SEAM f32(fsubr_m(fmul_m(fld_m(&g_scroll), (const float *)IMG(0x4a9408)), (const float *)IMG(0x4a9414)))
-#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_scroll), (const float *)IMG(0x4a9404)), (const float *)IMG(0x4a9424)))   /* 1 - 0.005 scroll */
+#define S_LEFT f32(fsubr_m(fmul_m(fld_m(&g_scroll), (const float *)IMG(0x4a9404)), (const float *)ADDR(k_1f)))   /* 1 - 0.005 scroll */
 #define S_RIGHT f32(fmul_m(fld_m(&g_scroll), (const float *)IMG(0x4a9404)))                                    /* 0.005 scroll */
 	if (!right) {
 		glBegin(GL_QUADS);
@@ -430,7 +430,7 @@ static void tunnel_advance(int turn_only)
 		g_tunnelPulse = 100.0f;
 		g_tunnelPulseStep = 0xbf800000;   /* -1 */
 	}
-	long double scroll = fadd_m(fmul_m(fld_m((const float *)IMG(0x4deda8)), frame), &g_scroll);
+	long double scroll = fadd_m(fmul_m(fld_m((const float *)ADDR(g_menuTunnelSpeed)), frame), &g_scroll);
 	g_scroll = f32(scroll);
 	if (scroll >= k_200f)
 		g_scroll = 0;
@@ -450,10 +450,10 @@ void (setup_drawTunnel)(void)
 	glEnable(GL_TEXTURE_2D);
 	if (g_setupPage == 1)
 		g_setupTunnelAlpha = f32(fsubr_m(fmul_m(fmul_m(fsub_m(fld_m(&g_setupTunnelAlpha), (const float *)IMG(0x4a94fc)), frame),
-		                                   (const float *)IMG(0x4a93ec)), &g_setupTunnelAlpha));
+		                                   (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
 	else if (g_setupPage == 0)
-		g_setupTunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)IMG(0x4a942c)), &g_setupTunnelAlpha), frame),
-		                                  (const float *)IMG(0x4a93ec)), &g_setupTunnelAlpha));
+		g_setupTunnelAlpha = f32(fadd_m(fmul_m(fmul_m(fsub_m(fld_m((const float *)ADDR(k_0_5f)), &g_setupTunnelAlpha), frame),
+		                                  (const float *)ADDR(k_tenthsToDegrees)), &g_setupTunnelAlpha));
 	glColor4f(1.0f, 1.0f, 1.0f, g_setupTunnelAlpha);
 	for (int layer = 0; layer < 4; layer++) {
 		/* the strip of the texture: s from s_near (+ ds) to s_far, t from t0 / t1 on by the wall's parity */
@@ -468,7 +468,7 @@ void (setup_drawTunnel)(void)
 			glColor4f(1.0f, 1.0f, 10.0f, 0.4f);
 			texture = g_menuTunnelTexture;
 		} else if (layer == 3) {
-			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_setupTunnelAlpha), (const float *)IMG(0x4a94f8))));
+			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_setupTunnelAlpha), (const float *)ADDR(k_0_2f))));
 			texture = GAME_VAR(int, 0x5b1984 - layer * 4);
 		} else
 			continue;
@@ -485,7 +485,7 @@ void (setup_drawTunnel)(void)
 				stripes(far, 12.0f);
 				continue;
 			}
-			float x = f32(fmul_m(fld_m(&s0), (const float *)IMG(0x4a9418)));    /* 10 s0 */
+			float x = f32(fmul_m(fld_m(&s0), (const float *)ADDR(k_10f)));    /* 10 s0 */
 			float y = f32(fmul_m(fld_m(&s0), (const float *)IMG(0x4a9410)));    /* 12 s0 */
 			float top = f32(fsub_m(fld_m((const float *)IMG(0x4a9410)), &y));   /* 12 - y */
 			float bottom = f32(fsub_m(fld_m(&y), (const float *)IMG(0x4a9410)));
@@ -512,10 +512,10 @@ void (setup_drawTunnel)(void)
 				glVertex3f(30.0f, bottom, z0);
 			} else if (!far) {
 				float fp = (float)parity;
-				float ta = f32(fmul_m((long double)parity, (const float *)IMG(0x4a941c)));
+				float ta = f32(fmul_m((long double)parity, (const float *)ADDR(k_0_25f)));
 				float z0 = f32(fsub_m(fld_m((const float *)IMG(0x4a9414)), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)IMG(0x4a9414)));
-				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a940c)));
-				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)IMG(0x4a9424)), (const float *)IMG(0x4a941c)));
+				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), (const float *)IMG(0x4a940c)));
+				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_25f)));
 				glTexCoord2f(0.0f, ta);
 				glVertex3f(wx, top, z0);
 				glTexCoord2f(s_far, ta);
@@ -525,11 +525,11 @@ void (setup_drawTunnel)(void)
 				glTexCoord2f(0.0f, tb);
 				glVertex3f(wx, bottom, z0);
 			} else {
-				long double pk = fmul_m((long double)parity, (const float *)IMG(0x4a941c));
+				long double pk = fmul_m((long double)parity, (const float *)ADDR(k_0_25f));
 				float ta = f32(pk);
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m((const float *)IMG(0x4a9400)), &x)), z1 = f32(fadd_m(fld_m(&x), (const float *)IMG(0x4a9414)));
-				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a940c)));
+				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), (const float *)IMG(0x4a940c)));
 				float s1 = f32(fadd_m(fld_m(&s_far), &ds));
 				float u1 = f32(fadd_m(fld_m(&ta), &t1));
 				glTexCoord2f(ds, u0);
@@ -596,7 +596,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				turn = -turn;
 			gl_rotateXYZ(0, 0, BITS(turn));
 			if (layer == 0) {
-				float a = f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)IMG(0x4a9430)), (const float *)IMG(0x4a942c)));
+				float a = f32(fsubr_m(fmul_m(fld_m(&g_tunnelPulse), (const float *)IMG(0x4a9430)), (const float *)ADDR(k_0_5f)));
 				if (deep)
 					glColor4f(0.7f, 0.0f, 0.7f, a);
 				else
@@ -614,16 +614,16 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				if (!t->layer2)
 					continue;
 				if (wall == hovered)
-					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)IMG(0x4a9428)), (const float *)IMG(0x4a9424))));
+					glColor4f(h->glow[0], h->glow[1], h->glow[2], f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)ADDR(k_clockRate)), (const float *)ADDR(k_1f))));
 				else
 					glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 			} else if (!h->layer3)
 				glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 			else if (wall == hovered)
-				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)IMG(0x4a9420)), (const float *)IMG(0x4a9424))));
+				glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(fmul_m(fld_m(&g_panelGlow), (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_1f))));
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
-			float x = f32(fmul_m(fld_m(&s0), (const float *)IMG(0x4a9418)));   /* 10 s0 */
+			float x = f32(fmul_m(fld_m(&s0), (const float *)ADDR(k_10f)));   /* 10 s0 */
 			float y = f32(fmul_m(fld_m(&s0), t->height));
 			float top = f32(fsub_m(fld_m(t->height), &y));
 			float bottom = f32(fsub_m(fld_m(&y), t->height));
@@ -652,8 +652,8 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				float fp = (float)place;
 				float ta = f32(fmul_m(fld_m(&fp), t->step));   /* 0.15625 a place */
 				float z0 = f32(fsub_m(fld_m((const float *)IMG(0x4a9414)), &x)), z1 = f32(fsub_m(fld_m(&x), (const float *)IMG(0x4a9414)));
-				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a940c)));
-				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)IMG(0x4a9424)), t->step));
+				float wx = f32(fsub_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), (const float *)IMG(0x4a940c)));
+				float tb = f32(fmul_m(fadd_m(fld_m(&fp), (const float *)ADDR(k_1f)), t->step));
 				glTexCoord2f(0.0f, ta);
 				glVertex3f(wx, top, z0);
 				glTexCoord2f(s_far, ta);
@@ -667,7 +667,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 				float ta = f32(pk);
 				float u0 = f32(fadd_m(pk, &t0));
 				float z0 = f32(fsub_m(fld_m((const float *)IMG(0x4a9400)), &x)), z1 = f32(fadd_m(fld_m(&x), (const float *)IMG(0x4a9414)));
-				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a940c)));
+				float wx = f32(fsubr_m(fmul_m((long double)layer, (const float *)ADDR(k_tenthsToDegrees)), (const float *)IMG(0x4a940c)));
 				float s1 = f32(fadd_m(fld_m(&s_far), &ds));
 				float u1 = f32(fadd_m(fld_m(&ta), &t1));
 				glTexCoord2f(ds, u0);
@@ -708,11 +708,11 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
    (as deep as 0x9dd698). The originals leave eax to callers that ignore it */
 static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
-#define SIX_WALLS 6, (const float *)IMG(0x4a9418), (const float *)IMG(0x4a9478), 0.46875f, 0.625f
-#define FOUR_WALLS 4, (const float *)IMG(0x4a9410), (const float *)IMG(0x4a941c), 0.5f, 0.75f
-void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, IMG(0x76d484), 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, IMG(0x76d484), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, IMG(0x76d484), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+#define SIX_WALLS 6, (const float *)ADDR(k_10f), (const float *)IMG(0x4a9478), 0.46875f, 0.625f
+#define FOUR_WALLS 4, (const float *)IMG(0x4a9410), (const float *)ADDR(k_0_25f), 0.5f, 0.75f
+void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, IMG(0x4df910), 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)
 {
@@ -830,7 +830,7 @@ void (menu_mainMenu)(void)
 		}
 	}
 	if (g_tunnelFlyingIn) {   /* (no calls: before the tunnel's projection and texturing as in the original) */
-		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)IMG(0x4a9498)), frame), (const float *)IMG(0x4a93ec));
+		long double step = fmul_m(fmul_m(fadd_m(fld_m(&g_depth), (const float *)ADDR(k_550f)), frame), (const float *)ADDR(k_tenthsToDegrees));
 		g_mainMenuFrames++;
 		if (g_depth > k_m549_9f)
 			g_depth = f32(fld_m(&g_depth) - step);
@@ -840,7 +840,7 @@ void (menu_mainMenu)(void)
 		}
 	}
 	Highlight h = { on, white, 1, 1, 1 };
-	Tunnel t = { (*(u32 *)&g_depth), IMG(0x76d484), 0, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_depth), ADDR(g_searchResult), 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
 		if (!g_keysBlocked)

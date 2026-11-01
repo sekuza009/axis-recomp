@@ -695,7 +695,7 @@ typedef struct { float r, g, b, a; } Colour;
 /* the mission-select screen */
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_missionPage GAME_VAR(int, 0x9f62f8)        /* 0 / 1: no keys; 2: no list refresh */
-#define g_missionBox ((const int *)IMG(0x9f6308))         /* the dialog frame: x0, y0, x1, y1 */
+#define g_missionBox ((const int *)ADDR(g_missionSelectLeft))         /* the dialog frame: x0, y0, x1, y1 */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionStarted GAME_VAR(int, 0x9f62e0)
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
@@ -788,7 +788,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawStatsPanel() GAME_FN(armc_drawStatsPanel, 0x412650, void, void)()
 #define armc_drawBuildScreen() GAME_FN(armc_drawBuildScreen, 0x419160, void, void)()
 #define armc_drawColourEditor() GAME_FN(armc_drawColourEditor, 0x41a280, void, void)()
-#define g_startPos ((const u32 *)IMG(0xa0e7a8))          /* (by use) where the player's actor starts (three floats) */
+#define g_startPos ((const u32 *)ADDR(g_vecOrigin))          /* (by use) where the player's actor starts (three floats) */
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define stage_claimPlayerActor(stage, a, x, y, spawn) GAME_THISFN(stage_claimPlayerActor, 0x45dd80, void, Stage *, int, int, int, void *)(stage, a, x, y, spawn)
 

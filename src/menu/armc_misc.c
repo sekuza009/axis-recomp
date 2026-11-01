@@ -133,7 +133,7 @@ void (armc_exit)(int confirmed)
 
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
    while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
-#define g_armcEye ((const u32 *)IMG(0xa0e7a8))              /* (by use) the preview camera's position */
+#define g_armcEye ((const u32 *)ADDR(g_vecOrigin))              /* (by use) the preview camera's position */
 
 /* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
    while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
@@ -176,7 +176,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	int a = GAME_VAR(int, s + 0x234240d);
 	u8 *actor = s + 0x1ecca70 + a * 0x8888;
 	GAME_VAR(float, actor + 0x18c) = (float)fmul_m(fld_m((const float *)(s + 0x2343293)) / (long double)(H / 2),
-	                                               (const float *)IMG(0x4a972c));   /* 890: tenths of a degree */
+	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
 	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);
 	actor_processFrame(stage, GAME_VAR(int, s + 0x234240d), GAME_VAR(float, s + 0x3c));
 	Light_clearCounts(light);
@@ -201,7 +201,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	gluPerspective(g_viewAngle, g_viewAspect, 100.0, 20000.0);
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
-	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)IMG(0x4a93ec)));
+	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)ADDR(k_tenthsToDegrees)));
 	gl_rotateXYZ(0, BITS(turn), 0);
 	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
@@ -302,7 +302,7 @@ void (menuState700_armCenter)(void)
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
-		static const u32 items[6] = { IMG(0x4dcb20), IMG(0x4dcb24), IMG(0x4dcb28), IMG(0x4dcb2c), IMG(0x4dcb18), IMG(0x4dcb1c) };
+		static const u32 items[6] = { ADDR(g_mechItem2), ADDR(g_mechItem3), ADDR(g_mechItem4), ADDR(g_mechItem5), ADDR(g_itemSlot4), ADDR(g_itemSlot5) };
 		armc_enterScreen();
 		for (int slot = 0; slot < 6; slot++)
 			armc_weaponSlotRecord(slot, GAME_VAR(int, items[slot]));
@@ -332,14 +332,14 @@ void (menuState700_armCenter)(void)
 		text_drawBox16(105, 244, 535, (const char *)IMG(0x757324));
 		g_armcSessionDue = 1;
 	}
-	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a93ec)), &g_armcZoom);
+	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_tenthsToDegrees)), &g_armcZoom);
 	g_armcZoom = zoom;
 	if (!(zoom >= k_m2f))
 		g_armcZoom = -2.0f;
 }
 
-#define g_menuEye ((u32 *)IMG(0x4df024))                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
-#define g_menuAt ((u32 *)IMG(0x680378))                    /* and the point it looks at */
+#define g_menuEye ((u32 *)ADDR(g_menuCameraPos))                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
+#define g_menuAt ((u32 *)ADDR(g_menuCameraLook))                    /* and the point it looks at */
 
 /* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
@@ -374,7 +374,7 @@ u32 (menu_enterMenus)(void)
 		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
 	}
 	g_progressWentUp = 0;
-	u32 *point = (u32 *)IMG(0x4df870), *pointAt = (u32 *)IMG(0x76d388);   /* the ARM CENTER's camera point */
+	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
 	point[0] = 0;
 	point[1] = 0;
 	pointAt[0] = 0;
@@ -390,7 +390,7 @@ u32 (menu_enterMenus)(void)
 		if (g_progress > g_bestProgressSolo)
 			g_progressWentUp = 1;
 	}
-	u32 *home = (u32 *)IMG(0x9db090), *homeAt = (u32 *)IMG(0x76d3f8);
+	u32 *home = (u32 *)ADDR(g_menuCameraX), *homeAt = (u32 *)ADDR(g_menuLookAtX);
 	home[2] = distance;
 	home[0] = 0;
 	home[1] = 0;
@@ -652,7 +652,7 @@ void (armc_snapshot)(int i)
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
 void (armc_drawWeightLine)(void)
 {
-	static const u32 weights[10] = { IMG(0x4dc14c), IMG(0x4dc0cc), IMG(0x4dc04c), IMG(0x4dbfcc), IMG(0x4dbf4c), IMG(0x4dbecc), IMG(0x4dcea0), IMG(0x4dc240), IMG(0x4dc2a4), IMG(0x4dcf0c) };
+	static const u32 weights[10] = { IMG(0x4dc14c), IMG(0x4dc0cc), IMG(0x4dc04c), IMG(0x4dbfcc), IMG(0x4dbf4c), IMG(0x4dbecc), ADDR(g_boosterWeight), ADDR(g_legsWeight), ADDR(g_armsWeight), ADDR(g_headWeight) };
 	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -711,8 +711,8 @@ u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
 	memcpy((void *)IMG(0x4dcfe0), (const void *)IMG(0x4dc4b8), 0x90);
-	memcpy((void *)IMG(0x4dc878), (const void *)IMG(0x4dc760), 5 * 4);
-	memcpy((void *)IMG(0x4dcf18), (const void *)IMG(0x4dcb18), 6 * 4);
+	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
 	return GAME_FN(profile_saveProgress, 0x447010, u32, void)();   /* profile_saveProgress */
 }
@@ -733,10 +733,10 @@ void (armc_sendSelectionToNet)(void)
 	}
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
-	memcpy((void *)IMG(0x4dc878), (const void *)IMG(0x4dc760), 5 * 4);
-	memcpy((void *)IMG(0x4dcf18), (const void *)IMG(0x4dcb18), 6 * 4);
+	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	u8 *room = (u8 *)IMG(0x9dd5f8);
-	const int *parts = (const int *)IMG(0x4dc878), *settings = (const int *)IMG(0x4dcf18);
+	const int *parts = (const int *)ADDR(g_savedMechParts), *settings = (const int *)ADDR(g_savedMechWeapons);
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)settings[2 + i];
 	room[5] = (u8)g_itemSlot4;

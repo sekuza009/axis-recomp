@@ -7,13 +7,13 @@
 /* where each screen's panel is (its top left, menu units); the fields sit at fixed offsets from it */
 #define PANEL_X(addr) GAME_VAR(int, addr)
 #define PANEL_Y(addr) GAME_VAR(int, (addr) + 4)
-#define ARENA_SETUP IMG(0x4dbb00)      /* the arena settings (name, password, limits) */
-#define ARENA_CREATE IMG(0x4dbb68)     /* "create arena" */
-#define ARENA_MESSAGE IMG(0x4db8c8)    /* the message line */
-#define ROOM_TOP IMG(0x9dd1b8)
-#define ROOM_GAME IMG(0x9dd358)
-#define ROOM_RULES IMG(0x9dd368)
-#define ROOM_MESSAGE IMG(0x9dd4a8)
+#define ARENA_SETUP ADDR(g_newArenaFormLeft)      /* the arena settings (name, password, limits) */
+#define ARENA_CREATE ADDR(g_arenaNameDialogLeft)     /* "create arena" */
+#define ARENA_MESSAGE ADDR(g_arenaGameListLeft)    /* the message line */
+#define ROOM_TOP ADDR(g_roomFormLeft)
+#define ROOM_GAME ADDR(g_roomLoginLeft)
+#define ROOM_RULES ADDR(g_accountPanelLeft)
+#define ROOM_MESSAGE ADDR(g_roomGameListLeft)
 
 /* "being edited" flags, one per field */
 #define EDITING(addr) GAME_VAR(int, addr)
@@ -258,8 +258,8 @@ void (editField_readTyping)(void)
 int (loginForm_openField)(int k)
 {
 	static const struct { u32 editing, text; int bufferLength, maxLength, flag; } field[4] = {
-		{ IMG(0x9dd348), IMG(0x9dd1d8), 0x1e, 0x10, 0 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 0xc, 0xc, 1 }, { IMG(0x9dd564), IMG(0x9dd202), 0xc, 0xc, 1 },
-		{ IMG(0x9dd6cc), IMG(0x9dd20e), 0x28, 0x28, 0 } };
+		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 0x1e, 0x10, 0 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 0xc, 0xc, 1 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 0xc, 0xc, 1 },
+		{ ADDR(g_typingAccountEmail), IMG(0x9dd20e), 0x28, 0x28, 0 } };
 	input_releaseKeyboard();
 	line_clear();
 	g_paused = 1;
@@ -279,7 +279,7 @@ int (loginForm_openField)(int k)
 		chat_createEdit(field[k].maxLength);
 		row = k;
 	}
-	caret(g_loginFormLeft + 0x94, PANEL_Y(IMG(0x9dd6e8)) + row * 0x30 + 0x3c);
+	caret(g_loginFormLeft + 0x94, PANEL_Y(ADDR(g_loginFormLeft)) + row * 0x30 + 0x3c);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	return 0;

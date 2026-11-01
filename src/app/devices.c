@@ -232,7 +232,7 @@ int *(input_getCursorPos)(void)
 		g_cursorPos = p[0];
 		g_cursorPosY = p[1];
 	}
-	return (int *)IMG(0xae2f18);
+	return (int *)ADDR(g_cursorPos);
 }
 
 /* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (0xae2f24 + key * 4) clear

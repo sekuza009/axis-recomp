@@ -213,7 +213,7 @@ u32 (profile_logIn)(void)
 u32 (profile_frame)(void)
 {
 	if (g_profileRowClicked) {
-		long double t = fadd_m(fld_m(&g_frameTime), (const float *)IMG(0x9f8f18));
+		long double t = fadd_m(fld_m(&g_frameTime), (const float *)ADDR(g_profileMessageTime));
 		g_profileMessageTime = (float)t;
 		if (t > k_20f) {
 			g_profileRowClicked = 0;
@@ -349,13 +349,13 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 u32 (profile_pilotPanelPage)(void)
 {
 	static const u32 frame[4] = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28) };
-	return glide_page((const float *)IMG(0x4a941c), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
+	return glide_page((const float *)ADDR(k_0_25f), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
 }
 /* 0x44f740: the second panel's page (profile_drawSecondDialog), gliding at its own rate */
 u32 (profile_secondPanelPage)(void)
 {
 	static const u32 frame[4] = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0) };
-	return glide_page((const float *)IMG(0x4a94f8), frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
+	return glide_page((const float *)ADDR(k_0_2f), frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
 }
 
 /* 0x44ce90: the profile list's names drawn (13 rows from the top entry 0x9f8c4c, 20 units apart in the panel at

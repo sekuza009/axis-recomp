@@ -301,7 +301,7 @@ static void section3(Panel *p)
 		wear_bonus(p, ROW(k), a + wear(F(f)), F(f));
 	}
 	for (int k = 0; k < 4; k++) {
-		float f = F(IMG(0x4dc230) + k * 4);
+		float f = F(ADDR(g_legsSpeedCorrection) + k * 4);
 		label(p, ROW(k + 2), IMG(0x761aa4) + k * 0x80);
 		sprintf(p->t.line, FMT(f >= 0 ? IMG(0x4b02c4) : IMG(0x4b02fc)), (double)f);   /* "+%.1f(" / "%.1f(" */
 		append(p->t.line, (const char *)IMG(0x7656a4));
@@ -405,7 +405,7 @@ static void section5(Panel *p)
 	label(p, ROW(0), 0x762da4);
 	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
 	value(p, ROW(0));
-	static const u32 ints[4][2] = { { IMG(0x4b02e8), IMG(0x4dcaa8) }, { IMG(0x4b0320), IMG(0x4dcab4) }, { IMG(0x4b0320), IMG(0x4dcab8) }, { IMG(0x4b02e8), IMG(0x4dcabc) } };
+	static const u32 ints[4][2] = { { IMG(0x4b02e8), ADDR(g_mechHackingLevel) }, { IMG(0x4b0320), IMG(0x4dcab4) }, { IMG(0x4b0320), IMG(0x4dcab8) }, { IMG(0x4b02e8), IMG(0x4dcabc) } };
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), 0x762e24 + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
@@ -424,7 +424,7 @@ static void section5(Panel *p)
 	sprintf(p->t.line, FMT(p->korean ? IMG(0x4b025c) : IMG(0x4b01e0)), (double)g_mechNormalSpeed);   /* "%.0f(km/h)" / "%.1f(km/h)" */
 	value(p, ROW(7));
 	label(p, ROW(8), 0x7631a4);
-	static const u32 speeds[3] = { IMG(0x4dcafc), IMG(0x4dcb04), IMG(0x4dcb00) };
+	static const u32 speeds[3] = { IMG(0x4dcafc), IMG(0x4dcb04), ADDR(g_mechMaxSpeedBwd) };
 	for (int k = 0; k < 3; k++) {
 		u32 format = p->korean ? (k < 2 ? IMG(0x4b02bc) : IMG(0x4b025c)) : (k < 2 ? IMG(0x4b0254) : IMG(0x4b01e0));
 		sprintf(p->t.bonus, FMT(format), (double)F(speeds[k]));

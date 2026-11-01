@@ -199,8 +199,8 @@ static void remap_item(u8 *scene, int *kind)
 void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-	const float *scale = (const float *)IMG(0x4a9418);
-	memcpy(scene + 0x20fab60, (const void *)IMG(0xa0e7a8), 12);
+	const float *scale = (const float *)ADDR(k_10f);
+	memcpy(scene + 0x20fab60, (const void *)ADDR(g_vecOrigin), 12);
 	FIELD(int, scene, 0x20fab6c) = 0;
 	FIELD(int, scene, 0x20fab70) = 0;
 	FIELD(int, scene, 0x20fadf4) = 0;

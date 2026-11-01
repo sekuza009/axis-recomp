@@ -268,7 +268,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			break;
 		case 13:
 			if (actor)
-				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)IMG(0x4a9750)));
+				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
 			break;
 		case 14: if (actor) FIELD(int, actor, 0x880c) = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
@@ -415,7 +415,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 {
 	u32 rec[13] = { kind, 0 };
 	memcpy(&rec[2], p, 12);
-	memcpy(&rec[5], (const void *)IMG(0xa0e7e8), 12);
+	memcpy(&rec[5], (const void *)ADDR(g_vecZero), 12);
 	particle_spawn(s, rec);
 }
 
@@ -425,7 +425,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 static void spark(u8 *s, u8 *p, float dt)
 {
 	float *pos = (float *)(p + 0x10);
-	const float *v = (const float *)(p + 0x1c), *k = (const float *)IMG(0x4a9554);
+	const float *v = (const float *)(p + 0x1c), *k = (const float *)ADDR(k_2000f);
 	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
 	float hit[3], below[3];
 	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
@@ -443,8 +443,8 @@ static void spark(u8 *s, u8 *p, float dt)
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef_stored(pos);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)IMG(0x4a94c8))), 0.0f, 1.0f, 0.0f);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)IMG(0x4a94c8))), 0.0f, 0.0f, 1.0f);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, (float *)(p + 0x2c));
 	glPopMatrix();
 	long double wait = fsub_m(fld_m((const float *)(p + 0x84)), &dt);
@@ -485,7 +485,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 			spark(s, p, dt);
 		break;
 	case 5:
-		size = k == 25 || k == 26 ? IMG(0x4a9554) : 0;
+		size = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
 		break;
 	case 6:
 		size = k <= 31 ? IMG(0x4a94bc) : IMG(0x4a949c);
@@ -495,7 +495,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		break;
 	}
 	if (size) {
-		long double u = fsub_m(fld_m((const float *)IMG(0x4a9424)), &t);
+		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
 		GAME_VAR(float, p + 0x7c) = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
 	GAME_VAR(float, p + 0x74) = f32(fadd_m(fld_m(&dt), (const float *)(p + 0x74)));
@@ -560,7 +560,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			if (A(int, 0x110) == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
 				memcpy(ac + 0x180, to + 0xc, 12);
-				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)IMG(0x4a9418)));
+				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
 				A(u32, 0x190) = GAME_VAR(u32, to + 0x1c);
 				A(int, 0x538) = I(int, 4);
 				strcpy((char *)ac + 0x4f4, (const char *)IMG(0x4c8198));   /* WARP ZONE */
@@ -669,7 +669,7 @@ static u32 table_rand_below(u32 n)
 /* the particle's direction (+0x10, from 0xa0e7a8 through its matrix +0x2c) */
 static void particle_heading(u8 *p)
 {
-	const float *m = (const float *)(p + 0x2c), *v = (const float *)IMG(0xa0e7a8);
+	const float *m = (const float *)(p + 0x2c), *v = (const float *)ADDR(g_vecOrigin);
 	for (int r = 0; r < 3; r++)
 		P(float, 0x10 + r * 4) = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
 		                                    &m[12 + r]));
@@ -867,7 +867,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		P(u32, 0x70) = 0x3f800000;
 		break;
 	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
-	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, IMG(0x4a93f0)); break;
+	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, ADDR(k_200f)); break;
 	case 45: particle_trail(p, desc, IMG(0x4aa424)); break;
 	}
 }

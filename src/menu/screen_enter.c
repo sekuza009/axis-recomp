@@ -30,8 +30,8 @@ static void camera_heights(int n)
 {
 	int z = g_menuCameraHeight;
 	for (int i = 0; i < n; i++) {
-		I(IMG(0x4df878) + i * 0x10) = z;
-		I(IMG(0x76d390) + i * 0x10) = z;
+		I(ADDR(g_camPoint0Z) + i * 0x10) = z;
+		I(ADDR(g_camAim0Z) + i * 0x10) = z;
 	}
 	g_menuCameraX = (*(int *)&g_menuCameraPos);
 	g_menuCameraY = (*(int *)&g_armcCamHeight);
@@ -40,9 +40,9 @@ static void camera_heights(int n)
 
 /* the four target and look-at points of the lobby and setup screens: (+-35, 0) looking at (-+70, +-35) */
 static const Store camera4[] = {
-	{ IMG(0x4df870), 0x420c0000 }, { IMG(0x4df874), 0 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x420c0000 },
-	{ IMG(0x4df880), 0x420c0000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0xc20c0000 },
-	{ IMG(0x4df890), 0xc20c0000 }, { IMG(0x4df894), 0 }, { IMG(0x76d3a8), 0x428c0000 }, { IMG(0x76d3ac), 0x420c0000 },
+	{ ADDR(g_camPoint0X), 0x420c0000 }, { ADDR(g_camPoint0Y), 0 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x420c0000 },
+	{ ADDR(g_camPoint1X), 0x420c0000 }, { IMG(0x4df884), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0xc20c0000 },
+	{ ADDR(g_camPoint2X), 0xc20c0000 }, { ADDR(g_camPoint2Y), 0 }, { ADDR(g_camAim2X), 0x428c0000 }, { ADDR(g_camAim2Y), 0x420c0000 },
 	{ IMG(0x4df8a0), 0xc20c0000 }, { IMG(0x4df8a4), 0 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0xc20c0000 } };
 
 /* 0x440bb0: the main menu: its camera (-300), its limits, colours, fade */
@@ -75,15 +75,15 @@ void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
 		{ IMG(0x4dbb60), 0 }, { IMG(0x4db51c), 5 }, { IMG(0x4dba70), 0x50 }, { IMG(0x4dba74), 0x96 }, { IMG(0x4dba78), 0x230 }, { IMG(0x4dba7c), 0x15e },
-		{ IMG(0x4dbb70), 0x21c }, { IMG(0x4dbb74), 0x190 }, { IMG(0x4db8d0), 0x262 }, { IMG(0x4dbb00), 0x28 }, { IMG(0x4dbb04), 0x1e },
-		{ IMG(0x4dbb08), 0x258 } };
-	static const u32 cleared1[] = { IMG(0x4dbbd0), IMG(0x4dbab0), IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc), IMG(0x4dba90), IMG(0x4db858), IMG(0x4dbac8),
-	                                IMG(0x4dbaa8), IMG(0x67ef30), IMG(0x4dba80) };
-	static const u32 cleared2[] = { IMG(0x76d41c), IMG(0x680bb0), IMG(0x4df818), IMG(0x4dba84), IMG(0x4db854), IMG(0x4dba98), IMG(0x907b2c), IMG(0x4dbbf4) };
+		{ ADDR(g_arenaNameDialogRight), 0x21c }, { ADDR(g_arenaNameDialogBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
+		{ ADDR(g_newArenaFormRight), 0x258 } };
+	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
+	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
+	static const u32 cleared2[] = { IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), IMG(0x4dba98), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
-		{ IMG(0x4dbb3c), 2 }, { IMG(0x907b24), 999 }, { IMG(0x4dba9c), ONE }, { IMG(0x4dbaa0), ONE }, { IMG(0x4dbaa4), ONE },
+		{ ADDR(g_arenaLobbyMode), 2 }, { ADDR(g_lastPanel), 999 }, { IMG(0x4dba9c), ONE }, { IMG(0x4dbaa0), ONE }, { IMG(0x4dbaa4), ONE },
 		{ IMG(0x4db8a0), 0x3e99999a }, { IMG(0x4db8a4), 0x3f333333 }, { IMG(0x4db8a8), 0x3f333333 }, { IMG(0x4db8ac), ONE }, { IMG(0x9fd958), 0xf },
-		{ IMG(0x4dc24c), 1 } };
+		{ ADDR(g_armcFrom), 1 } };
 	g_matchMode = 1;
 	arena_clearChatRecord();
 	g_arenaNameDialogLeft = 0x64;
@@ -118,13 +118,13 @@ void (menuState400_enter)(void)
 void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x4ddac8), 0x29a }, { IMG(0x4ddd90), 0xc4af0000 }, { IMG(0x4dda60), 1 }, { IMG(0x4de03c), 0 }, { IMG(0x4ddcec), 2 },
-		{ IMG(0x4ddad0), 0x32 }, { IMG(0x4ddad4), 0x3c }, { IMG(0x4ddadc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
-		{ IMG(0x4ddddc), 0x1c2 }, { IMG(0x4dde80), 0x28 }, { IMG(0x4dde8c), 0x1b8 } };
+		{ IMG(0x4ddac8), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
+		{ ADDR(g_setupSoundLeft), 0x32 }, { IMG(0x4ddad4), 0x3c }, { IMG(0x4ddadc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
+		{ IMG(0x4ddddc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { IMG(0x4dde8c), 0x1b8 } };
 	static const Store colours[] = {
 		{ IMG(0x4de048), 0 }, { IMG(0x4de04c), ONE }, { IMG(0x4de050), ONE }, { IMG(0x4de054), ONE }, { IMG(0x4ddae0), 0 },
-		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { IMG(0x4e14fc), 0 }, { IMG(0x4deda8), ONE },
-		{ IMG(0x9db978), 0 }, { IMG(0x4df010), ONE } };
+		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { IMG(0x4e14fc), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
+		{ IMG(0x9db978), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
 	g_setupOptionsTop = 0x1e;
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
@@ -157,22 +157,22 @@ void (menuState600_enterSetup)(void)
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x9dd698), 0xc4af0000 }, { IMG(0x9dd7d8), 1 }, { IMG(0x9dd560), 0 }, { IMG(0x9dce48), 2 }, { IMG(0x9dd6bc), 0x3f333333 },
-		{ IMG(0x9dd834), 0x42 }, { IMG(0x4dba88), 0 }, { IMG(0x9dd358), 0x32 }, { IMG(0x9dd35c), 0x6e }, { IMG(0x9dd360), 0x24e },
-		{ IMG(0x9dd364), 0x172 }, { IMG(0x9dd368), 0x3c }, { IMG(0x9dd36c), 0x1e }, { IMG(0x9dd370), 0x244 }, { IMG(0x9dd374), 0x1c2 },
-		{ IMG(0x9dd4a8), 0x14 }, { IMG(0x9dd4ac), 0x28 }, { IMG(0x9dd4b0), 0x26c }, { IMG(0x9dd4b4), 0x1b8 }, { IMG(0x9dd1b8), 0x28 },
-		{ IMG(0x9dd1bc), 0x1e }, { IMG(0x9dd1c0), 0x258 }, { IMG(0x9dd1c4), 0x1c2 }, { IMG(0x9dced8), 0x10 }, { IMG(0x9dcedc), 0x1e },
+		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomDialogOpen), 1 }, { IMG(0x9dd560), 0 }, { ADDR(g_roomMode), 2 }, { ADDR(g_roomPanelBrightness), 0x3f333333 },
+		{ ADDR(g_roomState), 0x42 }, { ADDR(g_connectionAwaited), 0 }, { ADDR(g_roomLoginLeft), 0x32 }, { ADDR(g_roomLoginTop), 0x6e }, { IMG(0x9dd360), 0x24e },
+		{ ADDR(g_roomLoginBottom), 0x172 }, { ADDR(g_accountPanelLeft), 0x3c }, { ADDR(g_accountPanelTop), 0x1e }, { ADDR(g_accountPanelRight), 0x244 }, { ADDR(g_accountPanelBottom), 0x1c2 },
+		{ ADDR(g_roomGameListLeft), 0x14 }, { ADDR(g_roomGameListTop), 0x28 }, { ADDR(g_roomGameListRight), 0x26c }, { ADDR(g_roomGameListBottom), 0x1b8 }, { ADDR(g_roomFormLeft), 0x28 },
+		{ ADDR(g_roomFormTop), 0x1e }, { ADDR(g_roomFormRight), 0x258 }, { ADDR(g_roomFormBottom), 0x1c2 }, { IMG(0x9dced8), 0x10 }, { IMG(0x9dcedc), 0x1e },
 		{ IMG(0x9dcee0), 0x268 }, { IMG(0x9dcee4), 0x1b8 } };
 	static const Store colours_camera[] = {
-		{ IMG(0x4ded60), 2 }, { IMG(0x9dcec0), 0 }, { IMG(0x9dcec4), ONE }, { IMG(0x9dcec8), ONE }, { IMG(0x9dcecc), ONE },
+		{ ADDR(g_connectStep), 2 }, { IMG(0x9dcec0), 0 }, { IMG(0x9dcec4), ONE }, { IMG(0x9dcec8), ONE }, { IMG(0x9dcecc), ONE },
 		{ IMG(0x9dd338), 0x3e99999a }, { IMG(0x9dd33c), 0x3f333333 }, { IMG(0x9dd340), 0x3f333333 }, { IMG(0x9dd344), ONE },
-		{ IMG(0x4df870), 0x41a00000 }, { IMG(0x4df874), 0xc1200000 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x425c0000 },
-		{ IMG(0x4df880), 0x41a00000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0 },
-		{ IMG(0x4df890), 0x41a00000 }, { IMG(0x4df894), 0x41200000 }, { IMG(0x76d3a8), 0xc28c0000 }, { IMG(0x76d3ac), 0xc25c0000 },
+		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
+		{ ADDR(g_camPoint1X), 0x41a00000 }, { IMG(0x4df884), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
+		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ IMG(0x4df8a0), 0xc1a00000 }, { IMG(0x4df8a4), 0xc1200000 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0x425c0000 },
 		{ IMG(0x4df8b0), 0xc1a00000 }, { IMG(0x4df8b4), 0 }, { IMG(0x76d3c8), 0x428c0000 }, { IMG(0x76d3cc), 0 } };
-	static const u32 cleared[] = { IMG(0x9dd838), IMG(0x9dd6a4), IMG(0x9dd1b0), IMG(0x4ded54), IMG(0x9dd1c8), IMG(0x9dd350), IMG(0x9dd84c), IMG(0x9dd6d4),
-	                               IMG(0x9dd850) };
+	static const u32 cleared[] = { ADDR(g_roomRequestOut), ADDR(g_roomAnswerAwaited), ADDR(g_unusedRoomWord), ADDR(g_arenaGameSetUp), ADDR(g_roomLoginDue), ADDR(g_rankingRequestPending), ADDR(g_roomConnected), ADDR(g_roomAwaitingServer),
+	                               ADDR(g_roomLeaveDialog) };
 	g_matchMode = 2;
 	arena_clearChatRecord();
 	STORE_ALL(layout);
@@ -266,10 +266,10 @@ u32 (menu_enterState)(void)
 /* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
    point (0, 0, 100) looking at the origin */
 static const Store briefing_camera[] = {
-	{ IMG(0x4df024), 0 }, { IMG(0x4df028), 0 }, { IMG(0x4df02c), 0xc3e10000 }, { IMG(0x680378), 0 }, { IMG(0x68037c), 0 },
-	{ IMG(0x680380), 0xc4098000 }, { IMG(0x4df870), 0 }, { IMG(0x4df874), 0 }, { IMG(0x4df878), 0x42c80000 }, { IMG(0x76d388), 0 },
-	{ IMG(0x76d38c), 0 }, { IMG(0x76d390), 0 }, { IMG(0x9db090), 0 }, { IMG(0x9db094), 0 }, { IMG(0x9db098), 0xc3e10000 }, { IMG(0x76d3f8), 0 },
-	{ IMG(0x76d3fc), 0 }, { IMG(0x76d400), 0xc4098000 } };
+	{ ADDR(g_menuCameraPos), 0 }, { ADDR(g_armcCamHeight), 0 }, { ADDR(g_armcCamDistance), 0xc3e10000 }, { ADDR(g_menuCameraLook), 0 }, { ADDR(g_menuCameraLookY), 0 },
+	{ ADDR(g_menuCameraHeight), 0xc4098000 }, { ADDR(g_camPoint0X), 0 }, { ADDR(g_camPoint0Y), 0 }, { ADDR(g_camPoint0Z), 0x42c80000 }, { ADDR(g_camAim0X), 0 },
+	{ ADDR(g_camAim0Y), 0 }, { ADDR(g_camAim0Z), 0 }, { ADDR(g_menuCameraX), 0 }, { ADDR(g_menuCameraY), 0 }, { ADDR(g_menuCameraZ), 0xc3e10000 }, { ADDR(g_menuLookAtX), 0 },
+	{ ADDR(g_menuLookAtY), 0 }, { ADDR(g_menuLookAtZ), 0xc4098000 } };
 
 /* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
    panels (skirmish_layout, skirmishButtons_layout), the page set to 10 (skirmish settings) with a sound, the mission list
@@ -277,11 +277,11 @@ static const Store briefing_camera[] = {
 int (menuState900_enterSkirmish)(void)
 {
 	static const Store setup[] = {
-		{ IMG(0x9f16a8), 0xa }, { IMG(0x9f16ac), 0x14 }, { IMG(0x9f16b0), 0x276 }, { IMG(0x9f16b4), 0x1cc }, { IMG(0x9ef208), 0 },
+		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { IMG(0x9ef208), 0 },
 		{ IMG(0x9ef20c), ONE }, { IMG(0x9ef210), ONE }, { IMG(0x9ef214), ONE }, { IMG(0x9eeac8), 0 }, { IMG(0x9eeacc), 0x3f19999a },
-		{ IMG(0x9eead0), 0x3f19999a }, { IMG(0x9eead4), ONE }, { IMG(0x9ef1f0), 1 }, { IMG(0x76d3e8), 900 }, { IMG(0x67ef0c), 900 },
+		{ IMG(0x9eead0), 0x3f19999a }, { IMG(0x9eead4), ONE }, { ADDR(g_settingsState), 1 }, { IMG(0x76d3e8), 900 }, { IMG(0x67ef0c), 900 },
 		{ IMG(0x67ef20), 900 } };
-	static const u32 cleared[] = { IMG(0x9f16bc), IMG(0x9f1058), IMG(0x9f16a4), IMG(0x680bb4), IMG(0x76d37c) };
+	static const u32 cleared[] = { IMG(0x9f16bc), IMG(0x9f1058), ADDR(g_missionPicked), IMG(0x680bb4), IMG(0x76d37c) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
@@ -300,7 +300,7 @@ int (menuState900_enterSkirmish)(void)
 int (menuState500_enter)(void)
 {
 	static const Store setup[] = {
-		{ IMG(0x9f6308), 0x28 }, { IMG(0x9f630c), 0xa }, { IMG(0x9f6310), 0x258 }, { IMG(0x9f6314), 0x1cc }, { IMG(0x9f6318), 0 },
+		{ ADDR(g_missionSelectLeft), 0x28 }, { ADDR(g_missionSelectTop), 0xa }, { IMG(0x9f6310), 0x258 }, { IMG(0x9f6314), 0x1cc }, { IMG(0x9f6318), 0 },
 		{ IMG(0x9f631c), ONE }, { IMG(0x9f6320), ONE }, { IMG(0x9f6324), ONE }, { IMG(0x9f62e8), 0 }, { IMG(0x9f62ec), 0x3f19999a },
 		{ IMG(0x9f62f0), 0x3f19999a }, { IMG(0x9f62f4), ONE }, { IMG(0x9f62f8), 1 }, { IMG(0x76d3e8), 500 }, { IMG(0x67ef0c), 500 },
 		{ IMG(0x67ef20), 500 } };
@@ -329,16 +329,16 @@ int (menuState500_enter)(void)
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x9f8e48), 0x3c }, { IMG(0x9f8e4c), 0x3c }, { IMG(0x9f8f28), 0x10e }, { IMG(0x9f93c0), 0x10e }, { IMG(0x9f8ea0), 0x244 },
-		{ IMG(0x9f8ea4), 0x1a4 }, { IMG(0x9f8eac), 0x78 }, { IMG(0x9f8ea8), 0x96 }, { IMG(0x9f8f20), 0x208 }, { IMG(0x9f8f24), 0x118 },
+		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { IMG(0x9f8f28), 0x10e }, { IMG(0x9f93c0), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
+		{ ADDR(g_profilePageBottom), 0x1a4 }, { ADDR(g_newNameDialogLeft), 0x78 }, { ADDR(g_newNameDialogTop), 0x96 }, { ADDR(g_newNameDialogRight), 0x208 }, { ADDR(g_newNameDialogBottom), 0x118 },
 		{ IMG(0x9f8f1c), 0x78 }, { IMG(0x9f8f0c), 0x96 }, { IMG(0x9f8f2c), 0x208 }, { IMG(0x9f6834), 0x78 }, { IMG(0x9f683c), 0x96 },
-		{ IMG(0x9f93bc), 0x208 }, { IMG(0x9f8c54), 0x1e }, { IMG(0x9f8c50), 0x14 }, { IMG(0x9f6830), 0x262 }, { IMG(0x9f682c), 0x1c2 } };
-	static const u32 cleared[] = { IMG(0x9f8d70), IMG(0x9f6840), IMG(0x9f8c4c), IMG(0x9f8c5c), IMG(0x9f8d74), IMG(0x9f8c58), IMG(0x680bb4), IMG(0x76d37c),
+		{ IMG(0x9f93bc), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
+	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), IMG(0x680bb4), IMG(0x76d37c),
 	                               IMG(0x76d42c) };
 	static const Store colours[] = {
 		{ IMG(0x9f8eb0), 0 }, { IMG(0x9f8eb4), ONE }, { IMG(0x9f8eb8), ONE }, { IMG(0x9f8ebc), ONE }, { IMG(0x9f8d58), 0 },
-		{ IMG(0x9f8d5c), 0x3f19999a }, { IMG(0x9f8d60), 0x3f19999a }, { IMG(0x9f8d64), ONE }, { IMG(0x4dda44), 0 }, { IMG(0x4dda48), 0 },
-		{ IMG(0x9f6838), 0 }, { IMG(0x9f900c), 0 }, { IMG(0x9f8f18), 0 } };
+		{ IMG(0x9f8d5c), 0x3f19999a }, { IMG(0x9f8d60), 0x3f19999a }, { IMG(0x9f8d64), ONE }, { IMG(0x4dda44), 0 }, { ADDR(g_introZoom), 0 },
+		{ IMG(0x9f6838), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
@@ -390,7 +390,7 @@ static void match_name(const char *name)
 void (console_init)(void)
 {
 	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
-		tunnel_removeLastRing((TunnelRing **)IMG(0x67fb3c));
+		tunnel_removeLastRing((TunnelRing **)ADDR(g_menuTunnel));
 	if (!g_startedFromLobby)
 		check_profiles();
 	g_matchRunning = 1;

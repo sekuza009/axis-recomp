@@ -125,8 +125,8 @@ static void map_step(int dir, u32 lock, u32 choice)
 }
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
-void (arena_stepMap)(int dir) { map_step(dir, IMG(0x4db54a), IMG(0x4db548)); }
-void (room_stepMap)(int dir) { map_step(dir, IMG(0x4df9ea), IMG(0x4df9e8)); }
+void (arena_stepMap)(int dir) { map_step(dir, ADDR(g_newArenaKind), ADDR(g_newArenaMap)); }
+void (room_stepMap)(int dir) { map_step(dir, ADDR(g_roomCustom), ADDR(g_roomMap)); }
 
 /* ---- the map list's drawing ---- */
 #define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */
@@ -218,7 +218,7 @@ void (mapList_draw)(void)
    it */
 void (mapList_mouse)(void)
 {
-	const float *repeat = (const float *)IMG(0x4a93d0);
+	const float *repeat = (const float *)ADDR(k_5f);
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		int on = mapList_hitTest(g_mouseX, g_mouseY);

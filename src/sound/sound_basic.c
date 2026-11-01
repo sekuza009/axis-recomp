@@ -77,7 +77,7 @@ int (sound_setVolume)(int v)
 		g_soundBaseVolume = 0;
 		return p;
 	}
-	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)IMG(0x4a93ec)));
+	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)ADDR(k_tenthsToDegrees)));
 	g_soundBaseVolume = r;
 	return r;
 }
@@ -231,7 +231,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	if (!(range > 0.0f))
 		return;
 	int base = g_soundBaseVolume + 10000;
-	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)IMG(0x4a9424)) * (long double)base) - 10000;
+	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)ADDR(k_1f)) * (long double)base) - 10000;
 	if (volume > 0)
 		volume = 0;
 	c[0] = f32(fmul_m(fld_m(&d[1]), &up[2]) - fmul_m(fld_m(&d[2]), &up[1]));
@@ -320,7 +320,7 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (((int (STDCALL *)(void *, void **, void *))*(const u32 *)IMG(0x4a9020))(NULL, (void **)IMG(0xa0e804), NULL))   /* DirectSoundCreate */
+	if (((int (STDCALL *)(void *, void **, void *))*(const u32 *)IMG(0x4a9020))(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
 		return 0;
 	void *ds = g_directSound;
 	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
@@ -338,7 +338,7 @@ int (sound_init)(void *hwnd)
 	wave.bits = 16;
 	wave.extra = 0;
 	ds = g_directSound;
-	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)IMG(0xa0e808), NULL))   /* CreateSoundBuffer */
+	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)ADDR(g_primarySoundBuffer), NULL))   /* CreateSoundBuffer */
 		return 0;
 	void *primary = g_primarySoundBuffer;
 	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
@@ -412,6 +412,6 @@ int (music_play)(const char *name)
 	g_music = stream;
 	COM(stream, 0x1c, long, u32)(stream, 1);   /* SetState(run) */
 	strcpy((char *)IMG(0xa0e674), name);
-	COM(g_music, 0x24, long, void *)(g_music, (void *)IMG(0xa0e018));   /* GetDuration */
+	COM(g_music, 0x24, long, void *)(g_music, (void *)ADDR(g_musicLength));   /* GetDuration */
 	return 1;
 }

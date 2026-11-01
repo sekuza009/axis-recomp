@@ -16,7 +16,7 @@
 #define g_cursor GAME_VAR(int, 0xb116e0)              /* the player looked at first by netq_receive (turns 0..15) */
 #define g_resends GAME_VAR(int, 0xb116e4)             /* out-of-turn packets seen: the caller re-syncs at 0x80 */
 #define PLAYER(i, offset) GAME_VAR(int, 0x9f9840 + (i) * 0x410 + (offset))
-#define g_send ((u8 *)IMG(0x9f9428))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
+#define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 
 /* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
 u32 (netq_reset)(int host)

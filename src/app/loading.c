@@ -5,7 +5,7 @@
 
 #define g_loadTimer ((void *)IMG(0xa0e948))                /* its own game-time timer */
 #define g_loadProgress GAME_VAR(float, 0xa0ea88)
-#define g_loadText ((char *)IMG(0xa0e988))
+#define g_loadText ((char *)ADDR(g_statusLine))
 #define g_loadTexture GAME_VAR(int, 0xa0e980)         /* the backdrop's texture id */
 #define g_loadFade GAME_VAR(float, 0xa0e984)          /* the fade's time, 0 .. 1 s */
 #define ONE k_1f
@@ -90,7 +90,7 @@ void (loading_draw)(u32 progress)
 	int texture = g_loadTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
-	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)IMG(0x4a9418)));   /* progress + 10 */
+	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)ADDR(k_10f)));   /* progress + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
 		glBegin(GL_QUADS);
 		float s0 = f32(fmul_m((long double)j, (const float *)IMG(0x4aa26c)));        /* j / 18 */
@@ -134,7 +134,7 @@ void (loading_draw)(u32 progress)
 	sprintf(line, (const char *)IMG(0x4c52c8), g_timeLimit);   /* "TIME LIMIT : %d" */
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
-	text_drawSized(0x96, row * 16 + 0x76, (const char *)IMG(0xa0e988), 0x10);
+	text_drawSized(0x96, row * 16 + 0x76, (const char *)ADDR(g_statusLine), 0x10);
 }
 
 /* ---- the game's start-up load ---- */
@@ -191,8 +191,8 @@ void (menu_loadIntroTextures)(void)
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {
-		{ IMG(0x4ad574), IMG(0x4df450) }, { IMG(0x4b2360), IMG(0x9db0a4) }, { IMG(0x4b2354), IMG(0x4e152c) }, { IMG(0x4b2344), IMG(0x4e186c) },
-		{ IMG(0x4b2330), IMG(0x76d36c) }, { IMG(0x4b2320), IMG(0x4e0cd0) }, { IMG(0x4b255c), IMG(0x4dfa00) },
+		{ IMG(0x4ad574), IMG(0x4df450) }, { IMG(0x4b2360), ADDR(g_buttonTexture) }, { IMG(0x4b2354), IMG(0x4e152c) }, { IMG(0x4b2344), IMG(0x4e186c) },
+		{ IMG(0x4b2330), IMG(0x76d36c) }, { IMG(0x4b2320), ADDR(g_menuTunnelTexture) }, { IMG(0x4b255c), ADDR(g_characterTexture) },
 	};
 	for (int k = 0; k < 7; k++) {
 		GAME_VAR(int, rest[k].into) = T(rest[k].name);
@@ -262,20 +262,20 @@ int (app_checkCdAndLoad)(void *instance)
 	}
 	const char *dir = (const char *)IMG(0x4b1304);
 	u32 w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x4e1878), dir, 0x28, 0, 0x40, 0x40, w, h);
+	tex_initBy((void *)ADDR(g_staticTex64x64), dir, 0x28, 0, 0x40, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x5b1db8), dir, 0x28, 0, 0x80, 0x40, w, h);
+	tex_initBy((void *)ADDR(g_staticTex128x64), dir, 0x28, 0, 0x80, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x680cd8), dir, 0x28, 0, 0x100, 0x40, w, h);
+	tex_initBy((void *)ADDR(g_staticTex256x64), dir, 0x28, 0, 0x100, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x76d498), dir, 0x28, 0, 0x80, 0x80, w, h);
+	tex_initBy((void *)ADDR(g_staticTex128x128), dir, 0x28, 0, 0x80, 0x80, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x90d1e0), dir, 0x50, 0, 0x100, 0x80, w, h);
+	tex_initBy((void *)ADDR(g_staticTex256x128), dir, 0x50, 0, 0x100, 0x80, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)IMG(0x83a9e0), dir, 0x28, 0, 0x100, 0x100, w, h);
-	texSmall_initBy((void *)IMG(0x83a5e0), (void *)IMG(0x4e1878), (void *)IMG(0x5b1db8), (void *)IMG(0x680cd8), (void *)IMG(0x76d498),
-	                (void *)IMG(0x90d1e0), (void *)IMG(0x83a9e0));
-	g_textures = (TextureSets *)IMG(0x83a5e0);
+	tex_initBy((void *)ADDR(g_staticTex256x256), dir, 0x28, 0, 0x100, 0x100, w, h);
+	texSmall_initBy((void *)ADDR(g_textureManager), (void *)ADDR(g_staticTex64x64), (void *)ADDR(g_staticTex128x64), (void *)ADDR(g_staticTex256x64), (void *)ADDR(g_staticTex128x128),
+	                (void *)ADDR(g_staticTex256x128), (void *)ADDR(g_staticTex256x256));
+	g_textures = (TextureSets *)ADDR(g_textureManager);
 	pen_init((const char *)IMG(0x4b2514));
 	g_fontAscii = texture_named((const char *)IMG(0x4b24c4));
 	g_fontAsciiLarge = texture_named((const char *)IMG(0x4b24b4));
@@ -384,13 +384,13 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			fread_scrambled(g + 0x1f35c4, 4, 1, G(void *, 0x2340d08));
 			if (G(int, 0x1f35c4) != 0x1201)
 				sys_fatalError((char *)IMG(0xa0e778), (const char *)IMG(0x4c5234), (int)path);
-			fread_scrambled((void *)IMG(0x5ae9c4), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)IMG(0x9dad94), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)IMG(0x67fb44), 1, 0x20, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x9da3e0), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x76d368), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x4df8e8), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x76d408), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, G(void *, 0x2340d08));
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
 		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawCylinder, 0x469730);

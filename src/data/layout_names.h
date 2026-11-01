@@ -1723,3 +1723,72 @@ extern struct GameData g_data;
 #define k_tenth (g_rdata.k_tenth_)
 #undef k_tenthsToDegrees
 #define k_tenthsToDegrees (g_rdata.k_tenthsToDegrees_)
+/* names that are no member of their own type: at IMG()'s place */
+#undef k_setupPanelEnd
+#define k_setupPanelEnd (*(double *)IMG(0x4a9440))
+#undef k_degToRad
+#define k_degToRad (*(double *)IMG(0x4aa290))
+#undef k_tenthDegreeRad
+#define k_tenthDegreeRad (*(double *)IMG(0x4aa298))
+#undef k_clockRate3
+#define k_clockRate3 (*(float *)IMG(0x4aa498))
+#undef g_errorHook
+#define g_errorHook (*(ErrorHook *)IMG(0x4c57cc))
+#undef k_oneOver180
+#define k_oneOver180 (*(double *)IMG(0x4a9540))
+#undef k_3600f
+#define k_3600f (*(float *)IMG(0x4a94c8))
+#undef k_10000f
+#define k_10000f (*(float *)IMG(0x4a9708))
+#undef k_0f
+#define k_0f (*(float *)IMG(0x4a93e8))
+#undef k_2f
+#define k_2f (*(float *)IMG(0x4a93fc))
+#undef k_0_5f
+#define k_0_5f (*(float *)IMG(0x4a942c))
+#undef k_360f
+#define k_360f (*(float *)IMG(0x4a9460))
+#undef k_m1f
+#define k_m1f (*(float *)IMG(0x4a9474))
+#undef k_4f
+#define k_4f (*(float *)IMG(0x4a947c))
+#undef k_550f
+#define k_550f (*(float *)IMG(0x4a9498))
+#undef k_m2f
+#define k_m2f (*(float *)IMG(0x4a94a8))
+#undef k_0_01
+#define k_0_01 (*(double *)IMG(0x4a94c0))
+#undef k_0_9f
+#define k_0_9f (*(float *)IMG(0x4a9508))
+#undef k_m1000f
+#define k_m1000f (*(float *)IMG(0x4a95c0))
+#undef k_27_7778f
+#define k_27_7778f (*(float *)IMG(0x4a9750))
+#undef k_1em8f
+#define k_1em8f (*(float *)IMG(0x4aa268))
+#undef k_0_0078125f
+#define k_0_0078125f (*(float *)IMG(0x4aa420))
+#undef k_1em8
+#define k_1em8 (*(double *)IMG(0x4aa458))
+#undef g_menuTunnel
+#define g_menuTunnel (*(TunnelRing * *)IMG(0x67fb3c))
+#undef g_imp_wsprintfA
+#define g_imp_wsprintfA (*(void * *)IMG(0x4a92f0))
+#undef k_5f
+#define k_5f (*(float *)IMG(0x4a93d0))
+#undef k_0_07f
+#define k_0_07f (*(float *)IMG(0x4a946c))
+#undef k_1000000f
+#define k_1000000f (*(float *)IMG(0x4a94ec))
+#undef k_0_2f
+#define k_0_2f (*(float *)IMG(0x4a94f8))
+#undef k_640f
+#define k_640f (*(float *)IMG(0x4a9510))
+#undef k_3f
+#define k_3f (*(float *)IMG(0x4a9534))
+#undef k_0_28125f
+#define k_0_28125f (*(float *)IMG(0x4a9564))
+#undef k_890f
+#define k_890f (*(float *)IMG(0x4a972c))
+#undef k_27
+#define k_27 (*(double *)IMG(0x4aa408))

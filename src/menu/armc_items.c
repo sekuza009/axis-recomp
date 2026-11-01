@@ -11,7 +11,7 @@
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)
 {
-	return slot < 4 ? (int *)IMG(0x4dcb20) + slot : (int *)IMG(0x4dcb18) + (slot - 4);
+	return slot < 4 ? (int *)ADDR(g_mechItem2) + slot : (int *)ADDR(g_itemSlot4) + (slot - 4);
 }
 
 /* the whole mech handed to the scene, with name */
@@ -187,18 +187,18 @@ u32 (armc_partScreenClicks)(void)
 void (armc_extraItemBonuses)(void)
 {
 	static const u32 flag[9] = { 0x4dcb10, 0x4dcea8, 0x4dcc5c, 0x4dbc54, 0x4dbe44, 0x4dc794, 0x4dbd78, 0x4dc774, 0x4dcf30 };
-	static const u32 value[14] = { IMG(0x4dbc70), IMG(0x4dc248), IMG(0x4dcc6c), IMG(0x4dc548), IMG(0x4dcb34), IMG(0x4dbc78), IMG(0x4dc898), IMG(0x4dceb4), IMG(0x4dc88c),
-	                               IMG(0x4dcca0), IMG(0x4dc894), IMG(0x4dceb0), IMG(0x4dcc68), IMG(0x4dbc74) };
+	static const u32 value[14] = { ADDR(g_itemBonusCapacityPerLevel), IMG(0x4dc248), IMG(0x4dcc6c), IMG(0x4dc548), IMG(0x4dcb34), ADDR(g_itemBonusDetectionRange), ADDR(g_itemBonusLockOn), ADDR(g_itemBonusHacking), ADDR(g_itemBonusTargetKeep),
+	                               ADDR(g_itemBonusActiveTime), ADDR(g_itemBonusRechargeTime), ADDR(g_itemBonusWeightLimit), ADDR(g_itemBonusShield), IMG(0x4dbc74) };
 	static const struct { u8 item; u32 at, bits; } bonus[14] = {
-		{ 0, IMG(0x4dbc70), 0x3e99999a }, { 1, IMG(0x4dc248), 0x42c80000 }, { 2, IMG(0x4dcc6c), 0x42c80000 }, { 3, IMG(0x4dc548), 0x42c80000 },
-		{ 4, IMG(0x4dcb34), 0x42480000 }, { 5, IMG(0x4dbc78), 0x42c80000 }, { 5, IMG(0x4dc898), 0x3f000000 }, { 5, IMG(0x4dceb4), 0x40400000 },
-		{ 5, IMG(0x4dc88c), 0x3f800000 }, { 6, IMG(0x4dcca0), 0x3f000000 }, { 6, IMG(0x4dc894), 0xbdcccccd }, { 7, IMG(0x4dceb0), 0x3e4ccccd },
-		{ 8, IMG(0x4dcc68), 0x3e99999a }, { 8, IMG(0x4dbc74), 0x3f800000 } };
+		{ 0, ADDR(g_itemBonusCapacityPerLevel), 0x3e99999a }, { 1, IMG(0x4dc248), 0x42c80000 }, { 2, IMG(0x4dcc6c), 0x42c80000 }, { 3, IMG(0x4dc548), 0x42c80000 },
+		{ 4, IMG(0x4dcb34), 0x42480000 }, { 5, ADDR(g_itemBonusDetectionRange), 0x42c80000 }, { 5, ADDR(g_itemBonusLockOn), 0x3f000000 }, { 5, ADDR(g_itemBonusHacking), 0x40400000 },
+		{ 5, ADDR(g_itemBonusTargetKeep), 0x3f800000 }, { 6, ADDR(g_itemBonusActiveTime), 0x3f000000 }, { 6, ADDR(g_itemBonusRechargeTime), 0xbdcccccd }, { 7, ADDR(g_itemBonusWeightLimit), 0x3e4ccccd },
+		{ 8, ADDR(g_itemBonusShield), 0x3e99999a }, { 8, IMG(0x4dbc74), 0x3f800000 } };
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(int, flag[k]) = 0;
 	for (int k = 0; k < 14; k++)
 		GAME_VAR(u32, value[k]) = 0;
-	static const u32 items[2] = { IMG(0x4dcb1c), IMG(0x4dcb18) };
+	static const u32 items[2] = { ADDR(g_itemSlot5), ADDR(g_itemSlot4) };
 	for (int k = 0; k < 2; k++) {
 		u32 bonusItem = (u32)(GAME_VAR(int, items[k]) - 27);
 		if (bonusItem <= 8)

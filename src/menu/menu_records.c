@@ -244,7 +244,7 @@ static int rank_value(const u8 *row, int mode, long double *value)
 void (roomList_fillPage)(void)
 {
 	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
-	u8 *rows = (u8 *)IMG(0x9dceec);
+	u8 *rows = (u8 *)ADDR(g_roomMessageText4);
 	for (int i = 0; i < 10; i++) {
 		u8 *row = rows + i * 0x44;
 		*(int *)(RELOC(row) + 4) = 0;
@@ -254,7 +254,7 @@ void (roomList_fillPage)(void)
 			*(int *)(RELOC(row) + cleared[k]) = 0;
 		*(int *)(RELOC(row) + 0x3a) = 1;
 	}
-	long double value = fld_m((const float *)IMG(0x4a94ec));
+	long double value = fld_m((const float *)ADDR(k_1000000f));
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
@@ -398,7 +398,7 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (skirmishSettings_leave)(void) { return leave_settings(IMG(0x9ef1f0)); }
+u32 (skirmishSettings_leave)(void) { return leave_settings(ADDR(g_settingsState)); }
 u32 (missionSettings_leave)(void) { return leave_settings(IMG(0x9f62f8)); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
@@ -537,7 +537,7 @@ u32 (chat_closeLine)(int ok)
 /* 0x431950: any of three keys closes the message box (0x4df900). Returns the last key's state */
 u32 (messageBox_keyClose)(void)
 {
-	static const u32 keys[3] = { IMG(0x9dae70), IMG(0x5b1da8), IMG(0x6803a0) };
+	static const u32 keys[3] = { ADDR(g_dikEnter), ADDR(g_dikSpace), ADDR(g_dikEscape) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
@@ -553,7 +553,7 @@ u32 (messageBox_keyClose)(void)
    original leaves in eax */
 u32 (menu_keyStartFade)(void)
 {
-	static const u32 keys[3] = { IMG(0x9dae70), IMG(0x5b1da8), IMG(0x6803a0) };
+	static const u32 keys[3] = { ADDR(g_dikEnter), ADDR(g_dikSpace), ADDR(g_dikEscape) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
@@ -672,7 +672,7 @@ u32 (mainmenu_startNetGame)(void)
    the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
-	static const u32 key[6] = { IMG(0x4e1500), IMG(0x4e1508), IMG(0x4e1504), IMG(0x4e1524), IMG(0x4e0cd4), IMG(0x4e153c) };
+	static const u32 key[6] = { IMG(0x4e1500), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)

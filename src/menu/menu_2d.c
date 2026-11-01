@@ -157,7 +157,7 @@ u32 (menu_frameBegin)(void)
    at most 1). Returns menu_drawRect's eax */
 u32 (menu_drawDimOverlay)(void)
 {
-	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a943c)), (const float *)IMG(0x4deb74));
+	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a943c)), (const float *)ADDR(g_roomFade));
 	g_roomFade = (float)a;
 	float alpha = (float)a;
 	if (a > k_1f)
@@ -172,11 +172,11 @@ u32 (menu_drawDimOverlay)(void)
    the look-at point (0x680378), y up. Returns gluLookAt's eax */
 u32 (gfx_setMenuCamera)(void)
 {
-	float z = (float)-fld_m((const float *)IMG(0x4df02c)), y = (float)-fld_m((const float *)IMG(0x4df028)),
-	      x = (float)-fld_m((const float *)IMG(0x4df024));
+	float z = (float)-fld_m((const float *)ADDR(g_armcCamDistance)), y = (float)-fld_m((const float *)ADDR(g_armcCamHeight)),
+	      x = (float)-fld_m((const float *)ADDR(g_menuCameraPos));
 	IMPORT(0x4a9214, void, float, float, float)(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
-	const float *eye = (const float *)IMG(0x4df024), *at = (const float *)IMG(0x680378);
+	const float *eye = (const float *)ADDR(g_menuCameraPos), *at = (const float *)ADDR(g_menuCameraLook);
 	return ((u32 (STDCALL *)(double, double, double, double, double, double, double, double, double))*(const u32 *)IMG(0x4a904c))(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
@@ -200,8 +200,8 @@ static int up_to(long double progress, int limit)
 /* the fading lines' alpha: 1 - frames x the frame time / 10, 0 once below */
 static float fading(void)
 {
-	long double a = frame_progress((const float *)IMG(0x4a93ec));
-	return a > k_1f ? 0.0f : f32(fsubr_m(a, (const float *)IMG(0x4a9424)));   /* 1 - a */
+	long double a = frame_progress((const float *)ADDR(k_tenthsToDegrees));
+	return a > k_1f ? 0.0f : f32(fsubr_m(a, (const float *)ADDR(k_1f)));   /* 1 - a */
 }
 
 static void line(int xa, int ya, int xb, int yb)
@@ -300,7 +300,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 {
 	long double t = fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a950c));
 	int frames = g_frameCounter40 + 1;
-	t = fadd_m(t, (const float *)IMG(0x4de1f0));
+	t = fadd_m(t, (const float *)ADDR(g_cursorBlinkTimer));
 	g_frameCounter40 = frames;
 	g_cursorBlinkTimer = (float)t;
 	if (frames > 0x28)
@@ -308,7 +308,7 @@ u32 (menu_drawTextCursor)(int x, int y)
 	if (t > k_0_9f)
 		(*(int *)&g_cursorBlinkTimer) = 0;
 	gfx_setProjection2D3D(2);
-	float alpha = (float)fsub_m(fld_m((const float *)IMG(0x4a9424)), (const float *)IMG(0x4de1f0));
+	float alpha = (float)fsub_m(fld_m((const float *)ADDR(k_1f)), (const float *)ADDR(g_cursorBlinkTimer));
 	glColor4f_bits(0, 0x3f800000, 0, BITS(alpha));
 	glBegin(GL_QUADS);
 	menu_vertex(x, y);

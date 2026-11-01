@@ -93,7 +93,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 	int player = FIELD(int, a, 0x108) == 1 ? FIELD(int, a, 0x114) : -1;
 	if ((unsigned)kind <= 9) {
 		int level = GAME_VAR(int, 0x9f9068 + player * 0x4c + group[kind]) + 100;
-		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)IMG(0x4a9420)), (const float *)IMG(0x4a942c)));
+		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (FIELD(u32, a, 0x3f0) & 0x100)
 		damage *= 2;
@@ -109,9 +109,9 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 			int shield = FIELD(int, t, 0x12c);
 			if (shield >= damage) {
 				FIELD(int, t, 0x12c) = shield - damage;
-				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)IMG(0x4a9758)), (const float *)IMG(0x4a942c)));
+				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)IMG(0x4a9758)), (const float *)ADDR(k_0_5f)));
 			} else {
-				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)IMG(0x4a9758)), (const float *)IMG(0x4a942c)));
+				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)IMG(0x4a9758)), (const float *)ADDR(k_0_5f)));
 				FIELD(int, t, 0x128) += shield - lost - damage;
 				FIELD(int, t, 0x12c) = 0;
 			}
@@ -303,7 +303,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	float *vel = (float *)(RELOC(b) + 0xa0);
 	for (int k = 0; k < 3; k++)
 		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
-	memcpy(b + 0xac, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(b + 0xac, (const void *)ADDR(g_vecZero), 12);
 	B(int, 0xb8) = -1;
 	B(int, 0xc0) = 0;
 	B(int, 0xbc) = a4;

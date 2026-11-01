@@ -136,7 +136,7 @@ u8 (net_freeSlotsOf)(int id)
 }
 
 /* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
-void (net_clearSlots)(void) { for (u32 p = IMG(0x9f9840); p < IMG(0x9fd940); p += 0x410) GAME_VAR(int, p) = 0; }
+void (net_clearSlots)(void) { for (u32 p = IMG(0x9f9840); p < ADDR(g_netBlockSize); p += 0x410) GAME_VAR(int, p) = 0; }
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
@@ -147,7 +147,7 @@ void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_V
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
-u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)IMG(0x67fb3c)); }
+u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)IMG(0x76d438), r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
@@ -500,13 +500,13 @@ u32 (reg_writeCharacterSettings)(void)
 	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0x9dd20e));
 	strcpy((char *)IMG(0x76d450), (const char *)IMG(0x9dd570));
 	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4df9c8));
-	memcpy((void *)IMG(0x5b1b50), (const void *)IMG(0x4df9e8), 6);
+	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
 	if (!RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b179c), 0, 0xf003f, &key)) {
 		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);   /* REG_SZ */
 		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
-		const signed char *choice = (const signed char *)IMG(0x5b1b50);
+		const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
 		static const u32 names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
 		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
 		for (int i = 0; i < 6; i++) {
@@ -526,9 +526,9 @@ u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)IMG(
    is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
 u32 (chat_keepLastLine)(void)
 {
-	memset((void *)IMG(0x9f63e4), 0, 0x400);
+	memset((void *)ADDR(g_keptChatLine), 0, 0x400);
 	if (strlen((const char *)IMG(0x9dc92c))) {
-		memcpy((void *)IMG(0x9f63e4), (const void *)IMG(0x9dc92c), 0x400);
+		memcpy((void *)ADDR(g_keptChatLine), (const void *)IMG(0x9dc92c), 0x400);
 		g_chatTyping = 0;
 	}
 	g_paused = 0;
@@ -562,7 +562,7 @@ static const u8 choice_order[6] = { 0, 1, 3, 4, 5, 2 };
 static const u32 choice_names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
 static u32 choice_dword(int k)
 {
-	const signed char *choice = (const signed char *)IMG(0x5b1b50);
+	const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
 	return (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
 }
 
@@ -588,13 +588,13 @@ void (reg_readCharacterSettings)(void)
 	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x4b17d0));
 	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4b17bc));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
-	memcpy((void *)IMG(0x5b1b50), defaults, 6);
+	memcpy((void *)ADDR(g_roomRecMap), defaults, 6);
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
 	IMPORT(0x4a9010, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
 		(0x80000001, (const char *)IMG(0x4b179c), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
-	signed char *choice = (signed char *)IMG(0x5b1b50);
+	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
 		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);
 		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
@@ -618,7 +618,7 @@ void (reg_readCharacterSettings)(void)
 		}
 	} else
 		return;
-	u8 *limit = (u8 *)IMG(0x5b1b54);
+	u8 *limit = (u8 *)ADDR(g_roomRecFragLimit);
 	for (int k = 0; k < 2; k++)
 		limit[k] = limit[k] < 5 ? 5 : limit[k] > 30 ? 30 : limit[k];
 	if (choice[0] < 0 || choice[0] > 0x15)
@@ -646,8 +646,8 @@ int (reg_readServerSettings)(void)
 	RegQueryValueExA(key, (const char *)IMG(0x4b1720), 0, &type, (void *)IMG(0xa0b24c), &size);
 	RegQueryValueExA(key, (const char *)IMG(0x4b1714), 0, &type, (void *)IMG(0xa055fc), &size);
 	size = 4;
-	RegQueryValueExA(key, (const char *)IMG(0x4b170c), 0, &type, (void *)IMG(0xa055f4), &size);
-	RegQueryValueExA(key, (const char *)IMG(0x4b1700), 0, &type, (void *)IMG(0xa05634), &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b170c), 0, &type, (void *)ADDR(g_lobbyTcpPort), &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b1700), 0, &type, (void *)ADDR(g_ladderPort), &size);
 	return RegCloseKey(key);
 }
 

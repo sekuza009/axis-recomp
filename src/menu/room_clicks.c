@@ -140,21 +140,21 @@ static int key_hit(u32 binding)
    0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, menu_enterMenus). Returns the action's eax */
 u32 (room_keys)(void)
 {
-	if (key_hit(IMG(0x76d48c)))
+	if (key_hit(ADDR(g_dikEscape_2)))
 		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
-	if (key_hit(IMG(0x4e1514)))
+	if (key_hit(ADDR(g_dikP)))
 		return GAME_FN(room_requestJoin, 0x4334c0, u32, void)();   /* room_requestJoin */
-	if (key_hit(IMG(0x4e14f8)))
+	if (key_hit(ADDR(g_dikJ)))
 		return GAME_FN(room_start, 0x433590, u32, void)();   /* room_start */
-	if (key_hit(IMG(0x4e0cdc)))
+	if (key_hit(ADDR(g_dikC)))
 		return GAME_FN(room_enterGameList, 0x433790, u32, void)();   /* room_enterGameList */
-	if (key_hit(IMG(0x4e151c)))
+	if (key_hit(ADDR(g_dikR)))
 		return GAME_FN(room_enterRoomList, 0x433800, u32, void)();   /* room_enterRoomList */
-	if (key_hit(IMG(0x4e0cd4))) {
+	if (key_hit(ADDR(g_dikA))) {
 		g_armcFrom = 3;
 		return menu_enterMenus();
 	}
-	if (key_hit(IMG(0x4e153c)))
+	if (key_hit(ADDR(g_dikX)))
 		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();
 	return 0;
 }
@@ -266,8 +266,8 @@ static void load_map_preview(u32 selected)
 	g_mapPreviewChanged = 0;
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
-void (room_loadMapPreview)(void) { load_map_preview(IMG(0x4df9e8)); }
-void (arena_loadMapPreview)(void) { load_map_preview(IMG(0x4db548)); }
+void (room_loadMapPreview)(void) { load_map_preview(ADDR(g_roomMap)); }
+void (arena_loadMapPreview)(void) { load_map_preview(ADDR(g_newArenaMap)); }
 
 /* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
    0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
@@ -287,7 +287,7 @@ static u32 typing_end(void)
 u32 (account_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
-		{ IMG(0x9dd348), IMG(0x9dd1d8), 30 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 12 }, { IMG(0x9dd564), IMG(0x9dd202), 12 }, { IMG(0x9dd6cc), IMG(0x9dd20e), 50 } };
+		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 30 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 12 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 12 }, { ADDR(g_typingAccountEmail), IMG(0x9dd20e), 50 } };
 	u32 r = typing_end();
 	const char *typed = (const char *)IMG(0x9dc92c);
 	for (int k = 0; k < 4; k++) {
@@ -407,17 +407,17 @@ u32 (account_checkForm)(void)
 	const char *name = (const char *)IMG(0x9dd1d8), *password = (const char *)IMG(0x9dd1f6);
 	int message, reopen;
 	if (strlen(name) == 0 || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
-		message = 0x24, reopen = IMG(0x9dd348);
+		message = 0x24, reopen = ADDR(g_typingAccountName);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
-		message = 0x15a, reopen = IMG(0x9dd348);
+		message = 0x15a, reopen = ADDR(g_typingAccountName);
 	else if (strlen(password) == 0)
-		message = 0x25, reopen = IMG(0x9dd3f8);
+		message = 0x25, reopen = ADDR(g_typingAccountPassword);
 	else if (strcmp(password, (const char *)IMG(0x9dd202)))
-		message = 0x21, reopen = IMG(0x9dd3f8);
+		message = 0x21, reopen = ADDR(g_typingAccountPassword);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1)
-		message = 0x15b, reopen = IMG(0x9dd3f8);
+		message = 0x15b, reopen = ADDR(g_typingAccountPassword);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)IMG(0x9dd20e)) == 1)
-		message = 0x81, reopen = IMG(0x9dd6cc);
+		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
 		return GAME_FN(room_openDialog58, 0x433980, u32, void)();   /* the next dialog */
 	u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(message);
@@ -430,7 +430,7 @@ u32 (account_checkForm)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)IMG(0x9dd58e), (const char *)IMG(0x9dd6d8)) || strcmp((const char *)IMG(0x9dd1f6), (const char *)IMG(0x9dd202)))
+	if (strcmp((const char *)ADDR(g_joinedTitleLevel), (const char *)IMG(0x9dd6d8)) || strcmp((const char *)IMG(0x9dd1f6), (const char *)IMG(0x9dd202)))
 		return 0;
 	static const u32 fields[4] = { IMG(0x9dd6d8), IMG(0x9dd1f6), IMG(0x9dd202), IMG(0x9dd20e) };
 	for (int i = 0; i < 4; i++)
@@ -506,7 +506,7 @@ u32 (ranking_page)(void)
 			g_roomListPrev = g_rankingSort;
 			g_roomListPrevPage = g_roomListPage;
 		}
-		long double blink = fld_m((const float *)IMG(0x4dba80)) - fmul_m(fld_m((const float *)IMG(0x4b071c)), (const float *)IMG(0x4ad498));
+		long double blink = fld_m((const float *)ADDR(g_lobbyBlinkClock)) - fmul_m(fld_m((const float *)IMG(0x4b071c)), (const float *)IMG(0x4ad498));
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= 0))
 			g_lobbyBlinkClock = 1000.0f;
@@ -535,7 +535,7 @@ u32 (login_send)(void)
 	}
 	memset((void *)IMG(0x9dd570), 0, 30 + 12);
 	strcpy((char *)IMG(0x9dd570), name);
-	strcpy((char *)IMG(0x9dd58e), password);
+	strcpy((char *)ADDR(g_joinedTitleLevel), password);
 	memset((*(u8 **)&g_accountPacket) + 4, 0, 30);
 	memset((*(u8 **)&g_accountPacket) + 0x22, 0, 12);
 	strcpy(g_accountPacket + 4, name);
@@ -600,7 +600,7 @@ u32 (ranking_clicks)(void)
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
 {
-	static const u32 typing[4] = { IMG(0x9dd380), IMG(0x9dd388), IMG(0x9dd568), IMG(0x9dd6a8) };
+	static const u32 typing[4] = { ADDR(g_editingRoomName), IMG(0x9dd388), IMG(0x9dd568), ADDR(g_editingRoomPassword) };
 	for (int k = 0; k < 4; k++)
 		if (GAME_VAR(int, typing[k]))
 			return GAME_VAR(u32, typing[k]);
@@ -614,7 +614,7 @@ u32 (room_settingsClicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = GAME_FN(roomSettings_hitTest, 0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
-	u8 *players = (u8 *)IMG(0x4df9e9), *type = (u8 *)IMG(0x4df9eb), *frags = (u8 *)IMG(0x4df9ec), *time = (u8 *)IMG(0x4df9ed);
+	u8 *players = (u8 *)ADDR(g_roomPlayers), *type = (u8 *)ADDR(g_roomGameMode), *frags = (u8 *)ADDR(g_roomFragLimit), *time = (u8 *)ADDR(g_roomTimeLimit);
 	u32 r;
 	switch (button) {
 	case 0:
@@ -705,7 +705,7 @@ u32 (room_settingsAfterTyping)(void)
 		strcpy((char *)IMG(0x4df9ee), line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { IMG(0x9dd388), IMG(0x4df9ec) }, { IMG(0x9dd568), IMG(0x4df9ed) } };   /* frags, time */
+	static const u32 limit[2][2] = { { IMG(0x9dd388), ADDR(g_roomFragLimit) }, { IMG(0x9dd568), ADDR(g_roomTimeLimit) } };   /* frags, time */
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
@@ -720,7 +720,7 @@ u32 (room_settingsAfterTyping)(void)
 		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
 	}
 	u32 r = 0;
-	static const u32 close[2] = { IMG(0x4e0cdc), IMG(0x76d48c) };
+	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
@@ -774,8 +774,8 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 
 /* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
    (0x4dbb04, 0x4db54a, arena_loadMapPreview) */
-u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)IMG(0x9dd1bc), IMG(0x4df9ea), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
-u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)IMG(0x4dbb04), IMG(0x4db54a), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
+u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomCustom), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
+u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaKind), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
    frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
@@ -785,8 +785,8 @@ u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)IMG(0x4
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ IMG(0x9dd69c), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { IMG(0x9dd37c), IMG(0x9dd1f6), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
-		{ IMG(0x9dd378), IMG(0x9dd202), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { IMG(0x9dd304), IMG(0x9dd20e), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
+		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), IMG(0x9dd1f6), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
+		{ ADDR(g_editingPasswordRepeat), IMG(0x9dd202), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), IMG(0x9dd20e), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)

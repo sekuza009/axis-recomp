@@ -207,7 +207,7 @@ u32 (cfg_keyBindings)(void *f)
 		{ IMG(0x4b1c2c), 60 }, { IMG(0x4b1c10), 61 },   /* change-viewmode */
 		{ IMG(0x4b1c00), 62 }, { IMG(0x4b1bf0), 63 },   /* help */
 	};
-	const int *binding = (const int *)IMG(0x4def00);
+	const int *binding = (const int *)ADDR(g_keyFreeCam0);
 	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
@@ -400,10 +400,10 @@ static u32 profiles_write(void *f)
 {
 	u32 magic = 0xfefefef7;
 	crt_fwrite(&magic, 4, 1, f);
-	crt_fwrite((void *)IMG(0x9f9008), 4, 1, f);
-	crt_fwrite((void *)IMG(0x9f8c58), 4, 1, f);
-	crt_fwrite((void *)IMG(0x9f8c4c), 4, 1, f);
-	crt_fwrite((void *)IMG(0x9f8c5c), 4, 1, f);
+	crt_fwrite((void *)ADDR(g_profileCount), 4, 1, f);
+	crt_fwrite((void *)ADDR(g_currentProfile), 4, 1, f);
+	crt_fwrite((void *)ADDR(g_profileListTop), 4, 1, f);
+	crt_fwrite((void *)ADDR(g_profileListRow), 4, 1, f);
 	crt_fwrite((void *)IMG(0x9f8fe8), 0x20, 1, f);
 	for (int i = 0; i < g_profileCount; i++)
 		crt_fwrite((void *)(IMG(0x9f6848) + i * 0x48), 0x48, 1, f);
@@ -459,7 +459,7 @@ u32 (mission_loadAxisMis)(void)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
 	GAME_FN(skirmish_clearPlayerRows, 0x443570, void, void)();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
-		crt_fread((void *)(IMG(0x9ef2c0) + k * 4), 4, 1, f);
+		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
 		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
 	u8 *mission = (u8 *)IMG(0x9ef2d0);
@@ -747,7 +747,7 @@ static void campaign_new(void)
 	strcpy((char *)IMG(0x9f1a2c), (const char *)IMG(0x4b2ae4));
 	g_profileMechItem5 = -1;
 	g_profileMechItem0 = -1;
-	for (u32 a = IMG(0x9f19f8); a <= IMG(0x9f1a08); a += 4)
+	for (u32 a = ADDR(g_profileMechRecord); a <= ADDR(g_profileMechBooster); a += 4)
 		GAME_VAR(int, a) = 0;
 	g_profileMechItem2 = 0;
 	g_profileMechItem3 = 2;
@@ -856,10 +856,10 @@ u32 (profile_create)(void)
 		g_profileCount = 0;
 		return r;
 	}
-	crt_fread((void *)IMG(0x9f9008), 4, 1, f);
-	crt_fread((void *)IMG(0x9f8c58), 4, 1, f);
-	crt_fread((void *)IMG(0x9f8c4c), 4, 1, f);
-	crt_fread((void *)IMG(0x9f8c5c), 4, 1, f);
+	crt_fread((void *)ADDR(g_profileCount), 4, 1, f);
+	crt_fread((void *)ADDR(g_currentProfile), 4, 1, f);
+	crt_fread((void *)ADDR(g_profileListTop), 4, 1, f);
+	crt_fread((void *)ADDR(g_profileListRow), 4, 1, f);
 	crt_fread((void *)IMG(0x9f8fe8), 0x20, 1, f);
 	if (crt_chdir((const char *)IMG(0x4b2b04))) {   /* "save " */
 		GAME_CDECL(0x49f94a, int, const char *)((const char *)IMG(0x4b2adc));   /* mkdir("save") */
@@ -893,7 +893,7 @@ u32 (data_loadSkirmishInfo)(void)
 		data_missing(IMG(0x4b1534));
 	}
 	crt_fseek(f, 25000, 1);
-	crt_fread((void *)IMG(0x90d1d8), 4, 1, f);
+	crt_fread((void *)ADDR(g_skirmishInfoCount), 4, 1, f);
 	for (int i = 0; i < g_skirmishInfoCount; i++)
 		crt_fread((void *)(IMG(0x9db998) + i * 0x5c), 0x5c, 1, f);
 	return fclose(f);
@@ -963,7 +963,7 @@ u32 (data_loadMapInfo)(void)
 		fclose(f);
 		data_missing(IMG(0x4b14e0));
 	}
-	crt_fread((void *)IMG(0x67ef00), 4, 1, f);
+	crt_fread((void *)ADDR(g_arenaMapCount), 4, 1, f);
 	for (int i = 0; i < g_arenaMapCount; i++) {
 		char *name = (char *)(IMG(0x907b30) + i * 0x20), *about = (char *)(IMG(0x5ae9d0) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
@@ -994,7 +994,7 @@ int (arena_loadSettings)(const char *path)
 	if (!f)
 		return 0;
 	static const struct { u32 key, into; } numbers[4] = {
-		{ IMG(0x4ad5b0), IMG(0x5b194c) }, { IMG(0x4ad5a4), IMG(0x5b1948) }, { IMG(0x4ad5a0), IMG(0x5b1944) }, { IMG(0x4ad594), IMG(0x5b1950) },
+		{ IMG(0x4ad5b0), ADDR(g_arenaFileGameType) }, { IMG(0x4ad5a4), ADDR(g_arenaFilePlayers) }, { IMG(0x4ad5a0), ADDR(g_arenaFileMap) }, { IMG(0x4ad594), ADDR(g_arenaFileFragLimit) },
 	};
 	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
 	for (;;) {
@@ -1019,7 +1019,7 @@ int (arena_loadSettings)(const char *path)
 				word = crt_strtok(NULL, gaps);
 				g_arenaFileClan = 0;
 				g_arenaFileClan4 = 0;
-				strcpy((char *)IMG(0x5b193c), word);
+				strcpy((char *)ADDR(g_arenaFileClan), word);
 			}
 			for (int k = 0; k < 4; k++)
 				if (!strcmp(word, (const char *)numbers[k].key)) {
@@ -1277,7 +1277,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 	g_soundVolume = 100;
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
-	memcpy((void *)IMG(0x4ded40), server, 6);
+	memcpy((void *)ADDR(g_arenaMap), server, 6);
 	g_soundSwitch1 = 1;
 	g_items3D = 1;
 	(*(int *)&g_textureSetHeight) = 1;
@@ -1401,14 +1401,14 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	FIELD(int, s, 0x2340d29) = 0;
 	int value = 0x1201;
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x5ae9c4), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)IMG(0x9dad94), 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)IMG(0x67fb44), 1, 0x20, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x9da3e0), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, FIELD(void *, s, 0x2340d08));
 	value = FIELD(int, s, 0x22e7180);
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x4df8e8), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x76d408), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)ADDR(g_fragLimit), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)ADDR(g_timeLimit), 4, 1, FIELD(void *, s, 0x2340d08));
 	for (int i = 0; i < 16; i++)
 		if (net_playerInUse(i) == 1) {
 			FIELD(int, s, 0x234300e + i * 0x10) = 1;

@@ -60,14 +60,14 @@ static void merge(const Received *g)
 /* 0x434ff0: the game room's (0x79-byte records) */
 void (room_mergeReceivedSessions)(void)
 {
-	static const Received room = { IMG(0xa0b358), IMG(0x9fd9c7), 0x79, -0x66, -0x34, IMG(0x9dd840), { IMG(0x9dd6a0), IMG(0x9da498), IMG(0x9dd3fc) } };
+	static const Received room = { ADDR(g_roomListCount), IMG(0x9fd9c7), 0x79, -0x66, -0x34, ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
 	merge(&room);
 }
 
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { IMG(0xa0b368), IMG(0xa05791), 0x5b, -0x48, -0x16, IMG(0x4dba8c), { IMG(0x4db858), IMG(0x4df018), IMG(0x4db8b8) } };
+	static const Received arena = { ADDR(g_serverListCount), IMG(0xa05791), 0x5b, -0x48, -0x16, ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
 	merge(&arena);
 }
 

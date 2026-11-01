@@ -65,7 +65,7 @@ void (net_resetState)(void)
 	g_hostResultFlag = 0;
 	g_netChatMessageWord2 = 0;
 	g_netSlotMessageKind = 0;
-	memset((void *)IMG(0x9f9428), 0, 0x103 * 4);
+	memset((void *)ADDR(g_netPacketMessageKind), 0, 0x103 * 4);
 	g_netChatMessageText = 0;
 	g_netClaimedSlot = 0;
 	g_netChatMessageKind = 1;
@@ -97,9 +97,9 @@ void (menu_initKeyRepeat)(void)
 void (menuCamera_initPoints)(void)
 {
 	static const u32 point[][2] = {
-		{ IMG(0x4df870), 0x41a00000 }, { IMG(0x4df874), 0xc1200000 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x425c0000 },
-		{ IMG(0x4df880), 0x41a00000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0 },
-		{ IMG(0x4df890), 0x41a00000 }, { IMG(0x4df894), 0x41200000 }, { IMG(0x76d3a8), 0xc28c0000 }, { IMG(0x76d3ac), 0xc25c0000 },
+		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
+		{ ADDR(g_camPoint1X), 0x41a00000 }, { IMG(0x4df884), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
+		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
 		{ IMG(0x4df8a0), 0xc1a00000 }, { IMG(0x4df8a4), 0xc1200000 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0x425c0000 },
 		{ IMG(0x4df8b0), 0xc1a00000 }, { IMG(0x4df8b4), 0 }, { IMG(0x76d3c8), 0x428c0000 }, { IMG(0x76d3cc), 0 } };   /* (+-20, +-10), (-+70, +-55) */
 	int z = g_menuCameraHeight;

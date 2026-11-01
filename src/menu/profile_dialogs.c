@@ -234,8 +234,8 @@ void (mainmenu_drawScreen)(void)
 			}
 		} else if (PAGE == k + 2) {
 			glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
-			float b = f32(fsub_m(fld_m(&panel[2]), (const float *)IMG(0x4a94f8)));
-			float g = f32(fsub_m(fld_m(&panel[1]), (const float *)IMG(0x4a94f8)));
+			float b = f32(fsub_m(fld_m(&panel[2]), (const float *)ADDR(k_0_2f)));
+			float g = f32(fsub_m(fld_m(&panel[1]), (const float *)ADDR(k_0_2f)));
 			set_colour_bits((Colour *)IMG(0x76d438), bright[0], BITS(g), BITS(b), bright[3]);
 		} else {
 			glColor4f(0.8f, 0.8f, 0.8f, 0.3f);
@@ -304,9 +304,9 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	for (int k = 0; k < 9; k++) {
 		glBegin(GL_QUADS);
 		glColor4f(grey, grey, grey, 1.0f);
-		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), frame), (const float *)IMG(0x4a93ec)), &bar[k]);
+		long double eased = fadd_m(fmul_m(fmul_m(fsub_m(fld_m(&target[k]), &bar[k]), frame), (const float *)ADDR(k_tenthsToDegrees)), &bar[k]);
 		bar[k] = f32(eased);
-		long double end = fadd_m(fmul_m(eased, (const float *)IMG(0x4a9420)), (const float *)IMG(0x4a9468));
+		long double end = fadd_m(fmul_m(eased, (const float *)ADDR(k_0_01f)), (const float *)IMG(0x4a9468));
 		float s = f32(end);
 		if (end > k_0_95f)
 			s = 0.95f;
@@ -478,7 +478,7 @@ void (profile_drawChosenPilot)(void)
 	if (focus)
 		set_colour_bits((Colour *)IMG(0x76d438), BITS(panel[0]), BITS(panel[1]), BITS(panel[2]), BITS(panel[3]));
 	else {
-		const float *half = (const float *)IMG(0x4a942c);
+		const float *half = (const float *)ADDR(k_0_5f);
 		float b = f32(fmul_m(fld_m(&panel[2]), half)), g = f32(fmul_m(fld_m(&panel[1]), half));
 		float r = f32(fmul_m(fld_m(&panel[0]), half));
 		set_colour_bits((Colour *)IMG(0x76d438), BITS(r), BITS(g), BITS(b), BITS(panel[3]));

@@ -113,7 +113,7 @@ static void info_box(u32 line, int named)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
 	menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 0);
 	if (named)
-		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)IMG(0x4db520));
+		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)ADDR(g_arenaMessageText));
 }
 
 /* 0x40a070: the arena's game list: the window, its title 0x7524a4, three tabs (0x752524; the one under the pointer,
@@ -179,7 +179,7 @@ void (arena_drawGameList)(void)
 	menu_drawSmallButton3(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
 	menu_drawSmallButton4(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)IMG(0x4dba80)), (const float *)IMG(0x4a9438))) % 15;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)IMG(0x752a24));
@@ -300,7 +300,7 @@ void (gameList_draw)(void)
 	menu_drawSmallButton4(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
 	glDisable(GL_TEXTURE_2D);
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)IMG(0x4dba80)), (const float *)IMG(0x4a9438))) % 15;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)IMG(0x75a1a4));
@@ -315,7 +315,7 @@ void (gameList_draw)(void)
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
 		menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 0);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)IMG(0x9dcee8));
+		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)ADDR(g_roomMessageText));
 	}
 	if (g_arenaConfirming) {
 		glDisable(GL_TEXTURE_2D);
@@ -350,7 +350,7 @@ void (gameList_draw)(void)
    (message 0x27 when wrong) */
 void (gameList_drawPage)(void)
 {
-	const float *step = (const float *)IMG(0x4ad498), *blinkFloor = (const float *)IMG(0x4a9418);
+	const float *step = (const float *)IMG(0x4ad498), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
@@ -419,9 +419,9 @@ void (gameList_drawPage)(void)
 	if (!g_joinPasswordTyped || g_paused)
 		return;
 	g_joinPasswordTyped = 0;
-	memset((void *)IMG(0x9dcee8), 0, 8);
-	strcpy((char *)IMG(0x9dcee8), g_chatLine);
-	if (strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)IMG(0x9dcee8)) != 0) {
+	memset((void *)ADDR(g_roomMessageText), 0, 8);
+	strcpy((char *)ADDR(g_roomMessageText), g_chatLine);
+	if (strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_roomMessageText)) != 0) {
 		menu_showMessage(0x27);
 		g_roomJoined = 0;
 	}
@@ -794,10 +794,10 @@ void (lobbyJoin_draw)(void)
 		}
 		if (!g_editingArenaMessage || g_paused)
 			return;
-		memset((void *)IMG(0x4db520), 0, 8);
+		memset((void *)ADDR(g_arenaMessageText), 0, 8);
 		g_editingArenaMessage = 0;
-		strcpy((char *)IMG(0x4db520), (const char *)IMG(0x9dc92c));
-		int wrong = strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)IMG(0x4db520)) != 0;
+		strcpy((char *)ADDR(g_arenaMessageText), (const char *)IMG(0x9dc92c));
+		int wrong = strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_arenaMessageText)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
 		g_arenaJoining = 0;
@@ -809,8 +809,8 @@ void (lobbyJoin_draw)(void)
 		if (g_paused)
 			return;
 		g_arenaFull = 0;
-		memset((void *)IMG(0x4dbbd4), 0, 6 * 4);
-		strcpy((char *)IMG(0x4dbbd4), (const char *)IMG(0x9dc92c));
+		memset((void *)ADDR(g_typedArenaName), 0, 6 * 4);
+		strcpy((char *)ADDR(g_typedArenaName), (const char *)IMG(0x9dc92c));
 		if (g_typedArenaName)
 			arena_joinListed(99999);
 	}

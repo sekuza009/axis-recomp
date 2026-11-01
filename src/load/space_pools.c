@@ -292,7 +292,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
-	const float *half = (const float *)IMG(0x4a942c);
+	const float *half = (const float *)ADDR(k_0_5f);
 	while (node) {
 		if (!FIELD(int, node, 0x24))
 			return FIELD(int, grid, 0x98) = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
@@ -312,7 +312,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
    it out (the x half kept at full precision) */
 static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 {
-	const float *half = (const float *)IMG(0x4a942c);
+	const float *half = (const float *)ADDR(k_0_5f);
 	int bx = i % 2, by = i / 4, bz = i / 2 % 2;
 	float box[6];
 	box[0] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[0]), &low[0]) * bx, half), &low[0]));
@@ -704,7 +704,7 @@ static void through_m(float *out, const float *m, const float *p, int yx)
    matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
 u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
-	const float *low = (const float *)RELOC(unit), *k = (const float *)IMG(0x4a942c);
+	const float *low = (const float *)RELOC(unit), *k = (const float *)ADDR(k_0_5f);
 	if (GAME_VAR(int, unit + 0x24) == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {

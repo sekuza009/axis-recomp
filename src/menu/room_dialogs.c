@@ -35,7 +35,7 @@ void (room_openDialog58)(void)
 /* 0x4338c0: dialog 0x4d, its two 0x2a-byte name buffers emptied */
 void (room_openDialog4d)(void)
 {
-	set_box(IMG(0x9dd6e8), 0x1e, 0x32, 0x262, 0x1ae);
+	set_box(ADDR(g_loginFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
 	loginDialog_layout();
 	memset((void *)IMG(0x9dd1d8), 0, 0x54);
 	dialog_opened(0x4d);
@@ -46,7 +46,7 @@ void (room_openDialog4d)(void)
 /* 0x434640: dialog 0x42, its name field filled from 0x9dd570 */
 void (room_openDialog42)(void)
 {
-	static const u32 cleared[] = { IMG(0x9dd348), IMG(0x9dd32c), IMG(0x9dd3f8), IMG(0x9dd564), IMG(0x9dd6cc), IMG(0x4e1868), IMG(0x68039c) };
+	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), IMG(0x4e1868), IMG(0x68039c) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	memset((void *)IMG(0x9dd1d8), 0, 7 * 4 + 2 + 12);
@@ -58,8 +58,8 @@ void (room_openDialog42)(void)
 /* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
 void (room_start)(void)
 {
-	static const u32 cleared[] = { IMG(0x9dd3fc), IMG(0x9dd6a0), IMG(0x9dd330), IMG(0x9da498), IMG(0x67ef30), IMG(0x4dba80), IMG(0x76d41c), IMG(0x680bb0),
-	                               IMG(0x4df818), IMG(0x9dd4bc), IMG(0x9dd56c), IMG(0x9dd6c0), IMG(0x9dd34c), IMG(0x9dcd40), IMG(0x9dd840) };
+	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), IMG(0x76d41c), ADDR(g_gameListTop),
+	                               ADDR(g_lobbyListRow), ADDR(g_gameListJoinClicked), ADDR(g_roomJoined), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomNameSum) };
 	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomMode = 1;
@@ -200,7 +200,7 @@ u32 (arena_joinListed)(int i)
 	g_lobbyJoinRequest = 0;
 	if (g_arenaSearchStarted)
 		GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
-	void *session = i == 99999 ? (void *)IMG(0x4dbbd4) : (void *)(IMG(0x9087ef) + i * 0x4a);
+	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)(IMG(0x9087ef) + i * 0x4a);
 	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, session)) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
@@ -435,7 +435,7 @@ void (createDialog_draw)(void)
 void (loginForm_update)(void)
 {
 	static const struct { u32 editing, text; int size; } field[4] = {
-		{ IMG(0x9dd348), IMG(0x9dd1d8), 30 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 12 }, { IMG(0x9dd564), IMG(0x9dd202), 12 }, { IMG(0x9dd6cc), IMG(0x9dd20e), 50 } };
+		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 30 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 12 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 12 }, { ADDR(g_typingAccountEmail), IMG(0x9dd20e), 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
 	if (g_openLoginName) {
 		loginForm_openField(0);
@@ -569,12 +569,12 @@ u32 (roomList_passwordKeys)(void)
    Returns net_send's eax */
 u32 (room_requestJoin)(void)
 {
-	static const u32 cleared[] = { IMG(0x9dd202), IMG(0x9dd1f6), IMG(0x9dd206), IMG(0x9dd6d8), IMG(0x9dd1fa), IMG(0x9dd20a), IMG(0x9dd6dc), IMG(0x9dd834) };
+	static const u32 cleared[] = { IMG(0x9dd202), IMG(0x9dd1f6), IMG(0x9dd206), IMG(0x9dd6d8), IMG(0x9dd1fa), IMG(0x9dd20a), IMG(0x9dd6dc), ADDR(g_roomState) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
-	static const u32 cleared2[] = { IMG(0x9dd69c), IMG(0x9dd37c), IMG(0x9dd378), IMG(0x9dd304), IMG(0x9dd6d0), IMG(0x9dd1fe), IMG(0x9dd6e0) };
+	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), IMG(0x9dd1fe), IMG(0x9dd6e0) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
@@ -872,7 +872,7 @@ void (account_drawPanel)(void)
 	}
 	char text[20];
 	static const struct { u32 typing, password; int y; } hidden[3] = {
-		{ IMG(0x9dd69c), IMG(0x9dd6d8), 0x50 }, { IMG(0x9dd37c), IMG(0x9dd1f6), 0x6c }, { IMG(0x9dd378), IMG(0x9dd202), 0x88 },
+		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 0x50 }, { ADDR(g_editingAccountPassword), IMG(0x9dd1f6), 0x6c }, { ADDR(g_editingPasswordRepeat), IMG(0x9dd202), 0x88 },
 	};
 	for (int k = 0; k < 3; k++)
 		if (!GAME_VAR(int, hidden[k].typing)) {
@@ -903,7 +903,7 @@ void (account_drawPanel)(void)
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
 	sprintf(text, (const char *)IMG(0x4b0268), (double)g_pilotWinRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
-	static const u32 counts[3] = { IMG(0x9dd5ec), IMG(0x9dd5f0), IMG(0x9dd5dc) };
+	static const u32 counts[3] = { ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotPoints) };
 	for (int k = 0; k < 3; k++) {
 		itoa(GAME_VAR(int, counts[k]), text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0x11e + k * 0x18, text);
@@ -1068,8 +1068,8 @@ u32 (ranking_drawTable)(void)
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(IMG(0x75b0a4) + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
-		int step = ftol(fmul_m(fld_m((const float *)IMG(0x4dba80)), (const float *)IMG(0x4a9438))) % 10;
-		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a9424)));
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 10;
+		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)IMG(0x75b1a4));
 	}

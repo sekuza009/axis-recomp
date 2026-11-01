@@ -8,10 +8,10 @@
 #define TAB_CONTROL 2
 #define TAB_TOP 0x29a
 
-#define g_soundEdited ((const int *)IMG(0x4dde98))         /* the sound tab's values being edited (the menu sounds' volume first) */
-#define g_soundSettings ((int *)IMG(0x4e0c90))             /* the sound settings in use */
-#define g_graphicEdited ((const u32 *)IMG(0x4ddba0))       /* the graphics tab's seven values being edited */
-#define g_graphicSettings ((u32 *)IMG(0x83a9c0))           /* the graphics settings in use (g_items3D is the third) */
+#define g_soundEdited ((const int *)ADDR(g_volumeSetting))         /* the sound tab's values being edited (the menu sounds' volume first) */
+#define g_soundSettings ((int *)ADDR(g_soundVolume))             /* the sound settings in use */
+#define g_graphicEdited ((const u32 *)ADDR(g_setupResolution))       /* the graphics tab's seven values being edited */
+#define g_graphicSettings ((u32 *)ADDR(g_videoMode))           /* the graphics settings in use (g_items3D is the third) */
 
 /* 0x422b30: the tab's page (nothing while a dialog is up) */
 void (setup_drawTab)(void)
@@ -142,9 +142,9 @@ static void page_425460(void) { setup_drawOptionsDialog(); }
 static void page_crosshair(void) { setup_crosshairScreen(); }
 
 /* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
-void (setup_frameSoundPage)(void) { with_page(page_424810, (const int *)IMG(0x4ddad0)); }
+void (setup_frameSoundPage)(void) { with_page(page_424810, (const int *)ADDR(g_setupSoundLeft)); }
 void (setup_frameOptionsPage)(void) { with_page(page_425460, (const int *)IMG(0x4dddd0)); }
-void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)IMG(0x4dde80)); }
+void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)ADDR(g_setupControlLeft)); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
 static void tab_opened(void)
@@ -175,7 +175,7 @@ void (setup_selectGraphicTab)(void)
 
 void (setup_selectControlTab)(void)
 {
-	memcpy((void *)IMG(0x4de0c0), (void *)IMG(0x4def00), 0x44 * 4);   /* the key bindings */
+	memcpy((void *)IMG(0x4de0c0), (void *)ADDR(g_keyFreeCam0), 0x44 * 4);   /* the key bindings */
 	g_setupTab = TAB_CONTROL;
 	g_bindPage = 0;
 	g_bindRow = -1;
@@ -426,7 +426,7 @@ void (setup_controlTabKeys)(void)
 			g_bindRow++;
 		return;
 	}
-	static const u32 page_keys[4] = { IMG(0x4e1508), IMG(0x4e1524), IMG(0x4e14f4), IMG(0x4e1530) };
+	static const u32 page_keys[4] = { ADDR(g_dikM), ADDR(g_dikS), ADDR(g_dikI), IMG(0x4e1530) };
 	for (int page = 0; page < 4; page++)
 		if (input_justPressed(GAME_VAR(int, page_keys[page])) == 1) {
 			sound_playMenu(2);
@@ -435,7 +435,7 @@ void (setup_controlTabKeys)(void)
 		}
 	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
-		memcpy((void *)IMG(0x4def00), (const void *)IMG(0x4de0c0), 0x44 * 4);
+		memcpy((void *)ADDR(g_keyFreeCam0), (const void *)IMG(0x4de0c0), 0x44 * 4);
 		cfg_loadAxisCfg();
 		g_setupPage = 0;
 		return;
@@ -494,7 +494,7 @@ void (setup_drawControlTab)(void)
 			g_bindPage = on;
 		} else if (on == 4) {
 			sound_playMenu(0);
-			memcpy((void *)IMG(0x4def00), (const void *)IMG(0x4de0c0), 0x110);
+			memcpy((void *)ADDR(g_keyFreeCam0), (const void *)IMG(0x4de0c0), 0x110);
 			cfg_loadAxisCfg();
 			g_setupPage = 0;
 		} else if (on == 5) {

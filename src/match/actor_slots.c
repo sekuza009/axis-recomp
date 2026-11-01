@@ -822,8 +822,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(int, 0x360 + k * 4) = -1;
 	}
 	A(int, 0x374) = 0;
-	memcpy(ac + 0x378, (const void *)IMG(0xa0e7e8), 12);
-	memcpy(ac + 0x384, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(ac + 0x378, (const void *)ADDR(g_vecZero), 12);
+	memcpy(ac + 0x384, (const void *)ADDR(g_vecZero), 12);
 	A(u32, 0x3e8) = 0x43fa0000;   /* 500 */
 	A(int, 0x3ec) = 0;
 	A(int, 0x3f0) = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
@@ -862,16 +862,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x880c) = 0;
 	fill_dwords(ac + 0x8810, 5, (u32)-1);
 	fill_dwords(ac + 0x8824, 5, 0);
-	memcpy(ac + 0x8838, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(ac + 0x8838, (const void *)ADDR(g_vecZero), 12);
 	A(int, 0x8844) = 0;
 	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + 0x884c, 3, 0);
-	memcpy(ac + 0x885c, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(ac + 0x885c, (const void *)ADDR(g_vecZero), 12);
 	A(int, 0x8858) = 0;
 	A(int, 0x8868) = 0;
 	A(u32, 0x886c) = 0x3f800000;
 	A(int, 0x8870) = -1;
-	memcpy(ac + 0x8874, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(ac + 0x8874, (const void *)ADDR(g_vecZero), 12);
 	A(int, 0x8880) = A(int, 0x8884) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;

@@ -139,5 +139,8 @@ static inline int code_matches(u32 addr, const char *pattern)
 #define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)RELOC(slot))
 /* a global of the game at its address (an original one or, for memory reached through a pointer, any) */
 #define GAME_VAR(type, addr) (*(type *)RELOC(addr))
+/* a named global's address (src/globals.h): the original's in the harness, its place in AxisRC.exe - a constant
+   either way (in AxisRC.exe every name is a member of g_rdata / g_data or IMG()'s place: src/data/layout_names.h) */
+#define ADDR(name) ((u32)&(name))
 
 #endif
