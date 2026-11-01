@@ -214,7 +214,7 @@ void (room_copyJoinedSettings)(void)
 	g_roomTimeLimit = g_roomRecTimeLimit;
 	memcpy((void *)IMG(0x9dd260), (void *)OBJ(g_roomMech), 11);
 	memcpy((void *)IMG(0x9dd26b), (void *)OBJ(g_roomColours), 0x90);
-	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { IMG(0x9dd25c), ADDR(g_pilotWinRate) },
+	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { (OBJ(g_pilotStatsKept) + 0x1c), ADDR(g_pilotWinRate) },
 	                                { ADDR(g_pilotWinsKept), ADDR(g_pilotWins) }, { ADDR(g_pilotLossesKept), ADDR(g_pilotLosses) }, { ADDR(g_pilotScoreKept), ADDR(g_pilotScore) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
@@ -323,7 +323,7 @@ u32 (room_host)(void)
 	g_pilotLevel = 1;
 	memset((void *)OBJ(g_titleName), 0, 7 * 4 + 2);
 	static const u32 zero[] = { ADDR(g_pilotPoints), ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotScore), ADDR(g_pilotWinRate), ADDR(g_pilotPointsKept), ADDR(g_pilotWinsKept), ADDR(g_pilotLossesKept),
-	                            ADDR(g_pilotScoreKept), IMG(0x9dd25c) };
+	                            ADDR(g_pilotScoreKept), (OBJ(g_pilotStatsKept) + 0x1c) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
 	strcpy(g_titleName, g_joinedTitleName);

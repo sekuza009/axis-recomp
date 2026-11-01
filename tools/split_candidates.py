@@ -64,7 +64,12 @@ for f in files:
 			after, before = line[m.end():m.end() + 4], line[:m.start()]
 			if re.match(r'\s*[-+]', after) or re.search(r'[-+]\s*$', before):
 				why[n].add('address arithmetic')
-			if re.search(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*$', before) and m.group(1):
+			# (one value: a float given to an FPU helper, fld_m((const float *)ADDR(x)) / fadd_m(a, (const float *)ADDR(x)),
+			# or 4 bytes read / written, crt_fwrite((void *)ADDR(x), 4, 1, f))
+			one = re.search(r'\b(?:fld_m|fadd_m|fsub_m|fsubr_m|fmul_m|fdiv_m|fdivr_m)\((?:[^()]|\([^()]*\))*?\(\s*(?:const\s+)?float\s*\*\s*\)\s*$', before) \
+				or (re.search(r'\b(?:crt_fread|crt_fwrite|fread_scrambled|file_writeScrambled)\(\s*\(\s*(?:const\s+)?void\s*\*\s*\)\s*$', before)
+				    and re.match(r'\s*,\s*4\s*,\s*1\b', after + line[m.end() + 4:m.end() + 12]))
+			if re.search(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*$', before) and m.group(1) and not one:
 				why[n].add('address arithmetic (made a pointer: indexed)')
 			if m.group(1) and re.search(r'\{[^}]*$', before) and re.search(r'=\s*\{', before) and n not in table_ok:
 				why[n].add('address arithmetic (stored in a table: a base the code indexes)')

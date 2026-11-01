@@ -173,3 +173,15 @@
 #define g_setupControlRect ((int *)IMG(0x4dde80))   /* int[4]; the setup control panel's window: left (g_setupControlLeft) */
 #define g_soundEdited ((int *)IMG(0x4dde98))   /* int[4]; the sound tab's four values being edited: the volume (g_volumeSetting) */
 #define g_newArenaForm ((int *)IMG(0x4dbb00))   /* int[4]; the create-arena form's window: left (g_newArenaFormLeft) */
+#define g_pilotStats ((int *)IMG(0x9dd5d8))   /* int[8]; the pilot's record from the server: level (g_pilotLevel) */
+#define g_pilotStatsKept ((int *)IMG(0x9dd240))   /* int[8]; the pilot's record as kept: level (g_pilotLevelKept) .. losses */
+#define g_roomForm ((int *)IMG(0x9dd1b8))   /* int[4]; the game room settings form's window: left (g_roomFormLeft) */
+#define g_roomLookKept ((float *)IMG(0x9dd918))   /* float[3]; the room camera's look-at point kept for the slide (g_roomSlideNearX .. Z; menu_tunnel's LOOK_KEPT) */
+#define g_roomEyeKept ((float *)IMG(0x9dd930))   /* float[3]; the room camera's position kept for the slide (g_roomSlideFarX .. Z; menu_tunnel's EYE_KEPT) */
+#define g_mapSelectDim ((u32 *)IMG(0x9dda70))   /* u32[4]; the map list's colour */
+#define g_mapSelectLit ((u32 *)IMG(0x9eea98))   /* u32[4]; the map list's colour */
+#define g_missionSelectRect ((int *)IMG(0x9f6308))   /* int[4]; the mission select dialog's window: left (g_missionSelectLeft) */
+#define g_missionColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the mission list's colour */
+#define g_missionColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the mission list's colour */
+#define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the chat line kept (copied whole from g_chatLine */
+#define g_netSendPacket ((u32 *)IMG(0x9f9428))   /* u32[259]; the message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */

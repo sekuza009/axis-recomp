@@ -137,7 +137,7 @@ void (skirmishButtons_layout)(void)
 
 void (missionsel_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_missionSelectLeft), 0x96, 1), RA(IMG(0x9f6314), -0x30, 0), RA(ADDR(g_missionSelectLeft), 0x10e, 1), RA(IMG(0x9f6314), -0x10, 0) };
+	static const RArg a[4] = { RA(ADDR(g_missionSelectLeft), 0x96, 1), RA((OBJ(g_missionSelectRect) + 0xc), -0x30, 0), RA(ADDR(g_missionSelectLeft), 0x10e, 1), RA((OBJ(g_missionSelectRect) + 0xc), -0x10, 0) };
 	rect_spec(IMG(0x9f6330), IMG(0x9f6350), 0x8c, a);
 	set4ints(g_missionSelectLeft + 0x98, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0xd0, g_missionSelectTop + 0x74, (int *)IMG(0x9f6350));
 	set4ints(g_missionSelectLeft + 0x160, g_missionSelectTop + 0x4c, g_missionSelectLeft + 0x198, g_missionSelectTop + 0x74, (int *)IMG(0x9f6360));
@@ -223,7 +223,7 @@ void (mapSelect_layout)(void)
 	static const RArg d[4] = { RA(ADDR(g_mapSelectLeft), 0x64, 1), RA(ADDR(g_mapSelectBottom), -0x34, 0), RA(ADDR(g_mapSelectLeft), 0xdc, 1), RA(ADDR(g_mapSelectBottom), -0x14, 0) };
 	static const RArg e[4] = { RA(ADDR(g_mapSelectLeft), 0x28, 0), RA(ADDR(g_mapSelectTop), 0x2c, 1), RA(ADDR(g_mapSelectRight), -0x50, 0), RA(ADDR(g_mapSelectTop), 0x3c, 1) };
 	rect_spec(IMG(0x9dd950), IMG(0x9dd970), 0x64, a); rect_spec(IMG(0x9dd970), IMG(0x9dd990), 0x1e, b); rect_spec(IMG(0x9dd990), IMG(0x9dd9b0), 0xa0, c);
-	rect_spec(IMG(0x9dd9b0), IMG(0x9dd9d0), 0xa0, d); rect_spec(IMG(0x9dd9d0), ADDR(g_mapSelectDimR), 0x14, e);
+	rect_spec(IMG(0x9dd9b0), IMG(0x9dd9d0), 0xa0, d); rect_spec(IMG(0x9dd9d0), IMG(0x9dd9d0) + 10 * 16, 0x14, e);
 }
 
 void (setupControl_layout)(void)

@@ -300,9 +300,9 @@ int (menuState900_enterSkirmish)(void)
 int (menuState500_enter)(void)
 {
 	static const Store setup[] = {
-		{ ADDR(g_missionSelectLeft), 0x28 }, { ADDR(g_missionSelectTop), 0xa }, { IMG(0x9f6310), 0x258 }, { IMG(0x9f6314), 0x1cc }, { IMG(0x9f6318), 0 },
-		{ IMG(0x9f631c), ONE }, { IMG(0x9f6320), ONE }, { IMG(0x9f6324), ONE }, { IMG(0x9f62e8), 0 }, { IMG(0x9f62ec), 0x3f19999a },
-		{ IMG(0x9f62f0), 0x3f19999a }, { IMG(0x9f62f4), ONE }, { IMG(0x9f62f8), 1 }, { IMG(0x76d3e8), 500 }, { IMG(0x67ef0c), 500 },
+		{ ADDR(g_missionSelectLeft), 0x28 }, { ADDR(g_missionSelectTop), 0xa }, { (OBJ(g_missionSelectRect) + 0x8), 0x258 }, { (OBJ(g_missionSelectRect) + 0xc), 0x1cc }, { OBJ(g_missionColourLit), 0 },
+		{ (OBJ(g_missionColourLit) + 0x4), ONE }, { (OBJ(g_missionColourLit) + 0x8), ONE }, { (OBJ(g_missionColourLit) + 0xc), ONE }, { OBJ(g_missionColourDim), 0 }, { (OBJ(g_missionColourDim) + 0x4), 0x3f19999a },
+		{ (OBJ(g_missionColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionColourDim) + 0xc), ONE }, { IMG(0x9f62f8), 1 }, { IMG(0x76d3e8), 500 }, { IMG(0x67ef0c), 500 },
 		{ IMG(0x67ef20), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);

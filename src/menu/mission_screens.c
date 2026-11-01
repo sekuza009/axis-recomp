@@ -6,8 +6,8 @@
 
 #define X0 g_missionSelectLeft
 #define Y0 g_missionSelectTop
-#define X1 GAME_VAR(int, 0x9f6310)
-#define Y1 GAME_VAR(int, 0x9f6314)
+#define X1 (g_missionSelectRect[2])
+#define Y1 (g_missionSelectRect[3])
 #define K(addr) ((const float *)RELOC(addr))
 #define record ((const int *)(IMG(0x9db99c) + g_missionShown * 0x5c))
 #define map_name ((const char *)(OBJ(g_mapNames) + g_missionShown * 0x20))
@@ -41,7 +41,7 @@ static void value_line(int y, u32 label, int value, u32 none, u32 unit)
 /* the screen, hovered the button (0 / 1) or arrow (2 / 3) under the pointer (-1: none, nothing lit) */
 static void mission_screen(int hovered)
 {
-	const u32 *bright = (const u32 *)IMG(0x9f6318), *dim = (const u32 *)IMG(0x9f62e8);
+	const u32 *bright = g_missionColourLit, *dim = g_missionColourDim;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
