@@ -93,10 +93,10 @@ void (loading_draw)(u32 progress)
 	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)ADDR(k_10f)));   /* progress + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
 		glBegin(GL_QUADS);
-		float s0 = f32(fmul_m((long double)j, (const float *)IMG(0x4aa26c)));        /* j / 18 */
+		float s0 = f32(fmul_m((long double)j, k_0_0555556f));        /* j / 18 */
 		glTexCoord2f_bits(BITS(s0), progress);
 		cylinder_vertex(angle / 18, 0);
-		float s1 = f32(fmul_m((long double)(j + 1), (const float *)IMG(0x4aa26c)));
+		float s1 = f32(fmul_m((long double)(j + 1), k_0_0555556f));
 		glTexCoord2f_bits(BITS(s1), progress);
 		cylinder_vertex((angle + 0xe10) / 18, 0);
 		glTexCoord2f_bits(BITS(s1), BITS(far));
@@ -119,7 +119,7 @@ void (loading_draw)(u32 progress)
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
 		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
 	else
-		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(IMG(0x907b30) + g_missionStage * 32));
+		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_missionStage * 32));
 	info_line(row, line);
 	row += 2;
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
@@ -211,7 +211,7 @@ void (menu_loadIntroTextures)(void)
 int (app_checkCdAndLoad)(void *instance)
 {
 	memset((void *)IMG(0x4d1688), 0, 0x400);
-	memset((void *)IMG(0x4d1a98), 0, 0x400);
+	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_roomConnected = 0;
 	net_clearBuffers();
 	reg_readServerSettings();
@@ -300,10 +300,10 @@ int (app_checkCdAndLoad)(void *instance)
 	set_colour_bits((Colour *)IMG(0x76d350), 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
-	g_menuScaleX = f32(fmul_m((long double)width, (const float *)IMG(0x4a9578)));
+	g_menuScaleX = f32(fmul_m((long double)width, k_0_0015625f));
 	g_screenCentreX = width / 2;
 	g_unusedStartupWord1 = 0;
-	g_menuScaleY = f32(fmul_m((long double)height, (const float *)IMG(0x4a9574)));
+	g_menuScaleY = f32(fmul_m((long double)height, k_0_00208333f));
 	g_dialogPending = 0;
 	g_screenCentreY = height / 2;
 	g_unusedStartupWord2 = 0;
@@ -333,7 +333,7 @@ static void next_stage(u8 *g, int stage, u32 line)
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)IMG(0xa0e778), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), G(int, 8), G(int, 0x233cc20),
+	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), G(int, 8), G(int, 0x233cc20),
 	                                                             G(int, 0x233cc24));
 }
 
@@ -380,10 +380,10 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
 			void *f = G(void *, 0x2340d08) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 			if (!f)
-				sys_fatalError((char *)IMG(0xa0e778), (const char *)STR(0x4c5278, "can't open file %s - processAutoPlayM..."), (int)path);
+				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5278, "can't open file %s - processAutoPlayM..."), (int)path);
 			fread_scrambled(g + 0x1f35c4, 4, 1, G(void *, 0x2340d08));
 			if (G(int, 0x1f35c4) != 0x1201)
-				sys_fatalError((char *)IMG(0xa0e778), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
+				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)IMG(0x9dad94), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, G(void *, 0x2340d08));
@@ -408,7 +408,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 1: {
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51f4, ".load auto-play file"));
 		g_mapMissing = 0;
-		const char *map = (const char *)IMG(0x907b30) + g_missionStage * 0x20;
+		const char *map = g_mapNames + g_missionStage * 0x20;
 		if (!map[0]) {
 			g_mapMissing = 1;
 			return 0;
@@ -426,7 +426,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
 		keep_alive(g);
 		if (G(int, 0x1f1cb0) == 0) {
-			scene_setTextureFolder((Scene *)g, (const char *)IMG(0x907b30) + g_missionStage * 0x20);
+			scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
 			mode = G(int, 8);
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
@@ -462,9 +462,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5198, ".load zone information"));
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		if (g_missionStage != G(int, 0xbe3000))
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */

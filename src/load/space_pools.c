@@ -51,7 +51,7 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 	u8 *r = FIELD(u8 *, space, head);
 	if (!r) {
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
-			(void *)IMG(0xae2ed0), (const char *)RELOC(format), FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
+			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
 			FIELD(int, space, 0x20), FIELD(int, space, 0x3c), FIELD(int, space, 0x30), FIELD(int, space, 0x4c),
 			FIELD(int, space, 0x40));
 		return 0;
@@ -81,7 +81,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
 	u32 *block = FIELD(u32 *, 0x48);
 	if (!block) {
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)IMG(0xae2ed0), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
 			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
 		return 0;
 	}
@@ -151,9 +151,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(int, 0x7c) = nz;
 	int cells = FIELD(int, 0x58) = nx * ny * nz;
 	if (cells <= 0)
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
 	else if (cells > FIELD(int, 0x50))
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, FIELD(int, 0x50));
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, FIELD(int, 0x50));
 	FIELD(u32, 0x90) = b;
 	FIELD(u32, 0x8c) = a;
 	FIELD(int, 0x94) = depth;
@@ -161,7 +161,7 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(float, 0x84) = (float)(((long double)FIELD(float, 0x68) - FIELD(float, 0x5c)) / FIELD(int, 0x78));
 	FIELD(float, 0x88) = (float)(((long double)FIELD(float, 0x6c) - FIELD(float, 0x60)) / FIELD(int, 0x7c));
 	if (depth > 8)
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
 	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
 #undef FIELD
 }
@@ -184,11 +184,11 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
 		if (!FIELD(void *, 8))
-			sys_fatalError((char *)IMG(0xae2ed0), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
+			sys_fatalError((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
 		FIELD(int, 0xc) = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
+			sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);

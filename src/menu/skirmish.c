@@ -24,7 +24,6 @@ void (skirmish_processKeys)(void)
 
 /* ---- the briefing: the text block 0x9ef1ec (read by mission_saveAxisMis), from offset 0x9eeba4 up to 0x9ef200;
    0x9ef1f4 characters of it shown so far, copied to 0x9f1064 ---- */
-#define g_briefingText ((char *)IMG(0x9f1064))
 
 /* 0x445520: the briefing typed out: while not done or skipped, every 1.4 of the clock (frame times added) shows one
    more character (a CR LF or a double-byte character at once); drawn in the briefing window (wrapping at 0x23e,

@@ -87,7 +87,7 @@ static void first_round(Scene *s)
 		s->levelPoints = g_titlePoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
-			sys_fatalError((char *)IMG(0xa0e778), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);
+			sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);
 	} else {
 		s->levelPoints = 0;
 		s->level = 1;
@@ -101,8 +101,8 @@ static void first_round(Scene *s)
 	   0x23424c6): set i's dwords 0 / 3, 1 / 4 and 2 / 5 */
 	for (int i = 0; i < 5; i++)
 		for (int t = 0; t < 3; t++) {
-			FIELD(u32, s, 0x2342476 + t * 0x28 + i * 8) = GAME_VAR(u32, 0x4dcfe0 + i * 0x18 + t * 4);
-			FIELD(u32, s, 0x234247a + t * 0x28 + i * 8) = GAME_VAR(u32, 0x4dcfec + i * 0x18 + t * 4);
+			FIELD(u32, s, 0x2342476 + t * 0x28 + i * 8) = GAME_VAR(u32, OBJ(g_savedColourChoices) + i * 0x18 + t * 4);
+			FIELD(u32, s, 0x234247a + t * 0x28 + i * 8) = GAME_VAR(u32, OBJ(g_savedColourChoices) + 0xc + i * 0x18 + t * 4);
 		}
 	if (s->network == 1) {
 		if (!s->client) {
@@ -139,7 +139,7 @@ static int random_below(u32 n)
 	if ((int)n <= 0)
 		return 0;
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
+	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
 	g_randPos = at + 1;
 	return (int)(r % n);
 }
@@ -300,13 +300,13 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts(s + 0x9ccffc);
-	factors_addConstant(s + 0x9ccffc, (const void *)IMG(0xa1f23c));
+	factors_addConstant(s + 0x9ccffc, (const void *)OBJ(g_packedWhite));
 	stage_resetLights(s);
 	Light_clearCounts(s + 0x9e3020);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
 	factors_addConstant(s + 0x9e3020, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addPoint(s + 0x9e3020, (const void *)IMG(0xa1f23c), down);
+	factors_addPoint(s + 0x9e3020, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
 	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(k_27));
 	memset(s + 0x9ee030, 0, 14 * 4);

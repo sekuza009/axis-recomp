@@ -105,7 +105,7 @@ u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 /* ---- network tables cleared ---- */
 void (net_clearServerList)(void) { clear((void *)IMG(0xa05748), 0x16c0); }
 void (net_clearRoomList)(void) { clear((void *)IMG(0x9fd960), 0x1e40); }
-void (net_clearPlayerList)(void) { clear((void *)IMG(0xa05330), 0x9b); }
+void (net_clearPlayerList)(void) { clear((void *)OBJ(g_netPlayerList), 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
 char *(path_normalize)(char *s)
 {
@@ -124,7 +124,7 @@ char *(path_normalize)(char *s)
 u8 (net_freeSlotsOf)(int id)
 {
 	for (int s = 0; s < 16; s++) {
-		u32 r = IMG(0x9f9840) + s * 0x410;
+		u32 r = OBJ(g_netSlots) + s * 0x410;
 		if (GAME_VAR(int, r + 4) != id)
 			continue;
 		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
@@ -136,7 +136,7 @@ u8 (net_freeSlotsOf)(int id)
 }
 
 /* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
-void (net_clearSlots)(void) { for (u32 p = IMG(0x9f9840); p < ADDR(g_netBlockSize); p += 0x410) GAME_VAR(int, p) = 0; }
+void (net_clearSlots)(void) { for (u32 p = OBJ(g_netSlots); p < ADDR(g_netBlockSize); p += 0x410) GAME_VAR(int, p) = 0; }
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
@@ -678,8 +678,8 @@ int (app_screenSizeForMode)(void)
    either the window closed (0x9dd904; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
 int (sys_checkClockTampering)(void)
 {
-	const u16 *now = (const u16 *)IMG(0x9dd8d0), *last = (const u16 *)IMG(0x9dd878);   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
-	GetSystemTime((void *)IMG(0x9dd8d0));
+	const u16 *now = g_clockNowTime, *last = g_clockLastTime;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
+	GetSystemTime((void *)OBJ(g_clockNowTime));
 	u32 tick = timeGetTime();
 	g_clockCheckTick = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
@@ -694,11 +694,11 @@ int (sys_checkClockTampering)(void)
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}
-		GetSystemTime((void *)IMG(0x9dd878));
+		GetSystemTime((void *)OBJ(g_clockLastTime));
 		g_startTicks = timeGetTime();
 		return 0;
 	}
-	GetSystemTime((void *)IMG(0x9dd878));
+	GetSystemTime((void *)OBJ(g_clockLastTime));
 	g_startTicks = timeGetTime();
 	return 1;
 }
@@ -792,7 +792,7 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, scene + k->count))
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)(uintptr_t)k->message, type);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)(uintptr_t)k->message, type);
 	ShapeManager_releaseModels(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
@@ -829,7 +829,7 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	else
 		type[0x18c + slot * 0x40] = 0;
 	if (item >= GAME_VAR(int, scene + 0x1561b64))
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	GAME_VAR(int, type + 0x320 + slot * 4) = item;
 	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
 		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)

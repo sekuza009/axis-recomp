@@ -208,7 +208,7 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	chat_createEdit(maxLength);
 }
 
-void (account_editOldPassword)(void) { edit_rule(0, (const char *)IMG(0x9dd6d8), 0x50, 0xc, 1); }
+void (account_editOldPassword)(void) { edit_rule(0, g_accountOldPassword, 0x50, 0xc, 1); }
 void (account_editPassword)(void) { edit_rule(1, g_accountPassword, 0x6c, 0xc, 1); }
 void (account_editPasswordRepeat)(void) { edit_rule(2, g_accountPasswordRepeat, 0x88, 0xc, 1); }
 void (account_editEmail)(void) { edit_rule(3, g_accountEmail, 0xa4, 0x32, 0); }

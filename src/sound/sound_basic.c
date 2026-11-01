@@ -68,7 +68,7 @@ int (sound_setVolume)(int v)
 {
 	if (!g_soundOn)
 		return 0;
-	int p = ftol(fmul_m((long double)g_soundVolume * v, (const float *)IMG(0x4a9504)));
+	int p = ftol(fmul_m((long double)g_soundVolume * v, k_0_01f_4a9504));
 	if (p < 0) {
 		g_soundBaseVolume = -1000;
 		return p;
@@ -158,7 +158,7 @@ u32 (sound_playFile)(const char *name, int volume)
 	else if (volume > 100)
 		attenuation = g_soundBaseVolume;
 	else
-		attenuation = ftol(fmul_m((long double)volume, (const float *)IMG(0x4a9504)) * (g_soundBaseVolume + 10000)) - 10000;
+		attenuation = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (g_soundBaseVolume + 10000)) - 10000;
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
 	GAME_FN(dsbuf_play, 0x467d70, void, void *)(sound);                     /* dsbuf_play */
 	return mem_free(sound);
@@ -175,7 +175,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 	GAME_FN(sound_setVolume, 0x456de0, int, int)(volume);   /* sound_setVolume */
 	void *f = crt_fopen(file, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)IMG(0xa0e020), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)OBJ(g_logSound), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
 	int index;
 	char name[0x100];
 	fread_scrambled(&index, 4, 1, f);
@@ -206,7 +206,7 @@ u32 (sound_playVolume)(int index, int volume)
 	else if (volume > 100)
 		level = g_soundBaseVolume;
 	else
-		level = ftol(fmul_m((long double)volume, (const float *)IMG(0x4a9504)) * (long double)(g_soundBaseVolume + 10000)) - 10000;
+		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
 	return GAME_FN(dsbuf_play, 0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
 }
@@ -361,7 +361,7 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	static const u32 kind1[4] = { STR(0x4b496c, "Music/trance soul.mp3"), STR(0x4b4a6c, "Music/Dark Core.mp3"), STR(0x4b4b6c, "Music/Mean street.mp3"), STR(0x4b4c6c, "Music/Thrill Seeker.mp3") };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
 	static const u32 kind3[3] = { STR(0x4b4d6c, "Music/Forgotten.mp3"), STR(0x4b4e6c, "Music/desert wind.mp3"), STR(0x4b506c, "Music/ashes of past.mp3") };             /* Forgotten, desert wind, ashes of past */
 	static const u32 kind4[3] = { STR(0x4b516c, "Music/Speed of Light.mp3"), STR(0x4b536c, "Music/Fierce battle.mp3"), STR(0x4b546c, "Music/Valhalla.mp3") };             /* Speed of Light, Fierce battle, Valhalla */
-	const u32 *random = (const u32 *)IMG(0xa106f8);
+	const u32 *random = (const u32 *)OBJ(g_randTable);
 	u32 kind = *(u32 *)(stage + 0xbe3004) - 1;
 	u32 n;
 	switch (kind) {

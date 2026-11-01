@@ -398,7 +398,7 @@ void (armc_enter)(TunnelRing *ring)
 {
 	if (g_frameTime > k_10f)
 		BITS(g_frameTime) = 0x40000000;   /* 2 */
-	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a940c)));
+	int step = ftol(fmul_m(fld_m(&g_frameTime), k_30f));
 	int ringLength = 0x44c;
 	g_armcEnterStep = step;
 	g_armcEnterStepF = (float)step;
@@ -440,9 +440,9 @@ void (armc_enter)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? IMG(0x4a95c8) : IMG(0x4a95c4))));
+				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? IMG(0x4a95c8) : OBJ(k_1100f))));
 			else
-				r->turn = f32(fadd_m(fld_m(&r->turn), (const float *)IMG(0x4a95c4)));
+				r->turn = f32(fadd_m(fld_m(&r->turn), k_1100f));
 			r->moveSteps = 0;
 			for (int k = 0; k < 2; k++) {
 				((u32 *)EYE)[k] = ((const u32 *)EYE_KEPT)[k];

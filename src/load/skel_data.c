@@ -31,7 +31,7 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
 	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
-	take_block(self, mem, size, (char *)IMG(0xa0eaa8), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
+	take_block(self, mem, size, (char *)OBJ(g_logSkeleton), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
 	u8 *bones = AT(u8 *, self, 0x14) = AT(u8 *, self, 8);
 	crt_fread(bones, 0x70, AT(u32, self, 0x10), f);
 	int at = AT(int, self, 0x10) * 0x70;
@@ -59,7 +59,7 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 	AT(int, self, 0x114) = n;
 	AT(int, self, 0x124) = extra;
 	AT(int, self, 4) = n * 0x70 + extra;
-	take_block(self, mem, size, (char *)IMG(0xa0eaa0), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
+	take_block(self, mem, size, (char *)OBJ(g_logSkeletonManager), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
 	n = AT(int, self, 0x114);
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
@@ -87,7 +87,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	AT(int, self, 0x114) = n;
 	AT(int, self, 0x124) = extra;
 	AT(int, self, 4) = n * 0x98 + extra;
-	take_block(self, mem, size, (char *)IMG(0xa0e788), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
+	take_block(self, mem, size, (char *)OBJ(g_logShapeManager), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
 	n = AT(int, self, 0x114);
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
@@ -128,7 +128,7 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 {
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
+		sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
 	switch (file_format(path, "shp", "obj")) {
 	case 0:
 		shape_read(shape, f, mem, size);
@@ -137,7 +137,7 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 		model_loadObjFormatFrom(shape, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
 	}
 	fclose(f);
 }
@@ -148,7 +148,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 {
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
+		sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
 	switch (file_format(path, "ske", "ase")) {
 	case 0:
 		skel_loadFromFile(sk, f, mem, size);
@@ -157,7 +157,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 		skel_loadAseFrom(sk, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
 	}
 	fclose(f);
 }
@@ -194,11 +194,11 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 	if (!mem) {
 		AT(void *, list, 8) = operator_new(AT(u32, list, 4));
 		if (!AT(void *, list, 8))
-			sys_fatalError((char *)IMG(0xae2e98), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), AT(int, list, 4));
+			sys_fatalError((char *)OBJ(g_logUnit), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), AT(int, list, 4));
 		AT(int, list, 0xc) = 1;
 	} else {
 		if (size < AT(int, list, 4))
-			sys_fatalErrorN((char *)IMG(0xae2e98), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), AT(int, list, 4), size);
+			sys_fatalErrorN((char *)OBJ(g_logUnit), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), AT(int, list, 4), size);
 		AT(void *, list, 8) = mem;
 	}
 	AT(u8 *, list, 0x14) = AT(u8 *, list, 8);
@@ -270,7 +270,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 			out[k] = k % 5 == 0 ? 0x3f800000 : 0;   /* 1.0 on the diagonal */
 		return;
 	}
-	const float *unit = (const float *)IMG(0x4aa270);
+	const float *unit = k_57_2958f;
 	float saved[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
 	int frames = AT(int, sk, 0x20);
@@ -362,7 +362,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0eaa0), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
+	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logSkeletonManager), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
 	u8 *sk = AT(u8 *, cache, 0x11c) + i * 0x24;
 	if (!added)
 		return sk;
@@ -374,7 +374,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
-		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)IMG(0xa0eaa0), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
+		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)OBJ(g_logSkeletonManager), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
 		skel_loadFrom(sk, path, at, room);
 	}
 	if (mem)
@@ -394,7 +394,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0e788), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
+	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
 	u8 *shape = AT(u8 *, cache, 0x11c) + i * 0x4c;
 	if (added) {
 		const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
@@ -405,7 +405,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 			shape_read(shape, shape_findDatEntry(key), at, room);
 		else {
 			char path[0x100];
-			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)IMG(0xa0e788), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
+			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
 			model_loadFrom(shape, path, at, room);
 		}
 		if (mem)
@@ -438,7 +438,7 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		AT(int, shape, 4) += AT(int, shape, 0x10) * 0x18;
 		crt_fseek(f, at, 0);   /* SEEK_SET */
 	}
-	take_block(shape, mem, size, (char *)IMG(0xa0e790), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
+	take_block(shape, mem, size, (char *)OBJ(g_logShape), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
 	u8 *parts = AT(u8 *, shape, 0x14) = AT(u8 *, shape, 8);
 	if (current)
 		crt_fread(parts, 0x80, AT(u32, shape, 0x10), f);
@@ -508,7 +508,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 	u8 **entry = AT(u8 **, pose, 0x20) + AT(int, pose, 0x24);
 	if (!*entry)
 		return;
-	const float *unit = (const float *)IMG(0x4aa270), *point = (const float *)ADDR(g_vecOrigin);
+	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
 	for (int i = 0; i < AT(int, pose, 0x10); i++) {
 		u8 *sk = *entry;
 		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
@@ -609,11 +609,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		GAME_VAR(void *, sk + 8) = operator_new(size);
 		if (!GAME_VAR(void *, sk + 8))
-			sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sk + 4));
+			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sk + 4));
 		GAME_VAR(int, sk + 0xc) = 1;
 	} else {
 		if (memSize < size)
-			sys_fatalErrorN((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
+			sys_fatalErrorN((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
 		GAME_VAR(u8 *, sk + 8) = mem;
 		GAME_VAR(int, sk + 0xc) = 0;
 	}
@@ -655,7 +655,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 						break;
 					}
 			if (GAME_VAR(int, b + 0x40) < 0)
-				sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c53b8, "can't find parent part(%s)-loadAseFor..."), (int)parent);
+				sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c53b8, "can't find parent part(%s)-loadAseFor..."), (int)parent);
 		} else if (!strcmp(t, (const char *)STR(0x4c53b0, "TM_POS"))) {   /* TM_POS */
 			GAME_VAR(float, b + 0x44) = ase_float(SPACE, 0);
 			GAME_VAR(float, b + 0x4c) = ase_float(SPACE, 1);
@@ -764,7 +764,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")
 #define SLASH STR(0x4ad564, "/")
-#define BAD_OBJ() sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4c20, "invalid obj format string(%s)-loadObj..."), (int)line)
+#define BAD_OBJ() sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4c20, "invalid obj format string(%s)-loadObj..."), (int)line)
 
 /* a face's first corner token: a lone "\" continues the face on the next line */
 static char *face_start(char *line, void *f)
@@ -848,19 +848,19 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		GAME_VAR(void *, sh + 8) = operator_new(size);
 		if (!GAME_VAR(void *, sh + 8))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sh + 4));
+			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sh + 4));
 		GAME_VAR(int, sh + 0xc) = 1;
 		if (!(vs = operator_new(nv * 12)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4bb4, "insufficient memory for vertexCoordAr..."), nv);
+			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bb4, "insufficient memory for vertexCoordAr..."), nv);
 		if (!(ns = operator_new(nvn * 12)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4b78, "insufficient memory for vertexNormalA..."), nvn);
+			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4b78, "insufficient memory for vertexNormalA..."), nvn);
 		if (!(ts = operator_new(nvt * 8)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4b38, "insufficient memory for vertexTexture..."), nvt);
+			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4b38, "insufficient memory for vertexTexture..."), nvt);
 		allocated = 1;
 	} else {
 		int need = nvt * 8 + (nvn + nv) * 0xc + size;
 		if (memSize < need)
-			sys_fatalErrorN((char *)IMG(0xa0e790), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), need, memSize);
+			sys_fatalErrorN((char *)OBJ(g_logShape), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), need, memSize);
 		GAME_VAR(u8 *, sh + 8) = mem;
 		GAME_VAR(int, sh + 0xc) = 0;
 		vs = (float *)(mem + GAME_VAR(int, sh + 4));

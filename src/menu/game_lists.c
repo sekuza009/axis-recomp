@@ -7,7 +7,7 @@
 #define g_listTop g_gameListTop
 #define g_searching (g_lanSearch || g_lobbySearching)
 
-static const u32 *const bright = (const u32 *)IMG(0x4dba98), *const dim = (const u32 *)IMG(0x4db8a0);
+static const u32 *const bright = g_arenaBright, *const dim = g_arenaDim;
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 #define RECT(r, g, b, a) set_colour_bits(g_rectColour, r, g, b, a)
 
@@ -37,7 +37,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 {
 	char text[50], other[12];
 	for (int i = 0; i < g_gameCount && y < end; i++, y += 0x18) {
-		const u8 *game = (const u8 *)IMG(0x9087c4) + (g_listTop + i) * 0x4a;
+		const u8 *game = g_gameList + (g_listTop + i) * 0x4a;
 		if (locks && game[0x43]) {
 			glEnable(GL_TEXTURE_2D);
 			int texture = g_fontAscii;
@@ -65,7 +65,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 			text_draw8(x0 + 0x114, y0 + y, (const char *)MSG(455, "ROTATION"));
 		else {
 			memset(text, 0, sizeof text);
-			crt_strncpy(text, (const char *)(IMG(0x907b30) + (signed char)game[0x21] * 0x20), 0xd);
+			crt_strncpy(text, (const char *)(OBJ(g_mapNames) + (signed char)game[0x21] * 0x20), 0xd);
 			text_draw8(x0 + 0x114, y0 + y, text);
 		}
 		text_draw8(x0 + 0x182, y0 + y, (const char *)(RELOC(kinds) + (signed char)game[0x28] * step));
@@ -179,8 +179,8 @@ void (arena_drawGameList)(void)
 	menu_drawSmallButton3(X0 + 0x21e, Y0 + 0xa0, X0 + 0x23e, Y0 + 0xe0, hovered == 0xf);
 	menu_drawSmallButton4(X0 + 0x21e, Y0 + 0xf0, X0 + 0x23e, Y0 + 0x130, hovered != 0xf && hovered == 0x10);
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
-		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
+		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
 	}
@@ -300,8 +300,8 @@ void (gameList_draw)(void)
 	menu_drawSmallButton4(X0 + 0x226, Y0 + 0xbe, X0 + 0x246, Y0 + 0xfe, hovered != 0xd && hovered == 0xe);
 	glDisable(GL_TEXTURE_2D);
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
-		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 15;
+		float alpha = f32(fmul_m((long double)step, k_0_0667f));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
 	}
@@ -421,7 +421,7 @@ void (gameList_drawPage)(void)
 	g_joinPasswordTyped = 0;
 	memset((void *)ADDR(g_roomMessageText), 0, 8);
 	strcpy((char *)ADDR(g_roomMessageText), g_chatLine);
-	if (strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_roomMessageText)) != 0) {
+	if (strcmp((const char *)(OBJ(g_gameList) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_roomMessageText)) != 0) {
 		menu_showMessage(0x27);
 		g_roomJoined = 0;
 	}
@@ -797,7 +797,7 @@ void (lobbyJoin_draw)(void)
 		memset((void *)ADDR(g_arenaMessageText), 0, 8);
 		g_editingArenaMessage = 0;
 		strcpy((char *)ADDR(g_arenaMessageText), g_chatLine);
-		int wrong = strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_arenaMessageText)) != 0;
+		int wrong = strcmp((const char *)(OBJ(g_gameList) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_arenaMessageText)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
 		g_arenaJoining = 0;

@@ -187,7 +187,7 @@ DELETING(BMPRGBFile, BMPRGBFile_ctor)
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
 void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
 DELETING(ErrorLog, ErrorLog_dtor)
-void (static_endSoundRtti)(void) { ErrorLog_dtor((u32 *)IMG(0xa0e020)); }
+void (static_endSoundRtti)(void) { ErrorLog_dtor(g_logSound); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 {
 	self[0] = VT(ErrorLog, 0x4aa2a0);
@@ -292,7 +292,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)RELOC(text))
+#define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
 	if (GAME_VAR(void *, image + 4))
 		fclose(GAME_VAR(void *, image + 4));
 	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -434,7 +434,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	if (w <= 0 || h <= 0)
 		return;
 	if (w > 0x400)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
 	crt_fseek(f, GAME_VAR(int, image + 0x12) + ((GAME_VAR(int, image + 0x42) - sy - h) * GAME_VAR(int, image + 0x3e) + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
@@ -455,7 +455,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 				p4[k * 4 + 3] = 0xff;
 			}
 		else
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
 		crt_fseek(f, (GAME_VAR(int, image + 0x3e) - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
@@ -539,9 +539,9 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
 	if (!GAME_THISFN(catalogue_loadComponents, 0x473780, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	if (!GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
 	GAME_VAR(int, g + 0x233cc10) = 1;
 	stage_selectActor((Stage *)s, -1);
@@ -593,7 +593,7 @@ static void zero_dwords(u8 *at, int n)
 void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), g_insertCdMessage);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), g_insertCdMessage);
 	GAME_VAR(u32, g + 4) = a;
 	GAME_VAR(int, g + 8) = mode;
 	GAME_VAR(int, g + 0x1f1664) = 0;

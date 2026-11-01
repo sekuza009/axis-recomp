@@ -233,7 +233,7 @@ void (room_drawGameSettings)(void)
 /* two buttons (0x7517a4, 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
 static void box_buttons(int hovered, int lit_from)
 {
-	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);
+	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
 	for (int k = 0; k < 2; k++) {
 		int x = 0xb4 + k * 0xa0;
 		button(hovered == lit_from + k, 1.0f, x, 0x104, x + 0x78, 0x124, 0x10c, bright, dim, MSG(115, "$[0] O K") + k * 0x80);
@@ -253,7 +253,7 @@ void (arena_createDraw)(void)
 	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
 	                           0, IMG(0x4dbba4), 10 };
 	const Form *f = &form;
-	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);
+	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
 	int editing = g_paused, confirming = g_createQuitDialog, leaving = g_arenaLeaving;
 	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];

@@ -4,26 +4,26 @@
 #include "../game.h"
 
 /* ---- class names: an ErrorLog record (vtable 0x4aa2a0) holding the class name, built once at start-up ---- */
-void *(Texture_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0dff8), (const char *)STR(0x4b3e74, "class Texture"), 0); }   /* 0x454fe0 "class Texture" */
-void *(TextureManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e000), (const char *)STR(0x4b4134, "class TextureManager"), 0); }   /* 0x456940 "class TextureManager" */
-void *(Sound_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e020), (const char *)STR(0x4b42e0, "Sound"), 0); }   /* 0x456c90 "Sound" */
-void *(Console_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e778), (const char *)STR(0x4c456c, "class Console"), 0); }   /* 0x460520 "class Console" */
-void *(Shape_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e790), (const char *)STR(0x4c4a40, "class Shape"), 0); }   /* 0x463b30 "class Shape" */
-void *(ShapeManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e788), (const char *)STR(0x4c4ca8, "class ShapeManager"), 0); }   /* 0x4669c0 "class ShapeManager" */
-void *(Skeleton_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa8), (const char *)STR(0x4c534c, "class Skeleton"), 0); }   /* 0x469930 "class Skeleton" */
-void *(SkeletonManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa0), (const char *)STR(0x4c549c, "class SkeletonManager"), 0); }   /* 0x46ae10 "class SkeletonManager" */
-void *(BMPRGBFile_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f0f0), (const char *)STR(0x4c58f4, "class BMPRGBFile"), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
-void *(RealColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f290), (const char *)STR(0x4c59c0, "struct RealColor"), 0); }   /* 0x46d270 "struct RealColor" */
-void *(PackedColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f250), (const char *)STR(0x4c59d4, "struct PackedColor"), 0); }   /* 0x46da70 "struct PackedColor" */
-void *(UnitPartInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea0), (const char *)STR(0x4c6ffc, "struct UnitPartInfo"), 0); }   /* 0x46f360 "struct UnitPartInfo" */
-void *(UnitPoseInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea8), (const char *)STR(0x4c7010, "struct UnitPoseInfo"), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
-void *(Unit_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2e98), (const char *)STR(0x4c7024, "class Unit"), 0); }   /* 0x46f420 "class Unit" */
-void *(Stage_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2eb8), (const char *)STR(0x4c73b0, "class Stage"), 0); }   /* 0x46ff20 "class Stage" */
-void *(CollisionVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ed0), (const char *)STR(0x4c7800, "class CollisionVolume"), 0); }   /* 0x481340 "class CollisionVolume" */
-void *(Light_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ee8), (const char *)STR(0x4c7ad4, "class Light"), 0); }   /* 0x483d00 "class Light" */
-void *(ViewVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ef0), (const char *)STR(0x4c7b08, "class ViewVolume"), 0); }   /* 0x483f60 "class ViewVolume" */
-void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2f00), (const char *)STR(0x4c7b70, "class TimeSync"), 0); }   /* 0x4873e0 "class TimeSync" */
-void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae3328), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
+void *(Texture_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logTexture), (const char *)STR(0x4b3e74, "class Texture"), 0); }   /* 0x454fe0 "class Texture" */
+void *(TextureManager_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logTextureManager), (const char *)STR(0x4b4134, "class TextureManager"), 0); }   /* 0x456940 "class TextureManager" */
+void *(Sound_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logSound), (const char *)STR(0x4b42e0, "Sound"), 0); }   /* 0x456c90 "Sound" */
+void *(Console_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logConsole), (const char *)STR(0x4c456c, "class Console"), 0); }   /* 0x460520 "class Console" */
+void *(Shape_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logShape), (const char *)STR(0x4c4a40, "class Shape"), 0); }   /* 0x463b30 "class Shape" */
+void *(ShapeManager_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logShapeManager), (const char *)STR(0x4c4ca8, "class ShapeManager"), 0); }   /* 0x4669c0 "class ShapeManager" */
+void *(Skeleton_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logSkeleton), (const char *)STR(0x4c534c, "class Skeleton"), 0); }   /* 0x469930 "class Skeleton" */
+void *(SkeletonManager_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logSkeletonManager), (const char *)STR(0x4c549c, "class SkeletonManager"), 0); }   /* 0x46ae10 "class SkeletonManager" */
+void *(BMPRGBFile_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c58f4, "class BMPRGBFile"), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
+void *(RealColor_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logRealColor), (const char *)STR(0x4c59c0, "struct RealColor"), 0); }   /* 0x46d270 "struct RealColor" */
+void *(PackedColor_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logPackedColor), (const char *)STR(0x4c59d4, "struct PackedColor"), 0); }   /* 0x46da70 "struct PackedColor" */
+void *(UnitPartInfo_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnitPartInfo), (const char *)STR(0x4c6ffc, "struct UnitPartInfo"), 0); }   /* 0x46f360 "struct UnitPartInfo" */
+void *(UnitPoseInfo_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnitPoseInfo), (const char *)STR(0x4c7010, "struct UnitPoseInfo"), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
+void *(Unit_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logUnit), (const char *)STR(0x4c7024, "class Unit"), 0); }   /* 0x46f420 "class Unit" */
+void *(Stage_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logStage), (const char *)STR(0x4c73b0, "class Stage"), 0); }   /* 0x46ff20 "class Stage" */
+void *(CollisionVolume_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7800, "class CollisionVolume"), 0); }   /* 0x481340 "class CollisionVolume" */
+void *(Light_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logLight), (const char *)STR(0x4c7ad4, "class Light"), 0); }   /* 0x483d00 "class Light" */
+void *(ViewVolume_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logViewVolume), (const char *)STR(0x4c7b08, "class ViewVolume"), 0); }   /* 0x483f60 "class ViewVolume" */
+void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b70, "class TimeSync"), 0); }   /* 0x4873e0 "class TimeSync" */
+void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logScene), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
 void (static_initTex64x64)(void) { g_staticTex64x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
@@ -112,7 +112,7 @@ void (colour_initPackedGrey)(void) { u8 *c = (u8 *)IMG(0xa1f204); c[0] = 0x7f; c
 void (colour_initPackedYellow)(void) { u8 *c = (u8 *)IMG(0xa1f208); c[0] = 0xff; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dc20 */
 void (colour_initPackedClear)(void) { u8 *c = (u8 *)ADDR(g_defaultColour); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46dad0 */
 void (colour_initPackedRed)(void) { u8 *c = (u8 *)ADDR(g_colourMaskRed); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
-void (colour_initPackedWhite)(void) { u8 *c = (u8 *)IMG(0xa1f23c); c[0] = 0xff; c[1] = 0xff; c[2] = 0xff; c[3] = 0xff; }   /* 0x46db60 */
+void (colour_initPackedWhite)(void) { u8 *c = g_packedWhite; c[0] = 0xff; c[1] = 0xff; c[2] = 0xff; c[3] = 0xff; }   /* 0x46db60 */
 void (colour_initPackedBlack)(void) { u8 *c = (u8 *)IMG(0xa1f278); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db00 */
 void (colour_initPackedGreen)(void) { u8 *c = (u8 *)IMG(0xa1f2ec); c[0] = 0; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dbc0 */
 void (colour_initRealClear)(void) { u32 *c = (u32 *)IMG(0xa1f210); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46d2d0 */
@@ -133,23 +133,23 @@ void (colour_initRealGrey)(void) { u32 *c = (u32 *)IMG(0xa1f2f0); c[0] = 0x3f000
 			ErrorLog_dtor((void *)(obj)); \
 		} \
 	}
-GUARDED_DTOR(static_endTextureRtti, 0xa0e009, IMG(0xa0dff8))
-GUARDED_DTOR(static_endTextureManagerRtti, 0xa0e008, IMG(0xa0e000))
-GUARDED_DTOR(static_endConsoleRtti, 0xa0e780, IMG(0xa0e778))
-GUARDED_DTOR(static_endShapeRtti, 0xa0e798, IMG(0xa0e790))
-GUARDED_DTOR(static_endShapeManagerRtti, 0xa0e799, IMG(0xa0e788))
-GUARDED_DTOR(static_endSkeletonRtti, 0xa0eab0, IMG(0xa0eaa8))
-GUARDED_DTOR(static_endSkeletonManagerRtti, 0xa0eab1, IMG(0xa0eaa0))
-GUARDED_DTOR(static_endBMPRGBFileRtti, 0xa1f0f8, IMG(0xa1f0f0))
-GUARDED_DTOR(static_endRealColorRtti, 0xa1f2e8, IMG(0xa1f290))
-GUARDED_DTOR(static_endPackedColorRtti, 0xa1f2e9, IMG(0xa1f250))
-GUARDED_DTOR(static_endUnitPartInfoRtti, 0xae2eb2, IMG(0xae2ea0))
-GUARDED_DTOR(static_endUnitPoseInfoRtti, 0xae2eb1, IMG(0xae2ea8))
-GUARDED_DTOR(static_endUnitRtti, 0xae2eb0, IMG(0xae2e98))
-GUARDED_DTOR(static_endStageRtti, 0xae2ec0, IMG(0xae2eb8))
-GUARDED_DTOR(static_endCollisionVolumeRtti, 0xae2ed8, IMG(0xae2ed0))
-GUARDED_DTOR(static_endLightRtti, 0xae2ee0, IMG(0xae2ee8))
-GUARDED_DTOR(static_endViewVolumeRtti, 0xae2ef8, IMG(0xae2ef0))
-GUARDED_DTOR(static_endTimeSyncRtti, 0xae2f08, IMG(0xae2f00))
-GUARDED_DTOR(static_endSceneRtti, 0xae3330, IMG(0xae3328))
+GUARDED_DTOR(static_endTextureRtti, 0xa0e009, OBJ(g_logTexture))
+GUARDED_DTOR(static_endTextureManagerRtti, 0xa0e008, OBJ(g_logTextureManager))
+GUARDED_DTOR(static_endConsoleRtti, 0xa0e780, OBJ(g_logConsole))
+GUARDED_DTOR(static_endShapeRtti, 0xa0e798, OBJ(g_logShape))
+GUARDED_DTOR(static_endShapeManagerRtti, 0xa0e799, OBJ(g_logShapeManager))
+GUARDED_DTOR(static_endSkeletonRtti, 0xa0eab0, OBJ(g_logSkeleton))
+GUARDED_DTOR(static_endSkeletonManagerRtti, 0xa0eab1, OBJ(g_logSkeletonManager))
+GUARDED_DTOR(static_endBMPRGBFileRtti, 0xa1f0f8, OBJ(g_logBMPRGBFile))
+GUARDED_DTOR(static_endRealColorRtti, 0xa1f2e8, OBJ(g_logRealColor))
+GUARDED_DTOR(static_endPackedColorRtti, 0xa1f2e9, OBJ(g_logPackedColor))
+GUARDED_DTOR(static_endUnitPartInfoRtti, 0xae2eb2, OBJ(g_logUnitPartInfo))
+GUARDED_DTOR(static_endUnitPoseInfoRtti, 0xae2eb1, OBJ(g_logUnitPoseInfo))
+GUARDED_DTOR(static_endUnitRtti, 0xae2eb0, OBJ(g_logUnit))
+GUARDED_DTOR(static_endStageRtti, 0xae2ec0, OBJ(g_logStage))
+GUARDED_DTOR(static_endCollisionVolumeRtti, 0xae2ed8, OBJ(g_logCollisionVolume))
+GUARDED_DTOR(static_endLightRtti, 0xae2ee0, OBJ(g_logLight))
+GUARDED_DTOR(static_endViewVolumeRtti, 0xae2ef8, OBJ(g_logViewVolume))
+GUARDED_DTOR(static_endTimeSyncRtti, 0xae2f08, OBJ(g_logTimeSync))
+GUARDED_DTOR(static_endSceneRtti, 0xae3330, OBJ(g_logScene))
 #undef GUARDED_DTOR

@@ -12,7 +12,7 @@ static const short copied[6][2] = { { 0x40, 0x2dbc }, { 0x44, 0x2dc0 }, { 0x48, 
 /* and those scaled by a constant of the game (record offset, ActorInfo offset, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
 	{ 0x58, 0x2de4, ADDR(k_0_01f) }, { 0x5c, 0x2de8, ADDR(k_0_01f) }, { 0x60, 0x2dec, ADDR(k_tenthsToDegrees) }, { 0x64, 0x2df0, ADDR(k_0_01f) },
-	{ 0x68, 0x2df4, ADDR(k_0_01f) }, { 0x70, 0x2e08, IMG(0x4a94bc) }, { 0x74, 0x2e0c, ADDR(k_tenthsToDegrees) }, { 0x78, 0x2e10, IMG(0x4a94bc) } };
+	{ 0x68, 0x2df4, ADDR(k_0_01f) }, { 0x70, 0x2e08, OBJ(k_1000f) }, { 0x74, 0x2e0c, ADDR(k_tenthsToDegrees) }, { 0x78, 0x2e10, OBJ(k_1000f) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its +0x40 -1) */
 static void part_info(u8 *rec, int idx)
@@ -76,7 +76,7 @@ u8 *(armc_readMechStats)(void)
 	mulf(IMG(0x4dcaa4), &FIELD(float, A, 0x1ecca74), (const float *)ADDR(k_tenthsToDegrees));
 	g_mechHackingLevel = FIELD(int, A, 0x1ecca78);
 	mulf(IMG(0x4dcaac), &FIELD(float, A, 0x1ecca7c), (const float *)ADDR(k_100f));
-	mulf(IMG(0x4dcab0), &FIELD(float, A, 0x1ecca80), (const float *)IMG(0x4a94bc));
+	mulf(IMG(0x4dcab0), &FIELD(float, A, 0x1ecca80), k_1000f);
 	for (int i = 0; i < 7; i++)
 		GAME_VAR(int, 0x4dcab4 + i * 4) = FIELD(int, A, 0x1ecca8c + i * 4);
 	copyf(ADDR(g_mechMobility), &FIELD(float, A, 0x1eccaa8));
@@ -88,10 +88,10 @@ u8 *(armc_readMechStats)(void)
 	mulf(IMG(0x4dcae0), &FIELD(float, part, 0x163c97c), (const float *)ADDR(k_100f));
 	mulf(IMG(0x4dcae4), &FIELD(float, part, 0x163c978), (const float *)ADDR(k_100f));
 	g_unusedMechStat = FIELD(int, g + FIELD(int, player, 0x175554c) * 0x1820, 0x167b334);
-	mulf(ADDR(g_mechBoosterEnergy), &FIELD(float, A, 0x1eccab4), (const float *)IMG(0x4a94bc));
-	mulf(ADDR(g_mechBoosterRecharge), &FIELD(float, A, 0x1eccab8), (const float *)IMG(0x4a94bc));
-	mulf(IMG(0x4dcaf4), &FIELD(float, A, 0x1eccabc), (const float *)IMG(0x4a94bc));
-	mulf(ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac0), (const float *)IMG(0x4a94b8));
+	mulf(ADDR(g_mechBoosterEnergy), &FIELD(float, A, 0x1eccab4), k_1000f);
+	mulf(ADDR(g_mechBoosterRecharge), &FIELD(float, A, 0x1eccab8), k_1000f);
+	mulf(IMG(0x4dcaf4), &FIELD(float, A, 0x1eccabc), k_1000f);
+	mulf(ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac0), k_0_036f);
 	mulf(IMG(0x4dcafc), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac4));
 	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &FIELD(float, A, 0x1eccac8));
 	mulf(IMG(0x4dcb04), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccacc));
@@ -132,7 +132,7 @@ int (armc_drawPartPanels)(void)
 	mulf(ADDR(g_headDetectionAngle), &FIELD(float, p, 0x15bdc90), (const float *)ADDR(k_tenthsToDegrees));
 	g_headHackingLevel = FIELD(int, p, 0x15bdc94);
 	mulf(ADDR(g_headLockOnTime), &FIELD(float, p, 0x15bdc98), (const float *)ADDR(k_100f));
-	mulf(ADDR(g_headTargetKeepTime), &FIELD(float, p, 0x15bdc9c), (const float *)IMG(0x4a94bc));
+	mulf(ADDR(g_headTargetKeepTime), &FIELD(float, p, 0x15bdc9c), k_1000f);
 	copyf(ADDR(g_headWeight), &FIELD(float, p, 0x15bdc88));
 	p = g + FIELD(int, player, 0x1755540) * 0xabc;   /* chest */
 	panel_name(IMG(0x4dbc08), (const char *)p + 0x15de6cc);
@@ -158,9 +158,9 @@ int (armc_drawPartPanels)(void)
 	panel_name(IMG(0x4dce40), (const char *)p + 0x1679b38);
 	g_boosterThrustType = FIELD(int, p, 0x167b334);
 	for (int i = 0; i < 3; i++)
-		mulf(ADDR(g_boosterActiveTime) + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)IMG(0x4a94bc));
+		mulf(ADDR(g_boosterActiveTime) + i * 4, &FIELD(float, p, 0x167b33c + i * 4), k_1000f);
 	for (int i = 0; i < 4; i++)
-		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &FIELD(float, p, 0x167b348 + i * 4), (const float *)IMG(0x4a94b8));
+		mulf(ADDR(g_boosterNormalSpeed) + i * 4, &FIELD(float, p, 0x167b348 + i * 4), k_0_036f);
 	(*(u32 *)&g_armcZoom) = 0x3f800000;
 	copyf(ADDR(g_boosterWeight), &FIELD(float, p, 0x167b330));
 	return weapon;

@@ -281,7 +281,7 @@ int (input_justPressed)(int key)
 	if (key >= 0xfa && key <= 0xfc) {
 		if (*g_wide->pressedFix)
 			return g_wide->mousePressed(key);
-		int *flag = (int *)(IMG(0x4d1e80) + (key - 0xfa) * 4);
+		int *flag = (int *)((OBJ(g_keySeen) + 0x3e8) + (key - 0xfa) * 4);
 		if (*flag) {
 			*flag = 0;
 			return 0;
@@ -290,7 +290,7 @@ int (input_justPressed)(int key)
 		return GAME_VAR(int, 0x4ded88 + (key - 0xfa) * 4);
 	}
 	if (key == 0xfd) {
-		int *latch = (int *)IMG(0x4d1e8c);
+		int *latch = (int *)(OBJ(g_keySeen) + 0x3f4);
 		if (g_mouseWheel >= 0) {
 			*latch = 0;
 			return 0;
@@ -302,7 +302,7 @@ int (input_justPressed)(int key)
 	}
 	if (key == 0xfe)
 		return g_mouseWheel > 0;
-	int *seen = (int *)(IMG(0x4d1a98) + key * 4);
+	int *seen = (int *)(OBJ(g_keySeen) + key * 4);
 	if (!GAME_FN(input_keyHeld, 0x4014f0, int, int)(key))   /* input_keyHeld */
 		*seen = 0;
 	if (*seen)
@@ -345,7 +345,7 @@ int (input_initKeyboard)(void *window)
 	if (COM(g_keyboard, 0x34, int, void *, u32)(g_keyboard, window, 6) < 0)
 		return 0;
 	COM(g_keyboard, DI_ACQUIRE, int)(g_keyboard);   /* (its result not checked) */
-	memset((void *)IMG(0x4d1a98), 0, 0x400);
+	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_keyboardActive = 1;
 	return 1;
 }

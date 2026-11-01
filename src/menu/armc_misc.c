@@ -182,7 +182,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
 	Vec3_normalize((float *)RELOC(dir));
-	factors_addPoint(light, (const void *)IMG(0xa1f23c), dir);
+	factors_addPoint(light, (const void *)OBJ(g_packedWhite), dir);
 	for (int k = 0; k < 8; k++) {
 		u8 *list = s + 0x1ecca70 + GAME_VAR(int, s + 0x234240d) * 0x8888 + lists[k];
 		if (part < 0)
@@ -208,7 +208,7 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	if (posed)
 		armc_rotateFromCursor(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
 	if (g_armcSpin) {
-		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a94cc)), &g_armcAngle);
+		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), k_8f), &g_armcAngle);
 		g_armcAngle = angle;
 		if (angle >= k_3600f)
 			BITS(g_armcAngle) = 0;
@@ -710,7 +710,7 @@ int (armc_drawModeTabs)(void)
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
-	memcpy((void *)OBJ(g_savedColourChoices), (const void *)IMG(0x4dc4b8), 0x90);
+	memcpy((void *)OBJ(g_savedColourChoices), (const void *)OBJ(g_armcColours), 0x90);
 	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
@@ -727,15 +727,15 @@ u32 (armc_saveSelection)(void)
 void (armc_sendSelectionToNet)(void)
 {
 	for (int i = 0; i < 0x24; i++) {
-		float v = f32(fld_m((const float *)IMG(0x4dc4b8) + i));
+		float v = f32(fld_m(g_armcColours + i));
 		((float *)OBJ(g_savedColourChoices))[i] = v;
-		((float *)IMG(0x9dd603))[i] = v;
+		(g_roomColours)[i] = v;
 	}
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
 	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
-	u8 *room = (u8 *)IMG(0x9dd5f8);
+	u8 *room = g_roomMech;
 	const int *parts = (const int *)ADDR(g_savedMechParts), *settings = (const int *)ADDR(g_savedMechWeapons);
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)settings[2 + i];
@@ -746,7 +746,7 @@ void (armc_sendSelectionToNet)(void)
 	u8 *packet = g_netSelectionPacket;
 	strcpy((char *)packet, g_joinedTitleName);
 	memcpy(packet + 0x1e, room, 11);
-	memcpy(packet + 0x29, (const void *)IMG(0x9dd603), 0x90);
+	memcpy(packet + 0x29, (const void *)OBJ(g_roomColours), 0x90);
 	net_send(0x1b, 0x65);
 }
 

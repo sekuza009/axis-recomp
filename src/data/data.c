@@ -7,6 +7,28 @@
 /* the game's writable data (0x4ad000 .. 0xb13000): src/data/layout.h; the pieces below copied in at start-up */
 struct GameData g_data __attribute__((aligned(4096)));
 
+/* the objects split out of g_data (tools/names/split.txt): variables of their own; their old pages in g_data are
+   left inaccessible (standalone/main.c, g_splitObjects) */
+int g_keySeen_v[256] __attribute__((aligned(16)));   /* 0x4d1a98 */
+char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
+char g_briefingText_v[1600] __attribute__((aligned(16)));   /* 0x9f1064 */
+float g_tan10Table_v[18] __attribute__((aligned(16)));   /* 0xa106b0 */
+int g_randTable_v[4096] __attribute__((aligned(16)));   /* 0xa106f8 */
+float g_tanTable_v[3600] __attribute__((aligned(16)));   /* 0xa146f8 */
+float g_cosTable_v[3600] __attribute__((aligned(16)));   /* 0xa17f38 */
+float g_sinTable_v[3600] __attribute__((aligned(16)));   /* 0xa1b778 */
+const DataPiece g_splitObjects[] = {
+	{ 0x4d1a98, g_keySeen_v, sizeof g_keySeen_v },
+	{ 0x9dc92c, g_chatLine_v, sizeof g_chatLine_v },
+	{ 0x9f1064, g_briefingText_v, sizeof g_briefingText_v },
+	{ 0xa106b0, g_tan10Table_v, sizeof g_tan10Table_v },
+	{ 0xa106f8, g_randTable_v, sizeof g_randTable_v },
+	{ 0xa146f8, g_tanTable_v, sizeof g_tanTable_v },
+	{ 0xa17f38, g_cosTable_v, sizeof g_cosTable_v },
+	{ 0xa1b778, g_sinTable_v, sizeof g_sinTable_v },
+	{ 0, 0, 0 }
+};
+
 static const u32 d_4ad000[] = {   /* 0x4ad000 */
 	0x00000000, FN_ADDR(static_startTex64x64, 0x42b120),
 	FN_ADDR(static_startTex128x64, 0x42b190), FN_ADDR(static_startTex256x64, 0x42b1e0),

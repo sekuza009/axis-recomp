@@ -26,7 +26,7 @@ int (net_sessionValue)(int i)
 void (net_takePlayerSlot)(u32 slot, int id)
 {
 	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };
-	u32 r = IMG(0x9f9840) + (slot & 0xff) * 0x410;
+	u32 r = OBJ(g_netSlots) + (slot & 0xff) * 0x410;
 	GAME_VAR(int, r) = 1;
 	GAME_VAR(int, r + 4) = id;
 	memcpy((void *)(RELOC(r) + 0x10), init, sizeof init);
@@ -37,7 +37,7 @@ void (net_takePlayerSlot)(u32 slot, int id)
 void (net_freeAllSlots)(void)
 {
 	memset((void *)IMG(0x9f93d8), 0, 0x40);
-	for (u32 r = IMG(0x9f9840); r < ADDR(g_netBlockSize); r += 0x410)
+	for (u32 r = OBJ(g_netSlots); r < ADDR(g_netBlockSize); r += 0x410)
 		memset((void *)RELOC(r), 0, 16);
 }
 
@@ -327,12 +327,12 @@ void (net_closeAll)(int kind)
 	}
 	if (kind == 100 || kind == 101) {
 		const char *host = (const char *)(RELOC(kind) == 100 ? IMG(0xa0b24c) : IMG(0xa055fc));
-		strcpy((char *)IMG(0xa055e4), net_resolveHost(host) ? (const char *)IMG(0xa0d320) : host);
+		strcpy((char *)IMG(0xa055e4), net_resolveHost(host) ? g_serverAddress : host);
 		g_serverPort = GAME_VAR(u16, kind == 100 ? ADDR(g_lobbyTcpPort) : ADDR(g_ladderPort));
 	}
 	memset((void *)IMG(0x9fd960), 0, 0x1e40 * 4);
 	memset((void *)IMG(0xa05748), 0, 0x16c0 * 4);
-	memset((void *)IMG(0xa05330), 0, 0x2aa);
+	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
 		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { IMG(0xa0b318), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
 		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_arenaPacket), 0x79 }, { ADDR(g_arenaInfoPacket), 0x79 }, { ADDR(g_roomRecordPacket), 0x79 }, { ADDR(g_netRequestWord), 4 }, { ADDR(g_netKindWord), 4 },
@@ -396,7 +396,7 @@ int (dplay_release)(void)
 int (net_resolveHost)(const char *host)
 {
 	u8 wsa[0x190];
-	memset((void *)IMG(0xa0d320), 0, 0x64);
+	memset((void *)OBJ(g_serverAddress), 0, 0x64);
 	if (((int (STDCALL *)(u32, void *))*(const u32 *)IMG(0x4a9378))(0x202, wsa))             /* WSAStartup */
 		return 0;
 	int sock = ((int (STDCALL *)(int, int, int))*(const u32 *)IMG(0x4a937c))(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
@@ -406,8 +406,8 @@ int (net_resolveHost)(const char *host)
 	if (!entry)
 		return 0;
 	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
-	strcpy((char *)IMG(0xa0d320), ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(address));   /* inet_ntoa */
-	if (!strlen((const char *)IMG(0xa0d320)))
+	strcpy(g_serverAddress, ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(address));   /* inet_ntoa */
+	if (!strlen(g_serverAddress))
 		return 0;
 	if (sock) {
 		((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))();      /* WSACancelBlockingCall */
@@ -536,9 +536,9 @@ int (net_startThread)(void)
 int (net_addPlayerRecord)(const u8 *rec)
 {
 	static const u8 fields[7] = { 0x2a, 0x26, 0x22, 0x2e, 0x36, 0x3a, 0x32 };
-	lstrcpyA((char *)(IMG(0xa05330) + g_playerListCount * 62), (const char *)RELOC(rec));
+	lstrcpyA((char *)(OBJ(g_netPlayerList) + g_playerListCount * 62), (const char *)RELOC(rec));
 	int i = g_playerListCount;
-	u8 *slot = (u8 *)(IMG(0xa05330) + i * 62);
+	u8 *slot = (u8 *)(OBJ(g_netPlayerList) + i * 62);
 	for (int k = 0; k < 7; k++)
 		*(u32 *)(RELOC(slot) + fields[k]) = *(const u32 *)(RELOC(rec) + fields[k]);
 	g_playerListCount = i + 1;
@@ -906,7 +906,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 	(void)size;
 	u32 type = *(const u32 *)RELOC(message);
 	u32 slot = message[4], length = *(const u32 *)(RELOC(message) + 5);
-	u8 *player = (u8 *)IMG(0x9f9840) + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
+	u8 *player = g_netSlots + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
 	int r;
 	switch (type) {
 	case 1:
@@ -1609,7 +1609,7 @@ static int scaled(const void *v, u32 k)
 /* an angle wrapped into a turn (angle_wrap, given the float's bits) times 0x4aa49c, truncated */
 static int angle_byte(const void *v)
 {
-	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), (const float *)IMG(0x4aa49c)));
+	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), k_0_0711111f));
 }
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at +0x1ecca70 + p x 0x8888): its
@@ -1693,7 +1693,7 @@ static u32 table_rand(void)
 {
 	u32 at = g_randPos;
 	g_randPos = at + 1;
-	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
+	return GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
 }
 
 /* a random entry of one of the level's geometry tables (rows of row_len dwords from base, rows of them at +rows,
@@ -1979,7 +1979,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					g_missionStage = pkt[3];
 					G(int, 0x1f1cb4) = pkt[4];
 					G(int, 0x1f1cb8) = pkt[6];
-					scene_setTextureFolder((Scene *)g, (const char *)IMG(0x907b30) + g_missionStage * 0x20);
+					scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
 					G(int, 0x233cc20) = 1;
 					G(int, 0x233cc28) = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);

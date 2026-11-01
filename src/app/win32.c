@@ -540,7 +540,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */
 		Sleep(500);
 	}
-	IMPORT(0x4a910c, void, void *)((void *)IMG(0x9dd878));              /* GetSystemTime */
+	IMPORT(0x4a910c, void, void *)((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
 	g_startTicks = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
 	Sleep(2000);
 	if (FindWindowA((const char *)IMG(0x4b0714), NULL)) {

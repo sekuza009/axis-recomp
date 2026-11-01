@@ -6,7 +6,7 @@
 /* 0x431590: no key down (the 256 key states at 0x4d1a98), the key repeat delay 5, no input line */
 void (input_resetKeys)(void)
 {
-	memset((void *)IMG(0x4d1a98), 0, 0x100 * 4);
+	memset((void *)OBJ(g_keySeen), 0, 0x100 * 4);
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5.0 */
 	g_typedLength = 0;
 	g_chatLength = 0;

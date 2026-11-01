@@ -148,7 +148,7 @@ u32 (settingsDialog_clicks)(void)
 u32 (room_joinSession)(int i)
 {
 	g_roomJoined = 0;
-	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, (void *)(IMG(0x9087ef) + i * 0x4a))) {
+	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, (void *)((OBJ(g_gameList) + 0x2b) + i * 0x4a))) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();   /* arena_leaveSession */
 	}
@@ -200,7 +200,7 @@ u32 (arena_joinListed)(int i)
 	g_lobbyJoinRequest = 0;
 	if (g_arenaSearchStarted)
 		GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
-	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)(IMG(0x9087ef) + i * 0x4a);
+	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)((OBJ(g_gameList) + 0x2b) + i * 0x4a);
 	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, session)) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
@@ -569,12 +569,12 @@ u32 (roomList_passwordKeys)(void)
    Returns net_send's eax */
 u32 (room_requestJoin)(void)
 {
-	static const u32 cleared[] = { OBJ(g_accountPasswordRepeat), OBJ(g_accountPassword), (OBJ(g_accountPasswordRepeat) + 0x4), IMG(0x9dd6d8), (OBJ(g_accountPassword) + 0x4), (OBJ(g_accountPasswordRepeat) + 0x8), IMG(0x9dd6dc), ADDR(g_roomState) };
+	static const u32 cleared[] = { OBJ(g_accountPasswordRepeat), OBJ(g_accountPassword), (OBJ(g_accountPasswordRepeat) + 0x4), OBJ(g_accountOldPassword), (OBJ(g_accountPassword) + 0x4), (OBJ(g_accountPasswordRepeat) + 0x8), (OBJ(g_accountOldPassword) + 0x4), ADDR(g_roomState) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
-	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), (OBJ(g_accountPassword) + 0x8), IMG(0x9dd6e0) };
+	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
@@ -807,10 +807,10 @@ u32 (roomLogin_draw)(void)
    (x, y) */
 static void rank_badge(int rank, int x, int y)
 {
-	const float *col_w = (const float *)IMG(0x4a9590), *row_h = (const float *)IMG(0x4a958c);
+	const float *col_w = k_0_09375f, *row_h = k_0_0625f;
 	int cell = rank - 1;
 	float u0 = f32(fmul_m((long double)(cell % 10), col_w));
-	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), (const float *)IMG(0x4a9588)));
+	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), k_0_875f));
 	glBegin(GL_QUADS);
 	glTexCoord2f(u0, v0);
 	menu_vertex(x, y);
@@ -872,7 +872,7 @@ void (account_drawPanel)(void)
 	}
 	char text[20];
 	static const struct { u32 typing, password; int y; } hidden[3] = {
-		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 0x50 }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 0x6c }, { ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 0x88 },
+		{ ADDR(g_editingOldPassword), OBJ(g_accountOldPassword), 0x50 }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 0x6c }, { ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 0x88 },
 	};
 	for (int k = 0; k < 3; k++)
 		if (!GAME_VAR(int, hidden[k].typing)) {
@@ -1068,7 +1068,7 @@ u32 (ranking_drawTable)(void)
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 10;
+		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), k_0_333333f)) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));

@@ -80,7 +80,7 @@ void (deleteDialog_layout)(void) { rects_row(IMG(0x9f6808), IMG(0x9f6828), IMG(0
 
 void (secondDialog_layout)(void) { rects_row(IMG(0x9f8ee8), ADDR(g_profileFrameAlpha), IMG(0x9f6834), IMG(0x9f683c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
-void (newNameDialog_layout)(void) { rects_row(IMG(0x9f9020), IMG(0x9f9040), ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
+void (newNameDialog_layout)(void) { rects_row(IMG(0x9f9020), OBJ(g_profileRecords), ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
 void (popup_layout)(void) { rects_row(IMG(0x9dd3b8), IMG(0x9dd3d8), IMG(0x9dd1a0), IMG(0x9dd1ac), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 

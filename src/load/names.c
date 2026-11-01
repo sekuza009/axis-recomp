@@ -71,7 +71,7 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 {
 	int i = tex_findByName(manager, name);
 	if (i < 0) {
-		sys_fatalError((char *)IMG(0xa0dff8), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
+		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
 		return 0;
 	}
 	crt_fseek(GAME_VAR(void *, manager + 0x110), GAME_VAR(long, GAME_VAR(u8 *, manager + 0x10c) + i * 0x44 + 0x40), 0);
@@ -90,7 +90,7 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
 		if (i >= 0)
 			return k * 512 + i;
 	}
-	sys_fatalError((char *)IMG(0xa0e000), (const char *)STR(0x4b42b0, "can't find texture object (%s) - getI..."), (int)name);
+	sys_fatalError((char *)OBJ(g_logTextureManager), (const char *)STR(0x4b42b0, "can't find texture object (%s) - getI..."), (int)name);
 	return -1;
 }
 
@@ -105,7 +105,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 		char *name = (char *)part + 4;
 		if (*suffix) {
 			if (strlen(name) + strlen(suffix) > 0x3f)
-				sys_fatalErrorN((char *)IMG(0xa0e790), (const char *)STR(0x4c4c6c, "texture object name is too long (%s+%..."), name, suffix);
+				sys_fatalErrorN((char *)OBJ(g_logShape), (const char *)STR(0x4c4c6c, "texture object name is too long (%s+%..."), name, suffix);
 			strcat(name, (const char *)STR(0x4b12f4, "*"));
 			strcat(name, suffix);
 		}
@@ -175,7 +175,7 @@ void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 
 	for (int k = 0; k < 6; k++) {
 		u8 *m = managers[k];
 		if (m && (GAME_VAR(u32, m + 0xc0118) != sizes[k][0] || GAME_VAR(u32, m + 0xc011c) != sizes[k][1]))
-			sys_fatalErrorN((char *)IMG(0xa0e000), (const char *)RELOC(sizes[k][2]), GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
+			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
 	}
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
@@ -217,7 +217,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 	const char *dir = (const char *)tm + 8;
 	int format = FIELD(int, tm, 0xc0114), ok = 0;
 	if ((unsigned)format > 2)
-		sys_fatalError((char *)IMG(0xa0dff8), (const char *)STR(0x4b400c, "invalid file format(%s)-textureFileEx..."), format);
+		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b400c, "invalid file format(%s)-textureFileEx..."), format);
 	else {
 		if (*dir)
 			sprintf(path, (const char *)RELOC(formats[format][0]), dir, base);
@@ -259,7 +259,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)IMG(0xa0dff8), (const char *)RELOC(text), ##__VA_ARGS__)
+#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)OBJ(g_logTexture), (const char *)RELOC(text), ##__VA_ARGS__)
 	static const u32 names[6][3] = { { 64, 64, STR(0x4b3f54, "Image0") }, { 128, 64, STR(0x4b3f4c, "Image1") }, { 128, 128, STR(0x4b3f3c, "Image3") },
 	                                 { 256, 64, STR(0x4b3f44, "Image2") }, { 256, 128, STR(0x4b3f34, "Image4") }, { 256, 256, STR(0x4b3f2c, "Image5") } };
 	if (FIELD(int, tm, 4) == 1)
@@ -365,7 +365,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		texRecord_init(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		FIELD(int, tm, 0xcd128)++;
 	} else
-		sys_fatalErrorN((char *)IMG(0xa0dff8), (const char *)STR(0x4b3fa8, "[%dx%d] object buffer overflow(%d) - ..."), FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
+		sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)STR(0x4b3fa8, "[%dx%d] object buffer overflow(%d) - ..."), FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
 	if (FIELD(int, tm, 0xcd128) < FIELD(int, tm, 0xcd130))
 		tex_bind(tm, i);
 	return i;
@@ -387,7 +387,7 @@ static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *nam
 static void size_check(u8 *m, int w, int h)
 {
 	if (W(m) != w || H(m) != h)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)IMG(0xa0dff8), (const char *)STR(0x4b4104, "mismatching image size(%dx%d/%dx%d)-b..."), W(m), H(m), w, h);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)OBJ(g_logTexture), (const char *)STR(0x4b4104, "mismatching image size(%dx%d/%dx%d)-b..."), W(m), H(m), w, h);
 }
 
 /* the image's alpha (the 4th bytes from +0x114): the grey of the ALPHA image at +0x40114, or opaque */
@@ -451,7 +451,7 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 	case 1:
 		tex_path(m, path, STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP"), name);
 		if (!image_initBy(bmp[0], path))
-			sys_fatalError((char *)IMG(0xa0dff8), (const char *)STR(0x4b40a8, "can't open file %s-bindBy()"), (int)path);
+			sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b40a8, "can't open file %s-bindBy()"), (int)path);
 		image_copyTo(bmp[0], m + 0x114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 		tex_path(m, path, STR(0x4b4098, "%s\\%s_ALPHA.BMP"), STR(0x4b4088, "%s_ALPHA.BMP"), name);
 		if (image_initBy(bmp[1], path)) {

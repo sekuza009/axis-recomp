@@ -79,10 +79,10 @@ void (menuState400_enter)(void)
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
 	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), IMG(0x4dba98), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
+	static const u32 cleared2[] = { IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
-		{ ADDR(g_arenaLobbyMode), 2 }, { ADDR(g_lastPanel), 999 }, { IMG(0x4dba9c), ONE }, { IMG(0x4dbaa0), ONE }, { IMG(0x4dbaa4), ONE },
-		{ IMG(0x4db8a0), 0x3e99999a }, { IMG(0x4db8a4), 0x3f333333 }, { IMG(0x4db8a8), 0x3f333333 }, { IMG(0x4db8ac), ONE }, { IMG(0x9fd958), 0xf },
+		{ ADDR(g_arenaLobbyMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
+		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { IMG(0x9fd958), 0xf },
 		{ ADDR(g_armcFrom), 1 } };
 	g_matchMode = 1;
 	arena_clearChatRecord();
@@ -194,7 +194,7 @@ void (menuState800_enterGameRoom)(void)
 	g_joinedTitleRating = 0;
 	g_typingGameName = 0;
 	g_typingGamePassword = 1;
-	memset((void *)IMG(0x9dd5f8), 0, 5);
+	memset((void *)OBJ(g_roomMech), 0, 5);
 	g_typingRoomPassword = 1;
 	g_typingRoomName = 0;
 	g_loginToSend = 0;
@@ -336,8 +336,8 @@ u32 (menuState210_enter)(void)
 	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), IMG(0x680bb4), IMG(0x76d37c),
 	                               IMG(0x76d42c) };
 	static const Store colours[] = {
-		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { IMG(0x9f8d58), 0 },
-		{ IMG(0x9f8d5c), 0x3f19999a }, { IMG(0x9f8d60), 0x3f19999a }, { IMG(0x9f8d64), ONE }, { IMG(0x4dda44), 0 }, { ADDR(g_introZoom), 0 },
+		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { OBJ(g_profileDim), 0 },
+		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { IMG(0x4dda44), 0 }, { ADDR(g_introZoom), 0 },
 		{ IMG(0x9f6838), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
@@ -433,6 +433,6 @@ void (console_init)(void)
 		app_requireCd(scene, 0, 0);
 		break;
 	}
-	scene_setTextureFolder(scene, (const char *)(IMG(0x907b30) + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setTextureFolder(scene, (const char *)(OBJ(g_mapNames) + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

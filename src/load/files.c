@@ -109,12 +109,12 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shape_findDatEntry)(const char *name)
 {
-	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, IMG(0xa0e7a0), IMG(0xa0e7a4), IMG(0xa0e788));
+	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, IMG(0xa0e7a0), IMG(0xa0e7a4), OBJ(g_logShapeManager));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, IMG(0xa0eab8), IMG(0xa0eabc), IMG(0xa0eaa0));
+	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, IMG(0xa0eab8), IMG(0xa0eabc), OBJ(g_logSkeletonManager));
 }
 
 /* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
@@ -286,8 +286,8 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
-u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)IMG(0xa0e788)); }
-u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)IMG(0xa0eaa0)); }
+u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)OBJ(g_logShapeManager)); }
+u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)OBJ(g_logSkeletonManager)); }
 
 /* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
    switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
@@ -315,7 +315,7 @@ u32 (cfg_parseSound)(void *f)
    when not or when the name is shorter than 2 letters */
 int (console_loadFile)(int k)
 {
-	const char *name = (const char *)(IMG(0x907b30) + k * 32);
+	const char *name = (const char *)(OBJ(g_mapNames) + k * 32);
 	if (strlen(name) <= 1)
 		return 0;
 	char path[0x400];
@@ -432,7 +432,7 @@ u32 (profile_delete)(void)
 	if (!f)
 		return 0;
 	memset((void *)OBJ(g_profileName), 0, 0x20);
-	strcpy(g_profileName, (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48));
+	strcpy(g_profileName, (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48));
 	return profiles_write(f);
 }
 
@@ -493,7 +493,7 @@ u32 (mission_saveAxisMis)(int k)
 	fclose(f);
 	memset((void *)IMG(0x9eeadc), 0, 0xc8);
 	g_unusedMissionSaveWord = 0;
-	memset((void *)IMG(0x9f1064), 0, 0x640);
+	memset((void *)OBJ(g_briefingText), 0, 0x640);
 	memset((void *)IMG(0x9eebac), 0, 0x640);
 	g_briefingShown = 0;
 	g_briefingDone = 0;
@@ -665,7 +665,7 @@ u32 (data_loadMessages)(void)
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
 #define g_pilot g_pilotChosen               /* the pilot chosen in the list */
-#define pilot_name(i) ((const char *)(IMG(0x9f684c) + (i) * 0x48))
+#define pilot_name(i) ((const char *)(OBJ(g_profileList) + (i) * 0x48))
 #define g_campaign ((u8 *)IMG(0x9f1718))
 
 /* the current profile's name as axisuser.dat keeps it */
@@ -720,7 +720,7 @@ int (profile_saveProgress)(void)
 	char path[0x80];
 	pilot_path(path);
 	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
-	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	(*(u32 *)&g_armcValue) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
@@ -735,7 +735,7 @@ static void campaign_new(void)
 	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
 	memset((void *)IMG(0x9f1798), 0, 0x80);
 	memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
-	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
+	(*(u32 *)&g_armcValue) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	g_progress = 0;
 	memset((void *)IMG(0x9f1820), 0, 0x190);
 	memset((void *)IMG(0x9f19b0), 0, 0x40);
@@ -867,7 +867,7 @@ u32 (profile_create)(void)
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	for (int i = 0; i < g_profileCount; i++)
-		if (str_order((const char *)(IMG(0x9f684c) + i * 0x48), g_profileName) == 0) {
+		if (str_order((const char *)(OBJ(g_profileList) + i * 0x48), g_profileName) == 0) {
 			g_currentProfile = i;
 			break;
 		}
@@ -932,11 +932,11 @@ void (data_loadPilotProfiles)(void)
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
 		crypt_countingKey(record, key++);
-		memcpy((void *)(IMG(0x9f9040) + i * 0x4c), record, 0x4c);
+		memcpy((void *)(OBJ(g_profileRecords) + i * 0x4c), record, 0x4c);
 	}
 	fclose(f);
 	for (int i = 0; i < version; i++) {
-		int *stats = (int *)(IMG(0x9f9040) + i * 0x4c);
+		int *stats = (int *)(OBJ(g_profileRecords) + i * 0x4c);
 		static const u8 limited[8] = { 0x28, 0x30, 0x34, 0x2c, 0x3c, 0x38, 0x40, 0x48 };
 		for (int k = 0; k < 8; k++)
 			if (stats[limited[k] / 4] > 30)
@@ -965,7 +965,7 @@ u32 (data_loadMapInfo)(void)
 	}
 	crt_fread((void *)ADDR(g_arenaMapCount), 4, 1, f);
 	for (int i = 0; i < g_arenaMapCount; i++) {
-		char *name = (char *)(IMG(0x907b30) + i * 0x20), *about = (char *)(IMG(0x5ae9d0) + i * 0x50);
+		char *name = (char *)(OBJ(g_mapNames) + i * 0x20), *about = (char *)(IMG(0x5ae9d0) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
 		GAME_FN(str_invert, 0x42b390, int, char *)(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);
@@ -976,7 +976,7 @@ u32 (data_loadMapInfo)(void)
 	if (count <= 0)
 		return count;
 	for (int i = 0; i < count; i++) {
-		char *name = (char *)(IMG(0x907b30) + i * 0x20);
+		char *name = (char *)(OBJ(g_mapNames) + i * 0x20);
 		for (int n = strlen(name); n > 0 && name[n - 1] == ' '; n--)
 			name[n - 1] = '\0';
 	}
@@ -1337,7 +1337,7 @@ void (profile_scanSaves)(void)
 	profile_create();
 	profile_loadList(valid);
 	for (int i = 0; i < count; i++)
-		if (!strcmp((const char *)IMG(0x9f684c) + i * 0x48, g_profileName)) {
+		if (!strcmp(g_profileList + i * 0x48, g_profileName)) {
 			g_currentProfile = i;
 			return;
 		}
@@ -1354,11 +1354,11 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 		{ STR(0x4c7508, "read ActorBoosterInfo"), 0x14d1ab0, 0x1486470, 0x1820 }, { STR(0x4c74f4, "read ActorItemInfo"), 0x1561b64, 0x14d1ab4, 0x2e18 } };
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);
 	int version;
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(&version, 4, 1, f);   /* fread */
 	if (version != 0x1204)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7570, "incorrect file version, remove the fi..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7570, "incorrect file version, remove the fi..."), (int)path);
 	for (int k = 0; k < 6; k++) {
 		log_message((int)scene, 0, 0, (const char *)RELOC(tables[k][0]));
 		fread_scrambled(scene + tables[k][1], 4, 1, f);

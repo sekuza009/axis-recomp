@@ -195,7 +195,7 @@ void (mapList_draw)(void)
 		itoa(map + 1, number, 10);
 		map_cell(g_mapTop + i, 0x96, 0x154, y);
 		text_draw8(0xb4 - (int)strlen(number) * 8, y + 3, number);
-		text_draw8(0xbe, y + 3, (const char *)(IMG(0x907b30) + (g_mapTop + i) * 0x20));
+		text_draw8(0xbe, y + 3, (const char *)(OBJ(g_mapNames) + (g_mapTop + i) * 0x20));
 		map_cell(g_mapTop + i, 0x168, 0x1a4, y);
 		text_draw8(0x17c, y + 3, (const char *)(IMG(0x4db8d8) + g_mapChoices[g_mapTop + i].type * 20));
 	}

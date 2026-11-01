@@ -59,7 +59,7 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 #define NEXT GAME_VAR(int, pool + 0xb008)
 #define SLOT(k) ((u32 *)(pool + 4 + (k) * 0x2c))
 	if (NEXT >= 0x400)
-		sys_fatalError((char *)IMG(0xae2ee8), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);
+		sys_fatalError((char *)OBJ(g_logLight), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);
 	if (NEXT == COUNT) {
 		COUNT++;
 		SLOT(COUNT)[1] = 0;
@@ -99,11 +99,11 @@ void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
 		if (!FIELD(void *, 8))
-			sys_fatalError((char *)IMG(0xae2ef0), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
+			sys_fatalError((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
 		FIELD(int, 0xc) = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)IMG(0xae2ef0), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
+			sys_fatalErrorN((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);

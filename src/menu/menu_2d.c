@@ -157,7 +157,7 @@ u32 (menu_frameBegin)(void)
    at most 1). Returns menu_drawRect's eax */
 u32 (menu_drawDimOverlay)(void)
 {
-	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a943c)), (const float *)ADDR(g_roomFade));
+	long double a = fadd_m(fmul_m(fld_m(&g_frameTime), k_0_015f), (const float *)ADDR(g_roomFade));
 	g_roomFade = (float)a;
 	float alpha = (float)a;
 	if (a > k_1f)
@@ -236,10 +236,10 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 	glLoadIdentity();
 	if (g_framePhase == 1) {
 		glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
-		line(0, y0, up_to(frame_progress((const float *)IMG(0x4a9518)), x1), y0);
+		line(0, y0, up_to(frame_progress(k_64f), x1), y0);
 		glBegin(GL_LINES);
 		menu_vertex(x0, g_screenH);
-		long double down = frame_progress((const float *)IMG(0x4a9514));
+		long double down = frame_progress(k_48f);
 		menu_vertex(x0, down > (long double)y1 ? g_screenH - y1 : g_screenH - ftol(down));
 		glEnd();
 		if (phase_done(2))
@@ -250,9 +250,9 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 		line(0, y0, g_screenW, y0);
 		line(x0, g_screenH, x0, 0);
 		glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
-		long double across = frame_progress((const float *)IMG(0x4a9518));
+		long double across = frame_progress(k_64f);
 		line(across > (long double)x1 ? g_screenW - x1 : g_screenW - ftol(across), y1, g_screenW, y1);
-		line(x1, up_to(frame_progress((const float *)IMG(0x4a9514)), y1), x1, 0);
+		line(x1, up_to(frame_progress(k_48f), y1), x1, 0);
 		if (phase_done(3))
 			return;
 	}
@@ -298,7 +298,7 @@ u32 (menu_drawMessageBox)(void)
    frame time, back to 0 past 0x4a9508; a frame counter 0x9da908 wraps past 40). Returns glEnd's eax */
 u32 (menu_drawTextCursor)(int x, int y)
 {
-	long double t = fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a950c));
+	long double t = fmul_m(fld_m(&g_frameTime), k_0_035f);
 	int frames = g_frameCounter40 + 1;
 	t = fadd_m(t, (const float *)ADDR(g_cursorBlinkTimer));
 	g_frameCounter40 = frames;

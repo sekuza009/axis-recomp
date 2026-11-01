@@ -4,7 +4,6 @@
    changed (0x4dca98). */
 #include "../game.h"
 
-#define g_armcColours ((float *)IMG(0x4dc4b8))       /* six values per slot */
 
 static long double slider_pos(void)
 {

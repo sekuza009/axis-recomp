@@ -83,7 +83,7 @@ void (menu_frame)(void)
 		menu_processKeys();
 	}
 	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
-		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a9468)), &g_viewAspect));   /* 0.05 a frame */
+		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 a frame */
 		g_armcCamDistance = fadd_m(fld_m((const float *)ADDR(g_armcCamDistance)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
 		g_introZoom = zoom;
@@ -231,7 +231,7 @@ static void mouse_offset(u8 *s, int steer)
 	if (steer)
 		dx = -dx;
 	S(float, 0x2343297) = f32(dx);
-	long double k = fmul_m((long double)g_mouseSensitivity, (const float *)IMG(0x4aa480));
+	long double k = fmul_m((long double)g_mouseSensitivity, k_0_02f);
 	long double f = fmul_m(fadd_m(k * k, (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_5f));
 	S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 	S(float, 0x2343297) = f32(steer ? fmul_m(f, (const float *)(s + 0x2343297)) : dx * f);
@@ -314,7 +314,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			S(int, 0x2343257) = g_mouseX;
 			S(int, 0x234325b) = g_mouseY;
 			S(int, 0x2343293) = S(int, 0x2343297) = 0;
-			long double k = fmul_m((long double)g_mouseSensitivity, (const float *)IMG(0x4aa480));
+			long double k = fmul_m((long double)g_mouseSensitivity, k_0_02f);
 			long double f = fmul_m(fadd_m(k * k, (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_5f));
 			S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 			S(float, 0x2343297) = f32(fmul_m(f, (const float *)(s + 0x2343297)));
@@ -460,8 +460,8 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	S(int, 0x23432f3) = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	S(int, 0x23432f7) = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	frameTimer_average(s);
-	float slow = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m((const float *)(s + 0x44)), (const float *)IMG(0x4aa488)));
-	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), (const float *)IMG(0x4aa484)));
+	float slow = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m((const float *)(s + 0x44)), k_0_6f));
+	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), k_750f));
 	long double look = fmul_m(fld_m((const float *)(s + 0x44)), (const float *)ADDR(k_100f));
 	float yaw = f32(look * S(float, 0x2343297)), pitch = f32(look * S(float, 0x2343293));
 	actor_setInput(stage, 0, S(u32, 0x2343263), S(u32, 0x2343267), S(u32, 0x234326b), S(u32, 0x234326f), *(u32 *)&pitch, *(u32 *)&yaw,
@@ -624,7 +624,7 @@ static void unfollow(u8 *s)
 /* the game's next random number below n (its table 0xa106f8 by the counter 0xa1efb8) */
 static u32 rand_below(u32 n)
 {
-	u32 r = GAME_VAR(u32, 0xa106f8 + (g_randPos & 0xfff) * 4) % n;
+	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (g_randPos & 0xfff) * 4) % n;
 	g_randPos++;
 	return r;
 }

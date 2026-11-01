@@ -73,13 +73,13 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 	for (int i = 0; i < stage->actorCount; i++) {
 		u8 *a = (u8 *)&stage->actors[i];
 		if (stage->actors[i].active == 1) {
-			float value = f32(fmul_m(fadd_m(fld_m((const float *)(RELOC(a) + 0x4ec)), (const float *)ADDR(k_1f)), (const float *)IMG(0x4aa410)));
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, IMG(0xa1f23c), value, a + 0x154);   /* factors_addDirected */
+			float value = f32(fmul_m(fadd_m(fld_m((const float *)(RELOC(a) + 0x4ec)), (const float *)ADDR(k_1f)), k_2500f));
+			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, a + 0x154);   /* factors_addDirected */
 		}
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {
 		u8 *p = (u8 *)&stage->projectiles[i];
 		if (stage->projectiles[i].active == 1 && *(const float *)(p + 0x7c) > k_0f)
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, IMG(0xa1f23c), GAME_VAR(u32, p + 0x7c), p + 0x10);
+			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, u32, void *)(pool, OBJ(g_packedWhite), GAME_VAR(u32, p + 0x7c), p + 0x10);
 	}
 }

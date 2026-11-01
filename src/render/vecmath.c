@@ -9,8 +9,8 @@
 
 typedef long double X;
 
-#define COS_TABLE ((const float *)IMG(0xa17f38))    /* 3600 entries, 1/10 degree */
-#define SIN_TABLE ((const float *)IMG(0xa1b778))
+#define COS_TABLE (g_cosTable)    /* 3600 entries, 1/10 degree */
+#define SIN_TABLE (g_sinTable)
 #define LD(p) fld_m(&(p))
 
 static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }

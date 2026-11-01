@@ -1,0 +1,11 @@
+# objects split out of g_data into variables of their own (tools/mkdatasrc.py); their old pages guarded
+g_tan10Table
+g_randTable
+g_tanTable
+g_cosTable
+g_sinTable
+# (not g_netSlots: the pilot profiles' stats check runs over 103 records of 0x4c from 0x9f9040, through the
+#  slots' memory - the original's own aliasing)
+g_briefingText
+g_chatLine
+g_keySeen

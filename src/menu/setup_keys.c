@@ -327,7 +327,7 @@ static void volume_up(void)
 /* the slider set where the pointer is (its track 0x90 in from the page, 0x4ddad0) */
 static void volume_at_pointer(void)
 {
-	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), (const float *)IMG(0x4a94f0)));
+	g_volumeSetting = 1 - ftol(fmul_m((long double)(g_mouseX - g_setupSoundLeft - 0x90), k_m0_390625f));
 }
 
 /* 0x4221d0: the sound tab's mouse (an open page, no message box; a right click closes it but goes on): a click (the

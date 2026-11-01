@@ -177,7 +177,7 @@ int (arena_openSession)(u32 kind, const char *host)
 	if (host) {
 		if (!net_resolveHost(host))   /* net_resolveHost */
 			return 0;
-		strcpy(address, (const char *)IMG(0xa0d320));
+		strcpy(address, g_serverAddress);
 	}
 	if (g_dplaySessionList) {
 		if ((*(u32 *)&g_connectionKind) == kind) {

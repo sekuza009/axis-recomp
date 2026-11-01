@@ -542,7 +542,7 @@ static void leave_game(u32 lobby, int disconnect)
 	if (disconnect)
 		GAME_FN(net_disconnect, 0x451e60, void, void)();   /* net_disconnect */
 	g_arenaLobbyState = 0;
-	for (u32 p = IMG(0x9f9844); p < IMG(0x9fd944); p += 0x410) {
+	for (u32 p = (OBJ(g_netSlots) + 0x4); p < IMG(0x9fd944); p += 0x410) {
 		GAME_VAR(int, p - 4) = 0;
 		GAME_VAR(int, p) = 0;
 	}

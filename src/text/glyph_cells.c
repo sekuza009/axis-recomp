@@ -108,7 +108,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 	const float *texel = (const float *)ADDR(k_0_00390625f);                         /* 1/256 */
 	const float *heightFactor = *(const float *const *)IMG(0x46bddc);          /* (the fmul's operand) */
 	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))IMG(0x46be98);   /* (mov ebx, [..]) */
-	int w = ftol(fmul_m(fld_m(&scale), (const float *)IMG(0x4aa280)));       /* 28 */
+	int w = ftol(fmul_m(fld_m(&scale), k_28f));       /* 28 */
 	int h = ftol(fmul_m(fld_m(&scale), heightFactor));
 	int pad = ftol(fmul_m(fld_m(&scale), (const float *)ADDR(k_3f)));
 	x += (int)((u32)w * (u32)count) / 2;

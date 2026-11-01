@@ -42,7 +42,7 @@ void (popup_clicks)(void)
 void (room_startChat)(void)
 {
 	g_roomChatting = 0;
-	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
+	if (GAME_VAR(u8, OBJ(g_gameList) + 0x43 + g_localPlayer * 0x4a) != 0) {
 		g_roomChatting = 1;
 		field_editMessage();
 	}
@@ -84,7 +84,7 @@ void (room_drawWhiteFade)(void)
 void (arena_chatLine)(void)
 {
 	g_arenaJoining = 0;
-	if (GAME_VAR(u8, 0x908807 + g_localPlayer * 0x4a) != 0) {
+	if (GAME_VAR(u8, OBJ(g_gameList) + 0x43 + g_localPlayer * 0x4a) != 0) {
 		g_arenaJoining = 1;
 		arena_editMessage();
 	}
@@ -255,7 +255,7 @@ u32 (room_pageClicks)(void)
 static void load_map_preview(u32 selected)
 {
 	char path[0x80], copy[0x40];
-	const char *name = (const char *)(IMG(0x907b30) + (signed char)GAME_VAR(u8, selected) * 32);
+	const char *name = (const char *)(OBJ(g_mapNames) + (signed char)GAME_VAR(u8, selected) * 32);
 	memset(path, 0, sizeof path);
 	strcpy(path, (const char *)IMG(0x680bc4));   /* the maps' folder */
 	strcat(path, name);
@@ -430,9 +430,9 @@ u32 (account_checkForm)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)ADDR(g_joinedTitleLevel), (const char *)IMG(0x9dd6d8)) || strcmp(g_accountPassword, g_accountPasswordRepeat))
+	if (strcmp((const char *)ADDR(g_joinedTitleLevel), g_accountOldPassword) || strcmp(g_accountPassword, g_accountPasswordRepeat))
 		return 0;
-	static const u32 fields[4] = { IMG(0x9dd6d8), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
+	static const u32 fields[4] = { OBJ(g_accountOldPassword), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
 		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
 			menu_showMessage(0x81);
@@ -785,7 +785,7 @@ u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
+		{ ADDR(g_editingOldPassword), OBJ(g_accountOldPassword), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
 		{ ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), OBJ(g_accountEmail), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomMode);

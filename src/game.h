@@ -595,7 +595,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
-#define g_trig ((const float *)IMG(0xa146f8))            /* 3600 values by tenths of a degree (the ring's radius) */
+#define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */

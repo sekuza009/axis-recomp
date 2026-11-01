@@ -305,7 +305,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double w3 = fadd_m(fmul_m(x, &pr[3]) + fmul_m(z, &pr[11]) + fmul_m(y, &pr[7]), &pr[15]);
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
-		A(int, 0x484) = tag_narrow(ac, IMG(0x4a940c));
+		A(int, 0x484) = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = s + 0x1cd93a8 + GAME_VAR(int, s + 0x202e8d4) * 0x8888;
 		if ((A(u32, 0x3f0) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			A(int, 0x87e8) = 0;
@@ -315,7 +315,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double cosv = -fld_m(&e[2]) / root(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
 		A(float, 0x87e4) = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
-		if (!(cosv > GAME_VAR(float, 0xa17f38 + ((heading % 3600 + 3600) % 3600) * 4))) {
+		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
 			A(int, 0x87e8) = 0;
 			A(int, 0x87e0) = 1;
 			continue;
@@ -326,7 +326,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			A(float, 0x87e8) = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else
 			A(int, 0x87e8) = 0;
-		if (!tag_narrow(ac, IMG(0x4a9414)))
+		if (!tag_narrow(ac, OBJ(k_40f)))
 			A(u32, 0x87f0) = 0x40400000;
 		A(int, 0x87e0) = 1;
 	}

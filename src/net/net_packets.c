@@ -15,7 +15,7 @@
 #define g_unused16 ((int *)IMG(0xaef660))                  /* (cleared per player, never read) */
 #define g_cursor GAME_VAR(int, 0xb116e0)              /* the player looked at first by netq_receive (turns 0..15) */
 #define g_resends GAME_VAR(int, 0xb116e4)             /* out-of-turn packets seen: the caller re-syncs at 0x80 */
-#define PLAYER(i, offset) GAME_VAR(int, 0x9f9840 + (i) * 0x410 + (offset))
+#define PLAYER(i, offset) GAME_VAR(int, OBJ(g_netSlots) + (i) * 0x410 + (offset))
 #define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 
 /* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
@@ -98,15 +98,15 @@ int (netq_receive)(int *from, int *size, void *data)
 	*from = g_cursor;
 	*size = 0x40;
 	int p = g_cursor;
-	memcpy(data, (const u8 *)IMG(0x9f9850) + p * 0x410, 0x40);
+	memcpy(data, (const u8 *)(OBJ(g_netSlots) + 0x10) + p * 0x410, 0x40);
 	p = g_cursor;
 	int due = g_nextNumber[p];
 	PLAYER(p, 8) = 0;
-	u8 head = GAME_VAR(u8, 0x9f9850 + p * 0x410);
+	u8 head = GAME_VAR(u8, OBJ(g_netSlots) + 0x10 + p * 0x410);
 	int number = head & 0x7f;
 	if (head & 0x80) {   /* a resend request */
 		u8 local = g_localSlot;
-		if (GAME_VAR(u8, 0x9f9851 + p * 0x410) == local) {
+		if (GAME_VAR(u8, OBJ(g_netSlots) + 0x11 + p * 0x410) == local) {
 			g_send[4] = local;
 			GAME_VAR(int, g_send + 5) = 0x40;
 			memcpy(g_send + 9, g_history + ((local << 7) + number) * 0x40, 0x40);

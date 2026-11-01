@@ -42,8 +42,8 @@ void THISCALL (vec3_negate)(float *v)
 }
 
 /* 0x467700: (x, y) turned by angle tenths of a degree, from the game's cosine and sine tables */
-#define g_cos ((const float *)IMG(0xa17f38))
-#define g_sin ((const float *)IMG(0xa1b778))
+#define g_cos (g_cosTable)
+#define g_sin (g_sinTable)
 void THISCALL (vec_rotate)(float *v, int angle)
 {
 	int i = (angle % 3600 + 3600) % 3600;
@@ -65,7 +65,7 @@ void THISCALL (vec3_scaleCopy)(float *v, float *out, float s)
 /* 0x46c100: an angle in tenths of a degree wrapped into 0 .. 3600 (a - whole turns, plus a turn when that is
    negative or NaN); returned unrounded */
 #define TURN ((const float *)ADDR(k_3600f))        /* 3600 */
-#define PER_TURN ((const float *)IMG(0x4aa284))    /* 1 / 3600 */
+#define PER_TURN (k_0_000277778f)    /* 1 / 3600 */
 #define ZERO k_0f
 long double (angle_wrap)(float a)
 {

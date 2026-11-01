@@ -3,8 +3,8 @@
    their 32 bits (floats included). */
 #include "../game.h"
 
-#define g_armcColourBits ((u32 *)IMG(0x4dc4b8))           /* the six colour slots, six values each (see g_armcColours) */
-#define g_colourUndo ((u32 *)IMG(0x4dc530))               /* one slot's six values, for undo */
+#define g_armcColourBits ((u32 *)OBJ(g_armcColours))           /* the six colour slots, six values each (see g_armcColours) */
+#define g_colourUndo ((u32 *)(OBJ(g_armcColours) + 0x78))               /* one slot's six values, for undo */
 #define g_savedParts ((const u32 *)ADDR(g_savedMechParts))         /* the saved mech: head, chest, arm, leg, booster */
 #define g_workParts ((u32 *)IMG(0x4dc760))                /* the working copy, same order */
 

@@ -172,7 +172,7 @@ static void menu_camera2(const MenuCam2 *m)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
-		g_viewAspect = (float)((X)g_frameTime * F(fast ? IMG(0x4a9468) : ADDR(k_0_01f)) + g_viewAspect);
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? OBJ(k_0_05f) : ADDR(k_0_01f)) + g_viewAspect);
 	if ((*(float *)&g_menuCameraHeight) > k_m549_99f)
 		return;
 	/* home */
@@ -242,7 +242,7 @@ void (arena_launchFromFile)(void)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
-		g_viewAspect = (float)((X)g_frameTime * F(fast ? IMG(0x4a9468) : ADDR(k_0_01f)) + g_viewAspect);
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? OBJ(k_0_05f) : ADDR(k_0_01f)) + g_viewAspect);
 	if (!((X)base + k_0_01f >= (*(float *)&g_menuCameraHeight)))
 		return;
 	/* home */

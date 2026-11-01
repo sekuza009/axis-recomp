@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
-#define fatal4(format, a, b) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int)((char *)IMG(0xae2eb8), (const char *)RELOC(format), a, b)
+#define fatal4(format, a, b) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int)((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (+0xe3b034) and 0x14-byte records (+0xe36214), each
    given its run of 0x30-byte points (+0x10: from +0xdc0f10; +0xc: its length); the points' total against +0xe36210.
@@ -52,11 +52,11 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)IMG(0xae2eb8), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
 	u32 version;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)IMG(0xae2eb8), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, const char *)((char *)OBJ(g_logStage), (const char *)STR(0x4c7b94, "incorrect file version, remove the fi..."), path);
 	int *count = (int *)(scene + 0x20f3adc);
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
@@ -80,12 +80,12 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7dec, "can not open file %s - loadMissionInf..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7dec, "can not open file %s - loadMissionInf..."), (int)path);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
 	u32 version, skip;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
 	for (int k = 0; k < 2; k++) {
 		fread_scrambled(&skip, 4, 1, f);
 		crt_fseek(f, skip, 1);   /* SEEK_CUR */
@@ -134,12 +134,12 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7e48, "can not open file %s-loadObjectInfoFr..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7e48, "can not open file %s-loadObjectInfoFr..."), (int)path);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
 	fread_scrambled(&value, 4, 1, f);
 	fread_scrambled(&count, 4, 1, f);
 	for (int i = 0; i < count; i++) {
@@ -210,12 +210,12 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7c8c, "can not open file %s - loadPlayInfoFr..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c8c, "can not open file %s - loadPlayInfoFr..."), (int)path);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
 	int version, value, count;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
 	fread_scrambled(&value, 4, 1, f);
 	crt_fseek(f, value, 1);   /* SEEK_CUR */
 	fread_scrambled(&value, 4, 1, f);
@@ -234,7 +234,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			memcpy(scene + 0x20fab60, &r[4], 12);
 		} else if (r[0] == 1) {
 			if (FIELD(int, scene, 0x20fadf4) >= 32)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
+				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
 			u8 *start = scene + 0x20fab74 + FIELD(int, scene, 0x20fadf4) * 0x14;
 			memcpy(start, &r[4], 12);
 			FIELD(float, start, 0xc) = f32(fmul_m(fld_m(&rf[7]), scale));
@@ -242,7 +242,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			FIELD(int, scene, 0x20fadf4)++;
 		} else if (r[0] == 2) {
 			if (FIELD(int, scene, 0x20fcd38) >= 200)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
+				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
 			u8 *item = scene + 0x20fadf8 + FIELD(int, scene, 0x20fcd38) * 0x28;
 			FIELD(u32, item, 0) = r[1];
 			remap_item(scene, (int *)item);
@@ -292,12 +292,12 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c77c4, "can not open file %s - loadActorInfoF..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c77c4, "can not open file %s - loadActorInfoF..."), (int)path);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c77b4, "check version"));
 	int version, value;
 	crt_fread(&version, 4, 1, f);
 	if (version != 0x1201)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
 	for (int k = 0; k < 3; k++) {
 		fread_scrambled(&value, 4, 1, f);
 		crt_fseek(f, value, 1);   /* SEEK_CUR */
@@ -351,7 +351,7 @@ static u8 *pool_take(u8 *s, int n)
 {
 	int used = GAME_VAR(int, s + 0xdc0240);
 	if (used + n > POOL_MAX)
-		sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD..."), used + n, POOL_MAX);
+		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD..."), used + n, POOL_MAX);
 	return s + 0x9ef940 + GAME_VAR(int, s + 0xdc0240);
 }
 
@@ -386,11 +386,11 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), (const char *)s + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c806c, "can not open file %s - loadGroundInfo..."), (int)path);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c806c, "can not open file %s - loadGroundInfo..."), (int)path);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c77b4, "check version"));
 	crt_fread(&n, 4, 1, f);
 	if (n != 0x1201)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7768, "incorrect file version, please remake..."), (int)name);
 	for (int k = 0; k < 4; k++) {
 		fread_scrambled(&n, 4, 1, f);
 		crt_fseek(f, n, 1);

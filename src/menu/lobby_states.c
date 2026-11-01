@@ -212,8 +212,8 @@ void (room_copyJoinedSettings)(void)
 	g_roomGameMode = g_roomRecGameMode;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
-	memcpy((void *)IMG(0x9dd260), (void *)IMG(0x9dd5f8), 11);
-	memcpy((void *)IMG(0x9dd26b), (void *)IMG(0x9dd603), 0x90);
+	memcpy((void *)IMG(0x9dd260), (void *)OBJ(g_roomMech), 11);
+	memcpy((void *)IMG(0x9dd26b), (void *)OBJ(g_roomColours), 0x90);
 	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { IMG(0x9dd25c), ADDR(g_pilotWinRate) },
 	                                { ADDR(g_pilotWinsKept), ADDR(g_pilotWins) }, { ADDR(g_pilotLossesKept), ADDR(g_pilotLosses) }, { ADDR(g_pilotScoreKept), ADDR(g_pilotScore) } };
 	for (int k = 0; k < 6; k++)
@@ -274,13 +274,13 @@ void (room_takeReceivedSettings)(void)
 {
 	strcpy(g_joinedTitleName, (const char *)IMG(0xa0563c));
 	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0xa0565a));
-	memcpy((void *)IMG(0x9dd5f8), (void *)IMG(0xa0568c), 11);
+	memcpy((void *)OBJ(g_roomMech), (void *)IMG(0xa0568c), 11);
 	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(IMG(0x9dd603) + k * 0x18), (void *)(IMG(0xa05697) + k * 0x18), 0x18);
-		if (!(GAME_VAR(float, 0x9dd607 + k * 0x18) >= k_0f))
-			GAME_VAR(int, 0x9dd607 + k * 0x18) = 0;
-		if (!(GAME_VAR(float, 0x9dd60b + k * 0x18) >= k_0f))
-			GAME_VAR(int, 0x9dd60b + k * 0x18) = 0;
+		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)(IMG(0xa05697) + k * 0x18), 0x18);
+		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x4 + k * 0x18) >= k_0f))
+			GAME_VAR(int, OBJ(g_roomColours) + 0x4 + k * 0x18) = 0;
+		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x8 + k * 0x18) >= k_0f))
+			GAME_VAR(int, OBJ(g_roomColours) + 0x8 + k * 0x18) = 0;
 	}
 	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), IMG(0xa05727) }, { ADDR(g_pilotPoints), IMG(0xa05737) }, { ADDR(g_pilotRating), IMG(0xa0573b) },
 	                                { ADDR(g_pilotWinRate), IMG(0xa0573f) }, { ADDR(g_pilotWins), IMG(0xa0572f) }, { ADDR(g_pilotLosses), IMG(0xa05733) },
@@ -318,7 +318,7 @@ u32 (room_host)(void)
 	strcpy(g_joinedTitleName, g_accountName);
 	strcpy((char *)IMG(0x9dd5a6), g_accountEmail);
 	default_mech((u8 *)IMG(0x9dd260), (u8 *)IMG(0x9dd26b));
-	default_mech((u8 *)IMG(0x9dd5f8), (u8 *)IMG(0x9dd603));
+	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
 	memset((void *)OBJ(g_titleName), 0, 7 * 4 + 2);
@@ -1502,7 +1502,7 @@ static void special_map(const char *name, u8 *map)
 			}
 }
 
-#define ARENA(off) GAME_VAR(signed char, 0x4ded20 + (off))   /* the arena's settings: the name, then the map (+0x20) .. */
+#define ARENA(off) GAME_VAR(signed char, OBJ(g_playerName) + (off))   /* the arena's settings: the name, then the map (+0x20) .. */
 
 /* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)

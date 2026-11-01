@@ -89,11 +89,11 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 {
 	float c[4];
 	for (int i = 0; i < 4; i++)
-		c[i] = (float)fmul_m((long double)(int)rgba[i], (const float *)IMG(0x4aa2a4));   /* 1 / 255 */
+		c[i] = (float)fmul_m((long double)(int)rgba[i], k_0_00392157f);   /* 1 / 255 */
 	tex_tintHsv(c, dh, ds, dv);
 	int r = 0;
 	for (int i = 0; i < 4; i++) {
-		r = ftol(fmul_m(fld_m(&c[i]), (const float *)IMG(0x4a9744)));   /* 255 */
+		r = ftol(fmul_m(fld_m(&c[i]), k_255f));   /* 255 */
 		rgba[i] = (u8)r;
 	}
 	return r;

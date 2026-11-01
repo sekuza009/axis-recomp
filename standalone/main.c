@@ -77,6 +77,7 @@ static LONG CALLBACK guard_hit(EXCEPTION_POINTERS *e)
 	DWORD code = e->ExceptionRecord->ExceptionCode, at = (DWORD)e->ExceptionRecord->ExceptionAddress;
 	DWORD data = code == EXCEPTION_ACCESS_VIOLATION ? (DWORD)e->ExceptionRecord->ExceptionInformation[1] : 0;
 	int moved = data - (DWORD)(g_image + 0xa9000) < 0x66a000;   /* (g_image's data part, now g_rdata / g_data) */
+	moved |= data - (DWORD)g_data < 0x666000;   /* (in g_data only the old pages of the split objects fault) */
 	if (data - GAME_BASE >= GAME_SIZE && at - GAME_BASE >= GAME_SIZE && !moved)
 		return EXCEPTION_CONTINUE_SEARCH;
 	if (g_log)
@@ -85,7 +86,7 @@ static LONG CALLBACK guard_hit(EXCEPTION_POINTERS *e)
 	if (f) {
 		fprintf(f, "ORIGINAL ADDRESS USED: %s %08lx at %08lx (esp %08lx); on the stack:",
 		        data - GAME_BASE < GAME_SIZE ? (e->ExceptionRecord->ExceptionInformation[0] ? "writing" : "reading") : "executing",
-		        data - GAME_BASE < GAME_SIZE ? data : at, original(at), e->ContextRecord->Esp);
+		        data - GAME_BASE < GAME_SIZE ? data : original(data ? data : at), original(at), e->ContextRecord->Esp);
 		log_stack(f, (const DWORD *)e->ContextRecord->Esp, 64);
 		fprintf(f, "\n");
 		fclose(f);
@@ -155,6 +156,7 @@ static LONG WINAPI crash_hit(EXCEPTION_POINTERS *e)
 /* a piece of the game's data as C (src/data/data.h; tools/mkdatasrc.py) */
 typedef struct { DWORD address; const void *bytes; DWORD size; } DataPiece;
 extern const DataPiece g_rdataPieces[], g_dataPieces[], g_text_dataPieces[];
+extern const DataPiece g_splitObjects[];   /* the objects split out of g_data (src/data/data.c) */
 
 /* AXISRC_DATACHECK=1 (a check): the image as built compared with the exe file (path) over .rdata, .data and src/data's
    pieces in .text, before the patch layer changes anything. A word may only differ where the file has a rebuilt
@@ -480,6 +482,15 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	/* and g_image's own .rdata / .data part: those are g_rdata / g_data now, so nothing may use the copy's place */
 	if (!VirtualProtect(g_image + 0xa9000, 0xb13000 - 0x4a9000, PAGE_NOACCESS, &old))
 		fail("cannot protect g_image's data part (%s)", "VirtualProtect");
+	{	/* the split objects' old pages in g_data (each page they cover whole): nothing may reach them there */
+		DWORD pages = 0, objects = 0;
+		for (const DataPiece *s = g_splitObjects; s->address; s++, objects++) {
+			DWORD lo = ((DWORD)AT(s->address) + 0xfff) & ~0xfffu, hi = (DWORD)AT(s->address + s->size) & ~0xfffu;
+			if (hi > lo && VirtualProtect((void *)lo, hi - lo, PAGE_NOACCESS, &old))
+				pages += (hi - lo) >> 12;
+		}
+		fprintf(g_log, "%lu objects split out of g_data, %lu of their old pages guarded\n", objects, pages);
+	}
 	fprintf(g_log, "the original's range 0x%x .. 0x%x and g_image's data part left inaccessible (guarded); "
 	        "the data in g_rdata %p, g_data %p\n", GAME_BASE, GAME_BASE + GAME_SIZE, (void *)g_rdata, (void *)g_data);
 	resolve_imports();

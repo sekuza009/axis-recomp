@@ -3,11 +3,11 @@
    fptan, so the tables are exactly the game's. */
 #include "../game.h"
 
-#define SIN_TABLE ((float *)IMG(0xa1b778))
-#define COS_TABLE ((float *)IMG(0xa17f38))
-#define TAN_TABLE ((float *)IMG(0xa146f8))
-#define RAND_TABLE ((int *)IMG(0xa106f8))
-#define TAN10_TABLE ((float *)IMG(0xa106b0))
+#define SIN_TABLE (g_sinTable)
+#define COS_TABLE (g_cosTable)
+#define TAN_TABLE (g_tanTable)
+#define RAND_TABLE (g_randTable)
+#define TAN10_TABLE (g_tan10Table)
 #define TABLE_FILE ((const char *)STR(0x4c575c, "MATHFUNC.TBL"))
 
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)

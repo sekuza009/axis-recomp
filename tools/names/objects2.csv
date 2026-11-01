@@ -1,0 +1,93 @@
+# the ErrorLog records of the classes (a vtable and the class name): their ErrorLog_ctor calls
+0xa0dff8,u32,2,g_logTexture,vtable + class name
+0xa0e000,u32,2,g_logTextureManager,vtable + class name
+0xa0e020,u32,2,g_logSound,vtable + class name
+0xa0e778,u32,2,g_logConsole,vtable + class name
+0xa0e788,u32,2,g_logShapeManager,vtable + class name
+0xa0e790,u32,2,g_logShape,vtable + class name
+0xa0eaa0,u32,2,g_logSkeletonManager,vtable + class name
+0xa0eaa8,u32,2,g_logSkeleton,vtable + class name
+0xa1f0f0,u32,2,g_logBMPRGBFile,vtable + class name
+0xa1f250,u32,2,g_logPackedColor,vtable + class name
+0xa1f290,u32,2,g_logRealColor,vtable + class name
+0xae2e98,u32,2,g_logUnit,vtable + class name
+0xae2ea0,u32,2,g_logUnitPartInfo,vtable + class name
+0xae2ea8,u32,2,g_logUnitPoseInfo,vtable + class name
+0xae2eb8,u32,2,g_logStage,vtable + class name
+0xae2ed0,u32,2,g_logCollisionVolume,vtable + class name
+0xae2ee8,u32,2,g_logLight,vtable + class name
+0xae2ef0,u32,2,g_logViewVolume,vtable + class name
+0xae2f00,u32,2,g_logTimeSync,vtable + class name
+0xae3328,u32,2,g_logScene,vtable + class name
+# float constants of .rdata, by value
+0x4a9400,float,1,k_m40f,-40
+0x4a9404,float,1,k_0_005f,0.005
+0x4a9408,float,1,k_0_4f,0.4
+0x4a940c,float,1,k_30f,30
+0x4a9410,float,1,k_12f,12
+0x4a9414,float,1,k_40f,40
+0x4a9430,float,1,k_0_003f,0.003
+0x4a9434,float,1,k_0_0667f,0.0667
+0x4a9438,float,1,k_0_333333f,0.333333
+0x4a943c,float,1,k_0_015f,0.015
+0x4a9468,float,1,k_0_05f,0.05
+0x4a9478,float,1,k_0_15625f,0.15625
+0x4a94ac,float,1,k_600f,600
+0x4a94b8,float,1,k_0_036f,0.036
+0x4a94bc,float,1,k_1000f,1000
+0x4a94cc,float,1,k_8f,8
+0x4a94f0,float,1,k_m0_390625f,-0.390625
+0x4a94fc,float,1,k_0_3f,0.3
+0x4a9500,float,1,k_m2_56f,-2.56
+0x4a9504,float,1,k_0_01f_4a9504,0.01
+0x4a950c,float,1,k_0_035f,0.035
+0x4a9514,float,1,k_48f,48
+0x4a9518,float,1,k_64f,64
+0x4a9574,float,1,k_0_00208333f,0.00208333
+0x4a9578,float,1,k_0_0015625f,0.0015625
+0x4a9588,float,1,k_0_875f,0.875
+0x4a958c,float,1,k_0_0625f,0.0625
+0x4a9590,float,1,k_0_09375f,0.09375
+0x4a95c4,float,1,k_1100f,1100
+0x4a95e8,float,1,k_85f,85
+0x4a95ec,float,1,k_86f,86
+0x4a95f0,float,1,k_m0_9f,-0.9
+0x4a9744,float,1,k_255f,255
+0x4a974c,float,1,k_1_5f,1.5
+0x4aa26c,float,1,k_0_0555556f,0.0555556
+0x4aa270,float,1,k_57_2958f,57.2958
+0x4aa280,float,1,k_28f,28
+0x4aa284,float,1,k_0_000277778f,0.000277778
+0x4aa2a4,float,1,k_0_00392157f,0.00392157
+0x4aa410,float,1,k_2500f,2500
+0x4aa480,float,1,k_0_02f,0.02
+0x4aa484,float,1,k_750f,750
+0x4aa488,float,1,k_0_6f,0.6
+0x4aa49c,float,1,k_0_0711111f,0.0711111
+0x4aa500,float,1,k_m1_5f,-1.5
+# the math tables (app/math_tables.c: MATHFUNC.TBL): each runs to the next
+0xa106b0,float,18,g_tan10Table,to the random table (0x48 bytes)
+0xa106f8,int,4096,g_randTable,to the tan table (0x4000 bytes)
+0xa146f8,float,3600,g_tanTable,by tenths of a degree (to the cos table)
+0xa17f38,float,3600,g_cosTable,(to the sin table)
+0xa1b778,float,3600,g_sinTable,
+# tables and records with their extents from the code
+0x9f9840,u8,0x4100,g_netSlots,16 network slots of 0x410 bytes (net_clearSlots runs to 0x9fd940)
+0xa05330,u8,0x2aa,g_netPlayerList,(net_clearPlayerList)
+0x4d1a98,int,0x100,g_keySeen,a key's press seen until released (0x400 bytes)
+0x9f1064,char,0x640,g_briefingText,the briefing's text (memset 0x640)
+0x9dd5f8,u8,0xb,g_roomMech,the room's copy of the mech bytes (11)
+0x9dd603,float,0x24,g_roomColours,the room's copy of the colour choices (0x90 bytes)
+0x4dc4b8,float,0x24,g_armcColours,the ARM CENTER's colour choices (0x90 bytes: six values per slot)
+0x9dd6d8,char,0xc,g_accountOldPassword,(12 bytes)
+0xa1f23c,u8,4,g_packedWhite,a packed colour (ff ff ff ff: colour_initPackedWhite)
+0xa0d320,char,0x64,g_serverAddress,the server's address text (100 bytes)
+0x9dd878,u16,8,g_clockLastTime,a SYSTEMTIME (sys_checkClockTampering)
+0x9dd8d0,u16,8,g_clockNowTime,a SYSTEMTIME
+0x4dba98,u32,4,g_arenaBright,the arena lobby's bright colour
+0x4db8a0,u32,4,g_arenaDim,the arena lobby's dim colour
+0x9f8d58,u32,4,g_profileDim,the profile screen's dim colour
+0x907b30,char,0x20,g_mapNames,0x20 bytes a map (extent unknown: the first)
+0x9f684c,char,0x48,g_profileList,0x48 bytes a profile (extent unknown: the first)
+0x9087c4,u8,0x4a,g_gameList,0x4a bytes a game (extent unknown: the first)
+0x9f9040,u8,0x4c,g_profileRecords,0x4c bytes a record (extent unknown: the first)

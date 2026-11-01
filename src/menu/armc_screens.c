@@ -10,7 +10,7 @@
 #define Y1 g_armcStatsPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
 #define g_slot GAME_VAR(int, 0x4dc4b0)
-#define SLOT ((const float *)IMG(0x4dc4b8) + g_slot * 6)
+#define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
 static const u32 *const bright = (const u32 *)IMG(0x4dbc58), *const dim = (const u32 *)IMG(0x4dc1d0);

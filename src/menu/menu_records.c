@@ -75,7 +75,7 @@ void (record_swap)(void *a, void *b)
 /* 0x4045e0: chat record 0x67ef30 (from 0x9087c4) cleared; the original does it 256 times over without moving on */
 void (arena_clearChatRecord)(void)
 {
-	u32 r = IMG(0x9087c4) + g_gameCount * 0x4a;
+	u32 r = OBJ(g_gameList) + g_gameCount * 0x4a;
 	memset((void *)RELOC(r), 0, 32);
 	GAME_VAR(u8, r + 0x21) = 0;
 	GAME_VAR(u8, r + 0x28) = 0;
@@ -104,7 +104,7 @@ void (mech_setEmpty)(void)
    then the colours) */
 void (mech_unpackFromRecord)(void)
 {
-	const signed char *rec = (const signed char *)IMG(0x9dd5f8);
+	const signed char *rec = (const signed char *)OBJ(g_roomMech);
 	g_savedMechParts = rec[0];
 	g_savedMechChest = rec[1];
 	g_savedMechArm = rec[2];
@@ -114,7 +114,7 @@ void (mech_unpackFromRecord)(void)
 		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
 	g_savedMechItem1 = rec[6];
 	g_savedMechWeapons = rec[5];
-	memcpy((void *)OBJ(g_savedColourChoices), (void *)IMG(0x9dd603), 0x90);
+	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
 }
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
@@ -258,7 +258,7 @@ void (roomList_fillPage)(void)
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
-		const u8 *player = (const u8 *)IMG(0xa05330) + i * 62;
+		const u8 *player = g_netPlayerList + i * 62;
 		if (!*player)
 			break;
 		u8 *row = rows + i * 0x44;
@@ -340,7 +340,7 @@ void (undo_push)(void)
 		undo_value = undo_stack[d] - 1 + undo_step;
 		undo_step = 0;
 		undo_stack[d + 1] = undo_value;
-		memset((void *)IMG(0x9f1064), 0, 1600);
+		memset((void *)OBJ(g_briefingText), 0, 1600);
 		undo_pending = 0;
 	}
 }
@@ -351,7 +351,7 @@ void (undo_pop)(void)
 	if (g_undoDepth > 0) {
 		g_undoDepth--;
 		undo_value = undo_stack[g_undoDepth];
-		memset((void *)IMG(0x9f1064), 0, 1600);
+		memset((void *)OBJ(g_briefingText), 0, 1600);
 		undo_step = 0;
 		undo_pending = 0;
 		g_briefingDone = 0;
@@ -469,7 +469,7 @@ u32 (mission_choose)(void)
 	int sel = g_missionShown;
 	u32 t = (u32)sel * 0x5c;
 	g_missionStage = sel;
-	memcpy((void *)OBJ(g_mapTitle), (const void *)(IMG(0x907b30) + sel * 32), 32);
+	memcpy((void *)OBJ(g_mapTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
 	g_mapRotation = 0;
 	g_chosenGameMode = a;

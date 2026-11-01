@@ -358,7 +358,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #define R(type, offset) GAME_VAR(type, rec + (offset))
 	int player = GAME_VAR(int, scene + 0x202e8d4);
 	if (player < 0)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
+		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
 	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
 	((float *)RELOC(spawn))[5] = f32(fld_m(&R(float, 0x10)));
 	((float *)RELOC(spawn))[6] = f32(fld_m(&R(float, 0x14)));
@@ -636,7 +636,7 @@ static void fill_dwords(u8 *at, int n, u32 v)
    level value x 0.01 + 1 */
 static long double level_factor(u8 *p, int k)
 {
-	return fadd_m(fmul_m((long double)GAME_VAR(int, 0x9f9078 + GAME_VAR(int, p + 0x44) * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
+	return fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x38 + GAME_VAR(int, p + 0x44) * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
@@ -727,7 +727,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	A(float, 0x48) = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), (const float *)(ac + 0x438)));
 	A(float, 0x4c) = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), (const float *)(ac + 0x43c)));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, 0x9f907c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
+#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
 	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
 	A(float, 0x50) = f32(v);
 	if (!(v >= *K(0x4a93f4)))

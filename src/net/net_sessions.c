@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define SESSION(k) ((u8 *)IMG(0x9087c4) + (k) * 0x4a)
+#define SESSION(k) (g_gameList + (k) * 0x4a)
 
 /* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
    byte: its name at s + nameOff, its flags around s, a second string at s + str2Off); total sums the entries'

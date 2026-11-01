@@ -47,12 +47,12 @@ static void load_colour(int i)
 	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(float, 0x9f8ec0 + k * 4) =
-			(float)((long double)GAME_VAR(int, 0x9f9068 + i * 76 + k * 4) + k_50f);
+			(float)((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + i * 76 + k * 4) + k_50f);
 }
 
 /* 0x44bc50: the selected profile's colours; 0x44bd20: those of the pilot under the list cursor */
 void (profile_loadSelectedColours)(void) { load_colour(g_emblemCursor); }
-void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, 0x9f688c + g_pilotChosen * 72)); }
+void (profile_loadCursorColours)(void) { load_colour(GAME_VAR(int, OBJ(g_profileList) + 0x40 + g_pilotChosen * 72)); }
 
 /* 0x445ee0: a whole 0x3ac-byte profile record scrambled */
 void (save_cryptRecord)(u8 *rec, u8 key) { crypt_bytes(rec, 0x3ac, key); }
@@ -135,7 +135,7 @@ int (profile_nameExists)(void)
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
-		const char *p = (const char *)(IMG(0x9f684c) + e * 0x48);
+		const char *p = (const char *)(OBJ(g_profileList) + e * 0x48);
 		for (int i = 0, n = (int)strlen(p); i < n; i++)
 			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
 		if (!strcmp(typed, name))
@@ -201,7 +201,7 @@ u32 (profile_logIn)(void)
 	g_keysBlocked = 2;
 	g_unusedMenuReturnWord = 0;
 	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)(g_cfgPlayerName,
-	                                                        (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48), 0x20);   /* strncpy */
+	                                                        (const char *)(OBJ(g_profileList) + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 }
 
@@ -303,8 +303,8 @@ int (profileList_clicks)(void)
 u32 (profile_selectAndLoad)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(IMG(0x9f684c) + n * 0x48), g_chatLine);
-	GAME_VAR(int, 0x9f688c + n * 0x48) = g_emblemCursor;
+	strcpy((char *)(OBJ(g_profileList) + n * 0x48), g_chatLine);
+	GAME_VAR(int, OBJ(g_profileList) + 0x40 + n * 0x48) = g_emblemCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
 		chdir_((const char *)STR(0x4b2adc, "save"));
@@ -373,7 +373,7 @@ u32 (profileList_drawNames)(void)
 			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		}
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
-		                                                      (const char *)(IMG(0x9f684c) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
+		                                                      (const char *)(OBJ(g_profileList) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
 	}
 	return r;
 }

@@ -116,7 +116,7 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #define COUNT FIELD(int, s, 0x13c9b24)
 #define NEXT FIELD(int, s, 0x13c9b28)
 	if (NEXT >= 1000) {
-		sys_errorMessage((char *)IMG(0xae2eb8), (const char *)STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()"), NEXT + 1, 1000);
+		sys_errorMessage((char *)OBJ(g_logStage), (const char *)STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()"), NEXT + 1, 1000);
 		return -1;
 	}
 	if (NEXT == COUNT) {
@@ -302,9 +302,9 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 25: camera_setTarget(s, -1, -1, 0); break;
 		case 26:
 			if (FIELD(int, s, 0x2104fe8 + c[1] * 0x88) == 0)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);
+				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);
 			if (FIELD(int, s, 0x210850c + c[2] * 0x108) == 0)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7a48, "invalid text (%d) in command MESSAGE ..."), c[2]);
+				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a48, "invalid text (%d) in command MESSAGE ..."), c[2]);
 			script_pushEvent(s, c[1], c[2], c[3], c[4]);
 			break;
 		case 27:
@@ -353,7 +353,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 			break;
 	if (idx == FIELD(int, s, 0x131ae40)) {
 		if (idx >= 1000)
-			sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
+			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
 		idx = FIELD(int, s, 0x131ae40)++;
 		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
@@ -387,7 +387,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	for (int r = 0; r < 2; r++) {
 		int need = FIELD(int, s, 0x13016c8) + FIELD(int, shape, 0x18);
 		if (need > 1000000)
-			sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
+			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
 		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + FIELD(int, s, 0x13016c8) * 4;
 		FIELD(int, s, 0x13016c8) += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
 	}
@@ -452,7 +452,7 @@ static void spark(u8 *s, u8 *p, float dt)
 	if (wait > 0)
 		return;
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % 10;
+	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
 	GAME_VAR(u32, p + 0x84) = 0x3dcccccd;
@@ -488,7 +488,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		size = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
 		break;
 	case 6:
-		size = k <= 31 ? IMG(0x4a94bc) : IMG(0x4a949c);
+		size = k <= 31 ? OBJ(k_1000f) : IMG(0x4a949c);
 		break;
 	case 7:
 		size = k == 35 ? IMG(0x4aa430) : k == 36 ? IMG(0x4aa42c) : k <= 38 ? IMG(0x4a949c) : 0;
@@ -534,7 +534,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 0:
 	case 1: {
 		if (type < 10 && type > 5) {
-			sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
+			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
@@ -582,7 +582,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		last = 1;
 		break;
 	default:
-		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)IMG(0xae2eb8), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
+		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 		return;
 	}
 	strcpy((char *)ac + 0x4f4, (const char *)RELOC(text));
@@ -621,7 +621,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 			}
 		} else if (I(int, 0x20) == 0) {
 			if (type != 0x22)
-				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)IMG(0x4a94ac)), (const float *)(it + 0x1c)));
+				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
 			int n = GAME_VAR(int, s + 0x202e8c8);
 			for (int k = 0; k < n; k++) {
 				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
@@ -634,7 +634,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 					if (!(d >= 0))
 						d = -d;
 					if (a == 0)
-						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), (const float *)IMG(0x4a974c)));
+						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), k_1_5f));
 					near = !(d >= reach);
 				}
 				if (near) {
@@ -661,7 +661,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 static u32 table_rand_below(u32 n)
 {
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
+	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % n;
 	g_randPos = at + 1;
 	return r;
 }

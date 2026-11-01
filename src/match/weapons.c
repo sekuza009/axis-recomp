@@ -65,7 +65,7 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	if (FIELD(int, actor, 0x14c) != 1)
 		return;
 	u32 r = g_randPos;
-	u32 v = GAME_VAR(u32, 0xa106f8 + (r & 0xfff) * 4);
+	u32 v = GAME_VAR(u32, OBJ(g_randTable) + (r & 0xfff) * 4);
 	g_randPos = r + 1;
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
 	FIELD(int, actor, 0x8830) = 0;
@@ -92,7 +92,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 		return;
 	int player = FIELD(int, a, 0x108) == 1 ? FIELD(int, a, 0x114) : -1;
 	if ((unsigned)kind <= 9) {
-		int level = GAME_VAR(int, 0x9f9068 + player * 0x4c + group[kind]) + 100;
+		int level = GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + player * 0x4c + group[kind]) + 100;
 		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
 	if (FIELD(u32, a, 0x3f0) & 0x100)
@@ -136,7 +136,7 @@ static u32 table_rand(void)
 {
 	u32 at = g_randPos;
 	g_randPos = at + 1;
-	return GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4);
+	return GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
 }
 
 /* is |p - from| within range (as fcom has it: a NaN is) */
@@ -195,7 +195,7 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 		FIELD(int, a, 0x8870) = -1;
 		FIELD(u32, a, 0x8848) = 0x44bb8000;   /* 1500.0 */
 	} else
-		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), (const float *)IMG(0x4a974c)));
+		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), k_1_5f));
 }
 
 #define K(address) ((const float *)RELOC(address))
@@ -207,7 +207,7 @@ static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 static u32 next_rand(u32 n)
 {
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, 0xa106f8 + (at & 0xfff) * 4) % n;
+	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % n;
 	g_randPos = at + 1;
 	return r;
 }
@@ -674,7 +674,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	Vec3_normalize(vel);
 	long double dot = (fmul_m(fld_m(&T[2]), &vel[2]) + fmul_m(fld_m(&T[1]), &vel[1])) + fmul_m(fld_m(&T[0]), &vel[0]);
 	int deg = ftol(fld_m(&rate));
-	if (fld_m((const float *)IMG(0xa17f38) + deg) > dot) {
+	if (fld_m(g_cosTable + deg) > dot) {
 		float axis[3], rot[4], m[16];
 		axis[0] = f32(fmul_m(fld_m(&T[2]), &vel[1]) - fmul_m(fld_m(&T[1]), &vel[2]));
 		axis[1] = f32(fmul_m(fld_m(&T[0]), &vel[2]) - fmul_m(fld_m(&T[2]), &vel[0]));
