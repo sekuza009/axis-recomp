@@ -6,7 +6,7 @@
 #define g_armcColourBits ((u32 *)OBJ(g_armcColours))           /* the six colour slots, six values each (see g_armcColours) */
 #define g_colourUndo ((u32 *)(OBJ(g_armcColours) + 0x78))               /* one slot's six values, for undo */
 #define g_savedParts ((const u32 *)ADDR(g_savedMechParts))         /* the saved mech: head, chest, arm, leg, booster */
-#define g_workParts ((u32 *)IMG(0x4dc760))                /* the working copy, same order */
+#define g_workParts ((u32 *)OBJ(g_armcParts))                /* the working copy, same order */
 
 static void copy(u32 *to, const u32 *from, int n)
 {
@@ -38,9 +38,9 @@ void (armc_restoreColourUndo)(void)
 void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
-		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8), IMG(0x4dc760) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c), IMG(0x4dc764) },
-		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), IMG(0x4dc768) }, { IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c), IMG(0x4dc76c) },
-		{ IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c), IMG(0x4dc770) } };   /* head, chest, arm, leg, booster */
+		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8), OBJ(g_armcParts) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c), (OBJ(g_armcParts) + 0x4) },
+		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), (OBJ(g_armcParts) + 0x8) }, { IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c), (OBJ(g_armcParts) + 0xc) },
+		{ IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
 		const int *list = (const int *)kinds[k].list;

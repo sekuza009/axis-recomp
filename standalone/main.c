@@ -112,6 +112,29 @@ static DWORD WINAPI canary_watch(void *unused)
 
 /* (a fence build) the split object an access to a guard page ran past: the nearest that ends before it or starts
    after it; its original address and the access's distance from it */
+/* a .data address (0x4ad000 .. 0xb13000) for code that names the game's data by number (the patch layer,
+   axisnet_recomp.c's IMG): inside a split object, its place in that object's variable; else its place in g_data.
+   g_splitObjects is in address order: a binary search */
+DWORD axis_dataAt(DWORD a)
+{
+	static int n = -1;
+	if (n < 0)
+		for (n = 0; g_splitObjects[n].address; n++)
+			;
+	int lo = 0, hi = n - 1;
+	while (lo <= hi) {
+		int mid = (lo + hi) / 2;
+		const DataPiece *s = &g_splitObjects[mid];
+		if (a < s->address)
+			hi = mid - 1;
+		else if (a - s->address >= s->size)
+			lo = mid + 1;
+		else
+			return (DWORD)s->bytes + (a - s->address);
+	}
+	return (DWORD)g_data + (a - 0x4ad000);
+}
+
 static void fence_report(FILE *f, DWORD data)
 {
 	const DataPiece *best = NULL;

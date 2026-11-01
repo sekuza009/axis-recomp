@@ -11,7 +11,7 @@
 #define g_soundEdited ((const int *)ADDR(g_volumeSetting))         /* the sound tab's values being edited (the menu sounds' volume first) */
 #define g_soundSettings ((int *)ADDR(g_soundVolume))             /* the sound settings in use */
 #define g_graphicEdited ((const u32 *)ADDR(g_setupResolution))       /* the graphics tab's seven values being edited */
-#define g_graphicSettings ((u32 *)ADDR(g_videoMode))           /* the graphics settings in use (g_items3D is the third) */
+#define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_items3D is the third) */
 
 /* 0x422b30: the tab's page (nothing while a dialog is up) */
 void (setup_drawTab)(void)
@@ -102,11 +102,11 @@ void (setup_soundTabKeys)(void)
    last call's eax */
 static u32 graphics_apply(void)
 {
-	int same = g_graphicSettings[1] == g_graphicEdited[1] && g_graphicSettings[0] == g_graphicEdited[0]
-	           && g_graphicSettings[3] == g_graphicEdited[3] && g_graphicSettings[4] == g_graphicEdited[4];
+	int same = g_graphicInUse[1] == g_graphicEdited[1] && g_graphicInUse[0] == g_graphicEdited[0]
+	           && g_graphicInUse[3] == g_graphicEdited[3] && g_graphicInUse[4] == g_graphicEdited[4];
 	sound_playMenu(0);
 	for (int i = 0; i < 7; i++)
-		g_graphicSettings[i] = g_graphicEdited[i];
+		g_graphicInUse[i] = g_graphicEdited[i];
 	u32 r = GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 	if (!same)
 		return GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(1);   /* app_closeWindow */
@@ -168,7 +168,7 @@ void (setup_selectSoundTab)(void)
 
 void (setup_selectGraphicTab)(void)
 {
-	memcpy((void *)g_graphicEdited, g_graphicSettings, 7 * 4);
+	memcpy((void *)g_graphicEdited, g_graphicInUse, 7 * 4);
 	g_setupTab = TAB_GRAPHIC;
 	tab_opened();
 }
@@ -374,7 +374,7 @@ void (setup_drawSoundTab)(void)
 
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
 #define g_bindRows ((const int *)IMG(0x4b04ec))            /* rows per page */
-#define g_bindToggle GAME_VAR(int, 0x4de1c0)          /* row 10's setting (on / off) */
+#define g_bindToggle (g_setupToggles[0])          /* row 10's setting (on / off) */
 
 /* 0x422e10: the controls tab's keys. 0x9da440 only gives a sound. While a row waits: cancel stops waiting, any
    other key (codes 2 .. 0xdd) is bound to it. Otherwise: fire selects (row 10 toggles), up / down move along the
@@ -504,7 +504,7 @@ void (setup_drawControlTab)(void)
 			sound_playMenu(0);
 			setup_keepKeyBindings();
 		} else if ((on == 7 || on == 8) && row >= 0 && page == 3) {
-			int *setting = &GAME_VAR(int, on == 7 ? IMG(0x4de1c0) : IMG(0x4de1c4));
+			int *setting = &GAME_VAR(int, on == 7 ? OBJ(g_setupToggles) : (OBJ(g_setupToggles) + 0x4));
 			*setting = 1 - *setting;
 			sound_playMenu(0);
 			return;

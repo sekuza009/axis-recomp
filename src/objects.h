@@ -139,3 +139,20 @@
 #define g_ctrlMenuTextures ((int *)IMG(0x5b1978))   /* int[2]; ctrlmenu01 / 02 (the setup tunnel) */
 #define g_ladderMenuTextures ((int *)IMG(0x4df904))   /* int[2]; laddermenu01 / 02 (the room's and the ARM CENTER preview's tunnel) */
 #define g_spiralTextures ((int *)IMG(0x9da45c))   /* int[6]; the six spirals */
+#define g_graphicSettings ((int *)IMG(0x83a9c0))   /* int[7]; the graphics settings in use: video mode, colour depth, polygon detail (HIGH), then axis.cfg's four switches (setup_keys.c copies all 7) */
+#define g_cfgSwitches (g_graphicSettings + 3)   /* int[4]; axis.cfg's graphics switches: linear filtering */
+#define g_mouseSettings ((int *)IMG(0x4df000))   /* int[4]; axis.cfg's mouse lines 0x40 .. 0x43: invert */
+#define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts: head */
+#define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts (match_start's loop of 5) */
+#define g_mechSettings ((int *)IMG(0x4dcb18))   /* int[6]; the mech's weapon and item settings (copied into g_savedMechSettings: armc_misc.c) */
+#define g_savedMechSettings ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's weapon and items (menu_records' loop writes items 2 .. 5) */
+#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[6]; ARM CENTER's six slot textures (armc_screens' loop of 6) */
+#define g_timerClocks ((u32 *)IMG(0x9db980))   /* u32[4]; the timer's two doubles (now */
+#define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
+#define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
+#define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the mech stats copied from a part (armc_parts' loop of 7) */
+#define g_armcTabColour ((u32 *)IMG(0x4dbc58))   /* u32[4]; ARM CENTER's chosen tab colour (armc_misc's loop of 4) */
+#define g_setupToggles ((int *)IMG(0x4de1c0))   /* int[2]; two setup on / off values (setup_pages' loop of 2) */
+#define g_legsStats ((float *)IMG(0x4dc228))   /* float[2]; two leg values (armc_stats' loop of 2) */
+#define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
+#define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */

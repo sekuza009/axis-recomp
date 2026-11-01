@@ -552,7 +552,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
    coordinates uv0 .. uv1, colour (4 bytes) */
 #define viewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(viewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
 	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
-#define g_items3D GAME_VAR(int, 0x83a9c8)            /* (unclear) a graphics setting: 1 draws map items as models */
+#define g_items3D (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
 #define g_white GAME_VAR(u32, 0xa1f23c)              /* four bytes 0xff: an opaque white colour */
 #define projectile_draw(stage, i, view) GAME_THISFN(projectile_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
 #define stage_drawItems(stage, view) GAME_THISFN(stage_drawItems, 0x48f970, void, void *, void *)(stage, view)
@@ -596,7 +596,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
-#define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
+#define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
 #define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
@@ -650,8 +650,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define input_isDown(key) GAME_FN(input_isDown, 0x401590, int, int)(key)   /* the key (code) is held */
 #define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
 #define g_mouseY GAME_VAR(int, 0x4ded6c)
-#define g_mouseClick GAME_VAR(int, 0x4ded88)         /* a click this frame */
-#define g_mouseHeld GAME_VAR(int, 0x4ded94)          /* (by use) the button held down */
+#define g_mouseClick (g_mouseClicked[0])           /* a click this frame (the left button) */
+#define g_mouseHeld (g_mouseButtonsHeld[0])        /* (by use) the left button held down */
 #define g_localPlayer GAME_VAR(int, 0x76d41c)        /* (by use) the local player's index in the room's lists */
 #define g_hWndMain g_mainWindow
 #define g_screenW GAME_VAR(int, 0x5b1998)

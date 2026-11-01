@@ -227,7 +227,7 @@ void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (g_mechChanged == 1) {
-		const int *parts = (const int *)IMG(0x4dc760);    /* the mech's head, chest, arm, leg, booster */
+		const int *parts = g_armcParts;    /* the mech's head, chest, arm, leg, booster */
 		switch (g_armcPartSlot) {
 		case 0: armc_setHeadIndex(g_scene, parts[0]); break;
 		case 1: armc_setChestIndex(g_scene, parts[1]); break;
@@ -370,7 +370,7 @@ u32 (menu_enterMenus)(void)
 	g_armcStatsPanelBottom = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
-		GAME_VAR(u32, 0x4dbc58 + i * 4) = colourA[i];
+		GAME_VAR(u32, OBJ(g_armcTabColour) + i * 4) = colourA[i];
 		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
 	}
 	g_progressWentUp = 0;
@@ -581,7 +581,7 @@ void (armc_initCameraBox)(void)
    limits (200, 600, 2, -2) */
 void (armc_initPartBoxes)(void)
 {
-	for (u32 p = IMG(0x4dc554); p < IMG(0x4dc764); p += 0x58) {
+	for (u32 p = IMG(0x4dc554); p < (OBJ(g_armcParts) + 0x4); p += 0x58) {
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
 		for (int k = 0; k < 15; k++)
 			if (corner[k])
@@ -642,7 +642,7 @@ void (armc_snapshot)(int i)
 	strcat(path, (const char *)STR(0x4ad564, "/"));
 	strcat(path, (const char *)STR(0x4b0360, "snapshot"));
 	strcpy(copy, path);
-	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
+	GAME_VAR(int, OBJ(g_slotTextures) + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcChanged = 0;
 }
 
@@ -695,7 +695,7 @@ int (armc_drawModeTabs)(void)
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
-		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? IMG(0x4dbc58) : IMG(0x4dc1d0));
+		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? OBJ(g_armcTabColour) : IMG(0x4dc1d0));
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		int x = g_armcStatsPanelLeft;
 		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
@@ -711,7 +711,7 @@ u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
 	memcpy((void *)OBJ(g_savedColourChoices), (const void *)OBJ(g_armcColours), 0x90);
-	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)ADDR(g_savedMechParts), (const void *)OBJ(g_armcParts), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
 	return GAME_FN(profile_saveProgress, 0x447010, u32, void)();   /* profile_saveProgress */
@@ -733,7 +733,7 @@ void (armc_sendSelectionToNet)(void)
 	}
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
-	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)ADDR(g_savedMechParts), (const void *)OBJ(g_armcParts), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	u8 *room = g_roomMech;
 	const int *parts = (const int *)ADDR(g_savedMechParts), *settings = (const int *)ADDR(g_savedMechWeapons);

@@ -265,8 +265,8 @@ static void section1(Panel *p)
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
 static void section2(Panel *p)
 {
-	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), IMG(0x4dc294), IMG(0x4dcc6c) }, { MSG(623, "CAPACITY FOR 60MM"), IMG(0x4dc298), IMG(0x4dc548) },
-	                                  { MSG(624, "CAPACITY FOR E-PAK"), IMG(0x4dc29c), IMG(0x4dc248) }, { MSG(625, "CAPACITY FOR MISSLE"), IMG(0x4dc2a0), IMG(0x4dcb34) } };
+	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), IMG(0x4dcc6c) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), IMG(0x4dc548) },
+	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), IMG(0x4dc248) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), IMG(0x4dcb34) } };
 	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
 	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
 	value(p, ROW(0));
@@ -294,7 +294,7 @@ static void section2(Panel *p)
 static void section3(Panel *p)
 {
 	for (int k = 0; k < 2; k++) {
-		u32 f = 0x4dc228 + k * 4;
+		u32 f = OBJ(g_legsStats) + k * 4;
 		label(p, ROW(k), k ? MSG(632, "INERTIA") : MSG(631, "AGILITY"));
 		sprintf(p->t.line, FMT(0x4b0334), (double)F(f));
 		X a = SKILL(0) * HUNDREDTH * F(f);
@@ -405,7 +405,7 @@ static void section5(Panel *p)
 	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
 	value(p, ROW(0));
-	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), IMG(0x4dcab4) }, { STR(0x4b0320, "%d"), IMG(0x4dcab8) }, { STR(0x4b02e8, "%d(Lv)"), IMG(0x4dcabc) } };
+	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechPartStats) }, { STR(0x4b0320, "%d"), (OBJ(g_mechPartStats) + 0x4) }, { STR(0x4b02e8, "%d(Lv)"), (OBJ(g_mechPartStats) + 0x8) } };
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), MSG(672, "HACKING LEVEL") + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
@@ -413,7 +413,7 @@ static void section5(Panel *p)
 	}
 	label(p, ROW(5), MSG(676, "WEAPON LOAD"));
 	for (int k = 0; k < 4; k++) {
-		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I(IMG(0x4dcac0) + k * 4));
+		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I((OBJ(g_mechPartStats) + 0xc) + k * 4));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(5));
@@ -450,7 +450,7 @@ static void section5(Panel *p)
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
-	const u32 *bright = (const u32 *)IMG(0x4dbc58), *dim = (const u32 *)IMG(0x4dc1d0);
+	const u32 *bright = g_armcTabColour, *dim = (const u32 *)IMG(0x4dc1d0);
 	int hovered = armcMain_hitTest(g_mouseX, g_mouseY);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;

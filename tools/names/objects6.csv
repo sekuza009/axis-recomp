@@ -1,0 +1,18 @@
+# arrays and records the code indexes (step 3b: the "indexed bases" that kept named globals from being split); with
+# --records: those holding named globals are split out as a whole, the globals offsets in them
+0x83a9c0,int,7,g_graphicSettings,the graphics settings in use: video mode, colour depth, polygon detail, then axis.cfg's four switches (setup_keys.c copies all 7; g_cfgSwitches is + 3)
+0x4df000,int,4,g_mouseSettings,axis.cfg's mouse lines 0x40 .. 0x43: invert, smooth, sensitivity, crosshair
+0x4dc760,int,5,g_armcParts,the mech's chosen parts: head, chest, arm, leg, booster (copied into g_savedMechPartIds)
+0x4dc878,int,5,g_savedMechPartIds,the saved mech's parts (match_start's loop of 5)
+0x4dcb18,int,6,g_mechSettings,the mech's weapon and item settings (copied into g_savedMechSettings: armc_misc.c)
+0x4dcf18,int,6,g_savedMechSettings,the saved mech's weapon and items (menu_records' loop writes items 2 .. 5)
+0x4dcc70,int,6,g_slotTextures,ARM CENTER's six slot textures (armc_screens' loop of 6)
+0x9db980,u32,4,g_timerClocks,the timer's two doubles (now, last), cleared as four words
+0x4ded88,int,3,g_mouseClicked,the three mouse buttons' click pulses (0xfa .. 0xfc)
+0x4ded94,int,3,g_mouseButtonsHeld,the three mouse buttons held (devices.c's loop of 3)
+0x4dcab4,int,7,g_mechPartStats,the mech stats copied from a part (armc_parts' loop of 7)
+0x4dbc58,u32,4,g_armcTabColour,ARM CENTER's chosen tab colour (armc_misc's loop of 4)
+0x4de1c0,int,2,g_setupToggles,two setup on / off values (setup_pages' loop of 2)
+0x4dc228,float,2,g_legsStats,two leg values (armc_stats' loop of 2)
+0x4dc290,int,5,g_armsStats,the arms' stats copied from the part (armc_parts' loop of 5)
+0xa0bae0,int,4,g_dpConnections,the DirectPlay connections by kind (net_connectionAvailable: below 4)

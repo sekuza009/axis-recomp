@@ -6,6 +6,7 @@
 R="C:/Users/Alexander/Desktop/Axis/recomp"
 L="C:/Users/ALEXAN~1/AppData/Local/Temp/claude/C--Users-Alexander-Desktop-Axis/0b4df063-0171-44b1-8c17-2ffdad638f27/scratchpad"
 cd "$R"
+out=$(python tools/split_aliases.py) || { echo "$out" | tail -5; echo "names reach split objects' old places - stop"; exit 1; }
 for F in 0 1 2; do
 	if [ $F = 0 ]; then bash standalone/build.sh 2>&1 | grep -E " error|undefined" | head -3
 	else FENCE=$F bash standalone/build.sh 2>&1 | grep -E " error|undefined" | head -3; fi

@@ -174,6 +174,6 @@ static const CStore k_setup_controlTabHelper_420c10[68] = {
 	{ IMG(0x4de190), IMG(0x9da454), 1 }, { IMG(0x4de198), IMG(0x9da450), 1 }, { IMG(0x4de194), ADDR(g_dikNone), 1 }, { IMG(0x4de19c), ADDR(g_dikNone), 1 },
 	{ IMG(0x4de1a0), ADDR(g_dikTab), 1 }, { IMG(0x4de1a4), ADDR(g_dikNone), 1 }, { IMG(0x4de1a8), IMG(0x4df8dc), 1 }, { IMG(0x4de1ac), ADDR(g_dikNone), 1 },
 	{ IMG(0x4de1b4), ADDR(g_dikNone), 1 }, { IMG(0x4de1bc), ADDR(g_dikNone), 1 }, { IMG(0x4de1b0), IMG(0x4e1534), 1 }, { IMG(0x4de1b8), ADDR(g_excludedKey), 1 },
-	{ IMG(0x4de1c0), 0x0, 0 }, { IMG(0x4de1c4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshair), 0x0, 0 } };
+	{ OBJ(g_setupToggles), 0x0, 0 }, { (OBJ(g_setupToggles) + 0x4), 0x0, 0 }, { ADDR(g_sensitivitySlider), 0x32, 0 }, { ADDR(g_crosshair), 0x0, 0 } };
 
 void (setup_keepKeyBindings)(void) { apply_cstores(k_setup_controlTabHelper_420c10, 68); }

@@ -111,7 +111,7 @@ void (mech_unpackFromRecord)(void)
 	g_savedMechLeg = rec[3];
 	g_savedMechBooster = rec[4];
 	for (int i = 0; i < 4; i++)
-		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
+		GAME_VAR(int, OBJ(g_savedMechSettings) + 8 + i * 4) = rec[7 + i];   /* (items 2 .. 5) */
 	g_savedMechItem1 = rec[6];
 	g_savedMechWeapons = rec[5];
 	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
@@ -327,9 +327,9 @@ void (skirmish_clickRow)(int row)
 /* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
    pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
 #define undo_stack ((int *)IMG(0x9eeadc))
-#define undo_value GAME_VAR(int, 0x9eeba4)
-#define undo_step GAME_VAR(int, 0x9ef1f4)
-#define undo_pending GAME_VAR(int, 0x4d7348)
+#define undo_value g_briefingStart
+#define undo_step g_briefingShown
+#define undo_pending g_briefingSkipped
 
 /* 0x443d80: the pending step pushed (value = the top - 1 + step) */
 void (undo_push)(void)

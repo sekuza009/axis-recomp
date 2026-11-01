@@ -945,7 +945,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 
 /* 0x453a90: a fresh DirectPlay connection of kind 0 .. 3: the old object closed (dplay_closeSession). The kind picks
    the service provider (0xa0bad8: 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8) and its stored connection (0xa0badc from
-   0xa0bae0 + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
+   OBJ(g_dpConnections) + 4 * kind); for TCP/IP (0) a compound address is made instead by the lobby from the provider and the
    host `address` (or 0xa0bb0c), size query then fill, into a new block 0xa0baf0. Then (when there is a connection) a
    new DirectPlay object (dplay_createLobby) initialised with it and its caps kept (timeout, buffer and queue sizes into
    0xa0bb00 .. 0xa0bb08). 0 when that fails, else 1 */
@@ -958,7 +958,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	static const u32 provider[4] = { 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8 };
 	if ((u32)kind <= 3) {
 		(*(u32 *)&g_instanceGuid) = provider[kind];
-		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, 0xa0bae0 + kind * 4);
+		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, OBJ(g_dpConnections) + kind * 4);
 	}
 	if (kind == 0) {
 		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
@@ -1492,8 +1492,8 @@ PACKET_ENTRY(net_sendPlayerInfo, 1);
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
-		{ { STR(0x4b3e64, "TCP") }, 0xa0b3a0, 0xa0bae0 }, { { STR(0x4b3e60, "IPX") }, 0xa0b450, 0xa0bae4 },
-		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, 0xa0b408, 0xa0bae8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, 0xa0bab8, 0xa0baec } };
+		{ { STR(0x4b3e64, "TCP") }, IMG(0xa0b3a0), OBJ(g_dpConnections) }, { { STR(0x4b3e60, "IPX") }, IMG(0xa0b450), OBJ(g_dpConnections) + 4 },
+		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, IMG(0xa0b408), OBJ(g_dpConnections) + 8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, IMG(0xa0bab8), OBJ(g_dpConnections) + 12 } };
 	char names[10][0x80];
 	char *own = names[g_serviceProviderCount];
 	strcpy(own, (const char *)RELOC(name[2]));   /* lpszShortNameA */
@@ -1509,7 +1509,7 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 	for (int k = 0; k < 4; k++)
 		if (text_findWord(own, (const char *)kinds[k].words[0], 1) ||
 		    (kinds[k].words[1] && text_findWord(own, (const char *)kinds[k].words[1], 1))) {
-			memcpy((void *)kinds[k].guid, id, 0x10);
+			memcpy((void *)RELOC(kinds[k].guid), id, 0x10);
 			GAME_VAR(void *, kinds[k].data) = g_connectionCopy;
 			break;
 		}

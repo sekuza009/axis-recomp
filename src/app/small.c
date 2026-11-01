@@ -140,7 +140,7 @@ void (net_clearSlots)(void) { for (u32 p = OBJ(g_netSlots); p < ADDR(g_netBlockS
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
-int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, 0xa0bae0 + i * 4) ? 1 : 0; }
+int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, OBJ(g_dpConnections) + i * 4) ? 1 : 0; }
 /* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
 void (mapSelect_toggle)(int i) { int *f = (int *)((OBJ(g_fileList) + 0x40) + i * 0x44); *f = 1 - *f; }
 void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_VAR(int, OBJ(g_fileList) + 0x40 + i * 0x44) = 1; }

@@ -78,7 +78,7 @@ u8 *(armc_readMechStats)(void)
 	mulf(IMG(0x4dcaac), &FIELD(float, A, 0x1ecca7c), (const float *)ADDR(k_100f));
 	mulf(IMG(0x4dcab0), &FIELD(float, A, 0x1ecca80), k_1000f);
 	for (int i = 0; i < 7; i++)
-		GAME_VAR(int, 0x4dcab4 + i * 4) = FIELD(int, A, 0x1ecca8c + i * 4);
+		GAME_VAR(int, OBJ(g_mechPartStats) + i * 4) = FIELD(int, A, 0x1ecca8c + i * 4);
 	copyf(ADDR(g_mechMobility), &FIELD(float, A, 0x1eccaa8));
 	u8 *player = g + FIELD(int, A, 0x1eccb7c) * 0x47fd2;
 	u8 *part = g + FIELD(int, player, 0x1755548) * 0x13f4;
@@ -142,12 +142,12 @@ int (armc_drawPartPanels)(void)
 	p = g + FIELD(int, player, 0x1755544) * 0x1300;   /* arm */
 	panel_name(IMG(0x4dc250), (const char *)p + 0x15fff88);
 	for (int i = 0; i < 5; i++)
-		GAME_VAR(int, 0x4dc290 + i * 4) = FIELD(int, p, 0x1601274 + i * 4);
+		GAME_VAR(int, OBJ(g_armsStats) + i * 4) = FIELD(int, p, 0x1601274 + i * 4);
 	copyf(ADDR(g_armsWeight), &FIELD(float, p, 0x1601270));
 	p = g + FIELD(int, player, 0x1755548) * 0x13f4;   /* leg */
 	panel_name(IMG(0x4dc1e8), (const char *)p + 0x163b58c);
-	copyf(0x4dc228, &FIELD(float, p, 0x163c968));
-	copyf(0x4dc22c, &FIELD(float, p, 0x163c96c));
+	copyf(OBJ(g_legsStats), &FIELD(float, p, 0x163c968));
+	copyf(OBJ(g_legsStats) + 4, &FIELD(float, p, 0x163c96c));
 	mulf(ADDR(g_legsSpeedCorrection), &FIELD(float, p, 0x163c970), (const float *)ADDR(k_100f));
 	mulf(IMG(0x4dc234), &FIELD(float, p, 0x163c974), (const float *)ADDR(k_100f));
 	mulf(IMG(0x4dc238), &FIELD(float, p, 0x163c97c), (const float *)ADDR(k_100f));
@@ -167,7 +167,7 @@ int (armc_drawPartPanels)(void)
 }
 
 /* 0x40f340: mech part `part` (0 .. 4: head, chest, arm, leg, booster) stepped through its list, back (dir 1) or on
-   (wrapping at both ends): its cursor, the list's count and entries, the chosen part (0x4dc760 + 4 * part), and
+   (wrapping at both ends): its cursor, the list's count and entries, the chosen part (OBJ(g_armcParts) + 4 * part), and
    the mech marked changed (0x4dcc58). Returns what the original leaves in eax: the new part on the even steps back
    and odd steps on, else the cursor (another part: the part number) */
 u32 (armc_stepPart)(u32 part, int dir)
@@ -185,7 +185,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 	} else if (++*cursor >= count)
 		*cursor = 0;
 	u32 chosen = ((const u32 *)RELOC(parts[part].list))[*cursor];
-	GAME_VAR(u32, 0x4dc760 + part * 4) = chosen;
+	GAME_VAR(u32, OBJ(g_armcParts) + part * 4) = chosen;
 	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
 }
 

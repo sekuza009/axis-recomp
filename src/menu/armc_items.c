@@ -6,7 +6,6 @@
 #define g_weaponCount GAME_VAR(int, 0x4dc244)
 #define g_extraList ((const int *)IMG(0x4dcca4))           /* the other items on offer */
 #define g_extraCount GAME_VAR(int, 0x4dc778)
-#define g_armcParts ((const int *)IMG(0x4dc760))           /* the mech's head, chest, arm, leg, booster */
 
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)

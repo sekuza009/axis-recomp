@@ -8,7 +8,8 @@ address (an extent the code shows, or what is known of it - the note says which)
     OBJ(name) + offset;
   - records it in tools/names/objects.txt, which tools/mkdatasrc.py makes members of g_rdata / g_data (with their
     extents, offsets checked).
-An address that is already a named global or overlaps an object already named stops the run."""
+An object that overlaps one already named stops the run; one that holds named globals too, unless --records (a
+record or array of named globals: split out as a whole, they are offsets in it - tools/mkdatasrc.py)."""
 import glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -32,8 +33,8 @@ for a, t, n, name, note in rows:
 		if lo < end and a < hi:
 			print('%s overlaps %s' % (name, other)); bad += 1
 	inner = [g for ga, g in globals_addr.items() if a <= ga < end]
-	if inner:
-		print('%s holds named globals %s' % (name, ', '.join(inner[:4]))); bad += 1
+	if inner and '--records' not in sys.argv:
+		print('%s holds named globals %s (a record of them: --records)' % (name, ', '.join(inner[:4]))); bad += 1
 	spans.append((a, end, name))
 if bad:
 	sys.exit('%d problems, nothing changed' % bad)
@@ -58,6 +59,14 @@ for f in files:
 				return '(OBJ(%s) + 0x%x)' % (name, v - a)
 			return m.group(0)
 		t = re.sub(r'\bIMG\((0x[0-9a-f]+)\)', inside, t)
+		# a bare base with an index (GAME_VAR(int, 0x83a9cc + i * 4)): OBJ(name) + ..., in code (not comments)
+		def bare(line):
+			cut = line.find('/*')
+			code, rest = (line, '') if cut < 0 else (line[:cut], line[cut:])
+			if code.lstrip().startswith('*'):
+				return line
+			return re.sub(r'(?<![\w.])0x0*%x\b(?=\s*[-+])' % a, 'OBJ(%s)' % name, code) + rest
+		t = '\n'.join(bare(l) for l in t.split('\n'))
 	# a bare number at or inside a new object, outside IMG() (GAME_VAR(int, 0x... - k * 4) and the like): not
 	# rewritten - written by hand, else that access stays at the old place once the object is split
 	for i, l in enumerate(t.split('\n')):

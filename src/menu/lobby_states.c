@@ -1394,7 +1394,7 @@ void (lobbyJoin_keysChat)(void)
    +0x2e wins, +0x32 losses) and its two kept copies (0x9dd5d8 and 0x9dd240: +0 level, +4 points, +0xc rating,
    +0x10 0x4de72a's value, +0x14 wins, +0x18 losses, +0x1c the win rate) ---- */
 #define R_POINTS g_titlePoints
-#define R_RATING GAME_VAR(float, 0x4de726)
+#define R_RATING (*(float *)&g_titleRating)
 #define R_OTHER g_titleScore
 #define R_WINS g_titleWins
 #define R_LOSSES g_titleLosses

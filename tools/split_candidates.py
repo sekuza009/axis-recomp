@@ -47,8 +47,6 @@ for f in files:
 	for line in code.split('\n'):
 		if data and re.match(r'\s*\{ 0x[0-9a-f]+, \w+, (?:sizeof \w+|\d+) \},', line):
 			continue
-		if re.match(r'\s*#define\s+\w+\s', line) and not data and 'GAME_VAR(' in line and re.search(r'GAME_VAR\([^,]+, 0x[0-9a-f]+\)\s*(/\*.*)?$', line):
-			continue   # (a name's own definition)
 		for m in re.finditer(r'(?<![\w.])0x0*([0-9a-f]{6})\b', line):
 			v = int(m.group(1), 16)
 			pre = line[:m.start()]

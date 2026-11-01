@@ -524,7 +524,7 @@ u32 (cfg_parseGraphic)(void *f)
 	FPUTS(g_items3D ? STR(0x4b1acc, "HIGH\n") : STR(0x4b1ad4, "LOW\n"));
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
-		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+		FPUTS(GAME_VAR(int, OBJ(g_cfgSwitches) + i * 4) == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	}
 	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
@@ -1192,7 +1192,7 @@ void (cfg_videoModeNames)(void *f)
 		else if (n == 2)
 			g_items3D = !strcmp(b.value, (const char *)STR(0x4b22cc, "HIGH"));
 		else
-			GAME_VAR(int, 0x83a9cc + (n - 3) * 4) = IS_ON(b.value);
+			GAME_VAR(int, OBJ(g_cfgSwitches) + (n - 3) * 4) = IS_ON(b.value);
 	}
 	crt_fgets(b.line, 0x50, f);
 }
@@ -1219,9 +1219,9 @@ void (cfg_parseKeyNames)(void *f)
 	for (int n = 0; n < 0x44; n++) {
 		read_into(f, &b, 0);
 		if (n == 0x40 || n == 0x41)
-			GAME_VAR(int, 0x4df000 + (n - 0x40) * 4) = IS_ON(b.value);
+			GAME_VAR(int, OBJ(g_mouseSettings) + (n - 0x40) * 4) = IS_ON(b.value);
 		else if (n == 0x42 || n == 0x43)
-			GAME_VAR(int, 0x4df008 + (n - 0x42) * 4) = crt_atoi(b.value);
+			GAME_VAR(int, OBJ(g_mouseSettings) + 8 + (n - 0x42) * 4) = crt_atoi(b.value);   /* (sensitivity, crosshair) */
 		else
 			for (int k = 0; k < 256; k++)
 				if (!strcmp(b.value, key_name[k]))

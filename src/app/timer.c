@@ -25,7 +25,7 @@ void (timer_init)(void)
 	}
 	g_timerShift = shift;
 	for (int i = 0; i < 4; i++)
-		GAME_VAR(u32, 0x9db980 + i * 4) = 0;
+		GAME_VAR(u32, OBJ(g_timerClocks) + i * 4) = 0;
 	g_timerTick = ONE / (long double)(u32)f;
 }
 

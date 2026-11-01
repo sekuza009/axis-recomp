@@ -13,7 +13,7 @@
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = (const u32 *)IMG(0x4dbc58), *const dim = (const u32 *)IMG(0x4dc1d0);
+static const u32 *const bright = g_armcTabColour, *const dim = (const u32 *)IMG(0x4dc1d0);
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<0x756da4> <the name of 0x4dceac (0x751924)>" (the texture bound) */
@@ -251,7 +251,7 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 
 /* 0x419160: the build screen: two buttons (0x7517a4; 3 / 4 under the pointer, by armcParts_hitTest, lit), the six part
    slots (the chosen one, 0x4dbe48, bright), a new snapshot of it when asked (0x4dcc64), each slot's picture
-   (texture 0x4dcc70 + 4 k, when it has a name, 0x4dbe50) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
+   (texture OBJ(g_slotTextures) + 4 k, when it has a name, 0x4dbe50) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
    box: its picture (0x4dcc88), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
    MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
    (0x4dc194 = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
@@ -286,7 +286,7 @@ void (armc_drawBuildScreen)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++)
 		if (strlen(SLOT_NAME(k)) > 1) {
-			bind_texture(GAME_VAR(int, 0x4dcc70 + k * 4));
+			bind_texture(GAME_VAR(int, OBJ(g_slotTextures) + k * 4));
 			picture(X0 + 0x40, Y0 + k * 0x3f + 0x2a, X0 + 0x9c, Y0 + k * 0x3f + 0x4e);
 		}
 	for (int k = 0; k < 6; k++) {

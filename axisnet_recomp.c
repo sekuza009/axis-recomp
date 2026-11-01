@@ -37,8 +37,9 @@
 /* an address of the game's image: where AxisRC.exe keeps it (src/axis.h's IMG; the original range itself is
    unmapped there) */
 extern unsigned char g_image[], g_rdata[], g_data[];   /* (.rdata and .data are g_rdata / g_data: src/data/layout.h) */
+DWORD axis_dataAt(DWORD a);   /* standalone/main.c: a .data address -> its split variable's place, else g_data's */
 #define IMG(a) ((DWORD)(a) - 0x4a9000u < 0x4000u ? (DWORD)g_rdata + ((DWORD)(a) - 0x4a9000u) : \
-                (DWORD)(a) - 0x4ad000u < 0x666000u ? (DWORD)g_data + ((DWORD)(a) - 0x4ad000u) : (DWORD)g_image + ((DWORD)(a) - 0x400000))
+                (DWORD)(a) - 0x4ad000u < 0x666000u ? axis_dataAt((DWORD)(a)) : (DWORD)g_image + ((DWORD)(a) - 0x400000))
 static inline DWORD img_reloc(DWORD a) { return a - 0x400000 < 0x76b000 ? IMG(a) : a; }
 #define RELOC(a) ((__typeof__((a) + 0))img_reloc((DWORD)(a)))   /* (of the operand's own type) */
 #else
