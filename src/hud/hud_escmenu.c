@@ -270,7 +270,7 @@ static int esc_main(Scene *scene)
 				msg_newKing(scene);
 				scene->watchedPlayer = -1;
 			}
-			notice_printCentre(scene, (const char *)0x4d06f4);
+			notice_printCentre(scene, (const char *)IMG(0x4d06f4));
 			return 1;
 		}
 		if (scene->teamGame != 1) {   /* START */
@@ -347,7 +347,7 @@ static int esc_name(Scene *scene)
 		return scene->menuKeys[KEY_ESC] == 1;
 	chat_keepLastLine();
 	if (g_keptChatLine)
-		autoplay_startRecording(scene, (const char *)0x9f63e4);
+		autoplay_startRecording(scene, (const char *)IMG(0x9f63e4));
 	return 1;
 }
 

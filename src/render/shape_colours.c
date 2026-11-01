@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* a shape: its part count at +0x10, its 0x80-byte parts at +0x14 (each with its material at +0x44) */
 #define PART_COUNT(shape) FIELD(int, shape, 0x10)
@@ -89,11 +89,11 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
 {
 	float c[4];
 	for (int i = 0; i < 4; i++)
-		c[i] = (float)fmul_m((long double)(int)rgba[i], (const float *)0x4aa2a4);   /* 1 / 255 */
+		c[i] = (float)fmul_m((long double)(int)rgba[i], (const float *)IMG(0x4aa2a4));   /* 1 / 255 */
 	tex_tintHsv(c, dh, ds, dv);
 	int r = 0;
 	for (int i = 0; i < 4; i++) {
-		r = ftol(fmul_m(fld_m(&c[i]), (const float *)0x4a9744));   /* 255 */
+		r = ftol(fmul_m(fld_m(&c[i]), (const float *)IMG(0x4a9744)));   /* 255 */
 		rgba[i] = (u8)r;
 	}
 	return r;

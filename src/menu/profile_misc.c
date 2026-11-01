@@ -88,15 +88,15 @@ int (name_isBlank)(const char *name)
 /* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at 0x9f9010 (left, top, right, bottom), else -1 */
 int (profile_inDialogBox)(int x, int y)
 {
-	const int *r = (const int *)0x9f9010;
+	const int *r = (const int *)IMG(0x9f9010);
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
 /* 0x44b7a0: the colour preview reset: no colours, distance 40, -1, turning */
 void (profile_resetPreview)(void)
 {
-	memset((void *)0x9f8ec0, 0, 36);
-	memset((void *)0x9f8d34, 0, 36);
+	memset((void *)IMG(0x9f8ec0), 0, 36);
+	memset((void *)IMG(0x9f8d34), 0, 36);
 	g_emblemMoved = 1;
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
@@ -131,11 +131,11 @@ int (profile_nameExists)(void)
 	char typed[1024], name[1024];
 	memset(name, 0, sizeof name);
 	memset(typed, 0, sizeof typed);
-	const char *s = (const char *)0x9dc92c;
+	const char *s = (const char *)IMG(0x9dc92c);
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
-		const char *p = (const char *)(0x9f684c + e * 0x48);
+		const char *p = (const char *)(IMG(0x9f684c) + e * 0x48);
 		for (int i = 0, n = (int)strlen(p); i < n; i++)
 			name[i] = p[i] >= 'A' && p[i] <= 'Z' ? p[i] + 0x20 : p[i];
 		if (!strcmp(typed, name))
@@ -200,8 +200,8 @@ u32 (profile_logIn)(void)
 	g_nextScreen = 300;
 	g_keysBlocked = 2;
 	g_unusedMenuReturnWord = 0;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)0x4dedb0,
-	                                                        (const char *)(0x9f684c + g_currentProfile * 0x48), 0x20);   /* strncpy */
+	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)IMG(0x4dedb0),
+	                                                        (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 }
 
@@ -213,7 +213,7 @@ u32 (profile_logIn)(void)
 u32 (profile_frame)(void)
 {
 	if (g_profileRowClicked) {
-		long double t = fadd_m(fld_m(&g_frameTime), (const float *)0x9f8f18);
+		long double t = fadd_m(fld_m(&g_frameTime), (const float *)IMG(0x9f8f18));
 		g_profileMessageTime = (float)t;
 		if (t > k_20f) {
 			g_profileRowClicked = 0;
@@ -303,13 +303,13 @@ int (profileList_clicks)(void)
 u32 (profile_selectAndLoad)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(0x9f684c + n * 0x48), (const char *)0x9dc92c);
+	strcpy((char *)(IMG(0x9f684c) + n * 0x48), (const char *)IMG(0x9dc92c));
 	GAME_VAR(int, 0x9f688c + n * 0x48) = g_emblemCursor;
-	if (chdir_((const char *)0x4b2adc)) {
-		mkdir_((const char *)0x4b2adc);
-		chdir_((const char *)0x4b2adc);
+	if (chdir_((const char *)IMG(0x4b2adc))) {
+		mkdir_((const char *)IMG(0x4b2adc));
+		chdir_((const char *)IMG(0x4b2adc));
 	}
-	chdir_((const char *)0x4b2a80);
+	chdir_((const char *)IMG(0x4b2a80));
 	int count = n + 1;
 	g_profileCount = count;
 	if (count <= 0xd) {
@@ -334,7 +334,7 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 		g_mouseX += step;
 		step = ftol(fmul_m(fmul_m((long double)(g_highlightY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
-		long double t = fsub_m(fld_m((const float *)0x680bc0), &g_frameTime);
+		long double t = fsub_m(fld_m((const float *)IMG(0x680bc0)), &g_frameTime);
 		g_highlightSize = (float)t;
 		if (!(t >= k_0f))
 			g_highlightShown = 0;
@@ -348,14 +348,14 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 /* 0x44f5f0: the pilot panel's page (profile_drawDeleteQuestion) */
 u32 (profile_pilotPanelPage)(void)
 {
-	static const u32 frame[4] = { 0x9f8f1c, 0x9f8f0c, 0x9f8f2c, 0x9f8f28 };
-	return glide_page((const float *)0x4a941c, frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
+	static const u32 frame[4] = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28) };
+	return glide_page((const float *)IMG(0x4a941c), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
 }
 /* 0x44f740: the second panel's page (profile_drawSecondDialog), gliding at its own rate */
 u32 (profile_secondPanelPage)(void)
 {
-	static const u32 frame[4] = { 0x9f6834, 0x9f683c, 0x9f93bc, 0x9f93c0 };
-	return glide_page((const float *)0x4a94f8, frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
+	static const u32 frame[4] = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0) };
+	return glide_page((const float *)IMG(0x4a94f8), frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
 }
 
 /* 0x44ce90: the profile list's names drawn (13 rows from the top entry 0x9f8c4c, 20 units apart in the panel at
@@ -367,13 +367,13 @@ u32 (profileList_drawNames)(void)
 	for (int i = 0; i < 13 && i < g_profileCount; i++) {
 		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
-		GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
+		GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)IMG(0x76d438), 0, shade, shade, 0x3f800000);
 		if (g_profileListTop + i == g_pilotChosen) {
 			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
-			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)0x76d438, 0, shade, shade, 0x3f800000);
+			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)IMG(0x76d438), 0, shade, shade, 0x3f800000);
 		}
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
-		                                                      (const char *)(0x9f684c + (g_profileListTop + i) * 0x48));   /* text_draw8 */
+		                                                      (const char *)(IMG(0x9f684c) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
 	}
 	return r;
 }
@@ -385,7 +385,7 @@ u32 (profileList_drawNames)(void)
    last call's eax */
 u32 (profile_nameEntryStep)(void)
 {
-	const char *typed = (const char *)0x9dc92c;
+	const char *typed = (const char *)IMG(0x9dc92c);
 	GAME_FN(mainmenu_drawScreen, 0x44d720, void, void)();
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_newNameDialogLeft, g_newNameDialogTop,
@@ -433,15 +433,15 @@ u32 (profile_nameEntryStep)(void)
 u32 (profile_deleteFiles)(void)
 {
 	int current = g_pilotChosen;
-	u8 *records = (u8 *)0x9f6848;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
-	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)0x4b2adc) == 0) {   /* chdir("save") */
+	u8 *records = (u8 *)IMG(0x9f6848);   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
+	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)IMG(0x4b2adc)) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
 		strcpy(path, (const char *)(records + current * 0x48 + 4));
-		strcat(path, (const char *)0x4b2afc);   /* ".axs" */
+		strcat(path, (const char *)IMG(0x4b2afc));   /* ".axs" */
 		if (!IMPORT(0x4a9104, int, const char *)(path))   /* DeleteFileA */
 			IMPORT(0x4a9104, int, const char *)(path);
-		GAME_CDECL(0x49f8a6, int, const char *)((const char *)0x4b2a80);   /* chdir("..") */
+		GAME_CDECL(0x49f8a6, int, const char *)((const char *)IMG(0x4b2a80));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = current;
 	for (; last < count; last++)
@@ -481,7 +481,7 @@ static void line_wipe(void)
 {
 	int n = g_typedLength;
 	if (n > 0)
-		memset((void *)0x9dc92c, 0, n);
+		memset((void *)IMG(0x9dc92c), 0, n);
 }
 
 /* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_inDialogBox) or
@@ -491,7 +491,7 @@ static void line_wipe(void)
    leaves in eax */
 u32 (profile_newNameDialog)(void)
 {
-	const char *typed = (const char *)0x9dc92c;
+	const char *typed = (const char *)IMG(0x9dc92c);
 	g_cursorBlink = 0.0f;
 	u32 r = 0;
 	if (g_profileMessage) {

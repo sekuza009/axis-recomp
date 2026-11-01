@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define SESSION(k) ((u8 *)0x9087c4 + (k) * 0x4a)
+#define SESSION(k) ((u8 *)IMG(0x9087c4) + (k) * 0x4a)
 
 /* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
    byte: its name at s + nameOff, its flags around s, a second string at s + str2Off); total sums the entries'
@@ -21,7 +21,7 @@ static void merge(const Received *g)
 		for (int i = 0; i < g_serverPingCount; i++) {
 			if (GAME_VAR(int, 0xa0bb14 + i * 4) != 1)   /* not new */
 				continue;
-			const u8 *s = (const u8 *)(g->base + i * g->stride);
+			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
 			int players = GAME_VAR(int, 0xa0d384 + i * 4);
 			if (players > 0) {
 				int k = g_gameCount;
@@ -60,14 +60,14 @@ static void merge(const Received *g)
 /* 0x434ff0: the game room's (0x79-byte records) */
 void (room_mergeReceivedSessions)(void)
 {
-	static const Received room = { 0xa0b358, 0x9fd9c7, 0x79, -0x66, -0x34, 0x9dd840, { 0x9dd6a0, 0x9da498, 0x9dd3fc } };
+	static const Received room = { IMG(0xa0b358), IMG(0x9fd9c7), 0x79, -0x66, -0x34, IMG(0x9dd840), { IMG(0x9dd6a0), IMG(0x9da498), IMG(0x9dd3fc) } };
 	merge(&room);
 }
 
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { 0xa0b368, 0xa05791, 0x5b, -0x48, -0x16, 0x4dba8c, { 0x4db858, 0x4df018, 0x4db8b8 } };
+	static const Received arena = { IMG(0xa0b368), IMG(0xa05791), 0x5b, -0x48, -0x16, IMG(0x4dba8c), { IMG(0x4db858), IMG(0x4df018), IMG(0x4db8b8) } };
 	merge(&arena);
 }
 

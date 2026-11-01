@@ -14,7 +14,7 @@ void (menu_initColours)(void)
 /* 0x40e510: three camera points (0, 300, 0), (0, -500, 0), (0, 350, 0) (16 bytes apart, the fourth word kept) */
 void (armc_initCameraPoints)(void)
 {
-	for (u32 p = 0x4dca30; p < 0x4dca90; p += 0x10) {
+	for (u32 p = IMG(0x4dca30); p < IMG(0x4dca90); p += 0x10) {
 		GAME_VAR(int, p) = 0;
 		GAME_VAR(int, p + 4) = 0;
 		GAME_VAR(int, p + 8) = 0;
@@ -27,13 +27,13 @@ void (armc_initCameraPoints)(void)
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
 void (arena_initOptionTexts)(void)
 {
-	static const u32 copies[7][2] = { { 0x4db860, 0x75baa4 }, { 0x4db874, 0x75bb24 }, { 0x4db888, 0x75bba4 },
-	                                  { 0x4dbb14, 0x75bc24 }, { 0x4dbb28, 0x75bca4 }, { 0x4dbba4, 0x75bc24 },
-	                                  { 0x4dbbb8, 0x75bca4 } };
+	static const u32 copies[7][2] = { { IMG(0x4db860), IMG(0x75baa4) }, { IMG(0x4db874), IMG(0x75bb24) }, { IMG(0x4db888), IMG(0x75bba4) },
+	                                  { IMG(0x4dbb14), IMG(0x75bc24) }, { IMG(0x4dbb28), IMG(0x75bca4) }, { IMG(0x4dbba4), IMG(0x75bc24) },
+	                                  { IMG(0x4dbbb8), IMG(0x75bca4) } };
 	for (int k = 0; k < 7; k++)
-		strcpy((char *)copies[k][0], (const char *)copies[k][1]);
-	for (u32 s = 0x75c224, d = 0x4db8d8; s < 0x75c9a4; s += 0x80, d += 0x14)
-		strcpy((char *)d, (const char *)s);
+		strcpy((char *)RELOC(copies[k][0]), (const char *)RELOC(copies[k][1]));
+	for (u32 s = IMG(0x75c224), d = IMG(0x4db8d8); s < IMG(0x75c9a4); s += 0x80, d += 0x14)
+		strcpy((char *)RELOC(d), (const char *)RELOC(s));
 }
 
 /* 0x443570: the skirmish list's 32 player rows (0xfc bytes: a 0x40-byte name, 0xa0 bytes of settings, the team
@@ -45,8 +45,8 @@ void (skirmish_clearPlayerRows)(void)
 	g_misHeader2 = 0;
 	g_misHeader3 = 0;
 	for (u32 e = 0x9ef314; e < 0x9f109c; e += 0xfc) {
-		memset((void *)(e - 0x40), 0, 0x40);
-		memset((void *)e, 0, 0xa0);
+		memset((void *)(RELOC(e) - 0x40), 0, 0x40);
+		memset((void *)RELOC(e), 0, 0xa0);
 		GAME_VAR(int, e - 0x44) = 0;
 		GAME_VAR(int, e + 0xa0) = 0;
 		GAME_VAR(int, e + 0xa4) = 0;
@@ -65,7 +65,7 @@ void (net_resetState)(void)
 	g_hostResultFlag = 0;
 	g_netChatMessageWord2 = 0;
 	g_netSlotMessageKind = 0;
-	memset((void *)0x9f9428, 0, 0x103 * 4);
+	memset((void *)IMG(0x9f9428), 0, 0x103 * 4);
 	g_netChatMessageText = 0;
 	g_netClaimedSlot = 0;
 	g_netChatMessageKind = 1;
@@ -97,11 +97,11 @@ void (menu_initKeyRepeat)(void)
 void (menuCamera_initPoints)(void)
 {
 	static const u32 point[][2] = {
-		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },
-		{ 0x4df880, 0x41a00000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0 },
-		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
-		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
-		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };   /* (+-20, +-10), (-+70, +-55) */
+		{ IMG(0x4df870), 0x41a00000 }, { IMG(0x4df874), 0xc1200000 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x425c0000 },
+		{ IMG(0x4df880), 0x41a00000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0 },
+		{ IMG(0x4df890), 0x41a00000 }, { IMG(0x4df894), 0x41200000 }, { IMG(0x76d3a8), 0xc28c0000 }, { IMG(0x76d3ac), 0xc25c0000 },
+		{ IMG(0x4df8a0), 0xc1a00000 }, { IMG(0x4df8a4), 0xc1200000 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0x425c0000 },
+		{ IMG(0x4df8b0), 0xc1a00000 }, { IMG(0x4df8b4), 0 }, { IMG(0x76d3c8), 0x428c0000 }, { IMG(0x76d3cc), 0 } };   /* (+-20, +-10), (-+70, +-55) */
 	int z = g_menuCameraHeight;
 	for (int i = 0; i < 5; i++) {
 		GAME_VAR(int, 0x4df878 + i * 0x10) = z;
@@ -132,8 +132,8 @@ u32 (replayList_open)(void)
 	g_mapSelectTop = 0x28;
 	g_mapSelectRight = 0x230;
 	g_mapSelectBottom = 0x1b8;
-	for (u32 r = 0x9ddac8; r < 0x9eeac8; r += 0x44)
-		memset((void *)(r - 0x40), 0, 0x44);
+	for (u32 r = IMG(0x9ddac8); r < IMG(0x9eeac8); r += 0x44)
+		memset((void *)(RELOC(r) - 0x40), 0, 0x44);
 	GAME_FN(mapSelect_layout, 0x440a20, void, void)();          /* mapSelect_layout: the layout */
 	return GAME_FN(autoplay_listFiles, 0x440c60, u32, void)();    /* autoplay_listFiles */
 }
@@ -144,7 +144,7 @@ u32 (replayList_open)(void)
 u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(menu_initKeyRepeat, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
-	memset((void *)0x67ef38, 0, 0x300 * 4);
+	memset((void *)IMG(0x67ef38), 0, 0x300 * 4);
 	GAME_FN(menu_initColours, 0x430ab0, void, void)();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {

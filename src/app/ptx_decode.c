@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define g_table g_ptxTable           /* the Huffman table set in use */
-#define g_zigzag ((const int *)0x4c59ec)
+#define g_zigzag ((const int *)IMG(0x4c59ec))
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 
 /* 0x46f230: *out = the next n bits; returns the new position */
@@ -43,7 +43,7 @@ void (ptx_readDcDiff)(int *out)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(0x4c5af0 + g_table * 96);
+	const int *code = (const int *)(IMG(0x4c5af0) + g_table * 96);
 	for (k = 0; k < 16; k++, code += 2) {
 		len = code[0];
 		if (v >> ((16 - len) & 31) == code[1])
@@ -58,7 +58,7 @@ void (ptx_readAcSymbol)(int *out, int *run)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(0x4c5bb0 + (g_table << 11));
+	const int *code = (const int *)(IMG(0x4c5bb0) + (g_table << 11));
 	for (k = 0; k < 256; k++, code += 2) {
 		len = code[0];
 		if (len && v >> ((16 - len) & 31) == code[1])
@@ -147,7 +147,7 @@ static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 
 void (ptx_inverseDct)(const int *in, u8 *out)
 {
-	const int *quant = (const int *)0xaa2c94;
+	const int *quant = (const int *)IMG(0xaa2c94);
 	const u8 *limit = g_clamp + 0x80;
 	int ws[64];
 	for (int c = 0; c < 8; c++) {   /* pass 1: the columns, dequantised */
@@ -207,11 +207,11 @@ void (ptx_inverseDct)(const int *in, u8 *out)
    stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
-	void *err = (void *)0x4d0878;   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4b182c);
-	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fc0, GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
+	void *err = (void *)IMG(0x4d0878);   /* stderr */
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4b182c));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fc0), GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
 	if (format && strlen(format)) {
-		((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fb0);
+		((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fb0));
 		va_list args;
 		va_start(args, format);
 		GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
@@ -225,9 +225,9 @@ int (ptx_crtlError)(int code, const char *format, ...)
 /* 0x46e260: a video error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_error)(int code, const char *format, ...)
 {
-	void *err = (void *)0x4d0878;   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4b182c);
-	((int (CDECL *)(void *, const char *, ...))0x49f135)(err, (const char *)0x4c6fd0);
+	void *err = (void *)IMG(0x4d0878);   /* stderr */
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4b182c));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fd0));
 	va_list args;
 	va_start(args, format);
 	GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
@@ -248,26 +248,26 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	struct { char magic[4]; u16 version; short w, h, type, quality; u8 pad[6]; } head;
 	ptx_fread(&head, 1, 0x10, f);
 	if (head.magic[0] != 'P' || head.magic[1] != 'T' || head.magic[2] != 'X' || head.magic[3] != 0)
-		ptx_error(-1, (const char *)0x4c6fec);
+		ptx_error(-1, (const char *)IMG(0x4c6fec));
 	if (head.version != 0x100)
-		ptx_error(-1, (const char *)0x4c6fec);
+		ptx_error(-1, (const char *)IMG(0x4c6fec));
 	int w = head.w * 8, h = head.h * 8, planes;
 	if (head.type == 0x81)
 		planes = 3;
 	else if (head.type == 0x82)
 		planes = 4;
 	else {
-		ptx_error(-1, (const char *)0x4c6fd8);
+		ptx_error(-1, (const char *)IMG(0x4c6fd8));
 		planes = -1;
 	}
 	ptx_initQuantTables(head.quality);
-	u8 *data = (u8 *)0xaa2e98;
+	u8 *data = (u8 *)IMG(0xaa2e98);
 	ptx_fread(data, 1, 0x10000, f);
 	int pos = 0, bits = 0;
 	for (int p = 0; p < planes; p++) {
 		if (p <= 3)
 			g_table = p == 1 || p == 2;
-		u8 *plane = (u8 *)0xa6228c + (p << 16);
+		u8 *plane = (u8 *)IMG(0xa6228c) + (p << 16);
 		ptx_startBitReader(data + pos);
 		if (w * h > 0)
 			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
@@ -281,10 +281,10 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	if (close)
 		fclose(f);
 	if (head.type == 0x81)
-		ptx_toRgb((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
+		ptx_toRgb((const u8 *)IMG(0xa6228c), (u8 *)IMG(0xa21708), w * h);
 	else if (head.type == 0x82)
-		ptx_toRgba((const u8 *)0xa6228c, (u8 *)0xa21708, w * h);
-	ptx_layoutBlocks((const u8 *)0xa21708, out, w, h, planes);
+		ptx_toRgba((const u8 *)IMG(0xa6228c), (u8 *)IMG(0xa21708), w * h);
+	ptx_layoutBlocks((const u8 *)IMG(0xa21708), out, w, h, planes);
 	*width = w;
 	*height = h;
 	if (head.type == 0x81) {
@@ -302,9 +302,9 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
    the conversion. Returns 0, or the type less 0x82 for an unknown type */
 int (ptx_open)(const char *path, u8 *out, int *fmt, int *width, int *height)
 {
-	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 	if (!f)
-		ptx_crtlError(-1, (const char *)0x4b3fd8, path);
+		ptx_crtlError(-1, (const char *)IMG(0x4b3fd8), path);
 	return ptx_read(f, out, fmt, width, height, 1);
 }
 

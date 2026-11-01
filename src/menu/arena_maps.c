@@ -4,8 +4,8 @@
 #include <string.h>
 
 typedef struct { i32 chosen; i32 type; } MapChoice;
-#define g_mapChoices ((MapChoice *)0x4d7358)
-#define g_mapChoicesKept ((MapChoice *)0x4d9508)
+#define g_mapChoices ((MapChoice *)IMG(0x4d7358))
+#define g_mapChoicesKept ((MapChoice *)IMG(0x4d9508))
 #define g_mapListKept GAME_VAR(int, 0x4d94fc)         /* (by use) set once a list has been kept */
 
 /* the maps that are never offered */
@@ -93,8 +93,8 @@ void (mapList_ok)(void)
 void (arena_saveSettings)(void)
 {
 	g_playerSex = g_arenaSex;
-	const char *name = (const char *)0x4db560;
-	char *kept = (char *)0x4dedb0;
+	const char *name = (const char *)IMG(0x4db560);
+	char *kept = (char *)IMG(0x4dedb0);
 	int i = 0;
 	do
 		kept[i] = name[i];
@@ -107,8 +107,8 @@ void (arena_saveSettings)(void)
    lock byte is set; the change flagged (0x680cd0) */
 static void map_step(int dir, u32 lock, u32 choice)
 {
-	signed char *c = (signed char *)choice;
-	if (*(char *)lock)
+	signed char *c = (signed char *)RELOC(choice);
+	if (*(char *)RELOC(lock))
 		return;
 	if (dir > 0) {
 		if (++*c == 0x16)
@@ -125,12 +125,12 @@ static void map_step(int dir, u32 lock, u32 choice)
 }
 
 /* 0x4068d0, 0x4356f0: the arena's and the room's map choice */
-void (arena_stepMap)(int dir) { map_step(dir, 0x4db54a, 0x4db548); }
-void (room_stepMap)(int dir) { map_step(dir, 0x4df9ea, 0x4df9e8); }
+void (arena_stepMap)(int dir) { map_step(dir, IMG(0x4db54a), IMG(0x4db548)); }
+void (room_stepMap)(int dir) { map_step(dir, IMG(0x4df9ea), IMG(0x4df9e8)); }
 
 /* ---- the map list's drawing ---- */
 #define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */
-#define cyan_text(a) set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, a)
+#define cyan_text(a) set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, a)
 
 /* a map's cell from x0 to x1 in the row at y: on a red bar (yellow text) when the map is chosen */
 static void map_cell(int map, int x0, int x1, int y)
@@ -138,7 +138,7 @@ static void map_cell(int map, int x0, int x1, int y)
 	if (g_mapChoices[map].chosen) {
 		set_colour_bits(g_rectColour, 0x3f800000, 0, 0x3f000000, 0x3f000000);   /* 1, 0, 0.5, 0.5 */
 		menu_drawRect(x0, y, x1, y + 0x14, 1);
-		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	} else
 		cyan_text(0x3f4ccccd);
 }
@@ -153,13 +153,13 @@ static void map_buttons(int hovered, int first, int y, int label)
 		int x = 0xaa + k * 0xa0;
 		if (hovered == first + k) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		} else {
 			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
-			set_colour_bits((Colour *)0x76d438, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
+			set_colour_bits((Colour *)IMG(0x76d438), 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		}
 		menu_drawWideButton(x, y, x + 0x8c, y + 0x20, 1);
-		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(label + k * 0x80));
+		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(RELOC(label) + k * 0x80));
 	}
 }
 
@@ -177,9 +177,9 @@ void (mapList_draw)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawRect(0x90, 0x2c, 0x1f0, 0x1b4, 0);
 	cyan_text(0x3f800000);
-	text_draw8(0xc8, 0x32, (const char *)0x75d924);
+	text_draw8(0xc8, 0x32, (const char *)IMG(0x75d924));
 	cyan_text(0x3f800000);
-	text_draw8(0x168, 0x32, (const char *)0x75d9a4);
+	text_draw8(0x168, 0x32, (const char *)IMG(0x75d9a4));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
 	for (int i = 0; i < g_arenaMapCount && i < 10; i++) {
@@ -195,9 +195,9 @@ void (mapList_draw)(void)
 		itoa(map + 1, number, 10);
 		map_cell(g_mapTop + i, 0x96, 0x154, y);
 		text_draw8(0xb4 - (int)strlen(number) * 8, y + 3, number);
-		text_draw8(0xbe, y + 3, (const char *)(0x907b30 + (g_mapTop + i) * 0x20));
+		text_draw8(0xbe, y + 3, (const char *)(IMG(0x907b30) + (g_mapTop + i) * 0x20));
 		map_cell(g_mapTop + i, 0x168, 0x1a4, y);
-		text_draw8(0x17c, y + 3, (const char *)(0x4db8d8 + g_mapChoices[g_mapTop + i].type * 20));
+		text_draw8(0x17c, y + 3, (const char *)(IMG(0x4db8d8) + g_mapChoices[g_mapTop + i].type * 20));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);
@@ -218,7 +218,7 @@ void (mapList_draw)(void)
    it */
 void (mapList_mouse)(void)
 {
-	const float *repeat = (const float *)0x4a93d0;
+	const float *repeat = (const float *)IMG(0x4a93d0);
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		int on = mapList_hitTest(g_mouseX, g_mouseY);

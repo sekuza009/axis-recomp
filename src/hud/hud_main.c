@@ -31,8 +31,8 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 
 /* the energy bar's length and left edge in HUD units: floats the patch DLL may move (it rewrites every operand that
    reads them, all to the same new address); read through the first of those operands */
-#define ENERGY_HEIGHT (**(const float **)0x493db8)   /* 160 on disk */
-#define ENERGY_WIDTH  (**(const float **)0x493f29)   /* 8 on disk */
+#define ENERGY_HEIGHT (*(const float *)RELOC(*(const u32 *)IMG(0x493db8)))   /* 160 on disk */
+#define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */
 
 /* the alert ring: a quad strip around the screen centre, opaque at its inner edge and fading out 1.2 times further
    out, turning with the player's heading */

@@ -7,15 +7,15 @@
 /* a name field cleared, then the name copied in (the lobby and room code always do both) */
 static void copy_name(u32 dst, int clear_bytes, const char *src)
 {
-	memset((void *)dst, 0, clear_bytes);
-	strcpy((char *)dst, src);
+	memset((void *)RELOC(dst), 0, clear_bytes);
+	strcpy((char *)RELOC(dst), src);
 }
 
 /* ---- the lobby player record (0x4db560: name, two fields) ---- */
 /* 0x4050f0: "PLAYER" (0x4ad4b0) and both fields 0 */
 void (cfg_defaultPlayerName)(void)
 {
-	copy_name(0x4db560, 32, (const char *)0x4ad4b0);
+	copy_name(IMG(0x4db560), 32, (const char *)IMG(0x4ad4b0));
 	g_arenaCorporation = 0;
 	g_arenaSex = 0;
 }
@@ -24,23 +24,23 @@ void (cfg_defaultPlayerName)(void)
 void (arena_copyProfile)(void)
 {
 	g_arenaSex = g_playerSex;
-	copy_name(0x4db560, 32, (const char *)0x4dedb0);
+	copy_name(IMG(0x4db560), 32, (const char *)IMG(0x4dedb0));
 	g_arenaCorporation = g_playerCorporation;
 }
 
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
 void (app_setDataPaths)(void)
 {
-	copy_name(0x9dae7c, 0x105, (const char *)0x4b29bc);
-	copy_name(0x4dedf8, 0x105, (const char *)0x4b29bc);
-	copy_name(0x680bc4, 0x105, (const char *)0x4b0498);
+	copy_name(IMG(0x9dae7c), 0x105, (const char *)IMG(0x4b29bc));
+	copy_name(IMG(0x4dedf8), 0x105, (const char *)IMG(0x4b29bc));
+	copy_name(IMG(0x680bc4), 0x105, (const char *)IMG(0x4b0498));
 }
 
 /* ---- the chat input line (0x400 bytes at 0x9dc92c) and its three-line history ---- */
 /* 0x431560: the line emptied, in input mode mode */
 void (menu_clearInputBuffer)(int mode)
 {
-	memset((void *)0x9dc92c, 0, 0x400);
+	memset((void *)IMG(0x9dc92c), 0, 0x400);
 	g_chatLength = 0;
 	g_typedLength = mode;
 }
@@ -48,18 +48,18 @@ void (menu_clearInputBuffer)(int mode)
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
 void (chat_pushHistory)(void)
 {
-	memcpy((void *)0x67f738, (void *)0x67f338, 0x400);
-	memcpy((void *)0x67f338, (void *)0x67ef38, 0x400);
-	memcpy((void *)0x67ef38, (void *)0x9dc92c, 0x400);
+	memcpy((void *)IMG(0x67f738), (void *)IMG(0x67f338), 0x400);
+	memcpy((void *)IMG(0x67f338), (void *)IMG(0x67ef38), 0x400);
+	memcpy((void *)IMG(0x67ef38), (void *)IMG(0x9dc92c), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
 void (menu_showMessage)(int i)
 {
 	g_dialogPending = 1;
-	memset((void *)0x4df81c, 0, 0x50);
+	memset((void *)IMG(0x4df81c), 0, 0x50);
 	g_lobbyReply = 0;
-	strcpy((char *)0x4df81c, (const char *)(0x74de24 + i * 0x80));
+	strcpy((char *)IMG(0x4df81c), (const char *)(IMG(0x74de24) + i * 0x80));
 }
 
 /* ---- session records (0x4a bytes) ---- */
@@ -75,8 +75,8 @@ void (record_swap)(void *a, void *b)
 /* 0x4045e0: chat record 0x67ef30 (from 0x9087c4) cleared; the original does it 256 times over without moving on */
 void (arena_clearChatRecord)(void)
 {
-	u32 r = 0x9087c4 + g_gameCount * 0x4a;
-	memset((void *)r, 0, 32);
+	u32 r = IMG(0x9087c4) + g_gameCount * 0x4a;
+	memset((void *)RELOC(r), 0, 32);
 	GAME_VAR(u8, r + 0x21) = 0;
 	GAME_VAR(u8, r + 0x28) = 0;
 	GAME_VAR(u8, r + 0x22) = 0;
@@ -96,15 +96,15 @@ void (mech_setEmpty)(void)
 	g_savedMechParts = g_savedMechChest = g_savedMechArm =
 		g_savedMechLeg = g_savedMechBooster = 0;
 	g_savedMechItem2 = 0;
-	for (u32 p = 0x4dcfe0; p < 0x4dd058; p += 24)
-		memcpy((void *)p, colour, 24);
+	for (u32 p = IMG(0x4dcfe0); p < IMG(0x4dd058); p += 24)
+		memcpy((void *)RELOC(p), colour, 24);
 }
 
 /* 0x40ddb0: the mech unpacked from the network / profile record at 0x9dd5f8 (signed bytes: five parts, the weapons,
    then the colours) */
 void (mech_unpackFromRecord)(void)
 {
-	const signed char *rec = (const signed char *)0x9dd5f8;
+	const signed char *rec = (const signed char *)IMG(0x9dd5f8);
 	g_savedMechParts = rec[0];
 	g_savedMechChest = rec[1];
 	g_savedMechArm = rec[2];
@@ -114,7 +114,7 @@ void (mech_unpackFromRecord)(void)
 		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
 	g_savedMechItem1 = rec[6];
 	g_savedMechWeapons = rec[5];
-	memcpy((void *)0x4dcfe0, (void *)0x9dd603, 0x90);
+	memcpy((void *)IMG(0x4dcfe0), (void *)IMG(0x9dd603), 0x90);
 }
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
@@ -137,7 +137,7 @@ void (mech_loadFromProfile)(void)
 			GAME_VAR(int, 0x9f1a38 + o) = 0;
 		if (!(GAME_VAR(float, 0x9f1a3c + o) >= 0.0f))
 			GAME_VAR(int, 0x9f1a3c + o) = 0;
-		memcpy((void *)(0x4dcfe0 + o), (void *)(0x9f1a34 + o), 0x18);
+		memcpy((void *)(IMG(0x4dcfe0) + o), (void *)(IMG(0x9f1a34) + o), 0x18);
 	}
 }
 
@@ -155,7 +155,7 @@ void (mech_storeToProfile)(void)
 	g_profileMechItem1 = g_savedMechItem1;
 	g_profileMechItem5 = g_savedMechItem5;
 	g_profileMechItem0 = g_savedMechWeapons;
-	memcpy((void *)0x9f1a34, (void *)0x4dcfe0, 0x90);
+	memcpy((void *)IMG(0x9f1a34), (void *)IMG(0x4dcfe0), 0x90);
 }
 
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
@@ -225,13 +225,13 @@ void (roomList_cycleMode)(void)
 static int rank_value(const u8 *row, int mode, long double *value)
 {
 	if (mode == 0)
-		*value = fld_m((const float *)(row + 0x3e));
+		*value = fld_m((const float *)(RELOC(row) + 0x3e));
 	else if (mode == 1)
-		*value = (long double)*(const int *)(row + 0x2e);
+		*value = (long double)*(const int *)(RELOC(row) + 0x2e);
 	else if (mode == 2)
-		*value = (long double)*(const int *)(row + 0x26);
+		*value = (long double)*(const int *)(RELOC(row) + 0x26);
 	else if (mode == 3)
-		*value = fld_m((const float *)(row + 0x36));
+		*value = fld_m((const float *)(RELOC(row) + 0x36));
 	else
 		return 0;
 	return 1;
@@ -244,41 +244,41 @@ static int rank_value(const u8 *row, int mode, long double *value)
 void (roomList_fillPage)(void)
 {
 	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
-	u8 *rows = (u8 *)0x9dceec;
+	u8 *rows = (u8 *)IMG(0x9dceec);
 	for (int i = 0; i < 10; i++) {
 		u8 *row = rows + i * 0x44;
-		*(int *)(row + 4) = 0;
+		*(int *)(RELOC(row) + 4) = 0;
 		memset(row + 8, 0, 30);
 		static const u8 cleared[5] = { 0x26, 0x2a, 0x2e, 0x32, 0x36 };   /* (+0x3e is left as it was) */
 		for (int k = 0; k < 5; k++)
-			*(int *)(row + cleared[k]) = 0;
-		*(int *)(row + 0x3a) = 1;
+			*(int *)(RELOC(row) + cleared[k]) = 0;
+		*(int *)(RELOC(row) + 0x3a) = 1;
 	}
-	long double value = fld_m((const float *)0x4a94ec);
+	long double value = fld_m((const float *)IMG(0x4a94ec));
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
-		const u8 *player = (const u8 *)0xa05330 + i * 62;
+		const u8 *player = (const u8 *)IMG(0xa05330) + i * 62;
 		if (!*player)
 			break;
 		u8 *row = rows + i * 0x44;
-		*(int *)(row + 4) = i + g_roomListPage * 10 + 1;
-		strcpy((char *)(row + 8), (const char *)player);
+		*(int *)(RELOC(row) + 4) = i + g_roomListPage * 10 + 1;
+		strcpy((char *)(RELOC(row) + 8), (const char *)player);
 		for (int k = 0; k < 7; k++)
-			*(u32 *)(row + dst[k]) = *(const u32 *)(player + src[k]);
+			*(u32 *)(RELOC(row) + dst[k]) = *(const u32 *)(player + src[k]);
 		int mode = g_rankingSort, rank;
 		if (i == 0) {
 			before = (*(float *)&g_roomListDistanceLimit);
 			rank = g_roomListPrevRank;
 		} else {
 			long double v;
-			rank = *(const int *)(row - 0x44 + 4);
+			rank = *(const int *)(RELOC(row) - 0x44 + 4);
 			if (rank_value(row - 0x44, mode, &v))
 				before = f32(v);
 		}
 		rank_value(row, mode, &value);
 		if (!(value < before) && !(value > before))   /* (fcom: unordered counts as equal) */
-			*(int *)(row + 4) = rank;
+			*(int *)(RELOC(row) + 4) = rank;
 	}
 	(*(float *)&g_roomListDistanceLimit) = f32(value);
 	g_roomListPrevRank = *(const int *)(rows + (i - 1) * 0x44 + 4);
@@ -326,7 +326,7 @@ void (skirmish_clickRow)(int row)
 
 /* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
    pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
-#define undo_stack ((int *)0x9eeadc)
+#define undo_stack ((int *)IMG(0x9eeadc))
 #define undo_value GAME_VAR(int, 0x9eeba4)
 #define undo_step GAME_VAR(int, 0x9ef1f4)
 #define undo_pending GAME_VAR(int, 0x4d7348)
@@ -340,7 +340,7 @@ void (undo_push)(void)
 		undo_value = undo_stack[d] - 1 + undo_step;
 		undo_step = 0;
 		undo_stack[d + 1] = undo_value;
-		memset((void *)0x9f1064, 0, 1600);
+		memset((void *)IMG(0x9f1064), 0, 1600);
 		undo_pending = 0;
 	}
 }
@@ -351,7 +351,7 @@ void (undo_pop)(void)
 	if (g_undoDepth > 0) {
 		g_undoDepth--;
 		undo_value = undo_stack[g_undoDepth];
-		memset((void *)0x9f1064, 0, 1600);
+		memset((void *)IMG(0x9f1064), 0, 1600);
 		undo_step = 0;
 		undo_pending = 0;
 		g_briefingDone = 0;
@@ -398,8 +398,8 @@ static u32 leave_settings(u32 state)
 	sound_playMenu(4);
 	return put_camera_back();
 }
-u32 (skirmishSettings_leave)(void) { return leave_settings(0x9ef1f0); }
-u32 (missionSettings_leave)(void) { return leave_settings(0x9f62f8); }
+u32 (skirmishSettings_leave)(void) { return leave_settings(IMG(0x9ef1f0)); }
+u32 (missionSettings_leave)(void) { return leave_settings(IMG(0x9f62f8)); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
    menu sound. Returns what the original leaves in eax */
@@ -469,7 +469,7 @@ u32 (mission_choose)(void)
 	int sel = g_missionShown;
 	u32 t = (u32)sel * 0x5c;
 	g_missionStage = sel;
-	memcpy((void *)0x67fb44, (const void *)(0x907b30 + sel * 32), 32);
+	memcpy((void *)IMG(0x67fb44), (const void *)(IMG(0x907b30) + sel * 32), 32);
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
@@ -524,7 +524,7 @@ u32 (chat_closeLine)(int ok)
 		r = GAME_FN(chat_pushHistory, 0x4315c0, u32, void)();   /* chat_pushHistory: into the history */
 	} else {
 		if (g_typedLength > 0)
-			memset((void *)0x9dc92c, 0, g_typedLength);
+			memset((void *)IMG(0x9dc92c), 0, g_typedLength);
 		input_resetKeys();
 		r = (u32)input_initKeyboard(g_hWndMain);
 	}
@@ -537,7 +537,7 @@ u32 (chat_closeLine)(int ok)
 /* 0x431950: any of three keys closes the message box (0x4df900). Returns the last key's state */
 u32 (messageBox_keyClose)(void)
 {
-	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
+	static const u32 keys[3] = { IMG(0x9dae70), IMG(0x5b1da8), IMG(0x6803a0) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
@@ -553,7 +553,7 @@ u32 (messageBox_keyClose)(void)
    original leaves in eax */
 u32 (menu_keyStartFade)(void)
 {
-	static const u32 keys[3] = { 0x9dae70, 0x5b1da8, 0x6803a0 };
+	static const u32 keys[3] = { IMG(0x9dae70), IMG(0x5b1da8), IMG(0x6803a0) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = input_justPressed(GAME_VAR(int, keys[k]));
@@ -574,17 +574,17 @@ u32 (mapSelect_drawNames)(void)
 {
 	u32 r = 0;
 	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
-		set_colour_bits((Colour *)0x76d438, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
+		set_colour_bits((Colour *)IMG(0x76d438), 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
 		int map = g_mapSelectFirst + i;
 		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
-			set_colour_bits((Colour *)0x9da480, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
+			set_colour_bits((Colour *)IMG(0x9da480), 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
 			menu_drawRect(g_mapSelectLeft + 0x20, g_mapSelectTop + dy + 0x2b, g_mapSelectRight - 0x50,
 			              g_mapSelectTop + dy + 0x3d, 1);
-			set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
+			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
 		map = g_mapSelectFirst + i;
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
-		                                                      (const char *)(0x9dda88 + map * 0x44));   /* text_draw8 */
+		                                                      (const char *)(IMG(0x9dda88) + map * 0x44));   /* text_draw8 */
 	}
 	return r;
 }
@@ -650,7 +650,7 @@ u32 (mainmenu_startNetGame)(void)
 		return GAME_FN(mapSelect_mouse, 0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		const Outline *buttons = (const Outline *)0x4deb80;
+		const Outline *buttons = (const Outline *)IMG(0x4deb80);
 		int i = 0;
 		while (i < 6 && point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 			i++;
@@ -672,7 +672,7 @@ u32 (mainmenu_startNetGame)(void)
    the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
-	static const u32 key[6] = { 0x4e1500, 0x4e1508, 0x4e1504, 0x4e1524, 0x4e0cd4, 0x4e153c };
+	static const u32 key[6] = { IMG(0x4e1500), IMG(0x4e1508), IMG(0x4e1504), IMG(0x4e1524), IMG(0x4e0cd4), IMG(0x4e153c) };
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)

@@ -37,15 +37,20 @@ static const u32 d_4ad000[] = {   /* 0x4ad000 */
 	FN_VIA(static_emptyCtorTimeSync1, 0x487b70, 0x487b60), FN_VIA(static_emptyCtorTimeSync2, 0x487b90, 0x487b80),
 	FN_ADDR(static_startSceneRtti, 0x48b3b0),
 };
-static const u32 d_4ad104[] = { 0x0049efae, 0x0049fef8, 0x004a64ce, 0x004a5a9d };
-static const u32 d_4ad11c[] = { 0x0049ff9d };
+static const u32 d_4ad104[] = {   /* 0x4ad104 */
+	IMG(0x0049efae),
+	IMG(0x0049fef8),
+	IMG(0x004a64ce),
+	IMG(0x004a5a9d),   /* "hWZJ" */
+};
+static const u32 d_4ad11c[] = { IMG(0x0049ff9d) };
 static const u32 d_4ad128[] = {   /* 0x4ad128 */
-	0x004a5aae,
+	IMG(0x004a5aae),
 	0x00000000,
-	0x004ad164,   /* "_Disk1.dat" */
-	0x004ad158,   /* "_Disk2.dat" */
-	0x004ad14c,   /* "_Disk3.dat" */
-	0x004ad140,   /* "_Disk4.dat" */
+	IMG(0x004ad164),   /* "_Disk1.dat" */
+	IMG(0x004ad158),   /* "_Disk2.dat" */
+	IMG(0x004ad14c),   /* "_Disk3.dat" */
+	IMG(0x004ad140),   /* "_Disk4.dat" */
 };
 static const char d_4ad140[] = "_Disk4.dat";
 static const char d_4ad14c[] = "_Disk3.dat";
@@ -412,14 +417,14 @@ static const char d_4b04a0[] = "Axis Console";
 static const char d_4b04b0[] = "Run AxisPlay.exe";
 static const float d_4b04c4[] = { -35.0f, 35.0f };
 static const u32 d_4b04cc[] = {   /* 0x4b04cc */
-	0x004b0550,   /* "640 x 480" */
-	0x004ac840,   /* "1280 x 720" */
-	0x004ac864,   /* "1600 x 900" */
-	0x004ac888,   /* "1920 x 1080" */
-	0x004ac8ac,   /* "2560 x 1440" */
-	0x004ac8d0,   /* "3840 x 2160" */
-	0x004ac8f4,   /* "1024 x 768" */
-	0x004ac918,   /* "DESKTOP" */
+	IMG(0x004b0550),   /* "640 x 480" */
+	IMG(0x004ac840),   /* "1280 x 720" */
+	IMG(0x004ac864),   /* "1600 x 900" */
+	IMG(0x004ac888),   /* "1920 x 1080" */
+	IMG(0x004ac8ac),   /* "2560 x 1440" */
+	IMG(0x004ac8d0),   /* "3840 x 2160" */
+	IMG(0x004ac8f4),   /* "1024 x 768" */
+	IMG(0x004ac918),   /* "DESKTOP" */
 	0x00000008,
 	0x0000000a,
 	0x00000009,
@@ -458,518 +463,518 @@ static const float d_4b071c[] = {   /* 0x4b071c */
 	1.0f,
 };
 static const u32 d_4b0750[] = {   /* 0x4b0750 */
-	0x004b035c,
-	0x004b13f0,   /* "ESCAPE" */
-	0x004b13ec,
-	0x004b13e8,
-	0x004b13e4,
-	0x004b13e0,
-	0x004b13dc,
-	0x004b13d8,
-	0x004b13d4,
-	0x004b13d0,
-	0x004b13cc,
-	0x004b13c8,
-	0x004b13c4,
-	0x004b13c0,
-	0x004b13b4,   /* "BACKSPACE" */
-	0x004b13b0,   /* "TAB" */
-	0x004b13ac,
-	0x004b13a8,
-	0x004b13a4,
-	0x004b13a0,
-	0x004b139c,
-	0x004b1398,
-	0x004b1394,
-	0x004b1390,
-	0x004b138c,
-	0x004b1388,
-	0x004b1384,
-	0x004b1380,
-	0x004b1378,   /* "ENTER" */
-	0x004b1368,   /* "LEFT-CONTROL" */
-	0x004b1364,
-	0x004b1360,
-	0x004b135c,
-	0x004b1358,
-	0x004b1354,
-	0x004b1350,
-	0x004b134c,
-	0x004b1348,
-	0x004b1344,
-	0x004b1340,
-	0x004b133c,
-	0x004b1338,
-	0x004b132c,   /* "LEFT-SHIFT" */
-	0x004b1328,
-	0x004b1324,
-	0x004b1320,
-	0x004b131c,
-	0x004b1318,
-	0x004b1314,
-	0x004b1310,
-	0x004b130c,
-	0x004b1308,
-	0x004b1304,
-	0x004ad564,
-	0x004b12f8,   /* "RIGHT-SHIFT" */
-	0x004b12f4,
-	0x004b12e8,   /* "LEFT-ALT" */
-	0x004b12dc,   /* "SPACEBAR" */
-	0x004b12d0,   /* "CAPS-LOCK" */
-	0x004b12cc,   /* "F1" */
-	0x004b12c8,   /* "F2" */
-	0x004b12c4,   /* "F3" */
-	0x004b12c0,   /* "F4" */
-	0x004b12bc,   /* "F5" */
-	0x004b12b8,   /* "F6" */
-	0x004b12b4,   /* "F7" */
-	0x004b12b0,   /* "F8" */
-	0x004b12ac,   /* "F9" */
-	0x004b12a8,   /* "F10" */
-	0x004b129c,   /* "NUM-LOCK" */
-	0x004b1290,   /* "SCROLL-LOCK" */
-	0x004b1288,   /* "NUM-7" */
-	0x004b1280,   /* "NUM-8" */
-	0x004b1278,   /* "NUM-9" */
-	0x004b126c,   /* "NUM-MINUS" */
-	0x004b1264,   /* "NUM-4" */
-	0x004b125c,   /* "NUM-5" */
-	0x004b1254,   /* "NUM-6" */
-	0x004b124c,   /* "NUM-ADD" */
-	0x004b1244,   /* "NUM-1" */
-	0x004b123c,   /* "NUM-2" */
-	0x004b1234,   /* "NUM-3" */
-	0x004b122c,   /* "NUM-0" */
-	0x004b1220,   /* "NUM-DECIMAL" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b121c,   /* "F11" */
-	0x004b1218,   /* "F12" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b120c,   /* "NUM-ENTER" */
-	0x004b11fc,   /* "RIGHT-CONTROL" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b11f0,   /* "NUM-COMMA" */
-	0x004b035c,
-	0x004b11e4,   /* "NUM-DIVIDE" */
-	0x004b035c,
-	0x004b11dc,   /* "SYSRQ" */
-	0x004b11d0,   /* "RIGHT-ALT" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b11c8,   /* "HOME" */
-	0x004b11c4,   /* "UP" */
-	0x004b11bc,   /* "PGUP " */
-	0x004b035c,
-	0x004b11b4,   /* "LEFT" */
-	0x004b035c,
-	0x004b11ac,   /* "RIGHT" */
-	0x004b035c,
-	0x004b11a8,   /* "END" */
-	0x004b11a0,   /* "DOWN" */
-	0x004b1198,   /* "PGDN" */
-	0x004b1190,   /* "INSERT" */
-	0x004b1188,   /* "DELETE" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b117c,   /* "LEFT-WIN" */
-	0x004b1170,   /* "RIGHT-WIN" */
-	0x004b1168,   /* "APPS" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b115c,   /* "LEFT-BUTTON" */
-	0x004b114c,   /* "RIGHT-BUTTON" */
-	0x004b113c,   /* "MIDDLE-BUTTON" */
-	0x004b1130,   /* "WHEEL-UP" */
-	0x004b1124,   /* "WHEEL-DOWN" */
-	0x004b035c,
-	0x004b035c,
-	0x004b115c,   /* "LEFT-BUTTON" */
-	0x004b114c,   /* "RIGHT-BUTTON" */
-	0x004b111c,   /* "CANCEL" */
-	0x004b113c,   /* "MIDDLE-BUTTON" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b13b4,   /* "BACKSPACE" */
-	0x004b13b0,   /* "TAB" */
-	0x004b035c,
-	0x004b035c,
-	0x004b1114,   /* "CLEAR" */
-	0x004b1378,   /* "ENTER" */
-	0x004b035c,
-	0x004b035c,
-	0x004b110c,   /* "SHIFT" */
-	0x004b1104,   /* "CONTROL" */
-	0x004b1100,   /* "ALT" */
-	0x004b10f8,   /* "PAUSE" */
-	0x004b12d0,   /* "CAPS-LOCK" */
-	0x004b10f0,   /* "HANGUL" */
-	0x004b035c,
-	0x004b10e8,   /* "JUNJA" */
-	0x004b10e0,   /* "FINAL" */
-	0x004b10d8,   /* "HANJA" */
-	0x004b035c,
-	0x004b13f0,   /* "ESCAPE" */
-	0x004b10d0,   /* "CONVERT" */
-	0x004b10c4,   /* "NONCONVERT" */
-	0x004b10bc,   /* "ACCEPT" */
-	0x004b10b0,   /* "MODECHANGE" */
-	0x004b12dc,   /* "SPACEBAR" */
-	0x004b10a8,   /* "PGUP" */
-	0x004b1198,   /* "PGDN" */
-	0x004b11a8,   /* "END" */
-	0x004b11c8,   /* "HOME" */
-	0x004b11b4,   /* "LEFT" */
-	0x004b11c4,   /* "UP" */
-	0x004b11ac,   /* "RIGHT" */
-	0x004b11a0,   /* "DOWN" */
-	0x004b10a0,   /* "SELECT" */
-	0x004b1098,   /* "PRINT" */
-	0x004b1090,   /* "EXECUTE" */
-	0x004b1084,   /* "SNAPSHOT" */
-	0x004b1190,   /* "INSERT" */
-	0x004b1188,   /* "DELETE" */
-	0x004b107c,   /* "HELP" */
-	0x004b13c8,
-	0x004b13ec,
-	0x004b13e8,
-	0x004b13e4,
-	0x004b13e0,
-	0x004b13dc,
-	0x004b13d8,
-	0x004b13d4,
-	0x004b13d0,
-	0x004b13cc,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b1364,
-	0x004b1314,
-	0x004b131c,
-	0x004b135c,
-	0x004b13a4,
-	0x004b1358,
-	0x004b1354,
-	0x004b1350,
-	0x004b1390,
-	0x004b134c,
-	0x004b1348,
-	0x004b1344,
-	0x004b130c,
-	0x004b1310,
-	0x004b138c,
-	0x004b1388,
-	0x004b13ac,
-	0x004b13a0,
-	0x004b1360,
-	0x004b139c,
-	0x004b1394,
-	0x004b1318,
-	0x004b13a8,
-	0x004b1320,
-	0x004b1398,
-	0x004b1324,
-	0x004b117c,   /* "LEFT-WIN" */
-	0x004b1170,   /* "RIGHT-WIN" */
-	0x004b1168,   /* "APPS" */
-	0x004b035c,
-	0x004b035c,
-	0x004b122c,   /* "NUM-0" */
-	0x004b1244,   /* "NUM-1" */
-	0x004b123c,   /* "NUM-2" */
-	0x004b1234,   /* "NUM-3" */
-	0x004b1264,   /* "NUM-4" */
-	0x004b125c,   /* "NUM-5" */
-	0x004b1254,   /* "NUM-6" */
-	0x004b1288,   /* "NUM-7" */
-	0x004b1280,   /* "NUM-8" */
-	0x004b1278,   /* "NUM-9" */
-	0x004b12f4,
-	0x004b124c,   /* "NUM-ADD" */
-	0x004ad564,
-	0x004b126c,   /* "NUM-MINUS" */
-	0x004b1220,   /* "NUM-DECIMAL" */
-	0x004b11e4,   /* "NUM-DIVIDE" */
-	0x004b12cc,   /* "F1" */
-	0x004b12c8,   /* "F2" */
-	0x004b12c4,   /* "F3" */
-	0x004b12c0,   /* "F4" */
-	0x004b12bc,   /* "F5" */
-	0x004b12b8,   /* "F6" */
-	0x004b12b4,   /* "F7" */
-	0x004b12b0,   /* "F8" */
-	0x004b12ac,   /* "F9" */
-	0x004b12a8,   /* "F10" */
-	0x004b121c,   /* "F11" */
-	0x004b1218,   /* "F12" */
-	0x004b1078,   /* "F13" */
-	0x004b1074,   /* "F14" */
-	0x004b1070,   /* "F15" */
-	0x004b106c,   /* "F16" */
-	0x004b1068,   /* "F17" */
-	0x004b1064,   /* "F18" */
-	0x004b1060,   /* "F19" */
-	0x004b105c,   /* "F20" */
-	0x004b1058,   /* "F21" */
-	0x004b1054,   /* "F22" */
-	0x004b1050,   /* "F23" */
-	0x004b104c,   /* "F24" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b129c,   /* "NUM-LOCK" */
-	0x004b1290,   /* "SCROLL-LOCK" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b132c,   /* "LEFT-SHIFT" */
-	0x004b12f8,   /* "RIGHT-SHIFT" */
-	0x004b1368,   /* "LEFT-CONTROL" */
-	0x004b11fc,   /* "RIGHT-CONTROL" */
-	0x004b12e8,   /* "LEFT-ALT" */
-	0x004b11d0,   /* "RIGHT-ALT" */
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b035c,
-	0x004b115c,   /* "LEFT-BUTTON" */
-	0x004b114c,   /* "RIGHT-BUTTON" */
-	0x004b113c,   /* "MIDDLE-BUTTON" */
-	0x004b1130,   /* "WHEEL-UP" */
-	0x004b1124,   /* "WHEEL-DOWN" */
-	0x004b035c,
+	IMG(0x004b035c),
+	IMG(0x004b13f0),   /* "ESCAPE" */
+	IMG(0x004b13ec),
+	IMG(0x004b13e8),
+	IMG(0x004b13e4),
+	IMG(0x004b13e0),
+	IMG(0x004b13dc),
+	IMG(0x004b13d8),
+	IMG(0x004b13d4),
+	IMG(0x004b13d0),
+	IMG(0x004b13cc),
+	IMG(0x004b13c8),
+	IMG(0x004b13c4),
+	IMG(0x004b13c0),
+	IMG(0x004b13b4),   /* "BACKSPACE" */
+	IMG(0x004b13b0),   /* "TAB" */
+	IMG(0x004b13ac),
+	IMG(0x004b13a8),
+	IMG(0x004b13a4),
+	IMG(0x004b13a0),
+	IMG(0x004b139c),
+	IMG(0x004b1398),
+	IMG(0x004b1394),
+	IMG(0x004b1390),
+	IMG(0x004b138c),
+	IMG(0x004b1388),
+	IMG(0x004b1384),
+	IMG(0x004b1380),
+	IMG(0x004b1378),   /* "ENTER" */
+	IMG(0x004b1368),   /* "LEFT-CONTROL" */
+	IMG(0x004b1364),
+	IMG(0x004b1360),
+	IMG(0x004b135c),
+	IMG(0x004b1358),
+	IMG(0x004b1354),
+	IMG(0x004b1350),
+	IMG(0x004b134c),
+	IMG(0x004b1348),
+	IMG(0x004b1344),
+	IMG(0x004b1340),
+	IMG(0x004b133c),
+	IMG(0x004b1338),
+	IMG(0x004b132c),   /* "LEFT-SHIFT" */
+	IMG(0x004b1328),
+	IMG(0x004b1324),
+	IMG(0x004b1320),
+	IMG(0x004b131c),
+	IMG(0x004b1318),
+	IMG(0x004b1314),
+	IMG(0x004b1310),
+	IMG(0x004b130c),
+	IMG(0x004b1308),
+	IMG(0x004b1304),
+	IMG(0x004ad564),
+	IMG(0x004b12f8),   /* "RIGHT-SHIFT" */
+	IMG(0x004b12f4),
+	IMG(0x004b12e8),   /* "LEFT-ALT" */
+	IMG(0x004b12dc),   /* "SPACEBAR" */
+	IMG(0x004b12d0),   /* "CAPS-LOCK" */
+	IMG(0x004b12cc),   /* "F1" */
+	IMG(0x004b12c8),   /* "F2" */
+	IMG(0x004b12c4),   /* "F3" */
+	IMG(0x004b12c0),   /* "F4" */
+	IMG(0x004b12bc),   /* "F5" */
+	IMG(0x004b12b8),   /* "F6" */
+	IMG(0x004b12b4),   /* "F7" */
+	IMG(0x004b12b0),   /* "F8" */
+	IMG(0x004b12ac),   /* "F9" */
+	IMG(0x004b12a8),   /* "F10" */
+	IMG(0x004b129c),   /* "NUM-LOCK" */
+	IMG(0x004b1290),   /* "SCROLL-LOCK" */
+	IMG(0x004b1288),   /* "NUM-7" */
+	IMG(0x004b1280),   /* "NUM-8" */
+	IMG(0x004b1278),   /* "NUM-9" */
+	IMG(0x004b126c),   /* "NUM-MINUS" */
+	IMG(0x004b1264),   /* "NUM-4" */
+	IMG(0x004b125c),   /* "NUM-5" */
+	IMG(0x004b1254),   /* "NUM-6" */
+	IMG(0x004b124c),   /* "NUM-ADD" */
+	IMG(0x004b1244),   /* "NUM-1" */
+	IMG(0x004b123c),   /* "NUM-2" */
+	IMG(0x004b1234),   /* "NUM-3" */
+	IMG(0x004b122c),   /* "NUM-0" */
+	IMG(0x004b1220),   /* "NUM-DECIMAL" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b121c),   /* "F11" */
+	IMG(0x004b1218),   /* "F12" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b120c),   /* "NUM-ENTER" */
+	IMG(0x004b11fc),   /* "RIGHT-CONTROL" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b11f0),   /* "NUM-COMMA" */
+	IMG(0x004b035c),
+	IMG(0x004b11e4),   /* "NUM-DIVIDE" */
+	IMG(0x004b035c),
+	IMG(0x004b11dc),   /* "SYSRQ" */
+	IMG(0x004b11d0),   /* "RIGHT-ALT" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b11c8),   /* "HOME" */
+	IMG(0x004b11c4),   /* "UP" */
+	IMG(0x004b11bc),   /* "PGUP " */
+	IMG(0x004b035c),
+	IMG(0x004b11b4),   /* "LEFT" */
+	IMG(0x004b035c),
+	IMG(0x004b11ac),   /* "RIGHT" */
+	IMG(0x004b035c),
+	IMG(0x004b11a8),   /* "END" */
+	IMG(0x004b11a0),   /* "DOWN" */
+	IMG(0x004b1198),   /* "PGDN" */
+	IMG(0x004b1190),   /* "INSERT" */
+	IMG(0x004b1188),   /* "DELETE" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b117c),   /* "LEFT-WIN" */
+	IMG(0x004b1170),   /* "RIGHT-WIN" */
+	IMG(0x004b1168),   /* "APPS" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b115c),   /* "LEFT-BUTTON" */
+	IMG(0x004b114c),   /* "RIGHT-BUTTON" */
+	IMG(0x004b113c),   /* "MIDDLE-BUTTON" */
+	IMG(0x004b1130),   /* "WHEEL-UP" */
+	IMG(0x004b1124),   /* "WHEEL-DOWN" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b115c),   /* "LEFT-BUTTON" */
+	IMG(0x004b114c),   /* "RIGHT-BUTTON" */
+	IMG(0x004b111c),   /* "CANCEL" */
+	IMG(0x004b113c),   /* "MIDDLE-BUTTON" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b13b4),   /* "BACKSPACE" */
+	IMG(0x004b13b0),   /* "TAB" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b1114),   /* "CLEAR" */
+	IMG(0x004b1378),   /* "ENTER" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b110c),   /* "SHIFT" */
+	IMG(0x004b1104),   /* "CONTROL" */
+	IMG(0x004b1100),   /* "ALT" */
+	IMG(0x004b10f8),   /* "PAUSE" */
+	IMG(0x004b12d0),   /* "CAPS-LOCK" */
+	IMG(0x004b10f0),   /* "HANGUL" */
+	IMG(0x004b035c),
+	IMG(0x004b10e8),   /* "JUNJA" */
+	IMG(0x004b10e0),   /* "FINAL" */
+	IMG(0x004b10d8),   /* "HANJA" */
+	IMG(0x004b035c),
+	IMG(0x004b13f0),   /* "ESCAPE" */
+	IMG(0x004b10d0),   /* "CONVERT" */
+	IMG(0x004b10c4),   /* "NONCONVERT" */
+	IMG(0x004b10bc),   /* "ACCEPT" */
+	IMG(0x004b10b0),   /* "MODECHANGE" */
+	IMG(0x004b12dc),   /* "SPACEBAR" */
+	IMG(0x004b10a8),   /* "PGUP" */
+	IMG(0x004b1198),   /* "PGDN" */
+	IMG(0x004b11a8),   /* "END" */
+	IMG(0x004b11c8),   /* "HOME" */
+	IMG(0x004b11b4),   /* "LEFT" */
+	IMG(0x004b11c4),   /* "UP" */
+	IMG(0x004b11ac),   /* "RIGHT" */
+	IMG(0x004b11a0),   /* "DOWN" */
+	IMG(0x004b10a0),   /* "SELECT" */
+	IMG(0x004b1098),   /* "PRINT" */
+	IMG(0x004b1090),   /* "EXECUTE" */
+	IMG(0x004b1084),   /* "SNAPSHOT" */
+	IMG(0x004b1190),   /* "INSERT" */
+	IMG(0x004b1188),   /* "DELETE" */
+	IMG(0x004b107c),   /* "HELP" */
+	IMG(0x004b13c8),
+	IMG(0x004b13ec),
+	IMG(0x004b13e8),
+	IMG(0x004b13e4),
+	IMG(0x004b13e0),
+	IMG(0x004b13dc),
+	IMG(0x004b13d8),
+	IMG(0x004b13d4),
+	IMG(0x004b13d0),
+	IMG(0x004b13cc),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b1364),
+	IMG(0x004b1314),
+	IMG(0x004b131c),
+	IMG(0x004b135c),
+	IMG(0x004b13a4),
+	IMG(0x004b1358),
+	IMG(0x004b1354),
+	IMG(0x004b1350),
+	IMG(0x004b1390),
+	IMG(0x004b134c),
+	IMG(0x004b1348),
+	IMG(0x004b1344),
+	IMG(0x004b130c),
+	IMG(0x004b1310),
+	IMG(0x004b138c),
+	IMG(0x004b1388),
+	IMG(0x004b13ac),
+	IMG(0x004b13a0),
+	IMG(0x004b1360),
+	IMG(0x004b139c),
+	IMG(0x004b1394),
+	IMG(0x004b1318),
+	IMG(0x004b13a8),
+	IMG(0x004b1320),
+	IMG(0x004b1398),
+	IMG(0x004b1324),
+	IMG(0x004b117c),   /* "LEFT-WIN" */
+	IMG(0x004b1170),   /* "RIGHT-WIN" */
+	IMG(0x004b1168),   /* "APPS" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b122c),   /* "NUM-0" */
+	IMG(0x004b1244),   /* "NUM-1" */
+	IMG(0x004b123c),   /* "NUM-2" */
+	IMG(0x004b1234),   /* "NUM-3" */
+	IMG(0x004b1264),   /* "NUM-4" */
+	IMG(0x004b125c),   /* "NUM-5" */
+	IMG(0x004b1254),   /* "NUM-6" */
+	IMG(0x004b1288),   /* "NUM-7" */
+	IMG(0x004b1280),   /* "NUM-8" */
+	IMG(0x004b1278),   /* "NUM-9" */
+	IMG(0x004b12f4),
+	IMG(0x004b124c),   /* "NUM-ADD" */
+	IMG(0x004ad564),
+	IMG(0x004b126c),   /* "NUM-MINUS" */
+	IMG(0x004b1220),   /* "NUM-DECIMAL" */
+	IMG(0x004b11e4),   /* "NUM-DIVIDE" */
+	IMG(0x004b12cc),   /* "F1" */
+	IMG(0x004b12c8),   /* "F2" */
+	IMG(0x004b12c4),   /* "F3" */
+	IMG(0x004b12c0),   /* "F4" */
+	IMG(0x004b12bc),   /* "F5" */
+	IMG(0x004b12b8),   /* "F6" */
+	IMG(0x004b12b4),   /* "F7" */
+	IMG(0x004b12b0),   /* "F8" */
+	IMG(0x004b12ac),   /* "F9" */
+	IMG(0x004b12a8),   /* "F10" */
+	IMG(0x004b121c),   /* "F11" */
+	IMG(0x004b1218),   /* "F12" */
+	IMG(0x004b1078),   /* "F13" */
+	IMG(0x004b1074),   /* "F14" */
+	IMG(0x004b1070),   /* "F15" */
+	IMG(0x004b106c),   /* "F16" */
+	IMG(0x004b1068),   /* "F17" */
+	IMG(0x004b1064),   /* "F18" */
+	IMG(0x004b1060),   /* "F19" */
+	IMG(0x004b105c),   /* "F20" */
+	IMG(0x004b1058),   /* "F21" */
+	IMG(0x004b1054),   /* "F22" */
+	IMG(0x004b1050),   /* "F23" */
+	IMG(0x004b104c),   /* "F24" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b129c),   /* "NUM-LOCK" */
+	IMG(0x004b1290),   /* "SCROLL-LOCK" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b132c),   /* "LEFT-SHIFT" */
+	IMG(0x004b12f8),   /* "RIGHT-SHIFT" */
+	IMG(0x004b1368),   /* "LEFT-CONTROL" */
+	IMG(0x004b11fc),   /* "RIGHT-CONTROL" */
+	IMG(0x004b12e8),   /* "LEFT-ALT" */
+	IMG(0x004b11d0),   /* "RIGHT-ALT" */
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b035c),
+	IMG(0x004b115c),   /* "LEFT-BUTTON" */
+	IMG(0x004b114c),   /* "RIGHT-BUTTON" */
+	IMG(0x004b113c),   /* "MIDDLE-BUTTON" */
+	IMG(0x004b1130),   /* "WHEEL-UP" */
+	IMG(0x004b1124),   /* "WHEEL-DOWN" */
+	IMG(0x004b035c),
 };
 static const char d_4b0f50[] = "AXIS CONFIGURATION FILE Master ver 1.00.0106";
 static const char d_4b0fa0[] = "AXIS USER PROFILE DATA Master ver 1.00.0106";
@@ -1731,7 +1736,7 @@ static const u32 d_4b4310[] = {   /* 0x4b4310 */
 	0x00000064, 0x00000073, 0x00000082, 0x00000096,
 };
 static const u32 init_g_componentDatPath[] = {   /* 0x4b4414 */
-	0x004b4418,   /* "Data/Component.dat" */
+	IMG(0x004b4418),   /* "Data/Component.dat" */
 };
 static const char d_4b4418[] = "Data/Component.dat";
 static const char d_4b442c[] = "YOUR COMMANDER %s HAS BEEN KILLED!";
@@ -2427,7 +2432,7 @@ static const char d_4d051c[] = "\"AutoPlay\\%s\"";
 static const char d_4d052c[] = "primitiveElementIndexHeap overflow(%d/%d)-processRenderingBy()";
 static const char d_4d056c[] = "primitiveBuffer overflow(%d/%d)-processRenderingBy()";
 static const u32 init_g_catalogueFile[] = {   /* 0x4d05a4 */
-	0x004b4418,   /* "Data/Component.dat" */
+	IMG(0x004b4418),   /* "Data/Component.dat" */
 };
 static const char d_4d05a8[] = "GameTitle %s\nMapNo %d\nFragLimit %d\nTimeLimit %d\nMyID %s\nGameEnd 0\n";
 static const char d_4d05ec[] = "LEVEL UP!";
@@ -2443,57 +2448,57 @@ static const char d_4d06e0[] = "axiswl.log";
 static const char d_4d06ec[] = "NOTEAM";
 static const char d_4d06f4[] = "YOU ARE A SPECTATOR NOW.";
 static const char d_4d0710[] = "incorrect level(%d) - processGameMode_init()";
-static const u32 d_4d0740[] = { 0x00009875, 0x00009873, 0x0049ea2f, 0x0049ea46, 0x0049ea46 };
+static const u32 d_4d0740[] = { 0x00009875, 0x00009873, IMG(0x0049ea2f), IMG(0x0049ea46), IMG(0x0049ea46) };
 static const u32 d_4d0760[] = { 0x19930520 };
 static const u32 d_4d0770[] = {   /* 0x4d0770 */
 	0x00000001,
-	0x0049edbd,
+	IMG(0x0049edbd),
 	0x00000002,
 	0x00000000,
-	0x004aa870,   /* "No error" */
-	0x004aa858,   /* "Operation not permitted" */
-	0x004aa83c,   /* "No such file or directory" */
-	0x004aa82c,   /* "No such process" */
-	0x004aa810,   /* "Interrupted function call" */
-	0x004aa7fc,   /* "Input/output error" */
-	0x004aa7e0,   /* "No such device or address" */
-	0x004aa7cc,   /* "Arg list too long" */
-	0x004aa7b8,   /* "Exec format error" */
-	0x004aa7a4,   /* "Bad file descriptor" */
-	0x004aa790,   /* "No child processes" */
-	0x004aa76c,   /* "Resource temporarily unavailable" */
-	0x004aa758,   /* "Not enough space" */
-	0x004aa744,   /* "Permission denied" */
-	0x004aa738,   /* "Bad address" */
-	0x004aa728,   /* "Unknown error" */
-	0x004aa718,   /* "Resource device" */
-	0x004aa70c,   /* "File exists" */
-	0x004aa6fc,   /* "Improper link" */
-	0x004aa6ec,   /* "No such device" */
-	0x004aa6dc,   /* "Not a directory" */
-	0x004aa6cc,   /* "Is a directory" */
-	0x004aa6b8,   /* "Invalid argument" */
-	0x004aa698,   /* "Too many open files in system" */
-	0x004aa684,   /* "Too many open files" */
-	0x004aa660,   /* "Inappropriate I/O control operation" */
-	0x004aa728,   /* "Unknown error" */
-	0x004aa650,   /* "File too large" */
-	0x004aa638,   /* "No space left on device" */
-	0x004aa628,   /* "Invalid seek" */
-	0x004aa610,   /* "Read-only file system" */
-	0x004aa600,   /* "Too many links" */
-	0x004aa5f4,   /* "Broken pipe" */
-	0x004aa5e4,   /* "Domain error" */
-	0x004aa5d0,   /* "Result too large" */
-	0x004aa728,   /* "Unknown error" */
-	0x004aa5b4,   /* "Resource deadlock avoided" */
-	0x004aa728,   /* "Unknown error" */
-	0x004aa5a0,   /* "Filename too long" */
-	0x004aa58c,   /* "No locks available" */
-	0x004aa570,   /* "Function not implemented" */
-	0x004aa55c,   /* "Directory not empty" */
-	0x004aa544,   /* "Illegal byte sequence" */
-	0x004aa728,   /* "Unknown error" */
+	IMG(0x004aa870),   /* "No error" */
+	IMG(0x004aa858),   /* "Operation not permitted" */
+	IMG(0x004aa83c),   /* "No such file or directory" */
+	IMG(0x004aa82c),   /* "No such process" */
+	IMG(0x004aa810),   /* "Interrupted function call" */
+	IMG(0x004aa7fc),   /* "Input/output error" */
+	IMG(0x004aa7e0),   /* "No such device or address" */
+	IMG(0x004aa7cc),   /* "Arg list too long" */
+	IMG(0x004aa7b8),   /* "Exec format error" */
+	IMG(0x004aa7a4),   /* "Bad file descriptor" */
+	IMG(0x004aa790),   /* "No child processes" */
+	IMG(0x004aa76c),   /* "Resource temporarily unavailable" */
+	IMG(0x004aa758),   /* "Not enough space" */
+	IMG(0x004aa744),   /* "Permission denied" */
+	IMG(0x004aa738),   /* "Bad address" */
+	IMG(0x004aa728),   /* "Unknown error" */
+	IMG(0x004aa718),   /* "Resource device" */
+	IMG(0x004aa70c),   /* "File exists" */
+	IMG(0x004aa6fc),   /* "Improper link" */
+	IMG(0x004aa6ec),   /* "No such device" */
+	IMG(0x004aa6dc),   /* "Not a directory" */
+	IMG(0x004aa6cc),   /* "Is a directory" */
+	IMG(0x004aa6b8),   /* "Invalid argument" */
+	IMG(0x004aa698),   /* "Too many open files in system" */
+	IMG(0x004aa684),   /* "Too many open files" */
+	IMG(0x004aa660),   /* "Inappropriate I/O control operation" */
+	IMG(0x004aa728),   /* "Unknown error" */
+	IMG(0x004aa650),   /* "File too large" */
+	IMG(0x004aa638),   /* "No space left on device" */
+	IMG(0x004aa628),   /* "Invalid seek" */
+	IMG(0x004aa610),   /* "Read-only file system" */
+	IMG(0x004aa600),   /* "Too many links" */
+	IMG(0x004aa5f4),   /* "Broken pipe" */
+	IMG(0x004aa5e4),   /* "Domain error" */
+	IMG(0x004aa5d0),   /* "Result too large" */
+	IMG(0x004aa728),   /* "Unknown error" */
+	IMG(0x004aa5b4),   /* "Resource deadlock avoided" */
+	IMG(0x004aa728),   /* "Unknown error" */
+	IMG(0x004aa5a0),   /* "Filename too long" */
+	IMG(0x004aa58c),   /* "No locks available" */
+	IMG(0x004aa570),   /* "Function not implemented" */
+	IMG(0x004aa55c),   /* "Directory not empty" */
+	IMG(0x004aa544),   /* "Illegal byte sequence" */
+	IMG(0x004aa728),   /* "Unknown error" */
 	0x0000002b,
 	0x00000000,
 	0x00b11a60,
@@ -2506,16 +2511,16 @@ static const u32 d_4d0864[] = { 0x00000002, 0x00000001 };
 static const u32 d_4d0884[] = { 0x00000002, 0x00000002 };
 static const char d_4d0ac0[] = "acos";
 static const u32 d_4d0ad0[] = {   /* 0x4d0ad0 */
-	0x004aa8e8,   /* "(null)" */
-	0x004aa8d8,
-	0x004a5905,
-	0x004a5905,
-	0x004a5905,
-	0x004a5905,
-	0x004a5905,
-	0x004a5905,
-	0x004d0afa,
-	0x004d0afa,
+	IMG(0x004aa8e8),   /* "(null)" */
+	IMG(0x004aa8d8),
+	IMG(0x004a5905),
+	IMG(0x004a5905),
+	IMG(0x004a5905),
+	IMG(0x004a5905),
+	IMG(0x004a5905),
+	IMG(0x004a5905),
+	IMG(0x004d0afa),
+	IMG(0x004d0afa),
 	0x00200000,
 	0x00200020,
 	0x00200020,
@@ -2532,7 +2537,7 @@ static const u32 d_4d0ad0[] = {   /* 0x4d0ad0 */
 	0x00200020,
 	0x00200020,
 	0x00200020,
-	0x00480020,
+	IMG(0x00480020),
 	0x00100010,
 	0x00100010,
 	0x00100010,
@@ -2624,41 +2629,41 @@ static const u32 d_4d0f18[] = {   /* 0x4d0f18 */
 	0x0000000a,
 	0x0000008c,
 	0x00000002,
-	0x004aac0c,   /* "R6002\r\n- floating point not loaded\r\n" */
+	IMG(0x004aac0c),   /* "R6002\r\n- floating point not loaded\r\n" */
 	0x00000008,
-	0x004aabe0,   /* "R6008\r\n- not enough space for arguments\r\n" */
+	IMG(0x004aabe0),   /* "R6008\r\n- not enough space for arguments\r\n" */
 	0x00000009,
-	0x004aabb4,   /* "R6009\r\n- not enough space for environment\r\n" */
+	IMG(0x004aabb4),   /* "R6009\r\n- not enough space for environment\r\n" */
 	0x0000000a,
-	0x004aab90,   /* "\r\nabnormal program termination\r\n" */
+	IMG(0x004aab90),   /* "\r\nabnormal program termination\r\n" */
 	0x00000010,
-	0x004aab64,   /* "R6016\r\n- not enough space for thread data\r\n" */
+	IMG(0x004aab64),   /* "R6016\r\n- not enough space for thread data\r\n" */
 	0x00000011,
-	0x004aab34,   /* "R6017\r\n- unexpected multithread lock error\r\n" */
+	IMG(0x004aab34),   /* "R6017\r\n- unexpected multithread lock error\r\n" */
 	0x00000012,
-	0x004aab10,   /* "R6018\r\n- unexpected heap error\r\n" */
+	IMG(0x004aab10),   /* "R6018\r\n- unexpected heap error\r\n" */
 	0x00000013,
-	0x004aaae4,   /* "R6019\r\n- unable to open console device\r\n" */
+	IMG(0x004aaae4),   /* "R6019\r\n- unable to open console device\r\n" */
 	0x00000018,
-	0x004aaaac,   /* "R6024\r\n- not enough space for _onexit/atexit tab"... */
+	IMG(0x004aaaac),   /* "R6024\r\n- not enough space for _onexit/atexit tab"... */
 	0x00000019,
-	0x004aaa84,   /* "R6025\r\n- pure virtual function call\r\n" */
+	IMG(0x004aaa84),   /* "R6025\r\n- pure virtual function call\r\n" */
 	0x0000001a,
-	0x004aaa4c,   /* "R6026\r\n- not enough space for stdio initializati"... */
+	IMG(0x004aaa4c),   /* "R6026\r\n- not enough space for stdio initializati"... */
 	0x0000001b,
-	0x004aaa14,   /* "R6027\r\n- not enough space for lowio initializati"... */
+	IMG(0x004aaa14),   /* "R6027\r\n- not enough space for lowio initializati"... */
 	0x0000001c,
-	0x004aa9ec,   /* "R6028\r\n- unable to initialize heap\r\n" */
+	IMG(0x004aa9ec),   /* "R6028\r\n- unable to initialize heap\r\n" */
 	0x00000078,
-	0x004aa9dc,   /* "DOMAIN error\r\n" */
+	IMG(0x004aa9dc),   /* "DOMAIN error\r\n" */
 	0x00000079,
-	0x004aa9cc,   /* "SING error\r\n" */
+	IMG(0x004aa9cc),   /* "SING error\r\n" */
 	0x0000007a,
-	0x004aa9bc,   /* "TLOSS error\r\n" */
+	IMG(0x004aa9bc),   /* "TLOSS error\r\n" */
 	0x000000fc,
-	0x004aa9b8,
+	IMG(0x004aa9b8),
 	0x000000ff,
-	0x004aa9a8,   /* "runtime error " */
+	IMG(0x004aa9a8),   /* "runtime error " */
 	0x00aef520,
 };
 static const u8 d_4d0fd7[] = { 0xc0 };
@@ -2673,8 +2678,8 @@ static const u32 d_4d0fec[] = {   /* 0x4d0fec */
 };
 static const u32 d_4d108c[] = { 0x00544450 };
 static const u32 d_4d10cc[] = {   /* 0x4d10cc */
-	0x004d104c,   /* "PST" */
-	0x004d108c,   /* "PDT" */
+	IMG(0x004d104c),   /* "PST" */
+	IMG(0x004d108c),   /* "PDT" */
 	0x00000000,
 	0xffffffff,
 };
@@ -2704,59 +2709,59 @@ static const u32 d_4d1218[] = {   /* 0x4d1218 */
 static const u32 d_4d1248[] = { 0xded8d381, 0x0000f9e0, 0xfe817e31 };
 static const u32 d_4d1260[] = {   /* 0x4d1260 */
 	0x00000014,
-	0x004aae54,   /* "exp" */
+	IMG(0x004aae54),   /* "exp" */
 	0x0000001d,
-	0x004aae50,   /* "pow" */
+	IMG(0x004aae50),   /* "pow" */
 	0x0000001a,
-	0x004aae4c,   /* "log" */
+	IMG(0x004aae4c),   /* "log" */
 	0x0000001b,
-	0x004aae44,   /* "log10" */
+	IMG(0x004aae44),   /* "log10" */
 	0x0000001f,
-	0x004aae3c,   /* "sinh" */
+	IMG(0x004aae3c),   /* "sinh" */
 	0x00000013,
-	0x004aae34,   /* "cosh" */
+	IMG(0x004aae34),   /* "cosh" */
 	0x00000021,
-	0x004aae2c,   /* "tanh" */
+	IMG(0x004aae2c),   /* "tanh" */
 	0x0000000e,
-	0x004aae24,   /* "asin" */
+	IMG(0x004aae24),   /* "asin" */
 	0x0000000d,
-	0x004aae1c,   /* "acos" */
+	IMG(0x004aae1c),   /* "acos" */
 	0x0000000f,
-	0x004aae14,   /* "atan" */
+	IMG(0x004aae14),   /* "atan" */
 	0x00000010,
-	0x004aae0c,   /* "atan2" */
+	IMG(0x004aae0c),   /* "atan2" */
 	0x00000005,
-	0x004aae04,   /* "sqrt" */
+	IMG(0x004aae04),   /* "sqrt" */
 	0x0000001e,
-	0x004aae00,   /* "sin" */
+	IMG(0x004aae00),   /* "sin" */
 	0x00000012,
-	0x004aadfc,   /* "cos" */
+	IMG(0x004aadfc),   /* "cos" */
 	0x00000020,
-	0x004aadf8,   /* "tan" */
+	IMG(0x004aadf8),   /* "tan" */
 	0x0000000c,
-	0x004aadf0,   /* "ceil" */
+	IMG(0x004aadf0),   /* "ceil" */
 	0x0000000b,
-	0x004aade8,   /* "floor" */
+	IMG(0x004aade8),   /* "floor" */
 	0x00000015,
-	0x004aade0,   /* "fabs" */
+	IMG(0x004aade0),   /* "fabs" */
 	0x0000001c,
-	0x004aadd8,   /* "modf" */
+	IMG(0x004aadd8),   /* "modf" */
 	0x00000019,
-	0x004aadd0,   /* "ldexp" */
+	IMG(0x004aadd0),   /* "ldexp" */
 	0x00000011,
-	0x004aadc8,   /* "_cabs" */
+	IMG(0x004aadc8),   /* "_cabs" */
 	0x00000018,
-	0x004aadc0,   /* "_hypot" */
+	IMG(0x004aadc0),   /* "_hypot" */
 	0x00000016,
-	0x004aadb8,   /* "fmod" */
+	IMG(0x004aadb8),   /* "fmod" */
 	0x00000017,
-	0x004aadb0,   /* "frexp" */
+	IMG(0x004aadb0),   /* "frexp" */
 	0x00000022,
-	0x004aadac,   /* "_y0" */
+	IMG(0x004aadac),   /* "_y0" */
 	0x00000023,
-	0x004aada8,   /* "_y1" */
+	IMG(0x004aada8),   /* "_y1" */
 	0x00000024,
-	0x004aada4,   /* "_yn" */
+	IMG(0x004aada4),   /* "_yn" */
 	0x00002694,
 	0x00000000,
 	0x80000000,

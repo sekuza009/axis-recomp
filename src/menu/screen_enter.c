@@ -30,8 +30,8 @@ static void camera_heights(int n)
 {
 	int z = g_menuCameraHeight;
 	for (int i = 0; i < n; i++) {
-		I(0x4df878 + i * 0x10) = z;
-		I(0x76d390 + i * 0x10) = z;
+		I(IMG(0x4df878) + i * 0x10) = z;
+		I(IMG(0x76d390) + i * 0x10) = z;
 	}
 	g_menuCameraX = (*(int *)&g_menuCameraPos);
 	g_menuCameraY = (*(int *)&g_armcCamHeight);
@@ -40,10 +40,10 @@ static void camera_heights(int n)
 
 /* the four target and look-at points of the lobby and setup screens: (+-35, 0) looking at (-+70, +-35) */
 static const Store camera4[] = {
-	{ 0x4df870, 0x420c0000 }, { 0x4df874, 0 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x420c0000 },
-	{ 0x4df880, 0x420c0000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0xc20c0000 },
-	{ 0x4df890, 0xc20c0000 }, { 0x4df894, 0 }, { 0x76d3a8, 0x428c0000 }, { 0x76d3ac, 0x420c0000 },
-	{ 0x4df8a0, 0xc20c0000 }, { 0x4df8a4, 0 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0xc20c0000 } };
+	{ IMG(0x4df870), 0x420c0000 }, { IMG(0x4df874), 0 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x420c0000 },
+	{ IMG(0x4df880), 0x420c0000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0xc20c0000 },
+	{ IMG(0x4df890), 0xc20c0000 }, { IMG(0x4df894), 0 }, { IMG(0x76d3a8), 0x428c0000 }, { IMG(0x76d3ac), 0x420c0000 },
+	{ IMG(0x4df8a0), 0xc20c0000 }, { IMG(0x4df8a4), 0 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0xc20c0000 } };
 
 /* 0x440bb0: the main menu: its camera (-300), its limits, colours, fade */
 void (menuState300_enter)(void)
@@ -74,16 +74,16 @@ void (menuState300_enter)(void)
 void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
-		{ 0x4dbb60, 0 }, { 0x4db51c, 5 }, { 0x4dba70, 0x50 }, { 0x4dba74, 0x96 }, { 0x4dba78, 0x230 }, { 0x4dba7c, 0x15e },
-		{ 0x4dbb70, 0x21c }, { 0x4dbb74, 0x190 }, { 0x4db8d0, 0x262 }, { 0x4dbb00, 0x28 }, { 0x4dbb04, 0x1e },
-		{ 0x4dbb08, 0x258 } };
-	static const u32 cleared1[] = { 0x4dbbd0, 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, 0x4dba90, 0x4db858, 0x4dbac8,
-	                                0x4dbaa8, 0x67ef30, 0x4dba80 };
-	static const u32 cleared2[] = { 0x76d41c, 0x680bb0, 0x4df818, 0x4dba84, 0x4db854, 0x4dba98, 0x907b2c, 0x4dbbf4 };
+		{ IMG(0x4dbb60), 0 }, { IMG(0x4db51c), 5 }, { IMG(0x4dba70), 0x50 }, { IMG(0x4dba74), 0x96 }, { IMG(0x4dba78), 0x230 }, { IMG(0x4dba7c), 0x15e },
+		{ IMG(0x4dbb70), 0x21c }, { IMG(0x4dbb74), 0x190 }, { IMG(0x4db8d0), 0x262 }, { IMG(0x4dbb00), 0x28 }, { IMG(0x4dbb04), 0x1e },
+		{ IMG(0x4dbb08), 0x258 } };
+	static const u32 cleared1[] = { IMG(0x4dbbd0), IMG(0x4dbab0), IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc), IMG(0x4dba90), IMG(0x4db858), IMG(0x4dbac8),
+	                                IMG(0x4dbaa8), IMG(0x67ef30), IMG(0x4dba80) };
+	static const u32 cleared2[] = { IMG(0x76d41c), IMG(0x680bb0), IMG(0x4df818), IMG(0x4dba84), IMG(0x4db854), IMG(0x4dba98), IMG(0x907b2c), IMG(0x4dbbf4) };
 	static const Store state[] = {
-		{ 0x4dbb3c, 2 }, { 0x907b24, 999 }, { 0x4dba9c, ONE }, { 0x4dbaa0, ONE }, { 0x4dbaa4, ONE },
-		{ 0x4db8a0, 0x3e99999a }, { 0x4db8a4, 0x3f333333 }, { 0x4db8a8, 0x3f333333 }, { 0x4db8ac, ONE }, { 0x9fd958, 0xf },
-		{ 0x4dc24c, 1 } };
+		{ IMG(0x4dbb3c), 2 }, { IMG(0x907b24), 999 }, { IMG(0x4dba9c), ONE }, { IMG(0x4dbaa0), ONE }, { IMG(0x4dbaa4), ONE },
+		{ IMG(0x4db8a0), 0x3e99999a }, { IMG(0x4db8a4), 0x3f333333 }, { IMG(0x4db8a8), 0x3f333333 }, { IMG(0x4db8ac), ONE }, { IMG(0x9fd958), 0xf },
+		{ IMG(0x4dc24c), 1 } };
 	g_matchMode = 1;
 	arena_clearChatRecord();
 	g_arenaNameDialogLeft = 0x64;
@@ -118,13 +118,13 @@ void (menuState400_enter)(void)
 void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
-		{ 0x4ddac8, 0x29a }, { 0x4ddd90, 0xc4af0000 }, { 0x4dda60, 1 }, { 0x4de03c, 0 }, { 0x4ddcec, 2 },
-		{ 0x4ddad0, 0x32 }, { 0x4ddad4, 0x3c }, { 0x4ddadc, 0x1a4 }, { 0x4dddd0, 0x64 }, { 0x4dddd8, 0x21c },
-		{ 0x4ddddc, 0x1c2 }, { 0x4dde80, 0x28 }, { 0x4dde8c, 0x1b8 } };
+		{ IMG(0x4ddac8), 0x29a }, { IMG(0x4ddd90), 0xc4af0000 }, { IMG(0x4dda60), 1 }, { IMG(0x4de03c), 0 }, { IMG(0x4ddcec), 2 },
+		{ IMG(0x4ddad0), 0x32 }, { IMG(0x4ddad4), 0x3c }, { IMG(0x4ddadc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
+		{ IMG(0x4ddddc), 0x1c2 }, { IMG(0x4dde80), 0x28 }, { IMG(0x4dde8c), 0x1b8 } };
 	static const Store colours[] = {
-		{ 0x4de048, 0 }, { 0x4de04c, ONE }, { 0x4de050, ONE }, { 0x4de054, ONE }, { 0x4ddae0, 0 },
-		{ 0x4ddae4, 0x3f19999a }, { 0x4ddae8, 0x3f19999a }, { 0x4ddaec, ONE }, { 0x4e14fc, 0 }, { 0x4deda8, ONE },
-		{ 0x9db978, 0 }, { 0x4df010, ONE } };
+		{ IMG(0x4de048), 0 }, { IMG(0x4de04c), ONE }, { IMG(0x4de050), ONE }, { IMG(0x4de054), ONE }, { IMG(0x4ddae0), 0 },
+		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { IMG(0x4e14fc), 0 }, { IMG(0x4deda8), ONE },
+		{ IMG(0x9db978), 0 }, { IMG(0x4df010), ONE } };
 	g_setupOptionsTop = 0x1e;
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
@@ -141,14 +141,14 @@ void (menuState600_enterSetup)(void)
 	setupControl_layout();
 	STORE_ALL(colours);
 	for (int k = 0; k < 2; k++) {
-		const char *text = (const char *)(0x75b7a4 + k * 0x80);
+		const char *text = (const char *)(IMG(0x75b7a4) + k * 0x80);
 		int o = k * 0x32;
-		strcpy((char *)(0x4ddbbc + o), text - 0x200);
-		strcpy((char *)(0x4dda64 + o), text - 0x100);
-		strcpy((char *)(0x4ddc84 + o), text);
-		strcpy((char *)(0x4de058 + o), text);
-		strcpy((char *)(0x4ddc20 + o), text);
-		strcpy((char *)(0x4ddaf0 + o), text);
+		strcpy((char *)(IMG(0x4ddbbc) + o), text - 0x200);
+		strcpy((char *)(IMG(0x4dda64) + o), text - 0x100);
+		strcpy((char *)(IMG(0x4ddc84) + o), text);
+		strcpy((char *)(IMG(0x4de058) + o), text);
+		strcpy((char *)(IMG(0x4ddc20) + o), text);
+		strcpy((char *)(IMG(0x4ddaf0) + o), text);
 	}
 }
 
@@ -157,22 +157,22 @@ void (menuState600_enterSetup)(void)
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
-		{ 0x9dd698, 0xc4af0000 }, { 0x9dd7d8, 1 }, { 0x9dd560, 0 }, { 0x9dce48, 2 }, { 0x9dd6bc, 0x3f333333 },
-		{ 0x9dd834, 0x42 }, { 0x4dba88, 0 }, { 0x9dd358, 0x32 }, { 0x9dd35c, 0x6e }, { 0x9dd360, 0x24e },
-		{ 0x9dd364, 0x172 }, { 0x9dd368, 0x3c }, { 0x9dd36c, 0x1e }, { 0x9dd370, 0x244 }, { 0x9dd374, 0x1c2 },
-		{ 0x9dd4a8, 0x14 }, { 0x9dd4ac, 0x28 }, { 0x9dd4b0, 0x26c }, { 0x9dd4b4, 0x1b8 }, { 0x9dd1b8, 0x28 },
-		{ 0x9dd1bc, 0x1e }, { 0x9dd1c0, 0x258 }, { 0x9dd1c4, 0x1c2 }, { 0x9dced8, 0x10 }, { 0x9dcedc, 0x1e },
-		{ 0x9dcee0, 0x268 }, { 0x9dcee4, 0x1b8 } };
+		{ IMG(0x9dd698), 0xc4af0000 }, { IMG(0x9dd7d8), 1 }, { IMG(0x9dd560), 0 }, { IMG(0x9dce48), 2 }, { IMG(0x9dd6bc), 0x3f333333 },
+		{ IMG(0x9dd834), 0x42 }, { IMG(0x4dba88), 0 }, { IMG(0x9dd358), 0x32 }, { IMG(0x9dd35c), 0x6e }, { IMG(0x9dd360), 0x24e },
+		{ IMG(0x9dd364), 0x172 }, { IMG(0x9dd368), 0x3c }, { IMG(0x9dd36c), 0x1e }, { IMG(0x9dd370), 0x244 }, { IMG(0x9dd374), 0x1c2 },
+		{ IMG(0x9dd4a8), 0x14 }, { IMG(0x9dd4ac), 0x28 }, { IMG(0x9dd4b0), 0x26c }, { IMG(0x9dd4b4), 0x1b8 }, { IMG(0x9dd1b8), 0x28 },
+		{ IMG(0x9dd1bc), 0x1e }, { IMG(0x9dd1c0), 0x258 }, { IMG(0x9dd1c4), 0x1c2 }, { IMG(0x9dced8), 0x10 }, { IMG(0x9dcedc), 0x1e },
+		{ IMG(0x9dcee0), 0x268 }, { IMG(0x9dcee4), 0x1b8 } };
 	static const Store colours_camera[] = {
-		{ 0x4ded60, 2 }, { 0x9dcec0, 0 }, { 0x9dcec4, ONE }, { 0x9dcec8, ONE }, { 0x9dcecc, ONE },
-		{ 0x9dd338, 0x3e99999a }, { 0x9dd33c, 0x3f333333 }, { 0x9dd340, 0x3f333333 }, { 0x9dd344, ONE },
-		{ 0x4df870, 0x41a00000 }, { 0x4df874, 0xc1200000 }, { 0x76d388, 0xc28c0000 }, { 0x76d38c, 0x425c0000 },
-		{ 0x4df880, 0x41a00000 }, { 0x4df884, 0 }, { 0x76d398, 0xc28c0000 }, { 0x76d39c, 0 },
-		{ 0x4df890, 0x41a00000 }, { 0x4df894, 0x41200000 }, { 0x76d3a8, 0xc28c0000 }, { 0x76d3ac, 0xc25c0000 },
-		{ 0x4df8a0, 0xc1a00000 }, { 0x4df8a4, 0xc1200000 }, { 0x76d3b8, 0x428c0000 }, { 0x76d3bc, 0x425c0000 },
-		{ 0x4df8b0, 0xc1a00000 }, { 0x4df8b4, 0 }, { 0x76d3c8, 0x428c0000 }, { 0x76d3cc, 0 } };
-	static const u32 cleared[] = { 0x9dd838, 0x9dd6a4, 0x9dd1b0, 0x4ded54, 0x9dd1c8, 0x9dd350, 0x9dd84c, 0x9dd6d4,
-	                               0x9dd850 };
+		{ IMG(0x4ded60), 2 }, { IMG(0x9dcec0), 0 }, { IMG(0x9dcec4), ONE }, { IMG(0x9dcec8), ONE }, { IMG(0x9dcecc), ONE },
+		{ IMG(0x9dd338), 0x3e99999a }, { IMG(0x9dd33c), 0x3f333333 }, { IMG(0x9dd340), 0x3f333333 }, { IMG(0x9dd344), ONE },
+		{ IMG(0x4df870), 0x41a00000 }, { IMG(0x4df874), 0xc1200000 }, { IMG(0x76d388), 0xc28c0000 }, { IMG(0x76d38c), 0x425c0000 },
+		{ IMG(0x4df880), 0x41a00000 }, { IMG(0x4df884), 0 }, { IMG(0x76d398), 0xc28c0000 }, { IMG(0x76d39c), 0 },
+		{ IMG(0x4df890), 0x41a00000 }, { IMG(0x4df894), 0x41200000 }, { IMG(0x76d3a8), 0xc28c0000 }, { IMG(0x76d3ac), 0xc25c0000 },
+		{ IMG(0x4df8a0), 0xc1a00000 }, { IMG(0x4df8a4), 0xc1200000 }, { IMG(0x76d3b8), 0x428c0000 }, { IMG(0x76d3bc), 0x425c0000 },
+		{ IMG(0x4df8b0), 0xc1a00000 }, { IMG(0x4df8b4), 0 }, { IMG(0x76d3c8), 0x428c0000 }, { IMG(0x76d3cc), 0 } };
+	static const u32 cleared[] = { IMG(0x9dd838), IMG(0x9dd6a4), IMG(0x9dd1b0), IMG(0x4ded54), IMG(0x9dd1c8), IMG(0x9dd350), IMG(0x9dd84c), IMG(0x9dd6d4),
+	                               IMG(0x9dd850) };
 	g_matchMode = 2;
 	arena_clearChatRecord();
 	STORE_ALL(layout);
@@ -188,13 +188,13 @@ void (menuState800_enterGameRoom)(void)
 	g_menuLookAtX = (*(int *)&g_menuCameraLook);
 	g_menuLookAtY = (*(int *)&g_menuCameraLookY);
 	g_menuLookAtZ = g_menuCameraHeight;
-	memset((void *)0x9dd5a6, 0, 7 * 4 + 2);
+	memset((void *)IMG(0x9dd5a6), 0, 7 * 4 + 2);
 	g_joinedTitleLevel = 0;
 	g_joinedTitlePoints = 0;
 	g_joinedTitleRating = 0;
 	g_typingGameName = 0;
 	g_typingGamePassword = 1;
-	memset((void *)0x9dd5f8, 0, 5);
+	memset((void *)IMG(0x9dd5f8), 0, 5);
 	g_typingRoomPassword = 1;
 	g_typingRoomName = 0;
 	g_loginToSend = 0;
@@ -266,10 +266,10 @@ u32 (menu_enterState)(void)
 /* the skirmish and mission screens' camera: at (0, 0, -450) moving to (0, 0, -550), that place its home, one target
    point (0, 0, 100) looking at the origin */
 static const Store briefing_camera[] = {
-	{ 0x4df024, 0 }, { 0x4df028, 0 }, { 0x4df02c, 0xc3e10000 }, { 0x680378, 0 }, { 0x68037c, 0 },
-	{ 0x680380, 0xc4098000 }, { 0x4df870, 0 }, { 0x4df874, 0 }, { 0x4df878, 0x42c80000 }, { 0x76d388, 0 },
-	{ 0x76d38c, 0 }, { 0x76d390, 0 }, { 0x9db090, 0 }, { 0x9db094, 0 }, { 0x9db098, 0xc3e10000 }, { 0x76d3f8, 0 },
-	{ 0x76d3fc, 0 }, { 0x76d400, 0xc4098000 } };
+	{ IMG(0x4df024), 0 }, { IMG(0x4df028), 0 }, { IMG(0x4df02c), 0xc3e10000 }, { IMG(0x680378), 0 }, { IMG(0x68037c), 0 },
+	{ IMG(0x680380), 0xc4098000 }, { IMG(0x4df870), 0 }, { IMG(0x4df874), 0 }, { IMG(0x4df878), 0x42c80000 }, { IMG(0x76d388), 0 },
+	{ IMG(0x76d38c), 0 }, { IMG(0x76d390), 0 }, { IMG(0x9db090), 0 }, { IMG(0x9db094), 0 }, { IMG(0x9db098), 0xc3e10000 }, { IMG(0x76d3f8), 0 },
+	{ IMG(0x76d3fc), 0 }, { IMG(0x76d400), 0xc4098000 } };
 
 /* 0x443950: the skirmish setup (screen 900): the briefing camera, the briefing window and its colours, the page's
    panels (skirmish_layout, skirmishButtons_layout), the page set to 10 (skirmish settings) with a sound, the mission list
@@ -277,11 +277,11 @@ static const Store briefing_camera[] = {
 int (menuState900_enterSkirmish)(void)
 {
 	static const Store setup[] = {
-		{ 0x9f16a8, 0xa }, { 0x9f16ac, 0x14 }, { 0x9f16b0, 0x276 }, { 0x9f16b4, 0x1cc }, { 0x9ef208, 0 },
-		{ 0x9ef20c, ONE }, { 0x9ef210, ONE }, { 0x9ef214, ONE }, { 0x9eeac8, 0 }, { 0x9eeacc, 0x3f19999a },
-		{ 0x9eead0, 0x3f19999a }, { 0x9eead4, ONE }, { 0x9ef1f0, 1 }, { 0x76d3e8, 900 }, { 0x67ef0c, 900 },
-		{ 0x67ef20, 900 } };
-	static const u32 cleared[] = { 0x9f16bc, 0x9f1058, 0x9f16a4, 0x680bb4, 0x76d37c };
+		{ IMG(0x9f16a8), 0xa }, { IMG(0x9f16ac), 0x14 }, { IMG(0x9f16b0), 0x276 }, { IMG(0x9f16b4), 0x1cc }, { IMG(0x9ef208), 0 },
+		{ IMG(0x9ef20c), ONE }, { IMG(0x9ef210), ONE }, { IMG(0x9ef214), ONE }, { IMG(0x9eeac8), 0 }, { IMG(0x9eeacc), 0x3f19999a },
+		{ IMG(0x9eead0), 0x3f19999a }, { IMG(0x9eead4), ONE }, { IMG(0x9ef1f0), 1 }, { IMG(0x76d3e8), 900 }, { IMG(0x67ef0c), 900 },
+		{ IMG(0x67ef20), 900 } };
+	static const u32 cleared[] = { IMG(0x9f16bc), IMG(0x9f1058), IMG(0x9f16a4), IMG(0x680bb4), IMG(0x76d37c) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
@@ -300,10 +300,10 @@ int (menuState900_enterSkirmish)(void)
 int (menuState500_enter)(void)
 {
 	static const Store setup[] = {
-		{ 0x9f6308, 0x28 }, { 0x9f630c, 0xa }, { 0x9f6310, 0x258 }, { 0x9f6314, 0x1cc }, { 0x9f6318, 0 },
-		{ 0x9f631c, ONE }, { 0x9f6320, ONE }, { 0x9f6324, ONE }, { 0x9f62e8, 0 }, { 0x9f62ec, 0x3f19999a },
-		{ 0x9f62f0, 0x3f19999a }, { 0x9f62f4, ONE }, { 0x9f62f8, 1 }, { 0x76d3e8, 500 }, { 0x67ef0c, 500 },
-		{ 0x67ef20, 500 } };
+		{ IMG(0x9f6308), 0x28 }, { IMG(0x9f630c), 0xa }, { IMG(0x9f6310), 0x258 }, { IMG(0x9f6314), 0x1cc }, { IMG(0x9f6318), 0 },
+		{ IMG(0x9f631c), ONE }, { IMG(0x9f6320), ONE }, { IMG(0x9f6324), ONE }, { IMG(0x9f62e8), 0 }, { IMG(0x9f62ec), 0x3f19999a },
+		{ IMG(0x9f62f0), 0x3f19999a }, { IMG(0x9f62f4), ONE }, { IMG(0x9f62f8), 1 }, { IMG(0x76d3e8), 500 }, { IMG(0x67ef0c), 500 },
+		{ IMG(0x67ef20), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(missionsel_layout, 0x447660, void, void)();   /* mission_447660 */
@@ -329,16 +329,16 @@ int (menuState500_enter)(void)
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
-		{ 0x9f8e48, 0x3c }, { 0x9f8e4c, 0x3c }, { 0x9f8f28, 0x10e }, { 0x9f93c0, 0x10e }, { 0x9f8ea0, 0x244 },
-		{ 0x9f8ea4, 0x1a4 }, { 0x9f8eac, 0x78 }, { 0x9f8ea8, 0x96 }, { 0x9f8f20, 0x208 }, { 0x9f8f24, 0x118 },
-		{ 0x9f8f1c, 0x78 }, { 0x9f8f0c, 0x96 }, { 0x9f8f2c, 0x208 }, { 0x9f6834, 0x78 }, { 0x9f683c, 0x96 },
-		{ 0x9f93bc, 0x208 }, { 0x9f8c54, 0x1e }, { 0x9f8c50, 0x14 }, { 0x9f6830, 0x262 }, { 0x9f682c, 0x1c2 } };
-	static const u32 cleared[] = { 0x9f8d70, 0x9f6840, 0x9f8c4c, 0x9f8c5c, 0x9f8d74, 0x9f8c58, 0x680bb4, 0x76d37c,
-	                               0x76d42c };
+		{ IMG(0x9f8e48), 0x3c }, { IMG(0x9f8e4c), 0x3c }, { IMG(0x9f8f28), 0x10e }, { IMG(0x9f93c0), 0x10e }, { IMG(0x9f8ea0), 0x244 },
+		{ IMG(0x9f8ea4), 0x1a4 }, { IMG(0x9f8eac), 0x78 }, { IMG(0x9f8ea8), 0x96 }, { IMG(0x9f8f20), 0x208 }, { IMG(0x9f8f24), 0x118 },
+		{ IMG(0x9f8f1c), 0x78 }, { IMG(0x9f8f0c), 0x96 }, { IMG(0x9f8f2c), 0x208 }, { IMG(0x9f6834), 0x78 }, { IMG(0x9f683c), 0x96 },
+		{ IMG(0x9f93bc), 0x208 }, { IMG(0x9f8c54), 0x1e }, { IMG(0x9f8c50), 0x14 }, { IMG(0x9f6830), 0x262 }, { IMG(0x9f682c), 0x1c2 } };
+	static const u32 cleared[] = { IMG(0x9f8d70), IMG(0x9f6840), IMG(0x9f8c4c), IMG(0x9f8c5c), IMG(0x9f8d74), IMG(0x9f8c58), IMG(0x680bb4), IMG(0x76d37c),
+	                               IMG(0x76d42c) };
 	static const Store colours[] = {
-		{ 0x9f8eb0, 0 }, { 0x9f8eb4, ONE }, { 0x9f8eb8, ONE }, { 0x9f8ebc, ONE }, { 0x9f8d58, 0 },
-		{ 0x9f8d5c, 0x3f19999a }, { 0x9f8d60, 0x3f19999a }, { 0x9f8d64, ONE }, { 0x4dda44, 0 }, { 0x4dda48, 0 },
-		{ 0x9f6838, 0 }, { 0x9f900c, 0 }, { 0x9f8f18, 0 } };
+		{ IMG(0x9f8eb0), 0 }, { IMG(0x9f8eb4), ONE }, { IMG(0x9f8eb8), ONE }, { IMG(0x9f8ebc), ONE }, { IMG(0x9f8d58), 0 },
+		{ IMG(0x9f8d5c), 0x3f19999a }, { IMG(0x9f8d60), 0x3f19999a }, { IMG(0x9f8d64), ONE }, { IMG(0x4dda44), 0 }, { IMG(0x4dda48), 0 },
+		{ IMG(0x9f6838), 0 }, { IMG(0x9f900c), 0 }, { IMG(0x9f8f18), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);
@@ -368,7 +368,7 @@ static void check_profiles(void)
 {
 	for (int k = 0; k < 5; k++)
 		if (!(k == 0 ? app_checkFile_profeng() : app_checkFile_profkor())) {
-			sys_messageBox((const char *)0x4b04b0);
+			sys_messageBox((const char *)IMG(0x4b04b0));
 			GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
 		}
 }
@@ -376,8 +376,8 @@ static void check_profiles(void)
 /* the player's name for the match (0x4dedd8, 32 bytes) */
 static void match_name(const char *name)
 {
-	memset((void *)0x4dedd8, 0, 32);
-	strcpy((char *)0x4dedd8, name);
+	memset((void *)IMG(0x4dedd8), 0, 32);
+	strcpy((char *)IMG(0x4dedd8), name);
 }
 
 /* 0x41fd40 (named console_init; by use the match started, state 9999): the menus' tunnel freed; outside the lobby
@@ -390,13 +390,13 @@ static void match_name(const char *name)
 void (console_init)(void)
 {
 	while (g_menuTunnel)   /* the menus' tunnel, ring by ring */
-		tunnel_removeLastRing((TunnelRing **)0x67fb3c);
+		tunnel_removeLastRing((TunnelRing **)IMG(0x67fb3c));
 	if (!g_startedFromLobby)
 		check_profiles();
 	g_matchRunning = 1;
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)0x4b04a0, g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
+	glWindow_init((const char *)IMG(0x4b04a0), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;
@@ -416,7 +416,7 @@ void (console_init)(void)
 	switch (kind) {
 	case 1:   /* (the selection's range checks are jumped over in the patched game) */
 		data_loadPilotProfiles();
-		match_name((const char *)0x4dedb0);
+		match_name((const char *)IMG(0x4dedb0));
 		armc_resetSeraphimParts();
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
@@ -425,14 +425,14 @@ void (console_init)(void)
 		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
-		match_name((const char *)0x9dd570);
+		match_name((const char *)IMG(0x9dd570));
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
-		match_name((const char *)0x9f1798);
+		match_name((const char *)IMG(0x9f1798));
 		app_requireCd(scene, 0, 0);
 		break;
 	}
-	scene_setTextureFolder(scene, (const char *)(0x907b30 + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
+	scene_setTextureFolder(scene, (const char *)(IMG(0x907b30) + g_missionStage * 0x20));   /* (the original also builds "%s" with the name on its stack, unused) */
 #undef scene
 }

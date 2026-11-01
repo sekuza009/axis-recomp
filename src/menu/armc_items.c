@@ -2,16 +2,16 @@
    from its list with a cursor; the chosen items go to the mech (mech_setAll) and the preview. */
 #include "../game.h"
 
-#define g_weaponList ((const int *)0x4dc79c)          /* the weapons on offer */
+#define g_weaponList ((const int *)IMG(0x4dc79c))          /* the weapons on offer */
 #define g_weaponCount GAME_VAR(int, 0x4dc244)
-#define g_extraList ((const int *)0x4dcca4)           /* the other items on offer */
+#define g_extraList ((const int *)IMG(0x4dcca4))           /* the other items on offer */
 #define g_extraCount GAME_VAR(int, 0x4dc778)
-#define g_armcParts ((const int *)0x4dc760)           /* the mech's head, chest, arm, leg, booster */
+#define g_armcParts ((const int *)IMG(0x4dc760))           /* the mech's head, chest, arm, leg, booster */
 
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)
 {
-	return slot < 4 ? (int *)0x4dcb20 + slot : (int *)0x4dcb18 + (slot - 4);
+	return slot < 4 ? (int *)IMG(0x4dcb20) + slot : (int *)IMG(0x4dcb18) + (slot - 4);
 }
 
 /* the whole mech handed to the scene, with name */
@@ -90,7 +90,7 @@ void (armc_takeCursorItem)(void)
 	armc_weaponSlotRecord(g_armcSlot, item);
 	armc_snapshot(g_armcSlot);
 	slot = g_armcSlot;
-	set_mech((const char *)0x4dedd8);
+	set_mech((const char *)IMG(0x4dedd8));
 	g_armcSlot = -1;
 	armc_pickSlot(slot);
 }
@@ -100,7 +100,7 @@ void (armc_takeCursorItem)(void)
 void (armc_enterScreen)(void)
 {
 	app_requireCd(g_scene, 0, 2);
-	set_mech((const char *)0x4dedb0);
+	set_mech((const char *)IMG(0x4dedb0));
 	stage_remakePlayerActor(STAGE(g_scene));
 	g_armcPreview = 1;
 	g_armcSessionMade = 1;
@@ -187,18 +187,18 @@ u32 (armc_partScreenClicks)(void)
 void (armc_extraItemBonuses)(void)
 {
 	static const u32 flag[9] = { 0x4dcb10, 0x4dcea8, 0x4dcc5c, 0x4dbc54, 0x4dbe44, 0x4dc794, 0x4dbd78, 0x4dc774, 0x4dcf30 };
-	static const u32 value[14] = { 0x4dbc70, 0x4dc248, 0x4dcc6c, 0x4dc548, 0x4dcb34, 0x4dbc78, 0x4dc898, 0x4dceb4, 0x4dc88c,
-	                               0x4dcca0, 0x4dc894, 0x4dceb0, 0x4dcc68, 0x4dbc74 };
+	static const u32 value[14] = { IMG(0x4dbc70), IMG(0x4dc248), IMG(0x4dcc6c), IMG(0x4dc548), IMG(0x4dcb34), IMG(0x4dbc78), IMG(0x4dc898), IMG(0x4dceb4), IMG(0x4dc88c),
+	                               IMG(0x4dcca0), IMG(0x4dc894), IMG(0x4dceb0), IMG(0x4dcc68), IMG(0x4dbc74) };
 	static const struct { u8 item; u32 at, bits; } bonus[14] = {
-		{ 0, 0x4dbc70, 0x3e99999a }, { 1, 0x4dc248, 0x42c80000 }, { 2, 0x4dcc6c, 0x42c80000 }, { 3, 0x4dc548, 0x42c80000 },
-		{ 4, 0x4dcb34, 0x42480000 }, { 5, 0x4dbc78, 0x42c80000 }, { 5, 0x4dc898, 0x3f000000 }, { 5, 0x4dceb4, 0x40400000 },
-		{ 5, 0x4dc88c, 0x3f800000 }, { 6, 0x4dcca0, 0x3f000000 }, { 6, 0x4dc894, 0xbdcccccd }, { 7, 0x4dceb0, 0x3e4ccccd },
-		{ 8, 0x4dcc68, 0x3e99999a }, { 8, 0x4dbc74, 0x3f800000 } };
+		{ 0, IMG(0x4dbc70), 0x3e99999a }, { 1, IMG(0x4dc248), 0x42c80000 }, { 2, IMG(0x4dcc6c), 0x42c80000 }, { 3, IMG(0x4dc548), 0x42c80000 },
+		{ 4, IMG(0x4dcb34), 0x42480000 }, { 5, IMG(0x4dbc78), 0x42c80000 }, { 5, IMG(0x4dc898), 0x3f000000 }, { 5, IMG(0x4dceb4), 0x40400000 },
+		{ 5, IMG(0x4dc88c), 0x3f800000 }, { 6, IMG(0x4dcca0), 0x3f000000 }, { 6, IMG(0x4dc894), 0xbdcccccd }, { 7, IMG(0x4dceb0), 0x3e4ccccd },
+		{ 8, IMG(0x4dcc68), 0x3e99999a }, { 8, IMG(0x4dbc74), 0x3f800000 } };
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(int, flag[k]) = 0;
 	for (int k = 0; k < 14; k++)
 		GAME_VAR(u32, value[k]) = 0;
-	static const u32 items[2] = { 0x4dcb1c, 0x4dcb18 };
+	static const u32 items[2] = { IMG(0x4dcb1c), IMG(0x4dcb18) };
 	for (int k = 0; k < 2; k++) {
 		u32 bonusItem = (u32)(GAME_VAR(int, items[k]) - 27);
 		if (bonusItem <= 8)

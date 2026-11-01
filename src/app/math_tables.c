@@ -3,12 +3,12 @@
    fptan, so the tables are exactly the game's. */
 #include "../game.h"
 
-#define SIN_TABLE ((float *)0xa1b778)
-#define COS_TABLE ((float *)0xa17f38)
-#define TAN_TABLE ((float *)0xa146f8)
-#define RAND_TABLE ((int *)0xa106f8)
-#define TAN10_TABLE ((float *)0xa106b0)
-#define TABLE_FILE ((const char *)0x4c575c)   /* "MATHFUNC.TBL" */
+#define SIN_TABLE ((float *)IMG(0xa1b778))
+#define COS_TABLE ((float *)IMG(0xa17f38))
+#define TAN_TABLE ((float *)IMG(0xa146f8))
+#define RAND_TABLE ((int *)IMG(0xa106f8))
+#define TAN10_TABLE ((float *)IMG(0xa106b0))
+#define TABLE_FILE ((const char *)IMG(0x4c575c))   /* "MATHFUNC.TBL" */
 
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
@@ -30,9 +30,9 @@ u32 (math_makeMathFunctionTableFile)(void)
 	}
 	for (int i = 0; i < 4096; i++)
 		RAND_TABLE[i] = crt_rand();
-	void *f = crt_fopen(TABLE_FILE, (const char *)0x4b2ab0);
+	void *f = crt_fopen(TABLE_FILE, (const char *)IMG(0x4b2ab0));
 	if (!f)
-		sys_errorTerminate((const char *)0x4c576c);
+		sys_errorTerminate((const char *)IMG(0x4c576c));
 	crt_fwrite(SIN_TABLE, 4, 3600, f);
 	crt_fwrite(COS_TABLE, 4, 3600, f);
 	crt_fwrite(TAN_TABLE, 4, 3600, f);
@@ -44,12 +44,12 @@ u32 (math_makeMathFunctionTableFile)(void)
    tangents of 85, 75 .. -85 degrees. Returns what the original leaves in eax (the loop counter, -95) */
 int (math_initMathFunction)(void)
 {
-	void *f = crt_fopen(TABLE_FILE, (const char *)0x4ad170);
+	void *f = crt_fopen(TABLE_FILE, (const char *)IMG(0x4ad170));
 	if (!f)
 		GAME_FN(math_makeMathFunctionTableFile, 0x46c340, u32, void)();   /* math_makeMathFunctionTableFile */
-	f = crt_fopen(TABLE_FILE, (const char *)0x4ad170);
+	f = crt_fopen(TABLE_FILE, (const char *)IMG(0x4ad170));
 	if (!f)
-		sys_errorTerminate((const char *)0x4c5728);
+		sys_errorTerminate((const char *)IMG(0x4c5728));
 	crt_fread(SIN_TABLE, 4, 3600, f);
 	crt_fread(COS_TABLE, 4, 3600, f);
 	crt_fread(TAN_TABLE, 4, 3600, f);

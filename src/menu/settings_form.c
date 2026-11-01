@@ -43,15 +43,15 @@ static void field_box(int x0, int y0, int x1, int y1)
 /* the hovered value drawn again: its shadow at (x, y), then in yellow one up and left */
 static void hover_text(int x, int y, const char *text)
 {
-	set_colour_bits((Colour *)0x76d438, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
 	text_draw8(x, y, text);
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
 	text_draw8(x - 1, y - 1, text);
 }
 
 static void colour(const u32 *c)
 {
-	set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
+	set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
 }
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -73,11 +73,11 @@ static const char *stars(const Form *f, char *out)
 	return out;
 }
 
-static const char *map_name(const Form *f) { return (const char *)(0x5ae9d0 + f->s->map * 0x50); }
-static const char *mode_name(const Form *f) { return (const char *)(f->modes + f->s->mode * 0x80); }
+static const char *map_name(const Form *f) { return (const char *)(IMG(0x5ae9d0) + f->s->map * 0x50); }
+static const char *mode_name(const Form *f) { return (const char *)(RELOC(f->modes) + f->s->mode * 0x80); }
 static const char *row5_text(const Form *f)
 {
-	return f->kinds ? (const char *)(f->kinds + f->s->kind * 20) : (const char *)f->row5;
+	return f->kinds ? (const char *)(RELOC(f->kinds) + f->s->kind * 20) : (const char *)RELOC(f->row5);
 }
 
 /* the eight rows' values in their boxes (white text); a value being edited is left out */
@@ -93,7 +93,7 @@ static void draw_values(const Form *f, char *text)
 		text_draw8(X0 + 0xa4, Y0 + 0x54, stars(f, text));
 	field_box(X0 + 0x9f, Y0 + 0x6d, X0 + 0x18f, Y0 + 0x91);
 	if (s->kind)
-		text_draw8(X0 + 0xa4, Y0 + 0x76, (const char *)0x4ad56c);   /* CUSTOM */
+		text_draw8(X0 + 0xa4, Y0 + 0x76, (const char *)IMG(0x4ad56c));   /* CUSTOM */
 	else
 		text_draw8(X0 + 0xa4, Y0 + 0x6f, map_name(f));
 	field_box(X0 + 0x9f, Y0 + 0x95, X0 + 0xef, Y0 + 0xab);
@@ -165,7 +165,7 @@ static void button(int lit, float a_lit, int x0, int y0, int x1, int y1, int ty,
 	glColor4f(1.0f, 1.0f, 1.0f, lit ? a_lit : 0.4f);
 	menu_drawWideButton(x0, y0, x1, y1, 1);
 	colour(lit ? bright : dim);
-	text_drawBox16(x0, ty, x1, (const char *)text);
+	text_drawBox16(x0, ty, x1, (const char *)RELOC(text));
 }
 
 /* the preview's arrows (lit as given) and the custom rules button: lit in white, else at 0.4 in the colour other */
@@ -186,7 +186,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 		colour(other);
 	}
 	menu_drawWideButton(X1 - 0x96, Y0 + 0xf5, X1 - 0x16, Y0 + 0x111, 1);
-	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)0x75d8a4);
+	text_drawBox16(X1 - 0x96, Y0 + 0xfb, X1 - 0x16, (const char *)IMG(0x75d8a4));
 }
 
 /* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for 0x4df9c8: the title 0x75a424, a cyan line, the
@@ -197,11 +197,11 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { 0x9dd1b8, (GameSettings *)0x4df9c8, { 0x9dd380, 0x9dd6a8, 0x9dd388, 0x9dd568 }, 0x7669a4,
-	                           0x74e6a4, 0, 20 };
+	static const Form form = { IMG(0x9dd1b8), (GameSettings *)IMG(0x4df9c8), { IMG(0x9dd380), IMG(0x9dd6a8), IMG(0x9dd388), IMG(0x9dd568) }, IMG(0x7669a4),
+	                           IMG(0x74e6a4), 0, 20 };
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	int editing = g_paused, open = editing || g_arenaLeaving;
 	char text[20];
 	int hovered = roomSettings_hitTest(g_mouseX, g_mouseY);
@@ -210,11 +210,11 @@ void (room_drawGameSettings)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x75a424);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x75a424));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	for (int k = 0; k < 8; k++)   /* (the original would grey labels past the eighth: there are none) */
-		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(0x75a4a4 + k * 0x80));
+		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(IMG(0x75a4a4) + k * 0x80));
 	draw_values(f, text);
 	if (!open)
 		draw_hover(f, hovered, text);
@@ -233,10 +233,10 @@ void (room_drawGameSettings)(void)
 /* two buttons (0x7517a4, 0x80 apart) in a box over the arena form; the button lit is lit_from + its index */
 static void box_buttons(int hovered, int lit_from)
 {
-	const u32 *bright = (const u32 *)0x4dba98, *dim = (const u32 *)0x4db8a0;
+	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);
 	for (int k = 0; k < 2; k++) {
 		int x = 0xb4 + k * 0xa0;
-		button(hovered == lit_from + k, 1.0f, x, 0x104, x + 0x78, 0x124, 0x10c, bright, dim, 0x7517a4 + k * 0x80);
+		button(hovered == lit_from + k, 1.0f, x, 0x104, x + 0x78, 0x124, 0x10c, bright, dim, IMG(0x7517a4) + k * 0x80);
 	}
 }
 
@@ -250,10 +250,10 @@ static void box_buttons(int hovered, int lit_from)
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
-	static const Form form = { 0x4dbb00, (GameSettings *)0x4db528, { 0x4dbab0, 0x4dbacc, 0x4db850, 0x4db518 }, 0x75c9a4,
-	                           0, 0x4dbba4, 10 };
+	static const Form form = { IMG(0x4dbb00), (GameSettings *)IMG(0x4db528), { IMG(0x4dbab0), IMG(0x4dbacc), IMG(0x4db850), IMG(0x4db518) }, IMG(0x75c9a4),
+	                           0, IMG(0x4dbba4), 10 };
 	const Form *f = &form;
-	const u32 *bright = (const u32 *)0x4dba98, *dim = (const u32 *)0x4db8a0;
+	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);
 	int editing = g_paused, confirming = g_createQuitDialog, leaving = g_arenaLeaving;
 	int open = editing || confirming || leaving, blocked = open || g_mapListOpen;
 	char text[20];
@@ -263,10 +263,10 @@ void (arena_createDraw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	colour(bright);
-	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)0x752c24);
+	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)IMG(0x752c24));
 	for (int k = 0; k < 8; k++) {
 		colour(bright);
-		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(0x752ca4 + k * 0x80));
+		text_draw8(X0 + 0x40, Y0 + 0x32 + k * 0x22, (const char *)(IMG(0x752ca4) + k * 0x80));
 	}
 	draw_values(f, text);
 	if (!blocked)
@@ -278,15 +278,15 @@ void (arena_createDraw)(void)
 	}
 	/* (the next row's first button is skipped) */
 	button(hovered == 11 && !blocked, 1.0f, X0 + 0xfa + 0x3c, Y1 - 0x32, X0 + 0xfa + 0x104, Y1 - 0x12, Y1 - 0x2a, bright,
-	       dim, 0x753224);
+	       dim, IMG(0x753224));
 	arena_drawCustomOption(f->s->map);
 	preview_controls(f, hovered == 13 && !blocked, hovered == 14 && !open, f->s->kind == 1 && !blocked, dim);
 	if (confirming) {
 		glColor4f(0.7f, 0.0f, 1.0f, 1.0f);
 		menu_drawTextureFlipped(0x64, 0xb4, 0x21c, 0x140, g_dialogFrameTexture);
 		white();
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)0x753224);
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x7532a4);
+		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)IMG(0x753224));
+		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)IMG(0x7532a4));
 		box_buttons(hovered, 15);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int, int)(0x64, 0xb4, 0x21c, 0x140);   /* menu_drawTopRightOrnament */
@@ -300,8 +300,8 @@ void (arena_createDraw)(void)
 		set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 		white();
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)0x74dfa4);
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x74e024);
+		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)IMG(0x74dfa4));
+		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)IMG(0x74e024));
 		box_buttons(choice, 0);
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

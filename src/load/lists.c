@@ -2,7 +2,7 @@
    goes down (it counts the entries still free). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* node's links (prev, next) at link, the list's head and count at head */
 static void push_front(void *self, u8 *node, int link, int head)

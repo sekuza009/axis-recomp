@@ -26,7 +26,7 @@ static void dialog_opened(int state)
 /* 0x433980: dialog 0x58 */
 void (room_openDialog58)(void)
 {
-	set_box(0x9dd1a0, 0x50, 0x78, 0x230, 0x168);
+	set_box(IMG(0x9dd1a0), 0x50, 0x78, 0x230, 0x168);
 	popup_layout();
 	dialog_opened(0x58);
 	g_roomPopup = 0;
@@ -35,9 +35,9 @@ void (room_openDialog58)(void)
 /* 0x4338c0: dialog 0x4d, its two 0x2a-byte name buffers emptied */
 void (room_openDialog4d)(void)
 {
-	set_box(0x9dd6e8, 0x1e, 0x32, 0x262, 0x1ae);
+	set_box(IMG(0x9dd6e8), 0x1e, 0x32, 0x262, 0x1ae);
 	loginDialog_layout();
-	memset((void *)0x9dd1d8, 0, 0x54);
+	memset((void *)IMG(0x9dd1d8), 0, 0x54);
 	dialog_opened(0x4d);
 	g_openLoginName = 1;
 	g_roomLeaveDialog = 0;
@@ -46,20 +46,20 @@ void (room_openDialog4d)(void)
 /* 0x434640: dialog 0x42, its name field filled from 0x9dd570 */
 void (room_openDialog42)(void)
 {
-	static const u32 cleared[] = { 0x9dd348, 0x9dd32c, 0x9dd3f8, 0x9dd564, 0x9dd6cc, 0x4e1868, 0x68039c };
+	static const u32 cleared[] = { IMG(0x9dd348), IMG(0x9dd32c), IMG(0x9dd3f8), IMG(0x9dd564), IMG(0x9dd6cc), IMG(0x4e1868), IMG(0x68039c) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
-	memset((void *)0x9dd1d8, 0, 7 * 4 + 2 + 12);
+	memset((void *)IMG(0x9dd1d8), 0, 7 * 4 + 2 + 12);
 	g_roomState = 0x42;
 	g_retypePassword = 1;
-	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
+	strcpy((char *)IMG(0x9dd1d8), (const char *)IMG(0x9dd570));
 }
 
 /* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
 void (room_start)(void)
 {
-	static const u32 cleared[] = { 0x9dd3fc, 0x9dd6a0, 0x9dd330, 0x9da498, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0,
-	                               0x4df818, 0x9dd4bc, 0x9dd56c, 0x9dd6c0, 0x9dd34c, 0x9dcd40, 0x9dd840 };
+	static const u32 cleared[] = { IMG(0x9dd3fc), IMG(0x9dd6a0), IMG(0x9dd330), IMG(0x9da498), IMG(0x67ef30), IMG(0x4dba80), IMG(0x76d41c), IMG(0x680bb0),
+	                               IMG(0x4df818), IMG(0x9dd4bc), IMG(0x9dd56c), IMG(0x9dd6c0), IMG(0x9dd34c), IMG(0x9dcd40), IMG(0x9dd840) };
 	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;
 	g_roomMode = 1;
@@ -148,7 +148,7 @@ u32 (settingsDialog_clicks)(void)
 u32 (room_joinSession)(int i)
 {
 	g_roomJoined = 0;
-	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, (void *)(0x9087ef + i * 0x4a))) {
+	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, (void *)(IMG(0x9087ef) + i * 0x4a))) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();   /* arena_leaveSession */
 	}
@@ -200,7 +200,7 @@ u32 (arena_joinListed)(int i)
 	g_lobbyJoinRequest = 0;
 	if (g_arenaSearchStarted)
 		GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
-	void *session = i == 99999 ? (void *)0x4dbbd4 : (void *)(0x9087ef + i * 0x4a);
+	void *session = i == 99999 ? (void *)IMG(0x4dbbd4) : (void *)(IMG(0x9087ef) + i * 0x4a);
 	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, session)) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
@@ -318,15 +318,15 @@ u32 (chat_closeEdit)(void)
 	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
 	GAME_FN(chat_closeLine, 0x431600, u32, int)(1);                           /* chat_closeLine: the line sent */
 	if (g_typingRoomName == 1) {
-		memset((void *)0x9dd1d8, 0, 30);
+		memset((void *)IMG(0x9dd1d8), 0, 30);
 		g_typingRoomName = 0;
-		strcpy((char *)0x9dd1d8, (const char *)0x9dc92c);
+		strcpy((char *)IMG(0x9dd1d8), (const char *)IMG(0x9dc92c));
 		return 0;
 	}
 	if (g_typingRoomPassword == 1) {
-		memset((void *)0x9dd1f6, 0, 12);
+		memset((void *)IMG(0x9dd1f6), 0, 12);
 		g_chatFieldFlag = 0;
-		strcpy((char *)0x9dd1f6, (const char *)0x9dc92c);
+		strcpy((char *)IMG(0x9dd1f6), (const char *)IMG(0x9dc92c));
 		g_typingRoomPassword = 0;
 		return 0;
 	}
@@ -369,8 +369,8 @@ void (createDialog_draw)(void)
 		if (g_paused)
 			return;
 		g_typingGameName = 0;
-		memset((void *)0x9dd1d8, 0, 30);
-		strcpy((char *)0x9dd1d8, g_chatLine);
+		memset((void *)IMG(0x9dd1d8), 0, 30);
+		strcpy((char *)IMG(0x9dd1d8), g_chatLine);
 		if (g_editKey == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
@@ -387,9 +387,9 @@ void (createDialog_draw)(void)
 	if (g_typingGamePassword) {
 		if (g_paused)
 			return;
-		memset((void *)0x9dd1f6, 0, 12);
+		memset((void *)IMG(0x9dd1f6), 0, 12);
 		g_typingGamePassword = 0;
-		strcpy((char *)0x9dd1f6, g_chatLine);
+		strcpy((char *)IMG(0x9dd1f6), g_chatLine);
 		g_chatFieldFlag = 0;
 		if (g_editKey == 10) {
 			g_typingRoomName = 1;
@@ -435,7 +435,7 @@ void (createDialog_draw)(void)
 void (loginForm_update)(void)
 {
 	static const struct { u32 editing, text; int size; } field[4] = {
-		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
+		{ IMG(0x9dd348), IMG(0x9dd1d8), 30 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 12 }, { IMG(0x9dd564), IMG(0x9dd202), 12 }, { IMG(0x9dd6cc), IMG(0x9dd20e), 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
 	if (g_openLoginName) {
 		loginForm_openField(0);
@@ -450,8 +450,8 @@ void (loginForm_update)(void)
 		while (k < 4 && EDITING(k) != 1)
 			k++;
 		if (k < 4) {
-			memset((void *)field[k].text, 0, field[k].size);
-			strcpy((char *)field[k].text, g_chatLine);
+			memset((void *)RELOC(field[k].text), 0, field[k].size);
+			strcpy((char *)RELOC(field[k].text), g_chatLine);
 			if (key == 10 && k == 0)
 				highlight_choice(2, g_loginFormLeft + 0x172, g_loginFormBottom - 0x2c);
 			else {
@@ -569,17 +569,17 @@ u32 (roomList_passwordKeys)(void)
    Returns net_send's eax */
 u32 (room_requestJoin)(void)
 {
-	static const u32 cleared[] = { 0x9dd202, 0x9dd1f6, 0x9dd206, 0x9dd6d8, 0x9dd1fa, 0x9dd20a, 0x9dd6dc, 0x9dd834 };
+	static const u32 cleared[] = { IMG(0x9dd202), IMG(0x9dd1f6), IMG(0x9dd206), IMG(0x9dd6d8), IMG(0x9dd1fa), IMG(0x9dd20a), IMG(0x9dd6dc), IMG(0x9dd834) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
-	static const u32 cleared2[] = { 0x9dd69c, 0x9dd37c, 0x9dd378, 0x9dd304, 0x9dd6d0, 0x9dd1fe, 0x9dd6e0 };
+	static const u32 cleared2[] = { IMG(0x9dd69c), IMG(0x9dd37c), IMG(0x9dd378), IMG(0x9dd304), IMG(0x9dd6d0), IMG(0x9dd1fe), IMG(0x9dd6e0) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
 	memset(message, 0, 30);
-	strcpy(message, (const char *)0x9dd570);
+	strcpy(message, (const char *)IMG(0x9dd570));
 	u32 r = net_send(0x1d, 0x65);
 	g_accountNotice = 0;
 	g_roomAwaitingServer = 1;
@@ -608,32 +608,32 @@ u32 (loginDialog_draw)(void)
 #define Y1 g_loginFormBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	int hovered = GAME_FN(loginForm_hitTest, 0x432240, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7588a4);
+	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)IMG(0x7588a4));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	for (int k = 0; k < 4; k++) {
-		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(0x758924 + k * 0x80));
+		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(IMG(0x758924) + k * 0x80));
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
 	if (!g_typingAccountName || !g_paused)
-		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)0x9dd1d8);
+		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)IMG(0x9dd1d8));
 	if (!g_typingAccountPassword || !g_paused) {
-		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
+		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd1f6));
 		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
 	}
 	if (!g_typingAccountRepeat || !g_paused) {
-		stars(hidden, sizeof hidden, (const char *)0x9dd202);
+		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd202));
 		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
 	}
 	if (!g_typingAccountEmail || !g_paused)
-		text_draw8(X0 + 0x94, Y0 + 0xcc, (const char *)0x9dd20e);
+		text_draw8(X0 + 0x94, Y0 + 0xcc, (const char *)IMG(0x9dd20e));
 	for (int k = 0; k < 2; k++) {
 		int x = k * 0xc8;
 		glEnable(GL_TEXTURE_2D);
@@ -642,8 +642,8 @@ u32 (loginDialog_draw)(void)
 		const u32 *colour = hovered == k + 4 ? bright : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
-		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(0x7517a4 + k * 0x80));
+		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(IMG(0x7517a4) + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawCornerOrnaments, 0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -664,9 +664,9 @@ static void confirm_box(void)
 	menu_drawRect(0x64, 0xb4, 0x21c, 0x140, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)0x74dfa4);
-	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)0x74e024);
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)IMG(0x74dfa4));
+	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)IMG(0x74e024));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -675,10 +675,10 @@ static void confirm_box(void)
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
 		menu_drawWideButton(x, 0x104, x + 0x78, 0x124, 1);
 		if (hovered == k)
-			set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
-			set_colour_bits((Colour *)0x76d438, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
-		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(0x7517a4 + k * 0x80));
+			set_colour_bits((Colour *)IMG(0x76d438), 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
+		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(IMG(0x7517a4) + k * 0x80));
 	}
 }
 
@@ -694,14 +694,14 @@ u32 (serverDialog_draw)(void)
 #define Y1 GAME_VAR(int, 0x9dd1ac)
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	int hovered = popup_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x758da4);
+	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x758da4));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x20, X1 - 0x20, Y0 + 0x20);
@@ -709,10 +709,10 @@ u32 (serverDialog_draw)(void)
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 0);
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, (const char *)0x9dd1d8);
-	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
-	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)0x758e24);
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, (const char *)IMG(0x9dd1d8));
+	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)IMG(0x758e24));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -721,8 +721,8 @@ u32 (serverDialog_draw)(void)
 		int x = X0 + k * 0xb4;
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
-		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(0x758f24 + k * 0x80));
+		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(IMG(0x758f24) + k * 0x80));
 	}
 	if (g_roomLeaveDialog)
 		confirm_box();
@@ -748,30 +748,30 @@ u32 (roomLogin_draw)(void)
 #define Y1 g_roomLoginBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	int hovered = createDialog_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)0x7583a4);
+	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)IMG(0x7583a4));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	menu_drawLine(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + k * 0x30;
-		text_draw16(X0 + 0x40, y + 0x58, (const char *)(0x758424 + k * 0x80));
+		text_draw16(X0 + 0x40, y + 0x58, (const char *)(IMG(0x758424) + k * 0x80));
 		set_colour_bits(g_rectColour, 0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 1);
 		set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 0);
 	}
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_typingGameName)
-		text_draw8(X0 + 0xc8, Y0 + 0x58, (const char *)0x9dd1d8);
+		text_draw8(X0 + 0xc8, Y0 + 0x58, (const char *)IMG(0x9dd1d8));
 	if (!g_typingGamePassword) {
 		char hidden[30];
-		stars(hidden, sizeof hidden, (const char *)0x9dd1f6);
+		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd1f6));
 		text_draw8(X0 + 0xc8, Y0 + 0x88, hidden);
 	}
 	for (int k = 0; k < 3; k++) {
@@ -783,15 +783,15 @@ u32 (roomLogin_draw)(void)
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(0x758524 + k * 0x80));
+		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(IMG(0x758524) + k * 0x80));
 	}
 	if (g_roomRequestOut) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
-		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)0x74f6a4);
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)0x74f724);
+		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		text_drawBox16(0x69, 0xdc, 0x217, (const char *)IMG(0x74f6a4));
+		text_drawBox16(0x69, 0xf4, 0x217, (const char *)IMG(0x74f724));
 	}
 	if (g_roomLeaveDialog)
 		confirm_box();
@@ -807,10 +807,10 @@ u32 (roomLogin_draw)(void)
    (x, y) */
 static void rank_badge(int rank, int x, int y)
 {
-	const float *col_w = (const float *)0x4a9590, *row_h = (const float *)0x4a958c;
+	const float *col_w = (const float *)IMG(0x4a9590), *row_h = (const float *)IMG(0x4a958c);
 	int cell = rank - 1;
 	float u0 = f32(fmul_m((long double)(cell % 10), col_w));
-	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), (const float *)0x4a9588));
+	float v0 = f32(fadd_m(fmul_m((long double)(cell / 10), row_h), (const float *)IMG(0x4a9588)));
 	glBegin(GL_QUADS);
 	glTexCoord2f(u0, v0);
 	menu_vertex(x, y);
@@ -839,30 +839,30 @@ void (account_drawPanel)(void)
 #define Y0 g_accountPanelTop
 #define X1 g_accountPanelRight
 #define Y1 g_accountPanelBottom
-#define K(addr) ((const float *)(addr))
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+#define K(addr) ((const float *)RELOC(addr))
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	int hovered = GAME_FN(account_hitTest, 0x4322c0, int, int, int)(g_mouseX, g_mouseY);   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (g_roomAwaitingServer == 1) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
-		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x50, 0xdc, 0x230, (const char *)0x75b1a4);
-		text_drawBox16(0x50, 0xf0, 0x230, (const char *)0x74f724);
+		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		text_drawBox16(0x50, 0xdc, 0x230, (const char *)IMG(0x75b1a4));
+		text_drawBox16(0x50, 0xf0, 0x230, (const char *)IMG(0x74f724));
 		return;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
-	set_colour_bits((Colour *)0x76d438, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)0x7592a4);
+	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x7592a4));
 	for (int k = 0; k < 5; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(0x759324 + k * 0x80));
+		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(IMG(0x759324) + k * 0x80));
 	for (int k = 0; k < 7; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(0x7595a4 + k * 0x80));
-	text_draw8(X0 + 0x98, Y0 + 0x38, (const char *)0x9dd1d8);
+		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(IMG(0x7595a4) + k * 0x80));
+	text_draw8(X0 + 0x98, Y0 + 0x38, (const char *)IMG(0x9dd1d8));
 	for (int k = 0; k < 4; k++) {
 		int y = Y0 + k * 0x1c;
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f800000);   /* 0.1, 0.1, 0.1, 1 */
@@ -872,7 +872,7 @@ void (account_drawPanel)(void)
 	}
 	char text[20];
 	static const struct { u32 typing, password; int y; } hidden[3] = {
-		{ 0x9dd69c, 0x9dd6d8, 0x50 }, { 0x9dd37c, 0x9dd1f6, 0x6c }, { 0x9dd378, 0x9dd202, 0x88 },
+		{ IMG(0x9dd69c), IMG(0x9dd6d8), 0x50 }, { IMG(0x9dd37c), IMG(0x9dd1f6), 0x6c }, { IMG(0x9dd378), IMG(0x9dd202), 0x88 },
 	};
 	for (int k = 0; k < 3; k++)
 		if (!GAME_VAR(int, hidden[k].typing)) {
@@ -880,7 +880,7 @@ void (account_drawPanel)(void)
 			text_draw8(X0 + 0x98, Y0 + hidden[k].y, text);
 		}
 	if (!g_editingEmail)
-		text_draw8(X0 + 0x98, Y0 + 0xa4, (const char *)0x9dd20e);
+		text_draw8(X0 + 0x98, Y0 + 0xa4, (const char *)IMG(0x9dd20e));
 	itoa(g_pilotLevel, text, 10);
 	text_draw8(X0 + 0x98, Y0 + 0xbe, text);
 	/* the rank badge */
@@ -894,16 +894,16 @@ void (account_drawPanel)(void)
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
 	if (!g_accountClan)
-		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)0x759924);
+		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)IMG(0x759924));
 	else {
 		itoa(g_accountClan, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)0x4b0268, (double)(*(float *)&g_pilotRating));
+	sprintf(text, (const char *)IMG(0x4b0268), (double)(*(float *)&g_pilotRating));
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
-	sprintf(text, (const char *)0x4b0268, (double)g_pilotWinRate);
+	sprintf(text, (const char *)IMG(0x4b0268), (double)g_pilotWinRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
-	static const u32 counts[3] = { 0x9dd5ec, 0x9dd5f0, 0x9dd5dc };
+	static const u32 counts[3] = { IMG(0x9dd5ec), IMG(0x9dd5f0), IMG(0x9dd5dc) };
 	for (int k = 0; k < 3; k++) {
 		itoa(GAME_VAR(int, counts[k]), text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0x11e + k * 0x18, text);
@@ -917,8 +917,8 @@ void (account_drawPanel)(void)
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)0x76d438, colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(0x7517a4 + k * 0x80));
+		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(IMG(0x7517a4) + k * 0x80));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
@@ -945,8 +945,8 @@ u32 (ranking_drawTable)(void)
 #define Y0 GAME_VAR(int, 0x9dcedc)
 #define X1 GAME_VAR(int, 0x9dcee0)
 #define Y1 GAME_VAR(int, 0x9dcee4)
-#define TEXT(c) set_colour_bits((Colour *)0x76d438, (c)[0], (c)[1], (c)[2], (c)[3])
-	const u32 *bright = (const u32 *)0x9dcec0, *dim = (const u32 *)0x9dd338;
+#define TEXT(c) set_colour_bits((Colour *)IMG(0x76d438), (c)[0], (c)[1], (c)[2], (c)[3])
+	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	int hovered = GAME_FN(ranking_hitTest, 0x4323c0, int, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
@@ -955,7 +955,7 @@ u32 (ranking_drawTable)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	TEXT(bright);
-	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)0x75aba4);
+	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)IMG(0x75aba4));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -969,11 +969,11 @@ u32 (ranking_drawTable)(void)
 	g_rankingLast = (g_roomListPage * 5 + 5) * 2;
 	itoa(first, page, 10);
 	itoa(g_rankingLast, last, 10);
-	strcat(page, (const char *)0x4b278c);   /* " ~ " */
+	strcat(page, (const char *)IMG(0x4b278c));   /* " ~ " */
 	strcat(page, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
 	text_draw8b(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
-	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)0x75ac24);
+	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)IMG(0x75ac24));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -982,15 +982,15 @@ u32 (ranking_drawTable)(void)
 	TEXT(yellow);
 	static const u32 sorted_by[4] = { 0x75ae24, 0x75af24, 0x75b024, 0x75aea4 };
 	if ((unsigned)g_rankingSort <= 3)
-		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)sorted_by[g_rankingSort]);
+		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)RELOC(sorted_by[g_rankingSort]));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	/* the column heads, the numbers' right-aligned (8 a character) */
 	TEXT(bright);
-	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)0x75aca4);
-	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)0x75ad24);
-	text_draw8(X0 - (int)strlen((const char *)0x75ada4) * 8 + 0xec, Y0 + 0x52, (const char *)0x75ada4);
+	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)IMG(0x75aca4));
+	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)IMG(0x75ad24));
+	text_draw8(X0 - (int)strlen((const char *)IMG(0x75ada4)) * 8 + 0xec, Y0 + 0x52, (const char *)IMG(0x75ada4));
 	static const struct { u32 text; int right, sort; } heads[5] = {
 		{ 0x75ae24, 0x12c, 0 }, { 0x75aea4, 0x2d * 8, 3 }, { 0x75af24, 0x35 * 8, 1 }, { 0x75afa4, 0x3c * 8, -1 },
 		{ 0x75b024, 0x226, 2 },
@@ -1007,7 +1007,7 @@ u32 (ranking_drawTable)(void)
 	if (g_rankingHaveList) {
 		char text[64];
 		for (int i = 0; i < 10; i++) {
-			const u8 *row = (const u8 *)0x9dcef4 + i * 0x44;
+			const u8 *row = (const u8 *)IMG(0x9dcef4) + i * 0x44;
 #define ROW(type, offset) (*(const type *)(row + (offset)))
 			if (!*row) {
 				g_roomListPages = g_roomListPage;
@@ -1028,12 +1028,12 @@ u32 (ranking_drawTable)(void)
 			TEXT(white);
 			if (g_rankingSort == 0)
 				TEXT(yellow);
-			sprintf(text, (const char *)0x4b2784, (double)ROW(float, 0x36));   /* "%8.1f" */
+			sprintf(text, (const char *)IMG(0x4b2784), (double)ROW(float, 0x36));   /* "%8.1f" */
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x144, y, text);
 			TEXT(white);
 			if (g_rankingSort == 3)
 				TEXT(yellow);
-			sprintf(text, (const char *)0x4b277c, (double)ROW(float, 0x2e));   /* "%3.2f" */
+			sprintf(text, (const char *)IMG(0x4b277c), (double)ROW(float, 0x2e));   /* "%3.2f" */
 			text_draw8(X0 + (0x30 - (int)strlen(text)) * 8, y, text);
 			TEXT(white);
 			if (g_rankingSort == 1)
@@ -1065,13 +1065,13 @@ u32 (ranking_drawTable)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(0x75b0a4 + k * 0x80));
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(IMG(0x75b0a4) + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
-		int step = ftol(fmul_m(fld_m((const float *)0x4dba80), (const float *)0x4a9438)) % 10;
-		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)0x4a93ec), (const float *)0x4a9424));
-		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)0x75b1a4);
+		int step = ftol(fmul_m(fld_m((const float *)IMG(0x4dba80)), (const float *)IMG(0x4a9438))) % 10;
+		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)IMG(0x4a93ec)), (const float *)IMG(0x4a9424)));
+		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
+		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)IMG(0x75b1a4));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawCornerOrnaments, 0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */

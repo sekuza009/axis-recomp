@@ -2,6 +2,13 @@
 #ifndef STANDALONE_H
 #define STANDALONE_H
 
+/* the game's image (header, code bytes, data), relocated: g_image in main.c holds what the original kept at
+   0x400000 .. 0xb6b000; AT(a) is the original address a there. The original range itself is left inaccessible */
+extern unsigned char g_image[];
+#define GAME_BASE 0x400000u
+#define GAME_SIZE 0x76b000u
+#define AT(a) (g_image + ((unsigned)(a) - GAME_BASE))
+
 /* a rebuilt function and the original's address, where the game's own remaining code and its tables reach it */
 typedef struct { unsigned addr; void *fn; const char *name; } SaHook;
 extern const SaHook g_saHooks[];

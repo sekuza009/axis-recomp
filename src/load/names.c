@@ -1,7 +1,7 @@
 /* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 #include <string.h>
 
 /* binary search of name in the table at *table (count at *count; the search starts with hi = count); -1 when not
@@ -25,8 +25,8 @@ static int name_search(u32 count, u32 table, const char *name)
 }
 
 /* 0x466ce0: a shape by name; 0x46b0c0: a skeleton data file by name */
-int (shape_findByName)(const char *name) { return name_search(0xa0e79c, 0xa0e7a0, name); }
-int (skelDat_findByName)(const char *name) { return name_search(0xa0eab4, 0xa0eab8, name); }
+int (shape_findByName)(const char *name) { return name_search(IMG(0xa0e79c), IMG(0xa0e7a0), name); }
+int (skelDat_findByName)(const char *name) { return name_search(IMG(0xa0eab4), IMG(0xa0eab8), name); }
 
 /* 0x46cad0: src without its extension (from the last '.') copied to dst */
 void (path_stripExtension)(const char *src, char *dst)
@@ -71,7 +71,7 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 {
 	int i = tex_findByName(manager, name);
 	if (i < 0) {
-		sys_fatalError((char *)0xa0dff8, (const char *)0x4b3f80, (int)name);
+		sys_fatalError((char *)IMG(0xa0dff8), (const char *)IMG(0x4b3f80), (int)name);
 		return 0;
 	}
 	crt_fseek(GAME_VAR(void *, manager + 0x110), GAME_VAR(long, GAME_VAR(u8 *, manager + 0x10c) + i * 0x44 + 0x40), 0);
@@ -90,7 +90,7 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
 		if (i >= 0)
 			return k * 512 + i;
 	}
-	sys_fatalError((char *)0xa0e000, (const char *)0x4b42b0, (int)name);
+	sys_fatalError((char *)IMG(0xa0e000), (const char *)IMG(0x4b42b0), (int)name);
 	return -1;
 }
 
@@ -105,8 +105,8 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 		char *name = (char *)part + 4;
 		if (*suffix) {
 			if (strlen(name) + strlen(suffix) > 0x3f)
-				sys_fatalErrorN((char *)0xa0e790, (const char *)0x4c4c6c, name, suffix);
-			strcat(name, (const char *)0x4b12f4);
+				sys_fatalErrorN((char *)IMG(0xa0e790), (const char *)IMG(0x4c4c6c), name, suffix);
+			strcat(name, (const char *)IMG(0x4b12f4));
 			strcat(name, suffix);
 		}
 		GAME_VAR(int, part + 0x44) = tex_getIdByName((*(void **)&g_textures), name, flags, a, b, c, d, e, f);
@@ -121,7 +121,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
    (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
 void THISCALL (tex_bind)(u8 *tm, int i)
 {
-#define AT(type, p, offset) GAME_VAR(type, (u8 *)(p) + (offset))
+#define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
 #define OLDEST AT(u8 *, tm, 0xcd134)
 	u8 *texture = tm + i * 0x68;
 	u8 *slot;
@@ -168,14 +168,14 @@ void THISCALL (tex_bind)(u8 *tm, int i)
    with the size found otherwise. Its caller ignores the eax it leaves */
 void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 *f)
 {
-	static const u32 sizes[6][3] = { { 64, 64, 0x4b4278 }, { 128, 64, 0x4b423c }, { 256, 64, 0x4b4200 },
-	                                 { 128, 128, 0x4b41c4 }, { 256, 128, 0x4b4188 }, { 256, 256, 0x4b414c } };
+	static const u32 sizes[6][3] = { { 64, 64, IMG(0x4b4278) }, { 128, 64, IMG(0x4b423c) }, { 256, 64, IMG(0x4b4200) },
+	                                 { 128, 128, IMG(0x4b41c4) }, { 256, 128, IMG(0x4b4188) }, { 256, 256, IMG(0x4b414c) } };
 	u8 *managers[6] = { a, b, c, d, e, f };
 	TextureManager_reset(sets);
 	for (int k = 0; k < 6; k++) {
 		u8 *m = managers[k];
 		if (m && (GAME_VAR(u32, m + 0xc0118) != sizes[k][0] || GAME_VAR(u32, m + 0xc011c) != sizes[k][1]))
-			sys_fatalErrorN((char *)0xa0e000, (const char *)sizes[k][2], GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
+			sys_fatalErrorN((char *)IMG(0xa0e000), (const char *)RELOC(sizes[k][2]), GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
 	}
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
@@ -207,22 +207,22 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-	static const u32 formats[3][2] = { { 0x4b3fdc, 0x4b3fd8 }, { 0x4b3fec, 0x4b3fe4 }, { 0x4b4000, 0x4b3ff8 } };   /* "%s\%s" "%s", .BMP, .RAW */
+	static const u32 formats[3][2] = { { IMG(0x4b3fdc), IMG(0x4b3fd8) }, { IMG(0x4b3fec), IMG(0x4b3fe4) }, { IMG(0x4b4000), IMG(0x4b3ff8) } };   /* "%s\%s" "%s", .BMP, .RAW */
 	u8 image[0x48];
-	FIELD(u32, image, 0) = 0x4a96f8;   /* (its vtable) */
+	FIELD(u32, image, 0) = IMG(0x4a96f8);   /* (its vtable) */
 	FIELD(u32, image, 4) = 0;          /* (no file yet) */
 	char base[0x100], path[0x100];
 	strcpy(base, name);
-	crt_strtok(base, (const char *)0x4b12f4);   /* "*" */
+	crt_strtok(base, (const char *)IMG(0x4b12f4));   /* "*" */
 	const char *dir = (const char *)tm + 8;
 	int format = FIELD(int, tm, 0xc0114), ok = 0;
 	if ((unsigned)format > 2)
-		sys_fatalError((char *)0xa0dff8, (const char *)0x4b400c, format);
+		sys_fatalError((char *)IMG(0xa0dff8), (const char *)IMG(0x4b400c), format);
 	else {
 		if (*dir)
-			sprintf(path, (const char *)formats[format][0], dir, base);
+			sprintf(path, (const char *)RELOC(formats[format][0]), dir, base);
 		else
-			sprintf(path, (const char *)formats[format][1], base);
+			sprintf(path, (const char *)RELOC(formats[format][1]), base);
 		if (format == 0)
 			ok = tex_findByName(tm, path) >= 0;
 		else if (format == 1) {
@@ -233,7 +233,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 				ok = w == FIELD(int, tm, 0xc0118) && h == FIELD(int, tm, 0xc011c);
 			}
 		} else {
-			void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+			void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 			if (f) {
 				short size[2];
 				crt_fseek(f, 6, 0);
@@ -259,13 +259,13 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)0xa0dff8, (const char *)(text), ##__VA_ARGS__)
-	static const u32 names[6][3] = { { 64, 64, 0x4b3f54 }, { 128, 64, 0x4b3f4c }, { 128, 128, 0x4b3f3c },
-	                                 { 256, 64, 0x4b3f44 }, { 256, 128, 0x4b3f34 }, { 256, 256, 0x4b3f2c } };
+#define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)IMG(0xa0dff8), (const char *)RELOC(text), ##__VA_ARGS__)
+	static const u32 names[6][3] = { { 64, 64, IMG(0x4b3f54) }, { 128, 64, IMG(0x4b3f4c) }, { 128, 128, IMG(0x4b3f3c) },
+	                                 { 256, 64, IMG(0x4b3f44) }, { 256, 128, IMG(0x4b3f34) }, { 256, 256, IMG(0x4b3f2c) } };
 	if (FIELD(int, tm, 4) == 1)
-		fatal(0x4b3f5c);
+		fatal(IMG(0x4b3f5c));
 	char *own = (char *)tm + 8;
-	if (dir && strcmp(dir, (const char *)0x4b1304) != 0)
+	if (dir && strcmp(dir, (const char *)IMG(0x4b1304)) != 0)
 		strcpy(own, dir);
 	else
 		own[0] = 0;
@@ -281,20 +281,20 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		while (k < 6 && !(names[k][0] == (u32)w && names[k][1] == (u32)h))
 			k++;
 		if (k < 6)
-			strcpy(name, (const char *)names[k][2]);
+			strcpy(name, (const char *)RELOC(names[k][2]));
 		else
-			sprintf(name, (const char *)0x4b3f20, w, h);
+			sprintf(name, (const char *)IMG(0x4b3f20), w, h);
 		if (*own)
-			sprintf(path, (const char *)0x4b3f10, own, name);
+			sprintf(path, (const char *)IMG(0x4b3f10), own, name);
 		else
-			sprintf(path, (const char *)0x4b3f04, name);
-		FIELD(void *, tm, 0x110) = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+			sprintf(path, (const char *)IMG(0x4b3f04), name);
+		FIELD(void *, tm, 0x110) = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 		if (!FIELD(void *, tm, 0x110))
-			fatal(0x4b3ee4, path);
+			fatal(IMG(0x4b3ee4), path);
 		crt_fread(tm + 0x108, 4, 1, FIELD(void *, tm, 0x110));
 		FIELD(void *, tm, 0x10c) = operator_new(FIELD(u32, tm, 0x108) * 0x44);
 		if (!FIELD(void *, tm, 0x10c))
-			fatal(0x4b3eb4, FIELD(int, tm, 0x108));
+			fatal(IMG(0x4b3eb4), FIELD(int, tm, 0x108));
 		crt_fread(FIELD(void *, tm, 0x10c), 0x44, FIELD(u32, tm, 0x108), FIELD(void *, tm, 0x110));
 	} else {
 		FIELD(int, tm, 0x108) = 0;
@@ -305,7 +305,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 	FIELD(int, tm, 0xcd130) = slots > 0x200 ? 0x200 : slots;
 	FIELD(u8 *, tm, 0xcd12c) = operator_new(FIELD(int, tm, 0xcd130) * 0x14);
 	if (!FIELD(u8 *, tm, 0xcd12c))
-		fatal(0x4b3e84, FIELD(int, tm, 0xcd130));
+		fatal(IMG(0x4b3e84), FIELD(int, tm, 0xcd130));
 	for (int i = 0; i < FIELD(int, tm, 0xcd130); i++) {
 		u32 *slot = (u32 *)(FIELD(u8 *, tm, 0xcd12c) + i * 0x14);
 		slot[0] = i;
@@ -365,7 +365,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		texRecord_init(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		FIELD(int, tm, 0xcd128)++;
 	} else
-		sys_fatalErrorN((char *)0xa0dff8, (const char *)0x4b3fa8, FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
+		sys_fatalErrorN((char *)IMG(0xa0dff8), (const char *)IMG(0x4b3fa8), FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
 	if (FIELD(int, tm, 0xcd128) < FIELD(int, tm, 0xcd130))
 		tex_bind(tm, i);
 	return i;
@@ -378,16 +378,16 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 static void tex_path(u8 *m, char *path, u32 with_dir, u32 plain, const char *name)
 {
 	if (m[8])
-		sprintf(path, (const char *)with_dir, (const char *)m + 8, name);
+		sprintf(path, (const char *)RELOC(with_dir), (const char *)m + 8, name);
 	else
-		sprintf(path, (const char *)plain, name);
+		sprintf(path, (const char *)RELOC(plain), name);
 }
 
 /* a decoded image of another size than the manager's is fatal */
 static void size_check(u8 *m, int w, int h)
 {
 	if (W(m) != w || H(m) != h)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)0xa0dff8, (const char *)0x4b4104, W(m), H(m), w, h);
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int)((char *)IMG(0xa0dff8), (const char *)IMG(0x4b4104), W(m), H(m), w, h);
 }
 
 /* the image's alpha (the 4th bytes from +0x114): the grey of the ALPHA image at +0x40114, or opaque */
@@ -418,30 +418,30 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 {
 	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */
 	for (int k = 0; k < 3; k++) {
-		bmp[k][0] = 0x4a96f8;
+		bmp[k][0] = IMG(0x4a96f8);
 		bmp[k][1] = 0;
 	}
 	char name[0x100], path[0x190];
 	int bpp, w, h;
 	strcpy(name, (const char *)m + 0xc0128 + i * 0x68);
-	crt_strtok(name, (const char *)0x4b12f4);
+	crt_strtok(name, (const char *)IMG(0x4b12f4));
 	switch (GAME_VAR(int, m + 0xc0114)) {
 	case 0:
 		if (!g_ptxTablesReady) {
 			ptx_initTables();
 			g_ptxTablesReady = 1;
 		}
-		tex_path(m, path, 0x4b3fdc, 0x4b3fd8, name);
+		tex_path(m, path, IMG(0x4b3fdc), IMG(0x4b3fd8), name);
 		ptx_decode(tex_getItemFileBy(m, path), m + 0x114, &bpp, &w, &h);
 		size_check(m, w, h);
-		tex_path(m, path, 0x4b405c, 0x4b4050, name);
+		tex_path(m, path, IMG(0x4b405c), IMG(0x4b4050), name);
 		if (tex_findByName(m, (const u8 *)path) >= 0) {
 			ptx_decode(tex_getItemFileBy(m, path), m + 0x40114, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);
 		} else
 			alpha_from(m, 0);
-		tex_path(m, path, 0x4b4044, 0x4b4038, name);
+		tex_path(m, path, IMG(0x4b4044), IMG(0x4b4038), name);
 		if (tex_findByName(m, (const u8 *)path) >= 0) {
 			ptx_decode(tex_getItemFileBy(m, path), m + 0x80114, &bpp, &w, &h);
 			size_check(m, w, h);
@@ -449,18 +449,18 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 			colour_fill(m);
 		break;
 	case 1:
-		tex_path(m, path, 0x4b3fec, 0x4b3fe4, name);
+		tex_path(m, path, IMG(0x4b3fec), IMG(0x4b3fe4), name);
 		if (!image_initBy(bmp[0], path))
-			sys_fatalError((char *)0xa0dff8, (const char *)0x4b40a8, (int)path);
+			sys_fatalError((char *)IMG(0xa0dff8), (const char *)IMG(0x4b40a8), (int)path);
 		image_copyTo(bmp[0], m + 0x114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
-		tex_path(m, path, 0x4b4098, 0x4b4088, name);
+		tex_path(m, path, IMG(0x4b4098), IMG(0x4b4088), name);
 		if (image_initBy(bmp[1], path)) {
 			image_copyTo(bmp[1], m + 0x40114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 			alpha_from(m, 1);
 			BMPRGBFile_close(bmp[1]);
 		} else
 			alpha_from(m, 0);
-		tex_path(m, path, 0x4b4078, 0x4b4068, name);
+		tex_path(m, path, IMG(0x4b4078), IMG(0x4b4068), name);
 		if (image_initBy(bmp[2], path)) {
 			image_copyTo(bmp[2], m + 0x80114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 			BMPRGBFile_close(bmp[2]);
@@ -472,19 +472,19 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 			ptx_initTables();
 			g_ptxTablesReady = 1;
 		}
-		tex_path(m, path, 0x4b4000, 0x4b3ff8, name);
+		tex_path(m, path, IMG(0x4b4000), IMG(0x4b3ff8), name);
 		ptx_open(path, m + 0x114, &bpp, &w, &h);
 		size_check(m, w, h);
-		tex_path(m, path, 0x4b40f4, 0x4b40e4, name);
-		void *f = crt_fopen(path, (const char *)0x4ad170);
+		tex_path(m, path, IMG(0x4b40f4), IMG(0x4b40e4), name);
+		void *f = crt_fopen(path, (const char *)IMG(0x4ad170));
 		if (f) {
 			ptx_decode(f, m + 0x40114, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);
 		} else
 			alpha_from(m, 0);
-		tex_path(m, path, 0x4b40d4, 0x4b40c4, name);
-		f = crt_fopen(path, (const char *)0x4ad170);
+		tex_path(m, path, IMG(0x4b40d4), IMG(0x4b40c4), name);
+		f = crt_fopen(path, (const char *)IMG(0x4ad170));
 		if (f) {
 			ptx_decode(f, m + 0x80114, &bpp, &w, &h);
 			size_check(m, w, h);

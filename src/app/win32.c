@@ -9,7 +9,7 @@
 /* 0x43f580: the current directory into the game's path buffer (0x76d224, 0x105 bytes) */
 u32 (app_readCurrentDirectory)(void)
 {
-	return GetCurrentDirectoryA(0x105, (char *)0x76d224);
+	return GetCurrentDirectoryA(0x105, (char *)IMG(0x76d224));
 }
 
 /* 0x46c580: a message box over the active window (title, text); MessageBox's answer */
@@ -32,9 +32,9 @@ int (sys_messageBox)(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	g_messageBoxArgs = args;
-	vsprintf((char *)0x4dd0d0, format, args);
+	vsprintf((char *)IMG(0x4dd0d0), format, args);
 	(*(void **)&g_messageBoxArgs) = NULL;
-	int answer = MessageBoxA(GetActiveWindow(), (const char *)0x4dd0d0, (const char *)0x4b043c, 0);
+	int answer = MessageBoxA(GetActiveWindow(), (const char *)IMG(0x4dd0d0), (const char *)IMG(0x4b043c), 0);
 	va_end(args);
 	return answer;
 }
@@ -61,7 +61,7 @@ int (glWindow_resize)(int width, int height)
 	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
 	if (g_fullScreen == 1 &&
 	    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c500c);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c500c));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_glCachedState = -1;
@@ -70,7 +70,7 @@ int (glWindow_resize)(int width, int height)
 
 #define g_glWindowMade GAME_VAR(int, 0xa0e930)        /* the window exists (it is made once) */
 #define g_glWindow GAME_VAR(void *, 0xa0e934)
-#define g_glTitle ((char *)0xa0e81c)                   /* also the window class's, icon's and menu's name */
+#define g_glTitle ((char *)IMG(0xa0e81c))                   /* also the window class's, icon's and menu's name */
 
 /* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
    colour / depth bits (0xa0e810, 0xa0e928, 0xa0e818, 0xa0e924) kept. Without a given window (window and other
@@ -82,7 +82,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
                       void *window, void *other)
 {
 	if (g_glWindowMade == 1) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4fd8);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4fd8));   /* sys_errorMessageNoName */
 		return NULL;
 	}
 	strcpy(g_glTitle, title);
@@ -104,19 +104,19 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		wc[8] = (u32)g_glTitle;    /* menu name */
 		wc[9] = (u32)g_glTitle;    /* class name */
 		if (!(IMPORT(0x4a92b8, u16, const u32 *)(wc))) {                                               /* RegisterClassA */
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4fa4);
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4fa4));
 			return NULL;
 		}
 		if (g_fullScreen == 1 &&
 		    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, g_glColourBits)) {
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4f50);   /* glWindow_setDisplayModeBy failed */
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4f50));   /* glWindow_setDisplayModeBy failed */
 			g_fullScreen = 0;
 		}
 		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 		if (g_glWindow == NULL) {
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4f14);
+			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4f14));
 			return NULL;
 		}
 		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
@@ -161,7 +161,7 @@ int (glWindow_restoreDisplayMode)(void)
 	u8 mode[0x94];
 	display_mode(mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4ed4);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4ed4));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_modeChanged = 0;
@@ -188,7 +188,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	u8 mode[0x94];
 	display_mode(mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e94);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4e94));
 		return 0;
 	}
 	g_modeChanged = 1;
@@ -230,7 +230,7 @@ u32 (wnd_setCursor)(void)
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	GAME_FN(input_releaseAll, 0x4014c0, void, void)();
 	music_shutdown();
-	for (u32 p = 0x4dd4d4; p < 0x4dd4fc; p += 4)
+	for (u32 p = IMG(0x4dd4d4); p < IMG(0x4dd4fc); p += 4)
 		mem_free(GAME_VAR(void *, p));
 	GAME_FN(sound_freeAll, 0x456cd0, void, void)();
 	return GAME_FN(sound_releaseDirectSound, 0x467b70, u32, void)();
@@ -254,15 +254,15 @@ int (glWindow_setupPixelFormat)(void *dc)
 	pfd[0x17] = g_glDepthBits;  /* cDepthBits */
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e5c);   /* sys_errorMessageNoName */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4e5c));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	if (pfd[4] & 0x80) {   /* PFD_NEED_PALETTE */
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4e30);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4e30));
 		return 0;
 	}
 	if (!SetPixelFormat(dc, format, pfd)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)0x4c4df8);
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4df8));
 		return 0;
 	}
 	return 1;
@@ -273,7 +273,7 @@ int (glWindow_setupPixelFormat)(void *dc)
    is none, it needs a palette, or it cannot be set */
 int (gfx_setPixelFormat)(void *dc)
 {
-	u8 *pfd = (u8 *)0x4b1020;
+	u8 *pfd = (u8 *)IMG(0x4b1020);
 	if (!(g_pixelFormatFilled & 1)) {
 		g_pixelFormatFilled |= 1;
 		pfd[9] = (u8)(((*(u8 *)&g_videoDepth) + 1) << 4);   /* cColorBits */
@@ -300,11 +300,11 @@ int (chat_createEdit)(int chars)
 	memset(&font, 0, sizeof font);
 	font.height = -12;
 	font.charSet = 1;   /* DEFAULT_CHARSET */
-	strcpy(font.face, (const char *)0x4b29b0);
+	strcpy(font.face, (const char *)IMG(0x4b29b0));
 	g_chatEditLength = chars;
 	g_inputFont = IMPORT(0x4a9038, void *, const void *)(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
-		0, (const char *)0x4b29a8, NULL, 0x40000400, g_chatCaretX - 5, g_chatCaretY + 0x21,
+		0, (const char *)IMG(0x4b29a8), NULL, 0x40000400, g_chatCaretX - 5, g_chatCaretY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
 	g_hChatEdit = edit;
 	if (edit) {
@@ -313,8 +313,8 @@ int (chat_createEdit)(int chars)
 	}
 	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
 	IMPORT(0x4a935c, void *, void *)(g_hChatEdit);   /* SetFocus */
-	u32 length = strlen((const char *)0x9dc92c);
-	SendMessageA(g_hChatEdit, 0xc, 0, 0x9dc92c);   /* WM_SETTEXT */
+	u32 length = strlen((const char *)IMG(0x9dc92c));
+	SendMessageA(g_hChatEdit, 0xc, 0, IMG(0x9dc92c));   /* WM_SETTEXT */
 	return SendMessageA(g_hChatEdit, 0xb1, length, length);   /* EM_SETSEL */
 }
 
@@ -327,7 +327,7 @@ static int files_present(void)
 {
 	if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() ||
 	    !app_checkFile_axisgame() || !app_checkFile_game()) {
-		sys_messageBox((const char *)0x4b04b0);
+		sys_messageBox((const char *)IMG(0x4b04b0));
 		return 0;
 	}
 	return 1;
@@ -350,9 +350,9 @@ int (app_init)(void *inst, int show)
 	app_readCurrentDirectory();
 	app_setDataPaths();
 	data_loadMessages();
-	void *user32 = GetModuleHandleA((const char *)0x4ac820);
+	void *user32 = GetModuleHandleA((const char *)IMG(0x4ac820));
 	if (user32) {
-		void (STDCALL *dpi_aware)(void) = IMPORT(0x4a907c, void *, void *, const char *)(user32, (const char *)0x4ac82c);   /* GetProcAddress */
+		void (STDCALL *dpi_aware)(void) = IMPORT(0x4a907c, void *, void *, const char *)(user32, (const char *)IMG(0x4ac82c));   /* GetProcAddress */
 		if (dpi_aware)
 			dpi_aware();
 	}
@@ -377,7 +377,7 @@ int (app_init)(void *inst, int show)
 	wc.icon = IMPORT(0x4a92c4, void *, void *, const char *)(inst, NULL);   /* LoadIconA */
 	wc.cursor = IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
 	wc.brush = IMPORT(0x4a903c, void *, int)(4);   /* GetStockObject(BLACK_BRUSH) */
-	wc.menu = wc.name = (const char *)0x4b0714;
+	wc.menu = wc.name = (const char *)IMG(0x4b0714);
 	int extended;   /* (GetVersion asked up to three times, as the original does) */
 	if (GetVersion() < 0x80000000)
 		extended = 0;
@@ -391,9 +391,9 @@ int (app_init)(void *inst, int show)
 	} else if (!(u16)IMPORT(0x4a92b8, u32, void *)(&wc))   /* RegisterClassA */
 		return 0;
 
-	memcpy((void *)0x4e0ca8, &wc, sizeof wc);
+	memcpy((void *)IMG(0x4e0ca8), &wc, sizeof wc);
 	g_hWndMain = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
-		(0, (const char *)0x4b0714, (const char *)0x4b2874, 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
+		(0, (const char *)IMG(0x4b0714), (const char *)IMG(0x4b2874), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
 	if (!g_hWndMain)
 		return 0;
 	g_hInstance = inst;
@@ -473,7 +473,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 static void chat_close(void *edit, int sent)
 {
 	if (sent)
-		SendMessageA(edit, 0xd, 0x80, 0x9dc92c);   /* WM_GETTEXT */
+		SendMessageA(edit, 0xd, 0x80, IMG(0x9dc92c));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
@@ -535,30 +535,30 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 #define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
 #define Sleep(ms) IMPORT(0x4a9110, void, u32)(ms)
 	arena_readLaunchFile(cmd);
-	void *launcher = FindWindowA((const char *)0x4b2834, (const char *)0x4b2854);
+	void *launcher = FindWindowA((const char *)IMG(0x4b2834), (const char *)IMG(0x4b2854));
 	if (launcher) {
 		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */
 		Sleep(500);
 	}
-	IMPORT(0x4a910c, void, void *)((void *)0x9dd878);              /* GetSystemTime */
+	IMPORT(0x4a910c, void, void *)((void *)IMG(0x9dd878));              /* GetSystemTime */
 	g_startTicks = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
 	Sleep(2000);
-	if (FindWindowA((const char *)0x4b0714, NULL)) {
-		MessageBoxA(NULL, (const char *)0x4b2a00, (const char *)0x4b2554, 0);
+	if (FindWindowA((const char *)IMG(0x4b0714), NULL)) {
+		MessageBoxA(NULL, (const char *)IMG(0x4b2a00), (const char *)IMG(0x4b2554), 0);
 		return 0;
 	}
 	if (!cd_findDrive()) {
-		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);
+		MessageBoxA(NULL, (const char *)IMG(0x4b2528), (const char *)IMG(0x4b2554), 0);
 		return 0;
 	}
 	u16 language = IMPORT(0x4a9100, u16, void)();   /* GetSystemDefaultLangID */
 	g_languageId = language;
 	if (language == 0x412 || language == 0x812) {
 		g_language = 1;
-		(*(u32 *)&g_launchMessage) = 0x4b2794;
+		(*(u32 *)&g_launchMessage) = IMG(0x4b2794);
 	} else {
 		g_language = 2;
-		(*(u32 *)&g_launchMessage) = 0x4b27e4;
+		(*(u32 *)&g_launchMessage) = IMG(0x4b27e4);
 	}
 	sys_checkClockTampering();
 	if (!g_startedFromLobby) {
@@ -567,17 +567,17 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 			return 0;
 		}
 		if (!reg_readStartMode()) {
-			sys_messageBox((const char *)0x4b04b0);
+			sys_messageBox((const char *)IMG(0x4b04b0));
 			return 0;
 		}
 		if (!files_present())
 			return 0;
 	}
-	launcher = FindWindowA((const char *)0x4b2834, (const char *)0x4b2854);
+	launcher = FindWindowA((const char *)IMG(0x4b2834), (const char *)IMG(0x4b2854));
 	if (launcher)
 		PostMessageA(launcher, 0x12, 0, 0);
 	if (!app_init(inst, show)) {
-		MessageBoxA(g_hWndMain, (const char *)0x4b29ec, (const char *)0x4b141c, 0);
+		MessageBoxA(g_hWndMain, (const char *)IMG(0x4b29ec), (const char *)IMG(0x4b141c), 0);
 		return 0;
 	}
 	g_gameRunning = 1;
@@ -703,24 +703,24 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		case 1:
 			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(1);
-			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a64, NULL, NULL, 10);   /* "open" "AxisGL.exe" */
+			ShellExecuteA(NULL, (const char *)IMG(0x4b2a5c), (const char *)IMG(0x4b2a64), NULL, NULL, 10);   /* "open" "AxisGL.exe" */
 			ExitProcess(0);
 			return 0;
 		case 2:
 			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
 			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
-			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a44, (const char *)0x4b2a54, NULL, 10);   /* "axispatch.exe" "nstower" */
+			ShellExecuteA(NULL, (const char *)IMG(0x4b2a5c), (const char *)IMG(0x4b2a44), (const char *)IMG(0x4b2a54), NULL, 10);   /* "axispatch.exe" "nstower" */
 			ExitProcess(0);
 			return 0;
 		case 3:
 			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
 			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
-			ShellExecuteA(NULL, (const char *)0x4b2a5c, (const char *)0x4b2a38, (const char *)0x4b13ec, NULL, 10);   /* "DServer.exe" */
+			ShellExecuteA(NULL, (const char *)IMG(0x4b2a5c), (const char *)IMG(0x4b2a38), (const char *)IMG(0x4b13ec), NULL, 10);   /* "DServer.exe" */
 			ExitProcess(0);
 			return 0;
 		case 99:
 			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
-			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)0x4b2a24, g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
+			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)IMG(0x4b2a24), g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
 			ExitProcess(0);
 		}
 		ExitProcess(0);

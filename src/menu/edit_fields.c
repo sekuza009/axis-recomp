@@ -7,13 +7,13 @@
 /* where each screen's panel is (its top left, menu units); the fields sit at fixed offsets from it */
 #define PANEL_X(addr) GAME_VAR(int, addr)
 #define PANEL_Y(addr) GAME_VAR(int, (addr) + 4)
-#define ARENA_SETUP 0x4dbb00      /* the arena settings (name, password, limits) */
-#define ARENA_CREATE 0x4dbb68     /* "create arena" */
-#define ARENA_MESSAGE 0x4db8c8    /* the message line */
-#define ROOM_TOP 0x9dd1b8
-#define ROOM_GAME 0x9dd358
-#define ROOM_RULES 0x9dd368
-#define ROOM_MESSAGE 0x9dd4a8
+#define ARENA_SETUP IMG(0x4dbb00)      /* the arena settings (name, password, limits) */
+#define ARENA_CREATE IMG(0x4dbb68)     /* "create arena" */
+#define ARENA_MESSAGE IMG(0x4db8c8)    /* the message line */
+#define ROOM_TOP IMG(0x9dd1b8)
+#define ROOM_GAME IMG(0x9dd358)
+#define ROOM_RULES IMG(0x9dd368)
+#define ROOM_MESSAGE IMG(0x9dd4a8)
 
 /* "being edited" flags, one per field */
 #define EDITING(addr) GAME_VAR(int, addr)
@@ -59,7 +59,7 @@ static void caret(int x, int y)
 void (arena_editName)(void)
 {
 	edit_start(0x10);
-	line_set((const char *)0x4db560);
+	line_set((const char *)IMG(0x4db560));
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -72,7 +72,7 @@ void (arena_editName)(void)
 void (arena_editComment)(void)
 {
 	edit_start(0x1e);
-	line_set((const char *)0x4db528);
+	line_set((const char *)IMG(0x4db528));
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -138,7 +138,7 @@ void (arena_editMessage)(void)
 void (field_editComment)(void)
 {
 	edit_start(0x1e);
-	line_set((const char *)0x4df9c8);
+	line_set((const char *)IMG(0x4df9c8));
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -164,7 +164,7 @@ void (field_editGameName)(void)
 {
 	edit_start(0x10);
 	line_clear();
-	line_set((const char *)0x9dd1d8);
+	line_set((const char *)IMG(0x9dd1d8));
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x58);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -180,7 +180,7 @@ void (field_editGamePassword)(void)
 	edit_start(0xc);
 	line_clear();
 	if (g_retypePassword == 0)
-		line_set((const char *)0x9dd1f6);
+		line_set((const char *)IMG(0x9dd1f6));
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
@@ -208,10 +208,10 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 	chat_createEdit(maxLength);
 }
 
-void (account_editOldPassword)(void) { edit_rule(0, (const char *)0x9dd6d8, 0x50, 0xc, 1); }
-void (account_editPassword)(void) { edit_rule(1, (const char *)0x9dd1f6, 0x6c, 0xc, 1); }
-void (account_editPasswordRepeat)(void) { edit_rule(2, (const char *)0x9dd202, 0x88, 0xc, 1); }
-void (account_editEmail)(void) { edit_rule(3, (const char *)0x9dd20e, 0xa4, 0x32, 0); }
+void (account_editOldPassword)(void) { edit_rule(0, (const char *)IMG(0x9dd6d8), 0x50, 0xc, 1); }
+void (account_editPassword)(void) { edit_rule(1, (const char *)IMG(0x9dd1f6), 0x6c, 0xc, 1); }
+void (account_editPasswordRepeat)(void) { edit_rule(2, (const char *)IMG(0x9dd202), 0x88, 0xc, 1); }
+void (account_editEmail)(void) { edit_rule(3, (const char *)IMG(0x9dd20e), 0xa4, 0x32, 0); }
 
 /* 0x434320: a message (8), starting empty */
 void (field_editMessage)(void)
@@ -258,8 +258,8 @@ void (editField_readTyping)(void)
 int (loginForm_openField)(int k)
 {
 	static const struct { u32 editing, text; int bufferLength, maxLength, flag; } field[4] = {
-		{ 0x9dd348, 0x9dd1d8, 0x1e, 0x10, 0 }, { 0x9dd3f8, 0x9dd1f6, 0xc, 0xc, 1 }, { 0x9dd564, 0x9dd202, 0xc, 0xc, 1 },
-		{ 0x9dd6cc, 0x9dd20e, 0x28, 0x28, 0 } };
+		{ IMG(0x9dd348), IMG(0x9dd1d8), 0x1e, 0x10, 0 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 0xc, 0xc, 1 }, { IMG(0x9dd564), IMG(0x9dd202), 0xc, 0xc, 1 },
+		{ IMG(0x9dd6cc), IMG(0x9dd20e), 0x28, 0x28, 0 } };
 	input_releaseKeyboard();
 	line_clear();
 	g_paused = 1;
@@ -275,11 +275,11 @@ int (loginForm_openField)(int k)
 		EDITING(field[k].editing) = 1;
 		if (field[k].flag)
 			g_chatFieldFlag = 1;
-		line_set((const char *)field[k].text);
+		line_set((const char *)RELOC(field[k].text));
 		chat_createEdit(field[k].maxLength);
 		row = k;
 	}
-	caret(g_loginFormLeft + 0x94, PANEL_Y(0x9dd6e8) + row * 0x30 + 0x3c);
+	caret(g_loginFormLeft + 0x94, PANEL_Y(IMG(0x9dd6e8)) + row * 0x30 + 0x3c);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
 	return 0;

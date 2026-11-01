@@ -4,7 +4,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define AI(offset) GAME_VAR(int, a + (offset))   /* the actor's fields */
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AU(offset) GAME_VAR(u32, a + (offset))
@@ -108,7 +108,7 @@ static const float *part_matrix(u8 *base, u8 *joints, int pose)
 /* the local player's weapon at its grip (negated), drawn back by 600 while it comes up (or out, for the sixth) */
 static void hold(float *grip, const u8 *at, int out, const float *raise)
 {
-	const float *o = (const float *)at;
+	const float *o = (const float *)RELOC(at);
 	float x = f32(-fld_m(&o[0])), y = f32(-fld_m(&o[1])), z = f32(-fld_m(&o[2]));
 	long double d = fmul_m(fsub_m(fld_m(K(0x4a9424)), raise), K(0x4a94ac));
 	grip[0] = f32(out ? fadd_m(d, &x) : fsubr_m(d, &x));
@@ -191,18 +191,18 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
 				if (AI(0x4d8) == 1) {
 					if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-						stage_print(s, (const char *)0x4b44f8, 5, a + 0x98, points, 5);
+						stage_print(s, (const char *)IMG(0x4b44f8), 5, a + 0x98, points, 5);
 					else
-						stage_print(s, (const char *)0x4b44d4, a + 0x98, 5);
+						stage_print(s, (const char *)IMG(0x4b44d4), a + 0x98, 5);
 					GAME_VAR(int, s + 0x20fce4c) = -1;
 				} else if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-					stage_print(s, (const char *)0x4b44c4, points);
+					stage_print(s, (const char *)IMG(0x4b44c4), points);
 				else
-					stage_print(s, (const char *)0x4b44bc);
+					stage_print(s, (const char *)IMG(0x4b44bc));
 			}
 		} else {
 			AI(0xe4)--;
-			stage_print(s, (const char *)0x4b44b4);
+			stage_print(s, (const char *)IMG(0x4b44b4));
 		}
 	} else if (GAME_VAR(int, s + 0x20f3ad8) == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
 		if (AI(0x4dc) == 1) {
@@ -218,11 +218,11 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			int lt = OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd94c0);
 			if (lt >= 0 && lt != AI(0x118)) {
 				if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-					stage_print(s, (const char *)0x4b447c, a + 0x98, n, sum);
+					stage_print(s, (const char *)IMG(0x4b447c), a + 0x98, n, sum);
 				else
-					stage_print(s, (const char *)0x4b4450, a + 0x98, n);
+					stage_print(s, (const char *)IMG(0x4b4450), a + 0x98, n);
 			} else if (lt == AI(0x118))
-				stage_print(s, (const char *)0x4b442c, a + 0x98);
+				stage_print(s, (const char *)IMG(0x4b442c), a + 0x98);
 			if (AI(0x118) == 0)
 				GAME_VAR(int, s + 0x202e8f4) += n;
 			else
@@ -237,9 +237,9 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		award(s, k, 1, points);
 		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
 			if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-				stage_print(s, (const char *)0x4b44c4, points);
+				stage_print(s, (const char *)IMG(0x4b44c4), points);
 			else
-				stage_print(s, (const char *)0x4b44bc);
+				stage_print(s, (const char *)IMG(0x4b44bc));
 		}
 		int t = OI(AI(0x4c0), 0x1cd94c0);
 		if (t >= 0)
@@ -247,7 +247,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	} else {
 		AI(0xe4)--;
 		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4))
-			stage_print(s, (const char *)0x4b44b4);
+			stage_print(s, (const char *)IMG(0x4b44b4));
 		if (GAME_VAR(int, s + 0x20f3abc) == 1)
 			GAME_VAR(int, s + 0x202e8f0 + AI(0x118) * 4)--;
 	}
@@ -461,7 +461,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 			}
 			AU(0x886c) = 0x3f800000;
-			memcpy(a + 0x8874, (const void *)0xa0e7e8, 12);
+			memcpy(a + 0x8874, (const void *)IMG(0xa0e7e8), 12);
 		}
 		if (AI(0x11c) == 1 && AI(0x87f8) < 0 && (AI(0x8820) < 0 || (AU8(0x87f4) & 3))) {
 			actor_checkLineOfSight(s, i);
@@ -507,7 +507,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					d[c] = f32(fsub_m(fld_m(&at[c]), &AF(0x154 + c * 4)));
 				memcpy(v28, d, 12);
 				long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
-				memcpy(a + 0x1d4, dist + fmul_m(fld_m(&d[1]), &d[1]) > *K(0x4a973c) ? (const void *)at : (const void *)(a + 0x154), 12);
+				memcpy(a + 0x1d4, dist + fmul_m(fld_m(&d[1]), &d[1]) > *K(0x4a973c) ? (const void *)RELOC(at) : (const void *)(a + 0x154), 12);
 			} else if (AI(0x87f8) >= 0) {   /* its path's point while over 1000 away */
 				const float *pt = PATH_POINT(AI(0x87f8), AI(0x87fc));
 				float d[3];
@@ -816,7 +816,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 		if (!(AF(0x490) >= 1.0f)) {
 			int kind = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
-			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? 0x4a9710 : kind == 3 ? 0x4a970c : 0x4a9534)), &AF(0x490)));
+			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? IMG(0x4a9710) : kind == 3 ? IMG(0x4a970c) : IMG(0x4a9534))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
 				AU(0x490) = 0x3f800000;
 		}
@@ -976,7 +976,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (i == GAME_VAR(int, s + 0x202e8d4)) {
 						if (AI(0x4a0) != 0)
 							break;
-						strcpy((char *)(a + 0x4f4), (const char *)0x4b4528);
+						strcpy((char *)(a + 0x4f4), (const char *)IMG(0x4b4528));
 						AU(0x534) = BITS(*dt);
 						sound_playVolume(0xa5, 0x64);
 					}

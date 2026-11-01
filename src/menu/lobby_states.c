@@ -34,9 +34,9 @@ void (lobby_setSubState0)(void)
 /* 0x404b30: sub-screen 1, the arena list: its 24 state words cleared, 999 (no selection), 30 seconds */
 void (lobby_setSubState1)(void)
 {
-	static const u32 cleared[] = { 0x4df884, 0x4dbaac, 0x4db8b8, 0x4dba84, 0x4db854, 0x4dbbec, 0x4dbbf0, 0x4dba90,
-	                               0x4db858, 0x4dbac8, 0x4dbaa8, 0x67ef30, 0x4dba80, 0x76d41c, 0x680bb0, 0x4df818,
-	                               0x4db71c, 0x4dbaf8, 0x4db85c, 0x4db8b4, 0x4db718, 0x907b2c, 0x4dbaf0, 0x4db714 };
+	static const u32 cleared[] = { IMG(0x4df884), IMG(0x4dbaac), IMG(0x4db8b8), IMG(0x4dba84), IMG(0x4db854), IMG(0x4dbbec), IMG(0x4dbbf0), IMG(0x4dba90),
+	                               IMG(0x4db858), IMG(0x4dbac8), IMG(0x4dbaa8), IMG(0x67ef30), IMG(0x4dba80), IMG(0x76d41c), IMG(0x680bb0), IMG(0x4df818),
+	                               IMG(0x4db71c), IMG(0x4dbaf8), IMG(0x4db85c), IMG(0x4db8b4), IMG(0x4db718), IMG(0x907b2c), IMG(0x4dbaf0), IMG(0x4db714) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
 	g_camPoint1Z = z;
@@ -60,14 +60,14 @@ void (lobby_drawArenaTitle)(void)
 	signed char map = g_arenaMap;
 	if (map >= 0x16 && map <= 0x18)
 		g_arenaMap = map = 0;
-	if (!strcmp((char *)0x4ded20, (const char *)0x4ad4a4)) {
-		memset((void *)0x4ded20, 0, 32);
-		strcpy((char *)0x4ded20, (const char *)0x4dedb0);
-		strcat((char *)0x4ded20, (const char *)0x4ad49c);
+	if (!strcmp((char *)IMG(0x4ded20), (const char *)IMG(0x4ad4a4))) {
+		memset((void *)IMG(0x4ded20), 0, 32);
+		strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x4dedb0));
+		strcat((char *)IMG(0x4ded20), (const char *)IMG(0x4ad49c));
 		map = g_arenaMap;
 	}
-	memset((void *)0x4db528, 0, 32);
-	strcpy((char *)0x4db528, (const char *)0x4ded20);
+	memset((void *)IMG(0x4db528), 0, 32);
+	strcpy((char *)IMG(0x4db528), (const char *)IMG(0x4ded20));
 	u8 b1 = g_arenaPlayers, b2 = g_arenaCustomize, b3 = g_arenaGameType, b4 = g_arenaFragLimit,
 	   b5 = g_arenaTimeLimit;
 	g_newArenaMap = map;
@@ -106,8 +106,8 @@ void (mapList_init)(void)
    list */
 void (lobby_setSubState2)(void)
 {
-	static const u32 cleared[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4db55c, 0x4ded54, 0x4db85c, 0x907b2c, 0x4dbab0,
-	                               0x4db850, 0x4db518, 0x4dbacc };
+	static const u32 cleared[] = { IMG(0x4dbbf4), IMG(0x4dba88), IMG(0xa0b360), IMG(0x4db55c), IMG(0x4ded54), IMG(0x4db85c), IMG(0x907b2c), IMG(0x4dbab0),
+	                               IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc) };
 	int z = g_menuCameraHeight;
 	g_camPoint2X = 0xc20c0000;   /* -35.0 */
 	g_camPoint2Y = 0;
@@ -132,9 +132,9 @@ void (room_loadSettingsRecord)(void)
 	if (g_roomRecMap > 0x15 && g_roomRecMap < 0x19)
 		(*(u8 *)&g_roomRecMap) = 0;
 	g_roomMap = (*(u8 *)&g_roomRecMap);
-	memset((void *)0x4df9c8, 0, 32);
+	memset((void *)IMG(0x4df9c8), 0, 32);
 	g_roomGameMode = g_roomRecGameMode;   /* stored before the name is copied, as in the original */
-	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
+	strcpy((char *)IMG(0x4df9c8), (const char *)IMG(0x5b1b30));
 	g_roomPlayers = g_roomRecPlayers;
 	g_roomCustom = g_roomRecCustom;
 	g_roomFragLimit = g_roomRecFragLimit;
@@ -144,8 +144,8 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
 void (room_enterGameList)(void)
 {
-	static const u32 cleared[] = { 0x4dbbf4, 0x4dba88, 0xa0b360, 0x4ded54, 0x907b2c, 0x9dd380, 0x9dd388, 0x9dd568,
-	                               0x9dd6a8 };
+	static const u32 cleared[] = { IMG(0x4dbbf4), IMG(0x4dba88), IMG(0xa0b360), IMG(0x4ded54), IMG(0x907b2c), IMG(0x9dd380), IMG(0x9dd388), IMG(0x9dd568),
+	                               IMG(0x9dd6a8) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
 	g_roomMode = 1;
@@ -160,10 +160,10 @@ void (room_enterGameList)(void)
    selection cleared, the distance limit 10,000,000, 999 rooms */
 void (room_enterRoomList)(void)
 {
-	static const u32 cleared[] = { 0x9dd6ac, 0x9dd350, 0x76d40c, 0x9dd6b8, 0x9dd3b0, 0xa0b350, 0xa0b35c, 0x9dd1b4,
-	                               0x9dd1d0, 0x9dd300, 0x9dd328 };
-	for (u32 e = 0x9dcef4; e < 0x9dd19c; e += 0x44) {
-		memset((void *)(e - 4), 0, 0x36);
+	static const u32 cleared[] = { IMG(0x9dd6ac), IMG(0x9dd350), IMG(0x76d40c), IMG(0x9dd6b8), IMG(0x9dd3b0), IMG(0xa0b350), IMG(0xa0b35c), IMG(0x9dd1b4),
+	                               IMG(0x9dd1d0), IMG(0x9dd300), IMG(0x9dd328) };
+	for (u32 e = IMG(0x9dcef4); e < IMG(0x9dd19c); e += 0x44) {
+		memset((void *)(RELOC(e) - 4), 0, 0x36);
 		GAME_VAR(int, e + 0x32) = 1;
 	}
 	clear_all(cleared, sizeof cleared / sizeof cleared[0]);
@@ -180,15 +180,15 @@ void (room_enterRoomList)(void)
    both the room's record and the room settings; the mech unpacked */
 void (lobby_ladderGameName)(void)
 {
-	strcpy((char *)0x4df9c8, (const char *)0x4b17bc);
+	strcpy((char *)IMG(0x4df9c8), (const char *)IMG(0x4b17bc));
 	(*(char *)&g_roomPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
-	strcpy((char *)0x76d450, (const char *)0x9dd570);
+	strcpy((char *)IMG(0x76d450), (const char *)IMG(0x9dd570));
 	(*(char *)&g_roomMap) = 0;
 	(*(char *)&g_roomFragLimit) = 10;
 	(*(char *)&g_roomTimeLimit) = 10;
 	(*(char *)&g_roomCustom) = 0;
-	strcpy((char *)0x5b1b30, (const char *)0x4df9c8);
+	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4df9c8));
 	(*(char *)&g_roomRecPlayers) = 8;
 	(*(char *)&g_roomRecGameMode) = 0;
 	(*(char *)&g_roomRecMap) = 0;
@@ -202,20 +202,20 @@ void (lobby_ladderGameName)(void)
    window rectangles) copied into the room screen's */
 void (room_copyJoinedSettings)(void)
 {
-	strcpy((char *)0x9dd1d8, (const char *)0x9dd570);
-	strcpy((char *)0x9dd20e, (const char *)0x9dd5a6);
+	strcpy((char *)IMG(0x9dd1d8), (const char *)IMG(0x9dd570));
+	strcpy((char *)IMG(0x9dd20e), (const char *)IMG(0x9dd5a6));
 	u8 map = g_roomRecPlayers;
-	strcpy((char *)0x4df9c8, (const char *)0x5b1b30);
+	strcpy((char *)IMG(0x4df9c8), (const char *)IMG(0x5b1b30));
 	g_roomPlayers = map;
 	g_roomMap = (*(u8 *)&g_roomRecMap);
 	g_roomCustom = g_roomRecCustom;
 	g_roomGameMode = g_roomRecGameMode;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
-	memcpy((void *)0x9dd260, (void *)0x9dd5f8, 11);
-	memcpy((void *)0x9dd26b, (void *)0x9dd603, 0x90);
-	static const u32 copy[6][2] = { { 0x9dd240, 0x9dd5d8 }, { 0x9dd244, 0x9dd5dc }, { 0x9dd25c, 0x9dd5f4 },
-	                                { 0x9dd254, 0x9dd5ec }, { 0x9dd258, 0x9dd5f0 }, { 0x9dd250, 0x9dd5e8 } };
+	memcpy((void *)IMG(0x9dd260), (void *)IMG(0x9dd5f8), 11);
+	memcpy((void *)IMG(0x9dd26b), (void *)IMG(0x9dd603), 0x90);
+	static const u32 copy[6][2] = { { IMG(0x9dd240), IMG(0x9dd5d8) }, { IMG(0x9dd244), IMG(0x9dd5dc) }, { IMG(0x9dd25c), IMG(0x9dd5f4) },
+	                                { IMG(0x9dd254), IMG(0x9dd5ec) }, { IMG(0x9dd258), IMG(0x9dd5f0) }, { IMG(0x9dd250), IMG(0x9dd5e8) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, copy[k][0]) = GAME_VAR(int, copy[k][1]);
 }
@@ -235,7 +235,7 @@ void (room_fitWindowRects)(void)
 {
 	int c5, a1, b1;   /* the values the original holds in registers where the branches meet */
 	if (g_pilotWins > g_pilotWinsKept || g_pilotPoints > g_pilotPointsKept) {
-		rect_copy(0x9dd5d8, 0x9dd240);
+		rect_copy(IMG(0x9dd5d8), IMG(0x9dd240));
 		c5 = g_pilotWinsKept;
 		a1 = b1 = g_pilotPointsKept;
 	} else {
@@ -243,7 +243,7 @@ void (room_fitWindowRects)(void)
 		a1 = g_pilotPoints;
 		b1 = g_pilotPointsKept;
 		if (g_pilotWinsKept > c5 || b1 > a1) {
-			rect_copy(0x9dd240, 0x9dd5d8);
+			rect_copy(IMG(0x9dd240), IMG(0x9dd5d8));
 			b1 = a1;
 		}
 	}
@@ -272,26 +272,26 @@ void (room_fitWindowRects)(void)
    record and the mech */
 void (room_takeReceivedSettings)(void)
 {
-	strcpy((char *)0x9dd570, (const char *)0xa0563c);
-	strcpy((char *)0x9dd5a6, (const char *)0xa0565a);
-	memcpy((void *)0x9dd5f8, (void *)0xa0568c, 11);
+	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0xa0563c));
+	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0xa0565a));
+	memcpy((void *)IMG(0x9dd5f8), (void *)IMG(0xa0568c), 11);
 	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(0x9dd603 + k * 0x18), (void *)(0xa05697 + k * 0x18), 0x18);
+		memcpy((void *)(IMG(0x9dd603) + k * 0x18), (void *)(IMG(0xa05697) + k * 0x18), 0x18);
 		if (!(GAME_VAR(float, 0x9dd607 + k * 0x18) >= k_0f))
 			GAME_VAR(int, 0x9dd607 + k * 0x18) = 0;
 		if (!(GAME_VAR(float, 0x9dd60b + k * 0x18) >= k_0f))
 			GAME_VAR(int, 0x9dd60b + k * 0x18) = 0;
 	}
-	static const u32 rect[7][2] = { { 0x9dd5d8, 0xa05727 }, { 0x9dd5dc, 0xa05737 }, { 0x9dd5e4, 0xa0573b },
-	                                { 0x9dd5f4, 0xa0573f }, { 0x9dd5ec, 0xa0572f }, { 0x9dd5f0, 0xa05733 },
-	                                { 0x9dd5e8, 0xa0572b } };
+	static const u32 rect[7][2] = { { IMG(0x9dd5d8), IMG(0xa05727) }, { IMG(0x9dd5dc), IMG(0xa05737) }, { IMG(0x9dd5e4), IMG(0xa0573b) },
+	                                { IMG(0x9dd5f4), IMG(0xa0573f) }, { IMG(0x9dd5ec), IMG(0xa0572f) }, { IMG(0x9dd5f0), IMG(0xa05733) },
+	                                { IMG(0x9dd5e8), IMG(0xa0572b) } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();
-	memset((void *)0x4de700, 0, 7 * 4 + 2);
-	strcpy((char *)0x4de700, (const char *)0x9dd570);
-	static const u32 title[6][2] = { { 0x4de71e, 0x9dd5d8 }, { 0x4de722, 0x9dd5dc }, { 0x4de72e, 0x9dd5ec },
-	                                 { 0x4de732, 0x9dd5f0 }, { 0x4de72a, 0x9dd5e8 }, { 0x4de726, 0x9dd5e4 } };
+	memset((void *)IMG(0x4de700), 0, 7 * 4 + 2);
+	strcpy((char *)IMG(0x4de700), (const char *)IMG(0x9dd570));
+	static const u32 title[6][2] = { { IMG(0x4de71e), IMG(0x9dd5d8) }, { IMG(0x4de722), IMG(0x9dd5dc) }, { IMG(0x4de72e), IMG(0x9dd5ec) },
+	                                 { IMG(0x4de732), IMG(0x9dd5f0) }, { IMG(0x4de72a), IMG(0x9dd5e8) }, { IMG(0x4de726), IMG(0x9dd5e4) } };
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(int, title[k][0]) = GAME_VAR(int, title[k][1]);
 	mech_unpackFromRecord();
@@ -315,26 +315,26 @@ static void default_mech(u8 *mech, u8 *colours)
    eax */
 u32 (room_host)(void)
 {
-	strcpy((char *)0x9dd570, (const char *)0x9dd1d8);
-	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
-	default_mech((u8 *)0x9dd260, (u8 *)0x9dd26b);
-	default_mech((u8 *)0x9dd5f8, (u8 *)0x9dd603);
+	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x9dd1d8));
+	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0x9dd20e));
+	default_mech((u8 *)IMG(0x9dd260), (u8 *)IMG(0x9dd26b));
+	default_mech((u8 *)IMG(0x9dd5f8), (u8 *)IMG(0x9dd603));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
-	memset((void *)0x4de700, 0, 7 * 4 + 2);
-	static const u32 zero[] = { 0x9dd5dc, 0x9dd5ec, 0x9dd5f0, 0x9dd5e8, 0x9dd5f4, 0x9dd244, 0x9dd254, 0x9dd258,
-	                            0x9dd250, 0x9dd25c };
+	memset((void *)IMG(0x4de700), 0, 7 * 4 + 2);
+	static const u32 zero[] = { IMG(0x9dd5dc), IMG(0x9dd5ec), IMG(0x9dd5f0), IMG(0x9dd5e8), IMG(0x9dd5f4), IMG(0x9dd244), IMG(0x9dd254), IMG(0x9dd258),
+	                            IMG(0x9dd250), IMG(0x9dd25c) };
 	for (unsigned k = 0; k < sizeof zero / sizeof zero[0]; k++)
 		GAME_VAR(int, zero[k]) = 0;
-	strcpy((char *)0x4de700, (const char *)0x9dd570);
+	strcpy((char *)IMG(0x4de700), (const char *)IMG(0x9dd570));
 	g_titleRating = g_pilotRating;
 	g_titleLevel = 1;
-	static const u32 zero2[] = { 0x4de722, 0x4de72e, 0x4de732, 0x4de72a };
+	static const u32 zero2[] = { IMG(0x4de722), IMG(0x4de72e), IMG(0x4de732), IMG(0x4de72a) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
-	strcpy(g_accountPacket + 4, (const char *)0x9dd1d8);
-	strcpy(g_accountPacket + 0x22, (const char *)0x9dd1f6);
-	strcpy(g_accountPacket + 0x2e, (const char *)0x9dd20e);
+	strcpy(g_accountPacket + 4, (const char *)IMG(0x9dd1d8));
+	strcpy(g_accountPacket + 0x22, (const char *)IMG(0x9dd1f6));
+	strcpy(g_accountPacket + 0x2e, (const char *)IMG(0x9dd20e));
 	u8 *record = (*(u8 **)&g_accountPacket);
 	default_mech(record + 0x70, record + 0x7b);
 	g_bestLevelNet = g_pilotLevel;
@@ -529,7 +529,7 @@ u32 (room_mapListKeys)(void)
    second, back to the main menu (state 300), the connection closed, the mech reloaded from the profile */
 u32 (room_leaveGame)(void)
 {
-	strcpy(g_netLeaveBuffer, (const char *)0x9dd570);
+	strcpy(g_netLeaveBuffer, (const char *)IMG(0x9dd570));
 	GAME_FN(net_send, 0x4521c0, int, int, int)(0x19, 0x65);   /* net_send */
 	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
 	input_setKeysBlocked(4);
@@ -544,7 +544,7 @@ u32 (room_leaveGame)(void)
    lobby_quitDialogClicks. Returns what the original leaves in eax */
 u32 (create_quitDialogClicks)(void)
 {
-	static const u32 panels[5] = { 0x4dbab0, 0x4db850, 0x4db518, 0x4dbacc, 0x90d1c4 };
+	static const u32 panels[5] = { IMG(0x4dbab0), IMG(0x4db850), IMG(0x4db518), IMG(0x4dbacc), IMG(0x90d1c4) };
 	for (int k = 0; k < 5; k++)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);
@@ -572,11 +572,11 @@ u32 (arena_editTitle)(void)
 	input_releaseKeyboard();
 	g_paused = 1;
 	menu_clearInputBuffer(0x14);
-	memset((void *)0x9dc92c, 0, 0x400);
+	memset((void *)IMG(0x9dc92c), 0, 0x400);
 	(*(int *)&g_typedArenaName) = 0;
 	g_chatCaretX = g_arenaGameListLeft + 0xd8;
 	g_chatCaretY = g_arenaGameListTop + 0xd0;
-	g_chatLength = (int)strlen((const char *)0x9dc92c);
+	g_chatLength = (int)strlen((const char *)IMG(0x9dc92c));
 	g_typedArenaName4 = 0;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
 	/* chat_createEdit(20); the original also leaves the 20 it gave menu_clearInputBuffer on the stack as a second
@@ -609,9 +609,9 @@ static u32 settings_store(u8 *from, u8 *to, u32 then)
 	return GAME_CDECL(then, u32, void)();
 }
 /* 0x405140: the arena being created kept as the arena settings (0x4ded20), then axis.cfg loaded again */
-u32 (lobby_keepArenaSettings)(void) { return settings_store((u8 *)0x4db528, (u8 *)0x4ded20, FN_ADDR(cfg_loadAxisCfg, 0x42d730)); }
+u32 (lobby_keepArenaSettings)(void) { return settings_store((u8 *)IMG(0x4db528), (u8 *)IMG(0x4ded20), FN_ADDR(cfg_loadAxisCfg, 0x42d730)); }
 /* 0x433640: the room's settings kept (0x5b1b30) and written to the registry (reg_writeCharacterSettings) */
-u32 (room_keepSettings)(void) { return settings_store((u8 *)0x4df9c8, (u8 *)0x5b1b30, FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
+u32 (room_keepSettings)(void) { return settings_store((u8 *)IMG(0x4df9c8), (u8 *)IMG(0x5b1b30), FN_ADDR(reg_writeCharacterSettings, 0x432400)); }
 
 /* 0x40d390: the create-arena screen drawn: the tunnel, then (modes other than 0 and 1, not on sub-screen 5) the
    dialog's frame if one is open, else the settings kept in range (players 0 .. 16 else 8, the two limits at most 250
@@ -664,7 +664,7 @@ u32 (lobby_keysQuit)(void)
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
 	g_mapRotation = (*(signed char *)&g_arenaCustomize);
 	g_missionStage = g_arenaMap;
-	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	memcpy((void *)IMG(0x67fb44), (const void *)IMG(0x4ded20), 32);
 	g_chosenGameMode = (*(signed char *)&g_arenaGameType);
 	(*(u32 *)&g_fragLimit) = limits & 0xff;
 	(*(u32 *)&g_timeLimit) = (limits >> 8) & 0xff;
@@ -719,7 +719,7 @@ static void take_session(const u8 *rec)
 {
 	music_shutdown();
 	g_missionStage = (signed char)rec[0x25];
-	memcpy((void *)0x67fb44, rec + 4, 32);
+	memcpy((void *)IMG(0x67fb44), rec + 4, 32);
 	g_mapRotation = (signed char)rec[0x24];
 	g_arenaLobbyMode = 0;
 	g_quitAsked = 1;
@@ -735,12 +735,12 @@ static void take_session(const u8 *rec)
    message's eax, or the colour +0x2e */
 u32 (arena_joinSession)(int session)
 {
-	const u8 *rec = (const u8 *)(0x9087c0 + session * 0x4a);
+	const u8 *rec = (const u8 *)(IMG(0x9087c0) + session * 0x4a);
 	g_lobbyJoinStarted = 0;
 	g_lobbyJoinRequest = 0;
 	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec[0x2e];
 	g_arenaFragLimit = g_arenaFragLimitTyped = rec[0x2d];
-	int r = dplay_join(session, *(const u32 *)rec, (const char *)0x4dedb0,
+	int r = dplay_join(session, *(const u32 *)rec, (const char *)IMG(0x4dedb0),
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
@@ -772,7 +772,7 @@ void (app_shutdown)(void)
 		if (!g_arenaJoinPending)
 			return;
 		const u8 *in = g_receivedSession;
-		rec = (u8 *)0x9dae20;
+		rec = (u8 *)IMG(0x9dae20);
 		*(u32 *)rec = *(const u32 *)in;
 		rec[0x2d] = in[0x28];
 		rec[0x2e] = in[0x29];
@@ -783,12 +783,12 @@ void (app_shutdown)(void)
 	} else {
 		if (!g_arenaJoinPending)
 			return;
-		rec = (u8 *)(0x9087c0 + pick * 0x4a);
+		rec = (u8 *)(IMG(0x9087c0) + pick * 0x4a);
 		*(u32 *)rec = *(*(const u32 **)&g_receivedSession);
 		g_arenaFragLimit = rec[0x2d];
 		g_arenaTimeLimit = rec[0x2e];
 	}
-	int r = dplay_join(0, *(const u32 *)rec, (const char *)0x4dedb0, g_playerCorporation);
+	int r = dplay_join(0, *(const u32 *)rec, (const char *)IMG(0x4dedb0), g_playerCorporation);
 	if (r == 0x1f4) {
 		take_session(rec);
 		net_disconnect();
@@ -832,13 +832,13 @@ u32 (lobbyTop_keys)(void)
 		sound_playMenu(0);
 		return to_main_menu();
 	}
-	if (key_hit(0x4e0cdc))
+	if (key_hit(IMG(0x4e0cdc)))
 		return GAME_FN(lobby_setSubState2, 0x404c20, u32, void)();   /* lobby_setSubState2 */
-	if (key_hit(0x4e1514))
+	if (key_hit(IMG(0x4e1514)))
 		return GAME_FN(lobby_setSubState0, 0x404ac0, u32, void)();   /* lobby_setSubState0 */
-	if (key_hit(0x4e14f8))
+	if (key_hit(IMG(0x4e14f8)))
 		return GAME_FN(lobby_setSubState1, 0x404b30, u32, void)();   /* lobby_setSubState1 */
-	if (key_hit(0x4e153c))
+	if (key_hit(IMG(0x4e153c)))
 		return to_main_menu();
 	return 0;
 }
@@ -853,7 +853,7 @@ u32 (lobby_topPageClicks)(void)
 	if (g_quitAsked == 1)
 		return 0;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)0x5b1cf8;
+		const Outline *buttons = (const Outline *)IMG(0x5b1cf8);
 		for (int i = 0; i < 4; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
@@ -889,13 +889,13 @@ u32 (lobbyPlayer_keys)(void)
 	if (g_typingArenaName) {
 		if (g_paused)
 			return page;
-		const char *typed = (const char *)0x9dc92c;
+		const char *typed = (const char *)IMG(0x9dc92c);
 		u32 length = strlen(typed);
 		g_typingArenaName = 0;
 		if (!length)
 			return 0;
-		memset((void *)0x4db560, 0, 32);
-		strcpy((char *)0x4db560, typed);
+		memset((void *)IMG(0x4db560), 0, 32);
+		strcpy((char *)IMG(0x4db560), typed);
 		return length + 1;
 	}
 	if (input_justPressed(g_keyCancel2)) {
@@ -971,22 +971,22 @@ u32 (arena_loadAndQuit)(void)
 	if (g_startedByLauncher != 1) {
 		GAME_FN(menuState400_enter, 0x404640, void, void)();   /* menuState400_enter */
 		GAME_FN(lobby_setSubState1, 0x404b30, void, void)();   /* lobby_setSubState1 */
-		memset((void *)0x4dbbd4, 0, 24);
-		strcpy((char *)0x4dbbd4, (const char *)0x4de748);
+		memset((void *)IMG(0x4dbbd4), 0, 24);
+		strcpy((char *)IMG(0x4dbbd4), (const char *)IMG(0x4de748));
 		u32 r = GAME_FN(arena_joinListed, 0x406200, u32, int)(99999);   /* arena_joinListed */
 		g_lobbyReply = 0x69;
 		return r;
 	}
-	if (!arena_loadSettings((const char *)0x4ad5e4))   /* "axiswl.dat" */
+	if (!arena_loadSettings((const char *)IMG(0x4ad5e4)))   /* "axiswl.dat" */
 		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
-	memset((void *)0x4ded20, 0, 32);
-	strcpy((char *)0x4ded20, (const char *)0x5b191c);
+	memset((void *)IMG(0x4ded20), 0, 32);
+	strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x5b191c));
 	u8 clan = (*(u8 *)&g_cmdSecret);
 	g_unusedPlayerRecord26 = 0;
 	g_playerHasClan = clan;
 	g_unusedPlayerRecord2a = 0;
 	if (clan == 1)
-		strcpy((char *)0x4ded46, (const char *)0x5b193c);
+		strcpy((char *)IMG(0x4ded46), (const char *)IMG(0x5b193c));
 	g_arenaFragLimit = g_arenaFileFragLimit;
 	g_arenaGameType = g_arenaFileGameType;
 	g_arenaCustomize = 0;
@@ -1027,7 +1027,7 @@ u32 (lobby_pageClicks)(void)
 	music_shutdown();
 	g_mapRotation = (signed char)g_arenaCustomize;
 	g_missionStage = (signed char)(*(u8 *)&g_arenaMap);
-	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	memcpy((void *)IMG(0x67fb44), (const void *)IMG(0x4ded20), 32);
 	g_chosenGameMode = (signed char)g_arenaGameType;
 	g_fragLimit = g_arenaFragLimit;
 	g_timeLimit = g_arenaTimeLimit;
@@ -1047,7 +1047,7 @@ u32 (arena_connectionOutcome)(void)
 	int state = g_connectStep;
 	if (state == 2)
 		return 2;
-	const u8 *me = (const u8 *)0x4ded20;
+	const u8 *me = (const u8 *)IMG(0x4ded20);
 	if (state == 1) {
 		g_connectionAwaited = 0;
 		g_quitAsked = 1;
@@ -1055,11 +1055,11 @@ u32 (arena_connectionOutcome)(void)
 		music_shutdown();
 		g_arenaLobbyMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, void, int, int)(0, 0);   /* arena_openSession */
-		GAME_FN(dplay_host, 0x453090, void, const void *, const void *, int, int, int, int, int, u32)(me, (const void *)0x4dedb0,
+		GAME_FN(dplay_host, 0x453090, void, const void *, const void *, int, int, int, int, int, u32)(me, (const void *)IMG(0x4dedb0),
 			(int)(signed char)me[0x22] << 8 | (int)(signed char)me[0x20], (signed char)me[0x21], (signed char)me[0x23],
 			me[0x24], me[0x25], (*(u32 *)&g_playerCorporation));   /* dplay_host: host */
 		g_missionStage = (signed char)me[0x20];
-		memcpy((void *)0x67fb44, me, 32);
+		memcpy((void *)IMG(0x67fb44), me, 32);
 		g_mapRotation = (signed char)me[0x22];
 		g_chosenGameMode = (signed char)me[0x23];
 		g_fragLimit = me[0x24];
@@ -1090,7 +1090,7 @@ u32 (lobbyTop_connect)(void)
 	u32 mode = (*(u32 *)&g_arenaLobbyMode);
 	if (mode == 1 || mode == 0 || g_dialogOpen)
 		return mode;
-	const char *line = (const char *)0x9dc92c;
+	const char *line = (const char *)IMG(0x9dc92c);
 	if (g_editingNewArenaName) {   /* the arena's name */
 		if (g_paused)
 			return mode;
@@ -1100,20 +1100,20 @@ u32 (lobbyTop_connect)(void)
 			return r;
 		}
 		g_editingNewArenaName = 0;
-		memset((void *)0x4db528, 0, 32);
-		strcpy((char *)0x4db528, line);
+		memset((void *)IMG(0x4db528), 0, 32);
+		strcpy((char *)IMG(0x4db528), line);
 		return strlen(line) + 1;
 	}
 	if (g_typingArenaPassword) {   /* the password */
 		if (g_paused)
 			return mode;
-		memset((void *)0x4db54e, 0, 8);
+		memset((void *)IMG(0x4db54e), 0, 8);
 		g_typingArenaPassword = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)0x4db54e, line);
+		strcpy((char *)IMG(0x4db54e), line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { 0x4db850, 0x4db54c }, { 0x4db518, 0x4db54d } };
+	static const u32 limit[2][2] = { { IMG(0x4db850), IMG(0x4db54c) }, { IMG(0x4db518), IMG(0x4db54d) } };
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
@@ -1140,7 +1140,7 @@ u32 (lobbyTop_connect)(void)
 		return r ? r : GAME_FN(lobby_checkReservedName, 0x4057a0, u32, void)();   /* lobby_checkReservedName */
 	}
 	u32 r = 0;
-	static const u32 close[2] = { 0x4e0cdc, 0x76d48c };
+	static const u32 close[2] = { IMG(0x4e0cdc), IMG(0x76d48c) };
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
@@ -1176,7 +1176,7 @@ u32 (arena_createClick)(void)
 	if (!g_mouseClick || mode != 2)
 		return mode;
 	u32 button = GAME_FN(createArena_hitTest, 0x404520, u32, int, int)(g_mouseX, g_mouseY);   /* createArena_hitTest */
-	u8 *players = (u8 *)0x4db549, *custom = (u8 *)0x4db54a, *type = (u8 *)0x4db54b;
+	u8 *players = (u8 *)IMG(0x4db549), *custom = (u8 *)IMG(0x4db54a), *type = (u8 *)IMG(0x4db54b);
 	u32 r;
 	u8 old;
 	switch (button) {
@@ -1407,7 +1407,7 @@ static u32 win_rate(int wins, int losses, int checked)
 	int total = wins + losses;
 	if (checked && total <= 0)
 		return 0;
-	float rate = f32(fmul_m((long double)wins, (const float *)0x4a93f4) / (long double)total);   /* x 100 / total */
+	float rate = f32(fmul_m((long double)wins, (const float *)IMG(0x4a93f4)) / (long double)total);   /* x 100 / total */
 	return BITS(rate);
 }
 
@@ -1416,7 +1416,7 @@ static void rate_points(u32 rate)
 {
 	float r;
 	BITS(r) = rate;
-	R_RATING = f32(fmul_m(fld_m(&r), (const float *)0x4a9420) * (long double)R_POINTS);
+	R_RATING = f32(fmul_m(fld_m(&r), (const float *)IMG(0x4a9420)) * (long double)R_POINTS);
 }
 
 /* a kept copy taken back as the record, when the record's wins are more than 300 above it */
@@ -1439,14 +1439,14 @@ static void record_send(u32 rate, int name)
 {
 	u8 *packet = g_netPlayerRecordPacket;
 	if (name)
-		strcpy((char *)packet, (const char *)0x4de700);
+		strcpy((char *)packet, (const char *)IMG(0x4de700));
 	*(int *)(packet + 0x1e) = R_OTHER;
 	*(int *)(packet + 0x22) = R_WINS;
 	*(int *)(packet + 0x26) = R_LOSSES;
 	*(int *)(packet + 0x2a) = R_POINTS;
 	*(float *)(packet + 0x32) = f32(fld_m(&R_RATING));
 	*(int *)(packet + 0x2e) = actor_levelFromValue(R_POINTS);
-	static const u32 kept[2] = { 0x9dd5d8, 0x9dd240 };
+	static const u32 kept[2] = { IMG(0x9dd5d8), IMG(0x9dd240) };
 	for (int k = 0; k < 2; k++) {
 		GAME_VAR(int, kept[k] + 0x10) = R_OTHER;
 		GAME_VAR(int, kept[k] + 0x14) = R_WINS;
@@ -1467,8 +1467,8 @@ void (profile_checkAndSendRecord)(void)
 {
 	u32 rate = win_rate(R_WINS, R_LOSSES, 1);
 	rate_points(rate);
-	rate = take_back(0x9dd5d8, rate);
-	rate = take_back(0x9dd240, rate);
+	rate = take_back(IMG(0x9dd5d8), rate);
+	rate = take_back(IMG(0x9dd240), rate);
 	record_send(rate, 1);
 	if (R_WINS * 150 >= R_POINTS)
 		return;
@@ -1491,9 +1491,9 @@ void (profile_checkAndSendRecord)(void)
 static void special_map(const char *name, u8 *map)
 {
 	static const struct { u8 map; u32 names[4]; } rooms[3] = {
-		{ 0x18, { 0x4ad554, 0x4ad548, 0x4ad53c, 0x4ad530 } },
-		{ 0x16, { 0x4ad524, 0x4ad514, 0x4ad504, 0x4ad4f4 } },
-		{ 0x17, { 0x4ad4e8, 0x4ad4d8, 0x4ad4c8, 0x4ad4b8 } } };
+		{ 0x18, { IMG(0x4ad554), IMG(0x4ad548), IMG(0x4ad53c), IMG(0x4ad530) } },
+		{ 0x16, { IMG(0x4ad524), IMG(0x4ad514), IMG(0x4ad504), IMG(0x4ad4f4) } },
+		{ 0x17, { IMG(0x4ad4e8), IMG(0x4ad4d8), IMG(0x4ad4c8), IMG(0x4ad4b8) } } };
 	for (int r = 0; r < 3; r++)
 		for (int k = 0; k < 4; k++)
 			if (!strcmp(name, (const char *)rooms[r].names[k])) {
@@ -1507,7 +1507,7 @@ static void special_map(const char *name, u8 *map)
 /* the arena hosted with its settings (dplay_host): 0 when that failed */
 static int host_arena(void)
 {
-	return dplay_host((const char *)0x4ded20, (const char *)0x4dedb0, ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
+	return dplay_host((const char *)IMG(0x4ded20), (const char *)IMG(0x4dedb0), ((int)ARENA(0x22) << 8) | (int)ARENA(0x20),
 	                    ARENA(0x21), ARENA(0x23), (u8)ARENA(0x24), (u8)ARENA(0x25), g_playerCorporation);
 }
 
@@ -1515,7 +1515,7 @@ static int host_arena(void)
 static void take_arena(void)
 {
 	g_missionStage = ARENA(0x20);
-	memcpy((void *)0x67fb44, (const void *)0x4ded20, 32);
+	memcpy((void *)IMG(0x67fb44), (const void *)IMG(0x4ded20), 32);
 	g_mapRotation = ARENA(0x22);
 	g_chosenGameMode = ARENA(0x23);
 	g_fragLimit = (u8)ARENA(0x24);
@@ -1534,7 +1534,7 @@ void (lobby_roomNameCheck)(void)
 	lobby_keepArenaSettings();
 	int hosted = arena_openSession(1, NULL);
 	if (hosted) {
-		special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+		special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
 		hosted = host_arena();
 	}
 	if (!hosted) {
@@ -1560,7 +1560,7 @@ void (lobby_checkReservedName)(void)
 	music_shutdown();
 	g_arenaLobbyMode = 0;
 	arena_openSession(0, NULL);
-	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+	special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
 	host_arena();
 	take_arena();
 }
@@ -1585,7 +1585,7 @@ int (lobby_checkReservedName2)(void)
 		return 0;
 	}
 	g_arenaGameSetUp = 1;
-	special_map((const char *)0x4ded20, (u8 *)0x4ded40);
+	special_map((const char *)IMG(0x4ded20), (u8 *)IMG(0x4ded40));
 	u8 *packet = g_roomPacket;
 	packet[0] = 0x18;
 	packet[0x49] = ARENA(0x22);
@@ -1596,10 +1596,10 @@ int (lobby_checkReservedName2)(void)
 	packet[0x43] = ARENA(0x20);
 	packet[0x44] = ARENA(0x21);
 	packet[0x52] = ARENA(0x2e);
-	lstrcpyA((char *)packet + 0x53, (const char *)0x4ded46);
-	lstrcpyA((char *)g_roomPacket + 1, (const char *)0x4ded20);
+	lstrcpyA((char *)packet + 0x53, (const char *)IMG(0x4ded46));
+	lstrcpyA((char *)g_roomPacket + 1, (const char *)IMG(0x4ded20));
 	jmp_net_getLocalAddress();
-	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)0xa0b43c);
+	lstrcpyA((char *)g_roomPacket + 0x33, (const char *)IMG(0xa0b43c));
 	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0xa, 0x64);
@@ -1614,11 +1614,11 @@ int (lobby_checkReservedName2)(void)
 void (lobby_checkReservedName3)(void)
 {
 	room_keepSettings();
-	special_map((const char *)0x5b1b30, (u8 *)0x5b1b50);
+	special_map((const char *)IMG(0x5b1b30), (u8 *)IMG(0x5b1b50));
 	u8 *packet = g_arenaPacket;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)0x9dd570, 0x1e);   /* strncpy */
+	GAME_CDECL(0x49ea80, char *, char *, const char *, int)((char *)packet + 0x43, (const char *)IMG(0x9dd570), 0x1e);   /* strncpy */
 	packet = g_arenaPacket;
-	const u8 *room = (const u8 *)0x5b1b30;
+	const u8 *room = (const u8 *)IMG(0x5b1b30);
 	packet[0] = 0x18;
 	packet[0x67] = room[0x22];
 	packet[0x66] = room[0x25];
@@ -1628,10 +1628,10 @@ void (lobby_checkReservedName3)(void)
 	packet[0x61] = room[0x20];
 	packet[0x62] = room[0x21];
 	packet[0x70] = room[0x2e];
-	lstrcpyA((char *)packet + 0x71, (const char *)0x5b1b56);
-	lstrcpyA((char *)g_arenaPacket + 1, (const char *)0x5b1b30);
+	lstrcpyA((char *)packet + 0x71, (const char *)IMG(0x5b1b56));
+	lstrcpyA((char *)g_arenaPacket + 1, (const char *)IMG(0x5b1b30));
 	jmp_net_getLocalAddress();
-	lstrcpyA((char *)g_arenaPacket + 0x33, (const char *)0xa0b43c);
+	lstrcpyA((char *)g_arenaPacket + 0x33, (const char *)IMG(0xa0b43c));
 	g_connectionAwaited = 1;
 	g_connectStep = 2;
 	net_send(0x12, 0x65);

@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 #define g_mapIndex GAME_VAR(int, 0x9dad94)
 
@@ -25,7 +25,7 @@ static void make_rotation(Scene *s)
 		s->rotationCount = 0;
 		int k;
 		for (k = 0; k < 15; k++) {
-			u32 stage = 0x9db9e4 + k * 0x5c;
+			u32 stage = IMG(0x9db9e4) + k * 0x5c;
 			set_round(&s->rotation[s->rotationCount++], k, GAME_VAR(int, stage), GAME_VAR(int, stage + 8), GAME_VAR(int, stage + 4));
 		}
 		s->rotationAt = g_mapIndex;
@@ -43,7 +43,7 @@ static void make_rotation(Scene *s)
 	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
 		for (int k = 0; k < g_arenaMapCount; k++) {
-			u32 entry = 0x4d9508 + k * 8;
+			u32 entry = IMG(0x4d9508) + k * 8;
 			if (GAME_VAR(int, entry) != 1)
 				continue;
 			int mode = g_chosenGameMode;
@@ -81,20 +81,20 @@ static void first_round(Scene *s)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);
 	s->scoreLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
-	strcpy(s->mechName, (const char *)0x4dedd8);
+	strcpy(s->mechName, (const char *)IMG(0x4dedd8));
 	s->mechValue = g_armcValue;
 	if (s->showEmblems == 1) {
 		s->levelPoints = g_titlePoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
-			sys_fatalError((char *)0xa0e778, (const char *)0x4d0710, s->level);
+			sys_fatalError((char *)IMG(0xa0e778), (const char *)IMG(0x4d0710), s->level);
 	} else {
 		s->levelPoints = 0;
 		s->level = 1;
 	}
 	for (int k = 0; k < 5; k++)
 		s->mechParts[k] = GAME_VAR(int, 0x4dc878 + k * 4);
-	static const u32 items[6] = { 0x4dcf20, 0x4dcf24, 0x4dcf28, 0x4dcf2c, 0x4dcf18, 0x4dcf1c };
+	static const u32 items[6] = { IMG(0x4dcf20), IMG(0x4dcf24), IMG(0x4dcf28), IMG(0x4dcf2c), IMG(0x4dcf18), IMG(0x4dcf1c) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
 	/* the five colour sets (six dwords each from 0x4dcfe0) into three tables of pairs (0x2342476, 0x234249e,
@@ -270,7 +270,7 @@ void THISCALL (scene_reset)(u8 *s)
 	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
 }
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 
 /* a part type's (or the stage's) shape set and skeleton set sized into their blocks */
 static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, u8 *skels, const char *skel_dir, int sn,
@@ -296,17 +296,17 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
-		sprintf(name, (const char *)0x4c7410, sky, i);
+		sprintf(name, (const char *)IMG(0x4c7410), sky, i);
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts(s + 0x9ccffc);
-	factors_addConstant(s + 0x9ccffc, (const void *)0xa1f23c);
+	factors_addConstant(s + 0x9ccffc, (const void *)IMG(0xa1f23c));
 	stage_resetLights(s);
 	Light_clearCounts(s + 0x9e3020);
 	u8 grey[4] = { 0x40, 0x40, 0x40, 0xff };
 	factors_addConstant(s + 0x9e3020, grey);
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
-	factors_addPoint(s + 0x9e3020, (const void *)0xa1f23c, down);
+	factors_addPoint(s + 0x9e3020, (const void *)IMG(0xa1f23c), down);
 	long double root = 1;
 	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(k_27));
 	memset(s + 0x9ee030, 0, 14 * 4);
@@ -340,9 +340,9 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		int ai = ftol(fmul_m(fsub_m((long double)i, K(0x4a9534)), K(0x4a93f0)));
 		for (int j = 0; j <= 6; j++, dome += 3) {
 			u32 v[3] = { 0, 0x3f800000, 0 };
-			Vec3_rotateAxis((float *)v, 1, ai);
-			Vec3_rotateAxis((float *)v, 0, ftol(fmul_m(fsub_m((long double)j, K(0x4a9534)), K(0x4a93f0))));
-			((float *)v)[1] = f32(fsub_m(fld_m((float *)&v[1]), K(0x4a942c)));
+			Vec3_rotateAxis((float *)RELOC(v), 1, ai);
+			Vec3_rotateAxis((float *)RELOC(v), 0, ftol(fmul_m(fsub_m((long double)j, K(0x4a9534)), K(0x4a93f0))));
+			((float *)RELOC(v))[1] = f32(fsub_m(fld_m((float *)&v[1]), K(0x4a942c)));
 			memcpy(dome, v, 12);
 		}
 	}
@@ -351,7 +351,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		FIELD(int, s, 0x9ef0b4 + o * 4) = -1;
 		for (int k = 0; k < 4; k++) {
 			u32 v[3] = { 0, 0x3f800000, 0x3f800000 };
-			Vec3_rotateAxis((float *)v, 2, angle + k * 200);
+			Vec3_rotateAxis((float *)RELOC(v), 2, angle + k * 200);
 			memcpy(s + 0x9ef0cc + o * 0x60 + k * 0xc, v, 12);
 			float *low = (float *)(s + 0x9ef0fc + o * 0x60 + k * 0xc);
 			low[0] = f32(fld_m((float *)&v[0]));
@@ -404,9 +404,9 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	skelSet_setup(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
 	debug_traceStripped((Scene *)s);
 	effect_initTextures(s);
-	static const u32 names[3] = { 0x4c73f4, 0x4c73d8, 0x4c73bc };
+	static const u32 names[3] = { IMG(0x4c73f4), IMG(0x4c73d8), IMG(0x4c73bc) };
 	for (int k = 0; k < 3; k++) {
-		sprintf(name, (const char *)names[k]);
+		sprintf(name, (const char *)RELOC(names[k]));
 		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {

@@ -59,7 +59,7 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 #define NEXT GAME_VAR(int, pool + 0xb008)
 #define SLOT(k) ((u32 *)(pool + 4 + (k) * 0x2c))
 	if (NEXT >= 0x400)
-		sys_fatalError((char *)0xae2ee8, (const char *)0x4c7ae0, NEXT);
+		sys_fatalError((char *)IMG(0xae2ee8), (const char *)IMG(0x4c7ae0), NEXT);
 	if (NEXT == COUNT) {
 		COUNT++;
 		SLOT(COUNT)[1] = 0;
@@ -99,11 +99,11 @@ void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
 		if (!FIELD(void *, 8))
-			sys_fatalError((char *)0xae2ef0, (const char *)0x4c4cec, FIELD(int, 4));
+			sys_fatalError((char *)IMG(0xae2ef0), (const char *)IMG(0x4c4cec), FIELD(int, 4));
 		FIELD(int, 0xc) = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)0xae2ef0, (const char *)0x4c4cbc, need, size);
+			sys_fatalErrorN((char *)IMG(0xae2ef0), (const char *)IMG(0x4c4cbc), need, size);
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);

@@ -42,8 +42,8 @@ void THISCALL (vec3_negate)(float *v)
 }
 
 /* 0x467700: (x, y) turned by angle tenths of a degree, from the game's cosine and sine tables */
-#define g_cos ((const float *)0xa17f38)
-#define g_sin ((const float *)0xa1b778)
+#define g_cos ((const float *)IMG(0xa17f38))
+#define g_sin ((const float *)IMG(0xa1b778))
 void THISCALL (vec_rotate)(float *v, int angle)
 {
 	int i = (angle % 3600 + 3600) % 3600;
@@ -64,8 +64,8 @@ void THISCALL (vec3_scaleCopy)(float *v, float *out, float s)
 
 /* 0x46c100: an angle in tenths of a degree wrapped into 0 .. 3600 (a - whole turns, plus a turn when that is
    negative or NaN); returned unrounded */
-#define TURN ((const float *)0x4a94c8)        /* 3600 */
-#define PER_TURN ((const float *)0x4aa284)    /* 1 / 3600 */
+#define TURN ((const float *)IMG(0x4a94c8))        /* 3600 */
+#define PER_TURN ((const float *)IMG(0x4aa284))    /* 1 / 3600 */
 #define ZERO k_0f
 long double (angle_wrap)(float a)
 {
@@ -216,7 +216,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 /* the game's CRT acos (_CIacos: the argument and result on the FPU stack) */
 static X crt_acos(X x)
 {
-	__asm__ volatile("call *%1" : "+t"(x) : "r"(0x49ffc0) : "eax", "ecx", "edx", "memory");
+	__asm__ volatile("call *%1" : "+t"(x) : "r"(RELOC(0x49ffc0)) : "eax", "ecx", "edx", "memory");
 	return x;
 }
 
@@ -227,15 +227,15 @@ void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 	if (q[3] >= ONE)
 		out[0] = 0;
 	else if (q[3] > k_m1f)
-		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), (const float *)0x4a94a8);   /* * -2 */
+		out[0] = (float)fmul_m(crt_acos(fld_m(&q[3])), (const float *)IMG(0x4a94a8));   /* * -2 */
 	else
 		BITS(out[0]) = 0xc0c90fdb;   /* -2 pi */
 	X w = fld_m(&q[3]);
-	X s = fsubr_m(w * w, (const float *)0x4a9424), a;
+	X s = fsubr_m(w * w, (const float *)IMG(0x4a9424)), a;
 	__asm__("fsqrt" : "+t"(s));
 	__asm__("fabs" : "=t"(a) : "0"(s));
 	if (!(a >= k_1em8))
-		s = fld_m((const float *)0x4a9424);
+		s = fld_m((const float *)IMG(0x4a9424));
 	out[1] = (float)(fld_m(&q[0]) / s);
 	out[2] = (float)(fld_m(&q[1]) / s);
 	out[3] = (float)(fld_m(&q[2]) / s);

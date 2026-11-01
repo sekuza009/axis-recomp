@@ -9,14 +9,14 @@
 
 #define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
 #define g_localSlot g_watchedSlot            /* the local player's slot */
-#define g_nextNumber ((int *)0xb116a0)                /* each player's next packet number (-1: none yet) */
-#define g_ahead ((int *)0xb0f6a0)                     /* [player * 128 + number]: arrived ahead of its turn */
-#define g_history ((u8 *)0xaef6a0)                    /* [player][number]: 64 bytes */
-#define g_unused16 ((int *)0xaef660)                  /* (cleared per player, never read) */
+#define g_nextNumber ((int *)IMG(0xb116a0))                /* each player's next packet number (-1: none yet) */
+#define g_ahead ((int *)IMG(0xb0f6a0))                     /* [player * 128 + number]: arrived ahead of its turn */
+#define g_history ((u8 *)IMG(0xaef6a0))                    /* [player][number]: 64 bytes */
+#define g_unused16 ((int *)IMG(0xaef660))                  /* (cleared per player, never read) */
 #define g_cursor GAME_VAR(int, 0xb116e0)              /* the player looked at first by netq_receive (turns 0..15) */
 #define g_resends GAME_VAR(int, 0xb116e4)             /* out-of-turn packets seen: the caller re-syncs at 0x80 */
 #define PLAYER(i, offset) GAME_VAR(int, 0x9f9840 + (i) * 0x410 + (offset))
-#define g_send ((u8 *)0x9f9428)                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
+#define g_send ((u8 *)IMG(0x9f9428))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 
 /* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
 u32 (netq_reset)(int host)
@@ -45,7 +45,7 @@ u32 (net_sendPacketData)(int size, const void *data)
 	if (!net_isClient())
 		return 0;
 	if (size != 0x40)
-		sys_errorTerminate((const char *)0x4d1640, size, 0x40);
+		sys_errorTerminate((const char *)IMG(0x4d1640), size, 0x40);
 	u8 slot = g_localSlot;
 	GAME_VAR(int, g_send + 5) = (short)size;
 	memcpy(g_send + 9, data, (u32)size);
@@ -98,7 +98,7 @@ int (netq_receive)(int *from, int *size, void *data)
 	*from = g_cursor;
 	*size = 0x40;
 	int p = g_cursor;
-	memcpy(data, (const u8 *)0x9f9850 + p * 0x410, 0x40);
+	memcpy(data, (const u8 *)IMG(0x9f9850) + p * 0x410, 0x40);
 	p = g_cursor;
 	int due = g_nextNumber[p];
 	PLAYER(p, 8) = 0;

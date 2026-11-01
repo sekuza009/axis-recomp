@@ -6,19 +6,19 @@
 #define I32(a) GAME_VAR(int, a)
 #define F32(a) GAME_VAR(float, a)
 #define F64(a) GAME_VAR(double, a)
-#define g_ptxQuality I32(0x4c59e8)           /* the quality the tables are made for */
+#define g_ptxQuality I32(IMG(0x4c59e8))           /* the quality the tables are made for */
 #define g_ptxClamp GAME_VAR(u8 *, 0xa1f300)   /* clamp[v]: v limited to 0 .. 255 (v from -0x100) */
 
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
 void (ptx_initClampTable)(void)
 {
-	memset((void *)0xa61b0c, 0, 0x100);
-	g_ptxClamp = (u8 *)0xa61c0c;
+	memset((void *)IMG(0xa61b0c), 0, 0x100);
+	g_ptxClamp = (u8 *)IMG(0xa61c0c);
 	for (int i = 0; i < 256; i++)
 		GAME_VAR(u8, 0xa61c0c + i) = (u8)i;
-	memset((void *)0xa61d0c, 0xff, 0x180);
-	memset((void *)0xa61e8c, 0, 0x180);
-	memcpy((void *)0xa6200c, g_ptxClamp, 0x80);
+	memset((void *)IMG(0xa61d0c), 0xff, 0x180);
+	memset((void *)IMG(0xa61e8c), 0, 0x180);
+	memcpy((void *)IMG(0xa6200c), g_ptxClamp, 0x80);
 }
 
 /* 0x46e7c0: YCbCr -> RGB, the four per-component tables (Cr to red, Cb and Cr to green, Cb to blue) */
@@ -69,8 +69,8 @@ void (ptx_initQuantTables)(int q)
 	if (g_ptxQuality == q)
 		return;
 	for (int j = 0; j < 128; j++) {
-		int t = (int)((u32)I32(0x4c6db0 + j * 4) * (u32)I32(0x4aa2f0 + (j & 63) * 4) * 100u);
-		I32(0xaa2c94 + j * 4) = (t / q) >> 12;
+		int t = (int)((u32)I32(IMG(0x4c6db0) + j * 4) * (u32)I32(IMG(0x4aa2f0) + (j & 63) * 4) * 100u);
+		I32(IMG(0xaa2c94) + j * 4) = (t / q) >> 12;
 	}
 }
 
@@ -82,9 +82,9 @@ void (ptx_initDequantTables)(int q)
 	if (g_ptxQuality == q)
 		return;
 	X qf = q;
-	const double *f = (const double *)0x4aa2b0;
+	const double *f = (const double *)IMG(0x4aa2b0);
 	for (int j = 0; j < 128; j++) {
-		X v = (X)F32(0x4c6bb0 + j * 4) * k_100;
+		X v = (X)F32(IMG(0x4c6bb0) + j * 4) * k_100;
 		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
 		F32(0xaa2a90 + j * 4) = (float)((X)k_1 / v);
 	}

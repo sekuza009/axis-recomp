@@ -6,7 +6,7 @@
 /* 0x431590: no key down (the 256 key states at 0x4d1a98), the key repeat delay 5, no input line */
 void (input_resetKeys)(void)
 {
-	memset((void *)0x4d1a98, 0, 0x100 * 4);
+	memset((void *)IMG(0x4d1a98), 0, 0x100 * 4);
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5.0 */
 	g_typedLength = 0;
 	g_chatLength = 0;
@@ -16,7 +16,7 @@ void (input_resetKeys)(void)
 void (input_clearKeyTable2)(void)
 {
 	g_unusedKeyTable2Flags = 0x8000;
-	memset((void *)0x4d1fc4, 0, 0x100 * 4);
+	memset((void *)IMG(0x4d1fc4), 0, 0x100 * 4);
 	g_unusedKeyTable2Word1 = 0;
 	g_unusedKeyTable2Word0 = 0;
 	g_unusedKeyTable2Word2 = 0;
@@ -25,8 +25,8 @@ void (input_clearKeyTable2)(void)
 /* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
 void (net_clearBuffers)(void)
 {
-	memset((void *)0xa0b24c, 0, 0xc * 4 + 2);
-	memset((void *)0xa055fc, 0, 0xc * 4 + 2);
+	memset((void *)IMG(0xa0b24c), 0, 0xc * 4 + 2);
+	memset((void *)IMG(0xa055fc), 0, 0xc * 4 + 2);
 	g_lobbyTcpPort = 0;
 	g_ladderPort = 0;
 }
@@ -34,7 +34,7 @@ void (net_clearBuffers)(void)
 /* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
 void (mapSelect_allOut)(void)
 {
-	for (u32 p = 0x9ddac8; p < 0x9eeac8; p += 0x44)
+	for (u32 p = IMG(0x9ddac8); p < IMG(0x9eeac8); p += 0x44)
 		GAME_VAR(int, p) = 0;
 	g_replayWrap = 1;
 	g_unusedMainMenuWord = 0;

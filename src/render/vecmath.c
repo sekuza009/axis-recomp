@@ -9,8 +9,8 @@
 
 typedef long double X;
 
-#define COS_TABLE ((const float *)0xa17f38)    /* 3600 entries, 1/10 degree */
-#define SIN_TABLE ((const float *)0xa1b778)
+#define COS_TABLE ((const float *)IMG(0xa17f38))    /* 3600 entries, 1/10 degree */
+#define SIN_TABLE ((const float *)IMG(0xa1b778))
 #define LD(p) fld_m(&(p))
 
 static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
@@ -152,7 +152,7 @@ X (Mat4_determinant)(const float *m)
 	for (int c = 0; c < 4; c++) {
 		Mat4_minor(m, n, 0, c);
 		sum = (float)fadd_m(fmul_m(fmul_m(det3(n), &m[c]), &sign), &sum);
-		sign = (float)fmul_m(LD(sign), (const float *)0x4a9474);         /* -1 */
+		sign = (float)fmul_m(LD(sign), (const float *)IMG(0x4a9474));         /* -1 */
 	}
 	return sum;
 }
@@ -183,7 +183,7 @@ int (Mat4_invert)(float *out, const float *m)
 int (math_segmentSphere)(const float *p0, const float *p1, const float *dir, const float *ctr, float radius, float *hit,
                          float *t_out)
 {
-	const float *K0 = (const float *)0x4a93e8;                          /* 0.0 */
+	const float *K0 = (const float *)IMG(0x4a93e8);                          /* 0.0 */
 	float ax = (float)fsub_m(LD(ctr[0]), &p0[0]), ay = (float)fsub_m(LD(ctr[1]), &p0[1]);
 	float az = (float)fsub_m(LD(ctr[2]), &p0[2]);
 	float proj = (float)((fmul_m(LD(ay), &dir[1]) + fmul_m(LD(ax), &dir[0])) + fmul_m(LD(az), &dir[2]));

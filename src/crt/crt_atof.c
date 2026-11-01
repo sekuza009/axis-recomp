@@ -10,8 +10,8 @@
 #include "crt.h"
 #include <string.h>
 
-#define W16(p, o) (*(u16 *)((u8 *)(p) + (o)))
-#define W32(p, o) (*(u32 *)((u8 *)(p) + (o)))
+#define W16(p, o) (*(u16 *)((u8 *)RELOC(p) + (o)))
+#define W32(p, o) (*(u32 *)((u8 *)RELOC(p) + (o)))
 
 /* 0x4a6cc5: *sum = x + y; 1 on a carry */
 static int addl(u32 x, u32 y, u32 *sum)
@@ -103,13 +103,13 @@ static void ld12mul(u8 *x, const u8 *y)
 	}
 	for (int i = 0, count = 5; count > 0; i++, count--)
 		for (int j = 0; j < count; j++) {
-			u32 *at = (u32 *)((u8 *)r + 2 * i);
+			u32 *at = (u32 *)((u8 *)RELOC(r) + 2 * i);
 			if (addl(*at, (u32)W16(x, 2 * (i + j)) * W16(y, 8 - 2 * j), at))
 				W16(r, 2 * i + 4)++;
 		}
 	e += 0xc002;
 	if ((short)e > 0) {
-		while (!(((u8 *)r)[11] & 0x80)) {
+		while (!(((u8 *)RELOC(r))[11] & 0x80)) {
 			shl12(r);
 			e += 0xffff;
 			if ((short)e <= 0)
@@ -122,12 +122,12 @@ static void ld12mul(u8 *x, const u8 *y)
 			int n = -(short)e;
 			e += n;
 			for (; n > 0; n--) {
-				if (((u8 *)r)[0] & 1)
+				if (((u8 *)RELOC(r))[0] & 1)
 					sticky++;
 				shr12(r);
 			}
 			if (sticky)
-				((u8 *)r)[0] |= 1;
+				((u8 *)RELOC(r))[0] |= 1;
 		}
 	}
 	if (W16(r, 0) > 0x8000 || (W32(r, 0) & 0x1ffff) == 0x18000) {
@@ -165,12 +165,12 @@ infinite:
    whose extension word is 0x8000 or more is used one unit lower in its mantissa); mult12 0: the extension cleared */
 static void multtenpow12(u8 *x, int power, int mult12)
 {
-	u32 table = 0x4d12f8;
+	u32 table = IMG(0x4d12f8);
 	if (power == 0)
 		return;
 	if (power < 0) {
 		power = -power;
-		table = 0x4d1458;
+		table = IMG(0x4d1458);
 	}
 	if (mult12 == 0)
 		W16(x, 0) = 0;
@@ -180,7 +180,7 @@ static void multtenpow12(u8 *x, int power, int mult12)
 		power >>= 3;
 		if (k == 0)
 			continue;
-		const u8 *entry = (const u8 *)(table + k * 12);
+		const u8 *entry = (const u8 *)(RELOC(table) + k * 12);
 		u8 lower[12];
 		if (W16(entry, 0) >= 0x8000) {
 			memcpy(lower, entry, 12);
@@ -202,7 +202,7 @@ static unsigned strgtold12(u8 *x, const char **end, const char *s, int mult12, i
 	int exp = 0, expAdj = 0;
 	unsigned flags = 0;
 	int state = 0;
-	const unsigned char *p = (const unsigned char *)s, *saved = p;   /* (the restart point: before the spaces) */
+	const unsigned char *p = (const unsigned char *)RELOC(s), *saved = p;   /* (the restart point: before the spaces) */
 	unsigned char c;
 	while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
 		p++;

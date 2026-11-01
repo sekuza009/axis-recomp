@@ -5,14 +5,14 @@
 /* 0x4519b0: the arena's 19 buffers freed (in the original's order) and their pointers cleared */
 u32 (arena_freeBuffers)(void)
 {
-	static const u32 buffers[19] = { 0xa0b310, 0xa0b314, 0xa0b318, 0xa0b30c, 0xa0b31c, 0xa0b304, 0xa0b320, 0xa0b328,
-	                                 0xa0b32c, 0xa0b330, 0xa0b334, 0xa0b324, 0xa0b308, 0xa0b340, 0xa0b344, 0xa0b338,
-	                                 0xa052e4, 0xa0b33c, 0xa055e0 };
+	static const u32 buffers[19] = { IMG(0xa0b310), IMG(0xa0b314), IMG(0xa0b318), IMG(0xa0b30c), IMG(0xa0b31c), IMG(0xa0b304), IMG(0xa0b320), IMG(0xa0b328),
+	                                 IMG(0xa0b32c), IMG(0xa0b330), IMG(0xa0b334), IMG(0xa0b324), IMG(0xa0b308), IMG(0xa0b340), IMG(0xa0b344), IMG(0xa0b338),
+	                                 IMG(0xa052e4), IMG(0xa0b33c), IMG(0xa055e0) };
 	u32 r = 0;
 	for (int i = 0; i < 19; i++) {
 		r = GAME_VAR(u32, buffers[i]);
 		if (r) {
-			r = crt_free((void *)r);
+			r = crt_free((void *)RELOC(r));
 			GAME_VAR(u32, buffers[i]) = 0;
 		}
 	}
@@ -25,10 +25,10 @@ u32 (sound_freeAll)(void)
 	if (!g_soundOn)
 		return 0;
 	u32 r = 0;
-	for (u32 p = 0xa0e02c; p < 0xa0e66c; p += 4) {
+	for (u32 p = IMG(0xa0e02c); p < IMG(0xa0e66c); p += 4) {
 		r = GAME_VAR(u32, p);
 		if (r) {
-			r = mem_free((void *)r);
+			r = mem_free((void *)RELOC(r));
 			GAME_VAR(u32, p) = 0;
 		}
 	}

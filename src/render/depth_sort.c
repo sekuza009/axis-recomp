@@ -4,7 +4,7 @@
 #define GAME_I32(a) GAME_VAR(int, a)
 #define GAME_U32(a) GAME_VAR(u32, a)
 #define GAME_F32(a) GAME_VAR(float, a)
-#define FIELD_I32(p, o) GAME_VAR(int, (u8 *)(p) + (o))
+#define FIELD_I32(p, o) GAME_VAR(int, (u8 *)RELOC(p) + (o))
 
 /* where a sort keeps its state: the stack depth, then arrays by depth (lo, hi, i, j, pivot) and two dwords of swap space */
 typedef struct { u32 sp, lo, hi, i, j, piv, tmp; } QsGlobals;
@@ -59,10 +59,10 @@ static void depth_sort(const QsGlobals *q, u32 *e, int lo, int hi)
 #undef PIV
 }
 
-static const QsGlobals k_sortA = { 0xae5338, 0x4c83c4, 0x4ca3c4, 0xae3338, 0xae7340, 0xaed350, 0xae9340 };
+static const QsGlobals k_sortA = { IMG(0xae5338), IMG(0x4c83c4), IMG(0x4ca3c4), IMG(0xae3338), IMG(0xae7340), IMG(0xaed350), IMG(0xae9340) };
 
 void (render_depthSortA)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
 
-static const QsGlobals k_sortB = { 0xae533c, 0x4cc3c4, 0x4ce3c4, 0xaeb350, 0xae9350, 0xae5340, 0xae9348 };
+static const QsGlobals k_sortB = { IMG(0xae533c), IMG(0x4cc3c4), IMG(0x4ce3c4), IMG(0xaeb350), IMG(0xae9350), IMG(0xae5340), IMG(0xae9348) };
 
 void (render_depthSortB)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }

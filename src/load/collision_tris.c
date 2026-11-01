@@ -6,7 +6,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 typedef long double X;
 
@@ -279,10 +279,10 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 }
 
 /* ---- 0x47dd90: a moving sphere against one triangle ---- */
-#define TINY ((const float *)0x4aa268)    /* 1e-8 */
-#define ONE ((const float *)0x4a9424)
-#define MINUS_ONE ((const float *)0x4a9474)
-#define REST ((const float *)0xa0e7e8)    /* the axis a response falls back to */
+#define TINY ((const float *)IMG(0x4aa268))    /* 1e-8 */
+#define ONE ((const float *)IMG(0x4a9424))
+#define MINUS_ONE ((const float *)IMG(0x4a9474))
+#define REST ((const float *)IMG(0xa0e7e8))    /* the axis a response falls back to */
 
 static void vset(float *o, float x, float y, float z) { o[0] = x; o[1] = y; o[2] = z; }
 /* a x b, each component's products in the original's order */
@@ -579,8 +579,8 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 			if (!node) {
 				if (++sub >= nsubs)
 					break;
-				const float *in = (const float *)subs[sub * 3 + 2];
-				node = (u8 *)subs[sub * 3];
+				const float *in = (const float *)RELOC(subs[sub * 3 + 2]);
+				node = (u8 *)RELOC(subs[sub * 3]);
 				for (int i = 0; i < 3; i++)
 					at[i] = row_point(in, from, i);
 				for (int i = 0; i < 3; i++)
@@ -595,7 +595,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 						memcpy(outVel, hitVel, 12);
 						memcpy(outPlane, plane, 16);
 					} else {
-						const float *out = (const float *)subs[sub * 3 + 1];
+						const float *out = (const float *)RELOC(subs[sub * 3 + 1]);
 						for (int i = 0; i < 3; i++)
 							outPos[i] = row_point(out, hitPos, i);
 						for (int i = 0; i < 3; i++)
@@ -610,11 +610,11 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 			}
 			node = FIELD(u8 *, node, 0xc);
 		}
-		const float *tiny = (const float *)0x4aa268;   /* 1e-8 */
+		const float *tiny = (const float *)IMG(0x4aa268);   /* 1e-8 */
 		if (!(hit == 1 && best > *tiny))
 			return result;
 		if (!(mul(fld_m(&outVel[2]), &vel[2]) + mul(fld_m(&outVel[1]), &vel[1]) + mul(fld_m(&outVel[0]), &vel[0]) > *tiny)) {
-			memcpy(outVel, (const void *)0xa0e7e8, 12);
+			memcpy(outVel, (const void *)IMG(0xa0e7e8), 12);
 			FIELD(u32, outDist, 0) = 0;
 			return 1;
 		}
@@ -622,7 +622,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 		memcpy(from, outPos, 12);
 		memcpy(step, outVel, 12);
 		FIELD(u32, outDist, 0) = FIELD(u32, &best, 0);
-		if (pass != 0 && mul(fld_m(&r), (const float *)0x4a93ec) > best)
+		if (pass != 0 && mul(fld_m(&r), (const float *)IMG(0x4a93ec)) > best)
 			return result;
 		if (pass + 1 > 5)
 			return result;
@@ -646,12 +646,12 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 {
 	u8 *grid = stage + 0xa10;
 	const float *low = (const float *)(stage + 0x9ef904), *high = (const float *)(stage + 0x9ef910);
-	log_message((int)stage, 0, 0, (const char *)0x4c7490);
+	log_message((int)stage, 0, 0, (const char *)IMG(0x4c7490));
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
 	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));
 	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, a, b, depth);
-	log_message((int)stage, 0, 0, (const char *)0x4c747c);
+	log_message((int)stage, 0, 0, (const char *)IMG(0x4c747c));
 	if (FIELD(int, stage, 0x9ef30c)) {
 #define F(v) f32(fld_m(&(v)))
 		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
@@ -668,7 +668,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (kind != 0 && kind != 1)
 			continue;
 		for (int r = 0; r < FIELD(int, layer, 0x1c); r++) {
-			log_message((int)stage, 0, r, (const char *)(kind ? 0x4c7430 : 0x4c7458), r);
+			log_message((int)stage, 0, r, (const char *)(RELOC(kind) ? IMG(0x4c7430) : IMG(0x4c7458)), r);
 			for (int c = 0; c < FIELD(int, layer, 0x20); c++) {
 				int w = FIELD(int, layer, 0x20) + 1;
 				const float *v = FIELD(const float *, layer, 0x40);
@@ -688,7 +688,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
 			continue;
 		if (i % 2 == 0)
-			log_message((int)stage, 0, i, (const char *)0x4c7418, i);
+			log_message((int)stage, 0, i, (const char *)IMG(0x4c7418), i);
 		FIELD(u32, obj, 0x28c) = space_buildUnits(grid, i, FIELD(void *, obj, 0x27c), (const float *)(obj + 0xf4));
 	}
 }

@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 static int paused(void *s) { return FIELD(int, s, 0x2149308) && FIELD(int, s, 0x214930c) == 1; }
 
@@ -116,7 +116,7 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #define COUNT FIELD(int, s, 0x13c9b24)
 #define NEXT FIELD(int, s, 0x13c9b28)
 	if (NEXT >= 1000) {
-		sys_errorMessage((char *)0xae2eb8, (const char *)0x4c8398, NEXT + 1, 1000);
+		sys_errorMessage((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8398), NEXT + 1, 1000);
 		return -1;
 	}
 	if (NEXT == COUNT) {
@@ -206,17 +206,17 @@ void THISCALL (sound_updateListener)(u8 *s)
    (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initTextures)(u8 *s)
 {
-	static const u32 sets[3][2] = { { 0x4c8170, 0x20f2dac }, { 0x4c815c, 0x20f2dcc }, { 0x4c8144, 0x20f2dec } };
-	static const u32 singles[8] = { 0x4c8130, 0x4c811c, 0x4c8108, 0x4c80f4, 0x4c80e0, 0x4c80c8, 0x4c80b0, 0x4c8098 };
+	static const u32 sets[3][2] = { { IMG(0x4c8170), 0x20f2dac }, { IMG(0x4c815c), 0x20f2dcc }, { IMG(0x4c8144), 0x20f2dec } };
+	static const u32 singles[8] = { IMG(0x4c8130), IMG(0x4c811c), IMG(0x4c8108), IMG(0x4c80f4), IMG(0x4c80e0), IMG(0x4c80c8), IMG(0x4c80b0), IMG(0x4c8098) };
 	FIELD(int, s, 0x20f2f3c) = 0;
 	char name[0x100];
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
-			sprintf(name, (const char *)sets[set][0], k);
+			sprintf(name, (const char *)RELOC(sets[set][0]), k);
 			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName(s + 0x19e188c, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
-		FIELD(u32, s, 0x20f2e74 + k * 4) = shape_getByName(s + 0x19e188c, (const char *)singles[k], 1);
+		FIELD(u32, s, 0x20f2e74 + k * 4) = shape_getByName(s + 0x19e188c, (const char *)RELOC(singles[k]), 1);
 }
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
@@ -268,7 +268,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			break;
 		case 13:
 			if (actor)
-				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)0x4a9750));
+				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)IMG(0x4a9750)));
 			break;
 		case 14: if (actor) FIELD(int, actor, 0x880c) = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
@@ -302,21 +302,21 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 25: camera_setTarget(s, -1, -1, 0); break;
 		case 26:
 			if (FIELD(int, s, 0x2104fe8 + c[1] * 0x88) == 0)
-				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7a8c, c[1]);
+				sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7a8c), c[1]);
 			if (FIELD(int, s, 0x210850c + c[2] * 0x108) == 0)
-				sys_fatalError((char *)0xae2eb8, (const char *)0x4c7a48, c[2]);
+				sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7a48), c[2]);
 			script_pushEvent(s, c[1], c[2], c[3], c[4]);
 			break;
 		case 27:
-			sprintf(name, (const char *)0x4c7a3c, s + 0x808, (const char *)&c[1]);
+			sprintf(name, (const char *)IMG(0x4c7a3c), s + 0x808, (const char *)&c[1]);
 			script_runScpFile(s, name, c[9]);
 			break;
 		case 28:
-			sprintf(name, (const char *)0x4c7a30, s + 8, s + 0x908, (const char *)&c[2]);
+			sprintf(name, (const char *)IMG(0x4c7a30), s + 8, s + 0x908, (const char *)&c[2]);
 			object_setAnimation(s, c[1], name, c[10], c[11]);
 			break;
 		case 29:
-			sprintf(name, (const char *)0x4c7a20, s + 0x908, (const char *)&c[1]);
+			sprintf(name, (const char *)IMG(0x4c7a20), s + 0x908, (const char *)&c[1]);
 			sound_playFile(name, 100);
 			break;
 		case 30: object_activate(s, c[1]); break;
@@ -349,32 +349,32 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	u8 *obj = s + 0x131ae44 + i * 0x2cc;
 	int idx = 0;
 	for (; idx < FIELD(int, s, 0x131ae40); idx++)
-		if (!strcmp((const char *)type, (const char *)s + 0x130b440 + idx * 0x40))
+		if (!strcmp((const char *)RELOC(type), (const char *)s + 0x130b440 + idx * 0x40))
 			break;
 	if (idx == FIELD(int, s, 0x131ae40)) {
 		if (idx >= 1000)
-			sys_fatalError((char *)0xae2eb8, (const char *)0x4c8364, 1000);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8364), 1000);
 		idx = FIELD(int, s, 0x131ae40)++;
-		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)type);
+		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
 	FIELD(int, obj, 0) = FIELD(int, s, 0x13c9b2c)++;
 	FIELD(int, obj, 4) = 1;
 	FIELD(int, obj, 8) = idx;
 	memcpy(obj + 0xc, type + 0x40, 12);
 	if (type[0x4c])
-		sprintf((char *)obj + 0x18, (const char *)0x4c7a30, s + 8, s + 0x908, type + 0x4c);
+		sprintf((char *)obj + 0x18, (const char *)IMG(0x4c7a30), s + 8, s + 0x908, type + 0x4c);
 	else
 		obj[0x18] = 0;
 	memcpy(obj + 0x58, type + 0x8c, 12);
 	u32 move[16];
 	identity4(move);
 	for (int c = 0; c < 3; c++)
-		((float *)move)[12 + c] = f32(fld_m((const float *)(obj + 0x58) + c));
+		((float *)RELOC(move))[12 + c] = f32(fld_m((const float *)(obj + 0x58) + c));
 	memcpy(obj + 0x64, type + 0x98, 16);
 	float turn[16];
 	Mat4_fromQuat(turn, (const float *)(obj + 0x64));
 	float *m = (float *)(obj + 0xf4);
-	Mat4_multiply((float *)(obj + 0x74), (const float *)move, turn);
+	Mat4_multiply((float *)(obj + 0x74), (const float *)RELOC(move), turn);
 	Mat4_invert((float *)(obj + 0xb4), (const float *)(obj + 0x74));
 	Mat4_copy(m, obj + 0x74);
 	Mat4_invert((float *)(obj + 0x134), m);
@@ -382,12 +382,12 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	identity4((u32 *)(obj + 0x1b4));
 	Mat4_multiply((float *)(obj + 0x1f4), m, (const float *)(obj + 0xb4));
 	Mat4_invert((float *)(obj + 0x234), (const float *)(obj + 0x1f4));
-	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)type, 1);
+	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)RELOC(type), 1);
 	FIELD(u8 *, obj, 0x27c) = shape;
 	for (int r = 0; r < 2; r++) {
 		int need = FIELD(int, s, 0x13016c8) + FIELD(int, shape, 0x18);
 		if (need > 1000000)
-			sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4c8314, i, need, 1000000);
+			sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8314), i, need, 1000000);
 		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + FIELD(int, s, 0x13016c8) * 4;
 		FIELD(int, s, 0x13016c8) += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
 	}
@@ -415,7 +415,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 {
 	u32 rec[13] = { kind, 0 };
 	memcpy(&rec[2], p, 12);
-	memcpy(&rec[5], (const void *)0xa0e7e8, 12);
+	memcpy(&rec[5], (const void *)IMG(0xa0e7e8), 12);
 	particle_spawn(s, rec);
 }
 
@@ -425,7 +425,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 static void spark(u8 *s, u8 *p, float dt)
 {
 	float *pos = (float *)(p + 0x10);
-	const float *v = (const float *)(p + 0x1c), *k = (const float *)0x4a9554;
+	const float *v = (const float *)(p + 0x1c), *k = (const float *)IMG(0x4a9554);
 	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
 	float hit[3], below[3];
 	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
@@ -443,8 +443,8 @@ static void spark(u8 *s, u8 *p, float dt)
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef_stored(pos);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)0x4a94c8)), 0.0f, 1.0f, 0.0f);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)0x4a94c8)), 0.0f, 0.0f, 1.0f);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)IMG(0x4a94c8))), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)IMG(0x4a94c8))), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, (float *)(p + 0x2c));
 	glPopMatrix();
 	long double wait = fsub_m(fld_m((const float *)(p + 0x84)), &dt);
@@ -478,25 +478,25 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	u32 size = 0;   /* where the size constant is */
 	switch (k / 5) {
 	case 0:
-		size = k == 2 ? 0x4aa42c : k == 3 ? 0x4aa430 : 0;
+		size = k == 2 ? IMG(0x4aa42c) : k == 3 ? IMG(0x4aa430) : 0;
 		break;
 	case 1:
 		if (k == 9)
 			spark(s, p, dt);
 		break;
 	case 5:
-		size = k == 25 || k == 26 ? 0x4a9554 : 0;
+		size = k == 25 || k == 26 ? IMG(0x4a9554) : 0;
 		break;
 	case 6:
-		size = k <= 31 ? 0x4a94bc : 0x4a949c;
+		size = k <= 31 ? IMG(0x4a94bc) : IMG(0x4a949c);
 		break;
 	case 7:
-		size = k == 35 ? 0x4aa430 : k == 36 ? 0x4aa42c : k <= 38 ? 0x4a949c : 0;
+		size = k == 35 ? IMG(0x4aa430) : k == 36 ? IMG(0x4aa42c) : k <= 38 ? IMG(0x4a949c) : 0;
 		break;
 	}
 	if (size) {
-		long double u = fsub_m(fld_m((const float *)0x4a9424), &t);
-		GAME_VAR(float, p + 0x7c) = f32(fmul_m(u * u, (const float *)size));
+		long double u = fsub_m(fld_m((const float *)IMG(0x4a9424)), &t);
+		GAME_VAR(float, p + 0x7c) = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
 	GAME_VAR(float, p + 0x74) = f32(fadd_m(fld_m(&dt), (const float *)(p + 0x74)));
 }
@@ -508,12 +508,12 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
    last big pickup (+0x20fcd3c) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
-	{ 0x10, 0x130, 0x28, 1, 0, 0x4c82f4 }, { 0x10, 0x130, 0x28, 40, 0, 0x4c82e4 }, { 0x20, 0x134, 0x2c, 40, 0, 0x4c82d4 },
-	{ 0x40, 0x138, 0x30, 40, 0, 0x4c82c0 }, { 0x80, 0x13c, 0x34, 15, 0, 0x4c82ac }, { 0x80, 0x13c, 0x34, 5, 0, 0x4c8298 },
-	{ 1, 0x128, 0x1c, 10, 0, 0x4c828c }, { 1, 0x128, 0x1c, 25, 0, 0x4c8280 }, { 1, 0x128, 0x1c, 50, 0, 0x4c8274 },
-	{ 1, 0x128, 0x1c, 100, 0, 0x4c8268 }, { 2, 0x128, 0x1c, 100, 100, 0x4c8254 }, { 4, 0x12c, 0x20, 10, 0, 0x4c8248 },
-	{ 4, 0x12c, 0x20, 25, 0, 0x4c823c }, { 4, 0x12c, 0x20, 50, 0, 0x4c8230 }, { 4, 0x12c, 0x20, 100, 0, 0x4c8224 },
-	{ 8, 0x12c, 0x20, 100, 100, 0x4c820c } };
+	{ 0x10, 0x130, 0x28, 1, 0, IMG(0x4c82f4) }, { 0x10, 0x130, 0x28, 40, 0, IMG(0x4c82e4) }, { 0x20, 0x134, 0x2c, 40, 0, IMG(0x4c82d4) },
+	{ 0x40, 0x138, 0x30, 40, 0, IMG(0x4c82c0) }, { 0x80, 0x13c, 0x34, 15, 0, IMG(0x4c82ac) }, { 0x80, 0x13c, 0x34, 5, 0, IMG(0x4c8298) },
+	{ 1, 0x128, 0x1c, 10, 0, IMG(0x4c828c) }, { 1, 0x128, 0x1c, 25, 0, IMG(0x4c8280) }, { 1, 0x128, 0x1c, 50, 0, IMG(0x4c8274) },
+	{ 1, 0x128, 0x1c, 100, 0, IMG(0x4c8268) }, { 2, 0x128, 0x1c, 100, 100, IMG(0x4c8254) }, { 4, 0x12c, 0x20, 10, 0, IMG(0x4c8248) },
+	{ 4, 0x12c, 0x20, 25, 0, IMG(0x4c823c) }, { 4, 0x12c, 0x20, 50, 0, IMG(0x4c8230) }, { 4, 0x12c, 0x20, 100, 0, IMG(0x4c8224) },
+	{ 8, 0x12c, 0x20, 100, 100, IMG(0x4c820c) } };
 
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
@@ -534,7 +534,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 0:
 	case 1: {
 		if (type < 10 && type > 5) {
-			sys_fatalError((char *)0xae2eb8, (const char *)0x4c81d0, type);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c81d0), type);
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
@@ -551,19 +551,19 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 2:
 	case 3:
 		switch (type % 10) {
-		case 0: timer = &A(u32, 0x3f4); text = 0x4c81c4; break;   /* DAMAGE AMP */
-		case 1: timer = &A(u32, 0x3f8); text = 0x4c81b4; break;   /* CLOAKING FIELD */
-		case 3: timer = &A(u32, 0x3fc); text = 0x4c81a4; break;   /* OVERED BOOSTER */
-		case 7: timer = &A(u32, 0x400); text = 0x4c8188; break;   /* GRAVITY ARMOR */
+		case 0: timer = &A(u32, 0x3f4); text = IMG(0x4c81c4); break;   /* DAMAGE AMP */
+		case 1: timer = &A(u32, 0x3f8); text = IMG(0x4c81b4); break;   /* CLOAKING FIELD */
+		case 3: timer = &A(u32, 0x3fc); text = IMG(0x4c81a4); break;   /* OVERED BOOSTER */
+		case 7: timer = &A(u32, 0x400); text = IMG(0x4c8188); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
 			if (A(int, 0x110) == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
 				memcpy(ac + 0x180, to + 0xc, 12);
-				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)0x4a9418));
+				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)IMG(0x4a9418)));
 				A(u32, 0x190) = GAME_VAR(u32, to + 0x1c);
 				A(int, 0x538) = I(int, 4);
-				strcpy((char *)ac + 0x4f4, (const char *)0x4c8198);   /* WARP ZONE */
+				strcpy((char *)ac + 0x4f4, (const char *)IMG(0x4c8198));   /* WARP ZONE */
 				A(int, 0x534) = 0;
 				A(u32, 0x548) = 0x3f800000;
 				A(u32, 0x540) = 0x40000000;
@@ -582,10 +582,10 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		last = 1;
 		break;
 	default:
-		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)0xae2eb8, (const char *)0x4c81d0, type);
+		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)IMG(0xae2eb8), (const char *)IMG(0x4c81d0), type);
 		return;
 	}
-	strcpy((char *)ac + 0x4f4, (const char *)text);
+	strcpy((char *)ac + 0x4f4, (const char *)RELOC(text));
 	A(int, 0x534) = 0;
 	if (last)
 		GAME_VAR(int, s + 0x20fcd3c) = i;
@@ -621,7 +621,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 			}
 		} else if (I(int, 0x20) == 0) {
 			if (type != 0x22)
-				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)0x4a94ac), (const float *)(it + 0x1c)));
+				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)IMG(0x4a94ac)), (const float *)(it + 0x1c)));
 			int n = GAME_VAR(int, s + 0x202e8c8);
 			for (int k = 0; k < n; k++) {
 				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
@@ -634,7 +634,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 					if (!(d >= 0))
 						d = -d;
 					if (a == 0)
-						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), (const float *)0x4a974c));
+						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), (const float *)IMG(0x4a974c)));
 					near = !(d >= reach);
 				}
 				if (near) {
@@ -655,7 +655,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 #undef I
 
 #define P(type, offset) GAME_VAR(type, p + (offset))
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
 static u32 table_rand_below(u32 n)
@@ -669,7 +669,7 @@ static u32 table_rand_below(u32 n)
 /* the particle's direction (+0x10, from 0xa0e7a8 through its matrix +0x2c) */
 static void particle_heading(u8 *p)
 {
-	const float *m = (const float *)(p + 0x2c), *v = (const float *)0xa0e7a8;
+	const float *m = (const float *)(p + 0x2c), *v = (const float *)IMG(0xa0e7a8);
 	for (int r = 0; r < 3; r++)
 		P(float, 0x10 + r * 4) = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
 		                                    &m[12 + r]));
@@ -736,7 +736,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	if (n <= 1) {
 		memset(rec, 0, sizeof rec);
 		memcpy(&rec[2], at, 12);
-		memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+		memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
 		float size = f32(fld_m((const float *)(p + 0x80)));
 		memcpy(&rec[11], &size, 4);
 		particle_spawn(s, rec);
@@ -751,7 +751,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(fadd_m(fld_m(&y), &at[1])), f32(fadd_m(fld_m(&z), &at[2])) };
 		rec[0] = rec[1] = 0;
 		memcpy(&rec[2], pos, 12);
-		memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+		memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
 		rec[8] = rec[9] = rec[10] = 0;
 		float size = f32(fld_m((const float *)(p + 0x80)));
 		memcpy(&rec[11], &size, 4);
@@ -867,8 +867,8 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		P(u32, 0x70) = 0x3f800000;
 		break;
 	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
-	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, 0x4a93f0); break;
-	case 45: particle_trail(p, desc, 0x4aa424); break;
+	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, IMG(0x4a93f0)); break;
+	case 45: particle_trail(p, desc, IMG(0x4aa424)); break;
 	}
 }
 #undef P

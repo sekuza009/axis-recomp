@@ -12,6 +12,7 @@
 #include "standalone.h"
 #undef CDECL   /* (windows.h's; axis.h has its own) */
 #include "../src/crt/crt.h"
+void sa_log(const char *fmt, int arg);   /* main.c */
 /* the rebuilt WinMain (src/app/win32.c; the u32 return and the game's own types as it is defined there) */
 unsigned __stdcall game_WinMain(void *inst, void *prev, const char *cmd, int show);
 
@@ -36,9 +37,9 @@ static int (__cdecl *msvcrt_fputs)(const char *, void *);
 /* the game's own standard streams (its _iob at 0x4d0838: stdin, stdout, stderr) as msvcrt's */
 static void *stream(void *f)
 {
-	unsigned a = (unsigned)f;
-	if (a >= 0x4d0838 && a < 0x4d0898 && (a - 0x4d0838) % 0x20 == 0)
-		return (char *)msvcrt_iob(0) + (a - 0x4d0838);
+	unsigned a = (unsigned)f - (unsigned)AT(0x4d0838);   /* (in the relocated image) */
+	if (a < 0x60 && a % 0x20 == 0)
+		return (char *)msvcrt_iob(0) + a;
 	return f;
 }
 /* (the file versions of the formatting, with the arguments as VC6 sees them: src/crt/crt_format.c) */
@@ -78,14 +79,37 @@ static void __stdcall vector_destruct(char *first, int size, int count, void (__
 	}
 }
 
+void sa_log(const char *fmt, int arg);   /* main.c */
+static void (__cdecl *msvcrt_exit)(int);
+static void __cdecl logged_exit(int code)
+{
+	sa_log("exit(%d)", code);
+	sa_log("  called from %08x", (int)__builtin_return_address(0));
+	msvcrt_exit(code);
+}
+
+/* (a check while the image is relocated: frees of what is no block of msvcrt's heap, logged with their caller) */
+static HANDLE g_crtHeap;
+static void (__cdecl *msvcrt_free)(void *), (__cdecl *msvcrt_delete)(void *);
+static int checked(void *p, void *caller, const char *what)
+{
+	if (!p || !g_crtHeap || HeapValidate(g_crtHeap, 0, p))
+		return 1;
+	sa_log(what, (int)p);
+	sa_log("  called from %08x", (int)caller);
+	return 0;
+}
+static void __cdecl checked_free(void *p) { if (checked(p, __builtin_return_address(0), "free(%08x): NO HEAP BLOCK")) msvcrt_free(p); }
+static void __cdecl checked_delete(void *p) { if (checked(p, __builtin_return_address(0), "delete %08x: NO HEAP BLOCK")) msvcrt_delete(p); }
+
 unsigned g_crtEntries[64];   /* the runtime entries pointed elsewhere (AXISRC_POISON keeps their jumps) */
 int g_ncrtEntries;
 static void jump(unsigned at, const void *to)
 {
-	BYTE *p = (BYTE *)at;
+	BYTE *p = AT(at);
 	g_crtEntries[g_ncrtEntries++] = at;
 	p[0] = 0xE9;
-	*(DWORD *)(p + 1) = (DWORD)to - (at + 5);
+	*(DWORD *)(p + 1) = (DWORD)to - ((DWORD)p + 5);
 }
 
 /* every runtime entry the rebuilds use pointed at its replacement; 0 and the missing export's name on a failure */
@@ -95,10 +119,22 @@ const char *crt_install(int *count)
 	if (!m)
 		return "msvcrt.dll";
 	*count = 0;
+	HANDLE (__cdecl *heap)(void) = (HANDLE (__cdecl *)(void))GetProcAddress(m, "_get_heap_handle");
+	g_crtHeap = heap ? heap() : NULL;
 	for (unsigned i = 0; i < sizeof k_msvcrt / sizeof k_msvcrt[0]; i++) {
 		FARPROC f = GetProcAddress(m, k_msvcrt[i].name);
 		if (!f)
 			return k_msvcrt[i].name;
+		if (!strcmp(k_msvcrt[i].name, "exit")) {   /* (the game's exit, logged with its caller) */
+			msvcrt_exit = (void (__cdecl *)(int))f;
+			f = (FARPROC)logged_exit;
+		} else if (!strcmp(k_msvcrt[i].name, "free")) {
+			msvcrt_free = (void (__cdecl *)(void *))f;
+			f = (FARPROC)checked_free;
+		} else if (!strcmp(k_msvcrt[i].name, "??3@YAXPAX@Z")) {
+			msvcrt_delete = (void (__cdecl *)(void *))f;
+			f = (FARPROC)checked_delete;
+		}
 		jump(k_msvcrt[i].addr, (const void *)f);
 		++*count;
 	}
@@ -128,9 +164,10 @@ const char *crt_install(int *count)
    stubs), WinMain(the exe, NULL, the command line after the program's name, how the window is to be shown), exit */
 void crt_start(void)
 {
-	for (const unsigned *f = (const unsigned *)0x4ad000; f < (const unsigned *)0x4ad0fc; f++)
+	for (const unsigned *f = (const unsigned *)AT(0x4ad000); f < (const unsigned *)AT(0x4ad0fc); f++)
 		if (*f)
 			((void (__cdecl *)(void))*f)();
+	sa_log("the game's static constructors run (%d)", 0);
 	char *cmd = GetCommandLineA();
 	if (*cmd == '"') {
 		for (cmd++; *cmd && *cmd != '"'; cmd++)
@@ -148,5 +185,6 @@ void crt_start(void)
 	GetStartupInfoA(&si);
 	int show = si.dwFlags & STARTF_USESHOWWINDOW ? si.wShowWindow : SW_SHOWDEFAULT;
 	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
-	((void (__cdecl *)(int))0x49edac)(r);   /* exit (msvcrt's) */
+	sa_log("WinMain returned %d", r);
+	((void (__cdecl *)(int))AT(0x49edac))(r);   /* exit (msvcrt's, through the runtime entry's jump) */
 }

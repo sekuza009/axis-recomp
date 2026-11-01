@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 static void clear(void *p, int dwords)
 {
@@ -96,16 +96,16 @@ static void free_owned(void *self)
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
 int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
 /* 0x46f470: UnitPoseInfo's destructor (vtable 0x4a9754) */
-int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = 0x4a9754; return partList_release(self); }
+int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = IMG(0x4a9754); return partList_release(self); }
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
-u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)self[1]) : 0; }
+u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)RELOC(self[1])) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
 u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
-void (net_clearServerList)(void) { clear((void *)0xa05748, 0x16c0); }
-void (net_clearRoomList)(void) { clear((void *)0x9fd960, 0x1e40); }
-void (net_clearPlayerList)(void) { clear((void *)0xa05330, 0x9b); }
+void (net_clearServerList)(void) { clear((void *)IMG(0xa05748), 0x16c0); }
+void (net_clearRoomList)(void) { clear((void *)IMG(0x9fd960), 0x1e40); }
+void (net_clearPlayerList)(void) { clear((void *)IMG(0xa05330), 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
 char *(path_normalize)(char *s)
 {
@@ -124,7 +124,7 @@ char *(path_normalize)(char *s)
 u8 (net_freeSlotsOf)(int id)
 {
 	for (int s = 0; s < 16; s++) {
-		u32 r = 0x9f9840 + s * 0x410;
+		u32 r = IMG(0x9f9840) + s * 0x410;
 		if (GAME_VAR(int, r + 4) != id)
 			continue;
 		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
@@ -136,24 +136,24 @@ u8 (net_freeSlotsOf)(int id)
 }
 
 /* 0x430bd0: the 16 entries of 0x410 bytes from 0x9f9840 marked empty */
-void (net_clearSlots)(void) { for (u32 p = 0x9f9840; p < 0x9fd940; p += 0x410) GAME_VAR(int, p) = 0; }
+void (net_clearSlots)(void) { for (u32 p = IMG(0x9f9840); p < IMG(0x9fd940); p += 0x410) GAME_VAR(int, p) = 0; }
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
 int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, 0xa0bae0 + i * 4) ? 1 : 0; }
 /* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
-void (mapSelect_toggle)(int i) { int *f = (int *)(0x9ddac8 + i * 0x44); *f = 1 - *f; }
+void (mapSelect_toggle)(int i) { int *f = (int *)(IMG(0x9ddac8) + i * 0x44); *f = 1 - *f; }
 void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_VAR(int, 0x9ddac8 + i * 0x44) = 1; }
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
-u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)0x67fb3c); }
+u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)IMG(0x67fb3c)); }
 /* 0x44ad30: the text colour */
-void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)0x76d438, r, g, b, a); }
+void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)IMG(0x76d438), r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
-void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x4dbad0); }
-void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)0x9dd308); }
-void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)0x9f9010); }
+void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x4dbad0)); }
+void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x9dd308)); }
+void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)IMG(0x9f9010)); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
@@ -221,7 +221,7 @@ static void player_seen(Stage *stage, int p)
 	if (p > (int)(*seen - 1))
 		*seen = p + 1;
 }
-#define PLAYER_RECORD(stage, p) ((u8 *)(stage) + 0x1561b68 + (p) * 0x47fd2)
+#define PLAYER_RECORD(stage, p) ((u8 *)RELOC(stage) + 0x1561b68 + (p) * 0x47fd2)
 
 /* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
 void THISCALL (player_setValue)(Stage *stage, int p, int v)
@@ -265,7 +265,7 @@ void *THISCALL (ResourceSet_initLists)(u8 *self)
 {
 	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
 	for (int k = 0; k < 8; k++) {
-		FIELD(u32, self, lists[k]) = 0x4a9754;
+		FIELD(u32, self, lists[k]) = IMG(0x4a9754);
 		partList_clear(self + lists[k]);
 	}
 	return self;
@@ -326,7 +326,7 @@ void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a
 /* 0x45dfe0: the stage's actor without footstep sounds (+0x202e8dc) set (returned) */
 int THISCALL (stage_setSilentActor)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
-void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)0xa0e948); }
+void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)IMG(0xa0e948)); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
 char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 {
@@ -485,7 +485,7 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 static u32 reg_write(u32 value, const char *name)
 {
 	u32 key = value, data = value;
-	if (!RegOpenKeyExA(0x80000001, (const char *)0x4b0458, 0, 0xf003f, &key))
+	if (!RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b0458), 0, 0xf003f, &key))
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
@@ -496,39 +496,39 @@ static u32 reg_write(u32 value, const char *name)
    even when it could not be opened) */
 u32 (reg_writeCharacterSettings)(void)
 {
-	strcpy((char *)0x9dd570, (const char *)0x9dd1d8);
-	strcpy((char *)0x9dd5a6, (const char *)0x9dd20e);
-	strcpy((char *)0x76d450, (const char *)0x9dd570);
-	strcpy((char *)0x5b1b30, (const char *)0x4df9c8);
-	memcpy((void *)0x5b1b50, (const void *)0x4df9e8, 6);
+	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x9dd1d8));
+	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0x9dd20e));
+	strcpy((char *)IMG(0x76d450), (const char *)IMG(0x9dd570));
+	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4df9c8));
+	memcpy((void *)IMG(0x5b1b50), (const void *)IMG(0x4df9e8), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
-	if (!RegOpenKeyExA(0x80000001, (const char *)0x4b179c, 0, 0xf003f, &key)) {
-		RegSetValueExA(key, (const char *)0x4b1794, 0, 1, (const void *)0x9dd570, 0x1e);   /* REG_SZ */
-		RegSetValueExA(key, (const char *)0x4b1788, 0, 1, (const void *)0x5b1b30, 0x20);
-		const signed char *choice = (const signed char *)0x5b1b50;
-		static const u32 names[6] = { 0x4b1784, 0x4b1778, 0x4b176c, 0x4b1760, 0x4b1754, 0x4b1748 };
+	if (!RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b179c), 0, 0xf003f, &key)) {
+		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
+		const signed char *choice = (const signed char *)IMG(0x5b1b50);
+		static const u32 names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
 		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
 		for (int i = 0; i < 6; i++) {
 			int k = order[i];
 			u32 data = (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
-			RegSetValueExA(key, (const char *)names[i], 0, 4, &data, 4);
+			RegSetValueExA(key, (const char *)RELOC(names[i]), 0, 4, &data, 4);
 		}
 	}
 	return RegCloseKey(key);
 }
 
 /* 0x41f880, 0x43f7f0: the end mode and the start mode */
-u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)0x4b0450); }
-u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)0x4b29dc); }
+u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)IMG(0x4b0450)); }
+u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)IMG(0x4b29dc)); }
 
 /* 0x44ace0: the typed chat line (0x9dc92c) kept as the match's last line (0x9f63e4, 0x400 bytes; cleared when there
    is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
 u32 (chat_keepLastLine)(void)
 {
-	memset((void *)0x9f63e4, 0, 0x400);
-	if (strlen((const char *)0x9dc92c)) {
-		memcpy((void *)0x9f63e4, (const void *)0x9dc92c, 0x400);
+	memset((void *)IMG(0x9f63e4), 0, 0x400);
+	if (strlen((const char *)IMG(0x9dc92c))) {
+		memcpy((void *)IMG(0x9f63e4), (const void *)IMG(0x9dc92c), 0x400);
 		g_chatTyping = 0;
 	}
 	g_paused = 0;
@@ -542,15 +542,15 @@ int (app_reportStartupProblem)(int code)
 {
 	u32 text;
 	switch (code) {
-	case 1: text = 0x7511a4; break;
-	case -4: text = 0x751224; break;
-	case -5: text = 0x7512a4; break;
-	case -1: text = 0x751324; break;
-	case -2: text = 0x7513a4; break;
-	case -3: text = 0x751424; break;
+	case 1: text = IMG(0x7511a4); break;
+	case -4: text = IMG(0x751224); break;
+	case -5: text = IMG(0x7512a4); break;
+	case -1: text = IMG(0x751324); break;
+	case -2: text = IMG(0x7513a4); break;
+	case -3: text = IMG(0x751424); break;
 	default: return code;
 	}
-	return MessageBoxA(g_mainWindow, (const char *)text, (const char *)0x751024, 0);
+	return MessageBoxA(g_mainWindow, (const char *)RELOC(text), (const char *)IMG(0x751024), 0);
 }
 
 
@@ -559,10 +559,10 @@ int (app_reportStartupProblem)(int code)
 /* the six choices (0x5b1b50 ..) in the order the registry keeps them, with their value names; the fourth and fifth
    (the flag and time limits) are unsigned */
 static const u8 choice_order[6] = { 0, 1, 3, 4, 5, 2 };
-static const u32 choice_names[6] = { 0x4b1784, 0x4b1778, 0x4b176c, 0x4b1760, 0x4b1754, 0x4b1748 };
+static const u32 choice_names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
 static u32 choice_dword(int k)
 {
-	const signed char *choice = (const signed char *)0x5b1b50;
+	const signed char *choice = (const signed char *)IMG(0x5b1b50);
 	return (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
 }
 
@@ -585,40 +585,40 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
    the eax it leaves */
 void (reg_readCharacterSettings)(void)
 {
-	strcpy((char *)0x9dd570, (const char *)0x4b17d0);
-	strcpy((char *)0x5b1b30, (const char *)0x4b17bc);
+	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x4b17d0));
+	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4b17bc));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
-	memcpy((void *)0x5b1b50, defaults, 6);
+	memcpy((void *)IMG(0x5b1b50), defaults, 6);
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
 	IMPORT(0x4a9010, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
-		(0x80000001, (const char *)0x4b179c, 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
-	signed char *choice = (signed char *)0x5b1b50;
+		(0x80000001, (const char *)IMG(0x4b179c), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
+	signed char *choice = (signed char *)IMG(0x5b1b50);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
-		RegSetValueExA(key, (const char *)0x4b1794, 0, 1, (const void *)0x9dd570, 0x1e);
-		RegSetValueExA(key, (const char *)0x4b1788, 0, 1, (const void *)0x5b1b30, 0x20);
+		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);
+		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
 		for (int i = 0; i < 6; i++) {
 			value = choice_dword(choice_order[i]);
-			RegSetValueExA(key, (const char *)choice_names[i], 0, 4, &value, 4);
+			RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
 		}
 	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
-		read_string(key, (const char *)0x4b1794, (char *)0x9dd570, 0x1e, &type, buf);
-		read_string(key, (const char *)0x4b1788, (char *)0x5b1b30, 0x20, &type, buf);
+		read_string(key, (const char *)IMG(0x4b1794), (char *)IMG(0x9dd570), 0x1e, &type, buf);
+		read_string(key, (const char *)IMG(0x4b1788), (char *)IMG(0x5b1b30), 0x20, &type, buf);
 		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
 		value = 0;
 		for (int i = 0; i < 6; i++) {
 			int k = choice_order[i];
-			if (!RegQueryValueExA(key, (const char *)choice_names[i], 0, &type, &value, &size))
+			if (!RegQueryValueExA(key, (const char *)RELOC(choice_names[i]), 0, &type, &value, &size))
 				choice[k] = (signed char)value;
 			else {
 				value = choice_dword(k);
-				RegSetValueExA(key, (const char *)choice_names[i], 0, 4, &value, 4);
+				RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
 			}
 		}
 	} else
 		return;
-	u8 *limit = (u8 *)0x5b1b54;
+	u8 *limit = (u8 *)IMG(0x5b1b54);
 	for (int k = 0; k < 2; k++)
 		limit[k] = limit[k] < 5 ? 5 : limit[k] > 30 ? 30 : limit[k];
 	if (choice[0] < 0 || choice[0] > 0x15)
@@ -637,17 +637,17 @@ void (reg_readCharacterSettings)(void)
 int (reg_readServerSettings)(void)
 {
 	u32 key, type, size;
-	if (RegOpenKeyExA(0x80000001, (const char *)0x4b1728, 0, 0xf003f, &key)) {
-		sys_messageBox((const char *)(g_language == 1 ? 0x4b16a4 : 0x4b1660));
+	if (RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b1728), 0, 0xf003f, &key)) {
+		sys_messageBox((const char *)(g_language == 1 ? IMG(0x4b16a4) : IMG(0x4b1660)));
 		RegCloseKey(key);
 		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
 	size = 50;
-	RegQueryValueExA(key, (const char *)0x4b1720, 0, &type, (void *)0xa0b24c, &size);
-	RegQueryValueExA(key, (const char *)0x4b1714, 0, &type, (void *)0xa055fc, &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b1720), 0, &type, (void *)IMG(0xa0b24c), &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b1714), 0, &type, (void *)IMG(0xa055fc), &size);
 	size = 4;
-	RegQueryValueExA(key, (const char *)0x4b170c, 0, &type, (void *)0xa055f4, &size);
-	RegQueryValueExA(key, (const char *)0x4b1700, 0, &type, (void *)0xa05634, &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b170c), 0, &type, (void *)IMG(0xa055f4), &size);
+	RegQueryValueExA(key, (const char *)IMG(0x4b1700), 0, &type, (void *)IMG(0xa05634), &size);
 	return RegCloseKey(key);
 }
 
@@ -678,8 +678,8 @@ int (app_screenSizeForMode)(void)
    either the window closed (0x9dd904; 1) or 0 with the check restarted. Otherwise the check restarts and 1 */
 int (sys_checkClockTampering)(void)
 {
-	const u16 *now = (const u16 *)0x9dd8d0, *last = (const u16 *)0x9dd878;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
-	GetSystemTime((void *)0x9dd8d0);
+	const u16 *now = (const u16 *)IMG(0x9dd8d0), *last = (const u16 *)IMG(0x9dd878);   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
+	GetSystemTime((void *)IMG(0x9dd8d0));
 	u32 tick = timeGetTime();
 	g_clockCheckTick = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
@@ -689,16 +689,16 @@ int (sys_checkClockTampering)(void)
 	g_clockCheckTickSeconds = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
-		sys_messageBox((const char *)(g_language == 1 ? 0x4b2914 : 0x4b2888));
+		sys_messageBox((const char *)(g_language == 1 ? IMG(0x4b2914) : IMG(0x4b2888)));
 		if (g_clockCheckClosed) {
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}
-		GetSystemTime((void *)0x9dd878);
+		GetSystemTime((void *)IMG(0x9dd878));
 		g_startTicks = timeGetTime();
 		return 0;
 	}
-	GetSystemTime((void *)0x9dd878);
+	GetSystemTime((void *)IMG(0x9dd878));
 	g_startTicks = timeGetTime();
 	return 1;
 }
@@ -712,13 +712,13 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 	if (!GAME_VAR(int, scene + 0x2149308))
 		return;
 	if (!GAME_VAR(int, scene + 0x2148ee0))
-		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)0x4c45e4);
+		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)IMG(0x4c45e4));
 	if (!recorder_setPathStub(scene + 0x2148ed8, path))
 		GAME_VAR(int, scene + 0x2149308) = 0;
 	const char *name = (const char *)(scene + 0x2149108);
 	if (*name) {
 		char text[0x100];
-		sprintf(text, (const char *)0x4c8304, name);
+		sprintf(text, (const char *)IMG(0x4c8304), name);
 		sound_playFile(text, 100);
 	}
 }
@@ -771,11 +771,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ 0x30c, 0x13eb000, 0x4c75f0, 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
-	{ 0x310, 0x140c8bc, 0x4c7624, 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
-	{ 0x314, 0x1447ec0, 0x4c7658, 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
-	{ 0x318, 0x148646c, 0x4c7688, 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
-	{ 0x31c, 0x14d1ab0, 0x4c76b8, 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
+	{ 0x30c, 0x13eb000, IMG(0x4c75f0), 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
+	{ 0x310, 0x140c8bc, IMG(0x4c7624), 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
+	{ 0x314, 0x1447ec0, IMG(0x4c7658), 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
+	{ 0x318, 0x148646c, IMG(0x4c7688), 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
+	{ 0x31c, 0x14d1ab0, IMG(0x4c76b8), 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
@@ -792,7 +792,7 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, scene + k->count))
-		sys_fatalError((char *)0xae2eb8, (const char *)(uintptr_t)k->message, type);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)(uintptr_t)k->message, type);
 	ShapeManager_releaseModels(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
@@ -825,11 +825,11 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy((char *)type + 0x18c + slot * 0x40, (const char *)scene + 0x14d1ab4 + item * 0x2e18);
+		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)scene + 0x14d1ab4 + item * 0x2e18);
 	else
 		type[0x18c + slot * 0x40] = 0;
 	if (item >= GAME_VAR(int, scene + 0x1561b64))
-		sys_fatalError((char *)0xae2eb8, (const char *)0x4c76f0, item);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c76f0), item);
 	GAME_VAR(int, type + 0x320 + slot * 4) = item;
 	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
 		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)

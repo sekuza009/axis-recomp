@@ -8,13 +8,13 @@
 #define Y0 g_armcStatsPanelTop
 #define X1 GAME_VAR(int, 0x4dcc98)
 #define Y1 g_armcStatsPanelBottom
-#define K(addr) ((const float *)(addr))
+#define K(addr) ((const float *)RELOC(addr))
 #define g_slot GAME_VAR(int, 0x4dc4b0)
-#define SLOT ((const float *)0x4dc4b8 + g_slot * 6)
+#define SLOT ((const float *)IMG(0x4dc4b8) + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = (const u32 *)0x4dbc58, *const dim = (const u32 *)0x4dc1d0;
-#define TEXT(c) set_colour_bits((Colour *)0x76d438, (c)[0], (c)[1], (c)[2], (c)[3])
+static const u32 *const bright = (const u32 *)IMG(0x4dbc58), *const dim = (const u32 *)IMG(0x4dc1d0);
+#define TEXT(c) set_colour_bits((Colour *)IMG(0x76d438), (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<0x756da4> <the name of 0x4dceac (0x751924)>" (the texture bound) */
 static void mode_box(void)
@@ -23,9 +23,9 @@ static void mode_box(void)
 	menu_drawWideButton(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
 	TEXT(bright);
 	char text[50] = { 0 };
-	strcpy(text, (const char *)0x756da4);
-	strcat(text, (const char *)0x4b035c);   /* " " */
-	strcat(text, (const char *)(0x751924 + g_armcSpin * 0x80));
+	strcpy(text, (const char *)IMG(0x756da4));
+	strcat(text, (const char *)IMG(0x4b035c));   /* " " */
+	strcat(text, (const char *)(IMG(0x751924) + g_armcSpin * 0x80));
 	text_drawBox16(X1 - 0xa0, Y1 - 0x18, X1, text);
 }
 
@@ -54,9 +54,9 @@ static int half_percent(long double v)
 static void value_line(int k, int y, int value)
 {
 	char line[50] = { 0 }, number[50] = { 0 };
-	strcpy(line, (const char *)(0x75d4a4 + k * 0x80));
-	strcat(line, (const char *)0x4b037c);   /* " [" */
-	sprintf(number, (const char *)0x4b0378, value);   /* "%d]" */
+	strcpy(line, (const char *)(IMG(0x75d4a4) + k * 0x80));
+	strcat(line, (const char *)IMG(0x4b037c));   /* " [" */
+	sprintf(number, (const char *)IMG(0x4b0378), value);   /* "%d]" */
 	strcat(line, number);
 	text_draw8(X1 - 0xc0, y, line);
 }
@@ -116,8 +116,8 @@ void (armc_drawColourEditor)(void)
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
 	}
 	TEXT(bright);
-	text_draw8b(X1 - 200, Y0 + 0x34, X1, (const char *)0x75d3a4);
-	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)0x75d424);
+	text_draw8b(X1 - 200, Y0 + 0x34, X1, (const char *)IMG(0x75d3a4));
+	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)IMG(0x75d424));
 	for (int k = 0; k < 3; k++) {
 		int y = Y0 + k * 0x30;
 		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), K(0x4a9490)))
@@ -142,15 +142,15 @@ void (armc_drawColourEditor)(void)
 		else
 			TEXT(dim);
 		if (k == 5)
-			text_drawBox16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)0x756d24);
+			text_drawBox16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)IMG(0x756d24));
 		else
-			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(0x756aa4 + k * 0x80));
+			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(IMG(0x756aa4) + k * 0x80));
 	}
 	if (g_armcPreview) {
-		static const u32 names[5] = { 0x4dceb8, 0x4dbc08, 0x4dc250, 0x4dc1e8, 0x4dce40 };
+		static const u32 names[5] = { IMG(0x4dceb8), IMG(0x4dbc08), IMG(0x4dc250), IMG(0x4dc1e8), IMG(0x4dce40) };
 		TEXT(bright);
 		for (int k = 0; k < 5; k++)
-			text_draw8(X0 + 0x28, Y0 + 0x54 + k * 0x30, (const char *)names[k]);
+			text_draw8(X0 + 0x28, Y0 + 0x54 + k * 0x30, (const char *)RELOC(names[k]));
 	}
 	/* the sliders' tracks: the hue's rainbow, saturation and value plain */
 	glEnable(GL_TEXTURE_2D);
@@ -199,7 +199,7 @@ void (armc_drawColourEditor)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(0x7517a4 + k * 0x80));
+		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(IMG(0x7517a4) + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
@@ -208,7 +208,7 @@ void (armc_drawColourEditor)(void)
 }
 
 /* ---- the build screen ---- */
-#define SLOT_NAME(k) ((const char *)0x4dbe50 + (k) * 0x80)
+#define SLOT_NAME(k) ((const char *)IMG(0x4dbe50) + (k) * 0x80)
 #define STAT(type, offset) GAME_VAR(type, 0x4dc190 + (offset))
 
 static void bind_texture(int texture)
@@ -237,15 +237,15 @@ static void stat_int(int x, int y, int value, u32 unit)
 	char text[50] = { 0 };
 	itoa(value, text, 10);
 	if (unit)
-		strcat(text, (const char *)unit);
+		strcat(text, (const char *)RELOC(unit));
 	armc_drawStatLabel(x, y, text);
 }
 
 static void stat_float(int x, int y, float value, u32 format, u32 unit)
 {
 	char text[50] = { 0 };
-	sprintf(text, (const char *)format, (double)value);   /* "%.0f" / "%.1f" */
-	strcat(text, (const char *)unit);
+	sprintf(text, (const char *)RELOC(format), (double)value);   /* "%.0f" / "%.1f" */
+	strcat(text, (const char *)RELOC(unit));
 	armc_drawStatLabel(x, y, text);
 }
 
@@ -271,7 +271,7 @@ void (armc_drawBuildScreen)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(0x7517a4 + k * 0x80));
+		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(IMG(0x7517a4) + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -291,10 +291,10 @@ void (armc_drawBuildScreen)(void)
 		}
 	for (int k = 0; k < 6; k++) {
 		TEXT(bright);
-		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(0x756fa4 + k * 0x80));
+		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(IMG(0x756fa4) + k * 0x80));
 		TEXT(yellow);
 		if (strlen(SLOT_NAME(k)) <= 1)
-			text_draw8b(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)0x757da4);
+			text_draw8b(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)IMG(0x757da4));
 		else
 			text_draw5(X0 + 0x18, Y0 + k * 0x3f + 0x2d, SLOT_NAME(k));
 	}
@@ -305,20 +305,20 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 0);
-	if (strlen((const char *)0x4dc150) <= 1) {
+	if (strlen((const char *)IMG(0x4dc150)) <= 1) {
 		TEXT(yellow);
-		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)0x757e24);
+		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)IMG(0x757e24));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		bind_texture(g_armcBuildTexture);
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x158, (const char *)0x4dc150);
+		armc_drawText(x + 5, y + 0x158, (const char *)IMG(0x4dc150));
 		int part = g_armcCursor;
-		int type = g_armcSlot > 3 ? ((const int *)0x4dcca4)[part] : ((const int *)0x4dc79c)[part];
+		int type = g_armcSlot > 3 ? ((const int *)IMG(0x4dcca4))[part] : ((const int *)IMG(0x4dc79c))[part];
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x16a, (const char *)(0x7641a4 + type * 0x80));
+		armc_drawText(x + 5, y + 0x16a, (const char *)(IMG(0x7641a4) + type * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -334,56 +334,56 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x + 4, y + 4, x + 0xc4, y + 0x10a, 0);
 	if (STAT(int, 0) == -1) {
 		TEXT(yellow);
-		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)0x757da4);
+		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)IMG(0x757da4));
 		return;
 	}
 	if (STAT(int, 4) == -1) {
 		TEXT(yellow);
-		text_draw8(x + 8, y + 0x10, (const char *)0x765fa4);
+		text_draw8(x + 8, y + 0x10, (const char *)IMG(0x765fa4));
 		TEXT(white);
-		armc_drawText(x + 8, y + 0x28, (const char *)(0x7652a4 + STAT(int, 8) * 0x80));
+		armc_drawText(x + 8, y + 0x28, (const char *)(IMG(0x7652a4) + STAT(int, 8) * 0x80));
 		return;
 	}
 	TEXT(bright);
 	TEXT(white);
 	for (int k = 0; k < 16; k++)
-		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(0x7574a4 + k * 0x80));
-	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0x3f800000, 0x3f800000);
+		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(IMG(0x7574a4) + k * 0x80));
+	set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
-	strcpy(text, (const char *)(0x757ea4 + STAT(int, 0) * 0x80));
+	strcpy(text, (const char *)(IMG(0x757ea4) + STAT(int, 0) * 0x80));
 	armc_drawStatLabel(vx, y + 8, text);
 	char kind[50] = { 0 };
-	strcpy(kind, (const char *)(0x757fa4 + STAT(int, 4) * 0x80));
+	strcpy(kind, (const char *)(IMG(0x757fa4) + STAT(int, 4) * 0x80));
 	armc_drawStatLabel(vx, y + 0x18, kind);
-	stat_int(vx, y + 0x28, STAT(int, 8), 0x765824);
+	stat_int(vx, y + 0x28, STAT(int, 8), IMG(0x765824));
 	stat_int(vx, y + 0x38, STAT(int, 0xc), 0x765924);
 	char name[50] = { 0 };
-	strcpy(name, (const char *)(0x7581a4 + STAT(int, 0x10) * 0x80));
+	strcpy(name, (const char *)(IMG(0x7581a4) + STAT(int, 0x10) * 0x80));
 	armc_drawStatLabel(vx, y + 0x48, name);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(STAT(int, 0x14), value, 10);
 	static const u32 skill[5] = { 0x9f9068, 0x9f9068, 0x9f906c, 0x9f9070, 0x9f9074 };   /* by kind; above 3 the last */
 	int kind_of = (unsigned)STAT(int, 4) <= 3 ? STAT(int, 4) : 4;
-	long double b = fmul_m((long double)*(const int *)(skill[kind_of] + g_armcValue * 0x4c), (const float *)0x4a9420);
+	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)IMG(0x4a9420));
 	b *= (long double)STAT(int, 0x14);
 	if (b >= k_0f)
-		sprintf(bonus, (const char *)0x4b02f0, ftol(b));   /* " +%d" */
+		sprintf(bonus, (const char *)IMG(0x4b02f0), ftol(b));   /* " +%d" */
 	else
-		sprintf(bonus, (const char *)0x4b02f8, ftol(b));   /* " %d" */
+		sprintf(bonus, (const char *)IMG(0x4b02f8), ftol(b));   /* " %d" */
 	strcat(value, bonus);
 	armc_drawStatLabel(vx, y + 0x58, value);
-	stat_float(vx, y + 0x68, STAT(float, 0x18), 0x4b0354, 0x7655a4);
-	stat_float(vx, y + 0x78, STAT(float, 0x1c), 0x4b0354, 0x7659a4);
-	stat_float(vx, y + 0x88, STAT(float, 0x20), 0x4b0334, 0x765624);
-	stat_float(vx, y + 0x98, STAT(float, 0x24), 0x4b0334, 0x7655a4);
-	stat_float(vx, y + 0xa8, STAT(float, 0x28), 0x4b0334, 0x7655a4);
+	stat_float(vx, y + 0x68, STAT(float, 0x18), IMG(0x4b0354), IMG(0x7655a4));
+	stat_float(vx, y + 0x78, STAT(float, 0x1c), IMG(0x4b0354), IMG(0x7659a4));
+	stat_float(vx, y + 0x88, STAT(float, 0x20), IMG(0x4b0334), IMG(0x765624));
+	stat_float(vx, y + 0x98, STAT(float, 0x24), IMG(0x4b0334), IMG(0x7655a4));
+	stat_float(vx, y + 0xa8, STAT(float, 0x28), IMG(0x4b0334), IMG(0x7655a4));
 	stat_int(vx, y + 0xb8, STAT(int, 0x2c), 0);
-	stat_float(vx, y + 0xc8, STAT(float, 0x30), 0x4b0354, 0x765724);
-	stat_float(vx, y + 0xd8, STAT(float, 0x34), 0x4b0334, 0x765624);
-	stat_float(vx, y + 0xe8, STAT(float, 0x38), 0x4b0334, 0x765724);
-	stat_float(vx, y + 0xf8, STAT(float, 0x3c), 0x4b0334, 0x7657a4);
+	stat_float(vx, y + 0xc8, STAT(float, 0x30), IMG(0x4b0354), IMG(0x765724));
+	stat_float(vx, y + 0xd8, STAT(float, 0x34), IMG(0x4b0334), IMG(0x765624));
+	stat_float(vx, y + 0xe8, STAT(float, 0x38), IMG(0x4b0334), IMG(0x765724));
+	stat_float(vx, y + 0xf8, STAT(float, 0x3c), IMG(0x4b0334), IMG(0x7657a4));
 }
 #undef STAT
 #undef SLOT_NAME

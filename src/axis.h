@@ -29,11 +29,30 @@ typedef uint64_t u64;
 #define STDCALL __attribute__((stdcall))
 #define THISCALL __attribute__((thiscall))
 
+/* the game's image (its header, code bytes, data: 0x400000 .. 0xb6b000 in the original). In the harness (recomp.dll)
+   it is where AxisGL.exe put it; AxisRC.exe (AXIS_DIRECT) keeps it in an array of its own, g_image
+   (standalone/main.c), so the game no longer needs its original addresses. IMG(a) is the original address a there;
+   RELOC(a) is IMG(a) for an address in the original range and a itself for any other (memory of AxisRC.exe's own,
+   the heap): for values that may be either, e.g. a table of addresses read through GAME_VAR. The original range
+   itself is kept unmapped (inaccessible) in AxisRC.exe, so an address missed here stops the game at once */
+#define IMG_BASE 0x400000u
+#define IMG_SIZE 0x76b000u
+#ifdef AXIS_DIRECT
+extern unsigned char g_image[];
+#define IMG(a) ((u32)g_image + ((u32)(a) - IMG_BASE))
+static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a; }
+/* (of the operand's own type: a pointer stays a pointer, so RELOC(p) + 1 steps as p + 1 did) */
+#define RELOC(a) ((__typeof__((a) + 0))img_reloc((u32)(a)))
+#else
+#define IMG(a) (a)
+#define RELOC(a) (a)
+#endif
+
 /* the game's __ftol: ST0 truncated to 64 bits, EDX:EAX; callers keep the low 32 bits */
 static inline int ftol(long double x)
 {
 	long long r;
-	__asm__ volatile("call *%1" : "=A"(r) : "r"(0x49ec14), "t"(x) : "ecx", "st", "memory");
+	__asm__ volatile("call *%1" : "=A"(r) : "r"(RELOC(0x49ec14)), "t"(x) : "ecx", "st", "memory");
 	return (int)r;
 }
 
@@ -61,9 +80,10 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
    the FPU (which would quiet a signalling NaN) */
 #define BITS(lvalue) (*(u32 *)&(lvalue))
 
+
 /* a game function at its original address, as a callable expression */
-#define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(addr))
-#define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(addr))
+#define GAME_CDECL(addr, ret, ...) ((ret (CDECL *)(__VA_ARGS__))RELOC(addr))
+#define GAME_THISCALL(addr, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))RELOC(addr))
 /* a rebuilt game function, by its C name and original address: in the harness (recomp.dll) a call to the address,
    where the harness's tests can stand a mock or the original in for it; in AxisRC.exe (built with AXIS_DIRECT) a
    direct call to the C function, its address checked against the hook table at compile time (build/fn_syms.h,
@@ -85,13 +105,13 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 #endif
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would */
-#define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
-#define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))((site) + 5 + *(const i32 *)((site) + 1)))
+#define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1)))
+#define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1)))
 /* 1 when the game's code at addr currently reads as pattern (hex bytes separated by spaces, "??" for any byte): for
    a block the patch DLL rewrites at start-up, so the rebuild follows whichever version is in memory */
 static inline int code_matches(u32 addr, const char *pattern)
 {
-	const u8 *code = (const u8 *)addr;
+	const u8 *code = (const u8 *)RELOC(addr);
 	for (const char *p = pattern; *p; code++) {
 		if (p[0] != '?') {
 			unsigned hi = p[0] <= '9' ? p[0] - '0' : p[0] - 'a' + 10, lo = p[1] <= '9' ? p[1] - '0' : p[1] - 'a' + 10;
@@ -109,8 +129,8 @@ static inline int code_matches(u32 addr, const char *pattern)
 #define COM_RELEASE 0x08
 
 /* an import, through the game's import table slot */
-#define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)(slot))
-/* a global of the game at its address */
-#define GAME_VAR(type, addr) (*(type *)(addr))
+#define IMPORT(slot, ret, ...) ((ret (STDCALL *)(__VA_ARGS__))*(const u32 *)RELOC(slot))
+/* a global of the game at its address (an original one or, for memory reached through a pointer, any) */
+#define GAME_VAR(type, addr) (*(type *)RELOC(addr))
 
 #endif

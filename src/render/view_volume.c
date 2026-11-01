@@ -5,7 +5,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 typedef long double X;
 
@@ -57,7 +57,7 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p,
 		FIELD(int, vv, 0x908c)--;
 		return;
 	}
-	*(u32 *)r = *object;
+	*(u32 *)RELOC(r) = *object;
 }
 
 /* a quad record's fields after its points: the texture id, two uv pairs (when it has a texture), the colour and a
@@ -234,12 +234,12 @@ void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 	}
 	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(view);   /* ViewVolume_clear */
 	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
-	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)0x4c7b5c))   /* strstr */
+	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)IMG(0x4c7b5c)))   /* strstr */
 		return;
 	FIELD(int, view, 0x10) = 1;
-	static const u32 names[3] = { 0x4c7b48, 0x4c7b34, 0x4c7b1c };   /* the three entry points' names */
+	static const u32 names[3] = { IMG(0x4c7b48), IMG(0x4c7b34), IMG(0x4c7b1c) };   /* the three entry points' names */
 	for (int k = 0; k < 3; k++)
-		FIELD(void *, view, 0x14 + k * 4) = IMPORT(0x4a928c, void *, const char *)((const char *)names[k]);   /* wglGetProcAddress */
+		FIELD(void *, view, 0x14 + k * 4) = IMPORT(0x4a928c, void *, const char *)((const char *)RELOC(names[k]));   /* wglGetProcAddress */
 }
 
 /* a box corner (x stored as a float, y and z kept on the FPU) through the 4 x 4 matrix m into clip space: each row
@@ -425,7 +425,7 @@ static void invert(float *inv, const float *m)
 static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 {
 	u8 *buf = FIELD(u8 *, vv, 0x904c);
-	const u8 *colours = (const u8 *)it[1], *factors = (const u8 *)it[2];
+	const u8 *colours = (const u8 *)RELOC(it[1]), *factors = (const u8 *)RELOC(it[2]);
 	float inv[16];
 	if (colours) {
 		if (mesh[0] & 2)
@@ -434,17 +434,17 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 			if (!fits(vv, mesh))
 				return NULL;
 			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
-			invert(inv, (const float *)it[4]);
+			invert(inv, (const float *)RELOC(it[4]));
 			shape_getShadingColorBufferBy(buf, 0, mesh, factors, inv);
 			if (it[3])
-				image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+				image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 			return (const u32 *)buf;
 		}
 		if (it[3]) {
 			if (!fits(vv, mesh))
 				return NULL;
 			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
-			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 			return (const u32 *)buf;
 		}
 		return (const u32 *)colours;
@@ -452,18 +452,18 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 	if ((mesh[0] & 2) && !it[3])
 		return FIELD(const u32 *, mesh, 0x58);
 	if (factors) {
-		invert(inv, (const float *)it[4]);
+		invert(inv, (const float *)RELOC(it[4]));
 		if (!fits(vv, mesh))
 			return NULL;
 		shape_getShadingColorBufferBy(buf, 1, mesh, factors, inv);
 		if (it[3])
-			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)it[3]);
+			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 		return (const u32 *)buf;
 	}
 	if (it[3]) {
 		if (!fits(vv, mesh))
 			return NULL;
-		image_addColour(buf, 1, (const u32 *)mesh, (const u8 *)it[3]);
+		image_addColour(buf, 1, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 		return (const u32 *)buf;
 	}
 	return FIELD(const u32 *, mesh, 0x58);
@@ -502,9 +502,9 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 	} else
 		glDisableClientState(0x8078);
 	glPushMatrix();
-	glMultMatrixf((const float *)it[4]);
+	glMultMatrixf((const float *)RELOC(it[4]));
 	if (it[5])
-		glMultMatrixf((const float *)it[5]);
+		glMultMatrixf((const float *)RELOC(it[5]));
 	if (mesh[0] & 4)
 		glDisable(0xb44);
 	else {
@@ -517,7 +517,7 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 		glEnable(GL_DEPTH_TEST);
 	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
 		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
-		glDrawElements(pg[0], pg[1], 0x1405, (const void *)pg[2]);
+		glDrawElements(pg[0], pg[1], 0x1405, (const void *)RELOC(pg[2]));
 		int c = (int)pg[1];
 		if (pg[0] == 4)
 			FIELD(int, vv, 0x90a4) += c / 3;
@@ -549,11 +549,11 @@ static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *c
 	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
 		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
 		int count = (int)pg[1];
-		const u32 *idx = (const u32 *)pg[2];
+		const u32 *idx = (const u32 *)RELOC(pg[2]);
 		float product[16];
-		const float *M = (const float *)it[4];
+		const float *M = (const float *)RELOC(it[4]);
 		if (it[5]) {
-			Mat4_multiply(product, (const float *)it[4], (const float *)it[5]);
+			Mat4_multiply(product, (const float *)RELOC(it[4]), (const float *)RELOC(it[5]));
 			M = product;
 		}
 		if (pg[0] != 4 || count <= 0)
@@ -592,7 +592,7 @@ static void triangle(const u32 *r, int textured, int four)
 		if (four)
 			glVertex4fv(r + 10 + 4 * k);
 		else
-			glVertex3fv((const float *)(r + 10 + 4 * k));
+			glVertex3fv((const float *)(RELOC(r) + 10 + 4 * k));
 	}
 }
 
@@ -661,7 +661,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 			bind(vv, id - 1);
 		do {
 			FIELD(int, vv, 0x90a8)++;
-			const u8 *mesh = (const u8 *)it[0];
+			const u8 *mesh = (const u8 *)RELOC(it[0]);
 			const u32 *col = item_colours(vv, it, mesh);
 			if (!col)
 				continue;
@@ -669,7 +669,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 				draw_opaque(vv, it, mesh, col, id, &b, uvs);
 			else
 				draw_transparent(vv, it, mesh, col, id, &b);
-			it = (const u32 *)it[6];
+			it = (const u32 *)RELOC(it[6]);
 		} while (it);
 		if (id > 0)
 			glDisable(GL_TEXTURE_2D);
@@ -689,7 +689,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 			continue;
 		glPushMatrix();
 		if (r[0x16])
-			glMultMatrixf((const float *)r[0x16]);
+			glMultMatrixf((const float *)RELOC(r[0x16]));
 		if ((int)r[0] != cur) {
 			cur = (int)r[0];
 			use_texture(vv, cur, mode);

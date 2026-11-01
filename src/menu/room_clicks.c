@@ -140,21 +140,21 @@ static int key_hit(u32 binding)
    0x433590, 0x433790, 0x433800) or the arm center (0x4dc24c = 3, menu_enterMenus). Returns the action's eax */
 u32 (room_keys)(void)
 {
-	if (key_hit(0x76d48c))
+	if (key_hit(IMG(0x76d48c)))
 		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
-	if (key_hit(0x4e1514))
+	if (key_hit(IMG(0x4e1514)))
 		return GAME_FN(room_requestJoin, 0x4334c0, u32, void)();   /* room_requestJoin */
-	if (key_hit(0x4e14f8))
+	if (key_hit(IMG(0x4e14f8)))
 		return GAME_FN(room_start, 0x433590, u32, void)();   /* room_start */
-	if (key_hit(0x4e0cdc))
+	if (key_hit(IMG(0x4e0cdc)))
 		return GAME_FN(room_enterGameList, 0x433790, u32, void)();   /* room_enterGameList */
-	if (key_hit(0x4e151c))
+	if (key_hit(IMG(0x4e151c)))
 		return GAME_FN(room_enterRoomList, 0x433800, u32, void)();   /* room_enterRoomList */
-	if (key_hit(0x4e0cd4)) {
+	if (key_hit(IMG(0x4e0cd4))) {
 		g_armcFrom = 3;
 		return menu_enterMenus();
 	}
-	if (key_hit(0x4e153c))
+	if (key_hit(IMG(0x4e153c)))
 		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();
 	return 0;
 }
@@ -226,7 +226,7 @@ u32 (room_pageClicks)(void)
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)0x9daf88;
+		const Outline *buttons = (const Outline *)IMG(0x9daf88);
 		for (int i = 0; i < 6; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
@@ -255,19 +255,19 @@ u32 (room_pageClicks)(void)
 static void load_map_preview(u32 selected)
 {
 	char path[0x80], copy[0x40];
-	const char *name = (const char *)(0x907b30 + (signed char)GAME_VAR(u8, selected) * 32);
+	const char *name = (const char *)(IMG(0x907b30) + (signed char)GAME_VAR(u8, selected) * 32);
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)0x680bc4);   /* the maps' folder */
+	strcpy(path, (const char *)IMG(0x680bc4));   /* the maps' folder */
 	strcat(path, name);
-	strcat(path, (const char *)0x4ad564);   /* "/" */
+	strcat(path, (const char *)IMG(0x4ad564));   /* "/" */
 	strcat(path, name);
 	strcpy(copy, path);
 	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_mapPreviewChanged = 0;
 }
 /* 0x43bcb0: the game room's (selection 0x4df9e8); 0x40b420: the arena screen's (0x4db548) */
-void (room_loadMapPreview)(void) { load_map_preview(0x4df9e8); }
-void (arena_loadMapPreview)(void) { load_map_preview(0x4db548); }
+void (room_loadMapPreview)(void) { load_map_preview(IMG(0x4df9e8)); }
+void (arena_loadMapPreview)(void) { load_map_preview(IMG(0x4db548)); }
 
 /* 0x433d30: the typed line (0x9dc92c) committed to the room field being edited (when the keyboard was let go for it,
    0x68039c: the edit window 0x9dd888 destroyed and the focus back on the main window first): the room name
@@ -287,14 +287,14 @@ static u32 typing_end(void)
 u32 (account_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
-		{ 0x9dd348, 0x9dd1d8, 30 }, { 0x9dd3f8, 0x9dd1f6, 12 }, { 0x9dd564, 0x9dd202, 12 }, { 0x9dd6cc, 0x9dd20e, 50 } };
+		{ IMG(0x9dd348), IMG(0x9dd1d8), 30 }, { IMG(0x9dd3f8), IMG(0x9dd1f6), 12 }, { IMG(0x9dd564), IMG(0x9dd202), 12 }, { IMG(0x9dd6cc), IMG(0x9dd20e), 50 } };
 	u32 r = typing_end();
-	const char *typed = (const char *)0x9dc92c;
+	const char *typed = (const char *)IMG(0x9dc92c);
 	for (int k = 0; k < 4; k++) {
 		if (GAME_VAR(int, fields[k].editing) != 1)
 			continue;
-		memset((void *)fields[k].field, 0, fields[k].size);
-		strcpy((char *)fields[k].field, typed);
+		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
+		strcpy((char *)RELOC(fields[k].field), typed);
 		return k == 3 ? strlen(typed) + 1 : 0;
 	}
 	return r;
@@ -306,7 +306,7 @@ u32 (account_endTyping)(void)
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
 {
-	const u8 *room = (const u8 *)0x5b1b30;
+	const u8 *room = (const u8 *)IMG(0x5b1b30);
 	u32 step = (*(u32 *)&g_connectStep);
 	if (step == 2)
 		return 2;
@@ -318,11 +318,11 @@ u32 (room_hostingStep)(void)
 		g_roomMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(
-			room, (const char *)0x9dd570, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
+			room, (const char *)IMG(0x9dd570), (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_missionStage = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
-		memcpy((void *)0x67fb44, room, 32);
+		memcpy((void *)IMG(0x67fb44), room, 32);
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
@@ -365,11 +365,11 @@ u32 (app_onClose)(void)
 	if (!g_arenaJoinPending)
 		return 0;
 	u32 row = (*(u32 *)&g_arenaJoinRow) * 0x4a;
-	u8 *game = (u8 *)0x9087c0 + row;
+	u8 *game = (u8 *)IMG(0x9087c0) + row;
 	*(u32 *)game = *(*(u32 **)&g_receivedSession);
 	g_roomRecFragLimit = game[0x2d];
 	g_roomRecTimeLimit = game[0x2e];
-	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)0x9dd570, 0);   /* dplay_join */
+	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)IMG(0x9dd570), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -388,7 +388,7 @@ u32 (app_onClose)(void)
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
 	g_missionStage = (signed char)game[0x25];
-	memcpy((void *)0x67fb44, game + 4, 32);
+	memcpy((void *)IMG(0x67fb44), game + 4, 32);
 	g_mapRotation = (signed char)game[0x24];
 	g_chosenGameMode = (signed char)game[0x2c];
 	g_fragLimit = game[0x2d];
@@ -404,20 +404,20 @@ u32 (account_checkForm)(void)
 	GAME_FN(account_endTyping, 0x433d30, void, void)();   /* account_endTyping */
 	g_paused = 0;
 	g_fieldTabKey = 0;
-	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
+	const char *name = (const char *)IMG(0x9dd1d8), *password = (const char *)IMG(0x9dd1f6);
 	int message, reopen;
 	if (strlen(name) == 0 || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
-		message = 0x24, reopen = 0x9dd348;
+		message = 0x24, reopen = IMG(0x9dd348);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
-		message = 0x15a, reopen = 0x9dd348;
+		message = 0x15a, reopen = IMG(0x9dd348);
 	else if (strlen(password) == 0)
-		message = 0x25, reopen = 0x9dd3f8;
-	else if (strcmp(password, (const char *)0x9dd202))
-		message = 0x21, reopen = 0x9dd3f8;
+		message = 0x25, reopen = IMG(0x9dd3f8);
+	else if (strcmp(password, (const char *)IMG(0x9dd202)))
+		message = 0x21, reopen = IMG(0x9dd3f8);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1)
-		message = 0x15b, reopen = 0x9dd3f8;
-	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)0x9dd20e) == 1)
-		message = 0x81, reopen = 0x9dd6cc;
+		message = 0x15b, reopen = IMG(0x9dd3f8);
+	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)IMG(0x9dd20e)) == 1)
+		message = 0x81, reopen = IMG(0x9dd6cc);
 	else
 		return GAME_FN(room_openDialog58, 0x433980, u32, void)();   /* the next dialog */
 	u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(message);
@@ -430,19 +430,19 @@ u32 (account_checkForm)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)0x9dd58e, (const char *)0x9dd6d8) || strcmp((const char *)0x9dd1f6, (const char *)0x9dd202))
+	if (strcmp((const char *)IMG(0x9dd58e), (const char *)IMG(0x9dd6d8)) || strcmp((const char *)IMG(0x9dd1f6), (const char *)IMG(0x9dd202)))
 		return 0;
-	static const u32 fields[4] = { 0x9dd6d8, 0x9dd1f6, 0x9dd202, 0x9dd20e };
+	static const u32 fields[4] = { IMG(0x9dd6d8), IMG(0x9dd1f6), IMG(0x9dd202), IMG(0x9dd20e) };
 	for (int i = 0; i < 4; i++)
-		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)fields[i]) == 1) {   /* room_nameHasBadChar */
+		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
 			menu_showMessage(0x81);
 			g_roomLoginDue = 0;
 			return 0;
 		}
 	char *out = g_netAccountBuffer;
-	strcpy(out, (const char *)0x9dd1d8);
-	strcpy(out + 0x1e, (const char *)0x9dd1f6);
-	strcpy(out + 0x2a, (const char *)0x9dd20e);
+	strcpy(out, (const char *)IMG(0x9dd1d8));
+	strcpy(out + 0x1e, (const char *)IMG(0x9dd1f6));
+	strcpy(out + 0x2a, (const char *)IMG(0x9dd20e));
 	GAME_FN(net_send, 0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
 	return 1;
 }
@@ -490,7 +490,7 @@ u32 (ranking_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen) {
-		const int *box = (const int *)0x9dced8;
+		const int *box = (const int *)IMG(0x9dced8);
 		menu_drawFrame(box[0], box[1], box[2], box[3]);   /* the message box */
 		if (g_dialogOpen)
 			return (*(u32 *)&g_dialogOpen);
@@ -506,7 +506,7 @@ u32 (ranking_page)(void)
 			g_roomListPrev = g_rankingSort;
 			g_roomListPrevPage = g_roomListPage;
 		}
-		long double blink = fld_m((const float *)0x4dba80) - fmul_m(fld_m((const float *)0x4b071c), (const float *)0x4ad498);
+		long double blink = fld_m((const float *)IMG(0x4dba80)) - fmul_m(fld_m((const float *)IMG(0x4b071c)), (const float *)IMG(0x4ad498));
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= 0))
 			g_lobbyBlinkClock = 1000.0f;
@@ -525,7 +525,7 @@ u32 (login_send)(void)
 	g_typingGamePassword = 0;
 	g_chatFieldFlag = 0;
 	g_paused = 0;
-	const char *name = (const char *)0x9dd1d8, *password = (const char *)0x9dd1f6;
+	const char *name = (const char *)IMG(0x9dd1d8), *password = (const char *)IMG(0x9dd1f6);
 	int bad = GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1 ? 0x15a
 	        : GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
@@ -533,9 +533,9 @@ u32 (login_send)(void)
 		g_roomLoginDue = 0;
 		return r;
 	}
-	memset((void *)0x9dd570, 0, 30 + 12);
-	strcpy((char *)0x9dd570, name);
-	strcpy((char *)0x9dd58e, password);
+	memset((void *)IMG(0x9dd570), 0, 30 + 12);
+	strcpy((char *)IMG(0x9dd570), name);
+	strcpy((char *)IMG(0x9dd58e), password);
 	memset((*(u8 **)&g_accountPacket) + 4, 0, 30);
 	memset((*(u8 **)&g_accountPacket) + 0x22, 0, 12);
 	strcpy(g_accountPacket + 4, name);
@@ -600,7 +600,7 @@ u32 (ranking_clicks)(void)
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
 {
-	static const u32 typing[4] = { 0x9dd380, 0x9dd388, 0x9dd568, 0x9dd6a8 };
+	static const u32 typing[4] = { IMG(0x9dd380), IMG(0x9dd388), IMG(0x9dd568), IMG(0x9dd6a8) };
 	for (int k = 0; k < 4; k++)
 		if (GAME_VAR(int, typing[k]))
 			return GAME_VAR(u32, typing[k]);
@@ -614,7 +614,7 @@ u32 (room_settingsClicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = GAME_FN(roomSettings_hitTest, 0x432380, u32, int, int)(g_mouseX, g_mouseY);   /* roomSettings_hitTest */
-	u8 *players = (u8 *)0x4df9e9, *type = (u8 *)0x4df9eb, *frags = (u8 *)0x4df9ec, *time = (u8 *)0x4df9ed;
+	u8 *players = (u8 *)IMG(0x4df9e9), *type = (u8 *)IMG(0x4df9eb), *frags = (u8 *)IMG(0x4df9ec), *time = (u8 *)IMG(0x4df9ed);
 	u32 r;
 	switch (button) {
 	case 0:
@@ -686,7 +686,7 @@ u32 (room_settingsAfterTyping)(void)
 		return (*(u32 *)&g_dialogOpen);
 	if (g_paused)
 		return 0;
-	const char *line = (const char *)0x9dc92c;
+	const char *line = (const char *)IMG(0x9dc92c);
 	if (g_editingRoomName) {   /* the room's name */
 		if (!strlen(line) || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
@@ -694,18 +694,18 @@ u32 (room_settingsAfterTyping)(void)
 			return r;
 		}
 		g_editingRoomName = 0;
-		memset((void *)0x4df9c8, 0, 32);
-		strcpy((char *)0x4df9c8, line);
+		memset((void *)IMG(0x4df9c8), 0, 32);
+		strcpy((char *)IMG(0x4df9c8), line);
 		return strlen(line) + 1;
 	}
 	if (g_editingRoomPassword) {   /* the password */
-		memset((void *)0x4df9ee, 0, 8);
+		memset((void *)IMG(0x4df9ee), 0, 8);
 		g_editingRoomPassword = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)0x4df9ee, line);
+		strcpy((char *)IMG(0x4df9ee), line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { 0x9dd388, 0x4df9ec }, { 0x9dd568, 0x4df9ed } };   /* frags, time */
+	static const u32 limit[2][2] = { { IMG(0x9dd388), IMG(0x4df9ec) }, { IMG(0x9dd568), IMG(0x4df9ed) } };   /* frags, time */
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;
@@ -720,7 +720,7 @@ u32 (room_settingsAfterTyping)(void)
 		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
 	}
 	u32 r = 0;
-	static const u32 close[2] = { 0x4e0cdc, 0x76d48c };
+	static const u32 close[2] = { IMG(0x4e0cdc), IMG(0x76d48c) };
 	for (int k = 0; k < 2; k++) {
 		r = (u32)input_justPressed(GAME_VAR(int, close[k]));
 		if (r) {
@@ -743,10 +743,10 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 	if (g_mapPreviewChanged)
 		GAME_CDECL(reload, void, void)();
 	if (GAME_VAR(u8, custom)) {
-		Color4_set((Colour *)0x9da480, 0.0f, 0.0f, 0.0f, 0.4f);
+		Color4_set((Colour *)IMG(0x9da480), 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
-		Color4_set((Colour *)0x76d438, 1.0f, 1.0f, 0.0f, 1.0f);
-		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)0x4ad56c);
+		Color4_set((Colour *)IMG(0x76d438), 1.0f, 1.0f, 0.0f, 1.0f);
+		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)IMG(0x4ad56c));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;
@@ -764,7 +764,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 	}
-	Color4_set((Colour *)0x9da480, 1.0f, 1.0f, 0.0f, 1.0f);
+	Color4_set((Colour *)IMG(0x9da480), 1.0f, 1.0f, 0.0f, 1.0f);
 	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
 #undef X0
 #undef X1
@@ -774,8 +774,8 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 
 /* 0x43bde0: the game room's (panel 0x9dd1bc, custom flag 0x4df9ea, room_loadMapPreview); 0x40b550: the arena screen's
    (0x4dbb04, 0x4db54a, arena_loadMapPreview) */
-u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)0x9dd1bc, 0x4df9ea, FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
-u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb04, 0x4db54a, FN_ADDR(arena_loadMapPreview, 0x40b420)); }
+u32 (room_drawCustomOption)(void) { return map_preview_box((const int *)IMG(0x9dd1bc), IMG(0x4df9ea), FN_ADDR(room_loadMapPreview, 0x43bcb0)); }
+u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)IMG(0x4dbb04), IMG(0x4db54a), FN_ADDR(arena_loadMapPreview, 0x40b420)); }
 
 /* 0x43e7b0: the account page (room page 0; room modes other than 0 / 1, not page 99): with a message box only its
    frame; else the page (0x433610 when 0x9dd354, then account_drawPanel) and, once a field's typing has ended, the typed
@@ -785,8 +785,8 @@ u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)0x4dbb0
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ 0x9dd69c, 0x9dd6d8, 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { 0x9dd37c, 0x9dd1f6, 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
-		{ 0x9dd378, 0x9dd202, 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { 0x9dd304, 0x9dd20e, 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
+		{ IMG(0x9dd69c), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { IMG(0x9dd37c), IMG(0x9dd1f6), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
+		{ IMG(0x9dd378), IMG(0x9dd202), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { IMG(0x9dd304), IMG(0x9dd20e), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
@@ -804,10 +804,10 @@ u32 (account_page)(void)
 			continue;
 		if (g_paused)
 			return r;
-		memset((void *)fields[k].field, 0, fields[k].size);
+		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)fields[k].field, (const char *)0x9dc92c);
+		strcpy((char *)RELOC(fields[k].field), (const char *)IMG(0x9dc92c));
 		u32 key = (*(u32 *)&g_fieldTabKey);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
 		if (!next)

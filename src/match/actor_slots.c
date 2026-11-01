@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the ninth is the
    one cleared to -1 */
@@ -358,10 +358,10 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #define R(type, offset) GAME_VAR(type, rec + (offset))
 	int player = GAME_VAR(int, scene + 0x202e8d4);
 	if (player < 0)
-		sys_fatalError((char *)0xae2eb8, (const char *)0x4b4538, player);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4b4538), player);
 	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
-	((float *)spawn)[5] = f32(fld_m(&R(float, 0x10)));
-	((float *)spawn)[6] = f32(fld_m(&R(float, 0x14)));
+	((float *)RELOC(spawn))[5] = f32(fld_m(&R(float, 0x10)));
+	((float *)RELOC(spawn))[6] = f32(fld_m(&R(float, 0x14)));
 	stage_setupActorSlot((Stage *)scene, a, -1, GAME_VAR(int, scene + 0x202e8d4), spawn);
 	if (a < 0)
 		return;
@@ -450,7 +450,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 		FIELD(int, actor, 0x4cc) = it ? FIELD(int, it, 0x2dc0) : -1;
 }
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 
 /* a hue as the colour code keeps it: wrapped (angle_wrap of it x 0x4a9418, then x 0x4a93ec), brought down by
    0x4a9460 when over 0x4a945c (*h updated); its byte ((h - 0x4aa418) x 0x4aa414 - 0x4aa264) */
@@ -467,9 +467,9 @@ static u8 hue_byte(float *h)
 static u8 level_byte(float *v)
 {
 	if (!(*v >= *K(0x4a9474)))
-		*(u32 *)v = 0xbf800000;   /* -1.0 */
+		*(u32 *)RELOC(v) = 0xbf800000;   /* -1.0 */
 	else if (!(*v < *K(0x4a9424)))
-		*(u32 *)v = 0x3f7fbe77;   /* 0.999 */
+		*(u32 *)RELOC(v) = 0x3f7fbe77;   /* 0.999 */
 	return (u8)ftol(fmul_m(fld_m(v), K(0x4aa264)));
 }
 
@@ -488,14 +488,14 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 	colours[0xb] = level_byte(&s2);
 	colours[0x15] = level_byte(&v2);
 	char dir[0x100];
-	sprintf(dir, (const char *)0x4c77f8, p);
+	sprintf(dir, (const char *)IMG(0x4c77f8), p);
 	if ((unsigned)part <= 4)
 		shape_setTextureDir(scene + shapes[part] + p * 0x47fd2, dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 #undef K
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 
 /* the actor's eight object lists (the body, the parts, the weapons) */
@@ -623,7 +623,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 #undef A
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 
 /* n dwords from at in the actor set to v */
 static void fill_dwords(u8 *at, int n, u32 v)
@@ -781,7 +781,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
 	mech_stats(s, ac, p, 0);
 	A(int, 0xd8) = 1;
-	strcpy((char *)ac + 0x98, (const char *)p + 4);
+	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
 	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
 	A(int, 0x108) = 1;
 	A(u32, 0x10c) = pp[0];
@@ -822,8 +822,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(int, 0x360 + k * 4) = -1;
 	}
 	A(int, 0x374) = 0;
-	memcpy(ac + 0x378, (const void *)0xa0e7e8, 12);
-	memcpy(ac + 0x384, (const void *)0xa0e7e8, 12);
+	memcpy(ac + 0x378, (const void *)IMG(0xa0e7e8), 12);
+	memcpy(ac + 0x384, (const void *)IMG(0xa0e7e8), 12);
 	A(u32, 0x3e8) = 0x43fa0000;   /* 500 */
 	A(int, 0x3ec) = 0;
 	A(int, 0x3f0) = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
@@ -862,16 +862,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x880c) = 0;
 	fill_dwords(ac + 0x8810, 5, (u32)-1);
 	fill_dwords(ac + 0x8824, 5, 0);
-	memcpy(ac + 0x8838, (const void *)0xa0e7e8, 12);
+	memcpy(ac + 0x8838, (const void *)IMG(0xa0e7e8), 12);
 	A(int, 0x8844) = 0;
 	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + 0x884c, 3, 0);
-	memcpy(ac + 0x885c, (const void *)0xa0e7e8, 12);
+	memcpy(ac + 0x885c, (const void *)IMG(0xa0e7e8), 12);
 	A(int, 0x8858) = 0;
 	A(int, 0x8868) = 0;
 	A(u32, 0x886c) = 0x3f800000;
 	A(int, 0x8870) = -1;
-	memcpy(ac + 0x8874, (const void *)0xa0e7e8, 12);
+	memcpy(ac + 0x8874, (const void *)IMG(0xa0e7e8), 12);
 	A(int, 0x8880) = A(int, 0x8884) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
@@ -880,7 +880,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 #undef K
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 
 /* the actor's eight part lists (constructed on the stack copy as the original does) */
 static const u16 k_listAt[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
@@ -948,7 +948,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	for (int k = 0; k < 5; k++)
 		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
-		GAME_VAR(u32, me + k_listAt[k]) = 0x4a9754;
+		GAME_VAR(u32, me + k_listAt[k]) = IMG(0x4a9754);
 		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;

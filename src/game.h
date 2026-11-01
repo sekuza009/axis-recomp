@@ -12,7 +12,7 @@
 #define glColor4f(r, g, b, a) IMPORT(0x4a9228, void, float, float, float, float)(r, g, b, a)
 /* a colour kept in memory, passed on bit for bit (the original copies the four values without the FPU, which
    would turn a signalling NaN into a quiet one) */
-#define glColor4f_stored(c) IMPORT(0x4a9228, void, u32, u32, u32, u32)(((const u32 *)(c))[0], ((const u32 *)(c))[1], \
+#define glColor4f_stored(c) IMPORT(0x4a9228, void, u32, u32, u32, u32)(((const u32 *)RELOC(c))[0], ((const u32 *)RELOC(c))[1], \
 	((const u32 *)(c))[2], ((const u32 *)(c))[3])
 #define glEnable(cap) IMPORT(0x4a9224, void, u32)(cap)
 #define GL_FOG 0x0b60
@@ -69,17 +69,17 @@
 #define glVertex4fv(v) IMPORT(0x4a9294, void, const void *)(v)
 #define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glVertex3f_stored(v) IMPORT(0x4a9210, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
+#define glVertex3f_stored(v) IMPORT(0x4a9210, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
 /* colours and translations given as float bits (see BITS) */
 #define glColor4f_bits(r, g, b, a) IMPORT(0x4a9228, void, u32, u32, u32, u32)(r, g, b, a)
 #define glTranslatef_bits(x, y, z) IMPORT(0x4a9214, void, u32, u32, u32)(x, y, z)
 #define glScalef_bits(x, y, z) IMPORT(0x4a9200, void, u32, u32, u32)(x, y, z)
 /* GLU, through the game's jump to its import */
 #define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
-	double, double))*(const u32 *)0x4a904c)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
+	double, double))*(const u32 *)IMG(0x4a904c))(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT(0x4a9258, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)(v))[0], ((const u32 *)(v))[1], ((const u32 *)(v))[2])
+#define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
 #define glRotatef(angle, x, y, z) IMPORT(0x4a91f8, void, float, float, float, float)(angle, x, y, z)
 
 /* ---- C runtime of the game ---- */
@@ -97,7 +97,7 @@
 /* the 3D background (menu_tunnel.c) */
 #define g_texturesOff GAME_VAR(int, 0x9da494)        /* (by use) set: the menus' 3D background is drawn untextured (left out) */
 #define g_tunnelTexture GAME_VAR(int, 0x4e186c)
-#define g_flareTextures ((const int *)0x9da470)     /* flare k's texture is g_flareTextures[-k] */
+#define g_flareTextures ((const int *)IMG(0x9da470))     /* flare k's texture is g_flareTextures[-k] */
 #define g_cageTexture GAME_VAR(int, 0x76d36c)
 #define g_pulse GAME_VAR(float, 0x4b06fc)            /* the bands' colour pulse, 0.05 .. 0.95 */
 #define g_pulseStep GAME_VAR(float, 0x4b0700)
@@ -536,7 +536,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define sky_draw(stage, scale) GAME_THISFN(sky_draw, 0x496f20, void, Stage *, float)(stage, scale)   /* the sky (render/sky.c) */
 #define render_processRenderingBy(stage, view, scale) GAME_THISFN(render_processRenderingBy, 0x497d20, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
-#define STAGE(scene) ((Stage *)((u8 *)(scene) + 0x1f36c8))
+#define STAGE(scene) ((Stage *)((u8 *)RELOC(scene) + 0x1f36c8))
 #define stage_drawObjects(stage, view) GAME_THISFN(stage_drawObjects, 0x490da0, void, Stage *, void *)(stage, view)
 #define stage_drawActors(stage, view, pass) GAME_THISFN(stage_drawActors, 0x45e170, void, Stage *, void *, int)(stage, view, pass)
 /* actor i's frame of its parts (actor_updateBody / actor_updatePart), with the view volume and pass */
@@ -580,8 +580,8 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
-#define g_textColours ((Colour *)0xa1f100)          /* the 16 message colours */
-#define g_chatLine ((char *)0x9dc92c)               /* the chat line being typed */
+#define g_textColours ((Colour *)IMG(0xa1f100))          /* the 16 message colours */
+#define g_chatLine ((char *)IMG(0x9dc92c))               /* the chat line being typed */
 #define g_chatCaretX GAME_VAR(int, 0x9da3d8)          /* where the line being typed is drawn (menu units) */
 #define g_chatCaretY GAME_VAR(int, 0x9da3dc)
 #define g_chatLength GAME_VAR(int, 0x9dbf10)          /* characters in g_chatLine */
@@ -592,9 +592,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
-#define g_trig ((const float *)0xa146f8)            /* 3600 values by tenths of a degree (the ring's radius) */
+#define g_trig ((const float *)IMG(0xa146f8))            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
-#define g_gameModeNames ((const char (*)[64])0x4c7030)   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
+#define g_gameModeNames ((const char (*)[64])IMG(0x4c7030))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
 #define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
                                                          500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
@@ -607,7 +607,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time in 1/60 s (menu_frame; 1 after a stall) */
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
-#define g_textColour ((Colour *)0x76d438)            /* the menus' text colour */
+#define g_textColour ((Colour *)IMG(0x76d438))            /* the menus' text colour */
 #define g_textCharWidth GAME_VAR(int, 0x4d23d8)      /* units per character of the font being drawn */
 #define g_fontHanCho GAME_VAR(int, 0x9dae1c)         /* font textures (ids): Hangul initial consonants */
 #define g_fontHanJungJong GAME_VAR(int, 0x76d360)    /* Hangul vowels and finals */
@@ -617,8 +617,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_titleShown GAME_VAR(int, 0x4df01c)
 #define g_titleFrames GAME_VAR(int, 0x4e0458)        /* frames the title has been shown */
 /* the title emblem (menu_title.c) */
-#define g_titleTextures ((const int *)0x9dad6c)     /* eight: the base picture's quarters, then the pulsing layer's */
-#define g_titleSpread ((const int *)0x4b065c)       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
+#define g_titleTextures ((const int *)IMG(0x9dad6c))     /* eight: the base picture's quarters, then the pulsing layer's */
+#define g_titleSpread ((const int *)IMG(0x4b065c))       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
 #define g_emblemAlpha GAME_VAR(float, 0x4de1e0)      /* the pulsing layer's alpha (0.2 .. 0.9) */
 #define g_emblemPulse GAME_VAR(float, 0x4de1d8)      /* its change per time unit (+-0.018) */
 #define g_logoFade GAME_VAR(float, 0x4de1e8)         /* the logo fading in, 0 .. 1 */
@@ -657,7 +657,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
 #define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, void, int, int, int, int, int)(x0, y0, x1, y1, filled)
-#define g_rectColour ((Colour *)0x9da480)
+#define g_rectColour ((Colour *)IMG(0x9da480))
 /* the room's buttons under (x, y): the index of the button hit, or -1 */
 #define leaveDialog_hitTest(x, y) GAME_FN(leaveDialog_hitTest, 0x4321c0, int, int, int)(x, y)
 #define popup_hitTest(x, y) GAME_FN(popup_hitTest, 0x432280, int, int, int)(x, y)
@@ -692,16 +692,16 @@ typedef struct { float r, g, b, a; } Colour;
 /* the mission-select screen */
 #define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
 #define g_missionPage GAME_VAR(int, 0x9f62f8)        /* 0 / 1: no keys; 2: no list refresh */
-#define g_missionBox ((const int *)0x9f6308)         /* the dialog frame: x0, y0, x1, y1 */
+#define g_missionBox ((const int *)IMG(0x9f6308))         /* the dialog frame: x0, y0, x1, y1 */
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionStarted GAME_VAR(int, 0x9f62e0)
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
-#define STR_COPYRIGHT ((const char *)0x4b0474)       /* "AXIS by Jamie System Development" */
-#define STR_2D ((const char *)0x4d03e0)              /* "%2d" */
-#define STR_VERSION ((const char *)0x4b0384)         /* "Axis v1.03" */
+#define STR_COPYRIGHT ((const char *)IMG(0x4b0474))       /* "AXIS by Jamie System Development" */
+#define STR_2D ((const char *)IMG(0x4d03e0))              /* "%2d" */
+#define STR_VERSION ((const char *)IMG(0x4b0384))         /* "Axis v1.03" */
 
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
-#define g_dplaySlots ((int *)0xa0d7a4)               /* four connection slots: 1 while open */
+#define g_dplaySlots ((int *)IMG(0xa0d7a4))               /* four connection slots: 1 while open */
 #define dplay_coInit() GAME_FN(dplay_coInit, 0x453720, int, void)()                     /* 0 when COM is up */
 #define dplay_connectionAvailable(kind) GAME_FN(net_connectionAvailable, 0x453a30, int, int)(kind)  /* net_connectionAvailable */
 #define dplay_initConnection(kind, address) GAME_FN(dplay_initConnection, 0x453a90, int, int, int)(kind, address)
@@ -785,7 +785,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define armc_drawStatsPanel() GAME_FN(armc_drawStatsPanel, 0x412650, void, void)()
 #define armc_drawBuildScreen() GAME_FN(armc_drawBuildScreen, 0x419160, void, void)()
 #define armc_drawColourEditor() GAME_FN(armc_drawColourEditor, 0x41a280, void, void)()
-#define g_startPos ((const u32 *)0xa0e7a8)          /* (by use) where the player's actor starts (three floats) */
+#define g_startPos ((const u32 *)IMG(0xa0e7a8))          /* (by use) where the player's actor starts (three floats) */
 /* claim actor slot a for the player and make it theirs (thiscall on the stage; spawn: slot, -, position...) */
 #define stage_claimPlayerActor(stage, a, x, y, spawn) GAME_THISFN(stage_claimPlayerActor, 0x45dd80, void, Stage *, int, int, int, void *)(stage, a, x, y, spawn)
 
@@ -1023,7 +1023,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_frameCrosshairPage() GAME_FN(setup_frameCrosshairPage, 0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
-#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))*(const u32 *)0x4a9018)(instance, version, out, outer)
+#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))*(const u32 *)IMG(0x4a9018))(instance, version, out, outer)
 #define input_initKeyboard(window) GAME_FN(input_initKeyboard, 0x401310, int, void *)(window)
 #define input_createMouse(window) GAME_FN(input_createMouse, 0x4013a0, int, void *)(window)   /* the mouse */
 
@@ -1186,8 +1186,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define GL_PROJECTION 0x1701
 #define glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
 #define glMatrixMode(mode) IMPORT(0x4a91fc, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)0x4a9048)(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)0x4a9050)(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)IMG(0x4a9048))(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)IMG(0x4a9050))(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, load/space_pools.c, render/rotations.c) ---- */
 #define path_normalize(path) GAME_FN(path_normalize, 0x46cb60, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */

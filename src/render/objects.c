@@ -49,8 +49,8 @@ void THISCALL (stage_drawProjectiles)(Stage *stage, void *view)
 			projectile_draw(stage, i, view);
 }
 
-#define K(address) ((const float *)(address))
-#define F(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define K(address) ((const float *)RELOC(address))
+#define F(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* an object's animation stopped at its start: time and speed 0, its collision unit put back (space_enableUnit), the
    unit flag cleared */
@@ -169,7 +169,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			flare[6] = F(u32, obj, 0x278);
 			for (int k = 8; k < 13; k++)
 				flare[k] = 0;
-			particle_spawn(s, (const void *)flare);
+			particle_spawn(s, (const void *)RELOC(flare));
 		}
 	}
 	if (obj[0xc] & 8) {
@@ -178,9 +178,9 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			u8 *a = s + 0x1cd93a8 + k * 0x8888;
 			if (F(int, a, 0x14c) != 1)
 				continue;
-			long double dx = fsub_m(fld_m((const float *)(a + 0x154)), (const float *)(obj + 0x58));
-			long double dy = fsub_m(fld_m((const float *)(a + 0x158)), (const float *)(obj + 0x5c));
-			long double dz = fsub_m(fld_m((const float *)(a + 0x15c)), (const float *)(obj + 0x60));
+			long double dx = fsub_m(fld_m((const float *)(RELOC(a) + 0x154)), (const float *)(obj + 0x58));
+			long double dy = fsub_m(fld_m((const float *)(RELOC(a) + 0x158)), (const float *)(obj + 0x5c));
+			long double dz = fsub_m(fld_m((const float *)(RELOC(a) + 0x15c)), (const float *)(obj + 0x60));
 			long double d2 = (dz * dz + dy * dy) + dx * dx;
 			float d2f = f32(d2);
 			if (!(d2 >= nearest))
@@ -189,9 +189,9 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		long double r = fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4));
 		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
 			if (!(nearest >= r * r))
-				anim_start(s, i, obj, 0x4a9480);
+				anim_start(s, i, obj, IMG(0x4a9480));
 		} else if (F(u32, obj, 0x29c) == 0x3f800000 && nearest > r * r)
-			anim_start(s, i, obj, 0x4aa4a0);
+			anim_start(s, i, obj, IMG(0x4aa4a0));
 	} else if (obj[0xc] & 0x10) {
 		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
 			if (fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4)) > F(float, obj, 0x2c8)) {
@@ -199,15 +199,15 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 				return;
 			}
 			F(int, obj, 0x2c8) = 0;
-			anim_start(s, i, obj, 0x4a9480);
+			anim_start(s, i, obj, IMG(0x4a9480));
 		} else if (F(u32, obj, 0x29c) == 0x3f800000)
-			anim_start(s, i, obj, 0x4aa4a0);
+			anim_start(s, i, obj, IMG(0x4aa4a0));
 	}
 }
 #undef K
 #undef F
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 
 static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
@@ -305,7 +305,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double w3 = fadd_m(fmul_m(x, &pr[3]) + fmul_m(z, &pr[11]) + fmul_m(y, &pr[7]), &pr[15]);
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
-		A(int, 0x484) = tag_narrow(ac, 0x4a940c);
+		A(int, 0x484) = tag_narrow(ac, IMG(0x4a940c));
 		u8 *me = s + 0x1cd93a8 + GAME_VAR(int, s + 0x202e8d4) * 0x8888;
 		if ((A(u32, 0x3f0) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			A(int, 0x87e8) = 0;
@@ -326,7 +326,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			A(float, 0x87e8) = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else
 			A(int, 0x87e8) = 0;
-		if (!tag_narrow(ac, 0x4a9414))
+		if (!tag_narrow(ac, IMG(0x4a9414)))
 			A(u32, 0x87f0) = 0x40400000;
 		A(int, 0x87e0) = 1;
 	}
@@ -336,7 +336,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 
 /* ---- 0x476890: a projectile drawn ---- */
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define P(type, offset) GAME_VAR(type, p + (offset))
 #define TEX(k) GAME_VAR(int, s + 0x9ccfd4 + (k) * 4)   /* the effect textures */
 

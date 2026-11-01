@@ -2,7 +2,7 @@
    linked list, bit 0 of a part's flags: left out of collisions). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* a part of a collision unit: flags first, the next part at +0xa4; the unit keeps its first part at +4 */
 static void unit_parts_flag(void *unit, int set)

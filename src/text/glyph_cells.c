@@ -57,7 +57,7 @@ void (font_initHudGrids)(void)
    right, bottom left */
 static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 {
-	const float *texel = (const float *)0x4a957c;
+	const float *texel = (const float *)IMG(0x4a957c);
 	float left = f32(fmul_m((long double)x0, texel)), right = f32(fmul_m((long double)x1, texel));
 	float top = f32(fmul_m((long double)y0, texel)), bottom = f32(fmul_m((long double)y1, texel));
 	const float st[4][2] = { { left, top }, { right, top }, { right, bottom }, { left, bottom } };
@@ -74,9 +74,9 @@ static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
 int (pen_init)(const char *name)
 {
 	static const u32 fixed[4] = { 0xa0f490, 0xa10010, 0xa0f148, 0xa0fcc8 };
-	static const u32 proportional[4] = { 0xa0eab8, 0xa10358, 0xa0ee00, 0xa0f7d8 };
+	static const u32 proportional[4] = { IMG(0xa0eab8), IMG(0xa10358), IMG(0xa0ee00), IMG(0xa0f7d8) };
 	if (g_penFontNeverSet == 1) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, void, const char *)((const char *)0x4c56fc);   /* "pen duplicate initialization" */
+		GAME_FN(sys_errorMessageNoName, 0x46c840, void, const char *)((const char *)IMG(0x4c56fc));   /* "pen duplicate initialization" */
 		return 0;
 	}
 	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
@@ -86,7 +86,7 @@ int (pen_init)(const char *name)
 	for (int y = 0x48; g <= 105; y += 8)
 		for (int c = 0; c < 21; c++, g++)
 			pen_cell(fixed, g, c * 8, c * 8 + 8, y, y + 8);
-	const int *width = (const int *)0x4c5558;
+	const int *width = (const int *)IMG(0x4c5558);
 	g = 1;
 	for (int y = 0; g <= 105; y += 14)
 		for (int c = 0, x = 0; c < 21; c++, g++, x += *width++)
@@ -105,12 +105,12 @@ int (pen_init)(const char *name)
    0x46be96) may be its half-texel inset. Returns glDisable's eax */
 u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded)
 {
-	const float *texel = (const float *)0x4a957c;                         /* 1/256 */
-	const float *heightFactor = *(const float *const *)0x46bddc;          /* (the fmul's operand) */
-	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))0x46be98;   /* (mov ebx, [..]) */
-	int w = ftol(fmul_m(fld_m(&scale), (const float *)0x4aa280));       /* 28 */
+	const float *texel = (const float *)IMG(0x4a957c);                         /* 1/256 */
+	const float *heightFactor = *(const float *const *)IMG(0x46bddc);          /* (the fmul's operand) */
+	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))IMG(0x46be98);   /* (mov ebx, [..]) */
+	int w = ftol(fmul_m(fld_m(&scale), (const float *)IMG(0x4aa280)));       /* 28 */
 	int h = ftol(fmul_m(fld_m(&scale), heightFactor));
-	int pad = ftol(fmul_m(fld_m(&scale), (const float *)0x4a9534));
+	int pad = ftol(fmul_m(fld_m(&scale), (const float *)IMG(0x4a9534)));
 	x += (int)((u32)w * (u32)count) / 2;
 	int top = y - h / 2, negative = 0;
 	if (value < 0) {
@@ -174,11 +174,11 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	const int *widths;
 	int height;
 	if (font) {
-		topLeft = (const u8 *)0xa0eac0; topRight = (const u8 *)0xa10360; bottomRight = (const u8 *)0xa0ee08;
-		bottomLeft = (const u8 *)0xa0f7e0; widths = (const int *)0x4c5558; height = 14;
+		topLeft = (const u8 *)IMG(0xa0eac0); topRight = (const u8 *)IMG(0xa10360); bottomRight = (const u8 *)IMG(0xa0ee08);
+		bottomLeft = (const u8 *)IMG(0xa0f7e0); widths = (const int *)IMG(0x4c5558); height = 14;
 	} else {
-		topLeft = (const u8 *)0xa0f498; topRight = (const u8 *)0xa10018; bottomRight = (const u8 *)0xa0f150;
-		bottomLeft = (const u8 *)0xa0fcd0; widths = (const int *)0xa0fb28; height = 8;
+		topLeft = (const u8 *)IMG(0xa0f498); topRight = (const u8 *)IMG(0xa10018); bottomRight = (const u8 *)IMG(0xa0f150);
+		bottomLeft = (const u8 *)IMG(0xa0fcd0); widths = (const int *)IMG(0xa0fb28); height = 8;
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);

@@ -5,10 +5,10 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* the player records (stride 0x47fd2 from 0x1755230) keep a name at +4 */
-#define RECORD_NAME(scene, k) ((char *)(scene) + 0x1755234 + (k) * 0x47fd2)
+#define RECORD_NAME(scene, k) ((char *)RELOC(scene) + 0x1755234 + (k) * 0x47fd2)
 
 /* 0x4616e0: the 16 players' names saved into the name table */
 void THISCALL (scene_saveNames)(Scene *scene)

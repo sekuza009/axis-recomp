@@ -5,9 +5,9 @@
 #include <stdarg.h>
 
 #define GetLocalTime(st) IMPORT(0x4a90f4, void, u16 *)(st)
-#define sprintf_game ((int (CDECL *)(char *, const char *, ...))0x49e9dd)
+#define sprintf_game ((int (CDECL *)(char *, const char *, ...))IMG(0x49e9dd))
 #define vsprintf_game(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
-#define fprintf_game ((int (CDECL *)(void *, const char *, ...))0x49f135)
+#define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))
 typedef int (CDECL *ErrorHook)(char *stamp, char *text);
 typedef void (*Cleanup)(void);
 
@@ -22,16 +22,16 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 	GAME_VAR(int, flag) = 1;
 	GetLocalTime(st);
 	if (object)
-		sprintf_game(stamp, (const char *)timeFormat, *(const u32 *)(object + 4), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
+		sprintf_game(stamp, (const char *)RELOC(timeFormat), *(const u32 *)(object + 4), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	else
-		sprintf_game(stamp, (const char *)timeFormat, st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
+		sprintf_game(stamp, (const char *)RELOC(timeFormat), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	vsprintf_game(text, format, args);
 	if (g_errorLogging == 1) {
-		void *f = crt_fopen((const char *)0x4c582c, (const char *)0x4c5838);   /* ERROR.TXT, appended */
+		void *f = crt_fopen((const char *)IMG(0x4c582c), (const char *)IMG(0x4c5838));   /* ERROR.TXT, appended */
 		if (f) {
 			fseek(f, 0, 2);
-			fprintf_game(f, (const char *)0x4c5824, stamp, text);
-			fprintf_game(f, (const char *)0x4c57d0);
+			fprintf_game(f, (const char *)IMG(0x4c5824), stamp, text);
+			fprintf_game(f, (const char *)IMG(0x4c57d0));
 			fclose(f);
 		}
 	}
@@ -52,7 +52,7 @@ int (sys_errorMessageNoName)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(0xa1efe0, NULL, 0x4c58a0, format, args);
+	int r = report(IMG(0xa1efe0), NULL, IMG(0x4c58a0), format, args);
 	va_end(args);
 	return r;
 }
@@ -60,7 +60,7 @@ int (sys_errorMessage)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(0xa1efe0, object, 0x4c583c, format, args);
+	int r = report(IMG(0xa1efe0), object, IMG(0x4c583c), format, args);
 	va_end(args);
 	return r;
 }
@@ -70,7 +70,7 @@ void (sys_errorTerminate)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(0xa1efe4, NULL, 0x4c58c8, format, args);
+	report(IMG(0xa1efe4), NULL, IMG(0x4c58c8), format, args);
 	va_end(args);
 	terminate();
 }
@@ -78,7 +78,7 @@ void (sys_fatalError)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(0xa1efe4, object, 0x4c586c, format, args);
+	report(IMG(0xa1efe4), object, IMG(0x4c586c), format, args);
 	va_end(args);
 	terminate();
 }

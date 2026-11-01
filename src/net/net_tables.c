@@ -7,7 +7,7 @@
 int (net_findFreeSession)(void)
 {
 	int i = 0;
-	for (u32 p = 0xa0b470; p < 0xa0bab0; p += 8, i++)
+	for (u32 p = IMG(0xa0b470); p < IMG(0xa0bab0); p += 8, i++)
 		if (GAME_VAR(u32, p) == 0)
 			return i;
 	return -1;
@@ -26,19 +26,19 @@ int (net_sessionValue)(int i)
 void (net_takePlayerSlot)(u32 slot, int id)
 {
 	static const short init[10] = { 0, 0, 0, 0, 0, -1, 0, 0, -1, 0 };
-	u32 r = 0x9f9840 + (slot & 0xff) * 0x410;
+	u32 r = IMG(0x9f9840) + (slot & 0xff) * 0x410;
 	GAME_VAR(int, r) = 1;
 	GAME_VAR(int, r + 4) = id;
-	memcpy((void *)(r + 0x10), init, sizeof init);
+	memcpy((void *)(RELOC(r) + 0x10), init, sizeof init);
 	GAME_VAR(short, r + 0x32) = (*(short *)&g_localPlayerData);
 }
 
 /* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
 void (net_freeAllSlots)(void)
 {
-	memset((void *)0x9f93d8, 0, 0x40);
-	for (u32 r = 0x9f9840; r < 0x9fd940; r += 0x410)
-		memset((void *)r, 0, 16);
+	memset((void *)IMG(0x9f93d8), 0, 0x40);
+	for (u32 r = IMG(0x9f9840); r < IMG(0x9fd940); r += 0x410)
+		memset((void *)RELOC(r), 0, 16);
 }
 
 /* 0x451450: a free player slot claimed (its flag in the sixteen at 0x9f93d8 set); 0xff when none is free */
@@ -71,12 +71,12 @@ u32 (net_freeSessionList)(void)
 	if (!g_dplaySessionList)
 		return 0;
 	for (int i = 0; i < g_dplaySessionCount; i++) {
-		u32 *rec = (u32 *)(0xa0b470 + i * 8);
+		u32 *rec = (u32 *)(IMG(0xa0b470) + i * 8);
 		if (rec[0] != 1)
 			continue;
 		rec[0] = 0;
 		if (rec[1])
-			crt_free((void *)rec[1]);
+			crt_free((void *)RELOC(rec[1]));
 		rec[0] = 0;
 		rec[1] = 0;
 	}
@@ -92,10 +92,10 @@ int (net_parseAddress)(void)
 {
 	char buf[20];
 	memset(buf, 0, sizeof buf);
-	char *part = crt_strtok((char *)0xa0b43c, (const char *)0x4b1304);   /* "." */
+	char *part = crt_strtok((char *)IMG(0xa0b43c), (const char *)IMG(0x4b1304));   /* "." */
 	strcpy(buf, part);
 	if (part)
-		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)0x4b3e68)) != NULL; slot += 4)
+		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)IMG(0x4b3e68))) != NULL; slot += 4)
 			strcpy(slot, part);
 	int a = crt_atoi(buf), b = crt_atoi(buf + 4), c = crt_atoi(buf + 8), d = crt_atoi(buf + 12);
 	return ((((a << 8) | (b & 0xff)) << 8 | (c & 0xff)) << 8) | (d & 0xff);
@@ -108,11 +108,11 @@ int (dplay_formatSessionEntry)(u32 address)
 	itoa((int)(address >> 24), part, 10);
 	strcpy(text, part);
 	for (int shift = 16; shift >= 0; shift -= 8) {
-		strcat(text, (const char *)0x4b1304);
+		strcat(text, (const char *)IMG(0x4b1304));
 		itoa((int)((address >> shift) & 0xff), part, 10);
 		strcat(text, part);
 	}
-	strcpy((char *)0xa0b460, text);
+	strcpy((char *)IMG(0xa0b460), text);
 	return (int)strlen(text) + 1;
 }
 
@@ -124,7 +124,7 @@ typedef struct { u8 b[0x85]; } SessionDesc;
    own, or -1 when the table is full */
 u32 (net_addSession)(SessionDesc d)
 {
-	if (!memcmp(d.b + 4, (const void *)0x4aae70, 16))
+	if (!memcmp(d.b + 4, (const void *)IMG(0x4aae70), 16))
 		return 0;
 	int i = net_findFreeSession();
 	if (i < 0)
@@ -150,7 +150,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	SessionDesc d;
 	memset(d.b, 0, sizeof d.b);
 	const u8 *guid = desc + 8;
-	if (!memcmp(guid, (const void *)0x4aae70, 16))
+	if (!memcmp(guid, (const void *)IMG(0x4aae70), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
 		if (!memcmp(guid, GAME_VAR(u8 *, 0xa0b474 + k * 8) + 4, 16))
@@ -169,7 +169,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	d.b[0x29] = desc[0x48];
 	if (g_connectionKind == 0) {
 		GAME_FN(dplay_formatSessionEntry, 0x454390, int, u32)(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry */
-		crt_strncpy((char *)d.b + 0x74, (const char *)0xa0b460, 0x10);
+		crt_strncpy((char *)d.b + 0x74, (const char *)IMG(0xa0b460), 0x10);
 	}
 	GAME_FN(net_addSession, 0x4540b0, u32, SessionDesc)(d);
 	return 1;
@@ -177,7 +177,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 #undef crt_strncpy
 
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
-u32 (net_inetAddr)(const char *text) { return ((u32 (STDCALL *)(const char *))*(const u32 *)0x4a9370)(text); }
+u32 (net_inetAddr)(const char *text) { return ((u32 (STDCALL *)(const char *))*(const u32 *)IMG(0x4a9370))(text); }
 
 /* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
@@ -212,7 +212,7 @@ int (net_asyncSelect)(void *wnd, int which)
 		return 1;
 	if (!sock)
 		return 1;
-	if (((int (STDCALL *)(u32, void *, u32, u32))*(const u32 *)0x4a9388)(sock, wnd, message, 0x21) == -1)
+	if (((int (STDCALL *)(u32, void *, u32, u32))*(const u32 *)IMG(0x4a9388))(sock, wnd, message, 0x21) == -1)
 		return 0;
 	return 1;
 }
@@ -224,7 +224,7 @@ int (dplay_coInit)(void)
 	g_unusedDplayWord1 = 0;
 	g_unusedDplayWord2 = 0;
 	g_unusedDplayWord3 = 0;
-	memset((void *)0xa0b470, 0, 0x190 * 4);
+	memset((void *)IMG(0xa0b470), 0, 0x190 * 4);
 	g_unusedDplayWord4 = 0;
 	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
 	if (hr >= 0) {
@@ -240,7 +240,7 @@ int (dplay_coInit)(void)
    Returns what the original leaves in eax (the last close's answer, or 0) */
 u32 (net_closeThreadHandles)(void)
 {
-	static const u32 handles[3] = { 0xa0d788, 0xa0bf1c, 0xa0bb10 };
+	static const u32 handles[3] = { IMG(0xa0d788), IMG(0xa0bf1c), IMG(0xa0bb10) };
 	u32 r = 0;
 	for (int k = 0; k < 3; k++) {
 		r = GAME_VAR(u32, handles[k]);
@@ -259,11 +259,11 @@ u32 (net_closeThreadHandles)(void)
    refused (0xa0b350 set, 0xa0b300 cleared) */
 void (net_receiveServerReply)(void)
 {
-	u8 *reply = (u8 *)0xa052e8;
+	u8 *reply = (u8 *)IMG(0xa052e8);
 	u32 start = GetTickCount();
 	u32 got = 0;
 	do {
-		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)IMG(0x4a9398))((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
@@ -283,15 +283,15 @@ void (net_receiveServerReply)(void)
    in eax */
 u32 (net_closeSockets)(void)
 {
-	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
+	static const u32 sockets[2] = { IMG(0xa055f8), IMG(0xa05630) };
 	u32 r = g_lobbySocket;
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
 		g_netHostGone = 1;
-		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                     /* WSACancelBlockingCall */
-		((int (STDCALL *)(u32, int))*(const u32 *)0x4a938c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
-		((int (STDCALL *)(u32))*(const u32 *)0x4a9390)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))*(const u32 *)IMG(0x4a938c))(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))*(const u32 *)IMG(0x4a9390))(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
 		r = arena_freeBuffers();
 	}
@@ -315,37 +315,37 @@ static void *alloc_clear(u32 n)
 void (net_closeAll)(int kind)
 {
 	net_clearServers();
-	static const u32 sockets[2] = { 0xa055f8, 0xa05630 };
+	static const u32 sockets[2] = { IMG(0xa055f8), IMG(0xa05630) };
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
-		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                     /* WSACancelBlockingCall */
-		((int (STDCALL *)(u32, int))*(const u32 *)0x4a938c)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
-		((int (STDCALL *)(u32))*(const u32 *)0x4a9390)(GAME_VAR(u32, sockets[k]));           /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))();                                     /* WSACancelBlockingCall */
+		((int (STDCALL *)(u32, int))*(const u32 *)IMG(0x4a938c))(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
+		((int (STDCALL *)(u32))*(const u32 *)IMG(0x4a9390))(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
 		arena_freeBuffers();
 	}
 	if (kind == 100 || kind == 101) {
-		const char *host = (const char *)(kind == 100 ? 0xa0b24c : 0xa055fc);
-		strcpy((char *)0xa055e4, net_resolveHost(host) ? (const char *)0xa0d320 : host);
-		g_serverPort = GAME_VAR(u16, kind == 100 ? 0xa055f4 : 0xa05634);
+		const char *host = (const char *)(RELOC(kind) == 100 ? IMG(0xa0b24c) : IMG(0xa055fc));
+		strcpy((char *)IMG(0xa055e4), net_resolveHost(host) ? (const char *)IMG(0xa0d320) : host);
+		g_serverPort = GAME_VAR(u16, kind == 100 ? IMG(0xa055f4) : IMG(0xa05634));
 	}
-	memset((void *)0x9fd960, 0, 0x1e40 * 4);
-	memset((void *)0xa05748, 0, 0x16c0 * 4);
-	memset((void *)0xa05330, 0, 0x2aa);
+	memset((void *)IMG(0x9fd960), 0, 0x1e40 * 4);
+	memset((void *)IMG(0xa05748), 0, 0x16c0 * 4);
+	memset((void *)IMG(0xa05330), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
-		{ 0xa0b310, 0x5b }, { 0xa0b314, 0x5b }, { 0xa0b318, 0x5b }, { 0xa0b31c, 4 }, { 0xa0b304, 0x10 }, { 0xa0b320, 0x10b },
-		{ 0xa0b324, 8 }, { 0xa0b328, 0x79 }, { 0xa0b32c, 0x79 }, { 0xa0b330, 0x79 }, { 0xa0b334, 4 }, { 0xa0b30c, 4 },
-		{ 0xa0b308, 0x10 }, { 0xa0b340, 0xb9 }, { 0xa0b344, 0x5c }, { 0xa0b338, 0x36 }, { 0xa052e4, 1 }, { 0xa055e0, 0x1e } };
+		{ IMG(0xa0b310), 0x5b }, { IMG(0xa0b314), 0x5b }, { IMG(0xa0b318), 0x5b }, { IMG(0xa0b31c), 4 }, { IMG(0xa0b304), 0x10 }, { IMG(0xa0b320), 0x10b },
+		{ IMG(0xa0b324), 8 }, { IMG(0xa0b328), 0x79 }, { IMG(0xa0b32c), 0x79 }, { IMG(0xa0b330), 0x79 }, { IMG(0xa0b334), 4 }, { IMG(0xa0b30c), 4 },
+		{ IMG(0xa0b308), 0x10 }, { IMG(0xa0b340), 0xb9 }, { IMG(0xa0b344), 0x5c }, { IMG(0xa0b338), 0x36 }, { IMG(0xa052e4), 1 }, { IMG(0xa055e0), 0x1e } };
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
-	memset((void *)0xa052c0, 0, 0x22);
+	memset((void *)IMG(0xa052c0), 0, 0x22);
 	(*(void **)&g_netLeaveBuffer) = alloc_clear(0x1e);
-	memset((void *)0xa05260, 0, 0x5b);
-	memset((void *)0xa0b280, 0, 0x79);
+	memset((void *)IMG(0xa05260), 0, 0x5b);
+	memset((void *)IMG(0xa0b280), 0, 0x79);
 	g_unusedNetCloseWord = 0;
-	memset((void *)0xa052e8, 0, 0x3e);
-	memset((void *)0xa05638, 0, 0x10b);
+	memset((void *)IMG(0xa052e8), 0, 0x3e);
+	memset((void *)IMG(0xa05638), 0, 0x10b);
 }
 
 /* a GlobalAlloc'd block unlocked and freed (through its handle) */
@@ -396,22 +396,22 @@ int (dplay_release)(void)
 int (net_resolveHost)(const char *host)
 {
 	u8 wsa[0x190];
-	memset((void *)0xa0d320, 0, 0x64);
-	if (((int (STDCALL *)(u32, void *))*(const u32 *)0x4a9378)(0x202, wsa))             /* WSAStartup */
+	memset((void *)IMG(0xa0d320), 0, 0x64);
+	if (((int (STDCALL *)(u32, void *))*(const u32 *)IMG(0x4a9378))(0x202, wsa))             /* WSAStartup */
 		return 0;
-	int sock = ((int (STDCALL *)(int, int, int))*(const u32 *)0x4a937c)(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
+	int sock = ((int (STDCALL *)(int, int, int))*(const u32 *)IMG(0x4a937c))(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
 	if (sock == -1)
 		return 0;
-	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(host);           /* gethostbyname */
+	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)IMG(0x4a93a8))(host);           /* gethostbyname */
 	if (!entry)
 		return 0;
 	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
-	strcpy((char *)0xa0d320, ((const char *(STDCALL *)(u32))*(const u32 *)0x4a939c)(address));   /* inet_ntoa */
-	if (!strlen((const char *)0xa0d320))
+	strcpy((char *)IMG(0xa0d320), ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(address));   /* inet_ntoa */
+	if (!strlen((const char *)IMG(0xa0d320)))
 		return 0;
 	if (sock) {
-		((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();      /* WSACancelBlockingCall */
-		((int (STDCALL *)(int))*(const u32 *)0x4a9390)(sock);   /* closesocket */
+		((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))();      /* WSACancelBlockingCall */
+		((int (STDCALL *)(int))*(const u32 *)IMG(0x4a9390))(sock);   /* closesocket */
 	}
 	return 1;
 }
@@ -428,7 +428,7 @@ int (dplay_enumSessions)(void)
 	memset(desc, 0, sizeof desc);
 	desc[0] = 0x50;                                                  /* dwSize */
 	memcpy(&desc[2], g_instanceGuid, 16);         /* guidInstance */
-	memcpy(&desc[6], (const void *)0x4a96e8, 16);                    /* guidApplication */
+	memcpy(&desc[6], (const void *)IMG(0x4a96e8), 16);                    /* guidApplication */
 	if (!g_connectionKind) {
 		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
 			return 0;
@@ -449,10 +449,10 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
                        const u8 *bytes, int nbytes)
 {
 	for (int k = 0; k < nstrings; k++)
-		lstrcpyA((char *)(base + GAME_VAR(int, count) * size + strings[k]), (const char *)rec + strings[k]);
-	lstrcpyA((char *)(0xa0bf20 + GAME_VAR(int, count) * 20), (const char *)rec + name);
+		lstrcpyA((char *)(RELOC(base) + GAME_VAR(int, count) * size + strings[k]), (const char *)RELOC(rec) + strings[k]);
+	lstrcpyA((char *)(IMG(0xa0bf20) + GAME_VAR(int, count) * 20), (const char *)RELOC(rec) + name);
 	int i = GAME_VAR(int, count);
-	u8 *slot = (u8 *)(base + i * size);
+	u8 *slot = (u8 *)(RELOC(base) + i * size);
 	for (int k = 0; k < nbytes; k++)
 		slot[bytes[k]] = rec[bytes[k]];
 	GAME_VAR(int, count) = i + 1;
@@ -463,14 +463,14 @@ int (net_addServerRecord)(const u8 *rec)
 {
 	static const u8 strings[3] = { 0x33, 0x01, 0x53 };
 	static const u8 bytes[9] = { 0x00, 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 };
-	return list_append(0xa0b368, 0xa05748, 0x5b, rec, strings, 3, 0x33, bytes, 9);
+	return list_append(IMG(0xa0b368), IMG(0xa05748), 0x5b, rec, strings, 3, 0x33, bytes, 9);
 }
 /* 0x452c80: a room record (0x79 bytes) into the list at 0x9fd960 (count 0xa0b358) */
 int (net_addRoomRecord)(const u8 *rec)
 {
 	static const u8 strings[4] = { 0x43, 0x33, 0x01, 0x71 };
 	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
-	return list_append(0xa0b358, 0x9fd960, 0x79, rec, strings, 4, 0x33, bytes, 9);
+	return list_append(IMG(0xa0b358), IMG(0x9fd960), 0x79, rec, strings, 4, 0x33, bytes, 9);
 }
 
 #define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
@@ -482,15 +482,15 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 	u8 *name = NULL;
 	int r = GAME_FN(dplay_getPlayerName, 0x454190, int, u32, u8 **)(from, &name);
 	if (r >= 0) {
-		const char *shortName = *(const char **)(name + 8);
+		const char *shortName = *(const char **)(RELOC(name) + 8);
 		if (!shortName)
-			shortName = (const char *)0x4b3e38;
-		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)0x4b3e30) + 1;
+			shortName = (const char *)IMG(0x4b3e38);
+		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)IMG(0x4b3e30)) + 1;
 		char *line = IMPORT(0x4a9198, char *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, length));   /* GlobalLock(GlobalAlloc(GHND)) */
 		if (!line)
 			r = 0x8007000e;
 		else {
-			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, (const char *)0x4b3e30, shortName, text);   /* wsprintfA */
+			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, (const char *)IMG(0x4b3e30), shortName, text);   /* wsprintfA */
 			*out = line;
 		}
 	}
@@ -524,7 +524,7 @@ int (net_startThread)(void)
 		return 0;
 	if (!(g_pingStopEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
 		return 0;
-	g_pingThread = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)FN_ADDR(net_pingThreadProc, 0x454560), NULL, 0, (u32 *)0xa0d784);   /* CreateThread */
+	g_pingThread = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)FN_ADDR(net_pingThreadProc, 0x454560), NULL, 0, (u32 *)IMG(0xa0d784));   /* CreateThread */
 	if (!g_pingThread)
 		return 0;
 	SetEvent(g_pingDataEvent);
@@ -536,11 +536,11 @@ int (net_startThread)(void)
 int (net_addPlayerRecord)(const u8 *rec)
 {
 	static const u8 fields[7] = { 0x2a, 0x26, 0x22, 0x2e, 0x36, 0x3a, 0x32 };
-	lstrcpyA((char *)(0xa05330 + g_playerListCount * 62), (const char *)rec);
+	lstrcpyA((char *)(IMG(0xa05330) + g_playerListCount * 62), (const char *)RELOC(rec));
 	int i = g_playerListCount;
-	u8 *slot = (u8 *)(0xa05330 + i * 62);
+	u8 *slot = (u8 *)(IMG(0xa05330) + i * 62);
 	for (int k = 0; k < 7; k++)
-		*(u32 *)(slot + fields[k]) = *(const u32 *)(rec + fields[k]);
+		*(u32 *)(RELOC(slot) + fields[k]) = *(const u32 *)(RELOC(rec) + fields[k]);
 	g_playerListCount = i + 1;
 	return i * 62;
 }
@@ -550,12 +550,12 @@ int (net_addPlayerRecord)(const u8 *rec)
 int (net_getLocalAddress)(void)
 {
 	char name[0xc8];
-	memset((void *)0xa0b43c, 0, 16);
-	if (((int (STDCALL *)(char *, int))*(const u32 *)0x4a93a0)(name, 0xc8) == -1)   /* gethostname */
+	memset((void *)IMG(0xa0b43c), 0, 16);
+	if (((int (STDCALL *)(char *, int))*(const u32 *)IMG(0x4a93a0))(name, 0xc8) == -1)   /* gethostname */
 		return -1;
-	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(name);     /* gethostbyname */
+	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)IMG(0x4a93a8))(name);     /* gethostbyname */
 	if (entry)
-		strcpy((char *)0xa0b43c, ((const char *(STDCALL *)(u32))*(const u32 *)0x4a939c)(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+		strcpy((char *)IMG(0xa0b43c), ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
 	return 0;
 }
 
@@ -563,15 +563,15 @@ int (net_getLocalAddress)(void)
    the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
 int (net_sendChat)(const char *text)
 {
-	if (GAME_FN(net_logMessage, 0x451350, int, u32, const char *, char **)(g_localPlayerId, text, (char **)0x9fd944) < 0)   /* net_logMessage */
+	if (GAME_FN(net_logMessage, 0x451350, int, u32, const char *, char **)(g_localPlayerId, text, (char **)IMG(0x9fd944)) < 0)   /* net_logMessage */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
 	u8 *message = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!message)
 		return 0;
-	*(u32 *)message = 1;
-	*(u32 *)(message + 8) = g_localPlayerId;
-	lstrcpyA((char *)message + 0xc, text);
+	*(u32 *)RELOC(message) = 1;
+	*(u32 *)(RELOC(message) + 8) = g_localPlayerId;
+	lstrcpyA((char *)RELOC(message) + 0xc, text);
 	return GAME_FN(dplay_send, 0x450bf0, int, u32, u32, u32, void *, int)(g_localPlayerId, 0, 0, message, size) >= 0;
 }
 
@@ -581,18 +581,18 @@ u32 (net_ping)(u32 ip, u32 timeout)
 {
 	u32 reply[9];   /* ICMP_ECHO_REPLY; [2] the round trip time */
 	g_pingTime = 0;
-	void *icmp = ((void *(STDCALL *)(void))0x454e4c)();   /* IcmpCreateFile */
+	void *icmp = ((void *(STDCALL *)(void))IMG(0x454e4c))();   /* IcmpCreateFile */
 	memset(reply, 0, sizeof reply);
 	reply[2] = 0xffffffff;
-	u32 sent = ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))0x454e46)(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
+	u32 sent = ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))IMG(0x454e46))(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
 	u32 rtt = reply[2];
 	if (!sent) {
 		g_pingTime = rtt;
-		((int (STDCALL *)(void *))0x454e40)(icmp);   /* IcmpCloseHandle */
+		((int (STDCALL *)(void *))IMG(0x454e40))(icmp);   /* IcmpCloseHandle */
 		return rtt ? g_pingTime : 0;
 	}
 	g_pingTime = rtt ? rtt : 1;
-	((int (STDCALL *)(void *))0x454e40)(icmp);
+	((int (STDCALL *)(void *))IMG(0x454e40))(icmp);
 	return g_pingTime;
 }
 
@@ -626,7 +626,7 @@ u32 (net_pingAllServers)(void)
 	(*(int *)&g_pingTime) = 0;
 	if (g_serverPingCount > 0) {
 		for (int i = 0; i < g_serverPingCount && g_netListDone != 1; i++) {
-			const char *name = (const char *)(0xa0bf20 + i * 20);
+			const char *name = (const char *)(IMG(0xa0bf20) + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
 			if (GAME_FN(net_pingServer, 0x454650, int, const char *, int)(name, i)) {   /* net_pingServer */
@@ -650,7 +650,7 @@ static void reply_read(u32 socket, void *buf, u32 size)
 	u32 start = IMPORT(0x4a9184, u32, void)();   /* GetTickCount */
 	u32 got = 0;
 	do {
-		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)IMG(0x4a9398))(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (IMPORT(0x4a9184, u32, void)() - start <= 3000 && got < size);
@@ -661,10 +661,10 @@ static void reply_read(u32 socket, void *buf, u32 size)
    state 0xa0b36c set (0xcb / 0x29); 1..3 also end the wait (0xa0b300) */
 void (net_receiveLobbyReply)(void)
 {
-	reply_read(0xa055f8, (void *)0xa05260, 0x5b);
+	reply_read(IMG(0xa055f8), (void *)IMG(0xa05260), 0x5b);
 	switch (g_lobbyReplyKind) {
 	case 0:
-		GAME_FN(net_addServerRecord, 0x452af0, int, void *)((void *)0xa05260);   /* net_addServerRecord */
+		GAME_FN(net_addServerRecord, 0x452af0, int, void *)((void *)IMG(0xa05260));   /* net_addServerRecord */
 		break;
 	case 1:
 		g_serverPingCount = g_serverListCount;
@@ -687,10 +687,10 @@ void (net_receiveLobbyReply)(void)
    the list (net_addRoomRecord), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
 void (net_receiveGameServerReply)(void)
 {
-	reply_read(0xa05630, (void *)0xa0b280, 0x79);
+	reply_read(IMG(0xa05630), (void *)IMG(0xa0b280), 0x79);
 	switch (g_gameServerReplyKind) {
 	case 0:
-		GAME_FN(net_addRoomRecord, 0x452c80, int, void *)((void *)0xa0b280);   /* net_addRoomRecord */
+		GAME_FN(net_addRoomRecord, 0x452c80, int, void *)((void *)IMG(0xa0b280));   /* net_addRoomRecord */
 		break;
 	case 1:
 		g_serverPingCount = g_roomListCount;
@@ -757,11 +757,11 @@ u32 (net_receiveAll)(void)
    session's GUID and the game's application GUID (0x4a96e8) */
 static u32 *session_desc(const void *guid)
 {
-	u32 *desc = (u32 *)0xa0b3b0;
+	u32 *desc = (u32 *)IMG(0xa0b3b0);
 	memset(desc, 0, 0x50);
 	desc[0] = 0x50;                              /* dwSize */
 	memcpy(&desc[2], guid, 16);                  /* guidInstance */
-	memcpy(&desc[6], (const void *)0x4a96e8, 16);   /* guidApplication */
+	memcpy(&desc[6], (const void *)IMG(0x4a96e8), 16);   /* guidApplication */
 	return desc;
 }
 
@@ -841,8 +841,8 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    first failure */
 static void dplay_lobbyConnect(void)
 {
-	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4a9648, NULL, 1,
-			(const void *)0x4a9658, (void **)0xa0b398) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)IMG(0x4a9648), NULL, 1,
+			(const void *)IMG(0x4a9658), (void **)IMG(0xa0b398)) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
 		return;
 	void *lobby = g_dplayLobby;
 	u32 size;
@@ -862,7 +862,7 @@ static void dplay_lobbyConnect(void)
 	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, g_lobbyConnectionBlock) < 0)   /* SetConnectionSettings */
 		return;
 	lobby = g_dplayLobby;
-	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)0x4a9678, (void **)0xa0b404, NULL) < 0)
+	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)IMG(0x4a9678), (void **)IMG(0xa0b404), NULL) < 0)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = g_dplay;   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
@@ -883,11 +883,11 @@ static void dplay_lobbyConnect(void)
 int (dplay_create)(void)
 {
 	dplay_lobbyConnect();
-	int r = GAME_FN(dplay_createLobby, 0x4539f0, int, void **)((void **)0xa0b404);   /* dplay_createLobby */
+	int r = GAME_FN(dplay_createLobby, 0x4539f0, int, void **)((void **)IMG(0xa0b404));   /* dplay_createLobby */
 	if (r < 0)
 		return r;
 	void *play = g_dplay;
-	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)0x4a96e8, (void *)FN_ADDR(dplay_enumConnections, 0x4532f0), NULL, 0);
+	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)IMG(0x4a96e8), (void *)FN_ADDR(dplay_enumConnections, 0x4532f0), NULL, 0);
 	if (r >= 0)
 		r = 0;
 	if (g_lobbyConnectionBlock)
@@ -904,20 +904,20 @@ int (dplay_create)(void)
 u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 {
 	(void)size;
-	u32 type = *(const u32 *)message;
-	u32 slot = message[4], length = *(const u32 *)(message + 5);
-	u8 *player = (u8 *)0x9f9840 + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
+	u32 type = *(const u32 *)RELOC(message);
+	u32 slot = message[4], length = *(const u32 *)(RELOC(message) + 5);
+	u8 *player = (u8 *)IMG(0x9f9840) + slot * 0x410;   /* +0 taken, +4 the id, +8 data there, +0xc its size, +0x10 data */
 	int r;
 	switch (type) {
 	case 1:
 		if (g_chatLog)
 			g_chatLog = 0;
-		r = GAME_FN(net_logMessage, 0x451350, int, u32, const u8 *, char **)(from, message + 0xc, (char **)0x9fd948);   /* net_logMessage */
+		r = GAME_FN(net_logMessage, 0x451350, int, u32, const u8 *, char **)(from, message + 0xc, (char **)IMG(0x9fd948));   /* net_logMessage */
 		if (r >= 0)
 			g_chatLogged = 1;
 		return r;
 	case 2:
-		(*(u32 *)&g_netHostGone) = *(const u32 *)(message + 4);
+		(*(u32 *)&g_netHostGone) = *(const u32 *)(RELOC(message) + 4);
 		GAME_FN(net_freeSessionList, 0x454130, void, void)();
 		return GAME_FN(net_freeAllSlots, 0x4515a0, u32, void)();
 	case 6:
@@ -964,11 +964,11 @@ int (dplay_initConnection)(int kind, const char *address)
 		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
 		char host[0xc0];
 		u32 size = 0;
-		strcpy(host, address ? address : (const char *)0xa0bb0c);
-		memcpy(element[0].guid, (const void *)0x4a9638, 16);   /* DPAID_ServiceProvider */
+		strcpy(host, address ? address : (const char *)IMG(0xa0bb0c));
+		memcpy(element[0].guid, (const void *)IMG(0x4a9638), 16);   /* DPAID_ServiceProvider */
 		element[0].size = 0x10;
 		element[0].data = g_instanceGuid;
-		memcpy(element[1].guid, (const void *)0x4a9628, 16);   /* DPAID_INet */
+		memcpy(element[1].guid, (const void *)IMG(0x4a9628), 16);   /* DPAID_INet */
 		element[1].size = strlen(host) + 1;
 		element[1].data = host;
 		void *lobby = g_dplayLobby;
@@ -981,7 +981,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	}
 	if (!g_storedConnection)
 		return 1;
-	if (GAME_FN(dplay_createLobby, 0x4539f0, int, void **)((void **)0xa0b404) < 0 || !g_dplay)   /* dplay_createLobby */
+	if (GAME_FN(dplay_createLobby, 0x4539f0, int, void **)((void **)IMG(0xa0b404)) < 0 || !g_dplay)   /* dplay_createLobby */
 		return 0;
 	void *play = g_dplay;
 	if (COM(play, 0x98, int, void *, u32)(play, g_storedConnection, 0) < 0)   /* InitializeConnection */
@@ -1000,9 +1000,9 @@ int (dplay_initConnection)(int kind, const char *address)
    0x4519b0. Returns its eax */
 static u32 socket_close(u32 socket)
 {
-	((int (STDCALL *)(void))*(const u32 *)0x4a93ac)();                                  /* WSACancelBlockingCall */
-	((int (STDCALL *)(int, int))*(const u32 *)0x4a938c)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
-	((int (STDCALL *)(int))*(const u32 *)0x4a9390)(GAME_VAR(int, socket));              /* closesocket */
+	((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))();                                  /* WSACancelBlockingCall */
+	((int (STDCALL *)(int, int))*(const u32 *)IMG(0x4a938c))(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
+	((int (STDCALL *)(int))*(const u32 *)IMG(0x4a9390))(GAME_VAR(int, socket));              /* closesocket */
 	GAME_VAR(int, socket) = 0;
 	return arena_freeBuffers();
 }
@@ -1028,7 +1028,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	return 1;
 }
 
-#define WSACancelBlockingCall() ((int (STDCALL *)(void))*(const u32 *)0x4a93ac)()
+#define WSACancelBlockingCall() ((int (STDCALL *)(void))*(const u32 *)IMG(0x4a93ac))()
 
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
    the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */
@@ -1085,7 +1085,7 @@ void (net_sendLocalInfo)(const u32 *msg)
 		if (!g_isHost)
 			return;
 		(*(u8 *)&g_netClaimedSlot) = net_claimPlayerSlot();
-		net_sendMessage((void *)0x9f9420, msg[2], 0);
+		net_sendMessage((void *)IMG(0x9f9420), msg[2], 0);
 		gone = 1;
 	} else
 		return;
@@ -1122,15 +1122,15 @@ void (net_sendLocalInfo)(const u32 *msg)
    the network left where the original does so) */
 static int connect_socket(int *sock, int status)
 {
-	const char *host = (const char *)0xa055e4;
+	const char *host = (const char *)IMG(0xa055e4);
 	u8 wsa[0x190];
-	if (((int (STDCALL *)(u32, void *))*(const u32 *)0x4a9378)(0x202, wsa))                /* WSAStartup */
+	if (((int (STDCALL *)(u32, void *))*(const u32 *)IMG(0x4a9378))(0x202, wsa))                /* WSAStartup */
 		return 0;
 	if (wsa[0] != 2 || wsa[1] != wsa[0]) {
 		WSACancelBlockingCall();
 		return 0;
 	}
-	*sock = ((int (STDCALL *)(int, int, int))*(const u32 *)0x4a937c)(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
+	*sock = ((int (STDCALL *)(int, int, int))*(const u32 *)IMG(0x4a937c))(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
 	if (*sock == -1) {
 		WSACancelBlockingCall();
 		net_disconnect();
@@ -1139,20 +1139,20 @@ static int connect_socket(int *sock, int status)
 	struct { u16 family, port; u32 address; u8 zero[8]; } where;          /* sockaddr_in */
 	memset(&where, 0, sizeof where);
 	where.family = 2;
-	if (((int (STDCALL *)(int, void *, int))*(const u32 *)0x4a9384)(*sock, &where, 16) == -1)   /* bind */
+	if (((int (STDCALL *)(int, void *, int))*(const u32 *)IMG(0x4a9384))(*sock, &where, 16) == -1)   /* bind */
 		return 0;
 	where.family = 2;
-	where.address = ((u32 (STDCALL *)(const char *))*(const u32 *)0x4a9370)(host);      /* inet_addr */
-	where.port = ((u16 (STDCALL *)(u32))*(const u32 *)0x4a9374)(g_serverPort); /* htons */
+	where.address = ((u32 (STDCALL *)(const char *))*(const u32 *)IMG(0x4a9370))(host);      /* inet_addr */
+	where.port = ((u16 (STDCALL *)(u32))*(const u32 *)IMG(0x4a9374))(g_serverPort); /* htons */
 	if (where.address == 0xffffffff) {
-		u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)0x4a93a8)(host);       /* gethostbyname */
+		u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)IMG(0x4a93a8))(host);       /* gethostbyname */
 		if (!entry) {
-			((void (STDCALL *)(int))*(const u32 *)0x4a9380)(0x2726);                     /* WSASetLastError(WSAEINVAL) */
+			((void (STDCALL *)(int))*(const u32 *)IMG(0x4a9380))(0x2726);                     /* WSASetLastError(WSAEINVAL) */
 			return 0;
 		}
 		where.address = ***(u32 ***)(entry + 0xc);                          /* h_addr_list[0] */
 	}
-	int r = ((int (STDCALL *)(int, void *, int))*(const u32 *)0x4a93a4)(*sock, &where, 16);   /* connect */
+	int r = ((int (STDCALL *)(int, void *, int))*(const u32 *)IMG(0x4a93a4))(*sock, &where, 16);   /* connect */
 	if (r == 10061 || r == -1) {
 		WSACancelBlockingCall();
 		net_disconnect();
@@ -1170,9 +1170,9 @@ int (net_connect)(int mode)
 	net_closeAll(mode);
 	g_netConnected = 1;
 	if (mode == 100)
-		return connect_socket((int *)0xa055f8, 200);
+		return connect_socket((int *)IMG(0xa055f8), 200);
 	if (mode == 0x65)
-		return connect_socket((int *)0xa05630, 201);
+		return connect_socket((int *)IMG(0xa05630), 201);
 	return 1;
 }
 
@@ -1188,14 +1188,14 @@ u32 (net_disconnect)(void)
 		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
 	if ((*(int *)&g_lobbySocket)) {
-		if (!g_lobbyPending && !send_leave(0xa0b310, 0xa0b318, lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+		if (!g_lobbyPending && !send_leave(IMG(0xa0b310), IMG(0xa0b318), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
 			return 0;
-		r = socket_close(0xa055f8);
+		r = socket_close(IMG(0xa055f8));
 	}
 	if (g_gameServerSocket) {
-		if (!g_gameServerPending && !send_leave(0xa0b328, 0xa0b330, roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
+		if (!g_gameServerPending && !send_leave(IMG(0xa0b328), IMG(0xa0b330), roomBytes, 8, 0x63, roomNames, 0x16, 0x65))
 			return 0;
-		r = socket_close(0xa05630);
+		r = socket_close(IMG(0xa05630));
 	}
 	g_netLastRequest = 0;
 	g_lobbyConnectStatus = 0;
@@ -1215,7 +1215,7 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 {
 	void *data = GAME_VAR(void *, buffer);
 	if (data && GAME_VAR(u32, socket))
-		((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), data, size, 0);   /* send */
+		((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)IMG(0x4a9394))(GAME_VAR(u32, socket), data, size, 0);   /* send */
 }
 
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
@@ -1231,25 +1231,25 @@ void (net_send)(int kind, int to)
 		if (!word)
 			return;
 		*word = (u32)kind;
-		u32 socket = to == 100 ? 0xa055f8 : 0xa05630;
+		u32 socket = to == 100 ? IMG(0xa055f8) : IMG(0xa05630);
 		if (GAME_VAR(u32, socket))
-			((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)0x4a9394)(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
+			((int (STDCALL *)(u32, const void *, int, int))*(const u32 *)IMG(0x4a9394))(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
-		[10] = { 0xa0b310, 0x5b, 1 }, [11] = { 0xa0b318, 0x5b, 1 }, [12] = { 0xa0b314, 0x5b, 1 },
-		[17] = { 0xa0b338, 0x36, 0 }, [18] = { 0xa0b328, 0x79, 0 }, [20] = { 0xa0b32c, 0x79, 0 },
-		[25] = { 0xa0b33c, 0x1e, 0 }, [27] = { 0xa0b340, 0xb9, 0 }, [28] = { 0xa0b344, 0x5c, 0 }, [29] = { 0xa055e0, 0x1e, 0 } };
+		[10] = { IMG(0xa0b310), 0x5b, 1 }, [11] = { IMG(0xa0b318), 0x5b, 1 }, [12] = { IMG(0xa0b314), 0x5b, 1 },
+		[17] = { IMG(0xa0b338), 0x36, 0 }, [18] = { IMG(0xa0b328), 0x79, 0 }, [20] = { IMG(0xa0b32c), 0x79, 0 },
+		[25] = { IMG(0xa0b33c), 0x1e, 0 }, [27] = { IMG(0xa0b340), 0xb9, 0 }, [28] = { IMG(0xa0b344), 0x5c, 0 }, [29] = { IMG(0xa055e0), 0x1e, 0 } };
 	switch (kind) {
 	case 10: case 11: case 12: case 17: case 18: case 20: case 27: case 28: case 29:
 		g_netLastRequest = kind;
 		/* fall through */
 	case 25:
-		send_buffer(plain[kind].lobby ? 0xa055f8 : 0xa05630, plain[kind].buffer, plain[kind].size);
+		send_buffer(plain[kind].lobby ? IMG(0xa055f8) : IMG(0xa05630), plain[kind].buffer, plain[kind].size);
 		return;
 	case 13:
 		net_clearServerList();
 		g_netLastRequest = 13;
-		send_buffer(0xa055f8, 0xa0b31c, 4);
+		send_buffer(IMG(0xa055f8), IMG(0xa0b31c), 4);
 		return;
 	case 23: {
 		char *name = g_netSendName;
@@ -1257,7 +1257,7 @@ void (net_send)(int kind, int to)
 		if (!name || !from)
 			return;
 		strcpy(name, from + 0x33);
-		send_buffer(0xa055f8, 0xa0b304, 0x10);
+		send_buffer(IMG(0xa055f8), IMG(0xa0b304), 0x10);
 		return;
 	}
 	case 14: case 15:
@@ -1265,35 +1265,35 @@ void (net_send)(int kind, int to)
 		if (!(*(void **)&g_accountPacket))
 			return;
 		jmp_net_getLocalAddress();
-		lstrcpyA(g_accountPacket + 0x60, (const char *)0xa0b43c);
-		send_buffer(0xa05630, 0xa0b320, 0x10b);
+		lstrcpyA(g_accountPacket + 0x60, (const char *)IMG(0xa0b43c));
+		send_buffer(IMG(0xa05630), IMG(0xa0b320), 0x10b);
 		return;
 	case 19:
 		net_clearServers();
 		net_clearRoomList();
 		g_netLastRequest = 0x13;
-		send_buffer(0xa05630, 0xa0b334, 4);
+		send_buffer(IMG(0xa05630), IMG(0xa0b334), 4);
 		return;
 	case 21:
 	case 26:
 		net_clearPlayerList();
 		if (kind == 21)
 			g_netLastRequest = 0x15;
-		send_buffer(0xa05630, kind == 21 ? 0xa0b324 : 0xa052e4, kind == 21 ? 8 : 1);
+		send_buffer(IMG(0xa05630), kind == 21 ? IMG(0xa0b324) : IMG(0xa052e4), kind == 21 ? 8 : 1);
 		return;
 	case 22:
 		g_netLastRequest = 0x16;
 		if (!g_roomRecordPacket)
 			return;
 		*g_roomRecordPacket = 1;
-		send_buffer(0xa05630, 0xa0b330, 0x79);
+		send_buffer(IMG(0xa05630), IMG(0xa0b330), 0x79);
 		return;
 	case 24:
 		jmp_net_getLocalAddress();
 		if (!g_netSendBuffer)
 			return;
-		lstrcpyA(g_netSendBuffer, (const char *)0xa0b43c);
-		send_buffer(0xa05630, 0xa0b308, 0x10);
+		lstrcpyA(g_netSendBuffer, (const char *)IMG(0xa0b43c));
+		send_buffer(IMG(0xa05630), IMG(0xa0b308), 0x10);
 		return;
 	}
 }
@@ -1306,7 +1306,7 @@ static int recv_all(u32 socket, void *buf, int size, u32 start)
 {
 	u32 got = 0;
 	for (;;) {
-		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)0x4a9398)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ((int (STDCALL *)(u32, void *, int, int))*(const u32 *)IMG(0x4a9398))(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
 		if (GetTickCount() - start > 3000)
@@ -1320,7 +1320,7 @@ static int recv_all(u32 socket, void *buf, int size, u32 start)
    request and leaves its code in status */
 static void status_reply(u32 socket, u32 reply, u32 status, u32 timeout, u32 start)
 {
-	if (!recv_all(socket, (void *)reply, 4, start)) {
+	if (!recv_all(socket, (void *)RELOC(reply), 4, start)) {
 		GAME_VAR(int, status) = timeout;
 		g_netLastRequest = 0;
 	}
@@ -1345,7 +1345,7 @@ static void status_reply(u32 socket, u32 reply, u32 status, u32 timeout, u32 sta
    (that ends the request); a timeout leaves 0x28 */
 static void answer_reply(u32 answer, const u8 *codes, int count, u32 start)
 {
-	if (!recv_all(0xa05630, (void *)0xa05638, 0x10b, start)) {
+	if (!recv_all(IMG(0xa05630), (void *)IMG(0xa05638), 0x10b, start)) {
 		GAME_VAR(int, answer) = 0x28;
 		g_netLastRequest = 0;
 	}
@@ -1368,19 +1368,19 @@ void (net_recv)(void)
 	static const u8 answers14[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a }, answers15[4] = { 0x1e, 0x21, 0x28, 0x2a };
 	switch (g_netLastRequest) {
 	case 10:
-		status_reply(0xa055f8, 0xa055dc, 0xa0b370, 0x29, start);
+		status_reply(IMG(0xa055f8), IMG(0xa055dc), IMG(0xa0b370), 0x29, start);
 		break;
 	case 13:
 		net_receiveLobbyReply();
 		break;
 	case 14:
-		answer_reply(0xa0b378, answers14, 6, start);
+		answer_reply(IMG(0xa0b378), answers14, 6, start);
 		break;
 	case 15:
-		answer_reply(0xa0b37c, answers15, 4, start);
+		answer_reply(IMG(0xa0b37c), answers15, 4, start);
 		break;
 	case 18:
-		status_reply(0xa05630, 0xa0b248, 0xa0b374, 0x28, start);
+		status_reply(IMG(0xa05630), IMG(0xa0b248), IMG(0xa0b374), 0x28, start);
 		break;
 	case 19:
 		net_receiveGameServerReply();
@@ -1394,7 +1394,7 @@ void (net_recv)(void)
 		g_netLastRequest = 0;
 		break;
 	case 29:
-		recv_all(0xa05630, (void *)0xa052c0, 0x22, start);
+		recv_all(IMG(0xa05630), (void *)IMG(0xa052c0), 0x22, start);
 		if (g_netNotice) {
 			g_netNoticeIn = 1;
 			g_netLastRequest = 0;
@@ -1438,7 +1438,7 @@ static void send_packet(u8 *s, u8 *packet)
    byte cleared at its even player). The frame count (+0x2340c78) goes up; while recording (+0x2340d1d 1) the frame
    (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
    (+0x2340d08). Its caller ignores the eax it leaves */
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *packet)
 {
 	packet[1] = 0xe;
@@ -1470,7 +1470,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 		return;
 	u8 *r = s + 0x1755230 + p * 0x47fd2;
 	packet[1] = 2;
-	strcpy((char *)packet + 2, (const char *)r + 4);
+	strcpy((char *)packet + 2, (const char *)RELOC(r) + 4);
 	packet[0x14] = r[0x48];
 	packet[0x13] = r[0x44];
 	packet[0x16] = (u8)p;
@@ -1492,11 +1492,11 @@ PACKET_ENTRY(net_sendPlayerInfo, 1);
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
-		{ { 0x4b3e64 }, 0xa0b3a0, 0xa0bae0 }, { { 0x4b3e60 }, 0xa0b450, 0xa0bae4 },
-		{ { 0x4b3e58, 0x4b3e50 }, 0xa0b408, 0xa0bae8 }, { { 0x4b3e48, 0x4b3e40 }, 0xa0bab8, 0xa0baec } };
+		{ { IMG(0x4b3e64) }, 0xa0b3a0, 0xa0bae0 }, { { IMG(0x4b3e60) }, 0xa0b450, 0xa0bae4 },
+		{ { IMG(0x4b3e58), IMG(0x4b3e50) }, 0xa0b408, 0xa0bae8 }, { { IMG(0x4b3e48), IMG(0x4b3e40) }, 0xa0bab8, 0xa0baec } };
 	char names[10][0x80];
 	char *own = names[g_serviceProviderCount];
-	strcpy(own, (const char *)name[2]);   /* lpszShortNameA */
+	strcpy(own, (const char *)RELOC(name[2]));   /* lpszShortNameA */
 	crt_strupr(own);
 	u32 *id = operator_new(0x10);
 	if (!id)
@@ -1603,13 +1603,13 @@ PACKET_ENTRY(net_sendColourRing, 1);
 /* a float in memory times a constant, truncated (the original's __ftol) */
 static int scaled(const void *v, u32 k)
 {
-	return ftol(fmul_m(fld_m((const float *)v), (const float *)k));
+	return ftol(fmul_m(fld_m((const float *)RELOC(v)), (const float *)RELOC(k)));
 }
 
 /* an angle wrapped into a turn (angle_wrap, given the float's bits) times 0x4aa49c, truncated */
 static int angle_byte(const void *v)
 {
-	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)v), (const float *)0x4aa49c));
+	return ftol(fmul_m(FUN_0046c100_bits(*(const u32 *)RELOC(v)), (const float *)IMG(0x4aa49c)));
 }
 
 /* 0x48e2c0 (thiscall on the game): player p's state sent (packet 0; the actor at +0x1ecca70 + p x 0x8888): its
@@ -1634,14 +1634,14 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	if (GAME_VAR(int, a + 0x14c) == 1)
 		packet[4] |= 1;
 	for (int c = 0; c < 3; c++) {
-		w = (u16)scaled(a + 0x180 + c * 4, 0x4a93ec);
+		w = (u16)scaled(a + 0x180 + c * 4, IMG(0x4a93ec));
 		memcpy(packet + 5 + c * 2, &w, 2);
 	}
 	packet[0xb] = (u8)angle_byte(a + 0x18c);
 	packet[0xc] = (u8)angle_byte(a + 0x190);
-	packet[0xd] = (u8)scaled(a + 0x194, 0x4a9418);
-	packet[0xe] = (u8)scaled(a + 0x198, 0x4a9418);
-	packet[0xf] = (u8)(scaled(a + 0x19c, 0x4aa498) << 4) | (u8)scaled(a + 0x1a4, 0x4aa498);
+	packet[0xd] = (u8)scaled(a + 0x194, IMG(0x4a9418));
+	packet[0xe] = (u8)scaled(a + 0x198, IMG(0x4a9418));
+	packet[0xf] = (u8)(scaled(a + 0x19c, IMG(0x4aa498)) << 4) | (u8)scaled(a + 0x1a4, IMG(0x4aa498));
 	packet[0x10] = (u8)angle_byte(a + 0x1a0);
 	packet[0x11] = 0;
 	if (GAME_VAR(int, a + 0x8850) == 1) {
@@ -1653,7 +1653,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	for (int k = 0; k < 5; k++)
 		packet[0x13 + k * 9] = 0;
 	for (int k = 0; k < 5; k++) {
-		int *slot = (int *)(a + 0x360 + k * 4), *fresh = (int *)(a + 0x1fc + k * 0x20);
+		int *slot = (int *)(RELOC(a) + 0x360 + k * 4), *fresh = (int *)(RELOC(a) + 0x1fc + k * 0x20);
 		u8 *o = packet + 0x13 + k * 9;
 		if (*slot < 0)
 			continue;
@@ -1680,7 +1680,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			o[0] |= 8;
 		u8 *at = flying && GAME_VAR(void *, shot + 0x6c) ? shot + 0x60 : shot + 0x84;
 		for (int c = 0; c < 3; c++) {
-			w = (u16)scaled(at + c * 4, 0x4a93ec);
+			w = (u16)scaled(at + c * 4, IMG(0x4a93ec));
 			memcpy(o + 3 + c * 2, &w, 2);
 		}
 	}
@@ -1775,7 +1775,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 PACKET_ENTRY(net_sendGamePacket, 1);
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define STAGE (g + 0x1f36c8)
 #define ACTOR(i) (g + 0x1ecca70 + (i) * 0x8888)   /* the stage's actors, from the game object */
 #define PLAYER(i) (g + 0x1755230 + (i) * 0x47fd2)
@@ -1979,7 +1979,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					g_missionStage = pkt[3];
 					G(int, 0x1f1cb4) = pkt[4];
 					G(int, 0x1f1cb8) = pkt[6];
-					scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + g_missionStage * 0x20);
+					scene_setTextureFolder((Scene *)g, (const char *)IMG(0x907b30) + g_missionStage * 0x20);
 					G(int, 0x233cc20) = 1;
 					G(int, 0x233cc28) = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);

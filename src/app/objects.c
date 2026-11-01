@@ -6,7 +6,7 @@
    which also looks the GL_EXT_vertex_array entry points up again) */
 int THISCALL (ViewVolume_dtor)(void *view)
 {
-	*(u32 *)view = 0x4aa24c;
+	*(u32 *)view = IMG(0x4aa24c);
 	return gfx_initVertexArrayExt(view);
 }
 
@@ -48,7 +48,7 @@ void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL
    leaves */
 void THISCALL (Console_ctor)(u8 *self)
 {
-	GAME_VAR(u32, self) = 0x4aa238;
+	GAME_VAR(u32, self) = IMG(0x4aa238);
 	Stage_dtor((Stage *)(self + 0x1f36c8));
 	ViewVolume_dtor(self + 0x74);
 	TimeSync_dtor(self + 0xc);

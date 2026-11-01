@@ -3,10 +3,10 @@
    their 32 bits (floats included). */
 #include "../game.h"
 
-#define g_armcColourBits ((u32 *)0x4dc4b8)           /* the six colour slots, six values each (see g_armcColours) */
-#define g_colourUndo ((u32 *)0x4dc530)               /* one slot's six values, for undo */
-#define g_savedParts ((const u32 *)0x4dc878)         /* the saved mech: head, chest, arm, leg, booster */
-#define g_workParts ((u32 *)0x4dc760)                /* the working copy, same order */
+#define g_armcColourBits ((u32 *)IMG(0x4dc4b8))           /* the six colour slots, six values each (see g_armcColours) */
+#define g_colourUndo ((u32 *)IMG(0x4dc530))               /* one slot's six values, for undo */
+#define g_savedParts ((const u32 *)IMG(0x4dc878))         /* the saved mech: head, chest, arm, leg, booster */
+#define g_workParts ((u32 *)IMG(0x4dc760))                /* the working copy, same order */
 
 static void copy(u32 *to, const u32 *from, int n)
 {
@@ -38,9 +38,9 @@ void (armc_restoreColourUndo)(void)
 void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
-		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8, 0x4dc760 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c, 0x4dc764 },
-		{ 0x4dbc7c, 0x4dca90, 0x4dc964, 0x4dc768 }, { 0x4dcea4, 0x4dca94, 0x4dc89c, 0x4dc76c },
-		{ 0x4dcb30, 0x4dc890, 0x4dbd7c, 0x4dc770 } };   /* head, chest, arm, leg, booster */
+		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8), IMG(0x4dc760) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c), IMG(0x4dc764) },
+		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), IMG(0x4dc768) }, { IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c), IMG(0x4dc76c) },
+		{ IMG(0x4dcb30), IMG(0x4dc890), IMG(0x4dbd7c), IMG(0x4dc770) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
 		const int *list = (const int *)kinds[k].list;
@@ -56,8 +56,8 @@ void (armc_syncPartCursors)(void)
 /* 0x40e670: the menu camera put back as it was before the screen (angles and position), the preview off */
 void (armc_restoreMenuCamera)(void)
 {
-	copy((u32 *)0x4df024, (const u32 *)0x4df870, 3);
-	copy((u32 *)0x680378, (const u32 *)0x76d388, 3);
+	copy((u32 *)IMG(0x4df024), (const u32 *)IMG(0x4df870), 3);
+	copy((u32 *)IMG(0x680378), (const u32 *)IMG(0x76d388), 3);
 	g_armcPreview = 0;
 }
 
@@ -75,12 +75,12 @@ void (armc_loadSavedMech)(void)
 	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItem1);
 	g_mechItem5 = (*(u32 *)&g_savedMechItem5);
 	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechWeapons);
-	copy(g_armcColourBits, (const u32 *)0x4dcfe0, 0x90 / 4);
+	copy(g_armcColourBits, (const u32 *)IMG(0x4dcfe0), 0x90 / 4);
 }
 
 /* 0x40f830: 1 if item list entry i is a colour part (27 and up) already in one of the two item slots */
 int (armc_colourPartEquipped)(int i)
 {
-	int item = ((const int *)0x4dcca4)[i];
+	int item = ((const int *)IMG(0x4dcca4))[i];
 	return item >= 0x1b && (item == g_itemSlot4 || item == g_itemSlot5);
 }

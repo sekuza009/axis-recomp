@@ -26,7 +26,7 @@ typedef struct {
 	float radius;   /* +0x28 */
 } Light;
 
-#define K(addr) ((const float *)(addr))
+#define K(addr) ((const float *)RELOC(addr))
 #define MUL(a, b) fmul_m(fld_m(a), b)
 #define LIGHT_COUNT(factors) (*(const int *)((factors) + 0xb004))
 #define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
@@ -195,7 +195,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			break;
 		}
 		default:
-			sys_errorTerminate((const char *)0x4c4a4c, l->type);
+			sys_errorTerminate((const char *)IMG(0x4c4a4c), l->type);
 		}
 	}
 }
@@ -239,7 +239,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		if (kind == 0 || kind == 2)
 			continue;
 		if (kind != 1) {
-			sys_fatalError((char *)0xae2eb8, (const char *)0x4c74a8, kind);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c74a8), kind);
 			continue;
 		}
 		for (int row = r0; row <= r1; row++)
@@ -266,7 +266,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 {
 	if (GAME_VAR(int, layer + 0x5c) + 2 > GAME_VAR(int, layer + 0x54))
-		sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4d052c, GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
+		sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4d052c), GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
 	idx[(*n)++] = r * w + c;
 	GAME_VAR(int, layer + 0x5c)++;
 	idx[(*n)++] = (r + 1) * w + c;
@@ -321,7 +321,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				if (GAME_VAR(u8 *, layer + 0x3c)[r * GAME_VAR(int, layer + 0x20) + c] & 1) {
 					if (!open) {
 						if (GAME_VAR(int, layer + 0x68) >= GAME_VAR(int, layer + 0x60))
-							sys_fatalErrorN((char *)0xae2eb8, (const char *)0x4d056c, GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
+							sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4d056c), GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
 						prim = (u32 *)(GAME_VAR(u8 *, layer + 0x64) + GAME_VAR(int, layer + 0x68) * 12);
 						GAME_VAR(int, layer + 0x68)++;
 						open = 1;
@@ -330,15 +330,15 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 						prim[1] = 0;
 						prim[2] = (u32)(GAME_VAR(u8 *, layer + 0x58) + GAME_VAR(int, layer + 0x5c) * 4);
 					}
-					strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 				} else if (open) {
 					open = 0;
-					strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 					prim[1] = n;
 				}
 			}
 			if (open) {
-				strip_pair(layer, (u32 *)prim[2], &n, r, c, w);
+				strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 				prim[1] = n;
 			}
 		}
@@ -357,7 +357,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				water_point(s, layer, water, at, tex_at, v, angle);
 			}
 		u32 out = 0;
-		float r2 = f32(fmul_m(fld_m(&h), (const float *)0x4aa500));
+		float r2 = f32(fmul_m(fld_m(&h), (const float *)IMG(0x4aa500)));
 		memcpy(&out, &r2, 4);
 		for (int k = 0, angle = 0; k < 8; k++, angle += 450) {
 			float v[3];

@@ -3,7 +3,7 @@
    and handed to the view volume. */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* an entry's colours: with neither lights nor factors cleared; factors first (they set the colours), point lights
    then added on top, or alone (setting them). The inverse is taken again before the point lights, as the original

@@ -15,7 +15,7 @@ typedef struct {
 	i32 slotB[8];
 } Sound;                 /* 100 bytes */
 
-#define g_menuSounds ((Sound *const *)0x4dd4d4)
+#define g_menuSounds ((Sound *const *)IMG(0x4dd4d4))
 #define g_music GAME_VAR(void *, 0xa0e670)            /* the music graph */
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
@@ -68,7 +68,7 @@ int (sound_setVolume)(int v)
 {
 	if (!g_soundOn)
 		return 0;
-	int p = ftol(fmul_m((long double)g_soundVolume * v, (const float *)0x4a9504));
+	int p = ftol(fmul_m((long double)g_soundVolume * v, (const float *)IMG(0x4a9504)));
 	if (p < 0) {
 		g_soundBaseVolume = -1000;
 		return p;
@@ -77,7 +77,7 @@ int (sound_setVolume)(int v)
 		g_soundBaseVolume = 0;
 		return p;
 	}
-	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)0x4a93ec));
+	int r = ftol(fmul_m((long double)((p * 5 - 500) * 20), (const float *)IMG(0x4a93ec)));
 	g_soundBaseVolume = r;
 	return r;
 }
@@ -115,9 +115,9 @@ u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
 	modes[sound[8]] = (u32)mode;
 	if (mode == 1 || mode == 2)
 		values[sound[8]] = (u32)value;
-	void *buffer = (void *)sound[sound[8]];
+	void *buffer = (void *)RELOC(sound[sound[8]]);
 	COM(buffer, 0x40, u32, u32)(buffer, values[sound[8]]);
-	buffer = (void *)sound[sound[8]];
+	buffer = (void *)RELOC(sound[sound[8]]);
 	COM(buffer, 0x30, u32, u32, u32, u32)(buffer, 0, 0, 0);   /* Play */
 	u32 turn = sound[8];
 	if ((int)turn < 7) {
@@ -132,11 +132,11 @@ u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
    0x4dd4f8. Returns the last one */
 u32 (sound_loadMenuSounds)(void)
 {
-	static const u32 names[10] = { 0x4b1644, 0x4b1628, 0x4b1610, 0x4b15f4, 0x4b15dc, 0x4b15c4, 0x4b15b0, 0x4b1598,
-	                               0x4b1580, 0x4b1564 };
+	static const u32 names[10] = { IMG(0x4b1644), IMG(0x4b1628), IMG(0x4b1610), IMG(0x4b15f4), IMG(0x4b15dc), IMG(0x4b15c4), IMG(0x4b15b0), IMG(0x4b1598),
+	                               IMG(0x4b1580), IMG(0x4b1564) };
 	u32 r = 0;
 	for (int k = 0; k < 10; k++)
-		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)((const char *)names[k]);
+		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)((const char *)RELOC(names[k]));
 	return r;
 }
 
@@ -158,7 +158,7 @@ u32 (sound_playFile)(const char *name, int volume)
 	else if (volume > 100)
 		attenuation = g_soundBaseVolume;
 	else
-		attenuation = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (g_soundBaseVolume + 10000)) - 10000;
+		attenuation = ftol(fmul_m((long double)volume, (const float *)IMG(0x4a9504)) * (g_soundBaseVolume + 10000)) - 10000;
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, attenuation);   /* dsbuf_setVolume */
 	GAME_FN(dsbuf_play, 0x467d70, void, void *)(sound);                     /* dsbuf_play */
 	return mem_free(sound);
@@ -173,9 +173,9 @@ int (sound_initSoundTable)(const char *file, int volume)
 		return 0;
 	GAME_FN(sound_freeAll, 0x456cd0, void, void)();   /* sound_freeAll */
 	GAME_FN(sound_setVolume, 0x456de0, int, int)(volume);   /* sound_setVolume */
-	void *f = crt_fopen(file, (const char *)0x4ad170);
+	void *f = crt_fopen(file, (const char *)IMG(0x4ad170));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)0xa0e020, (const char *)0x4b42e8, file);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)IMG(0xa0e020), (const char *)IMG(0x4b42e8), file);   /* sys_fatalError */
 	int index;
 	char name[0x100];
 	fread_scrambled(&index, 4, 1, f);
@@ -206,7 +206,7 @@ u32 (sound_playVolume)(int index, int volume)
 	else if (volume > 100)
 		level = g_soundBaseVolume;
 	else
-		level = ftol(fmul_m((long double)volume, (const float *)0x4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
+		level = ftol(fmul_m((long double)volume, (const float *)IMG(0x4a9504)) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
 	return GAME_FN(dsbuf_play, 0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
 }
@@ -219,7 +219,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 {
 	if (!g_soundOn || !GAME_VAR(void *, 0xa0e02c + index * 4))
 		return;
-	const float *up = (const float *)0xa0e7d8;
+	const float *up = (const float *)IMG(0xa0e7d8);
 	float d[3], v[3], c[3];
 	for (int k = 0; k < 3; k++)
 		d[k] = f32(fsub_m(fld_m(pos + k), listener + k));
@@ -231,7 +231,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	if (!(range > 0.0f))
 		return;
 	int base = g_soundBaseVolume + 10000;
-	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)0x4a9424) * (long double)base) - 10000;
+	int volume = ftol(fsubr_m(fdiv_m(fld_m(&distance), &range), (const float *)IMG(0x4a9424)) * (long double)base) - 10000;
 	if (volume > 0)
 		volume = 0;
 	c[0] = f32(fmul_m(fld_m(&d[1]), &up[2]) - fmul_m(fld_m(&d[2]), &up[1]));
@@ -240,7 +240,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	Vec3_normalize(c);
 	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
 	across = across + fmul_m(fld_m(&c[0]), &side[0]);
-	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? 0x4a96fc : 0x4a9700)));
+	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? IMG(0x4a96fc) : IMG(0x4a9700))));
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, 0xa0e02c + index * 4), volume);   /* dsbuf_setVolume */
 	sound_playNextBuffer(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
 }
@@ -295,7 +295,7 @@ Sound *(sound_loadWav)(const char *name)
 	CloseHandle(file);
 	void *ds = g_directSound;
 	if (COM(ds, DS_CREATESOUNDBUFFER, long, void *, void **, void *)(ds, &desc.size, &sound->buffers[0], NULL)) {
-		MessageBoxA(NULL, (const char *)0x4c4dc4, (const char *)0x4c4de0, 0);
+		MessageBoxA(NULL, (const char *)IMG(0x4c4dc4), (const char *)IMG(0x4c4de0), 0);
 		return NULL;
 	}
 	void *buffer = sound->buffers[0], *locked;
@@ -320,7 +320,7 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (((int (STDCALL *)(void *, void **, void *))*(const u32 *)0x4a9020)(NULL, (void **)0xa0e804, NULL))   /* DirectSoundCreate */
+	if (((int (STDCALL *)(void *, void **, void *))*(const u32 *)IMG(0x4a9020))(NULL, (void **)IMG(0xa0e804), NULL))   /* DirectSoundCreate */
 		return 0;
 	void *ds = g_directSound;
 	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
@@ -338,7 +338,7 @@ int (sound_init)(void *hwnd)
 	wave.bits = 16;
 	wave.extra = 0;
 	ds = g_directSound;
-	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)0xa0e808, NULL))   /* CreateSoundBuffer */
+	if (COM(ds, 0xc, int, void *, void **, void *)(ds, &desc, (void **)IMG(0xa0e808), NULL))   /* CreateSoundBuffer */
 		return 0;
 	void *primary = g_primarySoundBuffer;
 	COM(primary, 0x38, int, void *)(primary, &wave);   /* SetFormat */
@@ -358,23 +358,23 @@ int (sound_init)(void *hwnd)
    one of three (the counter after). Returns music_play's eax, or kind - 1 for another kind */
 u32 THISCALL (music_playMatch)(u8 *stage)
 {
-	static const u32 kind1[4] = { 0x4b496c, 0x4b4a6c, 0x4b4b6c, 0x4b4c6c };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
-	static const u32 kind3[3] = { 0x4b4d6c, 0x4b4e6c, 0x4b506c };             /* Forgotten, desert wind, ashes of past */
-	static const u32 kind4[3] = { 0x4b516c, 0x4b536c, 0x4b546c };             /* Speed of Light, Fierce battle, Valhalla */
-	const u32 *random = (const u32 *)0xa106f8;
+	static const u32 kind1[4] = { IMG(0x4b496c), IMG(0x4b4a6c), IMG(0x4b4b6c), IMG(0x4b4c6c) };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
+	static const u32 kind3[3] = { IMG(0x4b4d6c), IMG(0x4b4e6c), IMG(0x4b506c) };             /* Forgotten, desert wind, ashes of past */
+	static const u32 kind4[3] = { IMG(0x4b516c), IMG(0x4b536c), IMG(0x4b546c) };             /* Speed of Light, Fierce battle, Valhalla */
+	const u32 *random = (const u32 *)IMG(0xa106f8);
 	u32 kind = *(u32 *)(stage + 0xbe3004) - 1;
 	u32 n;
 	switch (kind) {
 	case 0:
 		n = g_randPos++;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)kind1[random[n & 0xfff] & 3]);   /* music_play */
+		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
 	case 1:
 		g_randPos++;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)0x4b4f6c);   /* darkness */
+		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)IMG(0x4b4f6c));   /* darkness */
 	case 2:
 	case 3:
 		n = ++g_randPos;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)(kind == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
+		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)(RELOC(kind) == 2 ? kind3 : kind4)[random[n & 0xfff] % 3]);
 	}
 	return kind;
 }
@@ -399,19 +399,19 @@ int (music_play)(const char *name)
 	void *stream;
 	unsigned short wname[0x104];
 	IMPORT(0x4a93bc, long, void *)(NULL);   /* CoInitialize */
-	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)0x4aaf10, NULL, 1,
-			(const void *)0x4aae90, &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)IMG(0x4aaf10), NULL, 1,
+			(const void *)IMG(0x4aae90), &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
 		return 0;
 	IMPORT(0x4a9164, int, u32, u32, const char *, int, void *, int)(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
 	if (COM(stream, 0x30, long, u32, u32, void *)(stream, 0, 1, NULL))   /* Initialize(read, no graph thread) */
 		return 0;
-	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)0x4aafc0, 1, NULL))
+	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)IMG(0x4aafc0), 1, NULL))
 		return 0;   /* AddMediaStream(primary audio, default renderer) */
 	if (COM(stream, 0x40, long, const void *, u32)(stream, wname, 0))   /* OpenFile */
 		return 0;
 	g_music = stream;
 	COM(stream, 0x1c, long, u32)(stream, 1);   /* SetState(run) */
-	strcpy((char *)0xa0e674, name);
-	COM(g_music, 0x24, long, void *)(g_music, (void *)0xa0e018);   /* GetDuration */
+	strcpy((char *)IMG(0xa0e674), name);
+	COM(g_music, 0x24, long, void *)(g_music, (void *)IMG(0xa0e018));   /* GetDuration */
 	return 1;
 }

@@ -27,10 +27,10 @@ void THISCALL (scene_resetScores)(Scene *scene)
 static void mark_notice(Scene *scene, int i, u32 local, u32 other)
 {
 	if (i == scene->localPlayer) {
-		notice_printCentre(scene, (const char *)local);
+		notice_printCentre(scene, (const char *)RELOC(local));
 		sound_playVolume(6, 100);
 	} else {
-		notice_printCentre(scene, (const char *)other, scene->players[i].name);
+		notice_printCentre(scene, (const char *)RELOC(other), scene->players[i].name);
 		sound_playVolume(7, 100);
 	}
 }
@@ -93,7 +93,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 				continue;
 			if (i == scene->ranking[0]) {
 				if (p->markSolo == 0)
-					mark_notice(scene, i, 0x4c4644, 0x4c4630);
+					mark_notice(scene, i, IMG(0x4c4644), IMG(0x4c4630));
 				p->markSolo = 1;
 				player_setTeam(STAGE(scene), i, 0);
 				scene->kingPlayer = i;
@@ -130,7 +130,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 				p->markTeam = 0;
 			else if (p->markTeam == 0) {
 				p->markTeam = 1;
-				mark_notice(scene, i, 0x4c4614, 0x4c45f8);
+				mark_notice(scene, i, IMG(0x4c4614), IMG(0x4c45f8));
 			}
 		}
 		scene->teamLeaders[t] = leader;

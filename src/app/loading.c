@@ -3,9 +3,9 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_loadTimer ((void *)0xa0e948)                /* its own game-time timer */
+#define g_loadTimer ((void *)IMG(0xa0e948))                /* its own game-time timer */
 #define g_loadProgress GAME_VAR(float, 0xa0ea88)
-#define g_loadText ((char *)0xa0e988)
+#define g_loadText ((char *)IMG(0xa0e988))
 #define g_loadTexture GAME_VAR(int, 0xa0e980)         /* the backdrop's texture id */
 #define g_loadFade GAME_VAR(float, 0xa0e984)          /* the fade's time, 0 .. 1 s */
 #define ONE k_1f
@@ -44,7 +44,7 @@ void (loading_drawCylinder)(int mode, int unused, const char *text)
 	if (mode == -1) {
 		BITS(g_loadProgress) = 0;
 		strcpy(g_loadText, text);
-		g_loadTexture = tex_getIdByName(g_textures, (const char *)0x4c533c, 0, 0, 0, 0, 0, 0, 0);
+		g_loadTexture = tex_getIdByName(g_textures, (const char *)IMG(0x4c533c), 0, 0, 0, 0, 0, 0, 0);
 		BITS(g_loadFade) = 0;
 		do
 			fade_frame(1);
@@ -66,8 +66,8 @@ void (loading_drawCylinder)(int mode, int unused, const char *text)
 static void cylinder_vertex(int angle, u32 z)
 {
 	u32 v[3] = { 0, 0x43c80000, z };   /* (0, 400, z) */
-	Vec3_rotateAxis((float *)v, 0, angle);
-	glVertex3fv((const float *)v);
+	Vec3_rotateAxis((float *)RELOC(v), 0, angle);
+	glVertex3fv((const float *)RELOC(v));
 }
 
 /* one line of the loading screen's text at row (16 pixels a row) */
@@ -90,13 +90,13 @@ void (loading_draw)(u32 progress)
 	int texture = g_loadTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
-	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)0x4a9418));   /* progress + 10 */
+	float far = f32(fadd_m(fld_m((const float *)&progress), (const float *)IMG(0x4a9418)));   /* progress + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
 		glBegin(GL_QUADS);
-		float s0 = f32(fmul_m((long double)j, (const float *)0x4aa26c));        /* j / 18 */
+		float s0 = f32(fmul_m((long double)j, (const float *)IMG(0x4aa26c)));        /* j / 18 */
 		glTexCoord2f_bits(BITS(s0), progress);
 		cylinder_vertex(angle / 18, 0);
-		float s1 = f32(fmul_m((long double)(j + 1), (const float *)0x4aa26c));
+		float s1 = f32(fmul_m((long double)(j + 1), (const float *)IMG(0x4aa26c)));
 		glTexCoord2f_bits(BITS(s1), progress);
 		cylinder_vertex((angle + 0xe10) / 18, 0);
 		glTexCoord2f_bits(BITS(s1), BITS(far));
@@ -112,29 +112,29 @@ void (loading_draw)(u32 progress)
 	int row = 2;
 	int mode = *(int *)(g_loadGame + 8);
 	if (mode == 1 || mode == 3) {
-		sprintf(line, (const char *)0x4c5330, (const char *)0x67fb44);   /* "TITLE : %s" */
+		sprintf(line, (const char *)IMG(0x4c5330), (const char *)IMG(0x67fb44));   /* "TITLE : %s" */
 		info_line(row, line);
 		row = 4;
 	}
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
-		sprintf(line, (const char *)0x4c531c);
+		sprintf(line, (const char *)IMG(0x4c531c));
 	else
-		sprintf(line, (const char *)0x4c5310, (const char *)(0x907b30 + g_missionStage * 32));   /* "ZONE : %s" */
+		sprintf(line, (const char *)IMG(0x4c5310), (const char *)(IMG(0x907b30) + g_missionStage * 32));   /* "ZONE : %s" */
 	info_line(row, line);
 	row += 2;
 	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
-		sprintf(line, (const char *)0x4c52f8);
+		sprintf(line, (const char *)IMG(0x4c52f8));
 	else
-		sprintf(line, (const char *)0x4c52e8, (const char *)(0x4c7030 + *(int *)(g_loadGame + 0x22e7180) * 64));   /* "PLAY TYPE : %s" */
+		sprintf(line, (const char *)IMG(0x4c52e8), (const char *)(IMG(0x4c7030) + *(int *)(g_loadGame + 0x22e7180) * 64));   /* "PLAY TYPE : %s" */
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)0x4c52d8, g_fragLimit);   /* "FRAG LIMIT : %d" */
+	sprintf(line, (const char *)IMG(0x4c52d8), g_fragLimit);   /* "FRAG LIMIT : %d" */
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)0x4c52c8, g_timeLimit);   /* "TIME LIMIT : %d" */
+	sprintf(line, (const char *)IMG(0x4c52c8), g_timeLimit);   /* "TIME LIMIT : %d" */
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
-	text_drawSized(0x96, row * 16 + 0x76, (const char *)0xa0e988, 0x10);
+	text_drawSized(0x96, row * 16 + 0x76, (const char *)IMG(0xa0e988), 0x10);
 }
 
 /* ---- the game's start-up load ---- */
@@ -148,7 +148,7 @@ static int texture_named(const char *name)
 }
 
 /* ---- the menus' textures, loaded with the loading screen moved on a step (g_loadStep) between them ---- */
-#define T(addr) texture_named((const char *)(addr))
+#define T(addr) texture_named((const char *)RELOC(addr))
 
 static void next_step(void)
 {
@@ -163,36 +163,36 @@ static void next_step(void)
    and "character" (0x4dfa00); first a step and a wait of 2 */
 void (menu_loadIntroTextures)(void)
 {
-	static const u32 intro[8] = { 0x4b25dc, 0x4b25cc, 0x4b25bc, 0x4b25ac, 0x4b259c, 0x4b258c, 0x4b257c, 0x4b256c };
-	static const u32 frames[2] = { 0x4b2480, 0x4b2470 };   /* corner, boxscreen */
-	static const u32 mainmenu[2] = { 0x4b245c, 0x4b2448 }, arenamenu[2] = { 0x4b2434, 0x4b2420 };
-	static const u32 ctrlmenu[2] = { 0x4b23e4, 0x4b23d0 }, laddermenu[2] = { 0x4b240c, 0x4b23f8 };
-	static const u32 spiral[6] = { 0x4b23c0, 0x4b23b0, 0x4b23a0, 0x4b2390, 0x4b2380, 0x4b2370 };
+	static const u32 intro[8] = { IMG(0x4b25dc), IMG(0x4b25cc), IMG(0x4b25bc), IMG(0x4b25ac), IMG(0x4b259c), IMG(0x4b258c), IMG(0x4b257c), IMG(0x4b256c) };
+	static const u32 frames[2] = { IMG(0x4b2480), IMG(0x4b2470) };   /* corner, boxscreen */
+	static const u32 mainmenu[2] = { IMG(0x4b245c), IMG(0x4b2448) }, arenamenu[2] = { IMG(0x4b2434), IMG(0x4b2420) };
+	static const u32 ctrlmenu[2] = { IMG(0x4b23e4), IMG(0x4b23d0) }, laddermenu[2] = { IMG(0x4b240c), IMG(0x4b23f8) };
+	static const u32 spiral[6] = { IMG(0x4b23c0), IMG(0x4b23b0), IMG(0x4b23a0), IMG(0x4b2390), IMG(0x4b2380), IMG(0x4b2370) };
 	next_step();
 	timer_waitFrames(2.0);
 	for (int k = 0; k < 8; k++) {
-		((int *)0x9dad6c)[k] = T(intro[k]);
+		((int *)IMG(0x9dad6c))[k] = T(intro[k]);
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
-		((int *)0x4deb4c)[k] = T(frames[k]);
+		((int *)IMG(0x4deb4c))[k] = T(frames[k]);
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
-		((int *)0x76d478)[k] = T(mainmenu[k]);
-		((int *)0x4df040)[k] = T(arenamenu[k]);
+		((int *)IMG(0x76d478))[k] = T(mainmenu[k]);
+		((int *)IMG(0x4df040))[k] = T(arenamenu[k]);
 		next_step();
-		((int *)0x5b1978)[k] = T(ctrlmenu[k]);
-		((int *)0x4df904)[k] = T(laddermenu[k]);
+		((int *)IMG(0x5b1978))[k] = T(ctrlmenu[k]);
+		((int *)IMG(0x4df904))[k] = T(laddermenu[k]);
 		next_step();
 	}
 	for (int k = 0; k < 6; k++) {
-		((int *)0x9da45c)[k] = T(spiral[k]);
+		((int *)IMG(0x9da45c))[k] = T(spiral[k]);
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {
-		{ 0x4ad574, 0x4df450 }, { 0x4b2360, 0x9db0a4 }, { 0x4b2354, 0x4e152c }, { 0x4b2344, 0x4e186c },
-		{ 0x4b2330, 0x76d36c }, { 0x4b2320, 0x4e0cd0 }, { 0x4b255c, 0x4dfa00 },
+		{ IMG(0x4ad574), IMG(0x4df450) }, { IMG(0x4b2360), IMG(0x9db0a4) }, { IMG(0x4b2354), IMG(0x4e152c) }, { IMG(0x4b2344), IMG(0x4e186c) },
+		{ IMG(0x4b2330), IMG(0x76d36c) }, { IMG(0x4b2320), IMG(0x4e0cd0) }, { IMG(0x4b255c), IMG(0x4dfa00) },
 	};
 	for (int k = 0; k < 7; k++) {
 		GAME_VAR(int, rest[k].into) = T(rest[k].name);
@@ -210,8 +210,8 @@ void (menu_loadIntroTextures)(void)
    then the camera and menu defaults. Returns 1 (0 on a failure) */
 int (app_checkCdAndLoad)(void *instance)
 {
-	memset((void *)0x4d1688, 0, 0x400);
-	memset((void *)0x4d1a98, 0, 0x400);
+	memset((void *)IMG(0x4d1688), 0, 0x400);
+	memset((void *)IMG(0x4d1a98), 0, 0x400);
 	g_roomConnected = 0;
 	net_clearBuffers();
 	reg_readServerSettings();
@@ -233,7 +233,7 @@ int (app_checkCdAndLoad)(void *instance)
 	g_quitAsked = 0;
 	if (!g_directInputMade) {
 		if (!input_createDirectInput(g_mainWindow, instance)) {
-			MessageBoxA(g_mainWindow, (const char *)0x751624, (const char *)0x7510a4, 0);
+			MessageBoxA(g_mainWindow, (const char *)IMG(0x751624), (const char *)IMG(0x7510a4), 0);
 			return 0;
 		}
 		g_directInputMade = 1;
@@ -241,7 +241,7 @@ int (app_checkCdAndLoad)(void *instance)
 	if (!g_startedFromLobby) {
 		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
 		    || !app_checkFile_game()) {
-			sys_messageBox((const char *)0x4b04b0);
+			sys_messageBox((const char *)IMG(0x4b04b0));
 			return 0;
 		}
 	}
@@ -257,37 +257,37 @@ int (app_checkCdAndLoad)(void *instance)
 	input_clearKeyTable2();
 	(*(u32 *)&g_viewAngle) = 0x42340000;   /* 45 */
 	if (!cd_findDrive()) {
-		MessageBoxA(NULL, (const char *)0x4b2528, (const char *)0x4b2554, 0);
+		MessageBoxA(NULL, (const char *)IMG(0x4b2528), (const char *)IMG(0x4b2554), 0);
 		return 0;
 	}
-	const char *dir = (const char *)0x4b1304;
+	const char *dir = (const char *)IMG(0x4b1304);
 	u32 w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x4e1878, dir, 0x28, 0, 0x40, 0x40, w, h);
+	tex_initBy((void *)IMG(0x4e1878), dir, 0x28, 0, 0x40, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x5b1db8, dir, 0x28, 0, 0x80, 0x40, w, h);
+	tex_initBy((void *)IMG(0x5b1db8), dir, 0x28, 0, 0x80, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x680cd8, dir, 0x28, 0, 0x100, 0x40, w, h);
+	tex_initBy((void *)IMG(0x680cd8), dir, 0x28, 0, 0x100, 0x40, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x76d498, dir, 0x28, 0, 0x80, 0x80, w, h);
+	tex_initBy((void *)IMG(0x76d498), dir, 0x28, 0, 0x80, 0x80, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x90d1e0, dir, 0x50, 0, 0x100, 0x80, w, h);
+	tex_initBy((void *)IMG(0x90d1e0), dir, 0x50, 0, 0x100, 0x80, w, h);
 	w = g_textureSetWidth, h = g_textureSetHeight;
-	tex_initBy((void *)0x83a9e0, dir, 0x28, 0, 0x100, 0x100, w, h);
-	texSmall_initBy((void *)0x83a5e0, (void *)0x4e1878, (void *)0x5b1db8, (void *)0x680cd8, (void *)0x76d498,
-	                (void *)0x90d1e0, (void *)0x83a9e0);
-	g_textures = (TextureSets *)0x83a5e0;
-	pen_init((const char *)0x4b2514);
-	g_fontAscii = texture_named((const char *)0x4b24c4);
-	g_fontAsciiLarge = texture_named((const char *)0x4b24b4);
-	g_fontHanCho = texture_named((const char *)0x4b24a4);
-	g_fontHanJungJong = texture_named((const char *)0x4b2490);
+	tex_initBy((void *)IMG(0x83a9e0), dir, 0x28, 0, 0x100, 0x100, w, h);
+	texSmall_initBy((void *)IMG(0x83a5e0), (void *)IMG(0x4e1878), (void *)IMG(0x5b1db8), (void *)IMG(0x680cd8), (void *)IMG(0x76d498),
+	                (void *)IMG(0x90d1e0), (void *)IMG(0x83a9e0));
+	g_textures = (TextureSets *)IMG(0x83a5e0);
+	pen_init((const char *)IMG(0x4b2514));
+	g_fontAscii = texture_named((const char *)IMG(0x4b24c4));
+	g_fontAsciiLarge = texture_named((const char *)IMG(0x4b24b4));
+	g_fontHanCho = texture_named((const char *)IMG(0x4b24a4));
+	g_fontHanJungJong = texture_named((const char *)IMG(0x4b2490));
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
 	(*(void **)&g_scene) = scene ? game_loadAllData(scene) : NULL;
-	sound_initSoundTable((const char *)0x4b2504, 0x64);
+	sound_initSoundTable((const char *)IMG(0x4b2504), 0x64);
 	char logo[64];
-	strcpy(logo, (const char *)0x4b24f0);
+	strcpy(logo, (const char *)IMG(0x4b24f0));
 	(*(u32 *)&g_armcCamHeight) = 0;
 	g_menuCameraPos = 0;
 	(*(u32 *)&g_armcCamDistance) = 0x43fa0000;   /* 500 */
@@ -296,14 +296,14 @@ int (app_checkCdAndLoad)(void *instance)
 	(*(u32 *)&g_menuCameraHeight) = 0x43c80000;   /* 400 */
 	g_menuFrameCount = 0;
 	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
-	set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
-	set_colour_bits((Colour *)0x76d350, 0, 0, 0, 0x3f800000);
+	set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, 0x3f800000);
+	set_colour_bits((Colour *)IMG(0x76d350), 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
-	g_menuScaleX = f32(fmul_m((long double)width, (const float *)0x4a9578));
+	g_menuScaleX = f32(fmul_m((long double)width, (const float *)IMG(0x4a9578)));
 	g_screenCentreX = width / 2;
 	g_unusedStartupWord1 = 0;
-	g_menuScaleY = f32(fmul_m((long double)height, (const float *)0x4a9574));
+	g_menuScaleY = f32(fmul_m((long double)height, (const float *)IMG(0x4a9574)));
 	g_dialogPending = 0;
 	g_screenCentreY = height / 2;
 	g_unusedStartupWord2 = 0;
@@ -327,13 +327,13 @@ int (app_checkCdAndLoad)(void *instance)
 static void next_stage(u8 *g, int stage, u32 line)
 {
 	G(int, 0x233cc24) = stage;
-	strcpy((char *)g + 0x233cc60 + G(int, 0x2340c60)++ * 0x100, (const char *)line);
+	strcpy((char *)g + 0x233cc60 + G(int, 0x2340c60)++ * 0x100, (const char *)RELOC(line));
 }
 
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)0xa0e778, (const char *)0x4c5060, G(int, 8), G(int, 0x233cc20),
+	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)IMG(0xa0e778), (const char *)IMG(0x4c5060), G(int, 8), G(int, 0x233cc20),
 	                                                             G(int, 0x233cc24));
 }
 
@@ -347,7 +347,7 @@ static void keep_alive(u8 *g)
 /* the map's file name (+0x1f35c8 with .bfd) */
 static char *bfd_name(u8 *g, char *out)
 {
-	sprintf(out, (const char *)0x4c5190, (const char *)g + 0x1f35c8);
+	sprintf(out, (const char *)IMG(0x4c5190), (const char *)g + 0x1f35c8);
 	return out;
 }
 
@@ -366,7 +366,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		g_loadGame = g;
 		g_statusLine = 0;
 		G(int, 0x2340c60) = 1;
-		strcpy((char *)g + 0x233cc60, (const char *)0x4c52b0);
+		strcpy((char *)g + 0x233cc60, (const char *)IMG(0x4c52b0));
 		G(int, 0x233cc24) = 0;
 		G(int, 0x233cc2c) = 0;
 	}
@@ -377,38 +377,38 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		music_shutdown();
 		if (G(int, 8) == 3) {
-			sprintf(path, (const char *)0x4c52a4, (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
-			void *f = G(void *, 0x2340d08) = crt_fopen(path, (const char *)0x4ad170);
+			sprintf(path, (const char *)IMG(0x4c52a4), (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
+			void *f = G(void *, 0x2340d08) = crt_fopen(path, (const char *)IMG(0x4ad170));
 			if (!f)
-				sys_fatalError((char *)0xa0e778, (const char *)0x4c5278, (int)path);
+				sys_fatalError((char *)IMG(0xa0e778), (const char *)IMG(0x4c5278), (int)path);
 			fread_scrambled(g + 0x1f35c4, 4, 1, G(void *, 0x2340d08));
 			if (G(int, 0x1f35c4) != 0x1201)
-				sys_fatalError((char *)0xa0e778, (const char *)0x4c5234, (int)path);
-			fread_scrambled((void *)0x5ae9c4, 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x9dad94, 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x67fb44, 1, 0x20, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x9da3e0, 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x76d368, 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x4df8e8, 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)0x76d408, 4, 1, G(void *, 0x2340d08));
+				sys_fatalError((char *)IMG(0xa0e778), (const char *)IMG(0x4c5234), (int)path);
+			fread_scrambled((void *)IMG(0x5ae9c4), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x9dad94), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x67fb44), 1, 0x20, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x9da3e0), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x76d368), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x4df8e8), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)IMG(0x76d408), 4, 1, G(void *, 0x2340d08));
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
 		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawCylinder, 0x469730);
-		log_message((int)STAGE(g), -1, 0, (const char *)0x4c521c);
+		log_message((int)STAGE(g), -1, 0, (const char *)IMG(0x4c521c));
 		scene_reset(STAGE(g));
 		mode = G(int, 8);
 		if (mode == 3)
-			next_stage(g, 1, 0x4c520c);   /* .LOAD AUTO PLAY */
+			next_stage(g, 1, IMG(0x4c520c));   /* .LOAD AUTO PLAY */
 		else if (mode >= 0 && mode <= 2)
-			next_stage(g, 2, 0x4c51e4);   /* .INIT PLAY INFO */
+			next_stage(g, 2, IMG(0x4c51e4));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 1: {
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51f4);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c51f4));
 		g_mapMissing = 0;
-		const char *map = (const char *)0x907b30 + g_missionStage * 0x20;
+		const char *map = (const char *)IMG(0x907b30) + g_missionStage * 0x20;
 		if (!map[0]) {
 			g_mapMissing = 1;
 			return 0;
@@ -416,20 +416,20 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		scene_setTextureFolder((Scene *)g, map);
 		mode = G(int, 8);
 		if (mode >= 0 && mode <= 3)
-			next_stage(g, mode == 2 ? 6 : 2, 0x4c51e4);   /* .INIT PLAY INFO */
+			next_stage(g, mode == 2 ? 6 : 2, IMG(0x4c51e4));   /* .INIT PLAY INFO */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	}
 	case 2:
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c51c0);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c51c0));
 		keep_alive(g);
 		if (G(int, 0x1f1cb0) == 0) {
-			scene_setTextureFolder((Scene *)g, (const char *)0x907b30 + g_missionStage * 0x20);
+			scene_setTextureFolder((Scene *)g, (const char *)IMG(0x907b30) + g_missionStage * 0x20);
 			mode = G(int, 8);
 			if (mode == 0 || mode == 1 || mode == 3)
-				next_stage(g, 3, 0x4c51b0);   /* .LOAD GROUND */
+				next_stage(g, 3, IMG(0x4c51b0));   /* .LOAD GROUND */
 			else
 				no_next(g);
 			G(int, 0x233cc2c) = 0;
@@ -459,71 +459,71 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			stop = 1;
 		break;
 	case 3:
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5198);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c5198));
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)IMG(0x4c4598));
 		if (g_missionStage != G(int, 0xbe3000))
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)0xa0e778, (const char *)0x4c4598);
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)IMG(0x4c4598));
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
-			next_stage(g, 4, 0x4c5180);   /* .LOAD OBJECT */
+			next_stage(g, 4, IMG(0x4c5180));   /* .LOAD OBJECT */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 4:
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5164);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c5164));
 		keep_alive(g);
 		map_loadObjectInfoFrom(STAGE(g), bfd_name(g, path), 0);
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
-			next_stage(g, 5, 0x4c514c);   /* .SET COLLISION VOLUME */
+			next_stage(g, 5, IMG(0x4c514c));   /* .SET COLLISION VOLUME */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 5:
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c512c);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c512c));
 		keep_alive(g);
 		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* 20000 cubed, cells of 500 */
 		mode = G(int, 8);
 		if (mode == 0 || mode == 1 || mode == 3)
-			next_stage(g, 6, 0x4c511c);   /* .LOAD PLAY INFO */
+			next_stage(g, 6, IMG(0x4c511c));   /* .LOAD PLAY INFO */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 6:
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c5104);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c5104));
 		keep_alive(g);
-		sprintf(name, (const char *)0x4c50e4, g_crosshairSetting);
+		sprintf(name, (const char *)IMG(0x4c50e4), g_crosshairSetting);
 		G(int, 0x233c9f8) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
 		mode = G(int, 8);
 		if (mode >= 0 && mode <= 3)
-			next_stage(g, mode <= 1 ? 7 : 8, 0x4c50a0);   /* END LOADING PROCESS */
+			next_stage(g, mode <= 1 ? 7 : 8, IMG(0x4c50a0));   /* END LOADING PROCESS */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 7:
 		keep_alive(g);
-		log_message((int)STAGE(g), 1, 0, (const char *)0x4c50c4);
+		log_message((int)STAGE(g), 1, 0, (const char *)IMG(0x4c50c4));
 		map_loadMissionInfoFrom(STAGE(g), bfd_name(g, path));
 		if (G(int, 8) == 0) {
-			log_message((int)STAGE(g), 0, 0, (const char *)0x4c50b4);
+			log_message((int)STAGE(g), 0, 0, (const char *)IMG(0x4c50b4));
 			map_loadActorInfoFrom(STAGE(g), bfd_name(g, path));
 		}
 		mode = G(int, 8);
 		if (mode >= 0 && mode <= 3)
-			next_stage(g, 8, 0x4c50a0);   /* END LOADING PROCESS */
+			next_stage(g, 8, IMG(0x4c50a0));   /* END LOADING PROCESS */
 		else
 			no_next(g);
 		G(int, 0x233cc2c) = 0;
 		break;
 	case 8:
-		log_message((int)STAGE(g), -2, 0, (const char *)0x4c5048);
+		log_message((int)STAGE(g), -2, 0, (const char *)IMG(0x4c5048));
 		keep_alive(g);
 		music_playMatch((Scene *)g);
 		G(int, 0x233c9e8) = 1;

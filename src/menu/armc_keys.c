@@ -4,7 +4,7 @@
 
 
 /* the keys of slots 0 .. 4 */
-static const u32 slot_keys[5] = { 0x4e14f0, 0x4e10e4, 0x4e1524, 0x4e14ec, 0x4e0cd8 };
+static const u32 slot_keys[5] = { IMG(0x4e14f0), IMG(0x4e10e4), IMG(0x4e1524), IMG(0x4e14ec), IMG(0x4e0cd8) };
 
 /* 0x4101e0: the parts page: 0x4e1538 / 0x4e1504 to the weapons / third page, 0x4e151c toggles the spin; the part in
    view picked (slot keys, 0x4e0cd4 the weapons) or stepped (up / down); left / right change that part; OK keeps the
@@ -91,7 +91,7 @@ void (armc_partsPageKeys)(void)
    up and then down step the slot (the original leaves eax to callers that ignore it) */
 void (armc_weaponsPageKeys)(void)
 {
-	static const u32 item_keys[6] = { 0x4e0468, 0x4e046c, 0x4e0470, 0x4e0874, 0x4e0c78, 0x4e0c7c };
+	static const u32 item_keys[6] = { IMG(0x4e0468), IMG(0x4e046c), IMG(0x4e0470), IMG(0x4e0874), IMG(0x4e0c78), IMG(0x4e0c7c) };
 	if (input_justPressed(g_keyCancel2)) {
 		sound_playMenu(0);
 		armc_exit(0);

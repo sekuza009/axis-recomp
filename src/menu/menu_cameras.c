@@ -11,11 +11,11 @@ typedef long double X;
 #define F(a) GAME_VAR(float, a)
 #define I(a) GAME_VAR(int, a)
 /* g_viewAspect (game.h): the 3D view's aspect ratio, eased to the screen's while the camera moves */
-#define SCREEN_ASPECT ((X)I(0x5b1998) / I(0x4e045c))
+#define SCREEN_ASPECT ((X)I(IMG(0x5b1998)) / I(IMG(0x4e045c)))
 #define RATE F(0x4a93ec)                   /* the share eased per second */
 
-static const u32 cam[6] = { 0x4df024, 0x4df028, 0x4df02c, 0x680378, 0x68037c, 0x680380 };
-static const u32 home[6] = { 0x9db090, 0x9db094, 0x9db098, 0x76d3f8, 0x76d3fc, 0x76d400 };
+static const u32 cam[6] = { IMG(0x4df024), IMG(0x4df028), IMG(0x4df02c), IMG(0x680378), IMG(0x68037c), IMG(0x680380) };
+static const u32 home[6] = { IMG(0x9db090), IMG(0x9db094), IMG(0x9db098), IMG(0x76d3f8), IMG(0x76d3fc), IMG(0x76d400) };
 
 /* the frame time limited to 1 second (above the constant at limit) */
 static void limit_frame_time(u32 limit)
@@ -39,7 +39,7 @@ typedef struct {
 
 static void menu_camera(const MenuCam *m)
 {
-	limit_frame_time(0x4a93d0);
+	limit_frame_time(IMG(0x4a93d0));
 	int mode = I(m->mode);
 	if (mode == 1) {
 		int i = I(m->idx) * 16;
@@ -105,7 +105,7 @@ static void menu_camera(const MenuCam *m)
 		return;
 	}
 	if (g_quitAsked == 1) {
-		limit_frame_time(0x4a93d0);
+		limit_frame_time(IMG(0x4a93d0));
 		GAME_VAR(u32, m->v150) = 0x43160000;   /* 150.0 */
 	}
 	for (int k = 0; k < 6; k++)
@@ -115,14 +115,14 @@ static void menu_camera(const MenuCam *m)
 /* 0x437a10: the game room's camera */
 void (room_camera)(void)
 {
-	static const MenuCam room = { 0x9dce48, 0x9dd834, 0x9dd848, 0x63, 0 };
+	static const MenuCam room = { IMG(0x9dce48), IMG(0x9dd834), IMG(0x9dd848), 0x63, 0 };
 	menu_camera(&room);
 }
 
 /* 0x408270: the arena lobby's camera */
 void (arena_camera)(void)
 {
-	static const MenuCam arena = { 0x4dbb3c, 0x4db51c, 0x4dbaf4, 5, 1 };
+	static const MenuCam arena = { IMG(0x4dbb3c), IMG(0x4db51c), IMG(0x4dbaf4), 5, 1 };
 	menu_camera(&arena);
 }
 
@@ -133,11 +133,11 @@ typedef struct {
 	int mission;   /* the mission select: its state set before the rest */
 } MenuCam2;
 
-static const u32 point0[6] = { 0x4df870, 0x4df874, 0x4df878, 0x76d388, 0x76d38c, 0x76d390 };
+static const u32 point0[6] = { IMG(0x4df870), IMG(0x4df874), IMG(0x4df878), IMG(0x76d388), IMG(0x76d38c), IMG(0x76d390) };
 
 static void menu_camera2(const MenuCam2 *m)
 {
-	limit_frame_time(0x4a9418);
+	limit_frame_time(IMG(0x4a9418));
 	int mode = I(m->mode);
 	if (mode == 1) {
 		X k = g_frameTime, c = RATE;
@@ -172,7 +172,7 @@ static void menu_camera2(const MenuCam2 *m)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
-		g_viewAspect = (float)((X)g_frameTime * F(fast ? 0x4a9468 : 0x4a9420) + g_viewAspect);
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? IMG(0x4a9468) : IMG(0x4a9420)) + g_viewAspect);
 	if ((*(float *)&g_menuCameraHeight) > k_m549_99f)
 		return;
 	/* home */
@@ -206,7 +206,7 @@ static void menu_camera2(const MenuCam2 *m)
    ignores the eax it leaves */
 void (arena_launchFromFile)(void)
 {
-	limit_frame_time(0x4a9418);
+	limit_frame_time(IMG(0x4a9418));
 	int from = g_armcFrom, network = from == 3;
 	float base = network ? -1650.0f : -550.0f;
 	int mode = g_armcState;
@@ -219,7 +219,7 @@ void (arena_launchFromFile)(void)
 		}
 		if (g_viewAspect > k_0f)
 			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * k_0_07f);
-		if (!(last > F(network ? 0x4a9470 : 0x4a9474)))   /* (the depth before its rounding) */
+		if (!(last > F(network ? IMG(0x4a9470) : IMG(0x4a9474))))   /* (the depth before its rounding) */
 			return;
 		(*(int *)&g_menuCameraPos) = 0;
 		(*(u32 *)&g_armcCamHeight) = 0xc3480000;   /* -200 */
@@ -242,7 +242,7 @@ void (arena_launchFromFile)(void)
 		F(cam[i]) = (float)((X)F(cam[i]) - ((X)F(cam[i]) - F(home[i])) * g_frameTime * c);
 	X full = SCREEN_ASPECT;
 	if (!(g_viewAspect >= full))
-		g_viewAspect = (float)((X)g_frameTime * F(fast ? 0x4a9468 : 0x4a9420) + g_viewAspect);
+		g_viewAspect = (float)((X)g_frameTime * F(fast ? IMG(0x4a9468) : IMG(0x4a9420)) + g_viewAspect);
 	if (!((X)base + k_0_01f >= (*(float *)&g_menuCameraHeight)))
 		return;
 	/* home */
@@ -295,14 +295,14 @@ void (arena_launchFromFile)(void)
 /* 0x444130: the skirmish screen's camera */
 void (skirmish_camera)(void)
 {
-	static const MenuCam2 skirmish = { 0x9ef1f0, 0x9eeba8, 0x9ef1f8, 0 };
+	static const MenuCam2 skirmish = { IMG(0x9ef1f0), IMG(0x9eeba8), IMG(0x9ef1f8), 0 };
 	menu_camera2(&skirmish);
 }
 
 /* 0x447cb0: the mission select's camera */
 void (missionsel_camera)(void)
 {
-	static const MenuCam2 mission = { 0x9f62f8, 0x9f63b8, 0x9f6300, 1 };
+	static const MenuCam2 mission = { IMG(0x9f62f8), IMG(0x9f63b8), IMG(0x9f6300), 1 };
 	menu_camera2(&mission);
 }
 
@@ -388,7 +388,7 @@ void (armc_mouseLook)(void)
 	if (dy < 0 && g_armcLookTilt > k_m50f)
 		g_armcLookTilt = (float)((X)dy * k_tenth * g_frameTime + g_armcLookTilt);
 	if (g_mouseClick && !g_armcMoveStarted) {
-		u32 r = 0x4dfa1c + slot * 88;
+		u32 r = IMG(0x4dfa1c) + slot * 88;
 		g_armcMoveStarted = 1;
 		g_unusedArmcMoveWord = 0x41f00000;   /* 30 */
 		g_armcMoveTargetX = I(r);
@@ -420,10 +420,10 @@ void (setup_camera)(void)
 		if (!(look > k_69_9))
 			return;
 		for (int a = 0; a < 3; a++) {
-			I(0x4df024 + a * 4) = I(i + 0x4df870 + a * 4);
+			I(IMG(0x4df024) + a * 4) = I(i + 0x4df870 + a * 4);
 		}
 		for (int a = 0; a < 3; a++)
-			I(0x680378 + a * 4) = I(i + 0x76d388 + a * 4);
+			I(IMG(0x680378) + a * 4) = I(i + 0x76d388 + a * 4);
 		g_setupPage = 2;
 		g_dialogOpen = 1;
 	} else if (mode == 0) {
@@ -437,10 +437,10 @@ void (setup_camera)(void)
 		if (look >= k_cameraSnapDistance)
 			return;
 		for (int a = 0; a < 3; a++)
-			I(0x680378 + a * 4) = I(0x76d3f8 + a * 4);
+			I(IMG(0x680378) + a * 4) = I(IMG(0x76d3f8) + a * 4);
 		g_setupPage = 2;
 		for (int a = 0; a < 3; a++)
-			I(0x4df024 + a * 4) = I(0x9db090 + a * 4);
+			I(IMG(0x4df024) + a * 4) = I(IMG(0x9db090) + a * 4);
 		g_setupTab = 0x29a;
 	}
 }
@@ -455,15 +455,15 @@ void (setup_camera)(void)
    leaves eax to callers that ignore it */
 void (match_debugHandler)(void)
 {
-	const float *frame = (const float *)0x4b071c, *speed = (const float *)0x4a9534;
+	const float *frame = (const float *)IMG(0x4b071c), *speed = (const float *)IMG(0x4a9534);
 	if (g_watchChatOpen) {
 		if (g_paused)
 			return;
-		if (strlen((const char *)0x9dc92c)) {
-			net_sendChat((const char *)0x9dc92c);
+		if (strlen((const char *)IMG(0x9dc92c))) {
+			net_sendChat((const char *)IMG(0x9dc92c));
 			g_watchChatOpen = 0;
 			g_chatLogged = 1;
-			(*(u32 *)&g_chatLog) = 0x9dc92c;
+			(*(u32 *)&g_chatLog) = IMG(0x9dc92c);
 		} else {
 			g_watchChatOpen = 0;
 			g_chatLogged = 0;
@@ -486,7 +486,7 @@ void (match_debugHandler)(void)
 	if (input_justPressed(g_keyCancel2)) {
 		if (g_isHost) {
 			g_hostResultFlag = 1;
-			net_sendMessage((void *)0x9f9418, 0, 0);
+			net_sendMessage((void *)IMG(0x9f9418), 0, 0);
 			g_hostResultFlag = 0;
 		}
 		g_unusedPostMatchFlag = 1;
@@ -516,13 +516,13 @@ void (match_debugHandler)(void)
 		menuCamera_back();
 	g_menuCameraLook = g_menuCamX;
 	(*(u32 *)&g_menuCameraHeight) = g_menuCamZ;
-	(*(float *)&g_menuCameraPos) = f32(fsubr_m(fmul_m(fld_m(&g_armcLookSin), (const float *)0x4a9560), &(*(float *)&g_menuCamX)));
-	g_armcCamHeight = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)0x4a9418));
-	u32 *slot = (u32 *)(0x4dfa1c + g_watchedSlot * 0x58);
+	(*(float *)&g_menuCameraPos) = f32(fsubr_m(fmul_m(fld_m(&g_armcLookSin), (const float *)IMG(0x4a9560)), &(*(float *)&g_menuCamX)));
+	g_armcCamHeight = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)IMG(0x4a9418)));
+	u32 *slot = (u32 *)(IMG(0x4dfa1c) + g_watchedSlot * 0x58);
 	slot[0] = g_menuCamX;
 	slot[1] = (*(u32 *)&g_freeCamHeight);
 	slot[2] = g_menuCamZ;
-	g_armcCamDistance = f32(fsubr_m(fmul_m(fld_m(&g_armcLookCos), (const float *)0x4a9560), &(*(float *)&g_menuCamZ)));
+	g_armcCamDistance = f32(fsubr_m(fmul_m(fld_m(&g_armcLookCos), (const float *)IMG(0x4a9560)), &(*(float *)&g_menuCamZ)));
 	(*(float *)&g_menuCameraLookY) = f32(fadd_m(fld_m(&g_armcLookTilt), &g_freeCamHeight));
 	if (input_justPressed(g_dikZ_2) == 1)
 		g_fovKeys = g_fovKeys == 1 ? 2 : 1;

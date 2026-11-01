@@ -152,7 +152,7 @@ u32 (arena_leaveSession)(void)
 		return 1;
 	if (g_isHost) {
 		g_hostResultFlag = 1;
-		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)0x9f9418, 0, 0);   /* net_sendMessage: send */
+		GAME_FN(net_sendMessage, 0x451270, int, void *, u32, u32)((void *)IMG(0x9f9418), 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = (*(u32 *)&g_connectionKind);
 	(*(u32 *)&g_connectionKind) = 4;
@@ -177,7 +177,7 @@ int (arena_openSession)(u32 kind, const char *host)
 	if (host) {
 		if (!net_resolveHost(host))   /* net_resolveHost */
 			return 0;
-		strcpy(address, (const char *)0xa0d320);
+		strcpy(address, (const char *)IMG(0xa0d320));
 	}
 	if (g_dplaySessionList) {
 		if ((*(u32 *)&g_connectionKind) == kind) {

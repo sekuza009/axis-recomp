@@ -77,7 +77,7 @@ void (sound_releaseDirectSound)(void)
 
 #define DI_GETDEVICESTATE 0x24
 #define DIERR_INPUTLOST 0x8007001eL
-#define g_keyState ((u8 *)0x4d1e9c)                    /* the keyboard's 256 key bytes (0x80: held) */
+#define g_keyState ((u8 *)IMG(0x4d1e9c))                    /* the keyboard's 256 key bytes (0x80: held) */
 
 /* the keyboard's state into g_keyState; when the keyboard was lost it is taken again */
 static long read_keys(void)
@@ -134,7 +134,7 @@ int (input_createDirectInput)(void *window, void *instance)
 #define DIERR_INPUTLOST_MOUSE 0x8007001e
 int (input_readMouse)(void)
 {
-	void *state = (void *)0x4d1a88;
+	void *state = (void *)IMG(0x4d1a88);
 	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
 		goto clear;
 	if (g_mouse) {
@@ -161,7 +161,7 @@ clear:
    a click pulse (0x4ded88 + i * 4) on the frame it went down (0x9f1704 + i * 4: down last frame). */
 void (input_updateMenuCursor)(void)
 {
-	const int *state = (const int *)0x4d1a88;   /* DIMOUSESTATE: x, y, wheel, buttons */
+	const int *state = (const int *)IMG(0x4d1a88);   /* DIMOUSESTATE: x, y, wheel, buttons */
 	GAME_FN(input_reacquireMouse, 0x4012e0, int, void)();          /* input_reacquireMouse */
 	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
@@ -185,10 +185,10 @@ void (input_updateMenuCursor)(void)
 				g_mouseY = 0;
 		}
 	}
-	const u8 *buttons = (const u8 *)0x4d1a94;
+	const u8 *buttons = (const u8 *)IMG(0x4d1a94);
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
-		int *pulse = (int *)(0x4ded88 + i * 4), *was = (int *)(0x9f1704 + i * 4);
+		int *pulse = (int *)(IMG(0x4ded88) + i * 4), *was = (int *)(IMG(0x9f1704) + i * 4);
 		GAME_VAR(int, 0x4ded94 + i * 4) = held;
 		if (!held) {
 			*pulse = 0;
@@ -232,7 +232,7 @@ int *(input_getCursorPos)(void)
 		g_cursorPos = p[0];
 		g_cursorPosY = p[1];
 	}
-	return (int *)0xae2f18;
+	return (int *)IMG(0xae2f18);
 }
 
 /* 0x487bd0: was the key just pressed (down now, and not already seen down)? The seen flags (0xae2f24 + key * 4) clear
@@ -241,7 +241,7 @@ int (input_asyncKeyPressed)(int key)
 {
 	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
 		return 0;
-	int *seen = (int *)(0xae2f24 + key * 4);
+	int *seen = (int *)(IMG(0xae2f24) + key * 4);
 	if (!(u16)GetAsyncKeyState(key))
 		*seen = 0;
 	if (*seen)
@@ -281,7 +281,7 @@ int (input_justPressed)(int key)
 	if (key >= 0xfa && key <= 0xfc) {
 		if (*g_wide->pressedFix)
 			return g_wide->mousePressed(key);
-		int *flag = (int *)(0x4d1e80 + (key - 0xfa) * 4);
+		int *flag = (int *)(IMG(0x4d1e80) + (key - 0xfa) * 4);
 		if (*flag) {
 			*flag = 0;
 			return 0;
@@ -290,7 +290,7 @@ int (input_justPressed)(int key)
 		return GAME_VAR(int, 0x4ded88 + (key - 0xfa) * 4);
 	}
 	if (key == 0xfd) {
-		int *latch = (int *)0x4d1e8c;
+		int *latch = (int *)IMG(0x4d1e8c);
 		if (g_mouseWheel >= 0) {
 			*latch = 0;
 			return 0;
@@ -302,7 +302,7 @@ int (input_justPressed)(int key)
 	}
 	if (key == 0xfe)
 		return g_mouseWheel > 0;
-	int *seen = (int *)(0x4d1a98 + key * 4);
+	int *seen = (int *)(IMG(0x4d1a98) + key * 4);
 	if (!GAME_FN(input_keyHeld, 0x4014f0, int, int)(key))   /* input_keyHeld */
 		*seen = 0;
 	if (*seen)
@@ -320,9 +320,9 @@ int (input_createMouse)(void *window)
 	if (g_mouseActive)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)0x4a9698, &g_mouse, NULL) < 0)
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)IMG(0x4a9698), &g_mouse, NULL) < 0)
 		return 0;
-	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)0x4a9610) < 0)
+	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)IMG(0x4a9610)) < 0)
 		return 0;
 	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
 		return 0;
@@ -338,14 +338,14 @@ int (input_initKeyboard)(void *window)
 	if (g_keyboardActive)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)0x4a9688, &g_keyboard, NULL) < 0)
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)IMG(0x4a9688), &g_keyboard, NULL) < 0)
 		return 0;
-	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)0x4a95f8) < 0)
+	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)IMG(0x4a95f8)) < 0)
 		return 0;
 	if (COM(g_keyboard, 0x34, int, void *, u32)(g_keyboard, window, 6) < 0)
 		return 0;
 	COM(g_keyboard, DI_ACQUIRE, int)(g_keyboard);   /* (its result not checked) */
-	memset((void *)0x4d1a98, 0, 0x400);
+	memset((void *)IMG(0x4d1a98), 0, 0x400);
 	g_keyboardActive = 1;
 	return 1;
 }

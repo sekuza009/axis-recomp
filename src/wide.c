@@ -37,7 +37,7 @@ void wide_testCursor(int on, int x, int w)
 
 int wide_carries(u32 addr)
 {
-	const u8 *p = (const u8 *)addr;
+	const u8 *p = (const u8 *)RELOC(addr);
 	switch (addr) {
 	case 0x41ef60: case 0x427970:   /* menu_vertex, menu_drawRect: replaced by the patch DLL's own versions */
 		return wide_menuFix() && p[0] == 0xE9;

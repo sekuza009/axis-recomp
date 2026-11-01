@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* ActorInfo offsets copied as they are (record offset, ActorInfo offset) */
 static const short copied[6][2] = { { 0x40, 0x2dbc }, { 0x44, 0x2dc0 }, { 0x48, 0x2dc4 }, { 0x4c, 0x2dc8 },
@@ -11,8 +11,8 @@ static const short copied[6][2] = { { 0x40, 0x2dbc }, { 0x44, 0x2dc0 }, { 0x48, 
 
 /* and those scaled by a constant of the game (record offset, ActorInfo offset, constant's address) */
 static const struct { short dst, src; u32 scale; } scaled[8] = {
-	{ 0x58, 0x2de4, 0x4a9420 }, { 0x5c, 0x2de8, 0x4a9420 }, { 0x60, 0x2dec, 0x4a93ec }, { 0x64, 0x2df0, 0x4a9420 },
-	{ 0x68, 0x2df4, 0x4a9420 }, { 0x70, 0x2e08, 0x4a94bc }, { 0x74, 0x2e0c, 0x4a93ec }, { 0x78, 0x2e10, 0x4a94bc } };
+	{ 0x58, 0x2de4, IMG(0x4a9420) }, { 0x5c, 0x2de8, IMG(0x4a9420) }, { 0x60, 0x2dec, IMG(0x4a93ec) }, { 0x64, 0x2df0, IMG(0x4a9420) },
+	{ 0x68, 0x2df4, IMG(0x4a9420) }, { 0x70, 0x2e08, IMG(0x4a94bc) }, { 0x74, 0x2e0c, IMG(0x4a93ec) }, { 0x78, 0x2e10, IMG(0x4a94bc) } };
 
 /* record rec for actor type idx; idx -1: the record emptied (its +0x40 -1) */
 static void part_info(u8 *rec, int idx)
@@ -47,12 +47,12 @@ static void part_info(u8 *rec, int idx)
 }
 
 /* 0x41ca50: the record of weapon slot slot (0x4dbe50, 0x80 apart) */
-void (armc_weaponSlotRecord)(int slot, int idx) { part_info((u8 *)0x4dbe50 + slot * 0x80, idx); }
+void (armc_weaponSlotRecord)(int slot, int idx) { part_info((u8 *)IMG(0x4dbe50) + slot * 0x80, idx); }
 
 /* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in 0x4dc198 */
 void (armc_viewedPartRecord)(int idx)
 {
-	part_info((u8 *)0x4dc150, idx);
+	part_info((u8 *)IMG(0x4dc150), idx);
 	if (idx != -1 && g_viewedPartKind == -1)
 		g_viewedPartIndex = idx;
 }
@@ -73,29 +73,29 @@ u8 *(armc_readMechStats)(void)
 	__asm__("fsqrt" : "+t"(s));
 	s = s * k_0_01;
 	g_mechDetectionRange = (float)s;
-	mulf(0x4dcaa4, &FIELD(float, A, 0x1ecca74), (const float *)0x4a93ec);
+	mulf(IMG(0x4dcaa4), &FIELD(float, A, 0x1ecca74), (const float *)IMG(0x4a93ec));
 	g_mechHackingLevel = FIELD(int, A, 0x1ecca78);
-	mulf(0x4dcaac, &FIELD(float, A, 0x1ecca7c), (const float *)0x4a93f4);
-	mulf(0x4dcab0, &FIELD(float, A, 0x1ecca80), (const float *)0x4a94bc);
+	mulf(IMG(0x4dcaac), &FIELD(float, A, 0x1ecca7c), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dcab0), &FIELD(float, A, 0x1ecca80), (const float *)IMG(0x4a94bc));
 	for (int i = 0; i < 7; i++)
 		GAME_VAR(int, 0x4dcab4 + i * 4) = FIELD(int, A, 0x1ecca8c + i * 4);
-	copyf(0x4dcad0, &FIELD(float, A, 0x1eccaa8));
+	copyf(IMG(0x4dcad0), &FIELD(float, A, 0x1eccaa8));
 	u8 *player = g + FIELD(int, A, 0x1eccb7c) * 0x47fd2;
 	u8 *part = g + FIELD(int, player, 0x1755548) * 0x13f4;
 	copyf(0x4dcad4, &FIELD(float, part, 0x163c96c));
-	mulf(0x4dcad8, &FIELD(float, part, 0x163c970), (const float *)0x4a93f4);
-	mulf(0x4dcadc, &FIELD(float, part, 0x163c974), (const float *)0x4a93f4);
-	mulf(0x4dcae0, &FIELD(float, part, 0x163c97c), (const float *)0x4a93f4);
-	mulf(0x4dcae4, &FIELD(float, part, 0x163c978), (const float *)0x4a93f4);
+	mulf(IMG(0x4dcad8), &FIELD(float, part, 0x163c970), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dcadc), &FIELD(float, part, 0x163c974), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dcae0), &FIELD(float, part, 0x163c97c), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dcae4), &FIELD(float, part, 0x163c978), (const float *)IMG(0x4a93f4));
 	g_unusedMechStat = FIELD(int, g + FIELD(int, player, 0x175554c) * 0x1820, 0x167b334);
-	mulf(0x4dcaec, &FIELD(float, A, 0x1eccab4), (const float *)0x4a94bc);
-	mulf(0x4dcaf0, &FIELD(float, A, 0x1eccab8), (const float *)0x4a94bc);
-	mulf(0x4dcaf4, &FIELD(float, A, 0x1eccabc), (const float *)0x4a94bc);
-	mulf(0x4dcaf8, &FIELD(float, A, 0x1eccac0), (const float *)0x4a94b8);
-	mulf(0x4dcafc, (const float *)0x4dcaf8, &FIELD(float, A, 0x1eccac4));
-	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)0x4dcaf8), &FIELD(float, A, 0x1eccac8));
-	mulf(0x4dcb04, (const float *)0x4dcaf8, &FIELD(float, A, 0x1eccacc));
-	copyf(0x4dcb0c, &FIELD(float, A, 0x1ecca84));
+	mulf(IMG(0x4dcaec), &FIELD(float, A, 0x1eccab4), (const float *)IMG(0x4a94bc));
+	mulf(IMG(0x4dcaf0), &FIELD(float, A, 0x1eccab8), (const float *)IMG(0x4a94bc));
+	mulf(IMG(0x4dcaf4), &FIELD(float, A, 0x1eccabc), (const float *)IMG(0x4a94bc));
+	mulf(IMG(0x4dcaf8), &FIELD(float, A, 0x1eccac0), (const float *)IMG(0x4a94b8));
+	mulf(IMG(0x4dcafc), (const float *)IMG(0x4dcaf8), &FIELD(float, A, 0x1eccac4));
+	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)IMG(0x4dcaf8)), &FIELD(float, A, 0x1eccac8));
+	mulf(IMG(0x4dcb04), (const float *)IMG(0x4dcaf8), &FIELD(float, A, 0x1eccacc));
+	copyf(IMG(0x4dcb0c), &FIELD(float, A, 0x1ecca84));
 	copyf(0x4dcb08, &FIELD(float, A, 0x1ecca88));
 	return g;
 }
@@ -114,9 +114,9 @@ static void panel_name(u32 dst, const char *name)
 		if (buf[i] == '/')
 			buf[i] = '-';
 	}
-	memset((void *)dst, 0, 64);
+	memset((void *)RELOC(dst), 0, 64);
 	if (len > 0)
-		memcpy((void *)dst, buf, len);
+		memcpy((void *)RELOC(dst), buf, len);
 }
 
 /* 0x41b750: the ARM CENTER's part panels for the local player's mech: for its head, chest, arm, leg and weapon (the
@@ -127,42 +127,42 @@ int (armc_drawPartPanels)(void)
 	u8 *g = (*(u8 **)&g_scene);
 	u8 *player = g + FIELD(int, g + FIELD(int, g, 0x234240d) * 0x8888, 0x1eccb7c) * 0x47fd2;
 	u8 *p = g + FIELD(int, player, 0x175553c) * 0xaa8;   /* head */
-	panel_name(0x4dceb8, (const char *)p + 0x15bd1f8);
-	mulf(0x4dcef8, &FIELD(float, p, 0x15bdc8c), (const float *)0x4a9420);
-	mulf(0x4dcefc, &FIELD(float, p, 0x15bdc90), (const float *)0x4a93ec);
+	panel_name(IMG(0x4dceb8), (const char *)p + 0x15bd1f8);
+	mulf(IMG(0x4dcef8), &FIELD(float, p, 0x15bdc8c), (const float *)IMG(0x4a9420));
+	mulf(IMG(0x4dcefc), &FIELD(float, p, 0x15bdc90), (const float *)IMG(0x4a93ec));
 	g_headHackingLevel = FIELD(int, p, 0x15bdc94);
-	mulf(0x4dcf04, &FIELD(float, p, 0x15bdc98), (const float *)0x4a93f4);
-	mulf(0x4dcf08, &FIELD(float, p, 0x15bdc9c), (const float *)0x4a94bc);
-	copyf(0x4dcf0c, &FIELD(float, p, 0x15bdc88));
+	mulf(IMG(0x4dcf04), &FIELD(float, p, 0x15bdc98), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dcf08), &FIELD(float, p, 0x15bdc9c), (const float *)IMG(0x4a94bc));
+	copyf(IMG(0x4dcf0c), &FIELD(float, p, 0x15bdc88));
 	p = g + FIELD(int, player, 0x1755540) * 0xabc;   /* chest */
-	panel_name(0x4dbc08, (const char *)p + 0x15de6cc);
-	copyf(0x4dbc48, &FIELD(float, p, 0x15df17c));
+	panel_name(IMG(0x4dbc08), (const char *)p + 0x15de6cc);
+	copyf(IMG(0x4dbc48), &FIELD(float, p, 0x15df17c));
 	g_chestMaxArmor = FIELD(int, p, 0x15df180);
 	g_chestMaxShield = FIELD(int, p, 0x15df184);
 	p = g + FIELD(int, player, 0x1755544) * 0x1300;   /* arm */
-	panel_name(0x4dc250, (const char *)p + 0x15fff88);
+	panel_name(IMG(0x4dc250), (const char *)p + 0x15fff88);
 	for (int i = 0; i < 5; i++)
 		GAME_VAR(int, 0x4dc290 + i * 4) = FIELD(int, p, 0x1601274 + i * 4);
-	copyf(0x4dc2a4, &FIELD(float, p, 0x1601270));
+	copyf(IMG(0x4dc2a4), &FIELD(float, p, 0x1601270));
 	p = g + FIELD(int, player, 0x1755548) * 0x13f4;   /* leg */
-	panel_name(0x4dc1e8, (const char *)p + 0x163b58c);
+	panel_name(IMG(0x4dc1e8), (const char *)p + 0x163b58c);
 	copyf(0x4dc228, &FIELD(float, p, 0x163c968));
 	copyf(0x4dc22c, &FIELD(float, p, 0x163c96c));
-	mulf(0x4dc230, &FIELD(float, p, 0x163c970), (const float *)0x4a93f4);
-	mulf(0x4dc234, &FIELD(float, p, 0x163c974), (const float *)0x4a93f4);
-	mulf(0x4dc238, &FIELD(float, p, 0x163c97c), (const float *)0x4a93f4);
-	mulf(0x4dc23c, &FIELD(float, p, 0x163c978), (const float *)0x4a93f4);
-	copyf(0x4dc240, &FIELD(float, p, 0x163c964));
+	mulf(IMG(0x4dc230), &FIELD(float, p, 0x163c970), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dc234), &FIELD(float, p, 0x163c974), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dc238), &FIELD(float, p, 0x163c97c), (const float *)IMG(0x4a93f4));
+	mulf(IMG(0x4dc23c), &FIELD(float, p, 0x163c978), (const float *)IMG(0x4a93f4));
+	copyf(IMG(0x4dc240), &FIELD(float, p, 0x163c964));
 	int weapon = FIELD(int, player, 0x175554c);
 	p = g + weapon * 0x1820;
-	panel_name(0x4dce40, (const char *)p + 0x1679b38);
+	panel_name(IMG(0x4dce40), (const char *)p + 0x1679b38);
 	g_boosterThrustType = FIELD(int, p, 0x167b334);
 	for (int i = 0; i < 3; i++)
-		mulf(0x4dce84 + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)0x4a94bc);
+		mulf(IMG(0x4dce84) + i * 4, &FIELD(float, p, 0x167b33c + i * 4), (const float *)IMG(0x4a94bc));
 	for (int i = 0; i < 4; i++)
-		mulf(0x4dce90 + i * 4, &FIELD(float, p, 0x167b348 + i * 4), (const float *)0x4a94b8);
+		mulf(IMG(0x4dce90) + i * 4, &FIELD(float, p, 0x167b348 + i * 4), (const float *)IMG(0x4a94b8));
 	(*(u32 *)&g_armcZoom) = 0x3f800000;
-	copyf(0x4dcea0, &FIELD(float, p, 0x167b330));
+	copyf(IMG(0x4dcea0), &FIELD(float, p, 0x167b330));
 	return weapon;
 }
 
@@ -173,18 +173,18 @@ int (armc_drawPartPanels)(void)
 u32 (armc_stepPart)(u32 part, int dir)
 {
 	static const struct { u32 cursor, count, list; } parts[5] = {
-		{ 0x4dcc8c, 0x4dc780, 0x4dc3e8 }, { 0x4dcf3c, 0x4dcc60, 0x4dcd6c }, { 0x4dbc7c, 0x4dca90, 0x4dc964 },
-		{ 0x4dcea4, 0x4dca94, 0x4dc89c }, { 0x4dcb30, 0x4dc890, 0x4dbd7c } };
+		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c) }, { IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964) },
+		{ IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c) }, { IMG(0x4dcb30), IMG(0x4dc890), IMG(0x4dbd7c) } };
 	g_mechChanged = 1;
 	if (part > 4)
 		return part;
-	int *cursor = (int *)parts[part].cursor, count = GAME_VAR(int, parts[part].count);
+	int *cursor = (int *)RELOC(parts[part].cursor), count = GAME_VAR(int, parts[part].count);
 	if (dir == 1) {
 		if (--*cursor < 0)
 			*cursor = count - 1;
 	} else if (++*cursor >= count)
 		*cursor = 0;
-	u32 chosen = ((const u32 *)parts[part].list)[*cursor];
+	u32 chosen = ((const u32 *)RELOC(parts[part].list))[*cursor];
 	GAME_VAR(u32, 0x4dc760 + part * 4) = chosen;
 	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
 }
@@ -201,7 +201,7 @@ static int append_parts(const Unlock *entry, u32 list, int len)
 	if ((int)((u32)n + 1) <= 1)   /* none (the original's test: n + 1 > 1, wrapping) */
 		return len;
 	for (int i = 0; i < n; i++)
-		((int *)list)[len + i] = entry->parts[i];
+		((int *)RELOC(list))[len + i] = entry->parts[i];
 	return len + n;
 }
 
@@ -232,12 +232,12 @@ void (armc_buildPartLists)(void)
 	int level = unlocked_level(network);
 	g_armcLevel = level;
 	g_unlockedLevel = level;
-	static const u32 lists[5] = { 0x4dc3e8, 0x4dcd6c, 0x4dc964, 0x4dc89c, 0x4dbd7c };
-	static const u32 lengths[5] = { 0x4dc780, 0x4dcc60, 0x4dca90, 0x4dca94, 0x4dc890 };
+	static const u32 lists[5] = { IMG(0x4dc3e8), IMG(0x4dcd6c), IMG(0x4dc964), IMG(0x4dc89c), IMG(0x4dbd7c) };
+	static const u32 lengths[5] = { IMG(0x4dc780), IMG(0x4dcc60), IMG(0x4dca90), IMG(0x4dca94), IMG(0x4dc890) };
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
-	u32 tables = network ? 0x4aebd0 : 0x4ad5f0;
-#define TABLE(k, lv) ((const Unlock *)(tables + (k) * 0x320) + (lv))
+	u32 tables = network ? IMG(0x4aebd0) : IMG(0x4ad5f0);
+#define TABLE(k, lv) ((const Unlock *)(RELOC(tables) + (k) * 0x320) + (lv))
 	if (level >= 0) {
 		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */
 		for (int lv = 0; lv <= level; lv++) {
@@ -248,7 +248,7 @@ void (armc_buildPartLists)(void)
 		g_armcLastPart = last;
 	}
 	/* the two lists that start with -1; their lengths too stored once at the end */
-	static const u32 extra[2] = { 0x4dc79c, 0x4dcca4 }, extra_len[2] = { 0x4dc244, 0x4dc778 };
+	static const u32 extra[2] = { IMG(0x4dc79c), IMG(0x4dcca4) }, extra_len[2] = { IMG(0x4dc244), IMG(0x4dc778) };
 	for (int j = 0; j < 2; j++) {
 		GAME_VAR(int, extra[j]) = -1;
 		GAME_VAR(int, extra_len[j]) = 1;

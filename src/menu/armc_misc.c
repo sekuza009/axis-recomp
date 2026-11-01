@@ -126,14 +126,14 @@ void (armc_exit)(int confirmed)
 	g_flareStepB = 0.2f;
 	g_flareStepA = -0.2f;
 	sound_playMenu(4);
-	music_play((const char *)0x4b01cc);                  /* "music/Netsphere.mp3", the game's own string */
+	music_play((const char *)IMG(0x4b01cc));                  /* "music/Netsphere.mp3", the game's own string */
 	if (g_startedFromLobby == 1 && g_lobbyReply == 0x66)
 		g_lobbyReply = 0x67;
 }
 
 /* ---- the mech preview of the parts and colour pages: a perspective view turned by the preview's angle (spinning
    while 0x4dceac is set), the mech posed by armc_rotateFromCursor for the part in view ---- */
-#define g_armcEye ((const u32 *)0xa0e7a8)              /* (by use) the preview camera's position */
+#define g_armcEye ((const u32 *)IMG(0xa0e7a8))              /* (by use) the preview camera's position */
 
 /* 0x461850: the preview's 3D pass. The camera at eye looking along forward (camera_setupView, as the match's view);
    while the right button is held the cursor turns the mech: its offset from the screen's centre (w x h) is kept
@@ -151,8 +151,8 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	u8 *s = (u8 *)scene, *stage = s + 0x1f36c8, *vv = s + 0x74;
 	u32 light[0xb00c / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts */
 	for (int i = 0; i < 0x400; i++)
-		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)light + 4 + i * 0x2c);
-	light[0] = 0x4aa248;
+		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)RELOC(light) + 4 + i * 0x2c);
+	light[0] = IMG(0x4aa248);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
@@ -176,13 +176,13 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	int a = GAME_VAR(int, s + 0x234240d);
 	u8 *actor = s + 0x1ecca70 + a * 0x8888;
 	GAME_VAR(float, actor + 0x18c) = (float)fmul_m(fld_m((const float *)(s + 0x2343293)) / (long double)(H / 2),
-	                                               (const float *)0x4a972c);   /* 890: tenths of a degree */
+	                                               (const float *)IMG(0x4a972c));   /* 890: tenths of a degree */
 	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);
 	actor_processFrame(stage, GAME_VAR(int, s + 0x234240d), GAME_VAR(float, s + 0x3c));
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
-	Vec3_normalize((float *)dir);
-	factors_addPoint(light, (const void *)0xa1f23c, dir);
+	Vec3_normalize((float *)RELOC(dir));
+	factors_addPoint(light, (const void *)IMG(0xa1f23c), dir);
 	for (int k = 0; k < 8; k++) {
 		u8 *list = s + 0x1ecca70 + GAME_VAR(int, s + 0x234240d) * 0x8888 + lists[k];
 		if (part < 0)
@@ -201,14 +201,14 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	gluPerspective(g_viewAngle, g_viewAspect, 100.0, 20000.0);
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
-	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)0x4a93ec));
+	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)IMG(0x4a93ec)));
 	gl_rotateXYZ(0, BITS(turn), 0);
 	u32 eye[3] = { g_armcEye[0], g_armcEye[1], g_armcEye[2] };
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
 	if (posed)
 		armc_rotateFromCursor(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
 	if (g_armcSpin) {
-		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a94cc), &g_armcAngle);
+		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a94cc)), &g_armcAngle);
 		g_armcAngle = angle;
 		if (angle >= k_3600f)
 			BITS(g_armcAngle) = 0;
@@ -227,7 +227,7 @@ void (armc_updatePartsPreview)(void)
 {
 	gfx_setProjection2D3D(1);
 	if (g_mechChanged == 1) {
-		const int *parts = (const int *)0x4dc760;    /* the mech's head, chest, arm, leg, booster */
+		const int *parts = (const int *)IMG(0x4dc760);    /* the mech's head, chest, arm, leg, booster */
 		switch (g_armcPartSlot) {
 		case 0: armc_setHeadIndex(g_scene, parts[0]); break;
 		case 1: armc_setChestIndex(g_scene, parts[1]); break;
@@ -302,7 +302,7 @@ void (menuState700_armCenter)(void)
 		return;
 	}
 	if (g_armcSessionDue && !g_armcSessionMade) {
-		static const u32 items[6] = { 0x4dcb20, 0x4dcb24, 0x4dcb28, 0x4dcb2c, 0x4dcb18, 0x4dcb1c };
+		static const u32 items[6] = { IMG(0x4dcb20), IMG(0x4dcb24), IMG(0x4dcb28), IMG(0x4dcb2c), IMG(0x4dcb18), IMG(0x4dcb1c) };
 		armc_enterScreen();
 		for (int slot = 0; slot < 6; slot++)
 			armc_weaponSlotRecord(slot, GAME_VAR(int, items[slot]));
@@ -328,18 +328,18 @@ void (menuState700_armCenter)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(100, 200, 540, 280, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
-		text_drawBox16(105, 220, 535, (const char *)0x7572a4);
-		text_drawBox16(105, 244, 535, (const char *)0x757324);
+		text_drawBox16(105, 220, 535, (const char *)IMG(0x7572a4));
+		text_drawBox16(105, 244, 535, (const char *)IMG(0x757324));
 		g_armcSessionDue = 1;
 	}
-	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a93ec), &g_armcZoom);
+	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a93ec)), &g_armcZoom);
 	g_armcZoom = zoom;
 	if (!(zoom >= k_m2f))
 		g_armcZoom = -2.0f;
 }
 
-#define g_menuEye ((u32 *)0x4df024)                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
-#define g_menuAt ((u32 *)0x680378)                    /* and the point it looks at */
+#define g_menuEye ((u32 *)IMG(0x4df024))                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
+#define g_menuAt ((u32 *)IMG(0x680378))                    /* and the point it looks at */
 
 /* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
@@ -350,7 +350,7 @@ u32 (menu_enterMenus)(void)
 	g_armcHideInterface = 0;
 	g_armcSlot = 0;
 	armc_initCameraPoints();
-	music_play((const char *)0x4b01b0);
+	music_play((const char *)IMG(0x4b01b0));
 	g_armcPartSlot = 5;
 	g_unusedArmcWord3 = 5;
 	g_armcColourSlot = 5;
@@ -374,7 +374,7 @@ u32 (menu_enterMenus)(void)
 		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
 	}
 	g_progressWentUp = 0;
-	u32 *point = (u32 *)0x4df870, *pointAt = (u32 *)0x76d388;   /* the ARM CENTER's camera point */
+	u32 *point = (u32 *)IMG(0x4df870), *pointAt = (u32 *)IMG(0x76d388);   /* the ARM CENTER's camera point */
 	point[0] = 0;
 	point[1] = 0;
 	pointAt[0] = 0;
@@ -390,7 +390,7 @@ u32 (menu_enterMenus)(void)
 		if (g_progress > g_bestProgressSolo)
 			g_progressWentUp = 1;
 	}
-	u32 *home = (u32 *)0x9db090, *homeAt = (u32 *)0x76d3f8;
+	u32 *home = (u32 *)IMG(0x9db090), *homeAt = (u32 *)IMG(0x76d3f8);
 	home[2] = distance;
 	home[0] = 0;
 	home[1] = 0;
@@ -444,12 +444,12 @@ typedef struct {
 	float angle;         /* its turn about y, kept within -360 .. 360 */
 	float speed;
 } Panel;                 /* 0x58 bytes */
-#define g_panels ((Panel *)0x4dc550)
+#define g_panels ((Panel *)IMG(0x4dc550))
 #define g_panelSize2 GAME_VAR(float, 0x4b0708)   /* panels 2 and 3 breathe: a half width growing by its rate, */
 #define g_panelSize3 GAME_VAR(float, 0x4b0704)   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
 #define g_panelRate2 GAME_VAR(float, 0x4b0710)
 #define g_panelRate3 GAME_VAR(float, 0x4b070c)
-#define F(addr) ((const float *)(addr))
+#define F(addr) ((const float *)RELOC(addr))
 
 /* a square of half width size: corners (-s, s), (s, s), (s, -s), (-s, -s) in x, z */
 static void panel_resize(Panel *p, float *size)
@@ -581,7 +581,7 @@ void (armc_initCameraBox)(void)
    limits (200, 600, 2, -2) */
 void (armc_initPartBoxes)(void)
 {
-	for (u32 p = 0x4dc554; p < 0x4dc764; p += 0x58) {
+	for (u32 p = IMG(0x4dc554); p < IMG(0x4dc764); p += 0x58) {
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
 		for (int k = 0; k < 15; k++)
 			if (corner[k])
@@ -630,17 +630,17 @@ u32 (armc_onStateEnter)(void)
    0x4dbe50) loaded into 0x4dcc70[i]; nothing for a name shorter than 2 letters. 0x4dcc64 cleared either way */
 void (armc_snapshot)(int i)
 {
-	const char *name = (const char *)(0x4dbe50 + i * 0x80);
+	const char *name = (const char *)(IMG(0x4dbe50) + i * 0x80);
 	if (strlen(name) <= 1) {
 		g_armcChanged = 0;
 		return;
 	}
 	char path[0x80], copy[0x40];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)0x4b036c);   /* "Actor/item/" */
+	strcpy(path, (const char *)IMG(0x4b036c));   /* "Actor/item/" */
 	strcat(path, name);
-	strcat(path, (const char *)0x4ad564);   /* "/" */
-	strcat(path, (const char *)0x4b0360);   /* "snapshot" */
+	strcat(path, (const char *)IMG(0x4ad564));   /* "/" */
+	strcat(path, (const char *)IMG(0x4b0360));   /* "snapshot" */
 	strcpy(copy, path);
 	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcChanged = 0;
@@ -652,28 +652,28 @@ void (armc_snapshot)(int i)
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
 void (armc_drawWeightLine)(void)
 {
-	static const u32 weights[10] = { 0x4dc14c, 0x4dc0cc, 0x4dc04c, 0x4dbfcc, 0x4dbf4c, 0x4dbecc, 0x4dcea0, 0x4dc240, 0x4dc2a4, 0x4dcf0c };
+	static const u32 weights[10] = { IMG(0x4dc14c), IMG(0x4dc0cc), IMG(0x4dc04c), IMG(0x4dbfcc), IMG(0x4dbf4c), IMG(0x4dbecc), IMG(0x4dcea0), IMG(0x4dc240), IMG(0x4dc2a4), IMG(0x4dcf0c) };
 	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	int length = (int)strlen((const char *)0x7573a4);
-	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)0x7573a4);
-	long double sum = fld_m((const float *)weights[0]);
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	int length = (int)strlen((const char *)IMG(0x7573a4));
+	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)IMG(0x7573a4));
+	long double sum = fld_m((const float *)RELOC(weights[0]));
 	for (int k = 1; k < 10; k++)
-		sum = fadd_m(sum, (const float *)weights[k]);
+		sum = fadd_m(sum, (const float *)RELOC(weights[k]));
 	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
-	strcpy(s.most, (const char *)0x4ad564);   /* "/" */
-	sprintf(s.total, (const char *)0x4b0354, (double)g_legsMaxWeight);   /* "%.0f" */
+	strcpy(s.most, (const char *)IMG(0x4ad564));   /* "/" */
+	sprintf(s.total, (const char *)IMG(0x4b0354), (double)g_legsMaxWeight);   /* "%.0f" */
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
-	sprintf(s.total, (const char *)0x4b0354, (double)g_totalWeight);
+	sprintf(s.total, (const char *)IMG(0x4b0354), (double)g_totalWeight);
 	if (g_totalWeight > g_legsMaxWeight)
-		set_colour_bits((Colour *)0x76d438, 0x3f800000, 0, 0, 0x3f800000);
+		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0, 0, 0x3f800000);
 	else
-		set_colour_bits((Colour *)0x76d438, 0, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, 0x3f800000);
 	text_draw16(0x27e - ((int)strlen(s.total) + (int)strlen(s.most)) * 14, y + 0x10, s.total);
-	set_colour_bits((Colour *)0x76d438, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_draw16(0x27e - (int)strlen(s.most) * 14, y + 0x10, s.most);
 }
 
@@ -695,10 +695,10 @@ int (armc_drawModeTabs)(void)
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
-		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? 0x4dbc58 : 0x4dc1d0);
-		set_colour_bits((Colour *)0x76d438, c[0], c[1], c[2], c[3]);
+		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? IMG(0x4dbc58) : IMG(0x4dc1d0));
+		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
 		int x = g_armcStatsPanelLeft;
-		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(0x7565a4 + i * 0x80));
+		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(IMG(0x7565a4) + i * 0x80));
 	}
 	return 3;
 }
@@ -710,9 +710,9 @@ int (armc_drawModeTabs)(void)
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
-	memcpy((void *)0x4dcfe0, (const void *)0x4dc4b8, 0x90);
-	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
-	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
+	memcpy((void *)IMG(0x4dcfe0), (const void *)IMG(0x4dc4b8), 0x90);
+	memcpy((void *)IMG(0x4dc878), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)IMG(0x4dcf18), (const void *)IMG(0x4dcb18), 6 * 4);
 	armc_resetSeraphimParts();
 	return GAME_FN(profile_saveProgress, 0x447010, u32, void)();   /* profile_saveProgress */
 }
@@ -727,16 +727,16 @@ u32 (armc_saveSelection)(void)
 void (armc_sendSelectionToNet)(void)
 {
 	for (int i = 0; i < 0x24; i++) {
-		float v = f32(fld_m((const float *)0x4dc4b8 + i));
-		((float *)0x4dcfe0)[i] = v;
-		((float *)0x9dd603)[i] = v;
+		float v = f32(fld_m((const float *)IMG(0x4dc4b8) + i));
+		((float *)IMG(0x4dcfe0))[i] = v;
+		((float *)IMG(0x9dd603))[i] = v;
 	}
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
-	memcpy((void *)0x4dc878, (const void *)0x4dc760, 5 * 4);
-	memcpy((void *)0x4dcf18, (const void *)0x4dcb18, 6 * 4);
-	u8 *room = (u8 *)0x9dd5f8;
-	const int *parts = (const int *)0x4dc878, *settings = (const int *)0x4dcf18;
+	memcpy((void *)IMG(0x4dc878), (const void *)IMG(0x4dc760), 5 * 4);
+	memcpy((void *)IMG(0x4dcf18), (const void *)IMG(0x4dcb18), 6 * 4);
+	u8 *room = (u8 *)IMG(0x9dd5f8);
+	const int *parts = (const int *)IMG(0x4dc878), *settings = (const int *)IMG(0x4dcf18);
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)settings[2 + i];
 	room[5] = (u8)g_itemSlot4;
@@ -744,9 +744,9 @@ void (armc_sendSelectionToNet)(void)
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
 	u8 *packet = g_netSelectionPacket;
-	strcpy((char *)packet, (const char *)0x9dd570);
+	strcpy((char *)packet, (const char *)IMG(0x9dd570));
 	memcpy(packet + 0x1e, room, 11);
-	memcpy(packet + 0x29, (const void *)0x9dd603, 0x90);
+	memcpy(packet + 0x29, (const void *)IMG(0x9dd603), 0x90);
 	net_send(0x1b, 0x65);
 }
 

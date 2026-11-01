@@ -4,7 +4,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 typedef int (THISCALL *Clear)(void *record);
 
@@ -51,7 +51,7 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 	u8 *r = FIELD(u8 *, space, head);
 	if (!r) {
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
-			(void *)0xae2ed0, (const char *)format, FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
+			(void *)IMG(0xae2ed0), (const char *)RELOC(format), FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
 			FIELD(int, space, 0x20), FIELD(int, space, 0x3c), FIELD(int, space, 0x30), FIELD(int, space, 0x4c),
 			FIELD(int, space, 0x40));
 		return 0;
@@ -69,9 +69,9 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 static int THISCALL clear_unit(void *r) { spaceSlot_clear(r); return 0; }
 
 /* 0x4815c0, 0x4816c0, 0x4817f0: a free plane, node or unit */
-void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, 0x4c7818); }
-void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, 0x4c7874); }
-void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, 0x4c78cc); }
+void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, IMG(0x4c7818)); }
+void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, IMG(0x4c7874)); }
+void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, IMG(0x4c78cc)); }
 
 /* 0x4818e0 (thiscall on the space): a block taken from the free list (+0x48; its next at +0x4c, the new head's back
    link +0x48 cleared), counted (+0x4c), reset (spaceBlock_clear) and given the bounds mn / mx (three dwords each);
@@ -81,11 +81,11 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
 	u32 *block = FIELD(u32 *, 0x48);
 	if (!block) {
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)0xae2ed0, (const char *)0x4c7924,
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)IMG(0xae2ed0), (const char *)IMG(0x4c7924),
 			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
 		return 0;
 	}
-	u32 *next = (u32 *)block[0x4c / 4];
+	u32 *next = (u32 *)RELOC(block[0x4c / 4]);
 	if (next) {
 		FIELD(u32 *, 0x48) = next;
 		next[0x48 / 4] = 0;
@@ -106,7 +106,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
    Ptr: +0 the planes, +8 / +0xc next / previous; owner +8 its last node). Its callers ignore the eax it leaves */
 void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
-#define AT(type, p, offset) GAME_VAR(type, (u8 *)(p) + (offset))
+#define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
 	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!planes)
 		return;
@@ -151,9 +151,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(int, 0x7c) = nz;
 	int cells = FIELD(int, 0x58) = nx * ny * nz;
 	if (cells <= 0)
-		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c79f4, nx, ny, nz);
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c79f4), nx, ny, nz);
 	else if (cells > FIELD(int, 0x50))
-		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c79bc, nx, ny, nz, cells, FIELD(int, 0x50));
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c79bc), nx, ny, nz, cells, FIELD(int, 0x50));
 	FIELD(u32, 0x90) = b;
 	FIELD(u32, 0x8c) = a;
 	FIELD(int, 0x94) = depth;
@@ -161,7 +161,7 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(float, 0x84) = (float)(((long double)FIELD(float, 0x68) - FIELD(float, 0x5c)) / FIELD(int, 0x78));
 	FIELD(float, 0x88) = (float)(((long double)FIELD(float, 0x6c) - FIELD(float, 0x60)) / FIELD(int, 0x7c));
 	if (depth > 8)
-		sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c7980, depth, 8);
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c7980), depth, 8);
 	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
 #undef FIELD
 }
@@ -184,11 +184,11 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
 		if (!FIELD(void *, 8))
-			sys_fatalError((char *)0xae2ed0, (const char *)0x4c4cec, FIELD(int, 4));
+			sys_fatalError((char *)IMG(0xae2ed0), (const char *)IMG(0x4c4cec), FIELD(int, 4));
 		FIELD(int, 0xc) = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)0xae2ed0, (const char *)0x4c4cbc, need, size);
+			sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c4cbc), need, size);
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);
@@ -243,7 +243,7 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	return space_collideAt(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* 0x482aa0 (thiscall on the collision space): the leaf of the space's octrees at pos + vel (written to outPos) has its
    triangles tested (space_collideUnit, its answer also kept at +0x98). The end point must be inside the space's box
@@ -292,7 +292,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
-	const float *half = (const float *)0x4a942c;
+	const float *half = (const float *)IMG(0x4a942c);
 	while (node) {
 		if (!FIELD(int, node, 0x24))
 			return FIELD(int, grid, 0x98) = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
@@ -312,7 +312,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
    it out (the x half kept at full precision) */
 static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 {
-	const float *half = (const float *)0x4a942c;
+	const float *half = (const float *)IMG(0x4a942c);
 	int bx = i % 2, by = i / 4, bz = i / 2 % 2;
 	float box[6];
 	box[0] = f32(fadd_m(fmul_m(fsub_m(fld_m(&high[0]), &low[0]) * bx, half), &low[0]));
@@ -375,8 +375,8 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	}
 	for (u32 *n = FIELD(u32 *, block, 0x18); n;) {
 		for (int j = 0; j < 8; j++)
-			space_insertItem(space, child[j], (void *)n[0], depth - 1);
-		u32 *next = (u32 *)n[3];
+			space_insertItem(space, child[j], (void *)RELOC(n[0]), depth - 1);
+		u32 *next = (u32 *)RELOC(n[3]);
 		space_freeNode(space, n);
 		n = next;
 	}
@@ -704,7 +704,7 @@ static void through_m(float *out, const float *m, const float *p, int yx)
    matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
 u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
-	const float *low = (const float *)unit, *k = (const float *)0x4a942c;
+	const float *low = (const float *)RELOC(unit), *k = (const float *)IMG(0x4a942c);
 	if (GAME_VAR(int, unit + 0x24) == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {
@@ -776,14 +776,14 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 	u32 found = 0;
 	const u32 *sub = NULL;
 	for (int s = -1;;) {
-		u8 *rec = (u8 *)node[0];
+		u8 *rec = (u8 *)RELOC(node[0]);
 		if (s >= 0 || !(rec[0] & 1)) {
 			float at[3], tt;
 			if (collisionTri_traceSegment(rec, f, t, at, &tt) == 1 && tt > *dist) {
 				if (s < 0)
 					memcpy(hit, at, 12);
 				else {
-					const float *m = (const float *)sub[1];
+					const float *m = (const float *)RELOC(sub[1]);
 					for (int r = 0; r < 3; r++)
 						hit[r] = f32(fadd_m(fmul_m(fld_m(&at[2]), &m[8 + r]) + fmul_m(fld_m(&at[1]), &m[4 + r]) +
 						                    fmul_m(fld_m(&at[0]), &m[r]), &m[12 + r]));
@@ -792,14 +792,14 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 				found = node[0];
 			}
 		}
-		node = (u32 *)node[3];
+		node = (u32 *)RELOC(node[3]);
 		if (!node) {
 			if (++s >= nsubs)
 				return found;
 			sub = subs + s * 3;
-			node = (u32 *)sub[0];
-			through_m(f, (const float *)sub[2], from, 0);
-			through_m(t, (const float *)sub[2], to, 1);
+			node = (u32 *)RELOC(sub[0]);
+			through_m(f, (const float *)RELOC(sub[2]), from, 0);
+			through_m(t, (const float *)RELOC(sub[2]), to, 1);
 		}
 	}
 }
@@ -910,7 +910,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 			clip_end(a, b, d, &hi[1], 1, 0);
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
-		u32 *sub = (u32 *)(s + 0x9ca0f4) + n * 3;
+		u32 *sub = (u32 *)(RELOC(s) + 0x9ca0f4) + n * 3;
 		sub[0] = GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8);
 		sub[1] = (u32)(o + 0x1f4);
 		sub[2] = (u32)(o + 0x234);

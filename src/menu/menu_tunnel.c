@@ -4,7 +4,7 @@
    -360 (sic). Floats the original only copies are passed on bit for bit (BITS). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 static void bind(int texture)
 {
@@ -352,10 +352,10 @@ void (intro_cameraPath)(u8 *o, int h)
 /* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at
    (0x680378), kept at 0x9dd930 / 0x9dd918; the move's state in g_keysBlocked (0 still, 1 / 3 moving in / out a ring,
    2 / 4 the view swinging up before them) ---- */
-#define EYE ((float *)0x4df024)
-#define LOOK ((float *)0x680378)
-#define EYE_KEPT ((float *)0x9dd930)
-#define LOOK_KEPT ((float *)0x9dd918)
+#define EYE ((float *)IMG(0x4df024))
+#define LOOK ((float *)IMG(0x680378))
+#define EYE_KEPT ((float *)IMG(0x9dd930))
+#define LOOK_KEPT ((float *)IMG(0x9dd918))
 
 static void camera_keep(void)
 {
@@ -398,7 +398,7 @@ void (armc_enter)(TunnelRing *ring)
 {
 	if (g_frameTime > k_10f)
 		BITS(g_frameTime) = 0x40000000;   /* 2 */
-	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)0x4a940c));
+	int step = ftol(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a940c)));
 	int ringLength = 0x44c;
 	g_armcEnterStep = step;
 	g_armcEnterStepF = (float)step;
@@ -411,7 +411,7 @@ void (armc_enter)(TunnelRing *ring)
 	TunnelRing *r = ring;
 	for (TunnelRing *last = ring; last->next != NULL; last = last->next)
 		r = last;
-	const float *stepF = (const float *)0x4b2a78;
+	const float *stepF = (const float *)IMG(0x4b2a78);
 	int state = g_keysBlocked;
 	switch (state) {
 	case 0:
@@ -440,9 +440,9 @@ void (armc_enter)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? 0x4a95c8 : 0x4a95c4)));
+				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? IMG(0x4a95c8) : IMG(0x4a95c4))));
 			else
-				r->turn = f32(fadd_m(fld_m(&r->turn), (const float *)0x4a95c4));
+				r->turn = f32(fadd_m(fld_m(&r->turn), (const float *)IMG(0x4a95c4)));
 			r->moveSteps = 0;
 			for (int k = 0; k < 2; k++) {
 				((u32 *)EYE)[k] = ((const u32 *)EYE_KEPT)[k];
@@ -473,7 +473,7 @@ void (armc_enter)(TunnelRing *ring)
 			}
 		} else if (state == 1)
 			return;
-		lower_view((const float *)0x4a942c);
+		lower_view((const float *)IMG(0x4a942c));
 		return;
 	case 2:
 	case 4:

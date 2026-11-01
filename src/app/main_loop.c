@@ -83,8 +83,8 @@ void (menu_frame)(void)
 		menu_processKeys();
 	}
 	if (g_screen == 300 && g_mainMenuFadingIn && !g_dialogPending) {
-		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)0x4a9468), &g_viewAspect));   /* 0.05 a frame */
-		g_armcCamDistance = fadd_m(fld_m((const float *)0x4df02c), (const float *)0x4a9418);                       /* the camera 10 back */
+		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)IMG(0x4a9468)), &g_viewAspect));   /* 0.05 a frame */
+		g_armcCamDistance = fadd_m(fld_m((const float *)IMG(0x4df02c)), (const float *)IMG(0x4a9418));                       /* the camera 10 back */
 		long double zoom = fadd_m(fld_m(&g_introZoom), &g_frameTime);
 		g_introZoom = zoom;
 		if (!(g_viewAspect >= k_0_01f))
@@ -122,11 +122,11 @@ void (menu_frame)(void)
 	switch (g_fovKeys) {
 	case 1:
 		if (g_viewAngle > k_5f)
-			g_viewAngle = fsub_m(fld_m(&g_viewAngle), (const float *)0x4a93d0);
+			g_viewAngle = fsub_m(fld_m(&g_viewAngle), (const float *)IMG(0x4a93d0));
 		break;
 	case 2:
 		if (!(g_viewAngle >= k_45f))
-			g_viewAngle = fadd_m(fld_m(&g_viewAngle), (const float *)0x4a93d0);
+			g_viewAngle = fadd_m(fld_m(&g_viewAngle), (const float *)IMG(0x4a93d0));
 		break;
 	}
 	long double now = timer_now();
@@ -145,7 +145,7 @@ void (menu_frame)(void)
 	}
 	long double rate = k_1 / (now - g_lastFrameClock);
 	g_frameRate = rate;
-	long double frame = fdivr_m(rate, (const float *)0x4a94dc);   /* 60 / rate */
+	long double frame = fdivr_m(rate, (const float *)IMG(0x4a94dc));   /* 60 / rate */
 	g_frameTime = frame;
 	if (frame > k_20f)
 		g_frameTime = 1.0f;
@@ -158,12 +158,12 @@ void (menu_frame)(void)
 static void count_down(u8 *s, u32 offset, const float *dt)
 {
 	float *t = (float *)(s + offset);
-	const float *zero = (const float *)0x4a93e8;
+	const float *zero = (const float *)IMG(0x4a93e8);
 	if (*t > *zero) {
 		long double left = fsub_m(fld_m(t), dt);
 		*t = f32(left);
 		if (!(left >= *zero))
-			*(u32 *)t = 0;
+			*(u32 *)RELOC(t) = 0;
 	}
 }
 
@@ -231,8 +231,8 @@ static void mouse_offset(u8 *s, int steer)
 	if (steer)
 		dx = -dx;
 	S(float, 0x2343297) = f32(dx);
-	long double k = fmul_m((long double)g_mouseSensitivity, (const float *)0x4aa480);
-	long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
+	long double k = fmul_m((long double)g_mouseSensitivity, (const float *)IMG(0x4aa480));
+	long double f = fmul_m(fadd_m(k * k, (const float *)IMG(0x4a9424)), (const float *)IMG(0x4a942c));
 	S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 	S(float, 0x2343297) = f32(steer ? fmul_m(f, (const float *)(s + 0x2343297)) : dx * f);
 	g_mouseX = gfx_getWidth() / 2;
@@ -240,17 +240,17 @@ static void mouse_offset(u8 *s, int steer)
 }
 
 /* the weapon slot keys: slot 1 .. 9, 0 (+0x23424f2), each also asking for the switch (+0x2340c6c, +0x23432cb) */
-static const u32 k_slotKeys[10][2] = { { 0x4dec90, 1 }, { 0x4dec8c, 2 }, { 0x4deb5c, 3 }, { 0x4deb58, 4 }, { 0x4deb64, 5 },
-                                       { 0x4deb60, 6 }, { 0x4deb6c, 7 }, { 0x4deb68, 8 }, { 0x4deb70, 9 }, { 0x4deb78, 0 } };
+static const u32 k_slotKeys[10][2] = { { IMG(0x4dec90), 1 }, { IMG(0x4dec8c), 2 }, { IMG(0x4deb5c), 3 }, { IMG(0x4deb58), 4 }, { IMG(0x4deb64), 5 },
+                                       { IMG(0x4deb60), 6 }, { IMG(0x4deb6c), 7 }, { IMG(0x4deb68), 8 }, { IMG(0x4deb70), 9 }, { IMG(0x4deb78), 0 } };
 /* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
-static const u32 k_radioKeys[10] = { 0x4e0468, 0x4e046c, 0x4e0470, 0x4e0874, 0x4e0c78, 0x4e0c7c, 0x4e0c80, 0x4e0c84, 0x4e0c88, 0x4e0460 };
+static const u32 k_radioKeys[10] = { IMG(0x4e0468), IMG(0x4e046c), IMG(0x4e0470), IMG(0x4e0874), IMG(0x4e0c78), IMG(0x4e0c7c), IMG(0x4e0c80), IMG(0x4e0c84), IMG(0x4e0c88), IMG(0x4e0460) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { 0x4def30, 0x234325f }, { 0x4def10, 0x234326b }, { 0x4def18, 0x234326f },
-                                       { 0x4def00, 0x2343263 }, { 0x4def08, 0x2343267 }, { 0x4def40, 0x2343273 },
-                                       { 0x4def48, 0x2343277 }, { 0x4def98, 0x234328b }, { 0x4defe0, 0x234328f },
-                                       { 0x4def38, 0x2343283 } };
+static const u32 k_heldKeys[10][2] = { { IMG(0x4def30), 0x234325f }, { IMG(0x4def10), 0x234326b }, { IMG(0x4def18), 0x234326f },
+                                       { IMG(0x4def00), 0x2343263 }, { IMG(0x4def08), 0x2343267 }, { IMG(0x4def40), 0x2343273 },
+                                       { IMG(0x4def48), 0x2343277 }, { IMG(0x4def98), 0x234328b }, { IMG(0x4defe0), 0x234328f },
+                                       { IMG(0x4def38), 0x2343283 } };
 /* the view keys (+0x2343287: the last held wins, else -1) */
-static const u32 k_viewKeys[6] = { 0x4def78, 0x4def80, 0x4def88, 0x4def90, 0x4def68, 0x4def70 };
+static const u32 k_viewKeys[6] = { IMG(0x4def78), IMG(0x4def80), IMG(0x4def88), IMG(0x4def90), IMG(0x4def68), IMG(0x4def70) };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match runs, +0x233c9e8). In play (no menu +0x2340d35 / +0x2340cf4): with the own view (+0x233c9fc
@@ -269,7 +269,7 @@ void THISCALL (match_combatInput)(u8 *s)
 	if (S(int, 0x2340d35) == 0 && S(int, 0x2340cf4) == 0) {
 		if (S(int, 0x233c9fc) == 0) {
 			if (S(int, 0x2340cf0) == 0 || (S(int, 8) == 0 && S(int, 0x1eccb48 + S(int, 0x234240d) * 0x8888) == 0)) {
-				if (pressed2(0x4def50, 0x4def54))
+				if (pressed2(IMG(0x4def50), IMG(0x4def54)))
 					S(int, 0x23432cf) = 1;
 			} else {
 				if (g_mouseClick) {
@@ -294,9 +294,9 @@ void THISCALL (match_combatInput)(u8 *s)
 				S(int, 0x2343307)--;
 			}
 		} else {
-			if (held2(0x4def50, 0x4def54))
+			if (held2(IMG(0x4def50), IMG(0x4def54)))
 				S(int, 0x234327b) = 1;
-			if (pressed2(0x4def50, 0x4def54))
+			if (pressed2(IMG(0x4def50), IMG(0x4def54)))
 				S(int, 0x234327f) = 1;
 		}
 		for (int k = 0; k < 10; k++)
@@ -314,37 +314,37 @@ void THISCALL (match_combatInput)(u8 *s)
 			S(int, 0x2343257) = g_mouseX;
 			S(int, 0x234325b) = g_mouseY;
 			S(int, 0x2343293) = S(int, 0x2343297) = 0;
-			long double k = fmul_m((long double)g_mouseSensitivity, (const float *)0x4aa480);
-			long double f = fmul_m(fadd_m(k * k, (const float *)0x4a9424), (const float *)0x4a942c);
+			long double k = fmul_m((long double)g_mouseSensitivity, (const float *)IMG(0x4aa480));
+			long double f = fmul_m(fadd_m(k * k, (const float *)IMG(0x4a9424)), (const float *)IMG(0x4a942c));
 			S(float, 0x2343293) = f32(fmul_m(f, (const float *)(s + 0x2343293)));
 			S(float, 0x2343297) = f32(fmul_m(f, (const float *)(s + 0x2343297)));
 			g_mouseX = gfx_getWidth() / 2;
 			g_mouseY = gfx_getHeight() / 2;
 		}
-		if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0))
+		if (pressed2(IMG(0x4defc8), IMG(0x4defcc)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432cf) = 1;
-		if (pressed2(0x4def58, 0x4def5c))
+		if (pressed2(IMG(0x4def58), IMG(0x4def5c)))
 			S(int, 0x23432eb) = 1;
-		if (pressed2(0x4def60, 0x4def64))
+		if (pressed2(IMG(0x4def60), IMG(0x4def64)))
 			S(int, 0x23432ef) = 1;
-		if (pressed2(0x4deff0, 0x4deff4))
+		if (pressed2(IMG(0x4deff0), IMG(0x4deff4)))
 			S(int, 0x23424ee) = S(int, 0x233cc10) == 1 ? 2 : S(int, 0x233cc10) == 2 ? 3 : 1;
-		if (pressed2(0x4defa8, 0x4defac) && !(S(float, 0x2340d39) > 0))
+		if (pressed2(IMG(0x4defa8), IMG(0x4defac)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432fb) = 1;
-		else if (pressed2(0x4defb0, 0x4defb4) && !(S(float, 0x2340d39) > 0))
+		else if (pressed2(IMG(0x4defb0), IMG(0x4defb4)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432ff) = 1;
-		if (pressed2(0x4deff8, 0x4deffc))
+		if (pressed2(IMG(0x4deff8), IMG(0x4deffc)))
 			S(int, 0x2343303) = 1;
 		if (input_justPressed(g_dikF11)) {
 			if (S(int, 0x2340ce8) == 0) {
 				S(int, 0x2340ce8) = 1;
-				notice_printCentre((Scene *)s, (const char *)0x4c7d00);
+				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7d00));
 			} else if (S(int, 0x2340ce4) == 0) {
 				S(int, 0x2340ce4) = 1;
-				notice_printCentre((Scene *)s, (const char *)0x4c7cf0);
+				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7cf0));
 			} else {
 				S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
-				notice_printCentre((Scene *)s, (const char *)0x4c7ce4);
+				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7ce4));
 			}
 		}
 	} else if (S(int, 0x2340cf4) == 1) {
@@ -352,13 +352,13 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (code_matches(0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
 		else {
-			const float *down = (const float *)0x4a9558, *up = (const float *)0x4a9560;
+			const float *down = (const float *)IMG(0x4a9558), *up = (const float *)IMG(0x4a9560);
 			if (!(S(float, 0x2343293) >= *down) || !(S(float, 0x2343297) >= *down))
 				S(int, 0x234330b) = 1;
 			if (S(float, 0x2343293) > *up || S(float, 0x2343297) > *up)
 				S(int, 0x234330f) = 1;
 		}
-		if (pressed2(0x4def50, 0x4def54))
+		if (pressed2(IMG(0x4def50), IMG(0x4def54)))
 			S(int, 0x2343313) = 1;
 		S(int, 0x2343293) = S(int, 0x2343297) = 0;
 		if (input_justPressed(g_dikLeft) || input_justPressed(g_dikUp))
@@ -460,9 +460,9 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	S(int, 0x23432f3) = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	S(int, 0x23432f7) = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	frameTimer_average(s);
-	float slow = f32(fld_m((const float *)0x4a9424) - fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa488));
-	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4aa484));
-	long double look = fmul_m(fld_m((const float *)(s + 0x44)), (const float *)0x4a93f4);
+	float slow = f32(fld_m((const float *)IMG(0x4a9424)) - fmul_m(fld_m((const float *)(s + 0x44)), (const float *)IMG(0x4aa488)));
+	float turn = f32(fmul_m(fld_m((const float *)(s + 0x44)), (const float *)IMG(0x4aa484)));
+	long double look = fmul_m(fld_m((const float *)(s + 0x44)), (const float *)IMG(0x4a93f4));
 	float yaw = f32(look * S(float, 0x2343297)), pitch = f32(look * S(float, 0x2343293));
 	actor_setInput(stage, 0, S(u32, 0x2343263), S(u32, 0x2343267), S(u32, 0x234326b), S(u32, 0x234326f), *(u32 *)&pitch, *(u32 *)&yaw,
 	             S(u32, 0x234327b), S(u32, 0x234325f), S(u32, 0x2343283), S(u32, 0x2343287), 0, 0);
@@ -482,13 +482,13 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca2c)), &turn);
 		S(float, 0x233ca2c) = f32(v);
 		if (!(v >= 0))
-			S(float, 0x233ca2c) = f32(fadd_m(v, (const float *)0x4a94c8));
+			S(float, 0x233ca2c) = f32(fadd_m(v, (const float *)IMG(0x4a94c8)));
 	}
 	if (S(int, 0x23432b7)) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca2c));
 		S(float, 0x233ca2c) = f32(v);
 		if (v >= k_3600f)
-			S(float, 0x233ca2c) = f32(fsub_m(v, (const float *)0x4a94c8));
+			S(float, 0x233ca2c) = f32(fsub_m(v, (const float *)IMG(0x4a94c8)));
 	}
 	float *zoom = (float *)(s + 0x233cb70) + S(int, 0x233cc10);
 	if (S(int, 0x23432ab)) {
@@ -576,12 +576,12 @@ u32 THISCALL (match_inputState3)(u8 *s)
 				far_point(b, pitch + 100, yaw);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+				ViewVolume_addSegment(s + 0x74, (const void *)IMG(0xa1f238), pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
 				about(pb, b, actor);
 				about(pa, a, actor);
-				ViewVolume_addSegment(s + 0x74, (const void *)0xa1f238, pa, pb, 1);
+				ViewVolume_addSegment(s + 0x74, (const void *)IMG(0xa1f238), pa, pb, 1);
 			}
 	stage_drawActors((Stage *)stage, s + 0x74, -1);
 	stage_drawBullets(stage, s + 0x74);
@@ -593,7 +593,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 #undef S
 
 #define S(type, offset) GAME_VAR(type, s + (offset))
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define ACTOR(i, offset) GAME_VAR(float, s + 0x1eccbc4 + (i) * 0x8888 + (offset))   /* an actor's field, from its position */
 #define ACTOR_INT(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)
 
@@ -753,7 +753,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	int i = S(int, preset);
 	S(float, 0x233ca28) = (float)fld_m((const float *)(s + 0x233cb20) + i);
 	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
-		S(float, 0x233ca28) = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(t + 0x160)));
+		S(float, 0x233ca28) = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
 	if (S(float, 0x233ca28) > 890.0f)
 		S(u32, 0x233ca28) = 0x445e8000;
 	if (!(S(float, 0x233ca28) >= -890.0f))
@@ -761,7 +761,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	i = S(int, preset);
 	S(float, 0x233ca2c) = (float)fld_m((const float *)(s + 0x233cb48) + i);
 	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
-		S(float, 0x233ca2c) = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(t + 0x164)));
+		S(float, 0x233ca2c) = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(RELOC(t) + 0x164)));
 }
 
 /* the camera pulled back by the preset's zoom (+0x233cb70) from 0.85 of the actor t's height (its position with
@@ -770,7 +770,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
 	float *cam = (float *)(s + 0x233ca04), a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
-		a[1] = f32(fmul_m(fld_m((const float *)(t + 0x3e8)), K(0x4aa478)));   /* 0.85 */
+		a[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4aa478)));   /* 0.85 */
 		Vec3_rotateAxis(a, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
 		Vec3_rotateAxis(a, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	}
@@ -779,7 +779,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	Vec3_rotateAxis(b, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
 	Vec3_rotateAxis(b, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	for (int k = 0; k < 3; k++)
-		a[k] = f32(fadd_m(fld_m(&a[k]), (const float *)(t + 0x154) + k));
+		a[k] = f32(fadd_m(fld_m(&a[k]), (const float *)(RELOC(t) + 0x154) + k));
 	to[0] = f32(fadd_m(fld_m(&b[0]), &a[0]));
 	to[1] = f32(fadd_m(fld_m(&a[1]), &b[1]));
 	to[2] = f32(fadd_m(fld_m(&a[2]), &b[2]));
@@ -904,7 +904,7 @@ static void turn_view(u8 *s)
    three times as fast with +0x2343283; the mouse turns the view (pitch within +-890, heading wrapped at 3600) */
 static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 {
-	memcpy(mv, (const void *)0xa0e7e8, 12);
+	memcpy(mv, (const void *)IMG(0xa0e7e8), 12);
 	int bits = S(int, 0x234326b) ? 1 : 0;
 	if (S(int, 0x234326f))
 		bits |= 0x10;
@@ -956,11 +956,11 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the free camera / follow keys: held pairs and the flag each sets */
-static const u32 k_replayHeld[7][3] = { { 0x4def30, 0x4def34, 0x234325f }, { 0x4def10, 0x4def14, 0x234326b }, { 0x4def18, 0x4def1c, 0x234326f },
-                                        { 0x4def00, 0x4def04, 0x2343263 }, { 0x4def08, 0x4def0c, 0x2343267 }, { 0x4def40, 0x4def44, 0x2343273 },
-                                        { 0x4def48, 0x4def4c, 0x2343277 } };
+static const u32 k_replayHeld[7][3] = { { IMG(0x4def30), IMG(0x4def34), 0x234325f }, { IMG(0x4def10), IMG(0x4def14), 0x234326b }, { IMG(0x4def18), IMG(0x4def1c), 0x234326f },
+                                        { IMG(0x4def00), IMG(0x4def04), 0x2343263 }, { IMG(0x4def08), IMG(0x4def0c), 0x2343267 }, { IMG(0x4def40), IMG(0x4def44), 0x2343273 },
+                                        { IMG(0x4def48), IMG(0x4def4c), 0x2343277 } };
 /* the camera preset keys (presets 1 .. 9, 0) */
-static const u32 k_presetKeys[10] = { 0x4dec90, 0x4dec8c, 0x4deb5c, 0x4deb58, 0x4deb64, 0x4deb60, 0x4deb6c, 0x4deb68, 0x4deb70, 0x4deb78 };
+static const u32 k_presetKeys[10] = { IMG(0x4dec90), IMG(0x4dec8c), IMG(0x4deb5c), IMG(0x4deb58), IMG(0x4deb64), IMG(0x4deb60), IMG(0x4deb6c), IMG(0x4deb68), IMG(0x4deb70), IMG(0x4deb78) };
 /* the eight lines of a debug marker's star: the far corner's signs */
 static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 1 }, { -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { -1, -1, 1 }, { 1, 1, -1 } };
 
@@ -1032,19 +1032,19 @@ u32 THISCALL (replay_frame)(u8 *s)
 	follow--;
 	S(int, 0x2340d21) = input_isDown(g_dikSpace) ? 1 : 0;
 	S(int, 0x2340d25) = input_isDown(g_dikEnter) ? 1 : 0;
-	if (held2(0x4defe0, 0x4defe4))
+	if (held2(IMG(0x4defe0), IMG(0x4defe4)))
 		S(int, 0x234328f) = 1;
 	if (input_justPressed(g_dikF11)) {
 		const char *mode;
 		if (S(int, 0x2340ce8) == 0) {
 			S(int, 0x2340ce8) = 1;
-			mode = (const char *)0x4c7d00;   /* "HIDDEN MESSAGE BOX MODE" */
+			mode = (const char *)IMG(0x4c7d00);   /* "HIDDEN MESSAGE BOX MODE" */
 		} else if (S(int, 0x2340ce4) == 0) {
 			S(int, 0x2340ce4) = 1;
-			mode = (const char *)0x4c7cf0;   /* "SCREENSHOT MODE" */
+			mode = (const char *)IMG(0x4c7cf0);   /* "SCREENSHOT MODE" */
 		} else {
 			S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
-			mode = (const char *)0x4c7ce4;   /* "NORMAL MODE" */
+			mode = (const char *)IMG(0x4c7ce4);   /* "NORMAL MODE" */
 		}
 		notice_printCentre((Scene *)s, mode);
 	}
@@ -1065,7 +1065,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	S(float, 0x2343297) = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	if (pressed2(0x4defc8, 0x4defcc) && !(S(float, 0x2340d39) > 0)) {
+	if (pressed2(IMG(0x4defc8), IMG(0x4defcc)) && !(S(float, 0x2340d39) > 0)) {
 		g_mainMenuFadingIn = 0;
 		S(int, 0x23432cf) = 1;
 	}
@@ -1151,7 +1151,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	/* the camera */
 	S(int, 0x233c9fc) = S(int, 0x2340c64) >= 0;
 	if (S(int, 0x233c9fc) == 0) {
-		free_camera(s, mv, S(int, 0x234325f) ? 0xa0e7d8 : 0, &move);
+		free_camera(s, mv, S(int, 0x234325f) ? IMG(0xa0e7d8) : 0, &move);
 		turn_view(s);
 	} else {
 		int i = S(int, 0x233cc10);
@@ -1211,7 +1211,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), K(0x4a93f4)) : fsub_m(fld_m(&p[k]), K(0x4a93f4)));
-				ViewVolume_addSegment(view, (const void *)0xa1f208, p, q, 1);
+				ViewVolume_addSegment(view, (const void *)IMG(0xa1f208), p, q, 1);
 			}
 		}
 	if (S(int, 0xbe170c) == 1) {
@@ -1234,14 +1234,14 @@ u32 THISCALL (replay_frame)(u8 *s)
 			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* replay_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = S(int, 0x233cc10);
-			sprintf(text, (const char *)0x4b0320, n > 0 ? n : n + 10);   /* "%d" */
+			sprintf(text, (const char *)IMG(0x4b0320), n > 0 ? n : n + 10);   /* "%d" */
 			PATCHED_CALL(0x48a259, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		if (!(S(float, 0x233cc34) >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* replay_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
-			sprintf(text, (const char *)0x4c7cd8, S(int, 0x233cc30) / 60, S(int, 0x233cc30) % 60);   /* "%02d:%02d" */
+			sprintf(text, (const char *)IMG(0x4c7cd8), S(int, 0x233cc30) / 60, S(int, 0x233cc30) % 60);   /* "%02d:%02d" */
 			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* replay_drawFollowedName */
@@ -1274,16 +1274,16 @@ static int team_game(void)
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
-	static const char *const k_teams[3] = { (const char *)0x4b21b8, (const char *)0x4b21b0, (const char *)0x4d06ec };   /* NOTEAM */
-	void *f = crt_fopen((const char *)0x4d06e0, (const char *)0x4b21a4);   /* "axiswl.log" */
-	crt_fprintf(f, format, (const char *)0x67fb44, g_missionStage, g_fragLimit, g_timeLimit, (const char *)0x4dedd8);
+	static const char *const k_teams[3] = { (const char *)IMG(0x4b21b8), (const char *)IMG(0x4b21b0), (const char *)IMG(0x4d06ec) };   /* NOTEAM */
+	void *f = crt_fopen((const char *)IMG(0x4d06e0), (const char *)IMG(0x4b21a4));   /* "axiswl.log" */
+	crt_fprintf(f, format, (const char *)IMG(0x67fb44), g_missionStage, g_fragLimit, g_timeLimit, (const char *)IMG(0x4dedd8));
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;
 		char name[64];
 		memset(name, 0, sizeof name);
 		strcpy(name, (const char *)ACTOR_AT(e) + 0x98);
-		crt_fprintf(f, (const char *)0x4d062c, name, k_teams[team], own_time ? A_INT(e, 0x1eccb6c) : stack_time,
+		crt_fprintf(f, (const char *)IMG(0x4d062c), name, k_teams[team], own_time ? A_INT(e, 0x1eccb6c) : stack_time,
 		            A_INT(e, 0x1eccb54), A_INT(e, 0x1eccb58));
 	}
 	fclose(f);
@@ -1368,7 +1368,7 @@ static void local_spawn(u8 *s)
 	if (S(int, 0x2340d1d) == 1)
 		S(int, 0x234300a + S(int, 0x234240d) * 16) = 1;
 	S(int, 0x233c9fc) = 1;
-	notice_printCentre((Scene *)s, (const char *)0x4d0618);
+	notice_printCentre((Scene *)s, (const char *)IMG(0x4d0618));
 	S(u32, 0x23423c1) = 0x40400000;   /* 3 */
 	S(int, 0x23423c5) = -1;
 	msg_newKing((Scene *)s);
@@ -1400,12 +1400,12 @@ static void bot_spawns(u8 *s)
 /* the camera looking back at the actor t's killer (+0x4c0) from 2 heights behind its head (+0x4e0) */
 static void killer_view(u8 *s, const u8 *t)
 {
-	float *cam = (float *)(s + 0x233ca04), *head = (float *)(t + 0x4e0), d[3], p[3];
+	float *cam = (float *)(s + 0x233ca04), *head = (float *)(RELOC(t) + 0x4e0), d[3], p[3];
 	int k = GAME_VAR(int, t + 0x4c0);
 	for (int j = 0; j < 3; j++)
 		d[j] = f32(fsub_m(fld_m((const float *)(ACTOR_AT(k) + 0x154) + j), &head[j]));
 	Vec3_normalize(d);
-	long double r = fmul_m(fld_m((const float *)(t + 0x3e8)), K(0x4a94a8));   /* -2 heights */
+	long double r = fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4a94a8));   /* -2 heights */
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
@@ -1458,13 +1458,13 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	const float *v, *m;
 	int bone;
 	if (slot == 4) {
-		v = (const float *)(item + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
+		v = (const float *)(RELOC(item) + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
 		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12d8);
 	} else if (slot == 5) {
-		v = (const float *)(item + 0x2d70 + GAME_VAR(int, t + 0x49c) * 0xc);
+		v = (const float *)(RELOC(item) + 0x2d70 + GAME_VAR(int, t + 0x49c) * 0xc);
 		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12e0);
 	} else {
-		v = (const float *)(item + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
+		v = (const float *)(RELOC(item) + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
 		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12d0);
 	}
 	m = (const float *)(GAME_VAR(u8 *, t + 0x1568) + bone * 100 + 0xc);
@@ -1481,11 +1481,11 @@ static void muzzle_camera(u8 *s, const u8 *t)
 		P[1] = mrow(m, v, 1, 0, 5, 1, 9, 2, 13);
 		P[2] = mrow(m, v, 2, 0, 6, 1, 10, 2, 14);
 	}
-	E[1] = f32(fmul_m(fld_m((const float *)(t + 0x3e8)), K(0x4a94fc)));   /* 0.3 */
+	E[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4a94fc)));   /* 0.3 */
 	Vec3_rotateAxis(E, 1, ftol(fld_m((const float *)(s + 0x233ca28))));
 	Vec3_rotateAxis(E, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	for (int k = 0; k < 3; k++)
-		E[k] = f32(fadd_m(fld_m(&E[k]), (const float *)(t + 0x154) + k));
+		E[k] = f32(fadd_m(fld_m(&E[k]), (const float *)(RELOC(t) + 0x154) + k));
 	float f;
 	BITS(f) = GAME_VAR(u32, t + 0x490);
 	long double dx = fsub_m(fld_m(&P[0]), &E[0]);
@@ -1568,13 +1568,13 @@ static void chat_keys(u8 *s)
 		return;
 	S(int, 0x2340d35) = 0;
 	chat_keepLastLine();
-	const char *typed = (const char *)0x9f63e4;
+	const char *typed = (const char *)IMG(0x9f63e4);
 	(void)me;
 	if (strlen(typed) != 0) {
 		int code = mode == 1 ? chat_matchCheatCode(s, S(int, 0x234240d), typed) : -1;
 		if (code >= 0) {
 			msg_cheatUsed(s, S(int, 0x234240d), code);
-			recorder_openStub(s, (void *)S(int, 0x234240d), (const void *)code);
+			recorder_openStub(s, (void *)S(int, 0x234240d), (const void *)RELOC(code));
 		} else {
 			int r = chat_macro(s, typed, line);
 			if (r == 0)
@@ -1607,7 +1607,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
 	if (g_writeMatchLog != 0 && g_startedFromLobby != 0) {
-		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? 0x4d0658 : 0x4d069c), 0, *(volatile int *)&from);
+		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? IMG(0x4d0658) : IMG(0x4d069c)), 0, *(volatile int *)&from);
 		g_writeMatchLog = 0;
 		g_matchLogWritten = 1;
 	}
@@ -1900,18 +1900,18 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(float, 0x23423c1) = (float)v;
 		if (!(v >= 0)) {
 			S(int, 0x23423c1) = 0;
-			notice_printCentre((Scene *)s, (const char *)0x4d0610);
+			notice_printCentre((Scene *)s, (const char *)IMG(0x4d0610));
 			sound_playVolume(0x17, 100);
 		} else {
 			int n = ftol(v);
 			if (S(int, 0x23423c5) != n) {
 				S(int, 0x23423c5) = n;
 				if (n == 0)
-					notice_printCentre((Scene *)s, (const char *)0x4d05f8);
+					notice_printCentre((Scene *)s, (const char *)IMG(0x4d05f8));
 				else if (n == 1)
-					notice_printCentre((Scene *)s, (const char *)0x4d0600);
+					notice_printCentre((Scene *)s, (const char *)IMG(0x4d0600));
 				else if (n == 2)
-					notice_printCentre((Scene *)s, (const char *)0x4d0608);
+					notice_printCentre((Scene *)s, (const char *)IMG(0x4d0608));
 				sound_playVolume(9, 100);
 			}
 		}
@@ -1921,7 +1921,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		int a = A_INT(me, 0x1eccb4c);
 		if (a != A_INT(me, 0x1eccb50)) {
 			A_INT(me, 0x1eccb50) = a;
-			notice_printCentre((Scene *)s, (const char *)0x4d05ec);
+			notice_printCentre((Scene *)s, (const char *)IMG(0x4d05ec));
 			sound_playVolume(0x18, 100);
 		}
 	}
@@ -2153,7 +2153,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		if (GAME_VAR(int, t + 0x14c) != 1 && GAME_VAR(int, t + 0x4c0) >= 0)
 			killer_view(s, t);
 		else if (S(int, 0x233cb98 + S(int, 0x233cc10) * 4) != 0)
-			look_at(s, (const float *)(t + 0x154));
+			look_at(s, (const float *)(RELOC(t) + 0x154));
 		else {
 			preset_angles(s, t, 0x233cc10);
 			if (S(int, 0x233cc10) == 1)
@@ -2248,7 +2248,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(float, 0x23423a5) = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
-				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && S(int, 0x2342976) <= 1) ? 0x4d069c : 0x4d05a8),
+				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && S(int, 0x2342976) <= 1) ? IMG(0x4d069c) : IMG(0x4d05a8)),
 				          1, 0);
 			replay_closeRecording((Scene *)s);
 			music_shutdown();

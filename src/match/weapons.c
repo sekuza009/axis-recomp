@@ -2,7 +2,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* the next usable weapon slot of actor i, going step slots round the six (1 forward, 5 = one back): a slot is
    usable when its player record holds a weapon there, of a known type, and the actor has at least that weapon's
@@ -93,7 +93,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 	int player = FIELD(int, a, 0x108) == 1 ? FIELD(int, a, 0x114) : -1;
 	if ((unsigned)kind <= 9) {
 		int level = GAME_VAR(int, 0x9f9068 + player * 0x4c + group[kind]) + 100;
-		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)0x4a9420), (const float *)0x4a942c));
+		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)IMG(0x4a9420)), (const float *)IMG(0x4a942c)));
 	}
 	if (FIELD(u32, a, 0x3f0) & 0x100)
 		damage *= 2;
@@ -109,9 +109,9 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 			int shield = FIELD(int, t, 0x12c);
 			if (shield >= damage) {
 				FIELD(int, t, 0x12c) = shield - damage;
-				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)0x4a9758), (const float *)0x4a942c));
+				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)IMG(0x4a9758)), (const float *)IMG(0x4a942c)));
 			} else {
-				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)0x4a9758), (const float *)0x4a942c));
+				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)IMG(0x4a9758)), (const float *)IMG(0x4a942c)));
 				FIELD(int, t, 0x128) += shield - lost - damage;
 				FIELD(int, t, 0x12c) = 0;
 			}
@@ -158,7 +158,7 @@ static int within(const float *p, const float *from, const float *range)
 void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
 	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
-	const float *from = (const float *)(a + 0x154), *range = (const float *)(a + 0x8848);
+	const float *from = (const float *)(RELOC(a) + 0x154), *range = (const float *)(RELOC(a) + 0x8848);
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
 	for (int i = 0; i < FIELD(int, scene, 0xe3c938); i++) {
@@ -195,10 +195,10 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 		FIELD(int, a, 0x8870) = -1;
 		FIELD(u32, a, 0x8848) = 0x44bb8000;   /* 1500.0 */
 	} else
-		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), (const float *)0x4a974c));
+		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), (const float *)IMG(0x4a974c)));
 }
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define B(type, offset) GAME_VAR(type, b + (offset))
 
 static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
@@ -259,13 +259,13 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			Mat4_invert(inv, m);
 			glPopMatrix();
 			u32 cone[3] = { 0, 0x3e10d068, 0x3f7d6d5d };   /* 0, 0.141, 0.990: 8.1 degrees off the axis */
-			float *v = (float *)cone;
+			float *v = (float *)RELOC(cone);
 			Vec3_rotateAxis(v, 0, (int)next_rand(3600));
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(fmul_m(fld_m(&v[2]), &inv[8 + r]) + fmul_m(fld_m(&v[1]), &inv[4 + r]) + fmul_m(fld_m(&inv[r]), &v[0]));
 		}
-		const float *speed = (const float *)(w + 0x2de4), *from = (const float *)(b + 0x54);
-		float *end = (float *)(b + 0x60);
+		const float *speed = (const float *)(w + 0x2de4), *from = (const float *)(RELOC(b) + 0x54);
+		float *end = (float *)(RELOC(b) + 0x60);
 		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
 		long double sz = fmul_m(fld_m(speed), &dir[2]);
 		end[0] = f32(fadd_m(fld_m(&sx), &from[0]));
@@ -300,16 +300,16 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(b + 0x78, o, 12);
 	memcpy(b + 0x84, o, 12);
 	B(int, 0x9c) = 0;
-	float *vel = (float *)(b + 0xa0);
+	float *vel = (float *)(RELOC(b) + 0xa0);
 	for (int k = 0; k < 3; k++)
-		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(b + 0x60) + k), (const float *)(b + 0x54) + k));
-	memcpy(b + 0xac, (const void *)0xa0e7e8, 12);
+		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
+	memcpy(b + 0xac, (const void *)IMG(0xa0e7e8), 12);
 	B(int, 0xb8) = -1;
 	B(int, 0xc0) = 0;
 	B(int, 0xbc) = a4;
 	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4)) {
-		const float *at = (const float *)(b + 0x78);
-		float *tip = (float *)(b + 0xc4);
+		const float *at = (const float *)(RELOC(b) + 0x78);
+		float *tip = (float *)(RELOC(b) + 0xc4);
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
 		float ty = f32(fmul_m(fld_m(&aim[1]), K(0x4aa444))), tz = f32(fmul_m(fld_m(&aim[2]), K(0x4aa444)));
 		tip[0] = f32(fadd_m(tx, &at[0]));
@@ -322,7 +322,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		return;
 	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, B(u32, 0xc) };
 	memcpy(&rec[2], b + 0x78, 12);
-	memcpy(&rec[5], (const void *)0xa0e7b8, 12);
+	memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
 	rec[8] = B(u32, 0x10);
 	float size = f32(fld_m((const float *)(w + 0x2df0)));
 	memcpy(&rec[11], &size, 4);
@@ -334,14 +334,14 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		sound_playVolume(sound, 100);
 	else
 		GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
-		                                                                                (const float *)(b + 0x78), (const float *)(s + 0x20f397c), 0x47435000);
+		                                                                                (const float *)(RELOC(b) + 0x78), (const float *)(s + 0x20f397c), 0x47435000);
 }
 #undef K
 #undef B
 
 /* ---- 0x47a2d0: a bullet's frame ---- */
 
-#define K(address) ((const float *)(address))
+#define K(address) ((const float *)RELOC(address))
 #define B(type, offset) GAME_VAR(type, b + (offset))
 #define W(type, offset) GAME_VAR(type, w + (offset))
 #define AF(i, offset) GAME_VAR(float, s + (offset) + (i) * 0x8888)   /* an actor's field */
@@ -373,7 +373,7 @@ static u32 effect_size(const u8 *w)
 /* the inverse of the view gluLookAt makes from the bullet's last point (+0x78) to its point (+0x84) */
 static void look_inverse(u8 *b, float *inv, int x_up)
 {
-	float *prev = (float *)(b + 0x78), *cur = (float *)(b + 0x84), mv[16];
+	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), mv[16];
 	glPushMatrix();
 	glLoadIdentity();
 	if (x_up)
@@ -397,26 +397,26 @@ static void offset_point(float *out, const float *off, const float *p)
    quarter of the texture (+0); the length kept (+0x494). The flying copy sums the length's squares in another order */
 static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
-	float *prev = (float *)(b + 0x78), *cur = (float *)(b + 0x84), inv[16], a[3];
+	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
 	look_inverse(b, inv, 0);
 	float half = f32(fld_m(&W(float, 0x2df0))), minus;
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&half), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
-	offset_point((float *)(b + 0xd4), a, prev);
-	offset_point((float *)(b + 0x104), a, cur);
+	offset_point((float *)(RELOC(b) + 0xd4), a, prev);
+	offset_point((float *)(RELOC(b) + 0x104), a, cur);
 	minus = f32(-fld_m(&W(float, 0x2df0)));
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&minus), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
-	offset_point((float *)(b + 0xe0), a, prev);
-	offset_point((float *)(b + 0x110), a, cur);
+	offset_point((float *)(RELOC(b) + 0xe0), a, prev);
+	offset_point((float *)(RELOC(b) + 0x110), a, cur);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fmul_m(fld_m(&half), &inv[k]), K(0x4a93e8)));
-	offset_point((float *)(b + 0xec), a, prev);
-	offset_point((float *)(b + 0x11c), a, cur);
+	offset_point((float *)(RELOC(b) + 0xec), a, prev);
+	offset_point((float *)(RELOC(b) + 0x11c), a, cur);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fmul_m(fld_m(&minus), &inv[k]), K(0x4a93e8)));
-	offset_point((float *)(b + 0xf8), a, prev);
-	offset_point((float *)(b + 0x128), a, cur);
+	offset_point((float *)(RELOC(b) + 0xf8), a, prev);
+	offset_point((float *)(RELOC(b) + 0x128), a, cur);
 	long double dx = fsub_m(fld_m(&cur[0]), &prev[0]), dy = fsub_m(fld_m(&cur[1]), &prev[1]), dz = fsub_m(fld_m(&cur[2]), &prev[2]);
 	long double len = flying ? root((dx * dx + dz * dz) + dy * dy) : root((dz * dz + dy * dy) + dx * dx);
 	B(float, 0x494) = (float)len;
@@ -456,7 +456,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
    line), the next one collapsed onto the point. The flying copy keeps one product unrounded */
 static void trail(u8 *b, const u8 *w, int flying)
 {
-	float *prev = (float *)(b + 0x78), *cur = (float *)(b + 0x84), inv[16], a[3];
+	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
 	look_inverse(b, inv, !(prev[0] < cur[0]) && !(prev[0] > cur[0]) && !(prev[2] < cur[2]) && !(prev[2] > cur[2]));
 	int i = B(int, 0x4e4) % 20;
 	u8 *ring = b + i * 0x30;
@@ -518,7 +518,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	t = B(int, 0xb8);
 	float dir[3];
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fsub_m(fld_m((const float *)(b + 0x84) + k), &AF(t, 0x1cd9528 + k * 4)));
+		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &AF(t, 0x1cd9528 + k * 4)));
 	Vec3_normalize(dir);
 	effect(s, r, W(int, 0x2dfc) + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
 	effect(s, r, 8, AI(B(int, 0xb8), 0x1cd9798) & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
@@ -549,7 +549,7 @@ static float through(const float *M, const float *p, int a, int ia, int b, int i
    the other two corners' coordinates in them (uv: the axes' lengths, 0, then two pairs) */
 static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N, const float *P)
 {
-	const float *imp = (const float *)(b + 0x60);
+	const float *imp = (const float *)(RELOC(b) + 0x60);
 	float e[3], uv[6], c2, le;
 	for (int k = 0; k < 3; k++)
 		e[k] = f32(fsub_m(fld_m(&P[k]), &imp[k]));
@@ -631,7 +631,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
-			d[k] = f32(fsub_m(fld_m(&AF(j, 0x1cd9528 + k * 4)), (const float *)(b + 0x84) + k));
+			d[k] = f32(fsub_m(fld_m(&AF(j, 0x1cd9528 + k * 4)), (const float *)(RELOC(b) + 0x84) + k));
 		long double len = Vec3_normalize(d);
 		if (len >= W(float, 0x2df4))
 			continue;
@@ -657,7 +657,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
    for kind 3 both by the bullet's age); again in 1/15 s (+0xc0) */
 static void home(u8 *s, u8 *b, const u8 *w)
 {
-	float *prev = (float *)(b + 0x78), *vel = (float *)(b + 0xa0), spd, rate, T[3];
+	float *prev = (float *)(RELOC(b) + 0x78), *vel = (float *)(RELOC(b) + 0xa0), spd, rate, T[3];
 	if (W(int, 0x2dfc) != 3) {
 		BITS(spd) = W(u32, 0x2de8);
 		BITS(rate) = W(u32, 0x2e0c);
@@ -669,12 +669,12 @@ static void home(u8 *s, u8 *b, const u8 *w)
 	}
 	int tg = B(int, 0xbc);
 	for (int k = 0; k < 3; k++)
-		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &AF(tg, 0x1cd9528 + k * 4) : (const float *)(b + 0xc4) + k), &prev[k]));
+		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &AF(tg, 0x1cd9528 + k * 4) : (const float *)(RELOC(b) + 0xc4) + k), &prev[k]));
 	Vec3_normalize(T);
 	Vec3_normalize(vel);
 	long double dot = (fmul_m(fld_m(&T[2]), &vel[2]) + fmul_m(fld_m(&T[1]), &vel[1])) + fmul_m(fld_m(&T[0]), &vel[0]);
 	int deg = ftol(fld_m(&rate));
-	if (fld_m((const float *)0xa17f38 + deg) > dot) {
+	if (fld_m((const float *)IMG(0xa17f38) + deg) > dot) {
 		float axis[3], rot[4], m[16];
 		axis[0] = f32(fmul_m(fld_m(&T[2]), &vel[1]) - fmul_m(fld_m(&T[1]), &vel[2]));
 		axis[1] = f32(fmul_m(fld_m(&T[0]), &vel[2]) - fmul_m(fld_m(&T[2]), &vel[0]));
@@ -700,7 +700,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
    homing weapon the world in the way (collision_rayTrace: the hit record +0x6c and the life cut to it) */
 static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
-	float *prev = (float *)(b + 0x78), *cur = (float *)(b + 0x84), *vel = (float *)(b + 0xa0), *step = (float *)(b + 0xac);
+	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *vel = (float *)(RELOC(b) + 0xa0), *step = (float *)(RELOC(b) + 0xac);
 	if (W(float, 0x2e0c) > 0 && W(float, 0x2de8) > 0) {
 		long double v = fsub_m(fld_m(&B(float, 0xc0)), dt);
 		B(float, 0xc0) = (float)v;
@@ -771,7 +771,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	int weapon = B(int, 8);
 	u8 *w = s + 0x14d1ab4 + weapon * 0x2e18;
 	u32 r[31];   /* particle_spawn's record, reused */
-	float *prev = (float *)(b + 0x78), *cur = (float *)(b + 0x84), *step = (float *)(b + 0xac);
+	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *step = (float *)(RELOC(b) + 0xac);
 	if (B(int, 0xb8) >= 0)
 		hit_actor(s, b, w, r, weapon);
 	if (!(B(float, 0x70) > B(float, 0x74))) {

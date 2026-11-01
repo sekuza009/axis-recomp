@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* 0x48b460: a count (+0xe36210) and that many 0x30-byte records (+0xdc0f10) */
 u32 THISCALL (map_readMissionRecords)(u8 *self, void *f)
@@ -27,7 +27,7 @@ u32 THISCALL (Light_read)(u8 *self, void *f)
    saves); fclose's result, 0 when the file cannot be opened */
 u32 THISCALL (chat_loadMacros)(Scene *scene)
 {
-	void *f = crt_fopen((const char *)0x4c45ec, (const char *)0x4b2ab0);
+	void *f = crt_fopen((const char *)IMG(0x4c45ec), (const char *)IMG(0x4b2ab0));
 	if (!f)
 		return 0;
 	crt_fwrite((u8 *)scene + 0x2340d3d, 0x39, 100, f);
@@ -75,7 +75,7 @@ int (file_existsf)(const char *format, ...)
 	va_start(args, format);
 	vsprintf(path, format, args);
 	va_end(args);
-	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 	if (!f)
 		return 0;
 	fclose(f);
@@ -100,7 +100,7 @@ u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
 {
 	if (index < 0) {
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)log, (const char *)0x4b3f80, name);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)RELOC(log), (const char *)IMG(0x4b3f80), name);   /* sys_fatalError */
 		return 0;
 	}
 	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
@@ -109,19 +109,19 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shape_findDatEntry)(const char *name)
 {
-	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, 0xa0e7a0, 0xa0e7a4, 0xa0e788);
+	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, IMG(0xa0e7a0), IMG(0xa0e7a4), IMG(0xa0e788));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, 0xa0eab8, 0xa0eabc, 0xa0eaa0);
+	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, IMG(0xa0eab8), IMG(0xa0eabc), IMG(0xa0eaa0));
 }
 
 /* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
    emptied and the defaults made (chat_loadMacros). Returns what the original leaves in eax */
 u32 THISCALL (chat_saveMacros)(Scene *scene)
 {
-	void *f = crt_fopen((const char *)0x4c45ec, (const char *)0x4ad170);
+	void *f = crt_fopen((const char *)IMG(0x4c45ec), (const char *)IMG(0x4ad170));
 	if (f) {
 		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((u8 *)scene + 0x2340d3d, 0x39, 100, f);   /* fread */
 		return fclose(f);
@@ -154,16 +154,16 @@ u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
    their keywords. Returns the last fputs */
 u32 (cfg_parsePlayer)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
-	FPUTS(0x4b1830);
-	FPUTS(0x4dedb0);
-	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)0x4b182c);   /* fprintf */
-	FPUTS(0x4b1818);
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+	FPUTS(IMG(0x4b1830));
+	FPUTS(IMG(0x4dedb0));
+	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)IMG(0x4b182c));   /* fprintf */
+	FPUTS(IMG(0x4b1818));
 	int corp = g_playerCorporation;
-	FPUTS(corp == 1 ? 0x4b1808 : corp == 2 ? 0x4b1810 : 0x4b1800);
-	FPUTS(0x4b17e8);
-	FPUTS(g_playerSex == 1 ? 0x4b17e4 : 0x4b17dc);
-	return FPUTS(0x4b182c);
+	FPUTS(corp == 1 ? IMG(0x4b1808) : corp == 2 ? IMG(0x4b1810) : IMG(0x4b1800));
+	FPUTS(IMG(0x4b17e8));
+	FPUTS(g_playerSex == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	return FPUTS(IMG(0x4b182c));
 #undef FPUTS
 }
 
@@ -172,61 +172,61 @@ u32 (cfg_parsePlayer)(void *f)
    0x4df000, 0x4df004), the sensitivity (0x4df008) and the crosshairs (0x4df00c). Returns the last fputs */
 u32 (cfg_keyBindings)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const struct { u32 line; u8 binding; } keys[64] = {
-		{ 0x4b2184, 0 }, { 0x4b2170, 1 },   /* forward */
-		{ 0x4b215c, 2 }, { 0x4b2148, 3 },   /* backward */
-		{ 0x4b2134, 4 }, { 0x4b2120, 5 },   /* left-step */
-		{ 0x4b2108, 6 }, { 0x4b20f0, 7 },   /* right-step */
-		{ 0x4b20dc, 8 }, { 0x4b20c8, 9 },   /* left-turn */
-		{ 0x4b20b0, 10 }, { 0x4b2098, 11 },   /* right-turn */
-		{ 0x4b207c, 12 }, { 0x4b2060, 13 },   /* fixed-altitude */
-		{ 0x4b204c, 14 }, { 0x4b2038, 15 },   /* booster */
-		{ 0x4b2024, 16 }, { 0x4b2010, 17 },   /* moveup */
-		{ 0x4b1ffc, 18 }, { 0x4b1fe8, 19 },   /* movedown */
-		{ 0x4b1fd8, 20 }, { 0x4b1fc8, 21 },   /* fire */
-		{ 0x4b1fb0, 22 }, { 0x4b1f98, 23 },   /* pre-weapon */
-		{ 0x4b1f80, 24 }, { 0x4b1f68, 25 },   /* next-weapon */
-		{ 0x4b1f4c, 30 }, { 0x4b1f30, 31 },   /* 1st-hand-weapon */
-		{ 0x4b1f14, 32 }, { 0x4b1ef8, 33 },   /* 2nd-hand-weapon */
-		{ 0x4b1edc, 34 }, { 0x4b1ec0, 35 },   /* 3rd-hand-weapon */
-		{ 0x4b1ea4, 36 }, { 0x4b1e88, 37 },   /* 4th-hand-weapon */
-		{ 0x4b1e68, 26 }, { 0x4b1e48, 27 },   /* right-shoulder-weapon */
-		{ 0x4b1e28, 28 }, { 0x4b1e08, 29 },   /* left-shoulder-weapon */
-		{ 0x4b1df8, 38 }, { 0x4b1de8, 39 },   /* zoom */
-		{ 0x4b1dd4, 40 }, { 0x4b1dc0, 41 },   /* alt-shoot */
-		{ 0x4b1db0, 42 }, { 0x4b1da0, 43 },   /* talk */
-		{ 0x4b1d8c, 44 }, { 0x4b1d78, 45 },   /* team-talk */
-		{ 0x4b1d64, 46 }, { 0x4b1d50, 47 },   /* use-item */
-		{ 0x4b1d3c, 48 }, { 0x4b1d28, 49 },   /* feedback */
-		{ 0x4b1d14, 50 }, { 0x4b1d00, 51 },   /* call-menu */
-		{ 0x4b1ce8, 52 }, { 0x4b1cd0, 53 },   /* quick-save */
-		{ 0x4b1cb8, 54 }, { 0x4b1ca0, 55 },   /* quick-load */
-		{ 0x4b1c90, 56 }, { 0x4b1c80, 57 },   /* score */
-		{ 0x4b1c64, 58 }, { 0x4b1c48, 59 },   /* mission-objective */
-		{ 0x4b1c2c, 60 }, { 0x4b1c10, 61 },   /* change-viewmode */
-		{ 0x4b1c00, 62 }, { 0x4b1bf0, 63 },   /* help */
+		{ IMG(0x4b2184), 0 }, { IMG(0x4b2170), 1 },   /* forward */
+		{ IMG(0x4b215c), 2 }, { IMG(0x4b2148), 3 },   /* backward */
+		{ IMG(0x4b2134), 4 }, { IMG(0x4b2120), 5 },   /* left-step */
+		{ IMG(0x4b2108), 6 }, { IMG(0x4b20f0), 7 },   /* right-step */
+		{ IMG(0x4b20dc), 8 }, { IMG(0x4b20c8), 9 },   /* left-turn */
+		{ IMG(0x4b20b0), 10 }, { IMG(0x4b2098), 11 },   /* right-turn */
+		{ IMG(0x4b207c), 12 }, { IMG(0x4b2060), 13 },   /* fixed-altitude */
+		{ IMG(0x4b204c), 14 }, { IMG(0x4b2038), 15 },   /* booster */
+		{ IMG(0x4b2024), 16 }, { IMG(0x4b2010), 17 },   /* moveup */
+		{ IMG(0x4b1ffc), 18 }, { IMG(0x4b1fe8), 19 },   /* movedown */
+		{ IMG(0x4b1fd8), 20 }, { IMG(0x4b1fc8), 21 },   /* fire */
+		{ IMG(0x4b1fb0), 22 }, { IMG(0x4b1f98), 23 },   /* pre-weapon */
+		{ IMG(0x4b1f80), 24 }, { IMG(0x4b1f68), 25 },   /* next-weapon */
+		{ IMG(0x4b1f4c), 30 }, { IMG(0x4b1f30), 31 },   /* 1st-hand-weapon */
+		{ IMG(0x4b1f14), 32 }, { IMG(0x4b1ef8), 33 },   /* 2nd-hand-weapon */
+		{ IMG(0x4b1edc), 34 }, { IMG(0x4b1ec0), 35 },   /* 3rd-hand-weapon */
+		{ IMG(0x4b1ea4), 36 }, { IMG(0x4b1e88), 37 },   /* 4th-hand-weapon */
+		{ IMG(0x4b1e68), 26 }, { IMG(0x4b1e48), 27 },   /* right-shoulder-weapon */
+		{ IMG(0x4b1e28), 28 }, { IMG(0x4b1e08), 29 },   /* left-shoulder-weapon */
+		{ IMG(0x4b1df8), 38 }, { IMG(0x4b1de8), 39 },   /* zoom */
+		{ IMG(0x4b1dd4), 40 }, { IMG(0x4b1dc0), 41 },   /* alt-shoot */
+		{ IMG(0x4b1db0), 42 }, { IMG(0x4b1da0), 43 },   /* talk */
+		{ IMG(0x4b1d8c), 44 }, { IMG(0x4b1d78), 45 },   /* team-talk */
+		{ IMG(0x4b1d64), 46 }, { IMG(0x4b1d50), 47 },   /* use-item */
+		{ IMG(0x4b1d3c), 48 }, { IMG(0x4b1d28), 49 },   /* feedback */
+		{ IMG(0x4b1d14), 50 }, { IMG(0x4b1d00), 51 },   /* call-menu */
+		{ IMG(0x4b1ce8), 52 }, { IMG(0x4b1cd0), 53 },   /* quick-save */
+		{ IMG(0x4b1cb8), 54 }, { IMG(0x4b1ca0), 55 },   /* quick-load */
+		{ IMG(0x4b1c90), 56 }, { IMG(0x4b1c80), 57 },   /* score */
+		{ IMG(0x4b1c64), 58 }, { IMG(0x4b1c48), 59 },   /* mission-objective */
+		{ IMG(0x4b1c2c), 60 }, { IMG(0x4b1c10), 61 },   /* change-viewmode */
+		{ IMG(0x4b1c00), 62 }, { IMG(0x4b1bf0), 63 },   /* help */
 	};
-	const int *binding = (const int *)0x4def00;
-	const char *const *key_name = (const char *const *)0x4b0750;
+	const int *binding = (const int *)IMG(0x4def00);
+	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
 		FPUTS(key_name[binding[keys[k].binding]]);
-		FPUTS(0x4b182c);
+		FPUTS(IMG(0x4b182c));
 	}
-	FPUTS(0x4b1bd8);
-	FPUTS(g_mouseInvert == 1 ? 0x4b17e4 : 0x4b17dc);
-	FPUTS(0x4b1bc0);
-	FPUTS(g_mouseSmooth == 1 ? 0x4b17e4 : 0x4b17dc);
+	FPUTS(IMG(0x4b1bd8));
+	FPUTS(g_mouseInvert == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	FPUTS(IMG(0x4b1bc0));
+	FPUTS(g_mouseSmooth == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
 	char number[12];
 	itoa(g_mouseSensitivity, number, 10);
-	FPUTS(0x4b1ba8);
+	FPUTS(IMG(0x4b1ba8));
 	FPUTS(number);
-	FPUTS(0x4b182c);
+	FPUTS(IMG(0x4b182c));
 	itoa(g_crosshairSetting, number, 10);
-	FPUTS(0x4b1b90);
+	FPUTS(IMG(0x4b1b90));
 	FPUTS(number);
-	return FPUTS(0x4b182c);
+	return FPUTS(IMG(0x4b182c));
 #undef FPUTS
 }
 
@@ -235,11 +235,11 @@ u32 (cfg_keyBindings)(void *f)
 u32 (cfg_loadAxisCfg)(void)
 {
 	char path[0x184];
-	strcpy(path, (const char *)0x9dae7c);
-	strcat(path, (const char *)0x4b2198);   /* the file's name */
-	void *f = crt_fopen(path, (const char *)0x4b21a4);
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b0f50, f);   /* fputs */
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)0x4b182c, f);
+	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcat(path, (const char *)IMG(0x4b2198));   /* the file's name */
+	void *f = crt_fopen(path, (const char *)IMG(0x4b21a4));
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)IMG(0x4b0f50), f);   /* fputs */
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)IMG(0x4b182c), f);
 	static const u32 sections[5] = { FN_ADDR(cfg_parsePlayer, 0x42c650), FN_ADDR(cfg_parseServer, 0x42c6f0), FN_ADDR(cfg_parseSound, 0x42c910), FN_ADDR(cfg_parseGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
@@ -250,17 +250,17 @@ u32 (cfg_loadAxisCfg)(void)
    three files, then two more deleted. Returns the last DeleteFileA's eax */
 u32 (app_deleteDataFiles)(void)
 {
-	static const u32 files[3] = { 0x4b03c4, 0x4b03dc, 0x4b03f4 };
+	static const u32 files[3] = { IMG(0x4b03c4), IMG(0x4b03dc), IMG(0x4b03f4) };
 	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
 	for (int k = 0; k < 3; k++) {
-		void *f = crt_fopen((const char *)files[k], (const char *)0x4b29e8);
+		void *f = crt_fopen((const char *)RELOC(files[k]), (const char *)IMG(0x4b29e8));
 		GAME_CDECL(0x49e91e, int, void *, int, int)(f, 2000, 0);   /* fseek */
 		u32 mark = marks[k];
 		crt_fwrite(&mark, 4, 1, f);
 		fclose(f);
 	}
-	IMPORT(0x4a9104, u32, const char *)((const char *)0x4b040c);   /* DeleteFileA */
-	return IMPORT(0x4a9104, u32, const char *)((const char *)0x4b0420);
+	IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b040c));   /* DeleteFileA */
+	return IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b0420));
 }
 
 /* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
@@ -275,39 +275,39 @@ static u32 dat_open(u32 count, const char *format, void *log)
 		return GAME_VAR(u32, file);
 	char path[0x100];
 	GAME_CDECL(0x49e9dd, int, char *, const char *)(path, format);   /* sprintf */
-	GAME_VAR(void *, file) = crt_fopen(path, (const char *)0x4ad170);
+	GAME_VAR(void *, file) = crt_fopen(path, (const char *)IMG(0x4ad170));
 	if (!GAME_VAR(void *, file))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)0x4b3ee4, path);
-	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)count, 4, 1, GAME_VAR(void *, file));   /* fread */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)IMG(0x4b3ee4), path);
+	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
 	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
 	if (!GAME_VAR(void *, table))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)0x4b3eb4, GAME_VAR(int, count));
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)IMG(0x4b3eb4), GAME_VAR(int, count));
 	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
-u32 (shapeDat_initBy)(void) { return dat_open(0xa0e79c, (const char *)0x4c4d20, (void *)0xa0e788); }
-u32 (skelDat_initBy)(void) { return dat_open(0xa0eab4, (const char *)0x4c54b4, (void *)0xa0eaa0); }
+u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)IMG(0x4c4d20), (void *)IMG(0xa0e788)); }
+u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)IMG(0x4c54b4), (void *)IMG(0xa0eaa0)); }
 
 /* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
    switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
 u32 (cfg_parseSound)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	char number[12];
 	itoa(g_soundVolume, number, 10);
-	FPUTS(0x4b1a4c);
+	FPUTS(IMG(0x4b1a4c));
 	FPUTS(number);
-	FPUTS(0x4b182c);
+	FPUTS(IMG(0x4b182c));
 	itoa(g_musicVolume, number, 10);
-	FPUTS(0x4b1a34);
+	FPUTS(IMG(0x4b1a34));
 	FPUTS(number);
-	FPUTS(0x4b182c);
-	FPUTS(0x4b1a20);
-	FPUTS(g_soundSwitch1 == 1 ? 0x4b17e4 : 0x4b17dc);
-	FPUTS(0x4b1a04);
-	FPUTS(g_sound3D == 1 ? 0x4b17e4 : 0x4b17dc);
-	return FPUTS(0x4b182c);
+	FPUTS(IMG(0x4b182c));
+	FPUTS(IMG(0x4b1a20));
+	FPUTS(g_soundSwitch1 == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	FPUTS(IMG(0x4b1a04));
+	FPUTS(g_sound3D == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	return FPUTS(IMG(0x4b182c));
 #undef FPUTS
 }
 
@@ -315,15 +315,15 @@ u32 (cfg_parseSound)(void *f)
    when not or when the name is shorter than 2 letters */
 int (console_loadFile)(int k)
 {
-	const char *name = (const char *)(0x907b30 + k * 32);
+	const char *name = (const char *)(IMG(0x907b30) + k * 32);
 	if (strlen(name) <= 1)
 		return 0;
 	char path[0x400];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)0x4b0434);   /* "map/" */
+	strcpy(path, (const char *)IMG(0x4b0434));   /* "map/" */
 	strcat(path, name);
-	strcat(path, (const char *)0x4b042c);   /* ".bfd" */
-	void *f = crt_fopen(path, (const char *)0x4ad170);
+	strcat(path, (const char *)IMG(0x4b042c));   /* ".bfd" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));
 	if (!f)
 		return 0;
 	fclose(f);
@@ -341,21 +341,21 @@ int (console_loadFile)(int k)
 int (autoplay_listFiles)(void)
 {
 	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
-	int r = crt_chdir((const char *)0x4b2a8c);
+	int r = crt_chdir((const char *)IMG(0x4b2a8c));
 	if (r)
 		return r;
-	int search = crt_findfirst((const char *)0x4b2a84, &found);
+	int search = crt_findfirst((const char *)IMG(0x4b2a84), &found);
 	if (search < 0)
-		return crt_chdir((const char *)0x4b2a80);
-	strcpy((char *)(0x9dda88 + g_mapSelectCount * 0x44), found.name);
+		return crt_chdir((const char *)IMG(0x4b2a80));
+	strcpy((char *)(IMG(0x9dda88) + g_mapSelectCount * 0x44), found.name);
 	g_mapSelectCount++;
 	while (!crt_findnext(search, &found)) {
-		strcpy((char *)(0x9dda88 + g_mapSelectCount * 0x44), found.name);
+		strcpy((char *)(IMG(0x9dda88) + g_mapSelectCount * 0x44), found.name);
 		if (++g_mapSelectCount > 0x3fe)
 			break;
 	}
 	crt_findclose(search);
-	return crt_chdir((const char *)0x4b2a80);
+	return crt_chdir((const char *)IMG(0x4b2a80));
 }
 
 /* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into 0x4dd988 (12
@@ -363,13 +363,13 @@ int (autoplay_listFiles)(void)
 int (app_checkLauncherRunning)(void)
 {
 	static const u16 offsets[8] = { 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2 };
-	memset((void *)0x4dd988, 0, 12);
-	void *f = crt_fopen((const char *)0x4b03b4, (const char *)0x4ad170);
+	memset((void *)IMG(0x4dd988), 0, 12);
+	void *f = crt_fopen((const char *)IMG(0x4b03b4), (const char *)IMG(0x4ad170));
 	if (!f)
 		return 0;
 	for (int i = 0; i < 8; i++) {
 		GAME_CDECL(0x49e91e, int, void *, int, int)(f, offsets[i], 0);   /* fseek */
-		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(0x4dd988 + i), 1, 1, f);   /* fread */
+		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(IMG(0x4dd988) + i), 1, 1, f);   /* fread */
 	}
 	fclose(f);
 	return 1;
@@ -380,8 +380,8 @@ int (app_checkLauncherRunning)(void)
    0x48-byte profile records from 0x9f6848. Without the file the count is 0 ---- */
 static void profiles_path(char *path)
 {
-	strcpy(path, (const char *)0x9dae7c);
-	strcat(path, (const char *)0x4b2ab4);   /* "\axisuser.dat" */
+	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcat(path, (const char *)IMG(0x4b2ab4));   /* "\axisuser.dat" */
 }
 
 static void *profiles_create(void)
@@ -389,7 +389,7 @@ static void *profiles_create(void)
 	char path[0x184];
 	profiles_path(path);
 	(*(u32 *)&g_currentProfile) = (*(u32 *)&g_pilotChosen);
-	void *f = crt_fopen(path, (const char *)0x4b2ab0);
+	void *f = crt_fopen(path, (const char *)IMG(0x4b2ab0));
 	if (!f)
 		g_profileCount = 0;
 	return f;
@@ -400,13 +400,13 @@ static u32 profiles_write(void *f)
 {
 	u32 magic = 0xfefefef7;
 	crt_fwrite(&magic, 4, 1, f);
-	crt_fwrite((void *)0x9f9008, 4, 1, f);
-	crt_fwrite((void *)0x9f8c58, 4, 1, f);
-	crt_fwrite((void *)0x9f8c4c, 4, 1, f);
-	crt_fwrite((void *)0x9f8c5c, 4, 1, f);
-	crt_fwrite((void *)0x9f8fe8, 0x20, 1, f);
+	crt_fwrite((void *)IMG(0x9f9008), 4, 1, f);
+	crt_fwrite((void *)IMG(0x9f8c58), 4, 1, f);
+	crt_fwrite((void *)IMG(0x9f8c4c), 4, 1, f);
+	crt_fwrite((void *)IMG(0x9f8c5c), 4, 1, f);
+	crt_fwrite((void *)IMG(0x9f8fe8), 0x20, 1, f);
 	for (int i = 0; i < g_profileCount; i++)
-		crt_fwrite((void *)(0x9f6848 + i * 0x48), 0x48, 1, f);
+		crt_fwrite((void *)(IMG(0x9f6848) + i * 0x48), 0x48, 1, f);
 	return fclose(f);
 }
 
@@ -431,8 +431,8 @@ u32 (profile_delete)(void)
 	void *f = profiles_create();
 	if (!f)
 		return 0;
-	memset((void *)0x9f8fe8, 0, 0x20);
-	strcpy((char *)0x9f8fe8, (const char *)(0x9f684c + g_currentProfile * 0x48));
+	memset((void *)IMG(0x9f8fe8), 0, 0x20);
+	strcpy((char *)IMG(0x9f8fe8), (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48));
 	return profiles_write(f);
 }
 
@@ -443,9 +443,9 @@ u32 (profile_delete)(void)
 static void *mis_open(void)
 {
 	char path[0x184];
-	strcpy(path, (const char *)0x9dae7c);
-	strcat(path, (const char *)0x4b2aa4);   /* "\axis.mis" */
-	return crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcat(path, (const char *)IMG(0x4b2aa4));   /* "\axis.mis" */
+	return crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 }
 
 /* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_clearPlayerRows), four header words (the
@@ -459,10 +459,10 @@ u32 (mission_loadAxisMis)(void)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
 	GAME_FN(skirmish_clearPlayerRows, 0x443570, void, void)();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
-		crt_fread((void *)(0x9ef2c0 + k * 4), 4, 1, f);
+		crt_fread((void *)(IMG(0x9ef2c0) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
 		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
-	u8 *mission = (u8 *)0x9ef2d0;
+	u8 *mission = (u8 *)IMG(0x9ef2d0);
 	for (int i = 0; i < g_missionCount; i++)
 		for (int k = 0; k < 8; k++)
 			crt_fread(mission + i * 0xfc + part[k].offset, part[k].size, 1, f);
@@ -480,7 +480,7 @@ u32 (mission_saveAxisMis)(int k)
 	void *f = mis_open();
 	if (!f)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
-	const int *size = (const int *)0x9ef3c4;   /* size[i * 63] */
+	const int *size = (const int *)IMG(0x9ef3c4);   /* size[i * 63] */
 	int offset = 0;
 	for (int i = 0; i < k; i++)
 		offset += size[i * 63];
@@ -491,10 +491,10 @@ u32 (mission_saveAxisMis)(int k)
 	(*(void **)&g_briefingSource) = block;
 	crt_fread(block, size[k * 63], 1, f);
 	fclose(f);
-	memset((void *)0x9eeadc, 0, 0xc8);
+	memset((void *)IMG(0x9eeadc), 0, 0xc8);
 	g_unusedMissionSaveWord = 0;
-	memset((void *)0x9f1064, 0, 0x640);
-	memset((void *)0x9eebac, 0, 0x640);
+	memset((void *)IMG(0x9f1064), 0, 0x640);
+	memset((void *)IMG(0x9eebac), 0, 0x640);
 	g_briefingShown = 0;
 	g_briefingDone = 0;
 	g_briefingStart = 0;
@@ -512,21 +512,21 @@ u32 (mission_saveAxisMis)(int k)
    mipmapping, the frame counter and the simple menu, each line after its keyword. Returns the last fputs */
 u32 (cfg_parseGraphic)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
-	static const u32 mode[8] = { 0x4b1b6c, 0x4ac84c, 0x4ac870, 0x4ac894, 0x4ac8b8, 0x4ac8dc, 0x4ac900, 0x4ac920 };
-	static const u32 switches[4] = { 0x4b1aac, 0x4b1a94, 0x4b1a7c, 0x4b1a64 };
-	FPUTS(0x4b1b78);   /* "set_graphic videomode " */
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+	static const u32 mode[8] = { IMG(0x4b1b6c), IMG(0x4ac84c), IMG(0x4ac870), IMG(0x4ac894), IMG(0x4ac8b8), IMG(0x4ac8dc), IMG(0x4ac900), IMG(0x4ac920) };
+	static const u32 switches[4] = { IMG(0x4b1aac), IMG(0x4b1a94), IMG(0x4b1a7c), IMG(0x4b1a64) };
+	FPUTS(IMG(0x4b1b78));   /* "set_graphic videomode " */
 	if (g_videoMode <= 7)
 		FPUTS(mode[g_videoMode]);
-	FPUTS(0x4b1b00);   /* "set_graphic colordepth " */
-	FPUTS(g_videoDepth ? 0x4b1af8 : 0x4b1afc);
-	FPUTS(0x4b1adc);   /* "set_graphic polygondetail " */
-	FPUTS(g_items3D ? 0x4b1acc : 0x4b1ad4);
+	FPUTS(IMG(0x4b1b00));   /* "set_graphic colordepth " */
+	FPUTS(g_videoDepth ? IMG(0x4b1af8) : IMG(0x4b1afc));
+	FPUTS(IMG(0x4b1adc));   /* "set_graphic polygondetail " */
+	FPUTS(g_items3D ? IMG(0x4b1acc) : IMG(0x4b1ad4));
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
-		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? 0x4b17e4 : 0x4b17dc);
+		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
 	}
-	return FPUTS(0x4b182c);
+	return FPUTS(IMG(0x4b182c));
 #undef FPUTS
 }
 
@@ -536,35 +536,35 @@ u32 (cfg_parseGraphic)(void *f)
    Returns the last fputs */
 u32 (cfg_parseServer)(void *f)
 {
-#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)(s), f)
-	static const u32 type[15] = { 0x4b1878, 0x4b1988, 0x4b1978, 0x4b1964, 0x4b1954, 0x4b1940, 0x4b192c, 0x4b1914,
-	                              0x4b1904, 0x4b18f0, 0x4b18dc, 0x4b18c4, 0x4b18b0, 0x4b18a0, 0x4b1888 };
-	const u8 *me = (const u8 *)0x4ded20;
+#define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
+	static const u32 type[15] = { IMG(0x4b1878), IMG(0x4b1988), IMG(0x4b1978), IMG(0x4b1964), IMG(0x4b1954), IMG(0x4b1940), IMG(0x4b192c), IMG(0x4b1914),
+	                              IMG(0x4b1904), IMG(0x4b18f0), IMG(0x4b18dc), IMG(0x4b18c4), IMG(0x4b18b0), IMG(0x4b18a0), IMG(0x4b1888) };
+	const u8 *me = (const u8 *)IMG(0x4ded20);
 	char number[12];
-	FPUTS(0x4b19f0);   /* "set_server name " */
+	FPUTS(IMG(0x4b19f0));   /* "set_server name " */
 	FPUTS(me);
-	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)0x4b182c);   /* fprintf "\n" */
-	FPUTS(0x4b19e0);   /* "set_server map " */
+	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)IMG(0x4b182c));   /* fprintf "\n" */
+	FPUTS(IMG(0x4b19e0));   /* "set_server map " */
 	itoa((signed char)me[0x20], number, 10);
 	FPUTS(number);
-	FPUTS(0x4b182c);
-	FPUTS(0x4b19c8);   /* "set_server numofplayer " */
+	FPUTS(IMG(0x4b182c));
+	FPUTS(IMG(0x4b19c8));   /* "set_server numofplayer " */
 	itoa((signed char)me[0x21], number, 10);
 	FPUTS(number);
-	FPUTS(0x4b182c);
-	FPUTS(0x4b19b0);   /* "set_server customize " */
-	FPUTS(me[0x22] == 1 ? 0x4b17e4 : 0x4b17dc);
-	FPUTS(0x4b199c);   /* "set_server type " */
+	FPUTS(IMG(0x4b182c));
+	FPUTS(IMG(0x4b19b0));   /* "set_server customize " */
+	FPUTS(me[0x22] == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	FPUTS(IMG(0x4b199c));   /* "set_server type " */
 	u32 kind = (u32)(int)(signed char)me[0x23];
 	FPUTS(type[kind <= 14 ? kind : 0]);
 	itoa(me[0x24], number, 10);
-	FPUTS(0x4b1860);   /* "set_server gameflag " */
+	FPUTS(IMG(0x4b1860));   /* "set_server gameflag " */
 	FPUTS(number);
-	FPUTS(0x4b182c);
+	FPUTS(IMG(0x4b182c));
 	itoa(me[0x25], number, 10);
-	FPUTS(0x4b1848);   /* "set_server timeflag " */
+	FPUTS(IMG(0x4b1848));   /* "set_server timeflag " */
 	FPUTS(number);
-	return FPUTS(0x4b1844);   /* "\n\n" */
+	return FPUTS(IMG(0x4b1844));   /* "\n\n" */
 #undef FPUTS
 }
 
@@ -581,21 +581,21 @@ u32 (arena_readLaunchFile)(char *line)
 		g_startedByLauncher = 0;
 		return 0;
 	}
-	char **args = (char **)0x9dd890;
-	char *word = crt_strtok(line, (const char *)0x4b035c);   /* " " */
+	char **args = (char **)IMG(0x9dd890);
+	char *word = crt_strtok(line, (const char *)IMG(0x4b035c));   /* " " */
 	g_argCount = 0;
 	do {
 		args[g_argCount++] = word;
-		word = crt_strtok(NULL, (const char *)0x4b035c);
+		word = crt_strtok(NULL, (const char *)IMG(0x4b035c));
 	} while (word);
 	g_startedFromLobby = 0;
 	g_startedByLauncher = 0;
 	u32 r = (*(u32 *)&g_argCount);
 	if (r == 1) {
-		r = (u32)str_order(args[0], (const char *)0x4b2880);   /* "-net" */
+		r = (u32)str_order(args[0], (const char *)IMG(0x4b2880));   /* "-net" */
 		if (r)
 			return r;
-		void *f = crt_fopen((const char *)0x4ad5e4, (const char *)0x4ad5e0);   /* "axiswl.dat", "rt" */
+		void *f = crt_fopen((const char *)IMG(0x4ad5e4), (const char *)IMG(0x4ad5e0));   /* "axiswl.dat", "rt" */
 		if (f) {
 			g_startedFromLobby = 1;
 			g_startedByLauncher = 1;
@@ -604,20 +604,20 @@ u32 (arena_readLaunchFile)(char *line)
 	}
 	if (g_argCount != 3)
 		return r;
-	r = (u32)str_order(args[1], (const char *)0x4b287c);   /* "-ip" */
+	r = (u32)str_order(args[1], (const char *)IMG(0x4b287c));   /* "-ip" */
 	if (r)
 		return r;
 	g_startedFromLobby = 1;
-	memset((void *)0x4de748, 0, 0x400);
+	memset((void *)IMG(0x4de748), 0, 0x400);
 	g_startedByLauncher = 0;
-	strcpy((char *)0x4de748, args[2]);
+	strcpy((char *)IMG(0x4de748), args[2]);
 	return strlen(args[2]) + 1;
 }
 
 /* the game ended with an error box (title "ERROR") */
 static void data_missing(u32 message)
 {
-	MessageBoxA(NULL, (const char *)message, (const char *)0x4b141c, 0);
+	MessageBoxA(NULL, (const char *)RELOC(message), (const char *)IMG(0x4b141c), 0);
 	GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
 }
 
@@ -629,9 +629,9 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
 {
 	char path[0x105];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)folder);
-	strcat(path, (const char *)name);
-	void *f = crt_fopen(path, (const char *)mode);
+	strcpy(path, (const char *)RELOC(folder));
+	strcat(path, (const char *)RELOC(name));
+	void *f = crt_fopen(path, (const char *)RELOC(mode));
 	if (!f)
 		data_missing(missing);
 	return f;
@@ -642,9 +642,9 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {
-	void *f = data_open(0x9dae7c, g_language == 1 ? 0x4b1430 : 0x4b1424, 0x4ad5e0,   /* "msgkor.dat" / "msgeng.dat", "rt" */
-	                    0x4b13f8);   /* "Text Message Data File Not Found" */
-	char *message = (char *)0x74de24;
+	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? IMG(0x4b1430) : IMG(0x4b1424), IMG(0x4ad5e0),   /* "msgkor.dat" / "msgeng.dat", "rt" */
+	                    IMG(0x4b13f8));   /* "Text Message Data File Not Found" */
+	char *message = (char *)IMG(0x74de24);
 	for (;;) {
 		char line[0x80];
 		memset(line, 0, sizeof line);
@@ -665,21 +665,21 @@ u32 (data_loadMessages)(void)
    (a signature 0x4b0fa0 first, the pilot's name at +0x80, its value at +0x100) between blocks of noise, 20000 bytes
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
 #define g_pilot g_pilotChosen               /* the pilot chosen in the list */
-#define pilot_name(i) ((const char *)(0x9f684c + (i) * 0x48))
-#define g_campaign ((u8 *)0x9f1718)
+#define pilot_name(i) ((const char *)(IMG(0x9f684c) + (i) * 0x48))
+#define g_campaign ((u8 *)IMG(0x9f1718))
 
 /* the current profile's name as axisuser.dat keeps it */
 static void set_current_name(void)
 {
-	memset((void *)0x9f8fe8, 0, 0x20);
-	strcpy((char *)0x9f8fe8, pilot_name(g_currentProfile));
+	memset((void *)IMG(0x9f8fe8), 0, 0x20);
+	strcpy((char *)IMG(0x9f8fe8), pilot_name(g_currentProfile));
 }
 
 static void enter_save_folder(void)
 {
-	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir */
-		crt_chdir((const char *)0x4b2adc);
+	if (crt_chdir((const char *)IMG(0x4b2adc))) {   /* "save" */
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)IMG(0x4b2adc));   /* mkdir */
+		crt_chdir((const char *)IMG(0x4b2adc));
 	}
 }
 
@@ -687,12 +687,12 @@ static void pilot_path(char *path)
 {
 	memset(path, 0, 0x80);
 	strcpy(path, pilot_name(g_pilot));
-	strcat(path, (const char *)0x4b2afc);
+	strcat(path, (const char *)IMG(0x4b2afc));
 }
 
 static void pilot_write(void *f)
 {
-	u8 *noise = (u8 *)0x9f3ac4;
+	u8 *noise = (u8 *)IMG(0x9f3ac4);
 	for (int i = 0; i < 10000; i++)
 		noise[i] = (u8)(crt_rand() % 0xfe);
 	crt_fwrite(noise, 10000, 1, f);
@@ -719,12 +719,12 @@ int (profile_saveProgress)(void)
 	enter_save_folder();
 	char path[0x80];
 	pilot_path(path);
-	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
 	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
-	return crt_chdir((const char *)0x4b2a80);   /* ".." */
+	return crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
 }
 
 /* a new pilot's record: the signature, the name, the value; no progress, the default parts (0x4b2af4, 0x4b2aec,
@@ -732,28 +732,28 @@ int (profile_saveProgress)(void)
 static void campaign_new(void)
 {
 	memset(g_campaign, 0, 0x80);
-	strcpy((char *)g_campaign, (const char *)0x4b0fa0);
-	memset((void *)0x9f1798, 0, 0x80);
-	memcpy((void *)0x9f1798, pilot_name(g_pilot), 0x80);
+	strcpy((char *)g_campaign, (const char *)IMG(0x4b0fa0));
+	memset((void *)IMG(0x9f1798), 0, 0x80);
+	memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
 	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
 	g_progress = 0;
-	memset((void *)0x9f1820, 0, 0x190);
-	memset((void *)0x9f19b0, 0, 0x40);
-	static const u32 cleared[6] = { 0x9f19f0, 0x9f1a0c, 0x9f19f4, 0x9f1a10, 0x9f1a2c, 0x9f1a30 };
+	memset((void *)IMG(0x9f1820), 0, 0x190);
+	memset((void *)IMG(0x9f19b0), 0, 0x40);
+	static const u32 cleared[6] = { IMG(0x9f19f0), IMG(0x9f1a0c), IMG(0x9f19f4), IMG(0x9f1a10), IMG(0x9f1a2c), IMG(0x9f1a30) };
 	for (int i = 0; i < 6; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	strcpy((char *)0x9f19f0, (const char *)0x4b2af4);
-	strcpy((char *)0x9f1a0c, (const char *)0x4b2aec);
-	strcpy((char *)0x9f1a2c, (const char *)0x4b2ae4);
+	strcpy((char *)IMG(0x9f19f0), (const char *)IMG(0x4b2af4));
+	strcpy((char *)IMG(0x9f1a0c), (const char *)IMG(0x4b2aec));
+	strcpy((char *)IMG(0x9f1a2c), (const char *)IMG(0x4b2ae4));
 	g_profileMechItem5 = -1;
 	g_profileMechItem0 = -1;
-	for (u32 a = 0x9f19f8; a <= 0x9f1a08; a += 4)
+	for (u32 a = IMG(0x9f19f8); a <= IMG(0x9f1a08); a += 4)
 		GAME_VAR(int, a) = 0;
 	g_profileMechItem2 = 0;
 	g_profileMechItem3 = 2;
 	g_profileMechItem4 = 8;
 	g_profileMechItem1 = 0x11;
-	for (u32 *t = (u32 *)0x9f1a34; t < (u32 *)0x9f1ac4; t += 3) {
+	for (u32 *t = (u32 *)IMG(0x9f1a34); t < (u32 *)IMG(0x9f1ac4); t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
 		t[2] = 0;
@@ -775,24 +775,24 @@ int (profile_load)(void)
 	char path[0x80];
 	pilot_path(path);
 	campaign_new();
-	f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
 	if (f)
 		pilot_write(f);
 	fclose(f);
-	return crt_chdir((const char *)0x4b2a80);
+	return crt_chdir((const char *)IMG(0x4b2a80));
 }
 
 /* 1 when the pilot's file is there and signed */
 static int campaign_signed(const char *path)
 {
-	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 	if (!f)
 		return 0;
 	crt_fseek(f, 20000, 0);
 	u8 head[0x80];
 	crt_fread(head, 0x80, 1, f);
 	crypt_record80(head, 0x7e);
-	int ok = str_order((const char *)head, (const char *)0x4b0fa0) == 0;
+	int ok = str_order((const char *)head, (const char *)IMG(0x4b0fa0)) == 0;
 	fclose(f);
 	return ok;
 }
@@ -812,23 +812,23 @@ u32 (profile_save)(void)
 	char path[0x80];
 	pilot_path(path);
 	if (campaign_signed(path)) {
-		f = crt_fopen(path, (const char *)0x4ad170);
+		f = crt_fopen(path, (const char *)IMG(0x4ad170));
 		if (f) {
 			crt_fseek(f, 20000, 0);
 			u8 record[0x3ac];
 			crt_fread(record, sizeof record, 1, f);
 			save_cryptRecord(record, 0x7e);
 			memcpy(g_campaign, record, sizeof record);
-			memcpy((void *)0x9f1798, pilot_name(g_pilot), 0x80);
+			memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
 		}
 	} else {
 		campaign_new();
-		f = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+		f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
 		if (f)
 			pilot_write(f);
 	}
 	fclose(f);
-	crt_chdir((const char *)0x4b2a80);
+	crt_chdir((const char *)IMG(0x4b2a80));
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
 	g_missionStarted = 0;
@@ -844,7 +844,7 @@ u32 (profile_create)(void)
 {
 	char path[0x184];
 	profiles_path(path);
-	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 	if (!f) {
 		g_profileCount = 0;
 		return 0;
@@ -856,18 +856,18 @@ u32 (profile_create)(void)
 		g_profileCount = 0;
 		return r;
 	}
-	crt_fread((void *)0x9f9008, 4, 1, f);
-	crt_fread((void *)0x9f8c58, 4, 1, f);
-	crt_fread((void *)0x9f8c4c, 4, 1, f);
-	crt_fread((void *)0x9f8c5c, 4, 1, f);
-	crt_fread((void *)0x9f8fe8, 0x20, 1, f);
-	if (crt_chdir((const char *)0x4b2b04)) {   /* "save " */
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)0x4b2adc);   /* mkdir("save") */
-		crt_chdir((const char *)0x4b2adc);
+	crt_fread((void *)IMG(0x9f9008), 4, 1, f);
+	crt_fread((void *)IMG(0x9f8c58), 4, 1, f);
+	crt_fread((void *)IMG(0x9f8c4c), 4, 1, f);
+	crt_fread((void *)IMG(0x9f8c5c), 4, 1, f);
+	crt_fread((void *)IMG(0x9f8fe8), 0x20, 1, f);
+	if (crt_chdir((const char *)IMG(0x4b2b04))) {   /* "save " */
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)IMG(0x4b2adc));   /* mkdir("save") */
+		crt_chdir((const char *)IMG(0x4b2adc));
 	}
-	crt_chdir((const char *)0x4b2a80);   /* ".." */
+	crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
 	for (int i = 0; i < g_profileCount; i++)
-		if (str_order((const char *)(0x9f684c + i * 0x48), (const char *)0x9f8fe8) == 0) {
+		if (str_order((const char *)(IMG(0x9f684c) + i * 0x48), (const char *)IMG(0x9f8fe8)) == 0) {
 			g_currentProfile = i;
 			break;
 		}
@@ -879,23 +879,23 @@ u32 (profile_create)(void)
    0x5c-byte entries into 0x9db998. Returns fclose's eax */
 u32 (data_loadSkirmishInfo)(void)
 {
-	void *f = data_open(0x9dae7c, 0x4b1554, 0x4ad170, 0x4b1534);   /* "skirmish.dat", "rb" */
+	void *f = data_open(IMG(0x9dae7c), IMG(0x4b1554), IMG(0x4ad170), IMG(0x4b1534));   /* "skirmish.dat", "rb" */
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(0x4b1534);
+		data_missing(IMG(0x4b1534));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (str_order(header, (const char *)0x4b1510)) {
+	if (str_order(header, (const char *)IMG(0x4b1510))) {
 		fclose(f);
-		data_missing(0x4b1534);
+		data_missing(IMG(0x4b1534));
 	}
 	crt_fseek(f, 25000, 1);
-	crt_fread((void *)0x90d1d8, 4, 1, f);
+	crt_fread((void *)IMG(0x90d1d8), 4, 1, f);
 	for (int i = 0; i < g_skirmishInfoCount; i++)
-		crt_fread((void *)(0x9db998 + i * 0x5c), 0x5c, 1, f);
+		crt_fread((void *)(IMG(0x9db998) + i * 0x5c), 0x5c, 1, f);
 	return fclose(f);
 }
 
@@ -906,19 +906,19 @@ u32 (data_loadSkirmishInfo)(void)
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
 void (data_loadPilotProfiles)(void)
 {
-	void *f = data_open(0x9dae7c, g_language == 1 ? 0x4b14b4 : 0x4b14a8, 0x4ad170,   /* "profkor.dat" / "profeng.dat", "rb" */
-	                    0x4b1480);   /* "Character Profile Data File Not Found" */
+	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? IMG(0x4b14b4) : IMG(0x4b14a8), IMG(0x4ad170),   /* "profkor.dat" / "profeng.dat", "rb" */
+	                    IMG(0x4b1480));   /* "Character Profile Data File Not Found" */
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(0x4b1480);
+		data_missing(IMG(0x4b1480));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (strcmp(header, (const char *)0x4b145c)) {   /* "AXIS CHARACTER PROFILE DATA FILE" */
+	if (strcmp(header, (const char *)IMG(0x4b145c))) {   /* "AXIS CHARACTER PROFILE DATA FILE" */
 		fclose(f);
-		data_missing(0x4b1480);
+		data_missing(IMG(0x4b1480));
 	}
 	crt_fseek(f, 0x1046a, 1);
 	int count, version;
@@ -926,17 +926,17 @@ void (data_loadPilotProfiles)(void)
 	crt_fread(&version, 4, 1, f);
 	version -= 0x115c;
 	if (version != 0x67)
-		data_missing(0x4b143c);   /* "Character Profile wrong version" */
+		data_missing(IMG(0x4b143c));   /* "Character Profile wrong version" */
 	u8 key = 'a';
 	for (int i = 0; i < count; i++) {
 		u8 record[0x4c];
 		crt_fread(record, 0x4c, 1, f);
 		crypt_countingKey(record, key++);
-		memcpy((void *)(0x9f9040 + i * 0x4c), record, 0x4c);
+		memcpy((void *)(IMG(0x9f9040) + i * 0x4c), record, 0x4c);
 	}
 	fclose(f);
 	for (int i = 0; i < version; i++) {
-		int *stats = (int *)(0x9f9040 + i * 0x4c);
+		int *stats = (int *)(IMG(0x9f9040) + i * 0x4c);
 		static const u8 limited[8] = { 0x28, 0x30, 0x34, 0x2c, 0x3c, 0x38, 0x40, 0x48 };
 		for (int k = 0; k < 8; k++)
 			if (stats[limited[k] / 4] > 30)
@@ -952,20 +952,20 @@ void (data_loadPilotProfiles)(void)
    (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
-	void *f = data_open(0x4dedf8, 0x4b1504, 0x4ad170, 0x4b14e0);   /* "mapinfo.dat", "rb" */
+	void *f = data_open(IMG(0x4dedf8), IMG(0x4b1504), IMG(0x4ad170), IMG(0x4b14e0));   /* "mapinfo.dat", "rb" */
 	u8 header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (str_order((const char *)header, (const char *)0x4b14c0)) {   /* (the original compares a 0x30-byte copy) */
+	if (str_order((const char *)header, (const char *)IMG(0x4b14c0))) {   /* (the original compares a 0x30-byte copy) */
 		fclose(f);
-		data_missing(0x4b14e0);
+		data_missing(IMG(0x4b14e0));
 	}
 	if (header[0x32] != 0x1a) {
 		fclose(f);
-		data_missing(0x4b14e0);
+		data_missing(IMG(0x4b14e0));
 	}
-	crt_fread((void *)0x67ef00, 4, 1, f);
+	crt_fread((void *)IMG(0x67ef00), 4, 1, f);
 	for (int i = 0; i < g_arenaMapCount; i++) {
-		char *name = (char *)(0x907b30 + i * 0x20), *about = (char *)(0x5ae9d0 + i * 0x50);
+		char *name = (char *)(IMG(0x907b30) + i * 0x20), *about = (char *)(IMG(0x5ae9d0) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
 		GAME_FN(str_invert, 0x42b390, int, char *)(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);
@@ -976,7 +976,7 @@ u32 (data_loadMapInfo)(void)
 	if (count <= 0)
 		return count;
 	for (int i = 0; i < count; i++) {
-		char *name = (char *)(0x907b30 + i * 0x20);
+		char *name = (char *)(IMG(0x907b30) + i * 0x20);
 		for (int n = strlen(name); n > 0 && name[n - 1] == ' '; n--)
 			name[n - 1] = '\0';
 	}
@@ -990,13 +990,13 @@ u32 (data_loadMapInfo)(void)
    left. Returns 1, or 0 when the file does not open */
 int (arena_loadSettings)(const char *path)
 {
-	void *f = crt_fopen(path, (const char *)0x4ad5e0);   /* "rt" */
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad5e0));   /* "rt" */
 	if (!f)
 		return 0;
 	static const struct { u32 key, into; } numbers[4] = {
-		{ 0x4ad5b0, 0x5b194c }, { 0x4ad5a4, 0x5b1948 }, { 0x4ad5a0, 0x5b1944 }, { 0x4ad594, 0x5b1950 },
+		{ IMG(0x4ad5b0), IMG(0x5b194c) }, { IMG(0x4ad5a4), IMG(0x5b1948) }, { IMG(0x4ad5a0), IMG(0x5b1944) }, { IMG(0x4ad594), IMG(0x5b1950) },
 	};
-	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
 	for (;;) {
 		char line[0x50];
 		memset(line, 0, sizeof line);
@@ -1006,27 +1006,27 @@ int (arena_loadSettings)(const char *path)
 			continue;
 		char *word = crt_strtok(line, gaps);
 		while (word) {
-			if (!strcmp(word, (const char *)0x4ad5d0)) {   /* gamename */
+			if (!strcmp(word, (const char *)IMG(0x4ad5d0))) {   /* gamename */
 				word = crt_strtok(NULL, gaps);
-				memset((void *)0x5b191c, 0, 0x20);
-				strcpy((char *)0x5b191c, word);
+				memset((void *)IMG(0x5b191c), 0, 0x20);
+				strcpy((char *)IMG(0x5b191c), word);
 			}
-			if (!strcmp(word, (const char *)0x4ad5c8)) {   /* secret */
+			if (!strcmp(word, (const char *)IMG(0x4ad5c8))) {   /* secret */
 				word = crt_strtok(NULL, gaps);
 				g_cmdSecret = crt_atoi(word);
 			}
-			if (!strcmp(word, (const char *)0x4ad5bc)) {   /* password */
+			if (!strcmp(word, (const char *)IMG(0x4ad5bc))) {   /* password */
 				word = crt_strtok(NULL, gaps);
 				g_arenaFileClan = 0;
 				g_arenaFileClan4 = 0;
-				strcpy((char *)0x5b193c, word);
+				strcpy((char *)IMG(0x5b193c), word);
 			}
 			for (int k = 0; k < 4; k++)
 				if (!strcmp(word, (const char *)numbers[k].key)) {
 					word = crt_strtok(NULL, gaps);
 					GAME_VAR(int, numbers[k].into) = crt_atoi(word);
 				}
-			if (!strcmp(word, (const char *)0x4ad588))   /* timelimit */
+			if (!strcmp(word, (const char *)IMG(0x4ad588)))   /* timelimit */
 				g_cmdTimeLimit = crt_atoi(crt_strtok(NULL, gaps));
 			word = crt_strtok(NULL, gaps);
 		}
@@ -1039,7 +1039,7 @@ int (arena_loadSettings)(const char *path)
    skipped and the rest joined into value (0x84 bytes; spaced: a space after each word) ---- */
 static void read_value(void *f, char *value, int spaced)
 {
-	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
 	char line[0x50];
 	crt_fgets(line, 0x50, f);
 	line[strlen(line) - 1] = '\0';
@@ -1049,7 +1049,7 @@ static void read_value(void *f, char *value, int spaced)
 	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
 		strcat(value, word);
 		if (spaced)
-			strcat(value, (const char *)0x4b035c);   /* " " */
+			strcat(value, (const char *)IMG(0x4b035c));   /* " " */
 	}
 }
 
@@ -1069,16 +1069,16 @@ void (cfg_readLines)(void *f)
 	char value[0x84];
 	read_value(f, value, 1);
 	str_dropLast(value);
-	strcpy((char *)0x4dedb0, value);
+	strcpy((char *)IMG(0x4dedb0), value);
 	read_value(f, value, 0);
-	if (!strcmp(value, (const char *)0x4b21b8))        /* RED */
+	if (!strcmp(value, (const char *)IMG(0x4b21b8)))        /* RED */
 		g_playerCorporation = 0;
-	else if (!strcmp(value, (const char *)0x4b21b0))   /* BLUE */
+	else if (!strcmp(value, (const char *)IMG(0x4b21b0)))   /* BLUE */
 		g_playerCorporation = 1;
 	else
-		g_playerCorporation = strcmp(value, (const char *)0x4b21a8) ? 0 : 2;   /* YELLOW */
+		g_playerCorporation = strcmp(value, (const char *)IMG(0x4b21a8)) ? 0 : 2;   /* YELLOW */
 	read_value(f, value, 0);
-	g_playerSex = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	g_playerSex = !strcmp(value, (const char *)IMG(0x4b21bc));   /* ON */
 	skip_line(f);
 }
 
@@ -1092,9 +1092,9 @@ void (cfg_readAudioLines)(void *f)
 	read_value(f, value, 0);
 	g_musicVolume = crt_atoi(value);
 	read_value(f, value, 0);
-	g_soundSwitch1 = !strcmp(value, (const char *)0x4b21bc);   /* ON */
+	g_soundSwitch1 = !strcmp(value, (const char *)IMG(0x4b21bc));   /* ON */
 	read_value(f, value, 0);
-	g_sound3D = !strcmp(value, (const char *)0x4b21bc);
+	g_sound3D = !strcmp(value, (const char *)IMG(0x4b21bc));
 	skip_line(f);
 }
 
@@ -1107,7 +1107,7 @@ typedef struct { char before[4]; char value[0x84]; char line[0x78]; } CfgBuf;
 
 static void read_into(void *f, CfgBuf *b, int spaced)
 {
-	const char *gaps = (const char *)0x4ad5dc;   /* " \t" */
+	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
 	crt_fgets(b->line, 0x50, f);
 	char *end = b->line + strlen(b->line) - 1;
 	*end = '\0';
@@ -1117,7 +1117,7 @@ static void read_into(void *f, CfgBuf *b, int spaced)
 	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
 		strcat(b->value, word);
 		if (spaced)
-			strcat(b->value, (const char *)0x4b035c);   /* " " */
+			strcat(b->value, (const char *)IMG(0x4b035c));   /* " " */
 	}
 }
 
@@ -1125,12 +1125,12 @@ static void read_into(void *f, CfgBuf *b, int spaced)
 static int named(const char *value, const u32 *names, int count)
 {
 	for (int k = 0; k < count; k++)
-		if (!strcmp(value, (const char *)names[k]))
+		if (!strcmp(value, (const char *)RELOC(names[k])))
 			return k + 1;
 	return 0;
 }
 
-#define IS_ON(value) (!strcmp((value), (const char *)0x4b21bc))   /* "ON" */
+#define IS_ON(value) (!strcmp((value), (const char *)IMG(0x4b21bc)))   /* "ON" */
 
 /* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; 0x4ded20),
    the map (0 .. 21, else 0; 0x4ded40), the players (0 .. 16, else 8; 0x4ded41), a switch (ON; 0x4ded42), the game
@@ -1138,8 +1138,8 @@ static int named(const char *value, const u32 *names, int count)
    0x4ded45); then one more line */
 void (cfg_gameTypeNames)(void *f)
 {
-	static const u32 types[14] = { 0x4b22b8, 0x4b22a8, 0x4b2294, 0x4b2284, 0x4b2270, 0x4b2260, 0x4b2248, 0x4b2238,
-	                               0x4b2224, 0x4b2214, 0x4b21fc, 0x4b21e8, 0x4b21d8, 0x4b21c0 };
+	static const u32 types[14] = { IMG(0x4b22b8), IMG(0x4b22a8), IMG(0x4b2294), IMG(0x4b2284), IMG(0x4b2270), IMG(0x4b2260), IMG(0x4b2248), IMG(0x4b2238),
+	                               IMG(0x4b2224), IMG(0x4b2214), IMG(0x4b21fc), IMG(0x4b21e8), IMG(0x4b21d8), IMG(0x4b21c0) };
 	CfgBuf b;
 	__asm__("" : "=m"(b));   /* (left as the stack holds it) */
 	for (int n = 0; n < 7; n++) {
@@ -1148,7 +1148,7 @@ void (cfg_gameTypeNames)(void *f)
 		switch (n) {
 		case 0:
 			str_dropLast(b.value);
-			strcpy((char *)0x4ded20, b.value);
+			strcpy((char *)IMG(0x4ded20), b.value);
 			break;
 		case 1:
 			v = (signed char)crt_atoi(b.value);
@@ -1180,7 +1180,7 @@ void (cfg_gameTypeNames)(void *f)
    0x83a9cc .. 0x83a9d8); then one more line */
 void (cfg_videoModeNames)(void *f)
 {
-	static const u32 sizes[7] = { 0x4ac858, 0x4ac87c, 0x4ac8a0, 0x4ac8c4, 0x4ac8e8, 0x4ac90c, 0x4ac92c };
+	static const u32 sizes[7] = { IMG(0x4ac858), IMG(0x4ac87c), IMG(0x4ac8a0), IMG(0x4ac8c4), IMG(0x4ac8e8), IMG(0x4ac90c), IMG(0x4ac92c) };
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 7; n++) {
@@ -1188,9 +1188,9 @@ void (cfg_videoModeNames)(void *f)
 		if (n == 0)
 			(*(int *)&g_videoMode) = named(b.value, sizes, 7);
 		else if (n == 1)
-			g_videoDepth = !strcmp(b.value, (const char *)0x4b22d4);   /* "32" */
+			g_videoDepth = !strcmp(b.value, (const char *)IMG(0x4b22d4));   /* "32" */
 		else if (n == 2)
-			g_items3D = !strcmp(b.value, (const char *)0x4b22cc);   /* "HIGH" */
+			g_items3D = !strcmp(b.value, (const char *)IMG(0x4b22cc));   /* "HIGH" */
 		else
 			GAME_VAR(int, 0x83a9cc + (n - 3) * 4) = IS_ON(b.value);
 	}
@@ -1213,7 +1213,7 @@ static int read_binding(int line)
    (ON; 0x4df000, 0x4df004), the sensitivity and the crosshairs (0x4df008, 0x4df00c); then one more line */
 void (cfg_parseKeyNames)(void *f)
 {
-	const char *const *key_name = (const char *const *)0x4b0750;
+	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 0x44; n++) {
@@ -1243,18 +1243,18 @@ void (cfg_parseKeyNames)(void *f)
 void (cfg_writeDefaultAxisCfg)(void)
 {
 	struct { char line[0x84]; char path[0x184]; } s;
-	strcpy(s.path, (const char *)0x9dae7c);
-	strcat(s.path, (const char *)0x4b2198);   /* "\\axis.cfg" */
-	memset((void *)0x4dedb0, 0, 32);
-	memset((void *)0x4ded20, 0, 32);
-	void *f = crt_fopen(s.path, (const char *)0x4ad5e0);   /* "rt" */
+	strcpy(s.path, (const char *)IMG(0x9dae7c));
+	strcat(s.path, (const char *)IMG(0x4b2198));   /* "\\axis.cfg" */
+	memset((void *)IMG(0x4dedb0), 0, 32);
+	memset((void *)IMG(0x4ded20), 0, 32);
+	void *f = crt_fopen(s.path, (const char *)IMG(0x4ad5e0));   /* "rt" */
 	if (f) {
 		__asm__("" : "=m"(s.line));   /* (left as the stack holds it until fgets writes it) */
 		crt_fgets(s.line, 0x50, f);
 		size_t length = strlen((const char *)&s);
 		if (length)
 			((char *)&s)[length - 1] = '\0';
-		if (!strcmp(s.line, (const char *)0x4b0f50)) {
+		if (!strcmp(s.line, (const char *)IMG(0x4b0f50))) {
 			cfg_readLines(f);
 			cfg_gameTypeNames(f);
 			cfg_readAudioLines(f);
@@ -1270,14 +1270,14 @@ void (cfg_writeDefaultAxisCfg)(void)
 	(*(int *)&g_videoMode) = 0;
 	g_showFps = 0;
 	g_cfgSimpleMenu = 0;
-	strcpy((char *)0x4dedb0, (const char *)0x4ad4b0);   /* "PLAYER" */
+	strcpy((char *)IMG(0x4dedb0), (const char *)IMG(0x4ad4b0));   /* "PLAYER" */
 	g_playerCorporation = 0;
 	g_playerSex = 0;
-	strcpy((char *)0x4ded20, (const char *)0x4ad4a4);   /* "AXIS ARENA" */
+	strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x4ad4a4));   /* "AXIS ARENA" */
 	g_soundVolume = 100;
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
-	memcpy((void *)0x4ded40, server, 6);
+	memcpy((void *)IMG(0x4ded40), server, 6);
 	g_soundSwitch1 = 1;
 	g_items3D = 1;
 	(*(int *)&g_textureSetHeight) = 1;
@@ -1294,20 +1294,20 @@ void (cfg_writeDefaultAxisCfg)(void)
    callers that ignore it */
 void (profile_scanSaves)(void)
 {
-	if (crt_chdir((const char *)0x4b2adc)) {   /* "save" */
-		crt_chdir((const char *)0x9dae7c);
-		IMPORT(0x4a9104, u32, const char *)((const char *)0x4b2acc);   /* DeleteFileA("axisuser.dat") */
-		crt_chdir((const char *)0x4b2a80);   /* ".." */
+	if (crt_chdir((const char *)IMG(0x4b2adc))) {   /* "save" */
+		crt_chdir((const char *)IMG(0x9dae7c));
+		IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b2acc));   /* DeleteFileA("axisuser.dat") */
+		crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
 		return;
 	}
 	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
-	int search = crt_findfirst((const char *)0x4b2ac4, &found);   /* "*.axs" */
+	int search = crt_findfirst((const char *)IMG(0x4b2ac4), &found);   /* "*.axs" */
 	if (search < 0) {
-		crt_chdir((const char *)0x4b2a80);
+		crt_chdir((const char *)IMG(0x4b2a80));
 		profile_loadList(0);
 		return;
 	}
-	char (*files)[0x40] = (char (*)[0x40])0x9f1ac4;
+	char (*files)[0x40] = (char (*)[0x40])IMG(0x9f1ac4);
 	strcpy(files[0], found.name);
 	int count = 1;
 	while (!crt_findnext(search, &found))
@@ -1316,28 +1316,28 @@ void (profile_scanSaves)(void)
 	int valid = 0;
 	for (int i = 0; i < count; i++) {
 		u8 header[0x104];
-		void *f = crt_fopen(files[i], (const char *)0x4ad170);   /* "rb" */
+		void *f = crt_fopen(files[i], (const char *)IMG(0x4ad170));   /* "rb" */
 		crt_fseek(f, 20000, 0);
 		crt_fread(header, 0x104, 1, f);
 		fclose(f);
 		crypt_record104(header, 0x7e);
-		memcpy((void *)0x9f61d8, header, 0x104);
+		memcpy((void *)IMG(0x9f61d8), header, 0x104);
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);
-		if (strcmp((const char *)0x9f61d8, (const char *)0x4b0fa0)) {
+		if (strcmp((const char *)IMG(0x9f61d8), (const char *)IMG(0x4b0fa0))) {
 			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
 			continue;
 		}
-		u8 *profile = (u8 *)0x9f6848 + valid * 0x48;
+		u8 *profile = (u8 *)IMG(0x9f6848) + valid * 0x48;
 		strcpy((char *)profile + 4, name);
 		*(u32 *)(profile + 0x44) = *(const u32 *)(header + 0x100);   /* the pilot */
 		*(int *)profile = valid++;
 	}
-	crt_chdir((const char *)0x4b2a80);
+	crt_chdir((const char *)IMG(0x4b2a80));
 	profile_create();
 	profile_loadList(valid);
 	for (int i = 0; i < count; i++)
-		if (!strcmp((const char *)0x9f684c + i * 0x48, (const char *)0x9f8fe8)) {
+		if (!strcmp((const char *)IMG(0x9f684c) + i * 0x48, (const char *)IMG(0x9f8fe8))) {
 			g_currentProfile = i;
 			return;
 		}
@@ -1349,18 +1349,18 @@ void (profile_scanSaves)(void)
 u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 {
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
-		{ 0x4c755c, 0x13eb000, 0x13c9b30, 0xaa8 }, { 0x4c7548, 0x140c8bc, 0x13eb004, 0xabc },
-		{ 0x4c7534, 0x1447ec0, 0x140c8c0, 0x1300 }, { 0x4c7520, 0x148646c, 0x1447ec4, 0x13f4 },
-		{ 0x4c7508, 0x14d1ab0, 0x1486470, 0x1820 }, { 0x4c74f4, 0x1561b64, 0x14d1ab4, 0x2e18 } };
-	void *f = crt_fopen(path, (const char *)0x4ad170);   /* "rb" */
+		{ IMG(0x4c755c), 0x13eb000, 0x13c9b30, 0xaa8 }, { IMG(0x4c7548), 0x140c8bc, 0x13eb004, 0xabc },
+		{ IMG(0x4c7534), 0x1447ec0, 0x140c8c0, 0x1300 }, { IMG(0x4c7520), 0x148646c, 0x1447ec4, 0x13f4 },
+		{ IMG(0x4c7508), 0x14d1ab0, 0x1486470, 0x1820 }, { IMG(0x4c74f4), 0x1561b64, 0x14d1ab4, 0x2e18 } };
+	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
 	if (!f)
-		sys_fatalError((char *)0xae2eb8, (const char *)0x4c75bc, (int)path);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c75bc), (int)path);
 	int version;
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(&version, 4, 1, f);   /* fread */
 	if (version != 0x1204)
-		sys_fatalError((char *)0xae2eb8, (const char *)0x4c7570, (int)path);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7570), (int)path);
 	for (int k = 0; k < 6; k++) {
-		log_message((int)scene, 0, 0, (const char *)tables[k][0]);
+		log_message((int)scene, 0, 0, (const char *)RELOC(tables[k][0]));
 		fread_scrambled(scene + tables[k][1], 4, 1, f);
 		fread_scrambled(scene + tables[k][2], tables[k][3], FIELD(u32, scene, tables[k][1]), f);
 	}
@@ -1382,33 +1382,33 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 		replay_closeRecording((Scene *)s);
 	if (name) {
 		strcpy(kept, name);
-		sprintf(path, (const char *)0x4c7cc8, kept);   /* "AutoPlay\%s.ape" */
+		sprintf(path, (const char *)IMG(0x4c7cc8), kept);   /* "AutoPlay\%s.ape" */
 	} else {
 		int i = 0;
 		for (;; i++) {
-			sprintf(kept, (const char *)0x4c7cb8, i);   /* "AutoPlay%03d" */
-			sprintf(path, (const char *)0x4c7cc8, kept);
+			sprintf(kept, (const char *)IMG(0x4c7cb8), i);   /* "AutoPlay%03d" */
+			sprintf(path, (const char *)IMG(0x4c7cc8), kept);
 			if (!file_exists_46ca70(path))
 				break;
 			if (i == 999)
 				return;
 		}
 	}
-	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)0x4b2ab0);   /* "wb" */
+	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
 	if (!f)
 		return;
 	FIELD(int, s, 0x2340d1d) = 1;
 	FIELD(int, s, 0x2340d29) = 0;
 	int value = 0x1201;
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x5ae9c4, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x9dad94, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x67fb44, 1, 0x20, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x9da3e0, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x5ae9c4), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x9dad94), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x67fb44), 1, 0x20, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x9da3e0), 4, 1, FIELD(void *, s, 0x2340d08));
 	value = FIELD(int, s, 0x22e7180);
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x4df8e8, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)0x76d408, 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x4df8e8), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)IMG(0x76d408), 4, 1, FIELD(void *, s, 0x2340d08));
 	for (int i = 0; i < 16; i++)
 		if (net_playerInUse(i) == 1) {
 			FIELD(int, s, 0x234300e + i * 0x10) = 1;
