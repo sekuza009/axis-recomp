@@ -149,7 +149,8 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 {
 	static const u32 lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };   /* (in the actor) */
 	u8 *s = (u8 *)scene, *stage = s + 0x1f36c8, *vv = s + 0x74;
-	u32 light[0xb00c / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts */
+	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
+	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */
 	for (int i = 0; i < 0x400; i++)
 		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)RELOC(light) + 4 + i * 0x2c);
 	light[0] = VT(Light, 0x4aa248);
