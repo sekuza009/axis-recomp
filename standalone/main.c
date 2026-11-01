@@ -186,7 +186,7 @@ void sa_log(const char *fmt, int arg)
 /* AXISRC_WATCH=<original address> (a check): every write to those four words of the image logged with where it came from
    (a hardware breakpoint, debug register 0, on the main thread); with AXISRC_WATCH_RW reads too - code still reading
    a split object's old place, which its canary cannot show */
-static int g_watchHits;
+static int g_watchHits, g_watchNonZero;
 static LONG CALLBACK watch_hit(EXCEPTION_POINTERS *e)
 {
 	if (e->ExceptionRecord->ExceptionCode != EXCEPTION_SINGLE_STEP || !(e->ContextRecord->Dr6 & 0xf))
@@ -194,6 +194,8 @@ static LONG CALLBACK watch_hit(EXCEPTION_POINTERS *e)
 	DWORD hit = e->ContextRecord->Dr6 & 2 ? e->ContextRecord->Dr1 : e->ContextRecord->Dr6 & 4 ? e->ContextRecord->Dr2 :
 	            e->ContextRecord->Dr6 & 8 ? e->ContextRecord->Dr3 : e->ContextRecord->Dr0;
 	e->ContextRecord->Dr6 = 0;
+	if (g_watchNonZero && *(DWORD *)hit == 0)
+		return EXCEPTION_CONTINUE_EXECUTION;   /* (AXISRC_WATCH_NZ: only what leaves it non-zero) */
 	if (g_watchHits++ < 12) {
 		FILE *f = fopen(g_logPath, "a");
 		if (f) {
@@ -616,7 +618,10 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	{
 		char v[16];
 		if (GetEnvironmentVariableA("AXISRC_WATCH", v, sizeof v))
+			{
+			g_watchNonZero = GetEnvironmentVariableA("AXISRC_WATCH_NZ", NULL, 0) != 0;
 			watch(strtoul(v, NULL, 16), GetEnvironmentVariableA("AXISRC_WATCH_RW", NULL, 0) != 0);
+		}
 	}
 	{	/* the x87 control word the game runs with: Windows starts every thread at 0x027f (53-bit precision), and the
 		   game's runtime never changes it (only __ftol, for a moment); MinGW's start-up code in this exe set 0x037f
