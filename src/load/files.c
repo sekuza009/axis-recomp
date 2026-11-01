@@ -1167,7 +1167,7 @@ void (cfg_gameTypeNames)(void *f)
 			break;
 		default: {
 			u8 limit = (u8)crt_atoi(b.value);
-			GAME_VAR(u8, 0x4ded44 + (n - 5)) = limit > 250 ? 30 : limit;
+			GAME_VAR(u8, OBJ(g_playerName) + 0x24 + (n - 5)) = limit > 250 ? 30 : limit;
 			break;
 		}
 		}
@@ -1225,7 +1225,7 @@ void (cfg_parseKeyNames)(void *f)
 		else
 			for (int k = 0; k < 256; k++)
 				if (!strcmp(b.value, key_name[k]))
-					GAME_VAR(int, 0x4def00 + read_binding(n) * 4) = k;
+					GAME_VAR(int, OBJ(g_controls) + read_binding(n) * 4) = k;
 	}
 	crt_fgets(b.line, 0x50, f);
 }

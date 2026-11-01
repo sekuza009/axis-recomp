@@ -1628,7 +1628,7 @@ void (lobby_checkReservedName3)(void)
 	packet[0x61] = room[0x20];
 	packet[0x62] = room[0x21];
 	packet[0x70] = room[0x2e];
-	lstrcpyA((char *)packet + 0x71, (const char *)IMG(0x5b1b56));
+	lstrcpyA((char *)packet + 0x71, g_roomRecName + 0x26);
 	lstrcpyA((char *)g_arenaPacket + 1, g_roomRecName);
 	jmp_net_getLocalAddress();
 	lstrcpyA((char *)g_arenaPacket + 0x33, g_localAddress);

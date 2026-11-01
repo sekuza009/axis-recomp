@@ -9,11 +9,11 @@
 #define g_accountPassword ((char *)IMG(0x9dd1f6))   /* char[12]; (12 bytes) */
 #define g_accountPasswordRepeat ((char *)IMG(0x9dd202))   /* char[12]; (12 bytes) */
 #define g_accountEmail ((char *)IMG(0x9dd20e))   /* char[40]; (40 bytes) */
-#define g_playerName ((char *)IMG(0x4ded20))   /* char[32]; the arena player's record: the name (32 bytes) */
+#define g_playerName ((char *)IMG(0x4ded20))   /* char[48]; the arena settings record (GameSettings, axis.cfg's server section): the name, then the map .. limits (+0x20: g_arenaMap ..), the clan / password (+0x26), the flag +0x2e */
 #define g_cfgPlayerName ((char *)IMG(0x4dedb0))   /* char[32]; axis.cfg's player name (default "PLAYER") */
-#define g_roomRecName ((char *)IMG(0x5b1b30))   /* char[32]; the room record's name (fields from +0x20: g_roomRec*) */
-#define g_roomSettingsName ((char *)IMG(0x4df9c8))   /* char[32]; the room's settings record (GameSettings): its name */
-#define g_newArenaName ((char *)IMG(0x4db528))   /* char[32]; the new arena's settings record: its name */
+#define g_roomRecName ((char *)IMG(0x5b1b30))   /* char[48]; the room settings record (GameSettings, the registry's copy): the name, then the six choices (+0x20: g_roomRec*), the password (+0x26) */
+#define g_roomSettingsName ((char *)IMG(0x4df9c8))   /* char[48]; the room's settings record (GameSettings, the room's form): the name, then +0x20: g_roomMap .., the password (+0x26) */
+#define g_newArenaName ((char *)IMG(0x4db528))   /* char[48]; the new arena's settings record (GameSettings, the create-arena form): the name, then +0x20: g_newArenaMap .., the password (+0x26) */
 #define g_mapTitle ((char *)IMG(0x67fb44))   /* char[32]; the map's title (TITLE: %s) */
 #define g_profileName ((char *)IMG(0x9f8fe8))   /* char[32]; the profile's name (written 0x20 bytes) */
 #define g_arenaName ((char *)IMG(0x4db560))   /* char[32]; (0x20 bytes) */
@@ -141,7 +141,6 @@
 #define g_spiralTextures ((int *)IMG(0x9da45c))   /* int[6]; the six spirals */
 #define g_graphicSettings ((int *)IMG(0x83a9c0))   /* int[7]; the graphics settings in use: video mode, colour depth, polygon detail (HIGH), then axis.cfg's four switches (setup_keys.c copies all 7) */
 #define g_cfgSwitches (g_graphicSettings + 3)   /* int[4]; axis.cfg's graphics switches: linear filtering */
-#define g_mouseSettings ((int *)IMG(0x4df000))   /* int[4]; axis.cfg's mouse lines 0x40 .. 0x43: invert */
 #define g_armcParts ((int *)IMG(0x4dc760))   /* int[5]; the mech's chosen parts: head */
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts (match_start's loop of 5) */
 #define g_mechSettings ((int *)IMG(0x4dcb18))   /* int[6]; the mech's weapon and item settings (copied into g_savedMechSettings: armc_misc.c) */
@@ -152,9 +151,12 @@
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
 #define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the mech stats copied from a part (armc_parts' loop of 7) */
 #define g_armcTabColour ((u32 *)IMG(0x4dbc58))   /* u32[4]; ARM CENTER's chosen tab colour (armc_misc's loop of 4) */
-#define g_setupToggles ((int *)IMG(0x4de1c0))   /* int[2]; two setup on / off values (setup_pages' loop of 2) */
 #define g_legsStats ((float *)IMG(0x4dc228))   /* float[2]; two leg values (armc_stats' loop of 2) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */
 #define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target points (x y z */
 #define g_camAims ((float *)IMG(0x76d388))   /* float[20]; the menu camera's five look-at points (x y z */
+#define g_controls ((int *)IMG(0x4def00))   /* int[68]; axis.cfg's control settings: the key bindings (two slots per action) */
+#define g_controlsEdit ((int *)IMG(0x4de0c0))   /* int[68]; setup's edited copy of g_controls (copied in on open */
+#define g_mouseSettings (g_controls + 0x40)   /* int[4]; axis.cfg's mouse lines 0x40 .. 0x43: invert, smooth, sensitivity, crosshair */
+#define g_setupToggles (g_controlsEdit + 0x40)   /* int[2]; two setup on / off values (setup_pages' loop of 2) */

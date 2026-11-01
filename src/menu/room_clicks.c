@@ -699,10 +699,10 @@ u32 (room_settingsAfterTyping)(void)
 		return strlen(line) + 1;
 	}
 	if (g_editingRoomPassword) {   /* the password */
-		memset((void *)IMG(0x4df9ee), 0, 8);
+		memset(g_roomSettingsName + 0x26, 0, 8);
 		g_editingRoomPassword = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)IMG(0x4df9ee), line);
+		strcpy(g_roomSettingsName + 0x26, line);
 		return 0;
 	}
 	static const u32 limit[2][2] = { { IMG(0x9dd388), ADDR(g_roomFragLimit) }, { IMG(0x9dd568), ADDR(g_roomTimeLimit) } };   /* frags, time */

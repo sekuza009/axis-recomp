@@ -245,12 +245,12 @@ static const u32 k_slotKeys[10][2] = { { IMG(0x4dec90), 1 }, { IMG(0x4dec8c), 2 
 /* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
 static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), IMG(0x4e0c78), IMG(0x4e0c7c), IMG(0x4e0c80), IMG(0x4e0c84), IMG(0x4e0c88), IMG(0x4e0460) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { IMG(0x4def30), 0x234325f }, { ADDR(g_keyFreeCam2), 0x234326b }, { ADDR(g_keyFreeCam3), 0x234326f },
-                                       { ADDR(g_keyFreeCam0), 0x2343263 }, { ADDR(g_keyFreeCam1), 0x2343267 }, { IMG(0x4def40), 0x2343273 },
-                                       { IMG(0x4def48), 0x2343277 }, { IMG(0x4def98), 0x234328b }, { IMG(0x4defe0), 0x234328f },
-                                       { IMG(0x4def38), 0x2343283 } };
+static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), 0x234325f }, { ADDR(g_keyFreeCam2), 0x234326b }, { ADDR(g_keyFreeCam3), 0x234326f },
+                                       { ADDR(g_keyFreeCam0), 0x2343263 }, { ADDR(g_keyFreeCam1), 0x2343267 }, { (OBJ(g_controls) + 0x40), 0x2343273 },
+                                       { (OBJ(g_controls) + 0x48), 0x2343277 }, { (OBJ(g_controls) + 0x98), 0x234328b }, { (OBJ(g_controls) + 0xe0), 0x234328f },
+                                       { (OBJ(g_controls) + 0x38), 0x2343283 } };
 /* the view keys (+0x2343287: the last held wins, else -1) */
-static const u32 k_viewKeys[6] = { IMG(0x4def78), IMG(0x4def80), IMG(0x4def88), IMG(0x4def90), IMG(0x4def68), IMG(0x4def70) };
+static const u32 k_viewKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match runs, +0x233c9e8). In play (no menu +0x2340d35 / +0x2340cf4): with the own view (+0x233c9fc
@@ -269,7 +269,7 @@ void THISCALL (match_combatInput)(u8 *s)
 	if (S(int, 0x2340d35) == 0 && S(int, 0x2340cf4) == 0) {
 		if (S(int, 0x233c9fc) == 0) {
 			if (S(int, 0x2340cf0) == 0 || (S(int, 8) == 0 && S(int, 0x1eccb48 + S(int, 0x234240d) * 0x8888) == 0)) {
-				if (pressed2(IMG(0x4def50), IMG(0x4def54)))
+				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 					S(int, 0x23432cf) = 1;
 			} else {
 				if (g_mouseClick) {
@@ -294,9 +294,9 @@ void THISCALL (match_combatInput)(u8 *s)
 				S(int, 0x2343307)--;
 			}
 		} else {
-			if (held2(IMG(0x4def50), IMG(0x4def54)))
+			if (held2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 				S(int, 0x234327b) = 1;
-			if (pressed2(IMG(0x4def50), IMG(0x4def54)))
+			if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 				S(int, 0x234327f) = 1;
 		}
 		for (int k = 0; k < 10; k++)
@@ -323,17 +323,17 @@ void THISCALL (match_combatInput)(u8 *s)
 		}
 		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432cf) = 1;
-		if (pressed2(IMG(0x4def58), IMG(0x4def5c)))
+		if (pressed2((OBJ(g_controls) + 0x58), (OBJ(g_controls) + 0x5c)))
 			S(int, 0x23432eb) = 1;
-		if (pressed2(IMG(0x4def60), IMG(0x4def64)))
+		if (pressed2((OBJ(g_controls) + 0x60), (OBJ(g_controls) + 0x64)))
 			S(int, 0x23432ef) = 1;
-		if (pressed2(IMG(0x4deff0), IMG(0x4deff4)))
+		if (pressed2((OBJ(g_controls) + 0xf0), (OBJ(g_controls) + 0xf4)))
 			S(int, 0x23424ee) = S(int, 0x233cc10) == 1 ? 2 : S(int, 0x233cc10) == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyWatchChat), IMG(0x4defac)) && !(S(float, 0x2340d39) > 0))
+		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432fb) = 1;
-		else if (pressed2(IMG(0x4defb0), IMG(0x4defb4)) && !(S(float, 0x2340d39) > 0))
+		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(S(float, 0x2340d39) > 0))
 			S(int, 0x23432ff) = 1;
-		if (pressed2(IMG(0x4deff8), IMG(0x4deffc)))
+		if (pressed2((OBJ(g_controls) + 0xf8), (OBJ(g_controls) + 0xfc)))
 			S(int, 0x2343303) = 1;
 		if (input_justPressed(g_dikF11)) {
 			if (S(int, 0x2340ce8) == 0) {
@@ -358,7 +358,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			if (S(float, 0x2343293) > *up || S(float, 0x2343297) > *up)
 				S(int, 0x234330f) = 1;
 		}
-		if (pressed2(IMG(0x4def50), IMG(0x4def54)))
+		if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 			S(int, 0x2343313) = 1;
 		S(int, 0x2343293) = S(int, 0x2343297) = 0;
 		if (input_justPressed(g_dikLeft) || input_justPressed(g_dikUp))
@@ -956,9 +956,9 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the free camera / follow keys: held pairs and the flag each sets */
-static const u32 k_replayHeld[7][3] = { { IMG(0x4def30), IMG(0x4def34), 0x234325f }, { ADDR(g_keyFreeCam2), IMG(0x4def14), 0x234326b }, { ADDR(g_keyFreeCam3), IMG(0x4def1c), 0x234326f },
-                                        { ADDR(g_keyFreeCam0), IMG(0x4def04), 0x2343263 }, { ADDR(g_keyFreeCam1), IMG(0x4def0c), 0x2343267 }, { IMG(0x4def40), IMG(0x4def44), 0x2343273 },
-                                        { IMG(0x4def48), IMG(0x4def4c), 0x2343277 } };
+static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), 0x234325f }, { ADDR(g_keyFreeCam2), (OBJ(g_controls) + 0x14), 0x234326b }, { ADDR(g_keyFreeCam3), (OBJ(g_controls) + 0x1c), 0x234326f },
+                                        { ADDR(g_keyFreeCam0), (OBJ(g_controls) + 0x4), 0x2343263 }, { ADDR(g_keyFreeCam1), (OBJ(g_controls) + 0xc), 0x2343267 }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), 0x2343273 },
+                                        { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), 0x2343277 } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { IMG(0x4dec90), IMG(0x4dec8c), IMG(0x4deb5c), IMG(0x4deb58), IMG(0x4deb64), IMG(0x4deb60), IMG(0x4deb6c), IMG(0x4deb68), IMG(0x4deb70), IMG(0x4deb78) };
 /* the eight lines of a debug marker's star: the far corner's signs */
@@ -1032,7 +1032,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	follow--;
 	S(int, 0x2340d21) = input_isDown(g_dikSpace) ? 1 : 0;
 	S(int, 0x2340d25) = input_isDown(g_dikEnter) ? 1 : 0;
-	if (held2(IMG(0x4defe0), IMG(0x4defe4)))
+	if (held2((OBJ(g_controls) + 0xe0), (OBJ(g_controls) + 0xe4)))
 		S(int, 0x234328f) = 1;
 	if (input_justPressed(g_dikF11)) {
 		const char *mode;

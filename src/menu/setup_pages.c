@@ -192,7 +192,7 @@ static void key_tab(int tab)
 	for (int r = 0; r < rows[tab]; r++)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(RELOC(labels[tab]) + r * 0x80));
 	for (int r = 0; r < rows[tab]; r++) {
-		const int *slot = (const int *)(IMG(0x4de0c0) + key_rows[tab][r] * 8);
+		const int *slot = (const int *)(OBJ(g_controlsEdit) + key_rows[tab][r] * 8);
 		int y = Y0 + 0x5c + r * 0x18;
 		if (tab == 2 && (r == 4 || r == 9)) {
 			set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red */

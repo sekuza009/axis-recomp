@@ -175,7 +175,7 @@ void (setup_selectGraphicTab)(void)
 
 void (setup_selectControlTab)(void)
 {
-	memcpy((void *)IMG(0x4de0c0), (void *)ADDR(g_keyFreeCam0), 0x44 * 4);   /* the key bindings */
+	memcpy((void *)OBJ(g_controlsEdit), (void *)OBJ(g_controls), 0x44 * 4);   /* the key bindings */
 	g_setupTab = TAB_CONTROL;
 	g_bindPage = 0;
 	g_bindRow = -1;
@@ -185,10 +185,10 @@ void (setup_selectControlTab)(void)
 }
 
 /* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at 0x4df8e4 ---- */
-static const u32 bindings[32] = { IMG(0x4de0c0), IMG(0x4de0c8), IMG(0x4de0d0), IMG(0x4de0d8), IMG(0x4de0e0), IMG(0x4de0e8), IMG(0x4de0f0), IMG(0x4de0f8),
-                                  IMG(0x4de100), IMG(0x4de108), IMG(0x4de110), IMG(0x4de118), IMG(0x4de120), IMG(0x4de138), IMG(0x4de140), IMG(0x4de148),
-                                  IMG(0x4de150), IMG(0x4de128), IMG(0x4de130), IMG(0x4de158), IMG(0x4de160), IMG(0x4de168), IMG(0x4de170), IMG(0x4de178),
-                                  IMG(0x4de180), IMG(0x4de188), IMG(0x4de190), IMG(0x4de198), IMG(0x4de1a0), IMG(0x4de1a8), IMG(0x4de1b0), IMG(0x4de1b8) };
+static const u32 bindings[32] = { OBJ(g_controlsEdit), (OBJ(g_controlsEdit) + 0x8), (OBJ(g_controlsEdit) + 0x10), (OBJ(g_controlsEdit) + 0x18), (OBJ(g_controlsEdit) + 0x20), (OBJ(g_controlsEdit) + 0x28), (OBJ(g_controlsEdit) + 0x30), (OBJ(g_controlsEdit) + 0x38),
+                                  (OBJ(g_controlsEdit) + 0x40), (OBJ(g_controlsEdit) + 0x48), (OBJ(g_controlsEdit) + 0x50), (OBJ(g_controlsEdit) + 0x58), (OBJ(g_controlsEdit) + 0x60), (OBJ(g_controlsEdit) + 0x78), (OBJ(g_controlsEdit) + 0x80), (OBJ(g_controlsEdit) + 0x88),
+                                  (OBJ(g_controlsEdit) + 0x90), (OBJ(g_controlsEdit) + 0x68), (OBJ(g_controlsEdit) + 0x70), (OBJ(g_controlsEdit) + 0x98), (OBJ(g_controlsEdit) + 0xa0), (OBJ(g_controlsEdit) + 0xa8), (OBJ(g_controlsEdit) + 0xb0), (OBJ(g_controlsEdit) + 0xb8),
+                                  (OBJ(g_controlsEdit) + 0xc0), (OBJ(g_controlsEdit) + 0xc8), (OBJ(g_controlsEdit) + 0xd0), (OBJ(g_controlsEdit) + 0xd8), (OBJ(g_controlsEdit) + 0xe0), (OBJ(g_controlsEdit) + 0xe8), (OBJ(g_controlsEdit) + 0xf0), (OBJ(g_controlsEdit) + 0xf8) };
 #define KEY_NONE g_dikNone
 
 /* 0x421350: a pair with no primary key gets its secondary as the primary */
@@ -435,7 +435,7 @@ void (setup_controlTabKeys)(void)
 		}
 	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
-		memcpy((void *)ADDR(g_keyFreeCam0), (const void *)IMG(0x4de0c0), 0x44 * 4);
+		memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x44 * 4);
 		cfg_loadAxisCfg();
 		g_setupPage = 0;
 		return;
@@ -494,7 +494,7 @@ void (setup_drawControlTab)(void)
 			g_bindPage = on;
 		} else if (on == 4) {
 			sound_playMenu(0);
-			memcpy((void *)ADDR(g_keyFreeCam0), (const void *)IMG(0x4de0c0), 0x110);
+			memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x110);
 			cfg_loadAxisCfg();
 			g_setupPage = 0;
 		} else if (on == 5) {
@@ -545,7 +545,7 @@ void (setup_drawKeyBindingRows)(int key)
 	int page = g_bindPage, row = g_bindRow;
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
-		int *slot = (int *)(IMG(0x4de0c0) + binding * 8), none = g_dikNone;
+		int *slot = (int *)(OBJ(g_controlsEdit) + binding * 8), none = g_dikNone;
 		if (slot[1] != none) {
 			slot[0] = key;
 			slot[1] = none;

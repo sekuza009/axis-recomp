@@ -24,9 +24,6 @@ g_profileMechItem5   # its old place written (canary): reached at its old place 
 g_profileMechLeg   # its old place written (canary): reached at its old place by address
 g_profileMechRecord   # its old place written (canary): reached at its old place by address
 g_textureSetHeight   # its old place written (canary): reached at its old place by address
-g_newArenaMap   # a field of the new arena's GameSettings record (0x4db528, 0x3a bytes): the settings form reads it as f->s->map
-g_mouseSettings   # the tail of the control settings block (0x4def00, 0x110 bytes) that setup_keys.c copies whole
-g_setupToggles   # the tail of setup's edited copy of the control settings (0x4de0c0, 0x110 bytes, copied whole both ways): canary
 g_gameServerReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
 g_lobbyReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
 g_mapEntry22On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives

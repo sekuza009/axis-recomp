@@ -355,3 +355,11 @@ g_dpConnections
 # the menu camera's point tables (objects7.csv), whole
 g_camPoints
 g_camAims
+# the control settings and setup's copy (objects8.csv), whole: g_mouseSettings / g_setupToggles are their tails
+g_controls
+g_controlsEdit
+# the four GameSettings records (the arena's, the room's registry copy, the two forms'), 0x30 bytes, whole
+g_playerName
+g_roomRecName
+g_newArenaName
+g_roomSettingsName
