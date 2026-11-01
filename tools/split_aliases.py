@@ -100,13 +100,39 @@ for f in sorted(glob.glob('src/**/*.c', recursive=True)):
 		continue
 	text = open(f, 'rb').read().decode('latin-1')
 	for i, l in enumerate(text.split('\n')):
-		m = re.search(r'for \([^;]*?\b(\w+) = \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))[^;]*; \1 (?:<|<=|!=) \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))', l)
-		if not m:
-			continue
-		a, b = where(m.group(2)), where(m.group(3))
-		if a and b and a != b:
-			print('%s:%d a loop from %s (%s) to %s (%s): write its end from its start: %s' % (f, i + 1, m.group(2), a, m.group(3), b, l.strip()[:80]))
-			found += 1
+		ms = list(re.finditer(r'for \([^;]*?\b(\w+) = \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))[^;]*; \1 (?:<|<=|!=) \(?((?:IMG|OBJ|ADDR|RELOC)\(\w+\))', l))
+		# (or a helper given a start and an end: layouts.c's rect_spec / rects_column / rects_row)
+		ms += list(re.finditer(r'\b()(?:rect_spec|rects_column|rects_row)\((\w+\(\w+\)), (\w+\(\w+\))', l))
+		for m in ms:
+			a, b = where(m.group(2)), where(m.group(3))
+			if a and b and a != b:
+				print('%s:%d a loop from %s (%s) to %s (%s): write its end from its start: %s' % (f, i + 1, m.group(2), a, m.group(3), b, l.strip()[:80]))
+				found += 1
+# a range in the old block that holds split data inside it: a loop between two plain addresses (bare numbers or
+# IMG()), or a memset / memcpy / receive of a constant size from one - it walks the old place
+def addr_of(tok):
+	m = re.match(r'(?:IMG|RELOC)\((0x[0-9a-f]+)\)$|\(?(0x[0-9a-f]{6})\)?$', tok.strip())
+	return int(m.group(1) or m.group(2), 16) if m else None
+def inside(lo, hi):
+	return [s for a, b, s in spans if lo < b and a < hi and not (a == lo)]
+for f in sorted(glob.glob('src/**/*.c', recursive=True)):
+	if os.sep + 'data' + os.sep in f:
+		continue
+	text = open(f, 'rb').read().decode('latin-1')
+	code = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: re.sub(r'[^\n]', ' ', m.group(0)), text, flags=re.S)
+	for i, l in enumerate(code.split('\n')):
+		for m in re.finditer(r'for \([^;]*?\b(\w+) = ((?:IMG|RELOC)\(0x[0-9a-f]+\)|0x[0-9a-f]{6})\s*;\s*\1\s*(<|<=|!=)\s*((?:IMG|RELOC)\(0x[0-9a-f]+\)|0x[0-9a-f]{6})\s*;', l):
+			lo, hi = addr_of(m.group(2)), addr_of(m.group(4))
+			if lo and hi and 0x4ad000 <= lo < hi:
+				for s in inside(lo, hi + (4 if m.group(3) == '<=' else 0)):
+					print('%s:%d a loop over 0x%x .. 0x%x walks over split %s: %s' % (f, i + 1, lo, hi, s, text.split('\n')[i].strip()[:80]))
+					found += 1
+		for m in re.finditer(r'\b(?:memset|memcpy|memmove|reply_read)\s*\(\s*(?:\([^()]*\)\s*)?((?:IMG|RELOC)\(0x[0-9a-f]+\))\s*,[^;]*?,\s*(0x[0-9a-f]+|\d+)\s*\)', l):
+			lo, size = addr_of(m.group(1)), int(m.group(2), 0)
+			if lo and 0x4ad000 <= lo < 0xb13000:
+				for s in inside(lo, lo + size):
+					print('%s:%d %d bytes from 0x%x cover split %s: %s' % (f, i + 1, size, lo, s, text.split('\n')[i].strip()[:80]))
+					found += 1
 print('%d names reach a split object\'s old place; %d record bases to review (REVIEW: a pointer to one value, or a '
       'reach that stops short, is fine)' % (found, review))
 sys.exit(1 if found else 0)

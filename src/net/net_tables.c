@@ -955,7 +955,7 @@ int (dplay_initConnection)(int kind, const char *address)
 		GAME_FN(dplay_closeSession, 0x453a10, void, void *)(g_dplay);   /* dplay_closeSession */
 		g_dplay = NULL;
 	}
-	static const u32 provider[4] = { 0xa0b3a0, 0xa0b450, 0xa0b408, 0xa0bab8 };
+	static const u32 provider[4] = { IMG(0xa0b3a0), IMG(0xa0b450), IMG(0xa0b408), IMG(0xa0bab8) };   /* (the GUIDs: TCP, IPX, modem, serial) */
 	if ((u32)kind <= 3) {
 		(*(u32 *)&g_instanceGuid) = provider[kind];
 		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, OBJ(g_dpConnections) + kind * 4);

@@ -78,7 +78,7 @@ void (leaveDialog_layout)(void) { rects_column(IMG(0x9dd390), ADDR(g_rankingHave
 
 void (deleteDialog_layout)(void) { rects_row(IMG(0x9f6808), IMG(0x9f6828), IMG(0x9f8f1c), IMG(0x9f8f0c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
-void (secondDialog_layout)(void) { rects_row(IMG(0x9f8ee8), ADDR(g_profileFrameAlpha), IMG(0x9f6834), IMG(0x9f683c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
+void (secondDialog_layout)(void) { rects_row(IMG(0x9f8ee8), IMG(0x9f8ee8) + 2 * 16, IMG(0x9f6834), IMG(0x9f683c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
 void (newNameDialog_layout)(void) { rects_row(IMG(0x9f9020), OBJ(g_profileRecords), ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
@@ -111,7 +111,7 @@ void (roomLogin_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_roomLoginLeft), 0xb8, 0), RA(ADDR(g_roomLoginTop), 0x50, 1), RA(ADDR(g_roomLoginLeft), 0x1a8, 0), RA(ADDR(g_roomLoginTop), 0x70, 1) };
 	static const RArg b[4] = { RA(ADDR(g_roomLoginLeft), 0x30, 1), RA(ADDR(g_roomLoginBottom), -0x40, 0), RA(ADDR(g_roomLoginLeft), 0xa8, 1), RA(ADDR(g_roomLoginBottom), -0x18, 0) };
-	rect_spec(IMG(0x9dd7e0), IMG(0x9dd800), 0x30, a); rect_spec(IMG(0x9dd800), ADDR(g_typingGameName), 0xa0, b);
+	rect_spec(IMG(0x9dd7e0), IMG(0x9dd800), 0x30, a); rect_spec(IMG(0x9dd800), IMG(0x9dd800) + 3 * 16, 0xa0, b);
 }
 
 void (skirmish_layout)(void)
@@ -244,7 +244,7 @@ void (setupSound_layout)(void)
 	static const short r[5][4] = { { 0x50, 0x50, 0x8f, 0x70 }, { 0x191, 0x50, 0x1d0, 0x70 }, { 0x90, 0x50, 0x190, 0x70 },
 	                               { 0x50, 0x8c, 0x8f, 0xac }, { 0x191, 0x8c, 0x1d0, 0xac } };
 	for (int k = 0; k < 5; k++) rect1(IMG(0x4ddcf0) + k * 16, ADDR(g_setupSoundLeft), r[k][0], IMG(0x4ddad4), r[k][1], ADDR(g_setupSoundLeft), r[k][2], IMG(0x4ddad4), r[k][3]);
-	rect_spec(IMG(0x4ddd40), IMG(0x4ddd70), 0x28, a); rect_spec(IMG(0x4ddd70), ADDR(g_setupTunnelDepth), 0x8c, b);
+	rect_spec(IMG(0x4ddd40), IMG(0x4ddd70), 0x28, a); rect_spec(IMG(0x4ddd70), IMG(0x4ddd70) + 2 * 16, 0x8c, b);
 }
 
 void (ranking_layout)(void)
@@ -274,7 +274,7 @@ void (arenaOptions_layout)(void)
 	options_panel(IMG(0x4db5e8), 0, ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
 	rect_spec(IMG(0x4db668), IMG(0x4db688), 0xfa, a); rect_spec(IMG(0x4db688), IMG(0x4db6a8), 0xfa, b);
 	options_panel(0, IMG(0x4db6a8), ADDR(g_newArenaFormLeft), ADDR(g_newArenaFormTop), ADDR(g_newArenaFormRight));
-	rects_column(IMG(0x4db6e8), ADDR(g_arenaJoinPending), 0xb4);
+	rects_column(IMG(0x4db6e8), IMG(0x4db6e8) + 2 * 16, 0xb4);
 }
 
 void (profileList_layout)(void)       /* a column: 13 rows 0x14 apart */
