@@ -1,0 +1,66 @@
+# tables of named globals' addresses whose code reads / writes each entry's one 4-byte value only (reviewed
+# 2026-11-01; tools/split_tables.py lists them): "file table [-name ...]" - a -name is an entry the code indexes
+# from (held back). Not here: main_loop.c k_heldKeys (entry + 4), lobby_states.c kept (+ 0x10 .. 0x18),
+# menu_states.c clocks (+ 4), room_clicks.c limit (a byte written)
+src/app/frees.c buffers
+src/app/main_loop.c k_radioKeys
+src/app/main_loop.c k_replayHeld
+src/app/store_tables.c k_input_setDefaultKeyBindings
+src/app/store_tables.c k_input_applyKeyBindings
+src/app/store_tables.c k_setup_controlTabHelper_420c10
+src/match/match_start.c items
+src/menu/armc_items.c value
+src/menu/armc_items.c items
+src/menu/armc_keys.c slot_keys
+src/menu/armc_keys.c item_keys
+src/menu/armc_misc.c items
+src/menu/armc_misc.c weights
+src/menu/armc_parts.c lengths
+src/menu/armc_stats.c ints
+src/menu/armc_stats.c speeds
+src/menu/layouts.c a
+src/menu/layouts.c b
+src/menu/layouts.c c
+src/menu/layouts.c d
+src/menu/layouts.c e
+src/menu/lobby_states.c cleared
+src/menu/lobby_states.c copy
+src/menu/lobby_states.c rect
+src/menu/lobby_states.c title
+src/menu/lobby_states.c zero
+src/menu/lobby_states.c zero2
+src/menu/lobby_states.c panels
+src/menu/lobby_states.c limit
+src/menu/lobby_states.c close
+src/menu/menu_cameras.c cam
+src/menu/menu_cameras.c home
+src/menu/menu_cameras.c room
+src/menu/menu_cameras.c arena
+src/menu/menu_cameras.c point0
+src/menu/menu_cameras.c skirmish
+src/menu/menu_init.c point
+src/menu/menu_records.c keys
+src/menu/menu_records.c key
+src/menu/menu_states.c cleared
+src/menu/menu_states.c ticked
+src/menu/room_clicks.c typing
+src/menu/room_clicks.c close
+src/menu/room_dialogs.c cleared
+src/menu/room_dialogs.c cleared2
+src/menu/room_dialogs.c counts
+src/menu/screen_enter.c camera4
+src/menu/screen_enter.c layout
+src/menu/screen_enter.c cleared1
+src/menu/screen_enter.c cleared2
+src/menu/screen_enter.c state
+src/menu/screen_enter.c colours
+src/menu/screen_enter.c colours_camera
+src/menu/screen_enter.c cleared
+src/menu/screen_enter.c briefing_camera
+src/menu/screen_enter.c setup
+src/menu/settings_form.c form -g_newArenaFormLeft
+src/menu/setup_keys.c page_keys
+src/net/net_sessions.c room
+src/net/net_sessions.c arena
+src/net/net_tables.c handles
+src/net/net_tables.c sockets

@@ -23,6 +23,21 @@ def strip(t):
 	return re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
 files = [f for f in glob.glob('src/**/*.[ch]', recursive=True) if not f.endswith(('globals.h', 'scene.h'))]
 files += ['axisnet_recomp.c'] + glob.glob('standalone/*.c')
+# the globals whose addresses are only in reviewed tables (tools/names/split_tables_ok.txt; each entry one 4-byte
+# value): stored in a table is no reason to hold them back, if they are 4 bytes or more
+sys.path.insert(0, os.path.join(os.getcwd(), 'tools'))
+import split_tables
+ok_tables, ok_except = set(), set()
+for line in open('tools/names/split_tables_ok.txt'):
+	w = line.split('#')[0].split()
+	if w:
+		ok_tables.add((w[0], w[1]))
+		ok_except.update(x[1:] for x in w[2:] if x.startswith('-'))
+in_tables = collections.defaultdict(set)
+for key, (line, decl, inside) in split_tables.tables.items():
+	for n in inside:
+		in_tables[n].add(key)
+table_ok = {n for n, keys in in_tables.items() if keys <= ok_tables and n not in ok_except and n in cands and cands[n][2] >= 4}
 numbers = collections.Counter()
 based = {}
 why = collections.defaultdict(set)
@@ -53,7 +68,7 @@ for f in files:
 				why[n].add('address arithmetic')
 			if re.search(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*$', before) and m.group(1):
 				why[n].add('address arithmetic (made a pointer: indexed)')
-			if m.group(1) and re.search(r'\{[^}]*$', before) and re.search(r'=\s*\{', before):
+			if m.group(1) and re.search(r'\{[^}]*$', before) and re.search(r'=\s*\{', before) and n not in table_ok:
 				why[n].add('address arithmetic (stored in a table: a base the code indexes)')
 			if re.search(r'\b(memset|memcpy|memmove|strcpy|strncpy|crt_strncpy|lstrcpyA|strcat|sprintf|rect_copy|\w+_copy\w*|clear)\s*\([^;]*$', before):
 				why[n].add('given to %s' % re.search(r'\b(memset|memcpy|memmove|strcpy|strncpy|crt_strncpy|lstrcpyA|strcat|sprintf|rect_copy|\w+_copy\w*|clear)\s*\([^;]*$', before).group(1))
