@@ -1,0 +1,7 @@
+# setup's edited values and panel rects, the create-arena form's window (step 3b): records of the named globals in
+# them (name_objects.py --records)
+0x4ddad0,int,4,g_setupSoundRect,the setup sound panel's window: left (g_setupSoundLeft), top, right (g_setupSoundRight), bottom
+0x4ddba0,u32,7,g_graphicEdited,the graphics tab's seven values being edited: the screen size (g_setupResolution) then six choices (copied from / to g_graphicInUse)
+0x4dde80,int,4,g_setupControlRect,the setup control panel's window: left (g_setupControlLeft), top, right, bottom
+0x4dde98,int,4,g_soundEdited,the sound tab's four values being edited: the volume (g_volumeSetting), effects, two toggles (copied from / to g_soundSettings)
+0x4dbb00,int,4,g_newArenaForm,the create-arena form's window: left (g_newArenaFormLeft), top, right, bottom (settings_form reads it at + 4 .. + 12)

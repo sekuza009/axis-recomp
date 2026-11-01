@@ -8,9 +8,7 @@
 #define TAB_CONTROL 2
 #define TAB_TOP 0x29a
 
-#define g_soundEdited ((const int *)ADDR(g_volumeSetting))         /* the sound tab's values being edited (the menu sounds' volume first) */
 #define g_soundSettings ((int *)ADDR(g_soundVolume))             /* the sound settings in use */
-#define g_graphicEdited ((const u32 *)ADDR(g_setupResolution))       /* the graphics tab's seven values being edited */
 #define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_items3D is the third) */
 
 /* 0x422b30: the tab's page (nothing while a dialog is up) */

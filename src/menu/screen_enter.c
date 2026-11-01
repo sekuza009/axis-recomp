@@ -119,8 +119,8 @@ void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
 		{ IMG(0x4ddac8), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
-		{ ADDR(g_setupSoundLeft), 0x32 }, { IMG(0x4ddad4), 0x3c }, { IMG(0x4ddadc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
-		{ IMG(0x4ddddc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { IMG(0x4dde8c), 0x1b8 } };
+		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
+		{ IMG(0x4ddddc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
 	static const Store colours[] = {
 		{ IMG(0x4de048), 0 }, { IMG(0x4de04c), ONE }, { IMG(0x4de050), ONE }, { IMG(0x4de054), ONE }, { IMG(0x4ddae0), 0 },
 		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { IMG(0x4e14fc), 0 }, { ADDR(g_menuTunnelSpeed), ONE },

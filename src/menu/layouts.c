@@ -229,7 +229,7 @@ void (mapSelect_layout)(void)
 void (setupControl_layout)(void)
 {
 	static const RArg a[4] = { RA(ADDR(g_setupControlLeft), 0x46, 1), RA(ADDR(g_setupControlTop), 0x10, 0), RA(ADDR(g_setupControlLeft), 0xaa, 1), RA(ADDR(g_setupControlTop), 0x24, 0) };
-	static const RArg b[4] = { RA(ADDR(g_setupControlLeft), 0x50, 1), RA(IMG(0x4dde8c), -0x30, 0), RA(ADDR(g_setupControlLeft), 0xc8, 1), RA(IMG(0x4dde8c), -0x10, 0) };
+	static const RArg b[4] = { RA(ADDR(g_setupControlLeft), 0x50, 1), RA((OBJ(g_setupControlRect) + 0xc), -0x30, 0), RA(ADDR(g_setupControlLeft), 0xc8, 1), RA((OBJ(g_setupControlRect) + 0xc), -0x10, 0) };
 	static const RArg c[4] = { RA(ADDR(g_setupControlLeft), 0x30, 0), RA(ADDR(g_setupControlTop), 0x59, 1), RA(ADDR(g_setupControlRight), -0x18, 0), RA(ADDR(g_setupControlTop), 0x70, 1) };
 	rect_spec(IMG(0x4ddea8), IMG(0x4ddee8), 0x78, a); rect_spec(IMG(0x4ddee8), IMG(0x4ddf18), 0x8c, b); rect_spec(IMG(0x4ddf18), IMG(0x4ddfc8), 0x18, c);
 	rect1(IMG(0x4ddd98), ADDR(g_setupControlLeft), 0xc8, ADDR(g_setupControlTop), 0x88, ADDR(g_setupControlLeft), 0x108, ADDR(g_setupControlTop), 0xa0);
@@ -239,11 +239,11 @@ void (setupControl_layout)(void)
 
 void (setupSound_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_setupSoundLeft), 0x74, 0), RA(IMG(0x4ddad4), 0x94, 1), RA(ADDR(g_setupSoundLeft), 0x1ae, 0), RA(IMG(0x4ddad4), 0xb4, 1) };
-	static const RArg b[4] = { RA(ADDR(g_setupSoundLeft), 0x90, 1), RA(IMG(0x4ddad4), 0x113, 0), RA(ADDR(g_setupSoundLeft), 0x108, 1), RA(IMG(0x4ddad4), 0x133, 0) };
+	static const RArg a[4] = { RA(ADDR(g_setupSoundLeft), 0x74, 0), RA((OBJ(g_setupSoundRect) + 0x4), 0x94, 1), RA(ADDR(g_setupSoundLeft), 0x1ae, 0), RA((OBJ(g_setupSoundRect) + 0x4), 0xb4, 1) };
+	static const RArg b[4] = { RA(ADDR(g_setupSoundLeft), 0x90, 1), RA((OBJ(g_setupSoundRect) + 0x4), 0x113, 0), RA(ADDR(g_setupSoundLeft), 0x108, 1), RA((OBJ(g_setupSoundRect) + 0x4), 0x133, 0) };
 	static const short r[5][4] = { { 0x50, 0x50, 0x8f, 0x70 }, { 0x191, 0x50, 0x1d0, 0x70 }, { 0x90, 0x50, 0x190, 0x70 },
 	                               { 0x50, 0x8c, 0x8f, 0xac }, { 0x191, 0x8c, 0x1d0, 0xac } };
-	for (int k = 0; k < 5; k++) rect1(IMG(0x4ddcf0) + k * 16, ADDR(g_setupSoundLeft), r[k][0], IMG(0x4ddad4), r[k][1], ADDR(g_setupSoundLeft), r[k][2], IMG(0x4ddad4), r[k][3]);
+	for (int k = 0; k < 5; k++) rect1(IMG(0x4ddcf0) + k * 16, ADDR(g_setupSoundLeft), r[k][0], (OBJ(g_setupSoundRect) + 0x4), r[k][1], ADDR(g_setupSoundLeft), r[k][2], (OBJ(g_setupSoundRect) + 0x4), r[k][3]);
 	rect_spec(IMG(0x4ddd40), IMG(0x4ddd70), 0x28, a); rect_spec(IMG(0x4ddd70), IMG(0x4ddd70) + 2 * 16, 0x8c, b);
 }
 

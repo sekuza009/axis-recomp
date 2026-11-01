@@ -532,3 +532,13 @@ g_itemBonusHacking
 g_itemBonusWeightLimit
 g_progressWentUp
 g_unusedArmcWord2
+# setup edited values and panel rects, the create-arena form (objects11.csv), whole
+g_setupSoundRect
+g_graphicEdited
+g_setupControlRect
+g_soundEdited
+g_newArenaForm
+# freed by the setup / form records (objects11.csv), 2026-11-01
+g_arenaLobbyMode
+g_arenaSearchTicks
+g_setupPressed

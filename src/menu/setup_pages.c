@@ -26,9 +26,9 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 void (setup_drawSoundPage)(void)
 {
 #define X0 g_setupSoundLeft
-#define Y0 GAME_VAR(int, 0x4ddad4)
+#define Y0 (g_setupSoundRect[1])
 #define X1 g_setupSoundRight
-#define Y1 GAME_VAR(int, 0x4ddadc)
+#define Y1 (g_setupSoundRect[3])
 	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
 	int hovered = setupSound_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -134,7 +134,7 @@ void (setup_drawOptionsDialog)(void)
 	const char *value[7];
 	value[0] = GAME_VAR(const char *, 0x4b04cc + g_setupResolution * 4);
 	for (int k = 1; k < 7; k++)
-		value[k] = (const char *)(RELOC(names[k - 1]) + GAME_VAR(int, 0x4ddba4 + (k - 1) * 4) * 0x32);
+		value[k] = (const char *)(RELOC(names[k - 1]) + (int)g_graphicEdited[k] * 0x32);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	for (int k = 0; k < 7; k++)
 		text_draw8(X0 + 0xe6, Y0 + 0x44 + k * 0x28, value[k]);
@@ -288,7 +288,7 @@ void (setup_crosshairScreen)(void)
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
 #define X1 g_setupControlRight
-#define Y1 GAME_VAR(int, 0x4dde8c)
+#define Y1 (g_setupControlRect[3])
 	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
 	int hovered = setupControl_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
