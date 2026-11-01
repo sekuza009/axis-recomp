@@ -370,7 +370,26 @@ def data_struct():
 	type at its offset (one that overlaps an earlier one left out), the rest padding. Its initial values are
 	src/data/data.c's pieces, copied in at start-up; the struct itself is zeroed memory (.bss)"""
 	members, asserts, named, cursor = [], [], {}, DATA_LO
-	for a, n in sorted((a, n) for a, n in names.items() if DATA_LO <= a < DATA_HI):
+	# the arrays, buffers and records of src/objects.h (tools/name_objects.py): members of their extent
+	objects = {}
+	reg = os.path.join(R, 'tools', 'names', 'objects.txt')
+	for line in (open(reg) if os.path.exists(reg) else []):
+		a, ty, n, name = line.split()
+		objects[int(a, 16)] = (ty.replace('_', ' '), int(n), name)
+	for a, n in sorted([(a, n) for a, n in names.items() if DATA_LO <= a < DATA_HI] + [(a, None) for a in objects if DATA_LO <= a < DATA_HI]):
+		if n is None:   # an object
+			ty, count, name = objects[a]
+			esize = {'Colour': 16}.get(ty) or BASIC.get(ty, 1)
+			if a < cursor or a + esize * count > DATA_HI:
+				continue
+			if a > cursor:
+				members.append('\tu8 _gap_%06x[0x%x];' % (cursor, a - cursor))
+			mty, mcount = (ty, count) if ty in BASIC else ('u8', esize * count)
+			members.append('\t%s %s_[%d];' % (mty, name, mcount))
+			asserts.append('_Static_assert(offsetof(struct GameData, %s_) == 0x%x, "%s");' % (name, a - DATA_LO, name))
+			named[name] = '(%s *)g_data.%s_' % (ty, name)
+			cursor = a + esize * count
+			continue
 		t, size, direct = member_type(types[a].most_common(1)[0][0]) if types.get(a) else ('u32', 4, False)
 		declared = re.search(r'#define %s GAME_VAR\(([\w \*]+), 0x' % n, globals_h).group(1).strip()
 		if a < cursor or a + size > DATA_HI:

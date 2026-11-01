@@ -93,8 +93,8 @@ void (mapList_ok)(void)
 void (arena_saveSettings)(void)
 {
 	g_playerSex = g_arenaSex;
-	const char *name = (const char *)IMG(0x4db560);
-	char *kept = (char *)IMG(0x4dedb0);
+	const char *name = g_arenaName;
+	char *kept = g_cfgPlayerName;
 	int i = 0;
 	do
 		kept[i] = name[i];
@@ -130,7 +130,7 @@ void (room_stepMap)(int dir) { map_step(dir, ADDR(g_roomCustom), ADDR(g_roomMap)
 
 /* ---- the map list's drawing ---- */
 #define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */
-#define cyan_text(a) set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, a)
+#define cyan_text(a) set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, a)
 
 /* a map's cell from x0 to x1 in the row at y: on a red bar (yellow text) when the map is chosen */
 static void map_cell(int map, int x0, int x1, int y)
@@ -138,7 +138,7 @@ static void map_cell(int map, int x0, int x1, int y)
 	if (g_mapChoices[map].chosen) {
 		set_colour_bits(g_rectColour, 0x3f800000, 0, 0x3f000000, 0x3f000000);   /* 1, 0, 0.5, 0.5 */
 		menu_drawRect(x0, y, x1, y + 0x14, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	} else
 		cyan_text(0x3f4ccccd);
 }
@@ -153,10 +153,10 @@ static void map_buttons(int hovered, int first, int y, int label)
 		int x = 0xaa + k * 0xa0;
 		if (hovered == first + k) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		} else {
 			glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
+			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		}
 		menu_drawWideButton(x, y, x + 0x8c, y + 0x20, 1);
 		text_drawBox16(x, y + 8, x + 0x8c, (const char *)(RELOC(label) + k * 0x80));

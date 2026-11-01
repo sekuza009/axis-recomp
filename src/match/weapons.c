@@ -322,7 +322,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		return;
 	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, B(u32, 0xc) };
 	memcpy(&rec[2], b + 0x78, 12);
-	memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
+	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = B(u32, 0x10);
 	float size = f32(fld_m((const float *)(w + 0x2df0)));
 	memcpy(&rec[11], &size, 4);

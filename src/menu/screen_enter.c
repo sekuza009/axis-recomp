@@ -164,8 +164,8 @@ void (menuState800_enterGameRoom)(void)
 		{ ADDR(g_roomFormTop), 0x1e }, { ADDR(g_roomFormRight), 0x258 }, { ADDR(g_roomFormBottom), 0x1c2 }, { IMG(0x9dced8), 0x10 }, { IMG(0x9dcedc), 0x1e },
 		{ IMG(0x9dcee0), 0x268 }, { IMG(0x9dcee4), 0x1b8 } };
 	static const Store colours_camera[] = {
-		{ ADDR(g_connectStep), 2 }, { IMG(0x9dcec0), 0 }, { IMG(0x9dcec4), ONE }, { IMG(0x9dcec8), ONE }, { IMG(0x9dcecc), ONE },
-		{ IMG(0x9dd338), 0x3e99999a }, { IMG(0x9dd33c), 0x3f333333 }, { IMG(0x9dd340), 0x3f333333 }, { IMG(0x9dd344), ONE },
+		{ ADDR(g_connectStep), 2 }, { OBJ(g_roomBright), 0 }, { (OBJ(g_roomBright) + 0x4), ONE }, { (OBJ(g_roomBright) + 0x8), ONE }, { (OBJ(g_roomBright) + 0xc), ONE },
+		{ OBJ(g_roomDim), 0x3e99999a }, { (OBJ(g_roomDim) + 0x4), 0x3f333333 }, { (OBJ(g_roomDim) + 0x8), 0x3f333333 }, { (OBJ(g_roomDim) + 0xc), ONE },
 		{ ADDR(g_camPoint0X), 0x41a00000 }, { ADDR(g_camPoint0Y), 0xc1200000 }, { ADDR(g_camAim0X), 0xc28c0000 }, { ADDR(g_camAim0Y), 0x425c0000 },
 		{ ADDR(g_camPoint1X), 0x41a00000 }, { IMG(0x4df884), 0 }, { ADDR(g_camAim1X), 0xc28c0000 }, { ADDR(g_camAim1Y), 0 },
 		{ ADDR(g_camPoint2X), 0x41a00000 }, { ADDR(g_camPoint2Y), 0x41200000 }, { ADDR(g_camAim2X), 0xc28c0000 }, { ADDR(g_camAim2Y), 0xc25c0000 },
@@ -336,7 +336,7 @@ u32 (menuState210_enter)(void)
 	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), IMG(0x680bb4), IMG(0x76d37c),
 	                               IMG(0x76d42c) };
 	static const Store colours[] = {
-		{ IMG(0x9f8eb0), 0 }, { IMG(0x9f8eb4), ONE }, { IMG(0x9f8eb8), ONE }, { IMG(0x9f8ebc), ONE }, { IMG(0x9f8d58), 0 },
+		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { IMG(0x9f8d58), 0 },
 		{ IMG(0x9f8d5c), 0x3f19999a }, { IMG(0x9f8d60), 0x3f19999a }, { IMG(0x9f8d64), ONE }, { IMG(0x4dda44), 0 }, { ADDR(g_introZoom), 0 },
 		{ IMG(0x9f6838), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
@@ -416,7 +416,7 @@ void (console_init)(void)
 	switch (kind) {
 	case 1:   /* (the selection's range checks are jumped over in the patched game) */
 		data_loadPilotProfiles();
-		match_name((const char *)IMG(0x4dedb0));
+		match_name(g_cfgPlayerName);
 		armc_resetSeraphimParts();
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
@@ -425,7 +425,7 @@ void (console_init)(void)
 		if (g_pilotLevel != 0x14)
 			armc_resetSeraphimParts();
 		data_loadPilotProfiles();
-		match_name((const char *)IMG(0x9dd570));
+		match_name(g_joinedTitleName);
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:

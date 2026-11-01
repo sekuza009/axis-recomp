@@ -100,7 +100,7 @@ void (armc_takeCursorItem)(void)
 void (armc_enterScreen)(void)
 {
 	app_requireCd(g_scene, 0, 2);
-	set_mech((const char *)IMG(0x4dedb0));
+	set_mech(g_cfgPlayerName);
 	stage_remakePlayerActor(STAGE(g_scene));
 	g_armcPreview = 1;
 	g_armcSessionMade = 1;

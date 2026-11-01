@@ -151,7 +151,7 @@ void (pilotSelect_layout)(void)        /* 3 x 3 grid, then a row of two */
 		set4ints(x + 0x20, y + 0x4c, x + 0x74, y + 0xa0, (int *)RELOC(rec));
 	}
 	static const RArg b[4] = { RA(ADDR(g_pilotSelectLeft), 0xaa, 1), RA(ADDR(g_pilotSelectBottom), -0x40, 0), RA(ADDR(g_pilotSelectLeft), 0x122, 1), RA(ADDR(g_pilotSelectBottom), -0x20, 0) };
-	rect_spec(IMG(0x9f8fc8), IMG(0x9f8fe8), 0xa0, b);
+	rect_spec(IMG(0x9f8fc8), OBJ(g_profileName), 0xa0, b);
 }
 
 void (gameList_layout)(void)

@@ -8,7 +8,7 @@
 #define g_searching (g_lanSearch || g_lobbySearching)
 
 static const u32 *const bright = (const u32 *)IMG(0x4dba98), *const dim = (const u32 *)IMG(0x4db8a0);
-#define TEXT(c) set_colour_bits((Colour *)IMG(0x76d438), (c)[0], (c)[1], (c)[2], (c)[3])
+#define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 #define RECT(r, g, b, a) set_colour_bits(g_rectColour, r, g, b, a)
 
 static void bind_buttons(void)
@@ -55,9 +55,9 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 			glEnd();
 			glDisable(GL_TEXTURE_2D);
 		}
-		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);   /* 0, 0.8, 0.8, 1 */
+		set_colour_bits(g_textColour, 0, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);   /* 0, 0.8, 0.8, 1 */
 		if (g_localPlayer == g_listTop + i)
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		memset(text, 0, sizeof text);
 		crt_strncpy(text, (const char *)game, 0x20);
 		text_draw8(x0 + 0x20, y0 + y, text);
@@ -85,7 +85,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 /* "page / pages" (0x680bb8) in white, right-aligned (13 a character) 0x3c in from x1 at y */
 static void game_page(int x1, int y, int pages_count)
 {
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	char page[50] = { 0 }, pages[10] = { 0 };
 	itoa(g_lobbyListPage, page, 10);
 	strcat(page, (const char *)STR(0x4ad564, "/"));
@@ -106,7 +106,7 @@ static void info_box(u32 line, int named)
 {
 	RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 	menu_drawRect(X0 + 0x64, Y0 + 0x96, X1 - 0x64, Y0 + 0x116, 1);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)RELOC(line));
 	RECT(0, 0, 0, 0x3f000000);
 	menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 1);
@@ -181,7 +181,7 @@ void (arena_drawGameList)(void)
 	if (g_searching || g_lobbyRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
-		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
+		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
 	}
 	glDisable(GL_TEXTURE_2D);
@@ -193,7 +193,7 @@ void (arena_drawGameList)(void)
 		int on = GAME_FN(arenaDialogBox_hitTest, 0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
@@ -211,7 +211,7 @@ void (arena_drawGameList)(void)
 		menu_drawRect(0x64, 0xb4, 0x21c, 0x140, 1);
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
 		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 		for (int k = 0; k < 2; k++) {
@@ -235,7 +235,7 @@ void (arena_drawGameList)(void)
 #define X1 g_roomGameListRight
 #define Y1 g_roomGameListBottom
 
-static const u32 *const room_bright = (const u32 *)IMG(0x9dcec0), *const room_dim = (const u32 *)IMG(0x9dd338);
+static const u32 *const room_bright = g_roomBright, *const room_dim = g_roomDim;
 
 /* a room button's quad, lit or dimmed, and the text colour to match */
 static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
@@ -302,19 +302,19 @@ void (gameList_draw)(void)
 	if (g_roomSearching || g_roomRefreshing) {   /* blinking in fifteen steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
-		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
+		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
 	}
 	if (g_roomChatting) {
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(X0 + 0x64, Y0 + 0x96, X1 - 0x64, Y0 + 0x116, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)MSG(38, "TYPE GAME PASSWORD"));
 		RECT(0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 1);
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
 		menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 0);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		text_draw16(X0 + 0xd8, Y0 + 0xd0, (const char *)ADDR(g_roomMessageText));
 	}
 	if (g_arenaConfirming) {
@@ -322,7 +322,7 @@ void (gameList_draw)(void)
 		int on = gameListStop_hitTest(g_mouseX, g_mouseY);
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
@@ -433,9 +433,9 @@ void (gameList_drawPage)(void)
 /* text with a near-black shadow one down and right, then in yellow */
 static void shadowed(int x, int y, const char *text)
 {
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
+	set_colour_bits(g_textColour, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
 	text_draw8(x + 1, y + 1, text);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);           /* 1, 0.8, 0 */
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);           /* 1, 0.8, 0 */
 	text_draw8(x, y, text);
 }
 
@@ -459,12 +459,12 @@ void (arena_drawNameDialog)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	text_draw8(x0 + 0x40, y0 + 0x64, (const char *)MSG(132, "PLAYER NAME :"));
 	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_paused)
-		text_draw8(x0 + 0xc2, y0 + 0x64, (const char *)IMG(0x4db560));
+		text_draw8(x0 + 0xc2, y0 + 0x64, g_arenaName);
 	if (!g_typingArenaName) {
 		if (hovered == 0 && !g_paused)
-			shadowed(x0 + 0xc1, y0 + 0x63, (const char *)IMG(0x4db560));
+			shadowed(x0 + 0xc1, y0 + 0x63, g_arenaName);
 		else if (hovered == 2)
 			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	}
@@ -796,7 +796,7 @@ void (lobbyJoin_draw)(void)
 			return;
 		memset((void *)ADDR(g_arenaMessageText), 0, 8);
 		g_editingArenaMessage = 0;
-		strcpy((char *)ADDR(g_arenaMessageText), (const char *)IMG(0x9dc92c));
+		strcpy((char *)ADDR(g_arenaMessageText), g_chatLine);
 		int wrong = strcmp((const char *)(IMG(0x9087c4) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_arenaMessageText)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
@@ -810,7 +810,7 @@ void (lobbyJoin_draw)(void)
 			return;
 		g_arenaFull = 0;
 		memset((void *)ADDR(g_typedArenaName), 0, 6 * 4);
-		strcpy((char *)ADDR(g_typedArenaName), (const char *)IMG(0x9dc92c));
+		strcpy((char *)ADDR(g_typedArenaName), g_chatLine);
 		if (g_typedArenaName)
 			arena_joinListed(99999);
 	}

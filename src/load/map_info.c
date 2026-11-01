@@ -480,12 +480,12 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		u8 *normals = GAME_VAR(u8 *, l + 0x44) = pool_take(s, size);
 		w = GAME_VAR(int, l + 0x20) + 1;
 		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++) {
-			memcpy(normals + (w * r) * 12, (const void *)IMG(0xa0e7d8), 12);
-			memcpy(normals + (w * r + GAME_VAR(int, l + 0x20)) * 12, (const void *)IMG(0xa0e7d8), 12);
+			memcpy(normals + (w * r) * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + (w * r + GAME_VAR(int, l + 0x20)) * 12, (const void *)OBJ(g_vecUnitY), 12);
 		}
 		for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {
-			memcpy(normals + c * 12, (const void *)IMG(0xa0e7d8), 12);
-			memcpy(normals + ((GAME_VAR(int, l + 0x20) + 1) * GAME_VAR(int, l + 0x1c) + c) * 12, (const void *)IMG(0xa0e7d8), 12);
+			memcpy(normals + c * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + ((GAME_VAR(int, l + 0x20) + 1) * GAME_VAR(int, l + 0x1c) + c) * 12, (const void *)OBJ(g_vecUnitY), 12);
 		}
 		for (int r = 1; r < GAME_VAR(int, l + 0x1c); r++)
 			for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {

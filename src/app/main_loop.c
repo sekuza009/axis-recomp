@@ -1151,7 +1151,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	/* the camera */
 	S(int, 0x233c9fc) = S(int, 0x2340c64) >= 0;
 	if (S(int, 0x233c9fc) == 0) {
-		free_camera(s, mv, S(int, 0x234325f) ? IMG(0xa0e7d8) : 0, &move);
+		free_camera(s, mv, S(int, 0x234325f) ? OBJ(g_vecUnitY) : 0, &move);
 		turn_view(s);
 	} else {
 		int i = S(int, 0x233cc10);
@@ -1276,7 +1276,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
 	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
-	crt_fprintf(f, format, (const char *)IMG(0x67fb44), g_missionStage, g_fragLimit, g_timeLimit, (const char *)IMG(0x4dedd8));
+	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, (const char *)IMG(0x4dedd8));
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;

@@ -1,0 +1,30 @@
+# the ErrorLog records of the classes (a vtable and the name): ErrorLog_ctor in app/statics.c
+# texts and records
+0x9dc92c,char,0x400,g_chatLine,the chat line being typed (memset 0x400)
+0x9dd570,char,0x1e,g_joinedTitleName,the joined game's title record: the name (laid out as 0x4de700)
+0x4de700,char,0x1e,g_titleName,the title record's name (+0x1e the level: g_titleLevel)
+0x9dd1d8,char,0x1e,g_accountName,the login form's name (30 bytes)
+0x9dd1f6,char,0xc,g_accountPassword,(12 bytes)
+0x9dd202,char,0xc,g_accountPasswordRepeat,(12 bytes)
+0x9dd20e,char,0x28,g_accountEmail,(40 bytes)
+0x4ded20,char,0x20,g_playerName,the arena player's record: the name (32 bytes)
+0x4dedb0,char,0x20,g_cfgPlayerName,axis.cfg's player name (default "PLAYER")
+0x5b1b30,char,0x20,g_roomRecName,the room record's name (fields from +0x20: g_roomRec*)
+0x4df9c8,char,0x20,g_roomSettingsName,the room's settings record (GameSettings): its name
+0x4db528,char,0x20,g_newArenaName,the new arena's settings record: its name
+0x67fb44,char,0x20,g_mapTitle,the map's title (TITLE: %s)
+0x9f8fe8,char,0x20,g_profileName,the profile's name (written 0x20 bytes)
+0x4db560,char,0x20,g_arenaName,(0x20 bytes)
+0xa0b43c,char,0x10,g_localAddress,the local IP address text (memset 16)
+0x9dae7c,char,1,g_dataDir,the data folder's path (extent unknown)
+0x4dcfe0,u8,0x90,g_savedColourChoices,the ARM CENTER's colour choices kept (memcpy 0x90)
+# colours
+0x76d438,Colour,1,g_textColour,the menus' text colour
+0x9da480,Colour,1,g_rectColour,the rectangles' colour
+0x9dcec0,u32,4,g_roomBright,the room's bright colour (r g b a)
+0x9dd338,u32,4,g_roomDim,the room's dim colour
+0x9f8eb0,u32,4,g_profileColour,
+# vectors
+0xa0e7b8,float,3,g_vecZero2,a zero vector (vec_initZero)
+0xa0e7d8,float,3,g_vecUnitY,(0 1 0: vec_initUp)
+0xa0e7f8,float,3,g_vecUnitX,(1 0 0: vec_initAxisX)

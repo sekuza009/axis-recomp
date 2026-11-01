@@ -100,7 +100,7 @@ void (menuState100_intro)(void)
 	draw_logo(1);
 	glFinish();
 	SwapBuffers(g_desktopDC);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0, 0, 0x3f800000);   /* red text */
+	set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red text */
 	g_loadStep++;
 	frontEnd_drawProgress();
 	timer_waitFrames(5.0);
@@ -157,7 +157,7 @@ void (mapSelect_drawDialog)(void)
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(21, "SELECT RECORDED GAME"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
@@ -177,7 +177,7 @@ void (mapSelect_drawDialog)(void)
 			set_colour_bits(g_rectColour, 0x3f800000, 0, 0, 0x3f800000);
 			menu_drawRect(X0 + 0x12, y + 2, X0 + 0x1d, y + 0xd, 1);
 		}
-		set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+		set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 		text_draw16(X0 + 0x28, k ? y : y + 2, (const char *)(MSG(22, "AUTO REPEAT") + k * 0x80));   /* (the second label 2 higher) */
 	}
 	for (int row = 0; row < 2; row++)
@@ -190,7 +190,7 @@ void (mapSelect_drawDialog)(void)
 			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;
 			menu_drawWideButton(x + 0x64, y, x + 0xdc, y + 0x20, 1);
 			const u32 *colour = lit ? bright : dim;
-			set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+			set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80));
 		}
 	if (hovered > 7 && hovered < 0x12) {
@@ -490,8 +490,8 @@ void (menuState600_setup)(void)
 /* 0x44aee0: the room's text (0x9dd570) copied to 0x4de700, and profile_checkAndSendRecord when it is not empty */
 void (room_keepText)(void)
 {
-	const char *from = (const char *)IMG(0x9dd570);
-	char *to = (char *)IMG(0x4de700);
+	const char *from = g_joinedTitleName;
+	char *to = g_titleName;
 	int i = 0;
 	do
 		to[i] = from[i];

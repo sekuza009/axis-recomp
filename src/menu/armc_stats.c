@@ -26,7 +26,7 @@ typedef long double X;
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 static const u32 k_cyan[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 };
 static const u32 k_yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
-static void colour(const u32 *c) { set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]); }
+static void colour(const u32 *c) { set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]); }
 
 /* the section being drawn: its layout, its corner (the left of the stats box, X1 - 0xdc, and Y0 + 0x40), and the
    original's two text buffers in their order (a bonus long enough runs on into the line) */
@@ -482,7 +482,7 @@ void (armc_drawStatsPanel)(void)
 
 	for (int i = 0; i < 6; i++) {
 		const u32 *c = slot == i ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
+		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		if (i == 5)
 			text_drawBox16(PANEL_X0 + 0x10, PANEL_Y0 + 0x13d, PANEL_X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
 		else

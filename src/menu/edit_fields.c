@@ -59,7 +59,7 @@ static void caret(int x, int y)
 void (arena_editName)(void)
 {
 	edit_start(0x10);
-	line_set((const char *)IMG(0x4db560));
+	line_set(g_arenaName);
 	caret(PANEL_X(ARENA_CREATE) + 0xc2, PANEL_Y(ARENA_CREATE) + 100);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -72,7 +72,7 @@ void (arena_editName)(void)
 void (arena_editComment)(void)
 {
 	edit_start(0x1e);
-	line_set((const char *)IMG(0x4db528));
+	line_set(g_newArenaName);
 	caret(PANEL_X(ARENA_SETUP) + 0xa4, PANEL_Y(ARENA_SETUP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -138,7 +138,7 @@ void (arena_editMessage)(void)
 void (field_editComment)(void)
 {
 	edit_start(0x1e);
-	line_set((const char *)IMG(0x4df9c8));
+	line_set(g_roomSettingsName);
 	caret(PANEL_X(ROOM_TOP) + 0xa4, PANEL_Y(ROOM_TOP) + 0x32);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -164,7 +164,7 @@ void (field_editGameName)(void)
 {
 	edit_start(0x10);
 	line_clear();
-	line_set((const char *)IMG(0x9dd1d8));
+	line_set(g_accountName);
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x58);
 	g_menuFade = 5.0f;
 	g_chatLength = line_length();
@@ -180,7 +180,7 @@ void (field_editGamePassword)(void)
 	edit_start(0xc);
 	line_clear();
 	if (g_retypePassword == 0)
-		line_set((const char *)IMG(0x9dd1f6));
+		line_set(g_accountPassword);
 	caret(PANEL_X(ROOM_GAME) + 200, PANEL_Y(ROOM_GAME) + 0x88);
 	g_chatLength = line_length();
 	g_menuFade = 5.0f;
@@ -209,9 +209,9 @@ static void edit_rule(int field, const char *text, int y, int maxLength, int fla
 }
 
 void (account_editOldPassword)(void) { edit_rule(0, (const char *)IMG(0x9dd6d8), 0x50, 0xc, 1); }
-void (account_editPassword)(void) { edit_rule(1, (const char *)IMG(0x9dd1f6), 0x6c, 0xc, 1); }
-void (account_editPasswordRepeat)(void) { edit_rule(2, (const char *)IMG(0x9dd202), 0x88, 0xc, 1); }
-void (account_editEmail)(void) { edit_rule(3, (const char *)IMG(0x9dd20e), 0xa4, 0x32, 0); }
+void (account_editPassword)(void) { edit_rule(1, g_accountPassword, 0x6c, 0xc, 1); }
+void (account_editPasswordRepeat)(void) { edit_rule(2, g_accountPasswordRepeat, 0x88, 0xc, 1); }
+void (account_editEmail)(void) { edit_rule(3, g_accountEmail, 0xa4, 0x32, 0); }
 
 /* 0x434320: a message (8), starting empty */
 void (field_editMessage)(void)
@@ -258,8 +258,8 @@ void (editField_readTyping)(void)
 int (loginForm_openField)(int k)
 {
 	static const struct { u32 editing, text; int bufferLength, maxLength, flag; } field[4] = {
-		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 0x1e, 0x10, 0 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 0xc, 0xc, 1 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 0xc, 0xc, 1 },
-		{ ADDR(g_typingAccountEmail), IMG(0x9dd20e), 0x28, 0x28, 0 } };
+		{ ADDR(g_typingAccountName), OBJ(g_accountName), 0x1e, 0x10, 0 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 0xc, 0xc, 1 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 0xc, 0xc, 1 },
+		{ ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 0x28, 0x28, 0 } };
 	input_releaseKeyboard();
 	line_clear();
 	g_paused = 1;

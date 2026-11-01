@@ -75,7 +75,7 @@ void (armc_loadSavedMech)(void)
 	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItem1);
 	g_mechItem5 = (*(u32 *)&g_savedMechItem5);
 	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechWeapons);
-	copy(g_armcColourBits, (const u32 *)IMG(0x4dcfe0), 0x90 / 4);
+	copy(g_armcColourBits, (const u32 *)OBJ(g_savedColourChoices), 0x90 / 4);
 }
 
 /* 0x40f830: 1 if item list entry i is a colour part (27 and up) already in one of the two item slots */

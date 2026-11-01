@@ -736,7 +736,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	if (n <= 1) {
 		memset(rec, 0, sizeof rec);
 		memcpy(&rec[2], at, 12);
-		memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
+		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 		float size = f32(fld_m((const float *)(p + 0x80)));
 		memcpy(&rec[11], &size, 4);
 		particle_spawn(s, rec);
@@ -751,7 +751,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(fadd_m(fld_m(&y), &at[1])), f32(fadd_m(fld_m(&z), &at[2])) };
 		rec[0] = rec[1] = 0;
 		memcpy(&rec[2], pos, 12);
-		memcpy(&rec[5], (const void *)IMG(0xa0e7b8), 12);
+		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 		rec[8] = rec[9] = rec[10] = 0;
 		float size = f32(fld_m((const float *)(p + 0x80)));
 		memcpy(&rec[11], &size, 4);

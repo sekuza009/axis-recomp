@@ -37,7 +37,7 @@ void (setup_drawSoundPage)(void)
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y1 - 0x20, 0);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(171, "SETUP SOUND"));
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -65,7 +65,7 @@ void (setup_drawSoundPage)(void)
 			g_setupPressed = -1;
 		}
 	}
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x3c, (const char *)MSG(172, "EFFECT SOUND"));
 	for (int k = 0; k < 3; k++)
 		text_draw8(X0 + 0x8c, Y0 + 0x9c + k * 0x28, (const char *)(MSG(173, "BGM") + k * 0x80));
@@ -75,12 +75,12 @@ void (setup_drawSoundPage)(void)
 		const char *name = (const char *)(MSG(176, "OFF") + value * 0x80);
 		int y = Y0 + 0x9c + k * 0x28;
 		if (hovered == 5 + k) {
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01: the shadow */
+			set_colour_bits(g_textColour, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01: the shadow */
 			text_draw8(X0 + 0x12d, y + 2, name);
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
+			set_colour_bits(g_textColour, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
 			text_draw8(X0 + 0x12c, y + 1, name);
 		} else {
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 			text_draw8(X0 + 0x12c, y, name);
 		}
 	}
@@ -93,7 +93,7 @@ void (setup_drawSoundPage)(void)
 		int bx = X0 + k * 0x8c;
 		menu_drawWideButton(bx + 0x90, Y0 + 0x113, bx + 0x108, Y0 + 0x133, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(bx + 0x90, Y0 + 0x11b, bx + 0x108, (const char *)(MSG(178, "$[0] ACCEPT") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -122,7 +122,7 @@ void (setup_drawOptionsDialog)(void)
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(181, "SETUP GRAPHIC"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
@@ -135,14 +135,14 @@ void (setup_drawOptionsDialog)(void)
 	value[0] = GAME_VAR(const char *, 0x4b04cc + g_setupResolution * 4);
 	for (int k = 1; k < 7; k++)
 		value[k] = (const char *)(RELOC(names[k - 1]) + GAME_VAR(int, 0x4ddba4 + (k - 1) * 4) * 0x32);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	for (int k = 0; k < 7; k++)
 		text_draw8(X0 + 0xe6, Y0 + 0x44 + k * 0x28, value[k]);
 	if (hovered >= 0 && hovered <= 6) {
 		int y = Y0 + 0x44 + hovered * 0x28;
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01: the shadow */
+		set_colour_bits(g_textColour, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01: the shadow */
 		text_draw8(X0 + 0xe6, y, value[hovered]);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
 		text_draw8(X0 + 0xe5, y - 1, value[hovered]);
 	}
 	for (int k = 0; k < 2; k++) {
@@ -154,7 +154,7 @@ void (setup_drawOptionsDialog)(void)
 		int bx = X0 + k * 0x8c;
 		menu_drawWideButton(bx + 0x64, Y1 - 0x40, bx + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(bx + 0x64, Y1 - 0x38, bx + 0xdc, (const char *)(MSG(189, "$[0] ACCEPT") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -187,7 +187,7 @@ static void key_tab(int tab)
 	const u32 *bright = (const u32 *)IMG(0x4de048);
 	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	int none = g_dikNone;
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x46 + tab * 0x78, Y0 + 0x12, (const char *)(MSG(202, "$[0] MOVE") + tab * 0x80));
 	for (int r = 0; r < rows[tab]; r++)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(RELOC(labels[tab]) + r * 0x80));
@@ -195,13 +195,13 @@ static void key_tab(int tab)
 		const int *slot = (const int *)(IMG(0x4de0c0) + key_rows[tab][r] * 8);
 		int y = Y0 + 0x5c + r * 0x18;
 		if (tab == 2 && (r == 4 || r == 9)) {
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0, 0, 0x3f800000);   /* red */
+			set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);   /* red */
 			if (slot[0] != none) {
 				text_draw16(X0 + 0xc8, y, key_name[slot[0]]);
 				text_draw16(X0 + 0x14a, y, key_name[slot[0]]);
 			}
 			if (r == 4)
-				set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+				set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 			continue;
 		}
 		for (int k = 0; k < 2; k++)
@@ -221,7 +221,7 @@ static void settings_tab(void)
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
 	const u32 *bright = (const u32 *)IMG(0x4de048);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)MSG(205, "MO$[0] USE"));
 	for (int r = 0; r < 3; r++)
 		text_draw8(X0 + 0x30, Y0 + 0x5c + r * 0x18, (const char *)(MSG(261, "INVERT MOUSE") + r * 0x80));
@@ -297,14 +297,14 @@ void (setup_crosshairScreen)(void)
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x30, X1 - 0x20, Y0 + 0x30);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_draw8(X0 + 0x30, Y0 + 0x3c, (const char *)MSG(206, "KEY FUNCTION"));
 	text_draw8(X0 + 0xc8, Y0 + 0x3c, (const char *)MSG(207, "PRIMARY-KEY"));
 	text_draw8(X0 + 0x14a, Y0 + 0x3c, (const char *)MSG(208, "SECONDARY-KEY"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x50, X1 - 0x20, Y0 + 0x50);
 	menu_drawLine(X0 + 0x20, Y1 - 0x38, X1 - 0x20, Y1 - 0x38);
-	set_colour_bits((Colour *)IMG(0x76d438), dim[0], dim[1], dim[2], dim[3]);
+	set_colour_bits(g_textColour, dim[0], dim[1], dim[2], dim[3]);
 	for (int k = 0; k < 4; k++)
 		text_draw16(X0 + 0x46 + k * 0x78, Y0 + 0x12, (const char *)(MSG(202, "$[0] MOVE") + k * 0x80));
 	int editing = g_bindWaiting, tab = g_bindPage;
@@ -334,10 +334,10 @@ void (setup_crosshairScreen)(void)
 		int bx = X0 + 0x50 + k * 0x8c;
 		menu_drawWideButton(bx, Y1 - 0x30, bx + 0x78, Y1 - 0x10, 1);
 		const u32 *c = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
+		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		text_drawBox16(bx, Y1 - 0x28, bx + 0x78, (const char *)(MSG(209, "$[0] ACCEPT") + k * 0x80));
 	}
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (over_row && !editing)
 		text_drawBox16(0, 0x1bc, 0x280, (const char *)MSG(212, "Press ENTER or CLICK to change"));
 	if (editing)
@@ -734,7 +734,7 @@ static void caption(u32 captions, int on)
 {
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_drawBox16(0, 0x1bc, 0x280, (const char *)(RELOC(captions) + on * 0x80));
 }
 
@@ -859,7 +859,7 @@ void (menu_mainMenu)(void)
 		gfx_setProjection2D3D(2);
 		glLoadIdentity();
 		float alpha = g_hint > k_1f ? 1.0f : g_hint;
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, BITS(alpha));
 		text_drawBox16(0, 0x1d0, 0x280, (const char *)STR(0x4b2a98, "AUTOPLAY-F1"));
 	}
 	glDisable(GL_TEXTURE_2D);

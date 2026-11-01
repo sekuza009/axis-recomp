@@ -313,8 +313,8 @@ int (chat_createEdit)(int chars)
 	}
 	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
 	IMPORT(0x4a935c, void *, void *)(g_hChatEdit);   /* SetFocus */
-	u32 length = strlen((const char *)IMG(0x9dc92c));
-	SendMessageA(g_hChatEdit, 0xc, 0, IMG(0x9dc92c));   /* WM_SETTEXT */
+	u32 length = strlen(g_chatLine);
+	SendMessageA(g_hChatEdit, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
 	return SendMessageA(g_hChatEdit, 0xb1, length, length);   /* EM_SETSEL */
 }
 
@@ -473,7 +473,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 static void chat_close(void *edit, int sent)
 {
 	if (sent)
-		SendMessageA(edit, 0xd, 0x80, IMG(0x9dc92c));   /* WM_GETTEXT */
+		SendMessageA(edit, 0xd, 0x80, OBJ(g_chatLine));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */

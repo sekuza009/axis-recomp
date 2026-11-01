@@ -156,7 +156,7 @@ u32 (cfg_parsePlayer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	FPUTS(STR(0x4b1830, "set_player name "));
-	FPUTS(IMG(0x4dedb0));
+	FPUTS(OBJ(g_cfgPlayerName));
 	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf */
 	FPUTS(STR(0x4b1818, "set_player color "));
 	int corp = g_playerCorporation;
@@ -235,7 +235,7 @@ u32 (cfg_keyBindings)(void *f)
 u32 (cfg_loadAxisCfg)(void)
 {
 	char path[0x184];
-	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcpy(path, g_dataDir);
 	strcat(path, (const char *)STR(0x4b2198, "\\axis.cfg"));   /* the file's name */
 	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
 	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
@@ -380,7 +380,7 @@ int (app_checkLauncherRunning)(void)
    0x48-byte profile records from 0x9f6848. Without the file the count is 0 ---- */
 static void profiles_path(char *path)
 {
-	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcpy(path, g_dataDir);
 	strcat(path, (const char *)STR(0x4b2ab4, "\\axisuser.dat"));
 }
 
@@ -404,7 +404,7 @@ static u32 profiles_write(void *f)
 	crt_fwrite((void *)ADDR(g_currentProfile), 4, 1, f);
 	crt_fwrite((void *)ADDR(g_profileListTop), 4, 1, f);
 	crt_fwrite((void *)ADDR(g_profileListRow), 4, 1, f);
-	crt_fwrite((void *)IMG(0x9f8fe8), 0x20, 1, f);
+	crt_fwrite((void *)OBJ(g_profileName), 0x20, 1, f);
 	for (int i = 0; i < g_profileCount; i++)
 		crt_fwrite((void *)(IMG(0x9f6848) + i * 0x48), 0x48, 1, f);
 	return fclose(f);
@@ -431,8 +431,8 @@ u32 (profile_delete)(void)
 	void *f = profiles_create();
 	if (!f)
 		return 0;
-	memset((void *)IMG(0x9f8fe8), 0, 0x20);
-	strcpy((char *)IMG(0x9f8fe8), (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48));
+	memset((void *)OBJ(g_profileName), 0, 0x20);
+	strcpy(g_profileName, (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48));
 	return profiles_write(f);
 }
 
@@ -443,7 +443,7 @@ u32 (profile_delete)(void)
 static void *mis_open(void)
 {
 	char path[0x184];
-	strcpy(path, (const char *)IMG(0x9dae7c));
+	strcpy(path, g_dataDir);
 	strcat(path, (const char *)STR(0x4b2aa4, "\\axis.mis"));
 	return crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 }
@@ -539,7 +539,7 @@ u32 (cfg_parseServer)(void *f)
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
 	                              STR(0x4b1904, "ROCKET ARENA\n"), STR(0x4b18f0, "TEAM ROCKET ARENA\n"), STR(0x4b18dc, "GLADIATOR ARENA\n"), STR(0x4b18c4, "TEAM GLADIATOR ARENA\n"), STR(0x4b18b0, "KING ON THE HILL\n"), STR(0x4b18a0, "PLATOON MODE\n"), STR(0x4b1888, "ACCEPT ADVANCED MODE\n") };
-	const u8 *me = (const u8 *)IMG(0x4ded20);
+	const u8 *me = (const u8 *)OBJ(g_playerName);
 	char number[12];
 	FPUTS(STR(0x4b19f0, "set_server name "));
 	FPUTS(me);
@@ -642,7 +642,7 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? STR(0x4b1430, "msgkor.dat") : STR(0x4b1424, "msgeng.dat"), STR(0x4ad5e0, "rt"),
+	void *f = data_open(OBJ(g_dataDir), g_language == 1 ? STR(0x4b1430, "msgkor.dat") : STR(0x4b1424, "msgeng.dat"), STR(0x4ad5e0, "rt"),
 	                    STR(0x4b13f8, "Text Message Data File Not Found"));
 	char *message = (char *)MSG(0, "PRESS ENTER OR CLICK MOUSE");
 	for (;;) {
@@ -671,8 +671,8 @@ u32 (data_loadMessages)(void)
 /* the current profile's name as axisuser.dat keeps it */
 static void set_current_name(void)
 {
-	memset((void *)IMG(0x9f8fe8), 0, 0x20);
-	strcpy((char *)IMG(0x9f8fe8), pilot_name(g_currentProfile));
+	memset((void *)OBJ(g_profileName), 0, 0x20);
+	strcpy(g_profileName, pilot_name(g_currentProfile));
 }
 
 static void enter_save_folder(void)
@@ -860,14 +860,14 @@ u32 (profile_create)(void)
 	crt_fread((void *)ADDR(g_currentProfile), 4, 1, f);
 	crt_fread((void *)ADDR(g_profileListTop), 4, 1, f);
 	crt_fread((void *)ADDR(g_profileListRow), 4, 1, f);
-	crt_fread((void *)IMG(0x9f8fe8), 0x20, 1, f);
+	crt_fread((void *)OBJ(g_profileName), 0x20, 1, f);
 	if (crt_chdir((const char *)STR(0x4b2b04, "save "))) {
 		GAME_CDECL(0x49f94a, int, const char *)((const char *)STR(0x4b2adc, "save"));   /* mkdir("save") */
 		crt_chdir((const char *)STR(0x4b2adc, "save"));
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	for (int i = 0; i < g_profileCount; i++)
-		if (str_order((const char *)(IMG(0x9f684c) + i * 0x48), (const char *)IMG(0x9f8fe8)) == 0) {
+		if (str_order((const char *)(IMG(0x9f684c) + i * 0x48), g_profileName) == 0) {
 			g_currentProfile = i;
 			break;
 		}
@@ -879,7 +879,7 @@ u32 (profile_create)(void)
    0x5c-byte entries into 0x9db998. Returns fclose's eax */
 u32 (data_loadSkirmishInfo)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), STR(0x4b1554, "skirmish.dat"), STR(0x4ad170, "rb"), STR(0x4b1534, "Skirmish Data File Not Found"));
+	void *f = data_open(OBJ(g_dataDir), STR(0x4b1554, "skirmish.dat"), STR(0x4ad170, "rb"), STR(0x4b1534, "Skirmish Data File Not Found"));
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
 		fclose(f);
@@ -906,7 +906,7 @@ u32 (data_loadSkirmishInfo)(void)
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
 void (data_loadPilotProfiles)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? STR(0x4b14b4, "profkor.dat") : STR(0x4b14a8, "profeng.dat"), STR(0x4ad170, "rb"),
+	void *f = data_open(OBJ(g_dataDir), g_language == 1 ? STR(0x4b14b4, "profkor.dat") : STR(0x4b14a8, "profeng.dat"), STR(0x4ad170, "rb"),
 	                    STR(0x4b1480, "Character Profile Data File Not Found"));
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
@@ -1069,7 +1069,7 @@ void (cfg_readLines)(void *f)
 	char value[0x84];
 	read_value(f, value, 1);
 	str_dropLast(value);
-	strcpy((char *)IMG(0x4dedb0), value);
+	strcpy(g_cfgPlayerName, value);
 	read_value(f, value, 0);
 	if (!strcmp(value, (const char *)STR(0x4b21b8, "RED")))        /* RED */
 		g_playerCorporation = 0;
@@ -1148,7 +1148,7 @@ void (cfg_gameTypeNames)(void *f)
 		switch (n) {
 		case 0:
 			str_dropLast(b.value);
-			strcpy((char *)IMG(0x4ded20), b.value);
+			strcpy(g_playerName, b.value);
 			break;
 		case 1:
 			v = (signed char)crt_atoi(b.value);
@@ -1243,10 +1243,10 @@ void (cfg_parseKeyNames)(void *f)
 void (cfg_writeDefaultAxisCfg)(void)
 {
 	struct { char line[0x84]; char path[0x184]; } s;
-	strcpy(s.path, (const char *)IMG(0x9dae7c));
+	strcpy(s.path, g_dataDir);
 	strcat(s.path, (const char *)STR(0x4b2198, "\\axis.cfg"));
-	memset((void *)IMG(0x4dedb0), 0, 32);
-	memset((void *)IMG(0x4ded20), 0, 32);
+	memset((void *)OBJ(g_cfgPlayerName), 0, 32);
+	memset((void *)OBJ(g_playerName), 0, 32);
 	void *f = crt_fopen(s.path, (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 		__asm__("" : "=m"(s.line));   /* (left as the stack holds it until fgets writes it) */
@@ -1270,10 +1270,10 @@ void (cfg_writeDefaultAxisCfg)(void)
 	(*(int *)&g_videoMode) = 0;
 	g_showFps = 0;
 	g_cfgSimpleMenu = 0;
-	strcpy((char *)IMG(0x4dedb0), (const char *)STR(0x4ad4b0, "PLAYER"));
+	strcpy(g_cfgPlayerName, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_playerCorporation = 0;
 	g_playerSex = 0;
-	strcpy((char *)IMG(0x4ded20), (const char *)STR(0x4ad4a4, "AXIS ARENA"));
+	strcpy(g_playerName, (const char *)STR(0x4ad4a4, "AXIS ARENA"));
 	g_soundVolume = 100;
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
@@ -1295,7 +1295,7 @@ void (cfg_writeDefaultAxisCfg)(void)
 void (profile_scanSaves)(void)
 {
 	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
-		crt_chdir((const char *)IMG(0x9dae7c));
+		crt_chdir(g_dataDir);
 		IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
 		crt_chdir((const char *)STR(0x4b2a80, ".."));
 		return;
@@ -1337,7 +1337,7 @@ void (profile_scanSaves)(void)
 	profile_create();
 	profile_loadList(valid);
 	for (int i = 0; i < count; i++)
-		if (!strcmp((const char *)IMG(0x9f684c) + i * 0x48, (const char *)IMG(0x9f8fe8))) {
+		if (!strcmp((const char *)IMG(0x9f684c) + i * 0x48, g_profileName)) {
 			g_currentProfile = i;
 			return;
 		}
@@ -1403,7 +1403,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)IMG(0x9dad94), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x67fb44), 1, 0x20, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, FIELD(void *, s, 0x2340d08));
 	value = FIELD(int, s, 0x22e7180);
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));

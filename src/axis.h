@@ -142,6 +142,8 @@ static inline int code_matches(u32 addr, const char *pattern)
 /* a named global's address (src/globals.h): the original's in the harness, its place in AxisRC.exe - a constant
    either way (in AxisRC.exe every name is a member of g_rdata / g_data or IMG()'s place: src/data/layout_names.h) */
 #define ADDR(name) ((u32)&(name))
+/* an array / buffer / record of src/objects.h (a pointer name) as an address number */
+#define OBJ(name) ((u32)(name))
 /* a text of the image by its address, with the text for the reader (tools/img_strings.py checks it against the
    data): STR(0x4b4418, "Data/Component.dat"); MSG(n, text) is line n of the message table (0x80 bytes a line from
    0x74de24, read from msgeng.dat at start-up). Both the address as IMG() gives it */

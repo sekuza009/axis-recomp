@@ -112,7 +112,7 @@ void (loading_draw)(u32 progress)
 	int row = 2;
 	int mode = *(int *)(g_loadGame + 8);
 	if (mode == 1 || mode == 3) {
-		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), (const char *)IMG(0x67fb44));
+		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), g_mapTitle);
 		info_line(row, line);
 		row = 4;
 	}
@@ -296,7 +296,7 @@ int (app_checkCdAndLoad)(void *instance)
 	(*(u32 *)&g_menuCameraHeight) = 0x43c80000;   /* 400 */
 	g_menuFrameCount = 0;
 	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
-	set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, 0x3f800000);
+	set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits((Colour *)IMG(0x76d350), 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
@@ -386,7 +386,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 				sys_fatalError((char *)IMG(0xa0e778), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)IMG(0x9dad94), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x67fb44), 1, 0x20, G(void *, 0x2340d08));
+			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, G(void *, 0x2340d08));
 			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, G(void *, 0x2340d08));

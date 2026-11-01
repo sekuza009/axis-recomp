@@ -14,7 +14,7 @@
 #define glVertex(x, y) menu_vertex(x, y)
 
 static const u32 *const bright = (const u32 *)IMG(0x4dbc58), *const dim = (const u32 *)IMG(0x4dc1d0);
-#define TEXT(c) set_colour_bits((Colour *)IMG(0x76d438), (c)[0], (c)[1], (c)[2], (c)[3])
+#define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<0x756da4> <the name of 0x4dceac (0x751924)>" (the texture bound) */
 static void mode_box(void)
@@ -348,7 +348,7 @@ void (armc_drawBuildScreen)(void)
 	TEXT(white);
 	for (int k = 0; k < 16; k++)
 		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(MSG(301, "SLOT TYPE") + k * 0x80));
-	set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
 	strcpy(text, (const char *)(MSG(321, "HAND") + STAT(int, 0) * 0x80));

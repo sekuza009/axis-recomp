@@ -219,7 +219,7 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 {
 	if (!g_soundOn || !GAME_VAR(void *, 0xa0e02c + index * 4))
 		return;
-	const float *up = (const float *)IMG(0xa0e7d8);
+	const float *up = g_vecUnitY;
 	float d[3], v[3], c[3];
 	for (int k = 0; k < 3; k++)
 		d[k] = f32(fsub_m(fld_m(pos + k), listener + k));

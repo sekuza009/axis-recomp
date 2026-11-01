@@ -15,7 +15,7 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 /* 0x4050f0: "PLAYER" (0x4ad4b0) and both fields 0 */
 void (cfg_defaultPlayerName)(void)
 {
-	copy_name(IMG(0x4db560), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
+	copy_name(OBJ(g_arenaName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_arenaCorporation = 0;
 	g_arenaSex = 0;
 }
@@ -24,14 +24,14 @@ void (cfg_defaultPlayerName)(void)
 void (arena_copyProfile)(void)
 {
 	g_arenaSex = g_playerSex;
-	copy_name(IMG(0x4db560), 32, (const char *)IMG(0x4dedb0));
+	copy_name(OBJ(g_arenaName), 32, g_cfgPlayerName);
 	g_arenaCorporation = g_playerCorporation;
 }
 
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
 void (app_setDataPaths)(void)
 {
-	copy_name(IMG(0x9dae7c), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
+	copy_name(OBJ(g_dataDir), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
 	copy_name(IMG(0x4dedf8), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
 	copy_name(IMG(0x680bc4), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
@@ -40,7 +40,7 @@ void (app_setDataPaths)(void)
 /* 0x431560: the line emptied, in input mode mode */
 void (menu_clearInputBuffer)(int mode)
 {
-	memset((void *)IMG(0x9dc92c), 0, 0x400);
+	memset((void *)OBJ(g_chatLine), 0, 0x400);
 	g_chatLength = 0;
 	g_typedLength = mode;
 }
@@ -50,7 +50,7 @@ void (chat_pushHistory)(void)
 {
 	memcpy((void *)IMG(0x67f738), (void *)IMG(0x67f338), 0x400);
 	memcpy((void *)IMG(0x67f338), (void *)IMG(0x67ef38), 0x400);
-	memcpy((void *)IMG(0x67ef38), (void *)IMG(0x9dc92c), 0x400);
+	memcpy((void *)IMG(0x67ef38), (void *)OBJ(g_chatLine), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
@@ -96,7 +96,7 @@ void (mech_setEmpty)(void)
 	g_savedMechParts = g_savedMechChest = g_savedMechArm =
 		g_savedMechLeg = g_savedMechBooster = 0;
 	g_savedMechItem2 = 0;
-	for (u32 p = IMG(0x4dcfe0); p < IMG(0x4dd058); p += 24)
+	for (u32 p = OBJ(g_savedColourChoices); p < (OBJ(g_savedColourChoices) + 0x78); p += 24)
 		memcpy((void *)RELOC(p), colour, 24);
 }
 
@@ -114,7 +114,7 @@ void (mech_unpackFromRecord)(void)
 		GAME_VAR(int, 0x4dcf20 + i * 4) = rec[7 + i];
 	g_savedMechItem1 = rec[6];
 	g_savedMechWeapons = rec[5];
-	memcpy((void *)IMG(0x4dcfe0), (void *)IMG(0x9dd603), 0x90);
+	memcpy((void *)OBJ(g_savedColourChoices), (void *)IMG(0x9dd603), 0x90);
 }
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
@@ -137,7 +137,7 @@ void (mech_loadFromProfile)(void)
 			GAME_VAR(int, 0x9f1a38 + o) = 0;
 		if (!(GAME_VAR(float, 0x9f1a3c + o) >= 0.0f))
 			GAME_VAR(int, 0x9f1a3c + o) = 0;
-		memcpy((void *)(IMG(0x4dcfe0) + o), (void *)(IMG(0x9f1a34) + o), 0x18);
+		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)(IMG(0x9f1a34) + o), 0x18);
 	}
 }
 
@@ -155,7 +155,7 @@ void (mech_storeToProfile)(void)
 	g_profileMechItem1 = g_savedMechItem1;
 	g_profileMechItem5 = g_savedMechItem5;
 	g_profileMechItem0 = g_savedMechWeapons;
-	memcpy((void *)IMG(0x9f1a34), (void *)IMG(0x4dcfe0), 0x90);
+	memcpy((void *)IMG(0x9f1a34), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
@@ -469,7 +469,7 @@ u32 (mission_choose)(void)
 	int sel = g_missionShown;
 	u32 t = (u32)sel * 0x5c;
 	g_missionStage = sel;
-	memcpy((void *)IMG(0x67fb44), (const void *)(IMG(0x907b30) + sel * 32), 32);
+	memcpy((void *)OBJ(g_mapTitle), (const void *)(IMG(0x907b30) + sel * 32), 32);
 	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
@@ -524,7 +524,7 @@ u32 (chat_closeLine)(int ok)
 		r = GAME_FN(chat_pushHistory, 0x4315c0, u32, void)();   /* chat_pushHistory: into the history */
 	} else {
 		if (g_typedLength > 0)
-			memset((void *)IMG(0x9dc92c), 0, g_typedLength);
+			memset((void *)OBJ(g_chatLine), 0, g_typedLength);
 		input_resetKeys();
 		r = (u32)input_initKeyboard(g_hWndMain);
 	}
@@ -574,13 +574,13 @@ u32 (mapSelect_drawNames)(void)
 {
 	u32 r = 0;
 	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
+		set_colour_bits(g_textColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
 		int map = g_mapSelectFirst + i;
 		if (GAME_VAR(int, 0x9dda88 + map * 0x44 + 0x40)) {
-			set_colour_bits((Colour *)IMG(0x9da480), 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
+			set_colour_bits(g_rectColour, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
 			menu_drawRect(g_mapSelectLeft + 0x20, g_mapSelectTop + dy + 0x2b, g_mapSelectRight - 0x50,
 			              g_mapSelectTop + dy + 0x3d, 1);
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
+			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
 		}
 		map = g_mapSelectFirst + i;
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,

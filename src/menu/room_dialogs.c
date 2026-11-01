@@ -37,7 +37,7 @@ void (room_openDialog4d)(void)
 {
 	set_box(ADDR(g_loginFormLeft), 0x1e, 0x32, 0x262, 0x1ae);
 	loginDialog_layout();
-	memset((void *)IMG(0x9dd1d8), 0, 0x54);
+	memset((void *)OBJ(g_accountName), 0, 0x54);
 	dialog_opened(0x4d);
 	g_openLoginName = 1;
 	g_roomLeaveDialog = 0;
@@ -49,10 +49,10 @@ void (room_openDialog42)(void)
 	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), IMG(0x4e1868), IMG(0x68039c) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
-	memset((void *)IMG(0x9dd1d8), 0, 7 * 4 + 2 + 12);
+	memset((void *)OBJ(g_accountName), 0, 7 * 4 + 2 + 12);
 	g_roomState = 0x42;
 	g_retypePassword = 1;
-	strcpy((char *)IMG(0x9dd1d8), (const char *)IMG(0x9dd570));
+	strcpy(g_accountName, g_joinedTitleName);
 }
 
 /* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
@@ -318,15 +318,15 @@ u32 (chat_closeEdit)(void)
 	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
 	GAME_FN(chat_closeLine, 0x431600, u32, int)(1);                           /* chat_closeLine: the line sent */
 	if (g_typingRoomName == 1) {
-		memset((void *)IMG(0x9dd1d8), 0, 30);
+		memset((void *)OBJ(g_accountName), 0, 30);
 		g_typingRoomName = 0;
-		strcpy((char *)IMG(0x9dd1d8), (const char *)IMG(0x9dc92c));
+		strcpy(g_accountName, g_chatLine);
 		return 0;
 	}
 	if (g_typingRoomPassword == 1) {
-		memset((void *)IMG(0x9dd1f6), 0, 12);
+		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_chatFieldFlag = 0;
-		strcpy((char *)IMG(0x9dd1f6), (const char *)IMG(0x9dc92c));
+		strcpy(g_accountPassword, g_chatLine);
 		g_typingRoomPassword = 0;
 		return 0;
 	}
@@ -369,8 +369,8 @@ void (createDialog_draw)(void)
 		if (g_paused)
 			return;
 		g_typingGameName = 0;
-		memset((void *)IMG(0x9dd1d8), 0, 30);
-		strcpy((char *)IMG(0x9dd1d8), g_chatLine);
+		memset((void *)OBJ(g_accountName), 0, 30);
+		strcpy(g_accountName, g_chatLine);
 		if (g_editKey == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
 			g_typingRoomName = 0;
@@ -387,9 +387,9 @@ void (createDialog_draw)(void)
 	if (g_typingGamePassword) {
 		if (g_paused)
 			return;
-		memset((void *)IMG(0x9dd1f6), 0, 12);
+		memset((void *)OBJ(g_accountPassword), 0, 12);
 		g_typingGamePassword = 0;
-		strcpy((char *)IMG(0x9dd1f6), g_chatLine);
+		strcpy(g_accountPassword, g_chatLine);
 		g_chatFieldFlag = 0;
 		if (g_editKey == 10) {
 			g_typingRoomName = 1;
@@ -435,7 +435,7 @@ void (createDialog_draw)(void)
 void (loginForm_update)(void)
 {
 	static const struct { u32 editing, text; int size; } field[4] = {
-		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 30 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 12 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 12 }, { ADDR(g_typingAccountEmail), IMG(0x9dd20e), 50 } };
+		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
 #define EDITING(k) GAME_VAR(int, field[k].editing)
 	if (g_openLoginName) {
 		loginForm_openField(0);
@@ -569,17 +569,17 @@ u32 (roomList_passwordKeys)(void)
    Returns net_send's eax */
 u32 (room_requestJoin)(void)
 {
-	static const u32 cleared[] = { IMG(0x9dd202), IMG(0x9dd1f6), IMG(0x9dd206), IMG(0x9dd6d8), IMG(0x9dd1fa), IMG(0x9dd20a), IMG(0x9dd6dc), ADDR(g_roomState) };
+	static const u32 cleared[] = { OBJ(g_accountPasswordRepeat), OBJ(g_accountPassword), (OBJ(g_accountPasswordRepeat) + 0x4), IMG(0x9dd6d8), (OBJ(g_accountPassword) + 0x4), (OBJ(g_accountPasswordRepeat) + 0x8), IMG(0x9dd6dc), ADDR(g_roomState) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
-	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), IMG(0x9dd1fe), IMG(0x9dd6e0) };
+	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), (OBJ(g_accountPassword) + 0x8), IMG(0x9dd6e0) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
 	memset(message, 0, 30);
-	strcpy(message, (const char *)IMG(0x9dd570));
+	strcpy(message, g_joinedTitleName);
 	u32 r = net_send(0x1d, 0x65);
 	g_accountNotice = 0;
 	g_roomAwaitingServer = 1;
@@ -608,13 +608,13 @@ u32 (loginDialog_draw)(void)
 #define Y1 g_loginFormBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = GAME_FN(loginForm_hitTest, 0x432240, int, int, int)(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(341, "CREATE NEW ID"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	for (int k = 0; k < 4; k++) {
@@ -623,17 +623,17 @@ u32 (loginDialog_draw)(void)
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
 	if (!g_typingAccountName || !g_paused)
-		text_draw8(X0 + 0x94, Y0 + 0x3c, (const char *)IMG(0x9dd1d8));
+		text_draw8(X0 + 0x94, Y0 + 0x3c, g_accountName);
 	if (!g_typingAccountPassword || !g_paused) {
-		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd1f6));
+		stars(hidden, sizeof hidden, g_accountPassword);
 		text_draw8(X0 + 0x94, Y0 + 0x6c, hidden);
 	}
 	if (!g_typingAccountRepeat || !g_paused) {
-		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd202));
+		stars(hidden, sizeof hidden, g_accountPasswordRepeat);
 		text_draw8(X0 + 0x94, Y0 + 0x9c, hidden);
 	}
 	if (!g_typingAccountEmail || !g_paused)
-		text_draw8(X0 + 0x94, Y0 + 0xcc, (const char *)IMG(0x9dd20e));
+		text_draw8(X0 + 0x94, Y0 + 0xcc, g_accountEmail);
 	for (int k = 0; k < 2; k++) {
 		int x = k * 0xc8;
 		glEnable(GL_TEXTURE_2D);
@@ -642,7 +642,7 @@ u32 (loginDialog_draw)(void)
 		const u32 *colour = hovered == k + 4 ? bright : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -664,7 +664,7 @@ static void confirm_box(void)
 	menu_drawRect(0x64, 0xb4, 0x21c, 0x140, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
 	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 	for (int k = 0; k < 2; k++) {
@@ -675,9 +675,9 @@ static void confirm_box(void)
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k ? 1.0f : 0.4f);
 		menu_drawWideButton(x, 0x104, x + 0x78, 0x124, 1);
 		if (hovered == k)
-			set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
+			set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
-			set_colour_bits((Colour *)IMG(0x76d438), 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
+			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
 		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 }
@@ -694,13 +694,13 @@ u32 (serverDialog_draw)(void)
 #define Y1 GAME_VAR(int, 0x9dd1ac)
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = popup_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(351, "CREATE NEW ID"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -709,9 +709,9 @@ u32 (serverDialog_draw)(void)
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0, 0x3f800000);
 	menu_drawRect(X0 + 0x30, Y0 + 0x40, X1 - 0x30, Y0 + 0x60, 0);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, (const char *)IMG(0x9dd1d8));
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, g_accountName);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)MSG(352, "NEW ID ON REGISTRATION"));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
@@ -721,7 +721,7 @@ u32 (serverDialog_draw)(void)
 		int x = X0 + k * 0xb4;
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
 	}
 	if (g_roomLeaveDialog)
@@ -748,13 +748,13 @@ u32 (roomLogin_draw)(void)
 #define Y1 g_roomLoginBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = createDialog_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(331, "LADDER GAME ID MANAGER"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	menu_drawLine(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
@@ -766,12 +766,12 @@ u32 (roomLogin_draw)(void)
 		set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 0);
 	}
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_typingGameName)
-		text_draw8(X0 + 0xc8, Y0 + 0x58, (const char *)IMG(0x9dd1d8));
+		text_draw8(X0 + 0xc8, Y0 + 0x58, g_accountName);
 	if (!g_typingGamePassword) {
 		char hidden[30];
-		stars(hidden, sizeof hidden, (const char *)IMG(0x9dd1f6));
+		stars(hidden, sizeof hidden, g_accountPassword);
 		text_draw8(X0 + 0xc8, Y0 + 0x88, hidden);
 	}
 	for (int k = 0; k < 3; k++) {
@@ -783,13 +783,13 @@ u32 (roomLogin_draw)(void)
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(MSG(334, "LOG$[0] IN") + k * 0x80));
 	}
 	if (g_roomRequestOut) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
 		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 	}
@@ -840,14 +840,14 @@ void (account_drawPanel)(void)
 #define X1 g_accountPanelRight
 #define Y1 g_accountPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int hovered = GAME_FN(account_hitTest, 0x4322c0, int, int, int)(g_mouseX, g_mouseY);   /* account_hitTest */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (g_roomAwaitingServer == 1) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 		text_drawBox16(0x50, 0xdc, 0x230, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
 		text_drawBox16(0x50, 0xf0, 0x230, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 		return;
@@ -856,13 +856,13 @@ void (account_drawPanel)(void)
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(361, "USER INFOMATION"));
 	for (int k = 0; k < 5; k++)
 		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(MSG(362, "USER ID") + k * 0x80));
 	for (int k = 0; k < 7; k++)
 		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(MSG(367, "LEVEL") + k * 0x80));
-	text_draw8(X0 + 0x98, Y0 + 0x38, (const char *)IMG(0x9dd1d8));
+	text_draw8(X0 + 0x98, Y0 + 0x38, g_accountName);
 	for (int k = 0; k < 4; k++) {
 		int y = Y0 + k * 0x1c;
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3dcccccd, 0x3f800000);   /* 0.1, 0.1, 0.1, 1 */
@@ -872,7 +872,7 @@ void (account_drawPanel)(void)
 	}
 	char text[20];
 	static const struct { u32 typing, password; int y; } hidden[3] = {
-		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 0x50 }, { ADDR(g_editingAccountPassword), IMG(0x9dd1f6), 0x6c }, { ADDR(g_editingPasswordRepeat), IMG(0x9dd202), 0x88 },
+		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 0x50 }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 0x6c }, { ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 0x88 },
 	};
 	for (int k = 0; k < 3; k++)
 		if (!GAME_VAR(int, hidden[k].typing)) {
@@ -880,7 +880,7 @@ void (account_drawPanel)(void)
 			text_draw8(X0 + 0x98, Y0 + hidden[k].y, text);
 		}
 	if (!g_editingEmail)
-		text_draw8(X0 + 0x98, Y0 + 0xa4, (const char *)IMG(0x9dd20e));
+		text_draw8(X0 + 0x98, Y0 + 0xa4, g_accountEmail);
 	itoa(g_pilotLevel, text, 10);
 	text_draw8(X0 + 0x98, Y0 + 0xbe, text);
 	/* the rank badge */
@@ -917,7 +917,7 @@ void (account_drawPanel)(void)
 		int x = X0 + k * 0xa0;
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -945,8 +945,8 @@ u32 (ranking_drawTable)(void)
 #define Y0 GAME_VAR(int, 0x9dcedc)
 #define X1 GAME_VAR(int, 0x9dcee0)
 #define Y1 GAME_VAR(int, 0x9dcee4)
-#define TEXT(c) set_colour_bits((Colour *)IMG(0x76d438), (c)[0], (c)[1], (c)[2], (c)[3])
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+#define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
 	static const u32 yellow[4] = { 0x3f800000, 0x3f800000, 0, 0x3f800000 };
 	int hovered = GAME_FN(ranking_hitTest, 0x4323c0, int, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
@@ -1070,7 +1070,7 @@ u32 (ranking_drawTable)(void)
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
-		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
+		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
 		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

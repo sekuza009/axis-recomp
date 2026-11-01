@@ -655,7 +655,7 @@ void (armc_drawWeightLine)(void)
 	static const u32 weights[10] = { IMG(0x4dc14c), IMG(0x4dc0cc), IMG(0x4dc04c), IMG(0x4dbfcc), IMG(0x4dbf4c), IMG(0x4dbecc), ADDR(g_boosterWeight), ADDR(g_legsWeight), ADDR(g_armsWeight), ADDR(g_headWeight) };
 	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	int length = (int)strlen((const char *)MSG(299, "WEIGHT"));
 	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)MSG(299, "WEIGHT"));
 	long double sum = fld_m((const float *)RELOC(weights[0]));
@@ -669,11 +669,11 @@ void (armc_drawWeightLine)(void)
 	memset(s.total, 0, sizeof s.total);
 	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_totalWeight);
 	if (g_totalWeight > g_legsMaxWeight)
-		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);
 	else
-		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, 0x3f800000);
+		set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
 	text_draw16(0x27e - ((int)strlen(s.total) + (int)strlen(s.most)) * 14, y + 0x10, s.total);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	text_draw16(0x27e - (int)strlen(s.most) * 14, y + 0x10, s.most);
 }
 
@@ -696,7 +696,7 @@ int (armc_drawModeTabs)(void)
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
 		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? IMG(0x4dbc58) : IMG(0x4dc1d0));
-		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
+		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		int x = g_armcStatsPanelLeft;
 		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
 	}
@@ -710,7 +710,7 @@ int (armc_drawModeTabs)(void)
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
-	memcpy((void *)IMG(0x4dcfe0), (const void *)IMG(0x4dc4b8), 0x90);
+	memcpy((void *)OBJ(g_savedColourChoices), (const void *)IMG(0x4dc4b8), 0x90);
 	memcpy((void *)ADDR(g_savedMechParts), (const void *)IMG(0x4dc760), 5 * 4);
 	memcpy((void *)ADDR(g_savedMechWeapons), (const void *)ADDR(g_itemSlot4), 6 * 4);
 	armc_resetSeraphimParts();
@@ -728,7 +728,7 @@ void (armc_sendSelectionToNet)(void)
 {
 	for (int i = 0; i < 0x24; i++) {
 		float v = f32(fld_m((const float *)IMG(0x4dc4b8) + i));
-		((float *)IMG(0x4dcfe0))[i] = v;
+		((float *)OBJ(g_savedColourChoices))[i] = v;
 		((float *)IMG(0x9dd603))[i] = v;
 	}
 	if (g_pilotLevel != 0x14)
@@ -744,7 +744,7 @@ void (armc_sendSelectionToNet)(void)
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
 	u8 *packet = g_netSelectionPacket;
-	strcpy((char *)packet, (const char *)IMG(0x9dd570));
+	strcpy((char *)packet, g_joinedTitleName);
 	memcpy(packet + 0x1e, room, 11);
 	memcpy(packet + 0x29, (const void *)IMG(0x9dd603), 0x90);
 	net_send(0x1b, 0x65);

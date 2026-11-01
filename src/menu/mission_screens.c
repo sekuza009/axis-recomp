@@ -14,7 +14,7 @@
 
 static void white_text(void)
 {
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 }
 
 static void bind(int texture)
@@ -46,7 +46,7 @@ static void mission_screen(int hovered)
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
-	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
+	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	/* "<n>ST <0x75f1a4>  [ <map> ]" */
 	char title[256];
 	itoa(g_missionShown + 1, title, 10);
@@ -140,7 +140,7 @@ static void mission_screen(int hovered)
 		int x = X0 + k * 0x8c;
 		menu_drawWideButton(x + 0x96, Y1 - 0x30, x + 0x10e, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
-		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
+		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
 		text_drawBox16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(MSG(561, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -166,7 +166,7 @@ void (missionsel_drawScreen)(void)
 	menu_drawRect(0x3c, 0xc8, 0x244, 0x122, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x41, 0xcd, 0x23f, 0x11d, 0);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawBox16(0x46, 0xdc, 0x23a, (const char *)MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS"));
 	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }

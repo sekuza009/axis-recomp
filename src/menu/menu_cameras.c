@@ -459,11 +459,11 @@ void (match_debugHandler)(void)
 	if (g_watchChatOpen) {
 		if (g_paused)
 			return;
-		if (strlen((const char *)IMG(0x9dc92c))) {
-			net_sendChat((const char *)IMG(0x9dc92c));
+		if (strlen(g_chatLine)) {
+			net_sendChat(g_chatLine);
 			g_watchChatOpen = 0;
 			g_chatLogged = 1;
-			(*(u32 *)&g_chatLog) = IMG(0x9dc92c);
+			(*(u32 *)&g_chatLog) = OBJ(g_chatLine);
 		} else {
 			g_watchChatOpen = 0;
 			g_chatLogged = 0;

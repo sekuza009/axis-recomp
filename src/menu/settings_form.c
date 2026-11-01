@@ -43,15 +43,15 @@ static void field_box(int x0, int y0, int x1, int y1)
 /* the hovered value drawn again: its shadow at (x, y), then in yellow one up and left */
 static void hover_text(int x, int y, const char *text)
 {
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
+	set_colour_bits(g_textColour, 0x3c23d70a, 0x3c23d70a, 0x3c23d70a, 0x3f800000);   /* 0.01 */
 	text_draw8(x, y, text);
-	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
+	set_colour_bits(g_textColour, 0x3f800000, 0x3f4ccccd, 0, 0x3f800000);            /* 1, 0.8, 0, 1 */
 	text_draw8(x - 1, y - 1, text);
 }
 
 static void colour(const u32 *c)
 {
-	set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
+	set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 }
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };
@@ -197,11 +197,11 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)IMG(0x4df9c8), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), IMG(0x9dd388), IMG(0x9dd568) }, MSG(791, "DEATH MATCH"),
+	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), IMG(0x9dd388), IMG(0x9dd568) }, MSG(791, "DEATH MATCH"),
 	                           MSG(17, "DO NOT USE"), 0, 20 };
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;
-	const u32 *bright = (const u32 *)IMG(0x9dcec0), *dim = (const u32 *)IMG(0x9dd338);
+	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	int editing = g_paused, open = editing || g_arenaLeaving;
 	char text[20];
 	int hovered = roomSettings_hitTest(g_mouseX, g_mouseY);
@@ -250,7 +250,7 @@ static void box_buttons(int hovered, int lit_from)
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
-	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)IMG(0x4db528), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
+	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
 	                           0, IMG(0x4dbba4), 10 };
 	const Form *f = &form;
 	const u32 *bright = (const u32 *)IMG(0x4dba98), *dim = (const u32 *)IMG(0x4db8a0);

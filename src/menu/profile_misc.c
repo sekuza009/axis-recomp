@@ -131,7 +131,7 @@ int (profile_nameExists)(void)
 	char typed[1024], name[1024];
 	memset(name, 0, sizeof name);
 	memset(typed, 0, sizeof typed);
-	const char *s = (const char *)IMG(0x9dc92c);
+	const char *s = g_chatLine;
 	for (int i = 0, n = (int)strlen(s); i < n; i++)
 		typed[i] = s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 0x20 : s[i];
 	for (int e = 0; e < g_profileCount; e++) {
@@ -200,7 +200,7 @@ u32 (profile_logIn)(void)
 	g_nextScreen = 300;
 	g_keysBlocked = 2;
 	g_unusedMenuReturnWord = 0;
-	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)((char *)IMG(0x4dedb0),
+	GAME_CDECL(0x49ea80, char *, char *, const char *, u32)(g_cfgPlayerName,
 	                                                        (const char *)(IMG(0x9f684c) + g_currentProfile * 0x48), 0x20);   /* strncpy */
 	return GAME_FN(cfg_loadAxisCfg, 0x42d730, u32, void)();   /* cfg_loadAxisCfg */
 }
@@ -303,7 +303,7 @@ int (profileList_clicks)(void)
 u32 (profile_selectAndLoad)(void)
 {
 	int n = g_profileCount;
-	strcpy((char *)(IMG(0x9f684c) + n * 0x48), (const char *)IMG(0x9dc92c));
+	strcpy((char *)(IMG(0x9f684c) + n * 0x48), g_chatLine);
 	GAME_VAR(int, 0x9f688c + n * 0x48) = g_emblemCursor;
 	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
 		mkdir_((const char *)STR(0x4b2adc, "save"));
@@ -367,10 +367,10 @@ u32 (profileList_drawNames)(void)
 	for (int i = 0; i < 13 && i < g_profileCount; i++) {
 		int page1 = g_profilePage == 1;
 		u32 shade = page1 ? 0x3f000000 : 0x3e99999a;   /* 0.5 / 0.3 */
-		GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)IMG(0x76d438), 0, shade, shade, 0x3f800000);
+		GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		if (g_profileListTop + i == g_pilotChosen) {
 			shade = g_profilePage == 1 ? 0x3f800000 : 0x3f000000;   /* 1 / 0.5 */
-			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)IMG(0x76d438), 0, shade, shade, 0x3f800000);
+			GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, shade, shade, 0x3f800000);
 		}
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_profilePageLeft + 0x28, g_profilePageTop + 0x24 + i * 0x14,
 		                                                      (const char *)(IMG(0x9f684c) + (g_profileListTop + i) * 0x48));   /* text_draw8 */
@@ -385,7 +385,7 @@ u32 (profileList_drawNames)(void)
    last call's eax */
 u32 (profile_nameEntryStep)(void)
 {
-	const char *typed = (const char *)IMG(0x9dc92c);
+	const char *typed = g_chatLine;
 	GAME_FN(mainmenu_drawScreen, 0x44d720, void, void)();
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_newNameDialogLeft, g_newNameDialogTop,
@@ -481,7 +481,7 @@ static void line_wipe(void)
 {
 	int n = g_typedLength;
 	if (n > 0)
-		memset((void *)IMG(0x9dc92c), 0, n);
+		memset((void *)OBJ(g_chatLine), 0, n);
 }
 
 /* 0x44c190: the new pilot's name dialog. Before typing (0x9f8f34): a click on the name field (profile_inDialogBox) or
@@ -491,7 +491,7 @@ static void line_wipe(void)
    leaves in eax */
 u32 (profile_newNameDialog)(void)
 {
-	const char *typed = (const char *)IMG(0x9dc92c);
+	const char *typed = g_chatLine;
 	g_cursorBlink = 0.0f;
 	u32 r = 0;
 	if (g_profileMessage) {

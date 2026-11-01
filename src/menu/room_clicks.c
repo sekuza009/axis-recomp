@@ -287,9 +287,9 @@ static u32 typing_end(void)
 u32 (account_endTyping)(void)
 {
 	static const struct { u32 editing, field, size; } fields[4] = {
-		{ ADDR(g_typingAccountName), IMG(0x9dd1d8), 30 }, { ADDR(g_typingAccountPassword), IMG(0x9dd1f6), 12 }, { ADDR(g_typingAccountRepeat), IMG(0x9dd202), 12 }, { ADDR(g_typingAccountEmail), IMG(0x9dd20e), 50 } };
+		{ ADDR(g_typingAccountName), OBJ(g_accountName), 30 }, { ADDR(g_typingAccountPassword), OBJ(g_accountPassword), 12 }, { ADDR(g_typingAccountRepeat), OBJ(g_accountPasswordRepeat), 12 }, { ADDR(g_typingAccountEmail), OBJ(g_accountEmail), 50 } };
 	u32 r = typing_end();
-	const char *typed = (const char *)IMG(0x9dc92c);
+	const char *typed = g_chatLine;
 	for (int k = 0; k < 4; k++) {
 		if (GAME_VAR(int, fields[k].editing) != 1)
 			continue;
@@ -306,7 +306,7 @@ u32 (account_endTyping)(void)
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
 {
-	const u8 *room = (const u8 *)IMG(0x5b1b30);
+	const u8 *room = (const u8 *)OBJ(g_roomRecName);
 	u32 step = (*(u32 *)&g_connectStep);
 	if (step == 2)
 		return 2;
@@ -318,11 +318,11 @@ u32 (room_hostingStep)(void)
 		g_roomMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
 		GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(
-			room, (const char *)IMG(0x9dd570), (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
+			room, g_joinedTitleName, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_missionStage = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
-		memcpy((void *)IMG(0x67fb44), room, 32);
+		memcpy((void *)OBJ(g_mapTitle), room, 32);
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
@@ -369,7 +369,7 @@ u32 (app_onClose)(void)
 	*(u32 *)game = *(*(u32 **)&g_receivedSession);
 	g_roomRecFragLimit = game[0x2d];
 	g_roomRecTimeLimit = game[0x2e];
-	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)IMG(0x9dd570), 0);   /* dplay_join */
+	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -388,7 +388,7 @@ u32 (app_onClose)(void)
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
 	g_missionStage = (signed char)game[0x25];
-	memcpy((void *)IMG(0x67fb44), game + 4, 32);
+	memcpy((void *)OBJ(g_mapTitle), game + 4, 32);
 	g_mapRotation = (signed char)game[0x24];
 	g_chosenGameMode = (signed char)game[0x2c];
 	g_fragLimit = game[0x2d];
@@ -404,7 +404,7 @@ u32 (account_checkForm)(void)
 	GAME_FN(account_endTyping, 0x433d30, void, void)();   /* account_endTyping */
 	g_paused = 0;
 	g_fieldTabKey = 0;
-	const char *name = (const char *)IMG(0x9dd1d8), *password = (const char *)IMG(0x9dd1f6);
+	const char *name = g_accountName, *password = g_accountPassword;
 	int message, reopen;
 	if (strlen(name) == 0 || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
 		message = 0x24, reopen = ADDR(g_typingAccountName);
@@ -412,11 +412,11 @@ u32 (account_checkForm)(void)
 		message = 0x15a, reopen = ADDR(g_typingAccountName);
 	else if (strlen(password) == 0)
 		message = 0x25, reopen = ADDR(g_typingAccountPassword);
-	else if (strcmp(password, (const char *)IMG(0x9dd202)))
+	else if (strcmp(password, g_accountPasswordRepeat))
 		message = 0x21, reopen = ADDR(g_typingAccountPassword);
 	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1)
 		message = 0x15b, reopen = ADDR(g_typingAccountPassword);
-	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)IMG(0x9dd20e)) == 1)
+	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(g_accountEmail) == 1)
 		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
 		return GAME_FN(room_openDialog58, 0x433980, u32, void)();   /* the next dialog */
@@ -430,9 +430,9 @@ u32 (account_checkForm)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)ADDR(g_joinedTitleLevel), (const char *)IMG(0x9dd6d8)) || strcmp((const char *)IMG(0x9dd1f6), (const char *)IMG(0x9dd202)))
+	if (strcmp((const char *)ADDR(g_joinedTitleLevel), (const char *)IMG(0x9dd6d8)) || strcmp(g_accountPassword, g_accountPasswordRepeat))
 		return 0;
-	static const u32 fields[4] = { IMG(0x9dd6d8), IMG(0x9dd1f6), IMG(0x9dd202), IMG(0x9dd20e) };
+	static const u32 fields[4] = { IMG(0x9dd6d8), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
 		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
 			menu_showMessage(0x81);
@@ -440,9 +440,9 @@ int (account_sendChange)(void)
 			return 0;
 		}
 	char *out = g_netAccountBuffer;
-	strcpy(out, (const char *)IMG(0x9dd1d8));
-	strcpy(out + 0x1e, (const char *)IMG(0x9dd1f6));
-	strcpy(out + 0x2a, (const char *)IMG(0x9dd20e));
+	strcpy(out, g_accountName);
+	strcpy(out + 0x1e, g_accountPassword);
+	strcpy(out + 0x2a, g_accountEmail);
 	GAME_FN(net_send, 0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
 	return 1;
 }
@@ -525,7 +525,7 @@ u32 (login_send)(void)
 	g_typingGamePassword = 0;
 	g_chatFieldFlag = 0;
 	g_paused = 0;
-	const char *name = (const char *)IMG(0x9dd1d8), *password = (const char *)IMG(0x9dd1f6);
+	const char *name = g_accountName, *password = g_accountPassword;
 	int bad = GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1 ? 0x15a
 	        : GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
@@ -533,8 +533,8 @@ u32 (login_send)(void)
 		g_roomLoginDue = 0;
 		return r;
 	}
-	memset((void *)IMG(0x9dd570), 0, 30 + 12);
-	strcpy((char *)IMG(0x9dd570), name);
+	memset((void *)OBJ(g_joinedTitleName), 0, 30 + 12);
+	strcpy(g_joinedTitleName, name);
 	strcpy((char *)ADDR(g_joinedTitleLevel), password);
 	memset((*(u8 **)&g_accountPacket) + 4, 0, 30);
 	memset((*(u8 **)&g_accountPacket) + 0x22, 0, 12);
@@ -686,7 +686,7 @@ u32 (room_settingsAfterTyping)(void)
 		return (*(u32 *)&g_dialogOpen);
 	if (g_paused)
 		return 0;
-	const char *line = (const char *)IMG(0x9dc92c);
+	const char *line = g_chatLine;
 	if (g_editingRoomName) {   /* the room's name */
 		if (!strlen(line) || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
@@ -694,8 +694,8 @@ u32 (room_settingsAfterTyping)(void)
 			return r;
 		}
 		g_editingRoomName = 0;
-		memset((void *)IMG(0x4df9c8), 0, 32);
-		strcpy((char *)IMG(0x4df9c8), line);
+		memset((void *)OBJ(g_roomSettingsName), 0, 32);
+		strcpy(g_roomSettingsName, line);
 		return strlen(line) + 1;
 	}
 	if (g_editingRoomPassword) {   /* the password */
@@ -743,9 +743,9 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 	if (g_mapPreviewChanged)
 		GAME_CDECL(reload, void, void)();
 	if (GAME_VAR(u8, custom)) {
-		Color4_set((Colour *)IMG(0x9da480), 0.0f, 0.0f, 0.0f, 0.4f);
+		Color4_set(g_rectColour, 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
-		Color4_set((Colour *)IMG(0x76d438), 1.0f, 1.0f, 0.0f, 1.0f);
+		Color4_set(g_textColour, 1.0f, 1.0f, 0.0f, 1.0f);
 		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)STR(0x4ad56c, "CUSTOM"));
 	} else {
 		glEnable(GL_TEXTURE_2D);
@@ -764,7 +764,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 	}
-	Color4_set((Colour *)IMG(0x9da480), 1.0f, 1.0f, 0.0f, 1.0f);
+	Color4_set(g_rectColour, 1.0f, 1.0f, 0.0f, 1.0f);
 	return GAME_FN(menu_drawRect, 0x427970, u32, int, int, int, int, int)(X0, Y0, X1, Y1, 0);   /* menu_drawRect: the outline */
 #undef X0
 #undef X1
@@ -785,8 +785,8 @@ u32 (arena_drawCustomOption)(void) { return map_preview_box((const int *)ADDR(g_
 u32 (account_page)(void)
 {
 	static const struct { u32 editing, field, size, back, on; } fields[4] = {
-		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), IMG(0x9dd1f6), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
-		{ ADDR(g_editingPasswordRepeat), IMG(0x9dd202), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), IMG(0x9dd20e), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
+		{ ADDR(g_editingOldPassword), IMG(0x9dd6d8), 12, 0, FN_ADDR(account_editPassword, 0x4340e0) }, { ADDR(g_editingAccountPassword), OBJ(g_accountPassword), 12, FN_ADDR(account_editOldPassword, 0x434020), FN_ADDR(account_editPasswordRepeat, 0x4341a0) },
+		{ ADDR(g_editingPasswordRepeat), OBJ(g_accountPasswordRepeat), 12, FN_ADDR(account_editPassword, 0x4340e0), FN_ADDR(account_editEmail, 0x434260) }, { ADDR(g_editingEmail), OBJ(g_accountEmail), 50, FN_ADDR(account_editPasswordRepeat, 0x4341a0), 0 } };
 	room_drawTunnel();   /* room_drawTunnel: the tunnel */
 	u32 mode = (*(u32 *)&g_roomMode);
 	if (mode == 1 || mode == 0 || g_roomState == 99)
@@ -807,7 +807,7 @@ u32 (account_page)(void)
 		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_chatFieldFlag = 0;
-		strcpy((char *)RELOC(fields[k].field), (const char *)IMG(0x9dc92c));
+		strcpy((char *)RELOC(fields[k].field), g_chatLine);
 		u32 key = (*(u32 *)&g_fieldTabKey);
 		u32 next = key == 0xa ? fields[k].back : key == 0x14 ? fields[k].on : 0;
 		if (!next)

@@ -107,11 +107,11 @@ static void set3(u32 addr, u32 x, u32 y, u32 z)
 	p[2] = z;
 }
 void (vec_initOrigin)(void) { set3(ADDR(g_vecOrigin), 0, 0, 0); }
-void (vec_initZero)(void) { set3(IMG(0xa0e7b8), 0, 0, 0); }
+void (vec_initZero)(void) { set3(OBJ(g_vecZero2), 0, 0, 0); }
 void (vec_initAxisZ)(void) { set3(ADDR(g_vecUnitZ), 0, 0, 0x3f800000u); }
-void (vec_initUp)(void) { set3(IMG(0xa0e7d8), 0, 0x3f800000u, 0); }
+void (vec_initUp)(void) { set3(OBJ(g_vecUnitY), 0, 0x3f800000u, 0); }
 void (vec_initRest)(void) { set3(ADDR(g_vecZero), 0, 0, 0); }
-void (vec_initAxisX)(void) { set3(IMG(0xa0e7f8), 0x3f800000u, 0, 0); }
+void (vec_initAxisX)(void) { set3(OBJ(g_vecUnitX), 0x3f800000u, 0, 0); }
 
 /* ---- class lifecycles ---- */
 
@@ -626,7 +626,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	memcpy(g + 0x233ca04, (const void *)ADDR(g_vecOrigin), 12);
 	for (int k = 0; k < 3; k++)
 		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
-	memcpy(g + 0x233ca1c, (const void *)IMG(0xa0e7d8), 12);
+	memcpy(g + 0x233ca1c, (const void *)OBJ(g_vecUnitY), 12);
 	GAME_VAR(int, g + 0x233ca28) = GAME_VAR(int, g + 0x233ca2c) = 0;
 	GAME_VAR(int, g + 0x233cc20) = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;
 	GAME_VAR(int, g + 0x233cc28) = GAME_VAR(int, g + 0x233cc30) = GAME_VAR(int, g + 0x233cc34) = 0;

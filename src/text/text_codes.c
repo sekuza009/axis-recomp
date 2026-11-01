@@ -72,7 +72,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	int left = x;
 	glBegin(7);   /* GL_QUADS */
 	for (u8 c = *s; c; c = *s) {
-		glColor4f_stored((const u32 *)IMG(0x76d438));
+		glColor4f_stored((const u32 *)OBJ(g_textColour));
 		s++;
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
@@ -129,7 +129,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			c = s[2];
 			s += 3;
 		}
-		glColor4f_stored(special && kept ? (const u32 *)(IMG(0x9dada0) + colour * 16) : (const u32 *)IMG(0x76d438));
+		glColor4f_stored(special && kept ? (const u32 *)(IMG(0x9dada0) + colour * 16) : (const u32 *)OBJ(g_textColour));
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += pass->line;

@@ -6,6 +6,7 @@
 #include "axis.h"
 #include "scene.h"
 #include "globals.h"
+#include "objects.h"   /* the arrays, buffers and records by name (tools/name_objects.py) */
 #ifdef AXIS_DIRECT
 #include "data/layout_names.h"   /* (in AxisRC.exe the named globals are members of g_rdata / g_data) */
 #endif
@@ -584,7 +585,6 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)IMG(0xa1f100))          /* the 16 message colours */
-#define g_chatLine ((char *)IMG(0x9dc92c))               /* the chat line being typed */
 #define g_chatCaretX GAME_VAR(int, 0x9da3d8)          /* where the line being typed is drawn (menu units) */
 #define g_chatCaretY GAME_VAR(int, 0x9da3dc)
 #define g_chatLength GAME_VAR(int, 0x9dbf10)          /* characters in g_chatLine */
@@ -610,7 +610,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time in 1/60 s (menu_frame; 1 after a stall) */
 #define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
 #define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
-#define g_textColour ((Colour *)IMG(0x76d438))            /* the menus' text colour */
 #define g_textCharWidth GAME_VAR(int, 0x4d23d8)      /* units per character of the font being drawn */
 #define g_fontHanCho GAME_VAR(int, 0x9dae1c)         /* font textures (ids): Hangul initial consonants */
 #define g_fontHanJungJong GAME_VAR(int, 0x76d360)    /* Hangul vowels and finals */
@@ -660,7 +659,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
 #define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, void, int, int, int, int, int)(x0, y0, x1, y1, filled)
-#define g_rectColour ((Colour *)IMG(0x9da480))
 /* the room's buttons under (x, y): the index of the button hit, or -1 */
 #define leaveDialog_hitTest(x, y) GAME_FN(leaveDialog_hitTest, 0x4321c0, int, int, int)(x, y)
 #define popup_hitTest(x, y) GAME_FN(popup_hitTest, 0x432280, int, int, int)(x, y)

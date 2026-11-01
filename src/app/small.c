@@ -149,7 +149,7 @@ void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */
 u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
 /* 0x44ad30: the text colour */
-void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits((Colour *)IMG(0x76d438), r, g, b, a); }
+void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
 void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x4dbad0)); }
 void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x9dd308)); }
@@ -496,16 +496,16 @@ static u32 reg_write(u32 value, const char *name)
    even when it could not be opened) */
 u32 (reg_writeCharacterSettings)(void)
 {
-	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x9dd1d8));
-	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0x9dd20e));
-	strcpy((char *)IMG(0x76d450), (const char *)IMG(0x9dd570));
-	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4df9c8));
+	strcpy(g_joinedTitleName, g_accountName);
+	strcpy((char *)IMG(0x9dd5a6), g_accountEmail);
+	strcpy((char *)IMG(0x76d450), g_joinedTitleName);
+	strcpy(g_roomRecName, g_roomSettingsName);
 	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
 	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, 0xf003f, &key)) {
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)IMG(0x9dd570), 0x1e);   /* REG_SZ */
-		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_joinedTitleName), 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
 		const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
 		static const u32 names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
 		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
@@ -527,8 +527,8 @@ u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(
 u32 (chat_keepLastLine)(void)
 {
 	memset((void *)ADDR(g_keptChatLine), 0, 0x400);
-	if (strlen((const char *)IMG(0x9dc92c))) {
-		memcpy((void *)ADDR(g_keptChatLine), (const void *)IMG(0x9dc92c), 0x400);
+	if (strlen(g_chatLine)) {
+		memcpy((void *)ADDR(g_keptChatLine), (const void *)OBJ(g_chatLine), 0x400);
 		g_chatTyping = 0;
 	}
 	g_paused = 0;
@@ -585,8 +585,8 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
    the eax it leaves */
 void (reg_readCharacterSettings)(void)
 {
-	strcpy((char *)IMG(0x9dd570), (const char *)STR(0x4b17d0, "AxisPlayer"));
-	strcpy((char *)IMG(0x5b1b30), (const char *)STR(0x4b17bc, "Axis Ladder Game"));
+	strcpy(g_joinedTitleName, (const char *)STR(0x4b17d0, "AxisPlayer"));
+	strcpy(g_roomRecName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
 	memcpy((void *)ADDR(g_roomRecMap), defaults, 6);
 	u32 key, disposition, type, value;
@@ -596,15 +596,15 @@ void (reg_readCharacterSettings)(void)
 		(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
 	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)IMG(0x9dd570), 0x1e);
-		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_joinedTitleName), 0x1e);
+		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
 		for (int i = 0; i < 6; i++) {
 			value = choice_dword(choice_order[i]);
 			RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
 		}
 	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
-		read_string(key, (const char *)STR(0x4b1794, "Name"), (char *)IMG(0x9dd570), 0x1e, &type, buf);
-		read_string(key, (const char *)STR(0x4b1788, "GameName"), (char *)IMG(0x5b1b30), 0x20, &type, buf);
+		read_string(key, (const char *)STR(0x4b1794, "Name"), g_joinedTitleName, 0x1e, &type, buf);
+		read_string(key, (const char *)STR(0x4b1788, "GameName"), g_roomRecName, 0x20, &type, buf);
 		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
 		value = 0;
 		for (int i = 0; i < 6; i++) {

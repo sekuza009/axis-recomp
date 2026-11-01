@@ -92,7 +92,7 @@ int (net_parseAddress)(void)
 {
 	char buf[20];
 	memset(buf, 0, sizeof buf);
-	char *part = crt_strtok((char *)IMG(0xa0b43c), (const char *)STR(0x4b1304, "."));
+	char *part = crt_strtok(g_localAddress, (const char *)STR(0x4b1304, "."));
 	strcpy(buf, part);
 	if (part)
 		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)STR(0x4b3e68, ".\n"))) != NULL; slot += 4)
@@ -550,12 +550,12 @@ int (net_addPlayerRecord)(const u8 *rec)
 int (net_getLocalAddress)(void)
 {
 	char name[0xc8];
-	memset((void *)IMG(0xa0b43c), 0, 16);
+	memset((void *)OBJ(g_localAddress), 0, 16);
 	if (((int (STDCALL *)(char *, int))*(const u32 *)IMG(0x4a93a0))(name, 0xc8) == -1)   /* gethostname */
 		return -1;
 	u8 *entry = ((u8 *(STDCALL *)(const char *))*(const u32 *)IMG(0x4a93a8))(name);     /* gethostbyname */
 	if (entry)
-		strcpy((char *)IMG(0xa0b43c), ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+		strcpy(g_localAddress, ((const char *(STDCALL *)(u32))*(const u32 *)IMG(0x4a939c))(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
 	return 0;
 }
 
@@ -1265,7 +1265,7 @@ void (net_send)(int kind, int to)
 		if (!(*(void **)&g_accountPacket))
 			return;
 		jmp_net_getLocalAddress();
-		lstrcpyA(g_accountPacket + 0x60, (const char *)IMG(0xa0b43c));
+		lstrcpyA(g_accountPacket + 0x60, g_localAddress);
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_accountPacket), 0x10b);
 		return;
 	case 19:
@@ -1292,7 +1292,7 @@ void (net_send)(int kind, int to)
 		jmp_net_getLocalAddress();
 		if (!g_netSendBuffer)
 			return;
-		lstrcpyA(g_netSendBuffer, (const char *)IMG(0xa0b43c));
+		lstrcpyA(g_netSendBuffer, g_localAddress);
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_netSendBuffer), 0x10);
 		return;
 	}
