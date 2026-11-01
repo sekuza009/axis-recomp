@@ -36,8 +36,9 @@
 #define GAMEFN_ASM(name, addr) "_" #name
 /* an address of the game's image: where AxisRC.exe keeps it (src/axis.h's IMG; the original range itself is
    unmapped there) */
-extern unsigned char g_image[];
-#define IMG(a) ((DWORD)g_image + ((DWORD)(a) - 0x400000))
+extern unsigned char g_image[], g_rdata[], g_data[];   /* (.rdata and .data are g_rdata / g_data: src/data/layout.h) */
+#define IMG(a) ((DWORD)(a) - 0x4a9000u < 0x4000u ? (DWORD)g_rdata + ((DWORD)(a) - 0x4a9000u) : \
+                (DWORD)(a) - 0x4ad000u < 0x666000u ? (DWORD)g_data + ((DWORD)(a) - 0x4ad000u) : (DWORD)g_image + ((DWORD)(a) - 0x400000))
 static inline DWORD img_reloc(DWORD a) { return a - 0x400000 < 0x76b000 ? IMG(a) : a; }
 #define RELOC(a) ((__typeof__((a) + 0))img_reloc((DWORD)(a)))   /* (of the operand's own type) */
 #else
@@ -2196,20 +2197,27 @@ static int WINAPI fake_GetSystemMetrics(int i) {
 }
 
 /* replace one import of a module (by name, or by ordinal when ord != 0) */
+/* base + rva in a module; for the game's image in AxisRC.exe (AXIS_STANDALONE) the place IMG() gives it: its
+   import table is in .rdata, which is g_rdata there (src/data/layout.h) */
+#ifdef AXIS_STANDALONE
+#define RVA(base, rva) ((BYTE *)(base) == (BYTE *)IMG(0x400000) ? (BYTE *)IMG(0x400000 + (rva)) : (BYTE *)(base) + (rva))
+#else
+#define RVA(base, rva) ((BYTE *)(base) + (rva))
+#endif
 static void *hook_import_ex(HMODULE mod, const char *dll, const char *func, WORD ord, void *repl) {
     BYTE *base = (BYTE *)mod;
     IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + ((IMAGE_DOS_HEADER *)base)->e_lfanew);
     IMAGE_DATA_DIRECTORY dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
     if (!dir.VirtualAddress) return NULL;
-    for (IMAGE_IMPORT_DESCRIPTOR *d = (IMAGE_IMPORT_DESCRIPTOR *)(base + dir.VirtualAddress); d->Name; d++) {
-        if (lstrcmpiA((char *)base + d->Name, dll)) continue;
-        IMAGE_THUNK_DATA *names = (IMAGE_THUNK_DATA *)(base + (d->OriginalFirstThunk ? d->OriginalFirstThunk : d->FirstThunk));
-        IMAGE_THUNK_DATA *iat = (IMAGE_THUNK_DATA *)(base + d->FirstThunk);
+    for (IMAGE_IMPORT_DESCRIPTOR *d = (IMAGE_IMPORT_DESCRIPTOR *)RVA(base, dir.VirtualAddress); d->Name; d++) {
+        if (lstrcmpiA((char *)RVA(base, d->Name), dll)) continue;
+        IMAGE_THUNK_DATA *names = (IMAGE_THUNK_DATA *)RVA(base, d->OriginalFirstThunk ? d->OriginalFirstThunk : d->FirstThunk);
+        IMAGE_THUNK_DATA *iat = (IMAGE_THUNK_DATA *)RVA(base, d->FirstThunk);
         for (; names->u1.AddressOfData; names++, iat++) {
             if (IMAGE_SNAP_BY_ORDINAL(names->u1.Ordinal)) {
                 if (!ord || IMAGE_ORDINAL(names->u1.Ordinal) != ord) continue;
             } else {
-                IMAGE_IMPORT_BY_NAME *ibn = (IMAGE_IMPORT_BY_NAME *)(base + names->u1.AddressOfData);
+                IMAGE_IMPORT_BY_NAME *ibn = (IMAGE_IMPORT_BY_NAME *)RVA(base, names->u1.AddressOfData);
                 if (strcmp((char *)ibn->Name, func)) continue;
             }
             DWORD old; void *orig = (void *)iat->u1.Function;

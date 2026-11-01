@@ -56,7 +56,12 @@ static void fail(const char *fmt, const char *arg)
 static IMAGE_NT_HEADERS32 *nt_of(const BYTE *image) { return (IMAGE_NT_HEADERS32 *)(image + ((IMAGE_DOS_HEADER *)image)->e_lfanew); }
 
 /* an address of the relocated image as the original's (for the log), else as it is */
-static DWORD original(DWORD a) { return a - (DWORD)g_image < GAME_SIZE ? a - (DWORD)g_image + GAME_BASE : a; }
+static DWORD original(DWORD a)
+{
+	if (a - (DWORD)g_rdata < 0x4000) return a - (DWORD)g_rdata + 0x4a9000;
+	if (a - (DWORD)g_data < 0x666000) return a - (DWORD)g_data + 0x4ad000;
+	return a - (DWORD)g_image < GAME_SIZE ? a - (DWORD)g_image + GAME_BASE : a;
+}
 /* the return-address-like values on a stack: in AxisRC.exe's own code, or in the image's (as original addresses) */
 static void log_stack(FILE *f, const DWORD *sp, int words)
 {
@@ -71,7 +76,8 @@ static LONG CALLBACK guard_hit(EXCEPTION_POINTERS *e)
 {
 	DWORD code = e->ExceptionRecord->ExceptionCode, at = (DWORD)e->ExceptionRecord->ExceptionAddress;
 	DWORD data = code == EXCEPTION_ACCESS_VIOLATION ? (DWORD)e->ExceptionRecord->ExceptionInformation[1] : 0;
-	if (data - GAME_BASE >= GAME_SIZE && at - GAME_BASE >= GAME_SIZE)
+	int moved = data - (DWORD)(g_image + 0xa9000) < 0x66a000;   /* (g_image's data part, now g_rdata / g_data) */
+	if (data - GAME_BASE >= GAME_SIZE && at - GAME_BASE >= GAME_SIZE && !moved)
 		return EXCEPTION_CONTINUE_SEARCH;
 	if (g_log)
 		fflush(g_log);
@@ -234,7 +240,8 @@ static void map_game(void)
 	fprintf(g_log, "the game's data from src/data: %lu bytes in %lu pieces\n", total, pieces);
 	g_before = VirtualAlloc(NULL, GAME_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!g_before) fail("out of memory (%s)", "the image's copy");
-	memcpy(g_before, g_image, GAME_SIZE);
+	for (DWORD o = 0; o < GAME_SIZE; o += 0x1000)   /* (in the original's layout: from g_image, g_rdata, g_data) */
+		memcpy(g_before + o, AT(GAME_BASE + o), 0x1000);
 }
 
 static void resolve_imports(void)
@@ -242,12 +249,12 @@ static void resolve_imports(void)
 	IMAGE_NT_HEADERS32 *nt = nt_of(g_image);
 	IMAGE_DATA_DIRECTORY *d = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 	int n = 0;
-	for (IMAGE_IMPORT_DESCRIPTOR *imp = (IMAGE_IMPORT_DESCRIPTOR *)(g_image + d->VirtualAddress); imp->Name; imp++) {
-		const char *dll = (const char *)(g_image + imp->Name);
+	for (IMAGE_IMPORT_DESCRIPTOR *imp = (IMAGE_IMPORT_DESCRIPTOR *)AT(GAME_BASE + d->VirtualAddress); imp->Name; imp++) {
+		const char *dll = (const char *)AT(GAME_BASE + imp->Name);
 		HMODULE m = LoadLibraryA(dll);
 		if (!m) fail("cannot load %s (a library the game imports)", dll);
-		DWORD *names = (DWORD *)(g_image + (imp->OriginalFirstThunk ? imp->OriginalFirstThunk : imp->FirstThunk));
-		DWORD *slots = (DWORD *)(g_image + imp->FirstThunk);
+		DWORD *names = (DWORD *)AT(GAME_BASE + (imp->OriginalFirstThunk ? imp->OriginalFirstThunk : imp->FirstThunk));
+		DWORD *slots = (DWORD *)AT(GAME_BASE + imp->FirstThunk);
 		for (; *names; names++, slots++, n++) {
 			char what[128];
 			FARPROC f;
@@ -255,7 +262,7 @@ static void resolve_imports(void)
 				f = GetProcAddress(m, (LPCSTR)(*names & 0xffff));
 				snprintf(what, sizeof what, "%s ordinal %lu", dll, *names & 0xffff);
 			} else {
-				const char *name = (const char *)((IMAGE_IMPORT_BY_NAME *)(g_image + *names))->Name;
+				const char *name = (const char *)((IMAGE_IMPORT_BY_NAME *)AT(GAME_BASE + *names))->Name;
 				f = GetProcAddress(m, name);
 				snprintf(what, sizeof what, "%s %s", dll, name);
 			}
@@ -470,7 +477,11 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 		fail("cannot protect the original's range (%s)", "VirtualProtect");
 	AddVectoredExceptionHandler(1, guard_hit);
 	SetUnhandledExceptionFilter(crash_hit);
-	fprintf(g_log, "the original's range 0x%x .. 0x%x left inaccessible (guarded)\n", GAME_BASE, GAME_BASE + GAME_SIZE);
+	/* and g_image's own .rdata / .data part: those are g_rdata / g_data now, so nothing may use the copy's place */
+	if (!VirtualProtect(g_image + 0xa9000, 0xb13000 - 0x4a9000, PAGE_NOACCESS, &old))
+		fail("cannot protect g_image's data part (%s)", "VirtualProtect");
+	fprintf(g_log, "the original's range 0x%x .. 0x%x and g_image's data part left inaccessible (guarded); "
+	        "the data in g_rdata %p, g_data %p\n", GAME_BASE, GAME_BASE + GAME_SIZE, (void *)g_rdata, (void *)g_data);
 	resolve_imports();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	{	/* what the patch layer changed in the game's code (to compare the built-in data with the exe file) */

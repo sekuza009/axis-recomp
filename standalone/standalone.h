@@ -7,7 +7,10 @@
 extern unsigned char g_image[];
 #define GAME_BASE 0x400000u
 #define GAME_SIZE 0x76b000u
-#define AT(a) (g_image + ((unsigned)(a) - GAME_BASE))
+/* (the read-only data 0x4a9000 .. 0x4ad000 and writable data 0x4ad000 .. 0xb13000 are g_rdata and g_data,
+   src/data/layout.h; header and code bytes stay in g_image) */
+extern unsigned char g_rdata[], g_data[];
+#define AT(a) ((unsigned)(a) - 0x4a9000u < 0x4000u ? g_rdata + ((unsigned)(a) - 0x4a9000u) :                (unsigned)(a) - 0x4ad000u < 0x666000u ? g_data + ((unsigned)(a) - 0x4ad000u) : g_image + ((unsigned)(a) - GAME_BASE))
 
 /* a rebuilt function and the original's address, where the game's own remaining code and its tables reach it */
 typedef struct { unsigned addr; void *fn; const char *name; } SaHook;

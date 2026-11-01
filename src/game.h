@@ -6,6 +6,9 @@
 #include "axis.h"
 #include "scene.h"
 #include "globals.h"
+#ifdef AXIS_DIRECT
+#include "data/layout_names.h"   /* (in AxisRC.exe the named globals are members of g_rdata / g_data) */
+#endif
 
 /* ---- OpenGL, through the import table ---- */
 #define GL_TEXTURE_2D 0x0de1

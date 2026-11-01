@@ -38,8 +38,15 @@ typedef uint64_t u64;
 #define IMG_BASE 0x400000u
 #define IMG_SIZE 0x76b000u
 #ifdef AXIS_DIRECT
+/* (its read-only data, 0x4a9000 .. 0x4ad000, and writable data, 0x4ad000 .. 0xb13000, are the structs g_rdata and
+   g_data of src/data/layout.h; the rest - the header, the code bytes still read - is g_image) */
 extern unsigned char g_image[];
-#define IMG(a) ((u32)g_image + ((u32)(a) - IMG_BASE))
+struct GameRdata;
+struct GameData;
+extern struct GameRdata g_rdata;
+extern struct GameData g_data;
+#define IMG(a) ((u32)(a) - 0x4a9000u < 0x4000u ? (u32)&g_rdata + ((u32)(a) - 0x4a9000u) : \
+                (u32)(a) - 0x4ad000u < 0x666000u ? (u32)&g_data + ((u32)(a) - 0x4ad000u) : (u32)g_image + ((u32)(a) - IMG_BASE))
 static inline u32 img_reloc(u32 a) { return a - IMG_BASE < IMG_SIZE ? IMG(a) : a; }
 /* (of the operand's own type: a pointer stays a pointer, so RELOC(p) + 1 steps as p + 1 did) */
 #define RELOC(a) ((__typeof__((a) + 0))img_reloc((u32)(a)))

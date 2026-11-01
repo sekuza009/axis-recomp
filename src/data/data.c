@@ -2,6 +2,10 @@
    Each piece is copied to its address at start-up (standalone/main.c); see tools/mkdatasrc.py for the forms. */
 #include "../game.h"
 #include "data.h"
+#include "layout.h"
+
+/* the game's writable data (0x4ad000 .. 0xb13000): src/data/layout.h; the pieces below copied in at start-up */
+struct GameData g_data __attribute__((aligned(4096)));
 
 static const u32 d_4ad000[] = {   /* 0x4ad000 */
 	0x00000000, FN_ADDR(static_startTex64x64, 0x42b120),
