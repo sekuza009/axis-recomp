@@ -371,7 +371,7 @@ u32 (menu_enterMenus)(void)
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, OBJ(g_armcTabColour) + i * 4) = colourA[i];
-		GAME_VAR(u32, 0x4dc1d0 + i * 4) = colourB[i];
+		GAME_VAR(u32, OBJ(g_armcTabColourDim) + i * 4) = colourB[i];
 	}
 	g_progressWentUp = 0;
 	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
@@ -482,7 +482,7 @@ void (armc_drawPanels)(void)
 			panel_resize(p, &g_panelSize2);
 		else if (k == 3)
 			panel_resize(p, &g_panelSize3);
-		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(0x4dcfc4)), F(0x4a9424)), F(0x4a94b4)));
+		float y = f32(fsub_m(fadd_m(fadd_m(fmul_m((long double)k, F(0x4a93d0)), F(OBJ(g_armcCameraBox) + 0x84)), F(0x4a9424)), F(0x4a94b4)));
 		glTranslatef_bits(p->x, BITS(y), g_armcPanelDepth);
 		glPushMatrix();
 		gl_rotateXYZ(0, BITS(p->angle), 0);
@@ -574,7 +574,7 @@ void (armc_initCameraBox)(void)
 		{ 0x98, -1 }, { 0xa0, 1 }, { 0xa4, -1 }, { 0xa8, -1 }, { 0xb0, -1 }, { 0xb4, -1 }, { 0xb8, -1 },
 		{ 0xc0, 0 }, { 0xc4, 0 }, { 0xc8, 0 }, { 0xd0, 0 }, { 0xd4, 0 } };
 	for (unsigned k = 0; k < sizeof corner / sizeof corner[0]; k++)
-		GAME_VAR(u32, 0x4dcf00 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
+		GAME_VAR(u32, OBJ(g_armcCameraBox) - 0x40 + corner[k].offset) = corner[k].sign > 0 ? 0x442f0000 : corner[k].sign < 0 ? 0xc42f0000 : 0;
 }
 
 /* 0x40dfa0: the six parts' bounding boxes (+-600, 0x58 bytes each from 0x4dc550), their offsets, and the camera's
@@ -695,7 +695,7 @@ int (armc_drawModeTabs)(void)
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
-		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? OBJ(g_armcTabColour) : IMG(0x4dc1d0));
+		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? OBJ(g_armcTabColour) : OBJ(g_armcTabColourDim));
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		int x = g_armcStatsPanelLeft;
 		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));

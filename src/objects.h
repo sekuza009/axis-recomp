@@ -151,7 +151,7 @@
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
 #define g_mechPartStats ((int *)IMG(0x4dcab4))   /* int[7]; the mech stats copied from a part (armc_parts' loop of 7) */
 #define g_armcTabColour ((u32 *)IMG(0x4dbc58))   /* u32[4]; ARM CENTER's chosen tab colour (armc_misc's loop of 4) */
-#define g_legsStats ((float *)IMG(0x4dc228))   /* float[2]; two leg values (armc_stats' loop of 2) */
+#define g_legsStats ((float *)IMG(0x4dc228))   /* float[7]; the legs' stats: two values (armc_stats' loop of 2), four speed corrections (g_legsSpeedCorrection + k * 4; three of them bonuses from +0xc), the weight (g_legsWeight) */
 #define g_armsStats ((int *)IMG(0x4dc290))   /* int[5]; the arms' stats copied from the part (armc_parts' loop of 5) */
 #define g_dpConnections ((int *)IMG(0xa0bae0))   /* int[4]; the DirectPlay connections by kind (net_connectionAvailable: below 4) */
 #define g_camPoints ((float *)IMG(0x4df870))   /* float[20]; the menu camera's five target points (x y z */
@@ -164,3 +164,7 @@
 #define g_menuLook ((float *)IMG(0x680378))   /* float[3]; the point the menu camera looks at (g_menuCameraLook */
 #define g_menuEyeHome ((float *)IMG(0x9db090))   /* float[3]; the menu camera's home position (g_menuCameraX .. Z) */
 #define g_menuLookHome ((float *)IMG(0x76d3f8))   /* float[3]; the menu camera's home look-at point (g_menuLookAtX .. Z) */
+#define g_armcTabColourDim ((u32 *)IMG(0x4dc1d0))   /* u32[4]; ARM CENTER's tab colour when not chosen (RGBA; g_armcTabColour the chosen one: armc_misc's loop of 4) */
+#define g_mechSpeeds ((float *)IMG(0x4dcaf8))   /* float[6]; the mech's speeds from its legs: normal (g_mechNormalSpeed) .. max backward (g_mechMaxSpeedBwd) .. the legs' max weight (g_legsMaxWeight) */
+#define g_boosterStats ((float *)IMG(0x4dce80))   /* float[10]; the booster's stats: thrust type (g_boosterThrustType) */
+#define g_armcCameraBox ((u32 *)IMG(0x4dcf40))   /* u32[38]; ARM CENTER's camera box corners (+-700 or 0 as floats; armc_initCameraBox writes them from 0x4dcf00 + 0x40 ..) */

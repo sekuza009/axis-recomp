@@ -160,6 +160,8 @@ extern struct GameData g_data;
 #define g_armcCamDistance (*(float *)((u8 *)g_menuEye_v + 0x8))
 #undef g_armcCamHeight
 #define g_armcCamHeight (*(float *)((u8 *)g_menuEye_v + 0x4))
+#undef g_armcCameraBox
+#define g_armcCameraBox ((u32 *)g_armcCameraBox_v)
 #undef g_armcChanged
 #define g_armcChanged (*(int *)g_armcChanged_v)
 #undef g_armcColours
@@ -173,11 +175,11 @@ extern struct GameData g_data;
 #undef g_armcEntered
 #define g_armcEntered (*(int *)g_armcEntered_v)
 #undef g_armcFrom
-#define g_armcFrom (g_data.g_armcFrom_)
+#define g_armcFrom (*(int *)g_armcFrom_v)
 #undef g_armcLastPart
 #define g_armcLastPart (*(int *)g_armcLastPart_v)
 #undef g_armcLeaving
-#define g_armcLeaving (g_data.g_armcLeaving_)
+#define g_armcLeaving (*(int *)g_armcLeaving_v)
 #undef g_armcLevel
 #define g_armcLevel (*(int *)g_armcLevel_v)
 #undef g_armcLookCos
@@ -203,7 +205,7 @@ extern struct GameData g_data;
 #undef g_armcMoveTargetZ
 #define g_armcMoveTargetZ (*(int *)g_armcMoveTargetZ_v)
 #undef g_armcPanelDepth
-#define g_armcPanelDepth (g_data.g_armcPanelDepth_)
+#define g_armcPanelDepth (*(u32 *)((u8 *)g_armcCameraBox_v + 0x88))
 #undef g_armcParts
 #define g_armcParts ((int *)g_armcParts_v)
 #undef g_armcPreview
@@ -215,7 +217,7 @@ extern struct GameData g_data;
 #undef g_armcSlot
 #define g_armcSlot (*(int *)g_armcSlot_v)
 #undef g_armcSpin
-#define g_armcSpin (g_data.g_armcSpin_)
+#define g_armcSpin (*(int *)g_armcSpin_v)
 #undef g_armcState
 #define g_armcState (*(int *)g_armcState_v)
 #undef g_armcStatsPanelBottom
@@ -226,6 +228,8 @@ extern struct GameData g_data;
 #define g_armcStatsPanelTop (*(int *)g_armcStatsPanelTop_v)
 #undef g_armcTabColour
 #define g_armcTabColour ((u32 *)g_armcTabColour_v)
+#undef g_armcTabColourDim
+#define g_armcTabColourDim ((u32 *)g_armcTabColourDim_v)
 #undef g_armcUnusedFlag
 #define g_armcUnusedFlag (*(int *)g_armcUnusedFlag_v)
 #undef g_armcValue
@@ -247,7 +251,7 @@ extern struct GameData g_data;
 #undef g_bestLevelNet
 #define g_bestLevelNet (*(int *)g_bestLevelNet_v)
 #undef g_bestProgressSolo
-#define g_bestProgressSolo (g_data.g_bestProgressSolo_)
+#define g_bestProgressSolo (*(int *)g_bestProgressSolo_v)
 #undef g_bindPage
 #define g_bindPage (*(int *)g_bindPage_v)
 #undef g_bindRow
@@ -257,17 +261,19 @@ extern struct GameData g_data;
 #undef g_bitStream
 #define g_bitStream (*(const u8 * *)g_bitStream_v)
 #undef g_boosterActiveTime
-#define g_boosterActiveTime (g_data.g_boosterActiveTime_)
+#define g_boosterActiveTime (*(float *)((u8 *)g_boosterStats_v + 0x4))
 #undef g_boosterNormalSpeed
-#define g_boosterNormalSpeed (g_data.g_boosterNormalSpeed_)
+#define g_boosterNormalSpeed (*(float *)((u8 *)g_boosterStats_v + 0x10))
 #undef g_boosterRechargeDelay
-#define g_boosterRechargeDelay (g_data.g_boosterRechargeDelay_)
+#define g_boosterRechargeDelay (*(float *)((u8 *)g_boosterStats_v + 0xc))
 #undef g_boosterRechargeTime
-#define g_boosterRechargeTime (g_data.g_boosterRechargeTime_)
+#define g_boosterRechargeTime (*(float *)((u8 *)g_boosterStats_v + 0x8))
+#undef g_boosterStats
+#define g_boosterStats ((float *)g_boosterStats_v)
 #undef g_boosterThrustType
-#define g_boosterThrustType (*(int *)g_boosterThrustType_v)
+#define g_boosterThrustType (*(int *)((u8 *)g_boosterStats_v + 0x0))
 #undef g_boosterWeight
-#define g_boosterWeight (g_data.g_boosterWeight_)
+#define g_boosterWeight (*(float *)((u8 *)g_boosterStats_v + 0x20))
 #undef g_briefingBottom
 #define g_briefingBottom (*(int *)g_briefingBottom_v)
 #undef g_briefingClock
@@ -665,13 +671,13 @@ extern struct GameData g_data;
 #undef g_headDetectionRange
 #define g_headDetectionRange (*(float *)g_headDetectionRange_v)
 #undef g_headHackingLevel
-#define g_headHackingLevel (g_data.g_headHackingLevel_)
+#define g_headHackingLevel (*(int *)g_headHackingLevel_v)
 #undef g_headLockOnTime
-#define g_headLockOnTime (g_data.g_headLockOnTime_)
+#define g_headLockOnTime (*(float *)g_headLockOnTime_v)
 #undef g_headTargetKeepTime
-#define g_headTargetKeepTime (g_data.g_headTargetKeepTime_)
+#define g_headTargetKeepTime (*(float *)g_headTargetKeepTime_v)
 #undef g_headWeight
-#define g_headWeight (g_data.g_headWeight_)
+#define g_headWeight (*(float *)g_headWeight_v)
 #undef g_hostAddressBlock
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostResultFlag
@@ -695,7 +701,7 @@ extern struct GameData g_data;
 #undef g_itemBonusDetectionRange
 #define g_itemBonusDetectionRange (*(float *)g_itemBonusDetectionRange_v)
 #undef g_itemBonusHacking
-#define g_itemBonusHacking (g_data.g_itemBonusHacking_)
+#define g_itemBonusHacking (*(float *)g_itemBonusHacking_v)
 #undef g_itemBonusLockOn
 #define g_itemBonusLockOn (*(float *)g_itemBonusLockOn_v)
 #undef g_itemBonusRechargeTime
@@ -705,7 +711,7 @@ extern struct GameData g_data;
 #undef g_itemBonusTargetKeep
 #define g_itemBonusTargetKeep (*(float *)g_itemBonusTargetKeep_v)
 #undef g_itemBonusWeightLimit
-#define g_itemBonusWeightLimit (g_data.g_itemBonusWeightLimit_)
+#define g_itemBonusWeightLimit (*(float *)g_itemBonusWeightLimit_v)
 #undef g_itemSlot4
 #define g_itemSlot4 (*(int *)((u8 *)g_mechSettings_v + 0x0))
 #undef g_itemSlot5
@@ -763,13 +769,13 @@ extern struct GameData g_data;
 #undef g_launchMessage
 #define g_launchMessage (*(const char * *)g_launchMessage_v)
 #undef g_legsMaxWeight
-#define g_legsMaxWeight (g_data.g_legsMaxWeight_)
+#define g_legsMaxWeight (*(float *)((u8 *)g_mechSpeeds_v + 0x14))
 #undef g_legsSpeedCorrection
-#define g_legsSpeedCorrection (g_data.g_legsSpeedCorrection_)
+#define g_legsSpeedCorrection (*(float *)((u8 *)g_legsStats_v + 0x8))
 #undef g_legsStats
 #define g_legsStats ((float *)g_legsStats_v)
 #undef g_legsWeight
-#define g_legsWeight (g_data.g_legsWeight_)
+#define g_legsWeight (*(float *)((u8 *)g_legsStats_v + 0x18))
 #undef g_listRefreshPeriod
 #define g_listRefreshPeriod (*(int *)g_listRefreshPeriod_v)
 #undef g_loadStep
@@ -967,15 +973,17 @@ extern struct GameData g_data;
 #undef g_mechItem5
 #define g_mechItem5 (*(u32 *)((u8 *)g_mechSettings_v + 0x14))
 #undef g_mechMaxSpeedBwd
-#define g_mechMaxSpeedBwd (g_data.g_mechMaxSpeedBwd_)
+#define g_mechMaxSpeedBwd (*(float *)((u8 *)g_mechSpeeds_v + 0x8))
 #undef g_mechMobility
 #define g_mechMobility (*(float *)g_mechMobility_v)
 #undef g_mechNormalSpeed
-#define g_mechNormalSpeed (g_data.g_mechNormalSpeed_)
+#define g_mechNormalSpeed (*(float *)((u8 *)g_mechSpeeds_v + 0x0))
 #undef g_mechPartStats
 #define g_mechPartStats ((int *)g_mechPartStats_v)
 #undef g_mechSettings
 #define g_mechSettings ((int *)g_mechSettings_v)
+#undef g_mechSpeeds
+#define g_mechSpeeds ((float *)g_mechSpeeds_v)
 #undef g_menuCamX
 #define g_menuCamX (*(u32 *)g_menuCamX_v)
 #undef g_menuCamZ
@@ -1329,7 +1337,7 @@ extern struct GameData g_data;
 #undef g_profileScreenReady
 #define g_profileScreenReady (*(int *)g_profileScreenReady_v)
 #undef g_progressWentUp
-#define g_progressWentUp (g_data.g_progressWentUp_)
+#define g_progressWentUp (*(int *)g_progressWentUp_v)
 #undef g_projMode
 #define g_projMode (*(int *)g_projMode_v)
 #undef g_ptxBitPos
@@ -1759,7 +1767,7 @@ extern struct GameData g_data;
 #undef g_unusedArmcWord1
 #define g_unusedArmcWord1 (*(int *)g_unusedArmcWord1_v)
 #undef g_unusedArmcWord2
-#define g_unusedArmcWord2 (g_data.g_unusedArmcWord2_)
+#define g_unusedArmcWord2 (*(int *)g_unusedArmcWord2_v)
 #undef g_unusedArmcWord3
 #define g_unusedArmcWord3 (*(int *)g_unusedArmcWord3_v)
 #undef g_unusedArmcWord4

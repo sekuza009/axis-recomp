@@ -13,7 +13,7 @@
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 
-static const u32 *const bright = g_armcTabColour, *const dim = (const u32 *)IMG(0x4dc1d0);
+static const u32 *const bright = g_armcTabColour, *const dim = g_armcTabColourDim;
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 
 /* the box at the bottom right: "<0x756da4> <the name of 0x4dceac (0x751924)>" (the texture bound) */

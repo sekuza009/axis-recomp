@@ -92,11 +92,11 @@ u8 *(armc_readMechStats)(void)
 	mulf(ADDR(g_mechBoosterRecharge), &FIELD(float, A, 0x1eccab8), k_1000f);
 	mulf(IMG(0x4dcaf4), &FIELD(float, A, 0x1eccabc), k_1000f);
 	mulf(ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac0), k_0_036f);
-	mulf(IMG(0x4dcafc), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac4));
+	mulf((OBJ(g_mechSpeeds) + 0x4), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccac4));
 	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &FIELD(float, A, 0x1eccac8));
-	mulf(IMG(0x4dcb04), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccacc));
+	mulf((OBJ(g_mechSpeeds) + 0xc), (const float *)ADDR(g_mechNormalSpeed), &FIELD(float, A, 0x1eccacc));
 	copyf(ADDR(g_legsMaxWeight), &FIELD(float, A, 0x1ecca84));
-	copyf(0x4dcb08, &FIELD(float, A, 0x1ecca88));
+	copyf(OBJ(g_mechSpeeds) + 0x10, &FIELD(float, A, 0x1ecca88));
 	return g;
 }
 
@@ -149,9 +149,9 @@ int (armc_drawPartPanels)(void)
 	copyf(OBJ(g_legsStats), &FIELD(float, p, 0x163c968));
 	copyf(OBJ(g_legsStats) + 4, &FIELD(float, p, 0x163c96c));
 	mulf(ADDR(g_legsSpeedCorrection), &FIELD(float, p, 0x163c970), (const float *)ADDR(k_100f));
-	mulf(IMG(0x4dc234), &FIELD(float, p, 0x163c974), (const float *)ADDR(k_100f));
-	mulf(IMG(0x4dc238), &FIELD(float, p, 0x163c97c), (const float *)ADDR(k_100f));
-	mulf(IMG(0x4dc23c), &FIELD(float, p, 0x163c978), (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0xc, &FIELD(float, p, 0x163c974), (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0x10, &FIELD(float, p, 0x163c97c), (const float *)ADDR(k_100f));
+	mulf(OBJ(g_legsStats) + 0x14, &FIELD(float, p, 0x163c978), (const float *)ADDR(k_100f));
 	copyf(ADDR(g_legsWeight), &FIELD(float, p, 0x163c964));
 	int weapon = FIELD(int, player, 0x175554c);
 	p = g + weapon * 0x1820;
@@ -174,7 +174,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 {
 	static const struct { u32 cursor, count, list; } parts[5] = {
 		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c) }, { IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964) },
-		{ IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c) }, { IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c) } };
+		{ (OBJ(g_boosterStats) + 0x24), IMG(0x4dca94), IMG(0x4dc89c) }, { IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c) } };
 	g_mechChanged = 1;
 	if (part > 4)
 		return part;

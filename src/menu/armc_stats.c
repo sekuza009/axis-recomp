@@ -366,7 +366,7 @@ static void section4(Panel *p)
 	}
 
 	/* the three speeds (0x4dce94, 0x4dce9c, 0x4dce98) and below them their changes (with 0x4dc234 .. 0x4dc23c) */
-	static const u32 speeds[3] = { IMG(0x4dce94), IMG(0x4dce9c), IMG(0x4dce98) }, bonuses[3] = { IMG(0x4dc234), IMG(0x4dc238), IMG(0x4dc23c) };
+	static const u32 speeds[3] = { (OBJ(g_boosterStats) + 0x14), (OBJ(g_boosterStats) + 0x1c), (OBJ(g_boosterStats) + 0x18) }, bonuses[3] = { (OBJ(g_legsStats) + 0xc), (OBJ(g_legsStats) + 0x10), (OBJ(g_legsStats) + 0x14) };
 	static const u32 shown[2][3] = { { STR(0x4b0228, "%03.0f/"), STR(0x4b021c, " %03.0f/"), STR(0x4b0214, " %03.0f") },
 	                                 { STR(0x4b02bc, "%.0f/"), STR(0x4b02b4, " %.0f/"), STR(0x4b02a8, " %.0f(km/h)") } };
 	label(p, ROW(5), MSG(646, "MAX SPEED FWD/SWD/BWD"));
@@ -424,7 +424,7 @@ static void section5(Panel *p)
 	sprintf(p->t.line, FMT(p->korean ? STR(0x4b025c, "%.0f(km/h)") : STR(0x4b01e0, "%.1f(km/h)")), (double)g_mechNormalSpeed);
 	value(p, ROW(7));
 	label(p, ROW(8), MSG(679, "MAX SPEED"));
-	static const u32 speeds[3] = { IMG(0x4dcafc), IMG(0x4dcb04), ADDR(g_mechMaxSpeedBwd) };
+	static const u32 speeds[3] = { (OBJ(g_mechSpeeds) + 0x4), (OBJ(g_mechSpeeds) + 0xc), ADDR(g_mechMaxSpeedBwd) };
 	for (int k = 0; k < 3; k++) {
 		u32 format = p->korean ? (k < 2 ? STR(0x4b02bc, "%.0f/") : STR(0x4b025c, "%.0f(km/h)")) : (k < 2 ? STR(0x4b0254, "%.1f/") : STR(0x4b01e0, "%.1f(km/h)"));
 		sprintf(p->t.bonus, FMT(format), (double)F(speeds[k]));
@@ -450,7 +450,7 @@ static void section5(Panel *p)
 void (armc_drawStatsPanel)(void)
 {
 	int slot = g_armcPartSlot, korean = g_language == 1;
-	const u32 *bright = g_armcTabColour, *dim = (const u32 *)IMG(0x4dc1d0);
+	const u32 *bright = g_armcTabColour, *dim = g_armcTabColourDim;
 	int hovered = armcMain_hitTest(g_mouseX, g_mouseY);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;

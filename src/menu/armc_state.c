@@ -39,7 +39,7 @@ void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
 		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8), OBJ(g_armcParts) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c), (OBJ(g_armcParts) + 0x4) },
-		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), (OBJ(g_armcParts) + 0x8) }, { IMG(0x4dcea4), IMG(0x4dca94), IMG(0x4dc89c), (OBJ(g_armcParts) + 0xc) },
+		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), (OBJ(g_armcParts) + 0x8) }, { (OBJ(g_boosterStats) + 0x24), IMG(0x4dca94), IMG(0x4dc89c), (OBJ(g_armcParts) + 0xc) },
 		{ IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
