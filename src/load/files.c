@@ -347,10 +347,10 @@ int (autoplay_listFiles)(void)
 	int search = crt_findfirst((const char *)STR(0x4b2a84, "*.ape"), &found);
 	if (search < 0)
 		return crt_chdir((const char *)STR(0x4b2a80, ".."));
-	strcpy((char *)(IMG(0x9dda88) + g_mapSelectCount * 0x44), found.name);
+	strcpy((char *)(OBJ(g_fileList) + g_mapSelectCount * 0x44), found.name);
 	g_mapSelectCount++;
 	while (!crt_findnext(search, &found)) {
-		strcpy((char *)(IMG(0x9dda88) + g_mapSelectCount * 0x44), found.name);
+		strcpy((char *)(OBJ(g_fileList) + g_mapSelectCount * 0x44), found.name);
 		if (++g_mapSelectCount > 0x3fe)
 			break;
 	}

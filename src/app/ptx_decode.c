@@ -92,9 +92,9 @@ int (ptx_readBlock)(int *block)
 }
 
 /* the RGB of a pixel from its Y, Cb and Cr (16.16 tables for green) */
-#define RED(Y, Cr) g_clamp[GAME_VAR(int, 0xaa228c + (Cr) * 4) + (Y)]
-#define GREEN(Y, Cb, Cr) g_clamp[((GAME_VAR(int, 0xa6170c + (Cb) * 4) + GAME_VAR(int, 0xaa2690 + (Cr) * 4)) >> 16) + (Y)]
-#define BLUE(Y, Cb) g_clamp[GAME_VAR(int, 0xa1f304 + (Cb) * 4) + (Y)]
+#define RED(Y, Cr) g_clamp[GAME_VAR(int, OBJ(g_ptxCrRed) + (Cr) * 4) + (Y)]
+#define GREEN(Y, Cb, Cr) g_clamp[((GAME_VAR(int, OBJ(g_ptxCbGreen) + (Cb) * 4) + GAME_VAR(int, OBJ(g_ptxCrGreen) + (Cr) * 4)) >> 16) + (Y)]
+#define BLUE(Y, Cb) g_clamp[GAME_VAR(int, OBJ(g_ptxCbBlue) + (Cb) * 4) + (Y)]
 
 /* 0x46e830: n pixels to RGB */
 void (ptx_toRgb)(const u8 *y, u8 *dst, unsigned n)
@@ -147,7 +147,7 @@ static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 
 void (ptx_inverseDct)(const int *in, u8 *out)
 {
-	const int *quant = (const int *)IMG(0xaa2c94);
+	const int *quant = g_ptxQuant;
 	const u8 *limit = g_clamp + 0x80;
 	int ws[64];
 	for (int c = 0; c < 8; c++) {   /* pass 1: the columns, dequantised */
@@ -267,7 +267,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	for (int p = 0; p < planes; p++) {
 		if (p <= 3)
 			g_table = p == 1 || p == 2;
-		u8 *plane = (u8 *)IMG(0xa6228c) + (p << 16);
+		u8 *plane = g_ptxPlanes + (p << 16);
 		ptx_startBitReader(data + pos);
 		if (w * h > 0)
 			for (unsigned n = (unsigned)(w * h + 0x3f) >> 6; n; n--) {
@@ -281,9 +281,9 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	if (close)
 		fclose(f);
 	if (head.type == 0x81)
-		ptx_toRgb((const u8 *)IMG(0xa6228c), g_ptxPixels, w * h);
+		ptx_toRgb(g_ptxPlanes, g_ptxPixels, w * h);
 	else if (head.type == 0x82)
-		ptx_toRgba((const u8 *)IMG(0xa6228c), g_ptxPixels, w * h);
+		ptx_toRgba(g_ptxPlanes, g_ptxPixels, w * h);
 	ptx_layoutBlocks(g_ptxPixels, out, w, h, planes);
 	*width = w;
 	*height = h;

@@ -602,7 +602,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	GAME_VAR(int, g + 0x1f35bc) = 0;
 	if (GAME_VAR(int, g + 8) == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
-			const char *e = (const char *)IMG(0x9dda88) + k * 0x44;
+			const char *e = (const char *)OBJ(g_fileList) + k * 0x44;
 			if (GAME_VAR(int, e + 0x40) == 1)
 				strcpy((char *)g + 0x1f1cbc + GAME_VAR(int, g + 0x1f35bc)++ * 0x40, e);
 		}

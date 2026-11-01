@@ -12,13 +12,13 @@
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */
 void (ptx_initClampTable)(void)
 {
-	memset((void *)IMG(0xa61b0c), 0, 0x100);
-	g_ptxClamp = (u8 *)IMG(0xa61c0c);
+	memset((void *)OBJ(g_ptxClampTable), 0, 0x100);
+	g_ptxClamp = (u8 *)(OBJ(g_ptxClampTable) + 0x100);
 	for (int i = 0; i < 256; i++)
-		GAME_VAR(u8, 0xa61c0c + i) = (u8)i;
-	memset((void *)IMG(0xa61d0c), 0xff, 0x180);
-	memset((void *)IMG(0xa61e8c), 0, 0x180);
-	memcpy((void *)IMG(0xa6200c), g_ptxClamp, 0x80);
+		GAME_VAR(u8, OBJ(g_ptxClampTable) + 0x100 + i) = (u8)i;
+	memset((void *)(OBJ(g_ptxClampTable) + 0x200), 0xff, 0x180);
+	memset((void *)(OBJ(g_ptxClampTable) + 0x380), 0, 0x180);
+	memcpy((void *)(OBJ(g_ptxClampTable) + 0x500), g_ptxClamp, 0x80);
 }
 
 /* 0x46e7c0: YCbCr -> RGB, the four per-component tables (Cr to red, Cb and Cr to green, Cb to blue) */
@@ -26,10 +26,10 @@ void (ptx_initColourTables)(void)
 {
 	int c = 0x2c8d00, d = (int)0xff4d0b80, s = (int)0xff1daf00, e = 0x5b6900;
 	for (int k = 0; ; k += 4) {
-		I32(0xa6170c + k) = c;
-		I32(0xaa228c + k) = d >> 16;
-		I32(0xa1f304 + k) = s >> 16;
-		I32(0xaa2690 + k) = e;
+		I32(OBJ(g_ptxCbGreen) + k) = c;
+		I32(OBJ(g_ptxCrRed) + k) = d >> 16;
+		I32(OBJ(g_ptxCbBlue) + k) = s >> 16;
+		I32(OBJ(g_ptxCrGreen) + k) = e;
 		c -= 0x581a;
 		d += 0x166e9;
 		s += 0x1c5a2;
@@ -43,7 +43,7 @@ void (ptx_initColourTables)(void)
 void (ptx_initYCbCrTables)(void)
 {
 	int c = 0, d = 0, s = 0x8000, e = 0, b = 0, l10 = 0x807fff, l14 = 0, l18 = 0;
-	for (u32 p = 0xa1ff04; p <= 0xa20300; p += 4) {
+	for (u32 p = OBJ(g_ptxYCbCrTables) + 0x800; p <= OBJ(g_ptxYCbCrTables) + 0xbfc; p += 4) {   /* (the third table; the others around it) */
 		I32(p - 0x800) = c;
 		I32(p - 0x400) = d;
 		I32(p) = s;
@@ -70,7 +70,7 @@ void (ptx_initQuantTables)(int q)
 		return;
 	for (int j = 0; j < 128; j++) {
 		int t = (int)((u32)I32(IMG(0x4c6db0) + j * 4) * (u32)I32(IMG(0x4aa2f0) + (j & 63) * 4) * 100u);
-		I32(IMG(0xaa2c94) + j * 4) = (t / q) >> 12;
+		I32(OBJ(g_ptxQuant) + j * 4) = (t / q) >> 12;
 	}
 }
 
@@ -86,7 +86,7 @@ void (ptx_initDequantTables)(int q)
 	for (int j = 0; j < 128; j++) {
 		X v = (X)F32(IMG(0x4c6bb0) + j * 4) * k_100;
 		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
-		F32(0xaa2a90 + j * 4) = (float)((X)k_1 / v);
+		F32(OBJ(g_ptxDequant) + j * 4) = (float)((X)k_1 / v);
 	}
 }
 

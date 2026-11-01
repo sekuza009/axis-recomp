@@ -15,3 +15,13 @@ g_ptxData
 g_roomList
 g_missions
 g_serverNames
+g_ptxCbGreen
+g_ptxCrRed
+g_ptxCbBlue
+g_ptxCrGreen
+g_ptxYCbCrTables
+g_ptxClampTable
+g_ptxPlanes
+g_ptxDequant
+g_ptxQuant
+g_fileList

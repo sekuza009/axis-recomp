@@ -346,7 +346,7 @@ void (mapSelect_ok)(void)
 {
 	int count = g_mapSelectCount;
 	for (int i = 0; i < count; i++)
-		if (GAME_VAR(int, 0x9ddac8 + i * 0x44) == 1) {
+		if (GAME_VAR(int, OBJ(g_fileList) + 0x40 + i * 0x44) == 1) {
 			sound_playMenu(0);
 			g_mapListFlaggedCount = g_mapSelectCount;
 			g_mainMenuFadingIn = 1;

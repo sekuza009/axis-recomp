@@ -12,6 +12,7 @@ struct GameData g_data __attribute__((aligned(4096)));
 int g_keySeen_v[256] __attribute__((aligned(16)));   /* 0x4d1a98 */
 char g_messages_v[128256] __attribute__((aligned(16)));   /* 0x74de24 */
 char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
+u8 g_fileList_v[69632] __attribute__((aligned(16)));   /* 0x9dda88 */
 u8 g_missions_v[7560] __attribute__((aligned(16)));   /* 0x9ef2d0 */
 char g_briefingText_v[1600] __attribute__((aligned(16)));   /* 0x9f1064 */
 u8 g_roomList_v[7744] __attribute__((aligned(16)));   /* 0x9fd960 */
@@ -21,12 +22,22 @@ int g_randTable_v[4096] __attribute__((aligned(16)));   /* 0xa106f8 */
 float g_tanTable_v[3600] __attribute__((aligned(16)));   /* 0xa146f8 */
 float g_cosTable_v[3600] __attribute__((aligned(16)));   /* 0xa17f38 */
 float g_sinTable_v[3600] __attribute__((aligned(16)));   /* 0xa1b778 */
+int g_ptxCbBlue_v[256] __attribute__((aligned(16)));   /* 0xa1f304 */
+int g_ptxYCbCrTables_v[2048] __attribute__((aligned(16)));   /* 0xa1f704 */
 u8 g_ptxPixels_v[262144] __attribute__((aligned(16)));   /* 0xa21708 */
+int g_ptxCbGreen_v[256] __attribute__((aligned(16)));   /* 0xa6170c */
+u8 g_ptxClampTable_v[1408] __attribute__((aligned(16)));   /* 0xa61b0c */
+u8 g_ptxPlanes_v[262144] __attribute__((aligned(16)));   /* 0xa6228c */
+int g_ptxCrRed_v[256] __attribute__((aligned(16)));   /* 0xaa228c */
+int g_ptxCrGreen_v[256] __attribute__((aligned(16)));   /* 0xaa2690 */
+float g_ptxDequant_v[128] __attribute__((aligned(16)));   /* 0xaa2a90 */
+int g_ptxQuant_v[128] __attribute__((aligned(16)));   /* 0xaa2c94 */
 u8 g_ptxData_v[262144] __attribute__((aligned(16)));   /* 0xaa2e98 */
 const DataPiece g_splitObjects[] = {
 	{ 0x4d1a98, g_keySeen_v, sizeof g_keySeen_v },
 	{ 0x74de24, g_messages_v, sizeof g_messages_v },
 	{ 0x9dc92c, g_chatLine_v, sizeof g_chatLine_v },
+	{ 0x9dda88, g_fileList_v, sizeof g_fileList_v },
 	{ 0x9ef2d0, g_missions_v, sizeof g_missions_v },
 	{ 0x9f1064, g_briefingText_v, sizeof g_briefingText_v },
 	{ 0x9fd960, g_roomList_v, sizeof g_roomList_v },
@@ -36,7 +47,16 @@ const DataPiece g_splitObjects[] = {
 	{ 0xa146f8, g_tanTable_v, sizeof g_tanTable_v },
 	{ 0xa17f38, g_cosTable_v, sizeof g_cosTable_v },
 	{ 0xa1b778, g_sinTable_v, sizeof g_sinTable_v },
+	{ 0xa1f304, g_ptxCbBlue_v, sizeof g_ptxCbBlue_v },
+	{ 0xa1f704, g_ptxYCbCrTables_v, sizeof g_ptxYCbCrTables_v },
 	{ 0xa21708, g_ptxPixels_v, sizeof g_ptxPixels_v },
+	{ 0xa6170c, g_ptxCbGreen_v, sizeof g_ptxCbGreen_v },
+	{ 0xa61b0c, g_ptxClampTable_v, sizeof g_ptxClampTable_v },
+	{ 0xa6228c, g_ptxPlanes_v, sizeof g_ptxPlanes_v },
+	{ 0xaa228c, g_ptxCrRed_v, sizeof g_ptxCrRed_v },
+	{ 0xaa2690, g_ptxCrGreen_v, sizeof g_ptxCrGreen_v },
+	{ 0xaa2a90, g_ptxDequant_v, sizeof g_ptxDequant_v },
+	{ 0xaa2c94, g_ptxQuant_v, sizeof g_ptxQuant_v },
 	{ 0xaa2e98, g_ptxData_v, sizeof g_ptxData_v },
 	{ 0, 0, 0 }
 };

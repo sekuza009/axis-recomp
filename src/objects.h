@@ -123,3 +123,13 @@
 #define g_roomList ((u8 *)IMG(0x9fd960))   /* u8[7744]; the server's room list (net_clearRoomList: 0x1e40 bytes) */
 #define g_missions ((u8 *)IMG(0x9ef2d0))   /* u8[7560]; the 30 missions of axis.mis: 0xfc bytes each (mission_clear runs to 0x9f109c) */
 #define g_serverNames ((u32 *)IMG(0xa0bf20))   /* u32[1280]; 256 server names of 0x14 bytes */
+#define g_ptxCbGreen ((int *)IMG(0xa6170c))   /* int[256]; YCbCr -> RGB: Cb's part of green (ptx_initColourTables: 256 entries) */
+#define g_ptxCrRed ((int *)IMG(0xaa228c))   /* int[256]; Cr's part of red */
+#define g_ptxCbBlue ((int *)IMG(0xa1f304))   /* int[256]; Cb's part of blue */
+#define g_ptxCrGreen ((int *)IMG(0xaa2690))   /* int[256]; Cr's part of green */
+#define g_ptxYCbCrTables ((int *)IMG(0xa1f704))   /* int[2048]; RGB -> YCbCr: eight tables of 256 (ptx_initYCbCrTables) */
+#define g_ptxClampTable ((u8 *)IMG(0xa61b0c))   /* u8[1408]; the clamp table: 0x100 zeros */
+#define g_ptxPlanes ((u8 *)IMG(0xa6228c))   /* u8[262144]; the decoded planes: 64 KB each */
+#define g_ptxDequant ((float *)IMG(0xaa2a90))   /* float[128]; the two 64-entry dequantisation tables */
+#define g_ptxQuant ((int *)IMG(0xaa2c94))   /* int[128]; the two 64-entry quantisation tables */
+#define g_fileList ((u8 *)IMG(0x9dda88))   /* u8[69632]; 1024 entries of 0x44 bytes: the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */

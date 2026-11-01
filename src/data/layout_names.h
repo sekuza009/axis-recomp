@@ -8,6 +8,7 @@ extern struct GameData g_data;
 extern int g_keySeen_v[256];   /* split out of g_data (src/data/data.c) */
 extern char g_messages_v[128256];   /* split out of g_data (src/data/data.c) */
 extern char g_chatLine_v[1024];   /* split out of g_data (src/data/data.c) */
+extern u8 g_fileList_v[69632];   /* split out of g_data (src/data/data.c) */
 extern u8 g_missions_v[7560];   /* split out of g_data (src/data/data.c) */
 extern char g_briefingText_v[1600];   /* split out of g_data (src/data/data.c) */
 extern u8 g_roomList_v[7744];   /* split out of g_data (src/data/data.c) */
@@ -17,7 +18,16 @@ extern int g_randTable_v[4096];   /* split out of g_data (src/data/data.c) */
 extern float g_tanTable_v[3600];   /* split out of g_data (src/data/data.c) */
 extern float g_cosTable_v[3600];   /* split out of g_data (src/data/data.c) */
 extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxCbBlue_v[256];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxYCbCrTables_v[2048];   /* split out of g_data (src/data/data.c) */
 extern u8 g_ptxPixels_v[262144];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxCbGreen_v[256];   /* split out of g_data (src/data/data.c) */
+extern u8 g_ptxClampTable_v[1408];   /* split out of g_data (src/data/data.c) */
+extern u8 g_ptxPlanes_v[262144];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxCrRed_v[256];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxCrGreen_v[256];   /* split out of g_data (src/data/data.c) */
+extern float g_ptxDequant_v[128];   /* split out of g_data (src/data/data.c) */
+extern int g_ptxQuant_v[128];   /* split out of g_data (src/data/data.c) */
 extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_accountClan
 #define g_accountClan (g_data.g_accountClan_)
@@ -581,6 +591,8 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #define g_excludedKey (g_data.g_excludedKey_)
 #undef g_fieldTabKey
 #define g_fieldTabKey (g_data.g_fieldTabKey_)
+#undef g_fileList
+#define g_fileList ((u8 *)g_fileList_v)
 #undef g_fovKeys
 #define g_fovKeys (g_data.g_fovKeys_)
 #undef g_fps
@@ -1299,16 +1311,34 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #define g_projMode (g_data.g_projMode_)
 #undef g_ptxBitPos
 #define g_ptxBitPos (g_data.g_ptxBitPos_)
+#undef g_ptxCbBlue
+#define g_ptxCbBlue ((int *)g_ptxCbBlue_v)
+#undef g_ptxCbGreen
+#define g_ptxCbGreen ((int *)g_ptxCbGreen_v)
+#undef g_ptxClampTable
+#define g_ptxClampTable ((u8 *)g_ptxClampTable_v)
+#undef g_ptxCrGreen
+#define g_ptxCrGreen ((int *)g_ptxCrGreen_v)
+#undef g_ptxCrRed
+#define g_ptxCrRed ((int *)g_ptxCrRed_v)
 #undef g_ptxData
 #define g_ptxData ((u8 *)g_ptxData_v)
+#undef g_ptxDequant
+#define g_ptxDequant ((float *)g_ptxDequant_v)
 #undef g_ptxLastDc
 #define g_ptxLastDc (g_data.g_ptxLastDc_)
 #undef g_ptxPixels
 #define g_ptxPixels ((u8 *)g_ptxPixels_v)
+#undef g_ptxPlanes
+#define g_ptxPlanes ((u8 *)g_ptxPlanes_v)
+#undef g_ptxQuant
+#define g_ptxQuant ((int *)g_ptxQuant_v)
 #undef g_ptxTable
 #define g_ptxTable (g_data.g_ptxTable_)
 #undef g_ptxTablesReady
 #define g_ptxTablesReady (g_data.g_ptxTablesReady_)
+#undef g_ptxYCbCrTables
+#define g_ptxYCbCrTables ((int *)g_ptxYCbCrTables_v)
 #undef g_quitAsked
 #define g_quitAsked (g_data.g_quitAsked_)
 #undef g_randPos

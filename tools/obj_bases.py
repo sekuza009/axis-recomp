@@ -24,6 +24,7 @@ for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)):
 				return '%sOBJ(%s)%s +' % (m.group(1), name, ' + 0x%x' % (a - lo) if a > lo else '')
 		return m.group(0)
 	u = re.sub(r'(\bGAME_VAR\(\s*[\w \*]+?,\s*\(?\s*)(0x[0-9a-f]{6,7})\s*\+', sub, t)
+	u = re.sub(r'(\b(?:I32|F32|F64)\(\s*\(?\s*)(0x[0-9a-f]{6,7})\s*\+', sub, u)   # (files' GAME_VAR wrappers)
 	if n[0]:
 		total += n[0]; print('%-40s %d' % (f, n[0]))
 		if '--dry' not in sys.argv:

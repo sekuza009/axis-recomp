@@ -34,7 +34,7 @@ void (net_clearBuffers)(void)
 /* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
 void (mapSelect_allOut)(void)
 {
-	for (u32 p = IMG(0x9ddac8); p < IMG(0x9eeac8); p += 0x44)
+	for (u32 p = OBJ(g_fileList) + 0x40; p < OBJ(g_fileList) + 0x40 + 1024 * 0x44; p += 0x44)
 		GAME_VAR(int, p) = 0;
 	g_replayWrap = 1;
 	g_unusedMainMenuWord = 0;
