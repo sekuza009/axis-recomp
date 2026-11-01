@@ -133,11 +133,11 @@ void (mech_loadFromProfile)(void)
 	g_savedMechWeapons = g_profileMechItem0;
 	g_savedMechItem1 = g_profileMechItem1;
 	for (int o = 0; o < 0x90; o += 0x18) {
-		if (!(GAME_VAR(float, 0x9f1a38 + o) >= 0.0f))
-			GAME_VAR(int, 0x9f1a38 + o) = 0;
-		if (!(GAME_VAR(float, 0x9f1a3c + o) >= 0.0f))
-			GAME_VAR(int, 0x9f1a3c + o) = 0;
-		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)(IMG(0x9f1a34) + o), 0x18);
+		if (!(GAME_VAR(float, OBJ(g_campaign) + 0x320 + o) >= 0.0f))
+			GAME_VAR(int, OBJ(g_campaign) + 0x320 + o) = 0;
+		if (!(GAME_VAR(float, OBJ(g_campaign) + 0x324 + o) >= 0.0f))
+			GAME_VAR(int, OBJ(g_campaign) + 0x324 + o) = 0;
+		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)((OBJ(g_campaign) + 0x31c) + o), 0x18);
 	}
 }
 
@@ -155,7 +155,7 @@ void (mech_storeToProfile)(void)
 	g_profileMechItem1 = g_savedMechItem1;
 	g_profileMechItem5 = g_savedMechItem5;
 	g_profileMechItem0 = g_savedMechWeapons;
-	memcpy((void *)IMG(0x9f1a34), (void *)OBJ(g_savedColourChoices), 0x90);
+	memcpy((void *)(OBJ(g_campaign) + 0x31c), (void *)OBJ(g_savedColourChoices), 0x90);
 }
 
 /* 0x447910: the menu camera put back (armc_restoreMenuCamera without its flag) */
@@ -287,7 +287,7 @@ void (roomList_fillPage)(void)
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
 #define sk_top GAME_VAR(int, 0x9f16bc)
 #define sk_row GAME_VAR(int, 0x9f1058)
-#define sk_sel GAME_VAR(int, 0x9f16a4)
+#define sk_sel g_missionPicked
 #define sk_count GAME_VAR(int, 0x9ef2c0)
 
 /* 0x443cd0: cursor up (the list scrolls at the top row) */

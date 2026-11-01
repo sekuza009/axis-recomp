@@ -1,27 +1,8 @@
-g_armcValue   # its old place written (canary): reached at its old place by address
-g_armcViewPoint0Y   # its old place written (canary): reached at its old place by address
-g_armcViewPoint3Y   # its old place written (canary): reached at its old place by address
-g_armcViewPoint5Y   # its old place written (canary): reached at its old place by address
 g_cfgSimpleMenu   # its old place written (canary): reached at its old place by address
-g_dialogFrameTexture   # its old place written (canary): reached at its old place by address
 g_keyEnter   # its old place written (canary): reached at its old place by address
 g_lastTime   # its old place written (canary): reached at its old place by address
-g_mainMenuDepth   # its old place written (canary): reached at its old place by address
-g_menuHintClock   # its old place written (canary): reached at its old place by address
-g_menuIdleTime   # its old place written (canary): reached at its old place by address
 g_mouse2Down   # its old place written (canary): reached at its old place by address
 g_mouse3Down   # its old place written (canary): reached at its old place by address
-g_profileMechArm   # its old place written (canary): reached at its old place by address
-g_profileMechBooster   # its old place written (canary): reached at its old place by address
-g_profileMechChest   # its old place written (canary): reached at its old place by address
-g_profileMechItem0   # its old place written (canary): reached at its old place by address
-g_profileMechItem1   # its old place written (canary): reached at its old place by address
-g_profileMechItem2   # its old place written (canary): reached at its old place by address
-g_profileMechItem3   # its old place written (canary): reached at its old place by address
-g_profileMechItem4   # its old place written (canary): reached at its old place by address
-g_profileMechItem5   # its old place written (canary): reached at its old place by address
-g_profileMechLeg   # its old place written (canary): reached at its old place by address
-g_profileMechRecord   # its old place written (canary): reached at its old place by address
 g_textureSetHeight   # its old place written (canary): reached at its old place by address
 g_gameServerReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
 g_lobbyReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives

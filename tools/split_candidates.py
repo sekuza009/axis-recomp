@@ -54,6 +54,8 @@ for f in files:
 				continue
 			if re.search(r'\b(S|A|G|R|P|I|U|AI|AU|AF|OF|FIELD\w*|PLAYER\w*|STAGE\w*|W16|W32)\([^()]*,\s*$', pre):
 				continue
+			if f == 'axisnet_recomp.c' and re.search(r'\bIMG\(\s*$', pre) and re.match(r'\s*\)', line[m.end():]):
+				continue   # (the patch layer's IMG(0x...) of .data goes through axis_dataAt: to the split variable)
 			numbers[v] += 1
 			if re.match(r'\s*\+', line[m.end():]):   # (a base with an index added: what follows it is reached too)
 				based[v] = True

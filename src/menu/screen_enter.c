@@ -429,7 +429,7 @@ void (console_init)(void)
 		app_requireCd(scene, g_netRole == 1 ? 0 : 1, 1);
 		break;
 	case 3:
-		match_name((const char *)IMG(0x9f1798));
+		match_name((const char *)(OBJ(g_campaign) + 0x80));
 		app_requireCd(scene, 0, 0);
 		break;
 	}

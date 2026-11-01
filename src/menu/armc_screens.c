@@ -6,7 +6,7 @@
 
 #define X0 g_armcStatsPanelLeft
 #define Y0 g_armcStatsPanelTop
-#define X1 GAME_VAR(int, 0x4dcc98)
+#define X1 g_armcSliderLeft
 #define Y1 g_armcStatsPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
 #define g_slot GAME_VAR(int, 0x4dc4b0)

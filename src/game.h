@@ -479,7 +479,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define menu_drawTextureFlipped(x0, y0, x1, y1, tex) GAME_FN(menu_drawTextureFlipped, 0x427b60, void, int, int, int, int, int)(x0, y0, x1, y1, tex)
 #define menu_drawCornerOrnaments(x0, y0, x1, y1) GAME_FN(menu_drawCornerOrnaments, 0x428a00, void, int, int, int, int)(x0, y0, x1, y1)
 #define menu_drawTopRightOrnament(x0, y0, x1) GAME_FN(menu_drawTopRightOrnament, 0x428b50, void, int, int, int)(x0, y0, x1)
-#define g_menuOrnamentTexture GAME_VAR(int, 0x4deb4c)   /* the panel corner ornaments (texture id, four 128-unit quarters) */
+#define g_menuOrnamentTexture (g_menuFrameTextures[0])   /* the panel corner ornaments (texture id, four 128-unit quarters) */
 #define messageBox_keyClose() GAME_FN(messageBox_keyClose, 0x431950, void, void)()
 #define menu_keyStartFade() GAME_FN(menu_keyStartFade, 0x4318b0, void, void)()
 #define profile_screenKeys() GAME_FN(profile_screenKeys, 0x44cdd0, void, void)()
@@ -594,7 +594,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define chat_createEdit(maxLength) GAME_FN(chat_createEdit, 0x43f460, void, int)(maxLength)   /* the hidden EDIT control typing goes to */
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
 #define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
-#define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
+#define g_missionProgress (*(int *)(g_campaign + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
@@ -882,7 +882,7 @@ typedef struct { float r, g, b, a; } Colour;
 
 /* ---- front-end screens (menu/menu_states.c) ---- */
 #define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
-#define g_progress GAME_VAR(int, 0x9f181c)            /* rounds beaten (missions unlocked) */
+#define g_progress (*(int *)(g_campaign + 0x104))            /* rounds beaten (missions unlocked) */
 #define armc_enter(tunnel) GAME_FN(armc_enter, 0x441260, void, void *)(tunnel)   /* moves the background tunnel on */
 #define menu_drawBackground3D(tunnel) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(tunnel)
 #define mission_chosen(m) GAME_FN(mission_chosen, 0x4479b0, void, int)(m)

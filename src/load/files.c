@@ -666,7 +666,6 @@ u32 (data_loadMessages)(void)
    before it and 24999 after (the same 10000 random bytes below 0xfe each time), scrambled with key 0x7e ---- */
 #define g_pilot g_pilotChosen               /* the pilot chosen in the list */
 #define pilot_name(i) ((const char *)(OBJ(g_profileList) + (i) * 0x48))
-#define g_campaign ((u8 *)IMG(0x9f1718))
 
 /* the current profile's name as axisuser.dat keeps it */
 static void set_current_name(void)
@@ -733,18 +732,18 @@ static void campaign_new(void)
 {
 	memset(g_campaign, 0, 0x80);
 	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
-	memset((void *)IMG(0x9f1798), 0, 0x80);
-	memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
+	memset((void *)(OBJ(g_campaign) + 0x80), 0, 0x80);
+	memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
 	(*(u32 *)&g_armcValue) = GAME_VAR(u32, OBJ(g_profileList) + 0x40 + g_pilot * 0x48);
 	g_progress = 0;
-	memset((void *)IMG(0x9f1820), 0, 0x190);
-	memset((void *)IMG(0x9f19b0), 0, 0x40);
-	static const u32 cleared[6] = { IMG(0x9f19f0), IMG(0x9f1a0c), IMG(0x9f19f4), IMG(0x9f1a10), IMG(0x9f1a2c), IMG(0x9f1a30) };
+	memset((void *)(OBJ(g_campaign) + 0x108), 0, 0x190);
+	memset((void *)(OBJ(g_campaign) + 0x298), 0, 0x40);
+	static const u32 cleared[6] = { (OBJ(g_campaign) + 0x2d8), (OBJ(g_campaign) + 0x2f4), (OBJ(g_campaign) + 0x2dc), (OBJ(g_campaign) + 0x2f8), (OBJ(g_campaign) + 0x314), (OBJ(g_campaign) + 0x318) };
 	for (int i = 0; i < 6; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	strcpy((char *)IMG(0x9f19f0), (const char *)STR(0x4b2af4, "[TRAP]"));
-	strcpy((char *)IMG(0x9f1a0c), (const char *)STR(0x4b2aec, "[NOPA]"));
-	strcpy((char *)IMG(0x9f1a2c), (const char *)STR(0x4b2ae4, "[ROLO]"));
+	strcpy((char *)(OBJ(g_campaign) + 0x2d8), (const char *)STR(0x4b2af4, "[TRAP]"));
+	strcpy((char *)(OBJ(g_campaign) + 0x2f4), (const char *)STR(0x4b2aec, "[NOPA]"));
+	strcpy((char *)(OBJ(g_campaign) + 0x314), (const char *)STR(0x4b2ae4, "[ROLO]"));
 	g_profileMechItem5 = -1;
 	g_profileMechItem0 = -1;
 	for (u32 a = ADDR(g_profileMechRecord); a <= ADDR(g_profileMechBooster); a += 4)
@@ -753,7 +752,7 @@ static void campaign_new(void)
 	g_profileMechItem3 = 2;
 	g_profileMechItem4 = 8;
 	g_profileMechItem1 = 0x11;
-	for (u32 *t = (u32 *)IMG(0x9f1a34); t < (u32 *)IMG(0x9f1ac4); t += 3) {
+	for (u32 *t = (u32 *)(OBJ(g_campaign) + 0x31c); t < (u32 *)(OBJ(g_campaign) + 0x3ac); t += 3) {
 		t[0] = 0x432a0000;   /* 170 */
 		t[1] = 0x3ecccccd;   /* 0.4 */
 		t[2] = 0;
@@ -819,7 +818,7 @@ u32 (profile_save)(void)
 			crt_fread(record, sizeof record, 1, f);
 			save_cryptRecord(record, 0x7e);
 			memcpy(g_campaign, record, sizeof record);
-			memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
+			memcpy((void *)(OBJ(g_campaign) + 0x80), pilot_name(g_pilot), 0x80);
 		}
 	} else {
 		campaign_new();

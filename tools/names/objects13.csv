@@ -1,0 +1,4 @@
+# the pilot's save record, ARM CENTER's view points, the menu frame textures (step 3b; --records)
+0x9f1718,u8,940,g_campaign,the pilot's save record (0x3ac bytes, written and read whole, crypted, at 20000 in the .axs): its header, the name (+0x80), the value (g_armcValue +0x100), the progress (+0x104), the mech (+0x2e0 ..), colours (+0x31c ..)
+0x4dca30,u32,24,g_armcViewPoints,ARM CENTER's six view points (16 bytes each, x y z and a kept fourth word: armc_initCameraPoints; g_armcViewPoint0Y ..)
+0x4deb4c,int,2,g_menuFrameTextures,the menu frames' textures: the panel corner ornaments, the dialog frame (g_dialogFrameTexture)

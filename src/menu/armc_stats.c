@@ -20,7 +20,7 @@ typedef long double X;
 
 #define PANEL_X0 g_armcStatsPanelLeft
 #define PANEL_Y0 g_armcStatsPanelTop
-#define PANEL_X1 GAME_VAR(int, 0x4dcc98)
+#define PANEL_X1 g_armcSliderLeft
 #define PANEL_Y1 g_armcStatsPanelBottom
 
 static const u32 k_white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };

@@ -614,3 +614,22 @@ g_tunnelFlyingIn
 g_typingRoomName
 g_unusedMainMenuWord
 g_unusedReplayListWord1
+# the pilot save record, ARM CENTER view points, menu frame textures (objects13.csv), whole
+g_campaign
+g_armcViewPoints
+g_menuFrameTextures
+# freed: raw local defines replaced by names, the patch layer's IMG reads counted as routed (axis_dataAt), 2026-11-01
+g_armcSliderLeft
+g_briefingX
+g_briefingY
+g_glHeight
+g_glWidth
+g_mainMenuDepth
+g_mainWindow
+g_menuHintClock
+g_menuIdleTime
+g_menuScaleX
+g_menuScaleY
+g_missionPicked
+g_textBottom
+g_textWrapX

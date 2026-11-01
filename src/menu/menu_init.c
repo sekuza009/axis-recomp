@@ -14,7 +14,7 @@ void (menu_initColours)(void)
 /* 0x40e510: three camera points (0, 300, 0), (0, -500, 0), (0, 350, 0) (16 bytes apart, the fourth word kept) */
 void (armc_initCameraPoints)(void)
 {
-	for (u32 p = IMG(0x4dca30); p < IMG(0x4dca90); p += 0x10) {
+	for (u32 p = OBJ(g_armcViewPoints); p < OBJ(g_armcViewPoints) + 6 * 16; p += 0x10) {
 		GAME_VAR(int, p) = 0;
 		GAME_VAR(int, p + 4) = 0;
 		GAME_VAR(int, p + 8) = 0;

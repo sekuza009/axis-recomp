@@ -802,9 +802,9 @@ void (setup_drawMenu)(void)
    that ignore it */
 void (menu_mainMenu)(void)
 {
-#define g_depth GAME_VAR(float, 0x9eea90)
-#define g_idle GAME_VAR(float, 0x9dda80)
-#define g_hint GAME_VAR(float, 0x9eea8c)
+#define g_depth (*(float *)&g_mainMenuDepth)
+#define g_idle (*(float *)&g_menuIdleTime)
+#define g_hint (*(float *)&g_menuHintClock)
 #define g_hintStep g_menuHintStep
 	const float *frame = (const float *)IMG(0x4b071c);
 	int on = -1;

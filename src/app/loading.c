@@ -175,7 +175,7 @@ void (menu_loadIntroTextures)(void)
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
-		((int *)IMG(0x4deb4c))[k] = T(frames[k]);
+		(g_menuFrameTextures)[k] = T(frames[k]);
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
