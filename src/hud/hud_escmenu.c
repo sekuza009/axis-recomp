@@ -270,7 +270,7 @@ static int esc_main(Scene *scene)
 				msg_newKing(scene);
 				scene->watchedPlayer = -1;
 			}
-			notice_printCentre(scene, (const char *)IMG(0x4d06f4));
+			notice_printCentre(scene, (const char *)STR(0x4d06f4, "YOU ARE A SPECTATOR NOW."));
 			return 1;
 		}
 		if (scene->teamGame != 1) {   /* START */

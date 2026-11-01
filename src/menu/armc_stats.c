@@ -94,8 +94,8 @@ static int none(X v) { return v == 0 || v != v; }   /* (the original's compare: 
    yellow, or for none in the value's colour (yellow anyway when always_yellow) */
 static void bracket_bonus(Panel *p, int dy, X v, int decimals, u32 unit, int always_yellow)
 {
-	static const u32 en[2][2] = { { IMG(0x4b0244), IMG(0x4b024c) }, { IMG(0x4b02c4), IMG(0x4b02fc) } };   /* "+%.0f(", "%.0f(" .. */
-	static const u32 ko[2][2] = { { IMG(0x4b0344), IMG(0x4b034c) }, { IMG(0x4b0324), IMG(0x4b032c) } };   /* " +%.0f(", " %.0f(" .. */
+	static const u32 en[2][2] = { { STR(0x4b0244, "+%.0f("), STR(0x4b024c, "%.0f(") }, { STR(0x4b02c4, "+%.1f("), STR(0x4b02fc, "%.1f(") } };   /* "+%.0f(", "%.0f(" .. */
+	static const u32 ko[2][2] = { { STR(0x4b0344, " +%.0f("), STR(0x4b034c, " %.0f(") }, { STR(0x4b0324, " +%.1f("), STR(0x4b032c, " %.1f(") } };   /* " +%.0f(", " %.0f(" .. */
 	if (p->korean)
 		value(p, dy);
 	char *out = p->korean ? p->t.line : p->t.bonus;
@@ -123,7 +123,7 @@ static void level_bonus(Panel *p, int dy, X v)
 			strcpy(p->t.line, FMT(0x4b0304));   /* "(Lv)" */
 			after_value(p, dy, 0);
 		} else {
-			sprintf(p->t.line, FMT(v < 0 ? IMG(0x4b0318) : IMG(0x4b030c)), ftol(v));   /* " %d(Lv)" / " +%d(Lv)" */
+			sprintf(p->t.line, FMT(v < 0 ? STR(0x4b0318, " %d(Lv)") : STR(0x4b030c, " +%d(Lv)")), ftol(v));
 			after_value(p, dy, 1);
 		}
 		return;
@@ -131,7 +131,7 @@ static void level_bonus(Panel *p, int dy, X v)
 	if (none(v))
 		strcpy(p->t.bonus, FMT(0x4b0304));
 	else
-		sprintf(p->t.bonus, FMT(v < 0 ? IMG(0x4b02e8) : IMG(0x4b023c)), ftol(v));     /* "%d(Lv)" / "+%d(Lv)" */
+		sprintf(p->t.bonus, FMT(v < 0 ? STR(0x4b02e8, "%d(Lv)") : STR(0x4b023c, "+%d(Lv)")), ftol(v));
 	append(p->t.line, p->t.bonus);
 	value(p, dy);
 }
@@ -151,13 +151,13 @@ static void count_bonus(Panel *p, int dy, int n)
 	if (p->korean) {
 		value(p, dy);
 		if (n) {
-			sprintf(p->t.line, FMT(n < 0 ? IMG(0x4b02f8) : IMG(0x4b02f0)), n);
+			sprintf(p->t.line, FMT(n < 0 ? STR(0x4b02f8, " %d") : STR(0x4b02f0, " +%d")), n);
 			after_value(p, dy, 1);
 		}
 		return;
 	}
 	if (n) {
-		sprintf(p->t.bonus, FMT(n < 0 ? IMG(0x4b0320) : IMG(0x4b0238)), n);
+		sprintf(p->t.bonus, FMT(n < 0 ? STR(0x4b0320, "%d") : STR(0x4b0238, "+%d")), n);
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, dy);
@@ -188,11 +188,11 @@ static void wear_bonus(Panel *p, int dy, X v, float f)
 	if (!none(v)) {
 		u32 format;
 		if (v >= 0)
-			format = p->korean ? IMG(0x4b02cc) : IMG(0x4b0230);   /* " +%.2f" / "+%.2f" */
+			format = p->korean ? STR(0x4b02cc, " +%.2f") : STR(0x4b0230, "+%.2f");
 		else {
 			if (neg(v) > f)
 				v = neg(f);
-			format = p->korean ? IMG(0x4b02d4) : IMG(0x4b0268);   /* " %.2f" / "%.2f" */
+			format = p->korean ? STR(0x4b02d4, " %.2f") : STR(0x4b0268, "%.2f");
 		}
 		sprintf(p->korean ? p->t.line : p->t.bonus, FMT(format), (double)v);
 		if (p->korean) {
@@ -215,8 +215,8 @@ static void speed_change(char *out, X v, float f, int korean, int last)
 		if (v > f)
 			v = f;
 	}
-	static const u32 formats[2][2][2] = { { { IMG(0x4b01fc), IMG(0x4b0208) }, { IMG(0x4b01ec), IMG(0x4b01f4) } },     /* English */
-	                                      { { IMG(0x4b0298), IMG(0x4b02a0) }, { IMG(0x4b0288), IMG(0x4b0290) } } };   /* Korean */
+	static const u32 formats[2][2][2] = { { { STR(0x4b01fc, "+%03.0f/"), STR(0x4b0208, "-%03.0f/") }, { STR(0x4b01ec, "+%03.0f"), STR(0x4b01f4, "-%03.0f") } },     /* English */
+	                                      { { STR(0x4b0298, "+%3.0f/"), STR(0x4b02a0, "-%3.0f/") }, { STR(0x4b0288, "+%3.0f"), STR(0x4b0290, "-%3.0f") } } };   /* Korean */
 	sprintf(out, FMT(formats[korean][last][lost]), (double)v);
 }
 
@@ -230,22 +230,22 @@ static void section0(Panel *p)
 {
 	label(p, ROW(0), 0x760aa4);
 	sprintf(p->t.line, FMT(0x4b0354), (double)g_headDetectionRange);
-	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * g_headDetectionRange + g_itemBonusDetectionRange, 0, IMG(0x7655a4), 0);
+	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * g_headDetectionRange + g_itemBonusDetectionRange, 0, MSG(751, "m"), 0);
 	label(p, ROW(1), 0x760b24);
 	sprintf(p->t.line, FMT(0x4b0334), (double)g_headDetectionAngle);
-	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * g_headDetectionAngle, 1, IMG(0x765624), 0);
+	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * g_headDetectionAngle, 1, MSG(752, "'"), 0);
 	label(p, ROW(2), 0x760ba4);
 	sprintf(p->t.line, FMT(0x4b0320), g_headHackingLevel);
 	level_bonus(p, ROW(2), g_itemBonusHacking);
 	label(p, ROW(3), 0x760c24);
 	X rate = (X)HUNDRED / g_headLockOnTime * HUNDRED;
 	sprintf(p->t.line, FMT(0x4b0334), (double)rate);
-	bracket_bonus(p, ROW(3), (X)g_itemBonusLockOn * f32(rate), 1, IMG(0x7656a4), 0);   /* (by the rate as a float) */
+	bracket_bonus(p, ROW(3), (X)g_itemBonusLockOn * f32(rate), 1, MSG(753, "%"), 0);   /* (by the rate as a float) */
 	label(p, ROW(4), 0x760ca4);
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_headTargetKeepTime * THOUSANDTH));
-	bracket_bonus(p, ROW(4), (X)g_itemBonusTargetKeep * g_headTargetKeepTime * THOUSANDTH, 1, IMG(0x765aa4), 0);
+	bracket_bonus(p, ROW(4), (X)g_itemBonusTargetKeep * g_headTargetKeepTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(5), 0x760d24);
-	value_unit(p, ROW(5), g_headWeight, IMG(0x7657a4));
+	value_unit(p, ROW(5), g_headWeight, MSG(755, "t"));
 }
 
 /* slot 1, the chest: a figure with skill 4's bonus (Korean: yellow even when none), two counts rounded with skill 2 */
@@ -253,7 +253,7 @@ static void section1(Panel *p)
 {
 	label(p, ROW(0), 0x760fa4);
 	sprintf(p->t.line, FMT(0x4b0334), (double)g_chestWeightLimit);
-	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * g_chestWeightLimit + (X)g_itemBonusWeightLimit * g_chestWeightLimit, 1, IMG(0x7657a4), 1);
+	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * g_chestWeightLimit + (X)g_itemBonusWeightLimit * g_chestWeightLimit, 1, MSG(755, "t"), 1);
 	label(p, ROW(1), 0x761024);
 	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxArmor);
 	count_bonus(p, ROW(1), ftol(SKILL(2) * HUNDREDTH * (X)g_chestMaxArmor + HALF));
@@ -265,8 +265,8 @@ static void section1(Panel *p)
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
 static void section2(Panel *p)
 {
-	static const u32 levels[4][3] = { { IMG(0x761524), IMG(0x4dc294), IMG(0x4dcc6c) }, { IMG(0x7615a4), IMG(0x4dc298), IMG(0x4dc548) },
-	                                  { IMG(0x761624), IMG(0x4dc29c), IMG(0x4dc248) }, { IMG(0x7616a4), IMG(0x4dc2a0), IMG(0x4dcb34) } };
+	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), IMG(0x4dc294), IMG(0x4dcc6c) }, { MSG(623, "CAPACITY FOR 60MM"), IMG(0x4dc298), IMG(0x4dc548) },
+	                                  { MSG(624, "CAPACITY FOR E-PAK"), IMG(0x4dc29c), IMG(0x4dc248) }, { MSG(625, "CAPACITY FOR MISSLE"), IMG(0x4dc2a0), IMG(0x4dcb34) } };
 	label(p, ROW(0), 0x7614a4);
 	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
 	value(p, ROW(0));
@@ -282,12 +282,12 @@ static void section2(Panel *p)
 			sprintf(p->t.bonus, FMT(0x4b02e0), n);   /* "+%d(" */
 			append(p->t.line, p->t.bonus);
 		}
-		append(p->t.line, (const char *)IMG(0x765824));
+		append(p->t.line, (const char *)MSG(756, "cell"));
 		append(p->t.line, FMT(0x4b0340));
 		value(p, ROW(k + 1));
 	}
-	label(p, ROW(5), IMG(0x761724));
-	value_unit(p, ROW(5), g_armsWeight, IMG(0x7657a4));
+	label(p, ROW(5), MSG(626, "WEIGHT"));
+	value_unit(p, ROW(5), g_armsWeight, MSG(755, "t"));
 }
 
 /* slot 3, the legs: two figures with skill 0 less the wear, four signed figures, a figure */
@@ -302,14 +302,14 @@ static void section3(Panel *p)
 	}
 	for (int k = 0; k < 4; k++) {
 		float f = F(ADDR(g_legsSpeedCorrection) + k * 4);
-		label(p, ROW(k + 2), IMG(0x761aa4) + k * 0x80);
-		sprintf(p->t.line, FMT(f >= 0 ? IMG(0x4b02c4) : IMG(0x4b02fc)), (double)f);   /* "+%.1f(" / "%.1f(" */
-		append(p->t.line, (const char *)IMG(0x7656a4));
+		label(p, ROW(k + 2), MSG(633, "SPD CORRECTION") + k * 0x80);
+		sprintf(p->t.line, FMT(f >= 0 ? STR(0x4b02c4, "+%.1f(") : STR(0x4b02fc, "%.1f(")), (double)f);
+		append(p->t.line, (const char *)MSG(753, "%"));
 		append(p->t.line, FMT(0x4b0340));
 		value(p, ROW(k + 2));
 	}
-	label(p, ROW(6), IMG(0x761ca4));
-	value_unit(p, ROW(6), g_legsWeight, IMG(0x7657a4));
+	label(p, ROW(6), MSG(637, "WEIGHT"));
+	value_unit(p, ROW(6), g_legsWeight, MSG(755, "t"));
 }
 
 /* slot 4, the booster: the type's name, two figures, a third, the speed with skill 1 less the wear, the three speeds
@@ -317,16 +317,16 @@ static void section3(Panel *p)
 static void section4(Panel *p)
 {
 	label(p, ROW(0), 0x761ea4);
-	append(p->t.line, (const char *)(IMG(0x7623a4) + g_boosterThrustType * 0x80));
+	append(p->t.line, (const char *)(MSG(651, "PLASMA THRUST ENGINE") + g_boosterThrustType * 0x80));
 	value(p, ROW(0));
 	label(p, ROW(1), 0x761f24);
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterActiveTime * THOUSANDTH));
-	bracket_bonus(p, ROW(1), (X)g_itemBonusActiveTime * g_boosterActiveTime * THOUSANDTH, 1, IMG(0x765aa4), 0);
+	bracket_bonus(p, ROW(1), (X)g_itemBonusActiveTime * g_boosterActiveTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(2), 0x761fa4);
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterRechargeTime * THOUSANDTH));
-	bracket_bonus(p, ROW(2), (X)g_boosterRechargeTime * g_itemBonusRechargeTime * THOUSANDTH, 1, IMG(0x765aa4), 0);
+	bracket_bonus(p, ROW(2), (X)g_boosterRechargeTime * g_itemBonusRechargeTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(3), 0x762024);
-	value_unit(p, ROW(3), (X)g_boosterRechargeDelay * THOUSANDTH, IMG(0x765aa4));
+	value_unit(p, ROW(3), (X)g_boosterRechargeDelay * THOUSANDTH, MSG(761, "sec"));
 
 	label(p, ROW(4), 0x7620a4);
 	float speed = g_boosterNormalSpeed;
@@ -338,14 +338,14 @@ static void section4(Panel *p)
 		int n = ftol(v);
 		if (n) {
 			X w = n;
-			u32 format = IMG(0x4b0344);   /* " +%.0f(" */
+			u32 format = STR(0x4b0344, " +%.0f(");
 			if (n < 0) {
 				if (neg(w) > speed)
 					w = neg(speed);
-				format = IMG(0x4b034c);   /* " %.0f(" */
+				format = STR(0x4b034c, " %.0f(");
 			}
 			sprintf(p->t.line, FMT(format), (double)w);
-			append(p->t.line, (const char *)IMG(0x7658a4));
+			append(p->t.line, (const char *)MSG(757, "Km/h"));
 			append(p->t.line, FMT(0x4b0340));
 			after_value(p, ROW(4), 1);
 		}
@@ -359,7 +359,7 @@ static void section4(Panel *p)
 				v = neg(speed);
 			sprintf(p->t.bonus, FMT(0x4b024c), (double)v);
 		}
-		append(p->t.bonus, (const char *)IMG(0x7658a4));
+		append(p->t.bonus, (const char *)MSG(757, "Km/h"));
 		append(p->t.bonus, FMT(0x4b0340));
 		append(p->t.line, p->t.bonus);
 		value(p, ROW(4));
@@ -367,13 +367,13 @@ static void section4(Panel *p)
 
 	/* the three speeds (0x4dce94, 0x4dce9c, 0x4dce98) and below them their changes (with 0x4dc234 .. 0x4dc23c) */
 	static const u32 speeds[3] = { IMG(0x4dce94), IMG(0x4dce9c), IMG(0x4dce98) }, bonuses[3] = { IMG(0x4dc234), IMG(0x4dc238), IMG(0x4dc23c) };
-	static const u32 shown[2][3] = { { IMG(0x4b0228), IMG(0x4b021c), IMG(0x4b0214) },     /* "%03.0f/", " %03.0f/", " %03.0f" */
-	                                 { IMG(0x4b02bc), IMG(0x4b02b4), IMG(0x4b02a8) } };   /* "%.0f/", " %.0f/", " %.0f(km/h)" */
+	static const u32 shown[2][3] = { { STR(0x4b0228, "%03.0f/"), STR(0x4b021c, " %03.0f/"), STR(0x4b0214, " %03.0f") },
+	                                 { STR(0x4b02bc, "%.0f/"), STR(0x4b02b4, " %.0f/"), STR(0x4b02a8, " %.0f(km/h)") } };
 	label(p, ROW(5), 0x762124);
 	for (int k = 0; k < 3; k++) {
 		sprintf(p->t.bonus, FMT(shown[p->korean][k]), (double)F(speeds[k]));
 		if (k == 2 && !p->korean)
-			append(p->t.bonus, (const char *)IMG(0x7658a4));
+			append(p->t.bonus, (const char *)MSG(757, "Km/h"));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, p->korean ? ROW(5) : ROW(5) + 0xa);
@@ -382,7 +382,7 @@ static void section4(Panel *p)
 		X b = SKILL(1) * HUNDREDTH * f + (X)F(bonuses[k]) * HUNDREDTH * f;
 		speed_change(k ? p->t.bonus : p->t.line, b + speed_wear(f, b), f, p->korean, k == 2);
 		if (k == 2 && !p->korean)
-			append(p->t.bonus, (const char *)IMG(0x7658a4));
+			append(p->t.bonus, (const char *)MSG(757, "Km/h"));
 		if (k)
 			append(p->t.line, p->t.bonus);
 	}
@@ -405,7 +405,7 @@ static void section5(Panel *p)
 	label(p, ROW(0), 0x762da4);
 	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
 	value(p, ROW(0));
-	static const u32 ints[4][2] = { { IMG(0x4b02e8), ADDR(g_mechHackingLevel) }, { IMG(0x4b0320), IMG(0x4dcab4) }, { IMG(0x4b0320), IMG(0x4dcab8) }, { IMG(0x4b02e8), IMG(0x4dcabc) } };
+	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), IMG(0x4dcab4) }, { STR(0x4b0320, "%d"), IMG(0x4dcab8) }, { STR(0x4b02e8, "%d(Lv)"), IMG(0x4dcabc) } };
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), 0x762e24 + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
@@ -413,7 +413,7 @@ static void section5(Panel *p)
 	}
 	label(p, ROW(5), 0x763024);
 	for (int k = 0; k < 4; k++) {
-		sprintf(p->t.bonus, FMT(k < 3 ? IMG(0x4b0270) : IMG(0x4b0320)), I(IMG(0x4dcac0) + k * 4));   /* "%d/" .. "%d" */
+		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I(IMG(0x4dcac0) + k * 4));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(5));
@@ -421,12 +421,12 @@ static void section5(Panel *p)
 	sprintf(p->t.line, FMT(0x4b0268), (double)g_mechMobility);   /* "%.2f" */
 	value(p, ROW(6));
 	label(p, ROW(7), 0x763124);
-	sprintf(p->t.line, FMT(p->korean ? IMG(0x4b025c) : IMG(0x4b01e0)), (double)g_mechNormalSpeed);   /* "%.0f(km/h)" / "%.1f(km/h)" */
+	sprintf(p->t.line, FMT(p->korean ? STR(0x4b025c, "%.0f(km/h)") : STR(0x4b01e0, "%.1f(km/h)")), (double)g_mechNormalSpeed);
 	value(p, ROW(7));
 	label(p, ROW(8), 0x7631a4);
 	static const u32 speeds[3] = { IMG(0x4dcafc), IMG(0x4dcb04), ADDR(g_mechMaxSpeedBwd) };
 	for (int k = 0; k < 3; k++) {
-		u32 format = p->korean ? (k < 2 ? IMG(0x4b02bc) : IMG(0x4b025c)) : (k < 2 ? IMG(0x4b0254) : IMG(0x4b01e0));
+		u32 format = p->korean ? (k < 2 ? STR(0x4b02bc, "%.0f/") : STR(0x4b025c, "%.0f(km/h)")) : (k < 2 ? STR(0x4b0254, "%.1f/") : STR(0x4b01e0, "%.1f(km/h)"));
 		sprintf(p->t.bonus, FMT(format), (double)F(speeds[k]));
 		append(p->t.line, p->t.bonus);
 	}
@@ -435,7 +435,7 @@ static void section5(Panel *p)
 	sprintf(p->t.bonus, FMT(0x4b0254), (double)((X)g_mechBoosterEnergy * THOUSANDTH));   /* "%.1f/" */
 	append(p->t.line, p->t.bonus);
 	sprintf(p->t.bonus, FMT(0x4b02fc), (double)((X)g_mechBoosterRecharge * THOUSANDTH));   /* "%.1f(" */
-	append(p->t.bonus, (const char *)IMG(0x765aa4));
+	append(p->t.bonus, (const char *)MSG(761, "sec"));
 	append(p->t.bonus, FMT(0x4b0340));
 	append(p->t.line, p->t.bonus);
 	value(p, ROW(9));
@@ -484,9 +484,9 @@ void (armc_drawStatsPanel)(void)
 		const u32 *c = slot == i ? bright : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
 		if (i == 5)
-			text_drawBox16(PANEL_X0 + 0x10, PANEL_Y0 + 0x13d, PANEL_X0 + 0xb0, (const char *)IMG(0x756d24));
+			text_drawBox16(PANEL_X0 + 0x10, PANEL_Y0 + 0x13d, PANEL_X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
 		else
-			text_draw8(PANEL_X0 + 0x18, PANEL_Y0 + 0x44 + i * 0x30, (const char *)(IMG(0x756aa4) + i * 0x80));
+			text_draw8(PANEL_X0 + 0x18, PANEL_Y0 + 0x44 + i * 0x30, (const char *)(MSG(281, "$[0] HEAD") + i * 0x80));
 	}
 	if (g_armcPreview) {
 		static const u32 names[5] = { IMG(0x4dceb8), IMG(0x4dbc08), IMG(0x4dc250), IMG(0x4dc1e8), IMG(0x4dce40) };
@@ -496,16 +496,16 @@ void (armc_drawStatsPanel)(void)
 	}
 	for (int i = 0; i < 2; i++) {
 		colour(hovered == i + 3 ? bright : dim);
-		text_drawBox16(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x18, PANEL_X0 + 0x70 + i * 100, (const char *)(IMG(0x7517a4) + i * 0x80));
+		text_drawBox16(PANEL_X0 + 0x10 + i * 100, PANEL_Y1 - 0x18, PANEL_X0 + 0x70 + i * 100, (const char *)(MSG(115, "$[0] O K") + i * 0x80));
 	}
 	colour(bright);
 	memset(p->t.line, 0, 50);
-	strcpy(p->t.line, (const char *)IMG(0x756da4));
+	strcpy(p->t.line, (const char *)MSG(287, "$[0] ROTATE"));
 	append(p->t.line, FMT(0x4b035c));   /* " " */
-	append(p->t.line, (const char *)(IMG(0x751924) + g_armcSpin * 0x80));
+	append(p->t.line, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
 	text_drawBox16(PANEL_X1 - 0xa0, PANEL_Y1 - 0x18, PANEL_X1, p->t.line);
 	colour(bright);
-	text_drawBox16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)IMG(0x7568a4));
+	text_drawBox16(PANEL_X0 + 0x114, PANEL_Y1 - 0x18, PANEL_X0 + 0x174, (const char *)MSG(277, "SELECT"));
 
 	static void (*const sections[6])(Panel *) = { section0, section1, section2, section3, section4, section5 };
 	if ((u32)slot < 6)

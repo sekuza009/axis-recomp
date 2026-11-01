@@ -124,7 +124,7 @@ void (vec_initAxisX)(void) { set3(IMG(0xa0e7f8), 0x3f800000u, 0, 0); }
 u32 THISCALL (Texture_dtor)(u32 *self)
 {
 	u32 r = self[0x42];
-	self[0] = IMG(0x4a956c);
+	self[0] = VT(Texture, 0x4a956c);
 	if ((int)r >= 0) {
 		r = GAME_CDECL(0x49ef24, u32, void *)((void *)RELOC(self[0x43]));   /* operator delete, its eax kept */
 		self[0x42] = 0;
@@ -143,54 +143,54 @@ u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)ADDR(g_staticT
 u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)ADDR(g_staticTex256x256)); }
 
 /* TimeSync (vtable 0x4aa46c) */
-void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = IMG(0x4aa46c); TimeSync_clear(self); return self; }
-void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = IMG(0x4aa46c); }
+void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); TimeSync_clear(self); return self; }
+void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); }
 DELETING(TimeSync, TimeSync_dtor)
 void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)IMG(0xa0e948)); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
-int (TextureManager_ctor)(void) { g_textureManager = IMG(0x4a9570); return TextureManager_clear((void *)ADDR(g_textureManager)); }
-int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = IMG(0x4a9570); return TextureManager_reset(self); }
+int (TextureManager_ctor)(void) { g_textureManager = STR(0x4a9570, "P\263B"); return TextureManager_clear((void *)ADDR(g_textureManager)); }
+int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = STR(0x4a9570, "P\263B"); return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
 void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textureManager)); }
 
 /* Scene (vtable 0x4aa258) */
-void *THISCALL (Scene_ctor)(u32 *self) { self[0] = IMG(0x4aa258); debug_traceStripped(NULL); return self; }
-void THISCALL (Scene_dtor)(u32 *self) { self[0] = IMG(0x4aa258); }
+void *THISCALL (Scene_ctor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); debug_traceStripped(NULL); return self; }
+void THISCALL (Scene_dtor)(u32 *self) { self[0] = VT(Scene, 0x4aa258); }
 DELETING(Scene, Scene_dtor)
 
 /* Light (vtable 0x4aa248) */
-void *THISCALL (Light_ctor)(u32 *self) { self[0] = IMG(0x4aa248); Light_clearCounts(self); return self; }
-int THISCALL (Light_dtor)(u32 *self) { self[0] = IMG(0x4aa248); return Light_clearCounts(self); }
+void *THISCALL (Light_ctor)(u32 *self) { self[0] = VT(Light, 0x4aa248); Light_clearCounts(self); return self; }
+int THISCALL (Light_dtor)(u32 *self) { self[0] = VT(Light, 0x4aa248); return Light_clearCounts(self); }
 DELETING(Light, Light_dtor)
 
 /* CollisionVolume (vtable 0x4aa254) */
-void *THISCALL (CollisionVolume_ctor)(u32 *self) { self[0] = IMG(0x4aa254); CollisionVolume_clear(self); return self; }
-int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = IMG(0x4aa254); return CollisionVolume_release(self); }
+void *THISCALL (CollisionVolume_ctor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F"); CollisionVolume_clear(self); return self; }
+int THISCALL (CollisionVolume_dtor)(u32 *self) { self[0] = STR(0x4aa254, "\2607F"); return CollisionVolume_release(self); }
 DELETING(CollisionVolume, CollisionVolume_dtor)
 
 /* Model (vtable 0x4aa250) */
-void *THISCALL (Model_ctor)(u32 *self) { self[0] = IMG(0x4aa250); Model_clear(self); return self; }
-int THISCALL (Model_dtor)(u32 *self) { self[0] = IMG(0x4aa250); return Model_release(self); }
+void *THISCALL (Model_ctor)(u32 *self) { self[0] = VT(Model, 0x4aa250); Model_clear(self); return self; }
+int THISCALL (Model_dtor)(u32 *self) { self[0] = VT(Model, 0x4aa250); return Model_release(self); }
 DELETING(Model, Model_dtor)
 
 /* ShapeManager (vtable 0x4aa244), SkeletonManager (vtable 0x4aa240) */
-int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = IMG(0x4aa244); return ShapeManager_release(self); }
+int THISCALL (ShapeManager_dtor)(u32 *self) { self[0] = VT(ShapeManager, 0x4aa244); return ShapeManager_release(self); }
 DELETING(ShapeManager, ShapeManager_dtor)
-int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = IMG(0x4aa240); return SkeletonManager_release(self); }
+int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = STR(0x4aa240, "\3207F"); return SkeletonManager_release(self); }
 DELETING(SkeletonManager, SkeletonManager_dtor)
 
 /* BMPRGBFile (vtable 0x4a96f8): 0x46ce60 (named BMPRGBFile_ctor, in fact its destructor) closes its file */
-void THISCALL (BMPRGBFile_ctor)(u32 *self) { self[0] = IMG(0x4a96f8); if (self[1]) fclose((void *)RELOC(self[1])); }
+void THISCALL (BMPRGBFile_ctor)(u32 *self) { self[0] = VT(BMPRGBFile, 0x4a96f8); if (self[1]) fclose((void *)RELOC(self[1])); }
 DELETING(BMPRGBFile, BMPRGBFile_ctor)
 
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
-void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = IMG(0x4aa2a0); }
+void THISCALL (ErrorLog_dtor)(u32 *self) { self[0] = VT(ErrorLog, 0x4aa2a0); }
 DELETING(ErrorLog, ErrorLog_dtor)
 void (static_endSoundRtti)(void) { ErrorLog_dtor((u32 *)IMG(0xa0e020)); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 {
-	self[0] = IMG(0x4aa2a0);
+	self[0] = VT(ErrorLog, 0x4aa2a0);
 	self[1] = (u32)name;
 	g_errorCleanupHook = b;
 	return self;
@@ -203,11 +203,11 @@ void *THISCALL (ResourceSet_ctor)(u8 *self)
 	static const u32 shapes[5] = { 0x338, 0x8284, 0x101d0, 0x1fe1c, 0x2fa68 };
 	static const u32 skels[5] = { 0x43534, 0x43e34, 0x44734, 0x45804, 0x468d4 };
 	for (int i = 0; i < 5; i++) {
-		*(u32 *)(self + shapes[i]) = IMG(0x4aa244);
+		*(u32 *)(self + shapes[i]) = VT(ShapeManager, 0x4aa244);
 		ShapeManager_clear(self + shapes[i]);
 	}
 	for (int i = 0; i < 5; i++) {
-		*(u32 *)(self + skels[i]) = IMG(0x4aa240);
+		*(u32 *)(self + skels[i]) = STR(0x4aa240, "\3207F");
 		SkeletonManager_clear(self + skels[i]);
 	}
 	return self;
@@ -270,7 +270,7 @@ u32 THISCALL (ResourceSet_dtor)(u8 *self)
    Returns the last destructor's eax */
 u32 THISCALL (Stage_dtor)(u8 *self)
 {
-	*(u32 *)self = IMG(0x4aa23c);   /* the vtable */
+	*(u32 *)self = STR(0x4aa23c, "08F");   /* the vtable */
 	Scene_dtor(self + 0x2148ed8);
 	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	GAME_THISFN(SkeletonManager_dtor, 0x46ae60, void, void *)(self + 0x1cbe198);   /* SkeletonManager_dtor */
@@ -295,15 +295,15 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 #define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)RELOC(text))
 	if (GAME_VAR(void *, image + 4))
 		fclose(GAME_VAR(void *, image + 4));
-	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	if (crt_fread(image + 8, 0xe, 1, f) < 1)
-		fatal(IMG(0x4c5948));
+		fatal(STR(0x4c5948, "can't read header-initBy()"));
 	if (crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1)
-		fatal(IMG(0x4c592c));
+		fatal(STR(0x4c592c, "can't read info-initBy()"));
 	if (GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
-		fatal(IMG(0x4c5908));
+		fatal(STR(0x4c5908, "non-RGB format BMP file-initBy()"));
 	GAME_VAR(u32, image + 0x3e) = GAME_VAR(u32, image + 0x1a);
 	GAME_VAR(u32, image + 0x42) = GAME_VAR(u32, image + 0x1e);
 	return GAME_VAR(void *, image + 4);
@@ -318,7 +318,7 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	if (GAME_VAR(void *, image + 4))
 		fclose(GAME_VAR(void *, image + 4));
-	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f || crt_fread(image + 8, 0xe, 1, f) < 1 || crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1
 	    || GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
 		return 0;
@@ -336,10 +336,10 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 {
 	u8 *type = scene + 0x1561b68 + p * 0x47fd2;
 	u8 image[0x48];
-	GAME_VAR(u32, image) = IMG(0x4a96f8);   /* (its vtable) */
+	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	GAME_VAR(u32, image + 4) = 0;      /* (no file yet) */
 	char path[0x100];
-	sprintf(path, (const char *)IMG(0x4c74e8), type + 4);
+	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), type + 4);
 	int ok = 0;
 	if (image_tryOpen(image, path)) {
 		if (GAME_VAR(int, image + 0x3e) >= 23 && GAME_VAR(int, image + 0x42) >= 15) {
@@ -434,7 +434,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	if (w <= 0 || h <= 0)
 		return;
 	if (w > 0x400)
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)IMG(0x4c5984));
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
 	crt_fseek(f, GAME_VAR(int, image + 0x12) + ((GAME_VAR(int, image + 0x42) - sy - h) * GAME_VAR(int, image + 0x3e) + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
@@ -455,7 +455,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 				p4[k * 4 + 3] = 0xff;
 			}
 		else
-			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)IMG(0x4c5964));
+			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa1f0f0), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
 		crt_fseek(f, (GAME_VAR(int, image + 0x3e) - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
@@ -487,14 +487,14 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = g + 0x1f36c8;
 	GAME_THISFN(TimeSync_ctor, 0x487430, void, void *)(g + 0xc);   /* TimeSync_ctor */
-	VTABLE(g + 0x74, IMG(0x4aa24c));
+	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
 	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(g + 0x74);
 	GAME_THISFN(CollisionVolume_ctor, 0x463790, void, void *)(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
-	VTABLE(s + 0x9ccffc, IMG(0x4aa248));
+	VTABLE(s + 0x9ccffc, VT(Light, 0x4aa248));
 	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9ccffc);
 	VECTOR(s + 0x9d8014, 0x2c, 0x400);
-	VTABLE(s + 0x9d8010, IMG(0x4aa248));
+	VTABLE(s + 0x9d8010, VT(Light, 0x4aa248));
 	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9d8010);
 	GAME_THISFN(Light_ctor, 0x462560, void, void *)(s + 0x9e3020);   /* Light_ctor */
 	VECTOR(s + 0x9ee080, 0xc, 0x126);
@@ -505,17 +505,17 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0a78);   /* Model_ctor */
 	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0cc4);
 	VECTOR(s + 0xe36214, 0x14, 0x3e8);
-	VTABLE(s + 0xe3c93c, IMG(0x4aa244));
+	VTABLE(s + 0xe3c93c, VT(ShapeManager, 0x4aa244));
 	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0xe3c93c);
 	VECTOR(s + 0xf30dc8, 4, 1000000);
-	VTABLE(s + 0x13016d0, IMG(0x4aa240));
+	VTABLE(s + 0x13016d0, STR(0x4aa240, "\3207F"));
 	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x13016d0);
 	VECTOR(s + 0x131ae44, 0x2cc, 0x3e8);
 	VECTOR(s + 0x14d1ab4, 0x2e18, 0x32);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1561b68, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
-	VTABLE(s + 0x19e188c, IMG(0x4aa244));
+	VTABLE(s + 0x19e188c, VT(ShapeManager, 0x4aa244));
 	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0x19e188c);
-	VTABLE(s + 0x1cbe198, IMG(0x4aa240));
+	VTABLE(s + 0x1cbe198, STR(0x4aa240, "\3207F"));
 	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x1cbe198);
 	VECTOR(s + 0x1cd6fb4, 0x5c, 0x64);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1cd93a8, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
@@ -526,9 +526,9 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VECTOR(s + 0x20fadf8, 0x28, 0xc8);
 	VECTOR(s + 0x20fcfe4, 4, 0x2000);
 	GAME_THISFN(Scene_ctor, 0x4637f0, void, void *)(s + 0x2148ed8);   /* Scene_ctor */
-	VTABLE(s, IMG(0x4aa23c));
+	VTABLE(s, STR(0x4aa23c, "08F"));
 	GAME_VAR(int, s + 4) = 0;
-	VTABLE(g, IMG(0x4aa238));
+	VTABLE(g, VT(Console, 0x4aa238));
 	GAME_VAR(int, g + 4) = GAME_VAR(int, g + 8) = -1;
 	GAME_THISFN(TimeSync_clear, 0x487480, void, void *)(g + 0xc);
 	for (int k = 0; k < 10; k++)
@@ -536,12 +536,12 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GAME_VAR(int, g + 0x70) = 0;
 	GAME_THISFN(factor_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
-	GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, IMG(0x4c45a8), IMG(0x4b1784), IMG(0x4c45b0), IMG(0x4c45b8),
-	                                                                                  IMG(0x4c45c0), IMG(0x4c45cc), IMG(0x4c45d4), IMG(0x4c45dc), IMG(0x4c45e4));   /* item_initTextures */
-	if (!GAME_THISFN(catalogue_loadComponents, 0x473780, int, void *, const char *)(s, (const char *)IMG(0x4b4418)))   /* catalogue_loadComponents */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)IMG(0x4c4598));
-	if (!GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(s, (const char *)IMG(0x4c4588)))   /* map_loadItemInfoFrom */
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)IMG(0x4c4598));
+	GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
+	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
+	if (!GAME_THISFN(catalogue_loadComponents, 0x473780, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents */
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
+	if (!GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)IMG(0xa0e778), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
 	GAME_VAR(int, g + 0x233cc10) = 1;
 	stage_selectActor((Stage *)s, -1);
@@ -556,7 +556,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	char *macros = (char *)g + 0x234334b;
 	for (int k = 0; k < 30; k++)
 		macros[k * 0x40] = 0;
-	void *f = crt_fopen((const char *)IMG(0x4c457c), (const char *)IMG(0x4ad5e0));
+	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 #define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
 		if (crt_fgets(macros, 0x3f, f))

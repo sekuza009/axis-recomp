@@ -358,7 +358,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #define R(type, offset) GAME_VAR(type, rec + (offset))
 	int player = GAME_VAR(int, scene + 0x202e8d4);
 	if (player < 0)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4b4538), player);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
 	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
 	((float *)RELOC(spawn))[5] = f32(fld_m(&R(float, 0x10)));
 	((float *)RELOC(spawn))[6] = f32(fld_m(&R(float, 0x14)));
@@ -488,7 +488,7 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 	colours[0xb] = level_byte(&s2);
 	colours[0x15] = level_byte(&v2);
 	char dir[0x100];
-	sprintf(dir, (const char *)IMG(0x4c77f8), p);
+	sprintf(dir, (const char *)STR(0x4c77f8, "_T%d"), p);
 	if ((unsigned)part <= 4)
 		shape_setTextureDir(scene + shapes[part] + p * 0x47fd2, dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);

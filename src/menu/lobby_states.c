@@ -60,7 +60,7 @@ void (lobby_drawArenaTitle)(void)
 	signed char map = g_arenaMap;
 	if (map >= 0x16 && map <= 0x18)
 		g_arenaMap = map = 0;
-	if (!strcmp((char *)IMG(0x4ded20), (const char *)IMG(0x4ad4a4))) {
+	if (!strcmp((char *)IMG(0x4ded20), (const char *)STR(0x4ad4a4, "AXIS ARENA"))) {
 		memset((void *)IMG(0x4ded20), 0, 32);
 		strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x4dedb0));
 		strcat((char *)IMG(0x4ded20), (const char *)IMG(0x4ad49c));
@@ -180,7 +180,7 @@ void (room_enterRoomList)(void)
    both the room's record and the room settings; the mech unpacked */
 void (lobby_ladderGameName)(void)
 {
-	strcpy((char *)IMG(0x4df9c8), (const char *)IMG(0x4b17bc));
+	strcpy((char *)IMG(0x4df9c8), (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	(*(char *)&g_roomPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
 	strcpy((char *)IMG(0x76d450), (const char *)IMG(0x9dd570));
@@ -977,7 +977,7 @@ u32 (arena_loadAndQuit)(void)
 		g_lobbyReply = 0x69;
 		return r;
 	}
-	if (!arena_loadSettings((const char *)IMG(0x4ad5e4)))   /* "axiswl.dat" */
+	if (!arena_loadSettings((const char *)STR(0x4ad5e4, "axiswl.dat")))
 		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
 	memset((void *)IMG(0x4ded20), 0, 32);
 	strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x5b191c));
@@ -1491,9 +1491,9 @@ void (profile_checkAndSendRecord)(void)
 static void special_map(const char *name, u8 *map)
 {
 	static const struct { u8 map; u32 names[4]; } rooms[3] = {
-		{ 0x18, { IMG(0x4ad554), IMG(0x4ad548), IMG(0x4ad53c), IMG(0x4ad530) } },
-		{ 0x16, { IMG(0x4ad524), IMG(0x4ad514), IMG(0x4ad504), IMG(0x4ad4f4) } },
-		{ 0x17, { IMG(0x4ad4e8), IMG(0x4ad4d8), IMG(0x4ad4c8), IMG(0x4ad4b8) } } };
+		{ 0x18, { STR(0x4ad554, "\300\347\271\314\275\303\275\272\305\333\260\263\271\337"), STR(0x4ad548, "jamiesystem"), STR(0x4ad53c, "JAMIESYSTEM"), STR(0x4ad530, "JamieSystem") } },
+		{ 0x16, { STR(0x4ad524, "\277\356\277\265\300\332\271\346"), STR(0x4ad514, "operator room"), STR(0x4ad504, "OPERATOR ROOM"), STR(0x4ad4f4, "Operator Room") } },
+		{ 0x17, { STR(0x4ad4e8, "\260\263\271\337\300\332\271\346"), STR(0x4ad4d8, "developer room"), STR(0x4ad4c8, "DEVELOPER ROOM"), STR(0x4ad4b8, "Developer Room") } } };
 	for (int r = 0; r < 3; r++)
 		for (int k = 0; k < 4; k++)
 			if (!strcmp(name, (const char *)rooms[r].names[k])) {

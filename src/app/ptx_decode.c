@@ -208,10 +208,10 @@ void (ptx_inverseDct)(const int *in, u8 *out)
 int (ptx_crtlError)(int code, const char *format, ...)
 {
 	void *err = (void *)IMG(0x4d0878);   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4b182c));
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fc0), GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
 	if (format && strlen(format)) {
-		((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fb0));
+		((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
 		va_list args;
 		va_start(args, format);
 		GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
@@ -226,8 +226,8 @@ int (ptx_crtlError)(int code, const char *format, ...)
 int (ptx_error)(int code, const char *format, ...)
 {
 	void *err = (void *)IMG(0x4d0878);   /* stderr */
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4b182c));
-	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)IMG(0x4c6fd0));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
+	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fd0, "ERROR: "));
 	va_list args;
 	va_start(args, format);
 	GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
@@ -248,16 +248,16 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	struct { char magic[4]; u16 version; short w, h, type, quality; u8 pad[6]; } head;
 	ptx_fread(&head, 1, 0x10, f);
 	if (head.magic[0] != 'P' || head.magic[1] != 'T' || head.magic[2] != 'X' || head.magic[3] != 0)
-		ptx_error(-1, (const char *)IMG(0x4c6fec));
+		ptx_error(-1, (const char *)STR(0x4c6fec, "Not PTX file\n"));
 	if (head.version != 0x100)
-		ptx_error(-1, (const char *)IMG(0x4c6fec));
+		ptx_error(-1, (const char *)STR(0x4c6fec, "Not PTX file\n"));
 	int w = head.w * 8, h = head.h * 8, planes;
 	if (head.type == 0x81)
 		planes = 3;
 	else if (head.type == 0x82)
 		planes = 4;
 	else {
-		ptx_error(-1, (const char *)IMG(0x4c6fd8));
+		ptx_error(-1, (const char *)STR(0x4c6fd8, "not implemented\n"));
 		planes = -1;
 	}
 	ptx_initQuantTables(head.quality);
@@ -302,9 +302,9 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
    the conversion. Returns 0, or the type less 0x82 for an unknown type */
 int (ptx_open)(const char *path, u8 *out, int *fmt, int *width, int *height)
 {
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		ptx_crtlError(-1, (const char *)IMG(0x4b3fd8), path);
+		ptx_crtlError(-1, (const char *)STR(0x4b3fd8, "%s"), path);
 	return ptx_read(f, out, fmt, width, height, 1);
 }
 

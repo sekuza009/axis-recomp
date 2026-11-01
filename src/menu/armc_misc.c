@@ -126,7 +126,7 @@ void (armc_exit)(int confirmed)
 	g_flareStepB = 0.2f;
 	g_flareStepA = -0.2f;
 	sound_playMenu(4);
-	music_play((const char *)IMG(0x4b01cc));                  /* "music/Netsphere.mp3", the game's own string */
+	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));                  /* "music/Netsphere.mp3", the game's own string */
 	if (g_startedFromLobby == 1 && g_lobbyReply == 0x66)
 		g_lobbyReply = 0x67;
 }
@@ -152,7 +152,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	u32 light[0xb00c / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts */
 	for (int i = 0; i < 0x400; i++)
 		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)RELOC(light) + 4 + i * 0x2c);
-	light[0] = IMG(0x4aa248);
+	light[0] = VT(Light, 0x4aa248);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
@@ -328,8 +328,8 @@ void (menuState700_armCenter)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(100, 200, 540, 280, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
-		text_drawBox16(105, 220, 535, (const char *)IMG(0x7572a4));
-		text_drawBox16(105, 244, 535, (const char *)IMG(0x757324));
+		text_drawBox16(105, 220, 535, (const char *)MSG(297, "LOADING MECHANIC DATA.."));
+		text_drawBox16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
 		g_armcSessionDue = 1;
 	}
 	long double zoom = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_tenthsToDegrees)), &g_armcZoom);
@@ -350,7 +350,7 @@ u32 (menu_enterMenus)(void)
 	g_armcHideInterface = 0;
 	g_armcSlot = 0;
 	armc_initCameraPoints();
-	music_play((const char *)IMG(0x4b01b0));
+	music_play((const char *)STR(0x4b01b0, "music/Heart of Giants.mp3"));
 	g_armcPartSlot = 5;
 	g_unusedArmcWord3 = 5;
 	g_armcColourSlot = 5;
@@ -637,10 +637,10 @@ void (armc_snapshot)(int i)
 	}
 	char path[0x80], copy[0x40];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)IMG(0x4b036c));   /* "Actor/item/" */
+	strcpy(path, (const char *)STR(0x4b036c, "Actor/item/"));
 	strcat(path, name);
-	strcat(path, (const char *)IMG(0x4ad564));   /* "/" */
-	strcat(path, (const char *)IMG(0x4b0360));   /* "snapshot" */
+	strcat(path, (const char *)STR(0x4ad564, "/"));
+	strcat(path, (const char *)STR(0x4b0360, "snapshot"));
 	strcpy(copy, path);
 	GAME_VAR(int, 0x4dcc70 + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcChanged = 0;
@@ -656,18 +656,18 @@ void (armc_drawWeightLine)(void)
 	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	int length = (int)strlen((const char *)IMG(0x7573a4));
-	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)IMG(0x7573a4));
+	int length = (int)strlen((const char *)MSG(299, "WEIGHT"));
+	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)MSG(299, "WEIGHT"));
 	long double sum = fld_m((const float *)RELOC(weights[0]));
 	for (int k = 1; k < 10; k++)
 		sum = fadd_m(sum, (const float *)RELOC(weights[k]));
 	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
-	strcpy(s.most, (const char *)IMG(0x4ad564));   /* "/" */
-	sprintf(s.total, (const char *)IMG(0x4b0354), (double)g_legsMaxWeight);   /* "%.0f" */
+	strcpy(s.most, (const char *)STR(0x4ad564, "/"));
+	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_legsMaxWeight);
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
-	sprintf(s.total, (const char *)IMG(0x4b0354), (double)g_totalWeight);
+	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_totalWeight);
 	if (g_totalWeight > g_legsMaxWeight)
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0, 0, 0x3f800000);
 	else
@@ -698,7 +698,7 @@ int (armc_drawModeTabs)(void)
 		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? IMG(0x4dbc58) : IMG(0x4dc1d0));
 		set_colour_bits((Colour *)IMG(0x76d438), c[0], c[1], c[2], c[3]);
 		int x = g_armcStatsPanelLeft;
-		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(IMG(0x7565a4) + i * 0x80));
+		text_drawBox16(x + i * 100 + 0x10, g_armcStatsPanelTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
 	}
 	return 3;
 }

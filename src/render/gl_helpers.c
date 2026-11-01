@@ -113,7 +113,7 @@ u32 (gfx_initGLState)(int width, int height)
 	default_gl_state();
 	IMPORT(0x4a91fc, void, u32)(0x1701);   /* glMatrixMode(GL_PROJECTION) */
 	g_viewAspect = f32((long double)width / (long double)height);
-	((void (STDCALL *)(double, double, double, double))*(const u32 *)IMG(0x4a9048))((double)fld_m((const float *)IMG(0x68038c)),
+	((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))((double)fld_m((const float *)IMG(0x68038c)),
 		(double)fld_m((const float *)IMG(0x4e1870)), 1.0, 20000.0);   /* gluPerspective */
 	IMPORT(0x4a91fc, void, u32)(0x1700);   /* glMatrixMode(GL_MODELVIEW) */
 	u32 r = GAME_FN(gfx_setup3DView, 0x42f0f0, u32, int, int)(width, height);

@@ -23,9 +23,9 @@ static void mode_box(void)
 	menu_drawWideButton(X1 - 0xa0, Y1 - 0x20, X1, Y1, 1);
 	TEXT(bright);
 	char text[50] = { 0 };
-	strcpy(text, (const char *)IMG(0x756da4));
-	strcat(text, (const char *)IMG(0x4b035c));   /* " " */
-	strcat(text, (const char *)(IMG(0x751924) + g_armcSpin * 0x80));
+	strcpy(text, (const char *)MSG(287, "$[0] ROTATE"));
+	strcat(text, (const char *)STR(0x4b035c, " "));
+	strcat(text, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
 	text_drawBox16(X1 - 0xa0, Y1 - 0x18, X1, text);
 }
 
@@ -54,9 +54,9 @@ static int half_percent(long double v)
 static void value_line(int k, int y, int value)
 {
 	char line[50] = { 0 }, number[50] = { 0 };
-	strcpy(line, (const char *)(IMG(0x75d4a4) + k * 0x80));
-	strcat(line, (const char *)IMG(0x4b037c));   /* " [" */
-	sprintf(number, (const char *)IMG(0x4b0378), value);   /* "%d]" */
+	strcpy(line, (const char *)(MSG(493, "HUE") + k * 0x80));
+	strcat(line, (const char *)STR(0x4b037c, " ["));
+	sprintf(number, (const char *)STR(0x4b0378, "%d]"), value);
 	strcat(line, number);
 	text_draw8(X1 - 0xc0, y, line);
 }
@@ -116,8 +116,8 @@ void (armc_drawColourEditor)(void)
 		menu_drawRect(X1 - 200, Y0 + 0x30 + box * 0xb0, X1, Y0 + 0xd0 + box * 0xb0, 1);
 	}
 	TEXT(bright);
-	text_draw8b(X1 - 200, Y0 + 0x34, X1, (const char *)IMG(0x75d3a4));
-	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)IMG(0x75d424));
+	text_draw8b(X1 - 200, Y0 + 0x34, X1, (const char *)MSG(491, "PRIMARY COLOR"));
+	text_draw8b(X1 - 200, Y0 + 0xe4, X1, (const char *)MSG(492, "SECONDARY COLOR"));
 	for (int k = 0; k < 3; k++) {
 		int y = Y0 + k * 0x30;
 		int v1 = k == 0 ? ftol(fmul_m((long double)turned(ftol(fld_m(&SLOT[0]))), K(0x4a9490)))
@@ -142,9 +142,9 @@ void (armc_drawColourEditor)(void)
 		else
 			TEXT(dim);
 		if (k == 5)
-			text_drawBox16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)IMG(0x756d24));
+			text_drawBox16(X0 + 0x10, Y0 + 0x13d, X0 + 0xb0, (const char *)MSG(286, "VIEW $[0] ALL"));
 		else
-			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(IMG(0x756aa4) + k * 0x80));
+			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(MSG(281, "$[0] HEAD") + k * 0x80));
 	}
 	if (g_armcPreview) {
 		static const u32 names[5] = { IMG(0x4dceb8), IMG(0x4dbc08), IMG(0x4dc250), IMG(0x4dc1e8), IMG(0x4dce40) };
@@ -199,7 +199,7 @@ void (armc_drawColourEditor)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(X0 + k * 0x64 + 0x10, Y1 - 0x18, X0 + k * 0x64 + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
@@ -271,7 +271,7 @@ void (armc_drawBuildScreen)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(x + 0x10, Y1 - 0x18, x + 0x70, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -291,10 +291,10 @@ void (armc_drawBuildScreen)(void)
 		}
 	for (int k = 0; k < 6; k++) {
 		TEXT(bright);
-		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(IMG(0x756fa4) + k * 0x80));
+		text_draw8(X0 + 0x14, Y0 + k * 0x3f + 0x19, (const char *)(MSG(291, "HAND-W1($[0] 1)") + k * 0x80));
 		TEXT(yellow);
 		if (strlen(SLOT_NAME(k)) <= 1)
-			text_draw8b(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)IMG(0x757da4));
+			text_draw8b(X0 + 0x10, Y0 + k * 0x3f + 0x36, X0 + 0xa0, (const char *)MSG(319, "EMPTY SLOT"));
 		else
 			text_draw5(X0 + 0x18, Y0 + k * 0x3f + 0x2d, SLOT_NAME(k));
 	}
@@ -307,7 +307,7 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 0);
 	if (strlen((const char *)IMG(0x4dc150)) <= 1) {
 		TEXT(yellow);
-		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)IMG(0x757e24));
+		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)MSG(320, "REMOVE WEAPON"));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -318,7 +318,7 @@ void (armc_drawBuildScreen)(void)
 		int part = g_armcCursor;
 		int type = g_armcSlot > 3 ? ((const int *)IMG(0x4dcca4))[part] : ((const int *)IMG(0x4dc79c))[part];
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x16a, (const char *)(IMG(0x7641a4) + type * 0x80));
+		armc_drawText(x + 5, y + 0x16a, (const char *)(MSG(711, "HV-PISTOL") + type * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	bind_texture(g_buttonTexture);
@@ -334,32 +334,32 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x + 4, y + 4, x + 0xc4, y + 0x10a, 0);
 	if (STAT(int, 0) == -1) {
 		TEXT(yellow);
-		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)IMG(0x757da4));
+		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
 		return;
 	}
 	if (STAT(int, 4) == -1) {
 		TEXT(yellow);
-		text_draw8(x + 8, y + 0x10, (const char *)IMG(0x765fa4));
+		text_draw8(x + 8, y + 0x10, (const char *)MSG(771, "SPECIAL WEAPON"));
 		TEXT(white);
-		armc_drawText(x + 8, y + 0x28, (const char *)(IMG(0x7652a4) + STAT(int, 8) * 0x80));
+		armc_drawText(x + 8, y + 0x28, (const char *)(MSG(745, "GRAVITY CONTROLLER") + STAT(int, 8) * 0x80));
 		return;
 	}
 	TEXT(bright);
 	TEXT(white);
 	for (int k = 0; k < 16; k++)
-		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(IMG(0x7574a4) + k * 0x80));
+		armc_drawText(x + 8, y + 8 + k * 0x10, (const char *)(MSG(301, "SLOT TYPE") + k * 0x80));
 	set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
-	strcpy(text, (const char *)(IMG(0x757ea4) + STAT(int, 0) * 0x80));
+	strcpy(text, (const char *)(MSG(321, "HAND") + STAT(int, 0) * 0x80));
 	armc_drawStatLabel(vx, y + 8, text);
 	char kind[50] = { 0 };
-	strcpy(kind, (const char *)(IMG(0x757fa4) + STAT(int, 4) * 0x80));
+	strcpy(kind, (const char *)(MSG(323, "30mm") + STAT(int, 4) * 0x80));
 	armc_drawStatLabel(vx, y + 0x18, kind);
-	stat_int(vx, y + 0x28, STAT(int, 8), IMG(0x765824));
+	stat_int(vx, y + 0x28, STAT(int, 8), MSG(756, "cell"));
 	stat_int(vx, y + 0x38, STAT(int, 0xc), 0x765924);
 	char name[50] = { 0 };
-	strcpy(name, (const char *)(IMG(0x7581a4) + STAT(int, 0x10) * 0x80));
+	strcpy(name, (const char *)(MSG(327, "IMPACT") + STAT(int, 0x10) * 0x80));
 	armc_drawStatLabel(vx, y + 0x48, name);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
@@ -369,21 +369,21 @@ void (armc_drawBuildScreen)(void)
 	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)ADDR(k_0_01f));
 	b *= (long double)STAT(int, 0x14);
 	if (b >= k_0f)
-		sprintf(bonus, (const char *)IMG(0x4b02f0), ftol(b));   /* " +%d" */
+		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));
 	else
-		sprintf(bonus, (const char *)IMG(0x4b02f8), ftol(b));   /* " %d" */
+		sprintf(bonus, (const char *)STR(0x4b02f8, " %d"), ftol(b));
 	strcat(value, bonus);
 	armc_drawStatLabel(vx, y + 0x58, value);
-	stat_float(vx, y + 0x68, STAT(float, 0x18), IMG(0x4b0354), IMG(0x7655a4));
-	stat_float(vx, y + 0x78, STAT(float, 0x1c), IMG(0x4b0354), IMG(0x7659a4));
-	stat_float(vx, y + 0x88, STAT(float, 0x20), IMG(0x4b0334), IMG(0x765624));
-	stat_float(vx, y + 0x98, STAT(float, 0x24), IMG(0x4b0334), IMG(0x7655a4));
-	stat_float(vx, y + 0xa8, STAT(float, 0x28), IMG(0x4b0334), IMG(0x7655a4));
+	stat_float(vx, y + 0x68, STAT(float, 0x18), STR(0x4b0354, "%.0f"), MSG(751, "m"));
+	stat_float(vx, y + 0x78, STAT(float, 0x1c), STR(0x4b0354, "%.0f"), MSG(759, "m/s"));
+	stat_float(vx, y + 0x88, STAT(float, 0x20), STR(0x4b0334, "%.1f"), MSG(752, "'"));
+	stat_float(vx, y + 0x98, STAT(float, 0x24), STR(0x4b0334, "%.1f"), MSG(751, "m"));
+	stat_float(vx, y + 0xa8, STAT(float, 0x28), STR(0x4b0334, "%.1f"), MSG(751, "m"));
 	stat_int(vx, y + 0xb8, STAT(int, 0x2c), 0);
-	stat_float(vx, y + 0xc8, STAT(float, 0x30), IMG(0x4b0354), IMG(0x765724));
-	stat_float(vx, y + 0xd8, STAT(float, 0x34), IMG(0x4b0334), IMG(0x765624));
-	stat_float(vx, y + 0xe8, STAT(float, 0x38), IMG(0x4b0334), IMG(0x765724));
-	stat_float(vx, y + 0xf8, STAT(float, 0x3c), IMG(0x4b0334), IMG(0x7657a4));
+	stat_float(vx, y + 0xc8, STAT(float, 0x30), STR(0x4b0354, "%.0f"), MSG(754, "ms"));
+	stat_float(vx, y + 0xd8, STAT(float, 0x34), STR(0x4b0334, "%.1f"), MSG(752, "'"));
+	stat_float(vx, y + 0xe8, STAT(float, 0x38), STR(0x4b0334, "%.1f"), MSG(754, "ms"));
+	stat_float(vx, y + 0xf8, STAT(float, 0x3c), STR(0x4b0334, "%.1f"), MSG(755, "t"));
 }
 #undef STAT
 #undef SLOT_NAME

@@ -15,7 +15,7 @@ static void copy_name(u32 dst, int clear_bytes, const char *src)
 /* 0x4050f0: "PLAYER" (0x4ad4b0) and both fields 0 */
 void (cfg_defaultPlayerName)(void)
 {
-	copy_name(IMG(0x4db560), 32, (const char *)IMG(0x4ad4b0));
+	copy_name(IMG(0x4db560), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_arenaCorporation = 0;
 	g_arenaSex = 0;
 }
@@ -31,9 +31,9 @@ void (arena_copyProfile)(void)
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
 void (app_setDataPaths)(void)
 {
-	copy_name(IMG(0x9dae7c), 0x105, (const char *)IMG(0x4b29bc));
-	copy_name(IMG(0x4dedf8), 0x105, (const char *)IMG(0x4b29bc));
-	copy_name(IMG(0x680bc4), 0x105, (const char *)IMG(0x4b0498));
+	copy_name(IMG(0x9dae7c), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
+	copy_name(IMG(0x4dedf8), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
+	copy_name(IMG(0x680bc4), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
 
 /* ---- the chat input line (0x400 bytes at 0x9dc92c) and its three-line history ---- */
@@ -59,7 +59,7 @@ void (menu_showMessage)(int i)
 	g_dialogPending = 1;
 	memset((void *)IMG(0x4df81c), 0, 0x50);
 	g_lobbyReply = 0;
-	strcpy((char *)IMG(0x4df81c), (const char *)(IMG(0x74de24) + i * 0x80));
+	strcpy((char *)IMG(0x4df81c), (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
 }
 
 /* ---- session records (0x4a bytes) ---- */

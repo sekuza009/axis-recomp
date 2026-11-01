@@ -305,11 +305,11 @@ u32 (profile_selectAndLoad)(void)
 	int n = g_profileCount;
 	strcpy((char *)(IMG(0x9f684c) + n * 0x48), (const char *)IMG(0x9dc92c));
 	GAME_VAR(int, 0x9f688c + n * 0x48) = g_emblemCursor;
-	if (chdir_((const char *)IMG(0x4b2adc))) {
-		mkdir_((const char *)IMG(0x4b2adc));
-		chdir_((const char *)IMG(0x4b2adc));
+	if (chdir_((const char *)STR(0x4b2adc, "save"))) {
+		mkdir_((const char *)STR(0x4b2adc, "save"));
+		chdir_((const char *)STR(0x4b2adc, "save"));
 	}
-	chdir_((const char *)IMG(0x4b2a80));
+	chdir_((const char *)STR(0x4b2a80, ".."));
 	int count = n + 1;
 	g_profileCount = count;
 	if (count <= 0xd) {
@@ -434,14 +434,14 @@ u32 (profile_deleteFiles)(void)
 {
 	int current = g_pilotChosen;
 	u8 *records = (u8 *)IMG(0x9f6848);   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
-	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)IMG(0x4b2adc)) == 0) {   /* chdir("save") */
+	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
 		strcpy(path, (const char *)(records + current * 0x48 + 4));
-		strcat(path, (const char *)IMG(0x4b2afc));   /* ".axs" */
+		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 		if (!IMPORT(0x4a9104, int, const char *)(path))   /* DeleteFileA */
 			IMPORT(0x4a9104, int, const char *)(path);
-		GAME_CDECL(0x49f8a6, int, const char *)((const char *)IMG(0x4b2a80));   /* chdir("..") */
+		GAME_CDECL(0x49f8a6, int, const char *)((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = current;
 	for (; last < count; last++)

@@ -21,7 +21,8 @@ def sections(path):
         relptr, = struct.unpack_from('<I', d, o + 24)
         if name.startswith('.debug') or name.startswith('.llvm'):
             continue
-        out.setdefault(name, []).append((d[ptr:ptr + size], d[relptr:relptr + nrel * 10]))
+        # (a section without data in the file - .bss - by its size only: its pointer is 0, not its bytes)
+        out.setdefault(name, []).append((d[ptr:ptr + size] if ptr else ('zeroed', size), d[relptr:relptr + nrel * 10]))
     return out
 
 

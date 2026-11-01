@@ -4,34 +4,34 @@
 #include "../game.h"
 
 /* ---- class names: an ErrorLog record (vtable 0x4aa2a0) holding the class name, built once at start-up ---- */
-void *(Texture_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0dff8), (const char *)IMG(0x4b3e74), 0); }   /* 0x454fe0 "class Texture" */
-void *(TextureManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e000), (const char *)IMG(0x4b4134), 0); }   /* 0x456940 "class TextureManager" */
-void *(Sound_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e020), (const char *)IMG(0x4b42e0), 0); }   /* 0x456c90 "Sound" */
-void *(Console_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e778), (const char *)IMG(0x4c456c), 0); }   /* 0x460520 "class Console" */
-void *(Shape_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e790), (const char *)IMG(0x4c4a40), 0); }   /* 0x463b30 "class Shape" */
-void *(ShapeManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e788), (const char *)IMG(0x4c4ca8), 0); }   /* 0x4669c0 "class ShapeManager" */
-void *(Skeleton_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa8), (const char *)IMG(0x4c534c), 0); }   /* 0x469930 "class Skeleton" */
-void *(SkeletonManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa0), (const char *)IMG(0x4c549c), 0); }   /* 0x46ae10 "class SkeletonManager" */
-void *(BMPRGBFile_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f0f0), (const char *)IMG(0x4c58f4), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
-void *(RealColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f290), (const char *)IMG(0x4c59c0), 0); }   /* 0x46d270 "struct RealColor" */
-void *(PackedColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f250), (const char *)IMG(0x4c59d4), 0); }   /* 0x46da70 "struct PackedColor" */
-void *(UnitPartInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea0), (const char *)IMG(0x4c6ffc), 0); }   /* 0x46f360 "struct UnitPartInfo" */
-void *(UnitPoseInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea8), (const char *)IMG(0x4c7010), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
-void *(Unit_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2e98), (const char *)IMG(0x4c7024), 0); }   /* 0x46f420 "class Unit" */
-void *(Stage_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2eb8), (const char *)IMG(0x4c73b0), 0); }   /* 0x46ff20 "class Stage" */
-void *(CollisionVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ed0), (const char *)IMG(0x4c7800), 0); }   /* 0x481340 "class CollisionVolume" */
-void *(Light_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ee8), (const char *)IMG(0x4c7ad4), 0); }   /* 0x483d00 "class Light" */
-void *(ViewVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ef0), (const char *)IMG(0x4c7b08), 0); }   /* 0x483f60 "class ViewVolume" */
-void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2f00), (const char *)IMG(0x4c7b70), 0); }   /* 0x4873e0 "class TimeSync" */
-void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae3328), (const char *)IMG(0x4c7d18), 0); }   /* 0x48b3c0 "class Scene" */
+void *(Texture_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0dff8), (const char *)STR(0x4b3e74, "class Texture"), 0); }   /* 0x454fe0 "class Texture" */
+void *(TextureManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e000), (const char *)STR(0x4b4134, "class TextureManager"), 0); }   /* 0x456940 "class TextureManager" */
+void *(Sound_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e020), (const char *)STR(0x4b42e0, "Sound"), 0); }   /* 0x456c90 "Sound" */
+void *(Console_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e778), (const char *)STR(0x4c456c, "class Console"), 0); }   /* 0x460520 "class Console" */
+void *(Shape_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e790), (const char *)STR(0x4c4a40, "class Shape"), 0); }   /* 0x463b30 "class Shape" */
+void *(ShapeManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0e788), (const char *)STR(0x4c4ca8, "class ShapeManager"), 0); }   /* 0x4669c0 "class ShapeManager" */
+void *(Skeleton_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa8), (const char *)STR(0x4c534c, "class Skeleton"), 0); }   /* 0x469930 "class Skeleton" */
+void *(SkeletonManager_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa0eaa0), (const char *)STR(0x4c549c, "class SkeletonManager"), 0); }   /* 0x46ae10 "class SkeletonManager" */
+void *(BMPRGBFile_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f0f0), (const char *)STR(0x4c58f4, "class BMPRGBFile"), 0); }   /* 0x46ccb0 "class BMPRGBFile" */
+void *(RealColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f290), (const char *)STR(0x4c59c0, "struct RealColor"), 0); }   /* 0x46d270 "struct RealColor" */
+void *(PackedColor_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xa1f250), (const char *)STR(0x4c59d4, "struct PackedColor"), 0); }   /* 0x46da70 "struct PackedColor" */
+void *(UnitPartInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea0), (const char *)STR(0x4c6ffc, "struct UnitPartInfo"), 0); }   /* 0x46f360 "struct UnitPartInfo" */
+void *(UnitPoseInfo_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ea8), (const char *)STR(0x4c7010, "struct UnitPoseInfo"), 0); }   /* 0x46f3c0 "struct UnitPoseInfo" */
+void *(Unit_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2e98), (const char *)STR(0x4c7024, "class Unit"), 0); }   /* 0x46f420 "class Unit" */
+void *(Stage_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2eb8), (const char *)STR(0x4c73b0, "class Stage"), 0); }   /* 0x46ff20 "class Stage" */
+void *(CollisionVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ed0), (const char *)STR(0x4c7800, "class CollisionVolume"), 0); }   /* 0x481340 "class CollisionVolume" */
+void *(Light_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ee8), (const char *)STR(0x4c7ad4, "class Light"), 0); }   /* 0x483d00 "class Light" */
+void *(ViewVolume_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2ef0), (const char *)STR(0x4c7b08, "class ViewVolume"), 0); }   /* 0x483f60 "class ViewVolume" */
+void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae2f00), (const char *)STR(0x4c7b70, "class TimeSync"), 0); }   /* 0x4873e0 "class TimeSync" */
+void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)IMG(0xae3328), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
-void (static_initTex64x64)(void) { g_staticTex64x64 = IMG(0x4a956c); GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
-void (static_initTex128x64)(void) { g_staticTex128x64 = IMG(0x4a956c); GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
-void (static_initTex256x64)(void) { g_staticTex256x64 = IMG(0x4a956c); GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
-void (static_initTex128x128)(void) { g_staticTex128x128 = IMG(0x4a956c); GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
-void (static_initTex256x128)(void) { g_staticTex256x128 = IMG(0x4a956c); GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
-void (static_initTex256x256)(void) { g_staticTex256x256 = IMG(0x4a956c); GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
+void (static_initTex64x64)(void) { g_staticTex64x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
+void (static_initTex128x64)(void) { g_staticTex128x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
+void (static_initTex256x64)(void) { g_staticTex256x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
+void (static_initTex128x128)(void) { g_staticTex128x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
+void (static_initTex256x128)(void) { g_staticTex256x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
+void (static_initTex256x256)(void) { g_staticTex256x256 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
 int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex64x64, 0x42b180)); }

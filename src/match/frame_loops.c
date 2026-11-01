@@ -116,7 +116,7 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #define COUNT FIELD(int, s, 0x13c9b24)
 #define NEXT FIELD(int, s, 0x13c9b28)
 	if (NEXT >= 1000) {
-		sys_errorMessage((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8398), NEXT + 1, 1000);
+		sys_errorMessage((char *)IMG(0xae2eb8), (const char *)STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()"), NEXT + 1, 1000);
 		return -1;
 	}
 	if (NEXT == COUNT) {
@@ -206,8 +206,8 @@ void THISCALL (sound_updateListener)(u8 *s)
    (+0x20f2e74 ..); +0x20f2f3c cleared first. Its caller ignores the eax it leaves */
 void THISCALL (effect_initTextures)(u8 *s)
 {
-	static const u32 sets[3][2] = { { IMG(0x4c8170), 0x20f2dac }, { IMG(0x4c815c), 0x20f2dcc }, { IMG(0x4c8144), 0x20f2dec } };
-	static const u32 singles[8] = { IMG(0x4c8130), IMG(0x4c811c), IMG(0x4c8108), IMG(0x4c80f4), IMG(0x4c80e0), IMG(0x4c80c8), IMG(0x4c80b0), IMG(0x4c8098) };
+	static const u32 sets[3][2] = { { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), 0x20f2dac }, { STR(0x4c815c, "Effect\\IonThrust-%d"), 0x20f2dcc }, { STR(0x4c8144, "Effect\\GravityThrust-%d"), 0x20f2dec } };
+	static const u32 singles[8] = { STR(0x4c8130, "Effect\\Shell-Fire"), STR(0x4c811c, "Effect\\Shell-Bullet"), STR(0x4c8108, "Effect\\Rail-Fire"), STR(0x4c80f4, "Effect\\Blade-Fire"), STR(0x4c80e0, "Effect\\Rail-Bullet"), STR(0x4c80c8, "Effect\\Lightning-Bullet"), STR(0x4c80b0, "Effect\\Missile-Bullet"), STR(0x4c8098, "Effect\\Homing-Bullet") };
 	FIELD(int, s, 0x20f2f3c) = 0;
 	char name[0x100];
 	for (int set = 0; set < 3; set++)
@@ -302,21 +302,21 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 25: camera_setTarget(s, -1, -1, 0); break;
 		case 26:
 			if (FIELD(int, s, 0x2104fe8 + c[1] * 0x88) == 0)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7a8c), c[1]);
+				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);
 			if (FIELD(int, s, 0x210850c + c[2] * 0x108) == 0)
-				sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7a48), c[2]);
+				sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7a48, "invalid text (%d) in command MESSAGE ..."), c[2]);
 			script_pushEvent(s, c[1], c[2], c[3], c[4]);
 			break;
 		case 27:
-			sprintf(name, (const char *)IMG(0x4c7a3c), s + 0x808, (const char *)&c[1]);
+			sprintf(name, (const char *)STR(0x4c7a3c, "%s/%s.scp"), s + 0x808, (const char *)&c[1]);
 			script_runScpFile(s, name, c[9]);
 			break;
 		case 28:
-			sprintf(name, (const char *)IMG(0x4c7a30), s + 8, s + 0x908, (const char *)&c[2]);
+			sprintf(name, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, s + 0x908, (const char *)&c[2]);
 			object_setAnimation(s, c[1], name, c[10], c[11]);
 			break;
 		case 29:
-			sprintf(name, (const char *)IMG(0x4c7a20), s + 0x908, (const char *)&c[1]);
+			sprintf(name, (const char *)STR(0x4c7a20, "%s/Sound/%s.wav"), s + 0x908, (const char *)&c[1]);
 			sound_playFile(name, 100);
 			break;
 		case 30: object_activate(s, c[1]); break;
@@ -353,7 +353,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 			break;
 	if (idx == FIELD(int, s, 0x131ae40)) {
 		if (idx >= 1000)
-			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8364), 1000);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
 		idx = FIELD(int, s, 0x131ae40)++;
 		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
@@ -362,7 +362,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	FIELD(int, obj, 8) = idx;
 	memcpy(obj + 0xc, type + 0x40, 12);
 	if (type[0x4c])
-		sprintf((char *)obj + 0x18, (const char *)IMG(0x4c7a30), s + 8, s + 0x908, type + 0x4c);
+		sprintf((char *)obj + 0x18, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, s + 0x908, type + 0x4c);
 	else
 		obj[0x18] = 0;
 	memcpy(obj + 0x58, type + 0x8c, 12);
@@ -387,7 +387,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	for (int r = 0; r < 2; r++) {
 		int need = FIELD(int, s, 0x13016c8) + FIELD(int, shape, 0x18);
 		if (need > 1000000)
-			sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4c8314), i, need, 1000000);
+			sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
 		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + FIELD(int, s, 0x13016c8) * 4;
 		FIELD(int, s, 0x13016c8) += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
 	}
@@ -508,12 +508,12 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
    last big pickup (+0x20fcd3c) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
-	{ 0x10, 0x130, 0x28, 1, 0, IMG(0x4c82f4) }, { 0x10, 0x130, 0x28, 40, 0, IMG(0x4c82e4) }, { 0x20, 0x134, 0x2c, 40, 0, IMG(0x4c82d4) },
-	{ 0x40, 0x138, 0x30, 40, 0, IMG(0x4c82c0) }, { 0x80, 0x13c, 0x34, 15, 0, IMG(0x4c82ac) }, { 0x80, 0x13c, 0x34, 5, 0, IMG(0x4c8298) },
-	{ 1, 0x128, 0x1c, 10, 0, IMG(0x4c828c) }, { 1, 0x128, 0x1c, 25, 0, IMG(0x4c8280) }, { 1, 0x128, 0x1c, 50, 0, IMG(0x4c8274) },
-	{ 1, 0x128, 0x1c, 100, 0, IMG(0x4c8268) }, { 2, 0x128, 0x1c, 100, 100, IMG(0x4c8254) }, { 4, 0x12c, 0x20, 10, 0, IMG(0x4c8248) },
-	{ 4, 0x12c, 0x20, 25, 0, IMG(0x4c823c) }, { 4, 0x12c, 0x20, 50, 0, IMG(0x4c8230) }, { 4, 0x12c, 0x20, 100, 0, IMG(0x4c8224) },
-	{ 8, 0x12c, 0x20, 100, 100, IMG(0x4c820c) } };
+	{ 0x10, 0x130, 0x28, 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, 0x130, 0x28, 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, 0x134, 0x2c, 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
+	{ 0x40, 0x138, 0x30, 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, 0x13c, 0x34, 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, 0x13c, 0x34, 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
+	{ 1, 0x128, 0x1c, 10, 0, STR(0x4c828c, "+10 ARMOR") }, { 1, 0x128, 0x1c, 25, 0, STR(0x4c8280, "+25 ARMOR") }, { 1, 0x128, 0x1c, 50, 0, STR(0x4c8274, "+50 ARMOR") },
+	{ 1, 0x128, 0x1c, 100, 0, STR(0x4c8268, "+100 ARMOR") }, { 2, 0x128, 0x1c, 100, 100, STR(0x4c8254, "+100 EXTENDED ARMOR") }, { 4, 0x12c, 0x20, 10, 0, STR(0x4c8248, "+10 SHIELD") },
+	{ 4, 0x12c, 0x20, 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, 0x12c, 0x20, 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, 0x12c, 0x20, 100, 0, STR(0x4c8224, "+100 SHIELD") },
+	{ 8, 0x12c, 0x20, 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
 
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
@@ -534,7 +534,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 0:
 	case 1: {
 		if (type < 10 && type > 5) {
-			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c81d0), type);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
@@ -551,10 +551,10 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 2:
 	case 3:
 		switch (type % 10) {
-		case 0: timer = &A(u32, 0x3f4); text = IMG(0x4c81c4); break;   /* DAMAGE AMP */
-		case 1: timer = &A(u32, 0x3f8); text = IMG(0x4c81b4); break;   /* CLOAKING FIELD */
-		case 3: timer = &A(u32, 0x3fc); text = IMG(0x4c81a4); break;   /* OVERED BOOSTER */
-		case 7: timer = &A(u32, 0x400); text = IMG(0x4c8188); break;   /* GRAVITY ARMOR */
+		case 0: timer = &A(u32, 0x3f4); text = STR(0x4c81c4, "DAMAGE AMP"); break;   /* DAMAGE AMP */
+		case 1: timer = &A(u32, 0x3f8); text = STR(0x4c81b4, "CLOAKING FIELD"); break;   /* CLOAKING FIELD */
+		case 3: timer = &A(u32, 0x3fc); text = STR(0x4c81a4, "OVERED BOOSTER"); break;   /* OVERED BOOSTER */
+		case 7: timer = &A(u32, 0x400); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
 			if (A(int, 0x110) == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
@@ -563,7 +563,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
 				A(u32, 0x190) = GAME_VAR(u32, to + 0x1c);
 				A(int, 0x538) = I(int, 4);
-				strcpy((char *)ac + 0x4f4, (const char *)IMG(0x4c8198));   /* WARP ZONE */
+				strcpy((char *)ac + 0x4f4, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
 				A(int, 0x534) = 0;
 				A(u32, 0x548) = 0x3f800000;
 				A(u32, 0x540) = 0x40000000;
@@ -582,7 +582,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		last = 1;
 		break;
 	default:
-		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)IMG(0xae2eb8), (const char *)IMG(0x4c81d0), type);
+		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)IMG(0xae2eb8), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 		return;
 	}
 	strcpy((char *)ac + 0x4f4, (const char *)RELOC(text));

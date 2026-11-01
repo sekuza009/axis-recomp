@@ -27,11 +27,11 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 		sprintf_game(stamp, (const char *)RELOC(timeFormat), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	vsprintf_game(text, format, args);
 	if (g_errorLogging == 1) {
-		void *f = crt_fopen((const char *)IMG(0x4c582c), (const char *)IMG(0x4c5838));   /* ERROR.TXT, appended */
+		void *f = crt_fopen((const char *)STR(0x4c582c, "ERROR.TXT"), (const char *)STR(0x4c5838, "at+"));   /* ERROR.TXT, appended */
 		if (f) {
 			fseek(f, 0, 2);
-			fprintf_game(f, (const char *)IMG(0x4c5824), stamp, text);
-			fprintf_game(f, (const char *)IMG(0x4c57d0));
+			fprintf_game(f, (const char *)STR(0x4c5824, "%s\n%s\n"), stamp, text);
+			fprintf_game(f, (const char *)STR(0x4c57d0, "-------------------------------------..."));
 			fclose(f);
 		}
 	}
@@ -52,7 +52,7 @@ int (sys_errorMessageNoName)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(IMG(0xa1efe0), NULL, IMG(0x4c58a0), format, args);
+	int r = report(IMG(0xa1efe0), NULL, STR(0x4c58a0, "Error Message at %d/%d/%d/%d:%d:%d(%d)"), format, args);
 	va_end(args);
 	return r;
 }
@@ -60,7 +60,7 @@ int (sys_errorMessage)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(IMG(0xa1efe0), object, IMG(0x4c583c), format, args);
+	int r = report(IMG(0xa1efe0), object, STR(0x4c583c, "Error in %s - Message at %d/%d/%d/%d:..."), format, args);
 	va_end(args);
 	return r;
 }
@@ -70,7 +70,7 @@ void (sys_errorTerminate)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(IMG(0xa1efe4), NULL, IMG(0x4c58c8), format, args);
+	report(IMG(0xa1efe4), NULL, STR(0x4c58c8, "Error Termination at %d/%d/%d/%d:%d:%..."), format, args);
 	va_end(args);
 	terminate();
 }
@@ -78,7 +78,7 @@ void (sys_fatalError)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(IMG(0xa1efe4), object, IMG(0x4c586c), format, args);
+	report(IMG(0xa1efe4), object, STR(0x4c586c, "Error in %s - Termination at %d/%d/%d..."), format, args);
 	va_end(args);
 	terminate();
 }

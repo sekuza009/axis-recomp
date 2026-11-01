@@ -291,7 +291,7 @@ u32 (menu_drawMessageBox)(void)
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, (const char *)IMG(0x4df81c));
-	return GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)IMG(0x74de24));
+	return GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
 /* 0x428890: the text cursor at (x, y), a green bar 7 x 15 menu units, its alpha 1 - a timer (0x4de1f0: grows by the

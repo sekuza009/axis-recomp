@@ -27,12 +27,12 @@ void (armc_initCameraPoints)(void)
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
 void (arena_initOptionTexts)(void)
 {
-	static const u32 copies[7][2] = { { IMG(0x4db860), IMG(0x75baa4) }, { IMG(0x4db874), IMG(0x75bb24) }, { IMG(0x4db888), IMG(0x75bba4) },
-	                                  { IMG(0x4dbb14), IMG(0x75bc24) }, { IMG(0x4dbb28), IMG(0x75bca4) }, { IMG(0x4dbba4), IMG(0x75bc24) },
-	                                  { IMG(0x4dbbb8), IMG(0x75bca4) } };
+	static const u32 copies[7][2] = { { IMG(0x4db860), MSG(441, "RED") }, { IMG(0x4db874), MSG(442, "BLUE") }, { IMG(0x4db888), MSG(443, "YELLOW") },
+	                                  { IMG(0x4dbb14), MSG(444, "OFF") }, { IMG(0x4dbb28), MSG(445, "ON") }, { IMG(0x4dbba4), MSG(444, "OFF") },
+	                                  { IMG(0x4dbbb8), MSG(445, "ON") } };
 	for (int k = 0; k < 7; k++)
 		strcpy((char *)RELOC(copies[k][0]), (const char *)RELOC(copies[k][1]));
-	for (u32 s = IMG(0x75c224), d = IMG(0x4db8d8); s < IMG(0x75c9a4); s += 0x80, d += 0x14)
+	for (u32 s = MSG(456, "DM"), d = IMG(0x4db8d8); s < MSG(471, "DEATH MATCH"); s += 0x80, d += 0x14)
 		strcpy((char *)RELOC(d), (const char *)RELOC(s));
 }
 

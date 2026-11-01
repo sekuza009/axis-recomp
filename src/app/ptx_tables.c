@@ -6,7 +6,7 @@
 #define I32(a) GAME_VAR(int, a)
 #define F32(a) GAME_VAR(float, a)
 #define F64(a) GAME_VAR(double, a)
-#define g_ptxQuality I32(IMG(0x4c59e8))           /* the quality the tables are made for */
+#define g_ptxQuality I32(STR(0x4c59e8, "\377\377\377\377"))           /* the quality the tables are made for */
 #define g_ptxClamp GAME_VAR(u8 *, 0xa1f300)   /* clamp[v]: v limited to 0 .. 255 (v from -0x100) */
 
 /* 0x46e320: the clamp table: 0 below, the identity, 255 above */

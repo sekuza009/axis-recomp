@@ -141,7 +141,7 @@ void (menuState600_enterSetup)(void)
 	setupControl_layout();
 	STORE_ALL(colours);
 	for (int k = 0; k < 2; k++) {
-		const char *text = (const char *)(IMG(0x75b7a4) + k * 0x80);
+		const char *text = (const char *)(MSG(435, "OFF") + k * 0x80);
 		int o = k * 0x32;
 		strcpy((char *)(IMG(0x4ddbbc) + o), text - 0x200);
 		strcpy((char *)(IMG(0x4dda64) + o), text - 0x100);
@@ -368,7 +368,7 @@ static void check_profiles(void)
 {
 	for (int k = 0; k < 5; k++)
 		if (!(k == 0 ? app_checkFile_profeng() : app_checkFile_profkor())) {
-			sys_messageBox((const char *)IMG(0x4b04b0));
+			sys_messageBox((const char *)STR(0x4b04b0, "Run AxisPlay.exe"));
 			GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
 		}
 }
@@ -396,7 +396,7 @@ void (console_init)(void)
 	g_matchRunning = 1;
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
-	glWindow_init((const char *)IMG(0x4b04a0), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
+	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
 #define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;

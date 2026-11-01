@@ -31,7 +31,7 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
 	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
-	take_block(self, mem, size, (char *)IMG(0xa0eaa8), IMG(0x4c4bec), IMG(0x4c4b08), 1);
+	take_block(self, mem, size, (char *)IMG(0xa0eaa8), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
 	u8 *bones = AT(u8 *, self, 0x14) = AT(u8 *, self, 8);
 	crt_fread(bones, 0x70, AT(u32, self, 0x10), f);
 	int at = AT(int, self, 0x10) * 0x70;
@@ -54,12 +54,12 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
 	SkeletonManager_release(self);
-	strcpy((char *)self + 0x10, dir ? dir : (const char *)IMG(0x4b1304));
+	strcpy((char *)self + 0x10, dir ? dir : (const char *)STR(0x4b1304, "."));
 	AT(u32, self, 0x110) = a;
 	AT(int, self, 0x114) = n;
 	AT(int, self, 0x124) = extra;
 	AT(int, self, 4) = n * 0x70 + extra;
-	take_block(self, mem, size, (char *)IMG(0xa0eaa0), IMG(0x4c4bec), IMG(0x4c4b08), 0);
+	take_block(self, mem, size, (char *)IMG(0xa0eaa0), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
 	n = AT(int, self, 0x114);
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
@@ -78,7 +78,7 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
 	ShapeManager_release(self);
-	if (dir && strcmp(dir, (const char *)IMG(0x4b1304)) != 0)
+	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
 		strcpy((char *)self + 0x10, dir);
 	else
 		self[0x10] = 0;
@@ -87,7 +87,7 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	AT(int, self, 0x114) = n;
 	AT(int, self, 0x124) = extra;
 	AT(int, self, 4) = n * 0x98 + extra;
-	take_block(self, mem, size, (char *)IMG(0xa0e788), IMG(0x4c4cec), IMG(0x4c4cbc), 0);
+	take_block(self, mem, size, (char *)IMG(0xa0e788), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
 	n = AT(int, self, 0x114);
 	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
 	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
@@ -126,9 +126,9 @@ static int file_format(const char *path, const char *first, const char *second)
    message; the file closed. Its callers ignore the eax it leaves */
 void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 {
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4ae4), (int)path);
+		sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
 	switch (file_format(path, "shp", "obj")) {
 	case 0:
 		shape_read(shape, f, mem, size);
@@ -137,7 +137,7 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 		model_loadObjFormatFrom(shape, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4aa4), (int)path);
+		sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
 	}
 	fclose(f);
 }
@@ -146,9 +146,9 @@ void THISCALL (model_loadFrom)(u8 *shape, const char *path, void *mem, int size)
    ASCII scene export (skel_loadAseFrom). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 {
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)IMG(0x4c4ae4), (int)path);
+		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
 	switch (file_format(path, "ske", "ase")) {
 	case 0:
 		skel_loadFromFile(sk, f, mem, size);
@@ -157,7 +157,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 		skel_loadAseFrom(sk, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)IMG(0x4c4aa4), (int)path);
+		sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
 	}
 	fclose(f);
 }
@@ -194,11 +194,11 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 	if (!mem) {
 		AT(void *, list, 8) = operator_new(AT(u32, list, 4));
 		if (!AT(void *, list, 8))
-			sys_fatalError((char *)IMG(0xae2e98), (const char *)IMG(0x4c4bec), AT(int, list, 4));
+			sys_fatalError((char *)IMG(0xae2e98), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), AT(int, list, 4));
 		AT(int, list, 0xc) = 1;
 	} else {
 		if (size < AT(int, list, 4))
-			sys_fatalErrorN((char *)IMG(0xae2e98), (const char *)IMG(0x4c4b08), AT(int, list, 4), size);
+			sys_fatalErrorN((char *)IMG(0xae2e98), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), AT(int, list, 4), size);
 		AT(void *, list, 8) = mem;
 	}
 	AT(u8 *, list, 0x14) = AT(u8 *, list, 8);
@@ -345,9 +345,9 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 	else
 		sys_fatalError(out, (const char *)RELOC(bad), format);
 	if (cache[0x10])
-		sprintf(path, (const char *)IMG(0x4c4d5c), cache + 0x10, name, ext);
+		sprintf(path, (const char *)STR(0x4c4d5c, "%s\\%s.%s"), cache + 0x10, name, ext);
 	else
-		sprintf(path, (const char *)IMG(0x4c4d54), name, ext);
+		sprintf(path, (const char *)STR(0x4c4d54, "%s.%s"), name, ext);
 }
 
 /* 0x46b1a0 (thiscall on a skeleton cache): the skeleton named name (upper-cased; empty or starting with '.': none,
@@ -362,7 +362,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0eaa0), IMG(0x4c5528), IMG(0x4c54c8), &added);
+	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0eaa0), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
 	u8 *sk = AT(u8 *, cache, 0x11c) + i * 0x24;
 	if (!added)
 		return sk;
@@ -374,7 +374,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
-		item_path(path, cache, own, IMG(0x4c54f4), IMG(0x4c54f8), (char *)IMG(0xa0eaa0), IMG(0x4c54fc));   /* "ske" / "ase" */
+		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)IMG(0xa0eaa0), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
 		skel_loadFrom(sk, path, at, room);
 	}
 	if (mem)
@@ -394,7 +394,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0e788), IMG(0x4c4d98), IMG(0x4c4d30), &added);
+	int added, i = tree_lookup(cache, key, (char *)IMG(0xa0e788), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
 	u8 *shape = AT(u8 *, cache, 0x11c) + i * 0x4c;
 	if (added) {
 		const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
@@ -405,7 +405,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 			shape_read(shape, shape_findDatEntry(key), at, room);
 		else {
 			char path[0x100];
-			item_path(path, cache, own, IMG(0x4c4d68), IMG(0x4c4d6c), (char *)IMG(0xa0e788), IMG(0x4c4d70));   /* "shp" / "obj" */
+			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)IMG(0xa0e788), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
 			model_loadFrom(shape, path, at, room);
 		}
 		if (mem)
@@ -438,7 +438,7 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		AT(int, shape, 4) += AT(int, shape, 0x10) * 0x18;
 		crt_fseek(f, at, 0);   /* SEEK_SET */
 	}
-	take_block(shape, mem, size, (char *)IMG(0xa0e790), IMG(0x4c4bec), IMG(0x4c4b08), 1);
+	take_block(shape, mem, size, (char *)IMG(0xa0e790), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
 	u8 *parts = AT(u8 *, shape, 0x14) = AT(u8 *, shape, 8);
 	if (current)
 		crt_fread(parts, 0x80, AT(u32, shape, 0x10), f);
@@ -555,8 +555,8 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 
 #define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
 #define TOKEN(delims) crt_strtok(NULL, (const char *)RELOC(delims))
-#define SPACE IMG(0x4ad5dc)     /* " \t" */
-#define LINE_END IMG(0x4b4310)  /* " \t\n" */
+#define SPACE STR(0x4ad5dc, " \t")
+#define LINE_END STR(0x4b4310, " \t\n")
 
 /* the next number of the line as a float (atof's double rounded), negated or not */
 static float ase_float(u32 delims, int negate)
@@ -594,12 +594,12 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	Skeleton_release(sk);
 	GAME_VAR(int, sk + 0x10) = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
 	while (crt_fgets(line, 0x100, f)) {
-		const char *t = crt_strtok(line, (const char *)IMG(0x4c5498));
-		if (!strcmp(t, (const char *)IMG(0x4c548c)))
+		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
+		if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT")))
 			GAME_VAR(int, sk + 0x10)++;
-		else if (!strcmp(t, (const char *)IMG(0x4c5478)) || !strcmp(t, (const char *)IMG(0x4c5460)))
+		else if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))
 			GAME_VAR(int, sk + 0x18)++;
-		else if (!strcmp(t, (const char *)IMG(0x4c544c)))
+		else if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))
 			GAME_VAR(int, sk + 0x1c)++;
 	}
 	int bones = GAME_VAR(int, sk + 0x10);
@@ -609,11 +609,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		GAME_VAR(void *, sk + 8) = operator_new(size);
 		if (!GAME_VAR(void *, sk + 8))
-			sys_fatalError((char *)IMG(0xa0eaa8), (const char *)IMG(0x4c4bec), GAME_VAR(int, sk + 4));
+			sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sk + 4));
 		GAME_VAR(int, sk + 0xc) = 1;
 	} else {
 		if (memSize < size)
-			sys_fatalErrorN((char *)IMG(0xa0eaa8), (const char *)IMG(0x4c4b08), size, memSize);
+			sys_fatalErrorN((char *)IMG(0xa0eaa8), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
 		GAME_VAR(u8 *, sk + 8) = mem;
 		GAME_VAR(int, sk + 0xc) = 0;
 	}
@@ -623,31 +623,31 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
 	u8 *b = NULL;
 	while (crt_fgets(line, 0x100, f)) {
-		const char *t = crt_strtok(line, (const char *)IMG(0x4c5498));
-		if (!strcmp(t, (const char *)IMG(0x4c543c)))   /* SCENE_LASTFRAME */
+		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
+		if (!strcmp(t, (const char *)STR(0x4c543c, "SCENE_LASTFRAME")))   /* SCENE_LASTFRAME */
 			frames = crt_atoi(TOKEN(LINE_END));
-		else if (!strcmp(t, (const char *)IMG(0x4c541c))) {   /* SCENE_FRAMESPEED */
+		else if (!strcmp(t, (const char *)STR(0x4c541c, "SCENE_FRAMESPEED"))) {   /* SCENE_FRAMESPEED */
 			ms = 1000 / crt_atoi(TOKEN(LINE_END));
 			GAME_VAR(int, sk + 0x20) = ms * frames;
-		} else if (!strcmp(t, (const char *)IMG(0x4c5408)))   /* SCENE_TICKSPERFRAME */
+		} else if (!strcmp(t, (const char *)STR(0x4c5408, "SCENE_TICKSPERFRAME")))   /* SCENE_TICKSPERFRAME */
 			ticks = crt_atoi(TOKEN(LINE_END));
-		else if (!strcmp(t, (const char *)IMG(0x4c548c))) {   /* GEOMOBJECT */
+		else if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT"))) {   /* GEOMOBJECT */
 			index++;
 			skip = 0;
 			at += 0x70;
 			b = GAME_VAR(u8 *, sk + 0x14) + at;
 			GAME_VAR(int, b + 0x40) = -1;
 			GAME_VAR(int, b + 0x60) = GAME_VAR(int, b + 0x64) = GAME_VAR(int, b + 0x68) = GAME_VAR(int, b + 0x6c) = 0;
-		} else if (!strcmp(t, (const char *)IMG(0x4c53f8))) {   /* CAMERAOBJECT */
+		} else if (!strcmp(t, (const char *)STR(0x4c53f8, "CAMERAOBJECT"))) {   /* CAMERAOBJECT */
 			skip = 1;
 			continue;
 		}
 		if (skip)
 			continue;
-		if (!strcmp(t, (const char *)IMG(0x4c5430)))   /* NODE_NAME */
-			strcpy((char *)RELOC(b), TOKEN(IMG(0x4c53f4)));
-		else if (!strcmp(t, (const char *)IMG(0x4c53e8))) {   /* NODE_PARENT */
-			strcpy(parent, TOKEN(IMG(0x4c53f4)));
+		if (!strcmp(t, (const char *)STR(0x4c5430, "NODE_NAME")))   /* NODE_NAME */
+			strcpy((char *)RELOC(b), TOKEN(STR(0x4c53f4, "\"")));
+		else if (!strcmp(t, (const char *)STR(0x4c53e8, "NODE_PARENT"))) {   /* NODE_PARENT */
+			strcpy(parent, TOKEN(STR(0x4c53f4, "\"")));
 			if (at > 0)
 				for (int j = 0; j < index; j++)
 					if (!strcmp((const char *)GAME_VAR(u8 *, sk + 0x14) + j * 0x70, parent)) {
@@ -655,22 +655,22 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 						break;
 					}
 			if (GAME_VAR(int, b + 0x40) < 0)
-				sys_fatalError((char *)IMG(0xa0eaa8), (const char *)IMG(0x4c53b8), (int)parent);
-		} else if (!strcmp(t, (const char *)IMG(0x4c53b0))) {   /* TM_POS */
+				sys_fatalError((char *)IMG(0xa0eaa8), (const char *)STR(0x4c53b8, "can't find parent part(%s)-loadAseFor..."), (int)parent);
+		} else if (!strcmp(t, (const char *)STR(0x4c53b0, "TM_POS"))) {   /* TM_POS */
 			GAME_VAR(float, b + 0x44) = ase_float(SPACE, 0);
 			GAME_VAR(float, b + 0x4c) = ase_float(SPACE, 1);
 			GAME_VAR(float, b + 0x48) = ase_float(LINE_END, 0);
-		} else if (!strcmp(t, (const char *)IMG(0x4c53a4))) {   /* TM_ROTAXIS */
+		} else if (!strcmp(t, (const char *)STR(0x4c53a4, "TM_ROTAXIS"))) {   /* TM_ROTAXIS */
 			GAME_VAR(float, b + 0x54) = ase_float(SPACE, 0);
 			GAME_VAR(float, b + 0x5c) = ase_float(SPACE, 1);
 			GAME_VAR(float, b + 0x58) = ase_float(LINE_END, 0);
-		} else if (!strcmp(t, (const char *)IMG(0x4c5398)))   /* TM_ROTANGLE */
+		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
 			GAME_VAR(float, b + 0x50) = ase_float(LINE_END, 1);
-		else if (!strcmp(t, (const char *)IMG(0x4c5388)) || !strcmp(t, (const char *)IMG(0x4c5374))) {   /* CONTROL_POS_TCB / _BEZIER */
+		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
 			GAME_VAR(u8 *, b + 0x64) = GAME_VAR(u8 *, sk + 8) + keys;
 			while (crt_fgets(line, 0x100, f)) {
-				t = crt_strtok(line, (const char *)IMG(0x4c535c));
-				if (!strcmp(t, (const char *)IMG(0x4c5478)) || !strcmp(t, (const char *)IMG(0x4c5460))) {
+				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
+				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
 					u8 *k = GAME_VAR(u8 *, b + 0x64) + GAME_VAR(int, b + 0x60) * 0x20;
 					GAME_VAR(int, k) = ase_time(ticks, ms);
 					GAME_VAR(float, k + 8) = ase_float(SPACE, 0);
@@ -681,11 +681,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 					break;
 			}
 			keys += GAME_VAR(int, b + 0x60) * 0x20;
-		} else if (!strcmp(t, (const char *)IMG(0x4c5364))) {   /* CONTROL_ROT_TCB */
+		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
 			GAME_VAR(u8 *, b + 0x6c) = GAME_VAR(u8 *, sk + 8) + keys;
 			while (crt_fgets(line, 0x100, f)) {
-				t = crt_strtok(line, (const char *)IMG(0x4c535c));
-				if (!strcmp(t, (const char *)IMG(0x4c544c))) {
+				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
+				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
 					u8 *k = GAME_VAR(u8 *, b + 0x6c) + GAME_VAR(int, b + 0x68) * 0x28;
 					GAME_VAR(int, k) = ase_time(ticks, ms);
 					GAME_VAR(float, k + 0xc) = ase_float(SPACE, 0);
@@ -761,16 +761,16 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 
 #define crt_fgets(line, n, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, n, f)
 #define TOK(s, delims) crt_strtok(s, (const char *)RELOC(delims))
-#define SPACE IMG(0x4ad5dc)     /* " \t" */
-#define LINE_END IMG(0x4b4310)  /* " \t\n" */
-#define SLASH IMG(0x4ad564)     /* "/" */
-#define BAD_OBJ() sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4c20), (int)line)
+#define SPACE STR(0x4ad5dc, " \t")
+#define LINE_END STR(0x4b4310, " \t\n")
+#define SLASH STR(0x4ad564, "/")
+#define BAD_OBJ() sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4c20, "invalid obj format string(%s)-loadObj..."), (int)line)
 
 /* a face's first corner token: a lone "\" continues the face on the next line */
 static char *face_start(char *line, void *f)
 {
 	char *t = TOK(NULL, LINE_END);
-	if (!strcmp(t, (const char *)IMG(0x4b1328))) {
+	if (!strcmp(t, (const char *)STR(0x4b1328, "\\"))) {
 		crt_fgets(line, 0x100, f);
 		t = TOK(line, LINE_END);
 	}
@@ -816,15 +816,15 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	GAME_VAR(int, sh + 0x10) = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
-		if (!strcmp(t, (const char *)IMG(0x4c4c64)))
+		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl")))
 			GAME_VAR(int, sh + 0x10)++;
-		else if (!strcmp(t, (const char *)IMG(0x4c4c60)))
+		else if (!strcmp(t, (const char *)STR(0x4c4c60, "v")))
 			nv++;
-		else if (!strcmp(t, (const char *)IMG(0x4c4c5c)))
+		else if (!strcmp(t, (const char *)STR(0x4c4c5c, "vn")))
 			nvn++;
-		else if (!strcmp(t, (const char *)IMG(0x4c4c58)))
+		else if (!strcmp(t, (const char *)STR(0x4c4c58, "vt")))
 			nvt++;
-		else if (!strcmp(t, (const char *)IMG(0x4c4c54))) {
+		else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 			if (!face_start(line, f))
 				BAD_OBJ();
 			for (int k = 0; k < 2; k++)
@@ -848,19 +848,19 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		GAME_VAR(void *, sh + 8) = operator_new(size);
 		if (!GAME_VAR(void *, sh + 8))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4bec), GAME_VAR(int, sh + 4));
+			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sh + 4));
 		GAME_VAR(int, sh + 0xc) = 1;
 		if (!(vs = operator_new(nv * 12)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4bb4), nv);
+			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4bb4, "insufficient memory for vertexCoordAr..."), nv);
 		if (!(ns = operator_new(nvn * 12)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4b78), nvn);
+			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4b78, "insufficient memory for vertexNormalA..."), nvn);
 		if (!(ts = operator_new(nvt * 8)))
-			sys_fatalError((char *)IMG(0xa0e790), (const char *)IMG(0x4c4b38), nvt);
+			sys_fatalError((char *)IMG(0xa0e790), (const char *)STR(0x4c4b38, "insufficient memory for vertexTexture..."), nvt);
 		allocated = 1;
 	} else {
 		int need = nvt * 8 + (nvn + nv) * 0xc + size;
 		if (memSize < need)
-			sys_fatalErrorN((char *)IMG(0xa0e790), (const char *)IMG(0x4c4b08), need, memSize);
+			sys_fatalErrorN((char *)IMG(0xa0e790), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), need, memSize);
 		GAME_VAR(u8 *, sh + 8) = mem;
 		GAME_VAR(int, sh + 0xc) = 0;
 		vs = (float *)(mem + GAME_VAR(int, sh + 4));
@@ -881,10 +881,10 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	int off = -0x80;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
-		if (!strcmp(t, (const char *)IMG(0x4c4c64))) {
+		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
 			off += 0x80;
 			GAME_VAR(int, GAME_VAR(u8 *, sh + 0x14) + 0x60 + off) = 1;
-		} else if (!strcmp(t, (const char *)IMG(0x4c4c54))) {
+		} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 			if (!face_start(line, f))
 				BAD_OBJ();
 			for (int k = 0; k < 2; k++)
@@ -935,31 +935,31 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 			} while (*r);
 		} else {
 			char *t = TOK(line, SPACE);
-			if (!strcmp(t, (const char *)IMG(0x4c4c60))) {
+			if (!strcmp(t, (const char *)STR(0x4c4c60, "v"))) {
 				vp[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				vp[1] = f32(crt_atof(TOK(NULL, SPACE)));
 				vp[2] = f32(crt_atof(TOK(NULL, LINE_END)));
 				vp += 3;
-			} else if (!strcmp(t, (const char *)IMG(0x4c4c5c))) {
+			} else if (!strcmp(t, (const char *)STR(0x4c4c5c, "vn"))) {
 				np[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				np[1] = f32(crt_atof(TOK(NULL, SPACE)));
 				np[2] = f32(crt_atof(TOK(NULL, LINE_END)));
 				np += 3;
-			} else if (!strcmp(t, (const char *)IMG(0x4c4c58))) {
+			} else if (!strcmp(t, (const char *)STR(0x4c4c58, "vt"))) {
 				tp[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				tp[1] = f32(crt_atof(TOK(NULL, LINE_END)));
 				tp += 2;
-			} else if (!strcmp(t, (const char *)IMG(0x4c4c64))) {
+			} else if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
 				part = GAME_VAR(u8 *, sh + 0x14) + poff;
 				poff += 0x80;
-				for (char *piece = TOK(NULL, IMG(0x4c4b04)); piece; piece = TOK(NULL, IMG(0x4c4b04)))
+				for (char *piece = TOK(NULL, STR(0x4c4b04, "_")); piece; piece = TOK(NULL, STR(0x4c4b04, "_")))
 					strcpy(last, piece);
 				char *name = TOK(last, LINE_END);
 				strcpy((char *)part + 4, name);
 				part[(int)strlen(name) + 3] = 0;
 				GAME_VAR(int, part + 0x44) = -1;
 				next = 0;
-			} else if (!strcmp(t, (const char *)IMG(0x4c4c54))) {
+			} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 				strcpy(c[0], face_start(line, f));
 				strcpy(c[1], TOK(NULL, LINE_END));
 				strcpy(c[2], TOK(NULL, LINE_END));

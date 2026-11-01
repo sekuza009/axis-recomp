@@ -69,9 +69,9 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 static int THISCALL clear_unit(void *r) { spaceSlot_clear(r); return 0; }
 
 /* 0x4815c0, 0x4816c0, 0x4817f0: a free plane, node or unit */
-void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, IMG(0x4c7818)); }
-void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, IMG(0x4c7874)); }
-void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, IMG(0x4c78cc)); }
+void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, STR(0x4c7818, "not enoush free plane-getNextFreePlan...")); }
+void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, STR(0x4c7874, "not enoush free node-getNextFreeNodeP...")); }
+void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, STR(0x4c78cc, "not enoush free unit-getNextFreeUnitP...")); }
 
 /* 0x4818e0 (thiscall on the space): a block taken from the free list (+0x48; its next at +0x4c, the new head's back
    link +0x48 cleared), counted (+0x4c), reset (spaceBlock_clear) and given the bounds mn / mx (three dwords each);
@@ -81,7 +81,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
 	u32 *block = FIELD(u32 *, 0x48);
 	if (!block) {
-		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)IMG(0xae2ed0), (const char *)IMG(0x4c7924),
+		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)IMG(0xae2ed0), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
 			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
 		return 0;
 	}
@@ -151,9 +151,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(int, 0x7c) = nz;
 	int cells = FIELD(int, 0x58) = nx * ny * nz;
 	if (cells <= 0)
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c79f4), nx, ny, nz);
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
 	else if (cells > FIELD(int, 0x50))
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c79bc), nx, ny, nz, cells, FIELD(int, 0x50));
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, FIELD(int, 0x50));
 	FIELD(u32, 0x90) = b;
 	FIELD(u32, 0x8c) = a;
 	FIELD(int, 0x94) = depth;
@@ -161,7 +161,7 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 	FIELD(float, 0x84) = (float)(((long double)FIELD(float, 0x68) - FIELD(float, 0x5c)) / FIELD(int, 0x78));
 	FIELD(float, 0x88) = (float)(((long double)FIELD(float, 0x6c) - FIELD(float, 0x60)) / FIELD(int, 0x7c));
 	if (depth > 8)
-		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c7980), depth, 8);
+		sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
 	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
 #undef FIELD
 }
@@ -184,11 +184,11 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
 		if (!FIELD(void *, 8))
-			sys_fatalError((char *)IMG(0xae2ed0), (const char *)IMG(0x4c4cec), FIELD(int, 4));
+			sys_fatalError((char *)IMG(0xae2ed0), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), FIELD(int, 4));
 		FIELD(int, 0xc) = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)IMG(0x4c4cbc), need, size);
+			sys_fatalErrorN((char *)IMG(0xae2ed0), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);

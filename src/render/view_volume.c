@@ -234,10 +234,10 @@ void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 	}
 	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(view);   /* ViewVolume_clear */
 	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
-	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)IMG(0x4c7b5c)))   /* strstr */
+	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)STR(0x4c7b5c, "GL_EXT_vertex_array")))   /* strstr */
 		return;
 	FIELD(int, view, 0x10) = 1;
-	static const u32 names[3] = { IMG(0x4c7b48), IMG(0x4c7b34), IMG(0x4c7b1c) };   /* the three entry points' names */
+	static const u32 names[3] = { STR(0x4c7b48, "glVertexPointerEXT"), STR(0x4c7b34, "glColorPointerEXT"), STR(0x4c7b1c, "glTexCoordPointerEXT") };   /* the three entry points' names */
 	for (int k = 0; k < 3; k++)
 		FIELD(void *, view, 0x14 + k * 4) = IMPORT(0x4a928c, void *, const char *)((const char *)RELOC(names[k]));   /* wglGetProcAddress */
 }

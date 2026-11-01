@@ -92,10 +92,10 @@ int (net_parseAddress)(void)
 {
 	char buf[20];
 	memset(buf, 0, sizeof buf);
-	char *part = crt_strtok((char *)IMG(0xa0b43c), (const char *)IMG(0x4b1304));   /* "." */
+	char *part = crt_strtok((char *)IMG(0xa0b43c), (const char *)STR(0x4b1304, "."));
 	strcpy(buf, part);
 	if (part)
-		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)IMG(0x4b3e68))) != NULL; slot += 4)
+		for (char *slot = buf + 4; (part = crt_strtok(NULL, (const char *)STR(0x4b3e68, ".\n"))) != NULL; slot += 4)
 			strcpy(slot, part);
 	int a = crt_atoi(buf), b = crt_atoi(buf + 4), c = crt_atoi(buf + 8), d = crt_atoi(buf + 12);
 	return ((((a << 8) | (b & 0xff)) << 8 | (c & 0xff)) << 8) | (d & 0xff);
@@ -108,7 +108,7 @@ int (dplay_formatSessionEntry)(u32 address)
 	itoa((int)(address >> 24), part, 10);
 	strcpy(text, part);
 	for (int shift = 16; shift >= 0; shift -= 8) {
-		strcat(text, (const char *)IMG(0x4b1304));
+		strcat(text, (const char *)STR(0x4b1304, "."));
 		itoa((int)((address >> shift) & 0xff), part, 10);
 		strcat(text, part);
 	}
@@ -484,13 +484,13 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 	if (r >= 0) {
 		const char *shortName = *(const char **)(RELOC(name) + 8);
 		if (!shortName)
-			shortName = (const char *)IMG(0x4b3e38);
-		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)IMG(0x4b3e30)) + 1;
+			shortName = (const char *)STR(0x4b3e38, "unknown");
+		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)STR(0x4b3e30, "%s > %s")) + 1;
 		char *line = IMPORT(0x4a9198, char *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, length));   /* GlobalLock(GlobalAlloc(GHND)) */
 		if (!line)
 			r = 0x8007000e;
 		else {
-			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, (const char *)IMG(0x4b3e30), shortName, text);   /* wsprintfA */
+			((int (CDECL *)(char *, const char *, ...))g_imp_wsprintfA)(line, (const char *)STR(0x4b3e30, "%s > %s"), shortName, text);   /* wsprintfA */
 			*out = line;
 		}
 	}
@@ -1492,8 +1492,8 @@ PACKET_ENTRY(net_sendPlayerInfo, 1);
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
-		{ { IMG(0x4b3e64) }, 0xa0b3a0, 0xa0bae0 }, { { IMG(0x4b3e60) }, 0xa0b450, 0xa0bae4 },
-		{ { IMG(0x4b3e58), IMG(0x4b3e50) }, 0xa0b408, 0xa0bae8 }, { { IMG(0x4b3e48), IMG(0x4b3e40) }, 0xa0bab8, 0xa0baec } };
+		{ { STR(0x4b3e64, "TCP") }, 0xa0b3a0, 0xa0bae0 }, { { STR(0x4b3e60, "IPX") }, 0xa0b450, 0xa0bae4 },
+		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, 0xa0b408, 0xa0bae8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, 0xa0bab8, 0xa0baec } };
 	char names[10][0x80];
 	char *own = names[g_serviceProviderCount];
 	strcpy(own, (const char *)RELOC(name[2]));   /* lpszShortNameA */

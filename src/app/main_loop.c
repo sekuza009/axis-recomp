@@ -338,13 +338,13 @@ void THISCALL (match_combatInput)(u8 *s)
 		if (input_justPressed(g_dikF11)) {
 			if (S(int, 0x2340ce8) == 0) {
 				S(int, 0x2340ce8) = 1;
-				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7d00));
+				notice_printCentre((Scene *)s, (const char *)STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE"));
 			} else if (S(int, 0x2340ce4) == 0) {
 				S(int, 0x2340ce4) = 1;
-				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7cf0));
+				notice_printCentre((Scene *)s, (const char *)STR(0x4c7cf0, "SCREENSHOT MODE"));
 			} else {
 				S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
-				notice_printCentre((Scene *)s, (const char *)IMG(0x4c7ce4));
+				notice_printCentre((Scene *)s, (const char *)STR(0x4c7ce4, "NORMAL MODE"));
 			}
 		}
 	} else if (S(int, 0x2340cf4) == 1) {
@@ -1038,13 +1038,13 @@ u32 THISCALL (replay_frame)(u8 *s)
 		const char *mode;
 		if (S(int, 0x2340ce8) == 0) {
 			S(int, 0x2340ce8) = 1;
-			mode = (const char *)IMG(0x4c7d00);   /* "HIDDEN MESSAGE BOX MODE" */
+			mode = (const char *)STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE");
 		} else if (S(int, 0x2340ce4) == 0) {
 			S(int, 0x2340ce4) = 1;
-			mode = (const char *)IMG(0x4c7cf0);   /* "SCREENSHOT MODE" */
+			mode = (const char *)STR(0x4c7cf0, "SCREENSHOT MODE");
 		} else {
 			S(int, 0x2340ce8) = S(int, 0x2340ce4) = 0;
-			mode = (const char *)IMG(0x4c7ce4);   /* "NORMAL MODE" */
+			mode = (const char *)STR(0x4c7ce4, "NORMAL MODE");
 		}
 		notice_printCentre((Scene *)s, mode);
 	}
@@ -1234,14 +1234,14 @@ u32 THISCALL (replay_frame)(u8 *s)
 			PATCHED_THISCALL(0x48a1f7, void, void *, int, int, int)(s, 0x10, 0x10, 6);   /* replay_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = S(int, 0x233cc10);
-			sprintf(text, (const char *)IMG(0x4b0320), n > 0 ? n : n + 10);   /* "%d" */
+			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
 			PATCHED_CALL(0x48a259, void, int, int, const char *, int)(0x28, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		if (!(S(float, 0x233cc34) >= 0.5f)) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			PATCHED_THISCALL(0x48a299, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* replay_drawIcon */
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
-			sprintf(text, (const char *)IMG(0x4c7cd8), S(int, 0x233cc30) / 60, S(int, 0x233cc30) % 60);   /* "%02d:%02d" */
+			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), S(int, 0x233cc30) / 60, S(int, 0x233cc30) % 60);
 			PATCHED_CALL(0x48a2ff, void, int, int, const char *, int)(0x226, 0x10, text, 0x10);   /* text_drawSized */
 		}
 		PATCHED_THISCALL(0x48a309, void, void *)(s);                                 /* replay_drawFollowedName */
@@ -1274,8 +1274,8 @@ static int team_game(void)
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
-	static const char *const k_teams[3] = { (const char *)IMG(0x4b21b8), (const char *)IMG(0x4b21b0), (const char *)IMG(0x4d06ec) };   /* NOTEAM */
-	void *f = crt_fopen((const char *)IMG(0x4d06e0), (const char *)IMG(0x4b21a4));   /* "axiswl.log" */
+	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
+	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
 	crt_fprintf(f, format, (const char *)IMG(0x67fb44), g_missionStage, g_fragLimit, g_timeLimit, (const char *)IMG(0x4dedd8));
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
@@ -1283,7 +1283,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 		char name[64];
 		memset(name, 0, sizeof name);
 		strcpy(name, (const char *)ACTOR_AT(e) + 0x98);
-		crt_fprintf(f, (const char *)IMG(0x4d062c), name, k_teams[team], own_time ? A_INT(e, 0x1eccb6c) : stack_time,
+		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? A_INT(e, 0x1eccb6c) : stack_time,
 		            A_INT(e, 0x1eccb54), A_INT(e, 0x1eccb58));
 	}
 	fclose(f);
@@ -1368,7 +1368,7 @@ static void local_spawn(u8 *s)
 	if (S(int, 0x2340d1d) == 1)
 		S(int, 0x234300a + S(int, 0x234240d) * 16) = 1;
 	S(int, 0x233c9fc) = 1;
-	notice_printCentre((Scene *)s, (const char *)IMG(0x4d0618));
+	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
 	S(u32, 0x23423c1) = 0x40400000;   /* 3 */
 	S(int, 0x23423c5) = -1;
 	msg_newKing((Scene *)s);
@@ -1607,7 +1607,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
 	if (g_writeMatchLog != 0 && g_startedFromLobby != 0) {
-		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? IMG(0x4d0658) : IMG(0x4d069c)), 0, *(volatile int *)&from);
+		write_log(s, (const char *)(S(int, 0x2342976) > 1 ? STR(0x4d0658, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")), 0, *(volatile int *)&from);
 		g_writeMatchLog = 0;
 		g_matchLogWritten = 1;
 	}
@@ -1900,18 +1900,18 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(float, 0x23423c1) = (float)v;
 		if (!(v >= 0)) {
 			S(int, 0x23423c1) = 0;
-			notice_printCentre((Scene *)s, (const char *)IMG(0x4d0610));
+			notice_printCentre((Scene *)s, (const char *)STR(0x4d0610, "FIGHT!"));
 			sound_playVolume(0x17, 100);
 		} else {
 			int n = ftol(v);
 			if (S(int, 0x23423c5) != n) {
 				S(int, 0x23423c5) = n;
 				if (n == 0)
-					notice_printCentre((Scene *)s, (const char *)IMG(0x4d05f8));
+					notice_printCentre((Scene *)s, (const char *)STR(0x4d05f8, "HANA!"));
 				else if (n == 1)
-					notice_printCentre((Scene *)s, (const char *)IMG(0x4d0600));
+					notice_printCentre((Scene *)s, (const char *)STR(0x4d0600, "DOOL!"));
 				else if (n == 2)
-					notice_printCentre((Scene *)s, (const char *)IMG(0x4d0608));
+					notice_printCentre((Scene *)s, (const char *)STR(0x4d0608, "SET!"));
 				sound_playVolume(9, 100);
 			}
 		}
@@ -1921,7 +1921,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		int a = A_INT(me, 0x1eccb4c);
 		if (a != A_INT(me, 0x1eccb50)) {
 			A_INT(me, 0x1eccb50) = a;
-			notice_printCentre((Scene *)s, (const char *)IMG(0x4d05ec));
+			notice_printCentre((Scene *)s, (const char *)STR(0x4d05ec, "LEVEL UP!"));
 			sound_playVolume(0x18, 100);
 		}
 	}
@@ -2248,7 +2248,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		S(float, 0x23423a5) = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
-				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && S(int, 0x2342976) <= 1) ? IMG(0x4d069c) : IMG(0x4d05a8)),
+				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && S(int, 0x2342976) <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),
 				          1, 0);
 			replay_closeRecording((Scene *)s);
 			music_shutdown();

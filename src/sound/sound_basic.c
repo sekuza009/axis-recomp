@@ -132,8 +132,8 @@ u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
    0x4dd4f8. Returns the last one */
 u32 (sound_loadMenuSounds)(void)
 {
-	static const u32 names[10] = { IMG(0x4b1644), IMG(0x4b1628), IMG(0x4b1610), IMG(0x4b15f4), IMG(0x4b15dc), IMG(0x4b15c4), IMG(0x4b15b0), IMG(0x4b1598),
-	                               IMG(0x4b1580), IMG(0x4b1564) };
+	static const u32 names[10] = { STR(0x4b1644, "sound/if_menu_select.wav"), STR(0x4b1628, "sound/if_menu_cancel.wav"), STR(0x4b1610, "sound/if_menu_move.wav"), STR(0x4b15f4, "sound/if_tunnel_select.wav"), STR(0x4b15dc, "sound/if_tunnel_in.wav"), STR(0x4b15c4, "sound/if_tunnel_out.wav"), STR(0x4b15b0, "sound/if_error.wav"), STR(0x4b1598, "sound/if_negative.wav"),
+	                               STR(0x4b1580, "sound/if_arm_equip.wav"), STR(0x4b1564, "sound/if_arm_equipslide.wav") };
 	u32 r = 0;
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)((const char *)RELOC(names[k]));
@@ -173,9 +173,9 @@ int (sound_initSoundTable)(const char *file, int volume)
 		return 0;
 	GAME_FN(sound_freeAll, 0x456cd0, void, void)();   /* sound_freeAll */
 	GAME_FN(sound_setVolume, 0x456de0, int, int)(volume);   /* sound_setVolume */
-	void *f = crt_fopen(file, (const char *)IMG(0x4ad170));
+	void *f = crt_fopen(file, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)IMG(0xa0e020), (const char *)IMG(0x4b42e8), file);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)IMG(0xa0e020), (const char *)STR(0x4b42e8, "can't open file %s - initSoundTable()"), file);   /* sys_fatalError */
 	int index;
 	char name[0x100];
 	fread_scrambled(&index, 4, 1, f);
@@ -295,7 +295,7 @@ Sound *(sound_loadWav)(const char *name)
 	CloseHandle(file);
 	void *ds = g_directSound;
 	if (COM(ds, DS_CREATESOUNDBUFFER, long, void *, void **, void *)(ds, &desc.size, &sound->buffers[0], NULL)) {
-		MessageBoxA(NULL, (const char *)IMG(0x4c4dc4), (const char *)IMG(0x4c4de0), 0);
+		MessageBoxA(NULL, (const char *)STR(0x4c4dc4, "SoundBuffer create error"), (const char *)STR(0x4c4de0, "Error"), 0);
 		return NULL;
 	}
 	void *buffer = sound->buffers[0], *locked;
@@ -358,9 +358,9 @@ int (sound_init)(void *hwnd)
    one of three (the counter after). Returns music_play's eax, or kind - 1 for another kind */
 u32 THISCALL (music_playMatch)(u8 *stage)
 {
-	static const u32 kind1[4] = { IMG(0x4b496c), IMG(0x4b4a6c), IMG(0x4b4b6c), IMG(0x4b4c6c) };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
-	static const u32 kind3[3] = { IMG(0x4b4d6c), IMG(0x4b4e6c), IMG(0x4b506c) };             /* Forgotten, desert wind, ashes of past */
-	static const u32 kind4[3] = { IMG(0x4b516c), IMG(0x4b536c), IMG(0x4b546c) };             /* Speed of Light, Fierce battle, Valhalla */
+	static const u32 kind1[4] = { STR(0x4b496c, "Music/trance soul.mp3"), STR(0x4b4a6c, "Music/Dark Core.mp3"), STR(0x4b4b6c, "Music/Mean street.mp3"), STR(0x4b4c6c, "Music/Thrill Seeker.mp3") };   /* trance soul, Dark Core, Mean street, Thrill Seeker */
+	static const u32 kind3[3] = { STR(0x4b4d6c, "Music/Forgotten.mp3"), STR(0x4b4e6c, "Music/desert wind.mp3"), STR(0x4b506c, "Music/ashes of past.mp3") };             /* Forgotten, desert wind, ashes of past */
+	static const u32 kind4[3] = { STR(0x4b516c, "Music/Speed of Light.mp3"), STR(0x4b536c, "Music/Fierce battle.mp3"), STR(0x4b546c, "Music/Valhalla.mp3") };             /* Speed of Light, Fierce battle, Valhalla */
 	const u32 *random = (const u32 *)IMG(0xa106f8);
 	u32 kind = *(u32 *)(stage + 0xbe3004) - 1;
 	u32 n;
@@ -370,7 +370,7 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)RELOC(kind1[random[n & 0xfff] & 3]));   /* music_play */
 	case 1:
 		g_randPos++;
-		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)IMG(0x4b4f6c));   /* darkness */
+		return GAME_FN(music_play, 0x457150, u32, const char *)((const char *)STR(0x4b4f6c, "Music/darkness.mp3"));   /* darkness */
 	case 2:
 	case 3:
 		n = ++g_randPos;

@@ -615,10 +615,10 @@ u32 (loginDialog_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)IMG(0x7588a4));
+	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(341, "CREATE NEW ID"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	for (int k = 0; k < 4; k++) {
-		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(IMG(0x758924) + k * 0x80));
+		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(MSG(342, "INPUT ID") + k * 0x80));
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (30 bytes cleared, as the original's buffer) */
@@ -643,7 +643,7 @@ u32 (loginDialog_draw)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		profile_drawButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawCornerOrnaments, 0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -665,8 +665,8 @@ static void confirm_box(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)IMG(0x74dfa4));
-	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)IMG(0x74e024));
+	text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
+	text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -678,7 +678,7 @@ static void confirm_box(void)
 			set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
 			set_colour_bits((Colour *)IMG(0x76d438), 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
-		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 }
 
@@ -701,7 +701,7 @@ u32 (serverDialog_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x758da4));
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(351, "CREATE NEW ID"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x20, X1 - 0x20, Y0 + 0x20);
@@ -712,7 +712,7 @@ u32 (serverDialog_draw)(void)
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawBox16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, (const char *)IMG(0x9dd1d8));
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)IMG(0x758e24));
+	text_drawBox16(X0, Y0 + 0x8c, X1, (const char *)MSG(352, "NEW ID ON REGISTRATION"));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -722,7 +722,7 @@ u32 (serverDialog_draw)(void)
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(IMG(0x758f24) + k * 0x80));
+		text_drawBox16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
 	}
 	if (g_roomLeaveDialog)
 		confirm_box();
@@ -755,12 +755,12 @@ u32 (roomLogin_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)IMG(0x7583a4));
+	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(331, "LADDER GAME ID MANAGER"));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	menu_drawLine(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + k * 0x30;
-		text_draw16(X0 + 0x40, y + 0x58, (const char *)(IMG(0x758424) + k * 0x80));
+		text_draw16(X0 + 0x40, y + 0x58, (const char *)(MSG(332, "YOUR ID") + k * 0x80));
 		set_colour_bits(g_rectColour, 0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 1);
 		set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
@@ -784,14 +784,14 @@ u32 (roomLogin_draw)(void)
 		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(IMG(0x758524) + k * 0x80));
+		text_drawBox16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(MSG(334, "LOG$[0] IN") + k * 0x80));
 	}
 	if (g_roomRequestOut) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)IMG(0x74f6a4));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)IMG(0x74f724));
+		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
+		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 	}
 	if (g_roomLeaveDialog)
 		confirm_box();
@@ -848,8 +848,8 @@ void (account_drawPanel)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x50, 0xdc, 0x230, (const char *)IMG(0x75b1a4));
-		text_drawBox16(0x50, 0xf0, 0x230, (const char *)IMG(0x74f724));
+		text_drawBox16(0x50, 0xdc, 0x230, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
+		text_drawBox16(0x50, 0xf0, 0x230, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
 		return;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -857,11 +857,11 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x7592a4));
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(361, "USER INFOMATION"));
 	for (int k = 0; k < 5; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(IMG(0x759324) + k * 0x80));
+		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(MSG(362, "USER ID") + k * 0x80));
 	for (int k = 0; k < 7; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(IMG(0x7595a4) + k * 0x80));
+		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(MSG(367, "LEVEL") + k * 0x80));
 	text_draw8(X0 + 0x98, Y0 + 0x38, (const char *)IMG(0x9dd1d8));
 	for (int k = 0; k < 4; k++) {
 		int y = Y0 + k * 0x1c;
@@ -894,14 +894,14 @@ void (account_drawPanel)(void)
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
 	if (!g_accountClan)
-		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)IMG(0x759924));
+		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)MSG(374, "OUT OF RANK(1000)"));
 	else {
 		itoa(g_accountClan, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)IMG(0x4b0268), (double)(*(float *)&g_pilotRating));
+	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)(*(float *)&g_pilotRating));
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
-	sprintf(text, (const char *)IMG(0x4b0268), (double)g_pilotWinRate);
+	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotWinRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
 	static const u32 counts[3] = { ADDR(g_pilotWins), ADDR(g_pilotLosses), ADDR(g_pilotPoints) };
 	for (int k = 0; k < 3; k++) {
@@ -918,7 +918,7 @@ void (account_drawPanel)(void)
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
@@ -955,7 +955,7 @@ u32 (ranking_drawTable)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	TEXT(bright);
-	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)IMG(0x75aba4));
+	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)MSG(411, "LADDER GAME RANKING"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -969,11 +969,11 @@ u32 (ranking_drawTable)(void)
 	g_rankingLast = (g_roomListPage * 5 + 5) * 2;
 	itoa(first, page, 10);
 	itoa(g_rankingLast, last, 10);
-	strcat(page, (const char *)IMG(0x4b278c));   /* " ~ " */
+	strcat(page, (const char *)STR(0x4b278c, " ~ "));
 	strcat(page, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
 	text_draw8b(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, page);
-	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)IMG(0x75ac24));
+	text_drawBox16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -988,9 +988,9 @@ u32 (ranking_drawTable)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	/* the column heads, the numbers' right-aligned (8 a character) */
 	TEXT(bright);
-	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)IMG(0x75aca4));
-	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)IMG(0x75ad24));
-	text_draw8(X0 - (int)strlen((const char *)IMG(0x75ada4)) * 8 + 0xec, Y0 + 0x52, (const char *)IMG(0x75ada4));
+	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)MSG(413, "RANK"));
+	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)MSG(414, "ID"));
+	text_draw8(X0 - (int)strlen((const char *)MSG(415, "GRADE")) * 8 + 0xec, Y0 + 0x52, (const char *)MSG(415, "GRADE"));
 	static const struct { u32 text; int right, sort; } heads[5] = {
 		{ 0x75ae24, 0x12c, 0 }, { 0x75aea4, 0x2d * 8, 3 }, { 0x75af24, 0x35 * 8, 1 }, { 0x75afa4, 0x3c * 8, -1 },
 		{ 0x75b024, 0x226, 2 },
@@ -1028,12 +1028,12 @@ u32 (ranking_drawTable)(void)
 			TEXT(white);
 			if (g_rankingSort == 0)
 				TEXT(yellow);
-			sprintf(text, (const char *)IMG(0x4b2784), (double)ROW(float, 0x36));   /* "%8.1f" */
+			sprintf(text, (const char *)STR(0x4b2784, "%8.1f"), (double)ROW(float, 0x36));
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x144, y, text);
 			TEXT(white);
 			if (g_rankingSort == 3)
 				TEXT(yellow);
-			sprintf(text, (const char *)IMG(0x4b277c), (double)ROW(float, 0x2e));   /* "%3.2f" */
+			sprintf(text, (const char *)STR(0x4b277c, "%3.2f"), (double)ROW(float, 0x2e));
 			text_draw8(X0 + (0x30 - (int)strlen(text)) * 8, y, text);
 			TEXT(white);
 			if (g_rankingSort == 1)
@@ -1065,13 +1065,13 @@ u32 (ranking_drawTable)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(IMG(0x75b0a4) + k * 0x80));
+		text_drawBox16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 10;
 		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_tenthsToDegrees)), (const float *)ADDR(k_1f)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)IMG(0x75b1a4));
+		text_drawBox16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawCornerOrnaments, 0x428a00, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */

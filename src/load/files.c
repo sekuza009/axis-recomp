@@ -27,7 +27,7 @@ u32 THISCALL (Light_read)(u8 *self, void *f)
    saves); fclose's result, 0 when the file cannot be opened */
 u32 THISCALL (chat_loadMacros)(Scene *scene)
 {
-	void *f = crt_fopen((const char *)IMG(0x4c45ec), (const char *)IMG(0x4b2ab0));
+	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		return 0;
 	crt_fwrite((u8 *)scene + 0x2340d3d, 0x39, 100, f);
@@ -75,7 +75,7 @@ int (file_existsf)(const char *format, ...)
 	va_start(args, format);
 	vsprintf(path, format, args);
 	va_end(args);
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	fclose(f);
@@ -100,7 +100,7 @@ u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log)
 {
 	if (index < 0) {
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)RELOC(log), (const char *)IMG(0x4b3f80), name);   /* sys_fatalError */
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)((void *)RELOC(log), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), name);   /* sys_fatalError */
 		return 0;
 	}
 	GAME_CDECL(0x49e91e, int, void *, int, int)(GAME_VAR(void *, file), FIELD(int, GAME_VAR(u8 *, table) + index * 0x44, 0x40), 0);   /* fseek */
@@ -121,7 +121,7 @@ void *(skelDat_getItemFileBy)(const char *name)
    emptied and the defaults made (chat_loadMacros). Returns what the original leaves in eax */
 u32 THISCALL (chat_saveMacros)(Scene *scene)
 {
-	void *f = crt_fopen((const char *)IMG(0x4c45ec), (const char *)IMG(0x4ad170));
+	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4ad170, "rb"));
 	if (f) {
 		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((u8 *)scene + 0x2340d3d, 0x39, 100, f);   /* fread */
 		return fclose(f);
@@ -155,15 +155,15 @@ u32 (file_writeScrambled)(u8 *p, u32 size, u32 count, void *f)
 u32 (cfg_parsePlayer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
-	FPUTS(IMG(0x4b1830));
+	FPUTS(STR(0x4b1830, "set_player name "));
 	FPUTS(IMG(0x4dedb0));
-	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)IMG(0x4b182c));   /* fprintf */
-	FPUTS(IMG(0x4b1818));
+	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf */
+	FPUTS(STR(0x4b1818, "set_player color "));
 	int corp = g_playerCorporation;
-	FPUTS(corp == 1 ? IMG(0x4b1808) : corp == 2 ? IMG(0x4b1810) : IMG(0x4b1800));
-	FPUTS(IMG(0x4b17e8));
-	FPUTS(g_playerSex == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
-	return FPUTS(IMG(0x4b182c));
+	FPUTS(corp == 1 ? STR(0x4b1808, "BLUE\n") : corp == 2 ? STR(0x4b1810, "YELLOW\n") : STR(0x4b1800, "RED\n"));
+	FPUTS(STR(0x4b17e8, "set_player customize "));
+	FPUTS(g_playerSex == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
 
@@ -174,59 +174,59 @@ u32 (cfg_keyBindings)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	static const struct { u32 line; u8 binding; } keys[64] = {
-		{ IMG(0x4b2184), 0 }, { IMG(0x4b2170), 1 },   /* forward */
-		{ IMG(0x4b215c), 2 }, { IMG(0x4b2148), 3 },   /* backward */
-		{ IMG(0x4b2134), 4 }, { IMG(0x4b2120), 5 },   /* left-step */
-		{ IMG(0x4b2108), 6 }, { IMG(0x4b20f0), 7 },   /* right-step */
-		{ IMG(0x4b20dc), 8 }, { IMG(0x4b20c8), 9 },   /* left-turn */
-		{ IMG(0x4b20b0), 10 }, { IMG(0x4b2098), 11 },   /* right-turn */
-		{ IMG(0x4b207c), 12 }, { IMG(0x4b2060), 13 },   /* fixed-altitude */
-		{ IMG(0x4b204c), 14 }, { IMG(0x4b2038), 15 },   /* booster */
-		{ IMG(0x4b2024), 16 }, { IMG(0x4b2010), 17 },   /* moveup */
-		{ IMG(0x4b1ffc), 18 }, { IMG(0x4b1fe8), 19 },   /* movedown */
-		{ IMG(0x4b1fd8), 20 }, { IMG(0x4b1fc8), 21 },   /* fire */
-		{ IMG(0x4b1fb0), 22 }, { IMG(0x4b1f98), 23 },   /* pre-weapon */
-		{ IMG(0x4b1f80), 24 }, { IMG(0x4b1f68), 25 },   /* next-weapon */
-		{ IMG(0x4b1f4c), 30 }, { IMG(0x4b1f30), 31 },   /* 1st-hand-weapon */
-		{ IMG(0x4b1f14), 32 }, { IMG(0x4b1ef8), 33 },   /* 2nd-hand-weapon */
-		{ IMG(0x4b1edc), 34 }, { IMG(0x4b1ec0), 35 },   /* 3rd-hand-weapon */
-		{ IMG(0x4b1ea4), 36 }, { IMG(0x4b1e88), 37 },   /* 4th-hand-weapon */
-		{ IMG(0x4b1e68), 26 }, { IMG(0x4b1e48), 27 },   /* right-shoulder-weapon */
-		{ IMG(0x4b1e28), 28 }, { IMG(0x4b1e08), 29 },   /* left-shoulder-weapon */
-		{ IMG(0x4b1df8), 38 }, { IMG(0x4b1de8), 39 },   /* zoom */
-		{ IMG(0x4b1dd4), 40 }, { IMG(0x4b1dc0), 41 },   /* alt-shoot */
-		{ IMG(0x4b1db0), 42 }, { IMG(0x4b1da0), 43 },   /* talk */
-		{ IMG(0x4b1d8c), 44 }, { IMG(0x4b1d78), 45 },   /* team-talk */
-		{ IMG(0x4b1d64), 46 }, { IMG(0x4b1d50), 47 },   /* use-item */
-		{ IMG(0x4b1d3c), 48 }, { IMG(0x4b1d28), 49 },   /* feedback */
-		{ IMG(0x4b1d14), 50 }, { IMG(0x4b1d00), 51 },   /* call-menu */
-		{ IMG(0x4b1ce8), 52 }, { IMG(0x4b1cd0), 53 },   /* quick-save */
-		{ IMG(0x4b1cb8), 54 }, { IMG(0x4b1ca0), 55 },   /* quick-load */
-		{ IMG(0x4b1c90), 56 }, { IMG(0x4b1c80), 57 },   /* score */
-		{ IMG(0x4b1c64), 58 }, { IMG(0x4b1c48), 59 },   /* mission-objective */
-		{ IMG(0x4b1c2c), 60 }, { IMG(0x4b1c10), 61 },   /* change-viewmode */
-		{ IMG(0x4b1c00), 62 }, { IMG(0x4b1bf0), 63 },   /* help */
+		{ STR(0x4b2184, "set_key forward1 "), 0 }, { STR(0x4b2170, "set_key forward2 "), 1 },   /* forward */
+		{ STR(0x4b215c, "set_key backward1 "), 2 }, { STR(0x4b2148, "set_key backward2 "), 3 },   /* backward */
+		{ STR(0x4b2134, "set_key left-step1 "), 4 }, { STR(0x4b2120, "set_key left-step2 "), 5 },   /* left-step */
+		{ STR(0x4b2108, "set_key right-step1 "), 6 }, { STR(0x4b20f0, "set_key right-step2 "), 7 },   /* right-step */
+		{ STR(0x4b20dc, "set_key left-turn1 "), 8 }, { STR(0x4b20c8, "set_key left-turn2 "), 9 },   /* left-turn */
+		{ STR(0x4b20b0, "set_key right-turn1 "), 10 }, { STR(0x4b2098, "set_key right-turn2 "), 11 },   /* right-turn */
+		{ STR(0x4b207c, "set_key fixed-altitude1 "), 12 }, { STR(0x4b2060, "set_key fixed-altitude2 "), 13 },   /* fixed-altitude */
+		{ STR(0x4b204c, "set_key booster1 "), 14 }, { STR(0x4b2038, "set_key booster2 "), 15 },   /* booster */
+		{ STR(0x4b2024, "set_key moveup1 "), 16 }, { STR(0x4b2010, "set_key moveup2 "), 17 },   /* moveup */
+		{ STR(0x4b1ffc, "set_key movedown1 "), 18 }, { STR(0x4b1fe8, "set_key movedown2 "), 19 },   /* movedown */
+		{ STR(0x4b1fd8, "set_key fire1 "), 20 }, { STR(0x4b1fc8, "set_key fire2 "), 21 },   /* fire */
+		{ STR(0x4b1fb0, "set_key pre-weapon1 "), 22 }, { STR(0x4b1f98, "set_key pre-weapon2 "), 23 },   /* pre-weapon */
+		{ STR(0x4b1f80, "set_key next-weapon1 "), 24 }, { STR(0x4b1f68, "set_key next-weapon2 "), 25 },   /* next-weapon */
+		{ STR(0x4b1f4c, "set_key 1st-hand-weapon1 "), 30 }, { STR(0x4b1f30, "set_key 1st-hand-weapon2 "), 31 },   /* 1st-hand-weapon */
+		{ STR(0x4b1f14, "set_key 2nd-hand-weapon1 "), 32 }, { STR(0x4b1ef8, "set_key 2nd-hand-weapon2 "), 33 },   /* 2nd-hand-weapon */
+		{ STR(0x4b1edc, "set_key 3rd-hand-weapon1 "), 34 }, { STR(0x4b1ec0, "set_key 3rd-hand-weapon2 "), 35 },   /* 3rd-hand-weapon */
+		{ STR(0x4b1ea4, "set_key 4th-hand-weapon1 "), 36 }, { STR(0x4b1e88, "set_key 4th-hand-weapon2 "), 37 },   /* 4th-hand-weapon */
+		{ STR(0x4b1e68, "set_key right-shoulder-weapon1 "), 26 }, { STR(0x4b1e48, "set_key right-shoulder-weapon2 "), 27 },   /* right-shoulder-weapon */
+		{ STR(0x4b1e28, "set_key left-shoulder-weapon1 "), 28 }, { STR(0x4b1e08, "set_key left-shoulder-weapon2 "), 29 },   /* left-shoulder-weapon */
+		{ STR(0x4b1df8, "set_key zoom1 "), 38 }, { STR(0x4b1de8, "set_key zoom2 "), 39 },   /* zoom */
+		{ STR(0x4b1dd4, "set_key alt-shoot1 "), 40 }, { STR(0x4b1dc0, "set_key alt-shoot2 "), 41 },   /* alt-shoot */
+		{ STR(0x4b1db0, "set_key talk1 "), 42 }, { STR(0x4b1da0, "set_key talk2 "), 43 },   /* talk */
+		{ STR(0x4b1d8c, "set_key team-talk1 "), 44 }, { STR(0x4b1d78, "set_key team-talk2 "), 45 },   /* team-talk */
+		{ STR(0x4b1d64, "set_key use-item1 "), 46 }, { STR(0x4b1d50, "set_key use-item2 "), 47 },   /* use-item */
+		{ STR(0x4b1d3c, "set_key feedback1 "), 48 }, { STR(0x4b1d28, "set_key feedback2 "), 49 },   /* feedback */
+		{ STR(0x4b1d14, "set_key call-menu1 "), 50 }, { STR(0x4b1d00, "set_key call-menu2 "), 51 },   /* call-menu */
+		{ STR(0x4b1ce8, "set_key quick-save1 "), 52 }, { STR(0x4b1cd0, "set_key quick-save2 "), 53 },   /* quick-save */
+		{ STR(0x4b1cb8, "set_key quick-load1 "), 54 }, { STR(0x4b1ca0, "set_key quick-load2 "), 55 },   /* quick-load */
+		{ STR(0x4b1c90, "set_key score1 "), 56 }, { STR(0x4b1c80, "set_key score2 "), 57 },   /* score */
+		{ STR(0x4b1c64, "set_key mission-objective1 "), 58 }, { STR(0x4b1c48, "set_key mission-objective2 "), 59 },   /* mission-objective */
+		{ STR(0x4b1c2c, "set_key change-viewmode1 "), 60 }, { STR(0x4b1c10, "set_key change-viewmode2 "), 61 },   /* change-viewmode */
+		{ STR(0x4b1c00, "set_key help1 "), 62 }, { STR(0x4b1bf0, "set_key help2 "), 63 },   /* help */
 	};
 	const int *binding = (const int *)ADDR(g_keyFreeCam0);
 	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
 		FPUTS(key_name[binding[keys[k].binding]]);
-		FPUTS(IMG(0x4b182c));
+		FPUTS(STR(0x4b182c, "\n"));
 	}
-	FPUTS(IMG(0x4b1bd8));
-	FPUTS(g_mouseInvert == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
-	FPUTS(IMG(0x4b1bc0));
-	FPUTS(g_mouseSmooth == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+	FPUTS(STR(0x4b1bd8, "set_mouse convertmouse "));
+	FPUTS(g_mouseInvert == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(STR(0x4b1bc0, "set_mouse smoothmouse "));
+	FPUTS(g_mouseSmooth == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	char number[12];
 	itoa(g_mouseSensitivity, number, 10);
-	FPUTS(IMG(0x4b1ba8));
+	FPUTS(STR(0x4b1ba8, "set_mouse sensitivity "));
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
+	FPUTS(STR(0x4b182c, "\n"));
 	itoa(g_crosshairSetting, number, 10);
-	FPUTS(IMG(0x4b1b90));
+	FPUTS(STR(0x4b1b90, "set_mouse crosshairs "));
 	FPUTS(number);
-	return FPUTS(IMG(0x4b182c));
+	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
 
@@ -236,10 +236,10 @@ u32 (cfg_loadAxisCfg)(void)
 {
 	char path[0x184];
 	strcpy(path, (const char *)IMG(0x9dae7c));
-	strcat(path, (const char *)IMG(0x4b2198));   /* the file's name */
-	void *f = crt_fopen(path, (const char *)IMG(0x4b21a4));
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)IMG(0x4b0f50), f);   /* fputs */
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)IMG(0x4b182c), f);
+	strcat(path, (const char *)STR(0x4b2198, "\\axis.cfg"));   /* the file's name */
+	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
+	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)STR(0x4b182c, "\n"), f);
 	static const u32 sections[5] = { FN_ADDR(cfg_parsePlayer, 0x42c650), FN_ADDR(cfg_parseServer, 0x42c6f0), FN_ADDR(cfg_parseSound, 0x42c910), FN_ADDR(cfg_parseGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
@@ -250,17 +250,17 @@ u32 (cfg_loadAxisCfg)(void)
    three files, then two more deleted. Returns the last DeleteFileA's eax */
 u32 (app_deleteDataFiles)(void)
 {
-	static const u32 files[3] = { IMG(0x4b03c4), IMG(0x4b03dc), IMG(0x4b03f4) };
+	static const u32 files[3] = { STR(0x4b03c4, "initdata\\profeng.dat"), STR(0x4b03dc, "initdata\\profkor.dat"), STR(0x4b03f4, "initdata\\skirmish.dat") };
 	static const u32 marks[3] = { 0xa1a2a3a4, 0xb1b2b3b4, 0xc1c2c3c4 };
 	for (int k = 0; k < 3; k++) {
-		void *f = crt_fopen((const char *)RELOC(files[k]), (const char *)IMG(0x4b29e8));
+		void *f = crt_fopen((const char *)RELOC(files[k]), (const char *)STR(0x4b29e8, "r+"));
 		GAME_CDECL(0x49e91e, int, void *, int, int)(f, 2000, 0);   /* fseek */
 		u32 mark = marks[k];
 		crt_fwrite(&mark, 4, 1, f);
 		fclose(f);
 	}
-	IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b040c));   /* DeleteFileA */
-	return IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b0420));
+	IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b040c, "save\\axisgame.dat"));   /* DeleteFileA */
+	return IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b0420, "game.dat"));
 }
 
 /* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
@@ -275,19 +275,19 @@ static u32 dat_open(u32 count, const char *format, void *log)
 		return GAME_VAR(u32, file);
 	char path[0x100];
 	GAME_CDECL(0x49e9dd, int, char *, const char *)(path, format);   /* sprintf */
-	GAME_VAR(void *, file) = crt_fopen(path, (const char *)IMG(0x4ad170));
+	GAME_VAR(void *, file) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!GAME_VAR(void *, file))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)IMG(0x4b3ee4), path);
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
 	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
 	if (!GAME_VAR(void *, table))
-		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)IMG(0x4b3eb4), GAME_VAR(int, count));
+		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int)(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, count));
 	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
-u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)IMG(0x4c4d20), (void *)IMG(0xa0e788)); }
-u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)IMG(0x4c54b4), (void *)IMG(0xa0eaa0)); }
+u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)IMG(0xa0e788)); }
+u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)IMG(0xa0eaa0)); }
 
 /* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
    switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
@@ -296,18 +296,18 @@ u32 (cfg_parseSound)(void *f)
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	char number[12];
 	itoa(g_soundVolume, number, 10);
-	FPUTS(IMG(0x4b1a4c));
+	FPUTS(STR(0x4b1a4c, "set_sound effectvolume "));
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
+	FPUTS(STR(0x4b182c, "\n"));
 	itoa(g_musicVolume, number, 10);
-	FPUTS(IMG(0x4b1a34));
+	FPUTS(STR(0x4b1a34, "set_sound musicvolume "));
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
-	FPUTS(IMG(0x4b1a20));
-	FPUTS(g_soundSwitch1 == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
-	FPUTS(IMG(0x4b1a04));
-	FPUTS(g_sound3D == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
-	return FPUTS(IMG(0x4b182c));
+	FPUTS(STR(0x4b182c, "\n"));
+	FPUTS(STR(0x4b1a20, "set_sound 3dsound "));
+	FPUTS(g_soundSwitch1 == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(STR(0x4b1a04, "set_sound stereoreverse "));
+	FPUTS(g_sound3D == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
 
@@ -320,10 +320,10 @@ int (console_loadFile)(int k)
 		return 0;
 	char path[0x400];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)IMG(0x4b0434));   /* "map/" */
+	strcpy(path, (const char *)STR(0x4b0434, "map/"));
 	strcat(path, name);
-	strcat(path, (const char *)IMG(0x4b042c));   /* ".bfd" */
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));
+	strcat(path, (const char *)STR(0x4b042c, ".bfd"));
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	fclose(f);
@@ -341,12 +341,12 @@ int (console_loadFile)(int k)
 int (autoplay_listFiles)(void)
 {
 	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
-	int r = crt_chdir((const char *)IMG(0x4b2a8c));
+	int r = crt_chdir((const char *)STR(0x4b2a8c, "autoplay"));
 	if (r)
 		return r;
-	int search = crt_findfirst((const char *)IMG(0x4b2a84), &found);
+	int search = crt_findfirst((const char *)STR(0x4b2a84, "*.ape"), &found);
 	if (search < 0)
-		return crt_chdir((const char *)IMG(0x4b2a80));
+		return crt_chdir((const char *)STR(0x4b2a80, ".."));
 	strcpy((char *)(IMG(0x9dda88) + g_mapSelectCount * 0x44), found.name);
 	g_mapSelectCount++;
 	while (!crt_findnext(search, &found)) {
@@ -355,7 +355,7 @@ int (autoplay_listFiles)(void)
 			break;
 	}
 	crt_findclose(search);
-	return crt_chdir((const char *)IMG(0x4b2a80));
+	return crt_chdir((const char *)STR(0x4b2a80, ".."));
 }
 
 /* 0x41e260: eight check bytes read from the launcher's file (0x4b03b4; each at its own offset) into 0x4dd988 (12
@@ -364,7 +364,7 @@ int (app_checkLauncherRunning)(void)
 {
 	static const u16 offsets[8] = { 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2 };
 	memset((void *)IMG(0x4dd988), 0, 12);
-	void *f = crt_fopen((const char *)IMG(0x4b03b4), (const char *)IMG(0x4ad170));
+	void *f = crt_fopen((const char *)STR(0x4b03b4, "axisplay.exe"), (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	for (int i = 0; i < 8; i++) {
@@ -381,7 +381,7 @@ int (app_checkLauncherRunning)(void)
 static void profiles_path(char *path)
 {
 	strcpy(path, (const char *)IMG(0x9dae7c));
-	strcat(path, (const char *)IMG(0x4b2ab4));   /* "\axisuser.dat" */
+	strcat(path, (const char *)STR(0x4b2ab4, "\\axisuser.dat"));
 }
 
 static void *profiles_create(void)
@@ -389,7 +389,7 @@ static void *profiles_create(void)
 	char path[0x184];
 	profiles_path(path);
 	(*(u32 *)&g_currentProfile) = (*(u32 *)&g_pilotChosen);
-	void *f = crt_fopen(path, (const char *)IMG(0x4b2ab0));
+	void *f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		g_profileCount = 0;
 	return f;
@@ -444,8 +444,8 @@ static void *mis_open(void)
 {
 	char path[0x184];
 	strcpy(path, (const char *)IMG(0x9dae7c));
-	strcat(path, (const char *)IMG(0x4b2aa4));   /* "\axis.mis" */
-	return crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	strcat(path, (const char *)STR(0x4b2aa4, "\\axis.mis"));
+	return crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 }
 
 /* 0x4435f0: the mission list read from axis.mis: the list cleared first (skirmish_clearPlayerRows), four header words (the
@@ -513,20 +513,20 @@ u32 (mission_saveAxisMis)(int k)
 u32 (cfg_parseGraphic)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
-	static const u32 mode[8] = { IMG(0x4b1b6c), IMG(0x4ac84c), IMG(0x4ac870), IMG(0x4ac894), IMG(0x4ac8b8), IMG(0x4ac8dc), IMG(0x4ac900), IMG(0x4ac920) };
-	static const u32 switches[4] = { IMG(0x4b1aac), IMG(0x4b1a94), IMG(0x4b1a7c), IMG(0x4b1a64) };
-	FPUTS(IMG(0x4b1b78));   /* "set_graphic videomode " */
+	static const u32 mode[8] = { STR(0x4b1b6c, "640x480\n"), IMG(0x4ac84c), IMG(0x4ac870), IMG(0x4ac894), IMG(0x4ac8b8), IMG(0x4ac8dc), IMG(0x4ac900), IMG(0x4ac920) };
+	static const u32 switches[4] = { STR(0x4b1aac, "set_graphic linearfiltering "), STR(0x4b1a94, "set_graphic mipmapping "), STR(0x4b1a7c, "set_graphic viewfps "), STR(0x4b1a64, "set_graphic simplemenu ") };
+	FPUTS(STR(0x4b1b78, "set_graphic videomode "));
 	if (g_videoMode <= 7)
 		FPUTS(mode[g_videoMode]);
-	FPUTS(IMG(0x4b1b00));   /* "set_graphic colordepth " */
-	FPUTS(g_videoDepth ? IMG(0x4b1af8) : IMG(0x4b1afc));
-	FPUTS(IMG(0x4b1adc));   /* "set_graphic polygondetail " */
-	FPUTS(g_items3D ? IMG(0x4b1acc) : IMG(0x4b1ad4));
+	FPUTS(STR(0x4b1b00, "set_graphic colordepth "));
+	FPUTS(g_videoDepth ? STR(0x4b1af8, "32\n") : STR(0x4b1afc, "16\n"));
+	FPUTS(STR(0x4b1adc, "set_graphic polygondetail "));
+	FPUTS(g_items3D ? STR(0x4b1acc, "HIGH\n") : STR(0x4b1ad4, "LOW\n"));
 	for (int i = 0; i < 4; i++) {
 		FPUTS(switches[i]);
-		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
+		FPUTS(GAME_VAR(int, 0x83a9cc + i * 4) == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
 	}
-	return FPUTS(IMG(0x4b182c));
+	return FPUTS(STR(0x4b182c, "\n"));
 #undef FPUTS
 }
 
@@ -537,34 +537,34 @@ u32 (cfg_parseGraphic)(void *f)
 u32 (cfg_parseServer)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
-	static const u32 type[15] = { IMG(0x4b1878), IMG(0x4b1988), IMG(0x4b1978), IMG(0x4b1964), IMG(0x4b1954), IMG(0x4b1940), IMG(0x4b192c), IMG(0x4b1914),
-	                              IMG(0x4b1904), IMG(0x4b18f0), IMG(0x4b18dc), IMG(0x4b18c4), IMG(0x4b18b0), IMG(0x4b18a0), IMG(0x4b1888) };
+	static const u32 type[15] = { STR(0x4b1878, "DEATH MATCH\n"), STR(0x4b1988, "TEAM DEATH MATCH\n"), STR(0x4b1978, "SUDDEN DEATH\n"), STR(0x4b1964, "TEAM SUDDEN DEATH\n"), STR(0x4b1954, "SHOTGUN ARENA\n"), STR(0x4b1940, "TEAM SHOTGUN ARENA\n"), STR(0x4b192c, "IONCANNON ARENA\n"), STR(0x4b1914, "TEAM IONCANNON ARENA\n"),
+	                              STR(0x4b1904, "ROCKET ARENA\n"), STR(0x4b18f0, "TEAM ROCKET ARENA\n"), STR(0x4b18dc, "GLADIATOR ARENA\n"), STR(0x4b18c4, "TEAM GLADIATOR ARENA\n"), STR(0x4b18b0, "KING ON THE HILL\n"), STR(0x4b18a0, "PLATOON MODE\n"), STR(0x4b1888, "ACCEPT ADVANCED MODE\n") };
 	const u8 *me = (const u8 *)IMG(0x4ded20);
 	char number[12];
-	FPUTS(IMG(0x4b19f0));   /* "set_server name " */
+	FPUTS(STR(0x4b19f0, "set_server name "));
 	FPUTS(me);
-	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)IMG(0x4b182c));   /* fprintf "\n" */
-	FPUTS(IMG(0x4b19e0));   /* "set_server map " */
+	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf "\n" */
+	FPUTS(STR(0x4b19e0, "set_server map "));
 	itoa((signed char)me[0x20], number, 10);
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
-	FPUTS(IMG(0x4b19c8));   /* "set_server numofplayer " */
+	FPUTS(STR(0x4b182c, "\n"));
+	FPUTS(STR(0x4b19c8, "set_server numofplayer "));
 	itoa((signed char)me[0x21], number, 10);
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
-	FPUTS(IMG(0x4b19b0));   /* "set_server customize " */
-	FPUTS(me[0x22] == 1 ? IMG(0x4b17e4) : IMG(0x4b17dc));
-	FPUTS(IMG(0x4b199c));   /* "set_server type " */
+	FPUTS(STR(0x4b182c, "\n"));
+	FPUTS(STR(0x4b19b0, "set_server customize "));
+	FPUTS(me[0x22] == 1 ? STR(0x4b17e4, "ON\n") : STR(0x4b17dc, "OFF\n"));
+	FPUTS(STR(0x4b199c, "set_server type "));
 	u32 kind = (u32)(int)(signed char)me[0x23];
 	FPUTS(type[kind <= 14 ? kind : 0]);
 	itoa(me[0x24], number, 10);
-	FPUTS(IMG(0x4b1860));   /* "set_server gameflag " */
+	FPUTS(STR(0x4b1860, "set_server gameflag "));
 	FPUTS(number);
-	FPUTS(IMG(0x4b182c));
+	FPUTS(STR(0x4b182c, "\n"));
 	itoa(me[0x25], number, 10);
-	FPUTS(IMG(0x4b1848));   /* "set_server timeflag " */
+	FPUTS(STR(0x4b1848, "set_server timeflag "));
 	FPUTS(number);
-	return FPUTS(IMG(0x4b1844));   /* "\n\n" */
+	return FPUTS(STR(0x4b1844, "\n\n"));
 #undef FPUTS
 }
 
@@ -582,20 +582,20 @@ u32 (arena_readLaunchFile)(char *line)
 		return 0;
 	}
 	char **args = (char **)IMG(0x9dd890);
-	char *word = crt_strtok(line, (const char *)IMG(0x4b035c));   /* " " */
+	char *word = crt_strtok(line, (const char *)STR(0x4b035c, " "));
 	g_argCount = 0;
 	do {
 		args[g_argCount++] = word;
-		word = crt_strtok(NULL, (const char *)IMG(0x4b035c));
+		word = crt_strtok(NULL, (const char *)STR(0x4b035c, " "));
 	} while (word);
 	g_startedFromLobby = 0;
 	g_startedByLauncher = 0;
 	u32 r = (*(u32 *)&g_argCount);
 	if (r == 1) {
-		r = (u32)str_order(args[0], (const char *)IMG(0x4b2880));   /* "-net" */
+		r = (u32)str_order(args[0], (const char *)STR(0x4b2880, "-net"));
 		if (r)
 			return r;
-		void *f = crt_fopen((const char *)IMG(0x4ad5e4), (const char *)IMG(0x4ad5e0));   /* "axiswl.dat", "rt" */
+		void *f = crt_fopen((const char *)STR(0x4ad5e4, "axiswl.dat"), (const char *)STR(0x4ad5e0, "rt"));
 		if (f) {
 			g_startedFromLobby = 1;
 			g_startedByLauncher = 1;
@@ -604,7 +604,7 @@ u32 (arena_readLaunchFile)(char *line)
 	}
 	if (g_argCount != 3)
 		return r;
-	r = (u32)str_order(args[1], (const char *)IMG(0x4b287c));   /* "-ip" */
+	r = (u32)str_order(args[1], (const char *)STR(0x4b287c, "-ip"));
 	if (r)
 		return r;
 	g_startedFromLobby = 1;
@@ -617,7 +617,7 @@ u32 (arena_readLaunchFile)(char *line)
 /* the game ended with an error box (title "ERROR") */
 static void data_missing(u32 message)
 {
-	MessageBoxA(NULL, (const char *)RELOC(message), (const char *)IMG(0x4b141c), 0);
+	MessageBoxA(NULL, (const char *)RELOC(message), (const char *)STR(0x4b141c, "ERROR"), 0);
 	GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
 }
 
@@ -642,9 +642,9 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? IMG(0x4b1430) : IMG(0x4b1424), IMG(0x4ad5e0),   /* "msgkor.dat" / "msgeng.dat", "rt" */
-	                    IMG(0x4b13f8));   /* "Text Message Data File Not Found" */
-	char *message = (char *)IMG(0x74de24);
+	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? STR(0x4b1430, "msgkor.dat") : STR(0x4b1424, "msgeng.dat"), STR(0x4ad5e0, "rt"),
+	                    STR(0x4b13f8, "Text Message Data File Not Found"));
+	char *message = (char *)MSG(0, "PRESS ENTER OR CLICK MOUSE");
 	for (;;) {
 		char line[0x80];
 		memset(line, 0, sizeof line);
@@ -677,9 +677,9 @@ static void set_current_name(void)
 
 static void enter_save_folder(void)
 {
-	if (crt_chdir((const char *)IMG(0x4b2adc))) {   /* "save" */
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)IMG(0x4b2adc));   /* mkdir */
-		crt_chdir((const char *)IMG(0x4b2adc));
+	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)STR(0x4b2adc, "save"));   /* mkdir */
+		crt_chdir((const char *)STR(0x4b2adc, "save"));
 	}
 }
 
@@ -687,7 +687,7 @@ static void pilot_path(char *path)
 {
 	memset(path, 0, 0x80);
 	strcpy(path, pilot_name(g_pilot));
-	strcat(path, (const char *)IMG(0x4b2afc));
+	strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 }
 
 static void pilot_write(void *f)
@@ -719,12 +719,12 @@ int (profile_saveProgress)(void)
 	enter_save_folder();
 	char path[0x80];
 	pilot_path(path);
-	f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
+	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
 	if (f)
 		pilot_write(f);
 	fclose(f);
-	return crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
+	return crt_chdir((const char *)STR(0x4b2a80, ".."));
 }
 
 /* a new pilot's record: the signature, the name, the value; no progress, the default parts (0x4b2af4, 0x4b2aec,
@@ -732,7 +732,7 @@ int (profile_saveProgress)(void)
 static void campaign_new(void)
 {
 	memset(g_campaign, 0, 0x80);
-	strcpy((char *)g_campaign, (const char *)IMG(0x4b0fa0));
+	strcpy((char *)g_campaign, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."));
 	memset((void *)IMG(0x9f1798), 0, 0x80);
 	memcpy((void *)IMG(0x9f1798), pilot_name(g_pilot), 0x80);
 	(*(u32 *)&g_armcValue) = GAME_VAR(u32, 0x9f688c + g_pilot * 0x48);
@@ -742,9 +742,9 @@ static void campaign_new(void)
 	static const u32 cleared[6] = { IMG(0x9f19f0), IMG(0x9f1a0c), IMG(0x9f19f4), IMG(0x9f1a10), IMG(0x9f1a2c), IMG(0x9f1a30) };
 	for (int i = 0; i < 6; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
-	strcpy((char *)IMG(0x9f19f0), (const char *)IMG(0x4b2af4));
-	strcpy((char *)IMG(0x9f1a0c), (const char *)IMG(0x4b2aec));
-	strcpy((char *)IMG(0x9f1a2c), (const char *)IMG(0x4b2ae4));
+	strcpy((char *)IMG(0x9f19f0), (const char *)STR(0x4b2af4, "[TRAP]"));
+	strcpy((char *)IMG(0x9f1a0c), (const char *)STR(0x4b2aec, "[NOPA]"));
+	strcpy((char *)IMG(0x9f1a2c), (const char *)STR(0x4b2ae4, "[ROLO]"));
 	g_profileMechItem5 = -1;
 	g_profileMechItem0 = -1;
 	for (u32 a = ADDR(g_profileMechRecord); a <= ADDR(g_profileMechBooster); a += 4)
@@ -775,24 +775,24 @@ int (profile_load)(void)
 	char path[0x80];
 	pilot_path(path);
 	campaign_new();
-	f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
+	f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	if (f)
 		pilot_write(f);
 	fclose(f);
-	return crt_chdir((const char *)IMG(0x4b2a80));
+	return crt_chdir((const char *)STR(0x4b2a80, ".."));
 }
 
 /* 1 when the pilot's file is there and signed */
 static int campaign_signed(const char *path)
 {
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	crt_fseek(f, 20000, 0);
 	u8 head[0x80];
 	crt_fread(head, 0x80, 1, f);
 	crypt_record80(head, 0x7e);
-	int ok = str_order((const char *)head, (const char *)IMG(0x4b0fa0)) == 0;
+	int ok = str_order((const char *)head, (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0...")) == 0;
 	fclose(f);
 	return ok;
 }
@@ -812,7 +812,7 @@ u32 (profile_save)(void)
 	char path[0x80];
 	pilot_path(path);
 	if (campaign_signed(path)) {
-		f = crt_fopen(path, (const char *)IMG(0x4ad170));
+		f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 		if (f) {
 			crt_fseek(f, 20000, 0);
 			u8 record[0x3ac];
@@ -823,12 +823,12 @@ u32 (profile_save)(void)
 		}
 	} else {
 		campaign_new();
-		f = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
+		f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 		if (f)
 			pilot_write(f);
 	}
 	fclose(f);
-	crt_chdir((const char *)IMG(0x4b2a80));
+	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	u32 r = mech_loadFromProfile();
 	g_progressWentUp = 0;
 	g_missionStarted = 0;
@@ -844,7 +844,7 @@ u32 (profile_create)(void)
 {
 	char path[0x184];
 	profiles_path(path);
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f) {
 		g_profileCount = 0;
 		return 0;
@@ -861,11 +861,11 @@ u32 (profile_create)(void)
 	crt_fread((void *)ADDR(g_profileListTop), 4, 1, f);
 	crt_fread((void *)ADDR(g_profileListRow), 4, 1, f);
 	crt_fread((void *)IMG(0x9f8fe8), 0x20, 1, f);
-	if (crt_chdir((const char *)IMG(0x4b2b04))) {   /* "save " */
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)IMG(0x4b2adc));   /* mkdir("save") */
-		crt_chdir((const char *)IMG(0x4b2adc));
+	if (crt_chdir((const char *)STR(0x4b2b04, "save "))) {
+		GAME_CDECL(0x49f94a, int, const char *)((const char *)STR(0x4b2adc, "save"));   /* mkdir("save") */
+		crt_chdir((const char *)STR(0x4b2adc, "save"));
 	}
-	crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
+	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	for (int i = 0; i < g_profileCount; i++)
 		if (str_order((const char *)(IMG(0x9f684c) + i * 0x48), (const char *)IMG(0x9f8fe8)) == 0) {
 			g_currentProfile = i;
@@ -879,18 +879,18 @@ u32 (profile_create)(void)
    0x5c-byte entries into 0x9db998. Returns fclose's eax */
 u32 (data_loadSkirmishInfo)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), IMG(0x4b1554), IMG(0x4ad170), IMG(0x4b1534));   /* "skirmish.dat", "rb" */
+	void *f = data_open(IMG(0x9dae7c), STR(0x4b1554, "skirmish.dat"), STR(0x4ad170, "rb"), STR(0x4b1534, "Skirmish Data File Not Found"));
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(IMG(0x4b1534));
+		data_missing(STR(0x4b1534, "Skirmish Data File Not Found"));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (str_order(header, (const char *)IMG(0x4b1510))) {
+	if (str_order(header, (const char *)STR(0x4b1510, "AXIS SKIRMISH INFOMATION DATA FILE"))) {
 		fclose(f);
-		data_missing(IMG(0x4b1534));
+		data_missing(STR(0x4b1534, "Skirmish Data File Not Found"));
 	}
 	crt_fseek(f, 25000, 1);
 	crt_fread((void *)ADDR(g_skirmishInfoCount), 4, 1, f);
@@ -906,19 +906,19 @@ u32 (data_loadSkirmishInfo)(void)
    records' stats are checked: eight above 30 and one (+0x44) above 50 become 0. The callers ignore the eax it leaves */
 void (data_loadPilotProfiles)(void)
 {
-	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? IMG(0x4b14b4) : IMG(0x4b14a8), IMG(0x4ad170),   /* "profkor.dat" / "profeng.dat", "rb" */
-	                    IMG(0x4b1480));   /* "Character Profile Data File Not Found" */
+	void *f = data_open(IMG(0x9dae7c), g_language == 1 ? STR(0x4b14b4, "profkor.dat") : STR(0x4b14a8, "profeng.dat"), STR(0x4ad170, "rb"),
+	                    STR(0x4b1480, "Character Profile Data File Not Found"));
 	crt_fseek(f, 0, 2);
 	if (GAME_CDECL(0x49efdd, int, void *)(f) < 10000) {   /* ftell */
 		fclose(f);
-		data_missing(IMG(0x4b1480));
+		data_missing(STR(0x4b1480, "Character Profile Data File Not Found"));
 	}
 	crt_fseek(f, 0, 0);
 	char header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (strcmp(header, (const char *)IMG(0x4b145c))) {   /* "AXIS CHARACTER PROFILE DATA FILE" */
+	if (strcmp(header, (const char *)STR(0x4b145c, "AXIS CHARACTER PROFILE DATA FILE"))) {
 		fclose(f);
-		data_missing(IMG(0x4b1480));
+		data_missing(STR(0x4b1480, "Character Profile Data File Not Found"));
 	}
 	crt_fseek(f, 0x1046a, 1);
 	int count, version;
@@ -926,7 +926,7 @@ void (data_loadPilotProfiles)(void)
 	crt_fread(&version, 4, 1, f);
 	version -= 0x115c;
 	if (version != 0x67)
-		data_missing(IMG(0x4b143c));   /* "Character Profile wrong version" */
+		data_missing(STR(0x4b143c, "Character Profile wrong version"));
 	u8 key = 'a';
 	for (int i = 0; i < count; i++) {
 		u8 record[0x4c];
@@ -952,16 +952,16 @@ void (data_loadPilotProfiles)(void)
    (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
-	void *f = data_open(IMG(0x4dedf8), IMG(0x4b1504), IMG(0x4ad170), IMG(0x4b14e0));   /* "mapinfo.dat", "rb" */
+	void *f = data_open(IMG(0x4dedf8), STR(0x4b1504, "mapinfo.dat"), STR(0x4ad170, "rb"), STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	u8 header[0x80];
 	crt_fread(header, 0x80, 1, f);
-	if (str_order((const char *)header, (const char *)IMG(0x4b14c0))) {   /* (the original compares a 0x30-byte copy) */
+	if (str_order((const char *)header, (const char *)STR(0x4b14c0, "AXIS MAP INFOMATION DATA FILE"))) {   /* (the original compares a 0x30-byte copy) */
 		fclose(f);
-		data_missing(IMG(0x4b14e0));
+		data_missing(STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	}
 	if (header[0x32] != 0x1a) {
 		fclose(f);
-		data_missing(IMG(0x4b14e0));
+		data_missing(STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	}
 	crt_fread((void *)ADDR(g_arenaMapCount), 4, 1, f);
 	for (int i = 0; i < g_arenaMapCount; i++) {
@@ -990,13 +990,13 @@ u32 (data_loadMapInfo)(void)
    left. Returns 1, or 0 when the file does not open */
 int (arena_loadSettings)(const char *path)
 {
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad5e0));   /* "rt" */
+	void *f = crt_fopen(path, (const char *)STR(0x4ad5e0, "rt"));
 	if (!f)
 		return 0;
 	static const struct { u32 key, into; } numbers[4] = {
-		{ IMG(0x4ad5b0), ADDR(g_arenaFileGameType) }, { IMG(0x4ad5a4), ADDR(g_arenaFilePlayers) }, { IMG(0x4ad5a0), ADDR(g_arenaFileMap) }, { IMG(0x4ad594), ADDR(g_arenaFileFragLimit) },
+		{ STR(0x4ad5b0, "gametype"), ADDR(g_arenaFileGameType) }, { STR(0x4ad5a4, "maxplayer"), ADDR(g_arenaFilePlayers) }, { STR(0x4ad5a0, "map"), ADDR(g_arenaFileMap) }, { STR(0x4ad594, "fraglimit"), ADDR(g_arenaFileFragLimit) },
 	};
-	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
+	const char *gaps = (const char *)STR(0x4ad5dc, " \t");
 	for (;;) {
 		char line[0x50];
 		memset(line, 0, sizeof line);
@@ -1006,16 +1006,16 @@ int (arena_loadSettings)(const char *path)
 			continue;
 		char *word = crt_strtok(line, gaps);
 		while (word) {
-			if (!strcmp(word, (const char *)IMG(0x4ad5d0))) {   /* gamename */
+			if (!strcmp(word, (const char *)STR(0x4ad5d0, "gamename"))) {   /* gamename */
 				word = crt_strtok(NULL, gaps);
 				memset((void *)IMG(0x5b191c), 0, 0x20);
 				strcpy((char *)IMG(0x5b191c), word);
 			}
-			if (!strcmp(word, (const char *)IMG(0x4ad5c8))) {   /* secret */
+			if (!strcmp(word, (const char *)STR(0x4ad5c8, "secret"))) {   /* secret */
 				word = crt_strtok(NULL, gaps);
 				g_cmdSecret = crt_atoi(word);
 			}
-			if (!strcmp(word, (const char *)IMG(0x4ad5bc))) {   /* password */
+			if (!strcmp(word, (const char *)STR(0x4ad5bc, "password"))) {   /* password */
 				word = crt_strtok(NULL, gaps);
 				g_arenaFileClan = 0;
 				g_arenaFileClan4 = 0;
@@ -1026,7 +1026,7 @@ int (arena_loadSettings)(const char *path)
 					word = crt_strtok(NULL, gaps);
 					GAME_VAR(int, numbers[k].into) = crt_atoi(word);
 				}
-			if (!strcmp(word, (const char *)IMG(0x4ad588)))   /* timelimit */
+			if (!strcmp(word, (const char *)STR(0x4ad588, "timelimit")))   /* timelimit */
 				g_cmdTimeLimit = crt_atoi(crt_strtok(NULL, gaps));
 			word = crt_strtok(NULL, gaps);
 		}
@@ -1039,7 +1039,7 @@ int (arena_loadSettings)(const char *path)
    skipped and the rest joined into value (0x84 bytes; spaced: a space after each word) ---- */
 static void read_value(void *f, char *value, int spaced)
 {
-	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
+	const char *gaps = (const char *)STR(0x4ad5dc, " \t");
 	char line[0x50];
 	crt_fgets(line, 0x50, f);
 	line[strlen(line) - 1] = '\0';
@@ -1049,7 +1049,7 @@ static void read_value(void *f, char *value, int spaced)
 	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
 		strcat(value, word);
 		if (spaced)
-			strcat(value, (const char *)IMG(0x4b035c));   /* " " */
+			strcat(value, (const char *)STR(0x4b035c, " "));
 	}
 }
 
@@ -1071,14 +1071,14 @@ void (cfg_readLines)(void *f)
 	str_dropLast(value);
 	strcpy((char *)IMG(0x4dedb0), value);
 	read_value(f, value, 0);
-	if (!strcmp(value, (const char *)IMG(0x4b21b8)))        /* RED */
+	if (!strcmp(value, (const char *)STR(0x4b21b8, "RED")))        /* RED */
 		g_playerCorporation = 0;
-	else if (!strcmp(value, (const char *)IMG(0x4b21b0)))   /* BLUE */
+	else if (!strcmp(value, (const char *)STR(0x4b21b0, "BLUE")))   /* BLUE */
 		g_playerCorporation = 1;
 	else
-		g_playerCorporation = strcmp(value, (const char *)IMG(0x4b21a8)) ? 0 : 2;   /* YELLOW */
+		g_playerCorporation = strcmp(value, (const char *)STR(0x4b21a8, "YELLOW")) ? 0 : 2;   /* YELLOW */
 	read_value(f, value, 0);
-	g_playerSex = !strcmp(value, (const char *)IMG(0x4b21bc));   /* ON */
+	g_playerSex = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
 	skip_line(f);
 }
 
@@ -1092,9 +1092,9 @@ void (cfg_readAudioLines)(void *f)
 	read_value(f, value, 0);
 	g_musicVolume = crt_atoi(value);
 	read_value(f, value, 0);
-	g_soundSwitch1 = !strcmp(value, (const char *)IMG(0x4b21bc));   /* ON */
+	g_soundSwitch1 = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));   /* ON */
 	read_value(f, value, 0);
-	g_sound3D = !strcmp(value, (const char *)IMG(0x4b21bc));
+	g_sound3D = !strcmp(value, (const char *)STR(0x4b21bc, "ON"));
 	skip_line(f);
 }
 
@@ -1107,7 +1107,7 @@ typedef struct { char before[4]; char value[0x84]; char line[0x78]; } CfgBuf;
 
 static void read_into(void *f, CfgBuf *b, int spaced)
 {
-	const char *gaps = (const char *)IMG(0x4ad5dc);   /* " \t" */
+	const char *gaps = (const char *)STR(0x4ad5dc, " \t");
 	crt_fgets(b->line, 0x50, f);
 	char *end = b->line + strlen(b->line) - 1;
 	*end = '\0';
@@ -1117,7 +1117,7 @@ static void read_into(void *f, CfgBuf *b, int spaced)
 	for (char *word; (word = crt_strtok(NULL, gaps)) != NULL;) {
 		strcat(b->value, word);
 		if (spaced)
-			strcat(b->value, (const char *)IMG(0x4b035c));   /* " " */
+			strcat(b->value, (const char *)STR(0x4b035c, " "));
 	}
 }
 
@@ -1130,7 +1130,7 @@ static int named(const char *value, const u32 *names, int count)
 	return 0;
 }
 
-#define IS_ON(value) (!strcmp((value), (const char *)IMG(0x4b21bc)))   /* "ON" */
+#define IS_ON(value) (!strcmp((value), (const char *)STR(0x4b21bc, "ON")))
 
 /* 0x42da70: the server section read back: the server's name (words joined by spaces, cut once more; 0x4ded20),
    the map (0 .. 21, else 0; 0x4ded40), the players (0 .. 16, else 8; 0x4ded41), a switch (ON; 0x4ded42), the game
@@ -1138,8 +1138,8 @@ static int named(const char *value, const u32 *names, int count)
    0x4ded45); then one more line */
 void (cfg_gameTypeNames)(void *f)
 {
-	static const u32 types[14] = { IMG(0x4b22b8), IMG(0x4b22a8), IMG(0x4b2294), IMG(0x4b2284), IMG(0x4b2270), IMG(0x4b2260), IMG(0x4b2248), IMG(0x4b2238),
-	                               IMG(0x4b2224), IMG(0x4b2214), IMG(0x4b21fc), IMG(0x4b21e8), IMG(0x4b21d8), IMG(0x4b21c0) };
+	static const u32 types[14] = { STR(0x4b22b8, "TEAM DEATH MATCH"), STR(0x4b22a8, "SUDDEN DEATH"), STR(0x4b2294, "TEAM SUDDEN DEATH"), STR(0x4b2284, "SHOTGUN ARENA"), STR(0x4b2270, "TEAM SHOTGUN ARENA"), STR(0x4b2260, "IONCANNON ARENA"), STR(0x4b2248, "TEAM IONCANNON ARENA"), STR(0x4b2238, "ROCKET ARENA"),
+	                               STR(0x4b2224, "TEAM ROCKET ARENA"), STR(0x4b2214, "GLADIATOR ARENA"), STR(0x4b21fc, "TEAM GLADIATOR ARENA"), STR(0x4b21e8, "KING ON THE HILL"), STR(0x4b21d8, "PLATOON MODE"), STR(0x4b21c0, "ACCEPT ADVANCED MODE") };
 	CfgBuf b;
 	__asm__("" : "=m"(b));   /* (left as the stack holds it) */
 	for (int n = 0; n < 7; n++) {
@@ -1188,9 +1188,9 @@ void (cfg_videoModeNames)(void *f)
 		if (n == 0)
 			(*(int *)&g_videoMode) = named(b.value, sizes, 7);
 		else if (n == 1)
-			g_videoDepth = !strcmp(b.value, (const char *)IMG(0x4b22d4));   /* "32" */
+			g_videoDepth = !strcmp(b.value, (const char *)STR(0x4b22d4, "32"));
 		else if (n == 2)
-			g_items3D = !strcmp(b.value, (const char *)IMG(0x4b22cc));   /* "HIGH" */
+			g_items3D = !strcmp(b.value, (const char *)STR(0x4b22cc, "HIGH"));
 		else
 			GAME_VAR(int, 0x83a9cc + (n - 3) * 4) = IS_ON(b.value);
 	}
@@ -1244,17 +1244,17 @@ void (cfg_writeDefaultAxisCfg)(void)
 {
 	struct { char line[0x84]; char path[0x184]; } s;
 	strcpy(s.path, (const char *)IMG(0x9dae7c));
-	strcat(s.path, (const char *)IMG(0x4b2198));   /* "\\axis.cfg" */
+	strcat(s.path, (const char *)STR(0x4b2198, "\\axis.cfg"));
 	memset((void *)IMG(0x4dedb0), 0, 32);
 	memset((void *)IMG(0x4ded20), 0, 32);
-	void *f = crt_fopen(s.path, (const char *)IMG(0x4ad5e0));   /* "rt" */
+	void *f = crt_fopen(s.path, (const char *)STR(0x4ad5e0, "rt"));
 	if (f) {
 		__asm__("" : "=m"(s.line));   /* (left as the stack holds it until fgets writes it) */
 		crt_fgets(s.line, 0x50, f);
 		size_t length = strlen((const char *)&s);
 		if (length)
 			((char *)&s)[length - 1] = '\0';
-		if (!strcmp(s.line, (const char *)IMG(0x4b0f50))) {
+		if (!strcmp(s.line, (const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."))) {
 			cfg_readLines(f);
 			cfg_gameTypeNames(f);
 			cfg_readAudioLines(f);
@@ -1270,10 +1270,10 @@ void (cfg_writeDefaultAxisCfg)(void)
 	(*(int *)&g_videoMode) = 0;
 	g_showFps = 0;
 	g_cfgSimpleMenu = 0;
-	strcpy((char *)IMG(0x4dedb0), (const char *)IMG(0x4ad4b0));   /* "PLAYER" */
+	strcpy((char *)IMG(0x4dedb0), (const char *)STR(0x4ad4b0, "PLAYER"));
 	g_playerCorporation = 0;
 	g_playerSex = 0;
-	strcpy((char *)IMG(0x4ded20), (const char *)IMG(0x4ad4a4));   /* "AXIS ARENA" */
+	strcpy((char *)IMG(0x4ded20), (const char *)STR(0x4ad4a4, "AXIS ARENA"));
 	g_soundVolume = 100;
 	g_musicVolume = 100;
 	static const u8 server[6] = { 0, 8, 0, 0, 0, 0 };   /* 0x4ded40: (by use) 8 players */
@@ -1294,16 +1294,16 @@ void (cfg_writeDefaultAxisCfg)(void)
    callers that ignore it */
 void (profile_scanSaves)(void)
 {
-	if (crt_chdir((const char *)IMG(0x4b2adc))) {   /* "save" */
+	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
 		crt_chdir((const char *)IMG(0x9dae7c));
-		IMPORT(0x4a9104, u32, const char *)((const char *)IMG(0x4b2acc));   /* DeleteFileA("axisuser.dat") */
-		crt_chdir((const char *)IMG(0x4b2a80));   /* ".." */
+		IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
+		crt_chdir((const char *)STR(0x4b2a80, ".."));
 		return;
 	}
 	struct { u32 attrib, created, accessed, written, size; char name[260]; } found;   /* _finddata_t */
-	int search = crt_findfirst((const char *)IMG(0x4b2ac4), &found);   /* "*.axs" */
+	int search = crt_findfirst((const char *)STR(0x4b2ac4, "*.axs"), &found);   /* "*.axs" */
 	if (search < 0) {
-		crt_chdir((const char *)IMG(0x4b2a80));
+		crt_chdir((const char *)STR(0x4b2a80, ".."));
 		profile_loadList(0);
 		return;
 	}
@@ -1316,7 +1316,7 @@ void (profile_scanSaves)(void)
 	int valid = 0;
 	for (int i = 0; i < count; i++) {
 		u8 header[0x104];
-		void *f = crt_fopen(files[i], (const char *)IMG(0x4ad170));   /* "rb" */
+		void *f = crt_fopen(files[i], (const char *)STR(0x4ad170, "rb"));
 		crt_fseek(f, 20000, 0);
 		crt_fread(header, 0x104, 1, f);
 		fclose(f);
@@ -1324,7 +1324,7 @@ void (profile_scanSaves)(void)
 		memcpy((void *)IMG(0x9f61d8), header, 0x104);
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);
-		if (strcmp((const char *)IMG(0x9f61d8), (const char *)IMG(0x4b0fa0))) {
+		if (strcmp((const char *)IMG(0x9f61d8), (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."))) {
 			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
 			continue;
 		}
@@ -1333,7 +1333,7 @@ void (profile_scanSaves)(void)
 		*(u32 *)(profile + 0x44) = *(const u32 *)(header + 0x100);   /* the pilot */
 		*(int *)profile = valid++;
 	}
-	crt_chdir((const char *)IMG(0x4b2a80));
+	crt_chdir((const char *)STR(0x4b2a80, ".."));
 	profile_create();
 	profile_loadList(valid);
 	for (int i = 0; i < count; i++)
@@ -1349,16 +1349,16 @@ void (profile_scanSaves)(void)
 u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 {
 	static const u32 tables[6][4] = {   /* log message, count, records, record size */
-		{ IMG(0x4c755c), 0x13eb000, 0x13c9b30, 0xaa8 }, { IMG(0x4c7548), 0x140c8bc, 0x13eb004, 0xabc },
-		{ IMG(0x4c7534), 0x1447ec0, 0x140c8c0, 0x1300 }, { IMG(0x4c7520), 0x148646c, 0x1447ec4, 0x13f4 },
-		{ IMG(0x4c7508), 0x14d1ab0, 0x1486470, 0x1820 }, { IMG(0x4c74f4), 0x1561b64, 0x14d1ab4, 0x2e18 } };
-	void *f = crt_fopen(path, (const char *)IMG(0x4ad170));   /* "rb" */
+		{ STR(0x4c755c, "read ActorHeadInfo"), 0x13eb000, 0x13c9b30, 0xaa8 }, { STR(0x4c7548, "read ActorChestInfo"), 0x140c8bc, 0x13eb004, 0xabc },
+		{ STR(0x4c7534, "read ActorArmInfo"), 0x1447ec0, 0x140c8c0, 0x1300 }, { STR(0x4c7520, "read ActorLegInfo"), 0x148646c, 0x1447ec4, 0x13f4 },
+		{ STR(0x4c7508, "read ActorBoosterInfo"), 0x14d1ab0, 0x1486470, 0x1820 }, { STR(0x4c74f4, "read ActorItemInfo"), 0x1561b64, 0x14d1ab4, 0x2e18 } };
+	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c75bc), (int)path);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);
 	int version;
 	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(&version, 4, 1, f);   /* fread */
 	if (version != 0x1204)
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c7570), (int)path);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c7570, "incorrect file version, remove the fi..."), (int)path);
 	for (int k = 0; k < 6; k++) {
 		log_message((int)scene, 0, 0, (const char *)RELOC(tables[k][0]));
 		fread_scrambled(scene + tables[k][1], 4, 1, f);
@@ -1382,19 +1382,19 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 		replay_closeRecording((Scene *)s);
 	if (name) {
 		strcpy(kept, name);
-		sprintf(path, (const char *)IMG(0x4c7cc8), kept);   /* "AutoPlay\%s.ape" */
+		sprintf(path, (const char *)STR(0x4c7cc8, "AutoPlay\\%s.ape"), kept);
 	} else {
 		int i = 0;
 		for (;; i++) {
-			sprintf(kept, (const char *)IMG(0x4c7cb8), i);   /* "AutoPlay%03d" */
-			sprintf(path, (const char *)IMG(0x4c7cc8), kept);
+			sprintf(kept, (const char *)STR(0x4c7cb8, "AutoPlay%03d"), i);
+			sprintf(path, (const char *)STR(0x4c7cc8, "AutoPlay\\%s.ape"), kept);
 			if (!file_exists_46ca70(path))
 				break;
 			if (i == 999)
 				return;
 		}
 	}
-	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)IMG(0x4b2ab0));   /* "wb" */
+	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		return;
 	FIELD(int, s, 0x2340d1d) = 1;

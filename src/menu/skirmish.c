@@ -113,7 +113,7 @@ void (skirmish_drawScreenA)(void)
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
 	menu_drawRect(BX0, BY0, BX1, BY1, 1);
 	set_colour_bits((Colour *)IMG(0x76d438), g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
-	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)IMG(0x75dda4));
+	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)MSG(511, "DON'T"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
 	menu_drawLine(BX0 + 0x18, BY1 - 0xa0, BX1 - 0x18, BY1 - 0xa0);
@@ -121,10 +121,10 @@ void (skirmish_drawScreenA)(void)
 	for (int c = 0; c < 4; c++)
 		menu_drawRect(BX0 + column_x0[c], BY0 + 0x24, BX0 + column_x1[c], BY0 + 0x3c, 1);
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_draw8(BX0 + 0x18, BY0 + 0x28, (const char *)IMG(0x75de24));
+	text_draw8(BX0 + 0x18, BY0 + 0x28, (const char *)MSG(512, "SUCCEED"));
 	for (int c = 1; c < 4; c++)
-		text_draw8b(BX0 + column_x0[c], BY0 + 0x28, BX0 + column_x1[c], (const char *)(IMG(0x75de24) + c * 0x80));
-	text_draw8(BX0 + 0xf0, BY1 - 0x9e, (const char *)IMG(0x75e024));
+		text_draw8b(BX0 + column_x0[c], BY0 + 0x28, BX0 + column_x1[c], (const char *)(MSG(512, "SUCCEED") + c * 0x80));
+	text_draw8(BX0 + 0xf0, BY1 - 0x9e, (const char *)MSG(516, "MISSION BRIEFING"));
 	char number[12];
 	for (int i = 0; i < g_missionCount && i < 8; i++) {
 		const u32 *colour = g_missionPicked == g_missionTop + i ? g_panelColour : g_dimColour;
@@ -135,7 +135,7 @@ void (skirmish_drawScreenA)(void)
 		itoa(*(const int *)(mission(g_missionTop + i) + 0xe0), number, 10);
 		text_draw8b(BX0 + column_x0[2], y, BX0 + column_x1[2], number);
 		text_draw8b(BX0 + column_x0[3], y, BX0 + column_x1[3],
-		            (const char *)(IMG(0x75dda4) + *(const int *)(mission(g_missionTop + i) + 0xe8) * 0x80));
+		            (const char *)(MSG(511, "DON'T") + *(const int *)(mission(g_missionTop + i) + 0xe8) * 0x80));
 	}
 	text_setWrapX(BX1 - 0x38);
 	set_colour_bits((Colour *)IMG(0x76d438), g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
@@ -148,7 +148,7 @@ void (skirmish_drawScreenA)(void)
 		menu_drawWideButton(x0, BY1 - 0x40, x1, BY1 - 0x20, lit);
 		const u32 *colour = lit ? g_panelColour : g_dimColour;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x0, BY1 - 0x38, x1, (const char *)(IMG(0x75e0a4) + k * 0x80));
+		text_drawBox16(x0, BY1 - 0x38, x1, (const char *)(MSG(517, "RESERVED") + k * 0x80));
 	}
 }
 #undef mission
@@ -165,7 +165,7 @@ void (skirmish_drawScreenB)(void)
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e4ccccd, 0x3f000000, 0x3f000000);   /* 0.1, 0.2, 0.5, 0.5 */
 	menu_drawRect(BX0, BY0, BX1, BY1, 1);
 	set_colour_bits((Colour *)IMG(0x76d438), g_panelColour[0], g_panelColour[1], g_panelColour[2], g_panelColour[3]);
-	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)IMG(0x75e024));
+	text_draw16(BX0 + 0x10, BY0 + 0xa, (const char *)MSG(516, "MISSION BRIEFING"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(BX0 + 8, BY0 + 0x20, BX1 - 8, BY1 - 8, 0);
 	menu_drawLine(BX0 + 0x18, BY1 - 0x40, BX1 - 0x18, BY1 - 0x40);
@@ -175,7 +175,7 @@ void (skirmish_drawScreenB)(void)
 		bind_button_texture();
 		int x = BX1 + k * 0x8c;
 		int lit = hovered == k;
-		briefing_button(x - 0x12c, x - 0xb4, lit, lit ? g_panelColour : g_dimColour, (const char *)(IMG(0x75e2a4) + k * 0x80));
+		briefing_button(x - 0x12c, x - 0xb4, lit, lit ? g_panelColour : g_dimColour, (const char *)(MSG(521, "$[0] ACCEPT") + k * 0x80));
 	}
 	for (int k = 0; k < 2; k++) {
 		bind_button_texture();
@@ -183,7 +183,7 @@ void (skirmish_drawScreenB)(void)
 		int usable = k == 0 ? g_briefingSkipped != 0 : g_undoDepth > 0;
 		int lit = usable && hovered == k + 2;
 		briefing_button(x + 0x30, x + 0xa8, lit, usable ? (lit ? g_panelColour : g_dimColour) : NULL,
-		                (const char *)(IMG(0x75e3a4) + k * 0x80));
+		                (const char *)(MSG(523, "$[0] NEXT") + k * 0x80));
 	}
 }
 

@@ -485,7 +485,7 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 static u32 reg_write(u32 value, const char *name)
 {
 	u32 key = value, data = value;
-	if (!RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b0458), 0, 0xf003f, &key))
+	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b0458, "SOFTWARE\\AxisArena\\Launcher"), 0, 0xf003f, &key))
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
@@ -503,11 +503,11 @@ u32 (reg_writeCharacterSettings)(void)
 	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
-	if (!RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b179c), 0, 0xf003f, &key)) {
-		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);   /* REG_SZ */
-		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
+	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, 0xf003f, &key)) {
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)IMG(0x9dd570), 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
 		const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
-		static const u32 names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
+		static const u32 names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
 		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
 		for (int i = 0; i < 6; i++) {
 			int k = order[i];
@@ -519,8 +519,8 @@ u32 (reg_writeCharacterSettings)(void)
 }
 
 /* 0x41f880, 0x43f7f0: the end mode and the start mode */
-u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)IMG(0x4b0450)); }
-u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)IMG(0x4b29dc)); }
+u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b0450, "EndMode")); }
+u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b29dc, "StartMode")); }
 
 /* 0x44ace0: the typed chat line (0x9dc92c) kept as the match's last line (0x9f63e4, 0x400 bytes; cleared when there
    is none), typing off, the key state reset and the keyboard taken again. Returns that call's eax */
@@ -542,15 +542,15 @@ int (app_reportStartupProblem)(int code)
 {
 	u32 text;
 	switch (code) {
-	case 1: text = IMG(0x7511a4); break;
-	case -4: text = IMG(0x751224); break;
-	case -5: text = IMG(0x7512a4); break;
-	case -1: text = IMG(0x751324); break;
-	case -2: text = IMG(0x7513a4); break;
-	case -3: text = IMG(0x751424); break;
+	case 1: text = MSG(103, "SYSTEM MODE CHANGE RESTART"); break;
+	case -4: text = MSG(104, "SYSTEM MODE CHANGE INVALID FLAGS"); break;
+	case -5: text = MSG(105, "SYSTEM MODE CHANGE INVALID PARAMETER"); break;
+	case -1: text = MSG(106, "SYSTEM MODE CHANGE FAILED"); break;
+	case -2: text = MSG(107, "SYSTEM MODE CHANGE INVALID MODE"); break;
+	case -3: text = MSG(108, "SYSTEM MODE CHANGE NOTUPDATED"); break;
 	default: return code;
 	}
-	return MessageBoxA(g_mainWindow, (const char *)RELOC(text), (const char *)IMG(0x751024), 0);
+	return MessageBoxA(g_mainWindow, (const char *)RELOC(text), (const char *)MSG(100, "USERMESSAGE"), 0);
 }
 
 
@@ -559,7 +559,7 @@ int (app_reportStartupProblem)(int code)
 /* the six choices (0x5b1b50 ..) in the order the registry keeps them, with their value names; the fourth and fifth
    (the flag and time limits) are unsigned */
 static const u8 choice_order[6] = { 0, 1, 3, 4, 5, 2 };
-static const u32 choice_names[6] = { IMG(0x4b1784), IMG(0x4b1778), IMG(0x4b176c), IMG(0x4b1760), IMG(0x4b1754), IMG(0x4b1748) };
+static const u32 choice_names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
 static u32 choice_dword(int k)
 {
 	const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
@@ -585,26 +585,26 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
    the eax it leaves */
 void (reg_readCharacterSettings)(void)
 {
-	strcpy((char *)IMG(0x9dd570), (const char *)IMG(0x4b17d0));
-	strcpy((char *)IMG(0x5b1b30), (const char *)IMG(0x4b17bc));
+	strcpy((char *)IMG(0x9dd570), (const char *)STR(0x4b17d0, "AxisPlayer"));
+	strcpy((char *)IMG(0x5b1b30), (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
 	memcpy((void *)ADDR(g_roomRecMap), defaults, 6);
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
 	IMPORT(0x4a9010, int, u32, const char *, u32, const char *, u32, u32, void *, u32 *, u32 *)
-		(0x80000001, (const char *)IMG(0x4b179c), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
+		(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
 	signed char *choice = (signed char *)ADDR(g_roomRecMap);
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
-		RegSetValueExA(key, (const char *)IMG(0x4b1794), 0, 1, (const void *)IMG(0x9dd570), 0x1e);
-		RegSetValueExA(key, (const char *)IMG(0x4b1788), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
+		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)IMG(0x9dd570), 0x1e);
+		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)IMG(0x5b1b30), 0x20);
 		for (int i = 0; i < 6; i++) {
 			value = choice_dword(choice_order[i]);
 			RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
 		}
 	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
-		read_string(key, (const char *)IMG(0x4b1794), (char *)IMG(0x9dd570), 0x1e, &type, buf);
-		read_string(key, (const char *)IMG(0x4b1788), (char *)IMG(0x5b1b30), 0x20, &type, buf);
+		read_string(key, (const char *)STR(0x4b1794, "Name"), (char *)IMG(0x9dd570), 0x1e, &type, buf);
+		read_string(key, (const char *)STR(0x4b1788, "GameName"), (char *)IMG(0x5b1b30), 0x20, &type, buf);
 		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
 		value = 0;
 		for (int i = 0; i < 6; i++) {
@@ -637,17 +637,17 @@ void (reg_readCharacterSettings)(void)
 int (reg_readServerSettings)(void)
 {
 	u32 key, type, size;
-	if (RegOpenKeyExA(0x80000001, (const char *)IMG(0x4b1728), 0, 0xf003f, &key)) {
-		sys_messageBox((const char *)(g_language == 1 ? IMG(0x4b16a4) : IMG(0x4b1660)));
+	if (RegOpenKeyExA(0x80000001, (const char *)STR(0x4b1728, "SOFTWARE\\AxisArena\\SelectServer"), 0, 0xf003f, &key)) {
+		sys_messageBox((const char *)(g_language == 1 ? STR(0x4b16a4, "     \260\324\300\323\274\255\271\366\270\246 \274\261\305\303\307\317\301\366 \276\312\276\322\275\300\264\317\264\331.\n...") : STR(0x4b1660, "     Cannot find Server list.\nSelect ...")));
 		RegCloseKey(key);
 		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
 	size = 50;
-	RegQueryValueExA(key, (const char *)IMG(0x4b1720), 0, &type, (void *)IMG(0xa0b24c), &size);
-	RegQueryValueExA(key, (const char *)IMG(0x4b1714), 0, &type, (void *)IMG(0xa055fc), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b1720, "TcpDNS"), 0, &type, (void *)IMG(0xa0b24c), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b1714, "LadderDNS"), 0, &type, (void *)IMG(0xa055fc), &size);
 	size = 4;
-	RegQueryValueExA(key, (const char *)IMG(0x4b170c), 0, &type, (void *)ADDR(g_lobbyTcpPort), &size);
-	RegQueryValueExA(key, (const char *)IMG(0x4b1700), 0, &type, (void *)ADDR(g_ladderPort), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b170c, "TcpPort"), 0, &type, (void *)ADDR(g_lobbyTcpPort), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b1700, "LadderPort"), 0, &type, (void *)ADDR(g_ladderPort), &size);
 	return RegCloseKey(key);
 }
 
@@ -689,7 +689,7 @@ int (sys_checkClockTampering)(void)
 	g_clockCheckTickSeconds = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
-		sys_messageBox((const char *)(g_language == 1 ? IMG(0x4b2914) : IMG(0x4b2888)));
+		sys_messageBox((const char *)(g_language == 1 ? STR(0x4b2914, "\300\337\270\370\265\307\260\305\263\252 \300\314\273\363\307\321 \307\301\267\316\261\327\267\245\300\314 \265\277\300\333\307\317\260\355...") : STR(0x4b2888, "Now Unauthorized program is running\n\n...")));
 		if (g_clockCheckClosed) {
 			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
@@ -712,13 +712,13 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 	if (!GAME_VAR(int, scene + 0x2149308))
 		return;
 	if (!GAME_VAR(int, scene + 0x2148ee0))
-		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)IMG(0x4c45e4));
+		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)STR(0x4c45e4, "Scene"));
 	if (!recorder_setPathStub(scene + 0x2148ed8, path))
 		GAME_VAR(int, scene + 0x2149308) = 0;
 	const char *name = (const char *)(scene + 0x2149108);
 	if (*name) {
 		char text[0x100];
-		sprintf(text, (const char *)IMG(0x4c8304), name);
+		sprintf(text, (const char *)STR(0x4c8304, "scenePath\\%s"), name);
 		sound_playFile(text, 100);
 	}
 }
@@ -771,11 +771,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ 0x30c, 0x13eb000, IMG(0x4c75f0), 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
-	{ 0x310, 0x140c8bc, IMG(0x4c7624), 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
-	{ 0x314, 0x1447ec0, IMG(0x4c7658), 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
-	{ 0x318, 0x148646c, IMG(0x4c7688), 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
-	{ 0x31c, 0x14d1ab0, IMG(0x4c76b8), 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
+	{ 0x30c, 0x13eb000, STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
+	{ 0x310, 0x140c8bc, STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
+	{ 0x314, 0x1447ec0, STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
+	{ 0x318, 0x148646c, STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
+	{ 0x31c, 0x14d1ab0, STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
@@ -829,7 +829,7 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	else
 		type[0x18c + slot * 0x40] = 0;
 	if (item >= GAME_VAR(int, scene + 0x1561b64))
-		sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c76f0), item);
+		sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	GAME_VAR(int, type + 0x320 + slot * 4) = item;
 	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
 		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)

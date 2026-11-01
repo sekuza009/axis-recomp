@@ -597,7 +597,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_missionProgress GAME_VAR(int, 0x9f181c)   /* the furthest stage reached */
 #define g_trig ((const float *)IMG(0xa146f8))            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps GAME_VAR(int, 0x83a9d4)           /* 1: the FPS counter is shown */
-#define g_gameModeNames ((const char (*)[64])IMG(0x4c7030))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
+#define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
 #define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
 #define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
                                                          500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
@@ -699,9 +699,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_missionBusy GAME_VAR(int, 0x9f6300)
 #define g_missionStarted GAME_VAR(int, 0x9f62e0)
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
-#define STR_COPYRIGHT ((const char *)IMG(0x4b0474))       /* "AXIS by Jamie System Development" */
-#define STR_2D ((const char *)IMG(0x4d03e0))              /* "%2d" */
-#define STR_VERSION ((const char *)IMG(0x4b0384))         /* "Axis v1.03" */
+#define STR_COPYRIGHT ((const char *)STR(0x4b0474, "AXIS by Jamie System Development"))
+#define STR_2D ((const char *)STR(0x4d03e0, "%2d"))
+#define STR_VERSION ((const char *)STR(0x4b0384, "Axis v1.03"))
 
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))               /* four connection slots: 1 while open */
@@ -1189,8 +1189,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define GL_PROJECTION 0x1701
 #define glViewport(x, y, w, h) IMPORT(0x4a91d4, void, int, int, int, int)(x, y, w, h)
 #define glMatrixMode(mode) IMPORT(0x4a91fc, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)IMG(0x4a9048))(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)IMG(0x4a9050))(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9050, "|\300\n"))(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, load/space_pools.c, render/rotations.c) ---- */
 #define path_normalize(path) GAME_FN(path_normalize, 0x46cb60, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */

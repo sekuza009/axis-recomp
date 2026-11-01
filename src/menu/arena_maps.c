@@ -177,9 +177,9 @@ void (mapList_draw)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawRect(0x90, 0x2c, 0x1f0, 0x1b4, 0);
 	cyan_text(0x3f800000);
-	text_draw8(0xc8, 0x32, (const char *)IMG(0x75d924));
+	text_draw8(0xc8, 0x32, (const char *)MSG(502, "MAP"));
 	cyan_text(0x3f800000);
-	text_draw8(0x168, 0x32, (const char *)IMG(0x75d9a4));
+	text_draw8(0x168, 0x32, (const char *)MSG(503, "TYPE"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x4b, 0x1ea, 0x4b);
 	for (int i = 0; i < g_arenaMapCount && i < 10; i++) {

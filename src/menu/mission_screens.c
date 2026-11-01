@@ -27,7 +27,7 @@ static void value_line(int y, u32 label, int value, u32 none, u32 unit)
 {
 	char line[128] = { 0 }, number[128] = { 0 };
 	strcpy(line, (const char *)RELOC(label));
-	strcat(line, (const char *)IMG(0x4b2b10));
+	strcat(line, (const char *)STR(0x4b2b10, " : "));
 	if (!value)
 		strcat(line, (const char *)RELOC(none));
 	else {
@@ -50,19 +50,19 @@ static void mission_screen(int hovered)
 	/* "<n>ST <0x75f1a4>  [ <map> ]" */
 	char title[256];
 	itoa(g_missionShown + 1, title, 10);
-	static const u32 suffix[4] = { IMG(0x4b2b20), IMG(0x4b2b24), IMG(0x4b2b28), IMG(0x4b2b2c) };   /* "ST " "ND " "RD " "TH " */
+	static const u32 suffix[4] = { STR(0x4b2b20, "ST "), STR(0x4b2b24, "ND "), STR(0x4b2b28, "RD "), STR(0x4b2b2c, "TH ") };
 	strcat(title, (const char *)RELOC(suffix[(unsigned)g_missionShown < 3 ? g_missionShown : 3]));
-	strcat(title, (const char *)IMG(0x75f1a4));
-	strcat(title, (const char *)IMG(0x4b2b18));
+	strcat(title, (const char *)MSG(551, "ROUND"));
+	strcat(title, (const char *)STR(0x4b2b18, "  [ "));
 	strcat(title, map_name);
-	strcat(title, (const char *)IMG(0x4b2b14));
+	strcat(title, (const char *)STR(0x4b2b14, " ]"));
 	text_drawBox16(X0, Y0 + 8, X1, title);
 	/* the preview, looked up when asked for: "<0x680bc4><map>/<map>" */
 	if (g_missionPreviewDue) {
 		char path[128] = { 0 }, name[64];
 		strcpy(path, (const char *)IMG(0x680bc4));
 		strcat(path, map_name);
-		strcat(path, (const char *)IMG(0x4ad564));
+		strcat(path, (const char *)STR(0x4ad564, "/"));
 		strcat(path, map_name);
 		strcpy(name, path);
 		g_mapPreviewTexture = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
@@ -94,16 +94,16 @@ static void mission_screen(int hovered)
 	white_text();
 	/* the kind and the two values */
 	char line[128] = { 0 };
-	strcpy(line, (const char *)IMG(0x75f2a4));
-	strcat(line, (const char *)IMG(0x4b2b10));
-	strcat(line, (const char *)(IMG(0x75c9a4) + record[0x48 / 4] * 0x80));
+	strcpy(line, (const char *)MSG(553, "GAME TYPE"));
+	strcat(line, (const char *)STR(0x4b2b10, " : "));
+	strcat(line, (const char *)(MSG(471, "DEATH MATCH") + record[0x48 / 4] * 0x80));
 	text_draw16(X0 + 0xc4, Y0 + 0xaa, line);
 	value_line(Y0 + 0xbc, 0x75f324, record[0x50 / 4], 0x75c0a4, 0x75c124);
 	value_line(Y0 + 0xce, 0x75f3a4, record[0x4c / 4], 0x75bfa4, 0x75c024);
 	/* the allies (+0x24 of them, faces from +0x28) in red frames */
 	if (record[0x24 / 4]) {
 		white_text();
-		text_drawBox16(X0, Y0 + 0xf2, X1, (const char *)IMG(0x75f524));
+		text_drawBox16(X0, Y0 + 0xf2, X1, (const char *)MSG(558, "FRIENDLY"));
 		glEnable(GL_TEXTURE_2D);
 		bind(g_characterTexture);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -116,7 +116,7 @@ static void mission_screen(int hovered)
 			menu_drawRect(x0 + i * 0x40, Y0 + 0x104, x0 + i * 0x40 + 0x30, Y0 + 0x134, 0);
 	}
 	/* the enemies (+0 of them, faces from +4; outside 0 .. 8 "???") in blue frames */
-	text_drawBox16(X0, Y0 + 0x142, X1, (const char *)IMG(0x75f5a4));
+	text_drawBox16(X0, Y0 + 0x142, X1, (const char *)MSG(559, "ENEMY"));
 	glEnable(GL_TEXTURE_2D);
 	int x0 = 0x146 - record[0] * 0x20;
 	for (int i = 0; i < record[0]; i++) {
@@ -126,7 +126,7 @@ static void mission_screen(int hovered)
 		if (face >= 0 && face <= 8)
 			portrait(face, x, Y0 + 0x154, 0x30);
 		else
-			text_drawBox16(x, Y0 + 0x164, x + 0x30, (const char *)IMG(0x4b2b0c));
+			text_drawBox16(x, Y0 + 0x164, x + 0x30, (const char *)STR(0x4b2b0c, "???"));
 	}
 	glDisable(GL_TEXTURE_2D);
 	set_colour_bits(g_rectColour, 0x3dcccccd, 0x3dcccccd, 0x3f800000, 0x3f800000);   /* 0.1, 0.1, 1, 1 */
@@ -141,7 +141,7 @@ static void mission_screen(int hovered)
 		menu_drawWideButton(x + 0x96, Y1 - 0x30, x + 0x10e, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(IMG(0x75f6a4) + k * 0x80));
+		text_drawBox16(x + 0x96, Y1 - 0x28, x + 0x10e, (const char *)(MSG(561, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -167,8 +167,8 @@ void (missionsel_drawScreen)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x41, 0xcd, 0x23f, 0x11d, 0);
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	text_drawBox16(0x46, 0xdc, 0x23a, (const char *)IMG(0x75f7a4));
-	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)IMG(0x74de24));
+	text_drawBox16(0x46, 0xdc, 0x23a, (const char *)MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS"));
+	text_drawBox16(0x46, 0xf5, 0x23a, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 
 /* 0x44aa20, 0x44aa30: jumps to missionsel_drawSettingsScreen and missionsel_drawScreen (the mission select's states'

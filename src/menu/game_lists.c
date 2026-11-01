@@ -62,7 +62,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 		crt_strncpy(text, (const char *)game, 0x20);
 		text_draw8(x0 + 0x20, y0 + y, text);
 		if (game[0x20])
-			text_draw8(x0 + 0x114, y0 + y, (const char *)IMG(0x75c1a4));
+			text_draw8(x0 + 0x114, y0 + y, (const char *)MSG(455, "ROTATION"));
 		else {
 			memset(text, 0, sizeof text);
 			crt_strncpy(text, (const char *)(IMG(0x907b30) + (signed char)game[0x21] * 0x20), 0xd);
@@ -72,7 +72,7 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 		memset(text, 0, sizeof text);
 		itoa((signed char)game[0x23], text, 10);
 		itoa((signed char)game[0x22], other, 10);
-		strcat(text, (const char *)IMG(0x4ad568));   /* " / " */
+		strcat(text, (const char *)STR(0x4ad568, " / "));
 		strcat(text, other);
 		text_draw8(x0 + 0x1bc, y0 + y, text);
 		if (pings) {
@@ -88,7 +88,7 @@ static void game_page(int x1, int y, int pages_count)
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	char page[50] = { 0 }, pages[10] = { 0 };
 	itoa(g_lobbyListPage, page, 10);
-	strcat(page, (const char *)IMG(0x4ad564));   /* "/" */
+	strcat(page, (const char *)STR(0x4ad564, "/"));
 	itoa(pages_count, pages, 10);
 	strcat(page, pages);
 	text_draw16(x1 - (int)strlen(page) * 13 - 0x3c, y, page);
@@ -133,13 +133,13 @@ void (arena_drawGameList)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(bright);
-	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)IMG(0x7524a4));
+	text_draw16(X0 + 0x50, Y0 + 0x10, (const char *)MSG(141, "JOIN ARENA"));
 	int boxed = g_arenaConfirming || g_arenaLeaving || g_arenaFull || g_arenaJoining;
 	for (int k = 0; k < 3; k++) {
 		bind_buttons();
 		int x = X0 + k * 0xb4;
 		button(hovered == k && !boxed, x + 0x23, Y0 + 0x30, x + 0xc3, Y0 + 0x50, 0.4f);
-		text_drawBox16(x + 0x25, Y0 + 0x38, x + 0xc1, (const char *)(IMG(0x752524) + k * 0x80));
+		text_drawBox16(x + 0x25, Y0 + 0x38, x + 0xc1, (const char *)(MSG(142, "SEARCH $[0] IPX") + k * 0x80));
 	}
 	TEXT(bright);
 	static const struct { int x; u32 text; } heads[5] = {
@@ -170,7 +170,7 @@ void (arena_drawGameList)(void)
 		button(lit, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
 		if (g_arenaFull || g_arenaJoining)
 			button(0, x, Y1 - 0x2c, x + 0x78, Y1 - 0xc, 0.4f);
-		text_drawBox16(x, Y1 - 0x24, x + 0x78, (const char *)(IMG(0x7528a4) + k * 0x80));
+		text_drawBox16(x, Y1 - 0x24, x + 0x78, (const char *)(MSG(149, "$[0] JOIN") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
@@ -182,11 +182,11 @@ void (arena_drawGameList)(void)
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)IMG(0x752a24));
+		text_drawBox16(X0, Y1 - 0x4a, X1, (const char *)MSG(152, "SEARCHING FOR THE GAME SERVER"));
 	}
 	glDisable(GL_TEXTURE_2D);
 	if (g_arenaJoining)
-		info_box(IMG(0x74f124), 1);
+		info_box(MSG(38, "TYPE GAME PASSWORD"), 1);
 	if (g_arenaFull)
 		info_box(0x74f624, 0);
 	if (g_arenaConfirming) {
@@ -194,14 +194,14 @@ void (arena_drawGameList)(void)
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)IMG(0x752aa4));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)IMG(0x752b24));
+		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
+		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
-		text_drawBox16(0x104, 0x120, 0x17c, (const char *)IMG(0x751824));
+		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
 	if (g_arenaLeaving) {
 		arenaCreate_hitTest(g_mouseX, g_mouseY);   /* arenaCreate_hitTest (unused) */
@@ -212,13 +212,13 @@ void (arena_drawGameList)(void)
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 		menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)IMG(0x74dfa4));
-		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)IMG(0x74e024));
+		text_drawBox16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
+		text_drawBox16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
 		for (int k = 0; k < 2; k++) {
 			bind_buttons();
 			int x = 0xb4 + k * 0xa0;
 			button(hovered == k, x, 0x104, x + 0x78, 0x124, 0.4f);
-			text_drawBox16(x, 0x10c, x + 0x78, (const char *)(IMG(0x7517a4) + k * 0x80));
+			text_drawBox16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 		}
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -264,10 +264,10 @@ void (gameList_draw)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	TEXT(room_bright);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x759ca4));
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(381, "AXIS LADDER GAME"));
 	static const int heads[5] = { 0x10, 0x114, 0x164, 0x1b4, 0x1fc };
 	for (int c = 0; c < 5; c++)
-		text_draw8(X0 + heads[c], Y0 + 0x38, (const char *)(IMG(0x759d24) + c * 0x80));
+		text_draw8(X0 + heads[c], Y0 + 0x38, (const char *)(MSG(382, "TITLE") + c * 0x80));
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x50, X1 - 0x10, Y0 + 0x50);
 	menu_drawLine(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
@@ -290,7 +290,7 @@ void (gameList_draw)(void)
 		room_button(lit, x, Y1 - 0x32, x + 0x78, Y1 - 0x12, 0.4f);
 		if (g_roomChatting)
 			room_button(0, x, Y1 - 0x32, x + 0x78, Y1 - 0x12, 0.4f);
-		text_drawBox16(x, Y1 - 0x2a, x + 0x78, (const char *)(IMG(0x759fa4) + k * 0x80));
+		text_drawBox16(x, Y1 - 0x2a, x + 0x78, (const char *)(MSG(387, "$[0] JOIN") + k * 0x80));
 	}
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
@@ -303,13 +303,13 @@ void (gameList_draw)(void)
 		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkClock)), (const float *)IMG(0x4a9438))) % 15;
 		float alpha = f32(fmul_m((long double)step, (const float *)IMG(0x4a9434)));
 		set_colour_bits((Colour *)IMG(0x76d438), 0, 0x3f800000, 0, BITS(alpha));
-		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)IMG(0x75a1a4));
+		text_drawBox16(X0, Y1 - 0x57, X1, (const char *)MSG(391, "SEARCHING FOR THE GAME SERVER"));
 	}
 	if (g_roomChatting) {
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(X0 + 0x64, Y0 + 0x96, X1 - 0x64, Y0 + 0x116, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-		text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)IMG(0x74f124));
+		text_drawBox16(X0 + 0x64, Y0 + 0xa6, X1 - 0x64, (const char *)MSG(38, "TYPE GAME PASSWORD"));
 		RECT(0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xc8, Y0 + 0xc8, X1 - 0xc8, Y0 + 0xe8, 1);
 		RECT(0, 0x3f800000, 0x3f800000, 0x3f000000);
@@ -323,15 +323,15 @@ void (gameList_draw)(void)
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawBox16(0x69, 0xdc, 0x217, (const char *)IMG(0x752aa4));
-		text_drawBox16(0x69, 0xf4, 0x217, (const char *)IMG(0x752b24));
+		text_drawBox16(0x69, 0xdc, 0x217, (const char *)MSG(153, "CONNECTING TO THE GAME SERVER"));
+		text_drawBox16(0x69, 0xf4, 0x217, (const char *)MSG(154, "PLEASE WAIT"));
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		room_button(on == 0, 0x104, 0x118, 0x17c, 0x138, 0.7f);
 		glDisable(GL_TEXTURE_2D);
-		text_drawBox16(0x104, 0x120, 0x17c, (const char *)IMG(0x751824));
+		text_drawBox16(0x104, 0x120, 0x17c, (const char *)MSG(116, "$[0] CANCEL"));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -454,11 +454,11 @@ void (arena_drawNameDialog)(void)
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x0 + 0x20, y0 + 0x30, g_arenaNameDialogRight - 0x20, g_arenaNameDialogBottom - 0x20, 0);
 	TEXT(bright);
-	text_draw16(x0 + 0x50, y0 + 0x10, (const char *)IMG(0x751fa4));
+	text_draw16(x0 + 0x50, y0 + 0x10, (const char *)MSG(131, "SETUP PLAYER"));
 	bind_buttons();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	text_draw8(x0 + 0x40, y0 + 0x64, (const char *)IMG(0x752024));
-	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)IMG(0x752124));
+	text_draw8(x0 + 0x40, y0 + 0x64, (const char *)MSG(132, "PLAYER NAME :"));
+	text_draw8(x0 + 0x40, y0 + 0x96, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 	if (!g_paused)
 		text_draw8(x0 + 0xc2, y0 + 0x64, (const char *)IMG(0x4db560));
@@ -466,14 +466,14 @@ void (arena_drawNameDialog)(void)
 		if (hovered == 0 && !g_paused)
 			shadowed(x0 + 0xc1, y0 + 0x63, (const char *)IMG(0x4db560));
 		else if (hovered == 2)
-			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)IMG(0x752124));
+			shadowed(x0 + 0x3f, y0 + 0x95, (const char *)MSG(134, "MOVE TO ARM-CENTER"));
 	}
 	for (int k = 0; k < 3; k++) {
 		int x = g_arenaNameDialogLeft + k * 0x78, y = g_arenaNameDialogTop;
 		bind_buttons();
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		button(hovered == k + 3 && !g_typingArenaName, x + 0x32, y + 0xdc, x + 0x96, y + 0xfc, 0.4f);
-		text_drawBox16(x + 0x32, g_arenaNameDialogTop + 0xe4, x + 0x96, (const char *)(IMG(0x7521a4) + k * 0x80));
+		text_drawBox16(x + 0x32, g_arenaNameDialogTop + 0xe4, x + 0x96, (const char *)(MSG(135, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(g_arenaNameDialogLeft, g_arenaNameDialogTop, g_arenaNameDialogRight, g_arenaNameDialogBottom);

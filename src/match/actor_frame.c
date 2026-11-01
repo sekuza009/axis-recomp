@@ -191,18 +191,18 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
 				if (AI(0x4d8) == 1) {
 					if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-						stage_print(s, (const char *)IMG(0x4b44f8), 5, a + 0x98, points, 5);
+						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, a + 0x98, points, 5);
 					else
-						stage_print(s, (const char *)IMG(0x4b44d4), a + 0x98, 5);
+						stage_print(s, (const char *)STR(0x4b44d4, "YOU FRAGED KING %s, +1(x%d) FRAGS"), a + 0x98, 5);
 					GAME_VAR(int, s + 0x20fce4c) = -1;
 				} else if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-					stage_print(s, (const char *)IMG(0x4b44c4), points);
+					stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 				else
-					stage_print(s, (const char *)IMG(0x4b44bc));
+					stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
 			}
 		} else {
 			AI(0xe4)--;
-			stage_print(s, (const char *)IMG(0x4b44b4));
+			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		}
 	} else if (GAME_VAR(int, s + 0x20f3ad8) == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
 		if (AI(0x4dc) == 1) {
@@ -218,11 +218,11 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			int lt = OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd94c0);
 			if (lt >= 0 && lt != AI(0x118)) {
 				if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-					stage_print(s, (const char *)IMG(0x4b447c), a + 0x98, n, sum);
+					stage_print(s, (const char *)STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG..."), a + 0x98, n, sum);
 				else
-					stage_print(s, (const char *)IMG(0x4b4450), a + 0x98, n);
+					stage_print(s, (const char *)STR(0x4b4450, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG(S)"), a + 0x98, n);
 			} else if (lt == AI(0x118))
-				stage_print(s, (const char *)IMG(0x4b442c), a + 0x98);
+				stage_print(s, (const char *)STR(0x4b442c, "YOUR COMMANDER %s HAS BEEN KILLED!"), a + 0x98);
 			if (AI(0x118) == 0)
 				GAME_VAR(int, s + 0x202e8f4) += n;
 			else
@@ -237,9 +237,9 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		award(s, k, 1, points);
 		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
 			if (GAME_VAR(int, s + 0x20f3ab4) == 1)
-				stage_print(s, (const char *)IMG(0x4b44c4), points);
+				stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 			else
-				stage_print(s, (const char *)IMG(0x4b44bc));
+				stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
 		}
 		int t = OI(AI(0x4c0), 0x1cd94c0);
 		if (t >= 0)
@@ -247,7 +247,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	} else {
 		AI(0xe4)--;
 		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4))
-			stage_print(s, (const char *)IMG(0x4b44b4));
+			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		if (GAME_VAR(int, s + 0x20f3abc) == 1)
 			GAME_VAR(int, s + 0x202e8f0 + AI(0x118) * 4)--;
 	}
@@ -976,7 +976,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (i == GAME_VAR(int, s + 0x202e8d4)) {
 						if (AI(0x4a0) != 0)
 							break;
-						strcpy((char *)(a + 0x4f4), (const char *)IMG(0x4b4528));
+						strcpy((char *)(a + 0x4f4), (const char *)STR(0x4b4528, "OUT OF AMMO!"));
 						AU(0x534) = BITS(*dt);
 						sound_playVolume(0xa5, 0x64);
 					}

@@ -195,7 +195,7 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			break;
 		}
 		default:
-			sys_errorTerminate((const char *)IMG(0x4c4a4c), l->type);
+			sys_errorTerminate((const char *)STR(0x4c4a4c, "light factor type(%d) not yet impleme..."), l->type);
 		}
 	}
 }
@@ -239,7 +239,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		if (kind == 0 || kind == 2)
 			continue;
 		if (kind != 1) {
-			sys_fatalError((char *)IMG(0xae2eb8), (const char *)IMG(0x4c74a8), kind);
+			sys_fatalError((char *)IMG(0xae2eb8), (const char *)STR(0x4c74a8, "light factor type(%d) not yet impleme..."), kind);
 			continue;
 		}
 		for (int row = r0; row <= r1; row++)
@@ -266,7 +266,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 {
 	if (GAME_VAR(int, layer + 0x5c) + 2 > GAME_VAR(int, layer + 0x54))
-		sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4d052c), GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
+		sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)STR(0x4d052c, "primitiveElementIndexHeap overflow(%d..."), GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
 	idx[(*n)++] = r * w + c;
 	GAME_VAR(int, layer + 0x5c)++;
 	idx[(*n)++] = (r + 1) * w + c;
@@ -321,7 +321,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				if (GAME_VAR(u8 *, layer + 0x3c)[r * GAME_VAR(int, layer + 0x20) + c] & 1) {
 					if (!open) {
 						if (GAME_VAR(int, layer + 0x68) >= GAME_VAR(int, layer + 0x60))
-							sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)IMG(0x4d056c), GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
+							sys_fatalErrorN((char *)IMG(0xae2eb8), (const char *)STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce..."), GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
 						prim = (u32 *)(GAME_VAR(u8 *, layer + 0x64) + GAME_VAR(int, layer + 0x68) * 12);
 						GAME_VAR(int, layer + 0x68)++;
 						open = 1;

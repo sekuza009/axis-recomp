@@ -87,7 +87,7 @@ static void first_round(Scene *s)
 		s->levelPoints = g_titlePoints;
 		s->level = actor_levelFromValue(s->levelPoints);
 		if (s->level < 1 || s->level > 20)
-			sys_fatalError((char *)IMG(0xa0e778), (const char *)IMG(0x4d0710), s->level);
+			sys_fatalError((char *)IMG(0xa0e778), (const char *)STR(0x4d0710, "incorrect level(%d) - processGameMode..."), s->level);
 	} else {
 		s->levelPoints = 0;
 		s->level = 1;
@@ -296,7 +296,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
-		sprintf(name, (const char *)IMG(0x4c7410), sky, i);
+		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);
 		FIELD(int, s, 0x9ccfd4 + i * 4) = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts(s + 0x9ccffc);
@@ -404,7 +404,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	skelSet_setup(s + 0x1cbe198, skel_dir, 0x64, 2, 0x15ae0, s + 0x1cbe2c8, 0x186a0);
 	debug_traceStripped((Scene *)s);
 	effect_initTextures(s);
-	static const u32 names[3] = { IMG(0x4c73f4), IMG(0x4c73d8), IMG(0x4c73bc) };
+	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {
 		sprintf(name, (const char *)RELOC(names[k]));
 		FIELD(int, s, 0x20f2f3c + k * 4) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);

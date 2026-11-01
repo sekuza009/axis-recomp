@@ -259,7 +259,7 @@ static void load_map_preview(u32 selected)
 	memset(path, 0, sizeof path);
 	strcpy(path, (const char *)IMG(0x680bc4));   /* the maps' folder */
 	strcat(path, name);
-	strcat(path, (const char *)IMG(0x4ad564));   /* "/" */
+	strcat(path, (const char *)STR(0x4ad564, "/"));
 	strcat(path, name);
 	strcpy(copy, path);
 	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
@@ -746,7 +746,7 @@ static u32 map_preview_box(const int *panel, u32 custom, u32 reload)
 		Color4_set((Colour *)IMG(0x9da480), 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
 		Color4_set((Colour *)IMG(0x76d438), 1.0f, 1.0f, 0.0f, 1.0f);
-		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)IMG(0x4ad56c));
+		text_drawBox16(X0, panel[0] + 0x88, X1, (const char *)STR(0x4ad56c, "CUSTOM"));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;

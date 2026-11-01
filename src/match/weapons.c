@@ -109,9 +109,9 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 			int shield = FIELD(int, t, 0x12c);
 			if (shield >= damage) {
 				FIELD(int, t, 0x12c) = shield - damage;
-				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)IMG(0x4a9758)), (const float *)ADDR(k_0_5f)));
+				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
 			} else {
-				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)IMG(0x4a9758)), (const float *)ADDR(k_0_5f)));
+				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
 				FIELD(int, t, 0x128) += shield - lost - damage;
 				FIELD(int, t, 0x12c) = 0;
 			}

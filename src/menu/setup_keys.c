@@ -83,7 +83,7 @@ static void sound_ok(void)
 	cfg_loadAxisCfg();
 	g_setupPage = 0;
 	music_shutdown();
-	music_play((const char *)IMG(0x4b01cc));                  /* "music/Netsphere.mp3" */
+	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
 }
 
 /* 0x422c60: the sound tab: OK (sound_ok); back or cancel closes the page */

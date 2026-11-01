@@ -70,14 +70,14 @@ u32 (profile_drawMessageWindow)(void)
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	int button = X0 + (X1 - X0) / 2 - 0x32;
 	set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-	text_drawBox16(X0, Y0 + 0x20, X1, (const char *)IMG(0x751d24));
+	text_drawBox16(X0, Y0 + 0x20, X1, (const char *)MSG(126, "NAME ALREADY REGISTRED"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawWideButton(button, Y0 + 0x50, button + 0x60, Y0 + 0x70, 1);
 	set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-	text_drawBox16(button, Y0 + 0x58, button + 0x60, (const char *)IMG(0x7517a4));
+	text_drawBox16(button, Y0 + 0x58, button + 0x60, (const char *)MSG(115, "$[0] O K"));
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
 #undef X0
@@ -115,7 +115,7 @@ static u32 two_buttons(const TwoButtons *d)
 		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
 		menu_drawWideButton(X0 + k * 0x78 + 0x6e, Y0 + 0x3c, X0 + k * 0x78 + 0xce, Y0 + 0x5c, 1);
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(X0 + k * 0x78 + 0x6e, Y0 + 0x44, X0 + k * 0x78 + 0xce, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -129,12 +129,12 @@ static u32 two_buttons(const TwoButtons *d)
    question 0x751e24) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), IMG(0x751da4) };
+	static const TwoButtons d = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 u32 (profile_drawSecondDialog)(void)
 {
-	static const TwoButtons d = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0), FN_ADDR(secondDialog_hitTest, 0x44b360), IMG(0x751e24) };
+	static const TwoButtons d = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 
@@ -155,7 +155,7 @@ u32 (profile_drawNewDialog)(void)
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
 	set_colour_bits((Colour *)IMG(0x76d438), panel[0], panel[1], panel[2], panel[3]);
-	text_draw16(X0 + 0x14, Y0 + 0x10, (const char *)IMG(0x751ca4));
+	text_draw16(X0 + 0x14, Y0 + 0x10, (const char *)MSG(125, "REGISTRY PROFILE"));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -176,7 +176,7 @@ u32 (profile_drawNewDialog)(void)
 			menu_drawWideButton(X0 + 0xa0, Y0 + 0x5a, X0 + 0x100, Y0 + 0x7a, 1);
 			set_colour_bits((Colour *)IMG(0x76d438), dim[0], dim[1], dim[2], dim[3]);
 		}
-		text_drawBox16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(x + 0xa0, Y0 + 0x62, x + 0x100, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return GAME_FN(menu_drawTopRightOrnament, 0x428b50, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the border */
@@ -220,7 +220,7 @@ void (mainmenu_drawScreen)(void)
 	menu_drawRect(X0 + 0x108, Y0 + 0x20, X1 - 0x20, Y1 - 0x40, 0);
 	const u32 *title = PAGE == 1 ? bright : dim;
 	set_colour_bits((Colour *)IMG(0x76d438), title[0], title[1], title[2], title[3]);
-	text_draw16(X0 + 0x20, Y0 + 0xa, (const char *)IMG(0x751a24));
+	text_draw16(X0 + 0x20, Y0 + 0xa, (const char *)MSG(120, "PROFILE MANAGEMENT"));
 	for (int k = 0; k < 4; k++) {
 		int x = X0 + k * 0x72;
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -245,7 +245,7 @@ void (mainmenu_drawScreen)(void)
 		int texture = g_buttonTexture;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		menu_drawWideButton(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
-		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(IMG(0x751aa4) + k * 0x80));
+		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(MSG(121, "$[0] NEW") + k * 0x80));
 	}
 	GAME_FN(profileList_drawNames, 0x44ce90, void, void)();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
@@ -261,7 +261,7 @@ void (mainmenu_drawScreen)(void)
 	else
 		glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
-	const char *version = (const char *)IMG(0x4b0384);
+	const char *version = (const char *)STR(0x4b0384, "Axis v1.03");
 	text_draw5((0x69 - (int)strlen(version)) * 6, 0x1d6, version);
 #undef X0
 #undef Y0
@@ -285,7 +285,7 @@ static void pilot_stats(int pilot, int x, int y, int step)
 			pad = strlen(text) < 2 ? 0x10 : 8;
 		else
 			pad = strlen(text) < 3 ? 8 : 0;
-		strcat(text, (const char *)IMG(0x4b3e2c));
+		strcat(text, (const char *)STR(0x4b3e2c, "%"));
 		text_draw8(x + pad, y + k * step, text);
 	}
 }
@@ -347,7 +347,7 @@ void (profile_drawPilotSelect)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)IMG(0x76d438), panel[0], panel[1], panel[2], panel[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x75e7a4));
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(531, "CHARACTER SELECT"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	/* the portraits */
@@ -426,11 +426,11 @@ void (profile_drawPilotSelect)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x130, Y0 + 0x40, X0 + 0x22a, Y0 + 0x158, 0);
 	for (int k = 0; k < 13; k++)
-		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(IMG(0x75e824) + k * 0x80));
+		text_draw8(X0 + 0x138, Y0 + k * 0x15 + 0x48, (const char *)(MSG(532, "NAME :") + k * 0x80));
 	set_colour_bits((Colour *)IMG(0x76d438), 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 	text_draw8(X0 + 0x184, Y0 + 0x5d, (const char *)PILOT(g_pilot) + 0x10);
-	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(IMG(0x75eea4) + *(const int *)(PILOT(g_pilot) + 0x20) * 0x80));
+	text_draw8(X0 + 0x184, Y0 + 0x72, (const char *)(MSG(545, "RESERVED") + *(const int *)(PILOT(g_pilot) + 0x20) * 0x80));
 	char text[20];
 	itoa(*(const int *)(PILOT(g_pilot) + 0x24), text, 10);
 	text_draw8(X0 + 0x184, Y0 + 0x87, text);
@@ -447,7 +447,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 		menu_drawWideButton(bx + 0xaa, Y1 - 0x40, bx + 0x122, Y1 - 0x20, 1);
 		const u32 *colour = lit ? panel : dim;
 		set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-		text_drawBox16(bx + 0xaa, Y1 - 0x38, bx + 0x122, (const char *)(IMG(0x7517a4) + k * 0x80));
+		text_drawBox16(bx + 0xaa, Y1 - 0x38, bx + 0x122, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawCornerOrnaments(X0, Y0, X1, Y1);
@@ -484,7 +484,7 @@ void (profile_drawChosenPilot)(void)
 		set_colour_bits((Colour *)IMG(0x76d438), BITS(r), BITS(g), BITS(b), BITS(panel[3]));
 	}
 	for (int k = 0; k < 13; k++)
-		text_draw8(X0 + 0x10c, Y0 + k * 0x14 + 0x24, (const char *)(IMG(0x75e824) + k * 0x80));
+		text_draw8(X0 + 0x10c, Y0 + k * 0x14 + 0x24, (const char *)(MSG(532, "NAME :") + k * 0x80));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_characterTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -498,7 +498,7 @@ void (profile_drawChosenPilot)(void)
 	set_colour_bits((Colour *)IMG(0x76d438), text_grey, text_grey, text_grey, 0x3f800000);
 	text_draw8(X0 + 0x14e, Y0 + 0x24, (const char *)PILOT(g_chosenPilot));
 	text_draw8(X0 + 0x14e, X0 + 0x38, (const char *)PILOT(g_chosenPilot) + 0x10);
-	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(IMG(0x75eea4) + *(const int *)(PILOT(g_chosenPilot) + 0x20) * 0x80));
+	text_draw8(X0 + 0x14e, X0 + 0x4c, (const char *)(MSG(545, "RESERVED") + *(const int *)(PILOT(g_chosenPilot) + 0x20) * 0x80));
 	char text[20];
 	itoa(*(const int *)(PILOT(g_chosenPilot) + 0x24), text, 10);
 	text_draw8(X0 + 0x14e, Y0 + 0x60, text);

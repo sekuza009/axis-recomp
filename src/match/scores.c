@@ -93,7 +93,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 				continue;
 			if (i == scene->ranking[0]) {
 				if (p->markSolo == 0)
-					mark_notice(scene, i, IMG(0x4c4644), IMG(0x4c4630));
+					mark_notice(scene, i, STR(0x4c4644, "YOU ARE THE NEW KING!"), STR(0x4c4630, "%s IS THE NEW KING!"));
 				p->markSolo = 1;
 				player_setTeam(STAGE(scene), i, 0);
 				scene->kingPlayer = i;
@@ -130,7 +130,7 @@ void THISCALL (msg_newKing)(Scene *scene)
 				p->markTeam = 0;
 			else if (p->markTeam == 0) {
 				p->markTeam = 1;
-				mark_notice(scene, i, IMG(0x4c4614), IMG(0x4c45f8));
+				mark_notice(scene, i, STR(0x4c4614, "YOU ARE THE NEW COMMANDER!"), STR(0x4c45f8, "%s IS THE NEW COMMANDER!"));
 			}
 		}
 		scene->teamLeaders[t] = leader;

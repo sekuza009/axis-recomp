@@ -124,7 +124,7 @@ void (menuState100_intro)(void)
 	g_tunnelPulseStep = 0x3f800000;
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
-	music_play((const char *)IMG(0x4b01cc));   /* "music/Netsphere.mp3" */
+	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
 	static const u32 clocks[] = { IMG(0x4dd560), IMG(0x4dd0a8), IMG(0x4dd080), ADDR(g_lastFrameClock) };   /* four doubles */
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, clocks[i]) = 0;
@@ -158,7 +158,7 @@ void (mapSelect_drawDialog)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)IMG(0x74e8a4));
+	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(21, "SELECT RECORDED GAME"));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
 	glEnable(GL_TEXTURE_2D);
@@ -178,7 +178,7 @@ void (mapSelect_drawDialog)(void)
 			menu_drawRect(X0 + 0x12, y + 2, X0 + 0x1d, y + 0xd, 1);
 		}
 		set_colour_bits((Colour *)IMG(0x76d438), bright[0], bright[1], bright[2], bright[3]);
-		text_draw16(X0 + 0x28, k ? y : y + 2, (const char *)(IMG(0x74e924) + k * 0x80));   /* (the second label 2 higher) */
+		text_draw16(X0 + 0x28, k ? y : y + 2, (const char *)(MSG(22, "AUTO REPEAT") + k * 0x80));   /* (the second label 2 higher) */
 	}
 	for (int row = 0; row < 2; row++)
 		for (int k = 0; k < 2; k++) {
@@ -191,7 +191,7 @@ void (mapSelect_drawDialog)(void)
 			menu_drawWideButton(x + 0x64, y, x + 0xdc, y + 0x20, 1);
 			const u32 *colour = lit ? bright : dim;
 			set_colour_bits((Colour *)IMG(0x76d438), colour[0], colour[1], colour[2], colour[3]);
-			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(IMG(0x74ea24) + row * 0x100 + k * 0x80));
+			text_drawBox16(x + 0x64, y + 8, x + 0xdc, (const char *)(MSG(24, "$[0] ALL FILES") + row * 0x100 + k * 0x80));
 		}
 	if (hovered > 7 && hovered < 0x12) {
 		set_colour_bits(g_rectColour, 0x3dcccccd, 0x3e99999a, 0x3f800000, 0x3e99999a);   /* 0.1, 0.3, 1, 0.3 */
@@ -754,7 +754,7 @@ u32 (game_postMatch)(void)
 	default:
 		game_returnToMainMenu();
 	}
-	r = GAME_FN(music_play, 0x457150, u32, const char *)((const char *)IMG(0x4b01cc));   /* music_play */
+	r = GAME_FN(music_play, 0x457150, u32, const char *)((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));   /* music_play */
 message:
 	if (g_mapMissing) {
 		r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(6);
