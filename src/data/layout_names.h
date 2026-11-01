@@ -155,7 +155,7 @@ extern struct GameData g_data;
 #undef g_argCount
 #define g_argCount (*(int *)g_argCount_v)
 #undef g_armcBuildTexture
-#define g_armcBuildTexture (g_data.g_armcBuildTexture_)
+#define g_armcBuildTexture (*(int *)g_armcBuildTexture_v)
 #undef g_armcCamDistance
 #define g_armcCamDistance (g_data.g_armcCamDistance_)
 #undef g_armcCamHeight
@@ -165,7 +165,7 @@ extern struct GameData g_data;
 #undef g_armcColours
 #define g_armcColours ((float *)g_data.g_armcColours_)
 #undef g_armcCursor
-#define g_armcCursor (g_data.g_armcCursor_)
+#define g_armcCursor (*(int *)g_armcCursor_v)
 #undef g_armcEnterStep
 #define g_armcEnterStep (*(int *)g_armcEnterStep_v)
 #undef g_armcEnterStepF
@@ -207,7 +207,7 @@ extern struct GameData g_data;
 #undef g_armcParts
 #define g_armcParts ((int *)g_armcParts_v)
 #undef g_armcPreview
-#define g_armcPreview (g_data.g_armcPreview_)
+#define g_armcPreview (*(int *)g_armcPreview_v)
 #undef g_armcSessionMade
 #define g_armcSessionMade (*(int *)g_armcSessionMade_v)
 #undef g_armcSliderLeft
@@ -217,17 +217,17 @@ extern struct GameData g_data;
 #undef g_armcSpin
 #define g_armcSpin (g_data.g_armcSpin_)
 #undef g_armcState
-#define g_armcState (g_data.g_armcState_)
+#define g_armcState (*(int *)g_armcState_v)
 #undef g_armcStatsPanelBottom
-#define g_armcStatsPanelBottom (g_data.g_armcStatsPanelBottom_)
+#define g_armcStatsPanelBottom (*(int *)g_armcStatsPanelBottom_v)
 #undef g_armcStatsPanelLeft
-#define g_armcStatsPanelLeft (g_data.g_armcStatsPanelLeft_)
+#define g_armcStatsPanelLeft (*(int *)g_armcStatsPanelLeft_v)
 #undef g_armcStatsPanelTop
-#define g_armcStatsPanelTop (g_data.g_armcStatsPanelTop_)
+#define g_armcStatsPanelTop (*(int *)g_armcStatsPanelTop_v)
 #undef g_armcTabColour
 #define g_armcTabColour ((u32 *)g_armcTabColour_v)
 #undef g_armcUnusedFlag
-#define g_armcUnusedFlag (g_data.g_armcUnusedFlag_)
+#define g_armcUnusedFlag (*(int *)g_armcUnusedFlag_v)
 #undef g_armcValue
 #define g_armcValue (g_data.g_armcValue_)
 #undef g_armcViewPoint0Y
@@ -243,7 +243,7 @@ extern struct GameData g_data;
 #undef g_armsStats
 #define g_armsStats ((int *)g_armsStats_v)
 #undef g_armsWeight
-#define g_armsWeight (g_data.g_armsWeight_)
+#define g_armsWeight (*(float *)g_armsWeight_v)
 #undef g_bestLevelNet
 #define g_bestLevelNet (*(int *)g_bestLevelNet_v)
 #undef g_bestProgressSolo
@@ -539,11 +539,11 @@ extern struct GameData g_data;
 #undef g_dpConnections
 #define g_dpConnections ((int *)g_dpConnections_v)
 #undef g_dpMaxBufferSize
-#define g_dpMaxBufferSize (g_data.g_dpMaxBufferSize_)
+#define g_dpMaxBufferSize (*(u32 *)g_dpMaxBufferSize_v)
 #undef g_dpMaxQueueSize
-#define g_dpMaxQueueSize (g_data.g_dpMaxQueueSize_)
+#define g_dpMaxQueueSize (*(u32 *)g_dpMaxQueueSize_v)
 #undef g_dpTimeout
-#define g_dpTimeout (g_data.g_dpTimeout_)
+#define g_dpTimeout (*(u32 *)g_dpTimeout_v)
 #undef g_dplay
 #define g_dplay (*(void * *)g_dplay_v)
 #undef g_dplayLobby
@@ -577,7 +577,7 @@ extern struct GameData g_data;
 #undef g_effectsVolume
 #define g_effectsVolume (g_data.g_effectsVolume_)
 #undef g_emptyItemSlot0
-#define g_emptyItemSlot0 (g_data.g_emptyItemSlot0_)
+#define g_emptyItemSlot0 (*(int *)g_emptyItemSlot0_v)
 #undef g_enteringMenus
 #define g_enteringMenus (*(int *)g_enteringMenus_v)
 #undef g_errorCleanupHook
@@ -673,7 +673,7 @@ extern struct GameData g_data;
 #undef g_headWeight
 #define g_headWeight (g_data.g_headWeight_)
 #undef g_hostAddressBlock
-#define g_hostAddressBlock (g_data.g_hostAddressBlock_)
+#define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostResultFlag
 #define g_hostResultFlag (g_data.g_hostResultFlag_)
 #undef g_inputFont
@@ -687,13 +687,13 @@ extern struct GameData g_data;
 #undef g_introZoom
 #define g_introZoom (*(float *)g_introZoom_v)
 #undef g_isHost
-#define g_isHost (g_data.g_isHost_)
+#define g_isHost (*(int *)g_isHost_v)
 #undef g_itemBonusActiveTime
-#define g_itemBonusActiveTime (g_data.g_itemBonusActiveTime_)
+#define g_itemBonusActiveTime (*(float *)g_itemBonusActiveTime_v)
 #undef g_itemBonusCapacityPerLevel
-#define g_itemBonusCapacityPerLevel (g_data.g_itemBonusCapacityPerLevel_)
+#define g_itemBonusCapacityPerLevel (*(float *)g_itemBonusCapacityPerLevel_v)
 #undef g_itemBonusDetectionRange
-#define g_itemBonusDetectionRange (g_data.g_itemBonusDetectionRange_)
+#define g_itemBonusDetectionRange (*(float *)g_itemBonusDetectionRange_v)
 #undef g_itemBonusHacking
 #define g_itemBonusHacking (g_data.g_itemBonusHacking_)
 #undef g_itemBonusLockOn
@@ -779,7 +779,7 @@ extern struct GameData g_data;
 #undef g_lobbyConnectStatus
 #define g_lobbyConnectStatus (g_data.g_lobbyConnectStatus_)
 #undef g_lobbyConnectionBlock
-#define g_lobbyConnectionBlock (g_data.g_lobbyConnectionBlock_)
+#define g_lobbyConnectionBlock (*(void * *)g_lobbyConnectionBlock_v)
 #undef g_lobbyConnectionOpen
 #define g_lobbyConnectionOpen (*(int *)g_lobbyConnectionOpen_v)
 #undef g_lobbyJoinRequest
@@ -865,7 +865,7 @@ extern struct GameData g_data;
 #undef g_mainMenuDepth
 #define g_mainMenuDepth (g_data.g_mainMenuDepth_)
 #undef g_mainMenuFadingIn
-#define g_mainMenuFadingIn (g_data.g_mainMenuFadingIn_)
+#define g_mainMenuFadingIn (*(int *)g_mainMenuFadingIn_v)
 #undef g_mainMenuFrames
 #define g_mainMenuFrames (g_data.g_mainMenuFrames_)
 #undef g_mainMenuPicked
@@ -949,9 +949,9 @@ extern struct GameData g_data;
 #undef g_mciTo
 #define g_mciTo (*(u32 *)g_mciTo_v)
 #undef g_mechBoosterEnergy
-#define g_mechBoosterEnergy (g_data.g_mechBoosterEnergy_)
+#define g_mechBoosterEnergy (*(float *)g_mechBoosterEnergy_v)
 #undef g_mechBoosterRecharge
-#define g_mechBoosterRecharge (g_data.g_mechBoosterRecharge_)
+#define g_mechBoosterRecharge (*(float *)g_mechBoosterRecharge_v)
 #undef g_mechChanged
 #define g_mechChanged (*(int *)g_mechChanged_v)
 #undef g_mechDetectionRange
@@ -969,7 +969,7 @@ extern struct GameData g_data;
 #undef g_mechMaxSpeedBwd
 #define g_mechMaxSpeedBwd (g_data.g_mechMaxSpeedBwd_)
 #undef g_mechMobility
-#define g_mechMobility (g_data.g_mechMobility_)
+#define g_mechMobility (*(float *)g_mechMobility_v)
 #undef g_mechNormalSpeed
 #define g_mechNormalSpeed (g_data.g_mechNormalSpeed_)
 #undef g_mechPartStats
@@ -1235,7 +1235,7 @@ extern struct GameData g_data;
 #undef g_pilotWinsKept
 #define g_pilotWinsKept (g_data.g_pilotWinsKept_)
 #undef g_pingDataEvent
-#define g_pingDataEvent (g_data.g_pingDataEvent_)
+#define g_pingDataEvent (*(void * *)g_pingDataEvent_v)
 #undef g_pingStopEvent
 #define g_pingStopEvent (*(void * *)g_pingStopEvent_v)
 #undef g_pingThread
@@ -1381,7 +1381,7 @@ extern struct GameData g_data;
 #undef g_replayRandomOrder
 #define g_replayRandomOrder (g_data.g_replayRandomOrder_)
 #undef g_replayRunning
-#define g_replayRunning (g_data.g_replayRunning_)
+#define g_replayRunning (*(int *)g_replayRunning_v)
 #undef g_replayWrap
 #define g_replayWrap (g_data.g_replayWrap_)
 #undef g_resultMessage
@@ -1563,7 +1563,7 @@ extern struct GameData g_data;
 #undef g_serverAddress
 #define g_serverAddress ((char *)g_data.g_serverAddress_)
 #undef g_serverAnswerIn
-#define g_serverAnswerIn (g_data.g_serverAnswerIn_)
+#define g_serverAnswerIn (*(int *)g_serverAnswerIn_v)
 #undef g_serverConnected
 #define g_serverConnected (g_data.g_serverConnected_)
 #undef g_serverConnectionState
@@ -1709,11 +1709,11 @@ extern struct GameData g_data;
 #undef g_titleWins
 #define g_titleWins (*(int *)g_titleWins_v)
 #undef g_totalWeight
-#define g_totalWeight (g_data.g_totalWeight_)
+#define g_totalWeight (*(float *)g_totalWeight_v)
 #undef g_tunnelFlyingIn
 #define g_tunnelFlyingIn (g_data.g_tunnelFlyingIn_)
 #undef g_tunnelPulseStep
-#define g_tunnelPulseStep (g_data.g_tunnelPulseStep_)
+#define g_tunnelPulseStep (*(u32 *)g_tunnelPulseStep_v)
 #undef g_tunnelRings
 #define g_tunnelRings (*(int *)g_tunnelRings_v)
 #undef g_typedArenaName
@@ -1745,7 +1745,7 @@ extern struct GameData g_data;
 #undef g_undoDepth
 #define g_undoDepth (*(int *)g_undoDepth_v)
 #undef g_unlockedLevel
-#define g_unlockedLevel (g_data.g_unlockedLevel_)
+#define g_unlockedLevel (*(int *)g_unlockedLevel_v)
 #undef g_unusedArmcMoveWord
 #define g_unusedArmcMoveWord (*(u32 *)g_unusedArmcMoveWord_v)
 #undef g_unusedArmcWord1
@@ -1781,7 +1781,7 @@ extern struct GameData g_data;
 #undef g_unusedMainMenuWord
 #define g_unusedMainMenuWord (g_data.g_unusedMainMenuWord_)
 #undef g_unusedMechStat
-#define g_unusedMechStat (g_data.g_unusedMechStat_)
+#define g_unusedMechStat (*(int *)g_unusedMechStat_v)
 #undef g_unusedMenuReturnWord
 #define g_unusedMenuReturnWord (*(int *)g_unusedMenuReturnWord_v)
 #undef g_unusedMissionSaveWord
