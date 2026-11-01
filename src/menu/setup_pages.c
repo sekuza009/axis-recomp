@@ -469,7 +469,7 @@ void (setup_drawTunnel)(void)
 			texture = g_menuTunnelTexture;
 		} else if (layer == 3) {
 			glColor4f(1.0f, 1.0f, 1.0f, f32(fadd_m(fld_m(&g_setupTunnelAlpha), (const float *)ADDR(k_0_2f))));
-			texture = GAME_VAR(int, 0x5b1984 - layer * 4);
+			texture = GAME_VAR(int, OBJ(g_ctrlMenuTextures) + 12 - layer * 4);
 		} else
 			continue;
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -556,7 +556,7 @@ void (setup_drawTunnel)(void)
    purple, the stripes red, layer 2 drawn (fully transparent) */
 typedef struct {
 	u32 depth;             /* how far the walls are pushed back (float bits) */
-	u32 textures;          /* layer 2's and 3's textures from here, 4 down a layer */
+	u32 textures;          /* layer 2's and 3's textures from here, 4 down a layer: a menu's texture pair + 12 */
 	int deep;              /* purple panels, red stripes */
 	int layer2;            /* layer 2 drawn (fully transparent) */
 	int clamp;
@@ -710,22 +710,22 @@ static const Highlight none = { -1, NULL, 0, 0, 0 };
 static const float white[3] = { 1.0f, 1.0f, 1.0f };
 #define SIX_WALLS 6, (const float *)ADDR(k_10f), k_0_15625f, 0.46875f, 0.625f
 #define FOUR_WALLS 4, k_12f, (const float *)ADDR(k_0_25f), 0.5f, 0.75f
-void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, ADDR(g_searchResult), 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
-void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, IMG(0x4df910), 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (missionsel_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 0, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (skirmish_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawTunnel)(void) { static const Tunnel t = { 0xc4098000, OBJ(g_mainMenuTextures) + 12, 0, 0, 1, 0, SIX_WALLS }; menu_tunnel(&t, &none); }
+void (armc_drawPreviewTunnel)(void) { static const Tunnel t = { 0xc4ce4000, OBJ(g_ladderMenuTextures) + 12, 1, 1, 0, 1, SIX_WALLS }; menu_tunnel(&t, &none); }
 void (room_drawTunnel)(void)
 {
 	static const float glow[3] = { 0.5f, 0.1f, 1.0f };   /* (no wall glows: the original compares with -1) */
 	static const Highlight h = { -1, glow, 0, 0, 0 };
-	Tunnel t = { g_roomTunnelDepth, IMG(0x4df910), 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 }
 /* 0x4091b0: the arena lobby's (as deep as 0x4dba68; four walls) */
 void (arena_drawTunnel)(void)
 {
 	static const Highlight h = { -1, white, 0, 0, 0 };
-	Tunnel t = { g_arenaTunnelDepth, IMG(0x4df04c), 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 }
 
@@ -765,7 +765,7 @@ void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
 	Highlight h = { hovered_panel(IMG(0x9daf88), 6, g_roomDialogOpen), glow, 0, 0, 0 };
-	Tunnel t = { g_roomTunnelDepth, IMG(0x4df910), 1, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomMode == 2)
 		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
@@ -777,7 +777,7 @@ void (room_drawMenu)(void)
 void (lobbyTop_drawTitle)(void)
 {
 	Highlight h = { hovered_panel(IMG(0x5b1cf8), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
-	Tunnel t = { g_arenaTunnelDepth, IMG(0x4df04c), 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_keysBlocked)
 		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
@@ -789,7 +789,7 @@ void (lobbyTop_drawTitle)(void)
 void (setup_drawMenu)(void)
 {
 	Highlight h = { hovered_panel(IMG(0x4df918), 4, g_setupPanelMoving), white, 1, 0, 0 };
-	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
+	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), OBJ(g_ctrlMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_setupPage == 2 && !g_keysBlocked)
 		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
@@ -840,7 +840,7 @@ void (menu_mainMenu)(void)
 		}
 	}
 	Highlight h = { on, white, 1, 1, 1 };
-	Tunnel t = { (*(u32 *)&g_depth), ADDR(g_searchResult), 0, 1, 1, 0, SIX_WALLS };
+	Tunnel t = { (*(u32 *)&g_depth), OBJ(g_mainMenuTextures) + 12, 0, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (on != -1) {
 		if (!g_keysBlocked)

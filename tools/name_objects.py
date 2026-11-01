@@ -58,6 +58,15 @@ for f in files:
 				return '(OBJ(%s) + 0x%x)' % (name, v - a)
 			return m.group(0)
 		t = re.sub(r'\bIMG\((0x[0-9a-f]+)\)', inside, t)
+	# a bare number at or inside a new object, outside IMG() (GAME_VAR(int, 0x... - k * 4) and the like): not
+	# rewritten - written by hand, else that access stays at the old place once the object is split
+	for i, l in enumerate(t.split('\n')):
+		code = re.sub(r'/\*.*?\*/|//.*|"(?:\\.|[^"\\])*"|\bIMG\(0x[0-9a-f]+\)|#define\s+\w+\s+\(\([^)]*\)IMG\(0x[0-9a-f]+\)\)', '', l)
+		for m in re.finditer(r'\b0x0*([0-9a-f]{6})\b', code):
+			v = int(m.group(1), 16)
+			for a, ty, n, name, note in rows:
+				if a <= v < a + SIZES[ty] * n:
+					print('WRITE BY HAND: %s:%d 0x%x is in %s: %s' % (f, i + 1, v, name, l.strip()[:100]))
 	if t != orig:
 		count += 1
 		if '--dry' not in sys.argv:

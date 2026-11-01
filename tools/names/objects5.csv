@@ -1,0 +1,8 @@
+# the menus' texture ids (app/loading.c, menu_loadIntroTextures); a menu tunnel's textures base is its pair + 12 (layer 3
+# reads pair[0], layer 2 pair[1]: menu/setup_pages.c, menu_tunnel)
+0x9dad6c,int,8,g_introTextures,the intro frames (m_intro1 .. 4, m2_intro1 .. 4: the load loop's 8)
+0x76d478,int,2,g_mainMenuTextures,mainmenu01 / 02 (the main, mission select, skirmish and ARM CENTER tunnels)
+0x4df040,int,2,g_arenaMenuTextures,arenamenu01 / 02 (the arena lobby's tunnel)
+0x5b1978,int,2,g_ctrlMenuTextures,ctrlmenu01 / 02 (the setup tunnel)
+0x4df904,int,2,g_ladderMenuTextures,laddermenu01 / 02 (the room's and the ARM CENTER preview's tunnel)
+0x9da45c,int,6,g_spiralTextures,the six spirals

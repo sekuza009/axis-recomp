@@ -475,7 +475,7 @@ void (armc_drawPanels)(void)
 		gfx_setMenuCamera();
 		glScalef_bits(0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd);   /* 0.8 */
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		int texture = GAME_VAR(int, 0x9da470 - k * 4);
+		int texture = GAME_VAR(int, OBJ(g_spiralTextures) + 0x14 - k * 4);   /* (spirals 5 .. 1) */
 		tex_bind(g_textures->managers[texture / 512], texture % 512);
 		Panel *p = &g_panels[k];
 		if (k == 2)

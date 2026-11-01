@@ -2490,9 +2490,7 @@ struct __attribute__((packed)) GameData {
 	int g_desktopHeight_;
 	u8 _gap_76d434[0x4];
 	u8 g_textColour_[16];
-	u8 _gap_76d448[0x3c];
-	int g_searchResult_;
-	u8 _gap_76d488[0x4];
+	u8 _gap_76d448[0x44];
 	int g_dikEscape_2_;
 	int g_dikWheelUp_;
 	u8 _gap_76d494[0x4];
@@ -3263,7 +3261,6 @@ _Static_assert(offsetof(struct GameData, g_dikMouse2_) == 0x2c0424, "g_dikMouse2
 _Static_assert(offsetof(struct GameData, g_menuFrameCounter_) == 0x2c0428, "g_menuFrameCounter");
 _Static_assert(offsetof(struct GameData, g_desktopHeight_) == 0x2c0430, "g_desktopHeight");
 _Static_assert(offsetof(struct GameData, g_textColour_) == 0x2c0438, "g_textColour");
-_Static_assert(offsetof(struct GameData, g_searchResult_) == 0x2c0484, "g_searchResult");
 _Static_assert(offsetof(struct GameData, g_dikEscape_2_) == 0x2c048c, "g_dikEscape_2");
 _Static_assert(offsetof(struct GameData, g_dikWheelUp_) == 0x2c0490, "g_dikWheelUp");
 _Static_assert(offsetof(struct GameData, g_staticTex128x128_) == 0x2c0498, "g_staticTex128x128");

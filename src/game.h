@@ -101,7 +101,7 @@
 /* the 3D background (menu_tunnel.c) */
 #define g_texturesOff GAME_VAR(int, 0x9da494)        /* (by use) set: the menus' 3D background is drawn untextured (left out) */
 #define g_tunnelTexture GAME_VAR(int, 0x4e186c)
-#define g_flareTextures ((const int *)IMG(0x9da470))     /* flare k's texture is g_flareTextures[-k] */
+#define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
 #define g_cageTexture GAME_VAR(int, 0x76d36c)
 #define g_pulse GAME_VAR(float, 0x4b06fc)            /* the bands' colour pulse, 0.05 .. 0.95 */
 #define g_pulseStep GAME_VAR(float, 0x4b0700)
@@ -619,7 +619,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_titleShown GAME_VAR(int, 0x4df01c)
 #define g_titleFrames GAME_VAR(int, 0x4e0458)        /* frames the title has been shown */
 /* the title emblem (menu_title.c) */
-#define g_titleTextures ((const int *)IMG(0x9dad6c))     /* eight: the base picture's quarters, then the pulsing layer's */
+#define g_titleTextures (g_introTextures)     /* eight: the base picture's quarters, then the pulsing layer's */
 #define g_titleSpread ((const int *)IMG(0x4b065c))       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
 #define g_emblemAlpha GAME_VAR(float, 0x4de1e0)      /* the pulsing layer's alpha (0.2 .. 0.9) */
 #define g_emblemPulse GAME_VAR(float, 0x4de1d8)      /* its change per time unit (+-0.018) */

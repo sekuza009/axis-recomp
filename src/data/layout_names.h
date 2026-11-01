@@ -112,6 +112,8 @@ extern struct GameData g_data;
 #define g_arenaMap (g_data.g_arenaMap_)
 #undef g_arenaMapCount
 #define g_arenaMapCount (g_data.g_arenaMapCount_)
+#undef g_arenaMenuTextures
+#define g_arenaMenuTextures ((int *)g_arenaMenuTextures_v)
 #undef g_arenaMessageText
 #define g_arenaMessageText (g_data.g_arenaMessageText_)
 #undef g_arenaMessageText4
@@ -396,6 +398,8 @@ extern struct GameData g_data;
 #define g_crosshairSetting (g_data.g_crosshairSetting_)
 #undef g_crosshairTexture
 #define g_crosshairTexture (*(int *)g_crosshairTexture_v)
+#undef g_ctrlMenuTextures
+#define g_ctrlMenuTextures ((int *)g_ctrlMenuTextures_v)
 #undef g_currentProfile
 #define g_currentProfile (g_data.g_currentProfile_)
 #undef g_currentStageName
@@ -660,6 +664,8 @@ extern struct GameData g_data;
 #define g_insertCdMessage (*(const char * *)g_insertCdMessage_v)
 #undef g_instanceGuid
 #define g_instanceGuid (*(const void * *)g_instanceGuid_v)
+#undef g_introTextures
+#define g_introTextures ((int *)g_introTextures_v)
 #undef g_introZoom
 #define g_introZoom (g_data.g_introZoom_)
 #undef g_isHost
@@ -720,6 +726,8 @@ extern struct GameData g_data;
 #define g_keySeen ((int *)g_keySeen_v)
 #undef g_keyWatchChat
 #define g_keyWatchChat (g_data.g_keyWatchChat_)
+#undef g_ladderMenuTextures
+#define g_ladderMenuTextures ((int *)g_ladderMenuTextures_v)
 #undef g_ladderPort
 #define g_ladderPort (g_data.g_ladderPort_)
 #undef g_lanSearch
@@ -842,6 +850,8 @@ extern struct GameData g_data;
 #define g_mainMenuFrames (g_data.g_mainMenuFrames_)
 #undef g_mainMenuPicked
 #define g_mainMenuPicked (g_data.g_mainMenuPicked_)
+#undef g_mainMenuTextures
+#define g_mainMenuTextures ((int *)g_mainMenuTextures_v)
 #undef g_mainWindow
 #define g_mainWindow (g_data.g_mainWindow_)
 #undef g_mapEntry22On
@@ -1515,7 +1525,7 @@ extern struct GameData g_data;
 #undef g_screenCentreY
 #define g_screenCentreY (g_data.g_screenCentreY_)
 #undef g_searchResult
-#define g_searchResult (g_data.g_searchResult_)
+#define g_searchResult (*(int *)g_searchResult_v)
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (g_data.g_sensitivitySlider_)
 #undef g_serverAddress
@@ -1596,6 +1606,8 @@ extern struct GameData g_data;
 #define g_soundToggle7 (g_data.g_soundToggle7_)
 #undef g_soundVolume
 #define g_soundVolume (g_data.g_soundVolume_)
+#undef g_spiralTextures
+#define g_spiralTextures ((int *)g_spiralTextures_v)
 #undef g_startTicks
 #define g_startTicks (*(u32 *)g_startTicks_v)
 #undef g_startedByLauncher

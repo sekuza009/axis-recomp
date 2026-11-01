@@ -171,7 +171,7 @@ void (menu_loadIntroTextures)(void)
 	next_step();
 	timer_waitFrames(2.0);
 	for (int k = 0; k < 8; k++) {
-		((int *)IMG(0x9dad6c))[k] = T(intro[k]);
+		(g_introTextures)[k] = T(intro[k]);
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
@@ -179,15 +179,15 @@ void (menu_loadIntroTextures)(void)
 		next_step();
 	}
 	for (int k = 0; k < 2; k++) {
-		((int *)IMG(0x76d478))[k] = T(mainmenu[k]);
-		((int *)IMG(0x4df040))[k] = T(arenamenu[k]);
+		(g_mainMenuTextures)[k] = T(mainmenu[k]);
+		(g_arenaMenuTextures)[k] = T(arenamenu[k]);
 		next_step();
-		((int *)IMG(0x5b1978))[k] = T(ctrlmenu[k]);
-		((int *)IMG(0x4df904))[k] = T(laddermenu[k]);
+		(g_ctrlMenuTextures)[k] = T(ctrlmenu[k]);
+		(g_ladderMenuTextures)[k] = T(laddermenu[k]);
 		next_step();
 	}
 	for (int k = 0; k < 6; k++) {
-		((int *)IMG(0x9da45c))[k] = T(spiral[k]);
+		(g_spiralTextures)[k] = T(spiral[k]);
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {

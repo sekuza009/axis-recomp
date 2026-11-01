@@ -258,3 +258,11 @@ g_viewNear
 g_watchChatOpen
 g_watchedSlot
 g_writeMatchLog
+# the menus' texture ids (objects5.csv); g_searchResult once the tunnels' bases were written from the pairs
+g_introTextures
+g_mainMenuTextures
+g_arenaMenuTextures
+g_ctrlMenuTextures
+g_ladderMenuTextures
+g_spiralTextures
+g_searchResult
