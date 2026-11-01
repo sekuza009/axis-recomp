@@ -4,29 +4,8 @@ g_lastTime   # its old place written (canary): reached at its old place by addre
 g_mouse2Down   # its old place written (canary): reached at its old place by address
 g_mouse3Down   # its old place written (canary): reached at its old place by address
 g_textureSetHeight   # its old place written (canary): reached at its old place by address
-g_gameServerReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_lobbyReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
 g_mapEntry22On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
 g_mapEntry23On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
 g_mapEntry24On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
-g_netConnected   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netLastRequest   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_serverPort   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_serverReplyKind   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_unusedNetCloseWord   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_gameServerState   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netAccountBuffer   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netInfoPacket   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netJoinMessage   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netKindWord   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netLobbyMessage   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netNoticeIn   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netSelectionPacket   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netSendBuffer   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_netSendName   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_playerListCount   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_playerListRefused   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_roomListCount   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
-g_roomPacket   # inside network reply buffers and received lists (0xa05260 .. 0xa0b400): reached by raw ranges and receives
 g_mapListOpen   # inside the arena's map-choice table (lobby_states.c's loop over 0x4d950c .. 0x4db50c)
 g_loginToSend   # inside the 0x44-byte entries lobby_states.c walks from 0x9dcef4 to 0x9dd19c

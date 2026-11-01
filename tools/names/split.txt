@@ -647,3 +647,32 @@ g_defaultColour
 g_replayRandomOrder
 g_replayWrap
 g_roomFade
+# the network receive buffers (objects15.csv), whole
+g_lobbyReplyRecord
+g_netNoticeRecord
+g_serverReply
+g_gameServerReply
+g_netRecvRecord
+# the network globals: the receive buffers named, the blanket hold dropped, sockets / ports / pointer words reviewed, 2026-11-01
+g_gameServerSocket
+g_gameServerState
+g_ladderPort
+g_lobbySocket
+g_lobbyTcpPort
+g_netAccountBuffer
+g_netConnected
+g_netInfoPacket
+g_netJoinMessage
+g_netKindWord
+g_netLastRequest
+g_netLobbyMessage
+g_netNoticeIn
+g_netSelectionPacket
+g_netSendBuffer
+g_netSendName
+g_playerListCount
+g_playerListRefused
+g_roomListCount
+g_roomPacket
+g_serverPort
+g_unusedNetCloseWord

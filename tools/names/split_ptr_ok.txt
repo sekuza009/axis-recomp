@@ -5,3 +5,8 @@ g_replayWrap          # menu_states.c: ticked[k], read as *ticked[k] (one int)
 g_replayRandomOrder   # menu_states.c: ticked[k], read as *ticked[k] (one int)
 g_defaultColour       # statics.c: a packed colour, its bytes c[0] .. c[3] (its own 4)
 g_colourMaskRed       # statics.c: a packed colour, bytes c[0] .. c[3]; ViewVolume_addSegment's colour (4 bytes)
+g_lobbySocket         # net_tables.c: a socket word: connect_socket / socket_close / reply_read read or write the one word
+g_gameServerSocket    # net_tables.c: the same
+g_lobbyTcpPort        # small.c: RegQueryValueExA of a REG_DWORD (4 bytes); net_tables.c reads it as a u16
+g_ladderPort          # small.c: the same
+g_accountPacket       # a pointer word: memset / [0] reach the block it points to, not the global

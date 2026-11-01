@@ -259,7 +259,7 @@ u32 (net_closeThreadHandles)(void)
    refused (0xa0b350 set, 0xa0b300 cleared) */
 void (net_receiveServerReply)(void)
 {
-	u8 *reply = (u8 *)IMG(0xa052e8);
+	u8 *reply = g_serverReply;
 	u32 start = GetTickCount();
 	u32 got = 0;
 	do {
@@ -341,10 +341,10 @@ void (net_closeAll)(int kind)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
 	memset((void *)ADDR(g_netNotice), 0, 0x22);
 	(*(void **)&g_netLeaveBuffer) = alloc_clear(0x1e);
-	memset((void *)IMG(0xa05260), 0, 0x5b);
-	memset((void *)IMG(0xa0b280), 0, 0x79);
+	memset((void *)OBJ(g_lobbyReplyRecord), 0, 0x5b);
+	memset((void *)OBJ(g_gameServerReply), 0, 0x79);
 	g_unusedNetCloseWord = 0;
-	memset((void *)IMG(0xa052e8), 0, 0x3e);
+	memset((void *)OBJ(g_serverReply), 0, 0x3e);
 	memset((void *)ADDR(g_netRecvBuffer), 0, 0x10b);
 }
 
@@ -661,10 +661,10 @@ static void reply_read(u32 socket, void *buf, u32 size)
    state 0xa0b36c set (0xcb / 0x29); 1..3 also end the wait (0xa0b300) */
 void (net_receiveLobbyReply)(void)
 {
-	reply_read(ADDR(g_lobbySocket), (void *)IMG(0xa05260), 0x5b);
+	reply_read(ADDR(g_lobbySocket), (void *)OBJ(g_lobbyReplyRecord), 0x5b);
 	switch (g_lobbyReplyKind) {
 	case 0:
-		GAME_FN(net_addServerRecord, 0x452af0, int, void *)((void *)IMG(0xa05260));   /* net_addServerRecord */
+		GAME_FN(net_addServerRecord, 0x452af0, int, void *)((void *)OBJ(g_lobbyReplyRecord));   /* net_addServerRecord */
 		break;
 	case 1:
 		g_serverPingCount = g_serverListCount;
@@ -687,10 +687,10 @@ void (net_receiveLobbyReply)(void)
    the list (net_addRoomRecord), 1 the list is complete (as above, state 0xa0b34c 0xca), 2 / 3 state 0x28 */
 void (net_receiveGameServerReply)(void)
 {
-	reply_read(ADDR(g_gameServerSocket), (void *)IMG(0xa0b280), 0x79);
+	reply_read(ADDR(g_gameServerSocket), (void *)OBJ(g_gameServerReply), 0x79);
 	switch (g_gameServerReplyKind) {
 	case 0:
-		GAME_FN(net_addRoomRecord, 0x452c80, int, void *)((void *)IMG(0xa0b280));   /* net_addRoomRecord */
+		GAME_FN(net_addRoomRecord, 0x452c80, int, void *)((void *)OBJ(g_gameServerReply));   /* net_addRoomRecord */
 		break;
 	case 1:
 		g_serverPingCount = g_roomListCount;

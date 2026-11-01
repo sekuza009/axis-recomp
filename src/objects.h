@@ -193,3 +193,8 @@
 #define g_cursorPoint ((int *)IMG(0xae2f18))   /* int[2]; the cursor position (x: g_cursorPos */
 #define g_resultMsg ((u32 *)IMG(0x9f9418))   /* u32[2]; an 8-byte message sent (net_sendMessage */
 #define g_netSlotMsg ((u32 *)IMG(0x9f9420))   /* u32[2]; an 8-byte message sent (net_sendMessage): kind (g_netSlotMessageKind) */
+#define g_lobbyReplyRecord ((u8 *)IMG(0xa05260))   /* u8[91]; a lobby reply (0x5b bytes read from the lobby socket; its kind at +0x4a: g_lobbyReplyKind) */
+#define g_netNoticeRecord ((u8 *)IMG(0xa052c0))   /* u8[34]; the notice received (cleared as 0x22 bytes: g_netNotice */
+#define g_serverReply ((u8 *)IMG(0xa052e8))   /* u8[62]; the game server's 62-byte reply (its kind at +0x1e: g_serverReplyKind) */
+#define g_gameServerReply ((u8 *)IMG(0xa0b280))   /* u8[121]; a game server's reply (0x79 bytes; its kind at +0x68: g_gameServerReplyKind) */
+#define g_netRecvRecord ((u8 *)IMG(0xa05638))   /* u8[267]; the receive buffer (cleared as 0x10b bytes; g_netRecvBuffer its start */

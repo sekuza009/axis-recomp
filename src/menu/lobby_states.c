@@ -272,19 +272,19 @@ void (room_fitWindowRects)(void)
    record and the mech */
 void (room_takeReceivedSettings)(void)
 {
-	strcpy(g_joinedTitleName, (const char *)IMG(0xa0563c));
-	strcpy((char *)IMG(0x9dd5a6), (const char *)IMG(0xa0565a));
-	memcpy((void *)OBJ(g_roomMech), (void *)IMG(0xa0568c), 11);
+	strcpy(g_joinedTitleName, (const char *)(OBJ(g_netRecvRecord) + 0x4));
+	strcpy((char *)IMG(0x9dd5a6), (const char *)(OBJ(g_netRecvRecord) + 0x22));
+	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_netRecvRecord) + 0x54), 11);
 	for (int k = 0; k < 6; k++) {
-		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)(IMG(0xa05697) + k * 0x18), 0x18);
+		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_netRecvRecord) + 0x5f) + k * 0x18), 0x18);
 		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x4 + k * 0x18) >= k_0f))
 			GAME_VAR(int, OBJ(g_roomColours) + 0x4 + k * 0x18) = 0;
 		if (!(GAME_VAR(float, OBJ(g_roomColours) + 0x8 + k * 0x18) >= k_0f))
 			GAME_VAR(int, OBJ(g_roomColours) + 0x8 + k * 0x18) = 0;
 	}
-	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), IMG(0xa05727) }, { ADDR(g_pilotPoints), IMG(0xa05737) }, { ADDR(g_pilotRating), IMG(0xa0573b) },
-	                                { ADDR(g_pilotWinRate), IMG(0xa0573f) }, { ADDR(g_pilotWins), IMG(0xa0572f) }, { ADDR(g_pilotLosses), IMG(0xa05733) },
-	                                { ADDR(g_pilotScore), IMG(0xa0572b) } };
+	static const u32 rect[7][2] = { { ADDR(g_pilotLevel), (OBJ(g_netRecvRecord) + 0xef) }, { ADDR(g_pilotPoints), (OBJ(g_netRecvRecord) + 0xff) }, { ADDR(g_pilotRating), (OBJ(g_netRecvRecord) + 0x103) },
+	                                { ADDR(g_pilotWinRate), (OBJ(g_netRecvRecord) + 0x107) }, { ADDR(g_pilotWins), (OBJ(g_netRecvRecord) + 0xf7) }, { ADDR(g_pilotLosses), (OBJ(g_netRecvRecord) + 0xfb) },
+	                                { ADDR(g_pilotScore), (OBJ(g_netRecvRecord) + 0xf3) } };
 	for (int k = 0; k < 7; k++)
 		GAME_VAR(int, rect[k][0]) = GAME_VAR(int, rect[k][1]);
 	room_copyJoinedSettings();

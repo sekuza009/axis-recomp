@@ -644,12 +644,14 @@ extern struct GameData g_data;
 #define g_gameServerAnswer15 (*(int *)g_gameServerAnswer15_v)
 #undef g_gameServerPending
 #define g_gameServerPending (*(int *)g_gameServerPending_v)
+#undef g_gameServerReply
+#define g_gameServerReply ((u8 *)g_gameServerReply_v)
 #undef g_gameServerReplyKind
-#define g_gameServerReplyKind (g_data.g_gameServerReplyKind_)
+#define g_gameServerReplyKind (*(u32 *)((u8 *)g_gameServerReply_v + 0x68))
 #undef g_gameServerSocket
-#define g_gameServerSocket (g_data.g_gameServerSocket_)
+#define g_gameServerSocket (*(int *)g_gameServerSocket_v)
 #undef g_gameServerState
-#define g_gameServerState (g_data.g_gameServerState_)
+#define g_gameServerState (*(int *)g_gameServerState_v)
 #undef g_gameServerStatus
 #define g_gameServerStatus (*(int *)g_gameServerStatus_v)
 #undef g_glCachedState
@@ -727,7 +729,7 @@ extern struct GameData g_data;
 #undef g_joinPasswordTyped
 #define g_joinPasswordTyped (*(int *)g_joinPasswordTyped_v)
 #undef g_joinedSessionFlag
-#define g_joinedSessionFlag (g_data.g_joinedSessionFlag_)
+#define g_joinedSessionFlag (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
 #undef g_joinedTitleLevel
 #define g_joinedTitleLevel (g_data.g_joinedTitleLevel_)
 #undef g_joinedTitleName
@@ -763,7 +765,7 @@ extern struct GameData g_data;
 #undef g_ladderMenuTextures
 #define g_ladderMenuTextures ((int *)g_ladderMenuTextures_v)
 #undef g_ladderPort
-#define g_ladderPort (g_data.g_ladderPort_)
+#define g_ladderPort (*(int *)g_ladderPort_v)
 #undef g_lanSearch
 #define g_lanSearch (*(int *)g_lanSearch_v)
 #undef g_languageId
@@ -815,15 +817,17 @@ extern struct GameData g_data;
 #undef g_lobbyReply
 #define g_lobbyReply (*(int *)g_lobbyReply_v)
 #undef g_lobbyReplyKind
-#define g_lobbyReplyKind (g_data.g_lobbyReplyKind_)
+#define g_lobbyReplyKind (*(u32 *)((u8 *)g_lobbyReplyRecord_v + 0x4a))
+#undef g_lobbyReplyRecord
+#define g_lobbyReplyRecord ((u8 *)g_lobbyReplyRecord_v)
 #undef g_lobbySearching
 #define g_lobbySearching (*(int *)g_lobbySearching_v)
 #undef g_lobbySocket
-#define g_lobbySocket (g_data.g_lobbySocket_)
+#define g_lobbySocket (*(u32 *)g_lobbySocket_v)
 #undef g_lobbyStatus
 #define g_lobbyStatus (*(int *)g_lobbyStatus_v)
 #undef g_lobbyTcpPort
-#define g_lobbyTcpPort (g_data.g_lobbyTcpPort_)
+#define g_lobbyTcpPort (*(int *)g_lobbyTcpPort_v)
 #undef g_localAddress
 #define g_localAddress ((char *)g_data.g_localAddress_)
 #undef g_localPlayerData
@@ -1113,7 +1117,7 @@ extern struct GameData g_data;
 #undef g_musicVolumeSetting
 #define g_musicVolumeSetting (*(int *)g_musicVolumeSetting_v)
 #undef g_netAccountBuffer
-#define g_netAccountBuffer (g_data.g_netAccountBuffer_)
+#define g_netAccountBuffer (*(char * *)g_netAccountBuffer_v)
 #undef g_netBlockSize
 #define g_netBlockSize (*(u32 *)g_netBlockSize_v)
 #undef g_netChatMessageKind
@@ -1127,27 +1131,29 @@ extern struct GameData g_data;
 #undef g_netClaimedSlot
 #define g_netClaimedSlot (*(int *)((u8 *)g_netSlotMsg_v + 0x4))
 #undef g_netConnected
-#define g_netConnected (g_data.g_netConnected_)
+#define g_netConnected (*(int *)g_netConnected_v)
 #undef g_netHostGone
 #define g_netHostGone (*(int *)g_netHostGone_v)
 #undef g_netInfoPacket
-#define g_netInfoPacket (g_data.g_netInfoPacket_)
+#define g_netInfoPacket (*(u8 * *)g_netInfoPacket_v)
 #undef g_netJoinMessage
-#define g_netJoinMessage (g_data.g_netJoinMessage_)
+#define g_netJoinMessage (*(char * *)g_netJoinMessage_v)
 #undef g_netKindWord
-#define g_netKindWord (g_data.g_netKindWord_)
+#define g_netKindWord (*(u32 * *)g_netKindWord_v)
 #undef g_netLastRequest
-#define g_netLastRequest (g_data.g_netLastRequest_)
+#define g_netLastRequest (*(int *)g_netLastRequest_v)
 #undef g_netLeaveBuffer
 #define g_netLeaveBuffer (g_data.g_netLeaveBuffer_)
 #undef g_netListDone
 #define g_netListDone (g_data.g_netListDone_)
 #undef g_netLobbyMessage
-#define g_netLobbyMessage (g_data.g_netLobbyMessage_)
+#define g_netLobbyMessage (*(u32 * *)g_netLobbyMessage_v)
 #undef g_netNotice
-#define g_netNotice (g_data.g_netNotice_)
+#define g_netNotice (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x0))
 #undef g_netNoticeIn
-#define g_netNoticeIn (g_data.g_netNoticeIn_)
+#define g_netNoticeIn (*(int *)g_netNoticeIn_v)
+#undef g_netNoticeRecord
+#define g_netNoticeRecord ((u8 *)g_netNoticeRecord_v)
 #undef g_netPacketMessageKind
 #define g_netPacketMessageKind (*(int *)((u8 *)g_netSendPacket_v + 0x0))
 #undef g_netPlayerList
@@ -1159,17 +1165,19 @@ extern struct GameData g_data;
 #undef g_netRankingBuffer
 #define g_netRankingBuffer (g_data.g_netRankingBuffer_)
 #undef g_netRecvBuffer
-#define g_netRecvBuffer (g_data.g_netRecvBuffer_)
+#define g_netRecvBuffer (*(int *)((u8 *)g_netRecvRecord_v + 0x0))
+#undef g_netRecvRecord
+#define g_netRecvRecord ((u8 *)g_netRecvRecord_v)
 #undef g_netRequestWord
 #define g_netRequestWord (g_data.g_netRequestWord_)
 #undef g_netRole
 #define g_netRole (*(int *)g_netRole_v)
 #undef g_netSelectionPacket
-#define g_netSelectionPacket (g_data.g_netSelectionPacket_)
+#define g_netSelectionPacket (*(u8 * *)g_netSelectionPacket_v)
 #undef g_netSendBuffer
-#define g_netSendBuffer (g_data.g_netSendBuffer_)
+#define g_netSendBuffer (*(char * *)g_netSendBuffer_v)
 #undef g_netSendName
-#define g_netSendName (g_data.g_netSendName_)
+#define g_netSendName (*(char * *)g_netSendName_v)
 #undef g_netSendPacket
 #define g_netSendPacket ((u32 *)g_netSendPacket_v)
 #undef g_netSlotMessageKind
@@ -1301,9 +1309,9 @@ extern struct GameData g_data;
 #undef g_playerHasClan
 #define g_playerHasClan (*(u8 *)((u8 *)g_playerName_v + 0x2e))
 #undef g_playerListCount
-#define g_playerListCount (g_data.g_playerListCount_)
+#define g_playerListCount (*(int *)g_playerListCount_v)
 #undef g_playerListRefused
-#define g_playerListRefused (g_data.g_playerListRefused_)
+#define g_playerListRefused (*(int *)g_playerListRefused_v)
 #undef g_playerName
 #define g_playerName ((char *)g_playerName_v)
 #undef g_playerSex
@@ -1423,7 +1431,7 @@ extern struct GameData g_data;
 #undef g_rankingWaiting
 #define g_rankingWaiting (*(int *)g_rankingWaiting_v)
 #undef g_receivedClan
-#define g_receivedClan (g_data.g_receivedClan_)
+#define g_receivedClan (*(int *)((u8 *)g_netNoticeRecord_v + 0x16))
 #undef g_receivedSession
 #define g_receivedSession (*(const u8 * *)g_receivedSession_v)
 #undef g_rectColour
@@ -1491,7 +1499,7 @@ extern struct GameData g_data;
 #undef g_roomList
 #define g_roomList ((u8 *)g_roomList_v)
 #undef g_roomListCount
-#define g_roomListCount (g_data.g_roomListCount_)
+#define g_roomListCount (*(int *)g_roomListCount_v)
 #undef g_roomListDistanceLimit
 #define g_roomListDistanceLimit (*(u32 *)g_roomListDistanceLimit_v)
 #undef g_roomListPage
@@ -1531,7 +1539,7 @@ extern struct GameData g_data;
 #undef g_roomNameSum
 #define g_roomNameSum (*(int *)g_roomNameSum_v)
 #undef g_roomPacket
-#define g_roomPacket (g_data.g_roomPacket_)
+#define g_roomPacket (*(u8 * *)g_roomPacket_v)
 #undef g_roomPanelBrightness
 #define g_roomPanelBrightness (*(u32 *)g_roomPanelBrightness_v)
 #undef g_roomPlayers
@@ -1633,9 +1641,11 @@ extern struct GameData g_data;
 #undef g_serverPingCount
 #define g_serverPingCount (g_data.g_serverPingCount_)
 #undef g_serverPort
-#define g_serverPort (g_data.g_serverPort_)
+#define g_serverPort (*(u16 *)g_serverPort_v)
+#undef g_serverReply
+#define g_serverReply ((u8 *)g_serverReply_v)
 #undef g_serverReplyKind
-#define g_serverReplyKind (g_data.g_serverReplyKind_)
+#define g_serverReplyKind (*(int *)((u8 *)g_serverReply_v + 0x1e))
 #undef g_serverSearching
 #define g_serverSearching (*(int *)g_serverSearching_v)
 #undef g_serviceProviderCount
@@ -1853,7 +1863,7 @@ extern struct GameData g_data;
 #undef g_unusedMissionSaveWord
 #define g_unusedMissionSaveWord (*(int *)g_unusedMissionSaveWord_v)
 #undef g_unusedNetCloseWord
-#define g_unusedNetCloseWord (g_data.g_unusedNetCloseWord_)
+#define g_unusedNetCloseWord (*(int *)g_unusedNetCloseWord_v)
 #undef g_unusedPingWord1
 #define g_unusedPingWord1 (*(int *)g_unusedPingWord1_v)
 #undef g_unusedPingWord2
