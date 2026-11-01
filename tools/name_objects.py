@@ -25,6 +25,11 @@ for line in open(sys.argv[1], encoding='utf-8'):
 globals_addr = {int(a, 16): n for n, a in re.findall(r'#define (\w+) GAME_VAR\([\w \*]+, (0x[0-9a-f]+)\)', open('src/globals.h').read())}
 spans = [(int(k[0], 16), int(k[0], 16) + SIZES.get(k[1].replace('_', ' '), 1) * int(k[2]), k[3]) for k in known]
 bad = 0
+# a name already defined (a global, game.h's names, an object) would be redefined over it in every file
+defined = set(re.findall(r'#define (\w+)', open('src/globals.h').read() + open('src/game.h').read() + open('src/objects.h').read()))
+for a, t, n, name, note in rows:
+	if name in defined:
+		print('%s is already defined (src/globals.h, game.h or objects.h): pick another name' % name); bad += 1
 for a, t, n, name, note in rows:
 	if t not in SIZES:
 		print('unknown type', t, name); bad += 1; continue

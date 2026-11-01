@@ -11,8 +11,12 @@ cd "$R"
 out=$(python tools/split_aliases.py) || { echo "$out" | tail -5; echo "names reach split objects' old places - stop"; exit 1; }
 python tools/mkdatasrc.py > /dev/null   # (split.txt / objects.txt as they stand: build.sh does not regenerate src/data)
 for F in 1 2 0; do
-	if [ $F = 0 ]; then bash standalone/build.sh 2>&1 | grep -E " error|undefined" | head -3
-	else FENCE=$F bash standalone/build.sh 2>&1 | grep -E " error|undefined" | head -3; fi
+	rm -f build/AxisRC.exe
+	if [ $F = 0 ]; then bash standalone/build.sh > build/check3_build.log 2>&1
+	else FENCE=$F bash standalone/build.sh > build/check3_build.log 2>&1; fi
+	st=$?
+	grep -E " error|undefined" build/check3_build.log | head -3
+	[ $st = 0 ] && [ -e build/AxisRC.exe ] || { echo "build (FENCE=$F) failed - stop"; exit 1; }
 	cp build/AxisRC.exe build/AxisRC_f$F.exe || exit 1
 done
 for F in 0 1 2; do
