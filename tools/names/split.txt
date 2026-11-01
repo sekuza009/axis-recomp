@@ -633,3 +633,17 @@ g_menuScaleY
 g_missionPicked
 g_textBottom
 g_textWrapX
+# small records (objects14.csv), whole
+g_soundSettings
+g_missionHeader
+g_cursorPoint
+g_resultMsg
+g_netSlotMsg
+# freed: reviewed single-value pointers (split_ptr_ok.txt) and FPU operands inside nested calls, 2026-11-01
+g_armcEnterStepF
+g_colourMaskRed
+g_cursorBlinkTimer
+g_defaultColour
+g_replayRandomOrder
+g_replayWrap
+g_roomFade

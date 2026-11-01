@@ -288,7 +288,7 @@ void (roomList_fillPage)(void)
 #define sk_top GAME_VAR(int, 0x9f16bc)
 #define sk_row GAME_VAR(int, 0x9f1058)
 #define sk_sel g_missionPicked
-#define sk_count GAME_VAR(int, 0x9ef2c0)
+#define sk_count g_missionCount
 
 /* 0x443cd0: cursor up (the list scrolls at the top row) */
 void (skirmish_cursorUp)(void)

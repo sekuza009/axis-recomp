@@ -38,6 +38,19 @@ for key, (line, decl, inside) in split_tables.tables.items():
 	for n in inside:
 		in_tables[n].add(key)
 table_ok = {n for n, keys in in_tables.items() if keys <= ok_tables and n not in ok_except and n in cands and cands[n][2] >= 4}
+def enclosing_call(text):
+	"""the name of the call whose argument list text ends inside (fadd_m(fmul_m(x, y), | -> fadd_m), else None"""
+	depth = 0
+	for i in range(len(text) - 1, -1, -1):
+		if text[i] == ')':
+			depth += 1
+		elif text[i] == '(':
+			if depth == 0:
+				m = re.search(r'(\w+)\s*$', text[:i])
+				return m.group(1) if m else None
+			depth -= 1
+	return None
+ptr_ok = {l.split('#')[0].strip() for l in open('tools/names/split_ptr_ok.txt')} - {''}   # (reviewed: one value)
 numbers = collections.Counter()
 based = {}
 why = collections.defaultdict(set)
@@ -68,10 +81,11 @@ for f in files:
 				why[n].add('address arithmetic')
 			# (one value: a float given to an FPU helper, fld_m((const float *)ADDR(x)) / fadd_m(a, (const float *)ADDR(x)),
 			# or 4 bytes read / written, crt_fwrite((void *)ADDR(x), 4, 1, f))
-			one = re.search(r'\b(?:fld_m|fadd_m|fsub_m|fsubr_m|fmul_m|fdiv_m|fdivr_m)\((?:[^()]|\([^()]*\))*?\(\s*(?:const\s+)?float\s*\*\s*\)\s*$', before) \
+			one = (re.search(r'\(\s*(?:const\s+)?float\s*\*\s*\)\s*$', before) and enclosing_call(re.sub(r'\(\s*(?:const\s+)?float\s*\*\s*\)\s*$', '', before))
+			       in ('fld_m', 'fadd_m', 'fsub_m', 'fsubr_m', 'fmul_m', 'fdiv_m', 'fdivr_m')) \
 				or (re.search(r'\b(?:crt_fread|crt_fwrite|fread_scrambled|file_writeScrambled)\(\s*\(\s*(?:const\s+)?void\s*\*\s*\)\s*$', before)
 				    and re.match(r'\s*,\s*4\s*,\s*1\b', after + line[m.end() + 4:m.end() + 12]))
-			if re.search(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*$', before) and m.group(1) and not one:
+			if re.search(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*$', before) and m.group(1) and not one and n not in ptr_ok:
 				why[n].add('address arithmetic (made a pointer: indexed)')
 			if m.group(1) and re.search(r'\{[^}]*$', before) and re.search(r'=\s*\{', before) and n not in table_ok:
 				why[n].add('address arithmetic (stored in a table: a base the code indexes)')

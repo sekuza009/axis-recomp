@@ -1,0 +1,6 @@
+# small records of named globals (step 3b; --records)
+0x4e0c90,int,4,g_soundSettings,the sound settings in use: the volume (g_soundVolume), music volume, two switches (copied from / to g_soundEdited)
+0x9ef2c0,u32,4,g_missionHeader,the mission file's header: the count (g_missionCount) and three words (g_misHeader1 .. 3; read as four words)
+0xae2f18,int,2,g_cursorPoint,the cursor position (x: g_cursorPos, y: g_cursorPosY; devices.c returns it as an int pair)
+0x9f9418,u32,2,g_resultMsg,an 8-byte message sent (net_sendMessage, type 2 / 6): kind (g_resultMessage), flag (g_hostResultFlag)
+0x9f9420,u32,2,g_netSlotMsg,an 8-byte message sent (net_sendMessage): kind (g_netSlotMessageKind), the slot (g_netClaimedSlot)

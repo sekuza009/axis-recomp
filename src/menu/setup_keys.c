@@ -8,7 +8,6 @@
 #define TAB_CONTROL 2
 #define TAB_TOP 0x29a
 
-#define g_soundSettings ((int *)ADDR(g_soundVolume))             /* the sound settings in use */
 #define g_graphicInUse ((u32 *)g_graphicSettings)               /* the graphics settings in use (g_items3D is the third) */
 
 /* 0x422b30: the tab's page (nothing while a dialog is up) */

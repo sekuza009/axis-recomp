@@ -188,3 +188,8 @@
 #define g_campaign ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes */
 #define g_armcViewPoints ((u32 *)IMG(0x4dca30))   /* u32[24]; ARM CENTER's six view points (16 bytes each */
 #define g_menuFrameTextures ((int *)IMG(0x4deb4c))   /* int[2]; the menu frames' textures: the panel corner ornaments */
+#define g_soundSettings ((int *)IMG(0x4e0c90))   /* int[4]; the sound settings in use: the volume (g_soundVolume) */
+#define g_missionHeader ((u32 *)IMG(0x9ef2c0))   /* u32[4]; the mission file's header: the count (g_missionCount) and three words (g_misHeader1 .. 3; read as four words) */
+#define g_cursorPoint ((int *)IMG(0xae2f18))   /* int[2]; the cursor position (x: g_cursorPos */
+#define g_resultMsg ((u32 *)IMG(0x9f9418))   /* u32[2]; an 8-byte message sent (net_sendMessage */
+#define g_netSlotMsg ((u32 *)IMG(0x9f9420))   /* u32[2]; an 8-byte message sent (net_sendMessage): kind (g_netSlotMessageKind) */
