@@ -9,7 +9,7 @@
 /* 0x43f580: the current directory into the game's path buffer (0x76d224, 0x105 bytes) */
 u32 (app_readCurrentDirectory)(void)
 {
-	return GetCurrentDirectoryA(0x105, (char *)IMG(0x76d224));
+	return GetCurrentDirectoryA(0x105, (char *)(OBJ(g_messages) + 0x1f400));
 }
 
 /* 0x46c580: a message box over the active window (title, text); MessageBox's answer */

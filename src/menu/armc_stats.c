@@ -228,36 +228,36 @@ static void speed_change(char *out, X v, float f, int korean, int last)
 /* slot 0, the head: its six lines, with the pilot's skill 3 */
 static void section0(Panel *p)
 {
-	label(p, ROW(0), 0x760aa4);
+	label(p, ROW(0), MSG(601, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(0x4b0354), (double)g_headDetectionRange);
 	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * g_headDetectionRange + g_itemBonusDetectionRange, 0, MSG(751, "m"), 0);
-	label(p, ROW(1), 0x760b24);
+	label(p, ROW(1), MSG(602, "DETECTION ANGLE"));
 	sprintf(p->t.line, FMT(0x4b0334), (double)g_headDetectionAngle);
 	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * g_headDetectionAngle, 1, MSG(752, "'"), 0);
-	label(p, ROW(2), 0x760ba4);
+	label(p, ROW(2), MSG(603, "HACKING LEVEL"));
 	sprintf(p->t.line, FMT(0x4b0320), g_headHackingLevel);
 	level_bonus(p, ROW(2), g_itemBonusHacking);
-	label(p, ROW(3), 0x760c24);
+	label(p, ROW(3), MSG(604, "LOCK ON EFFICIENCY"));
 	X rate = (X)HUNDRED / g_headLockOnTime * HUNDRED;
 	sprintf(p->t.line, FMT(0x4b0334), (double)rate);
 	bracket_bonus(p, ROW(3), (X)g_itemBonusLockOn * f32(rate), 1, MSG(753, "%"), 0);   /* (by the rate as a float) */
-	label(p, ROW(4), 0x760ca4);
+	label(p, ROW(4), MSG(605, "TARGET KEEPING TIME"));
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_headTargetKeepTime * THOUSANDTH));
 	bracket_bonus(p, ROW(4), (X)g_itemBonusTargetKeep * g_headTargetKeepTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
-	label(p, ROW(5), 0x760d24);
+	label(p, ROW(5), MSG(606, "WEIGHT"));
 	value_unit(p, ROW(5), g_headWeight, MSG(755, "t"));
 }
 
 /* slot 1, the chest: a figure with skill 4's bonus (Korean: yellow even when none), two counts rounded with skill 2 */
 static void section1(Panel *p)
 {
-	label(p, ROW(0), 0x760fa4);
+	label(p, ROW(0), MSG(611, "WEIGHT LIMIT"));
 	sprintf(p->t.line, FMT(0x4b0334), (double)g_chestWeightLimit);
 	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * g_chestWeightLimit + (X)g_itemBonusWeightLimit * g_chestWeightLimit, 1, MSG(755, "t"), 1);
-	label(p, ROW(1), 0x761024);
+	label(p, ROW(1), MSG(612, "MAX ARMOR"));
 	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxArmor);
 	count_bonus(p, ROW(1), ftol(SKILL(2) * HUNDREDTH * (X)g_chestMaxArmor + HALF));
-	label(p, ROW(2), 0x7610a4);
+	label(p, ROW(2), MSG(613, "MAX SHIELD"));
 	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxShield);
 	count_bonus(p, ROW(2), ftol((SKILL(2) * HUNDREDTH + g_itemBonusShield) * (X)g_chestMaxShield + HALF));
 }
@@ -267,7 +267,7 @@ static void section2(Panel *p)
 {
 	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), IMG(0x4dc294), IMG(0x4dcc6c) }, { MSG(623, "CAPACITY FOR 60MM"), IMG(0x4dc298), IMG(0x4dc548) },
 	                                  { MSG(624, "CAPACITY FOR E-PAK"), IMG(0x4dc29c), IMG(0x4dc248) }, { MSG(625, "CAPACITY FOR MISSLE"), IMG(0x4dc2a0), IMG(0x4dcb34) } };
-	label(p, ROW(0), 0x7614a4);
+	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
 	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
 	value(p, ROW(0));
 	for (int k = 0; k < 4; k++) {
@@ -295,7 +295,7 @@ static void section3(Panel *p)
 {
 	for (int k = 0; k < 2; k++) {
 		u32 f = 0x4dc228 + k * 4;
-		label(p, ROW(k), k ? 0x761a24 : 0x7619a4);
+		label(p, ROW(k), k ? MSG(632, "INERTIA") : MSG(631, "AGILITY"));
 		sprintf(p->t.line, FMT(0x4b0334), (double)F(f));
 		X a = SKILL(0) * HUNDREDTH * F(f);
 		wear_bonus(p, ROW(k), a + wear(F(f)), F(f));
@@ -316,19 +316,19 @@ static void section3(Panel *p)
    and their changes, the weight */
 static void section4(Panel *p)
 {
-	label(p, ROW(0), 0x761ea4);
+	label(p, ROW(0), MSG(641, "THRUST TYPE"));
 	append(p->t.line, (const char *)(MSG(651, "PLASMA THRUST ENGINE") + g_boosterThrustType * 0x80));
 	value(p, ROW(0));
-	label(p, ROW(1), 0x761f24);
+	label(p, ROW(1), MSG(642, "ACTIVE TIME"));
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterActiveTime * THOUSANDTH));
 	bracket_bonus(p, ROW(1), (X)g_itemBonusActiveTime * g_boosterActiveTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
-	label(p, ROW(2), 0x761fa4);
+	label(p, ROW(2), MSG(643, "RECHARGE TIME"));
 	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterRechargeTime * THOUSANDTH));
 	bracket_bonus(p, ROW(2), (X)g_boosterRechargeTime * g_itemBonusRechargeTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
-	label(p, ROW(3), 0x762024);
+	label(p, ROW(3), MSG(644, "DELAY FOR RECHARGE"));
 	value_unit(p, ROW(3), (X)g_boosterRechargeDelay * THOUSANDTH, MSG(761, "sec"));
 
-	label(p, ROW(4), 0x7620a4);
+	label(p, ROW(4), MSG(645, "NORMAL SPEED"));
 	float speed = g_boosterNormalSpeed;
 	sprintf(p->t.line, FMT(0x4b0354), (double)speed);
 	X a = SKILL(1) * HUNDREDTH * speed + (X)g_legsSpeedCorrection * HUNDREDTH * speed;
@@ -369,7 +369,7 @@ static void section4(Panel *p)
 	static const u32 speeds[3] = { IMG(0x4dce94), IMG(0x4dce9c), IMG(0x4dce98) }, bonuses[3] = { IMG(0x4dc234), IMG(0x4dc238), IMG(0x4dc23c) };
 	static const u32 shown[2][3] = { { STR(0x4b0228, "%03.0f/"), STR(0x4b021c, " %03.0f/"), STR(0x4b0214, " %03.0f") },
 	                                 { STR(0x4b02bc, "%.0f/"), STR(0x4b02b4, " %.0f/"), STR(0x4b02a8, " %.0f(km/h)") } };
-	label(p, ROW(5), 0x762124);
+	label(p, ROW(5), MSG(646, "MAX SPEED FWD/SWD/BWD"));
 	for (int k = 0; k < 3; k++) {
 		sprintf(p->t.bonus, FMT(shown[p->korean][k]), (double)F(speeds[k]));
 		if (k == 2 && !p->korean)
@@ -394,7 +394,7 @@ static void section4(Panel *p)
 		armc_drawStatLabel(p->left + 0xd8, p->top + ROW(5) + 0x14, p->t.line);
 	}
 	int dy = p->korean ? 0xd8 : ROW(7);
-	label(p, dy, 0x7621a4);
+	label(p, dy, MSG(647, "WEIGHT"));
 	sprintf(p->t.line, FMT(0x4b027c), (double)g_boosterWeight);   /* "%.1f(Ton)" */
 	value(p, dy);
 }
@@ -402,28 +402,28 @@ static void section4(Panel *p)
 /* slot 5, the whole mech: ten plain lines */
 static void section5(Panel *p)
 {
-	label(p, ROW(0), 0x762da4);
+	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
 	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
 	value(p, ROW(0));
 	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), IMG(0x4dcab4) }, { STR(0x4b0320, "%d"), IMG(0x4dcab8) }, { STR(0x4b02e8, "%d(Lv)"), IMG(0x4dcabc) } };
 	for (int k = 0; k < 4; k++) {
-		label(p, ROW(k + 1), 0x762e24 + k * 0x80);
+		label(p, ROW(k + 1), MSG(672, "HACKING LEVEL") + k * 0x80);
 		sprintf(p->t.line, FMT(ints[k][0]), I(ints[k][1]));
 		value(p, ROW(k + 1));
 	}
-	label(p, ROW(5), 0x763024);
+	label(p, ROW(5), MSG(676, "WEAPON LOAD"));
 	for (int k = 0; k < 4; k++) {
 		sprintf(p->t.bonus, FMT(k < 3 ? STR(0x4b0270, "%d/") : STR(0x4b0320, "%d")), I(IMG(0x4dcac0) + k * 4));
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(5));
-	label(p, ROW(6), 0x7630a4);
+	label(p, ROW(6), MSG(677, "MOBILITY"));
 	sprintf(p->t.line, FMT(0x4b0268), (double)g_mechMobility);   /* "%.2f" */
 	value(p, ROW(6));
-	label(p, ROW(7), 0x763124);
+	label(p, ROW(7), MSG(678, "NORMAL SPEED"));
 	sprintf(p->t.line, FMT(p->korean ? STR(0x4b025c, "%.0f(km/h)") : STR(0x4b01e0, "%.1f(km/h)")), (double)g_mechNormalSpeed);
 	value(p, ROW(7));
-	label(p, ROW(8), 0x7631a4);
+	label(p, ROW(8), MSG(679, "MAX SPEED"));
 	static const u32 speeds[3] = { IMG(0x4dcafc), IMG(0x4dcb04), ADDR(g_mechMaxSpeedBwd) };
 	for (int k = 0; k < 3; k++) {
 		u32 format = p->korean ? (k < 2 ? STR(0x4b02bc, "%.0f/") : STR(0x4b025c, "%.0f(km/h)")) : (k < 2 ? STR(0x4b0254, "%.1f/") : STR(0x4b01e0, "%.1f(km/h)"));
@@ -431,7 +431,7 @@ static void section5(Panel *p)
 		append(p->t.line, p->t.bonus);
 	}
 	value(p, ROW(8));
-	label(p, ROW(9), 0x763224);
+	label(p, ROW(9), MSG(680, "BOOSTER ENERGY"));
 	sprintf(p->t.bonus, FMT(0x4b0254), (double)((X)g_mechBoosterEnergy * THOUSANDTH));   /* "%.1f/" */
 	append(p->t.line, p->t.bonus);
 	sprintf(p->t.bonus, FMT(0x4b02fc), (double)((X)g_mechBoosterRecharge * THOUSANDTH));   /* "%.1f(" */
@@ -443,9 +443,9 @@ static void section5(Panel *p)
 #undef ROW
 
 /* 0x412650: the ARM CENTER's stats panel (0x4dcc90 .. 0x4dcc9c) for the part in slot 0x4dbc6c: the six slot
-   buttons (the chosen one brighter) and their labels (0x756aa4 ..; the sixth boxed, 0x756d24), the part names
-   beside them when 0x4dbc68 is set, two buttons (0x7517a4, lit from 3 by armcMain_hitTest), the weight button and its
-   arrows (14 / 15), the on / off button (0x756da4 with 0x751924 + 0x80 x 0x4dceac) and the detail button (0x7568a4);
+   buttons (the chosen one brighter) and their labels (MSG(281, "$[0] HEAD") ..; the sixth boxed, MSG(286, "VIEW $[0] ALL")), the part names
+   beside them when 0x4dbc68 is set, two buttons (MSG(115, "$[0] O K"), lit from 3 by armcMain_hitTest), the weight button and its
+   arrows (14 / 15), the on / off button (MSG(287, "$[0] ROTATE") with 0x751924 + 0x80 x 0x4dceac) and the detail button (MSG(277, "SELECT"));
    then the stats box (taller for Korean, 0x9dae74) and the slot's section. The caller ignores the eax it leaves */
 void (armc_drawStatsPanel)(void)
 {

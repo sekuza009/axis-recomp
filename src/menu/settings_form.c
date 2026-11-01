@@ -190,9 +190,9 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
 }
 
 /* 0x43bfe0: the game room's settings form (0x9dd1b8 .. 0x9dd1c4) for 0x4df9c8: the title 0x75a424, a cyan line, the
-   labels (0x75a4a4, 0x80 apart), the values (the fifth row's text 0x74e6a4, the modes at 0x7669a4; hidden while
+   labels (MSG(397, "TITLE"), 0x80 apart), the values (the fifth row's text MSG(17, "DO NOT USE"), the modes at MSG(791, "DEATH MATCH"); hidden while
    edited: 0x9dd380, 0x9dd6a8, 0x9dd388, 0x9dd568). Unless a field is being edited (0x68039c) or the "leave?" box is up
-   (0x907b2c), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (0x75a8a4, lit from 8 unless
+   (0x907b2c), the value under the pointer (roomSettings_hitTest) highlighted. Two buttons (MSG(405, "$[0] O K"), lit from 8 unless
    editing), the map preview (room_drawCustomOption), its arrows (11 / 12) and the custom rules button (13, not while
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
@@ -221,7 +221,7 @@ void (room_drawGameSettings)(void)
 	for (int k = 0; k < 2; k++) {
 		int bx = X0 + k * 0xc8;
 		button(hovered == k + 8 && !editing, 1.0f, bx + 0x64, Y1 - 0x40, bx + 0x104, Y1 - 0x20, Y1 - 0x38, bright, dim,
-		       0x75a8a4 + k * 0x80);
+		       MSG(405, "$[0] O K") + k * 0x80);
 	}
 	room_drawCustomOption(f->s->map);
 	preview_controls(f, hovered == 11 && !open, hovered == 12 && !open,
@@ -241,12 +241,12 @@ static void box_buttons(int hovered, int lit_from)
 }
 
 /* 0x40b750: the arena screen's form for a new arena (0x4dbb00 .. 0x4dbb0c) for 0x4db528: the title 0x752c24, the
-   labels (0x752ca4), the values (the kind's name from 0x4dbba4, the modes at 0x75c9a4; hidden while edited: 0x4dbab0,
+   labels (MSG(157, "GAME NAME")), the values (the kind's name from 0x4dbba4, the modes at MSG(471, "DEATH MATCH"); hidden while edited: 0x4dbab0,
    0x4dbacc, 0x4db850, 0x4db518). Unless a field is being edited, the confirmation (0x4db55c) or "leave?" box (0x907b2c)
-   or the map list (0x4db508) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (0x7530a4, lit
-   from 8 at 0.9) and below the second of the next pair (0x753224, 11), the map preview (arena_drawCustomOption), its
-   arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (0x753224 / 0x7532a4, its buttons
-   15 / 16) and the "leave?" box over the whole screen (0x74dfa4 / 0x74e024, its buttons by arenaCreate_hitTest); the border.
+   or the map list (0x4db508) is up, the value under the pointer (createArena_hitTest) highlighted. Two buttons (MSG(165, "$[0] IPX GAME"), lit
+   from 8 at 0.9) and below the second of the next pair (MSG(168, "$[0] CANCEL"), 11), the map preview (arena_drawCustomOption), its
+   arrows (13 / 14) and the custom rules button (lit for kind 1). The confirmation box (MSG(168, "$[0] CANCEL") / MSG(169, "NETWORK INITIALIZE ERROR"), its buttons
+   15 / 16) and the "leave?" box over the whole screen (MSG(3, "THIS PROGRAM HAS BEEN UPDATED") / MSG(4, "DO DOWNLOAD A NEW VERSION"), its buttons by arenaCreate_hitTest); the border.
    The caller ignores the eax it leaves */
 void (arena_createDraw)(void)
 {
@@ -274,7 +274,7 @@ void (arena_createDraw)(void)
 	for (int k = 0; k < 2; k++) {
 		int bx = X0 + k * 0xfa;
 		button(hovered == k + 8 && !blocked, 0.9f, bx + 0x3c, Y1 - 0x5a, bx + 0x104, Y1 - 0x3a, Y1 - 0x52, bright, dim,
-		       0x7530a4 + k * 0x80);
+		       MSG(165, "$[0] IPX GAME") + k * 0x80);
 	}
 	/* (the next row's first button is skipped) */
 	button(hovered == 11 && !blocked, 1.0f, X0 + 0xfa + 0x3c, Y1 - 0x32, X0 + 0xfa + 0x104, Y1 - 0x12, Y1 - 0x2a, bright,

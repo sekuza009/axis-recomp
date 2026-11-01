@@ -261,7 +261,7 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 		planes = -1;
 	}
 	ptx_initQuantTables(head.quality);
-	u8 *data = (u8 *)IMG(0xaa2e98);
+	u8 *data = g_ptxData;
 	ptx_fread(data, 1, 0x10000, f);
 	int pos = 0, bits = 0;
 	for (int p = 0; p < planes; p++) {
@@ -281,10 +281,10 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	if (close)
 		fclose(f);
 	if (head.type == 0x81)
-		ptx_toRgb((const u8 *)IMG(0xa6228c), (u8 *)IMG(0xa21708), w * h);
+		ptx_toRgb((const u8 *)IMG(0xa6228c), g_ptxPixels, w * h);
 	else if (head.type == 0x82)
-		ptx_toRgba((const u8 *)IMG(0xa6228c), (u8 *)IMG(0xa21708), w * h);
-	ptx_layoutBlocks((const u8 *)IMG(0xa21708), out, w, h, planes);
+		ptx_toRgba((const u8 *)IMG(0xa6228c), g_ptxPixels, w * h);
+	ptx_layoutBlocks(g_ptxPixels, out, w, h, planes);
 	*width = w;
 	*height = h;
 	if (head.type == 0x81) {

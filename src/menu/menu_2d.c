@@ -282,7 +282,7 @@ void (menu_drawFrame)(int x0, int y0, int x1, int y1)
 #undef g_frameCount
 
 /* 0x4290d0: the message box: a dark blue-grey panel (0.2, 0.2, 0.7, alpha 0.7) and its two lines (0x4df81c, then the
-   message 0x74de24) in yellow. Returns the text call's eax */
+   message MSG(0, "PRESS ENTER OR CLICK MOUSE")) in yellow. Returns the text call's eax */
 u32 (menu_drawMessageBox)(void)
 {
 	gfx_setProjection2D3D(2);

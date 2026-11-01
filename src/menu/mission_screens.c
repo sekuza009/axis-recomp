@@ -98,8 +98,8 @@ static void mission_screen(int hovered)
 	strcat(line, (const char *)STR(0x4b2b10, " : "));
 	strcat(line, (const char *)(MSG(471, "DEATH MATCH") + record[0x48 / 4] * 0x80));
 	text_draw16(X0 + 0xc4, Y0 + 0xaa, line);
-	value_line(Y0 + 0xbc, 0x75f324, record[0x50 / 4], 0x75c0a4, 0x75c124);
-	value_line(Y0 + 0xce, 0x75f3a4, record[0x4c / 4], 0x75bfa4, 0x75c024);
+	value_line(Y0 + 0xbc, MSG(554, "OBJECTIVE"), record[0x50 / 4], MSG(453, "UNLIMITED"), MSG(454, "FRAGS"));
+	value_line(Y0 + 0xce, MSG(555, "TIME"), record[0x4c / 4], MSG(451, "UNLIMITED"), MSG(452, "MIN"));
 	/* the allies (+0x24 of them, faces from +0x28) in red frames */
 	if (record[0x24 / 4]) {
 		white_text();
@@ -155,7 +155,7 @@ void (missionsel_drawSettingsScreen)(void)
 }
 
 /* 0x449a50: the same with nothing lit (the pointer is still asked), under a dimmed screen with the message
-   0x75f7a4 / 0x74de24. The original leaves eax to callers that ignore it */
+   MSG(563, "YOU'VE GOT NEW PARTS AND WEAPONS") / MSG(0, "PRESS ENTER OR CLICK MOUSE"). The original leaves eax to callers that ignore it */
 void (missionsel_drawScreen)(void)
 {
 	GAME_FN(missionsel_hitTest, 0x447710, int, int, int)(g_mouseX, g_mouseY);   /* missionsel_hitTest */

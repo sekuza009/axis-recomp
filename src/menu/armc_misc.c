@@ -678,7 +678,7 @@ void (armc_drawWeightLine)(void)
 }
 
 /* 0x412450: the three mode tabs across the top (0x4dcc90 / 0x4dcc94, 100 apart): the tab texture (0x9db0a4), the
-   chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (0x7565a4, 0x80 a slot) in its colour (0x4dbc58
+   chosen one (0x4dc798, 1 .. 3) brighter, then each tab's name (MSG(271, "$[0] PARTS"), 0x80 a slot) in its colour (0x4dbc58
    chosen, else 0x4dc1d0). Returns 3 (the original's eax) */
 int (armc_drawModeTabs)(void)
 {

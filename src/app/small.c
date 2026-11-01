@@ -104,7 +104,7 @@ u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
 void (net_clearServerList)(void) { clear((void *)IMG(0xa05748), 0x16c0); }
-void (net_clearRoomList)(void) { clear((void *)IMG(0x9fd960), 0x1e40); }
+void (net_clearRoomList)(void) { clear((void *)OBJ(g_roomList), 0x1e40); }
 void (net_clearPlayerList)(void) { clear((void *)OBJ(g_netPlayerList), 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
 char *(path_normalize)(char *s)
@@ -537,7 +537,7 @@ u32 (chat_keepLastLine)(void)
 }
 
 /* 0x42ef30: a start-up problem reported: codes 1 and -1 .. -5 each show their message (0x7511a4 ..) in a box titled
-   0x751024 over the main window; returns the box's answer, or the code itself when it has no message */
+   MSG(100, "USERMESSAGE") over the main window; returns the box's answer, or the code itself when it has no message */
 int (app_reportStartupProblem)(int code)
 {
 	u32 text;

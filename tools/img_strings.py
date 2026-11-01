@@ -83,9 +83,19 @@ for f in sorted(files):
 			return m.group(0)
 		total['STR'] += 1
 		return 'STR(0x%x, %s)' % (a, lit(s))
+	def raw_msg(m):   # (a plain message-table address: in a table, an argument - not an offset)
+		a = int(m.group(2), 16)
+		if not MSG0 <= a < MSG0 + LINE * len(msgs) or re.search(r'[-+]\s*$', m.group(1)) or \
+		   re.search(r'\b[A-Z][A-Z_0-9]*\(\s*[^(),]*,\s*(?:[^(),]*,\s*)?$', m.group(1)) or re.search(r'\bcase\s*$', m.group(1)):
+			return m.group(0)
+		n, k = divmod(a - MSG0, LINE)
+		total['MSG'] += 1
+		return m.group(1) + 'MSG(%d, %s)' % (n, lit(msgs[n])) + (' + %d' % k if k else '')
 	out = []
 	for line in t.split('\n'):
 		new = re.sub(r'\bIMG\((0x[0-9a-f]+)\)', sub, line)
+		if '--raw' in sys.argv and not re.match(r'\s*(#define|/\*|\*)', new):
+			new = re.sub(r'(^|[^\w.])(0x[0-9a-f]{6})\b(?!\s*[-+*])', lambda m: raw_msg(type('M', (), {'group': lambda s, i: (m.group(0), m.group(1), m.group(2))[i]})()), new)
 		if new != line and re.search(r'/\*\s*"[^*]*"\s*\*/\s*$', new):   # (a comment that only quoted the text)
 			new = re.sub(r'\s*/\*\s*"[^*]*"\s*\*/\s*$', '', new)
 		out.append(new)

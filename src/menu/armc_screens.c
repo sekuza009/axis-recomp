@@ -104,9 +104,9 @@ static void marker(float pos, int y)
 
 /* 0x41a280: the colour editor: two boxes (0x75d3a4 / 0x75d424) of three lines each, the current slot's hue
    (turned half round, as 0 .. 50 by 0.278) and saturation and value (percent; the second colour's from -1 .. 1);
-   the six slot buttons (the current one, 0x4dc4b0, bright; the sixth 0x756d24) with the parts' names beside them
-   when 0x4dbc68 is set; the sliders' tracks, bars and hue markers; two buttons (0x7517a4; 3 / 4 under the pointer,
-   by armcColour_hitTest, lit) and the box "<0x756da4> <0x751924 name of 0x4dceac>". The original leaves eax to callers
+   the six slot buttons (the current one, 0x4dc4b0, bright; the sixth MSG(286, "VIEW $[0] ALL")) with the parts' names beside them
+   when 0x4dbc68 is set; the sliders' tracks, bars and hue markers; two buttons (MSG(115, "$[0] O K"); 3 / 4 under the pointer,
+   by armcColour_hitTest, lit) and the box "<MSG(287, "$[0] ROTATE")> <MSG(118, "OFF") name of 0x4dceac>". The original leaves eax to callers
    that ignore it */
 void (armc_drawColourEditor)(void)
 {
@@ -251,10 +251,10 @@ static void stat_float(int x, int y, float value, u32 format, u32 unit)
 
 /* 0x419160: the build screen: two buttons (0x7517a4; 3 / 4 under the pointer, by armcParts_hitTest, lit), the six part
    slots (the chosen one, 0x4dbe48, bright), a new snapshot of it when asked (0x4dcc64), each slot's picture
-   (texture 0x4dcc70 + 4 k, when it has a name, 0x4dbe50) and label (0x756fa4) with its name (or 0x757da4); the part
-   box: its picture (0x4dcc88), name (0x4dc150) and type (0x7641a4, by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
-   0x757e24 without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: 0x757da4), a part type only
-   (0x4dc194 = -1: 0x765fa4 and its kind 0x7652a4), or the 16 stats under their labels (0x7574a4), the sixth with
+   (texture 0x4dcc70 + 4 k, when it has a name, 0x4dbe50) and label (MSG(291, "HAND-W1($[0] 1)")) with its name (or MSG(319, "EMPTY SLOT")); the part
+   box: its picture (0x4dcc88), name (0x4dc150) and type (MSG(711, "HV-PISTOL"), by 0x4dc79c / 0x4dcca4 of 0x4dc77c), or
+   MSG(320, "REMOVE WEAPON") without one; its arrows either side of it (0xc / 0xd lit); the mode box; the stats panel: nothing chosen (0x4dc190 = -1: MSG(319, "EMPTY SLOT")), a part type only
+   (0x4dc194 = -1: MSG(771, "SPECIAL WEAPON") and its kind MSG(745, "GRAVITY CONTROLLER")), or the 16 stats under their labels (MSG(301, "SLOT TYPE")), the sixth with
    the pilot's (0x9f1818) skill bonus. The original leaves eax to callers that ignore it */
 void (armc_drawBuildScreen)(void)
 {
@@ -357,7 +357,7 @@ void (armc_drawBuildScreen)(void)
 	strcpy(kind, (const char *)(MSG(323, "30mm") + STAT(int, 4) * 0x80));
 	armc_drawStatLabel(vx, y + 0x18, kind);
 	stat_int(vx, y + 0x28, STAT(int, 8), MSG(756, "cell"));
-	stat_int(vx, y + 0x38, STAT(int, 0xc), 0x765924);
+	stat_int(vx, y + 0x38, STAT(int, 0xc), MSG(758, "Round"));
 	char name[50] = { 0 };
 	strcpy(name, (const char *)(MSG(327, "IMPACT") + STAT(int, 0x10) * 0x80));
 	armc_drawStatLabel(vx, y + 0x48, name);

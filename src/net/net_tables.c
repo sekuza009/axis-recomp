@@ -330,7 +330,7 @@ void (net_closeAll)(int kind)
 		strcpy((char *)IMG(0xa055e4), net_resolveHost(host) ? g_serverAddress : host);
 		g_serverPort = GAME_VAR(u16, kind == 100 ? ADDR(g_lobbyTcpPort) : ADDR(g_ladderPort));
 	}
-	memset((void *)IMG(0x9fd960), 0, 0x1e40 * 4);
+	memset((void *)OBJ(g_roomList), 0, 0x1e40 * 4);
 	memset((void *)IMG(0xa05748), 0, 0x16c0 * 4);
 	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
@@ -450,7 +450,7 @@ static int list_append(u32 count, u32 base, int size, const u8 *rec, const u8 *s
 {
 	for (int k = 0; k < nstrings; k++)
 		lstrcpyA((char *)(RELOC(base) + GAME_VAR(int, count) * size + strings[k]), (const char *)RELOC(rec) + strings[k]);
-	lstrcpyA((char *)(IMG(0xa0bf20) + GAME_VAR(int, count) * 20), (const char *)RELOC(rec) + name);
+	lstrcpyA((char *)(OBJ(g_serverNames) + GAME_VAR(int, count) * 20), (const char *)RELOC(rec) + name);
 	int i = GAME_VAR(int, count);
 	u8 *slot = (u8 *)(RELOC(base) + i * size);
 	for (int k = 0; k < nbytes; k++)
@@ -470,7 +470,7 @@ int (net_addRoomRecord)(const u8 *rec)
 {
 	static const u8 strings[4] = { 0x43, 0x33, 0x01, 0x71 };
 	static const u8 bytes[9] = { 0x00, 0x67, 0x65, 0x64, 0x63, 0x61, 0x62, 0x66, 0x70 };
-	return list_append(ADDR(g_roomListCount), IMG(0x9fd960), 0x79, rec, strings, 4, 0x33, bytes, 9);
+	return list_append(ADDR(g_roomListCount), OBJ(g_roomList), 0x79, rec, strings, 4, 0x33, bytes, 9);
 }
 
 #define lstrlenA(s) IMPORT(0x4a9188, int, const char *)(s)
@@ -626,7 +626,7 @@ u32 (net_pingAllServers)(void)
 	(*(int *)&g_pingTime) = 0;
 	if (g_serverPingCount > 0) {
 		for (int i = 0; i < g_serverPingCount && g_netListDone != 1; i++) {
-			const char *name = (const char *)(IMG(0xa0bf20) + i * 20);
+			const char *name = (const char *)(OBJ(g_serverNames) + i * 20);
 			if ((int)strlen(name) <= 0)
 				continue;
 			if (GAME_FN(net_pingServer, 0x454650, int, const char *, int)(name, i)) {   /* net_pingServer */

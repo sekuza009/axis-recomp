@@ -28,7 +28,8 @@ shot menu0
 "$M/k_rc.sh" - 5 0x43; shot setup3; "$M/k_rc.sh" - 4 0x1B   # C: control
 "$M/k_rc.sh" - 5 0x1B; shot back2
 "$M/k_rc.sh" - 5 0x70; shot replays                     # F1: the replay list
-"$M/k_rc.sh" - 15 0x4F; shot replay1                    # O: a replay played
+"$M/k_rc.sh" - 3 0x41; shot replays2                    # A: every file in
+"$M/k_rc.sh" - 20 0x4F; shot replay1                    # O: the replays played
 sleep 10; shot replay2
 "$M/k_rc.sh" - 8 0x1B; shot back3; "$M/k_rc.sh" - 6 0x1B; shot back3b
 "$M/k_rc.sh" - 5 0x49; shot main2                         # (logged in again if it went back to the profiles)

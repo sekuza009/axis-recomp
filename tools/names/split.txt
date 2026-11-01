@@ -9,3 +9,9 @@ g_sinTable
 g_briefingText
 g_chatLine
 g_keySeen
+g_messages
+g_ptxPixels
+g_ptxData
+g_roomList
+g_missions
+g_serverNames

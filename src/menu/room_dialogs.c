@@ -596,7 +596,7 @@ static void stars(char *out, int size, const char *password)
 }
 
 /* 0x4399c0: the server login dialog (0x9dd6e8 .. 0x9dd6f4; only its frame while a message box is open): the title
-   0x7588a4, four labelled lines (0x758924, 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
+   MSG(341, "CREATE NEW ID"), four labelled lines (MSG(342, "INPUT ID"), 0x80 apart) with underlines, the values (the name 0x9dd1d8, the two
    passwords 0x9dd1f6 / 0x9dd202 as stars, 0x9dd20e), each left out while its field is being typed in (0x9dd348 /
    0x9dd3f8 / 0x9dd564 / 0x9dd6cc, with the keys taken), the two buttons (the one under the pointer, 4 / 5 by
    FUN_00432240, bright) and the border. Returns the frame's or the border's eax */
@@ -654,7 +654,7 @@ u32 (loginDialog_draw)(void)
 }
 
 /* the confirmation over a room dialog (0x9dd850): the screen dimmed, a box with two lines (0x74dfa4, 0x74e024) and
-   its two buttons (0x7517a4; the one under the pointer, by leaveDialog_hitTest, in cyan) */
+   its two buttons (MSG(115, "$[0] O K"); the one under the pointer, by leaveDialog_hitTest, in cyan) */
 static void confirm_box(void)
 {
 	int hovered = leaveDialog_hitTest(g_mouseX, g_mouseY);
@@ -683,7 +683,7 @@ static void confirm_box(void)
 }
 
 /* 0x439e00: the room's server dialog (0x9dd1a0 .. 0x9dd1ac; only its frame while a message box is open): the title
-   0x758da4, a rule, the server name 0x9dd1d8 in a green-framed box, the note 0x758e24, two buttons (0x758f24, 0x80
+   MSG(351, "CREATE NEW ID"), a rule, the server name 0x9dd1d8 in a green-framed box, the note MSG(352, "NEW ID ON REGISTRATION"), two buttons (MSG(354, "$[0] O K"), 0x80
    apart; the one under the pointer by popup_hitTest bright), the confirmation (0x9dd850) and the border. Returns the
    frame's or the border's eax */
 u32 (serverDialog_draw)(void)
@@ -735,10 +735,10 @@ u32 (serverDialog_draw)(void)
 }
 
 /* 0x4392c0: the room login dialog (0x9dd358 .. 0x9dd364; only its frame while a message box is open): the title
-   0x7583a4 and its rule, two labelled dark boxes (0x758424, 0x80 apart) with the name 0x9dd1d8 and the password
-   0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (0x758524; the
+   MSG(331, "LADDER GAME ID MANAGER") and its rule, two labelled dark boxes (MSG(332, "YOUR ID"), 0x80 apart) with the name 0x9dd1d8 and the password
+   0x9dd1f6 as stars (each left out while it is being typed in: 0x9dd830 / 0x9dd38c), three buttons (MSG(334, "LOG$[0] IN"); the
    one under the pointer, 2 .. 4 by createDialog_hitTest, bright unless connecting), while connecting (0x9dd838) a box with
-   two lines (0x74f6a4, 0x74f724), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
+   two lines (MSG(49, "CHECKING YOUR ID. PLEASE WAIT."), MSG(50, "PRESS ESC-KEY TO CANCEL")), the confirmation (0x9dd850) and the border. Returns the frame's or the border's
    eax */
 u32 (roomLogin_draw)(void)
 {
@@ -826,12 +826,12 @@ static void rank_badge(int rank, int x, int y)
 }
 
 /* 0x43a420: the pilot's account panel (0x9dd368 .. 0x9dd374); while waiting for the server (0x9dd6d4 = 1) only a
-   box with two lines (0x75b1a4, 0x74f724). The title 0x7592a4, five labels for the fields (0x759324, 0x80 apart) and
-   seven for the record (0x7595a4); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
+   box with two lines (MSG(423, "DOWNLOADING RANKING DATA"), MSG(50, "PRESS ESC-KEY TO CANCEL")). The title MSG(361, "USER INFOMATION"), five labels for the fields (MSG(362, "USER ID"), 0x80 apart) and
+   seven for the record (MSG(367, "LEVEL")); four dark boxes with the name 0x9dd1d8, three passwords as stars (0x9dd6d8,
    0x9dd1f6, 0x9dd202; each left out while it is being typed in: 0x9dd69c / 0x9dd37c / 0x9dd378) and 0x9dd20e (left
    out while 0x9dd304); the level 0x9dd5d8 with its rank badge (cell (level - 1) % 10, / 10 of the texture 0x76d448),
-   the clan 0x9dd248 (0x759924 when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
-   0x9dd5f0, 0x9dd5dc); two buttons (0x7517a4; 4 / 5 under the pointer by account_hitTest, lit unless 0x68039c), a
+   the clan 0x9dd248 (MSG(374, "OUT OF RANK(1000)") when none), two ratios ("%.2f": 0x9dd5e4, 0x9dd5f4) and three counts (0x9dd5ec,
+   0x9dd5f0, 0x9dd5dc); two buttons (MSG(115, "$[0] O K"); 4 / 5 under the pointer by account_hitTest, lit unless 0x68039c), a
    rule and the border. The original leaves eax to callers that ignore it */
 void (account_drawPanel)(void)
 {
@@ -933,11 +933,11 @@ void (account_drawPanel)(void)
 
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
    by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
-   (0x75ac24; 2) with the sorted column's name; two rules and the column heads (0x75aca4 .., the sorted one in
+   (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
    yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (the name at 0x9dcef4, its rank at -4) until an
    empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (+0x32) in a yellow frame, "%8.1f" (+0x36),
    "%3.2f" (+0x2e) and three counts (+0x26, +0x2a, +0x1e), the sorted value in yellow; a rule, two buttons
-   (0x75b0a4; 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking 0x75b1a4; the
+   (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
    border. Returns the border's eax */
 u32 (ranking_drawTable)(void)
 {
@@ -980,7 +980,7 @@ u32 (ranking_drawTable)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, hovered == 2 ? 1.0f : 0.6f);
 	menu_drawWideButton(X1 - 0x78, Y0 + 0x24, X1 - 0x14, Y0 + 0x40, 1);
 	TEXT(yellow);
-	static const u32 sorted_by[4] = { 0x75ae24, 0x75af24, 0x75b024, 0x75aea4 };
+	static const u32 sorted_by[4] = { MSG(416, "POWER"), MSG(418, "KILL"), MSG(420, "EXP"), MSG(417, "RATE") };
 	if ((unsigned)g_rankingSort <= 3)
 		text_draw8b(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)RELOC(sorted_by[g_rankingSort]));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -992,8 +992,8 @@ u32 (ranking_drawTable)(void)
 	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)MSG(414, "ID"));
 	text_draw8(X0 - (int)strlen((const char *)MSG(415, "GRADE")) * 8 + 0xec, Y0 + 0x52, (const char *)MSG(415, "GRADE"));
 	static const struct { u32 text; int right, sort; } heads[5] = {
-		{ 0x75ae24, 0x12c, 0 }, { 0x75aea4, 0x2d * 8, 3 }, { 0x75af24, 0x35 * 8, 1 }, { 0x75afa4, 0x3c * 8, -1 },
-		{ 0x75b024, 0x226, 2 },
+		{ MSG(416, "POWER"), 0x12c, 0 }, { MSG(417, "RATE"), 0x2d * 8, 3 }, { MSG(418, "KILL"), 0x35 * 8, 1 }, { MSG(419, "DEATH"), 0x3c * 8, -1 },
+		{ MSG(420, "EXP"), 0x226, 2 },
 	};
 	for (int c = 0; c < 5; c++) {
 		int x = heads[c].right - (int)strlen((const char *)heads[c].text) * 8;

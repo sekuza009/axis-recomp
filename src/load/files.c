@@ -462,7 +462,7 @@ u32 (mission_loadAxisMis)(void)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
 		{ 0, 4 }, { 4, 0x40 }, { 0x44, 0x20 }, { 0x64, 0x80 }, { 0xe4, 4 }, { 0xe8, 4 }, { 0xec, 4 }, { 0xf0, 4 } };
-	u8 *mission = (u8 *)IMG(0x9ef2d0);
+	u8 *mission = g_missions;
 	for (int i = 0; i < g_missionCount; i++)
 		for (int k = 0; k < 8; k++)
 			crt_fread(mission + i * 0xfc + part[k].offset, part[k].size, 1, f);
@@ -480,7 +480,7 @@ u32 (mission_saveAxisMis)(int k)
 	void *f = mis_open();
 	if (!f)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
-	const int *size = (const int *)IMG(0x9ef3c4);   /* size[i * 63] */
+	const int *size = (const int *)(OBJ(g_missions) + 0xf4);   /* size[i * 63] */
 	int offset = 0;
 	for (int i = 0; i < k; i++)
 		offset += size[i * 63];
@@ -638,7 +638,7 @@ static void *data_open(u32 folder, u32 name, u32 mode, u32 missing)
 }
 
 /* 0x42b3e0: the game's messages read from msgkor.dat or msgeng.dat (by the language 0x9dae74; in the data folder),
-   one line each into 0x80-byte slots from 0x74de24 with the line break cut off; "//" comment lines and empty lines
+   one line each into 0x80-byte slots from MSG(0, "PRESS ENTER OR CLICK MOUSE") with the line break cut off; "//" comment lines and empty lines
    skipped. Without the file a message box and the game ends. Returns fclose's eax */
 u32 (data_loadMessages)(void)
 {

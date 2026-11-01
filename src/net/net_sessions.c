@@ -60,7 +60,7 @@ static void merge(const Received *g)
 /* 0x434ff0: the game room's (0x79-byte records) */
 void (room_mergeReceivedSessions)(void)
 {
-	static const Received room = { ADDR(g_roomListCount), IMG(0x9fd9c7), 0x79, -0x66, -0x34, ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
+	static const Received room = { ADDR(g_roomListCount), (OBJ(g_roomList) + 0x67), 0x79, -0x66, -0x34, ADDR(g_roomNameSum), { ADDR(g_roomSearching), ADDR(g_roomSearchAnswerIn), ADDR(g_roomRefreshing) } };
 	merge(&room);
 }
 

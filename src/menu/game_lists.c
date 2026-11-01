@@ -30,7 +30,7 @@ static void button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 }
 
 /* nine rows of games from g_listTop at x0, from y (to end) below y0: a lock (+0x43; when locks), the name (+0, 32
-   characters), the map (+0x21, 13 characters; 0x75c1a4 when +0x20), the game type (+0x28, a string of kinds, step
+   characters), the map (+0x21, 13 characters; MSG(455, "ROTATION") when +0x20), the game type (+0x28, a string of kinds, step
    apart), "players / most" (+0x23 / +0x22) and the ping (+0x24; when pings); the game under the cursor (0x76d41c) in
    white, the others cyan */
 static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int step, int pings)
@@ -118,10 +118,10 @@ static void info_box(u32 line, int named)
 
 /* 0x40a070: the arena's game list: the window, its title 0x7524a4, three tabs (0x752524; the one under the pointer,
    by arenaGameList_hitTest, lit unless a box is up), five column heads; the rows and page when there is a list (0x4dbac8,
-   or the full one 0x4dbaa8); three buttons (0x7528a4: join needs a game, and while searching only the second
-   lights; all dimmed under the full / joining boxes); the scroll arrows (15 / 16); the blinking 0x752a24 while
-   searching or 0x4db8b8; the joining and full boxes, the join confirmation (0x752aa4 / 0x752b24, its button
-   0x751824 by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
+   or the full one 0x4dbaa8); three buttons (MSG(149, "$[0] JOIN"): join needs a game, and while searching only the second
+   lights; all dimmed under the full / joining boxes); the scroll arrows (15 / 16); the blinking MSG(152, "SEARCHING FOR THE GAME SERVER") while
+   searching or 0x4db8b8; the joining and full boxes, the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") / MSG(154, "PLEASE WAIT"), its button
+   MSG(116, "$[0] CANCEL") by arenaDialogBox_hitTest) and the "leave?" box (the original asks arenaCreate_hitTest but lights its buttons by the
    list's own pointer test); the border. The original leaves eax to callers that ignore it */
 void (arena_drawGameList)(void)
 {
@@ -143,7 +143,7 @@ void (arena_drawGameList)(void)
 	}
 	TEXT(bright);
 	static const struct { int x; u32 text; } heads[5] = {
-		{ 0x10, 0x7526a4 }, { 0x114, 0x752724 }, { 0x164, 0x752ba4 }, { 0x1b4, 0x7527a4 }, { 0x1fc, 0x752824 },
+		{ 0x10, MSG(145, "ROOM NAME") }, { 0x114, MSG(146, "MAP NAME") }, { 0x164, MSG(155, "TYPE") }, { 0x1b4, MSG(147, "PLAYER") }, { 0x1fc, MSG(148, "PING") },
 	};
 	for (int c = 0; c < 5; c++)
 		text_draw8(X0 + heads[c].x, Y0 + 0x5a, (const char *)RELOC(heads[c].text));
@@ -188,7 +188,7 @@ void (arena_drawGameList)(void)
 	if (g_arenaJoining)
 		info_box(MSG(38, "TYPE GAME PASSWORD"), 1);
 	if (g_arenaFull)
-		info_box(0x74f624, 0);
+		info_box(MSG(48, "INPUT IP-ADDRESS"), 0);
 	if (g_arenaConfirming) {
 		int on = GAME_FN(arenaDialogBox_hitTest, 0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
@@ -249,11 +249,11 @@ static void room_button(int lit, int x0, int y0, int x1, int y1, float dim_alpha
 }
 
 /* 0x43adc0: the game room's list of games: the window, its title 0x759ca4, five column heads (0x759d24, 0x80
-   apart), rules; with a list (0x9dd330) of games, the rows and "page / pages" (0xa0b358); four buttons (0x759fa4;
+   apart), rules; with a list (0x9dd330) of games, the rows and "page / pages" (0xa0b358); four buttons (MSG(387, "$[0] JOIN");
    the one under the pointer, by gameList_hitTest, lit: the first only with games, and while searching (0x9dd6a0) only
-   the third; all dimmed while joining, 0x9dd6b4); the scroll arrows (13 / 14); the blinking 0x75a1a4 while
-   searching or 0x9dd3fc; the joining box (0x74f124 and the room's name 0x9dcee8); the join confirmation (0x752aa4 /
-   0x752b24, its button 0x751824 by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
+   the third; all dimmed while joining, 0x9dd6b4); the scroll arrows (13 / 14); the blinking MSG(391, "SEARCHING FOR THE GAME SERVER") while
+   searching or 0x9dd3fc; the joining box (MSG(38, "TYPE GAME PASSWORD") and the room's name 0x9dcee8); the join confirmation (MSG(153, "CONNECTING TO THE GAME SERVER") /
+   MSG(154, "PLEASE WAIT"), its button MSG(116, "$[0] CANCEL") by gameListStop_hitTest); the border. The original leaves eax to callers that ignore it */
 void (gameList_draw)(void)
 {
 	int hovered = gameList_hitTest(g_mouseX, g_mouseY);
@@ -272,7 +272,7 @@ void (gameList_draw)(void)
 	menu_drawLine(X0 + 0x10, Y0 + 0x50, X1 - 0x10, Y0 + 0x50);
 	menu_drawLine(X0 + 0x10, Y1 - 0x5e, X1 - 0x10, Y1 - 0x5e);
 	if (g_gameListLoaded && g_gameCount) {
-		game_rows(X0, Y0, 0x60, 0x138, 1, 0x7673a4, 0x80, 1);
+		game_rows(X0, Y0, 0x60, 0x138, 1, MSG(811, "DM"), 0x80, 1);
 		game_page(X1, Y1 - 0x58, g_roomListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);
@@ -441,7 +441,7 @@ static void shadowed(int x, int y, const char *text)
 
 /* 0x409bc0: the arena's name dialog: the window, a cyan frame, the title 0x751fa4, two labels (0x752024, 0x752124)
    and the name 0x4db560 (hidden while it is typed in, g_paused); without a message (0x4dbbd0) the name or the
-   second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (0x7521a4, 0x80 apart;
+   second label under the pointer (arenaNameDialog_hitTest's 0 / 2) shadowed in yellow; three buttons (MSG(135, "$[0] O K"), 0x80 apart;
    3 .. 5, lit under the pointer), the border. The original leaves eax to callers that ignore it */
 void (arena_drawNameDialog)(void)
 {

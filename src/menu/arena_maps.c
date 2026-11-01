@@ -166,7 +166,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 /* 0x4038e0: the map list over a dimmed screen: two column heads (0x75d924, 0x75d9a4), up to 10 rows from g_mapTop
    (22 .. 24 left out): the number, the name (0x907b30, 0x20 apart) and the game type's name (0x4db8d8, 20 apart),
    the row under the pointer (by mapList_hitTest) highlighted; the scroll arrows (0x14 / 0x15) and two rows of buttons
-   (0x75db24 from 0x16, 0x75da24 from 0x18). The original leaves eax to callers that ignore it */
+   (MSG(506, "$[0] DEFAULT") from 0x16, MSG(504, "$[0] O K") from 0x18). The original leaves eax to callers that ignore it */
 void (mapList_draw)(void)
 {
 	int hovered = mapList_hitTest(g_mouseX, g_mouseY);
@@ -207,8 +207,8 @@ void (mapList_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawSmallButton3(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
 	menu_drawSmallButton4(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);
-	map_buttons(hovered, 0x16, 0x15e, 0x75db24);
-	map_buttons(hovered, 0x18, 0x186, 0x75da24);
+	map_buttons(hovered, 0x16, 0x15e, MSG(506, "$[0] DEFAULT"));
+	map_buttons(hovered, 0x18, 0x186, MSG(504, "$[0] O K"));
 }
 #undef cyan_text
 

@@ -93,8 +93,8 @@ static void bind_button_texture(void)
 }
 
 /* ---- the mission list: 0xfc-byte records from 0x9ef2d4 (count 0x9ef2c0): the name, +0x40 a text, +0x60 the
-   description, +0xe0 a number, +0xe8 the kind (a 0x75dda4 string) ---- */
-#define mission(i) ((const u8 *)IMG(0x9ef2d4) + (i) * 0xfc)
+   description, +0xe0 a number, +0xe8 the kind (a MSG(511, "DON'T") string) ---- */
+#define mission(i) ((const u8 *)(OBJ(g_missions) + 0x4) + (i) * 0xfc)
 #define g_missionTop GAME_VAR(int, 0x9f16bc)      /* the first row shown */
 
 /* the columns' left (and right) x from the window's left */
@@ -102,7 +102,7 @@ static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 
 
 /* 0x444f40: the mission list: the window and its title 0x75dda4, a cyan frame and rule, the column heads (0x75de24,
    0x80 apart) on blue bars, up to 8 rows from g_missionTop (the picked one bright), the picked one's description
-   (wrapped at the window's right less 0x38) and two buttons (0x75e0a4; 8 / 9 under the pointer by skirmishSettings_hitTest,
+   (wrapped at the window's right less 0x38) and two buttons (MSG(517, "RESERVED"); 8 / 9 under the pointer by skirmishSettings_hitTest,
    lit). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenA)(void)
 {
@@ -153,8 +153,8 @@ void (skirmish_drawScreenA)(void)
 #undef mission
 
 /* 0x4456b0: the mission briefing: a translucent blue window, its title 0x75e024, a cyan frame and rule, the text
-   typed out (briefing_typeOut), two buttons at the right (0x75e2a4, 0x80 apart; lit under the pointer: 0 / 1 by
-   briefing_hitTest) and two at the left (0x75e3a4: 2 only once the text is out (0x4d7348), 3 only with something to
+   typed out (briefing_typeOut), two buttons at the right (MSG(521, "$[0] ACCEPT"), 0x80 apart; lit under the pointer: 0 / 1 by
+   briefing_hitTest) and two at the left (MSG(523, "$[0] NEXT"): 2 only once the text is out (0x4d7348), 3 only with something to
    undo (0x9f1060); greyed otherwise). The original leaves eax to callers that ignore it */
 void (skirmish_drawScreenB)(void)
 {

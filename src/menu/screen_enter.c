@@ -114,7 +114,7 @@ void (menuState400_enter)(void)
 }
 
 /* 0x420770: the setup screen: its layout, camera, colours, and the two option columns' texts (0x80 apart in the
-   text block at 0x75b5a4) */
+   text block at MSG(431, "16BIT COLOR")) */
 void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {

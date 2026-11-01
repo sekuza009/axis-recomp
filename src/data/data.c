@@ -10,22 +10,34 @@ struct GameData g_data __attribute__((aligned(4096)));
 /* the objects split out of g_data (tools/names/split.txt): variables of their own; their old pages in g_data are
    left inaccessible (standalone/main.c, g_splitObjects) */
 int g_keySeen_v[256] __attribute__((aligned(16)));   /* 0x4d1a98 */
+char g_messages_v[128256] __attribute__((aligned(16)));   /* 0x74de24 */
 char g_chatLine_v[1024] __attribute__((aligned(16)));   /* 0x9dc92c */
+u8 g_missions_v[7560] __attribute__((aligned(16)));   /* 0x9ef2d0 */
 char g_briefingText_v[1600] __attribute__((aligned(16)));   /* 0x9f1064 */
+u8 g_roomList_v[7744] __attribute__((aligned(16)));   /* 0x9fd960 */
+u32 g_serverNames_v[1280] __attribute__((aligned(16)));   /* 0xa0bf20 */
 float g_tan10Table_v[18] __attribute__((aligned(16)));   /* 0xa106b0 */
 int g_randTable_v[4096] __attribute__((aligned(16)));   /* 0xa106f8 */
 float g_tanTable_v[3600] __attribute__((aligned(16)));   /* 0xa146f8 */
 float g_cosTable_v[3600] __attribute__((aligned(16)));   /* 0xa17f38 */
 float g_sinTable_v[3600] __attribute__((aligned(16)));   /* 0xa1b778 */
+u8 g_ptxPixels_v[262144] __attribute__((aligned(16)));   /* 0xa21708 */
+u8 g_ptxData_v[262144] __attribute__((aligned(16)));   /* 0xaa2e98 */
 const DataPiece g_splitObjects[] = {
 	{ 0x4d1a98, g_keySeen_v, sizeof g_keySeen_v },
+	{ 0x74de24, g_messages_v, sizeof g_messages_v },
 	{ 0x9dc92c, g_chatLine_v, sizeof g_chatLine_v },
+	{ 0x9ef2d0, g_missions_v, sizeof g_missions_v },
 	{ 0x9f1064, g_briefingText_v, sizeof g_briefingText_v },
+	{ 0x9fd960, g_roomList_v, sizeof g_roomList_v },
+	{ 0xa0bf20, g_serverNames_v, sizeof g_serverNames_v },
 	{ 0xa106b0, g_tan10Table_v, sizeof g_tan10Table_v },
 	{ 0xa106f8, g_randTable_v, sizeof g_randTable_v },
 	{ 0xa146f8, g_tanTable_v, sizeof g_tanTable_v },
 	{ 0xa17f38, g_cosTable_v, sizeof g_cosTable_v },
 	{ 0xa1b778, g_sinTable_v, sizeof g_sinTable_v },
+	{ 0xa21708, g_ptxPixels_v, sizeof g_ptxPixels_v },
+	{ 0xaa2e98, g_ptxData_v, sizeof g_ptxData_v },
 	{ 0, 0, 0 }
 };
 

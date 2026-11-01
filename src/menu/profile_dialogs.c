@@ -55,8 +55,8 @@ void (profile_drawScreen)(void)
 }
 
 /* 0x44dc60: the profile message window (the panel 0x9f8eac, 0x9f8ea8 .. 0x9f8f20, 0x9f8f24): its frame (texture
-   0x4deb50), the message 0x751d24 across the top in the panel's colour (0x9f8eb0), the OK button (texture
-   0x9db0a4, 0x60 wide, centred) with its label 0x7517a4, and the border. Returns the border call's eax */
+   0x4deb50), the message MSG(126, "NAME ALREADY REGISTRED") across the top in the panel's colour (0x9f8eb0), the OK button (texture
+   0x9db0a4, 0x60 wide, centred) with its label MSG(115, "$[0] O K"), and the border. Returns the border call's eax */
 u32 (profile_drawMessageWindow)(void)
 {
 #define X0 g_newNameDialogLeft
@@ -88,7 +88,7 @@ u32 (profile_drawMessageWindow)(void)
 
 /* ---- a two-button profile dialog: the window (x0, y0, x1, y1 kept in four globals) with its frame (texture
    0x4deb50), the question across the top in the panel colour (0x9f8eb0), two buttons 0x78 apart (texture 0x9db0a4,
-   labels 0x80 bytes apart from 0x7517a4), the hovered one (by hit) bright in the panel colour, the other dim in
+   labels 0x80 bytes apart from MSG(115, "$[0] O K")), the hovered one (by hit) bright in the panel colour, the other dim in
    0x9f8d58, and the border. Returns the border call's eax ---- */
 typedef struct { u32 x0, y0, x1, y1, hit, question; } TwoButtons;
 
@@ -126,7 +126,7 @@ static u32 two_buttons(const TwoButtons *d)
 }
 
 /* 0x44e180: the delete question (deleteDialog_hitTest, question 0x751da4); 0x44e3e0: the second dialog (secondDialog_hitTest,
-   question 0x751e24) */
+   question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
 	static const TwoButtons d = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
@@ -187,7 +187,7 @@ u32 (profile_drawNewDialog)(void)
 }
 
 /* 0x44d720: the profile screen (0x9f8e48 .. 0x9f8ea4): the window (brighter while the pilot list has the focus,
-   page 0x9f8f10 = 1), the list's and the details' frames, the title 0x751a24, four buttons (0x751aa4, 0x80 apart:
+   page 0x9f8f10 = 1), the list's and the details' frames, the title MSG(120, "PROFILE MANAGEMENT"), four buttons (MSG(121, "$[0] NEW"), 0x80 apart:
    on the list page the one under the pointer, by profilePage_hitTest, lit; on page k + 2 button k lit, in the panel
    colour less 0.2 in green and blue), the pilot list (profileList_drawNames), its scroll arrows (5 / 6 under the
    pointer), the details (profile_drawChosenPilot), the border and the version string 0x4b0384 right-aligned at the bottom.
@@ -326,9 +326,9 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 /* 0x44e640: the pilot-select dialog (0x9f8c54, 0x9f8c50 .. 0x9f6830, 0x9f682c): the window, its title 0x75e7a4 and
    rule; the portraits (texture 0x4dfa00) and over them the chosen pilot's (0x9f8d30: cell % 3, / 3 of 86 texels)
    growing by 2 a reveal step (0x9f6828, up to 8, one a 1.0 of 0x9f8ee4) under a pulsing frame (0x9dad90; its alpha
-   by 0x9f8f08, which bounces between 2 and 38 at 0x9f8c48 a frame); the details: 13 labels (0x75e824), the pilot's
-   name, title, class (0x75eea4), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (0x9f8d34,
-   easing to 0x9f8ec0); two buttons (0x7517a4; 9 / 10 under the pointer by pilotSelect_hitTest, bright) and the border.
+   by 0x9f8f08, which bounces between 2 and 38 at 0x9f8c48 a frame); the details: 13 labels (MSG(532, "NAME :")), the pilot's
+   name, title, class (MSG(545, "RESERVED")), level and nine stats (right-aligned, with 0x4b3e2c) beside their bars (0x9f8d34,
+   easing to 0x9f8ec0); two buttons (MSG(115, "$[0] O K"); 9 / 10 under the pointer by pilotSelect_hitTest, bright) and the border.
    The original leaves eax to callers that ignore it */
 void (profile_drawPilotSelect)(void)
 {
@@ -462,7 +462,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, (const char *)PILOT(g_pilot));
 }
 
 /* 0x44cf70: the chosen profile's pilot (0x9f688c, 0x48 bytes a profile, of 0x9f8d74, into 0x9f8d6c) beside the
-   profile list, when there are profiles (0x9f9008): 13 labels (0x75e824), the portrait in a yellow frame, the name,
+   profile list, when there are profiles (0x9f9008): 13 labels (MSG(532, "NAME :")), the portrait in a yellow frame, the name,
    title and class (the original places these two by the panel's x, 0x9f8e48, not its y), the level, the nine
    stats and their bars; all at half brightness while the list does not have the focus (0x9f8f10) */
 void (profile_drawChosenPilot)(void)

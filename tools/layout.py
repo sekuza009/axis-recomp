@@ -32,6 +32,13 @@ for m in re.finditer(r'#define (\w+) GAME_VAR\(([\w \*]+), (0x[0-9a-f]+)\)', ope
 	names[m.group(1)] = (m.group(2).strip(), int(m.group(3), 16))
 starts = {a: n for n, (t, a) in names.items()}
 extent = {n: size_of(t) or 0 for n, (t, a) in names.items()}
+# the arrays, buffers and records of src/objects.h (tools/names/objects.txt), with their extents
+OBJ_SIZES = {'char': 1, 'u8': 1, 'signed_char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'Colour': 16}
+for line in open(os.path.join(R, 'tools', 'names', 'objects.txt')):
+	a, ty, n, name = line.split()
+	names[name] = ('u8', int(a, 16))
+	starts[int(a, 16)] = name
+	extent[name] = OBJ_SIZES[ty] * int(n)
 
 files = [f for f in glob.glob(os.path.join(R, 'src', '**', '*.[ch]'), recursive=True) if not f.endswith(('globals.h', 'scene.h'))]
 files += [os.path.join(R, 'axisnet_recomp.c')] + glob.glob(os.path.join(R, 'standalone', '*.[ch]'))

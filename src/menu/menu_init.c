@@ -44,7 +44,7 @@ void (skirmish_clearPlayerRows)(void)
 	g_misHeader1 = 0;
 	g_misHeader2 = 0;
 	g_misHeader3 = 0;
-	for (u32 e = 0x9ef314; e < 0x9f109c; e += 0xfc) {
+	for (u32 e = OBJ(g_missions) + 0x44; e < OBJ(g_missions) + 30 * 0xfc + 0x44; e += 0xfc) {   /* (+0x44: each entry's name) */
 		memset((void *)(RELOC(e) - 0x40), 0, 0x40);
 		memset((void *)RELOC(e), 0, 0xa0);
 		GAME_VAR(int, e - 0x44) = 0;

@@ -148,7 +148,7 @@ static inline int code_matches(u32 addr, const char *pattern)
    data): STR(0x4b4418, "Data/Component.dat"); MSG(n, text) is line n of the message table (0x80 bytes a line from
    0x74de24, read from msgeng.dat at start-up). Both the address as IMG() gives it */
 #define STR(addr, text) IMG(addr)
-#define MSG(n, text) IMG(0x74de24 + (n) * 0x80)
+#define MSG(n, text) (OBJ(g_messages) + (n) * 0x80)   /* (g_messages: src/objects.h) */
 /* a class's vtable in .rdata, named after the class (tools/img_vtables.py): self[0] = VT(Scene, 0x4aa258) */
 #define VT(cls, addr) IMG(addr)
 

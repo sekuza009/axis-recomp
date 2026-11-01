@@ -20,9 +20,9 @@ static void tex_quad(float s0, float t0, float s1, float t1, int x0, int y0, int
 /* 0x424810: the sound page (0x4ddad0 .. 0x4ddadc): the window, a cyan frame, the title 0x7533a4; the volume slider
    from the button texture (0x9db0a4): the two arrows, the track and the bar (the volume 0x4dde98 long); while
    0x4ddb98 runs down (by 0x4b071c, then -1 into 0x4dde90) the arrow pressed (0x4dde90: 0 / 1, or 2 / 3 a row lower)
-   lit; the label 0x753424 and three switches (0x7534a4, 0x80 apart) with their on / off names (0x753624 + 0x80 x:
+   lit; the label MSG(172, "EFFECT SOUND") and three switches (MSG(173, "BGM"), 0x80 apart) with their on / off names (0x753624 + 0x80 x:
    the volume on, 0x4ddea0, 0x4ddea4), the one under the pointer (5 .. 7, by setupSound_hitTest) yellow with a shadow; two
-   buttons (0x753724, lit from 8) and the border. The original leaves eax to callers that ignore it */
+   buttons (MSG(178, "$[0] ACCEPT"), lit from 8) and the border. The original leaves eax to callers that ignore it */
 void (setup_drawSoundPage)(void)
 {
 #define X0 g_setupSoundLeft
@@ -107,7 +107,7 @@ void (setup_drawSoundPage)(void)
 /* 0x425460: the options dialog (0x4dddd0 .. 0x4ddddc): the window, the title 0x7538a4, seven labels (0x753924, 0x80
    apart) and their values: the screen size (the names at 0x4b04cc by 0x4ddba0) and six choices, each from its own
    table of 0x32-byte names (by 0x4ddba4 .. 0x4ddbb8); the value under the pointer (0 .. 6, by setupOptions_hitTest) drawn
-   again with a shadow, in yellow; two buttons (0x753ca4, lit from 7) and the border. The caller ignores the eax it
+   again with a shadow, in yellow; two buttons (MSG(189, "$[0] ACCEPT"), lit from 7) and the border. The caller ignores the eax it
    leaves */
 void (setup_drawOptionsDialog)(void)
 {
@@ -182,7 +182,7 @@ static void key_tab(int tab)
 {
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
-	static const u32 labels[3] = { 0x754a24, 0x7551a4, 0x755924 };
+	static const u32 labels[3] = { MSG(216, "FORWARD"), MSG(231, "FIRE"), MSG(246, "CHAT") };
 	static const int rows[3] = { 10, 11, 10 };
 	const u32 *bright = (const u32 *)IMG(0x4de048);
 	const char *const *key_name = (const char *const *)IMG(0x4b0750);
@@ -213,7 +213,7 @@ static void key_tab(int tab)
 }
 
 /* the fourth tab: its title, labels (0x7560a4, and 0x756224 lower), the two switches (0x4de1c0 / 0x4de1c4: on
-   0x7519a4, off 0x751924), the sensitivity slider (0x4de1c8, its arrows lit while 0x4ddb98 runs down: 0x4dde90 0 /
+   MSG(119, "ON"), off MSG(118, "OFF")), the sensitivity slider (0x4de1c8, its arrows lit while 0x4ddb98 runs down: 0x4dde90 0 /
    1) and the crosshair 0x4de1cc: when it changed (from 0x4b04f8) its texture looked up again (0 .. 7: the path
    "texture/crosshair/crosshair<n>"; others keep the path in 0x4ddb58) into 0x4e0c8c, drawn in a box */
 static void settings_tab(void)
@@ -278,10 +278,10 @@ static void settings_tab(void)
 }
 
 /* 0x425cd0 (named setup_crosshairScreen; by use the controls dialog, 0x4dde80 .. 0x4dde8c): the window, cyan lines,
-   the column heads (0x754524 ..), the four tab titles (0x754324, 0x80 apart; dim, the current one, 0x4ddce8, bright
+   the column heads (MSG(206, "KEY FUNCTION") ..), the four tab titles (MSG(202, "$[0] MOVE"), 0x80 apart; dim, the current one, 0x4ddce8, bright
    again). The row under the pointer (setupControl_hitTest: 7 .. 17, kept in 0x4de040; -1 for rows the tab lacks and its fixed
-   ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (0x7546a4, lit from 4
-   unless editing); the help line (0x754824 over a row, 0x7548a4 while editing) and the border. The caller ignores
+   ones) lit blue, or the row being edited (0x4dddc8) magenta. The tab's rows; three buttons (MSG(209, "$[0] ACCEPT"), lit from 4
+   unless editing); the help line (MSG(212, "Press ENTER or CLICK to change") over a row, MSG(213, "Press NEW-KEY to set |Press ESC to ca...") while editing) and the border. The caller ignores
    the eax it leaves */
 void (setup_crosshairScreen)(void)
 {
@@ -759,7 +759,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 }
 
 /* 0x437e00: the game room's menu: the panel under the pointer (six, 0x9daf88; none while 0x9dd7d8), the room's
-   tunnel with that panel glowing, and in mode 2 (0x9dce48) its caption (0x750ba4, 0x80 apart) at the bottom. The
+   tunnel with that panel glowing, and in mode 2 (0x9dce48) its caption (MSG(91, "SETUP ID|Hotkey is $[5] P"), 0x80 apart) at the bottom. The
    original leaves eax to callers that ignore it */
 void (room_drawMenu)(void)
 {
@@ -768,11 +768,11 @@ void (room_drawMenu)(void)
 	Tunnel t = { g_roomTunnelDepth, IMG(0x4df910), 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomMode == 2)
-		caption(0x750ba4, h.on);
+		caption(MSG(91, "SETUP ID|Hotkey is $[5] P"), h.on);
 }
 
 /* 0x408680: the arena lobby's top menu: the panel under the pointer (four, 0x5b1cf8; none while 0x4db85c), the
-   arena tunnel (as deep as 0x4dba68) with that panel lit, and in mode 2 (0x4dbb3c) its caption (0x750924) unless
+   arena tunnel (as deep as 0x4dba68) with that panel lit, and in mode 2 (0x4dbb3c) its caption (MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey...")) unless
    0x680370. The original leaves eax to callers that ignore it */
 void (lobbyTop_drawTitle)(void)
 {
@@ -780,11 +780,11 @@ void (lobbyTop_drawTitle)(void)
 	Tunnel t = { g_arenaTunnelDepth, IMG(0x4df04c), 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_keysBlocked)
-		caption(0x750924, h.on);
+		caption(MSG(86, "SETUP PLAYER FOR THE MULTIPLAY|Hotkey..."), h.on);
 }
 
 /* 0x423330: the setup screen's menu: the same over the setup tunnel's textures (0x5b197c / 0x5b1978, as deep as
-   0x4ddd90): four panels (0x4df918; none while 0x4dda60), the caption (0x7506a4) in mode 2 (0x4ddcec). The original
+   0x4ddd90): four panels (0x4df918; none while 0x4dda60), the caption (MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S")) in mode 2 (0x4ddcec). The original
    leaves eax to callers that ignore it */
 void (setup_drawMenu)(void)
 {
@@ -792,12 +792,12 @@ void (setup_drawMenu)(void)
 	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), 0x5b1984, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_setupPage == 2 && !g_keysBlocked)
-		caption(0x7506a4, h.on);
+		caption(MSG(81, "SETUP SOUND SYSTEM|Hotkey is $[5] S"), h.on);
 }
 /* 0x442050: the main menu: the panel under the pointer (six, 0x4deb80; none while the tunnel flies in, 0x9eeaa8, or
    after one is picked, 0x9eeab4: then the idle clock 0x9dda80 and the hint's fade restart); with none the idle
    clock runs on. The tunnel flies in (0x9eea90 from deep to -550, faster the deeper; 0x9eeab0 counts the frames)
-   and is drawn with the panel lit (the stripes plain); then the panel's caption (0x7501a4), or once idle for 120
+   and is drawn with the panel lit (the stripes plain); then the panel's caption (MSG(71, "SKIRMISH PLAY|Hotkey is $[5] K")), or once idle for 120
    the hint 0x4b2a98 fading in and out (0x9eea8c by 0x9dd948), unless 0x680370. The original leaves eax to callers
    that ignore it */
 void (menu_mainMenu)(void)

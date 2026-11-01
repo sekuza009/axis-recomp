@@ -6,13 +6,19 @@
 extern struct GameRdata g_rdata;
 extern struct GameData g_data;
 extern int g_keySeen_v[256];   /* split out of g_data (src/data/data.c) */
+extern char g_messages_v[128256];   /* split out of g_data (src/data/data.c) */
 extern char g_chatLine_v[1024];   /* split out of g_data (src/data/data.c) */
+extern u8 g_missions_v[7560];   /* split out of g_data (src/data/data.c) */
 extern char g_briefingText_v[1600];   /* split out of g_data (src/data/data.c) */
+extern u8 g_roomList_v[7744];   /* split out of g_data (src/data/data.c) */
+extern u32 g_serverNames_v[1280];   /* split out of g_data (src/data/data.c) */
 extern float g_tan10Table_v[18];   /* split out of g_data (src/data/data.c) */
 extern int g_randTable_v[4096];   /* split out of g_data (src/data/data.c) */
 extern float g_tanTable_v[3600];   /* split out of g_data (src/data/data.c) */
 extern float g_cosTable_v[3600];   /* split out of g_data (src/data/data.c) */
 extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
+extern u8 g_ptxPixels_v[262144];   /* split out of g_data (src/data/data.c) */
+extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_accountClan
 #define g_accountClan (g_data.g_accountClan_)
 #undef g_accountEmail
@@ -993,6 +999,8 @@ extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
 #define g_menuTunnelTexture (g_data.g_menuTunnelTexture_)
 #undef g_messageBoxArgs
 #define g_messageBoxArgs (g_data.g_messageBoxArgs_)
+#undef g_messages
+#define g_messages ((char *)g_messages_v)
 #undef g_misHeader1
 #define g_misHeader1 (g_data.g_misHeader1_)
 #undef g_misHeader2
@@ -1013,6 +1021,8 @@ extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
 #define g_missionSelectTop (g_data.g_missionSelectTop_)
 #undef g_missionShown
 #define g_missionShown (g_data.g_missionShown_)
+#undef g_missions
+#define g_missions ((u8 *)g_missions_v)
 #undef g_mouse2Down
 #define g_mouse2Down (g_data.g_mouse2Down_)
 #undef g_mouse3Down
@@ -1289,8 +1299,12 @@ extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
 #define g_projMode (g_data.g_projMode_)
 #undef g_ptxBitPos
 #define g_ptxBitPos (g_data.g_ptxBitPos_)
+#undef g_ptxData
+#define g_ptxData ((u8 *)g_ptxData_v)
 #undef g_ptxLastDc
 #define g_ptxLastDc (g_data.g_ptxLastDc_)
+#undef g_ptxPixels
+#define g_ptxPixels ((u8 *)g_ptxPixels_v)
 #undef g_ptxTable
 #define g_ptxTable (g_data.g_ptxTable_)
 #undef g_ptxTablesReady
@@ -1373,6 +1387,8 @@ extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
 #define g_roomJoined (g_data.g_roomJoined_)
 #undef g_roomLeaveDialog
 #define g_roomLeaveDialog (g_data.g_roomLeaveDialog_)
+#undef g_roomList
+#define g_roomList ((u8 *)g_roomList_v)
 #undef g_roomListCount
 #define g_roomListCount (g_data.g_roomListCount_)
 #undef g_roomListDistanceLimit
@@ -1505,6 +1521,8 @@ extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
 #define g_serverConnectionState (g_data.g_serverConnectionState_)
 #undef g_serverListCount
 #define g_serverListCount (g_data.g_serverListCount_)
+#undef g_serverNames
+#define g_serverNames ((u32 *)g_serverNames_v)
 #undef g_serverPingCount
 #define g_serverPingCount (g_data.g_serverPingCount_)
 #undef g_serverPort
