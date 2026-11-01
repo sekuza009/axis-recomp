@@ -1,0 +1,10 @@
+# the six static texture sets and the manager list (step 3b; --records): each Texture object 0xcd144 bytes (vtable,
+# the pixels from +0x114, the colour mask from +0x80114, 512 slot records of 0x68 from +0xc0108, the sizes at
+# +0xc0118 / +0xc011c ..: as far as the next object, the same for all six)
+0x4e1878,u8,840004,g_texture64x64,the 64 x 64 texture set (a Texture: g_staticTex64x64 its vtable word)
+0x5b1db8,u8,840004,g_texture128x64,the 128 x 64 texture set (g_staticTex128x64 its vtable word)
+0x680cd8,u8,840004,g_texture256x64,the 256 x 64 texture set (g_staticTex256x64 its vtable word)
+0x76d498,u8,840004,g_texture128x128,the 128 x 128 texture set (g_staticTex128x128 its vtable word)
+0x83a9e0,u8,840004,g_texture256x256,the 256 x 256 texture set (g_staticTex256x256 its vtable word)
+0x90d1e0,u8,840004,g_texture256x128,the 256 x 128 texture set (g_staticTex256x128 its vtable word)
+0x83a5e0,u32,8,g_textureSets,the texture manager: vtable word (g_textureManager), count, the six sets (TextureManager_clear: 8 words; g_textures points here)

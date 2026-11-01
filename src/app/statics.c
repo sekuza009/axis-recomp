@@ -26,12 +26,12 @@ void *(TimeSync_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logTimeSync), (
 void *(Scene_rtti)(void) { return ErrorLog_ctor((void *)OBJ(g_logScene), (const char *)STR(0x4c7d18, "class Scene"), 0); }   /* 0x48b3c0 "class Scene" */
 
 /* ---- global objects: the vtable 0x4a956c (Texture) and an empty second field ---- */
-void (static_initTex64x64)(void) { g_staticTex64x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x4e1878 + 4) = 0; }   /* 0x42b130 */
-void (static_initTex128x64)(void) { g_staticTex128x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x5b1db8 + 4) = 0; }   /* 0x42b1a0 */
-void (static_initTex256x64)(void) { g_staticTex256x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x680cd8 + 4) = 0; }   /* 0x42b1f0 */
-void (static_initTex128x128)(void) { g_staticTex128x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x76d498 + 4) = 0; }   /* 0x42b240 */
-void (static_initTex256x128)(void) { g_staticTex256x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x90d1e0 + 4) = 0; }   /* 0x42b290 */
-void (static_initTex256x256)(void) { g_staticTex256x256 = VT(Texture, 0x4a956c); GAME_VAR(u32, 0x83a9e0 + 4) = 0; }   /* 0x42b2e0 */
+void (static_initTex64x64)(void) { g_staticTex64x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture64x64) + 4) = 0; }   /* 0x42b130 */
+void (static_initTex128x64)(void) { g_staticTex128x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture128x64) + 4) = 0; }   /* 0x42b1a0 */
+void (static_initTex256x64)(void) { g_staticTex256x64 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x64) + 4) = 0; }   /* 0x42b1f0 */
+void (static_initTex128x128)(void) { g_staticTex128x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture128x128) + 4) = 0; }   /* 0x42b240 */
+void (static_initTex256x128)(void) { g_staticTex256x128 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x128) + 4) = 0; }   /* 0x42b290 */
+void (static_initTex256x256)(void) { g_staticTex256x256 = VT(Texture, 0x4a956c); GAME_VAR(u32, OBJ(g_texture256x256) + 4) = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
 int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN_ADDR(static_destroyTex64x64, 0x42b180)); }

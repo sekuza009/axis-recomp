@@ -18,9 +18,15 @@ for line in open('tools/names/objects.txt'):
 	if name in split:
 		spans.append((int(a, 16), int(a, 16) + SIZES.get(ty.replace('_', ' '), 1) * int(cnt), name))
 found = 0
+# constants that only look like addresses (tools/names/split_consts_ok.txt: file and number)
+consts = set()
+for line in open('tools/names/split_consts_ok.txt'):
+	w = line.split('#')[0].split()
+	if w:
+		consts.add((w[0], int(w[1], 16)))
 for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)) + sorted(glob.glob('standalone/*.c')):   # (not axisnet_recomp.c: its IMG goes through axis_dataAt, standalone/main.c)
-	if f.endswith('globals.h') or os.sep + 'data' + os.sep in f:
-		continue
+	if f.endswith(('globals.h', 'scene.h', 'main.c')) or os.sep + 'data' + os.sep in f:
+		continue   # (scene.h: struct paddings / offsets; standalone/main.c: the sizes of its own blocks)
 	text = open(f, 'rb').read().decode('latin-1')
 	# comments and strings blanked (line breaks kept): only code's numbers count
 	code = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: re.sub(r'[^\n]', ' ', m.group(0)), text, flags=re.S)
@@ -39,6 +45,8 @@ for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)) + sorted(glob.glob('
 					for lo, hi, n in spans:
 						if lo <= a < hi:
 							print('REVIEW %s:%d 0x%x after +/- is in split %s: %s' % (f, i + 1, a, n, text.split('\n')[i].strip()[:90]))
+				continue
+			if (f.replace(os.sep, '/'), a) in consts:
 				continue
 			for lo, hi, n in spans:
 				if lo <= a < hi:

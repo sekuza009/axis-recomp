@@ -1725,17 +1725,17 @@ extern struct GameData g_data;
 #undef g_startedFromLobby
 #define g_startedFromLobby (*(int *)g_startedFromLobby_v)
 #undef g_staticTex128x128
-#define g_staticTex128x128 (g_data.g_staticTex128x128_)
+#define g_staticTex128x128 (*(u32 *)((u8 *)g_texture128x128_v + 0x0))
 #undef g_staticTex128x64
-#define g_staticTex128x64 (g_data.g_staticTex128x64_)
+#define g_staticTex128x64 (*(u32 *)((u8 *)g_texture128x64_v + 0x0))
 #undef g_staticTex256x128
-#define g_staticTex256x128 (g_data.g_staticTex256x128_)
+#define g_staticTex256x128 (*(u32 *)((u8 *)g_texture256x128_v + 0x0))
 #undef g_staticTex256x256
-#define g_staticTex256x256 (g_data.g_staticTex256x256_)
+#define g_staticTex256x256 (*(u32 *)((u8 *)g_texture256x256_v + 0x0))
 #undef g_staticTex256x64
-#define g_staticTex256x64 (g_data.g_staticTex256x64_)
+#define g_staticTex256x64 (*(u32 *)((u8 *)g_texture256x64_v + 0x0))
 #undef g_staticTex64x64
-#define g_staticTex64x64 (g_data.g_staticTex64x64_)
+#define g_staticTex64x64 (*(u32 *)((u8 *)g_texture64x64_v + 0x0))
 #undef g_statusLine
 #define g_statusLine (g_data.g_statusLine_)
 #undef g_storedConnection
@@ -1754,12 +1754,26 @@ extern struct GameData g_data;
 #define g_textEndY (*(int *)g_textEndY_v)
 #undef g_textWrapX
 #define g_textWrapX (*(int *)g_textWrapX_v)
+#undef g_texture128x128
+#define g_texture128x128 ((u8 *)g_texture128x128_v)
+#undef g_texture128x64
+#define g_texture128x64 ((u8 *)g_texture128x64_v)
+#undef g_texture256x128
+#define g_texture256x128 ((u8 *)g_texture256x128_v)
+#undef g_texture256x256
+#define g_texture256x256 ((u8 *)g_texture256x256_v)
+#undef g_texture256x64
+#define g_texture256x64 ((u8 *)g_texture256x64_v)
+#undef g_texture64x64
+#define g_texture64x64 ((u8 *)g_texture64x64_v)
 #undef g_textureManager
-#define g_textureManager (g_data.g_textureManager_)
+#define g_textureManager (*(u32 *)((u8 *)g_textureSets_v + 0x0))
 #undef g_textureSetHeight
 #define g_textureSetHeight (*(u32 *)((u8 *)g_graphicSettings_v + 0x10))
 #undef g_textureSetWidth
 #define g_textureSetWidth (*(u32 *)((u8 *)g_graphicSettings_v + 0xc))
+#undef g_textureSets
+#define g_textureSets ((u32 *)g_textureSets_v)
 #undef g_timeLimit
 #define g_timeLimit (*(int *)g_timeLimit_v)
 #undef g_timerClocks

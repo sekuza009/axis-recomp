@@ -1,0 +1,6 @@
+# numbers in src/ that look like addresses inside a split object but are constants (reviewed 2026-11-01):
+# "file 0xnumber  # what it is" - tools/split_aliases.py does not report them
+src/app/ptx_tables.c 0x5b6900    # a fixed-point step of the particle tables
+src/app/ptx_tables.c 0x807fff    # a fixed-point bound of the particle tables
+src/match/scores.c 0x800000      # the smallest normal float's bits
+src/match/match_start.c 0x9c95f0 # space_initBy's memory size (bytes), not an address

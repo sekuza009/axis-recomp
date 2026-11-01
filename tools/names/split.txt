@@ -676,3 +676,11 @@ g_roomListCount
 g_roomPacket
 g_serverPort
 g_unusedNetCloseWord
+# the six texture sets and the manager (objects16.csv), whole
+g_texture64x64
+g_texture128x64
+g_texture256x64
+g_texture128x128
+g_texture256x256
+g_texture256x128
+g_textureSets
