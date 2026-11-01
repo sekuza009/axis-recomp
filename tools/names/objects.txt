@@ -153,3 +153,7 @@
 0x76d388 float 20 g_camAims
 0x4def00 int 68 g_controls
 0x4de0c0 int 68 g_controlsEdit
+0x4df024 float 3 g_menuEye
+0x680378 float 3 g_menuLook
+0x9db090 float 3 g_menuEyeHome
+0x76d3f8 float 3 g_menuLookHome

@@ -68,6 +68,8 @@ for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)):
 			size = re.match(r'[^;]*?,\s*(0x[0-9a-f]+|\d+)\s*\)', after) if copy else None
 			a = gaddr[n]
 			reach = int(size.group(1), 0) if size else 0x40
+			# (a base inside a record split whole reaches no further than that record's end: it moves as one)
+			reach = min([reach] + [hi - a for lo, hi, s in spans if lo <= a < hi])
 			for lo, hi, s in spans:
 				if a < lo < a + reach and not lo <= a < hi:
 					print('REVIEW %s:%d %s (0x%x, a record base reaching 0x%x) runs into split %s: %s' % (f, i + 1, n, a, reach, s, text.split('\n')[i].strip()[:90]))

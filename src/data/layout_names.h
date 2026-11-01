@@ -157,9 +157,9 @@ extern struct GameData g_data;
 #undef g_armcBuildTexture
 #define g_armcBuildTexture (*(int *)g_armcBuildTexture_v)
 #undef g_armcCamDistance
-#define g_armcCamDistance (g_data.g_armcCamDistance_)
+#define g_armcCamDistance (*(float *)((u8 *)g_menuEye_v + 0x8))
 #undef g_armcCamHeight
-#define g_armcCamHeight (g_data.g_armcCamHeight_)
+#define g_armcCamHeight (*(float *)((u8 *)g_menuEye_v + 0x4))
 #undef g_armcChanged
 #define g_armcChanged (*(int *)g_armcChanged_v)
 #undef g_armcColours
@@ -293,7 +293,7 @@ extern struct GameData g_data;
 #undef g_briefingY
 #define g_briefingY (g_data.g_briefingY_)
 #undef g_buttonTexture
-#define g_buttonTexture (g_data.g_buttonTexture_)
+#define g_buttonTexture (*(int *)g_buttonTexture_v)
 #undef g_camAim0X
 #define g_camAim0X (*(int *)((u8 *)g_camAims_v + 0x0))
 #undef g_camAim0Y
@@ -461,7 +461,7 @@ extern struct GameData g_data;
 #undef g_dikEnter
 #define g_dikEnter (*(int *)g_dikEnter_v)
 #undef g_dikEscape
-#define g_dikEscape (g_data.g_dikEscape_)
+#define g_dikEscape (*(int *)g_dikEscape_v)
 #undef g_dikEscape_2
 #define g_dikEscape_2 (*(int *)g_dikEscape_2_v)
 #undef g_dikF11
@@ -477,7 +477,7 @@ extern struct GameData g_data;
 #undef g_dikLAlt
 #define g_dikLAlt (*(int *)g_dikLAlt_v)
 #undef g_dikLCtrl
-#define g_dikLCtrl (g_data.g_dikLCtrl_)
+#define g_dikLCtrl (*(int *)g_dikLCtrl_v)
 #undef g_dikLShift
 #define g_dikLShift (g_data.g_dikLShift_)
 #undef g_dikLeft
@@ -505,7 +505,7 @@ extern struct GameData g_data;
 #undef g_dikRCtrl
 #define g_dikRCtrl (*(int *)g_dikRCtrl_v)
 #undef g_dikRShift
-#define g_dikRShift (g_data.g_dikRShift_)
+#define g_dikRShift (*(int *)g_dikRShift_v)
 #undef g_dikRight
 #define g_dikRight (*(int *)g_dikRight_v)
 #undef g_dikS
@@ -515,9 +515,9 @@ extern struct GameData g_data;
 #undef g_dikT
 #define g_dikT (*(int *)g_dikT_v)
 #undef g_dikTab
-#define g_dikTab (g_data.g_dikTab_)
+#define g_dikTab (*(int *)g_dikTab_v)
 #undef g_dikUp
-#define g_dikUp (g_data.g_dikUp_)
+#define g_dikUp (*(int *)g_dikUp_v)
 #undef g_dikW
 #define g_dikW (*(int *)g_dikW_v)
 #undef g_dikWheelDown
@@ -527,7 +527,7 @@ extern struct GameData g_data;
 #undef g_dikX
 #define g_dikX (*(int *)g_dikX_v)
 #undef g_dikZ_2
-#define g_dikZ_2 (g_data.g_dikZ_2_)
+#define g_dikZ_2 (*(int *)g_dikZ_2_v)
 #undef g_directInputMade
 #define g_directInputMade (*(int *)g_directInputMade_v)
 #undef g_directSound
@@ -981,19 +981,23 @@ extern struct GameData g_data;
 #undef g_menuCamZ
 #define g_menuCamZ (*(u32 *)g_menuCamZ_v)
 #undef g_menuCameraHeight
-#define g_menuCameraHeight (g_data.g_menuCameraHeight_)
+#define g_menuCameraHeight (*(int *)((u8 *)g_menuLook_v + 0x8))
 #undef g_menuCameraLook
-#define g_menuCameraLook (g_data.g_menuCameraLook_)
+#define g_menuCameraLook (*(u32 *)((u8 *)g_menuLook_v + 0x0))
 #undef g_menuCameraLookY
-#define g_menuCameraLookY (g_data.g_menuCameraLookY_)
+#define g_menuCameraLookY (*(u32 *)((u8 *)g_menuLook_v + 0x4))
 #undef g_menuCameraPos
-#define g_menuCameraPos (g_data.g_menuCameraPos_)
+#define g_menuCameraPos (*(u32 *)((u8 *)g_menuEye_v + 0x0))
 #undef g_menuCameraX
-#define g_menuCameraX (g_data.g_menuCameraX_)
+#define g_menuCameraX (*(int *)((u8 *)g_menuEyeHome_v + 0x0))
 #undef g_menuCameraY
-#define g_menuCameraY (g_data.g_menuCameraY_)
+#define g_menuCameraY (*(int *)((u8 *)g_menuEyeHome_v + 0x4))
 #undef g_menuCameraZ
-#define g_menuCameraZ (g_data.g_menuCameraZ_)
+#define g_menuCameraZ (*(int *)((u8 *)g_menuEyeHome_v + 0x8))
+#undef g_menuEye
+#define g_menuEye ((float *)g_menuEye_v)
+#undef g_menuEyeHome
+#define g_menuEyeHome ((float *)g_menuEyeHome_v)
 #undef g_menuFrameCount
 #define g_menuFrameCount (*(int *)g_menuFrameCount_v)
 #undef g_menuFrameCounter
@@ -1006,12 +1010,16 @@ extern struct GameData g_data;
 #define g_menuHintStep (g_data.g_menuHintStep_)
 #undef g_menuIdleTime
 #define g_menuIdleTime (g_data.g_menuIdleTime_)
+#undef g_menuLook
+#define g_menuLook ((float *)g_menuLook_v)
 #undef g_menuLookAtX
-#define g_menuLookAtX (g_data.g_menuLookAtX_)
+#define g_menuLookAtX (*(int *)((u8 *)g_menuLookHome_v + 0x0))
 #undef g_menuLookAtY
-#define g_menuLookAtY (g_data.g_menuLookAtY_)
+#define g_menuLookAtY (*(int *)((u8 *)g_menuLookHome_v + 0x4))
 #undef g_menuLookAtZ
-#define g_menuLookAtZ (g_data.g_menuLookAtZ_)
+#define g_menuLookAtZ (*(int *)((u8 *)g_menuLookHome_v + 0x8))
+#undef g_menuLookHome
+#define g_menuLookHome ((float *)g_menuLookHome_v)
 #undef g_menuScaleX
 #define g_menuScaleX (g_data.g_menuScaleX_)
 #undef g_menuScaleY
@@ -1177,7 +1185,7 @@ extern struct GameData g_data;
 #undef g_panelGlowStep
 #define g_panelGlowStep (*(u32 *)g_panelGlowStep_v)
 #undef g_panelHovered
-#define g_panelHovered (g_data.g_panelHovered_)
+#define g_panelHovered (*(int *)g_panelHovered_v)
 #undef g_partBox0Offset
 #define g_partBox0Offset (*(u32 *)g_partBox0Offset_v)
 #undef g_partBox1Offset
@@ -1555,7 +1563,7 @@ extern struct GameData g_data;
 #undef g_screenCentreX
 #define g_screenCentreX (*(int *)g_screenCentreX_v)
 #undef g_screenCentreY
-#define g_screenCentreY (g_data.g_screenCentreY_)
+#define g_screenCentreY (*(int *)g_screenCentreY_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
 #undef g_sensitivitySlider

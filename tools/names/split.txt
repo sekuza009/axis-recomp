@@ -499,3 +499,18 @@ g_unusedArmcWord4
 g_unusedLastWParam
 g_unusedLoginWord
 g_unusedRoomWord
+# the menu camera: its position, look-at point and their homes (objects9.csv), whole
+g_menuEye
+g_menuLook
+g_menuEyeHome
+g_menuLookHome
+# freed by the menu camera records (g_menuLook ...), 2026-11-01
+g_buttonTexture
+g_dikEscape
+g_dikLCtrl
+g_dikRShift
+g_dikTab
+g_dikUp
+g_dikZ_2
+g_panelHovered
+g_screenCentreY

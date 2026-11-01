@@ -338,8 +338,8 @@ void (menuState700_armCenter)(void)
 		g_armcZoom = -2.0f;
 }
 
-#define g_menuEye ((u32 *)ADDR(g_menuCameraPos))                   /* the menu camera: its position (g_armcCamHeight, g_armcCamDistance) */
-#define g_menuAt ((u32 *)ADDR(g_menuCameraLook))                    /* and the point it looks at */
+#define g_menuEyeBits ((u32 *)g_menuEye)                          /* the menu camera's position (objects.h), as words */
+#define g_menuAt ((u32 *)g_menuLook)                              /* and the point it looks at (objects.h) */
 
 /* 0x40ee20: entering the ARM CENTER: its music, the parts page with nothing picked, the camera put in front of the
    mech (further back from the room), the dialog box and two colours, the camera's point for the screen, the part
@@ -357,12 +357,12 @@ u32 (menu_enterMenus)(void)
 	int fromRoom = g_armcFrom == 3;
 	g_armcMode = 1;
 	g_armcUnusedFlag = 0;
-	g_menuEye[0] = 0;
-	g_menuEye[1] = 0;
+	g_menuEyeBits[0] = 0;
+	g_menuEyeBits[1] = 0;
 	u32 distance = fromRoom ? k_armcDistanceRoom : k_armcDistance;   /* -1550, -450 */
 	g_menuAt[0] = 0;
 	g_menuAt[1] = 0;
-	g_menuEye[2] = distance;
+	g_menuEyeBits[2] = distance;
 	g_menuAt[2] = fromRoom ? 0xc4ce4000 : 0xc4098000;                                /* -1650, -550 */
 	g_armcStatsPanelLeft = 10;
 	g_armcStatsPanelTop = 10;

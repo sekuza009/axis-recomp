@@ -1,0 +1,7 @@
+# the menu camera (menu/menu_cameras.c): its position and look-at point, and their homes, three floats each, copied
+# as three words from one another (I(ADDR(g_menuCameraPos) + a * 4) ...). Records of the named globals in them
+# (name_objects.py --records): g_menuCameraPos / g_armcCamHeight / g_armcCamDistance are the eye's x y z ...
+0x4df024,float,3,g_menuEye,the menu camera's position (x: g_menuCameraPos, y: g_armcCamHeight, z: g_armcCamDistance)
+0x680378,float,3,g_menuLook,the point the menu camera looks at (g_menuCameraLook, g_menuCameraLookY, g_menuCameraHeight)
+0x9db090,float,3,g_menuEyeHome,the menu camera's home position (g_menuCameraX .. Z)
+0x76d3f8,float,3,g_menuLookHome,the menu camera's home look-at point (g_menuLookAtX .. Z)
