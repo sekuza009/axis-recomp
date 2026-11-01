@@ -92,10 +92,25 @@ for v in based:   # a raw base with an index: the globals after it (0x40 bytes) 
 	for m2, (t2, a2, s2) in cands.items():
 		if v <= a2 < v + 0x40:
 			why[m2].add('after an indexed base 0x%x' % v)
+# the objects split whole (tools/names/split.txt): a base inside one reaches no further than its end (the record
+# moves as one; its named globals are offsets in it), and the globals inside one are split already
+OSIZES = dict(SIZES, Colour=16)
+split = {l.split('#')[0].strip() for l in open('tools/names/split.txt')} - {''}
+split_objects = []
+for line in open('tools/names/objects.txt'):
+	oa, oty, ocnt, oname = line.split()
+	if oname in split:
+		split_objects.append((int(oa, 16), int(oa, 16) + OSIZES.get(oty.replace('_', ' '), 1) * int(ocnt)))
+def in_split(a):
+	return next((hi for lo, hi in split_objects if lo <= a < hi), None)
+for n in [n for n in cands if in_split(cands[n][1])]:
+	del cands[n]
 for n in list(cands):
 	if any(w.startswith(('address arithmetic', 'given')) for w in why[n]):
 		t, a, size = cands[n]
 		end = a + max(reach.get(n, 0x40), size)
+		if in_split(a):
+			end = min(end, in_split(a))
 		for m2, (t2, a2, s2) in cands.items():
 			if a < a2 < end:
 				why[m2].add('after the record base %s' % n)

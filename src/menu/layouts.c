@@ -72,9 +72,9 @@ static void armc_tabs(u32 rec)
 	rect_spec(rec + 0x30, rec + 0x50, 0x64, b);
 }
 
-void (arenaCreate_layout)(void) { rects_column(IMG(0x4dbb80), ADDR(g_arenaPanelBrightness), 0xb4); }
+void (arenaCreate_layout)(void) { rects_column(IMG(0x4dbb80), IMG(0x4dbb80) + 2 * 16, 0xb4); }
 
-void (leaveDialog_layout)(void) { rects_column(IMG(0x9dd390), ADDR(g_rankingHaveList), 0xb4); }
+void (leaveDialog_layout)(void) { rects_column(IMG(0x9dd390), IMG(0x9dd390) + 2 * 16, 0xb4); }
 
 void (deleteDialog_layout)(void) { rects_row(IMG(0x9f6808), IMG(0x9f6828), IMG(0x9f8f1c), IMG(0x9f8f0c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 

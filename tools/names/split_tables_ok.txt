@@ -1,5 +1,5 @@
 # tables of named globals' addresses whose code reads / writes each entry's one 4-byte value only (reviewed
-# 2026-11-01; tools/split_tables.py lists them): "file table [-name ...]" - a -name is an entry the code indexes
+# 2026-11-01; tools/split_tables.py lists them; a file's tables of one name each as name@line): "file table [-name ...]" - a -name is an entry the code indexes
 # from (held back). Not here: main_loop.c k_heldKeys (entry + 4), lobby_states.c kept (+ 0x10 .. 0x18),
 # menu_states.c clocks (+ 4), room_clicks.c limit (a byte written)
 src/app/frees.c buffers
@@ -18,12 +18,46 @@ src/menu/armc_misc.c weights
 src/menu/armc_parts.c lengths
 src/menu/armc_stats.c ints
 src/menu/armc_stats.c speeds
-src/menu/layouts.c a
-src/menu/layouts.c b
-src/menu/layouts.c c
-src/menu/layouts.c d
+src/menu/layouts.c a@91
+src/menu/layouts.c a@98
+src/menu/layouts.c a@105
+src/menu/layouts.c a@112
+src/menu/layouts.c a@119
+src/menu/layouts.c a@126
+src/menu/layouts.c a@133
+src/menu/layouts.c a@140
+src/menu/layouts.c a@159
+src/menu/layouts.c a@167
+src/menu/layouts.c a@177
+src/menu/layouts.c a@220
+src/menu/layouts.c a@231
+src/menu/layouts.c a@242
+src/menu/layouts.c a@263
+src/menu/layouts.c a@272
+src/menu/layouts.c b@99
+src/menu/layouts.c b@106
+src/menu/layouts.c b@113
+src/menu/layouts.c b@120
+src/menu/layouts.c b@127
+src/menu/layouts.c b@134
+src/menu/layouts.c b@153
+src/menu/layouts.c b@160
+src/menu/layouts.c b@168
+src/menu/layouts.c b@221
+src/menu/layouts.c b@232
+src/menu/layouts.c b@243
+src/menu/layouts.c b@273
+src/menu/layouts.c c@161
+src/menu/layouts.c c@169
+src/menu/layouts.c c@222
+src/menu/layouts.c c@233
+src/menu/layouts.c d@170
+src/menu/layouts.c d@223
 src/menu/layouts.c e
-src/menu/lobby_states.c cleared
+src/menu/lobby_states.c cleared@37
+src/menu/lobby_states.c cleared@109
+src/menu/lobby_states.c cleared@147
+src/menu/lobby_states.c cleared@163
 src/menu/lobby_states.c copy
 src/menu/lobby_states.c rect
 src/menu/lobby_states.c title
@@ -39,28 +73,40 @@ src/menu/menu_cameras.c arena
 src/menu/menu_cameras.c point0
 src/menu/menu_cameras.c skirmish
 src/menu/menu_init.c point
-src/menu/menu_records.c keys
+src/menu/menu_records.c keys@540
+src/menu/menu_records.c keys@556
 src/menu/menu_records.c key
 src/menu/menu_states.c cleared
 src/menu/menu_states.c ticked
 src/menu/room_clicks.c typing
 src/menu/room_clicks.c close
-src/menu/room_dialogs.c cleared
+src/menu/room_dialogs.c cleared@49
+src/menu/room_dialogs.c cleared@61
+src/menu/room_dialogs.c cleared@572
 src/menu/room_dialogs.c cleared2
 src/menu/room_dialogs.c counts
 src/menu/screen_enter.c camera4
-src/menu/screen_enter.c layout
+src/menu/screen_enter.c layout@76
+src/menu/screen_enter.c layout@120
+src/menu/screen_enter.c layout@159
+src/menu/screen_enter.c layout@331
 src/menu/screen_enter.c cleared1
 src/menu/screen_enter.c cleared2
 src/menu/screen_enter.c state
-src/menu/screen_enter.c colours
+src/menu/screen_enter.c colours@124
+src/menu/screen_enter.c colours@338
 src/menu/screen_enter.c colours_camera
-src/menu/screen_enter.c cleared
+src/menu/screen_enter.c cleared@174
+src/menu/screen_enter.c cleared@284
+src/menu/screen_enter.c cleared@336
 src/menu/screen_enter.c briefing_camera
-src/menu/screen_enter.c setup
-src/menu/settings_form.c form -g_newArenaFormLeft
+src/menu/screen_enter.c setup@279
+src/menu/screen_enter.c setup@302
+src/menu/settings_form.c form@200 -g_roomFormLeft -g_newArenaFormLeft
+src/menu/settings_form.c form@253 -g_roomFormLeft -g_newArenaFormLeft
 src/menu/setup_keys.c page_keys
 src/net/net_sessions.c room
 src/net/net_sessions.c arena
 src/net/net_tables.c handles
-src/net/net_tables.c sockets
+src/net/net_tables.c sockets@286
+src/net/net_tables.c sockets@318
