@@ -8,7 +8,10 @@ os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 src = {f: open(f, 'rb').read().decode('latin-1') for f in glob.glob('src/**/*.[ch]', recursive=True) if os.sep + 'data' + os.sep not in f}
 alltext = '\n'.join(src.values())
 pl = open('axisnet_recomp.c', 'rb').read().decode('latin-1')
-sites = sorted({(int(a, 16), int(b, 16)) for a, b in re.findall(r'\{\s*(0x4[0-9a-f]{5}),\s*(0x4[0-9a-f]{5}),\s*\w+\s*\}', pl)})
+sites = {(int(a, 16), int(b, 16)) for a, b in re.findall(r'\{\s*(0x4[0-9a-f]{5}),\s*(0x4[0-9a-f]{5}),\s*(?:\(void \*\))?\w+\s*\}', pl)}
+# single sites: "IMG(0x...);   /* call 0x<target> ..." (one call rewritten in place)
+sites |= {(int(a, 16), int(b, 16)) for a, b in re.findall(r'IMG\((0x4[0-9a-f]{5})\);\s*/\*\s*call (0x4[0-9a-f]{5})', pl)}
+sites = sorted(sites)
 rows = sorted((int(r['address'], 16), int(r['size']), r['name']) for r in csv.DictReader(open('../decomp/out/functions.csv')))
 starts = [r[0] for r in rows]
 names = {int(a, 16): n for n, a in re.findall(r'\b(\w+)\s*,\s*(0x4[0-9a-f]{5})\)', alltext)}

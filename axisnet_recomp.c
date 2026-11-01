@@ -1416,6 +1416,14 @@ static void update_digit_h(void) {
     int w = AXGL_W, h = AXGL_H;
     g_digit_h = (g_hud43 && w > 0 && h > 0 && w * 3 > h * 4) ? (float)(26.0 * 640.0 * h / (480.0 * w)) : 26.0f;
 }
+/* an address of the game's image as the original's (the HUD sites below are compared with the original's numbers;
+   in AxisRC.exe IMG() puts them in g_image) */
+static DWORD orig_addr(DWORD a) {
+#ifdef AXIS_STANDALONE
+    if (a - (DWORD)g_image < 0x76b000) return a - (DWORD)g_image + 0x400000;
+#endif
+    return a;
+}
 static int hud_anchor(DWORD ret, DWORD site) {
     if (site == 0x498659) {                       /* drawn directly by the main HUD routine 0x4926f0 */
         if (ret >= 0x492840 && ret < 0x4929d0) return A_NONE;    /* lock-on range circle: already H-based */
@@ -2018,7 +2026,7 @@ __attribute__((noinline)) static void WINAPI hook_glVertex2i(int x, int y) {
         return;
     }
     if (g_hud43 && g_inhud && w > 0 && h > 0 &&
-        (a = area == 6 ? A_LEFT : area == 7 ? A_RIGHT : area == 8 ? A_CENTER : hud_part_anchor(area, (DWORD)ret, (DWORD)site)) != A_NONE) {
+        (a = area == 6 ? A_LEFT : area == 7 ? A_RIGHT : area == 8 ? A_CENTER : hud_part_anchor(area, (DWORD)ret, orig_addr((DWORD)site))) != A_NONE) {
         /* to screen pixels (ortho 0..w over the current viewport), remap, and back */
         double X = g_vpx + (double)x * g_vpw / w;
         int sw = g_vpx * 2 + g_vpw;                   /* the viewport is centred (or full) */
