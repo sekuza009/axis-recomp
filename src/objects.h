@@ -205,3 +205,7 @@
 #define g_texture256x256 ((u8 *)IMG(0x83a9e0))   /* u8[840004]; the 256 x 256 texture set (g_staticTex256x256 its vtable word) */
 #define g_texture256x128 ((u8 *)IMG(0x90d1e0))   /* u8[840004]; the 256 x 128 texture set (g_staticTex256x128 its vtable word) */
 #define g_textureSets ((u32 *)IMG(0x83a5e0))   /* u32[8]; the texture manager: its vtable word (g_textureManager), the count, the six sets (TextureManager_clear: 8 words; g_textures points here) */
+#define g_vecOriginXyz ((float *)IMG(0xa0e7a8))   /* float[3]; the origin (0 */
+#define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0 */
+#define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the rest vector (0 */
+#define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (GetDuration's 64-bit time: g_musicLength the low word */

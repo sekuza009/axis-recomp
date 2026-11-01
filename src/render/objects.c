@@ -470,8 +470,8 @@ static void frame16_turned(float *uv, const float *t, int i)
 static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 {
 	int tex = TEX(5), phase = i % 8;
-	long double gx = fmul_m(fld_m(K(0xa0e7c8)), K(0x4a9558)), gy = fmul_m(fld_m(K(0xa0e7cc)), K(0x4a9558)),
-	            gz = fmul_m(fld_m(K(0xa0e7d0)), K(0x4a9558));
+	long double gx = fmul_m(fld_m((&g_vecUnitZXyz[0])), K(0x4a9558)), gy = fmul_m(fld_m((&g_vecUnitZXyz[1])), K(0x4a9558)),
+	            gz = fmul_m(fld_m((&g_vecUnitZXyz[2])), K(0x4a9558));
 	float v[3], at[3], uv[4], ab[4];
 	v[0] = f32((fmul_m(gz, &P(float, 0x4c)) + fmul_m(gy, &P(float, 0x3c))) + fmul_m(gx, &P(float, 0x2c)));
 	v[1] = f32((fmul_m(gz, &P(float, 0x50)) + fmul_m(gy, &P(float, 0x40))) + fmul_m(gx, &P(float, 0x30)));

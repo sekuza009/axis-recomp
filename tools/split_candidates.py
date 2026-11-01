@@ -21,7 +21,7 @@ for line in open('tools/names/objects.txt'):
 	objects[int(a, 16)] = name
 def strip(t):
 	return re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
-files = [f for f in glob.glob('src/**/*.[ch]', recursive=True) if not f.endswith(('globals.h', 'scene.h'))]
+files = [f for f in glob.glob('src/**/*.[ch]', recursive=True) if not f.endswith(('globals.h', 'scene.h', 'layout_names.h'))]   # (layout_names.h: generated from the names)
 files += ['axisnet_recomp.c'] + glob.glob('standalone/*.c')
 # the globals whose addresses are only in reviewed tables (tools/names/split_tables_ok.txt; each entry one 4-byte
 # value): stored in a table is no reason to hold them back, if they are 4 bytes or more
@@ -77,6 +77,9 @@ for f in files:
 			if n not in cands:
 				continue
 			after, before = line[m.end():m.end() + 4], line[:m.start()]
+			own = re.search(r'\(\*\(\s*((?:const\s+)?[\w ]+?\s*\*+)\s*\)\s*$', before)
+			if own and re.match(r'\s*\)', after) and size_of(own.group(1)[:-1]) <= cands[n][2]:
+				continue   # ((*(T *)&x): x's own value read as a T - a pointer stored there, say - not x's address handed on)
 			if re.match(r'\s*[-+]', after) or re.search(r'[-+]\s*$', before):
 				why[n].add('address arithmetic')
 			# (one value: a float given to an FPU helper, fld_m((const float *)ADDR(x)) / fadd_m(a, (const float *)ADDR(x)),

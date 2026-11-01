@@ -110,3 +110,4 @@ src/net/net_sessions.c arena
 src/net/net_tables.c handles
 src/net/net_tables.c sockets@286
 src/net/net_tables.c sockets@318
+src/menu/menu_states.c clocks   # four doubles cleared as two words each (+0, +4: inside each double; g_lastFrameClock is 8 bytes)

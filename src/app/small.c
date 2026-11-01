@@ -239,7 +239,7 @@ void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 		FIELD(u32, stage, 0x20f2fc8 + k * 4) = k % 5 ? 0 : 0x3f800000;
 	for (int k = 0; k < 200; k++)
 		for (int j = 0; j < 3; j++)
-			FIELD(int, stage, 0x20f300c + k * 12 + j * 4) = GAME_VAR(int, 0xa0e7a8 + j * 4);
+			FIELD(int, stage, 0x20f300c + k * 12 + j * 4) = GAME_VAR(int, OBJ(g_vecOriginXyz) + j * 4);
 	FIELD(int, stage, 0x20f3008) = 0;
 	FIELD(int, stage, 0x20f396c) = g_defaultColour;
 }

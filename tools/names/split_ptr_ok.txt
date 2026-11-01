@@ -10,3 +10,5 @@ g_gameServerSocket    # net_tables.c: the same
 g_lobbyTcpPort        # small.c: RegQueryValueExA of a REG_DWORD (4 bytes); net_tables.c reads it as a u16
 g_ladderPort          # small.c: the same
 g_accountPacket       # a pointer word: memset / [0] reach the block it points to, not the global
+g_pingThreadId        # net_tables.c: CreateThread's thread id out (4 bytes)
+g_menuTunnel          # the tunnel's ring list head: tunnel_appendRing / armc_freeRing / tunnel_removeLastRing update the one pointer

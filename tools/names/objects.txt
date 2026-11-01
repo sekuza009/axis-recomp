@@ -198,3 +198,7 @@
 0x83a9e0 u8 840004 g_texture256x256
 0x90d1e0 u8 840004 g_texture256x128
 0x83a5e0 u32 8 g_textureSets
+0xa0e7a8 float 3 g_vecOriginXyz
+0xa0e7c8 float 3 g_vecUnitZXyz
+0xa0e7e8 float 3 g_vecZeroXyz
+0xa0e018 u32 2 g_musicDuration

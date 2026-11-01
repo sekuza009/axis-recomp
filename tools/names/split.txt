@@ -684,3 +684,25 @@ g_texture128x128
 g_texture256x256
 g_texture256x128
 g_textureSets
+# vectors and the music duration (objects17.csv), whole
+g_vecOriginXyz
+g_vecUnitZXyz
+g_vecZeroXyz
+g_musicDuration
+# freed: pointer reads (*(T **)&x), reviewed pointers / tables, vectors and music records, the generated header not counted, 2026-11-01
+g_accountPacket
+g_arenaInfoPacket
+g_arenaPacket
+g_errorHook
+g_lastFrameClock
+g_menuTunnel
+g_netLeaveBuffer
+g_netListDone
+g_netPlayerRecordPacket
+g_netRankingBuffer
+g_netRequestWord
+g_pingThread
+g_pingThreadId
+g_pingTime
+g_roomRecordPacket
+g_serverPingCount
