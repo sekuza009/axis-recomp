@@ -72,11 +72,67 @@ static void log_stack(FILE *f, const DWORD *sp, int words)
 
 /* the guard: an access to the original range (where nothing is now) - an address the rebuilt code or the patch layer
    still uses as it was, missed by IMG / RELOC. Logged with where it happened, and the game stopped */
+extern BYTE *const g_fenceBase;      /* src/data/data.c: a fence build's g_fence (else 0) */
+extern const DWORD g_fenceGuards[];
+/* a piece of the game's data as C (src/data/data.h; tools/mkdatasrc.py) */
+typedef struct { DWORD address; const void *bytes; DWORD size; } DataPiece;
+extern const DataPiece g_splitObjects[];
+/* the canaries in the split objects' old places (0xa5 bytes, set when they were split): every second, any old place
+   written to is logged, once - code still reaching a split object at its old address (the parts of old places on
+   guarded pages are not read: they fault instead) */
+static DWORD WINAPI canary_watch(void *unused)
+{
+	(void)unused;
+	static BYTE told[4096];
+	for (;;) {
+		Sleep(1000);
+		int k = 0;
+		for (const DataPiece *s = g_splitObjects; s->address && k < 4096; s++, k++) {
+			if (told[k])
+				continue;
+			DWORD lo = ((DWORD)AT(s->address) + 0xfff) & ~0xfffu, hi = (DWORD)AT(s->address + s->size) & ~0xfffu;
+			for (DWORD a = (DWORD)AT(s->address); a < (DWORD)AT(s->address + s->size); a++) {
+				if (hi > lo && a >= lo && a < hi)
+					continue;
+				if (*(const BYTE *)a != 0xa5) {
+					FILE *f = fopen(g_logPath, "a");
+					if (f) {
+						fprintf(f, "CANARY: the old place of split object 0x%lx (0x%lx bytes) written at +0x%lx (now %02x)\n",
+						        s->address, s->size, a - (DWORD)AT(s->address), *(const BYTE *)a);
+						fclose(f);
+					}
+					told[k] = 1;
+					break;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/* (a fence build) the split object an access to a guard page ran past: the nearest that ends before it or starts
+   after it; its original address and the access's distance from it */
+static void fence_report(FILE *f, DWORD data)
+{
+	const DataPiece *best = NULL;
+	long dist = 0x7fffffff;
+	for (const DataPiece *s = g_splitObjects; s->address; s++) {
+		long d = (long)data - (long)((DWORD)s->bytes + s->size), d2 = (long)(DWORD)s->bytes - (long)data;
+		if (d >= 0 && d < dist) { dist = d; best = s; }
+		if (d2 > 0 && d2 < dist) { dist = -d2; best = s; }
+	}
+	if (best)
+		fprintf(f, "FENCE: %s split object 0x%lx (0x%lx bytes) by 0x%lx: ", dist >= 0 ? "past the end of" : "before",
+		        best->address, best->size, (DWORD)(dist >= 0 ? dist : -dist));
+}
+
 static LONG CALLBACK guard_hit(EXCEPTION_POINTERS *e)
 {
 	DWORD code = e->ExceptionRecord->ExceptionCode, at = (DWORD)e->ExceptionRecord->ExceptionAddress;
 	DWORD data = code == EXCEPTION_ACCESS_VIOLATION ? (DWORD)e->ExceptionRecord->ExceptionInformation[1] : 0;
 	int moved = data - (DWORD)(g_image + 0xa9000) < 0x66a000;   /* (g_image's data part, now g_rdata / g_data) */
+	int fence = g_fenceBase && data - (DWORD)g_fenceBase < 0x8000000;
+	moved |= fence;
 	moved |= data - (DWORD)g_data < 0x666000;   /* (in g_data only the old pages of the split objects fault) */
 	if (data - GAME_BASE >= GAME_SIZE && at - GAME_BASE >= GAME_SIZE && !moved)
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -84,6 +140,8 @@ static LONG CALLBACK guard_hit(EXCEPTION_POINTERS *e)
 		fflush(g_log);
 	FILE *f = fopen(g_logPath, "a");
 	if (f) {
+		if (fence)
+			fence_report(f, data);
 		fprintf(f, "ORIGINAL ADDRESS USED: %s %08lx at %08lx (esp %08lx); on the stack:",
 		        data - GAME_BASE < GAME_SIZE ? (e->ExceptionRecord->ExceptionInformation[0] ? "writing" : "reading") : "executing",
 		        data - GAME_BASE < GAME_SIZE ? data : original(data ? data : at), original(at), e->ContextRecord->Esp);
@@ -153,10 +211,7 @@ static LONG WINAPI crash_hit(EXCEPTION_POINTERS *e)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-/* a piece of the game's data as C (src/data/data.h; tools/mkdatasrc.py) */
-typedef struct { DWORD address; const void *bytes; DWORD size; } DataPiece;
 extern const DataPiece g_rdataPieces[], g_dataPieces[], g_text_dataPieces[];
-extern const DataPiece g_splitObjects[];   /* the objects split out of g_data (src/data/data.c) */
 
 /* AXISRC_DATACHECK=1 (a check): the image as built compared with the exe file (path) over .rdata, .data and src/data's
    pieces in .text, before the patch layer changes anything. A word may only differ where the file has a rebuilt
@@ -485,11 +540,20 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	{	/* the split objects' old pages in g_data (each page they cover whole): nothing may reach them there */
 		DWORD pages = 0, objects = 0;
 		for (const DataPiece *s = g_splitObjects; s->address; s++, objects++) {
+			memcpy((void *)s->bytes, AT(s->address), s->size);   /* (its initial value, from src/data's pieces) */
+			memset(AT(s->address), 0xa5, s->size);                /* (the old place's canary: canary_watch) */
 			DWORD lo = ((DWORD)AT(s->address) + 0xfff) & ~0xfffu, hi = (DWORD)AT(s->address + s->size) & ~0xfffu;
 			if (hi > lo && VirtualProtect((void *)lo, hi - lo, PAGE_NOACCESS, &old))
 				pages += (hi - lo) >> 12;
 		}
 		fprintf(g_log, "%lu objects split out of g_data, %lu of their old pages guarded\n", objects, pages);
+		CloseHandle(CreateThread(NULL, 0, canary_watch, NULL, 0, NULL));
+		if (g_fenceBase) {   /* (a fence build: each split variable's guard page) */
+			DWORD n = 0;
+			for (const DWORD *g = g_fenceGuards; *g != 0xffffffff; g++)
+				n += VirtualProtect(g_fenceBase + *g, 0x1000, PAGE_NOACCESS, &old) != 0;
+			fprintf(g_log, "AXIS_FENCE: %lu guard pages around the split variables\n", n);
+		}
 	}
 	fprintf(g_log, "the original's range 0x%x .. 0x%x and g_image's data part left inaccessible (guarded); "
 	        "the data in g_rdata %p, g_data %p\n", GAME_BASE, GAME_BASE + GAME_SIZE, (void *)g_rdata, (void *)g_data);

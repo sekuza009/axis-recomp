@@ -5,30 +5,7 @@
 #include "layout.h"
 extern struct GameRdata g_rdata;
 extern struct GameData g_data;
-extern int g_keySeen_v[256];   /* split out of g_data (src/data/data.c) */
-extern char g_messages_v[128256];   /* split out of g_data (src/data/data.c) */
-extern char g_chatLine_v[1024];   /* split out of g_data (src/data/data.c) */
-extern u8 g_fileList_v[69632];   /* split out of g_data (src/data/data.c) */
-extern u8 g_missions_v[7560];   /* split out of g_data (src/data/data.c) */
-extern char g_briefingText_v[1600];   /* split out of g_data (src/data/data.c) */
-extern u8 g_roomList_v[7744];   /* split out of g_data (src/data/data.c) */
-extern u32 g_serverNames_v[1280];   /* split out of g_data (src/data/data.c) */
-extern float g_tan10Table_v[18];   /* split out of g_data (src/data/data.c) */
-extern int g_randTable_v[4096];   /* split out of g_data (src/data/data.c) */
-extern float g_tanTable_v[3600];   /* split out of g_data (src/data/data.c) */
-extern float g_cosTable_v[3600];   /* split out of g_data (src/data/data.c) */
-extern float g_sinTable_v[3600];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxCbBlue_v[256];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxYCbCrTables_v[2048];   /* split out of g_data (src/data/data.c) */
-extern u8 g_ptxPixels_v[262144];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxCbGreen_v[256];   /* split out of g_data (src/data/data.c) */
-extern u8 g_ptxClampTable_v[1408];   /* split out of g_data (src/data/data.c) */
-extern u8 g_ptxPlanes_v[262144];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxCrRed_v[256];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxCrGreen_v[256];   /* split out of g_data (src/data/data.c) */
-extern float g_ptxDequant_v[128];   /* split out of g_data (src/data/data.c) */
-extern int g_ptxQuant_v[128];   /* split out of g_data (src/data/data.c) */
-extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
+#include "split.h"   /* (the variables split out of g_data) */
 #undef g_accountClan
 #define g_accountClan (g_data.g_accountClan_)
 #undef g_accountEmail
@@ -56,7 +33,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_arenaBright
 #define g_arenaBright ((u32 *)g_data.g_arenaBright_)
 #undef g_arenaConfirming
-#define g_arenaConfirming (g_data.g_arenaConfirming_)
+#define g_arenaConfirming (*(int *)g_arenaConfirming_v)
 #undef g_arenaCorporation
 #define g_arenaCorporation (g_data.g_arenaCorporation_)
 #undef g_arenaCustomize
@@ -80,7 +57,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_arenaFragLimitTyped
 #define g_arenaFragLimitTyped (g_data.g_arenaFragLimitTyped_)
 #undef g_arenaFull
-#define g_arenaFull (g_data.g_arenaFull_)
+#define g_arenaFull (*(int *)g_arenaFull_v)
 #undef g_arenaGameListBottom
 #define g_arenaGameListBottom (g_data.g_arenaGameListBottom_)
 #undef g_arenaGameListLeft
@@ -98,21 +75,21 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_arenaInfoPacket
 #define g_arenaInfoPacket (g_data.g_arenaInfoPacket_)
 #undef g_arenaJoinPending
-#define g_arenaJoinPending (g_data.g_arenaJoinPending_)
+#define g_arenaJoinPending (*(int *)g_arenaJoinPending_v)
 #undef g_arenaJoinRow
-#define g_arenaJoinRow (g_data.g_arenaJoinRow_)
+#define g_arenaJoinRow (*(int *)g_arenaJoinRow_v)
 #undef g_arenaJoinTimer
-#define g_arenaJoinTimer (g_data.g_arenaJoinTimer_)
+#define g_arenaJoinTimer (*(u32 *)g_arenaJoinTimer_v)
 #undef g_arenaJoinWaiting
 #define g_arenaJoinWaiting (g_data.g_arenaJoinWaiting_)
 #undef g_arenaJoining
 #define g_arenaJoining (g_data.g_arenaJoining_)
 #undef g_arenaKeptCamX
-#define g_arenaKeptCamX (g_data.g_arenaKeptCamX_)
+#define g_arenaKeptCamX (*(float *)g_arenaKeptCamX_v)
 #undef g_arenaKeptCamY
-#define g_arenaKeptCamY (g_data.g_arenaKeptCamY_)
+#define g_arenaKeptCamY (*(int *)g_arenaKeptCamY_v)
 #undef g_arenaKeptCamZ
-#define g_arenaKeptCamZ (g_data.g_arenaKeptCamZ_)
+#define g_arenaKeptCamZ (*(int *)g_arenaKeptCamZ_v)
 #undef g_arenaKeptLookX
 #define g_arenaKeptLookX (g_data.g_arenaKeptLookX_)
 #undef g_arenaKeptLookY
@@ -122,7 +99,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_arenaLeaving
 #define g_arenaLeaving (g_data.g_arenaLeaving_)
 #undef g_arenaListClickArmed
-#define g_arenaListClickArmed (g_data.g_arenaListClickArmed_)
+#define g_arenaListClickArmed (*(int *)g_arenaListClickArmed_v)
 #undef g_arenaListFull
 #define g_arenaListFull (g_data.g_arenaListFull_)
 #undef g_arenaListRefreshTimer
@@ -172,9 +149,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_arenaTimeLimitTyped
 #define g_arenaTimeLimitTyped (g_data.g_arenaTimeLimitTyped_)
 #undef g_arenaTunnelDepth
-#define g_arenaTunnelDepth (g_data.g_arenaTunnelDepth_)
+#define g_arenaTunnelDepth (*(u32 *)g_arenaTunnelDepth_v)
 #undef g_argCount
-#define g_argCount (g_data.g_argCount_)
+#define g_argCount (*(int *)g_argCount_v)
 #undef g_armcBuildTexture
 #define g_armcBuildTexture (g_data.g_armcBuildTexture_)
 #undef g_armcCamDistance
@@ -182,17 +159,17 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_armcCamHeight
 #define g_armcCamHeight (g_data.g_armcCamHeight_)
 #undef g_armcChanged
-#define g_armcChanged (g_data.g_armcChanged_)
+#define g_armcChanged (*(int *)g_armcChanged_v)
 #undef g_armcColours
 #define g_armcColours ((float *)g_data.g_armcColours_)
 #undef g_armcCursor
 #define g_armcCursor (g_data.g_armcCursor_)
 #undef g_armcEnterStep
-#define g_armcEnterStep (g_data.g_armcEnterStep_)
+#define g_armcEnterStep (*(int *)g_armcEnterStep_v)
 #undef g_armcEnterStepF
 #define g_armcEnterStepF (g_data.g_armcEnterStepF_)
 #undef g_armcEntered
-#define g_armcEntered (g_data.g_armcEntered_)
+#define g_armcEntered (*(int *)g_armcEntered_v)
 #undef g_armcFrom
 #define g_armcFrom (g_data.g_armcFrom_)
 #undef g_armcLastPart
@@ -200,39 +177,39 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_armcLeaving
 #define g_armcLeaving (g_data.g_armcLeaving_)
 #undef g_armcLevel
-#define g_armcLevel (g_data.g_armcLevel_)
+#define g_armcLevel (*(int *)g_armcLevel_v)
 #undef g_armcLookCos
-#define g_armcLookCos (g_data.g_armcLookCos_)
+#define g_armcLookCos (*(float *)g_armcLookCos_v)
 #undef g_armcLookSin
-#define g_armcLookSin (g_data.g_armcLookSin_)
+#define g_armcLookSin (*(float *)g_armcLookSin_v)
 #undef g_armcLookTilt
-#define g_armcLookTilt (g_data.g_armcLookTilt_)
+#define g_armcLookTilt (*(float *)g_armcLookTilt_v)
 #undef g_armcLookYaw
-#define g_armcLookYaw (g_data.g_armcLookYaw_)
+#define g_armcLookYaw (*(float *)g_armcLookYaw_v)
 #undef g_armcMoveEyeX
-#define g_armcMoveEyeX (g_data.g_armcMoveEyeX_)
+#define g_armcMoveEyeX (*(float *)g_armcMoveEyeX_v)
 #undef g_armcMoveEyeY
-#define g_armcMoveEyeY (g_data.g_armcMoveEyeY_)
+#define g_armcMoveEyeY (*(int *)g_armcMoveEyeY_v)
 #undef g_armcMoveEyeZ
-#define g_armcMoveEyeZ (g_data.g_armcMoveEyeZ_)
+#define g_armcMoveEyeZ (*(float *)g_armcMoveEyeZ_v)
 #undef g_armcMoveStarted
-#define g_armcMoveStarted (g_data.g_armcMoveStarted_)
+#define g_armcMoveStarted (*(int *)g_armcMoveStarted_v)
 #undef g_armcMoveTargetX
-#define g_armcMoveTargetX (g_data.g_armcMoveTargetX_)
+#define g_armcMoveTargetX (*(int *)g_armcMoveTargetX_v)
 #undef g_armcMoveTargetY
-#define g_armcMoveTargetY (g_data.g_armcMoveTargetY_)
+#define g_armcMoveTargetY (*(int *)g_armcMoveTargetY_v)
 #undef g_armcMoveTargetZ
-#define g_armcMoveTargetZ (g_data.g_armcMoveTargetZ_)
+#define g_armcMoveTargetZ (*(int *)g_armcMoveTargetZ_v)
 #undef g_armcPanelDepth
 #define g_armcPanelDepth (g_data.g_armcPanelDepth_)
 #undef g_armcPreview
 #define g_armcPreview (g_data.g_armcPreview_)
 #undef g_armcSessionMade
-#define g_armcSessionMade (g_data.g_armcSessionMade_)
+#define g_armcSessionMade (*(int *)g_armcSessionMade_v)
 #undef g_armcSliderLeft
 #define g_armcSliderLeft (g_data.g_armcSliderLeft_)
 #undef g_armcSlot
-#define g_armcSlot (g_data.g_armcSlot_)
+#define g_armcSlot (*(int *)g_armcSlot_v)
 #undef g_armcSpin
 #define g_armcSpin (g_data.g_armcSpin_)
 #undef g_armcState
@@ -254,23 +231,23 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_armcViewPoint5Y
 #define g_armcViewPoint5Y (g_data.g_armcViewPoint5Y_)
 #undef g_armcZoom
-#define g_armcZoom (g_data.g_armcZoom_)
+#define g_armcZoom (*(float *)g_armcZoom_v)
 #undef g_armsFcsLevel
 #define g_armsFcsLevel (g_data.g_armsFcsLevel_)
 #undef g_armsWeight
 #define g_armsWeight (g_data.g_armsWeight_)
 #undef g_bestLevelNet
-#define g_bestLevelNet (g_data.g_bestLevelNet_)
+#define g_bestLevelNet (*(int *)g_bestLevelNet_v)
 #undef g_bestProgressSolo
 #define g_bestProgressSolo (g_data.g_bestProgressSolo_)
 #undef g_bindPage
-#define g_bindPage (g_data.g_bindPage_)
+#define g_bindPage (*(int *)g_bindPage_v)
 #undef g_bindRow
-#define g_bindRow (g_data.g_bindRow_)
+#define g_bindRow (*(int *)g_bindRow_v)
 #undef g_bindWaiting
-#define g_bindWaiting (g_data.g_bindWaiting_)
+#define g_bindWaiting (*(int *)g_bindWaiting_v)
 #undef g_bitStream
-#define g_bitStream (g_data.g_bitStream_)
+#define g_bitStream (*(const u8 * *)g_bitStream_v)
 #undef g_boosterActiveTime
 #define g_boosterActiveTime (g_data.g_boosterActiveTime_)
 #undef g_boosterNormalSpeed
@@ -280,7 +257,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_boosterRechargeTime
 #define g_boosterRechargeTime (g_data.g_boosterRechargeTime_)
 #undef g_boosterThrustType
-#define g_boosterThrustType (g_data.g_boosterThrustType_)
+#define g_boosterThrustType (*(int *)g_boosterThrustType_v)
 #undef g_boosterWeight
 #define g_boosterWeight (g_data.g_boosterWeight_)
 #undef g_briefingBottom
@@ -288,7 +265,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_briefingClock
 #define g_briefingClock (g_data.g_briefingClock_)
 #undef g_briefingDone
-#define g_briefingDone (g_data.g_briefingDone_)
+#define g_briefingDone (*(int *)g_briefingDone_v)
 #undef g_briefingEnd
 #define g_briefingEnd (g_data.g_briefingEnd_)
 #undef g_briefingRight
@@ -296,11 +273,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_briefingShown
 #define g_briefingShown (g_data.g_briefingShown_)
 #undef g_briefingSkipped
-#define g_briefingSkipped (g_data.g_briefingSkipped_)
+#define g_briefingSkipped (*(int *)g_briefingSkipped_v)
 #undef g_briefingSource
-#define g_briefingSource (g_data.g_briefingSource_)
+#define g_briefingSource (*(u8 * *)g_briefingSource_v)
 #undef g_briefingStart
-#define g_briefingStart (g_data.g_briefingStart_)
+#define g_briefingStart (*(int *)g_briefingStart_v)
 #undef g_briefingText
 #define g_briefingText ((char *)g_briefingText_v)
 #undef g_briefingX
@@ -344,7 +321,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_camPoint2Z
 #define g_camPoint2Z (g_data.g_camPoint2Z_)
 #undef g_catalogueFile
-#define g_catalogueFile (g_data.g_catalogueFile_)
+#define g_catalogueFile (*(const char * *)g_catalogueFile_v)
 #undef g_cfgPlayerName
 #define g_cfgPlayerName ((char *)g_data.g_cfgPlayerName_)
 #undef g_cfgSimpleMenu
@@ -356,31 +333,31 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_chatLine
 #define g_chatLine ((char *)g_chatLine_v)
 #undef g_chatLineDone
-#define g_chatLineDone (g_data.g_chatLineDone_)
+#define g_chatLineDone (*(int *)g_chatLineDone_v)
 #undef g_chatLog
-#define g_chatLog (g_data.g_chatLog_)
+#define g_chatLog (*(int *)g_chatLog_v)
 #undef g_chatLogged
-#define g_chatLogged (g_data.g_chatLogged_)
+#define g_chatLogged (*(int *)g_chatLogged_v)
 #undef g_chatTyping
-#define g_chatTyping (g_data.g_chatTyping_)
+#define g_chatTyping (*(int *)g_chatTyping_v)
 #undef g_chestMaxArmor
-#define g_chestMaxArmor (g_data.g_chestMaxArmor_)
+#define g_chestMaxArmor (*(int *)g_chestMaxArmor_v)
 #undef g_chestMaxShield
-#define g_chestMaxShield (g_data.g_chestMaxShield_)
+#define g_chestMaxShield (*(int *)g_chestMaxShield_v)
 #undef g_chestWeightLimit
-#define g_chestWeightLimit (g_data.g_chestWeightLimit_)
+#define g_chestWeightLimit (*(float *)g_chestWeightLimit_v)
 #undef g_chosenGameMode
 #define g_chosenGameMode (g_data.g_chosenGameMode_)
 #undef g_chosenPilot
-#define g_chosenPilot (g_data.g_chosenPilot_)
+#define g_chosenPilot (*(int *)g_chosenPilot_v)
 #undef g_clockCheckClosed
-#define g_clockCheckClosed (g_data.g_clockCheckClosed_)
+#define g_clockCheckClosed (*(int *)g_clockCheckClosed_v)
 #undef g_clockCheckSeconds
 #define g_clockCheckSeconds (g_data.g_clockCheckSeconds_)
 #undef g_clockCheckTick
-#define g_clockCheckTick (g_data.g_clockCheckTick_)
+#define g_clockCheckTick (*(u32 *)g_clockCheckTick_v)
 #undef g_clockCheckTickSeconds
-#define g_clockCheckTickSeconds (g_data.g_clockCheckTickSeconds_)
+#define g_clockCheckTickSeconds (*(u32 *)g_clockCheckTickSeconds_v)
 #undef g_clockLastTime
 #define g_clockLastTime ((u16 *)g_data.g_clockLastTime_)
 #undef g_clockNow
@@ -392,23 +369,23 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_cmdTimeLimit
 #define g_cmdTimeLimit (g_data.g_cmdTimeLimit_)
 #undef g_colourChanged
-#define g_colourChanged (g_data.g_colourChanged_)
+#define g_colourChanged (*(int *)g_colourChanged_v)
 #undef g_colourMaskRed
 #define g_colourMaskRed (g_data.g_colourMaskRed_)
 #undef g_coloursChanged
-#define g_coloursChanged (g_data.g_coloursChanged_)
+#define g_coloursChanged (*(int *)g_coloursChanged_v)
 #undef g_componentDatPath
-#define g_componentDatPath (g_data.g_componentDatPath_)
+#define g_componentDatPath (*(u32 *)g_componentDatPath_v)
 #undef g_connectStep
 #define g_connectStep (g_data.g_connectStep_)
 #undef g_connectionAwaited
 #define g_connectionAwaited (g_data.g_connectionAwaited_)
 #undef g_connectionCopy
-#define g_connectionCopy (g_data.g_connectionCopy_)
+#define g_connectionCopy (*(void * *)g_connectionCopy_v)
 #undef g_connectionKind
-#define g_connectionKind (g_data.g_connectionKind_)
+#define g_connectionKind (*(int *)g_connectionKind_v)
 #undef g_convertHangul
-#define g_convertHangul (g_data.g_convertHangul_)
+#define g_convertHangul (*(int *)g_convertHangul_v)
 #undef g_cosTable
 #define g_cosTable ((float *)g_cosTable_v)
 #undef g_createQuitDialog
@@ -418,11 +395,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_crosshairSetting
 #define g_crosshairSetting (g_data.g_crosshairSetting_)
 #undef g_crosshairTexture
-#define g_crosshairTexture (g_data.g_crosshairTexture_)
+#define g_crosshairTexture (*(int *)g_crosshairTexture_v)
 #undef g_currentProfile
 #define g_currentProfile (g_data.g_currentProfile_)
 #undef g_currentStageName
-#define g_currentStageName (g_data.g_currentStageName_)
+#define g_currentStageName (*(int *)g_currentStageName_v)
 #undef g_cursorBlinkTimer
 #define g_cursorBlinkTimer (g_data.g_cursorBlinkTimer_)
 #undef g_cursorPos
@@ -432,17 +409,17 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dataDir
 #define g_dataDir ((char *)g_data.g_dataDir_)
 #undef g_debugValue
-#define g_debugValue (g_data.g_debugValue_)
+#define g_debugValue (*(int *)g_debugValue_v)
 #undef g_defaultColour
 #define g_defaultColour (g_data.g_defaultColour_)
 #undef g_desktopDC
-#define g_desktopDC (g_data.g_desktopDC_)
+#define g_desktopDC (*(void * *)g_desktopDC_v)
 #undef g_desktopDepth
-#define g_desktopDepth (g_data.g_desktopDepth_)
+#define g_desktopDepth (*(int *)g_desktopDepth_v)
 #undef g_desktopHeight
 #define g_desktopHeight (g_data.g_desktopHeight_)
 #undef g_desktopWidth
-#define g_desktopWidth (g_data.g_desktopWidth_)
+#define g_desktopWidth (*(int *)g_desktopWidth_v)
 #undef g_dialogFrameTexture
 #define g_dialogFrameTexture (g_data.g_dialogFrameTexture_)
 #undef g_dik1
@@ -462,7 +439,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikDelete
 #define g_dikDelete (g_data.g_dikDelete_)
 #undef g_dikDown
-#define g_dikDown (g_data.g_dikDown_)
+#define g_dikDown (*(int *)g_dikDown_v)
 #undef g_dikEnter
 #define g_dikEnter (g_data.g_dikEnter_)
 #undef g_dikEscape
@@ -470,7 +447,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikEscape_2
 #define g_dikEscape_2 (g_data.g_dikEscape_2_)
 #undef g_dikF11
-#define g_dikF11 (g_data.g_dikF11_)
+#define g_dikF11 (*(int *)g_dikF11_v)
 #undef g_dikG
 #define g_dikG (g_data.g_dikG_)
 #undef g_dikI
@@ -486,7 +463,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikLShift
 #define g_dikLShift (g_data.g_dikLShift_)
 #undef g_dikLeft
-#define g_dikLeft (g_data.g_dikLeft_)
+#define g_dikLeft (*(int *)g_dikLeft_v)
 #undef g_dikM
 #define g_dikM (g_data.g_dikM_)
 #undef g_dikMouse1
@@ -508,11 +485,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikRAlt
 #define g_dikRAlt (g_data.g_dikRAlt_)
 #undef g_dikRCtrl
-#define g_dikRCtrl (g_data.g_dikRCtrl_)
+#define g_dikRCtrl (*(int *)g_dikRCtrl_v)
 #undef g_dikRShift
 #define g_dikRShift (g_data.g_dikRShift_)
 #undef g_dikRight
-#define g_dikRight (g_data.g_dikRight_)
+#define g_dikRight (*(int *)g_dikRight_v)
 #undef g_dikS
 #define g_dikS (g_data.g_dikS_)
 #undef g_dikSpace
@@ -526,7 +503,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikW
 #define g_dikW (g_data.g_dikW_)
 #undef g_dikWheelDown
-#define g_dikWheelDown (g_data.g_dikWheelDown_)
+#define g_dikWheelDown (*(int *)g_dikWheelDown_v)
 #undef g_dikWheelUp
 #define g_dikWheelUp (g_data.g_dikWheelUp_)
 #undef g_dikX
@@ -534,13 +511,13 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dikZ_2
 #define g_dikZ_2 (g_data.g_dikZ_2_)
 #undef g_directInputMade
-#define g_directInputMade (g_data.g_directInputMade_)
+#define g_directInputMade (*(int *)g_directInputMade_v)
 #undef g_directSound
-#define g_directSound (g_data.g_directSound_)
+#define g_directSound (*(void * *)g_directSound_v)
 #undef g_displayModeChanged
-#define g_displayModeChanged (g_data.g_displayModeChanged_)
+#define g_displayModeChanged (*(u8 *)g_displayModeChanged_v)
 #undef g_displayModeLeft
-#define g_displayModeLeft (g_data.g_displayModeLeft_)
+#define g_displayModeLeft (*(u8 *)g_displayModeLeft_v)
 #undef g_dpMaxBufferSize
 #define g_dpMaxBufferSize (g_data.g_dpMaxBufferSize_)
 #undef g_dpMaxQueueSize
@@ -548,11 +525,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_dpTimeout
 #define g_dpTimeout (g_data.g_dpTimeout_)
 #undef g_dplay
-#define g_dplay (g_data.g_dplay_)
+#define g_dplay (*(void * *)g_dplay_v)
 #undef g_dplayLobby
 #define g_dplayLobby (g_data.g_dplayLobby_)
 #undef g_dplaySessionCount
-#define g_dplaySessionCount (g_data.g_dplaySessionCount_)
+#define g_dplaySessionCount (*(int *)g_dplaySessionCount_v)
 #undef g_dplaySessionList
 #define g_dplaySessionList (g_data.g_dplaySessionList_)
 #undef g_editOldProc
@@ -560,7 +537,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_editingAccountPassword
 #define g_editingAccountPassword (g_data.g_editingAccountPassword_)
 #undef g_editingArenaMessage
-#define g_editingArenaMessage (g_data.g_editingArenaMessage_)
+#define g_editingArenaMessage (*(int *)g_editingArenaMessage_v)
 #undef g_editingEmail
 #define g_editingEmail (g_data.g_editingEmail_)
 #undef g_editingNewArenaFragLimit
@@ -582,37 +559,37 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_emptyItemSlot0
 #define g_emptyItemSlot0 (g_data.g_emptyItemSlot0_)
 #undef g_enteringMenus
-#define g_enteringMenus (g_data.g_enteringMenus_)
+#define g_enteringMenus (*(int *)g_enteringMenus_v)
 #undef g_errorCleanupHook
-#define g_errorCleanupHook (g_data.g_errorCleanupHook_)
+#define g_errorCleanupHook (*(int *)g_errorCleanupHook_v)
 #undef g_errorLogging
-#define g_errorLogging (g_data.g_errorLogging_)
+#define g_errorLogging (*(int *)g_errorLogging_v)
 #undef g_excludedKey
-#define g_excludedKey (g_data.g_excludedKey_)
+#define g_excludedKey (*(int *)g_excludedKey_v)
 #undef g_fieldTabKey
-#define g_fieldTabKey (g_data.g_fieldTabKey_)
+#define g_fieldTabKey (*(int *)g_fieldTabKey_v)
 #undef g_fileList
 #define g_fileList ((u8 *)g_fileList_v)
 #undef g_fovKeys
-#define g_fovKeys (g_data.g_fovKeys_)
+#define g_fovKeys (*(int *)g_fovKeys_v)
 #undef g_fps
-#define g_fps (g_data.g_fps_)
+#define g_fps (*(float *)g_fps_v)
 #undef g_fpsFrameClock
-#define g_fpsFrameClock (g_data.g_fpsFrameClock_)
+#define g_fpsFrameClock (*(double *)g_fpsFrameClock_v)
 #undef g_fpsSecondSoFar
-#define g_fpsSecondSoFar (g_data.g_fpsSecondSoFar_)
+#define g_fpsSecondSoFar (*(double *)g_fpsSecondSoFar_v)
 #undef g_fpsSecondStart
-#define g_fpsSecondStart (g_data.g_fpsSecondStart_)
+#define g_fpsSecondStart (*(double *)g_fpsSecondStart_v)
 #undef g_fragLimit
 #define g_fragLimit (g_data.g_fragLimit_)
 #undef g_frameCounter40
-#define g_frameCounter40 (g_data.g_frameCounter40_)
+#define g_frameCounter40 (*(int *)g_frameCounter40_v)
 #undef g_frameRate
-#define g_frameRate (g_data.g_frameRate_)
+#define g_frameRate (*(double *)g_frameRate_v)
 #undef g_freeCamHeight
-#define g_freeCamHeight (g_data.g_freeCamHeight_)
+#define g_freeCamHeight (*(float *)g_freeCamHeight_v)
 #undef g_fullScreen
-#define g_fullScreen (g_data.g_fullScreen_)
+#define g_fullScreen (*(int *)g_fullScreen_v)
 #undef g_gameCount
 #define g_gameCount (g_data.g_gameCount_)
 #undef g_gameList
@@ -620,7 +597,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_gameListClickArmed
 #define g_gameListClickArmed (g_data.g_gameListClickArmed_)
 #undef g_gameListClickTimer
-#define g_gameListClickTimer (g_data.g_gameListClickTimer_)
+#define g_gameListClickTimer (*(float *)g_gameListClickTimer_v)
 #undef g_gameListJoinClicked
 #define g_gameListJoinClicked (g_data.g_gameListJoinClicked_)
 #undef g_gameListLoaded
@@ -628,7 +605,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_gameListTop
 #define g_gameListTop (g_data.g_gameListTop_)
 #undef g_gameRunning
-#define g_gameRunning (g_data.g_gameRunning_)
+#define g_gameRunning (*(int *)g_gameRunning_v)
 #undef g_gameServerAnswer
 #define g_gameServerAnswer (g_data.g_gameServerAnswer_)
 #undef g_gameServerAnswer15
@@ -636,7 +613,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_gameServerPending
 #define g_gameServerPending (g_data.g_gameServerPending_)
 #undef g_gameServerReplyKind
-#define g_gameServerReplyKind (g_data.g_gameServerReplyKind_)
+#define g_gameServerReplyKind (*(u32 *)g_gameServerReplyKind_v)
 #undef g_gameServerSocket
 #define g_gameServerSocket (g_data.g_gameServerSocket_)
 #undef g_gameServerState
@@ -644,9 +621,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_gameServerStatus
 #define g_gameServerStatus (g_data.g_gameServerStatus_)
 #undef g_glCachedState
-#define g_glCachedState (g_data.g_glCachedState_)
+#define g_glCachedState (*(int *)g_glCachedState_v)
 #undef g_glColourBits
-#define g_glColourBits (g_data.g_glColourBits_)
+#define g_glColourBits (*(int *)g_glColourBits_v)
 #undef g_glDepthBits
 #define g_glDepthBits (g_data.g_glDepthBits_)
 #undef g_glHeight
@@ -656,15 +633,15 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_hInstance
 #define g_hInstance (g_data.g_hInstance_)
 #undef g_hangulLeadGlyph
-#define g_hangulLeadGlyph (g_data.g_hangulLeadGlyph_)
+#define g_hangulLeadGlyph (*(int *)g_hangulLeadGlyph_v)
 #undef g_hangulTailGlyph
-#define g_hangulTailGlyph (g_data.g_hangulTailGlyph_)
+#define g_hangulTailGlyph (*(int *)g_hangulTailGlyph_v)
 #undef g_hangulVowelGlyph
-#define g_hangulVowelGlyph (g_data.g_hangulVowelGlyph_)
+#define g_hangulVowelGlyph (*(int *)g_hangulVowelGlyph_v)
 #undef g_headDetectionAngle
-#define g_headDetectionAngle (g_data.g_headDetectionAngle_)
+#define g_headDetectionAngle (*(float *)g_headDetectionAngle_v)
 #undef g_headDetectionRange
-#define g_headDetectionRange (g_data.g_headDetectionRange_)
+#define g_headDetectionRange (*(float *)g_headDetectionRange_v)
 #undef g_headHackingLevel
 #define g_headHackingLevel (g_data.g_headHackingLevel_)
 #undef g_headLockOnTime
@@ -678,11 +655,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_hostResultFlag
 #define g_hostResultFlag (g_data.g_hostResultFlag_)
 #undef g_inputFont
-#define g_inputFont (g_data.g_inputFont_)
+#define g_inputFont (*(void * *)g_inputFont_v)
 #undef g_insertCdMessage
-#define g_insertCdMessage (g_data.g_insertCdMessage_)
+#define g_insertCdMessage (*(const char * *)g_insertCdMessage_v)
 #undef g_instanceGuid
-#define g_instanceGuid (g_data.g_instanceGuid_)
+#define g_instanceGuid (*(const void * *)g_instanceGuid_v)
 #undef g_introZoom
 #define g_introZoom (g_data.g_introZoom_)
 #undef g_isHost
@@ -700,7 +677,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_itemBonusRechargeTime
 #define g_itemBonusRechargeTime (g_data.g_itemBonusRechargeTime_)
 #undef g_itemBonusShield
-#define g_itemBonusShield (g_data.g_itemBonusShield_)
+#define g_itemBonusShield (*(float *)g_itemBonusShield_v)
 #undef g_itemBonusTargetKeep
 #define g_itemBonusTargetKeep (g_data.g_itemBonusTargetKeep_)
 #undef g_itemBonusWeightLimit
@@ -722,7 +699,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_joinedTitleRating
 #define g_joinedTitleRating (g_data.g_joinedTitleRating_)
 #undef g_keepCameraAsked
-#define g_keepCameraAsked (g_data.g_keepCameraAsked_)
+#define g_keepCameraAsked (*(int *)g_keepCameraAsked_v)
 #undef g_keptChatLine
 #define g_keptChatLine (g_data.g_keptChatLine_)
 #undef g_keyEnter
@@ -754,11 +731,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_lastFrameClock
 #define g_lastFrameClock (g_data.g_lastFrameClock_)
 #undef g_lastPanel
-#define g_lastPanel (g_data.g_lastPanel_)
+#define g_lastPanel (*(int *)g_lastPanel_v)
 #undef g_lastTime
 #define g_lastTime (g_data.g_lastTime_)
 #undef g_launchMessage
-#define g_launchMessage (g_data.g_launchMessage_)
+#define g_launchMessage (*(const char * *)g_launchMessage_v)
 #undef g_legsMaxWeight
 #define g_legsMaxWeight (g_data.g_legsMaxWeight_)
 #undef g_legsSpeedCorrection
@@ -766,9 +743,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_legsWeight
 #define g_legsWeight (g_data.g_legsWeight_)
 #undef g_listRefreshPeriod
-#define g_listRefreshPeriod (g_data.g_listRefreshPeriod_)
+#define g_listRefreshPeriod (*(int *)g_listRefreshPeriod_v)
 #undef g_loadStep
-#define g_loadStep (g_data.g_loadStep_)
+#define g_loadStep (*(int *)g_loadStep_v)
 #undef g_lobbyBlinkClock
 #define g_lobbyBlinkClock (g_data.g_lobbyBlinkClock_)
 #undef g_lobbyConnectStatus
@@ -776,7 +753,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_lobbyConnectionBlock
 #define g_lobbyConnectionBlock (g_data.g_lobbyConnectionBlock_)
 #undef g_lobbyConnectionOpen
-#define g_lobbyConnectionOpen (g_data.g_lobbyConnectionOpen_)
+#define g_lobbyConnectionOpen (*(int *)g_lobbyConnectionOpen_v)
 #undef g_lobbyJoinRequest
 #define g_lobbyJoinRequest (g_data.g_lobbyJoinRequest_)
 #undef g_lobbyJoinStarted
@@ -794,7 +771,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_lobbyReply
 #define g_lobbyReply (g_data.g_lobbyReply_)
 #undef g_lobbyReplyKind
-#define g_lobbyReplyKind (g_data.g_lobbyReplyKind_)
+#define g_lobbyReplyKind (*(u32 *)g_lobbyReplyKind_v)
 #undef g_lobbySearching
 #define g_lobbySearching (g_data.g_lobbySearching_)
 #undef g_lobbySocket
@@ -806,9 +783,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_localAddress
 #define g_localAddress ((char *)g_data.g_localAddress_)
 #undef g_localPlayerData
-#define g_localPlayerData (g_data.g_localPlayerData_)
+#define g_localPlayerData (*(u32 *)g_localPlayerData_v)
 #undef g_localPlayerId
-#define g_localPlayerId (g_data.g_localPlayerId_)
+#define g_localPlayerId (*(u32 *)g_localPlayerId_v)
 #undef g_logBMPRGBFile
 #define g_logBMPRGBFile ((u32 *)g_data.g_logBMPRGBFile_)
 #undef g_logCollisionVolume
@@ -816,7 +793,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_logConsole
 #define g_logConsole ((u32 *)g_data.g_logConsole_)
 #undef g_logHook
-#define g_logHook (g_data.g_logHook_)
+#define g_logHook (*(void * *)g_logHook_v)
 #undef g_logLight
 #define g_logLight ((u32 *)g_data.g_logLight_)
 #undef g_logPackedColor
@@ -856,7 +833,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_loginFormLeft
 #define g_loginFormLeft (g_data.g_loginFormLeft_)
 #undef g_loginToSend
-#define g_loginToSend (g_data.g_loginToSend_)
+#define g_loginToSend (*(int *)g_loginToSend_v)
 #undef g_mainMenuDepth
 #define g_mainMenuDepth (g_data.g_mainMenuDepth_)
 #undef g_mainMenuFadingIn
@@ -868,25 +845,25 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_mainWindow
 #define g_mainWindow (g_data.g_mainWindow_)
 #undef g_mapEntry22On
-#define g_mapEntry22On (g_data.g_mapEntry22On_)
+#define g_mapEntry22On (*(int *)g_mapEntry22On_v)
 #undef g_mapEntry23On
-#define g_mapEntry23On (g_data.g_mapEntry23On_)
+#define g_mapEntry23On (*(int *)g_mapEntry23On_v)
 #undef g_mapEntry24On
-#define g_mapEntry24On (g_data.g_mapEntry24On_)
+#define g_mapEntry24On (*(int *)g_mapEntry24On_v)
 #undef g_mapListFlaggedCount
 #define g_mapListFlaggedCount (g_data.g_mapListFlaggedCount_)
 #undef g_mapListMade
-#define g_mapListMade (g_data.g_mapListMade_)
+#define g_mapListMade (*(int *)g_mapListMade_v)
 #undef g_mapListOpen
-#define g_mapListOpen (g_data.g_mapListOpen_)
+#define g_mapListOpen (*(int *)g_mapListOpen_v)
 #undef g_mapMissing
-#define g_mapMissing (g_data.g_mapMissing_)
+#define g_mapMissing (*(int *)g_mapMissing_v)
 #undef g_mapNames
 #define g_mapNames ((char *)g_data.g_mapNames_)
 #undef g_mapPreviewChanged
-#define g_mapPreviewChanged (g_data.g_mapPreviewChanged_)
+#define g_mapPreviewChanged (*(int *)g_mapPreviewChanged_v)
 #undef g_mapPreviewTexture
-#define g_mapPreviewTexture (g_data.g_mapPreviewTexture_)
+#define g_mapPreviewTexture (*(int *)g_mapPreviewTexture_v)
 #undef g_mapRotation
 #define g_mapRotation (g_data.g_mapRotation_)
 #undef g_mapSelectBottom
@@ -920,35 +897,35 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_mapTitle
 #define g_mapTitle ((char *)g_data.g_mapTitle_)
 #undef g_matchChatCaretX
-#define g_matchChatCaretX (g_data.g_matchChatCaretX_)
+#define g_matchChatCaretX (*(int *)g_matchChatCaretX_v)
 #undef g_matchChatCaretY
-#define g_matchChatCaretY (g_data.g_matchChatCaretY_)
+#define g_matchChatCaretY (*(int *)g_matchChatCaretY_v)
 #undef g_matchEndedByServer
-#define g_matchEndedByServer (g_data.g_matchEndedByServer_)
+#define g_matchEndedByServer (*(int *)g_matchEndedByServer_v)
 #undef g_matchEndedByUser
-#define g_matchEndedByUser (g_data.g_matchEndedByUser_)
+#define g_matchEndedByUser (*(int *)g_matchEndedByUser_v)
 #undef g_matchLogWritten
-#define g_matchLogWritten (g_data.g_matchLogWritten_)
+#define g_matchLogWritten (*(int *)g_matchLogWritten_v)
 #undef g_matchMode
 #define g_matchMode (g_data.g_matchMode_)
 #undef g_matchRunning
 #define g_matchRunning (g_data.g_matchRunning_)
 #undef g_mciCallback
-#define g_mciCallback (g_data.g_mciCallback_)
+#define g_mciCallback (*(u32 *)g_mciCallback_v)
 #undef g_mciDevice
-#define g_mciDevice (g_data.g_mciDevice_)
+#define g_mciDevice (*(u32 *)g_mciDevice_v)
 #undef g_mciFrom
-#define g_mciFrom (g_data.g_mciFrom_)
+#define g_mciFrom (*(u32 *)g_mciFrom_v)
 #undef g_mciTo
-#define g_mciTo (g_data.g_mciTo_)
+#define g_mciTo (*(u32 *)g_mciTo_v)
 #undef g_mechBoosterEnergy
 #define g_mechBoosterEnergy (g_data.g_mechBoosterEnergy_)
 #undef g_mechBoosterRecharge
 #define g_mechBoosterRecharge (g_data.g_mechBoosterRecharge_)
 #undef g_mechChanged
-#define g_mechChanged (g_data.g_mechChanged_)
+#define g_mechChanged (*(int *)g_mechChanged_v)
 #undef g_mechDetectionRange
-#define g_mechDetectionRange (g_data.g_mechDetectionRange_)
+#define g_mechDetectionRange (*(float *)g_mechDetectionRange_v)
 #undef g_mechHackingLevel
 #define g_mechHackingLevel (g_data.g_mechHackingLevel_)
 #undef g_mechItem2
@@ -966,9 +943,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_mechNormalSpeed
 #define g_mechNormalSpeed (g_data.g_mechNormalSpeed_)
 #undef g_menuCamX
-#define g_menuCamX (g_data.g_menuCamX_)
+#define g_menuCamX (*(u32 *)g_menuCamX_v)
 #undef g_menuCamZ
-#define g_menuCamZ (g_data.g_menuCamZ_)
+#define g_menuCamZ (*(u32 *)g_menuCamZ_v)
 #undef g_menuCameraHeight
 #define g_menuCameraHeight (g_data.g_menuCameraHeight_)
 #undef g_menuCameraLook
@@ -984,7 +961,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_menuCameraZ
 #define g_menuCameraZ (g_data.g_menuCameraZ_)
 #undef g_menuFrameCount
-#define g_menuFrameCount (g_data.g_menuFrameCount_)
+#define g_menuFrameCount (*(int *)g_menuFrameCount_v)
 #undef g_menuFrameCounter
 #define g_menuFrameCounter (g_data.g_menuFrameCounter_)
 #undef g_menuFramePhase
@@ -1008,9 +985,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_menuTunnelSpeed
 #define g_menuTunnelSpeed (g_data.g_menuTunnelSpeed_)
 #undef g_menuTunnelTexture
-#define g_menuTunnelTexture (g_data.g_menuTunnelTexture_)
+#define g_menuTunnelTexture (*(int *)g_menuTunnelTexture_v)
 #undef g_messageBoxArgs
-#define g_messageBoxArgs (g_data.g_messageBoxArgs_)
+#define g_messageBoxArgs (*(va_list *)g_messageBoxArgs_v)
 #undef g_messages
 #define g_messages ((char *)g_messages_v)
 #undef g_misHeader1
@@ -1026,13 +1003,13 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_missionPicked
 #define g_missionPicked (g_data.g_missionPicked_)
 #undef g_missionPreviewDue
-#define g_missionPreviewDue (g_data.g_missionPreviewDue_)
+#define g_missionPreviewDue (*(int *)g_missionPreviewDue_v)
 #undef g_missionSelectLeft
 #define g_missionSelectLeft (g_data.g_missionSelectLeft_)
 #undef g_missionSelectTop
 #define g_missionSelectTop (g_data.g_missionSelectTop_)
 #undef g_missionShown
-#define g_missionShown (g_data.g_missionShown_)
+#define g_missionShown (*(int *)g_missionShown_v)
 #undef g_missions
 #define g_missions ((u8 *)g_missions_v)
 #undef g_mouse2Down
@@ -1056,25 +1033,25 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_musicVolume
 #define g_musicVolume (g_data.g_musicVolume_)
 #undef g_musicVolumeSetting
-#define g_musicVolumeSetting (g_data.g_musicVolumeSetting_)
+#define g_musicVolumeSetting (*(int *)g_musicVolumeSetting_v)
 #undef g_netAccountBuffer
 #define g_netAccountBuffer (g_data.g_netAccountBuffer_)
 #undef g_netBlockSize
-#define g_netBlockSize (g_data.g_netBlockSize_)
+#define g_netBlockSize (*(u32 *)g_netBlockSize_v)
 #undef g_netChatMessageKind
-#define g_netChatMessageKind (g_data.g_netChatMessageKind_)
+#define g_netChatMessageKind (*(int *)g_netChatMessageKind_v)
 #undef g_netChatMessageText
-#define g_netChatMessageText (g_data.g_netChatMessageText_)
+#define g_netChatMessageText (*(int *)g_netChatMessageText_v)
 #undef g_netChatMessageWord1
-#define g_netChatMessageWord1 (g_data.g_netChatMessageWord1_)
+#define g_netChatMessageWord1 (*(int *)g_netChatMessageWord1_v)
 #undef g_netChatMessageWord2
-#define g_netChatMessageWord2 (g_data.g_netChatMessageWord2_)
+#define g_netChatMessageWord2 (*(int *)g_netChatMessageWord2_v)
 #undef g_netClaimedSlot
 #define g_netClaimedSlot (g_data.g_netClaimedSlot_)
 #undef g_netConnected
-#define g_netConnected (g_data.g_netConnected_)
+#define g_netConnected (*(int *)g_netConnected_v)
 #undef g_netHostGone
-#define g_netHostGone (g_data.g_netHostGone_)
+#define g_netHostGone (*(int *)g_netHostGone_v)
 #undef g_netInfoPacket
 #define g_netInfoPacket (g_data.g_netInfoPacket_)
 #undef g_netJoinMessage
@@ -1082,7 +1059,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_netKindWord
 #define g_netKindWord (g_data.g_netKindWord_)
 #undef g_netLastRequest
-#define g_netLastRequest (g_data.g_netLastRequest_)
+#define g_netLastRequest (*(int *)g_netLastRequest_v)
 #undef g_netLeaveBuffer
 #define g_netLeaveBuffer (g_data.g_netLeaveBuffer_)
 #undef g_netListDone
@@ -1150,35 +1127,35 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_newNameDialogTop
 #define g_newNameDialogTop (g_data.g_newNameDialogTop_)
 #undef g_openLoginName
-#define g_openLoginName (g_data.g_openLoginName_)
+#define g_openLoginName (*(int *)g_openLoginName_v)
 #undef g_otherModeHeight
-#define g_otherModeHeight (g_data.g_otherModeHeight_)
+#define g_otherModeHeight (*(int *)g_otherModeHeight_v)
 #undef g_otherModeWidth
-#define g_otherModeWidth (g_data.g_otherModeWidth_)
+#define g_otherModeWidth (*(int *)g_otherModeWidth_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
 #undef g_panelGlow
-#define g_panelGlow (g_data.g_panelGlow_)
+#define g_panelGlow (*(float *)g_panelGlow_v)
 #undef g_panelGlowStep
-#define g_panelGlowStep (g_data.g_panelGlowStep_)
+#define g_panelGlowStep (*(u32 *)g_panelGlowStep_v)
 #undef g_panelHovered
 #define g_panelHovered (g_data.g_panelHovered_)
 #undef g_partBox0Offset
-#define g_partBox0Offset (g_data.g_partBox0Offset_)
+#define g_partBox0Offset (*(u32 *)g_partBox0Offset_v)
 #undef g_partBox1Offset
-#define g_partBox1Offset (g_data.g_partBox1Offset_)
+#define g_partBox1Offset (*(u32 *)g_partBox1Offset_v)
 #undef g_partBox2Offset
-#define g_partBox2Offset (g_data.g_partBox2Offset_)
+#define g_partBox2Offset (*(u32 *)g_partBox2Offset_v)
 #undef g_partBox3Offset
-#define g_partBox3Offset (g_data.g_partBox3Offset_)
+#define g_partBox3Offset (*(u32 *)g_partBox3Offset_v)
 #undef g_partBox4Offset
-#define g_partBox4Offset (g_data.g_partBox4Offset_)
+#define g_partBox4Offset (*(u32 *)g_partBox4Offset_v)
 #undef g_partBox5Offset
-#define g_partBox5Offset (g_data.g_partBox5Offset_)
+#define g_partBox5Offset (*(u32 *)g_partBox5Offset_v)
 #undef g_penFontNeverSet
-#define g_penFontNeverSet (g_data.g_penFontNeverSet_)
+#define g_penFontNeverSet (*(int *)g_penFontNeverSet_v)
 #undef g_penFontTexture
-#define g_penFontTexture (g_data.g_penFontTexture_)
+#define g_penFontTexture (*(int *)g_penFontTexture_v)
 #undef g_perfCounter
 #define g_perfCounter (g_data.g_perfCounter_)
 #undef g_pilotChosen
@@ -1230,7 +1207,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_pingTime
 #define g_pingTime (g_data.g_pingTime_)
 #undef g_pixelFormatFilled
-#define g_pixelFormatFilled (g_data.g_pixelFormatFilled_)
+#define g_pixelFormatFilled (*(u8 *)g_pixelFormatFilled_v)
 #undef g_playerCorporation
 #define g_playerCorporation (g_data.g_playerCorporation_)
 #undef g_playerHasClan
@@ -1244,7 +1221,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_playerSex
 #define g_playerSex (g_data.g_playerSex_)
 #undef g_primarySoundBuffer
-#define g_primarySoundBuffer (g_data.g_primarySoundBuffer_)
+#define g_primarySoundBuffer (*(void * *)g_primarySoundBuffer_v)
 #undef g_profileColour
 #define g_profileColour ((u32 *)g_data.g_profileColour_)
 #undef g_profileCount
@@ -1254,9 +1231,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_profileDim
 #define g_profileDim ((u32 *)g_data.g_profileDim_)
 #undef g_profileFrameAlpha
-#define g_profileFrameAlpha (g_data.g_profileFrameAlpha_)
+#define g_profileFrameAlpha (*(float *)g_profileFrameAlpha_v)
 #undef g_profileFrameStep
-#define g_profileFrameStep (g_data.g_profileFrameStep_)
+#define g_profileFrameStep (*(u32 *)g_profileFrameStep_v)
 #undef g_profileList
 #define g_profileList ((char *)g_data.g_profileList_)
 #undef g_profileListRow
@@ -1294,11 +1271,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_profilePageLeft
 #define g_profilePageLeft (g_data.g_profilePageLeft_)
 #undef g_profilePageRight
-#define g_profilePageRight (g_data.g_profilePageRight_)
+#define g_profilePageRight (*(int *)g_profilePageRight_v)
 #undef g_profilePageTop
 #define g_profilePageTop (g_data.g_profilePageTop_)
 #undef g_profileProgressSaved
-#define g_profileProgressSaved (g_data.g_profileProgressSaved_)
+#define g_profileProgressSaved (*(int *)g_profileProgressSaved_v)
 #undef g_profileRecords
 #define g_profileRecords ((u8 *)g_data.g_profileRecords_)
 #undef g_profileRowClicked
@@ -1308,9 +1285,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_progressWentUp
 #define g_progressWentUp (g_data.g_progressWentUp_)
 #undef g_projMode
-#define g_projMode (g_data.g_projMode_)
+#define g_projMode (*(int *)g_projMode_v)
 #undef g_ptxBitPos
-#define g_ptxBitPos (g_data.g_ptxBitPos_)
+#define g_ptxBitPos (*(int *)g_ptxBitPos_v)
 #undef g_ptxCbBlue
 #define g_ptxCbBlue ((int *)g_ptxCbBlue_v)
 #undef g_ptxCbGreen
@@ -1326,7 +1303,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_ptxDequant
 #define g_ptxDequant ((float *)g_ptxDequant_v)
 #undef g_ptxLastDc
-#define g_ptxLastDc (g_data.g_ptxLastDc_)
+#define g_ptxLastDc (*(int *)g_ptxLastDc_v)
 #undef g_ptxPixels
 #define g_ptxPixels ((u8 *)g_ptxPixels_v)
 #undef g_ptxPlanes
@@ -1334,15 +1311,15 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_ptxQuant
 #define g_ptxQuant ((int *)g_ptxQuant_v)
 #undef g_ptxTable
-#define g_ptxTable (g_data.g_ptxTable_)
+#define g_ptxTable (*(int *)g_ptxTable_v)
 #undef g_ptxTablesReady
-#define g_ptxTablesReady (g_data.g_ptxTablesReady_)
+#define g_ptxTablesReady (*(int *)g_ptxTablesReady_v)
 #undef g_ptxYCbCrTables
 #define g_ptxYCbCrTables ((int *)g_ptxYCbCrTables_v)
 #undef g_quitAsked
 #define g_quitAsked (g_data.g_quitAsked_)
 #undef g_randPos
-#define g_randPos (g_data.g_randPos_)
+#define g_randPos (*(u32 *)g_randPos_v)
 #undef g_randTable
 #define g_randTable ((int *)g_randTable_v)
 #undef g_rankingFirst
@@ -1350,7 +1327,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_rankingHaveList
 #define g_rankingHaveList (g_data.g_rankingHaveList_)
 #undef g_rankingLast
-#define g_rankingLast (g_data.g_rankingLast_)
+#define g_rankingLast (*(int *)g_rankingLast_v)
 #undef g_rankingRequestPending
 #define g_rankingRequestPending (g_data.g_rankingRequestPending_)
 #undef g_rankingSort
@@ -1372,7 +1349,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_resultMessage
 #define g_resultMessage (g_data.g_resultMessage_)
 #undef g_retypePassword
-#define g_retypePassword (g_data.g_retypePassword_)
+#define g_retypePassword (*(int *)g_retypePassword_v)
 #undef g_roomAnswerAwaited
 #define g_roomAnswerAwaited (g_data.g_roomAnswerAwaited_)
 #undef g_roomAwaitingServer
@@ -1388,7 +1365,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_roomCustom
 #define g_roomCustom (g_data.g_roomCustom_)
 #undef g_roomDialogOpen
-#define g_roomDialogOpen (g_data.g_roomDialogOpen_)
+#define g_roomDialogOpen (*(int *)g_roomDialogOpen_v)
 #undef g_roomDim
 #define g_roomDim ((u32 *)g_data.g_roomDim_)
 #undef g_roomFade
@@ -1428,7 +1405,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_roomListPages
 #define g_roomListPages (g_data.g_roomListPages_)
 #undef g_roomListPrev
-#define g_roomListPrev (g_data.g_roomListPrev_)
+#define g_roomListPrev (*(int *)g_roomListPrev_v)
 #undef g_roomListPrevPage
 #define g_roomListPrevPage (g_data.g_roomListPrevPage_)
 #undef g_roomListPrevRank
@@ -1508,7 +1485,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_roomTimeLimit
 #define g_roomTimeLimit (g_data.g_roomTimeLimit_)
 #undef g_roomTunnelDepth
-#define g_roomTunnelDepth (g_data.g_roomTunnelDepth_)
+#define g_roomTunnelDepth (*(u32 *)g_roomTunnelDepth_v)
 #undef g_savedColourChoices
 #define g_savedColourChoices ((u8 *)g_data.g_savedColourChoices_)
 #undef g_savedMechArm
@@ -1556,13 +1533,13 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_serverPingCount
 #define g_serverPingCount (g_data.g_serverPingCount_)
 #undef g_serverPort
-#define g_serverPort (g_data.g_serverPort_)
+#define g_serverPort (*(u16 *)g_serverPort_v)
 #undef g_serverReplyKind
-#define g_serverReplyKind (g_data.g_serverReplyKind_)
+#define g_serverReplyKind (*(int *)g_serverReplyKind_v)
 #undef g_serverSearching
 #define g_serverSearching (g_data.g_serverSearching_)
 #undef g_serviceProviderCount
-#define g_serviceProviderCount (g_data.g_serviceProviderCount_)
+#define g_serviceProviderCount (*(int *)g_serviceProviderCount_v)
 #undef g_settingsPage
 #define g_settingsPage (g_data.g_settingsPage_)
 #undef g_settingsState
@@ -1576,15 +1553,15 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_setupOptionsTop
 #define g_setupOptionsTop (g_data.g_setupOptionsTop_)
 #undef g_setupPage
-#define g_setupPage (g_data.g_setupPage_)
+#define g_setupPage (*(int *)g_setupPage_v)
 #undef g_setupPanelMoving
 #define g_setupPanelMoving (g_data.g_setupPanelMoving_)
 #undef g_setupPanelPos
-#define g_setupPanelPos (g_data.g_setupPanelPos_)
+#define g_setupPanelPos (*(float *)g_setupPanelPos_v)
 #undef g_setupPressed
 #define g_setupPressed (g_data.g_setupPressed_)
 #undef g_setupPressedClock
-#define g_setupPressedClock (g_data.g_setupPressedClock_)
+#define g_setupPressedClock (*(float *)g_setupPressedClock_v)
 #undef g_setupResolution
 #define g_setupResolution (g_data.g_setupResolution_)
 #undef g_setupSoundLeft
@@ -1592,11 +1569,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_setupSoundRight
 #define g_setupSoundRight (g_data.g_setupSoundRight_)
 #undef g_setupTunnelAlpha
-#define g_setupTunnelAlpha (g_data.g_setupTunnelAlpha_)
+#define g_setupTunnelAlpha (*(float *)g_setupTunnelAlpha_v)
 #undef g_setupTunnelDepth
-#define g_setupTunnelDepth (g_data.g_setupTunnelDepth_)
+#define g_setupTunnelDepth (*(float *)g_setupTunnelDepth_v)
 #undef g_showCmd
-#define g_showCmd (g_data.g_showCmd_)
+#define g_showCmd (*(int *)g_showCmd_v)
 #undef g_sinTable
 #define g_sinTable ((float *)g_sinTable_v)
 #undef g_skirmishDrawBackground
@@ -1604,13 +1581,13 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (g_data.g_skirmishInfoCount_)
 #undef g_slotTakenFlag
-#define g_slotTakenFlag (g_data.g_slotTakenFlag_)
+#define g_slotTakenFlag (*(int *)g_slotTakenFlag_v)
 #undef g_sound3D
 #define g_sound3D (g_data.g_sound3D_)
 #undef g_soundBaseVolume
-#define g_soundBaseVolume (g_data.g_soundBaseVolume_)
+#define g_soundBaseVolume (*(int *)g_soundBaseVolume_v)
 #undef g_soundOn
-#define g_soundOn (g_data.g_soundOn_)
+#define g_soundOn (*(int *)g_soundOn_v)
 #undef g_soundSwitch1
 #define g_soundSwitch1 (g_data.g_soundSwitch1_)
 #undef g_soundToggle6
@@ -1620,9 +1597,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_soundVolume
 #define g_soundVolume (g_data.g_soundVolume_)
 #undef g_startTicks
-#define g_startTicks (g_data.g_startTicks_)
+#define g_startTicks (*(u32 *)g_startTicks_v)
 #undef g_startedByLauncher
-#define g_startedByLauncher (g_data.g_startedByLauncher_)
+#define g_startedByLauncher (*(int *)g_startedByLauncher_v)
 #undef g_startedFromLobby
 #define g_startedFromLobby (g_data.g_startedFromLobby_)
 #undef g_staticTex128x128
@@ -1640,7 +1617,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_statusLine
 #define g_statusLine (g_data.g_statusLine_)
 #undef g_storedConnection
-#define g_storedConnection (g_data.g_storedConnection_)
+#define g_storedConnection (*(void * *)g_storedConnection_v)
 #undef g_tan10Table
 #define g_tan10Table ((float *)g_tan10Table_v)
 #undef g_tanTable
@@ -1650,9 +1627,9 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_textColour
 #define g_textColour ((Colour *)g_data.g_textColour_)
 #undef g_textEndX
-#define g_textEndX (g_data.g_textEndX_)
+#define g_textEndX (*(int *)g_textEndX_v)
 #undef g_textEndY
-#define g_textEndY (g_data.g_textEndY_)
+#define g_textEndY (*(int *)g_textEndY_v)
 #undef g_textWrapX
 #define g_textWrapX (g_data.g_textWrapX_)
 #undef g_textureManager
@@ -1664,11 +1641,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_timeLimit
 #define g_timeLimit (g_data.g_timeLimit_)
 #undef g_timerFirstCall
-#define g_timerFirstCall (g_data.g_timerFirstCall_)
+#define g_timerFirstCall (*(int *)g_timerFirstCall_v)
 #undef g_timerHigh
 #define g_timerHigh (g_data.g_timerHigh_)
 #undef g_timerRepeatCount
-#define g_timerRepeatCount (g_data.g_timerRepeatCount_)
+#define g_timerRepeatCount (*(int *)g_timerRepeatCount_v)
 #undef g_titleLevel
 #define g_titleLevel (g_data.g_titleLevel_)
 #undef g_titleLosses
@@ -1690,13 +1667,13 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_tunnelPulseStep
 #define g_tunnelPulseStep (g_data.g_tunnelPulseStep_)
 #undef g_tunnelRings
-#define g_tunnelRings (g_data.g_tunnelRings_)
+#define g_tunnelRings (*(int *)g_tunnelRings_v)
 #undef g_typedArenaName
 #define g_typedArenaName (g_data.g_typedArenaName_)
 #undef g_typedArenaName4
 #define g_typedArenaName4 (g_data.g_typedArenaName4_)
 #undef g_typedLength
-#define g_typedLength (g_data.g_typedLength_)
+#define g_typedLength (*(int *)g_typedLength_v)
 #undef g_typingAccountEmail
 #define g_typingAccountEmail (g_data.g_typingAccountEmail_)
 #undef g_typingAccountName
@@ -1710,7 +1687,7 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_typingArenaPassword
 #define g_typingArenaPassword (g_data.g_typingArenaPassword_)
 #undef g_typingGameName
-#define g_typingGameName (g_data.g_typingGameName_)
+#define g_typingGameName (*(int *)g_typingGameName_v)
 #undef g_typingGamePassword
 #define g_typingGamePassword (g_data.g_typingGamePassword_)
 #undef g_typingRoomName
@@ -1718,37 +1695,37 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_typingRoomPassword
 #define g_typingRoomPassword (g_data.g_typingRoomPassword_)
 #undef g_undoDepth
-#define g_undoDepth (g_data.g_undoDepth_)
+#define g_undoDepth (*(int *)g_undoDepth_v)
 #undef g_unlockedLevel
 #define g_unlockedLevel (g_data.g_unlockedLevel_)
 #undef g_unusedArmcMoveWord
-#define g_unusedArmcMoveWord (g_data.g_unusedArmcMoveWord_)
+#define g_unusedArmcMoveWord (*(u32 *)g_unusedArmcMoveWord_v)
 #undef g_unusedArmcWord1
-#define g_unusedArmcWord1 (g_data.g_unusedArmcWord1_)
+#define g_unusedArmcWord1 (*(int *)g_unusedArmcWord1_v)
 #undef g_unusedArmcWord2
 #define g_unusedArmcWord2 (g_data.g_unusedArmcWord2_)
 #undef g_unusedArmcWord3
-#define g_unusedArmcWord3 (g_data.g_unusedArmcWord3_)
+#define g_unusedArmcWord3 (*(int *)g_unusedArmcWord3_v)
 #undef g_unusedArmcWord4
 #define g_unusedArmcWord4 (g_data.g_unusedArmcWord4_)
 #undef g_unusedDplayWord1
-#define g_unusedDplayWord1 (g_data.g_unusedDplayWord1_)
+#define g_unusedDplayWord1 (*(int *)g_unusedDplayWord1_v)
 #undef g_unusedDplayWord2
-#define g_unusedDplayWord2 (g_data.g_unusedDplayWord2_)
+#define g_unusedDplayWord2 (*(int *)g_unusedDplayWord2_v)
 #undef g_unusedDplayWord3
-#define g_unusedDplayWord3 (g_data.g_unusedDplayWord3_)
+#define g_unusedDplayWord3 (*(int *)g_unusedDplayWord3_v)
 #undef g_unusedDplayWord4
-#define g_unusedDplayWord4 (g_data.g_unusedDplayWord4_)
+#define g_unusedDplayWord4 (*(int *)g_unusedDplayWord4_v)
 #undef g_unusedInitWord
-#define g_unusedInitWord (g_data.g_unusedInitWord_)
+#define g_unusedInitWord (*(int *)g_unusedInitWord_v)
 #undef g_unusedKeyTable2Flags
-#define g_unusedKeyTable2Flags (g_data.g_unusedKeyTable2Flags_)
+#define g_unusedKeyTable2Flags (*(u16 *)g_unusedKeyTable2Flags_v)
 #undef g_unusedKeyTable2Word0
-#define g_unusedKeyTable2Word0 (g_data.g_unusedKeyTable2Word0_)
+#define g_unusedKeyTable2Word0 (*(int *)g_unusedKeyTable2Word0_v)
 #undef g_unusedKeyTable2Word1
-#define g_unusedKeyTable2Word1 (g_data.g_unusedKeyTable2Word1_)
+#define g_unusedKeyTable2Word1 (*(int *)g_unusedKeyTable2Word1_v)
 #undef g_unusedKeyTable2Word2
-#define g_unusedKeyTable2Word2 (g_data.g_unusedKeyTable2Word2_)
+#define g_unusedKeyTable2Word2 (*(int *)g_unusedKeyTable2Word2_v)
 #undef g_unusedLastWParam
 #define g_unusedLastWParam (g_data.g_unusedLastWParam_)
 #undef g_unusedLoginWord
@@ -1762,35 +1739,35 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_unusedMissionSaveWord
 #define g_unusedMissionSaveWord (g_data.g_unusedMissionSaveWord_)
 #undef g_unusedNetCloseWord
-#define g_unusedNetCloseWord (g_data.g_unusedNetCloseWord_)
+#define g_unusedNetCloseWord (*(int *)g_unusedNetCloseWord_v)
 #undef g_unusedPingWord1
-#define g_unusedPingWord1 (g_data.g_unusedPingWord1_)
+#define g_unusedPingWord1 (*(int *)g_unusedPingWord1_v)
 #undef g_unusedPingWord2
-#define g_unusedPingWord2 (g_data.g_unusedPingWord2_)
+#define g_unusedPingWord2 (*(int *)g_unusedPingWord2_v)
 #undef g_unusedPlayerRecord26
 #define g_unusedPlayerRecord26 (g_data.g_unusedPlayerRecord26_)
 #undef g_unusedPlayerRecord2a
 #define g_unusedPlayerRecord2a (g_data.g_unusedPlayerRecord2a_)
 #undef g_unusedPostMatchFlag
-#define g_unusedPostMatchFlag (g_data.g_unusedPostMatchFlag_)
+#define g_unusedPostMatchFlag (*(int *)g_unusedPostMatchFlag_v)
 #undef g_unusedProfileCameraWord
-#define g_unusedProfileCameraWord (g_data.g_unusedProfileCameraWord_)
+#define g_unusedProfileCameraWord (*(int *)g_unusedProfileCameraWord_v)
 #undef g_unusedReplayListWord1
 #define g_unusedReplayListWord1 (g_data.g_unusedReplayListWord1_)
 #undef g_unusedReplayListWord2
-#define g_unusedReplayListWord2 (g_data.g_unusedReplayListWord2_)
+#define g_unusedReplayListWord2 (*(int *)g_unusedReplayListWord2_v)
 #undef g_unusedRoomListWord
-#define g_unusedRoomListWord (g_data.g_unusedRoomListWord_)
+#define g_unusedRoomListWord (*(int *)g_unusedRoomListWord_v)
 #undef g_unusedRoomWord
 #define g_unusedRoomWord (g_data.g_unusedRoomWord_)
 #undef g_unusedSessionWord
-#define g_unusedSessionWord (g_data.g_unusedSessionWord_)
+#define g_unusedSessionWord (*(int *)g_unusedSessionWord_v)
 #undef g_unusedStartupWord1
-#define g_unusedStartupWord1 (g_data.g_unusedStartupWord1_)
+#define g_unusedStartupWord1 (*(int *)g_unusedStartupWord1_v)
 #undef g_unusedStartupWord2
-#define g_unusedStartupWord2 (g_data.g_unusedStartupWord2_)
+#define g_unusedStartupWord2 (*(u32 *)g_unusedStartupWord2_v)
 #undef g_unusedStartupWord3
-#define g_unusedStartupWord3 (g_data.g_unusedStartupWord3_)
+#define g_unusedStartupWord3 (*(int *)g_unusedStartupWord3_v)
 #undef g_vecOrigin
 #define g_vecOrigin (g_data.g_vecOrigin_)
 #undef g_vecUnitX
@@ -1808,11 +1785,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_videoMode
 #define g_videoMode (g_data.g_videoMode_)
 #undef g_viewFar
-#define g_viewFar (g_data.g_viewFar_)
+#define g_viewFar (*(float *)g_viewFar_v)
 #undef g_viewFov
-#define g_viewFov (g_data.g_viewFov_)
+#define g_viewFov (*(float *)g_viewFov_v)
 #undef g_viewNear
-#define g_viewNear (g_data.g_viewNear_)
+#define g_viewNear (*(float *)g_viewNear_v)
 #undef g_viewedPartIndex
 #define g_viewedPartIndex (g_data.g_viewedPartIndex_)
 #undef g_viewedPartKind
@@ -1820,11 +1797,11 @@ extern u8 g_ptxData_v[262144];   /* split out of g_data (src/data/data.c) */
 #undef g_volumeSetting
 #define g_volumeSetting (g_data.g_volumeSetting_)
 #undef g_watchChatOpen
-#define g_watchChatOpen (g_data.g_watchChatOpen_)
+#define g_watchChatOpen (*(int *)g_watchChatOpen_v)
 #undef g_watchedSlot
-#define g_watchedSlot (g_data.g_watchedSlot_)
+#define g_watchedSlot (*(u8 *)g_watchedSlot_v)
 #undef g_writeMatchLog
-#define g_writeMatchLog (g_data.g_writeMatchLog_)
+#define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00390625f
 #define k_0_00390625f (g_rdata.k_0_00390625f_)
 #undef k_0_01f

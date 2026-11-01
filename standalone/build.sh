@@ -8,13 +8,14 @@ cd "$(dirname "$0")/.."
 CC="python -m ziglang cc -target x86-windows-gnu"
 test -n "$(ls build/obj/*.o 2>/dev/null)" || { echo "no build/obj: run build.sh first"; exit 1; }
 python tools/mkhooks.py build/standalone_hooks.c
+# (FENCE=1 / FENCE=2: a fence build, src/data/split.h - each split variable beside a guard page)
 # src/ again with AXIS_DIRECT: calls between rebuilt functions direct, not through their original addresses (GAME_FN
 # in src/axis.h; build/fn_syms.h gives each one's symbol and address). build/obj stays the harness's.
 python tools/hooktable.py build/fn_syms.h
 mkdir -p build/obj_direct
 for f in $(find src -name '*.c' | sort); do
 	o="build/obj_direct/$(echo "${f#src/}" | tr '/' '_' | sed 's/\.c$/.o/')"
-	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT -Ibuild -o "$o" "$f"
+	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f"
 done
 python tools/mkgamedata.py build/gamedata.bin
 # (the blob's hash in the source: zig caches objects by their source text, and .incbin's file is not part of it, so a

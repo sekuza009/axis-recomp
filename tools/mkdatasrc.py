@@ -399,6 +399,10 @@ def data_struct():
 		declared = re.search(r'#define %s GAME_VAR\(([\w \*]+), 0x' % n, globals_h).group(1).strip()
 		if a < cursor or a + size > DATA_HI:
 			continue
+		if n in SPLIT:   # (a named global split out: bytes of its own, read as its declared type)
+			SPLIT_DEFS.append((a, 'u8', size, n, declared))
+			named[n] = '*(%s *)%s_v' % (declared, n)
+			continue
 		if a > cursor:
 			members.append('\tu8 _gap_%06x[0x%x];' % (cursor, a - cursor))
 		members.append('\t%s %s_;' % (t, n))
@@ -433,7 +437,7 @@ for out, section, base, d in regions:
 			['struct __attribute__((packed)) GameRdata {'] + members + ['};'] + asserts) + '\n')
 	if out == 'data':   # (the struct itself, zeroed: these pieces are its initial values)
 		i = lines.index('#include "data.h"')
-		lines[i + 1:i + 1] = ['#include "layout.h"', '',
+		lines[i + 1:i + 1] = ['#include "layout.h"', '#include "split.h"', '',
 		                      '/* the game\'s writable data (0x4ad000 .. 0xb13000): src/data/layout.h; the pieces below copied in at start-up */',
 		                      'struct GameData g_data __attribute__((aligned(4096)));']
 	if out == 'data':
@@ -445,15 +449,43 @@ members_d, asserts_d, named_d = data_struct()
 # the split objects: their variables (zeroed: an object with initial data is refused) and the table the loader guards
 for a, mty, mcount, name, ty in SPLIT_DEFS:
 	size = (BASIC.get(mty, 1)) * mcount
-	for r in RUNS['data']:
-		if r['start'] < a + size and a < r['end']:
-			sys.exit('%s (split) has initial data at 0x%x: not supported' % (name, r['start']))
+	pass   # (initial data is fine: the loader copies it from the old place before guarding it)
 i = DATA_LINES.index('struct GameData g_data __attribute__((aligned(4096)));')
-DATA_LINES[i + 1:i + 1] = ['', '/* the objects split out of g_data (tools/names/split.txt): variables of their own; their old pages in g_data are',
-                           '   left inaccessible (standalone/main.c, g_splitObjects) */'] + [
+SPLIT_DEFS.sort()
+def _size(mty, mcount):
+	return BASIC.get(mty, 1) * mcount
+# fence slots: each variable's pages (its size rounded up) and one guard page; (slot start, data pages' size)
+FENCE_SLOTS, FENCE_TOTAL = [], 0
+for a, mty, mcount, name, ty in SPLIT_DEFS:
+	d = (_size(mty, mcount) + 0xfff) & ~0xfff
+	FENCE_SLOTS.append((FENCE_TOTAL, d))
+	FENCE_TOTAL += d + 0x1000
+DATA_LINES[i + 1:i + 1] = ['', '/* the objects and globals split out of g_data (tools/names/split.txt): variables of their own; their old pages in',
+                           '   g_data are left inaccessible (standalone/main.c, g_splitObjects). With AXIS_FENCE (a check build) each sits at',
+                           '   the end of a page of its own (AXIS_FENCE == 2: at the start), the page after (before) it inaccessible: any',
+                           '   access past its end (before its start) stops the game - code that took neighbours for one record */',
+                           '#ifndef AXIS_FENCE'] + [
 	'%s %s_v[%d] __attribute__((aligned(16)));   /* 0x%x */' % (mty, name, mcount, a) for a, mty, mcount, name, ty in SPLIT_DEFS] + [
-	'const DataPiece g_splitObjects[] = {'] + ['\t{ 0x%x, %s_v, sizeof %s_v },' % (a, name, name) for a, mty, mcount, name, ty in SPLIT_DEFS] + [
+	'const u32 g_fenceGuards[] = { 0xffffffff };   /* (no fence) */', '#else',
+	'u8 g_fence[0x%x] __attribute__((aligned(4096)));' % max(0x1000, FENCE_TOTAL),
+	'/* the guard pages: offsets in g_fence (AXIS_FENCE 1: after each variable; 2: before it), ended by 0xffffffff */',
+	'#if AXIS_FENCE == 2',
+	'const u32 g_fenceGuards[] = { %s0xffffffff };' % ''.join('0x%x, ' % s for s, d in FENCE_SLOTS),
+	'#else',
+	'const u32 g_fenceGuards[] = { %s0xffffffff };' % ''.join('0x%x, ' % (s + d) for s, d in FENCE_SLOTS),
+	'#endif', 'u8 *const g_fenceBase = g_fence;', '#endif',
+	'#ifndef AXIS_FENCE', 'u8 *const g_fenceBase = 0;', '#endif',
+	'const DataPiece g_splitObjects[] = {'] + ['\t{ 0x%x, %s_v, %d },' % (a, name, _size(mty, mcount)) for a, mty, mcount, name, ty in SPLIT_DEFS] + [
 	'\t{ 0, 0, 0 }', '};']
+# src/data/split.h: each split variable's place (its own, or its fence slot)
+with open(os.path.join(R, 'src', 'data', 'split.h'), 'w', newline='\n') as f:
+	f.write('/* split.h (tools/mkdatasrc.py): the variables split out of g_data, and in a fence build (AXIS_FENCE) their places\n'
+	        '   in g_fence: AXIS_FENCE 1 at the end of their pages, the guard page after; 2 after the guard page */\n#pragma once\n'
+	        '#ifdef AXIS_FENCE\nextern u8 g_fence[];\n#endif\n')
+	for k, (a, mty, mcount, name, ty) in enumerate(SPLIT_DEFS):
+		s, d = FENCE_SLOTS[k]; size = _size(mty, mcount)
+		f.write('#ifdef AXIS_FENCE\n#define %s_v ((%s *)(AXIS_FENCE == 2 ? g_fence + 0x%x : g_fence + 0x%x))\n#else\nextern %s %s_v[%d];\n#endif\n' % (
+			name, mty, s + 0x1000, s + d - size, mty, name, mcount))
 open(os.path.join(R, 'src', 'data', 'data.c'), 'w', newline='\n', encoding='latin-1').write('\n'.join(DATA_LINES) + '\n')
 with open(os.path.join(R, 'src', 'data', 'layout.h'), 'w', newline='\n') as f:
 	f.write('''/* layout.h: the game's read-only data (struct GameRdata, 0x4a9000 .. 0x4ad000) and writable data (struct GameData,
@@ -473,8 +505,7 @@ with open(os.path.join(R, 'src', 'data', 'layout_names.h'), 'w', newline='\n') a
 	f.write('/* layout_names.h (tools/mkdatasrc.py): in AxisRC.exe (AXIS_DIRECT) the named globals that are members of\n'
 	        '   g_rdata / g_data (src/data/layout.h) as those members; the others stay GAME_VAR (src/globals.h), which IMG()\n'
 	        '   routes to the same place */\n#pragma once\n#include "layout.h"\nextern struct GameRdata g_rdata;\nextern struct GameData g_data;\n')
-	for a, mty, mcount, name, ty in SPLIT_DEFS:
-		f.write('extern %s %s_v[%d];   /* split out of g_data (src/data/data.c) */\n' % (mty, name, mcount))
+	f.write('#include "split.h"   /* (the variables split out of g_data) */\n')
 	members = dict(list(named_r.items()) + list(named_d.items()))
 	for n, m in sorted(members.items()):
 		f.write('#undef %s\n#define %s (%s)\n' % (n, n, m))
