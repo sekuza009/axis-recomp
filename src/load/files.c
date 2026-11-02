@@ -363,13 +363,13 @@ int (autoplay_listFiles)(void)
 int (app_checkLauncherRunning)(void)
 {
 	static const u16 offsets[8] = { 0x1a2b, 0x1a2c, 0x2dbf, 0x2dc0, 0x38a4, 0x38a5, 0x55f1, 0x55f2 };
-	memset((void *)IMG(0x4dd988), 0, 12);
+	memset((void *)OBJ(g_launcherCheck), 0, 12);
 	void *f = crt_fopen((const char *)STR(0x4b03b4, "axisplay.exe"), (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	for (int i = 0; i < 8; i++) {
 		GAME_CDECL(0x49e91e, int, void *, int, int)(f, offsets[i], 0);   /* fseek */
-		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(IMG(0x4dd988) + i), 1, 1, f);   /* fread */
+		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(OBJ(g_launcherCheck) + i), 1, 1, f);   /* fread */
 	}
 	fclose(f);
 	return 1;
@@ -494,7 +494,7 @@ u32 (mission_saveAxisMis)(int k)
 	memset((void *)IMG(0x9eeadc), 0, 0xc8);
 	g_unusedMissionSaveWord = 0;
 	memset((void *)OBJ(g_briefingText), 0, 0x640);
-	memset((void *)IMG(0x9eebac), 0, 0x640);
+	memset((void *)OBJ(g_missionClearBuffer), 0, 0x640);
 	g_briefingShown = 0;
 	g_briefingDone = 0;
 	g_briefingStart = 0;
@@ -608,9 +608,9 @@ u32 (arena_readLaunchFile)(char *line)
 	if (r)
 		return r;
 	g_startedFromLobby = 1;
-	memset((void *)IMG(0x4de748), 0, 0x400);
+	memset((void *)OBJ(g_serverAddressArg), 0, 0x400);
 	g_startedByLauncher = 0;
-	strcpy((char *)IMG(0x4de748), args[2]);
+	strcpy(g_serverAddressArg, args[2]);
 	return strlen(args[2]) + 1;
 }
 
@@ -691,7 +691,7 @@ static void pilot_path(char *path)
 
 static void pilot_write(void *f)
 {
-	u8 *noise = (u8 *)IMG(0x9f3ac4);
+	u8 *noise = g_pilotNoise;
 	for (int i = 0; i < 10000; i++)
 		noise[i] = (u8)(crt_rand() % 0xfe);
 	crt_fwrite(noise, 10000, 1, f);
@@ -1007,8 +1007,8 @@ int (arena_loadSettings)(const char *path)
 		while (word) {
 			if (!strcmp(word, (const char *)STR(0x4ad5d0, "gamename"))) {   /* gamename */
 				word = crt_strtok(NULL, gaps);
-				memset((void *)IMG(0x5b191c), 0, 0x20);
-				strcpy((char *)IMG(0x5b191c), word);
+				memset((void *)OBJ(g_arenaGameName), 0, 0x20);
+				strcpy(g_arenaGameName, word);
 			}
 			if (!strcmp(word, (const char *)STR(0x4ad5c8, "secret"))) {   /* secret */
 				word = crt_strtok(NULL, gaps);
@@ -1320,10 +1320,10 @@ void (profile_scanSaves)(void)
 		crt_fread(header, 0x104, 1, f);
 		fclose(f);
 		crypt_record104(header, 0x7e);
-		memcpy((void *)IMG(0x9f61d8), header, 0x104);
+		memcpy((void *)OBJ(g_profileHeader), header, 0x104);
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);
-		if (strcmp((const char *)IMG(0x9f61d8), (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."))) {
+		if (strcmp((const char *)OBJ(g_profileHeader), (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."))) {
 			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
 			continue;
 		}

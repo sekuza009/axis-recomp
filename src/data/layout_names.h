@@ -76,6 +76,8 @@ extern struct GameData g_data;
 #define g_arenaGameListRight (*(int *)g_arenaGameListRight_v)
 #undef g_arenaGameListTop
 #define g_arenaGameListTop (*(int *)g_arenaGameListTop_v)
+#undef g_arenaGameName
+#define g_arenaGameName ((char *)g_arenaGameName_v)
 #undef g_arenaGameSetUp
 #define g_arenaGameSetUp (*(int *)g_arenaGameSetUp_v)
 #undef g_arenaGameType
@@ -1114,6 +1116,8 @@ extern struct GameData g_data;
 #define g_lastTime (*(double *)((u8 *)g_timerClocks_v + 0x8))
 #undef g_launchMessage
 #define g_launchMessage (*(const char * *)g_launchMessage_v)
+#undef g_launcherCheck
+#define g_launcherCheck ((u8 *)g_launcherCheck_v)
 #undef g_leaveDialogRects
 #define g_leaveDialogRects ((int *)g_leaveDialogRects_v)
 #undef g_legCount
@@ -1476,6 +1480,8 @@ extern struct GameData g_data;
 #define g_missionBusy (*(int *)g_missionBusy_v)
 #undef g_missionChosen
 #define g_missionChosen (*(int *)g_missionChosen_v)
+#undef g_missionClearBuffer
+#define g_missionClearBuffer ((u8 *)g_missionClearBuffer_v)
 #undef g_missionColourDim
 #define g_missionColourDim ((u32 *)g_missionColourDim_v)
 #undef g_missionColourLit
@@ -1714,6 +1720,8 @@ extern struct GameData g_data;
 #define g_pilotLosses (*(int *)((u8 *)g_pilotStats_v + 0x18))
 #undef g_pilotLossesKept
 #define g_pilotLossesKept (*(int *)((u8 *)g_pilotStatsKept_v + 0x18))
+#undef g_pilotNoise
+#define g_pilotNoise ((u8 *)g_pilotNoise_v)
 #undef g_pilotPoints
 #define g_pilotPoints (*(int *)((u8 *)g_pilotStats_v + 0x4))
 #undef g_pilotPointsKept
@@ -1808,6 +1816,8 @@ extern struct GameData g_data;
 #define g_profileFrameAlpha (*(float *)g_profileFrameAlpha_v)
 #undef g_profileFrameStep
 #define g_profileFrameStep (*(u32 *)g_profileFrameStep_v)
+#undef g_profileHeader
+#define g_profileHeader ((u8 *)g_profileHeader_v)
 #undef g_profileIntro
 #define g_profileIntro (*(int *)g_profileIntro_v)
 #undef g_profileIntroSpeed
@@ -2158,6 +2168,8 @@ extern struct GameData g_data;
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
 #undef g_serverAddress
 #define g_serverAddress ((char *)g_data.g_serverAddress_)
+#undef g_serverAddressArg
+#define g_serverAddressArg ((char *)g_serverAddressArg_v)
 #undef g_serverAnswerIn
 #define g_serverAnswerIn (*(int *)g_serverAnswerIn_v)
 #undef g_serverConnected

@@ -972,7 +972,7 @@ u32 (arena_loadAndQuit)(void)
 		GAME_FN(menuState400_enter, 0x404640, void, void)();   /* menuState400_enter */
 		GAME_FN(lobby_setSubState1, 0x404b30, void, void)();   /* lobby_setSubState1 */
 		memset((void *)ADDR(g_typedArenaName), 0, 24);
-		strcpy((char *)ADDR(g_typedArenaName), (const char *)IMG(0x4de748));
+		strcpy((char *)ADDR(g_typedArenaName), g_serverAddressArg);
 		u32 r = GAME_FN(arena_joinListed, 0x406200, u32, int)(99999);   /* arena_joinListed */
 		g_lobbyReply = 0x69;
 		return r;
@@ -980,7 +980,7 @@ u32 (arena_loadAndQuit)(void)
 	if (!arena_loadSettings((const char *)STR(0x4ad5e4, "axiswl.dat")))
 		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
 	memset((void *)OBJ(g_playerName), 0, 32);
-	strcpy(g_playerName, (const char *)IMG(0x5b191c));
+	strcpy(g_playerName, g_arenaGameName);
 	u8 clan = (*(u8 *)&g_cmdSecret);
 	g_unusedPlayerRecord26 = 0;
 	g_playerHasClan = clan;

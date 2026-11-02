@@ -1009,3 +1009,10 @@ g_headCount
 g_chestCount
 g_armCount
 g_legCount
+# files.c buffers (objects29.csv), whole
+g_launcherCheck
+g_missionClearBuffer
+g_serverAddressArg
+g_arenaGameName
+g_profileHeader
+g_pilotNoise
