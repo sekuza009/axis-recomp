@@ -5,9 +5,9 @@
 /* 0x4519b0: the arena's 19 buffers freed (in the original's order) and their pointers cleared */
 u32 (arena_freeBuffers)(void)
 {
-	static const u32 buffers[19] = { ADDR(g_roomPacket), ADDR(g_netInfoPacket), IMG(0xa0b318), ADDR(g_netKindWord), ADDR(g_netLobbyMessage), ADDR(g_netSendName), ADDR(g_accountPacket), ADDR(g_arenaPacket),
+	static const u32 buffers[19] = { ADDR(g_roomPacket), ADDR(g_netInfoPacket), ADDR(g_lobbyLeavePacket), ADDR(g_netKindWord), ADDR(g_netLobbyMessage), ADDR(g_netSendName), ADDR(g_accountPacket), ADDR(g_arenaPacket),
 	                                 ADDR(g_arenaInfoPacket), ADDR(g_roomRecordPacket), ADDR(g_netRequestWord), ADDR(g_netRankingBuffer), ADDR(g_netSendBuffer), ADDR(g_netSelectionPacket), ADDR(g_netAccountBuffer), ADDR(g_netPlayerRecordPacket),
-	                                 IMG(0xa052e4), ADDR(g_netLeaveBuffer), ADDR(g_netJoinMessage) };
+	                                 ADDR(g_netOneByte), ADDR(g_netLeaveBuffer), ADDR(g_netJoinMessage) };
 	u32 r = 0;
 	for (int i = 0; i < 19; i++) {
 		r = GAME_VAR(u32, buffers[i]);
@@ -25,7 +25,7 @@ u32 (sound_freeAll)(void)
 	if (!g_soundOn)
 		return 0;
 	u32 r = 0;
-	for (u32 p = IMG(0xa0e02c); p < IMG(0xa0e02c) + 400 * 4; p += 4) {   /* (400 entries) */
+	for (u32 p = OBJ(g_soundTable); p < OBJ(g_soundTable) + 400 * 4; p += 4) {   /* (400 entries) */
 		r = GAME_VAR(u32, p);
 		if (r) {
 			r = mem_free((void *)RELOC(r));

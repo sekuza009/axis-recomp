@@ -223,7 +223,7 @@ u32 (wnd_setCursor)(void)
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	GAME_FN(input_releaseAll, 0x4014c0, void, void)();
 	music_shutdown();
-	for (u32 p = IMG(0x4dd4d4); p < IMG(0x4dd4fc); p += 4)
+	for (u32 p = OBJ(g_menuSoundBuffers); p < OBJ(g_menuSoundBuffers) + 10 * 4; p += 4)
 		mem_free(GAME_VAR(void *, p));
 	GAME_FN(sound_freeAll, 0x456cd0, void, void)();
 	return GAME_FN(sound_releaseDirectSound, 0x467b70, u32, void)();

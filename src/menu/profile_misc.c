@@ -433,7 +433,7 @@ u32 (profile_nameEntryStep)(void)
 u32 (profile_deleteFiles)(void)
 {
 	int current = g_pilotChosen;
-	u8 *records = (u8 *)IMG(0x9f6848);   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
+	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
 	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);

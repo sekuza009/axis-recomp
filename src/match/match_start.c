@@ -15,7 +15,7 @@ static void set_round(Round *r, int map, int mode, int score, int time)
 	r->timeLimit = time;
 }
 
-/* the first round's map rotation: solo, the 15 stages (0x5c-byte records from 0x9db9e4: the mode, the time and the
+/* the first round's map rotation: solo, the 15 stages (0x5c-byte records of g_skirmishInfo from +0x4c: the mode, the time and the
    score limits) from the stage chosen (0x9dad94); a network host, the arena maps in rotation (0x67ef00 of them, 8
    bytes each from 0x4d9508: in rotation, the map's own mode, used when the chosen mode 0x76d368 is 14 or more) or,
    without rotation (0x9da3e0), the chosen map only, from the first; a machine that joined, none */
@@ -25,12 +25,12 @@ static void make_rotation(Scene *s)
 		s->rotationCount = 0;
 		int k;
 		for (k = 0; k < 15; k++) {
-			u32 stage = IMG(0x9db9e4) + k * 0x5c;
+			u32 stage = (OBJ(g_skirmishInfo) + 0x4c) + k * 0x5c;
 			set_round(&s->rotation[s->rotationCount++], k, GAME_VAR(int, stage), GAME_VAR(int, stage + 8), GAME_VAR(int, stage + 4));
 		}
 		s->rotationAt = g_mapIndex;
 		s->nextMap = k + 1;   /* (beyond the 15, as the original has it) */
-		s->nextMode = GAME_VAR(int, 0x9db9e4 + (k + 1) * 0x5c);
+		s->nextMode = GAME_VAR(int, 0x9dbfa4);   /* "record 16"'s mode (0x9db9e4 + 16 * 0x5c): past g_skirmishInfo's 15, an unnamed gap */
 		s->rotationOff = 0;
 		return;
 	}

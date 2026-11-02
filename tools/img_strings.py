@@ -23,9 +23,11 @@ msgs = [l[:0x7e] for l in msgs if l and not l.startswith('//')]
 MSG0, LINE = 0x74de24, 0x80
 
 
-def string_at(a):
-	t = raw(a, 256)
-	if not t or not t[0] or raw(a - 1, 1) not in (b'\0', None):
+def string_at(a, packed=False):
+	# packed: the text may follow other data directly (--check allows that for a hand-written STR); near a
+	# section's end fewer than 256 bytes are read
+	t = next((raw(a, n) for n in (256, 64, 16, 8) if raw(a, n)), None)
+	if not t or not t[0] or (not packed and raw(a - 1, 1) not in (b'\0', None)):
 		return None
 	k = t.find(b'\0')
 	if k <= 0 or not all(32 <= c < 127 or c >= 0xa1 or c in (9, 10, 13) for c in t[:k]):
@@ -60,7 +62,7 @@ if '--check' in sys.argv:
 	for f in files:
 		t = open(f, encoding='latin-1').read()
 		for a, s in re.findall(r'\bSTR\((0x[0-9a-f]+), ("(?:\\.|[^"\\])*")\)', t):
-			want, have = unlit(s), string_at(int(a, 16)) or ''
+			want, have = unlit(s), string_at(int(a, 16), packed=True) or ''
 			if not (have == want or (want.endswith('...') and have.startswith(want[:-3]))):
 				print('%s: STR(%s) is %r, the data %r' % (f, a, want, have)); bad += 1
 		for n, s in re.findall(r'\bMSG\((\d+), ("(?:\\.|[^"\\])*")\)', t):

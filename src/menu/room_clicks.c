@@ -365,7 +365,7 @@ u32 (app_onClose)(void)
 	if (!g_arenaJoinPending)
 		return 0;
 	u32 row = (*(u32 *)&g_arenaJoinRow) * 0x4a;
-	u8 *game = (u8 *)IMG(0x9087c0) + row;
+	u8 *game = g_sessionList + row;
 	*(u32 *)game = *(*(u32 **)&g_receivedSession);
 	g_roomRecFragLimit = game[0x2d];
 	g_roomRecTimeLimit = game[0x2e];
@@ -600,7 +600,7 @@ u32 (ranking_clicks)(void)
    leaves in eax (for the byte settings, its low byte the new value) */
 u32 (room_settingsClicks)(void)
 {
-	static const u32 typing[4] = { ADDR(g_editingRoomName), IMG(0x9dd388), IMG(0x9dd568), ADDR(g_editingRoomPassword) };
+	static const u32 typing[4] = { ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit), ADDR(g_editingRoomPassword) };
 	for (int k = 0; k < 4; k++)
 		if (GAME_VAR(int, typing[k]))
 			return GAME_VAR(u32, typing[k]);
@@ -705,7 +705,7 @@ u32 (room_settingsAfterTyping)(void)
 		strcpy(g_roomSettingsName + 0x26, line);
 		return 0;
 	}
-	static const u32 limit[2][2] = { { IMG(0x9dd388), ADDR(g_roomFragLimit) }, { IMG(0x9dd568), ADDR(g_roomTimeLimit) } };   /* frags, time */
+	static const u32 limit[2][2] = { { ADDR(g_editingFragLimit), ADDR(g_roomFragLimit) }, { ADDR(g_editingTimeLimit), ADDR(g_roomTimeLimit) } };   /* frags, time */
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(int, limit[k][0]))
 			continue;

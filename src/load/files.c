@@ -109,12 +109,12 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shape_findDatEntry)(const char *name)
 {
-	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, IMG(0xa0e7a0), IMG(0xa0e7a4), OBJ(g_logShapeManager));
+	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, IMG(0xa0eab8), IMG(0xa0eabc), OBJ(g_logSkeletonManager));
+	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
 }
 
 /* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
@@ -286,8 +286,8 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
-u32 (shapeDat_initBy)(void) { return dat_open(IMG(0xa0e79c), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)OBJ(g_logShapeManager)); }
-u32 (skelDat_initBy)(void) { return dat_open(IMG(0xa0eab4), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)OBJ(g_logSkeletonManager)); }
+u32 (shapeDat_initBy)(void) { return dat_open(OBJ(g_shapeDat), (const char *)STR(0x4c4d20, "Data\\Shape.dat"), (void *)OBJ(g_logShapeManager)); }
+u32 (skelDat_initBy)(void) { return dat_open(OBJ(g_skelDat), (const char *)STR(0x4c54b4, "Data\\Skeleton.dat"), (void *)OBJ(g_logSkeletonManager)); }
 
 /* 0x42c910: the sound section of axis.cfg written: the two volumes (0x4e0c90, 0x4e0c94) as numbers, then two on/off
    switches (0x4e0c98, 0x4e0c9c; 1 is on), each after its keyword. Returns the last fputs */
@@ -406,7 +406,7 @@ static u32 profiles_write(void *f)
 	crt_fwrite((void *)ADDR(g_profileListRow), 4, 1, f);
 	crt_fwrite((void *)OBJ(g_profileName), 0x20, 1, f);
 	for (int i = 0; i < g_profileCount; i++)
-		crt_fwrite((void *)(IMG(0x9f6848) + i * 0x48), 0x48, 1, f);
+		crt_fwrite((void *)(OBJ(g_profiles) + i * 0x48), 0x48, 1, f);
 	return fclose(f);
 }
 
@@ -581,7 +581,7 @@ u32 (arena_readLaunchFile)(char *line)
 		g_startedByLauncher = 0;
 		return 0;
 	}
-	char **args = (char **)IMG(0x9dd890);
+	char **args = (char **)OBJ(g_launchArgs);
 	char *word = crt_strtok(line, (const char *)STR(0x4b035c, " "));
 	g_argCount = 0;
 	do {
@@ -894,7 +894,7 @@ u32 (data_loadSkirmishInfo)(void)
 	crt_fseek(f, 25000, 1);
 	crt_fread((void *)ADDR(g_skirmishInfoCount), 4, 1, f);
 	for (int i = 0; i < g_skirmishInfoCount; i++)
-		crt_fread((void *)(IMG(0x9db998) + i * 0x5c), 0x5c, 1, f);
+		crt_fread((void *)(OBJ(g_skirmishInfo) + i * 0x5c), 0x5c, 1, f);
 	return fclose(f);
 }
 
@@ -1306,7 +1306,7 @@ void (profile_scanSaves)(void)
 		profile_loadList(0);
 		return;
 	}
-	char (*files)[0x40] = (char (*)[0x40])IMG(0x9f1ac4);
+	char (*files)[0x40] = (char (*)[0x40])OBJ(g_saveFileNames);
 	strcpy(files[0], found.name);
 	int count = 1;
 	while (!crt_findnext(search, &found))
@@ -1327,7 +1327,7 @@ void (profile_scanSaves)(void)
 			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
 			continue;
 		}
-		u8 *profile = (u8 *)IMG(0x9f6848) + valid * 0x48;
+		u8 *profile = g_profiles + valid * 0x48;
 		strcpy((char *)profile + 4, name);
 		*(u32 *)(profile + 0x44) = *(const u32 *)(header + 0x100);   /* the pilot */
 		*(int *)profile = valid++;

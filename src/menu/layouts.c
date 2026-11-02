@@ -82,7 +82,7 @@ void (secondDialog_layout)(void) { rects_row(OBJ(g_secondDialogRects), OBJ(g_sec
 
 void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_newNameDialogRects) + 2 * 16, ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
-void (popup_layout)(void) { rects_row(OBJ(g_popupRects), OBJ(g_popupRects) + 2 * 16, IMG(0x9dd1a0), IMG(0x9dd1ac), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
+void (popup_layout)(void) { rects_row(OBJ(g_popupRects), OBJ(g_popupRects) + 2 * 16, OBJ(g_roomDialogBox), (OBJ(g_roomDialogBox) + 0xc), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 
 void (lobbyTop_layout)(void) { rects_row(OBJ(g_lobbyTopRects), OBJ(g_lobbyTopRects) + 2 * 16, OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 
@@ -95,7 +95,7 @@ void (setupOptions_layout)(void)
 
 void (loginDialog_layout)(void)
 {
-	static const RArg a[4] = { RA(ADDR(g_loginFormLeft), 0x30, 0), RA(IMG(0x9dd6ec), 0x30, 1), RA(ADDR(g_loginFormLeft), 0x210, 0), RA(IMG(0x9dd6ec), 0x58, 1) };
+	static const RArg a[4] = { RA(ADDR(g_loginFormLeft), 0x30, 0), RA(ADDR(g_loginFormTop), 0x30, 1), RA(ADDR(g_loginFormLeft), 0x210, 0), RA(ADDR(g_loginFormTop), 0x58, 1) };
 	static const RArg b[4] = { RA(ADDR(g_loginFormLeft), 0x5a, 1), RA(ADDR(g_loginFormBottom), -0x40, 0), RA(ADDR(g_loginFormLeft), 0xfa, 1), RA(ADDR(g_loginFormBottom), -0x20, 0) };
 	rect_spec(OBJ(g_loginFormRects), (OBJ(g_loginFormRects) + 0x40), 0x30, a); rect_spec((OBJ(g_loginFormRects) + 0x40), (OBJ(g_loginFormRects) + 0x60), 0xc8, b);
 }

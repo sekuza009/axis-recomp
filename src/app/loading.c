@@ -186,7 +186,7 @@ void (menu_loadIntroTextures)(void)
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {
-		{ STR(0x4ad574, "iftex/gameconnect"), IMG(0x4df450) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), ADDR(g_cursorTexture) }, { STR(0x4b2344, "iftex/cylinder"), ADDR(g_tunnelTexture) },
+		{ STR(0x4ad574, "iftex/gameconnect"), ADDR(g_gameConnectTexture) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), ADDR(g_cursorTexture) }, { STR(0x4b2344, "iftex/cylinder"), ADDR(g_tunnelTexture) },
 		{ STR(0x4b2330, "iftex/cylinder_menu"), ADDR(g_cageTexture) }, { STR(0x4b2320, "iftex/menu34"), ADDR(g_menuTunnelTexture) }, { STR(0x4b255c, "iftex/character"), ADDR(g_characterTexture) },
 	};
 	for (int k = 0; k < 7; k++) {

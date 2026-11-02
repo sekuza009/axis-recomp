@@ -114,8 +114,6 @@
 #define g_arenaDim ((u32 *)IMG(0x4db8a0))   /* u32[4]; the arena lobby's dim colour */
 #define g_profileDim ((u32 *)IMG(0x9f8d58))   /* u32[4]; the profile screen's dim colour */
 #define g_mapNames ((char *)IMG(0x907b30))   /* char[100][0x20]; a map's name (100 maps: up to 0x9087b0, like the descriptions g_mapAbouts) */
-#define g_profileList ((char *)IMG(0x9f684c))   /* char[72]; 0x48 bytes a profile (extent unknown: the first) */
-#define g_gameList ((u8 *)IMG(0x9087c4))   /* u8[74]; 0x4a bytes a game (extent unknown: the first) */
 #define g_profileRecords ((u8 *)IMG(0x9f9040))   /* u8[76]: 0x4c bytes a record; the stats check reads 103 records (to 0x9fafb4), so the table overlaps g_netSlots (the original's aliasing) */
 #define g_messages ((char *)IMG(0x74de24))   /* char[128256]; the message table: 0x80 bytes a line from msgeng.dat (data_loadMessages) */
 #define g_ptxPixels ((u8 *)IMG(0xa21708))   /* u8[262144]; the image decoder's output (RGB(A) */
@@ -418,3 +416,22 @@
 #define g_glTitle ((char *)IMG(0xa0e81c))   /* char[256]; the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c) */
 #define g_musicFile ((char *)IMG(0xa0e674))   /* char[260]; the music file's name (MAX_PATH; up to 0xa0e778) */
 #define g_messageBoxText ((char *)IMG(0x4dd0d0))   /* char[1024]; sys_messageBox's text (vsprintf; 4 more bytes before 0x4dd4d4) */
+#define g_sessionList ((u8 *)IMG(0x9087c0))   /* u8[18944]; 256 records of 0x4a (to 0x90d1c0): +0 the DirectPlay id; +4 the name (g_gameList); +0x24 players; +0x2b the session; +0x3b the title */
+#define g_gameList (g_sessionList + 4)   /* a game's name: +4 in g_sessionList's records (0x4a apart) */
+#define g_profiles ((u8 *)IMG(0x9f6848))   /* u8[9216]; 128 records of 0x48 (to 0x9f8c48): +0 the number; +4 the name (g_profileList); +0x44 the pilot */
+#define g_profileList ((char *)(g_profiles + 4))   /* a profile's name: +4 in g_profiles' records (0x48 apart) */
+#define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */
+#define g_roomTextAndRows ((u8 *)IMG(0x9dcee8))   /* u8[684]; the room's typed password text (+0; 8 bytes cleared; a strcpy of the chat line) and the room list's ten 0x44-byte rows from +4 (to 0x9dd194): the two overlap in the original */
+#define g_roomMessageText (*(int *)g_roomTextAndRows)   /* the typed password (text from here) */
+#define g_roomMessageText4 (*(int *)(g_roomTextAndRows + 4))   /* the rows' start (cleared with the text) */
+#define g_roomListRows (g_roomTextAndRows + 4)   /* the rows: +4 the rank; +8 the name; +0x3a 1 when empty */
+#define g_roomDialogBox ((int *)IMG(0x9dd1a0))   /* int[4]; the room's server dialog box (room_openDialog58; popup_layout) */
+#define g_roomMechKept ((u8 *)IMG(0x9dd260))   /* u8[11]; the room record's mech parts kept (lobby_states) */
+#define g_roomColoursKept ((u8 *)IMG(0x9dd26b))   /* u8[144]; the room record's colours kept */
+#define g_launchArgs ((u32 *)IMG(0x9dd890))   /* u32[14]; the launch line's words (strtok of up to 0x400 bytes: held) */
+#define g_shapeDat ((u32 *)IMG(0xa0e79c))   /* u32[3]; Data\Shape.dat: the entry count; the table; the FILE */
+#define g_skelDat ((u32 *)IMG(0xa0eab4))   /* u32[3]; Data\Skeleton.dat: the entry count; the table; the FILE */
+#define g_skirmishInfo ((u8 *)IMG(0x9db998))   /* u8[1380]; skirmish.dat's 15 records of 0x5c (to 0x9dbefc) */
+#define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
+#define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds (sound_loadMenuSounds) */
+#define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[655]; the ARM CENTER's camera per slot (88 bytes a slot: +0 .. +8 the point; +0x28 the turn); to 0x4e0458 */

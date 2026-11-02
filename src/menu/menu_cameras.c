@@ -115,14 +115,14 @@ static void menu_camera(const MenuCam *m)
 /* 0x437a10: the game room's camera */
 void (room_camera)(void)
 {
-	static const MenuCam room = { ADDR(g_roomMode), ADDR(g_roomState), IMG(0x9dd848), 0x63, 0 };
+	static const MenuCam room = { ADDR(g_roomMode), ADDR(g_roomState), ADDR(g_unusedRoomCamWord), 0x63, 0 };
 	menu_camera(&room);
 }
 
 /* 0x408270: the arena lobby's camera */
 void (arena_camera)(void)
 {
-	static const MenuCam arena = { ADDR(g_arenaLobbyMode), ADDR(g_lobbySubState), IMG(0x4dbaf4), 5, 1 };
+	static const MenuCam arena = { ADDR(g_arenaLobbyMode), ADDR(g_lobbySubState), ADDR(g_unusedArenaCamWord), 5, 1 };
 	menu_camera(&arena);
 }
 
@@ -349,15 +349,14 @@ void (menuCamera_back)(void)
 	g_armcCamDistance = (float)((X)g_armcCamDistance - u);
 }
 
-/* the ARM CENTER's turn (0x90d1cc, degrees) as its sine and cosine, and kept in the slot's record (88 bytes from
-   0x4dfa1c) */
+/* the ARM CENTER's turn (0x90d1cc, degrees) as its sine and cosine, and kept in the slot's record (g_slotCams) */
 static void turn_update(int slot)
 {
 	X a = (X)g_armcLookYaw * k_pi * k_oneOver180;
 	g_armcLookSin = (float)fsin(a);
 	g_armcLookCos = (float)fcos(a);
 	volatile X t = g_armcLookYaw;
-	F(0x4dfa44 + slot * 88) = (float)t;
+	F(OBJ(g_slotCams) + 0x28 + slot * 88) = (float)t;
 }
 
 /* 0x42ab70: the ARM CENTER's mouse look (unless locked, 0x4de6fc): the pointer's distance from the centre turns
@@ -388,7 +387,7 @@ void (armc_mouseLook)(void)
 	if (dy < 0 && g_armcLookTilt > k_m50f)
 		g_armcLookTilt = (float)((X)dy * k_tenth * g_frameTime + g_armcLookTilt);
 	if (g_mouseClick && !g_armcMoveStarted) {
-		u32 r = IMG(0x4dfa1c) + slot * 88;
+		u32 r = OBJ(g_slotCams) + slot * 88;
 		g_armcMoveStarted = 1;
 		g_unusedArmcMoveWord = 0x41f00000;   /* 30 */
 		g_armcMoveTargetX = I(r);
@@ -518,7 +517,7 @@ void (match_debugHandler)(void)
 	(*(u32 *)&g_menuCameraHeight) = g_menuCamZ;
 	(*(float *)&g_menuCameraPos) = f32(fsubr_m(fmul_m(fld_m(&g_armcLookSin), (const float *)ADDR(k_50f)), &(*(float *)&g_menuCamX)));
 	g_armcCamHeight = f32(fadd_m(fld_m(&g_freeCamHeight), (const float *)ADDR(k_10f)));
-	u32 *slot = (u32 *)(IMG(0x4dfa1c) + g_watchedSlot * 0x58);
+	u32 *slot = (u32 *)(OBJ(g_slotCams) + g_watchedSlot * 0x58);
 	slot[0] = g_menuCamX;
 	slot[1] = (*(u32 *)&g_freeCamHeight);
 	slot[2] = g_menuCamZ;

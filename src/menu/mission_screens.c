@@ -9,7 +9,7 @@
 #define X1 (g_missionSelectRect[2])
 #define Y1 (g_missionSelectRect[3])
 #define K(addr) ((const float *)RELOC(addr))
-#define record ((const int *)(IMG(0x9db99c) + g_missionShown * 0x5c))
+#define record ((const int *)((OBJ(g_skirmishInfo) + 0x4) + g_missionShown * 0x5c))
 #define map_name ((const char *)(OBJ(g_mapNames) + g_missionShown * 0x20))
 
 static void white_text(void)

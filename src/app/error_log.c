@@ -52,7 +52,7 @@ int (sys_errorMessageNoName)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(IMG(0xa1efe0), NULL, STR(0x4c58a0, "Error Message at %d/%d/%d/%d:%d:%d(%d)"), format, args);
+	int r = report(ADDR(g_errorReported), NULL, STR(0x4c58a0, "Error Message at %d/%d/%d/%d:%d:%d(%d)"), format, args);
 	va_end(args);
 	return r;
 }
@@ -60,7 +60,7 @@ int (sys_errorMessage)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int r = report(IMG(0xa1efe0), object, STR(0x4c583c, "Error in %s - Message at %d/%d/%d/%d:..."), format, args);
+	int r = report(ADDR(g_errorReported), object, STR(0x4c583c, "Error in %s - Message at %d/%d/%d/%d:..."), format, args);
 	va_end(args);
 	return r;
 }
@@ -70,7 +70,7 @@ void (sys_errorTerminate)(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(IMG(0xa1efe4), NULL, STR(0x4c58c8, "Error Termination at %d/%d/%d/%d:%d:%..."), format, args);
+	report(ADDR(g_fatalReported), NULL, STR(0x4c58c8, "Error Termination at %d/%d/%d/%d:%d:%..."), format, args);
 	va_end(args);
 	terminate();
 }
@@ -78,7 +78,7 @@ void (sys_fatalError)(const u8 *object, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	report(IMG(0xa1efe4), object, STR(0x4c586c, "Error in %s - Termination at %d/%d/%d..."), format, args);
+	report(ADDR(g_fatalReported), object, STR(0x4c586c, "Error in %s - Termination at %d/%d/%d..."), format, args);
 	va_end(args);
 	terminate();
 }

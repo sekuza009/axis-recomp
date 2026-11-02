@@ -15,7 +15,7 @@ typedef struct {
 	i32 slotB[8];
 } Sound;                 /* 100 bytes */
 
-#define g_menuSounds ((Sound *const *)IMG(0x4dd4d4))
+#define g_menuSounds ((Sound *const *)OBJ(g_menuSoundBuffers))
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
 void (dsbuf_play)(Sound *sound)
@@ -135,7 +135,7 @@ u32 (sound_loadMenuSounds)(void)
 	                               STR(0x4b1580, "sound/if_arm_equip.wav"), STR(0x4b1564, "sound/if_arm_equipslide.wav") };
 	u32 r = 0;
 	for (int k = 0; k < 10; k++)
-		GAME_VAR(u32, 0x4dd4d4 + k * 4) = r = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)((const char *)RELOC(names[k]));
+		GAME_VAR(u32, OBJ(g_menuSoundBuffers) + k * 4) = r = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)((const char *)RELOC(names[k]));
 	return r;
 }
 
@@ -181,7 +181,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 	while (index >= 0) {
 		fread_scrambled(name, 1, 0x100, f);
 		u32 sound = GAME_FN(sound_loadWav, 0x467b90, u32, const char *)(name);
-		GAME_VAR(u32, 0xa0e02c + index * 4) = sound;
+		GAME_VAR(u32, OBJ(g_soundTable) + index * 4) = sound;
 		fread_scrambled(&index, 4, 1, f);
 	}
 	fclose(f);
@@ -196,7 +196,7 @@ u32 (sound_playVolume)(int index, int volume)
 	u32 on = (*(u32 *)&g_soundOn);
 	if (!on)
 		return 0;
-	void *sound = GAME_VAR(void *, 0xa0e02c + index * 4);
+	void *sound = GAME_VAR(void *, OBJ(g_soundTable) + index * 4);
 	if (!sound)
 		return on;
 	int level;
@@ -207,7 +207,7 @@ u32 (sound_playVolume)(int index, int volume)
 	else
 		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, level);   /* dsbuf_setVolume */
-	return GAME_FN(dsbuf_play, 0x467d70, u32, void *)(GAME_VAR(void *, 0xa0e02c + index * 4));   /* dsbuf_play */
+	return GAME_FN(dsbuf_play, 0x467d70, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* dsbuf_play */
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
@@ -216,7 +216,7 @@ u32 (sound_playVolume)(int index, int volume)
    Nothing out of range or with sound off. The callers ignore the eax it leaves */
 void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
 {
-	if (!g_soundOn || !GAME_VAR(void *, 0xa0e02c + index * 4))
+	if (!g_soundOn || !GAME_VAR(void *, OBJ(g_soundTable) + index * 4))
 		return;
 	const float *up = g_vecUnitY;
 	float d[3], v[3], c[3];
@@ -240,8 +240,8 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	long double across = fmul_m(fld_m(&c[1]), &side[1]) + fmul_m(fld_m(&c[2]), &side[2]);
 	across = across + fmul_m(fld_m(&c[0]), &side[0]);
 	int pan = ftol(fmul_m(across, (const float *)(g_sound3D ? IMG(0x4a96fc) : IMG(0x4a9700))));
-	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, 0xa0e02c + index * 4), volume);   /* dsbuf_setVolume */
-	sound_playNextBuffer(GAME_VAR(void *, 0xa0e02c + index * 4), (pan > 0) + 1, pan);
+	GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* dsbuf_setVolume */
+	sound_playNextBuffer(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), (pan > 0) + 1, pan);
 }
 
 #define DS_CREATESOUNDBUFFER 0x0c

@@ -197,7 +197,7 @@ static void preview_controls(const Form *f, int left, int right, int custom, con
    the map list is up, 0x4db508); the border. The caller ignores the eax it leaves */
 void (room_drawGameSettings)(void)
 {
-	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), IMG(0x9dd388), IMG(0x9dd568) }, MSG(791, "DEATH MATCH"),
+	static const Form form = { ADDR(g_roomFormLeft), (GameSettings *)OBJ(g_roomSettingsName), { ADDR(g_editingRoomName), ADDR(g_editingRoomPassword), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit) }, MSG(791, "DEATH MATCH"),
 	                           MSG(17, "DO NOT USE"), 0, 20 };
 	static const u32 grey[4] = { 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000 };   /* 0.3, 0.7, 0.7, 1 */
 	const Form *f = &form;

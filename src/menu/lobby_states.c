@@ -144,7 +144,7 @@ void (room_loadSettingsRecord)(void)
 /* 0x433790: the game room's list (state 2) entered: the room's settings, its state cleared, the map list */
 void (room_enterGameList)(void)
 {
-	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaLeaving), ADDR(g_editingRoomName), IMG(0x9dd388), IMG(0x9dd568),
+	static const u32 cleared[] = { ADDR(g_arenaLobbyState), ADDR(g_connectionAwaited), ADDR(g_lobbyPending), ADDR(g_arenaGameSetUp), ADDR(g_arenaLeaving), ADDR(g_editingRoomName), ADDR(g_editingFragLimit), ADDR(g_editingTimeLimit),
 	                               ADDR(g_editingRoomPassword) };
 	room_loadSettingsRecord();
 	g_roomState = 2;
@@ -162,7 +162,7 @@ void (room_enterRoomList)(void)
 {
 	static const u32 cleared[] = { ADDR(g_roomListPage), ADDR(g_rankingRequestPending), ADDR(g_roomListWaiting), ADDR(g_rankingWaiting), ADDR(g_rankingHaveList), ADDR(g_playerListRefused), ADDR(g_playerListCount), ADDR(g_roomListPrevPage),
 	                               ADDR(g_rankingSort), ADDR(g_roomListPrev), ADDR(g_roomListPrevRank) };
-	for (u32 e = IMG(0x9dcef4); e < IMG(0x9dd19c); e += 0x44) {
+	for (u32 e = OBJ(g_roomListRows) + 8; e < OBJ(g_roomListRows) + 8 + 10 * 0x44; e += 0x44) {
 		memset((void *)(RELOC(e) - 4), 0, 0x36);
 		GAME_VAR(int, e + 0x32) = 1;
 	}
@@ -212,8 +212,8 @@ void (room_copyJoinedSettings)(void)
 	g_roomGameMode = g_roomRecGameMode;
 	g_roomFragLimit = g_roomRecFragLimit;
 	g_roomTimeLimit = g_roomRecTimeLimit;
-	memcpy((void *)IMG(0x9dd260), (void *)OBJ(g_roomMech), 11);
-	memcpy((void *)IMG(0x9dd26b), (void *)OBJ(g_roomColours), 0x90);
+	memcpy((void *)OBJ(g_roomMechKept), (void *)OBJ(g_roomMech), 11);
+	memcpy((void *)OBJ(g_roomColoursKept), (void *)OBJ(g_roomColours), 0x90);
 	static const u32 copy[6][2] = { { ADDR(g_pilotLevelKept), ADDR(g_pilotLevel) }, { ADDR(g_pilotPointsKept), ADDR(g_pilotPoints) }, { (OBJ(g_pilotStatsKept) + 0x1c), ADDR(g_pilotWinRate) },
 	                                { ADDR(g_pilotWinsKept), ADDR(g_pilotWins) }, { ADDR(g_pilotLossesKept), ADDR(g_pilotLosses) }, { ADDR(g_pilotScoreKept), ADDR(g_pilotScore) } };
 	for (int k = 0; k < 6; k++)
@@ -317,7 +317,7 @@ u32 (room_host)(void)
 {
 	strcpy(g_joinedTitleName, g_accountName);
 	strcpy(g_joinedTitleEmail, g_accountEmail);
-	default_mech((u8 *)IMG(0x9dd260), (u8 *)IMG(0x9dd26b));
+	default_mech(g_roomMechKept, g_roomColoursKept);
 	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
 	g_pilotLevelKept = 1;
 	g_pilotLevel = 1;
@@ -735,7 +735,7 @@ static void take_session(const u8 *rec)
    message's eax, or the colour +0x2e */
 u32 (arena_joinSession)(int session)
 {
-	const u8 *rec = (const u8 *)(IMG(0x9087c0) + session * 0x4a);
+	const u8 *rec = (const u8 *)(OBJ(g_sessionList) + session * 0x4a);
 	g_lobbyJoinStarted = 0;
 	g_lobbyJoinRequest = 0;
 	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec[0x2e];
@@ -783,7 +783,7 @@ void (app_shutdown)(void)
 	} else {
 		if (!g_arenaJoinPending)
 			return;
-		rec = (u8 *)(IMG(0x9087c0) + pick * 0x4a);
+		rec = (u8 *)(OBJ(g_sessionList) + pick * 0x4a);
 		*(u32 *)rec = *(*(const u32 **)&g_receivedSession);
 		g_arenaFragLimit = rec[0x2d];
 		g_arenaTimeLimit = rec[0x2e];

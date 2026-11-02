@@ -244,7 +244,7 @@ static int rank_value(const u8 *row, int mode, long double *value)
 void (roomList_fillPage)(void)
 {
 	static const u8 dst[7] = { 0x26, 0x3e, 0x36, 0x2a, 0x2e, 0x32, 0x3a }, src[7] = { 0x2e, 0x36, 0x3a, 0x22, 0x26, 0x2a, 0x32 };
-	u8 *rows = (u8 *)ADDR(g_roomMessageText4);
+	u8 *rows = g_roomListRows;
 	for (int i = 0; i < 10; i++) {
 		u8 *row = rows + i * 0x44;
 		*(int *)(RELOC(row) + 4) = 0;
@@ -463,14 +463,15 @@ u32 (skirmish_settingsKeys)(void)
 
 /* ---- the mission select (selection 0x9f63b4) ---- */
 /* 0x4479d0: mission sel chosen: its 32-byte record (0x907b30) as the current one (0x67fb44), its three values from the
-   0x5c-byte table at 0x9db9e4, the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
+   0x5c-byte records of g_skirmishInfo (+0x4c ..), the settings left, mission mode (0x67ef14 = 1, 0x5ae9c4 = 3) */
 u32 (mission_choose)(void)
 {
 	int sel = g_missionShown;
 	u32 t = (u32)sel * 0x5c;
 	g_missionStage = sel;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
-	int a = GAME_VAR(int, 0x9db9e4 + t), b = GAME_VAR(int, 0x9db9ec + t), c = GAME_VAR(int, 0x9db9e8 + t);
+	u32 rec = OBJ(g_skirmishInfo) + t;
+	int a = GAME_VAR(int, rec + 0x4c), b = GAME_VAR(int, rec + 0x54), c = GAME_VAR(int, rec + 0x50);
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
 	g_fragLimit = b;

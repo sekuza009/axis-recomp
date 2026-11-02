@@ -26,7 +26,7 @@ static void dialog_opened(int state)
 /* 0x433980: dialog 0x58 */
 void (room_openDialog58)(void)
 {
-	set_box(IMG(0x9dd1a0), 0x50, 0x78, 0x230, 0x168);
+	set_box(OBJ(g_roomDialogBox), 0x50, 0x78, 0x230, 0x168);
 	popup_layout();
 	dialog_opened(0x58);
 	g_roomPopup = 0;
@@ -574,7 +574,7 @@ u32 (room_requestJoin)(void)
 		GAME_VAR(int, cleared[k]) = 0;
 	g_roomMode = 1;
 	g_roomPanelBrightness = 0x3f333333;
-	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), IMG(0x9dd6d0), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
+	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), ADDR(g_unusedAccountWord), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
 	char *message = g_netJoinMessage;
@@ -603,7 +603,7 @@ static void stars(char *out, int size, const char *password)
 u32 (loginDialog_draw)(void)
 {
 #define X0 g_loginFormLeft
-#define Y0 GAME_VAR(int, 0x9dd6ec)
+#define Y0 g_loginFormTop
 #define X1 GAME_VAR(int, 0x9dd6f0)
 #define Y1 g_loginFormBottom
 	if (g_dialogOpen)
@@ -688,10 +688,10 @@ static void confirm_box(void)
    frame's or the border's eax */
 u32 (serverDialog_draw)(void)
 {
-#define X0 GAME_VAR(int, 0x9dd1a0)
-#define Y0 GAME_VAR(int, 0x9dd1a4)
-#define X1 GAME_VAR(int, 0x9dd1a8)
-#define Y1 GAME_VAR(int, 0x9dd1ac)
+#define X0 (g_roomDialogBox[0])
+#define Y0 (g_roomDialogBox[1])
+#define X1 (g_roomDialogBox[2])
+#define Y1 (g_roomDialogBox[3])
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
@@ -934,7 +934,7 @@ void (account_drawPanel)(void)
 /* 0x43d060: the ranking table (0x9dced8 .. 0x9dcee4): the title 0x75aba4; the page arrows (0 / 1 under the pointer,
    by ranking_hitTest, lit) about "first ~ last" of page 0x9dd6ac (stored in 0x9dd83c / 0x9dd7dc); the sort button
    (MSG(412, "OPTION"); 2) with the sorted column's name; two rules and the column heads (MSG(413, "RANK") .., the sorted one in
-   yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (the name at 0x9dcef4, its rank at -4) until an
+   yellow); when there is a list (0x9dd3b0) up to ten 0x44-byte rows (g_roomListRows: the name at +8, its rank at +4) until an
    empty name (which stores the page in 0x9dd4b8): rank, name, rank badge (+0x32) in a yellow frame, "%8.1f" (+0x36),
    "%3.2f" (+0x2e) and three counts (+0x26, +0x2a, +0x1e), the sorted value in yellow; a rule, two buttons
    (MSG(421, "$[0] STOP"); 3 / 4, the first dead until the list is loaded, 0x9dd6b8); while loading the blinking MSG(423, "DOWNLOADING RANKING DATA"); the
@@ -1007,7 +1007,7 @@ u32 (ranking_drawTable)(void)
 	if (g_rankingHaveList) {
 		char text[64];
 		for (int i = 0; i < 10; i++) {
-			const u8 *row = (const u8 *)IMG(0x9dcef4) + i * 0x44;
+			const u8 *row = (const u8 *)(OBJ(g_roomListRows) + 8) + i * 0x44;
 #define ROW(type, offset) (*(const type *)(row + (offset)))
 			if (!*row) {
 				g_roomListPages = g_roomListPage;

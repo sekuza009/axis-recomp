@@ -124,7 +124,7 @@ void (menuState100_intro)(void)
 	g_mouseX = 0x136;
 	g_mouseY = 0xe6;
 	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
-	static const u32 clocks[] = { IMG(0x4dd560), IMG(0x4dd0a8), IMG(0x4dd080), ADDR(g_lastFrameClock) };   /* four doubles */
+	static const u32 clocks[] = { ADDR(g_unusedClock1), ADDR(g_unusedClock2), ADDR(g_unusedClock3), ADDR(g_lastFrameClock) };   /* four doubles */
 	for (int i = 0; i < 4; i++) {
 		GAME_VAR(u32, clocks[i]) = 0;
 		GAME_VAR(u32, clocks[i] + 4) = 0;
@@ -541,7 +541,7 @@ static void leave_game(u32 lobby, int disconnect)
 	if (disconnect)
 		GAME_FN(net_disconnect, 0x451e60, void, void)();   /* net_disconnect */
 	g_arenaLobbyState = 0;
-	for (u32 p = (OBJ(g_netSlots) + 0x4); p < IMG(0x9fd944); p += 0x410) {
+	for (u32 p = (OBJ(g_netSlots) + 0x4); p < OBJ(g_netSlots) + 4 + 16 * 0x410; p += 0x410) {
 		GAME_VAR(int, p - 4) = 0;
 		GAME_VAR(int, p) = 0;
 	}

@@ -82,7 +82,7 @@ void (menuState400_enter)(void)
 	static const u32 cleared2[] = { ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaLobbyMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
-		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { IMG(0x9fd958), 0xf },
+		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { ADDR(g_unusedArenaWord), 0xf },
 		{ ADDR(g_armcFrom), 1 } };
 	g_matchMode = 1;
 	arena_clearChatRecord();

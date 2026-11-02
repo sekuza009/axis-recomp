@@ -1,0 +1,16 @@
+# step 3b: error flags, room / login edit flags, words only cleared or set, the game-connect texture, net buffers
+0xa1efe0,int,g_errorReported
+0xa1efe4,int,g_fatalReported
+0x9dd388,int,g_editingFragLimit
+0x9dd568,int,g_editingTimeLimit
+0x9dd6d0,int,g_unusedAccountWord
+0x9dd6ec,int,g_loginFormTop
+0x4dbaf4,u32,g_unusedArenaCamWord
+0x9dd848,u32,g_unusedRoomCamWord
+0x4dd560,double,g_unusedClock1
+0x4dd0a8,double,g_unusedClock2
+0x4dd080,double,g_unusedClock3
+0x9fd958,int,g_unusedArenaWord
+0x4df450,int,g_gameConnectTexture
+0xa0b318,u8 *,g_lobbyLeavePacket
+0xa052e4,char *,g_netOneByte

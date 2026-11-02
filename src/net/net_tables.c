@@ -335,9 +335,9 @@ void (net_closeAll)(int kind)
 	memset((void *)OBJ(g_serverList), 0, 0x16c0 * 4);
 	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
-		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { IMG(0xa0b318), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
+		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { ADDR(g_lobbyLeavePacket), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
 		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_arenaPacket), 0x79 }, { ADDR(g_arenaInfoPacket), 0x79 }, { ADDR(g_roomRecordPacket), 0x79 }, { ADDR(g_netRequestWord), 4 }, { ADDR(g_netKindWord), 4 },
-		{ ADDR(g_netSendBuffer), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { IMG(0xa052e4), 1 }, { ADDR(g_netJoinMessage), 0x1e } };
+		{ ADDR(g_netSendBuffer), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { ADDR(g_netOneByte), 1 }, { ADDR(g_netJoinMessage), 0x1e } };
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
 		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
 	memset((void *)ADDR(g_netNotice), 0, 0x22);
@@ -1188,7 +1188,7 @@ u32 (net_disconnect)(void)
 		return (*(u32 *)&g_netConnected);
 	u32 r = g_lobbySocket;
 	if ((*(int *)&g_lobbySocket)) {
-		if (!g_lobbyPending && !send_leave(ADDR(g_roomPacket), IMG(0xa0b318), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
+		if (!g_lobbyPending && !send_leave(ADDR(g_roomPacket), ADDR(g_lobbyLeavePacket), lobbyBytes, 8, 0x45, lobbyNames, 0xb, 0x64))
 			return 0;
 		r = socket_close(ADDR(g_lobbySocket));
 	}
@@ -1236,7 +1236,7 @@ void (net_send)(int kind, int to)
 			IMPORT(WS_SEND, int, u32, const void *, int, int)(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
-		[10] = { ADDR(g_roomPacket), 0x5b, 1 }, [11] = { IMG(0xa0b318), 0x5b, 1 }, [12] = { ADDR(g_netInfoPacket), 0x5b, 1 },
+		[10] = { ADDR(g_roomPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_netInfoPacket), 0x5b, 1 },
 		[17] = { ADDR(g_netPlayerRecordPacket), 0x36, 0 }, [18] = { ADDR(g_arenaPacket), 0x79, 0 }, [20] = { ADDR(g_arenaInfoPacket), 0x79, 0 },
 		[25] = { ADDR(g_netLeaveBuffer), 0x1e, 0 }, [27] = { ADDR(g_netSelectionPacket), 0xb9, 0 }, [28] = { ADDR(g_netAccountBuffer), 0x5c, 0 }, [29] = { ADDR(g_netJoinMessage), 0x1e, 0 } };
 	switch (kind) {
@@ -1279,7 +1279,7 @@ void (net_send)(int kind, int to)
 		net_clearPlayerList();
 		if (kind == 21)
 			g_netLastRequest = 0x15;
-		send_buffer(ADDR(g_gameServerSocket), kind == 21 ? ADDR(g_netRankingBuffer) : IMG(0xa052e4), kind == 21 ? 8 : 1);
+		send_buffer(ADDR(g_gameServerSocket), kind == 21 ? ADDR(g_netRankingBuffer) : ADDR(g_netOneByte), kind == 21 ? 8 : 1);
 		return;
 	case 22:
 		g_netLastRequest = 0x16;
