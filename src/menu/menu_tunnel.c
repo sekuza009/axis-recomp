@@ -275,8 +275,6 @@ TunnelRing *(tunnel_addRing)(void)
 /* ---- 0x440e20: an intro camera path node for screen height h: two circles of 101 points (each stored twice, at
    heights +500 and -500), the path settings (taken from the linked node, +0x3530, when there is one), the box's
    corners, and six records whose heights step down ---- */
-static long double fsin_(long double x) { __asm__("fsin" : "+t"(x)); return x; }
-static long double fcos_(long double x) { __asm__("fcos" : "+t"(x)); return x; }
 
 void (intro_cameraPath)(u8 *o, int h)
 {
@@ -304,7 +302,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		for (int i = 0; ; ) {
 			X a = (X)i * k_3_6f * k_pi * k_oneOver180;
 			u8 *r = o + base + i * 16;
-			float s = f32(fsin_(a) * radius), c = f32(fcos_(a) * radius);
+			float s = f32(x87_fsin(a) * radius), c = f32(x87_fcos(a) * radius);
 			FIELD(float, r, 0xc90) = s;
 			FIELD(float, r, 0) = s;
 			FIELD(float, r, 0xc94) = c;

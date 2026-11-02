@@ -210,7 +210,6 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 
-static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* the screen point (the view's width +0x20f3a24 and height +0x20f3a28) of clip x / w and y / w */
 static void to_screen(u8 *s, long double qx, long double qy, float *out)
@@ -312,7 +311,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			A(int, 0x87e0) = 1;
 			continue;
 		}
-		long double cosv = -fld_m(&e[2]) / root(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
+		long double cosv = -fld_m(&e[2]) / x87_fsqrt(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
 		A(float, 0x87e4) = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
 		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
@@ -480,7 +479,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 	v[0] = f32(fmul_m(h, &v[0]));
 	v[1] = f32(fmul_m(h, &v[1]));
 	v[2] = f32(v2 * h);
-	long double size = root((fmul_m(fld_m(&v[0]), &v[0]) + fmul_m(fld_m(&v[2]), &v[2])) + fmul_m(fld_m(&v[1]), &v[1]));
+	long double size = x87_fsqrt((fmul_m(fld_m(&v[0]), &v[0]) + fmul_m(fld_m(&v[2]), &v[2])) + fmul_m(fld_m(&v[1]), &v[1]));
 	float last = (float)size;
 	for (int k = 0; k < 3; k++)
 		at[k] = f32(fadd_m(fld_m(&v[k]), &P(float, 0x10 + k * 4)));

@@ -201,7 +201,6 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 #define K(address) ((const float *)RELOC(address))
 #define B(type, offset) GAME_VAR(type, b + (offset))
 
-static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
 static u32 next_rand(u32 n)
@@ -278,7 +277,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			if (*w2de8 > 0) {
 				float dx = f32(fsub_m(fld_m(&hit[0]), &from[0]));
 				long double dy = fsub_m(fld_m(&hit[1]), &from[1]), dz = fsub_m(fld_m(&hit[2]), &from[2]);
-				B(float, 0x74) = f32(fdiv_m(root((fmul_m(fld_m(&dx), &dx) + dz * dz) + dy * dy), w2de8));
+				B(float, 0x74) = f32(fdiv_m(x87_fsqrt((fmul_m(fld_m(&dx), &dx) + dz * dz) + dy * dy), w2de8));
 			} else
 				B(int, 0x74) = 0;
 		} else if (*w2de8 > 0)
@@ -418,7 +417,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	offset_point((float *)(RELOC(b) + 0xf8), a, prev);
 	offset_point((float *)(RELOC(b) + 0x128), a, cur);
 	long double dx = fsub_m(fld_m(&cur[0]), &prev[0]), dy = fsub_m(fld_m(&cur[1]), &prev[1]), dz = fsub_m(fld_m(&cur[2]), &prev[2]);
-	long double len = flying ? root((dx * dx + dz * dz) + dy * dy) : root((dz * dz + dy * dy) + dx * dx);
+	long double len = flying ? x87_fsqrt((dx * dx + dz * dz) + dy * dy) : x87_fsqrt((dz * dz + dy * dy) + dx * dx);
 	B(float, 0x494) = (float)len;
 	float scale = f32(fmul_m(len, K(0x4aa450)));   /* / 800 */
 	u32 colour = GAME_VAR(u32, s + 0x9ccfe4);
@@ -556,8 +555,8 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 	long double c0 = fmul_m(fld_m(&e[1]), &N[2]) - fmul_m(fld_m(&e[2]), &N[1]);
 	long double c1 = fmul_m(fld_m(&N[0]), &e[2]) - fmul_m(fld_m(&N[2]), &e[0]);
 	c2 = f32(fmul_m(fld_m(&N[1]), &e[0]) - fmul_m(fld_m(&N[0]), &e[1]));
-	le = f32(root((fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1])) + fmul_m(fld_m(&e[0]), &e[0])));
-	long double lc = root((fmul_m(fld_m(&c2), &c2) + c1 * c1) + c0 * c0);
+	le = f32(x87_fsqrt((fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1])) + fmul_m(fld_m(&e[0]), &e[0])));
+	long double lc = x87_fsqrt((fmul_m(fld_m(&c2), &c2) + c1 * c1) + c0 * c0);
 	if (!(le < 0) && !(le > 0))
 		BITS(le) = 0x3f800000;
 	if (!(lc < 0) && !(lc > 0))
@@ -750,8 +749,8 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 			h[1] = (float)dy;
 			long double dz = fsub_m(fld_m(&h[2]), &prev[2]);
 			h[2] = (float)dz;
-			long double len = root((fmul_m(fld_m(&h[0]), &h[0]) + dz * dz) + dy * dy);
-			long double spd = root((fmul_m(fld_m(&vel[0]), &vel[0]) + fmul_m(fld_m(&vel[1]), &vel[1])) + fmul_m(fld_m(&vel[2]), &vel[2]));
+			long double len = x87_fsqrt((fmul_m(fld_m(&h[0]), &h[0]) + dz * dz) + dy * dy);
+			long double spd = x87_fsqrt((fmul_m(fld_m(&vel[0]), &vel[0]) + fmul_m(fld_m(&vel[1]), &vel[1])) + fmul_m(fld_m(&vel[2]), &vel[2]));
 			B(float, 0x74) = f32(fadd_m(len / spd, &B(float, 0x70)));
 		}
 	}

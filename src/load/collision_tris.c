@@ -10,7 +10,6 @@
 
 typedef long double X;
 
-static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* a * *m, the product not folded into anything around it */
 static X mul(X a, const float *m) { return fmul_m(a, m); }
@@ -92,7 +91,7 @@ int THISCALL (collisionTri_traceSegment)(const u8 *self, const float *p0, const 
 			return 0;
 	}
 	X a = (X)p1[0] - hit[0], b = (X)p1[1] - hit[1], c = (X)p1[2] - hit[2];
-	*dist = (float)fsqrt(c * c + b * b + a * a);
+	*dist = (float)x87_fsqrt(c * c + b * b + a * a);
 	return 1;
 }
 
@@ -247,7 +246,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	for (int i = 0; i < FIELD(int, stage, 0x13c9b24); i++) {
 		if (i == 0) {
 			X y = fld_m(&d[1]), z = fld_m(&d[2]);
-			reach = fadd_m(fsqrt(z * z + y * y + mul(fld_m(&d[0]), &d[0])), &r);
+			reach = fadd_m(x87_fsqrt(z * z + y * y + mul(fld_m(&d[0]), &d[0])), &r);
 		}
 		u8 *obj = stage + 0x131ae48 + i * 0x2cc;
 		if (FIELD(int, obj, 0) != 1 || FIELD(int, obj, 0x28c) != 1)
@@ -448,7 +447,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 			u[j] = f32(fmul_m(fld_m(&t), &v[j]));
 		vset(c, f32(fadd_m(fld_m(&u[0]), &p[0])), f32(fadd_m(fld_m(&u[1]), &p[1])), f32(fadd_m(fld_m(&u[2]), &p[2])));
 		vsub(d, o, c);
-		*outDist = (float)fsqrt(len2(d));
+		*outDist = (float)x87_fsqrt(len2(d));
 		memcpy(o, c, 12);
 		if (!(fsub_m(dot_zyx(nn, o), dist) >= 0))
 			for (int j = 0; j < 3; j++)
@@ -487,7 +486,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 		X disc = b * b - fmul_m(fsub_m(len2(pv), &r2), &a);
 		if (!(disc >= *TINY))
 			return 0;
-		X s = fsqrt(disc);
+		X s = x87_fsqrt(disc);
 		contact_centre(c, p, v, nearer_root(f32(fdiv_m(s - b, &a)), fdiv_m(-b - s, &a)));
 		vsub(d, o, c);
 	} else {
@@ -502,7 +501,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 			X disc = b * b - fsub_m(len2(pv), &r2) * aa;
 			if (!(disc >= *TINY))
 				return 0;
-			X s = fsqrt(disc);
+			X s = x87_fsqrt(disc);
 			contact_centre(c, p, v, nearer_root((float)((s - b) / aa), (-b - s) / aa));
 			vi = vj;
 		} else {   /* along the edge: the sphere against the edge's line */
@@ -521,7 +520,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 			X disc = b * b - fmul_m(fsub_m(len2(pv) - mul(fld_m(&pe), &pe), &r2), &a);
 			if (!(disc >= *TINY))
 				return 0;
-			X s = fsqrt(disc);
+			X s = x87_fsqrt(disc);
 			contact_centre(c, p, v, nearer_root(f32(fdiv_m(s - b, &a)), fdiv_m(-b - s, &a)));
 			corner = 0;
 		}
@@ -529,7 +528,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 		if (!(dot_xyz(d, v) > 0))   /* the contact behind the move: the rest axis */
 			memcpy(d, REST, 12);
 	}
-	*outDist = (float)fsqrt(mul(fld_m(&d[1]), &d[1]) + mul(fld_m(&d[2]), &d[2]) + mul(fld_m(&d[0]), &d[0]));
+	*outDist = (float)x87_fsqrt(mul(fld_m(&d[1]), &d[1]) + mul(fld_m(&d[2]), &d[2]) + mul(fld_m(&d[0]), &d[0]));
 	memcpy(o, c, 12);
 	vsub(w, o, vi);
 	if (!corner) {   /* the normal from the edge's line: e x ((centre - start) x e) */

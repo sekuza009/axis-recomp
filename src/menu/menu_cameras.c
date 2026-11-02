@@ -308,8 +308,6 @@ void (missionsel_camera)(void)
 
 /* ---- the free menu camera moved along its heading (the turn at 0x90d1cc, plus a quarter turn, wrapped, in radians)
    by the frame time times its speed ---- */
-static X fsin(X x) { __asm__("fsin" : "+t"(x)); return x; }
-static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
 
 static X heading(void)
 {
@@ -324,8 +322,8 @@ static X heading(void)
 void (menuCamera_forward)(void)
 {
 	X a = heading();
-	float s = (float)fsin(a);
-	X c = fcos(a);
+	float s = (float)x87_fsin(a);
+	X c = x87_fcos(a);
 	X t = (X)g_frameTime * s * SPEED;
 	float tf = (float)t;
 	(*(float *)&g_menuCamX) = (float)(t + (*(float *)&g_menuCamX));   /* the unrounded step here ... */
@@ -339,8 +337,8 @@ void (menuCamera_forward)(void)
 void (menuCamera_back)(void)
 {
 	X a = heading();
-	float s = (float)fsin(a);
-	X c = fcos(a);
+	float s = (float)x87_fsin(a);
+	X c = x87_fcos(a);
 	float tf = (float)((X)g_frameTime * s * SPEED);
 	(*(float *)&g_menuCamX) = (float)((X)(*(float *)&g_menuCamX) - tf);
 	X u = c * g_frameTime * SPEED;
@@ -353,8 +351,8 @@ void (menuCamera_back)(void)
 static void turn_update(int slot)
 {
 	X a = (X)g_armcLookYaw * k_pi * k_oneOver180;
-	g_armcLookSin = (float)fsin(a);
-	g_armcLookCos = (float)fcos(a);
+	g_armcLookSin = (float)x87_fsin(a);
+	g_armcLookCos = (float)x87_fcos(a);
 	volatile X t = g_armcLookYaw;
 	F(OBJ(g_slotCams) + 0x28 + slot * 88) = (float)t;
 }

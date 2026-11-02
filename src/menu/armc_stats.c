@@ -81,11 +81,7 @@ static void append(char *to, const char *from)
 
 /* -x by fchs, as the original negates: a NaN made by the product keeps the sign the original gives it (a compiler
    may move a negation into the product, which leaves a new NaN's sign the other way) */
-static X neg(X x)
-{
-	__asm__("fchs" : "+t"(x));
-	return x;
-}
+static X neg(X x) { return x87_fchs(x); }
 
 static int none(X v) { return v == 0 || v != v; }   /* (the original's compare: equal or unordered) */
 

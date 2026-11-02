@@ -70,7 +70,7 @@ u8 *(armc_readMechStats)(void)
 	u8 *g = (*(u8 **)&g_scene);
 	u8 *A = g + FIELD(int, g, 0x234240d) * 0x8888;
 	X s = fld_m(&FIELD(float, A, 0x1ecca70));
-	__asm__("fsqrt" : "+t"(s));
+	s = x87_fsqrt(s);
 	s = s * k_0_01;
 	g_mechDetectionRange = (float)s;
 	mulf(ADDR(g_mechDetectionAngle), &FIELD(float, A, 0x1ecca74), (const float *)ADDR(k_tenthsToDegrees));

@@ -308,7 +308,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	u32 down[3] = { 0xbf800000, 0xbf800000, 0xbf800000 };
 	factors_addPoint(s + 0x9e3020, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
-	__asm__("fldl %1\n\tfsqrt" : "=t"(root) : "m"(k_27));
+	root = x87_fsqrt(k_27);
 	memset(s + 0x9ee030, 0, 14 * 4);
 	long double inv = fld_m(K(0x4a9424)) / root;
 	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));

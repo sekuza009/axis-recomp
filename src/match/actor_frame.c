@@ -14,15 +14,7 @@
 /* point k (20 bytes) of path r: the paths' records (28 bytes at +0xe3b03c) start with their points' address */
 #define PATH_POINT(r, k) ((const float *)(uintptr_t)(GAME_VAR(u32, s + ((r) + 0x821b9) * 0x1c) + (k) * 20))
 
-static long double root(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
-/* atan2(y, x) by fpatan */
-static long double arctan2(long double y, long double x)
-{
-	long double r;
-	__asm__("fpatan" : "=t"(r) : "0"(x), "u"(y) : "st(1)");
-	return r;
-}
 
 static u32 rand_below(u32 n)
 {
@@ -38,8 +30,8 @@ static void aim_at(u8 *a, const float *p)
 	for (int c = 0; c < 3; c++)
 		d[c] = f32(fsub_m(fld_m(&p[c]), &AF(0x154 + c * 4)));
 	long double x = fld_m(&d[0]), z = fld_m(&d[2]);
-	AF(0x1e0) = f32(fmul_m(arctan2(-fld_m(&d[1]), root(x * x + z * z)), K(0x4a9738)));
-	AF(0x1e4) = f32(fmul_m(arctan2(fld_m(&d[0]), fld_m(&d[2])), K(0x4a9738)));
+	AF(0x1e0) = f32(fmul_m(x87_fpatan(-fld_m(&d[1]), x87_fsqrt(x * x + z * z)), K(0x4a9738)));
+	AF(0x1e4) = f32(fmul_m(x87_fpatan(fld_m(&d[0]), fld_m(&d[2])), K(0x4a9738)));
 }
 
 /* a key-driven speed towards top (key pos) or bottom (key neg) by at most step, else back to 0 */
@@ -578,7 +570,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				v28[c] = f32(fsub_m(fld_m(&AF(0x1d4 + c * 4)), &AF(0x154 + c * 4)));
 			Vec3_rotateAxis(v28, 2, -ftol(fld_m(&AF(0x164))));
 			Vec3_rotateAxis(v28, 1, -ftol(fld_m(&AF(0x160))));
-			long double len = root((fmul_m(fld_m(&v28[0]), &v28[0]) + fmul_m(fld_m(&v28[2]), &v28[2])) + fmul_m(fld_m(&v28[1]), &v28[1]));
+			long double len = x87_fsqrt((fmul_m(fld_m(&v28[0]), &v28[0]) + fmul_m(fld_m(&v28[2]), &v28[2])) + fmul_m(fld_m(&v28[1]), &v28[1]));
 			if (len > 500.0f) {
 				long double G = fld_m(&v28[0]), Y = fld_m(&v28[1]), Z = fld_m(&v28[2]);
 				long double ay = !(Y >= 0) ? -Y : Y;
@@ -698,7 +690,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			for (int c = 0; c < 3; c++)
 				AF(0x384 + c * 4) = f32(fsub_m(fld_m(&AF(0x180 + c * 4)), &AF(0x154 + c * 4)));
 			long double X = fld_m(&AF(0x384)), Y = fld_m(&AF(0x388)), Z = fld_m(&AF(0x38c));
-			left = f32(fsubr_m(root((X * X + Y * Y) + Z * Z), &left));
+			left = f32(fsubr_m(x87_fsqrt((X * X + Y * Y) + Z * Z), &left));
 			const float *o = &OF(j, 0x1cd94fc);
 			long double d0 = fsub_m(fld_m(&hit[0]), &o[0]), d1 = fsub_m(fld_m(&hit[1]), &o[1]), d2 = fsub_m(fld_m(&hit[2]), &o[2]);
 			float c0 = f32(fmul_m(d2, &dir[1]) - fmul_m(d1, &dir[2]));

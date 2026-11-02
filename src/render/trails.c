@@ -9,7 +9,6 @@ typedef long double X;
 #define ONE k_1f
 #define HALF k_0_5f
 
-static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 static float as_float(u32 bits) { float f; memcpy(&f, &bits, 4); return f; }
 
 /* 0x4666d0: a shape's bounds: each part's box (min +0x68, max +0x74) from its vertices, the box of all of them (which
@@ -59,7 +58,7 @@ void THISCALL (shape_relocate)(u8 *shape)
 				r2 = f32(d2);
 		}
 	}
-	FIELD(float, shape, 0x2c) = (float)fsqrt(r2);
+	FIELD(float, shape, 0x2c) = (float)x87_fsqrt(r2);
 	FIELD(u32, shape, 0x30) = 0x71110300;
 }
 

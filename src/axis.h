@@ -18,6 +18,7 @@
 #define AXIS_H
 #include <stdint.h>
 #include <stddef.h>
+#include "x87.h"   /* x87_fsin, x87_fsqrt ...: the instructions the original computes with */
 
 typedef uint8_t u8;
 typedef uint16_t u16;

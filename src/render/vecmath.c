@@ -13,7 +13,6 @@ typedef long double X;
 #define SIN_TABLE (g_sinTable)
 #define LD(p) fld_m(&(p))
 
-static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* 0x4722c0 Vec3::set(x, y, z), returns this */
 float *THISCALL (Vec3_set)(float *v, float x, float y, float z)
@@ -26,7 +25,7 @@ float *THISCALL (Vec3_set)(float *v, float x, float y, float z)
    (the original's fcomp/test ah,1 is also true for NaN) */
 X THISCALL (Vec3_normalize)(float *v)
 {
-	X len = fsqrt((X)v[0] * v[0] + (X)v[1] * v[1] + (X)v[2] * v[2]);
+	X len = x87_fsqrt((X)v[0] * v[0] + (X)v[1] * v[1] + (X)v[2] * v[2]);
 	if (!(len >= 1e-8f)) {
 		v[0] = 1.0f; v[1] = 0.0f; v[2] = 0.0f;
 		return len;
@@ -201,7 +200,7 @@ int (math_segmentSphere)(const float *p0, const float *p1, const float *dir, con
 	X d2 = ((fmul_m(LD(az), &az) + fmul_m(LD(ay), &ay)) + fmul_m(LD(ax), &ax)) - fmul_m(LD(proj), &proj);
 	if (d2 >= r2)
 		return 0;
-	X t = fsubr_m(fsqrt(fsubr_m(d2, &r2)), &proj);
+	X t = fsubr_m(x87_fsqrt(fsubr_m(d2, &r2)), &proj);
 	*t_out = (float)t;
 	float hx = (float)fmul_m(t, &dir[0]), hy = (float)fmul_m(t, &dir[1]);
 	X tz = fmul_m(t, &dir[2]);
@@ -252,5 +251,5 @@ void (set4ints)(u32 a, u32 b, u32 c, u32 d, u32 *out) { out[0] = a; out[1] = b; 
 X THISCALL (vec3_length)(const float *v)
 {
 	X x = v[0], y = v[1], z = v[2];
-	return fsqrt(x * x + y * y + z * z);
+	return x87_fsqrt(x * x + y * y + z * z);
 }

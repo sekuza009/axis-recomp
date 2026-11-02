@@ -6,8 +6,6 @@
 
 typedef long double X;
 
-static X fsin(X x) { __asm__("fsin" : "+t"(x)); return x; }
-static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
 
 #define MINUS_HALF k_m0_5f   /* -0.5 */
 #define HALF k_0_5f         /* 0.5 */
@@ -17,11 +15,11 @@ static X fcos(X x) { __asm__("fcos" : "+t"(x)); return x; }
    angle read again for it) */
 void THISCALL (quat_fromAxisAngle)(float *q, const float *rotation)
 {
-	X s = fsin((X)rotation[0] * MINUS_HALF);
+	X s = x87_fsin((X)rotation[0] * MINUS_HALF);
 	q[0] = (float)(s * rotation[1]);
 	q[1] = (float)(s * rotation[2]);
 	q[2] = (float)(s * rotation[3]);
-	q[3] = (float)fcos((X)rotation[0] * HALF);
+	q[3] = (float)x87_fcos((X)rotation[0] * HALF);
 }
 
 /* 0x47d9a0: m = the matrix of {angle, axis x, y, z}, through its quaternion */
@@ -167,7 +165,6 @@ void (Mat4_fromQuat)(float *m, const float *q)
 	memcpy(m, r, sizeof r);   /* all of q is read before the first store, as in the original */
 }
 
-static X fsqrt(X x) { __asm__("fsqrt" : "+t"(x)); return x; }
 
 /* 0x47d0f0: q = the quaternion (x, y, z, w) of the rotation in m's upper 3 x 3 (columns): from the trace when it is
    positive, else from the largest diagonal element */
@@ -176,7 +173,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 	X one = ONE, half = HALF, quarter = k_0_25f;
 	X t = (X)m[5] + m[0] + m[10] + one;
 	if (t > k_0f) {
-		X s = half / fsqrt(t);
+		X s = half / x87_fsqrt(t);
 		q[3] = (float)(quarter / s);
 		q[0] = (float)(((X)m[9] - m[6]) * s);
 		q[1] = (float)(((X)m[2] - m[8]) * s);
@@ -187,7 +184,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 	X s;
 	switch (i) {
 	case 0:
-		s = fsqrt((X)m[0] + one - m[5] - m[10]);
+		s = x87_fsqrt((X)m[0] + one - m[5] - m[10]);
 		s += s;
 		q[0] = (float)(s * quarter);
 		q[3] = (float)(((X)m[9] - m[6]) / s);
@@ -195,7 +192,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 		q[2] = (float)(((X)m[8] + m[2]) / s);
 		break;
 	case 1:
-		s = fsqrt((X)m[5] + one - m[10] - m[0]);
+		s = x87_fsqrt((X)m[5] + one - m[10] - m[0]);
 		s += s;
 		q[1] = (float)(s * quarter);
 		q[3] = (float)(((X)m[2] - m[8]) / s);
@@ -203,7 +200,7 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 		q[0] = (float)(((X)m[4] + m[1]) / s);
 		break;
 	default:
-		s = fsqrt((X)m[10] + one - m[0] - m[5]);
+		s = x87_fsqrt((X)m[10] + one - m[0] - m[5]);
 		s += s;
 		q[2] = (float)(s * quarter);
 		q[3] = (float)(((X)m[4] - m[1]) / s);
@@ -232,8 +229,8 @@ void THISCALL (quat_toAxisAngle)(float *out, const float *q)
 		BITS(out[0]) = 0xc0c90fdb;   /* -2 pi */
 	X w = fld_m(&q[3]);
 	X s = fsubr_m(w * w, (const float *)ADDR(k_1f)), a;
-	__asm__("fsqrt" : "+t"(s));
-	__asm__("fabs" : "=t"(a) : "0"(s));
+	s = x87_fsqrt(s);
+	a = x87_fabs(s);
 	if (!(a >= k_1em8))
 		s = fld_m((const float *)ADDR(k_1f));
 	out[1] = (float)(fld_m(&q[0]) / s);
