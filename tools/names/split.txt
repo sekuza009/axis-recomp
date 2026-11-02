@@ -364,7 +364,6 @@ g_roomRecName
 g_newArenaName
 g_roomSettingsName
 # reached only by name once the records around them were split (split_candidates.py), 2026-11-01
-g_armcBuildTexture
 g_armcCursor
 g_armcPreview
 g_armcState
@@ -706,3 +705,10 @@ g_pingThreadId
 g_pingTime
 g_roomRecordPacket
 g_serverPingCount
+g_partRecords
+# the resolution names, the typed arena address (objects18.csv) and the grown joined-title record, whole
+g_resolutionNames
+g_typedArenaNameText
+g_joinedTitleName
+# freed by the resolution names record, 2026-11-01
+g_lastCrosshair

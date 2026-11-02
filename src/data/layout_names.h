@@ -155,7 +155,7 @@ extern struct GameData g_data;
 #undef g_argCount
 #define g_argCount (*(int *)g_argCount_v)
 #undef g_armcBuildTexture
-#define g_armcBuildTexture (*(int *)g_armcBuildTexture_v)
+#define g_armcBuildTexture (*(int *)((u8 *)g_slotTextures_v + 0x18))
 #undef g_armcCamDistance
 #define g_armcCamDistance (*(float *)((u8 *)g_menuEye_v + 0x8))
 #undef g_armcCamHeight
@@ -733,13 +733,13 @@ extern struct GameData g_data;
 #undef g_joinedSessionFlag
 #define g_joinedSessionFlag (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
 #undef g_joinedTitleLevel
-#define g_joinedTitleLevel (g_data.g_joinedTitleLevel_)
+#define g_joinedTitleLevel (*(int *)((u8 *)g_joinedTitleName_v + 0x1e))
 #undef g_joinedTitleName
-#define g_joinedTitleName ((char *)g_data.g_joinedTitleName_)
+#define g_joinedTitleName ((char *)g_joinedTitleName_v)
 #undef g_joinedTitlePoints
-#define g_joinedTitlePoints (g_data.g_joinedTitlePoints_)
+#define g_joinedTitlePoints (*(int *)((u8 *)g_joinedTitleName_v + 0x22))
 #undef g_joinedTitleRating
-#define g_joinedTitleRating (g_data.g_joinedTitleRating_)
+#define g_joinedTitleRating (*(int *)((u8 *)g_joinedTitleName_v + 0x26))
 #undef g_keepCameraAsked
 #define g_keepCameraAsked (*(int *)g_keepCameraAsked_v)
 #undef g_keptChat
@@ -773,7 +773,7 @@ extern struct GameData g_data;
 #undef g_languageId
 #define g_languageId (*(u16 *)g_languageId_v)
 #undef g_lastCrosshair
-#define g_lastCrosshair (g_data.g_lastCrosshair_)
+#define g_lastCrosshair (*(int *)g_lastCrosshair_v)
 #undef g_lastFrameClock
 #define g_lastFrameClock (*(double *)g_lastFrameClock_v)
 #undef g_lastPanel
@@ -1250,6 +1250,8 @@ extern struct GameData g_data;
 #define g_partBox4Offset (*(u32 *)g_partBox4Offset_v)
 #undef g_partBox5Offset
 #define g_partBox5Offset (*(u32 *)g_partBox5Offset_v)
+#undef g_partRecords
+#define g_partRecords ((u8 *)g_partRecords_v)
 #undef g_penFontNeverSet
 #define g_penFontNeverSet (*(int *)g_penFontNeverSet_v)
 #undef g_penFontTexture
@@ -1448,6 +1450,8 @@ extern struct GameData g_data;
 #define g_replayRunning (*(int *)g_replayRunning_v)
 #undef g_replayWrap
 #define g_replayWrap (*(int *)g_replayWrap_v)
+#undef g_resolutionNames
+#define g_resolutionNames ((u32 *)g_resolutionNames_v)
 #undef g_resultMessage
 #define g_resultMessage (*(int *)((u8 *)g_resultMsg_v + 0x0))
 #undef g_resultMsg
@@ -1813,9 +1817,11 @@ extern struct GameData g_data;
 #undef g_tunnelRings
 #define g_tunnelRings (*(int *)g_tunnelRings_v)
 #undef g_typedArenaName
-#define g_typedArenaName (g_data.g_typedArenaName_)
+#define g_typedArenaName (*(char *)((u8 *)g_typedArenaNameText_v + 0x0))
 #undef g_typedArenaName4
-#define g_typedArenaName4 (g_data.g_typedArenaName4_)
+#define g_typedArenaName4 (*(int *)((u8 *)g_typedArenaNameText_v + 0x4))
+#undef g_typedArenaNameText
+#define g_typedArenaNameText ((char *)g_typedArenaNameText_v)
 #undef g_typedLength
 #define g_typedLength (*(int *)g_typedLength_v)
 #undef g_typingAccountEmail
@@ -1941,9 +1947,9 @@ extern struct GameData g_data;
 #undef g_viewNear
 #define g_viewNear (*(float *)g_viewNear_v)
 #undef g_viewedPartIndex
-#define g_viewedPartIndex (g_data.g_viewedPartIndex_)
+#define g_viewedPartIndex (*(int *)((u8 *)g_partRecords_v + 0x348))
 #undef g_viewedPartKind
-#define g_viewedPartKind (g_data.g_viewedPartKind_)
+#define g_viewedPartKind (*(int *)((u8 *)g_partRecords_v + 0x344))
 #undef g_volumeSetting
 #define g_volumeSetting (*(int *)((u8 *)g_soundEdited_v + 0x0))
 #undef g_watchChatOpen

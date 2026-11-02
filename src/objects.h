@@ -3,7 +3,7 @@
    OBJ(name) is its address as a number (src/axis.h). Element type, count: the extent known (see the note) */
 #pragma once
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
-#define g_joinedTitleName ((char *)IMG(0x9dd570))   /* char[30]; the joined game's title record: the name (laid out as 0x4de700) */
+#define g_joinedTitleName ((char *)IMG(0x9dd570))   /* char[54]; the joined game's title record (laid out as 0x4de700): the name, then the level / points / rating words from +0x1e (g_joinedTitleLevel ..; a password strcpy'd over them, 12 at most), up to the registry's next copy at 0x9dd5a6 */
 #define g_titleName ((char *)IMG(0x4de700))   /* char[30]; the title record's name (+0x1e the level: g_titleLevel) */
 #define g_accountName ((char *)IMG(0x9dd1d8))   /* char[30]; the login form's name (30 bytes) */
 #define g_accountPassword ((char *)IMG(0x9dd1f6))   /* char[12]; (12 bytes) */
@@ -145,7 +145,7 @@
 #define g_savedMechPartIds ((int *)IMG(0x4dc878))   /* int[5]; the saved mech's parts (match_start's loop of 5) */
 #define g_mechSettings ((int *)IMG(0x4dcb18))   /* int[6]; the mech's weapon and item settings (copied into g_savedMechSettings: armc_misc.c) */
 #define g_savedMechSettings ((int *)IMG(0x4dcf18))   /* int[6]; the saved mech's weapon and items (menu_records' loop writes items 2 .. 5) */
-#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[6]; ARM CENTER's six slot textures (armc_screens' loop of 6) */
+#define g_slotTextures ((int *)IMG(0x4dcc70))   /* int[7]; ARM CENTER's snapshot textures by part record (armc_snapshot(i): the six slots, then the part looked at - g_armcBuildTexture, the seventh) */
 #define g_timerClocks ((u32 *)IMG(0x9db980))   /* u32[4]; the timer's two doubles (now */
 #define g_mouseClicked ((int *)IMG(0x4ded88))   /* int[3]; the three mouse buttons' click pulses (0xfa .. 0xfc) */
 #define g_mouseButtonsHeld ((int *)IMG(0x4ded94))   /* int[3]; the three mouse buttons held (devices.c's loop of 3) */
@@ -209,3 +209,7 @@
 #define g_vecUnitZXyz ((float *)IMG(0xa0e7c8))   /* float[3]; the unit z axis (0 */
 #define g_vecZeroXyz ((float *)IMG(0xa0e7e8))   /* float[3]; the rest vector (0 */
 #define g_musicDuration ((u32 *)IMG(0xa0e018))   /* u32[2]; the music's duration (GetDuration's 64-bit time: g_musicLength the low word */
+#define g_resolutionNames ((u32 *)IMG(0x4b04cc))   /* u32[8]; the setup screen's screen size names (by g_setupResolution) */
+#define g_typedArenaNameText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaName its first word) */
+#define g_partRecords ((u8 *)IMG(0x4dbe50))   /* u8[896]; ARM CENTER's part records: six slots then the part looked at */
+#define g_viewedPart (g_partRecords + 6 * 0x80)   /* u8[0x80]; the part being looked at: the seventh of g_partRecords (g_viewedPartKind +0x44, index +0x48) */

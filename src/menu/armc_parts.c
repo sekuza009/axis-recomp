@@ -47,12 +47,12 @@ static void part_info(u8 *rec, int idx)
 }
 
 /* 0x41ca50: the record of weapon slot slot (0x4dbe50, 0x80 apart) */
-void (armc_weaponSlotRecord)(int slot, int idx) { part_info((u8 *)IMG(0x4dbe50) + slot * 0x80, idx); }
+void (armc_weaponSlotRecord)(int slot, int idx) { part_info(g_partRecords + slot * 0x80, idx); }
 
 /* 0x41cca0: the record of the part being looked at (0x4dc150); the first type picked is kept in 0x4dc198 */
 void (armc_viewedPartRecord)(int idx)
 {
-	part_info((u8 *)IMG(0x4dc150), idx);
+	part_info(g_viewedPart, idx);
 	if (idx != -1 && g_viewedPartKind == -1)
 		g_viewedPartIndex = idx;
 }

@@ -269,7 +269,7 @@ void (armc_updateColourPreview)(void)
 	case 1: preview(1, part_in_view()); break;
 	case 2:
 		slot = g_armcSlot;
-		if (GAME_VAR(int, 0x4dbe90 + slot * 0x80) == -1)
+		if (GAME_VAR(int, OBJ(g_partRecords) + 0x40 + slot * 0x80) == -1)
 			preview(1, -1);
 		else
 			preview(1, slot > 3 ? slot + 2 : 5);
@@ -631,7 +631,7 @@ u32 (armc_onStateEnter)(void)
    0x4dbe50) loaded into 0x4dcc70[i]; nothing for a name shorter than 2 letters. 0x4dcc64 cleared either way */
 void (armc_snapshot)(int i)
 {
-	const char *name = (const char *)(IMG(0x4dbe50) + i * 0x80);
+	const char *name = (const char *)(OBJ(g_partRecords) + i * 0x80);
 	if (strlen(name) <= 1) {
 		g_armcChanged = 0;
 		return;
@@ -653,7 +653,7 @@ void (armc_snapshot)(int i)
    right-aligned at 0x27e. The original leaves eax to callers that ignore it */
 void (armc_drawWeightLine)(void)
 {
-	static const u32 weights[10] = { IMG(0x4dc14c), IMG(0x4dc0cc), IMG(0x4dc04c), IMG(0x4dbfcc), IMG(0x4dbf4c), IMG(0x4dbecc), ADDR(g_boosterWeight), ADDR(g_legsWeight), ADDR(g_armsWeight), ADDR(g_headWeight) };
+	static const u32 weights[10] = { (OBJ(g_partRecords) + 0x2fc), (OBJ(g_partRecords) + 0x27c), (OBJ(g_partRecords) + 0x1fc), (OBJ(g_partRecords) + 0x17c), (OBJ(g_partRecords) + 0xfc), (OBJ(g_partRecords) + 0x7c), ADDR(g_boosterWeight), ADDR(g_legsWeight), ADDR(g_armsWeight), ADDR(g_headWeight) };
 	int y = g_armcStatsPanelTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);

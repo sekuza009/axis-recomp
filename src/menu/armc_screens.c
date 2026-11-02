@@ -208,8 +208,8 @@ void (armc_drawColourEditor)(void)
 }
 
 /* ---- the build screen ---- */
-#define SLOT_NAME(k) ((const char *)IMG(0x4dbe50) + (k) * 0x80)
-#define STAT(type, offset) GAME_VAR(type, 0x4dc190 + (offset))
+#define SLOT_NAME(k) ((const char *)OBJ(g_partRecords) + (k) * 0x80)
+#define STAT(type, offset) GAME_VAR(type, OBJ(g_viewedPart) + 0x40 + (offset))
 
 static void bind_texture(int texture)
 {
@@ -305,7 +305,7 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x, y + 0x118, x + 0xa0, y + 0x17c, 0);
-	if (strlen((const char *)IMG(0x4dc150)) <= 1) {
+	if (strlen((const char *)OBJ(g_viewedPart)) <= 1) {
 		TEXT(yellow);
 		text_draw8b(x, y + 0x142, x + 0xa0, (const char *)MSG(320, "REMOVE WEAPON"));
 	} else {
@@ -314,7 +314,7 @@ void (armc_drawBuildScreen)(void)
 		bind_texture(g_armcBuildTexture);
 		picture(x + 0x10, y + 0x11c, x + 0x90, y + 0x158);
 		TEXT(white);
-		armc_drawText(x + 5, y + 0x158, (const char *)IMG(0x4dc150));
+		armc_drawText(x + 5, y + 0x158, (const char *)OBJ(g_viewedPart));
 		int part = g_armcCursor;
 		int type = g_armcSlot > 3 ? ((const int *)IMG(0x4dcca4))[part] : ((const int *)IMG(0x4dc79c))[part];
 		TEXT(white);

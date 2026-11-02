@@ -1,0 +1,3 @@
+# ARM CENTER's part records (step 3b; --records): seven of 0x80 bytes (part_info's): the six weapon / item slots
+# (armc_weaponSlotRecord(slot): + slot * 0x80) and the part being looked at (the seventh, g_viewedPart)
+0x4dbe50,u8,896,g_partRecords,ARM CENTER's part records: six slots then the part looked at, 0x80 bytes each (the name, kind +0x44, index +0x48, stats, weight +0x7c)
