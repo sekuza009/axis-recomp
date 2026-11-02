@@ -672,7 +672,7 @@ u32 (mainmenu_startNetGame)(void)
    the map-select key (0x440d70, the dialog opened). Returns what the original leaves in eax */
 u32 (mainmenu_processKeys)(void)
 {
-	static const u32 key[6] = { IMG(0x4e1500), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
+	static const u32 key[6] = { ADDR(g_dikK), ADDR(g_dikM), ADDR(g_dikL), ADDR(g_dikS), ADDR(g_dikA), ADDR(g_dikX) };
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)

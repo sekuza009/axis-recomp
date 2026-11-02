@@ -10,7 +10,7 @@ for n, a in re.findall(r'#define (\w+) GAME_VAR\([\w \*]+, (0x[0-9a-f]+)\)', ope
 	names.setdefault(int(a, 16), n)
 total = 0
 for f in sorted(glob.glob('src/**/*.[ch]', recursive=True)):
-	if os.path.basename(os.path.dirname(f)) == 'data' or f.endswith(('globals.h', 'axis.h')):
+	if os.path.basename(os.path.dirname(f)) == 'data' or f.endswith(('globals.h', 'axis.h', 'objects.h')):   # (objects.h: the objects' own IMG definitions stay)
 		continue
 	t = open(f, 'rb').read().decode('latin-1')
 	n = [0]

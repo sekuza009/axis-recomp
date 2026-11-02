@@ -29,7 +29,9 @@ bad = 0
 for addr, typ, name in entries:
     if '--reuse' not in sys.argv and re.search(r'\b%s\b' % name, allt):
         print('already exists:', name); bad += 1
-    if not any(pattern(addr, typ).search(t) for f, t in data.items() if f != HEADER.replace('/', os.sep)):
+    # (--img: an address src/ reaches only as IMG(0x...) - in a table, as a pointer - is named too; tools/img_names.py
+    # then writes those as ADDR(name))
+    if '--img' not in sys.argv and not any(pattern(addr, typ).search(t) for f, t in data.items() if f != HEADER.replace('/', os.sep)):
         print('no GAME_VAR(%s, 0x%x) in src' % (typ, addr)); bad += 1
 if bad:
     sys.exit('%d problems, nothing changed' % bad)

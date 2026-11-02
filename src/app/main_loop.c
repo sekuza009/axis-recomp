@@ -240,10 +240,10 @@ static void mouse_offset(u8 *s, int steer)
 }
 
 /* the weapon slot keys: slot 1 .. 9, 0 (+0x23424f2), each also asking for the switch (+0x2340c6c, +0x23432cb) */
-static const u32 k_slotKeys[10][2] = { { IMG(0x4dec90), 1 }, { IMG(0x4dec8c), 2 }, { IMG(0x4deb5c), 3 }, { IMG(0x4deb58), 4 }, { IMG(0x4deb64), 5 },
-                                       { IMG(0x4deb60), 6 }, { IMG(0x4deb6c), 7 }, { IMG(0x4deb68), 8 }, { IMG(0x4deb70), 9 }, { IMG(0x4deb78), 0 } };
+static const u32 k_slotKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { ADDR(g_dikNumpad2), 2 }, { ADDR(g_dikNumpad3), 3 }, { ADDR(g_dikNumpad4), 4 }, { ADDR(g_dikNumpad5), 5 },
+                                       { ADDR(g_dikNumpad6), 6 }, { ADDR(g_dikNumpad7), 7 }, { ADDR(g_dikNumpad8), 8 }, { ADDR(g_dikNumpad9), 9 }, { ADDR(g_dikNumpad0), 0 } };
 /* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
-static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), IMG(0x4e0c78), IMG(0x4e0c7c), IMG(0x4e0c80), IMG(0x4e0c84), IMG(0x4e0c88), IMG(0x4e0460) };
+static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
 static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), 0x234325f }, { ADDR(g_keyFreeCam2), 0x234326b }, { ADDR(g_keyFreeCam3), 0x234326f },
                                        { ADDR(g_keyFreeCam0), 0x2343263 }, { ADDR(g_keyFreeCam1), 0x2343267 }, { (OBJ(g_controls) + 0x40), 0x2343273 },
@@ -960,7 +960,7 @@ static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_contr
                                         { ADDR(g_keyFreeCam0), (OBJ(g_controls) + 0x4), 0x2343263 }, { ADDR(g_keyFreeCam1), (OBJ(g_controls) + 0xc), 0x2343267 }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), 0x2343273 },
                                         { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), 0x2343277 } };
 /* the camera preset keys (presets 1 .. 9, 0) */
-static const u32 k_presetKeys[10] = { IMG(0x4dec90), IMG(0x4dec8c), IMG(0x4deb5c), IMG(0x4deb58), IMG(0x4deb64), IMG(0x4deb60), IMG(0x4deb6c), IMG(0x4deb68), IMG(0x4deb70), IMG(0x4deb78) };
+static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
 /* the eight lines of a debug marker's star: the far corner's signs */
 static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 1 }, { -1, 1, -1 }, { -1, 1, 1 }, { 1, -1, -1 }, { -1, -1, 1 }, { 1, 1, -1 } };
 

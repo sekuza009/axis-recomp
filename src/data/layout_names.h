@@ -478,6 +478,8 @@ extern struct GameData g_data;
 #define g_desktopWidth (*(int *)g_desktopWidth_v)
 #undef g_dialogFrameTexture
 #define g_dialogFrameTexture (*(int *)((u8 *)g_menuFrameTextures_v + 0x4))
+#undef g_dik0
+#define g_dik0 (*(int *)g_dik0_v)
 #undef g_dik1
 #define g_dik1 (*(int *)g_dik1_v)
 #undef g_dik2
@@ -486,76 +488,216 @@ extern struct GameData g_data;
 #define g_dik3 (*(int *)g_dik3_v)
 #undef g_dik4
 #define g_dik4 (*(int *)g_dik4_v)
+#undef g_dik5
+#define g_dik5 (*(int *)g_dik5_v)
+#undef g_dik6
+#define g_dik6 (*(int *)g_dik6_v)
+#undef g_dik7
+#define g_dik7 (*(int *)g_dik7_v)
+#undef g_dik8
+#define g_dik8 (*(int *)g_dik8_v)
+#undef g_dik9
+#define g_dik9 (*(int *)g_dik9_v)
 #undef g_dikA
 #define g_dikA (*(int *)g_dikA_v)
+#undef g_dikApostrophe
+#define g_dikApostrophe (*(int *)g_dikApostrophe_v)
+#undef g_dikApps
+#define g_dikApps (*(int *)g_dikApps_v)
+#undef g_dikB
+#define g_dikB (*(int *)g_dikB_v)
+#undef g_dikBack
+#define g_dikBack (*(int *)g_dikBack_v)
+#undef g_dikBackslash
+#define g_dikBackslash (*(int *)g_dikBackslash_v)
 #undef g_dikC
 #define g_dikC (*(int *)g_dikC_v)
+#undef g_dikCapsLock
+#define g_dikCapsLock (*(int *)g_dikCapsLock_v)
+#undef g_dikComma
+#define g_dikComma (*(int *)g_dikComma_v)
 #undef g_dikD
 #define g_dikD (*(int *)g_dikD_v)
 #undef g_dikDelete
 #define g_dikDelete (*(int *)g_dikDelete_v)
+#undef g_dikDelete_2
+#define g_dikDelete_2 (*(int *)g_dikDelete_2_v)
 #undef g_dikDown
 #define g_dikDown (*(int *)g_dikDown_v)
+#undef g_dikE
+#define g_dikE (*(int *)g_dikE_v)
+#undef g_dikEnd
+#define g_dikEnd (*(int *)g_dikEnd_v)
+#undef g_dikEnd_2
+#define g_dikEnd_2 (*(int *)g_dikEnd_2_v)
 #undef g_dikEnter
 #define g_dikEnter (*(int *)g_dikEnter_v)
+#undef g_dikEnter_2
+#define g_dikEnter_2 (*(int *)g_dikEnter_2_v)
+#undef g_dikEquals
+#define g_dikEquals (*(int *)g_dikEquals_v)
 #undef g_dikEscape
 #define g_dikEscape (*(int *)g_dikEscape_v)
 #undef g_dikEscape_2
 #define g_dikEscape_2 (*(int *)g_dikEscape_2_v)
+#undef g_dikF
+#define g_dikF (*(int *)g_dikF_v)
+#undef g_dikF10
+#define g_dikF10 (*(int *)g_dikF10_v)
 #undef g_dikF11
 #define g_dikF11 (*(int *)g_dikF11_v)
+#undef g_dikF12
+#define g_dikF12 (*(int *)g_dikF12_v)
+#undef g_dikF2
+#define g_dikF2 (*(int *)g_dikF2_v)
+#undef g_dikF3
+#define g_dikF3 (*(int *)g_dikF3_v)
+#undef g_dikF4
+#define g_dikF4 (*(int *)g_dikF4_v)
+#undef g_dikF5
+#define g_dikF5 (*(int *)g_dikF5_v)
+#undef g_dikF6
+#define g_dikF6 (*(int *)g_dikF6_v)
+#undef g_dikF7
+#define g_dikF7 (*(int *)g_dikF7_v)
+#undef g_dikF8
+#define g_dikF8 (*(int *)g_dikF8_v)
+#undef g_dikF9
+#define g_dikF9 (*(int *)g_dikF9_v)
 #undef g_dikG
 #define g_dikG (*(int *)g_dikG_v)
+#undef g_dikGrave
+#define g_dikGrave (*(int *)g_dikGrave_v)
+#undef g_dikH
+#define g_dikH (*(int *)g_dikH_v)
+#undef g_dikHome
+#define g_dikHome (*(int *)g_dikHome_v)
+#undef g_dikHome_2
+#define g_dikHome_2 (*(int *)g_dikHome_2_v)
 #undef g_dikI
 #define g_dikI (*(int *)g_dikI_v)
+#undef g_dikInsert
+#define g_dikInsert (*(int *)g_dikInsert_v)
+#undef g_dikInsert_2
+#define g_dikInsert_2 (*(int *)g_dikInsert_2_v)
 #undef g_dikJ
 #define g_dikJ (*(int *)g_dikJ_v)
+#undef g_dikK
+#define g_dikK (*(int *)g_dikK_v)
 #undef g_dikL
 #define g_dikL (*(int *)g_dikL_v)
 #undef g_dikLAlt
 #define g_dikLAlt (*(int *)g_dikLAlt_v)
+#undef g_dikLBracket
+#define g_dikLBracket (*(int *)g_dikLBracket_v)
 #undef g_dikLCtrl
 #define g_dikLCtrl (*(int *)g_dikLCtrl_v)
 #undef g_dikLShift
 #define g_dikLShift (*(int *)g_dikLShift_v)
+#undef g_dikLWin
+#define g_dikLWin (*(int *)g_dikLWin_v)
 #undef g_dikLeft
 #define g_dikLeft (*(int *)g_dikLeft_v)
 #undef g_dikM
 #define g_dikM (*(int *)g_dikM_v)
+#undef g_dikMinus
+#define g_dikMinus (*(int *)g_dikMinus_v)
 #undef g_dikMouse1
 #define g_dikMouse1 (*(int *)g_dikMouse1_v)
 #undef g_dikMouse2
 #define g_dikMouse2 (*(int *)g_dikMouse2_v)
+#undef g_dikMouse3
+#define g_dikMouse3 (*(int *)g_dikMouse3_v)
 #undef g_dikN
 #define g_dikN (*(int *)g_dikN_v)
 #undef g_dikNone
 #define g_dikNone (*(int *)g_dikNone_v)
+#undef g_dikNumLock
+#define g_dikNumLock (g_data.g_dikNumLock_)
+#undef g_dikNumpad0
+#define g_dikNumpad0 (g_data.g_dikNumpad0_)
+#undef g_dikNumpad1
+#define g_dikNumpad1 (g_data.g_dikNumpad1_)
+#undef g_dikNumpad2
+#define g_dikNumpad2 (g_data.g_dikNumpad2_)
+#undef g_dikNumpad3
+#define g_dikNumpad3 (g_data.g_dikNumpad3_)
+#undef g_dikNumpad4
+#define g_dikNumpad4 (g_data.g_dikNumpad4_)
+#undef g_dikNumpad5
+#define g_dikNumpad5 (g_data.g_dikNumpad5_)
+#undef g_dikNumpad6
+#define g_dikNumpad6 (g_data.g_dikNumpad6_)
+#undef g_dikNumpad7
+#define g_dikNumpad7 (g_data.g_dikNumpad7_)
+#undef g_dikNumpad8
+#define g_dikNumpad8 (g_data.g_dikNumpad8_)
+#undef g_dikNumpad9
+#define g_dikNumpad9 (g_data.g_dikNumpad9_)
+#undef g_dikNumpadDot
+#define g_dikNumpadDot (*(int *)g_dikNumpadDot_v)
+#undef g_dikNumpadEnter
+#define g_dikNumpadEnter (*(int *)g_dikNumpadEnter_v)
+#undef g_dikNumpadMinus
+#define g_dikNumpadMinus (*(int *)g_dikNumpadMinus_v)
+#undef g_dikNumpadPlus
+#define g_dikNumpadPlus (*(int *)g_dikNumpadPlus_v)
+#undef g_dikNumpadSlash
+#define g_dikNumpadSlash (*(int *)g_dikNumpadSlash_v)
+#undef g_dikNumpadStar
+#define g_dikNumpadStar (*(int *)g_dikNumpadStar_v)
 #undef g_dikO
 #define g_dikO (*(int *)g_dikO_v)
 #undef g_dikP
 #define g_dikP (*(int *)g_dikP_v)
+#undef g_dikPageDown
+#define g_dikPageDown (*(int *)g_dikPageDown_v)
+#undef g_dikPageDown_2
+#define g_dikPageDown_2 (*(int *)g_dikPageDown_2_v)
 #undef g_dikPageUp
 #define g_dikPageUp (*(int *)g_dikPageUp_v)
+#undef g_dikPageUp_2
+#define g_dikPageUp_2 (*(int *)g_dikPageUp_2_v)
+#undef g_dikPeriod
+#define g_dikPeriod (*(int *)g_dikPeriod_v)
+#undef g_dikPrintScreen
+#define g_dikPrintScreen (*(int *)g_dikPrintScreen_v)
+#undef g_dikQ
+#define g_dikQ (*(int *)g_dikQ_v)
 #undef g_dikR
 #define g_dikR (*(int *)g_dikR_v)
 #undef g_dikRAlt
 #define g_dikRAlt (*(int *)g_dikRAlt_v)
+#undef g_dikRBracket
+#define g_dikRBracket (*(int *)g_dikRBracket_v)
 #undef g_dikRCtrl
 #define g_dikRCtrl (*(int *)g_dikRCtrl_v)
 #undef g_dikRShift
 #define g_dikRShift (*(int *)g_dikRShift_v)
+#undef g_dikRWin
+#define g_dikRWin (*(int *)g_dikRWin_v)
 #undef g_dikRight
 #define g_dikRight (*(int *)g_dikRight_v)
 #undef g_dikS
 #define g_dikS (*(int *)g_dikS_v)
+#undef g_dikScrollLock
+#define g_dikScrollLock (*(int *)g_dikScrollLock_v)
+#undef g_dikSemicolon
+#define g_dikSemicolon (*(int *)g_dikSemicolon_v)
+#undef g_dikSlash
+#define g_dikSlash (g_data.g_dikSlash_)
 #undef g_dikSpace
 #define g_dikSpace (*(int *)g_dikSpace_v)
 #undef g_dikT
 #define g_dikT (*(int *)g_dikT_v)
 #undef g_dikTab
 #define g_dikTab (*(int *)g_dikTab_v)
+#undef g_dikU
+#define g_dikU (*(int *)g_dikU_v)
 #undef g_dikUp
 #define g_dikUp (*(int *)g_dikUp_v)
+#undef g_dikV
+#define g_dikV (*(int *)g_dikV_v)
 #undef g_dikW
 #define g_dikW (*(int *)g_dikW_v)
 #undef g_dikWheelDown
@@ -564,6 +706,10 @@ extern struct GameData g_data;
 #define g_dikWheelUp (*(int *)g_dikWheelUp_v)
 #undef g_dikX
 #define g_dikX (*(int *)g_dikX_v)
+#undef g_dikY
+#define g_dikY (*(int *)g_dikY_v)
+#undef g_dikZ
+#define g_dikZ (*(int *)g_dikZ_v)
 #undef g_dikZ_2
 #define g_dikZ_2 (*(int *)g_dikZ_2_v)
 #undef g_directInputMade

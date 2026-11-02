@@ -423,7 +423,7 @@ void (setup_controlTabKeys)(void)
 			g_bindRow++;
 		return;
 	}
-	static const u32 page_keys[4] = { ADDR(g_dikM), ADDR(g_dikS), ADDR(g_dikI), IMG(0x4e1530) };
+	static const u32 page_keys[4] = { ADDR(g_dikM), ADDR(g_dikS), ADDR(g_dikI), ADDR(g_dikU) };
 	for (int page = 0; page < 4; page++)
 		if (input_justPressed(GAME_VAR(int, page_keys[page])) == 1) {
 			sound_playMenu(2);
