@@ -189,9 +189,9 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		long double r = fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4));
 		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
 			if (!(nearest >= r * r))
-				anim_start(s, i, obj, IMG(0x4a9480));
+				anim_start(s, i, obj, ADDR(k_0_001f));
 		} else if (F(u32, obj, 0x29c) == 0x3f800000 && nearest > r * r)
-			anim_start(s, i, obj, IMG(0x4aa4a0));
+			anim_start(s, i, obj, ADDR(k_m0_001f));
 	} else if (obj[0xc] & 0x10) {
 		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
 			if (fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4)) > F(float, obj, 0x2c8)) {
@@ -199,9 +199,9 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 				return;
 			}
 			F(int, obj, 0x2c8) = 0;
-			anim_start(s, i, obj, IMG(0x4a9480));
+			anim_start(s, i, obj, ADDR(k_0_001f));
 		} else if (F(u32, obj, 0x29c) == 0x3f800000)
-			anim_start(s, i, obj, IMG(0x4aa4a0));
+			anim_start(s, i, obj, ADDR(k_m0_001f));
 	}
 }
 #undef K

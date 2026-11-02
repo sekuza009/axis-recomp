@@ -350,7 +350,7 @@ void (gameList_draw)(void)
    (message 0x27 when wrong) */
 void (gameList_drawPage)(void)
 {
-	const float *step = (const float *)IMG(0x4ad498), *blinkFloor = (const float *)ADDR(k_10f);
+	const float *step = (const float *)ADDR(g_lobbyBlinkRate), *blinkFloor = (const float *)ADDR(k_10f);
 	if (g_gameListClickArmed) {
 		long double t = fadd_m(fld_m(&g_frameTime), &g_gameListClickTimer);
 		g_gameListClickTimer = f32(t);
@@ -711,7 +711,7 @@ void (room_gameListKeys)(void)
 /* the searching message's blink clock (0x4dba80) run down, back to 1000 once below 0x4a9418 */
 static void blink_down(void)
 {
-	long double blink = fsubr_m(fmul_m(fld_m((const float *)IMG(0x4ad498)), &g_frameTime), &g_lobbyBlinkClock);
+	long double blink = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkRate)), &g_frameTime), &g_lobbyBlinkClock);
 	g_lobbyBlinkClock = f32(blink);
 	if (!(blink >= k_10f))
 		(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
@@ -746,7 +746,7 @@ void (lobbyJoin_draw)(void)
 	if (g_lanSearch) {
 		for (int k = 0; k < 10; k++)
 			dplay_listSessions();
-		long double t = fsubr_m(fmul_m(fld_m((const float *)IMG(0x4ad498)), &g_frameTime), &g_lobbyBlinkClock);
+		long double t = fsubr_m(fmul_m(fld_m((const float *)ADDR(g_lobbyBlinkRate)), &g_frameTime), &g_lobbyBlinkClock);
 		g_lobbyBlinkClock = f32(t);
 		if (!(t > k_0f)) {
 			arenaList_rebuild();

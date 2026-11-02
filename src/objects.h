@@ -435,3 +435,20 @@
 #define g_soundTable ((u32 *)IMG(0xa0e02c))   /* u32[400]; the sound table's buffers by index (sound_initSoundTable; to 0xa0e66c) */
 #define g_menuSoundBuffers ((u32 *)IMG(0x4dd4d4))   /* u32[10]; the ten menu sounds (sound_loadMenuSounds) */
 #define g_slotCams ((float *)IMG(0x4dfa1c))   /* float[655]; the ARM CENTER's camera per slot (88 bytes a slot: +0 .. +8 the point; +0x28 the turn); to 0x4e0458 */
+#define g_unlockTablesSolo ((u8 *)IMG(0x4ad5f0))   /* u8[5600]; armc_buildPartLists' seven 0x320-byte Unlock tables for solo play (to 0x4aebd0) */
+#define g_unlockTablesNet ((u8 *)IMG(0x4aebd0))   /* u8[5600]; the same for network play (to 0x4b01b0) */
+#define g_setupWallTurns ((float *)IMG(0x4b04c4))   /* float[2]; the setup tunnel's wall turn by parity (-35; 35) */
+#define g_titleSpread ((int *)IMG(0x4b065c))   /* int[20]; by g_titleFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512) */
+#define g_penPropWidths ((int *)IMG(0x4c5558))   /* int[105]; the pen font's proportional glyph widths (105 glyphs; to 0x4c56fc) */
+#define g_ptxZigzag ((int *)IMG(0x4c59ec))   /* int[64]; the PTX decoder's zigzag order */
+#define g_ptxDcCodes ((int *)IMG(0x4c5af0))   /* int[48]; the DC Huffman codes: two tables of 96 bytes (length; code pairs) */
+#define g_ptxAcCodes ((int *)IMG(0x4c5bb0))   /* int[1024]; the AC Huffman codes: two tables of 256 (length; code) pairs */
+#define g_ptxDequantBase ((float *)IMG(0x4c6bb0))   /* float[128]; the dequantisation tables' base values (luma; chroma) */
+#define g_ptxQuantBase ((int *)IMG(0x4c6db0))   /* int[128]; the quantisation tables' base values (luma; chroma) */
+#define g_crtStderr ((u8 *)IMG(0x4d0878))   /* u8[32]; the C runtime's stderr FILE (_iob[2]; name only: the runtime's own code reaches it) */
+#define g_crtTenPowersUp ((u8 *)IMG(0x4d12f8))   /* u8[352]; crt_atof's powers of ten (12-byte entries; name only) */
+#define g_crtTenPowersDown ((u8 *)IMG(0x4d1458))   /* u8[352]; crt_atof's negative powers of ten (name only) */
+#define k_teamNamesKorean ((char *)IMG(0x4a975c))   /* char[64]; the four team names in Korean (16 bytes each) */
+#define k_aanScales ((double *)IMG(0x4aa2b0))   /* double[8]; the AAN inverse DCT's scale factors */
+#define k_ptxQuantScales ((int *)IMG(0x4aa2f0))   /* int[64]; the quantisation scale per coefficient */
+#define g_keyNames ((u32 *)IMG(0x4b0750))   /* u32[256]; a key code's name (pointers to the texts; to 0x4b0b50) */

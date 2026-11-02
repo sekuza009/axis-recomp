@@ -816,7 +816,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 		if (!(AF(0x490) >= 1.0f)) {
 			int kind = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
-			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? IMG(0x4a9710) : kind == 3 ? IMG(0x4a970c) : ADDR(k_3f))), &AF(0x490)));
+			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
 				AU(0x490) = 0x3f800000;
 		}

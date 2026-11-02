@@ -8,6 +8,7 @@
    A 12-byte value ("ld12") is: +0 16 more mantissa bits, +2 and +6 the 64-bit mantissa (top bit explicit), +0xa the
    sign and the biased exponent (0x3fff). */
 #include "crt.h"
+#include "../objects.h"   /* g_crtTenPowersUp / Down */
 #include <string.h>
 
 #define W16(p, o) (*(u16 *)((u8 *)RELOC(p) + (o)))
@@ -165,12 +166,12 @@ infinite:
    whose extension word is 0x8000 or more is used one unit lower in its mantissa); mult12 0: the extension cleared */
 static void multtenpow12(u8 *x, int power, int mult12)
 {
-	u32 table = IMG(0x4d12f8);
+	u32 table = OBJ(g_crtTenPowersUp);
 	if (power == 0)
 		return;
 	if (power < 0) {
 		power = -power;
-		table = IMG(0x4d1458);
+		table = OBJ(g_crtTenPowersDown);
 	}
 	if (mult12 == 0)
 		W16(x, 0) = 0;

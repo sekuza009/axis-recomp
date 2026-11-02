@@ -208,7 +208,7 @@ u32 (cfg_keyBindings)(void *f)
 		{ STR(0x4b1c00, "set_key help1 "), 62 }, { STR(0x4b1bf0, "set_key help2 "), 63 },   /* help */
 	};
 	const int *binding = (const int *)ADDR(g_keyFreeCam0);
-	const char *const *key_name = (const char *const *)IMG(0x4b0750);
+	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
 		FPUTS(key_name[binding[keys[k].binding]]);
@@ -513,7 +513,7 @@ u32 (mission_saveAxisMis)(int k)
 u32 (cfg_parseGraphic)(void *f)
 {
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
-	static const u32 mode[8] = { STR(0x4b1b6c, "640x480\n"), IMG(0x4ac84c), IMG(0x4ac870), IMG(0x4ac894), IMG(0x4ac8b8), IMG(0x4ac8dc), IMG(0x4ac900), IMG(0x4ac920) };
+	static const u32 mode[8] = { STR(0x4b1b6c, "640x480\n"), STR(0x4ac84c, "1280x720\n"), STR(0x4ac870, "1600x900\n"), STR(0x4ac894, "1920x1080\n"), STR(0x4ac8b8, "2560x1440\n"), STR(0x4ac8dc, "3840x2160\n"), STR(0x4ac900, "1024x768\n"), STR(0x4ac920, "DESKTOP\n") };
 	static const u32 switches[4] = { STR(0x4b1aac, "set_graphic linearfiltering "), STR(0x4b1a94, "set_graphic mipmapping "), STR(0x4b1a7c, "set_graphic viewfps "), STR(0x4b1a64, "set_graphic simplemenu ") };
 	FPUTS(STR(0x4b1b78, "set_graphic videomode "));
 	if (g_videoMode <= 7)
@@ -1179,7 +1179,7 @@ void (cfg_gameTypeNames)(void *f)
    0x83a9cc .. 0x83a9d8); then one more line */
 void (cfg_videoModeNames)(void *f)
 {
-	static const u32 sizes[7] = { IMG(0x4ac858), IMG(0x4ac87c), IMG(0x4ac8a0), IMG(0x4ac8c4), IMG(0x4ac8e8), IMG(0x4ac90c), IMG(0x4ac92c) };
+	static const u32 sizes[7] = { STR(0x4ac858, "1280x720"), STR(0x4ac87c, "1600x900"), STR(0x4ac8a0, "1920x1080"), STR(0x4ac8c4, "2560x1440"), STR(0x4ac8e8, "3840x2160"), STR(0x4ac90c, "1024x768"), STR(0x4ac92c, "DESKTOP") };
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 7; n++) {
@@ -1212,7 +1212,7 @@ static int read_binding(int line)
    (ON; 0x4df000, 0x4df004), the sensitivity and the crosshairs (0x4df008, 0x4df00c); then one more line */
 void (cfg_parseKeyNames)(void *f)
 {
-	const char *const *key_name = (const char *const *)IMG(0x4b0750);
+	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 0x44; n++) {

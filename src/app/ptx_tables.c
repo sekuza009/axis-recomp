@@ -69,7 +69,7 @@ void (ptx_initQuantTables)(int q)
 	if (g_ptxQuality == q)
 		return;
 	for (int j = 0; j < 128; j++) {
-		int t = (int)((u32)I32(IMG(0x4c6db0) + j * 4) * (u32)I32(IMG(0x4aa2f0) + (j & 63) * 4) * 100u);
+		int t = (int)((u32)I32(OBJ(g_ptxQuantBase) + j * 4) * (u32)I32(OBJ(k_ptxQuantScales) + (j & 63) * 4) * 100u);
 		I32(OBJ(g_ptxQuant) + j * 4) = (t / q) >> 12;
 	}
 }
@@ -82,9 +82,9 @@ void (ptx_initDequantTables)(int q)
 	if (g_ptxQuality == q)
 		return;
 	X qf = q;
-	const double *f = (const double *)IMG(0x4aa2b0);
+	const double *f = k_aanScales;
 	for (int j = 0; j < 128; j++) {
-		X v = (X)F32(IMG(0x4c6bb0) + j * 4) * k_100;
+		X v = (X)F32(OBJ(g_ptxDequantBase) + j * 4) * k_100;
 		v = v / qf * f[(j >> 3) & 7] * f[j & 7] * k_8;
 		F32(OBJ(g_ptxDequant) + j * 4) = (float)((X)k_1 / v);
 	}

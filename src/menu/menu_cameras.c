@@ -219,7 +219,7 @@ void (arena_launchFromFile)(void)
 		}
 		if (g_viewAspect > k_0f)
 			g_viewAspect = (float)((X)g_viewAspect - (X)g_frameTime * k_0_07f);
-		if (!(last > F(network ? IMG(0x4a9470) : ADDR(k_m1f))))   /* (the depth before its rounding) */
+		if (!(last > F(network ? ADDR(k_m1101f) : ADDR(k_m1f))))   /* (the depth before its rounding) */
 			return;
 		(*(int *)&g_menuCameraPos) = 0;
 		(*(u32 *)&g_armcCamHeight) = 0xc3480000;   /* -200 */

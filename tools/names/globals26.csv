@@ -1,0 +1,14 @@
+# step 3b: the lobby's blink rate (1.0; never written) and the remaining float constants of .rdata
+0x4ad498,float,g_lobbyBlinkRate
+0x4a9480,float,k_0_001f
+0x4aa4a0,float,k_m0_001f
+0x4a949c,float,k_1500f
+0x4a9700,float,k_1500f_4a9700
+0x4a96fc,float,k_m1500f
+0x4aa42c,float,k_3000f
+0x4aa430,float,k_5000f
+0x4aa424,float,k_400f
+0x4a9470,float,k_m1101f
+0x4a95c8,float,k_2200f
+0x4a970c,float,k_2_25f
+0x4a9710,float,k_1_95f

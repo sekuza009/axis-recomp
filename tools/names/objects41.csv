@@ -1,0 +1,18 @@
+# step 3b: the remaining tables: the ARM CENTER's unlock tables; the setup tunnel's turns; the title's spread; the pen
+# font's widths; the PTX decoder's tables; the runtime's stderr and powers of ten (name only); the Korean team names
+0x4ad5f0,u8,5600,g_unlockTablesSolo,armc_buildPartLists' seven 0x320-byte Unlock tables for solo play (to 0x4aebd0)
+0x4aebd0,u8,5600,g_unlockTablesNet,the same for network play (to 0x4b01b0)
+0x4b04c4,float,2,g_setupWallTurns,the setup tunnel's wall turn by parity (-35; 35)
+0x4b065c,int,20,g_titleSpread,by g_titleFrames (0 .. 19): how far the title's quarters have moved apart (0 .. 512)
+0x4c5558,int,105,g_penPropWidths,the pen font's proportional glyph widths (105 glyphs; to 0x4c56fc)
+0x4c59ec,int,64,g_ptxZigzag,the PTX decoder's zigzag order
+0x4c5af0,int,48,g_ptxDcCodes,the DC Huffman codes: two tables of 96 bytes (length; code pairs)
+0x4c5bb0,int,1024,g_ptxAcCodes,the AC Huffman codes: two tables of 256 (length; code) pairs
+0x4c6bb0,float,128,g_ptxDequantBase,the dequantisation tables' base values (luma; chroma)
+0x4c6db0,int,128,g_ptxQuantBase,the quantisation tables' base values (luma; chroma)
+0x4d0878,u8,32,g_crtStderr,the C runtime's stderr FILE (_iob[2]; name only: the runtime's own code reaches it)
+0x4d12f8,u8,352,g_crtTenPowersUp,crt_atof's powers of ten (12-byte entries; name only)
+0x4d1458,u8,352,g_crtTenPowersDown,crt_atof's negative powers of ten (name only)
+0x4a975c,char,64,k_teamNamesKorean,the four team names in Korean (16 bytes each)
+0x4aa2b0,double,8,k_aanScales,the AAN inverse DCT's scale factors
+0x4aa2f0,int,64,k_ptxQuantScales,the quantisation scale per coefficient

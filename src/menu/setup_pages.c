@@ -185,7 +185,7 @@ static void key_tab(int tab)
 	static const u32 labels[3] = { MSG(216, "FORWARD"), MSG(231, "FIRE"), MSG(246, "CHAT") };
 	static const int rows[3] = { 10, 11, 10 };
 	const u32 *bright = g_setupColourLit;
-	const char *const *key_name = (const char *const *)IMG(0x4b0750);
+	const char *const *key_name = (const char *const *)OBJ(g_keyNames);
 	int none = g_dikNone;
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x46 + tab * 0x78, Y0 + 0x12, (const char *)(MSG(202, "$[0] MOVE") + tab * 0x80));
@@ -475,7 +475,7 @@ void (setup_drawTunnel)(void)
 			int parity = wall % 2, far = wall >= 2;
 			gfx_setMenuCamera();
 			glTranslatef_bits(0, 0, (*(u32 *)&g_setupTunnelDepth));
-			float turn = ((const float *)IMG(0x4b04c4))[parity];
+			float turn = (g_setupWallTurns)[parity];
 			if (far)
 				turn = -turn;
 			gl_rotateXYZ(0, 0, BITS(turn));

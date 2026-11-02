@@ -1,0 +1,2 @@
+# step 3b: the key names (256 pointers to their texts; axis.cfg's bindings and the controls page)
+0x4b0750,u32,256,g_keyNames,a key code's name (pointers to the texts; to 0x4b0b50)

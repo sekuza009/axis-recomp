@@ -564,7 +564,7 @@ int (net_getLocalAddress)(void)
    the player 0xa0b424, the text at +0xc) in a new global block sent to everyone (0x450bf0). 1 when sent */
 int (net_sendChat)(const char *text)
 {
-	if (GAME_FN(net_logMessage, 0x451350, int, u32, const char *, char **)(g_localPlayerId, text, (char **)IMG(0x9fd944)) < 0)   /* net_logMessage */
+	if (GAME_FN(net_logMessage, 0x451350, int, u32, const char *, char **)(g_localPlayerId, text, (char **)ADDR(g_sentChatBlock)) < 0)   /* net_logMessage */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
 	u8 *message = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */

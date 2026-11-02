@@ -440,7 +440,7 @@ void (armc_enter)(TunnelRing *ring)
 		r->moveSteps += step;
 		if (r->moveSteps >= ringLength) {
 			if (state == 1)
-				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? IMG(0x4a95c8) : OBJ(k_1100f))));
+				r->turn = f32(fsub_m(fld_m(&r->turn), (const float *)(g_quitAsked ? ADDR(k_2200f) : OBJ(k_1100f))));
 			else
 				r->turn = f32(fadd_m(fld_m(&r->turn), k_1100f));
 			r->moveSteps = 0;

@@ -514,6 +514,12 @@ extern struct GameData g_data;
 #define g_crosshairSetting (*(int *)((u8 *)g_controls_v + 0x10c))
 #undef g_crosshairTexture
 #define g_crosshairTexture (*(int *)g_crosshairTexture_v)
+#undef g_crtStderr
+#define g_crtStderr ((u8 *)g_data.g_crtStderr_)
+#undef g_crtTenPowersDown
+#define g_crtTenPowersDown ((u8 *)g_data.g_crtTenPowersDown_)
+#undef g_crtTenPowersUp
+#define g_crtTenPowersUp ((u8 *)g_data.g_crtTenPowersUp_)
 #undef g_ctrlMenuTextures
 #define g_ctrlMenuTextures ((int *)g_ctrlMenuTextures_v)
 #undef g_currentProfile
@@ -1192,6 +1198,8 @@ extern struct GameData g_data;
 #define g_keyLoadingSkip (*(int *)((u8 *)g_controls_v + 0xc8))
 #undef g_keyLoadingSkip2
 #define g_keyLoadingSkip2 (*(int *)((u8 *)g_controls_v + 0xcc))
+#undef g_keyNames
+#define g_keyNames ((u32 *)g_keyNames_v)
 #undef g_keySeen
 #define g_keySeen ((int *)g_keySeen_v)
 #undef g_keyState
@@ -1272,6 +1280,8 @@ extern struct GameData g_data;
 #define g_loadTimer ((u8 *)g_loadTimer_v)
 #undef g_lobbyBlinkClock
 #define g_lobbyBlinkClock (*(float *)g_lobbyBlinkClock_v)
+#undef g_lobbyBlinkRate
+#define g_lobbyBlinkRate (*(float *)g_lobbyBlinkRate_v)
 #undef g_lobbyConnectStatus
 #define g_lobbyConnectStatus (*(int *)g_lobbyConnectStatus_v)
 #undef g_lobbyConnectionBlock
@@ -1894,6 +1904,8 @@ extern struct GameData g_data;
 #define g_penPropTopLeft ((float *)g_penPropTopLeft_v)
 #undef g_penPropTopRight
 #define g_penPropTopRight ((float *)g_penPropTopRight_v)
+#undef g_penPropWidths
+#define g_penPropWidths ((int *)g_penPropWidths_v)
 #undef g_perfCounter
 #define g_perfCounter (*(u32 *)g_perfCounter_v)
 #undef g_pilotChosen
@@ -2080,6 +2092,8 @@ extern struct GameData g_data;
 #define g_progressWentUp (*(int *)g_progressWentUp_v)
 #undef g_projMode
 #define g_projMode (*(int *)g_projMode_v)
+#undef g_ptxAcCodes
+#define g_ptxAcCodes ((int *)g_ptxAcCodes_v)
 #undef g_ptxBitPos
 #define g_ptxBitPos (*(int *)g_ptxBitPos_v)
 #undef g_ptxCbBlue
@@ -2094,8 +2108,12 @@ extern struct GameData g_data;
 #define g_ptxCrRed ((int *)g_ptxCrRed_v)
 #undef g_ptxData
 #define g_ptxData ((u8 *)g_ptxData_v)
+#undef g_ptxDcCodes
+#define g_ptxDcCodes ((int *)g_ptxDcCodes_v)
 #undef g_ptxDequant
 #define g_ptxDequant ((float *)g_ptxDequant_v)
+#undef g_ptxDequantBase
+#define g_ptxDequantBase ((float *)g_ptxDequantBase_v)
 #undef g_ptxLastDc
 #define g_ptxLastDc (*(int *)g_ptxLastDc_v)
 #undef g_ptxPixels
@@ -2104,12 +2122,16 @@ extern struct GameData g_data;
 #define g_ptxPlanes ((u8 *)g_ptxPlanes_v)
 #undef g_ptxQuant
 #define g_ptxQuant ((int *)g_ptxQuant_v)
+#undef g_ptxQuantBase
+#define g_ptxQuantBase ((int *)g_ptxQuantBase_v)
 #undef g_ptxTable
 #define g_ptxTable (*(int *)g_ptxTable_v)
 #undef g_ptxTablesReady
 #define g_ptxTablesReady (*(int *)g_ptxTablesReady_v)
 #undef g_ptxYCbCrTables
 #define g_ptxYCbCrTables ((int *)g_ptxYCbCrTables_v)
+#undef g_ptxZigzag
+#define g_ptxZigzag ((int *)g_ptxZigzag_v)
 #undef g_pulse
 #define g_pulse (*(float *)g_pulse_v)
 #undef g_pulseStep
@@ -2380,6 +2402,8 @@ extern struct GameData g_data;
 #define g_secondDialogRects ((int *)g_secondDialogRects_v)
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
+#undef g_sentChatBlock
+#define g_sentChatBlock (*(char * *)g_sentChatBlock_v)
 #undef g_serialProviderGuid
 #define g_serialProviderGuid ((u8 *)g_serialProviderGuid_v)
 #undef g_serverAddress
@@ -2474,6 +2498,8 @@ extern struct GameData g_data;
 #define g_setupTunnelAlpha (*(float *)g_setupTunnelAlpha_v)
 #undef g_setupTunnelDepth
 #define g_setupTunnelDepth (*(float *)g_setupTunnelDepth_v)
+#undef g_setupWallTurns
+#define g_setupWallTurns ((float *)g_setupWallTurns_v)
 #undef g_shapeDat
 #define g_shapeDat ((u32 *)g_shapeDat_v)
 #undef g_showCmd
@@ -2638,6 +2664,8 @@ extern struct GameData g_data;
 #define g_titleScore (*(int *)g_titleScore_v)
 #undef g_titleShown
 #define g_titleShown (*(int *)g_titleShown_v)
+#undef g_titleSpread
+#define g_titleSpread ((int *)g_titleSpread_v)
 #undef g_titleWins
 #define g_titleWins (*(int *)g_titleWins_v)
 #undef g_totalWeight
@@ -2686,6 +2714,10 @@ extern struct GameData g_data;
 #define g_undoStack ((int *)g_data.g_undoStack_)
 #undef g_unlit
 #define g_unlit (g_data.g_unlit_)
+#undef g_unlockTablesNet
+#define g_unlockTablesNet ((u8 *)g_unlockTablesNet_v)
+#undef g_unlockTablesSolo
+#define g_unlockTablesSolo ((u8 *)g_unlockTablesSolo_v)
 #undef g_unlockedLevel
 #define g_unlockedLevel (*(int *)g_unlockedLevel_v)
 #undef g_unusedAccountWord
@@ -2828,8 +2860,12 @@ extern struct GameData g_data;
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00390625f
 #define k_0_00390625f (g_rdata.k_0_00390625f_)
+#undef k_0_0078125f
+#define k_0_0078125f (g_rdata.k_0_0078125f_)
 #undef k_0_01f
 #define k_0_01f (g_rdata.k_0_01f_)
+#undef k_0_07f
+#define k_0_07f (g_rdata.k_0_07f_)
 #undef k_0_25f
 #define k_0_25f (g_rdata.k_0_25f_)
 #undef k_0_3
@@ -2840,6 +2876,8 @@ extern struct GameData g_data;
 #define k_1 (g_rdata.k_1_)
 #undef k_100
 #define k_100 (g_rdata.k_100_)
+#undef k_10000f
+#define k_10000f (g_rdata.k_10000f_)
 #undef k_100f
 #define k_100f (g_rdata.k_100f_)
 #undef k_10f
@@ -2862,10 +2900,16 @@ extern struct GameData g_data;
 #define k_200f (g_rdata.k_200f_)
 #undef k_20f
 #define k_20f (g_rdata.k_20f_)
+#undef k_2200f
+#define k_2200f (g_rdata.k_2200f_)
 #undef k_23
 #define k_23 (g_rdata.k_23_)
 #undef k_25
 #define k_25 (g_rdata.k_25_)
+#undef k_2_25f
+#define k_2_25f (g_rdata.k_2_25f_)
+#undef k_3000f
+#define k_3000f (g_rdata.k_3000f_)
 #undef k_38f
 #define k_38f (g_rdata.k_38f_)
 #undef k_3_6f
@@ -2874,10 +2918,14 @@ extern struct GameData g_data;
 #define k_45f (g_rdata.k_45f_)
 #undef k_49f
 #define k_49f (g_rdata.k_49f_)
+#undef k_4f
+#define k_4f (g_rdata.k_4f_)
 #undef k_500f
 #define k_500f (g_rdata.k_500f_)
 #undef k_50f
 #define k_50f (g_rdata.k_50f_)
+#undef k_550f
+#define k_550f (g_rdata.k_550f_)
 #undef k_60
 #define k_60 (g_rdata.k_60_)
 #undef k_60f
@@ -2896,12 +2944,18 @@ extern struct GameData g_data;
 #define k_cameraSnapDistance (g_rdata.k_cameraSnapDistance_)
 #undef k_clockRate
 #define k_clockRate (g_rdata.k_clockRate_)
+#undef k_m0_001f
+#define k_m0_001f (g_rdata.k_m0_001f_)
 #undef k_m0_5f
 #define k_m0_5f (g_rdata.k_m0_5f_)
 #undef k_m100f
 #define k_m100f (g_rdata.k_m100f_)
 #undef k_m1100f
 #define k_m1100f (g_rdata.k_m1100f_)
+#undef k_m1101f
+#define k_m1101f (g_rdata.k_m1101f_)
+#undef k_m1500f
+#define k_m1500f (g_rdata.k_m1500f_)
 #undef k_m50f
 #define k_m50f (g_rdata.k_m50f_)
 #undef k_m549_99f
@@ -2933,8 +2987,6 @@ extern struct GameData g_data;
 #define k_oneOver180 (*(double *)IMG(0x4a9540))
 #undef k_3600f
 #define k_3600f (*(float *)IMG(0x4a94c8))
-#undef k_10000f
-#define k_10000f (*(float *)IMG(0x4a9708))
 #undef k_0f
 #define k_0f (*(float *)IMG(0x4a93e8))
 #undef k_2f
@@ -2945,10 +2997,6 @@ extern struct GameData g_data;
 #define k_360f (*(float *)IMG(0x4a9460))
 #undef k_m1f
 #define k_m1f (*(float *)IMG(0x4a9474))
-#undef k_4f
-#define k_4f (*(float *)IMG(0x4a947c))
-#undef k_550f
-#define k_550f (*(float *)IMG(0x4a9498))
 #undef k_m2f
 #define k_m2f (*(float *)IMG(0x4a94a8))
 #undef k_0_01
@@ -2961,16 +3009,12 @@ extern struct GameData g_data;
 #define k_27_7778f (*(float *)IMG(0x4a9750))
 #undef k_1em8f
 #define k_1em8f (*(float *)IMG(0x4aa268))
-#undef k_0_0078125f
-#define k_0_0078125f (*(float *)IMG(0x4aa420))
 #undef k_1em8
 #define k_1em8 (*(double *)IMG(0x4aa458))
 #undef g_imp_wsprintfA
 #define g_imp_wsprintfA (*(void * *)IMG(0x4a92f0))
 #undef k_5f
 #define k_5f (*(float *)IMG(0x4a93d0))
-#undef k_0_07f
-#define k_0_07f (*(float *)IMG(0x4a946c))
 #undef k_1000000f
 #define k_1000000f (*(float *)IMG(0x4a94ec))
 #undef k_0_2f
@@ -2989,3 +3033,15 @@ extern struct GameData g_data;
 #define g_scene (*(Scene * *)IMG(0x9087b4))
 #undef g_white
 #define g_white (*(u32 *)IMG(0xa1f23c))
+#undef k_0_001f
+#define k_0_001f (*(float *)IMG(0x4a9480))
+#undef k_1500f
+#define k_1500f (*(float *)IMG(0x4a949c))
+#undef k_1500f_4a9700
+#define k_1500f_4a9700 (*(float *)IMG(0x4a9700))
+#undef k_1_95f
+#define k_1_95f (*(float *)IMG(0x4a9710))
+#undef k_400f
+#define k_400f (*(float *)IMG(0x4aa424))
+#undef k_5000f
+#define k_5000f (*(float *)IMG(0x4aa430))

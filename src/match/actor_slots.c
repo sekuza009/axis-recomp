@@ -948,7 +948,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	for (int k = 0; k < 5; k++)
 		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
-		GAME_VAR(u32, me + k_listAt[k]) = IMG(0x4a9754);
+		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;

@@ -87,7 +87,7 @@ int (pen_init)(const char *name)
 	for (int y = 0x48; g <= 105; y += 8)
 		for (int c = 0; c < 21; c++, g++)
 			pen_cell(fixed, g, c * 8, c * 8 + 8, y, y + 8);
-	const int *width = (const int *)IMG(0x4c5558);
+	const int *width = g_penPropWidths;
 	g = 1;
 	for (int y = 0; g <= 105; y += 14)
 		for (int c = 0, x = 0; c < 21; c++, g++, x += *width++)
@@ -176,7 +176,7 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	int height;
 	if (font) {
 		topLeft = (const u8 *)OBJ(g_penPropTopLeft); topRight = (const u8 *)OBJ(g_penPropTopRight); bottomRight = (const u8 *)OBJ(g_penPropBottomRight);
-		bottomLeft = (const u8 *)OBJ(g_penPropBottomLeft); widths = (const int *)IMG(0x4c5558); height = 14;
+		bottomLeft = (const u8 *)OBJ(g_penPropBottomLeft); widths = g_penPropWidths; height = 14;
 	} else {
 		topLeft = (const u8 *)OBJ(g_penFixedTopLeft); topRight = (const u8 *)OBJ(g_penFixedTopRight); bottomRight = (const u8 *)OBJ(g_penFixedBottomRight);
 		bottomLeft = (const u8 *)OBJ(g_penFixedBottomLeft); widths = g_penFixedWidths; height = 8;

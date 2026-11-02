@@ -236,7 +236,7 @@ void (armc_buildPartLists)(void)
 	static const u32 lengths[5] = { ADDR(g_headCount), ADDR(g_chestCount), ADDR(g_armCount), ADDR(g_legCount), ADDR(g_armcLastPart) };
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
-	u32 tables = network ? IMG(0x4aebd0) : IMG(0x4ad5f0);
+	u32 tables = network ? OBJ(g_unlockTablesNet) : OBJ(g_unlockTablesSolo);
 #define TABLE(k, lv) ((const Unlock *)(RELOC(tables) + (k) * 0x320) + (lv))
 	if (level >= 0) {
 		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */

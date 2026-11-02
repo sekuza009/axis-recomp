@@ -238,7 +238,7 @@ int (text_hangulConvert)(u32 code)
 	if (hi == 0xa4) {
 		for (int k = 0; k < 39; k++)
 			if ((u16)code == GAME_VAR(u16, 0x4b3d8c + k * 2))
-				return IMG(0x4b0000) | GAME_VAR(u16, 0x4b3ddc + k * 2);
+				return (OBJ(g_unlockTablesNet) + 0x1430) | GAME_VAR(u16, 0x4b3ddc + k * 2);
 		return IMG(0x4b8761);
 	}
 	int ok = lo >= 0xa1 && lo <= 0xfe;

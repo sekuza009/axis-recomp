@@ -79,8 +79,8 @@
 #define glTranslatef_bits(x, y, z) IMPORT(0x4a9214, void, u32, u32, u32)(x, y, z)
 #define glScalef_bits(x, y, z) IMPORT(0x4a9200, void, u32, u32, u32)(x, y, z)
 /* GLU, through the game's jump to its import */
-#define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) ((void (STDCALL *)(double, double, double, double, double, double, double, \
-	double, double))*(const u32 *)IMG(0x4a904c))(ex, ey, ez, cx, cy, cz, ux, uy, uz)
+#define gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz) IMPORT(0x4a904c, void, double, double, double, double, double, double, \
+	double, double, double)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT(0x4a9258, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
 #define glTranslatef_stored(v) IMPORT(0x4a9214, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
@@ -584,7 +584,6 @@ typedef struct { float r, g, b, a; } Colour;
 /* the title and profile screens */
 /* the title emblem (menu_title.c) */
 #define g_titleTextures (g_introTextures)     /* eight: the base picture's quarters, then the pulsing layer's */
-#define g_titleSpread ((const int *)IMG(0x4b065c))       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
 /* key bindings (key codes), named by their use in the menus */
 #define g_keyClick g_dikEnter           /* fire / click: the button under the pointer */
 #define g_keyOk g_dikO              /* confirms a page */
@@ -937,7 +936,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define setup_frameCrosshairPage() GAME_FN(setup_frameCrosshairPage, 0x4278d0, void, void)()
 
 /* ---- DirectInput setup (app/devices.c) ---- */
-#define DirectInputCreateA(instance, version, out, outer) ((long (STDCALL *)(void *, u32, void *, void *))*(const u32 *)IMG(0x4a9018))(instance, version, out, outer)
+#define DirectInputCreateA(instance, version, out, outer) IMPORT(0x4a9018, long, void *, u32, void *, void *)(instance, version, out, outer)
 #define input_initKeyboard(window) GAME_FN(input_initKeyboard, 0x401310, int, void *)(window)
 #define input_createMouse(window) GAME_FN(input_createMouse, 0x4013a0, int, void *)(window)   /* the mouse */
 

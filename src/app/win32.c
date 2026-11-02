@@ -255,7 +255,7 @@ int (glWindow_setupPixelFormat)(void *dc)
 		return 0;
 	}
 	if (!SetPixelFormat(dc, format, pfd)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)IMG(0x4c4df8));
+		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4df8, "glWindow SetPixelFormat() failed - se..."));
 		return 0;
 	}
 	return 1;
@@ -370,7 +370,7 @@ int (app_init)(void *inst, int show)
 	wc.icon = IMPORT(0x4a92c4, void *, void *, const char *)(inst, NULL);   /* LoadIconA */
 	wc.cursor = IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
 	wc.brush = IMPORT(0x4a903c, void *, int)(4);   /* GetStockObject(BLACK_BRUSH) */
-	wc.menu = wc.name = (const char *)IMG(0x4b0714);
+	wc.menu = wc.name = (const char *)STR(0x4b0714, "AXIS");
 	int extended;   /* (GetVersion asked up to three times, as the original does) */
 	if (GetVersion() < 0x80000000)
 		extended = 0;
@@ -386,7 +386,7 @@ int (app_init)(void *inst, int show)
 
 	memcpy((void *)OBJ(g_windowClass), &wc, sizeof wc);
 	g_hWndMain = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
-		(0, (const char *)IMG(0x4b0714), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
+		(0, (const char *)STR(0x4b0714, "AXIS"), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
 	if (!g_hWndMain)
 		return 0;
 	g_hInstance = inst;
@@ -535,7 +535,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	IMPORT(0x4a910c, void, void *)((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
 	g_startTicks = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
 	Sleep(2000);
-	if (FindWindowA((const char *)IMG(0x4b0714), NULL)) {
+	if (FindWindowA((const char *)STR(0x4b0714, "AXIS"), NULL)) {
 		MessageBoxA(NULL, (const char *)STR(0x4b2a00, "This application is already run!!"), (const char *)STR(0x4b2554, "Warning"), 0);
 		return 0;
 	}

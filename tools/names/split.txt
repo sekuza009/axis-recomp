@@ -1161,3 +1161,16 @@ g_unusedArenaWord
 g_gameConnectTexture
 g_lobbyLeavePacket
 g_netOneByte
+g_unlockTablesSolo
+g_unlockTablesNet
+g_setupWallTurns
+g_titleSpread
+g_penPropWidths
+g_ptxZigzag
+g_ptxDcCodes
+g_ptxAcCodes
+g_ptxDequantBase
+g_ptxQuantBase
+g_lobbyBlinkRate
+g_keyNames
+g_sentChatBlock

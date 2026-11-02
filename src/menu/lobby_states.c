@@ -63,7 +63,7 @@ void (lobby_drawArenaTitle)(void)
 	if (!strcmp(g_playerName, (const char *)STR(0x4ad4a4, "AXIS ARENA"))) {
 		memset((void *)OBJ(g_playerName), 0, 32);
 		strcpy(g_playerName, g_cfgPlayerName);
-		strcat(g_playerName, (const char *)IMG(0x4ad49c));
+		strcat(g_playerName, (const char *)STR(0x4ad49c, " room"));
 		map = g_arenaMap;
 	}
 	memset((void *)OBJ(g_newArenaName), 0, 32);

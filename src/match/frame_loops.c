@@ -478,7 +478,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	u32 size = 0;   /* where the size constant is */
 	switch (k / 5) {
 	case 0:
-		size = k == 2 ? IMG(0x4aa42c) : k == 3 ? IMG(0x4aa430) : 0;
+		size = k == 2 ? ADDR(k_3000f) : k == 3 ? ADDR(k_5000f) : 0;
 		break;
 	case 1:
 		if (k == 9)
@@ -488,10 +488,10 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		size = k == 25 || k == 26 ? ADDR(k_2000f) : 0;
 		break;
 	case 6:
-		size = k <= 31 ? OBJ(k_1000f) : IMG(0x4a949c);
+		size = k <= 31 ? OBJ(k_1000f) : ADDR(k_1500f);
 		break;
 	case 7:
-		size = k == 35 ? IMG(0x4aa430) : k == 36 ? IMG(0x4aa42c) : k <= 38 ? IMG(0x4a949c) : 0;
+		size = k == 35 ? ADDR(k_5000f) : k == 36 ? ADDR(k_3000f) : k <= 38 ? ADDR(k_1500f) : 0;
 		break;
 	}
 	if (size) {
@@ -868,7 +868,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		break;
 	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
 	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, ADDR(k_200f)); break;
-	case 45: particle_trail(p, desc, IMG(0x4aa424)); break;
+	case 45: particle_trail(p, desc, ADDR(k_400f)); break;
 	}
 }
 #undef P

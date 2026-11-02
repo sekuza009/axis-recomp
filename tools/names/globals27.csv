@@ -1,0 +1,2 @@
+# step 3b: net_sendChat's logged block (net_logMessage's out pointer)
+0x9fd944,char *,g_sentChatBlock

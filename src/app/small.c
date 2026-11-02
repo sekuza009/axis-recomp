@@ -96,7 +96,7 @@ static void free_owned(void *self)
 int THISCALL (Skeleton_release)(void *self) { free_owned(self); Skeleton_clear(self); return 0; }
 int THISCALL (partList_release)(void *self) { free_owned(self); partList_clear(self); return 0; }
 /* 0x46f470: UnitPoseInfo's destructor (vtable 0x4a9754) */
-int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = IMG(0x4a9754); return partList_release(self); }
+int THISCALL (UnitPoseInfo_dtor)(u32 *self) { self[0] = VT(UnitPoseInfo, 0x4a9754); return partList_release(self); }
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
 u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)RELOC(self[1])) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
@@ -265,7 +265,7 @@ void *THISCALL (ResourceSet_initLists)(u8 *self)
 {
 	static const int lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };
 	for (int k = 0; k < 8; k++) {
-		FIELD(u32, self, lists[k]) = IMG(0x4a9754);
+		FIELD(u32, self, lists[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(self + lists[k]);
 	}
 	return self;

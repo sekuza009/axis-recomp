@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define g_table g_ptxTable           /* the Huffman table set in use */
-#define g_zigzag ((const int *)IMG(0x4c59ec))
+#define g_zigzag (g_ptxZigzag)
 
 /* 0x46f230: *out = the next n bits; returns the new position */
 int (ptx_readBits)(int *out, int n)
@@ -42,7 +42,7 @@ void (ptx_readDcDiff)(int *out)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(IMG(0x4c5af0) + g_table * 96);
+	const int *code = (const int *)(OBJ(g_ptxDcCodes) + g_table * 96);
 	for (k = 0; k < 16; k++, code += 2) {
 		len = code[0];
 		if (v >> ((16 - len) & 31) == code[1])
@@ -57,7 +57,7 @@ void (ptx_readAcSymbol)(int *out, int *run)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(IMG(0x4c5bb0) + (g_table << 11));
+	const int *code = (const int *)(OBJ(g_ptxAcCodes) + (g_table << 11));
 	for (k = 0; k < 256; k++, code += 2) {
 		len = code[0];
 		if (len && v >> ((16 - len) & 31) == code[1])
@@ -206,7 +206,7 @@ void (ptx_inverseDct)(const int *in, u8 *out)
    stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
-	void *err = (void *)IMG(0x4d0878);   /* stderr */
+	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
 	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
 	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), GAME_VAR(u32, 0x4d0780 + g_currentStageName * 4));
 	if (format && strlen(format)) {
@@ -224,7 +224,7 @@ int (ptx_crtlError)(int code, const char *format, ...)
 /* 0x46e260: a video error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_error)(int code, const char *format, ...)
 {
-	void *err = (void *)IMG(0x4d0878);   /* stderr */
+	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
 	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4b182c, "\n"));
 	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fd0, "ERROR: "));
 	va_list args;
