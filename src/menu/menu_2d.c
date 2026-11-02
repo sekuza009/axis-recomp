@@ -177,7 +177,7 @@ u32 (gfx_setMenuCamera)(void)
 	IMPORT(0x4a9214, void, float, float, float)(x, y, z);   /* glTranslatef */
 	glLoadIdentity();
 	const float *eye = (const float *)ADDR(g_menuCameraPos), *at = (const float *)ADDR(g_menuCameraLook);
-	return ((u32 (STDCALL *)(double, double, double, double, double, double, double, double, double))*(const u32 *)IMG(0x4a904c))(
+	return IMPORT(0x4a904c, u32, double, double, double, double, double, double, double, double, double)(
 		eye[0], eye[1], eye[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);   /* gluLookAt */
 }
 

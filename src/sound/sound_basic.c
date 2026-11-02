@@ -319,7 +319,7 @@ Sound *(sound_loadWav)(const char *name)
    released again when the buffer will not play) */
 int (sound_init)(void *hwnd)
 {
-	if (((int (STDCALL *)(void *, void **, void *))*(const u32 *)IMG(0x4a9020))(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
+	if (IMPORT(0x4a9020, int, void *, void **, void *)(NULL, (void **)ADDR(g_directSound), NULL))   /* DirectSoundCreate */
 		return 0;
 	void *ds = g_directSound;
 	if (COM(ds, 0x18, int, void *, u32)(ds, hwnd, 2))   /* SetCooperativeLevel(DSSCL_PRIORITY) */
