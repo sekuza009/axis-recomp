@@ -3,9 +3,7 @@
 #include "../game.h"
 
 #define g_weaponList ((const int *)IMG(0x4dc79c))          /* the weapons on offer */
-#define g_weaponCount GAME_VAR(int, 0x4dc244)
 #define g_extraList ((const int *)IMG(0x4dcca4))           /* the other items on offer */
-#define g_extraCount GAME_VAR(int, 0x4dc778)
 
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)

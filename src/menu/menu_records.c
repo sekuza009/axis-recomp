@@ -285,7 +285,7 @@ void (roomList_fillPage)(void)
 }
 
 /* ---- the skirmish list: eight rows shown from entry top, the cursor on row; sel = top + row ---- */
-#define sk_top GAME_VAR(int, 0x9f16bc)
+#define sk_top g_missionTop
 #define sk_row GAME_VAR(int, 0x9f1058)
 #define sk_sel g_missionPicked
 #define sk_count g_missionCount

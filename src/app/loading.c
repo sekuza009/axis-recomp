@@ -4,10 +4,7 @@
 #include <string.h>
 
 #define g_loadTimer ((void *)IMG(0xa0e948))                /* its own game-time timer */
-#define g_loadProgress GAME_VAR(float, 0xa0ea88)
 #define g_loadText ((char *)ADDR(g_statusLine))
-#define g_loadTexture GAME_VAR(int, 0xa0e980)         /* the backdrop's texture id */
-#define g_loadFade GAME_VAR(float, 0xa0e984)          /* the fade's time, 0 .. 1 s */
 #define ONE k_1f
 
 /* one frame of a fade: the screen at its progress, under a black quad (alpha 1 - time fading in, time fading out),
@@ -60,7 +57,6 @@ void (loading_drawCylinder)(int mode, int unused, const char *text)
 
 #define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
 #define Vec3_rotateAxis(v, axis, angle) GAME_THISFN(Vec3_rotateAxis, 0x4677c0, void, float *, int, int)(v, axis, angle)   /* angle in tenths of a degree */
-#define g_loadGame GAME_VAR(u8 *, 0xa0ea8c)            /* the game being loaded */
 
 /* a point of the cylinder: radius 400 about the z axis at angle (tenths of a degree), at depth z */
 static void cylinder_vertex(int angle, u32 z)

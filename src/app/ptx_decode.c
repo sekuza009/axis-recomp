@@ -8,7 +8,6 @@
 
 #define g_table g_ptxTable           /* the Huffman table set in use */
 #define g_zigzag ((const int *)IMG(0x4c59ec))
-#define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 
 /* 0x46f230: *out = the next n bits; returns the new position */
 int (ptx_readBits)(int *out, int n)

@@ -3,9 +3,8 @@
 #include "../game.h"
 #include "key_repeat.h"
 
-#define g_missionState GAME_VAR(int, 0x9f62f8)        /* (by use) the mission select: 0 and 1 not up */
-#define g_missionBusy GAME_VAR(int, 0x9f6300)
-#define g_missionBriefing GAME_VAR(int, 0x9f62e0)     /* (by use) a mission's briefing is shown */
+#define g_missionState g_missionPage   /* (by use) the mission select: 0 and 1 not up */
+#define g_missionBriefing g_missionStarted   /* (by use) a mission's briefing is shown */
 
 /* ---- the start-up screen: the logo (texture 0x76d3f0, on a quad 320 x 256 at (160, 60)) over the clear colour
    0x76d350, blended ---- */

@@ -16,7 +16,6 @@ typedef struct {
 } Sound;                 /* 100 bytes */
 
 #define g_menuSounds ((Sound *const *)IMG(0x4dd4d4))
-#define g_music GAME_VAR(void *, 0xa0e670)            /* the music graph */
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
 void (dsbuf_play)(Sound *sound)

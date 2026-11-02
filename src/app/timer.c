@@ -2,9 +2,6 @@
    counter's low 32 bits are enough between two frames), and a wait on it. */
 #include "../game.h"
 
-#define g_timerFrequency GAME_VAR(u64, 0x4df030)     /* QueryPerformanceFrequency's result */
-#define g_timerShift GAME_VAR(int, 0x67ef1c)         /* how far the counter is shifted right */
-#define g_timerTick GAME_VAR(double, 0x4ded58)       /* seconds per (shifted) tick */
 #define TIMER_MAX_FREQUENCY k_2000000
 #define ONE k_1
 #define FRAME_RATE k_60        /* 60: timer_now's seconds to 1/60 s frames */
@@ -45,7 +42,6 @@ void (timer_waitFrames)(double frames)
 long double (timer_now)(void)
 {
 #define g_time g_clockNow
-#define g_lastCount GAME_VAR(u32, 0x9dbf08)
 	u32 counter[2];
 	IMPORT(0x4a9140, int, u32 *)(counter);   /* QueryPerformanceCounter */
 	int shift = g_timerShift;

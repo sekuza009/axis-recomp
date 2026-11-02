@@ -15,7 +15,7 @@ import collections, glob, os, re, struct, sys
 R = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 LO, HI = 0x4a9000, 0xb6b000
 SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'i16': 2, 'int': 4, 'u32': 4, 'i32': 4, 'float': 4,
-         'long': 4, 'double': 8, 'va_list': 4, 'Cleanup': 4}
+         'long': 4, 'double': 8, 'u64': 8, 'i64': 8, 'va_list': 4, 'Cleanup': 4}
 
 
 def size_of(t):
@@ -33,7 +33,7 @@ for m in re.finditer(r'#define (\w+) GAME_VAR\(([\w \*]+), (0x[0-9a-f]+)\)', ope
 starts = {a: n for n, (t, a) in names.items()}
 extent = {n: size_of(t) or 0 for n, (t, a) in names.items()}
 # the arrays, buffers and records of src/objects.h (tools/names/objects.txt), with their extents
-OBJ_SIZES = {'char': 1, 'u8': 1, 'signed_char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'Colour': 16}
+OBJ_SIZES = {'char': 1, 'u8': 1, 'signed_char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'Colour': 16}
 for line in open(os.path.join(R, 'tools', 'names', 'objects.txt')):
 	a, ty, n, name = line.split()
 	names[name] = ('u8', int(a, 16))

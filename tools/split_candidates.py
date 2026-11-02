@@ -9,7 +9,7 @@ canary (standalone/main.c)."""
 import collections, glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'i32': 4, 'float': 4, 'double': 8}
+SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'i32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8}
 def size_of(t):
 	t = re.sub(r'\s+', ' ', t.strip()).replace('const ', '')
 	return 4 if t.endswith('*') else SIZES.get(t, 4)

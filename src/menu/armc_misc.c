@@ -4,8 +4,6 @@
 #include "../wide.h"
 #include <string.h>
 
-#define g_armcAngle GAME_VAR(float, 0x4dbc04)          /* the preview's turn */
-#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)      /* (by use) the "please wait" box was shown: the session is made next */
 
 /* 0x41dfb0: the parts page: the preview, the part lists (armc_resetSeraphimParts, a no-op in the patched game) and, unless the
    interface is hidden (Ctrl+Alt+M), the frame and the stats panel */
@@ -446,10 +444,10 @@ typedef struct {
 	float speed;
 } Panel;                 /* 0x58 bytes */
 #define g_panels ((Panel *)IMG(0x4dc550))
-#define g_panelSize2 GAME_VAR(float, 0x4b0708)   /* panels 2 and 3 breathe: a half width growing by its rate, */
-#define g_panelSize3 GAME_VAR(float, 0x4b0704)   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
-#define g_panelRate2 GAME_VAR(float, 0x4b0710)
-#define g_panelRate3 GAME_VAR(float, 0x4b070c)
+#define g_panelSize2 g_flareSizeA   /* panels 2 and 3 breathe: a half width growing by its rate, */
+#define g_panelSize3 g_flareSizeB   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
+#define g_panelRate2 g_flareStepA
+#define g_panelRate3 g_flareStepB
 #define F(addr) ((const float *)RELOC(addr))
 
 /* a square of half width size: corners (-s, s), (s, s), (s, -s), (-s, -s) in x, z */

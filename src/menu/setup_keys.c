@@ -586,7 +586,7 @@ static void slider_press(void)
    uses the eax it leaves */
 void (setup_drawControlSlider)(void)
 {
-#define TIMER GAME_VAR(float, 0x4dda44)
+#define TIMER g_cursorBlink
 	if (g_mouseClick) {
 		TIMER = 0;
 		slider_press();

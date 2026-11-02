@@ -6,7 +6,6 @@
 typedef struct { i32 chosen; i32 type; } MapChoice;
 #define g_mapChoices ((MapChoice *)IMG(0x4d7358))
 #define g_mapChoicesKept ((MapChoice *)IMG(0x4d9508))
-#define g_mapListKept GAME_VAR(int, 0x4d94fc)         /* (by use) set once a list has been kept */
 
 /* the maps that are never offered */
 static void clear_unused(void)
@@ -129,7 +128,6 @@ void (arena_stepMap)(int dir) { map_step(dir, ADDR(g_newArenaKind), ADDR(g_newAr
 void (room_stepMap)(int dir) { map_step(dir, ADDR(g_roomCustom), ADDR(g_roomMap)); }
 
 /* ---- the map list's drawing ---- */
-#define g_mapTop GAME_VAR(int, 0x4d7350)      /* the first map shown */
 #define cyan_text(a) set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, a)
 
 /* a map's cell from x0 to x1 in the row at y: on a red bar (yellow text) when the map is chosen */

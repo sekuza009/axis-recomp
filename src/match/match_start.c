@@ -5,7 +5,7 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-#define g_mapIndex GAME_VAR(int, 0x9dad94)
+#define g_mapIndex g_missionStage
 
 static void set_round(Round *r, int map, int mode, int score, int time)
 {

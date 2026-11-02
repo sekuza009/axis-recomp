@@ -300,7 +300,7 @@ def generate(region_name, section, base, d, comment):
 
 
 RUNS = {}
-BASIC = {'u8': 1, 'u16': 2, 'u32': 4, 'int': 4, 'float': 4, 'double': 8, 'char': 1, 'signed char': 1, 'short': 2,
+BASIC = {'u8': 1, 'u16': 2, 'u32': 4, 'int': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'char': 1, 'signed char': 1, 'short': 2,
          'i32': 4, 'va_list': 4}
 
 

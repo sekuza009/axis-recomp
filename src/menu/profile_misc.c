@@ -627,8 +627,6 @@ void (profileList_keys)(void)
    callers that ignore it */
 void (profileList_mouse)(void)
 {
-#define g_mouseX GAME_VAR(int, 0x4ded68)
-#define g_mouseY GAME_VAR(int, 0x4ded6c)
 	if (g_mouseClick) {
 		g_cursorBlink = 0;
 		switch (GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */

@@ -397,7 +397,7 @@ void (console_init)(void)
 	g_viewAspect = f32((long double)g_screenW / (long double)g_screenH);
 	sys_checkClockTampering();
 	glWindow_init((const char *)STR(0x4b04a0, "Axis Console"), g_screenW, g_screenH, g_videoDepth, 0x10, 0, g_hWndMain, (*(int *)&g_desktopDC));
-#define scene GAME_VAR(Scene *, 0x9087b4)   /* read at each use: loading the map makes the match's scene */
+#define scene g_scene   /* read at each use: loading the map makes the match's scene */
 	if (g_replayRunning) {
 		g_matchMode = 0;
 		app_requireCd(scene, 0, 3);

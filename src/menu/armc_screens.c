@@ -9,7 +9,7 @@
 #define X1 g_armcSliderLeft
 #define Y1 g_armcStatsPanelBottom
 #define K(addr) ((const float *)RELOC(addr))
-#define g_slot GAME_VAR(int, 0x4dc4b0)
+#define g_slot g_armcColourSlot
 #define SLOT (g_armcColours + g_slot * 6)
 #define glVertex(x, y) menu_vertex(x, y)
 

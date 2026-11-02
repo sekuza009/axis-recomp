@@ -68,8 +68,6 @@ int (glWindow_resize)(int width, int height)
 	return 1;
 }
 
-#define g_glWindowMade GAME_VAR(int, 0xa0e930)        /* the window exists (it is made once) */
-#define g_glWindow GAME_VAR(void *, 0xa0e934)
 #define g_glTitle ((char *)IMG(0xa0e81c))                   /* also the window class's, icon's and menu's name */
 
 /* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
@@ -135,11 +133,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 
 #define ChangeDisplaySettingsA(mode, flags) IMPORT(0x4a9314, int, void *, u32)(mode, flags)
 #define GetDeviceCaps(dc, index) IMPORT(0x4a9034, int, void *, int)(dc, index)
-#define g_modeChanged GAME_VAR(int, 0xa0e940)          /* the display mode was switched (to be put back) */
-#define g_glDc GAME_VAR(void *, 0xa0e938)
-#define g_desktopW GAME_VAR(int, 0xa0e92c)             /* the desktop's mode before the switch */
-#define g_desktopH GAME_VAR(int, 0xa0e814)
-#define g_desktopBits GAME_VAR(int, 0xa0e91c)
+#define g_glDc g_hdc
 
 /* a DEVMODEA asking for width x height (and bits). (The original fills only these fields and leaves the
    rest as the stack had it; here it is zeroed.) */
@@ -422,8 +416,7 @@ int (app_init)(void *inst, int show)
    rest go to DefWindowProcA */
 long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
-#define g_dc GAME_VAR(void *, 0xa0e938)
-#define g_context GAME_VAR(void *, 0xa0e93c)
+#define g_dc g_hdc
 #define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
 	u32 rect[4], paint[0x10];
@@ -630,8 +623,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
      taken from it. */
 long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
-#define g_glContext GAME_VAR(void *, 0x9087b8)
-#define g_exitMode GAME_VAR(int, 0x4df048)
+#define g_exitMode g_exitCode
 #define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
 #define ShowWindow(wnd, how) IMPORT(0x4a92bc, int, void *, int)(wnd, how)

@@ -353,8 +353,6 @@ void (setup_crosshairScreen)(void)
 
 /* ---- the tunnel behind the setup pages ---- */
 #define glVertex3f(x, y, z) IMPORT(0x4a9210, void, float, float, float)(x, y, z)
-#define g_tunnelPulse GAME_VAR(float, 0x9db978)       /* bounces 0 .. 100 */
-#define g_scroll GAME_VAR(float, 0x4e14fc)      /* runs 0 .. 200 */
 
 /* a wall of scrolling stripes at x = -29.9 (or 29.9 on the right), h either side of the floor, two quads either
    side of the moving seam z = 40 - 0.4 scroll */

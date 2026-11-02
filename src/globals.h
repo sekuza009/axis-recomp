@@ -969,3 +969,129 @@
 #define g_dikHome_2 GAME_VAR(int, 0x9dae6c)
 #define g_dikBackslash GAME_VAR(int, 0x9dae78)
 #define g_dikNumpadStar GAME_VAR(int, 0x9db0a8)
+/* moved from game.h and the files' own defines (tools/promote_locals.py) */
+#define g_mouseTaken GAME_VAR(int, 0x4ad17c)   /* (by use) 0: the mouse is let go instead of taken */
+#define g_pulse GAME_VAR(float, 0x4b06fc)   /* the bands' colour pulse, 0.05 .. 0.95 */
+#define g_pulseStep GAME_VAR(float, 0x4b0700)
+#define g_flareSizeB GAME_VAR(float, 0x4b0704)   /* flare 3's half-size, 10 .. 48 */
+#define g_flareSizeA GAME_VAR(float, 0x4b0708)   /* flare 2's */
+#define g_flareStepB GAME_VAR(float, 0x4b070c)
+#define g_flareStepA GAME_VAR(float, 0x4b0710)
+#define g_frameTime GAME_VAR(float, 0x4b071c)   /* the last frame's time in 1/60 s (menu_frame; 1 after a stall) */
+#define g_directInput GAME_VAR(void *, 0x4d1e98)
+#define g_keyboard GAME_VAR(void *, 0x4d1fa0)
+#define g_mouse GAME_VAR(void *, 0x4d1fa4)
+#define g_keyboardActive GAME_VAR(int, 0x4d1fa8)   /* (by use) the window is active: the keyboard may be taken */
+#define g_mouseActive GAME_VAR(int, 0x4d1fac)
+#define g_textCharWidth GAME_VAR(int, 0x4d23d8)   /* units per character of the font being drawn */
+#define g_mapTop GAME_VAR(int, 0x4d7350)   /* the first map shown */
+#define g_mapListKept GAME_VAR(int, 0x4d94fc)   /* (by use) set once a list has been kept */
+#define g_lobbySubState GAME_VAR(int, 0x4db51c)   /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
+#define g_armcAngle GAME_VAR(float, 0x4dbc04)   /* the preview's turn */
+#define g_armcPartSlot GAME_VAR(int, 0x4dbc6c)   /* 0 head, 1 chest, 2 arm, 3 leg, 4 booster, 5 weapons */
+#define g_weaponCount GAME_VAR(int, 0x4dc244)
+#define g_armcColourSlot GAME_VAR(int, 0x4dc4b0)   /* the colour slot being edited */
+#define g_extraCount GAME_VAR(int, 0x4dc778)
+#define g_armcMode GAME_VAR(int, 0x4dc798)   /* the ARM CENTER's page: 1 the parts, 2 the weapons, 3 the colours, 4 ... */
+#define g_armcSessionDue GAME_VAR(int, 0x4dc86c)   /* (by use) the "please wait" box was shown: the session is made next */
+#define g_armcHideInterface GAME_VAR(int, 0x4dd078)   /* Ctrl+Alt+M: the screen without its interface */
+#define g_menuVolume GAME_VAR(int, 0x4dd984)   /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
+#define g_cursorBlink GAME_VAR(float, 0x4dda44)   /* the text cursor's blink clock */
+#define g_setupTab GAME_VAR(int, 0x4ddac8)   /* 0 sound, 1 graphics, 2 controls, 0x29a the top page */
+#define g_emblemPulse GAME_VAR(float, 0x4de1d8)   /* its change per time unit (+-0.018) */
+#define g_emblemAlpha GAME_VAR(float, 0x4de1e0)   /* the pulsing layer's alpha (0.2 .. 0.9) */
+#define g_logoFade GAME_VAR(float, 0x4de1e8)   /* the logo fading in, 0 .. 1 */
+#define g_logoFadeLate GAME_VAR(float, 0x4de1ec)   /* (unclear) a faster fade from 0.2, not read here */
+#define g_timerTick GAME_VAR(double, 0x4ded58)   /* seconds per (shifted) tick */
+#define g_mouseX GAME_VAR(int, 0x4ded68)   /* the pointer, 640 x 480 units */
+#define g_mouseY GAME_VAR(int, 0x4ded6c)
+#define g_titleShown GAME_VAR(int, 0x4df01c)
+#define g_timerFrequency GAME_VAR(u64, 0x4df030)   /* QueryPerformanceFrequency's result */
+#define g_cursorFrame GAME_VAR(int, 0x4df03c)   /* the mouse pointer's animation frame, 0..14 */
+#define g_exitCode GAME_VAR(int, 0x4df048)   /* (by use) why the game closed: 1 to start again with new graphics */
+#define g_dialogPending GAME_VAR(int, 0x4df900)   /* a message box is up: it takes the keys */
+#define g_cursorFrameTime GAME_VAR(float, 0x4df910)   /* frame time collected towards the next frame (5 units) */
+#define g_titleFrames GAME_VAR(int, 0x4e0458)   /* frames the title has been shown */
+#define g_screenH GAME_VAR(int, 0x4e045c)
+#define g_scroll GAME_VAR(float, 0x4e14fc)   /* runs 0 .. 200 */
+#define g_cursorTexture GAME_VAR(int, 0x4e152c)   /* the pointer's sprite sheet (texture id) */
+#define g_chatFieldFlag GAME_VAR(int, 0x4e1868)   /* (unclear) set for the short fields (passwords, rules), clear for names */
+#define g_tunnelTexture GAME_VAR(int, 0x4e186c)
+#define g_viewAspect GAME_VAR(float, 0x4e1870)   /* the 3D view's aspect ratio (gluPerspective), width / height */
+#define g_screenW GAME_VAR(int, 0x5b1998)
+#define g_lastScreen GAME_VAR(int, 0x67ef0c)   /* the screen whose music / state was set up last */
+#define g_timerShift GAME_VAR(int, 0x67ef1c)   /* how far the counter is shifted right */
+#define g_nextScreen GAME_VAR(int, 0x67ef20)   /* (by use) the front-end screen to go to (300 the main menu) */
+#define g_highlightX GAME_VAR(int, 0x67ef34)
+#define g_highlightY GAME_VAR(int, 0x67fb38)
+#define g_keysBlocked GAME_VAR(int, 0x680370)   /* (unclear) the menus ignore their keys while set */
+#define g_viewAngle GAME_VAR(float, 0x68038c)   /* the 3D view's vertical angle (degrees) */
+#define g_paused GAME_VAR(int, 0x68039c)   /* (unclear) input off: the window is inactive or a text box has the keys */
+#define g_repeatDown GAME_VAR(float, 0x680bb4)
+#define g_highlightSize GAME_VAR(float, 0x680bc0)
+#define g_dialogChoice GAME_VAR(int, 0x74de1c)   /* 0 the left button, 1 the right one */
+#define g_fontHanJungJong GAME_VAR(int, 0x76d360)   /* Hangul vowels and finals */
+#define g_cageTexture GAME_VAR(int, 0x76d36c)
+#define g_repeatUp GAME_VAR(float, 0x76d37c)   /* frames until a held up / down key steps again */
+#define g_screen GAME_VAR(int, 0x76d3e8)   /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
+                                                         500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
+#define g_logoTexture GAME_VAR(int, 0x76d3f0)
+#define g_localPlayer GAME_VAR(int, 0x76d41c)   /* (by use) the local player's index in the room's lists */
+#define g_highlightShown GAME_VAR(int, 0x76d42c)
+#define g_fontAscii GAME_VAR(int, 0x76d448)   /* ASCII, 5- and 8-unit fonts */
+#define g_scene GAME_VAR(Scene *, 0x9087b4)   /* the scene object (0 outside a match) */
+#define g_glContext GAME_VAR(void *, 0x9087b8)
+#define g_dialogOpen GAME_VAR(int, 0x90d1c4)   /* a dialog of the current screen is open */
+#define g_chatCaretX GAME_VAR(int, 0x9da3d8)   /* where the line being typed is drawn (menu units) */
+#define g_chatCaretY GAME_VAR(int, 0x9da3dc)
+#define g_menuFade GAME_VAR(float, 0x9da434)   /* the menus' fade-in: the keys wait for it to reach 0 */
+#define g_texturesOff GAME_VAR(int, 0x9da494)   /* (by use) set: the menus' 3D background is drawn untextured (left out) */
+#define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
+#define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)   /* ASCII, 16- and 32-unit fonts */
+#define g_missionStage GAME_VAR(int, 0x9dad94)   /* the mission stage being played */
+#define g_fontHanCho GAME_VAR(int, 0x9dae1c)   /* font textures (ids): Hangul initial consonants */
+#define g_language GAME_VAR(int, 0x9dae74)   /* 2: the small font for labels */
+#define g_tunnelPulse GAME_VAR(float, 0x9db978)   /* bounces 0 .. 100 */
+#define g_lastCount GAME_VAR(u32, 0x9dbf08)
+#define g_chatLength GAME_VAR(int, 0x9dbf10)   /* characters in g_chatLine */
+#define g_hChatEdit GAME_VAR(void *, 0x9dd888)   /* the hidden EDIT control typing goes to */
+#define g_missionTop GAME_VAR(int, 0x9f16bc)   /* the first row shown */
+#define g_missionStarted GAME_VAR(int, 0x9f62e0)
+#define g_missionPage GAME_VAR(int, 0x9f62f8)   /* 0 / 1: no keys; 2: no list refresh */
+#define g_missionBusy GAME_VAR(int, 0x9f6300)
+#define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
+#define g_profile9f6828 GAME_VAR(int, 0x9f6828)   /* (unclear) the same */
+#define g_profileDialog2X GAME_VAR(int, 0x9f6834)   /* page 5's dialog frame */
+#define g_profileIntro GAME_VAR(int, 0x9f6838)   /* the profile screen's intro animation runs */
+#define g_profileDialog2Y GAME_VAR(int, 0x9f683c)
+#define g_emblemCursor GAME_VAR(int, 0x9f8d30)   /* page 6: 0..8, row by row */
+#define g_emblemMoved GAME_VAR(int, 0x9f8d68)
+#define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
+#define g_profileIntroState GAME_VAR(int, 0x9f8e54)   /* 5: finished */
+#define g_profile9f8ee4 GAME_VAR(int, 0x9f8ee4)   /* (unclear) cleared when the emblem cursor moves */
+#define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
+#define g_profilePage GAME_VAR(int, 0x9f8f10)   /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
+#define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
+#define g_profileDialogX GAME_VAR(int, 0x9f8f1c)   /* page 3's dialog frame */
+#define g_profileIntroTime GAME_VAR(int, 0x9f8f30)
+#define g_profileMessage GAME_VAR(int, 0x9f8f34)   /* page 2 shows a message */
+#define g_playerCount GAME_VAR(int, 0x9fd950)
+#define g_textures GAME_VAR(TextureSets *, 0xa0e010)
+#define g_music GAME_VAR(void *, 0xa0e670)   /* the music graph */
+#define g_desktopH GAME_VAR(int, 0xa0e814)
+#define g_desktopBits GAME_VAR(int, 0xa0e91c)
+#define g_desktopW GAME_VAR(int, 0xa0e92c)   /* the desktop's mode before the switch */
+#define g_glWindowMade GAME_VAR(int, 0xa0e930)   /* the window exists (it is made once) */
+#define g_glWindow GAME_VAR(void *, 0xa0e934)
+#define g_hdc GAME_VAR(void *, 0xa0e938)
+#define g_context GAME_VAR(void *, 0xa0e93c)
+#define g_modeChanged GAME_VAR(int, 0xa0e940)   /* the display mode was switched (to be put back) */
+#define g_loadTexture GAME_VAR(int, 0xa0e980)   /* the backdrop's texture id */
+#define g_loadFade GAME_VAR(float, 0xa0e984)   /* the fade's time, 0 .. 1 s */
+#define g_loadProgress GAME_VAR(float, 0xa0ea88)
+#define g_loadGame GAME_VAR(u8 *, 0xa0ea8c)   /* the game being loaded */
+#define g_white GAME_VAR(u32, 0xa1f23c)   /* four bytes 0xff: an opaque white colour */
+#define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
+#define g_clamp GAME_VAR(const u8 *, 0xa1f300)
+#define g_cursor GAME_VAR(int, 0xb116e0)   /* the player looked at first by netq_receive (turns 0..15) */
+#define g_resends GAME_VAR(int, 0xb116e4)   /* out-of-turn packets seen: the caller re-syncs at 0x80 */

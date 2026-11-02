@@ -3,9 +3,9 @@
 #include <string.h>
 #include "portrait.h"
 
-#define g_profileDialog GAME_VAR(int, 0x9f8f10)       /* (by use) the open dialog: 2 the name, 3 and 5 the questions */
-#define g_questionX GAME_VAR(int, 0x67ef34)           /* where the two-button question is drawn */
-#define g_questionY GAME_VAR(int, 0x67fb38)
+#define g_profileDialog g_profilePage   /* (by use) the open dialog: 2 the name, 3 and 5 the questions */
+#define g_questionX g_highlightX   /* where the two-button question is drawn */
+#define g_questionY g_highlightY
 
 /* 0x44b600: the new pilot's name (16 characters), typed into the panel at 0x9f8ea8 */
 void (profile_typeNewName)(void)
@@ -198,7 +198,7 @@ void (mainmenu_drawScreen)(void)
 #define Y0 g_profilePageTop
 #define X1 g_profilePageRight
 #define Y1 g_profilePageBottom
-#define PAGE GAME_VAR(int, 0x9f8f10)
+#define PAGE g_profilePage
 	float *panel = (float *)OBJ(g_profileColour);
 	const u32 *bright = g_profileColour, *dim = g_profileDim;
 	int hovered = GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY);
@@ -337,9 +337,9 @@ void (profile_drawPilotSelect)(void)
 #define X1 g_pilotSelectRight
 #define Y1 g_pilotSelectBottom
 #define K(addr) ((const float *)RELOC(addr))
-#define g_pilot GAME_VAR(int, 0x9f8d30)
-#define g_reveal GAME_VAR(int, 0x9f6828)
-#define g_revealClock GAME_VAR(float, 0x9f8ee4)
+#define g_pilot g_emblemCursor
+#define g_reveal g_profile9f6828
+#define g_revealClock (*(float *)&g_profile9f8ee4)
 	const u32 *panel = g_profileColour, *dim = g_profileDim;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();

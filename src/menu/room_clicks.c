@@ -822,7 +822,7 @@ u32 (account_page)(void)
 
 /* ---- the server login dialog's keys: its text fields (0x74de1c: 0 .. 2), the text cursor placed in the one typed
    into (0x67ef34 / 0x67fb38) ---- */
-#define g_loginField GAME_VAR(int, 0x74de1c)
+#define g_loginField g_dialogChoice
 #define g_tabDirection g_fieldTabKey   /* 20 forward, 10 back (shift) */
 
 /* the cursor into field to at (x, y) */

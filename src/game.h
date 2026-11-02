@@ -99,19 +99,9 @@
 /* glRotatef about x, then y, then z (degrees, as float bits) */
 #define gfx_rotateXYZ(x, y, z) GAME_FN(gl_rotateXYZ, 0x41ef20, void, u32, u32, u32)(x, y, z)
 /* the 3D background (menu_tunnel.c) */
-#define g_texturesOff GAME_VAR(int, 0x9da494)        /* (by use) set: the menus' 3D background is drawn untextured (left out) */
-#define g_tunnelTexture GAME_VAR(int, 0x4e186c)
 #define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
-#define g_cageTexture GAME_VAR(int, 0x76d36c)
-#define g_pulse GAME_VAR(float, 0x4b06fc)            /* the bands' colour pulse, 0.05 .. 0.95 */
-#define g_pulseStep GAME_VAR(float, 0x4b0700)
-#define g_flareSizeB GAME_VAR(float, 0x4b0704)       /* flare 3's half-size, 10 .. 48 */
-#define g_flareSizeA GAME_VAR(float, 0x4b0708)       /* flare 2's */
-#define g_flareStepB GAME_VAR(float, 0x4b070c)
-#define g_flareStepA GAME_VAR(float, 0x4b0710)
 /* ---- textures ---- */
 typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
-#define g_textures GAME_VAR(TextureSets *, 0xa0e010)
 #define tex_bind(manager, slot) GAME_THISFN(tex_bind, 0x4566c0, void, void *, int)(manager, slot)
 #define gfx_getWidth() GAME_FN(gfx_getWidth, 0x4685b0, int, void)()
 #define gfx_getHeight() GAME_FN(gfx_getHeight, 0x4685c0, int, void)()
@@ -553,7 +543,6 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define viewVolume_addBillboard(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag) GAME_THISFN(viewVolume_addBillboard, 0x484ca0, void, void *, int, const float *, \
 	const float *, float, const void *, const float *, const float *, const float *, int, int)(view, id, uv0, uv1, dz, colour, a, b, p, extra, flag)
 #define g_items3D (g_graphicSettings[2])            /* the polygon detail setting (HIGH 1): 1 draws map items as models */
-#define g_white GAME_VAR(u32, 0xa1f23c)              /* four bytes 0xff: an opaque white colour */
 #define projectile_draw(stage, i, view) GAME_THISFN(projectile_draw, 0x476890, void, Stage *, int, void *)(stage, i, view)
 #define stage_drawItems(stage, view) GAME_THISFN(stage_drawItems, 0x48f970, void, void *, void *)(stage, view)
 #define stage_setFog(stage, colour, start, end, density) GAME_THISFN(stage_setFog, 0x472900, void, Stage *, const void *, u32, u32, u32)(stage, colour, start, end, density)
@@ -585,53 +574,18 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
 #define g_textColours ((Colour *)IMG(0xa1f100))          /* the 16 message colours */
-#define g_chatCaretX GAME_VAR(int, 0x9da3d8)          /* where the line being typed is drawn (menu units) */
-#define g_chatCaretY GAME_VAR(int, 0x9da3dc)
-#define g_chatLength GAME_VAR(int, 0x9dbf10)          /* characters in g_chatLine */
-#define g_chatFieldFlag GAME_VAR(int, 0x4e1868)       /* (unclear) set for the short fields (passwords, rules), clear for names */
 #define input_releaseKeyboard() GAME_FN(input_releaseKeyboard, 0x401460, void, void)()
 #define menu_clearInputBuffer(maxLength) GAME_FN(menu_clearInputBuffer, 0x431560, void, int)(maxLength)
 #define chat_createEdit(maxLength) GAME_FN(chat_createEdit, 0x43f460, void, int)(maxLength)   /* the hidden EDIT control typing goes to */
 #define itoa(value, out, radix) GAME_CDECL(0x49fb53, char *, int, char *, int)(value, out, radix)
-#define g_missionStage GAME_VAR(int, 0x9dad94)      /* the mission stage being played */
 #define g_missionProgress (*(int *)(g_campaign + 0x104))   /* the furthest stage reached */
 #define g_trig (g_tanTable)            /* 3600 values by tenths of a degree (the ring's radius) */
 #define g_showFps (*(int *)&g_cfgSwitches[2])           /* 1: the FPS counter is shown */
 #define g_gameModeNames ((const char (*)[64])STR(0x4c7030, "DEATH MATCH"))   /* "DEATH MATCH", "TEAM DEATH MATCH", ... (12) */
-#define g_scene GAME_VAR(Scene *, 0x9087b4)          /* the scene object (0 outside a match) */
-#define g_screen GAME_VAR(int, 0x76d3e8)             /* the front end's screen: 100 intro, 200 title, 210 profile, 300 main menu, 400 lobby,
-                                                         500 missions, 600 setup, 700 armour, 800 game room, 900 skirmish, 9999 in a match */
-#define g_lastScreen GAME_VAR(int, 0x67ef0c)         /* the screen whose music / state was set up last */
-#define g_paused GAME_VAR(int, 0x68039c)             /* (unclear) input off: the window is inactive or a text box has the keys */
-#define g_keysBlocked GAME_VAR(int, 0x680370)        /* (unclear) the menus ignore their keys while set */
-#define g_menuFade GAME_VAR(float, 0x9da434)          /* the menus' fade-in: the keys wait for it to reach 0 */
-#define g_viewAngle GAME_VAR(float, 0x68038c)          /* the 3D view's vertical angle (degrees) */
-#define g_viewAspect GAME_VAR(float, 0x4e1870)        /* the 3D view's aspect ratio (gluPerspective), width / height */
-#define g_frameTime GAME_VAR(float, 0x4b071c)         /* the last frame's time in 1/60 s (menu_frame; 1 after a stall) */
-#define g_dialogPending GAME_VAR(int, 0x4df900)      /* a message box is up: it takes the keys */
-#define g_dialogOpen GAME_VAR(int, 0x90d1c4)         /* a dialog of the current screen is open */
-#define g_textCharWidth GAME_VAR(int, 0x4d23d8)      /* units per character of the font being drawn */
-#define g_fontHanCho GAME_VAR(int, 0x9dae1c)         /* font textures (ids): Hangul initial consonants */
-#define g_fontHanJungJong GAME_VAR(int, 0x76d360)    /* Hangul vowels and finals */
-#define g_fontAscii GAME_VAR(int, 0x76d448)          /* ASCII, 5- and 8-unit fonts */
-#define g_fontAsciiLarge GAME_VAR(int, 0x9dad90)     /* ASCII, 16- and 32-unit fonts */
 /* the title and profile screens */
-#define g_titleShown GAME_VAR(int, 0x4df01c)
-#define g_titleFrames GAME_VAR(int, 0x4e0458)        /* frames the title has been shown */
 /* the title emblem (menu_title.c) */
 #define g_titleTextures (g_introTextures)     /* eight: the base picture's quarters, then the pulsing layer's */
 #define g_titleSpread ((const int *)IMG(0x4b065c))       /* by g_titleFrames: how far the quarters have moved apart (0 .. 512) */
-#define g_emblemAlpha GAME_VAR(float, 0x4de1e0)      /* the pulsing layer's alpha (0.2 .. 0.9) */
-#define g_emblemPulse GAME_VAR(float, 0x4de1d8)      /* its change per time unit (+-0.018) */
-#define g_logoFade GAME_VAR(float, 0x4de1e8)         /* the logo fading in, 0 .. 1 */
-#define g_logoFadeLate GAME_VAR(float, 0x4de1ec)     /* (unclear) a faster fade from 0.2, not read here */
-#define g_logoTexture GAME_VAR(int, 0x76d3f0)
-#define g_profileIntro GAME_VAR(int, 0x9f6838)       /* the profile screen's intro animation runs */
-#define g_profileIntroState GAME_VAR(int, 0x9f8e54)  /* 5: finished */
-#define g_profileIntroTime GAME_VAR(int, 0x9f8f30)
-#define g_profileIntroZoom GAME_VAR(float, 0x9f8f14)
-#define g_profileIntroSpeed GAME_VAR(float, 0x9f8e50)
-#define g_profilePage GAME_VAR(int, 0x9f8f10)        /* 1 list, 2 info, 3 / 5 name forms, 6 emblem; 4 has no keys */
 /* key bindings (key codes), named by their use in the menus */
 #define g_keyClick g_dikEnter           /* fire / click: the button under the pointer */
 #define g_keyOk g_dikO              /* confirms a page */
@@ -648,14 +602,9 @@ typedef struct { float r, g, b, a; } Colour;
 #define g_keyLeftCtrl g_dikLCtrl
 #define g_keyRightCtrl g_dikRCtrl
 #define input_isDown(key) GAME_FN(input_isDown, 0x401590, int, int)(key)   /* the key (code) is held */
-#define g_mouseX GAME_VAR(int, 0x4ded68)             /* the pointer, 640 x 480 units */
-#define g_mouseY GAME_VAR(int, 0x4ded6c)
 #define g_mouseClick (g_mouseClicked[0])           /* a click this frame (the left button) */
 #define g_mouseHeld (g_mouseButtonsHeld[0])        /* (by use) the left button held down */
-#define g_localPlayer GAME_VAR(int, 0x76d41c)        /* (by use) the local player's index in the room's lists */
 #define g_hWndMain g_mainWindow
-#define g_screenW GAME_VAR(int, 0x5b1998)
-#define g_screenH GAME_VAR(int, 0x4e045c)
 #define KillTimer(hwnd, id) IMPORT(0x4a9330, int, void *, u32)(hwnd, id)
 /* a rectangle in menu units in g_rectColour, filled or outlined (the patch DLL replaces it: kept original) */
 #define menu_drawRect(x0, y0, x1, y1, filled) GAME_FN(menu_drawRect, 0x427970, void, int, int, int, int, int)(x0, y0, x1, y1, filled)
@@ -669,33 +618,10 @@ typedef struct { float r, g, b, a; } Colour;
 #define profile_loadSelectedColours() GAME_FN(profile_loadSelectedColours, 0x44bc50, void, void)()
 #define profile_drawPilotSelect() GAME_FN(profile_drawPilotSelect, 0x44e640, void, void)()
 #define arena_leaveSession() GAME_FN(arena_leaveSession, 0x452fe0, void, void)()
-#define g_cursorBlink GAME_VAR(float, 0x4dda44)      /* the text cursor's blink clock */
-#define g_cursorFrame GAME_VAR(int, 0x4df03c)        /* the mouse pointer's animation frame, 0..14 */
-#define g_cursorFrameTime GAME_VAR(float, 0x4df910)  /* frame time collected towards the next frame (5 units) */
-#define g_cursorTexture GAME_VAR(int, 0x4e152c)      /* the pointer's sprite sheet (texture id) */
 /* two-button dialogs: the highlighted choice and its marker */
-#define g_dialogChoice GAME_VAR(int, 0x74de1c)       /* 0 the left button, 1 the right one */
-#define g_highlightShown GAME_VAR(int, 0x76d42c)
-#define g_highlightSize GAME_VAR(float, 0x680bc0)
-#define g_highlightAlpha GAME_VAR(float, 0x9da4a4)
-#define g_highlightX GAME_VAR(int, 0x67ef34)
-#define g_highlightY GAME_VAR(int, 0x67fb38)
 /* the profile screen's pages */
-#define g_profileMessage GAME_VAR(int, 0x9f8f34)     /* page 2 shows a message */
-#define g_profileDialogX GAME_VAR(int, 0x9f8f1c)     /* page 3's dialog frame */
-#define g_profileDialogY GAME_VAR(int, 0x9f8f0c)
-#define g_profileDialog2X GAME_VAR(int, 0x9f6834)    /* page 5's dialog frame */
-#define g_profileDialog2Y GAME_VAR(int, 0x9f683c)
-#define g_emblemCursor GAME_VAR(int, 0x9f8d30)       /* page 6: 0..8, row by row */
-#define g_emblemMoved GAME_VAR(int, 0x9f8d68)
-#define g_profile9f8ee4 GAME_VAR(int, 0x9f8ee4)      /* (unclear) cleared when the emblem cursor moves */
-#define g_profile9f6828 GAME_VAR(int, 0x9f6828)      /* (unclear) the same */
 /* the mission-select screen */
-#define g_missionShowBackground GAME_VAR(int, 0x9f63b8)
-#define g_missionPage GAME_VAR(int, 0x9f62f8)        /* 0 / 1: no keys; 2: no list refresh */
 #define g_missionBox ((const int *)ADDR(g_missionSelectLeft))         /* the dialog frame: x0, y0, x1, y1 */
-#define g_missionBusy GAME_VAR(int, 0x9f6300)
-#define g_missionStarted GAME_VAR(int, 0x9f62e0)
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
 #define STR_COPYRIGHT ((const char *)STR(0x4b0474, "AXIS by Jamie System Development"))
 #define STR_2D ((const char *)STR(0x4d03e0, "%2d"))
@@ -753,8 +679,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define mech_setItem(scene, slot, item) GAME_THISFN(mech_setItem, 0x461510, void, Scene *, int, int)(scene, slot, item)
 
 /* ---- the ARM CENTER (menu/armc_*.c) ---- */
-#define g_armcHideInterface GAME_VAR(int, 0x4dd078)  /* Ctrl+Alt+M: the screen without its interface */
-#define g_language GAME_VAR(int, 0x9dae74)           /* 2: the small font for labels */
 #define armc_updatePartsPreview() GAME_FN(armc_updatePartsPreview, 0x41d600, void, void)()      /* the mech preview */
 #define armc_updateColourPreview() GAME_FN(armc_updateColourPreview, 0x41d8a0, void, void)()      /* the colour page's preview */
 #define armc_drawPreviewTunnel() GAME_FN(armc_drawPreviewTunnel, 0x411ab0, void, void)()      /* the screen's state entered from the room */
@@ -818,10 +742,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define actor_selectWeapon(stage, actor, slot) GAME_THISFN(actor_selectWeapon, 0x45e880, void, Stage *, int, int)(stage, actor, slot)
 #define app_requireCd(scene, a, b) GAME_THISFN(app_requireCd, 0x460cb0, void, Scene *, int, int)(scene, a, b)
 
-#define g_armcMode GAME_VAR(int, 0x4dc798)           /* the ARM CENTER's page: 1 the parts, 2 the weapons, 3 the colours, 4 ... */
-#define g_armcPartSlot GAME_VAR(int, 0x4dbc6c)       /* 0 head, 1 chest, 2 arm, 3 leg, 4 booster, 5 weapons */
-#define g_armcColourSlot GAME_VAR(int, 0x4dc4b0)     /* the colour slot being edited */
-#define g_lobbySubState GAME_VAR(int, 0x4db51c)      /* the lobby's page: 5 the top menu, 0 player setup, 1 join, 2 create */
 #define armc_restoreMenuCamera() GAME_FN(armc_restoreMenuCamera, 0x40e670, void, void)()
 #define armc_saveSelection() GAME_FN(armc_saveSelection, 0x40e7a0, void, void)()       /* keep the mech, save the progress */
 #define armc_sendSelectionToNet() GAME_FN(armc_sendSelectionToNet, 0x40e930, void, void)()
@@ -833,7 +753,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_playVolume(id, volume) GAME_FN(sound_playVolume, 0x456e50, void, int, int)(id, volume)   /* volume 0..100 */
 
 /* ---- the setup screen (menu/setup_keys.c) ---- */
-#define g_setupTab GAME_VAR(int, 0x4ddac8)           /* 0 sound, 1 graphics, 2 controls, 0x29a the top page */
 #define input_setKeysBlocked(v) GAME_FN(input_setKeysBlocked, 0x441250, void, int)(v)   /* g_keysBlocked = v */
 #define setup_drawTopPage() GAME_FN(setup_drawTopPage, 0x4220c0, void, void)()
 #define setup_drawSoundTab() GAME_FN(setup_drawSoundTab, 0x4221d0, void, void)()
@@ -870,18 +789,15 @@ typedef struct { float r, g, b, a; } Colour;
 #define music_shutdown() GAME_FN(music_shutdown, 0x457310, void, void)()
 
 /* ---- devices and sound (app/devices.c, sound/sound_basic.c) ---- */
-#define g_menuVolume GAME_VAR(int, 0x4dd984)          /* DirectSound volume of the menu sounds: (v * 5 - 500) * 4 of the setting */
 #define dsbuf_play(sound) GAME_FN(dsbuf_play, 0x467d70, void, void *)(sound)
 #define dsbuf_setVolume(sound, volume) GAME_FN(dsbuf_setVolume, 0x467db0, void, void *, int)(sound, volume)
 #define sound_playNextBuffer(sound, mode, value) GAME_FN(sound_playNextBuffer, 0x467dd0, u32, void *, int, int)(sound, mode, value)   /* played with a pan (mode 1 / 2) */
 #define input_releaseMouse() GAME_FN(input_releaseMouse, 0x401490, void, void)()   /* the mouse let go and released */
 #define glFinish() IMPORT(0x4a91f0, void, void)()
 #define SwapBuffers(hdc) IMPORT(0x4a9028, int, void *)(hdc)
-#define g_hdc GAME_VAR(void *, 0xa0e938)
 #define CoUninitialize() IMPORT(0x4a93b8, void, void)()
 
 /* ---- front-end screens (menu/menu_states.c) ---- */
-#define g_nextScreen GAME_VAR(int, 0x67ef20)          /* (by use) the front-end screen to go to (300 the main menu) */
 #define g_progress (*(int *)(g_campaign + 0x104))            /* rounds beaten (missions unlocked) */
 #define armc_enter(tunnel) GAME_FN(armc_enter, 0x441260, void, void *)(tunnel)   /* moves the background tunnel on */
 #define menu_drawBackground3D(tunnel) GAME_FN(menu_drawBackground3D, 0x429d70, void, void *)(tunnel)
@@ -1007,7 +923,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define game_returnToScreen400() GAME_FN(game_returnToScreen400, 0x41e9d0, void, void)()
 
 /* ---- more front end (menu/menu_states.c, menu/edit_fields.c) ---- */
-#define g_hChatEdit GAME_VAR(void *, 0x9dd888)        /* the hidden EDIT control typing goes to */
 #define GetWindowTextLengthA(hwnd) IMPORT(0x4a92e0, int, void *)(hwnd)
 #define GetWindowTextA(hwnd, out, size) IMPORT(0x4a92e4, int, void *, char *, int)(hwnd, out, size)
 #define game_returnToMainMenu() GAME_FN(game_returnToMainMenu, 0x41e8b0, void, void)()
@@ -1177,7 +1092,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define recorder_noteStub(self, a, b, c, d) GAME_THISFN(recorder_noteStub, 0x48b450, void, void *, int, int, int, int)(self, a, b, c, d)
 #define mem_free(p) GAME_FN(mem_free, 0x467d60, u32, void *)(p)   /* p deleted (0 for none) */
 
-#define g_menuState GAME_VAR(int, 0x76d3e8)          /* the front end's screen (300 the main menu) */
+#define g_menuState g_screen   /* the front end's screen (300 the main menu) */
 #define sessionList_sort() GAME_FN(sessionList_sort, 0x4065e0, void, void)()   /* the session list sorted */
 
 /* ---- the projection switch and the menus' 2D (menu_2d.c) ---- */

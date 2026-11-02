@@ -5,7 +5,7 @@ offsets). In the harness OBJ(name) is the address, so the objects do not change 
 import glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'Colour': 16}
+SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'Colour': 16}
 objs = []
 for line in open('tools/names/objects.txt'):
 	a, ty, n, name = line.split()

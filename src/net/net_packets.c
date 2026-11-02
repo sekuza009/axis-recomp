@@ -13,8 +13,6 @@
 #define g_ahead ((int *)IMG(0xb0f6a0))                     /* [player * 128 + number]: arrived ahead of its turn */
 #define g_history ((u8 *)IMG(0xaef6a0))                    /* [player][number]: 64 bytes */
 #define g_unused16 ((int *)IMG(0xaef660))                  /* (cleared per player, never read) */
-#define g_cursor GAME_VAR(int, 0xb116e0)              /* the player looked at first by netq_receive (turns 0..15) */
-#define g_resends GAME_VAR(int, 0xb116e4)             /* out-of-turn packets seen: the caller re-syncs at 0x80 */
 #define PLAYER(i, offset) GAME_VAR(int, OBJ(g_netSlots) + (i) * 0x410 + (offset))
 #define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 

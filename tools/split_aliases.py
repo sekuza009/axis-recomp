@@ -6,7 +6,7 @@ objects.h's are mapped to the split variables, src/data/layout_names.h): write i
 import glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'Colour': 16}
+SIZES = {'char': 1, 'u8': 1, 'signed char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'Colour': 16}
 split = {l.split('#')[0].strip() for l in open('tools/names/split.txt')} - {''}
 spans = []
 for n, t, a in re.findall(r'#define (\w+) GAME_VAR\(([\w \*]+), (0x[0-9a-f]+)\)', open('src/globals.h').read()):

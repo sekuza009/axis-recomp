@@ -1032,7 +1032,6 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
    the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */
-#define g_playerCount GAME_VAR(int, 0x9fd950)
 
 static void room_info(u8 *dst, u8 first, u8 count)
 {

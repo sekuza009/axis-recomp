@@ -29,7 +29,6 @@ typedef struct {
 #define K(addr) ((const float *)RELOC(addr))
 #define MUL(a, b) fmul_m(fld_m(a), b)
 #define LIGHT_COUNT(factors) (*(const int *)((factors) + 0xb004))
-#define g_unlit GAME_VAR(u32, 0xa1f278)   /* the colour of a vertex out of a light's reach */
 
 static int clamp255(int v) { return v < 0xff ? v : 0xff; }
 

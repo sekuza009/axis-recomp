@@ -2,8 +2,6 @@
 #ifndef KEY_REPEAT_H
 #define KEY_REPEAT_H
 
-#define g_repeatUp GAME_VAR(float, 0x76d37c)       /* frames until a held up / down key steps again */
-#define g_repeatDown GAME_VAR(float, 0x680bb4)
 
 /* a held key: the first press steps at once and waits 4 frames, then it steps whenever the wait runs out (the text
    cursor's blink restarting each frame). 1 when the key is held */

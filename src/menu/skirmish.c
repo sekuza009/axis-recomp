@@ -95,7 +95,6 @@ static void bind_button_texture(void)
 /* ---- the mission list: 0xfc-byte records from 0x9ef2d4 (count 0x9ef2c0): the name, +0x40 a text, +0x60 the
    description, +0xe0 a number, +0xe8 the kind (a MSG(511, "DON'T") string) ---- */
 #define mission(i) ((const u8 *)(OBJ(g_missions) + 0x4) + (i) * 0xfc)
-#define g_missionTop GAME_VAR(int, 0x9f16bc)      /* the first row shown */
 
 /* the columns' left (and right) x from the window's left */
 static const int column_x0[4] = { 0x10, 0x159, 0x1b3, 0x20d }, column_x1[4] = { 0x154, 0x1ae, 0x208, 0x25d };

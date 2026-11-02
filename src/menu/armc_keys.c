@@ -83,7 +83,6 @@ void (armc_partsPageKeys)(void)
 	}
 }
 
-#define g_weaponCount GAME_VAR(int, 0x4dc244)
 
 /* 0x410500: the weapons page: cancel / back leave, OK keeps the mech; 0x4e1514 / 0x4e1504 to the parts / third page
    (slot 0 picked first), 0x4e151c toggles the spin; six keys pick an item slot; right / left move the cursor in its

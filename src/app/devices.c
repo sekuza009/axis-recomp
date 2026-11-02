@@ -7,12 +7,6 @@
 #define DI_ACQUIRE 0x1c
 #define DI_UNACQUIRE 0x20
 
-#define g_directInput GAME_VAR(void *, 0x4d1e98)
-#define g_keyboard GAME_VAR(void *, 0x4d1fa0)
-#define g_mouse GAME_VAR(void *, 0x4d1fa4)
-#define g_keyboardActive GAME_VAR(int, 0x4d1fa8)      /* (by use) the window is active: the keyboard may be taken */
-#define g_mouseActive GAME_VAR(int, 0x4d1fac)
-#define g_mouseTaken GAME_VAR(int, 0x4ad17c)          /* (by use) 0: the mouse is let go instead of taken */
 
 /* 0x4012c0: take the keyboard again */
 void (input_reacquireKeyboard)(void)
