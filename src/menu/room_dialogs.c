@@ -744,7 +744,7 @@ u32 (roomLogin_draw)(void)
 {
 #define X0 g_roomLoginLeft
 #define Y0 g_roomLoginTop
-#define X1 GAME_VAR(int, 0x9dd360)
+#define X1 g_roomLoginRight
 #define Y1 g_roomLoginBottom
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* menu_drawFrame */

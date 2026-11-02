@@ -348,13 +348,13 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 /* 0x44f5f0: the pilot panel's page (profile_drawDeleteQuestion) */
 u32 (profile_pilotPanelPage)(void)
 {
-	static const u32 frame[4] = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), IMG(0x9f8f2c), IMG(0x9f8f28) };
+	static const u32 frame[4] = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), ADDR(g_profileDialogRight), ADDR(g_profileDialogBottom) };
 	return glide_page((const float *)ADDR(k_0_25f), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
 }
 /* 0x44f740: the second panel's page (profile_drawSecondDialog), gliding at its own rate */
 u32 (profile_secondPanelPage)(void)
 {
-	static const u32 frame[4] = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), IMG(0x9f93bc), IMG(0x9f93c0) };
+	static const u32 frame[4] = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), ADDR(g_profileDialog2Right), ADDR(g_profileDialog2Bottom) };
 	return glide_page((const float *)ADDR(k_0_2f), frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
 }
 

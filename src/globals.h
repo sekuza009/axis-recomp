@@ -1095,3 +1095,10 @@
 #define g_clamp GAME_VAR(const u8 *, 0xa1f300)
 #define g_cursor GAME_VAR(int, 0xb116e0)   /* the player looked at first by netq_receive (turns 0..15) */
 #define g_resends GAME_VAR(int, 0xb116e4)   /* out-of-turn packets seen: the caller re-syncs at 0x80 */
+#define g_roomLoginRight GAME_VAR(int, 0x9dd360)
+#define g_roomPanelEase GAME_VAR(float, 0x9dd560)
+#define g_skirmishRow GAME_VAR(int, 0x9f1058)
+#define g_profileDialogBottom GAME_VAR(int, 0x9f8f28)
+#define g_profileDialogRight GAME_VAR(int, 0x9f8f2c)
+#define g_profileDialog2Right GAME_VAR(int, 0x9f93bc)
+#define g_profileDialog2Bottom GAME_VAR(int, 0x9f93c0)

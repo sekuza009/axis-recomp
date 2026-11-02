@@ -129,12 +129,12 @@ static u32 two_buttons(const TwoButtons *d)
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), ADDR(g_profileDialogRight), ADDR(g_profileDialogBottom), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 u32 (profile_drawSecondDialog)(void)
 {
-	static const TwoButtons d = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), IMG(0x9f93bc), IMG(0x9f93c0), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), ADDR(g_profileDialog2Right), ADDR(g_profileDialog2Bottom), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 

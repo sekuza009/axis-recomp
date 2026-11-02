@@ -923,3 +923,16 @@ g_setupColourLit
 g_setupColourDim
 g_skirmishColourLit
 g_skirmishColourDim
+# the screen windows' remaining edges and two values (globals22.csv), 2026-11-01
+g_profileDialog2Bottom
+g_profileDialog2Right
+g_profileDialog2X
+g_profileDialog2Y
+g_profileDialogBottom
+g_profileDialogRight
+g_profileDialogX
+g_profileDialogY
+g_profileIntro
+g_roomLoginRight
+g_roomPanelEase
+g_skirmishRow

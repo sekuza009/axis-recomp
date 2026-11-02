@@ -157,8 +157,8 @@ void (menuState600_enterSetup)(void)
 void (menuState800_enterGameRoom)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomDialogOpen), 1 }, { IMG(0x9dd560), 0 }, { ADDR(g_roomMode), 2 }, { ADDR(g_roomPanelBrightness), 0x3f333333 },
-		{ ADDR(g_roomState), 0x42 }, { ADDR(g_connectionAwaited), 0 }, { ADDR(g_roomLoginLeft), 0x32 }, { ADDR(g_roomLoginTop), 0x6e }, { IMG(0x9dd360), 0x24e },
+		{ ADDR(g_roomTunnelDepth), 0xc4af0000 }, { ADDR(g_roomDialogOpen), 1 }, { ADDR(g_roomPanelEase), 0 }, { ADDR(g_roomMode), 2 }, { ADDR(g_roomPanelBrightness), 0x3f333333 },
+		{ ADDR(g_roomState), 0x42 }, { ADDR(g_connectionAwaited), 0 }, { ADDR(g_roomLoginLeft), 0x32 }, { ADDR(g_roomLoginTop), 0x6e }, { ADDR(g_roomLoginRight), 0x24e },
 		{ ADDR(g_roomLoginBottom), 0x172 }, { ADDR(g_accountPanelLeft), 0x3c }, { ADDR(g_accountPanelTop), 0x1e }, { ADDR(g_accountPanelRight), 0x244 }, { ADDR(g_accountPanelBottom), 0x1c2 },
 		{ ADDR(g_roomGameListLeft), 0x14 }, { ADDR(g_roomGameListTop), 0x28 }, { ADDR(g_roomGameListRight), 0x26c }, { ADDR(g_roomGameListBottom), 0x1b8 }, { ADDR(g_roomFormLeft), 0x28 },
 		{ ADDR(g_roomFormTop), 0x1e }, { ADDR(g_roomFormRight), 0x258 }, { ADDR(g_roomFormBottom), 0x1c2 }, { OBJ(g_roomMessageRect), 0x10 }, { (OBJ(g_roomMessageRect) + 0x4), 0x1e },
@@ -281,7 +281,7 @@ int (menuState900_enterSkirmish)(void)
 		{ (OBJ(g_skirmishColourLit) + 0x4), ONE }, { (OBJ(g_skirmishColourLit) + 0x8), ONE }, { (OBJ(g_skirmishColourLit) + 0xc), ONE }, { OBJ(g_skirmishColourDim), 0 }, { (OBJ(g_skirmishColourDim) + 0x4), 0x3f19999a },
 		{ (OBJ(g_skirmishColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_skirmishColourDim) + 0xc), ONE }, { ADDR(g_settingsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
 		{ ADDR(g_nextScreen), 900 } };
-	static const u32 cleared[] = { ADDR(g_missionTop), IMG(0x9f1058), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
+	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_skirmishRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
@@ -329,10 +329,10 @@ int (menuState500_enter)(void)
 u32 (menuState210_enter)(void)
 {
 	static const Store layout[] = {
-		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { IMG(0x9f8f28), 0x10e }, { IMG(0x9f93c0), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
+		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { ADDR(g_profileDialogBottom), 0x10e }, { ADDR(g_profileDialog2Bottom), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
 		{ ADDR(g_profilePageBottom), 0x1a4 }, { ADDR(g_newNameDialogLeft), 0x78 }, { ADDR(g_newNameDialogTop), 0x96 }, { ADDR(g_newNameDialogRight), 0x208 }, { ADDR(g_newNameDialogBottom), 0x118 },
-		{ ADDR(g_profileDialogX), 0x78 }, { ADDR(g_profileDialogY), 0x96 }, { IMG(0x9f8f2c), 0x208 }, { ADDR(g_profileDialog2X), 0x78 }, { ADDR(g_profileDialog2Y), 0x96 },
-		{ IMG(0x9f93bc), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
+		{ ADDR(g_profileDialogX), 0x78 }, { ADDR(g_profileDialogY), 0x96 }, { ADDR(g_profileDialogRight), 0x208 }, { ADDR(g_profileDialog2X), 0x78 }, { ADDR(g_profileDialog2Y), 0x96 },
+		{ ADDR(g_profileDialog2Right), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
 	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
 	                               ADDR(g_highlightShown) };
 	static const Store colours[] = {

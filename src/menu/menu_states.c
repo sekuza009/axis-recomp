@@ -529,7 +529,7 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 
 /* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
 int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsOff), IMG(0x4dbb60), ADDR(g_arenaTunnelDepth)); }
-int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomDialogOpen), IMG(0x9dd560), ADDR(g_roomTunnelDepth)); }
+int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomDialogOpen), ADDR(g_roomPanelEase), ADDR(g_roomTunnelDepth)); }
 
 /* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
    the player slots (0x410 bytes from 0x9f9840) emptied ---- */

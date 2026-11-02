@@ -1702,16 +1702,24 @@ extern struct GameData g_data;
 #define g_profileColour ((u32 *)g_data.g_profileColour_)
 #undef g_profileCount
 #define g_profileCount (*(int *)g_profileCount_v)
+#undef g_profileDialog2Bottom
+#define g_profileDialog2Bottom (*(int *)g_profileDialog2Bottom_v)
+#undef g_profileDialog2Right
+#define g_profileDialog2Right (*(int *)g_profileDialog2Right_v)
 #undef g_profileDialog2X
-#define g_profileDialog2X (g_data.g_profileDialog2X_)
+#define g_profileDialog2X (*(int *)g_profileDialog2X_v)
 #undef g_profileDialog2Y
-#define g_profileDialog2Y (g_data.g_profileDialog2Y_)
+#define g_profileDialog2Y (*(int *)g_profileDialog2Y_v)
+#undef g_profileDialogBottom
+#define g_profileDialogBottom (*(int *)g_profileDialogBottom_v)
 #undef g_profileDialogOpen
 #define g_profileDialogOpen (*(int *)g_profileDialogOpen_v)
+#undef g_profileDialogRight
+#define g_profileDialogRight (*(int *)g_profileDialogRight_v)
 #undef g_profileDialogX
-#define g_profileDialogX (g_data.g_profileDialogX_)
+#define g_profileDialogX (*(int *)g_profileDialogX_v)
 #undef g_profileDialogY
-#define g_profileDialogY (g_data.g_profileDialogY_)
+#define g_profileDialogY (*(int *)g_profileDialogY_v)
 #undef g_profileDim
 #define g_profileDim ((u32 *)g_data.g_profileDim_)
 #undef g_profileFrameAlpha
@@ -1719,7 +1727,7 @@ extern struct GameData g_data;
 #undef g_profileFrameStep
 #define g_profileFrameStep (*(u32 *)g_profileFrameStep_v)
 #undef g_profileIntro
-#define g_profileIntro (g_data.g_profileIntro_)
+#define g_profileIntro (*(int *)g_profileIntro_v)
 #undef g_profileIntroSpeed
 #define g_profileIntroSpeed (*(float *)g_profileIntroSpeed_v)
 #undef g_profileIntroState
@@ -1942,6 +1950,8 @@ extern struct GameData g_data;
 #define g_roomLoginDue (*(int *)g_roomLoginDue_v)
 #undef g_roomLoginLeft
 #define g_roomLoginLeft (*(int *)g_roomLoginLeft_v)
+#undef g_roomLoginRight
+#define g_roomLoginRight (*(int *)g_roomLoginRight_v)
 #undef g_roomLoginTop
 #define g_roomLoginTop (*(int *)g_roomLoginTop_v)
 #undef g_roomLookKept
@@ -1964,6 +1974,8 @@ extern struct GameData g_data;
 #define g_roomPacket (*(u8 * *)g_roomPacket_v)
 #undef g_roomPanelBrightness
 #define g_roomPanelBrightness (*(u32 *)g_roomPanelBrightness_v)
+#undef g_roomPanelEase
+#define g_roomPanelEase (*(float *)g_roomPanelEase_v)
 #undef g_roomPlayers
 #define g_roomPlayers (*(u8 *)((u8 *)g_roomSettingsName_v + 0x21))
 #undef g_roomPopup
@@ -2148,6 +2160,8 @@ extern struct GameData g_data;
 #define g_skirmishDrawBackground (*(int *)g_skirmishDrawBackground_v)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
+#undef g_skirmishRow
+#define g_skirmishRow (*(int *)g_skirmishRow_v)
 #undef g_skirmishSettingsRects
 #define g_skirmishSettingsRects ((int *)g_skirmishSettingsRects_v)
 #undef g_slotTakenFlag
