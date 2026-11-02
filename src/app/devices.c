@@ -71,7 +71,6 @@ void (sound_releaseDirectSound)(void)
 
 #define DI_GETDEVICESTATE 0x24
 #define DIERR_INPUTLOST 0x8007001eL
-#define g_keyState ((u8 *)IMG(0x4d1e9c))                    /* the keyboard's 256 key bytes (0x80: held) */
 
 /* the keyboard's state into g_keyState; when the keyboard was lost it is taken again */
 static long read_keys(void)

@@ -953,3 +953,20 @@ g_missionBusy
 g_missionPage
 g_missionShowBackground
 g_weaponCount
+# the text colours (objects24.csv), whole
+g_textColours
+# named arrays that were pointer macros only (objects25.csv), whole
+g_keyState
+g_dplaySlots
+g_panelBoxes
+g_mapChoiceTable
+g_mapChoiceKeptTable
+g_unused16
+g_history
+g_ahead
+g_nextNumber
+g_serverUsed
+g_serverPing
+g_loadTimer
+# freed: the map table loop written from its record
+g_mapListOpen

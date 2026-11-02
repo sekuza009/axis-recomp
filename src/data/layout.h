@@ -2030,15 +2030,7 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_4d1e9c[0x104];
 	void * g_keyboard_;
 	void * g_mouse_;
-	u8 _gap_4d1fa8[0x7610];
-	int g_mapEntry22On_;
-	u8 _gap_4d95bc[0x4];
-	int g_mapEntry23On_;
-	u8 _gap_4d95c4[0x4];
-	int g_mapEntry24On_;
-	u8 _gap_4d95cc[0x1f3c];
-	int g_mapListOpen_;
-	u8 _gap_4db50c[0x14];
+	u8 _gap_4d1fa8[0x9578];
 	int g_arenaMessageText_;
 	int g_arenaMessageText4_;
 	u8 _gap_4db528[0x38];
@@ -2182,10 +2174,6 @@ _Static_assert(offsetof(struct GameData, g_frameTime_) == 0x371c, "g_frameTime")
 _Static_assert(offsetof(struct GameData, g_directInput_) == 0x24e98, "g_directInput");
 _Static_assert(offsetof(struct GameData, g_keyboard_) == 0x24fa0, "g_keyboard");
 _Static_assert(offsetof(struct GameData, g_mouse_) == 0x24fa4, "g_mouse");
-_Static_assert(offsetof(struct GameData, g_mapEntry22On_) == 0x2c5b8, "g_mapEntry22On");
-_Static_assert(offsetof(struct GameData, g_mapEntry23On_) == 0x2c5c0, "g_mapEntry23On");
-_Static_assert(offsetof(struct GameData, g_mapEntry24On_) == 0x2c5c8, "g_mapEntry24On");
-_Static_assert(offsetof(struct GameData, g_mapListOpen_) == 0x2e508, "g_mapListOpen");
 _Static_assert(offsetof(struct GameData, g_arenaMessageText_) == 0x2e520, "g_arenaMessageText");
 _Static_assert(offsetof(struct GameData, g_arenaMessageText4_) == 0x2e524, "g_arenaMessageText4");
 _Static_assert(offsetof(struct GameData, g_arenaName_) == 0x2e560, "g_arenaName");

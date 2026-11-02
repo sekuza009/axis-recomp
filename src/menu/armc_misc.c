@@ -443,7 +443,7 @@ typedef struct {
 	float angle;         /* its turn about y, kept within -360 .. 360 */
 	float speed;
 } Panel;                 /* 0x58 bytes */
-#define g_panels ((Panel *)IMG(0x4dc550))
+#define g_panels ((Panel *)g_panelBoxes)   /* (objects.h: six of them) */
 #define g_panelSize2 g_flareSizeA   /* panels 2 and 3 breathe: a half width growing by its rate, */
 #define g_panelSize3 g_flareSizeB   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
 #define g_panelRate2 g_flareStepA
@@ -580,7 +580,7 @@ void (armc_initCameraBox)(void)
    limits (200, 600, 2, -2) */
 void (armc_initPartBoxes)(void)
 {
-	for (u32 p = IMG(0x4dc554); p < IMG(0x4dc554) + 6 * 0x58; p += 0x58) {   /* (the six boxes) */
+	for (u32 p = (OBJ(g_panelBoxes) + 0x4); p < (OBJ(g_panelBoxes) + 0x4) + 6 * 0x58; p += 0x58) {   /* (the six boxes) */
 		static const signed char corner[] = { -1, -1, -1, 0, 1, -1, -1, 0, 1, -1, 1, 0, -1, -1, 1 };
 		for (int k = 0; k < 15; k++)
 			if (corner[k])

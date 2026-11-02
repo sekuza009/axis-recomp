@@ -43,7 +43,7 @@ static void make_rotation(Scene *s)
 	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
 		for (int k = 0; k < g_arenaMapCount; k++) {
-			u32 entry = IMG(0x4d9508) + k * 8;
+			u32 entry = OBJ(g_mapChoiceKeptTable) + k * 8;
 			if (GAME_VAR(int, entry) != 1)
 				continue;
 			int mode = g_chosenGameMode;

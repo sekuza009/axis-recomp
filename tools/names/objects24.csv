@@ -1,0 +1,2 @@
+# the text colours (step 3b): color_initTextColours fills 16 RGBA float quads (64 floats from 0xa1f100); game.h's g_textColours
+0xa1f100,Colour,16,g_textColours,the 16 message colours (RGBA floats; color_initTextColours fills them)

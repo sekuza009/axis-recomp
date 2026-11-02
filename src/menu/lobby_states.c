@@ -85,13 +85,13 @@ void (lobby_drawArenaTitle)(void)
 void (mapList_init)(void)
 {
 	if (!g_mapListMade) {
-		for (u32 p = 0x4d950c; p < 0x4db50c; p += 8) {
+		for (u32 p = OBJ(g_mapChoiceKeptTable) + 4; p < OBJ(g_mapChoiceKeptTable) + 4 + 1024 * 8; p += 8) {
 			GAME_VAR(int, p - 4) = 0;
 			GAME_VAR(int, p) = 0;
 		}
 		for (int k = 0; k < g_arenaMapCount; k++) {
-			GAME_VAR(int, 0x4d9508 + k * 8) = 1;
-			GAME_VAR(int, 0x4d950c + k * 8) = 0;
+			GAME_VAR(int, OBJ(g_mapChoiceKeptTable) + k * 8) = 1;
+			GAME_VAR(int, OBJ(g_mapChoiceKeptTable) + 4 + k * 8) = 0;
 		}
 	}
 	g_mapEntry22On = 0;

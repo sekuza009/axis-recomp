@@ -27,8 +27,15 @@ spans = [(int(k[0], 16), int(k[0], 16) + SIZES.get(k[1].replace('_', ' '), 1) * 
 bad = 0
 # a name already defined (a global, game.h's names, an object) would be redefined over it in every file
 defined = set(re.findall(r'#define (\w+)', open('src/globals.h').read() + open('src/game.h').read() + open('src/objects.h').read()))
+alltext = '\n'.join(open(f, 'rb').read().decode('latin-1') for f in glob.glob('src/**/*.[ch]', recursive=True))
 for a, t, n, name, note in rows:
-	if name in defined:
+	# (a file's or game.h's own pointer define for the same address is the one case allowed: it is replaced)
+	same = re.search(r'#define[ \t]+%s[ \t]+\(\((?:const\s+)?[\w ]+\*\)IMG\(0x0*%x\)\)' % (re.escape(name), a), alltext)
+	# (... but only when it has the object's own type: a struct view (MapChoice *, Panel *) would lose its type -
+	# name the object otherwise and keep the view as "#define view ((T *)object)")
+	if same and not re.match(r'\(\((?:const\s+)?%s\s*\*\)' % re.escape(t), same.group(0).split(None, 2)[2]):
+		print('%s is a %s view in the code, not %s *: name the object otherwise' % (name, same.group(0).split('((')[1].split(')')[0], t)); bad += 1
+	if name in defined and not (same and not re.search(r'#define %s ' % re.escape(name), open('src/globals.h').read() + open('src/objects.h').read())):
 		print('%s is already defined (src/globals.h, game.h or objects.h): pick another name' % name); bad += 1
 for a, t, n, name, note in rows:
 	if t not in SIZES:

@@ -573,7 +573,6 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 
 /* ---- globals ---- */
 typedef struct { float r, g, b, a; } Colour;
-#define g_textColours ((Colour *)IMG(0xa1f100))          /* the 16 message colours */
 #define input_releaseKeyboard() GAME_FN(input_releaseKeyboard, 0x401460, void, void)()
 #define menu_clearInputBuffer(maxLength) GAME_FN(menu_clearInputBuffer, 0x431560, void, int)(maxLength)
 #define chat_createEdit(maxLength) GAME_FN(chat_createEdit, 0x43f460, void, int)(maxLength)   /* the hidden EDIT control typing goes to */
@@ -628,7 +627,6 @@ typedef struct { float r, g, b, a; } Colour;
 #define STR_VERSION ((const char *)STR(0x4b0384, "Axis v1.03"))
 
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
-#define g_dplaySlots ((int *)IMG(0xa0d7a4))               /* four connection slots: 1 while open */
 #define dplay_coInit() GAME_FN(dplay_coInit, 0x453720, int, void)()                     /* 0 when COM is up */
 #define dplay_connectionAvailable(kind) GAME_FN(net_connectionAvailable, 0x453a30, int, int)(kind)  /* net_connectionAvailable */
 #define dplay_initConnection(kind, address) GAME_FN(dplay_initConnection, 0x453a90, int, int, int)(kind, address)

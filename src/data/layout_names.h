@@ -32,6 +32,8 @@ extern struct GameData g_data;
 #define g_accountPasswordRepeat ((char *)g_data.g_accountPasswordRepeat_)
 #undef g_accountRects
 #define g_accountRects ((int *)g_accountRects_v)
+#undef g_ahead
+#define g_ahead ((int *)g_ahead_v)
 #undef g_arenaBright
 #define g_arenaBright ((u32 *)g_data.g_arenaBright_)
 #undef g_arenaConfirming
@@ -788,6 +790,8 @@ extern struct GameData g_data;
 #define g_dplaySessionCount (*(int *)g_dplaySessionCount_v)
 #undef g_dplaySessionList
 #define g_dplaySessionList (*(int *)g_dplaySessionList_v)
+#undef g_dplaySlots
+#define g_dplaySlots ((int *)g_dplaySlots_v)
 #undef g_editOldProc
 #define g_editOldProc (*(u32 *)g_editOldProc_v)
 #undef g_editingAccountPassword
@@ -968,6 +972,8 @@ extern struct GameData g_data;
 #define g_highlightX (*(int *)g_highlightX_v)
 #undef g_highlightY
 #define g_highlightY (*(int *)g_highlightY_v)
+#undef g_history
+#define g_history ((u8 *)g_history_v)
 #undef g_hostAddressBlock
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostResultFlag
@@ -1040,6 +1046,8 @@ extern struct GameData g_data;
 #define g_keyLoadingSkip2 (*(int *)((u8 *)g_controls_v + 0xcc))
 #undef g_keySeen
 #define g_keySeen ((int *)g_keySeen_v)
+#undef g_keyState
+#define g_keyState ((u8 *)g_keyState_v)
 #undef g_keyWatchChat
 #define g_keyWatchChat (*(int *)((u8 *)g_controls_v + 0xa8))
 #undef g_keyboard
@@ -1094,6 +1102,8 @@ extern struct GameData g_data;
 #define g_loadStep (*(int *)g_loadStep_v)
 #undef g_loadTexture
 #define g_loadTexture (*(int *)g_loadTexture_v)
+#undef g_loadTimer
+#define g_loadTimer ((u8 *)g_loadTimer_v)
 #undef g_lobbyBlinkClock
 #define g_lobbyBlinkClock (*(float *)g_lobbyBlinkClock_v)
 #undef g_lobbyConnectStatus
@@ -1210,12 +1220,16 @@ extern struct GameData g_data;
 #define g_mainMenuTextures ((int *)g_mainMenuTextures_v)
 #undef g_mainWindow
 #define g_mainWindow (*(void * *)g_mainWindow_v)
+#undef g_mapChoiceKeptTable
+#define g_mapChoiceKeptTable ((u8 *)g_mapChoiceKeptTable_v)
+#undef g_mapChoiceTable
+#define g_mapChoiceTable ((u8 *)g_mapChoiceTable_v)
 #undef g_mapEntry22On
-#define g_mapEntry22On (g_data.g_mapEntry22On_)
+#define g_mapEntry22On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xb0))
 #undef g_mapEntry23On
-#define g_mapEntry23On (g_data.g_mapEntry23On_)
+#define g_mapEntry23On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xb8))
 #undef g_mapEntry24On
-#define g_mapEntry24On (g_data.g_mapEntry24On_)
+#define g_mapEntry24On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xc0))
 #undef g_mapListFlaggedCount
 #define g_mapListFlaggedCount (*(int *)g_mapListFlaggedCount_v)
 #undef g_mapListKept
@@ -1223,7 +1237,7 @@ extern struct GameData g_data;
 #undef g_mapListMade
 #define g_mapListMade (*(int *)g_mapListMade_v)
 #undef g_mapListOpen
-#define g_mapListOpen (g_data.g_mapListOpen_)
+#define g_mapListOpen (*(int *)g_mapListOpen_v)
 #undef g_mapListRects
 #define g_mapListRects ((int *)g_mapListRects_v)
 #undef g_mapMissing
@@ -1582,6 +1596,8 @@ extern struct GameData g_data;
 #define g_newNameDialogRight (*(int *)g_newNameDialogRight_v)
 #undef g_newNameDialogTop
 #define g_newNameDialogTop (*(int *)g_newNameDialogTop_v)
+#undef g_nextNumber
+#define g_nextNumber ((int *)g_nextNumber_v)
 #undef g_nextScreen
 #define g_nextScreen (*(int *)g_nextScreen_v)
 #undef g_openLoginName
@@ -1592,6 +1608,8 @@ extern struct GameData g_data;
 #define g_otherModeWidth (*(int *)g_otherModeWidth_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
+#undef g_panelBoxes
+#define g_panelBoxes ((u8 *)g_panelBoxes_v)
 #undef g_panelGlow
 #define g_panelGlow (*(float *)g_panelGlow_v)
 #undef g_panelGlowStep
@@ -1599,17 +1617,17 @@ extern struct GameData g_data;
 #undef g_panelHovered
 #define g_panelHovered (*(int *)g_panelHovered_v)
 #undef g_partBox0Offset
-#define g_partBox0Offset (*(u32 *)g_partBox0Offset_v)
+#define g_partBox0Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x54))
 #undef g_partBox1Offset
-#define g_partBox1Offset (*(u32 *)g_partBox1Offset_v)
+#define g_partBox1Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0xac))
 #undef g_partBox2Offset
-#define g_partBox2Offset (*(u32 *)g_partBox2Offset_v)
+#define g_partBox2Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x104))
 #undef g_partBox3Offset
-#define g_partBox3Offset (*(u32 *)g_partBox3Offset_v)
+#define g_partBox3Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x15c))
 #undef g_partBox4Offset
-#define g_partBox4Offset (*(u32 *)g_partBox4Offset_v)
+#define g_partBox4Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x1b4))
 #undef g_partBox5Offset
-#define g_partBox5Offset (*(u32 *)g_partBox5Offset_v)
+#define g_partBox5Offset (*(u32 *)((u8 *)g_panelBoxes_v + 0x20c))
 #undef g_partRecords
 #define g_partRecords ((u8 *)g_partRecords_v)
 #undef g_paused
@@ -2084,6 +2102,8 @@ extern struct GameData g_data;
 #define g_serverListCount (*(int *)g_serverListCount_v)
 #undef g_serverNames
 #define g_serverNames ((u32 *)g_serverNames_v)
+#undef g_serverPing
+#define g_serverPing ((int *)g_serverPing_v)
 #undef g_serverPingCount
 #define g_serverPingCount (*(int *)g_serverPingCount_v)
 #undef g_serverPort
@@ -2094,6 +2114,8 @@ extern struct GameData g_data;
 #define g_serverReplyKind (*(int *)((u8 *)g_serverReply_v + 0x1e))
 #undef g_serverSearching
 #define g_serverSearching (*(int *)g_serverSearching_v)
+#undef g_serverUsed
+#define g_serverUsed ((u32 *)g_serverUsed_v)
 #undef g_serviceProviderCount
 #define g_serviceProviderCount (*(int *)g_serviceProviderCount_v)
 #undef g_settingsPage
@@ -2220,6 +2242,8 @@ extern struct GameData g_data;
 #define g_textCharWidth (*(int *)g_textCharWidth_v)
 #undef g_textColour
 #define g_textColour ((Colour *)g_data.g_textColour_)
+#undef g_textColours
+#define g_textColours ((Colour *)g_textColours_v)
 #undef g_textEndX
 #define g_textEndX (*(int *)g_textEndX_v)
 #undef g_textEndY
@@ -2330,6 +2354,8 @@ extern struct GameData g_data;
 #define g_unlit (g_data.g_unlit_)
 #undef g_unlockedLevel
 #define g_unlockedLevel (*(int *)g_unlockedLevel_v)
+#undef g_unused16
+#define g_unused16 ((int *)g_unused16_v)
 #undef g_unusedArmcMoveWord
 #define g_unusedArmcMoveWord (*(u32 *)g_unusedArmcMoveWord_v)
 #undef g_unusedArmcWord1

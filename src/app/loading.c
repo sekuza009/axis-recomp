@@ -3,7 +3,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define g_loadTimer ((void *)IMG(0xa0e948))                /* its own game-time timer */
 #define g_loadText ((char *)ADDR(g_statusLine))
 #define ONE k_1f
 

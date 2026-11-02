@@ -4,8 +4,8 @@
 #include <string.h>
 
 typedef struct { i32 chosen; i32 type; } MapChoice;
-#define g_mapChoices ((MapChoice *)IMG(0x4d7358))
-#define g_mapChoicesKept ((MapChoice *)IMG(0x4d9508))
+#define g_mapChoices ((MapChoice *)g_mapChoiceTable)          /* (objects.h: 1024 of them) */
+#define g_mapChoicesKept ((MapChoice *)g_mapChoiceKeptTable)
 
 /* the maps that are never offered */
 static void clear_unused(void)

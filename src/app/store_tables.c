@@ -56,19 +56,19 @@ static const Store k_input_initVkTable[57] = {
 void (input_initVkTable)(void) { apply_stores(k_input_initVkTable, 57); }   /* 0x431680 scan-code row -> virtual key table */
 
 static const Store k_replay_46d4d0[64] = {
-	{ IMG(0xa1f100), 0x3f800000 }, { IMG(0xa1f104), 0x3f800000 }, { IMG(0xa1f108), 0x3f800000 }, { IMG(0xa1f10c), 0x3f800000 }, { IMG(0xa1f110), 0x3f73f3f4 },
-	{ IMG(0xa1f114), 0x3ea8a8a9 }, { IMG(0xa1f118), 0x3ea8a8a9 }, { IMG(0xa1f11c), 0x3f800000 }, { IMG(0xa1f120), 0x3f7dfdfe }, { IMG(0xa1f124), 0x3f37b7b8 },
-	{ IMG(0xa1f128), 0x3f67e7e8 }, { IMG(0xa1f12c), 0x3f800000 }, { IMG(0xa1f130), 0x3ecccccd }, { IMG(0xa1f134), 0x3ea8a8a9 }, { IMG(0xa1f138), 0x3f73f3f4 },
-	{ IMG(0xa1f13c), 0x3f800000 }, { IMG(0xa1f140), 0x0 }, { IMG(0xa1f144), 0x3f4ccccd }, { IMG(0xa1f148), 0x3f800000 }, { IMG(0xa1f14c), 0x3f800000 },
-	{ IMG(0xa1f150), 0x3e70f0f1 }, { IMG(0xa1f154), 0x3f53d3d4 }, { IMG(0xa1f158), 0x3e0c8c8d }, { IMG(0xa1f15c), 0x3f800000 }, { IMG(0xa1f160), 0x3f4ccccd },
-	{ IMG(0xa1f164), 0x3f800000 }, { IMG(0xa1f168), 0x3f26a6a7 }, { IMG(0xa1f16c), 0x3f800000 }, { IMG(0xa1f170), 0x3f800000 }, { IMG(0xa1f174), 0x3f70f0f1 },
-	{ IMG(0xa1f178), 0x0 }, { IMG(0xa1f17c), 0x3f800000 }, { IMG(0xa1f180), 0x3f48c8c9 }, { IMG(0xa1f184), 0x3f48c8c9 }, { IMG(0xa1f188), 0x3f53d3d4 },
-	{ IMG(0xa1f18c), 0x3f800000 }, { IMG(0xa1f190), 0x3f109091 }, { IMG(0xa1f194), 0x3f109091 }, { IMG(0xa1f198), 0x3f20a0a1 }, { IMG(0xa1f19c), 0x3f800000 },
-	{ IMG(0xa1f1a0), 0x3f189899 }, { IMG(0xa1f1a4), 0x3f1a9a9b }, { IMG(0xa1f1a8), 0x3f058586 }, { IMG(0xa1f1ac), 0x3f800000 }, { IMG(0xa1f1b0), 0x3f058586 },
-	{ IMG(0xa1f1b4), 0x0 }, { IMG(0xa1f1b8), 0x0 }, { IMG(0xa1f1bc), 0x3f800000 }, { IMG(0xa1f1c0), 0x3d40c0c1 }, { IMG(0xa1f1c4), 0x0 },
-	{ IMG(0xa1f1c8), 0x3f800000 }, { IMG(0xa1f1cc), 0x3f800000 }, { IMG(0xa1f1d0), 0x3f52d2d3 }, { IMG(0xa1f1d4), 0x0 }, { IMG(0xa1f1d8), 0x3f800000 },
-	{ IMG(0xa1f1dc), 0x3f800000 }, { IMG(0xa1f1e0), 0x3e38b8b9 }, { IMG(0xa1f1e4), 0x3e48c8c9 }, { IMG(0xa1f1e8), 0x3e68e8e9 }, { IMG(0xa1f1ec), 0x3f800000 },
-	{ IMG(0xa1f1f0), 0x0 }, { IMG(0xa1f1f4), 0x3f800000 }, { IMG(0xa1f1f8), 0x3f22a2a3 }, { IMG(0xa1f1fc), 0x3f800000 } };
+	{ OBJ(g_textColours), 0x3f800000 }, { (OBJ(g_textColours) + 0x4), 0x3f800000 }, { (OBJ(g_textColours) + 0x8), 0x3f800000 }, { (OBJ(g_textColours) + 0xc), 0x3f800000 }, { (OBJ(g_textColours) + 0x10), 0x3f73f3f4 },
+	{ (OBJ(g_textColours) + 0x14), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x18), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x1c), 0x3f800000 }, { (OBJ(g_textColours) + 0x20), 0x3f7dfdfe }, { (OBJ(g_textColours) + 0x24), 0x3f37b7b8 },
+	{ (OBJ(g_textColours) + 0x28), 0x3f67e7e8 }, { (OBJ(g_textColours) + 0x2c), 0x3f800000 }, { (OBJ(g_textColours) + 0x30), 0x3ecccccd }, { (OBJ(g_textColours) + 0x34), 0x3ea8a8a9 }, { (OBJ(g_textColours) + 0x38), 0x3f73f3f4 },
+	{ (OBJ(g_textColours) + 0x3c), 0x3f800000 }, { (OBJ(g_textColours) + 0x40), 0x0 }, { (OBJ(g_textColours) + 0x44), 0x3f4ccccd }, { (OBJ(g_textColours) + 0x48), 0x3f800000 }, { (OBJ(g_textColours) + 0x4c), 0x3f800000 },
+	{ (OBJ(g_textColours) + 0x50), 0x3e70f0f1 }, { (OBJ(g_textColours) + 0x54), 0x3f53d3d4 }, { (OBJ(g_textColours) + 0x58), 0x3e0c8c8d }, { (OBJ(g_textColours) + 0x5c), 0x3f800000 }, { (OBJ(g_textColours) + 0x60), 0x3f4ccccd },
+	{ (OBJ(g_textColours) + 0x64), 0x3f800000 }, { (OBJ(g_textColours) + 0x68), 0x3f26a6a7 }, { (OBJ(g_textColours) + 0x6c), 0x3f800000 }, { (OBJ(g_textColours) + 0x70), 0x3f800000 }, { (OBJ(g_textColours) + 0x74), 0x3f70f0f1 },
+	{ (OBJ(g_textColours) + 0x78), 0x0 }, { (OBJ(g_textColours) + 0x7c), 0x3f800000 }, { (OBJ(g_textColours) + 0x80), 0x3f48c8c9 }, { (OBJ(g_textColours) + 0x84), 0x3f48c8c9 }, { (OBJ(g_textColours) + 0x88), 0x3f53d3d4 },
+	{ (OBJ(g_textColours) + 0x8c), 0x3f800000 }, { (OBJ(g_textColours) + 0x90), 0x3f109091 }, { (OBJ(g_textColours) + 0x94), 0x3f109091 }, { (OBJ(g_textColours) + 0x98), 0x3f20a0a1 }, { (OBJ(g_textColours) + 0x9c), 0x3f800000 },
+	{ (OBJ(g_textColours) + 0xa0), 0x3f189899 }, { (OBJ(g_textColours) + 0xa4), 0x3f1a9a9b }, { (OBJ(g_textColours) + 0xa8), 0x3f058586 }, { (OBJ(g_textColours) + 0xac), 0x3f800000 }, { (OBJ(g_textColours) + 0xb0), 0x3f058586 },
+	{ (OBJ(g_textColours) + 0xb4), 0x0 }, { (OBJ(g_textColours) + 0xb8), 0x0 }, { (OBJ(g_textColours) + 0xbc), 0x3f800000 }, { (OBJ(g_textColours) + 0xc0), 0x3d40c0c1 }, { (OBJ(g_textColours) + 0xc4), 0x0 },
+	{ (OBJ(g_textColours) + 0xc8), 0x3f800000 }, { (OBJ(g_textColours) + 0xcc), 0x3f800000 }, { (OBJ(g_textColours) + 0xd0), 0x3f52d2d3 }, { (OBJ(g_textColours) + 0xd4), 0x0 }, { (OBJ(g_textColours) + 0xd8), 0x3f800000 },
+	{ (OBJ(g_textColours) + 0xdc), 0x3f800000 }, { (OBJ(g_textColours) + 0xe0), 0x3e38b8b9 }, { (OBJ(g_textColours) + 0xe4), 0x3e48c8c9 }, { (OBJ(g_textColours) + 0xe8), 0x3e68e8e9 }, { (OBJ(g_textColours) + 0xec), 0x3f800000 },
+	{ (OBJ(g_textColours) + 0xf0), 0x0 }, { (OBJ(g_textColours) + 0xf4), 0x3f800000 }, { (OBJ(g_textColours) + 0xf8), 0x3f22a2a3 }, { (OBJ(g_textColours) + 0xfc), 0x3f800000 } };
 
 void (color_initTextColours)(void) { apply_stores(k_replay_46d4d0, 64); }   /* 0x46d4d0 64-entry table */
 

@@ -1,8 +1,6 @@
 /* net_servers.c: the server list of the game's own TCP network code: pings, and the threads' events. */
 #include "../game.h"
 
-#define g_serverUsed ((u32 *)IMG(0xa0bb14))                /* per server slot (256) */
-#define g_serverPing ((int *)IMG(0xa0d384))                /* per server slot: the ping time (0 none) */
 
 /* 0x454650: ping the server named address (dotted) and keep its time in slot; 1 when it answered within a second */
 int (net_pingServer)(const char *address, int slot)

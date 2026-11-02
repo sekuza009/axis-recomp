@@ -4,8 +4,4 @@ g_lastTime   # its old place written (canary): reached at its old place by addre
 g_mouse2Down   # its old place written (canary): reached at its old place by address
 g_mouse3Down   # its old place written (canary): reached at its old place by address
 g_textureSetHeight   # its old place written (canary): reached at its old place by address
-g_mapEntry22On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
-g_mapEntry23On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
-g_mapEntry24On   # inside the arena's map-choice table (1024 x 8 bytes from 0x4d9508): reached by raw ranges and receives
-g_mapListOpen   # inside the arena's map-choice table (lobby_states.c's loop over 0x4d950c .. 0x4db50c)
 g_loginToSend   # inside the 0x44-byte entries lobby_states.c walks from 0x9dcef4 to 0x9dd19c

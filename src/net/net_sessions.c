@@ -19,10 +19,10 @@ static void merge(const Received *g)
 {
 	if (GAME_VAR(int, g->flag)) {
 		for (int i = 0; i < g_serverPingCount; i++) {
-			if (GAME_VAR(int, 0xa0bb14 + i * 4) != 1)   /* not new */
+			if (GAME_VAR(int, OBJ(g_serverUsed) + i * 4) != 1)   /* not new */
 				continue;
 			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
-			int players = GAME_VAR(int, 0xa0d384 + i * 4);
+			int players = GAME_VAR(int, OBJ(g_serverPing) + i * 4);
 			if (players > 0) {
 				int k = g_gameCount;
 				u8 *e = SESSION(k);
@@ -47,7 +47,7 @@ static void merge(const Received *g)
 				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */
 			}
-			GAME_VAR(int, 0xa0bb14 + i * 4) = 0;
+			GAME_VAR(int, OBJ(g_serverUsed) + i * 4) = 0;
 			g_lobbyListPage++;
 		}
 		if (!g_netListDone)

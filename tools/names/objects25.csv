@@ -1,0 +1,13 @@
+# named arrays that were file / game.h pointer macros only (step 3b; --records): extents from the code and neighbours
+0x4d1e9c,u8,256,g_keyState,the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState)
+0xa0d7a4,int,4,g_dplaySlots,four DirectPlay connection slots: 1 while open
+0x4dc550,u8,528,g_panelBoxes,ARM CENTER's six part panels' boxes (0x58 bytes each: +-600 corners, offsets; up to g_armcParts)
+0x4d7358,u8,8192,g_mapChoiceTable,the arena's map choices (1024 of 8 bytes: MapChoice)
+0x4d9508,u8,8192,g_mapChoiceKeptTable,the map choices kept (1024 of 8: on, type; g_mapEntry22On .. 24On are entries 22 .. 24's flag)
+0xaef660,int,16,g_unused16,per player, cleared and never read (net_packets)
+0xaef6a0,u8,131072,g_history,each player's packets by number: 16 x 128 of 64 bytes (net_packets)
+0xb0f6a0,int,2048,g_ahead,[player * 128 + number]: arrived ahead of its turn (net_packets)
+0xb116a0,int,16,g_nextNumber,each player's next packet number (-1: none yet)
+0xa0bb14,u32,256,g_serverUsed,per server slot: in use
+0xa0d384,int,256,g_serverPing,per server slot: the ping time (0 none)
+0xa0e948,u8,56,g_loadTimer,the loading screen's own game-time timer (a TimeSync: 0xe words)

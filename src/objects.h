@@ -255,3 +255,16 @@
 #define g_setupColourDim ((u32 *)IMG(0x4ddae0))   /* u32[4]; setup's text colour */
 #define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish settings' panel colour */
 #define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish settings' colour */
+#define g_textColours ((Colour *)IMG(0xa1f100))   /* Colour[16]; the 16 message colours (RGBA floats; color_initTextColours fills them) */
+#define g_keyState ((u8 *)IMG(0x4d1e9c))   /* u8[256]; the keyboard's 256 key bytes (0x80: held; DirectInput's GetDeviceState) */
+#define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
+#define g_panelBoxes ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six part panels' boxes (0x58 bytes each: +-600 corners */
+#define g_mapChoiceTable ((u8 *)IMG(0x4d7358))   /* u8[8192]; the arena's map choices (1024 of 8 bytes: MapChoice) */
+#define g_mapChoiceKeptTable ((u8 *)IMG(0x4d9508))   /* u8[8192]; the map choices kept (1024 of 8: on */
+#define g_unused16 ((int *)IMG(0xaef660))   /* int[16]; per player */
+#define g_history ((u8 *)IMG(0xaef6a0))   /* u8[131072]; each player's packets by number: 16 x 128 of 64 bytes (net_packets) */
+#define g_ahead ((int *)IMG(0xb0f6a0))   /* int[2048]; [player * 128 + number]: arrived ahead of its turn (net_packets) */
+#define g_nextNumber ((int *)IMG(0xb116a0))   /* int[16]; each player's next packet number (-1: none yet) */
+#define g_serverUsed ((u32 *)IMG(0xa0bb14))   /* u32[256]; per server slot: in use */
+#define g_serverPing ((int *)IMG(0xa0d384))   /* int[256]; per server slot: the ping time (0 none) */
+#define g_loadTimer ((u8 *)IMG(0xa0e948))   /* u8[56]; the loading screen's own game-time timer (a TimeSync: 0xe words) */

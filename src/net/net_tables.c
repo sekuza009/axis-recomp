@@ -634,10 +634,10 @@ u32 (net_pingAllServers)(void)
 				int time = (*(int *)&g_pingTime);
 				if (time > 1000)
 					(*(int *)&g_pingTime) = time -= 400;
-				GAME_VAR(int, 0xa0d384 + i * 4) = time;
+				GAME_VAR(int, OBJ(g_serverPing) + i * 4) = time;
 			} else
-				GAME_VAR(int, 0xa0d384 + i * 4) = 0;
-			GAME_VAR(int, 0xa0bb14 + i * 4) = 1;
+				GAME_VAR(int, OBJ(g_serverPing) + i * 4) = 0;
+			GAME_VAR(int, OBJ(g_serverUsed) + i * 4) = 1;
 		}
 	}
 	g_netListDone = 1;

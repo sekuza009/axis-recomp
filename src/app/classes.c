@@ -146,7 +146,7 @@ u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)ADDR(g_staticT
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); TimeSync_clear(self); return self; }
 void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync, 0x4aa46c); }
 DELETING(TimeSync, TimeSync_dtor)
-void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)IMG(0xa0e948)); }
+void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)OBJ(g_loadTimer)); }
 
 /* TextureManager (vtable 0x4a9570; the global one at 0x83a5e0) */
 int (TextureManager_ctor)(void) { g_textureManager = STR(0x4a9570, "P\263B"); return TextureManager_clear((void *)ADDR(g_textureManager)); }

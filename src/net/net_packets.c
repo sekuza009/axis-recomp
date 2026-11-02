@@ -9,10 +9,6 @@
 
 #define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
 #define g_localSlot g_watchedSlot            /* the local player's slot */
-#define g_nextNumber ((int *)IMG(0xb116a0))                /* each player's next packet number (-1: none yet) */
-#define g_ahead ((int *)IMG(0xb0f6a0))                     /* [player * 128 + number]: arrived ahead of its turn */
-#define g_history ((u8 *)IMG(0xaef6a0))                    /* [player][number]: 64 bytes */
-#define g_unused16 ((int *)IMG(0xaef660))                  /* (cleared per player, never read) */
 #define PLAYER(i, offset) GAME_VAR(int, OBJ(g_netSlots) + (i) * 0x410 + (offset))
 #define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
 
