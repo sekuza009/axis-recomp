@@ -109,7 +109,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			   and keep its letters 4:3 on wide screens */
 			PATCHED_CALL(0x491c2d, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
 			int centre = marker_hudX(player->screenX), half;
-			if (code_matches(0x491c52, "52 8d 44 24 3c 50 e8 ?? ?? ?? ?? 59 5a 2b d0 90 90 90 90 90 90"))
+			if (PATCHED_BLOCK(0x491c58, 0x491c52, "52 8d 44 24 3c 50 e8 ?? ?? ?? ?? 59 5a 2b d0 90 90 90 90 90 90"))
 				half = PATCHED_CALL(0x491c58, int, const char *, int)(name, centre);   /* the patch DLL measures the name */
 			else
 				half = (int)(strlen(name) >> 1) * 8;                                  /* 8 units per character */

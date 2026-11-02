@@ -112,8 +112,19 @@ static inline long double fdivr_m(long double x, const float *m) { __asm__("fdiv
 #endif
 /* a call the patch DLL may retarget at start-up (it rewrites the call instruction's target): the call goes to
    whatever the instruction at the original call site targets now, as the original's would */
+#ifdef AXIS_DIRECT
+/* (AxisRC.exe: none of the game's code runs; the patch layer keeps its retargets in a table: src/wide.c) */
+void *wide_callSite(u32 site);
+int wide_callAdded(u32 site, u32 at, const char *pattern);
+#define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))wide_callSite(site))
+#define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))wide_callSite(site))
+/* 1 when the patch DLL's rewritten block at `at`, which adds a call at `site`, is in */
+#define PATCHED_BLOCK(site, at, pattern) wide_callAdded(site, at, pattern)
+#else
 #define PATCHED_CALL(site, ret, ...) ((ret (CDECL *)(__VA_ARGS__))(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1)))
 #define PATCHED_THISCALL(site, ret, ...) ((ret (THISCALL *)(__VA_ARGS__))(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1)))
+#define PATCHED_BLOCK(site, at, pattern) code_matches(at, pattern)
+#endif
 /* 1 when the game's code at addr currently reads as pattern (hex bytes separated by spaces, "??" for any byte): for
    a block the patch DLL rewrites at start-up, so the rebuild follows whichever version is in memory */
 static inline int code_matches(u32 addr, const char *pattern)

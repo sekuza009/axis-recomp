@@ -349,7 +349,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		}
 	} else if (S(int, 0x2340cf4) == 1) {
 		mouse_offset(s, 0);
-		if (code_matches(0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
+		if (PATCHED_BLOCK(0x49ddcc, 0x49ddcb, "56 e8 ?? ?? ?? ?? 59 e9"))
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
 		else {
 			const float *down = (const float *)ADDR(k_m50f), *up = (const float *)ADDR(k_50f);

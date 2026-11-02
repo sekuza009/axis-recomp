@@ -10,7 +10,7 @@ static int no_mousePressed(int key) { (void)key; return 0; }
 static int no_latch[3];
 static void CDECL no_cursorClamp(void) {}
 static const Wide none = { sizeof(Wide), &off, &off, &off, &off, &off, &off, &off, &unused, no_fullScreen,
-                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off, &unused };
+                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off, &unused, NULL };
 const Wide *g_wide = &none;
 
 /* called by the patch DLL (test build) right after it loads recomp.dll */
@@ -18,6 +18,18 @@ __declspec(dllexport) void recomp_setWide(const Wide *wide)
 {
 	if (wide && wide->size == (int)sizeof(Wide))
 		g_wide = wide;
+}
+
+void *wide_callSite(u32 site)
+{
+	if (g_wide->callSite)
+		return g_wide->callSite(site);
+	return (void *)(RELOC(site) + 5 + *(const i32 *)(RELOC(site) + 1));   /* (the call instruction's target) */
+}
+
+int wide_callAdded(u32 site, u32 at, const char *pattern)
+{
+	return g_wide->callSite ? g_wide->callSite(site) != NULL : code_matches(at, pattern);
 }
 
 /* for the harness: the patch DLL handed its table over, and it put in its own menu_vertex / menu_drawRect */

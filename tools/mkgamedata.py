@@ -37,7 +37,18 @@ for f in glob.glob(R + 'src/**/*.[ch]', recursive=True) + [R + 'axisnet_recomp.c
 	if os.path.basename(os.path.dirname(f)) == 'data':
 		continue   # (src/data/: the data, its addresses are not code anything reads)
 	patch_layer = f.endswith('axisnet_recomp.c')
-	for m in re.findall(r'0x(4[0-9a-f]{5})\b', open(f, encoding='latin-1').read()):
+	t = open(f, encoding='latin-1').read()
+	# not read: comments; the call sites the patch layer keeps in its table (g_sites) and the rebuilds reach through
+	# it (PATCHED_CALL / PATCHED_THISCALL / PATCHED_BLOCK's site, text_passes8's site argument)
+	t = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', t, flags=re.S)
+	t = re.sub(r'static CallSite g_sites\[\] = \{.*?\n\};', ' ', t, flags=re.S)
+	t = re.sub(r'PATCHED_(?:CALL|THISCALL|BLOCK)\(0x[0-9a-f]+', ' ', t)
+	if patch_layer:   # (its call tables, call_is / call_set / call_site: AXIS_STANDALONE asks g_sites)
+		t = re.sub(r'\{\s*0x4[0-9a-f]{5},\s*0x4[0-9a-f]{5},', ' ', t)
+		t = re.sub(r'call_(?:is|set|site)\(0x4[0-9a-f]{5}(?:,\s*0x4[0-9a-f]{5})?', ' ', t)
+		t = re.sub(r'at\[\] = \{0x429cc3, 0x429cf0\}', ' ', t)
+	t = re.sub(r'text_passes8\(([^;]*?), 0x4[0-9a-f]{5}\)', r'text_passes8(\1)', t)
+	for m in re.findall(r'0x(4[0-9a-f]{5})\b', t):
 		a = int(m, 16)
 		if text_lo <= a < text_hi and (patch_layer or a not in starts_set):   # (src: a function's entry is only called)
 			want.append((a - 32, a + 64))

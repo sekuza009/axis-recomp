@@ -31,7 +31,15 @@ typedef struct {
 	const volatile int *rotFix;        /* armc_rotateFromCursor (0x461850): the cursor's turn in 640 x 480 units */
 	volatile int *penDraw;             /* set by font_penDraw (0x46bb00) while it draws: the patch DLL recognised the
 	                                      original by its glVertex2i calls' return addresses */
+	void *(CDECL *callSite)(u32 site);   /* what the game's call at site goes to now (the patch DLL retargets some;
+	                                        NULL: a call one of its rewritten blocks adds, not added) */
 } Wide;
+
+/* the call at the game's call site `site` (PATCHED_CALL in the standalone build): the patch DLL's table, else the
+   call instruction's own target */
+void *wide_callSite(u32 site);
+/* 1 when the patch DLL's rewritten block at `at` (whose call is at `site`) is in; else code_matches(at, pattern) */
+int wide_callAdded(u32 site, u32 at, const char *pattern);
 
 /* what the main HUD's vertices are anchored to on a screen wider than 4:3 (hudPart) */
 enum {

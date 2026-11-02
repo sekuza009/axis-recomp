@@ -1128,6 +1128,73 @@ static void *lobby_vtbl[] = {
     LB_GetConnectionSettings, LU, LU, LU, LU, LU, LB_CreateCompoundAddress, LU, LU, LU, LU
 };
 
+/* ------------------------------------------------------------------ call sites
+   The game's call instructions this layer retargets, and the ones its rewritten blocks add (from 0), with the
+   function each calls in the game as shipped. In the game (and the harness) a retarget rewrites the instruction;
+   in AxisRC.exe (AXIS_STANDALONE), where none of the game's code runs, only this table changes and the rebuilt
+   callers ask it (Wide.callSite: wide_callSite in src/wide.c, PATCHED_CALL in src/axis.h). */
+typedef struct { DWORD at, from; void *to; } CallSite;
+static CallSite g_sites[] = {
+    {0x402720, 0x402010}, {0x40288c, 0x402010}, {0x4029b0, 0x402210}, {0x402be8, 0x402210},   /* text_ascii8Pass, text_ascii16Pass */
+    {0x402d90, 0x402420}, {0x402fbd, 0x402420}, {0x4031f1, 0x403060}, {0x4032e6, 0x403060},   /* text_ascii32Pass, text_ascii5Pass */
+    {0x41f903, 0x429170},   /* menu_titleEmblemTransition */
+    {0x41fc28, 0x429bc0},   /* menu_drawCursor */
+    {0x429cc3, 0x41ef60}, {0x429cf0, 0x41ef60},   /* menu_vertex */
+    {0x445c69, 0x401730},   /* input_readMouse */
+    {0x45636e, 0x4554c0},   /* tex_findByName */
+    {0x45c638, 0x473780}, {0x460920, 0x473780}, {0x498dd8, 0x473780}, {0x49a54f, 0x473780},   /* catalogue_loadComponents */
+    {0x466ea9, 0x466d60}, {0x466ee0, 0x466d60}, {0x4671f6, 0x466d60}, {0x467249, 0x466d60},   /* shape_findDatEntry */
+    {0x466eb8, 0x466120}, {0x466eef, 0x466120}, {0x467214, 0x466120}, {0x467267, 0x466120},   /* shape_read */
+    {0x48a19c, 0x4913a0}, {0x498580, 0x4913a0},   /* hud_drawPlayerMarkers */
+    {0x48a1c0, 0x495190},   /* replay_drawMessage */
+    {0x48a1f7, 0x496820}, {0x48a299, 0x496820},   /* replay_drawIcon */
+    {0x48a259, 0x44ad60}, {0x48a2ff, 0x44ad60},   /* text_drawSized */
+    {0x48a309, 0x496b80},   /* replay_drawFollowedName */
+    {0x48a318, 0x494930}, {0x4986a0, 0x494930},   /* hud_drawRanking */
+    {0x48b386, 0x4982f0},   /* hud_pass */
+    {0x491c2d, 0x44ae10},   /* text_drawCentred */
+    {0x49395f, 0x46bb00},   /* font_penDraw */
+    {0x4985c4, 0x491f50},   /* hud_drawLockOn */
+    {0x498654, 0x4926f0},   /* hud_drawMain */
+    {0x498862, 0x495510},   /* hud_drawFps */
+    {0x491c58, 0},          /* added by the name label's block (0x491c52): label_halfw */
+    {0x49ddcc, 0},          /* added by the in-match menu's block (0x49ddcb): menu_nav */
+};
+static CallSite *site_of(DWORD at) {
+    for (int i = 0; i < (int)(sizeof g_sites / sizeof g_sites[0]); i++) if (g_sites[i].at == at) return &g_sites[i];
+    return NULL;
+}
+/* 1 when the call at `at` still goes to the game's `from` */
+static int call_is(DWORD at, DWORD from) {
+#ifdef AXIS_STANDALONE
+    CallSite *s = site_of(at);
+    return s && s->from == from && !s->to;
+#else
+    BYTE *p = (BYTE *)RELOC(at);
+    return p[0] == 0xe8 && *(INT32 *)(p + 1) == (INT32)(from - (at + 5));
+#endif
+}
+/* the call at `at` sent to `to` */
+static void call_set(DWORD at, void *to) {
+    CallSite *s = site_of(at);
+    if (s) s->to = to;
+    else logf("call site %#lx not in the table", at);
+#ifndef AXIS_STANDALONE
+    BYTE *p = (BYTE *)RELOC(at);
+    DWORD old;
+    VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
+    *(INT32 *)(p + 1) = (INT32)((BYTE *)to - (p + 5));
+    VirtualProtect(p, 5, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), p, 5);
+#endif
+}
+/* what the call at `at` goes to now (NULL: a call a block adds, not added) */
+static void *__cdecl call_site(DWORD at) {
+    CallSite *s = site_of(at);
+    if (!s) { logf("call site %#lx not in the table", at); return NULL; }
+    return s->to ? s->to : s->from ? (void *)IMG(s->from) : NULL;
+}
+
 /* ------------------------------------------------------------------ hooks */
 typedef HRESULT (WINAPI *COCREATE)(REFCLSID, void *, DWORD, REFIID, void **);
 typedef DWORD (WINAPI *ICMPSEND)(HANDLE, DWORD, void *, WORD, void *, void *, DWORD, DWORD);
@@ -1657,20 +1724,13 @@ static void hook_sharptext(void) {
     p_glGetTexParameteriv = gl ? (GETTEXPARAMIV)GetProcAddress(gl, "glGetTexParameteriv") : NULL;
     int n = sizeof calls / sizeof calls[0];
     for (int i = 0; i < n; i++) {   /* all or nothing */
-        BYTE *p = (BYTE *)RELOC(calls[i].at);
-        if (p[0] != 0xe8 || *(INT32 *)(p + 1) != (INT32)(calls[i].from - (calls[i].at + 5)) || !p_glTexParameteri) {
+        if (!call_is(calls[i].at, calls[i].from) || !p_glTexParameteri) {
             logf("text: sharp font sampling NOT INSTALLED (unexpected code at %#lx)", calls[i].at);
             return;
         }
     }
-    for (int i = 0; i < n; i++) {
-        BYTE *p = (BYTE *)RELOC(calls[i].at);
-        DWORD old;
-        VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
-        *(INT32 *)(p + 1) = (INT32)((BYTE *)calls[i].to - (p + 5));
-        VirtualProtect(p, 5, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), p, 5);
-    }
+    for (int i = 0; i < n; i++)
+        call_set(calls[i].at, calls[i].to);
     logf("text: menu/chat fonts drawn with nearest-texel sampling (no lines at high resolutions)");
 }
 /* HUD numbers (0x46bdc0: armor, shield, ammo) are 35x27-texel cells of the HUD texture ([0xa106ac], 256x256;
@@ -2149,20 +2209,13 @@ static void hook_marked(void) {
     };
     int n = sizeof calls / sizeof calls[0];
     for (int i = 0; i < n; i++) {   /* all or nothing */
-        BYTE *p = (BYTE *)RELOC(calls[i].at);
-        if (p[0] != 0xe8 || *(INT32 *)(p + 1) != (INT32)(calls[i].from - (calls[i].at + 5))) {
+        if (!call_is(calls[i].at, calls[i].from)) {
             logf("KYRIE parts: NOT INSTALLED (unexpected code at %#lx)", calls[i].at);
             return;
         }
     }
-    for (int i = 0; i < n; i++) {
-        BYTE *p = (BYTE *)RELOC(calls[i].at);
-        DWORD old;
-        VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
-        *(INT32 *)(p + 1) = (INT32)((BYTE *)calls[i].to - (p + 5));
-        VirtualProtect(p, 5, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), p, 5);
-    }
+    for (int i = 0; i < n; i++)
+        call_set(calls[i].at, calls[i].to);
     logf("KYRIE parts hooks ok");
 }
 
@@ -2265,8 +2318,9 @@ static struct {
     const volatile int *cursorClampFix; void (__cdecl *cursorClamp)(void);
     const volatile int *rotFix;
     volatile int *penDraw;
+    void *(__cdecl *callSite)(DWORD site);
 } g_wide = { sizeof g_wide, &g_menufix, &g_menu43, &g_inhud, &g_area, &g_cur_on, &g_cur_vx, &g_cur_vw, &g_hudpart, menu_full,
-             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp, &g_rotfix, &g_pendraw };
+             NULL, 0, &g_pressedfix, mouse_pressed, g_mlatch, &g_clampfix, cursor_clamp, &g_rotfix, &g_pendraw, call_site };
 
 /* g_wide.state: this module's writable data section (none in the standalone exe, which runs no harness) */
 static void wide_state_range(void) {
@@ -2362,15 +2416,9 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
     static const BYTE sig_cur[] = {0x8d, 0x6e, 0x2f, 0x57, 0x55, 0xe8};   /* 0x429cbe: lea ebp,[esi+2f]; push edi; push ebp; call */
     if (!IsBadReadPtr((void *)IMG(0x429cbe), 16) && !memcmp((void *)IMG(0x429cbe), sig_cur, sizeof sig_cur)) {
         static const DWORD at[] = {0x429cc3, 0x429cf0};
-        for (int i = 0; i < 2; i++) {
-            BYTE *p = (BYTE *)RELOC(at[i]);
-            if (p[0] != 0xe8 || *(INT32 *)(p + 1) != (INT32)(0x41ef60 - (at[i] + 5))) continue;
-            DWORD old;
-            VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
-            *(INT32 *)(p + 1) = (INT32)((BYTE *)cursor_vtx - (p + 5));
-            VirtualProtect(p, 5, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), p, 5);
-        }
+        for (int i = 0; i < 2; i++)
+            if (call_is(at[i], 0x41ef60))
+                call_set(at[i], cursor_vtx);
     }
     /* name label icon spacing (AxisGL): replace "len/2*8" at 0x491c52 with label_halfw(name) */
     static const BYTE sig_icon[] = {0x8d,0x7c,0x24,0x38,0x83,0xc9,0xff,0x33,0xc0,0xf2,0xae,0xf7,0xd1,0x49,
@@ -2386,6 +2434,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         memcpy(pi, c, sizeof c);
         VirtualProtect(pi, sizeof c, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pi, sizeof c);
+        call_set(0x491c58, label_halfw);   /* (the block's call) */
     }
     /* in-match menu mouse (AxisGL): 0x49ddcb -> push esi; call menu_nav; pop ecx; jmp 0x49de23 (menusens=0: original) */
     static const BYTE sig_nav[] = {0xd9,0x86,0x93,0x32,0x34,0x02,0xd8,0x1d,0x58,0x95,0x4a,0x00,0xdf,0xe0,0xf6,0xc4,
@@ -2400,6 +2449,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         memcpy(pn, c, sizeof c);
         VirtualProtect(pn, sizeof c, old, &old);
         FlushInstructionCache(GetCurrentProcess(), pn, sizeof c);
+        call_set(0x49ddcc, menu_nav);   /* (the block's call) */
     }
     /* proportional HUD: AxisGL's layout only (HUD width getter at 0x4685b0, main HUD routine at 0x4926f0) */
     int hud = 0;
@@ -2409,22 +2459,10 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         real_glViewport = hook_import(exe, "OPENGL32.dll", "glViewport", hook_glViewport);
         real_glVertex2i = hook_import(exe, "OPENGL32.dll", "glVertex2i", hook_glVertex2i);
         hud = real_glViewport && real_glVertex2i;
-        BYTE *pt = (BYTE *)IMG(0x49395f);   /* call 0x46bb00 (power-up seconds) -> pu_text */
-        if (hud && g_hud43 && pt[0] == 0xe8 && *(INT32 *)(pt + 1) == (INT32)(0x46bb00 - 0x493964)) {
-            DWORD old;
-            VirtualProtect(pt, 5, PAGE_EXECUTE_READWRITE, &old);
-            *(INT32 *)(pt + 1) = (INT32)((BYTE *)pu_text - (pt + 5));
-            VirtualProtect(pt, 5, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), pt, 5);
-        }
-        BYTE *pl = (BYTE *)IMG(0x491c2d);   /* call 0x44ae10 (player name label) -> label_text */
-        if (hud && g_hud43 && pl[0] == 0xe8 && *(INT32 *)(pl + 1) == (INT32)(0x44ae10 - 0x491c32)) {
-            DWORD old;
-            VirtualProtect(pl, 5, PAGE_EXECUTE_READWRITE, &old);
-            *(INT32 *)(pl + 1) = (INT32)((BYTE *)label_text - (pl + 5));
-            VirtualProtect(pl, 5, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), pl, 5);
-        }
+        if (hud && g_hud43 && call_is(0x49395f, 0x46bb00))   /* call 0x46bb00 (power-up seconds) -> pu_text */
+            call_set(0x49395f, pu_text);
+        if (hud && g_hud43 && call_is(0x491c2d, 0x44ae10))   /* call 0x44ae10 (player name label) -> label_text */
+            call_set(0x491c2d, label_text);
         static const struct { DWORD at, target; void *wrap; } calls[] = {
             {0x498580, 0x4913a0, (void *)markers_wrap}, {0x48a19c, 0x4913a0, (void *)markers_wrap},
             {0x498654, 0x4926f0, (void *)mainhud_wrap}, {0x498862, 0x495510, (void *)fps_wrap},
@@ -2434,23 +2472,12 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
             {0x48a299, 0x496820, (void *)ov_icon_right}, {0x48a2ff, 0x44ad60, (void *)ov_text_right},
             {0x48a1c0, 0x495190, (void *)ov_message}, {0x48a309, 0x496b80, (void *)ov_name},
             {0x48a318, 0x494930, (void *)ov_rank}};
-        for (int i = 0; i < (int)(sizeof calls / sizeof calls[0]) && hud && g_hud43; i++) {
-            BYTE *p = (BYTE *)RELOC(calls[i].at);
-            if (p[0] != 0xe8 || *(INT32 *)(p + 1) != (INT32)(calls[i].target - (calls[i].at + 5))) continue;
-            DWORD old;
-            VirtualProtect(p, 5, PAGE_EXECUTE_READWRITE, &old);
-            *(INT32 *)(p + 1) = (INT32)((BYTE *)calls[i].wrap - (p + 5));
-            VirtualProtect(p, 5, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), p, 5);
-        }
-        BYTE *pc = (BYTE *)IMG(0x48b386);   /* call 0x4982f0 (in-match 2D pass) -> hud_pass_wrap */
-        if (hud && pc[0] == 0xe8 && *(INT32 *)(pc + 1) == (INT32)(0x4982f0 - 0x48b38b)) {
-            DWORD old;
-            VirtualProtect(pc, 5, PAGE_EXECUTE_READWRITE, &old);
-            *(INT32 *)(pc + 1) = (INT32)((BYTE *)hud_pass_wrap - (pc + 5));
-            VirtualProtect(pc, 5, old, &old);
-            FlushInstructionCache(GetCurrentProcess(), pc, 5);
-        } else hud = 0;
+        for (int i = 0; i < (int)(sizeof calls / sizeof calls[0]) && hud && g_hud43; i++)
+            if (call_is(calls[i].at, calls[i].target))
+                call_set(calls[i].at, calls[i].wrap);
+        if (hud && call_is(0x48b386, 0x4982f0))   /* call 0x4982f0 (in-match 2D pass) -> hud_pass_wrap */
+            call_set(0x48b386, (void *)hud_pass_wrap);
+        else hud = 0;
         static const BYTE sig_d[] = {0xd8, 0x0d, 0x7c, 0xa2, 0x4a, 0x00};   /* 0x46bdda: fmul dword ptr [0x4aa27c] (26.0) */
         if (hud && g_hud43 && !memcmp((void *)IMG(0x46bdda), sig_d, 6)) {
             DWORD old, addr = (DWORD)&g_digit_h;
@@ -2472,14 +2499,9 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
        enemy was in view. That needs the viewport hook and the HUD pass wrapper, installed here if the HUD
        hooks above weren't. */
     static const BYTE sig_box[] = {0xc1,0xe0,0x04,0xbb,0x09,0x00,0x00,0x00,0xf7,0xf3,0x8d,0x58,0x08,0x39,0xcb};
-    BYTE *phw = (BYTE *)IMG(0x48b386);   /* call 0x4982f0 (in-match 2D pass) */
-    int inhud_ok = phw[0] == 0xe8 && *(INT32 *)(phw + 1) == (INT32)((BYTE *)hud_pass_wrap - (phw + 5));
-    if (g_menu43 && !inhud_ok && phw[0] == 0xe8 && *(INT32 *)(phw + 1) == (INT32)(0x4982f0 - 0x48b38b)) {
-        DWORD old;
-        VirtualProtect(phw, 5, PAGE_EXECUTE_READWRITE, &old);
-        *(INT32 *)(phw + 1) = (INT32)((BYTE *)hud_pass_wrap - (phw + 5));
-        VirtualProtect(phw, 5, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), phw, 5);
+    int inhud_ok = call_site(0x48b386) == (void *)hud_pass_wrap;   /* call 0x4982f0 (in-match 2D pass) */
+    if (g_menu43 && !inhud_ok && call_is(0x48b386, 0x4982f0)) {
+        call_set(0x48b386, (void *)hud_pass_wrap);
         inhud_ok = 1;
     }
     if (g_menu43 && inhud_ok && !real_glViewport) real_glViewport = hook_import(exe, "OPENGL32.dll", "glViewport", hook_glViewport);
@@ -2493,36 +2515,25 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved) {
         /* full-screen effects keep covering the whole screen (menu_vtx / trans_wrap / rect_wrap) */
         static const BYTE sig_vtx[] = {0xdb,0x44,0x24,0x08,0xd8,0x0d,0x14,0xf0,0x4d,0x00};
         static const BYTE sig_rect[] = {0xa1,0x8c,0xa4,0x9d,0x00,0x8b,0x0d,0x88,0xa4,0x9d,0x00};
-        BYTE *pv = (BYTE *)IMG(0x41ef60), *pr = (BYTE *)IMG(0x427970), *pt = (BYTE *)IMG(0x41f903);
-        if (!memcmp(pv, sig_vtx, sizeof sig_vtx) && !memcmp(pr, sig_rect, sizeof sig_rect) &&
-            pt[0] == 0xe8 && *(INT32 *)(pt + 1) == (INT32)(0x429170 - 0x41f908)) {
-            struct { BYTE *at; void *to; BYTE op; } j[] = {{pv, (void *)menu_vtx, 0xe9}, {pr, (void *)rect_wrap, 0xe9},
-                                                          {pt, (void *)trans_wrap, 0xe8}};
-            for (int i = 0; i < 3; i++) {
+        BYTE *pv = (BYTE *)IMG(0x41ef60), *pr = (BYTE *)IMG(0x427970);
+        if (!memcmp(pv, sig_vtx, sizeof sig_vtx) && !memcmp(pr, sig_rect, sizeof sig_rect) && call_is(0x41f903, 0x429170)) {
+            struct { BYTE *at; void *to; } j[] = {{pv, (void *)menu_vtx}, {pr, (void *)rect_wrap}};
+            for (int i = 0; i < 2; i++) {
                 VirtualProtect(j[i].at, 5, PAGE_EXECUTE_READWRITE, &old);
-                j[i].at[0] = j[i].op; *(INT32 *)(RELOC(j)[i].at + 1) = (INT32)((BYTE *)RELOC(j)[i].to - (j[i].at + 5));
+                j[i].at[0] = 0xe9; *(INT32 *)(RELOC(j)[i].at + 1) = (INT32)((BYTE *)RELOC(j)[i].to - (j[i].at + 5));
                 VirtualProtect(j[i].at, 5, old, &old);
                 FlushInstructionCache(GetCurrentProcess(), j[i].at, 5);
             }
-            BYTE *pcur = (BYTE *)IMG(0x41fc28);   /* call 0x429bc0 (menu cursor) -> cursor_draw */
-            if (pcur[0] == 0xe8 && *(INT32 *)(pcur + 1) == (INT32)(0x429bc0 - 0x41fc2d)) {
-                VirtualProtect(pcur, 5, PAGE_EXECUTE_READWRITE, &old);
-                *(INT32 *)(pcur + 1) = (INT32)((BYTE *)cursor_draw - (pcur + 5));
-                VirtualProtect(pcur, 5, old, &old);
-                FlushInstructionCache(GetCurrentProcess(), pcur, 5);
-            }
+            call_set(0x41f903, (void *)trans_wrap);
+            if (call_is(0x41fc28, 0x429bc0))   /* call 0x429bc0 (menu cursor) -> cursor_draw */
+                call_set(0x41fc28, (void *)cursor_draw);
             g_menufix = 1;
             logf("menus: centred 4:3 box, full-screen effects kept full screen");
         } else logf("menus: centred 4:3 box (full-screen effect hooks NOT installed)");
     }
-    BYTE *pin = (BYTE *)IMG(0x445c69);   /* call 0x401730 (DInput mouse read) -> input_read */
-    if (pin[0] == 0xe8 && *(INT32 *)(pin + 1) == (INT32)(0x401730 - 0x445c6e) &&
+    if (call_is(0x445c69, 0x401730) &&   /* call 0x401730 (DInput mouse read) -> input_read */
         (*(BYTE *)IMG(0x401730) == 0xe9 || (*(BYTE *)IMG(0x401730) == 0xa1 && *(DWORD *)IMG(0x401731) == 0x4d1fa4))) {
-        DWORD old;
-        VirtualProtect(pin, 5, PAGE_EXECUTE_READWRITE, &old);
-        *(INT32 *)(pin + 1) = (INT32)((BYTE *)input_read - (pin + 5));
-        VirtualProtect(pin, 5, old, &old);
-        FlushInstructionCache(GetCurrentProcess(), pin, 5);
+        call_set(0x445c69, (void *)input_read);
         logf("input: mouse buttons held across alt-tab ignored, chat line refocused");
     }
     if (g_sharptext) hook_sharptext();
