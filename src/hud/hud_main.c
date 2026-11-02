@@ -31,8 +31,14 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 
 /* the energy bar's length and left edge in HUD units: floats the patch DLL may move (it rewrites every operand that
    reads them, all to the same new address); read through the first of those operands */
+#ifdef AXIS_DIRECT
+/* (AxisRC.exe: where the installed exe's patch put them, its section .axnet: no patch DLL moves them now) */
+#define ENERGY_HEIGHT GAME_VAR(float, 0xb68ce4)   /* 160 on disk */
+#define ENERGY_WIDTH  GAME_VAR(float, 0xb68ce0)   /* 8 on disk */
+#else
 #define ENERGY_HEIGHT (*(const float *)RELOC(*(const u32 *)IMG(0x493db8)))   /* 160 on disk */
 #define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */
+#endif
 
 /* the alert ring: a quad strip around the screen centre, opaque at its inner edge and fading out 1.2 times further
    out, turning with the player's heading */

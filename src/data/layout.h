@@ -180,7 +180,8 @@ struct __attribute__((packed)) GameRdata {
 	u32 d_4aa238[10];
 	float d_4aa260[2];
 	u32 k_1em8f_[3];
-	float d_4aa274[4];
+	float d_4aa274[2];
+	float k_26f_[2];
 	u32 d_4aa284[1];
 	float k_1800f_;
 	u32 d_4aa28c[1];
@@ -1340,6 +1341,7 @@ _Static_assert(offsetof(struct GameRdata, d_4aa238) == 0x1238, "d_4aa238");
 _Static_assert(offsetof(struct GameRdata, d_4aa260) == 0x1260, "d_4aa260");
 _Static_assert(offsetof(struct GameRdata, k_1em8f_) == 0x1268, "k_1em8f_");
 _Static_assert(offsetof(struct GameRdata, d_4aa274) == 0x1274, "d_4aa274");
+_Static_assert(offsetof(struct GameRdata, k_26f_) == 0x127c, "k_26f_");
 _Static_assert(offsetof(struct GameRdata, d_4aa284) == 0x1284, "d_4aa284");
 _Static_assert(offsetof(struct GameRdata, k_1800f_) == 0x1288, "k_1800f_");
 _Static_assert(offsetof(struct GameRdata, d_4aa28c) == 0x128c, "d_4aa28c");

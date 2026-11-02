@@ -9,8 +9,11 @@ static void CDECL no_fullScreen(int on) { (void)on; }
 static int no_mousePressed(int key) { (void)key; return 0; }
 static int no_latch[3];
 static void CDECL no_cursorClamp(void) {}
+static const float *const no_float;
+static void **const no_slot;
 static const Wide none = { sizeof(Wide), &off, &off, &off, &off, &off, &off, &off, &unused, no_fullScreen,
-                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off, &unused, NULL };
+                           0, 0, &off, no_mousePressed, no_latch, &off, no_cursorClamp, &off, &unused, NULL,
+                           &off, &no_float, &no_slot, NULL };
 const Wide *g_wide = &none;
 
 /* called by the patch DLL (test build) right after it loads recomp.dll */
@@ -49,12 +52,17 @@ void wide_testCursor(int on, int x, int w)
 
 int wide_carries(u32 addr)
 {
+#ifdef AXIS_DIRECT
+	const int entryJumps = 1;   /* (AxisRC.exe: the patch layer's flags say it all; it rewrites no game code) */
+#else
 	const u8 *p = (const u8 *)RELOC(addr);
+	const int entryJumps = p[0] == 0xE9;
+#endif
 	switch (addr) {
 	case 0x41ef60: case 0x427970:   /* menu_vertex, menu_drawRect: replaced by the patch DLL's own versions */
-		return wide_menuFix() && p[0] == 0xE9;
+		return wide_menuFix() && entryJumps;
 	case 0x401600:                  /* input_justPressed: its entry jumps to the mouse-button latch */
-		return *g_wide->pressedFix && p[0] == 0xE9;
+		return *g_wide->pressedFix && entryJumps;
 	case 0x445c60:                  /* input_updateMenuCursor: the mouse read's call retargeted (followed live), the
 	                                   clamp replaced (cursorClampFix): both carried */
 		return 1;

@@ -73,7 +73,10 @@ tpieces = []
 for _, _, base, d in regions:
 	for o in range(0, len(d) - 3, 4):
 		v = struct.unpack_from('<I', d, o)[0]
-		if text_lo <= v < text_hi and v not in starts and v not in hooked and v not in stubs and not inside(v):
+		# (not the C runtime's code, 0x49e000 .. 0x4a8300, which its own tables point into: AxisRC.exe replaces the
+		# runtime with msvcrt.dll's, so none of it runs)
+		if text_lo <= v < text_hi and v not in starts and v not in hooked and v not in stubs and not inside(v) \
+		   and not 0x49e000 <= v < 0x4a8300:
 			nxt = next((s for s in starts if s > v), text_hi)
 			tpieces.append([v, nxt])
 tpieces.sort(); merged = []

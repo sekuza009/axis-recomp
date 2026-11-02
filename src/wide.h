@@ -33,6 +33,13 @@ typedef struct {
 	                                      original by its glVertex2i calls' return addresses */
 	void *(CDECL *callSite)(u32 site);   /* what the game's call at site goes to now (the patch DLL retargets some;
 	                                        NULL: a call one of its rewritten blocks adds, not added) */
+	/* the patch DLL's rewrites of single instructions, as state (AxisRC.exe carries no game code to rewrite): */
+	const volatile int *menuBox43;       /* the menus' box is h * 4 / 3 wide (the cave at 0x4a8fbb: shl 2 / mov 3) */
+	const float *const volatile *digitHeight;   /* the HUD digits' height factor (the fmul at 0x46bdda; NULL: 26) */
+	void **const volatile *digitTexCoord;       /* the slot their texture coordinates are called through (the mov
+	                                               at 0x46be96; NULL: glTexCoord2f's import) */
+	void (CDECL *playEnding)(void *owner, const char *file, int w, int h);   /* movie_playEnding (0x46c420), which
+	                                               the patch DLL replaces with its own player */
 } Wide;
 
 /* the call at the game's call site `site` (PATCHED_CALL in the standalone build): the patch DLL's table, else the

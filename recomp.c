@@ -2119,6 +2119,8 @@ int THISCALL SkeletonManager_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL UnitPoseInfo_dtor(void *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
+void *THISCALL UnitPoseInfo_deletingDtor(void *self, int flags);
+/* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 int THISCALL CollisionVolume_dtor(void *self);
 /* 0x4411e0 tunnel_rebuild(): restart the intro camera path list at 0x67fb3c with one node (counter 0x9dae10 = 0) */
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
@@ -8802,6 +8804,7 @@ ST(Model_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x4
 ST(ShapeManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x466a10, char *)(BUF + 0x10), ShapeManager_dtor((DWORD *)(BUF + 0x10)))
 ST(SkeletonManager_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46ae60, char *)(BUF + 0x10), SkeletonManager_dtor((DWORD *)(BUF + 0x10)))
 ST(UnitPoseInfo_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x46f470, char *)(BUF + 0x10), UnitPoseInfo_dtor((DWORD *)(BUF + 0x10)))
+ST(UnitPoseInfo_deletingDtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2); g_a[0] = irnd(0, 3);, (DWORD)TC(char *, 0x45ff10, char *, DWORD)(BUF + 0x10, (DWORD)g_a[0]), (DWORD)UnitPoseInfo_deletingDtor(BUF + 0x10, (DWORD)g_a[0]))
 ST(CollisionVolume_dtor, fill(BUF, 0x300); S32(BUF + 0x10, 0xc) = irnd(0, 2);, TC(int, 0x481390, char *)(BUF + 0x10), CollisionVolume_dtor((DWORD *)(BUF + 0x10)))
 /* the intro path list: head 0x67fb3c -> 0..4 nodes in scratch */
 static void introlist_setup(void)
@@ -17369,7 +17372,7 @@ static const STest g_stests[] = {
 	T(static_startBMPRGBFileRtti, 1, 2, 0), T(static_startRealColorRtti, 1, 2, 0), T(static_startPackedColorRtti, 1, 2, 0), T(static_startUnitPartInfoRtti, 1, 2, 0),
 	T(static_startUnitPoseInfoRtti, 1, 2, 0), T(static_startUnitRtti, 1, 2, 0), T(static_startStageRtti, 1, 2, 0), T(static_startCollisionVolumeRtti, 1, 2, 0),
 	T(static_startLightRtti, 1, 2, 0), T(static_startViewVolumeRtti, 1, 2, 0), T(static_startTimeSyncRtti, 1, 2, 0), T(static_startSceneRtti, 1, 2, 0),
-	T(Model_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300),
+	T(Model_dtor, 1, 4, 300), T(ShapeManager_dtor, 1, 4, 300), T(SkeletonManager_dtor, 1, 4, 300), T(UnitPoseInfo_dtor, 1, 4, 300), T(UnitPoseInfo_deletingDtor, 1, 4, 300),
 	T(CollisionVolume_dtor, 1, 4, 300), T(tunnel_rebuild, 1, 30, 0), T(tunnel_addRing, 1, 30, 0), T(ShapeManager_releaseModels, 1, 4, 1000),
 	T(SkeletonManager_releaseSkeletons, 1, 4, 1000),
 	/* batch 45 */
@@ -18345,7 +18348,7 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x483cf0, (void *)static_startLightRtti, "static_startLightRtti" }, { 0x483f50, (void *)static_startViewVolumeRtti, "static_startViewVolumeRtti" },
 	{ 0x4873d0, (void *)static_startTimeSyncRtti, "static_startTimeSyncRtti" }, { 0x48b3b0, (void *)static_startSceneRtti, "static_startSceneRtti" },
 	{ 0x464ba0, (void *)Model_dtor, "Model_dtor" }, { 0x466a10, (void *)ShapeManager_dtor, "ShapeManager_dtor" },
-	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)UnitPoseInfo_dtor, "UnitPoseInfo_dtor" },
+	{ 0x46ae60, (void *)SkeletonManager_dtor, "SkeletonManager_dtor" }, { 0x46f470, (void *)UnitPoseInfo_dtor, "UnitPoseInfo_dtor" }, { 0x45ff10, (void *)UnitPoseInfo_deletingDtor, "UnitPoseInfo_deletingDtor" },
 	{ 0x481390, (void *)CollisionVolume_dtor, "CollisionVolume_dtor" }, { 0x4411e0, (void *)tunnel_rebuild, "tunnel_rebuild" },
 	{ 0x441200, (void *)tunnel_addRing, "tunnel_addRing" }, { 0x467520, (void *)ShapeManager_releaseModels, "ShapeManager_releaseModels" },
 	{ 0x46b7f0, (void *)SkeletonManager_releaseSkeletons, "SkeletonManager_releaseSkeletons" },

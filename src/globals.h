@@ -1151,3 +1151,4 @@
 #define k_m0_001f GAME_VAR(float, 0x4aa4a0)
 #define g_lobbyBlinkRate GAME_VAR(float, 0x4ad498)
 #define g_sentChatBlock GAME_VAR(char *, 0x9fd944)
+#define k_26f GAME_VAR(float, 0x4aa27c)

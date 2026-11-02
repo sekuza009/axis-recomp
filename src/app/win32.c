@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "../game.h"
+#include "../wide.h"
 
 #define MCI_PAUSE 0x809
 #define MCI_NOTIFY 1
@@ -711,7 +712,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			return 0;
 		case 99:
 			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
+#ifdef AXIS_DIRECT
+			if (g_wide->playEnding)   /* (AxisRC.exe: the patch layer's player, which replaces movie_playEnding) */
+				g_wide->playEnding(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);
+#else
 			GAME_CDECL(0x46c420, void, int, const char *, int, int)(0, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);   /* movie_playEnding: initdata\battle.sra */
+#endif
 			ExitProcess(0);
 		}
 		ExitProcess(0);

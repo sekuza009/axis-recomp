@@ -107,8 +107,16 @@ int (pen_init)(const char *name)
 u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded)
 {
 	const float *texel = (const float *)ADDR(k_0_00390625f);                         /* 1/256 */
+#ifdef AXIS_DIRECT
+	/* (AxisRC.exe: the patch layer's two changes as its state, Wide) */
+	const float *heightFactor = *g_wide->digitHeight ? *g_wide->digitHeight : (const float *)ADDR(k_26f);   /* 26 */
+	void (STDCALL *const *texCoord)(u32, u32) = *g_wide->digitTexCoord
+		? (void (STDCALL *const *)(u32, u32))*g_wide->digitTexCoord
+		: (void (STDCALL *const *)(u32, u32))RELOC(0x4a920c);   /* glTexCoord2f's import */
+#else
 	const float *heightFactor = *(const float *const *)IMG(0x46bddc);          /* (the fmul's operand) */
 	void (STDCALL *const *texCoord)(u32, u32) = *(void (STDCALL *const *const *)(u32, u32))IMG(0x46be98);   /* (mov ebx, [..]) */
+#endif
 	int w = ftol(fmul_m(fld_m(&scale), k_28f));       /* 28 */
 	int h = ftol(fmul_m(fld_m(&scale), heightFactor));
 	int pad = ftol(fmul_m(fld_m(&scale), (const float *)ADDR(k_3f)));

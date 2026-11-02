@@ -578,22 +578,33 @@ int (net_sendChat)(const char *text)
 
 /* 0x4548b0: host ip pinged (ICMP echo, waiting up to timeout ms). Returns the round trip time, kept in 0xa0d798:
    0 when the echo failed with no time, 1 when it came back in no time */
+/* (the game calls the three through its jump thunks 0x454e4c / 0x454e46 / 0x454e40; AxisRC.exe carries no game code,
+   so there they are called through the import slots the thunks jump through) */
+#ifdef AXIS_DIRECT
+#define ICMP_CREATE IMPORT(0x4a9058, void *, void)
+#define ICMP_SEND IMPORT(0x4a905c, u32, void *, u32, void *, u16, void *, void *, u32, u32)
+#define ICMP_CLOSE IMPORT(0x4a9060, int, void *)
+#else
+#define ICMP_CREATE ((void *(STDCALL *)(void))IMG(0x454e4c))
+#define ICMP_SEND ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))IMG(0x454e46))
+#define ICMP_CLOSE ((int (STDCALL *)(void *))IMG(0x454e40))
+#endif
 u32 (net_ping)(u32 ip, u32 timeout)
 {
 	u32 reply[9];   /* ICMP_ECHO_REPLY; [2] the round trip time */
 	g_pingTime = 0;
-	void *icmp = ((void *(STDCALL *)(void))IMG(0x454e4c))();   /* IcmpCreateFile */
+	void *icmp = ICMP_CREATE();   /* IcmpCreateFile */
 	memset(reply, 0, sizeof reply);
 	reply[2] = 0xffffffff;
-	u32 sent = ((u32 (STDCALL *)(void *, u32, void *, u16, void *, void *, u32, u32))IMG(0x454e46))(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
+	u32 sent = ICMP_SEND(icmp, ip, NULL, 0, NULL, reply, 0x24, timeout);   /* IcmpSendEcho */
 	u32 rtt = reply[2];
 	if (!sent) {
 		g_pingTime = rtt;
-		((int (STDCALL *)(void *))IMG(0x454e40))(icmp);   /* IcmpCloseHandle */
+		ICMP_CLOSE(icmp);   /* IcmpCloseHandle */
 		return rtt ? g_pingTime : 0;
 	}
 	g_pingTime = rtt ? rtt : 1;
-	((int (STDCALL *)(void *))IMG(0x454e40))(icmp);
+	ICMP_CLOSE(icmp);
 	return g_pingTime;
 }
 

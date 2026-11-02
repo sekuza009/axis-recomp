@@ -472,7 +472,7 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		170.0f, 1.5f,
 	},
 	.k_27_7778f_ = {
-		0x41de38e4, IMG(0x0045ff10),
+		0x41de38e4, FN_ADDR(UnitPoseInfo_deletingDtor, 0x45ff10),
 	},
 	.d_4a9758 = "333?\xc0\xfb\xbb\xf6",
 	.d_4a976c = "\xc3\xbb\xbb\xf6",
@@ -521,7 +521,10 @@ struct GameRdata g_rdata __attribute__((aligned(4096))) = {
 		0x322bcc77, 0x3d638e39, 0x42652ee0,
 	},
 	.d_4aa274 = {
-		0.125f, 14.0f, 26.0f, 28.0f,
+		0.125f, 14.0f,
+	},
+	.k_26f_ = {
+		26.0f, 28.0f,
 	},
 	.d_4aa284 = {
 		0x3991a2b4,

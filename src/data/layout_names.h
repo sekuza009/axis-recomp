@@ -3039,3 +3039,5 @@ extern struct GameData g_data;
 #define k_400f (*(float *)IMG(0x4aa424))
 #undef k_5000f
 #define k_5000f (*(float *)IMG(0x4aa430))
+#undef k_26f
+#define k_26f (*(float *)IMG(0x4aa27c))

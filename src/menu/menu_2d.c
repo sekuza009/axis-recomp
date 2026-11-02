@@ -73,7 +73,11 @@ void (menu_drawRect)(int x0, int y0, int x1, int y1, int filled)
 static void menu_box(int *x, int *w)
 {
 	u32 h = (u32)g_screenH;
+#ifdef AXIS_DIRECT
+	u32 box = *g_wide->menuBox43 ? (h << 2) / 3 : (h << 4) / 9;   /* (AxisRC.exe: the patch layer's state) */
+#else
 	u32 box = code_matches(0x4a8fbb, "c1 e0 02 bb 03 00 00 00") ? (h << 2) / 3 : (h << 4) / 9;
+#endif
 	*x = 0;
 	*w = g_screenW;
 	if ((int)(box + 8) < g_screenW) {

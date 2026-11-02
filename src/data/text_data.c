@@ -186,54 +186,6 @@ static const u32 d_4509b4[] = {   /* 0x4509b4 */
 	0x0000000f, 0x80ffff0c, 0x00000000, 0x901825ff, 0x25ff004a, IMG(0x004a9048),
 	0x905025ff, 0x25ff004a, IMG(0x004a904c), 0xcccccccc, 0xcccccccc,
 };
-static const u32 d_45ff10[] = { 0xe8f18b56, 0x0000f558, 0x082444f6, 0x56097401, 0x03efffe8, 0x04c48300 };
-static const float d_45ff28[] = { -55.69389f };
-static const u32 d_45ff2c[] = { 0x90900004 };
-static const u8 d_49ea46[] = { 0xc3 };
-static const u32 d_49efae[] = {   /* 0x49efae */
-	0x00008068, 0xfef8e800, 0xc085ffff, 0x2a74a359, 0x0d7500b1, 0xa3e8186a,
-	0xa100000a, 0x00b12a74, 0x00208359, 0xb12a74a1, 0x2a70a300,
-};
-static const u8 d_49efda[] = { 0xb1 };
-static const u8 d_49efdc[] = { 0xc3 };
-static const u32 d_49fa61[] = { 0xffe8658b, 0x51e89875 };
-static const u8 d_49fa69[] = { 0xf3, 0xff, 0xff };
-static const u32 d_49fef8[] = {   /* 0x49fef8 */
-	0xb12a60a1, 0x146a5600, 0x755ec085, 0x0200b807, 0x06eb0000, 0x077dc63b,
-	0x60a3c68b, 0x6a00b12a, 0x57e85004, 0x59000044, 0xb11a40a3, 0x59c08500,
-	0x046a2175, 0x60358956, 0xe800b12a,
-};
-static const char d_49ff34[] = ">D";
-static const u32 d_49ff38[] = {   /* 0x49ff38 */
-	0x1a40a359, 0xc08500b1, 0x6a087559, 0xfb22e81a, 0x3359ffff, 0x0838b8c9,
-	0x158b004d, 0x00b11a40, 0x83110489, 0xc18320c0, 0x0ab83d04, 0xea7c004d,
-};
-static const float d_49ff68[] = { 380561.6f };
-static const u32 d_49ff6c[] = {   /* 0x49ff6c */
-	0x8b004d08, 0xc1f28bc2, 0xe68305f8, 0x85048b1f, 0x00b11920, 0x83f0048b,
-	0x0474fff8, 0x0375c085, 0x83ff0983, 0x814220c1, 0x4d08a8f9, 0x5ed47c00,
-	0x02e3e8c3,
-};
-static const float d_49ffa0[] = { 0.0625f };
-static const u32 d_49ffa4[] = { 0x00aef39c, 0xe9057400 };
-static const char d_49ffac[] = "CD";
-static const u32 d_49ffb0[] = { 0xccccccc3, 0xcccccccc, 0xcccccccc, 0xcccccccc };
-static const u32 d_4a2eed[] = {   /* 0x4a2eed */
-	0xe8ec75ff, 0x00000068, 0x658bc359, 0xd46583e8, 0x8dff6a00, 0xe850f045,
-	0xffffc5d5, 0xc0335959, 0xdb33cfeb, 0x8b0c758b,
-};
-static const u8 d_4a2f15[] = { 0x7d, 0x08 };
-static const u32 d_4a313f[] = { 0xc358016a, 0xe9e8658b, 0x000000e1 };
-static const u32 d_4a31a1[] = { 0x4538c033 };
-static const float d_4a31a5[] = { -4.658087f };
-static const u32 d_4a31a9[] = { 0xe8658bc3, 0x00007ae9 };
-static const u32 d_4a327d[] = { 0x002912e9 };
-static const u32 d_4a32d3[] = { 0xffff54e9 };
-static const u8 d_4a32d7[] = { 0xff };
-static const char d_4a5a9d[] = "hWZJ";
-static const u8 d_4a5aa2[] = { 0xff, 0x15, 0xac };
-static const u32 d_4a5aa5[] = { 0xa3004a90, 0x00aef574, 0x7435ffc3, 0xff00aef5, 0x4a90ac15 };
-static const u8 d_4a5aba[] = { 0xc3 };
 static const float d_b68ce0[] = { 8.0f, 160.0f };
 
 const DataPiece g_text_dataPieces[] = {
@@ -242,37 +194,6 @@ const DataPiece g_text_dataPieces[] = {
 	{ 0x450994, d_450994, sizeof d_450994 },
 	{ 0x4509a4, d_4509a4, sizeof d_4509a4 },
 	{ 0x4509b4, d_4509b4, sizeof d_4509b4 },
-	{ 0x45ff10, d_45ff10, sizeof d_45ff10 },
-	{ 0x45ff28, d_45ff28, sizeof d_45ff28 },
-	{ 0x45ff2c, d_45ff2c, sizeof d_45ff2c },
-	{ 0x49ea46, d_49ea46, sizeof d_49ea46 },
-	{ 0x49efae, d_49efae, sizeof d_49efae },
-	{ 0x49efda, d_49efda, sizeof d_49efda },
-	{ 0x49efdc, d_49efdc, sizeof d_49efdc },
-	{ 0x49fa61, d_49fa61, sizeof d_49fa61 },
-	{ 0x49fa69, d_49fa69, sizeof d_49fa69 },
-	{ 0x49fef8, d_49fef8, sizeof d_49fef8 },
-	{ 0x49ff34, d_49ff34, sizeof d_49ff34 },
-	{ 0x49ff38, d_49ff38, sizeof d_49ff38 },
-	{ 0x49ff68, d_49ff68, sizeof d_49ff68 },
-	{ 0x49ff6c, d_49ff6c, sizeof d_49ff6c },
-	{ 0x49ffa0, d_49ffa0, sizeof d_49ffa0 },
-	{ 0x49ffa4, d_49ffa4, sizeof d_49ffa4 },
-	{ 0x49ffac, d_49ffac, sizeof d_49ffac },
-	{ 0x49ffb0, d_49ffb0, sizeof d_49ffb0 },
-	{ 0x4a2eed, d_4a2eed, sizeof d_4a2eed },
-	{ 0x4a2f15, d_4a2f15, sizeof d_4a2f15 },
-	{ 0x4a313f, d_4a313f, sizeof d_4a313f },
-	{ 0x4a31a1, d_4a31a1, sizeof d_4a31a1 },
-	{ 0x4a31a5, d_4a31a5, sizeof d_4a31a5 },
-	{ 0x4a31a9, d_4a31a9, sizeof d_4a31a9 },
-	{ 0x4a327d, d_4a327d, sizeof d_4a327d },
-	{ 0x4a32d3, d_4a32d3, sizeof d_4a32d3 },
-	{ 0x4a32d7, d_4a32d7, sizeof d_4a32d7 },
-	{ 0x4a5a9d, d_4a5a9d, sizeof d_4a5a9d },
-	{ 0x4a5aa2, d_4a5aa2, sizeof d_4a5aa2 },
-	{ 0x4a5aa5, d_4a5aa5, sizeof d_4a5aa5 },
-	{ 0x4a5aba, d_4a5aba, sizeof d_4a5aba },
 	{ 0xb68ce0, d_b68ce0, sizeof d_b68ce0 },
 	{ 0, 0, 0 }
 };

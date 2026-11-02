@@ -1,0 +1,2 @@
+# step 4b: the HUD digits height factor (26.0; the fmul at 0x46bdda reads it unless the patch layer moved it)
+0x4aa27c,float,k_26f
