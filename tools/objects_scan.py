@@ -8,6 +8,7 @@ import collections, glob, os, re, sys
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 named = {int(a, 16) for a in re.findall(r'GAME_VAR\([\w \*]+, (0x[0-9a-f]+)\)', open('src/globals.h').read())}
+named |= {int(l.split()[0], 16) for l in open('tools/names/objects.txt')}   # (the named objects: objects.h defines them by IMG)
 uses = collections.defaultdict(list); casts = collections.defaultdict(collections.Counter); ext = collections.defaultdict(int)
 loops = {}
 for f in glob.glob('src/**/*.[ch]', recursive=True):
