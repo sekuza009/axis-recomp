@@ -530,9 +530,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					d[1] = 0;
 					long double z = fmul_m(fld_m(&d[2]), &AF(0x8c));
 					d[2] = (float)z;
-					v28[0] = f32(-fmul_m(z, K(0xa0e7dc)));
-					v28[1] = f32(fmul_m(fld_m(&d[2]), K(0xa0e7d8)) - fmul_m(fld_m(&d[0]), K(0xa0e7e0)));
-					v28[2] = f32(fmul_m(fld_m(&d[0]), K(0xa0e7dc)));
+					v28[0] = f32(-fmul_m(z, &g_vecUnitY[1]));   /* (d x the unit Y vector) */
+					v28[1] = f32(fmul_m(fld_m(&d[2]), &g_vecUnitY[0]) - fmul_m(fld_m(&d[0]), &g_vecUnitY[2]));
+					v28[2] = f32(fmul_m(fld_m(&d[0]), &g_vecUnitY[1]));
 					Vec3_normalize(v28);
 					int n = ftol(fld_m(&AF(0x7c))) * 2;
 					int r = n > 0 ? (int)rand_below(n) : 0;

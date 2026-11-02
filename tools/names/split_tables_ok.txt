@@ -120,3 +120,7 @@ src/menu/menu_cameras.c mission   # a MenuCam2 (as skirmish): three flags each r
 src/app/main_loop.c k_slotKeys     # key codes (and a slot number), each key read as one int (KEY())
 src/app/main_loop.c k_presetKeys   # key codes, each read as one int
 src/menu/armc_stats.c levels
+src/menu/lobby_states.c cleared@147   # flags, each cleared as one int
+src/menu/room_clicks.c typing   # edit flags, each read as one int
+src/menu/room_clicks.c limit   # (edit flag, limit) pairs: the flag one int, the limit one u8
+src/menu/settings_form.c form   # a Form: the window rect base (g_roomFormLeft .. +12) and four edit flags read as one int each

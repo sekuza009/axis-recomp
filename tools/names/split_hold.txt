@@ -4,4 +4,3 @@ g_lastTime   # its old place written (canary): reached at its old place by addre
 g_mouse2Down   # its old place written (canary): reached at its old place by address
 g_mouse3Down   # its old place written (canary): reached at its old place by address
 g_textureSetHeight   # its old place written (canary): reached at its old place by address
-g_loginToSend   # inside the 0x44-byte entries lobby_states.c walks from 0x9dcef4 to 0x9dd19c
