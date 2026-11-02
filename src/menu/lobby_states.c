@@ -853,7 +853,7 @@ u32 (lobby_topPageClicks)(void)
 	if (g_quitAsked == 1)
 		return 0;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)IMG(0x5b1cf8);
+		const Outline *buttons = (const Outline *)OBJ(g_lobbyTopOutlines);
 		for (int i = 0; i < 4; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;

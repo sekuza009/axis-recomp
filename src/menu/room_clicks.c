@@ -226,7 +226,7 @@ u32 (room_pageClicks)(void)
 	if (g_dialogOpen)
 		return g_dialogOpen;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)IMG(0x9daf88);
+		const Outline *buttons = (const Outline *)OBJ(g_roomOutlines);
 		for (int i = 0; i < 6; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;

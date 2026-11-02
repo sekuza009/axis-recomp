@@ -1,0 +1,7 @@
+# the menus' button outlines (step 3b): Outline = { n, x[5], y[5] }, 0x2c bytes; each screen's array (hovered_panel's
+# count / the init loops) - each up to its neighbour
+0x5b1cf8,int,44,g_lobbyTopOutlines,the lobby top menu's 4 button outlines (lobby_states / setup_pages' hovered_panel)
+0x4deb80,int,66,g_mainMenuOutlines,the main menu's 6 button outlines (menu_records' menu_choice)
+0x9daf88,int,66,g_roomOutlines,the game room's 6 button outlines (room_clicks)
+0x4df918,int,44,g_setupTopOutlines,the setup top page's 4 button outlines (copied from the lobby's: menu_initKeyRepeat)
+0x9da328,int,44,g_outlinesCopy,a second copy of the lobby's 4 outlines (menu_initKeyRepeat; not read elsewhere)

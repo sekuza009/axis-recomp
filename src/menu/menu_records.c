@@ -650,7 +650,7 @@ u32 (mainmenu_startNetGame)(void)
 		return GAME_FN(mapSelect_mouse, 0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
-		const Outline *buttons = (const Outline *)IMG(0x4deb80);
+		const Outline *buttons = (const Outline *)OBJ(g_mainMenuOutlines);
 		int i = 0;
 		while (i < 6 && point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 			i++;

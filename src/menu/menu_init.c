@@ -76,18 +76,18 @@ void (net_resetState)(void)
 	g_netPacketMessageKind = 7;
 }
 
-/* 0x42f8e0: the key repeat records (four of 0x2c bytes, at 0x4df918 and again at 0x9da328): delay 4, then two rows of
-   five values from the defaults at 0x5b1cfc */
+/* 0x42f8e0: the setup top page's four button outlines (g_setupTopOutlines) and a second copy (g_outlinesCopy) from
+   the lobby top menu's (g_lobbyTopOutlines): each 4 points, then its five x and five y */
 void (menu_initKeyRepeat)(void)
 {
 	for (int o = 0; o < 0xb0; o += 0x2c) {
-		GAME_VAR(int, 0x4df918 + o) = 4;
-		GAME_VAR(int, 0x9da328 + o) = 4;
+		GAME_VAR(int, OBJ(g_setupTopOutlines) + o) = 4;
+		GAME_VAR(int, OBJ(g_outlinesCopy) + o) = 4;
 		for (int j = 0; j < 20; j += 4) {
-			GAME_VAR(int, 0x4df91c + o + j) = GAME_VAR(int, 0x5b1cfc + o + j);
-			GAME_VAR(int, 0x9da32c + o + j) = GAME_VAR(int, 0x5b1cfc + o + j);
-			GAME_VAR(int, 0x4df930 + o + j) = GAME_VAR(int, 0x5b1d10 + o + j);
-			GAME_VAR(int, 0x9da340 + o + j) = GAME_VAR(int, 0x5b1d10 + o + j);
+			GAME_VAR(int, OBJ(g_setupTopOutlines) + 4 + o + j) = GAME_VAR(int, OBJ(g_lobbyTopOutlines) + 4 + o + j);
+			GAME_VAR(int, OBJ(g_outlinesCopy) + 4 + o + j) = GAME_VAR(int, OBJ(g_lobbyTopOutlines) + 4 + o + j);
+			GAME_VAR(int, OBJ(g_setupTopOutlines) + 0x18 + o + j) = GAME_VAR(int, OBJ(g_lobbyTopOutlines) + 0x18 + o + j);
+			GAME_VAR(int, OBJ(g_outlinesCopy) + 0x18 + o + j) = GAME_VAR(int, OBJ(g_lobbyTopOutlines) + 0x18 + o + j);
 		}
 	}
 }

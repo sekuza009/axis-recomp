@@ -970,3 +970,9 @@ g_serverPing
 g_loadTimer
 # freed: the map table loop written from its record
 g_mapListOpen
+# the menus' button outlines (objects26.csv), whole
+g_lobbyTopOutlines
+g_mainMenuOutlines
+g_roomOutlines
+g_setupTopOutlines
+g_outlinesCopy

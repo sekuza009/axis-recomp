@@ -224,7 +224,7 @@ void (setup_unbindKey)(int k)
 u32 (setup_drawTopPage)(void)
 {
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)IMG(0x4df918);
+		const Outline *buttons = (const Outline *)OBJ(g_setupTopOutlines);
 		for (int i = 0; i < 4; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;

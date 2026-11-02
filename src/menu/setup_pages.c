@@ -762,7 +762,7 @@ static int hovered_panel(u32 outlines, int count, int locked)
 void (room_drawMenu)(void)
 {
 	static const float glow[3] = { 1.0f, 0.1f, 1.0f };
-	Highlight h = { hovered_panel(IMG(0x9daf88), 6, g_roomDialogOpen), glow, 0, 0, 0 };
+	Highlight h = { hovered_panel(OBJ(g_roomOutlines), 6, g_roomDialogOpen), glow, 0, 0, 0 };
 	Tunnel t = { g_roomTunnelDepth, OBJ(g_ladderMenuTextures) + 12, 1, 1, 1, 0, SIX_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_roomMode == 2)
@@ -774,7 +774,7 @@ void (room_drawMenu)(void)
    0x680370. The original leaves eax to callers that ignore it */
 void (lobbyTop_drawTitle)(void)
 {
-	Highlight h = { hovered_panel(IMG(0x5b1cf8), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
+	Highlight h = { hovered_panel(OBJ(g_lobbyTopOutlines), 4, g_lobbyPanelsOff), white, 1, 0, 0 };
 	Tunnel t = { g_arenaTunnelDepth, OBJ(g_arenaMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_arenaLobbyMode == 2 && !g_keysBlocked)
@@ -786,7 +786,7 @@ void (lobbyTop_drawTitle)(void)
    leaves eax to callers that ignore it */
 void (setup_drawMenu)(void)
 {
-	Highlight h = { hovered_panel(IMG(0x4df918), 4, g_setupPanelMoving), white, 1, 0, 0 };
+	Highlight h = { hovered_panel(OBJ(g_setupTopOutlines), 4, g_setupPanelMoving), white, 1, 0, 0 };
 	Tunnel t = { (*(u32 *)&g_setupTunnelDepth), OBJ(g_ctrlMenuTextures) + 12, 0, 1, 1, 0, FOUR_WALLS };
 	menu_tunnel(&t, &h);
 	if (h.on != -1 && g_setupPage == 2 && !g_keysBlocked)
@@ -807,7 +807,7 @@ void (menu_mainMenu)(void)
 	const float *frame = (const float *)ADDR(g_frameTime);
 	int on = -1;
 	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
-		if (point_in_outline(g_mouseX, g_mouseY, *(const Outline *)(IMG(0x4deb80) + k * 0x2c)) == 1) {
+		if (point_in_outline(g_mouseX, g_mouseY, *(const Outline *)(OBJ(g_mainMenuOutlines) + k * 0x2c)) == 1) {
 			on = k;
 			break;
 		}

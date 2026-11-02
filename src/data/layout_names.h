@@ -1142,6 +1142,8 @@ extern struct GameData g_data;
 #define g_lobbySubState (*(int *)g_lobbySubState_v)
 #undef g_lobbyTcpPort
 #define g_lobbyTcpPort (*(int *)g_lobbyTcpPort_v)
+#undef g_lobbyTopOutlines
+#define g_lobbyTopOutlines ((int *)g_lobbyTopOutlines_v)
 #undef g_lobbyTopRect
 #define g_lobbyTopRect ((int *)g_lobbyTopRect_v)
 #undef g_localAddress
@@ -1214,6 +1216,8 @@ extern struct GameData g_data;
 #define g_mainMenuFadingIn (*(int *)g_mainMenuFadingIn_v)
 #undef g_mainMenuFrames
 #define g_mainMenuFrames (*(int *)g_mainMenuFrames_v)
+#undef g_mainMenuOutlines
+#define g_mainMenuOutlines ((int *)g_mainMenuOutlines_v)
 #undef g_mainMenuPicked
 #define g_mainMenuPicked (*(int *)g_mainMenuPicked_v)
 #undef g_mainMenuTextures
@@ -1606,6 +1610,8 @@ extern struct GameData g_data;
 #define g_otherModeHeight (*(int *)g_otherModeHeight_v)
 #undef g_otherModeWidth
 #define g_otherModeWidth (*(int *)g_otherModeWidth_v)
+#undef g_outlinesCopy
+#define g_outlinesCopy ((int *)g_outlinesCopy_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
 #undef g_panelBoxes
@@ -1988,6 +1994,8 @@ extern struct GameData g_data;
 #define g_roomMode (*(int *)g_roomMode_v)
 #undef g_roomNameSum
 #define g_roomNameSum (*(int *)g_roomNameSum_v)
+#undef g_roomOutlines
+#define g_roomOutlines ((int *)g_roomOutlines_v)
 #undef g_roomPacket
 #define g_roomPacket (*(u8 * *)g_roomPacket_v)
 #undef g_roomPanelBrightness
@@ -2166,6 +2174,8 @@ extern struct GameData g_data;
 #define g_setupSoundRight (*(int *)((u8 *)g_setupSoundRect_v + 0x8))
 #undef g_setupTab
 #define g_setupTab (*(int *)g_setupTab_v)
+#undef g_setupTopOutlines
+#define g_setupTopOutlines ((int *)g_setupTopOutlines_v)
 #undef g_setupTunnelAlpha
 #define g_setupTunnelAlpha (*(float *)g_setupTunnelAlpha_v)
 #undef g_setupTunnelDepth
