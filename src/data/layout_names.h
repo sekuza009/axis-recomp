@@ -1132,6 +1132,8 @@ extern struct GameData g_data;
 #define g_lobbySubState (*(int *)g_lobbySubState_v)
 #undef g_lobbyTcpPort
 #define g_lobbyTcpPort (*(int *)g_lobbyTcpPort_v)
+#undef g_lobbyTopRect
+#define g_lobbyTopRect ((int *)g_lobbyTopRect_v)
 #undef g_localAddress
 #define g_localAddress ((char *)g_data.g_localAddress_)
 #undef g_localPlayer
@@ -1948,6 +1950,8 @@ extern struct GameData g_data;
 #define g_roomMap (*(u8 *)((u8 *)g_roomSettingsName_v + 0x20))
 #undef g_roomMech
 #define g_roomMech ((u8 *)g_data.g_roomMech_)
+#undef g_roomMessageRect
+#define g_roomMessageRect ((int *)g_roomMessageRect_v)
 #undef g_roomMessageText
 #define g_roomMessageText (g_data.g_roomMessageText_)
 #undef g_roomMessageText4
@@ -2084,6 +2088,10 @@ extern struct GameData g_data;
 #define g_settingsPage (*(int *)g_settingsPage_v)
 #undef g_settingsState
 #define g_settingsState (*(int *)g_settingsState_v)
+#undef g_setupColourDim
+#define g_setupColourDim ((u32 *)g_setupColourDim_v)
+#undef g_setupColourLit
+#define g_setupColourLit ((u32 *)g_setupColourLit_v)
 #undef g_setupControlLeft
 #define g_setupControlLeft (*(int *)((u8 *)g_setupControlRect_v + 0x0))
 #undef g_setupControlRect
@@ -2132,6 +2140,10 @@ extern struct GameData g_data;
 #define g_showCmd (*(int *)g_showCmd_v)
 #undef g_sinTable
 #define g_sinTable ((float *)g_sinTable_v)
+#undef g_skirmishColourDim
+#define g_skirmishColourDim ((u32 *)g_skirmishColourDim_v)
+#undef g_skirmishColourLit
+#define g_skirmishColourLit ((u32 *)g_skirmishColourLit_v)
 #undef g_skirmishDrawBackground
 #define g_skirmishDrawBackground (*(int *)g_skirmishDrawBackground_v)
 #undef g_skirmishInfoCount

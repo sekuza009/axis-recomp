@@ -29,7 +29,7 @@ void (setup_drawSoundPage)(void)
 #define Y0 (g_setupSoundRect[1])
 #define X1 g_setupSoundRight
 #define Y1 (g_setupSoundRect[3])
-	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
+	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
 	int hovered = setupSound_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -116,7 +116,7 @@ void (setup_drawOptionsDialog)(void)
 #define X1 (g_setupOptionsRect[2])
 #define Y1 (g_setupOptionsRect[3])
 	static const u32 names[6] = { IMG(0x4ddbbc), IMG(0x4dda64), IMG(0x4ddc84), IMG(0x4de058), IMG(0x4ddc20), IMG(0x4ddaf0) };
-	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
+	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
 	int hovered = setupOptions_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
@@ -184,7 +184,7 @@ static void key_tab(int tab)
 #define Y0 g_setupControlTop
 	static const u32 labels[3] = { MSG(216, "FORWARD"), MSG(231, "FIRE"), MSG(246, "CHAT") };
 	static const int rows[3] = { 10, 11, 10 };
-	const u32 *bright = (const u32 *)IMG(0x4de048);
+	const u32 *bright = g_setupColourLit;
 	const char *const *key_name = (const char *const *)IMG(0x4b0750);
 	int none = g_dikNone;
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
@@ -220,7 +220,7 @@ static void settings_tab(void)
 {
 #define X0 g_setupControlLeft
 #define Y0 g_setupControlTop
-	const u32 *bright = (const u32 *)IMG(0x4de048);
+	const u32 *bright = g_setupColourLit;
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
 	text_draw16(X0 + 0x1ae, Y0 + 0x12, (const char *)MSG(205, "MO$[0] USE"));
 	for (int r = 0; r < 3; r++)
@@ -289,7 +289,7 @@ void (setup_crosshairScreen)(void)
 #define Y0 g_setupControlTop
 #define X1 g_setupControlRight
 #define Y1 (g_setupControlRect[3])
-	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
+	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
 	int hovered = setupControl_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();

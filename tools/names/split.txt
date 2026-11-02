@@ -916,3 +916,10 @@ g_mousePos
 # setup tables read whole (objects22.csv): g_lastCrosshair / g_setupOptionsTop were split alone
 g_bindRows
 g_setupOptionsRect
+# screen panels' windows and colours (objects23.csv), whole
+g_lobbyTopRect
+g_roomMessageRect
+g_setupColourLit
+g_setupColourDim
+g_skirmishColourLit
+g_skirmishColourDim

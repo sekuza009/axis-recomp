@@ -941,10 +941,10 @@ void (account_drawPanel)(void)
    border. Returns the border's eax */
 u32 (ranking_drawTable)(void)
 {
-#define X0 GAME_VAR(int, 0x9dced8)
-#define Y0 GAME_VAR(int, 0x9dcedc)
-#define X1 GAME_VAR(int, 0x9dcee0)
-#define Y1 GAME_VAR(int, 0x9dcee4)
+#define X0 (g_roomMessageRect[0])
+#define Y0 (g_roomMessageRect[1])
+#define X1 (g_roomMessageRect[2])
+#define Y1 (g_roomMessageRect[3])
 #define TEXT(c) set_colour_bits(g_textColour, (c)[0], (c)[1], (c)[2], (c)[3])
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
 	static const u32 white[4] = { 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000 };

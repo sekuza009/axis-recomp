@@ -249,3 +249,9 @@
 #define g_mousePos ((int *)IMG(0x4ded68))   /* int[2]; the mouse pointer in 640 x 480 units (g_mouseX */
 #define g_bindRows ((int *)IMG(0x4b04ec))   /* int[4]; the rows of each controls page (move */
 #define g_setupOptionsRect ((int *)IMG(0x4dddd0))   /* int[4]; the setup options panel's window: left */
+#define g_lobbyTopRect ((int *)IMG(0x4dba70))   /* int[4]; the lobby top menu's window: left */
+#define g_roomMessageRect ((int *)IMG(0x9dced8))   /* int[4]; the game room's message box window: left */
+#define g_setupColourLit ((u32 *)IMG(0x4de048))   /* u32[4]; setup's text colour */
+#define g_setupColourDim ((u32 *)IMG(0x4ddae0))   /* u32[4]; setup's text colour */
+#define g_skirmishColourLit ((u32 *)IMG(0x9ef208))   /* u32[4]; the skirmish settings' panel colour */
+#define g_skirmishColourDim ((u32 *)IMG(0x9eeac8))   /* u32[4]; the skirmish settings' colour */

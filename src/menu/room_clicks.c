@@ -490,7 +490,7 @@ u32 (ranking_page)(void)
 	if (mode == 1 || mode == 0 || g_roomState == 99)
 		return mode;
 	if (g_dialogOpen) {
-		const int *box = (const int *)IMG(0x9dced8);
+		const int *box = g_roomMessageRect;
 		menu_drawFrame(box[0], box[1], box[2], box[3]);   /* the message box */
 		if (g_dialogOpen)
 			return (*(u32 *)&g_dialogOpen);

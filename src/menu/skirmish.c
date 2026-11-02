@@ -67,8 +67,8 @@ void (briefing_typeOut)(void)
 #define BY0 g_briefingY
 #define BX1 g_briefingRight
 #define BY1 g_briefingBottom
-#define g_panelColour ((const u32 *)IMG(0x9ef208))
-#define g_dimColour ((const u32 *)IMG(0x9eeac8))
+#define g_panelColour (g_skirmishColourLit)
+#define g_dimColour (g_skirmishColourDim)
 
 /* one of the window's buttons (x0 .. x1 along its bottom): the textured quad, lit when lit, then its label in
    colour (none: grey, the button greyed) */

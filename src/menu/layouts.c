@@ -84,7 +84,7 @@ void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_n
 
 void (popup_layout)(void) { rects_row(OBJ(g_popupRects), OBJ(g_popupRects) + 2 * 16, IMG(0x9dd1a0), IMG(0x9dd1ac), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 
-void (lobbyTop_layout)(void) { rects_row(IMG(0x4dbb40), IMG(0x4dbb60), IMG(0x4dba70), IMG(0x4dba74), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
+void (lobbyTop_layout)(void) { rects_row(IMG(0x4dbb40), IMG(0x4dbb60), OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 
 void (setupOptions_layout)(void)
 {
@@ -249,13 +249,13 @@ void (setupSound_layout)(void)
 
 void (ranking_layout)(void)
 {
-	static const RArg a[4] = { RA(IMG(0x9dced8), 0x7d, 1), RA(IMG(0x9dcee4), -0x30, 0), RA(IMG(0x9dced8), 0x11d, 1), RA(IMG(0x9dcee4), -0x10, 0) };
+	static const RArg a[4] = { RA(OBJ(g_roomMessageRect), 0x7d, 1), RA((OBJ(g_roomMessageRect) + 0xc), -0x30, 0), RA(OBJ(g_roomMessageRect), 0x11d, 1), RA((OBJ(g_roomMessageRect) + 0xc), -0x10, 0) };
 	static const short r[4][2] = { { 0x112, 0x144 }, { 0x14e, 0x130 }, { 0x18a, 0x1bc }, { 0x20c, 0x23e } };   /* [1] is inverted */
-	rect1(OBJ(g_rankingRects), IMG(0x9dced8), 0xb2, IMG(0x9dcedc), 0x26, IMG(0x9dced8), 0xe6, IMG(0x9dcedc), 0x3e);
-	rect1((OBJ(g_rankingRects) + 0x10), IMG(0x9dced8), 0x144, IMG(0x9dcedc), 0x26, IMG(0x9dced8), 0x178, IMG(0x9dcedc), 0x3e);
-	rect1((OBJ(g_rankingRects) + 0x20), IMG(0x9dcee0), -0x78, IMG(0x9dcedc), 0x24, IMG(0x9dcee0), -0x14, IMG(0x9dcedc), 0x40);
+	rect1(OBJ(g_rankingRects), OBJ(g_roomMessageRect), 0xb2, (OBJ(g_roomMessageRect) + 0x4), 0x26, OBJ(g_roomMessageRect), 0xe6, (OBJ(g_roomMessageRect) + 0x4), 0x3e);
+	rect1((OBJ(g_rankingRects) + 0x10), OBJ(g_roomMessageRect), 0x144, (OBJ(g_roomMessageRect) + 0x4), 0x26, OBJ(g_roomMessageRect), 0x178, (OBJ(g_roomMessageRect) + 0x4), 0x3e);
+	rect1((OBJ(g_rankingRects) + 0x20), (OBJ(g_roomMessageRect) + 0x8), -0x78, (OBJ(g_roomMessageRect) + 0x4), 0x24, (OBJ(g_roomMessageRect) + 0x8), -0x14, (OBJ(g_roomMessageRect) + 0x4), 0x40);
 	rect_spec((OBJ(g_rankingRects) + 0x30), (OBJ(g_rankingRects) + 0x50), 0xc8, a);
-	for (int k = 0; k < 4; k++) rect1((OBJ(g_rankingRects) + 0x50) + k * 16, IMG(0x9dced8), r[k][0], IMG(0x9dcedc), 0x50, IMG(0x9dced8), r[k][1], IMG(0x9dcedc), 0x66);
+	for (int k = 0; k < 4; k++) rect1((OBJ(g_rankingRects) + 0x50) + k * 16, OBJ(g_roomMessageRect), r[k][0], (OBJ(g_roomMessageRect) + 0x4), 0x50, OBJ(g_roomMessageRect), r[k][1], (OBJ(g_roomMessageRect) + 0x4), 0x66);
 }
 
 void (roomSettings_layout)(void)
