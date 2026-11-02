@@ -18,7 +18,7 @@
 #define g_profileName ((char *)IMG(0x9f8fe8))   /* char[32]; the profile's name (written 0x20 bytes) */
 #define g_arenaName ((char *)IMG(0x4db560))   /* char[32]; (0x20 bytes) */
 #define g_localAddress ((char *)IMG(0xa0b43c))   /* char[16]; the local IP address text (memset 16) */
-#define g_dataDir ((char *)IMG(0x9dae7c))   /* char[1]; the data folder's path (extent unknown) */
+#define g_dataDir ((char *)IMG(0x9dae7c))   /* char[0x105]; the data folder's path (app_setDataPaths clears 0x105 bytes; 0x9daf88 next) */
 #define g_savedColourChoices ((u8 *)IMG(0x4dcfe0))   /* u8[144]; the ARM CENTER's colour choices kept (memcpy 0x90) */
 #define g_textColour ((Colour *)IMG(0x76d438))   /* Colour[1]; the menus' text colour */
 #define g_rectColour ((Colour *)IMG(0x9da480))   /* Colour[1]; the rectangles' colour */
@@ -113,7 +113,7 @@
 #define g_arenaBright ((u32 *)IMG(0x4dba98))   /* u32[4]; the arena lobby's bright colour */
 #define g_arenaDim ((u32 *)IMG(0x4db8a0))   /* u32[4]; the arena lobby's dim colour */
 #define g_profileDim ((u32 *)IMG(0x9f8d58))   /* u32[4]; the profile screen's dim colour */
-#define g_mapNames ((char *)IMG(0x907b30))   /* char[32]; 0x20 bytes a map (extent unknown: the first) */
+#define g_mapNames ((char *)IMG(0x907b30))   /* char[100][0x20]; a map's name (100 maps: up to 0x9087b0, like the descriptions g_mapAbouts) */
 #define g_profileList ((char *)IMG(0x9f684c))   /* char[72]; 0x48 bytes a profile (extent unknown: the first) */
 #define g_gameList ((u8 *)IMG(0x9087c4))   /* u8[74]; 0x4a bytes a game (extent unknown: the first) */
 #define g_profileRecords ((u8 *)IMG(0x9f9040))   /* u8[76]: 0x4c bytes a record; the stats check reads 103 records (to 0x9fafb4), so the table overlaps g_netSlots (the original's aliasing) */
@@ -351,3 +351,32 @@
 #define g_realBlack ((float *)IMG(0xa1f280))   /* float[4]; real black */
 #define g_realYellow ((float *)IMG(0xa1f2d8))   /* float[4]; real yellow */
 #define g_realGrey ((float *)IMG(0xa1f2f0))   /* float[4]; real grey */
+#define k_c_dfDIKeyboard ((u32 *)IMG(0x4a95f8))   /* u32[6]; DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x100 bytes / 0x100 objects at 0x44f950) */
+#define k_c_dfDIMouse ((u32 *)IMG(0x4a9610))   /* u32[6]; DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x10 bytes / 7 objects at 0x450950) */
+#define k_DPAID_INet ((u8 *)IMG(0x4a9628))   /* u8[16]; c4a54da0-e0af-11cf-9c4e-00a0c905425e */
+#define k_DPAID_ServiceProvider ((u8 *)IMG(0x4a9638))   /* u8[16]; 07d916c0-e0af-11cf-9c4e-00a0c905425e */
+#define k_CLSID_DirectPlayLobby ((u8 *)IMG(0x4a9648))   /* u8[16]; 2fe8f810-b2a5-11d0-a787-0000f803abfc */
+#define k_IID_IDirectPlayLobby3A ((u8 *)IMG(0x4a9658))   /* u8[16]; 2db72491-652c-11d1-a7a8-0000f803abfc */
+#define k_CLSID_DirectPlay ((u8 *)IMG(0x4a9668))   /* u8[16]; d1eb6d20-8923-11d0-9d97-00a0c90a43cb */
+#define k_IID_IDirectPlay4A ((u8 *)IMG(0x4a9678))   /* u8[16]; 0ab1c531-4745-11d1-a7a1-0000f803abfc */
+#define k_GUID_SysKeyboard ((u8 *)IMG(0x4a9688))   /* u8[16]; 6f1d2b61-d5a0-11cf-bfc7-444553540000 */
+#define k_GUID_SysMouse ((u8 *)IMG(0x4a9698))   /* u8[16]; 6f1d2b60-d5a0-11cf-bfc7-444553540000 */
+#define k_axisAppGuid ((u8 *)IMG(0x4a96e8))   /* u8[16]; the game's DirectPlay application GUID (guidApplication) 456a6a41-e585-11d4-9662-0050da8e5b67 */
+#define k_GUID_NULL ((u8 *)IMG(0x4aae70))   /* u8[16]; 16 zero bytes (a session with no GUID is skipped) */
+#define k_IID_IAMMultiMediaStream ((u8 *)IMG(0x4aae90))   /* u8[16]; bebe595c-9a6f-11d0-8fde-00c04fd9189d */
+#define k_CLSID_AMMultiMediaStream ((u8 *)IMG(0x4aaf10))   /* u8[16]; 49c47ce5-9ba4-11d0-8212-00c04fc32c45 */
+#define k_MSPID_PrimaryAudio ((u8 *)IMG(0x4aafc0))   /* u8[16]; the audio stream's purpose ID (IAMMultiMediaStream::AddMediaStream) */
+#define g_hangulLeadIndex ((signed char *)IMG(0x4ad3c4))   /* signed char[32]; lead consonant code -> index */
+#define g_hangulVowelIndex ((signed char *)IMG(0x4ad3e4))   /* signed char[32]; vowel code -> index */
+#define g_hangulTailIndex ((signed char *)IMG(0x4ad404))   /* signed char[32]; tail consonant code -> index (0 none) */
+#define g_hangulVowelSetPlain ((signed char *)IMG(0x4ad424))   /* signed char[22]; the lead's glyph set by the vowel; no tail */
+#define g_hangulVowelSetTail ((signed char *)IMG(0x4ad43a))   /* signed char[22]; the lead's glyph set by the vowel; with a tail */
+#define g_hangulLeadSetPlain ((signed char *)IMG(0x4ad450))   /* signed char[20]; the vowel's glyph set by the lead; no tail */
+#define g_hangulLeadSetTail ((signed char *)IMG(0x4ad464))   /* signed char[20]; the vowel's glyph set by the lead; with a tail */
+#define g_hangulTailSet ((signed char *)IMG(0x4ad478))   /* signed char[22]; the tail's glyph set by the vowel (2 padding bytes before 0x4ad490) */
+#define g_matchPlayerName ((char *)IMG(0x4dedd8))   /* char[32]; the player's name for the match (match_name clears 32 bytes) */
+#define g_mapInfoDir ((char *)IMG(0x4dedf8))   /* char[261]; the second data path ("initdata/"; app_setDataPaths clears 0x105 bytes; mapinfo.dat's folder) */
+#define g_stageDir ((char *)IMG(0x680bc4))   /* char[261]; the maps' folder ("stage/"; app_setDataPaths clears 0x105 bytes) */
+#define g_mapAbouts ((char *)IMG(0x5ae9d0))   /* char[8000]; a map's 0x50-byte description (100 maps: up to 0x5b0910) */
+#define g_joinedSessionRec ((u8 *)IMG(0x9dae20))   /* u8[74]; the session record the arena join answer builds (0x4a bytes like the list's) */
+#define g_codeColours ((Colour *)IMG(0x9dada0))   /* Colour[7]; the seven "$[n]" text colours (menu_initColours) */

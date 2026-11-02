@@ -81,7 +81,7 @@ static void first_round(Scene *s)
 		game_setGameTypeFlags(STAGE(s), s->rotation[s->rotationAt].mode);
 	s->scoreLimit = g_fragLimit;
 	s->timeLimit = g_timeLimit;
-	strcpy(s->mechName, (const char *)IMG(0x4dedd8));
+	strcpy(s->mechName, g_matchPlayerName);
 	s->mechValue = g_armcValue;
 	if (s->showEmblems == 1) {
 		s->levelPoints = g_titlePoints;

@@ -772,7 +772,7 @@ void (app_shutdown)(void)
 		if (!g_arenaJoinPending)
 			return;
 		const u8 *in = g_receivedSession;
-		rec = (u8 *)IMG(0x9dae20);
+		rec = g_joinedSessionRec;
 		*(u32 *)rec = *(const u32 *)in;
 		rec[0x2d] = in[0x28];
 		rec[0x2e] = in[0x29];

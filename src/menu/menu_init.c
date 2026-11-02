@@ -8,7 +8,7 @@ void (menu_initColours)(void)
 {
 	static const u8 on[28] = { 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1 };
 	for (int k = 0; k < 28; k++)
-		GAME_VAR(u32, 0x9dada0 + k * 4) = on[k] ? 0x3f800000 : 0;
+		GAME_VAR(u32, OBJ(g_codeColours) + k * 4) = on[k] ? 0x3f800000 : 0;
 }
 
 /* 0x40e510: three camera points (0, 300, 0), (0, -500, 0), (0, 350, 0) (16 bytes apart, the fourth word kept) */

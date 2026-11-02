@@ -37,7 +37,7 @@ long (dplay_closeSession)(void *dplay)
 /* 0x4539f0: the DirectPlay lobby object (class 0x4a9668, interface 0x4a9678) into *out */
 long (dplay_createLobby)(void **out)
 {
-	return CoCreateInstance((const void *)IMG(0x4a9668), NULL, CLSCTX_INPROC_SERVER, (const void *)IMG(0x4a9678), out);
+	return CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlay), NULL, CLSCTX_INPROC_SERVER, (const void *)OBJ(k_IID_IDirectPlay4A), out);
 }
 
 /* 0x453260: list the sessions through the slot of the connection kind in use */

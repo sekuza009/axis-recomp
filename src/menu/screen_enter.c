@@ -376,8 +376,8 @@ static void check_profiles(void)
 /* the player's name for the match (0x4dedd8, 32 bytes) */
 static void match_name(const char *name)
 {
-	memset((void *)IMG(0x4dedd8), 0, 32);
-	strcpy((char *)IMG(0x4dedd8), name);
+	memset((void *)OBJ(g_matchPlayerName), 0, 32);
+	strcpy(g_matchPlayerName, name);
 }
 
 /* 0x41fd40 (named console_init; by use the match started, state 9999): the menus' tunnel freed; outside the lobby

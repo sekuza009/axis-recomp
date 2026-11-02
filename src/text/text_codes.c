@@ -10,14 +10,14 @@
 int (hangul_glyphs)(u32 hi, u32 lo)
 {
 	u32 v = (hi & 0xffff0000u) | (hi & 0xff) << 8 | (lo & 0xff);
-	int vowel = SC(IMG(0x4ad3e4) + ((v >> 5) & 31)), tail = SC(IMG(0x4ad404) + (v & 31)), lead = SC(IMG(0x4ad3c4) + ((v >> 10) & 31));
-	int tailSet = SC(IMG(0x4ad478) + vowel), leadSet, vowelSet;
+	int vowel = SC(OBJ(g_hangulVowelIndex) + ((v >> 5) & 31)), tail = SC(OBJ(g_hangulTailIndex) + (v & 31)), lead = SC(OBJ(g_hangulLeadIndex) + ((v >> 10) & 31));
+	int tailSet = SC(OBJ(g_hangulTailSet) + vowel), leadSet, vowelSet;
 	if (!tail) {
-		leadSet = SC(IMG(0x4ad450) + lead);
-		vowelSet = SC(IMG(0x4ad424) + vowel);
+		leadSet = SC(OBJ(g_hangulLeadSetPlain) + lead);
+		vowelSet = SC(OBJ(g_hangulVowelSetPlain) + vowel);
 	} else {
-		leadSet = SC(IMG(0x4ad464) + lead);
-		vowelSet = SC(IMG(0x4ad43a) + vowel);
+		leadSet = SC(OBJ(g_hangulLeadSetTail) + lead);
+		vowelSet = SC(OBJ(g_hangulVowelSetTail) + vowel);
 	}
 	g_hangulLeadGlyph = lead + vowelSet * 20;
 	g_hangulVowelGlyph = vowel + leadSet * 22;
@@ -82,7 +82,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 			}
 			s++;
 		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
-			const u32 *colour = (const u32 *)(IMG(0x9dada0) + ((signed char)s[1] - '0') * 16);
+			const u32 *colour = (const u32 *)(OBJ(g_codeColours) + ((signed char)s[1] - '0') * 16);
 			c = s[4];
 			s += 5;
 			glColor4f_stored(colour);
@@ -129,7 +129,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			c = s[2];
 			s += 3;
 		}
-		glColor4f_stored(special && kept ? (const u32 *)(IMG(0x9dada0) + colour * 16) : (const u32 *)OBJ(g_textColour));
+		glColor4f_stored(special && kept ? (const u32 *)(OBJ(g_codeColours) + colour * 16) : (const u32 *)OBJ(g_textColour));
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += pass->line;
@@ -143,7 +143,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 				colour = code;
 			c = s[4];
 			s += 5;
-			glColor4f_stored((const u32 *)(IMG(0x9dada0) + code * 16));
+			glColor4f_stored((const u32 *)(OBJ(g_codeColours) + code * 16));
 		}
 		if (c == '\r' && *s == '\n') {
 			s++;

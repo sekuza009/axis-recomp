@@ -458,6 +458,8 @@ extern struct GameData g_data;
 #define g_cmdSecret (g_data.g_cmdSecret_)
 #undef g_cmdTimeLimit
 #define g_cmdTimeLimit (g_data.g_cmdTimeLimit_)
+#undef g_codeColours
+#define g_codeColours ((Colour *)g_data.g_codeColours_)
 #undef g_colourChanged
 #define g_colourChanged (*(int *)g_colourChanged_v)
 #undef g_colourMaskRed
@@ -523,7 +525,7 @@ extern struct GameData g_data;
 #undef g_cursorTexture
 #define g_cursorTexture (*(int *)g_cursorTexture_v)
 #undef g_dataDir
-#define g_dataDir ((char *)g_data.g_dataDir_)
+#define g_dataDir ((char *)g_dataDir_v)
 #undef g_debugValue
 #define g_debugValue (*(int *)g_debugValue_v)
 #undef g_defaultColour
@@ -996,10 +998,26 @@ extern struct GameData g_data;
 #define g_hInstance (*(void * *)g_hInstance_v)
 #undef g_hangulLeadGlyph
 #define g_hangulLeadGlyph (*(int *)g_hangulLeadGlyph_v)
+#undef g_hangulLeadIndex
+#define g_hangulLeadIndex ((signed char *)g_hangulLeadIndex_v)
+#undef g_hangulLeadSetPlain
+#define g_hangulLeadSetPlain ((signed char *)g_hangulLeadSetPlain_v)
+#undef g_hangulLeadSetTail
+#define g_hangulLeadSetTail ((signed char *)g_hangulLeadSetTail_v)
 #undef g_hangulTailGlyph
 #define g_hangulTailGlyph (*(int *)g_hangulTailGlyph_v)
+#undef g_hangulTailIndex
+#define g_hangulTailIndex ((signed char *)g_hangulTailIndex_v)
+#undef g_hangulTailSet
+#define g_hangulTailSet ((signed char *)g_hangulTailSet_v)
 #undef g_hangulVowelGlyph
 #define g_hangulVowelGlyph (*(int *)g_hangulVowelGlyph_v)
+#undef g_hangulVowelIndex
+#define g_hangulVowelIndex ((signed char *)g_hangulVowelIndex_v)
+#undef g_hangulVowelSetPlain
+#define g_hangulVowelSetPlain ((signed char *)g_hangulVowelSetPlain_v)
+#undef g_hangulVowelSetTail
+#define g_hangulVowelSetTail ((signed char *)g_hangulVowelSetTail_v)
 #undef g_hdc
 #define g_hdc (*(void * *)g_hdc_v)
 #undef g_headCount
@@ -1100,6 +1118,8 @@ extern struct GameData g_data;
 #define g_joinPasswordTyped (*(int *)g_joinPasswordTyped_v)
 #undef g_joinedSessionFlag
 #define g_joinedSessionFlag (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
+#undef g_joinedSessionRec
+#define g_joinedSessionRec ((u8 *)g_joinedSessionRec_v)
 #undef g_joinedTitleLevel
 #define g_joinedTitleLevel (*(int *)((u8 *)g_joinedTitleName_v + 0x1e))
 #undef g_joinedTitleName
@@ -1316,6 +1336,8 @@ extern struct GameData g_data;
 #define g_mainMenuTextures ((int *)g_mainMenuTextures_v)
 #undef g_mainWindow
 #define g_mainWindow (*(void * *)g_mainWindow_v)
+#undef g_mapAbouts
+#define g_mapAbouts ((char *)g_mapAbouts_v)
 #undef g_mapChoiceKeptTable
 #define g_mapChoiceKeptTable ((u8 *)g_mapChoiceKeptTable_v)
 #undef g_mapChoiceTable
@@ -1326,6 +1348,8 @@ extern struct GameData g_data;
 #define g_mapEntry23On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xb8))
 #undef g_mapEntry24On
 #define g_mapEntry24On (*(int *)((u8 *)g_mapChoiceKeptTable_v + 0xc0))
+#undef g_mapInfoDir
+#define g_mapInfoDir ((char *)g_mapInfoDir_v)
 #undef g_mapListFlaggedCount
 #define g_mapListFlaggedCount (*(int *)g_mapListFlaggedCount_v)
 #undef g_mapListKept
@@ -1339,7 +1363,7 @@ extern struct GameData g_data;
 #undef g_mapMissing
 #define g_mapMissing (*(int *)g_mapMissing_v)
 #undef g_mapNames
-#define g_mapNames ((char *)g_data.g_mapNames_)
+#define g_mapNames ((char *)g_mapNames_v)
 #undef g_mapPreviewChanged
 #define g_mapPreviewChanged (*(int *)g_mapPreviewChanged_v)
 #undef g_mapPreviewTexture
@@ -1396,6 +1420,8 @@ extern struct GameData g_data;
 #define g_matchLogWritten (*(int *)g_matchLogWritten_v)
 #undef g_matchMode
 #define g_matchMode (*(int *)g_matchMode_v)
+#undef g_matchPlayerName
+#define g_matchPlayerName ((char *)g_matchPlayerName_v)
 #undef g_matchRunning
 #define g_matchRunning (*(int *)g_matchRunning_v)
 #undef g_mciCallback
@@ -2396,6 +2422,8 @@ extern struct GameData g_data;
 #define g_soundVolume (*(int *)((u8 *)g_soundSettings_v + 0x0))
 #undef g_spiralTextures
 #define g_spiralTextures ((int *)g_spiralTextures_v)
+#undef g_stageDir
+#define g_stageDir ((char *)g_stageDir_v)
 #undef g_startTicks
 #define g_startTicks (*(u32 *)g_startTicks_v)
 #undef g_startedByLauncher

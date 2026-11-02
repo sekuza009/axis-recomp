@@ -60,7 +60,7 @@ static void mission_screen(int hovered)
 	/* the preview, looked up when asked for: "<0x680bc4><map>/<map>" */
 	if (g_missionPreviewDue) {
 		char path[128] = { 0 }, name[64];
-		strcpy(path, (const char *)IMG(0x680bc4));
+		strcpy(path, g_stageDir);
 		strcat(path, map_name);
 		strcat(path, (const char *)STR(0x4ad564, "/"));
 		strcat(path, map_name);

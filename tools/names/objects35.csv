@@ -1,0 +1,16 @@
+# the COM / DirectX GUIDs and DirectInput data formats in .rdata (step 3b); bytes checked against the SDK values
+0x4a95f8,u32,6,k_c_dfDIKeyboard,DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x100 bytes / 0x100 objects at 0x44f950)
+0x4a9610,u32,6,k_c_dfDIMouse,DIDATAFORMAT (0x18 / 0x10 / DIDF_RELAXIS / 0x10 bytes / 7 objects at 0x450950)
+0x4a9628,u8,16,k_DPAID_INet,c4a54da0-e0af-11cf-9c4e-00a0c905425e
+0x4a9638,u8,16,k_DPAID_ServiceProvider,07d916c0-e0af-11cf-9c4e-00a0c905425e
+0x4a9648,u8,16,k_CLSID_DirectPlayLobby,2fe8f810-b2a5-11d0-a787-0000f803abfc
+0x4a9658,u8,16,k_IID_IDirectPlayLobby3A,2db72491-652c-11d1-a7a8-0000f803abfc
+0x4a9668,u8,16,k_CLSID_DirectPlay,d1eb6d20-8923-11d0-9d97-00a0c90a43cb
+0x4a9678,u8,16,k_IID_IDirectPlay4A,0ab1c531-4745-11d1-a7a1-0000f803abfc
+0x4a9688,u8,16,k_GUID_SysKeyboard,6f1d2b61-d5a0-11cf-bfc7-444553540000
+0x4a9698,u8,16,k_GUID_SysMouse,6f1d2b60-d5a0-11cf-bfc7-444553540000
+0x4a96e8,u8,16,k_axisAppGuid,the game's DirectPlay application GUID (guidApplication) 456a6a41-e585-11d4-9662-0050da8e5b67
+0x4aae70,u8,16,k_GUID_NULL,16 zero bytes (a session with no GUID is skipped)
+0x4aae90,u8,16,k_IID_IAMMultiMediaStream,bebe595c-9a6f-11d0-8fde-00c04fd9189d
+0x4aaf10,u8,16,k_CLSID_AMMultiMediaStream,49c47ce5-9ba4-11d0-8212-00c04fc32c45
+0x4aafc0,u8,16,k_MSPID_PrimaryAudio,the audio stream's purpose ID (IAMMultiMediaStream::AddMediaStream)

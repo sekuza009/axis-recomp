@@ -951,7 +951,7 @@ void (data_loadPilotProfiles)(void)
    (str_invert), and the names' trailing spaces cut. Returns 0, or the count when there are none */
 u32 (data_loadMapInfo)(void)
 {
-	void *f = data_open(IMG(0x4dedf8), STR(0x4b1504, "mapinfo.dat"), STR(0x4ad170, "rb"), STR(0x4b14e0, "Map Infomation Data File Not Found"));
+	void *f = data_open(OBJ(g_mapInfoDir), STR(0x4b1504, "mapinfo.dat"), STR(0x4ad170, "rb"), STR(0x4b14e0, "Map Infomation Data File Not Found"));
 	u8 header[0x80];
 	crt_fread(header, 0x80, 1, f);
 	if (str_order((const char *)header, (const char *)STR(0x4b14c0, "AXIS MAP INFOMATION DATA FILE"))) {   /* (the original compares a 0x30-byte copy) */
@@ -964,7 +964,7 @@ u32 (data_loadMapInfo)(void)
 	}
 	crt_fread((void *)ADDR(g_arenaMapCount), 4, 1, f);
 	for (int i = 0; i < g_arenaMapCount; i++) {
-		char *name = (char *)(OBJ(g_mapNames) + i * 0x20), *about = (char *)(IMG(0x5ae9d0) + i * 0x50);
+		char *name = (char *)(OBJ(g_mapNames) + i * 0x20), *about = (char *)(OBJ(g_mapAbouts) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
 		GAME_FN(str_invert, 0x42b390, int, char *)(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);

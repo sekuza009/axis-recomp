@@ -1276,7 +1276,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
 	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
 	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
-	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, (const char *)IMG(0x4dedd8));
+	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < S(int, 0x2342976); k++) {
 		int e = S(int, 0x23428f6 + k * 4);
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;

@@ -1074,3 +1074,19 @@ g_realRed
 g_realBlack
 g_realYellow
 g_realGrey
+# Johab jamo tables, path / name buffers, map names and descriptions, the joined session record (objects36.csv)
+g_hangulLeadIndex
+g_hangulVowelIndex
+g_hangulTailIndex
+g_hangulVowelSetPlain
+g_hangulVowelSetTail
+g_hangulLeadSetPlain
+g_hangulLeadSetTail
+g_hangulTailSet
+g_matchPlayerName
+g_mapInfoDir
+g_stageDir
+g_dataDir
+g_mapAbouts
+g_mapNames
+g_joinedSessionRec

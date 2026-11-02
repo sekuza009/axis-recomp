@@ -87,7 +87,7 @@ void (armc_takeCursorItem)(void)
 	armc_weaponSlotRecord(g_armcSlot, item);
 	armc_snapshot(g_armcSlot);
 	slot = g_armcSlot;
-	set_mech((const char *)IMG(0x4dedd8));
+	set_mech(g_matchPlayerName);
 	g_armcSlot = -1;
 	armc_pickSlot(slot);
 }

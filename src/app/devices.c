@@ -313,9 +313,9 @@ int (input_createMouse)(void *window)
 	if (g_mouseActive)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)IMG(0x4a9698), &g_mouse, NULL) < 0)
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysMouse), &g_mouse, NULL) < 0)
 		return 0;
-	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)IMG(0x4a9610)) < 0)
+	if (COM(g_mouse, 0x2c, int, const void *)(g_mouse, (const void *)OBJ(k_c_dfDIMouse)) < 0)
 		return 0;
 	if (COM(g_mouse, 0x34, int, void *, u32)(g_mouse, window, 5) < 0)
 		return 0;
@@ -331,9 +331,9 @@ int (input_initKeyboard)(void *window)
 	if (g_keyboardActive)
 		return 1;
 	void *dinput = g_directInput;
-	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)IMG(0x4a9688), &g_keyboard, NULL) < 0)
+	if (COM(dinput, 0x0c, int, const void *, void **, void *)(dinput, (const void *)OBJ(k_GUID_SysKeyboard), &g_keyboard, NULL) < 0)
 		return 0;
-	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)IMG(0x4a95f8)) < 0)
+	if (COM(g_keyboard, 0x2c, int, const void *)(g_keyboard, (const void *)OBJ(k_c_dfDIKeyboard)) < 0)
 		return 0;
 	if (COM(g_keyboard, 0x34, int, void *, u32)(g_keyboard, window, 6) < 0)
 		return 0;

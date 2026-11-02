@@ -73,7 +73,7 @@ static const char *stars(const Form *f, char *out)
 	return out;
 }
 
-static const char *map_name(const Form *f) { return (const char *)(IMG(0x5ae9d0) + f->s->map * 0x50); }
+static const char *map_name(const Form *f) { return (const char *)(OBJ(g_mapAbouts) + f->s->map * 0x50); }
 static const char *mode_name(const Form *f) { return (const char *)(RELOC(f->modes) + f->s->mode * 0x80); }
 static const char *row5_text(const Form *f)
 {

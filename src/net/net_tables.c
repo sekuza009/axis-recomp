@@ -120,12 +120,12 @@ int (dplay_formatSessionEntry)(u32 address)
 /* a DirectPlay session description as the enumeration callback gets it, by value */
 typedef struct { u8 b[0x85]; } SessionDesc;
 
-/* 0x4540b0: a session found: unless it is the game's own (its GUID, bytes 4 .. 19, the one at 0x4aae70), a copy
-   (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for the game's
-   own, or -1 when the table is full */
+/* 0x4540b0: a session found: unless its GUID (bytes 4 .. 19) is GUID_NULL (k_GUID_NULL, 0x4aae70), a copy
+   (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for a session
+   without a GUID, or -1 when the table is full */
 u32 (net_addSession)(SessionDesc d)
 {
-	if (!memcmp(d.b + 4, (const void *)IMG(0x4aae70), 16))
+	if (!memcmp(d.b + 4, (const void *)OBJ(k_GUID_NULL), 16))
 		return 0;
 	int i = net_findFreeSession();
 	if (i < 0)
@@ -139,7 +139,7 @@ u32 (net_addSession)(SessionDesc d)
 }
 
 /* 0x453560 (stdcall; DirectPlay's session enumeration callback): a found session (desc: its GUID at +8, name at
-   +0x30 ..) put into the list (net_addSession, by value) unless it is the game's own or already listed (0, which
+   +0x30 ..) put into the list (net_addSession, by value) unless its GUID is GUID_NULL (1) or already listed (0, which
    ends the enumeration). With no description (the enumeration timed out) it stops in modes 0 and 1. The copy's
    first word is a GlobalAlloc'd block holding the GUID; in mode 0 (+0x74) the session's address as text. 1 */
 #define crt_strncpy(to, from, n) GAME_CDECL(0x49ea80, char *, char *, const char *, int)(to, from, n)
@@ -151,7 +151,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	SessionDesc d;
 	memset(d.b, 0, sizeof d.b);
 	const u8 *guid = desc + 8;
-	if (!memcmp(guid, (const void *)IMG(0x4aae70), 16))
+	if (!memcmp(guid, (const void *)OBJ(k_GUID_NULL), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
 		if (!memcmp(guid, GAME_VAR(u8 *, OBJ(g_sessionTable) + 4 + k * 8) + 4, 16))
@@ -429,7 +429,7 @@ int (dplay_enumSessions)(void)
 	memset(desc, 0, sizeof desc);
 	desc[0] = 0x50;                                                  /* dwSize */
 	memcpy(&desc[2], g_instanceGuid, 16);         /* guidInstance */
-	memcpy(&desc[6], (const void *)IMG(0x4a96e8), 16);                    /* guidApplication */
+	memcpy(&desc[6], (const void *)OBJ(k_axisAppGuid), 16);                    /* guidApplication */
 	if (!g_connectionKind) {
 		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
 			return 0;
@@ -762,7 +762,7 @@ static u32 *session_desc(const void *guid)
 	memset(desc, 0, 0x50);
 	desc[0] = 0x50;                              /* dwSize */
 	memcpy(&desc[2], guid, 16);                  /* guidInstance */
-	memcpy(&desc[6], (const void *)IMG(0x4a96e8), 16);   /* guidApplication */
+	memcpy(&desc[6], (const void *)OBJ(k_axisAppGuid), 16);   /* guidApplication */
 	return desc;
 }
 
@@ -842,8 +842,8 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    first failure */
 static void dplay_lobbyConnect(void)
 {
-	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)IMG(0x4a9648), NULL, 1,
-			(const void *)IMG(0x4a9658), (void **)ADDR(g_dplayLobby)) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)OBJ(k_CLSID_DirectPlayLobby), NULL, 1,
+			(const void *)OBJ(k_IID_IDirectPlayLobby3A), (void **)ADDR(g_dplayLobby)) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
 		return;
 	void *lobby = g_dplayLobby;
 	u32 size;
@@ -863,7 +863,7 @@ static void dplay_lobbyConnect(void)
 	if (COM(lobby, 0x30, int, u32, u32, void *)(lobby, 0, 0, g_lobbyConnectionBlock) < 0)   /* SetConnectionSettings */
 		return;
 	lobby = g_dplayLobby;
-	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)IMG(0x4a9678), (void **)ADDR(g_dplay), NULL) < 0)
+	if (COM(lobby, 0x3c, int, u32, const void *, void **, void *)(lobby, 0, (const void *)OBJ(k_IID_IDirectPlay4A), (void **)ADDR(g_dplay), NULL) < 0)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = g_dplay;   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
@@ -888,7 +888,7 @@ int (dplay_create)(void)
 	if (r < 0)
 		return r;
 	void *play = g_dplay;
-	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)IMG(0x4a96e8), (void *)FN_ADDR(dplay_enumConnections, 0x4532f0), NULL, 0);
+	r = COM(play, 0x8c, int, const void *, void *, void *, u32)(play, (const void *)OBJ(k_axisAppGuid), (void *)FN_ADDR(dplay_enumConnections, 0x4532f0), NULL, 0);
 	if (r >= 0)
 		r = 0;
 	if (g_lobbyConnectionBlock)
@@ -966,10 +966,10 @@ int (dplay_initConnection)(int kind, const char *address)
 		char host[0xc0];
 		u32 size = 0;
 		strcpy(host, address ? address : (const char *)IMG(0xa0bb0c));
-		memcpy(element[0].guid, (const void *)IMG(0x4a9638), 16);   /* DPAID_ServiceProvider */
+		memcpy(element[0].guid, (const void *)OBJ(k_DPAID_ServiceProvider), 16);   /* DPAID_ServiceProvider */
 		element[0].size = 0x10;
 		element[0].data = g_instanceGuid;
-		memcpy(element[1].guid, (const void *)IMG(0x4a9628), 16);   /* DPAID_INet */
+		memcpy(element[1].guid, (const void *)OBJ(k_DPAID_INet), 16);   /* DPAID_INet */
 		element[1].size = strlen(host) + 1;
 		element[1].data = host;
 		void *lobby = g_dplayLobby;

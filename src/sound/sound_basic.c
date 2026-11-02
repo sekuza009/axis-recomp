@@ -398,13 +398,13 @@ int (music_play)(const char *name)
 	void *stream;
 	unsigned short wname[0x104];
 	IMPORT(0x4a93bc, long, void *)(NULL);   /* CoInitialize */
-	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)IMG(0x4aaf10), NULL, 1,
-			(const void *)IMG(0x4aae90), &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
+	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)OBJ(k_CLSID_AMMultiMediaStream), NULL, 1,
+			(const void *)OBJ(k_IID_IAMMultiMediaStream), &stream))   /* CoCreateInstance(CLSID_AMMultiMediaStream, IID_IAMMultiMediaStream) */
 		return 0;
 	IMPORT(0x4a9164, int, u32, u32, const char *, int, void *, int)(0, 0, name, -1, wname, 0x104);   /* MultiByteToWideChar */
 	if (COM(stream, 0x30, long, u32, u32, void *)(stream, 0, 1, NULL))   /* Initialize(read, no graph thread) */
 		return 0;
-	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)IMG(0x4aafc0), 1, NULL))
+	if (COM(stream, 0x3c, long, void *, const void *, u32, void *)(stream, NULL, (const void *)OBJ(k_MSPID_PrimaryAudio), 1, NULL))
 		return 0;   /* AddMediaStream(primary audio, default renderer) */
 	if (COM(stream, 0x40, long, const void *, u32)(stream, wname, 0))   /* OpenFile */
 		return 0;

@@ -32,8 +32,8 @@ void (arena_copyProfile)(void)
 void (app_setDataPaths)(void)
 {
 	copy_name(OBJ(g_dataDir), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
-	copy_name(IMG(0x4dedf8), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
-	copy_name(IMG(0x680bc4), 0x105, (const char *)STR(0x4b0498, "stage/"));
+	copy_name(OBJ(g_mapInfoDir), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
+	copy_name(OBJ(g_stageDir), 0x105, (const char *)STR(0x4b0498, "stage/"));
 }
 
 /* ---- the chat input line (0x400 bytes at 0x9dc92c) and its three-line history ---- */

@@ -257,7 +257,7 @@ static void load_map_preview(u32 selected)
 	char path[0x80], copy[0x40];
 	const char *name = (const char *)(OBJ(g_mapNames) + (signed char)GAME_VAR(u8, selected) * 32);
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)IMG(0x680bc4));   /* the maps' folder */
+	strcpy(path, g_stageDir);   /* the maps' folder */
 	strcat(path, name);
 	strcat(path, (const char *)STR(0x4ad564, "/"));
 	strcat(path, name);
