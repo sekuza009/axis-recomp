@@ -663,27 +663,27 @@ extern struct GameData g_data;
 #undef g_dikNone
 #define g_dikNone (*(int *)g_dikNone_v)
 #undef g_dikNumLock
-#define g_dikNumLock (g_data.g_dikNumLock_)
+#define g_dikNumLock (*(int *)g_dikNumLock_v)
 #undef g_dikNumpad0
-#define g_dikNumpad0 (g_data.g_dikNumpad0_)
+#define g_dikNumpad0 (*(int *)g_dikNumpad0_v)
 #undef g_dikNumpad1
-#define g_dikNumpad1 (g_data.g_dikNumpad1_)
+#define g_dikNumpad1 (*(int *)g_dikNumpad1_v)
 #undef g_dikNumpad2
-#define g_dikNumpad2 (g_data.g_dikNumpad2_)
+#define g_dikNumpad2 (*(int *)g_dikNumpad2_v)
 #undef g_dikNumpad3
-#define g_dikNumpad3 (g_data.g_dikNumpad3_)
+#define g_dikNumpad3 (*(int *)g_dikNumpad3_v)
 #undef g_dikNumpad4
-#define g_dikNumpad4 (g_data.g_dikNumpad4_)
+#define g_dikNumpad4 (*(int *)g_dikNumpad4_v)
 #undef g_dikNumpad5
-#define g_dikNumpad5 (g_data.g_dikNumpad5_)
+#define g_dikNumpad5 (*(int *)g_dikNumpad5_v)
 #undef g_dikNumpad6
-#define g_dikNumpad6 (g_data.g_dikNumpad6_)
+#define g_dikNumpad6 (*(int *)g_dikNumpad6_v)
 #undef g_dikNumpad7
-#define g_dikNumpad7 (g_data.g_dikNumpad7_)
+#define g_dikNumpad7 (*(int *)g_dikNumpad7_v)
 #undef g_dikNumpad8
-#define g_dikNumpad8 (g_data.g_dikNumpad8_)
+#define g_dikNumpad8 (*(int *)g_dikNumpad8_v)
 #undef g_dikNumpad9
-#define g_dikNumpad9 (g_data.g_dikNumpad9_)
+#define g_dikNumpad9 (*(int *)g_dikNumpad9_v)
 #undef g_dikNumpadDot
 #define g_dikNumpadDot (*(int *)g_dikNumpadDot_v)
 #undef g_dikNumpadEnter
@@ -835,7 +835,7 @@ extern struct GameData g_data;
 #undef g_exitCode
 #define g_exitCode (*(int *)g_exitCode_v)
 #undef g_extraCount
-#define g_extraCount (g_data.g_extraCount_)
+#define g_extraCount (*(int *)g_extraCount_v)
 #undef g_fieldTabKey
 #define g_fieldTabKey (*(int *)g_fieldTabKey_v)
 #undef g_fileList
@@ -1397,7 +1397,7 @@ extern struct GameData g_data;
 #undef g_misHeader3
 #define g_misHeader3 (*(int *)((u8 *)g_missionHeader_v + 0xc))
 #undef g_missionBusy
-#define g_missionBusy (g_data.g_missionBusy_)
+#define g_missionBusy (*(int *)g_missionBusy_v)
 #undef g_missionChosen
 #define g_missionChosen (*(int *)g_missionChosen_v)
 #undef g_missionColourDim
@@ -1409,7 +1409,7 @@ extern struct GameData g_data;
 #undef g_missionHeader
 #define g_missionHeader ((u32 *)g_missionHeader_v)
 #undef g_missionPage
-#define g_missionPage (g_data.g_missionPage_)
+#define g_missionPage (*(int *)g_missionPage_v)
 #undef g_missionPicked
 #define g_missionPicked (*(int *)g_missionPicked_v)
 #undef g_missionPreviewDue
@@ -1421,7 +1421,7 @@ extern struct GameData g_data;
 #undef g_missionSelectTop
 #define g_missionSelectTop (*(int *)((u8 *)g_missionSelectRect_v + 0x4))
 #undef g_missionShowBackground
-#define g_missionShowBackground (g_data.g_missionShowBackground_)
+#define g_missionShowBackground (*(int *)g_missionShowBackground_v)
 #undef g_missionShown
 #define g_missionShown (*(int *)g_missionShown_v)
 #undef g_missionStage
@@ -2443,7 +2443,7 @@ extern struct GameData g_data;
 #undef g_watchedSlot
 #define g_watchedSlot (*(u8 *)g_watchedSlot_v)
 #undef g_weaponCount
-#define g_weaponCount (g_data.g_weaponCount_)
+#define g_weaponCount (*(int *)g_weaponCount_v)
 #undef g_writeMatchLog
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00390625f

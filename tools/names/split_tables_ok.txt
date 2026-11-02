@@ -108,10 +108,14 @@ src/menu/setup_keys.c page_keys
 src/net/net_sessions.c room
 src/net/net_sessions.c arena
 src/net/net_tables.c handles
-src/net/net_tables.c sockets@286
-src/net/net_tables.c sockets@318
+src/net/net_tables.c sockets@287
+src/net/net_tables.c sockets@319
 src/menu/menu_states.c clocks   # four doubles cleared as two words each (+0, +4: inside each double; g_lastFrameClock is 8 bytes)
 src/menu/profile_dialogs.c d@132     # a TwoButtons' window: x0 y0 x1 y1 each read as one int (two_buttons' X0 .. Y1)
 src/menu/profile_dialogs.c d@137     # the same, the second dialog
 src/menu/profile_misc.c frame@351    # glide_page's frame: four ints each read whole
 src/menu/profile_misc.c frame@357    # the same, the second dialog
+src/menu/armc_parts.c extra_len   # two counts, each written / read as one int
+src/menu/menu_cameras.c mission   # a MenuCam2 (as skirmish): three flags each read as one int
+src/app/main_loop.c k_slotKeys     # key codes (and a slot number), each key read as one int (KEY())
+src/app/main_loop.c k_presetKeys   # key codes, each read as one int

@@ -936,3 +936,20 @@ g_profileIntro
 g_roomLoginRight
 g_roomPanelEase
 g_skirmishRow
+# freed by reviewing the numpad key tables, ARM CENTER extra_len, the mission MenuCam2, 2026-11-01
+g_dikNumLock
+g_dikNumpad0
+g_dikNumpad1
+g_dikNumpad2
+g_dikNumpad3
+g_dikNumpad4
+g_dikNumpad5
+g_dikNumpad6
+g_dikNumpad7
+g_dikNumpad8
+g_dikNumpad9
+g_extraCount
+g_missionBusy
+g_missionPage
+g_missionShowBackground
+g_weaponCount
