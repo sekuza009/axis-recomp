@@ -337,3 +337,5 @@
 #define g_penPropBottomRight ((float *)IMG(0xa0ee08))   /* float[210]; the proportional set's bottom right corners */
 #define g_penPropBottomLeft ((float *)IMG(0xa0f7e0))   /* float[210]; the proportional set's bottom left corners */
 #define g_penFixedWidths ((int *)IMG(0xa0fb28))   /* int[105]; the fixed set's glyph widths (all 8) */
+#define g_sortBounds ((int *)IMG(0x4c83c4))   /* int[8192]; the two sorts' lo / hi arrays: A lo */
+#define g_sortState ((u8 *)IMG(0xae3338))   /* u8[49176]; the two sorts' i / j / pivot arrays */

@@ -2348,6 +2348,10 @@ extern struct GameData g_data;
 #define g_slotTakenFlag (*(int *)g_slotTakenFlag_v)
 #undef g_slotTextures
 #define g_slotTextures ((int *)g_slotTextures_v)
+#undef g_sortBounds
+#define g_sortBounds ((int *)g_sortBounds_v)
+#undef g_sortState
+#define g_sortState ((u8 *)g_sortState_v)
 #undef g_sound3D
 #define g_sound3D (*(int *)((u8 *)g_soundSettings_v + 0xc))
 #undef g_soundBaseVolume

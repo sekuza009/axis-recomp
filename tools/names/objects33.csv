@@ -1,0 +1,4 @@
+# the depth sorts' state (step 3b): each sort's arrays by stack depth (2048 ints each) as the original lays them out -
+# a deeper stack runs on into the next array, so each block is one object (k_sortA / k_sortB: offsets in it)
+0x4c83c4,int,8192,g_sortBounds,the two sorts' lo / hi arrays: A lo, A hi, B lo, B hi
+0xae3338,u8,49176,g_sortState,the two sorts' i / j / pivot arrays, stack depths and swap dwords (A i, the depths, B pivot, A j, the swap space, B j, B i, A pivot)

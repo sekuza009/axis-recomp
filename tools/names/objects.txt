@@ -324,3 +324,5 @@
 0xa0ee08 float 210 g_penPropBottomRight
 0xa0f7e0 float 210 g_penPropBottomLeft
 0xa0fb28 int 105 g_penFixedWidths
+0x4c83c4 int 8192 g_sortBounds
+0xae3338 u8 49176 g_sortState

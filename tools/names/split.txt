@@ -1058,3 +1058,6 @@ g_penPropTopRight
 g_penPropBottomRight
 g_penPropBottomLeft
 g_penFixedWidths
+# the depth sorts state blocks (objects33.csv), whole
+g_sortBounds
+g_sortState

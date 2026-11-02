@@ -59,10 +59,10 @@ static void depth_sort(const QsGlobals *q, u32 *e, int lo, int hi)
 #undef PIV
 }
 
-static const QsGlobals k_sortA = { IMG(0xae5338), IMG(0x4c83c4), IMG(0x4ca3c4), IMG(0xae3338), IMG(0xae7340), IMG(0xaed350), IMG(0xae9340) };
+static const QsGlobals k_sortA = { (OBJ(g_sortState) + 0x2000), OBJ(g_sortBounds), (OBJ(g_sortBounds) + 0x2000), OBJ(g_sortState), (OBJ(g_sortState) + 0x4008), (OBJ(g_sortState) + 0xa018), (OBJ(g_sortState) + 0x6008) };
 
 void (render_depthSortA)(u32 *e, int lo, int hi) { depth_sort(&k_sortA, e, lo, hi); }
 
-static const QsGlobals k_sortB = { IMG(0xae533c), IMG(0x4cc3c4), IMG(0x4ce3c4), IMG(0xaeb350), IMG(0xae9350), IMG(0xae5340), IMG(0xae9348) };
+static const QsGlobals k_sortB = { (OBJ(g_sortState) + 0x2004), (OBJ(g_sortBounds) + 0x4000), (OBJ(g_sortBounds) + 0x6000), (OBJ(g_sortState) + 0x8018), (OBJ(g_sortState) + 0x6018), (OBJ(g_sortState) + 0x2008), (OBJ(g_sortState) + 0x6010) };
 
 void (render_depthSortB)(u32 *e, int lo, int hi) { depth_sort(&k_sortB, e, lo, hi); }
