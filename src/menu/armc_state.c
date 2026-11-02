@@ -38,9 +38,9 @@ void (armc_restoreColourUndo)(void)
 void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
-		{ IMG(0x4dcc8c), IMG(0x4dc780), IMG(0x4dc3e8), OBJ(g_armcParts) }, { IMG(0x4dcf3c), IMG(0x4dcc60), IMG(0x4dcd6c), (OBJ(g_armcParts) + 0x4) },
-		{ IMG(0x4dbc7c), IMG(0x4dca90), IMG(0x4dc964), (OBJ(g_armcParts) + 0x8) }, { (OBJ(g_boosterStats) + 0x24), IMG(0x4dca94), IMG(0x4dc89c), (OBJ(g_armcParts) + 0xc) },
-		{ IMG(0x4dcb30), ADDR(g_armcLastPart), IMG(0x4dbd7c), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
+		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), (OBJ(g_armcParts) + 0x4) },
+		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), (OBJ(g_armcParts) + 0x8) }, { (OBJ(g_boosterStats) + 0x24), ADDR(g_legCount), OBJ(g_legList), (OBJ(g_armcParts) + 0xc) },
+		{ ADDR(g_boosterCursor), ADDR(g_armcLastPart), OBJ(g_boosterList), (OBJ(g_armcParts) + 0x10) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
 		int *cursor = (int *)kinds[k].cursor;
 		const int *list = (const int *)kinds[k].list;
@@ -81,6 +81,6 @@ void (armc_loadSavedMech)(void)
 /* 0x40f830: 1 if item list entry i is a colour part (27 and up) already in one of the two item slots */
 int (armc_colourPartEquipped)(int i)
 {
-	int item = ((const int *)IMG(0x4dcca4))[i];
+	int item = (g_extraListTable)[i];
 	return item >= 0x1b && (item == g_itemSlot4 || item == g_itemSlot5);
 }

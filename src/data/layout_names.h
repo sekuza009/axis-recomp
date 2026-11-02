@@ -166,6 +166,14 @@ extern struct GameData g_data;
 #define g_arenaTunnelDepth (*(u32 *)g_arenaTunnelDepth_v)
 #undef g_argCount
 #define g_argCount (*(int *)g_argCount_v)
+#undef g_armCount
+#define g_armCount (*(int *)g_armCount_v)
+#undef g_armCursor
+#define g_armCursor (*(int *)g_armCursor_v)
+#undef g_armList
+#define g_armList ((int *)g_armList_v)
+#undef g_armPanelName
+#define g_armPanelName ((char *)g_armPanelName_v)
 #undef g_armcAngle
 #define g_armcAngle (*(float *)g_armcAngle_v)
 #undef g_armcBuildTexture
@@ -296,8 +304,14 @@ extern struct GameData g_data;
 #define g_bitStream (*(const u8 * *)g_bitStream_v)
 #undef g_boosterActiveTime
 #define g_boosterActiveTime (*(float *)((u8 *)g_boosterStats_v + 0x4))
+#undef g_boosterCursor
+#define g_boosterCursor (*(int *)g_boosterCursor_v)
+#undef g_boosterList
+#define g_boosterList ((int *)g_boosterList_v)
 #undef g_boosterNormalSpeed
 #define g_boosterNormalSpeed (*(float *)((u8 *)g_boosterStats_v + 0x10))
+#undef g_boosterPanelName
+#define g_boosterPanelName ((char *)g_boosterPanelName_v)
 #undef g_boosterRechargeDelay
 #define g_boosterRechargeDelay (*(float *)((u8 *)g_boosterStats_v + 0xc))
 #undef g_boosterRechargeTime
@@ -406,10 +420,18 @@ extern struct GameData g_data;
 #define g_chatLogged (*(int *)g_chatLogged_v)
 #undef g_chatTyping
 #define g_chatTyping (*(int *)g_chatTyping_v)
+#undef g_chestCount
+#define g_chestCount (*(int *)g_chestCount_v)
+#undef g_chestCursor
+#define g_chestCursor (*(int *)g_chestCursor_v)
+#undef g_chestList
+#define g_chestList ((int *)g_chestList_v)
 #undef g_chestMaxArmor
 #define g_chestMaxArmor (*(int *)g_chestMaxArmor_v)
 #undef g_chestMaxShield
 #define g_chestMaxShield (*(int *)g_chestMaxShield_v)
+#undef g_chestPanelName
+#define g_chestPanelName ((char *)g_chestPanelName_v)
 #undef g_chestWeightLimit
 #define g_chestWeightLimit (*(float *)g_chestWeightLimit_v)
 #undef g_chosenGameMode
@@ -842,6 +864,8 @@ extern struct GameData g_data;
 #define g_exitCode (*(int *)g_exitCode_v)
 #undef g_extraCount
 #define g_extraCount (*(int *)g_extraCount_v)
+#undef g_extraListTable
+#define g_extraListTable ((int *)g_extraListTable_v)
 #undef g_fieldTabKey
 #define g_fieldTabKey (*(int *)g_fieldTabKey_v)
 #undef g_fileList
@@ -952,14 +976,22 @@ extern struct GameData g_data;
 #define g_hangulVowelGlyph (*(int *)g_hangulVowelGlyph_v)
 #undef g_hdc
 #define g_hdc (*(void * *)g_hdc_v)
+#undef g_headCount
+#define g_headCount (*(int *)g_headCount_v)
+#undef g_headCursor
+#define g_headCursor (*(int *)g_headCursor_v)
 #undef g_headDetectionAngle
 #define g_headDetectionAngle (*(float *)g_headDetectionAngle_v)
 #undef g_headDetectionRange
 #define g_headDetectionRange (*(float *)g_headDetectionRange_v)
 #undef g_headHackingLevel
 #define g_headHackingLevel (*(int *)g_headHackingLevel_v)
+#undef g_headList
+#define g_headList ((int *)g_headList_v)
 #undef g_headLockOnTime
 #define g_headLockOnTime (*(float *)g_headLockOnTime_v)
+#undef g_headPanelName
+#define g_headPanelName ((char *)g_headPanelName_v)
 #undef g_headTargetKeepTime
 #define g_headTargetKeepTime (*(float *)g_headTargetKeepTime_v)
 #undef g_headWeight
@@ -1084,6 +1116,12 @@ extern struct GameData g_data;
 #define g_launchMessage (*(const char * *)g_launchMessage_v)
 #undef g_leaveDialogRects
 #define g_leaveDialogRects ((int *)g_leaveDialogRects_v)
+#undef g_legCount
+#define g_legCount (*(int *)g_legCount_v)
+#undef g_legList
+#define g_legList ((int *)g_legList_v)
+#undef g_legPanelName
+#define g_legPanelName ((char *)g_legPanelName_v)
 #undef g_legsMaxWeight
 #define g_legsMaxWeight (*(float *)((u8 *)g_mechSpeeds_v + 0x14))
 #undef g_legsSpeedCorrection
@@ -1320,8 +1358,12 @@ extern struct GameData g_data;
 #define g_mechBoosterEnergy (*(float *)g_mechBoosterEnergy_v)
 #undef g_mechBoosterRecharge
 #define g_mechBoosterRecharge (*(float *)g_mechBoosterRecharge_v)
+#undef g_mechBoosterValue3
+#define g_mechBoosterValue3 (*(float *)g_mechBoosterValue3_v)
 #undef g_mechChanged
 #define g_mechChanged (*(int *)g_mechChanged_v)
+#undef g_mechDetectionAngle
+#define g_mechDetectionAngle (*(float *)g_mechDetectionAngle_v)
 #undef g_mechDetectionRange
 #define g_mechDetectionRange (*(float *)g_mechDetectionRange_v)
 #undef g_mechHackingLevel
@@ -1334,6 +1376,18 @@ extern struct GameData g_data;
 #define g_mechItem4 (*(u32 *)((u8 *)g_mechSettings_v + 0x10))
 #undef g_mechItem5
 #define g_mechItem5 (*(u32 *)((u8 *)g_mechSettings_v + 0x14))
+#undef g_mechLegsBonus1
+#define g_mechLegsBonus1 (*(float *)g_mechLegsBonus1_v)
+#undef g_mechLegsBonus2
+#define g_mechLegsBonus2 (*(float *)g_mechLegsBonus2_v)
+#undef g_mechLegsBonus3
+#define g_mechLegsBonus3 (*(float *)g_mechLegsBonus3_v)
+#undef g_mechLegsSpeedCorrection
+#define g_mechLegsSpeedCorrection (*(float *)g_mechLegsSpeedCorrection_v)
+#undef g_mechLegsValue2
+#define g_mechLegsValue2 (*(float *)g_mechLegsValue2_v)
+#undef g_mechLockOnTime
+#define g_mechLockOnTime (*(float *)g_mechLockOnTime_v)
 #undef g_mechMaxSpeedBwd
 #define g_mechMaxSpeedBwd (*(float *)((u8 *)g_mechSpeeds_v + 0x8))
 #undef g_mechMobility
@@ -1346,6 +1400,8 @@ extern struct GameData g_data;
 #define g_mechSettings ((int *)g_mechSettings_v)
 #undef g_mechSpeeds
 #define g_mechSpeeds ((float *)g_mechSpeeds_v)
+#undef g_mechTargetKeepTime
+#define g_mechTargetKeepTime (*(float *)g_mechTargetKeepTime_v)
 #undef g_menuCamX
 #define g_menuCamX (*(u32 *)g_menuCamX_v)
 #undef g_menuCamZ
@@ -2484,6 +2540,8 @@ extern struct GameData g_data;
 #define g_watchedSlot (*(u8 *)g_watchedSlot_v)
 #undef g_weaponCount
 #define g_weaponCount (*(int *)g_weaponCount_v)
+#undef g_weaponListTable
+#define g_weaponListTable ((int *)g_weaponListTable_v)
 #undef g_writeMatchLog
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00390625f

@@ -147,7 +147,7 @@ void (armc_drawColourEditor)(void)
 			text_draw8(X0 + 0x18, Y0 + k * 0x30 + 0x44, (const char *)(MSG(281, "$[0] HEAD") + k * 0x80));
 	}
 	if (g_armcPreview) {
-		static const u32 names[5] = { IMG(0x4dceb8), IMG(0x4dbc08), IMG(0x4dc250), IMG(0x4dc1e8), IMG(0x4dce40) };
+		static const u32 names[5] = { OBJ(g_headPanelName), OBJ(g_chestPanelName), OBJ(g_armPanelName), OBJ(g_legPanelName), OBJ(g_boosterPanelName) };
 		TEXT(bright);
 		for (int k = 0; k < 5; k++)
 			text_draw8(X0 + 0x28, Y0 + 0x54 + k * 0x30, (const char *)RELOC(names[k]));
@@ -316,7 +316,7 @@ void (armc_drawBuildScreen)(void)
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x158, (const char *)OBJ(g_viewedPart));
 		int part = g_armcCursor;
-		int type = g_armcSlot > 3 ? ((const int *)IMG(0x4dcca4))[part] : ((const int *)IMG(0x4dc79c))[part];
+		int type = g_armcSlot > 3 ? (g_extraListTable)[part] : (g_weaponListTable)[part];
 		TEXT(white);
 		armc_drawText(x + 5, y + 0x16a, (const char *)(MSG(711, "HV-PISTOL") + type * 0x80));
 	}

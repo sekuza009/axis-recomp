@@ -489,7 +489,7 @@ void (armc_drawStatsPanel)(void)
 			text_draw8(PANEL_X0 + 0x18, PANEL_Y0 + 0x44 + i * 0x30, (const char *)(MSG(281, "$[0] HEAD") + i * 0x80));
 	}
 	if (g_armcPreview) {
-		static const u32 names[5] = { IMG(0x4dceb8), IMG(0x4dbc08), IMG(0x4dc250), IMG(0x4dc1e8), IMG(0x4dce40) };
+		static const u32 names[5] = { OBJ(g_headPanelName), OBJ(g_chestPanelName), OBJ(g_armPanelName), OBJ(g_legPanelName), OBJ(g_boosterPanelName) };
 		colour(bright);
 		for (int i = 0; i < 5; i++)
 			text_draw8(PANEL_X0 + 0x28, PANEL_Y0 + 0x54 + i * 0x30, (const char *)RELOC(names[i]));

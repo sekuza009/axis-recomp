@@ -1,0 +1,14 @@
+# ARM CENTER's part lists and part panel names (step 3b). Lists: the unlocked parts of each kind (append_parts; at
+# most 20 over all 16 levels of either unlock table), 50 ints each up to the next object; names: panel_name's 64 bytes
+0x4dc3e8,int,50,g_headList,the unlocked heads (armc_buildPartLists)
+0x4dcd6c,int,50,g_chestList,the unlocked chests
+0x4dc964,int,50,g_armList,the unlocked arms
+0x4dc89c,int,50,g_legList,the unlocked legs
+0x4dbd7c,int,50,g_boosterList,the unlocked boosters
+0x4dc79c,int,50,g_weaponListTable,the weapons on offer (starts with -1; armc_items' g_weaponList)
+0x4dcca4,int,50,g_extraListTable,the other items on offer (starts with -1; armc_items' g_extraList)
+0x4dceb8,char,64,g_headPanelName,the head panel's part name (panel_name)
+0x4dbc08,char,64,g_chestPanelName,the chest panel's part name
+0x4dc250,char,64,g_armPanelName,the arm panel's part name
+0x4dc1e8,char,64,g_legPanelName,the leg panel's part name
+0x4dce40,char,64,g_boosterPanelName,the booster panel's part name

@@ -275,3 +275,15 @@
 #define g_outlinesCopy ((int *)IMG(0x9da328))   /* int[44]; a second copy of the lobby's 4 outlines (menu_initKeyRepeat; not read elsewhere) */
 #define g_vkTable ((int *)IMG(0x4df054))   /* int[57]; the scan-code row -> virtual key table (input_initVkTable; written only */
 #define g_defaultColours ((u32 *)IMG(0xa1f298))   /* u32[16]; the 16 default packed colours (color_initDefaultColours: RGBA bytes) */
+#define g_headList ((int *)IMG(0x4dc3e8))   /* int[50]; the unlocked heads (armc_buildPartLists) */
+#define g_chestList ((int *)IMG(0x4dcd6c))   /* int[50]; the unlocked chests */
+#define g_armList ((int *)IMG(0x4dc964))   /* int[50]; the unlocked arms */
+#define g_legList ((int *)IMG(0x4dc89c))   /* int[50]; the unlocked legs */
+#define g_boosterList ((int *)IMG(0x4dbd7c))   /* int[50]; the unlocked boosters */
+#define g_weaponListTable ((int *)IMG(0x4dc79c))   /* int[50]; the weapons on offer (starts with -1; armc_items' g_weaponList) */
+#define g_extraListTable ((int *)IMG(0x4dcca4))   /* int[50]; the other items on offer (starts with -1; armc_items' g_extraList) */
+#define g_headPanelName ((char *)IMG(0x4dceb8))   /* char[64]; the head panel's part name (panel_name) */
+#define g_chestPanelName ((char *)IMG(0x4dbc08))   /* char[64]; the chest panel's part name */
+#define g_armPanelName ((char *)IMG(0x4dc250))   /* char[64]; the arm panel's part name */
+#define g_legPanelName ((char *)IMG(0x4dc1e8))   /* char[64]; the leg panel's part name */
+#define g_boosterPanelName ((char *)IMG(0x4dce40))   /* char[64]; the booster panel's part name */

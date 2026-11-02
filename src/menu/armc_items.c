@@ -2,8 +2,8 @@
    from its list with a cursor; the chosen items go to the mech (mech_setAll) and the preview. */
 #include "../game.h"
 
-#define g_weaponList ((const int *)IMG(0x4dc79c))          /* the weapons on offer */
-#define g_extraList ((const int *)IMG(0x4dcca4))           /* the other items on offer */
+#define g_weaponList (g_weaponListTable)          /* the weapons on offer */
+#define g_extraList (g_extraListTable)           /* the other items on offer */
 
 /* the item in slot (0 .. 3 at 0x4dcb20, 4 .. 5 at 0x4dcb18) */
 static int *slot_item(int slot)

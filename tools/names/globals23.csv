@@ -1,0 +1,19 @@
+# ARM CENTER (step 3b): the mech values armc_parts computes but section5 never shows, and each part kind's cursor and
+# list length (armc_syncPartCursors / armc_buildPartLists: head, chest, arm, leg, booster)
+0x4dcaa4,float,g_mechDetectionAngle
+0x4dcaac,float,g_mechLockOnTime
+0x4dcab0,float,g_mechTargetKeepTime
+0x4dcad4,float,g_mechLegsValue2
+0x4dcad8,float,g_mechLegsSpeedCorrection
+0x4dcadc,float,g_mechLegsBonus1
+0x4dcae0,float,g_mechLegsBonus2
+0x4dcae4,float,g_mechLegsBonus3
+0x4dcaf4,float,g_mechBoosterValue3
+0x4dcc8c,int,g_headCursor
+0x4dcf3c,int,g_chestCursor
+0x4dbc7c,int,g_armCursor
+0x4dcb30,int,g_boosterCursor
+0x4dc780,int,g_headCount
+0x4dcc60,int,g_chestCount
+0x4dca90,int,g_armCount
+0x4dca94,int,g_legCount

@@ -979,3 +979,33 @@ g_outlinesCopy
 # the VK table and default colours (objects27.csv), whole
 g_vkTable
 g_defaultColours
+# ARM CENTER part lists, panel names (objects28.csv), the cursors, lengths and unshown mech values (globals23.csv)
+g_headList
+g_chestList
+g_armList
+g_legList
+g_boosterList
+g_weaponListTable
+g_extraListTable
+g_headPanelName
+g_chestPanelName
+g_armPanelName
+g_legPanelName
+g_boosterPanelName
+g_mechDetectionAngle
+g_mechLockOnTime
+g_mechTargetKeepTime
+g_mechLegsValue2
+g_mechLegsSpeedCorrection
+g_mechLegsBonus1
+g_mechLegsBonus2
+g_mechLegsBonus3
+g_mechBoosterValue3
+g_headCursor
+g_chestCursor
+g_armCursor
+g_boosterCursor
+g_headCount
+g_chestCount
+g_armCount
+g_legCount
