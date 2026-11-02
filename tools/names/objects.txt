@@ -265,3 +265,5 @@
 0x9daf88 int 66 g_roomOutlines
 0x4df918 int 44 g_setupTopOutlines
 0x9da328 int 44 g_outlinesCopy
+0x4df054 int 57 g_vkTable
+0xa1f298 u32 16 g_defaultColours

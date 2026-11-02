@@ -1,0 +1,3 @@
+# two tables store_tables.c fills with bare addresses (step 3b)
+0x4df054,int,57,g_vkTable,the scan-code row -> virtual key table (input_initVkTable; written only, in the rebuild)
+0xa1f298,u32,16,g_defaultColours,the 16 default packed colours (color_initDefaultColours: RGBA bytes)

@@ -976,3 +976,6 @@ g_mainMenuOutlines
 g_roomOutlines
 g_setupTopOutlines
 g_outlinesCopy
+# the VK table and default colours (objects27.csv), whole
+g_vkTable
+g_defaultColours

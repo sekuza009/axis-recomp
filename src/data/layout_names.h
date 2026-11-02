@@ -506,6 +506,8 @@ extern struct GameData g_data;
 #define g_debugValue (*(int *)g_debugValue_v)
 #undef g_defaultColour
 #define g_defaultColour (*(int *)g_defaultColour_v)
+#undef g_defaultColours
+#define g_defaultColours ((u32 *)g_defaultColours_v)
 #undef g_deleteDialogRects
 #define g_deleteDialogRects ((int *)g_deleteDialogRects_v)
 #undef g_desktopBits
@@ -2472,6 +2474,8 @@ extern struct GameData g_data;
 #define g_viewedPartIndex (*(int *)((u8 *)g_partRecords_v + 0x348))
 #undef g_viewedPartKind
 #define g_viewedPartKind (*(int *)((u8 *)g_partRecords_v + 0x344))
+#undef g_vkTable
+#define g_vkTable ((int *)g_vkTable_v)
 #undef g_volumeSetting
 #define g_volumeSetting (*(int *)((u8 *)g_soundEdited_v + 0x0))
 #undef g_watchChatOpen
