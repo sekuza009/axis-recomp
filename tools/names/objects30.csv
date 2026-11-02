@@ -1,0 +1,9 @@
+# DirectPlay / network tables (step 3b) - sizes from the code
+0x9f93d8,int,16,g_playerSlotFlags,the sixteen player slots' in-use flags (net_claimPlayerSlot)
+0xa0b470,u32,400,g_sessionTable,the 200 session records: in use, a malloc'd copy (net_findFreeSession; 0x190 dwords cleared)
+0xa0b460,char,16,g_dottedAddress,an address as dotted text (at most 15 characters)
+0xa0b3b0,u8,80,g_sessionDesc,the DPSESSIONDESC2 shared by hosting and joining (session_desc: 0x50 bytes)
+0xa0b3a0,u8,16,g_tcpProviderGuid,the TCP service provider's GUID
+0xa0b450,u8,16,g_ipxProviderGuid,the IPX service provider's GUID
+0xa0b408,u8,16,g_modemProviderGuid,the modem service provider's GUID
+0xa0bab8,u8,16,g_serialProviderGuid,the serial service provider's GUID

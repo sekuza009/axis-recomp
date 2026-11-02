@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # standalone/check3.sh <prefix>: a split batch's run-time check - the normal build and both fence builds
 # (FENCE=1 guard pages after each split variable, FENCE=2 before): all three built first (build/AxisRC_f<n>.exe,
-# the normal one last so build/AxisRC.exe stays it), then play.sh in each and play2.sh in the two fence builds (the
+# the normal one last so build/AxisRC.exe stays it), then play.sh in each and play2.sh in the two fence builds, and a hosted TCP match in FENCE=1 (the
 # same code under the guard pages; the canary watch runs in all three); the lines that matter (running, IN MATCH,
 # axis.cfg, CANARY / FENCE / ORIGINAL / CRASH). Takes ~10 minutes: run it in the background, alone (no build.sh,
 # sweep or other play test at the same time).
@@ -28,4 +28,8 @@ for F in 0 1 2; do
 		grep -E "CANARY|FENCE|ORIGINAL|CRASH|NO HEAP" "$L/$p-standalone.log" | cut -c1-220
 	done
 done
+# a hosted TCP match (multiplayer, create arena, TCP: DirectPlay, the room list, the packet queue) in the FENCE=1 build
+p="${1}1tcp"
+RC_EXE="$R/build/AxisRC_f1.exe" timeout 400 bash standalone/keys.sh $p 0x0D 4 prof 0x49 5 main 0x4D 8 multi 0x43 6 create 0x54 12 tcp - 8 tcp2 2>&1 | grep -E "game still|EXITED|AXIS.CFG|^[<>] |SAVES CHANGED" | sed "s/^/$p: /" | cut -c1-140
+grep -E "CANARY|FENCE|ORIGINAL|CRASH|NO HEAP" "$L/$p-standalone.log" | cut -c1-220
 echo "done (build/AxisRC.exe is the normal build)"

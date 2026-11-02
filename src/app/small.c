@@ -128,7 +128,7 @@ u8 (net_freeSlotsOf)(int id)
 		if (GAME_VAR(int, r + 4) != id)
 			continue;
 		GAME_VAR(int, r) = GAME_VAR(int, r + 4) = GAME_VAR(int, r + 8) = GAME_VAR(int, r + 0xc) = 0;
-		GAME_VAR(int, 0x9f93d8 + s * 4) = 0;
+		GAME_VAR(int, OBJ(g_playerSlotFlags) + s * 4) = 0;
 		if (s == 0)
 			g_netHostGone = 1;
 	}

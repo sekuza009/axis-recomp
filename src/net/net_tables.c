@@ -8,7 +8,7 @@
 int (net_findFreeSession)(void)
 {
 	int i = 0;
-	for (u32 p = IMG(0xa0b470); p < IMG(0xa0b470) + 200 * 8; p += 8, i++)   /* (200 entries) */
+	for (u32 p = OBJ(g_sessionTable); p < OBJ(g_sessionTable) + 200 * 8; p += 8, i++)   /* (200 entries) */
 		if (GAME_VAR(u32, p) == 0)
 			return i;
 	return -1;
@@ -17,8 +17,8 @@ int (net_findFreeSession)(void)
 /* 0x4532b0: session i's value, 0 when out of range or unused */
 int (net_sessionValue)(int i)
 {
-	if (i > -1 && i <= g_dplaySessionCount && GAME_VAR(int, 0xa0b470 + i * 8))
-		return GAME_VAR(int, 0xa0b474 + i * 8);
+	if (i > -1 && i <= g_dplaySessionCount && GAME_VAR(int, OBJ(g_sessionTable) + i * 8))
+		return GAME_VAR(int, OBJ(g_sessionTable) + 4 + i * 8);
 	return 0;
 }
 
@@ -37,7 +37,7 @@ void (net_takePlayerSlot)(u32 slot, int id)
 /* 0x4515a0: all slots freed (and the 0x40 bytes at 0x9f93d8 cleared) */
 void (net_freeAllSlots)(void)
 {
-	memset((void *)IMG(0x9f93d8), 0, 0x40);
+	memset((void *)OBJ(g_playerSlotFlags), 0, 0x40);
 	for (u32 r = OBJ(g_netSlots); r < OBJ(g_netSlots) + 16 * 0x410; r += 0x410)
 		memset((void *)RELOC(r), 0, 16);
 }
@@ -46,8 +46,8 @@ void (net_freeAllSlots)(void)
 u8 (net_claimPlayerSlot)(void)
 {
 	for (u8 i = 0; i < 0x10; i++)
-		if (GAME_VAR(int, 0x9f93d8 + i * 4) == 0) {
-			GAME_VAR(int, 0x9f93d8 + i * 4) = 1;
+		if (GAME_VAR(int, OBJ(g_playerSlotFlags) + i * 4) == 0) {
+			GAME_VAR(int, OBJ(g_playerSlotFlags) + i * 4) = 1;
 			return i;
 		}
 	return 0xff;
@@ -72,7 +72,7 @@ u32 (net_freeSessionList)(void)
 	if (!g_dplaySessionList)
 		return 0;
 	for (int i = 0; i < g_dplaySessionCount; i++) {
-		u32 *rec = (u32 *)(IMG(0xa0b470) + i * 8);
+		u32 *rec = (u32 *)(OBJ(g_sessionTable) + i * 8);
 		if (rec[0] != 1)
 			continue;
 		rec[0] = 0;
@@ -113,7 +113,7 @@ int (dplay_formatSessionEntry)(u32 address)
 		itoa((int)((address >> shift) & 0xff), part, 10);
 		strcat(text, part);
 	}
-	strcpy((char *)IMG(0xa0b460), text);
+	strcpy(g_dottedAddress, text);
 	return (int)strlen(text) + 1;
 }
 
@@ -131,9 +131,9 @@ u32 (net_addSession)(SessionDesc d)
 	if (i < 0)
 		return (u32)i;
 	void *copy = crt_malloc(0x85);
-	GAME_VAR(void *, 0xa0b474 + i * 8) = copy;
-	GAME_VAR(int, 0xa0b470 + i * 8) = 1;
-	memcpy(GAME_VAR(void *, 0xa0b474 + i * 8), d.b, 0x85);
+	GAME_VAR(void *, OBJ(g_sessionTable) + 4 + i * 8) = copy;
+	GAME_VAR(int, OBJ(g_sessionTable) + i * 8) = 1;
+	memcpy(GAME_VAR(void *, OBJ(g_sessionTable) + 4 + i * 8), d.b, 0x85);
 	g_dplaySessionCount += 1;
 	return (u32)copy;
 }
@@ -154,7 +154,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	if (!memcmp(guid, (const void *)IMG(0x4aae70), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
-		if (!memcmp(guid, GAME_VAR(u8 *, 0xa0b474 + k * 8) + 4, 16))
+		if (!memcmp(guid, GAME_VAR(u8 *, OBJ(g_sessionTable) + 4 + k * 8) + 4, 16))
 			return 0;
 	u8 *block = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
 	GAME_VAR(u8 *, d.b) = block;
@@ -170,7 +170,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	d.b[0x29] = desc[0x48];
 	if (g_connectionKind == 0) {
 		GAME_FN(dplay_formatSessionEntry, 0x454390, int, u32)(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry */
-		crt_strncpy((char *)d.b + 0x74, (const char *)IMG(0xa0b460), 0x10);
+		crt_strncpy((char *)d.b + 0x74, g_dottedAddress, 0x10);
 	}
 	GAME_FN(net_addSession, 0x4540b0, u32, SessionDesc)(d);
 	return 1;
@@ -225,7 +225,7 @@ int (dplay_coInit)(void)
 	g_unusedDplayWord1 = 0;
 	g_unusedDplayWord2 = 0;
 	g_unusedDplayWord3 = 0;
-	memset((void *)IMG(0xa0b470), 0, 0x190 * 4);
+	memset((void *)OBJ(g_sessionTable), 0, 0x190 * 4);
 	g_unusedDplayWord4 = 0;
 	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
 	if (hr >= 0) {
@@ -758,7 +758,7 @@ u32 (net_receiveAll)(void)
    session's GUID and the game's application GUID (0x4a96e8) */
 static u32 *session_desc(const void *guid)
 {
-	u32 *desc = (u32 *)IMG(0xa0b3b0);
+	u32 *desc = (u32 *)OBJ(g_sessionDesc);
 	memset(desc, 0, 0x50);
 	desc[0] = 0x50;                              /* dwSize */
 	memcpy(&desc[2], guid, 16);                  /* guidInstance */
@@ -956,7 +956,7 @@ int (dplay_initConnection)(int kind, const char *address)
 		GAME_FN(dplay_closeSession, 0x453a10, void, void *)(g_dplay);   /* dplay_closeSession */
 		g_dplay = NULL;
 	}
-	static const u32 provider[4] = { IMG(0xa0b3a0), IMG(0xa0b450), IMG(0xa0b408), IMG(0xa0bab8) };   /* (the GUIDs: TCP, IPX, modem, serial) */
+	static const u32 provider[4] = { OBJ(g_tcpProviderGuid), OBJ(g_ipxProviderGuid), OBJ(g_modemProviderGuid), OBJ(g_serialProviderGuid) };   /* (the GUIDs: TCP, IPX, modem, serial) */
 	if ((u32)kind <= 3) {
 		(*(u32 *)&g_instanceGuid) = provider[kind];
 		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, OBJ(g_dpConnections) + kind * 4);
@@ -1492,8 +1492,8 @@ PACKET_ENTRY(net_sendPlayerInfo, 1);
 u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32 size, const u32 *name, u32 flags, void *context)
 {
 	static const struct { u32 words[2], guid, data; } kinds[4] = {
-		{ { STR(0x4b3e64, "TCP") }, IMG(0xa0b3a0), OBJ(g_dpConnections) }, { { STR(0x4b3e60, "IPX") }, IMG(0xa0b450), OBJ(g_dpConnections) + 4 },
-		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, IMG(0xa0b408), OBJ(g_dpConnections) + 8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, IMG(0xa0bab8), OBJ(g_dpConnections) + 12 } };
+		{ { STR(0x4b3e64, "TCP") }, OBJ(g_tcpProviderGuid), OBJ(g_dpConnections) }, { { STR(0x4b3e60, "IPX") }, OBJ(g_ipxProviderGuid), OBJ(g_dpConnections) + 4 },
+		{ { STR(0x4b3e58, "MODEM"), STR(0x4b3e50, "\270\360\265\251") }, OBJ(g_modemProviderGuid), OBJ(g_dpConnections) + 8 }, { { STR(0x4b3e48, "SERIAL"), STR(0x4b3e40, "\301\367\267\304") }, OBJ(g_serialProviderGuid), OBJ(g_dpConnections) + 12 } };
 	char names[10][0x80];
 	char *own = names[g_serviceProviderCount];
 	strcpy(own, (const char *)RELOC(name[2]));   /* lpszShortNameA */

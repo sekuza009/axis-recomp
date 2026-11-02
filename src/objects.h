@@ -120,7 +120,7 @@
 #define g_messages ((char *)IMG(0x74de24))   /* char[128256]; the message table: 0x80 bytes a line from msgeng.dat (data_loadMessages) */
 #define g_ptxPixels ((u8 *)IMG(0xa21708))   /* u8[262144]; the image decoder's output (RGB(A) */
 #define g_ptxData ((u8 *)IMG(0xaa2e98))   /* u8[262144]; the image decoder's input */
-#define g_roomList ((u8 *)IMG(0x9fd960))   /* u8[7744]; the server's room list (net_clearRoomList: 0x1e40 bytes) */
+#define g_roomList ((u8 *)IMG(0x9fd960))   /* u8[30976]; the server's room list: 256 rooms of 0x79 bytes (net_clearRoomList: 0x1e40 dwords) */
 #define g_missions ((u8 *)IMG(0x9ef2d0))   /* u8[7560]; the 30 missions of axis.mis: 0xfc bytes each (mission_clear runs to 0x9f109c) */
 #define g_serverNames ((u32 *)IMG(0xa0bf20))   /* u32[1280]; 256 server names of 0x14 bytes */
 #define g_ptxCbGreen ((int *)IMG(0xa6170c))   /* int[256]; YCbCr -> RGB: Cb's part of green (ptx_initColourTables: 256 entries) */
@@ -261,9 +261,12 @@
 #define g_panelBoxes ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six part panels' boxes (0x58 bytes each: +-600 corners */
 #define g_mapChoiceTable ((u8 *)IMG(0x4d7358))   /* u8[8192]; the arena's map choices (1024 of 8 bytes: MapChoice) */
 #define g_mapChoiceKeptTable ((u8 *)IMG(0x4d9508))   /* u8[8192]; the map choices kept (1024 of 8: on */
-#define g_unused16 ((int *)IMG(0xaef660))   /* int[16]; per player */
-#define g_history ((u8 *)IMG(0xaef6a0))   /* u8[131072]; each player's packets by number: 16 x 128 of 64 bytes (net_packets) */
-#define g_ahead ((int *)IMG(0xb0f6a0))   /* int[2048]; [player * 128 + number]: arrived ahead of its turn (net_packets) */
+#define g_packetQueue ((u8 *)IMG(0xaef660))   /* u8[139328]; the packet queue: g_unused16, g_history, g_ahead (one object: netq_receive
+   reads g_ahead[-1], the history's last word, while player 0's next number is -1, and when that word is 1 copies the 64
+   bytes before g_history, g_unused16) */
+#define g_unused16 ((int *)g_packetQueue)   /* int[16]; per player */
+#define g_history (g_packetQueue + 0x40)   /* u8[131072]; each player's packets by number: 16 x 128 of 64 bytes (net_packets) */
+#define g_ahead ((int *)(g_packetQueue + 0x20040))   /* int[2048]; [player * 128 + number]: arrived ahead of its turn (net_packets) */
 #define g_nextNumber ((int *)IMG(0xb116a0))   /* int[16]; each player's next packet number (-1: none yet) */
 #define g_serverUsed ((u32 *)IMG(0xa0bb14))   /* u32[256]; per server slot: in use */
 #define g_serverPing ((int *)IMG(0xa0d384))   /* int[256]; per server slot: the ping time (0 none) */
@@ -293,3 +296,11 @@
 #define g_arenaGameName ((char *)IMG(0x5b191c))   /* char[32]; the arena file's gamename value (32 cleared) */
 #define g_profileHeader ((u8 *)IMG(0x9f61d8))   /* u8[260]; a profile file's header (0x104 bytes) checked on the profile scan */
 #define g_pilotNoise ((u8 *)IMG(0x9f3ac4))   /* u8[10000]; the noise blocks around a saved pilot (pilot_write: 10000 random bytes) */
+#define g_playerSlotFlags ((int *)IMG(0x9f93d8))   /* int[16]; the sixteen player slots' in-use flags (net_claimPlayerSlot) */
+#define g_sessionTable ((u32 *)IMG(0xa0b470))   /* u32[400]; the 200 session records: in use */
+#define g_dottedAddress ((char *)IMG(0xa0b460))   /* char[16]; an address as dotted text (at most 15 characters) */
+#define g_sessionDesc ((u8 *)IMG(0xa0b3b0))   /* u8[80]; the DPSESSIONDESC2 shared by hosting and joining (session_desc: 0x50 bytes) */
+#define g_tcpProviderGuid ((u8 *)IMG(0xa0b3a0))   /* u8[16]; the TCP service provider's GUID */
+#define g_ipxProviderGuid ((u8 *)IMG(0xa0b450))   /* u8[16]; the IPX service provider's GUID */
+#define g_modemProviderGuid ((u8 *)IMG(0xa0b408))   /* u8[16]; the modem service provider's GUID */
+#define g_serialProviderGuid ((u8 *)IMG(0xa0bab8))   /* u8[16]; the serial service provider's GUID */

@@ -32,8 +32,6 @@ extern struct GameData g_data;
 #define g_accountPasswordRepeat ((char *)g_data.g_accountPasswordRepeat_)
 #undef g_accountRects
 #define g_accountRects ((int *)g_accountRects_v)
-#undef g_ahead
-#define g_ahead ((int *)g_ahead_v)
 #undef g_arenaBright
 #define g_arenaBright ((u32 *)g_data.g_arenaBright_)
 #undef g_arenaConfirming
@@ -800,6 +798,8 @@ extern struct GameData g_data;
 #define g_displayModeChanged (*(u8 *)g_displayModeChanged_v)
 #undef g_displayModeLeft
 #define g_displayModeLeft (*(u8 *)g_displayModeLeft_v)
+#undef g_dottedAddress
+#define g_dottedAddress ((char *)g_dottedAddress_v)
 #undef g_dpConnections
 #define g_dpConnections ((int *)g_dpConnections_v)
 #undef g_dpMaxBufferSize
@@ -1008,8 +1008,6 @@ extern struct GameData g_data;
 #define g_highlightX (*(int *)g_highlightX_v)
 #undef g_highlightY
 #define g_highlightY (*(int *)g_highlightY_v)
-#undef g_history
-#define g_history ((u8 *)g_history_v)
 #undef g_hostAddressBlock
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostResultFlag
@@ -1024,6 +1022,8 @@ extern struct GameData g_data;
 #define g_introTextures ((int *)g_introTextures_v)
 #undef g_introZoom
 #define g_introZoom (*(float *)g_introZoom_v)
+#undef g_ipxProviderGuid
+#define g_ipxProviderGuid ((u8 *)g_ipxProviderGuid_v)
 #undef g_isHost
 #define g_isHost (*(int *)g_isHost_v)
 #undef g_itemBonusActiveTime
@@ -1518,6 +1518,8 @@ extern struct GameData g_data;
 #define g_missionselRects ((int *)g_missionselRects_v)
 #undef g_modeChanged
 #define g_modeChanged (*(int *)g_modeChanged_v)
+#undef g_modemProviderGuid
+#define g_modemProviderGuid ((u8 *)g_modemProviderGuid_v)
 #undef g_mouse
 #define g_mouse (g_data.g_mouse_)
 #undef g_mouse2Down
@@ -1678,6 +1680,8 @@ extern struct GameData g_data;
 #define g_outlinesCopy ((int *)g_outlinesCopy_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
+#undef g_packetQueue
+#define g_packetQueue ((u8 *)g_packetQueue_v)
 #undef g_panelBoxes
 #define g_panelBoxes ((u8 *)g_panelBoxes_v)
 #undef g_panelGlow
@@ -1780,6 +1784,8 @@ extern struct GameData g_data;
 #define g_playerName ((char *)g_playerName_v)
 #undef g_playerSex
 #define g_playerSex (*(int *)g_playerSex_v)
+#undef g_playerSlotFlags
+#define g_playerSlotFlags ((int *)g_playerSlotFlags_v)
 #undef g_popupRects
 #define g_popupRects ((int *)g_popupRects_v)
 #undef g_primarySoundBuffer
@@ -2166,6 +2172,8 @@ extern struct GameData g_data;
 #define g_secondDialogRects ((int *)g_secondDialogRects_v)
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
+#undef g_serialProviderGuid
+#define g_serialProviderGuid ((u8 *)g_serialProviderGuid_v)
 #undef g_serverAddress
 #define g_serverAddress ((char *)g_data.g_serverAddress_)
 #undef g_serverAddressArg
@@ -2196,6 +2204,10 @@ extern struct GameData g_data;
 #define g_serverUsed ((u32 *)g_serverUsed_v)
 #undef g_serviceProviderCount
 #define g_serviceProviderCount (*(int *)g_serviceProviderCount_v)
+#undef g_sessionDesc
+#define g_sessionDesc ((u8 *)g_sessionDesc_v)
+#undef g_sessionTable
+#define g_sessionTable ((u32 *)g_sessionTable_v)
 #undef g_settingsPage
 #define g_settingsPage (*(int *)g_settingsPage_v)
 #undef g_settingsState
@@ -2316,6 +2328,8 @@ extern struct GameData g_data;
 #define g_tan10Table ((float *)g_tan10Table_v)
 #undef g_tanTable
 #define g_tanTable ((float *)g_tanTable_v)
+#undef g_tcpProviderGuid
+#define g_tcpProviderGuid ((u8 *)g_tcpProviderGuid_v)
 #undef g_textBottom
 #define g_textBottom (*(int *)g_textBottom_v)
 #undef g_textCharWidth
@@ -2434,8 +2448,6 @@ extern struct GameData g_data;
 #define g_unlit (g_data.g_unlit_)
 #undef g_unlockedLevel
 #define g_unlockedLevel (*(int *)g_unlockedLevel_v)
-#undef g_unused16
-#define g_unused16 ((int *)g_unused16_v)
 #undef g_unusedArmcMoveWord
 #define g_unusedArmcMoveWord (*(u32 *)g_unusedArmcMoveWord_v)
 #undef g_unusedArmcWord1

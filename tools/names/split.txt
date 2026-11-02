@@ -961,9 +961,7 @@ g_dplaySlots
 g_panelBoxes
 g_mapChoiceTable
 g_mapChoiceKeptTable
-g_unused16
-g_history
-g_ahead
+g_packetQueue
 g_nextNumber
 g_serverUsed
 g_serverPing
@@ -1016,3 +1014,12 @@ g_serverAddressArg
 g_arenaGameName
 g_profileHeader
 g_pilotNoise
+# network tables (objects30.csv), whole
+g_playerSlotFlags
+g_sessionTable
+g_dottedAddress
+g_sessionDesc
+g_tcpProviderGuid
+g_ipxProviderGuid
+g_modemProviderGuid
+g_serialProviderGuid
