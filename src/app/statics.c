@@ -107,22 +107,22 @@ int (static_startTimeSyncRtti)(void) { TimeSync_rtti(); return static_registerTi
 int (static_startSceneRtti)(void) { Scene_rtti(); return static_registerSceneRttiDtor(); }   /* 0x48b3b0 */
 
 /* ---- the game's constant colours: packed (four bytes r, g, b, a) and real (four floats, as bits) ---- */
-void (colour_initPackedBlue)(void) { u8 *c = (u8 *)IMG(0xa1f200); c[0] = 0; c[1] = 0; c[2] = 0xff; c[3] = 0xff; }   /* 0x46dbf0 */
-void (colour_initPackedGrey)(void) { u8 *c = (u8 *)IMG(0xa1f204); c[0] = 0x7f; c[1] = 0x7f; c[2] = 0x7f; c[3] = 0xff; }   /* 0x46db30 */
-void (colour_initPackedYellow)(void) { u8 *c = (u8 *)IMG(0xa1f208); c[0] = 0xff; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dc20 */
+void (colour_initPackedBlue)(void) { u8 *c = g_packedBlue; c[0] = 0; c[1] = 0; c[2] = 0xff; c[3] = 0xff; }   /* 0x46dbf0 */
+void (colour_initPackedGrey)(void) { u8 *c = g_packedGrey; c[0] = 0x7f; c[1] = 0x7f; c[2] = 0x7f; c[3] = 0xff; }   /* 0x46db30 */
+void (colour_initPackedYellow)(void) { u8 *c = g_packedYellow; c[0] = 0xff; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dc20 */
 void (colour_initPackedClear)(void) { u8 *c = (u8 *)ADDR(g_defaultColour); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46dad0 */
 void (colour_initPackedRed)(void) { u8 *c = (u8 *)ADDR(g_colourMaskRed); c[0] = 0xff; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db90 */
 void (colour_initPackedWhite)(void) { u8 *c = g_packedWhite; c[0] = 0xff; c[1] = 0xff; c[2] = 0xff; c[3] = 0xff; }   /* 0x46db60 */
 void (colour_initPackedBlack)(void) { u8 *c = (u8 *)ADDR(g_unlit); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0xff; }   /* 0x46db00 */
-void (colour_initPackedGreen)(void) { u8 *c = (u8 *)IMG(0xa1f2ec); c[0] = 0; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dbc0 */
-void (colour_initRealClear)(void) { u32 *c = (u32 *)IMG(0xa1f210); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46d2d0 */
-void (colour_initRealBlue)(void) { u32 *c = (u32 *)IMG(0xa1f228); c[0] = 0; c[1] = 0; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d450 */
-void (colour_initRealWhite)(void) { u32 *c = (u32 *)IMG(0xa1f240); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d390 */
-void (colour_initRealGreen)(void) { u32 *c = (u32 *)IMG(0xa1f258); c[0] = 0; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d410 */
-void (colour_initRealRed)(void) { u32 *c = (u32 *)IMG(0xa1f268); c[0] = 0x3f800000u; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d3d0 */
-void (colour_initRealBlack)(void) { u32 *c = (u32 *)IMG(0xa1f280); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d310 */
-void (colour_initRealYellow)(void) { u32 *c = (u32 *)IMG(0xa1f2d8); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d490 */
-void (colour_initRealGrey)(void) { u32 *c = (u32 *)IMG(0xa1f2f0); c[0] = 0x3f000000u; c[1] = 0x3f000000u; c[2] = 0x3f000000u; c[3] = 0x3f800000u; }   /* 0x46d350 */
+void (colour_initPackedGreen)(void) { u8 *c = g_packedGreen; c[0] = 0; c[1] = 0xff; c[2] = 0; c[3] = 0xff; }   /* 0x46dbc0 */
+void (colour_initRealClear)(void) { u32 *c = (u32 *)OBJ(g_realClear); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0; }   /* 0x46d2d0 */
+void (colour_initRealBlue)(void) { u32 *c = (u32 *)OBJ(g_realBlue); c[0] = 0; c[1] = 0; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d450 */
+void (colour_initRealWhite)(void) { u32 *c = (u32 *)OBJ(g_realWhite); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0x3f800000u; c[3] = 0x3f800000u; }   /* 0x46d390 */
+void (colour_initRealGreen)(void) { u32 *c = (u32 *)OBJ(g_realGreen); c[0] = 0; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d410 */
+void (colour_initRealRed)(void) { u32 *c = (u32 *)OBJ(g_realRed); c[0] = 0x3f800000u; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d3d0 */
+void (colour_initRealBlack)(void) { u32 *c = (u32 *)OBJ(g_realBlack); c[0] = 0; c[1] = 0; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d310 */
+void (colour_initRealYellow)(void) { u32 *c = (u32 *)OBJ(g_realYellow); c[0] = 0x3f800000u; c[1] = 0x3f800000u; c[2] = 0; c[3] = 0x3f800000u; }   /* 0x46d490 */
+void (colour_initRealGrey)(void) { u32 *c = (u32 *)OBJ(g_realGrey); c[0] = 0x3f000000u; c[1] = 0x3f000000u; c[2] = 0x3f000000u; c[3] = 0x3f800000u; }   /* 0x46d350 */
 
 /* ---- a global object's destructor, run once (the guard byte's bit 0 set first): ErrorLog_dtor of the object ---- */
 #define GUARDED_DTOR(name, guard, obj) \

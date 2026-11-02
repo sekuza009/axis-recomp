@@ -1211,7 +1211,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? fadd_m(fld_m(&p[k]), K(0x4a93f4)) : fsub_m(fld_m(&p[k]), K(0x4a93f4)));
-				ViewVolume_addSegment(view, (const void *)IMG(0xa1f208), p, q, 1);
+				ViewVolume_addSegment(view, (const void *)OBJ(g_packedYellow), p, q, 1);
 			}
 		}
 	if (S(int, 0xbe170c) == 1) {

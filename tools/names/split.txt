@@ -1061,3 +1061,16 @@ g_penFixedWidths
 # the depth sorts state blocks (objects33.csv), whole
 g_sortBounds
 g_sortState
+# the colour constants (objects34.csv), whole
+g_packedBlue
+g_packedGrey
+g_packedYellow
+g_packedGreen
+g_realClear
+g_realBlue
+g_realWhite
+g_realGreen
+g_realRed
+g_realBlack
+g_realYellow
+g_realGrey

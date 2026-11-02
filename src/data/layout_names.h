@@ -1726,8 +1726,16 @@ extern struct GameData g_data;
 #define g_otherModeWidth (*(int *)g_otherModeWidth_v)
 #undef g_outlinesCopy
 #define g_outlinesCopy ((int *)g_outlinesCopy_v)
+#undef g_packedBlue
+#define g_packedBlue ((u8 *)g_packedBlue_v)
+#undef g_packedGreen
+#define g_packedGreen ((u8 *)g_packedGreen_v)
+#undef g_packedGrey
+#define g_packedGrey ((u8 *)g_packedGrey_v)
 #undef g_packedWhite
 #define g_packedWhite ((u8 *)g_data.g_packedWhite_)
+#undef g_packedYellow
+#define g_packedYellow ((u8 *)g_packedYellow_v)
 #undef g_packetQueue
 #define g_packetQueue ((u8 *)g_packetQueue_v)
 #undef g_panelBoxes
@@ -2014,6 +2022,22 @@ extern struct GameData g_data;
 #define g_rankingSort (*(int *)g_rankingSort_v)
 #undef g_rankingWaiting
 #define g_rankingWaiting (*(int *)g_rankingWaiting_v)
+#undef g_realBlack
+#define g_realBlack ((float *)g_realBlack_v)
+#undef g_realBlue
+#define g_realBlue ((float *)g_realBlue_v)
+#undef g_realClear
+#define g_realClear ((float *)g_realClear_v)
+#undef g_realGreen
+#define g_realGreen ((float *)g_realGreen_v)
+#undef g_realGrey
+#define g_realGrey ((float *)g_realGrey_v)
+#undef g_realRed
+#define g_realRed ((float *)g_realRed_v)
+#undef g_realWhite
+#define g_realWhite ((float *)g_realWhite_v)
+#undef g_realYellow
+#define g_realYellow ((float *)g_realYellow_v)
 #undef g_receivedClan
 #define g_receivedClan (*(int *)((u8 *)g_netNoticeRecord_v + 0x16))
 #undef g_receivedSession

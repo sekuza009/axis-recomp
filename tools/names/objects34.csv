@@ -1,0 +1,13 @@
+# the named colour constants statics.c sets (step 3b): packed RGBA bytes and real (float) RGBA
+0xa1f200,u8,4,g_packedBlue,packed blue (colour_initPackedBlue)
+0xa1f204,u8,4,g_packedGrey,packed grey
+0xa1f208,u8,4,g_packedYellow,packed yellow (main_loop's view-volume segments)
+0xa1f2ec,u8,4,g_packedGreen,packed green
+0xa1f210,float,4,g_realClear,real clear (colour_initRealClear)
+0xa1f228,float,4,g_realBlue,real blue
+0xa1f240,float,4,g_realWhite,real white
+0xa1f258,float,4,g_realGreen,real green
+0xa1f268,float,4,g_realRed,real red
+0xa1f280,float,4,g_realBlack,real black
+0xa1f2d8,float,4,g_realYellow,real yellow
+0xa1f2f0,float,4,g_realGrey,real grey

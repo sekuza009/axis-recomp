@@ -339,3 +339,15 @@
 #define g_penFixedWidths ((int *)IMG(0xa0fb28))   /* int[105]; the fixed set's glyph widths (all 8) */
 #define g_sortBounds ((int *)IMG(0x4c83c4))   /* int[8192]; the two sorts' lo / hi arrays: A lo */
 #define g_sortState ((u8 *)IMG(0xae3338))   /* u8[49176]; the two sorts' i / j / pivot arrays */
+#define g_packedBlue ((u8 *)IMG(0xa1f200))   /* u8[4]; packed blue (colour_initPackedBlue) */
+#define g_packedGrey ((u8 *)IMG(0xa1f204))   /* u8[4]; packed grey */
+#define g_packedYellow ((u8 *)IMG(0xa1f208))   /* u8[4]; packed yellow (main_loop's view-volume segments) */
+#define g_packedGreen ((u8 *)IMG(0xa1f2ec))   /* u8[4]; packed green */
+#define g_realClear ((float *)IMG(0xa1f210))   /* float[4]; real clear (colour_initRealClear) */
+#define g_realBlue ((float *)IMG(0xa1f228))   /* float[4]; real blue */
+#define g_realWhite ((float *)IMG(0xa1f240))   /* float[4]; real white */
+#define g_realGreen ((float *)IMG(0xa1f258))   /* float[4]; real green */
+#define g_realRed ((float *)IMG(0xa1f268))   /* float[4]; real red */
+#define g_realBlack ((float *)IMG(0xa1f280))   /* float[4]; real black */
+#define g_realYellow ((float *)IMG(0xa1f2d8))   /* float[4]; real yellow */
+#define g_realGrey ((float *)IMG(0xa1f2f0))   /* float[4]; real grey */
