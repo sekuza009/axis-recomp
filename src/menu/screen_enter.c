@@ -74,12 +74,12 @@ void (menuState300_enter)(void)
 void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x4dbb60), 0 }, { IMG(0x4db51c), 5 }, { IMG(0x4dba70), 0x50 }, { IMG(0x4dba74), 0x96 }, { IMG(0x4dba78), 0x230 }, { IMG(0x4dba7c), 0x15e },
+		{ IMG(0x4dbb60), 0 }, { ADDR(g_lobbySubState), 5 }, { IMG(0x4dba70), 0x50 }, { IMG(0x4dba74), 0x96 }, { IMG(0x4dba78), 0x230 }, { IMG(0x4dba7c), 0x15e },
 		{ ADDR(g_arenaNameDialogRight), 0x21c }, { ADDR(g_arenaNameDialogBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
 	                                ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock) };
-	static const u32 cleared2[] = { IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
+	static const u32 cleared2[] = { ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), OBJ(g_arenaBright), ADDR(g_arenaLeaving), ADDR(g_arenaLobbyState) };
 	static const Store state[] = {
 		{ ADDR(g_arenaLobbyMode), 2 }, { ADDR(g_lastPanel), 999 }, { (OBJ(g_arenaBright) + 0x4), ONE }, { (OBJ(g_arenaBright) + 0x8), ONE }, { (OBJ(g_arenaBright) + 0xc), ONE },
 		{ OBJ(g_arenaDim), 0x3e99999a }, { (OBJ(g_arenaDim) + 0x4), 0x3f333333 }, { (OBJ(g_arenaDim) + 0x8), 0x3f333333 }, { (OBJ(g_arenaDim) + 0xc), ONE }, { IMG(0x9fd958), 0xf },
@@ -118,13 +118,13 @@ void (menuState400_enter)(void)
 void (menuState600_enterSetup)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x4ddac8), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
-		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { IMG(0x4dddd0), 0x64 }, { IMG(0x4dddd8), 0x21c },
-		{ IMG(0x4ddddc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
+		{ ADDR(g_setupTab), 0x29a }, { ADDR(g_setupTunnelDepth), 0xc4af0000 }, { ADDR(g_setupPanelMoving), 1 }, { ADDR(g_setupPanelPos), 0 }, { ADDR(g_setupPage), 2 },
+		{ ADDR(g_setupSoundLeft), 0x32 }, { (OBJ(g_setupSoundRect) + 0x4), 0x3c }, { (OBJ(g_setupSoundRect) + 0xc), 0x1a4 }, { OBJ(g_setupOptionsRect), 0x64 }, { (OBJ(g_setupOptionsRect) + 0x8), 0x21c },
+		{ (OBJ(g_setupOptionsRect) + 0xc), 0x1c2 }, { ADDR(g_setupControlLeft), 0x28 }, { (OBJ(g_setupControlRect) + 0xc), 0x1b8 } };
 	static const Store colours[] = {
 		{ IMG(0x4de048), 0 }, { IMG(0x4de04c), ONE }, { IMG(0x4de050), ONE }, { IMG(0x4de054), ONE }, { IMG(0x4ddae0), 0 },
-		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { IMG(0x4e14fc), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
-		{ IMG(0x9db978), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
+		{ IMG(0x4ddae4), 0x3f19999a }, { IMG(0x4ddae8), 0x3f19999a }, { IMG(0x4ddaec), ONE }, { ADDR(g_scroll), 0 }, { ADDR(g_menuTunnelSpeed), ONE },
+		{ ADDR(g_tunnelPulse), 0 }, { ADDR(g_tunnelPulseStep), ONE } };
 	g_setupOptionsTop = 0x1e;
 	g_setupControlTop = 0x1e;
 	g_setupSoundRight = 0x24e;
@@ -279,9 +279,9 @@ int (menuState900_enterSkirmish)(void)
 	static const Store setup[] = {
 		{ ADDR(g_briefingX), 0xa }, { ADDR(g_briefingY), 0x14 }, { ADDR(g_briefingRight), 0x276 }, { ADDR(g_briefingBottom), 0x1cc }, { IMG(0x9ef208), 0 },
 		{ IMG(0x9ef20c), ONE }, { IMG(0x9ef210), ONE }, { IMG(0x9ef214), ONE }, { IMG(0x9eeac8), 0 }, { IMG(0x9eeacc), 0x3f19999a },
-		{ IMG(0x9eead0), 0x3f19999a }, { IMG(0x9eead4), ONE }, { ADDR(g_settingsState), 1 }, { IMG(0x76d3e8), 900 }, { IMG(0x67ef0c), 900 },
-		{ IMG(0x67ef20), 900 } };
-	static const u32 cleared[] = { IMG(0x9f16bc), IMG(0x9f1058), ADDR(g_missionPicked), IMG(0x680bb4), IMG(0x76d37c) };
+		{ IMG(0x9eead0), 0x3f19999a }, { IMG(0x9eead4), ONE }, { ADDR(g_settingsState), 1 }, { ADDR(g_screen), 900 }, { ADDR(g_lastScreen), 900 },
+		{ ADDR(g_nextScreen), 900 } };
+	static const u32 cleared[] = { ADDR(g_missionTop), IMG(0x9f1058), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
@@ -302,8 +302,8 @@ int (menuState500_enter)(void)
 	static const Store setup[] = {
 		{ ADDR(g_missionSelectLeft), 0x28 }, { ADDR(g_missionSelectTop), 0xa }, { (OBJ(g_missionSelectRect) + 0x8), 0x258 }, { (OBJ(g_missionSelectRect) + 0xc), 0x1cc }, { OBJ(g_missionColourLit), 0 },
 		{ (OBJ(g_missionColourLit) + 0x4), ONE }, { (OBJ(g_missionColourLit) + 0x8), ONE }, { (OBJ(g_missionColourLit) + 0xc), ONE }, { OBJ(g_missionColourDim), 0 }, { (OBJ(g_missionColourDim) + 0x4), 0x3f19999a },
-		{ (OBJ(g_missionColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionColourDim) + 0xc), ONE }, { IMG(0x9f62f8), 1 }, { IMG(0x76d3e8), 500 }, { IMG(0x67ef0c), 500 },
-		{ IMG(0x67ef20), 500 } };
+		{ (OBJ(g_missionColourDim) + 0x8), 0x3f19999a }, { (OBJ(g_missionColourDim) + 0xc), ONE }, { ADDR(g_missionPage), 1 }, { ADDR(g_screen), 500 }, { ADDR(g_lastScreen), 500 },
+		{ ADDR(g_nextScreen), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
 	GAME_FN(missionsel_layout, 0x447660, void, void)();   /* mission_447660 */
@@ -331,14 +331,14 @@ u32 (menuState210_enter)(void)
 	static const Store layout[] = {
 		{ ADDR(g_profilePageLeft), 0x3c }, { ADDR(g_profilePageTop), 0x3c }, { IMG(0x9f8f28), 0x10e }, { IMG(0x9f93c0), 0x10e }, { ADDR(g_profilePageRight), 0x244 },
 		{ ADDR(g_profilePageBottom), 0x1a4 }, { ADDR(g_newNameDialogLeft), 0x78 }, { ADDR(g_newNameDialogTop), 0x96 }, { ADDR(g_newNameDialogRight), 0x208 }, { ADDR(g_newNameDialogBottom), 0x118 },
-		{ IMG(0x9f8f1c), 0x78 }, { IMG(0x9f8f0c), 0x96 }, { IMG(0x9f8f2c), 0x208 }, { IMG(0x9f6834), 0x78 }, { IMG(0x9f683c), 0x96 },
+		{ ADDR(g_profileDialogX), 0x78 }, { ADDR(g_profileDialogY), 0x96 }, { IMG(0x9f8f2c), 0x208 }, { ADDR(g_profileDialog2X), 0x78 }, { ADDR(g_profileDialog2Y), 0x96 },
 		{ IMG(0x9f93bc), 0x208 }, { ADDR(g_pilotSelectLeft), 0x1e }, { ADDR(g_pilotSelectTop), 0x14 }, { ADDR(g_pilotSelectRight), 0x262 }, { ADDR(g_pilotSelectBottom), 0x1c2 } };
-	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), IMG(0x680bb4), IMG(0x76d37c),
-	                               IMG(0x76d42c) };
+	static const u32 cleared[] = { ADDR(g_profileScreenReady), ADDR(g_profileDialogOpen), ADDR(g_profileListTop), ADDR(g_profileListRow), ADDR(g_pilotChosen), ADDR(g_currentProfile), ADDR(g_repeatDown), ADDR(g_repeatUp),
+	                               ADDR(g_highlightShown) };
 	static const Store colours[] = {
 		{ OBJ(g_profileColour), 0 }, { (OBJ(g_profileColour) + 0x4), ONE }, { (OBJ(g_profileColour) + 0x8), ONE }, { (OBJ(g_profileColour) + 0xc), ONE }, { OBJ(g_profileDim), 0 },
-		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { IMG(0x4dda44), 0 }, { ADDR(g_introZoom), 0 },
-		{ IMG(0x9f6838), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
+		{ (OBJ(g_profileDim) + 0x4), 0x3f19999a }, { (OBJ(g_profileDim) + 0x8), 0x3f19999a }, { (OBJ(g_profileDim) + 0xc), ONE }, { ADDR(g_cursorBlink), 0 }, { ADDR(g_introZoom), 0 },
+		{ ADDR(g_profileIntro), 0 }, { ADDR(g_profileRowClicked), 0 }, { ADDR(g_profileMessageTime), 0 } };
 	static const u32 rects[7] = { FN_ADDR(profilePage_layout, 0x44af30), FN_ADDR(newNameDialog_layout, 0x44b030), FN_ADDR(profileDialogBox_layout, 0x44b080), FN_ADDR(deleteDialog_layout, 0x44b0b0), FN_ADDR(secondDialog_layout, 0x44b100), FN_ADDR(profileList_layout, 0x44b150), FN_ADDR(pilotSelect_layout, 0x44b1a0) };
 	STORE_ALL(layout);
 	CLEAR_ALL(cleared);

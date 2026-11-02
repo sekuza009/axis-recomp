@@ -1,0 +1,3 @@
+# setup's tables read whole (step 3b; --records): found by split_aliases' check of unnamed bases
+0x4b04ec,int,4,g_bindRows,the rows of each controls page (move, shoot, misc; the mouse page's fourth is the word g_lastCrosshair: g_bindRows[g_bindPage])
+0x4dddd0,int,4,g_setupOptionsRect,the setup options panel's window: left, top (g_setupOptionsTop), right, bottom (with_page's frame while a dialog is open)

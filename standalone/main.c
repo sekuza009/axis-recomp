@@ -239,7 +239,7 @@ static LONG WINAPI crash_hit(EXCEPTION_POINTERS *e)
 		log_stack(f, (const DWORD *)e->ContextRecord->Esp, 64);
 		fprintf(f, "\n  (eax %08lx ecx %08lx edx %08lx esi %08lx edi %08lx; DirectInput %08lx keyboard %08lx mouse %08lx)\n",
 		        e->ContextRecord->Eax, e->ContextRecord->Ecx, e->ContextRecord->Edx, e->ContextRecord->Esi, e->ContextRecord->Edi,
-		        *(DWORD *)AT(0x4d1e98), *(DWORD *)AT(0x4d1fa0), *(DWORD *)AT(0x4d1fa4));
+		        *(DWORD *)axis_dataAt(0x4d1e98), *(DWORD *)axis_dataAt(0x4d1fa0), *(DWORD *)axis_dataAt(0x4d1fa4));   /* (split variables: their places) */
 		fclose(f);
 	}
 	return EXCEPTION_CONTINUE_SEARCH;

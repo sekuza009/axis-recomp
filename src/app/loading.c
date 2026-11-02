@@ -187,8 +187,8 @@ void (menu_loadIntroTextures)(void)
 		next_step();
 	}
 	static const struct { u32 name, into; } rest[7] = {
-		{ STR(0x4ad574, "iftex/gameconnect"), IMG(0x4df450) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), IMG(0x4e152c) }, { STR(0x4b2344, "iftex/cylinder"), IMG(0x4e186c) },
-		{ STR(0x4b2330, "iftex/cylinder_menu"), IMG(0x76d36c) }, { STR(0x4b2320, "iftex/menu34"), ADDR(g_menuTunnelTexture) }, { STR(0x4b255c, "iftex/character"), ADDR(g_characterTexture) },
+		{ STR(0x4ad574, "iftex/gameconnect"), IMG(0x4df450) }, { STR(0x4b2360, "iftex/option"), ADDR(g_buttonTexture) }, { STR(0x4b2354, "iftex/mouse"), ADDR(g_cursorTexture) }, { STR(0x4b2344, "iftex/cylinder"), ADDR(g_tunnelTexture) },
+		{ STR(0x4b2330, "iftex/cylinder_menu"), ADDR(g_cageTexture) }, { STR(0x4b2320, "iftex/menu34"), ADDR(g_menuTunnelTexture) }, { STR(0x4b255c, "iftex/character"), ADDR(g_characterTexture) },
 	};
 	for (int k = 0; k < 7; k++) {
 		GAME_VAR(int, rest[k].into) = T(rest[k].name);
@@ -381,7 +381,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			if (G(int, 0x1f35c4) != 0x1201)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
 			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)IMG(0x9dad94), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_missionStage), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, G(void *, 0x2340d08));
 			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, G(void *, 0x2340d08));
 			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, G(void *, 0x2340d08));

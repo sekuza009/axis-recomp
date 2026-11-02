@@ -1401,7 +1401,7 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 	int value = 0x1201;
 	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)IMG(0x9dad94), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled((void *)ADDR(g_missionStage), 4, 1, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, FIELD(void *, s, 0x2340d08));
 	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, FIELD(void *, s, 0x2340d08));
 	value = FIELD(int, s, 0x22e7180);

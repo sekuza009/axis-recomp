@@ -116,7 +116,7 @@ void (menuState100_intro)(void)
 	frontEnd_drawProgress();
 	g_screen = 200;
 	g_lastScreen = 200;
-	static const u32 cleared[] = { IMG(0x4df01c), IMG(0x4e0458), IMG(0x680370), ADDR(g_unusedMenuReturnWord), IMG(0x4df03c), IMG(0x4df910), IMG(0x4e14fc), IMG(0x9db978), ADDR(g_introZoom) };
+	static const u32 cleared[] = { ADDR(g_titleShown), ADDR(g_titleFrames), ADDR(g_keysBlocked), ADDR(g_unusedMenuReturnWord), ADDR(g_cursorFrame), ADDR(g_cursorFrameTime), ADDR(g_scroll), ADDR(g_tunnelPulse), ADDR(g_introZoom) };
 	for (unsigned i = 0; i < sizeof cleared / sizeof cleared[0]; i++)
 		GAME_VAR(u32, cleared[i]) = 0;
 	g_menuTunnelSpeed = 0x3f800000;   /* 1.0 */
@@ -642,10 +642,10 @@ u32 (game_returnToGameRoom)(void)
 u32 (menuState800_gameRoom)(void)
 {
 	if (g_highlightShown) {
-		int *mouse = (int *)IMG(0x4ded68);
-		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)IMG(0x4b071c)), (const float *)ADDR(k_0_25f)));
-		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)IMG(0x4b071c)), (const float *)ADDR(k_0_25f)));
-		long double size = fsub_m(fld_m((const float *)IMG(0x680bc0)), (const float *)IMG(0x4b071c));
+		int *mouse = (int *)ADDR(g_mouseX);
+		mouse[0] += ftol(fmul_m(fmul_m((long double)(g_highlightX - mouse[0]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
+		mouse[1] += ftol(fmul_m(fmul_m((long double)(g_highlightY - mouse[1]), (const float *)ADDR(g_frameTime)), (const float *)ADDR(k_0_25f)));
+		long double size = fsub_m(fld_m((const float *)ADDR(g_highlightSize)), (const float *)ADDR(g_frameTime));
 		g_highlightSize = f32(size);
 		if (!(size >= 0))   /* below 0, or not a number */
 			g_highlightShown = 0;

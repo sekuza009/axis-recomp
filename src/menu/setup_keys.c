@@ -140,7 +140,7 @@ static void page_crosshair(void) { setup_crosshairScreen(); }
 
 /* 0x427830, 0x427880, 0x4278d0: the screen with the key bindings page, the second page, the crosshair page */
 void (setup_frameSoundPage)(void) { with_page(page_424810, (const int *)ADDR(g_setupSoundLeft)); }
-void (setup_frameOptionsPage)(void) { with_page(page_425460, (const int *)IMG(0x4dddd0)); }
+void (setup_frameOptionsPage)(void) { with_page(page_425460, g_setupOptionsRect); }
 void (setup_frameCrosshairPage)(void) { with_page(page_crosshair, (const int *)ADDR(g_setupControlLeft)); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
@@ -370,7 +370,6 @@ void (setup_drawSoundTab)(void)
 }
 
 /* ---- the controls tab: four pages of bindings (0x4ddce8), a row selected on the page (0x4de040, -1 none) ---- */
-#define g_bindRows ((const int *)IMG(0x4b04ec))            /* rows per page */
 #define g_bindToggle (g_setupToggles[0])          /* row 10's setting (on / off) */
 
 /* 0x422e10: the controls tab's keys. 0x9da440 only gives a sound. While a row waits: cancel stops waiting, any

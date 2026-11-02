@@ -248,7 +248,7 @@ void (armc_buildPartLists)(void)
 		g_armcLastPart = last;
 	}
 	/* the two lists that start with -1; their lengths too stored once at the end */
-	static const u32 extra[2] = { IMG(0x4dc79c), IMG(0x4dcca4) }, extra_len[2] = { IMG(0x4dc244), IMG(0x4dc778) };
+	static const u32 extra[2] = { IMG(0x4dc79c), IMG(0x4dcca4) }, extra_len[2] = { ADDR(g_weaponCount), ADDR(g_extraCount) };
 	for (int j = 0; j < 2; j++) {
 		GAME_VAR(int, extra[j]) = -1;
 		GAME_VAR(int, extra_len[j]) = 1;

@@ -11,7 +11,7 @@ typedef long double X;
 #define F(a) GAME_VAR(float, a)
 #define I(a) GAME_VAR(int, a)
 /* g_viewAspect (game.h): the 3D view's aspect ratio, eased to the screen's while the camera moves */
-#define SCREEN_ASPECT ((X)I(IMG(0x5b1998)) / I(IMG(0x4e045c)))
+#define SCREEN_ASPECT ((X)I(ADDR(g_screenW)) / I(ADDR(g_screenH)))
 #define RATE F(0x4a93ec)                   /* the share eased per second */
 
 static const u32 cam[6] = { ADDR(g_menuCameraPos), ADDR(g_armcCamHeight), ADDR(g_armcCamDistance), ADDR(g_menuCameraLook), ADDR(g_menuCameraLookY), ADDR(g_menuCameraHeight) };
@@ -122,7 +122,7 @@ void (room_camera)(void)
 /* 0x408270: the arena lobby's camera */
 void (arena_camera)(void)
 {
-	static const MenuCam arena = { ADDR(g_arenaLobbyMode), IMG(0x4db51c), IMG(0x4dbaf4), 5, 1 };
+	static const MenuCam arena = { ADDR(g_arenaLobbyMode), ADDR(g_lobbySubState), IMG(0x4dbaf4), 5, 1 };
 	menu_camera(&arena);
 }
 
@@ -302,7 +302,7 @@ void (skirmish_camera)(void)
 /* 0x447cb0: the mission select's camera */
 void (missionsel_camera)(void)
 {
-	static const MenuCam2 mission = { IMG(0x9f62f8), IMG(0x9f63b8), IMG(0x9f6300), 1 };
+	static const MenuCam2 mission = { ADDR(g_missionPage), ADDR(g_missionShowBackground), ADDR(g_missionBusy), 1 };
 	menu_camera2(&mission);
 }
 
@@ -455,7 +455,7 @@ void (setup_camera)(void)
    leaves eax to callers that ignore it */
 void (match_debugHandler)(void)
 {
-	const float *frame = (const float *)IMG(0x4b071c), *speed = (const float *)ADDR(k_3f);
+	const float *frame = (const float *)ADDR(g_frameTime), *speed = (const float *)ADDR(k_3f);
 	if (g_watchChatOpen) {
 		if (g_paused)
 			return;

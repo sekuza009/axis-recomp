@@ -1,0 +1,3 @@
+# the mouse pointer (step 3b; --records): x and y, reached as a pair through a pointer to x (menuState800_gameRoom's
+# int *mouse = &g_mouseX; mouse[1] is y)
+0x4ded68,int,2,g_mousePos,the mouse pointer in 640 x 480 units (g_mouseX, g_mouseY)

@@ -486,7 +486,6 @@ g_roomRefreshing
 g_roomRequestOut
 g_serverConnectionState
 g_serverListCount
-g_setupOptionsTop
 g_typingAccountEmail
 g_typingAccountName
 g_typingAccountPassword
@@ -711,7 +710,6 @@ g_resolutionNames
 g_typedArenaNameText
 g_joinedTitleName
 # freed by the resolution names record, 2026-11-01
-g_lastCrosshair
 # the screens' hit-test rectangles (objects20.csv), whole, 2026-11-01
 g_mapListRects
 g_arenaNameDialogRects
@@ -864,7 +862,6 @@ g_missionStarted
 g_modeChanged
 g_mouseActive
 g_mouseTaken
-g_mouseY
 g_music
 g_playerCount
 g_profile9f6828
@@ -882,3 +879,40 @@ g_texturesOff
 g_timerFrequency
 g_timerShift
 g_timerTick
+# promoted globals freed once their IMG uses were written as names, 2026-11-01
+g_cageTexture
+g_chatFieldFlag
+g_cursorBlink
+g_cursorFrame
+g_cursorFrameTime
+g_cursorTexture
+g_dialogOpen
+g_highlightShown
+g_highlightSize
+g_keysBlocked
+g_lastScreen
+g_lobbySubState
+g_localPlayer
+g_missionStage
+g_missionTop
+g_nextScreen
+g_paused
+g_repeatDown
+g_repeatUp
+g_screen
+g_screenH
+g_screenW
+g_scroll
+g_setupTab
+g_textures
+g_titleFrames
+g_titleShown
+g_tunnelPulse
+g_tunnelTexture
+g_viewAngle
+g_viewAspect
+# the mouse pointer pair (objects21.csv), whole: g_mouseY split alone had the game room highlight move y at its old place
+g_mousePos
+# setup tables read whole (objects22.csv): g_lastCrosshair / g_setupOptionsTop were split alone
+g_bindRows
+g_setupOptionsRect

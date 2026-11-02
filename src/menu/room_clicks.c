@@ -506,7 +506,7 @@ u32 (ranking_page)(void)
 			g_roomListPrev = g_rankingSort;
 			g_roomListPrevPage = g_roomListPage;
 		}
-		long double blink = fld_m((const float *)ADDR(g_lobbyBlinkClock)) - fmul_m(fld_m((const float *)IMG(0x4b071c)), (const float *)IMG(0x4ad498));
+		long double blink = fld_m((const float *)ADDR(g_lobbyBlinkClock)) - fmul_m(fld_m((const float *)ADDR(g_frameTime)), (const float *)IMG(0x4ad498));
 		g_lobbyBlinkClock = f32(blink);
 		if (!(blink >= 0))
 			g_lobbyBlinkClock = 1000.0f;

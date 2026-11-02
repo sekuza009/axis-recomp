@@ -238,3 +238,6 @@
 0x9f8ee8 int 8 g_secondDialogRects
 0x9f8f38 int 44 g_pilotSelectRects
 0x9f9020 int 8 g_newNameDialogRects
+0x4ded68 int 2 g_mousePos
+0x4b04ec int 4 g_bindRows
+0x4dddd0 int 4 g_setupOptionsRect

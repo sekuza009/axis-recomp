@@ -58,7 +58,7 @@ void (setup_drawSoundPage)(void)
 		case 2: tex_quad(0.5f, 0.25f, 0.75f, 0.375f, X0 + 0x50, Y0 + 0x8c, X0 + 0x90, Y0 + 0xac); break;
 		case 3: tex_quad(0.75f, 0.25f, 1.0f, 0.375f, X0 + 0x190, Y0 + 0x8c, X0 + 0x1d0, Y0 + 0xac); break;
 		}
-		long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)IMG(0x4b071c));
+		long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)ADDR(g_frameTime));
 		g_setupPressedClock = f32(left);
 		if (!(left >= *zero)) {
 			g_setupPressedClock = 0;
@@ -111,10 +111,10 @@ void (setup_drawSoundPage)(void)
    leaves */
 void (setup_drawOptionsDialog)(void)
 {
-#define X0 GAME_VAR(int, 0x4dddd0)
+#define X0 (g_setupOptionsRect[0])
 #define Y0 g_setupOptionsTop
-#define X1 GAME_VAR(int, 0x4dddd8)
-#define Y1 GAME_VAR(int, 0x4ddddc)
+#define X1 (g_setupOptionsRect[2])
+#define Y1 (g_setupOptionsRect[3])
 	static const u32 names[6] = { IMG(0x4ddbbc), IMG(0x4dda64), IMG(0x4ddc84), IMG(0x4de058), IMG(0x4ddc20), IMG(0x4ddaf0) };
 	const u32 *bright = (const u32 *)IMG(0x4de048), *dim = (const u32 *)IMG(0x4ddae0);
 	int hovered = setupOptions_hitTest(g_mouseX, g_mouseY);
@@ -267,7 +267,7 @@ static void settings_tab(void)
 	glTexCoord2i(0, 1);
 	menu_vertex(X0 + 0xc8, Y0 + 0xd0);
 	glEnd();
-	long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)IMG(0x4b071c));
+	long double left = fsub_m(fld_m(&g_setupPressedClock), (const float *)ADDR(g_frameTime));
 	g_setupPressedClock = f32(left);
 	if (!(left >= *zero)) {
 		g_setupPressedClock = 0;
@@ -413,7 +413,7 @@ static void stripes(int right, float h)
    and the stripes scrolled on (0x4deda8 a frame, back to 0 at 200) */
 static void tunnel_advance(int turn_only)
 {
-	const float *frame = (const float *)IMG(0x4b071c);
+	const float *frame = (const float *)ADDR(g_frameTime);
 	long double pulse = fadd_m(fmul_m(fld_m(frame), (const float *)&g_tunnelPulseStep), &g_tunnelPulse);
 	g_tunnelPulse = f32(pulse);
 	if (turn_only) {
@@ -443,7 +443,7 @@ static void tunnel_advance(int turn_only)
    it */
 void (setup_drawTunnel)(void)
 {
-	const float *frame = (const float *)IMG(0x4b071c);
+	const float *frame = (const float *)ADDR(g_frameTime);
 	gfx_setProjection2D3D(1);
 	glEnable(GL_TEXTURE_2D);
 	if (g_setupPage == 1)
@@ -683,7 +683,7 @@ static void menu_tunnel(const Tunnel *t, const Highlight *h)
 	if (!h->keep_texture)
 		glDisable(GL_TEXTURE_2D);
 	if (g_panelHovered) {
-		long double glow = fadd_m(fmul_m(fld_m((const float *)IMG(0x4b071c)), &(*(float *)&g_panelGlowStep)), &g_panelGlow);
+		long double glow = fadd_m(fmul_m(fld_m((const float *)ADDR(g_frameTime)), &(*(float *)&g_panelGlowStep)), &g_panelGlow);
 		g_panelGlow = f32(glow);
 		if (!clamp) {
 			if (!(glow > k_2f))
@@ -804,7 +804,7 @@ void (menu_mainMenu)(void)
 #define g_idle (*(float *)&g_menuIdleTime)
 #define g_hint (*(float *)&g_menuHintClock)
 #define g_hintStep g_menuHintStep
-	const float *frame = (const float *)IMG(0x4b071c);
+	const float *frame = (const float *)ADDR(g_frameTime);
 	int on = -1;
 	for (int k = 0; k < 6 && !g_tunnelFlyingIn; k++)
 		if (point_in_outline(g_mouseX, g_mouseY, *(const Outline *)(IMG(0x4deb80) + k * 0x2c)) == 1) {

@@ -399,7 +399,7 @@ static u32 leave_settings(u32 state)
 	return put_camera_back();
 }
 u32 (skirmishSettings_leave)(void) { return leave_settings(ADDR(g_settingsState)); }
-u32 (missionSettings_leave)(void) { return leave_settings(IMG(0x9f62f8)); }
+u32 (missionSettings_leave)(void) { return leave_settings(ADDR(g_missionPage)); }
 
 /* 0x4370e0: the room's two keys: the first asks to leave (0x9dd6c4 = 1), the second to go back (2), each with the
    menu sound. Returns what the original leaves in eax */

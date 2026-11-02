@@ -46,7 +46,7 @@ void (room_openDialog4d)(void)
 /* 0x434640: dialog 0x42, its name field filled from 0x9dd570 */
 void (room_openDialog42)(void)
 {
-	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), IMG(0x4e1868), IMG(0x68039c) };
+	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), ADDR(g_chatFieldFlag), ADDR(g_paused) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
 	memset((void *)OBJ(g_accountName), 0, 7 * 4 + 2 + 12);
@@ -58,7 +58,7 @@ void (room_openDialog42)(void)
 /* 0x433590: the room screen's start: state 1, fade 0.7, 30 (0x5b1914), 999 (0x907b24), the rest cleared */
 void (room_start)(void)
 {
-	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), IMG(0x76d41c), ADDR(g_gameListTop),
+	static const u32 cleared[] = { ADDR(g_roomRefreshing), ADDR(g_roomSearching), ADDR(g_gameListLoaded), ADDR(g_roomSearchAnswerIn), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop),
 	                               ADDR(g_lobbyListRow), ADDR(g_gameListJoinClicked), ADDR(g_roomJoined), ADDR(g_roomListRefreshTimer), ADDR(g_gameListClickArmed), ADDR(g_gameListClickTimer), ADDR(g_roomNameSum) };
 	g_roomPanelBrightness = 0x3f333333;   /* 0.7 */
 	g_roomState = 1;

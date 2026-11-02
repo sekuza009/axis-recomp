@@ -334,7 +334,7 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 		g_mouseX += step;
 		step = ftol(fmul_m(fmul_m((long double)(g_highlightY - g_mouseY), &g_frameTime), rate));
 		g_mouseY += step;
-		long double t = fsub_m(fld_m((const float *)IMG(0x680bc0)), &g_frameTime);
+		long double t = fsub_m(fld_m((const float *)ADDR(g_highlightSize)), &g_frameTime);
 		g_highlightSize = (float)t;
 		if (!(t >= k_0f))
 			g_highlightShown = 0;
@@ -348,13 +348,13 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 /* 0x44f5f0: the pilot panel's page (profile_drawDeleteQuestion) */
 u32 (profile_pilotPanelPage)(void)
 {
-	static const u32 frame[4] = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28) };
+	static const u32 frame[4] = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), IMG(0x9f8f2c), IMG(0x9f8f28) };
 	return glide_page((const float *)ADDR(k_0_25f), frame, FN_ADDR(profile_drawDeleteQuestion, 0x44e180));
 }
 /* 0x44f740: the second panel's page (profile_drawSecondDialog), gliding at its own rate */
 u32 (profile_secondPanelPage)(void)
 {
-	static const u32 frame[4] = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0) };
+	static const u32 frame[4] = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), IMG(0x9f93bc), IMG(0x9f93c0) };
 	return glide_page((const float *)ADDR(k_0_2f), frame, FN_ADDR(profile_drawSecondDialog, 0x44e3e0));
 }
 

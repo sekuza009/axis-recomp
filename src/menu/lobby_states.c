@@ -35,7 +35,7 @@ void (lobby_setSubState0)(void)
 void (lobby_setSubState1)(void)
 {
 	static const u32 cleared[] = { (OBJ(g_camPoints) + 0x14), ADDR(g_serverConnected), ADDR(g_lobbyRefreshing), ADDR(g_arenaSearchStarted), ADDR(g_serverSearching), ADDR(g_lobbyJoinStarted), ADDR(g_lobbyJoinRequest), ADDR(g_lanSearch),
-	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), IMG(0x76d41c), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
+	                               ADDR(g_lobbySearching), ADDR(g_arenaHaveList), ADDR(g_arenaListFull), ADDR(g_gameCount), ADDR(g_lobbyBlinkClock), ADDR(g_localPlayer), ADDR(g_gameListTop), ADDR(g_lobbyListRow),
 	                               ADDR(g_arenaListClickArmed), ADDR(g_arenaSearchClock), ADDR(g_lobbyPanelsOff), ADDR(g_arenaConfirming), ADDR(g_lobbyConnectionOpen), ADDR(g_arenaLeaving), ADDR(g_arenaListRefreshTimer), ADDR(g_arenaFull) };
 	int z = g_menuCameraHeight;
 	g_camPoint1X = 0x420c0000;   /* 35.0 */
@@ -544,7 +544,7 @@ u32 (room_leaveGame)(void)
    lobby_quitDialogClicks. Returns what the original leaves in eax */
 u32 (create_quitDialogClicks)(void)
 {
-	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), IMG(0x90d1c4) };
+	static const u32 panels[5] = { ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_dialogOpen) };
 	for (int k = 0; k < 5; k++)
 		if (GAME_VAR(int, panels[k]))
 			return GAME_VAR(u32, panels[k]);

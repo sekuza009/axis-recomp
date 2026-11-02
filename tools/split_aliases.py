@@ -152,6 +152,22 @@ for f in sorted(glob.glob('src/**/*.c', recursive=True)):
 				for s in inside(lo, lo + size):
 					print('%s:%d %d bytes from 0x%x cover split %s: %s' % (f, i + 1, size, lo, s, text.split('\n')[i].strip()[:80]))
 					found += 1
+# an unnamed address of the old block made a pointer ((T *)IMG(0x...)) or given an offset (IMG(0x...) + k): its reach
+# (0x40 bytes) running into a split object is to review, as for a named record base
+for f in sorted(glob.glob('src/**/*.c', recursive=True)):
+	if os.sep + 'data' + os.sep in f:
+		continue
+	text = open(f, 'rb').read().decode('latin-1')
+	code = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\\n])*"', lambda m: re.sub(r'[^\n]', ' ', m.group(0)), text, flags=re.S)
+	for i, l in enumerate(code.split('\n')):
+		for m in re.finditer(r'\(\s*(?:const\s+)?[\w ]+\*\s*\)\s*IMG\((0x[0-9a-f]+)\)|IMG\((0x[0-9a-f]+)\)\s*\+', l):
+			a = int(m.group(1) or m.group(2), 16)
+			if not 0x4ad000 <= a < 0xb13000 or any(lo <= a < hi for lo, hi, s in spans):
+				continue
+			for lo, hi, s in spans:
+				if a < lo < a + 0x40:
+					print('REVIEW %s:%d IMG(0x%x) (a pointer / base, reaching 0x40) runs into split %s: %s' % (f, i + 1, a, s, text.split('\n')[i].strip()[:90]))
+					review += 1
 print('%d names reach a split object\'s old place; %d record bases to review (REVIEW: a pointer to one value, or a '
       'reach that stops short, is fine)' % (found, review))
 sys.exit(1 if found else 0)

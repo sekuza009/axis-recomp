@@ -129,12 +129,12 @@ static u32 two_buttons(const TwoButtons *d)
    question MSG(128, "ARE YOU SURE?")) */
 u32 (profile_drawDeleteQuestion)(void)
 {
-	static const TwoButtons d = { IMG(0x9f8f1c), IMG(0x9f8f0c), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_profileDialogX), ADDR(g_profileDialogY), IMG(0x9f8f2c), IMG(0x9f8f28), FN_ADDR(deleteDialog_hitTest, 0x44b320), MSG(127, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 u32 (profile_drawSecondDialog)(void)
 {
-	static const TwoButtons d = { IMG(0x9f6834), IMG(0x9f683c), IMG(0x9f93bc), IMG(0x9f93c0), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
+	static const TwoButtons d = { ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), IMG(0x9f93bc), IMG(0x9f93c0), FN_ADDR(secondDialog_hitTest, 0x44b360), MSG(128, "ARE YOU SURE?") };
 	return two_buttons(&d);
 }
 
@@ -294,7 +294,7 @@ static void pilot_stats(int pilot, int x, int y, int step)
    the bar by scale (negative: to the right), in grey; each the button texture's strip 0.05 .. 0.95 (by length) */
 static void stat_bars(int x, int y, int step, const float *scale, float grey)
 {
-	const float *frame = (const float *)IMG(0x4b071c);
+	const float *frame = (const float *)ADDR(g_frameTime);
 	float *bar = (float *)IMG(0x9f8d34);
 	const float *target = (const float *)IMG(0x9f8ec0);
 	glEnable(GL_TEXTURE_2D);
@@ -408,14 +408,14 @@ void (profile_drawPilotSelect)(void)
 	y1 = ftol(fadd_m(fadd_m((long double)(g_reveal * 2) + (long double)(Y0 + 0x4c), &y), K(0x4a9550)));
 	menu_vertex(ftol(fsub_m(fadd_m((long double)(X0 + 0x20), &x), K(0x4a93d0))), y1);
 	glEnd();
-	long double pulse = fadd_m(fmul_m(fld_m(K(0x4b071c)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
+	long double pulse = fadd_m(fmul_m(fld_m((&g_frameTime)), (const float *)&g_profileFrameStep), &g_profileFrameAlpha);
 	g_profileFrameAlpha = f32(pulse);
 	if (!(pulse > *K(0x4a93fc)))
 		g_profileFrameStep = 0x3f800000;   /* 1 */
 	if (pulse >= *K(0x4a93f8))
 		g_profileFrameStep = 0xbf800000;   /* -1 */
 	if (g_reveal < 8) {
-		long double clock = fadd_m(fld_m(&g_revealClock), K(0x4b071c));
+		long double clock = fadd_m(fld_m(&g_revealClock), (&g_frameTime));
 		g_revealClock = f32(clock);
 		if (clock > *K(0x4a9424)) {
 			g_revealClock = 0;

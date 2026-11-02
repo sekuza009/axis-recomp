@@ -76,9 +76,9 @@ void (arenaCreate_layout)(void) { rects_column(OBJ(g_arenaCreateRects), OBJ(g_ar
 
 void (leaveDialog_layout)(void) { rects_column(OBJ(g_leaveDialogRects), OBJ(g_leaveDialogRects) + 2 * 16, 0xb4); }
 
-void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, IMG(0x9f8f1c), IMG(0x9f8f0c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
+void (deleteDialog_layout)(void) { rects_row(OBJ(g_deleteDialogRects), OBJ(g_deleteDialogRects) + 2 * 16, ADDR(g_profileDialogX), ADDR(g_profileDialogY), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
-void (secondDialog_layout)(void) { rects_row(OBJ(g_secondDialogRects), OBJ(g_secondDialogRects) + 2 * 16, IMG(0x9f6834), IMG(0x9f683c), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
+void (secondDialog_layout)(void) { rects_row(OBJ(g_secondDialogRects), OBJ(g_secondDialogRects) + 2 * 16, ADDR(g_profileDialog2X), ADDR(g_profileDialog2Y), 0x6e, 0xce, 0x3c, 0x5c, 0x78); }
 
 void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_newNameDialogRects) + 2 * 16, ADDR(g_newNameDialogLeft), ADDR(g_newNameDialogTop), 0xa0, 0x100, 0x5a, 0x7a, 0x78); }
 
@@ -88,8 +88,8 @@ void (lobbyTop_layout)(void) { rects_row(IMG(0x4dbb40), IMG(0x4dbb60), IMG(0x4db
 
 void (setupOptions_layout)(void)
 {
-	static const RArg a[4] = { RA(IMG(0x4dddd0), 0xa, 0), RA(ADDR(g_setupOptionsTop), 0x3c, 1), RA(IMG(0x4dddd0), 0x186, 0), RA(ADDR(g_setupOptionsTop), 0x5c, 1) };
-	static const RArg b[4] = { RA(IMG(0x4dddd0), 0x64, 1), RA(IMG(0x4ddddc), -0x40, 0), RA(IMG(0x4dddd0), 0xdc, 1), RA(IMG(0x4ddddc), -0x20, 0) };
+	static const RArg a[4] = { RA(OBJ(g_setupOptionsRect), 0xa, 0), RA(ADDR(g_setupOptionsTop), 0x3c, 1), RA(OBJ(g_setupOptionsRect), 0x186, 0), RA(ADDR(g_setupOptionsTop), 0x5c, 1) };
+	static const RArg b[4] = { RA(OBJ(g_setupOptionsRect), 0x64, 1), RA((OBJ(g_setupOptionsRect) + 0xc), -0x40, 0), RA(OBJ(g_setupOptionsRect), 0xdc, 1), RA((OBJ(g_setupOptionsRect) + 0xc), -0x20, 0) };
 	rect_spec(OBJ(g_setupOptionsRects), (OBJ(g_setupOptionsRects) + 0x70), 0x28, a); rect_spec((OBJ(g_setupOptionsRects) + 0x70), OBJ(g_setupOptionsRects) + 9 * 16, 0x8c, b);
 }
 

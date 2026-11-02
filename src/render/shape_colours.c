@@ -8,7 +8,7 @@
 /* a shape: its part count at +0x10, its 0x80-byte parts at +0x14 (each with its material at +0x44) */
 #define PART_COUNT(shape) FIELD(int, shape, 0x10)
 #define PART(shape, i) (FIELD(u8 *, shape, 0x14) + (i) * 0x80)
-#define MATERIAL_SET(m) FIELD(void *, GAME_VAR(u8 *, 0xa0e010), ((m) / 512) * 4 + 4)
+#define MATERIAL_SET(m) FIELD(void *, (*(u8 **)&g_textures), ((m) / 512) * 4 + 4)
 
 /* a model: its shapes (0x4c bytes each) at +0x11c, their count at +0x120; its tint at +0x234 .. +0x248, on while
    bit 1 of +0x230 is set */
