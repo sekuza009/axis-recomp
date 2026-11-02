@@ -880,6 +880,30 @@ extern struct GameData g_data;
 #define g_flareStepA (*(float *)g_flareStepA_v)
 #undef g_flareStepB
 #define g_flareStepB (*(float *)g_flareStepB_v)
+#undef g_font16Bottom
+#define g_font16Bottom ((float *)g_font16Bottom_v)
+#undef g_font16Left
+#define g_font16Left ((float *)g_font16Left_v)
+#undef g_font16Right
+#define g_font16Right ((float *)g_font16Right_v)
+#undef g_font16Top
+#define g_font16Top ((float *)g_font16Top_v)
+#undef g_font5Bottom
+#define g_font5Bottom ((float *)g_font5Bottom_v)
+#undef g_font5Left
+#define g_font5Left ((float *)g_font5Left_v)
+#undef g_font5Right
+#define g_font5Right ((float *)g_font5Right_v)
+#undef g_font5Top
+#define g_font5Top ((float *)g_font5Top_v)
+#undef g_font8Bottom
+#define g_font8Bottom ((float *)g_font8Bottom_v)
+#undef g_font8Left
+#define g_font8Left ((float *)g_font8Left_v)
+#undef g_font8Right
+#define g_font8Right ((float *)g_font8Right_v)
+#undef g_font8Top
+#define g_font8Top ((float *)g_font8Top_v)
 #undef g_fontAscii
 #define g_fontAscii (*(int *)g_fontAscii_v)
 #undef g_fontAsciiLarge
@@ -1012,6 +1036,30 @@ extern struct GameData g_data;
 #define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
 #undef g_hostResultFlag
 #define g_hostResultFlag (*(int *)((u8 *)g_resultMsg_v + 0x4))
+#undef g_hudFontBottom
+#define g_hudFontBottom ((float *)g_hudFontBottom_v)
+#undef g_hudFontLeft
+#define g_hudFontLeft ((float *)g_hudFontLeft_v)
+#undef g_hudFontRight
+#define g_hudFontRight ((float *)g_hudFontRight_v)
+#undef g_hudFontTop
+#define g_hudFontTop ((float *)g_hudFontTop_v)
+#undef g_hudLayerABottom
+#define g_hudLayerABottom ((float *)g_hudLayerABottom_v)
+#undef g_hudLayerALeft
+#define g_hudLayerALeft ((float *)g_hudLayerALeft_v)
+#undef g_hudLayerARight
+#define g_hudLayerARight ((float *)g_hudLayerARight_v)
+#undef g_hudLayerATop
+#define g_hudLayerATop ((float *)g_hudLayerATop_v)
+#undef g_hudLayerBBottom
+#define g_hudLayerBBottom ((float *)g_hudLayerBBottom_v)
+#undef g_hudLayerBLeft
+#define g_hudLayerBLeft ((float *)g_hudLayerBLeft_v)
+#undef g_hudLayerBRight
+#define g_hudLayerBRight ((float *)g_hudLayerBRight_v)
+#undef g_hudLayerBTop
+#define g_hudLayerBTop ((float *)g_hudLayerBTop_v)
 #undef g_inputFont
 #define g_inputFont (*(void * *)g_inputFont_v)
 #undef g_insertCdMessage

@@ -35,9 +35,9 @@ static void glyph_grid(const Grid *g)
 void (font_initMenuGrids)(void)
 {
 	static const Grid grids[3] = {
-		{ 0, 16, 0x80, 0, 15, 16, 16, 0, 15, 0x9db0b0, 0x9da4a8, 0x9da90c, 0x9db510 },
-		{ 0, 16, 0x80, 0, 15, 32, 8, 1, 8, 0x67ff64, 0x6803ac, 0x6807ac, 0x67fb64 },
-		{ 0x87, 8, 0xa7, -7, 0, 32, 8, 1, 8, 0x4e0ce4, 0x5b1114, 0x5b1514, 0x4e10e8 } };
+		{ 0, 16, 0x80, 0, 15, 16, 16, 0, 15, OBJ(g_font16Bottom), OBJ(g_font16Top), OBJ(g_font16Left), OBJ(g_font16Right) },
+		{ 0, 16, 0x80, 0, 15, 32, 8, 1, 8, OBJ(g_font8Bottom), OBJ(g_font8Top), OBJ(g_font8Left), OBJ(g_font8Right) },
+		{ 0x87, 8, 0xa7, -7, 0, 32, 8, 1, 8, OBJ(g_font5Bottom), OBJ(g_font5Top), OBJ(g_font5Left), OBJ(g_font5Right) } };
 	for (int k = 0; k < 3; k++)
 		glyph_grid(&grids[k]);
 }
@@ -46,9 +46,9 @@ void (font_initMenuGrids)(void)
 void (font_initHudGrids)(void)
 {
 	static const Grid grids[3] = {
-		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, 0x4e0474, 0x5b0910, 0x5b0d10, 0x4e0878 },
-		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, 0x5b1b64, 0x4e16d8, 0x4e1548, 0x5b199c },
-		{ 0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, 0x83a7e0, 0x4df638, 0x4df458, 0x83a600 } };
+		{ 0, 16, 0x100, 0, 15, 16, 16, 0, 15, OBJ(g_hudFontBottom), OBJ(g_hudFontTop), OBJ(g_hudFontLeft), OBJ(g_hudFontRight) },
+		{ 0, 16, 0x60, 0, 15, 16, 16, 0, 15, OBJ(g_hudLayerABottom), OBJ(g_hudLayerATop), OBJ(g_hudLayerALeft), OBJ(g_hudLayerARight) },
+		{ 0x6f, 16, 0xdf, -15, 0, 16, 16, 0, 15, OBJ(g_hudLayerBBottom), OBJ(g_hudLayerBTop), OBJ(g_hudLayerBLeft), OBJ(g_hudLayerBRight) } };
 	for (int k = 0; k < 3; k++)
 		glyph_grid(&grids[k]);
 }

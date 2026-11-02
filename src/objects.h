@@ -304,3 +304,27 @@
 #define g_ipxProviderGuid ((u8 *)IMG(0xa0b450))   /* u8[16]; the IPX service provider's GUID */
 #define g_modemProviderGuid ((u8 *)IMG(0xa0b408))   /* u8[16]; the modem service provider's GUID */
 #define g_serialProviderGuid ((u8 *)IMG(0xa0bab8))   /* u8[16]; the serial service provider's GUID */
+#define g_font16Bottom ((float *)IMG(0x9db0b0))   /* float[280]; the 16 / 32-pixel menu font: the cells' bottom edges */
+#define g_font16Top ((float *)IMG(0x9da4a8))   /* float[280]; the 16 / 32-pixel menu font: the cells' top edges */
+#define g_font16Left ((float *)IMG(0x9da90c))   /* float[280]; the 16 / 32-pixel menu font: the cells' left edges */
+#define g_font16Right ((float *)IMG(0x9db510))   /* float[280]; the 16 / 32-pixel menu font: the cells' right edges */
+#define g_font8Bottom ((float *)IMG(0x67ff64))   /* float[256]; the 8-pixel menu font: the cells' bottom edges */
+#define g_font8Top ((float *)IMG(0x6803ac))   /* float[256]; the 8-pixel menu font: the cells' top edges */
+#define g_font8Left ((float *)IMG(0x6807ac))   /* float[256]; the 8-pixel menu font: the cells' left edges */
+#define g_font8Right ((float *)IMG(0x67fb64))   /* float[256]; the 8-pixel menu font: the cells' right edges */
+#define g_font5Bottom ((float *)IMG(0x4e0ce4))   /* float[256]; the 5-pixel menu font: the cells' bottom edges */
+#define g_font5Top ((float *)IMG(0x5b1114))   /* float[256]; the 5-pixel menu font: the cells' top edges */
+#define g_font5Left ((float *)IMG(0x5b1514))   /* float[256]; the 5-pixel menu font: the cells' left edges */
+#define g_font5Right ((float *)IMG(0x4e10e8))   /* float[256]; the 5-pixel menu font: the cells' right edges */
+#define g_hudFontBottom ((float *)IMG(0x4e0474))   /* float[256]; the HUD glyphs: the cells' bottom edges */
+#define g_hudFontTop ((float *)IMG(0x5b0910))   /* float[256]; the HUD glyphs: the cells' top edges */
+#define g_hudFontLeft ((float *)IMG(0x5b0d10))   /* float[256]; the HUD glyphs: the cells' left edges */
+#define g_hudFontRight ((float *)IMG(0x4e0878))   /* float[256]; the HUD glyphs: the cells' right edges */
+#define g_hudLayerABottom ((float *)IMG(0x5b1b64))   /* float[100]; the HUD two-layer glyphs */
+#define g_hudLayerATop ((float *)IMG(0x4e16d8))   /* float[100]; the HUD two-layer glyphs */
+#define g_hudLayerALeft ((float *)IMG(0x4e1548))   /* float[100]; the HUD two-layer glyphs */
+#define g_hudLayerARight ((float *)IMG(0x5b199c))   /* float[100]; the HUD two-layer glyphs */
+#define g_hudLayerBBottom ((float *)IMG(0x83a7e0))   /* float[120]; the HUD two-layer glyphs */
+#define g_hudLayerBTop ((float *)IMG(0x4df638))   /* float[120]; the HUD two-layer glyphs */
+#define g_hudLayerBLeft ((float *)IMG(0x4df458))   /* float[120]; the HUD two-layer glyphs */
+#define g_hudLayerBRight ((float *)IMG(0x83a600))   /* float[120]; the HUD two-layer glyphs */
