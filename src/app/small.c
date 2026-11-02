@@ -151,8 +151,8 @@ u32 (tunnel_rebuild)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
-void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x4dbad0)); }
-void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, (int *)IMG(0x9dd308)); }
+void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_arenaDialogBoxRects); }
+void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_gameListStopRects); }
 void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)IMG(0x9f9010)); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)

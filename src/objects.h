@@ -213,3 +213,36 @@
 #define g_typedArenaNameText ((char *)IMG(0x4dbbd4))   /* char[24]; the arena address typed (cleared as 24 bytes; its edit takes 20 characters; g_typedArenaName its first word) */
 #define g_partRecords ((u8 *)IMG(0x4dbe50))   /* u8[896]; ARM CENTER's part records: six slots then the part looked at */
 #define g_viewedPart (g_partRecords + 6 * 0x80)   /* u8[0x80]; the part being looked at: the seventh of g_partRecords (g_viewedPartKind +0x44, index +0x48) */
+#define g_mapListRects ((int *)IMG(0x4d9358))   /* int[104]; mapList_hitTest's 26 hit rectangles (hit_tests.c) */
+#define g_arenaNameDialogRects ((int *)IMG(0x4db588))   /* int[24]; arenaNameDialog_hitTest's 6 hit rectangles (hit_tests.c) */
+#define g_createArenaRects ((int *)IMG(0x4db5e8))   /* int[64]; createArena_hitTest's 16 hit rectangles (hit_tests.c) */
+#define g_createArena2Rects ((int *)IMG(0x4db6e8))   /* int[8]; createArena_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_arenaGameListRects ((int *)IMG(0x4db720))   /* int[72]; arenaGameList_hitTest's 18 hit rectangles (hit_tests.c) */
+#define g_arenaDialogBoxRects ((int *)IMG(0x4dbad0))   /* int[4]; arenaDialogBox_hitTest's 1 hit rectangles (hit_tests.c) */
+#define g_arenaCreateRects ((int *)IMG(0x4dbb80))   /* int[8]; arenaCreate_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_armcPartsRects ((int *)IMG(0x4dbc88))   /* int[60]; armcParts_hitTest's 15 hit rectangles (hit_tests.c) */
+#define g_armcMainRects ((int *)IMG(0x4dc2a8))   /* int[68]; armcMain_hitTest's 17 hit rectangles (hit_tests.c) */
+#define g_armcColourRects ((int *)IMG(0x4dcb38))   /* int[72]; armcColour_hitTest's 18 hit rectangles (hit_tests.c) */
+#define g_setupSoundRects ((int *)IMG(0x4ddcf0))   /* int[40]; setupSound_hitTest's 10 hit rectangles (hit_tests.c) */
+#define g_setupSliderRects ((int *)IMG(0x4ddd98))   /* int[12]; setupSlider_hitTest's 3 hit rectangles (hit_tests.c) */
+#define g_setupOptionsRects ((int *)IMG(0x4ddde0))   /* int[36]; setupOptions_hitTest's 9 hit rectangles (hit_tests.c) */
+#define g_setupControlRects ((int *)IMG(0x4ddea8))   /* int[72]; setupControl_hitTest's 18 hit rectangles (hit_tests.c) */
+#define g_gameListRects ((int *)IMG(0x9dcd48))   /* int[60]; gameList_hitTest's 15 hit rectangles (hit_tests.c) */
+#define g_loginFormRects ((int *)IMG(0x9dce50))   /* int[28]; loginForm_hitTest's 7 hit rectangles (hit_tests.c) */
+#define g_gameListStopRects ((int *)IMG(0x9dd308))   /* int[4]; gameListStop_hitTest's 1 hit rectangles (hit_tests.c) */
+#define g_leaveDialogRects ((int *)IMG(0x9dd390))   /* int[8]; leaveDialog_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_popupRects ((int *)IMG(0x9dd3b8))   /* int[8]; popup_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_accountRects ((int *)IMG(0x9dd400))   /* int[24]; account_hitTest's 6 hit rectangles (hit_tests.c) */
+#define g_rankingRects ((int *)IMG(0x9dd4c0))   /* int[36]; ranking_hitTest's 9 hit rectangles (hit_tests.c) */
+#define g_roomSettingsRects ((int *)IMG(0x9dd6f8))   /* int[56]; roomSettings_hitTest's 14 hit rectangles (hit_tests.c) */
+#define g_createDialogRects ((int *)IMG(0x9dd7e0))   /* int[20]; createDialog_hitTest's 5 hit rectangles (hit_tests.c) */
+#define g_mapSelectRects ((int *)IMG(0x9dd950))   /* int[72]; mapSelect_hitTest's 18 hit rectangles (hit_tests.c) */
+#define g_skirmishSettingsRects ((int *)IMG(0x9ef220))   /* int[40]; skirmishSettings_hitTest's 10 hit rectangles (hit_tests.c) */
+#define g_briefingRects ((int *)IMG(0x9f16c0))   /* int[16]; briefing_hitTest's 4 hit rectangles (hit_tests.c) */
+#define g_missionselRects ((int *)IMG(0x9f6330))   /* int[16]; missionsel_hitTest's 4 hit rectangles (hit_tests.c) */
+#define g_deleteDialogRects ((int *)IMG(0x9f6808))   /* int[8]; deleteDialog_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_profilePageRects ((int *)IMG(0x9f8c60))   /* int[36]; profilePage_hitTest's 9 hit rectangles (hit_tests.c) */
+#define g_profileListRects ((int *)IMG(0x9f8d78))   /* int[52]; profileList_hitTest's 13 hit rectangles (hit_tests.c) */
+#define g_secondDialogRects ((int *)IMG(0x9f8ee8))   /* int[8]; secondDialog_hitTest's 2 hit rectangles (hit_tests.c) */
+#define g_pilotSelectRects ((int *)IMG(0x9f8f38))   /* int[44]; pilotSelect_hitTest's 11 hit rectangles (hit_tests.c) */
+#define g_newNameDialogRects ((int *)IMG(0x9f9020))   /* int[8]; newNameDialog_hitTest's 2 hit rectangles (hit_tests.c) */

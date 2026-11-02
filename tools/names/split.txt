@@ -712,3 +712,37 @@ g_typedArenaNameText
 g_joinedTitleName
 # freed by the resolution names record, 2026-11-01
 g_lastCrosshair
+# the screens' hit-test rectangles (objects20.csv), whole, 2026-11-01
+g_mapListRects
+g_arenaNameDialogRects
+g_createArenaRects
+g_createArena2Rects
+g_arenaGameListRects
+g_arenaDialogBoxRects
+g_arenaCreateRects
+g_armcPartsRects
+g_armcMainRects
+g_armcColourRects
+g_setupSoundRects
+g_setupSliderRects
+g_setupOptionsRects
+g_setupControlRects
+g_gameListRects
+g_loginFormRects
+g_gameListStopRects
+g_leaveDialogRects
+g_popupRects
+g_accountRects
+g_rankingRects
+g_roomSettingsRects
+g_createDialogRects
+g_mapSelectRects
+g_skirmishSettingsRects
+g_briefingRects
+g_missionselRects
+g_deleteDialogRects
+g_profilePageRects
+g_profileListRects
+g_secondDialogRects
+g_pilotSelectRects
+g_newNameDialogRects

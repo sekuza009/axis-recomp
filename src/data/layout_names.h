@@ -30,14 +30,20 @@ extern struct GameData g_data;
 #define g_accountPassword ((char *)g_data.g_accountPassword_)
 #undef g_accountPasswordRepeat
 #define g_accountPasswordRepeat ((char *)g_data.g_accountPasswordRepeat_)
+#undef g_accountRects
+#define g_accountRects ((int *)g_accountRects_v)
 #undef g_arenaBright
 #define g_arenaBright ((u32 *)g_data.g_arenaBright_)
 #undef g_arenaConfirming
 #define g_arenaConfirming (*(int *)g_arenaConfirming_v)
 #undef g_arenaCorporation
 #define g_arenaCorporation (*(int *)g_arenaCorporation_v)
+#undef g_arenaCreateRects
+#define g_arenaCreateRects ((int *)g_arenaCreateRects_v)
 #undef g_arenaCustomize
 #define g_arenaCustomize (*(u8 *)((u8 *)g_playerName_v + 0x22))
+#undef g_arenaDialogBoxRects
+#define g_arenaDialogBoxRects ((int *)g_arenaDialogBoxRects_v)
 #undef g_arenaDim
 #define g_arenaDim ((u32 *)g_data.g_arenaDim_)
 #undef g_arenaFileClan
@@ -62,6 +68,8 @@ extern struct GameData g_data;
 #define g_arenaGameListBottom (*(int *)g_arenaGameListBottom_v)
 #undef g_arenaGameListLeft
 #define g_arenaGameListLeft (*(int *)g_arenaGameListLeft_v)
+#undef g_arenaGameListRects
+#define g_arenaGameListRects ((int *)g_arenaGameListRects_v)
 #undef g_arenaGameListRight
 #define g_arenaGameListRight (*(int *)g_arenaGameListRight_v)
 #undef g_arenaGameListTop
@@ -124,6 +132,8 @@ extern struct GameData g_data;
 #define g_arenaNameDialogBottom (*(int *)g_arenaNameDialogBottom_v)
 #undef g_arenaNameDialogLeft
 #define g_arenaNameDialogLeft (*(int *)g_arenaNameDialogLeft_v)
+#undef g_arenaNameDialogRects
+#define g_arenaNameDialogRects ((int *)g_arenaNameDialogRects_v)
 #undef g_arenaNameDialogRight
 #define g_arenaNameDialogRight (*(int *)g_arenaNameDialogRight_v)
 #undef g_arenaNameDialogTop
@@ -164,6 +174,8 @@ extern struct GameData g_data;
 #define g_armcCameraBox ((u32 *)g_armcCameraBox_v)
 #undef g_armcChanged
 #define g_armcChanged (*(int *)g_armcChanged_v)
+#undef g_armcColourRects
+#define g_armcColourRects ((int *)g_armcColourRects_v)
 #undef g_armcColours
 #define g_armcColours ((float *)g_data.g_armcColours_)
 #undef g_armcCursor
@@ -190,6 +202,8 @@ extern struct GameData g_data;
 #define g_armcLookTilt (*(float *)g_armcLookTilt_v)
 #undef g_armcLookYaw
 #define g_armcLookYaw (*(float *)g_armcLookYaw_v)
+#undef g_armcMainRects
+#define g_armcMainRects ((int *)g_armcMainRects_v)
 #undef g_armcMoveEyeX
 #define g_armcMoveEyeX (*(float *)g_armcMoveEyeX_v)
 #undef g_armcMoveEyeY
@@ -208,6 +222,8 @@ extern struct GameData g_data;
 #define g_armcPanelDepth (*(u32 *)((u8 *)g_armcCameraBox_v + 0x88))
 #undef g_armcParts
 #define g_armcParts ((int *)g_armcParts_v)
+#undef g_armcPartsRects
+#define g_armcPartsRects ((int *)g_armcPartsRects_v)
 #undef g_armcPreview
 #define g_armcPreview (*(int *)g_armcPreview_v)
 #undef g_armcSessionMade
@@ -284,6 +300,8 @@ extern struct GameData g_data;
 #define g_briefingDone (*(int *)g_briefingDone_v)
 #undef g_briefingEnd
 #define g_briefingEnd (*(int *)g_briefingEnd_v)
+#undef g_briefingRects
+#define g_briefingRects ((int *)g_briefingRects_v)
 #undef g_briefingRight
 #define g_briefingRight (*(int *)g_briefingRight_v)
 #undef g_briefingShown
@@ -414,6 +432,12 @@ extern struct GameData g_data;
 #define g_convertHangul (*(int *)g_convertHangul_v)
 #undef g_cosTable
 #define g_cosTable ((float *)g_cosTable_v)
+#undef g_createArena2Rects
+#define g_createArena2Rects ((int *)g_createArena2Rects_v)
+#undef g_createArenaRects
+#define g_createArenaRects ((int *)g_createArenaRects_v)
+#undef g_createDialogRects
+#define g_createDialogRects ((int *)g_createDialogRects_v)
 #undef g_createQuitDialog
 #define g_createQuitDialog (*(int *)g_createQuitDialog_v)
 #undef g_crosshair
@@ -442,6 +466,8 @@ extern struct GameData g_data;
 #define g_debugValue (*(int *)g_debugValue_v)
 #undef g_defaultColour
 #define g_defaultColour (*(int *)g_defaultColour_v)
+#undef g_deleteDialogRects
+#define g_deleteDialogRects ((int *)g_deleteDialogRects_v)
 #undef g_desktopDC
 #define g_desktopDC (*(void * *)g_desktopDC_v)
 #undef g_desktopDepth
@@ -636,6 +662,10 @@ extern struct GameData g_data;
 #define g_gameListJoinClicked (*(int *)g_gameListJoinClicked_v)
 #undef g_gameListLoaded
 #define g_gameListLoaded (*(int *)g_gameListLoaded_v)
+#undef g_gameListRects
+#define g_gameListRects ((int *)g_gameListRects_v)
+#undef g_gameListStopRects
+#define g_gameListStopRects ((int *)g_gameListStopRects_v)
 #undef g_gameListTop
 #define g_gameListTop (*(int *)g_gameListTop_v)
 #undef g_gameRunning
@@ -782,6 +812,8 @@ extern struct GameData g_data;
 #define g_lastTime (*(double *)((u8 *)g_timerClocks_v + 0x8))
 #undef g_launchMessage
 #define g_launchMessage (*(const char * *)g_launchMessage_v)
+#undef g_leaveDialogRects
+#define g_leaveDialogRects ((int *)g_leaveDialogRects_v)
 #undef g_legsMaxWeight
 #define g_legsMaxWeight (*(float *)((u8 *)g_mechSpeeds_v + 0x14))
 #undef g_legsSpeedCorrection
@@ -882,6 +914,8 @@ extern struct GameData g_data;
 #define g_loginFormBottom (*(int *)g_loginFormBottom_v)
 #undef g_loginFormLeft
 #define g_loginFormLeft (*(int *)g_loginFormLeft_v)
+#undef g_loginFormRects
+#define g_loginFormRects ((int *)g_loginFormRects_v)
 #undef g_loginToSend
 #define g_loginToSend (g_data.g_loginToSend_)
 #undef g_mainMenuDepth
@@ -908,6 +942,8 @@ extern struct GameData g_data;
 #define g_mapListMade (*(int *)g_mapListMade_v)
 #undef g_mapListOpen
 #define g_mapListOpen (g_data.g_mapListOpen_)
+#undef g_mapListRects
+#define g_mapListRects ((int *)g_mapListRects_v)
 #undef g_mapMissing
 #define g_mapMissing (*(int *)g_mapMissing_v)
 #undef g_mapNames
@@ -946,6 +982,8 @@ extern struct GameData g_data;
 #define g_mapSelectLitG (*(u32 *)((u8 *)g_mapSelectLit_v + 0x4))
 #undef g_mapSelectLitR
 #define g_mapSelectLitR (*(int *)((u8 *)g_mapSelectLit_v + 0x0))
+#undef g_mapSelectRects
+#define g_mapSelectRects ((int *)g_mapSelectRects_v)
 #undef g_mapSelectRight
 #define g_mapSelectRight (*(int *)g_mapSelectRight_v)
 #undef g_mapSelectTop
@@ -1094,6 +1132,8 @@ extern struct GameData g_data;
 #define g_missionShown (*(int *)g_missionShown_v)
 #undef g_missions
 #define g_missions ((u8 *)g_missions_v)
+#undef g_missionselRects
+#define g_missionselRects ((int *)g_missionselRects_v)
 #undef g_mouse2Down
 #define g_mouse2Down (*(int *)((u8 *)g_mouseButtonsHeld_v + 0x4))
 #undef g_mouse3Down
@@ -1220,6 +1260,8 @@ extern struct GameData g_data;
 #define g_newNameDialogBottom (*(int *)g_newNameDialogBottom_v)
 #undef g_newNameDialogLeft
 #define g_newNameDialogLeft (*(int *)g_newNameDialogLeft_v)
+#undef g_newNameDialogRects
+#define g_newNameDialogRects ((int *)g_newNameDialogRects_v)
 #undef g_newNameDialogRight
 #define g_newNameDialogRight (*(int *)g_newNameDialogRight_v)
 #undef g_newNameDialogTop
@@ -1286,6 +1328,8 @@ extern struct GameData g_data;
 #define g_pilotSelectBottom (*(int *)g_pilotSelectBottom_v)
 #undef g_pilotSelectLeft
 #define g_pilotSelectLeft (*(int *)g_pilotSelectLeft_v)
+#undef g_pilotSelectRects
+#define g_pilotSelectRects ((int *)g_pilotSelectRects_v)
 #undef g_pilotSelectRight
 #define g_pilotSelectRight (*(int *)g_pilotSelectRight_v)
 #undef g_pilotSelectTop
@@ -1324,6 +1368,8 @@ extern struct GameData g_data;
 #define g_playerName ((char *)g_playerName_v)
 #undef g_playerSex
 #define g_playerSex (*(int *)g_playerSex_v)
+#undef g_popupRects
+#define g_popupRects ((int *)g_popupRects_v)
 #undef g_primarySoundBuffer
 #define g_primarySoundBuffer (*(void * *)g_primarySoundBuffer_v)
 #undef g_profileColour
@@ -1340,6 +1386,8 @@ extern struct GameData g_data;
 #define g_profileFrameStep (*(u32 *)g_profileFrameStep_v)
 #undef g_profileList
 #define g_profileList ((char *)g_data.g_profileList_)
+#undef g_profileListRects
+#define g_profileListRects ((int *)g_profileListRects_v)
 #undef g_profileListRow
 #define g_profileListRow (*(int *)g_profileListRow_v)
 #undef g_profileListTop
@@ -1374,6 +1422,8 @@ extern struct GameData g_data;
 #define g_profilePageBottom (*(int *)g_profilePageBottom_v)
 #undef g_profilePageLeft
 #define g_profilePageLeft (*(int *)g_profilePageLeft_v)
+#undef g_profilePageRects
+#define g_profilePageRects ((int *)g_profilePageRects_v)
 #undef g_profilePageRight
 #define g_profilePageRight (*(int *)g_profilePageRight_v)
 #undef g_profilePageTop
@@ -1432,6 +1482,8 @@ extern struct GameData g_data;
 #define g_rankingHaveList (*(int *)g_rankingHaveList_v)
 #undef g_rankingLast
 #define g_rankingLast (*(int *)g_rankingLast_v)
+#undef g_rankingRects
+#define g_rankingRects ((int *)g_rankingRects_v)
 #undef g_rankingRequestPending
 #define g_rankingRequestPending (*(int *)g_rankingRequestPending_v)
 #undef g_rankingSort
@@ -1582,6 +1634,8 @@ extern struct GameData g_data;
 #define g_roomSearching (*(int *)g_roomSearching_v)
 #undef g_roomSettingsName
 #define g_roomSettingsName ((char *)g_roomSettingsName_v)
+#undef g_roomSettingsRects
+#define g_roomSettingsRects ((int *)g_roomSettingsRects_v)
 #undef g_roomSlideFarX
 #define g_roomSlideFarX (*(u32 *)((u8 *)g_roomEyeKept_v + 0x0))
 #undef g_roomSlideFarY
@@ -1634,6 +1688,8 @@ extern struct GameData g_data;
 #define g_screenCentreY (*(int *)g_screenCentreY_v)
 #undef g_searchResult
 #define g_searchResult (*(int *)g_searchResult_v)
+#undef g_secondDialogRects
+#define g_secondDialogRects ((int *)g_secondDialogRects_v)
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
 #undef g_serverAddress
@@ -1668,10 +1724,14 @@ extern struct GameData g_data;
 #define g_setupControlLeft (*(int *)((u8 *)g_setupControlRect_v + 0x0))
 #undef g_setupControlRect
 #define g_setupControlRect ((int *)g_setupControlRect_v)
+#undef g_setupControlRects
+#define g_setupControlRects ((int *)g_setupControlRects_v)
 #undef g_setupControlRight
 #define g_setupControlRight (*(int *)((u8 *)g_setupControlRect_v + 0x8))
 #undef g_setupControlTop
 #define g_setupControlTop (*(int *)((u8 *)g_setupControlRect_v + 0x4))
+#undef g_setupOptionsRects
+#define g_setupOptionsRects ((int *)g_setupOptionsRects_v)
 #undef g_setupOptionsTop
 #define g_setupOptionsTop (*(int *)g_setupOptionsTop_v)
 #undef g_setupPage
@@ -1686,10 +1746,14 @@ extern struct GameData g_data;
 #define g_setupPressedClock (*(float *)g_setupPressedClock_v)
 #undef g_setupResolution
 #define g_setupResolution (*(int *)((u8 *)g_graphicEdited_v + 0x0))
+#undef g_setupSliderRects
+#define g_setupSliderRects ((int *)g_setupSliderRects_v)
 #undef g_setupSoundLeft
 #define g_setupSoundLeft (*(int *)((u8 *)g_setupSoundRect_v + 0x0))
 #undef g_setupSoundRect
 #define g_setupSoundRect ((int *)g_setupSoundRect_v)
+#undef g_setupSoundRects
+#define g_setupSoundRects ((int *)g_setupSoundRects_v)
 #undef g_setupSoundRight
 #define g_setupSoundRight (*(int *)((u8 *)g_setupSoundRect_v + 0x8))
 #undef g_setupTunnelAlpha
@@ -1704,6 +1768,8 @@ extern struct GameData g_data;
 #define g_skirmishDrawBackground (*(int *)g_skirmishDrawBackground_v)
 #undef g_skirmishInfoCount
 #define g_skirmishInfoCount (*(int *)g_skirmishInfoCount_v)
+#undef g_skirmishSettingsRects
+#define g_skirmishSettingsRects ((int *)g_skirmishSettingsRects_v)
 #undef g_slotTakenFlag
 #define g_slotTakenFlag (*(int *)g_slotTakenFlag_v)
 #undef g_slotTextures
