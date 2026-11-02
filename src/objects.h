@@ -5,10 +5,11 @@
 #define g_chatLine ((char *)IMG(0x9dc92c))   /* char[1024]; the chat line being typed (memset 0x400) */
 #define g_joinedTitleName ((char *)IMG(0x9dd570))   /* char[54]; the joined game's title record (laid out as 0x4de700): the name, then the level / points / rating words from +0x1e (g_joinedTitleLevel ..; a password strcpy'd over them, 12 at most), up to the registry's next copy at 0x9dd5a6 */
 #define g_titleName ((char *)IMG(0x4de700))   /* char[30]; the title record's name (+0x1e the level: g_titleLevel) */
-#define g_accountName ((char *)IMG(0x9dd1d8))   /* char[30]; the login form's name (30 bytes) */
-#define g_accountPassword ((char *)IMG(0x9dd1f6))   /* char[12]; (12 bytes) */
-#define g_accountPasswordRepeat ((char *)IMG(0x9dd202))   /* char[12]; (12 bytes) */
-#define g_accountEmail ((char *)IMG(0x9dd20e))   /* char[40]; (40 bytes) */
+#define g_accountForm ((u8 *)IMG(0x9dd1d8))   /* u8[94]; the account / login form: the name (+0; 30); the password (+0x1e; 12); its repeat (+0x2a; 12); the e-mail (+0x36; 40). One clear of 0x54 bytes spans the fields and copies run on from the name: one record */
+#define g_accountName ((char *)(g_accountForm + 0))
+#define g_accountPassword ((char *)(g_accountForm + 0x1e))
+#define g_accountPasswordRepeat ((char *)(g_accountForm + 0x2a))
+#define g_accountEmail ((char *)(g_accountForm + 0x36))
 #define g_playerName ((char *)IMG(0x4ded20))   /* char[48]; the arena settings record (GameSettings, axis.cfg's server section): the name, then the map .. limits (+0x20: g_arenaMap ..), the clan / password (+0x26), the flag +0x2e */
 #define g_cfgPlayerName ((char *)IMG(0x4dedb0))   /* char[32]; axis.cfg's player name (default "PLAYER") */
 #define g_roomRecName ((char *)IMG(0x5b1b30))   /* char[48]; the room settings record (GameSettings, the registry's copy): the name, then the six choices (+0x20: g_roomRec*), the password (+0x26) */

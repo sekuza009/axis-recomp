@@ -8,10 +8,8 @@ extern struct GameData g_data;
 #include "split.h"   /* (the variables split out of g_data) */
 #undef g_accountClan
 #define g_accountClan (*(int *)((u8 *)g_pilotStatsKept_v + 0x8))
-#undef g_accountEmail
-#define g_accountEmail ((char *)g_data.g_accountEmail_)
-#undef g_accountName
-#define g_accountName ((char *)g_data.g_accountName_)
+#undef g_accountForm
+#define g_accountForm ((u8 *)g_accountForm_v)
 #undef g_accountNotice
 #define g_accountNotice (*(int *)g_accountNotice_v)
 #undef g_accountOldPassword
@@ -26,10 +24,6 @@ extern struct GameData g_data;
 #define g_accountPanelRight (*(int *)g_accountPanelRight_v)
 #undef g_accountPanelTop
 #define g_accountPanelTop (*(int *)g_accountPanelTop_v)
-#undef g_accountPassword
-#define g_accountPassword ((char *)g_data.g_accountPassword_)
-#undef g_accountPasswordRepeat
-#define g_accountPasswordRepeat ((char *)g_data.g_accountPasswordRepeat_)
 #undef g_accountRects
 #define g_accountRects ((int *)g_accountRects_v)
 #undef g_arenaBright
