@@ -23,6 +23,8 @@ shot menu0
 "$M/k_rc.sh" - 4 0x0D; "$M/k_rc.sh" - 4 0x49; shot main
 "$M/k_rc.sh" - 8 0x41; shot armc1                       # A: ARM CENTER
 "$M/k_rc.sh" - 3 0x27; "$M/k_rc.sh" - 3 0x28; shot armc2   # (keys in it)
+"$M/k_rc.sh" - 3 0x48; shot armc3                       # H: a part chosen (drawn white)
+"$M/k_rc.sh" - 4 0x57; "$M/k_rc.sh" - 3 0x27; shot armc4   # W: the weapon page, the next weapon (its snapshot)
 "$M/k_rc.sh" - 6 0x1B; "$M/k_rc.sh" - 3 0x0D; shot back1
 "$M/k_rc.sh" - 6 0x53; shot setup1                      # S: SETUP
 "$M/k_rc.sh" - 5 0x47; shot setup2; "$M/k_rc.sh" - 4 0x1B   # G: graphic
