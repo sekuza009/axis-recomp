@@ -27,12 +27,12 @@ void (armc_initCameraPoints)(void)
 /* 0x42bc00: the arena option texts (0x80-byte strings of the text table) copied into the menu's 0x14-byte fields */
 void (arena_initOptionTexts)(void)
 {
-	static const u32 copies[7][2] = { { IMG(0x4db860), MSG(441, "RED") }, { IMG(0x4db874), MSG(442, "BLUE") }, { IMG(0x4db888), MSG(443, "YELLOW") },
-	                                  { IMG(0x4dbb14), MSG(444, "OFF") }, { IMG(0x4dbb28), MSG(445, "ON") }, { IMG(0x4dbba4), MSG(444, "OFF") },
-	                                  { IMG(0x4dbbb8), MSG(445, "ON") } };
+	static const u32 copies[7][2] = { { OBJ(g_teamNames), MSG(441, "RED") }, { (OBJ(g_teamNames) + 0x14), MSG(442, "BLUE") }, { (OBJ(g_teamNames) + 0x28), MSG(443, "YELLOW") },
+	                                  { OBJ(g_arenaOnOff), MSG(444, "OFF") }, { (OBJ(g_arenaOnOff) + 0x14), MSG(445, "ON") }, { OBJ(g_arenaOnOff2), MSG(444, "OFF") },
+	                                  { (OBJ(g_arenaOnOff2) + 0x14), MSG(445, "ON") } };
 	for (int k = 0; k < 7; k++)
 		strcpy((char *)RELOC(copies[k][0]), (const char *)RELOC(copies[k][1]));
-	for (u32 s = MSG(456, "DM"), d = IMG(0x4db8d8); s < MSG(471, "DEATH MATCH"); s += 0x80, d += 0x14)
+	for (u32 s = MSG(456, "DM"), d = OBJ(g_gameTypeNames); s < MSG(471, "DEATH MATCH"); s += 0x80, d += 0x14)
 		strcpy((char *)RELOC(d), (const char *)RELOC(s));
 }
 
@@ -144,7 +144,7 @@ u32 (replayList_open)(void)
 u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(menu_initKeyRepeat, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
-	memset((void *)IMG(0x67ef38), 0, 0x300 * 4);
+	memset((void *)OBJ(g_chatHistory), 0, 0x300 * 4);
 	GAME_FN(menu_initColours, 0x430ab0, void, void)();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {

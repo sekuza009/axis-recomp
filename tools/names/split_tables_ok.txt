@@ -119,3 +119,4 @@ src/menu/armc_parts.c extra_len   # two counts, each written / read as one int
 src/menu/menu_cameras.c mission   # a MenuCam2 (as skirmish): three flags each read as one int
 src/app/main_loop.c k_slotKeys     # key codes (and a slot number), each key read as one int (KEY())
 src/app/main_loop.c k_presetKeys   # key codes, each read as one int
+src/menu/armc_stats.c levels

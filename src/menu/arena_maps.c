@@ -195,7 +195,7 @@ void (mapList_draw)(void)
 		text_draw8(0xb4 - (int)strlen(number) * 8, y + 3, number);
 		text_draw8(0xbe, y + 3, (const char *)(OBJ(g_mapNames) + (g_mapTop + i) * 0x20));
 		map_cell(g_mapTop + i, 0x168, 0x1a4, y);
-		text_draw8(0x17c, y + 3, (const char *)(IMG(0x4db8d8) + g_mapChoices[g_mapTop + i].type * 20));
+		text_draw8(0x17c, y + 3, (const char *)(OBJ(g_gameTypeNames) + g_mapChoices[g_mapTop + i].type * 20));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f4ccccd);
 	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);

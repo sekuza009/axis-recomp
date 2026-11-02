@@ -1,0 +1,20 @@
+# step 3b: network buffers (server list, replies, DNS names), the profile screen's bars and box, the chat history,
+# the key / mouse tables
+0xa05748,u8,23296,g_serverList,256 servers of 0x5b bytes (net_clearServerList: 0x16c0 dwords; up to 0xa0b248)
+0xa055dc,int,1,g_lobbyReplyCode,the lobby's 4-byte status reply (request 12)
+0xa0b248,int,1,g_gameServerReplyCode,the game server's 4-byte status reply (request 18)
+0xa055e4,char,16,g_lobbyHost,the lobby server's address as text (a name that does not resolve is copied whole: runs on in the original)
+0xa055fc,char,50,g_ladderDns,HKCU SelectServer LadderDNS (50 bytes cleared by net_clearBuffers)
+0xa0b24c,char,50,g_tcpDns,HKCU SelectServer TcpDNS (50 bytes)
+0xa0bb0c,char,4,g_noAddress,the empty address DirectPlay's TCP connection gets without one (never written)
+0x9f8d34,float,9,g_statBars,the profile screen's nine stat bars as drawn (eased a tenth a frame)
+0x9f8ec0,float,9,g_statBarTargets,the bars' targets (only cleared)
+0x9f9010,int,4,g_profileDialogBox,the profile dialog box (left; top; right; bottom)
+0x67ef38,char,3072,g_chatHistory,the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords)
+0x9eeadc,int,50,g_undoStack,the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows)
+0x9dd5a6,char,30,g_joinedTitleEmail,the registry's copy of the account e-mail (30 bytes cleared; up to 39 copied in)
+0x4d1688,int,256,g_keyTable1,a key table only cleared at start-up
+0x4d1a88,int,4,g_mouseState,DIMOUSESTATE: x; y; wheel movement; four button bytes
+0x4d1fc4,int,256,g_keyTable2,the second key table (only cleared)
+0xae2f24,int,256,g_asyncKeySeen,input_asyncKeyPressed's seen flags by virtual key
+0x9f1704,int,3,g_mouseWasDown,the three mouse buttons down last frame

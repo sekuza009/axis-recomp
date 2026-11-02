@@ -491,7 +491,7 @@ u32 (mission_saveAxisMis)(int k)
 	(*(void **)&g_briefingSource) = block;
 	crt_fread(block, size[k * 63], 1, f);
 	fclose(f);
-	memset((void *)IMG(0x9eeadc), 0, 0xc8);
+	memset((void *)OBJ(g_undoStack), 0, 0xc8);
 	g_unusedMissionSaveWord = 0;
 	memset((void *)OBJ(g_briefingText), 0, 0x640);
 	memset((void *)OBJ(g_missionClearBuffer), 0, 0x640);

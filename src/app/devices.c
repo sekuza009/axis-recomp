@@ -127,7 +127,7 @@ int (input_createDirectInput)(void *window, void *instance)
 #define DIERR_INPUTLOST_MOUSE 0x8007001e
 int (input_readMouse)(void)
 {
-	void *state = (void *)IMG(0x4d1a88);
+	void *state = (void *)OBJ(g_mouseState);
 	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
 		goto clear;
 	if (g_mouse) {
@@ -151,10 +151,10 @@ clear:
    read's movement, the wheel gives g_mouseWheel (one notch of 120 = 1, down positive) and 0x4ded70 (turned at all).
    Outside a match (screen 0x270f) the pointer is kept to 0..630 x 0..474, or by the patch DLL's clamp (it replaces the block at 0x445cd8), which lets it
    reach the whole width of a wide screen (wide.h: cursorClampFix). Each button gives its held state (0 / 0x80) and
-   a click pulse (OBJ(g_mouseClicked) + i * 4) on the frame it went down (0x9f1704 + i * 4: down last frame). */
+   a click pulse (OBJ(g_mouseClicked) + i * 4) on the frame it went down (OBJ(g_mouseWasDown) + i * 4: down last frame). */
 void (input_updateMenuCursor)(void)
 {
-	const int *state = (const int *)IMG(0x4d1a88);   /* DIMOUSESTATE: x, y, wheel, buttons */
+	const int *state = g_mouseState;   /* DIMOUSESTATE: x, y, wheel, buttons */
 	GAME_FN(input_reacquireMouse, 0x4012e0, int, void)();          /* input_reacquireMouse */
 	PATCHED_CALL(0x445c69, int, void)();        /* input_readMouse */
 	int x = (int)((u32)g_mouseX + (u32)state[0]), y = (int)((u32)g_mouseY + (u32)state[1]), z = state[2];
@@ -178,10 +178,10 @@ void (input_updateMenuCursor)(void)
 				g_mouseY = 0;
 		}
 	}
-	const u8 *buttons = (const u8 *)IMG(0x4d1a94);
+	const u8 *buttons = (const u8 *)(OBJ(g_mouseState) + 0xc);
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
-		int *pulse = (int *)(OBJ(g_mouseClicked) + i * 4), *was = (int *)(IMG(0x9f1704) + i * 4);
+		int *pulse = (int *)(OBJ(g_mouseClicked) + i * 4), *was = (int *)(OBJ(g_mouseWasDown) + i * 4);
 		GAME_VAR(int, OBJ(g_mouseButtonsHeld) + i * 4) = held;
 		if (!held) {
 			*pulse = 0;
@@ -234,7 +234,7 @@ int (input_asyncKeyPressed)(int key)
 {
 	if (g_hWndMain && GetForegroundWindow() != g_hWndMain)
 		return 0;
-	int *seen = (int *)(IMG(0xae2f24) + key * 4);
+	int *seen = (int *)(OBJ(g_asyncKeySeen) + key * 4);
 	if (!(u16)GetAsyncKeyState(key))
 		*seen = 0;
 	if (*seen)

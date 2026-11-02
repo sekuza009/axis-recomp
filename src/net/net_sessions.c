@@ -67,7 +67,7 @@ void (room_mergeReceivedSessions)(void)
 /* 0x406640: the arena lobby's (0x5b-byte records) */
 void (arena_mergeReceivedSessions)(void)
 {
-	static const Received arena = { ADDR(g_serverListCount), IMG(0xa05791), 0x5b, -0x48, -0x16, ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
+	static const Received arena = { ADDR(g_serverListCount), (OBJ(g_serverList) + 0x49), 0x5b, -0x48, -0x16, ADDR(g_arenaNameSum), { ADDR(g_lobbySearching), ADDR(g_serverAnswerIn), ADDR(g_lobbyRefreshing) } };
 	merge(&arena);
 }
 

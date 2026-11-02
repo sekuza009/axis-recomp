@@ -103,7 +103,7 @@ u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)REL
 u32 (mem_free)(void *p) { return p ? GAME_CDECL(0x49ef24, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
-void (net_clearServerList)(void) { clear((void *)IMG(0xa05748), 0x16c0); }
+void (net_clearServerList)(void) { clear((void *)OBJ(g_serverList), 0x16c0); }
 void (net_clearRoomList)(void) { clear((void *)OBJ(g_roomList), 0x1e40); }
 void (net_clearPlayerList)(void) { clear((void *)OBJ(g_netPlayerList), 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
@@ -153,7 +153,7 @@ void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour,
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
 void (arenaDialogBox_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_arenaDialogBoxRects); }
 void (gameListStop_layout)(void) { set4ints(0x104, 0x118, 0x17c, 0x138, g_gameListStopRects); }
-void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, (int *)IMG(0x9f9010)); }
+void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, g_profileDialogBox); }
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
@@ -497,8 +497,8 @@ static u32 reg_write(u32 value, const char *name)
 u32 (reg_writeCharacterSettings)(void)
 {
 	strcpy(g_joinedTitleName, g_accountName);
-	strcpy((char *)IMG(0x9dd5a6), g_accountEmail);
-	strcpy((char *)IMG(0x76d450), g_joinedTitleName);
+	strcpy(g_joinedTitleEmail, g_accountEmail);
+	strcpy(g_joinedTitleNameCopy, g_joinedTitleName);
 	strcpy(g_roomRecName, g_roomSettingsName);
 	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
 	u32 key;
@@ -643,8 +643,8 @@ int (reg_readServerSettings)(void)
 		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
 	}
 	size = 50;
-	RegQueryValueExA(key, (const char *)STR(0x4b1720, "TcpDNS"), 0, &type, (void *)IMG(0xa0b24c), &size);
-	RegQueryValueExA(key, (const char *)STR(0x4b1714, "LadderDNS"), 0, &type, (void *)IMG(0xa055fc), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b1720, "TcpDNS"), 0, &type, (void *)OBJ(g_tcpDns), &size);
+	RegQueryValueExA(key, (const char *)STR(0x4b1714, "LadderDNS"), 0, &type, (void *)OBJ(g_ladderDns), &size);
 	size = 4;
 	RegQueryValueExA(key, (const char *)STR(0x4b170c, "TcpPort"), 0, &type, (void *)ADDR(g_lobbyTcpPort), &size);
 	RegQueryValueExA(key, (const char *)STR(0x4b1700, "LadderPort"), 0, &type, (void *)ADDR(g_ladderPort), &size);

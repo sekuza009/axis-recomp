@@ -32,9 +32,9 @@ int (sys_messageBox)(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	g_messageBoxArgs = args;
-	vsprintf((char *)IMG(0x4dd0d0), format, args);
+	vsprintf(g_messageBoxText, format, args);
 	(*(void **)&g_messageBoxArgs) = NULL;
-	int answer = MessageBoxA(GetActiveWindow(), (const char *)IMG(0x4dd0d0), (const char *)STR(0x4b043c, "User Message ^_^;"), 0);
+	int answer = MessageBoxA(GetActiveWindow(), g_messageBoxText, (const char *)STR(0x4b043c, "User Message ^_^;"), 0);
 	va_end(args);
 	return answer;
 }
@@ -68,7 +68,6 @@ int (glWindow_resize)(int width, int height)
 	return 1;
 }
 
-#define g_glTitle ((char *)IMG(0xa0e81c))                   /* also the window class's, icon's and menu's name */
 
 /* 0x468250: the game's GL window made, once (a second call: a message and NULL), with title, width x height and
    colour / depth bits (0xa0e810, 0xa0e928, 0xa0e818, 0xa0e924) kept. Without a given window (window and other
@@ -385,7 +384,7 @@ int (app_init)(void *inst, int show)
 	} else if (!(u16)IMPORT(0x4a92b8, u32, void *)(&wc))   /* RegisterClassA */
 		return 0;
 
-	memcpy((void *)IMG(0x4e0ca8), &wc, sizeof wc);
+	memcpy((void *)OBJ(g_windowClass), &wc, sizeof wc);
 	g_hWndMain = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)
 		(0, (const char *)IMG(0x4b0714), (const char *)STR(0x4b2874, "AXIS"), 0x86000000, 0, -1, g_screenW, g_screenH + 1, NULL, NULL, inst, NULL);   /* CreateWindowExA: WS_POPUP | WS_VISIBLE | WS_SYSMENU */
 	if (!g_hWndMain)

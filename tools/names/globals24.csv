@@ -1,0 +1,7 @@
+# ARM CENTER (step 3b): the extra items' capacity bonuses (armc_extraItemBonuses: items 28 .. 31, 100 / 50 each; shown
+# by armc_stats' arms section) and item 35's second value (1.0; nothing rebuilt reads it)
+0x4dcc6c,float,g_itemBonus30mm
+0x4dc548,float,g_itemBonus60mm
+0x4dc248,float,g_itemBonusEpak
+0x4dcb34,float,g_itemBonusMissile
+0x4dbc74,float,g_itemBonusShieldUnread

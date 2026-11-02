@@ -48,18 +48,18 @@ void (menu_clearInputBuffer)(int mode)
 /* 0x4315c0: the line pushed onto the history (the oldest line dropped) */
 void (chat_pushHistory)(void)
 {
-	memcpy((void *)IMG(0x67f738), (void *)IMG(0x67f338), 0x400);
-	memcpy((void *)IMG(0x67f338), (void *)IMG(0x67ef38), 0x400);
-	memcpy((void *)IMG(0x67ef38), (void *)OBJ(g_chatLine), 0x400);
+	memcpy((void *)(OBJ(g_chatHistory) + 0x800), (void *)(OBJ(g_chatHistory) + 0x400), 0x400);
+	memcpy((void *)(OBJ(g_chatHistory) + 0x400), (void *)OBJ(g_chatHistory), 0x400);
+	memcpy((void *)OBJ(g_chatHistory), (void *)OBJ(g_chatLine), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at 0x74de24 shown in the message box */
 void (menu_showMessage)(int i)
 {
 	g_dialogPending = 1;
-	memset((void *)IMG(0x4df81c), 0, 0x50);
+	memset((void *)OBJ(g_messageBoxLine), 0, 0x50);
 	g_lobbyReply = 0;
-	strcpy((char *)IMG(0x4df81c), (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
+	strcpy(g_messageBoxLine, (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
 }
 
 /* ---- session records (0x4a bytes) ---- */
@@ -326,7 +326,7 @@ void (skirmish_clickRow)(int row)
 
 /* ---- the skirmish settings' undo stack: values at 0x9eeadc (depth 0x9f1060), the current one 0x9eeba4; the
    pending step 0x9ef1f4 and its flag 0x4d7348; each change clears the 400-dword work buffer at 0x9f1064 ---- */
-#define undo_stack ((int *)IMG(0x9eeadc))
+#define undo_stack (g_undoStack)
 #define undo_value g_briefingStart
 #define undo_step g_briefingShown
 #define undo_pending g_briefingSkipped

@@ -1,0 +1,16 @@
+# step 3b: the graphic setup's choice texts (two of 0x32 bytes each; screen_enter copies messages 431 .. 436), window
+# and front-end text buffers
+0x4ddbbc,char,100,g_colourDepthTexts,COLOR DEPTH: 16BIT COLOR / 32BIT COLOR (messages 431; 432)
+0x4dda64,char,100,g_fxStatusTexts,F/X STATUS: OFF / ON (messages 433; 434)
+0x4ddc84,char,100,g_linearFilterTexts,LINEAR FILTERING: OFF / ON (messages 435; 436)
+0x4de058,char,100,g_mipMapTexts,MIP MAPPING: OFF / ON
+0x4ddc20,char,100,g_viewFpsTexts,VIEW FPS: OFF / ON
+0x4ddaf0,char,100,g_simpleMenuTexts,SIMPLE MENU: OFF / ON
+0x4ddb58,char,32,g_crosshairName,the crosshair texture's name (texture/crosshair/crosshair<n>: 0x20-byte strings)
+0x4df81c,char,80,g_messageBoxLine,the front end's message box line (0x50 bytes cleared)
+0x76d350,Colour,1,g_clearColour,the start-up screen's clear colour (black)
+0x76d450,char,32,g_joinedTitleNameCopy,the registry's copy of the joined title name (up to 0x76d470)
+0x4e0ca8,u8,40,g_windowClass,the WNDCLASS the window was registered with (a copy)
+0xa0e81c,char,256,g_glTitle,the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c)
+0xa0e674,char,260,g_musicFile,the music file's name (MAX_PATH; up to 0xa0e778)
+0x4dd0d0,char,1024,g_messageBoxText,sys_messageBox's text (vsprintf; 4 more bytes before 0x4dd4d4)

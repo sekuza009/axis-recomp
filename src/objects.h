@@ -380,3 +380,41 @@
 #define g_mapAbouts ((char *)IMG(0x5ae9d0))   /* char[8000]; a map's 0x50-byte description (100 maps: up to 0x5b0910) */
 #define g_joinedSessionRec ((u8 *)IMG(0x9dae20))   /* u8[74]; the session record the arena join answer builds (0x4a bytes like the list's) */
 #define g_codeColours ((Colour *)IMG(0x9dada0))   /* Colour[7]; the seven "$[n]" text colours (menu_initColours) */
+#define g_serverList ((u8 *)IMG(0xa05748))   /* u8[23296]; 256 servers of 0x5b bytes (net_clearServerList: 0x16c0 dwords; up to 0xa0b248) */
+#define g_lobbyReplyCode ((int *)IMG(0xa055dc))   /* int[1]; the lobby's 4-byte status reply (request 12) */
+#define g_gameServerReplyCode ((int *)IMG(0xa0b248))   /* int[1]; the game server's 4-byte status reply (request 18) */
+#define g_lobbyHost ((char *)IMG(0xa055e4))   /* char[16]; the lobby server's address as text (a name that does not resolve is copied whole: runs on in the original) */
+#define g_ladderDns ((char *)IMG(0xa055fc))   /* char[50]; HKCU SelectServer LadderDNS (50 bytes cleared by net_clearBuffers) */
+#define g_tcpDns ((char *)IMG(0xa0b24c))   /* char[50]; HKCU SelectServer TcpDNS (50 bytes) */
+#define g_noAddress ((char *)IMG(0xa0bb0c))   /* char[4]; the empty address DirectPlay's TCP connection gets without one (never written) */
+#define g_statBars ((float *)IMG(0x9f8d34))   /* float[9]; the profile screen's nine stat bars as drawn (eased a tenth a frame) */
+#define g_statBarTargets ((float *)IMG(0x9f8ec0))   /* float[9]; the bars' targets (only cleared) */
+#define g_profileDialogBox ((int *)IMG(0x9f9010))   /* int[4]; the profile dialog box (left; top; right; bottom) */
+#define g_chatHistory ((char *)IMG(0x67ef38))   /* char[3072]; the chat line's three-line history of 0x400 bytes; newest first (frontEnd_startUp clears 0x300 dwords) */
+#define g_undoStack ((int *)IMG(0x9eeadc))   /* int[50]; the skirmish settings' undo values (0xc8 bytes cleared; g_briefingStart follows) */
+#define g_joinedTitleEmail ((char *)IMG(0x9dd5a6))   /* char[30]; the registry's copy of the account e-mail (30 bytes cleared; up to 39 copied in) */
+#define g_keyTable1 ((int *)IMG(0x4d1688))   /* int[256]; a key table only cleared at start-up */
+#define g_mouseState ((int *)IMG(0x4d1a88))   /* int[4]; DIMOUSESTATE: x; y; wheel movement; four button bytes */
+#define g_keyTable2 ((int *)IMG(0x4d1fc4))   /* int[256]; the second key table (only cleared) */
+#define g_asyncKeySeen ((int *)IMG(0xae2f24))   /* int[256]; input_asyncKeyPressed's seen flags by virtual key */
+#define g_mouseWasDown ((int *)IMG(0x9f1704))   /* int[3]; the three mouse buttons down last frame */
+#define g_teamNames ((char *)IMG(0x4db860))   /* char[60]; RED / BLUE / YELLOW; 0x14 bytes each (messages 441 .. 443) */
+#define g_gameTypeNames ((char *)IMG(0x4db8d8))   /* char[300]; 15 game type names of 0x14 bytes (messages 456 .. 470) */
+#define g_arenaOnOff ((char *)IMG(0x4dbb14))   /* char[40]; OFF / ON; 0x14 bytes each (messages 444; 445) */
+#define g_arenaOnOff2 ((char *)IMG(0x4dbba4))   /* char[40]; OFF / ON again; 0x14 bytes each (the new-arena form's kind names; arena_createDraw) */
+#define g_lobbyTopRects ((int *)IMG(0x4dbb40))   /* int[8]; lobbyTop_layout's two rectangles */
+#define g_lobbyTopEase ((float *)IMG(0x4dbb60))   /* float[1]; the lobby top panel's ease (menu_slide) */
+#define g_colourDepthTexts ((char *)IMG(0x4ddbbc))   /* char[100]; COLOR DEPTH: 16BIT COLOR / 32BIT COLOR (messages 431; 432) */
+#define g_fxStatusTexts ((char *)IMG(0x4dda64))   /* char[100]; F/X STATUS: OFF / ON (messages 433; 434) */
+#define g_linearFilterTexts ((char *)IMG(0x4ddc84))   /* char[100]; LINEAR FILTERING: OFF / ON (messages 435; 436) */
+#define g_mipMapTexts ((char *)IMG(0x4de058))   /* char[100]; MIP MAPPING: OFF / ON */
+#define g_viewFpsTexts ((char *)IMG(0x4ddc20))   /* char[100]; VIEW FPS: OFF / ON */
+#define g_simpleMenuTexts ((char *)IMG(0x4ddaf0))   /* char[100]; SIMPLE MENU: OFF / ON */
+#define g_crosshairName ((char *)IMG(0x4ddb58))   /* char[32]; the crosshair texture's name (texture/crosshair/crosshair<n>: 0x20-byte strings) */
+#define g_messageBoxLine ((char *)IMG(0x4df81c))   /* char[80]; the front end's message box line (0x50 bytes cleared) */
+#define g_clearColour ((Colour *)IMG(0x76d350))   /* Colour[1]; the start-up screen's clear colour (black) */
+#define g_joinedTitleNameCopy ((char *)IMG(0x76d450))   /* char[32]; the registry's copy of the joined title name (up to 0x76d470) */
+#define g_windowClass ((u8 *)IMG(0x4e0ca8))   /* u8[40]; the WNDCLASS the window was registered with (a copy) */
+#define g_glTitle ((char *)IMG(0xa0e81c))   /* char[256]; the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c) */
+#define g_musicFile ((char *)IMG(0xa0e674))   /* char[260]; the music file's name (MAX_PATH; up to 0xa0e778) */
+#define g_messageBoxText ((char *)IMG(0x4dd0d0))   /* char[1024]; sys_messageBox's text (vsprintf; 4 more bytes before 0x4dd4d4) */

@@ -251,7 +251,7 @@ static void box_buttons(int hovered, int lit_from)
 void (arena_createDraw)(void)
 {
 	static const Form form = { ADDR(g_newArenaFormLeft), (GameSettings *)OBJ(g_newArenaName), { ADDR(g_editingNewArenaName), ADDR(g_typingArenaPassword), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit) }, MSG(471, "DEATH MATCH"),
-	                           0, IMG(0x4dbba4), 10 };
+	                           0, OBJ(g_arenaOnOff2), 10 };
 	const Form *f = &form;
 	const u32 *bright = g_arenaBright, *dim = g_arenaDim;
 	int editing = g_paused, confirming = g_createQuitDialog, leaving = g_arenaLeaving;

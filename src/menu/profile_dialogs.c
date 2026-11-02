@@ -295,8 +295,8 @@ static void pilot_stats(int pilot, int x, int y, int step)
 static void stat_bars(int x, int y, int step, const float *scale, float grey)
 {
 	const float *frame = (const float *)ADDR(g_frameTime);
-	float *bar = (float *)IMG(0x9f8d34);
-	const float *target = (const float *)IMG(0x9f8ec0);
+	float *bar = g_statBars;
+	const float *target = g_statBarTargets;
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);

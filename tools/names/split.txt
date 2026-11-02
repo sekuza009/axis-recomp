@@ -1090,3 +1090,47 @@ g_dataDir
 g_mapAbouts
 g_mapNames
 g_joinedSessionRec
+# network buffers, profile bars, chat history, key / mouse tables (objects37.csv); held in place: g_lobbyHost (an
+# unresolved name runs on), g_undoStack (its depth is not bounded), g_joinedTitleEmail (up to 39 bytes into 30)
+g_serverList
+g_lobbyReplyCode
+g_gameServerReplyCode
+g_ladderDns
+g_tcpDns
+g_noAddress
+g_statBars
+g_statBarTargets
+g_profileDialogBox
+g_chatHistory
+g_keyTable1
+g_mouseState
+g_keyTable2
+g_asyncKeySeen
+g_mouseWasDown
+# the arena lobby's texts, top rects and ease (objects38.csv)
+g_teamNames
+g_gameTypeNames
+g_arenaOnOff
+g_arenaOnOff2
+g_lobbyTopRects
+g_lobbyTopEase
+# the graphic setup's choice texts, window / front-end text buffers (objects39.csv); held: g_messageBoxText (vsprintf)
+g_colourDepthTexts
+g_fxStatusTexts
+g_linearFilterTexts
+g_mipMapTexts
+g_viewFpsTexts
+g_simpleMenuTexts
+g_crosshairName
+g_messageBoxLine
+g_clearColour
+g_joinedTitleNameCopy
+g_windowClass
+g_glTitle
+g_musicFile
+# the extra items' capacity bonuses (globals24.csv)
+g_itemBonus30mm
+g_itemBonus60mm
+g_itemBonusEpak
+g_itemBonusMissile
+g_itemBonusShieldUnread

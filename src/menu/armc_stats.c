@@ -265,8 +265,8 @@ static void section1(Panel *p)
 /* slot 2, the arms: a level, four levels each raised by its own figure (count x 0x4dbc70 + base, from 1 shown), a figure */
 static void section2(Panel *p)
 {
-	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), IMG(0x4dcc6c) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), IMG(0x4dc548) },
-	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), IMG(0x4dc248) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), IMG(0x4dcb34) } };
+	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
+	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), ADDR(g_itemBonusMissile) } };
 	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
 	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
 	value(p, ROW(0));

@@ -152,7 +152,7 @@ void (arena_drawGameList)(void)
 	menu_drawLine(X0 + 0x10, Y1 - 0x54, X1 - 0x10, Y1 - 0x54);
 	if (g_arenaHaveList || g_arenaListFull) {
 		int full = g_arenaListFull;
-		game_rows(X0, Y0, 0x78, 0x150, full, IMG(0x4db8d8), 20, full);
+		game_rows(X0, Y0, 0x78, 0x150, full, OBJ(g_gameTypeNames), 20, full);
 		game_page(X1, Y1 - 0x4c, g_arenaHaveList ? g_gameCount : g_serverListCount);
 	}
 	RECT(0, 0x3f800000, 0x3f800000, 0x3f800000);

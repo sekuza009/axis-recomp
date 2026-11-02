@@ -290,7 +290,7 @@ u32 (menu_drawMessageBox)(void)
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_rectColour), 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 	menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0x3f800000, 0x3f800000, 0, 0x3f800000);
-	GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, (const char *)IMG(0x4df81c));
+	GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xdc, 0x217, g_messageBoxLine);
 	return GAME_FN(text_drawBox16, 0x4029d0, u32, int, int, int, const char *)(0x69, 0xf4, 0x217, (const char *)MSG(0, "PRESS ENTER OR CLICK MOUSE"));
 }
 

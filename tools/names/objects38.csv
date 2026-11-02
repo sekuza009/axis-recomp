@@ -1,0 +1,7 @@
+# step 3b: the arena lobby's texts copied from the messages (arena_initOptionTexts), its top panel's rects and ease
+0x4db860,char,60,g_teamNames,RED / BLUE / YELLOW; 0x14 bytes each (messages 441 .. 443)
+0x4db8d8,char,300,g_gameTypeNames,15 game type names of 0x14 bytes (messages 456 .. 470)
+0x4dbb14,char,40,g_arenaOnOff,OFF / ON; 0x14 bytes each (messages 444; 445)
+0x4dbba4,char,40,g_arenaOnOff2,OFF / ON again; 0x14 bytes each (the new-arena form's kind names; arena_createDraw)
+0x4dbb40,int,8,g_lobbyTopRects,lobbyTop_layout's two rectangles
+0x4dbb60,float,1,g_lobbyTopEase,the lobby top panel's ease (menu_slide)

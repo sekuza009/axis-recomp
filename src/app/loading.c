@@ -205,7 +205,7 @@ void (menu_loadIntroTextures)(void)
    then the camera and menu defaults. Returns 1 (0 on a failure) */
 int (app_checkCdAndLoad)(void *instance)
 {
-	memset((void *)IMG(0x4d1688), 0, 0x400);
+	memset((void *)OBJ(g_keyTable1), 0, 0x400);
 	memset((void *)OBJ(g_keySeen), 0, 0x400);
 	g_roomConnected = 0;
 	net_clearBuffers();
@@ -292,7 +292,7 @@ int (app_checkCdAndLoad)(void *instance)
 	g_menuFrameCount = 0;
 	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
-	set_colour_bits((Colour *)IMG(0x76d350), 0, 0, 0, 0x3f800000);
+	set_colour_bits(g_clearColour, 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
 	(*(u32 *)&g_menuFade) = 0x40a00000;   /* 5 */
 	g_menuScaleX = f32(fmul_m((long double)width, k_0_0015625f));

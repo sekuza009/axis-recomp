@@ -74,7 +74,7 @@ void (menuState300_enter)(void)
 void (menuState400_enter)(void)
 {
 	static const Store layout[] = {
-		{ IMG(0x4dbb60), 0 }, { ADDR(g_lobbySubState), 5 }, { OBJ(g_lobbyTopRect), 0x50 }, { (OBJ(g_lobbyTopRect) + 0x4), 0x96 }, { (OBJ(g_lobbyTopRect) + 0x8), 0x230 }, { (OBJ(g_lobbyTopRect) + 0xc), 0x15e },
+		{ OBJ(g_lobbyTopEase), 0 }, { ADDR(g_lobbySubState), 5 }, { OBJ(g_lobbyTopRect), 0x50 }, { (OBJ(g_lobbyTopRect) + 0x4), 0x96 }, { (OBJ(g_lobbyTopRect) + 0x8), 0x230 }, { (OBJ(g_lobbyTopRect) + 0xc), 0x15e },
 		{ ADDR(g_arenaNameDialogRight), 0x21c }, { ADDR(g_arenaNameDialogBottom), 0x190 }, { ADDR(g_arenaGameListRight), 0x262 }, { ADDR(g_newArenaFormLeft), 0x28 }, { ADDR(g_newArenaFormTop), 0x1e },
 		{ ADDR(g_newArenaFormRight), 0x258 } };
 	static const u32 cleared1[] = { ADDR(g_typingArenaName), ADDR(g_editingNewArenaName), ADDR(g_editingNewArenaFragLimit), ADDR(g_editingNewArenaTimeLimit), ADDR(g_typingArenaPassword), ADDR(g_lanSearch), ADDR(g_lobbySearching), ADDR(g_arenaHaveList),
@@ -143,12 +143,12 @@ void (menuState600_enterSetup)(void)
 	for (int k = 0; k < 2; k++) {
 		const char *text = (const char *)(MSG(435, "OFF") + k * 0x80);
 		int o = k * 0x32;
-		strcpy((char *)(IMG(0x4ddbbc) + o), text - 0x200);
-		strcpy((char *)(IMG(0x4dda64) + o), text - 0x100);
-		strcpy((char *)(IMG(0x4ddc84) + o), text);
-		strcpy((char *)(IMG(0x4de058) + o), text);
-		strcpy((char *)(IMG(0x4ddc20) + o), text);
-		strcpy((char *)(IMG(0x4ddaf0) + o), text);
+		strcpy((char *)(OBJ(g_colourDepthTexts) + o), text - 0x200);
+		strcpy((char *)(OBJ(g_fxStatusTexts) + o), text - 0x100);
+		strcpy((char *)(OBJ(g_linearFilterTexts) + o), text);
+		strcpy((char *)(OBJ(g_mipMapTexts) + o), text);
+		strcpy((char *)(OBJ(g_viewFpsTexts) + o), text);
+		strcpy((char *)(OBJ(g_simpleMenuTexts) + o), text);
 	}
 }
 
@@ -188,7 +188,7 @@ void (menuState800_enterGameRoom)(void)
 	g_menuLookAtX = (*(int *)&g_menuCameraLook);
 	g_menuLookAtY = (*(int *)&g_menuCameraLookY);
 	g_menuLookAtZ = g_menuCameraHeight;
-	memset((void *)IMG(0x9dd5a6), 0, 7 * 4 + 2);
+	memset((void *)OBJ(g_joinedTitleEmail), 0, 7 * 4 + 2);
 	g_joinedTitleLevel = 0;
 	g_joinedTitlePoints = 0;
 	g_joinedTitleRating = 0;

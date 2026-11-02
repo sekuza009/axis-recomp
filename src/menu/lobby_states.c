@@ -183,7 +183,7 @@ void (lobby_ladderGameName)(void)
 	strcpy(g_roomSettingsName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
 	(*(char *)&g_roomPlayers) = 8;
 	(*(char *)&g_roomGameMode) = 0;
-	strcpy((char *)IMG(0x76d450), g_joinedTitleName);
+	strcpy(g_joinedTitleNameCopy, g_joinedTitleName);
 	(*(char *)&g_roomMap) = 0;
 	(*(char *)&g_roomFragLimit) = 10;
 	(*(char *)&g_roomTimeLimit) = 10;
@@ -203,7 +203,7 @@ void (lobby_ladderGameName)(void)
 void (room_copyJoinedSettings)(void)
 {
 	strcpy(g_accountName, g_joinedTitleName);
-	strcpy(g_accountEmail, (const char *)IMG(0x9dd5a6));
+	strcpy(g_accountEmail, g_joinedTitleEmail);
 	u8 map = g_roomRecPlayers;
 	strcpy(g_roomSettingsName, g_roomRecName);
 	g_roomPlayers = map;
@@ -273,7 +273,7 @@ void (room_fitWindowRects)(void)
 void (room_takeReceivedSettings)(void)
 {
 	strcpy(g_joinedTitleName, (const char *)(OBJ(g_netRecvRecord) + 0x4));
-	strcpy((char *)IMG(0x9dd5a6), (const char *)(OBJ(g_netRecvRecord) + 0x22));
+	strcpy(g_joinedTitleEmail, (const char *)(OBJ(g_netRecvRecord) + 0x22));
 	memcpy((void *)OBJ(g_roomMech), (void *)(OBJ(g_netRecvRecord) + 0x54), 11);
 	for (int k = 0; k < 6; k++) {
 		memcpy((void *)(OBJ(g_roomColours) + k * 0x18), (void *)((OBJ(g_netRecvRecord) + 0x5f) + k * 0x18), 0x18);
@@ -316,7 +316,7 @@ static void default_mech(u8 *mech, u8 *colours)
 u32 (room_host)(void)
 {
 	strcpy(g_joinedTitleName, g_accountName);
-	strcpy((char *)IMG(0x9dd5a6), g_accountEmail);
+	strcpy(g_joinedTitleEmail, g_accountEmail);
 	default_mech((u8 *)IMG(0x9dd260), (u8 *)IMG(0x9dd26b));
 	default_mech(g_roomMech, (u8 *)OBJ(g_roomColours));
 	g_pilotLevelKept = 1;

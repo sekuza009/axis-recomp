@@ -16,7 +16,7 @@ void (input_resetKeys)(void)
 void (input_clearKeyTable2)(void)
 {
 	g_unusedKeyTable2Flags = 0x8000;
-	memset((void *)IMG(0x4d1fc4), 0, 0x100 * 4);
+	memset((void *)OBJ(g_keyTable2), 0, 0x100 * 4);
 	g_unusedKeyTable2Word1 = 0;
 	g_unusedKeyTable2Word0 = 0;
 	g_unusedKeyTable2Word2 = 0;
@@ -25,8 +25,8 @@ void (input_clearKeyTable2)(void)
 /* 0x4515d0: the two 50-byte network buffers and their lengths cleared */
 void (net_clearBuffers)(void)
 {
-	memset((void *)IMG(0xa0b24c), 0, 0xc * 4 + 2);
-	memset((void *)IMG(0xa055fc), 0, 0xc * 4 + 2);
+	memset((void *)OBJ(g_tcpDns), 0, 0xc * 4 + 2);
+	memset((void *)OBJ(g_ladderDns), 0, 0xc * 4 + 2);
 	g_lobbyTcpPort = 0;
 	g_ladderPort = 0;
 }

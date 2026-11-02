@@ -84,7 +84,7 @@ void (newNameDialog_layout)(void) { rects_row(OBJ(g_newNameDialogRects), OBJ(g_n
 
 void (popup_layout)(void) { rects_row(OBJ(g_popupRects), OBJ(g_popupRects) + 2 * 16, IMG(0x9dd1a0), IMG(0x9dd1ac), 0x64, 0xdc, -0x40, -0x20, 0xb4); }
 
-void (lobbyTop_layout)(void) { rects_row(IMG(0x4dbb40), IMG(0x4dbb60), OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
+void (lobbyTop_layout)(void) { rects_row(OBJ(g_lobbyTopRects), OBJ(g_lobbyTopRects) + 2 * 16, OBJ(g_lobbyTopRect), (OBJ(g_lobbyTopRect) + 0x4), 0x32, 0xe6, 0x64, 0x94, 0xc8); }
 
 void (setupOptions_layout)(void)
 {

@@ -115,7 +115,7 @@ void (setup_drawOptionsDialog)(void)
 #define Y0 g_setupOptionsTop
 #define X1 (g_setupOptionsRect[2])
 #define Y1 (g_setupOptionsRect[3])
-	static const u32 names[6] = { IMG(0x4ddbbc), IMG(0x4dda64), IMG(0x4ddc84), IMG(0x4de058), IMG(0x4ddc20), IMG(0x4ddaf0) };
+	static const u32 names[6] = { OBJ(g_colourDepthTexts), OBJ(g_fxStatusTexts), OBJ(g_linearFilterTexts), OBJ(g_mipMapTexts), OBJ(g_viewFpsTexts), OBJ(g_simpleMenuTexts) };
 	const u32 *bright = g_setupColourLit, *dim = g_setupColourDim;
 	int hovered = setupOptions_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
@@ -249,8 +249,8 @@ static void settings_tab(void)
 	int crosshair = g_crosshair;
 	if (crosshair != g_lastCrosshair) {
 		if ((u32)crosshair <= 7)
-			strcpy((char *)IMG(0x4ddb58), (const char *)(STR(0x4b063c, "texture/crosshair/crosshair0") - crosshair * 0x20));
-		g_crosshairTexture = tex_getIdByName(g_textures, (const char *)IMG(0x4ddb58), 0, 0, 0, 0, 0, 0, 0);
+			strcpy(g_crosshairName, (const char *)(STR(0x4b063c, "texture/crosshair/crosshair0") - crosshair * 0x20));
+		g_crosshairTexture = tex_getIdByName(g_textures, g_crosshairName, 0, 0, 0, 0, 0, 0, 0);
 		g_lastCrosshair = crosshair;
 	}
 	glEnable(GL_TEXTURE_2D);

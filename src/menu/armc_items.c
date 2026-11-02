@@ -184,13 +184,13 @@ u32 (armc_partScreenClicks)(void)
 void (armc_extraItemBonuses)(void)
 {
 	static const u32 flag[9] = { 0x4dcb10, 0x4dcea8, 0x4dcc5c, 0x4dbc54, 0x4dbe44, 0x4dc794, 0x4dbd78, 0x4dc774, 0x4dcf30 };
-	static const u32 value[14] = { ADDR(g_itemBonusCapacityPerLevel), IMG(0x4dc248), IMG(0x4dcc6c), IMG(0x4dc548), IMG(0x4dcb34), ADDR(g_itemBonusDetectionRange), ADDR(g_itemBonusLockOn), ADDR(g_itemBonusHacking), ADDR(g_itemBonusTargetKeep),
-	                               ADDR(g_itemBonusActiveTime), ADDR(g_itemBonusRechargeTime), ADDR(g_itemBonusWeightLimit), ADDR(g_itemBonusShield), IMG(0x4dbc74) };
+	static const u32 value[14] = { ADDR(g_itemBonusCapacityPerLevel), ADDR(g_itemBonusEpak), ADDR(g_itemBonus30mm), ADDR(g_itemBonus60mm), ADDR(g_itemBonusMissile), ADDR(g_itemBonusDetectionRange), ADDR(g_itemBonusLockOn), ADDR(g_itemBonusHacking), ADDR(g_itemBonusTargetKeep),
+	                               ADDR(g_itemBonusActiveTime), ADDR(g_itemBonusRechargeTime), ADDR(g_itemBonusWeightLimit), ADDR(g_itemBonusShield), ADDR(g_itemBonusShieldUnread) };
 	static const struct { u8 item; u32 at, bits; } bonus[14] = {
-		{ 0, ADDR(g_itemBonusCapacityPerLevel), 0x3e99999a }, { 1, IMG(0x4dc248), 0x42c80000 }, { 2, IMG(0x4dcc6c), 0x42c80000 }, { 3, IMG(0x4dc548), 0x42c80000 },
-		{ 4, IMG(0x4dcb34), 0x42480000 }, { 5, ADDR(g_itemBonusDetectionRange), 0x42c80000 }, { 5, ADDR(g_itemBonusLockOn), 0x3f000000 }, { 5, ADDR(g_itemBonusHacking), 0x40400000 },
+		{ 0, ADDR(g_itemBonusCapacityPerLevel), 0x3e99999a }, { 1, ADDR(g_itemBonusEpak), 0x42c80000 }, { 2, ADDR(g_itemBonus30mm), 0x42c80000 }, { 3, ADDR(g_itemBonus60mm), 0x42c80000 },
+		{ 4, ADDR(g_itemBonusMissile), 0x42480000 }, { 5, ADDR(g_itemBonusDetectionRange), 0x42c80000 }, { 5, ADDR(g_itemBonusLockOn), 0x3f000000 }, { 5, ADDR(g_itemBonusHacking), 0x40400000 },
 		{ 5, ADDR(g_itemBonusTargetKeep), 0x3f800000 }, { 6, ADDR(g_itemBonusActiveTime), 0x3f000000 }, { 6, ADDR(g_itemBonusRechargeTime), 0xbdcccccd }, { 7, ADDR(g_itemBonusWeightLimit), 0x3e4ccccd },
-		{ 8, ADDR(g_itemBonusShield), 0x3e99999a }, { 8, IMG(0x4dbc74), 0x3f800000 } };
+		{ 8, ADDR(g_itemBonusShield), 0x3e99999a }, { 8, ADDR(g_itemBonusShieldUnread), 0x3f800000 } };
 	for (int k = 0; k < 9; k++)
 		GAME_VAR(int, flag[k]) = 0;
 	for (int k = 0; k < 14; k++)

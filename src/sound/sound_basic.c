@@ -410,7 +410,7 @@ int (music_play)(const char *name)
 		return 0;
 	g_music = stream;
 	COM(stream, 0x1c, long, u32)(stream, 1);   /* SetState(run) */
-	strcpy((char *)IMG(0xa0e674), name);
+	strcpy(g_musicFile, name);
 	COM(g_music, 0x24, long, void *)(g_music, (void *)ADDR(g_musicLength));   /* GetDuration */
 	return 1;
 }

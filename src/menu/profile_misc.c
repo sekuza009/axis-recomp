@@ -46,7 +46,7 @@ static void load_colour(int i)
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
-		GAME_VAR(float, 0x9f8ec0 + k * 4) =
+		GAME_VAR(float, OBJ(g_statBarTargets) + k * 4) =
 			(float)((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + i * 76 + k * 4) + k_50f);
 }
 
@@ -88,15 +88,15 @@ int (name_isBlank)(const char *name)
 /* 0x44b2e0: 1 when (x, y) is in the dialog box rectangle at 0x9f9010 (left, top, right, bottom), else -1 */
 int (profile_inDialogBox)(int x, int y)
 {
-	const int *r = (const int *)IMG(0x9f9010);
+	const int *r = g_profileDialogBox;
 	return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] ? 1 : -1;
 }
 
 /* 0x44b7a0: the colour preview reset: no colours, distance 40, -1, turning */
 void (profile_resetPreview)(void)
 {
-	memset((void *)IMG(0x9f8ec0), 0, 36);
-	memset((void *)IMG(0x9f8d34), 0, 36);
+	memset((void *)OBJ(g_statBarTargets), 0, 36);
+	memset((void *)OBJ(g_statBars), 0, 36);
 	g_emblemMoved = 1;
 	(*(u32 *)&g_profileFrameAlpha) = 0x42200000;   /* 40.0 */
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */

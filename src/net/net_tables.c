@@ -327,12 +327,12 @@ void (net_closeAll)(int kind)
 		arena_freeBuffers();
 	}
 	if (kind == 100 || kind == 101) {
-		const char *host = (const char *)(RELOC(kind) == 100 ? IMG(0xa0b24c) : IMG(0xa055fc));
-		strcpy((char *)IMG(0xa055e4), net_resolveHost(host) ? g_serverAddress : host);
+		const char *host = (const char *)(RELOC(kind) == 100 ? OBJ(g_tcpDns) : OBJ(g_ladderDns));
+		strcpy(g_lobbyHost, net_resolveHost(host) ? g_serverAddress : host);
 		g_serverPort = GAME_VAR(u16, kind == 100 ? ADDR(g_lobbyTcpPort) : ADDR(g_ladderPort));
 	}
 	memset((void *)OBJ(g_roomList), 0, 0x1e40 * 4);
-	memset((void *)IMG(0xa05748), 0, 0x16c0 * 4);
+	memset((void *)OBJ(g_serverList), 0, 0x16c0 * 4);
 	memset((void *)OBJ(g_netPlayerList), 0, 0x2aa);
 	static const struct { u32 at, size; } buffers[] = {
 		{ ADDR(g_roomPacket), 0x5b }, { ADDR(g_netInfoPacket), 0x5b }, { IMG(0xa0b318), 0x5b }, { ADDR(g_netLobbyMessage), 4 }, { ADDR(g_netSendName), 0x10 }, { ADDR(g_accountPacket), 0x10b },
@@ -464,7 +464,7 @@ int (net_addServerRecord)(const u8 *rec)
 {
 	static const u8 strings[3] = { 0x33, 0x01, 0x53 };
 	static const u8 bytes[9] = { 0x00, 0x49, 0x47, 0x48, 0x46, 0x45, 0x43, 0x44, 0x52 };
-	return list_append(ADDR(g_serverListCount), IMG(0xa05748), 0x5b, rec, strings, 3, 0x33, bytes, 9);
+	return list_append(ADDR(g_serverListCount), OBJ(g_serverList), 0x5b, rec, strings, 3, 0x33, bytes, 9);
 }
 /* 0x452c80: a room record (0x79 bytes) into the list at 0x9fd960 (count 0xa0b358) */
 int (net_addRoomRecord)(const u8 *rec)
@@ -965,7 +965,7 @@ int (dplay_initConnection)(int kind, const char *address)
 		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
 		char host[0xc0];
 		u32 size = 0;
-		strcpy(host, address ? address : (const char *)IMG(0xa0bb0c));
+		strcpy(host, address ? address : g_noAddress);
 		memcpy(element[0].guid, (const void *)OBJ(k_DPAID_ServiceProvider), 16);   /* DPAID_ServiceProvider */
 		element[0].size = 0x10;
 		element[0].data = g_instanceGuid;
@@ -1122,7 +1122,7 @@ void (net_sendLocalInfo)(const u32 *msg)
    the network left where the original does so) */
 static int connect_socket(int *sock, int status)
 {
-	const char *host = (const char *)IMG(0xa055e4);
+	const char *host = g_lobbyHost;
 	u8 wsa[0x190];
 	if (IMPORT(WS_STARTUP, int, u32, void *)(0x202, wsa))                /* WSAStartup */
 		return 0;
@@ -1368,7 +1368,7 @@ void (net_recv)(void)
 	static const u8 answers14[6] = { 0x1f, 0x20, 0x21, 0x22, 0x28, 0x2a }, answers15[4] = { 0x1e, 0x21, 0x28, 0x2a };
 	switch (g_netLastRequest) {
 	case 10:
-		status_reply(ADDR(g_lobbySocket), IMG(0xa055dc), ADDR(g_lobbyStatus), 0x29, start);
+		status_reply(ADDR(g_lobbySocket), OBJ(g_lobbyReplyCode), ADDR(g_lobbyStatus), 0x29, start);
 		break;
 	case 13:
 		net_receiveLobbyReply();
@@ -1380,7 +1380,7 @@ void (net_recv)(void)
 		answer_reply(ADDR(g_gameServerAnswer15), answers15, 4, start);
 		break;
 	case 18:
-		status_reply(ADDR(g_gameServerSocket), IMG(0xa0b248), ADDR(g_gameServerStatus), 0x28, start);
+		status_reply(ADDR(g_gameServerSocket), OBJ(g_gameServerReplyCode), ADDR(g_gameServerStatus), 0x28, start);
 		break;
 	case 19:
 		net_receiveGameServerReply();

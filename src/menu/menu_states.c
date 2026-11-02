@@ -10,7 +10,7 @@
    0x76d350, blended ---- */
 static void draw_logo(int first)
 {
-	const u32 *clear = (const u32 *)IMG(0x76d350);
+	const u32 *clear = (const u32 *)OBJ(g_clearColour);
 	IMPORT(0x4a91e0, void, u32, u32, u32, u32)(clear[0], clear[1], clear[2], clear[3]);   /* glClearColor */
 	glClear(0x4100);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -528,7 +528,7 @@ static int menu_slide(u32 flag, u32 eased, u32 slid)
 }
 
 /* 0x40cef0 (lobbyTop_draw), 0x43e720: the lobby's and the room's panels */
-int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsOff), IMG(0x4dbb60), ADDR(g_arenaTunnelDepth)); }
+int (lobbyTop_draw)(void) { return menu_slide(ADDR(g_lobbyPanelsOff), OBJ(g_lobbyTopEase), ADDR(g_arenaTunnelDepth)); }
 int (room_slideMenu)(void) { return menu_slide(ADDR(g_roomDialogOpen), ADDR(g_roomPanelEase), ADDR(g_roomTunnelDepth)); }
 
 /* ---- back to the menus after a game: the arena session left (0x452fe0) and, unless kept, the connection closed;
