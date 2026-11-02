@@ -328,3 +328,12 @@
 #define g_hudLayerBTop ((float *)IMG(0x4df638))   /* float[120]; the HUD two-layer glyphs */
 #define g_hudLayerBLeft ((float *)IMG(0x4df458))   /* float[120]; the HUD two-layer glyphs */
 #define g_hudLayerBRight ((float *)IMG(0x83a600))   /* float[120]; the HUD two-layer glyphs */
+#define g_penFixedTopLeft ((float *)IMG(0xa0f498))   /* float[210]; the fixed set's top left corners */
+#define g_penFixedTopRight ((float *)IMG(0xa10018))   /* float[210]; the fixed set's top right corners */
+#define g_penFixedBottomRight ((float *)IMG(0xa0f150))   /* float[210]; the fixed set's bottom right corners */
+#define g_penFixedBottomLeft ((float *)IMG(0xa0fcd0))   /* float[210]; the fixed set's bottom left corners */
+#define g_penPropTopLeft ((float *)IMG(0xa0eac0))   /* float[210]; the proportional set's top left corners */
+#define g_penPropTopRight ((float *)IMG(0xa10360))   /* float[210]; the proportional set's top right corners */
+#define g_penPropBottomRight ((float *)IMG(0xa0ee08))   /* float[210]; the proportional set's bottom right corners */
+#define g_penPropBottomLeft ((float *)IMG(0xa0f7e0))   /* float[210]; the proportional set's bottom left corners */
+#define g_penFixedWidths ((int *)IMG(0xa0fb28))   /* int[105]; the fixed set's glyph widths (all 8) */

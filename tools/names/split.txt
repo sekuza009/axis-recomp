@@ -1048,3 +1048,13 @@ g_hudLayerBBottom
 g_hudLayerBTop
 g_hudLayerBLeft
 g_hudLayerBRight
+# the pen font tables (objects32.csv), whole
+g_penFixedTopLeft
+g_penFixedTopRight
+g_penFixedBottomRight
+g_penFixedBottomLeft
+g_penPropTopLeft
+g_penPropTopRight
+g_penPropBottomRight
+g_penPropBottomLeft
+g_penFixedWidths

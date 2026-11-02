@@ -73,15 +73,16 @@ static void pen_cell(const u32 corner[4], int g, int x0, int x1, int y0, int y1)
    (0xa106a8 set): 0. Otherwise 1 */
 int (pen_init)(const char *name)
 {
-	static const u32 fixed[4] = { 0xa0f490, 0xa10010, 0xa0f148, 0xa0fcc8 };
-	static const u32 proportional[4] = { IMG(0xa0eab8), IMG(0xa10358), IMG(0xa0ee00), IMG(0xa0f7d8) };
+	/* (the corners' tables less one glyph: pen_cell takes glyphs from 1) */
+	static const u32 fixed[4] = { OBJ(g_penFixedTopLeft) - 8, OBJ(g_penFixedTopRight) - 8, OBJ(g_penFixedBottomRight) - 8, OBJ(g_penFixedBottomLeft) - 8 };
+	static const u32 proportional[4] = { OBJ(g_penPropTopLeft) - 8, OBJ(g_penPropTopRight) - 8, OBJ(g_penPropBottomRight) - 8, OBJ(g_penPropBottomLeft) - 8 };
 	if (g_penFontNeverSet == 1) {
 		GAME_FN(sys_errorMessageNoName, 0x46c840, void, const char *)((const char *)STR(0x4c56fc, "pen duplicate initialization - penInit()"));
 		return 0;
 	}
 	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
-		GAME_VAR(int, 0xa0fb28 + i * 4) = 8;
+		GAME_VAR(int, OBJ(g_penFixedWidths) + i * 4) = 8;
 	int g = 1;
 	for (int y = 0x48; g <= 105; y += 8)
 		for (int c = 0; c < 21; c++, g++)
@@ -174,11 +175,11 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	const int *widths;
 	int height;
 	if (font) {
-		topLeft = (const u8 *)IMG(0xa0eac0); topRight = (const u8 *)IMG(0xa10360); bottomRight = (const u8 *)IMG(0xa0ee08);
-		bottomLeft = (const u8 *)IMG(0xa0f7e0); widths = (const int *)IMG(0x4c5558); height = 14;
+		topLeft = (const u8 *)OBJ(g_penPropTopLeft); topRight = (const u8 *)OBJ(g_penPropTopRight); bottomRight = (const u8 *)OBJ(g_penPropBottomRight);
+		bottomLeft = (const u8 *)OBJ(g_penPropBottomLeft); widths = (const int *)IMG(0x4c5558); height = 14;
 	} else {
-		topLeft = (const u8 *)IMG(0xa0f498); topRight = (const u8 *)IMG(0xa10018); bottomRight = (const u8 *)IMG(0xa0f150);
-		bottomLeft = (const u8 *)IMG(0xa0fcd0); widths = (const int *)IMG(0xa0fb28); height = 8;
+		topLeft = (const u8 *)OBJ(g_penFixedTopLeft); topRight = (const u8 *)OBJ(g_penFixedTopRight); bottomRight = (const u8 *)OBJ(g_penFixedBottomRight);
+		bottomLeft = (const u8 *)OBJ(g_penFixedBottomLeft); widths = g_penFixedWidths; height = 8;
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);

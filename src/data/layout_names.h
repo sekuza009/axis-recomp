@@ -1754,10 +1754,28 @@ extern struct GameData g_data;
 #define g_partRecords ((u8 *)g_partRecords_v)
 #undef g_paused
 #define g_paused (*(int *)g_paused_v)
+#undef g_penFixedBottomLeft
+#define g_penFixedBottomLeft ((float *)g_penFixedBottomLeft_v)
+#undef g_penFixedBottomRight
+#define g_penFixedBottomRight ((float *)g_penFixedBottomRight_v)
+#undef g_penFixedTopLeft
+#define g_penFixedTopLeft ((float *)g_penFixedTopLeft_v)
+#undef g_penFixedTopRight
+#define g_penFixedTopRight ((float *)g_penFixedTopRight_v)
+#undef g_penFixedWidths
+#define g_penFixedWidths ((int *)g_penFixedWidths_v)
 #undef g_penFontNeverSet
 #define g_penFontNeverSet (*(int *)g_penFontNeverSet_v)
 #undef g_penFontTexture
 #define g_penFontTexture (*(int *)g_penFontTexture_v)
+#undef g_penPropBottomLeft
+#define g_penPropBottomLeft ((float *)g_penPropBottomLeft_v)
+#undef g_penPropBottomRight
+#define g_penPropBottomRight ((float *)g_penPropBottomRight_v)
+#undef g_penPropTopLeft
+#define g_penPropTopLeft ((float *)g_penPropTopLeft_v)
+#undef g_penPropTopRight
+#define g_penPropTopRight ((float *)g_penPropTopRight_v)
 #undef g_perfCounter
 #define g_perfCounter (*(u32 *)g_perfCounter_v)
 #undef g_pilotChosen
