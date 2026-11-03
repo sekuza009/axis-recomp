@@ -131,14 +131,40 @@ elif FIXED and 'u32' in fixed.values() and 'float' in fixed.values():
 		return m.group(0)
 	t = re.sub(r'\b%s\((0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(U), lit, t)
 kinds = collections.defaultdict(set)
-for m in ACCESS.finditer(t):
-	kinds[int(m.group(2), 0)].add(SAME.get(typ(m), typ(m)))
 done, other, unknown = 0, collections.Counter(), collections.Counter()
 cls = lambda k: 'int32' if k in ('i32', 'u32') else k
 
 
+# --in=f,g: only inside those functions' bodies (a variable name can mean another record elsewhere in the file)
+spans = None
+for a in sys.argv:
+	if a.startswith('--in='):
+		spans = []
+		for fn in a[5:].split(','):
+			fm = re.search(r'\(%s\)\([^;{]*\)\s*\{' % re.escape(fn), t) or re.search(r'\b%s\([^;{]*\)\s*\{' % re.escape(fn), t)
+			if not fm:
+				raise SystemExit('no function ' + fn)
+			depth, k = 0, fm.end() - 1
+			for k in range(fm.end() - 1, len(t)):
+				depth += {'{': 1, '}': -1}.get(t[k], 0)
+				if depth == 0:
+					break
+			spans.append((fm.start(), k))
+
+
+def inside(m):
+	return spans is None or any(a <= m.start() < b for a, b in spans)
+
+
+for m in ACCESS.finditer(t):
+	if inside(m):
+		kinds[int(m.group(2), 0)].add(SAME.get(typ(m), typ(m)))
+
+
 def sub(m):
 	global done
+	if not inside(m):
+		return m.group(0)
 	ty, off = typ(m), int(m.group(2), 0)
 	f = resolve(TYPE, off)
 	if not f:

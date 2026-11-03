@@ -375,6 +375,31 @@ typedef struct ViewVolume {
 	float clip[16];   /* +0x9130: projection x modelview: points to clip space */
 } ViewVolume;
 
+/* a skeleton (skel_data.c): its 0x24-byte header and the block its bones and their tables are in */
+typedef struct Skeleton {
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4 */
+	u8 *block;   /* +0x8: its bones (from the start) and their key tables */
+	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
+	i32 boneCount;   /* +0x10 */
+	u8 *bones;   /* +0x14: boneCount Bone records */
+	u8 _pad0000018[0x8];
+	i32 frames;   /* +0x20: its animation's frames */
+} Skeleton;
+
+/* a skeleton's bone (Skeleton.bones) */
+typedef struct Bone {
+	u8 _pad0000000[0x40];
+	i32 parent;   /* +0x40: its parent bone (< 0: the root) */
+	float pos[3];   /* +0x44: its position without keys */
+	float angle;   /* +0x50: its rotation without keys: the angle (0x4aa270 units) about axis */
+	float axis[3];   /* +0x54 */
+	i32 posKeyCount;   /* +0x60: position keys, 0x20 bytes each: frame, length, base, delta */
+	u8 *posKeys;   /* +0x64 */
+	i32 rotKeyCount;   /* +0x68: rotation keys, 0x28 bytes each: frame, length, base angle + axis, delta angle + axis */
+	u8 *rotKeys;   /* +0x6c */
+} Bone;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -967,6 +992,22 @@ _Static_assert(offsetof(ViewVolume, projection) == 0x90b0 && sizeof(((ViewVolume
 _Static_assert(offsetof(ViewVolume, modelview) == 0x90f0 && sizeof(((ViewVolume *)0)->modelview) == 0x40, "scene.fields: ViewVolume.modelview");
 _Static_assert(offsetof(ViewVolume, clip) == 0x9130 && sizeof(((ViewVolume *)0)->clip) == 0x40, "scene.fields: ViewVolume.clip");
 _Static_assert(sizeof(ViewVolume) == 0x9170, "scene.fields: size of ViewVolume");
+_Static_assert(offsetof(Skeleton, blockSize) == 0x4 && sizeof(((Skeleton *)0)->blockSize) == 0x4, "scene.fields: Skeleton.blockSize");
+_Static_assert(offsetof(Skeleton, block) == 0x8 && sizeof(((Skeleton *)0)->block) == 0x4, "scene.fields: Skeleton.block");
+_Static_assert(offsetof(Skeleton, ownsBlock) == 0xc && sizeof(((Skeleton *)0)->ownsBlock) == 0x4, "scene.fields: Skeleton.ownsBlock");
+_Static_assert(offsetof(Skeleton, boneCount) == 0x10 && sizeof(((Skeleton *)0)->boneCount) == 0x4, "scene.fields: Skeleton.boneCount");
+_Static_assert(offsetof(Skeleton, bones) == 0x14 && sizeof(((Skeleton *)0)->bones) == 0x4, "scene.fields: Skeleton.bones");
+_Static_assert(offsetof(Skeleton, frames) == 0x20 && sizeof(((Skeleton *)0)->frames) == 0x4, "scene.fields: Skeleton.frames");
+_Static_assert(sizeof(Skeleton) == 0x24, "scene.fields: size of Skeleton");
+_Static_assert(offsetof(Bone, parent) == 0x40 && sizeof(((Bone *)0)->parent) == 0x4, "scene.fields: Bone.parent");
+_Static_assert(offsetof(Bone, pos) == 0x44 && sizeof(((Bone *)0)->pos) == 0xc, "scene.fields: Bone.pos");
+_Static_assert(offsetof(Bone, angle) == 0x50 && sizeof(((Bone *)0)->angle) == 0x4, "scene.fields: Bone.angle");
+_Static_assert(offsetof(Bone, axis) == 0x54 && sizeof(((Bone *)0)->axis) == 0xc, "scene.fields: Bone.axis");
+_Static_assert(offsetof(Bone, posKeyCount) == 0x60 && sizeof(((Bone *)0)->posKeyCount) == 0x4, "scene.fields: Bone.posKeyCount");
+_Static_assert(offsetof(Bone, posKeys) == 0x64 && sizeof(((Bone *)0)->posKeys) == 0x4, "scene.fields: Bone.posKeys");
+_Static_assert(offsetof(Bone, rotKeyCount) == 0x68 && sizeof(((Bone *)0)->rotKeyCount) == 0x4, "scene.fields: Bone.rotKeyCount");
+_Static_assert(offsetof(Bone, rotKeys) == 0x6c && sizeof(((Bone *)0)->rotKeys) == 0x4, "scene.fields: Bone.rotKeys");
+_Static_assert(sizeof(Bone) == 0x70, "scene.fields: size of Bone");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
