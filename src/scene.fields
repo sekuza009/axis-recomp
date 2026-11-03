@@ -409,6 +409,20 @@ struct Bone 0x70                                                # a skeleton's b
 0x68       4          i32 rotKeyCount                           # rotation keys, 0x28 bytes each: frame, length, base angle + axis, delta angle + axis
 0x6c       4          u8 *rotKeys
 
+struct PosKey 0x20                                              # a bone's position key (Bone.posKeys)
+0          4          i32 frame                                  # the frame it starts at
+4          4          i32 length                                 # frames to the next key (0: the last)
+8          0xc        float pos[3]
+0x14       0xc        float delta[3]                             # to the next key's position
+
+struct RotKey 0x28                                              # a bone's rotation key (Bone.rotKeys)
+0          4          i32 frame
+4          4          i32 length
+8          4          float angle                                # its rotation (angle, axis): from the ASE, combined with the ones before
+0xc        0xc        float axis[3]
+0x18       4          float stepAngle                            # the rotation to the next key
+0x1c       0xc        float stepAxis[3]
+
 struct Manager 0x24c                                            # a shape or skeleton manager (skel_data.c): items loaded by name into one block, found through a name tree
 4          4          i32 blockSize
 8          4          u8 *block                                 # the name nodes, then the items, then the data memory

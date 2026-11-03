@@ -39,13 +39,13 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 	for (int i = 0; i < sko->boneCount; i++) {
 		u8 *bone = sko->bones + i * 0x70;
 		Bone *bn = (Bone *)bone;
-		AT(u8 *, bone, 0x64) = sko->block + at;
+		((Bone *)bone)->posKeys = sko->block + at;
 		u32 keys = ((u32)bn->posKeyCount);
 		at += keys * 0x20;
-		AT(u8 *, bone, 0x6c) = sko->block + at;
+		((Bone *)bone)->rotKeys = sko->block + at;
 		at += bn->rotKeyCount * 0x28;
-		crt_fread(AT(void *, bone, 0x64), 0x20, keys, f);
-		crt_fread(AT(void *, bone, 0x6c), 0x28, ((u32)bn->rotKeyCount), f);
+		crt_fread((*(void * *)&((Bone *)bone)->posKeys), 0x20, keys, f);
+		crt_fread((*(void * *)&((Bone *)bone)->rotKeys), 0x28, ((u32)bn->rotKeyCount), f);
 	}
 }
 
@@ -293,7 +293,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
-		glTranslatef_bits(AT(u32, b, 0x44), AT(u32, b, 0x48), AT(u32, b, 0x4c));
+		glTranslatef_bits(BITS(((Bone *)b)->pos[0]), BITS(((Bone *)b)->pos[1]), BITS(((Bone *)b)->pos[2]));
 	if (bn->rotKeyCount > 0) {
 		float *key = (float *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
 		int length = ((int *)key)[1];
@@ -387,7 +387,7 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 		skel_loadFrom(sk, path, at, room);
 	}
 	if (mem)
-		mg->dataUsed += AT(int, sk, 4);
+		mg->dataUsed += ((Skeleton *)sk)->blockSize;
 	mg->count++;
 	return sk;
 }
@@ -623,17 +623,17 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		return;
 	int size = sko->blockSize = bones * 0x70 + GAME_VAR(int, sk + 0x1c) * 0x28 + GAME_VAR(int, sk + 0x18) * 0x20;
 	if (!mem) {
-		GAME_VAR(void *, sk + 8) = operator_new(size);
-		if (!GAME_VAR(void *, sk + 8))
+		(*(void * *)&((Skeleton *)sk)->block) = operator_new(size);
+		if (!(*(void * *)&((Skeleton *)sk)->block))
 			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), sko->blockSize);
 		sko->ownsBlock = 1;
 	} else {
 		if (memSize < size)
 			sys_fatalErrorN((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
-		GAME_VAR(u8 *, sk + 8) = mem;
+		((Skeleton *)sk)->block = mem;
 		sko->ownsBlock = 0;
 	}
-	sko->bones = GAME_VAR(u8 *, sk + 8);
+	sko->bones = ((Skeleton *)sk)->block;
 	int keys = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
 	crt_fseek(f, 0, 0);
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
@@ -653,7 +653,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			at += 0x70;
 			b = sko->bones + at;
 			((Bone *)b)->parent = -1;
-			((Bone *)b)->posKeyCount = GAME_VAR(int, b + 0x64) = ((Bone *)b)->rotKeyCount = GAME_VAR(int, b + 0x6c) = 0;
+			((Bone *)b)->posKeyCount = (*(int *)&((Bone *)b)->posKeys) = ((Bone *)b)->rotKeyCount = (*(int *)&((Bone *)b)->rotKeys) = 0;
 		} else if (!strcmp(t, (const char *)STR(0x4c53f8, "CAMERAOBJECT"))) {   /* CAMERAOBJECT */
 			skip = 1;
 			continue;
@@ -683,31 +683,31 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
 			((Bone *)b)->angle = ase_float(LINE_END, 1);
 		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
-			GAME_VAR(u8 *, b + 0x64) = GAME_VAR(u8 *, sk + 8) + keys;
+			((Bone *)b)->posKeys = ((Skeleton *)sk)->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
-					u8 *k = GAME_VAR(u8 *, b + 0x64) + ((Bone *)b)->posKeyCount * 0x20;
-					GAME_VAR(int, k) = ase_time(ticks, ms);
-					GAME_VAR(float, k + 8) = ase_float(SPACE, 0);
-					GAME_VAR(float, k + 0x10) = ase_float(SPACE, 1);
-					GAME_VAR(float, k + 0xc) = ase_float(SPACE, 0);
+					u8 *k = ((Bone *)b)->posKeys + ((Bone *)b)->posKeyCount * 0x20;
+					((PosKey *)k)->frame = ase_time(ticks, ms);
+					((PosKey *)k)->pos[0] = ase_float(SPACE, 0);
+					((PosKey *)k)->pos[2] = ase_float(SPACE, 1);
+					((PosKey *)k)->pos[1] = ase_float(SPACE, 0);
 					((Bone *)b)->posKeyCount++;
 				} else if (t && t[0] == '}')
 					break;
 			}
 			keys += ((Bone *)b)->posKeyCount * 0x20;
 		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
-			GAME_VAR(u8 *, b + 0x6c) = GAME_VAR(u8 *, sk + 8) + keys;
+			((Bone *)b)->rotKeys = ((Skeleton *)sk)->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
-					u8 *k = GAME_VAR(u8 *, b + 0x6c) + ((Bone *)b)->rotKeyCount * 0x28;
-					GAME_VAR(int, k) = ase_time(ticks, ms);
-					GAME_VAR(float, k + 0xc) = ase_float(SPACE, 0);
-					GAME_VAR(float, k + 0x14) = ase_float(SPACE, 1);
-					GAME_VAR(float, k + 0x10) = ase_float(SPACE, 0);
-					GAME_VAR(float, k + 8) = ase_float(SPACE, 1);
+					u8 *k = ((Bone *)b)->rotKeys + ((Bone *)b)->rotKeyCount * 0x28;
+					((RotKey *)k)->frame = ase_time(ticks, ms);
+					((RotKey *)k)->axis[0] = ase_float(SPACE, 0);
+					((RotKey *)k)->axis[2] = ase_float(SPACE, 1);
+					((RotKey *)k)->axis[1] = ase_float(SPACE, 0);
+					((RotKey *)k)->angle = ase_float(SPACE, 1);
 					if (((Bone *)b)->rotKeyCount > 0) {
 						float r[4];
 						axisAngle_combine(r, (const float *)(RELOC(k) + 8), (const float *)(RELOC(k) + 8 - 0x28));
@@ -720,12 +720,12 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			keys += ((Bone *)b)->rotKeyCount * 0x28;
 		}
 	}
-	u8 *all = GAME_VAR(u8 *, sk + 0x14);
-	for (int i = GAME_VAR(int, sk + 0x10) - 1; i >= 0; i--) {
+	u8 *all = ((Skeleton *)sk)->bones;
+	for (int i = ((Skeleton *)sk)->boneCount - 1; i >= 0; i--) {
 		u8 *bone = all + i * 0x70;
-		if (GAME_VAR(int, bone + 0x40) < 0)
+		if (((Bone *)bone)->parent < 0)
 			continue;
-		u8 *up = all + GAME_VAR(int, bone + 0x40) * 0x70;
+		u8 *up = all + ((Bone *)bone)->parent * 0x70;
 		float t[16], r[16], m[16], inv[16], local[16], rel[16];
 		translation(t, (const float *)(up + 0x44));
 		Mat4_fromAxisAngle(r, (const float *)(up + 0x50));
@@ -740,32 +740,32 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		rel[12] = rel[13] = rel[14] = 0;
 		axisAngle_fromMatrix((float *)(RELOC(bone) + 0x50), rel);
 	}
-	for (int i = 0; i < GAME_VAR(int, sk + 0x10); i++) {
-		u8 *bone = GAME_VAR(u8 *, sk + 0x14) + i * 0x70;
-		for (int k = 0; k < GAME_VAR(int, bone + 0x60) - 1; k++) {
-			u8 *key = GAME_VAR(u8 *, bone + 0x64) + k * 0x20;
-			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x20) - GAME_VAR(int, key);
+	for (int i = 0; i < ((Skeleton *)sk)->boneCount; i++) {
+		u8 *bone = ((Skeleton *)sk)->bones + i * 0x70;
+		for (int k = 0; k < ((Bone *)bone)->posKeyCount - 1; k++) {
+			u8 *key = ((Bone *)bone)->posKeys + k * 0x20;
+			((PosKey *)key)->length = ((PosKey *)key)[1].frame - ((PosKey *)key)->frame;
 			for (int c = 0; c < 3; c++)
-				GAME_VAR(float, key + 0x14 + c * 4) = f32(fsub_m(fld_m((const float *)(key + 0x28) + c), (const float *)(key + 8) + c));
+				((PosKey *)key)->delta[c] = f32(fsub_m(fld_m(&((PosKey *)key)[1].pos[c]), &((PosKey *)key)->pos[c]));
 		}
-		if (GAME_VAR(int, bone + 0x60) > 0) {
-			u8 *last = GAME_VAR(u8 *, bone + 0x64) + (GAME_VAR(int, bone + 0x60) - 1) * 0x20;
-			GAME_VAR(int, last + 4) = 0;
+		if (((Bone *)bone)->posKeyCount > 0) {
+			u8 *last = ((Bone *)bone)->posKeys + (((Bone *)bone)->posKeyCount - 1) * 0x20;
+			((PosKey *)last)->length = 0;
 			GAME_VAR(int, last + 0x14) = GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = 0;
 		}
-		for (int k = 0; k < GAME_VAR(int, bone + 0x68) - 1; k++) {
-			u8 *key = GAME_VAR(u8 *, bone + 0x6c) + k * 0x28;
-			GAME_VAR(int, key + 4) = GAME_VAR(int, key + 0x28) - GAME_VAR(int, key);
+		for (int k = 0; k < ((Bone *)bone)->rotKeyCount - 1; k++) {
+			u8 *key = ((Bone *)bone)->rotKeys + k * 0x28;
+			((RotKey *)key)->length = ((RotKey *)key)[1].frame - ((RotKey *)key)->frame;
 			float r[16], back[16], next[16], step[16];
 			Mat4_fromAxisAngle(r, (const float *)(key + 8));
 			Mat4_transpose(back, r);
-			Mat4_fromAxisAngle(next, (const float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x30));
+			Mat4_fromAxisAngle(next, (const float *)(((Bone *)bone)->rotKeys + k * 0x28 + 0x30));
 			Mat4_multiply(step, back, next);
-			axisAngle_fromMatrix((float *)(GAME_VAR(u8 *, bone + 0x6c) + k * 0x28 + 0x18), step);
+			axisAngle_fromMatrix((float *)(((Bone *)bone)->rotKeys + k * 0x28 + 0x18), step);
 		}
-		if (GAME_VAR(int, bone + 0x68) > 0) {
-			u8 *last = GAME_VAR(u8 *, bone + 0x6c) + (GAME_VAR(int, bone + 0x68) - 1) * 0x28;
-			GAME_VAR(int, last + 4) = 0;
+		if (((Bone *)bone)->rotKeyCount > 0) {
+			u8 *last = ((Bone *)bone)->rotKeys + (((Bone *)bone)->rotKeyCount - 1) * 0x28;
+			((RotKey *)last)->length = 0;
 			GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = GAME_VAR(int, last + 0x20) = GAME_VAR(int, last + 0x24) = 0;
 		}
 	}

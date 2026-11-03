@@ -516,6 +516,24 @@ typedef struct Bone {
 	u8 *rotKeys;   /* +0x6c */
 } Bone;
 
+/* a bone's position key (Bone.posKeys) */
+typedef struct PosKey {
+	i32 frame;   /* +0x0: the frame it starts at */
+	i32 length;   /* +0x4: frames to the next key (0: the last) */
+	float pos[3];   /* +0x8 */
+	float delta[3];   /* +0x14: to the next key's position */
+} PosKey;
+
+/* a bone's rotation key (Bone.rotKeys) */
+typedef struct RotKey {
+	i32 frame;   /* +0x0 */
+	i32 length;   /* +0x4 */
+	float angle;   /* +0x8: its rotation (angle, axis): from the ASE, combined with the ones before */
+	float axis[3];   /* +0xc */
+	float stepAngle;   /* +0x18: the rotation to the next key */
+	float stepAxis[3];   /* +0x1c */
+} RotKey;
+
 /* a shape or skeleton manager (skel_data.c): items loaded by name into one block, found through a name tree */
 typedef struct Manager {
 	u8 _pad0000000[0x4];
@@ -1405,6 +1423,18 @@ _Static_assert(offsetof(Bone, posKeys) == 0x64 && sizeof(((Bone *)0)->posKeys) =
 _Static_assert(offsetof(Bone, rotKeyCount) == 0x68 && sizeof(((Bone *)0)->rotKeyCount) == 0x4, "scene.fields: Bone.rotKeyCount");
 _Static_assert(offsetof(Bone, rotKeys) == 0x6c && sizeof(((Bone *)0)->rotKeys) == 0x4, "scene.fields: Bone.rotKeys");
 _Static_assert(sizeof(Bone) == 0x70, "scene.fields: size of Bone");
+_Static_assert(offsetof(PosKey, frame) == 0x0 && sizeof(((PosKey *)0)->frame) == 0x4, "scene.fields: PosKey.frame");
+_Static_assert(offsetof(PosKey, length) == 0x4 && sizeof(((PosKey *)0)->length) == 0x4, "scene.fields: PosKey.length");
+_Static_assert(offsetof(PosKey, pos) == 0x8 && sizeof(((PosKey *)0)->pos) == 0xc, "scene.fields: PosKey.pos");
+_Static_assert(offsetof(PosKey, delta) == 0x14 && sizeof(((PosKey *)0)->delta) == 0xc, "scene.fields: PosKey.delta");
+_Static_assert(sizeof(PosKey) == 0x20, "scene.fields: size of PosKey");
+_Static_assert(offsetof(RotKey, frame) == 0x0 && sizeof(((RotKey *)0)->frame) == 0x4, "scene.fields: RotKey.frame");
+_Static_assert(offsetof(RotKey, length) == 0x4 && sizeof(((RotKey *)0)->length) == 0x4, "scene.fields: RotKey.length");
+_Static_assert(offsetof(RotKey, angle) == 0x8 && sizeof(((RotKey *)0)->angle) == 0x4, "scene.fields: RotKey.angle");
+_Static_assert(offsetof(RotKey, axis) == 0xc && sizeof(((RotKey *)0)->axis) == 0xc, "scene.fields: RotKey.axis");
+_Static_assert(offsetof(RotKey, stepAngle) == 0x18 && sizeof(((RotKey *)0)->stepAngle) == 0x4, "scene.fields: RotKey.stepAngle");
+_Static_assert(offsetof(RotKey, stepAxis) == 0x1c && sizeof(((RotKey *)0)->stepAxis) == 0xc, "scene.fields: RotKey.stepAxis");
+_Static_assert(sizeof(RotKey) == 0x28, "scene.fields: size of RotKey");
 _Static_assert(offsetof(Manager, blockSize) == 0x4 && sizeof(((Manager *)0)->blockSize) == 0x4, "scene.fields: Manager.blockSize");
 _Static_assert(offsetof(Manager, block) == 0x8 && sizeof(((Manager *)0)->block) == 0x4, "scene.fields: Manager.block");
 _Static_assert(offsetof(Manager, ownsBlock) == 0xc && sizeof(((Manager *)0)->ownsBlock) == 0x4, "scene.fields: Manager.ownsBlock");
