@@ -55,8 +55,9 @@ def unlit(s):
 	              {'n': '\n', 'r': '\r', 't': '\t'}.get(m.group(1), m.group(1)), s[1:-1])
 
 
+# (objects.h defines g_messages, which MSG() is made of: never rewritten)
 files = [f for f in glob.glob('src/**/*.[ch]', recursive=True)
-         if os.path.basename(os.path.dirname(f)) != 'data' and not f.endswith(('axis.h', 'globals.h', 'objects.h'))   # (objects.h defines g_messages, which MSG() is made of)]
+         if os.path.basename(os.path.dirname(f)) != 'data' and not f.endswith(('axis.h', 'globals.h', 'objects.h'))]
 if '--check' in sys.argv:
 	bad = 0
 	for f in files:
