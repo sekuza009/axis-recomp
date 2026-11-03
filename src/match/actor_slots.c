@@ -47,7 +47,7 @@ void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
 /* 0x490d10: the 1000 map objects */
 void THISCALL (stage_clearMapObjects)(Stage *stage)
 {
-	FIELD(int, stage, 0x13016c8) = 0;
+	stage->objectColourCount = 0;
 	stage->objectCount = 0;
 	stage->objectFreeHint = 0;
 	stage->objectSerial = 0;
@@ -120,7 +120,7 @@ void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 /* 0x48fde0: while the script runs (+0x2149308), its object (+0x2148ed8) told (recorder_noteStub); returns b */
 int THISCALL (script_notifyObject)(Stage *stage, int a, int b, int c, int d)
 {
-	if (!FIELD(int, stage, 0x2149308))
+	if (!stage->scriptMode)
 		return 0;
 	recorder_noteStub((u8 *)stage + 0x2148ed8, a, b, c, d);
 	return b;
@@ -645,7 +645,8 @@ static void fill_dwords(u8 *at, int n, u32 v)
    level value x 0.01 + 1 */
 static long double level_factor(u8 *p, int k)
 {
-	return fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x38 + GAME_VAR(int, p + 0x44) * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
+	PlayerRecord *pr = (PlayerRecord *)p;
+	return fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x38 + pr->level * 0x4c + k * 4), K(0x4a9420)), K(0x4a9424));
 }
 
 /* the mech's stats for actor ac from player record p's parts (the head, chest, arms, legs and booster records, the
@@ -654,10 +655,11 @@ static long double level_factor(u8 *p, int k)
    differently */
 static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 {
+	PlayerRecord *pr = (PlayerRecord *)p;
 	Stage *st = (Stage *)s;
-	u8 *head = s + 0x13c9b30 + GAME_VAR(int, p + 0x30c) * 0xaa8, *chest = s + 0x13eb004 + GAME_VAR(int, p + 0x310) * 0xabc;
-	u8 *arms = s + 0x140c8c0 + GAME_VAR(int, p + 0x314) * 0x1300, *legs = s + 0x1447ec4 + GAME_VAR(int, p + 0x318) * 0x13f4;
-	u8 *boost = s + 0x1486470 + GAME_VAR(int, p + 0x31c) * 0x1820;
+	u8 *head = s + 0x13c9b30 + pr->parts[0] * 0xaa8, *chest = s + 0x13eb004 + pr->parts[1] * 0xabc;
+	u8 *arms = s + 0x140c8c0 + pr->parts[2] * 0x1300, *legs = s + 0x1447ec4 + pr->parts[3] * 0x13f4;
+	u8 *boost = s + 0x1486470 + pr->parts[4] * 0x1820;
 	for (int k = 0; k < 4; k++) {
 		A(u32, 0x404 + k * 4) = 0x3f800000;
 		AC->ammoBonus[k] = 0;
@@ -737,7 +739,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rechargeTime = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), &AC->rechargeTimeFactor));
 	AC->restTime = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
+#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
 	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
 	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))
@@ -790,6 +792,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	Stage *st = (Stage *)s;
 	u8 *ac = (u8 *)&st->actors[a];
 	u8 *p = (u8 *)&st->playerRecords[pp[0]];
+	PlayerRecord *pr = (PlayerRecord *)p;
 	mech_stats(s, ac, p, 0);
 	AC->statD8 = 1;
 	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
@@ -797,9 +800,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->active = 1;
 	AC->player = pp[0];
 	AC->pilot = a3;
-	int level = GAME_VAR(int, p + 0x44);
+	int level = pr->level;
 	AC->level = level >= 0 && level < 9 ? level : 0;
-	AC->team = GAME_VAR(u32, p + 0x48);
+	AC->team = ((u32)pr->team);
 	AC->bot = pp[1];
 	AC->blinkTime = 0.0f;
 	AC->armorDeadline = 1.0f;

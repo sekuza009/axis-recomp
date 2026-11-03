@@ -247,13 +247,11 @@ typedef struct ActorInfo {
 
 /* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
 typedef struct PlayerRecord {
-	u8 _pad0000000[0x48];
+	u8 _pad0000000[0x44];
+	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
 	i32 team;   /* +0x48 */
-	u8 _pad000004c[0x2c4];
-	i32 head;   /* +0x310: its mech's parts (records of the stage's part tables) */
-	i32 body;   /* +0x314 */
-	i32 arms;   /* +0x318 */
-	i32 legs;   /* +0x31c */
+	u8 _pad000004c[0x2c0];
+	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
 	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
 	u8 _pad0000338[0x47c8e];
 	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
@@ -1312,11 +1310,9 @@ _Static_assert(offsetof(ActorInfo, tracer) == 0x2e0c && sizeof(((ActorInfo *)0)-
 _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
 _Static_assert(offsetof(ActorInfo, push) == 0x2e14 && sizeof(((ActorInfo *)0)->push) == 0x4, "scene.fields: ActorInfo.push");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
+_Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
-_Static_assert(offsetof(PlayerRecord, head) == 0x310 && sizeof(((PlayerRecord *)0)->head) == 0x4, "scene.fields: PlayerRecord.head");
-_Static_assert(offsetof(PlayerRecord, body) == 0x314 && sizeof(((PlayerRecord *)0)->body) == 0x4, "scene.fields: PlayerRecord.body");
-_Static_assert(offsetof(PlayerRecord, arms) == 0x318 && sizeof(((PlayerRecord *)0)->arms) == 0x4, "scene.fields: PlayerRecord.arms");
-_Static_assert(offsetof(PlayerRecord, legs) == 0x31c && sizeof(((PlayerRecord *)0)->legs) == 0x4, "scene.fields: PlayerRecord.legs");
+_Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
 _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
 _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
 _Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
