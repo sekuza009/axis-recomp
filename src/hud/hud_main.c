@@ -182,7 +182,7 @@ static void main_weapons(Scene *scene, Player *player)
 	}
 }
 
-/* the gauge at the bottom centre: cell gaugeIcon of the menu texture (3 x 3 cells of 64 texels), its alpha the
+/* the gauge at the bottom centre: the selected slot's cell of the menu texture (3 x 3 cells of 64 texels), its alpha the
    gauge (at most 1) */
 static void main_gauge(Scene *scene, Player *player)
 {
@@ -196,18 +196,18 @@ static void main_gauge(Scene *scene, Player *player)
 	float gauge = player->gauge;
 	glColor4f(1.0f, 1.0f, 1.0f, gauge > 1.0f ? 1.0f : gauge);
 	glBegin(GL_QUADS);
-	glTexCoord2f(tex255(player->gaugeIcon % 3 * 64), tex255((player->gaugeIcon / 3 + 2) * 64));
+	glTexCoord2f(tex255(player->slot % 3 * 64), tex255((player->slot / 3 + 2) * 64));
 	glVertex2i(x, gfx_getHeight() - y);
-	glTexCoord2f(tex255((player->gaugeIcon % 3 + 1) * 64), tex255((player->gaugeIcon / 3 + 2) * 64));
+	glTexCoord2f(tex255((player->slot % 3 + 1) * 64), tex255((player->slot / 3 + 2) * 64));
 	float xf = (float)x;
 	int vy = gfx_getHeight() - y;
 	glVertex2i(ftol(wx(64.0f) + xf), vy);
-	glTexCoord2f(tex255((player->gaugeIcon % 3 + 1) * 64), tex255((player->gaugeIcon / 3 + 3) * 64));
+	glTexCoord2f(tex255((player->slot % 3 + 1) * 64), tex255((player->slot / 3 + 3) * 64));
 	float yf = (float)y;
 	h = hf();
 	vy = ftol(h - (hy(64.0f) + yf));
 	glVertex2i(ftol(wx(64.0f) + xf), vy);
-	glTexCoord2f(tex255(player->gaugeIcon % 3 * 64), tex255((player->gaugeIcon / 3 + 3) * 64));
+	glTexCoord2f(tex255(player->slot % 3 * 64), tex255((player->slot / 3 + 3) * 64));
 	h = hf();
 	vy = ftol(h - (hy(64.0f) + yf));
 	glVertex2i(x, vy);

@@ -65,7 +65,7 @@ typedef struct Player {
 	i32 armor;   /* +0x128: (by use) shown bottom left (ARMOR) */
 	i32 shield;   /* +0x12c: shown bottom left (SHIELD) */
 	i32 ammo[4];   /* +0x130: per weapon slot */
-	i32 gaugeIcon;   /* +0x140: cell of the gauge (3 x 3 cells) */
+	i32 slot;   /* +0x140: (by use) the selected item slot (the player record\'s items); its icon is the gauge\'s cell (3 x 3) */
 	u8 _pad0000144[0x4];
 	i32 actorType;   /* +0x148: index into Scene.actorInfo / snapshotTex */
 	i32 state;   /* +0x14c: 1: in play */
@@ -98,11 +98,14 @@ typedef struct Player {
 	i32 inView;   /* +0x478: the view key (-1 none) */
 	i32 inPrevWeapon;   /* +0x47c */
 	i32 inNextWeapon;   /* +0x480 */
-	u8 _pad0000484[0x8];
+	i32 detail;   /* +0x484: (unclear) the parts' variant wanted: they are reloaded when it differs from detailLoaded */
+	i32 detailLoaded;   /* +0x488 */
 	i32 weaponLowering;   /* +0x48c: (by use) 1: the weapon is going down (weaponLower from 1 to 0) */
 	float weaponLower;   /* +0x490 */
 	float gauge;   /* +0x494: > 0: the gauge is shown (its alpha, at most 1) */
-	u8 _pad0000498[0x14];
+	i32 slotLoaded;   /* +0x498: (by use) the slot whose item was loaded last (another player's actor) */
+	i32 variantLoaded;   /* +0x49c: (by use) the parts' variant loaded (0 for the selected actor, else detail + 1) */
+	u8 _pad00004a0[0xc];
 	float energyUsed;   /* +0x4ac: 0..1 */
 	u8 _pad00004b0[0x4];
 	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
@@ -802,7 +805,7 @@ _Static_assert(offsetof(Player, blinkTime) == 0x120 && sizeof(((Player *)0)->bli
 _Static_assert(offsetof(Player, armor) == 0x128 && sizeof(((Player *)0)->armor) == 0x4, "scene.fields: Player.armor");
 _Static_assert(offsetof(Player, shield) == 0x12c && sizeof(((Player *)0)->shield) == 0x4, "scene.fields: Player.shield");
 _Static_assert(offsetof(Player, ammo) == 0x130 && sizeof(((Player *)0)->ammo) == 0x10, "scene.fields: Player.ammo");
-_Static_assert(offsetof(Player, gaugeIcon) == 0x140 && sizeof(((Player *)0)->gaugeIcon) == 0x4, "scene.fields: Player.gaugeIcon");
+_Static_assert(offsetof(Player, slot) == 0x140 && sizeof(((Player *)0)->slot) == 0x4, "scene.fields: Player.slot");
 _Static_assert(offsetof(Player, actorType) == 0x148 && sizeof(((Player *)0)->actorType) == 0x4, "scene.fields: Player.actorType");
 _Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
 _Static_assert(offsetof(Player, pos) == 0x154 && sizeof(((Player *)0)->pos) == 0xc, "scene.fields: Player.pos");
@@ -826,9 +829,13 @@ _Static_assert(offsetof(Player, inBooster) == 0x474 && sizeof(((Player *)0)->inB
 _Static_assert(offsetof(Player, inView) == 0x478 && sizeof(((Player *)0)->inView) == 0x4, "scene.fields: Player.inView");
 _Static_assert(offsetof(Player, inPrevWeapon) == 0x47c && sizeof(((Player *)0)->inPrevWeapon) == 0x4, "scene.fields: Player.inPrevWeapon");
 _Static_assert(offsetof(Player, inNextWeapon) == 0x480 && sizeof(((Player *)0)->inNextWeapon) == 0x4, "scene.fields: Player.inNextWeapon");
+_Static_assert(offsetof(Player, detail) == 0x484 && sizeof(((Player *)0)->detail) == 0x4, "scene.fields: Player.detail");
+_Static_assert(offsetof(Player, detailLoaded) == 0x488 && sizeof(((Player *)0)->detailLoaded) == 0x4, "scene.fields: Player.detailLoaded");
 _Static_assert(offsetof(Player, weaponLowering) == 0x48c && sizeof(((Player *)0)->weaponLowering) == 0x4, "scene.fields: Player.weaponLowering");
 _Static_assert(offsetof(Player, weaponLower) == 0x490 && sizeof(((Player *)0)->weaponLower) == 0x4, "scene.fields: Player.weaponLower");
 _Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) == 0x4, "scene.fields: Player.gauge");
+_Static_assert(offsetof(Player, slotLoaded) == 0x498 && sizeof(((Player *)0)->slotLoaded) == 0x4, "scene.fields: Player.slotLoaded");
+_Static_assert(offsetof(Player, variantLoaded) == 0x49c && sizeof(((Player *)0)->variantLoaded) == 0x4, "scene.fields: Player.variantLoaded");
 _Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
 _Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");

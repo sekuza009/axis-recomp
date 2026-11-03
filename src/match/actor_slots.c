@@ -514,7 +514,7 @@ static u32 flag_light(u8 *s, u32 f)
 /* the list of the weapon in hand (+0x140: 4, 5, else the last) */
 static u8 *weapon_list(u8 *ac)
 {
-	return ac + (AC->gaugeIcon == 4 ? 0x587c : AC->gaugeIcon == 5 ? 0x701c : 0x40dc);
+	return ac + (AC->slot == 4 ? 0x587c : AC->slot == 5 ? 0x701c : 0x40dc);
 }
 
 /* 0x45d3e0 (thiscall on the scene): actor a drawn into the view volume vv when in play and within the view range
@@ -621,7 +621,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	actor_updateLegs(s, a);
 	actor_updateBooster(s, a);
 	for (int k = 0; k < 6; k++)
-		actor_updatePart(s, a, k, A(u32, 0x49c));
+		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
 }
 #undef K
 #undef A
@@ -801,7 +801,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
 	(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);
 	fill_dwords(ac + 0x130, 4, 0);
-	AC->gaugeIcon = -1;
+	AC->slot = -1;
 	A(int, 0x144) = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
 	actor_startingValues(s, a);   /* actor_startingValues */
@@ -838,8 +838,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->inView = -1;
 	fill_dwords(ac + 0x47c, 5, 0);
 	AC->weaponLower = 1.0f;
-	A(int, 0x494) = A(int, 0x498) = 0;
-	A(int, 0x49c) = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
+	A(int, 0x494) = AC->slotLoaded = 0;
+	AC->variantLoaded = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
 	fill_dwords(ac + 0x4a0, 3, 0);
 	A(u32, 0x4ac) = A(u32, 0x4b0) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
@@ -859,7 +859,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	actor_updateLegs(s, a);
 	actor_updateBooster(s, a);
 	for (int k = 5; k >= 0; k--)
-		actor_updatePart(s, a, k, A(u32, 0x49c));
+		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
 	fill_dwords(ac + 0x87bc, 10, 0);
 	fill_dwords(ac + 0x87e8, 4, 0);
 	AC->target1 = AC->target2 = -1;
