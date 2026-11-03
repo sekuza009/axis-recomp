@@ -55,19 +55,19 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 {
 	SkeletonManager_release(self);
 	strcpy((char *)self + 0x10, dir ? dir : (const char *)STR(0x4b1304, "."));
-	AT(u32, self, 0x110) = a;
-	AT(int, self, 0x114) = n;
-	AT(int, self, 0x124) = extra;
-	AT(int, self, 4) = n * 0x70 + extra;
+	((Manager *)self)->setupArg = a;
+	((Manager *)self)->capacity = n;
+	((Manager *)self)->dataSize = extra;
+	((Manager *)self)->blockSize = n * 0x70 + extra;
 	take_block(self, mem, size, (char *)OBJ(g_logSkeletonManager), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
-	n = AT(int, self, 0x114);
-	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
-	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
-	for (int i = 0; i < AT(int, self, 0x114); i++) {
-		Skeleton_clear(AT(u8 *, self, 0x11c) + i * 0x24);
-		Skeleton_release(AT(u8 *, self, 0x11c) + i * 0x24);
+	n = ((Manager *)self)->capacity;
+	((Manager *)self)->nodes = ((Manager *)self)->block;
+	((Manager *)self)->items = ((Manager *)self)->block + n * 0x4c;
+	for (int i = 0; i < ((Manager *)self)->capacity; i++) {
+		Skeleton_clear(((Manager *)self)->items + i * 0x24);
+		Skeleton_release(((Manager *)self)->items + i * 0x24);
 	}
-	AT(u8 *, self, 0x128) = AT(u8 *, self, 8) + n * 0x70;
+	((Manager *)self)->data = ((Manager *)self)->block + n * 0x70;
 }
 
 /* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (+0x10, upper-cased; none or
@@ -83,20 +83,20 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	else
 		self[0x10] = 0;
 	path_normalize((char *)self + 0x10);
-	AT(u32, self, 0x110) = a;
-	AT(int, self, 0x114) = n;
-	AT(int, self, 0x124) = extra;
-	AT(int, self, 4) = n * 0x98 + extra;
+	((Manager *)self)->setupArg = a;
+	((Manager *)self)->capacity = n;
+	((Manager *)self)->dataSize = extra;
+	((Manager *)self)->blockSize = n * 0x98 + extra;
 	take_block(self, mem, size, (char *)OBJ(g_logShapeManager), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
-	n = AT(int, self, 0x114);
-	AT(u8 *, self, 0x118) = AT(u8 *, self, 8);
-	AT(u8 *, self, 0x11c) = AT(u8 *, self, 8) + n * 0x4c;
-	for (int i = 0; i < AT(int, self, 0x114); i++) {
-		Model_clear(AT(u8 *, self, 0x11c) + i * 0x4c);
-		Model_release(AT(u8 *, self, 0x11c) + i * 0x4c);
+	n = ((Manager *)self)->capacity;
+	((Manager *)self)->nodes = ((Manager *)self)->block;
+	((Manager *)self)->items = ((Manager *)self)->block + n * 0x4c;
+	for (int i = 0; i < ((Manager *)self)->capacity; i++) {
+		Model_clear(((Manager *)self)->items + i * 0x4c);
+		Model_release(((Manager *)self)->items + i * 0x4c);
 	}
 	self[0x130] = 0;
-	AT(u8 *, self, 0x128) = AT(u8 *, self, 8) + n * 0x98;
+	((Manager *)self)->data = ((Manager *)self)->block + n * 0x98;
 	for (int k = 0; k < 7; k++)
 		AT(int, self, 0x230 + k * 4) = 0;
 }
@@ -306,29 +306,29 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 full, int *added)
 {
 	*added = 0;
-	if (AT(int, cache, 0x114) == 0)
+	if (((Manager *)cache)->capacity == 0)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)(out, (const char *)RELOC(no_room));
-	u8 *nodes = AT(u8 *, cache, 0x118), *node = nodes;
+	u8 *nodes = ((Manager *)cache)->nodes, *node = nodes;
 	u8 **link = NULL;
-	if (AT(int, cache, 0x120) != 0)
+	if (((Manager *)cache)->count != 0)
 		for (;;) {
 			int c = strcmp(key, (const char *)node);
 			if (c == 0)
-				return AT(int, node, 0x40);
+				return ((TreeNode *)node)->index;
 			link = (u8 **)(node + (c < 0 ? 0x44 : 0x48));
 			if (!*link)
 				break;
 			node = *link;
 		}
-	int i = AT(int, cache, 0x120);
+	int i = ((Manager *)cache)->count;
 	if (link) {
-		if (i >= AT(int, cache, 0x114))
+		if (i >= ((Manager *)cache)->capacity)
 			sys_fatalError(out, (const char *)RELOC(full), i);
-		i = AT(int, cache, 0x120);
-		*link = node = AT(u8 *, cache, 0x118) + i * 0x4c;
+		i = ((Manager *)cache)->count;
+		*link = node = ((Manager *)cache)->nodes + i * 0x4c;
 	}
 	strcpy((char *)node, key);
-	AT(int, node, 0x40) = link ? i : 0;
+	((TreeNode *)node)->index = link ? i : 0;
 	AT(int, node, 0x44) = AT(int, node, 0x48) = 0;
 	*added = 1;
 	return i;
@@ -339,7 +339,7 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
 {
 	char ext[4];
-	int format = AT(int, cache, 0x110);
+	int format = ((int)((Manager *)cache)->setupArg);
 	if (format == 0 || format == 1)
 		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
 	else
@@ -363,14 +363,14 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logSkeletonManager), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
-	u8 *sk = AT(u8 *, cache, 0x11c) + i * 0x24;
+	u8 *sk = ((Manager *)cache)->items + i * 0x24;
 	if (!added)
 		return sk;
-	const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
-	u8 *mem = AT(u8 *, cache, 0x128);
-	void *at = mem ? mem + AT(int, cache, 0x12c) : NULL;
-	int room = mem ? AT(int, cache, 0x124) - AT(int, cache, 0x12c) : 0;
-	if (AT(int, cache, 0x110) == 2)
+	const char *own = (const char *)((Manager *)cache)->nodes + i * 0x4c;
+	u8 *mem = ((Manager *)cache)->data;
+	void *at = mem ? mem + ((Manager *)cache)->dataUsed : NULL;
+	int room = mem ? ((Manager *)cache)->dataSize - ((Manager *)cache)->dataUsed : 0;
+	if (((int)((Manager *)cache)->setupArg) == 2)
 		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
@@ -378,8 +378,8 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 		skel_loadFrom(sk, path, at, room);
 	}
 	if (mem)
-		AT(int, cache, 0x12c) += AT(int, sk, 4);
-	AT(int, cache, 0x120)++;
+		((Manager *)cache)->dataUsed += AT(int, sk, 4);
+	((Manager *)cache)->count++;
 	return sk;
 }
 
@@ -395,13 +395,13 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
-	u8 *shape = AT(u8 *, cache, 0x11c) + i * 0x4c;
+	u8 *shape = ((Manager *)cache)->items + i * 0x4c;
 	if (added) {
-		const char *own = (const char *)AT(u8 *, cache, 0x118) + i * 0x4c;
-		u8 *mem = AT(u8 *, cache, 0x128);
-		void *at = mem ? mem + AT(int, cache, 0x12c) : NULL;
-		int room = mem ? AT(int, cache, 0x124) - AT(int, cache, 0x12c) : 0;
-		if (AT(int, cache, 0x110) == 2)
+		const char *own = (const char *)((Manager *)cache)->nodes + i * 0x4c;
+		u8 *mem = ((Manager *)cache)->data;
+		void *at = mem ? mem + ((Manager *)cache)->dataUsed : NULL;
+		int room = mem ? ((Manager *)cache)->dataSize - ((Manager *)cache)->dataUsed : 0;
+		if (((int)((Manager *)cache)->setupArg) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
 			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shape_findDatEntry) */
 		else {
@@ -410,10 +410,10 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 			model_loadFrom(shape, path, at, room);
 		}
 		if (mem)
-			AT(int, cache, 0x12c) += AT(int, shape, 4);
-		shape_bindTextureBy(shape, cache + 0x130, AT(u32, cache, 0x230), AT(u32, cache, 0x234), AT(u32, cache, 0x238),
-		                    AT(u32, cache, 0x23c), AT(u32, cache, 0x240), AT(u32, cache, 0x244), AT(u32, cache, 0x248));
-		AT(int, cache, 0x120)++;
+			((Manager *)cache)->dataUsed += AT(int, shape, 4);
+		shape_bindTextureBy(shape, cache + 0x130, ((Manager *)cache)->bindArgs[0], ((Manager *)cache)->bindArgs[1], ((Manager *)cache)->bindArgs[2],
+		                    ((Manager *)cache)->bindArgs[3], ((Manager *)cache)->bindArgs[4], ((Manager *)cache)->bindArgs[5], ((Manager *)cache)->bindArgs[6]);
+		((Manager *)cache)->count++;
 	}
 	if (bind == 1)
 		shape_bindPartTextures(shape);

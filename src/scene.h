@@ -404,6 +404,33 @@ typedef struct Bone {
 	u8 *rotKeys;   /* +0x6c */
 } Bone;
 
+/* a shape or skeleton manager (skel_data.c): items loaded by name into one block, found through a name tree */
+typedef struct Manager {
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4 */
+	u8 *block;   /* +0x8: the name nodes, then the items, then the data memory */
+	i32 ownsBlock;   /* +0xc: 1: allocated here */
+	char dir[0x100];   /* +0x10: where the items' files are */
+	u32 setupArg;   /* +0x110: (unclear) the a given to setup */
+	i32 capacity;   /* +0x114: items it has room for */
+	u8 *nodes;   /* +0x118: the name tree: one 0x4c-byte TreeNode per item */
+	u8 *items;   /* +0x11c: the items (skeletons 0x24 bytes, shapes 0x4c) */
+	i32 count;   /* +0x120: items loaded */
+	i32 dataSize;   /* +0x124: the data memory items are read into */
+	u8 *data;   /* +0x128 */
+	i32 dataUsed;   /* +0x12c */
+	char textureDir[0x100];   /* +0x130: (shapes) the textures' place, given with bindArgs to shape_bindTextureBy */
+	u32 bindArgs[7];   /* +0x230: (shapes) cleared at setup */
+} Manager;
+
+/* a manager's name tree node: by strcmp, smaller left */
+typedef struct TreeNode {
+	char name[0x40];   /* +0x0 */
+	i32 index;   /* +0x40: its item's index */
+	u8 *left;   /* +0x44 */
+	u8 *right;   /* +0x48 */
+} TreeNode;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -1032,6 +1059,26 @@ _Static_assert(offsetof(Bone, posKeys) == 0x64 && sizeof(((Bone *)0)->posKeys) =
 _Static_assert(offsetof(Bone, rotKeyCount) == 0x68 && sizeof(((Bone *)0)->rotKeyCount) == 0x4, "scene.fields: Bone.rotKeyCount");
 _Static_assert(offsetof(Bone, rotKeys) == 0x6c && sizeof(((Bone *)0)->rotKeys) == 0x4, "scene.fields: Bone.rotKeys");
 _Static_assert(sizeof(Bone) == 0x70, "scene.fields: size of Bone");
+_Static_assert(offsetof(Manager, blockSize) == 0x4 && sizeof(((Manager *)0)->blockSize) == 0x4, "scene.fields: Manager.blockSize");
+_Static_assert(offsetof(Manager, block) == 0x8 && sizeof(((Manager *)0)->block) == 0x4, "scene.fields: Manager.block");
+_Static_assert(offsetof(Manager, ownsBlock) == 0xc && sizeof(((Manager *)0)->ownsBlock) == 0x4, "scene.fields: Manager.ownsBlock");
+_Static_assert(offsetof(Manager, dir) == 0x10 && sizeof(((Manager *)0)->dir) == 0x100, "scene.fields: Manager.dir");
+_Static_assert(offsetof(Manager, setupArg) == 0x110 && sizeof(((Manager *)0)->setupArg) == 0x4, "scene.fields: Manager.setupArg");
+_Static_assert(offsetof(Manager, capacity) == 0x114 && sizeof(((Manager *)0)->capacity) == 0x4, "scene.fields: Manager.capacity");
+_Static_assert(offsetof(Manager, nodes) == 0x118 && sizeof(((Manager *)0)->nodes) == 0x4, "scene.fields: Manager.nodes");
+_Static_assert(offsetof(Manager, items) == 0x11c && sizeof(((Manager *)0)->items) == 0x4, "scene.fields: Manager.items");
+_Static_assert(offsetof(Manager, count) == 0x120 && sizeof(((Manager *)0)->count) == 0x4, "scene.fields: Manager.count");
+_Static_assert(offsetof(Manager, dataSize) == 0x124 && sizeof(((Manager *)0)->dataSize) == 0x4, "scene.fields: Manager.dataSize");
+_Static_assert(offsetof(Manager, data) == 0x128 && sizeof(((Manager *)0)->data) == 0x4, "scene.fields: Manager.data");
+_Static_assert(offsetof(Manager, dataUsed) == 0x12c && sizeof(((Manager *)0)->dataUsed) == 0x4, "scene.fields: Manager.dataUsed");
+_Static_assert(offsetof(Manager, textureDir) == 0x130 && sizeof(((Manager *)0)->textureDir) == 0x100, "scene.fields: Manager.textureDir");
+_Static_assert(offsetof(Manager, bindArgs) == 0x230 && sizeof(((Manager *)0)->bindArgs) == 0x1c, "scene.fields: Manager.bindArgs");
+_Static_assert(sizeof(Manager) == 0x24c, "scene.fields: size of Manager");
+_Static_assert(offsetof(TreeNode, name) == 0x0 && sizeof(((TreeNode *)0)->name) == 0x40, "scene.fields: TreeNode.name");
+_Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->index) == 0x4, "scene.fields: TreeNode.index");
+_Static_assert(offsetof(TreeNode, left) == 0x44 && sizeof(((TreeNode *)0)->left) == 0x4, "scene.fields: TreeNode.left");
+_Static_assert(offsetof(TreeNode, right) == 0x48 && sizeof(((TreeNode *)0)->right) == 0x4, "scene.fields: TreeNode.right");
+_Static_assert(sizeof(TreeNode) == 0x4c, "scene.fields: size of TreeNode");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
