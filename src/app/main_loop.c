@@ -420,7 +420,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	u8 *stage = s + 0x1f36c8;
 	if (SC->modeStarted == 0) {
 		SC->localPlayer = 0;
-		(*(int *)&SC->restartB[0]) = (*(int *)&SC->restartB[1]) = 0;
+		(*(int *)&SC->cameraAngle[0]) = (*(int *)&SC->cameraAngle[1]) = 0;
 		for (SC->cameraMode = 0; SC->cameraMode < 10; SC->cameraMode++)
 			for (int f = 0; f < 6; f++)
 				S(u32, 0x233cb20 + f * 0x28 + SC->cameraMode * 4) = S(u32, 0x233ca30 + f * 0x28 + SC->cameraMode * 4);
@@ -471,28 +471,28 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	actor_setInput(stage, 0, (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), *(u32 *)&pitch, *(u32 *)&yaw,
 	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->viewKey), 0, 0);
 	if (SC->arrowUpPlain) {
-		long double v = fsub_m(fld_m(SC->restartB), &turn);
-		SC->restartB[0] = f32(v);
+		long double v = fsub_m(fld_m(SC->cameraAngle), &turn);
+		SC->cameraAngle[0] = f32(v);
 		if (!(v >= k_m890f))
-			SC->restartB[0] = -890.0f;   /* -890 */
+			SC->cameraAngle[0] = -890.0f;   /* -890 */
 	}
 	if (SC->arrowDownPlain) {
-		long double v = fadd_m(fld_m(&turn), SC->restartB);
-		SC->restartB[0] = f32(v);
+		long double v = fadd_m(fld_m(&turn), SC->cameraAngle);
+		SC->cameraAngle[0] = f32(v);
 		if (v > k_890f)
-			SC->restartB[0] = 890.0f;   /* 890 */
+			SC->cameraAngle[0] = 890.0f;   /* 890 */
 	}
 	if (SC->arrowLeftHeld) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca2c)), &turn);
-		SC->restartB[1] = f32(v);
+		SC->cameraAngle[1] = f32(v);
 		if (!(v >= 0))
-			SC->restartB[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
+			SC->cameraAngle[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
 	}
 	if (SC->arrowRightHeld) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca2c));
-		SC->restartB[1] = f32(v);
+		SC->cameraAngle[1] = f32(v);
 		if (v >= k_3600f)
-			SC->restartB[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
+			SC->cameraAngle[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
 	}
 	float *zoom = (float *)(s + 0x233cb70) + SC->cameraMode;
 	if (SC->arrowUpHeld) {
@@ -508,7 +508,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	}
 	if (SC->actionKey) {
 		S(u32, 0x233cb70 + SC->cameraMode * 4) = 0x44fa0000;   /* 2000 */
-		(*(int *)&SC->restartB[0]) = (*(int *)&SC->restartB[1]) = 0;
+		(*(int *)&SC->cameraAngle[0]) = (*(int *)&SC->cameraAngle[1]) = 0;
 		GAME_VAR(int, actor + 0x160) = GAME_VAR(int, actor + 0x164) = 0;
 		GAME_VAR(int, actor + 0x18c) = GAME_VAR(int, actor + 0x190) = 0;
 	}
@@ -540,7 +540,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	float *cam = (float *)(s + 0x233ca04), *dir = (float *)(s + 0x233ca10), *up = (float *)(s + 0x233ca1c);
 	cam[0] = cam[1] = 0;
 	cam[2] = f32(fld_m((const float *)(s + 0x233cb70) + SC->cameraMode));
-	Vec3_rotateAxis(cam, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(cam, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(cam, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	for (int k = 0; k < 3; k++)
 		cam[k] = f32(fadd_m(fld_m((const float *)(actor + 0x180) + k), &cam[k]));
@@ -549,7 +549,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	up[0] = 0;
 	GAME_VAR(u32, &up[1]) = 0x3f800000;
 	up[2] = 0;
-	Vec3_rotateAxis(up, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(up, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(up, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	float far = view_farPlane(), near = view_nearPlane();
 	int h = gfx_getHeight(), w = gfx_getWidth();
@@ -607,8 +607,8 @@ u32 THISCALL (match_inputState3)(u8 *s)
 static void start_view(u8 *s)
 {
 	memcpy(s + 0x233ca04, s + 0x22ee228, 12);
-	BITS(SC->restartB[0]) = SC->restartFrom[3];
-	BITS(SC->restartB[1]) = SC->restartFrom[4];
+	BITS(SC->cameraAngle[0]) = SC->cameraSaved[3];
+	BITS(SC->cameraAngle[1]) = SC->cameraSaved[4];
 }
 
 /* the current camera preset (+0x233cc10) back from its stored one: six fields of ten */
@@ -757,17 +757,17 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 static void preset_angles(u8 *s, const u8 *t, u32 preset)
 {
 	int i = S(int, preset);
-	SC->restartB[0] = (float)fld_m((const float *)(s + 0x233cb20) + i);
+	SC->cameraAngle[0] = (float)fld_m((const float *)(s + 0x233cb20) + i);
 	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
-		SC->restartB[0] = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
-	if (SC->restartB[0] > 890.0f)
-		SC->restartB[0] = 890.0f;
-	if (!(SC->restartB[0] >= -890.0f))
-		SC->restartB[0] = -890.0f;
+		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
+	if (SC->cameraAngle[0] > 890.0f)
+		SC->cameraAngle[0] = 890.0f;
+	if (!(SC->cameraAngle[0] >= -890.0f))
+		SC->cameraAngle[0] = -890.0f;
 	i = S(int, preset);
-	SC->restartB[1] = (float)fld_m((const float *)(s + 0x233cb48) + i);
+	SC->cameraAngle[1] = (float)fld_m((const float *)(s + 0x233cb48) + i);
 	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
-		SC->restartB[1] = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(RELOC(t) + 0x164)));
+		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(RELOC(t) + 0x164)));
 }
 
 /* the camera pulled back by the preset's zoom (+0x233cb70) from 0.85 of the actor t's height (its position with
@@ -777,12 +777,12 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	float *cam = (float *)(s + 0x233ca04), a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
 		a[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4aa478)));   /* 0.85 */
-		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->restartB)));
+		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->cameraAngle)));
 		Vec3_rotateAxis(a, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	}
 	b[0] = b[1] = 0;
 	b[2] = f32(fsub_m(-fld_m((const float *)(s + 0x233cb70) + S(int, preset)), K(0x4aa440)));   /* - zoom - 300 */
-	Vec3_rotateAxis(b, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(b, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(b, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fld_m(&a[k]), (const float *)(RELOC(t) + 0x154) + k));
@@ -897,12 +897,12 @@ static void watch_camera(u8 *s)
 static void turn_view(u8 *s)
 {
 	float *dir = (float *)(s + 0x233ca10), *up = (float *)(s + 0x233ca1c);
-	Vec3_rotateAxis(dir, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(dir, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(dir, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	up[0] = 0;
 	BITS(up[1]) = 0x3f800000;
 	up[2] = 0;
-	Vec3_rotateAxis(up, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(up, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(up, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 }
 
@@ -927,7 +927,7 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 		      : bits == 0x1001 ? -2250 : bits == 0x1010 ? -1350 : 0;
 		if (a)
 			Vec3_rotateAxis(mv, 2, a);
-		Vec3_rotateAxis(mv, 1, ftol(fld_m(SC->restartB)));
+		Vec3_rotateAxis(mv, 1, ftol(fld_m(SC->cameraAngle)));
 		Vec3_rotateAxis(mv, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	}
 	if ((SC->holdAltitude && SC->holdForward) || SC->holdUp)
@@ -937,18 +937,18 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 	if (SC->holdBooster)
 		for (int k = 0; k < 3; k++)
 			mv[k] = f32(fmul_m(fld_m(&mv[k]), K(0x4a9534)));
-	long double v = fsubr_m(fmul_m(fld_m(turn), &SC->mouseDy), SC->restartB);
-	SC->restartB[0] = (float)v;
+	long double v = fsubr_m(fmul_m(fld_m(turn), &SC->mouseDy), SC->cameraAngle);
+	SC->cameraAngle[0] = (float)v;
 	if (v > 890.0f)
-		SC->restartB[0] = 890.0f;
-	if (!(SC->restartB[0] >= -890.0f))
-		SC->restartB[0] = -890.0f;
+		SC->cameraAngle[0] = 890.0f;
+	if (!(SC->cameraAngle[0] >= -890.0f))
+		SC->cameraAngle[0] = -890.0f;
 	v = fadd_m(fmul_m(fld_m(turn), &SC->mouseDx), (const float *)(s + 0x233ca2c));
-	SC->restartB[1] = (float)v;
+	SC->cameraAngle[1] = (float)v;
 	if (v >= 3600.0f)
-		SC->restartB[1] = f32(fsub_m(v, K(0x4a94c8)));
-	if (!(SC->restartB[1] >= 0))
-		SC->restartB[1] = f32(fadd_m(fld_m((const float *)(s + 0x233ca2c)), K(0x4a94c8)));
+		SC->cameraAngle[1] = f32(fsub_m(v, K(0x4a94c8)));
+	if (!(SC->cameraAngle[1] >= 0))
+		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)(s + 0x233ca2c)), K(0x4a94c8)));
 }
 
 /* a count-down (seconds at +offset) by dt when running; 1 when it ran out this frame */
@@ -1490,7 +1490,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 		P[2] = mrow(m, v, 2, 0, 6, 1, 10, 2, 14);
 	}
 	E[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4a94fc)));   /* 0.3 */
-	Vec3_rotateAxis(E, 1, ftol(fld_m(SC->restartB)));
+	Vec3_rotateAxis(E, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(E, 2, ftol(fld_m((const float *)(s + 0x233ca2c))));
 	for (int k = 0; k < 3; k++)
 		E[k] = f32(fadd_m(fld_m(&E[k]), (const float *)(RELOC(t) + 0x154) + k));

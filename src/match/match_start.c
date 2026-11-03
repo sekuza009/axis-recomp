@@ -162,12 +162,12 @@ static void later_round(Scene *s)
 	BITS(s->chatBlink) = 0;
 	BITS(s->roundTimer) = 0x40400000;   /* 3 */
 	for (int k = 0; k < 3; k++)
-		s->restartA[k] = s->restartFrom[k];
-	BITS(s->restartB[0]) = s->restartFrom[3];
-	BITS(s->restartB[1]) = s->restartFrom[4];
+		s->cameraPos[k] = s->cameraSaved[k];
+	BITS(s->cameraAngle[0]) = s->cameraSaved[3];
+	BITS(s->cameraAngle[1]) = s->cameraSaved[4];
 	for (s->cameraMode = 0; s->cameraMode < 10; s->cameraMode++)
 		for (int t = 0; t < 6; t++)
-			s->roundArrays[t][s->cameraMode] = s->restartArrays[t][s->cameraMode];
+			s->cameraSettings[t][s->cameraMode] = s->cameraPresets[t][s->cameraMode];
 	s->cameraMode = 1;
 	stage_selectActor(STAGE(s), -1);
 	s->watchedPlayer = -1;

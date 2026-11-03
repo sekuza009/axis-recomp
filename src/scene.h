@@ -253,9 +253,12 @@ typedef struct PlayerRecord {
 	u8 _pad000004c[0x2c0];
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
 	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
-	u8 _pad0000338[0x47c8e];
+	u8 _pad0000338[0x4768a];
+	u32 emblem[16][24];   /* +0x479c2: (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP) */
+	u8 _pad0047fc2[0x4];
 	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
-	u8 _pad0047fca[0x8];
+	i32 emblemChanged;   /* +0x47fca: 1: to be copied into the emblem atlas (flagShown: it is there) */
+	u8 _pad0047fce[0x4];
 } PlayerRecord;
 
 /* a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...) */
@@ -672,6 +675,26 @@ typedef struct SpawnRecord {
 	float botTimes[5];   /* +0x48: the bot's timings (copied to the actor's) */
 } SpawnRecord;
 
+/* an uncompressed 24-bit .BMP read in pieces (class BMPRGBFile: classes.c) */
+typedef struct BmpFile {
+	u32 vtable;   /* +0x0 */
+	void *file;   /* +0x4: open (none: 0) */
+	u16 type;   /* +0x8: its BITMAPFILEHEADER ("BM") */
+	u32 fileSize;   /* +0xa */
+	u8 _pad000000e[0x4];
+	i32 dataOffset;   /* +0x12: where its pixels start */
+	u32 infoSize;   /* +0x16: its BITMAPINFOHEADER */
+	i32 bmpWidth;   /* +0x1a */
+	i32 bmpHeight;   /* +0x1e */
+	u16 planes;   /* +0x22 */
+	u16 bitCount;   /* +0x24: 24 only */
+	u32 compression;   /* +0x26: 0 only */
+	u8 _pad000002a[0x14];
+	i32 width;   /* +0x3e: bmpWidth, bmpHeight kept */
+	i32 height;   /* +0x42 */
+	u8 _pad0000046[0x2];
+} BmpFile;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -700,7 +723,12 @@ typedef struct Stage {
 	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
 	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale hud_496f20 gets) */
 	i32 floorFrame;   /* +0x9ef8fc */
-	u8 _pad09ef900[0x3d0944];
+	u8 _pad09ef900[0x4];
+	float levelLow[3];   /* +0x9ef904: (by use) the level's bounds (the level grid over them; the actors kept inside) */
+	float levelHigh[3];   /* +0x9ef910 */
+	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
+	float worldHigh[3];   /* +0x9ef928 */
+	u8 _pad09ef934[0x3d0910];
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
 	u8 _pad0dc0a78[0x498];
@@ -801,7 +829,9 @@ typedef struct Stage {
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	u8 _pad20fcd48[0x104];
 	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
-	u8 _pad20fce50[0x8194];
+	u8 _pad20fce50[0x190];
+	u32 emblemTexture;   /* +0x20fcfe0: (by use) the emblem atlas's GL texture */
+	u32 emblemAtlas[64][128];   /* +0x20fcfe4: the players' emblems, four to a row */
 	i32 clanTexture;   /* +0x2104fe4: (by use) the map's clan texture (Stage\<map>\Clan) */
 	u8 _pad2104fe8[0x44220];
 	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
@@ -875,7 +905,7 @@ typedef struct Scene {
 	i32 rotationOff;   /* +0x1f1cb0: 1: no rotation (a machine that joined) */
 	i32 nextMap;   /* +0x1f1cb4: the next entry's map and mode */
 	i32 nextMode;   /* +0x1f1cb8 */
-	u8 _pad01f1cbc[0x1900];
+	char replayFiles[100][0x40];   /* +0x1f1cbc: (by use) the replay viewer's files (replayCount of them) */
 	i32 replayCount;   /* +0x1f35bc: (by use) replays in the viewer's list */
 	i32 replayIndex;   /* +0x1f35c0: the one playing (random or in order) */
 	u8 _pad01f35c4[0xba0];
@@ -932,7 +962,7 @@ typedef struct Scene {
 	i32 markersOff;   /* +0x22e719c: (unclear) no team mate arrows or leader marks */
 	i32 leaderMarkOff;   /* +0x22e71a0: (unclear) the team mark replaces the leader mark / rank */
 	u8 _pad22e71a4[0x7084];
-	u32 restartFrom[5];   /* +0x22ee228: (unclear) what a retry restarts from: the first three into restartA, the last two into restartB */
+	u32 cameraSaved[5];   /* +0x22ee228: (by use) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle */
 	u8 _pad22ee23c[0x280];
 	i32 spawnPointCount;   /* +0x22ee4bc: (by use) spawn points from 0x22ee23c, 0x14 bytes each */
 	u8 _pad22ee4c0[0x1f48];
@@ -962,11 +992,12 @@ typedef struct Scene {
 	i32 crosshairTexture;   /* +0x233c9f8 */
 	i32 playing;   /* +0x233c9fc: 1: the local player plays; 0: watching watchedPlayer */
 	u8 _pad233ca00[0x4];
-	u32 restartA[3];   /* +0x233ca04: (unclear) */
-	u8 _pad233ca10[0x18];
-	float restartB[2];   /* +0x233ca28: (unclear) */
-	u32 restartArrays[6][10];   /* +0x233ca30: (unclear) copied into roundArrays at each later round */
-	u32 roundArrays[6][10];   /* +0x233cb20 */
+	u32 cameraPos[3];   /* +0x233ca04: (by use) the camera's position (app_requireCd: the origin) */
+	float cameraDir[3];   /* +0x233ca10: its direction (-Z) */
+	float cameraUp[3];   /* +0x233ca1c: its up (Y) */
+	float cameraAngle[2];   /* +0x233ca28: its pitch (within +-890) and heading (wrapped at 3600; the free camera) */
+	u32 cameraPresets[6][10];   /* +0x233ca30: (by use) the camera presets: six fields by ten camera modes (classes.c k_cameraPresets), copied into cameraSettings */
+	u32 cameraSettings[6][10];   /* +0x233cb20: the working set (the free camera, each later round) */
 	i32 cameraMode;   /* +0x233cc10 */
 	u8 _pad233cc14[0xc];
 	i32 inputState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
@@ -1323,7 +1354,9 @@ _Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
 _Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
 _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
+_Static_assert(offsetof(PlayerRecord, emblem) == 0x479c2 && sizeof(((PlayerRecord *)0)->emblem) == 0x600, "scene.fields: PlayerRecord.emblem");
 _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
+_Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
 _Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
 _Static_assert(offsetof(Model, blockSize) == 0x4 && sizeof(((Model *)0)->blockSize) == 0x4, "scene.fields: Model.blockSize");
 _Static_assert(offsetof(Model, block) == 0x8 && sizeof(((Model *)0)->block) == 0x4, "scene.fields: Model.block");
@@ -1618,6 +1651,20 @@ _Static_assert(offsetof(SpawnRecord, dodgeSpread) == 0x40 && sizeof(((SpawnRecor
 _Static_assert(offsetof(SpawnRecord, climbSpread) == 0x44 && sizeof(((SpawnRecord *)0)->climbSpread) == 0x4, "scene.fields: SpawnRecord.climbSpread");
 _Static_assert(offsetof(SpawnRecord, botTimes) == 0x48 && sizeof(((SpawnRecord *)0)->botTimes) == 0x14, "scene.fields: SpawnRecord.botTimes");
 _Static_assert(sizeof(SpawnRecord) == 0x5c, "scene.fields: size of SpawnRecord");
+_Static_assert(offsetof(BmpFile, vtable) == 0x0 && sizeof(((BmpFile *)0)->vtable) == 0x4, "scene.fields: BmpFile.vtable");
+_Static_assert(offsetof(BmpFile, file) == 0x4 && sizeof(((BmpFile *)0)->file) == 0x4, "scene.fields: BmpFile.file");
+_Static_assert(offsetof(BmpFile, type) == 0x8 && sizeof(((BmpFile *)0)->type) == 0x2, "scene.fields: BmpFile.type");
+_Static_assert(offsetof(BmpFile, fileSize) == 0xa && sizeof(((BmpFile *)0)->fileSize) == 0x4, "scene.fields: BmpFile.fileSize");
+_Static_assert(offsetof(BmpFile, dataOffset) == 0x12 && sizeof(((BmpFile *)0)->dataOffset) == 0x4, "scene.fields: BmpFile.dataOffset");
+_Static_assert(offsetof(BmpFile, infoSize) == 0x16 && sizeof(((BmpFile *)0)->infoSize) == 0x4, "scene.fields: BmpFile.infoSize");
+_Static_assert(offsetof(BmpFile, bmpWidth) == 0x1a && sizeof(((BmpFile *)0)->bmpWidth) == 0x4, "scene.fields: BmpFile.bmpWidth");
+_Static_assert(offsetof(BmpFile, bmpHeight) == 0x1e && sizeof(((BmpFile *)0)->bmpHeight) == 0x4, "scene.fields: BmpFile.bmpHeight");
+_Static_assert(offsetof(BmpFile, planes) == 0x22 && sizeof(((BmpFile *)0)->planes) == 0x2, "scene.fields: BmpFile.planes");
+_Static_assert(offsetof(BmpFile, bitCount) == 0x24 && sizeof(((BmpFile *)0)->bitCount) == 0x2, "scene.fields: BmpFile.bitCount");
+_Static_assert(offsetof(BmpFile, compression) == 0x26 && sizeof(((BmpFile *)0)->compression) == 0x4, "scene.fields: BmpFile.compression");
+_Static_assert(offsetof(BmpFile, width) == 0x3e && sizeof(((BmpFile *)0)->width) == 0x4, "scene.fields: BmpFile.width");
+_Static_assert(offsetof(BmpFile, height) == 0x42 && sizeof(((BmpFile *)0)->height) == 0x4, "scene.fields: BmpFile.height");
+_Static_assert(sizeof(BmpFile) == 0x48, "scene.fields: size of BmpFile");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
@@ -1639,6 +1686,10 @@ _Static_assert(offsetof(Stage, floorOn) == 0x9ef30c && sizeof(((Stage *)0)->floo
 _Static_assert(offsetof(Stage, floorTextures) == 0x9ef310 && sizeof(((Stage *)0)->floorTextures) == 0x40, "scene.fields: Stage.floorTextures");
 _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor) == 0x5ac, "scene.fields: Stage.floor");
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
+_Static_assert(offsetof(Stage, levelLow) == 0x9ef904 && sizeof(((Stage *)0)->levelLow) == 0xc, "scene.fields: Stage.levelLow");
+_Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->levelHigh) == 0xc, "scene.fields: Stage.levelHigh");
+_Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
+_Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
 _Static_assert(offsetof(Stage, commands) == 0xdc0f10 && sizeof(((Stage *)0)->commands) == 0x75300, "scene.fields: Stage.commands");
@@ -1724,6 +1775,8 @@ _Static_assert(offsetof(Stage, startUsed) == 0x20fcd3c && sizeof(((Stage *)0)->s
 _Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
 _Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
+_Static_assert(offsetof(Stage, emblemTexture) == 0x20fcfe0 && sizeof(((Stage *)0)->emblemTexture) == 0x4, "scene.fields: Stage.emblemTexture");
+_Static_assert(offsetof(Stage, emblemAtlas) == 0x20fcfe4 && sizeof(((Stage *)0)->emblemAtlas) == 0x8000, "scene.fields: Stage.emblemAtlas");
 _Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)->clanTexture) == 0x4, "scene.fields: Stage.clanTexture");
 _Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
 _Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
@@ -1770,6 +1823,7 @@ _Static_assert(offsetof(Scene, rotationAt) == 0x1f1cac && sizeof(((Scene *)0)->r
 _Static_assert(offsetof(Scene, rotationOff) == 0x1f1cb0 && sizeof(((Scene *)0)->rotationOff) == 0x4, "scene.fields: Scene.rotationOff");
 _Static_assert(offsetof(Scene, nextMap) == 0x1f1cb4 && sizeof(((Scene *)0)->nextMap) == 0x4, "scene.fields: Scene.nextMap");
 _Static_assert(offsetof(Scene, nextMode) == 0x1f1cb8 && sizeof(((Scene *)0)->nextMode) == 0x4, "scene.fields: Scene.nextMode");
+_Static_assert(offsetof(Scene, replayFiles) == 0x1f1cbc && sizeof(((Scene *)0)->replayFiles) == 0x1900, "scene.fields: Scene.replayFiles");
 _Static_assert(offsetof(Scene, replayCount) == 0x1f35bc && sizeof(((Scene *)0)->replayCount) == 0x4, "scene.fields: Scene.replayCount");
 _Static_assert(offsetof(Scene, replayIndex) == 0x1f35c0 && sizeof(((Scene *)0)->replayIndex) == 0x4, "scene.fields: Scene.replayIndex");
 _Static_assert(offsetof(Scene, freeCamSpeedMax) == 0x1f4164 && sizeof(((Scene *)0)->freeCamSpeedMax) == 0x4, "scene.fields: Scene.freeCamSpeedMax");
@@ -1807,7 +1861,7 @@ _Static_assert(offsetof(Scene, gameMode) == 0x22e7180 && sizeof(((Scene *)0)->ga
 _Static_assert(offsetof(Scene, teamGame) == 0x22e7184 && sizeof(((Scene *)0)->teamGame) == 0x4, "scene.fields: Scene.teamGame");
 _Static_assert(offsetof(Scene, markersOff) == 0x22e719c && sizeof(((Scene *)0)->markersOff) == 0x4, "scene.fields: Scene.markersOff");
 _Static_assert(offsetof(Scene, leaderMarkOff) == 0x22e71a0 && sizeof(((Scene *)0)->leaderMarkOff) == 0x4, "scene.fields: Scene.leaderMarkOff");
-_Static_assert(offsetof(Scene, restartFrom) == 0x22ee228 && sizeof(((Scene *)0)->restartFrom) == 0x14, "scene.fields: Scene.restartFrom");
+_Static_assert(offsetof(Scene, cameraSaved) == 0x22ee228 && sizeof(((Scene *)0)->cameraSaved) == 0x14, "scene.fields: Scene.cameraSaved");
 _Static_assert(offsetof(Scene, spawnPointCount) == 0x22ee4bc && sizeof(((Scene *)0)->spawnPointCount) == 0x4, "scene.fields: Scene.spawnPointCount");
 _Static_assert(offsetof(Scene, elapsed) == 0x22f0408 && sizeof(((Scene *)0)->elapsed) == 0x4, "scene.fields: Scene.elapsed");
 _Static_assert(offsetof(Scene, timeFraction) == 0x22f040c && sizeof(((Scene *)0)->timeFraction) == 0x4, "scene.fields: Scene.timeFraction");
@@ -1827,10 +1881,12 @@ _Static_assert(offsetof(Scene, lastMissionWon) == 0x233c9ec && sizeof(((Scene *)
 _Static_assert(offsetof(Scene, showEmblems) == 0x233c9f0 && sizeof(((Scene *)0)->showEmblems) == 0x4, "scene.fields: Scene.showEmblems");
 _Static_assert(offsetof(Scene, crosshairTexture) == 0x233c9f8 && sizeof(((Scene *)0)->crosshairTexture) == 0x4, "scene.fields: Scene.crosshairTexture");
 _Static_assert(offsetof(Scene, playing) == 0x233c9fc && sizeof(((Scene *)0)->playing) == 0x4, "scene.fields: Scene.playing");
-_Static_assert(offsetof(Scene, restartA) == 0x233ca04 && sizeof(((Scene *)0)->restartA) == 0xc, "scene.fields: Scene.restartA");
-_Static_assert(offsetof(Scene, restartB) == 0x233ca28 && sizeof(((Scene *)0)->restartB) == 0x8, "scene.fields: Scene.restartB");
-_Static_assert(offsetof(Scene, restartArrays) == 0x233ca30 && sizeof(((Scene *)0)->restartArrays) == 0xf0, "scene.fields: Scene.restartArrays");
-_Static_assert(offsetof(Scene, roundArrays) == 0x233cb20 && sizeof(((Scene *)0)->roundArrays) == 0xf0, "scene.fields: Scene.roundArrays");
+_Static_assert(offsetof(Scene, cameraPos) == 0x233ca04 && sizeof(((Scene *)0)->cameraPos) == 0xc, "scene.fields: Scene.cameraPos");
+_Static_assert(offsetof(Scene, cameraDir) == 0x233ca10 && sizeof(((Scene *)0)->cameraDir) == 0xc, "scene.fields: Scene.cameraDir");
+_Static_assert(offsetof(Scene, cameraUp) == 0x233ca1c && sizeof(((Scene *)0)->cameraUp) == 0xc, "scene.fields: Scene.cameraUp");
+_Static_assert(offsetof(Scene, cameraAngle) == 0x233ca28 && sizeof(((Scene *)0)->cameraAngle) == 0x8, "scene.fields: Scene.cameraAngle");
+_Static_assert(offsetof(Scene, cameraPresets) == 0x233ca30 && sizeof(((Scene *)0)->cameraPresets) == 0xf0, "scene.fields: Scene.cameraPresets");
+_Static_assert(offsetof(Scene, cameraSettings) == 0x233cb20 && sizeof(((Scene *)0)->cameraSettings) == 0xf0, "scene.fields: Scene.cameraSettings");
 _Static_assert(offsetof(Scene, cameraMode) == 0x233cc10 && sizeof(((Scene *)0)->cameraMode) == 0x4, "scene.fields: Scene.cameraMode");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
 _Static_assert(offsetof(Scene, modeStarted) == 0x233cc28 && sizeof(((Scene *)0)->modeStarted) == 0x4, "scene.fields: Scene.modeStarted");

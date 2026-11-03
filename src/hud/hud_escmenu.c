@@ -364,8 +364,8 @@ static int esc_retry(Scene *scene)
 	scene->clockExtra = 0;
 	scene->elapsed = 0;
 	scene->timeFraction = 0.0f;
-	memcpy(scene->restartA, scene->restartFrom, sizeof scene->restartA);
-	memcpy(scene->restartB, scene->restartFrom + 3, sizeof scene->restartB);
+	memcpy(scene->cameraPos, scene->cameraSaved, sizeof scene->cameraPos);
+	memcpy(scene->cameraAngle, scene->cameraSaved + 3, sizeof scene->cameraAngle);
 	music_playMatch(scene);
 	return 1;
 }

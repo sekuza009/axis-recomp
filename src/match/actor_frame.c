@@ -201,7 +201,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 			AC->kills--;
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		}
-	} else if (GAME_VAR(int, s + 0x20f3ad8) == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
+	} else if (ST->platoon == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
 		if (AC->markTeam == 1) {
 			int n = 0, sum = 0, count = ST->actorCount;
 			for (int j = 0; j < count; j++)
@@ -245,7 +245,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		AC->kills--;
 		if (AC->lastAttacker == ST->playerActor)
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
-		if (GAME_VAR(int, s + 0x20f3abc) == 1)
+		if (ST->teamGame == 1)
 			ST->frags[AC->team]--;
 	}
 	if (AC->lastAttacker != i)
@@ -481,7 +481,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				script_processCommandBy(s, i, AC->target1, AC->target2);
 				int at = AC->target2;
 				if (AC->pathReverse == 0) {   /* forwards, or backwards */
-					if (at < GAME_VAR(int, s + 0xe3b038 + AC->target1 * 0x1c) - 1)
+					if (at < ST->triggers[AC->target1].wayPointCount - 1)
 						AC->target2 = at + 1;
 					else
 						AC->target1 = AC->target2 = -1;
@@ -495,7 +495,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->target1 = -1;
 		if (AC->botWait > 0)
 			AC->botWait = f32(fsub_m(fld_m(&AC->botWait), dt));
-		if (AC->botWaitTrigger >= 0 && GAME_VAR(int, s + 0xe3c618 + AC->botWaitTrigger * 4) == 1)
+		if (AC->botWaitTrigger >= 0 && ST->triggerFired[AC->botWaitTrigger] == 1)
 			AC->botWaitTrigger = -1;
 		if (AC->bot != 0 && !(AC->botWait > 0) && AC->botWaitTrigger < 0) {   /* a bot: where it goes (botGoal) and looks */
 			if (AC->followTarget >= 0) {   /* the one it follows: towards it while over 3000 away */
@@ -722,7 +722,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			for (int c = 0; c < 3; c++)
 				AC->nextPos[c] = f32(fadd_m(fld_m(&slide[c]), &AC->nextPos[c]));
 		for (int c = 0; c < 3; c++) {   /* inside the world box */
-			const float *lo = &GAME_VAR(float, s + 0x9ef904 + c * 4), *hi = &GAME_VAR(float, s + 0x9ef910 + c * 4);
+			const float *lo = &ST->levelLow[c], *hi = &ST->levelHigh[c];
 			if (!(AC->nextPos[c] >= *lo))
 				AU(0x180 + c * 4) = BITS(*lo);
 			else if (AC->nextPos[c] > *hi)

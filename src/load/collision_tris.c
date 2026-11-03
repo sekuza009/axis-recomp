@@ -232,7 +232,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	to[1] = f32(fadd_m(fld_m(&vel[1]), &pos[1]));
 	to[2] = f32(fadd_m(fld_m(&vel[2]), &pos[2]));
 	memcpy(outPos, to, sizeof to);
-	const float *low = (const float *)(stage + 0x9ef91c), *high = (const float *)(stage + 0x9ef928);
+	const float *low = ((Stage *)stage)->worldLow, *high = ((Stage *)stage)->worldHigh;
 	int clamped = clamp_to(&outPos[0], &low[0], &high[0]);
 	clamped |= clamp_to(&outPos[1], &low[1], &high[1]);
 	clamped |= clamp_to(&outPos[2], &low[2], &high[2]);
@@ -646,7 +646,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 {
 	Stage *st = (Stage *)stage;
 	u8 *grid = stage + 0xa10;
-	const float *low = (const float *)(stage + 0x9ef904), *high = (const float *)(stage + 0x9ef910);
+	const float *low = ((Stage *)stage)->levelLow, *high = ((Stage *)stage)->levelHigh;
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));
 	int nx = ftol(fdiv_m(fsub_m(fld_m(&high[0]), &low[0]), &size_x));

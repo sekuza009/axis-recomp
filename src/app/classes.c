@@ -292,22 +292,23 @@ u32 THISCALL (Stage_dtor)(u8 *self)
    too; its width and height kept (+0x3e, +0x42). Returns the file, or 0 when it can't be opened */
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
+	BmpFile *bmp = (BmpFile *)image;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define fatal(text) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
-	if (GAME_VAR(void *, image + 4))
-		fclose(GAME_VAR(void *, image + 4));
-	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	if (bmp->file)
+		fclose(bmp->file);
+	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
 	if (crt_fread(image + 8, 0xe, 1, f) < 1)
 		fatal(STR(0x4c5948, "can't read header-initBy()"));
-	if (crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1)
+	if (crt_fread(image + 0x16, 0x28, 1, bmp->file) < 1)
 		fatal(STR(0x4c592c, "can't read info-initBy()"));
-	if (GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
+	if (bmp->bitCount != 24 || bmp->compression != 0)
 		fatal(STR(0x4c5908, "non-RGB format BMP file-initBy()"));
-	GAME_VAR(u32, image + 0x3e) = GAME_VAR(u32, image + 0x1a);
-	GAME_VAR(u32, image + 0x42) = GAME_VAR(u32, image + 0x1e);
-	return GAME_VAR(void *, image + 4);
+	bmp->width = ((u32)bmp->bmpWidth);
+	bmp->height = ((u32)bmp->bmpHeight);
+	return bmp->file;
 #undef crt_fread
 #undef fatal
 }
@@ -316,16 +317,17 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
    opened, a header is short, or it isn't 24 bits uncompressed (the file then stays open at +4) */
 void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 {
+	BmpFile *bmp = (BmpFile *)image;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-	if (GAME_VAR(void *, image + 4))
-		fclose(GAME_VAR(void *, image + 4));
-	void *f = GAME_VAR(void *, image + 4) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
-	if (!f || crt_fread(image + 8, 0xe, 1, f) < 1 || crt_fread(image + 0x16, 0x28, 1, GAME_VAR(void *, image + 4)) < 1
-	    || GAME_VAR(u16, image + 0x24) != 24 || GAME_VAR(u32, image + 0x26) != 0)
+	if (bmp->file)
+		fclose(bmp->file);
+	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	if (!f || crt_fread(image + 8, 0xe, 1, f) < 1 || crt_fread(image + 0x16, 0x28, 1, bmp->file) < 1
+	    || bmp->bitCount != 24 || bmp->compression != 0)
 		return 0;
-	GAME_VAR(u32, image + 0x3e) = GAME_VAR(u32, image + 0x1a);
-	GAME_VAR(u32, image + 0x42) = GAME_VAR(u32, image + 0x1e);
-	return GAME_VAR(void *, image + 4);
+	bmp->width = ((u32)bmp->bmpWidth);
+	bmp->height = ((u32)bmp->bmpHeight);
+	return bmp->file;
 #undef crt_fread
 }
 
@@ -338,13 +340,13 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
 	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
-	GAME_VAR(u32, image + 4) = 0;      /* (no file yet) */
+	BITS(((BmpFile *)image)->file) = 0;      /* (no file yet) */
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), type + 4);
 	int ok = 0;
 	if (image_tryOpen(image, path)) {
-		if (GAME_VAR(int, image + 0x3e) >= 23 && GAME_VAR(int, image + 0x42) >= 15) {
-			u8 *pixel = type + 0x479c2;
+		if (((BmpFile *)image)->width >= 23 && ((BmpFile *)image)->height >= 15) {
+			u8 *pixel = (u8 *)((PlayerRecord *)type)->emblem;
 			image_copyTo(image, pixel, 24, 16, 4, 0, 0, 0, 0, 24, 16, 0);
 			for (int k = 0; k < 24 * 16; k++, pixel += 4)
 				pixel[3] = pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0 ? 0 : 0xff;
@@ -364,29 +366,29 @@ void THISCALL (tex_upload2)(u8 *scene)
 {
 	int uploaded = 0;
 	for (int p = 0; p < 16; p++) {
-		u8 *emblem = (u8 *)&((Stage *)scene)->playerRecords[p] + 0x479c2;
-		if (GAME_VAR(int, emblem + 0x608) != 1)
+		PlayerRecord *pr = &((Stage *)scene)->playerRecords[p];
+		if (pr->emblemChanged != 1)
 			continue;
-		u32 *atlas = (u32 *)(scene + 0x20fcfe4) + (p / 4) * 16 * 128 + (p % 4) * 24;
-		const u32 *pixel = (const u32 *)emblem;
+		u32 *atlas = &((Stage *)scene)->emblemAtlas[(p / 4) * 16][(p % 4) * 24];
+		const u32 *pixel = &pr->emblem[0][0];
 		for (int y = 0; y < 16; y++, atlas += 128)
 			for (int x = 0; x < 24; x++)
 				atlas[x] = *pixel++;
-		GAME_VAR(int, emblem + 0x608) = 0;
-		if (!GAME_VAR(int, emblem + 0x604)) {
-			GAME_VAR(int, emblem + 0x604) = 1;
+		pr->emblemChanged = 0;
+		if (!pr->flagShown) {
+			pr->flagShown = 1;
 			uploaded = 1;
 		}
 	}
 	if (uploaded != 1)
 		return;
 	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
-	glBindTexture(0xde1, GAME_VAR(u32, scene + 0x20fcfe0));
+	glBindTexture(0xde1, ((Stage *)scene)->emblemTexture);
 	glTexParameterf_bits(0xde1, 0x2802, 0x46240000);   /* wrap S: GL_CLAMP */
 	glTexParameterf_bits(0xde1, 0x2803, 0x46240000);   /* wrap T */
 	glTexParameterf_bits(0xde1, 0x2800, 0x46180400);   /* mag filter: GL_LINEAR */
 	glTexParameterf_bits(0xde1, 0x2801, 0x46180400);   /* min filter */
-	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, scene + 0x20fcfe4);   /* RGBA, unsigned bytes */
+	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)((Stage *)scene)->emblemAtlas);   /* RGBA, unsigned bytes */
 }
 
 /* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at +0x12, size +0x3e
@@ -397,9 +399,10 @@ void THISCALL (tex_upload2)(u8 *scene)
 void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int sx, int sy, int dx, int dy, int w, int h,
                              int topDown)
 {
+	BmpFile *bmp = (BmpFile *)image;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
-	void *f = GAME_VAR(void *, image + 4);
-	int iw = GAME_VAR(int, image + 0x3e), ih = GAME_VAR(int, image + 0x42);
+	void *f = bmp->file;
+	int iw = bmp->width, ih = bmp->height;
 	if (sx < 0) {
 		dx -= sx;
 		w += sx;
@@ -436,7 +439,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 		return;
 	if (w > 0x400)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
-	crt_fseek(f, GAME_VAR(int, image + 0x12) + ((GAME_VAR(int, image + 0x42) - sy - h) * GAME_VAR(int, image + 0x3e) + sx) * 3, 0);
+	crt_fseek(f, bmp->dataOffset + ((bmp->height - sy - h) * bmp->width + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
 	u8 *p3 = dst + (first * dw + dx) * 3, *p4 = dst + (first * dw + dx) * 4;
@@ -457,7 +460,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 			}
 		else
 			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
-		crt_fseek(f, (GAME_VAR(int, image + 0x3e) - w) * 3, 1);
+		crt_fseek(f, (bmp->width - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
 	}
@@ -530,7 +533,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
-	GAME_VAR(int, g + 4) = GAME_VAR(int, g + 8) = -1;
+	GS->client = GS->network = -1;
 	TimeSync_clear(g + 0xc);
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
@@ -595,49 +598,49 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 {
 	if (!cd_findDrive())
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), g_insertCdMessage);
-	GAME_VAR(u32, g + 4) = a;
-	GAME_VAR(int, g + 8) = mode;
+	GS->client = a;
+	GS->network = mode;
 	GS->objectsMode = 0;
 	zero_dwords(g + 0x1f1ca8, 3);
 	zero_dwords(g + 0x233c9e8, 3);
-	GAME_VAR(int, g + 0x1f35bc) = 0;
-	if (GAME_VAR(int, g + 8) == 3)
+	GS->replayCount = 0;
+	if (GS->network == 3)
 		for (int k = 0; k < g_mapListFlaggedCount; k++) {
 			const char *e = (const char *)OBJ(g_fileList) + k * 0x44;
 			if (GAME_VAR(int, e + 0x40) == 1)
-				strcpy((char *)g + 0x1f1cbc + GAME_VAR(int, g + 0x1f35bc)++ * 0x40, e);
+				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = g + 0x1f36c8;
-	GAME_VAR(int, g + 0x1f35c0) = GAME_VAR(int, g + 0x1f35c4) = 0;
+	GS->replayIndex = GAME_VAR(int, g + 0x1f35c4) = 0;
 	scene_resetActors(s);
 	scene_reset(s);
-	if (GAME_VAR(int, g + 8) == 2) {
+	if (GS->network == 2) {
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
 		GS->soloClear = 0;
 		for (int k = 0; k < 3; k++) {
-			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;
-			GAME_VAR(u32, g + 0xbe2fd8 + k * 4) = 0x47c35000;
+			((Stage *)s)->levelLow[k] = -100000.0f;
+			((Stage *)s)->levelHigh[k] = 100000.0f;
 		}
-		memcpy(g + 0xbe2fe4, g + 0xbe2fcc, 12);
-		memcpy(g + 0xbe2ff0, g + 0xbe2fd8, 12);
+		memcpy(((Stage *)s)->worldLow, ((Stage *)s)->levelLow, 12);
+		memcpy(((Stage *)s)->worldHigh, ((Stage *)s)->levelHigh, 12);
 		GAME_VAR(u32, g + 0xbe2ffc) = 0x3f800000;
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
 	GS->playing = GAME_VAR(int, g + 0x233ca00) = 0;
-	memcpy(g + 0x233ca04, (const void *)ADDR(g_vecOrigin), 12);
+	memcpy(GS->cameraPos, (const void *)ADDR(g_vecOrigin), 12);
 	for (int k = 0; k < 3; k++)
-		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
-	memcpy(g + 0x233ca1c, (const void *)OBJ(g_vecUnitY), 12);
-	GAME_VAR(int, g + 0x233ca28) = GAME_VAR(int, g + 0x233ca2c) = 0;
-	GS->inputState = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;
-	GS->modeStarted = GS->roundClear3 = GAME_VAR(int, g + 0x233cc34) = 0;
-	GAME_VAR(int, g + 0x233cc40) = GAME_VAR(int, g + 0x233cc44) = 0;
-	GAME_VAR(u32, g + 0x233cc50) = 0x43960000;   /* 300, 3, 5, 15 */
-	GAME_VAR(u32, g + 0x233cc54) = 0x40400000;
-	GAME_VAR(u32, g + 0x233cc58) = 0x40a00000;
-	GAME_VAR(u32, g + 0x233cc5c) = 0x41700000;
+		GS->cameraDir[k] = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
+	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
+	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
+	GS->inputState = GS->network == 2 ? 3 : GS->network == 3 ? 1 : 2;
+	GS->modeStarted = GS->roundClear3 = (*(int *)&GS->chatBlink) = 0;
+	(*(int *)&GS->msgFade) = GAME_VAR(int, g + 0x233cc44) = 0;
+	BITS(GS->emblemTime) = 0x43960000;   /* 300, 3, 5, 15 */
+	BITS(GS->roundTimer) = 0x40400000;
+	BITS(GS->kingTimer) = 0x40a00000;
+	BITS(GS->teamSyncTime) = 0x41700000;
 	zero_dwords(g + 0x2340ca4, 11);
-	GAME_VAR(int, g + 0x2340cd0) = 1;
+	GS->debugGrid = 1;
 	zero_dwords(g + 0x2340cd4, 13);
 	zero_dwords(g + 0x2340d1d, 7);
 	teams_setup((Scene *)g);
@@ -650,9 +653,9 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords(g + 0x234328b, 31);
 	zero_dwords(g + 0x234330b, 4);
 	notices_clearAll(g);
-	GS->localPlayer = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
+	GS->localPlayer = GS->network == 1 || GS->network == 3 ? -1 : 0;
 	zero_dwords(g + 0x2342411, 3);
 	GS->chosenTeam = -1;
-	GAME_VAR(int, g + 0x2342421) = 0;
+	GS->screenshotTaken = 0;
 	GAME_VAR(int, g + 0x2343253) = 0;
 }
