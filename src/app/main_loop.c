@@ -1284,12 +1284,12 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {
 		int e = SC->ranking[k];
-		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;
+		int team = team_game() ? SC->players[e].team : 2;
 		char name[64];
 		memset(name, 0, sizeof name);
 		strcpy(name, (const char *)ACTOR_AT(e) + 0x98);
-		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? A_INT(e, 0x1eccb6c) : stack_time,
-		            A_INT(e, 0x1eccb54), A_INT(e, 0x1eccb58));
+		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? SC->players[e].timePlayed : stack_time,
+		            SC->players[e].kills, SC->players[e].deaths);
 	}
 	fclose(f);
 }
@@ -1306,7 +1306,7 @@ static const u8 *spawn_point(u8 *s, int doubled)
 	for (;;) {
 		int taken = 0;
 		for (int j = 0; j < SC->playerCount; j++) {
-			if (A_INT(j, 0x1eccbbc) != 1)
+			if (SC->players[j].state != 1)
 				continue;
 			const float *pos = (const float *)(ACTOR_AT(j) + 0x154), *at = (const float *)(s + 0x22ee23c + r * 0x14);
 			float d[3];
@@ -1349,7 +1349,7 @@ static void local_spawn(u8 *s)
 	}
 	if (SC->teamGame == 1)
 		team_colours(s, SC->localPlayer, SC->localTeam);
-	else if (A_INT(SC->localPlayer, 0x1eccb48) == 0)
+	else if (SC->players[SC->localPlayer].statD8 == 0)
 		for (int part = 0; part < 5; part++) {
 			const u32 *c = (const u32 *)(s + 0x23424a2) + part * 2;
 			actor_setPartColor_bits(s + 0x1f36c8, SC->localPlayer, part, c[-11], c[-1], c[9], c[-10], c[0], c[10]);
@@ -1386,8 +1386,8 @@ static void bot_spawns(u8 *s)
 {
 	for (int j = 0; j < SC->botsWaiting; j++) {
 		u8 *rec = s + 0x1eca67c + j * 0x5c;
-		int state = A_INT(j, 0x1eccb78);
-		if (GAME_VAR(int, rec + 0x18) != 1 || !(state == 0 || (state == 1 && A_INT(j, 0x1eccbbc) == 3)))
+		int state = SC->players[j].active;
+		if (GAME_VAR(int, rec + 0x18) != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
 			continue;
 		u8 *player = s + 0x1755230 + GAME_VAR(int, rec) * 0x47fd2;
 		if (SC->teamGame == 1)
@@ -1397,7 +1397,7 @@ static void bot_spawns(u8 *s)
 		const u8 *at = spawn_point(s, 1);
 		memcpy(copy + 1, at ? at : s + 0x22ee228, 12);
 		actor_applySpawnRecord(s + 0x1f36c8, j, copy);
-		if (A_INT(j, 0x1eccb48) == 0)
+		if (SC->players[j].statD8 == 0)
 			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), GAME_VAR(int, player + 0x48));
 	}
 }
@@ -1515,7 +1515,7 @@ static int slow_end(u8 *s)
 		return 0;
 	if (!(fsub_m(fld_m(K(0x4a9418)), (const float *)(s + 0x234239d)) < 2.0f))
 		return 0;
-	return SC->roundWinner >= 0 && A_INT(SC->roundWinner, 0x1eccbbc) == 2;
+	return SC->roundWinner >= 0 && SC->players[SC->roundWinner].state == 2;
 }
 
 /* the winning team (+0x23423bd): the side whose team slot has more (team scores +0x2221fb8), -1 for a draw */
@@ -1561,11 +1561,11 @@ static void chat_keys(u8 *s)
 		if (SC->talkPressed == 1) {
 			SC->chatMode = 1;
 			chat_textField(0, 0, 0x38);
-			A_INT(SC->localPlayer, 0x1ecce5c) = 1;
+			SC->players[SC->localPlayer].statusIcon = 1;
 		} else if (SC->teamTalkPressed == 1) {
 			SC->chatMode = 2;
 			chat_textField(0, 0, 0x38);
-			A_INT(SC->localPlayer, 0x1ecce5c) = 2;
+			SC->players[SC->localPlayer].statusIcon = 2;
 		}
 		return;
 	}
@@ -1592,7 +1592,7 @@ static void chat_keys(u8 *s)
 			}
 		}
 	}
-	A_INT(SC->localPlayer, 0x1ecce5c) = 0;
+	SC->players[SC->localPlayer].statusIcon = 0;
 }
 
 /* 0x4988e0 (thiscall on the game object): the match's frame. The log of the last match written when asked
@@ -1635,11 +1635,11 @@ void THISCALL (game_processGameMode)(u8 *s)
 	else if (SC->quitAsked == 1) {
 		if (SC->roundOver == 0) {
 			sound_playVolume(9, 100);
-			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && A_INT(SC->localPlayer, 0x1eccb48) == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && SC->players[SC->localPlayer].statD8 == 0)) {
 				SC->rankingShown = 0;
 				SC->localAlive = 1;
 			}
-			escMenu_open((Scene *)s, 0, A_INT(SC->localPlayer, 0x1eccb48) == 0 ? 0 : 4);
+			escMenu_open((Scene *)s, 0, SC->players[SC->localPlayer].statD8 == 0 ? 0 : 4);
 			SC->quitAsked = 0;
 		}
 	} else
@@ -1673,9 +1673,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	/* the local player's starting kills and deaths, its screenshot */
 	if (SC->localPlayer >= 0 && S(int, 0x2342419) == 0) {
-		A_INT(SC->localPlayer, 0x1eccb4c) = SC->level;
+		SC->players[SC->localPlayer].emblem = SC->level;
 		A_INT(SC->localPlayer, 0x1eccb50) = SC->level;
-		A_INT(SC->localPlayer, 0x1eccb5c) = SC->levelPoints;
+		SC->players[SC->localPlayer].score = SC->levelPoints;
 		A_INT(SC->localPlayer, 0x1eccb68) = SC->levelPoints;
 		S(int, 0x2342419) = 1;
 	}
@@ -1696,14 +1696,14 @@ void THISCALL (game_processGameMode)(u8 *s)
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
 		player_setName((Stage *)stage, SC->localPlayer, (const char *)(s + 0x2342429));
 		strcpy((char *)ACTOR_AT(SC->localPlayer) + 0x98, (const char *)(s + 0x2342429));
-		A_INT(SC->localPlayer, 0x1eccb7c) = SC->localPlayer;
+		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
 		notice_raise1(s, SC->localPlayer, s + 0x1755234 + SC->localPlayer * 0x47fd2);
 		net_sendMatchEvent(s);
 	}
 	/* a team chosen (or a menu for it), then the spawn */
 	int me = SC->localPlayer;
-	if (me >= 0 && A_INT(me, 0x1eccb78) == 0 && SC->matchOver == 0 && P_INT(me, 0x179d1fe) == 0x180
+	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && P_INT(me, 0x179d1fe) == 0x180
 	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
 			if (SC->chosenTeam >= 0 && SC->network != 0)
@@ -1721,7 +1721,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		SC->teamAsked = 0;
 	}
 	me = SC->localPlayer;
-	if (me >= 0 && SC->localTeam >= 0 && A_INT(me, 0x1eccb78) == 0 && SC->chatMode == 0 && SC->matchOver == 0
+	if (me >= 0 && SC->localTeam >= 0 && SC->players[me].active == 0 && SC->chatMode == 0 && SC->matchOver == 0
 	    && SC->roundOver == 0) {
 		long double v = fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x233cc48));
 		S(float, 0x233cc48) = (float)v;
@@ -1732,9 +1732,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 	} else
 		S(int, 0x233cc48) = 0;
 	if (SC->teamChanged == 1
-	    || (SC->leaderMarkOff == 1 && A_INT(SC->localPlayer, 0x1eccbbc) == 3 && A_INT(SC->localPlayer, 0x1eccf4c) == 1))
+	    || (SC->leaderMarkOff == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].markTeam == 1))
 		local_spawn(s);
-	if (SC->network == 0 && SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccb48) == 1 && SC->matchOver == 0)
+	if (SC->network == 0 && SC->localPlayer >= 0 && SC->players[SC->localPlayer].statD8 == 1 && SC->matchOver == 0)
 		bot_spawns(s);
 	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
@@ -1807,9 +1807,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 		BITS(dt) = S(u32, 0x44);
 	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && SC->network == 0)) {
 		if (SC->playing == 0 && SC->cameraSlot == 2 && SC->watchedPlayer >= 0)
-			A_INT(SC->watchedPlayer, 0x1eccfc0) = 1;
+			SC->players[SC->watchedPlayer].viewMarked = 1;
 		else if (SC->playing == 1 && SC->cameraMode == 2 && SC->localPlayer >= 0)
-			A_INT(SC->localPlayer, 0x1eccfc0) = 1;
+			SC->players[SC->localPlayer].viewMarked = 1;
 		stage_advanceClocks(stage, BITS(dt));
 		actor_updateAll(stage, BITS(dt));
 		if (SC->matchOver == 1 || SC->roundOver == 1)
@@ -1823,7 +1823,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		if (SC->network == 1) {   /* the server checks the local player's parts every 20 s */
 			long double v = fsub_m(fld_m((const float *)(s + 0x2342405)), (const float *)(s + 0x44));
 			S(float, 0x2342405) = (float)v;
-			if (!(v >= 0) && SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccbbc) == 1) {
+			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
 				if (armc_computeTotals(stage, SC->localPlayer) == 0) {
 					SC->roundClear2 = 1;
 					SC->dataLossCode = 0;
@@ -1839,11 +1839,11 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		}
 		if (SC->playing == 0) {   /* spectating: the followed player */
-			if (SC->watchedPlayer >= 0 && A_INT(SC->watchedPlayer, 0x1eccb88) < 0)
+			if (SC->watchedPlayer >= 0 && SC->players[SC->watchedPlayer].team < 0)
 				SC->watchedPlayer = -1;
 			int f = SC->radioMessage, n = SC->playerCount;
 			if (f >= 0) {
-				if (A_INT(f, 0x1eccb88) >= 0) {
+				if (SC->players[f].team >= 0) {
 					if (SC->cameraSlot < 0)
 						SC->cameraSlot = 1;
 					SC->watchedPlayer = f;
@@ -1857,7 +1857,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					start_view(s);
 				} else
 					for (;;) {
-						if (A_INT(next, 0x1eccb88) >= 0) {
+						if (SC->players[next].team >= 0) {
 							if (SC->cameraSlot < 0)
 								SC->cameraSlot = 1;
 							SC->watchedPlayer = next;
@@ -1897,7 +1897,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->rankingKey == 1)
 		SC->msgFade = 5.0f;
 	me = SC->localPlayer;
-	if (me >= 0 && A_INT(me, 0x1eccbbc) == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
+	if (me >= 0 && SC->players[me].state == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
 		notice_printCentre((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
 	/* the start count (3, 2, 1, go) */
 	if (SC->startCount > 0) {
@@ -1923,7 +1923,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	if (SC->showEmblems == 1 && SC->localPlayer >= 0) {
 		me = SC->localPlayer;
-		int a = A_INT(me, 0x1eccb4c);
+		int a = SC->players[me].emblem;
 		if (a != A_INT(me, 0x1eccb50)) {
 			A_INT(me, 0x1eccb50) = a;
 			notice_printCentre((Scene *)s, (const char *)STR(0x4d05ec, "LEVEL UP!"));
@@ -1952,7 +1952,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			S(int, 0x2343006 + SC->localPlayer * 16) = 1;
 			SC->roundTimer = 3.0f;
 		}
-		if (A_INT(SC->localPlayer, 0x1eccb88) >= 0) {
+		if (SC->players[SC->localPlayer].team >= 0) {
 			v = fsub_m(fld_m((const float *)(s + 0x233cc5c)), (const float *)(s + 0x44));
 			S(float, 0x233cc5c) = (float)v;
 			if (!(v > 0)) {
@@ -1973,7 +1973,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				net_sendColourRing(s, SC->localPlayer);
 				S(float, 0x2340c74) = (float)-fld_m((const float *)(s + 0x44));
 			}
-			if (net_playerInUse(i) == 1 && A_INT(i, 0x1eccb78) == 1 && A_INT(i, 0x1eccb80) == SC->localPlayer
+			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].pilot == SC->localPlayer
 			    && (S(float, 0x2340c74) > 0.05f || A_INT(i, 0x1eccc5c) == 1
 			        || (!(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) < 0) && !(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) > 0))
 			        || A_INT(i, 0x1eccde4) == 1)) {
@@ -2069,13 +2069,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 				if (SC->teamGame == 0) {
 					SC->teamAsked = 0;
 					if (SC->localPlayer >= 0)
-						A_INT(SC->localPlayer, 0x1eccb48) = 0;
+						SC->players[SC->localPlayer].statD8 = 0;
 					scene_setLocalTeam((Scene *)s, -1);
 				}
-				A_INT(SC->localPlayer, 0x1eccb60) = 0;
-				A_INT(SC->localPlayer, 0x1eccb54) = 0;
-				A_INT(SC->localPlayer, 0x1eccb64) = 0;
-				A_INT(SC->localPlayer, 0x1eccb58) = 0;
+				SC->players[SC->localPlayer].statF0 = 0;
+				SC->players[SC->localPlayer].kills = 0;
+				SC->players[SC->localPlayer].statF4 = 0;
+				SC->players[SC->localPlayer].deaths = 0;
 				SC->rankingShown = 1;
 				SC->stageCleared = 0;
 				return;
@@ -2095,9 +2095,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 					    && g_missionStage == g_progress)
 						SC->stageCleared = 1;
 				}
-			} else if (SC->rankCount > 0 && A_INT(SC->ranking[0], 0x1eccb54) >= limit) {
+			} else if (SC->rankCount > 0 && SC->players[SC->ranking[0]].kills >= limit) {
 				round_over(s, 0);
-				if (SC->network == 0 && A_INT(SC->localPlayer, 0x1eccb54) >= SC->scoreLimit
+				if (SC->network == 0 && SC->players[SC->localPlayer].kills >= SC->scoreLimit
 				    && g_missionStage == g_progress)
 					SC->stageCleared = 1;
 			}
@@ -2116,7 +2116,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->playing == 0) {
 		if (SC->cameraSlot >= 0 && SC->watchedPlayer >= 0) {
 			int c = SC->watchedPlayer;
-			if (A_INT(c, 0x1eccbbc) != 1 && A_INT(c, 0x1eccf30) >= 0)
+			if (SC->players[c].state != 1 && SC->players[c].lastAttacker >= 0)
 				killer_view(s, ACTOR_AT(c));
 			else {
 				int i = SC->cameraSlot;
@@ -2218,7 +2218,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (ftol(fadd_m(v, (const float *)(s + 0x44))) != ftol(v))
 				sound_playVolume(9, 100);
 		} else {
-			if (SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccb88) >= 0)
+			if (SC->localPlayer >= 0 && SC->players[SC->localPlayer].team >= 0)
 				SC->teamChanged = 1;
 			S(int, 0x234239d) = 0;
 			SC->matchOver = 0;
@@ -2230,8 +2230,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 			for (int i = 0; i < S(int, 0x22f0400); i++)
 				S(int, 0x22ee4e0 + i * 0x28) = S(int, 0x22ee4e4 + i * 0x28) = 0;
 			for (int i = 0; i < 16; i++) {
-				A_INT(i, 0x1eccb54) = A_INT(i, 0x1eccb58) = A_INT(i, 0x1eccb60) = 0;
-				A_INT(i, 0x1eccb64) = A_INT(i, 0x1eccb6c) = A_INT(i, 0x1eccb70) = 0;
+				SC->players[i].kills = SC->players[i].deaths = SC->players[i].statF0 = 0;
+				SC->players[i].statF4 = SC->players[i].timePlayed = A_INT(i, 0x1eccb70) = 0;
 			}
 			stage_clearActorRefs((Stage *)stage);
 			msg_newKing((Scene *)s);
@@ -2239,10 +2239,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 			events_clear((Scene *)s, 60.0f);
 			notices_clearAll(s);
 			SC->elapsed = S(int, 0x22f040c) = 0;
-			A_INT(SC->localPlayer, 0x1eccb60) = 0;
-			A_INT(SC->localPlayer, 0x1eccb54) = 0;
-			A_INT(SC->localPlayer, 0x1eccb64) = 0;
-			A_INT(SC->localPlayer, 0x1eccb58) = 0;
+			SC->players[SC->localPlayer].statF0 = 0;
+			SC->players[SC->localPlayer].kills = 0;
+			SC->players[SC->localPlayer].statF4 = 0;
+			SC->players[SC->localPlayer].deaths = 0;
 			SC->startTimer = 0.0f;
 			sound_playVolume(0x18, 100);
 		}
