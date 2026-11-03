@@ -835,7 +835,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(int, 0x1fc + k * 0x20) = 0;
 		A(int, 0x360 + k * 4) = -1;
 	}
-	A(int, 0x374) = 0;
+	AC->sendFlag = 0;
 	memcpy(AC->velocity, (const void *)ADDR(g_vecZero), 12);
 	memcpy(AC->move, (const void *)ADDR(g_vecZero), 12);
 	AC->radius = 500.0f;   /* 500 */
@@ -857,7 +857,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->glow = 0.0f;
 	(*(u8 *)&AC->message[0]) = 0;
 	AC->messageTime = -10000.0f;   /* -10000 */
-	A(int, 0x538) = -1;
+	AC->lastWarp = -1;
 	fill_dwords(ac + 0x53c, 3, 0);
 	AC->damageFlash = 1.0f;
 	AC->breakUp = 0;
@@ -882,7 +882,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x884c, 3, 0);
 	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
-	A(int, 0x8868) = 0;
+	AC->killPending = 0;
 	AC->stuckTime = 1.0f;
 	AC->stuckPath = -1;
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);

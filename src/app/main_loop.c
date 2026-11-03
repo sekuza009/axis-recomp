@@ -686,7 +686,7 @@ static void choose_followed(u8 *s, int f)
 		return;
 	}
 	if (f >= 0) {
-		if (ACTOR_INT(f, 0x1eccb88) >= 0) {
+		if (SC->players[f].team >= 0) {
 			SC->watchedPlayer = f;
 			SC->watchClear[2] = 0;
 			SC->watchClear[0] = 1;
@@ -697,7 +697,7 @@ static void choose_followed(u8 *s, int f)
 			unfollow(s);
 		else
 			for (;;) {
-				if (ACTOR_INT(next, 0x1eccb48) == 1) {
+				if (SC->players[next].statD8 == 1) {
 					SC->watchedPlayer = next;
 					SC->watchClear[2] = 0;
 					break;
@@ -712,7 +712,7 @@ static void choose_followed(u8 *s, int f)
 	} else if ((SC->watchClear[2] == 0 && SC->watchedPlayer < 0) || SC->watchedPlayer >= n || SC->followTime > 14.0f) {
 		u32 r = rand_below(n);
 		SC->watchedPlayer = r;
-		if (ACTOR_INT(r, 0x1eccb78) == 1)
+		if (SC->players[r].active == 1)
 			SC->followTime = 0.0f;
 		else
 			SC->watchedPlayer = -1;
@@ -825,7 +825,7 @@ static void pair_camera(u8 *s)
 	float nearest;
 	BITS(nearest) = 0x7f7fffff;
 	for (int j = 0; j < n; j++)
-		if (ACTOR_INT(j, 0x1eccb78) == 1 && j != me) {
+		if (SC->players[j].active == 1 && j != me) {
 			for (int k = 0; k < 3; k++)
 				d[k] = f32(fsub_m(fld_m(&ACTOR(me, k * 4)), &ACTOR(j, k * 4)));
 			long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
@@ -1146,9 +1146,9 @@ u32 THISCALL (replay_frame)(u8 *s)
 		SC->replayTime = f32(fadd_m(fld_m(&dt), &SC->replayTime));
 	}
 	for (int i = 0; i < SC->playerCount; i++)
-		if (ACTOR_INT(i, 0x1ed52d8) == 1) {
-			msg_kill(s, i, ACTOR_INT(i, 0x1ed52d8 - 0x83a8));
-			ACTOR_INT(i, 0x1ed52d8) = 0;
+		if (SC->players[i].killPending == 1) {
+			msg_kill(s, i, SC->players[i].lastAttacker);
+			SC->players[i].killPending = 0;
 		}
 	events_age(s, BITS(SC->frameTime));
 	if (SC->rankingKey == 1)
@@ -1199,7 +1199,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	ViewVolume_captureMatrices(view, 0, s + 0x22e7068);
 	ViewVolume_reset(view);
 	if (SC->playing == 1 && SC->cameraMode == 2 && SC->watchedPlayer >= 0)
-		ACTOR_INT(SC->watchedPlayer, 0x1eccfc0) = 1;   /* (the followed player seen from inside) */
+		SC->players[SC->watchedPlayer].viewMarked = 1;   /* (the followed player seen from inside) */
 	sky_draw((Stage *)stage, view_farPlane());
 	render_processRenderingBy(stage, view, view_farPlane());
 	stage_drawObjects((Stage *)stage, view);
@@ -1677,9 +1677,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the local player's starting kills and deaths, its screenshot */
 	if (SC->localPlayer >= 0 && SC->statsTaken == 0) {
 		SC->players[SC->localPlayer].emblem = SC->level;
-		A_INT(SC->localPlayer, 0x1eccb50) = SC->level;
+		SC->players[SC->localPlayer].levelShown = SC->level;
 		SC->players[SC->localPlayer].score = SC->levelPoints;
-		A_INT(SC->localPlayer, 0x1eccb68) = SC->levelPoints;
+		SC->players[SC->localPlayer].startPoints = SC->levelPoints;
 		SC->statsTaken = 1;
 	}
 	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->network == 1) {
@@ -1892,9 +1892,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 	}
 	for (int i = 0; i < SC->playerCount; i++)
-		if (A_INT(i, 0x1ed52d8) == 1) {
-			msg_kill(s, i, A_INT(i, 0x1ed52d8 - 0x83a8));
-			A_INT(i, 0x1ed52d8) = 0;
+		if (SC->players[i].killPending == 1) {
+			msg_kill(s, i, SC->players[i].lastAttacker);
+			SC->players[i].killPending = 0;
 		}
 	events_age(s, BITS(SC->frameTime));
 	if (SC->rankingKey == 1)
@@ -1927,8 +1927,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->showEmblems == 1 && SC->localPlayer >= 0) {
 		me = SC->localPlayer;
 		int a = SC->players[me].emblem;
-		if (a != A_INT(me, 0x1eccb50)) {
-			A_INT(me, 0x1eccb50) = a;
+		if (a != SC->players[me].levelShown) {
+			SC->players[me].levelShown = a;
 			notice_printCentre((Scene *)s, (const char *)STR(0x4d05ec, "LEVEL UP!"));
 			sound_playVolume(0x18, 100);
 		}
@@ -1977,9 +1977,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 				(*(float *)&SC->firstRoundClear[0]) = (float)-fld_m(&SC->frameTime);
 			}
 			if (net_playerInUse(i) == 1 && SC->players[i].active == 1 && SC->players[i].pilot == SC->localPlayer
-			    && ((*(float *)&SC->firstRoundClear[0]) > 0.05f || A_INT(i, 0x1eccc5c) == 1
+			    && ((*(float *)&SC->firstRoundClear[0]) > 0.05f || SC->players[i].firing == 1
 			        || (!(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) < 0) && !(GAME_VAR(float, s + 0x1eccfa4 + i * 0x8888) > 0))
-			        || A_INT(i, 0x1eccde4) == 1)) {
+			        || SC->players[i].sendFlag == 1)) {
 				net_sendPlayerState(s, i);
 				(*(float *)&SC->firstRoundClear[0]) = (float)-fld_m(&SC->frameTime);
 			}

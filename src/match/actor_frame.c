@@ -251,7 +251,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	if (AC->lastAttacker != i)
 		AC->deaths++;
 	GAME_VAR(int, s + 0x202ea80 + i * 4) = 0;
-	AI(0x8868) = 1;
+	AC->killPending = 1;
 	GAME_VAR(int, s + 0x202e8e8) = i;
 }
 
@@ -923,7 +923,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	}
 	AC->firing = 0;   /* firing this frame */
-	AI(0x374) = 0;
+	AC->sendFlag = 0;
 	if (AC->pilot == ST->playerActor) {
 		if (weapon && AC->state == 1) {
 			if (AC->inFire == 1 && AC->blinkTime > 3.0f && AC->slot >= 0 && !(AC->fireAnim > 0) && AC->weaponLower >= 1.0f && AC->weaponLowering == 0
@@ -1218,7 +1218,7 @@ timers:
 	countdown(&AC->botTargetTime, dt);
 	countdown(&AC->gauge, dt);
 	AC->messageTime = f32(fsub_m(fld_m(&AC->messageTime), dt));
-	countdown(&AF(0x540), dt);
+	countdown(&AC->warpWait, dt);
 	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
 		long double v = fadd_m(fld_m(dt), &AC->shieldRegenTime);
 		AC->shieldRegenTime = (float)v;

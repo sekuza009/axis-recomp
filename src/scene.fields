@@ -12,6 +12,10 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0xe0       4          i32 levelShown                             # (by use) the level last announced ("LEVEL UP!" when the emblem's passes it)
+0xf8       4          i32 startPoints                            # the level points it started the match with
+0x374      4          i32 sendFlag                               # (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState)
+0x8868     4          i32 killPending                            # (by use) 1: it died; the kill is reported (msg_kill with lastAttacker) and this cleared
 0x538      4          i32 lastWarp                               # (by use) the warp zone (item) it came through last (-1 none: not kept off it)
 0x53c      4          i32 onWarp                                 # 1: touching a warp zone this frame
 0x540      4          float warpWait                             # seconds before it can warp again (2)

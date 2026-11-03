@@ -53,13 +53,13 @@ typedef struct Player {
 	char name[0x40];   /* +0x98 */
 	i32 statD8;   /* +0xd8: (unclear) cleared with the scores (match_4620e0) */
 	i32 emblem;   /* +0xdc: emblem shown in the ranking */
-	u8 _pad00000e0[0x4];
+	i32 levelShown;   /* +0xe0: (by use) the level last announced ("LEVEL UP!" when the emblem's passes it) */
 	i32 kills;   /* +0xe4 */
 	i32 deaths;   /* +0xe8 */
 	i32 score;   /* +0xec: shown top left */
 	i32 statF0;   /* +0xf0: (unclear) cleared with the scores */
 	i32 statF4;   /* +0xf4: (unclear) cleared with the scores */
-	u8 _pad00000f8[0x4];
+	i32 startPoints;   /* +0xf8: the level points it started the match with */
 	i32 timePlayed;   /* +0xfc: seconds */
 	float timeExtra;   /* +0x100: (by use) added to timePlayed when a team's leader is picked; cleared with the scores */
 	i32 id;   /* +0x104: (by use) its id (the next serial, or the network's) */
@@ -108,7 +108,8 @@ typedef struct Player {
 	i32 firing;   /* +0x1ec: (by use) 1: firing this frame */
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
-	u8 _pad00001f8[0x180];
+	u8 _pad00001f8[0x17c];
+	i32 sendFlag;   /* +0x374: (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState) */
 	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
 	float move[3];   /* +0x384: (by use) this frame's move (nextPos - pos) */
 	float pose[6];   /* +0x390: (by use) the body's pose: swing, lean, head turn; 3 animation frames */
@@ -213,7 +214,7 @@ typedef struct Player {
 	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
 	float botTargetTime;   /* +0x8858: (by use) seconds left on the bot's target (10.5) */
 	float push[3];   /* +0x885c: (by use) a hit's push on the local actor (with hitFlash) */
-	u8 _pad0008868[0x4];
+	i32 killPending;   /* +0x8868: (by use) 1: it died; the kill is reported (msg_kill with lastAttacker) and this cleared */
 	float stuckTime;   /* +0x886c: (by use) the path checked every second: moved under 500 -> dropped */
 	i32 stuckPath;   /* +0x8870: the path dropped */
 	float stuckMove[3];   /* +0x8874: the moves summed over the second */
@@ -1242,11 +1243,13 @@ _Static_assert(offsetof(Player, botTimes) == 0x84 && sizeof(((Player *)0)->botTi
 _Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
 _Static_assert(offsetof(Player, statD8) == 0xd8 && sizeof(((Player *)0)->statD8) == 0x4, "scene.fields: Player.statD8");
 _Static_assert(offsetof(Player, emblem) == 0xdc && sizeof(((Player *)0)->emblem) == 0x4, "scene.fields: Player.emblem");
+_Static_assert(offsetof(Player, levelShown) == 0xe0 && sizeof(((Player *)0)->levelShown) == 0x4, "scene.fields: Player.levelShown");
 _Static_assert(offsetof(Player, kills) == 0xe4 && sizeof(((Player *)0)->kills) == 0x4, "scene.fields: Player.kills");
 _Static_assert(offsetof(Player, deaths) == 0xe8 && sizeof(((Player *)0)->deaths) == 0x4, "scene.fields: Player.deaths");
 _Static_assert(offsetof(Player, score) == 0xec && sizeof(((Player *)0)->score) == 0x4, "scene.fields: Player.score");
 _Static_assert(offsetof(Player, statF0) == 0xf0 && sizeof(((Player *)0)->statF0) == 0x4, "scene.fields: Player.statF0");
 _Static_assert(offsetof(Player, statF4) == 0xf4 && sizeof(((Player *)0)->statF4) == 0x4, "scene.fields: Player.statF4");
+_Static_assert(offsetof(Player, startPoints) == 0xf8 && sizeof(((Player *)0)->startPoints) == 0x4, "scene.fields: Player.startPoints");
 _Static_assert(offsetof(Player, timePlayed) == 0xfc && sizeof(((Player *)0)->timePlayed) == 0x4, "scene.fields: Player.timePlayed");
 _Static_assert(offsetof(Player, timeExtra) == 0x100 && sizeof(((Player *)0)->timeExtra) == 0x4, "scene.fields: Player.timeExtra");
 _Static_assert(offsetof(Player, id) == 0x104 && sizeof(((Player *)0)->id) == 0x4, "scene.fields: Player.id");
@@ -1294,6 +1297,7 @@ _Static_assert(offsetof(Player, netFired) == 0x1e8 && sizeof(((Player *)0)->netF
 _Static_assert(offsetof(Player, firing) == 0x1ec && sizeof(((Player *)0)->firing) == 0x4, "scene.fields: Player.firing");
 _Static_assert(offsetof(Player, burstLeft) == 0x1f0 && sizeof(((Player *)0)->burstLeft) == 0x4, "scene.fields: Player.burstLeft");
 _Static_assert(offsetof(Player, burstTime) == 0x1f4 && sizeof(((Player *)0)->burstTime) == 0x4, "scene.fields: Player.burstTime");
+_Static_assert(offsetof(Player, sendFlag) == 0x374 && sizeof(((Player *)0)->sendFlag) == 0x4, "scene.fields: Player.sendFlag");
 _Static_assert(offsetof(Player, velocity) == 0x378 && sizeof(((Player *)0)->velocity) == 0xc, "scene.fields: Player.velocity");
 _Static_assert(offsetof(Player, move) == 0x384 && sizeof(((Player *)0)->move) == 0xc, "scene.fields: Player.move");
 _Static_assert(offsetof(Player, pose) == 0x390 && sizeof(((Player *)0)->pose) == 0x18, "scene.fields: Player.pose");
@@ -1384,6 +1388,7 @@ _Static_assert(offsetof(Player, cameraValue) == 0x884c && sizeof(((Player *)0)->
 _Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
 _Static_assert(offsetof(Player, botTargetTime) == 0x8858 && sizeof(((Player *)0)->botTargetTime) == 0x4, "scene.fields: Player.botTargetTime");
 _Static_assert(offsetof(Player, push) == 0x885c && sizeof(((Player *)0)->push) == 0xc, "scene.fields: Player.push");
+_Static_assert(offsetof(Player, killPending) == 0x8868 && sizeof(((Player *)0)->killPending) == 0x4, "scene.fields: Player.killPending");
 _Static_assert(offsetof(Player, stuckTime) == 0x886c && sizeof(((Player *)0)->stuckTime) == 0x4, "scene.fields: Player.stuckTime");
 _Static_assert(offsetof(Player, stuckPath) == 0x8870 && sizeof(((Player *)0)->stuckPath) == 0x4, "scene.fields: Player.stuckPath");
 _Static_assert(offsetof(Player, stuckMove) == 0x8874 && sizeof(((Player *)0)->stuckMove) == 0xc, "scene.fields: Player.stuckMove");
