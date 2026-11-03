@@ -54,7 +54,7 @@ static void main_ring(Scene *scene, Player *player)
 			glColor4f(1.0f, 0.0f, 0.0f, 0.25f);
 		else
 			glColor4f(0.0f, 1.0f, 0.0f, 0.25f);
-		int heading = ftol(player->heading);
+		int heading = ftol(player->detectionAngle);
 		float v[2] = { 0.0f, f32(g_trig[(heading % 3600 + 3600) % 3600] * (long double)radius) };
 		vec_rotate(v, angle);
 		for (int pass = 0; pass < 2; pass++) {

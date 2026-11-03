@@ -544,7 +544,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			return;
 	u8 *tint = ac + 0x4f0;
 	int local = st->playerActor;
-	if ((((u32)AC->timerFlags) & 0x200) && AC->sensorLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(AC->blinkTime > *K(0x4a9534))) {
@@ -665,8 +665,8 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->ammoBonus[k] = 0;
 	}
 	AC->rangeBonus = 0.0f;
-	BITS(AC->lockRangeFactor) = BITS(AC->lockHoldFactor) = 0x3f800000;
-	AC->sensorBonus = 0;
+	BITS(AC->lockOnTimeFactor) = BITS(AC->targetKeepFactor) = 0x3f800000;
+	AC->hackingBonus = 0;
 	fill_dwords(ac + 0x434, 5, 0x3f800000);
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
@@ -684,9 +684,9 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		case 0x1f: AC->ammoBonus[3] += 100; break;
 		case 0x20:
 			AC->rangeBonus = f32(fadd_m(fld_m(&AC->rangeBonus), K(0x4a9708)));
-			AC->lockRangeFactor = f32(fsub_m(fld_m(&AC->lockRangeFactor), K(0x4a942c)));
-			AC->lockHoldFactor = f32(fadd_m(fld_m(&AC->lockHoldFactor), K(0x4a9424)));
-			AC->sensorBonus += 3;
+			AC->lockOnTimeFactor = f32(fsub_m(fld_m(&AC->lockOnTimeFactor), K(0x4a942c)));
+			AC->targetKeepFactor = f32(fadd_m(fld_m(&AC->targetKeepFactor), K(0x4a9424)));
+			AC->hackingBonus += 3;
 			break;
 		case 0x21:
 			AC->boostTimeFactor = f32(fadd_m(fld_m(&AC->boostTimeFactor), K(0x4a942c)));
@@ -704,10 +704,10 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	}
 	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), &AC->rangeBonus);
 	AC->radiusSq = f32(hp * hp);
-	AC->heading = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
-	AC->sensorLevel = GAME_VAR(int, head + 0xa9c) + AC->sensorBonus;
-	AC->lockRange = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), &AC->lockRangeFactor));
-	AC->lockHold = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), &AC->lockHoldFactor));
+	AC->detectionAngle = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
+	AC->hackingLevel = GAME_VAR(int, head + 0xa9c) + AC->hackingBonus;
+	AC->lockOnTime = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), &AC->lockOnTimeFactor));
+	AC->targetKeepTime = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), &AC->targetKeepFactor));
 	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), &AC->loadFactor));
 	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
 	                                   (const float *)(arms + 0x12e8)), (const float *)(head + 0xa90)));
@@ -729,11 +729,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		                       AC->ammoBonus[k];
 	long double left = fld_m(K(0x4a9424)) - over;
 	long double v = fmul_m(level_factor(p, 0), (const float *)(legs + 0x13dc)) * left;
-	AC->keyRate = f32(v);
+	AC->mobility = f32(v);
 	if (!(v >= 0))
-		AC->keyRate = 0.0f;
+		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
-		AC->keyRate = f32(fmul_m(fld_m(&AC->keyRate), K(0x4a9704)));
+		AC->mobility = f32(fmul_m(fld_m(&AC->mobility), K(0x4a9704)));
 	BITS(AC->leanPitch) = GAME_VAR(u32, boost + 0x1800);
 	AC->boostTime = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), &AC->boostTimeFactor));
 	AC->rechargeTime = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), &AC->rechargeTimeFactor));
@@ -930,7 +930,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;
-	if (AC->sensorLevel != GAME_VAR(int, me + 8))
+	if (AC->hackingLevel != GAME_VAR(int, me + 8))
 		return 0;
 	for (int k = 0; k < 4; k++)
 		if (!close_enough((const float *)(ac + floats2[k]), (const float *)(me + floats2[k])))

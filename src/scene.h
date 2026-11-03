@@ -23,17 +23,17 @@ typedef struct EventLine {
 /* a player's record (Scene.players) */
 typedef struct Player {
 	float radiusSq;   /* +0x0: (by use) the spawn record's radius squared, x 10000 */
-	float heading;   /* +0x4: (by use) tenths of a degree (the alert ring turns with it) */
-	i32 sensorLevel;   /* +0x8: (by use) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own */
-	float lockRange;   /* +0xc: (by use) x the weapon's ring range: the lock-on reaches that far */
-	float lockHold;   /* +0x10: (by use) seconds a lock-on holds once out of reach */
+	float detectionAngle;   /* +0x4: (by use, the ARM CENTER's DETECTION ANGLE) tenths of a degree: the head's by level (the alert ring shows it) */
+	i32 hackingLevel;   /* +0x8: (the ARM CENTER's HACKING LEVEL) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own */
+	float lockOnTime;   /* +0xc: (the ARM CENTER's LOCK-ON TIME) x the weapon's ring range: the lock-on reaches that far */
+	float targetKeepTime;   /* +0x10: (the ARM CENTER's TARGET KEEP TIME) seconds a lock-on holds once out of reach */
 	float loadMax;   /* +0x14: (by use) the weight carried without slowing (the chest's, by level and items) */
 	float load;   /* +0x18: the parts' and items' weight (over loadMax: slower) */
 	i32 armorMax;   /* +0x1c: (by use) the armor it starts with (actor_startingValues) */
 	i32 shieldMax;   /* +0x20: the shield it starts with */
 	u8 _pad0000024[0x4];
 	i32 ammoMax[4];   /* +0x28: (by use) per weapon slot: the full load (ammo starts at half) */
-	float keyRate;   /* +0x38: (by use) how fast the movement keys ramp (a second) */
+	float mobility;   /* +0x38: (the ARM CENTER's MOBILITY) how fast the movement keys ramp (a second) */
 	float moveAccel;   /* +0x3c: the velocity's change towards the keys' (a second) */
 	float leanPitch;   /* +0x40: the body's lean with the pitch */
 	float boostTime;   /* +0x44: (by use) seconds of running the energy lasts */
@@ -121,9 +121,9 @@ typedef struct Player {
 	float ammoFactor[4];   /* +0x404: x the arms' ammunition, per kind */
 	i32 ammoBonus[4];   /* +0x414: + rounds, per kind */
 	float rangeBonus;   /* +0x424: + the sight range (radiusSq) */
-	float lockRangeFactor;   /* +0x428 */
-	float lockHoldFactor;   /* +0x42c */
-	i32 sensorBonus;   /* +0x430 */
+	float lockOnTimeFactor;   /* +0x428 */
+	float targetKeepFactor;   /* +0x42c */
+	i32 hackingBonus;   /* +0x430 */
 	float boostTimeFactor;   /* +0x434 */
 	float rechargeTimeFactor;   /* +0x438 */
 	float restTimeFactor;   /* +0x43c */
@@ -726,6 +726,59 @@ typedef struct BmpFile {
 	u8 _pad0000046[0x2];
 } BmpFile;
 
+/* a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c) */
+typedef struct HeadType {
+	char name[0x40];   /* +0x0: its folder path (the panel's name) */
+	u8 _pad0000040[0xa50];
+	float weight;   /* +0xa90 */
+	float detectionRange;   /* +0xa94: (by level: the actor's radiusSq, squared) */
+	float detectionAngle;   /* +0xa98: tenths of a degree */
+	i32 hackingLevel;   /* +0xa9c */
+	float lockOnTime;   /* +0xaa0 */
+	float targetKeepTime;   /* +0xaa4 */
+} HeadType;
+
+/* a chest part type (Stage.chestTypes) */
+typedef struct ChestType {
+	char name[0x40];   /* +0x0 */
+	u8 _pad0000040[0xa70];
+	float weightLimit;   /* +0xab0: (by level: the actor's loadMax) */
+	i32 maxArmor;   /* +0xab4 */
+	i32 maxShield;   /* +0xab8 */
+} ChestType;
+
+/* an arm part type (Stage.armTypes) */
+typedef struct ArmType {
+	char name[0x40];   /* +0x0 */
+	u8 _pad0000040[0x12a8];
+	float weight;   /* +0x12e8 */
+	i32 stats[5];   /* +0x12ec: (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax) */
+} ArmType;
+
+/* a leg part type (Stage.legTypes) */
+typedef struct LegType {
+	char name[0x40];   /* +0x0 */
+	u8 _pad0000040[0x1398];
+	float weight;   /* +0x13d8 */
+	float stat0;   /* +0x13dc: (the ARM CENTER's legs stats [0]) */
+	float value2;   /* +0x13e0 */
+	float speedCorrection;   /* +0x13e4 */
+	float bonus1;   /* +0x13e8 */
+	float bonus3;   /* +0x13ec */
+	float bonus2;   /* +0x13f0 */
+} LegType;
+
+/* a booster part type (Stage.boosterTypes) */
+typedef struct BoosterType {
+	char name[0x40];   /* +0x0 */
+	u8 _pad0000040[0x17b8];
+	float weight;   /* +0x17f8 */
+	i32 thrustType;   /* +0x17fc */
+	u8 _pad0001800[0x4];
+	float activeTime[3];   /* +0x1804: (the actor's boostTime, rechargeTime, restTime by these) */
+	float normalSpeed[4];   /* +0x1810 */
+} BoosterType;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -781,15 +834,15 @@ typedef struct Stage {
 	i32 objectCount;   /* +0x13c9b24 */
 	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
 	i32 objectSerial;   /* +0x13c9b2c: the next map object's id */
-	u8 headTypes[50][0xaa8];   /* +0x13c9b30 */
+	HeadType headTypes[50];   /* +0x13c9b30 */
 	i32 headTypeCount;   /* +0x13eb000 */
-	u8 chestTypes[50][0xabc];   /* +0x13eb004 */
+	ChestType chestTypes[50];   /* +0x13eb004 */
 	i32 chestTypeCount;   /* +0x140c8bc */
-	u8 armTypes[50][0x1300];   /* +0x140c8c0 */
+	ArmType armTypes[50];   /* +0x140c8c0 */
 	i32 armTypeCount;   /* +0x1447ec0 */
-	u8 legTypes[50][0x13f4];   /* +0x1447ec4 */
+	LegType legTypes[50];   /* +0x1447ec4 */
 	i32 legTypeCount;   /* +0x148646c */
-	u8 boosterTypes[50][0x1820];   /* +0x1486470 */
+	BoosterType boosterTypes[50];   /* +0x1486470 */
 	i32 boosterTypeCount;   /* +0x14d1ab0 */
 	ActorInfo actorInfo[50];   /* +0x14d1ab4: the item types ("read ActorItemInfo"; Scene.actorInfo: mechs and weapons) */
 	i32 actorInfoCount;   /* +0x1561b64 */
@@ -1214,16 +1267,16 @@ _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text
 _Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->time) == 0x4, "scene.fields: EventLine.time");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(Player, radiusSq) == 0x0 && sizeof(((Player *)0)->radiusSq) == 0x4, "scene.fields: Player.radiusSq");
-_Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading) == 0x4, "scene.fields: Player.heading");
-_Static_assert(offsetof(Player, sensorLevel) == 0x8 && sizeof(((Player *)0)->sensorLevel) == 0x4, "scene.fields: Player.sensorLevel");
-_Static_assert(offsetof(Player, lockRange) == 0xc && sizeof(((Player *)0)->lockRange) == 0x4, "scene.fields: Player.lockRange");
-_Static_assert(offsetof(Player, lockHold) == 0x10 && sizeof(((Player *)0)->lockHold) == 0x4, "scene.fields: Player.lockHold");
+_Static_assert(offsetof(Player, detectionAngle) == 0x4 && sizeof(((Player *)0)->detectionAngle) == 0x4, "scene.fields: Player.detectionAngle");
+_Static_assert(offsetof(Player, hackingLevel) == 0x8 && sizeof(((Player *)0)->hackingLevel) == 0x4, "scene.fields: Player.hackingLevel");
+_Static_assert(offsetof(Player, lockOnTime) == 0xc && sizeof(((Player *)0)->lockOnTime) == 0x4, "scene.fields: Player.lockOnTime");
+_Static_assert(offsetof(Player, targetKeepTime) == 0x10 && sizeof(((Player *)0)->targetKeepTime) == 0x4, "scene.fields: Player.targetKeepTime");
 _Static_assert(offsetof(Player, loadMax) == 0x14 && sizeof(((Player *)0)->loadMax) == 0x4, "scene.fields: Player.loadMax");
 _Static_assert(offsetof(Player, load) == 0x18 && sizeof(((Player *)0)->load) == 0x4, "scene.fields: Player.load");
 _Static_assert(offsetof(Player, armorMax) == 0x1c && sizeof(((Player *)0)->armorMax) == 0x4, "scene.fields: Player.armorMax");
 _Static_assert(offsetof(Player, shieldMax) == 0x20 && sizeof(((Player *)0)->shieldMax) == 0x4, "scene.fields: Player.shieldMax");
 _Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
-_Static_assert(offsetof(Player, keyRate) == 0x38 && sizeof(((Player *)0)->keyRate) == 0x4, "scene.fields: Player.keyRate");
+_Static_assert(offsetof(Player, mobility) == 0x38 && sizeof(((Player *)0)->mobility) == 0x4, "scene.fields: Player.mobility");
 _Static_assert(offsetof(Player, moveAccel) == 0x3c && sizeof(((Player *)0)->moveAccel) == 0x4, "scene.fields: Player.moveAccel");
 _Static_assert(offsetof(Player, leanPitch) == 0x40 && sizeof(((Player *)0)->leanPitch) == 0x4, "scene.fields: Player.leanPitch");
 _Static_assert(offsetof(Player, boostTime) == 0x44 && sizeof(((Player *)0)->boostTime) == 0x4, "scene.fields: Player.boostTime");
@@ -1308,9 +1361,9 @@ _Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers
 _Static_assert(offsetof(Player, ammoFactor) == 0x404 && sizeof(((Player *)0)->ammoFactor) == 0x10, "scene.fields: Player.ammoFactor");
 _Static_assert(offsetof(Player, ammoBonus) == 0x414 && sizeof(((Player *)0)->ammoBonus) == 0x10, "scene.fields: Player.ammoBonus");
 _Static_assert(offsetof(Player, rangeBonus) == 0x424 && sizeof(((Player *)0)->rangeBonus) == 0x4, "scene.fields: Player.rangeBonus");
-_Static_assert(offsetof(Player, lockRangeFactor) == 0x428 && sizeof(((Player *)0)->lockRangeFactor) == 0x4, "scene.fields: Player.lockRangeFactor");
-_Static_assert(offsetof(Player, lockHoldFactor) == 0x42c && sizeof(((Player *)0)->lockHoldFactor) == 0x4, "scene.fields: Player.lockHoldFactor");
-_Static_assert(offsetof(Player, sensorBonus) == 0x430 && sizeof(((Player *)0)->sensorBonus) == 0x4, "scene.fields: Player.sensorBonus");
+_Static_assert(offsetof(Player, lockOnTimeFactor) == 0x428 && sizeof(((Player *)0)->lockOnTimeFactor) == 0x4, "scene.fields: Player.lockOnTimeFactor");
+_Static_assert(offsetof(Player, targetKeepFactor) == 0x42c && sizeof(((Player *)0)->targetKeepFactor) == 0x4, "scene.fields: Player.targetKeepFactor");
+_Static_assert(offsetof(Player, hackingBonus) == 0x430 && sizeof(((Player *)0)->hackingBonus) == 0x4, "scene.fields: Player.hackingBonus");
 _Static_assert(offsetof(Player, boostTimeFactor) == 0x434 && sizeof(((Player *)0)->boostTimeFactor) == 0x4, "scene.fields: Player.boostTimeFactor");
 _Static_assert(offsetof(Player, rechargeTimeFactor) == 0x438 && sizeof(((Player *)0)->rechargeTimeFactor) == 0x4, "scene.fields: Player.rechargeTimeFactor");
 _Static_assert(offsetof(Player, restTimeFactor) == 0x43c && sizeof(((Player *)0)->restTimeFactor) == 0x4, "scene.fields: Player.restTimeFactor");
@@ -1760,6 +1813,38 @@ _Static_assert(offsetof(BmpFile, compression) == 0x26 && sizeof(((BmpFile *)0)->
 _Static_assert(offsetof(BmpFile, width) == 0x3e && sizeof(((BmpFile *)0)->width) == 0x4, "scene.fields: BmpFile.width");
 _Static_assert(offsetof(BmpFile, height) == 0x42 && sizeof(((BmpFile *)0)->height) == 0x4, "scene.fields: BmpFile.height");
 _Static_assert(sizeof(BmpFile) == 0x48, "scene.fields: size of BmpFile");
+_Static_assert(offsetof(HeadType, name) == 0x0 && sizeof(((HeadType *)0)->name) == 0x40, "scene.fields: HeadType.name");
+_Static_assert(offsetof(HeadType, weight) == 0xa90 && sizeof(((HeadType *)0)->weight) == 0x4, "scene.fields: HeadType.weight");
+_Static_assert(offsetof(HeadType, detectionRange) == 0xa94 && sizeof(((HeadType *)0)->detectionRange) == 0x4, "scene.fields: HeadType.detectionRange");
+_Static_assert(offsetof(HeadType, detectionAngle) == 0xa98 && sizeof(((HeadType *)0)->detectionAngle) == 0x4, "scene.fields: HeadType.detectionAngle");
+_Static_assert(offsetof(HeadType, hackingLevel) == 0xa9c && sizeof(((HeadType *)0)->hackingLevel) == 0x4, "scene.fields: HeadType.hackingLevel");
+_Static_assert(offsetof(HeadType, lockOnTime) == 0xaa0 && sizeof(((HeadType *)0)->lockOnTime) == 0x4, "scene.fields: HeadType.lockOnTime");
+_Static_assert(offsetof(HeadType, targetKeepTime) == 0xaa4 && sizeof(((HeadType *)0)->targetKeepTime) == 0x4, "scene.fields: HeadType.targetKeepTime");
+_Static_assert(sizeof(HeadType) == 0xaa8, "scene.fields: size of HeadType");
+_Static_assert(offsetof(ChestType, name) == 0x0 && sizeof(((ChestType *)0)->name) == 0x40, "scene.fields: ChestType.name");
+_Static_assert(offsetof(ChestType, weightLimit) == 0xab0 && sizeof(((ChestType *)0)->weightLimit) == 0x4, "scene.fields: ChestType.weightLimit");
+_Static_assert(offsetof(ChestType, maxArmor) == 0xab4 && sizeof(((ChestType *)0)->maxArmor) == 0x4, "scene.fields: ChestType.maxArmor");
+_Static_assert(offsetof(ChestType, maxShield) == 0xab8 && sizeof(((ChestType *)0)->maxShield) == 0x4, "scene.fields: ChestType.maxShield");
+_Static_assert(sizeof(ChestType) == 0xabc, "scene.fields: size of ChestType");
+_Static_assert(offsetof(ArmType, name) == 0x0 && sizeof(((ArmType *)0)->name) == 0x40, "scene.fields: ArmType.name");
+_Static_assert(offsetof(ArmType, weight) == 0x12e8 && sizeof(((ArmType *)0)->weight) == 0x4, "scene.fields: ArmType.weight");
+_Static_assert(offsetof(ArmType, stats) == 0x12ec && sizeof(((ArmType *)0)->stats) == 0x14, "scene.fields: ArmType.stats");
+_Static_assert(sizeof(ArmType) == 0x1300, "scene.fields: size of ArmType");
+_Static_assert(offsetof(LegType, name) == 0x0 && sizeof(((LegType *)0)->name) == 0x40, "scene.fields: LegType.name");
+_Static_assert(offsetof(LegType, weight) == 0x13d8 && sizeof(((LegType *)0)->weight) == 0x4, "scene.fields: LegType.weight");
+_Static_assert(offsetof(LegType, stat0) == 0x13dc && sizeof(((LegType *)0)->stat0) == 0x4, "scene.fields: LegType.stat0");
+_Static_assert(offsetof(LegType, value2) == 0x13e0 && sizeof(((LegType *)0)->value2) == 0x4, "scene.fields: LegType.value2");
+_Static_assert(offsetof(LegType, speedCorrection) == 0x13e4 && sizeof(((LegType *)0)->speedCorrection) == 0x4, "scene.fields: LegType.speedCorrection");
+_Static_assert(offsetof(LegType, bonus1) == 0x13e8 && sizeof(((LegType *)0)->bonus1) == 0x4, "scene.fields: LegType.bonus1");
+_Static_assert(offsetof(LegType, bonus3) == 0x13ec && sizeof(((LegType *)0)->bonus3) == 0x4, "scene.fields: LegType.bonus3");
+_Static_assert(offsetof(LegType, bonus2) == 0x13f0 && sizeof(((LegType *)0)->bonus2) == 0x4, "scene.fields: LegType.bonus2");
+_Static_assert(sizeof(LegType) == 0x13f4, "scene.fields: size of LegType");
+_Static_assert(offsetof(BoosterType, name) == 0x0 && sizeof(((BoosterType *)0)->name) == 0x40, "scene.fields: BoosterType.name");
+_Static_assert(offsetof(BoosterType, weight) == 0x17f8 && sizeof(((BoosterType *)0)->weight) == 0x4, "scene.fields: BoosterType.weight");
+_Static_assert(offsetof(BoosterType, thrustType) == 0x17fc && sizeof(((BoosterType *)0)->thrustType) == 0x4, "scene.fields: BoosterType.thrustType");
+_Static_assert(offsetof(BoosterType, activeTime) == 0x1804 && sizeof(((BoosterType *)0)->activeTime) == 0xc, "scene.fields: BoosterType.activeTime");
+_Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterType *)0)->normalSpeed) == 0x10, "scene.fields: BoosterType.normalSpeed");
+_Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");

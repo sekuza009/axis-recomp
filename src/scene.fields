@@ -19,18 +19,18 @@ struct Player 0x8888                                            # a player's rec
 0x538      4          i32 lastWarp                               # (by use) the warp zone (item) it came through last (-1 none: not kept off it)
 0x53c      4          i32 onWarp                                 # 1: touching a warp zone this frame
 0x540      4          float warpWait                             # seconds before it can warp again (2)
-8          4          i32 sensorLevel                            # (by use) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own
-0xc        4          float lockRange                            # (by use) x the weapon's ring range: the lock-on reaches that far
-0x10       4          float lockHold                             # (by use) seconds a lock-on holds once out of reach
+8          4          i32 hackingLevel                           # (the ARM CENTER's HACKING LEVEL) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own
+0xc        4          float lockOnTime                           # (the ARM CENTER's LOCK-ON TIME) x the weapon's ring range: the lock-on reaches that far
+0x10       4          float targetKeepTime                       # (the ARM CENTER's TARGET KEEP TIME) seconds a lock-on holds once out of reach
 0x14       4          float loadMax                              # (by use) the weight carried without slowing (the chest's, by level and items)
 0x18       4          float load                                 # the parts' and items' weight (over loadMax: slower)
 # the items' bonuses (actor_computeStats: item kinds 0x1b .. 0x23)
 0x404      0x10       float ammoFactor[4]                        # x the arms' ammunition, per kind
 0x414      0x10       i32 ammoBonus[4]                           # + rounds, per kind
 0x424      4          float rangeBonus                           # + the sight range (radiusSq)
-0x428      4          float lockRangeFactor
-0x42c      4          float lockHoldFactor
-0x430      4          i32 sensorBonus
+0x428      4          float lockOnTimeFactor
+0x42c      4          float targetKeepFactor
+0x430      4          i32 hackingBonus
 0x434      4          float boostTimeFactor
 0x438      4          float rechargeTimeFactor
 0x43c      4          float restTimeFactor
@@ -57,7 +57,7 @@ struct Player 0x8888                                            # a player's rec
 0x886c     4          float stuckTime                            # (by use) the path checked every second: moved under 500 -> dropped
 0x8870     4          i32 stuckPath                              # the path dropped
 0x8874     0xc        float stuckMove[3]                         # the moves summed over the second
-0x38       4          float keyRate                              # (by use) how fast the movement keys ramp (a second)
+0x38       4          float mobility                             # (the ARM CENTER's MOBILITY) how fast the movement keys ramp (a second)
 0x3c       4          float moveAccel                            # the velocity's change towards the keys' (a second)
 0x40       4          float leanPitch                            # the body's lean with the pitch
 0x44       4          float boostTime                            # (by use) seconds of running the energy lasts
@@ -152,7 +152,7 @@ struct Player 0x8888                                            # a player's rec
 0x87f8     4          i32 target1                               # (by use) its targets (-1 none; dropped with the bullet: actor_clearTargetRefs)
 0x87fc     4          i32 target2
 0x884c     4          i32 cameraValue                           # (by use) the camera's value while it follows this actor (camera_setTarget)
-4          4          float heading                             # (by use) tenths of a degree (the alert ring turns with it)
+4          4          float detectionAngle                      # (by use, the ARM CENTER's DETECTION ANGLE) tenths of a degree: the head's by level (the alert ring shows it)
 0xec       4          i32 score                                 # shown top left
 0x108      4          i32 active                                # 1: the slot is in use (0 for the local player's: "press fire" may be shown)
 0x120      4          float blinkTime                           # (unclear) the energy bar blinks 4 times a second by it while warned
@@ -593,6 +593,43 @@ struct BmpFile 0x48                                             # an uncompresse
 0x3e       4          i32 width                                  # bmpWidth, bmpHeight kept
 0x42       4          i32 height
 
+struct HeadType 0xaa8                                           # a head part type (Stage.headTypes; the ARM CENTER's head panel: armc_parts.c)
+0          0x40       char name[0x40]                            # its folder path (the panel's name)
+0xa90      4          float weight
+0xa94      4          float detectionRange                       # (by level: the actor's radiusSq, squared)
+0xa98      4          float detectionAngle                       # tenths of a degree
+0xa9c      4          i32 hackingLevel
+0xaa0      4          float lockOnTime
+0xaa4      4          float targetKeepTime
+
+struct ChestType 0xabc                                          # a chest part type (Stage.chestTypes)
+0          0x40       char name[0x40]
+0xab0      4          float weightLimit                          # (by level: the actor's loadMax)
+0xab4      4          i32 maxArmor
+0xab8      4          i32 maxShield
+
+struct ArmType 0x1300                                           # an arm part type (Stage.armTypes)
+0          0x40       char name[0x40]
+0x12e8     4          float weight
+0x12ec     0x14       i32 stats[5]                               # (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax)
+
+struct LegType 0x13f4                                           # a leg part type (Stage.legTypes)
+0          0x40       char name[0x40]
+0x13d8     4          float weight
+0x13dc     4          float stat0                                # (the ARM CENTER's legs stats [0])
+0x13e0     4          float value2
+0x13e4     4          float speedCorrection
+0x13e8     4          float bonus1
+0x13ec     4          float bonus3
+0x13f0     4          float bonus2
+
+struct BoosterType 0x1820                                       # a booster part type (Stage.boosterTypes)
+0          0x40       char name[0x40]
+0x17f8     4          float weight
+0x17fc     4          i32 thrustType
+0x1804     0xc        float activeTime[3]                        # (the actor's boostTime, rechargeTime, restTime by these)
+0x1810     0x10       float normalSpeed[4]
+
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
@@ -613,15 +650,15 @@ struct Stage 0x2150443                                          # the stage: the
 0x9ef928   0xc        float worldHigh[3]
 0x20fcfe0  4          u32 emblemTexture                          # (by use) the emblem atlas's GL texture
 0x20fcfe4  0x8000     u32 emblemAtlas[64][128]                   # the players' emblems, four to a row
-0x13c9b30  0x214d0    u8 headTypes[50][0xaa8]
+0x13c9b30  0x214d0    HeadType headTypes[50] 
 0x13eb000  4          i32 headTypeCount
-0x13eb004  0x218b8    u8 chestTypes[50][0xabc]
+0x13eb004  0x218b8    ChestType chestTypes[50]
 0x140c8bc  4          i32 chestTypeCount
-0x140c8c0  0x3b600    u8 armTypes[50][0x1300]
+0x140c8c0  0x3b600    ArmType armTypes[50]   
 0x1447ec0  4          i32 armTypeCount
-0x1447ec4  0x3e5a8    u8 legTypes[50][0x13f4]
+0x1447ec4  0x3e5a8    LegType legTypes[50]   
 0x148646c  4          i32 legTypeCount
-0x1486470  0x4b640    u8 boosterTypes[50][0x1820]
+0x1486470  0x4b640    BoosterType boosterTypes[50]
 0x14d1ab0  4          i32 boosterTypeCount
 0x1cd6a30  0x580      u8 mapPlayers[16][0x58]                    # (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40)
 0x1cd6fb0  4          i32 mapPlayerCount
