@@ -483,14 +483,16 @@ typedef struct Space {
 
 /* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
 typedef struct ViewVolume {
-	u8 _pad0000000[0x10];
+	u8 _pad0000000[0x8];
+	u8 *block;   /* +0x8: (by use) its lists' memory */
+	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
 	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c) */
-	u8 _pad0000014[0xc];
+	void *glArrays[3];   /* +0x14: (by use) the GL vertex / colour / texture-coordinate array entry points (wglGetProcAddress; none: the GL 1.1 ones) */
 	i32 materialOrder[3072];   /* +0x20: the materials in the order first queued (materialCount of them) */
 	u8 _pad0003020[0x4];
 	i32 materialCount;   /* +0x3024 */
-	u8 *materialHeads[6144];   /* +0x3028: per material: its first queued entry (0: none yet) */
-	u8 _pad0009028[0x8];
+	u8 *materialHeads[3073];   /* +0x3028: per material: its first queued entry (0: none yet) */
+	u8 *materialTails[3073];   /* +0x602c: its last (entries are linked on from it) */
 	i32 entryLimit;   /* +0x9030: the queued parts (0x1c bytes each) */
 	u8 *entries;   /* +0x9034 */
 	i32 entryCount;   /* +0x9038 */
@@ -1570,10 +1572,14 @@ _Static_assert(offsetof(Space, splitCount) == 0x90 && sizeof(((Space *)0)->split
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
 _Static_assert(offsetof(Space, lastHit) == 0x98 && sizeof(((Space *)0)->lastHit) == 0x4, "scene.fields: Space.lastHit");
 _Static_assert(sizeof(Space) == 0x9c, "scene.fields: size of Space");
+_Static_assert(offsetof(ViewVolume, block) == 0x8 && sizeof(((ViewVolume *)0)->block) == 0x4, "scene.fields: ViewVolume.block");
+_Static_assert(offsetof(ViewVolume, ownsBlock) == 0xc && sizeof(((ViewVolume *)0)->ownsBlock) == 0x4, "scene.fields: ViewVolume.ownsBlock");
 _Static_assert(offsetof(ViewVolume, entryPointsSet) == 0x10 && sizeof(((ViewVolume *)0)->entryPointsSet) == 0x4, "scene.fields: ViewVolume.entryPointsSet");
+_Static_assert(offsetof(ViewVolume, glArrays) == 0x14 && sizeof(((ViewVolume *)0)->glArrays) == 0xc, "scene.fields: ViewVolume.glArrays");
 _Static_assert(offsetof(ViewVolume, materialOrder) == 0x20 && sizeof(((ViewVolume *)0)->materialOrder) == 0x3000, "scene.fields: ViewVolume.materialOrder");
 _Static_assert(offsetof(ViewVolume, materialCount) == 0x3024 && sizeof(((ViewVolume *)0)->materialCount) == 0x4, "scene.fields: ViewVolume.materialCount");
-_Static_assert(offsetof(ViewVolume, materialHeads) == 0x3028 && sizeof(((ViewVolume *)0)->materialHeads) == 0x6000, "scene.fields: ViewVolume.materialHeads");
+_Static_assert(offsetof(ViewVolume, materialHeads) == 0x3028 && sizeof(((ViewVolume *)0)->materialHeads) == 0x3004, "scene.fields: ViewVolume.materialHeads");
+_Static_assert(offsetof(ViewVolume, materialTails) == 0x602c && sizeof(((ViewVolume *)0)->materialTails) == 0x3004, "scene.fields: ViewVolume.materialTails");
 _Static_assert(offsetof(ViewVolume, entryLimit) == 0x9030 && sizeof(((ViewVolume *)0)->entryLimit) == 0x4, "scene.fields: ViewVolume.entryLimit");
 _Static_assert(offsetof(ViewVolume, entries) == 0x9034 && sizeof(((ViewVolume *)0)->entries) == 0x4, "scene.fields: ViewVolume.entries");
 _Static_assert(offsetof(ViewVolume, entryCount) == 0x9038 && sizeof(((ViewVolume *)0)->entryCount) == 0x4, "scene.fields: ViewVolume.entryCount");

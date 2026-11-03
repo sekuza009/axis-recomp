@@ -228,19 +228,19 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
    its three entry points looked up (+0x14 .. +0x1c) and the flag (+0x10) set */
 void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 {
-	if (FIELD(int, view, 0xc) == 1) {
-		operator_delete(FIELD(void *, view, 8));   /* operator delete */
-		FIELD(void *, view, 8) = 0;
-		FIELD(int, view, 0xc) = 0;
+	if (((ViewVolume *)view)->ownsBlock == 1) {
+		operator_delete(((ViewVolume *)view)->block);   /* operator delete */
+		((ViewVolume *)view)->block = 0;
+		((ViewVolume *)view)->ownsBlock = 0;
 	}
 	ViewVolume_clear(view);   /* ViewVolume_clear */
 	const char *extensions = glGetString(0x1f03);   /* glGetString(GL_EXTENSIONS) */
 	if (!extensions || !crt_strstr(extensions, (const char *)STR(0x4c7b5c, "GL_EXT_vertex_array")))   /* strstr */
 		return;
-	FIELD(int, view, 0x10) = 1;
+	((ViewVolume *)view)->entryPointsSet = 1;
 	static const u32 names[3] = { STR(0x4c7b48, "glVertexPointerEXT"), STR(0x4c7b34, "glColorPointerEXT"), STR(0x4c7b1c, "glTexCoordPointerEXT") };   /* the three entry points' names */
 	for (int k = 0; k < 3; k++)
-		FIELD(void *, view, 0x14 + k * 4) = wglGetProcAddress((const char *)RELOC(names[k]));   /* wglGetProcAddress */
+		((ViewVolume *)view)->glArrays[k] = wglGetProcAddress((const char *)RELOC(names[k]));   /* wglGetProcAddress */
 }
 
 /* a box corner (x stored as a float, y and z kept on the FPU) through the 4 x 4 matrix m into clip space: each row
@@ -320,15 +320,15 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		u32 *e = (u32 *)(((ViewVolume *)view)->entries + ((ViewVolume *)view)->entryCount++ * 0x1c);
 		if (!e)
 			return;
-		if (GAME_VAR(u32 *, view + 0x3028 + list * 4) == 0) {
+		if (((ViewVolume *)view)->materialHeads[list] == 0) {
 			GAME_VAR(int, view + 0x20 + ((ViewVolume *)view)->materialCount * 4) = list;
 			((ViewVolume *)view)->materialCount++;
-			GAME_VAR(u32 *, view + 0x3028 + list * 4) = e;
+			((ViewVolume *)view)->materialHeads[list] = (u8 *)e;
 		}
-		u32 *tail = GAME_VAR(u32 *, view + 0x602c + list * 4);
+		u32 *tail = (u32 *)((ViewVolume *)view)->materialTails[list];
 		if (tail)
 			tail[6] = (u32)e;
-		GAME_VAR(u32 *, view + 0x602c + list * 4) = e;
+		((ViewVolume *)view)->materialTails[list] = (u8 *)e;
 		e[0] = (u32)part;
 		e[1] = extra ? (u32)(extra + sp->colourBase) : 0;
 		e[2] = a4;
@@ -405,7 +405,7 @@ static void scroll(float *uv, int n, int kind, const float *b)
    the most so far kept in +0x9050 */
 static int fits(u8 *vv, const u8 *mesh)
 {
-	int n = FIELD(int, mesh, 0x4c);
+	int n = ((const ShapePart *)mesh)->vertexCount;
 	if (n > VV->colourLimit)
 		return 0;
 	if (VV->colourMost < n)
@@ -435,7 +435,7 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 		if (factors) {
 			if (!fits(vv, mesh))
 				return NULL;
-			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
+			memcpy(buf, colours, (u32)((const ShapePart *)mesh)->vertexCount * 4);
 			invert(inv, (const float *)RELOC(it[4]));
 			shape_getShadingColorBufferBy(buf, 0, mesh, factors, inv);
 			if (it[3])
@@ -445,14 +445,14 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 		if (it[3]) {
 			if (!fits(vv, mesh))
 				return NULL;
-			memcpy(buf, colours, (u32)FIELD(int, mesh, 0x4c) * 4);
+			memcpy(buf, colours, (u32)((const ShapePart *)mesh)->vertexCount * 4);
 			image_addColour(buf, 0, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 			return (const u32 *)buf;
 		}
 		return (const u32 *)colours;
 	}
 	if ((mesh[0] & 2) && !it[3])
-		return FIELD(const u32 *, mesh, 0x58);
+		return ((const u32 *)((const ShapePart *)mesh)->colours);
 	if (factors) {
 		invert(inv, (const float *)RELOC(it[4]));
 		if (!fits(vv, mesh))
@@ -468,7 +468,7 @@ static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 		image_addColour(buf, 1, (const u32 *)mesh, (const u8 *)RELOC(it[3]));
 		return (const u32 *)buf;
 	}
-	return FIELD(const u32 *, mesh, 0x58);
+	return ((const u32 *)((const ShapePart *)mesh)->colours);
 }
 
 /* an opaque mesh from vertex arrays (an extension's array functions at +0x14 / +0x18 / +0x1c when set): positions,
@@ -479,26 +479,26 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 {
 	ArrayFn fn;
 	glEnableClientState(0x8074);
-	if ((fn = FIELD(ArrayFn, vv, 0x14)))
-		fn(3, 0x1406, 0, FIELD(int, mesh, 0x4c), FIELD(void *, mesh, 0x50));
+	if ((fn = (ArrayFn)VV->glArrays[0]))
+		fn(3, 0x1406, 0, ((const ShapePart *)mesh)->vertexCount, ((void *)((const ShapePart *)mesh)->vertices));
 	else
-		glVertexPointer(3, 0x1406, 0, FIELD(void *, mesh, 0x50));
+		glVertexPointer(3, 0x1406, 0, ((void *)((const ShapePart *)mesh)->vertices));
 	glEnableClientState(0x8076);
-	if ((fn = FIELD(ArrayFn, vv, 0x18)))
-		fn(4, 0x1401, 0, FIELD(int, mesh, 0x4c), col);
+	if ((fn = (ArrayFn)VV->glArrays[1]))
+		fn(4, 0x1401, 0, ((const ShapePart *)mesh)->vertexCount, col);
 	else
 		glColorPointer(4, 0x1401, 0, col);
 	if (id > 0) {
-		const float *uv = FIELD(const float *, mesh, 0x5c);
+		const float *uv = ((const float *)((const ShapePart *)mesh)->texCoords);
 		int kind = tex_scroll(id - 1);
 		if (kind) {
-			memcpy(uvs, uv, (u32)FIELD(int, mesh, 0x4c) * 8);
-			scroll(uvs, FIELD(int, mesh, 0x4c), kind, b);
+			memcpy(uvs, uv, (u32)((const ShapePart *)mesh)->vertexCount * 8);
+			scroll(uvs, ((const ShapePart *)mesh)->vertexCount, kind, b);
 			uv = uvs;
 		}
 		glEnableClientState(0x8078);
-		if ((fn = FIELD(ArrayFn, vv, 0x1c)))
-			fn(2, 0x1406, 0, FIELD(int, mesh, 0x4c), uv);
+		if ((fn = (ArrayFn)VV->glArrays[2]))
+			fn(2, 0x1406, 0, ((const ShapePart *)mesh)->vertexCount, uv);
 		else
 			glTexCoordPointer(2, 0x1406, 0, uv);
 	} else
@@ -517,8 +517,8 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 		glDisable(GL_DEPTH_TEST);
 	else
 		glEnable(GL_DEPTH_TEST);
-	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
-		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
+	for (int p = 0; p < ((const ShapePart *)mesh)->primCount; p++) {
+		const u32 *pg = ((const u32 *)((const ShapePart *)mesh)->prims) + p * 3;
 		glDrawElements(pg[0], pg[1], 0x1405, (const void *)RELOC(pg[2]));
 		int c = (int)pg[1];
 		if (pg[0] == 4)
@@ -548,8 +548,8 @@ static void through(float *out, const float *M, const float *p, const char *orde
    of both when there are two) into the view volume's list, with texture coordinates (scrolled) when textured */
 static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, int id, const float *b)
 {
-	for (int p = 0; p < FIELD(int, mesh, 0x60); p++) {
-		const u32 *pg = FIELD(const u32 *, mesh, 0x64) + p * 3;
+	for (int p = 0; p < ((const ShapePart *)mesh)->primCount; p++) {
+		const u32 *pg = ((const u32 *)((const ShapePart *)mesh)->prims) + p * 3;
 		int count = (int)pg[1];
 		const u32 *idx = (const u32 *)RELOC(pg[2]);
 		float product[16];
@@ -566,7 +566,7 @@ static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *c
 			const char *order = id > 0 ? k_texturedOrder : k_plainOrder;
 			if (id > 0) {
 				for (int k = 0; k < 3; k++)
-					memcpy(&uv[2 * k], FIELD(const float *, mesh, 0x5c) + idx[k] * 2, 8);
+					memcpy(&uv[2 * k], ((const float *)((const ShapePart *)mesh)->texCoords) + idx[k] * 2, 8);
 				int kind = tex_scroll(id - 1);
 				if (kind)
 					scroll(uv, 3, kind, b);
@@ -574,7 +574,7 @@ static void draw_transparent(u8 *vv, const u32 *it, const u8 *mesh, const u32 *c
 			for (int k = 0; k < 3; k++)
 				c[k] = col[idx[k]];
 			for (int k = 0; k < 3; k++)
-				through(P + 3 * k, M, FIELD(const float *, mesh, 0x50) + idx[k] * 3, order + 9 * k);
+				through(P + 3 * k, M, ((const float *)((const ShapePart *)mesh)->vertices) + idx[k] * 3, order + 9 * k);
 			if (id > 0)
 				ViewVolume_transformObject(vv, id - 1, (const u32 *)uv, c, P, NULL, 2, 1);
 			else
@@ -657,8 +657,8 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	VV->colourMost = 0;
 
 	for (int i = 0; i < VV->materialCount; i++) {
-		int id = FIELD(int, vv, 0x20 + i * 4);
-		const u32 *it = FIELD(const u32 *, vv, 0x3028 + id * 4);
+		int id = VV->materialOrder[i];
+		const u32 *it = (const u32 *)VV->materialHeads[id];
 		if (id > 0 && mode != 2)
 			bind(vv, id - 1);
 		do {
@@ -724,9 +724,9 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 		u8 *r = VV->triangles + i * 0x60;
 		if (FIELD(int, r, 0x5c) != 2)
 			continue;
-		FIELD(u8 **, vv, 0x9060)[VV->triangleOrderCount * 2] = r;
+		((u8 **)VV->triangleOrder)[VV->triangleOrderCount * 2] = r;
 		X z = fadd_m(fadd_m(fld_m(&FIELD(float, r, 0x50)), &FIELD(float, r, 0x40)), &FIELD(float, r, 0x30));
-		FIELD(float *, vv, 0x9060)[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
+		((float *)VV->triangleOrder)[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
 		VV->triangleOrderCount++;
 	}
 	VV->quadOrderACount = 0;
@@ -745,15 +745,15 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	/* triangles and billboards merged back to front (triangles fogged when fog is on, billboards never) */
 	identity_matrices();
 	fog_set(fog, mapped);
-	render_depthSortA(FIELD(u32 *, vv, 0x9060), 0, VV->triangleOrderCount - 1);
-	render_depthSortB(FIELD(u32 *, vv, 0x9074), 0, VV->quadOrderACount - 1);
+	render_depthSortA(((u32 *)VV->triangleOrder), 0, VV->triangleOrderCount - 1);
+	render_depthSortB(((u32 *)VV->quadOrderA), 0, VV->quadOrderACount - 1);
 	int ia = 0, ib = 0, triangles = 0;
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_FOG);
 	glBegin(GL_QUADS);
-	const float *a = VV->triangleOrderCount > 0 ? FIELD(const float *, vv, 0x9060) : NULL;
-	const float *q = VV->quadOrderACount > 0 ? FIELD(const float *, vv, 0x9074) : NULL;
+	const float *a = VV->triangleOrderCount > 0 ? ((const float *)VV->triangleOrder) : NULL;
+	const float *q = VV->quadOrderACount > 0 ? ((const float *)VV->quadOrderA) : NULL;
 	while (a || q) {
 		if (a && (!q || !(fld_m(&a[1]) >= fld_m(&q[1])))) {
 			if (triangles != 1) {
@@ -773,7 +773,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 			triangle(r, cur >= 0, 1);
 			VV->trianglesDrawn++;
 			ia++;
-			a = ia < VV->triangleOrderCount ? FIELD(const float *, vv, 0x9060) + ia * 2 : NULL;
+			a = ia < VV->triangleOrderCount ? ((const float *)VV->triangleOrder) + ia * 2 : NULL;
 		} else {
 			if (triangles != 0) {
 				glEnd();
@@ -791,7 +791,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 			billboard(r, cur >= 0);
 			VV->trianglesDrawn += 2;
 			ib++;
-			q = ib < VV->quadOrderACount ? FIELD(const float *, vv, 0x9074) + ib * 2 : NULL;
+			q = ib < VV->quadOrderACount ? ((const float *)VV->quadOrderA) + ib * 2 : NULL;
 		}
 	}
 	glEnd();
@@ -800,13 +800,13 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	glDisable(GL_FOG);
 
 	/* the billboards of kind 3, unfogged, without depth test */
-	render_depthSortB(FIELD(u32 *, vv, 0x907c), 0, VV->quadOrderBCount - 1);
+	render_depthSortB(((u32 *)VV->quadOrderB), 0, VV->quadOrderBCount - 1);
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_DEPTH_TEST);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < VV->quadOrderBCount; i++) {
-		const u32 *r = FIELD(const u32 **, vv, 0x907c)[i * 2];
+		const u32 *r = ((const u32 **)VV->quadOrderB)[i * 2];
 		if ((int)r[0] != cur) {
 			glEnd();
 			cur = (int)r[0];
