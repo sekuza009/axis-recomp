@@ -357,13 +357,13 @@ void THISCALL (actor_updateBooster)(u8 *scene, int a) { part_load(scene, a, &g_p
    leaves */
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
-#define R(type, offset) GAME_VAR(type, rec + (offset))
+#define SR ((SpawnRecord *)rec)   /* the same by its fields (src/scene.fields) */
 	int player = STS->playerActor;
 	if (player < 0)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
-	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
-	((float *)RELOC(spawn))[5] = f32(fld_m(&R(float, 0x10)));
-	((float *)RELOC(spawn))[6] = f32(fld_m(&R(float, 0x14)));
+	u32 spawn[7] = { SR->player, SR->bot, BITS(SR->pos[0]), BITS(SR->pos[1]), BITS(SR->pos[2]) };
+	((float *)RELOC(spawn))[5] = f32(fld_m(&SR->pitch));
+	((float *)RELOC(spawn))[6] = f32(fld_m(&SR->yaw));
 	stage_setupActorSlot((Stage *)scene, a, -1, STS->playerActor, spawn);
 	if (a < 0)
 		return;
@@ -371,25 +371,25 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	Player *act = (Player *)actor;
 #define A(type, offset) GAME_VAR(type, actor + (offset))
 #define AC act   /* the same by its fields (src/scene.fields) */
-	AC->spawn64 = R(u32, 0x1c);
-	AC->armorMax = R(u32, 0x20);
-	AC->shieldMax = R(u32, 0x24);
-	AC->armor = R(u32, 0x20);
-	AC->shield = R(u32, 0x24);
-	AC->topSpeed = AC->speed = (float)(R(float, 0x28) * (long double)k_27_7778f);
-	AC->accel = (float)(R(float, 0x2c) * (long double)k_10f);
-	long double radius = R(float, 0x30);
+	AC->spawn64 = SR->spawn64;
+	AC->armorMax = SR->armor;
+	AC->shieldMax = SR->shield;
+	AC->armor = SR->armor;
+	AC->shield = SR->shield;
+	AC->topSpeed = AC->speed = (float)(SR->speed * (long double)k_27_7778f);
+	AC->accel = (float)(SR->accel * (long double)k_10f);
+	long double radius = SR->range;
 	AC->radiusSq = (float)(radius * radius * k_10000f);
-	AC->spawn70 = R(u32, 0x34);
-	AC->spawn74 = ftol(R(float, 0x38) * (long double)k_10f);
-	AC->spawn78 = R(u32, 0x3c);
-	AC->dodgeSpread = (float)(R(float, 0x40) * (long double)k_100f);
-	AC->climbSpread = (float)(R(float, 0x44) * (long double)k_100f);
+	AC->spawn70 = SR->spawn70;
+	AC->spawn74 = ftol(SR->spawn74 * (long double)k_10f);
+	AC->spawn78 = SR->spawn78;
+	AC->dodgeSpread = (float)(SR->dodgeSpread * (long double)k_100f);
+	AC->climbSpread = (float)(SR->climbSpread * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
-		BITS(AC->spawnTail[k]) = R(u32, 0x48 + k * 4);
+		BITS(AC->botTimes[k]) = BITS(SR->botTimes[k]);
 	AC->target1 = -1;
 	AC->target2 = -1;
-#undef R
+#undef SR
 #undef A
 #undef AC
 }
@@ -768,11 +768,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->spawn78 = 0;
 	AC->dodgeSpread = 1000.0f;   /* 1000 */
 	AC->climbSpread = 500.0f;   /* 500 */
-	AC->spawnTail[0] = 2.0f;   /* 2 */
-	AC->spawnTail[1] = 1.0f;
-	AC->spawnTail[2] = 4000.0f;   /* 4000 */
-	AC->spawnTail[3] = 5.0f;   /* 5 */
-	AC->spawnTail[4] = 1.0f;
+	AC->botTimes[0] = 2.0f;   /* 2 */
+	AC->botTimes[1] = 1.0f;
+	AC->botTimes[2] = 4000.0f;   /* 4000 */
+	AC->botTimes[3] = 5.0f;   /* 5 */
+	AC->botTimes[4] = 1.0f;
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
@@ -816,7 +816,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	BITS(AC->pitch) = pp[5];
 	BITS(AC->yaw) = pp[6];
 	fill_dwords(ac + 0x168, 6, 0);
-	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* three past positions: the place and the heading */
+	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* the next, sent and bot-goal states start at the place and the heading (nextPos, netPos, botGoal) */
 	for (int k = 0; k < 3; k++) {
 		u8 *h = ac + past[k];
 		memcpy(h, AC->pos, 12);

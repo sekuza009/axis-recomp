@@ -49,7 +49,7 @@ typedef struct Player {
 	u32 spawn78;   /* +0x78: (unclear) the spawn record's +0x3c */
 	float dodgeSpread;   /* +0x7c: (by use) a bot's sideways step about its target: up to +- this (the spawn record's +0x40 x 100) */
 	float climbSpread;   /* +0x80: a bot's height about its target: up to +- this (the spawn record's +0x44 x 100) */
-	float spawnTail[5];   /* +0x84: (by use) a bot's timings, seconds: [0] between sideways steps, [1] between height changes, [2] its distance kept from the target, [3] the pause between bursts, [4] a burst's length */
+	float botTimes[5];   /* +0x84: (by use) a bot's timings, seconds: [0] between sideways steps, [1] between height changes, [2] its distance kept from the target, [3] the pause between bursts, [4] a burst's length */
 	char name[0x40];   /* +0x98 */
 	i32 statD8;   /* +0xd8: (unclear) cleared with the scores (match_4620e0) */
 	i32 emblem;   /* +0xdc: emblem shown in the ranking */
@@ -199,10 +199,10 @@ typedef struct Player {
 	i32 followTarget;   /* +0x881c: (by use) the actor a bot follows (-1 none) */
 	i32 botTarget;   /* +0x8820: (by use) the actor a bot attacks (-1 none) */
 	float scanTime;   /* +0x8824: (by use) a bot looks for a target every half second */
-	float burstPause;   /* +0x8828: (by use) seconds to the next burst (spawnTail[3]) */
-	float burstFire;   /* +0x882c: seconds of the burst left (spawnTail[4]) */
-	float dodgeTime;   /* +0x8830: (by use) seconds to the next sideways step (spawnTail[0]) */
-	float heightTime;   /* +0x8834: seconds to the next height change (spawnTail[1]) */
+	float burstPause;   /* +0x8828: (by use) seconds to the next burst (botTimes[3]) */
+	float burstFire;   /* +0x882c: seconds of the burst left (botTimes[4]) */
+	float dodgeTime;   /* +0x8830: (by use) seconds to the next sideways step (botTimes[0]) */
+	float heightTime;   /* +0x8834: seconds to the next height change (botTimes[1]) */
 	u8 _pad0008838[0xc];
 	float lookTime;   /* +0x8844: (by use) seconds to the next random look (2) */
 	u8 _pad0008848[0x4];
@@ -653,6 +653,27 @@ typedef struct StartPoint {
 	float angle[2];   /* +0xc */
 } StartPoint;
 
+/* an actor's spawn record (the map's actors, Stage.mapActors; actor_applySpawnRecord) */
+typedef struct SpawnRecord {
+	i32 player;   /* +0x0: its player record */
+	float pos[3];   /* +0x4 */
+	float pitch;   /* +0x10 */
+	float yaw;   /* +0x14 */
+	i32 bot;   /* +0x18: (by use) 1: run by the game (the map's actors but the first) */
+	u32 spawn64;   /* +0x1c: to the actor's spawn64 */
+	i32 armor;   /* +0x20: the armour and shield it starts with (and their maximum) */
+	i32 shield;   /* +0x24 */
+	float speed;   /* +0x28: x 27.7778: the actor's speed and top speed */
+	float accel;   /* +0x2c: x 10 */
+	float range;   /* +0x30: its sight range (squared, x 10000: radiusSq) */
+	u32 spawn70;   /* +0x34 */
+	float spawn74;   /* +0x38: x 10, whole: the actor's spawn74 */
+	u32 spawn78;   /* +0x3c */
+	float dodgeSpread;   /* +0x40: x 100 */
+	float climbSpread;   /* +0x44: x 100 */
+	float botTimes[5];   /* +0x48: the bot's timings (copied to the actor's) */
+} SpawnRecord;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -711,7 +732,7 @@ typedef struct Stage {
 	u8 _pad19e188c[0x2f51a4];
 	u8 mapPlayers[16][0x58];   /* +0x1cd6a30: (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
 	i32 mapPlayerCount;   /* +0x1cd6fb0 */
-	u8 mapActors[100][0x5c];   /* +0x1cd6fb4: the map's actor records (+0x18: active) */
+	SpawnRecord mapActors[100];   /* +0x1cd6fb4: the map's actors (the first: the player's) */
 	i32 mapActorCount;   /* +0x1cd93a4 */
 	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
@@ -1122,7 +1143,7 @@ _Static_assert(offsetof(Player, spawn74) == 0x74 && sizeof(((Player *)0)->spawn7
 _Static_assert(offsetof(Player, spawn78) == 0x78 && sizeof(((Player *)0)->spawn78) == 0x4, "scene.fields: Player.spawn78");
 _Static_assert(offsetof(Player, dodgeSpread) == 0x7c && sizeof(((Player *)0)->dodgeSpread) == 0x4, "scene.fields: Player.dodgeSpread");
 _Static_assert(offsetof(Player, climbSpread) == 0x80 && sizeof(((Player *)0)->climbSpread) == 0x4, "scene.fields: Player.climbSpread");
-_Static_assert(offsetof(Player, spawnTail) == 0x84 && sizeof(((Player *)0)->spawnTail) == 0x14, "scene.fields: Player.spawnTail");
+_Static_assert(offsetof(Player, botTimes) == 0x84 && sizeof(((Player *)0)->botTimes) == 0x14, "scene.fields: Player.botTimes");
 _Static_assert(offsetof(Player, name) == 0x98 && sizeof(((Player *)0)->name) == 0x40, "scene.fields: Player.name");
 _Static_assert(offsetof(Player, statD8) == 0xd8 && sizeof(((Player *)0)->statD8) == 0x4, "scene.fields: Player.statD8");
 _Static_assert(offsetof(Player, emblem) == 0xdc && sizeof(((Player *)0)->emblem) == 0x4, "scene.fields: Player.emblem");
@@ -1574,6 +1595,24 @@ _Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
 _Static_assert(offsetof(StartPoint, pos) == 0x0 && sizeof(((StartPoint *)0)->pos) == 0xc, "scene.fields: StartPoint.pos");
 _Static_assert(offsetof(StartPoint, angle) == 0xc && sizeof(((StartPoint *)0)->angle) == 0x8, "scene.fields: StartPoint.angle");
 _Static_assert(sizeof(StartPoint) == 0x14, "scene.fields: size of StartPoint");
+_Static_assert(offsetof(SpawnRecord, player) == 0x0 && sizeof(((SpawnRecord *)0)->player) == 0x4, "scene.fields: SpawnRecord.player");
+_Static_assert(offsetof(SpawnRecord, pos) == 0x4 && sizeof(((SpawnRecord *)0)->pos) == 0xc, "scene.fields: SpawnRecord.pos");
+_Static_assert(offsetof(SpawnRecord, pitch) == 0x10 && sizeof(((SpawnRecord *)0)->pitch) == 0x4, "scene.fields: SpawnRecord.pitch");
+_Static_assert(offsetof(SpawnRecord, yaw) == 0x14 && sizeof(((SpawnRecord *)0)->yaw) == 0x4, "scene.fields: SpawnRecord.yaw");
+_Static_assert(offsetof(SpawnRecord, bot) == 0x18 && sizeof(((SpawnRecord *)0)->bot) == 0x4, "scene.fields: SpawnRecord.bot");
+_Static_assert(offsetof(SpawnRecord, spawn64) == 0x1c && sizeof(((SpawnRecord *)0)->spawn64) == 0x4, "scene.fields: SpawnRecord.spawn64");
+_Static_assert(offsetof(SpawnRecord, armor) == 0x20 && sizeof(((SpawnRecord *)0)->armor) == 0x4, "scene.fields: SpawnRecord.armor");
+_Static_assert(offsetof(SpawnRecord, shield) == 0x24 && sizeof(((SpawnRecord *)0)->shield) == 0x4, "scene.fields: SpawnRecord.shield");
+_Static_assert(offsetof(SpawnRecord, speed) == 0x28 && sizeof(((SpawnRecord *)0)->speed) == 0x4, "scene.fields: SpawnRecord.speed");
+_Static_assert(offsetof(SpawnRecord, accel) == 0x2c && sizeof(((SpawnRecord *)0)->accel) == 0x4, "scene.fields: SpawnRecord.accel");
+_Static_assert(offsetof(SpawnRecord, range) == 0x30 && sizeof(((SpawnRecord *)0)->range) == 0x4, "scene.fields: SpawnRecord.range");
+_Static_assert(offsetof(SpawnRecord, spawn70) == 0x34 && sizeof(((SpawnRecord *)0)->spawn70) == 0x4, "scene.fields: SpawnRecord.spawn70");
+_Static_assert(offsetof(SpawnRecord, spawn74) == 0x38 && sizeof(((SpawnRecord *)0)->spawn74) == 0x4, "scene.fields: SpawnRecord.spawn74");
+_Static_assert(offsetof(SpawnRecord, spawn78) == 0x3c && sizeof(((SpawnRecord *)0)->spawn78) == 0x4, "scene.fields: SpawnRecord.spawn78");
+_Static_assert(offsetof(SpawnRecord, dodgeSpread) == 0x40 && sizeof(((SpawnRecord *)0)->dodgeSpread) == 0x4, "scene.fields: SpawnRecord.dodgeSpread");
+_Static_assert(offsetof(SpawnRecord, climbSpread) == 0x44 && sizeof(((SpawnRecord *)0)->climbSpread) == 0x4, "scene.fields: SpawnRecord.climbSpread");
+_Static_assert(offsetof(SpawnRecord, botTimes) == 0x48 && sizeof(((SpawnRecord *)0)->botTimes) == 0x14, "scene.fields: SpawnRecord.botTimes");
+_Static_assert(sizeof(SpawnRecord) == 0x5c, "scene.fields: size of SpawnRecord");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");

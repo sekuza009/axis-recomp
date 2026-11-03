@@ -73,8 +73,8 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
 	(*(int *)&actor->dodgeTime) = 0;
 	(*(int *)&actor->heightTime) = 0;
-	(*(int *)&actor->burstPause) = (*(int *)&actor->spawnTail[3]);
-	(*(int *)&actor->burstFire) = (*(int *)&actor->spawnTail[4]);
+	(*(int *)&actor->burstPause) = (*(int *)&actor->botTimes[3]);
+	(*(int *)&actor->burstFire) = (*(int *)&actor->botTimes[4]);
 }
 
 /* 0x460000 (thiscall on the scene): actor target (0x8888-byte actors from +0x1cd93a8) hit by actor attacker, when
