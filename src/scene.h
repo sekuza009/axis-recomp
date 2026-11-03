@@ -147,7 +147,23 @@ typedef struct Player {
 /* an actor type's record (Scene.actorInfo) */
 typedef struct ActorInfo {
 	char name[0x40];   /* +0x0: the folder under Actor/ */
-	u8 _pad0000040[0x2dd0];
+	u8 _pad0000040[0x2d80];
+	i32 ammoSlot;   /* +0x2dc0: (by use, a weapon's) the ammunition slot it uses (Player.ammo) */
+	i32 ammoPerShot;   /* +0x2dc4: ammunition one shot takes */
+	i32 burst;   /* +0x2dc8: rounds a burst */
+	float burstGap;   /* +0x2dcc: (unclear) the time between bursts */
+	u8 _pad0002dd0[0x14];
+	float stepLength;   /* +0x2de4: a shot's first step (traced) */
+	float velocity;   /* +0x2de8: its speed (0: it arrives at once) */
+	float spread;   /* +0x2dec: aimed shots spread by it, less the owner's steadiness */
+	float flashSize;   /* +0x2df0: its muzzle flash's size */
+	float splashRadius;   /* +0x2df4: (unclear) */
+	u8 _pad0002df8[0x4];
+	i32 shotMode;   /* +0x2dfc: 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10 */
+	i32 sound;   /* +0x2e00: its firing sound (< 0 none) */
+	u8 _pad0002e04[0x4];
+	float cycleTime;   /* +0x2e08: seconds a firing cycle */
+	float tracer;   /* +0x2e0c: > 0: the local player's tracer */
 	float ringRange;   /* +0x2e10: (unclear) > 0: the alert ring is shown */
 	u8 _pad0002e14[0x4];
 } ActorInfo;
@@ -235,12 +251,53 @@ typedef struct MapItem {
 	float fade;   /* +0x24: below 1: drawn faded (alpha 255 * fade) */
 } MapItem;
 
-/* a projectile (Stage.projectiles): bullets, missiles, beams, explosions... */
+/* a particle or effect (Stage.projectiles: particle_init / particle_update): flashes, sparks, beams, trails, explosions... */
 typedef struct Projectile {
-	u8 _pad0000000[0x4];
+	i32 id;   /* +0x0: a serial (Stage +0x20f2da8) */
 	i32 active;   /* +0x4: 1: in use */
-	u8 _pad0000008[0x124];
+	i32 kind;   /* +0x8: what it is: 2 / 3 explosions, 9 sparks, 25 / 26 beams, 40 .. 49 trails, 50 a scripted effect ... */
+	i32 owner;   /* +0xc: the actor (or player) it belongs to */
+	float pos[3];   /* +0x10 */
+	float target[3];   /* +0x1c: (by use) the point it aims at; some kinds keep a size in target[0] */
+	u32 matrixFrom;   /* +0x28: (by use) a matrix copied into matrix at its start (0: none) */
+	float matrix[16];   /* +0x2c */
+	float drawAge;   /* +0x6c: its age as drawn this frame (age before the frame's step) */
+	float life;   /* +0x70: seconds it lives (it is freed past it) */
+	float age;   /* +0x74 */
+	u32 colour;   /* +0x78: (its byte 0x7b: the alpha, set as it fades) */
+	float size;   /* +0x7c: shrinks with age for puffs and flashes */
+	float baseSize;   /* +0x80: the descriptor's size */
+	float fade;   /* +0x84: (unclear) 0.1 for the fading kinds */
+	u8 _pad0000088[0x4c];
+	u32 cornerColours[3];   /* +0xd4: (unclear) white at the start */
+	u8 _pad00000e0[0x4c];
 } Projectile;
+
+/* a bullet in flight (Stage.bullets: bullet_init, bullet_update) */
+typedef struct Bullet {
+	i32 id;   /* +0x0: its id (the next serial, or the network's) */
+	i32 active;   /* +0x4: 1: in use */
+	i32 weapon;   /* +0x8: its weapon's record (index into Scene.actorInfo) */
+	i32 owner;   /* +0xc: the actor that fired it */
+	u32 colour;   /* +0x10: the shot's colour (its muzzle flash's too) */
+	u8 _pad0000014[0x40];
+	float from[3];   /* +0x54: where it was fired from */
+	float end[3];   /* +0x60: where its first step ends (or the target's point) */
+	i32 hit;   /* +0x6c: what the first step's trace hit (a target: its record) */
+	float age;   /* +0x70: seconds in flight */
+	float life;   /* +0x74: seconds it flies (0 .. 10) */
+	float prev[3];   /* +0x78: its point before this frame's move */
+	float pos[3];   /* +0x84: its point */
+	float netPoint[3];   /* +0x90: the point the network sent (another player's bullet) */
+	i32 moved;   /* +0x9c: 1: it moved this frame (drawn) */
+	float vel[3];   /* +0xa0 */
+	float step[3];   /* +0xac: this frame's direction of move */
+	i32 hitActor;   /* +0xb8: an actor it hit (-1 none), which takes it first */
+	i32 link;   /* +0xbc: (unclear) the caller's fourth argument; < 0 for the tracer */
+	u8 _pad00000c0[0x4];
+	float tip[3];   /* +0xc4: the local player's tracer end */
+	u8 _pad00000d0[0x418];
+} Bullet;
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
@@ -276,7 +333,9 @@ typedef struct Stage {
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
 	u8 _pad202e8cc[0x8];
 	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
-	u8 _pad202e8d8[0x7b0e8];
+	u8 _pad202e8d8[0x65c];
+	Bullet bullets[400];   /* +0x202ef34: (stage_clearBullets) */
+	u8 _pad20a99b4[0xc];
 	Projectile projectiles[1000];   /* +0x20a99c0 */
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
 	u8 _pad20f2da4[0xbcc];
@@ -678,6 +737,19 @@ _Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hit
 _Static_assert(offsetof(Player, alert) == 0x8880 && sizeof(((Player *)0)->alert) == 0x4, "scene.fields: Player.alert");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
 _Static_assert(offsetof(ActorInfo, name) == 0x0 && sizeof(((ActorInfo *)0)->name) == 0x40, "scene.fields: ActorInfo.name");
+_Static_assert(offsetof(ActorInfo, ammoSlot) == 0x2dc0 && sizeof(((ActorInfo *)0)->ammoSlot) == 0x4, "scene.fields: ActorInfo.ammoSlot");
+_Static_assert(offsetof(ActorInfo, ammoPerShot) == 0x2dc4 && sizeof(((ActorInfo *)0)->ammoPerShot) == 0x4, "scene.fields: ActorInfo.ammoPerShot");
+_Static_assert(offsetof(ActorInfo, burst) == 0x2dc8 && sizeof(((ActorInfo *)0)->burst) == 0x4, "scene.fields: ActorInfo.burst");
+_Static_assert(offsetof(ActorInfo, burstGap) == 0x2dcc && sizeof(((ActorInfo *)0)->burstGap) == 0x4, "scene.fields: ActorInfo.burstGap");
+_Static_assert(offsetof(ActorInfo, stepLength) == 0x2de4 && sizeof(((ActorInfo *)0)->stepLength) == 0x4, "scene.fields: ActorInfo.stepLength");
+_Static_assert(offsetof(ActorInfo, velocity) == 0x2de8 && sizeof(((ActorInfo *)0)->velocity) == 0x4, "scene.fields: ActorInfo.velocity");
+_Static_assert(offsetof(ActorInfo, spread) == 0x2dec && sizeof(((ActorInfo *)0)->spread) == 0x4, "scene.fields: ActorInfo.spread");
+_Static_assert(offsetof(ActorInfo, flashSize) == 0x2df0 && sizeof(((ActorInfo *)0)->flashSize) == 0x4, "scene.fields: ActorInfo.flashSize");
+_Static_assert(offsetof(ActorInfo, splashRadius) == 0x2df4 && sizeof(((ActorInfo *)0)->splashRadius) == 0x4, "scene.fields: ActorInfo.splashRadius");
+_Static_assert(offsetof(ActorInfo, shotMode) == 0x2dfc && sizeof(((ActorInfo *)0)->shotMode) == 0x4, "scene.fields: ActorInfo.shotMode");
+_Static_assert(offsetof(ActorInfo, sound) == 0x2e00 && sizeof(((ActorInfo *)0)->sound) == 0x4, "scene.fields: ActorInfo.sound");
+_Static_assert(offsetof(ActorInfo, cycleTime) == 0x2e08 && sizeof(((ActorInfo *)0)->cycleTime) == 0x4, "scene.fields: ActorInfo.cycleTime");
+_Static_assert(offsetof(ActorInfo, tracer) == 0x2e0c && sizeof(((ActorInfo *)0)->tracer) == 0x4, "scene.fields: ActorInfo.tracer");
 _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
 _Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
@@ -720,8 +792,43 @@ _Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle)
 _Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
 _Static_assert(offsetof(MapItem, fade) == 0x24 && sizeof(((MapItem *)0)->fade) == 0x4, "scene.fields: MapItem.fade");
 _Static_assert(sizeof(MapItem) == 0x28, "scene.fields: size of MapItem");
+_Static_assert(offsetof(Projectile, id) == 0x0 && sizeof(((Projectile *)0)->id) == 0x4, "scene.fields: Projectile.id");
 _Static_assert(offsetof(Projectile, active) == 0x4 && sizeof(((Projectile *)0)->active) == 0x4, "scene.fields: Projectile.active");
+_Static_assert(offsetof(Projectile, kind) == 0x8 && sizeof(((Projectile *)0)->kind) == 0x4, "scene.fields: Projectile.kind");
+_Static_assert(offsetof(Projectile, owner) == 0xc && sizeof(((Projectile *)0)->owner) == 0x4, "scene.fields: Projectile.owner");
+_Static_assert(offsetof(Projectile, pos) == 0x10 && sizeof(((Projectile *)0)->pos) == 0xc, "scene.fields: Projectile.pos");
+_Static_assert(offsetof(Projectile, target) == 0x1c && sizeof(((Projectile *)0)->target) == 0xc, "scene.fields: Projectile.target");
+_Static_assert(offsetof(Projectile, matrixFrom) == 0x28 && sizeof(((Projectile *)0)->matrixFrom) == 0x4, "scene.fields: Projectile.matrixFrom");
+_Static_assert(offsetof(Projectile, matrix) == 0x2c && sizeof(((Projectile *)0)->matrix) == 0x40, "scene.fields: Projectile.matrix");
+_Static_assert(offsetof(Projectile, drawAge) == 0x6c && sizeof(((Projectile *)0)->drawAge) == 0x4, "scene.fields: Projectile.drawAge");
+_Static_assert(offsetof(Projectile, life) == 0x70 && sizeof(((Projectile *)0)->life) == 0x4, "scene.fields: Projectile.life");
+_Static_assert(offsetof(Projectile, age) == 0x74 && sizeof(((Projectile *)0)->age) == 0x4, "scene.fields: Projectile.age");
+_Static_assert(offsetof(Projectile, colour) == 0x78 && sizeof(((Projectile *)0)->colour) == 0x4, "scene.fields: Projectile.colour");
+_Static_assert(offsetof(Projectile, size) == 0x7c && sizeof(((Projectile *)0)->size) == 0x4, "scene.fields: Projectile.size");
+_Static_assert(offsetof(Projectile, baseSize) == 0x80 && sizeof(((Projectile *)0)->baseSize) == 0x4, "scene.fields: Projectile.baseSize");
+_Static_assert(offsetof(Projectile, fade) == 0x84 && sizeof(((Projectile *)0)->fade) == 0x4, "scene.fields: Projectile.fade");
+_Static_assert(offsetof(Projectile, cornerColours) == 0xd4 && sizeof(((Projectile *)0)->cornerColours) == 0xc, "scene.fields: Projectile.cornerColours");
 _Static_assert(sizeof(Projectile) == 0x12c, "scene.fields: size of Projectile");
+_Static_assert(offsetof(Bullet, id) == 0x0 && sizeof(((Bullet *)0)->id) == 0x4, "scene.fields: Bullet.id");
+_Static_assert(offsetof(Bullet, active) == 0x4 && sizeof(((Bullet *)0)->active) == 0x4, "scene.fields: Bullet.active");
+_Static_assert(offsetof(Bullet, weapon) == 0x8 && sizeof(((Bullet *)0)->weapon) == 0x4, "scene.fields: Bullet.weapon");
+_Static_assert(offsetof(Bullet, owner) == 0xc && sizeof(((Bullet *)0)->owner) == 0x4, "scene.fields: Bullet.owner");
+_Static_assert(offsetof(Bullet, colour) == 0x10 && sizeof(((Bullet *)0)->colour) == 0x4, "scene.fields: Bullet.colour");
+_Static_assert(offsetof(Bullet, from) == 0x54 && sizeof(((Bullet *)0)->from) == 0xc, "scene.fields: Bullet.from");
+_Static_assert(offsetof(Bullet, end) == 0x60 && sizeof(((Bullet *)0)->end) == 0xc, "scene.fields: Bullet.end");
+_Static_assert(offsetof(Bullet, hit) == 0x6c && sizeof(((Bullet *)0)->hit) == 0x4, "scene.fields: Bullet.hit");
+_Static_assert(offsetof(Bullet, age) == 0x70 && sizeof(((Bullet *)0)->age) == 0x4, "scene.fields: Bullet.age");
+_Static_assert(offsetof(Bullet, life) == 0x74 && sizeof(((Bullet *)0)->life) == 0x4, "scene.fields: Bullet.life");
+_Static_assert(offsetof(Bullet, prev) == 0x78 && sizeof(((Bullet *)0)->prev) == 0xc, "scene.fields: Bullet.prev");
+_Static_assert(offsetof(Bullet, pos) == 0x84 && sizeof(((Bullet *)0)->pos) == 0xc, "scene.fields: Bullet.pos");
+_Static_assert(offsetof(Bullet, netPoint) == 0x90 && sizeof(((Bullet *)0)->netPoint) == 0xc, "scene.fields: Bullet.netPoint");
+_Static_assert(offsetof(Bullet, moved) == 0x9c && sizeof(((Bullet *)0)->moved) == 0x4, "scene.fields: Bullet.moved");
+_Static_assert(offsetof(Bullet, vel) == 0xa0 && sizeof(((Bullet *)0)->vel) == 0xc, "scene.fields: Bullet.vel");
+_Static_assert(offsetof(Bullet, step) == 0xac && sizeof(((Bullet *)0)->step) == 0xc, "scene.fields: Bullet.step");
+_Static_assert(offsetof(Bullet, hitActor) == 0xb8 && sizeof(((Bullet *)0)->hitActor) == 0x4, "scene.fields: Bullet.hitActor");
+_Static_assert(offsetof(Bullet, link) == 0xbc && sizeof(((Bullet *)0)->link) == 0x4, "scene.fields: Bullet.link");
+_Static_assert(offsetof(Bullet, tip) == 0xc4 && sizeof(((Bullet *)0)->tip) == 0xc, "scene.fields: Bullet.tip");
+_Static_assert(sizeof(Bullet) == 0x4e8, "scene.fields: size of Bullet");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
@@ -747,6 +854,7 @@ _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
 _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
 _Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
+_Static_assert(offsetof(Stage, bullets) == 0x202ef34 && sizeof(((Stage *)0)->bullets) == 0x7aa80, "scene.fields: Stage.bullets");
 _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");

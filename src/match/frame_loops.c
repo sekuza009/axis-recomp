@@ -656,6 +656,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 #undef I
 
 #define P(type, offset) GAME_VAR(type, p + (offset))
+#define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
@@ -672,7 +673,7 @@ static void particle_heading(u8 *p)
 {
 	const float *m = (const float *)(p + 0x2c), *v = (const float *)ADDR(g_vecOrigin);
 	for (int r = 0; r < 3; r++)
-		P(float, 0x10 + r * 4) = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
+		PR->pos[r] = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
 		                                    &m[12 + r]));
 }
 
@@ -701,7 +702,7 @@ static void particle_aim(u8 *p, int by_size)
 	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m((const float *)(p + 0x80)), K(0x4a9504)), K(0x4a9424))) : 1.0f;
 	float z = f32(fld_m(K(0x4a9424)) / fmul_m(fld_m(&len), K(0x4a9504)));
 	glScalef_bits(*(u32 *)&xy, *(u32 *)&xy, *(u32 *)&z);
-	gluLookAt(P(float, 0x10), P(float, 0x14), P(float, 0x18), P(float, 0x1c), P(float, 0x20), P(float, 0x24), 0.0, 1.0, 0.0);
+	gluLookAt(PR->pos[0], PR->pos[1], PR->pos[2], PR->target[0], P(float, 0x20), PR->target[2], 0.0, 1.0, 0.0);
 	float m[16];
 	glGetFloatv(0xba6, m);
 	Mat4_invert((float *)(p + 0x2c), m);
@@ -713,7 +714,7 @@ static void particle_aim(u8 *p, int by_size)
 static void particle_beam(u8 *s, u8 *p, u32 colour)
 {
 	P(int, 0x70) = 0;
-	P(u32, 0x78) = colour;
+	PR->colour = colour;
 	glPushMatrix();
 	glLoadIdentity();
 	const float *at = (const float *)(p + 0x1c), *from = (const float *)(p + 0x10);
@@ -723,7 +724,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	glGetFloatv(0xba6, m);
 	Mat4_invert((float *)(p + 0x2c), m);
 	glPopMatrix();
-	if (P(int, 0xc) == 1)
+	if (PR->owner == 1)
 		return;
 	float d[3];
 	for (int k = 0; k < 3; k++)
@@ -766,7 +767,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
    plus a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
 static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 {
-	P(u32, 0x70) = 0x40000000;   /* 2 s */
+	P(float, 0x70) = 2.0f;   /* 2 s */
 	memcpy(p + 0x84, GAME_VAR(const u8 *, desc + 0x24), 12);
 	memcpy(p + 0x90, GAME_VAR(const u8 *, desc + 0x24) + 0xc, 12);
 	memcpy(p + 0x9c, GAME_VAR(const u8 *, desc + 0x24) + 0x18, 12);
@@ -786,7 +787,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 				P(u32, 0xb8) = 0x3f000000;
 		}
 	}
-	P(u32, 0xd4) = P(u32, 0xd8) = P(u32, 0xdc) = g_white;
+	PR->cornerColours[0] = PR->cornerColours[1] = PR->cornerColours[2] = g_white;
 }
 
 /* 0x475070 (thiscall on the scene): particle slot (0x12c bytes from +0x20a99c0) set up from its descriptor: a
@@ -797,35 +798,35 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
 	u8 *p = s + 0x20a99c0 + slot * 0x12c;
-	P(int, 0) = GAME_VAR(int, s + 0x20f2da8)++;
-	P(int, 4) = 1;
+	PR->id = GAME_VAR(int, s + 0x20f2da8)++;
+	PR->active = 1;
 	if (GAME_VAR(int, desc + 0x30) == 1) {
-		P(int, 8) = 0x32;
+		PR->kind = 0x32;
 		memcpy(p + 0xe4, desc + 0x34, 0x18);
 		memcpy(p + 0xfc, desc + 0x4c, 12);
 		memcpy(p + 0x108, desc + 0x58, 12);
 		memcpy(p + 0x114, desc + 0x64, 12);
 		memcpy(p + 0x120, desc + 0x70, 12);
-		P(u32, 0x70) = 0x3c23d70a;   /* 0.01 */
+		P(float, 0x70) = 0.01f;   /* 0.01 */
 		P(int, 0x6c) = P(int, 0x74) = 0;
 		return;
 	}
-	P(u32, 8) = GAME_VAR(u32, desc);
-	P(u32, 0xc) = GAME_VAR(u32, desc + 4);
+	(*(u32 *)&PR->kind) = GAME_VAR(u32, desc);
+	(*(u32 *)&PR->owner) = GAME_VAR(u32, desc + 4);
 	memcpy(p + 0x10, desc + 8, 12);
 	memcpy(p + 0x1c, desc + 0x14, 12);
 	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);
 	if (P(u32, 0x28))
 		Mat4_copy(p + 0x2c, P(const void *, 0x28));
 	P(int, 0x6c) = 0;
-	P(u32, 0x70) = 0x3f800000;
+	P(float, 0x70) = 1.0f;
 	P(int, 0x74) = 0;
-	P(u32, 0x78) = g_white;
+	PR->colour = g_white;
 	P(int, 0x7c) = 0;
 	P(u32, 0x80) = GAME_VAR(u32, desc + 0x2c);
-	int kind = P(int, 8);
+	int kind = PR->kind;
 	switch (kind) {
-	case 0: case 1: case 8: P(u32, 0x70) = 0x3f000000; break;   /* 0.5 s */
+	case 0: case 1: case 8: P(float, 0x70) = 0.5f; break;   /* 0.5 s */
 	case 2:
 	case 3:
 		sound_play3D(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
@@ -834,38 +835,38 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		break;
 	case 4:
 		P(int, 0x70) = 0;
-		P(u32, 0x78) = P(u32, 0x20);
+		PR->colour = P(u32, 0x20);
 		break;
 	case 5: case 6: case 7: P(int, 0x70) = 0; break;
 	case 9:
-		P(u32, 0x70) = 0x40000000;
-		P(u32, 0x84) = 0x3dcccccd;
+		P(float, 0x70) = 2.0f;
+		PR->fade = 0.1f;
 		break;
 	case 10: case 11: case 18:
-		P(u32, 0x70) = 0x3c23d70a;
+		P(float, 0x70) = 0.01f;
 		particle_spin(p);
 		break;
 	case 12: case 13: case 17:
-		P(u32, 0x70) = 0x3c23d70a;
+		P(float, 0x70) = 0.01f;
 		particle_heading(p);
 		break;
 	case 14: case 15: case 16:
-		P(u32, 0x70) = 0x3f000000;
+		P(float, 0x70) = 0.5f;
 		particle_heading(p);
 		break;
 	case 20: case 21:
-		P(u32, 0x70) = 0x3c23d70a;
+		P(float, 0x70) = 0.01f;
 		particle_aim(p, 0);
 		break;
-	case 22: P(u32, 0x70) = 0x3c23d70a; break;
+	case 22: P(float, 0x70) = 0.01f; break;
 	case 24:
-		P(u32, 0x70) = 0x3f000000;
+		P(float, 0x70) = 0.5f;
 		particle_aim(p, 1);
 		break;
 	case 25: particle_beam(s, p, 0xffc4c4ff); break;   /* bytes ff c4 c4 ff */
 	case 26: particle_beam(s, p, 0xffffc4c4); break;   /* bytes c4 c4 ff ff */
 	case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38:
-		P(u32, 0x70) = 0x3f800000;
+		P(float, 0x70) = 1.0f;
 		break;
 	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
 	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, ADDR(k_200f)); break;

@@ -200,6 +200,7 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 
 #define K(address) ((const float *)RELOC(address))
 #define B(type, offset) GAME_VAR(type, b + (offset))
+#define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 
 
 /* the next of the game's random numbers (its table 0xa106f8 by the counter 0xa1efb8) below n */
@@ -226,13 +227,13 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	u8 *w = s + 0x14d1ab4 + GAME_VAR(int, shot + 4) * 0x2e18;
 	const float *o = (const float *)(shot + 8), *aim = (const float *)(shot + 0x18);
 	if (id >= 0)
-		B(int, 0) = id;
+		BU->id = id;
 	else
-		B(int, 0) = GAME_VAR(int, s + 0x20a99bc)++;
-	B(int, 4) = 1;
-	B(int, 8) = GAME_VAR(int, shot + 4);
-	B(int, 0xc) = owner;
-	B(u32, 0x10) = GAME_VAR(u32, shot + 0x24);
+		BU->id = GAME_VAR(int, s + 0x20a99bc)++;
+	BU->active = 1;
+	BU->weapon = GAME_VAR(int, shot + 4);
+	BU->owner = owner;
+	BU->colour = GAME_VAR(u32, shot + 0x24);
 	memcpy(b + 0x54, o, 12);
 	float dir[3];
 	const float *w2de8 = (const float *)(w + 0x2de8);
@@ -298,15 +299,15 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	B(int, 0x70) = 0;
 	memcpy(b + 0x78, o, 12);
 	memcpy(b + 0x84, o, 12);
-	B(int, 0x9c) = 0;
+	BU->moved = 0;
 	float *vel = (float *)(RELOC(b) + 0xa0);
 	for (int k = 0; k < 3; k++)
 		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
 	memcpy(b + 0xac, (const void *)ADDR(g_vecZero), 12);
-	B(int, 0xb8) = -1;
+	BU->hitActor = -1;
 	B(int, 0xc0) = 0;
-	B(int, 0xbc) = a4;
-	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4)) {
+	BU->link = a4;
+	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && BU->owner == GAME_VAR(int, s + 0x202e8d4)) {
 		const float *at = (const float *)(RELOC(b) + 0x78);
 		float *tip = (float *)(RELOC(b) + 0xc4);
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
@@ -319,17 +320,17 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	B(int, 0x4e4) = 0;
 	if (quiet)
 		return;
-	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, B(u32, 0xc) };
+	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, ((u32)BU->owner) };
 	memcpy(&rec[2], b + 0x78, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
-	rec[8] = B(u32, 0x10);
+	rec[8] = BU->colour;
 	float size = f32(fld_m((const float *)(w + 0x2df0)));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
 	int sound = GAME_VAR(int, w + 0x2e00);
 	if (sound < 0)
 		return;
-	if (B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4))
+	if (BU->owner == GAME_VAR(int, s + 0x202e8d4))
 		sound_playVolume(sound, 100);
 	else
 		sound_play3D(sound, (const float *)(s + 0x20f3970),
@@ -337,12 +338,15 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 }
 #undef K
 #undef B
+#undef BU
 
 /* ---- 0x47a2d0: a bullet's frame ---- */
 
 #define K(address) ((const float *)RELOC(address))
 #define B(type, offset) GAME_VAR(type, b + (offset))
+#define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 #define W(type, offset) GAME_VAR(type, w + (offset))
+#define WI ((ActorInfo *)w)   /* the same by its fields (src/scene.fields) */
 #define AF(i, offset) GAME_VAR(float, s + (offset) + (i) * 0x8888)   /* an actor's field */
 #define AI(i, offset) GAME_VAR(int, s + (offset) + (i) * 0x8888)
 
@@ -365,7 +369,7 @@ static void effect(u8 *s, u32 *r, u32 kind, u32 flag, const void *at, const void
 /* the weapon's effect size (+0x2df0), as the original passes it through the FPU */
 static u32 effect_size(const u8 *w)
 {
-	float v = (float)fld_m(&W(float, 0x2df0));
+	float v = (float)fld_m(&WI->flashSize);
 	return BITS(v);
 }
 
@@ -398,12 +402,12 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
 	look_inverse(b, inv, 0);
-	float half = f32(fld_m(&W(float, 0x2df0))), minus;
+	float half = f32(fld_m(&WI->flashSize)), minus;
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&half), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
 	offset_point((float *)(RELOC(b) + 0xd4), a, prev);
 	offset_point((float *)(RELOC(b) + 0x104), a, cur);
-	minus = f32(-fld_m(&W(float, 0x2df0)));
+	minus = f32(-fld_m(&WI->flashSize));
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&minus), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
 	offset_point((float *)(RELOC(b) + 0xe0), a, prev);
@@ -422,7 +426,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	float scale = f32(fmul_m(len, K(0x4aa450)));   /* / 800 */
 	u32 colour = GAME_VAR(u32, s + 0x9ccfe4);
 	for (int k = 0; k < 4; k++) {
-		int quarter = B(int, 0) % 4;
+		int quarter = BU->id % 4;
 		float v0, u;
 		if (k & 1) {
 			long double t = fmul_m((long double)(quarter << 5), K(0x4a957c));   /* / 256 */
@@ -459,19 +463,19 @@ static void trail(u8 *b, const u8 *w, int flying)
 	look_inverse(b, inv, !(prev[0] < cur[0]) && !(prev[0] > cur[0]) && !(prev[2] < cur[2]) && !(prev[2] > cur[2]));
 	int i = B(int, 0x4e4) % 20;
 	u8 *ring = b + i * 0x30;
-	long double half = fld_m(&W(float, 0x2df0));
+	long double half = fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
 	offset_point((float *)(ring + 0xd4), a, prev);
-	half = fld_m(&W(float, 0x2df0));
+	half = fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
 	offset_point((float *)(ring + 0xe0), a, prev);
-	half = -fld_m(&W(float, 0x2df0));
+	half = -fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
 	offset_point((float *)(ring + 0xec), a, prev);
-	half = -fld_m(&W(float, 0x2df0));
+	half = -fld_m(&WI->flashSize);
 	float *last = (float *)(ring + 0xf8);
 	for (int k = 0; k < 2; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
@@ -495,13 +499,13 @@ static void trail(u8 *b, const u8 *w, int flying)
    point (flagged for the camera's own first 0.03 s, +0x202e8d8) */
 static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
-	int kind = W(int, 0x2dfc);
+	int kind = WI->shotMode;
 	if (kind == 3)
 		trail(b, w, flying);
 	else if (kind == 7)
 		beam(s, b, w, r, flying);
 	else {
-		u32 flag = B(int, 0xc) == GAME_VAR(int, s + 0x202e8d8) && !(B(float, 0x70) >= *K(0x4a9568)) ? 1 : 0;
+		u32 flag = BU->owner == GAME_VAR(int, s + 0x202e8d8) && !(B(float, 0x70) >= *K(0x4a9568)) ? 1 : 0;
 		effect(s, r, kind + 0x14, flag, b + 0x78, b + 0x84, 0, 0, 0, effect_size(w), 0);
 	}
 }
@@ -511,25 +515,25 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
    push (+0x1ce1c04: 10 times the weapon's +0x2e14 towards the actor) */
 static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
-	int t = B(int, 0xb8);
+	int t = BU->hitActor;
 	if (AI(t, 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4) && AI(t, 0x1cd94f4) == 1)
-		bullet_playImpactSound(s, B(int, 0xc), t, W(int, 0x2ddc), W(int, 0x2de0), W(int, 0x2dfc), weapon);
-	t = B(int, 0xb8);
+		bullet_playImpactSound(s, BU->owner, t, W(int, 0x2ddc), W(int, 0x2de0), WI->shotMode, weapon);
+	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
 		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &AF(t, 0x1cd9528 + k * 4)));
 	Vec3_normalize(dir);
-	effect(s, r, W(int, 0x2dfc) + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
-	effect(s, r, 8, AI(B(int, 0xb8), 0x1cd9798) & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, 8, AI(BU->hitActor, 0x1cd9798) & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
 	if (W(int, 0x2e04) >= 0)
 		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x84, s + 0x20f397c, 0x47435000);
-	if (B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4))
+	if (BU->owner == GAME_VAR(int, s + 0x202e8d4))
 		sound_playVolume(0xb, 100);
 	if (W(float, 0x2e14) > 0) {
 		long double k = -fld_m(&W(float, 0x2e14));
 		float x = f32(fmul_m(k, &dir[0])), y = f32(fmul_m(k, &dir[1]));
 		long double z = fmul_m(k, &dir[2]);
-		float *push = &AF(B(int, 0xb8), 0x1ce1c04);
+		float *push = &AF(BU->hitActor, 0x1ce1c04);
 		push[0] = f32(fmul_m(fld_m(&x), K(0x4a9418)));
 		push[1] = f32(fmul_m(fld_m(&y), K(0x4a9418)));
 		push[2] = f32(fmul_m(z, K(0x4a9418)));
@@ -574,9 +578,9 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		float tri[9];
 		for (int k = 0; k < 3; k++)
 			memcpy(tri + k * 3, GAME_VAR(float *, part + 0x50) + GAME_VAR(int, h + 0x94 + k * 4) * 3, 12);
-		effect(s, r, W(int, 0x2dfc) + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *GAME_VAR(const int *, h + 0x8c) * 0x2cc), (u32)tri, (u32)uv, 0, 0);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)(s + 0x131af38 + *GAME_VAR(const int *, h + 0x8c) * 0x2cc), (u32)tri, (u32)uv, 0, 0);
 	} else
-		effect(s, r, W(int, 0x2dfc) + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
 }
 
 /* the surface the bullet hit (+0x6c, a collision triangle record: corners +4, normal +0x4c, its object +0x8c):
@@ -609,7 +613,7 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 			N[k] = (float)fld_m(&n[k]);
 		memcpy(P, p, 36);
 	}
-	effect(s, r, W(int, 0x2dfc) + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
 	if (!(*B(const u8 *, 0x6c) & 0x10) && g_items3D == 1)
 		decal(s, b, w, r, B(const u8 *, 0x6c), N, P);
 	if (W(int, 0x2e04) >= 0)
@@ -622,21 +626,21 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
    pushed (+0x1ce1c04) */
 static void splash(u8 *s, u8 *b, const u8 *w)
 {
-	if (B(int, 0xd0) != 1 || !(W(float, 0x2df4) > 0))
+	if (B(int, 0xd0) != 1 || !(WI->splashRadius > 0))
 		return;
 	for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || AI(j, 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4) || B(int, 0xb8) == j
+		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || AI(j, 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4) || BU->hitActor == j
 		    || AI(j, 0x1ce1bf4) == 1)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
 			d[k] = f32(fsub_m(fld_m(&AF(j, 0x1cd9528 + k * 4)), (const float *)(RELOC(b) + 0x84) + k));
 		long double len = Vec3_normalize(d);
-		if (len >= W(float, 0x2df4))
+		if (len >= WI->splashRadius)
 			continue;
-		float f = f32(fsubr_m(fmul_m(fdiv_m(len, &W(float, 0x2df4)), K(0x4a942c)), K(0x4a9424)));   /* 1 - len / r / 2 */
+		float f = f32(fsubr_m(fmul_m(fdiv_m(len, &WI->splashRadius), K(0x4a942c)), K(0x4a9424)));   /* 1 - len / r / 2 */
 		int damage = ftol(fmul_m((long double)W(int, 0x2de0), &f));
-		bullet_playImpactSound(s, B(int, 0xc), j, W(int, 0x2ddc), damage, W(int, 0x2dfc), B(int, 8));
+		bullet_playImpactSound(s, BU->owner, j, W(int, 0x2ddc), damage, WI->shotMode, BU->weapon);
 		if (W(float, 0x2e14) > 0) {
 			long double k = fld_m(&W(float, 0x2e14));
 			float x = f32(fmul_m(k, &d[0])), y = f32(fmul_m(k, &d[1]));
@@ -657,7 +661,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 static void home(u8 *s, u8 *b, const u8 *w)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *vel = (float *)(RELOC(b) + 0xa0), spd, rate, T[3];
-	if (W(int, 0x2dfc) != 3) {
+	if (WI->shotMode != 3) {
 		BITS(spd) = W(u32, 0x2de8);
 		BITS(rate) = W(u32, 0x2e0c);
 	} else {
@@ -666,7 +670,7 @@ static void home(u8 *s, u8 *b, const u8 *w)
 		long double y = fadd_m(fld_m(&B(float, 0x70)), K(0x4a9424));
 		rate = f32(fdivr_m((y * y) * y, &W(float, 0x2e0c)));
 	}
-	int tg = B(int, 0xbc);
+	int tg = BU->link;
 	for (int k = 0; k < 3; k++)
 		T[k] = f32(fsub_m(fld_m(tg >= 0 ? &AF(tg, 0x1cd9528 + k * 4) : (const float *)(RELOC(b) + 0xc4) + k), &prev[k]));
 	Vec3_normalize(T);
@@ -724,21 +728,21 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	Vec3_normalize(dir);
 	BITS(best) = 0x7f7fffff;
 	for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || j == B(int, 0xc) || AI(j, 0x1ce1bf4) != 0)
+		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || j == BU->owner || AI(j, 0x1ce1bf4) != 0)
 			continue;
-		float radius = f32(fadd_m(fld_m(&AF(j, 0x1cd9790)), &W(float, 0x2df0)));
+		float radius = f32(fadd_m(fld_m(&AF(j, 0x1cd9790)), &WI->flashSize));
 		if (math_segmentSphere(prev, cur, dir, &AF(j, 0x1cd9528), radius, hit, &t) == 1 && !(t >= best)) {
-			B(int, 0xb8) = j;
+			BU->hitActor = j;
 			memcpy(cur, hit, 12);
 			memcpy(b + 0x60, hit, 12);
 			BITS(best) = BITS(t);
 		}
 	}
-	if (B(int, 0xb8) >= 0) {
+	if (BU->hitActor >= 0) {
 		B(int, 0x6c) = 0;
 		B(u32, 0x74) = B(u32, 0x70);
 	}
-	if (W(float, 0x2e0c) > 0 && B(int, 0xb8) < 0) {
+	if (W(float, 0x2e0c) > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
 		B(int, 0x6c) = r;
@@ -754,7 +758,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 			B(float, 0x74) = f32(fadd_m(len / spd, &B(float, 0x70)));
 		}
 	}
-	B(int, 0x9c) = 1;
+	BU->moved = 1;
 }
 
 /* 0x47a2d0 (thiscall on the scene): bullet slot's frame (0x4e8 bytes from +0x202ef34; its weapon's record 0x2e18
@@ -767,17 +771,17 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 {
 	const float *dt = (const float *)&dt_bits;   /* (only ever read from memory, as the original does) */
 	u8 *b = s + 0x202ef34 + slot * 0x4e8;
-	int weapon = B(int, 8);
+	int weapon = BU->weapon;
 	u8 *w = s + 0x14d1ab4 + weapon * 0x2e18;
 	u32 r[31];   /* particle_spawn's record, reused */
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *step = (float *)(RELOC(b) + 0xac);
-	if (B(int, 0xb8) >= 0)
+	if (BU->hitActor >= 0)
 		hit_actor(s, b, w, r, weapon);
 	if (!(B(float, 0x70) > B(float, 0x74))) {
 		memcpy(prev, cur, 12);
-		if (AI(B(int, 0xc), 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
+		if (AI(BU->owner, 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
 			fly_local(s, b, w, dt);
-		else if (B(int, 0x9c) == 1) {
+		else if (BU->moved == 1) {
 			memcpy(cur, b + 0x90, 12);
 			for (int k = 0; k < 3; k++)
 				step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));
@@ -785,16 +789,16 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		} else
 			for (int k = 0; k < 3; k++)
 				cur[k] = f32(fadd_m(fld_m(&step[k]), &prev[k]));
-		if (B(int, 0x9c) == 1)
+		if (BU->moved == 1)
 			draw_shot(s, b, w, r, 1);
 		long double age = fadd_m(fld_m(dt), &B(float, 0x70));
 		B(float, 0x70) = (float)age;
 		if (age > B(float, 0x74))
-			AI(B(int, 0xc), 0x1cd971c) = 1;
-		B(int, 0x9c) = 0;
+			AI(BU->owner, 0x1cd971c) = 1;
+		BU->moved = 0;
 		return;
 	}
-	if (AI(B(int, 0xc), 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4)) {
+	if (AI(BU->owner, 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4)) {
 		memcpy(cur, b + 0x90, 12);
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));
@@ -806,6 +810,8 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 }
 #undef K
 #undef B
+#undef BU
 #undef W
+#undef WI
 #undef AF
 #undef AI

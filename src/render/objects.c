@@ -339,6 +339,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 
 #define K(address) ((const float *)RELOC(address))
 #define P(type, offset) GAME_VAR(type, p + (offset))
+#define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define TEX(k) GAME_VAR(int, s + 0x9ccfd4 + (k) * 4)   /* the effect textures */
 
 static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
@@ -378,7 +379,7 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 {
 	float ab[4];
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
-	long double size = fadd_m(fld_m(&P(float, 0x80)), add);
+	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
 	if (P(int, 0xc) == GAME_VAR(int, s + 0x202e8d8)) {
 		ab[0] = f32(fmul_m(fld_m(&ab[0]), K(0x4a942c)));
@@ -408,7 +409,7 @@ static void flare(u8 *s, u8 *p, void *vv, float *t)
 	float a_rounded = (float)a;
 	long double a2 = a * a;
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
-	*t = f32(fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f0)));   /* (the original reuses t's slot) */
+	*t = f32(fadd_m(fld_m(&PR->baseSize), K(0x4a93f0)));   /* (the original reuses t's slot) */
 	square(ab, fmul_m(a2, t));
 	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, (const float *)(p + 0x10), 2);
 	sized_glow(s, p, vv, fld_m(&a_rounded), K(0x4a93d0));
@@ -430,7 +431,7 @@ static void bolt(u8 *s, u8 *p, void *vv, const float *t, int sized)
 	memcpy(at, p + 0x10, 12);
 	at[1] = f32(fadd_m(fmul_m(fld_m(t), K(0x4a93f4)), &at[1]));
 	if (sized)
-		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f4)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
 	else
 		square(ab, 100.0f);
 	quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
@@ -474,23 +475,23 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 	long double gx = fmul_m(fld_m((&g_vecUnitZXyz[0])), K(0x4a9558)), gy = fmul_m(fld_m((&g_vecUnitZXyz[1])), K(0x4a9558)),
 	            gz = fmul_m(fld_m((&g_vecUnitZXyz[2])), K(0x4a9558));
 	float v[3], at[3], uv[4], ab[4];
-	v[0] = f32((fmul_m(gz, &P(float, 0x4c)) + fmul_m(gy, &P(float, 0x3c))) + fmul_m(gx, &P(float, 0x2c)));
-	v[1] = f32((fmul_m(gz, &P(float, 0x50)) + fmul_m(gy, &P(float, 0x40))) + fmul_m(gx, &P(float, 0x30)));
-	long double v2 = (fmul_m(gz, &P(float, 0x54)) + fmul_m(gy, &P(float, 0x44))) + fmul_m(gx, &P(float, 0x34));
-	long double h = fld_m(&P(float, 0x1c));
+	v[0] = f32((fmul_m(gz, &PR->matrix[8]) + fmul_m(gy, &PR->matrix[4])) + fmul_m(gx, &PR->matrix[0]));
+	v[1] = f32((fmul_m(gz, &PR->matrix[9]) + fmul_m(gy, &PR->matrix[5])) + fmul_m(gx, &PR->matrix[1]));
+	long double v2 = (fmul_m(gz, &PR->matrix[10]) + fmul_m(gy, &PR->matrix[6])) + fmul_m(gx, &PR->matrix[2]);
+	long double h = fld_m(&PR->target[0]);
 	v[0] = f32(fmul_m(h, &v[0]));
 	v[1] = f32(fmul_m(h, &v[1]));
 	v[2] = f32(v2 * h);
 	long double size = x87_fsqrt((fmul_m(fld_m(&v[0]), &v[0]) + fmul_m(fld_m(&v[2]), &v[2])) + fmul_m(fld_m(&v[1]), &v[1]));
 	float last = (float)size;
 	for (int k = 0; k < 3; k++)
-		at[k] = f32(fadd_m(fld_m(&v[k]), &P(float, 0x10 + k * 4)));
+		at[k] = f32(fadd_m(fld_m(&v[k]), &PR->pos[k]));
 	for (int k = 0; k < 10; k++) {
 		uv[0] = f32(fmul_m((long double)(((k + phase) % 8) << 5), K(0x4a957c)));
 		uv[1] = v0;
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
 		uv[3] = v1;
-		P(u8, 0x7b) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &P(float, 0x20)), K(0x4a9744)));
+		P(u8, 0x7b) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &PR->target[1]), K(0x4a9744)));
 		square(ab, size);
 		quad(vv, tex, uv, 0, p, ab, at, 2);
 		for (int j = 0; j < 3; j++)
@@ -514,7 +515,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 {
 	u8 *p = s + 0x20a99c0 + i * 0x12c;
 	const float *at = (const float *)(p + 0x10), *cam = (const float *)(s + 0x20f3970), *range = (const float *)(s + 0xa08);
-	int type = P(int, 8);
+	int type = PR->kind;
 	float uv[4], ab[4], t;
 	if (type < 50) {
 		for (int k = 0; k < 3; k++)
@@ -524,13 +525,13 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 			if (!(fadd_m(fld_m(range), &cam[k]) >= at[k]))
 				return;
 	}
-	if (P(float, 0x70) > 0)
-		t = f32(fdiv_m(fld_m(&P(float, 0x6c)), &P(float, 0x70)));
+	if (PR->life > 0)
+		t = f32(fdiv_m(fld_m(&PR->drawAge), &PR->life));
 	else
 		t = 0;
 	switch (type) {
 	case 0: {   /* one of 8 frames by the frame count, growing and fading */
-		uv[0] = f32(fmul_m((long double)((P(int, 0) % 8) << 5), K(0x4a957c)));
+		uv[0] = f32(fmul_m((long double)((PR->id % 8) << 5), K(0x4a957c)));
 		uv[1] = 0;
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
 		uv[3] = 0.125f;
@@ -553,7 +554,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		if (type == 1) {
 			uv[1] = 0;
 			uv[3] = 0.125f;
-			pos[1] = f32(fadd_m(fmul_m(fld_m(&P(float, 0x6c)), K(0x4aa440)), &pos[1]));
+			pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), K(0x4aa440)), &pos[1]));
 		} else {
 			uv[1] = 0.625f;
 			uv[3] = 0.75f;
@@ -563,22 +564,22 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	}
 	case 2:
-		if (!(P(float, 0x6c) >= *K(0x4a9420)))
+		if (!(PR->drawAge >= *K(0x4a9420)))
 			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 600.0f, 300.0f);
 		frame16_turned(uv, &t, i);
 		square(ab, 300.0f);
 		quad(vv, TEX(0), uv, 300.0f, p, ab, at, 2);
 		return;
 	case 3:
-		if (!(P(float, 0x6c) >= *K(0x4a9420)))
+		if (!(PR->drawAge >= *K(0x4a9420)))
 			glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), 1600.0f, 800.0f);
 		frame16(uv, &t);
 		square(ab, 800.0f);
 		quad(vv, TEX(2), uv, 800.0f, p, ab, at, 2);
 		return;
 	case 4:   /* a marker the owner's colour index shows through */
-		ab[0] = ab[1] = (float)-fld_m(&P(float, 0x1c));
-		ab[2] = ab[3] = (float)fld_m(&P(float, 0x1c));
+		ab[0] = ab[1] = (float)-fld_m(&PR->target[0]);
+		ab[2] = ab[3] = (float)fld_m(&PR->target[0]);
 		P(u8, 0x7b) = P(u8, 0xc);
 		uv[0] = uv[1] = 0.75f;
 		uv[2] = uv[3] = 1.0f;
@@ -625,7 +626,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		uv[1] = 0.9375f;
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
 		uv[3] = 1.0f;
-		pos[1] = f32(fadd_m(fmul_m(fld_m(&P(float, 0x6c)), K(0x4a93f4)), &pos[1]));
+		pos[1] = f32(fadd_m(fmul_m(fld_m(&PR->drawAge), K(0x4a93f4)), &pos[1]));
 		square(ab, 100.0f);
 		quad(vv, TEX(0), uv, 0, p, ab, pos, 2);
 		return;
@@ -638,7 +639,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 22:
 		if (P(int, 0xc) == 1)
 			return;
-		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a93f4)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
 		uv[0] = 0.875f;
 		uv[1] = 0.25f;
 		uv[2] = 1.0f;
@@ -681,7 +682,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 35:   /* an explosion: 16 frames, the radius + 2000, then the radius glow (+4000) */
 		frame16(uv, &t);
 		P(u8, 0x7b) = 0xff;
-		square(ab, fadd_m(fld_m(&P(float, 0x80)), K(0x4a9554)));
+		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a9554)));
 		quad(vv, TEX(2), uv, 2000.0f, p, ab, at, 2);
 		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4aa434));
 		return;
@@ -695,8 +696,8 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48: case 49: {
 		/* a trail's triangle (texture 8), its three colours fading over its last second */
 		int tex = TEX(8);
-		if (P(float, 0x6c) > 1.0f)
-			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &P(float, 0x6c)), K(0x4aa260))));
+		if (PR->drawAge > 1.0f)
+			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
 		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), (const float *)(p + 0x84),
 		                           P(const float *, 0x28), 1, 1);
 		return;
@@ -708,4 +709,5 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 }
 #undef K
 #undef P
+#undef PR
 #undef TEX

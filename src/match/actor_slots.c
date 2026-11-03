@@ -383,7 +383,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)k_100f);
 	A(float, 0x80) = (float)(R(float, 0x44) * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
-		A(u32, 0x84 + k * 4) = R(u32, 0x48 + k * 4);
+		AC->spawnTail[k] = R(u32, 0x48 + k * 4);
 	AC->target1 = -1;
 	AC->target2 = -1;
 #undef R
@@ -718,7 +718,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), (const float *)(ac + 0x444)), K(0x4a942c)));
 	A(u32, 0x24) = GAME_VAR(u32, arms + 0x12ec);
 	for (int k = 0; k < 4; k++)
-		A(int, 0x28 + k * 4) = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), (const float *)(ac + 0x404) + k), K(0x4a942c))) +
+		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), (const float *)(ac + 0x404) + k), K(0x4a942c))) +
 		                       A(int, 0x414 + k * 4);
 	long double left = fld_m(K(0x4a9424)) - over;
 	long double v = fmul_m(level_factor(p, 0), (const float *)(legs + 0x13dc)) * left;

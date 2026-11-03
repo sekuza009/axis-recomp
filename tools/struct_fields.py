@@ -79,7 +79,10 @@ if FIXED:
 	macro = sorted(fixed)[0]
 elif VARFORM:
 	macro, var = macro.split(':')
-	ACCESS = re.compile(r'\b%s\(([^,()]+), %s, (0x[0-9a-f]+|\d+)\)' % (re.escape(macro), re.escape(var)))
+	if macro == 'GV':   # GAME_VAR(type, var + offset) on a byte pointer: (Type *)var's field
+		ACCESS = re.compile(r'\bGAME_VAR\(([^,()]+), %s \+ (0x[0-9a-f]+|\d+)\)' % re.escape(var))
+	else:
+		ACCESS = re.compile(r'\b%s\(([^,()]+), %s, (0x[0-9a-f]+|\d+)\)' % (re.escape(macro), re.escape(var)))
 else:
 	ACCESS = re.compile(r'\b%s\(([^,()]+), (0x[0-9a-f]+|\d+)\)' % re.escape(macro))
 
@@ -90,6 +93,31 @@ def is_lvalue(m):
 	return re.match(r'\s*(?:[-+*/%&|^]|<<|>>)?=(?!=)|\s*(?:\+\+|--)', after) is not None or \
 		before.endswith('&') and not before.endswith('&&') or before.endswith('++') or before.endswith('--')
 typ = lambda m: fixed[m.group(1)] if FIXED else m.group(1).strip()
+
+
+def nice_float(w):
+	"""a float's bit pattern as its shortest exact literal (None: no plain one)"""
+	import struct, math
+	f = struct.unpack('<f', struct.pack('<I', w))[0]
+	if w == 0 or not math.isfinite(f) or not (1e-6 <= abs(f) <= 1e9):
+		return None
+	for p in range(1, 9):
+		s = '%.*g' % (p, f)
+		if struct.unpack('<I', struct.pack('<f', float(s)))[0] == w:
+			return (s if ('.' in s or 'e' in s) else s + '.0') + 'f'
+	return None
+
+
+# a float field written with a float's bit pattern, M(u32, off) = 0x3f000000, becomes M(float, off) = 0.5f: the same
+# store (the compiler moves the constant's bits), and the field is then used as one type
+if not VARFORM and not FIXED:
+	def lit(m):
+		f = resolve(TYPE, int(m.group(1), 0))
+		v = nice_float(int(m.group(2), 16))
+		if f and f[1] == 'float' and v:
+			return '%s(float, %s) = %s;' % (macro, m.group(1), v)
+		return m.group(0)
+	t = re.sub(r'\b%s\(u32, (0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(macro), lit, t)
 kinds = collections.defaultdict(set)
 for m in ACCESS.finditer(t):
 	kinds[int(m.group(2), 0)].add(SAME.get(typ(m), typ(m)))
@@ -119,6 +147,39 @@ def sub(m):
 
 
 nt = ACCESS.sub(sub, t)
+
+# indexed: M(type, 0x130 + expr * 4) on an array field of that element type and size -> PTR->ammo[expr]
+if not VARFORM:
+	head = re.compile(r'\b(%s)\(' % '|'.join(re.escape(k) for k in (sorted(fixed, key=len, reverse=True) if FIXED else [macro])))
+	out, pos = [], 0
+	for m in head.finditer(nt):
+		if m.start() < pos:
+			continue
+		depth, j = 0, m.end() - 1
+		for j in range(m.end() - 1, len(nt)):
+			depth += {'(': 1, ')': -1}.get(nt[j], 0)
+			if depth == 0:
+				break
+		inner = nt[m.end():j]
+		if FIXED:
+			ty, offarg = fixed[m.group(1)], inner
+		else:
+			parts = inner.split(', ', 1)
+			if len(parts) != 2:
+				continue
+			ty, offarg = parts[0].strip(), parts[1]
+		im = re.match(r'^(0x[0-9a-f]+|\d+) \+ (.+) \* (0x[0-9a-f]+|\d+)$', offarg, re.S)
+		if not im:
+			continue
+		base, expr, n = int(im.group(1), 0), im.group(2), int(im.group(3), 0)
+		hitf = [f for f in structs[TYPE][1] if f[0] == base and len(f[4]) == 1 and SIZE.get(f[2]) == n and SAME.get(ty) == f[2]]
+		if not hitf:
+			continue
+		out.append(nt[pos:m.start()]); out.append('%s->%s[%s]' % (PTR, hitf[0][3], expr)); pos = j + 1
+		done += 1
+	if out:
+		out.append(nt[pos:]); nt = ''.join(out)
+
 if done and not DRY and FIXED:
 	d = re.compile(r'^(#define (?:%s)\(offset\) GAME_VAR\(\w+, (\w+) \+ \(offset\)\)[^\n]*\n)(?!#define %s )' % ('|'.join(fixed), PTR), re.M)
 	nt = d.sub(lambda m: m.group(1) + '#define %s ((%s *)%s)   /* the same by its fields (src/scene.fields) */\n' % (PTR, TYPE, m.group(2)), nt, count=1)
