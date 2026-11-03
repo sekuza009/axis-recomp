@@ -566,7 +566,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 				A(int, 0x538) = I(int, 4);
 				strcpy((char *)ac + 0x4f4, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
 				A(int, 0x534) = 0;
-				A(u32, 0x548) = 0x3f800000;
+				AC->damageFlash = 1.0f;
 				A(u32, 0x540) = 0x40000000;
 				A(int, 0x104) = GAME_VAR(int, s + 0x202e8d0)++;
 				warped = 1;

@@ -269,7 +269,7 @@ void THISCALL (match_combatInput)(u8 *s)
 		return;
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
-			if (SC->localAlive == 0 || (S(int, 8) == 0 && S(int, 0x1eccb48 + SC->localPlayer * 0x8888) == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && S(int, 0x1eccb48 + SC->localPlayer * 0x8888) == 0)) {
 				if (pressed2((OBJ(g_controls) + 0x50), (OBJ(g_controls) + 0x54)))
 					SC->quitAsked = 1;
 			} else {
@@ -459,7 +459,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	SC->actionKey = input_asyncKeyPressed(0x20) ? 1 : 0;
 	SC->quitAsked = input_asyncKeyPressed(0x1b) ? 1 : 0;
 	for (int k = 0; k < 6; k++)
-		S(int, 0x23432d3 + k * 4) = input_asyncKeyDown(0x70 + k) ? 1 : 0;
+		SC->fKeys[k] = input_asyncKeyDown(0x70 + k) ? 1 : 0;
 	SC->zoomInPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	SC->zoomOutPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	frameTimer_average(s);
@@ -1151,7 +1151,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		}
 	events_age(s, S(u32, 0x44));
 	if (SC->rankingKey == 1)
-		S(u32, 0x233cc40) = 0x40a00000;   /* the ranking shown 5 s */
+		S(float, 0x233cc40) = 5.0f;   /* the ranking shown 5 s */
 
 	/* the camera */
 	SC->playing = SC->watchedPlayer >= 0;
@@ -1283,7 +1283,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
 	crt_fprintf(f, format, g_mapTitle, g_missionStage, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {
-		int e = S(int, 0x23428f6 + k * 4);
+		int e = SC->ranking[k];
 		int team = team_game() ? A_INT(e, 0x1eccb88) : 2;
 		char name[64];
 		memset(name, 0, sizeof name);
@@ -1374,7 +1374,7 @@ static void local_spawn(u8 *s)
 		S(int, 0x234300a + SC->localPlayer * 16) = 1;
 	SC->playing = 1;
 	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
-	S(u32, 0x23423c1) = 0x40400000;   /* 3 */
+	S(float, 0x23423c1) = 3.0f;   /* 3 */
 	SC->startCountShown = -1;
 	msg_newKing((Scene *)s);
 	SC->actionKey = 1;
@@ -1522,13 +1522,13 @@ static int slow_end(u8 *s)
 static void winning_team(u8 *s)
 {
 	int a = scene_teamSlot((Scene *)s, 1), b = scene_teamSlot((Scene *)s, 0);
-	if (S(int, 0x2221fb8 + b * 4) > S(int, 0x2221fb8 + a * 4)) {
+	if (SC->teamScores[b] > SC->teamScores[a]) {
 		SC->winnerTeam = scene_teamSlot((Scene *)s, 0);
 		return;
 	}
 	a = scene_teamSlot((Scene *)s, 1);
 	b = scene_teamSlot((Scene *)s, 0);
-	if (S(int, 0x2221fb8 + b * 4) < S(int, 0x2221fb8 + a * 4))
+	if (SC->teamScores[b] < SC->teamScores[a])
 		SC->winnerTeam = scene_teamSlot((Scene *)s, 1);
 	else
 		SC->winnerTeam = -1;
@@ -1635,7 +1635,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	else if (SC->quitAsked == 1) {
 		if (SC->roundOver == 0) {
 			sound_playVolume(9, 100);
-			if (SC->localAlive == 0 || (S(int, 8) == 0 && SC->teamAsked == 1 && A_INT(SC->localPlayer, 0x1eccb48) == 0)) {
+			if (SC->localAlive == 0 || (SC->network == 0 && SC->teamAsked == 1 && A_INT(SC->localPlayer, 0x1eccb48) == 0)) {
 				SC->rankingShown = 0;
 				SC->localAlive = 1;
 			}
@@ -1645,12 +1645,12 @@ void THISCALL (game_processGameMode)(u8 *s)
 	} else
 		quit_check = 0;
 	if (quit_check && SC->quitAsked == 1) {
-		if (S(int, 4) == 0) {
+		if (SC->client == 0) {
 			if (SC->roundOver == 0) {
 				SC->roundOver = 1;
 				S(u32, 0x23423a5) = 0x40400000;
 				music_shutdown();
-				if (S(int, 8) == 0) {
+				if (SC->network == 0) {
 					msg_userEndsGame(s);
 					g_matchEndedByUser = 1;
 				} else {
@@ -1679,7 +1679,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		A_INT(SC->localPlayer, 0x1eccb68) = SC->levelPoints;
 		S(int, 0x2342419) = 1;
 	}
-	if (S(int, 0x2342421) == 0 && SC->localPlayer >= 0 && S(int, 8) == 1) {
+	if (S(int, 0x2342421) == 0 && SC->localPlayer >= 0 && SC->network == 1) {
 		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
 		P_INT(SC->localPlayer, 0x179d1fa) = shot;
 		P_INT(SC->localPlayer, 0x179d1fe) = 0;
@@ -1706,7 +1706,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (me >= 0 && A_INT(me, 0x1eccb78) == 0 && SC->matchOver == 0 && P_INT(me, 0x179d1fe) == 0x180
 	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
-			if (SC->chosenTeam >= 0 && S(int, 8) != 0)
+			if (SC->chosenTeam >= 0 && SC->network != 0)
 				escMenu_open((Scene *)s, 1, scene_teamSide((Scene *)s, SC->chosenTeam) == 0 ? 0 : 1);
 			else
 				escMenu_open((Scene *)s, 1, SC->counterRed > SC->counterBlue ? 1 : 0);
@@ -1734,7 +1734,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->teamChanged == 1
 	    || (SC->leaderMarkOff == 1 && A_INT(SC->localPlayer, 0x1eccbbc) == 3 && A_INT(SC->localPlayer, 0x1eccf4c) == 1))
 		local_spawn(s);
-	if (S(int, 8) == 0 && SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccb48) == 1 && SC->matchOver == 0)
+	if (SC->network == 0 && SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccb48) == 1 && SC->matchOver == 0)
 		bot_spawns(s);
 	stage_selectActor((Stage *)stage, SC->playing == 1 && SC->cameraMode == 1 ? SC->localPlayer : -1);
 	/* the keys' rates */
@@ -1758,7 +1758,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		} else
 			free_keys(s, mv, &speed, &turn);
-	} else if (SC->playing == 1 && (S(int, 8) == 0 || net_isClient())) {
+	} else if (SC->playing == 1 && (SC->network == 0 || net_isClient())) {
 		if (SC->matchOver == 1 || SC->roundOver == 1) {
 			if (SC->matchOver == 1 && SC->ranking[0] != SC->localPlayer) {   /* the round's end: the camera turns */
 				float *v = (float *)(s + 0x233cb20) + SC->cameraMode;
@@ -1805,7 +1805,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		dt = f32(fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9468)));
 	else
 		BITS(dt) = S(u32, 0x44);
-	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && S(int, 8) == 0)) {
+	if (SC->replaying == 0 && !(SC->escMenuOpen == 1 && SC->network == 0)) {
 		if (SC->playing == 0 && SC->cameraSlot == 2 && SC->watchedPlayer >= 0)
 			A_INT(SC->watchedPlayer, 0x1eccfc0) = 1;
 		else if (SC->playing == 1 && SC->cameraMode == 2 && SC->localPlayer >= 0)
@@ -1820,7 +1820,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		stage_refillFactors(stage);
 		stage_updateObjects(stage, BITS(dt));
 		scene_loadPath(stage, BITS(dt));
-		if (S(int, 8) == 1) {   /* the server checks the local player's parts every 20 s */
+		if (SC->network == 1) {   /* the server checks the local player's parts every 20 s */
 			long double v = fsub_m(fld_m((const float *)(s + 0x2342405)), (const float *)(s + 0x44));
 			S(float, 0x2342405) = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && A_INT(SC->localPlayer, 0x1eccbbc) == 1) {
@@ -1895,7 +1895,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 	events_age(s, S(u32, 0x44));
 	if (SC->rankingKey == 1)
-		S(u32, 0x233cc40) = 0x40a00000;
+		S(float, 0x233cc40) = 5.0f;
 	me = SC->localPlayer;
 	if (me >= 0 && A_INT(me, 0x1eccbbc) == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
 		notice_printCentre((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
@@ -1936,7 +1936,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	if (S(int, 0x2221fb4) == 1 || !(S(float, 0x233cc58) > 0)) {
 		msg_newKing((Scene *)s);
-		if (net_playerInUse(SC->localPlayer) == 1 && S(int, 0x2342936 + SC->localPlayer * 4) == 1
+		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->rankShown > 1 || (SC->markersOff == 1 && SC->rankShown != 1)))
 			sound_playVolume(0xf, 100);
 		S(int, 0x2221fb4) = 0;
@@ -1947,10 +1947,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the network's per-player updates */
 	if (SC->localPlayer >= 0) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233cc54)), (const float *)(s + 0x44));
-		S(float, 0x233cc54) = (float)v;
+		SC->roundTimer = (float)v;
 		if (!(v > 0)) {
 			S(int, 0x2343006 + SC->localPlayer * 16) = 1;
-			S(u32, 0x233cc54) = 0x40400000;
+			SC->roundTimer = 3.0f;
 		}
 		if (A_INT(SC->localPlayer, 0x1eccb88) >= 0) {
 			v = fsub_m(fld_m((const float *)(s + 0x233cc5c)), (const float *)(s + 0x44));
@@ -1986,7 +1986,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the round's end */
 	if (S(float, 0x234239d) > 0) {
 		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
-		if (S(int, 8) == 1 && S(int, 4) == 0) {   /* the server's end notices, every half second */
+		if (SC->network == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (S(float, 0x23423b9) > 0.5f) {
 				S(int, 0x23423b9) = 0;
 				int k = SC->endedByTime;
@@ -2017,7 +2017,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			stage_deactivateActors(stage);
 			S(int, 0x233cb20 + SC->cameraMode * 4) = 0;
 			S(int, 0x233cb48 + SC->cameraMode * 4) = 0;
-			if (S(int, 8) == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
+			if (SC->network == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->roundOver = 1;
 				S(int, 0x23423a5) = 0;
@@ -2031,7 +2031,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->rankShown = -1;
 				events_clear((Scene *)s, 60.0f);
 				notices_clearAll(s);
-				if (S(int, 8) == 0) {
+				if (SC->network == 0) {
 					teams_setup((Scene *)s);
 					scene_setLocalTeam((Scene *)s, -1);
 					if (SC->stageCleared == 0)
@@ -2083,21 +2083,21 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 	}
 	/* the frag and time limits */
-	if (S(int, 4) == 0 && SC->matchOver == 0) {
+	if (SC->client == 0 && SC->matchOver == 0) {
 		int limit = SC->scoreLimit;
 		if (limit > 0) {
 			if (SC->teamGame == 1) {
-				if (S(int, 0x2221fb8 + scene_teamSlot((Scene *)s, 0) * 4) >= SC->scoreLimit
-				    || S(int, 0x2221fb8 + scene_teamSlot((Scene *)s, 1) * 4) >= SC->scoreLimit) {
+				if (SC->teamScores[scene_teamSlot((Scene *)s, 0)] >= SC->scoreLimit
+				    || SC->teamScores[scene_teamSlot((Scene *)s, 1)] >= SC->scoreLimit) {
 					winning_team(s);
 					round_over(s, 0);
-					if (S(int, 8) == 0 && S(int, 0x2221fb8 + SC->localTeam * 4) >= SC->scoreLimit
+					if (SC->network == 0 && SC->teamScores[SC->localTeam] >= SC->scoreLimit
 					    && g_missionStage == g_progress)
 						SC->stageCleared = 1;
 				}
 			} else if (SC->rankCount > 0 && A_INT(SC->ranking[0], 0x1eccb54) >= limit) {
 				round_over(s, 0);
-				if (S(int, 8) == 0 && A_INT(SC->localPlayer, 0x1eccb54) >= SC->scoreLimit
+				if (SC->network == 0 && A_INT(SC->localPlayer, 0x1eccb54) >= SC->scoreLimit
 				    && g_missionStage == g_progress)
 					SC->stageCleared = 1;
 			}
@@ -2185,7 +2185,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			sound_updateListener((Scene *)s);
 	}
 	/* the connection (a client's) */
-	if (S(int, 8) == 1) {
+	if (SC->network == 1) {
 		if (SC->roundOver == 0) {
 			if (net_isClient() == 0) {
 				if (S(float, 0x2342395) > 5.0f) {

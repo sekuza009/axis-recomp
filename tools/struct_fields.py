@@ -104,7 +104,9 @@ def nice_float(w):
 	for p in range(1, 9):
 		s = '%.*g' % (p, f)
 		if struct.unpack('<I', struct.pack('<f', float(s)))[0] == w:
-			return (s if ('.' in s or 'e' in s) else s + '.0') + 'f'
+			if 'e' in s:   # (written out: 100.0f, not 1e+02f)
+				s = ('%.10f' % float(s)).rstrip('0')
+			return (s if '.' in s else s + '.0').replace('.f', '.0f') + ('0' if s.endswith('.') else '') + 'f'
 	return None
 
 
@@ -118,6 +120,16 @@ if not VARFORM and not FIXED:
 			return '%s(float, %s) = %s;' % (macro, m.group(1), v)
 		return m.group(0)
 	t = re.sub(r'\b%s\(u32, (0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(macro), lit, t)
+elif FIXED and 'u32' in fixed.values() and 'float' in fixed.values():
+	U = [k for k, v in fixed.items() if v == 'u32'][0]
+	FL = [k for k, v in fixed.items() if v == 'float'][0]
+	def lit(m):
+		f = resolve(TYPE, int(m.group(1), 0))
+		v = nice_float(int(m.group(2), 16))
+		if f and f[1] == 'float' and v:
+			return '%s(%s) = %s;' % (FL, m.group(1), v)
+		return m.group(0)
+	t = re.sub(r'\b%s\((0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(U), lit, t)
 kinds = collections.defaultdict(set)
 for m in ACCESS.finditer(t):
 	kinds[int(m.group(2), 0)].add(SAME.get(typ(m), typ(m)))

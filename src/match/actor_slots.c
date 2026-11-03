@@ -374,14 +374,14 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	(*(u32 *)&AC->armor) = R(u32, 0x20);
 	(*(u32 *)&AC->shield) = R(u32, 0x24);
 	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)k_27_7778f);
-	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)k_10f);
+	AC->accel = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
 	AC->radiusSq = (float)(radius * radius * k_10000f);
 	AC->spawn70 = R(u32, 0x34);
 	AC->spawn74 = ftol(R(float, 0x38) * (long double)k_10f);
 	AC->spawn78 = R(u32, 0x3c);
-	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)k_100f);
-	A(float, 0x80) = (float)(R(float, 0x44) * (long double)k_100f);
+	AC->spawn7c = (float)(R(float, 0x40) * (long double)k_100f);
+	AC->spawn80 = (float)(R(float, 0x44) * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
 		AC->spawnTail[k] = R(u32, 0x48 + k * 4);
 	AC->target1 = -1;
@@ -736,7 +736,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
 	A(float, 0x50) = f32(v);
 	if (!(v >= *K(0x4a93f4)))
-		A(u32, 0x50) = 0x42c80000;   /* 100 */
+		A(float, 0x50) = 100.0f;   /* 100 */
 	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), (const float *)(ac + 0x50));
 	A(float, 0x3c) = f32(v);
 	if (GAME_VAR(int, s + 0x20f3acc) == 1)   /* (the check scales the stored value) */
@@ -757,12 +757,12 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
 	(*(int *)&AC->spawn64) = 100;
 	A(u32, 0x68) = A(u32, 0x50);
-	A(u32, 0x6c) = 0x44610000;   /* 900 */
+	AC->accel = 900.0f;   /* 900 */
 	AC->spawn70 = 0x40400000;   /* 3 */
 	AC->spawn74 = 10;
 	(*(int *)&AC->spawn78) = 0;
-	A(u32, 0x7c) = 0x447a0000;   /* 1000 */
-	A(u32, 0x80) = 0x43fa0000;   /* 500 */
+	AC->spawn7c = 1000.0f;   /* 1000 */
+	AC->spawn80 = 500.0f;   /* 500 */
 	AC->spawnTail[0] = 0x40000000;   /* 2 */
 	AC->spawnTail[1] = 0x3f800000;
 	AC->spawnTail[2] = 0x457a0000;   /* 4000 */
@@ -836,7 +836,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x44c, 11, 0);
 	AC->inView = -1;
 	fill_dwords(ac + 0x47c, 5, 0);
-	A(u32, 0x490) = 0x3f800000;
+	AC->weaponLower = 1.0f;
 	A(int, 0x494) = A(int, 0x498) = 0;
 	A(int, 0x49c) = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
 	fill_dwords(ac + 0x4a0, 3, 0);
@@ -850,7 +850,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(u32, 0x534) = 0xc61c4000;   /* -10000 */
 	A(int, 0x538) = -1;
 	fill_dwords(ac + 0x53c, 3, 0);
-	A(u32, 0x548) = 0x3f800000;
+	AC->damageFlash = 1.0f;
 	A(int, 0x54c) = 0;
 	actor_updateHead(s, a);
 	actor_updateBody(s, a);
