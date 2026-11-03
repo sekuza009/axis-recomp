@@ -603,10 +603,12 @@ typedef struct TreeNode {
 
 /* a texture manager's material: a texture by name, its flags and colours (tex_allocIdBy) */
 typedef struct TexRecord {
-	char name[0x44];   /* +0x0: upper-cased */
+	char name[0x40];   /* +0x0: upper-cased */
+	i32 slot;   /* +0x40: (unclear) texRecord_init's second value (its caller: -1) */
 	u32 flags;   /* +0x44 */
 	float colours[6];   /* +0x48: two hue / saturation / value sets */
-	u8 _pad0000060[0x8];
+	i32 animation;   /* +0x60: (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0 */
+	i32 changed;   /* +0x64: 1: recoloured (tex_recolourMaterial; its image made again) */
 } TexRecord;
 
 /* a texture manager (names.c; TextureSets.managers): up to 512 materials and their GL texture slots */
@@ -1732,9 +1734,12 @@ _Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->inde
 _Static_assert(offsetof(TreeNode, left) == 0x44 && sizeof(((TreeNode *)0)->left) == 0x4, "scene.fields: TreeNode.left");
 _Static_assert(offsetof(TreeNode, right) == 0x48 && sizeof(((TreeNode *)0)->right) == 0x4, "scene.fields: TreeNode.right");
 _Static_assert(sizeof(TreeNode) == 0x4c, "scene.fields: size of TreeNode");
-_Static_assert(offsetof(TexRecord, name) == 0x0 && sizeof(((TexRecord *)0)->name) == 0x44, "scene.fields: TexRecord.name");
+_Static_assert(offsetof(TexRecord, name) == 0x0 && sizeof(((TexRecord *)0)->name) == 0x40, "scene.fields: TexRecord.name");
+_Static_assert(offsetof(TexRecord, slot) == 0x40 && sizeof(((TexRecord *)0)->slot) == 0x4, "scene.fields: TexRecord.slot");
 _Static_assert(offsetof(TexRecord, flags) == 0x44 && sizeof(((TexRecord *)0)->flags) == 0x4, "scene.fields: TexRecord.flags");
 _Static_assert(offsetof(TexRecord, colours) == 0x48 && sizeof(((TexRecord *)0)->colours) == 0x18, "scene.fields: TexRecord.colours");
+_Static_assert(offsetof(TexRecord, animation) == 0x60 && sizeof(((TexRecord *)0)->animation) == 0x4, "scene.fields: TexRecord.animation");
+_Static_assert(offsetof(TexRecord, changed) == 0x64 && sizeof(((TexRecord *)0)->changed) == 0x4, "scene.fields: TexRecord.changed");
 _Static_assert(sizeof(TexRecord) == 0x68, "scene.fields: size of TexRecord");
 _Static_assert(offsetof(TextureManager, ready) == 0x4 && sizeof(((TextureManager *)0)->ready) == 0x4, "scene.fields: TextureManager.ready");
 _Static_assert(offsetof(TextureManager, dir) == 0x8 && sizeof(((TextureManager *)0)->dir) == 0x100, "scene.fields: TextureManager.dir");

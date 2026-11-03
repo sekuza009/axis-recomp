@@ -106,19 +106,19 @@ static int same(u32 a, u32 b)
    2) and changed (+0x84) when any value differs */
 void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2, u32 v2)
 {
-	u8 *rec = self + m * 0x68;
-	u32 flags = FIELD(u32, rec, 0xc016c) | 2;
-	if (flags == 0 || !same(FIELD(u32, rec, 0xc0170), h1) || !same(FIELD(u32, rec, 0xc0174), c1) ||
-	    !same(FIELD(u32, rec, 0xc0178), v1) || !same(FIELD(u32, rec, 0xc017c), h2) ||
-	    !same(FIELD(u32, rec, 0xc0180), c2) || !same(FIELD(u32, rec, 0xc0184), v2)) {
-		FIELD(u32, rec, 0xc016c) = flags;
-		FIELD(u32, rec, 0xc0170) = h1;
-		FIELD(u32, rec, 0xc0174) = c1;
-		FIELD(u32, rec, 0xc0178) = v1;
-		FIELD(u32, rec, 0xc017c) = h2;
-		FIELD(u32, rec, 0xc0180) = c2;
-		FIELD(u32, rec, 0xc0184) = v2;
-		FIELD(int, rec, 0xc018c) = 1;
+	TexRecord *rec = &((TextureManager *)self)->records[m];
+	u32 flags = rec->flags | 2;
+	if (flags == 0 || !same(BITS(rec->colours[0]), h1) || !same(BITS(rec->colours[1]), c1) ||
+	    !same(BITS(rec->colours[2]), v1) || !same(BITS(rec->colours[3]), h2) ||
+	    !same(BITS(rec->colours[4]), c2) || !same(BITS(rec->colours[5]), v2)) {
+		rec->flags = flags;
+		BITS(rec->colours[0]) = h1;
+		BITS(rec->colours[1]) = c1;
+		BITS(rec->colours[2]) = v1;
+		BITS(rec->colours[3]) = h2;
+		BITS(rec->colours[4]) = c2;
+		BITS(rec->colours[5]) = v2;
+		rec->changed = 1;
 	}
 }
 
@@ -126,20 +126,20 @@ void THISCALL (tex_recolourMaterial)(u8 *self, int m, u32 h1, u32 c1, u32 v1, u3
    if the slot is tinted. Returns what the original leaves in eax */
 int THISCALL (tex_applyTintMask)(u8 *tex, int i)
 {
-	u8 *rec = tex + i * 0x68;
-	u8 flags = FIELD(u8, rec, 0xc016c);
+	TexRecord *rec = &((TextureManager *)tex)->records[i];
+	u8 flags = (*(u8 *)&rec->flags);
 	if (!(flags & 2))
 		return (int)(((u32)i & 0xffffff00u) | flags);
-	for (int y = 0; y < FIELD(int, tex, 0xc011c); y++)
-		for (int x = 0; x < FIELD(int, tex, 0xc0118); x++) {
-			int k = FIELD(int, tex, 0xc0118) * y + x;
+	for (int y = 0; y < ((TextureManager *)tex)->height; y++)
+		for (int x = 0; x < ((TextureManager *)tex)->width; x++) {
+			int k = ((TextureManager *)tex)->width * y + x;
 			u8 *px = tex + k * 4 + 0x114, *mask = tex + k * 4 + 0x80114;
 			if (mask[0] >= 200)
-				tex_tintRgba(px, FIELD(u32, rec, 0xc0170), FIELD(u32, rec, 0xc0174), FIELD(u32, rec, 0xc0178));
+				tex_tintRgba(px, BITS(rec->colours[0]), BITS(rec->colours[1]), BITS(rec->colours[2]));
 			else if (mask[1] >= 200)
-				tex_tintRgba(px, FIELD(u32, rec, 0xc017c), FIELD(u32, rec, 0xc0180), FIELD(u32, rec, 0xc0184));
+				tex_tintRgba(px, BITS(rec->colours[3]), BITS(rec->colours[4]), BITS(rec->colours[5]));
 		}
-	return FIELD(int, tex, 0xc011c);
+	return ((TextureManager *)tex)->height;
 }
 
 /* 0x454e60: a texture record: its name, eight parameters, and its animation from the name's suffix: "_ANI" 1,
@@ -147,28 +147,29 @@ int THISCALL (tex_applyTintMask)(u8 *tex, int i)
    upper-cased copy of the name it never uses; the suffix test is case-sensitive.) */
 void THISCALL (texRecord_init)(u8 *self, const char *name, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
+	TexRecord *tr = (TexRecord *)self;
 	strcpy((char *)self, name);
-	FIELD(int, self, 0x44) = a3;
-	FIELD(int, self, 0x40) = a2;
-	FIELD(int, self, 0x48) = a4;
-	FIELD(int, self, 0x4c) = a5;
-	FIELD(int, self, 0x50) = a6;
-	FIELD(int, self, 0x54) = a7;
-	FIELD(int, self, 0x58) = a8;
-	FIELD(int, self, 0x5c) = a9;
+	tr->flags = a3;
+	tr->slot = a2;
+	(*(int *)&tr->colours[0]) = a4;
+	(*(int *)&tr->colours[1]) = a5;
+	(*(int *)&tr->colours[2]) = a6;
+	(*(int *)&tr->colours[3]) = a7;
+	(*(int *)&tr->colours[4]) = a8;
+	(*(int *)&tr->colours[5]) = a9;
 	int n = (int)strlen((char *)self);
 	if (n > 4 && !memcmp(self + n - 4, "_ANI", 4)) {
-		FIELD(int, self, 0x60) = 1;
-		FIELD(int, self, 0x64) = 0;
+		tr->animation = 1;
+		tr->changed = 0;
 		return;
 	}
 	if (n > 5 && !memcmp(self + n - 5, "_ANI", 4)) {
 		char c = (char)self[n - 1];
 		if (c >= '0' && c <= '3')
-			FIELD(int, self, 0x60) = c - '0' + 1;
-		FIELD(int, self, 0x64) = 0;
+			tr->animation = c - '0' + 1;
+		tr->changed = 0;
 		return;
 	}
-	FIELD(int, self, 0x60) = 0;
-	FIELD(int, self, 0x64) = 0;
+	tr->animation = 0;
+	tr->changed = 0;
 }

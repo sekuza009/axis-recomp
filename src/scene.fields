@@ -496,9 +496,12 @@ struct TreeNode 0x4c                                            # a manager's na
 0x48       4          u8 *right
 
 struct TexRecord 0x68                                           # a texture manager's material: a texture by name, its flags and colours (tex_allocIdBy)
-0          0x44       char name[0x44]                           # upper-cased
+0          0x40       char name[0x40]                            # upper-cased
+0x40       4          i32 slot                                   # (unclear) texRecord_init's second value (its caller: -1)
 0x44       4          u32 flags
 0x48       0x18       float colours[6]                          # two hue / saturation / value sets
+0x60       4          i32 animation                              # (by use) the name's suffix: "_ANI" 1, "_ANI0" .. "_ANI3" 1 .. 4, else 0
+0x64       4          i32 changed                                # 1: recoloured (tex_recolourMaterial; its image made again)
 
 struct TextureManager 0xcd144                                   # a texture manager (names.c; TextureSets.managers): up to 512 materials and their GL texture slots
 4          4          i32 ready                                 # 1: set up (tex_initBy)
