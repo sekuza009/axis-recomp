@@ -444,7 +444,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			}
 		}
 		if (net_isClient() == 0) {
-			long double t = fadd_m(fld_m((const float *)(g + 0x44)), (const float *)(g + 0x2342395));
+			long double t = fadd_m(fld_m(&GS->frameTime), &GS->lostTime);
 			G(float, 0x2342395) = f32(t);
 			if (t > k_5f)
 				stop = 1;

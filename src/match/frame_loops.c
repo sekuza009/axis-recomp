@@ -520,8 +520,8 @@ static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_sup
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
 {
-	sound_play3D(sound, (const float *)(s + 0x20f3970),
-	                                                                                (const float *)(it + 0xc), (const float *)(s + 0x20f397c), 0x47c35000);   /* (heard to 100000) */
+	sound_play3D(sound, ST->cameraPos,
+	                                                                                (const float *)(it + 0xc), ST->viewDir, 0x47c35000);   /* (heard to 100000) */
 }
 
 /* actor ac touching item i (of kind type, its type record t): what it gives. Supplies the actor can use are taken;
@@ -561,7 +561,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			int warped = 0;
 			if (AC->pilot == ST->playerActor && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
-				memcpy(ac + 0x180, to + 0xc, 12);
+				memcpy(AC->nextPos, to + 0xc, 12);
 				AC->nextPitch = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
 				BITS(AC->nextYaw) = GAME_VAR(u32, to + 0x1c);
 				A(int, 0x538) = I(int, 4);
@@ -632,11 +632,11 @@ void THISCALL (item_update)(u8 *s, float dt)
 				float reach = 0;
 				int near = 1;
 				for (int a = 0; a < 3 && near; a++) {
-					long double d = fsub_m(fld_m((const float *)(ac + 0x154) + a), (const float *)(it + 0xc) + a);
+					long double d = fsub_m(fld_m(AC->pos + a), (const float *)(it + 0xc) + a);
 					if (!(d >= 0))
 						d = -d;
 					if (a == 0)
-						reach = f32(fmul_m(fld_m((const float *)(ac + 0x3e8)), k_1_5f));
+						reach = f32(fmul_m(fld_m(&AC->radius), k_1_5f));
 					near = !(d >= reach);
 				}
 				if (near) {
@@ -672,7 +672,7 @@ static u32 table_rand_below(u32 n)
 /* the particle's direction (+0x10, from 0xa0e7a8 through its matrix +0x2c) */
 static void particle_heading(u8 *p)
 {
-	const float *m = (const float *)(p + 0x2c), *v = (const float *)ADDR(g_vecOrigin);
+	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
 	for (int r = 0; r < 3; r++)
 		PR->pos[r] = f32(fadd_m(fmul_m(fld_m(&v[2]), &m[8 + r]) + fmul_m(fld_m(&v[1]), &m[4 + r]) + fmul_m(fld_m(&v[0]), &m[r]),
 		                                    &m[12 + r]));
@@ -685,7 +685,7 @@ static void particle_spin(u8 *p)
 	glLoadIdentity();
 	glLoadMatrixf((*(const float * *)&PR->matrixFrom));
 	glRotatef((float)table_rand_below(360), 0.0f, 0.0f, 1.0f);
-	glGetFloatv(0xba6, (float *)(p + 0x2c));
+	glGetFloatv(0xba6, PR->matrix);
 	glPopMatrix();
 	particle_heading(p);
 }
@@ -696,17 +696,17 @@ static void particle_aim(u8 *p, int by_size)
 {
 	float d[3];
 	for (int k = 0; k < 3; k++)
-		d[k] = f32(fsub_m(fld_m((const float *)(p + 0x1c) + k), (const float *)(p + 0x10) + k));
+		d[k] = f32(fsub_m(fld_m(PR->target + k), PR->pos + k));
 	float len = f32(Vec3_normalize(d));
 	glPushMatrix();
 	glLoadIdentity();
-	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m((const float *)(p + 0x80)), K(0x4a9504)), K(0x4a9424))) : 1.0f;
+	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m(&PR->baseSize), K(0x4a9504)), K(0x4a9424))) : 1.0f;
 	float z = f32(fld_m(K(0x4a9424)) / fmul_m(fld_m(&len), K(0x4a9504)));
 	glScalef_bits(*(u32 *)&xy, *(u32 *)&xy, *(u32 *)&z);
 	gluLookAt(PR->pos[0], PR->pos[1], PR->pos[2], PR->target[0], PR->target[1], PR->target[2], 0.0, 1.0, 0.0);
 	float m[16];
 	glGetFloatv(0xba6, m);
-	Mat4_invert((float *)(p + 0x2c), m);
+	Mat4_invert(PR->matrix, m);
 	glPopMatrix();
 }
 
@@ -718,12 +718,12 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	PR->colour = colour;
 	glPushMatrix();
 	glLoadIdentity();
-	const float *at = (const float *)(p + 0x1c), *from = (const float *)(p + 0x10);
+	const float *at = PR->target, *from = PR->pos;
 	gluLookAt(at[0], at[1], at[2], (double)(fld_m(&at[0]) * 2 - fld_m(&from[0])), (double)(fld_m(&at[1]) * 2 - fld_m(&from[1])),
 	          (double)(fld_m(&at[2]) * 2 - fld_m(&from[2])), 0.0, 1.0, 0.0);
 	float m[16];
 	glGetFloatv(0xba6, m);
-	Mat4_invert((float *)(p + 0x2c), m);
+	Mat4_invert(PR->matrix, m);
 	glPopMatrix();
 	if (PR->owner == 1)
 		return;
@@ -740,7 +740,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		memset(rec, 0, sizeof rec);
 		memcpy(&rec[2], at, 12);
 		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
-		float size = f32(fld_m((const float *)(p + 0x80)));
+		float size = f32(fld_m(&PR->baseSize));
 		memcpy(&rec[11], &size, 4);
 		particle_spawn(s, rec);
 		return;
@@ -756,7 +756,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		memcpy(&rec[2], pos, 12);
 		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 		rec[8] = rec[9] = rec[10] = 0;
-		float size = f32(fld_m((const float *)(p + 0x80)));
+		float size = f32(fld_m(&PR->baseSize));
 		memcpy(&rec[11], &size, 4);
 		rec[12] = 0;
 		particle_spawn(s, rec);
@@ -781,7 +781,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 				P(u32, 0xb8) = 0x3f000000;
 		}
 	} else {
-		long double d = fadd_m(fld_m((const float *)(p + 0x80)), K(margin));
+		long double d = fadd_m(fld_m(&PR->baseSize), K(margin));
 		for (int k = 0; k < 5; k++) {
 			P(float, to[k]) = f32(fmul_m(fadd_m(fld_m(&q[from[k]]) / d, K(0x4a9424)), K(0x4a942c)));
 			if (k == 0)
@@ -814,8 +814,8 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	}
 	PR->kind = GAME_VAR(u32, desc);
 	PR->owner = GAME_VAR(u32, desc + 4);
-	memcpy(p + 0x10, desc + 8, 12);
-	memcpy(p + 0x1c, desc + 0x14, 12);
+	memcpy(PR->pos, desc + 8, 12);
+	memcpy(PR->target, desc + 0x14, 12);
 	PR->matrixFrom = GAME_VAR(u32, desc + 0x20);
 	if (PR->matrixFrom)
 		Mat4_copy(p + 0x2c, (*(const void * *)&PR->matrixFrom));
@@ -830,8 +830,8 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 0: case 1: case 8: PR->life = 0.5f; break;   /* 0.5 s */
 	case 2:
 	case 3:
-		sound_play3D(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
-		                                                                                (const float *)(p + 0x10), (const float *)(s + 0x20f397c),
+		sound_play3D(kind == 2 ? 0x2a : 0x28, ST->cameraPos,
+		                                                                                PR->pos, ST->viewDir,
 		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
 		break;
 	case 4:

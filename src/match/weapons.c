@@ -235,7 +235,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->weapon = GAME_VAR(int, shot + 4);
 	BU->owner = owner;
 	BU->colour = GAME_VAR(u32, shot + 0x24);
-	memcpy(b + 0x54, o, 12);
+	memcpy(BU->from, o, 12);
 	float dir[3];
 	const float *w2de8 = (const float *)(w + 0x2de8);
 	if (GAME_VAR(int, shot) == 0) {
@@ -294,17 +294,17 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		Vec3_normalize(dir);
 		int target = GAME_VAR(int, shot + 0x14);
 		BITS(BU->hit) = target >= 0 ? GAME_VAR(u32, s + 0xa24) + target * 0xac : 0;
-		memcpy(b + 0x60, aim, 12);
+		memcpy(BU->end, aim, 12);
 		BU->life = 10.0f;   /* 10 */
 	}
 	BU->age = 0.0f;
-	memcpy(b + 0x78, o, 12);
-	memcpy(b + 0x84, o, 12);
+	memcpy(BU->prev, o, 12);
+	memcpy(BU->pos, o, 12);
 	BU->moved = 0;
 	float *vel = (float *)(RELOC(b) + 0xa0);
 	for (int k = 0; k < 3; k++)
 		vel[k] = *w2de8 > 0 ? f32(fmul_m(fld_m(w2de8), &dir[k])) : f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x60) + k), (const float *)(RELOC(b) + 0x54) + k));
-	memcpy(b + 0xac, (const void *)ADDR(g_vecZero), 12);
+	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
 	BU->hitActor = -1;
 	B(int, 0xc0) = 0;
 	BU->link = a4;
@@ -322,7 +322,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	if (quiet)
 		return;
 	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, ((u32)BU->owner) };
-	memcpy(&rec[2], b + 0x78, 12);
+	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = BU->colour;
 	float size = f32(fld_m((const float *)(w + 0x2df0)));
@@ -334,8 +334,8 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	if (BU->owner == ST->playerActor)
 		sound_playVolume(sound, 100);
 	else
-		sound_play3D(sound, (const float *)(s + 0x20f3970),
-		                                                                                (const float *)(RELOC(b) + 0x78), (const float *)(s + 0x20f397c), 0x47435000);
+		sound_play3D(sound, ST->cameraPos,
+		                                                                                (const float *)(RELOC(b) + 0x78), ST->viewDir, 0x47435000);
 }
 #undef K
 #undef B
@@ -719,10 +719,10 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 			cur[1] = f32(fadd_m(fld_m(&prev[1]), &step[1]));
 			cur[2] = f32(fadd_m(fld_m(&prev[2]), &step[2]));
 		} else
-			memcpy(cur, b + 0x60, 12);
+			memcpy(cur, BU->end, 12);
 	} else {
 		memcpy(step, vel, 12);
-		memcpy(cur, b + 0x60, 12);
+		memcpy(cur, BU->end, 12);
 	}
 	float dir[3], best, hit[3], t;
 	memcpy(dir, step, 12);
@@ -735,7 +735,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 		if (math_segmentSphere(prev, cur, dir, &AF(j, 0x1cd9528), radius, hit, &t) == 1 && !(t >= best)) {
 			BU->hitActor = j;
 			memcpy(cur, hit, 12);
-			memcpy(b + 0x60, hit, 12);
+			memcpy(BU->end, hit, 12);
 			BITS(best) = BITS(t);
 		}
 	}
@@ -748,7 +748,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 		int r = collision_rayTrace(s, prev, cur, h);
 		BU->hit = r;
 		if (r) {
-			memcpy(b + 0x60, h, 12);
+			memcpy(BU->end, h, 12);
 			h[0] = f32(fsub_m(fld_m(&h[0]), &prev[0]));
 			long double dy = fsub_m(fld_m(&h[1]), &prev[1]);
 			h[1] = (float)dy;
@@ -783,7 +783,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		if (ST->actors[BU->owner].pilot == ST->playerActor)
 			fly_local(s, b, w, dt);
 		else if (BU->moved == 1) {
-			memcpy(cur, b + 0x90, 12);
+			memcpy(cur, BU->netPoint, 12);
 			for (int k = 0; k < 3; k++)
 				step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));
 			Vec3_normalize(step);
@@ -800,7 +800,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		return;
 	}
 	if (ST->actors[BU->owner].pilot != ST->playerActor) {
-		memcpy(cur, b + 0x90, 12);
+		memcpy(cur, BU->netPoint, 12);
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));
 		draw_shot(s, b, w, r, 0);

@@ -48,7 +48,7 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p,
 	float *r = next_record(vv, 0x908c, 0x90a0, 36);
 	if (!r)
 		return;
-	const float *M = (const float *)(vv + 0x9130);
+	const float *M = VV->clip;
 	for (int c = 0; c < 4; c++)
 		r[1 + c] = f32((X)M[8 + c] * p[2] + (X)M[4 + c] * p[1] + (X)p[0] * M[c] + M[12 + c]);
 	r[5] = f32((X)M[4] * q[1] + (X)M[8] * q[2] + (X)q[0] * M[0] + M[12]);
@@ -92,7 +92,7 @@ void THISCALL (viewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
 	if (!r)
 		return;
-	const float *M = (const float *)(vv + 0x9130);
+	const float *M = VV->clip;
 	for (int k = 0; k < 4; k++) {
 		const float *v = p + k * 3;
 		float *o = r + 6 + k * 4;
@@ -116,7 +116,7 @@ void THISCALL (viewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u3
 	float *r = next_record(vv, 0x9070, 0x909c, 92);
 	if (!r)
 		return;
-	const float *V = (const float *)(vv + 0x90f0), *P = (const float *)(vv + 0x90b0);
+	const float *V = VV->modelview, *P = VV->projection;
 	float cx = f32((X)V[4] * p[1] + (X)V[8] * p[2] + (X)p[0] * V[0] + V[12]);
 	float cy = f32((X)V[5] * p[1] + (X)V[9] * p[2] + (X)V[1] * p[0] + V[13]);
 	X z = (X)V[6] * p[1] + (X)V[10] * p[2] + (X)V[2] * p[0] + V[14];
@@ -167,7 +167,7 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
 	VV->triangleCount = n + 1;
 	if (!rec)
 		return n + 1;
-	const float *V = (const float *)(vv + 0x9130), *p1 = P + 3, *p2 = P + 6;
+	const float *V = VV->clip, *p1 = P + 3, *p2 = P + 6;
 	float *R = rec + 10;
 	if (M) {
 		X x0 = row(LD(P[0]), &M[0], LD(M[4]), &P[1], LD(P[2]), &M[8], &M[12]);

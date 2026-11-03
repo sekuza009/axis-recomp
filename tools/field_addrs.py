@@ -22,8 +22,19 @@ for l in open('src/scene.fields', encoding='latin-1'):
 		scal[int(off, 16)] = m.group(1)
 t = open(path, encoding='latin-1', newline='').read()
 n = 0
+# only where PTR is defined (a "#define PTR ((T *)var)" up to its #undef or the end) when the file defines it;
+# a PTR that is an expression ((Player *)ac) works everywhere
+SPANS = None
+if re.match(r'^\w+$', PTR):
+	SPANS = []
+	for d in re.finditer(r'(?m)^#define %s \(\(\w+ \*\)\(?%s\)?\)' % (PTR, var), t):
+		u = re.compile(r'(?m)^#(?:undef|define) %s\b' % PTR).search(t, d.end())
+		SPANS.append((d.end(), u.start() if u else len(t)))
+inside = lambda p: SPANS is None or any(a <= p < b for a, b in SPANS)
 def cast(m):
 	global n
+	if not inside(m.start()):
+		return m.group(0)
 	o = int(m.group(2), 16)
 	if o in arrs:
 		n += 1
@@ -35,6 +46,8 @@ def cast(m):
 t2 = re.sub(r'\((const )?float \*\)\(%s \+ (0x[0-9a-f]+)\)' % var, cast, t)
 def mem(m):
 	global n
+	if not inside(m.start()):
+		return m.group(0)
 	argz = m.group(2)
 	def one(a):
 		global n

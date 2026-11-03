@@ -82,7 +82,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 	float nw = f32(-fld_m(&clip[3]));
 	u8 hit[12];
 	if (clip[0] > nw && clip[1] > nw && clip[2] > nw && !(clip[0] >= clip[3]) && !(clip[1] >= clip[3]) &&
-	    !(clip[2] >= clip[3]) && collision_rayTrace(s, (const float *)(s + 0x20f3970), p, hit) == 0) {
+	    !(clip[2] >= clip[3]) && collision_rayTrace(s, ST->cameraPos, p, hit) == 0) {
 		long double g = fadd_m(fmul_m(fld_m(&dt), K(0x4a947c)), (const float *)(obj + 0x2a8));
 		F(float, obj, 0x2a8) = f32(g);
 		if (g > *K(0x4a9424))
@@ -239,13 +239,13 @@ static int tag_narrow(u8 *ac, u32 k)
 void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
                                  float fr, float dt)
 {
-	float *cam = (float *)(s + 0x20f3970), *mv = (float *)(s + 0x20f39a0), *pr = (float *)(s + 0x20f3a34);
+	float *cam = ST->cameraPos, *mv = (float *)(s + 0x20f39a0), *pr = (float *)(s + 0x20f3a34);
 	memcpy(s + 0x20f3994, cam, 12);
 	Mat4_copy(s + 0x20f39e0, mv);
 	memcpy(cam, pos, 12);
-	memcpy(s + 0x20f397c, dir, 12);
-	memcpy(s + 0x20f3988, up, 12);
-	const float *d = (const float *)(s + 0x20f397c), *u = (const float *)(s + 0x20f3988);
+	memcpy(ST->viewDir, dir, 12);
+	memcpy(ST->viewUp, up, 12);
+	const float *d = ST->viewDir, *u = ST->viewUp;
 	glPushMatrix();
 	glLoadIdentity();
 	gluLookAt(cam[0], cam[1], cam[2], (double)fadd_m(fld_m(&d[0]), &cam[0]), (double)fadd_m(fld_m(&d[1]), &cam[1]),
@@ -276,14 +276,14 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		u8 *ac = (u8 *)&ST->actors[k];
 		if (AC->state != 1)
 			continue;
-		const float *p = (const float *)(ac + 0x154);
+		const float *p = AC->pos;
 		float e[3], c[4];
 		for (int r = 0; r < 3; r++)
 			e[r] = f32(fadd_m(fmul_m(fld_m(&mv[8 + r]), &p[2]) + fmul_m(fld_m(&mv[4 + r]), &p[1]) + fmul_m(fld_m(&mv[r]), &p[0]), &mv[12 + r]));
 		c[0] = f32(fadd_m(fmul_m(fld_m(&e[1]), &pr[4]) + fmul_m(fld_m(&e[2]), &pr[8]) + fmul_m(fld_m(&e[0]), &pr[0]), &pr[12]));
 		for (int r = 1; r < 4; r++)
 			c[r] = f32(fadd_m(fmul_m(fld_m(&e[0]), &pr[r]) + fmul_m(fld_m(&e[1]), &pr[4 + r]) + fmul_m(fld_m(&e[2]), &pr[8 + r]), &pr[12 + r]));
-		to_screen(s, fdiv_m(fld_m(&c[0]), &c[3]), fdiv_m(fld_m(&c[1]), &c[3]), (float *)(ac + 0x87bc));
+		to_screen(s, fdiv_m(fld_m(&c[0]), &c[3]), fdiv_m(fld_m(&c[1]), &c[3]), &AC->screenX);
 		A(float, 0x87c4) = f32(fld_m(&e[2]));
 		float nw = f32(-fld_m(&c[3]));
 		u8 hit[12];
@@ -293,7 +293,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			AC->onScreen = 0;
 			continue;
 		}
-		const float *rad = (const float *)(ac + 0x3e8);
+		const float *rad = &AC->radius;
 		float q[3] = { f32(fsub_m(fld_m(&e[0]), rad)), f32(fadd_m(fld_m(&e[1]), rad)), e[2] };
 		long double c0 = fadd_m(fmul_m(fld_m(&q[2]), &pr[8]) + fmul_m(fld_m(&q[1]), &pr[4]) + fmul_m(fld_m(&q[0]), &pr[0]), &pr[12]);
 		long double c1 = fadd_m(fmul_m(fld_m(&q[0]), &pr[1]) + fmul_m(fld_m(&q[2]), &pr[9]) + fmul_m(fld_m(&q[1]), &pr[5]), &pr[13]);
@@ -325,7 +325,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		int weapon = act->actorType;
 		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
 		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
-			AC->lockedOn = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
+			AC->lockedOn = f32(fadd_m(fld_m(&dt), &AC->lockedOn));
 		else
 			AC->lockedOn = 0.0f;
 		if (!tag_narrow(ac, OBJ(k_40f)))
@@ -362,7 +362,7 @@ static void square(float *ab, long double h)
 /* one of the effect shapes about the projectile's matrix (+0x2c) */
 static void shape(void *vv, u8 *p, void *model, const void *colour, int cull)
 {
-	ViewVolume_projectObject(vv, model, 0, (const float *)(p + 0x2c), 0, colour, cull, -1, 0);
+	ViewVolume_projectObject(vv, model, 0, PR->matrix, 0, colour, cull, -1, 0);
 }
 
 static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = { 0.875f, 0.125f, 1.0f, 0.25f };
@@ -373,7 +373,7 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 	float ab[4];
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
 	square(ab, PR->owner == ST->selectedActor ? small : big);
-	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
+	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
 
 /* the glow sized by the projectile's radius (+0x80) plus add, halved for the viewing actor's own */
@@ -388,7 +388,7 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 		ab[1] = f32(fmul_m(fld_m(&ab[1]), K(0x4a942c)));
 		ab[2] = ab[3] = (float)fmul_m(size, K(0x4a942c));
 	}
-	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
+	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
 
 /* a bright core (+-h, faded by (1 - t) squared) under the glow (faded the same, rounded) */
@@ -399,7 +399,7 @@ static void core(u8 *s, u8 *p, void *vv, const float *t, float h, float big, flo
 	float a_rounded = (float)a;
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4a9744))));   /* 255 */
 	square(ab, h);
-	quad(vv, TEX(0), k_coreUV, 0, p, ab, (const float *)(p + 0x10), 2);
+	quad(vv, TEX(0), k_coreUV, 0, p, ab, PR->pos, 2);
 	glow(s, p, vv, fld_m(&a_rounded), big, small);
 }
 
@@ -413,7 +413,7 @@ static void flare(u8 *s, u8 *p, void *vv, float *t)
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
 	*t = f32(fadd_m(fld_m(&PR->baseSize), K(0x4a93f0)));   /* (the original reuses t's slot) */
 	square(ab, fmul_m(a2, t));
-	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, (const float *)(p + 0x10), 2);
+	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, PR->pos, 2);
 	sized_glow(s, p, vv, fld_m(&a_rounded), K(0x4a93d0));
 }
 
@@ -430,7 +430,7 @@ static void bolt(u8 *s, u8 *p, void *vv, const float *t, int sized)
 	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
 	uv[3] = 1.0f;
 	P(u8, 0x7b) = 0xff;
-	memcpy(at, p + 0x10, 12);
+	memcpy(at, PR->pos, 12);
 	at[1] = f32(fadd_m(fmul_m(fld_m(t), K(0x4a93f4)), &at[1]));
 	if (sized)
 		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
@@ -516,7 +516,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 {
 	u8 *p = (u8 *)&ST->projectiles[i];
-	const float *at = (const float *)(p + 0x10), *cam = (const float *)(s + 0x20f3970), *range = (const float *)(s + 0xa08);
+	const float *at = PR->pos, *cam = ST->cameraPos, *range = &ST->cullMargin;
 	int type = PR->kind;
 	float uv[4], ab[4], t;
 	if (type < 50) {
@@ -700,7 +700,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
 			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
-		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), (const float *)(p + 0x84),
+		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), &PR->fade,
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}
