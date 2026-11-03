@@ -112,24 +112,24 @@ def nice_float(w):
 
 # a float field written with a float's bit pattern, M(u32, off) = 0x3f000000, becomes M(float, off) = 0.5f: the same
 # store (the compiler moves the constant's bits), and the field is then used as one type
-if not VARFORM and not FIXED:
+def float_literals(head_u32, write_float):
+	"""head_u32(off) a regex of the u32 access, write_float(off) the float access; only an assignment that is its own
+	statement (in a chain, a = b = 0x447a0000, the outer one would take the float's value converted, not its bits)"""
 	def lit(m):
-		f = resolve(TYPE, int(m.group(1), 0))
-		v = nice_float(int(m.group(2), 16))
+		f = resolve(TYPE, int(m.group(2), 0))
+		v = nice_float(int(m.group(3), 16))
 		if f and f[1] == 'float' and v:
-			return '%s(float, %s) = %s;' % (macro, m.group(1), v)
+			return '%s%s = %s;' % (m.group(1), write_float(m.group(2)), v)
 		return m.group(0)
-	t = re.sub(r'\b%s\(u32, (0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(macro), lit, t)
+	return re.sub(r'(?<=[;{}\n])([ \t]*)%s = (0x[0-9a-f]{8});' % head_u32, lit, t)
+
+
+if not VARFORM and not FIXED:
+	t = float_literals(r'\b%s\(u32, (0x[0-9a-f]+|\d+)\)' % re.escape(macro), lambda o: '%s(float, %s)' % (macro, o))
 elif FIXED and 'u32' in fixed.values() and 'float' in fixed.values():
 	U = [k for k, v in fixed.items() if v == 'u32'][0]
 	FL = [k for k, v in fixed.items() if v == 'float'][0]
-	def lit(m):
-		f = resolve(TYPE, int(m.group(1), 0))
-		v = nice_float(int(m.group(2), 16))
-		if f and f[1] == 'float' and v:
-			return '%s(%s) = %s;' % (FL, m.group(1), v)
-		return m.group(0)
-	t = re.sub(r'\b%s\((0x[0-9a-f]+|\d+)\) = (0x[0-9a-f]{8});' % re.escape(U), lit, t)
+	t = float_literals(r'\b%s\((0x[0-9a-f]+|\d+)\)' % re.escape(U), lambda o: '%s(%s)' % (FL, o))
 kinds = collections.defaultdict(set)
 done, other, unknown = 0, collections.Counter(), collections.Counter()
 cls = lambda k: 'int32' if k in ('i32', 'u32') else k

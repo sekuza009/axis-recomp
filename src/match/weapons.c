@@ -506,7 +506,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	else if (kind == 7)
 		beam(s, b, w, r, flying);
 	else {
-		u32 flag = BU->owner == GAME_VAR(int, s + 0x202e8d8) && !(B(float, 0x70) >= *K(0x4a9568)) ? 1 : 0;
+		u32 flag = BU->owner == ST->selectedActor && !(B(float, 0x70) >= *K(0x4a9568)) ? 1 : 0;
 		effect(s, r, kind + 0x14, flag, b + 0x78, b + 0x84, 0, 0, 0, effect_size(w), 0);
 	}
 }

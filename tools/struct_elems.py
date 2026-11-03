@@ -64,6 +64,8 @@ def resolve_elem(stype, c, n):
 			sub = resolve(ty, c - off)
 			if sub:
 				return name, sub[0], sub[1]
+		if len(dims) == 1 and esize(ty) == n and c == off and ty not in structs:
+			return name, None, ty   # (an array of scalars: frags[t])
 	return None
 
 
@@ -129,7 +131,7 @@ for a, b, ty, c, ix, n in found:
 	else:
 		e = resolve_elem(TYPE, c, n)
 		ix2 = ix[1:-1] if ix.startswith('(') and ix.endswith(')') and ix.count('(') == 1 else ix
-		text = e and '%s->%s[%s].%s' % (PTR, e[0], ix2, e[1])
+		text = e and ('%s->%s[%s].%s' % (PTR, e[0], ix2, e[1]) if e[1] else '%s->%s[%s]' % (PTR, e[0], ix2))
 		fty = e and e[2]
 	if not text or len(kinds[c]) != 1 or cls(SAME.get(ty, ty)) != cls(fty):
 		left[hex(c)] += 1

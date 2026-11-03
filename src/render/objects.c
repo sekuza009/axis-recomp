@@ -216,8 +216,8 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 /* the screen point (the view's width +0x20f3a24 and height +0x20f3a28) of clip x / w and y / w */
 static void to_screen(u8 *s, long double qx, long double qy, float *out)
 {
-	out[0] = f32(fmul_m(fadd_m(qx, K(0x4a9424)) * (long double)GAME_VAR(int, s + 0x20f3a24), K(0x4a942c)));
-	out[1] = f32(fmul_m((fld_m(K(0x4a9424)) - qy) * (long double)GAME_VAR(int, s + 0x20f3a28), K(0x4a942c)));
+	out[0] = f32(fmul_m(fadd_m(qx, K(0x4a9424)) * (long double)ST->viewWidth, K(0x4a942c)));
+	out[1] = f32(fmul_m((fld_m(K(0x4a9424)) - qy) * (long double)ST->viewHeight, K(0x4a942c)));
 }
 
 /* whether the name tag's width on screen (+0x87c8 .. +0x87d4) is under k (from the width 640 / the screen's) */
@@ -253,14 +253,14 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	glGetFloatv(0xba6, mv);
 	glPopMatrix();
 	GAME_VAR(float, s + 0x20f3a20) = fov;
-	GAME_VAR(int, s + 0x20f3a24) = w;
-	GAME_VAR(int, s + 0x20f3a28) = h;
+	ST->viewWidth = w;
+	ST->viewHeight = h;
 	GAME_VAR(float, s + 0x20f3a2c) = nr;
 	GAME_VAR(float, s + 0x20f3a30) = fr;
 	glMatrixMode(0x1701);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(GAME_VAR(float, s + 0x20f3a20), (double)((long double)GAME_VAR(int, s + 0x20f3a24) / GAME_VAR(int, s + 0x20f3a28)),
+	gluPerspective(GAME_VAR(float, s + 0x20f3a20), (double)((long double)ST->viewWidth / ST->viewHeight),
 	               GAME_VAR(float, s + 0x20f3a2c), GAME_VAR(float, s + 0x20f3a30));
 	glGetFloatv(0xba7, pr);
 	glPopMatrix();
@@ -287,7 +287,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		A(float, 0x87c4) = f32(fld_m(&e[2]));
 		float nw = f32(-fld_m(&c[3]));
 		u8 hit[12];
-		if (k == GAME_VAR(int, s + 0x202e8d8) || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
+		if (k == ST->selectedActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
 		    c[2] >= c[3] || collision_rayTrace(s, cam, p, hit)) {
 			A(int, 0x87e8) = 0;
 			AC->onScreen = 0;
@@ -371,7 +371,7 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 {
 	float ab[4];
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
-	square(ab, P(int, 0xc) == GAME_VAR(int, s + 0x202e8d8) ? small : big);
+	square(ab, P(int, 0xc) == ST->selectedActor ? small : big);
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
 }
 
@@ -382,7 +382,7 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
 	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
-	if (P(int, 0xc) == GAME_VAR(int, s + 0x202e8d8)) {
+	if (P(int, 0xc) == ST->selectedActor) {
 		ab[0] = f32(fmul_m(fld_m(&ab[0]), K(0x4a942c)));
 		ab[1] = f32(fmul_m(fld_m(&ab[1]), K(0x4a942c)));
 		ab[2] = ab[3] = (float)fmul_m(size, K(0x4a942c));
@@ -634,7 +634,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	}
 	case 20:
 	case 21:
-		if (P(int, 0xc) != GAME_VAR(int, s + 0x202e8d8))
+		if (P(int, 0xc) != ST->selectedActor)
 			shape(vv, p, GAME_VAR(void *, s + (type == 20 ? 0x20f2e78 : 0x20f2e84)), p + 0x78, 0);
 		return;
 	case 22:

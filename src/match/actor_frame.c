@@ -13,6 +13,7 @@
 #define AU(offset) GAME_VAR(u32, a + (offset))
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
 #define AU8(offset) GAME_VAR(u8, a + (offset))
+#define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
 #define OI(j, offset) GAME_VAR(int, s + (offset) + (j) * 0x8888)   /* actor j's, by their stage offsets */
 #define OF(j, offset) GAME_VAR(float, s + (offset) + (j) * 0x8888)
 /* point k (20 bytes) of path r: the paths' records (28 bytes at +0xe3b03c) start with their points' address */
@@ -167,31 +168,31 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		particle_spawn(s, fx);
 	}
 	int local = ST->playerActor;
-	if (i == local && AI(0x4c0) != i)
+	if (i == local && AC->lastAttacker != i)
 		sound_playVolume(0xd, 0x64);
 	AC->state = 2;
 	AI(0x150) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
-	int k = AI(0x4c0);
-	if (GAME_VAR(int, s + 0x20f3ad4) == 1) {   /* every one for themselves */
+	int k = AC->lastAttacker;
+	if (ST->freeForAll == 1) {   /* every one for themselves */
 		if (k != i) {
 			int frags, points;
 			if (AC->markSolo == 1) {   /* the marked one: five times */
 				frags = 5;
-				points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
+				points = ST->halfPoints == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
 			} else {
 				frags = 1;
 				points = FRAG_POINTS(AC->emblem);
 			}
 			award(s, k, frags, points);
-			if (AI(0x4c0) == ST->playerActor) {
+			if (AC->lastAttacker == ST->playerActor) {
 				if (AC->markSolo == 1) {
-					if (GAME_VAR(int, s + 0x20f3ab4) == 1)
+					if (ST->showExp == 1)
 						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, a + 0x98, points, 5);
 					else
 						stage_print(s, (const char *)STR(0x4b44d4, "YOU FRAGED KING %s, +1(x%d) FRAGS"), a + 0x98, 5);
 					GAME_VAR(int, s + 0x20fce4c) = -1;
-				} else if (GAME_VAR(int, s + 0x20f3ab4) == 1)
+				} else if (ST->showExp == 1)
 					stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 				else
 					stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
@@ -213,41 +214,41 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 					award(s, j, n, sum);
 			int lt = ST->actors[ST->playerActor].team;
 			if (lt >= 0 && lt != AC->team) {
-				if (GAME_VAR(int, s + 0x20f3ab4) == 1)
+				if (ST->showExp == 1)
 					stage_print(s, (const char *)STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG..."), a + 0x98, n, sum);
 				else
 					stage_print(s, (const char *)STR(0x4b4450, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG(S)"), a + 0x98, n);
 			} else if (lt == AC->team)
 				stage_print(s, (const char *)STR(0x4b442c, "YOUR COMMANDER %s HAS BEEN KILLED!"), a + 0x98);
 			if (AC->team == 0)
-				GAME_VAR(int, s + 0x202e8f4) += n;
+				ST->frags[1] += n;
 			else
-				GAME_VAR(int, s + 0x202e8f0) += n;
+				ST->frags[0] += n;
 			GAME_VAR(int, s + 0x20fce50 + AC->team * 4) = -1;
 		}
 	} else if (k != i) {   /* teams */
 		int lv = AC->emblem;
-		int points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
+		int points = ST->halfPoints == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
 		if (ST->actors[k].emblem > lv + 3)   /* half for a much weaker one */
 			points /= 2;
 		award(s, k, 1, points);
-		if (AI(0x4c0) == ST->playerActor) {
-			if (GAME_VAR(int, s + 0x20f3ab4) == 1)
+		if (AC->lastAttacker == ST->playerActor) {
+			if (ST->showExp == 1)
 				stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 			else
 				stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
 		}
-		int t = ST->actors[AI(0x4c0)].team;
+		int t = ST->actors[AC->lastAttacker].team;
 		if (t >= 0)
-			GAME_VAR(int, s + 0x202e8f0 + t * 4)++;
+			ST->frags[t]++;
 	} else {
 		AC->kills--;
-		if (AI(0x4c0) == ST->playerActor)
+		if (AC->lastAttacker == ST->playerActor)
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		if (GAME_VAR(int, s + 0x20f3abc) == 1)
-			GAME_VAR(int, s + 0x202e8f0 + AC->team * 4)--;
+			ST->frags[AC->team]--;
 	}
-	if (AI(0x4c0) != i)
+	if (AC->lastAttacker != i)
 		AC->deaths++;
 	GAME_VAR(int, s + 0x202ea80 + i * 4) = 0;
 	AI(0x8868) = 1;
@@ -277,8 +278,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u8 *player = s + 0x1561b68 + AC->player * 0x47fd2;
 	if (AF(0x120) > AF(0x124)) {   /* the armour gone */
 		actor_deactivate((Stage *)s, i);
-		if (GAME_VAR(int, s + 0x202e8d8) == i)
-			GAME_VAR(int, s + 0x202e8d8) = -1;
+		if (ST->selectedActor == i)
+			ST->selectedActor = -1;
 		return;
 	}
 	if (AC->pilot != ST->playerActor || AC->bot != 0)
@@ -308,7 +309,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_prevWeapon(s, i);
 	if (AC->inNextWeapon == 1)
 		actor_nextWeapon(s, i);
-	if (i == GAME_VAR(int, s + 0x202e8d8)) {
+	if (i == ST->selectedActor) {
 		if (AI(0x49c) != 0) {
 			AI(0x49c) = 0;
 			actor_updatePart(s, i, AC->gaugeIcon, 0);
@@ -327,7 +328,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	memcpy(a + 0x154, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + 0x160, a + 0x18c, 32);
 	if (AC->pilot == ST->playerActor) {   /* (to chunk N: the local team's actors) */
-		if (GAME_VAR(int, s + 0x20f3ad4) == 1) {
+		if (ST->freeForAll == 1) {
 			if (AC->markSolo == 1)
 				AU(0x3f4) = AU(0x3fc) = 0x447a0000;   /* 1000 */
 			else {
@@ -384,7 +385,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot != 0) {   /* a bot: its target */
 			long double v = fsub_m(fld_m(&AF(0x8824)), dt);
 			AF(0x8824) = (float)v;
-			int k = AI(0x4c0);
+			int k = AC->lastAttacker;
 			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
 			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
 				AC->botTarget = k;
@@ -814,7 +815,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			int kind = GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4);
 			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
-				AU(0x490) = 0x3f800000;
+				AF(0x490) = 1.0f;
 		}
 	}
 	/* the body's pose: the arms' swing and lean (+0x390..+0x3a4) */
@@ -853,21 +854,21 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	skel_poseBones(a + 0x34f4, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d0, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon <= 3)
+	if (i == ST->selectedActor && weapon && AC->gaugeIcon <= 3)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
 	skel_poseBones(a + 0x40dc, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d8, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon == 4)
+	if (i == ST->selectedActor && weapon && AC->gaugeIcon == 4)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
 	skel_poseBones(a + 0x587c, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12e0, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon == 5)
+	if (i == ST->selectedActor && weapon && AC->gaugeIcon == 5)
 		hold(grip, weapon + 0x2d94 + AI(0x49c) * 12, 1, &AF(0x490));
 	skel_poseBones(a + 0x701c, 0);
 	glPopMatrix();
 	if (i == ST->playerActor) {   /* the lock-on warnings (s+0x202ea80 per actor), sorted longest first */
 		float *lock = &GAME_VAR(float, s + 0x202ea80);
-		int *count = &GAME_VAR(int, s + 0x202ef30);
+		int *count = &ST->bulletCount;
 		if (weapon && ((ActorInfo *)weapon)->ringRange > 0) {
 			for (int j = 0; j < ST->actorCount; j++) {
 				float *seen = &ST->actors[j].lockSize;
@@ -1045,7 +1046,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					rec[9] = (u32)(uintptr_t)q;
 					int target;
 					if (i == ST->playerActor) {
-						int c = GAME_VAR(int, s + 0x202ef30);
+						int c = ST->bulletCount;
 						target = c > 0 ? GAME_VAR(int, s + 0x202eda0 + (n % c) * 4) : -1;
 					} else
 						target = AC->botTarget;
@@ -1054,7 +1055,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (AC->bot != 2)
 						AC->ammo[((ActorInfo *)weapon)->ammoSlot] -= ((ActorInfo *)weapon)->ammoPerShot;
 				}
-				AU(0x17c) = 0x38d1b717;   /* 0.0001: the firing cycle restarts */
+				AF(0x17c) = 0.0001f;   /* 0.0001: the firing cycle restarts */
 				long double v = fdiv_m(fld_m(dt), cycle);
 				AC->fireCycle = (float)v;
 				if (v >= 1.0L)
@@ -1097,7 +1098,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				memcpy(rec + 6, f + 4, 12);
 				rec[9] = (u32)(uintptr_t)q;
 				*item = bullet_spawn(s, -1, i, -1, rec, 0);
-				AU(0x17c) = 0x38d1b717;
+				AF(0x17c) = 0.0001f;
 				long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);
 				AC->fireCycle = (float)v;
 				if (v >= 1.0L)
@@ -1134,7 +1135,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x48)), &AF(0x4ac));
 		AF(0x4ac) = (float)v;
 		if (v > 1.0L)
-			AU(0x4ac) = 0x3f800000;
+			AF(0x4ac) = 1.0f;
 	}
 	AC->warned = AF(0x4ac) > *K(0x4a94f8) ? 0 : 1;
 	if (AC->overheat == 1 && AF(0x4ac) >= 0.5f)
@@ -1147,7 +1148,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AU(0x4a4) = AU(0x194);
 		else
 			AU(0x4a4) = 0x40400000;
-		if (i != GAME_VAR(int, s + 0x202e8d8) && AC->viewMarked == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
+		if (i != ST->selectedActor && AC->viewMarked == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = AU(0x4a4);
 			if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0))
 				BITS(v28[1]) = 0x3d808081;   /* 1/255 */

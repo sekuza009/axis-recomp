@@ -12,6 +12,7 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x4c0      4          i32 lastAttacker                           # (by use) the actor that hit it last (credited with the kill)
 0x110      4          i32 pilot                                  # (unclear) compared with the stage's local actor slot: its own actor when equal
 0x11c      4          i32 bot                                    # (by use) not 0: run by the game (targets, following)
 0x154      0xc        float pos[3]                               # (by use) its position (ray traces start there)
@@ -287,6 +288,15 @@ struct Bone 0x70                                                # a skeleton's b
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
+0xa24      4          u8 *collisionPlanes                        # (by use) the collision planes (0xac bytes each; a hit record points into them)
+0x202e8d8  4          i32 selectedActor                          # (by use) the selected actor (stage_selectActor; -1 none)
+0x202e8f0  0x190      i32 frags[100]                             # (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs)
+0x202ef30  4          i32 bulletCount                            # (by use) bullets in flight
+0x20f3a24  4          i32 viewWidth                              # (by use) the view's size in pixels (screen points)
+0x20f3a28  4          i32 viewHeight
+0x20f3ab4  4          i32 showExp                                # (by use) 1: kills report the experience points too
+0x20f3ac0  4          i32 halfPoints                             # (unclear) 1: team kills give half the points
+0x20f3ad4  4          i32 freeForAll                             # (by use) 1: every one for themselves
 0x202ef34  0x7aa80    Bullet bullets[400]                       # (stage_clearBullets)
 0xa08      4          float cullMargin                           # (by use) added to an object's radius when testing it against the camera box
 0x9ccff8   4          i32 billboards                             # (by use) the billboard list map items are drawn with (hud_484ca0's id)
