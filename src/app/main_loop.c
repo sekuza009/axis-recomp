@@ -1389,16 +1389,16 @@ static void bot_spawns(u8 *s)
 		int state = SC->players[j].active;
 		if (GAME_VAR(int, rec + 0x18) != 1 || !(state == 0 || (state == 1 && SC->players[j].state == 3)))
 			continue;
-		u8 *player = s + 0x1755230 + GAME_VAR(int, rec) * 0x47fd2;
+		PlayerRecord *player = (PlayerRecord *)(s + 0x1755230 + GAME_VAR(int, rec) * 0x47fd2);
 		if (SC->teamGame == 1)
-			team_colours(s, GAME_VAR(int, rec), GAME_VAR(int, player + 0x48));
+			team_colours(s, GAME_VAR(int, rec), player->team);
 		u32 copy[0x17];
 		memcpy(copy, rec, 0x5c);
 		const u8 *at = spawn_point(s, 1);
 		memcpy(copy + 1, at ? at : s + 0x22ee228, 12);
 		actor_applySpawnRecord(s + 0x1f36c8, j, copy);
 		if (SC->players[j].statD8 == 0)
-			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), GAME_VAR(int, player + 0x48));
+			msg_playerJoinedTeam((Scene *)s, GAME_VAR(int, rec), player->team);
 	}
 }
 

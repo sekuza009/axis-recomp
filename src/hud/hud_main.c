@@ -118,7 +118,7 @@ static void main_score(Scene *scene, Player *player, int p)
 {
 	char text[256];
 	int x = 4;
-	if (scene->flags[p].shown == 1) {
+	if (scene->playerRecords[p].flagShown == 1) {
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		hud_drawLeaderIcon(scene, p, 4, 8);
 		x = 0x1c;

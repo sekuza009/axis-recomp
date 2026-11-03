@@ -23,7 +23,7 @@ static void ranking_row(Scene *scene, int p, int *y)
 		hud_drawNameIcon(scene, player->emblem, x, *y);
 	}
 	int flagOwner = scene->network ? p : player->player;
-	if (scene->flags[flagOwner].shown == 1) {
+	if (scene->playerRecords[flagOwner].flagShown == 1) {
 		x -= 0x18;
 		hud_drawLeaderIcon(scene, flagOwner, x, *y);
 	}

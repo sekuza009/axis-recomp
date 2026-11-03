@@ -172,11 +172,20 @@ typedef struct ActorInfo {
 	u8 _pad0002e14[0x4];
 } ActorInfo;
 
-/* (unclear) a record of stride 0x47fd2 whose first field says a flag is shown */
-typedef struct FlagSlot {
-	i32 shown;   /* +0x0 */
-	u8 _pad0000004[0x47fce];
-} FlagSlot;
+/* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
+typedef struct PlayerRecord {
+	u8 _pad0000000[0x48];
+	i32 team;   /* +0x48 */
+	u8 _pad000004c[0x2c4];
+	i32 head;   /* +0x310: its mech's parts (records of the stage's part tables) */
+	i32 body;   /* +0x314 */
+	i32 arms;   /* +0x318 */
+	i32 legs;   /* +0x31c */
+	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
+	u8 _pad0000338[0x47c8e];
+	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
+	u8 _pad0047fca[0x8];
+} PlayerRecord;
 
 /* a shape (a map object's model, an object list's entries...; the size is unknown: only the fields used) */
 typedef struct Model {
@@ -462,7 +471,9 @@ typedef struct Stage {
 	u8 _pad09ef900[0x92b544];
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
-	u8 _pad13c9b28[0x90f880];
+	u8 _pad13c9b28[0x198040];
+	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
+	u8 _pad19e1888[0x2f7b20];
 	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
 	u8 _pad202e8cc[0x8];
@@ -587,9 +598,9 @@ typedef struct Scene {
 	u8 _pad1679b38[0x4b640];
 	i32 boosterCount;   /* +0x16c5178 */
 	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
-	u8 _pad172147c[0x7bd7a];
-	FlagSlot flags[16];   /* +0x179d1f6 */
-	u8 _pad1c1cf16[0x2ad11a];
+	u8 _pad172147c[0x33db4];
+	PlayerRecord playerRecords[16];   /* +0x1755230 */
+	u8 _pad1bd4f50[0x2f50e0];
 	i32 snapshotTex[64];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; count unclear) */
 	u8 _pad1eca130[0x293c];
 	i32 botsWaiting;   /* +0x1ecca6c: (by use) bots waiting to spawn (records of 0x5c bytes from +0x1eca67c) */
@@ -904,8 +915,14 @@ _Static_assert(offsetof(ActorInfo, cycleTime) == 0x2e08 && sizeof(((ActorInfo *)
 _Static_assert(offsetof(ActorInfo, tracer) == 0x2e0c && sizeof(((ActorInfo *)0)->tracer) == 0x4, "scene.fields: ActorInfo.tracer");
 _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
-_Static_assert(offsetof(FlagSlot, shown) == 0x0 && sizeof(((FlagSlot *)0)->shown) == 0x4, "scene.fields: FlagSlot.shown");
-_Static_assert(sizeof(FlagSlot) == 0x47fd2, "scene.fields: size of FlagSlot");
+_Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
+_Static_assert(offsetof(PlayerRecord, head) == 0x310 && sizeof(((PlayerRecord *)0)->head) == 0x4, "scene.fields: PlayerRecord.head");
+_Static_assert(offsetof(PlayerRecord, body) == 0x314 && sizeof(((PlayerRecord *)0)->body) == 0x4, "scene.fields: PlayerRecord.body");
+_Static_assert(offsetof(PlayerRecord, arms) == 0x318 && sizeof(((PlayerRecord *)0)->arms) == 0x4, "scene.fields: PlayerRecord.arms");
+_Static_assert(offsetof(PlayerRecord, legs) == 0x31c && sizeof(((PlayerRecord *)0)->legs) == 0x4, "scene.fields: PlayerRecord.legs");
+_Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
+_Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
+_Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
 _Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
 _Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
 _Static_assert(sizeof(Model) == 0x30, "scene.fields: size of Model");
@@ -1102,6 +1119,7 @@ _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor)
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
+_Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
 _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
 _Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
@@ -1180,7 +1198,7 @@ _Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->ar
 _Static_assert(offsetof(Scene, legCount) == 0x1679b34 && sizeof(((Scene *)0)->legCount) == 0x4, "scene.fields: Scene.legCount");
 _Static_assert(offsetof(Scene, boosterCount) == 0x16c5178 && sizeof(((Scene *)0)->boosterCount) == 0x4, "scene.fields: Scene.boosterCount");
 _Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
-_Static_assert(offsetof(Scene, flags) == 0x179d1f6 && sizeof(((Scene *)0)->flags) == 0x47fd20, "scene.fields: Scene.flags");
+_Static_assert(offsetof(Scene, playerRecords) == 0x1755230 && sizeof(((Scene *)0)->playerRecords) == 0x47fd20, "scene.fields: Scene.playerRecords");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, botsWaiting) == 0x1ecca6c && sizeof(((Scene *)0)->botsWaiting) == 0x4, "scene.fields: Scene.botsWaiting");
 _Static_assert(offsetof(Scene, players) == 0x1ecca70 && sizeof(((Scene *)0)->players) == 0x88880, "scene.fields: Scene.players");
