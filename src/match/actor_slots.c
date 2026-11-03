@@ -376,7 +376,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->shieldMax = R(u32, 0x24);
 	AC->armor = R(u32, 0x20);
 	AC->shield = R(u32, 0x24);
-	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)k_27_7778f);
+	AC->topSpeed = AC->speed = (float)(R(float, 0x28) * (long double)k_27_7778f);
 	AC->accel = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
 	AC->radiusSq = (float)(radius * radius * k_10000f);
@@ -737,9 +737,9 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
 #define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
 	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
-	A(float, 0x50) = f32(v);
+	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))
-		A(float, 0x50) = 100.0f;   /* 100 */
+		AC->speed = 100.0f;   /* 100 */
 	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), (const float *)(ac + 0x50));
 	A(float, 0x3c) = f32(v);
 	if (GAME_VAR(int, s + 0x20f3acc) == 1)   /* (the check scales the stored value) */
@@ -759,7 +759,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 #undef LEG
 	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
 	AC->spawn64 = 100;
-	A(u32, 0x68) = A(u32, 0x50);
+	BITS(AC->topSpeed) = BITS(AC->speed);
 	AC->accel = 900.0f;   /* 900 */
 	AC->spawn70 = 0x40400000;   /* 3 */
 	AC->spawn74 = 10;
@@ -810,15 +810,15 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->state = 1;
 	AC->stateTime = 0.0f;
 	memcpy(ac + 0x154, pp + 2, 12);
-	A(u32, 0x160) = pp[5];
-	A(u32, 0x164) = pp[6];
+	BITS(AC->pitch) = pp[5];
+	BITS(AC->yaw) = pp[6];
 	fill_dwords(ac + 0x168, 6, 0);
 	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* three past positions: the place and the heading */
 	for (int k = 0; k < 3; k++) {
 		u8 *h = ac + past[k];
 		memcpy(h, ac + 0x154, 12);
-		GAME_VAR(u32, h + 0xc) = A(u32, 0x160);
-		GAME_VAR(u32, h + 0x10) = A(u32, 0x164);
+		GAME_VAR(u32, h + 0xc) = BITS(AC->pitch);
+		GAME_VAR(u32, h + 0x10) = BITS(AC->yaw);
 	}
 	fill_dwords(ac + 0x194, 6, 0);
 	fill_dwords(ac + 0x1c0, 5, 0);
@@ -840,10 +840,10 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->inView = -1;
 	fill_dwords(ac + 0x47c, 5, 0);
 	AC->weaponLower = 1.0f;
-	A(int, 0x494) = AC->slotLoaded = 0;
+	(*(int *)&AC->gauge) = AC->slotLoaded = 0;
 	AC->variantLoaded = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
 	fill_dwords(ac + 0x4a0, 3, 0);
-	A(u32, 0x4ac) = A(u32, 0x4b0) = 0x3f800000;
+	BITS(AC->energyUsed) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
 	fill_dwords(ac + 0x4bc, 3, (u32)-1);
 	A(int, 0x4d0) = -1;
@@ -880,7 +880,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(u32, 0x886c) = 0x3f800000;
 	A(int, 0x8870) = -1;
 	memcpy(ac + 0x8874, (const void *)ADDR(g_vecZero), 12);
-	AC->alert = A(int, 0x8884) = 0;
+	AC->alert = (*(int *)&AC->beepTimer) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
 }

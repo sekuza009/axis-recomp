@@ -372,7 +372,7 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 {
 	float ab[4];
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
-	square(ab, P(int, 0xc) == ST->selectedActor ? small : big);
+	square(ab, PR->owner == ST->selectedActor ? small : big);
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, (const float *)(p + 0x10), 2);
 }
 
@@ -383,7 +383,7 @@ static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
 	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
-	if (P(int, 0xc) == ST->selectedActor) {
+	if (PR->owner == ST->selectedActor) {
 		ab[0] = f32(fmul_m(fld_m(&ab[0]), K(0x4a942c)));
 		ab[1] = f32(fmul_m(fld_m(&ab[1]), K(0x4a942c)));
 		ab[2] = ab[3] = (float)fmul_m(size, K(0x4a942c));
@@ -548,7 +548,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		int n = ftol(fmul_m(fld_m(&t), K(0x4a94cc)));
 		if (n > 7)
 			n = 7;
-		int tex = type == 8 && P(int, 0xc) != 0 ? TEX(4) : TEX(0);
+		int tex = type == 8 && PR->owner != 0 ? TEX(4) : TEX(0);
 		float pos[3];
 		uv[0] = f32(fmul_m((long double)(n << 5), K(0x4a957c)));
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
@@ -599,7 +599,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 9: {   /* debris: one of the owner's part shapes (the part by i % 5) */
 		static const u32 k_parts[4] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984 };
 		int part = i % 5;
-		u8 *cache = s + (part >= 0 && part < 4 ? k_parts[part] : 0x15915d0) + P(int, 0xc) * 0x47fd2;
+		u8 *cache = s + (part >= 0 && part < 4 ? k_parts[part] : 0x15915d0) + PR->owner * 0x47fd2;
 		shape(vv, p, GAME_VAR(u8 *, cache + 0x11c) + i % GAME_VAR(int, cache + 0x120) * 0x4c, 0, 1);
 		return;
 	}
@@ -635,11 +635,11 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	}
 	case 20:
 	case 21:
-		if (P(int, 0xc) != ST->selectedActor)
+		if (PR->owner != ST->selectedActor)
 			shape(vv, p, GAME_VAR(void *, s + (type == 20 ? 0x20f2e78 : 0x20f2e84)), p + 0x78, 0);
 		return;
 	case 22:
-		if (P(int, 0xc) == 1)
+		if (PR->owner == 1)
 			return;
 		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a93f4)));
 		uv[0] = 0.875f;
@@ -655,14 +655,14 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	}
 	case 25:
-		if (P(int, 0xc) == 1)
+		if (PR->owner == 1)
 			return;
 		shape(vv, p, GAME_VAR(void *, s + 0x20f2e8c), 0, 1);
 		square(ab, 500.0f);
 		quad(vv, TEX(0), k_glowUV, 0, p, ab, at, 2);
 		return;
 	case 26:
-		if (P(int, 0xc) == 1)
+		if (PR->owner == 1)
 			return;
 		shape(vv, p, GAME_VAR(void *, s + 0x20f2e90), 0, 1);
 		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9450));
@@ -701,7 +701,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		if (PR->drawAge > 1.0f)
 			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
 		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), (const float *)(p + 0x84),
-		                           P(const float *, 0x28), 1, 1);
+		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}
 	case 50:

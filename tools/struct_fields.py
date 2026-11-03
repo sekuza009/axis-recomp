@@ -17,6 +17,7 @@ import re, sys, os, collections
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 DRY, LIST = '--dry' in sys.argv, '--list' in sys.argv
+PUNNED = '--punned' in sys.argv
 path, macro, TYPE, PTR = args
 
 SAME = {'int': 'i32', 'i32': 'i32', 'u32': 'u32', 'float': 'float', 'u8': 'u8', 'char': 'char', 'i8': 'i8',
@@ -85,6 +86,11 @@ elif VARFORM:
 		ACCESS = re.compile(r'\b%s\(([^,()]+), %s, (0x[0-9a-f]+|\d+)\)' % (re.escape(macro), re.escape(var)))
 else:
 	ACCESS = re.compile(r'\b%s\(([^,()]+), (0x[0-9a-f]+|\d+)\)' % re.escape(macro))
+
+
+def size_of(ty):
+	st = SAME.get(ty, ty)
+	return SIZE.get(st) or (4 if st.endswith('*') else None)
 
 
 def is_lvalue(m):
@@ -184,6 +190,17 @@ def sub(m):
 		if re.match(r'\s*=(?!=)', t[m.end():m.end() + 3]) and re.search(r'(?:^|[;{}])\s*$', t[max(0, m.start() - 200):m.start()]):
 			return '%s->%s' % (PTR, name)
 		return ('(*(%s *)&%s->%s)' if is_lvalue(m) else '((%s)%s->%s)') % (ty, PTR, name)
+	# --punned: the field read or written as another type of its size (its bits): BITS(p->f) for a u32 / int view of
+	# a float field, *(T *)&p->f otherwise. Safe since the build has -fno-strict-aliasing (2026-11-03): the views of
+	# one place are no longer assumed apart
+	if PUNNED and size_of(ty) == size_of(fty) and size_of(ty):
+		done += 1
+		st = SAME.get(ty, ty)
+		if st == fty or (cls(st) == cls(fty) == 'int32' and not is_lvalue(m)):
+			return '%s->%s' % (PTR, name) if st == fty else '((%s)%s->%s)' % (ty, PTR, name)
+		if ty == 'u32':
+			return 'BITS(%s->%s)' % (PTR, name)
+		return '(*(%s *)&%s->%s)' % (ty, PTR, name)
 	other['%s %s as %s' % (hex(off), name, '/'.join(sorted(kinds[off])))] += 1
 	return m.group(0)
 

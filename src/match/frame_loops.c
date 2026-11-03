@@ -553,10 +553,10 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 2:
 	case 3:
 		switch (type % 10) {
-		case 0: timer = &A(u32, 0x3f4); text = STR(0x4c81c4, "DAMAGE AMP"); break;   /* DAMAGE AMP */
-		case 1: timer = &A(u32, 0x3f8); text = STR(0x4c81b4, "CLOAKING FIELD"); break;   /* CLOAKING FIELD */
-		case 3: timer = &A(u32, 0x3fc); text = STR(0x4c81a4, "OVERED BOOSTER"); break;   /* OVERED BOOSTER */
-		case 7: timer = &A(u32, 0x400); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
+		case 0: timer = &BITS(AC->timers[0]); text = STR(0x4c81c4, "DAMAGE AMP"); break;   /* DAMAGE AMP */
+		case 1: timer = &BITS(AC->timers[1]); text = STR(0x4c81b4, "CLOAKING FIELD"); break;   /* CLOAKING FIELD */
+		case 3: timer = &BITS(AC->timers[2]); text = STR(0x4c81a4, "OVERED BOOSTER"); break;   /* OVERED BOOSTER */
+		case 7: timer = &BITS(AC->timers[3]); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
 			if (AC->pilot == ST->playerActor && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
@@ -683,7 +683,7 @@ static void particle_spin(u8 *p)
 {
 	glPushMatrix();
 	glLoadIdentity();
-	glLoadMatrixf(P(const float *, 0x28));
+	glLoadMatrixf((*(const float * *)&PR->matrixFrom));
 	glRotatef((float)table_rand_below(360), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, (float *)(p + 0x2c));
 	glPopMatrix();
@@ -703,7 +703,7 @@ static void particle_aim(u8 *p, int by_size)
 	float xy = by_size ? f32(fld_m(K(0x4a9424)) / fadd_m(fmul_m(fld_m((const float *)(p + 0x80)), K(0x4a9504)), K(0x4a9424))) : 1.0f;
 	float z = f32(fld_m(K(0x4a9424)) / fmul_m(fld_m(&len), K(0x4a9504)));
 	glScalef_bits(*(u32 *)&xy, *(u32 *)&xy, *(u32 *)&z);
-	gluLookAt(PR->pos[0], PR->pos[1], PR->pos[2], PR->target[0], P(float, 0x20), PR->target[2], 0.0, 1.0, 0.0);
+	gluLookAt(PR->pos[0], PR->pos[1], PR->pos[2], PR->target[0], PR->target[1], PR->target[2], 0.0, 1.0, 0.0);
 	float m[16];
 	glGetFloatv(0xba6, m);
 	Mat4_invert((float *)(p + 0x2c), m);
@@ -714,7 +714,7 @@ static void particle_aim(u8 *p, int by_size)
    unless it is a remote one (+0xc 1) small particles (kind 0, of its size) along it, one per 200 units */
 static void particle_beam(u8 *s, u8 *p, u32 colour)
 {
-	P(float, 0x70) = 0.0f;
+	PR->life = 0.0f;
 	PR->colour = colour;
 	glPushMatrix();
 	glLoadIdentity();
@@ -768,7 +768,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
    plus a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
 static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 {
-	P(float, 0x70) = 2.0f;   /* 2 s */
+	PR->life = 2.0f;   /* 2 s */
 	memcpy(p + 0x84, GAME_VAR(const u8 *, desc + 0x24), 12);
 	memcpy(p + 0x90, GAME_VAR(const u8 *, desc + 0x24) + 0xc, 12);
 	memcpy(p + 0x9c, GAME_VAR(const u8 *, desc + 0x24) + 0x18, 12);
@@ -808,26 +808,26 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		memcpy(p + 0x108, desc + 0x58, 12);
 		memcpy(p + 0x114, desc + 0x64, 12);
 		memcpy(p + 0x120, desc + 0x70, 12);
-		P(float, 0x70) = 0.01f;   /* 0.01 */
-		P(int, 0x6c) = P(int, 0x74) = 0;
+		PR->life = 0.01f;   /* 0.01 */
+		(*(int *)&PR->drawAge) = (*(int *)&PR->age) = 0;
 		return;
 	}
 	PR->kind = GAME_VAR(u32, desc);
 	PR->owner = GAME_VAR(u32, desc + 4);
 	memcpy(p + 0x10, desc + 8, 12);
 	memcpy(p + 0x1c, desc + 0x14, 12);
-	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);
-	if (P(u32, 0x28))
-		Mat4_copy(p + 0x2c, P(const void *, 0x28));
-	P(float, 0x6c) = 0.0f;
-	P(float, 0x70) = 1.0f;
-	P(float, 0x74) = 0.0f;
+	PR->matrixFrom = GAME_VAR(u32, desc + 0x20);
+	if (PR->matrixFrom)
+		Mat4_copy(p + 0x2c, (*(const void * *)&PR->matrixFrom));
+	PR->drawAge = 0.0f;
+	PR->life = 1.0f;
+	PR->age = 0.0f;
 	PR->colour = g_white;
 	PR->size = 0.0f;
-	P(u32, 0x80) = GAME_VAR(u32, desc + 0x2c);
+	BITS(PR->baseSize) = GAME_VAR(u32, desc + 0x2c);
 	int kind = PR->kind;
 	switch (kind) {
-	case 0: case 1: case 8: P(float, 0x70) = 0.5f; break;   /* 0.5 s */
+	case 0: case 1: case 8: PR->life = 0.5f; break;   /* 0.5 s */
 	case 2:
 	case 3:
 		sound_play3D(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
@@ -835,39 +835,39 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
 		break;
 	case 4:
-		P(float, 0x70) = 0.0f;
-		PR->colour = P(u32, 0x20);
+		PR->life = 0.0f;
+		PR->colour = BITS(PR->target[1]);
 		break;
-	case 5: case 6: case 7: P(int, 0x70) = 0; break;
+	case 5: case 6: case 7: (*(int *)&PR->life) = 0; break;
 	case 9:
-		P(float, 0x70) = 2.0f;
+		PR->life = 2.0f;
 		PR->fade = 0.1f;
 		break;
 	case 10: case 11: case 18:
-		P(float, 0x70) = 0.01f;
+		PR->life = 0.01f;
 		particle_spin(p);
 		break;
 	case 12: case 13: case 17:
-		P(float, 0x70) = 0.01f;
+		PR->life = 0.01f;
 		particle_heading(p);
 		break;
 	case 14: case 15: case 16:
-		P(float, 0x70) = 0.5f;
+		PR->life = 0.5f;
 		particle_heading(p);
 		break;
 	case 20: case 21:
-		P(float, 0x70) = 0.01f;
+		PR->life = 0.01f;
 		particle_aim(p, 0);
 		break;
-	case 22: P(float, 0x70) = 0.01f; break;
+	case 22: PR->life = 0.01f; break;
 	case 24:
-		P(float, 0x70) = 0.5f;
+		PR->life = 0.5f;
 		particle_aim(p, 1);
 		break;
 	case 25: particle_beam(s, p, 0xffc4c4ff); break;   /* bytes ff c4 c4 ff */
 	case 26: particle_beam(s, p, 0xffffc4c4); break;   /* bytes c4 c4 ff ff */
 	case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37: case 38:
-		P(float, 0x70) = 1.0f;
+		PR->life = 1.0f;
 		break;
 	case 40: case 41: case 49: particle_trail(p, desc, 0); break;
 	case 42: case 43: case 44: case 46: case 47: case 48: particle_trail(p, desc, ADDR(k_200f)); break;

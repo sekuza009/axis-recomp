@@ -273,31 +273,31 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		end[1] = f32(fadd_m(fld_m(&sy), &from[1]));
 		end[2] = f32(fadd_m(sz, &from[2]));
 		float hit[3];
-		B(int, 0x6c) = collision_rayTrace(s, from, end, hit);
-		if (B(int, 0x6c)) {
+		BU->hit = collision_rayTrace(s, from, end, hit);
+		if (BU->hit) {
 			memcpy(end, hit, 12);
 			if (*w2de8 > 0) {
 				float dx = f32(fsub_m(fld_m(&hit[0]), &from[0]));
 				long double dy = fsub_m(fld_m(&hit[1]), &from[1]), dz = fsub_m(fld_m(&hit[2]), &from[2]);
-				B(float, 0x74) = f32(fdiv_m(x87_fsqrt((fmul_m(fld_m(&dx), &dx) + dz * dz) + dy * dy), w2de8));
+				BU->life = f32(fdiv_m(x87_fsqrt((fmul_m(fld_m(&dx), &dx) + dz * dz) + dy * dy), w2de8));
 			} else
-				B(int, 0x74) = 0;
+				BU->life = 0.0f;
 		} else if (*w2de8 > 0)
-			B(float, 0x74) = f32(fdiv_m(fld_m(speed), w2de8));
+			BU->life = f32(fdiv_m(fld_m(speed), w2de8));
 		else
-			B(int, 0x74) = 0;
-		if (!(B(float, 0x74) >= 0) || B(float, 0x74) > *K(0x4a9418))
-			B(int, 0x74) = 0;
+			BU->life = 0.0f;
+		if (!(BU->life >= 0) || BU->life > *K(0x4a9418))
+			BU->life = 0.0f;
 	} else {
 		for (int k = 0; k < 3; k++)
 			dir[k] = f32(fsub_m(fld_m(&aim[k]), &o[k]));
 		Vec3_normalize(dir);
 		int target = GAME_VAR(int, shot + 0x14);
-		B(u32, 0x6c) = target >= 0 ? GAME_VAR(u32, s + 0xa24) + target * 0xac : 0;
+		BITS(BU->hit) = target >= 0 ? GAME_VAR(u32, s + 0xa24) + target * 0xac : 0;
 		memcpy(b + 0x60, aim, 12);
-		B(u32, 0x74) = 0x41200000;   /* 10 */
+		BU->life = 10.0f;   /* 10 */
 	}
-	B(int, 0x70) = 0;
+	BU->age = 0.0f;
 	memcpy(b + 0x78, o, 12);
 	memcpy(b + 0x84, o, 12);
 	BU->moved = 0;
@@ -488,12 +488,12 @@ static void trail(u8 *b, const u8 *w, int flying)
 		a[2] = f32(fmul_m(half, &inv[2]));
 		last[2] = f32(fadd_m(fld_m(&a[2]), &prev[2]));
 	}
-	B(u32, 0x494 + i * 4) = B(u32, 0x70);
+	B(u32, 0x494 + i * 4) = BITS(BU->age);
 	i = ++B(int, 0x4e4) % 20;
 	ring = b + i * 0x30;
 	for (int c = 0; c < 4; c++)
 		memcpy(ring + 0xd4 + c * 0xc, cur, 12);
-	B(u32, 0x494 + i * 4) = B(u32, 0x70);
+	B(u32, 0x494 + i * 4) = BITS(BU->age);
 }
 
 /* the shot drawn by its kind (+0x2dfc): a trail, a beam, or a particle of kind + 0x14 from the last point to the
@@ -506,7 +506,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	else if (kind == 7)
 		beam(s, b, w, r, flying);
 	else {
-		u32 flag = BU->owner == ST->selectedActor && !(B(float, 0x70) >= *K(0x4a9568)) ? 1 : 0;
+		u32 flag = BU->owner == ST->selectedActor && !(BU->age >= *K(0x4a9568)) ? 1 : 0;
 		effect(s, r, kind + 0x14, flag, b + 0x78, b + 0x84, 0, 0, 0, effect_size(w), 0);
 	}
 }
@@ -589,7 +589,7 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
    mark unless the surface takes none (flag 0x10) or marks are off (0x83a9c8), the hit sound */
 static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 {
-	const u8 *h = B(const u8 *, 0x6c);
+	const u8 *h = (*(const u8 * *)&BU->hit);
 	if (!h)
 		return;
 	float N[3], P[9];
@@ -615,8 +615,8 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 		memcpy(P, p, 36);
 	}
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
-	if (!(*B(const u8 *, 0x6c) & 0x10) && g_items3D == 1)
-		decal(s, b, w, r, B(const u8 *, 0x6c), N, P);
+	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_items3D == 1)
+		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (W(int, 0x2e04) >= 0)
 		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);
 	B(int, 0xd0) = 1;
@@ -663,13 +663,13 @@ static void home(u8 *s, u8 *b, const u8 *w)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *vel = (float *)(RELOC(b) + 0xa0), spd, rate, T[3];
 	if (WI->shotMode != 3) {
-		BITS(spd) = W(u32, 0x2de8);
-		BITS(rate) = W(u32, 0x2e0c);
+		BITS(spd) = BITS(WI->velocity);
+		BITS(rate) = BITS(WI->tracer);
 	} else {
-		long double x = fsub_m(fmul_m(fld_m(&B(float, 0x70)), K(0x4a947c)), K(0x4a9424));   /* 4 age - 1 */
-		spd = f32(fmul_m(fadd_m(((x * x) * x) * x, K(0x4a93ec)), &W(float, 0x2de8)));
-		long double y = fadd_m(fld_m(&B(float, 0x70)), K(0x4a9424));
-		rate = f32(fdivr_m((y * y) * y, &W(float, 0x2e0c)));
+		long double x = fsub_m(fmul_m(fld_m(&BU->age), K(0x4a947c)), K(0x4a9424));   /* 4 age - 1 */
+		spd = f32(fmul_m(fadd_m(((x * x) * x) * x, K(0x4a93ec)), &WI->velocity));
+		long double y = fadd_m(fld_m(&BU->age), K(0x4a9424));
+		rate = f32(fdivr_m((y * y) * y, &WI->tracer));
 	}
 	int tg = BU->link;
 	for (int k = 0; k < 3; k++)
@@ -705,16 +705,16 @@ static void home(u8 *s, u8 *b, const u8 *w)
 static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *vel = (float *)(RELOC(b) + 0xa0), *step = (float *)(RELOC(b) + 0xac);
-	if (W(float, 0x2e0c) > 0 && W(float, 0x2de8) > 0) {
+	if (WI->tracer > 0 && WI->velocity > 0) {
 		long double v = fsub_m(fld_m(&B(float, 0xc0)), dt);
 		B(float, 0xc0) = (float)v;
 		if (!(v > 0))
 			home(s, b, w);
 	}
-	if (W(float, 0x2de8) > 0) {
+	if (WI->velocity > 0) {
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fmul_m(fld_m(dt), &vel[k]));
-		if (!(fadd_m(fld_m(dt), &B(float, 0x70)) > B(float, 0x74)) || W(float, 0x2e0c) > 0) {
+		if (!(fadd_m(fld_m(dt), &BU->age) > BU->life) || WI->tracer > 0) {
 			cur[0] = f32(fadd_m(fld_m(&step[0]), &prev[0]));
 			cur[1] = f32(fadd_m(fld_m(&prev[1]), &step[1]));
 			cur[2] = f32(fadd_m(fld_m(&prev[2]), &step[2]));
@@ -740,13 +740,13 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 		}
 	}
 	if (BU->hitActor >= 0) {
-		B(int, 0x6c) = 0;
-		B(u32, 0x74) = B(u32, 0x70);
+		BU->hit = 0;
+		BITS(BU->life) = BITS(BU->age);
 	}
-	if (W(float, 0x2e0c) > 0 && BU->hitActor < 0) {
+	if (WI->tracer > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
-		B(int, 0x6c) = r;
+		BU->hit = r;
 		if (r) {
 			memcpy(b + 0x60, h, 12);
 			h[0] = f32(fsub_m(fld_m(&h[0]), &prev[0]));
@@ -756,7 +756,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 			h[2] = (float)dz;
 			long double len = x87_fsqrt((fmul_m(fld_m(&h[0]), &h[0]) + dz * dz) + dy * dy);
 			long double spd = x87_fsqrt((fmul_m(fld_m(&vel[0]), &vel[0]) + fmul_m(fld_m(&vel[1]), &vel[1])) + fmul_m(fld_m(&vel[2]), &vel[2]));
-			B(float, 0x74) = f32(fadd_m(len / spd, &B(float, 0x70)));
+			BU->life = f32(fadd_m(len / spd, &BU->age));
 		}
 	}
 	BU->moved = 1;
@@ -778,7 +778,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *step = (float *)(RELOC(b) + 0xac);
 	if (BU->hitActor >= 0)
 		hit_actor(s, b, w, r, weapon);
-	if (!(B(float, 0x70) > B(float, 0x74))) {
+	if (!(BU->age > BU->life)) {
 		memcpy(prev, cur, 12);
 		if (ST->actors[BU->owner].pilot == ST->playerActor)
 			fly_local(s, b, w, dt);
@@ -792,9 +792,9 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 				cur[k] = f32(fadd_m(fld_m(&step[k]), &prev[k]));
 		if (BU->moved == 1)
 			draw_shot(s, b, w, r, 1);
-		long double age = fadd_m(fld_m(dt), &B(float, 0x70));
-		B(float, 0x70) = (float)age;
-		if (age > B(float, 0x74))
+		long double age = fadd_m(fld_m(dt), &BU->age);
+		BU->age = (float)age;
+		if (age > BU->life)
 			AI(BU->owner, 0x1cd971c) = 1;
 		BU->moved = 0;
 		return;
