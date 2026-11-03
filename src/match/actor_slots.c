@@ -96,7 +96,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 {
 	Player *a = &stage->actors[i];
 	a->name[0] = '\0';
-	FIELD(int, a, 0x10c) = -1;
+	a->player = -1;
 	FIELD(int, a, 0x114) = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
@@ -367,26 +367,28 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 		return;
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
 #define A(type, offset) GAME_VAR(type, actor + (offset))
-	A(u32, 0x64) = R(u32, 0x1c);
-	A(u32, 0x1c) = R(u32, 0x20);
-	A(u32, 0x20) = R(u32, 0x24);
-	A(u32, 0x128) = R(u32, 0x20);
-	A(u32, 0x12c) = R(u32, 0x24);
+#define AC ((Player *)actor)   /* the same by its fields (src/scene.fields) */
+	AC->spawn64 = R(u32, 0x1c);
+	(*(u32 *)&AC->armorMax) = R(u32, 0x20);
+	(*(u32 *)&AC->shieldMax) = R(u32, 0x24);
+	(*(u32 *)&AC->armor) = R(u32, 0x20);
+	(*(u32 *)&AC->shield) = R(u32, 0x24);
 	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)k_27_7778f);
 	A(float, 0x6c) = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
-	A(float, 0) = (float)(radius * radius * k_10000f);
-	A(u32, 0x70) = R(u32, 0x34);
-	A(int, 0x74) = ftol(R(float, 0x38) * (long double)k_10f);
-	A(u32, 0x78) = R(u32, 0x3c);
+	AC->radiusSq = (float)(radius * radius * k_10000f);
+	AC->spawn70 = R(u32, 0x34);
+	AC->spawn74 = ftol(R(float, 0x38) * (long double)k_10f);
+	AC->spawn78 = R(u32, 0x3c);
 	A(float, 0x7c) = (float)(R(float, 0x40) * (long double)k_100f);
 	A(float, 0x80) = (float)(R(float, 0x44) * (long double)k_100f);
 	for (int k = 0; k < 5; k++)
 		A(u32, 0x84 + k * 4) = R(u32, 0x48 + k * 4);
-	A(int, 0x87f8) = -1;
-	A(int, 0x87fc) = -1;
+	AC->target1 = -1;
+	AC->target2 = -1;
 #undef R
 #undef A
+#undef AC
 }
 
 /* 0x45ebc0 (thiscall on the scene): player p's starting values when the slot is in use (+0x108 1). Game types 2 ..
@@ -395,26 +397,26 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
    +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
 void THISCALL (actor_startingValues)(u8 *scene, int p)
 {
-	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
-	if (FIELD(int, a, 0x108) != 1)
+	Player *a = (Player *)(scene + 0x1cd93a8 + p * 0x8888);
+	if (a->active != 1)
 		return;
 	unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
 	if (mode <= 9) {
 		int pair = mode / 2;
 		int energy = pair == 0 ? 10 : 150;
-		FIELD(int, a, 0x1c) = FIELD(int, a, 0x20) = FIELD(int, a, 0x128) = energy;
-		FIELD(int, a, 0x12c) = 0;
+		a->armorMax = a->shieldMax = a->armor = energy;
+		a->shield = 0;
 		for (int k = 0; k < 4; k++)
 			if (k == pair) {
-				FIELD(int, a, 0x28 + k * 4) = 100;
-				FIELD(int, a, 0x130 + k * 4) = pair == 0 ? 10 : 50;
+				a->ammoMax[k] = 100;
+				a->ammo[k] = pair == 0 ? 10 : 50;
 			} else
-				FIELD(int, a, 0x130 + k * 4) = 0;
+				a->ammo[k] = 0;
 	} else {
-		FIELD(int, a, 0x12c) = FIELD(int, a, 0x20);
-		FIELD(int, a, 0x128) = FIELD(int, a, 0x1c);
+		a->shield = a->shieldMax;
+		a->armor = a->armorMax;
 		for (int k = 0; k < 4; k++)
-			FIELD(int, a, 0x130 + k * 4) = FIELD(int, a, 0x28 + k * 4) / 2;
+			a->ammo[k] = a->ammoMax[k] / 2;
 	}
 }
 
@@ -497,6 +499,7 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
+#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* the actor's eight object lists (the body, the parts, the weapons) */
 static const u32 k_partLists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c, 0x40dc };
@@ -510,7 +513,7 @@ static u32 flag_light(u8 *s, u32 f)
 /* the list of the weapon in hand (+0x140: 4, 5, else the last) */
 static u8 *weapon_list(u8 *ac)
 {
-	return ac + (A(int, 0x140) == 4 ? 0x587c : A(int, 0x140) == 5 ? 0x701c : 0x40dc);
+	return ac + (AC->gaugeIcon == 4 ? 0x587c : AC->gaugeIcon == 5 ? 0x701c : 0x40dc);
 }
 
 /* 0x45d3e0 (thiscall on the scene): actor a drawn into the view volume vv when in play and within the view range
@@ -525,7 +528,7 @@ static u8 *weapon_list(u8 *ac)
 void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 {
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
-	if (A(int, 0x14c) != 1 || A(int, 0x884c) == 1)
+	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
 	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), (const float *)(ac + 0x3e8)));
 	const float *cam = (const float *)(s + 0x20f3970), *at = (const float *)(ac + 0x154);
@@ -537,7 +540,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			return;
 	u8 *tint = ac + 0x4f0;
 	int local = GAME_VAR(int, s + 0x202e8d4);
-	if ((A(u32, 0x3f0) & 0x200) && A(int, 8) >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
+	if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(A(float, 0x120) > *K(0x4a9534))) {
@@ -547,11 +550,11 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m((const float *)(ac + 0x120)), K(0x4a974c)), K(0x4a9748))));
 			tint[3] = 0xff;
 		}
-	} else if (A(float, 0x4ec) > 0 || A(float, 0x8854) > 0) {
+	} else if (A(float, 0x4ec) > 0 || AC->hitFlash > 0) {
 		int c[3] = { 0, 0, 0 };
 		if (A(float, 0x4ec) > 0)
 			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m((const float *)(ac + 0x4ec)), K(0x4a9744)));
-		if (A(float, 0x8854) > 0) {
+		if (AC->hitFlash > 0) {
 			int red = ftol(fmul_m(fld_m((const float *)(ac + 0x8854)), K(0x4a9744)));
 			c[0] += red;
 			c[1] += red / 2;
@@ -569,12 +572,12 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	if (a == GAME_VAR(int, s + 0x202e8d8)) {
 		if (draw) {
 			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
-			f = A(u32, 0x3f0);
+			f = ((u32)AC->timerFlags);
 			if ((f & 0x100) || (f & 0xc00))
 				ok &= partList_queue(weapon_list(ac), vv, lights, tint, 1, flag_light(s, f), (u32)(s + 0x20f2f88));
 		}
 	} else if (draw != 1) {
-		f = A(u32, 0x3f0);
+		f = ((u32)AC->timerFlags);
 		int lists = 1;
 		if (f & 0xd00) {
 			if (g_items3D == 0)
@@ -594,21 +597,21 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			for (int k = 0; k < 8; k++) {
 				if (k > 0 && n < k)
 					return;
-				if (k == 4 && A(int, 0x550))
+				if (k == 4 && AC->viewMarked)
 					continue;
 				int r = partList_queue(ac + k_partLists[k], vv, lights, tint, 1, (u32)-1, light);
 				ok = k ? ok & r : r & 1;
 			}
 		}
-		f = A(u32, 0x3f0);
+		f = ((u32)AC->timerFlags);
 		if ((f & 0x100) || (f & 0xc00)) {
 			u32 lt = flag_light(s, f);
 			for (int k = 0; k < 8; k++)
-				if (k != 4 || !A(int, 0x550))
+				if (k != 4 || !AC->viewMarked)
 					ok &= partList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)(s + 0x20f2f88));
 		}
 	}
-	A(int, 0x550) = 0;
+	AC->viewMarked = 0;
 	if (ok)
 		return;
 	actor_updateHead(s, a);
@@ -621,8 +624,10 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 }
 #undef K
 #undef A
+#undef AC
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
+#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
 /* n dwords from at in the actor set to v */
@@ -691,8 +696,8 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		}
 	}
 	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), (const float *)(ac + 0x424));
-	A(float, 0) = f32(hp * hp);
-	A(float, 4) = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
+	AC->radiusSq = f32(hp * hp);
+	AC->heading = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
 	A(int, 8) = GAME_VAR(int, head + 0xa9c) + A(int, 0x430);
 	A(float, 0xc) = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), (const float *)(ac + 0x428)));
 	A(float, 0x10) = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), (const float *)(ac + 0x42c)));
@@ -709,8 +714,8 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	long double over = A(float, 0x18) > A(float, 0x14)
 		? fmul_m(fdiv_m(fsub_m(fld_m((const float *)(ac + 0x18)), (const float *)(ac + 0x14)), (const float *)(ac + 0x14)), K(0x4a947c))
 		: fld_m(K(0x4a93e8));
-	A(int, 0x1c) = ftol(fadd_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab4), K(0x4a942c)));
-	A(int, 0x20) = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), (const float *)(ac + 0x444)), K(0x4a942c)));
+	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab4), K(0x4a942c)));
+	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), (const float *)(ac + 0x444)), K(0x4a942c)));
 	A(u32, 0x24) = GAME_VAR(u32, arms + 0x12ec);
 	for (int k = 0; k < 4; k++)
 		A(int, 0x28 + k * 4) = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), (const float *)(ac + 0x404) + k), K(0x4a942c))) +
@@ -750,19 +755,19 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		A(int, 0x5c) = 0;
 #undef LEG
 	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
-	A(int, 0x64) = 100;
+	(*(int *)&AC->spawn64) = 100;
 	A(u32, 0x68) = A(u32, 0x50);
 	A(u32, 0x6c) = 0x44610000;   /* 900 */
-	A(u32, 0x70) = 0x40400000;   /* 3 */
-	A(int, 0x74) = 10;
-	A(int, 0x78) = 0;
+	AC->spawn70 = 0x40400000;   /* 3 */
+	AC->spawn74 = 10;
+	(*(int *)&AC->spawn78) = 0;
 	A(u32, 0x7c) = 0x447a0000;   /* 1000 */
 	A(u32, 0x80) = 0x43fa0000;   /* 500 */
-	A(u32, 0x84) = 0x40000000;   /* 2 */
-	A(u32, 0x88) = 0x3f800000;
-	A(u32, 0x8c) = 0x457a0000;   /* 4000 */
-	A(u32, 0x90) = 0x40a00000;   /* 5 */
-	A(u32, 0x94) = 0x3f800000;
+	AC->spawnTail[0] = 0x40000000;   /* 2 */
+	AC->spawnTail[1] = 0x3f800000;
+	AC->spawnTail[2] = 0x457a0000;   /* 4000 */
+	AC->spawnTail[3] = 0x40a00000;   /* 5 */
+	AC->spawnTail[4] = 0x3f800000;
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from
@@ -780,26 +785,26 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
 	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
 	mech_stats(s, ac, p, 0);
-	A(int, 0xd8) = 1;
+	AC->statD8 = 1;
 	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
 	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
-	A(int, 0x108) = 1;
-	A(u32, 0x10c) = pp[0];
+	AC->active = 1;
+	(*(u32 *)&AC->player) = pp[0];
 	A(u32, 0x110) = a3;
 	int level = GAME_VAR(int, p + 0x44);
 	A(int, 0x114) = level >= 0 && level < 9 ? level : 0;
-	A(u32, 0x118) = GAME_VAR(u32, p + 0x48);
+	(*(u32 *)&AC->team) = GAME_VAR(u32, p + 0x48);
 	A(u32, 0x11c) = pp[1];
 	A(int, 0x120) = 0;
 	A(u32, 0x124) = 0x3f800000;
-	A(u32, 0x128) = A(u32, 0x1c);
-	A(u32, 0x12c) = A(u32, 0x20);
+	(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
+	(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);
 	fill_dwords(ac + 0x130, 4, 0);
-	A(int, 0x140) = -1;
+	AC->gaugeIcon = -1;
 	A(int, 0x144) = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
 	actor_startingValues(s, a);   /* actor_startingValues */
-	A(int, 0x14c) = 1;
+	AC->state = 1;
 	A(int, 0x150) = 0;
 	memcpy(ac + 0x154, pp + 2, 12);
 	A(u32, 0x160) = pp[5];
@@ -825,18 +830,18 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	memcpy(ac + 0x378, (const void *)ADDR(g_vecZero), 12);
 	memcpy(ac + 0x384, (const void *)ADDR(g_vecZero), 12);
 	A(u32, 0x3e8) = 0x43fa0000;   /* 500 */
-	A(int, 0x3ec) = 0;
-	A(int, 0x3f0) = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
+	AC->statusIcon = 0;
+	AC->timerFlags = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
 	fill_dwords(ac + 0x3f4, 4, 0);
 	fill_dwords(ac + 0x44c, 11, 0);
-	A(int, 0x478) = -1;
+	AC->inView = -1;
 	fill_dwords(ac + 0x47c, 5, 0);
 	A(u32, 0x490) = 0x3f800000;
 	A(int, 0x494) = A(int, 0x498) = 0;
 	A(int, 0x49c) = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
 	fill_dwords(ac + 0x4a0, 3, 0);
 	A(u32, 0x4ac) = A(u32, 0x4b0) = 0x3f800000;
-	A(int, 0x4b4) = A(int, 0x4b8) = 0;
+	AC->overheat = AC->warned = 0;
 	fill_dwords(ac + 0x4bc, 3, (u32)-1);
 	A(int, 0x4d0) = -1;
 	memcpy(ac + 0x4e0, ac + 0x154, 12);
@@ -856,7 +861,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		actor_updatePart(s, a, k, A(u32, 0x49c));
 	fill_dwords(ac + 0x87bc, 10, 0);
 	fill_dwords(ac + 0x87e8, 4, 0);
-	A(int, 0x87f8) = A(int, 0x87fc) = -1;
+	AC->target1 = AC->target2 = -1;
 	A(int, 0x8800) = A(int, 0x8804) = 0;
 	A(int, 0x8808) = -1;
 	A(int, 0x880c) = 0;
@@ -872,14 +877,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(u32, 0x886c) = 0x3f800000;
 	A(int, 0x8870) = -1;
 	memcpy(ac + 0x8874, (const void *)ADDR(g_vecZero), 12);
-	A(int, 0x8880) = A(int, 0x8884) = 0;
+	AC->alert = A(int, 0x8884) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
 }
 #undef A
+#undef AC
 #undef K
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
+#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
 /* the actor's eight part lists (constructed on the stack copy as the original does) */
@@ -898,7 +905,7 @@ static int close_enough(const float *a, const float *b)
    then the game type's fixed energy and weapons), and its limits hold */
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
-	u8 *p = s + 0x1561b68 + A(int, 0x10c) * 0x47fd2;
+	u8 *p = s + 0x1561b68 + AC->player * 0x47fd2;
 	mech_stats(s, me, p, 1);
 	unsigned mode = GAME_VAR(int, s + 0x20f3ab8) - 2;
 	if (mode <= 9) {
@@ -928,12 +935,12 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	int d = A(int, 0x448) - GAME_VAR(int, me + 0x448);
 	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))
 		return 0;
-	if (A(int, 0x128) > A(int, 0x1c) + 100 || A(int, 0x12c) > A(int, 0x20) + 100 || A(int, 0x130) > A(int, 0x28) ||
-	    A(int, 0x134) > A(int, 0x2c) || A(int, 0x138) > A(int, 0x30) || A(int, 0x13c) > A(int, 0x34) || A(int, 0x448) > 8)
+	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
+	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || A(int, 0x448) > 8)
 		return 0;
 	const float *heat = K(0x4a940c);
-	if ((A(int, 0x4d8) == 0 && A(float, 0x3f4) > *heat) || A(float, 0x3f8) > *heat || (A(int, 0x4d8) == 0 && A(float, 0x3fc) > *heat) ||
-	    A(float, 0x400) > *heat)
+	if ((AC->markSolo == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->markSolo == 0 && AC->timers[2] > *heat) ||
+	    AC->timers[3] > *heat)
 		return 0;
 	return 1;
 }
@@ -952,10 +959,11 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 		partList_clear(me + k_listAt[k]);
 	}
 	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
-	int ok = A(int, 0x14c) != 1 || totals_agree(s, ac, me);
+	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
 		GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */
 	return ok;
 }
 #undef A
+#undef AC
 #undef K

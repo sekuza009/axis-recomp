@@ -209,6 +209,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
+#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
 
 /* the screen point (the view's width +0x20f3a24 and height +0x20f3a28) of clip x / w and y / w */
@@ -272,7 +273,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		}
 	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
 		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
-		if (A(int, 0x14c) != 1)
+		if (AC->state != 1)
 			continue;
 		const float *p = (const float *)(ac + 0x154);
 		float e[3], c[4];
@@ -288,7 +289,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		if (k == GAME_VAR(int, s + 0x202e8d8) || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
 		    c[2] >= c[3] || collision_rayTrace(s, cam, p, hit)) {
 			A(int, 0x87e8) = 0;
-			A(int, 0x87e0) = 0;
+			AC->onScreen = 0;
 			continue;
 		}
 		const float *rad = (const float *)(ac + 0x3e8);
@@ -306,9 +307,9 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
 		A(int, 0x484) = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = s + 0x1cd93a8 + GAME_VAR(int, s + 0x202e8d4) * 0x8888;
-		if ((A(u32, 0x3f0) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
+		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			A(int, 0x87e8) = 0;
-			A(int, 0x87e0) = 1;
+			AC->onScreen = 1;
 			continue;
 		}
 		long double cosv = -fld_m(&e[2]) / x87_fsqrt(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
@@ -316,22 +317,23 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		int heading = ftol(fld_m((const float *)(me + 4)));
 		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
 			A(int, 0x87e8) = 0;
-			A(int, 0x87e0) = 1;
+			AC->onScreen = 1;
 			continue;
 		}
 		int weapon = GAME_VAR(int, me + 0x148);
-		if (GAME_VAR(int, s + 0x202e8d4) >= 0 && A(int, 0x118) != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
+		if (GAME_VAR(int, s + 0x202e8d4) >= 0 && AC->team != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
 		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
 			A(float, 0x87e8) = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else
 			A(int, 0x87e8) = 0;
 		if (!tag_narrow(ac, OBJ(k_40f)))
 			A(u32, 0x87f0) = 0x40400000;
-		A(int, 0x87e0) = 1;
+		AC->onScreen = 1;
 	}
 }
 #undef K
 #undef A
+#undef AC
 
 /* ---- 0x476890: a projectile drawn ---- */
 

@@ -6,6 +6,7 @@
 
 #define K(address) ((const float *)RELOC(address))
 #define AI(offset) GAME_VAR(int, a + (offset))   /* the actor's fields */
+#define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AU(offset) GAME_VAR(u32, a + (offset))
 #define AU8(offset) GAME_VAR(u8, a + (offset))
@@ -154,7 +155,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		BITS(v28[2]) = 0x459c4000;   /* 5000 */
 		Vec3_rotateAxis(v28, 1, (int)rand_below(3600));
 		Vec3_rotateAxis(v28, 2, (int)rand_below(3600));
-		fx[1] = AU(0x10c);
+		fx[1] = ((u32)AC->player);
 		fx[0] = 9;
 		memcpy(fx + 2, a + 0x154, 12);
 		fx[8] = fx[9] = 0;
@@ -165,23 +166,23 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	int local = GAME_VAR(int, s + 0x202e8d4);
 	if (i == local && AI(0x4c0) != i)
 		sound_playVolume(0xd, 0x64);
-	AI(0x14c) = 2;
+	AC->state = 2;
 	AI(0x150) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
 	int k = AI(0x4c0);
 	if (GAME_VAR(int, s + 0x20f3ad4) == 1) {   /* every one for themselves */
 		if (k != i) {
 			int frags, points;
-			if (AI(0x4d8) == 1) {   /* the marked one: five times */
+			if (AC->markSolo == 1) {   /* the marked one: five times */
 				frags = 5;
-				points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(AI(0xdc)) * 5 / 2 : FRAG_POINTS(AI(0xdc)) * 5;
+				points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
 			} else {
 				frags = 1;
-				points = FRAG_POINTS(AI(0xdc));
+				points = FRAG_POINTS(AC->emblem);
 			}
 			award(s, k, frags, points);
 			if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
-				if (AI(0x4d8) == 1) {
+				if (AC->markSolo == 1) {
 					if (GAME_VAR(int, s + 0x20f3ab4) == 1)
 						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, a + 0x98, points, 5);
 					else
@@ -193,36 +194,36 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 					stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
 			}
 		} else {
-			AI(0xe4)--;
+			AC->kills--;
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		}
 	} else if (GAME_VAR(int, s + 0x20f3ad8) == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
-		if (AI(0x4dc) == 1) {
+		if (AC->markTeam == 1) {
 			int n = 0, sum = 0, count = GAME_VAR(int, s + 0x202e8c8);
 			for (int j = 0; j < count; j++)
-				if (OI(j, 0x1cd94c0) == AI(0x118)) {
+				if (OI(j, 0x1cd94c0) == AC->team) {
 					n++;
 					sum += FRAG_POINTS(OI(j, 0x1cd9484));
 				}
 			for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++)
-				if (OI(j, 0x1cd94c0) >= 0 && OI(j, 0x1cd94c0) != AI(0x118))
+				if (OI(j, 0x1cd94c0) >= 0 && OI(j, 0x1cd94c0) != AC->team)
 					award(s, j, n, sum);
 			int lt = OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd94c0);
-			if (lt >= 0 && lt != AI(0x118)) {
+			if (lt >= 0 && lt != AC->team) {
 				if (GAME_VAR(int, s + 0x20f3ab4) == 1)
 					stage_print(s, (const char *)STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG..."), a + 0x98, n, sum);
 				else
 					stage_print(s, (const char *)STR(0x4b4450, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG(S)"), a + 0x98, n);
-			} else if (lt == AI(0x118))
+			} else if (lt == AC->team)
 				stage_print(s, (const char *)STR(0x4b442c, "YOUR COMMANDER %s HAS BEEN KILLED!"), a + 0x98);
-			if (AI(0x118) == 0)
+			if (AC->team == 0)
 				GAME_VAR(int, s + 0x202e8f4) += n;
 			else
 				GAME_VAR(int, s + 0x202e8f0) += n;
-			GAME_VAR(int, s + 0x20fce50 + AI(0x118) * 4) = -1;
+			GAME_VAR(int, s + 0x20fce50 + AC->team * 4) = -1;
 		}
 	} else if (k != i) {   /* teams */
-		int lv = AI(0xdc);
+		int lv = AC->emblem;
 		int points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
 		if (OI(k, 0x1cd9484) > lv + 3)   /* half for a much weaker one */
 			points /= 2;
@@ -237,14 +238,14 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		if (t >= 0)
 			GAME_VAR(int, s + 0x202e8f0 + t * 4)++;
 	} else {
-		AI(0xe4)--;
+		AC->kills--;
 		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4))
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		if (GAME_VAR(int, s + 0x20f3abc) == 1)
-			GAME_VAR(int, s + 0x202e8f0 + AI(0x118) * 4)--;
+			GAME_VAR(int, s + 0x202e8f0 + AC->team * 4)--;
 	}
 	if (AI(0x4c0) != i)
-		AI(0xe8)++;
+		AC->deaths++;
 	GAME_VAR(int, s + 0x202ea80 + i * 4) = 0;
 	AI(0x8868) = 1;
 	GAME_VAR(int, s + 0x202e8e8) = i;
@@ -270,7 +271,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float m0d0[16], m18c[16], m1e0[16], m230[16], m270[16], shot_at[3], shot_dir[3];
 	u32 fx[13];
 	u8 *a = s + 0x1cd93a8 + i * 0x8888;
-	u8 *player = s + 0x1561b68 + AI(0x10c) * 0x47fd2;
+	u8 *player = s + 0x1561b68 + AC->player * 0x47fd2;
 	if (AF(0x120) > AF(0x124)) {   /* the armour gone */
 		actor_deactivate((Stage *)s, i);
 		if (GAME_VAR(int, s + 0x202e8d8) == i)
@@ -291,23 +292,23 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_updateBooster(s, i);
 		AI(0x488) = AI(0x484);
 	}
-	int item = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
+	int item = GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4);
 	u8 *weapon = item >= 0 ? s + 0x14d1ab4 + item * 0x2e18 : NULL;
 	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && weapon && AI(0x130 + GAME_VAR(int, weapon + 0x2dc0) * 4) < GAME_VAR(int, weapon + 0x2dc4)
 	    && !(AF(0x490) < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
-		weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AI(0x140) * 4) * 0x2e18;
+		weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4) * 0x2e18;
 	}
-	if (AI(0x478) >= 0)
-		actor_selectWeapon((Stage *)s, i, AI(0x478));
-	if (AI(0x47c) == 1)
+	if (AC->inView >= 0)
+		actor_selectWeapon((Stage *)s, i, AC->inView);
+	if (AC->inPrevWeapon == 1)
 		actor_prevWeapon(s, i);
-	if (AI(0x480) == 1)
+	if (AC->inNextWeapon == 1)
 		actor_nextWeapon(s, i);
 	if (i == GAME_VAR(int, s + 0x202e8d8)) {
 		if (AI(0x49c) != 0) {
 			AI(0x49c) = 0;
-			actor_updatePart(s, i, AI(0x140), 0);
+			actor_updatePart(s, i, AC->gaugeIcon, 0);
 		}
 	} else if (AI(0x49c) != AI(0x484) + 1) {
 		AI(0x49c) = AI(0x484) + 1;
@@ -315,16 +316,16 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_updatePart(s, i, 4, AI(0x49c));
 		actor_updatePart(s, i, 5, AI(0x49c));
 	}
-	if (AI(0x110) != GAME_VAR(int, s + 0x202e8d4) && AI(0x48c) == 0 && AI(0x498) != AI(0x140)) {
-		AI(0x498) = AI(0x140);
-		actor_updatePart(s, i, AI(0x140), AI(0x49c));
+	if (AI(0x110) != GAME_VAR(int, s + 0x202e8d4) && AI(0x48c) == 0 && AI(0x498) != AC->gaugeIcon) {
+		AI(0x498) = AC->gaugeIcon;
+		actor_updatePart(s, i, AC->gaugeIcon, AI(0x49c));
 	}
-	u8 *model = AI(0x140) == 4 ? a + 0x587c : AI(0x140) == 5 ? a + 0x701c : a + 0x40dc;
-	memcpy(a + 0x154, a + (AI(0x14c) == 1 ? 0x180 : 0x4e0), 12);
+	u8 *model = AC->gaugeIcon == 4 ? a + 0x587c : AC->gaugeIcon == 5 ? a + 0x701c : a + 0x40dc;
+	memcpy(a + 0x154, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + 0x160, a + 0x18c, 32);
 	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4)) {   /* (to chunk N: the local team's actors) */
 		if (GAME_VAR(int, s + 0x20f3ad4) == 1) {
-			if (AI(0x4d8) == 1)
+			if (AC->markSolo == 1)
 				AU(0x3f4) = AU(0x3fc) = 0x447a0000;   /* 1000 */
 			else {
 				if (AF(0x3f4) > *K(0x4a940c))
@@ -335,7 +336,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 		AI(0x87f4) = 0;
 		if (AI(0x11c) != 0) {
-			if (AI(0x128) < ftol(fmul_m((long double)AI(0x1c), K(0x4a94fc))))   /* under 0.3 of its armour */
+			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, K(0x4a94fc))))   /* under 0.3 of its armour */
 				AI(0x87f4) = 1;
 			u8 *w0 = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320) * 0x2e18;
 			if (AI(0x130 + GAME_VAR(int, w0 + 0x2dc0) * 4) < GAME_VAR(int, w0 + 0x2dc4) && GAME_VAR(int, player + 0x330) >= 0) {
@@ -351,9 +352,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (GAME_VAR(int, b + 0xbc) != i || OI(GAME_VAR(int, b + 0xc), 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
 				continue;
 			aimed = 1;
-			if (AI(0x8880) == 0 && AI(0x11c) != 0 && AI(0x8820) < 0) {
+			if (AC->alert == 0 && AI(0x11c) != 0 && AI(0x8820) < 0) {
 				int t = GAME_VAR(int, s + 0x202ef40 + k * 0x4e8);
-				if (OI(t, 0x1cd94c0) != AI(0x118) && OI(t, 0x1cd94f4) == 1 && (!(OI(t, 0x1cd9798) & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
+				if (OI(t, 0x1cd94c0) != AC->team && OI(t, 0x1cd94f4) == 1 && (!(OI(t, 0x1cd9798) & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
 					AI(0x8820) = t;
 					AU(0x8858) = 0x41280000;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
@@ -361,7 +362,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 			break;
 		}
-		AI(0x8880) = aimed;
+		AC->alert = aimed;
 		if (i == GAME_VAR(int, s + 0x202e8d4)) {   /* the warning beep */
 			if (aimed == 1) {
 				long double v = fsub_m(fld_m(&AF(0x8884)), dt);
@@ -381,7 +382,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			long double v = fsub_m(fld_m(&AF(0x8824)), dt);
 			AF(0x8824) = (float)v;
 			int k = AI(0x4c0);
-			if (AF(0x8854) > 0 && k != i && OI(k, 0x1cd94c0) != AI(0x118) && OI(k, 0x1cd94f4) == 1 && AI(0x8820) != k
+			if (AC->hitFlash > 0 && k != i && OI(k, 0x1cd94c0) != AC->team && OI(k, 0x1cd94f4) == 1 && AI(0x8820) != k
 			    && (!(OI(k, 0x1cd9798) & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
 				AI(0x8820) = k;
 				AU(0x8858) = 0x41280000;
@@ -389,7 +390,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AI(0x8820) < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-						if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AI(0x118) || ((OI(j, 0x1cd9798) & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
+						if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AC->team || ((OI(j, 0x1cd9798) & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
 							continue;
 						float d[3];
 						const float *at = &OF(j, 0x1cd94fc);
@@ -398,7 +399,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						memcpy(v28, d, 12);
 						long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
 						dist = dist + fmul_m(fld_m(&d[1]), &d[1]);
-						if (!(dist > AF(0)) && collision_rayTrace(s, &AF(0x154), at, v28) == 0) {
+						if (!(dist > AC->radiusSq) && collision_rayTrace(s, &AF(0x154), at, v28) == 0) {
 							AI(0x8820) = j;
 							break;
 						}
@@ -413,7 +414,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							AI(0x8820) = -1;
 						else
 							for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-								if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AI(0x118)
+								if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AC->team
 								    || ((OI(j, 0x1cd9798) & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
 									continue;
 								if (collision_rayTrace(s, &AF(0x154), &OF(j, 0x1cd94fc), v28) == 0) {
@@ -431,11 +432,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				AF(0x8828) = (float)v;
 				if (!(v > 0)) {
 					if (AF(0x882c) > 0) {
-						AI(0x46c) = 1;
+						AC->inFire = 1;
 						AF(0x882c) = f32(fsub_m(fld_m(&AF(0x882c)), dt));
 					} else {
-						AU(0x8828) = AU(0x90);
-						AU(0x882c) = AU(0x94);
+						AU(0x8828) = AC->spawnTail[3];
+						AU(0x882c) = AC->spawnTail[4];
 					}
 				}
 			}
@@ -445,17 +446,17 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int c = 0; c < 3; c++)
 			AF(0x8874 + c * 4) = f32(fadd_m(fld_m(&AF(0x384 + c * 4)), &AF(0x8874 + c * 4)));
 		if (!(AF(0x886c) > 0)) {
-			if (AI(0x87f8) >= 0) {
+			if (AC->target1 >= 0) {
 				long double x = fld_m(&AF(0x8874)), y = fld_m(&AF(0x8878)), z = fld_m(&AF(0x887c));
 				if (!((x * x + y * y) + z * z >= *K(0x4a9740))) {
-					AI(0x8870) = AI(0x87f8);
-					AI(0x87f8) = -1;
+					AI(0x8870) = AC->target1;
+					AC->target1 = -1;
 				}
 			}
 			AU(0x886c) = 0x3f800000;
 			memcpy(a + 0x8874, (const void *)ADDR(g_vecZero), 12);
 		}
-		if (AI(0x11c) == 1 && AI(0x87f8) < 0 && (AI(0x8820) < 0 || (AU8(0x87f4) & 3))) {
+		if (AI(0x11c) == 1 && AC->target1 < 0 && (AI(0x8820) < 0 || (AU8(0x87f4) & 3))) {
 			actor_checkLineOfSight(s, i);
 			if (AU8(0x87f4) & 2)
 				AI(0x8820) = -1;
@@ -464,29 +465,29 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AI(0x8810) = -1;
 		if (AI(0x881c) >= 0 && OI(AI(0x881c), 0x1cd94f4) != 1)
 			AI(0x881c) = -1;
-		if (AI(0x87f8) >= 0) {   /* the scripted path (+0x87f8, point +0x87fc): its command when within 1000 */
-			const float *pt = PATH_POINT(AI(0x87f8), AI(0x87fc));
+		if (AC->target1 >= 0) {   /* the scripted path (+0x87f8, point +0x87fc): its command when within 1000 */
+			const float *pt = PATH_POINT(AC->target1, AC->target2);
 			float d[3];
 			for (int c = 0; c < 3; c++)
 				d[c] = f32(fsub_m(fld_m(&pt[c]), &AF(0x154 + c * 4)));
 			memcpy(v28, d, 12);
 			long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
 			if (!(dist + fmul_m(fld_m(&d[1]), &d[1]) >= *K(0x4a94ec))) {
-				script_processCommandBy(s, i, AI(0x87f8), AI(0x87fc));
-				int at = AI(0x87fc);
+				script_processCommandBy(s, i, AC->target1, AC->target2);
+				int at = AC->target2;
 				if (AI(0x8800) == 0) {   /* forwards, or backwards */
-					if (at < GAME_VAR(int, s + 0xe3b038 + AI(0x87f8) * 0x1c) - 1)
-						AI(0x87fc) = at + 1;
+					if (at < GAME_VAR(int, s + 0xe3b038 + AC->target1 * 0x1c) - 1)
+						AC->target2 = at + 1;
 					else
-						AI(0x87f8) = AI(0x87fc) = -1;
-				} else if (AI(0x87fc) > 0)
-					AI(0x87fc) = AI(0x87fc) - 1;
+						AC->target1 = AC->target2 = -1;
+				} else if (AC->target2 > 0)
+					AC->target2 = AC->target2 - 1;
 				else
-					AI(0x87f8) = AI(0x87fc) = -1;
+					AC->target1 = AC->target2 = -1;
 			}
 		}
-		if (AI(0x11c) == 1 && AI(0x87f8) >= 0 && AI(0x8820) >= 0 && !(AU8(0x87f4) & 1))
-			AI(0x87f8) = -1;
+		if (AI(0x11c) == 1 && AC->target1 >= 0 && AI(0x8820) >= 0 && !(AU8(0x87f4) & 1))
+			AC->target1 = -1;
 		if (AF(0x8804) > 0)
 			AF(0x8804) = f32(fsub_m(fld_m(&AF(0x8804)), dt));
 		if (AI(0x8808) >= 0 && GAME_VAR(int, s + 0xe3c618 + AI(0x8808) * 4) == 1)
@@ -500,14 +501,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				memcpy(v28, d, 12);
 				long double dist = fmul_m(fld_m(&d[0]), &d[0]) + fmul_m(fld_m(&d[2]), &d[2]);
 				memcpy(a + 0x1d4, dist + fmul_m(fld_m(&d[1]), &d[1]) > *K(0x4a973c) ? (const void *)RELOC(at) : (const void *)(a + 0x154), 12);
-			} else if (AI(0x87f8) >= 0) {   /* its path's point while over 1000 away */
-				const float *pt = PATH_POINT(AI(0x87f8), AI(0x87fc));
+			} else if (AC->target1 >= 0) {   /* its path's point while over 1000 away */
+				const float *pt = PATH_POINT(AC->target1, AC->target2);
 				float d[3];
 				for (int c = 0; c < 3; c++)
 					d[c] = f32(fsub_m(fld_m(&pt[c]), &AF(0x154 + c * 4)));
 				memcpy(v28, d, 12);
 				long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
-				memcpy(a + 0x1d4, dist + fmul_m(fld_m(&d[0]), &d[0]) > *K(0x4a94ec) ? (const void *)PATH_POINT(AI(0x87f8), AI(0x87fc)) : (const void *)(a + 0x154), 12);
+				memcpy(a + 0x1d4, dist + fmul_m(fld_m(&d[0]), &d[0]) > *K(0x4a94ec) ? (const void *)PATH_POINT(AC->target1, AC->target2) : (const void *)(a + 0x154), 12);
 			} else if (AI(0x8820) >= 0) {   /* about its target: sideways by a random amount, now and then */
 				long double v = fsub_m(fld_m(&AF(0x8830)), dt);
 				AF(0x8830) = (float)v;
@@ -526,22 +527,22 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					v28[1] = f32(fmul_m(fld_m(&d[2]), &g_vecUnitY[0]) - fmul_m(fld_m(&d[0]), &g_vecUnitY[2]));
 					v28[2] = f32(fmul_m(fld_m(&d[0]), &g_vecUnitY[1]));
 					Vec3_normalize(v28);
-					int n = ftol(fld_m(&AF(0x7c))) * 2;
+					int n = ftol(fld_m(&AC->spawn7c)) * 2;
 					int r = n > 0 ? (int)rand_below(n) : 0;
-					long double o = fsub_m((long double)r, &AF(0x7c));
+					long double o = fsub_m((long double)r, &AC->spawn7c);
 					v28[0] = f32(fmul_m(o, &v28[0]));
 					v28[2] = f32(fmul_m(o, &v28[2]));
 					AF(0x1d4) = f32(fadd_m(fadd_m(fld_m(&v28[0]), &OF(AI(0x8820), 0x1cd94fc)), &d[0]));
-					AU(0x8830) = AU(0x84);
+					AU(0x8830) = AC->spawnTail[0];
 					AF(0x1dc) = f32(fadd_m(fadd_m(fld_m(&v28[2]), &OF(AI(0x8820), 0x1cd9504)), &d[2]));
 				}
 				v = fsub_m(fld_m(&AF(0x8834)), dt);
 				AF(0x8834) = (float)v;
 				if (!(v > 0)) {   /* and up or down */
-					int n = ftol(fld_m(&AF(0x80))) * 2;
+					int n = ftol(fld_m(&AC->spawn80)) * 2;
 					int r = n > 0 ? (int)rand_below(n) : 0;
-					AU(0x8834) = AU(0x88);
-					AF(0x1d8) = f32(fsub_m(fadd_m((long double)r, &AF(0x158)), &AF(0x80)));
+					AU(0x8834) = AC->spawnTail[1];
+					AF(0x1d8) = f32(fsub_m(fadd_m((long double)r, &AF(0x158)), &AC->spawn80));
 				}
 			}
 			/* the view (+0x1e0 pitch, +0x1e4 heading): at what it attends to, or a random look every 2 s */
@@ -553,8 +554,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				aim_at(a, &OF(AI(0x881c), 0x1cd94fc));
 			else if (AI(0x8820) >= 0)
 				aim_at(a, &OF(AI(0x8820), 0x1cd94fc));
-			else if (AI(0x87f8) >= 0)
-				aim_at(a, PATH_POINT(AI(0x87f8), AI(0x87fc)));
+			else if (AC->target1 >= 0)
+				aim_at(a, PATH_POINT(AC->target1, AC->target2));
 			else {
 				long double v = fsub_m(fld_m(&AF(0x8844)), dt);
 				AF(0x8844) = (float)v;
@@ -577,32 +578,32 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				int vert = 0;
 				if (Z > (!(G >= 0) ? -G : G)) {
 					if (Z > ay && Z > 500.0f)
-						AI(0x44c) = 1;
+						AC->inForward = 1;
 					else
 						vert = 1;
 				} else if (-Z > (!(G >= 0) ? -G : G)) {
 					if (-Z > ay && -Z > 500.0f)
-						AI(0x450) = 1;
+						AC->inBackward = 1;
 					else
 						vert = 1;
 				} else if (G > 0) {
 					if (G > ay && G > 500.0f)
-						AI(0x454) = 1;
+						AC->inStepLeft = 1;
 					else
 						vert = 1;
 				} else if (-G > ay && -G > 500.0f)
-					AI(0x458) = 1;
+					AC->inStepRight = 1;
 				else
 					vert = 1;
 				if (vert) {
 					if (Y > 500.0f)
-						AI(0x470) = AI(0x44c) = 1;
+						AC->inAltitude = AC->inForward = 1;
 					else if (-Y > 500.0f)
-						AI(0x470) = AI(0x450) = 1;
+						AC->inAltitude = AC->inBackward = 1;
 				}
 			}
 			/* the turns towards the view, at most the turn rate (+0x6c) a second */
-			float rate = f32(fmul_m(fld_m(dt), &AF(0x6c)));
+			float rate = f32(fmul_m(fld_m(dt), &AC->accel));
 			for (int c = 0; c < 2; c++) {
 				long double r = angle_turn(AU(0x160 + c * 4), AU(0x1e0 + c * 4));
 				float rr = (float)r;
@@ -614,12 +615,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 		}
 		if (AI(0x11c) == 1)
-			AI(0x474) = 1;
+			AC->inBooster = 1;
 	}
 	switch (AI(0x4d0)) {   /* a pending order */
 	case 0:
-		AU(0x128) = AU(0x1c);
-		AU(0x12c) = AU(0x20);
+		(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
+		(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);
 		break;
 	case 1:
 		memcpy(a + 0x130, a + 0x28, 16);
@@ -631,19 +632,19 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AI(0x4d4) = 0;
 		break;
 	case 4:
-		AI(0xe8)++;
-		bullet_playImpactSound(s, i, i, 1, AI(0x128), 0, -1);
+		AC->deaths++;
+		bullet_playImpactSound(s, i, i, 1, AC->armor, 0, -1);
 		break;
 	}
 	AI(0x4d0) = -1;
 	float speed = f32(fmul_m(fld_m(dt), &AF(0x38)));
-	if (AI(0x474) == 1)
+	if (AC->inBooster == 1)
 		speed = f32(fld_m(&speed) + fld_m(&speed));
 	float accel = f32(fmul_m(fld_m(dt), &AF(0x3c)));
 	float want[3];   /* the wanted velocity from the keys (+0x168, +0x16c), turned to the actor's facing */
 	want[2] = 0;
-	want[0] = f32(fmul_m(fld_m(&AF(0x16c)), &AF(0x50)));
-	want[1] = f32(fmul_m(fld_m(&AF(0x168)), &AF(0x50)));
+	want[0] = f32(fmul_m(fld_m(&AF(0x16c)), &AC->speed));
+	want[1] = f32(fmul_m(fld_m(&AF(0x168)), &AC->speed));
 	Vec3_rotateAxis(want, 1, ftol(fsub_m(fld_m(K(0x4a9424)), &AF(0x170)) * fadd_m(fld_m(&AF(0x160)), K(0x4a9734))));
 	Vec3_rotateAxis(want, 2, ftol(fld_m(&AF(0x164))));
 	float neg = f32(-fld_m(&accel));
@@ -659,11 +660,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float step = !(*dt >= 0.05f) ? *dt : 0.05f;   /* at most 0.05 s */
 	for (int c = 0; c < 3; c++)   /* the move this frame (+0x384) */
 		AF(0x384 + c * 4) = f32(fmul_m(fld_m(&step), &AF(0x378 + c * 4)));
-	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && AI(0x14c) == 1 && AF(0x8854) > 0) {   /* a push (+0x885c), fading with +0x8854 squared */
+	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && AC->state == 1 && AC->hitFlash > 0) {   /* a push (+0x885c), fading with +0x8854 squared */
 		long double px = fmul_m(fld_m(&step), &AF(0x885c));
 		float py = f32(fmul_m(fld_m(&step), &AF(0x8860)));
 		float pz = f32(fmul_m(fld_m(&step), &AF(0x8864)));
-		long double f = fld_m(&AF(0x8854));
+		long double f = fld_m(&AC->hitFlash);
 		float sq = f32(f * f);
 		px = fmul_m(px, &sq);
 		py = f32(fmul_m(fld_m(&py), &sq));
@@ -672,9 +673,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AF(0x388) = f32(fadd_m(fld_m(&py), &AF(0x388)));
 		AF(0x38c) = f32(fadd_m(fld_m(&pz), &AF(0x38c)));
 	}
-	if (AI(0x4b4) == 1)
-		AI(0x474) = 0;
-	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && AI(0x14c) == 1) {   /* (to 45a5d1) the local team's live actors move */
+	if (AC->overheat == 1)
+		AC->inBooster = 0;
+	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
 		AF(0x180) = f32(fadd_m(fld_m(&AF(0x154)), &AF(0x384)));
 		AF(0x184) = f32(fadd_m(fld_m(&AF(0x388)), &AF(0x158)));
 		AF(0x188) = f32(fadd_m(fld_m(&AF(0x38c)), &AF(0x15c)));
@@ -722,15 +723,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			else if (AF(0x180 + c * 4) > *hi)
 				AU(0x180 + c * 4) = BITS(*hi);
 		}
-		long double v = fadd_m(fld_m(&AF(0x464)), &AF(0x160));   /* the pitch, within +-89 degrees */
+		long double v = fadd_m(fld_m(&AC->inPitch), &AF(0x160));   /* the pitch, within +-89 degrees */
 		AF(0x18c) = (float)v;
 		if (v > *K(0x4a972c))
 			AU(0x18c) = 0x445e8000;   /* 890 */
 		if (!(AF(0x18c) >= *K(0x4a9728)))
 			AU(0x18c) = 0xc45e8000;
-		AF(0x190) = f32(fadd_m(fld_m(&AF(0x468)), &AF(0x164)));
+		AF(0x190) = f32(fadd_m(fld_m(&AC->inYaw), &AF(0x164)));
 		float fwd, back, right, lft;   /* the top speeds: 1 / -1 walking, +0x54.. running */
-		if (AI(0x474) == 0) {
+		if (AC->inBooster == 0) {
 			fwd = 1.0f;
 			back = -1.0f;
 			right = 1.0f;
@@ -741,10 +742,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			right = AF(0x5c);
 			lft = AF(0x60);
 		}
-		key_axis(&AF(0x194), AI(0x44c), AI(0x450), fwd, back, speed);   /* forward speed (+0x194) */
-		key_axis(&AF(0x198), AI(0x454), AI(0x458), right, lft, speed);   /* sideways (+0x198) */
-		key_ramp(&AF(0x19c), AI(0x470) == 1, speed);   /* up (+0x19c) */
-		key_ramp(&AF(0x1a4), AI(0x474) == 1, speed);   /* running (+0x1a4) */
+		key_axis(&AF(0x194), AC->inForward, AC->inBackward, fwd, back, speed);   /* forward speed (+0x194) */
+		key_axis(&AF(0x198), AC->inStepLeft, AC->inStepRight, right, lft, speed);   /* sideways (+0x198) */
+		key_ramp(&AF(0x19c), AC->inAltitude == 1, speed);   /* up (+0x19c) */
+		key_ramp(&AF(0x1a4), AC->inBooster == 1, speed);   /* running (+0x1a4) */
 		/* the walk cycle's rate (+0x1a0) from the forward speed and the pitch */
 		long double m, w;
 		if (!(AF(0x194) >= 0)) {
@@ -788,7 +789,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (v >= 1.0L)
 			AF(0x1a8) = 0;
 	}
-	if (AI(0x884c) != 0)
+	if (AC->cameraValue != 0)
 		goto tail;   /* 45cdb1 */
 	if (AI(0x48c) == 1) {   /* the weapon going down (+0x490 from 1 to 0) */
 		if (AF(0x490) > 0) {
@@ -802,12 +803,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (!(AF(0x490) > 0)) {
 			actor_setWeaponSlot((Stage *)s, i, AI(0x498));
 			actor_updatePart(s, i, AI(0x498), AI(0x49c));
-			weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AI(0x140) * 4) * 0x2e18;
-			model = AI(0x140) == 4 ? a + 0x587c : AI(0x140) == 5 ? a + 0x701c : a + 0x40dc;
-			AU(0x4cc) = GAME_VAR(u32, weapon + 0x2dc0);
+			weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4) * 0x2e18;
+			model = AC->gaugeIcon == 4 ? a + 0x587c : AC->gaugeIcon == 5 ? a + 0x701c : a + 0x40dc;
+			(*(u32 *)&AC->weapon) = GAME_VAR(u32, weapon + 0x2dc0);
 		}
 		if (!(AF(0x490) >= 1.0f)) {
-			int kind = GAME_VAR(int, player + 0x320 + AI(0x140) * 4);
+			int kind = GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4);
 			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
 				AU(0x490) = 0x3f800000;
@@ -840,7 +841,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xa90, AI(0x484)));
 	skel_poseBones(a + 0x1554, 0);
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xaa0, AI(0x484)));
-	if (AU(0x3f0) & 0x1000)
+	if (((u32)AC->timerFlags) & 0x1000)
 		glScalef_bits(0x40a00000, 0x40a00000, 0x40a00000);   /* 5 */
 	skel_poseBones(a + 0x554, 0);
 	glLoadMatrixf(part_matrix(a + 0xd68, head + 0xaa8, AI(0x484)));
@@ -849,15 +850,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	skel_poseBones(a + 0x34f4, 0);
 	memcpy(grip, &g_vecZero, 12);   /* where the weapon is held, for the local player's view */
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d0, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) <= 3)
+	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon <= 3)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
 	skel_poseBones(a + 0x40dc, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12d8, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) == 4)
+	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon == 4)
 		hold(grip, weapon + 0x16d8 + AI(0x49c) * 12, 0, &AF(0x490));
 	skel_poseBones(a + 0x587c, 0);
 	glLoadMatrixf(part_matrix(a + 0x1568, body + 0x12e0, AI(0x484)));
-	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AI(0x140) == 5)
+	if (i == GAME_VAR(int, s + 0x202e8d8) && weapon && AC->gaugeIcon == 5)
 		hold(grip, weapon + 0x2d94 + AI(0x49c) * 12, 1, &AF(0x490));
 	skel_poseBones(a + 0x701c, 0);
 	glPopMatrix();
@@ -877,7 +878,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AF(0xc)), &GAME_VAR(float, weapon + 0x2e10)) >= OF(j, 0x1ce1b90)) && AI(0x118) != OI(j, 0x1cd94c0)) {
+				if (!(fmul_m(fld_m(&AF(0xc)), &GAME_VAR(float, weapon + 0x2e10)) >= OF(j, 0x1ce1b90)) && AC->team != OI(j, 0x1cd94c0)) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						BITS(*seen) = 0x3e800000;   /* 0.25 */
@@ -919,9 +920,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	AI(0x1ec) = 0;   /* firing this frame */
 	AI(0x374) = 0;
 	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4)) {
-		if (weapon && AI(0x14c) == 1) {
-			if (AI(0x46c) == 1 && AF(0x120) > 3.0f && AI(0x140) >= 0 && !(AF(0x17c) > 0) && AF(0x490) >= 1.0f && AI(0x48c) == 0
-			    && AI(0x128) > 0)
+		if (weapon && AC->state == 1) {
+			if (AC->inFire == 1 && AF(0x120) > 3.0f && AC->gaugeIcon >= 0 && !(AF(0x17c) > 0) && AF(0x490) >= 1.0f && AI(0x48c) == 0
+			    && AC->armor > 0)
 				AI(0x1ec) = 1;
 			int shots = 0;   /* this frame's rounds: whole cycles times the burst, and a burst's rounds left (+0x1f0, +0x1f4) */
 			const float *cycle = &GAME_VAR(float, weapon + 0x2e08), *gap = &GAME_VAR(float, weapon + 0x2dcc);
@@ -977,7 +978,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					break;
 				}
 				if (w >= 0) {
-					const int *muzzle = (const int *)(weapon + (AI(0x140) == 5 ? 0x2ca4 : 0x15e8) + AI(0x49c) * 64);
+					const int *muzzle = (const int *)(weapon + (AC->gaugeIcon == 5 ? 0x2ca4 : 0x15e8) + AI(0x49c) * 64);
 					skel_applyPose(GAME_VAR(void *, GAME_VAR(u8 *, model + 0x20)), m1e0, muzzle[0], 0);
 					Mat4_invert(m270, m1e0);
 					memset(m0d0, 0, 64);   /* the grip undone */
@@ -1003,11 +1004,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AF(0x160))));
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))));
 					} else {   /* a bot's aim wanders by +-(+0x74) */
-						u32 sp = (u32)(AI(0x74) * 2);
+						u32 sp = (u32)(AC->spawn74 * 2);
 						int r1 = (int)sp > 0 ? (int)rand_below(sp) : 0;
-						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AF(0x160))) - AI(0x74) + r1);
-						int r2 = (int)(u32)(AI(0x74) * 2) > 0 ? (int)rand_below((u32)(AI(0x74) * 2)) : 0;
-						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))) - AI(0x74) + r2);
+						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AF(0x160))) - AC->spawn74 + r1);
+						int r2 = (int)(u32)(AC->spawn74 * 2) > 0 ? (int)rand_below((u32)(AC->spawn74 * 2)) : 0;
+						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))) - AC->spawn74 + r2);
 					}
 					if (collision_rayTrace(s, (float *)(a + 0x154), shot_at, v28) != 0) {   /* the muzzle inside a wall */
 						if (i == GAME_VAR(int, s + 0x202e8d4) && AI(0x4a0) == 0)
@@ -1025,16 +1026,16 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						long double R = fld_m(&GAME_VAR(float, weapon + 0x2df4));
 						long double dd = (fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1])) + fmul_m(fld_m(&d[0]), &d[0]);
 						if (R * R > dd) {
-							if (AI(0x140) == 0 && GAME_VAR(int, player + 0x330) >= 0)
+							if (AC->gaugeIcon == 0 && GAME_VAR(int, player + 0x330) >= 0)
 								actor_selectWeapon((Stage *)s, i, 4);
-							else if (AI(0x140) == 4)
+							else if (AC->gaugeIcon == 4)
 								actor_selectWeapon((Stage *)s, i, 0);
 							continue;
 						}
 					}
 					u32 *rec = (u32 *)(a + 0x298 + k * 40);   /* the round */
 					rec[0] = 0;
-					rec[1] = GAME_VAR(u32, player + 0x320 + AI(0x140) * 4);
+					rec[1] = GAME_VAR(u32, player + 0x320 + AC->gaugeIcon * 4);
 					memcpy(rec + 2, shot_at, 12);
 					rec[5] = 0xffffffff;
 					memcpy(rec + 6, shot_dir, 12);
@@ -1056,7 +1057,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (v >= 1.0L)
 					AF(0x1a8) = 0;
 			}
-			AI(0x4a0) = AI(0x46c);
+			AI(0x4a0) = AC->inFire;
 		}
 	} else if (weapon && AI(0x1e8) == 1) {   /* the others' rounds, as sent */
 		for (int k = 0; k < 5; k++) {   /* per slot: +0x1f8 in use, +0x1fc a new round (+0x200 kind, +0x204 owner, +0x208 flag, +0x20c dir) */
@@ -1067,7 +1068,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (f[0] == 1) {
 				if (*item >= 0)
 					actor_clearTargetRefs(s, *item);
-				const int *muzzle = (const int *)(weapon + (AI(0x140) == 5 ? 0x2ca4 : 0x15e8) + AI(0x49c) * 64);
+				const int *muzzle = (const int *)(weapon + (AC->gaugeIcon == 5 ? 0x2ca4 : 0x15e8) + AI(0x49c) * 64);
 				skel_applyPose(GAME_VAR(void *, GAME_VAR(u8 *, model + 0x20)), m1e0, muzzle[0], 0);
 				Mat4_invert(m270, m1e0);
 				memset(m0d0, 0, 64);
@@ -1087,7 +1088,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
 				u32 *rec = (u32 *)(a + 0x298 + k * 40);
 				rec[0] = 1;
-				rec[1] = GAME_VAR(u32, player + 0x320 + AI(0x140) * 4);
+				rec[1] = GAME_VAR(u32, player + 0x320 + AC->gaugeIcon * 4);
 				memcpy(rec + 2, shot_at, 12);
 				rec[5] = f[2];
 				memcpy(rec + 6, f + 4, 12);
@@ -1113,12 +1114,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	}
 	/* stamina (+0x4ac): spent running, back after a rest (+0x4b0 the rest) */
-	if (!(AU(0x3f0) & 0x400) && AI(0x474) == 1 && (AI(0x44c) == 1 || AI(0x450) == 1 || AI(0x454) == 1 || AI(0x458) == 1)) {
+	if (!(((u32)AC->timerFlags) & 0x400) && AC->inBooster == 1 && (AC->inForward == 1 || AC->inBackward == 1 || AC->inStepLeft == 1 || AC->inStepRight == 1)) {
 		long double v = fsubr_m(fdiv_m(fld_m(dt), &AF(0x44)), &AF(0x4ac));
 		AF(0x4ac) = (float)v;
 		if (!(v >= 0)) {
 			AI(0x4ac) = 0;
-			AI(0x4b4) = 1;
+			AC->overheat = 1;
 		}
 		AI(0x4b0) = 0;
 	} else if (!(AF(0x4b0) >= 1.0f)) {
@@ -1132,10 +1133,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (v > 1.0L)
 			AU(0x4ac) = 0x3f800000;
 	}
-	AI(0x4b8) = AF(0x4ac) > *K(0x4a94f8) ? 0 : 1;
-	if (AI(0x4b4) == 1 && AF(0x4ac) >= 0.5f)
-		AI(0x4b4) = 0;
-	if (AI(0x14c) == 1) {
+	AC->warned = AF(0x4ac) > *K(0x4a94f8) ? 0 : 1;
+	if (AC->overheat == 1 && AF(0x4ac) >= 0.5f)
+		AC->overheat = 0;
+	if (AC->state == 1) {
 		/* the effects' scale by the speed: 0.5 .. 3 */
 		if (!(AF(0x194) > 0.5f))
 			AU(0x4a4) = 0x3f000000;
@@ -1143,9 +1144,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AU(0x4a4) = AU(0x194);
 		else
 			AU(0x4a4) = 0x40400000;
-		if (i != GAME_VAR(int, s + 0x202e8d8) && AI(0x550) == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
+		if (i != GAME_VAR(int, s + 0x202e8d8) && AC->viewMarked == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = AU(0x4a4);
-			if ((AU(0x3f0) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0))
+			if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0))
 				BITS(v28[1]) = 0x3d808081;   /* 1/255 */
 			else if (AF(0x120) > 3.0f)
 				BITS(v28[1]) = 0x3f800000;
@@ -1159,38 +1160,38 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double v = fadd_m(fld_m(dt), &AF(0x4a8));   /* footsteps every third of a second */
 		AF(0x4a8) = (float)v;
 		if (v > *K(0x4a9704)) {
-			if (i == GAME_VAR(int, s + 0x202e8d4) && (AI(0x4b8) == 1 || AI(0x4b4) == 1) && !(AF(0x3fc) > 0))
+			if (i == GAME_VAR(int, s + 0x202e8d4) && (AC->warned == 1 || AC->overheat == 1) && !(AF(0x3fc) > 0))
 				sound_playVolume(0x10, 0x64);   /* out of breath */
 			if (i != GAME_VAR(int, s + 0x202e8dc)) {
 				int step = GAME_VAR(int, legs + 0x17fc);
 				if (i == GAME_VAR(int, s + 0x202e8d4))
-					sound_playVolume(AI(0x474) == 0 ? step : step + 3, AI(0x474) == 0 ? 0x28 : 0x50);
+					sound_playVolume(AC->inBooster == 0 ? step : step + 3, AC->inBooster == 0 ? 0x28 : 0x50);
 				else
 					sound_play3D(AF(0x1a4) > 0 ? step + 3 : step, s + 0x20f3970, a + 0x180, s + 0x20f397c, 0x47435000);
 			}
 			AI(0x4a8) = 0;
 		}
 	}
-	if (AI(0x14c) == 1) {
-		if (AI(0x128) <= 0)
+	if (AC->state == 1) {
+		if (AC->armor <= 0)
 			actor_dies(s, a, i, fx, v28);
 		else if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4) || AI(0x11c) != 0)   /* the armour's timer kept 10 s ahead */
 			AF(0x124) = f32(fadd_m(fadd_m(fld_m(dt), &AF(0x120)), K(0x4a9418)));
-	} else if (AI(0x14c) == 2) {   /* dying: out after 2 s */
+	} else if (AC->state == 2) {   /* dying: out after 2 s */
 		if (AF(0x150) > 2.0f) {
-			AI(0x14c) = 3;
+			AC->state = 3;
 			AI(0x150) = 0;
 			if (i == GAME_VAR(int, s + 0x202e8d4))   /* the patch DLL's cat_wrap */
 				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
-	} else if (AI(0x14c) == 3)
+	} else if (AC->state == 3)
 		AU(0x120) = AU(0x124);
 	AI(0x4ec) = 0;   /* the glow (+0x4ec): a fresh shot's flash, and speed unless cloaked */
 	if (AF(0x17c) > 0 && !(AF(0x17c) >= 0.5f)) {
 		long double g = fsub_m(fld_m(K(0x4a942c)), &AF(0x17c));
 		AF(0x4ec) = (float)(g + g);
 	}
-	if ((AU(0x3f0) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0)) {
 		if (AF(0x4a4) > 1.0f)
 			AF(0x4ec) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x4a4)), K(0x4a9424)), K(0x4a94f8)), &AF(0x4ec)));
 	} else
@@ -1201,50 +1202,50 @@ tail:   /* 45cdb1: held by the script */
 timers:
 	AF(0x120) = f32(fadd_m(fld_m(dt), &AF(0x120)));
 	AF(0x150) = f32(fadd_m(fld_m(dt), &AF(0x150)));
-	long double sec = fadd_m(fld_m(dt), &AF(0x100));   /* whole seconds into +0xfc */
-	AF(0x100) = (float)sec;
+	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into +0xfc */
+	AC->timeExtra = (float)sec;
 	if (sec > 1.0L) {
-		AI(0xfc) += ftol(sec);
-		AF(0x100) = f32(fsubr_m((long double)ftol(fld_m(&AF(0x100))), &AF(0x100)));
+		AC->timePlayed += ftol(sec);
+		AC->timeExtra = f32(fsubr_m((long double)ftol(fld_m(&AC->timeExtra)), &AC->timeExtra));
 	}
-	countdown(&AF(0x87f0), dt);
-	countdown(&AF(0x8854), dt);
+	countdown(&AC->labelFade, dt);
+	countdown(&AC->hitFlash, dt);
 	countdown(&AF(0x8858), dt);
-	countdown(&AF(0x494), dt);
+	countdown(&AC->gauge, dt);
 	AF(0x534) = f32(fsub_m(fld_m(&AF(0x534)), dt));
 	countdown(&AF(0x540), dt);
-	if (AI(0x12c) < AI(0x20) && AI(0x448) > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
+	if (AC->shield < AC->shieldMax && AI(0x448) > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
 		long double v = fadd_m(fld_m(dt), &AF(0x544));
 		AF(0x544) = (float)v;
 		if (v >= 1.0L) {
-			int e = ftol(v) * AI(0x448) + AI(0x12c);
-			if (e >= AI(0x20)) {
-				AI(0x12c) = AI(0x20);
+			int e = ftol(v) * AI(0x448) + AC->shield;
+			if (e >= AC->shieldMax) {
+				AC->shield = AC->shieldMax;
 				AI(0x544) = 0;
 			} else {
-				AI(0x12c) = e;
+				AC->shield = e;
 				AF(0x544) = f32(fsubr_m((long double)ftol(fld_m(&AF(0x544))), &AF(0x544)));
 			}
 		}
 	} else
 		AI(0x544) = 0;
-	countdown(&AF(0x548), dt);
+	countdown(&AC->damageFlash, dt);
 	countdown(&AF(0x3f4), dt);
-	countdown(&AF(0x3f8), dt);
+	countdown(&AC->timers[1], dt);
 	countdown(&AF(0x3fc), dt);
-	countdown(&AF(0x400), dt);
+	countdown(&AC->timers[3], dt);
 	for (int c = 0; c < 3; c++)   /* this frame's move */
 		AF(0x384 + c * 4) = f32(fsub_m(fld_m(&AF(0x180 + c * 4)), &AF(0x154 + c * 4)));
 	AI(0x1e8) = 0;
 	if (AI(0x110) == GAME_VAR(int, s + 0x202e8d4)) {   /* the state bits sent with the actor */
 		u32 f = 0;
-		if (AI(0x128) >= AI(0x1c))
+		if (AC->armor >= AC->armorMax)
 			f = 1;
-		if (AI(0x128) >= AI(0x1c) + 100)
+		if (AC->armor >= AC->armorMax + 100)
 			f |= 2;
-		if (AI(0x12c) >= AI(0x20))
+		if (AC->shield >= AC->shieldMax)
 			f |= 4;
-		if (AI(0x12c) >= AI(0x20) + 100)
+		if (AC->shield >= AC->shieldMax + 100)
 			f |= 8;
 		for (int c = 0; c < 4; c++)   /* the ammunition kinds full */
 			if (AI(0x130 + c * 4) >= AI(0x28 + c * 4))
@@ -1254,11 +1255,11 @@ timers:
 				f |= 0x100 << c;
 		if (AI(0x4d4) == 1)
 			f |= 0x1000;
-		if (AI(0x12c) <= 0)
+		if (AC->shield <= 0)
 			f |= 0x2000;
 		if (AI(0x104) % 2 == 1)
 			f |= 0x4000;
-		AU(0x3f0) = f;
+		(*(u32 *)&AC->timerFlags) = f;
 	}
 	static const u16 parts[7] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c };
 	if (AI(0x54c) < 7) {   /* the parts' break-up, one a frame */

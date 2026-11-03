@@ -76,7 +76,7 @@ static void main_ring(Scene *scene, Player *player)
 	glEnd();
 }
 
-/* the two counters at the bottom left (counterA, counterB) on their plate */
+/* the two counters at the bottom left (armor, shield) on their plate */
 static void main_counters(Scene *scene, Player *player)
 {
 	float h = hf();
@@ -109,7 +109,7 @@ static void main_counters(Scene *scene, Player *player)
 		float scale = f32(wx(0.9f));
 		int dy = ftol(hy(37.0f) + y0f);
 		int dx = ftol(wx(k == 0 ? 66.0f : 168.0f) + xf);
-		hud_drawDigits(dx, dy, scale, k == 0 ? player->counterA : player->counterB, 3, 0);
+		hud_drawDigits(dx, dy, scale, k == 0 ? player->armor : player->shield, 3, 0);
 	}
 }
 

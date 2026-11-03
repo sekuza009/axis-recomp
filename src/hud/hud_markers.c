@@ -119,7 +119,7 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 				x -= 0x18;
 				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->topY) - 0x10);
 			}
-			int flagOwner = scene->network == 0 ? player->flagOwner : i;
+			int flagOwner = scene->network == 0 ? player->player : i;
 			if (scene->flags[flagOwner].shown == 1)
 				hud_drawLeaderIcon(scene, flagOwner, x - 0x18, marker_hudY(player->topY) - 0x10);
 		}

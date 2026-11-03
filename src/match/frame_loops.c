@@ -502,6 +502,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 }
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
+#define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 #define I(type, offset) GAME_VAR(type, it + (offset))
 
 /* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (+0x3f0) that refuses them, the
@@ -604,7 +605,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 {
 	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
 		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
-		if (A(int, 0x14c) == 1)
+		if (AC->state == 1)
 			A(int, 0x53c) = 0;
 	}
 	for (int i = 0; i < GAME_VAR(int, s + 0x20fcd38); i++) {
@@ -625,7 +626,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 			int n = GAME_VAR(int, s + 0x202e8c8);
 			for (int k = 0; k < n; k++) {
 				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
-				if (A(int, 0x14c) != 1)
+				if (AC->state != 1)
 					continue;
 				float reach = 0;
 				int near = 1;

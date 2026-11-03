@@ -111,7 +111,7 @@ static void first_round(Scene *s)
 			actor_resetSlot(STAGE(s), 0);
 			player_setName(STAGE(s), s->localPlayer, s->mechName);
 			strcpy(s->players[s->localPlayer].name, s->mechName);
-			s->players[s->localPlayer].flagOwner = s->localPlayer;
+			s->players[s->localPlayer].player = s->localPlayer;
 		} else {
 			netq_reset(0);
 			s->localPlayer = -1;

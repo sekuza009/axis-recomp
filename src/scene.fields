@@ -12,12 +12,41 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0          4          float radiusSq                            # (by use) the spawn record's radius squared, x 10000
+0x1c       4          i32 armorMax                              # (by use) the armor it starts with (actor_startingValues)
+0x20       4          i32 shieldMax                             # the shield it starts with
+0x28       0x10       i32 ammoMax[4]                            # (by use) per weapon slot: the full load (ammo starts at half)
+0x50       4          float speed                               # (unclear) the spawn record's speed x 27.7778, kept twice (also topSpeed)
+0x64       4          u32 spawn64                               # (unclear) the spawn record's +0x1c
+0x68       4          float topSpeed                            # (unclear) see speed
+0x6c       4          float accel                               # (unclear) the spawn record's +0x2c x 10
+0x70       4          u32 spawn70                               # (unclear) the spawn record's +0x34
+0x74       4          i32 spawn74                               # (unclear) the spawn record's +0x38 x 10, whole
+0x78       4          u32 spawn78                               # (unclear) the spawn record's +0x3c
+0x7c       4          float spawn7c                             # (unclear) the spawn record's +0x40 x 100
+0x80       4          float spawn80                             # (unclear) the spawn record's +0x44 x 100
+0x84       0x14       u32 spawnTail[5]                          # (unclear) the spawn record's +0x48 .. +0x58
+0x44c      4          i32 inForward                             # the input it acts on this frame (actor_setInput): held forward
+0x450      4          i32 inBackward
+0x454      4          i32 inStepLeft
+0x458      4          i32 inStepRight
+0x464      4          float inPitch                             # the turn asked for this frame
+0x468      4          float inYaw
+0x46c      4          i32 inFire
+0x470      4          i32 inAltitude
+0x474      4          i32 inBooster
+0x478      4          i32 inView                                # the view key (-1 none)
+0x47c      4          i32 inPrevWeapon
+0x480      4          i32 inNextWeapon
+0x87f8     4          i32 target1                               # (by use) its targets (-1 none; dropped with the bullet: actor_clearTargetRefs)
+0x87fc     4          i32 target2
+0x884c     4          i32 cameraValue                           # (by use) the camera's value while it follows this actor (camera_setTarget)
 4          4          float heading                             # (by use) tenths of a degree (the alert ring turns with it)
 0xec       4          i32 score                                 # shown top left
 0x108      4          i32 active                                # 1: the slot is in use (0 for the local player's: "press fire" may be shown)
 0x120      4          float blinkTime                           # (unclear) the energy bar blinks 4 times a second by it while warned
-0x128      4          i32 counterA                              # (unclear) the first of the two counters bottom left
-0x12c      4          i32 counterB
+0x128      4          i32 armor                                 # (by use) shown bottom left (ARMOR)
+0x12c      4          i32 shield                                # shown bottom left (SHIELD)
 0x130      0x10       i32 ammo[4]                               # per weapon slot
 0x140      4          i32 gaugeIcon                             # cell of the gauge (3 x 3 cells)
 0x148      4          i32 actorType                             # index into Scene.actorInfo / snapshotTex
@@ -42,7 +71,7 @@ struct Player 0x8888                                            # a player's rec
 0xf4       4          i32 statF4                                # (unclear) cleared with the scores
 0xfc       4          i32 timePlayed                            # seconds
 0x100      4          float timeExtra                           # (by use) added to timePlayed when a team's leader is picked; cleared with the scores
-0x10c      4          i32 flagOwner                             # whose flag the ranking shows for this player (unless Scene.network)
+0x10c      4          i32 player                                 # (by use) the player record it belongs to (stride 0x47fd2; -1 none); the ranking shows that player's flag (unless Scene.network)
 0x118      4          i32 team                                  # 0 / 1 in team games
 0x14c      4          i32 state                                 # 1: in play
 0x87bc     4          float screenX                             # projected position on the screen, pixels
