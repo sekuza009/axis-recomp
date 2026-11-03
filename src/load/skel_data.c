@@ -511,11 +511,11 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		return;
 	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
 	for (int i = 0; i < AT(int, pose, 0x10); i++) {
-		u8 *sk = *entry;
+		Skeleton *sk = (Skeleton *)(*entry);
 		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
-		u8 *b = ((Skeleton *)sk)->bones + i * 0x70;
-		int frame = AT(int, pose, 0x28) % (((Skeleton *)sk)->frames + 1);
-		if (i >= ((Skeleton *)sk)->boneCount)
+		u8 *b = sk->bones + i * 0x70;
+		int frame = AT(int, pose, 0x28) % (sk->frames + 1);
+		if (i >= sk->boneCount)
 			break;
 		int parent = ((Bone *)b)->parent;
 		glLoadMatrixf(parent < 0 ? root : (const float *)(AT(u8 *, pose, 0x14) + parent * 0x64 + 0xc));

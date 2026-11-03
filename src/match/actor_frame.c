@@ -3,6 +3,7 @@
    its score, and the timers. */
 #include "../game.h"
 #include <string.h>
+#define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define K(address) ((const float *)RELOC(address))
 #define AI(offset) GAME_VAR(int, a + (offset))   /* the actor's fields */
@@ -137,10 +138,10 @@ static void emit(u8 *s, u8 *a, const int *joint, const int *count, const u8 *mx,
 /* the killer's points and level (the level shown for the local team only) */
 static void award(u8 *s, int k, int frags, int points)
 {
-	OI(k, 0x1cd948c) += frags;
-	OI(k, 0x1cd9494) += points;
-	if (OI(k, 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
-		OI(k, 0x1cd9484) = actor_levelFromValue(OI(k, 0x1cd9494));
+	ST->actors[k].kills += frags;
+	ST->actors[k].score += points;
+	if (ST->actors[k].pilot == ST->playerActor)
+		ST->actors[k].emblem = actor_levelFromValue(ST->actors[k].score);
 }
 
 /* armour gone: the burst, the debris, the score */
@@ -165,7 +166,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		fx[10] = fx[11] = fx[12] = 0;
 		particle_spawn(s, fx);
 	}
-	int local = GAME_VAR(int, s + 0x202e8d4);
+	int local = ST->playerActor;
 	if (i == local && AI(0x4c0) != i)
 		sound_playVolume(0xd, 0x64);
 	AC->state = 2;
@@ -183,7 +184,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 				points = FRAG_POINTS(AC->emblem);
 			}
 			award(s, k, frags, points);
-			if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
+			if (AI(0x4c0) == ST->playerActor) {
 				if (AC->markSolo == 1) {
 					if (GAME_VAR(int, s + 0x20f3ab4) == 1)
 						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, a + 0x98, points, 5);
@@ -201,16 +202,16 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		}
 	} else if (GAME_VAR(int, s + 0x20f3ad8) == 1) {   /* teams, the leader down: each of the other team gets the team's worth */
 		if (AC->markTeam == 1) {
-			int n = 0, sum = 0, count = GAME_VAR(int, s + 0x202e8c8);
+			int n = 0, sum = 0, count = ST->actorCount;
 			for (int j = 0; j < count; j++)
-				if (OI(j, 0x1cd94c0) == AC->team) {
+				if (ST->actors[j].team == AC->team) {
 					n++;
-					sum += FRAG_POINTS(OI(j, 0x1cd9484));
+					sum += FRAG_POINTS(ST->actors[j].emblem);
 				}
-			for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++)
-				if (OI(j, 0x1cd94c0) >= 0 && OI(j, 0x1cd94c0) != AC->team)
+			for (int j = 0; j < ST->actorCount; j++)
+				if (ST->actors[j].team >= 0 && ST->actors[j].team != AC->team)
 					award(s, j, n, sum);
-			int lt = OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd94c0);
+			int lt = ST->actors[ST->playerActor].team;
 			if (lt >= 0 && lt != AC->team) {
 				if (GAME_VAR(int, s + 0x20f3ab4) == 1)
 					stage_print(s, (const char *)STR(0x4b447c, "YOU FRAGED COMMANDER %s, +1(x%d) FRAG..."), a + 0x98, n, sum);
@@ -227,21 +228,21 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	} else if (k != i) {   /* teams */
 		int lv = AC->emblem;
 		int points = GAME_VAR(int, s + 0x20f3ac0) == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
-		if (OI(k, 0x1cd9484) > lv + 3)   /* half for a much weaker one */
+		if (ST->actors[k].emblem > lv + 3)   /* half for a much weaker one */
 			points /= 2;
 		award(s, k, 1, points);
-		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4)) {
+		if (AI(0x4c0) == ST->playerActor) {
 			if (GAME_VAR(int, s + 0x20f3ab4) == 1)
 				stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 			else
 				stage_print(s, (const char *)STR(0x4b44bc, "+1 FRAG"));
 		}
-		int t = OI(AI(0x4c0), 0x1cd94c0);
+		int t = ST->actors[AI(0x4c0)].team;
 		if (t >= 0)
 			GAME_VAR(int, s + 0x202e8f0 + t * 4)++;
 	} else {
 		AC->kills--;
-		if (AI(0x4c0) == GAME_VAR(int, s + 0x202e8d4))
+		if (AI(0x4c0) == ST->playerActor)
 			stage_print(s, (const char *)STR(0x4b44b4, "-1 FRAG"));
 		if (GAME_VAR(int, s + 0x20f3abc) == 1)
 			GAME_VAR(int, s + 0x202e8f0 + AC->team * 4)--;
@@ -280,7 +281,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			GAME_VAR(int, s + 0x202e8d8) = -1;
 		return;
 	}
-	if (AC->pilot != GAME_VAR(int, s + 0x202e8d4) || AC->bot != 0)
+	if (AC->pilot != ST->playerActor || AC->bot != 0)
 		actor_clearInput(s, i);
 	u8 *head = s + 0x13eb004 + GAME_VAR(int, player + 0x310) * 0xabc;
 	u8 *body = s + 0x140c8c0 + GAME_VAR(int, player + 0x314) * 0x1300;
@@ -296,7 +297,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	int item = GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4);
 	u8 *weapon = item >= 0 ? s + 0x14d1ab4 + item * 0x2e18 : NULL;
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
+	if (AC->pilot == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
 	    && !(AF(0x490) < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
 		weapon = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320 + AC->gaugeIcon * 4) * 0x2e18;
@@ -318,14 +319,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_updatePart(s, i, 4, AI(0x49c));
 		actor_updatePart(s, i, 5, AI(0x49c));
 	}
-	if (AC->pilot != GAME_VAR(int, s + 0x202e8d4) && AC->weaponLowering == 0 && AI(0x498) != AC->gaugeIcon) {
+	if (AC->pilot != ST->playerActor && AC->weaponLowering == 0 && AI(0x498) != AC->gaugeIcon) {
 		AI(0x498) = AC->gaugeIcon;
 		actor_updatePart(s, i, AC->gaugeIcon, AI(0x49c));
 	}
 	u8 *model = AC->gaugeIcon == 4 ? a + 0x587c : AC->gaugeIcon == 5 ? a + 0x701c : a + 0x40dc;
 	memcpy(a + 0x154, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + 0x160, a + 0x18c, 32);
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4)) {   /* (to chunk N: the local team's actors) */
+	if (AC->pilot == ST->playerActor) {   /* (to chunk N: the local team's actors) */
 		if (GAME_VAR(int, s + 0x20f3ad4) == 1) {
 			if (AC->markSolo == 1)
 				AU(0x3f4) = AU(0x3fc) = 0x447a0000;   /* 1000 */
@@ -340,8 +341,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot != 0) {
 			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, K(0x4a94fc))))   /* under 0.3 of its armour */
 				AI(0x87f4) = 1;
-			u8 *w0 = s + 0x14d1ab4 + GAME_VAR(int, player + 0x320) * 0x2e18;
-			if (AC->ammo[((ActorInfo *)w0)->ammoSlot] < ((ActorInfo *)w0)->ammoPerShot && GAME_VAR(int, player + 0x330) >= 0) {
+			ActorInfo *w0 = (ActorInfo *)(s + 0x14d1ab4 + GAME_VAR(int, player + 0x320) * 0x2e18);
+			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && GAME_VAR(int, player + 0x330) >= 0) {
 				u8 *w1 = s + 0x14d1ab4 + GAME_VAR(int, player + 0x330) * 0x2e18;
 				if (AC->ammo[((ActorInfo *)w1)->ammoSlot] < ((ActorInfo *)w1)->ammoPerShot)
 					AU8(0x87f4) |= 2;   /* both weapons empty */
@@ -351,12 +352,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		int aimed = 0;
 		for (int k = 0; k < GAME_VAR(int, s + 0x20a99b4); k++) {
 			u8 *b = s + 0x202ef34 + k * 0x4e8;
-			if (GAME_VAR(int, b + 0xbc) != i || OI(GAME_VAR(int, b + 0xc), 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
+			if (GAME_VAR(int, b + 0xbc) != i || ST->actors[GAME_VAR(int, b + 0xc)].pilot == ST->playerActor)
 				continue;
 			aimed = 1;
 			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
-				int t = GAME_VAR(int, s + 0x202ef40 + k * 0x4e8);
-				if (OI(t, 0x1cd94c0) != AC->team && OI(t, 0x1cd94f4) == 1 && (!(OI(t, 0x1cd9798) & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
+				int t = ST->bullets[k].owner;
+				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
 					AC->botTarget = t;
 					AU(0x8858) = 0x41280000;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
@@ -365,7 +366,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			break;
 		}
 		AC->alert = aimed;
-		if (i == GAME_VAR(int, s + 0x202e8d4)) {   /* the warning beep */
+		if (i == ST->playerActor) {   /* the warning beep */
 			if (aimed == 1) {
 				long double v = fsub_m(fld_m(&AF(0x8884)), dt);
 				AF(0x8884) = (float)v;
@@ -376,7 +377,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			} else
 				AI(0x8884) = 0;
 		}
-		if (AC->botTarget >= 0 && OI(AC->botTarget, 0x1cd94f4) != 1) {
+		if (AC->botTarget >= 0 && ST->actors[AC->botTarget].state != 1) {
 			AC->botTarget = -1;
 			AI(0x8858) = 0;
 		}
@@ -384,18 +385,18 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			long double v = fsub_m(fld_m(&AF(0x8824)), dt);
 			AF(0x8824) = (float)v;
 			int k = AI(0x4c0);
-			if (AC->hitFlash > 0 && k != i && OI(k, 0x1cd94c0) != AC->team && OI(k, 0x1cd94f4) == 1 && AC->botTarget != k
-			    && (!(OI(k, 0x1cd9798) & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
+			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
+			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
 				AC->botTarget = k;
 				AU(0x8858) = 0x41280000;
 				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
-					for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-						if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AC->team || ((OI(j, 0x1cd9798) & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
+					for (int j = 0; j < ST->actorCount; j++) {
+						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
 							continue;
 						float d[3];
-						const float *at = &OF(j, 0x1cd94fc);
+						const float *at = &ST->actors[j].pos[0];
 						for (int c = 0; c < 3; c++)
 							d[c] = f32(fsub_m(fld_m(&at[c]), &AC->pos[c]));
 						memcpy(v28, d, 12);
@@ -410,16 +411,16 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						actor_pickRandomWeapon(s, i);
 				} else {
 					int t = AC->botTarget;
-					if (collision_rayTrace(s, &AF(0x154), &OF(t, 0x1cd94fc), v28) != 0
-					    || ((OI(AC->botTarget, 0x1cd9798) & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AI(8))) {   /* lost from sight */
+					if (collision_rayTrace(s, &AF(0x154), &ST->actors[t].pos[0], v28) != 0
+					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AI(8))) {   /* lost from sight */
 						if (!(AF(0x8858) > 0))
 							AC->botTarget = -1;
 						else
-							for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-								if (j == i || OI(j, 0x1cd94f4) != 1 || OI(j, 0x1cd94c0) == AC->team
-								    || ((OI(j, 0x1cd9798) & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
+							for (int j = 0; j < ST->actorCount; j++) {
+								if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team
+								    || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
 									continue;
-								if (collision_rayTrace(s, &AF(0x154), &OF(j, 0x1cd94fc), v28) == 0) {
+								if (collision_rayTrace(s, &AF(0x154), &ST->actors[j].pos[0], v28) == 0) {
 									AC->botTarget = j;
 									actor_pickRandomWeapon(s, i);
 									break;
@@ -463,9 +464,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (AU8(0x87f4) & 2)
 				AC->botTarget = -1;
 		}
-		if (AI(0x8810) >= 0 && OI(AI(0x8810), 0x1cd94f4) != 1)
+		if (AI(0x8810) >= 0 && ST->actors[AI(0x8810)].state != 1)
 			AI(0x8810) = -1;
-		if (AC->followTarget >= 0 && OI(AC->followTarget, 0x1cd94f4) != 1)
+		if (AC->followTarget >= 0 && ST->actors[AC->followTarget].state != 1)
 			AC->followTarget = -1;
 		if (AC->target1 >= 0) {   /* the scripted path (+0x87f8, point +0x87fc): its command when within 1000 */
 			const float *pt = PATH_POINT(AC->target1, AC->target2);
@@ -496,7 +497,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AI(0x8808) = -1;
 		if (AC->bot != 0 && !(AF(0x8804) > 0) && AI(0x8808) < 0) {   /* a bot: where it goes (+0x1d4) and looks */
 			if (AC->followTarget >= 0) {   /* the one it follows: towards it while over 3000 away */
-				const float *at = &OF(AC->followTarget, 0x1cd94fc);
+				const float *at = &ST->actors[AC->followTarget].pos[0];
 				float d[3];
 				for (int c = 0; c < 3; c++)
 					d[c] = f32(fsub_m(fld_m(&at[c]), &AC->pos[c]));
@@ -534,9 +535,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					long double o = fsub_m((long double)r, &AC->spawn7c);
 					v28[0] = f32(fmul_m(o, &v28[0]));
 					v28[2] = f32(fmul_m(o, &v28[2]));
-					AF(0x1d4) = f32(fadd_m(fadd_m(fld_m(&v28[0]), &OF(AC->botTarget, 0x1cd94fc)), &d[0]));
+					AF(0x1d4) = f32(fadd_m(fadd_m(fld_m(&v28[0]), &ST->actors[AC->botTarget].pos[0]), &d[0]));
 					AU(0x8830) = AC->spawnTail[0];
-					AF(0x1dc) = f32(fadd_m(fadd_m(fld_m(&v28[2]), &OF(AC->botTarget, 0x1cd9504)), &d[2]));
+					AF(0x1dc) = f32(fadd_m(fadd_m(fld_m(&v28[2]), &ST->actors[AC->botTarget].pos[2]), &d[2]));
 				}
 				v = fsub_m(fld_m(&AF(0x8834)), dt);
 				AF(0x8834) = (float)v;
@@ -549,13 +550,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			}
 			/* the view (+0x1e0 pitch, +0x1e4 heading): at what it attends to, or a random look every 2 s */
 			if (AI(0x8810) >= 0)
-				aim_at(a, &OF(AI(0x8810), 0x1cd94fc));
+				aim_at(a, &ST->actors[AI(0x8810)].pos[0]);
 			else if (AI(0x8814) >= 0)
 				aim_at(a, PATH_POINT(AI(0x8814), AI(0x8818)));
 			else if (AC->followTarget >= 0)
-				aim_at(a, &OF(AC->followTarget, 0x1cd94fc));
+				aim_at(a, &ST->actors[AC->followTarget].pos[0]);
 			else if (AC->botTarget >= 0)
-				aim_at(a, &OF(AC->botTarget, 0x1cd94fc));
+				aim_at(a, &ST->actors[AC->botTarget].pos[0]);
 			else if (AC->target1 >= 0)
 				aim_at(a, PATH_POINT(AC->target1, AC->target2));
 			else {
@@ -662,7 +663,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float step = !(*dt >= 0.05f) ? *dt : 0.05f;   /* at most 0.05 s */
 	for (int c = 0; c < 3; c++)   /* the move this frame (+0x384) */
 		AF(0x384 + c * 4) = f32(fmul_m(fld_m(&step), &AF(0x378 + c * 4)));
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) && AC->state == 1 && AC->hitFlash > 0) {   /* a push (+0x885c), fading with +0x8854 squared */
+	if (AC->pilot == ST->playerActor && AC->state == 1 && AC->hitFlash > 0) {   /* a push (+0x885c), fading with +0x8854 squared */
 		long double px = fmul_m(fld_m(&step), &AF(0x885c));
 		float py = f32(fmul_m(fld_m(&step), &AF(0x8860)));
 		float pz = f32(fmul_m(fld_m(&step), &AF(0x8864)));
@@ -677,24 +678,24 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	if (AC->overheat == 1)
 		AC->inBooster = 0;
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
+	if (AC->pilot == ST->playerActor && AC->state == 1) {   /* (to 45a5d1) the local team's live actors move */
 		AF(0x180) = f32(fadd_m(fld_m(&AF(0x154)), &AF(0x384)));
 		AF(0x184) = f32(fadd_m(fld_m(&AF(0x388)), &AF(0x158)));
 		AF(0x188) = f32(fadd_m(fld_m(&AF(0x38c)), &AF(0x15c)));
 		memcpy(dir, a + 0x384, 12);
 		left = f32(Vec3_normalize(dir));
-		for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {   /* slide around the other live actors */
-			if (OI(j, 0x1cd94f4) != 1 || j == i || OI(j, 0x1ce1bf4) != 0)
+		for (int j = 0; j < ST->actorCount; j++) {   /* slide around the other live actors */
+			if (ST->actors[j].state != 1 || j == i || ST->actors[j].cameraValue != 0)
 				continue;
 			float r = f32(fmul_m(fadd_m(fld_m(&OF(j, 0x1cd9790)), &AF(0x3e8)), K(0x4a9730)));
-			if (math_segmentSphere((float *)(a + 0x154), (float *)(a + 0x180), dir, &OF(j, 0x1cd94fc), r, hit, hit_t) != 1)
+			if (math_segmentSphere((float *)(a + 0x154), (float *)(a + 0x180), dir, &ST->actors[j].pos[0], r, hit, hit_t) != 1)
 				continue;
 			memcpy(a + 0x180, hit, 12);
 			for (int c = 0; c < 3; c++)
 				AF(0x384 + c * 4) = f32(fsub_m(fld_m(&AF(0x180 + c * 4)), &AC->pos[c]));
 			long double X = fld_m(&AF(0x384)), Y = fld_m(&AF(0x388)), Z = fld_m(&AF(0x38c));
 			left = f32(fsubr_m(x87_fsqrt((X * X + Y * Y) + Z * Z), &left));
-			const float *o = &OF(j, 0x1cd94fc);
+			const float *o = &ST->actors[j].pos[0];
 			long double d0 = fsub_m(fld_m(&hit[0]), &o[0]), d1 = fsub_m(fld_m(&hit[1]), &o[1]), d2 = fsub_m(fld_m(&hit[2]), &o[2]);
 			float c0 = f32(fmul_m(d2, &dir[1]) - fmul_m(d1, &dir[2]));
 			float c1 = f32(fmul_m(d0, &dir[2]) - fmul_m(d2, &dir[0]));
@@ -795,7 +796,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		goto tail;   /* 45cdb1 */
 	if (AC->weaponLowering == 1) {   /* the weapon going down (+0x490 from 1 to 0) */
 		if (AF(0x490) > 0) {
-			if (AU(0x490) == 0x3f800000 && i == GAME_VAR(int, s + 0x202e8d4))
+			if (AU(0x490) == 0x3f800000 && i == ST->playerActor)
 				sound_playVolume(0x14, 0x64);
 			AF(0x490) = f32(fsubr_m(fmul_m(fld_m(dt), K(0x4a9534)), &AF(0x490)));
 		}
@@ -864,13 +865,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		hold(grip, weapon + 0x2d94 + AI(0x49c) * 12, 1, &AF(0x490));
 	skel_poseBones(a + 0x701c, 0);
 	glPopMatrix();
-	if (i == GAME_VAR(int, s + 0x202e8d4)) {   /* the lock-on warnings (s+0x202ea80 per actor), sorted longest first */
+	if (i == ST->playerActor) {   /* the lock-on warnings (s+0x202ea80 per actor), sorted longest first */
 		float *lock = &GAME_VAR(float, s + 0x202ea80);
 		int *count = &GAME_VAR(int, s + 0x202ef30);
 		if (weapon && ((ActorInfo *)weapon)->ringRange > 0) {
-			for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-				float *seen = &OF(j, 0x1ce1b94);
-				if (j == i || OI(j, 0x1cd94f4) != 1) {
+			for (int j = 0; j < ST->actorCount; j++) {
+				float *seen = &ST->actors[j].lockSize;
+				if (j == i || ST->actors[j].state != 1) {
 					lock[j] = 0;
 					continue;
 				}
@@ -880,7 +881,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AF(0xc)), &((ActorInfo *)weapon)->ringRange) >= OF(j, 0x1ce1b90)) && AC->team != OI(j, 0x1cd94c0)) {
+				if (!(fmul_m(fld_m(&AF(0xc)), &((ActorInfo *)weapon)->ringRange) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						BITS(*seen) = 0x3e800000;   /* 0.25 */
@@ -894,7 +895,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 			}
 			*count = 0;
-			for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++)
+			for (int j = 0; j < ST->actorCount; j++)
 				if (lock[j] > 0) {
 					BITS(GAME_VAR(float, s + 0x202ec10 + *count * 4)) = BITS(lock[j]);
 					GAME_VAR(int, s + 0x202eda0 + *count * 4) = j;
@@ -914,14 +915,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							id[k - 1] = w;
 						}
 		} else {
-			for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++)
+			for (int j = 0; j < ST->actorCount; j++)
 				lock[j] = 0;
 			*count = 0;
 		}
 	}
 	AI(0x1ec) = 0;   /* firing this frame */
 	AI(0x374) = 0;
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4)) {
+	if (AC->pilot == ST->playerActor) {
 		if (weapon && AC->state == 1) {
 			if (AC->inFire == 1 && AF(0x120) > 3.0f && AC->gaugeIcon >= 0 && !(AF(0x17c) > 0) && AF(0x490) >= 1.0f && AC->weaponLowering == 0
 			    && AC->armor > 0)
@@ -968,7 +969,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					break;
 				int w = ((ActorInfo *)weapon)->ammoSlot;
 				if (AC->ammo[w] < ((ActorInfo *)weapon)->ammoPerShot && AC->bot != 2) {   /* out of ammunition */
-					if (i == GAME_VAR(int, s + 0x202e8d4)) {
+					if (i == ST->playerActor) {
 						if (AI(0x4a0) != 0)
 							break;
 						strcpy((char *)(a + 0x4f4), (const char *)STR(0x4b4528, "OUT OF AMMO!"));
@@ -1013,12 +1014,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))) - AC->spawn74 + r2);
 					}
 					if (collision_rayTrace(s, (float *)(a + 0x154), shot_at, v28) != 0) {   /* the muzzle inside a wall */
-						if (i == GAME_VAR(int, s + 0x202e8d4) && AI(0x4a0) == 0)
+						if (i == ST->playerActor && AI(0x4a0) == 0)
 							sound_playVolume(0xa5, 0x64);
 						break;
 					}
 					if (AC->bot != 0) {   /* a bot holds fire without a clear line, and swaps weapons when too close */
-						const float *tp = &OF(AC->botTarget, 0x1cd94fc);
+						const float *tp = &ST->actors[AC->botTarget].pos[0];
 						if (collision_rayTrace(s, shot_at, tp, v28) != 0)
 							continue;
 						float d[3];
@@ -1043,7 +1044,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					memcpy(rec + 6, shot_dir, 12);
 					rec[9] = (u32)(uintptr_t)q;
 					int target;
-					if (i == GAME_VAR(int, s + 0x202e8d4)) {
+					if (i == ST->playerActor) {
 						int c = GAME_VAR(int, s + 0x202ef30);
 						target = c > 0 ? GAME_VAR(int, s + 0x202eda0 + (n % c) * 4) : -1;
 					} else
@@ -1148,13 +1149,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AU(0x4a4) = 0x40400000;
 		if (i != GAME_VAR(int, s + 0x202e8d8) && AC->viewMarked == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = AU(0x4a4);
-			if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0))
+			if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0))
 				BITS(v28[1]) = 0x3d808081;   /* 1/255 */
 			else if (AF(0x120) > 3.0f)
 				BITS(v28[1]) = 0x3f800000;
 			else
 				v28[1] = f32(fmul_m(fld_m(&AF(0x120)), K(0x4a9438)));
-			if (i == GAME_VAR(int, s + 0x202e8d4))
+			if (i == ST->playerActor)
 				v28[1] = f32(fmul_m(fld_m(&v28[1]), K(0x4a942c)));
 			emit(s, a, (const int *)(arms + 0x12d0), (const int *)(arms + 0x13d0), a + 0x2538, legs, v28, fx);
 			emit(s, a, (const int *)(legs + 0x16f0), (const int *)(legs + 0x17f0), a + 0x3508, legs, v28, fx);
@@ -1162,11 +1163,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double v = fadd_m(fld_m(dt), &AF(0x4a8));   /* footsteps every third of a second */
 		AF(0x4a8) = (float)v;
 		if (v > *K(0x4a9704)) {
-			if (i == GAME_VAR(int, s + 0x202e8d4) && (AC->warned == 1 || AC->overheat == 1) && !(AF(0x3fc) > 0))
+			if (i == ST->playerActor && (AC->warned == 1 || AC->overheat == 1) && !(AF(0x3fc) > 0))
 				sound_playVolume(0x10, 0x64);   /* out of breath */
 			if (i != GAME_VAR(int, s + 0x202e8dc)) {
 				int step = GAME_VAR(int, legs + 0x17fc);
-				if (i == GAME_VAR(int, s + 0x202e8d4))
+				if (i == ST->playerActor)
 					sound_playVolume(AC->inBooster == 0 ? step : step + 3, AC->inBooster == 0 ? 0x28 : 0x50);
 				else
 					sound_play3D(AF(0x1a4) > 0 ? step + 3 : step, s + 0x20f3970, a + 0x180, s + 0x20f397c, 0x47435000);
@@ -1177,13 +1178,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	if (AC->state == 1) {
 		if (AC->armor <= 0)
 			actor_dies(s, a, i, fx, v28);
-		else if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
+		else if (AC->pilot == ST->playerActor || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
 			AF(0x124) = f32(fadd_m(fadd_m(fld_m(dt), &AF(0x120)), K(0x4a9418)));
 	} else if (AC->state == 2) {   /* dying: out after 2 s */
 		if (AF(0x150) > 2.0f) {
 			AC->state = 3;
 			AI(0x150) = 0;
-			if (i == GAME_VAR(int, s + 0x202e8d4))   /* the patch DLL's cat_wrap */
+			if (i == ST->playerActor)   /* the patch DLL's cat_wrap */
 				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
 	} else if (AC->state == 3)
@@ -1193,7 +1194,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double g = fsub_m(fld_m(K(0x4a942c)), &AF(0x17c));
 		AF(0x4ec) = (float)(g + g);
 	}
-	if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(GAME_VAR(int, s + 0x202e8d4), 0x1cd93b0)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0)) {
 		if (AF(0x4a4) > 1.0f)
 			AF(0x4ec) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x4a4)), K(0x4a9424)), K(0x4a94f8)), &AF(0x4ec)));
 	} else
@@ -1239,7 +1240,7 @@ timers:
 	for (int c = 0; c < 3; c++)   /* this frame's move */
 		AF(0x384 + c * 4) = f32(fsub_m(fld_m(&AF(0x180 + c * 4)), &AC->pos[c]));
 	AI(0x1e8) = 0;
-	if (AC->pilot == GAME_VAR(int, s + 0x202e8d4)) {   /* the state bits sent with the actor */
+	if (AC->pilot == ST->playerActor) {   /* the state bits sent with the actor */
 		u32 f = 0;
 		if (AC->armor >= AC->armorMax)
 			f = 1;

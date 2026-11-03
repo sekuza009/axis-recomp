@@ -1,6 +1,7 @@
 /* weapons.c: switching an actor's weapon. */
 #include "../game.h"
 #include <string.h>
+#define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
@@ -307,7 +308,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->hitActor = -1;
 	B(int, 0xc0) = 0;
 	BU->link = a4;
-	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && BU->owner == GAME_VAR(int, s + 0x202e8d4)) {
+	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = (const float *)(RELOC(b) + 0x78);
 		float *tip = (float *)(RELOC(b) + 0xc4);
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
@@ -330,7 +331,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	int sound = GAME_VAR(int, w + 0x2e00);
 	if (sound < 0)
 		return;
-	if (BU->owner == GAME_VAR(int, s + 0x202e8d4))
+	if (BU->owner == ST->playerActor)
 		sound_playVolume(sound, 100);
 	else
 		sound_play3D(sound, (const float *)(s + 0x20f3970),
@@ -516,7 +517,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
-	if (AI(t, 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4) && AI(t, 0x1cd94f4) == 1)
+	if (ST->actors[t].pilot == ST->playerActor && ST->actors[t].state == 1)
 		bullet_playImpactSound(s, BU->owner, t, W(int, 0x2ddc), W(int, 0x2de0), WI->shotMode, weapon);
 	t = BU->hitActor;
 	float dir[3];
@@ -524,10 +525,10 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &AF(t, 0x1cd9528 + k * 4)));
 	Vec3_normalize(dir);
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
-	effect(s, r, 8, AI(BU->hitActor, 0x1cd9798) & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
+	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
 	if (W(int, 0x2e04) >= 0)
 		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x84, s + 0x20f397c, 0x47435000);
-	if (BU->owner == GAME_VAR(int, s + 0x202e8d4))
+	if (BU->owner == ST->playerActor)
 		sound_playVolume(0xb, 100);
 	if (W(float, 0x2e14) > 0) {
 		long double k = -fld_m(&W(float, 0x2e14));
@@ -628,9 +629,9 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 {
 	if (B(int, 0xd0) != 1 || !(WI->splashRadius > 0))
 		return;
-	for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || AI(j, 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4) || BU->hitActor == j
-		    || AI(j, 0x1ce1bf4) == 1)
+	for (int j = 0; j < ST->actorCount; j++) {
+		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || ST->actors[j].pilot != ST->playerActor || BU->hitActor == j
+		    || ST->actors[j].cameraValue == 1)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
@@ -727,8 +728,8 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	memcpy(dir, step, 12);
 	Vec3_normalize(dir);
 	BITS(best) = 0x7f7fffff;
-	for (int j = 0; j < GAME_VAR(int, s + 0x202e8c8); j++) {
-		if (AI(j, 0x1cd94f4) != 1 || !(AF(j, 0x1cd94c8) > 3.0f) || j == BU->owner || AI(j, 0x1ce1bf4) != 0)
+	for (int j = 0; j < ST->actorCount; j++) {
+		if (ST->actors[j].state != 1 || !(ST->actors[j].blinkTime > 3.0f) || j == BU->owner || ST->actors[j].cameraValue != 0)
 			continue;
 		float radius = f32(fadd_m(fld_m(&AF(j, 0x1cd9790)), &WI->flashSize));
 		if (math_segmentSphere(prev, cur, dir, &AF(j, 0x1cd9528), radius, hit, &t) == 1 && !(t >= best)) {
@@ -779,7 +780,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		hit_actor(s, b, w, r, weapon);
 	if (!(B(float, 0x70) > B(float, 0x74))) {
 		memcpy(prev, cur, 12);
-		if (AI(BU->owner, 0x1cd94b8) == GAME_VAR(int, s + 0x202e8d4))
+		if (ST->actors[BU->owner].pilot == ST->playerActor)
 			fly_local(s, b, w, dt);
 		else if (BU->moved == 1) {
 			memcpy(cur, b + 0x90, 12);
@@ -798,7 +799,7 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 		BU->moved = 0;
 		return;
 	}
-	if (AI(BU->owner, 0x1cd94b8) != GAME_VAR(int, s + 0x202e8d4)) {
+	if (ST->actors[BU->owner].pilot != ST->playerActor) {
 		memcpy(cur, b + 0x90, 12);
 		for (int k = 0; k < 3; k++)
 			step[k] = f32(fsub_m(fld_m(&cur[k]), &prev[k]));
