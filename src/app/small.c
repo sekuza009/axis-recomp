@@ -355,13 +355,13 @@ int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 {
 	script_reset(stage);
 	strcpy((char *)stage + 0x2149208, name);
-	FIELD(int, stage, 0x2149308) = mode;
+	stage->scriptMode = mode;
 	if (mode == 0 || mode == 2) {
-		FIELD(int, stage, 0x214930c) = 0;
+		stage->scriptRunning = 0;
 		return 0;
 	}
 	if (mode == 1) {
-		FIELD(int, stage, 0x214930c) = 1;
+		stage->scriptRunning = 1;
 		return 0;
 	}
 	return mode - 2;
@@ -431,7 +431,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 {
 	typedef long double X;
-	if (FIELD(int, stage, 0x2149308) && FIELD(int, stage, 0x214930c) == 1)
+	if (stage->scriptMode && stage->scriptRunning == 1)
 		return;
 	X d = (X)dt * k_clockRate, one = k_1f;
 	for (int k = 0; k < 2; k++) {
@@ -718,12 +718,12 @@ int (sys_checkClockTampering)(void)
    Its caller ignores the eax it leaves */
 void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 {
-	if (!GAME_VAR(int, scene + 0x2149308))
+	if (!((Stage *)scene)->scriptMode)
 		return;
 	if (!GAME_VAR(int, scene + 0x2148ee0))
 		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)STR(0x4c45e4, "Scene"));
 	if (!recorder_setPathStub(scene + 0x2148ed8, path))
-		GAME_VAR(int, scene + 0x2149308) = 0;
+		((Stage *)scene)->scriptMode = 0;
 	const char *name = (const char *)(scene + 0x2149108);
 	if (*name) {
 		char text[0x100];
@@ -796,8 +796,8 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 	if (type < 0)
 		return 0;
 	u8 *pl = (u8 *)&((Stage *)scene)->playerRecords[p];
-	if (p > GAME_VAR(int, scene + 0x19e1888) - 1)
-		GAME_VAR(int, scene + 0x19e1888) = p + 1;
+	if (p > ((Stage *)scene)->playerRecordCount - 1)
+		((Stage *)scene)->playerRecordCount = p + 1;
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, scene + k->count))
@@ -806,7 +806,7 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
 	GAME_VAR(int, pl + k->field) = type;
-	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
+	for (int i = 0; i < ((Stage *)scene)->actorCount; i++)
 		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
 			GAME_THISCALL(k->reload, void, void *, int)(scene, i);
 	return 1;
@@ -840,7 +840,7 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (item >= GAME_VAR(int, scene + 0x1561b64))
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	GAME_VAR(int, type + 0x320 + slot * 4) = item;
-	for (int i = 0; i < GAME_VAR(int, scene + 0x202e8c8); i++)
+	for (int i = 0; i < ((Stage *)scene)->actorCount; i++)
 		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
 			actor_updatePart(scene, i, slot, GAME_VAR(u32, scene + 0x1cd9844 + i * 0x8888));
 }

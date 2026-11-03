@@ -624,20 +624,22 @@ typedef struct GroundLayer {
 	u8 _pad000006c[0x1a0];
 } GroundLayer;
 
-/* a way point (Stage.wayPoints): its run of path points (map_info.c) */
+/* a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy) */
 typedef struct WayPoint {
-	u8 _pad0000000[0xc];
-	i32 pointCount;   /* +0xc */
-	u8 *points;   /* +0x10: 0x30-byte path points (Stage.pathPoints) */
+	float pos[3];   /* +0x0: (by use) where it is (a trigger's first one: the player within its radius fires it; bots walk the path) */
+	i32 commandCount;   /* +0xc */
+	u8 *commands;   /* +0x10: 0x30-byte commands (Stage.commands): an opcode and its arguments */
 } WayPoint;
 
-/* a trigger (Stage.triggers): its run of way points and its radius */
+/* a trigger (Stage.triggers): its path of way points, what fires it */
 typedef struct Trigger {
 	i32 wayPointCount;   /* +0x0 */
-	u8 *wayPoints;   /* +0x4 */
-	u8 _pad0000008[0xc];
-	float radiusSq;   /* +0x14: read as a radius: squared and scaled at load */
-	u8 _pad0000018[0x4];
+	u8 *wayPoints;   /* +0x4: WayPoint records (0x14 bytes) */
+	i32 armed;   /* +0x8: (by use) 1: it can fire (commands 0 / 1 arm and disarm it) */
+	u32 flags;   /* +0xc: 1: on its time; 2: on the player within its radius */
+	float time;   /* +0x10: the match clock it fires at (flag 1) */
+	float radiusSq;   /* +0x14: read as a radius: squared and scaled at load (flag 2) */
+	i32 fired;   /* +0x18: 1: fires this frame (its first way point's commands run; then disarmed) */
 } Trigger;
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
@@ -672,14 +674,20 @@ typedef struct Stage {
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
 	u8 _pad0dc0a78[0x498];
-	u8 pathPoints[10000][0x30];   /* +0xdc0f10: (by use) the path points (0x30 bytes each) the way points run over */
-	i32 pathPointCount;   /* +0xe36210 */
+	u8 commands[10000][0x30];   /* +0xdc0f10: (by use) the actor commands (0x30 bytes each) the way points run */
+	i32 commandCount;   /* +0xe36210 */
 	WayPoint wayPoints[1000];   /* +0xe36214 */
 	i32 wayPointCount;   /* +0xe3b034 */
-	Trigger triggers[228];   /* +0xe3b038: (the size up to triggerCount: 228 records) */
-	u8 _pad0e3c928[0x10];
+	Trigger triggers[200];   /* +0xe3b038 */
+	i32 triggerFired[200];   /* +0xe3c618: (by use) 1: the trigger fired this frame */
 	i32 triggerCount;   /* +0xe3c938 */
-	u8 _pad0e3c93c[0x4de508];
+	u8 _pad0e3c93c[0xf448c];
+	u32 objectColours[1000000];   /* +0xf30dc8: (by use) the map objects' shading colours (each object's run: MapObject +0x280) */
+	i32 objectColourCount;   /* +0x13016c8: dwords of it used (over 1000000: a fatal message) */
+	i32 mapShaded;   /* +0x13016cc: (by use) 1: the map brings its objects' shading (not worked out) */
+	u8 _pad13016d0[0x9d70];
+	char objectNames[1000][0x40];   /* +0x130b440: (by use) the map objects' type names */
+	i32 objectNameCount;   /* +0x131ae40 */
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
 	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
@@ -713,7 +721,12 @@ typedef struct Stage {
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
 	i32 projectileFreeHint;   /* +0x20f2da4: (by use) the lowest free particle slot */
 	i32 projectileSerial;   /* +0x20f2da8: the next particle's id */
-	u8 _pad20f2dac[0xbc4];
+	u32 thrustShapes[3][8];   /* +0x20f2dac: (by use) the thrust effects' shapes: plasma, ion, gravity (eight frames each) */
+	u8 _pad20f2e0c[0x68];
+	u32 effectShapes[8];   /* +0x20f2e74: shell / rail / blade fire, shell / rail / lightning / missile / homing bullet */
+	u8 _pad20f2e94[0xa8];
+	i32 effectShapesReset;   /* +0x20f2f3c: (unclear) cleared when the effects' shapes are looked up */
+	u8 _pad20f2f40[0xa30];
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
@@ -731,9 +744,16 @@ typedef struct Stage {
 	u8 _pad20f5ee0[0x4f18];
 	MapItem items[200];   /* +0x20fadf8 */
 	i32 itemCount;   /* +0x20fcd38 */
-	u8 _pad20fcd3c[0x110];
+	u8 _pad20fcd3c[0x4];
+	i32 clockSeconds;   /* +0x20fcd40: (by use) the match clock: whole seconds (triggers' times) */
+	float clockFraction;   /* +0x20fcd44: and the part of a second */
+	u8 _pad20fcd48[0x104];
 	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
-	u8 _pad20fce50[0x535f3];
+	u8 _pad20fce50[0x4c3b8];
+	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
+	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
+	i32 scriptRunning;   /* +0x214930c */
+	u8 _pad2149310[0x7133];
 } Stage;
 
 /* one of a tunnel ring's six flares (TunnelRing.flares) */
@@ -1506,12 +1526,17 @@ _Static_assert(offsetof(GroundLayer, stripCapacity) == 0x60 && sizeof(((GroundLa
 _Static_assert(offsetof(GroundLayer, strips) == 0x64 && sizeof(((GroundLayer *)0)->strips) == 0x4, "scene.fields: GroundLayer.strips");
 _Static_assert(offsetof(GroundLayer, stripCount) == 0x68 && sizeof(((GroundLayer *)0)->stripCount) == 0x4, "scene.fields: GroundLayer.stripCount");
 _Static_assert(sizeof(GroundLayer) == 0x20c, "scene.fields: size of GroundLayer");
-_Static_assert(offsetof(WayPoint, pointCount) == 0xc && sizeof(((WayPoint *)0)->pointCount) == 0x4, "scene.fields: WayPoint.pointCount");
-_Static_assert(offsetof(WayPoint, points) == 0x10 && sizeof(((WayPoint *)0)->points) == 0x4, "scene.fields: WayPoint.points");
+_Static_assert(offsetof(WayPoint, pos) == 0x0 && sizeof(((WayPoint *)0)->pos) == 0xc, "scene.fields: WayPoint.pos");
+_Static_assert(offsetof(WayPoint, commandCount) == 0xc && sizeof(((WayPoint *)0)->commandCount) == 0x4, "scene.fields: WayPoint.commandCount");
+_Static_assert(offsetof(WayPoint, commands) == 0x10 && sizeof(((WayPoint *)0)->commands) == 0x4, "scene.fields: WayPoint.commands");
 _Static_assert(sizeof(WayPoint) == 0x14, "scene.fields: size of WayPoint");
 _Static_assert(offsetof(Trigger, wayPointCount) == 0x0 && sizeof(((Trigger *)0)->wayPointCount) == 0x4, "scene.fields: Trigger.wayPointCount");
 _Static_assert(offsetof(Trigger, wayPoints) == 0x4 && sizeof(((Trigger *)0)->wayPoints) == 0x4, "scene.fields: Trigger.wayPoints");
+_Static_assert(offsetof(Trigger, armed) == 0x8 && sizeof(((Trigger *)0)->armed) == 0x4, "scene.fields: Trigger.armed");
+_Static_assert(offsetof(Trigger, flags) == 0xc && sizeof(((Trigger *)0)->flags) == 0x4, "scene.fields: Trigger.flags");
+_Static_assert(offsetof(Trigger, time) == 0x10 && sizeof(((Trigger *)0)->time) == 0x4, "scene.fields: Trigger.time");
 _Static_assert(offsetof(Trigger, radiusSq) == 0x14 && sizeof(((Trigger *)0)->radiusSq) == 0x4, "scene.fields: Trigger.radiusSq");
+_Static_assert(offsetof(Trigger, fired) == 0x18 && sizeof(((Trigger *)0)->fired) == 0x4, "scene.fields: Trigger.fired");
 _Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
@@ -1536,12 +1561,18 @@ _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor)
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
-_Static_assert(offsetof(Stage, pathPoints) == 0xdc0f10 && sizeof(((Stage *)0)->pathPoints) == 0x75300, "scene.fields: Stage.pathPoints");
-_Static_assert(offsetof(Stage, pathPointCount) == 0xe36210 && sizeof(((Stage *)0)->pathPointCount) == 0x4, "scene.fields: Stage.pathPointCount");
+_Static_assert(offsetof(Stage, commands) == 0xdc0f10 && sizeof(((Stage *)0)->commands) == 0x75300, "scene.fields: Stage.commands");
+_Static_assert(offsetof(Stage, commandCount) == 0xe36210 && sizeof(((Stage *)0)->commandCount) == 0x4, "scene.fields: Stage.commandCount");
 _Static_assert(offsetof(Stage, wayPoints) == 0xe36214 && sizeof(((Stage *)0)->wayPoints) == 0x4e20, "scene.fields: Stage.wayPoints");
 _Static_assert(offsetof(Stage, wayPointCount) == 0xe3b034 && sizeof(((Stage *)0)->wayPointCount) == 0x4, "scene.fields: Stage.wayPointCount");
-_Static_assert(offsetof(Stage, triggers) == 0xe3b038 && sizeof(((Stage *)0)->triggers) == 0x18f0, "scene.fields: Stage.triggers");
+_Static_assert(offsetof(Stage, triggers) == 0xe3b038 && sizeof(((Stage *)0)->triggers) == 0x15e0, "scene.fields: Stage.triggers");
+_Static_assert(offsetof(Stage, triggerFired) == 0xe3c618 && sizeof(((Stage *)0)->triggerFired) == 0x320, "scene.fields: Stage.triggerFired");
 _Static_assert(offsetof(Stage, triggerCount) == 0xe3c938 && sizeof(((Stage *)0)->triggerCount) == 0x4, "scene.fields: Stage.triggerCount");
+_Static_assert(offsetof(Stage, objectColours) == 0xf30dc8 && sizeof(((Stage *)0)->objectColours) == 0x3d0900, "scene.fields: Stage.objectColours");
+_Static_assert(offsetof(Stage, objectColourCount) == 0x13016c8 && sizeof(((Stage *)0)->objectColourCount) == 0x4, "scene.fields: Stage.objectColourCount");
+_Static_assert(offsetof(Stage, mapShaded) == 0x13016cc && sizeof(((Stage *)0)->mapShaded) == 0x4, "scene.fields: Stage.mapShaded");
+_Static_assert(offsetof(Stage, objectNames) == 0x130b440 && sizeof(((Stage *)0)->objectNames) == 0xfa00, "scene.fields: Stage.objectNames");
+_Static_assert(offsetof(Stage, objectNameCount) == 0x131ae40 && sizeof(((Stage *)0)->objectNameCount) == 0x4, "scene.fields: Stage.objectNameCount");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, objectFreeHint) == 0x13c9b28 && sizeof(((Stage *)0)->objectFreeHint) == 0x4, "scene.fields: Stage.objectFreeHint");
@@ -1569,6 +1600,9 @@ _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
 _Static_assert(offsetof(Stage, projectileFreeHint) == 0x20f2da4 && sizeof(((Stage *)0)->projectileFreeHint) == 0x4, "scene.fields: Stage.projectileFreeHint");
 _Static_assert(offsetof(Stage, projectileSerial) == 0x20f2da8 && sizeof(((Stage *)0)->projectileSerial) == 0x4, "scene.fields: Stage.projectileSerial");
+_Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)->thrustShapes) == 0x60, "scene.fields: Stage.thrustShapes");
+_Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
+_Static_assert(offsetof(Stage, effectShapesReset) == 0x20f2f3c && sizeof(((Stage *)0)->effectShapesReset) == 0x4, "scene.fields: Stage.effectShapesReset");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
 _Static_assert(offsetof(Stage, viewDir) == 0x20f397c && sizeof(((Stage *)0)->viewDir) == 0xc, "scene.fields: Stage.viewDir");
 _Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->viewUp) == 0xc, "scene.fields: Stage.viewUp");
@@ -1580,7 +1614,12 @@ _Static_assert(offsetof(Stage, freeForAll) == 0x20f3ad4 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
 _Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
 _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");
+_Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
+_Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
+_Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
+_Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
+_Static_assert(offsetof(Stage, scriptRunning) == 0x214930c && sizeof(((Stage *)0)->scriptRunning) == 0x4, "scene.fields: Stage.scriptRunning");
 _Static_assert(sizeof(Stage) == 0x2150443, "scene.fields: size of Stage");
 _Static_assert(offsetof(Flare, corners) == 0x0 && sizeof(((Flare *)0)->corners) == 0x40, "scene.fields: Flare.corners");
 _Static_assert(offsetof(Flare, pos) == 0x40 && sizeof(((Flare *)0)->pos) == 0xc, "scene.fields: Flare.pos");

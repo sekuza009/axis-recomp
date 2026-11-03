@@ -496,24 +496,43 @@ struct GroundLayer 0x20c                                        # a layer of the
 0x64       4          u8 *strips
 0x68       4          i32 stripCount
 
-struct WayPoint 0x14                                            # a way point (Stage.wayPoints): its run of path points (map_info.c)
-0xc        4          i32 pointCount
-0x10       4          u8 *points                                # 0x30-byte path points (Stage.pathPoints)
+struct WayPoint 0x14                                            # a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy)
+0          0xc        float pos[3]                               # (by use) where it is (a trigger's first one: the player within its radius fires it; bots walk the path)
+0xc        4          i32 commandCount
+0x10       4          u8 *commands                               # 0x30-byte commands (Stage.commands): an opcode and its arguments
 
-struct Trigger 0x1c                                             # a trigger (Stage.triggers): its run of way points and its radius
+struct Trigger 0x1c                                             # a trigger (Stage.triggers): its path of way points, what fires it
 0          4          i32 wayPointCount
-4          4          u8 *wayPoints
-0x14       4          float radiusSq                            # read as a radius: squared and scaled at load
+4          4          u8 *wayPoints                              # WayPoint records (0x14 bytes)
+8          4          i32 armed                                  # (by use) 1: it can fire (commands 0 / 1 arm and disarm it)
+0xc        4          u32 flags                                  # 1: on its time; 2: on the player within its radius
+0x10       4          float time                                 # the match clock it fires at (flag 1)
+0x14       4          float radiusSq                             # read as a radius: squared and scaled at load (flag 2)
+0x18       4          i32 fired                                  # 1: fires this frame (its first way point's commands run; then disarmed)
 
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
+0xf30dc8   0x3d0900   u32 objectColours[1000000]                 # (by use) the map objects' shading colours (each object's run: MapObject +0x280)
+0x13016c8  4          i32 objectColourCount                      # dwords of it used (over 1000000: a fatal message)
+0x13016cc  4          i32 mapShaded                              # (by use) 1: the map brings its objects' shading (not worked out)
+0x130b440  0xfa00     char objectNames[1000][0x40]               # (by use) the map objects' type names
+0x131ae40  4          i32 objectNameCount
+0x20f2dac  0x60       u32 thrustShapes[3][8]                     # (by use) the thrust effects' shapes: plasma, ion, gravity (eight frames each)
+0x20f2e74  0x20       u32 effectShapes[8]                        # shell / rail / blade fire, shell / rail / lightning / missile / homing bullet
+0x20f2f3c  4          i32 effectShapesReset                      # (unclear) cleared when the effects' shapes are looked up
+0x20fcd40  4          i32 clockSeconds                           # (by use) the match clock: whole seconds (triggers' times)
+0x20fcd44  4          float clockFraction                        # and the part of a second
+0x2149208  0x100      char scriptName[0x100]                     # (by use) the .scp file running (script_runScpFile)
+0x2149308  4          i32 scriptMode                             # its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks)
+0x214930c  4          i32 scriptRunning
 0x14d1ab4  0x5c300    ActorInfo actorInfo[32]                    # (Scene.actorInfo: mechs and weapons)
-0xdc0f10   0x75300    u8 pathPoints[10000][0x30]                 # (by use) the path points (0x30 bytes each) the way points run over
-0xe36210   4          i32 pathPointCount
+0xdc0f10   0x75300    u8 commands[10000][0x30]                   # (by use) the actor commands (0x30 bytes each) the way points run
+0xe36210   4          i32 commandCount
 0xe36214   0x4e20     WayPoint wayPoints[1000]
 0xe3b034   4          i32 wayPointCount
-0xe3b038   0x18f0     Trigger triggers[228]                      # (the size up to triggerCount: 228 records)
+0xe3b038   0x15e0     Trigger triggers[200]
+0xe3c618   0x320      i32 triggerFired[200]                      # (by use) 1: the trigger fired this frame
 0xe3c938   4          i32 triggerCount
 0x13c9b28  4          i32 objectFreeHint                         # (by use) the next free map object slot (at most 999)
 0x13c9b2c  4          i32 objectSerial                           # the next map object's id

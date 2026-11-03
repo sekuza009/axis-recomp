@@ -1,12 +1,12 @@
 /* frame_loops.c: the scene's per-frame passes over its slots: each slot in use (its first dword 1) updated, unless
-   the game is paused (+0x2149308 set with +0x214930c 1). The count is read again after each slot. */
+   a script holds the actors (scriptMode set with scriptRunning 1). The count is read again after each slot. */
 #include "../game.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-static int paused(void *s) { return FIELD(int, s, 0x2149308) && FIELD(int, s, 0x214930c) == 1; }
+static int paused(void *s) { return ST->scriptMode && ST->scriptRunning == 1; }   /* (a script holds the actors) */
 
 /* 0x47d000 (thiscall on the scene): the bullets (0x4e8-byte slots from +0x202ef38, +0x20a99b4 of them). Its callers
    ignore the eax it leaves */
@@ -75,12 +75,12 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 		if (ST->actors[i].active == 1)
 			actor_processFrame(s, i, dt);
 	script_processTriggers(s);
-	long double t = (long double)dt + FIELD(float, s, 0x20fcd44);
-	FIELD(float, s, 0x20fcd44) = (float)t;
+	long double t = (long double)dt + ST->clockFraction;
+	ST->clockFraction = (float)t;
 	if (t > k_1f) {   /* 1 */
 		int whole = ftol(t);
-		FIELD(int, s, 0x20fcd40) += whole;
-		FIELD(float, s, 0x20fcd44) = (float)(t - whole);
+		ST->clockSeconds += whole;
+		ST->clockFraction = (float)(t - whole);
 	}
 }
 
@@ -143,39 +143,38 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
    fired list (+0xe3c618, one dword each, the others 0) */
 void THISCALL (script_processTriggers)(u8 *s)
 {
-#define COUNT FIELD(int, s, 0xe3c938)
-#define TRIGGER(i) ((u8 *)&ST->triggers[i])
+#define COUNT ST->triggerCount
 	for (int i = 0; i < COUNT; i++) {
-		u8 *t = TRIGGER(i);
-		if (FIELD(int, t, 8) != 1)
+		Trigger *t = &ST->triggers[i];
+		if (t->armed != 1)
 			continue;
-		u32 flags = FIELD(u32, t, 0xc);
+		u32 flags = t->flags;
 		if (flags & 1) {
-			long double now = (long double)FIELD(int, s, 0x20fcd40) + FIELD(float, s, 0x20fcd44);
-			if (now >= FIELD(float, t, 0x10))
-				FIELD(int, t, 0x18) = 1;
+			long double now = (long double)ST->clockSeconds + ST->clockFraction;
+			if (now >= t->time)
+				t->fired = 1;
 		}
 		int player = ST->playerActor;
 		if (flags & 2 && player >= 0) {
 			const float *at = (const float *)(s + 0x1cd94fc + player * 0x8888);
-			const float *point = FIELD(const float *, t, 4);
+			const float *point = ((const float *)t->wayPoints);
 			long double dx = (long double)at[0] - point[0], dy = (long double)at[1] - point[1], dz = (long double)at[2] - point[2];
-			if (!(dz * dz + dy * dy + dx * dx >= FIELD(float, t, 0x14)))
-				FIELD(int, t, 0x18) = 1;
+			if (!(dz * dz + dy * dy + dx * dx >= t->radiusSq))
+				t->fired = 1;
 		}
 	}
 	for (int i = 0; i < COUNT; i++) {
-		u8 *t = TRIGGER(i);
-		if (FIELD(int, t, 0x18) == 1) {
+		Trigger *t = &ST->triggers[i];
+		if (t->fired == 1) {
 			script_processCommandBy(s, -1, i, 0);
-			FIELD(int, t, 0x18) = 0;
-			FIELD(int, t, 8) = 0;
-			FIELD(int, s, 0xe3c618 + i * 4) = 1;
+			t->fired = 0;
+			t->armed = 0;
+			ST->triggerFired[i] = 1;
 		} else
-			FIELD(int, s, 0xe3c618 + i * 4) = 0;
+			ST->triggerFired[i] = 0;
 	}
 #undef COUNT
-#undef TRIGGER
+
 }
 
 /* 0x49d150 (thiscall on the scene): the camera's actor (+0x234240d, none when negative): how far it moved since the
@@ -209,7 +208,7 @@ void THISCALL (effect_initTextures)(u8 *s)
 {
 	static const u32 sets[3][2] = { { STR(0x4c8170, "Effect\\PlasmaThrust-%d"), 0x20f2dac }, { STR(0x4c815c, "Effect\\IonThrust-%d"), 0x20f2dcc }, { STR(0x4c8144, "Effect\\GravityThrust-%d"), 0x20f2dec } };
 	static const u32 singles[8] = { STR(0x4c8130, "Effect\\Shell-Fire"), STR(0x4c811c, "Effect\\Shell-Bullet"), STR(0x4c8108, "Effect\\Rail-Fire"), STR(0x4c80f4, "Effect\\Blade-Fire"), STR(0x4c80e0, "Effect\\Rail-Bullet"), STR(0x4c80c8, "Effect\\Lightning-Bullet"), STR(0x4c80b0, "Effect\\Missile-Bullet"), STR(0x4c8098, "Effect\\Homing-Bullet") };
-	FIELD(int, s, 0x20f2f3c) = 0;
+	ST->effectShapesReset = 0;
 	char name[0x100];
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
@@ -217,7 +216,7 @@ void THISCALL (effect_initTextures)(u8 *s)
 			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName(s + 0x19e188c, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
-		FIELD(u32, s, 0x20f2e74 + k * 4) = shape_getByName(s + 0x19e188c, (const char *)RELOC(singles[k]), 1);
+		ST->effectShapes[k] = shape_getByName(s + 0x19e188c, (const char *)RELOC(singles[k]), 1);
 }
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
@@ -228,69 +227,69 @@ void THISCALL (effect_initTextures)(u8 *s)
    ignore the eax it leaves */
 void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 {
-#define TRIGGER(i, offset) FIELD(int, s, 0xe3b03c + (i) * 0x1c + (offset))
 #define ACTOR(i, type, offset) FIELD(type, s, 0x1cd93a8 + (i) * 0x8888 + (offset))
 	u8 *actor = a >= 0 ? (u8 *)&ST->actors[a] : NULL;
-	u8 *e = FIELD(u8 *, s, 0xe3b03c + trig * 0x1c) + entry * 0x14;
+	Player *ac = (Player *)actor;
+	WayPoint *e = (WayPoint *)(ST->triggers[trig].wayPoints + entry * 0x14);
 	char name[0x100];
-	for (int i = 0; i < FIELD(int, e, 0xc); i++) {
-		u32 *c = (u32 *)(FIELD(u8 *, e, 0x10) + i * 0x30);
+	for (int i = 0; i < e->commandCount; i++) {
+		u32 *c = (u32 *)(e->commands + i * 0x30);
 		switch (c[0]) {
-		case 0: TRIGGER(c[1], 4) = 1; break;
-		case 1: TRIGGER(c[1], 4) = 0; break;
-		case 2: TRIGGER(c[1], 0x14) = 1; break;
+		case 0: ST->triggers[c[1]].armed = 1; break;
+		case 1: ST->triggers[c[1]].armed = 0; break;
+		case 2: ST->triggers[c[1]].fired = 1; break;
 		case 3: stage_triggerActionNone(s, c[1]); break;
-		case 4: if (actor) FIELD(u32, actor, 0x8804) = c[1]; break;
-		case 5: if (actor) FIELD(u32, actor, 0x8808) = c[1]; break;
+		case 4: if (actor) BITS(ac->botWait) = c[1]; break;
+		case 5: if (actor) (*(u32 *)&ac->botWaitTrigger) = c[1]; break;
 		case 7:
 			if (actor) {
-				FIELD(u32, actor, 0x87f8) = c[1];
-				FIELD(u32, actor, 0x87fc) = c[2];
+				ac->target1 = c[1];
+				ac->target2 = c[2];
 			}
 			break;
 		case 8:
-			if (actor && FIELD(int, actor, 0x8820) >= 0)
-				TRIGGER(c[1], 0x14) = 1;
+			if (actor && ac->botTarget >= 0)
+				ST->triggers[c[1]].fired = 1;
 			break;
 		case 9:
-			if (actor && FIELD(int, actor, 0x8820) >= 0)
+			if (actor && ac->botTarget >= 0)
 				stage_triggerActionNone(s, c[1]);
 			break;
-		case 10: if (actor) FIELD(int, actor, 0x78) = 0; break;
-		case 11: if (actor) FIELD(int, actor, 0x78) = 1; break;
+		case 10: if (actor) (*(int *)&ac->spawn78) = 0; break;
+		case 11: if (actor) (*(int *)&ac->spawn78) = 1; break;
 		case 12:
 			if (actor) {
-				FIELD(int, actor, 0x8804) = 0;
-				FIELD(int, actor, 0x8808) = -1;
-				FIELD(u32, actor, 0x50) = FIELD(u32, actor, 0x68);
+				(*(int *)&ac->botWait) = 0;
+				ac->botWaitTrigger = -1;
+				BITS(ac->speed) = BITS(ac->topSpeed);
 				FIELD(int, actor, 0x880c) = 0;
-				FIELD(int, actor, 0x8810) = FIELD(int, actor, 0x8814) = FIELD(int, actor, 0x8818) = FIELD(int, actor, 0x881c) = -1;
+				ac->lookActor = ac->lookPath = ac->lookPoint = ac->followTarget = -1;
 			}
 			break;
 		case 13:
 			if (actor)
-				FIELD(float, actor, 0x50) = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
+				ac->speed = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
 			break;
 		case 14: if (actor) FIELD(int, actor, 0x880c) = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
 		case 16: ACTOR(c[1], int, 0x128) = 0; break;
 		case 17: actor_deactivate((Stage *)s, c[1]); break;
-		case 18: if (actor) FIELD(u32, actor, 0x8810) = c[1]; break;
+		case 18: if (actor) (*(u32 *)&ac->lookActor) = c[1]; break;
 		case 19:
 			if (actor) {
-				FIELD(u32, actor, 0x8814) = c[1];
-				FIELD(u32, actor, 0x8818) = c[2];
+				ac->lookPath = c[1];
+				ac->lookPoint = c[2];
 			}
 			break;
 		case 20:   /* the actor's weapon holding item c[1] selected */
 			if (actor) {
 				for (int k = 0; k < 6; k++)
-					if (FIELD(u32, s, 0x1561e88 + FIELD(int, actor, 0x10c) * 0x47fd2 + k * 4) == c[1])
+					if (FIELD(u32, s, 0x1561e88 + ac->player * 0x47fd2 + k * 4) == c[1])
 						actor_selectWeapon((Stage *)s, a, k);
-				FIELD(int, actor, 0x46c) = 1;
+				ac->inFire = 1;
 			}
 			break;
-		case 21: if (actor) FIELD(u32, actor, 0x881c) = c[1]; break;
+		case 21: if (actor) (*(u32 *)&ac->followTarget) = c[1]; break;
 		case 22:
 			ACTOR(c[1], int, 0x87f8) = -1;
 			ACTOR(c[1], int, 0x87fc) = -1;
@@ -324,7 +323,6 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 		case 31: object_deactivate(s, c[1]); break;
 		}
 	}
-#undef TRIGGER
 #undef ACTOR
 }
 
@@ -349,13 +347,13 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 {
 	u8 *obj = (u8 *)&ST->objects[i];
 	int idx = 0;
-	for (; idx < FIELD(int, s, 0x131ae40); idx++)
+	for (; idx < ST->objectNameCount; idx++)
 		if (!strcmp((const char *)RELOC(type), (const char *)s + 0x130b440 + idx * 0x40))
 			break;
-	if (idx == FIELD(int, s, 0x131ae40)) {
+	if (idx == ST->objectNameCount) {
 		if (idx >= 1000)
 			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
-		idx = FIELD(int, s, 0x131ae40)++;
+		idx = ST->objectNameCount++;
 		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
 	FIELD(int, obj, 0) = ST->objectSerial++;
@@ -386,11 +384,11 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)RELOC(type), 1);
 	FIELD(u8 *, obj, 0x27c) = shape;
 	for (int r = 0; r < 2; r++) {
-		int need = FIELD(int, s, 0x13016c8) + FIELD(int, shape, 0x18);
+		int need = ST->objectColourCount + FIELD(int, shape, 0x18);
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
-		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + FIELD(int, s, 0x13016c8) * 4;
-		FIELD(int, s, 0x13016c8) += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
+		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + ST->objectColourCount * 4;
+		ST->objectColourCount += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
 	}
 	FIELD(int, obj, 0x288) = 1;
 	FIELD(u32, obj, 0x274) = FIELD(u32, type, 0xa8);
@@ -406,7 +404,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		memcpy(obj + 0x2bc, obj + 0x58, 12);
 	FIELD(int, obj, 0x2a8) = 0;
 	FIELD(int, obj, 0x2c8) = 0;
-	if (FIELD(int, s, 0x13016cc) == 0)
+	if (ST->mapShaded == 0)
 		shape_shadeParts(FIELD(u32 *, obj, 0x280), 1, (Model *)FIELD(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9ccffc),
 		                 (const float *)(obj + 0x134));
 }

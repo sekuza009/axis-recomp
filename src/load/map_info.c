@@ -7,7 +7,7 @@
 #define fatal4(format, a, b) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int)((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (+0xe3b034) and 0x14-byte records (+0xe36214), each
-   given its run of 0x30-byte points (+0x10: from +0xdc0f10; +0xc: its length); the points' total against +0xe36210.
+   given its run of 0x30-byte actor commands (+0x10: from +0xdc0f10; +0xc: its length); the commands' total against +0xe36210.
    Its caller ignores the eax it leaves */
 void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 {
@@ -18,11 +18,11 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
 		WayPoint *r = &((Stage *)scene)->wayPoints[i];
-		r->points = scene + 0xdc0f10 + total * 0x30;
-		total += r->pointCount;
+		r->commands = scene + 0xdc0f10 + total * 0x30;
+		total += r->commandCount;
 	}
-	if (total != st->pathPointCount)
-		fatal4(STR(0x4c7d24, "mismatch between total num of actor c..."), total, st->pathPointCount);
+	if (total != st->commandCount)
+		fatal4(STR(0x4c7d24, "mismatch between total num of actor c..."), total, st->commandCount);
 }
 
 /* 0x48b530: the triggers: their count (+0xe3c938) and 0x1c-byte records (+0xe3b038), each given its run of way points
