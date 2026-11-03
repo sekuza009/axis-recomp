@@ -46,7 +46,7 @@ def resolve(stype, o):
 		if not off <= o < off + size:
 			continue
 		rel = o - off
-		esize = SIZE.get(ty) or (structs[ty][0] if ty in structs else None)
+		esize = SIZE.get(ty) or (4 if ty.endswith('*') else None) or (structs[ty][0] if ty in structs else None)
 		if not esize:
 			return None
 		k, r = divmod(rel, esize)
@@ -146,12 +146,12 @@ def sub(m):
 		return m.group(0)
 	name, fty = f
 	views = {cls(k) for k in kinds[off]}
-	if kinds[off] == {fty}:
+	if kinds[off] == {fty} or (fty.endswith('*') and kinds[off] == {fty.replace(' ', '')}) :
 		done += 1
 		return '%s->%s' % (PTR, name)
 	if views == {cls(fty)} == {'int32'}:
 		done += 1
-		if SAME.get(ty) == fty:
+		if SAME.get(ty, ty) == fty:
 			return '%s->%s' % (PTR, name)
 		return ('(*(%s *)&%s->%s)' if is_lvalue(m) else '((%s)%s->%s)') % (ty, PTR, name)
 	other['%s %s as %s' % (hex(off), name, '/'.join(sorted(kinds[off])))] += 1

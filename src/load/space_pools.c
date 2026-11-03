@@ -79,10 +79,11 @@ void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space,
 void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32 *mx)
 {
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
+#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
 	u32 *block = FIELD(u32 *, 0x48);
 	if (!block) {
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
-			FIELD(int, 0x1c), FIELD(int, 0x10), FIELD(int, 0x2c), FIELD(int, 0x20), FIELD(int, 0x3c), FIELD(int, 0x30), FIELD(int, 0x4c), FIELD(int, 0x40));
+			SP->planes.used, SP->planes.count, SP->nodes.used, SP->nodes.count, SP->units.used, SP->units.count, SP->blocks.used, SP->blocks.count);
 		return 0;
 	}
 	u32 *next = (u32 *)RELOC(block[0x4c / 4]);
@@ -91,7 +92,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 		next[0x48 / 4] = 0;
 	} else
 		FIELD(u32 *, 0x48) = 0;
-	FIELD(int, 0x4c)++;
+	SP->blocks.used++;
 	spaceBlock_clear(block);
 	for (int i = 0; i < 3; i++)
 		block[i] = mn[i];
@@ -99,6 +100,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 		block[3 + i] = mx[i];
 	return block;
 #undef FIELD
+#undef SP
 }
 
 /* 0x482320 (thiscall on the space): a unit's planes built (space_buildPlanes) and, when there are any, linked at the
@@ -137,6 +139,7 @@ void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u3
 void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 a, u32 b, int depth)
 {
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
+#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
 	space_resetPlanes(space);
 	space_resetNodes(space);
 	space_resetUnits(space);
@@ -145,25 +148,26 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 		FIELD(u32, 0x5c + i * 4) = mn[i];
 	FIELD(u32, 0x68) = mx[0];
 	FIELD(u32, 0x6c) = mx[1];
-	FIELD(int, 0x78) = ny;
+	SP->ny = ny;
 	FIELD(u32, 0x70) = mx[2];
-	FIELD(int, 0x74) = nx;
-	FIELD(int, 0x7c) = nz;
-	int cells = FIELD(int, 0x58) = nx * ny * nz;
+	SP->nx = nx;
+	SP->nz = nz;
+	int cells = SP->cellCount = nx * ny * nz;
 	if (cells <= 0)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
-	else if (cells > FIELD(int, 0x50))
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, FIELD(int, 0x50));
-	FIELD(u32, 0x90) = b;
-	FIELD(u32, 0x8c) = a;
-	FIELD(int, 0x94) = depth;
-	FIELD(float, 0x80) = (float)(((long double)FIELD(float, 0x70) - FIELD(float, 0x64)) / FIELD(int, 0x74));
-	FIELD(float, 0x84) = (float)(((long double)FIELD(float, 0x68) - FIELD(float, 0x5c)) / FIELD(int, 0x78));
-	FIELD(float, 0x88) = (float)(((long double)FIELD(float, 0x6c) - FIELD(float, 0x60)) / FIELD(int, 0x7c));
+	else if (cells > SP->cellCapacity)
+		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, SP->cellCapacity);
+	SP->b = b;
+	SP->a = a;
+	SP->depth = depth;
+	SP->cellSize[0] = (float)(((long double)FIELD(float, 0x70) - SP->min[2]) / SP->nx);
+	SP->cellSize[1] = (float)(((long double)FIELD(float, 0x68) - SP->min[0]) / SP->ny);
+	SP->cellSize[2] = (float)(((long double)FIELD(float, 0x6c) - SP->min[1]) / SP->nz);
 	if (depth > 8)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
-	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
+	memset(FIELD(void *, 0x54), 0xff, ((u32)SP->cellCapacity) * 2);
 #undef FIELD
+#undef SP
 }
 
 /* 0x4813e0 (thiscall on the space): sized for the pools: planes (0xac bytes each, +0x10 of them), nodes (0x10, +0x20),
@@ -174,12 +178,13 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int blocks, int cells, void *mem, int size)
 {
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
+#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
 	CollisionVolume_release(space);
-	FIELD(int, 0x30) = units;
-	FIELD(int, 0x40) = blocks;
-	FIELD(int, 0x10) = planes;
-	FIELD(int, 0x20) = nodes;
-	FIELD(int, 0x50) = cells;
+	SP->units.count = units;
+	SP->blocks.count = blocks;
+	SP->planes.count = planes;
+	SP->nodes.count = nodes;
+	SP->cellCapacity = cells;
 	int need = FIELD(int, 4) = planes * 0xac + nodes * 0x10 + units * 0x14 + blocks * 0x50 + cells * 2;
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
@@ -192,22 +197,23 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);
-	FIELD(u8 *, 0x14) = FIELD(u8 *, 0x18) = block;
-	int at = FIELD(int, 0x10) * 0xac;
-	FIELD(u8 *, 0x24) = block + at;
-	at += FIELD(int, 0x20) * 0x10;
-	FIELD(u8 *, 0x28) = FIELD(u8 *, 0x24);
-	FIELD(u8 *, 0x34) = block + at;
-	at += FIELD(int, 0x30) * 0x14;
-	FIELD(u8 *, 0x38) = FIELD(u8 *, 0x34);
-	FIELD(u8 *, 0x44) = FIELD(u8 *, 0x48) = block + at;
-	FIELD(u8 *, 0x54) = block + FIELD(int, 0x40) * 0x50 + at;
-	memset(FIELD(void *, 0x54), 0xff, FIELD(u32, 0x50) * 2);
+	SP->planes.records = SP->planes.freeHead = block;
+	int at = SP->planes.count * 0xac;
+	SP->nodes.records = block + at;
+	at += SP->nodes.count * 0x10;
+	SP->nodes.freeHead = SP->nodes.records;
+	SP->units.records = block + at;
+	at += SP->units.count * 0x14;
+	SP->units.freeHead = SP->units.records;
+	SP->blocks.records = FIELD(u8 *, 0x48) = block + at;
+	FIELD(u8 *, 0x54) = block + SP->blocks.count * 0x50 + at;
+	memset(FIELD(void *, 0x54), 0xff, ((u32)SP->cellCapacity) * 2);
 	space_resetPlanes(space);
 	space_resetNodes(space);
 	space_resetUnits(space);
 	space_resetBlocks(space);
 #undef FIELD
+#undef SP
 }
 
 /* 0x482e30 (thiscall on the collision space): a sphere of radius r swept from pos along vel in whole steps of length
