@@ -258,13 +258,45 @@ typedef struct PlayerRecord {
 	u8 _pad0047fca[0x8];
 } PlayerRecord;
 
-/* a shape (a map object's model, an object list's entries...; the size is unknown: only the fields used) */
+/* a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...) */
 typedef struct Model {
-	u8 _pad0000000[0x18];
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4: its data block (take_block): the parts and their tables */
+	u8 *block;   /* +0x8 */
+	i32 ownsBlock;   /* +0xc: 1: allocated here (freed with it) */
+	i32 partCount;   /* +0x10 */
+	u8 *parts;   /* +0x14: partCount ShapePart records (0x80 bytes), at the block's start */
 	i32 colourCount;   /* +0x18: (by use) dwords in a shading colour buffer for it */
-	u8 _pad000001c[0x10];
+	u8 _pad000001c[0x4];
+	float centre[3];   /* +0x20: (by use) a point of the file's header: the box starts from it */
 	float radius;   /* +0x2c: its bounding sphere */
+	u32 version;   /* +0x30: 0x71110300: the current format (older: 0x68-byte parts) */
+	float low[3];   /* +0x34: the box over its parts */
+	float high[3];   /* +0x40 */
 } Model;
+
+/* a shape's part (Model.parts): one material's vertices and primitives */
+typedef struct ShapePart {
+	char name[0x40];   /* +0x0: (by use) its material's name (the texture looked up by it: names.c) */
+	u8 _pad0000040[0x4];
+	i32 texture;   /* +0x44: its texture's id (-1 / 0 none) */
+	i32 colourBase;   /* +0x48: its first vertex in the shape's colour buffer */
+	i32 vertexCount;   /* +0x4c */
+	u8 *vertices;   /* +0x50: 12 bytes each */
+	u8 *normals;   /* +0x54: 12 bytes each */
+	u8 *colours;   /* +0x58: 4 bytes each */
+	float *texCoords;   /* +0x5c: 2 floats each */
+	i32 primCount;   /* +0x60 */
+	u8 *prims;   /* +0x64: ShapePrim records (0xc bytes) */
+	float box[6];   /* +0x68: its low and high corners */
+} ShapePart;
+
+/* a part's primitive: its index list */
+typedef struct ShapePrim {
+	u8 _pad0000000[0x4];
+	i32 indexCount;   /* +0x4 */
+	u8 *indices;   /* +0x8: 4 bytes each */
+} ShapePrim;
 
 /* an object list's entry (ObjectList.entries) */
 typedef struct ListedObject {
@@ -1196,9 +1228,33 @@ _Static_assert(offsetof(PlayerRecord, legs) == 0x31c && sizeof(((PlayerRecord *)
 _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
 _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
 _Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
+_Static_assert(offsetof(Model, blockSize) == 0x4 && sizeof(((Model *)0)->blockSize) == 0x4, "scene.fields: Model.blockSize");
+_Static_assert(offsetof(Model, block) == 0x8 && sizeof(((Model *)0)->block) == 0x4, "scene.fields: Model.block");
+_Static_assert(offsetof(Model, ownsBlock) == 0xc && sizeof(((Model *)0)->ownsBlock) == 0x4, "scene.fields: Model.ownsBlock");
+_Static_assert(offsetof(Model, partCount) == 0x10 && sizeof(((Model *)0)->partCount) == 0x4, "scene.fields: Model.partCount");
+_Static_assert(offsetof(Model, parts) == 0x14 && sizeof(((Model *)0)->parts) == 0x4, "scene.fields: Model.parts");
 _Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
+_Static_assert(offsetof(Model, centre) == 0x20 && sizeof(((Model *)0)->centre) == 0xc, "scene.fields: Model.centre");
 _Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
-_Static_assert(sizeof(Model) == 0x30, "scene.fields: size of Model");
+_Static_assert(offsetof(Model, version) == 0x30 && sizeof(((Model *)0)->version) == 0x4, "scene.fields: Model.version");
+_Static_assert(offsetof(Model, low) == 0x34 && sizeof(((Model *)0)->low) == 0xc, "scene.fields: Model.low");
+_Static_assert(offsetof(Model, high) == 0x40 && sizeof(((Model *)0)->high) == 0xc, "scene.fields: Model.high");
+_Static_assert(sizeof(Model) == 0x4c, "scene.fields: size of Model");
+_Static_assert(offsetof(ShapePart, name) == 0x0 && sizeof(((ShapePart *)0)->name) == 0x40, "scene.fields: ShapePart.name");
+_Static_assert(offsetof(ShapePart, texture) == 0x44 && sizeof(((ShapePart *)0)->texture) == 0x4, "scene.fields: ShapePart.texture");
+_Static_assert(offsetof(ShapePart, colourBase) == 0x48 && sizeof(((ShapePart *)0)->colourBase) == 0x4, "scene.fields: ShapePart.colourBase");
+_Static_assert(offsetof(ShapePart, vertexCount) == 0x4c && sizeof(((ShapePart *)0)->vertexCount) == 0x4, "scene.fields: ShapePart.vertexCount");
+_Static_assert(offsetof(ShapePart, vertices) == 0x50 && sizeof(((ShapePart *)0)->vertices) == 0x4, "scene.fields: ShapePart.vertices");
+_Static_assert(offsetof(ShapePart, normals) == 0x54 && sizeof(((ShapePart *)0)->normals) == 0x4, "scene.fields: ShapePart.normals");
+_Static_assert(offsetof(ShapePart, colours) == 0x58 && sizeof(((ShapePart *)0)->colours) == 0x4, "scene.fields: ShapePart.colours");
+_Static_assert(offsetof(ShapePart, texCoords) == 0x5c && sizeof(((ShapePart *)0)->texCoords) == 0x4, "scene.fields: ShapePart.texCoords");
+_Static_assert(offsetof(ShapePart, primCount) == 0x60 && sizeof(((ShapePart *)0)->primCount) == 0x4, "scene.fields: ShapePart.primCount");
+_Static_assert(offsetof(ShapePart, prims) == 0x64 && sizeof(((ShapePart *)0)->prims) == 0x4, "scene.fields: ShapePart.prims");
+_Static_assert(offsetof(ShapePart, box) == 0x68 && sizeof(((ShapePart *)0)->box) == 0x18, "scene.fields: ShapePart.box");
+_Static_assert(sizeof(ShapePart) == 0x80, "scene.fields: size of ShapePart");
+_Static_assert(offsetof(ShapePrim, indexCount) == 0x4 && sizeof(((ShapePrim *)0)->indexCount) == 0x4, "scene.fields: ShapePrim.indexCount");
+_Static_assert(offsetof(ShapePrim, indices) == 0x8 && sizeof(((ShapePrim *)0)->indices) == 0x4, "scene.fields: ShapePrim.indices");
+_Static_assert(sizeof(ShapePrim) == 0xc, "scene.fields: size of ShapePrim");
 _Static_assert(offsetof(ListedObject, shape) == 0x0 && sizeof(((ListedObject *)0)->shape) == 0x4, "scene.fields: ListedObject.shape");
 _Static_assert(offsetof(ListedObject, colours) == 0x8 && sizeof(((ListedObject *)0)->colours) == 0x4, "scene.fields: ListedObject.colours");
 _Static_assert(offsetof(ListedObject, matrix) == 0xc && sizeof(((ListedObject *)0)->matrix) == 0x40, "scene.fields: ListedObject.matrix");

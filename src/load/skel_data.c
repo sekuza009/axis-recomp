@@ -190,7 +190,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		if (i < 64)
 			found[i] = shape;
 		if (shape)
-			AT(int, list, 0x18) += AT(int, shape, 0x18);
+			AT(int, list, 0x18) += ((Model *)shape)->colourCount;
 	}
 	AT(int, list, 4) = (AT(int, list, 0x10) * 25 + AT(int, list, 0x1c)) * 4;
 	if (AT(int, list, 0x2c) == 1)
@@ -406,6 +406,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
 	u8 *shape = mg->items + i * 0x4c;
+	Model *md = (Model *)shape;
 	if (added) {
 		const char *own = (const char *)mg->nodes + i * 0x4c;
 		u8 *mem = mg->data;
@@ -420,7 +421,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 			model_loadFrom(shape, path, at, room);
 		}
 		if (mem)
-			mg->dataUsed += AT(int, shape, 4);
+			mg->dataUsed += md->blockSize;
 		shape_bindTextureBy(shape, cache + 0x130, mg->bindArgs[0], mg->bindArgs[1], mg->bindArgs[2],
 		                    mg->bindArgs[3], mg->bindArgs[4], mg->bindArgs[5], mg->bindArgs[6]);
 		mg->count++;
@@ -440,42 +441,44 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
    callers ignore the eax it leaves */
 void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 {
+	Model *md = (Model *)shape;
 	Model_release(shape);
 	crt_fread(shape, 0x34, 1, f);
-	int current = AT(u32, shape, 0x30) == 0x71110300;
+	int current = md->version == 0x71110300;
 	if (!current) {
 		long at = crt_ftell(f);
 		crt_fseek(f, -4, 1);   /* SEEK_CUR */
-		AT(int, shape, 4) += AT(int, shape, 0x10) * 0x18;
+		md->blockSize += md->partCount * 0x18;
 		crt_fseek(f, at, 0);   /* SEEK_SET */
 	}
 	take_block(shape, mem, size, (char *)OBJ(g_logShape), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
-	u8 *parts = AT(u8 *, shape, 0x14) = AT(u8 *, shape, 8);
+	u8 *parts = md->parts = md->block;
 	if (current)
-		crt_fread(parts, 0x80, AT(u32, shape, 0x10), f);
+		crt_fread(parts, 0x80, ((u32)md->partCount), f);
 	else
-		for (int i = 0; i < AT(int, shape, 0x10); i++)
-			crt_fread(AT(u8 *, shape, 0x14) + i * 0x80, 0x68, 1, f);
-	int at = AT(int, shape, 0x10) * 0x80;
-	for (int i = 0; i < AT(int, shape, 0x10); i++) {
-		u8 *p = AT(u8 *, shape, 0x14) + i * 0x80;
-		AT(int, p, 0x44) = -1;
-		int n = AT(int, p, 0x4c);
+		for (int i = 0; i < md->partCount; i++)
+			crt_fread(md->parts + i * 0x80, 0x68, 1, f);
+	int at = md->partCount * 0x80;
+	for (int i = 0; i < md->partCount; i++) {
+		u8 *p = md->parts + i * 0x80;
+		ShapePart *sp = (ShapePart *)p;
+		sp->texture = -1;
+		int n = sp->vertexCount;
 		static const u8 sizes[4] = { 12, 12, 4, 8 };   /* vertices, normals, colours, texture coordinates */
 		for (int t = 0; t < 4; t++) {
-			AT(u8 *, p, 0x50 + t * 4) = AT(u8 *, shape, 8) + at;
+			AT(u8 *, p, 0x50 + t * 4) = md->block + at;
 			at += n * sizes[t];
 		}
 		for (int t = 0; t < 4; t++)
-			crt_fread(AT(u8 *, p, 0x50 + t * 4), sizes[t], AT(u32, p, 0x4c), f);
-		AT(u8 *, p, 0x64) = AT(u8 *, shape, 8) + at;
-		crt_fread(AT(u8 *, p, 0x64), 0xc, AT(u32, p, 0x60), f);
+			crt_fread(AT(u8 *, p, 0x50 + t * 4), sizes[t], ((u32)sp->vertexCount), f);
+		sp->prims = md->block + at;
+		crt_fread(sp->prims, 0xc, ((u32)sp->primCount), f);
 		at += 0xc;
-		for (int k = 0; k < AT(int, p, 0x60); k++) {
-			u8 *prim = AT(u8 *, p, 0x64) + k * 0xc;
-			AT(u8 *, prim, 8) = AT(u8 *, shape, 8) + at;
-			crt_fread(AT(u8 *, prim, 8), 4, AT(u32, prim, 4), f);
-			at += AT(int, prim, 4) * 4;
+		for (int k = 0; k < sp->primCount; k++) {
+			ShapePrim *prim = (ShapePrim *)(sp->prims + k * 0xc);
+			prim->indices = md->block + at;
+			crt_fread(prim->indices, 4, ((u32)prim->indexCount), f);
+			at += prim->indexCount * 4;
 		}
 	}
 	if (!current)
@@ -483,8 +486,8 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 	memcpy(shape + 0x34, shape + 0x20, 12);
 	memcpy(shape + 0x40, shape + 0x20, 12);
 	float *low = (float *)(RELOC(shape) + 0x34), *high = (float *)(RELOC(shape) + 0x40);
-	for (int i = 0; i < AT(int, shape, 0x10); i++) {
-		const float *box = (const float *)(AT(u8 *, shape, 0x14) + i * 0x80 + 0x68);
+	for (int i = 0; i < md->partCount; i++) {
+		const float *box = (const float *)(md->parts + i * 0x80 + 0x68);
 		for (int c = 0; c < 3; c++)
 			if (low[c] > box[c])
 				((u32 *)low)[c] = ((const u32 *)box)[c];
@@ -794,19 +797,20 @@ static char *face_start(char *line, void *f)
    texture and normal a. Returns 0 when it is a bare position */
 static int obj_corner(u8 *part, int i, char *corner, const float *vs, const float *ns, const float *ts)
 {
-	memcpy(GAME_VAR(u8 *, part + 0x50) + i * 12, vs + (crt_atoi(TOK(corner, SLASH)) - 1) * 3, 12);
+	ShapePart *sp = (ShapePart *)part;
+	memcpy(sp->vertices + i * 12, vs + (crt_atoi(TOK(corner, SLASH)) - 1) * 3, 12);
 	char *a = TOK(NULL, SLASH);
 	if (!a)
 		return 0;
 	int ai = crt_atoi(a) - 1;
 	char *b = TOK(NULL, SLASH);
-	float *uv = GAME_VAR(float *, part + 0x5c) + i * 2;
+	float *uv = sp->texCoords + i * 2;
 	if (!b) {
 		GAME_VAR(int, uv) = GAME_VAR(int, uv + 1) = 0;
-		memcpy(GAME_VAR(u8 *, part + 0x54) + i * 12, ns + ai * 3, 12);
+		memcpy(sp->normals + i * 12, ns + ai * 3, 12);
 	} else {
 		memcpy(uv, ts + ai * 2, 8);
-		memcpy(GAME_VAR(u8 *, part + 0x54) + i * 12, ns + (crt_atoi(b) - 1) * 3, 12);
+		memcpy(sp->normals + i * 12, ns + (crt_atoi(b) - 1) * 3, 12);
 	}
 	return 1;
 }
@@ -823,14 +827,15 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
    it leaves */
 void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 {
+	Model *md = (Model *)sh;
 	char line[0x100], last[0x100], c[4][0x20];
 	int nv = 0, nvn = 0, nvt = 0;
 	Model_release(sh);
-	GAME_VAR(int, sh + 0x10) = 0;
+	md->partCount = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
 		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl")))
-			GAME_VAR(int, sh + 0x10)++;
+			md->partCount++;
 		else if (!strcmp(t, (const char *)STR(0x4c4c60, "v")))
 			nv++;
 		else if (!strcmp(t, (const char *)STR(0x4c4c5c, "vn")))
@@ -844,25 +849,25 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				if (!TOK(NULL, LINE_END))
 					BAD_OBJ();
 			if (!TOK(NULL, LINE_END)) {
-				GAME_VAR(int, sh + 0x18) += 3;
+				md->colourCount += 3;
 				GAME_VAR(int, sh + 0x1c) += 1;
 			} else {
-				GAME_VAR(int, sh + 0x18) += 6;
+				md->colourCount += 6;
 				GAME_VAR(int, sh + 0x1c) += 2;
 			}
 		}
 	}
-	int parts = GAME_VAR(int, sh + 0x10);
+	int parts = md->partCount;
 	if (parts <= 0)
 		return;
-	int size = GAME_VAR(int, sh + 4) = (GAME_VAR(int, sh + 0x18) * 3 + GAME_VAR(int, sh + 0x1c)) * 0xc + parts * 0x8c;
+	int size = md->blockSize = (md->colourCount * 3 + GAME_VAR(int, sh + 0x1c)) * 0xc + parts * 0x8c;
 	float *vs, *ns, *ts;
 	int allocated;
 	if (!mem) {
-		GAME_VAR(void *, sh + 8) = operator_new(size);
-		if (!GAME_VAR(void *, sh + 8))
-			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), GAME_VAR(int, sh + 4));
-		GAME_VAR(int, sh + 0xc) = 1;
+		(*(void * *)&md->block) = operator_new(size);
+		if (!(*(void * *)&md->block))
+			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), md->blockSize);
+		md->ownsBlock = 1;
 		if (!(vs = operator_new(nv * 12)))
 			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bb4, "insufficient memory for vertexCoordAr..."), nv);
 		if (!(ns = operator_new(nvn * 12)))
@@ -874,19 +879,19 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		int need = nvt * 8 + (nvn + nv) * 0xc + size;
 		if (memSize < need)
 			sys_fatalErrorN((char *)OBJ(g_logShape), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), need, memSize);
-		GAME_VAR(u8 *, sh + 8) = mem;
-		GAME_VAR(int, sh + 0xc) = 0;
-		vs = (float *)(mem + GAME_VAR(int, sh + 4));
-		ns = (float *)(mem + GAME_VAR(int, sh + 4) + nv * 0xc);
-		ts = (float *)(mem + GAME_VAR(int, sh + 4) + (nvn + nv) * 0xc);
+		md->block = mem;
+		md->ownsBlock = 0;
+		vs = (float *)(mem + md->blockSize);
+		ns = (float *)(mem + md->blockSize + nv * 0xc);
+		ts = (float *)(mem + md->blockSize + (nvn + nv) * 0xc);
 		allocated = 0;
 	}
-	u8 *all = GAME_VAR(u8 *, sh + 0x14) = GAME_VAR(u8 *, sh + 8);
-	int at = GAME_VAR(int, sh + 0x10) << 7;
-	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
+	u8 *all = md->parts = md->block;
+	int at = md->partCount << 7;
+	for (int k = 0; k < md->partCount; k++) {
 		u8 *pt = all + k * 0x80;
 		GAME_VAR(int, pt) = 0;
-		GAME_VAR(int, pt + 0x44) = 0;
+		((ShapePart *)pt)->texture = 0;
 		for (int o = 0x4c; o <= 0x64; o += 4)
 			GAME_VAR(int, pt + o) = 0;
 	}
@@ -896,37 +901,37 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		char *t = TOK(line, SPACE);
 		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
 			off += 0x80;
-			GAME_VAR(int, GAME_VAR(u8 *, sh + 0x14) + 0x60 + off) = 1;
+			GAME_VAR(int, md->parts + 0x60 + off) = 1;
 		} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 			if (!face_start(line, f))
 				BAD_OBJ();
 			for (int k = 0; k < 2; k++)
 				if (!TOK(NULL, LINE_END))
 					BAD_OBJ();
-			GAME_VAR(int, GAME_VAR(u8 *, sh + 0x14) + 0x4c + off) += TOK(NULL, LINE_END) ? 6 : 3;
+			GAME_VAR(int, md->parts + 0x4c + off) += TOK(NULL, LINE_END) ? 6 : 3;
 		}
 	}
 	int corner = 0;
-	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
-		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80, *data = GAME_VAR(u8 *, sh + 8);
-		int n = GAME_VAR(int, pt + 0x4c);
-		GAME_VAR(u8 *, pt + 0x50) = data + at;
+	for (int k = 0; k < md->partCount; k++) {
+		u8 *pt = md->parts + k * 0x80, *data = md->block;
+		int n = ((ShapePart *)pt)->vertexCount;
+		((ShapePart *)pt)->vertices = data + at;
 		at += n * 12;
-		GAME_VAR(u8 *, pt + 0x54) = data + at;
+		((ShapePart *)pt)->normals = data + at;
 		at += n * 12;
-		GAME_VAR(u8 *, pt + 0x58) = data + at;
+		((ShapePart *)pt)->colours = data + at;
 		at += n * 4;
-		GAME_VAR(int, pt + 0x48) = corner;
+		((ShapePart *)pt)->colourBase = corner;
 		corner += n;
-		GAME_VAR(u8 *, pt + 0x5c) = data + at;
+		(*(u8 * *)&((ShapePart *)pt)->texCoords) = data + at;
 		at += n * 8;
-		GAME_VAR(int, pt + 0x60) = 1;
-		u32 *prim = GAME_VAR(u32 *, pt + 0x64) = (u32 *)(data + at);
+		((ShapePart *)pt)->primCount = 1;
+		u32 *prim = (*(u32 * *)&((ShapePart *)pt)->prims) = (u32 *)(data + at);
 		at += 0xc;
 		prim[0] = 4;
-		prim[1] = GAME_VAR(u32, pt + 0x4c);
-		prim[2] = (u32)(GAME_VAR(u8 *, sh + 8) + at);
-		at += GAME_VAR(int, pt + 0x4c) * 4;
+		prim[1] = ((u32)((ShapePart *)pt)->vertexCount);
+		prim[2] = (u32)(md->block + at);
+		at += ((ShapePart *)pt)->vertexCount * 4;
 	}
 	u8 *part = NULL;
 	int flip = 0, poff = 0;
@@ -963,14 +968,14 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				tp[1] = f32(crt_atof(TOK(NULL, LINE_END)));
 				tp += 2;
 			} else if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
-				part = GAME_VAR(u8 *, sh + 0x14) + poff;
+				part = md->parts + poff;
 				poff += 0x80;
 				for (char *piece = TOK(NULL, STR(0x4c4b04, "_")); piece; piece = TOK(NULL, STR(0x4c4b04, "_")))
 					strcpy(last, piece);
 				char *name = TOK(last, LINE_END);
 				strcpy((char *)part + 4, name);
 				part[(int)strlen(name) + 3] = 0;
-				GAME_VAR(int, part + 0x44) = -1;
+				((ShapePart *)part)->texture = -1;
 				next = 0;
 			} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
 				strcpy(c[0], face_start(line, f));
@@ -982,14 +987,14 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 				else
 					c[3][0] = 0;
 				int b = corner;
-				float *pv = GAME_VAR(float *, part + 0x50), *pn;
+				float *pv = (*(float * *)&((ShapePart *)part)->vertices), *pn;
 				obj_corner(part, b, c[0], vs, ns, ts);
 				obj_corner(part, b + 1, c[1], vs, ns, ts);
 				if (!obj_corner(part, b + 2, c[2], vs, ns, ts)) {
 					float tmp[3];
-					pv = GAME_VAR(float *, part + 0x50);
+					pv = (*(float * *)&((ShapePart *)part)->vertices);
 					const float *nrm = math_triangleNormal(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
-					pn = GAME_VAR(float *, part + 0x54);
+					pn = (*(float * *)&((ShapePart *)part)->normals);
 					memcpy(pn + (b + 2) * 3, nrm, 12);
 					memcpy(pn + (b + 1) * 3, pn + (b + 2) * 3, 12);
 					memcpy(pn + b * 3, pn + (b + 2) * 3, 12);
@@ -1005,9 +1010,9 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					memcpy(ts + (q + 2) * 2, ts + (q - 3) * 2, 8);
 					if (!obj_corner(part, b + 4, c[3], vs, ns, ts)) {
 						float tmp[3];
-						pv = GAME_VAR(float *, part + 0x50);
+						pv = (*(float * *)&((ShapePart *)part)->vertices);
 						const float *nrm = math_triangleNormal(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
-						pn = GAME_VAR(float *, part + 0x54);
+						pn = (*(float * *)&((ShapePart *)part)->normals);
 						memcpy(pn + (b + 4) * 3, nrm, 12);
 						memcpy(pn + q * 3, pn + (b + 4) * 3, 12);
 						memcpy(pn + (b + 5) * 3, pn + (b + 4) * 3, 12);
@@ -1018,17 +1023,17 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		}
 		corner = next;
 	}
-	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
-		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
-		for (int i = 0; i < GAME_VAR(int, pt + 0x4c); i++)
-			GAME_VAR(u32 *, GAME_VAR(u8 *, pt + 0x64) + 8)[i] = i;
+	for (int k = 0; k < md->partCount; k++) {
+		u8 *pt = md->parts + k * 0x80;
+		for (int i = 0; i < ((ShapePart *)pt)->vertexCount; i++)
+			GAME_VAR(u32 *, ((ShapePart *)pt)->prims + 8)[i] = i;
 	}
 	if (flip)
-		for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
-			u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
-			while (GAME_VAR(int, pt + 0x4c) > 0) {   /* (never moves on, as the original) */
+		for (int k = 0; k < md->partCount; k++) {
+			u8 *pt = md->parts + k * 0x80;
+			while (((ShapePart *)pt)->vertexCount > 0) {   /* (never moves on, as the original) */
 				k++;
-				float *v = GAME_VAR(float *, pt + 0x50), *n = GAME_VAR(float *, pt + 0x54);
+				float *v = (*(float * *)&((ShapePart *)pt)->vertices), *n = (*(float * *)&((ShapePart *)pt)->normals);
 				long double y = fld_m(&v[2]);
 				v[2] = f32(-fld_m(&v[1]));
 				v[1] = f32(y);
@@ -1039,10 +1044,10 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					n[c3] = f32(fmul_m(fld_m(&n[c3]), (const float *)ADDR(k_m1f)));
 			}
 		}
-	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
-		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
-		for (int i = 0; i < GAME_VAR(int, pt + 0x4c); i++)
-			GAME_VAR(u32 *, pt + 0x58)[i] = g_white;
+	for (int k = 0; k < md->partCount; k++) {
+		u8 *pt = md->parts + k * 0x80;
+		for (int i = 0; i < ((ShapePart *)pt)->vertexCount; i++)
+			(*(u32 * *)&((ShapePart *)pt)->colours)[i] = g_white;
 	}
 	if (allocated == 1) {
 		if (nv > 0)
@@ -1055,8 +1060,8 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	shape_relocate(sh);
 	memcpy(sh + 0x34, sh + 0x20, 12);
 	memcpy(sh + 0x40, sh + 0x20, 12);
-	for (int k = 0; k < GAME_VAR(int, sh + 0x10); k++) {
-		u8 *pt = GAME_VAR(u8 *, sh + 0x14) + k * 0x80;
+	for (int k = 0; k < md->partCount; k++) {
+		u8 *pt = md->parts + k * 0x80;
 		for (int a = 0; a < 3; a++)   /* (the values copied as bits: a NaN stays as it is) */
 			if (fld_m((const float *)(sh + 0x34) + a) > *((const float *)(pt + 0x68) + a))
 				memcpy(sh + 0x34 + a * 4, pt + 0x68 + a * 4, 4);

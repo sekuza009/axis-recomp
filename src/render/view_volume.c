@@ -281,7 +281,8 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 	Mat4_multiply(clip_m, (const float *)(view + 0x9130), m);
 	for (int i = 0; i < GAME_VAR(int, model + 0x10); i++) {
 		u8 *part = GAME_VAR(u8 *, model + 0x14) + i * 0x80;
-		if (GAME_VAR(int, part + 0x60) <= 0)
+		ShapePart *sp = (ShapePart *)part;
+		if (sp->primCount <= 0)
 			continue;
 		if (cull == 1) {
 			const float *lo = (const float *)(part + 0x68), *hi = (const float *)(part + 0x74);
@@ -311,7 +312,7 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 			if ((all & 0x11) || (all & 0x111100))
 				continue;
 		}
-		int list = (material >= 0 ? material : GAME_VAR(int, part + 0x44)) + 1;
+		int list = (material >= 0 ? material : sp->texture) + 1;
 		if (((ViewVolume *)view)->entryCount >= ((ViewVolume *)view)->entryLimit) {
 			((ViewVolume *)view)->entriesFull = 1;
 			return;
@@ -329,7 +330,7 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 			tail[6] = (u32)e;
 		GAME_VAR(u32 *, view + 0x602c + list * 4) = e;
 		e[0] = (u32)part;
-		e[1] = extra ? (u32)(extra + GAME_VAR(int, part + 0x48)) : 0;
+		e[1] = extra ? (u32)(extra + sp->colourBase) : 0;
 		e[2] = a4;
 		e[3] = colour;
 		e[4] = (u32)m;

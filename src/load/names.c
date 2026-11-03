@@ -103,6 +103,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 {
 	for (int i = 0; i < GAME_VAR(int, shape + 0x10); i++) {
 		u8 *part = GAME_VAR(u8 *, shape + 0x14) + i * 0x80;
+		ShapePart *sp = (ShapePart *)part;
 		char *name = (char *)part + 4;
 		if (*suffix) {
 			if (strlen(name) + strlen(suffix) > 0x3f)
@@ -110,7 +111,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 			strcat(name, (const char *)STR(0x4b12f4, "*"));
 			strcat(name, suffix);
 		}
-		GAME_VAR(int, part + 0x44) = tex_getIdByName((*(void **)&g_textures), name, flags, a, b, c, d, e, f);
+		sp->texture = tex_getIdByName((*(void **)&g_textures), name, flags, a, b, c, d, e, f);
 	}
 }
 
