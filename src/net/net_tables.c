@@ -1867,7 +1867,7 @@ static void match_limit(u8 *g, int state, u32 notice)
 		GS->winnerTeam = red > blue ? 0 : red < blue ? 1 : -1;
 	}
 	GS->matchOver = 1;
-	(*(u32 *)&GS->roundClear6) = 0x41200000;   /* 10 s */
+	GS->roundClear6 = 0x41200000;   /* 10 s */
 }
 
 /* 0x48c830 (thiscall on the game object): a network packet (type 0x40 only) from a player. When recording
@@ -1983,7 +1983,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		if (b[2] > 0x10 || pkt[3] < -1 || pkt[4] < -1 || pkt[5] < -1 || pkt[6] < -1)
 			break;
 		if (b[2] == 0) {
-			(*(u32 *)&GS->elapsed) = *(const u32 *)(pkt + 9);
+			GS->elapsed = *(const u32 *)(pkt + 9);
 			G(u32, 0x22f040c) = *(const u32 *)(pkt + 0xd);
 			if (pkt[3] >= 0) {
 				int round = g_missionStage;
@@ -2095,7 +2095,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		if (GS->roundOver)
 			return;
 		GS->roundOver = 1;
-		(*(u32 *)&GS->roundClear7) = 0x40400000;
+		GS->roundClear7 = 0x40400000;
 		g_matchEndedByServer = 1;
 		return;
 	case 4:

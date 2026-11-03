@@ -98,7 +98,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	Player *a = &stage->actors[i];
 	a->name[0] = '\0';
 	a->player = -1;
-	FIELD(int, a, 0x114) = 0;
+	a->level = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
 		FIELD(int, a, 0xd8 + k * 4) = 0;
@@ -370,10 +370,10 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #define A(type, offset) GAME_VAR(type, actor + (offset))
 #define AC ((Player *)actor)   /* the same by its fields (src/scene.fields) */
 	AC->spawn64 = R(u32, 0x1c);
-	(*(u32 *)&AC->armorMax) = R(u32, 0x20);
-	(*(u32 *)&AC->shieldMax) = R(u32, 0x24);
-	(*(u32 *)&AC->armor) = R(u32, 0x20);
-	(*(u32 *)&AC->shield) = R(u32, 0x24);
+	AC->armorMax = R(u32, 0x20);
+	AC->shieldMax = R(u32, 0x24);
+	AC->armor = R(u32, 0x20);
+	AC->shield = R(u32, 0x24);
 	A(float, 0x68) = A(float, 0x50) = (float)(R(float, 0x28) * (long double)k_27_7778f);
 	AC->accel = (float)(R(float, 0x2c) * (long double)k_10f);
 	long double radius = R(float, 0x30);
@@ -756,12 +756,12 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		A(int, 0x5c) = 0;
 #undef LEG
 	A(float, 0x60) = f32(-fld_m((const float *)(ac + 0x5c)));
-	(*(int *)&AC->spawn64) = 100;
+	AC->spawn64 = 100;
 	A(u32, 0x68) = A(u32, 0x50);
 	AC->accel = 900.0f;   /* 900 */
 	AC->spawn70 = 0x40400000;   /* 3 */
 	AC->spawn74 = 10;
-	(*(int *)&AC->spawn78) = 0;
+	AC->spawn78 = 0;
 	AC->spawn7c = 1000.0f;   /* 1000 */
 	AC->spawn80 = 500.0f;   /* 500 */
 	AC->spawnTail[0] = 0x40000000;   /* 2 */
@@ -788,18 +788,18 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	mech_stats(s, ac, p, 0);
 	AC->statD8 = 1;
 	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
-	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
+	AC->id = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
 	AC->active = 1;
-	(*(u32 *)&AC->player) = pp[0];
-	(*(u32 *)&AC->pilot) = a3;
+	AC->player = pp[0];
+	AC->pilot = a3;
 	int level = GAME_VAR(int, p + 0x44);
-	A(int, 0x114) = level >= 0 && level < 9 ? level : 0;
-	(*(u32 *)&AC->team) = GAME_VAR(u32, p + 0x48);
-	(*(u32 *)&AC->bot) = pp[1];
+	AC->level = level >= 0 && level < 9 ? level : 0;
+	AC->team = GAME_VAR(u32, p + 0x48);
+	AC->bot = pp[1];
 	AC->blinkTime = 0.0f;
 	A(u32, 0x124) = 0x3f800000;
-	(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
-	(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);
+	AC->armor = ((u32)AC->armorMax);
+	AC->shield = ((u32)AC->shieldMax);
 	fill_dwords(ac + 0x130, 4, 0);
 	AC->slot = -1;
 	A(int, 0x144) = 0;
@@ -832,7 +832,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	memcpy(ac + 0x384, (const void *)ADDR(g_vecZero), 12);
 	A(u32, 0x3e8) = 0x43fa0000;   /* 500 */
 	AC->statusIcon = 0;
-	AC->timerFlags = A(int, 0x104) % 2 == 1 ? 0x4000 : 0;
+	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
 	fill_dwords(ac + 0x3f4, 4, 0);
 	fill_dwords(ac + 0x44c, 11, 0);
 	AC->inView = -1;

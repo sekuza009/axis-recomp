@@ -180,6 +180,9 @@ def sub(m):
 		done += 1
 		if SAME.get(ty, ty) == fty:
 			return '%s->%s' % (PTR, name)
+		# (a plain assignment that is its own statement stores the same bits through the field's own type)
+		if re.match(r'\s*=(?!=)', t[m.end():m.end() + 3]) and re.search(r'(?:^|[;{}])\s*$', t[max(0, m.start() - 200):m.start()]):
+			return '%s->%s' % (PTR, name)
 		return ('(*(%s *)&%s->%s)' if is_lvalue(m) else '((%s)%s->%s)') % (ty, PTR, name)
 	other['%s %s as %s' % (hex(off), name, '/'.join(sorted(kinds[off])))] += 1
 	return m.group(0)

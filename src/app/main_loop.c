@@ -710,7 +710,7 @@ static void choose_followed(u8 *s, int f)
 			}
 	} else if ((SC->watchClear[2] == 0 && SC->watchedPlayer < 0) || SC->watchedPlayer >= n || S(float, 0x233cc38) > 14.0f) {
 		u32 r = rand_below(n);
-		(*(u32 *)&SC->watchedPlayer) = r;
+		SC->watchedPlayer = r;
 		if (ACTOR_INT(r, 0x1eccb78) == 1)
 			S(float, 0x233cc38) = 0.0f;
 		else
@@ -2206,7 +2206,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 		if (netq_resends() > 0) {
 			netq_clearResends();
-			(*(u32 *)&SC->firstRoundClear[8]) = 0x3f800000;
+			SC->firstRoundClear[8] = 0x3f800000;
 		} else if (run_down(s, 0x2340c94))
 			SC->firstRoundClear[8] = 0;
 	}

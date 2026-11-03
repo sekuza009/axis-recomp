@@ -306,7 +306,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double w3 = fadd_m(fmul_m(x, &pr[3]) + fmul_m(z, &pr[11]) + fmul_m(y, &pr[7]), &pr[15]);
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
-		A(int, 0x484) = tag_narrow(ac, OBJ(k_30f));
+		AC->detail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = s + 0x1cd93a8 + ST->playerActor * 0x8888;
 		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			AC->lockedOn = 0.0f;

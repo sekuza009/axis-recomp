@@ -569,7 +569,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 				A(int, 0x534) = 0;
 				AC->damageFlash = 1.0f;
 				A(u32, 0x540) = 0x40000000;
-				A(int, 0x104) = GAME_VAR(int, s + 0x202e8d0)++;
+				AC->id = GAME_VAR(int, s + 0x202e8d0)++;
 				warped = 1;
 			}
 			A(int, 0x53c) = 1;
@@ -812,8 +812,8 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		P(int, 0x6c) = P(int, 0x74) = 0;
 		return;
 	}
-	(*(u32 *)&PR->kind) = GAME_VAR(u32, desc);
-	(*(u32 *)&PR->owner) = GAME_VAR(u32, desc + 4);
+	PR->kind = GAME_VAR(u32, desc);
+	PR->owner = GAME_VAR(u32, desc + 4);
 	memcpy(p + 0x10, desc + 8, 12);
 	memcpy(p + 0x1c, desc + 0x14, 12);
 	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);

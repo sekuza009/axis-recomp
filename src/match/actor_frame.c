@@ -574,7 +574,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			   or up / down (+0x470 with forward or back) when that is the larger way, beyond 500 */
 			for (int c = 0; c < 3; c++)
 				v28[c] = f32(fsub_m(fld_m(&AF(0x1d4 + c * 4)), &AC->pos[c]));
-			Vec3_rotateAxis(v28, 2, -ftol(fld_m(&AF(0x164))));
+			Vec3_rotateAxis(v28, 2, -ftol(fld_m(&AC->yaw)));
 			Vec3_rotateAxis(v28, 1, -ftol(fld_m(&AC->pitch)));
 			long double len = x87_fsqrt((fmul_m(fld_m(&v28[0]), &v28[0]) + fmul_m(fld_m(&v28[2]), &v28[2])) + fmul_m(fld_m(&v28[1]), &v28[1]));
 			if (len > 500.0f) {
@@ -624,8 +624,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	switch (AI(0x4d0)) {   /* a pending order */
 	case 0:
-		(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
-		(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);
+		AC->armor = ((u32)AC->armorMax);
+		AC->shield = ((u32)AC->shieldMax);
 		break;
 	case 1:
 		memcpy(a + 0x130, a + 0x28, 16);
@@ -651,7 +651,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	want[0] = f32(fmul_m(fld_m(&AF(0x16c)), &AC->speed));
 	want[1] = f32(fmul_m(fld_m(&AF(0x168)), &AC->speed));
 	Vec3_rotateAxis(want, 1, ftol(fsub_m(fld_m(K(0x4a9424)), &AF(0x170)) * fadd_m(fld_m(&AC->pitch), K(0x4a9734))));
-	Vec3_rotateAxis(want, 2, ftol(fld_m(&AF(0x164))));
+	Vec3_rotateAxis(want, 2, ftol(fld_m(&AC->yaw)));
 	float neg = f32(-fld_m(&accel));
 	for (int c = 0; c < 3; c++) {   /* the velocity (+0x378) towards it by at most accel */
 		long double v = fsub_m(fld_m(&AF(0x378 + c * 4)), &want[c]);
@@ -734,7 +734,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AU(0x18c) = 0x445e8000;   /* 890 */
 		if (!(AF(0x18c) >= *K(0x4a9728)))
 			AU(0x18c) = 0xc45e8000;
-		AF(0x190) = f32(fadd_m(fld_m(&AC->inYaw), &AF(0x164)));
+		AF(0x190) = f32(fadd_m(fld_m(&AC->inYaw), &AC->yaw));
 		float fwd, back, right, lft;   /* the top speeds: 1 / -1 walking, +0x54.. running */
 		if (AC->inBooster == 0) {
 			fwd = 1.0f;
@@ -810,7 +810,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			actor_updatePart(s, i, AC->slotLoaded, AC->variantLoaded);
 			weapon = s + 0x14d1ab4 + pr->items[AC->slot] * 0x2e18;
 			model = AC->slot == 4 ? a + 0x587c : AC->slot == 5 ? a + 0x701c : a + 0x40dc;
-			(*(u32 *)&AC->weapon) = ((u32)((ActorInfo *)weapon)->ammoSlot);
+			AC->weapon = ((u32)((ActorInfo *)weapon)->ammoSlot);
 		}
 		if (!(AF(0x490) >= 1.0f)) {
 			int kind = pr->items[AC->slot];
@@ -836,7 +836,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	/* the matrices: the body at the actor, turned and leant, the head on its neck, the arms */
 	glPushMatrix();
 	glTranslatef_bits(AU(0x154), AU(0x158), AU(0x15c));
-	glRotatef(f32(fmul_m(fld_m(&AF(0x164)), K(0x4a93ec))), 0, 1, 0);
+	glRotatef(f32(fmul_m(fld_m(&AC->yaw), K(0x4a93ec))), 0, 1, 0);
 	glRotatef(f32(fmul_m(fld_m(&AF(0x174)), K(0x4a93ec))), 1, 0, 0);
 	glGetFloatv(0xba6, (float *)(a + 0x3a8));
 	skel_poseBones(a + 0xd54, a + 0x3a8);
@@ -1007,13 +1007,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					memcpy(shot_dir, &g_vecUnitZ, 12);
 					if (AC->bot == 0) {
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)));
-						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))));
+						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)));
 					} else {   /* a bot's aim wanders by +-(+0x74) */
 						u32 sp = (u32)(AC->spawn74 * 2);
 						int r1 = (int)sp > 0 ? (int)rand_below(sp) : 0;
 						Vec3_rotateAxis(shot_dir, 1, ftol(fld_m(&AC->pitch)) - AC->spawn74 + r1);
 						int r2 = (int)(u32)(AC->spawn74 * 2) > 0 ? (int)rand_below((u32)(AC->spawn74 * 2)) : 0;
-						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AF(0x164))) - AC->spawn74 + r2);
+						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)) - AC->spawn74 + r2);
 					}
 					if (collision_rayTrace(s, (float *)(a + 0x154), shot_at, v28) != 0) {   /* the muzzle inside a wall */
 						if (i == ST->playerActor && AI(0x4a0) == 0)
@@ -1262,9 +1262,9 @@ timers:
 			f |= 0x1000;
 		if (AC->shield <= 0)
 			f |= 0x2000;
-		if (AI(0x104) % 2 == 1)
+		if (AC->id % 2 == 1)
 			f |= 0x4000;
-		(*(u32 *)&AC->timerFlags) = f;
+		AC->timerFlags = f;
 	}
 	static const u16 parts[7] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c };
 	if (AI(0x54c) < 7) {   /* the parts' break-up, one a frame */
