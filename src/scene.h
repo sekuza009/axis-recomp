@@ -440,6 +440,38 @@ typedef struct TreeNode {
 	u8 *right;   /* +0x48 */
 } TreeNode;
 
+/* a texture manager's material: a texture by name, its flags and colours (tex_allocIdBy) */
+typedef struct TexRecord {
+	char name[0x44];   /* +0x0: upper-cased */
+	u32 flags;   /* +0x44 */
+	float colours[6];   /* +0x48: two hue / saturation / value sets */
+	u8 _pad0000060[0x8];
+} TexRecord;
+
+/* a texture manager (names.c; TextureSets.managers): up to 512 materials and their GL texture slots */
+typedef struct TextureManager {
+	u8 _pad0000000[0x4];
+	i32 ready;   /* +0x4: 1: set up (tex_initBy) */
+	char dir[0x100];   /* +0x8 */
+	i32 indexCount;   /* +0x108: the image file's name index: indexCount entries of 0x44 bytes */
+	u8 *index;   /* +0x10c */
+	void *file;   /* +0x110: the image file (Data\ImageN.dat; format 0) */
+	u8 _pad0000114[0xc0000];
+	i32 format;   /* +0xc0114 */
+	i32 width;   /* +0xc0118: its images' size */
+	i32 height;   /* +0xc011c */
+	i32 mipmaps;   /* +0xc0120 */
+	i32 linear;   /* +0xc0124 */
+	TexRecord records[512];   /* +0xc0128 */
+	i32 recordCount;   /* +0xcd128 */
+	u8 *slots;   /* +0xcd12c: the GL texture slots: 0x14 bytes each (index, texture id or -1, GL name, previous, next: a ring) */
+	i32 slotCount;   /* +0xcd130: at most 0x200 */
+	u8 *oldest;   /* +0xcd134: the slot to reuse next */
+	i32 counterA;   /* +0xcd138: (unclear) cleared at setup */
+	i32 counterB;   /* +0xcd13c */
+	i32 counterC;   /* +0xcd140 */
+} TextureManager;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -1096,6 +1128,29 @@ _Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->inde
 _Static_assert(offsetof(TreeNode, left) == 0x44 && sizeof(((TreeNode *)0)->left) == 0x4, "scene.fields: TreeNode.left");
 _Static_assert(offsetof(TreeNode, right) == 0x48 && sizeof(((TreeNode *)0)->right) == 0x4, "scene.fields: TreeNode.right");
 _Static_assert(sizeof(TreeNode) == 0x4c, "scene.fields: size of TreeNode");
+_Static_assert(offsetof(TexRecord, name) == 0x0 && sizeof(((TexRecord *)0)->name) == 0x44, "scene.fields: TexRecord.name");
+_Static_assert(offsetof(TexRecord, flags) == 0x44 && sizeof(((TexRecord *)0)->flags) == 0x4, "scene.fields: TexRecord.flags");
+_Static_assert(offsetof(TexRecord, colours) == 0x48 && sizeof(((TexRecord *)0)->colours) == 0x18, "scene.fields: TexRecord.colours");
+_Static_assert(sizeof(TexRecord) == 0x68, "scene.fields: size of TexRecord");
+_Static_assert(offsetof(TextureManager, ready) == 0x4 && sizeof(((TextureManager *)0)->ready) == 0x4, "scene.fields: TextureManager.ready");
+_Static_assert(offsetof(TextureManager, dir) == 0x8 && sizeof(((TextureManager *)0)->dir) == 0x100, "scene.fields: TextureManager.dir");
+_Static_assert(offsetof(TextureManager, indexCount) == 0x108 && sizeof(((TextureManager *)0)->indexCount) == 0x4, "scene.fields: TextureManager.indexCount");
+_Static_assert(offsetof(TextureManager, index) == 0x10c && sizeof(((TextureManager *)0)->index) == 0x4, "scene.fields: TextureManager.index");
+_Static_assert(offsetof(TextureManager, file) == 0x110 && sizeof(((TextureManager *)0)->file) == 0x4, "scene.fields: TextureManager.file");
+_Static_assert(offsetof(TextureManager, format) == 0xc0114 && sizeof(((TextureManager *)0)->format) == 0x4, "scene.fields: TextureManager.format");
+_Static_assert(offsetof(TextureManager, width) == 0xc0118 && sizeof(((TextureManager *)0)->width) == 0x4, "scene.fields: TextureManager.width");
+_Static_assert(offsetof(TextureManager, height) == 0xc011c && sizeof(((TextureManager *)0)->height) == 0x4, "scene.fields: TextureManager.height");
+_Static_assert(offsetof(TextureManager, mipmaps) == 0xc0120 && sizeof(((TextureManager *)0)->mipmaps) == 0x4, "scene.fields: TextureManager.mipmaps");
+_Static_assert(offsetof(TextureManager, linear) == 0xc0124 && sizeof(((TextureManager *)0)->linear) == 0x4, "scene.fields: TextureManager.linear");
+_Static_assert(offsetof(TextureManager, records) == 0xc0128 && sizeof(((TextureManager *)0)->records) == 0xd000, "scene.fields: TextureManager.records");
+_Static_assert(offsetof(TextureManager, recordCount) == 0xcd128 && sizeof(((TextureManager *)0)->recordCount) == 0x4, "scene.fields: TextureManager.recordCount");
+_Static_assert(offsetof(TextureManager, slots) == 0xcd12c && sizeof(((TextureManager *)0)->slots) == 0x4, "scene.fields: TextureManager.slots");
+_Static_assert(offsetof(TextureManager, slotCount) == 0xcd130 && sizeof(((TextureManager *)0)->slotCount) == 0x4, "scene.fields: TextureManager.slotCount");
+_Static_assert(offsetof(TextureManager, oldest) == 0xcd134 && sizeof(((TextureManager *)0)->oldest) == 0x4, "scene.fields: TextureManager.oldest");
+_Static_assert(offsetof(TextureManager, counterA) == 0xcd138 && sizeof(((TextureManager *)0)->counterA) == 0x4, "scene.fields: TextureManager.counterA");
+_Static_assert(offsetof(TextureManager, counterB) == 0xcd13c && sizeof(((TextureManager *)0)->counterB) == 0x4, "scene.fields: TextureManager.counterB");
+_Static_assert(offsetof(TextureManager, counterC) == 0xcd140 && sizeof(((TextureManager *)0)->counterC) == 0x4, "scene.fields: TextureManager.counterC");
+_Static_assert(sizeof(TextureManager) == 0xcd144, "scene.fields: size of TextureManager");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");

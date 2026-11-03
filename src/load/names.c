@@ -2,6 +2,7 @@
 #include "../game.h"
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define TM ((TextureManager *)tm)   /* the texture manager (tm in each function) by its fields (src/scene.fields) */
 #include <string.h>
 
 /* binary search of name in the table at *table (count at *count; the search starts with hi = count); -1 when not
@@ -191,13 +192,13 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 	u32 wrap = mode == 1 ? 0x46240400 : 0x46240000;   /* GL_REPEAT : GL_CLAMP */
 	glTexParameterf_bits(0xde1, 0x2802, wrap);
 	glTexParameterf_bits(0xde1, 0x2803, wrap);
-	int linear = GAME_VAR(int, tm + 0xc0124) == 1;
-	int mipmaps = GAME_VAR(int, tm + 0xc0120) == 1;
+	int linear = TM->linear == 1;
+	int mipmaps = TM->mipmaps == 1;
 	glTexParameterf_bits(0xde1, 0x2800, linear ? 0x46180400 : 0x46180000);   /* mag: GL_LINEAR : GL_NEAREST */
 	glTexParameterf_bits(0xde1, 0x2801, mipmaps ? (linear ? 0x461c0c00 : 0x461c0000) : (linear ? 0x46180400 : 0x46180000));
-	glTexImage2D(0xde1, 0, 4, GAME_VAR(int, tm + 0xc0118), GAME_VAR(int, tm + 0xc011c), 0, 0x1908, 0x1401, tm + 0x114);
+	glTexImage2D(0xde1, 0, 4, TM->width, TM->height, 0, 0x1908, 0x1401, tm + 0x114);
 	if (mipmaps)
-		gluBuild2DMipmaps(0xde1, 4, GAME_VAR(int, tm + 0xc0118), GAME_VAR(int, tm + 0xc011c), 0x1908, 0x1401, tm + 0x114);
+		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, tm + 0x114);
 }
 
 /* 0x4557e0 (thiscall on a texture manager): is the texture name (up to a '*') there in the manager's format (+0xc0114,
@@ -215,7 +216,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 	strcpy(base, name);
 	crt_strtok(base, (const char *)STR(0x4b12f4, "*"));   /* "*" */
 	const char *dir = (const char *)tm + 8;
-	int format = FIELD(int, tm, 0xc0114), ok = 0;
+	int format = TM->format, ok = 0;
 	if ((unsigned)format > 2)
 		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b400c, "invalid file format(%s)-textureFileEx..."), format);
 	else {
@@ -230,7 +231,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 				image_initBy(image, path);
 				int w = FIELD(int, image, 0x3e), h = FIELD(int, image, 0x42);
 				BMPRGBFile_close(image);
-				ok = w == FIELD(int, tm, 0xc0118) && h == FIELD(int, tm, 0xc011c);
+				ok = w == TM->width && h == TM->height;
 			}
 		} else {
 			void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -240,7 +241,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 				crt_fread(&size[0], 2, 1, f);
 				crt_fread(&size[1], 2, 1, f);
 				fclose(f);
-				ok = size[0] * 8 == FIELD(int, tm, 0xc0118) && size[1] * 8 == FIELD(int, tm, 0xc011c);
+				ok = size[0] * 8 == TM->width && size[1] * 8 == TM->height;
 			}
 		}
 	}
@@ -262,7 +263,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 #define fatal(text, ...) GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, ...)((char *)OBJ(g_logTexture), (const char *)RELOC(text), ##__VA_ARGS__)
 	static const u32 names[6][3] = { { 64, 64, STR(0x4b3f54, "Image0") }, { 128, 64, STR(0x4b3f4c, "Image1") }, { 128, 128, STR(0x4b3f3c, "Image3") },
 	                                 { 256, 64, STR(0x4b3f44, "Image2") }, { 256, 128, STR(0x4b3f34, "Image4") }, { 256, 256, STR(0x4b3f2c, "Image5") } };
-	if (FIELD(int, tm, 4) == 1)
+	if (TM->ready == 1)
 		fatal(STR(0x4b3f5c, "duplicate initialization - init()"));
 	char *own = (char *)tm + 8;
 	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
@@ -270,11 +271,11 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 	else
 		own[0] = 0;
 	path_normalize(own);
-	FIELD(int, tm, 0xc0124) = linear;
-	FIELD(int, tm, 0xc0114) = format;
-	FIELD(int, tm, 0xc0118) = w;
-	FIELD(int, tm, 0xc011c) = h;
-	FIELD(int, tm, 0xc0120) = mipmaps;
+	TM->linear = linear;
+	TM->format = format;
+	TM->width = w;
+	TM->height = h;
+	TM->mipmaps = mipmaps;
 	if (format == 0) {
 		char name[0x100], path[0x100];
 		int k = 0;
@@ -288,38 +289,38 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 			sprintf(path, (const char *)STR(0x4b3f10, "%s\\Data\\%s.dat"), own, name);
 		else
 			sprintf(path, (const char *)STR(0x4b3f04, "Data\\%s.dat"), name);
-		FIELD(void *, tm, 0x110) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
-		if (!FIELD(void *, tm, 0x110))
+		TM->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+		if (!TM->file)
 			fatal(STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
-		crt_fread(tm + 0x108, 4, 1, FIELD(void *, tm, 0x110));
-		FIELD(void *, tm, 0x10c) = operator_new(FIELD(u32, tm, 0x108) * 0x44);
+		crt_fread(tm + 0x108, 4, 1, TM->file);
+		FIELD(void *, tm, 0x10c) = operator_new(((u32)TM->indexCount) * 0x44);
 		if (!FIELD(void *, tm, 0x10c))
-			fatal(STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), FIELD(int, tm, 0x108));
-		crt_fread(FIELD(void *, tm, 0x10c), 0x44, FIELD(u32, tm, 0x108), FIELD(void *, tm, 0x110));
+			fatal(STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), TM->indexCount);
+		crt_fread(FIELD(void *, tm, 0x10c), 0x44, ((u32)TM->indexCount), TM->file);
 	} else {
-		FIELD(int, tm, 0x108) = 0;
+		TM->indexCount = 0;
 		FIELD(void *, tm, 0x10c) = NULL;
-		FIELD(void *, tm, 0x110) = NULL;
+		TM->file = NULL;
 	}
-	FIELD(int, tm, 0xcd128) = 0;
-	FIELD(int, tm, 0xcd130) = slots > 0x200 ? 0x200 : slots;
-	FIELD(u8 *, tm, 0xcd12c) = operator_new(FIELD(int, tm, 0xcd130) * 0x14);
-	if (!FIELD(u8 *, tm, 0xcd12c))
-		fatal(STR(0x4b3e84, "insufficient memory for slotArray(%d)..."), FIELD(int, tm, 0xcd130));
-	for (int i = 0; i < FIELD(int, tm, 0xcd130); i++) {
-		u32 *slot = (u32 *)(FIELD(u8 *, tm, 0xcd12c) + i * 0x14);
+	TM->recordCount = 0;
+	TM->slotCount = slots > 0x200 ? 0x200 : slots;
+	TM->slots = operator_new(TM->slotCount * 0x14);
+	if (!TM->slots)
+		fatal(STR(0x4b3e84, "insufficient memory for slotArray(%d)..."), TM->slotCount);
+	for (int i = 0; i < TM->slotCount; i++) {
+		u32 *slot = (u32 *)(TM->slots + i * 0x14);
 		slot[0] = i;
 		slot[1] = 0xffffffff;
 		glGenTextures(1, &slot[2]);   /* glGenTextures */
-		int n = FIELD(int, tm, 0xcd130);
-		slot[3] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (n + i - 1) % n * 0x14);
-		slot[4] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (i + 1) % FIELD(int, tm, 0xcd130) * 0x14);
+		int n = TM->slotCount;
+		slot[3] = (u32)(TM->slots + (n + i - 1) % n * 0x14);
+		slot[4] = (u32)(TM->slots + (i + 1) % TM->slotCount * 0x14);
 	}
-	FIELD(int, tm, 0xcd138) = 0;
-	FIELD(int, tm, 0xcd13c) = 0;
-	FIELD(int, tm, 0xcd140) = 0;
-	FIELD(u8 *, tm, 0xcd134) = FIELD(u8 *, tm, 0xcd12c);
-	FIELD(int, tm, 4) = 1;
+	TM->counterA = 0;
+	TM->counterB = 0;
+	TM->counterC = 0;
+	TM->oldest = TM->slots;
+	TM->ready = 1;
 #undef crt_fread
 #undef fatal
 }
@@ -344,7 +345,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 	if (!key[0])
 		return -1;
 	int i = 0;
-	for (; i < FIELD(int, tm, 0xcd128); i++) {
+	for (; i < TM->recordCount; i++) {
 		u8 *rec = tm + 0xc0128 + i * 0x68;
 		if (strcmp((const char *)rec, key))
 			continue;
@@ -360,13 +361,13 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 	}
 	if (!tex_textureFileExist(tm, key))
 		return -1;
-	if (FIELD(int, tm, 0xcd128) < 0x200) {
-		i = FIELD(int, tm, 0xcd128);
+	if (TM->recordCount < 0x200) {
+		i = TM->recordCount;
 		texRecord_init(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
-		FIELD(int, tm, 0xcd128)++;
+		TM->recordCount++;
 	} else
-		sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)STR(0x4b3fa8, "[%dx%d] object buffer overflow(%d) - ..."), FIELD(int, tm, 0xc0118), FIELD(int, tm, 0xc011c), 0x200);
-	if (FIELD(int, tm, 0xcd128) < FIELD(int, tm, 0xcd130))
+		sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)STR(0x4b3fa8, "[%dx%d] object buffer overflow(%d) - ..."), TM->width, TM->height, 0x200);
+	if (TM->recordCount < TM->slotCount)
 		tex_bind(tm, i);
 	return i;
 }
