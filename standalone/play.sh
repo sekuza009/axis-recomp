@@ -28,7 +28,7 @@ shot match1
 sleep 30
 shot match2
 powershell -NoProfile -Command "if (Get-Process AxisRC -ErrorAction SilentlyContinue) { 'game still running' } else { 'GAME EXITED' }"
-python "$R/tools/inmatch.py" "$P-match1.png" | cut -d" " -f1-4   # (the HUD up: the player spawned, not the loading screen or the free camera)
+python "$R/tools/inmatch.py" --any "$P-match1.png" "$P-match2.png" | sed -E 's# [A-Za-z]:/.*##'   # (the HUD up in either shot: the player spawned, not the loading screen or the free camera)
 powershell -NoProfile -Command "Stop-Process -Name AxisRC -Force"
 for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; rm -f "$G/AxisRC.exe" 2>/dev/null && test ! -e "$G/AxisRC.exe" && break; done
 cmp -s "$R/installed.exe" "$G/AxisGL.exe" && echo "installed AxisGL.exe unchanged" || echo "AXISGL.EXE CHANGED"
