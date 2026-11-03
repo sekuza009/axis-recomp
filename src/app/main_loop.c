@@ -430,7 +430,8 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		input_setCursorPos(gfx_getWidth() / 2, y);
 	}
 	u8 *actor = s + 0x1ecca70 + SC->localPlayer * 0x8888;
-	u8 *player = s + 0x1755230 + GAME_VAR(int, actor + 0x10c) * 0x47fd2;
+	Player *act = (Player *)actor;
+	u8 *player = s + 0x1755230 + act->player * 0x47fd2;
 	for (int k = 0; k < 9; k++)
 		S(int, k_freeKeys[k][1]) = input_asyncKeyDown(k_freeKeys[k][0]) ? 1 : 0;
 	SC->viewKey = -1;
@@ -515,18 +516,18 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	if (SC->zoomInPressed == 1) {
 		for (int k = 0; k < 5; k++)
 			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) > 0)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, GAME_VAR(int, actor + 0x10c), GAME_VAR(int, player + k_partSteps[k][1]) - 1);
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) - 1);
 		if (SC->fKeys[5] == 1) {
-			int it = GAME_VAR(int, player + 0x320 + GAME_VAR(int, actor + 0x140) * 4);
+			int it = GAME_VAR(int, player + 0x320 + act->slot * 4);
 			if (it > 0)
 				item = it - 1;
 		}
 	} else if (SC->zoomOutPressed == 1) {
 		for (int k = 0; k < 5; k++)
 			if (S(int, k_partSteps[k][0]) == 1 && GAME_VAR(int, player + k_partSteps[k][1]) < S(int, k_partSteps[k][3]) - 1)
-				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, GAME_VAR(int, actor + 0x10c), GAME_VAR(int, player + k_partSteps[k][1]) + 1);
+				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) + 1);
 		if (SC->fKeys[5] == 1) {
-			int it = GAME_VAR(int, player + 0x320 + GAME_VAR(int, actor + 0x140) * 4);
+			int it = GAME_VAR(int, player + 0x320 + act->slot * 4);
 			if (it < S(int, 0x175522c) - 1)
 				item = it + 1;
 		}
@@ -560,8 +561,8 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		bullet_updateAll(stage, S(u32, 0x44));
 		stage_updateEffects(stage, S(u32, 0x44));
 		for (int k = 0; k < 4; k++) {
-			u8 *me = s + 0x1ecca70 + SC->localPlayer * 0x8888;
-			GAME_VAR(int, me + 0x130 + k * 4) = GAME_VAR(int, me + 0x28 + k * 4) / 2;
+			Player *me = (Player *)(s + 0x1ecca70 + SC->localPlayer * 0x8888);
+			me->ammo[k] = me->ammoMax[k] / 2;
 		}
 	}
 	SC->modeStarted++;
@@ -1405,8 +1406,9 @@ static void bot_spawns(u8 *s)
 /* the camera looking back at the actor t's killer (+0x4c0) from 2 heights behind its head (+0x4e0) */
 static void killer_view(u8 *s, const u8 *t)
 {
+	Player *act = (Player *)t;
 	float *cam = (float *)(s + 0x233ca04), *head = (float *)(RELOC(t) + 0x4e0), d[3], p[3];
-	int k = GAME_VAR(int, t + 0x4c0);
+	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
 		d[j] = f32(fsub_m(fld_m((const float *)(ACTOR_AT(k) + 0x154) + j), &head[j]));
 	Vec3_normalize(d);
@@ -1426,7 +1428,7 @@ static void killer_view(u8 *s, const u8 *t)
 		cam[1] = f32(fsub_m(fld_m(&cam[1]), &dy));
 		cam[2] = f32(fsub_m(fld_m(&cam[2]), &dz));
 	}
-	look_toward(s, (const float *)(ACTOR_AT(GAME_VAR(int, t + 0x4c0)) + 0x154));
+	look_toward(s, (const float *)(ACTOR_AT(act->lastAttacker) + 0x154));
 	for (int j = 0; j < 3; j++)
 		((float *)(s + 0x233ca10))[j] = f32(fsub_m(fld_m((const float *)(s + 0x233cc14) + j), &cam[j]));
 }
@@ -1455,22 +1457,23 @@ static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, 
    fraction (+0x490) of the way from the eye (0.3 heights up, turned with the view) */
 static void muzzle_camera(u8 *s, const u8 *t)
 {
-	u8 *player = s + GAME_VAR(int, t + 0x10c) * 0x47fd2;
-	int slot = GAME_VAR(int, t + 0x140);
+	Player *act = (Player *)t;
+	u8 *player = s + act->player * 0x47fd2;
+	int slot = act->slot;
 	u8 *parts = s + 0x15fff88 + GAME_VAR(int, player + 0x1755544) * 0x1300;
 	u8 *item = s + 0x16c517c + GAME_VAR(int, player + 0x1755550 + slot * 4) * 0x2e18;
 	float P[3], E[3] = { 0, 0, 0 };
 	const float *v, *m;
 	int bone;
 	if (slot == 4) {
-		v = (const float *)(RELOC(item) + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
-		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12d8);
+		v = (const float *)(RELOC(item) + 0x16b4 + act->variantLoaded * 0xc);
+		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12d8);
 	} else if (slot == 5) {
-		v = (const float *)(RELOC(item) + 0x2d70 + GAME_VAR(int, t + 0x49c) * 0xc);
-		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12e0);
+		v = (const float *)(RELOC(item) + 0x2d70 + act->variantLoaded * 0xc);
+		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12e0);
 	} else {
-		v = (const float *)(RELOC(item) + 0x16b4 + GAME_VAR(int, t + 0x49c) * 0xc);
-		bone = GAME_VAR(int, parts + GAME_VAR(int, t + 0x484) * 4 + 0x12d0);
+		v = (const float *)(RELOC(item) + 0x16b4 + act->variantLoaded * 0xc);
+		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12d0);
 	}
 	m = (const float *)(GAME_VAR(u8 *, t + 0x1568) + bone * 100 + 0xc);
 	if (slot == 4) {
@@ -2155,7 +2158,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->cameraMode = SC->startCameraMode;
 			t = ACTOR_AT(SC->localPlayer);
 		}
-		if (GAME_VAR(int, t + 0x14c) != 1 && GAME_VAR(int, t + 0x4c0) >= 0)
+		if (((Player *)t)->state != 1 && ((Player *)t)->lastAttacker >= 0)
 			killer_view(s, t);
 		else if (S(int, 0x233cb98 + SC->cameraMode * 4) != 0)
 			look_at(s, (const float *)(RELOC(t) + 0x154));

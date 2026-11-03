@@ -324,11 +324,12 @@ typedef struct {
 static void part_load(u8 *scene, int a, const PartModel *m)
 {
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
-	if (!GAME_VAR(int, actor + 0x108))
+	Player *act = (Player *)actor;
+	if (!act->active)
 		return;
-	u8 *type = scene + 0x1561b68 + GAME_VAR(int, actor + 0x10c) * 0x47fd2;
+	u8 *type = scene + 0x1561b68 + act->player * 0x47fd2;
 	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
-	int pose = GAME_VAR(int, actor + 0x484);
+	int pose = act->detail;
 	ObjectList_load(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
 	                     model + m->bones + pose * m->bone_size, GAME_VAR(u32, model + m->counts + pose * 4),
 	                     model + m->frames + pose * 0x80, 0, 0, 0, actor + m->self + 0x30, m->limit);
@@ -367,8 +368,9 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	if (a < 0)
 		return;
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	Player *act = (Player *)actor;
 #define A(type, offset) GAME_VAR(type, actor + (offset))
-#define AC ((Player *)actor)   /* the same by its fields (src/scene.fields) */
+#define AC act   /* the same by its fields (src/scene.fields) */
 	AC->spawn64 = R(u32, 0x1c);
 	AC->armorMax = R(u32, 0x20);
 	AC->shieldMax = R(u32, 0x24);
@@ -906,14 +908,15 @@ static int close_enough(const float *a, const float *b)
    then the game type's fixed energy and weapons), and its limits hold */
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
+	Player *act = (Player *)me;
 	u8 *p = s + 0x1561b68 + AC->player * 0x47fd2;
 	mech_stats(s, me, p, 1);
 	unsigned mode = GAME_VAR(int, s + 0x20f3ab8) - 2;
 	if (mode <= 9) {
 		int pair = mode / 2;
-		GAME_VAR(int, me + 0x1c) = GAME_VAR(int, me + 0x20) = pair == 0 ? 10 : 150;
+		act->armorMax = act->shieldMax = pair == 0 ? 10 : 150;
 		if (pair < 4)
-			GAME_VAR(int, me + 0x28 + pair * 4) = 100;
+			act->ammoMax[pair] = 100;
 	}
 	static const u8 floats1[] = { 0, 4 }, ints[] = { 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34 };
 	static const u8 floats2[] = { 0xc, 0x10, 0x14, 0x18 }, floats3[] = { 0x38, 0x44, 0x48, 0x4c, 0x50, 0x3c, 0x54, 0x58, 0x5c, 0x60 };

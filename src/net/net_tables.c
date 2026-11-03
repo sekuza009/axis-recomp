@@ -1908,7 +1908,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		u8 *ac = ACTOR(i);
 		if ((GAME_VAR(u16, ac + 0x3f0) ^ *(const u16 *)(pkt + 2)) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
-		if (GAME_VAR(int, ac + 0x108) == 0 && (b[4] & 1)) {
+		if (((Player *)ac)->active == 0 && (b[4] & 1)) {
 			u32 rec[7] = { (u32)i, 0 };
 			memcpy(&rec[2], &x, 4);
 			memcpy(&rec[3], &y, 4);
@@ -1922,11 +1922,11 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		GAME_VAR(float, ac + 0x124) = f32(fadd_m(fld_m((const float *)(ac + 0x120)), K(0x4a9418)));
 		GAME_VAR(u32, ac + 0x3f0) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
-			GAME_VAR(int, ac + 0x3ec) = 1;
+			((Player *)ac)->statusIcon = 1;
 		else if (weapon == 7)
-			GAME_VAR(int, ac + 0x3ec) = 2;
+			((Player *)ac)->statusIcon = 2;
 		else {
-			GAME_VAR(int, ac + 0x3ec) = 0;
+			((Player *)ac)->statusIcon = 0;
 			actor_setWeaponSlot(STAGE, i, weapon);   /* actor_setWeaponSlot */
 		}
 		GAME_VAR(float, ac + 0x1ac) = x;
@@ -1944,22 +1944,22 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_VAR(float, ac + 0x1cc) = f32(fsub_m(h, K(0x4a94c8)));
 		int hurt;
 		if (b[0x11] & 0x80) {
-			GAME_VAR(int, ac + 0x4c0) = b[0x11] & 0xf;
-			GAME_VAR(int, ac + 0x4c4) = b[0x12];
+			((Player *)ac)->lastAttacker = b[0x11] & 0xf;
+			((Player *)ac)->mechType = b[0x12];
 			hurt = 1;
-			if ((b[0x11] & 0x40) && GAME_VAR(int, ac + 0x128) > 0)
-				GAME_VAR(int, ac + 0x128) = 0;
+			if ((b[0x11] & 0x40) && ((Player *)ac)->armor > 0)
+				((Player *)ac)->armor = 0;
 		} else {
-			hurt = !(b[4] & 1) && GAME_VAR(int, ac + 0x128) > 0;
+			hurt = !(b[4] & 1) && ((Player *)ac)->armor > 0;
 			if (hurt)
-				GAME_VAR(int, ac + 0x128) = 0;
+				((Player *)ac)->armor = 0;
 		}
 		if (hurt)
 			GAME_VAR(u32, ac + 0x8854) = 0x3f000000;
 		const u8 *w = b + 0x13;
 		for (int k = 0; k < 5; k++, w += 9) {
 			u32 *slot = (u32 *)(ac + 0x1f8 + k * 0x20);
-			if (!(w[0] & 1) || GAME_VAR(int, ac + 0x118) < 0) {
+			if (!(w[0] & 1) || ((Player *)ac)->team < 0) {
 				slot[0] = 0;
 				continue;
 			}

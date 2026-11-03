@@ -308,6 +308,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
 		AC->detail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = s + 0x1cd93a8 + ST->playerActor * 0x8888;
+		Player *act = (Player *)me;
 		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
@@ -321,8 +322,8 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			AC->onScreen = 1;
 			continue;
 		}
-		int weapon = GAME_VAR(int, me + 0x148);
-		if (ST->playerActor >= 0 && AC->team != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
+		int weapon = act->actorType;
+		if (ST->playerActor >= 0 && AC->team != act->team && weapon >= 0 &&
 		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
 			AC->lockedOn = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else
