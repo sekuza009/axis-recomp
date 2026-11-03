@@ -14,8 +14,8 @@ void THISCALL (bullet_updateAll)(void *s, int dt)
 {
 	if (paused(s))
 		return;
-	for (int i = 0; i < FIELD(int, s, 0x20a99b4); i++)
-		if (FIELD(int, s, 0x202ef38 + i * 0x4e8) == 1)
+	for (int i = 0; i < ST->bulletSlotsUsed; i++)
+		if (ST->bullets[i].active == 1)
 			bullet_update(s, i, dt);
 }
 
@@ -24,8 +24,8 @@ void THISCALL (stage_updateEffects)(void *s, int dt)
 {
 	if (paused(s))
 		return;
-	for (int i = 0; i < FIELD(int, s, 0x20f2da0); i++)
-		if (FIELD(int, s, 0x20a99c4 + i * 0x12c) == 1)
+	for (int i = 0; i < ST->projectileCount; i++)
+		if (ST->projectiles[i].active == 1)
 			particle_update(s, i, dt);
 }
 
@@ -34,8 +34,8 @@ void THISCALL (stage_updateObjects)(void *s, int dt)
 {
 	if (paused(s))
 		return;
-	for (int i = 0; i < FIELD(int, s, 0x13c9b24); i++)
-		if (FIELD(int, s, 0x131ae48 + i * 0x2cc) == 1)
+	for (int i = 0; i < ST->objectCount; i++)
+		if (ST->objects[i].active == 1)
 			actor_render(s, i, dt);
 }
 
@@ -44,17 +44,17 @@ void THISCALL (stage_updateObjects)(void *s, int dt)
    then the effect set up (particle_init). Returns its slot, or -1 */
 int THISCALL (particle_spawn)(u8 *s, u32 desc)
 {
-#define COUNT FIELD(int, s, 0x20f2da0)
-#define NEXT FIELD(int, s, 0x20f2da4)
+#define COUNT ST->projectileCount
+#define NEXT ST->projectileFreeHint
 	if (NEXT >= 1000)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;
-		FIELD(int, s, 0x20a99c4 + COUNT * 0x12c) = 0;
+		ST->projectiles[COUNT].active = 0;
 	}
 	int slot = NEXT;
 	for (int k = slot + 1; k <= COUNT; k++)
-		if (FIELD(int, s, 0x20a99c4 + k * 0x12c) == 0) {
+		if (ST->projectiles[k].active == 0) {
 			NEXT = k;
 			break;
 		}
@@ -71,8 +71,8 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
 {
 	if (paused(s))
 		return;
-	for (int i = 0; i < FIELD(int, s, 0x202e8c8); i++)
-		if (FIELD(int, s, 0x1cd94b0 + i * 0x8888) == 1)
+	for (int i = 0; i < ST->actorCount; i++)
+		if (ST->actors[i].active == 1)
 			actor_processFrame(s, i, dt);
 	script_processTriggers(s);
 	long double t = (long double)dt + FIELD(float, s, 0x20fcd44);
@@ -89,17 +89,17 @@ void THISCALL (actor_updateAll)(u8 *s, float dt)
    the bullet set up (bullet_init). Returns its slot, or -1 */
 int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
 {
-#define COUNT FIELD(int, s, 0x20a99b4)
-#define NEXT FIELD(int, s, 0x20a99b8)
+#define COUNT ST->bulletSlotsUsed
+#define NEXT ST->bulletFreeHint
 	if (GAME_VAR(int, a4 + 4) < 0 || NEXT >= 400)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;
-		FIELD(int, s, 0x202ef38 + COUNT * 0x4e8) = 0;
+		ST->bullets[COUNT].active = 0;
 	}
 	int slot = NEXT;
 	for (int k = slot + 1; k <= COUNT; k++)
-		if (FIELD(int, s, 0x202ef38 + k * 0x4e8) == 0) {
+		if (ST->bullets[k].active == 0) {
 			NEXT = k;
 			break;
 		}
@@ -114,20 +114,20 @@ int THISCALL (bullet_spawn)(u8 *s, u32 a1, u32 a2, u32 a3, const u8 *a4, u32 a5)
    its slot */
 int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 {
-#define COUNT FIELD(int, s, 0x13c9b24)
-#define NEXT FIELD(int, s, 0x13c9b28)
+#define COUNT ST->objectCount
+#define NEXT ST->objectFreeHint
 	if (NEXT >= 1000) {
 		sys_errorMessage((char *)OBJ(g_logStage), (const char *)STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()"), NEXT + 1, 1000);
 		return -1;
 	}
 	if (NEXT == COUNT) {
 		COUNT++;
-		FIELD(int, s, 0x131ae48 + COUNT * 0x2cc) = 0;
+		ST->objects[COUNT].active = 0;
 	}
 	int slot = NEXT;
 	object_initObjectBy(s, slot, type);
 	for (int k = NEXT + 1; k <= COUNT; k++)
-		if (FIELD(int, s, 0x131ae48 + k * 0x2cc) == 0) {
+		if (ST->objects[k].active == 0) {
 			NEXT = k;
 			break;
 		}
@@ -155,7 +155,7 @@ void THISCALL (script_processTriggers)(u8 *s)
 			if (now >= FIELD(float, t, 0x10))
 				FIELD(int, t, 0x18) = 1;
 		}
-		int player = FIELD(int, s, 0x202e8d4);
+		int player = ST->playerActor;
 		if (flags & 2 && player >= 0) {
 			const float *at = (const float *)(s + 0x1cd94fc + player * 0x8888);
 			const float *point = FIELD(const float *, t, 4);
@@ -358,7 +358,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		idx = FIELD(int, s, 0x131ae40)++;
 		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
-	FIELD(int, obj, 0) = FIELD(int, s, 0x13c9b2c)++;
+	FIELD(int, obj, 0) = ST->objectSerial++;
 	FIELD(int, obj, 4) = 1;
 	FIELD(int, obj, 8) = idx;
 	memcpy(obj + 0xc, type + 0x40, 12);
@@ -569,7 +569,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 				A(int, 0x534) = 0;
 				AC->damageFlash = 1.0f;
 				A(u32, 0x540) = 0x40000000;
-				AC->id = GAME_VAR(int, s + 0x202e8d0)++;
+				AC->id = ST->actorSerial++;
 				warped = 1;
 			}
 			A(int, 0x53c) = 1;
@@ -799,7 +799,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
 	u8 *p = s + 0x20a99c0 + slot * 0x12c;
-	PR->id = GAME_VAR(int, s + 0x20f2da8)++;
+	PR->id = ST->projectileSerial++;
 	PR->active = 1;
 	if (GAME_VAR(int, desc + 0x30) == 1) {
 		PR->kind = 0x32;

@@ -172,7 +172,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		sound_playVolume(0xd, 0x64);
 	AC->state = 2;
 	AC->stateTime = 0.0f;
-	GAME_VAR(int, s + 0x202e8ec) = 1;
+	ST->teamsChanged = 1;
 	int k = AC->lastAttacker;
 	if (ST->freeForAll == 1) {   /* every one for themselves */
 		if (k != i) {
@@ -191,7 +191,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 						stage_print(s, (const char *)STR(0x4b44f8, "YOU FRAGED KING %s, +1(x%d) FRAGS +%d..."), 5, a + 0x98, points, 5);
 					else
 						stage_print(s, (const char *)STR(0x4b44d4, "YOU FRAGED KING %s, +1(x%d) FRAGS"), a + 0x98, 5);
-					GAME_VAR(int, s + 0x20fce4c) = -1;
+					ST->kingActor = -1;
 				} else if (ST->showExp == 1)
 					stage_print(s, (const char *)STR(0x4b44c4, "+1 FRAG +%d EXP"), points);
 				else
@@ -352,7 +352,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 		/* a bullet of another team aimed at it */
 		int aimed = 0;
-		for (int k = 0; k < GAME_VAR(int, s + 0x20a99b4); k++) {
+		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
 			u8 *b = s + 0x202ef34 + k * 0x4e8;
 			if (GAME_VAR(int, b + 0xbc) != i || ST->actors[GAME_VAR(int, b + 0xc)].pilot == ST->playerActor)
 				continue;

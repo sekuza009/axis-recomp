@@ -541,23 +541,36 @@ typedef struct Stage {
 	u8 _pad0dc0a78[0x55a3cc];
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
-	u8 _pad13c9b28[0x198040];
+	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
+	i32 objectSerial;   /* +0x13c9b2c: the next map object's id */
+	u8 _pad13c9b30[0x198038];
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
-	u8 _pad19e1888[0x2f7b20];
+	i32 playerRecordCount;   /* +0x19e1888: (by use) player records in use (grows to cover a new player) */
+	u8 _pad19e188c[0x2f7b1c];
 	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
-	u8 _pad202e8cc[0x8];
+	i32 actorFreeHint;   /* +0x202e8cc: (by use) the lowest free actor slot */
+	i32 actorSerial;   /* +0x202e8d0: the next actor's id */
 	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
 	i32 selectedActor;   /* +0x202e8d8: (by use) the selected actor (stage_selectActor; -1 none) */
-	u8 _pad202e8dc[0x14];
+	u8 _pad202e8dc[0x4];
+	i32 cameraTarget;   /* +0x202e8e0: (by use) the actor the camera follows (-1 none; camera_setTarget) */
+	i32 cameraTargetMode;   /* +0x202e8e4 */
+	u8 _pad202e8e8[0x4];
+	i32 teamsChanged;   /* +0x202e8ec: (by use) 1: an actor joined or changed team */
 	i32 frags[100];   /* +0x202e8f0: (by use) frags by team (a kill counts for the other team's slot); cleared together (stage_clearActorRefs) */
-	u8 _pad202ea80[0x4b0];
+	float lockWarnings[100];   /* +0x202ea80: (by use) per actor: the lock-on warnings, sorted longest first for the local player */
+	u8 _pad202ec10[0x320];
 	i32 bulletCount;   /* +0x202ef30: (by use) bullets in flight */
 	Bullet bullets[400];   /* +0x202ef34: (stage_clearBullets) */
-	u8 _pad20a99b4[0xc];
+	i32 bulletSlotsUsed;   /* +0x20a99b4: (by use) bullet slots up to the highest in use */
+	i32 bulletFreeHint;   /* +0x20a99b8: the lowest free bullet slot */
+	i32 bulletSerial;   /* +0x20a99bc: the next bullet's id */
 	Projectile projectiles[1000];   /* +0x20a99c0 */
 	i32 projectileCount;   /* +0x20f2da0: slots in use */
-	u8 _pad20f2da4[0xbcc];
+	i32 projectileFreeHint;   /* +0x20f2da4: (by use) the lowest free particle slot */
+	i32 projectileSerial;   /* +0x20f2da8: the next particle's id */
+	u8 _pad20f2dac[0xbc4];
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
@@ -575,7 +588,9 @@ typedef struct Stage {
 	u8 _pad20f5ee0[0x4f18];
 	MapItem items[200];   /* +0x20fadf8 */
 	i32 itemCount;   /* +0x20fcd38 */
-	u8 _pad20fcd3c[0x53707];
+	u8 _pad20fcd3c[0x110];
+	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
+	u8 _pad20fce50[0x535f3];
 } Stage;
 
 /* one of a tunnel ring's six flares (TunnelRing.flares) */
@@ -1248,16 +1263,30 @@ _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)-
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
+_Static_assert(offsetof(Stage, objectFreeHint) == 0x13c9b28 && sizeof(((Stage *)0)->objectFreeHint) == 0x4, "scene.fields: Stage.objectFreeHint");
+_Static_assert(offsetof(Stage, objectSerial) == 0x13c9b2c && sizeof(((Stage *)0)->objectSerial) == 0x4, "scene.fields: Stage.objectSerial");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
+_Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
 _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
+_Static_assert(offsetof(Stage, actorFreeHint) == 0x202e8cc && sizeof(((Stage *)0)->actorFreeHint) == 0x4, "scene.fields: Stage.actorFreeHint");
+_Static_assert(offsetof(Stage, actorSerial) == 0x202e8d0 && sizeof(((Stage *)0)->actorSerial) == 0x4, "scene.fields: Stage.actorSerial");
 _Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
 _Static_assert(offsetof(Stage, selectedActor) == 0x202e8d8 && sizeof(((Stage *)0)->selectedActor) == 0x4, "scene.fields: Stage.selectedActor");
+_Static_assert(offsetof(Stage, cameraTarget) == 0x202e8e0 && sizeof(((Stage *)0)->cameraTarget) == 0x4, "scene.fields: Stage.cameraTarget");
+_Static_assert(offsetof(Stage, cameraTargetMode) == 0x202e8e4 && sizeof(((Stage *)0)->cameraTargetMode) == 0x4, "scene.fields: Stage.cameraTargetMode");
+_Static_assert(offsetof(Stage, teamsChanged) == 0x202e8ec && sizeof(((Stage *)0)->teamsChanged) == 0x4, "scene.fields: Stage.teamsChanged");
 _Static_assert(offsetof(Stage, frags) == 0x202e8f0 && sizeof(((Stage *)0)->frags) == 0x190, "scene.fields: Stage.frags");
+_Static_assert(offsetof(Stage, lockWarnings) == 0x202ea80 && sizeof(((Stage *)0)->lockWarnings) == 0x190, "scene.fields: Stage.lockWarnings");
 _Static_assert(offsetof(Stage, bulletCount) == 0x202ef30 && sizeof(((Stage *)0)->bulletCount) == 0x4, "scene.fields: Stage.bulletCount");
 _Static_assert(offsetof(Stage, bullets) == 0x202ef34 && sizeof(((Stage *)0)->bullets) == 0x7aa80, "scene.fields: Stage.bullets");
+_Static_assert(offsetof(Stage, bulletSlotsUsed) == 0x20a99b4 && sizeof(((Stage *)0)->bulletSlotsUsed) == 0x4, "scene.fields: Stage.bulletSlotsUsed");
+_Static_assert(offsetof(Stage, bulletFreeHint) == 0x20a99b8 && sizeof(((Stage *)0)->bulletFreeHint) == 0x4, "scene.fields: Stage.bulletFreeHint");
+_Static_assert(offsetof(Stage, bulletSerial) == 0x20a99bc && sizeof(((Stage *)0)->bulletSerial) == 0x4, "scene.fields: Stage.bulletSerial");
 _Static_assert(offsetof(Stage, projectiles) == 0x20a99c0 && sizeof(((Stage *)0)->projectiles) == 0x493e0, "scene.fields: Stage.projectiles");
 _Static_assert(offsetof(Stage, projectileCount) == 0x20f2da0 && sizeof(((Stage *)0)->projectileCount) == 0x4, "scene.fields: Stage.projectileCount");
+_Static_assert(offsetof(Stage, projectileFreeHint) == 0x20f2da4 && sizeof(((Stage *)0)->projectileFreeHint) == 0x4, "scene.fields: Stage.projectileFreeHint");
+_Static_assert(offsetof(Stage, projectileSerial) == 0x20f2da8 && sizeof(((Stage *)0)->projectileSerial) == 0x4, "scene.fields: Stage.projectileSerial");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
 _Static_assert(offsetof(Stage, viewDir) == 0x20f397c && sizeof(((Stage *)0)->viewDir) == 0xc, "scene.fields: Stage.viewDir");
 _Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->viewUp) == 0xc, "scene.fields: Stage.viewUp");
@@ -1269,6 +1298,7 @@ _Static_assert(offsetof(Stage, freeForAll) == 0x20f3ad4 && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
 _Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
 _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");
+_Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
 _Static_assert(sizeof(Stage) == 0x2150443, "scene.fields: size of Stage");
 _Static_assert(offsetof(Flare, corners) == 0x0 && sizeof(((Flare *)0)->corners) == 0x40, "scene.fields: Flare.corners");
 _Static_assert(offsetof(Flare, pos) == 0x40 && sizeof(((Flare *)0)->pos) == 0xc, "scene.fields: Flare.pos");

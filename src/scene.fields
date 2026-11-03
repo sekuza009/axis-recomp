@@ -380,6 +380,21 @@ struct GroundLayer 0x20c                                        # a layer of the
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
+0x13c9b28  4          i32 objectFreeHint                         # (by use) the next free map object slot (at most 999)
+0x13c9b2c  4          i32 objectSerial                           # the next map object's id
+0x19e1888  4          i32 playerRecordCount                      # (by use) player records in use (grows to cover a new player)
+0x202e8cc  4          i32 actorFreeHint                          # (by use) the lowest free actor slot
+0x202e8d0  4          i32 actorSerial                            # the next actor's id
+0x202e8e0  4          i32 cameraTarget                           # (by use) the actor the camera follows (-1 none; camera_setTarget)
+0x202e8e4  4          i32 cameraTargetMode
+0x202e8ec  4          i32 teamsChanged                           # (by use) 1: an actor joined or changed team
+0x202ea80  0x190      float lockWarnings[100]                    # (by use) per actor: the lock-on warnings, sorted longest first for the local player
+0x20a99b4  4          i32 bulletSlotsUsed                        # (by use) bullet slots up to the highest in use
+0x20a99b8  4          i32 bulletFreeHint                         # the lowest free bullet slot
+0x20a99bc  4          i32 bulletSerial                           # the next bullet's id
+0x20f2da4  4          i32 projectileFreeHint                     # (by use) the lowest free particle slot
+0x20f2da8  4          i32 projectileSerial                       # the next particle's id
+0x20fce4c  4          i32 kingActor                              # (by use) the king (-1 none; dropped when fragged)
 0xdc0244   0x830      GroundLayer groundLayers[4]                # (groundLayerCount of them)
 0xdc0a74   4          i32 groundLayerCount
 0x1561b68  0x47fd20   PlayerRecord playerRecords[16]             # (Scene.playerRecords)

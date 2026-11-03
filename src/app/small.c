@@ -226,7 +226,7 @@ int THISCALL (script_reset)(Stage *stage)
 /* player p counted among the players seen so far (the highest + 1) */
 static void player_seen(Stage *stage, int p)
 {
-	u32 *seen = &FIELD(u32, stage, 0x19e1888);
+	u32 *seen = &(*(u32 *)&stage->playerRecordCount);
 	if (p > (int)(*seen - 1))
 		*seen = p + 1;
 }
@@ -422,7 +422,7 @@ void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 				FIELD(int, actor, 0x14c) = 0;
 		}
 	}
-	FIELD(int, stage, 0x202e8ec) = 1;
+	stage->teamsChanged = 1;
 }
 
 /* 0x496e40: the stage's animation clocks advanced by dt (unless a script runs in mode 1): two at dt * the rate at

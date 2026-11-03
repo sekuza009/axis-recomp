@@ -230,7 +230,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	if (id >= 0)
 		BU->id = id;
 	else
-		BU->id = GAME_VAR(int, s + 0x20a99bc)++;
+		BU->id = ST->bulletSerial++;
 	BU->active = 1;
 	BU->weapon = GAME_VAR(int, shot + 4);
 	BU->owner = owner;

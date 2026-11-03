@@ -33,12 +33,12 @@ void THISCALL (actor_setInput)(Stage *stage, int i, int v0, int v1, int v2, int 
    loses its value. A negative i follows none; an actor not in use is not followed */
 void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
 {
-	int *target = &FIELD(int, stage, 0x202e8e0);
+	int *target = &stage->cameraTarget;
 	if (*target > -1)
 		FIELD(int, &stage->actors[*target], 0x884c) = 0;
 	if (i < 0 || stage->actors[i].state == 1) {
 		*target = i;
-		FIELD(int, stage, 0x202e8e4) = mode;
+		stage->cameraTargetMode = mode;
 		FIELD(int, &stage->actors[i], 0x884c) = value;
 	}
 }
@@ -49,8 +49,8 @@ void THISCALL (stage_clearMapObjects)(Stage *stage)
 {
 	FIELD(int, stage, 0x13016c8) = 0;
 	stage->objectCount = 0;
-	FIELD(int, stage, 0x13c9b28) = 0;
-	FIELD(int, stage, 0x13c9b2c) = 0;
+	stage->objectFreeHint = 0;
+	stage->objectSerial = 0;
 	for (int i = 0; i < 1000; i++)
 		stage->objects[i].active = 0;
 }
@@ -59,8 +59,8 @@ void THISCALL (stage_clearMapObjects)(Stage *stage)
 void THISCALL (stage_clearProjectiles)(Stage *stage)
 {
 	stage->projectileCount = 0;
-	FIELD(int, stage, 0x20f2da4) = 0;
-	FIELD(int, stage, 0x20f2da8) = 0;
+	stage->projectileFreeHint = 0;
+	stage->projectileSerial = 0;
 	for (int i = 0; i < 1000; i++)
 		stage->projectiles[i].active = 0;
 }
@@ -72,8 +72,8 @@ void THISCALL (stage_freeProjectile)(Stage *stage, int i)
 	if (!stage->projectiles[i].active)
 		return;
 	stage->projectiles[i].active = 0;
-	if (i < FIELD(int, stage, 0x20f2da4))
-		FIELD(int, stage, 0x20f2da4) = i;
+	if (i < stage->projectileFreeHint)
+		stage->projectileFreeHint = i;
 	if (i != stage->projectileCount - 1 || stage->projectileCount <= 0)
 		return;
 	do {
@@ -85,9 +85,9 @@ void THISCALL (stage_freeProjectile)(Stage *stage, int i)
 /* 0x47cfd0: the 400 bullets (0x4e8-byte records from 0x202ef34) */
 void THISCALL (stage_clearBullets)(Stage *stage)
 {
-	FIELD(int, stage, 0x20a99b4) = 0;
-	FIELD(int, stage, 0x20a99b8) = 0;
-	FIELD(int, stage, 0x20a99bc) = 0;
+	stage->bulletSlotsUsed = 0;
+	stage->bulletFreeHint = 0;
+	stage->bulletSerial = 0;
 	for (int i = 0; i < 400; i++)
 		stage->bullets[i].active = 0;
 }
@@ -112,7 +112,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 /* 0x47d060: every bullet in use drawn (its trail, bullet_drawTrail) */
 void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 {
-	for (int i = 0; i < FIELD(int, stage, 0x20a99b4); i++)
+	for (int i = 0; i < stage->bulletSlotsUsed; i++)
 		if (stage->bullets[i].active == 1)
 			bullet_drawTrail(stage, i, view);
 }
@@ -132,7 +132,7 @@ void THISCALL (scene_resetActors)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
-	FIELD(int, stage, 0x202e8ec) = 1;
+	stage->teamsChanged = 1;
 	stage_clearActorRefs(stage);
 	stage_resetPlayerRecords(stage);
 	stage_clearActorSlots(stage);
@@ -144,8 +144,8 @@ void THISCALL (scene_resetActors)(Stage *stage)
 void THISCALL (stage_clearActorSlots)(Stage *stage)
 {
 	stage->actorCount = 0;
-	FIELD(int, stage, 0x202e8cc) = 0;
-	FIELD(int, stage, 0x202e8d0) = 0;
+	stage->actorFreeHint = 0;
+	stage->actorSerial = 0;
 	for (int i = 0; i < 100; i++) {
 		u8 *a = (u8 *)stage + i * 0x8888;
 		FIELD(int, a, 0x1cd94b0) = 0;
@@ -168,16 +168,16 @@ void THISCALL (actor_clearTargetRefs)(Stage *stage, int b)
 	if (!FIELD(int, bullet, 0x202ef38))
 		return;
 	FIELD(int, bullet, 0x202ef38) = 0;
-	if (b < FIELD(int, stage, 0x20a99b8))
-		FIELD(int, stage, 0x20a99b8) = b;
-	int n = FIELD(int, stage, 0x20a99b4);
+	if (b < stage->bulletFreeHint)
+		stage->bulletFreeHint = b;
+	int n = stage->bulletSlotsUsed;
 	if (b != n - 1 || n <= 0)
 		return;
 	do {
-		n = FIELD(int, stage, 0x20a99b4);
+		n = stage->bulletSlotsUsed;
 		if (FIELD(int, stage, 0x202ea50 + n * 0x4e8))
 			return;
-		FIELD(int, stage, 0x20a99b4) = --n;
+		stage->bulletSlotsUsed = --n;
 	} while (n > 0);
 }
 
@@ -217,7 +217,7 @@ void THISCALL (stage_resetPlayerRecords)(Stage *stage)
 		player_clear(e);
 		playerRecord_resetColourGrid(stage, p);
 	}
-	FIELD(int, stage, 0x19e1888) = 0;
+	stage->playerRecordCount = 0;
 }
 
 /* 0x470cb0: a new round: the actor slot numbers (-1), the scores, the 16 player records (their names kept), the
@@ -226,7 +226,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 {
 	for (int k = 0; k < 6; k++)
 		FIELD(int, stage, 0x202e8d4 + k * 4) = -1;
-	FIELD(int, stage, 0x202e8ec) = 1;
+	stage->teamsChanged = 1;
 	stage_clearActorRefs(stage);
 	for (int p = 0; p < 16; p++) {
 		u8 *e = (u8 *)stage + 0x1561bac + p * 0x47fd2;
@@ -234,7 +234,7 @@ void THISCALL (stage_newRound)(Stage *stage)
 		FIELD(int, e, 4) = -1;
 		player_clear(e);
 	}
-	FIELD(int, stage, 0x19e1888) = 0;
+	stage->playerRecordCount = 0;
 	stage_clearActorSlots(stage);
 	static const short cleared[] = { 0, 0xc, 0x10, 0x18, 0x1c, 0x24, 0x28, 0x74, 0x3fc, 0x400, 0x404 };
 	for (int i = 0; i < 100; i++) {
@@ -257,21 +257,21 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 	FIELD(int, a, 0x1ce1b88) = 0;
 	FIELD(int, a, 0x1ce1b90) = 0;
 	FIELD(int, a, 0x1ce1b98) = 0;
-	if (FIELD(int, stage, 0x20fce4c) == i)
-		FIELD(int, stage, 0x20fce4c) = -1;
+	if (stage->kingActor == i)
+		stage->kingActor = -1;
 	int team = FIELD(int, a, 0x1cd94c0);
 	if (team > -1 && FIELD(int, stage, 0x20fce50 + team * 4) == i)
 		FIELD(int, stage, 0x20fce50 + team * 4) = -1;
 	FIELD(int, stage, 0x202ea80 + i * 4) = 0;
-	if (i < FIELD(int, stage, 0x202e8cc))
-		FIELD(int, stage, 0x202e8cc) = i;
+	if (i < stage->actorFreeHint)
+		stage->actorFreeHint = i;
 	int n = stage->actorCount;
 	if (i == n - 1)
 		while (n > 0 && FIELD(int, stage, 0x1cd0c28 + stage->actorCount * 0x8888) == 0) {
 			n = stage->actorCount - 1;
 			stage->actorCount = n;
 		}
-	FIELD(int, stage, 0x202e8ec) = 1;
+	stage->teamsChanged = 1;
 }
 
 /* 0x45dc00 (thiscall on the scene): actor slot i (at most 99) set up from its parts (actor_setupFromParts): the
