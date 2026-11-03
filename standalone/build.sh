@@ -17,7 +17,7 @@ mkdir -p build/obj_direct
 export CC FENCE
 find src -name '*.c' | sort | xargs -P "$(nproc)" -I{} sh -c '
 	f={}; o="build/obj_direct/$(echo "${f#src/}" | tr "/" "_" | sed "s/\.c$/.o/")"
-	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f" || exit 255'
+	$CC -c -O2 -mno-sse -mno-sse2 -mfpmath=387 -fno-builtin -fno-strict-aliasing -Wall -Wno-unused-function -DAXIS_DIRECT ${FENCE:+-DAXIS_FENCE=$FENCE} -Ibuild -o "$o" "$f" || exit 255'
 python tools/mkgamedata.py build/gamedata.bin
 # (the blob's hash in the source: zig caches objects by their source text, and .incbin's file is not part of it, so a
 # new blob would otherwise link the old one)
