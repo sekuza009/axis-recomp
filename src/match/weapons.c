@@ -11,14 +11,15 @@
 static void weapon_cycle(Stage *stage, int i, int step)
 {
 	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
-	u8 *player = (u8 *)stage + 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2;
-	int slot = (FIELD(int, actor, 0x140) + step) % 6;
+	Player *ac = (Player *)actor;
+	u8 *player = (u8 *)stage + 0x1561b68 + ac->player * 0x47fd2;
+	int slot = (ac->slot + step) % 6;
 	for (int k = 0; k < 6; k++, slot = (slot + step) % 6) {
 		int weapon = FIELD(int, player, 0x320 + slot * 4);
 		if (weapon < 0)
 			continue;
-		int type = FIELD(int, stage, 0x14d4874 + weapon * 0x2e18);
-		if (FIELD(int, actor, 0x130 + type * 4) < FIELD(int, stage, 0x14d4878 + weapon * 0x2e18) || type < 0)
+		int type = stage->actorInfo[weapon].ammoSlot;
+		if (FIELD(int, actor, 0x130 + type * 4) < stage->actorInfo[weapon].ammoPerShot || type < 0)
 			continue;
 		actor_selectWeapon(stage, i, slot);
 		return;
@@ -34,12 +35,13 @@ void THISCALL (actor_prevWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 5
 void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 {
 	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
-	int player = FIELD(int, actor, 0x10c);
-	if (FIELD(int, actor, 0x140) != slot) {
-		FIELD(int, actor, 0x140) = slot;
+	Player *ac = (Player *)actor;
+	int player = ac->player;
+	if (ac->slot != slot) {
+		ac->slot = slot;
 		if (slot < 4)
 			FIELD(int, actor, 0x144) = slot;
-		FIELD(int, actor, 0x148) = FIELD(int, stage, 0x1561b68 + player * 0x47fd2 + 0x320 + slot * 4);
+		ac->actorType = FIELD(int, stage, 0x1561b68 + player * 0x47fd2 + 0x320 + slot * 4);
 	}
 }
 
@@ -47,14 +49,14 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
    holds a weapon there of a known type */
 void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 {
-	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
-	if (FIELD(int, actor, 0x140) == slot)
+	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
+	if (actor->slot == slot)
 		return;
-	int weapon = FIELD(int, stage, 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2 + 0x320 + slot * 4);
-	if (weapon > -1 && FIELD(int, stage, 0x14d4874 + weapon * 0x2e18) > -1) {
-		FIELD(int, actor, 0x48c) = 1;
-		FIELD(int, actor, 0x498) = slot;
-		FIELD(u32, actor, 0x494) = 0x40000000;   /* 2.0 */
+	int weapon = FIELD(int, stage, 0x1561b68 + actor->player * 0x47fd2 + 0x320 + slot * 4);
+	if (weapon > -1 && stage->actorInfo[weapon].ammoSlot > -1) {
+		actor->weaponLowering = 1;
+		actor->slotLoaded = slot;
+		BITS(actor->gauge) = 0x40000000;   /* 2.0 */
 	}
 }
 
@@ -62,17 +64,17 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
    (0xa106f8, 4096 values, position 0xa1efb8), and its aim is set back to its own point */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
-	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
-	if (FIELD(int, actor, 0x14c) != 1)
+	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
+	if (actor->state != 1)
 		return;
 	u32 r = g_randPos;
 	u32 v = GAME_VAR(u32, OBJ(g_randTable) + (r & 0xfff) * 4);
 	g_randPos = r + 1;
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
-	FIELD(int, actor, 0x8830) = 0;
-	FIELD(int, actor, 0x8834) = 0;
-	FIELD(int, actor, 0x8828) = FIELD(int, actor, 0x90);
-	FIELD(int, actor, 0x882c) = FIELD(int, actor, 0x94);
+	(*(int *)&actor->dodgeTime) = 0;
+	(*(int *)&actor->heightTime) = 0;
+	(*(int *)&actor->burstPause) = (*(int *)&actor->spawnTail[3]);
+	(*(int *)&actor->burstFire) = (*(int *)&actor->spawnTail[4]);
 }
 
 /* 0x460000 (thiscall on the scene): actor target (0x8888-byte actors from +0x1cd93a8) hit by actor attacker, when
@@ -89,44 +91,45 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 #define ACTOR(i) ((u8 *)&((Stage *)scene)->actors[i])
 	static const u8 group[10] = { 0, 0, 4, 4, 4, 8, 8, 4, 12, 12 };
 	u8 *t = ACTOR(target), *a = ACTOR(attacker);
-	if (FIELD(int, t, 0x14c) != 1 || FIELD(int, t, 0x880c) == 1)
+	Player *ac = (Player *)t;
+	if (ac->state != 1 || FIELD(int, t, 0x880c) == 1)
 		return;
-	int player = FIELD(int, a, 0x108) == 1 ? FIELD(int, a, 0x114) : -1;
+	int player = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
 	if ((unsigned)kind <= 9) {
 		int level = GAME_VAR(int, OBJ(g_profileRecords) + 0x28 + player * 0x4c + group[kind]) + 100;
 		damage = ftol(fadd_m(fmul_m((long double)level * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
 	}
-	if (FIELD(u32, a, 0x3f0) & 0x100)
+	if (((u32)((Player *)a)->timerFlags) & 0x100)
 		damage *= 2;
-	if (FIELD(u32, t, 0x3f0) & 0x800)
+	if (((u32)ac->timerFlags) & 0x800)
 		damage /= 2;
-	if (FIELD(int, t, 0x118) != FIELD(int, a, 0x118) || target == attacker) {
+	if (ac->team != ((Player *)a)->team || target == attacker) {
 		if (mode == 0) {
-			if ((FIELD(int, t, 0x12c) -= damage) < 0) {
-				FIELD(int, t, 0x128) += FIELD(int, t, 0x12c);
-				FIELD(int, t, 0x12c) = 0;
+			if ((ac->shield -= damage) < 0) {
+				ac->armor += ac->shield;
+				ac->shield = 0;
 			}
 		} else if (mode == 1) {
-			int shield = FIELD(int, t, 0x12c);
+			int shield = ac->shield;
 			if (shield >= damage) {
-				FIELD(int, t, 0x12c) = shield - damage;
-				FIELD(int, t, 0x128) -= ftol(fadd_m(fmul_m((long double)damage, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
+				ac->shield = shield - damage;
+				ac->armor -= ftol(fadd_m(fmul_m((long double)damage, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
 			} else {
 				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
-				FIELD(int, t, 0x128) += shield - lost - damage;
-				FIELD(int, t, 0x12c) = 0;
+				ac->armor += shield - lost - damage;
+				ac->shield = 0;
 			}
 		}
-		if (FIELD(int, t, 0x128) < 0)
-			FIELD(int, t, 0x128) = 0;
-		if (FIELD(int, t, 0x12c) < 0)
-			FIELD(int, t, 0x12c) = 0;
+		if (ac->armor < 0)
+			ac->armor = 0;
+		if (ac->shield < 0)
+			ac->shield = 0;
 		FIELD(int, t, 0x4bc) = mode;
-		FIELD(int, t, 0x4c0) = attacker;
-		FIELD(u32, t, 0x4c4) = value;
+		ac->lastAttacker = attacker;
+		ac->mechType = value;
 		FIELD(int, t, 0x8850) = 1;
 	}
-	FIELD(u32, t, 0x8854) = 0x3f000000;   /* 0.5 */
+	BITS(ac->hitFlash) = 0x3f000000;   /* 0.5 */
 	if (target == FIELD(int, scene, 0x202e8d4))
 		sound_playVolume(0xc, 100);
 #undef ACTOR
@@ -159,11 +162,12 @@ static int within(const float *p, const float *from, const float *range)
 void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
 	u8 *a = (u8 *)&((Stage *)scene)->actors[p];
+	Player *ac = (Player *)a;
 	const float *from = (const float *)(RELOC(a) + 0x154), *range = (const float *)(RELOC(a) + 0x8848);
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
 	for (int i = 0; i < FIELD(int, scene, 0xe3c938); i++) {
-		if (i == FIELD(int, a, 0x8870))
+		if (i == ac->stuckPath)
 			continue;
 		u8 *list = (u8 *)&((Stage *)scene)->triggers[i];
 		for (int j = 0; j < FIELD(int, list, 0); j++) {
@@ -190,10 +194,10 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 	}
 	if (n > 0) {
 		int k = table_rand() % n;
-		FIELD(int, a, 0x87f8) = lists[k];
-		FIELD(int, a, 0x87fc) = points[k];
-		FIELD(int, a, 0x8800) = table_rand() & 1;
-		FIELD(int, a, 0x8870) = -1;
+		ac->target1 = lists[k];
+		ac->target2 = points[k];
+		ac->pathReverse = table_rand() & 1;
+		ac->stuckPath = -1;
 		FIELD(u32, a, 0x8848) = 0x44bb8000;   /* 1500.0 */
 	} else
 		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), k_1_5f));
@@ -240,7 +244,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	const float *w2de8 = (const float *)(w + 0x2de8);
 	if (GAME_VAR(int, shot) == 0) {
 		memcpy(dir, aim, 12);
-		if (GAME_VAR(float, w + 0x2dec) > 0) {
+		if (((ActorInfo *)w)->spread > 0) {
 			long double spread = fmul_m(fld_m((const float *)(w + 0x2dec)) -
 			                            fmul_m((long double)GAME_VAR(int, s + 0x1cd93cc + owner * 0x8888), K(0x4a9418)), K(0x4aa448));
 			if (!(spread >= 0))
@@ -249,7 +253,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 				dir[k] = f32(fadd_m((long double)((int)next_rand(100) - 50) * spread, &dir[k]));
 			Vec3_normalize(dir);
 		}
-		if (GAME_VAR(int, w + 0x2dfc) == 3) {
+		if (((ActorInfo *)w)->shotMode == 3) {
 			glPushMatrix();
 			glLoadIdentity();
 			for (int k = 0; k < 3; k++)
@@ -308,7 +312,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->hitActor = -1;
 	B(int, 0xc0) = 0;
 	BU->link = a4;
-	if (GAME_VAR(float, w + 0x2e0c) > 0 && a4 < 0 && BU->owner == ST->playerActor) {
+	if (((ActorInfo *)w)->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = (const float *)(RELOC(b) + 0x78);
 		float *tip = (float *)(RELOC(b) + 0xc4);
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
@@ -318,17 +322,17 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		tip[2] = f32(fadd_m(fld_m(&tz), &at[2]));
 	}
 	B(int, 0xd0) = 0;
-	B(int, 0x4e4) = 0;
+	BU->trailCount = 0;
 	if (quiet)
 		return;
-	u32 rec[13] = { GAME_VAR(u32, w + 0x2dfc) + 10, ((u32)BU->owner) };
+	u32 rec[13] = { ((u32)((ActorInfo *)w)->shotMode) + 10, ((u32)BU->owner) };
 	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = BU->colour;
 	float size = f32(fld_m((const float *)(w + 0x2df0)));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
-	int sound = GAME_VAR(int, w + 0x2e00);
+	int sound = ((ActorInfo *)w)->sound;
 	if (sound < 0)
 		return;
 	if (BU->owner == ST->playerActor)
@@ -423,7 +427,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	offset_point((float *)(RELOC(b) + 0x128), a, cur);
 	long double dx = fsub_m(fld_m(&cur[0]), &prev[0]), dy = fsub_m(fld_m(&cur[1]), &prev[1]), dz = fsub_m(fld_m(&cur[2]), &prev[2]);
 	long double len = flying ? x87_fsqrt((dx * dx + dz * dz) + dy * dy) : x87_fsqrt((dz * dz + dy * dy) + dx * dx);
-	B(float, 0x494) = (float)len;
+	BU->trailAge[0] = (float)len;
 	float scale = f32(fmul_m(len, K(0x4aa450)));   /* / 800 */
 	u32 colour = GAME_VAR(u32, s + 0x9ccfe4);
 	for (int k = 0; k < 4; k++) {
@@ -462,7 +466,7 @@ static void trail(u8 *b, const u8 *w, int flying)
 {
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
 	look_inverse(b, inv, !(prev[0] < cur[0]) && !(prev[0] > cur[0]) && !(prev[2] < cur[2]) && !(prev[2] > cur[2]));
-	int i = B(int, 0x4e4) % 20;
+	int i = BU->trailCount % 20;
 	u8 *ring = b + i * 0x30;
 	long double half = fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
@@ -488,12 +492,12 @@ static void trail(u8 *b, const u8 *w, int flying)
 		a[2] = f32(fmul_m(half, &inv[2]));
 		last[2] = f32(fadd_m(fld_m(&a[2]), &prev[2]));
 	}
-	B(u32, 0x494 + i * 4) = BITS(BU->age);
-	i = ++B(int, 0x4e4) % 20;
+	BITS(BU->trailAge[i]) = BITS(BU->age);
+	i = ++BU->trailCount % 20;
 	ring = b + i * 0x30;
 	for (int c = 0; c < 4; c++)
 		memcpy(ring + 0xd4 + c * 0xc, cur, 12);
-	B(u32, 0x494 + i * 4) = BITS(BU->age);
+	BITS(BU->trailAge[i]) = BITS(BU->age);
 }
 
 /* the shot drawn by its kind (+0x2dfc): a trail, a beam, or a particle of kind + 0x14 from the last point to the
@@ -518,7 +522,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 {
 	int t = BU->hitActor;
 	if (ST->actors[t].pilot == ST->playerActor && ST->actors[t].state == 1)
-		bullet_playImpactSound(s, BU->owner, t, W(int, 0x2ddc), W(int, 0x2de0), WI->shotMode, weapon);
+		bullet_playImpactSound(s, BU->owner, t, WI->damageMode, WI->damage, WI->shotMode, weapon);
 	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
@@ -526,12 +530,12 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	Vec3_normalize(dir);
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
 	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
-	if (W(int, 0x2e04) >= 0)
-		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x84, s + 0x20f397c, 0x47435000);
+	if (WI->hitSound >= 0)
+		sound_play3D(WI->hitSound, s + 0x20f3970, b + 0x84, s + 0x20f397c, 0x47435000);
 	if (BU->owner == ST->playerActor)
 		sound_playVolume(0xb, 100);
-	if (W(float, 0x2e14) > 0) {
-		long double k = -fld_m(&W(float, 0x2e14));
+	if (WI->push > 0) {
+		long double k = -fld_m(&WI->push);
 		float x = f32(fmul_m(k, &dir[0])), y = f32(fmul_m(k, &dir[1]));
 		long double z = fmul_m(k, &dir[2]);
 		float *push = &AF(BU->hitActor, 0x1ce1c04);
@@ -617,8 +621,8 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
 	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_items3D == 1)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
-	if (W(int, 0x2e04) >= 0)
-		sound_play3D(W(int, 0x2e04), s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);
+	if (WI->hitSound >= 0)
+		sound_play3D(WI->hitSound, s + 0x20f3970, b + 0x60, s + 0x20f397c, 0x47435000);
 	B(int, 0xd0) = 1;
 }
 
@@ -640,10 +644,10 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 		if (len >= WI->splashRadius)
 			continue;
 		float f = f32(fsubr_m(fmul_m(fdiv_m(len, &WI->splashRadius), K(0x4a942c)), K(0x4a9424)));   /* 1 - len / r / 2 */
-		int damage = ftol(fmul_m((long double)W(int, 0x2de0), &f));
-		bullet_playImpactSound(s, BU->owner, j, W(int, 0x2ddc), damage, WI->shotMode, BU->weapon);
-		if (W(float, 0x2e14) > 0) {
-			long double k = fld_m(&W(float, 0x2e14));
+		int damage = ftol(fmul_m((long double)WI->damage, &f));
+		bullet_playImpactSound(s, BU->owner, j, WI->damageMode, damage, WI->shotMode, BU->weapon);
+		if (WI->push > 0) {
+			long double k = fld_m(&WI->push);
 			float x = f32(fmul_m(k, &d[0])), y = f32(fmul_m(k, &d[1]));
 			long double z = fmul_m(k, &d[2]);
 			float x10 = f32(fmul_m(fld_m(&x), K(0x4a9418))), y10 = f32(fmul_m(fld_m(&y), K(0x4a9418)));
