@@ -558,7 +558,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		case 7: timer = &A(u32, 0x400); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
-			if (A(int, 0x110) == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
+			if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
 				memcpy(ac + 0x180, to + 0xc, 12);
 				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));

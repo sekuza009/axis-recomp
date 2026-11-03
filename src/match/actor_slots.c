@@ -790,11 +790,11 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x104) = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
 	AC->active = 1;
 	(*(u32 *)&AC->player) = pp[0];
-	A(u32, 0x110) = a3;
+	(*(u32 *)&AC->pilot) = a3;
 	int level = GAME_VAR(int, p + 0x44);
 	A(int, 0x114) = level >= 0 && level < 9 ? level : 0;
 	(*(u32 *)&AC->team) = GAME_VAR(u32, p + 0x48);
-	A(u32, 0x11c) = pp[1];
+	(*(u32 *)&AC->bot) = pp[1];
 	A(int, 0x120) = 0;
 	A(u32, 0x124) = 0x3f800000;
 	(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
