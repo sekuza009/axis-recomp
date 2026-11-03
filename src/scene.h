@@ -247,7 +247,8 @@ typedef struct ActorInfo {
 
 /* a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player) */
 typedef struct PlayerRecord {
-	u8 _pad0000000[0x44];
+	i32 used;   /* +0x0: (by use) 1: in use (playerRecord_markUsed / markFree) */
+	u8 _pad0000004[0x40];
 	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
 	i32 team;   /* +0x48 */
 	u8 _pad000004c[0x2c0];
@@ -728,7 +729,7 @@ typedef struct Stage {
 	i32 layerMode;   /* +0x9eee48: cloud layers: 0 none, 1 one, 2 two */
 	i32 layerTextures[2];   /* +0x9eee4c */
 	float layer[7][7][3];   /* +0x9eee54: the layers' grid (scaled 10000) */
-	u8 _pad09ef0a0[0x8];
+	i32 layerTurns[2];   /* +0x9ef0a0: (by use) the layers' scroll: whole turns (layerScroll the part) */
 	float layerScroll[2];   /* +0x9ef0a8: u, v: the layers' texture offset */
 	i32 sideMode;   /* +0x9ef0b0: side walls: 0 none, 1 low, else high */
 	i32 sideTextures[6];   /* +0x9ef0b4 */
@@ -737,7 +738,7 @@ typedef struct Stage {
 	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
 	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale hud_496f20 gets) */
 	i32 floorFrame;   /* +0x9ef8fc */
-	u8 _pad09ef900[0x4];
+	float floorClock;   /* +0x9ef900: (by use) the floor's animation clock (floorFrame steps at each turn) */
 	float levelLow[3];   /* +0x9ef904: (by use) the level's bounds (the level grid over them; the actors kept inside) */
 	float levelHigh[3];   /* +0x9ef910 */
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
@@ -789,7 +790,7 @@ typedef struct Stage {
 	i32 actorSerial;   /* +0x202e8d0: the next actor's id */
 	i32 playerActor;   /* +0x202e8d4: the local player's actor slot */
 	i32 selectedActor;   /* +0x202e8d8: (by use) the selected actor (stage_selectActor; -1 none) */
-	u8 _pad202e8dc[0x4];
+	i32 silentActor;   /* +0x202e8dc: (by use) stage_setSilentActor's value */
 	i32 cameraTarget;   /* +0x202e8e0: (by use) the actor the camera follows (-1 none; camera_setTarget) */
 	i32 cameraTargetMode;   /* +0x202e8e4 */
 	u8 _pad202e8e8[0x4];
@@ -811,7 +812,11 @@ typedef struct Stage {
 	u32 effectShapes[8];   /* +0x20f2e74: shell / rail / blade fire, shell / rail / lightning / missile / homing bullet */
 	u8 _pad20f2e94[0xa8];
 	i32 effectShapesReset;   /* +0x20f2f3c: (unclear) cleared when the effects' shapes are looked up */
-	u8 _pad20f2f40[0xa30];
+	u8 _pad20f2f40[0x88];
+	float baseMatrix[16];   /* +0x20f2fc8: (by use) the stage's identity matrix (stage_resetMatrixAndPoints) */
+	i32 pointCount;   /* +0x20f3008 */
+	float points[200][3];   /* +0x20f300c: at the origin until set */
+	u32 defaultColour;   /* +0x20f396c */
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
@@ -847,7 +852,11 @@ typedef struct Stage {
 	u32 emblemTexture;   /* +0x20fcfe0: (by use) the emblem atlas's GL texture */
 	u32 emblemAtlas[64][128];   /* +0x20fcfe4: the players' emblems, four to a row */
 	i32 clanTexture;   /* +0x2104fe4: (by use) the map's clan texture (Stage\<map>\Clan) */
-	u8 _pad2104fe8[0x44220];
+	u8 _pad2104fe8[0x43c68];
+	i32 scriptEvents[32][5];   /* +0x2148c50: (by use) the script's event ring (script_pushEvent: a, b, c, d, d) */
+	i32 eventHead;   /* +0x2148ed0: events pushed (the ring's next: % 32) */
+	i32 eventTail;   /* +0x2148ed4: the oldest kept (moved on when the ring is full) */
+	u8 _pad2148ed8[0x330];
 	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
 	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
 	i32 scriptRunning;   /* +0x214930c */
@@ -1364,6 +1373,7 @@ _Static_assert(offsetof(ActorInfo, tracer) == 0x2e0c && sizeof(((ActorInfo *)0)-
 _Static_assert(offsetof(ActorInfo, ringRange) == 0x2e10 && sizeof(((ActorInfo *)0)->ringRange) == 0x4, "scene.fields: ActorInfo.ringRange");
 _Static_assert(offsetof(ActorInfo, push) == 0x2e14 && sizeof(((ActorInfo *)0)->push) == 0x4, "scene.fields: ActorInfo.push");
 _Static_assert(sizeof(ActorInfo) == 0x2e18, "scene.fields: size of ActorInfo");
+_Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)->used) == 0x4, "scene.fields: PlayerRecord.used");
 _Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
 _Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
@@ -1702,6 +1712,7 @@ _Static_assert(offsetof(Stage, skySphere) == 0x9ee080 && sizeof(((Stage *)0)->sk
 _Static_assert(offsetof(Stage, layerMode) == 0x9eee48 && sizeof(((Stage *)0)->layerMode) == 0x4, "scene.fields: Stage.layerMode");
 _Static_assert(offsetof(Stage, layerTextures) == 0x9eee4c && sizeof(((Stage *)0)->layerTextures) == 0x8, "scene.fields: Stage.layerTextures");
 _Static_assert(offsetof(Stage, layer) == 0x9eee54 && sizeof(((Stage *)0)->layer) == 0x24c, "scene.fields: Stage.layer");
+_Static_assert(offsetof(Stage, layerTurns) == 0x9ef0a0 && sizeof(((Stage *)0)->layerTurns) == 0x8, "scene.fields: Stage.layerTurns");
 _Static_assert(offsetof(Stage, layerScroll) == 0x9ef0a8 && sizeof(((Stage *)0)->layerScroll) == 0x8, "scene.fields: Stage.layerScroll");
 _Static_assert(offsetof(Stage, sideMode) == 0x9ef0b0 && sizeof(((Stage *)0)->sideMode) == 0x4, "scene.fields: Stage.sideMode");
 _Static_assert(offsetof(Stage, sideTextures) == 0x9ef0b4 && sizeof(((Stage *)0)->sideTextures) == 0x18, "scene.fields: Stage.sideTextures");
@@ -1710,6 +1721,7 @@ _Static_assert(offsetof(Stage, floorOn) == 0x9ef30c && sizeof(((Stage *)0)->floo
 _Static_assert(offsetof(Stage, floorTextures) == 0x9ef310 && sizeof(((Stage *)0)->floorTextures) == 0x40, "scene.fields: Stage.floorTextures");
 _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor) == 0x5ac, "scene.fields: Stage.floor");
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
+_Static_assert(offsetof(Stage, floorClock) == 0x9ef900 && sizeof(((Stage *)0)->floorClock) == 0x4, "scene.fields: Stage.floorClock");
 _Static_assert(offsetof(Stage, levelLow) == 0x9ef904 && sizeof(((Stage *)0)->levelLow) == 0xc, "scene.fields: Stage.levelLow");
 _Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->levelHigh) == 0xc, "scene.fields: Stage.levelHigh");
 _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
@@ -1756,6 +1768,7 @@ _Static_assert(offsetof(Stage, actorFreeHint) == 0x202e8cc && sizeof(((Stage *)0
 _Static_assert(offsetof(Stage, actorSerial) == 0x202e8d0 && sizeof(((Stage *)0)->actorSerial) == 0x4, "scene.fields: Stage.actorSerial");
 _Static_assert(offsetof(Stage, playerActor) == 0x202e8d4 && sizeof(((Stage *)0)->playerActor) == 0x4, "scene.fields: Stage.playerActor");
 _Static_assert(offsetof(Stage, selectedActor) == 0x202e8d8 && sizeof(((Stage *)0)->selectedActor) == 0x4, "scene.fields: Stage.selectedActor");
+_Static_assert(offsetof(Stage, silentActor) == 0x202e8dc && sizeof(((Stage *)0)->silentActor) == 0x4, "scene.fields: Stage.silentActor");
 _Static_assert(offsetof(Stage, cameraTarget) == 0x202e8e0 && sizeof(((Stage *)0)->cameraTarget) == 0x4, "scene.fields: Stage.cameraTarget");
 _Static_assert(offsetof(Stage, cameraTargetMode) == 0x202e8e4 && sizeof(((Stage *)0)->cameraTargetMode) == 0x4, "scene.fields: Stage.cameraTargetMode");
 _Static_assert(offsetof(Stage, teamsChanged) == 0x202e8ec && sizeof(((Stage *)0)->teamsChanged) == 0x4, "scene.fields: Stage.teamsChanged");
@@ -1773,6 +1786,10 @@ _Static_assert(offsetof(Stage, projectileSerial) == 0x20f2da8 && sizeof(((Stage 
 _Static_assert(offsetof(Stage, thrustShapes) == 0x20f2dac && sizeof(((Stage *)0)->thrustShapes) == 0x60, "scene.fields: Stage.thrustShapes");
 _Static_assert(offsetof(Stage, effectShapes) == 0x20f2e74 && sizeof(((Stage *)0)->effectShapes) == 0x20, "scene.fields: Stage.effectShapes");
 _Static_assert(offsetof(Stage, effectShapesReset) == 0x20f2f3c && sizeof(((Stage *)0)->effectShapesReset) == 0x4, "scene.fields: Stage.effectShapesReset");
+_Static_assert(offsetof(Stage, baseMatrix) == 0x20f2fc8 && sizeof(((Stage *)0)->baseMatrix) == 0x40, "scene.fields: Stage.baseMatrix");
+_Static_assert(offsetof(Stage, pointCount) == 0x20f3008 && sizeof(((Stage *)0)->pointCount) == 0x4, "scene.fields: Stage.pointCount");
+_Static_assert(offsetof(Stage, points) == 0x20f300c && sizeof(((Stage *)0)->points) == 0x960, "scene.fields: Stage.points");
+_Static_assert(offsetof(Stage, defaultColour) == 0x20f396c && sizeof(((Stage *)0)->defaultColour) == 0x4, "scene.fields: Stage.defaultColour");
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
 _Static_assert(offsetof(Stage, viewDir) == 0x20f397c && sizeof(((Stage *)0)->viewDir) == 0xc, "scene.fields: Stage.viewDir");
 _Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->viewUp) == 0xc, "scene.fields: Stage.viewUp");
@@ -1802,6 +1819,9 @@ _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->k
 _Static_assert(offsetof(Stage, emblemTexture) == 0x20fcfe0 && sizeof(((Stage *)0)->emblemTexture) == 0x4, "scene.fields: Stage.emblemTexture");
 _Static_assert(offsetof(Stage, emblemAtlas) == 0x20fcfe4 && sizeof(((Stage *)0)->emblemAtlas) == 0x8000, "scene.fields: Stage.emblemAtlas");
 _Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)->clanTexture) == 0x4, "scene.fields: Stage.clanTexture");
+_Static_assert(offsetof(Stage, scriptEvents) == 0x2148c50 && sizeof(((Stage *)0)->scriptEvents) == 0x280, "scene.fields: Stage.scriptEvents");
+_Static_assert(offsetof(Stage, eventHead) == 0x2148ed0 && sizeof(((Stage *)0)->eventHead) == 0x4, "scene.fields: Stage.eventHead");
+_Static_assert(offsetof(Stage, eventTail) == 0x2148ed4 && sizeof(((Stage *)0)->eventTail) == 0x4, "scene.fields: Stage.eventTail");
 _Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
 _Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
 _Static_assert(offsetof(Stage, scriptRunning) == 0x214930c && sizeof(((Stage *)0)->scriptRunning) == 0x4, "scene.fields: Stage.scriptRunning");

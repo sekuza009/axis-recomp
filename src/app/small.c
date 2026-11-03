@@ -51,19 +51,19 @@ int (str_dropLast)(char *s)
 
 /* ---- the scene's and stage's flags and lists ---- */
 /* 0x463670, 0x463690, 0x4636b0: one of three requests raised (and the "something requested" flag) */
-void THISCALL (event_raise3)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; FIELD(int, scene, 0x2343106) = 1; }
-void THISCALL (event_raise4)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; FIELD(int, scene, 0x2343106) = 1; }
-void THISCALL (event_raise5)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; FIELD(int, scene, 0x2343106) = 1; }
+void THISCALL (event_raise3)(Scene *scene) { FIELD(int, scene, 0x2343237) = 1; scene->noticeChanged = 1; }
+void THISCALL (event_raise4)(Scene *scene) { FIELD(int, scene, 0x234323b) = 1; scene->noticeChanged = 1; }
+void THISCALL (event_raise5)(Scene *scene) { FIELD(int, scene, 0x234323f) = 1; scene->noticeChanged = 1; }
 /* 0x463780: team slot i's id */
 int THISCALL (scene_teamSlot)(Scene *scene, int i) { return scene->teamIds[i]; }
 /* 0x474390: player record p marked used; 0x4743b0: marked free, its colour grid cleared */
-void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 1; }
+void THISCALL (playerRecord_markUsed)(Stage *stage, int p) { stage->playerRecords[p].used = 1; }
 void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 {
-	FIELD(int, stage, 0x1561b68 + p * 0x47fd2) = 0;
+	stage->playerRecords[p].used = 0;
 	playerRecord_resetColourGrid(stage, p);
 }
-/* 0x45df90: the stage's 100 actor references cleared */
+/* 0x45df90: the stage's frag counts cleared (frags[100]) */
 void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage + 0x202e8f0, 100); }
 /* 0x45e1c0: every actor in use switched off */
 void THISCALL (stage_deactivateActors)(Stage *stage)
@@ -205,15 +205,15 @@ void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
    dropped */
 void THISCALL (script_pushEvent)(Stage *stage, int a, int b, int c, int d)
 {
-	int *e = (int *)((u8 *)stage + 0x2148c50 + (FIELD(int, stage, 0x2148ed0) & 0x1f) * 20);
+	int *e = stage->scriptEvents[stage->eventHead & 0x1f];
 	e[0] = a;
 	e[1] = b;
 	e[2] = c;
 	e[3] = d;
 	e[4] = d;
-	int head = ++FIELD(int, stage, 0x2148ed0);
-	if (((FIELD(int, stage, 0x2148ed4) ^ head) & 0x1f) == 0)
-		FIELD(int, stage, 0x2148ed4)++;
+	int head = ++stage->eventHead;
+	if (((stage->eventTail ^ head) & 0x1f) == 0)
+		stage->eventTail++;
 }
 /* 0x48fca0: the script's six counters cleared */
 int THISCALL (script_reset)(Stage *stage)
@@ -236,21 +236,21 @@ static void player_seen(Stage *stage, int p)
 void THISCALL (player_setValue)(Stage *stage, int p, int v)
 {
 	player_seen(stage, p);
-	FIELD(int, stage, 0x1561b68 + p * 0x47fd2 + 0x44) = v;
+	stage->playerRecords[p].level = v;
 	for (int i = 0; i < stage->actorCount; i++)
-		if (FIELD(int, &stage->actors[i], 0x10c) == p)
-			FIELD(int, &stage->actors[i], 0x114) = v;
+		if (stage->actors[i].player == p)
+			stage->actors[i].level = v;
 }
 /* 0x48fe10: the stage's identity matrix, 200 points at the origin (0xa0e7a8), the colour at 0xa1f220 */
 void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 {
 	for (int k = 0; k < 16; k++)
-		FIELD(u32, stage, 0x20f2fc8 + k * 4) = k % 5 ? 0 : 0x3f800000;
+		BITS(stage->baseMatrix[k]) = k % 5 ? 0 : 0x3f800000;
 	for (int k = 0; k < 200; k++)
 		for (int j = 0; j < 3; j++)
-			FIELD(int, stage, 0x20f300c + k * 12 + j * 4) = GAME_VAR(int, OBJ(g_vecOriginXyz) + j * 4);
-	FIELD(int, stage, 0x20f3008) = 0;
-	FIELD(int, stage, 0x20f396c) = g_defaultColour;
+			(*(int *)&stage->points[k][j]) = GAME_VAR(int, OBJ(g_vecOriginXyz) + j * 4);
+	stage->pointCount = 0;
+	stage->defaultColour = g_defaultColour;
 }
 
 /* ---- matrices (16 dwords) ---- */
@@ -311,8 +311,8 @@ void THISCALL (match_resetInputState)(Scene *scene)
 {
 	for (int off = 0x234325f; off < 0x2343323; off += 4)
 		FIELD(int, scene, off) = 0;
-	FIELD(int, scene, 0x2343287) = -1;
-	FIELD(int, scene, 0x2343307) = -1;
+	scene->viewKey = -1;
+	scene->radioMessage = -1;
 	memset((u8 *)scene + 0x2343323, 0, 10 * 4);
 }
 
@@ -333,7 +333,7 @@ void (armc_resetSeraphimParts)(void) {}
 /* ---- more small methods ---- */
 void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a; }
 /* 0x45dfe0: the stage's actor without footstep sounds (+0x202e8dc) set (returned) */
-int THISCALL (stage_setSilentActor)(Stage *stage, int v) { FIELD(int, stage, 0x202e8dc) = v; return v; }
+int THISCALL (stage_setSilentActor)(Stage *stage, int v) { stage->silentActor = v; return v; }
 /* 0x468720: the time sync object at 0xa0e948 constructed */
 void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer)); }
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
@@ -438,17 +438,17 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 		X a = d + stage->layerScroll[k];
 		stage->layerScroll[k] = (float)a;
 		if (a >= one) {
-			FIELD(int, stage, 0x9ef0a0 + k * 4)++;
+			stage->layerTurns[k]++;
 			stage->layerScroll[k] = (float)(a - one);
 		}
 	}
 	if (stage->floorOn != 2)
 		return;
-	X e = (X)dt * k_clockRate3 + FIELD(float, stage, 0x9ef900);
-	FIELD(float, stage, 0x9ef900) = (float)e;
+	X e = (X)dt * k_clockRate3 + stage->floorClock;
+	stage->floorClock = (float)e;
 	if (e >= one) {
 		stage->floorFrame = (stage->floorFrame + 1) % 16;
-		FIELD(float, stage, 0x9ef900) = (float)(e - one);
+		stage->floorClock = (float)(e - one);
 	}
 }
 
@@ -718,12 +718,13 @@ int (sys_checkClockTampering)(void)
    Its caller ignores the eax it leaves */
 void THISCALL (scene_loadPath)(u8 *scene, u32 path)
 {
-	if (!((Stage *)scene)->scriptMode)
+	Stage *st = (Stage *)scene;
+	if (!st->scriptMode)
 		return;
 	if (!GAME_VAR(int, scene + 0x2148ee0))
 		recorder_openStub(scene + 0x2148ed8, scene + 0x2149208, (const void *)STR(0x4c45e4, "Scene"));
 	if (!recorder_setPathStub(scene + 0x2148ed8, path))
-		((Stage *)scene)->scriptMode = 0;
+		st->scriptMode = 0;
 	const char *name = (const char *)(scene + 0x2149108);
 	if (*name) {
 		char text[0x100];
@@ -793,11 +794,12 @@ static const PartKind part_kinds[5] = {
    stored, and each of the player's actors reloads the part; 1 */
 static int set_part(u8 *scene, int p, int type, const PartKind *k)
 {
+	Stage *st = (Stage *)scene;
 	if (type < 0)
 		return 0;
-	u8 *pl = (u8 *)&((Stage *)scene)->playerRecords[p];
-	if (p > ((Stage *)scene)->playerRecordCount - 1)
-		((Stage *)scene)->playerRecordCount = p + 1;
+	u8 *pl = (u8 *)&st->playerRecords[p];
+	if (p > st->playerRecordCount - 1)
+		st->playerRecordCount = p + 1;
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, scene + k->count))
@@ -806,8 +808,8 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)scene + k->names + type * k->stride);
 	GAME_VAR(int, pl + k->field) = type;
-	for (int i = 0; i < ((Stage *)scene)->actorCount; i++)
-		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
+	for (int i = 0; i < st->actorCount; i++)
+		if (st->actors[i].player == p)
 			GAME_THISCALL(k->reload, void, void *, int)(scene, i);
 	return 1;
 }
@@ -828,19 +830,20 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
 	u8 *scene = (u8 *)stage;
-	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
+	Stage *st = (Stage *)scene;
+	u8 *type = (u8 *)&st->playerRecords[p];
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
-	unsigned mode = GAME_VAR(int, scene + 0x20f3ab8) - 2;
+	unsigned mode = st->gameType - 2;
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)(u8 *)&((Stage *)scene)->actorInfo[item]);
+		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)(u8 *)&st->actorInfo[item]);
 	else
 		type[0x18c + slot * 0x40] = 0;
-	if (item >= GAME_VAR(int, scene + 0x1561b64))
+	if (item >= st->actorInfoCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	GAME_VAR(int, type + 0x320 + slot * 4) = item;
-	for (int i = 0; i < ((Stage *)scene)->actorCount; i++)
-		if (GAME_VAR(int, scene + 0x1cd94b4 + i * 0x8888) == p)
+	for (int i = 0; i < st->actorCount; i++)
+		if (st->actors[i].player == p)
 			actor_updatePart(scene, i, slot, GAME_VAR(u32, scene + 0x1cd9844 + i * 0x8888));
 }
