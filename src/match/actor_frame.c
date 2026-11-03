@@ -333,9 +333,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				AU(0x3f4) = AU(0x3fc) = 0x447a0000;   /* 1000 */
 			else {
 				if (AF(0x3f4) > *K(0x4a940c))
-					AI(0x3f4) = 0;
+					AF(0x3f4) = 0.0f;
 				if (AF(0x3fc) > *K(0x4a940c))
-					AI(0x3fc) = 0;
+					AF(0x3fc) = 0.0f;
 			}
 		}
 		AI(0x87f4) = 0;
@@ -1119,10 +1119,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	/* stamina (+0x4ac): spent running, back after a rest (+0x4b0 the rest) */
 	if (!(((u32)AC->timerFlags) & 0x400) && AC->inBooster == 1 && (AC->inForward == 1 || AC->inBackward == 1 || AC->inStepLeft == 1 || AC->inStepRight == 1)) {
-		long double v = fsubr_m(fdiv_m(fld_m(dt), &AF(0x44)), &AF(0x4ac));
-		AF(0x4ac) = (float)v;
+		long double v = fsubr_m(fdiv_m(fld_m(dt), &AF(0x44)), &AC->energyUsed);
+		AC->energyUsed = (float)v;
 		if (!(v >= 0)) {
-			AI(0x4ac) = 0;
+			AC->energyUsed = 0.0f;
 			AC->overheat = 1;
 		}
 		AI(0x4b0) = 0;
@@ -1131,14 +1131,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AF(0x4b0) = (float)v;
 		if (v > 1.0L)
 			AU(0x4b0) = 0x3f800000;
-	} else if (!(AF(0x4ac) >= 1.0f)) {
-		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x48)), &AF(0x4ac));
-		AF(0x4ac) = (float)v;
+	} else if (!(AC->energyUsed >= 1.0f)) {
+		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x48)), &AC->energyUsed);
+		AC->energyUsed = (float)v;
 		if (v > 1.0L)
-			AF(0x4ac) = 1.0f;
+			AC->energyUsed = 1.0f;
 	}
-	AC->warned = AF(0x4ac) > *K(0x4a94f8) ? 0 : 1;
-	if (AC->overheat == 1 && AF(0x4ac) >= 0.5f)
+	AC->warned = AC->energyUsed > *K(0x4a94f8) ? 0 : 1;
+	if (AC->overheat == 1 && AC->energyUsed >= 0.5f)
 		AC->overheat = 0;
 	if (AC->state == 1) {
 		/* the effects' scale by the speed: 0.5 .. 3 */

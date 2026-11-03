@@ -544,8 +544,8 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
-	} else if (!(A(float, 0x120) > *K(0x4a9534))) {
-		if (!(A(float, 0x120) >= *K(0x4a974c)))
+	} else if (!(AC->blinkTime > *K(0x4a9534))) {
+		if (!(AC->blinkTime >= *K(0x4a974c)))
 			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m((const float *)(ac + 0x120)), K(0x4a9748)));
 		else {
 			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m((const float *)(ac + 0x120)), K(0x4a974c)), K(0x4a9748))));
@@ -796,7 +796,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x114) = level >= 0 && level < 9 ? level : 0;
 	(*(u32 *)&AC->team) = GAME_VAR(u32, p + 0x48);
 	(*(u32 *)&AC->bot) = pp[1];
-	A(int, 0x120) = 0;
+	AC->blinkTime = 0.0f;
 	A(u32, 0x124) = 0x3f800000;
 	(*(u32 *)&AC->armor) = ((u32)AC->armorMax);
 	(*(u32 *)&AC->shield) = ((u32)AC->shieldMax);

@@ -117,19 +117,20 @@ def float_literals(head_u32, write_float):
 	statement (in a chain, a = b = 0x447a0000, the outer one would take the float's value converted, not its bits)"""
 	def lit(m):
 		f = resolve(TYPE, int(m.group(2), 0))
-		v = nice_float(int(m.group(3), 16))
+		v = '0.0f' if m.group(3) == '0' else nice_float(int(m.group(3), 16))
 		if f and f[1] == 'float' and v:
 			return '%s%s = %s;' % (m.group(1), write_float(m.group(2)), v)
 		return m.group(0)
-	return re.sub(r'(?<=[;{}\n])([ \t]*)%s = (0x[0-9a-f]{8});' % head_u32, lit, t)
+	# (an integer 0 is the same store as 0.0f: the bits of +0.0)
+	return re.sub(r'(?<=[;{}\n])([ \t]*)%s = (0x[0-9a-f]{8}|0);' % head_u32, lit, t)
 
 
 if not VARFORM and not FIXED:
-	t = float_literals(r'\b%s\(u32, (0x[0-9a-f]+|\d+)\)' % re.escape(macro), lambda o: '%s(float, %s)' % (macro, o))
+	t = float_literals(r'\b%s\((?:u32|int), (0x[0-9a-f]+|\d+)\)' % re.escape(macro), lambda o: '%s(float, %s)' % (macro, o))
 elif FIXED and 'u32' in fixed.values() and 'float' in fixed.values():
-	U = [k for k, v in fixed.items() if v == 'u32'][0]
 	FL = [k for k, v in fixed.items() if v == 'float'][0]
-	t = float_literals(r'\b%s\((0x[0-9a-f]+|\d+)\)' % re.escape(U), lambda o: '%s(%s)' % (FL, o))
+	ints = '|'.join(re.escape(k) for k, v in fixed.items() if v in ('u32', 'int'))
+	t = float_literals(r'\b(?:%s)\((0x[0-9a-f]+|\d+)\)' % ints, lambda o: '%s(%s)' % (FL, o))
 kinds = collections.defaultdict(set)
 done, other, unknown = 0, collections.Counter(), collections.Counter()
 cls = lambda k: 'int32' if k in ('i32', 'u32') else k

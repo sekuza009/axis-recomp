@@ -714,7 +714,7 @@ static void particle_aim(u8 *p, int by_size)
    unless it is a remote one (+0xc 1) small particles (kind 0, of its size) along it, one per 200 units */
 static void particle_beam(u8 *s, u8 *p, u32 colour)
 {
-	P(int, 0x70) = 0;
+	P(float, 0x70) = 0.0f;
 	PR->colour = colour;
 	glPushMatrix();
 	glLoadIdentity();
@@ -819,11 +819,11 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	P(u32, 0x28) = GAME_VAR(u32, desc + 0x20);
 	if (P(u32, 0x28))
 		Mat4_copy(p + 0x2c, P(const void *, 0x28));
-	P(int, 0x6c) = 0;
+	P(float, 0x6c) = 0.0f;
 	P(float, 0x70) = 1.0f;
-	P(int, 0x74) = 0;
+	P(float, 0x74) = 0.0f;
 	PR->colour = g_white;
-	P(int, 0x7c) = 0;
+	PR->size = 0.0f;
 	P(u32, 0x80) = GAME_VAR(u32, desc + 0x2c);
 	int kind = PR->kind;
 	switch (kind) {
@@ -835,7 +835,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
 		break;
 	case 4:
-		P(int, 0x70) = 0;
+		P(float, 0x70) = 0.0f;
 		PR->colour = P(u32, 0x20);
 		break;
 	case 5: case 6: case 7: P(int, 0x70) = 0; break;

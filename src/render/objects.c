@@ -289,7 +289,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		u8 hit[12];
 		if (k == ST->selectedActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
 		    c[2] >= c[3] || collision_rayTrace(s, cam, p, hit)) {
-			A(int, 0x87e8) = 0;
+			AC->lockedOn = 0.0f;
 			AC->onScreen = 0;
 			continue;
 		}
@@ -309,7 +309,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		A(int, 0x484) = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = s + 0x1cd93a8 + ST->playerActor * 0x8888;
 		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
-			A(int, 0x87e8) = 0;
+			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
 			continue;
 		}
@@ -317,18 +317,18 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		A(float, 0x87e4) = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
 		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
-			A(int, 0x87e8) = 0;
+			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
 			continue;
 		}
 		int weapon = GAME_VAR(int, me + 0x148);
 		if (ST->playerActor >= 0 && AC->team != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
 		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
-			A(float, 0x87e8) = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
+			AC->lockedOn = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else
-			A(int, 0x87e8) = 0;
+			AC->lockedOn = 0.0f;
 		if (!tag_narrow(ac, OBJ(k_40f)))
-			A(u32, 0x87f0) = 0x40400000;
+			AC->labelFade = 3.0f;
 		AC->onScreen = 1;
 	}
 }

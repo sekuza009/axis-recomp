@@ -712,7 +712,7 @@ static void choose_followed(u8 *s, int f)
 		u32 r = rand_below(n);
 		(*(u32 *)&SC->watchedPlayer) = r;
 		if (ACTOR_INT(r, 0x1eccb78) == 1)
-			S(int, 0x233cc38) = 0;
+			S(float, 0x233cc38) = 0.0f;
 		else
 			SC->watchedPlayer = -1;
 	}
@@ -721,7 +721,7 @@ static void choose_followed(u8 *s, int f)
 	else if (S(float, 0x233cc3c) > 7.0f) {
 		u32 r = rand_below(100);
 		SC->cameraMode = r < 5 ? 0 : r < 35 ? 1 : r < 45 ? 2 : r < 50 ? 3 : r < 55 ? 4 : r < 60 ? 5 : r < 65 ? 6 : r < 70 ? 7 : 8 + (r >= 75);
-		S(int, 0x233cc3c) = 0;
+		S(float, 0x233cc3c) = 0.0f;
 	}
 }
 
@@ -1075,9 +1075,9 @@ u32 THISCALL (replay_frame)(u8 *s)
 		SC->quitAsked = 1;
 	}
 	if (run_down(s, 0x233cc40))
-		S(int, 0x233cc40) = 0;
+		SC->msgFade = 0.0f;
 	if (run_down(s, 0x2342f02))
-		S(int, 0x2342f02) = 0;
+		SC->readyTimer = 0.0f;
 	if (run_down(s, 0x2342425)) {
 		tex_upload2(stage);
 		S(int, 0x2342425) = 0;
@@ -1151,7 +1151,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		}
 	events_age(s, S(u32, 0x44));
 	if (SC->rankingKey == 1)
-		S(float, 0x233cc40) = 5.0f;   /* the ranking shown 5 s */
+		SC->msgFade = 5.0f;   /* the ranking shown 5 s */
 
 	/* the camera */
 	SC->playing = SC->watchedPlayer >= 0;
@@ -1232,7 +1232,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		char text[0xf0];
 		/* (the patch DLL retargets these calls for wide screens) */
 		PATCHED_THISCALL(0x48a19c, void, void *)(s);                                 /* hud_drawPlayerMarkers */
-		if (SC->messagesHidden == 0 && S(float, 0x233cc40) > 0)
+		if (SC->messagesHidden == 0 && SC->msgFade > 0)
 			PATCHED_THISCALL(0x48a1c0, void, void *)(s);                             /* replay_drawMessage */
 		if (SC->watchedPlayer >= 0) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1253,7 +1253,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		if (SC->rankingKey == 1)
 			PATCHED_THISCALL(0x48a318, void, void *)(s);                             /* hud_drawRanking */
 	}
-	if (S(float, 0x2342f02) > 0)
+	if (SC->readyTimer > 0)
 		hud_drawReadyStart((Scene *)s);
 	if (SC->quitAsked != 1)
 		return 4;
@@ -1374,7 +1374,7 @@ static void local_spawn(u8 *s)
 		S(int, 0x234300a + SC->localPlayer * 16) = 1;
 	SC->playing = 1;
 	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
-	S(float, 0x23423c1) = 3.0f;   /* 3 */
+	SC->startCount = 3.0f;   /* 3 */
 	SC->startCountShown = -1;
 	msg_newKing((Scene *)s);
 	SC->actionKey = 1;
@@ -1847,7 +1847,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					if (SC->cameraSlot < 0)
 						SC->cameraSlot = 1;
 					SC->watchedPlayer = f;
-					S(int, 0x233cc38) = 0;
+					S(float, 0x233cc38) = 0.0f;
 					SC->watchClear[0] = 1;
 				}
 			} else if (n > 0 && (SC->followNextAsked == 1 || S(float, 0x233cc38) > 14.0f)) {
@@ -1861,7 +1861,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 							if (SC->cameraSlot < 0)
 								SC->cameraSlot = 1;
 							SC->watchedPlayer = next;
-							S(int, 0x233cc38) = 0;
+							S(float, 0x233cc38) = 0.0f;
 							break;
 						}
 						if (++next >= n) {
@@ -1879,7 +1879,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				else if (S(float, 0x233cc3c) > 7.0f) {
 					u32 r = rand_below(100);
 					SC->cameraSlot = r < 5 ? 0 : r < 35 ? 1 : r < 45 ? 2 : r < 50 ? 3 : r < 55 ? 4 : r < 60 ? 5 : r < 65 ? 6 : r < 70 ? 7 : 8 + (r >= 75);
-					S(int, 0x233cc3c) = 0;
+					S(float, 0x233cc3c) = 0.0f;
 				}
 			}
 			if (SC->watchClear[0] == 0)
@@ -1895,16 +1895,16 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 	events_age(s, S(u32, 0x44));
 	if (SC->rankingKey == 1)
-		S(float, 0x233cc40) = 5.0f;
+		SC->msgFade = 5.0f;
 	me = SC->localPlayer;
 	if (me >= 0 && A_INT(me, 0x1eccbbc) == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
 		notice_printCentre((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
 	/* the start count (3, 2, 1, go) */
-	if (S(float, 0x23423c1) > 0) {
+	if (SC->startCount > 0) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423c1)), (const float *)(s + 0x44));
-		S(float, 0x23423c1) = (float)v;
+		SC->startCount = (float)v;
 		if (!(v >= 0)) {
-			S(int, 0x23423c1) = 0;
+			SC->startCount = 0.0f;
 			notice_printCentre((Scene *)s, (const char *)STR(0x4d0610, "FIGHT!"));
 			sound_playVolume(0x17, 100);
 		} else {
@@ -2211,9 +2211,9 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->firstRoundClear[8] = 0;
 	}
 	/* the match restart count */
-	if (S(float, 0x233cc4c) > 0) {
+	if (SC->startTimer > 0) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233cc4c)), (const float *)(s + 0x44));
-		S(float, 0x233cc4c) = (float)v;
+		SC->startTimer = (float)v;
 		if (v > 0) {
 			if (ftol(fadd_m(v, (const float *)(s + 0x44))) != ftol(v))
 				sound_playVolume(9, 100);
@@ -2243,7 +2243,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			A_INT(SC->localPlayer, 0x1eccb54) = 0;
 			A_INT(SC->localPlayer, 0x1eccb64) = 0;
 			A_INT(SC->localPlayer, 0x1eccb58) = 0;
-			S(int, 0x233cc4c) = 0;
+			SC->startTimer = 0.0f;
 			sound_playVolume(0x18, 100);
 		}
 	}
