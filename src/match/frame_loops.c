@@ -144,7 +144,7 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 void THISCALL (script_processTriggers)(u8 *s)
 {
 #define COUNT FIELD(int, s, 0xe3c938)
-#define TRIGGER(i) (s + 0xe3b038 + (i) * 0x1c)
+#define TRIGGER(i) ((u8 *)&ST->triggers[i])
 	for (int i = 0; i < COUNT; i++) {
 		u8 *t = TRIGGER(i);
 		if (FIELD(int, t, 8) != 1)
@@ -230,7 +230,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 {
 #define TRIGGER(i, offset) FIELD(int, s, 0xe3b03c + (i) * 0x1c + (offset))
 #define ACTOR(i, type, offset) FIELD(type, s, 0x1cd93a8 + (i) * 0x8888 + (offset))
-	u8 *actor = a >= 0 ? s + 0x1cd93a8 + a * 0x8888 : NULL;
+	u8 *actor = a >= 0 ? (u8 *)&ST->actors[a] : NULL;
 	u8 *e = FIELD(u8 *, s, 0xe3b03c + trig * 0x1c) + entry * 0x14;
 	char name[0x100];
 	for (int i = 0; i < FIELD(int, e, 0xc); i++) {
@@ -347,7 +347,7 @@ static void identity4(u32 *m)
    callers ignore the eax it leaves */
 void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 {
-	u8 *obj = s + 0x131ae44 + i * 0x2cc;
+	u8 *obj = (u8 *)&ST->objects[i];
 	int idx = 0;
 	for (; idx < FIELD(int, s, 0x131ae40); idx++)
 		if (!strcmp((const char *)RELOC(type), (const char *)s + 0x130b440 + idx * 0x40))
@@ -467,7 +467,7 @@ static void spark(u8 *s, u8 *p, float dt)
    ignores the eax it leaves */
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
-	u8 *p = s + 0x20a99c0 + slot * 0x12c;
+	u8 *p = (u8 *)&ST->projectiles[slot];
 	float age = GAME_VAR(float, p + 0x74);
 	GAME_VAR(float, p + 0x6c) = age;
 	if (age > GAME_VAR(float, p + 0x70)) {
@@ -605,16 +605,16 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 void THISCALL (item_update)(u8 *s, float dt)
 {
 	for (int k = 0; k < ST->actorCount; k++) {
-		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+		u8 *ac = (u8 *)&ST->actors[k];
 		if (AC->state == 1)
 			A(int, 0x53c) = 0;
 	}
 	for (int i = 0; i < ST->itemCount; i++) {
-		u8 *it = s + 0x20fadf8 + i * 0x28;
+		u8 *it = (u8 *)&ST->items[i];
 		int type = I(int, 0);
 		if (type < 0)
 			continue;
-		u8 *t = s + 0x20f3ae0 + type * 0x90;
+		u8 *t = (u8 *)&ST->itemTypes[type];
 		if (I(int, 0x20) == 1) {
 			if (I(float, 0x24) > GAME_VAR(float, t + 0x48)) {
 				item_sound(s, GAME_VAR(int, t + 0x40), it);
@@ -626,7 +626,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
 			int n = ST->actorCount;
 			for (int k = 0; k < n; k++) {
-				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+				u8 *ac = (u8 *)&ST->actors[k];
 				if (AC->state != 1)
 					continue;
 				float reach = 0;
@@ -648,7 +648,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 		I(float, 0x24) = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
 	}
 	for (int k = 0; k < ST->actorCount; k++) {
-		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+		u8 *ac = (u8 *)&ST->actors[k];
 		if (A(int, 0x53c) == 0)
 			A(int, 0x538) = -1;
 	}
@@ -798,7 +798,7 @@ static void particle_trail(u8 *p, const u8 *desc, u32 margin)
    through its matrix; 20 / 21 / 24 aimed at the target; 25 / 26 beams; 40 .. 49 trails */
 void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 {
-	u8 *p = s + 0x20a99c0 + slot * 0x12c;
+	u8 *p = (u8 *)&ST->projectiles[slot];
 	PR->id = ST->projectileSerial++;
 	PR->active = 1;
 	if (GAME_VAR(int, desc + 0x30) == 1) {

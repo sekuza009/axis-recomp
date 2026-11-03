@@ -274,8 +274,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	float v28[3], dir[3], slide[3], hit[3], hit_t[3], mv_pos[3], mv_dist[3], mv_plane[4], left, grip[3];
 	float m0d0[16], m18c[16], m1e0[16], m230[16], m270[16], shot_at[3], shot_dir[3];
 	u32 fx[13];
-	u8 *a = s + 0x1cd93a8 + i * 0x8888;
-	u8 *player = s + 0x1561b68 + AC->player * 0x47fd2;
+	u8 *a = (u8 *)&ST->actors[i];
+	u8 *player = (u8 *)&ST->playerRecords[AC->player];
 	PlayerRecord *pr = (PlayerRecord *)player;
 	if (AC->blinkTime > AF(0x124)) {   /* the armour gone */
 		actor_deactivate((Stage *)s, i);
@@ -298,11 +298,11 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->detailLoaded = AC->detail;
 	}
 	int item = pr->items[AC->slot];
-	u8 *weapon = item >= 0 ? s + 0x14d1ab4 + item * 0x2e18 : NULL;
+	u8 *weapon = item >= 0 ? (u8 *)&ST->actorInfo[item] : NULL;
 	if (AC->pilot == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
 	    && !(AC->weaponLower < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
-		weapon = s + 0x14d1ab4 + pr->items[AC->slot] * 0x2e18;
+		weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
 	}
 	if (AC->inView >= 0)
 		actor_selectWeapon((Stage *)s, i, AC->inView);
@@ -343,9 +343,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot != 0) {
 			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, K(0x4a94fc))))   /* under 0.3 of its armour */
 				AC->botNeeds = 1;
-			ActorInfo *w0 = (ActorInfo *)(s + 0x14d1ab4 + pr->items[0] * 0x2e18);
+			ActorInfo *w0 = &ST->actorInfo[pr->items[0]];
 			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && pr->items[4] >= 0) {
-				ActorInfo *w1 = (ActorInfo *)(s + 0x14d1ab4 + pr->items[4] * 0x2e18);
+				ActorInfo *w1 = &ST->actorInfo[pr->items[4]];
 				if (AC->ammo[w1->ammoSlot] < w1->ammoPerShot)
 					AU8(0x87f4) |= 2;   /* both weapons empty */
 			}
@@ -353,7 +353,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		/* a bullet of another team aimed at it */
 		int aimed = 0;
 		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
-			u8 *b = s + 0x202ef34 + k * 0x4e8;
+			u8 *b = (u8 *)&ST->bullets[k];
 			if (GAME_VAR(int, b + 0xbc) != i || ST->actors[GAME_VAR(int, b + 0xc)].pilot == ST->playerActor)
 				continue;
 			aimed = 1;
@@ -808,7 +808,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (!(AC->weaponLower > 0)) {
 			actor_setWeaponSlot((Stage *)s, i, AC->slotLoaded);
 			actor_updatePart(s, i, AC->slotLoaded, AC->variantLoaded);
-			weapon = s + 0x14d1ab4 + pr->items[AC->slot] * 0x2e18;
+			weapon = (u8 *)&ST->actorInfo[pr->items[AC->slot]];
 			model = AC->slot == 4 ? a + 0x587c : AC->slot == 5 ? a + 0x701c : a + 0x40dc;
 			AC->weapon = ((u32)((ActorInfo *)weapon)->ammoSlot);
 		}

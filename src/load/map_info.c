@@ -17,7 +17,7 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 	fread_scrambled(scene + 0xe36214, 0x14, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		WayPoint *r = (WayPoint *)(scene + 0xe36214 + i * 0x14);
+		WayPoint *r = &((Stage *)scene)->wayPoints[i];
 		r->points = scene + 0xdc0f10 + total * 0x30;
 		total += r->pointCount;
 	}
@@ -36,9 +36,9 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 	fread_scrambled(scene + 0xe3b038, 0x1c, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		Trigger *r = (Trigger *)(scene + 0xe3b038 + i * 0x1c);
+		Trigger *r = &((Stage *)scene)->triggers[i];
 		long double radius = r->radiusSq;
-		r->wayPoints = scene + 0xe36214 + total * 0x14;
+		r->wayPoints = (u8 *)&((Stage *)scene)->wayPoints[total];
 		total += r->wayPointCount;
 		r->radiusSq = (float)(radius * radius * k_10000f);
 	}
@@ -64,7 +64,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
-		u8 *item = scene + 0x20f3ae0 + i * 0x90;
+		u8 *item = (u8 *)&((Stage *)scene)->itemTypes[i];
 		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName(scene + 0x19e188c, (const char *)(item + 0x4c), 1) : 0;
 	}
 	return 1;
@@ -247,7 +247,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		} else if (r[0] == 2) {
 			if (st->itemCount >= 200)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
-			u8 *item = scene + 0x20fadf8 + st->itemCount * 0x28;
+			u8 *item = (u8 *)&((Stage *)scene)->items[st->itemCount];
 			FIELD(u32, item, 0) = r[1];
 			remap_item(scene, (int *)item);
 			FIELD(u32, item, 4) = r[2];

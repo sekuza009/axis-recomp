@@ -323,11 +323,11 @@ typedef struct {
 
 static void part_load(u8 *scene, int a, const PartModel *m)
 {
-	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	u8 *actor = (u8 *)&STS->actors[a];
 	Player *act = (Player *)actor;
 	if (!act->active)
 		return;
-	u8 *type = scene + 0x1561b68 + act->player * 0x47fd2;
+	u8 *type = (u8 *)&STS->playerRecords[act->player];
 	u8 *model = scene + m->models + GAME_VAR(int, type + m->model_at) * m->model_size;
 	int pose = act->detail;
 	ObjectList_load(actor + m->self, type + m->data, type + m->names, GAME_VAR(u32, model + 0x40 + pose * 4),
@@ -367,7 +367,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	stage_setupActorSlot((Stage *)scene, a, -1, STS->playerActor, spawn);
 	if (a < 0)
 		return;
-	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	u8 *actor = (u8 *)&STS->actors[a];
 	Player *act = (Player *)actor;
 #define A(type, offset) GAME_VAR(type, actor + (offset))
 #define AC act   /* the same by its fields (src/scene.fields) */
@@ -400,7 +400,7 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
    +0x128 / +0x12c from +0x1c / +0x20 and each slot half its +0x28 ... Its caller ignores the eax it leaves */
 void THISCALL (actor_startingValues)(u8 *scene, int p)
 {
-	Player *a = (Player *)(scene + 0x1cd93a8 + p * 0x8888);
+	Player *a = &STS->actors[p];
 	if (a->active != 1)
 		return;
 	unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
@@ -429,12 +429,12 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
    +0x2dc0, -1 without). Without an item the loader is emptied (partList_release). Its callers ignore the eax it leaves */
 void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 {
-	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
+	u8 *actor = (u8 *)&STS->actors[a];
 	if (!FIELD(int, actor, 0x108))
 		return;
 	u8 *type = scene + 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2;
 	int item = FIELD(int, type, 0x320 + slot * 4);
-	u8 *it = item >= 0 ? scene + 0x14d1ab4 + item * 0x2e18 : NULL;
+	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
 	int self, models = 0x40, bones = 0x94c, counts = 0x12dc, frames = 0x1468;
 	if (slot == 4)
 		self = 0x587c;
@@ -530,7 +530,7 @@ static u8 *weapon_list(u8 *ac)
    actor_updateLegs / actor_updateBooster / actor_updatePart). Its caller ignores the eax it leaves */
 void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 {
-	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
 	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
 	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), (const float *)(ac + 0x3e8)));
@@ -712,7 +712,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		for (int k = 0; k < 6; k++) {
 			int it = GAME_VAR(int, p + 0x320 + k * 4);
 			if (it >= 0)
-				A(float, 0x18) = f32(fadd_m(fld_m((const float *)(s + 0x14d1ab4 + it * 0x2e18 + 0x2db8)), (const float *)(ac + 0x18)));
+				A(float, 0x18) = f32(fadd_m(fld_m((const float *)((u8 *)&((Stage *)s)->actorInfo[it] + 0x2db8)), (const float *)(ac + 0x18)));
 		}
 	long double over = A(float, 0x18) > A(float, 0x14)
 		? fmul_m(fdiv_m(fsub_m(fld_m((const float *)(ac + 0x18)), (const float *)(ac + 0x14)), (const float *)(ac + 0x14)), K(0x4a947c))
@@ -785,8 +785,8 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
 {
-	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
-	u8 *p = s + 0x1561b68 + pp[0] * 0x47fd2;
+	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
+	u8 *p = (u8 *)&((Stage *)s)->playerRecords[pp[0]];
 	mech_stats(s, ac, p, 0);
 	AC->statD8 = 1;
 	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
@@ -909,7 +909,7 @@ static int close_enough(const float *a, const float *b)
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
 	Player *act = (Player *)me;
-	u8 *p = s + 0x1561b68 + AC->player * 0x47fd2;
+	u8 *p = (u8 *)&((Stage *)s)->playerRecords[AC->player];
 	mech_stats(s, me, p, 1);
 	unsigned mode = GAME_VAR(int, s + 0x20f3ab8) - 2;
 	if (mode <= 9) {
@@ -962,7 +962,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);
 	}
-	u8 *ac = s + 0x1cd93a8 + a * 0x8888;
+	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
 	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
 		GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */

@@ -429,9 +429,9 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
 	}
-	u8 *actor = s + 0x1ecca70 + SC->localPlayer * 0x8888;
+	u8 *actor = (u8 *)&SC->players[SC->localPlayer];
 	Player *act = (Player *)actor;
-	u8 *player = s + 0x1755230 + act->player * 0x47fd2;
+	u8 *player = (u8 *)&SC->playerRecords[act->player];
 	for (int k = 0; k < 9; k++)
 		S(int, k_freeKeys[k][1]) = input_asyncKeyDown(k_freeKeys[k][0]) ? 1 : 0;
 	SC->viewKey = -1;
@@ -561,7 +561,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		bullet_updateAll(stage, BITS(SC->frameTime));
 		stage_updateEffects(stage, BITS(SC->frameTime));
 		for (int k = 0; k < 4; k++) {
-			Player *me = (Player *)(s + 0x1ecca70 + SC->localPlayer * 0x8888);
+			Player *me = &SC->players[SC->localPlayer];
 			me->ammo[k] = me->ammoMax[k] / 2;
 		}
 	}
@@ -806,7 +806,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 }
 
 /* an actor's record (0x8888 bytes from +0x1ecca70) */
-#define ACTOR_AT(i) (s + 0x1ecca70 + (i) * 0x8888)
+#define ACTOR_AT(i) ((u8 *)&SC->players[i])
 
 /* preset orbiting the followed player (the preset index at +0x233cc10) */
 static void orbit_camera(u8 *s, int i)

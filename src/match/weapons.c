@@ -224,7 +224,7 @@ static u32 next_rand(u32 n)
    player +0x202e8d4, else placed). Its callers ignore the eax it leaves */
 void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8 *shot, int quiet)
 {
-	u8 *b = s + 0x202ef34 + slot * 0x4e8;
+	u8 *b = (u8 *)&ST->bullets[slot];
 	u8 *w = s + 0x14d1ab4 + GAME_VAR(int, shot + 4) * 0x2e18;
 	const float *o = (const float *)(shot + 8), *aim = (const float *)(shot + 0x18);
 	if (id >= 0)
@@ -771,9 +771,9 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 {
 	const float *dt = (const float *)&dt_bits;   /* (only ever read from memory, as the original does) */
-	u8 *b = s + 0x202ef34 + slot * 0x4e8;
+	u8 *b = (u8 *)&ST->bullets[slot];
 	int weapon = BU->weapon;
-	u8 *w = s + 0x14d1ab4 + weapon * 0x2e18;
+	u8 *w = (u8 *)&ST->actorInfo[weapon];
 	u32 r[31];   /* particle_spawn's record, reused */
 	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), *step = (float *)(RELOC(b) + 0xac);
 	if (BU->hitActor >= 0)

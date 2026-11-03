@@ -106,6 +106,33 @@ if spec.startswith('GV:'):
 		pm = re.match(r'^([^,()]+), %s \+ (0x[0-9a-f]+)(?: \+ (\(?[\w\->.\[\]]+\)?|\([^()]*(?:\([^()]*\)[^()]*)*\)) \* (0x[0-9a-f]+|\d+))?$' % re.escape(var), inner)
 		if pm:
 			found.append((a, b, pm.group(1).strip(), int(pm.group(2), 16), pm.group(3), int(pm.group(4), 0) if pm.group(4) else None))
+elif spec.startswith('ADDR:'):   # var + C + expr * N, an element's address: (u8 *)&PTR->arr[expr] / &PTR->arr[expr]
+	var = spec[5:]
+	out, pos, done = [], 0, 0
+	ADDR_RE = re.compile(r'(\((\w+) \*\)\(|\b)%s \+ (0x[0-9a-f]+) \+ (\(?[\w\->.\[\]]+\)?|\([^()]*(?:\([^()]*\)[^()]*)*\)) \* (0x[0-9a-f]+|\d+)(\))?' % re.escape(var))
+	for m in ADDR_RE.finditer(t):
+		if not inside(m.start()) or t[max(0, m.start() - 10):m.start()].endswith('GAME_VAR(') or \
+		   re.search(r'\bGAME_VAR\([^,()]+, $', t[max(0, m.start() - 40):m.start()]):
+			continue
+		c, ix, n = int(m.group(3), 16), m.group(4), int(m.group(5), 0)
+		hit = [(off, name, ty) for off, size, ty, name, dims in structs[TYPE][1] if len(dims) == 1 and off == c and esize(ty) == n]
+		if not hit:
+			continue
+		off, name, ty = hit[0]
+		ix2 = ix[1:-1] if ix.startswith('(') and ix.endswith(')') and ix.count('(') == 1 else ix
+		cast, close = m.group(2), m.group(6)
+		if cast and close:   # (T *)(var + C + i * N)
+			text = '&%s->%s[%s]' % (PTR, name, ix2) if cast == ty else '(%s *)&%s->%s[%s]' % (cast, PTR, name, ix2)
+		elif not cast:
+			text = '(u8 *)&%s->%s[%s]' % (PTR, name, ix2) + (close or '')
+		else:
+			continue
+		out.append(t[pos:m.start()]); out.append(text); pos = m.end(); done += 1
+	out.append(t[pos:])
+	if done and not DRY:
+		open(path, 'w', encoding='latin-1', newline='').write(''.join(out))
+	print('%s %s: %d element addresses' % (path, spec, done))
+	sys.exit(0)
 elif spec.startswith('FIELD:'):   # FIELD(type, var, C [+ expr * N]) on a variable of the struct's type
 	var = spec[6:]
 	for a, b, inner, m in calls(r'\bFIELD\('):

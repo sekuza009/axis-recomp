@@ -107,7 +107,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
    Its caller ignores the eax it leaves */
 void THISCALL (actor_render)(u8 *s, int i, float dt)
 {
-	u8 *obj = s + 0x131ae44 + i * 0x2cc;
+	u8 *obj = (u8 *)&ST->objects[i];
 	if (!(F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c))) {   /* (fcom: a NaN counts as equal) */
 		float t = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)(obj + 0x29c)), (const float *)(obj + 0x298)));
 		F(float, obj, 0x298) = t;
@@ -176,7 +176,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 	if (obj[0xc] & 8) {
 		long double nearest = fld_m(K(0x4aa4a4));
 		for (int k = 0; k < ST->actorCount; k++) {
-			u8 *a = s + 0x1cd93a8 + k * 0x8888;
+			u8 *a = (u8 *)&ST->actors[k];
 			if (F(int, a, 0x14c) != 1)
 				continue;
 			long double dx = fsub_m(fld_m((const float *)(RELOC(a) + 0x154)), (const float *)(obj + 0x58));
@@ -268,12 +268,12 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	Mat4_multiply((float *)(s + 0x20f3a74), pr, mv);
 	if (!GAME_VAR(int, s + 0x2149308) || !GAME_VAR(int, s + 0x214930c))
 		for (int k = 0; k < ST->objectCount; k++) {
-			u8 *obj = s + 0x131ae44 + k * 0x2cc;
+			u8 *obj = (u8 *)&ST->objects[k];
 			if (GAME_VAR(int, obj + 4) == 1 && (obj[0xc] & 1))
 				object_glow(s, obj, dt);
 		}
 	for (int k = 0; k < ST->actorCount; k++) {
-		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
+		u8 *ac = (u8 *)&ST->actors[k];
 		if (AC->state != 1)
 			continue;
 		const float *p = (const float *)(ac + 0x154);
@@ -307,7 +307,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
 		AC->detail = tag_narrow(ac, OBJ(k_30f));
-		u8 *me = s + 0x1cd93a8 + ST->playerActor * 0x8888;
+		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
 		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			AC->lockedOn = 0.0f;
@@ -515,7 +515,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
    shapes for debris), a trail (types 40-49: triangles through ViewVolume_transformObject) or a quad (type 50) */
 void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 {
-	u8 *p = s + 0x20a99c0 + i * 0x12c;
+	u8 *p = (u8 *)&ST->projectiles[i];
 	const float *at = (const float *)(p + 0x10), *cam = (const float *)(s + 0x20f3970), *range = (const float *)(s + 0xa08);
 	int type = PR->kind;
 	float uv[4], ab[4], t;

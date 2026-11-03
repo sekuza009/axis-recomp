@@ -567,7 +567,9 @@ typedef struct Stage {
 	i32 objectCount;   /* +0x13c9b24 */
 	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
 	i32 objectSerial;   /* +0x13c9b2c: the next map object's id */
-	u8 _pad13c9b30[0x198038];
+	u8 _pad13c9b30[0x107f84];
+	ActorInfo actorInfo[32];   /* +0x14d1ab4: (Scene.actorInfo: mechs and weapons) */
+	u8 _pad152ddb4[0x33db4];
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use) player records in use (grows to cover a new player) */
 	u8 _pad19e188c[0x2f7b1c];
@@ -1315,6 +1317,7 @@ _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->obj
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, objectFreeHint) == 0x13c9b28 && sizeof(((Stage *)0)->objectFreeHint) == 0x4, "scene.fields: Stage.objectFreeHint");
 _Static_assert(offsetof(Stage, objectSerial) == 0x13c9b2c && sizeof(((Stage *)0)->objectSerial) == 0x4, "scene.fields: Stage.objectSerial");
+_Static_assert(offsetof(Stage, actorInfo) == 0x14d1ab4 && sizeof(((Stage *)0)->actorInfo) == 0x5c300, "scene.fields: Stage.actorInfo");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
