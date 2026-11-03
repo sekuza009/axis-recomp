@@ -211,7 +211,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	(*(int *)&st->startAngle[1]) = 0;
 	st->startCount = 0;
 	st->itemCount = 0;
-	st->startUsed = -1;
+	st->lastPickup = -1;
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));

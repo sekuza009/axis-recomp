@@ -170,7 +170,9 @@ typedef struct Player {
 	u8 _pad00004f0[0x4];
 	char message[0x40];   /* +0x4f4: (by use) a message for the local player ("OUT OF AMMO!") */
 	float messageTime;   /* +0x534: its time shown (-10000: none) */
-	u8 _pad0000538[0xc];
+	i32 lastWarp;   /* +0x538: (by use) the warp zone (item) it came through last (-1 none: not kept off it) */
+	i32 onWarp;   /* +0x53c: 1: touching a warp zone this frame */
+	float warpWait;   /* +0x540: seconds before it can warp again (2) */
 	float shieldRegenTime;   /* +0x544: (by use) seconds towards the next shield regained */
 	float damageFlash;   /* +0x548: > 0: a white flash over the screen at this alpha */
 	i32 breakUp;   /* +0x54c: (by use) the parts' break-up step (one a frame, to 7) */
@@ -335,17 +337,27 @@ typedef struct LightFactors {
 
 /* a map object (Scene.objects): animated scenery */
 typedef struct MapObject {
-	u8 _pad0000000[0x4];
+	i32 id;   /* +0x0: (by use) a serial (Stage.objectSerial) */
 	i32 active;   /* +0x4: 1: in use */
-	u8 _pad0000008[0x4];
+	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames) */
 	u8 flags;   /* +0xc: bit 1 (2): not drawn */
-	u8 _pad000000d[0xe7];
+	u8 _pad000000d[0xb];
+	char animPath[0x40];   /* +0x18: its animation ("dir/map/name"; none: empty) */
+	float place[3];   /* +0x58: its position (the type record's) */
+	float rotation[4];   /* +0x64: a quaternion */
+	float placeMatrix[16];   /* +0x74: translation x rotation */
+	float placeInverse[16];   /* +0xb4 */
 	float matrix[16];   /* +0xf4: where it is drawn */
-	u8 _pad0000134[0x148];
+	float matrixInverse[16];   /* +0x134: (matrix: a copy of placeMatrix) */
+	float identity1[16];   /* +0x174 */
+	float identity2[16];   /* +0x1b4 */
+	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
+	float relInverse[16];   /* +0x234 */
+	u32 typeValue1;   /* +0x274: (unclear) the type record's +0xa8, +0xac */
+	u32 typeValue2;   /* +0x278 */
 	Model *model;   /* +0x27c */
-	u32 poseFrom;   /* +0x280: the pose's source and destination; passed to the view volume by poseSide */
-	u32 poseTo;   /* +0x284 */
-	i32 poseSide;   /* +0x288: 0: poseFrom, else poseTo */
+	u32 colours[2];   /* +0x280: (by use) two runs of its shading colours (from Stage.objectColours; object_initObjectBy) */
+	i32 colourSide;   /* +0x288: which run is drawn (0: the first) */
 	void *unit;   /* +0x28c: its collision unit (none: 0) */
 	i32 animated;   /* +0x290: 1: its skeleton plays */
 	void *skeleton;   /* +0x294 */
@@ -366,7 +378,8 @@ typedef struct ItemType {
 /* an item lying on the map (Stage.items): power-ups, ammo... */
 typedef struct MapItem {
 	i32 type;   /* +0x0: index into Stage.itemTypes and the item atlas; < 0: none */
-	u8 _pad0000004[0x8];
+	i32 warpTo;   /* +0x4: (by use) a warp zone's: the item it leads to */
+	i32 warpPitch;   /* +0x8: its pitch there (x 10) */
 	float pos[3];   /* +0xc */
 	u8 _pad0000018[0x4];
 	float angle;   /* +0x1c: its turn, tenths of a degree */
@@ -843,7 +856,7 @@ typedef struct Stage {
 	i32 startCount;   /* +0x20fadf4 */
 	MapItem items[200];   /* +0x20fadf8 */
 	i32 itemCount;   /* +0x20fcd38 */
-	i32 startUsed;   /* +0x20fcd3c: (unclear) -1 after the play file is read */
+	i32 lastPickup;   /* +0x20fcd3c: (by use) the last item taken that ends something (a supply at its cap, a power-up; -1 after the map is read) */
 	i32 clockSeconds;   /* +0x20fcd40: (by use) the match clock: whole seconds (triggers' times) */
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	u8 _pad20fcd48[0x104];
@@ -1315,6 +1328,9 @@ _Static_assert(offsetof(Player, deathPos) == 0x4e0 && sizeof(((Player *)0)->deat
 _Static_assert(offsetof(Player, glow) == 0x4ec && sizeof(((Player *)0)->glow) == 0x4, "scene.fields: Player.glow");
 _Static_assert(offsetof(Player, message) == 0x4f4 && sizeof(((Player *)0)->message) == 0x40, "scene.fields: Player.message");
 _Static_assert(offsetof(Player, messageTime) == 0x534 && sizeof(((Player *)0)->messageTime) == 0x4, "scene.fields: Player.messageTime");
+_Static_assert(offsetof(Player, lastWarp) == 0x538 && sizeof(((Player *)0)->lastWarp) == 0x4, "scene.fields: Player.lastWarp");
+_Static_assert(offsetof(Player, onWarp) == 0x53c && sizeof(((Player *)0)->onWarp) == 0x4, "scene.fields: Player.onWarp");
+_Static_assert(offsetof(Player, warpWait) == 0x540 && sizeof(((Player *)0)->warpWait) == 0x4, "scene.fields: Player.warpWait");
 _Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
 _Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->damageFlash) == 0x4, "scene.fields: Player.damageFlash");
 _Static_assert(offsetof(Player, breakUp) == 0x54c && sizeof(((Player *)0)->breakUp) == 0x4, "scene.fields: Player.breakUp");
@@ -1426,13 +1442,26 @@ _Static_assert(offsetof(ObjectList, preLit) == 0x2c && sizeof(((ObjectList *)0)-
 _Static_assert(sizeof(ObjectList) == 0x30, "scene.fields: size of ObjectList");
 _Static_assert(offsetof(LightFactors, enabled) == 0xb00c && sizeof(((LightFactors *)0)->enabled) == 0x4, "scene.fields: LightFactors.enabled");
 _Static_assert(sizeof(LightFactors) == 0xb010, "scene.fields: size of LightFactors");
+_Static_assert(offsetof(MapObject, id) == 0x0 && sizeof(((MapObject *)0)->id) == 0x4, "scene.fields: MapObject.id");
 _Static_assert(offsetof(MapObject, active) == 0x4 && sizeof(((MapObject *)0)->active) == 0x4, "scene.fields: MapObject.active");
+_Static_assert(offsetof(MapObject, nameIndex) == 0x8 && sizeof(((MapObject *)0)->nameIndex) == 0x4, "scene.fields: MapObject.nameIndex");
 _Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x1, "scene.fields: MapObject.flags");
+_Static_assert(offsetof(MapObject, animPath) == 0x18 && sizeof(((MapObject *)0)->animPath) == 0x40, "scene.fields: MapObject.animPath");
+_Static_assert(offsetof(MapObject, place) == 0x58 && sizeof(((MapObject *)0)->place) == 0xc, "scene.fields: MapObject.place");
+_Static_assert(offsetof(MapObject, rotation) == 0x64 && sizeof(((MapObject *)0)->rotation) == 0x10, "scene.fields: MapObject.rotation");
+_Static_assert(offsetof(MapObject, placeMatrix) == 0x74 && sizeof(((MapObject *)0)->placeMatrix) == 0x40, "scene.fields: MapObject.placeMatrix");
+_Static_assert(offsetof(MapObject, placeInverse) == 0xb4 && sizeof(((MapObject *)0)->placeInverse) == 0x40, "scene.fields: MapObject.placeInverse");
 _Static_assert(offsetof(MapObject, matrix) == 0xf4 && sizeof(((MapObject *)0)->matrix) == 0x40, "scene.fields: MapObject.matrix");
+_Static_assert(offsetof(MapObject, matrixInverse) == 0x134 && sizeof(((MapObject *)0)->matrixInverse) == 0x40, "scene.fields: MapObject.matrixInverse");
+_Static_assert(offsetof(MapObject, identity1) == 0x174 && sizeof(((MapObject *)0)->identity1) == 0x40, "scene.fields: MapObject.identity1");
+_Static_assert(offsetof(MapObject, identity2) == 0x1b4 && sizeof(((MapObject *)0)->identity2) == 0x40, "scene.fields: MapObject.identity2");
+_Static_assert(offsetof(MapObject, relMatrix) == 0x1f4 && sizeof(((MapObject *)0)->relMatrix) == 0x40, "scene.fields: MapObject.relMatrix");
+_Static_assert(offsetof(MapObject, relInverse) == 0x234 && sizeof(((MapObject *)0)->relInverse) == 0x40, "scene.fields: MapObject.relInverse");
+_Static_assert(offsetof(MapObject, typeValue1) == 0x274 && sizeof(((MapObject *)0)->typeValue1) == 0x4, "scene.fields: MapObject.typeValue1");
+_Static_assert(offsetof(MapObject, typeValue2) == 0x278 && sizeof(((MapObject *)0)->typeValue2) == 0x4, "scene.fields: MapObject.typeValue2");
 _Static_assert(offsetof(MapObject, model) == 0x27c && sizeof(((MapObject *)0)->model) == 0x4, "scene.fields: MapObject.model");
-_Static_assert(offsetof(MapObject, poseFrom) == 0x280 && sizeof(((MapObject *)0)->poseFrom) == 0x4, "scene.fields: MapObject.poseFrom");
-_Static_assert(offsetof(MapObject, poseTo) == 0x284 && sizeof(((MapObject *)0)->poseTo) == 0x4, "scene.fields: MapObject.poseTo");
-_Static_assert(offsetof(MapObject, poseSide) == 0x288 && sizeof(((MapObject *)0)->poseSide) == 0x4, "scene.fields: MapObject.poseSide");
+_Static_assert(offsetof(MapObject, colours) == 0x280 && sizeof(((MapObject *)0)->colours) == 0x8, "scene.fields: MapObject.colours");
+_Static_assert(offsetof(MapObject, colourSide) == 0x288 && sizeof(((MapObject *)0)->colourSide) == 0x4, "scene.fields: MapObject.colourSide");
 _Static_assert(offsetof(MapObject, unit) == 0x28c && sizeof(((MapObject *)0)->unit) == 0x4, "scene.fields: MapObject.unit");
 _Static_assert(offsetof(MapObject, animated) == 0x290 && sizeof(((MapObject *)0)->animated) == 0x4, "scene.fields: MapObject.animated");
 _Static_assert(offsetof(MapObject, skeleton) == 0x294 && sizeof(((MapObject *)0)->skeleton) == 0x4, "scene.fields: MapObject.skeleton");
@@ -1443,6 +1472,8 @@ _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
 _Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");
 _Static_assert(sizeof(ItemType) == 0x90, "scene.fields: size of ItemType");
 _Static_assert(offsetof(MapItem, type) == 0x0 && sizeof(((MapItem *)0)->type) == 0x4, "scene.fields: MapItem.type");
+_Static_assert(offsetof(MapItem, warpTo) == 0x4 && sizeof(((MapItem *)0)->warpTo) == 0x4, "scene.fields: MapItem.warpTo");
+_Static_assert(offsetof(MapItem, warpPitch) == 0x8 && sizeof(((MapItem *)0)->warpPitch) == 0x4, "scene.fields: MapItem.warpPitch");
 _Static_assert(offsetof(MapItem, pos) == 0xc && sizeof(((MapItem *)0)->pos) == 0xc, "scene.fields: MapItem.pos");
 _Static_assert(offsetof(MapItem, angle) == 0x1c && sizeof(((MapItem *)0)->angle) == 0x4, "scene.fields: MapItem.angle");
 _Static_assert(offsetof(MapItem, taken) == 0x20 && sizeof(((MapItem *)0)->taken) == 0x4, "scene.fields: MapItem.taken");
@@ -1812,7 +1843,7 @@ _Static_assert(offsetof(Stage, starts) == 0x20fab74 && sizeof(((Stage *)0)->star
 _Static_assert(offsetof(Stage, startCount) == 0x20fadf4 && sizeof(((Stage *)0)->startCount) == 0x4, "scene.fields: Stage.startCount");
 _Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
 _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");
-_Static_assert(offsetof(Stage, startUsed) == 0x20fcd3c && sizeof(((Stage *)0)->startUsed) == 0x4, "scene.fields: Stage.startUsed");
+_Static_assert(offsetof(Stage, lastPickup) == 0x20fcd3c && sizeof(((Stage *)0)->lastPickup) == 0x4, "scene.fields: Stage.lastPickup");
 _Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
 _Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");

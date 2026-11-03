@@ -12,6 +12,9 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x538      4          i32 lastWarp                               # (by use) the warp zone (item) it came through last (-1 none: not kept off it)
+0x53c      4          i32 onWarp                                 # 1: touching a warp zone this frame
+0x540      4          float warpWait                             # seconds before it can warp again (2)
 8          4          i32 sensorLevel                            # (by use) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own
 0xc        4          float lockRange                            # (by use) x the weapon's ring range: the lock-on reaches that far
 0x10       4          float lockHold                             # (by use) seconds a lock-on holds once out of reach
@@ -272,13 +275,26 @@ struct LightFactors 0xb010                                      # (by use) the l
 0xb00c     4          i32 enabled                               # 1: a pre-lit object list uses them without point lights
 
 struct MapObject 0x2cc                                          # a map object (Scene.objects): animated scenery
+0          4          i32 id                                     # (by use) a serial (Stage.objectSerial)
+8          4          i32 nameIndex                              # its type's name (Stage.objectNames)
+0x18       0x40       char animPath[0x40]                        # its animation ("dir/map/name"; none: empty)
+0x58       0xc        float place[3]                             # its position (the type record's)
+0x64       0x10       float rotation[4]                          # a quaternion
+0x74       0x40       float placeMatrix[16]                      # translation x rotation
+0xb4       0x40       float placeInverse[16]
+0x134      0x40       float matrixInverse[16]                    # (matrix: a copy of placeMatrix)
+0x174      0x40       float identity1[16]
+0x1b4      0x40       float identity2[16]
+0x1f4      0x40       float relMatrix[16]                        # matrix x placeInverse
+0x234      0x40       float relInverse[16]
+0x274      4          u32 typeValue1                             # (unclear) the type record's +0xa8, +0xac
+0x278      4          u32 typeValue2
 4          4          i32 active                                # 1: in use
 0xc        1          u8 flags                                  # bit 1 (2): not drawn
 0xf4       0x40       float matrix[16]                          # where it is drawn
 0x27c      4          Model *model
-0x280      4          u32 poseFrom                              # the pose's source and destination; passed to the view volume by poseSide
-0x284      4          u32 poseTo
-0x288      4          i32 poseSide                              # 0: poseFrom, else poseTo
+0x280      8          u32 colours[2]                             # (by use) two runs of its shading colours (from Stage.objectColours; object_initObjectBy)
+0x288      4          i32 colourSide                             # which run is drawn (0: the first)
 0x28c      4          void *unit                                # its collision unit (none: 0)
 0x290      4          i32 animated                              # 1: its skeleton plays
 0x294      4          void *skeleton
@@ -290,6 +306,8 @@ struct ItemType 0x90                                            # a kind of map 
 0x8c       4          Model *model                              # its shape when items are drawn in 3D (none: not drawn)
 
 struct MapItem 0x28                                             # an item lying on the map (Stage.items): power-ups, ammo...
+4          4          i32 warpTo                                 # (by use) a warp zone's: the item it leads to
+8          4          i32 warpPitch                              # its pitch there (x 10)
 0          4          i32 type                                  # index into Stage.itemTypes and the item atlas; < 0: none
 0xc        0xc        float pos[3]
 0x1c       4          float angle                               # its turn, tenths of a degree
@@ -613,7 +631,7 @@ struct Stage 0x2150443                                          # the stage: the
 0x20fab6c  0x8        float startAngle[2]                        # its two angles
 0x20fab74  0x280      StartPoint starts[32]                      # the multiplayer starts
 0x20fadf4  4          i32 startCount
-0x20fcd3c  4          i32 startUsed                              # (unclear) -1 after the play file is read
+0x20fcd3c  4          i32 lastPickup                             # (by use) the last item taken that ends something (a supply at its cap, a power-up; -1 after the map is read)
 0x2104fe4  4          i32 clanTexture                            # (by use) the map's clan texture (Stage\<map>\Clan)
 0xf30dc8   0x3d0900   u32 objectColours[1000000]                 # (by use) the map objects' shading colours (each object's run: MapObject +0x280)
 0x13016c8  4          i32 objectColourCount                      # dwords of it used (over 1000000: a fatal message)

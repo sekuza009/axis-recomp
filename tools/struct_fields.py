@@ -246,10 +246,11 @@ if not VARFORM:
 	if out:
 		out.append(nt[pos:]); nt = ''.join(out)
 
-if done and not DRY and FIXED:
+# (the pointer macro is only inserted when PTR is a name: an expression - ((T *)p) - is written out at each use)
+if done and not DRY and FIXED and re.match(r'^\w+$', PTR):
 	d = re.compile(r'^(#define (?:%s)\(offset\) GAME_VAR\(\w+, (\w+) \+ \(offset\)\)[^\n]*\n)(?!#define %s )' % ('|'.join(fixed), PTR), re.M)
 	nt = d.sub(lambda m: m.group(1) + '#define %s ((%s *)%s)   /* the same by its fields (src/scene.fields) */\n' % (PTR, TYPE, m.group(2)), nt, count=1)
-elif done and not DRY and not VARFORM:
+elif done and not DRY and not VARFORM and re.match(r'^\w+$', PTR):
 	d = re.compile(r'^(#define %s\(type, offset\) GAME_VAR\(type, (\w+) \+ \(offset\)\)[^\n]*\n)(?!#define %s )' % (re.escape(macro), PTR), re.M)
 	nt = d.sub(lambda m: m.group(1) + '#define %s ((%s *)%s)   /* the same by its fields (src/scene.fields) */\n' % (PTR, TYPE, m.group(2)), nt)
 	nt = re.sub(r'^#undef %s\n(?!#undef %s\n)' % (re.escape(macro), PTR), '#undef %s\n#undef %s\n' % (macro, PTR), nt, flags=re.M)

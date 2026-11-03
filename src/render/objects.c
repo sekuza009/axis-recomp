@@ -22,7 +22,7 @@ void THISCALL (stage_drawObject)(Stage *stage, int i, void *view)
 	for (int k = 0; k < 3; k++)
 		if (!((long double)r + stage->cameraPos[k] >= o->pos[k]))
 			return;
-	ViewVolume_projectObject(view, model, o->poseSide == 0 ? o->poseFrom : o->poseTo, o->matrix, 0, NULL, 1, -1, 0);
+	ViewVolume_projectObject(view, model, o->colourSide == 0 ? o->colours[0] : o->colours[1], o->matrix, 0, NULL, 1, -1, 0);
 }
 
 /* 0x490da0 (stage_drawObjects): every active object */

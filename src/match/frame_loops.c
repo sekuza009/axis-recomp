@@ -346,6 +346,7 @@ static void identity4(u32 *m)
 void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 {
 	u8 *obj = (u8 *)&ST->objects[i];
+	MapObject *mo = (MapObject *)obj;
 	int idx = 0;
 	for (; idx < ST->objectNameCount; idx++)
 		if (!strcmp((const char *)RELOC(type), (const char *)s + 0x130b440 + idx * 0x40))
@@ -356,31 +357,31 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		idx = ST->objectNameCount++;
 		strcpy((char *)s + 0x130b440 + idx * 0x40, (const char *)RELOC(type));
 	}
-	FIELD(int, obj, 0) = ST->objectSerial++;
-	FIELD(int, obj, 4) = 1;
-	FIELD(int, obj, 8) = idx;
+	mo->id = ST->objectSerial++;
+	mo->active = 1;
+	mo->nameIndex = idx;
 	memcpy(obj + 0xc, type + 0x40, 12);
 	if (type[0x4c])
 		sprintf((char *)obj + 0x18, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, s + 0x908, type + 0x4c);
 	else
 		obj[0x18] = 0;
-	memcpy(obj + 0x58, type + 0x8c, 12);
+	memcpy(mo->place, type + 0x8c, 12);
 	u32 move[16];
 	identity4(move);
 	for (int c = 0; c < 3; c++)
-		((float *)RELOC(move))[12 + c] = f32(fld_m((const float *)(obj + 0x58) + c));
-	memcpy(obj + 0x64, type + 0x98, 16);
+		((float *)RELOC(move))[12 + c] = f32(fld_m(mo->place + c));
+	memcpy(mo->rotation, type + 0x98, 16);
 	float turn[16];
-	Mat4_fromQuat(turn, (const float *)(obj + 0x64));
-	float *m = (float *)(obj + 0xf4);
-	Mat4_multiply((float *)(obj + 0x74), (const float *)RELOC(move), turn);
-	Mat4_invert((float *)(obj + 0xb4), (const float *)(obj + 0x74));
+	Mat4_fromQuat(turn, mo->rotation);
+	float *m = mo->matrix;
+	Mat4_multiply(mo->placeMatrix, (const float *)RELOC(move), turn);
+	Mat4_invert(mo->placeInverse, mo->placeMatrix);
 	Mat4_copy(m, obj + 0x74);
-	Mat4_invert((float *)(obj + 0x134), m);
+	Mat4_invert(mo->matrixInverse, m);
 	identity4((u32 *)(obj + 0x174));
 	identity4((u32 *)(obj + 0x1b4));
-	Mat4_multiply((float *)(obj + 0x1f4), m, (const float *)(obj + 0xb4));
-	Mat4_invert((float *)(obj + 0x234), (const float *)(obj + 0x1f4));
+	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
+	Mat4_invert(mo->relInverse, mo->relMatrix);
 	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)RELOC(type), 1);
 	FIELD(u8 *, obj, 0x27c) = shape;
 	for (int r = 0; r < 2; r++) {
@@ -388,25 +389,25 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		if (need > 1000000)
 			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
 		FIELD(u8 *, obj, 0x280 + r * 4) = s + 0xf30dc8 + ST->objectColourCount * 4;
-		ST->objectColourCount += FIELD(int, FIELD(u8 *, obj, 0x27c), 0x18);
+		ST->objectColourCount += FIELD(int, ((u8 *)mo->model), 0x18);
 	}
-	FIELD(int, obj, 0x288) = 1;
-	FIELD(u32, obj, 0x274) = FIELD(u32, type, 0xa8);
-	FIELD(u32, obj, 0x278) = FIELD(u32, type, 0xac);
+	mo->colourSide = 1;
+	mo->typeValue1 = FIELD(u32, type, 0xa8);
+	mo->typeValue2 = FIELD(u32, type, 0xac);
 	memset(obj + 0x28c, 0, 7 * 4);
 	if (shape) {
 		const float *c = (const float *)(shape + 0x20);
-		float *out = (float *)(obj + 0x2bc);
+		float *out = mo->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
 			out[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &c[2]) + fmul_m(fld_m(&m[r]), &c[0]) + fmul_m(fld_m(&m[4 + r]), &c[1]), &m[12 + r]));
 	} else
-		memcpy(obj + 0x2bc, obj + 0x58, 12);
+		memcpy(mo->pos, mo->place, 12);
 	FIELD(int, obj, 0x2a8) = 0;
 	FIELD(int, obj, 0x2c8) = 0;
 	if (ST->mapShaded == 0)
-		shape_shadeParts(FIELD(u32 *, obj, 0x280), 1, (Model *)FIELD(u8 *, obj, 0x27c), (const LightFactors *)(s + 0x9ccffc),
-		                 (const float *)(obj + 0x134));
+		shape_shadeParts((*(u32 * *)&mo->colours[0]), 1, (Model *)((u8 *)mo->model), (const LightFactors *)(s + 0x9ccffc),
+		                 mo->matrixInverse);
 }
 
 /* a particle of kind at p (particle_spawn's record: the kind, 0, the point, the world's colour 0xa0e7e8, zeros) */
@@ -423,8 +424,8 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
    its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
 static void spark(u8 *s, u8 *p, float dt)
 {
-	float *pos = (float *)(p + 0x10);
-	const float *v = (const float *)(p + 0x1c), *k = (const float *)ADDR(k_2000f);
+	float *pos = ((Projectile *)p)->pos;
+	const float *v = ((Projectile *)p)->target, *k = (const float *)ADDR(k_2000f);
 	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
 	float hit[3], below[3];
 	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
@@ -435,28 +436,28 @@ static void spark(u8 *s, u8 *p, float dt)
 	below[2] = hit[2];
 	if (collision_rayTrace(s, pos, below, hit)) {
 		memcpy(pos, hit, 12);
-		GAME_VAR(u32, p + 0x70) = GAME_VAR(u32, p + 0x6c);
+		BITS(((Projectile *)p)->life) = BITS(((Projectile *)p)->drawAge);
 		spawn_at(s, 2, hit);
 	} else
 		memcpy(pos, below, 12);
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef_stored(pos);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
-	glRotatef(f32(fmul_m(fld_m((const float *)(p + 0x6c)), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
-	glGetFloatv(0xba6, (float *)(p + 0x2c));
+	glRotatef(f32(fmul_m(fld_m(&((Projectile *)p)->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m(&((Projectile *)p)->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
+	glGetFloatv(0xba6, ((Projectile *)p)->matrix);
 	glPopMatrix();
-	long double wait = fsub_m(fld_m((const float *)(p + 0x84)), &dt);
-	GAME_VAR(float, p + 0x84) = f32(wait);
+	long double wait = fsub_m(fld_m(&((Projectile *)p)->fade), &dt);
+	((Projectile *)p)->fade = f32(wait);
 	if (wait > 0)
 		return;
 	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
-	GAME_VAR(u32, p + 0x84) = 0x3dcccccd;
+	BITS(((Projectile *)p)->fade) = 0x3dcccccd;
 	if (!r)
-		GAME_VAR(u32, p + 0x70) = GAME_VAR(u32, p + 0x6c);
+		BITS(((Projectile *)p)->life) = BITS(((Projectile *)p)->drawAge);
 }
 
 /* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from +0x20a99c0). Its age (+0x74, kept at +0x6c)
@@ -466,14 +467,14 @@ static void spark(u8 *s, u8 *p, float dt)
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
 	u8 *p = (u8 *)&ST->projectiles[slot];
-	float age = GAME_VAR(float, p + 0x74);
-	GAME_VAR(float, p + 0x6c) = age;
-	if (age > GAME_VAR(float, p + 0x70)) {
+	float age = ((Projectile *)p)->age;
+	((Projectile *)p)->drawAge = age;
+	if (age > ((Projectile *)p)->life) {
 		stage_freeProjectile(s, slot);
 		return;
 	}
-	float t = GAME_VAR(float, p + 0x70) > 0 ? f32(fdiv_m(fld_m(&age), (const float *)(p + 0x70))) : 0.0f;
-	int k = GAME_VAR(int, p + 8);
+	float t = ((Projectile *)p)->life > 0 ? f32(fdiv_m(fld_m(&age), &((Projectile *)p)->life)) : 0.0f;
+	int k = ((Projectile *)p)->kind;
 	u32 size = 0;   /* where the size constant is */
 	switch (k / 5) {
 	case 0:
@@ -495,9 +496,9 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	}
 	if (size) {
 		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
-		GAME_VAR(float, p + 0x7c) = f32(fmul_m(u * u, (const float *)RELOC(size)));
+		((Projectile *)p)->size = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
-	GAME_VAR(float, p + 0x74) = f32(fadd_m(fld_m(&dt), (const float *)(p + 0x74)));
+	((Projectile *)p)->age = f32(fadd_m(fld_m(&dt), &((Projectile *)p)->age));
 }
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
@@ -528,6 +529,7 @@ static void item_sound(u8 *s, int sound, u8 *it)
    without being taken; other kinds are an error message (0 .. 9: fatal) */
 static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 {
+	MapItem *mi = (MapItem *)it;
 	u32 text, *timer = NULL;
 	int last = 0;
 	switch (type / 10) {
@@ -557,20 +559,20 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		case 7: timer = &BITS(AC->timers[3]); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
-			if (AC->pilot == ST->playerActor && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
-				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
-				memcpy(AC->nextPos, to + 0xc, 12);
-				AC->nextPitch = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
-				BITS(AC->nextYaw) = GAME_VAR(u32, to + 0x1c);
-				A(int, 0x538) = I(int, 4);
-				strcpy((char *)ac + 0x4f4, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
-				A(int, 0x534) = 0;
+			if (AC->pilot == ST->playerActor && !(AC->warpWait > 0) && AC->lastWarp != i) {
+				MapItem *to = &ST->items[mi->warpTo];
+				memcpy(AC->nextPos, to->pos, 12);
+				AC->nextPitch = f32(fmul_m((long double)to->warpPitch, (const float *)ADDR(k_10f)));
+				BITS(AC->nextYaw) = BITS(to->angle);
+				AC->lastWarp = mi->warpTo;
+				strcpy(AC->message, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
+				AC->messageTime = 0.0f;
 				AC->damageFlash = 1.0f;
-				A(u32, 0x540) = 0x40000000;
+				AC->warpWait = 2.0f;
 				AC->id = ST->actorSerial++;
 				warped = 1;
 			}
-			A(int, 0x53c) = 1;
+			AC->onWarp = 1;
 			if (warped)
 				item_sound(s, GAME_VAR(int, t + 0x44), it);
 			return;
@@ -585,13 +587,13 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		GAME_FN(sys_errorMessage, 0x46c5f0, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
 		return;
 	}
-	strcpy((char *)ac + 0x4f4, (const char *)RELOC(text));
-	A(int, 0x534) = 0;
+	strcpy(AC->message, (const char *)RELOC(text));
+	AC->messageTime = 0.0f;
 	if (last)
-		GAME_VAR(int, s + 0x20fcd3c) = i;
+		ST->lastPickup = i;
 	item_sound(s, GAME_VAR(int, t + 0x44), it);
-	I(int, 0x20) = 1;
-	I(int, 0x24) = 0;
+	mi->taken = 1;
+	mi->fade = 0.0f;
 }
 
 /* 0x48ed90 (thiscall on the scene): the items' frame. Live actors' touch flags (+0x53c) cleared; every item (0x28
@@ -605,23 +607,24 @@ void THISCALL (item_update)(u8 *s, float dt)
 	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = (u8 *)&ST->actors[k];
 		if (AC->state == 1)
-			A(int, 0x53c) = 0;
+			AC->onWarp = 0;
 	}
 	for (int i = 0; i < ST->itemCount; i++) {
 		u8 *it = (u8 *)&ST->items[i];
-		int type = I(int, 0);
+		MapItem *mi = (MapItem *)it;
+		int type = mi->type;
 		if (type < 0)
 			continue;
 		u8 *t = (u8 *)&ST->itemTypes[type];
-		if (I(int, 0x20) == 1) {
-			if (I(float, 0x24) > GAME_VAR(float, t + 0x48)) {
+		if (mi->taken == 1) {
+			if (mi->fade > GAME_VAR(float, t + 0x48)) {
 				item_sound(s, GAME_VAR(int, t + 0x40), it);
-				I(int, 0x20) = 0;
-				I(int, 0x24) = 0;
+				mi->taken = 0;
+				mi->fade = 0.0f;
 			}
-		} else if (I(int, 0x20) == 0) {
+		} else if (mi->taken == 0) {
 			if (type != 0x22)
-				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
+				mi->angle = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
 			int n = ST->actorCount;
 			for (int k = 0; k < n; k++) {
 				u8 *ac = (u8 *)&ST->actors[k];
@@ -643,12 +646,12 @@ void THISCALL (item_update)(u8 *s, float dt)
 				}
 			}
 		}
-		I(float, 0x24) = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
+		mi->fade = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
 	}
 	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = (u8 *)&ST->actors[k];
-		if (A(int, 0x53c) == 0)
-			A(int, 0x538) = -1;
+		if (AC->onWarp == 0)
+			AC->lastWarp = -1;
 	}
 }
 #undef A
