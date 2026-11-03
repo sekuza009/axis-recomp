@@ -507,6 +507,22 @@ typedef struct GroundLayer {
 	u8 _pad000006c[0x1a0];
 } GroundLayer;
 
+/* a way point (Stage.wayPoints): its run of path points (map_info.c) */
+typedef struct WayPoint {
+	u8 _pad0000000[0xc];
+	i32 pointCount;   /* +0xc */
+	u8 *points;   /* +0x10: 0x30-byte path points (Stage.pathPoints) */
+} WayPoint;
+
+/* a trigger (Stage.triggers): its run of way points and its radius */
+typedef struct Trigger {
+	i32 wayPointCount;   /* +0x0 */
+	u8 *wayPoints;   /* +0x4 */
+	u8 _pad0000008[0xc];
+	float radiusSq;   /* +0x14: read as a radius: squared and scaled at load */
+	u8 _pad0000018[0x4];
+} Trigger;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -538,7 +554,15 @@ typedef struct Stage {
 	u8 _pad09ef900[0x3d0944];
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
-	u8 _pad0dc0a78[0x55a3cc];
+	u8 _pad0dc0a78[0x498];
+	u8 pathPoints[10000][0x30];   /* +0xdc0f10: (by use) the path points (0x30 bytes each) the way points run over */
+	i32 pathPointCount;   /* +0xe36210 */
+	WayPoint wayPoints[1000];   /* +0xe36214 */
+	i32 wayPointCount;   /* +0xe3b034 */
+	Trigger triggers[228];   /* +0xe3b038: (the size up to triggerCount: 228 records) */
+	u8 _pad0e3c928[0x10];
+	i32 triggerCount;   /* +0xe3c938 */
+	u8 _pad0e3c93c[0x4de508];
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
 	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
@@ -1251,6 +1275,13 @@ _Static_assert(offsetof(GroundLayer, stripCapacity) == 0x60 && sizeof(((GroundLa
 _Static_assert(offsetof(GroundLayer, strips) == 0x64 && sizeof(((GroundLayer *)0)->strips) == 0x4, "scene.fields: GroundLayer.strips");
 _Static_assert(offsetof(GroundLayer, stripCount) == 0x68 && sizeof(((GroundLayer *)0)->stripCount) == 0x4, "scene.fields: GroundLayer.stripCount");
 _Static_assert(sizeof(GroundLayer) == 0x20c, "scene.fields: size of GroundLayer");
+_Static_assert(offsetof(WayPoint, pointCount) == 0xc && sizeof(((WayPoint *)0)->pointCount) == 0x4, "scene.fields: WayPoint.pointCount");
+_Static_assert(offsetof(WayPoint, points) == 0x10 && sizeof(((WayPoint *)0)->points) == 0x4, "scene.fields: WayPoint.points");
+_Static_assert(sizeof(WayPoint) == 0x14, "scene.fields: size of WayPoint");
+_Static_assert(offsetof(Trigger, wayPointCount) == 0x0 && sizeof(((Trigger *)0)->wayPointCount) == 0x4, "scene.fields: Trigger.wayPointCount");
+_Static_assert(offsetof(Trigger, wayPoints) == 0x4 && sizeof(((Trigger *)0)->wayPoints) == 0x4, "scene.fields: Trigger.wayPoints");
+_Static_assert(offsetof(Trigger, radiusSq) == 0x14 && sizeof(((Trigger *)0)->radiusSq) == 0x4, "scene.fields: Trigger.radiusSq");
+_Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
@@ -1274,6 +1305,12 @@ _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor)
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
+_Static_assert(offsetof(Stage, pathPoints) == 0xdc0f10 && sizeof(((Stage *)0)->pathPoints) == 0x75300, "scene.fields: Stage.pathPoints");
+_Static_assert(offsetof(Stage, pathPointCount) == 0xe36210 && sizeof(((Stage *)0)->pathPointCount) == 0x4, "scene.fields: Stage.pathPointCount");
+_Static_assert(offsetof(Stage, wayPoints) == 0xe36214 && sizeof(((Stage *)0)->wayPoints) == 0x4e20, "scene.fields: Stage.wayPoints");
+_Static_assert(offsetof(Stage, wayPointCount) == 0xe3b034 && sizeof(((Stage *)0)->wayPointCount) == 0x4, "scene.fields: Stage.wayPointCount");
+_Static_assert(offsetof(Stage, triggers) == 0xe3b038 && sizeof(((Stage *)0)->triggers) == 0x18f0, "scene.fields: Stage.triggers");
+_Static_assert(offsetof(Stage, triggerCount) == 0xe3c938 && sizeof(((Stage *)0)->triggerCount) == 0x4, "scene.fields: Stage.triggerCount");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, objectFreeHint) == 0x13c9b28 && sizeof(((Stage *)0)->objectFreeHint) == 0x4, "scene.fields: Stage.objectFreeHint");

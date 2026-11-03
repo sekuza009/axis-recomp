@@ -11,17 +11,18 @@
    Its caller ignores the eax it leaves */
 void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 {
+	Stage *st = (Stage *)scene;
 	int *count = (int *)(scene + 0xe3b034);
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(scene + 0xe36214, 0x14, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		u8 *r = scene + 0xe36214 + i * 0x14;
-		FIELD(u8 *, r, 0x10) = scene + 0xdc0f10 + total * 0x30;
-		total += FIELD(int, r, 0xc);
+		WayPoint *r = (WayPoint *)(scene + 0xe36214 + i * 0x14);
+		r->points = scene + 0xdc0f10 + total * 0x30;
+		total += r->pointCount;
 	}
-	if (total != FIELD(int, scene, 0xe36210))
-		fatal4(STR(0x4c7d24, "mismatch between total num of actor c..."), total, FIELD(int, scene, 0xe36210));
+	if (total != st->pathPointCount)
+		fatal4(STR(0x4c7d24, "mismatch between total num of actor c..."), total, st->pathPointCount);
 }
 
 /* 0x48b530: the triggers: their count (+0xe3c938) and 0x1c-byte records (+0xe3b038), each given its run of way points
@@ -29,19 +30,20 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
    the total against the way points' count (+0xe3b034) */
 void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 {
+	Stage *st = (Stage *)scene;
 	int *count = (int *)(scene + 0xe3c938);
 	fread_scrambled(count, 4, 1, f);
 	fread_scrambled(scene + 0xe3b038, 0x1c, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		u8 *r = scene + 0xe3b038 + i * 0x1c;
-		long double radius = FIELD(float, r, 0x14);
-		FIELD(u8 *, r, 4) = scene + 0xe36214 + total * 0x14;
-		total += FIELD(int, r, 0);
-		FIELD(float, r, 0x14) = (float)(radius * radius * k_10000f);
+		Trigger *r = (Trigger *)(scene + 0xe3b038 + i * 0x1c);
+		long double radius = r->radiusSq;
+		r->wayPoints = scene + 0xe36214 + total * 0x14;
+		total += r->wayPointCount;
+		r->radiusSq = (float)(radius * radius * k_10000f);
 	}
-	if (total != FIELD(int, scene, 0xe3b034))
-		fatal4(STR(0x4c7d74, "mismatch between total num of way poi..."), total, FIELD(int, scene, 0xe3b034));
+	if (total != st->wayPointCount)
+		fatal4(STR(0x4c7d74, "mismatch between total num of way poi..."), total, st->wayPointCount);
 }
 
 /* 0x4875d0 (thiscall on the scene): the item file: its version (0x1201, else a fatal message; no file one too), the
@@ -170,7 +172,8 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
    2, 3, 5 or none (-1); with the first, 10 .. 19 and 0x1e, 0x1f, 0x25 none too; with the third 15 .. 19 to 10 .. 14 */
 static void remap_item(u8 *scene, int *kind)
 {
-	if (FIELD(int, scene, 0x20f3ac0) == 1) {
+	Stage *st = (Stage *)scene;
+	if (st->halfPoints == 1) {
 		if (*kind / 10 == 0)
 			*kind = 0;
 		else if (*kind / 10 == 1 || *kind == 0x1e || *kind == 0x1f || *kind == 0x25)
@@ -198,13 +201,14 @@ static void remap_item(u8 *scene, int *kind)
    default (0xa0e7a8) until then, +0x20fcd3c -1. Its caller ignores the eax it leaves */
 void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 {
+	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	const float *scale = (const float *)ADDR(k_10f);
 	memcpy(scene + 0x20fab60, (const void *)ADDR(g_vecOrigin), 12);
 	FIELD(int, scene, 0x20fab6c) = 0;
 	FIELD(int, scene, 0x20fab70) = 0;
 	FIELD(int, scene, 0x20fadf4) = 0;
-	FIELD(int, scene, 0x20fcd38) = 0;
+	st->itemCount = 0;
 	FIELD(int, scene, 0x20fcd3c) = -1;
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
@@ -241,9 +245,9 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			FIELD(float, start, 0x10) = f32(fmul_m(fld_m(&rf[8]), scale));
 			FIELD(int, scene, 0x20fadf4)++;
 		} else if (r[0] == 2) {
-			if (FIELD(int, scene, 0x20fcd38) >= 200)
+			if (st->itemCount >= 200)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
-			u8 *item = scene + 0x20fadf8 + FIELD(int, scene, 0x20fcd38) * 0x28;
+			u8 *item = scene + 0x20fadf8 + st->itemCount * 0x28;
 			FIELD(u32, item, 0) = r[1];
 			remap_item(scene, (int *)item);
 			FIELD(u32, item, 4) = r[2];
@@ -253,7 +257,7 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 			FIELD(float, item, 0x1c) = f32(fmul_m(fld_m(&rf[8]), scale));
 			FIELD(int, item, 0x20) = 0;
 			FIELD(int, item, 0x24) = 0;
-			FIELD(int, scene, 0x20fcd38)++;
+			st->itemCount++;
 		}
 	}
 	fclose(f);
@@ -284,6 +288,7 @@ static const u32 k_schemeVal[10][2] = {
    leaves */
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
+	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define setPartColor(p, part, s) GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
@@ -329,13 +334,13 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 				items[k] = -1;
 		playerRecord_setFromActorRecord(scene, p, rec);
 	}
-	FIELD(int, scene, 0x19e1888) = FIELD(int, scene, 0x1cd6fb0);
+	st->playerRecordCount = FIELD(int, scene, 0x1cd6fb0);
 	for (int i = 1; i < FIELD(int, scene, 0x1cd93a4); i++)
 		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
 	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), scene + 0x908);
 	FIELD(int, scene, 0x2104fe4) = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < FIELD(int, scene, 0x1cd6fb0); p++) {
-		FIELD(int, scene, 0x15a9b2e + p * 0x47fd2) = 1;
+		st->playerRecords[p].flagShown = 1;
 		FIELD(int, scene, 0x15a9b36 + p * 0x47fd2) = 0x180;
 	}
 #undef crt_fread
@@ -380,6 +385,7 @@ static int grey(const u8 *px)
    last the layer meshes (stage_buildMeshDrawRecords). Returns 1 */
 int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 {
+	Stage *st = (Stage *)s;
 	u8 image[0x30000];   /* (on the stack, as the original's: the file reads log its address) */
 	char path[0x100], dir[0x100], tex[0x100];
 	u32 n;
@@ -410,7 +416,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	for (int k = 0; k < 7; k++)
 		fread_scrambled(s + fog_and_modes[k], 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8004, "load background sphere"));
-	int mode = GAME_VAR(int, s + 0x9ee064);
+	int mode = st->skyMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
 			GAME_VAR(u32, s + 0x9ee07c) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
@@ -419,18 +425,18 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 			GAME_VAR(u32, s + 0x9ee068 + k * 4) = ground_tex(dir, sphere[k], 0, tex);
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f8c, "load background sky"));
-	mode = GAME_VAR(int, s + 0x9eee48);
+	mode = st->layerMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
 			GAME_VAR(u32, s + 0x9eee50) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
 		GAME_VAR(u32, s + 0x9eee4c) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
-	if (GAME_VAR(int, s + 0x9ef0b0) > 0 && GAME_VAR(int, s + 0x9ef0b0) <= 2)
+	if (st->sideMode > 0 && st->sideMode <= 2)
 		for (int k = 0; k < 6; k++)
 			GAME_VAR(u32, s + 0x9ef0b4 + k * 4) = ground_tex(dir, STR(0x4c7f3c, "%s/SideLayer%d"), k + 1, tex);   /* SideLayer<n> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f24, "load background floor"));
-	if (GAME_VAR(int, s + 0x9ef30c) > 0 && GAME_VAR(int, s + 0x9ef30c) <= 2)
+	if (st->floorOn > 0 && st->floorOn <= 2)
 		for (int k = 0; k < 16; k++)
 			GAME_VAR(u32, s + 0x9ef310 + k * 4) = ground_tex(dir, STR(0x4c7f14, "%s/FloorAni%02d"), k + 1, tex);   /* FloorAni<nn> */
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f04, "load area limit"));
@@ -439,7 +445,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 		fread_scrambled(s + 0x9ef900 + limits[k][0], limits[k][1], 1, f);
 	fread_scrambled(s + 0xdc0a74, 4, 1, f);
 	GAME_VAR(int, s + 0xdc0240) = 0;
-	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
+	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *l = s + 0xdc0244 + i * 0x20c;
 		GroundLayer *gl = (GroundLayer *)l;
 		log_message((int)s, 0, i, (const char *)STR(0x4c7ef4, "load layer %d"), i);
