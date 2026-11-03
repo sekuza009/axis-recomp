@@ -533,8 +533,8 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
 	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
-	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), (const float *)(ac + 0x3e8)));
-	const float *cam = (const float *)(s + 0x20f3970), *at = (const float *)(ac + 0x154);
+	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), &AC->radius));
+	const float *cam = (const float *)(s + 0x20f3970), *at = AC->pos;
 	for (int k = 0; k < 3; k++)
 		if (fsub_m(fld_m(&cam[k]), &r) > at[k])
 			return;
@@ -543,22 +543,22 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			return;
 	u8 *tint = ac + 0x4f0;
 	int local = GAME_VAR(int, s + 0x202e8d4);
-	if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AC->sensorLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(AC->blinkTime > *K(0x4a9534))) {
 		if (!(AC->blinkTime >= *K(0x4a974c)))
-			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m((const float *)(ac + 0x120)), K(0x4a9748)));
+			tint[0] = tint[1] = tint[2] = tint[3] = (u8)ftol(fmul_m(fld_m(&AC->blinkTime), K(0x4a9748)));
 		else {
-			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m((const float *)(ac + 0x120)), K(0x4a974c)), K(0x4a9748))));
+			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m(&AC->blinkTime), K(0x4a974c)), K(0x4a9748))));
 			tint[3] = 0xff;
 		}
 	} else if (AC->glow > 0 || AC->hitFlash > 0) {
 		int c[3] = { 0, 0, 0 };
 		if (AC->glow > 0)
-			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m((const float *)(ac + 0x4ec)), K(0x4a9744)));
+			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m(&AC->glow), K(0x4a9744)));
 		if (AC->hitFlash > 0) {
-			int red = ftol(fmul_m(fld_m((const float *)(ac + 0x8854)), K(0x4a9744)));
+			int red = ftol(fmul_m(fld_m(&AC->hitFlash), K(0x4a9744)));
 			c[0] += red;
 			c[1] += red / 2;
 			c[2] += red / 2;
@@ -658,11 +658,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	u8 *boost = s + 0x1486470 + GAME_VAR(int, p + 0x31c) * 0x1820;
 	for (int k = 0; k < 4; k++) {
 		A(u32, 0x404 + k * 4) = 0x3f800000;
-		A(int, 0x414 + k * 4) = 0;
+		AC->ammoBonus[k] = 0;
 	}
-	A(int, 0x424) = 0;
-	A(u32, 0x428) = A(u32, 0x42c) = 0x3f800000;
-	A(int, 0x430) = 0;
+	AC->rangeBonus = 0.0f;
+	BITS(AC->lockRangeFactor) = BITS(AC->lockHoldFactor) = 0x3f800000;
+	AC->sensorBonus = 0;
 	fill_dwords(ac + 0x434, 5, 0x3f800000);
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
@@ -672,87 +672,87 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		switch (it) {
 		case 0x1b:
 			for (int i = 0; i < 4; i++)
-				A(float, 0x404 + i * 4) = f32(fadd_m(fld_m((const float *)(ac + 0x404) + i), K(0x4a94fc)));
+				AC->ammoFactor[i] = f32(fadd_m(fld_m(AC->ammoFactor + i), K(0x4a94fc)));
 			break;
-		case 0x1c: A(int, 0x41c) += 100; break;
-		case 0x1d: A(int, 0x414) += 100; break;
-		case 0x1e: A(int, 0x418) += 100; break;
-		case 0x1f: A(int, 0x420) += 100; break;
+		case 0x1c: AC->ammoBonus[2] += 100; break;
+		case 0x1d: AC->ammoBonus[0] += 100; break;
+		case 0x1e: AC->ammoBonus[1] += 100; break;
+		case 0x1f: AC->ammoBonus[3] += 100; break;
 		case 0x20:
-			A(float, 0x424) = f32(fadd_m(fld_m((const float *)(ac + 0x424)), K(0x4a9708)));
-			A(float, 0x428) = f32(fsub_m(fld_m((const float *)(ac + 0x428)), K(0x4a942c)));
-			A(float, 0x42c) = f32(fadd_m(fld_m((const float *)(ac + 0x42c)), K(0x4a9424)));
-			A(int, 0x430) += 3;
+			AC->rangeBonus = f32(fadd_m(fld_m(&AC->rangeBonus), K(0x4a9708)));
+			AC->lockRangeFactor = f32(fsub_m(fld_m(&AC->lockRangeFactor), K(0x4a942c)));
+			AC->lockHoldFactor = f32(fadd_m(fld_m(&AC->lockHoldFactor), K(0x4a9424)));
+			AC->sensorBonus += 3;
 			break;
 		case 0x21:
-			A(float, 0x434) = f32(fadd_m(fld_m((const float *)(ac + 0x434)), K(0x4a942c)));
-			A(float, 0x438) = f32(fsub_m(fld_m((const float *)(ac + 0x438)), K(0x4a942c)));
-			A(float, 0x43c) = f32(fsub_m(fld_m((const float *)(ac + 0x43c)), K(0x4a942c)));
+			AC->boostTimeFactor = f32(fadd_m(fld_m(&AC->boostTimeFactor), K(0x4a942c)));
+			AC->rechargeTimeFactor = f32(fsub_m(fld_m(&AC->rechargeTimeFactor), K(0x4a942c)));
+			AC->restTimeFactor = f32(fsub_m(fld_m(&AC->restTimeFactor), K(0x4a942c)));
 			break;
 		case 0x22:
-			A(float, 0x440) = f32(fadd_m(fld_m((const float *)(ac + 0x440)), K(0x4a94f8)));
+			AC->loadFactor = f32(fadd_m(fld_m(&AC->loadFactor), K(0x4a94f8)));
 			break;
 		case 0x23:
-			A(float, 0x444) = f32(fadd_m(fld_m((const float *)(ac + 0x444)), K(0x4a94fc)));
+			AC->shieldFactor = f32(fadd_m(fld_m(&AC->shieldFactor), K(0x4a94fc)));
 			AC->shieldRegen += 4;
 			break;
 		}
 	}
-	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), (const float *)(ac + 0x424));
+	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), &AC->rangeBonus);
 	AC->radiusSq = f32(hp * hp);
 	AC->heading = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
-	A(int, 8) = GAME_VAR(int, head + 0xa9c) + A(int, 0x430);
-	A(float, 0xc) = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), (const float *)(ac + 0x428)));
-	A(float, 0x10) = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), (const float *)(ac + 0x42c)));
-	A(float, 0x14) = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), (const float *)(ac + 0x440)));
-	A(float, 0x18) = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
+	AC->sensorLevel = GAME_VAR(int, head + 0xa9c) + AC->sensorBonus;
+	AC->lockRange = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), &AC->lockRangeFactor));
+	AC->lockHold = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), &AC->lockHoldFactor));
+	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), &AC->loadFactor));
+	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
 	                                   (const float *)(arms + 0x12e8)), (const float *)(head + 0xa90)));
 	int type = GAME_VAR(int, s + 0x20f3ab8);
 	if (type < 2 || type > 0xb)
 		for (int k = 0; k < 6; k++) {
 			int it = GAME_VAR(int, p + 0x320 + k * 4);
 			if (it >= 0)
-				A(float, 0x18) = f32(fadd_m(fld_m((const float *)((u8 *)&((Stage *)s)->actorInfo[it] + 0x2db8)), (const float *)(ac + 0x18)));
+				AC->load = f32(fadd_m(fld_m((const float *)((u8 *)&((Stage *)s)->actorInfo[it] + 0x2db8)), &AC->load));
 		}
-	long double over = A(float, 0x18) > A(float, 0x14)
-		? fmul_m(fdiv_m(fsub_m(fld_m((const float *)(ac + 0x18)), (const float *)(ac + 0x14)), (const float *)(ac + 0x14)), K(0x4a947c))
+	long double over = AC->load > AC->loadMax
+		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), K(0x4a947c))
 		: fld_m(K(0x4a93e8));
 	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab4), K(0x4a942c)));
-	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), (const float *)(ac + 0x444)), K(0x4a942c)));
+	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), &AC->shieldFactor), K(0x4a942c)));
 	A(u32, 0x24) = GAME_VAR(u32, arms + 0x12ec);
 	for (int k = 0; k < 4; k++)
-		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), (const float *)(ac + 0x404) + k), K(0x4a942c))) +
-		                       A(int, 0x414 + k * 4);
+		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), AC->ammoFactor + k), K(0x4a942c))) +
+		                       AC->ammoBonus[k];
 	long double left = fld_m(K(0x4a9424)) - over;
 	long double v = fmul_m(level_factor(p, 0), (const float *)(legs + 0x13dc)) * left;
 	AC->keyRate = f32(v);
 	if (!(v >= 0))
 		AC->keyRate = 0.0f;
 	if (GAME_VAR(int, s + 0x20f3acc) == 1)
-		AC->keyRate = f32(fmul_m(fld_m((const float *)(ac + 0x38)), K(0x4a9704)));
+		AC->keyRate = f32(fmul_m(fld_m(&AC->keyRate), K(0x4a9704)));
 	BITS(AC->leanPitch) = GAME_VAR(u32, boost + 0x1800);
-	AC->boostTime = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), (const float *)(ac + 0x434)));
-	AC->rechargeTime = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), (const float *)(ac + 0x438)));
-	AC->restTime = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), (const float *)(ac + 0x43c)));
+	AC->boostTime = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), &AC->boostTimeFactor));
+	AC->rechargeTime = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), &AC->rechargeTimeFactor));
+	AC->restTime = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
 #define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + GAME_VAR(int, p + 0x44) * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
 	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
 	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))
 		AC->speed = 100.0f;   /* 100 */
-	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), (const float *)(ac + 0x50));
+	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), &AC->speed);
 	AC->moveAccel = f32(v);
 	if (GAME_VAR(int, s + 0x20f3acc) == 1)   /* (the check scales the stored value) */
-		AC->moveAccel = f32(fmul_m(check ? fld_m((const float *)(ac + 0x3c)) : v, K(0x4a9704)));
-	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), (const float *)(ac + 0x50)) * left;
+		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, K(0x4a9704)));
+	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), (const float *)(boost + 0x1818)), (const float *)(ac + 0x50)) * left, K(0x4a9474));
+	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), (const float *)(boost + 0x1818)), &AC->speed) * left, K(0x4a9474));
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
-	v = fdiv_m(fmul_m(LEG(0x13f0), (const float *)(boost + 0x181c)), (const float *)(ac + 0x50)) * left;
+	v = fdiv_m(fmul_m(LEG(0x13f0), (const float *)(boost + 0x181c)), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
 	if (!((check ? fld_m((const float *)(ac + 0x5c)) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;
@@ -809,14 +809,14 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	actor_startingValues(s, a);   /* actor_startingValues */
 	AC->state = 1;
 	AC->stateTime = 0.0f;
-	memcpy(ac + 0x154, pp + 2, 12);
+	memcpy(AC->pos, pp + 2, 12);
 	BITS(AC->pitch) = pp[5];
 	BITS(AC->yaw) = pp[6];
 	fill_dwords(ac + 0x168, 6, 0);
 	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* three past positions: the place and the heading */
 	for (int k = 0; k < 3; k++) {
 		u8 *h = ac + past[k];
-		memcpy(h, ac + 0x154, 12);
+		memcpy(h, AC->pos, 12);
 		GAME_VAR(u32, h + 0xc) = BITS(AC->pitch);
 		GAME_VAR(u32, h + 0x10) = BITS(AC->yaw);
 	}
@@ -830,8 +830,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		A(int, 0x360 + k * 4) = -1;
 	}
 	A(int, 0x374) = 0;
-	memcpy(ac + 0x378, (const void *)ADDR(g_vecZero), 12);
-	memcpy(ac + 0x384, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->velocity, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->move, (const void *)ADDR(g_vecZero), 12);
 	AC->radius = 500.0f;   /* 500 */
 	AC->statusIcon = 0;
 	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
@@ -847,10 +847,10 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->overheat = AC->warned = 0;
 	fill_dwords(ac + 0x4bc, 3, (u32)-1);
 	AC->order = -1;
-	memcpy(ac + 0x4e0, ac + 0x154, 12);
+	memcpy(AC->deathPos, AC->pos, 12);
 	AC->glow = 0.0f;
-	A(u8, 0x4f4) = 0;
-	A(u32, 0x534) = 0xc61c4000;   /* -10000 */
+	(*(u8 *)&AC->message[0]) = 0;
+	AC->messageTime = -10000.0f;   /* -10000 */
 	A(int, 0x538) = -1;
 	fill_dwords(ac + 0x53c, 3, 0);
 	AC->damageFlash = 1.0f;
@@ -874,12 +874,12 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->lookTime = 0.0f;
 	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + 0x884c, 3, 0);
-	memcpy(ac + 0x885c, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
 	A(int, 0x8868) = 0;
 	AC->stuckTime = 1.0f;
 	AC->stuckPath = -1;
-	memcpy(ac + 0x8874, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 	AC->alert = (*(int *)&AC->beepTimer) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
@@ -923,7 +923,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;
-	if (A(int, 8) != GAME_VAR(int, me + 8))
+	if (AC->sensorLevel != GAME_VAR(int, me + 8))
 		return 0;
 	for (int k = 0; k < 4; k++)
 		if (!close_enough((const float *)(ac + floats2[k]), (const float *)(me + floats2[k])))
@@ -934,7 +934,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 10; k++)
 		if (!close_enough((const float *)(ac + floats3[k]), (const float *)(me + floats3[k])))
 			return 0;
-	if (!close_enough((const float *)(ac + 0x68), (const float *)(me + 0x50)))
+	if (!close_enough(&AC->topSpeed, (const float *)(me + 0x50)))
 		return 0;
 	int d = AC->shieldRegen - GAME_VAR(int, me + 0x448);
 	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))

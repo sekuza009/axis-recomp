@@ -1919,7 +1919,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			msg_newKing(g);   /* msg_newKing */
 		}
 		((Player *)ac)->netFired = 1;
-		((Player *)ac)->armorDeadline = f32(fadd_m(fld_m((const float *)(ac + 0x120)), K(0x4a9418)));
+		((Player *)ac)->armorDeadline = f32(fadd_m(fld_m(&((Player *)ac)->blinkTime), K(0x4a9418)));
 		BITS(((Player *)ac)->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			((Player *)ac)->statusIcon = 1;

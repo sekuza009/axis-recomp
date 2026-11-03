@@ -24,7 +24,11 @@ typedef struct EventLine {
 typedef struct Player {
 	float radiusSq;   /* +0x0: (by use) the spawn record's radius squared, x 10000 */
 	float heading;   /* +0x4: (by use) tenths of a degree (the alert ring turns with it) */
-	u8 _pad0000008[0x14];
+	i32 sensorLevel;   /* +0x8: (by use) a cloaked actor (timerFlags 0x200) is seen by those whose level is above its own */
+	float lockRange;   /* +0xc: (by use) x the weapon's ring range: the lock-on reaches that far */
+	float lockHold;   /* +0x10: (by use) seconds a lock-on holds once out of reach */
+	float loadMax;   /* +0x14: (by use) the weight carried without slowing (the chest's, by level and items) */
+	float load;   /* +0x18: the parts' and items' weight (over loadMax: slower) */
 	i32 armorMax;   /* +0x1c: (by use) the armor it starts with (actor_startingValues) */
 	i32 shieldMax;   /* +0x20: the shield it starts with */
 	u8 _pad0000024[0x4];
@@ -113,7 +117,17 @@ typedef struct Player {
 	i32 statusIcon;   /* +0x3ec: (unclear) 1 / 2: an icon over the player */
 	i32 timerFlags;   /* +0x3f0: bit 8 + k: timer k shown */
 	float timers[4];   /* +0x3f4: seconds left (2: boost, the energy bar turns blue) */
-	u8 _pad0000404[0x44];
+	float ammoFactor[4];   /* +0x404: x the arms' ammunition, per kind */
+	i32 ammoBonus[4];   /* +0x414: + rounds, per kind */
+	float rangeBonus;   /* +0x424: + the sight range (radiusSq) */
+	float lockRangeFactor;   /* +0x428 */
+	float lockHoldFactor;   /* +0x42c */
+	i32 sensorBonus;   /* +0x430 */
+	float boostTimeFactor;   /* +0x434 */
+	float rechargeTimeFactor;   /* +0x438 */
+	float restTimeFactor;   /* +0x43c */
+	float loadFactor;   /* +0x440 */
+	float shieldFactor;   /* +0x444 */
 	i32 shieldRegen;   /* +0x448: (by use) shield regained a second (up to shieldMax) */
 	i32 inForward;   /* +0x44c: the input it acts on this frame (actor_setInput): held forward */
 	i32 inBackward;   /* +0x450 */
@@ -153,7 +167,10 @@ typedef struct Player {
 	i32 markTeam;   /* +0x4dc: (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games */
 	float deathPos[3];   /* +0x4e0: (by use) where it died (its position while not in play) */
 	float glow;   /* +0x4ec: (by use) a fresh shot's flash (and speed unless cloaked) */
-	u8 _pad00004f0[0x54];
+	u8 _pad00004f0[0x4];
+	char message[0x40];   /* +0x4f4: (by use) a message for the local player ("OUT OF AMMO!") */
+	float messageTime;   /* +0x534: its time shown (-10000: none) */
+	u8 _pad0000538[0xc];
 	float shieldRegenTime;   /* +0x544: (by use) seconds towards the next shield regained */
 	float damageFlash;   /* +0x548: > 0: a white flash over the screen at this alpha */
 	i32 breakUp;   /* +0x54c: (by use) the parts' break-up step (one a frame, to 7) */
@@ -982,6 +999,11 @@ _Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->ti
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
 _Static_assert(offsetof(Player, radiusSq) == 0x0 && sizeof(((Player *)0)->radiusSq) == 0x4, "scene.fields: Player.radiusSq");
 _Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading) == 0x4, "scene.fields: Player.heading");
+_Static_assert(offsetof(Player, sensorLevel) == 0x8 && sizeof(((Player *)0)->sensorLevel) == 0x4, "scene.fields: Player.sensorLevel");
+_Static_assert(offsetof(Player, lockRange) == 0xc && sizeof(((Player *)0)->lockRange) == 0x4, "scene.fields: Player.lockRange");
+_Static_assert(offsetof(Player, lockHold) == 0x10 && sizeof(((Player *)0)->lockHold) == 0x4, "scene.fields: Player.lockHold");
+_Static_assert(offsetof(Player, loadMax) == 0x14 && sizeof(((Player *)0)->loadMax) == 0x4, "scene.fields: Player.loadMax");
+_Static_assert(offsetof(Player, load) == 0x18 && sizeof(((Player *)0)->load) == 0x4, "scene.fields: Player.load");
 _Static_assert(offsetof(Player, armorMax) == 0x1c && sizeof(((Player *)0)->armorMax) == 0x4, "scene.fields: Player.armorMax");
 _Static_assert(offsetof(Player, shieldMax) == 0x20 && sizeof(((Player *)0)->shieldMax) == 0x4, "scene.fields: Player.shieldMax");
 _Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
@@ -1064,6 +1086,17 @@ _Static_assert(offsetof(Player, radius) == 0x3e8 && sizeof(((Player *)0)->radius
 _Static_assert(offsetof(Player, statusIcon) == 0x3ec && sizeof(((Player *)0)->statusIcon) == 0x4, "scene.fields: Player.statusIcon");
 _Static_assert(offsetof(Player, timerFlags) == 0x3f0 && sizeof(((Player *)0)->timerFlags) == 0x4, "scene.fields: Player.timerFlags");
 _Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers) == 0x10, "scene.fields: Player.timers");
+_Static_assert(offsetof(Player, ammoFactor) == 0x404 && sizeof(((Player *)0)->ammoFactor) == 0x10, "scene.fields: Player.ammoFactor");
+_Static_assert(offsetof(Player, ammoBonus) == 0x414 && sizeof(((Player *)0)->ammoBonus) == 0x10, "scene.fields: Player.ammoBonus");
+_Static_assert(offsetof(Player, rangeBonus) == 0x424 && sizeof(((Player *)0)->rangeBonus) == 0x4, "scene.fields: Player.rangeBonus");
+_Static_assert(offsetof(Player, lockRangeFactor) == 0x428 && sizeof(((Player *)0)->lockRangeFactor) == 0x4, "scene.fields: Player.lockRangeFactor");
+_Static_assert(offsetof(Player, lockHoldFactor) == 0x42c && sizeof(((Player *)0)->lockHoldFactor) == 0x4, "scene.fields: Player.lockHoldFactor");
+_Static_assert(offsetof(Player, sensorBonus) == 0x430 && sizeof(((Player *)0)->sensorBonus) == 0x4, "scene.fields: Player.sensorBonus");
+_Static_assert(offsetof(Player, boostTimeFactor) == 0x434 && sizeof(((Player *)0)->boostTimeFactor) == 0x4, "scene.fields: Player.boostTimeFactor");
+_Static_assert(offsetof(Player, rechargeTimeFactor) == 0x438 && sizeof(((Player *)0)->rechargeTimeFactor) == 0x4, "scene.fields: Player.rechargeTimeFactor");
+_Static_assert(offsetof(Player, restTimeFactor) == 0x43c && sizeof(((Player *)0)->restTimeFactor) == 0x4, "scene.fields: Player.restTimeFactor");
+_Static_assert(offsetof(Player, loadFactor) == 0x440 && sizeof(((Player *)0)->loadFactor) == 0x4, "scene.fields: Player.loadFactor");
+_Static_assert(offsetof(Player, shieldFactor) == 0x444 && sizeof(((Player *)0)->shieldFactor) == 0x4, "scene.fields: Player.shieldFactor");
 _Static_assert(offsetof(Player, shieldRegen) == 0x448 && sizeof(((Player *)0)->shieldRegen) == 0x4, "scene.fields: Player.shieldRegen");
 _Static_assert(offsetof(Player, inForward) == 0x44c && sizeof(((Player *)0)->inForward) == 0x4, "scene.fields: Player.inForward");
 _Static_assert(offsetof(Player, inBackward) == 0x450 && sizeof(((Player *)0)->inBackward) == 0x4, "scene.fields: Player.inBackward");
@@ -1099,6 +1132,8 @@ _Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->mark
 _Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");
 _Static_assert(offsetof(Player, deathPos) == 0x4e0 && sizeof(((Player *)0)->deathPos) == 0xc, "scene.fields: Player.deathPos");
 _Static_assert(offsetof(Player, glow) == 0x4ec && sizeof(((Player *)0)->glow) == 0x4, "scene.fields: Player.glow");
+_Static_assert(offsetof(Player, message) == 0x4f4 && sizeof(((Player *)0)->message) == 0x40, "scene.fields: Player.message");
+_Static_assert(offsetof(Player, messageTime) == 0x534 && sizeof(((Player *)0)->messageTime) == 0x4, "scene.fields: Player.messageTime");
 _Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
 _Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->damageFlash) == 0x4, "scene.fields: Player.damageFlash");
 _Static_assert(offsetof(Player, breakUp) == 0x54c && sizeof(((Player *)0)->breakUp) == 0x4, "scene.fields: Player.breakUp");

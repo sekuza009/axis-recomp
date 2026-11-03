@@ -359,7 +359,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			aimed = 1;
 			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
 				int t = ST->bullets[k].owner;
-				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
+				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || OI(t, 0x1cd93b0) < AC->sensorLevel)) {
 					AC->botTarget = t;
 					AC->botTargetTime = 10.5f;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
@@ -388,14 +388,14 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->scanTime = (float)v;
 			int k = AC->lastAttacker;
 			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
-			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
+			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AC->sensorLevel)) {   /* the one who hit it */
 				AC->botTarget = k;
 				AC->botTargetTime = 10.5f;
 				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < ST->actorCount; j++) {
-						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
+						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AC->sensorLevel))
 							continue;
 						float d[3];
 						const float *at = &ST->actors[j].pos[0];
@@ -414,13 +414,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				} else {
 					int t = AC->botTarget;
 					if (collision_rayTrace(s, &AC->pos[0], &ST->actors[t].pos[0], v28) != 0
-					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AI(8))) {   /* lost from sight */
+					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AC->sensorLevel)) {   /* lost from sight */
 						if (!(AC->botTargetTime > 0))
 							AC->botTarget = -1;
 						else
 							for (int j = 0; j < ST->actorCount; j++) {
 								if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team
-								    || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AI(8)))
+								    || ((ST->actors[j].timerFlags & 0x200) && OI(j, 0x1cd93b0) >= AC->sensorLevel))
 									continue;
 								if (collision_rayTrace(s, &AC->pos[0], &ST->actors[j].pos[0], v28) == 0) {
 									AC->botTarget = j;
@@ -883,12 +883,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					if (!(v >= 0))
 						*seen = 0;
 				}
-				if (!(fmul_m(fld_m(&AF(0xc)), &((ActorInfo *)weapon)->ringRange) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
+				if (!(fmul_m(fld_m(&AC->lockRange), &((ActorInfo *)weapon)->ringRange) >= ST->actors[j].lockedOn) && AC->team != ST->actors[j].team) {
 					if (!(lock[j] > 0)) {
 						sound_playVolume(0x12, 0x64);
 						BITS(*seen) = 0x3e800000;   /* 0.25 */
 					}
-					BITS(lock[j]) = AU(0x10);
+					BITS(lock[j]) = BITS(AC->lockHold);
 				} else {
 					long double v = fsub_m(fld_m(&lock[j]), dt);
 					lock[j] = (float)v;
@@ -975,7 +975,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						if (AI(0x4a0) != 0)
 							break;
 						strcpy((char *)(a + 0x4f4), (const char *)STR(0x4b4528, "OUT OF AMMO!"));
-						AU(0x534) = BITS(*dt);
+						BITS(AC->messageTime) = BITS(*dt);
 						sound_playVolume(0xa5, 0x64);
 					}
 					if (AI(0x4a0) == 0)
@@ -1151,7 +1151,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->effectScale = 3.0f;
 		if (i != ST->selectedActor && AC->viewMarked == 0) {   /* the arms' and legs' emitters, faint when cloaked or hurt */
 			BITS(v28[0]) = BITS(AC->effectScale);
-			if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0))
+			if ((((u32)AC->timerFlags) & 0x200) && AC->sensorLevel >= OI(ST->playerActor, 0x1cd93b0))
 				BITS(v28[1]) = 0x3d808081;   /* 1/255 */
 			else if (AC->blinkTime > 3.0f)
 				BITS(v28[1]) = 0x3f800000;
@@ -1196,7 +1196,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		long double g = fsub_m(fld_m(K(0x4a942c)), &AC->fireAnim);
 		AC->glow = (float)(g + g);
 	}
-	if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AC->sensorLevel >= OI(ST->playerActor, 0x1cd93b0)) {
 		if (AC->effectScale > 1.0f)
 			AC->glow = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->effectScale), K(0x4a9424)), K(0x4a94f8)), &AC->glow));
 	} else
@@ -1217,7 +1217,7 @@ timers:
 	countdown(&AC->hitFlash, dt);
 	countdown(&AC->botTargetTime, dt);
 	countdown(&AC->gauge, dt);
-	AF(0x534) = f32(fsub_m(fld_m(&AF(0x534)), dt));
+	AC->messageTime = f32(fsub_m(fld_m(&AC->messageTime), dt));
 	countdown(&AF(0x540), dt);
 	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
 		long double v = fadd_m(fld_m(dt), &AC->shieldRegenTime);
