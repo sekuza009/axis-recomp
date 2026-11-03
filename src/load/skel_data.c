@@ -29,21 +29,23 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
    0x20 bytes at +0x64, +0x68 frames of 0x28 bytes at +0x6c). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 {
+	Skeleton *sko = (Skeleton *)self;
 	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
 	take_block(self, mem, size, (char *)OBJ(g_logSkeleton), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
-	u8 *bones = ((Skeleton *)self)->bones = ((Skeleton *)self)->block;
-	crt_fread(bones, 0x70, ((u32)((Skeleton *)self)->boneCount), f);
-	int at = ((Skeleton *)self)->boneCount * 0x70;
-	for (int i = 0; i < ((Skeleton *)self)->boneCount; i++) {
-		u8 *bone = ((Skeleton *)self)->bones + i * 0x70;
-		AT(u8 *, bone, 0x64) = ((Skeleton *)self)->block + at;
-		u32 keys = ((u32)((Bone *)bone)->posKeyCount);
+	u8 *bones = sko->bones = sko->block;
+	crt_fread(bones, 0x70, ((u32)sko->boneCount), f);
+	int at = sko->boneCount * 0x70;
+	for (int i = 0; i < sko->boneCount; i++) {
+		u8 *bone = sko->bones + i * 0x70;
+		Bone *bn = (Bone *)bone;
+		AT(u8 *, bone, 0x64) = sko->block + at;
+		u32 keys = ((u32)bn->posKeyCount);
 		at += keys * 0x20;
-		AT(u8 *, bone, 0x6c) = ((Skeleton *)self)->block + at;
-		at += ((Bone *)bone)->rotKeyCount * 0x28;
+		AT(u8 *, bone, 0x6c) = sko->block + at;
+		at += bn->rotKeyCount * 0x28;
 		crt_fread(AT(void *, bone, 0x64), 0x20, keys, f);
-		crt_fread(AT(void *, bone, 0x6c), 0x28, ((u32)((Bone *)bone)->rotKeyCount), f);
+		crt_fread(AT(void *, bone, 0x6c), 0x28, ((u32)bn->rotKeyCount), f);
 	}
 }
 
@@ -53,21 +55,22 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
    rest (+0x128). Its callers ignore the eax it leaves */
 void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
+	Manager *mg = (Manager *)self;
 	SkeletonManager_release(self);
 	strcpy((char *)self + 0x10, dir ? dir : (const char *)STR(0x4b1304, "."));
-	((Manager *)self)->setupArg = a;
-	((Manager *)self)->capacity = n;
-	((Manager *)self)->dataSize = extra;
-	((Manager *)self)->blockSize = n * 0x70 + extra;
+	mg->setupArg = a;
+	mg->capacity = n;
+	mg->dataSize = extra;
+	mg->blockSize = n * 0x70 + extra;
 	take_block(self, mem, size, (char *)OBJ(g_logSkeletonManager), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
-	n = ((Manager *)self)->capacity;
-	((Manager *)self)->nodes = ((Manager *)self)->block;
-	((Manager *)self)->items = ((Manager *)self)->block + n * 0x4c;
-	for (int i = 0; i < ((Manager *)self)->capacity; i++) {
-		Skeleton_clear(((Manager *)self)->items + i * 0x24);
-		Skeleton_release(((Manager *)self)->items + i * 0x24);
+	n = mg->capacity;
+	mg->nodes = mg->block;
+	mg->items = mg->block + n * 0x4c;
+	for (int i = 0; i < mg->capacity; i++) {
+		Skeleton_clear(mg->items + i * 0x24);
+		Skeleton_release(mg->items + i * 0x24);
 	}
-	((Manager *)self)->data = ((Manager *)self)->block + n * 0x70;
+	mg->data = mg->block + n * 0x70;
 }
 
 /* 0x466a60 (thiscall on a shape set): set up for n shapes from the directory dir (+0x10, upper-cased; none or
@@ -77,26 +80,27 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
    eax it leaves */
 void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra, void *mem, int size)
 {
+	Manager *mg = (Manager *)self;
 	ShapeManager_release(self);
 	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
 		strcpy((char *)self + 0x10, dir);
 	else
 		self[0x10] = 0;
 	path_normalize((char *)self + 0x10);
-	((Manager *)self)->setupArg = a;
-	((Manager *)self)->capacity = n;
-	((Manager *)self)->dataSize = extra;
-	((Manager *)self)->blockSize = n * 0x98 + extra;
+	mg->setupArg = a;
+	mg->capacity = n;
+	mg->dataSize = extra;
+	mg->blockSize = n * 0x98 + extra;
 	take_block(self, mem, size, (char *)OBJ(g_logShapeManager), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
-	n = ((Manager *)self)->capacity;
-	((Manager *)self)->nodes = ((Manager *)self)->block;
-	((Manager *)self)->items = ((Manager *)self)->block + n * 0x4c;
-	for (int i = 0; i < ((Manager *)self)->capacity; i++) {
-		Model_clear(((Manager *)self)->items + i * 0x4c);
-		Model_release(((Manager *)self)->items + i * 0x4c);
+	n = mg->capacity;
+	mg->nodes = mg->block;
+	mg->items = mg->block + n * 0x4c;
+	for (int i = 0; i < mg->capacity; i++) {
+		Model_clear(mg->items + i * 0x4c);
+		Model_release(mg->items + i * 0x4c);
 	}
 	self[0x130] = 0;
-	((Manager *)self)->data = ((Manager *)self)->block + n * 0x98;
+	mg->data = mg->block + n * 0x98;
 	for (int k = 0; k < 7; k++)
 		AT(int, self, 0x230 + k * 4) = 0;
 }
@@ -265,7 +269,8 @@ static void rotate(long double angle, const float *axis)
    the eax it leaves */
 void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 {
-	if (bone >= ((Skeleton *)sk)->boneCount) {
+	Skeleton *sko = (Skeleton *)sk;
+	if (bone >= sko->boneCount) {
 		for (int k = 0; k < 16; k++)
 			out[k] = k % 5 == 0 ? 0x3f800000 : 0;   /* 1.0 on the diagonal */
 		return;
@@ -273,23 +278,24 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	const float *unit = k_57_2958f;
 	float saved[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
-	int frames = ((Skeleton *)sk)->frames;
+	int frames = sko->frames;
 	int frame = ftol(fmul_m(frames, &t));
 	if (frame < 0)
 		frame = 0;
 	else if (frame >= frames)
 		frame = frames;
 	glLoadIdentity();
-	u8 *b = ((Skeleton *)sk)->bones + bone * 0x70;
-	if (((Bone *)b)->posKeyCount > 0) {
-		float *key = (float *)key_at(((Bone *)b)->posKeys, ((Bone *)b)->posKeyCount, 0x20, &frame);
+	u8 *b = sko->bones + bone * 0x70;
+	Bone *bn = (Bone *)b;
+	if (bn->posKeyCount > 0) {
+		float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &frame);
 		int length = ((int *)key)[1];
 		long double f = length > 0 ? (long double)(frame - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
 		glTranslatef_bits(AT(u32, b, 0x44), AT(u32, b, 0x48), AT(u32, b, 0x4c));
-	if (((Bone *)b)->rotKeyCount > 0) {
-		float *key = (float *)key_at(((Bone *)b)->rotKeys, ((Bone *)b)->rotKeyCount, 0x28, &frame);
+	if (bn->rotKeyCount > 0) {
+		float *key = (float *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
 		int length = ((int *)key)[1];
 		float f = length > 0 ? f32((long double)(frame - ((int *)key)[0]) / length) : 0;
 		rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
@@ -305,12 +311,13 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
    node; a missing one is added (index the count, *added set; the caller loads the item and counts it) */
 static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 full, int *added)
 {
+	Manager *mg = (Manager *)cache;
 	*added = 0;
-	if (((Manager *)cache)->capacity == 0)
+	if (mg->capacity == 0)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)(out, (const char *)RELOC(no_room));
-	u8 *nodes = ((Manager *)cache)->nodes, *node = nodes;
+	u8 *nodes = mg->nodes, *node = nodes;
 	u8 **link = NULL;
-	if (((Manager *)cache)->count != 0)
+	if (mg->count != 0)
 		for (;;) {
 			int c = strcmp(key, (const char *)node);
 			if (c == 0)
@@ -320,12 +327,12 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 				break;
 			node = *link;
 		}
-	int i = ((Manager *)cache)->count;
+	int i = mg->count;
 	if (link) {
-		if (i >= ((Manager *)cache)->capacity)
+		if (i >= mg->capacity)
 			sys_fatalError(out, (const char *)RELOC(full), i);
-		i = ((Manager *)cache)->count;
-		*link = node = ((Manager *)cache)->nodes + i * 0x4c;
+		i = mg->count;
+		*link = node = mg->nodes + i * 0x4c;
 	}
 	strcpy((char *)node, key);
 	((TreeNode *)node)->index = link ? i : 0;
@@ -338,8 +345,9 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
    format (+0x110: 0 or 1, another a fatal message) */
 static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext1, char *out, u32 bad)
 {
+	Manager *mg = (Manager *)cache;
 	char ext[4];
-	int format = ((int)((Manager *)cache)->setupArg);
+	int format = ((int)mg->setupArg);
 	if (format == 0 || format == 1)
 		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
 	else
@@ -357,20 +365,21 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
    skeleton's size added) */
 u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 {
+	Manager *mg = (Manager *)cache;
 	char key[0x100];
 	strcpy(key, name);
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logSkeletonManager), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
-	u8 *sk = ((Manager *)cache)->items + i * 0x24;
+	u8 *sk = mg->items + i * 0x24;
 	if (!added)
 		return sk;
-	const char *own = (const char *)((Manager *)cache)->nodes + i * 0x4c;
-	u8 *mem = ((Manager *)cache)->data;
-	void *at = mem ? mem + ((Manager *)cache)->dataUsed : NULL;
-	int room = mem ? ((Manager *)cache)->dataSize - ((Manager *)cache)->dataUsed : 0;
-	if (((int)((Manager *)cache)->setupArg) == 2)
+	const char *own = (const char *)mg->nodes + i * 0x4c;
+	u8 *mem = mg->data;
+	void *at = mem ? mem + mg->dataUsed : NULL;
+	int room = mem ? mg->dataSize - mg->dataUsed : 0;
+	if (((int)mg->setupArg) == 2)
 		skel_loadFromFile(sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
@@ -378,8 +387,8 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 		skel_loadFrom(sk, path, at, room);
 	}
 	if (mem)
-		((Manager *)cache)->dataUsed += AT(int, sk, 4);
-	((Manager *)cache)->count++;
+		mg->dataUsed += AT(int, sk, 4);
+	mg->count++;
 	return sk;
 }
 
@@ -389,19 +398,20 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
    +0x230 ..); bound (shape_bindPartTextures) when bind is 1, found or added */
 u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 {
+	Manager *mg = (Manager *)cache;
 	char key[0x100];
 	strcpy(key, name);
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
 	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
-	u8 *shape = ((Manager *)cache)->items + i * 0x4c;
+	u8 *shape = mg->items + i * 0x4c;
 	if (added) {
-		const char *own = (const char *)((Manager *)cache)->nodes + i * 0x4c;
-		u8 *mem = ((Manager *)cache)->data;
-		void *at = mem ? mem + ((Manager *)cache)->dataUsed : NULL;
-		int room = mem ? ((Manager *)cache)->dataSize - ((Manager *)cache)->dataUsed : 0;
-		if (((int)((Manager *)cache)->setupArg) == 2)
+		const char *own = (const char *)mg->nodes + i * 0x4c;
+		u8 *mem = mg->data;
+		void *at = mem ? mem + mg->dataUsed : NULL;
+		int room = mem ? mg->dataSize - mg->dataUsed : 0;
+		if (((int)mg->setupArg) == 2)
 			/* (the original's first of its four copies of this pair: the patch DLL retargets all four, for the KYRIE models) */
 			PATCHED_THISCALL(0x466eb8, void, void *, void *, void *, int)(shape, PATCHED_CALL(0x466ea9, void *, const char *)(key), at, room);   /* shape_read (shape_findDatEntry) */
 		else {
@@ -410,10 +420,10 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 			model_loadFrom(shape, path, at, room);
 		}
 		if (mem)
-			((Manager *)cache)->dataUsed += AT(int, shape, 4);
-		shape_bindTextureBy(shape, cache + 0x130, ((Manager *)cache)->bindArgs[0], ((Manager *)cache)->bindArgs[1], ((Manager *)cache)->bindArgs[2],
-		                    ((Manager *)cache)->bindArgs[3], ((Manager *)cache)->bindArgs[4], ((Manager *)cache)->bindArgs[5], ((Manager *)cache)->bindArgs[6]);
-		((Manager *)cache)->count++;
+			mg->dataUsed += AT(int, shape, 4);
+		shape_bindTextureBy(shape, cache + 0x130, mg->bindArgs[0], mg->bindArgs[1], mg->bindArgs[2],
+		                    mg->bindArgs[3], mg->bindArgs[4], mg->bindArgs[5], mg->bindArgs[6]);
+		mg->count++;
 	}
 	if (bind == 1)
 		shape_bindPartTextures(shape);
@@ -514,15 +524,16 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		Skeleton *sk = (Skeleton *)(*entry);
 		u8 *out = AT(u8 *, pose, 0x14) + i * 0x64;
 		u8 *b = sk->bones + i * 0x70;
+		Bone *bn = (Bone *)b;
 		int frame = AT(int, pose, 0x28) % (sk->frames + 1);
 		if (i >= sk->boneCount)
 			break;
-		int parent = ((Bone *)b)->parent;
+		int parent = bn->parent;
 		glLoadMatrixf(parent < 0 ? root : (const float *)(AT(u8 *, pose, 0x14) + parent * 0x64 + 0xc));
 		const float *scale = (const float *)(out + 4);
-		if (((Bone *)b)->posKeyCount > 0) {
+		if (bn->posKeyCount > 0) {
 			int at = frame;
-			float *key = (float *)key_at(((Bone *)b)->posKeys, ((Bone *)b)->posKeyCount, 0x20, &at);
+			float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
 			int length = ((int *)key)[1];
 			long double f = length > 0 ? (long double)(at - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
 			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key[5]), &key[2]), scale), fmul_m(fadd_m(fmul_m(f, &key[6]), &key[3]), scale),
@@ -530,9 +541,9 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		} else
 			glTranslatef(fmul_m(fld_m((const float *)(RELOC(b) + 0x44)), scale), fmul_m(fld_m((const float *)(RELOC(b) + 0x48)), scale),
 			             fmul_m(fld_m((const float *)(RELOC(b) + 0x4c)), scale));
-		if (((Bone *)b)->rotKeyCount > 0) {
+		if (bn->rotKeyCount > 0) {
 			int at = frame;
-			float *key = (float *)key_at(((Bone *)b)->rotKeys, ((Bone *)b)->rotKeyCount, 0x28, &at);
+			float *key = (float *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
 			int length = ((int *)key)[1];
 			float f = length > 0 ? f32((long double)(at - ((int *)key)[0]) / length) : 0;
 			rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
@@ -591,35 +602,36 @@ static void translation(float *m, const float *p)
    the eax it leaves */
 void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 {
+	Skeleton *sko = (Skeleton *)sk;
 	char line[0x100], parent[0x40];
 	Skeleton_release(sk);
-	((Skeleton *)sk)->boneCount = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
+	sko->boneCount = GAME_VAR(int, sk + 0x1c) = GAME_VAR(int, sk + 0x18) = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
 		if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT")))
-			((Skeleton *)sk)->boneCount++;
+			sko->boneCount++;
 		else if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))
 			GAME_VAR(int, sk + 0x18)++;
 		else if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))
 			GAME_VAR(int, sk + 0x1c)++;
 	}
-	int bones = ((Skeleton *)sk)->boneCount;
+	int bones = sko->boneCount;
 	if (bones <= 0)
 		return;
-	int size = ((Skeleton *)sk)->blockSize = bones * 0x70 + GAME_VAR(int, sk + 0x1c) * 0x28 + GAME_VAR(int, sk + 0x18) * 0x20;
+	int size = sko->blockSize = bones * 0x70 + GAME_VAR(int, sk + 0x1c) * 0x28 + GAME_VAR(int, sk + 0x18) * 0x20;
 	if (!mem) {
 		GAME_VAR(void *, sk + 8) = operator_new(size);
 		if (!GAME_VAR(void *, sk + 8))
-			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), ((Skeleton *)sk)->blockSize);
-		((Skeleton *)sk)->ownsBlock = 1;
+			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), sko->blockSize);
+		sko->ownsBlock = 1;
 	} else {
 		if (memSize < size)
 			sys_fatalErrorN((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
 		GAME_VAR(u8 *, sk + 8) = mem;
-		((Skeleton *)sk)->ownsBlock = 0;
+		sko->ownsBlock = 0;
 	}
-	((Skeleton *)sk)->bones = GAME_VAR(u8 *, sk + 8);
-	int keys = ((Skeleton *)sk)->boneCount * 0x70;   /* where the next key list goes, after the bones */
+	sko->bones = GAME_VAR(u8 *, sk + 8);
+	int keys = sko->boneCount * 0x70;   /* where the next key list goes, after the bones */
 	crt_fseek(f, 0, 0);
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
 	u8 *b = NULL;
@@ -629,14 +641,14 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			frames = crt_atoi(TOKEN(LINE_END));
 		else if (!strcmp(t, (const char *)STR(0x4c541c, "SCENE_FRAMESPEED"))) {   /* SCENE_FRAMESPEED */
 			ms = 1000 / crt_atoi(TOKEN(LINE_END));
-			((Skeleton *)sk)->frames = ms * frames;
+			sko->frames = ms * frames;
 		} else if (!strcmp(t, (const char *)STR(0x4c5408, "SCENE_TICKSPERFRAME")))   /* SCENE_TICKSPERFRAME */
 			ticks = crt_atoi(TOKEN(LINE_END));
 		else if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT"))) {   /* GEOMOBJECT */
 			index++;
 			skip = 0;
 			at += 0x70;
-			b = ((Skeleton *)sk)->bones + at;
+			b = sko->bones + at;
 			((Bone *)b)->parent = -1;
 			((Bone *)b)->posKeyCount = GAME_VAR(int, b + 0x64) = ((Bone *)b)->rotKeyCount = GAME_VAR(int, b + 0x6c) = 0;
 		} else if (!strcmp(t, (const char *)STR(0x4c53f8, "CAMERAOBJECT"))) {   /* CAMERAOBJECT */
@@ -651,7 +663,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			strcpy(parent, TOKEN(STR(0x4c53f4, "\"")));
 			if (at > 0)
 				for (int j = 0; j < index; j++)
-					if (!strcmp((const char *)((Skeleton *)sk)->bones + j * 0x70, parent)) {
+					if (!strcmp((const char *)sko->bones + j * 0x70, parent)) {
 						((Bone *)b)->parent = j;
 						break;
 					}

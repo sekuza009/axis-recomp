@@ -46,6 +46,9 @@ for path in files:
 				uses = re.findall(r'\(\(%s \*\)%s\)' % (T, v), body[at:])
 				if not uses or re.search(r'\b%s\b' % alias, body):
 					continue
+				# (a variable assigned again after the alias would leave the alias on the old record)
+				if re.search(r'(?<![\w.>])%s\s*(?:[-+*/|&^]?=(?!=)|\+\+|--)|(?:\+\+|--)%s\b' % (v, v), body[at:]):
+					continue
 				body = body[:at] + '%s%s *%s = (%s *)%s;\n' % (indent, T, alias, T, v) + \
 					re.sub(r'\(\(%s \*\)%s\)' % (T, v), alias, body[at:])
 				total += 1

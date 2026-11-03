@@ -276,6 +276,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	u32 fx[13];
 	u8 *a = s + 0x1cd93a8 + i * 0x8888;
 	u8 *player = s + 0x1561b68 + AC->player * 0x47fd2;
+	PlayerRecord *pr = (PlayerRecord *)player;
 	if (AF(0x120) > AF(0x124)) {   /* the armour gone */
 		actor_deactivate((Stage *)s, i);
 		if (ST->selectedActor == i)
@@ -284,10 +285,10 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	}
 	if (AC->pilot != ST->playerActor || AC->bot != 0)
 		actor_clearInput(s, i);
-	u8 *head = s + 0x13eb004 + ((PlayerRecord *)player)->head * 0xabc;
-	u8 *body = s + 0x140c8c0 + ((PlayerRecord *)player)->body * 0x1300;
-	u8 *arms = s + 0x1447ec4 + ((PlayerRecord *)player)->arms * 0x13f4;
-	u8 *legs = s + 0x1486470 + ((PlayerRecord *)player)->legs * 0x1820;
+	u8 *head = s + 0x13eb004 + pr->head * 0xabc;
+	u8 *body = s + 0x140c8c0 + pr->body * 0x1300;
+	u8 *arms = s + 0x1447ec4 + pr->arms * 0x13f4;
+	u8 *legs = s + 0x1486470 + pr->legs * 0x1820;
 	if (AC->detail != AC->detailLoaded) {
 		actor_updateHead(s, i);
 		actor_updateBody(s, i);
@@ -296,12 +297,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		actor_updateBooster(s, i);
 		AC->detailLoaded = AC->detail;
 	}
-	int item = ((PlayerRecord *)player)->items[AC->slot];
+	int item = pr->items[AC->slot];
 	u8 *weapon = item >= 0 ? s + 0x14d1ab4 + item * 0x2e18 : NULL;
 	if (AC->pilot == ST->playerActor && weapon && AC->ammo[((ActorInfo *)weapon)->ammoSlot] < ((ActorInfo *)weapon)->ammoPerShot
 	    && !(AF(0x490) < 1.0f)) {   /* out of ammunition: the next weapon */
 		actor_nextWeapon(s, i);
-		weapon = s + 0x14d1ab4 + ((PlayerRecord *)player)->items[AC->slot] * 0x2e18;
+		weapon = s + 0x14d1ab4 + pr->items[AC->slot] * 0x2e18;
 	}
 	if (AC->inView >= 0)
 		actor_selectWeapon((Stage *)s, i, AC->inView);
@@ -342,9 +343,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (AC->bot != 0) {
 			if (AC->armor < ftol(fmul_m((long double)AC->armorMax, K(0x4a94fc))))   /* under 0.3 of its armour */
 				AI(0x87f4) = 1;
-			ActorInfo *w0 = (ActorInfo *)(s + 0x14d1ab4 + ((PlayerRecord *)player)->items[0] * 0x2e18);
-			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && ((PlayerRecord *)player)->items[4] >= 0) {
-				ActorInfo *w1 = (ActorInfo *)(s + 0x14d1ab4 + ((PlayerRecord *)player)->items[4] * 0x2e18);
+			ActorInfo *w0 = (ActorInfo *)(s + 0x14d1ab4 + pr->items[0] * 0x2e18);
+			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && pr->items[4] >= 0) {
+				ActorInfo *w1 = (ActorInfo *)(s + 0x14d1ab4 + pr->items[4] * 0x2e18);
 				if (AC->ammo[w1->ammoSlot] < w1->ammoPerShot)
 					AU8(0x87f4) |= 2;   /* both weapons empty */
 			}
@@ -807,12 +808,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		if (!(AF(0x490) > 0)) {
 			actor_setWeaponSlot((Stage *)s, i, AC->slotLoaded);
 			actor_updatePart(s, i, AC->slotLoaded, AC->variantLoaded);
-			weapon = s + 0x14d1ab4 + ((PlayerRecord *)player)->items[AC->slot] * 0x2e18;
+			weapon = s + 0x14d1ab4 + pr->items[AC->slot] * 0x2e18;
 			model = AC->slot == 4 ? a + 0x587c : AC->slot == 5 ? a + 0x701c : a + 0x40dc;
 			(*(u32 *)&AC->weapon) = ((u32)((ActorInfo *)weapon)->ammoSlot);
 		}
 		if (!(AF(0x490) >= 1.0f)) {
-			int kind = ((PlayerRecord *)player)->items[AC->slot];
+			int kind = pr->items[AC->slot];
 			AF(0x490) = f32(fadd_m(fmul_m(fld_m(dt), K(kind == 11 ? ADDR(k_1_95f) : kind == 3 ? ADDR(k_2_25f) : ADDR(k_3f))), &AF(0x490)));
 			if (AF(0x490) >= 1.0f)
 				AF(0x490) = 1.0f;
@@ -1030,7 +1031,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						long double R = fld_m(&((ActorInfo *)weapon)->splashRadius);
 						long double dd = (fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1])) + fmul_m(fld_m(&d[0]), &d[0]);
 						if (R * R > dd) {
-							if (AC->slot == 0 && ((PlayerRecord *)player)->items[4] >= 0)
+							if (AC->slot == 0 && pr->items[4] >= 0)
 								actor_selectWeapon((Stage *)s, i, 4);
 							else if (AC->slot == 4)
 								actor_selectWeapon((Stage *)s, i, 0);
