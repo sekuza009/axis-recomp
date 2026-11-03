@@ -17,7 +17,7 @@ void THISCALL (map_loadWayPointInfoFrom)(u8 *scene, void *f)
 	fread_scrambled(scene + 0xe36214, 0x14, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		WayPoint *r = &((Stage *)scene)->wayPoints[i];
+		WayPoint *r = &st->wayPoints[i];
 		r->commands = scene + 0xdc0f10 + total * 0x30;
 		total += r->commandCount;
 	}
@@ -36,9 +36,9 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 	fread_scrambled(scene + 0xe3b038, 0x1c, *count, f);
 	int total = 0;
 	for (int i = 0; i < *count; i++) {
-		Trigger *r = &((Stage *)scene)->triggers[i];
+		Trigger *r = &st->triggers[i];
 		long double radius = r->radiusSq;
-		r->wayPoints = (u8 *)&((Stage *)scene)->wayPoints[total];
+		r->wayPoints = (u8 *)&st->wayPoints[total];
 		total += r->wayPointCount;
 		r->radiusSq = (float)(radius * radius * k_10000f);
 	}
@@ -51,6 +51,7 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
    (+0x8c: shape_getByName on the scene's shapes, +0x19e188c, by its name at +0x4c), the others none. Returns 1 */
 int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 {
+	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
@@ -64,7 +65,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	fread_scrambled(scene + 0x20f3ae0, 0x90, *count, f);
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
-		u8 *item = (u8 *)&((Stage *)scene)->itemTypes[i];
+		u8 *item = (u8 *)&st->itemTypes[i];
 		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName(scene + 0x19e188c, (const char *)(item + 0x4c), 1) : 0;
 	}
 	return 1;
@@ -112,14 +113,15 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
    written. Its caller ignores the eax it leaves */
 void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 {
+	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	char path[0x100], base[0x100];
 	u8 objects[56][0xb0];
-	FIELD(int, scene, 0x131ae40) = 0;
+	st->objectNameCount = 0;
 	ShapeManager_releaseModels(scene + 0xe3c93c);
 	SkeletonManager_releaseSkeletons(scene + 0x13016d0);
 	stage_clearMapObjects(scene);
-	FIELD(int, scene, 0x13016cc) = 0;
+	st->mapShaded = 0;
 	if (mode == 0) {
 		path_stripExtension(name, base);
 		sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), scene + 0x108, base);
@@ -127,10 +129,10 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 		if (f) {
 			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e74, "load object shading data"));
 			fread_scrambled(scene + 0x13016c8, 4, 1, f);
-			fread_scrambled(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
+			fread_scrambled(scene + 0xf30dc8, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
-			FIELD(int, scene, 0x13016c8) = 0;
-			FIELD(int, scene, 0x13016cc) = 1;
+			st->objectColourCount = 0;
+			st->mapShaded = 1;
 		}
 	}
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
@@ -156,12 +158,12 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	fclose(f);
 	path_stripExtension(name, base);
 	sprintf(path, (const char *)STR(0x4c7e90, "%s/Temp-%s-objectShadingInfo.dat"), scene + 0x108, base);
-	if (mode == 1 && FIELD(int, scene, 0x13016cc) == 0) {
+	if (mode == 1 && st->mapShaded == 0) {
 		f = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 		if (f) {
 			log_message((int)scene, 0, 0, (const char *)STR(0x4c7e1c, "save object shading data"));
 			file_writeScrambled(scene + 0x13016c8, 4, 1, f);
-			file_writeScrambled(scene + 0xf30dc8, 4, FIELD(u32, scene, 0x13016c8), f);
+			file_writeScrambled(scene + 0xf30dc8, 4, ((u32)st->objectColourCount), f);
 			fclose(f);
 		}
 	}
@@ -173,23 +175,23 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 static void remap_item(u8 *scene, int *kind)
 {
 	Stage *st = (Stage *)scene;
-	if (st->halfPoints == 1) {
+	if (st->suddenDeath == 1) {
 		if (*kind / 10 == 0)
 			*kind = 0;
 		else if (*kind / 10 == 1 || *kind == 0x1e || *kind == 0x1f || *kind == 0x25)
 			*kind = -1;
 	}
-	if (FIELD(int, scene, 0x20f3ac4) == 1 && *kind / 10 == 0)
+	if (st->shotgunArena == 1 && *kind / 10 == 0)
 		*kind = 2;
-	if (FIELD(int, scene, 0x20f3ac8) == 1) {
+	if (st->ionCannonArena == 1) {
 		if (*kind / 10 == 0)
 			*kind = 3;
 		else if (*kind >= 15 && *kind <= 19)
 			*kind -= 5;
 	}
-	if (FIELD(int, scene, 0x20f3acc) == 1 && *kind / 10 == 0)
+	if (st->rocketArena == 1 && *kind / 10 == 0)
 		*kind = 5;
-	if (FIELD(int, scene, 0x20f3ad0) == 1 && *kind / 10 == 0)
+	if (st->gladiator == 1 && *kind / 10 == 0)
 		*kind = -1;
 }
 
@@ -204,12 +206,12 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	const float *scale = (const float *)ADDR(k_10f);
-	memcpy(scene + 0x20fab60, (const void *)ADDR(g_vecOrigin), 12);
-	FIELD(int, scene, 0x20fab6c) = 0;
-	FIELD(int, scene, 0x20fab70) = 0;
-	FIELD(int, scene, 0x20fadf4) = 0;
+	memcpy(st->startPos, (const void *)ADDR(g_vecOrigin), 12);
+	(*(int *)&st->startAngle[0]) = 0;
+	(*(int *)&st->startAngle[1]) = 0;
+	st->startCount = 0;
 	st->itemCount = 0;
-	FIELD(int, scene, 0x20fcd3c) = -1;
+	st->startUsed = -1;
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), scene + 0x108, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -233,21 +235,21 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		u32 *r = records[k];
 		float *rf = (float *)RELOC(r);
 		if (r[0] == 0) {
-			FIELD(float, scene, 0x20fab6c) = f32(fmul_m(fld_m(&rf[7]), scale));
-			FIELD(float, scene, 0x20fab70) = f32(fmul_m(fld_m(&rf[8]), scale));
-			memcpy(scene + 0x20fab60, &r[4], 12);
+			st->startAngle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
+			st->startAngle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
+			memcpy(st->startPos, &r[4], 12);
 		} else if (r[0] == 1) {
-			if (FIELD(int, scene, 0x20fadf4) >= 32)
+			if (st->startCount >= 32)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c00, "numOfMultiPlayStartPoint overflow(lim..."), 0x20);
-			u8 *start = scene + 0x20fab74 + FIELD(int, scene, 0x20fadf4) * 0x14;
+			u8 *start = scene + 0x20fab74 + st->startCount * 0x14;
 			memcpy(start, &r[4], 12);
-			FIELD(float, start, 0xc) = f32(fmul_m(fld_m(&rf[7]), scale));
-			FIELD(float, start, 0x10) = f32(fmul_m(fld_m(&rf[8]), scale));
-			FIELD(int, scene, 0x20fadf4)++;
+			((StartPoint *)start)->angle[0] = f32(fmul_m(fld_m(&rf[7]), scale));
+			((StartPoint *)start)->angle[1] = f32(fmul_m(fld_m(&rf[8]), scale));
+			st->startCount++;
 		} else if (r[0] == 2) {
 			if (st->itemCount >= 200)
 				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7c44, "numOfItemPoint overflow(limit:%d) - l..."), 0x20);
-			u8 *item = (u8 *)&((Stage *)scene)->items[st->itemCount];
+			u8 *item = (u8 *)&st->items[st->itemCount];
 			FIELD(u32, item, 0) = r[1];
 			remap_item(scene, (int *)item);
 			FIELD(u32, item, 4) = r[2];
@@ -310,18 +312,18 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	fread_scrambled(&value, 4, 1, f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c774c, "load actor type info info"));
 	fread_scrambled(scene + 0x1cd6fb0, 4, 1, f);
-	fread_scrambled(scene + 0x1cd6a30, 0x58, FIELD(u32, scene, 0x1cd6fb0), f);
+	fread_scrambled(scene + 0x1cd6a30, 0x58, ((u32)st->mapPlayerCount), f);
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7734, "load actor spawn info"));
 	fread_scrambled(scene + 0x1cd93a4, 4, 1, f);
-	fread_scrambled(scene + 0x1cd6fb4, 0x5c, FIELD(u32, scene, 0x1cd93a4), f);
+	fread_scrambled(scene + 0x1cd6fb4, 0x5c, ((u32)st->mapActorCount), f);
 	fclose(f);
-	for (int p = 1; p < FIELD(int, scene, 0x1cd6fb0); p++) {
+	for (int p = 1; p < st->mapPlayerCount; p++) {
 		u8 *rec = scene + 0x1cd6a30 + p * 0x58;
 		if (--FIELD(int, rec, 4) >= 0)
 			for (int part = 0; part < 5; part++)
 				setPartColor(p, part, FIELD(int, rec, 4));
 		int *items = (int *)(rec + 0x40);
-		unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
+		unsigned mode = st->gameType - 2;
 		if (mode <= 9) {
 			items[0] = fixed[mode / 2];
 			for (int k = 1; k < 6; k++)
@@ -334,12 +336,12 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 				items[k] = -1;
 		playerRecord_setFromActorRecord(scene, p, rec);
 	}
-	st->playerRecordCount = FIELD(int, scene, 0x1cd6fb0);
-	for (int i = 1; i < FIELD(int, scene, 0x1cd93a4); i++)
+	st->playerRecordCount = st->mapPlayerCount;
+	for (int i = 1; i < st->mapActorCount; i++)
 		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
 	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), scene + 0x908);
-	FIELD(int, scene, 0x2104fe4) = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
-	for (int p = 0; p < FIELD(int, scene, 0x1cd6fb0); p++) {
+	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
+	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
 		FIELD(int, scene, 0x15a9b36 + p * 0x47fd2) = 0x180;
 	}
@@ -419,7 +421,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	int mode = st->skyMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
-			GAME_VAR(u32, s + 0x9ee07c) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
+			(*(u32 *)&((Stage *)s)->skyTextures[5]) = ground_tex(dir, STR(0x4c7ff4, "%s/SphereFloor"), 0, tex);   /* SphereFloor */
 		static const u32 sphere[5] = { STR(0x4c7fe0, "%s/SphereCeiling"), STR(0x4c7fd0, "%s/SphereEast"), STR(0x4c7fc0, "%s/SphereSouth"), STR(0x4c7fb0, "%s/SphereWest"), STR(0x4c7fa0, "%s/SphereNorth") };   /* ceiling, east, south, west, north */
 		for (int k = 0; k < 5; k++)
 			GAME_VAR(u32, s + 0x9ee068 + k * 4) = ground_tex(dir, sphere[k], 0, tex);
@@ -428,8 +430,8 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	mode = st->layerMode;
 	if (mode == 1 || mode == 2) {
 		if (mode == 2)
-			GAME_VAR(u32, s + 0x9eee50) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
-		GAME_VAR(u32, s + 0x9eee4c) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
+			(*(u32 *)&((Stage *)s)->layerTextures[1]) = ground_tex(dir, STR(0x4c7f78, "%s/SkyInnerLayer"), 0, tex);   /* SkyInnerLayer */
+		(*(u32 *)&((Stage *)s)->layerTextures[0]) = ground_tex(dir, STR(0x4c7f64, "%s/SkyOuterLayer"), 0, tex);       /* SkyOuterLayer */
 	}
 	log_message((int)s, 0, 0, (const char *)STR(0x4c7f4c, "load background side"));
 	if (st->sideMode > 0 && st->sideMode <= 2)

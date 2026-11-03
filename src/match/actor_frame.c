@@ -174,12 +174,12 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	AC->stateTime = 0.0f;
 	ST->teamsChanged = 1;
 	int k = AC->lastAttacker;
-	if (ST->freeForAll == 1) {   /* every one for themselves */
+	if (ST->kingOfTheHill == 1) {   /* every one for themselves */
 		if (k != i) {
 			int frags, points;
 			if (AC->markSolo == 1) {   /* the marked one: five times */
 				frags = 5;
-				points = ST->halfPoints == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
+				points = ST->suddenDeath == 1 ? FRAG_POINTS(AC->emblem) * 5 / 2 : FRAG_POINTS(AC->emblem) * 5;
 			} else {
 				frags = 1;
 				points = FRAG_POINTS(AC->emblem);
@@ -228,7 +228,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 		}
 	} else if (k != i) {   /* teams */
 		int lv = AC->emblem;
-		int points = ST->halfPoints == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
+		int points = ST->suddenDeath == 1 ? FRAG_POINTS(lv) / 2 : FRAG_POINTS(lv);
 		if (ST->actors[k].emblem > lv + 3)   /* half for a much weaker one */
 			points /= 2;
 		award(s, k, 1, points);
@@ -329,7 +329,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	memcpy(AC->pos, a + (AC->state == 1 ? 0x180 : 0x4e0), 12);
 	memcpy(a + 0x160, a + 0x18c, 32);
 	if (AC->pilot == ST->playerActor) {   /* (to chunk N: the local team's actors) */
-		if (ST->freeForAll == 1) {
+		if (ST->kingOfTheHill == 1) {
 			if (AC->markSolo == 1)
 				BITS(AC->timers[0]) = BITS(AC->timers[2]) = 0x447a0000;   /* 1000 */
 			else {

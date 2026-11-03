@@ -530,7 +530,8 @@ static u8 *weapon_list(u8 *ac)
    actor_updateLegs / actor_updateBooster / actor_updatePart). Its caller ignores the eax it leaves */
 void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 {
-	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
+	Stage *st = (Stage *)s;
+	u8 *ac = (u8 *)&st->actors[a];
 	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
 	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), &AC->radius));
@@ -542,7 +543,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 		if (!(fadd_m(fld_m(&r), &cam[k]) >= at[k]))
 			return;
 	u8 *tint = ac + 0x4f0;
-	int local = GAME_VAR(int, s + 0x202e8d4);
+	int local = st->playerActor;
 	if ((((u32)AC->timerFlags) & 0x200) && AC->sensorLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
@@ -572,7 +573,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	u8 *lights = s + 0x9e3020;
 	int ok = 1;
 	u32 f;
-	if (a == GAME_VAR(int, s + 0x202e8d8)) {
+	if (a == st->selectedActor) {
 		if (draw) {
 			ok = partList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, light) & 1;
 			f = ((u32)AC->timerFlags);
@@ -653,6 +654,7 @@ static long double level_factor(u8 *p, int k)
    differently */
 static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 {
+	Stage *st = (Stage *)s;
 	u8 *head = s + 0x13c9b30 + GAME_VAR(int, p + 0x30c) * 0xaa8, *chest = s + 0x13eb004 + GAME_VAR(int, p + 0x310) * 0xabc;
 	u8 *arms = s + 0x140c8c0 + GAME_VAR(int, p + 0x314) * 0x1300, *legs = s + 0x1447ec4 + GAME_VAR(int, p + 0x318) * 0x13f4;
 	u8 *boost = s + 0x1486470 + GAME_VAR(int, p + 0x31c) * 0x1820;
@@ -707,12 +709,12 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), &AC->loadFactor));
 	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
 	                                   (const float *)(arms + 0x12e8)), (const float *)(head + 0xa90)));
-	int type = GAME_VAR(int, s + 0x20f3ab8);
+	int type = st->gameType;
 	if (type < 2 || type > 0xb)
 		for (int k = 0; k < 6; k++) {
 			int it = GAME_VAR(int, p + 0x320 + k * 4);
 			if (it >= 0)
-				AC->load = f32(fadd_m(fld_m((const float *)((u8 *)&((Stage *)s)->actorInfo[it] + 0x2db8)), &AC->load));
+				AC->load = f32(fadd_m(fld_m((const float *)((u8 *)&st->actorInfo[it] + 0x2db8)), &AC->load));
 		}
 	long double over = AC->load > AC->loadMax
 		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), K(0x4a947c))
@@ -728,7 +730,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->keyRate = f32(v);
 	if (!(v >= 0))
 		AC->keyRate = 0.0f;
-	if (GAME_VAR(int, s + 0x20f3acc) == 1)
+	if (st->rocketArena == 1)
 		AC->keyRate = f32(fmul_m(fld_m(&AC->keyRate), K(0x4a9704)));
 	BITS(AC->leanPitch) = GAME_VAR(u32, boost + 0x1800);
 	AC->boostTime = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), &AC->boostTimeFactor));
@@ -742,7 +744,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->speed = 100.0f;   /* 100 */
 	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), &AC->speed);
 	AC->moveAccel = f32(v);
-	if (GAME_VAR(int, s + 0x20f3acc) == 1)   /* (the check scales the stored value) */
+	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, K(0x4a9704)));
 	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
@@ -785,12 +787,13 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
    an actor joined (+0x202e8ec). Its caller ignores the eax it leaves */
 void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp)
 {
-	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
-	u8 *p = (u8 *)&((Stage *)s)->playerRecords[pp[0]];
+	Stage *st = (Stage *)s;
+	u8 *ac = (u8 *)&st->actors[a];
+	u8 *p = (u8 *)&st->playerRecords[pp[0]];
 	mech_stats(s, ac, p, 0);
 	AC->statD8 = 1;
 	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
-	AC->id = id >= 0 ? id : GAME_VAR(int, s + 0x202e8d0)++;
+	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
 	AC->player = pp[0];
 	AC->pilot = a3;
@@ -841,7 +844,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x47c, 5, 0);
 	AC->weaponLower = 1.0f;
 	(*(int *)&AC->gauge) = AC->slotLoaded = 0;
-	AC->variantLoaded = a == GAME_VAR(int, s + 0x202e8d8) ? 0 : 1;
+	AC->variantLoaded = a == st->selectedActor ? 0 : 1;
 	fill_dwords(ac + 0x4a0, 3, 0);
 	BITS(AC->energyUsed) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
@@ -882,7 +885,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 	AC->alert = (*(int *)&AC->beepTimer) = 0;
 	GAME_VAR(int, s + 0x202ea80 + a * 4) = 0;
-	GAME_VAR(int, s + 0x202e8ec) = 1;
+	st->teamsChanged = 1;
 }
 #undef A
 #undef AC
@@ -908,10 +911,11 @@ static int close_enough(const float *a, const float *b)
    then the game type's fixed energy and weapons), and its limits hold */
 static int totals_agree(u8 *s, u8 *ac, u8 *me)
 {
+	Stage *st = (Stage *)s;
 	Player *act = (Player *)me;
-	u8 *p = (u8 *)&((Stage *)s)->playerRecords[AC->player];
+	u8 *p = (u8 *)&st->playerRecords[AC->player];
 	mech_stats(s, me, p, 1);
-	unsigned mode = GAME_VAR(int, s + 0x20f3ab8) - 2;
+	unsigned mode = st->gameType - 2;
 	if (mode <= 9) {
 		int pair = mode / 2;
 		act->armorMax = act->shieldMax = pair == 0 ? 10 : 150;
@@ -955,6 +959,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
    Returns 1 if all agree, else 0 */
 u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 {
+	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
 		ResourceSet_trivialCtor(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
@@ -962,7 +967,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);
 	}
-	u8 *ac = (u8 *)&((Stage *)s)->actors[a];
+	u8 *ac = (u8 *)&st->actors[a];
 	int ok = AC->state != 1 || totals_agree(s, ac, me);
 	for (int k = 7; k >= 0; k--)
 		GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, void, void *)(me + k_listAt[k]);   /* UnitPoseInfo_dtor: a part list released */

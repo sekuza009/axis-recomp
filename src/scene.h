@@ -642,6 +642,12 @@ typedef struct Trigger {
 	i32 fired;   /* +0x18: 1: fires this frame (its first way point's commands run; then disarmed) */
 } Trigger;
 
+/* a multiplayer start (Stage.starts) */
+typedef struct StartPoint {
+	float pos[3];   /* +0x0 */
+	float angle[2];   /* +0xc */
+} StartPoint;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -697,7 +703,11 @@ typedef struct Stage {
 	u8 _pad152ddb4[0x33db4];
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use) player records in use (grows to cover a new player) */
-	u8 _pad19e188c[0x2f7b1c];
+	u8 _pad19e188c[0x2f51a4];
+	u8 mapPlayers[16][0x58];   /* +0x1cd6a30: (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
+	i32 mapPlayerCount;   /* +0x1cd6fb0 */
+	u8 mapActors[100][0x5c];   /* +0x1cd6fb4: the map's actor records (+0x18: active) */
+	i32 mapActorCount;   /* +0x1cd93a4 */
 	Player actors[100];   /* +0x1cd93a8: the actor slots (Scene.players, the players' actors first) */
 	i32 actorCount;   /* +0x202e8c8: slots in use (the highest claimed + 1) */
 	i32 actorFreeHint;   /* +0x202e8cc: (by use) the lowest free actor slot */
@@ -735,21 +745,32 @@ typedef struct Stage {
 	i32 viewHeight;   /* +0x20f3a28 */
 	u8 _pad20f3a2c[0x88];
 	i32 showExp;   /* +0x20f3ab4: (by use) 1: kills report the experience points too */
-	u8 _pad20f3ab8[0x8];
-	i32 halfPoints;   /* +0x20f3ac0: (unclear) 1: team kills give half the points */
-	u8 _pad20f3ac4[0x10];
-	i32 freeForAll;   /* +0x20f3ad4: (by use) 1: every one for themselves */
-	u8 _pad20f3ad8[0x8];
+	i32 gameType;   /* +0x20f3ab8: 0 death match, 2 sudden death, 4 shotgun / 6 ion cannon / 8 rocket arena, 10 gladiator (odd: the team game), 12 king of the hill, 13 platoon */
+	i32 teamGame;   /* +0x20f3abc: the odd types */
+	i32 suddenDeath;   /* +0x20f3ac0: (types 2, 3) kills give half the points; the map's items thinned */
+	i32 shotgunArena;   /* +0x20f3ac4: (types 4, 5) the map's weapons all shotguns */
+	i32 ionCannonArena;   /* +0x20f3ac8: (6, 7) */
+	i32 rocketArena;   /* +0x20f3acc: (8, 9) */
+	i32 gladiator;   /* +0x20f3ad0: (10, 11) no weapons on the map */
+	i32 kingOfTheHill;   /* +0x20f3ad4: (type 12) the leader is the king: marked, given power-ups */
+	i32 platoon;   /* +0x20f3ad8: (13) */
+	u8 _pad20f3adc[0x4];
 	ItemType itemTypes[64];   /* +0x20f3ae0: (count unclear) */
-	u8 _pad20f5ee0[0x4f18];
+	u8 _pad20f5ee0[0x4c80];
+	float startPos[3];   /* +0x20fab60: (by use) the map's player start (map_loadPlayInfoFrom) */
+	float startAngle[2];   /* +0x20fab6c: its two angles */
+	StartPoint starts[32];   /* +0x20fab74: the multiplayer starts */
+	i32 startCount;   /* +0x20fadf4 */
 	MapItem items[200];   /* +0x20fadf8 */
 	i32 itemCount;   /* +0x20fcd38 */
-	u8 _pad20fcd3c[0x4];
+	i32 startUsed;   /* +0x20fcd3c: (unclear) -1 after the play file is read */
 	i32 clockSeconds;   /* +0x20fcd40: (by use) the match clock: whole seconds (triggers' times) */
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	u8 _pad20fcd48[0x104];
 	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
-	u8 _pad20fce50[0x4c3b8];
+	u8 _pad20fce50[0x8194];
+	i32 clanTexture;   /* +0x2104fe4: (by use) the map's clan texture (Stage\<map>\Clan) */
+	u8 _pad2104fe8[0x44220];
 	char scriptName[0x100];   /* +0x2149208: (by use) the .scp file running (script_runScpFile) */
 	i32 scriptMode;   /* +0x2149308: its mode (0 .. 2; with scriptRunning 1, mode 1 stops the actors and clocks) */
 	i32 scriptRunning;   /* +0x214930c */
@@ -1538,6 +1559,9 @@ _Static_assert(offsetof(Trigger, time) == 0x10 && sizeof(((Trigger *)0)->time) =
 _Static_assert(offsetof(Trigger, radiusSq) == 0x14 && sizeof(((Trigger *)0)->radiusSq) == 0x4, "scene.fields: Trigger.radiusSq");
 _Static_assert(offsetof(Trigger, fired) == 0x18 && sizeof(((Trigger *)0)->fired) == 0x4, "scene.fields: Trigger.fired");
 _Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
+_Static_assert(offsetof(StartPoint, pos) == 0x0 && sizeof(((StartPoint *)0)->pos) == 0xc, "scene.fields: StartPoint.pos");
+_Static_assert(offsetof(StartPoint, angle) == 0xc && sizeof(((StartPoint *)0)->angle) == 0x8, "scene.fields: StartPoint.angle");
+_Static_assert(sizeof(StartPoint) == 0x14, "scene.fields: size of StartPoint");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
@@ -1580,6 +1604,10 @@ _Static_assert(offsetof(Stage, objectSerial) == 0x13c9b2c && sizeof(((Stage *)0)
 _Static_assert(offsetof(Stage, actorInfo) == 0x14d1ab4 && sizeof(((Stage *)0)->actorInfo) == 0x5c300, "scene.fields: Stage.actorInfo");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
+_Static_assert(offsetof(Stage, mapPlayers) == 0x1cd6a30 && sizeof(((Stage *)0)->mapPlayers) == 0x580, "scene.fields: Stage.mapPlayers");
+_Static_assert(offsetof(Stage, mapPlayerCount) == 0x1cd6fb0 && sizeof(((Stage *)0)->mapPlayerCount) == 0x4, "scene.fields: Stage.mapPlayerCount");
+_Static_assert(offsetof(Stage, mapActors) == 0x1cd6fb4 && sizeof(((Stage *)0)->mapActors) == 0x23f0, "scene.fields: Stage.mapActors");
+_Static_assert(offsetof(Stage, mapActorCount) == 0x1cd93a4 && sizeof(((Stage *)0)->mapActorCount) == 0x4, "scene.fields: Stage.mapActorCount");
 _Static_assert(offsetof(Stage, actors) == 0x1cd93a8 && sizeof(((Stage *)0)->actors) == 0x355520, "scene.fields: Stage.actors");
 _Static_assert(offsetof(Stage, actorCount) == 0x202e8c8 && sizeof(((Stage *)0)->actorCount) == 0x4, "scene.fields: Stage.actorCount");
 _Static_assert(offsetof(Stage, actorFreeHint) == 0x202e8cc && sizeof(((Stage *)0)->actorFreeHint) == 0x4, "scene.fields: Stage.actorFreeHint");
@@ -1609,14 +1637,27 @@ _Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->view
 _Static_assert(offsetof(Stage, viewWidth) == 0x20f3a24 && sizeof(((Stage *)0)->viewWidth) == 0x4, "scene.fields: Stage.viewWidth");
 _Static_assert(offsetof(Stage, viewHeight) == 0x20f3a28 && sizeof(((Stage *)0)->viewHeight) == 0x4, "scene.fields: Stage.viewHeight");
 _Static_assert(offsetof(Stage, showExp) == 0x20f3ab4 && sizeof(((Stage *)0)->showExp) == 0x4, "scene.fields: Stage.showExp");
-_Static_assert(offsetof(Stage, halfPoints) == 0x20f3ac0 && sizeof(((Stage *)0)->halfPoints) == 0x4, "scene.fields: Stage.halfPoints");
-_Static_assert(offsetof(Stage, freeForAll) == 0x20f3ad4 && sizeof(((Stage *)0)->freeForAll) == 0x4, "scene.fields: Stage.freeForAll");
+_Static_assert(offsetof(Stage, gameType) == 0x20f3ab8 && sizeof(((Stage *)0)->gameType) == 0x4, "scene.fields: Stage.gameType");
+_Static_assert(offsetof(Stage, teamGame) == 0x20f3abc && sizeof(((Stage *)0)->teamGame) == 0x4, "scene.fields: Stage.teamGame");
+_Static_assert(offsetof(Stage, suddenDeath) == 0x20f3ac0 && sizeof(((Stage *)0)->suddenDeath) == 0x4, "scene.fields: Stage.suddenDeath");
+_Static_assert(offsetof(Stage, shotgunArena) == 0x20f3ac4 && sizeof(((Stage *)0)->shotgunArena) == 0x4, "scene.fields: Stage.shotgunArena");
+_Static_assert(offsetof(Stage, ionCannonArena) == 0x20f3ac8 && sizeof(((Stage *)0)->ionCannonArena) == 0x4, "scene.fields: Stage.ionCannonArena");
+_Static_assert(offsetof(Stage, rocketArena) == 0x20f3acc && sizeof(((Stage *)0)->rocketArena) == 0x4, "scene.fields: Stage.rocketArena");
+_Static_assert(offsetof(Stage, gladiator) == 0x20f3ad0 && sizeof(((Stage *)0)->gladiator) == 0x4, "scene.fields: Stage.gladiator");
+_Static_assert(offsetof(Stage, kingOfTheHill) == 0x20f3ad4 && sizeof(((Stage *)0)->kingOfTheHill) == 0x4, "scene.fields: Stage.kingOfTheHill");
+_Static_assert(offsetof(Stage, platoon) == 0x20f3ad8 && sizeof(((Stage *)0)->platoon) == 0x4, "scene.fields: Stage.platoon");
 _Static_assert(offsetof(Stage, itemTypes) == 0x20f3ae0 && sizeof(((Stage *)0)->itemTypes) == 0x2400, "scene.fields: Stage.itemTypes");
+_Static_assert(offsetof(Stage, startPos) == 0x20fab60 && sizeof(((Stage *)0)->startPos) == 0xc, "scene.fields: Stage.startPos");
+_Static_assert(offsetof(Stage, startAngle) == 0x20fab6c && sizeof(((Stage *)0)->startAngle) == 0x8, "scene.fields: Stage.startAngle");
+_Static_assert(offsetof(Stage, starts) == 0x20fab74 && sizeof(((Stage *)0)->starts) == 0x280, "scene.fields: Stage.starts");
+_Static_assert(offsetof(Stage, startCount) == 0x20fadf4 && sizeof(((Stage *)0)->startCount) == 0x4, "scene.fields: Stage.startCount");
 _Static_assert(offsetof(Stage, items) == 0x20fadf8 && sizeof(((Stage *)0)->items) == 0x1f40, "scene.fields: Stage.items");
 _Static_assert(offsetof(Stage, itemCount) == 0x20fcd38 && sizeof(((Stage *)0)->itemCount) == 0x4, "scene.fields: Stage.itemCount");
+_Static_assert(offsetof(Stage, startUsed) == 0x20fcd3c && sizeof(((Stage *)0)->startUsed) == 0x4, "scene.fields: Stage.startUsed");
 _Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
 _Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
+_Static_assert(offsetof(Stage, clanTexture) == 0x2104fe4 && sizeof(((Stage *)0)->clanTexture) == 0x4, "scene.fields: Stage.clanTexture");
 _Static_assert(offsetof(Stage, scriptName) == 0x2149208 && sizeof(((Stage *)0)->scriptName) == 0x100, "scene.fields: Stage.scriptName");
 _Static_assert(offsetof(Stage, scriptMode) == 0x2149308 && sizeof(((Stage *)0)->scriptMode) == 0x4, "scene.fields: Stage.scriptMode");
 _Static_assert(offsetof(Stage, scriptRunning) == 0x214930c && sizeof(((Stage *)0)->scriptRunning) == 0x4, "scene.fields: Stage.scriptRunning");
