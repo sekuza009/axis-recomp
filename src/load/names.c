@@ -176,8 +176,9 @@ void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 
 	TextureManager_reset(sets);
 	for (int k = 0; k < 6; k++) {
 		u8 *m = managers[k];
-		if (m && (GAME_VAR(u32, m + 0xc0118) != sizes[k][0] || GAME_VAR(u32, m + 0xc011c) != sizes[k][1]))
-			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), GAME_VAR(int, m + 0xc0118), GAME_VAR(int, m + 0xc011c));
+		TextureManager *mg = (TextureManager *)m;
+		if (m && (mg->width != sizes[k][0] || mg->height != sizes[k][1]))
+			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
 		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
@@ -197,9 +198,9 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
 	int mipmaps = TM->mipmaps == 1;
 	glTexParameterf_bits(0xde1, 0x2800, linear ? 0x46180400 : 0x46180000);   /* mag: GL_LINEAR : GL_NEAREST */
 	glTexParameterf_bits(0xde1, 0x2801, mipmaps ? (linear ? 0x461c0c00 : 0x461c0000) : (linear ? 0x46180400 : 0x46180000));
-	glTexImage2D(0xde1, 0, 4, TM->width, TM->height, 0, 0x1908, 0x1401, tm + 0x114);
+	glTexImage2D(0xde1, 0, 4, TM->width, TM->height, 0, 0x1908, 0x1401, TM->image);
 	if (mipmaps)
-		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, tm + 0x114);
+		gluBuild2DMipmaps(0xde1, 4, TM->width, TM->height, 0x1908, 0x1401, TM->image);
 }
 
 /* 0x4557e0 (thiscall on a texture manager): is the texture name (up to a '*') there in the manager's format (+0xc0114,
@@ -347,7 +348,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		return -1;
 	int i = 0;
 	for (; i < TM->recordCount; i++) {
-		u8 *rec = tm + 0xc0128 + i * 0x68;
+		u8 *rec = (u8 *)&TM->records[i];
 		if (strcmp((const char *)rec, key))
 			continue;
 		const float *c = (const float *)(rec + 0x48);
@@ -364,7 +365,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		return -1;
 	if (TM->recordCount < 0x200) {
 		i = TM->recordCount;
-		texRecord_init(tm + 0xc0128 + i * 0x68, key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
+		texRecord_init((u8 *)&TM->records[i], key, -1, flags, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		TM->recordCount++;
 	} else
 		sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)STR(0x4b3fa8, "[%dx%d] object buffer overflow(%d) - ..."), TM->width, TM->height, 0x200);
@@ -418,6 +419,7 @@ static void colour_fill(u8 *m)
    objects, is not reproduced.) Its callers ignore the eax it leaves */
 void THISCALL (tex_loadColorMask)(u8 *m, int i)
 {
+	TextureManager *mg = (TextureManager *)m;
 	u32 bmp[3][0x12];   /* BMP reader objects (vtable 0x4a96f8) for the image, the alpha, the mask */
 	for (int k = 0; k < 3; k++) {
 		bmp[k][0] = VT(BMPRGBFile, 0x4a96f8);
@@ -425,27 +427,27 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 	}
 	char name[0x100], path[0x190];
 	int bpp, w, h;
-	strcpy(name, (const char *)m + 0xc0128 + i * 0x68);
+	strcpy(name, mg->records[i].name);
 	crt_strtok(name, (const char *)STR(0x4b12f4, "*"));
-	switch (GAME_VAR(int, m + 0xc0114)) {
+	switch (mg->format) {
 	case 0:
 		if (!g_ptxTablesReady) {
 			ptx_initTables();
 			g_ptxTablesReady = 1;
 		}
 		tex_path(m, path, STR(0x4b3fdc, "%s\\%s"), STR(0x4b3fd8, "%s"), name);
-		ptx_decode(tex_getItemFileBy(m, path), m + 0x114, &bpp, &w, &h);
+		ptx_decode(tex_getItemFileBy(m, path), mg->image, &bpp, &w, &h);
 		size_check(m, w, h);
 		tex_path(m, path, STR(0x4b405c, "%s\\%s_ALPHA"), STR(0x4b4050, "%s_ALPHA"), name);
 		if (tex_findByName(m, (const u8 *)path) >= 0) {
-			ptx_decode(tex_getItemFileBy(m, path), m + 0x40114, &bpp, &w, &h);
+			ptx_decode(tex_getItemFileBy(m, path), mg->alphaImage, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, STR(0x4b4044, "%s\\%s_COLOR"), STR(0x4b4038, "%s_COLOR"), name);
 		if (PATCHED_THISCALL(0x45636e, int, void *, const u8 *)(m, (const u8 *)path) >= 0) {   /* tex_findByName (the patch DLL: the KYRIE masks) */
-			ptx_decode(tex_getItemFileBy(m, path), m + 0x80114, &bpp, &w, &h);
+			ptx_decode(tex_getItemFileBy(m, path), mg->colourMask, &bpp, &w, &h);
 			size_check(m, w, h);
 		} else
 			colour_fill(m);
@@ -454,17 +456,17 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 		tex_path(m, path, STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP"), name);
 		if (!image_initBy(bmp[0], path))
 			sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b40a8, "can't open file %s-bindBy()"), (int)path);
-		image_copyTo(bmp[0], m + 0x114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+		image_copyTo(bmp[0], mg->image, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 		tex_path(m, path, STR(0x4b4098, "%s\\%s_ALPHA.BMP"), STR(0x4b4088, "%s_ALPHA.BMP"), name);
 		if (image_initBy(bmp[1], path)) {
-			image_copyTo(bmp[1], m + 0x40114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+			image_copyTo(bmp[1], mg->alphaImage, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 			alpha_from(m, 1);
 			BMPRGBFile_close(bmp[1]);
 		} else
 			alpha_from(m, 0);
 		tex_path(m, path, STR(0x4b4078, "%s\\%s_COLOR.BMP"), STR(0x4b4068, "%s_COLOR.BMP"), name);
 		if (image_initBy(bmp[2], path)) {
-			image_copyTo(bmp[2], m + 0x80114, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
+			image_copyTo(bmp[2], mg->colourMask, W(m), H(m), 4, 0, 0, 0, 0, W(m), H(m), 0);
 			BMPRGBFile_close(bmp[2]);
 		} else
 			colour_fill(m);
@@ -475,12 +477,12 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 			g_ptxTablesReady = 1;
 		}
 		tex_path(m, path, STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW"), name);
-		ptx_open(path, m + 0x114, &bpp, &w, &h);
+		ptx_open(path, mg->image, &bpp, &w, &h);
 		size_check(m, w, h);
 		tex_path(m, path, STR(0x4b40f4, "%s\\%s_ALPHA.RAW"), STR(0x4b40e4, "%s_ALPHA.RAW"), name);
 		void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 		if (f) {
-			ptx_decode(f, m + 0x40114, &bpp, &w, &h);
+			ptx_decode(f, mg->alphaImage, &bpp, &w, &h);
 			size_check(m, w, h);
 			alpha_from(m, 1);
 		} else
@@ -488,7 +490,7 @@ void THISCALL (tex_loadColorMask)(u8 *m, int i)
 		tex_path(m, path, STR(0x4b40d4, "%s\\%s_COLOR.RAW"), STR(0x4b40c4, "%s_COLOR.RAW"), name);
 		f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 		if (f) {
-			ptx_decode(f, m + 0x80114, &bpp, &w, &h);
+			ptx_decode(f, mg->colourMask, &bpp, &w, &h);
 			size_check(m, w, h);
 		} else
 			colour_fill(m);

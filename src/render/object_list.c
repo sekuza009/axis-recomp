@@ -71,50 +71,51 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {
 	Stage *st = (Stage *)stage;
 	int n = st->groundLayerCount;
-	FIELD(int, stage, 0xdc0a88) = n;
-	FIELD(int, stage, 0xdc0a90) = 0;
-	FIELD(int, stage, 0xdc0a94) = 0;
-	FIELD(int, stage, 0xdc0cd4) = st->groundLayerCount;
-	FIELD(int, stage, 0xdc0cdc) = 0;
-	FIELD(int, stage, 0xdc0ce0) = 0;
+	st->layerModel.partCount = n;
+	st->layerModel.colourCount = 0;
+	st->layerModel.count1c = 0;
+	st->layerBoxModel.partCount = st->groundLayerCount;
+	st->layerBoxModel.colourCount = 0;
+	st->layerBoxModel.count1c = 0;
 	static const short faces[][2] = {   /* (offset in the mesh, value), in the original's order of stores */
 		{ 0x1b4, 6 }, { 0x1a8, 6 }, { 0x1c0, 6 }, { 0x1cc, 6 }, { 0x1ac, 5 }, { 0x1b8, 5 }, { 0x1c4, 5 }, { 0x1d0, 5 },
 		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },
 		{ 0x178, 0 }, { 0x17c, 5 }, { 0x180, 8 }, { 0x184, 9 }, { 0x188, 2 }, { 0x18c, 1 }, { 0x190, 7 }, { 0x194, 0xa },
 		{ 0x198, 0xb }, { 0x19c, 3 }, { 0x1a0, 2 }, { 0x1a4, 9 } };
 	for (int i = 0; i < st->groundLayerCount; i++) {
-		u8 *m = stage + 0xdc0278 + i * 0x20c;
-		u8 *A = FIELD(u8 *, stage, 0xdc0cd8) + i * 0x80, *B = FIELD(u8 *, stage, 0xdc0a8c) + i * 0x80;
-		switch (FIELD(int, m, -0x34)) {
+		GroundLayer *gl = &st->groundLayers[i];
+		u8 *m = (u8 *)gl + 0x34;   /* (the faces table's offsets are from here) */
+		ShapePart *A = (ShapePart *)st->layerBoxModel.parts + i, *B = (ShapePart *)st->layerModel.parts + i;
+		switch (gl->kind) {
 		case 0:
-			FIELD(int, B, 0) = 0;
-			FIELD(int, A, 0) = 0;
+			*(int *)B->name = 0;
+			*(int *)A->name = 0;
 			break;
 		case 1:
-			FIELD(int, B, 0) = 8;
-			FIELD(int, A, 0) = 8;
+			*(int *)B->name = 8;
+			*(int *)A->name = 8;
 			break;
 		case 2:
-			FIELD(int, B, 0) = 6;
-			FIELD(int, A, 0) = 6;
+			*(int *)B->name = 6;
+			*(int *)A->name = 6;
 			break;
 		}
-		FIELD(int, B, 0x44) = FIELD(int, m, 0);
-		FIELD(int, A, 0x44) = FIELD(int, m, 0);
-		FIELD(int, B, 0x48) = FIELD(int, stage, 0xdc0a90);
-		FIELD(int, B, 0x4c) = (int)((u32)(FIELD(int, m, -0x18) + 1) * (u32)(FIELD(int, m, -0x14) + 1));
-		FIELD(int, B, 0x50) = FIELD(int, m, 0xc);
-		FIELD(int, B, 0x58) = FIELD(int, m, 0x14);
-		FIELD(int, B, 0x5c) = FIELD(int, m, 0x1c);
-		FIELD(int, B, 0x60) = 0;
-		FIELD(int, B, 0x64) = FIELD(int, m, 0x30);
-		FIELD(int, A, 0x48) = FIELD(int, stage, 0xdc0cdc);
-		FIELD(u8 *, A, 0x50) = m + 0x38;
-		FIELD(u8 *, A, 0x58) = m + 0xc8;
-		FIELD(int, A, 0x4c) = 0xc;
-		FIELD(u8 *, A, 0x5c) = m + 0xf8;
-		FIELD(int, A, 0x60) = FIELD(int, m, -4) == 1 ? 4 : 0;
-		FIELD(u8 *, A, 0x64) = m + 0x1a8;
+		B->texture = gl->texture;
+		A->texture = gl->texture;
+		B->colourBase = st->layerModel.colourCount;
+		B->vertexCount = (int)((u32)(gl->rows + 1) * (u32)(gl->cols + 1));
+		B->vertices = (u8 *)gl->points;
+		B->colours = (u8 *)gl->colours;
+		B->texCoords = gl->uv;
+		B->primCount = 0;
+		B->prims = gl->strips;
+		A->colourBase = st->layerBoxModel.colourCount;
+		A->vertices = (u8 *)gl->boxPoints;
+		A->colours = (u8 *)gl->boxColours;
+		A->vertexCount = 0xc;
+		A->texCoords = &gl->boxUv[0][0];
+		A->primCount = gl->lit == 1 ? 4 : 0;
+		A->prims = (u8 *)gl->boxPrims;
 		for (unsigned k = 0; k < sizeof faces / sizeof faces[0]; k++) {
 			if (k == 8) {   /* the index lists' pointers, stored among the constants */
 				FIELD(u8 *, m, 0x1b0) = m + 0x158;
@@ -125,8 +126,8 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 				FIELD(u8 *, m, 0x1d4) = m + 0x194;
 			FIELD(int, m, faces[k][0]) = faces[k][1];
 		}
-		FIELD(int, stage, 0xdc0a90) += FIELD(int, B, 0x4c);
-		FIELD(int, stage, 0xdc0cdc) += FIELD(int, A, 0x4c);
+		st->layerModel.colourCount += B->vertexCount;
+		st->layerBoxModel.colourCount += A->vertexCount;
 	}
 }
 

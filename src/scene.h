@@ -274,7 +274,7 @@ typedef struct Model {
 	i32 partCount;   /* +0x10 */
 	u8 *parts;   /* +0x14: partCount ShapePart records (0x80 bytes), at the block's start */
 	i32 colourCount;   /* +0x18: (by use) dwords in a shading colour buffer for it */
-	u8 _pad000001c[0x4];
+	i32 count1c;   /* +0x1c: (unclear) cleared with colourCount (stage_buildMeshDrawRecords) */
 	float centre[3];   /* +0x20: (by use) a point of the file's header: the box starts from it */
 	float radius;   /* +0x2c: its bounding sphere */
 	u32 version;   /* +0x30: 0x71110300: the current format (older: 0x68-byte parts) */
@@ -617,7 +617,9 @@ typedef struct TextureManager {
 	i32 indexCount;   /* +0x108: the image file's name index: indexCount entries of 0x44 bytes */
 	u8 *index;   /* +0x10c */
 	void *file;   /* +0x110: the image file (Data\ImageN.dat; format 0) */
-	u8 _pad0000114[0xc0000];
+	u8 image[0x40000];   /* +0x114: (by use) the texture being loaded: RGBA, width x height (tex_loadColorMask) */
+	u8 alphaImage[0x40000];   /* +0x40114: its _ALPHA image (the grey becomes the image's alpha) */
+	u8 colourMask[0x40000];   /* +0x80114: its _COLOR mask (none: all g_colourMaskRed) */
 	i32 format;   /* +0xc0114 */
 	i32 width;   /* +0xc0118: its images' size */
 	i32 height;   /* +0xc011c */
@@ -635,7 +637,7 @@ typedef struct TextureManager {
 
 /* a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips */
 typedef struct GroundLayer {
-	u8 _pad0000000[0x4];
+	i32 kind;   /* +0x0: (by use) 0, 1, 2: its draw records' first word 0, 8, 6 (stage_buildMeshDrawRecords) */
 	float origin[3];   /* +0x4 */
 	u8 _pad0000010[0xc];
 	i32 rows;   /* +0x1c */
@@ -658,7 +660,11 @@ typedef struct GroundLayer {
 	i32 stripCapacity;   /* +0x60 */
 	u8 *strips;   /* +0x64 */
 	i32 stripCount;   /* +0x68 */
-	u8 _pad000006c[0x1a0];
+	float boxPoints[12][3];   /* +0x6c: (by use) its box's draw part (Stage.layerBoxModel): 12 points */
+	u32 boxColours[12];   /* +0xfc */
+	float boxUv[12][2];   /* +0x12c */
+	u8 boxIndices[0x50];   /* +0x18c: its index lists and their pointers (stage_buildMeshDrawRecords' faces table) */
+	u8 boxPrims[4][0xc];   /* +0x1dc: 4 primitives (only when lit) */
 } GroundLayer;
 
 /* a way point (Trigger.wayPoints): a place on the trigger's path, with the actor commands run there (map_info.c, script_processCommandBy) */
@@ -815,7 +821,10 @@ typedef struct Stage {
 	u8 _pad09ef934[0x3d0910];
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
 	i32 groundLayerCount;   /* +0xdc0a74 */
-	u8 _pad0dc0a78[0x498];
+	Model layerModel;   /* +0xdc0a78: (by use) the ground layers drawn as one shape: a part each (stage_buildMeshDrawRecords) */
+	u8 _pad0dc0ac4[0x200];
+	Model layerBoxModel;   /* +0xdc0cc4: their boxes: a part each */
+	u8 _pad0dc0d10[0x200];
 	u8 commands[10000][0x30];   /* +0xdc0f10: (by use) the actor commands (0x30 bytes each) the way points run */
 	i32 commandCount;   /* +0xe36210 */
 	WayPoint wayPoints[1000];   /* +0xe36214 */
@@ -1483,6 +1492,7 @@ _Static_assert(offsetof(Model, ownsBlock) == 0xc && sizeof(((Model *)0)->ownsBlo
 _Static_assert(offsetof(Model, partCount) == 0x10 && sizeof(((Model *)0)->partCount) == 0x4, "scene.fields: Model.partCount");
 _Static_assert(offsetof(Model, parts) == 0x14 && sizeof(((Model *)0)->parts) == 0x4, "scene.fields: Model.parts");
 _Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
+_Static_assert(offsetof(Model, count1c) == 0x1c && sizeof(((Model *)0)->count1c) == 0x4, "scene.fields: Model.count1c");
 _Static_assert(offsetof(Model, centre) == 0x20 && sizeof(((Model *)0)->centre) == 0xc, "scene.fields: Model.centre");
 _Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
 _Static_assert(offsetof(Model, version) == 0x30 && sizeof(((Model *)0)->version) == 0x4, "scene.fields: Model.version");
@@ -1731,6 +1741,9 @@ _Static_assert(offsetof(TextureManager, dir) == 0x8 && sizeof(((TextureManager *
 _Static_assert(offsetof(TextureManager, indexCount) == 0x108 && sizeof(((TextureManager *)0)->indexCount) == 0x4, "scene.fields: TextureManager.indexCount");
 _Static_assert(offsetof(TextureManager, index) == 0x10c && sizeof(((TextureManager *)0)->index) == 0x4, "scene.fields: TextureManager.index");
 _Static_assert(offsetof(TextureManager, file) == 0x110 && sizeof(((TextureManager *)0)->file) == 0x4, "scene.fields: TextureManager.file");
+_Static_assert(offsetof(TextureManager, image) == 0x114 && sizeof(((TextureManager *)0)->image) == 0x40000, "scene.fields: TextureManager.image");
+_Static_assert(offsetof(TextureManager, alphaImage) == 0x40114 && sizeof(((TextureManager *)0)->alphaImage) == 0x40000, "scene.fields: TextureManager.alphaImage");
+_Static_assert(offsetof(TextureManager, colourMask) == 0x80114 && sizeof(((TextureManager *)0)->colourMask) == 0x40000, "scene.fields: TextureManager.colourMask");
 _Static_assert(offsetof(TextureManager, format) == 0xc0114 && sizeof(((TextureManager *)0)->format) == 0x4, "scene.fields: TextureManager.format");
 _Static_assert(offsetof(TextureManager, width) == 0xc0118 && sizeof(((TextureManager *)0)->width) == 0x4, "scene.fields: TextureManager.width");
 _Static_assert(offsetof(TextureManager, height) == 0xc011c && sizeof(((TextureManager *)0)->height) == 0x4, "scene.fields: TextureManager.height");
@@ -1745,6 +1758,7 @@ _Static_assert(offsetof(TextureManager, counterA) == 0xcd138 && sizeof(((Texture
 _Static_assert(offsetof(TextureManager, counterB) == 0xcd13c && sizeof(((TextureManager *)0)->counterB) == 0x4, "scene.fields: TextureManager.counterB");
 _Static_assert(offsetof(TextureManager, counterC) == 0xcd140 && sizeof(((TextureManager *)0)->counterC) == 0x4, "scene.fields: TextureManager.counterC");
 _Static_assert(sizeof(TextureManager) == 0xcd144, "scene.fields: size of TextureManager");
+_Static_assert(offsetof(GroundLayer, kind) == 0x0 && sizeof(((GroundLayer *)0)->kind) == 0x4, "scene.fields: GroundLayer.kind");
 _Static_assert(offsetof(GroundLayer, origin) == 0x4 && sizeof(((GroundLayer *)0)->origin) == 0xc, "scene.fields: GroundLayer.origin");
 _Static_assert(offsetof(GroundLayer, rows) == 0x1c && sizeof(((GroundLayer *)0)->rows) == 0x4, "scene.fields: GroundLayer.rows");
 _Static_assert(offsetof(GroundLayer, cols) == 0x20 && sizeof(((GroundLayer *)0)->cols) == 0x4, "scene.fields: GroundLayer.cols");
@@ -1765,6 +1779,11 @@ _Static_assert(offsetof(GroundLayer, indexCount) == 0x5c && sizeof(((GroundLayer
 _Static_assert(offsetof(GroundLayer, stripCapacity) == 0x60 && sizeof(((GroundLayer *)0)->stripCapacity) == 0x4, "scene.fields: GroundLayer.stripCapacity");
 _Static_assert(offsetof(GroundLayer, strips) == 0x64 && sizeof(((GroundLayer *)0)->strips) == 0x4, "scene.fields: GroundLayer.strips");
 _Static_assert(offsetof(GroundLayer, stripCount) == 0x68 && sizeof(((GroundLayer *)0)->stripCount) == 0x4, "scene.fields: GroundLayer.stripCount");
+_Static_assert(offsetof(GroundLayer, boxPoints) == 0x6c && sizeof(((GroundLayer *)0)->boxPoints) == 0x90, "scene.fields: GroundLayer.boxPoints");
+_Static_assert(offsetof(GroundLayer, boxColours) == 0xfc && sizeof(((GroundLayer *)0)->boxColours) == 0x30, "scene.fields: GroundLayer.boxColours");
+_Static_assert(offsetof(GroundLayer, boxUv) == 0x12c && sizeof(((GroundLayer *)0)->boxUv) == 0x60, "scene.fields: GroundLayer.boxUv");
+_Static_assert(offsetof(GroundLayer, boxIndices) == 0x18c && sizeof(((GroundLayer *)0)->boxIndices) == 0x50, "scene.fields: GroundLayer.boxIndices");
+_Static_assert(offsetof(GroundLayer, boxPrims) == 0x1dc && sizeof(((GroundLayer *)0)->boxPrims) == 0x30, "scene.fields: GroundLayer.boxPrims");
 _Static_assert(sizeof(GroundLayer) == 0x20c, "scene.fields: size of GroundLayer");
 _Static_assert(offsetof(WayPoint, pos) == 0x0 && sizeof(((WayPoint *)0)->pos) == 0xc, "scene.fields: WayPoint.pos");
 _Static_assert(offsetof(WayPoint, commandCount) == 0xc && sizeof(((WayPoint *)0)->commandCount) == 0x4, "scene.fields: WayPoint.commandCount");
@@ -1875,6 +1894,8 @@ _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->wor
 _Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
 _Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
+_Static_assert(offsetof(Stage, layerModel) == 0xdc0a78 && sizeof(((Stage *)0)->layerModel) == 0x4c, "scene.fields: Stage.layerModel");
+_Static_assert(offsetof(Stage, layerBoxModel) == 0xdc0cc4 && sizeof(((Stage *)0)->layerBoxModel) == 0x4c, "scene.fields: Stage.layerBoxModel");
 _Static_assert(offsetof(Stage, commands) == 0xdc0f10 && sizeof(((Stage *)0)->commands) == 0x75300, "scene.fields: Stage.commands");
 _Static_assert(offsetof(Stage, commandCount) == 0xe36210 && sizeof(((Stage *)0)->commandCount) == 0x4, "scene.fields: Stage.commandCount");
 _Static_assert(offsetof(Stage, wayPoints) == 0xe36214 && sizeof(((Stage *)0)->wayPoints) == 0x4e20, "scene.fields: Stage.wayPoints");
