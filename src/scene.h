@@ -472,6 +472,34 @@ typedef struct TextureManager {
 	i32 counterC;   /* +0xcd140 */
 } TextureManager;
 
+/* a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips */
+typedef struct GroundLayer {
+	u8 _pad0000000[0x4];
+	float origin[3];   /* +0x4 */
+	u8 _pad0000010[0xc];
+	i32 rows;   /* +0x1c */
+	i32 cols;   /* +0x20: (rows + 1) x (cols + 1) points */
+	float cellSize;   /* +0x24 */
+	float heightScale;   /* +0x28 */
+	float texScale;   /* +0x2c: texture coordinates: x / texScale, z / texScale */
+	i32 lit;   /* +0x30: (unclear) 1: lit (its normals take the lights) */
+	u32 texture;   /* +0x34: its Ground<n>Map texture */
+	u8 *heights;   /* +0x38: one byte a point (the map image's grey) */
+	u8 *flat;   /* +0x3c: one byte a cell: all four corners present */
+	float *points;   /* +0x40: 3 floats a point */
+	float *normals;   /* +0x44 */
+	u32 *colours;   /* +0x48: RGBA a point (light_computeLayerLightBy) */
+	u8 _pad000004c[0x4];
+	float *uv;   /* +0x50 */
+	i32 indexCapacity;   /* +0x54: the strips' index heap */
+	u32 *indices;   /* +0x58 */
+	i32 indexCount;   /* +0x5c */
+	i32 stripCapacity;   /* +0x60 */
+	u8 *strips;   /* +0x64 */
+	i32 stripCount;   /* +0x68 */
+	u8 _pad000006c[0x1a0];
+} GroundLayer;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -500,7 +528,10 @@ typedef struct Stage {
 	i32 floorTextures[16];   /* +0x9ef310: its animation frames */
 	float floor[11][11][3];   /* +0x9ef350: its grid (times the scale hud_496f20 gets) */
 	i32 floorFrame;   /* +0x9ef8fc */
-	u8 _pad09ef900[0x92b544];
+	u8 _pad09ef900[0x3d0944];
+	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
+	i32 groundLayerCount;   /* +0xdc0a74 */
+	u8 _pad0dc0a78[0x55a3cc];
 	MapObject objects[1000];   /* +0x131ae44 */
 	i32 objectCount;   /* +0x13c9b24 */
 	u8 _pad13c9b28[0x198040];
@@ -1151,6 +1182,27 @@ _Static_assert(offsetof(TextureManager, counterA) == 0xcd138 && sizeof(((Texture
 _Static_assert(offsetof(TextureManager, counterB) == 0xcd13c && sizeof(((TextureManager *)0)->counterB) == 0x4, "scene.fields: TextureManager.counterB");
 _Static_assert(offsetof(TextureManager, counterC) == 0xcd140 && sizeof(((TextureManager *)0)->counterC) == 0x4, "scene.fields: TextureManager.counterC");
 _Static_assert(sizeof(TextureManager) == 0xcd144, "scene.fields: size of TextureManager");
+_Static_assert(offsetof(GroundLayer, origin) == 0x4 && sizeof(((GroundLayer *)0)->origin) == 0xc, "scene.fields: GroundLayer.origin");
+_Static_assert(offsetof(GroundLayer, rows) == 0x1c && sizeof(((GroundLayer *)0)->rows) == 0x4, "scene.fields: GroundLayer.rows");
+_Static_assert(offsetof(GroundLayer, cols) == 0x20 && sizeof(((GroundLayer *)0)->cols) == 0x4, "scene.fields: GroundLayer.cols");
+_Static_assert(offsetof(GroundLayer, cellSize) == 0x24 && sizeof(((GroundLayer *)0)->cellSize) == 0x4, "scene.fields: GroundLayer.cellSize");
+_Static_assert(offsetof(GroundLayer, heightScale) == 0x28 && sizeof(((GroundLayer *)0)->heightScale) == 0x4, "scene.fields: GroundLayer.heightScale");
+_Static_assert(offsetof(GroundLayer, texScale) == 0x2c && sizeof(((GroundLayer *)0)->texScale) == 0x4, "scene.fields: GroundLayer.texScale");
+_Static_assert(offsetof(GroundLayer, lit) == 0x30 && sizeof(((GroundLayer *)0)->lit) == 0x4, "scene.fields: GroundLayer.lit");
+_Static_assert(offsetof(GroundLayer, texture) == 0x34 && sizeof(((GroundLayer *)0)->texture) == 0x4, "scene.fields: GroundLayer.texture");
+_Static_assert(offsetof(GroundLayer, heights) == 0x38 && sizeof(((GroundLayer *)0)->heights) == 0x4, "scene.fields: GroundLayer.heights");
+_Static_assert(offsetof(GroundLayer, flat) == 0x3c && sizeof(((GroundLayer *)0)->flat) == 0x4, "scene.fields: GroundLayer.flat");
+_Static_assert(offsetof(GroundLayer, points) == 0x40 && sizeof(((GroundLayer *)0)->points) == 0x4, "scene.fields: GroundLayer.points");
+_Static_assert(offsetof(GroundLayer, normals) == 0x44 && sizeof(((GroundLayer *)0)->normals) == 0x4, "scene.fields: GroundLayer.normals");
+_Static_assert(offsetof(GroundLayer, colours) == 0x48 && sizeof(((GroundLayer *)0)->colours) == 0x4, "scene.fields: GroundLayer.colours");
+_Static_assert(offsetof(GroundLayer, uv) == 0x50 && sizeof(((GroundLayer *)0)->uv) == 0x4, "scene.fields: GroundLayer.uv");
+_Static_assert(offsetof(GroundLayer, indexCapacity) == 0x54 && sizeof(((GroundLayer *)0)->indexCapacity) == 0x4, "scene.fields: GroundLayer.indexCapacity");
+_Static_assert(offsetof(GroundLayer, indices) == 0x58 && sizeof(((GroundLayer *)0)->indices) == 0x4, "scene.fields: GroundLayer.indices");
+_Static_assert(offsetof(GroundLayer, indexCount) == 0x5c && sizeof(((GroundLayer *)0)->indexCount) == 0x4, "scene.fields: GroundLayer.indexCount");
+_Static_assert(offsetof(GroundLayer, stripCapacity) == 0x60 && sizeof(((GroundLayer *)0)->stripCapacity) == 0x4, "scene.fields: GroundLayer.stripCapacity");
+_Static_assert(offsetof(GroundLayer, strips) == 0x64 && sizeof(((GroundLayer *)0)->strips) == 0x4, "scene.fields: GroundLayer.strips");
+_Static_assert(offsetof(GroundLayer, stripCount) == 0x68 && sizeof(((GroundLayer *)0)->stripCount) == 0x4, "scene.fields: GroundLayer.stripCount");
+_Static_assert(sizeof(GroundLayer) == 0x20c, "scene.fields: size of GroundLayer");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
@@ -1172,6 +1224,8 @@ _Static_assert(offsetof(Stage, floorOn) == 0x9ef30c && sizeof(((Stage *)0)->floo
 _Static_assert(offsetof(Stage, floorTextures) == 0x9ef310 && sizeof(((Stage *)0)->floorTextures) == 0x40, "scene.fields: Stage.floorTextures");
 _Static_assert(offsetof(Stage, floor) == 0x9ef350 && sizeof(((Stage *)0)->floor) == 0x5ac, "scene.fields: Stage.floor");
 _Static_assert(offsetof(Stage, floorFrame) == 0x9ef8fc && sizeof(((Stage *)0)->floorFrame) == 0x4, "scene.fields: Stage.floorFrame");
+_Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
+_Static_assert(offsetof(Stage, groundLayerCount) == 0xdc0a74 && sizeof(((Stage *)0)->groundLayerCount) == 0x4, "scene.fields: Stage.groundLayerCount");
 _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->objects) == 0xaece0, "scene.fields: Stage.objects");
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");

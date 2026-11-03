@@ -342,9 +342,33 @@ struct TextureManager 0xcd144                                   # a texture mana
 0xcd13c    4          i32 counterB
 0xcd140    4          i32 counterC
 
+struct GroundLayer 0x20c                                        # a layer of the ground (Stage.groundLayers; map_info.c, shading.c): a height grid read from the map, drawn as strips
+4          0xc        float origin[3]
+0x1c       4          i32 rows
+0x20       4          i32 cols                                  # (rows + 1) x (cols + 1) points
+0x24       4          float cellSize
+0x28       4          float heightScale
+0x2c       4          float texScale                            # texture coordinates: x / texScale, z / texScale
+0x30       4          i32 lit                                   # (unclear) 1: lit (its normals take the lights)
+0x34       4          u32 texture                               # its Ground<n>Map texture
+0x38       4          u8 *heights                               # one byte a point (the map image's grey)
+0x3c       4          u8 *flat                                  # one byte a cell: all four corners present
+0x40       4          float *points                             # 3 floats a point
+0x44       4          float *normals
+0x48       4          u32 *colours                              # RGBA a point (light_computeLayerLightBy)
+0x50       4          float *uv
+0x54       4          i32 indexCapacity                         # the strips' index heap
+0x58       4          u32 *indices
+0x5c       4          i32 indexCount
+0x60       4          i32 stripCapacity
+0x64       4          u8 *strips
+0x68       4          i32 stripCount
+
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)
+0xdc0244   0x830      GroundLayer groundLayers[4]                # (groundLayerCount of them)
+0xdc0a74   4          i32 groundLayerCount
 0x1561b68  0x47fd20   PlayerRecord playerRecords[16]             # (Scene.playerRecords)
 0xa24      4          u8 *collisionPlanes                        # (by use) the collision planes (0xac bytes each; a hit record points into them)
 0x202e8d8  4          i32 selectedActor                          # (by use) the selected actor (stage_selectActor; -1 none)

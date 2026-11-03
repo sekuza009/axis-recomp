@@ -225,9 +225,10 @@ static int light_level(long double d)
    eax it leaves */
 void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
 {
+	GroundLayer *gl = (GroundLayer *)layer;
 	if (GAME_VAR(int, layer) == 2) {
-		memset(GAME_VAR(void *, layer + 0x48), 0xff, (GAME_VAR(int, layer + 0x20) + 1) * (GAME_VAR(int, layer + 0x1c) + 1) * 4);
-		if (GAME_VAR(int, layer + 0x30) == 1)
+		memset(GAME_VAR(void *, layer + 0x48), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
+		if (gl->lit == 1)
 			memset(layer + 0xfc, 0xff, 12 * 4);
 		return;
 	}
@@ -243,12 +244,12 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		}
 		for (int row = r0; row <= r1; row++)
 			for (int col = c0; col <= c1; col++) {
-				int v = (GAME_VAR(int, layer + 0x20) + 1) * row + col;
+				int v = (gl->cols + 1) * row + col;
 				const float *n = GAME_VAR(const float *, layer + 0x44) + v * 3;
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
-		if (GAME_VAR(int, layer + 0x30) == 1) {
+		if (gl->lit == 1) {
 			const float *above = GAME_VAR(int, layer) == 1 ? K(0x4a9474) : K(0x4a9424);
 			int i = light_level(MUL(above, &dir[1]));
 			u8 sky[4];
@@ -264,12 +265,13 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
    +0x5c used, at most +0x54: past it a fatal message) */
 static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 {
-	if (GAME_VAR(int, layer + 0x5c) + 2 > GAME_VAR(int, layer + 0x54))
-		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d052c, "primitiveElementIndexHeap overflow(%d..."), GAME_VAR(int, layer + 0x5c) + 2, GAME_VAR(int, layer + 0x54));
+	GroundLayer *gl = (GroundLayer *)layer;
+	if (gl->indexCount + 2 > gl->indexCapacity)
+		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d052c, "primitiveElementIndexHeap overflow(%d..."), gl->indexCount + 2, gl->indexCapacity);
 	idx[(*n)++] = r * w + c;
-	GAME_VAR(int, layer + 0x5c)++;
+	gl->indexCount++;
 	idx[(*n)++] = (r + 1) * w + c;
-	GAME_VAR(int, layer + 0x5c)++;
+	gl->indexCount++;
 }
 
 /* a water vertex: v turned about the vertical by angle, moved to the camera, stored with its texture coordinates (its
@@ -300,34 +302,35 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 	float max_x = f32(fadd_m(fld_m(range), &cam[0])), max_z = f32(fadd_m(fld_m(&cam[2]), range));
 	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
 		u8 *layer = s + 0xdc0244 + i * 0x20c;
+		GroundLayer *gl = (GroundLayer *)layer;
 		u8 *part = GAME_VAR(u8 *, s + 0xdc0a8c) + i * 0x80, *water = GAME_VAR(u8 *, s + 0xdc0cd8) + i * 0x80;
 		const float *size = (const float *)(layer + 0x24), *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
 		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
-		int cols = GAME_VAR(int, layer + 0x20), rows = GAME_VAR(int, layer + 0x1c);
+		int cols = gl->cols, rows = gl->rows;
 		long double e = fadd_m(fmul_m((long double)cols, size), &origin[0]);
 		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;
 		e = fadd_m(fmul_m((long double)rows, size), &origin[0]);   /* (the x origin: the original's slip) */
 		int r1 = (e > max_z ? rows - ftol(fdiv_m(fsub_m(e, &max_z), size)) : rows) - 1;
 		GAME_VAR(u32, part + 0x58) = GAME_VAR(u32, layer + 0x48);
-		int w = GAME_VAR(int, layer + 0x20) + 1;
-		GAME_VAR(int, layer + 0x5c) = 0;
-		GAME_VAR(int, layer + 0x68) = 0;
+		int w = gl->cols + 1;
+		gl->indexCount = 0;
+		gl->stripCount = 0;
 		for (int r = r0; r <= r1; r++) {
 			int open = 0, n = 0, c = c0;
 			u32 *prim = NULL;
 			for (; c <= c1; c++) {
-				if (GAME_VAR(u8 *, layer + 0x3c)[r * GAME_VAR(int, layer + 0x20) + c] & 1) {
+				if (gl->flat[r * gl->cols + c] & 1) {
 					if (!open) {
-						if (GAME_VAR(int, layer + 0x68) >= GAME_VAR(int, layer + 0x60))
-							sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce..."), GAME_VAR(int, layer + 0x68) + 1, GAME_VAR(int, layer + 0x60));
-						prim = (u32 *)(GAME_VAR(u8 *, layer + 0x64) + GAME_VAR(int, layer + 0x68) * 12);
-						GAME_VAR(int, layer + 0x68)++;
+						if (gl->stripCount >= gl->stripCapacity)
+							sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4d056c, "primitiveBuffer overflow(%d/%d)-proce..."), gl->stripCount + 1, gl->stripCapacity);
+						prim = (u32 *)(gl->strips + gl->stripCount * 12);
+						gl->stripCount++;
 						open = 1;
 						n = 0;
 						prim[0] = 5;
 						prim[1] = 0;
-						prim[2] = (u32)(GAME_VAR(u8 *, layer + 0x58) + GAME_VAR(int, layer + 0x5c) * 4);
+						prim[2] = (u32)(GAME_VAR(u8 *, layer + 0x58) + gl->indexCount * 4);
 					}
 					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 				} else if (open) {
@@ -341,8 +344,8 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				prim[1] = n;
 			}
 		}
-		GAME_VAR(int, part + 0x60) = GAME_VAR(int, layer + 0x68);
-		if (GAME_VAR(int, layer + 0x30) != 1) {
+		GAME_VAR(int, part + 0x60) = gl->stripCount;
+		if (gl->lit != 1) {
 			GAME_VAR(int, water + 0x60) = 0;
 			continue;
 		}

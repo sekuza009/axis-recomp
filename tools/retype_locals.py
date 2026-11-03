@@ -25,9 +25,31 @@ def bodies(t):
 total = 0
 for path in files:
 	t = open(path, encoding='latin-1', newline='').read()
+	crlf = '\r\n' in t
+	t = t.replace('\r\n', '\n')   # (worked on with LF line ends, written back as found)
 	edits = []   # (start, end, text)
 	for a, b in bodies(t):
 		body = t[a:b]
+		# --alias=Type:name: a byte pointer (local or parameter) that also has byte uses, cast to Type for its fields:
+		# a typed alias declared after it (Type *name = (Type *)v;) takes the casts over
+		for opt in [x for x in sys.argv if x.startswith('--alias=')]:
+			T, alias = opt[8:].split(':')
+			for v in sorted(set(re.findall(r'\(\(%s \*\)(\w+)\)' % T, body))):
+				head = t[t.rfind('\n', 0, t.rfind('(', 0, a)) + 1:a]
+				d = re.search(r'^(\s*)(?:const )?u8 \*%s = [^;]+;\n' % v, body, re.M)
+				if d:
+					at, indent = d.end(), d.group(1)
+				elif re.search(r'\bu8 \*%s\b' % v, head):
+					at, indent = 2, '\t'   # (a parameter: after the body's opening brace)
+				else:
+					continue
+				uses = re.findall(r'\(\(%s \*\)%s\)' % (T, v), body[at:])
+				if not uses or re.search(r'\b%s\b' % alias, body):
+					continue
+				body = body[:at] + '%s%s *%s = (%s *)%s;\n' % (indent, T, alias, T, v) + \
+					re.sub(r'\(\(%s \*\)%s\)' % (T, v), alias, body[at:])
+				total += 1
+				print('  %s: %s aliased as %s *%s' % (path, v, T, alias))
 		for d in re.finditer(r'^(\s*)(const )?u8 \*(\w+) = ([^;]+);', body, re.M):
 			const, v, init = d.group(2) or '', d.group(3), d.group(4)
 			casts = re.findall(r'\(\((?:const )?(\w+) \*\)%s\)' % v, body)
@@ -66,5 +88,5 @@ for path in files:
 	for a, b, nbody in reversed(edits):
 		t = t[:a] + nbody + t[b:]
 	if edits and not DRY:
-		open(path, 'w', encoding='latin-1', newline='').write(t)
+		open(path, 'w', encoding='latin-1', newline='').write(t.replace('\n', '\r\n') if crlf else t)
 print(total, 'locals retyped')

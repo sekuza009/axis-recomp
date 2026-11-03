@@ -441,33 +441,34 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	GAME_VAR(int, s + 0xdc0240) = 0;
 	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
 		u8 *l = s + 0xdc0244 + i * 0x20c;
+		GroundLayer *gl = (GroundLayer *)l;
 		log_message((int)s, 0, i, (const char *)STR(0x4c7ef4, "load layer %d"), i);
 		fread_scrambled(l, 0x20c, 1, f);
-		GAME_VAR(u32, l + 0x34) = ground_tex(dir, STR(0x4c7ee4, "%s/Ground%dMap"), i, tex);
+		gl->texture = ground_tex(dir, STR(0x4c7ee4, "%s/Ground%dMap"), i, tex);
 		fread_scrambled(image, 0x300, 0x100, f);
-		int rows = GAME_VAR(int, l + 0x1c), cols = GAME_VAR(int, l + 0x20), w = cols + 1;
+		int rows = gl->rows, cols = gl->cols, w = cols + 1;
 		int count = w * (rows + 1);
-		u8 *heights = GAME_VAR(u8 *, l + 0x38) = pool_take(s, count);
-		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
-			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
+		u8 *heights = gl->heights = pool_take(s, count);
+		for (int r = 0; r <= gl->rows; r++)
+			for (int c = 0; c <= gl->cols; c++) {
 				int g = grey(image + r * 0x300 + c * 3);
-				heights[(GAME_VAR(int, l + 0x20) + 1) * r + c] = g < 0 ? 0 : (u8)g;
+				heights[(gl->cols + 1) * r + c] = g < 0 ? 0 : (u8)g;
 			}
 		GAME_VAR(int, s + 0xdc0240) += count;
-		int cells = GAME_VAR(int, l + 0x20) * GAME_VAR(int, l + 0x1c);
-		u8 *flat = GAME_VAR(u8 *, l + 0x3c) = pool_take(s, cells);
-		for (int r = 0; r < GAME_VAR(int, l + 0x1c); r++)
-			for (int c = 0; c < GAME_VAR(int, l + 0x20); c++) {
+		int cells = gl->cols * gl->rows;
+		u8 *flat = gl->flat = pool_take(s, cells);
+		for (int r = 0; r < gl->rows; r++)
+			for (int c = 0; c < gl->cols; c++) {
 				const u8 *px = image + r * 0x300 + c * 3;
-				flat[GAME_VAR(int, l + 0x20) * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
+				flat[gl->cols * r + c] = grey(px) >= 0 && grey(px + 0x300) >= 0 && grey(px + 0x303) >= 0 && grey(px + 3) >= 0;
 			}
 		GAME_VAR(int, s + 0xdc0240) += cells;
-		int size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 12;
+		int size = (gl->cols + 1) * (gl->rows + 1) * 12;
 		float *v = GAME_VAR(float *, l + 0x40) = (float *)pool_take(s, size);
 		const float *origin = (const float *)(l + 4), *cell = (const float *)(l + 0x24), *hs = (const float *)(l + 0x28);
-		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
-			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
-				int at = (GAME_VAR(int, l + 0x20) + 1) * r + c;
+		for (int r = 0; r <= gl->rows; r++)
+			for (int c = 0; c <= gl->cols; c++) {
+				int at = (gl->cols + 1) * r + c;
 				float *p = v + at * 3;
 				long double z = fadd_m(fmul_m((long double)r, cell), &origin[2]);
 				long double y = fadd_m(fmul_m((long double)heights[at], hs), &origin[1]);
@@ -476,20 +477,20 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 				p[2] = f32(z);
 			}
 		GAME_VAR(int, s + 0xdc0240) += size;
-		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 12;
+		size = (gl->cols + 1) * (gl->rows + 1) * 12;
 		u8 *normals = GAME_VAR(u8 *, l + 0x44) = pool_take(s, size);
-		w = GAME_VAR(int, l + 0x20) + 1;
-		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++) {
+		w = gl->cols + 1;
+		for (int r = 0; r <= gl->rows; r++) {
 			memcpy(normals + (w * r) * 12, (const void *)OBJ(g_vecUnitY), 12);
-			memcpy(normals + (w * r + GAME_VAR(int, l + 0x20)) * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + (w * r + gl->cols) * 12, (const void *)OBJ(g_vecUnitY), 12);
 		}
-		for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {
+		for (int c = 1; c < gl->cols; c++) {
 			memcpy(normals + c * 12, (const void *)OBJ(g_vecUnitY), 12);
-			memcpy(normals + ((GAME_VAR(int, l + 0x20) + 1) * GAME_VAR(int, l + 0x1c) + c) * 12, (const void *)OBJ(g_vecUnitY), 12);
+			memcpy(normals + ((gl->cols + 1) * gl->rows + c) * 12, (const void *)OBJ(g_vecUnitY), 12);
 		}
-		for (int r = 1; r < GAME_VAR(int, l + 0x1c); r++)
-			for (int c = 1; c < GAME_VAR(int, l + 0x20); c++) {
-				w = GAME_VAR(int, l + 0x20) + 1;
+		for (int r = 1; r < gl->rows; r++)
+			for (int c = 1; c < gl->cols; c++) {
+				w = gl->cols + 1;
 				const float *vs = GAME_VAR(const float *, l + 0x40);
 				const float *p = vs + (w * r + c) * 3, *up = vs + (w * (r - 1) + c) * 3, *down = vs + (w * (r + 1) + c) * 3;
 				const float *right = p + 3, *left = p - 3;
@@ -506,30 +507,30 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 						out[k] = f32(-fld_m(&out[k]));
 			}
 		GAME_VAR(int, s + 0xdc0240) += size;
-		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 4;
+		size = (gl->cols + 1) * (gl->rows + 1) * 4;
 		GAME_VAR(u8 *, l + 0x48) = pool_take(s, size);
 		ground_computeLighting(s, l);
 		GAME_VAR(int, s + 0xdc0240) += size;
-		size = (GAME_VAR(int, l + 0x20) + 1) * (GAME_VAR(int, l + 0x1c) + 1) * 8;
-		float *uv = GAME_VAR(float *, l + 0x50) = (float *)pool_take(s, size);
-		for (int r = 0; r <= GAME_VAR(int, l + 0x1c); r++)
-			for (int c = 0; c <= GAME_VAR(int, l + 0x20); c++) {
-				int at = (GAME_VAR(int, l + 0x20) + 1) * r + c;
+		size = (gl->cols + 1) * (gl->rows + 1) * 8;
+		float *uv = gl->uv = (float *)pool_take(s, size);
+		for (int r = 0; r <= gl->rows; r++)
+			for (int c = 0; c <= gl->cols; c++) {
+				int at = (gl->cols + 1) * r + c;
 				const float *p = GAME_VAR(const float *, l + 0x40) + at * 3;
 				long double tz = fdiv_m(fld_m(&p[2]), (const float *)(l + 0x2c));
 				uv[at * 2] = f32(fdiv_m(fld_m(&p[0]), (const float *)(l + 0x2c)));
 				uv[at * 2 + 1] = f32(tz);
 			}
 		GAME_VAR(int, s + 0xdc0240) += size;
-		int indices = (GAME_VAR(int, l + 0x20) + 200) * GAME_VAR(int, l + 0x1c) * 2;
+		int indices = (gl->cols + 200) * gl->rows * 2;
 		u8 *heap = pool_take(s, indices * 4);
-		GAME_VAR(int, l + 0x54) = indices;
+		gl->indexCapacity = indices;
 		GAME_VAR(u8 *, l + 0x58) = heap;
 		GAME_VAR(int, s + 0xdc0240) += indices * 4;
-		int prims = GAME_VAR(int, l + 0x1c) * 200 + 4;
+		int prims = gl->rows * 200 + 4;
 		heap = pool_take(s, prims * 12);
-		GAME_VAR(int, l + 0x60) = prims;
-		GAME_VAR(u8 *, l + 0x64) = heap;
+		gl->stripCapacity = prims;
+		gl->strips = heap;
 		GAME_VAR(int, s + 0xdc0240) += prims * 12;
 	}
 	stage_buildMeshDrawRecords(s);
