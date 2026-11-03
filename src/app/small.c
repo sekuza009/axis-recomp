@@ -780,11 +780,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ 0x30c, 0x13eb000, STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), 0x338, 0x43534, 0x13c9b30, 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
-	{ 0x310, 0x140c8bc, STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), 0x8284, 0x43e34, 0x13eb004, 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
-	{ 0x314, 0x1447ec0, STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), 0x101d0, 0x44734, 0x140c8c0, 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
-	{ 0x318, 0x148646c, STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), 0x1fe1c, 0x45804, 0x1447ec4, 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
-	{ 0x31c, 0x14d1ab0, STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), 0x2fa68, 0x468d4, 0x1486470, 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
+	{ 0x30c, offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), 0x338, 0x43534, offsetof(Stage, headTypes), 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
+	{ 0x310, offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), 0x8284, 0x43e34, offsetof(Stage, chestTypes), 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
+	{ 0x314, offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), 0x101d0, 0x44734, offsetof(Stage, armTypes), 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
+	{ 0x318, offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), 0x1fe1c, 0x45804, offsetof(Stage, legTypes), 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
+	{ 0x31c, offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), 0x2fa68, 0x468d4, offsetof(Stage, boosterTypes), 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);

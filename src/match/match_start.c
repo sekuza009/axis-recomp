@@ -386,8 +386,8 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	shape_initBy(s + 0xe3c93c, dir, 0x190, 2, 0xe54c0, s + 0xe3cb88, 1000000);
 	FIELD(int, s, 0x13016c8) = 0;
 	skelSet_setup(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
-	static const u32 zero[10] = { 0x131ae40, 0x13c9b24, 0x13c9b28, 0x13c9b2c, 0x13eb000, 0x140c8bc, 0x1447ec0, 0x148646c,
-	                              0x14d1ab0, 0x19e1888 };
+	static const u32 zero[10] = { offsetof(Stage, objectNameCount), offsetof(Stage, objectCount), offsetof(Stage, objectFreeHint), offsetof(Stage, objectSerial), offsetof(Stage, headTypeCount), offsetof(Stage, chestTypeCount), offsetof(Stage, armTypeCount), offsetof(Stage, legTypeCount),
+	                              offsetof(Stage, boosterTypeCount), offsetof(Stage, playerRecordCount) };
 	for (int k = 0; k < 10; k++)
 		FIELD(int, s, zero[k]) = 0;
 	static const struct { u32 shapes; int n, extra, size; u32 skels; int sextra; u32 smem; int ssize; } parts[5] = {

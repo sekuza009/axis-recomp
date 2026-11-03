@@ -528,7 +528,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 				GAME_THISCALL(k_partSteps[k][2], int, void *, int, int)(stage, act->player, GAME_VAR(int, player + k_partSteps[k][1]) + 1);
 		if (SC->fKeys[5] == 1) {
 			int it = GAME_VAR(int, player + 0x320 + act->slot * 4);
-			if (it < S(int, 0x175522c) - 1)
+			if (it < SC->actorInfoCount - 1)
 				item = it + 1;
 		}
 	}

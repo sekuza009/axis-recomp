@@ -722,9 +722,18 @@ typedef struct Stage {
 	i32 objectCount;   /* +0x13c9b24 */
 	i32 objectFreeHint;   /* +0x13c9b28: (by use) the next free map object slot (at most 999) */
 	i32 objectSerial;   /* +0x13c9b2c: the next map object's id */
-	u8 _pad13c9b30[0x107f84];
-	ActorInfo actorInfo[32];   /* +0x14d1ab4: (Scene.actorInfo: mechs and weapons) */
-	u8 _pad152ddb4[0x33db4];
+	u8 headTypes[50][0xaa8];   /* +0x13c9b30 */
+	i32 headTypeCount;   /* +0x13eb000 */
+	u8 chestTypes[50][0xabc];   /* +0x13eb004 */
+	i32 chestTypeCount;   /* +0x140c8bc */
+	u8 armTypes[50][0x1300];   /* +0x140c8c0 */
+	i32 armTypeCount;   /* +0x1447ec0 */
+	u8 legTypes[50][0x13f4];   /* +0x1447ec4 */
+	i32 legTypeCount;   /* +0x148646c */
+	u8 boosterTypes[50][0x1820];   /* +0x1486470 */
+	i32 boosterTypeCount;   /* +0x14d1ab0 */
+	ActorInfo actorInfo[50];   /* +0x14d1ab4: the item types ("read ActorItemInfo"; Scene.actorInfo: mechs and weapons) */
+	i32 actorInfoCount;   /* +0x1561b64 */
 	PlayerRecord playerRecords[16];   /* +0x1561b68: (Scene.playerRecords) */
 	i32 playerRecordCount;   /* +0x19e1888: (by use) player records in use (grows to cover a new player) */
 	u8 _pad19e188c[0x2f51a4];
@@ -895,8 +904,8 @@ typedef struct Scene {
 	i32 legCount;   /* +0x1679b34 */
 	u8 _pad1679b38[0x4b640];
 	i32 boosterCount;   /* +0x16c5178 */
-	ActorInfo actorInfo[32];   /* +0x16c517c: (count unclear) */
-	u8 _pad172147c[0x33db4];
+	ActorInfo actorInfo[50];   /* +0x16c517c: (the stage's item types) */
+	i32 actorInfoCount;   /* +0x175522c */
 	PlayerRecord playerRecords[16];   /* +0x1755230 */
 	u8 _pad1bd4f50[0x2f50e0];
 	i32 snapshotTex[64];   /* +0x1eca030: texture id of each actor type's snapshot (< 0: not loaded; count unclear) */
@@ -1648,7 +1657,18 @@ _Static_assert(offsetof(Stage, objects) == 0x131ae44 && sizeof(((Stage *)0)->obj
 _Static_assert(offsetof(Stage, objectCount) == 0x13c9b24 && sizeof(((Stage *)0)->objectCount) == 0x4, "scene.fields: Stage.objectCount");
 _Static_assert(offsetof(Stage, objectFreeHint) == 0x13c9b28 && sizeof(((Stage *)0)->objectFreeHint) == 0x4, "scene.fields: Stage.objectFreeHint");
 _Static_assert(offsetof(Stage, objectSerial) == 0x13c9b2c && sizeof(((Stage *)0)->objectSerial) == 0x4, "scene.fields: Stage.objectSerial");
-_Static_assert(offsetof(Stage, actorInfo) == 0x14d1ab4 && sizeof(((Stage *)0)->actorInfo) == 0x5c300, "scene.fields: Stage.actorInfo");
+_Static_assert(offsetof(Stage, headTypes) == 0x13c9b30 && sizeof(((Stage *)0)->headTypes) == 0x214d0, "scene.fields: Stage.headTypes");
+_Static_assert(offsetof(Stage, headTypeCount) == 0x13eb000 && sizeof(((Stage *)0)->headTypeCount) == 0x4, "scene.fields: Stage.headTypeCount");
+_Static_assert(offsetof(Stage, chestTypes) == 0x13eb004 && sizeof(((Stage *)0)->chestTypes) == 0x218b8, "scene.fields: Stage.chestTypes");
+_Static_assert(offsetof(Stage, chestTypeCount) == 0x140c8bc && sizeof(((Stage *)0)->chestTypeCount) == 0x4, "scene.fields: Stage.chestTypeCount");
+_Static_assert(offsetof(Stage, armTypes) == 0x140c8c0 && sizeof(((Stage *)0)->armTypes) == 0x3b600, "scene.fields: Stage.armTypes");
+_Static_assert(offsetof(Stage, armTypeCount) == 0x1447ec0 && sizeof(((Stage *)0)->armTypeCount) == 0x4, "scene.fields: Stage.armTypeCount");
+_Static_assert(offsetof(Stage, legTypes) == 0x1447ec4 && sizeof(((Stage *)0)->legTypes) == 0x3e5a8, "scene.fields: Stage.legTypes");
+_Static_assert(offsetof(Stage, legTypeCount) == 0x148646c && sizeof(((Stage *)0)->legTypeCount) == 0x4, "scene.fields: Stage.legTypeCount");
+_Static_assert(offsetof(Stage, boosterTypes) == 0x1486470 && sizeof(((Stage *)0)->boosterTypes) == 0x4b640, "scene.fields: Stage.boosterTypes");
+_Static_assert(offsetof(Stage, boosterTypeCount) == 0x14d1ab0 && sizeof(((Stage *)0)->boosterTypeCount) == 0x4, "scene.fields: Stage.boosterTypeCount");
+_Static_assert(offsetof(Stage, actorInfo) == 0x14d1ab4 && sizeof(((Stage *)0)->actorInfo) == 0x900b0, "scene.fields: Stage.actorInfo");
+_Static_assert(offsetof(Stage, actorInfoCount) == 0x1561b64 && sizeof(((Stage *)0)->actorInfoCount) == 0x4, "scene.fields: Stage.actorInfoCount");
 _Static_assert(offsetof(Stage, playerRecords) == 0x1561b68 && sizeof(((Stage *)0)->playerRecords) == 0x47fd20, "scene.fields: Stage.playerRecords");
 _Static_assert(offsetof(Stage, playerRecordCount) == 0x19e1888 && sizeof(((Stage *)0)->playerRecordCount) == 0x4, "scene.fields: Stage.playerRecordCount");
 _Static_assert(offsetof(Stage, mapPlayers) == 0x1cd6a30 && sizeof(((Stage *)0)->mapPlayers) == 0x580, "scene.fields: Stage.mapPlayers");
@@ -1768,7 +1788,8 @@ _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->armCount) == 0x4, "scene.fields: Scene.armCount");
 _Static_assert(offsetof(Scene, legCount) == 0x1679b34 && sizeof(((Scene *)0)->legCount) == 0x4, "scene.fields: Scene.legCount");
 _Static_assert(offsetof(Scene, boosterCount) == 0x16c5178 && sizeof(((Scene *)0)->boosterCount) == 0x4, "scene.fields: Scene.boosterCount");
-_Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x5c300, "scene.fields: Scene.actorInfo");
+_Static_assert(offsetof(Scene, actorInfo) == 0x16c517c && sizeof(((Scene *)0)->actorInfo) == 0x900b0, "scene.fields: Scene.actorInfo");
+_Static_assert(offsetof(Scene, actorInfoCount) == 0x175522c && sizeof(((Scene *)0)->actorInfoCount) == 0x4, "scene.fields: Scene.actorInfoCount");
 _Static_assert(offsetof(Scene, playerRecords) == 0x1755230 && sizeof(((Scene *)0)->playerRecords) == 0x47fd20, "scene.fields: Scene.playerRecords");
 _Static_assert(offsetof(Scene, snapshotTex) == 0x1eca030 && sizeof(((Scene *)0)->snapshotTex) == 0x100, "scene.fields: Scene.snapshotTex");
 _Static_assert(offsetof(Scene, botsWaiting) == 0x1ecca6c && sizeof(((Scene *)0)->botsWaiting) == 0x4, "scene.fields: Scene.botsWaiting");
