@@ -82,11 +82,11 @@ int (gfx_swapBuffers)(void)
 static u32 default_gl_state(void)
 {
 	glHint(0xc50, 0x1102);                                      /* GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST */
-	IMPORT(0x4a91c8, void, u32, u32, u32)(0x2300, 0x2200, 0x46040000);   /* glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE) */
-	IMPORT(0x4a91ec, void, u32, u32)(0x302, 0x303);            /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
+	glTexEnvf(0x2300, 0x2200, 0x46040000);   /* glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE) */
+	glBlendFunc(0x302, 0x303);            /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 	glHint(0xc51, 0x1102);                                      /* points */
 	glHint(0xc52, 0x1102);                                      /* lines */
-	IMPORT(0x4a91cc, void, u32)(0x203);                         /* glDepthFunc(GL_LEQUAL) */
+	glDepthFunc(0x203);                         /* glDepthFunc(GL_LEQUAL) */
 	glHint(0xc54, 0x1102);                                      /* fog */
 	glEnable(0x1d01);
 	glDisable(0xde1);                                           /* GL_TEXTURE_2D */
@@ -98,9 +98,9 @@ static u32 default_gl_state(void)
 	glDisable(0xb50);                                           /* GL_LIGHTING */
 	glDisable(0x4000);                                          /* GL_LIGHT0 */
 	glDisable(0xb60);                                           /* GL_FOG */
-	IMPORT(0x4a91c4, void, u32, u32)(0x408, 0x1b02);           /* glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) */
-	IMPORT(0x4a91c0, void, u32)(0x901);                         /* glFrontFace(GL_CCW) */
-	IMPORT(0x4a91d0, void, u32)(0x405);                         /* glCullFace(GL_BACK) */
+	glPolygonMode(0x408, 0x1b02);           /* glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) */
+	glFrontFace(0x901);                         /* glFrontFace(GL_CCW) */
+	glCullFace(0x405);                         /* glCullFace(GL_BACK) */
 	return IMPORT(0x4a922c, u32, u32)(0xb44);                   /* glDisable(GL_CULL_FACE) */
 }
 u32 (gfx_resetState)(void) { return default_gl_state(); }
@@ -111,11 +111,11 @@ u32 (gfx_resetState)(void) { return default_gl_state(); }
 u32 (gfx_initGLState)(int width, int height)
 {
 	default_gl_state();
-	IMPORT(0x4a91fc, void, u32)(0x1701);   /* glMatrixMode(GL_PROJECTION) */
+	glMatrixMode(0x1701);   /* glMatrixMode(GL_PROJECTION) */
 	g_viewAspect = f32((long double)width / (long double)height);
 	((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))((double)fld_m((const float *)ADDR(g_viewAngle)),
 		(double)fld_m((const float *)ADDR(g_viewAspect)), 1.0, 20000.0);   /* gluPerspective */
-	IMPORT(0x4a91fc, void, u32)(0x1700);   /* glMatrixMode(GL_MODELVIEW) */
+	glMatrixMode(0x1700);   /* glMatrixMode(GL_MODELVIEW) */
 	u32 r = gfx_setup3DView(width, height);
 	g_projMode = 1;
 	return r;

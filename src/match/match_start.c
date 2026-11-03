@@ -413,7 +413,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		FIELD(u32, s, 0x20f2f48 + k * 4) = k % 5 == 0 ? 0x3f800000 : 0;
 		FIELD(u32, s, 0x20f2f88 + k * 4) = k == 15 ? 0x3f800000 : k % 5 == 0 ? 0x3f8ccccd : 0;   /* 1.1 */
 	}
-	IMPORT(0x4a925c, void, int, void *)(1, s + 0x20fcfe0);   /* glGenTextures */
+	glGenTextures(1, s + 0x20fcfe0);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
 		FIELD(u32, s, 0x20fcfe4 + k * 4) = (*(u32 *)&g_defaultColour);
 	FIELD(int, s, 0x20f3ab4) = 0;

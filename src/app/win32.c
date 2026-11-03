@@ -49,7 +49,7 @@ u32 (app_registerWindowClassEx)(const u32 *cls)
 	wc[11] = 0;     /* hIconSm */
 	for (int i = 0; i < 10; i++)
 		wc[1 + i] = cls[i];
-	return IMPORT(0x4a92e8, u32, const u32 *)(wc) & 0xffff;   /* RegisterClassExA */
+	return RegisterClassExA(wc) & 0xffff;   /* RegisterClassExA */
 }
 
 /* 0x468450: the GL window resized to width x height (0xa0e810, 0xa0e928): the viewport set and, in full screen
@@ -59,7 +59,7 @@ int (glWindow_resize)(int width, int height)
 {
 	g_glWidth = width;
 	g_glHeight = height;
-	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
+	glViewport(0, 0, width, height);   /* glViewport */
 	if (g_fullScreen == 1 &&
 	    !glWindow_setDisplayModeBy(g_glWidth, g_glHeight, 0)) {
 		sys_errorMessageNoName((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
@@ -96,12 +96,12 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		wc[2] = 0;
 		wc[3] = 0;
 		wc[4] = (u32)GetModuleHandleA(NULL);
-		wc[5] = (u32)IMPORT(0x4a92c4, void *, void *, const char *)(GetModuleHandleA(NULL), g_glTitle);   /* LoadIconA */
-		wc[6] = (u32)IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);                               /* LoadCursorA(IDC_ARROW) */
+		wc[5] = (u32)LoadIconA(GetModuleHandleA(NULL), g_glTitle);   /* LoadIconA */
+		wc[6] = (u32)LoadCursorA(NULL, 0x7f00);                               /* LoadCursorA(IDC_ARROW) */
 		wc[7] = 6;                 /* COLOR_WINDOW + 1 */
 		wc[8] = (u32)g_glTitle;    /* menu name */
 		wc[9] = (u32)g_glTitle;    /* class name */
-		if (!(IMPORT(0x4a92b8, u16, const u32 *)(wc))) {                                               /* RegisterClassA */
+		if (!(RegisterClassA(wc))) {                                               /* RegisterClassA */
 			sys_errorMessageNoName((const char *)STR(0x4c4fa4, "glWindow RegisterClass() failed - glW..."));
 			return NULL;
 		}
@@ -118,8 +118,8 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			return NULL;
 		}
 		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
-		IMPORT(0x4a92c0, int, void *)(g_glWindow);            /* UpdateWindow */
-		IMPORT(0x4a935c, void *, void *)(g_glWindow);         /* SetFocus */
+		UpdateWindow(g_glWindow);            /* UpdateWindow */
+		SetFocus(g_glWindow);         /* SetFocus */
 		g_glWindowMade = 1;
 	} else {
 		g_glWindow = window;
@@ -169,7 +169,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 {
 	void *dc = g_glDc;
 	if (!dc)
-		dc = g_glDc = IMPORT(0x4a9318, void *, void *)(GetActiveWindow());   /* GetDC */
+		dc = g_glDc = GetDC(GetActiveWindow());   /* GetDC */
 	if (!g_modeChanged) {
 		g_desktopW = GetDeviceCaps(dc, 8);       /* HORZRES */
 		g_desktopH = GetDeviceCaps(g_glDc, 10);  /* VERTRES */
@@ -221,7 +221,7 @@ u32 (wnd_setCursor)(void)
 	if (object)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
-	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
+	SetCursor(LoadCursorA(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	input_releaseAll();
 	music_shutdown();
 	for (u32 p = OBJ(g_menuSoundBuffers); p < OBJ(g_menuSoundBuffers) + 10 * 4; p += 4)
@@ -296,7 +296,7 @@ int (chat_createEdit)(int chars)
 	font.charSet = 1;   /* DEFAULT_CHARSET */
 	strcpy(font.face, (const char *)STR(0x4b29b0, "Fixedsys"));
 	g_chatEditLength = chars;
-	g_inputFont = IMPORT(0x4a9038, void *, const void *)(&font);   /* CreateFontIndirectA */
+	g_inputFont = CreateFontIndirectA(&font);   /* CreateFontIndirectA */
 	void *edit = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, u32, void *, void *)(
 		0, (const char *)STR(0x4b29a8, "EDIT"), NULL, 0x40000400, g_chatCaretX - 5, g_chatCaretY + 0x21,
 		chars * 8, 0x18, g_mainWindow, 0xca, g_hInstance, NULL);   /* CreateWindowExA("EDIT") */
@@ -305,8 +305,8 @@ int (chat_createEdit)(int chars)
 		SendMessageA(edit, 0x30, (*(u32 *)&g_inputFont), 0);   /* WM_SETFONT */
 		edit = g_hChatEdit;
 	}
-	g_editOldProc = IMPORT(0x4a9354, u32, void *, int, u32)(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
-	IMPORT(0x4a935c, void *, void *)(g_hChatEdit);   /* SetFocus */
+	g_editOldProc = SetWindowLongA(edit, -4, FN_ADDR(chat_editSubclass, 0x440840));   /* SetWindowLongA(GWL_WNDPROC) */
+	SetFocus(g_hChatEdit);   /* SetFocus */
 	u32 length = strlen(g_chatLine);
 	SendMessageA(g_hChatEdit, 0xc, 0, OBJ(g_chatLine));   /* WM_SETTEXT */
 	return SendMessageA(g_hChatEdit, 0xb1, length, length);   /* EM_SETSEL */
@@ -346,14 +346,14 @@ int (app_init)(void *inst, int show)
 	data_loadMessages();
 	void *user32 = GetModuleHandleA((const char *)STR(0x4ac820, "user32.dll"));
 	if (user32) {
-		void (STDCALL *dpi_aware)(void) = IMPORT(0x4a907c, void *, void *, const char *)(user32, (const char *)STR(0x4ac82c, "SetProcessDPIAware"));   /* GetProcAddress */
+		void (STDCALL *dpi_aware)(void) = GetProcAddress(user32, (const char *)STR(0x4ac82c, "SetProcessDPIAware"));   /* GetProcAddress */
 		if (dpi_aware)
 			dpi_aware();
 	}
 	g_unusedInitWord = 0;
 	g_desktopWidth = GetSystemMetrics(0);   /* SM_CXSCREEN */
 	g_desktopHeight = GetSystemMetrics(1);
-	void *dc = IMPORT(0x4a9318, void *, void *)(NULL);   /* GetDC */
+	void *dc = GetDC(NULL);   /* GetDC */
 	g_desktopDC = dc;
 	g_desktopDepth = GetDeviceCaps(dc, 12);   /* BITSPIXEL */
 	input_setDefaultKeyBindings();
@@ -368,9 +368,9 @@ int (app_init)(void *inst, int show)
 	wc.proc = FN_ADDR(game_wndProc, 0x440070);   /* WndProc */
 	wc.cls_extra = wc.wnd_extra = 0;
 	wc.inst = inst;
-	wc.icon = IMPORT(0x4a92c4, void *, void *, const char *)(inst, NULL);   /* LoadIconA */
-	wc.cursor = IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
-	wc.brush = IMPORT(0x4a903c, void *, int)(4);   /* GetStockObject(BLACK_BRUSH) */
+	wc.icon = LoadIconA(inst, NULL);   /* LoadIconA */
+	wc.cursor = LoadCursorA(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
+	wc.brush = GetStockObject(4);   /* GetStockObject(BLACK_BRUSH) */
 	wc.menu = wc.name = (const char *)STR(0x4b0714, "AXIS");
 	int extended;   /* (GetVersion asked up to three times, as the original does) */
 	if (GetVersion() < 0x80000000)
@@ -394,9 +394,9 @@ int (app_init)(void *inst, int show)
 	g_showCmd = show;
 	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
 	for (int k = 0; k < 3; k++)
-		IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
+		SetTimer(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
 	IMPORT(0x4a92bc, int, void *, int)(g_hWndMain, show);   /* ShowWindow */
-	IMPORT(0x4a92c0, int, void *)(g_hWndMain);   /* UpdateWindow */
+	UpdateWindow(g_hWndMain);   /* UpdateWindow */
 	if (!app_checkCdAndLoad(inst)) {
 		app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 		return 0;
@@ -423,16 +423,16 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	switch (msg) {
 	case 1:   /* WM_CREATE */
 		ShowCursor(0);
-		g_dc = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
+		g_dc = GetDC(wnd);   /* GetDC */
 		if (!glWindow_setupPixelFormat(g_dc))
 			PostQuitMessage(0);
-		g_context = IMPORT(0x4a9230, void *, void *)(g_dc);   /* wglCreateContext */
-		IMPORT(0x4a9254, int, void *, void *)(g_dc, g_context);   /* wglMakeCurrent */
+		g_context = wglCreateContext(g_dc);   /* wglCreateContext */
+		wglMakeCurrent(g_dc, g_context);   /* wglMakeCurrent */
 		IMPORT(0x4a9310, int, void *, u32 *)(wnd, rect);   /* GetClientRect */
 		return 0;
 	case 0xf:   /* WM_PAINT */
-		IMPORT(0x4a9308, void *, void *, u32 *)(wnd, paint);   /* BeginPaint */
-		IMPORT(0x4a92dc, int, void *, u32 *)(wnd, paint);   /* EndPaint */
+		BeginPaint(wnd, paint);   /* BeginPaint */
+		EndPaint(wnd, paint);   /* EndPaint */
 		return 0;
 	case 0x10:   /* WM_CLOSE */
 		IMPORT(0x4a9344, int, void *)(wnd);   /* DestroyWindow */
@@ -442,7 +442,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		return 0;
 	case 2:   /* WM_DESTROY */
 		if (g_context)
-			IMPORT(0x4a9274, int, void *)(g_context);   /* wglDeleteContext */
+			wglDeleteContext(g_context);   /* wglDeleteContext */
 		if (g_dc)
 			IMPORT(0x4a931c, int, void *, void *)(wnd, g_dc);   /* ReleaseDC */
 		g_context = 0;
@@ -452,7 +452,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		PostQuitMessage(0);
 		return 0;
 	}
-	return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, msg, w, l);   /* DefWindowProcA */
+	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */
 #undef g_dc
 #undef g_context
 #undef ShowCursor
@@ -469,7 +469,7 @@ static void chat_close(void *edit, int sent)
 		SendMessageA(edit, 0xd, 0x80, OBJ(g_chatLine));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
-	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
+	SetFocus(g_mainWindow);   /* SetFocus */
 	chat_closeLine(sent);   /* chat_closeLine */
 	g_chatLineDone = 1;
 }
@@ -495,11 +495,11 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 		case 9:   /* Tab */
 			if (g_menuState == 0x320) {
 				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
-				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
+				SetFocus(g_mainWindow);   /* SetFocus */
 				chat_closeLine(1);   /* chat_closeLine */
 				g_fieldTabKey = 0x14;
 				g_chatLineDone = 1;
-				g_fieldTabKey = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
+				g_fieldTabKey = GetKeyState(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
 			}
 			break;
 		case 0x24: case 0x25:   /* Home, Left */
@@ -533,8 +533,8 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */
 		Sleep(500);
 	}
-	IMPORT(0x4a910c, void, void *)((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
-	g_startTicks = IMPORT(0x4a9364, u32, void)();       /* timeGetTime */
+	GetSystemTime((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
+	g_startTicks = timeGetTime();       /* timeGetTime */
 	Sleep(2000);
 	if (FindWindowA((const char *)STR(0x4b0714, "AXIS"), NULL)) {
 		MessageBoxA(NULL, (const char *)STR(0x4b2a00, "This application is already run!!"), (const char *)STR(0x4b2554, "Warning"), 0);
@@ -544,7 +544,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		MessageBoxA(NULL, (const char *)STR(0x4b2528, "Please insert Axis CD in your CD-ROM ..."), (const char *)STR(0x4b2554, "Warning"), 0);
 		return 0;
 	}
-	u16 language = IMPORT(0x4a9100, u16, void)();   /* GetSystemDefaultLangID */
+	u16 language = GetSystemDefaultLangID();   /* GetSystemDefaultLangID */
 	g_languageId = language;
 	if (language == 0x412 || language == 0x812) {
 		g_language = 1;
@@ -574,14 +574,14 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 		return 0;
 	}
 	g_gameRunning = 1;
-	IMPORT(0x4a92d0, int, u32, u32, void *, u32)(0x61, 1, NULL, 0);   /* SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING) */
+	SystemParametersInfoA(0x61, 1, NULL, 0);   /* SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING) */
 	u32 msg[7];   /* MSG */
 	while (g_gameRunning) {
-		while (IMPORT(0x4a92d4, int, void *, void *, u32, u32, u32)(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
-			if (IMPORT(0x4a92d8, int, void *, void *, u32, u32)(msg, NULL, 0, 0)) {   /* GetMessageA */
+		while (PeekMessageA(msg, NULL, 0, 0, 0) == 1)   /* PeekMessageA */
+			if (GetMessageA(msg, NULL, 0, 0)) {   /* GetMessageA */
 				if (g_paused)
-					IMPORT(0x4a9348, int, const void *)(msg);   /* TranslateMessage */
-				IMPORT(0x4a934c, long, const void *)(msg);       /* DispatchMessageA */
+					TranslateMessage(msg);   /* TranslateMessage */
+				DispatchMessageA(msg);       /* DispatchMessageA */
 			}
 		editField_readTyping();
 		app_frame();
@@ -637,16 +637,16 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	u16 now[8];
 	int rect[4];
 	u32 paint[0x10];
-	IMPORT(0x4a90f4, void, u16 *)(now);   /* GetLocalTime (unused) */
+	GetLocalTime(now);   /* GetLocalTime (unused) */
 	switch (msg) {
 	case 1:   /* WM_CREATE */
-		g_desktopDC = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
+		g_desktopDC = GetDC(wnd);   /* GetDC */
 		if (!gfx_setPixelFormat(g_desktopDC)) {   /* gfx_setPixelFormat */
 			PostQuitMessage(0);
 			return 1;
 		}
-		g_glContext = IMPORT(0x4a9230, void *, void *)(g_desktopDC);   /* wglCreateContext */
-		IMPORT(0x4a9254, int, void *, void *)(g_desktopDC, g_glContext);   /* wglMakeCurrent */
+		g_glContext = wglCreateContext(g_desktopDC);   /* wglCreateContext */
+		wglMakeCurrent(g_desktopDC, g_glContext);   /* wglMakeCurrent */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
 		gfx_initGLState(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
@@ -655,8 +655,8 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		g_mouseWheelTurned = 0;
 		return 1;
 	case 0xf:   /* WM_PAINT */
-		IMPORT(0x4a9308, void *, void *, u32 *)(wnd, paint);   /* BeginPaint */
-		IMPORT(0x4a92dc, int, void *, u32 *)(wnd, paint);   /* EndPaint */
+		BeginPaint(wnd, paint);   /* BeginPaint */
+		EndPaint(wnd, paint);   /* EndPaint */
 		return 1;
 	case 5:   /* WM_SIZE */
 		GetClientRect(wnd, rect);
@@ -679,7 +679,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		DestroyWindow(wnd);
 		return 1;
 	case 2:   /* WM_DESTROY */
-		IMPORT(0x4a92d0, int, u32, u32, void *, u32)(0x61, 0, NULL, 0);   /* SystemParametersInfoA: SPI_SETSCREENSAVERRUNNING off */
+		SystemParametersInfoA(0x61, 0, NULL, 0);   /* SystemParametersInfoA: SPI_SETSCREENSAVERRUNNING off */
 		if (g_desktopDC)
 			ReleaseDC(wnd, g_desktopDC);
 		if (g_hChatEdit)
@@ -750,7 +750,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		u32 command = w & 0xfff0;
 		if (command == 0xf120)   /* SC_RESTORE: DefWindowProcA, with the command where the message goes (cursorfix.py's
 		                            jump arrives with the command in eax, which the call passes as the message) */
-			return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, command, w, l);
+			return DefWindowProcA(wnd, command, w, l);
 		if (command == 0xf130 || command == 0xf040 || command == 0xf050 || command == 0xf170 || command == 0xf060 ||
 		    command == 0xf030 || command == 0xf020 || command == 0xf140)
 			return 0;
@@ -825,7 +825,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			g_accountNotice = 1;
 		return 1;
 	}
-	return IMPORT(0x4a92f4, long, void *, u32, u32, u32)(wnd, msg, w, l);   /* DefWindowProcA */
+	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */
 #undef g_glContext
 #undef g_exitMode
 #undef ShowCursor

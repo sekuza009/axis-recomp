@@ -156,7 +156,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	for (int k = 0; k < g_dplaySessionCount; k++)
 		if (!memcmp(guid, GAME_VAR(u8 *, OBJ(g_sessionTable) + 4 + k * 8) + 4, 16))
 			return 0;
-	u8 *block = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
+	u8 *block = GlobalLock(GlobalAlloc(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
 	GAME_VAR(u8 *, d.b) = block;
 	crt_strncpy((char *)d.b + 0x2e, GAME_VAR(const char *, desc + 0x30), 0x46);
 	memcpy(d.b + 0x2a, desc + 0x2c, 4);
@@ -178,7 +178,7 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 #undef crt_strncpy
 
 /* 0x4547c0: inet_addr of the text (Winsock, through the game's jump to its import) */
-u32 (net_inetAddr)(const char *text) { return IMPORT(WS_INET_ADDR, u32, const char *)(text); }
+u32 (net_inetAddr)(const char *text) { return ws_inet_addr(text); }
 
 /* 0x451270: a message sent from the local player (0xa0b424) to to: types 2 and 6 guaranteed (flag 1) with 8 bytes,
    type 7 with size bytes, any other with none. Returns the send's result */
@@ -213,7 +213,7 @@ int (net_asyncSelect)(void *wnd, int which)
 		return 1;
 	if (!sock)
 		return 1;
-	if (IMPORT(WS_ASYNC_SELECT, int, u32, void *, u32, u32)(sock, wnd, message, 0x21) == -1)
+	if (WSAAsyncSelect(sock, wnd, message, 0x21) == -1)
 		return 0;
 	return 1;
 }
@@ -227,7 +227,7 @@ int (dplay_coInit)(void)
 	g_unusedDplayWord3 = 0;
 	memset((void *)OBJ(g_sessionTable), 0, 0x190 * 4);
 	g_unusedDplayWord4 = 0;
-	int hr = IMPORT(0x4a93bc, int, void *)(NULL);   /* CoInitialize */
+	int hr = CoInitialize(NULL);   /* CoInitialize */
 	if (hr >= 0) {
 		hr = dplay_check();      /* dplay_check */
 		if (hr >= 0)
@@ -246,7 +246,7 @@ u32 (net_closeThreadHandles)(void)
 	for (int k = 0; k < 3; k++) {
 		r = GAME_VAR(u32, handles[k]);
 		if (r) {
-			r = IMPORT(0x4a91b0, u32, u32)(r);   /* CloseHandle */
+			r = CloseHandle(r);   /* CloseHandle */
 			GAME_VAR(u32, handles[k]) = 0;
 		}
 	}
@@ -264,7 +264,7 @@ void (net_receiveServerReply)(void)
 	u32 start = GetTickCount();
 	u32 got = 0;
 	do {
-		int n = IMPORT(WS_RECV, int, u32, void *, int, int)((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
+		int n = ws_recv((*(u32 *)&g_gameServerSocket), reply, 0x3e, 0);   /* recv */
 		if (n > 0)
 			got += n;
 	} while (GetTickCount() - start <= 3000 && got < 0x3e);
@@ -352,8 +352,8 @@ void (net_closeAll)(int kind)
 /* a GlobalAlloc'd block unlocked and freed (through its handle) */
 static void global_free(void *p)
 {
-	IMPORT(0x4a918c, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalUnlock(GlobalHandle(p)) */
-	IMPORT(0x4a9190, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalFree(GlobalHandle(p)) */
+	GlobalUnlock(GlobalHandle(p));   /* GlobalUnlock(GlobalHandle(p)) */
+	GlobalFree(GlobalHandle(p));   /* GlobalFree(GlobalHandle(p)) */
 }
 
 /* 0x453920: DirectPlay shut down: the lobby object released, the local player destroyed and the session closed and
@@ -387,7 +387,7 @@ int (dplay_release)(void)
 		global_free(g_lobbyConnectionBlock);
 		g_lobbyConnectionBlock = 0;
 	}
-	IMPORT(0x4a93b8, void, void)();   /* CoUninitialize */
+	CoUninitialize();   /* CoUninitialize */
 	return 0;
 }
 
@@ -398,16 +398,16 @@ int (net_resolveHost)(const char *host)
 {
 	u8 wsa[0x190];
 	memset((void *)OBJ(g_serverAddress), 0, 0x64);
-	if (IMPORT(WS_STARTUP, int, u32, void *)(0x202, wsa))             /* WSAStartup */
+	if (WSAStartup(0x202, wsa))             /* WSAStartup */
 		return 0;
-	int sock = IMPORT(WS_SOCKET, int, int, int, int)(2, 3, 1);        /* socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
+	int sock = ws_socket(2, 3, 1);        /* ws_socket(AF_INET, SOCK_RAW, IPPROTO_ICMP) */
 	if (sock == -1)
 		return 0;
-	u8 *entry = IMPORT(WS_GETHOSTBYNAME, u8 *, const char *)(host);           /* gethostbyname */
+	u8 *entry = ws_gethostbyname(host);           /* gethostbyname */
 	if (!entry)
 		return 0;
 	u32 address = ***(u32 ***)(entry + 0xc);                                 /* h_addr_list[0] */
-	strcpy(g_serverAddress, IMPORT(WS_INET_NTOA, const char *, u32)(address));   /* inet_ntoa */
+	strcpy(g_serverAddress, ws_inet_ntoa(address));   /* inet_ntoa */
 	if (!strlen(g_serverAddress))
 		return 0;
 	if (sock) {
@@ -487,7 +487,7 @@ int (net_logMessage)(u32 from, const char *text, char **out)
 		if (!shortName)
 			shortName = (const char *)STR(0x4b3e38, "unknown");
 		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA((const char *)STR(0x4b3e30, "%s > %s")) + 1;
-		char *line = IMPORT(0x4a9198, char *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, length));   /* GlobalLock(GlobalAlloc(GHND)) */
+		char *line = IMPORT(0x4a9198, char *, void *)(GlobalAlloc(0x42, length));   /* GlobalLock(GlobalAlloc(GHND)) */
 		if (!line)
 			r = 0x8007000e;
 		else {
@@ -521,11 +521,11 @@ const char *(text_findWord)(const char *text, const char *word, int exact)
    0xa0d788, id 0xa0d784), then the first event set. 1, or 0 when any of them cannot be made */
 int (net_startThread)(void)
 {
-	if (!(g_pingDataEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))   /* CreateEventA */
+	if (!(g_pingDataEvent = CreateEventA(NULL, 0, 0, NULL)))   /* CreateEventA */
 		return 0;
-	if (!(g_pingStopEvent = IMPORT(0x4a9170, void *, void *, int, int, void *)(NULL, 0, 0, NULL)))
+	if (!(g_pingStopEvent = CreateEventA(NULL, 0, 0, NULL)))
 		return 0;
-	g_pingThread = IMPORT(0x4a9174, void *, void *, u32, void *, void *, u32, u32 *)(NULL, 0, (void *)FN_ADDR(net_pingThreadProc, 0x454560), NULL, 0, (u32 *)ADDR(g_pingThreadId));   /* CreateThread */
+	g_pingThread = CreateThread(NULL, 0, (void *)FN_ADDR(net_pingThreadProc, 0x454560), NULL, 0, (u32 *)ADDR(g_pingThreadId));   /* CreateThread */
 	if (!g_pingThread)
 		return 0;
 	SetEvent(g_pingDataEvent);
@@ -552,11 +552,11 @@ int (net_getLocalAddress)(void)
 {
 	char name[0xc8];
 	memset((void *)OBJ(g_localAddress), 0, 16);
-	if (IMPORT(WS_GETHOSTNAME, int, char *, int)(name, 0xc8) == -1)   /* gethostname */
+	if (ws_gethostname(name, 0xc8) == -1)   /* gethostname */
 		return -1;
-	u8 *entry = IMPORT(WS_GETHOSTBYNAME, u8 *, const char *)(name);     /* gethostbyname */
+	u8 *entry = ws_gethostbyname(name);     /* gethostbyname */
 	if (entry)
-		strcpy(g_localAddress, IMPORT(WS_INET_NTOA, const char *, u32)(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
+		strcpy(g_localAddress, ws_inet_ntoa(***(u32 ***)(entry + 0xc)));   /* inet_ntoa */
 	return 0;
 }
 
@@ -567,7 +567,7 @@ int (net_sendChat)(const char *text)
 	if (net_logMessage(g_localPlayerId, text, (char **)ADDR(g_sentChatBlock)) < 0)   /* net_logMessage */
 		return 0;
 	int size = lstrlenA(text) + 0x10;
-	u8 *message = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	u8 *message = GlobalLock(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!message)
 		return 0;
 	*(u32 *)RELOC(message) = 1;
@@ -617,7 +617,7 @@ int (dplay_getPlayerName)(u32 id, void **out)
 	int r = COM(play, 0x54, int, u32, void *, u32 *)(play, id, NULL, &size);
 	if (r != (int)0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return r;
-	void *name = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	void *name = IMPORT(0x4a9198, void *, void *)(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!name)
 		return 0x8007000e;
 	play = g_dplay;
@@ -659,13 +659,13 @@ u32 (net_pingAllServers)(void)
    original); the bytes are only counted ---- */
 static void reply_read(u32 socket, void *buf, u32 size)
 {
-	u32 start = IMPORT(0x4a9184, u32, void)();   /* GetTickCount */
+	u32 start = GetTickCount();   /* GetTickCount */
 	u32 got = 0;
 	do {
-		int n = IMPORT(WS_RECV, int, u32, void *, int, int)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ws_recv(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
-	} while (IMPORT(0x4a9184, u32, void)() - start <= 3000 && got < size);
+	} while (GetTickCount() - start <= 3000 && got < size);
 }
 
 /* 0x452a30: a lobby reply (0x5b bytes into 0xa05260, socket 0xa055f8), by its type (0xa052aa): 0 a server for the
@@ -721,8 +721,8 @@ void (net_receiveGameServerReply)(void)
 /* a global block freed; returns GlobalFree's eax */
 static u32 global_free_r(void *p)
 {
-	IMPORT(0x4a918c, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));          /* GlobalUnlock(GlobalHandle(p)) */
-	return IMPORT(0x4a9190, u32, void *)(IMPORT(0x4a9078, void *, void *)(p));   /* GlobalFree(GlobalHandle(p)) */
+	GlobalUnlock(GlobalHandle(p));          /* GlobalUnlock(GlobalHandle(p)) */
+	return GlobalFree(GlobalHandle(p));   /* GlobalFree(GlobalHandle(p)) */
 }
 
 /* 0x450a60: every waiting DirectPlay message received (0x450bc0) into a global block of 0x9fd940 bytes, grown when
@@ -741,7 +741,7 @@ u32 (net_receiveAll)(void)
 		if (r == 0x8877001e) {                     /* the buffer too small: a bigger one */
 			if (buf)
 				global_free_r(buf);
-			buf = IMPORT(0x4a9198, u8 *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+			buf = GlobalLock(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 			if (!buf)
 				return 0;
 			g_netBlockSize = size;
@@ -853,14 +853,14 @@ int (dplay_joinSession)(const void *guid, const char *player, u32 data)
    first failure */
 static void dplay_lobbyConnect(void)
 {
-	if (IMPORT(0x4a93b4, long, const void *, void *, u32, const void *, void **)((const void *)OBJ(k_CLSID_DirectPlayLobby), NULL, 1,
+	if (CoCreateInstance((const void *)OBJ(k_CLSID_DirectPlayLobby), NULL, 1,
 			(const void *)OBJ(k_IID_IDirectPlayLobby3A), (void **)ADDR(g_dplayLobby)) < 0)   /* CoCreateInstance(CLSID_DirectPlayLobby, IID_IDirectPlayLobby3A) */
 		return;
 	void *lobby = g_dplayLobby;
 	u32 size;
 	if ((u32)COM(lobby, 0x20, int, u32, void *, u32 *)(lobby, 0, NULL, &size) != 0x8877001e)   /* DPERR_BUFFERTOOSMALL */
 		return;
-	u8 *conn = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc) */
+	u8 *conn = IMPORT(0x4a9198, void *, void *)(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc) */
 	g_lobbyConnectionBlock = conn;
 	if (!conn)
 		return;
@@ -1036,7 +1036,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	for (int i = 0; i < 3; i++)
 		lstrcpyA(GAME_VAR(char *, to) + names[i], GAME_VAR(char *, from) + names[i]);
 	net_send(type, code);   /* net_send */
-	IMPORT(0x4a9110, void, u32)(1000);                 /* Sleep */
+	Sleep(1000);                 /* Sleep */
 	return 1;
 }
 
@@ -1135,13 +1135,13 @@ static int connect_socket(int *sock, int status)
 {
 	const char *host = g_lobbyHost;
 	u8 wsa[0x190];
-	if (IMPORT(WS_STARTUP, int, u32, void *)(0x202, wsa))                /* WSAStartup */
+	if (WSAStartup(0x202, wsa))                /* WSAStartup */
 		return 0;
 	if (wsa[0] != 2 || wsa[1] != wsa[0]) {
 		WSACleanup();
 		return 0;
 	}
-	*sock = IMPORT(WS_SOCKET, int, int, int, int)(2, 1, 0);           /* socket(AF_INET, SOCK_STREAM, 0) */
+	*sock = ws_socket(2, 1, 0);           /* ws_socket(AF_INET, SOCK_STREAM, 0) */
 	if (*sock == -1) {
 		WSACleanup();
 		net_disconnect();
@@ -1150,20 +1150,20 @@ static int connect_socket(int *sock, int status)
 	struct { u16 family, port; u32 address; u8 zero[8]; } where;          /* sockaddr_in */
 	memset(&where, 0, sizeof where);
 	where.family = 2;
-	if (IMPORT(WS_BIND, int, int, void *, int)(*sock, &where, 16) == -1)   /* bind */
+	if (ws_bind(*sock, &where, 16) == -1)   /* bind */
 		return 0;
 	where.family = 2;
-	where.address = IMPORT(WS_INET_ADDR, u32, const char *)(host);      /* inet_addr */
-	where.port = IMPORT(WS_HTONS, u16, u32)(g_serverPort); /* htons */
+	where.address = ws_inet_addr(host);      /* inet_addr */
+	where.port = ws_htons(g_serverPort); /* htons */
 	if (where.address == 0xffffffff) {
-		u8 *entry = IMPORT(WS_GETHOSTBYNAME, u8 *, const char *)(host);       /* gethostbyname */
+		u8 *entry = ws_gethostbyname(host);       /* gethostbyname */
 		if (!entry) {
-			IMPORT(WS_SET_LAST_ERROR, void, int)(0x2726);                     /* WSASetLastError(WSAEINVAL) */
+			WSASetLastError(0x2726);                     /* WSASetLastError(WSAEINVAL) */
 			return 0;
 		}
 		where.address = ***(u32 ***)(entry + 0xc);                          /* h_addr_list[0] */
 	}
-	int r = IMPORT(WS_CONNECT, int, int, void *, int)(*sock, &where, 16);   /* connect */
+	int r = ws_connect(*sock, &where, 16);   /* connect */
 	if (r == 10061 || r == -1) {
 		WSACleanup();
 		net_disconnect();
@@ -1226,7 +1226,7 @@ static void send_buffer(u32 socket, u32 buffer, int size)
 {
 	void *data = GAME_VAR(void *, buffer);
 	if (data && GAME_VAR(u32, socket))
-		IMPORT(WS_SEND, int, u32, const void *, int, int)(GAME_VAR(u32, socket), data, size, 0);   /* send */
+		ws_send(GAME_VAR(u32, socket), data, size, 0);   /* send */
 }
 
 /* 0x4521c0: packet `kind` sent to `to` (100 the lobby, 101 the game server; another value sends only the packet
@@ -1244,7 +1244,7 @@ void (net_send)(int kind, int to)
 		*word = (u32)kind;
 		u32 socket = to == 100 ? ADDR(g_lobbySocket) : ADDR(g_gameServerSocket);
 		if (GAME_VAR(u32, socket))
-			IMPORT(WS_SEND, int, u32, const void *, int, int)(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
+			ws_send(GAME_VAR(u32, socket), (*(void **)&g_netKindWord), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
 		[10] = { ADDR(g_roomPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_netInfoPacket), 0x5b, 1 },
@@ -1317,7 +1317,7 @@ static int recv_all(u32 socket, void *buf, int size, u32 start)
 {
 	u32 got = 0;
 	for (;;) {
-		int n = IMPORT(WS_RECV, int, u32, void *, int, int)(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
+		int n = ws_recv(GAME_VAR(u32, socket), buf, size, 0);   /* recv */
 		if (n > 0)
 			got += n;
 		if (GetTickCount() - start > 3000)
@@ -1513,7 +1513,7 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 	if (!id)
 		return 1;
 	memcpy(id, guid, 0x10);
-	void *data = g_connectionCopy = IMPORT(0x4a9198, void *, void *)(IMPORT(0x4a9070, void *, u32, u32)(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
+	void *data = g_connectionCopy = IMPORT(0x4a9198, void *, void *)(GlobalAlloc(0x42, size));   /* GlobalLock(GlobalAlloc(GHND)) */
 	if (!data)
 		return 1;
 	memcpy(data, connection, size);

@@ -259,8 +259,8 @@ u32 (app_deleteDataFiles)(void)
 		crt_fwrite(&mark, 4, 1, f);
 		fclose(f);
 	}
-	IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b040c, "save\\axisgame.dat"));   /* DeleteFileA */
-	return IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b0420, "game.dat"));
+	DeleteFileA((const char *)STR(0x4b040c, "save\\axisgame.dat"));   /* DeleteFileA */
+	return DeleteFileA((const char *)STR(0x4b0420, "game.dat"));
 }
 
 /* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
@@ -1295,7 +1295,7 @@ void (profile_scanSaves)(void)
 {
 	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
 		crt_chdir(g_dataDir);
-		IMPORT(0x4a9104, u32, const char *)((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
+		DeleteFileA((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
 		crt_chdir((const char *)STR(0x4b2a80, ".."));
 		return;
 	}
@@ -1324,7 +1324,7 @@ void (profile_scanSaves)(void)
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);
 		if (strcmp((const char *)OBJ(g_profileHeader), (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."))) {
-			IMPORT(0x4a9104, u32, const char *)(files[i]);   /* DeleteFileA */
+			DeleteFileA(files[i]);   /* DeleteFileA */
 			continue;
 		}
 		u8 *profile = g_profiles + valid * 0x48;

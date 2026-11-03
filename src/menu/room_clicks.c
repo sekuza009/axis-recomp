@@ -279,8 +279,8 @@ static u32 typing_end(void)
 {
 	if (!g_paused)
 		return 0;
-	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
-	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
+	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
+	SetFocus(g_mainWindow);   /* SetFocus */
 	return chat_closeLine(1);   /* chat_closeLine */
 }
 

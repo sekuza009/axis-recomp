@@ -531,7 +531,7 @@ u32 (room_leaveGame)(void)
 {
 	strcpy(g_netLeaveBuffer, g_joinedTitleName);
 	net_send(0x19, 0x65);   /* net_send */
-	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
+	Sleep(500);                   /* Sleep */
 	input_setKeysBlocked(4);
 	g_nextScreen = 300;
 	GAME_FN(debug_traceStripped, 0x48b420, void, void)();                 /* debug_traceStripped */
@@ -978,7 +978,7 @@ u32 (arena_loadAndQuit)(void)
 		return r;
 	}
 	if (!arena_loadSettings((const char *)STR(0x4ad5e4, "axiswl.dat")))
-		return IMPORT(0x4a932c, u32, int)(0);                               /* PostQuitMessage */
+		return PostQuitMessage(0);                               /* PostQuitMessage */
 	memset((void *)OBJ(g_playerName), 0, 32);
 	strcpy(g_playerName, g_arenaGameName);
 	u8 clan = (*(u8 *)&g_cmdSecret);

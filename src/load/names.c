@@ -310,7 +310,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		u32 *slot = (u32 *)(FIELD(u8 *, tm, 0xcd12c) + i * 0x14);
 		slot[0] = i;
 		slot[1] = 0xffffffff;
-		IMPORT(0x4a925c, void, int, u32 *)(1, &slot[2]);   /* glGenTextures */
+		glGenTextures(1, &slot[2]);   /* glGenTextures */
 		int n = FIELD(int, tm, 0xcd130);
 		slot[3] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (n + i - 1) % n * 0x14);
 		slot[4] = (u32)(FIELD(u8 *, tm, 0xcd12c) + (i + 1) % FIELD(int, tm, 0xcd130) * 0x14);

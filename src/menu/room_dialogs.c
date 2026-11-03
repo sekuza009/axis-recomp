@@ -161,7 +161,7 @@ u32 (room_joinSession)(int i)
 	g_arenaConfirming = 1;
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
-	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
 }
@@ -211,7 +211,7 @@ u32 (arena_joinListed)(int i)
 	g_arenaConfirming = 1;
 	g_arenaJoinWaiting = 0;
 	g_arenaJoinPending = 0;
-	u32 timer = IMPORT(0x4a9334, u32, void *, u32, u32, void *)(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(g_hWndMain, 0x378, 2000, NULL);   /* SetTimer */
 	g_arenaJoinTimer = timer;
 	return timer;
 }
@@ -314,8 +314,8 @@ u32 (room_draw)(void)
    Returns what the original leaves in eax */
 u32 (chat_closeEdit)(void)
 {
-	IMPORT(0x4a9344, u32, void *)(g_hChatEdit);   /* DestroyWindow */
-	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
+	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
+	SetFocus(g_hWndMain);               /* SetFocus */
 	chat_closeLine(1);                           /* chat_closeLine: the line sent */
 	if (g_typingRoomName == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);

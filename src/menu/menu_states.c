@@ -17,7 +17,7 @@ static void draw_logo(int first)
 	glEnable(0xbe2);   /* GL_BLEND */
 	if (first)
 		glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
-	IMPORT(0x4a91ec, void, u32, u32)(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
+	glBlendFunc(0x302, 0x303);   /* glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) */
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
