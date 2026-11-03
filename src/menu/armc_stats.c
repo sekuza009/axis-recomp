@@ -97,11 +97,11 @@ static void bracket_bonus(Panel *p, int dy, X v, int decimals, u32 unit, int alw
 	char *out = p->korean ? p->t.line : p->t.bonus;
 	int n = none(v);
 	if (n)
-		strcpy(out, FMT(0x4b033c));   /* "(" */
+		strcpy(out, FMT(STR(0x4b033c, "(")));
 	else
 		sprintf(out, FMT((p->korean ? ko : en)[decimals][v < 0]), (double)v);
 	append(out, (const char *)RELOC(unit));
-	append(out, FMT(0x4b0340));       /* ")" */
+	append(out, FMT(STR(0x4b0340, ")")));
 	if (p->korean)
 		after_value(p, dy, !n || always_yellow);
 	else {
@@ -116,7 +116,7 @@ static void level_bonus(Panel *p, int dy, X v)
 	if (p->korean) {
 		value(p, dy);
 		if (none(v)) {
-			strcpy(p->t.line, FMT(0x4b0304));   /* "(Lv)" */
+			strcpy(p->t.line, FMT(STR(0x4b0304, "(Lv)")));
 			after_value(p, dy, 0);
 		} else {
 			sprintf(p->t.line, FMT(v < 0 ? STR(0x4b0318, " %d(Lv)") : STR(0x4b030c, " +%d(Lv)")), ftol(v));
@@ -125,7 +125,7 @@ static void level_bonus(Panel *p, int dy, X v)
 		return;
 	}
 	if (none(v))
-		strcpy(p->t.bonus, FMT(0x4b0304));
+		strcpy(p->t.bonus, FMT(STR(0x4b0304, "(Lv)")));
 	else
 		sprintf(p->t.bonus, FMT(v < 0 ? STR(0x4b02e8, "%d(Lv)") : STR(0x4b023c, "+%d(Lv)")), ftol(v));
 	append(p->t.line, p->t.bonus);
@@ -135,9 +135,9 @@ static void level_bonus(Panel *p, int dy, X v)
 /* a value with its unit in brackets: "%.1f(" unit ")" */
 static void value_unit(Panel *p, int dy, X v, u32 unit)
 {
-	sprintf(p->t.line, FMT(0x4b02fc), (double)v);
+	sprintf(p->t.line, FMT(STR(0x4b02fc, "%.1f(")), (double)v);
 	append(p->t.line, (const char *)RELOC(unit));
-	append(p->t.line, FMT(0x4b0340));
+	append(p->t.line, FMT(STR(0x4b0340, ")")));
 	value(p, dy);
 }
 
@@ -225,20 +225,20 @@ static void speed_change(char *out, X v, float f, int korean, int last)
 static void section0(Panel *p)
 {
 	label(p, ROW(0), MSG(601, "DETECTION RANGE"));
-	sprintf(p->t.line, FMT(0x4b0354), (double)g_headDetectionRange);
+	sprintf(p->t.line, FMT(STR(0x4b0354, "%.0f")), (double)g_headDetectionRange);
 	bracket_bonus(p, ROW(0), SKILL(3) * HUNDREDTH * g_headDetectionRange + g_itemBonusDetectionRange, 0, MSG(751, "m"), 0);
 	label(p, ROW(1), MSG(602, "DETECTION ANGLE"));
-	sprintf(p->t.line, FMT(0x4b0334), (double)g_headDetectionAngle);
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)g_headDetectionAngle);
 	bracket_bonus(p, ROW(1), SKILL(3) * HUNDREDTH * g_headDetectionAngle, 1, MSG(752, "'"), 0);
 	label(p, ROW(2), MSG(603, "HACKING LEVEL"));
-	sprintf(p->t.line, FMT(0x4b0320), g_headHackingLevel);
+	sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), g_headHackingLevel);
 	level_bonus(p, ROW(2), g_itemBonusHacking);
 	label(p, ROW(3), MSG(604, "LOCK ON EFFICIENCY"));
 	X rate = (X)HUNDRED / g_headLockOnTime * HUNDRED;
-	sprintf(p->t.line, FMT(0x4b0334), (double)rate);
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)rate);
 	bracket_bonus(p, ROW(3), (X)g_itemBonusLockOn * f32(rate), 1, MSG(753, "%"), 0);   /* (by the rate as a float) */
 	label(p, ROW(4), MSG(605, "TARGET KEEPING TIME"));
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_headTargetKeepTime * THOUSANDTH));
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)((X)g_headTargetKeepTime * THOUSANDTH));
 	bracket_bonus(p, ROW(4), (X)g_itemBonusTargetKeep * g_headTargetKeepTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(5), MSG(606, "WEIGHT"));
 	value_unit(p, ROW(5), g_headWeight, MSG(755, "t"));
@@ -248,13 +248,13 @@ static void section0(Panel *p)
 static void section1(Panel *p)
 {
 	label(p, ROW(0), MSG(611, "WEIGHT LIMIT"));
-	sprintf(p->t.line, FMT(0x4b0334), (double)g_chestWeightLimit);
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)g_chestWeightLimit);
 	bracket_bonus(p, ROW(0), SKILL(4) * HUNDREDTH * g_chestWeightLimit + (X)g_itemBonusWeightLimit * g_chestWeightLimit, 1, MSG(755, "t"), 1);
 	label(p, ROW(1), MSG(612, "MAX ARMOR"));
-	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxArmor);
+	sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), g_chestMaxArmor);
 	count_bonus(p, ROW(1), ftol(SKILL(2) * HUNDREDTH * (X)g_chestMaxArmor + HALF));
 	label(p, ROW(2), MSG(613, "MAX SHIELD"));
-	sprintf(p->t.line, FMT(0x4b0320), g_chestMaxShield);
+	sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), g_chestMaxShield);
 	count_bonus(p, ROW(2), ftol((SKILL(2) * HUNDREDTH + g_itemBonusShield) * (X)g_chestMaxShield + HALF));
 }
 
@@ -264,22 +264,22 @@ static void section2(Panel *p)
 	static const u32 levels[4][3] = { { MSG(622, "CAPACITY FOR 30MM"), (OBJ(g_armsStats) + 0x4), ADDR(g_itemBonus30mm) }, { MSG(623, "CAPACITY FOR 60MM"), (OBJ(g_armsStats) + 0x8), ADDR(g_itemBonus60mm) },
 	                                  { MSG(624, "CAPACITY FOR E-PAK"), (OBJ(g_armsStats) + 0xc), ADDR(g_itemBonusEpak) }, { MSG(625, "CAPACITY FOR MISSLE"), (OBJ(g_armsStats) + 0x10), ADDR(g_itemBonusMissile) } };
 	label(p, ROW(0), MSG(621, "FIRE CONTROL SYSTEM"));
-	sprintf(p->t.line, FMT(0x4b02e8), g_armsFcsLevel);   /* "%d(Lv)" */
+	sprintf(p->t.line, FMT(STR(0x4b02e8, "%d(Lv)")), g_armsFcsLevel);
 	value(p, ROW(0));
 	for (int k = 0; k < 4; k++) {
 		label(p, ROW(k + 1), levels[k][0]);
 		int level = I(levels[k][1]);
 		int n = ftol((X)level * g_itemBonusCapacityPerLevel + F(levels[k][2]));
 		if (n < 1)
-			sprintf(p->t.line, FMT(0x4b02dc), level);   /* "%d(" */
+			sprintf(p->t.line, FMT(STR(0x4b02dc, "%d(")), level);
 		else {
 			memset(p->t.bonus, 0, 20);
-			sprintf(p->t.line, FMT(0x4b0320), level);
-			sprintf(p->t.bonus, FMT(0x4b02e0), n);   /* "+%d(" */
+			sprintf(p->t.line, FMT(STR(0x4b0320, "%d")), level);
+			sprintf(p->t.bonus, FMT(STR(0x4b02e0, "+%d(")), n);
 			append(p->t.line, p->t.bonus);
 		}
 		append(p->t.line, (const char *)MSG(756, "cell"));
-		append(p->t.line, FMT(0x4b0340));
+		append(p->t.line, FMT(STR(0x4b0340, ")")));
 		value(p, ROW(k + 1));
 	}
 	label(p, ROW(5), MSG(626, "WEIGHT"));
@@ -292,7 +292,7 @@ static void section3(Panel *p)
 	for (int k = 0; k < 2; k++) {
 		u32 f = OBJ(g_legsStats) + k * 4;
 		label(p, ROW(k), k ? MSG(632, "INERTIA") : MSG(631, "AGILITY"));
-		sprintf(p->t.line, FMT(0x4b0334), (double)F(f));
+		sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)F(f));
 		X a = SKILL(0) * HUNDREDTH * F(f);
 		wear_bonus(p, ROW(k), a + wear(F(f)), F(f));
 	}
@@ -301,7 +301,7 @@ static void section3(Panel *p)
 		label(p, ROW(k + 2), MSG(633, "SPD CORRECTION") + k * 0x80);
 		sprintf(p->t.line, FMT(f >= 0 ? STR(0x4b02c4, "+%.1f(") : STR(0x4b02fc, "%.1f(")), (double)f);
 		append(p->t.line, (const char *)MSG(753, "%"));
-		append(p->t.line, FMT(0x4b0340));
+		append(p->t.line, FMT(STR(0x4b0340, ")")));
 		value(p, ROW(k + 2));
 	}
 	label(p, ROW(6), MSG(637, "WEIGHT"));
@@ -316,17 +316,17 @@ static void section4(Panel *p)
 	append(p->t.line, (const char *)(MSG(651, "PLASMA THRUST ENGINE") + g_boosterThrustType * 0x80));
 	value(p, ROW(0));
 	label(p, ROW(1), MSG(642, "ACTIVE TIME"));
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterActiveTime * THOUSANDTH));
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)((X)g_boosterActiveTime * THOUSANDTH));
 	bracket_bonus(p, ROW(1), (X)g_itemBonusActiveTime * g_boosterActiveTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(2), MSG(643, "RECHARGE TIME"));
-	sprintf(p->t.line, FMT(0x4b0334), (double)((X)g_boosterRechargeTime * THOUSANDTH));
+	sprintf(p->t.line, FMT(STR(0x4b0334, "%.1f")), (double)((X)g_boosterRechargeTime * THOUSANDTH));
 	bracket_bonus(p, ROW(2), (X)g_boosterRechargeTime * g_itemBonusRechargeTime * THOUSANDTH, 1, MSG(761, "sec"), 0);
 	label(p, ROW(3), MSG(644, "DELAY FOR RECHARGE"));
 	value_unit(p, ROW(3), (X)g_boosterRechargeDelay * THOUSANDTH, MSG(761, "sec"));
 
 	label(p, ROW(4), MSG(645, "NORMAL SPEED"));
 	float speed = g_boosterNormalSpeed;
-	sprintf(p->t.line, FMT(0x4b0354), (double)speed);
+	sprintf(p->t.line, FMT(STR(0x4b0354, "%.0f")), (double)speed);
 	X a = SKILL(1) * HUNDREDTH * speed + (X)g_legsSpeedCorrection * HUNDREDTH * speed;
 	X v = a + speed_wear(speed, a);
 	if (p->korean) {   /* rounded first; none for 0 */
@@ -342,21 +342,21 @@ static void section4(Panel *p)
 			}
 			sprintf(p->t.line, FMT(format), (double)w);
 			append(p->t.line, (const char *)MSG(757, "Km/h"));
-			append(p->t.line, FMT(0x4b0340));
+			append(p->t.line, FMT(STR(0x4b0340, ")")));
 			after_value(p, ROW(4), 1);
 		}
 	} else {
 		if (none(v))
-			append(p->t.bonus, FMT(0x4b033c));   /* (appended to what the last bonus left, as the original does) */
+			append(p->t.bonus, FMT(STR(0x4b033c, "(")));   /* (appended to what the last bonus left, as the original does) */
 		else if (v >= 0)
-			sprintf(p->t.bonus, FMT(0x4b0244), (double)v);
+			sprintf(p->t.bonus, FMT(STR(0x4b0244, "+%.0f(")), (double)v);
 		else {
 			if (neg(v) > speed)
 				v = neg(speed);
-			sprintf(p->t.bonus, FMT(0x4b024c), (double)v);
+			sprintf(p->t.bonus, FMT(STR(0x4b024c, "%.0f(")), (double)v);
 		}
 		append(p->t.bonus, (const char *)MSG(757, "Km/h"));
-		append(p->t.bonus, FMT(0x4b0340));
+		append(p->t.bonus, FMT(STR(0x4b0340, ")")));
 		append(p->t.line, p->t.bonus);
 		value(p, ROW(4));
 	}
@@ -391,7 +391,7 @@ static void section4(Panel *p)
 	}
 	int dy = p->korean ? 0xd8 : ROW(7);
 	label(p, dy, MSG(647, "WEIGHT"));
-	sprintf(p->t.line, FMT(0x4b027c), (double)g_boosterWeight);   /* "%.1f(Ton)" */
+	sprintf(p->t.line, FMT(STR(0x4b027c, "%.1f(Ton)")), (double)g_boosterWeight);
 	value(p, dy);
 }
 
@@ -399,7 +399,7 @@ static void section4(Panel *p)
 static void section5(Panel *p)
 {
 	label(p, ROW(0), MSG(671, "DETECTION RANGE"));
-	sprintf(p->t.line, FMT(0x4b0274), (double)g_mechDetectionRange);   /* "%.1f(m)" */
+	sprintf(p->t.line, FMT(STR(0x4b0274, "%.1f(m)")), (double)g_mechDetectionRange);
 	value(p, ROW(0));
 	static const u32 ints[4][2] = { { STR(0x4b02e8, "%d(Lv)"), ADDR(g_mechHackingLevel) }, { STR(0x4b0320, "%d"), OBJ(g_mechPartStats) }, { STR(0x4b0320, "%d"), (OBJ(g_mechPartStats) + 0x4) }, { STR(0x4b02e8, "%d(Lv)"), (OBJ(g_mechPartStats) + 0x8) } };
 	for (int k = 0; k < 4; k++) {
@@ -414,7 +414,7 @@ static void section5(Panel *p)
 	}
 	value(p, ROW(5));
 	label(p, ROW(6), MSG(677, "MOBILITY"));
-	sprintf(p->t.line, FMT(0x4b0268), (double)g_mechMobility);   /* "%.2f" */
+	sprintf(p->t.line, FMT(STR(0x4b0268, "%.2f")), (double)g_mechMobility);
 	value(p, ROW(6));
 	label(p, ROW(7), MSG(678, "NORMAL SPEED"));
 	sprintf(p->t.line, FMT(p->korean ? STR(0x4b025c, "%.0f(km/h)") : STR(0x4b01e0, "%.1f(km/h)")), (double)g_mechNormalSpeed);
@@ -428,11 +428,11 @@ static void section5(Panel *p)
 	}
 	value(p, ROW(8));
 	label(p, ROW(9), MSG(680, "BOOSTER ENERGY"));
-	sprintf(p->t.bonus, FMT(0x4b0254), (double)((X)g_mechBoosterEnergy * THOUSANDTH));   /* "%.1f/" */
+	sprintf(p->t.bonus, FMT(STR(0x4b0254, "%.1f/")), (double)((X)g_mechBoosterEnergy * THOUSANDTH));
 	append(p->t.line, p->t.bonus);
-	sprintf(p->t.bonus, FMT(0x4b02fc), (double)((X)g_mechBoosterRecharge * THOUSANDTH));   /* "%.1f(" */
+	sprintf(p->t.bonus, FMT(STR(0x4b02fc, "%.1f(")), (double)((X)g_mechBoosterRecharge * THOUSANDTH));
 	append(p->t.bonus, (const char *)MSG(761, "sec"));
-	append(p->t.bonus, FMT(0x4b0340));
+	append(p->t.bonus, FMT(STR(0x4b0340, ")")));
 	append(p->t.line, p->t.bonus);
 	value(p, ROW(9));
 }
@@ -497,7 +497,7 @@ void (armc_drawStatsPanel)(void)
 	colour(bright);
 	memset(p->t.line, 0, 50);
 	strcpy(p->t.line, (const char *)MSG(287, "$[0] ROTATE"));
-	append(p->t.line, FMT(0x4b035c));   /* " " */
+	append(p->t.line, FMT(STR(0x4b035c, " ")));
 	append(p->t.line, (const char *)(MSG(118, "OFF") + g_armcSpin * 0x80));
 	text_drawBox16(PANEL_X1 - 0xa0, PANEL_Y1 - 0x18, PANEL_X1, p->t.line);
 	colour(bright);
