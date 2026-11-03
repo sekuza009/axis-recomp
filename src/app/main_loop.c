@@ -572,7 +572,7 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	gfx_setProjectionHud(1, 1.0f);
 	ViewVolume_captureMatrices(s + 0x74, 0, s + 0x22e7068);
 	ViewVolume_reset(s + 0x74);
-	if (S(int, 0x2340cd0) == 1)
+	if (SC->debugGrid == 1)
 		for (int pitch = 0; pitch < 0x708; pitch += 100)
 			for (int yaw = 0; yaw < 0xe10; yaw += 150) {
 				float a[3], b[3], pa[3], pb[3];
@@ -659,14 +659,14 @@ static int replay_next(u8 *s)
 	if (g_replayRandomOrder == 1) {
 		scene_resetActors(stage);
 		scene_reset(stage);
-		S(u32, 0x1f35c0) = S(int, 0x1f35bc) > 0 ? rand_below(S(u32, 0x1f35bc)) : 0;
+		SC->replayIndex = SC->replayCount > 0 ? rand_below(((u32)SC->replayCount)) : 0;
 	} else {
-		if (++S(int, 0x1f35c0) >= S(int, 0x1f35bc)) {
+		if (++SC->replayIndex >= SC->replayCount) {
 			if (g_replayWrap != 1) {
 				SC->quitAsked = 1;
 				return 0;
 			}
-			S(int, 0x1f35c0) = 0;
+			SC->replayIndex = 0;
 		}
 		scene_resetActors(stage);
 		scene_reset(stage);
@@ -997,7 +997,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		timer_getGameTime(s + 0xc);
 		int y = gfx_getHeight() / 2;
 		input_setCursorPos(gfx_getWidth() / 2, y);
-		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = S(int, 0x2342425) = 0;
+		(*(int *)&SC->followTime) = (*(int *)&SC->presetTime) = (*(int *)&SC->screenshotUpload) = 0;
 		SC->roundClear3 = (*(int *)&SC->chatBlink) = 0;
 		(*(int *)&SC->recordTime) = (*(int *)&SC->replayTime) = 0;
 		events_clear((Scene *)s, 60.0f);
@@ -1081,12 +1081,12 @@ u32 THISCALL (replay_frame)(u8 *s)
 		SC->readyTimer = 0.0f;
 	if (run_down(s, 0x2342425)) {
 		tex_upload2(stage);
-		S(int, 0x2342425) = 0;
+		SC->screenshotUpload = 0.0f;
 	}
 	long double sp = fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9554));   /* 2000 a second, at most +0x1f4164 */
 	float speed = (float)sp;
-	if (sp > S(float, 0x1f4164))
-		BITS(speed) = S(u32, 0x1f4164);
+	if (sp > SC->freeCamSpeedMax)
+		BITS(speed) = BITS(SC->freeCamSpeedMax);
 	float turn = f32(fmul_m(fmul_m(fmul_m((long double)game_clock(), K(0x4aa2a8)), (const float *)(s + 0x44)), K(0x4a9560)));
 	float step = f32(fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a945c)));
 	/* the zoom keys: the preset's distance by (1 - 0.9 dt) */
@@ -1207,7 +1207,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	stage_drawBullets(stage, view);
 	stage_drawProjectiles((Stage *)stage, view);
 	stage_drawItems(stage, view);
-	if (S(int, 0x2340cd4) == 1)
+	if (SC->debugPoints == 1)
 		for (int i = 0; i < S(int, 0xbcb6c8); i++) {
 			const u8 *r = s + 0xbc06cc + i * 0x2c;
 			if (GAME_VAR(int, r) != 1)
@@ -1550,7 +1550,7 @@ static void round_over(u8 *s, int time_limit)
 	else
 		msg_fragLimitReached(s);
 	SC->endedByTime = time_limit;
-	S(int, 0x23423b9) = 0;
+	SC->endNoticeTime = 0.0f;
 	g_writeMatchLog = 1;
 }
 
@@ -1660,7 +1660,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 					msg_serverEndsGame(s);
 					event_raise3(s);
 					SC->endedByTime = 2;
-					S(int, 0x23423b9) = 0;
+					SC->endNoticeTime = 0.0f;
 					g_matchEndedByUser = 1;
 				}
 			}
@@ -1675,22 +1675,22 @@ void THISCALL (game_processGameMode)(u8 *s)
 		SC->quitAsked = 0;
 	}
 	/* the local player's starting kills and deaths, its screenshot */
-	if (SC->localPlayer >= 0 && S(int, 0x2342419) == 0) {
+	if (SC->localPlayer >= 0 && SC->statsTaken == 0) {
 		SC->players[SC->localPlayer].emblem = SC->level;
 		A_INT(SC->localPlayer, 0x1eccb50) = SC->level;
 		SC->players[SC->localPlayer].score = SC->levelPoints;
 		A_INT(SC->localPlayer, 0x1eccb68) = SC->levelPoints;
-		S(int, 0x2342419) = 1;
+		SC->statsTaken = 1;
 	}
-	if (S(int, 0x2342421) == 0 && SC->localPlayer >= 0 && SC->network == 1) {
+	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->network == 1) {
 		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
 		P_INT(SC->localPlayer, 0x179d1fa) = shot;
 		P_INT(SC->localPlayer, 0x179d1fe) = 0;
-		S(u32, 0x2342425) = 0x40a00000;   /* 5 */
-		S(int, 0x2342421) = 1;
+		SC->screenshotUpload = 5.0f;   /* 5 */
+		SC->screenshotTaken = 1;
 	} else if (run_down(s, 0x2342425)) {
 		tex_upload2(stage);
-		S(int, 0x2342425) = 0;
+		SC->screenshotUpload = 0.0f;
 	}
 	/* joining: the network's slot for the local player */
 	if (SC->localPlayer < 0 && net_isClient()) {
@@ -1727,13 +1727,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (me >= 0 && SC->localTeam >= 0 && SC->players[me].active == 0 && SC->chatMode == 0 && SC->matchOver == 0
 	    && SC->roundOver == 0) {
 		long double v = fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x233cc48));
-		S(float, 0x233cc48) = (float)v;
+		SC->respawnTime = (float)v;
 		if (!(v < 10.0f)) {   /* respawn after 10 s */
-			S(int, 0x233cc48) = 0;
+			SC->respawnTime = 0.0f;
 			SC->teamChanged = 1;
 		}
 	} else
-		S(int, 0x233cc48) = 0;
+		SC->respawnTime = 0.0f;
 	if (SC->teamChanged == 1
 	    || (SC->leaderMarkOff == 1 && SC->players[SC->localPlayer].state == 3 && SC->players[SC->localPlayer].markTeam == 1))
 		local_spawn(s);
@@ -1743,8 +1743,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the keys' rates */
 	long double sp = fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a9554));
 	float speed = (float)sp;
-	if (sp > S(float, 0x1f4164))
-		BITS(speed) = S(u32, 0x1f4164);
+	if (sp > SC->freeCamSpeedMax)
+		BITS(speed) = BITS(SC->freeCamSpeedMax);
 	float turn = f32(fmul_m(fmul_m(fmul_m((long double)game_clock(), K(0x4aa2a8)), (const float *)(s + 0x44)), K(0x4aa504)));
 	float step = f32(fmul_m(fld_m((const float *)(s + 0x44)), K(0x4a945c)));
 	if (SC->actionKey == 1)
@@ -1825,13 +1825,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 		scene_loadPath(stage, BITS(dt));
 		if (SC->network == 1) {   /* the server checks the local player's parts every 20 s */
 			long double v = fsub_m(fld_m((const float *)(s + 0x2342405)), (const float *)(s + 0x44));
-			S(float, 0x2342405) = (float)v;
+			SC->partsCheckTime = (float)v;
 			if (!(v >= 0) && SC->localPlayer >= 0 && SC->players[SC->localPlayer].state == 1) {
 				if (armc_computeTotals(stage, SC->localPlayer) == 0) {
 					SC->roundClear2 = 1;
 					SC->dataLossCode = 0;
 				}
-				S(u32, 0x2342405) = 0x41a00000;   /* 20 */
+				SC->partsCheckTime = 20.0f;   /* 20 */
 			}
 			if (SC->roundClear2 == 1) {
 				msg_dataLoss(s);
@@ -1933,17 +1933,17 @@ void THISCALL (game_processGameMode)(u8 *s)
 			sound_playVolume(0x18, 100);
 		}
 	}
-	if (S(u8, 0x22f0414)) {
+	if ((*(u8 *)&SC->centreNotice[0])) {
 		notice_printCentre((Scene *)s, (const char *)(s + 0x22f0414));
-		S(u8, 0x22f0414) = 0;
+		(*(u8 *)&SC->centreNotice[0]) = 0;
 	}
-	if (S(int, 0x2221fb4) == 1 || !(S(float, 0x233cc58) > 0)) {
+	if (SC->kingChanged == 1 || !(SC->kingTimer > 0)) {
 		msg_newKing((Scene *)s);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->rankShown > 1 || (SC->markersOff == 1 && SC->rankShown != 1)))
 			sound_playVolume(0xf, 100);
-		S(int, 0x2221fb4) = 0;
-		S(u32, 0x233cc58) = 0x40a00000;
+		SC->kingChanged = 0;
+		SC->kingTimer = 5.0f;
 	}
 	if (SC->recording == 1)
 		SC->recordTime = f32(fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x2340d29)));
@@ -1957,10 +1957,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 		}
 		if (SC->players[SC->localPlayer].team >= 0) {
 			v = fsub_m(fld_m((const float *)(s + 0x233cc5c)), (const float *)(s + 0x44));
-			S(float, 0x233cc5c) = (float)v;
+			SC->teamSyncTime = (float)v;
 			if (!(v > 0)) {
 				S(int, 0x234300a + SC->localPlayer * 16) = 1;
-				S(u32, 0x233cc5c) = 0x41700000;   /* 15 */
+				SC->teamSyncTime = 15.0f;   /* 15 */
 			}
 		}
 		if (SC->noticeChanged == 1)
@@ -1990,8 +1990,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->endTime > 0) {
 		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		if (SC->network == 1 && SC->client == 0) {   /* the server's end notices, every half second */
-			if (S(float, 0x23423b9) > 0.5f) {
-				S(int, 0x23423b9) = 0;
+			if (SC->endNoticeTime > 0.5f) {
+				SC->endNoticeTime = 0.0f;
 				int k = SC->endedByTime;
 				if (k == 0)
 					event_raise4(s);
@@ -2000,7 +2000,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				else if (k == 2)
 					event_raise3(s);
 			} else
-				S(float, 0x23423b9) = f32(fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x23423b9)));
+				SC->endNoticeTime = f32(fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x23423b9)));
 		}
 		long double v = fsub_m(fld_m((const float *)(s + 0x234239d)), (const float *)(s + 0x44));
 		SC->endTime = (float)v;
