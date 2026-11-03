@@ -198,6 +198,13 @@ def sub(m):
 		st = SAME.get(ty, ty)
 		if st == fty or (cls(st) == cls(fty) == 'int32' and not is_lvalue(m)):
 			return '%s->%s' % (PTR, name) if st == fty else '((%s)%s->%s)' % (ty, PTR, name)
+		# a pointer field read as another pointer type: a cast (no punning; a write is left for a plain assignment)
+		if st.endswith('*') and fty.endswith('*'):
+			if is_lvalue(m):
+				done -= 1
+				other['%s %s as %s (a pointer written)' % (hex(off), name, ty)] += 1
+				return m.group(0)
+			return '((%s)%s->%s)' % (ty, PTR, name)
 		if ty == 'u32':
 			return 'BITS(%s->%s)' % (PTR, name)
 		return '(*(%s *)&%s->%s)' % (ty, PTR, name)

@@ -309,11 +309,14 @@ typedef struct ListedObject {
 
 /* shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown) */
 typedef struct ObjectList {
-	u8 _pad0000000[0x10];
+	u8 _pad0000000[0x4];
+	i32 blockSize;   /* +0x4: (by use) its block: the entries (100 bytes each), their colours when preLit, the skeletons */
+	u8 *block;   /* +0x8 */
+	i32 ownsBlock;   /* +0xc: 1: allocated here */
 	i32 count;   /* +0x10 */
 	ListedObject *entries;   /* +0x14 */
-	u8 _pad0000018[0x4];
-	i32 frameCount;   /* +0x1c: 0: nothing to draw */
+	i32 colourCount;   /* +0x18: the entries' shapes' colours summed */
+	i32 frameCount;   /* +0x1c: 0: nothing to draw (ObjectList_load: the skeletons named, one a frame) */
 	i32 *frames;   /* +0x20: frames[frame] == 0: nothing to draw */
 	i32 frame;   /* +0x24 */
 	u8 _pad0000028[0x4];
@@ -1277,8 +1280,12 @@ _Static_assert(offsetof(ListedObject, shape) == 0x0 && sizeof(((ListedObject *)0
 _Static_assert(offsetof(ListedObject, colours) == 0x8 && sizeof(((ListedObject *)0)->colours) == 0x4, "scene.fields: ListedObject.colours");
 _Static_assert(offsetof(ListedObject, matrix) == 0xc && sizeof(((ListedObject *)0)->matrix) == 0x40, "scene.fields: ListedObject.matrix");
 _Static_assert(sizeof(ListedObject) == 0x64, "scene.fields: size of ListedObject");
+_Static_assert(offsetof(ObjectList, blockSize) == 0x4 && sizeof(((ObjectList *)0)->blockSize) == 0x4, "scene.fields: ObjectList.blockSize");
+_Static_assert(offsetof(ObjectList, block) == 0x8 && sizeof(((ObjectList *)0)->block) == 0x4, "scene.fields: ObjectList.block");
+_Static_assert(offsetof(ObjectList, ownsBlock) == 0xc && sizeof(((ObjectList *)0)->ownsBlock) == 0x4, "scene.fields: ObjectList.ownsBlock");
 _Static_assert(offsetof(ObjectList, count) == 0x10 && sizeof(((ObjectList *)0)->count) == 0x4, "scene.fields: ObjectList.count");
 _Static_assert(offsetof(ObjectList, entries) == 0x14 && sizeof(((ObjectList *)0)->entries) == 0x4, "scene.fields: ObjectList.entries");
+_Static_assert(offsetof(ObjectList, colourCount) == 0x18 && sizeof(((ObjectList *)0)->colourCount) == 0x4, "scene.fields: ObjectList.colourCount");
 _Static_assert(offsetof(ObjectList, frameCount) == 0x1c && sizeof(((ObjectList *)0)->frameCount) == 0x4, "scene.fields: ObjectList.frameCount");
 _Static_assert(offsetof(ObjectList, frames) == 0x20 && sizeof(((ObjectList *)0)->frames) == 0x4, "scene.fields: ObjectList.frames");
 _Static_assert(offsetof(ObjectList, frame) == 0x24 && sizeof(((ObjectList *)0)->frame) == 0x4, "scene.fields: ObjectList.frame");

@@ -176,51 +176,52 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, const u8 *names, int nk, const u8 *knames,
                                      int lit, u32 factors, u32 lights, void *mem, int size)
 {
+	ObjectList *ol = (ObjectList *)list;
 	partList_release(list);
-	AT(int, list, 0x10) = ns;
-	AT(int, list, 0x1c) = nk;
-	AT(int, list, 0x2c) = lit;
-	AT(int, list, 0x18) = 0;
+	ol->count = ns;
+	ol->frameCount = nk;
+	ol->preLit = lit;
+	ol->colourCount = 0;
 	/* 65, and the entries walked by pointer: the frame is then as deep as the original's (0x11c with the saved
 	   registers), so the callees' frames lie where they did there. The skeleton loading reads stack it never wrote
 	   (the earlier callees' leftovers); a frame 4 bytes deeper gave those reads other values now and then */
 	u32 found[65];
-	for (int i = 0; i < AT(int, list, 0x10); i++) {
+	for (int i = 0; i < ol->count; i++) {
 		u32 shape = shape_getByName(shapes, (const char *)names + i * 0x44, 0);
 		if (i < 64)
 			found[i] = shape;
 		if (shape)
-			AT(int, list, 0x18) += ((Model *)shape)->colourCount;
+			ol->colourCount += ((Model *)shape)->colourCount;
 	}
-	AT(int, list, 4) = (AT(int, list, 0x10) * 25 + AT(int, list, 0x1c)) * 4;
-	if (AT(int, list, 0x2c) == 1)
-		AT(int, list, 4) += AT(int, list, 0x18) * 4;
+	ol->blockSize = (ol->count * 25 + ol->frameCount) * 4;
+	if (ol->preLit == 1)
+		ol->blockSize += ol->colourCount * 4;
 	if (!mem) {
-		AT(void *, list, 8) = operator_new(AT(u32, list, 4));
-		if (!AT(void *, list, 8))
-			sys_fatalError((char *)OBJ(g_logUnit), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), AT(int, list, 4));
-		AT(int, list, 0xc) = 1;
+		ol->block = operator_new(((u32)ol->blockSize));
+		if (!ol->block)
+			sys_fatalError((char *)OBJ(g_logUnit), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), ol->blockSize);
+		ol->ownsBlock = 1;
 	} else {
-		if (size < AT(int, list, 4))
-			sys_fatalErrorN((char *)OBJ(g_logUnit), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), AT(int, list, 4), size);
-		AT(void *, list, 8) = mem;
+		if (size < ol->blockSize)
+			sys_fatalErrorN((char *)OBJ(g_logUnit), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), ol->blockSize, size);
+		ol->block = mem;
 	}
-	AT(u8 *, list, 0x14) = AT(u8 *, list, 8);
-	int colours = AT(int, list, 0x10) * 100;
-	u32 *entry = (u32 *)AT(u8 *, list, 0x14);
-	for (int i = 0; i < AT(int, list, 0x10); i++, entry += 25) {
+	ol->entries = (ListedObject *)ol->block;
+	int colours = ol->count * 100;
+	u32 *entry = (u32 *)ol->entries;
+	for (int i = 0; i < ol->count; i++, entry += 25) {
 		entry[0] = i < 64 ? found[i] : shape_getByName(shapes, (const char *)names + i * 0x44, 0);
 		entry[1] = AT(u32, names, i * 0x44 + 0x40);
-		if (AT(int, list, 0x2c) == 1 && entry[0]) {
-			entry[2] = (u32)(AT(u8 *, list, 8) + colours);
+		if (ol->preLit == 1 && entry[0]) {
+			entry[2] = (u32)(ol->block + colours);
 			colours += AT(int, entry[0], 0x18) * 4;
 		} else
 			entry[2] = 0;
 	}
-	AT(u8 *, list, 0x20) = AT(u8 *, list, 8) + colours;
-	for (int j = 0; j < AT(int, list, 0x1c); j++)
-		AT(void *, AT(u8 *, list, 0x20), j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
-	if (AT(int, list, 0x2c) == 1)
+	ol->frames = (i32 *)(ol->block + colours);
+	for (int j = 0; j < ol->frameCount; j++)
+		AT(void *, ol->frames, j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
+	if (ol->preLit == 1)
 		ObjectList_relight(list, factors, lights);
 }
 
