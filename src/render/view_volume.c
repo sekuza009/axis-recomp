@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define VV ((ViewVolume *)vv)   /* the view volume (vv in each function) by its fields (src/scene.fields) */
 
 typedef long double X;
 
@@ -54,7 +55,7 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p,
 	for (int c = 1; c < 4; c++)
 		r[5 + c] = f32((X)M[c] * q[0] + (X)M[4 + c] * q[1] + (X)M[8 + c] * q[2] + M[12 + c]);
 	if (flag == 1 && all_outside(outcode(r + 1) & outcode(r + 5))) {
-		FIELD(int, vv, 0x908c)--;
+		VV->segmentCount--;
 		return;
 	}
 	*(u32 *)RELOC(r) = *object;
@@ -100,7 +101,7 @@ void THISCALL (viewVolume_addQuad)(u8 *vv, int id, const u32 *uv0, const u32 *uv
 			                        : f32((X)M[8 + c] * v[2] + (X)M[c] * v[0] + (X)M[4 + c] * v[1] + M[12 + c]);
 	}
 	if (flag == 1 && quad_outside(r)) {
-		FIELD(int, vv, 0x9070)--;
+		VV->quadCount--;
 		return;
 	}
 	quad_fields(r, id, uv0, uv1, colour, extra);
@@ -133,7 +134,7 @@ void THISCALL (viewVolume_addBillboard)(u8 *vv, int id, const u32 *uv0, const u3
 		for (int c = 0; c < 4; c++)
 			r[6 + k * 4 + c] = f32(z * P[8 + c] + ys[k] * P[4 + c] + xs[k] * P[c] + P[12 + c]);
 	if (flag == 1 && quad_outside(r)) {
-		FIELD(int, vv, 0x9070)--;
+		VV->quadCount--;
 		return;
 	}
 	quad_fields(r, id, uv0, uv1, colour, extra);
@@ -157,13 +158,13 @@ static X row(X a, const float *ma, X b, const float *mb, X c, const float *mc, c
 int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, const u32 *info3, const float *P,
                                          const float *M, int raw, int cull)
 {
-	int n = FIELD(int, vv, 0x905c);
-	if (n >= FIELD(int, vv, 0x9054)) {
-		FIELD(int, vv, 0x9098) = 1;
+	int n = VV->triangleCount;
+	if (n >= VV->triangleLimit) {
+		VV->trianglesFull = 1;
 		return n;
 	}
-	float *rec = (float *)(FIELD(u8 *, vv, 0x9058) + n * 0x60);
-	FIELD(int, vv, 0x905c) = n + 1;
+	float *rec = (float *)(VV->triangles + n * 0x60);
+	VV->triangleCount = n + 1;
 	if (!rec)
 		return n + 1;
 	const float *V = (const float *)(vv + 0x9130), *p1 = P + 3, *p2 = P + 6;
@@ -197,8 +198,8 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
 		for (int k = 0; k < 3; k++)
 			common &= outcode(R + k * 4);
 		if (common & 0x111111) {
-			FIELD(int, vv, 0x905c) -= 1;
-			return FIELD(int, vv, 0x905c);
+			VV->triangleCount -= 1;
+			return VV->triangleCount;
 		}
 	}
 	u32 *r = (u32 *)rec;
@@ -267,11 +268,11 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 		return;
 	float *m = (float *)matrix;
 	if (!m) {
-		if (GAME_VAR(int, view + 0x9044) >= GAME_VAR(int, view + 0x903c)) {
-			GAME_VAR(int, view + 0x9094) = 1;
+		if (((ViewVolume *)view)->matrixCount >= ((ViewVolume *)view)->matrixLimit) {
+			((ViewVolume *)view)->matricesFull = 1;
 			return;
 		}
-		m = (float *)(GAME_VAR(u8 *, view + 0x9040) + GAME_VAR(int, view + 0x9044)++ * 0x40);
+		m = (float *)(((ViewVolume *)view)->matrices + ((ViewVolume *)view)->matrixCount++ * 0x40);
 		if (!m)
 			return;
 		glGetFloatv(0xba6, m);
@@ -311,16 +312,16 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 				continue;
 		}
 		int list = (material >= 0 ? material : GAME_VAR(int, part + 0x44)) + 1;
-		if (GAME_VAR(int, view + 0x9038) >= GAME_VAR(int, view + 0x9030)) {
-			GAME_VAR(int, view + 0x9090) = 1;
+		if (((ViewVolume *)view)->entryCount >= ((ViewVolume *)view)->entryLimit) {
+			((ViewVolume *)view)->entriesFull = 1;
 			return;
 		}
-		u32 *e = (u32 *)(GAME_VAR(u8 *, view + 0x9034) + GAME_VAR(int, view + 0x9038)++ * 0x1c);
+		u32 *e = (u32 *)(((ViewVolume *)view)->entries + ((ViewVolume *)view)->entryCount++ * 0x1c);
 		if (!e)
 			return;
 		if (GAME_VAR(u32 *, view + 0x3028 + list * 4) == 0) {
-			GAME_VAR(int, view + 0x20 + GAME_VAR(int, view + 0x3024) * 4) = list;
-			GAME_VAR(int, view + 0x3024)++;
+			GAME_VAR(int, view + 0x20 + ((ViewVolume *)view)->materialCount * 4) = list;
+			((ViewVolume *)view)->materialCount++;
 			GAME_VAR(u32 *, view + 0x3028 + list * 4) = e;
 		}
 		u32 *tail = GAME_VAR(u32 *, view + 0x602c + list * 4);
@@ -373,7 +374,7 @@ static void bind(u8 *vv, int t)
 {
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->managers[t / 512], t % 512);
-	FIELD(int, vv, 0x90ac)++;
+	VV->textureBinds++;
 }
 
 /* a queued record's texture: bound, or texturing off for none (< 0) or mode 2 (untextured) */
@@ -404,10 +405,10 @@ static void scroll(float *uv, int n, int kind, const float *b)
 static int fits(u8 *vv, const u8 *mesh)
 {
 	int n = FIELD(int, mesh, 0x4c);
-	if (n > FIELD(int, vv, 0x9048))
+	if (n > VV->colourLimit)
 		return 0;
-	if (FIELD(int, vv, 0x9050) < n)
-		FIELD(int, vv, 0x9050) = n;
+	if (VV->colourMost < n)
+		VV->colourMost = n;
 	return 1;
 }
 
@@ -424,7 +425,7 @@ static void invert(float *inv, const float *m)
    of the item's matrix) and / or tinted (+0xc) in the colour buffer. NULL when the mesh does not fit the buffer */
 static const u32 *item_colours(u8 *vv, const u32 *it, const u8 *mesh)
 {
-	u8 *buf = FIELD(u8 *, vv, 0x904c);
+	u8 *buf = VV->colours;
 	const u8 *colours = (const u8 *)RELOC(it[1]), *factors = (const u8 *)RELOC(it[2]);
 	float inv[16];
 	if (colours) {
@@ -520,9 +521,9 @@ static void draw_opaque(u8 *vv, const u32 *it, const u8 *mesh, const u32 *col, i
 		glDrawElements(pg[0], pg[1], 0x1405, (const void *)RELOC(pg[2]));
 		int c = (int)pg[1];
 		if (pg[0] == 4)
-			FIELD(int, vv, 0x90a4) += c / 3;
+			VV->trianglesDrawn += c / 3;
 		else if (pg[0] == 5 || pg[0] == 6)
-			FIELD(int, vv, 0x90a4) += c - 2;
+			VV->trianglesDrawn += c - 2;
 	}
 	glEnable(GL_DEPTH_TEST);
 	glDisable(0xb44);
@@ -645,22 +646,22 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 		glGetFloatv(GL_FOG_END, &range[1]);
 		for (int k = 0; k < 2; k++) {
 			X z = -fld_m(&range[k]);
-			float x = f32(fadd_m(fmul_m(z, &FIELD(float, vv, 0x90d8)), &FIELD(float, vv, 0x90e8)));
-			X w = fadd_m(fmul_m(z, &FIELD(float, vv, 0x90dc)), &FIELD(float, vv, 0x90ec));
+			float x = f32(fadd_m(fmul_m(z, &VV->projection[10]), &VV->projection[14]));
+			X w = fadd_m(fmul_m(z, &VV->projection[11]), &VV->projection[15]);
 			mapped[k] = (float)(fld_m(&x) / w);
 		}
 	}
-	load_matrices(&FIELD(float, vv, 0x90b0), &FIELD(float, vv, 0x90f0));
+	load_matrices(&VV->projection[0], &VV->modelview[0]);
 	fog_set(fog, range);
-	FIELD(int, vv, 0x9050) = 0;
+	VV->colourMost = 0;
 
-	for (int i = 0; i < FIELD(int, vv, 0x3024); i++) {
+	for (int i = 0; i < VV->materialCount; i++) {
 		int id = FIELD(int, vv, 0x20 + i * 4);
 		const u32 *it = FIELD(const u32 *, vv, 0x3028 + id * 4);
 		if (id > 0 && mode != 2)
 			bind(vv, id - 1);
 		do {
-			FIELD(int, vv, 0x90a8)++;
+			VV->meshesDrawn++;
 			const u8 *mesh = (const u8 *)RELOC(it[0]);
 			const u32 *col = item_colours(vv, it, mesh);
 			if (!col)
@@ -676,15 +677,15 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	}
 
 	/* the queued triangles of kind 1, each under its own matrix (+0x58) */
-	load_matrices(&FIELD(float, vv, 0x90b0), &FIELD(float, vv, 0x90f0));
+	load_matrices(&VV->projection[0], &VV->modelview[0]);
 	fog_set(fog, range);
 	int cur = -1;
 	glEnable(0xb44);
 	glCullFace(0x405);
 	glEnable(0x8037);
 	glPolygonOffset(-1.0f, -1.0f);
-	for (int i = 0; i < FIELD(int, vv, 0x905c); i++) {
-		const u32 *r = (const u32 *)(FIELD(u8 *, vv, 0x9058) + i * 0x60);
+	for (int i = 0; i < VV->triangleCount; i++) {
+		const u32 *r = (const u32 *)(VV->triangles + i * 0x60);
 		if (r[0x17] != 1)
 			continue;
 		glPushMatrix();
@@ -697,7 +698,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 		glBegin(4);
 		triangle(r, cur >= 0, 0);
 		glEnd();
-		FIELD(int, vv, 0x90a4)++;
+		VV->trianglesDrawn++;
 		glPopMatrix();
 	}
 	glDisable(GL_TEXTURE_2D);
@@ -708,8 +709,8 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	fog_set(fog, mapped);
 	glBegin(GL_LINES);
 	glColor4ub(0xff, 0xff, 0xff, 0xff);
-	for (int i = 0; i < FIELD(int, vv, 0x908c); i++) {
-		const u8 *l = FIELD(u8 *, vv, 0x9088) + i * 0x24;
+	for (int i = 0; i < VV->segmentCount; i++) {
+		const u8 *l = VV->segments + i * 0x24;
 		glColor3ub(l[0], l[1], l[2]);
 		glVertex4fv(l + 4);
 		glVertex4fv(l + 0x14);
@@ -717,20 +718,20 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	glEnd();
 
 	/* the depth lists (record, key): triangles of kind 2, billboards of kinds 2 and 3 */
-	FIELD(int, vv, 0x9064) = 0;
-	for (int i = 0; i < FIELD(int, vv, 0x905c); i++) {
-		u8 *r = FIELD(u8 *, vv, 0x9058) + i * 0x60;
+	VV->triangleOrderCount = 0;
+	for (int i = 0; i < VV->triangleCount; i++) {
+		u8 *r = VV->triangles + i * 0x60;
 		if (FIELD(int, r, 0x5c) != 2)
 			continue;
-		FIELD(u8 **, vv, 0x9060)[FIELD(int, vv, 0x9064) * 2] = r;
+		FIELD(u8 **, vv, 0x9060)[VV->triangleOrderCount * 2] = r;
 		X z = fadd_m(fadd_m(fld_m(&FIELD(float, r, 0x50)), &FIELD(float, r, 0x40)), &FIELD(float, r, 0x30));
-		FIELD(float *, vv, 0x9060)[FIELD(int, vv, 0x9064) * 2 + 1] = (float)fmul_m(z, &k_third);
-		FIELD(int, vv, 0x9064)++;
+		FIELD(float *, vv, 0x9060)[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
+		VV->triangleOrderCount++;
 	}
-	FIELD(int, vv, 0x9078) = 0;
-	FIELD(int, vv, 0x9080) = 0;
-	for (int i = 0; i < FIELD(int, vv, 0x9070); i++) {
-		u8 *r = FIELD(u8 *, vv, 0x906c) + i * 0x5c;
+	VV->quadOrderACount = 0;
+	VV->quadOrderBCount = 0;
+	for (int i = 0; i < VV->quadCount; i++) {
+		u8 *r = VV->quads + i * 0x5c;
 		int list = FIELD(int, r, 0x58) == 2 ? 0x9074 : FIELD(int, r, 0x58) == 3 ? 0x907c : 0;
 		if (!list)
 			continue;
@@ -743,15 +744,15 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	/* triangles and billboards merged back to front (triangles fogged when fog is on, billboards never) */
 	identity_matrices();
 	fog_set(fog, mapped);
-	render_depthSortA(FIELD(u32 *, vv, 0x9060), 0, FIELD(int, vv, 0x9064) - 1);
-	render_depthSortB(FIELD(u32 *, vv, 0x9074), 0, FIELD(int, vv, 0x9078) - 1);
+	render_depthSortA(FIELD(u32 *, vv, 0x9060), 0, VV->triangleOrderCount - 1);
+	render_depthSortB(FIELD(u32 *, vv, 0x9074), 0, VV->quadOrderACount - 1);
 	int ia = 0, ib = 0, triangles = 0;
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_FOG);
 	glBegin(GL_QUADS);
-	const float *a = FIELD(int, vv, 0x9064) > 0 ? FIELD(const float *, vv, 0x9060) : NULL;
-	const float *q = FIELD(int, vv, 0x9078) > 0 ? FIELD(const float *, vv, 0x9074) : NULL;
+	const float *a = VV->triangleOrderCount > 0 ? FIELD(const float *, vv, 0x9060) : NULL;
+	const float *q = VV->quadOrderACount > 0 ? FIELD(const float *, vv, 0x9074) : NULL;
 	while (a || q) {
 		if (a && (!q || !(fld_m(&a[1]) >= fld_m(&q[1])))) {
 			if (triangles != 1) {
@@ -769,9 +770,9 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 				glBegin(4);
 			}
 			triangle(r, cur >= 0, 1);
-			FIELD(int, vv, 0x90a4)++;
+			VV->trianglesDrawn++;
 			ia++;
-			a = ia < FIELD(int, vv, 0x9064) ? FIELD(const float *, vv, 0x9060) + ia * 2 : NULL;
+			a = ia < VV->triangleOrderCount ? FIELD(const float *, vv, 0x9060) + ia * 2 : NULL;
 		} else {
 			if (triangles != 0) {
 				glEnd();
@@ -787,9 +788,9 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 				glBegin(GL_QUADS);
 			}
 			billboard(r, cur >= 0);
-			FIELD(int, vv, 0x90a4) += 2;
+			VV->trianglesDrawn += 2;
 			ib++;
-			q = ib < FIELD(int, vv, 0x9078) ? FIELD(const float *, vv, 0x9074) + ib * 2 : NULL;
+			q = ib < VV->quadOrderACount ? FIELD(const float *, vv, 0x9074) + ib * 2 : NULL;
 		}
 	}
 	glEnd();
@@ -798,12 +799,12 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	glDisable(GL_FOG);
 
 	/* the billboards of kind 3, unfogged, without depth test */
-	render_depthSortB(FIELD(u32 *, vv, 0x907c), 0, FIELD(int, vv, 0x9080) - 1);
+	render_depthSortB(FIELD(u32 *, vv, 0x907c), 0, VV->quadOrderBCount - 1);
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_DEPTH_TEST);
 	glBegin(GL_QUADS);
-	for (int i = 0; i < FIELD(int, vv, 0x9080); i++) {
+	for (int i = 0; i < VV->quadOrderBCount; i++) {
 		const u32 *r = FIELD(const u32 **, vv, 0x907c)[i * 2];
 		if ((int)r[0] != cur) {
 			glEnd();
@@ -812,7 +813,7 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 			glBegin(GL_QUADS);
 		}
 		billboard(r, cur >= 0);
-		FIELD(int, vv, 0x90a4) += 2;
+		VV->trianglesDrawn += 2;
 	}
 	glEnd();
 	glDisable(GL_TEXTURE_2D);

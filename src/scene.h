@@ -328,6 +328,53 @@ typedef struct Space {
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
 } Space;
 
+/* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
+typedef struct ViewVolume {
+	u8 _pad0000000[0x10];
+	i32 entryPointsSet;   /* +0x10: (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c) */
+	u8 _pad0000014[0xc];
+	i32 materialOrder[3072];   /* +0x20: the materials in the order first queued (materialCount of them) */
+	u8 _pad0003020[0x4];
+	i32 materialCount;   /* +0x3024 */
+	u8 *materialHeads[6144];   /* +0x3028: per material: its first queued entry (0: none yet) */
+	u8 _pad0009028[0x8];
+	i32 entryLimit;   /* +0x9030: the queued parts (0x1c bytes each) */
+	u8 *entries;   /* +0x9034 */
+	i32 entryCount;   /* +0x9038 */
+	i32 matrixLimit;   /* +0x903c: the parts' matrices (0x40 bytes each) */
+	u8 *matrices;   /* +0x9040 */
+	i32 matrixCount;   /* +0x9044 */
+	i32 colourLimit;   /* +0x9048: the colour buffer: room for so many vertices */
+	u8 *colours;   /* +0x904c */
+	i32 colourMost;   /* +0x9050: the most vertices it held so far */
+	i32 triangleLimit;   /* +0x9054: the clipped triangles (0x60 bytes each) */
+	u8 *triangles;   /* +0x9058 */
+	i32 triangleCount;   /* +0x905c */
+	u8 *triangleOrder;   /* +0x9060: (record, depth) pairs sorted back to front */
+	i32 triangleOrderCount;   /* +0x9064 */
+	i32 quadLimit;   /* +0x9068: the quads and billboards (0x5c bytes each) */
+	u8 *quads;   /* +0x906c */
+	i32 quadCount;   /* +0x9070 */
+	u8 *quadOrderA;   /* +0x9074: sorted quads of kind 2 */
+	i32 quadOrderACount;   /* +0x9078 */
+	u8 *quadOrderB;   /* +0x907c: ... of kind 3 */
+	i32 quadOrderBCount;   /* +0x9080 */
+	i32 segmentLimit;   /* +0x9084: the objects' segments (0x24 bytes each) */
+	u8 *segments;   /* +0x9088 */
+	i32 segmentCount;   /* +0x908c */
+	i32 entriesFull;   /* +0x9090: 1: a list overflowed (what did not fit is left out) */
+	i32 matricesFull;   /* +0x9094 */
+	i32 trianglesFull;   /* +0x9098 */
+	i32 quadsFull;   /* +0x909c */
+	i32 segmentsFull;   /* +0x90a0 */
+	i32 trianglesDrawn;   /* +0x90a4: counters of the frame */
+	i32 meshesDrawn;   /* +0x90a8 */
+	i32 textureBinds;   /* +0x90ac */
+	float projection[16];   /* +0x90b0 */
+	float modelview[16];   /* +0x90f0 */
+	float clip[16];   /* +0x9130: projection x modelview: points to clip space */
+} ViewVolume;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -880,6 +927,46 @@ _Static_assert(offsetof(Space, a) == 0x8c && sizeof(((Space *)0)->a) == 0x4, "sc
 _Static_assert(offsetof(Space, b) == 0x90 && sizeof(((Space *)0)->b) == 0x4, "scene.fields: Space.b");
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
 _Static_assert(sizeof(Space) == 0x98, "scene.fields: size of Space");
+_Static_assert(offsetof(ViewVolume, entryPointsSet) == 0x10 && sizeof(((ViewVolume *)0)->entryPointsSet) == 0x4, "scene.fields: ViewVolume.entryPointsSet");
+_Static_assert(offsetof(ViewVolume, materialOrder) == 0x20 && sizeof(((ViewVolume *)0)->materialOrder) == 0x3000, "scene.fields: ViewVolume.materialOrder");
+_Static_assert(offsetof(ViewVolume, materialCount) == 0x3024 && sizeof(((ViewVolume *)0)->materialCount) == 0x4, "scene.fields: ViewVolume.materialCount");
+_Static_assert(offsetof(ViewVolume, materialHeads) == 0x3028 && sizeof(((ViewVolume *)0)->materialHeads) == 0x6000, "scene.fields: ViewVolume.materialHeads");
+_Static_assert(offsetof(ViewVolume, entryLimit) == 0x9030 && sizeof(((ViewVolume *)0)->entryLimit) == 0x4, "scene.fields: ViewVolume.entryLimit");
+_Static_assert(offsetof(ViewVolume, entries) == 0x9034 && sizeof(((ViewVolume *)0)->entries) == 0x4, "scene.fields: ViewVolume.entries");
+_Static_assert(offsetof(ViewVolume, entryCount) == 0x9038 && sizeof(((ViewVolume *)0)->entryCount) == 0x4, "scene.fields: ViewVolume.entryCount");
+_Static_assert(offsetof(ViewVolume, matrixLimit) == 0x903c && sizeof(((ViewVolume *)0)->matrixLimit) == 0x4, "scene.fields: ViewVolume.matrixLimit");
+_Static_assert(offsetof(ViewVolume, matrices) == 0x9040 && sizeof(((ViewVolume *)0)->matrices) == 0x4, "scene.fields: ViewVolume.matrices");
+_Static_assert(offsetof(ViewVolume, matrixCount) == 0x9044 && sizeof(((ViewVolume *)0)->matrixCount) == 0x4, "scene.fields: ViewVolume.matrixCount");
+_Static_assert(offsetof(ViewVolume, colourLimit) == 0x9048 && sizeof(((ViewVolume *)0)->colourLimit) == 0x4, "scene.fields: ViewVolume.colourLimit");
+_Static_assert(offsetof(ViewVolume, colours) == 0x904c && sizeof(((ViewVolume *)0)->colours) == 0x4, "scene.fields: ViewVolume.colours");
+_Static_assert(offsetof(ViewVolume, colourMost) == 0x9050 && sizeof(((ViewVolume *)0)->colourMost) == 0x4, "scene.fields: ViewVolume.colourMost");
+_Static_assert(offsetof(ViewVolume, triangleLimit) == 0x9054 && sizeof(((ViewVolume *)0)->triangleLimit) == 0x4, "scene.fields: ViewVolume.triangleLimit");
+_Static_assert(offsetof(ViewVolume, triangles) == 0x9058 && sizeof(((ViewVolume *)0)->triangles) == 0x4, "scene.fields: ViewVolume.triangles");
+_Static_assert(offsetof(ViewVolume, triangleCount) == 0x905c && sizeof(((ViewVolume *)0)->triangleCount) == 0x4, "scene.fields: ViewVolume.triangleCount");
+_Static_assert(offsetof(ViewVolume, triangleOrder) == 0x9060 && sizeof(((ViewVolume *)0)->triangleOrder) == 0x4, "scene.fields: ViewVolume.triangleOrder");
+_Static_assert(offsetof(ViewVolume, triangleOrderCount) == 0x9064 && sizeof(((ViewVolume *)0)->triangleOrderCount) == 0x4, "scene.fields: ViewVolume.triangleOrderCount");
+_Static_assert(offsetof(ViewVolume, quadLimit) == 0x9068 && sizeof(((ViewVolume *)0)->quadLimit) == 0x4, "scene.fields: ViewVolume.quadLimit");
+_Static_assert(offsetof(ViewVolume, quads) == 0x906c && sizeof(((ViewVolume *)0)->quads) == 0x4, "scene.fields: ViewVolume.quads");
+_Static_assert(offsetof(ViewVolume, quadCount) == 0x9070 && sizeof(((ViewVolume *)0)->quadCount) == 0x4, "scene.fields: ViewVolume.quadCount");
+_Static_assert(offsetof(ViewVolume, quadOrderA) == 0x9074 && sizeof(((ViewVolume *)0)->quadOrderA) == 0x4, "scene.fields: ViewVolume.quadOrderA");
+_Static_assert(offsetof(ViewVolume, quadOrderACount) == 0x9078 && sizeof(((ViewVolume *)0)->quadOrderACount) == 0x4, "scene.fields: ViewVolume.quadOrderACount");
+_Static_assert(offsetof(ViewVolume, quadOrderB) == 0x907c && sizeof(((ViewVolume *)0)->quadOrderB) == 0x4, "scene.fields: ViewVolume.quadOrderB");
+_Static_assert(offsetof(ViewVolume, quadOrderBCount) == 0x9080 && sizeof(((ViewVolume *)0)->quadOrderBCount) == 0x4, "scene.fields: ViewVolume.quadOrderBCount");
+_Static_assert(offsetof(ViewVolume, segmentLimit) == 0x9084 && sizeof(((ViewVolume *)0)->segmentLimit) == 0x4, "scene.fields: ViewVolume.segmentLimit");
+_Static_assert(offsetof(ViewVolume, segments) == 0x9088 && sizeof(((ViewVolume *)0)->segments) == 0x4, "scene.fields: ViewVolume.segments");
+_Static_assert(offsetof(ViewVolume, segmentCount) == 0x908c && sizeof(((ViewVolume *)0)->segmentCount) == 0x4, "scene.fields: ViewVolume.segmentCount");
+_Static_assert(offsetof(ViewVolume, entriesFull) == 0x9090 && sizeof(((ViewVolume *)0)->entriesFull) == 0x4, "scene.fields: ViewVolume.entriesFull");
+_Static_assert(offsetof(ViewVolume, matricesFull) == 0x9094 && sizeof(((ViewVolume *)0)->matricesFull) == 0x4, "scene.fields: ViewVolume.matricesFull");
+_Static_assert(offsetof(ViewVolume, trianglesFull) == 0x9098 && sizeof(((ViewVolume *)0)->trianglesFull) == 0x4, "scene.fields: ViewVolume.trianglesFull");
+_Static_assert(offsetof(ViewVolume, quadsFull) == 0x909c && sizeof(((ViewVolume *)0)->quadsFull) == 0x4, "scene.fields: ViewVolume.quadsFull");
+_Static_assert(offsetof(ViewVolume, segmentsFull) == 0x90a0 && sizeof(((ViewVolume *)0)->segmentsFull) == 0x4, "scene.fields: ViewVolume.segmentsFull");
+_Static_assert(offsetof(ViewVolume, trianglesDrawn) == 0x90a4 && sizeof(((ViewVolume *)0)->trianglesDrawn) == 0x4, "scene.fields: ViewVolume.trianglesDrawn");
+_Static_assert(offsetof(ViewVolume, meshesDrawn) == 0x90a8 && sizeof(((ViewVolume *)0)->meshesDrawn) == 0x4, "scene.fields: ViewVolume.meshesDrawn");
+_Static_assert(offsetof(ViewVolume, textureBinds) == 0x90ac && sizeof(((ViewVolume *)0)->textureBinds) == 0x4, "scene.fields: ViewVolume.textureBinds");
+_Static_assert(offsetof(ViewVolume, projection) == 0x90b0 && sizeof(((ViewVolume *)0)->projection) == 0x40, "scene.fields: ViewVolume.projection");
+_Static_assert(offsetof(ViewVolume, modelview) == 0x90f0 && sizeof(((ViewVolume *)0)->modelview) == 0x40, "scene.fields: ViewVolume.modelview");
+_Static_assert(offsetof(ViewVolume, clip) == 0x9130 && sizeof(((ViewVolume *)0)->clip) == 0x40, "scene.fields: ViewVolume.clip");
+_Static_assert(sizeof(ViewVolume) == 0x9170, "scene.fields: size of ViewVolume");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");

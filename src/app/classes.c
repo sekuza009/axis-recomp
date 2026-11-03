@@ -46,9 +46,9 @@ int THISCALL (stage_clearMapItemCounts)(void *self)
 /* 0x4841d0: a view volume's three draw counters cleared */
 void THISCALL (ViewVolume_clearDrawCounts)(void *view)
 {
-	FIELD(int, view, 0x90a4) = 0;
-	FIELD(int, view, 0x90a8) = 0;
-	FIELD(int, view, 0x90ac) = 0;
+	((ViewVolume *)view)->trianglesDrawn = 0;
+	((ViewVolume *)view)->meshesDrawn = 0;
+	((ViewVolume *)view)->textureBinds = 0;
 }
 
 /* 0x480210: three ints set */

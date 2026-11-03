@@ -225,6 +225,47 @@ struct Space 0x98                                               # the collision 
 0x90       4          u32 b                                     # (unclear) setBy's b
 0x94       4          i32 depth                                 # the blocks' recursion depth (at most 8)
 
+struct ViewVolume 0x9170                                        # the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used)
+0x10       4          i32 entryPointsSet                        # (by use) set once its three GL entry points are looked up (+0x14 .. +0x1c)
+0x20       0x3000     i32 materialOrder[3072]                   # the materials in the order first queued (materialCount of them)
+0x3024     4          i32 materialCount
+0x3028     0x6000     u8 *materialHeads[6144]                   # per material: its first queued entry (0: none yet)
+0x9030     4          i32 entryLimit                            # the queued parts (0x1c bytes each)
+0x9034     4          u8 *entries
+0x9038     4          i32 entryCount
+0x903c     4          i32 matrixLimit                           # the parts' matrices (0x40 bytes each)
+0x9040     4          u8 *matrices
+0x9044     4          i32 matrixCount
+0x9048     4          i32 colourLimit                           # the colour buffer: room for so many vertices
+0x904c     4          u8 *colours
+0x9050     4          i32 colourMost                            # the most vertices it held so far
+0x9054     4          i32 triangleLimit                         # the clipped triangles (0x60 bytes each)
+0x9058     4          u8 *triangles
+0x905c     4          i32 triangleCount
+0x9060     4          u8 *triangleOrder                         # (record, depth) pairs sorted back to front
+0x9064     4          i32 triangleOrderCount
+0x9068     4          i32 quadLimit                             # the quads and billboards (0x5c bytes each)
+0x906c     4          u8 *quads
+0x9070     4          i32 quadCount
+0x9074     4          u8 *quadOrderA                            # sorted quads of kind 2
+0x9078     4          i32 quadOrderACount
+0x907c     4          u8 *quadOrderB                            # ... of kind 3
+0x9080     4          i32 quadOrderBCount
+0x9084     4          i32 segmentLimit                          # the objects' segments (0x24 bytes each)
+0x9088     4          u8 *segments
+0x908c     4          i32 segmentCount
+0x9090     4          i32 entriesFull                           # 1: a list overflowed (what did not fit is left out)
+0x9094     4          i32 matricesFull
+0x9098     4          i32 trianglesFull
+0x909c     4          i32 quadsFull
+0x90a0     4          i32 segmentsFull
+0x90a4     4          i32 trianglesDrawn                        # counters of the frame
+0x90a8     4          i32 meshesDrawn
+0x90ac     4          i32 textureBinds
+0x90b0     0x40       float projection[16]
+0x90f0     0x40       float modelview[16]
+0x9130     0x40       float clip[16]                            # projection x modelview: points to clip space
+
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
                                                                 # game's Stage methods; offsets here are from the stage (Scene fields past
                                                                 # 0x1f36c8 lie inside it too: Scene.players is Stage.actors)

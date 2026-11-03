@@ -88,13 +88,14 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
 void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f, void *mem, int size)
 {
 #define FIELD(type, offset) GAME_VAR(type, view + (offset))
+#define VV ((ViewVolume *)view)   /* the same by its fields (src/scene.fields) */
 	gfx_initVertexArrayExt(view);
-	FIELD(int, 0x9048) = c;
-	FIELD(int, 0x9030) = a;
-	FIELD(int, 0x903c) = b;
-	FIELD(int, 0x9054) = d;
-	FIELD(int, 0x9068) = e;
-	FIELD(int, 0x9084) = f;
+	VV->colourLimit = c;
+	VV->entryLimit = a;
+	VV->matrixLimit = b;
+	VV->triangleLimit = d;
+	VV->quadLimit = e;
+	VV->segmentLimit = f;
 	int need = FIELD(int, 4) = a * 0x1c + b * 0x40 + c * 4 + d * 0x68 + e * 0x64 + f * 0x24;
 	if (!mem) {
 		FIELD(void *, 8) = operator_new(need);
@@ -107,20 +108,20 @@ void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f
 		FIELD(void *, 8) = mem;
 	}
 	u8 *block = FIELD(u8 *, 8);
-	FIELD(u8 *, 0x9034) = block;
-	int at = FIELD(int, 0x9030) * 0x1c;
-	FIELD(u8 *, 0x9040) = block + at;
-	at += FIELD(int, 0x903c) * 0x40;
-	FIELD(u8 *, 0x904c) = block + at;
-	at += FIELD(int, 0x9048) * 4;
-	FIELD(u8 *, 0x9058) = block + at;
-	FIELD(u8 *, 0x9060) = block + at + FIELD(int, 0x9054) * 0x60;
-	at += FIELD(int, 0x9054) * 0x68;
-	FIELD(u8 *, 0x906c) = block + at;
-	int count = FIELD(int, 0x9068);
-	FIELD(u8 *, 0x9074) = block + at + count * 0x5c;
-	FIELD(u8 *, 0x907c) = block + at + count * 0x64;
-	FIELD(u8 *, 0x9088) = block + at + count * 0x6c;
+	VV->entries = block;
+	int at = VV->entryLimit * 0x1c;
+	VV->matrices = block + at;
+	at += VV->matrixLimit * 0x40;
+	VV->colours = block + at;
+	at += VV->colourLimit * 4;
+	VV->triangles = block + at;
+	VV->triangleOrder = block + at + VV->triangleLimit * 0x60;
+	at += VV->triangleLimit * 0x68;
+	VV->quads = block + at;
+	int count = VV->quadLimit;
+	VV->quadOrderA = block + at + count * 0x5c;
+	VV->quadOrderB = block + at + count * 0x64;
+	VV->segments = block + at + count * 0x6c;
 	ViewVolume_clearDrawCounts(view);
 #undef FIELD
 }
