@@ -69,11 +69,12 @@ int THISCALL (partList_queue)(ObjectList *list, void *view, const LightFactors *
    each mesh's fixed six-face index lists written into it (with their pointers) */
 void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 {
-	int n = FIELD(int, stage, 0xdc0a74);
+	Stage *st = (Stage *)stage;
+	int n = st->groundLayerCount;
 	FIELD(int, stage, 0xdc0a88) = n;
 	FIELD(int, stage, 0xdc0a90) = 0;
 	FIELD(int, stage, 0xdc0a94) = 0;
-	FIELD(int, stage, 0xdc0cd4) = FIELD(int, stage, 0xdc0a74);
+	FIELD(int, stage, 0xdc0cd4) = st->groundLayerCount;
 	FIELD(int, stage, 0xdc0cdc) = 0;
 	FIELD(int, stage, 0xdc0ce0) = 0;
 	static const short faces[][2] = {   /* (offset in the mesh, value), in the original's order of stores */
@@ -81,7 +82,7 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },
 		{ 0x178, 0 }, { 0x17c, 5 }, { 0x180, 8 }, { 0x184, 9 }, { 0x188, 2 }, { 0x18c, 1 }, { 0x190, 7 }, { 0x194, 0xa },
 		{ 0x198, 0xb }, { 0x19c, 3 }, { 0x1a0, 2 }, { 0x1a4, 9 } };
-	for (int i = 0; i < FIELD(int, stage, 0xdc0a74); i++) {
+	for (int i = 0; i < st->groundLayerCount; i++) {
 		u8 *m = stage + 0xdc0278 + i * 0x20c;
 		u8 *A = FIELD(u8 *, stage, 0xdc0cd8) + i * 0x80, *B = FIELD(u8 *, stage, 0xdc0a8c) + i * 0x80;
 		switch (FIELD(int, m, -0x34)) {

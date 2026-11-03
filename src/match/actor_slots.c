@@ -89,7 +89,7 @@ void THISCALL (stage_clearBullets)(Stage *stage)
 	FIELD(int, stage, 0x20a99b8) = 0;
 	FIELD(int, stage, 0x20a99bc) = 0;
 	for (int i = 0; i < 400; i++)
-		FIELD(int, stage, 0x202ef38 + i * 0x4e8) = 0;
+		stage->bullets[i].active = 0;
 }
 
 /* 0x4743e0: actor slot i emptied: no name, no player (-1), no team (-1), its counters and marks cleared */
@@ -113,7 +113,7 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 void THISCALL (stage_drawBullets)(Stage *stage, void *view)
 {
 	for (int i = 0; i < FIELD(int, stage, 0x20a99b4); i++)
-		if (FIELD(int, stage, 0x202ef38 + i * 0x4e8) == 1)
+		if (stage->bullets[i].active == 1)
 			bullet_drawTrail(stage, i, view);
 }
 
@@ -143,7 +143,7 @@ void THISCALL (scene_resetActors)(Stage *stage)
 /* 0x45e070: the 100 actor slots emptied (none in use, each free with no player), with the counts */
 void THISCALL (stage_clearActorSlots)(Stage *stage)
 {
-	FIELD(int, stage, 0x202e8c8) = 0;
+	stage->actorCount = 0;
 	FIELD(int, stage, 0x202e8cc) = 0;
 	FIELD(int, stage, 0x202e8d0) = 0;
 	for (int i = 0; i < 100; i++) {
@@ -265,11 +265,11 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
 	FIELD(int, stage, 0x202ea80 + i * 4) = 0;
 	if (i < FIELD(int, stage, 0x202e8cc))
 		FIELD(int, stage, 0x202e8cc) = i;
-	int n = FIELD(int, stage, 0x202e8c8);
+	int n = stage->actorCount;
 	if (i == n - 1)
-		while (n > 0 && FIELD(int, stage, 0x1cd0c28 + FIELD(int, stage, 0x202e8c8) * 0x8888) == 0) {
-			n = FIELD(int, stage, 0x202e8c8) - 1;
-			FIELD(int, stage, 0x202e8c8) = n;
+		while (n > 0 && FIELD(int, stage, 0x1cd0c28 + stage->actorCount * 0x8888) == 0) {
+			n = stage->actorCount - 1;
+			stage->actorCount = n;
 		}
 	FIELD(int, stage, 0x202e8ec) = 1;
 }

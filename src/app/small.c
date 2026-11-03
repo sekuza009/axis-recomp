@@ -166,8 +166,8 @@ void (profileDialogBox_layout)(void) { set4ints(0x1d7, 0xf6, 0x226, 0x114, g_pro
 /* 0x45dfb0: actor i selected when it is in use (any negative i: none selected) */
 void THISCALL (stage_selectActor)(Stage *stage, int i)
 {
-	if (i < 0 || FIELD(int, stage, 0x1cd94f4 + i * 0x8888) == 1)
-		FIELD(int, stage, 0x202e8d8) = i;
+	if (i < 0 || stage->actors[i].state == 1)
+		stage->selectedActor = i;
 }
 /* 0x456820: material m (0x68-byte records at +0xc016c) marked changed, its flags kept to the bits 0x11111113 (the
    original's guard, flags | 2, is always true) */
@@ -435,19 +435,19 @@ void THISCALL (stage_advanceClocks)(Stage *stage, float dt)
 		return;
 	X d = (X)dt * k_clockRate, one = k_1f;
 	for (int k = 0; k < 2; k++) {
-		X a = d + FIELD(float, stage, 0x9ef0a8 + k * 4);
-		FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)a;
+		X a = d + stage->layerScroll[k];
+		stage->layerScroll[k] = (float)a;
 		if (a >= one) {
 			FIELD(int, stage, 0x9ef0a0 + k * 4)++;
-			FIELD(float, stage, 0x9ef0a8 + k * 4) = (float)(a - one);
+			stage->layerScroll[k] = (float)(a - one);
 		}
 	}
-	if (FIELD(int, stage, 0x9ef30c) != 2)
+	if (stage->floorOn != 2)
 		return;
 	X e = (X)dt * k_clockRate3 + FIELD(float, stage, 0x9ef900);
 	FIELD(float, stage, 0x9ef900) = (float)e;
 	if (e >= one) {
-		FIELD(int, stage, 0x9ef8fc) = (FIELD(int, stage, 0x9ef8fc) + 1) % 16;
+		stage->floorFrame = (stage->floorFrame + 1) % 16;
 		FIELD(float, stage, 0x9ef900) = (float)(e - one);
 	}
 }

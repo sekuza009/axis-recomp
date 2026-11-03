@@ -69,12 +69,12 @@ void THISCALL (shape_relocate)(u8 *shape)
 void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
 	u8 *bullet = (u8 *)stage + 0x202ef34 + b * 0x4e8;
-	X r = FIELD(float, stage, 0xa08);
+	X r = stage->cullMargin;
 	for (int a = 0; a < 3; a++)
-		if ((X)FIELD(float, stage, 0x20f3970 + a * 4) - r > FIELD(float, bullet, 0x78 + a * 4))
+		if ((X)stage->cameraPos[a] - r > FIELD(float, bullet, 0x78 + a * 4))
 			return;
 	for (int a = 0; a < 3; a++)
-		if (!(r + FIELD(float, stage, 0x20f3970 + a * 4) >= FIELD(float, bullet, 0x78 + a * 4)))
+		if (!(r + stage->cameraPos[a] >= FIELD(float, bullet, 0x78 + a * 4)))
 			return;
 	if (FIELD(int, stage, FIELD(int, bullet, 8) * 0x2e18 + 0x14d48b0) != 3)
 		return;

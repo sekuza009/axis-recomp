@@ -226,6 +226,7 @@ static int clamp_to(float *v, const float *low, const float *high)
 int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const float *vel, u32 step, u32 k, float *outPos,
                                    u32 outVel, u32 outDist, u32 outPlane, u32 axis)
 {
+	Stage *st = (Stage *)stage;
 	float to[3], d[3];
 	to[0] = f32(fadd_m(fld_m(&pos[0]), &vel[0]));
 	to[1] = f32(fadd_m(fld_m(&vel[1]), &pos[1]));
@@ -243,7 +244,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	int count = 0;
 	u32 *sub = (u32 *)(stage + 0x9ca0f4);
 	X reach = 0;
-	for (int i = 0; i < FIELD(int, stage, 0x13c9b24); i++) {
+	for (int i = 0; i < st->objectCount; i++) {
 		if (i == 0) {
 			X y = fld_m(&d[1]), z = fld_m(&d[2]);
 			reach = fadd_m(x87_fsqrt(z * z + y * y + mul(fld_m(&d[0]), &d[0])), &r);
@@ -643,6 +644,7 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
    every second one logged. Its caller ignores the eax it leaves */
 void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 a, u32 b, u32 depth)
 {
+	Stage *st = (Stage *)stage;
 	u8 *grid = stage + 0xa10;
 	const float *low = (const float *)(stage + 0x9ef904), *high = (const float *)(stage + 0x9ef910);
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
@@ -651,7 +653,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 	int nz = ftol(fdiv_m(fsub_m(fld_m(&high[2]), &low[2]), &size_z));
 	space_setBy(grid, (void *)low, (void *)high, nz, nx, ny, a, b, depth);
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c747c, "add floor planes"));
-	if (FIELD(int, stage, 0x9ef30c)) {
+	if (st->floorOn) {
 #define F(v) f32(fld_m(&(v)))
 		float va[3] = { F(high[0]), F(low[1]), F(low[2]) }, vb[3] = { F(low[0]), F(low[1]), F(high[2]) };
 		float vd[3] = { F(high[0]), F(low[1]), F(high[2]) };
@@ -661,7 +663,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		ground_triangle(grid, 0x10, vc, vb, va);
 		ground_triangle(grid, 0x10, va, vb, vd);
 	}
-	for (int l = 0; l < FIELD(int, stage, 0xdc0a74); l++) {
+	for (int l = 0; l < st->groundLayerCount; l++) {
 		u8 *layer = stage + 0xdc0244 + l * 0x20c;
 		int kind = FIELD(int, layer, 0);
 		if (kind != 0 && kind != 1)
@@ -682,7 +684,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 			}
 		}
 	}
-	for (int i = 0; i < FIELD(int, stage, 0x13c9b24); i++) {
+	for (int i = 0; i < st->objectCount; i++) {
 		u8 *obj = stage + 0x131ae44 + i * 0x2cc;
 		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
 			continue;

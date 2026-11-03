@@ -106,6 +106,12 @@ if spec.startswith('GV:'):
 		pm = re.match(r'^([^,()]+), %s \+ (0x[0-9a-f]+)(?: \+ (\(?[\w\->.\[\]]+\)?|\([^()]*(?:\([^()]*\)[^()]*)*\)) \* (0x[0-9a-f]+|\d+))?$' % re.escape(var), inner)
 		if pm:
 			found.append((a, b, pm.group(1).strip(), int(pm.group(2), 16), pm.group(3), int(pm.group(4), 0) if pm.group(4) else None))
+elif spec.startswith('FIELD:'):   # FIELD(type, var, C [+ expr * N]) on a variable of the struct's type
+	var = spec[6:]
+	for a, b, inner, m in calls(r'\bFIELD\('):
+		pm = re.match(r'^([^,()]+), %s, (0x[0-9a-f]+)(?: \+ (\(?[\w\->.\[\]]+\)?|\([^()]*(?:\([^()]*\)[^()]*)*\)) \* (0x[0-9a-f]+|\d+))?$' % re.escape(var), inner)
+		if pm:
+			found.append((a, b, pm.group(1).strip(), int(pm.group(2), 16), pm.group(3), int(pm.group(4), 0) if pm.group(4) else None))
 else:
 	macros = {}
 	for x in spec.split(','):
