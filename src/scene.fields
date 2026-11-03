@@ -12,6 +12,25 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x124      4          float armorDeadline                        # (by use) blinkTime + 10 while in play (the local and bots'); past it: the armour is gone
+0x4a4      4          float effectScale                          # (by use) the emitters' scale by the speed (0.5 .. 3)
+0x4d0      4          i32 order                                  # (by use) an order to carry out this frame (-1 none): 0 refill, 1 ammunition, 2 / 3 orderFlag on / off, 4 a death
+0x4d4      4          i32 orderFlag                              # (unclear) sent as state bit 0x1000
+0x8800     4          i32 pathReverse                            # (by use) 1: the path is followed backwards
+0x8804     4          float botWait                              # (by use) seconds a bot stays put
+0x8808     4          i32 botWaitTrigger                         # (by use) a trigger a bot waits for (-1 none)
+0x8810     4          i32 lookActor                              # (by use) the actor a bot looks at (-1 none)
+0x8814     4          i32 lookPath                               # the path whose point it looks at (-1 none)
+0x8818     4          i32 lookPoint
+0x8824     4          float scanTime                             # (by use) a bot looks for a target every half second
+0x8828     4          float burstPause                           # (by use) seconds to the next burst (spawnTail[3])
+0x882c     4          float burstFire                            # seconds of the burst left (spawnTail[4])
+0x8830     4          float dodgeTime                            # (by use) seconds to the next sideways step (spawnTail[0])
+0x8834     4          float heightTime                           # seconds to the next height change (spawnTail[1])
+0x8844     4          float lookTime                             # (by use) seconds to the next random look (2)
+0x886c     4          float stuckTime                            # (by use) the path checked every second: moved under 500 -> dropped
+0x8870     4          i32 stuckPath                              # the path dropped
+0x8874     0xc        float stuckMove[3]                         # the moves summed over the second
 0x38       4          float keyRate                              # (by use) how fast the movement keys ramp (a second)
 0x3c       4          float moveAccel                            # the velocity's change towards the keys' (a second)
 0x40       4          float leanPitch                            # the body's lean with the pitch
@@ -89,9 +108,9 @@ struct Player 0x8888                                            # a player's rec
 0x70       4          u32 spawn70                                 # (unclear) the spawn record's +0x34
 0x74       4          i32 spawn74                               # (unclear) the spawn record's +0x38 x 10, whole
 0x78       4          u32 spawn78                               # (unclear) the spawn record's +0x3c
-0x7c       4          float spawn7c                             # (unclear) the spawn record's +0x40 x 100
-0x80       4          float spawn80                             # (unclear) the spawn record's +0x44 x 100
-0x84       0x14       float spawnTail[5]                            # (unclear) the spawn record's +0x48 .. +0x58
+0x7c       4          float dodgeSpread                         # (by use) a bot's sideways step about its target: up to +- this (the spawn record's +0x40 x 100)
+0x80       4          float climbSpread                         # a bot's height about its target: up to +- this (the spawn record's +0x44 x 100)
+0x84       0x14       float spawnTail[5]                            # (by use) a bot's timings, seconds: [0] between sideways steps, [1] between height changes, [2] its distance kept from the target, [3] the pause between bursts, [4] a burst's length
 0x44c      4          i32 inForward                             # the input it acts on this frame (actor_setInput): held forward
 0x450      4          i32 inBackward
 0x454      4          i32 inStepLeft

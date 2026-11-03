@@ -1918,9 +1918,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_THISFN(stage_setupActorSlot, 0x45dc00, void, void *, int, int, u32, u32 *)(STAGE, i, -1, from, rec);
 			msg_newKing(g);   /* msg_newKing */
 		}
-		GAME_VAR(int, ac + 0x1e8) = 1;
-		GAME_VAR(float, ac + 0x124) = f32(fadd_m(fld_m((const float *)(ac + 0x120)), K(0x4a9418)));
-		GAME_VAR(u32, ac + 0x3f0) = *(const u16 *)(pkt + 2);
+		((Player *)ac)->netFired = 1;
+		((Player *)ac)->armorDeadline = f32(fadd_m(fld_m((const float *)(ac + 0x120)), K(0x4a9418)));
+		BITS(((Player *)ac)->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
 			((Player *)ac)->statusIcon = 1;
 		else if (weapon == 7)
@@ -1929,19 +1929,19 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			((Player *)ac)->statusIcon = 0;
 			actor_setWeaponSlot(STAGE, i, weapon);   /* actor_setWeaponSlot */
 		}
-		GAME_VAR(float, ac + 0x1ac) = x;
-		GAME_VAR(float, ac + 0x1b0) = y;
-		GAME_VAR(float, ac + 0x1b4) = z;
-		GAME_VAR(float, ac + 0x1b8) = yaw;
-		GAME_VAR(float, ac + 0x1bc) = pitch;
-		GAME_VAR(float, ac + 0x1c0) = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
-		GAME_VAR(float, ac + 0x1c4) = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
-		GAME_VAR(float, ac + 0x1c8) = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
-		GAME_VAR(float, ac + 0x1d0) = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
+		((Player *)ac)->netPos[0] = x;
+		((Player *)ac)->netPos[1] = y;
+		((Player *)ac)->netPos[2] = z;
+		((Player *)ac)->netPitch = yaw;
+		((Player *)ac)->netYaw = pitch;
+		((Player *)ac)->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
+		((Player *)ac)->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
+		((Player *)ac)->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
+		((Player *)ac)->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
 		h = fmul_m((long double)b[0x10], K(0x4aa48c));
-		GAME_VAR(float, ac + 0x1cc) = f32(h);
+		((Player *)ac)->netMotion[3] = f32(h);
 		if (h > *K(0x4aa288))
-			GAME_VAR(float, ac + 0x1cc) = f32(fsub_m(h, K(0x4a94c8)));
+			((Player *)ac)->netMotion[3] = f32(fsub_m(h, K(0x4a94c8)));
 		int hurt;
 		if (b[0x11] & 0x80) {
 			((Player *)ac)->lastAttacker = b[0x11] & 0xf;
@@ -1955,7 +1955,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				((Player *)ac)->armor = 0;
 		}
 		if (hurt)
-			GAME_VAR(u32, ac + 0x8854) = 0x3f000000;
+			BITS(((Player *)ac)->hitFlash) = 0x3f000000;
 		const u8 *w = b + 0x13;
 		for (int k = 0; k < 5; k++, w += 9) {
 			u32 *slot = (u32 *)(ac + 0x1f8 + k * 0x20);
@@ -2020,8 +2020,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			}
 		}
 		u8 *ac = ACTOR(b[2]);
-		GAME_VAR(u32, ac + 0xfc) = *(const u32 *)(pkt + 0x11);
-		GAME_VAR(u32, ac + 0x100) = *(const u32 *)(pkt + 0x15);
+		((Player *)ac)->timePlayed = *(const u32 *)(pkt + 0x11);
+		BITS(((Player *)ac)->timeExtra) = *(const u32 *)(pkt + 0x15);
 		int me = GS->localPlayer;
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
 			G(int, 0x234300a + me * 0x10) = 1;

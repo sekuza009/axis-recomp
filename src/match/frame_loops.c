@@ -562,8 +562,8 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			if (AC->pilot == ST->playerActor && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
 				memcpy(ac + 0x180, to + 0xc, 12);
-				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
-				A(u32, 0x190) = GAME_VAR(u32, to + 0x1c);
+				AC->nextPitch = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
+				BITS(AC->nextYaw) = GAME_VAR(u32, to + 0x1c);
 				A(int, 0x538) = I(int, 4);
 				strcpy((char *)ac + 0x4f4, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
 				A(int, 0x534) = 0;
