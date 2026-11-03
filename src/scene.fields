@@ -12,6 +12,43 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x38       4          float keyRate                              # (by use) how fast the movement keys ramp (a second)
+0x3c       4          float moveAccel                            # the velocity's change towards the keys' (a second)
+0x40       4          float leanPitch                            # the body's lean with the pitch
+0x44       4          float boostTime                            # (by use) seconds of running the energy lasts
+0x48       4          float rechargeTime                         # seconds the energy takes to refill
+0x4c       4          float restTime                             # seconds of rest after running
+0x54       0x10       float runTop[4]                            # (by use) the top speeds running: forward, back, right, left
+# the motion state: this frame's (pos .. fireAnim, from the next one each frame: actor_frame.c), the next one
+# (nextPos .. fireCycle: the keys', or moved towards the sent one), the sent one (netPos .. netMotion)
+0x168      4          float forward                              # (by use) forward speed (-1 .. 1, more running)
+0x16c      4          float strafe                               # sideways speed
+0x170      4          float climb                                # 0 .. 1: going up (the altitude key)
+0x174      4          float lean                                 # (by use) the body's lean forward (degrees x 10: from the speed and pitch)
+0x178      4          float run                                  # 0 .. 1: running (the booster key)
+0x180      0xc        float nextPos[3]
+0x18c      4          float nextPitch
+0x190      4          float nextYaw
+0x198      4          float nextStrafe
+0x19c      4          float nextClimb
+0x1a0      4          float nextLean
+0x1a4      4          float nextRun
+0x1ac      0xc        float netPos[3]                            # (by use) the state last received (another machine's actor)
+0x1b8      4          float netPitch
+0x1bc      4          float netYaw
+0x1c0      0x14       float netMotion[5]                         # forward, strafe, climb, lean, run
+0x1d4      0xc        float botGoal[3]                           # (by use) where a bot goes
+0x1e0      4          float botLookPitch                         # (by use) the pitch a bot turns to
+0x1e4      4          float botLookYaw
+0x1e8      4          i32 netFired                               # (by use) 1: rounds received this frame (fired by the others' copy)
+0x1ec      4          i32 firing                                 # (by use) 1: firing this frame
+0x378      0xc        float velocity[3]                          # (by use) moves towards the keys' (moveAccel)
+0x384      0xc        float move[3]                              # (by use) this frame's move (nextPos - pos)
+0x390      0x18       float pose[6]                              # (by use) the body's pose: swing, lean, head turn; 3 animation frames
+0x3e8      4          float radius                               # (by use) its sphere against the others and the walls
+0x4a8      4          float footstepTime                         # (by use) a footstep every third of a second
+0x4e0      0xc        float deathPos[3]                          # (by use) where it died (its position while not in play)
+0x885c     0xc        float push[3]                              # (by use) a hit's push on the local actor (with hitFlash)
 0x150      4          float stateTime                            # (by use) seconds in its state (dying: out after 2)
 0x1f4      4          float burstTime                            # (by use) the time to the burst's next round
 0x448      4          i32 shieldRegen                            # (by use) shield regained a second (up to shieldMax)
@@ -34,7 +71,7 @@ struct Player 0x8888                                            # a player's rec
 0x11c      4          i32 bot                                    # (by use) not 0: run by the game (targets, following)
 0x154      0xc        float pos[3]                               # (by use) its position (ray traces start there)
 0x160      4          float pitch                                # (by use) the look's pitch, within +-89 degrees with the input's
-0x194      4          float forwardSpeed                         # (by use) the forward speed the keys build up
+0x194      4          float nextForward                          # (by use) the forward speed the keys build up (-1 .. 1, more running): copied to forward
 0x1a8      4          float fireCycle                            # (by use) the firing cycle, wrapping at 1
 0x1f0      4          i32 burstLeft                              # (by use) rounds of the current burst still to fire
 0x48c      4          i32 weaponLowering                         # (by use) 1: the weapon is going down (weaponLower from 1 to 0)
@@ -79,7 +116,7 @@ struct Player 0x8888                                            # a player's rec
 0x130      0x10       i32 ammo[4]                               # per weapon slot
 0x140      4          i32 slot                                  # (by use) the selected item slot (the player record\'s items); its icon is the gauge\'s cell (3 x 3)
 0x148      4          i32 actorType                             # index into Scene.actorInfo / snapshotTex
-0x17c      4          float aimBonus                            # (unclear) > 0: a larger, fainter crosshair
+0x17c      4          float fireAnim                             # the frame of the weapon's firing animation (fireCycle a frame late; > 0: a larger, fainter crosshair)
 0x3f0      4          i32 timerFlags                            # bit 8 + k: timer k shown
 0x3f4      0x10       float timers[4]                           # seconds left (2: boost, the energy bar turns blue)
 0x494      4          float gauge                               # > 0: the gauge is shown (its alpha, at most 1)

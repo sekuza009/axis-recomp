@@ -29,9 +29,14 @@ typedef struct Player {
 	i32 shieldMax;   /* +0x20: the shield it starts with */
 	u8 _pad0000024[0x4];
 	i32 ammoMax[4];   /* +0x28: (by use) per weapon slot: the full load (ammo starts at half) */
-	u8 _pad0000038[0x18];
+	float keyRate;   /* +0x38: (by use) how fast the movement keys ramp (a second) */
+	float moveAccel;   /* +0x3c: the velocity's change towards the keys' (a second) */
+	float leanPitch;   /* +0x40: the body's lean with the pitch */
+	float boostTime;   /* +0x44: (by use) seconds of running the energy lasts */
+	float rechargeTime;   /* +0x48: seconds the energy takes to refill */
+	float restTime;   /* +0x4c: seconds of rest after running */
 	float speed;   /* +0x50: (unclear) the spawn record's speed x 27.7778, kept twice (also topSpeed) */
-	u8 _pad0000054[0x10];
+	float runTop[4];   /* +0x54: (by use) the top speeds running: forward, back, right, left */
 	u32 spawn64;   /* +0x64: (unclear) the spawn record's +0x1c */
 	float topSpeed;   /* +0x68: (unclear) see speed */
 	float accel;   /* +0x6c: (unclear) the spawn record's +0x2c x 10 */
@@ -73,16 +78,38 @@ typedef struct Player {
 	float pos[3];   /* +0x154: (by use) its position (ray traces start there) */
 	float pitch;   /* +0x160: (by use) the look's pitch, within +-89 degrees with the input's */
 	float yaw;   /* +0x164: (by use) the heading (with pitch: the look) */
-	u8 _pad0000168[0x14];
-	float aimBonus;   /* +0x17c: (unclear) > 0: a larger, fainter crosshair */
-	u8 _pad0000180[0x14];
-	float forwardSpeed;   /* +0x194: (by use) the forward speed the keys build up */
-	u8 _pad0000198[0x10];
+	float forward;   /* +0x168: (by use) forward speed (-1 .. 1, more running) */
+	float strafe;   /* +0x16c: sideways speed */
+	float climb;   /* +0x170: 0 .. 1: going up (the altitude key) */
+	float lean;   /* +0x174: (by use) the body's lean forward (degrees x 10: from the speed and pitch) */
+	float run;   /* +0x178: 0 .. 1: running (the booster key) */
+	float fireAnim;   /* +0x17c: the frame of the weapon's firing animation (fireCycle a frame late; > 0: a larger, fainter crosshair) */
+	float nextPos[3];   /* +0x180 */
+	float nextPitch;   /* +0x18c */
+	float nextYaw;   /* +0x190 */
+	float nextForward;   /* +0x194: (by use) the forward speed the keys build up (-1 .. 1, more running): copied to forward */
+	float nextStrafe;   /* +0x198 */
+	float nextClimb;   /* +0x19c */
+	float nextLean;   /* +0x1a0 */
+	float nextRun;   /* +0x1a4 */
 	float fireCycle;   /* +0x1a8: (by use) the firing cycle, wrapping at 1 */
-	u8 _pad00001ac[0x44];
+	float netPos[3];   /* +0x1ac: (by use) the state last received (another machine's actor) */
+	float netPitch;   /* +0x1b8 */
+	float netYaw;   /* +0x1bc */
+	float netMotion[5];   /* +0x1c0: forward, strafe, climb, lean, run */
+	float botGoal[3];   /* +0x1d4: (by use) where a bot goes */
+	float botLookPitch;   /* +0x1e0: (by use) the pitch a bot turns to */
+	float botLookYaw;   /* +0x1e4 */
+	i32 netFired;   /* +0x1e8: (by use) 1: rounds received this frame (fired by the others' copy) */
+	i32 firing;   /* +0x1ec: (by use) 1: firing this frame */
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
-	u8 _pad00001f8[0x1f4];
+	u8 _pad00001f8[0x180];
+	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
+	float move[3];   /* +0x384: (by use) this frame's move (nextPos - pos) */
+	float pose[6];   /* +0x390: (by use) the body's pose: swing, lean, head turn; 3 animation frames */
+	u8 _pad00003a8[0x40];
+	float radius;   /* +0x3e8: (by use) its sphere against the others and the walls */
 	i32 statusIcon;   /* +0x3ec: (unclear) 1 / 2: an icon over the player */
 	i32 timerFlags;   /* +0x3f0: bit 8 + k: timer k shown */
 	float timers[4];   /* +0x3f4: seconds left (2: boost, the energy bar turns blue) */
@@ -108,7 +135,8 @@ typedef struct Player {
 	float gauge;   /* +0x494: > 0: the gauge is shown (its alpha, at most 1) */
 	i32 slotLoaded;   /* +0x498: (by use) the slot whose item was loaded last (another player's actor) */
 	i32 variantLoaded;   /* +0x49c: (by use) the parts' variant loaded (0 for the selected actor, else detail + 1) */
-	u8 _pad00004a0[0xc];
+	u8 _pad00004a0[0x8];
+	float footstepTime;   /* +0x4a8: (by use) a footstep every third of a second */
 	float energyUsed;   /* +0x4ac: 0..1 */
 	float staminaRest;   /* +0x4b0: (by use) the rest after running (back to 1) */
 	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
@@ -121,7 +149,7 @@ typedef struct Player {
 	u8 _pad00004d0[0x8];
 	i32 markSolo;   /* +0x4d8: (unclear) 1: a mark (icon 8) after the player's ranking row and over the player, games without teams */
 	i32 markTeam;   /* +0x4dc: (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games */
-	u8 _pad00004e0[0xc];
+	float deathPos[3];   /* +0x4e0: (by use) where it died (its position while not in play) */
 	float glow;   /* +0x4ec: (by use) a fresh shot's flash (and speed unless cloaked) */
 	u8 _pad00004f0[0x54];
 	float shieldRegenTime;   /* +0x544: (by use) seconds towards the next shield regained */
@@ -150,7 +178,8 @@ typedef struct Player {
 	u8 _pad0008850[0x4];
 	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
 	float botTargetTime;   /* +0x8858: (by use) seconds left on the bot's target (10.5) */
-	u8 _pad000885c[0x24];
+	float push[3];   /* +0x885c: (by use) a hit's push on the local actor (with hitFlash) */
+	u8 _pad0008868[0x18];
 	i32 alert;   /* +0x8880: (unclear) 1: the alert ring (red in network games) */
 	float beepTimer;   /* +0x8884: (by use) the warning beep while aimed at (0.5 s) */
 } Player;
@@ -938,7 +967,14 @@ _Static_assert(offsetof(Player, heading) == 0x4 && sizeof(((Player *)0)->heading
 _Static_assert(offsetof(Player, armorMax) == 0x1c && sizeof(((Player *)0)->armorMax) == 0x4, "scene.fields: Player.armorMax");
 _Static_assert(offsetof(Player, shieldMax) == 0x20 && sizeof(((Player *)0)->shieldMax) == 0x4, "scene.fields: Player.shieldMax");
 _Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
+_Static_assert(offsetof(Player, keyRate) == 0x38 && sizeof(((Player *)0)->keyRate) == 0x4, "scene.fields: Player.keyRate");
+_Static_assert(offsetof(Player, moveAccel) == 0x3c && sizeof(((Player *)0)->moveAccel) == 0x4, "scene.fields: Player.moveAccel");
+_Static_assert(offsetof(Player, leanPitch) == 0x40 && sizeof(((Player *)0)->leanPitch) == 0x4, "scene.fields: Player.leanPitch");
+_Static_assert(offsetof(Player, boostTime) == 0x44 && sizeof(((Player *)0)->boostTime) == 0x4, "scene.fields: Player.boostTime");
+_Static_assert(offsetof(Player, rechargeTime) == 0x48 && sizeof(((Player *)0)->rechargeTime) == 0x4, "scene.fields: Player.rechargeTime");
+_Static_assert(offsetof(Player, restTime) == 0x4c && sizeof(((Player *)0)->restTime) == 0x4, "scene.fields: Player.restTime");
 _Static_assert(offsetof(Player, speed) == 0x50 && sizeof(((Player *)0)->speed) == 0x4, "scene.fields: Player.speed");
+_Static_assert(offsetof(Player, runTop) == 0x54 && sizeof(((Player *)0)->runTop) == 0x10, "scene.fields: Player.runTop");
 _Static_assert(offsetof(Player, spawn64) == 0x64 && sizeof(((Player *)0)->spawn64) == 0x4, "scene.fields: Player.spawn64");
 _Static_assert(offsetof(Player, topSpeed) == 0x68 && sizeof(((Player *)0)->topSpeed) == 0x4, "scene.fields: Player.topSpeed");
 _Static_assert(offsetof(Player, accel) == 0x6c && sizeof(((Player *)0)->accel) == 0x4, "scene.fields: Player.accel");
@@ -976,11 +1012,36 @@ _Static_assert(offsetof(Player, stateTime) == 0x150 && sizeof(((Player *)0)->sta
 _Static_assert(offsetof(Player, pos) == 0x154 && sizeof(((Player *)0)->pos) == 0xc, "scene.fields: Player.pos");
 _Static_assert(offsetof(Player, pitch) == 0x160 && sizeof(((Player *)0)->pitch) == 0x4, "scene.fields: Player.pitch");
 _Static_assert(offsetof(Player, yaw) == 0x164 && sizeof(((Player *)0)->yaw) == 0x4, "scene.fields: Player.yaw");
-_Static_assert(offsetof(Player, aimBonus) == 0x17c && sizeof(((Player *)0)->aimBonus) == 0x4, "scene.fields: Player.aimBonus");
-_Static_assert(offsetof(Player, forwardSpeed) == 0x194 && sizeof(((Player *)0)->forwardSpeed) == 0x4, "scene.fields: Player.forwardSpeed");
+_Static_assert(offsetof(Player, forward) == 0x168 && sizeof(((Player *)0)->forward) == 0x4, "scene.fields: Player.forward");
+_Static_assert(offsetof(Player, strafe) == 0x16c && sizeof(((Player *)0)->strafe) == 0x4, "scene.fields: Player.strafe");
+_Static_assert(offsetof(Player, climb) == 0x170 && sizeof(((Player *)0)->climb) == 0x4, "scene.fields: Player.climb");
+_Static_assert(offsetof(Player, lean) == 0x174 && sizeof(((Player *)0)->lean) == 0x4, "scene.fields: Player.lean");
+_Static_assert(offsetof(Player, run) == 0x178 && sizeof(((Player *)0)->run) == 0x4, "scene.fields: Player.run");
+_Static_assert(offsetof(Player, fireAnim) == 0x17c && sizeof(((Player *)0)->fireAnim) == 0x4, "scene.fields: Player.fireAnim");
+_Static_assert(offsetof(Player, nextPos) == 0x180 && sizeof(((Player *)0)->nextPos) == 0xc, "scene.fields: Player.nextPos");
+_Static_assert(offsetof(Player, nextPitch) == 0x18c && sizeof(((Player *)0)->nextPitch) == 0x4, "scene.fields: Player.nextPitch");
+_Static_assert(offsetof(Player, nextYaw) == 0x190 && sizeof(((Player *)0)->nextYaw) == 0x4, "scene.fields: Player.nextYaw");
+_Static_assert(offsetof(Player, nextForward) == 0x194 && sizeof(((Player *)0)->nextForward) == 0x4, "scene.fields: Player.nextForward");
+_Static_assert(offsetof(Player, nextStrafe) == 0x198 && sizeof(((Player *)0)->nextStrafe) == 0x4, "scene.fields: Player.nextStrafe");
+_Static_assert(offsetof(Player, nextClimb) == 0x19c && sizeof(((Player *)0)->nextClimb) == 0x4, "scene.fields: Player.nextClimb");
+_Static_assert(offsetof(Player, nextLean) == 0x1a0 && sizeof(((Player *)0)->nextLean) == 0x4, "scene.fields: Player.nextLean");
+_Static_assert(offsetof(Player, nextRun) == 0x1a4 && sizeof(((Player *)0)->nextRun) == 0x4, "scene.fields: Player.nextRun");
 _Static_assert(offsetof(Player, fireCycle) == 0x1a8 && sizeof(((Player *)0)->fireCycle) == 0x4, "scene.fields: Player.fireCycle");
+_Static_assert(offsetof(Player, netPos) == 0x1ac && sizeof(((Player *)0)->netPos) == 0xc, "scene.fields: Player.netPos");
+_Static_assert(offsetof(Player, netPitch) == 0x1b8 && sizeof(((Player *)0)->netPitch) == 0x4, "scene.fields: Player.netPitch");
+_Static_assert(offsetof(Player, netYaw) == 0x1bc && sizeof(((Player *)0)->netYaw) == 0x4, "scene.fields: Player.netYaw");
+_Static_assert(offsetof(Player, netMotion) == 0x1c0 && sizeof(((Player *)0)->netMotion) == 0x14, "scene.fields: Player.netMotion");
+_Static_assert(offsetof(Player, botGoal) == 0x1d4 && sizeof(((Player *)0)->botGoal) == 0xc, "scene.fields: Player.botGoal");
+_Static_assert(offsetof(Player, botLookPitch) == 0x1e0 && sizeof(((Player *)0)->botLookPitch) == 0x4, "scene.fields: Player.botLookPitch");
+_Static_assert(offsetof(Player, botLookYaw) == 0x1e4 && sizeof(((Player *)0)->botLookYaw) == 0x4, "scene.fields: Player.botLookYaw");
+_Static_assert(offsetof(Player, netFired) == 0x1e8 && sizeof(((Player *)0)->netFired) == 0x4, "scene.fields: Player.netFired");
+_Static_assert(offsetof(Player, firing) == 0x1ec && sizeof(((Player *)0)->firing) == 0x4, "scene.fields: Player.firing");
 _Static_assert(offsetof(Player, burstLeft) == 0x1f0 && sizeof(((Player *)0)->burstLeft) == 0x4, "scene.fields: Player.burstLeft");
 _Static_assert(offsetof(Player, burstTime) == 0x1f4 && sizeof(((Player *)0)->burstTime) == 0x4, "scene.fields: Player.burstTime");
+_Static_assert(offsetof(Player, velocity) == 0x378 && sizeof(((Player *)0)->velocity) == 0xc, "scene.fields: Player.velocity");
+_Static_assert(offsetof(Player, move) == 0x384 && sizeof(((Player *)0)->move) == 0xc, "scene.fields: Player.move");
+_Static_assert(offsetof(Player, pose) == 0x390 && sizeof(((Player *)0)->pose) == 0x18, "scene.fields: Player.pose");
+_Static_assert(offsetof(Player, radius) == 0x3e8 && sizeof(((Player *)0)->radius) == 0x4, "scene.fields: Player.radius");
 _Static_assert(offsetof(Player, statusIcon) == 0x3ec && sizeof(((Player *)0)->statusIcon) == 0x4, "scene.fields: Player.statusIcon");
 _Static_assert(offsetof(Player, timerFlags) == 0x3f0 && sizeof(((Player *)0)->timerFlags) == 0x4, "scene.fields: Player.timerFlags");
 _Static_assert(offsetof(Player, timers) == 0x3f4 && sizeof(((Player *)0)->timers) == 0x10, "scene.fields: Player.timers");
@@ -1004,6 +1065,7 @@ _Static_assert(offsetof(Player, weaponLower) == 0x490 && sizeof(((Player *)0)->w
 _Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) == 0x4, "scene.fields: Player.gauge");
 _Static_assert(offsetof(Player, slotLoaded) == 0x498 && sizeof(((Player *)0)->slotLoaded) == 0x4, "scene.fields: Player.slotLoaded");
 _Static_assert(offsetof(Player, variantLoaded) == 0x49c && sizeof(((Player *)0)->variantLoaded) == 0x4, "scene.fields: Player.variantLoaded");
+_Static_assert(offsetof(Player, footstepTime) == 0x4a8 && sizeof(((Player *)0)->footstepTime) == 0x4, "scene.fields: Player.footstepTime");
 _Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");
 _Static_assert(offsetof(Player, staminaRest) == 0x4b0 && sizeof(((Player *)0)->staminaRest) == 0x4, "scene.fields: Player.staminaRest");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
@@ -1013,6 +1075,7 @@ _Static_assert(offsetof(Player, mechType) == 0x4c4 && sizeof(((Player *)0)->mech
 _Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
 _Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->markSolo) == 0x4, "scene.fields: Player.markSolo");
 _Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");
+_Static_assert(offsetof(Player, deathPos) == 0x4e0 && sizeof(((Player *)0)->deathPos) == 0xc, "scene.fields: Player.deathPos");
 _Static_assert(offsetof(Player, glow) == 0x4ec && sizeof(((Player *)0)->glow) == 0x4, "scene.fields: Player.glow");
 _Static_assert(offsetof(Player, shieldRegenTime) == 0x544 && sizeof(((Player *)0)->shieldRegenTime) == 0x4, "scene.fields: Player.shieldRegenTime");
 _Static_assert(offsetof(Player, damageFlash) == 0x548 && sizeof(((Player *)0)->damageFlash) == 0x4, "scene.fields: Player.damageFlash");
@@ -1033,6 +1096,7 @@ _Static_assert(offsetof(Player, botTarget) == 0x8820 && sizeof(((Player *)0)->bo
 _Static_assert(offsetof(Player, cameraValue) == 0x884c && sizeof(((Player *)0)->cameraValue) == 0x4, "scene.fields: Player.cameraValue");
 _Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
 _Static_assert(offsetof(Player, botTargetTime) == 0x8858 && sizeof(((Player *)0)->botTargetTime) == 0x4, "scene.fields: Player.botTargetTime");
+_Static_assert(offsetof(Player, push) == 0x885c && sizeof(((Player *)0)->push) == 0xc, "scene.fields: Player.push");
 _Static_assert(offsetof(Player, alert) == 0x8880 && sizeof(((Player *)0)->alert) == 0x4, "scene.fields: Player.alert");
 _Static_assert(offsetof(Player, beepTimer) == 0x8884 && sizeof(((Player *)0)->beepTimer) == 0x4, "scene.fields: Player.beepTimer");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");

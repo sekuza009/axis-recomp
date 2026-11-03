@@ -385,16 +385,16 @@ static void main_energy(Player *player)
 	hud_drawRectOutline(ftol(wx(8.0f)), y0, x1, y1);
 }
 
-/* the crosshair at the centre: 64 units, 72 while aimBonus > 0 (then at alpha 0.75) */
+/* the crosshair at the centre: 64 units, 72 while fireAnim (firing) > 0 (then at alpha 0.75) */
 static void main_crosshair(Scene *scene, Player *player)
 {
-	int size = player->aimBonus > 0.0f ? 0x48 : 0x40;
+	int size = player->fireAnim > 0.0f ? 0x48 : 0x40;
 	int w = hud_toScreenX(size), h = hud_toScreenY(size);
 	int top = gfx_getHeight() / 2 - h / 2;
 	int left = gfx_getWidth() / 2 - w / 2;
 	glEnable(GL_TEXTURE_2D);
 	tex_bind(g_textures->managers[scene->crosshairTexture / 512], scene->crosshairTexture % 512);
-	glColor4f(1.0f, 1.0f, 1.0f, player->aimBonus > 0.0f ? 0.75f : 1.0f);
+	glColor4f(1.0f, 1.0f, 1.0f, player->fireAnim > 0.0f ? 0.75f : 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f);
 	glVertex2i(left, gfx_getHeight() - top);
