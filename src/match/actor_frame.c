@@ -440,8 +440,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						AC->inFire = 1;
 						AF(0x882c) = f32(fsub_m(fld_m(&AF(0x882c)), dt));
 					} else {
-						AU(0x8828) = AC->spawnTail[3];
-						AU(0x882c) = AC->spawnTail[4];
+						AU(0x8828) = BITS(AC->spawnTail[3]);
+						AU(0x882c) = BITS(AC->spawnTail[4]);
 					}
 				}
 			}
@@ -524,9 +524,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						tmp[c] = f32(fsub_m(fld_m(&AC->pos[c]), &OF(t, 0x1cd94fc + c * 4)));
 					memcpy(d, tmp, 12);
 					Vec3_normalize(d);
-					d[0] = f32(fmul_m(fld_m(&d[0]), &(*(float *)&AC->spawnTail[2])));
+					d[0] = f32(fmul_m(fld_m(&d[0]), &AC->spawnTail[2]));
 					d[1] = 0;
-					long double z = fmul_m(fld_m(&d[2]), &(*(float *)&AC->spawnTail[2]));
+					long double z = fmul_m(fld_m(&d[2]), &AC->spawnTail[2]);
 					d[2] = (float)z;
 					v28[0] = f32(-fmul_m(z, &g_vecUnitY[1]));   /* (d x the unit Y vector) */
 					v28[1] = f32(fmul_m(fld_m(&d[2]), &g_vecUnitY[0]) - fmul_m(fld_m(&d[0]), &g_vecUnitY[2]));
@@ -538,7 +538,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					v28[0] = f32(fmul_m(o, &v28[0]));
 					v28[2] = f32(fmul_m(o, &v28[2]));
 					AF(0x1d4) = f32(fadd_m(fadd_m(fld_m(&v28[0]), &ST->actors[AC->botTarget].pos[0]), &d[0]));
-					AU(0x8830) = AC->spawnTail[0];
+					AU(0x8830) = BITS(AC->spawnTail[0]);
 					AF(0x1dc) = f32(fadd_m(fadd_m(fld_m(&v28[2]), &ST->actors[AC->botTarget].pos[2]), &d[2]));
 				}
 				v = fsub_m(fld_m(&AF(0x8834)), dt);
@@ -546,7 +546,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (!(v > 0)) {   /* and up or down */
 					int n = ftol(fld_m(&AC->spawn80)) * 2;
 					int r = n > 0 ? (int)rand_below(n) : 0;
-					AU(0x8834) = AC->spawnTail[1];
+					AU(0x8834) = BITS(AC->spawnTail[1]);
 					AF(0x1d8) = f32(fsub_m(fadd_m((long double)r, &AC->pos[1]), &AC->spawn80));
 				}
 			}

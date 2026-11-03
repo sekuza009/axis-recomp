@@ -129,7 +129,7 @@ static void first_round(Scene *s)
 		g_mapRotation = 1;
 		s->rankingShown = 0;
 	}
-	s->startClear = 0;
+	(*(int *)&s->startClear) = 0;
 	s->stageCleared = 0;
 }
 
@@ -163,8 +163,8 @@ static void later_round(Scene *s)
 	BITS(s->roundTimer) = 0x40400000;   /* 3 */
 	for (int k = 0; k < 3; k++)
 		s->restartA[k] = s->restartFrom[k];
-	s->restartB[0] = s->restartFrom[3];
-	s->restartB[1] = s->restartFrom[4];
+	BITS(s->restartB[0]) = s->restartFrom[3];
+	BITS(s->restartB[1]) = s->restartFrom[4];
 	for (s->cameraMode = 0; s->cameraMode < 10; s->cameraMode++)
 		for (int t = 0; t < 6; t++)
 			s->roundArrays[t][s->cameraMode] = s->restartArrays[t][s->cameraMode];
@@ -191,11 +191,11 @@ static void later_round(Scene *s)
 	s->chatMode = 0;
 	if (g_paused)
 		chat_keepLastLine();
-	s->roundClear5 = 0;
+	(*(int *)&s->roundClear5) = 0;
 	s->matchOver = 0;
-	s->roundClear6 = 0;
+	(*(int *)&s->roundClear6) = 0;
 	s->roundOver = 0;
-	s->roundClear7 = 0;
+	(*(int *)&s->roundClear7) = 0;
 	teams_setup(s);
 	BITS(s->msgFade) = 0;
 }

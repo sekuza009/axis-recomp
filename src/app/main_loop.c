@@ -322,7 +322,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			g_mouseX = gfx_getWidth() / 2;
 			g_mouseY = gfx_getHeight() / 2;
 		}
-		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !((*(float *)&SC->roundClear5) > 0))
+		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->roundClear5 > 0))
 			SC->quitAsked = 1;
 		if (pressed2((OBJ(g_controls) + 0x58), (OBJ(g_controls) + 0x5c)))
 			SC->prevWeaponPressed = 1;
@@ -330,9 +330,9 @@ void THISCALL (match_combatInput)(u8 *s)
 			SC->nextWeaponPressed = 1;
 		if (pressed2((OBJ(g_controls) + 0xf0), (OBJ(g_controls) + 0xf4)))
 			SC->startCameraMode = SC->cameraMode == 1 ? 2 : SC->cameraMode == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !((*(float *)&SC->roundClear5) > 0))
+		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !(SC->roundClear5 > 0))
 			SC->talkPressed = 1;
-		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !((*(float *)&SC->roundClear5) > 0))
+		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(SC->roundClear5 > 0))
 			SC->teamTalkPressed = 1;
 		if (pressed2((OBJ(g_controls) + 0xf8), (OBJ(g_controls) + 0xfc)))
 			SC->helpPressed = 1;
@@ -472,27 +472,27 @@ u32 THISCALL (match_inputState3)(u8 *s)
 	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->viewKey), 0, 0);
 	if (SC->arrowUpPlain) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca28)), &turn);
-		(*(float *)&SC->restartB[0]) = f32(v);
+		SC->restartB[0] = f32(v);
 		if (!(v >= k_m890f))
-			SC->restartB[0] = 0xc45e8000;   /* -890 */
+			BITS(SC->restartB[0]) = 0xc45e8000;   /* -890 */
 	}
 	if (SC->arrowDownPlain) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca28));
-		(*(float *)&SC->restartB[0]) = f32(v);
+		SC->restartB[0] = f32(v);
 		if (v > k_890f)
-			SC->restartB[0] = 0x445e8000;   /* 890 */
+			BITS(SC->restartB[0]) = 0x445e8000;   /* 890 */
 	}
 	if (SC->arrowLeftHeld) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca2c)), &turn);
-		(*(float *)&SC->restartB[1]) = f32(v);
+		SC->restartB[1] = f32(v);
 		if (!(v >= 0))
-			(*(float *)&SC->restartB[1]) = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
+			SC->restartB[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
 	}
 	if (SC->arrowRightHeld) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca2c));
-		(*(float *)&SC->restartB[1]) = f32(v);
+		SC->restartB[1] = f32(v);
 		if (v >= k_3600f)
-			(*(float *)&SC->restartB[1]) = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
+			SC->restartB[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
 	}
 	float *zoom = (float *)(s + 0x233cb70) + SC->cameraMode;
 	if (SC->arrowUpHeld) {
@@ -607,8 +607,8 @@ u32 THISCALL (match_inputState3)(u8 *s)
 static void start_view(u8 *s)
 {
 	memcpy(s + 0x233ca04, s + 0x22ee228, 12);
-	SC->restartB[0] = SC->restartFrom[3];
-	SC->restartB[1] = SC->restartFrom[4];
+	BITS(SC->restartB[0]) = SC->restartFrom[3];
+	BITS(SC->restartB[1]) = SC->restartFrom[4];
 }
 
 /* the current camera preset (+0x233cc10) back from its stored one: six fields of ten */
@@ -757,17 +757,17 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 static void preset_angles(u8 *s, const u8 *t, u32 preset)
 {
 	int i = S(int, preset);
-	(*(float *)&SC->restartB[0]) = (float)fld_m((const float *)(s + 0x233cb20) + i);
+	SC->restartB[0] = (float)fld_m((const float *)(s + 0x233cb20) + i);
 	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
-		(*(float *)&SC->restartB[0]) = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
-	if ((*(float *)&SC->restartB[0]) > 890.0f)
-		SC->restartB[0] = 0x445e8000;
-	if (!((*(float *)&SC->restartB[0]) >= -890.0f))
-		SC->restartB[0] = 0xc45e8000;
+		SC->restartB[0] = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
+	if (SC->restartB[0] > 890.0f)
+		BITS(SC->restartB[0]) = 0x445e8000;
+	if (!(SC->restartB[0] >= -890.0f))
+		BITS(SC->restartB[0]) = 0xc45e8000;
 	i = S(int, preset);
-	(*(float *)&SC->restartB[1]) = (float)fld_m((const float *)(s + 0x233cb48) + i);
+	SC->restartB[1] = (float)fld_m((const float *)(s + 0x233cb48) + i);
 	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
-		(*(float *)&SC->restartB[1]) = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(RELOC(t) + 0x164)));
+		SC->restartB[1] = f32(fadd_m(fld_m((const float *)(s + 0x233cb48) + i), (const float *)(RELOC(t) + 0x164)));
 }
 
 /* the camera pulled back by the preset's zoom (+0x233cb70) from 0.85 of the actor t's height (its position with
@@ -938,17 +938,17 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 		for (int k = 0; k < 3; k++)
 			mv[k] = f32(fmul_m(fld_m(&mv[k]), K(0x4a9534)));
 	long double v = fsubr_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343293)), (const float *)(s + 0x233ca28));
-	(*(float *)&SC->restartB[0]) = (float)v;
+	SC->restartB[0] = (float)v;
 	if (v > 890.0f)
-		SC->restartB[0] = 0x445e8000;
-	if (!((*(float *)&SC->restartB[0]) >= -890.0f))
-		SC->restartB[0] = 0xc45e8000;
+		BITS(SC->restartB[0]) = 0x445e8000;
+	if (!(SC->restartB[0] >= -890.0f))
+		BITS(SC->restartB[0]) = 0xc45e8000;
 	v = fadd_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343297)), (const float *)(s + 0x233ca2c));
-	(*(float *)&SC->restartB[1]) = (float)v;
+	SC->restartB[1] = (float)v;
 	if (v >= 3600.0f)
-		(*(float *)&SC->restartB[1]) = f32(fsub_m(v, K(0x4a94c8)));
-	if (!((*(float *)&SC->restartB[1]) >= 0))
-		(*(float *)&SC->restartB[1]) = f32(fadd_m(fld_m((const float *)(s + 0x233ca2c)), K(0x4a94c8)));
+		SC->restartB[1] = f32(fsub_m(v, K(0x4a94c8)));
+	if (!(SC->restartB[1] >= 0))
+		SC->restartB[1] = f32(fadd_m(fld_m((const float *)(s + 0x233ca2c)), K(0x4a94c8)));
 }
 
 /* a count-down (seconds at +offset) by dt when running; 1 when it ran out this frame */
@@ -1071,7 +1071,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	SC->mouseDx = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !((*(float *)&SC->roundClear5) > 0)) {
+	if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->roundClear5 > 0)) {
 		g_mainMenuFadingIn = 0;
 		SC->quitAsked = 1;
 	}
@@ -1666,7 +1666,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		} else {
 			SC->roundOver = 1;
-			SC->roundClear7 = 0;
+			(*(int *)&SC->roundClear7) = 0;
 			music_shutdown();
 			if (SC->localPlayer >= 0)
 				notice_raise2(s, SC->localPlayer);
@@ -1987,7 +1987,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		(*(float *)&SC->firstRoundClear[0]) = f32(fadd_m(fld_m((const float *)(s + 0x2340c74)), (const float *)(s + 0x44)));
 	}
 	/* the round's end */
-	if ((*(float *)&SC->roundClear6) > 0) {
+	if (SC->roundClear6 > 0) {
 		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		if (SC->network == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (S(float, 0x23423b9) > 0.5f) {
@@ -2003,7 +2003,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				S(float, 0x23423b9) = f32(fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x23423b9)));
 		}
 		long double v = fsub_m(fld_m((const float *)(s + 0x234239d)), (const float *)(s + 0x44));
-		(*(float *)&SC->roundClear6) = (float)v;
+		SC->roundClear6 = (float)v;
 		if (!(v >= 0)) {
 			if (g_startedFromLobby != 0) {
 				SC->quitAsked = 1;
@@ -2014,7 +2014,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->playing = 0;
 			SC->escMenuOpen = 0;
 			SC->localAlive = 0;
-			SC->roundClear6 = 0;
+			(*(int *)&SC->roundClear6) = 0;
 			SC->cameraSlot = -1;
 			replay_closeRecording((Scene *)s);
 			stage_deactivateActors(stage);
@@ -2023,7 +2023,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (SC->network == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->roundOver = 1;
-				SC->roundClear7 = 0;
+				(*(int *)&SC->roundClear7) = 0;
 			} else {
 				/* the next round */
 				if (SC->showEmblems == 1) {
@@ -2191,13 +2191,13 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->network == 1) {
 		if (SC->roundOver == 0) {
 			if (net_isClient() == 0) {
-				if ((*(float *)&SC->startClear) > 5.0f) {
+				if (SC->startClear > 5.0f) {
 					msg_connectionLost(s);
 					SC->roundOver = 1;
 					BITS(SC->roundClear7) = 0x40400000;
 					music_shutdown();
 				} else
-					(*(float *)&SC->startClear) = f32(fadd_m(fld_m((const float *)(s + 0x2342395)), (const float *)(s + 0x44)));
+					SC->startClear = f32(fadd_m(fld_m((const float *)(s + 0x2342395)), (const float *)(s + 0x44)));
 			}
 			if (SC->roundOver == 0 && netq_resends() >= 0x80) {
 				netq_clearResends();
@@ -2223,7 +2223,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		} else {
 			if (SC->localPlayer >= 0 && SC->players[SC->localPlayer].team >= 0)
 				SC->teamChanged = 1;
-			SC->roundClear6 = 0;
+			(*(int *)&SC->roundClear6) = 0;
 			SC->matchOver = 0;
 			replay_closeRecording((Scene *)s);
 			if (SC->showEmblems == 1) {
@@ -2253,7 +2253,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the match's end: the log, back to the menu */
 	if (SC->roundOver == 1) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423a5)), (const float *)(s + 0x44));
-		(*(float *)&SC->roundClear7) = (float)v;
+		SC->roundClear7 = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
 				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),

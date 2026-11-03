@@ -40,7 +40,7 @@ typedef struct Player {
 	u32 spawn78;   /* +0x78: (unclear) the spawn record's +0x3c */
 	float spawn7c;   /* +0x7c: (unclear) the spawn record's +0x40 x 100 */
 	float spawn80;   /* +0x80: (unclear) the spawn record's +0x44 x 100 */
-	u32 spawnTail[5];   /* +0x84: (unclear) the spawn record's +0x48 .. +0x58 */
+	float spawnTail[5];   /* +0x84: (unclear) the spawn record's +0x48 .. +0x58 */
 	char name[0x40];   /* +0x98 */
 	i32 statD8;   /* +0xd8: (unclear) cleared with the scores (match_4620e0) */
 	i32 emblem;   /* +0xdc: emblem shown in the ranking */
@@ -742,7 +742,7 @@ typedef struct Scene {
 	u8 _pad233ca00[0x4];
 	u32 restartA[3];   /* +0x233ca04: (unclear) */
 	u8 _pad233ca10[0x18];
-	u32 restartB[2];   /* +0x233ca28: (unclear) */
+	float restartB[2];   /* +0x233ca28: (unclear) */
 	u32 restartArrays[6][10];   /* +0x233ca30: (unclear) copied into roundArrays at each later round */
 	u32 roundArrays[6][10];   /* +0x233cb20 */
 	i32 cameraMode;   /* +0x233cc10 */
@@ -786,14 +786,14 @@ typedef struct Scene {
 	float replayTime;   /* +0x2340d2d: (by use) the replay's time it is read up to */
 	u8 _pad2340d31[0x4];
 	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
-	i32 roundClear5;   /* +0x2340d39: (unclear) */
+	float roundClear5;   /* +0x2340d39: (unclear) */
 	u8 _pad2340d3d[0x1644];
 	i32 teamIds[5];   /* +0x2342381: the teams by slot (free: < 0; match/teams.c) */
-	i32 startClear;   /* +0x2342395: (unclear) cleared at each start */
+	float startClear;   /* +0x2342395: (unclear) cleared at each start */
 	i32 matchOver;   /* +0x2342399: (by use) 1: the result is shown */
-	i32 roundClear6;   /* +0x234239d: (unclear) */
+	float roundClear6;   /* +0x234239d: (unclear) */
 	i32 roundOver;   /* +0x23423a1: (unclear) */
-	i32 roundClear7;   /* +0x23423a5: (unclear) */
+	float roundClear7;   /* +0x23423a5: (unclear) */
 	i32 stageCleared;   /* +0x23423a9: (unclear) 0 with g_missionStage == g_missionProgress: "MISSION FAILED, RETRY" */
 	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
 	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
