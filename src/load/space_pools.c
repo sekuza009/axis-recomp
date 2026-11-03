@@ -48,12 +48,13 @@ int THISCALL (space_resetBlocks)(void *space) { return reset_pool(space, 0x40, 0
    error reporting all the pools' sizes (format at format) ---- */
 static void *take_free(u8 *space, int head, int next, int prev, int count, Clear clear, u32 format)
 {
+	Space *sp = (Space *)space;
 	u8 *r = FIELD(u8 *, space, head);
 	if (!r) {
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
-			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), FIELD(int, space, 0x1c), FIELD(int, space, 0x10), FIELD(int, space, 0x2c),
-			FIELD(int, space, 0x20), FIELD(int, space, 0x3c), FIELD(int, space, 0x30), FIELD(int, space, 0x4c),
-			FIELD(int, space, 0x40));
+			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), sp->planes.used, sp->planes.count, sp->nodes.used,
+			sp->nodes.count, sp->units.used, sp->units.count, sp->blocks.used,
+			sp->blocks.count);
 		return 0;
 	}
 	u8 *after = FIELD(u8 *, r, next);
@@ -78,8 +79,9 @@ void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space,
    returns it. With none free, a fatal message with the pools' sizes and 0 */
 void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32 *mx)
 {
+	Space *sp = (Space *)space;
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
-#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
+#define SP sp   /* the same by its fields (src/scene.fields) */
 	u32 *block = (*(u32 * *)&SP->blocks.freeHead);
 	if (!block) {
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int, int, int, int, int, int)((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
@@ -138,8 +140,9 @@ void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u3
    ignore the eax it leaves */
 void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int ny, int nz, u32 a, u32 b, int depth)
 {
+	Space *sp = (Space *)space;
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
-#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
+#define SP sp   /* the same by its fields (src/scene.fields) */
 	space_resetPlanes(space);
 	space_resetNodes(space);
 	space_resetUnits(space);
@@ -157,8 +160,8 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), nx, ny, nz);
 	else if (cells > SP->cellCapacity)
 		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), nx, ny, nz, cells, SP->cellCapacity);
-	SP->b = b;
-	SP->a = a;
+	SP->splitCount = b;
+	SP->margin = a;
 	SP->depth = depth;
 	SP->cellSize[0] = (float)(((long double)SP->max[2] - SP->min[2]) / SP->nx);
 	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->ny);
@@ -177,8 +180,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
    table's (+0x54) filled with 0xff, then the pools emptied. Its caller ignores the eax it leaves */
 void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int blocks, int cells, void *mem, int size)
 {
+	Space *sp = (Space *)space;
 #define FIELD(type, offset) GAME_VAR(type, space + (offset))
-#define SP ((Space *)space)   /* the same by its fields (src/scene.fields) */
+#define SP sp   /* the same by its fields (src/scene.fields) */
 	CollisionVolume_release(space);
 	SP->units.count = units;
 	SP->blocks.count = blocks;
@@ -206,7 +210,7 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	at += SP->units.count * 0x14;
 	SP->units.freeHead = SP->units.records;
 	SP->blocks.records = SP->blocks.freeHead = block + at;
-	(*(u8 * *)&SP->cells) = block + SP->blocks.count * 0x50 + at;
+	SP->cells = (u16 *)(block + SP->blocks.count * 0x50 + at);
 	memset(SP->cells, 0xff, ((u32)SP->cellCapacity) * 2);
 	space_resetPlanes(space);
 	space_resetNodes(space);
@@ -261,22 +265,23 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *vel, u32 k, float *outPos,
                                       u32 outVel, u32 outDist, u32 outPlane, u32 axis, u32 subs, u32 nsubs)
 {
-	if (FIELD(int, grid, 0x74) <= 0 || FIELD(int, grid, 0x78) <= 0 || FIELD(int, grid, 0x7c) <= 0)
+	Space *sp = (Space *)grid;
+	if (sp->nx <= 0 || sp->ny <= 0 || sp->nz <= 0)
 		return 0;
 	float to[3];
 	for (int c = 0; c < 3; c++)
 		to[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
 	memcpy(outPos, to, sizeof to);
-	const float *low = (const float *)(grid + 0x5c), *high = (const float *)(grid + 0x68);
+	const float *low = sp->min, *high = sp->max;
 	const float *margin = (const float *)(grid + 0x8c);
-	const float *size_z = (const float *)(grid + 0x80), *size_x = (const float *)(grid + 0x84), *size_y = (const float *)(grid + 0x88);
+	const float *size_z = sp->cellSize, *size_x = (const float *)(grid + 0x84), *size_y = (const float *)(grid + 0x88);
 	for (int c = 0; c < 3; c++)
 		if (fsub_m(fld_m(&low[c]), margin) >= outPos[c])
 			return 0;
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&high[c]), margin) > outPos[c]))
 			return 0;
-	int nz = FIELD(int, grid, 0x74), nx = FIELD(int, grid, 0x78), ny = FIELD(int, grid, 0x7c);
+	int nz = sp->nx, nx = sp->ny, ny = sp->nz;
 	int cz = ftol(fdiv_m(fsub_m(fld_m(&outPos[2]), &low[2]), size_z));
 	if (cz > nz - 1)
 		cz = nz - 1;
@@ -286,10 +291,10 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	int cy = ftol(fdiv_m(fsub_m(fld_m(&outPos[1]), &low[1]), size_y));
 	if (cy > ny - 1)
 		cy = ny - 1;
-	u16 root = FIELD(u16 *, grid, 0x54)[(nz * cy + cz) * nx + cx];
+	u16 root = sp->cells[(nz * cy + cz) * nx + cx];
 	if (root == 0xffff)
 		return 0;
-	u8 *node = (u8 *)array_recordAt(root, FIELD(int, grid, 0x44), 0x50);
+	u8 *node = (u8 *)array_recordAt(root, (*(int *)&sp->blocks.records), 0x50);
 	float box[6];   /* low x, y, z, then high */
 	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
 	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
@@ -301,7 +306,7 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	const float *half = (const float *)ADDR(k_0_5f);
 	while (node) {
 		if (!FIELD(int, node, 0x24))
-			return FIELD(int, grid, 0x98) = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
+			return ((Space *)grid)->lastHit = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
 		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
 		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
 		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
@@ -350,14 +355,16 @@ static void drop_if_empty(u8 *space, u8 **child)
    child (made when missing) a level down, dropping those left empty. Otherwise 1 */
 int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 {
-	const float *low = (const float *)block, *high = (const float *)(block + 0xc);
-	if (!space_itemMeetsBox(item, low, high, FIELD(u32, space, 0x8c)))
+	SpaceBlock *bk = (SpaceBlock *)block;
+	Space *sp = (Space *)space;
+	const float *low = (const float *)block, *high = bk->high;
+	if (!space_itemMeetsBox(item, low, high, sp->margin))
 		return 0;
-	u32 *first = FIELD(u32 *, block, 0x18);
+	u32 *first = bk->items;
 	if (first && first[0] == (u32)item)
 		return 0;
 	u8 **child = (u8 **)(block + 0x28);
-	if (FIELD(int, block, 0x24)) {
+	if (bk->split) {
 		for (int i = 0; i < 8; i++) {
 			if (!child[i])
 				child[i] = make_octant(space, low, high, i);
@@ -369,25 +376,25 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	u32 *node = space_getNextFreeNodePtr(space);
 	node[0] = (u32)item;
 	node[1] = (u32)block;
-	node[3] = FIELD(u32, block, 0x18);
-	if (FIELD(u32 *, block, 0x18))
-		FIELD(u32 *, block, 0x18)[2] = (u32)node;
-	FIELD(u32 *, block, 0x18) = node;
-	if (++FIELD(int, block, 0x1c) <= FIELD(int, space, 0x90) || depth <= 0)
+	node[3] = BITS(bk->items);
+	if (bk->items)
+		bk->items[2] = (u32)node;
+	bk->items = node;
+	if (++bk->itemCount <= sp->splitCount || depth <= 0)
 		return 1;
 	for (int i = 0; i < 8; i++) {
 		child[i] = make_octant(space, low, high, i);
-		FIELD(int, block, 0x24) = 1;
+		bk->split = 1;
 	}
-	for (u32 *n = FIELD(u32 *, block, 0x18); n;) {
+	for (u32 *n = bk->items; n;) {
 		for (int j = 0; j < 8; j++)
 			space_insertItem(space, child[j], (void *)RELOC(n[0]), depth - 1);
 		u32 *next = (u32 *)RELOC(n[3]);
 		space_freeNode(space, n);
 		n = next;
 	}
-	FIELD(u32, block, 0x18) = 0;
-	FIELD(int, block, 0x1c) = 0;
+	BITS(bk->items) = 0;
+	bk->itemCount = 0;
 	for (int j = 0; j < 8; j++)
 		drop_if_empty(space, &child[j]);
 	return 1;
@@ -401,6 +408,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float *v1, const float *v2, u32 unit, u32 part,
                                  u32 i0, u32 i1, u32 i2)
 {
+	Space *sp = (Space *)space;
 	float low[3], high[3];
 	memcpy(low, v0, sizeof low);
 	memcpy(high, v0, sizeof high);
@@ -412,9 +420,9 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 			if (!(others[k][c] >= low[c]))
 				((u32 *)low)[c] = ((const u32 *)others[k])[c];
 		}
-	const float *grid_low = (const float *)(space + 0x5c), *grid_high = (const float *)(space + 0x68);
+	const float *grid_low = sp->min, *grid_high = sp->max;
 	const float *margin = (const float *)(space + 0x8c);
-	const float *size_z = (const float *)(space + 0x80), *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	const float *size_z = sp->cellSize, *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&grid_high[c]), margin) > low[c]))
 			return 0;
@@ -427,20 +435,20 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 	if (z0 < 0)
 		z0 = 0;
 	int z1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[2]), margin), &grid_low[2]), size_z));
-	if (z1 > FIELD(int, space, 0x74) - 1)
-		z1 = FIELD(int, space, 0x74) - 1;
+	if (z1 > sp->nx - 1)
+		z1 = sp->nx - 1;
 	int x0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[0]), margin), &grid_low[0]), size_x));
 	if (x0 < 0)
 		x0 = 0;
 	int x1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[0]), margin), &grid_low[0]), size_x));
-	if (x1 > FIELD(int, space, 0x78) - 1)
-		x1 = FIELD(int, space, 0x78) - 1;
+	if (x1 > sp->ny - 1)
+		x1 = sp->ny - 1;
 	int y0 = ftol(fdiv_m(fsub_m(fsub_m(fld_m(&low[1]), margin), &grid_low[1]), size_y));
 	if (y0 < 0)
 		y0 = 0;
 	int y1 = ftol(fdiv_m(fsub_m(fadd_m(fld_m(&high[1]), margin), &grid_low[1]), size_y));
-	if (y1 > FIELD(int, space, 0x7c) - 1)
-		y1 = FIELD(int, space, 0x7c) - 1;
+	if (y1 > sp->nz - 1)
+		y1 = sp->nz - 1;
 	for (int y = y0; y <= y1; y++)
 		for (int z = z0; z <= z1; z++) {
 			float fy = f32(y), fz = f32(z);   /* (the original keeps these two as floats) */
@@ -454,12 +462,12 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 				box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
 				if (space_itemMeetsBox(plane, box, box + 3, *(const u32 *)margin) != 1)
 					continue;
-				int cell = (FIELD(int, space, 0x74) * y + z) * FIELD(int, space, 0x78) + x;
-				if (FIELD(u16 *, space, 0x54)[cell] == 0xffff) {
+				int cell = (sp->nx * y + z) * sp->ny + x;
+				if (sp->cells[cell] == 0xffff) {
 					u8 *block = space_getNextFreeBlockPtrBy(space, box, box + 3);
-					FIELD(u16 *, space, 0x54)[cell] = (u16)array_indexOf(block, FIELD(int, space, 0x44), 0x50);
+					sp->cells[cell] = (u16)array_indexOf(block, (*(int *)&sp->blocks.records), 0x50);
 				}
-				space_insertItem(space, FIELD(u8 *, space, 0x44) + FIELD(u16 *, space, 0x54)[cell] * 0x50, plane, FIELD(int, space, 0x94));
+				space_insertItem(space, sp->blocks.records + sp->cells[cell] * 0x50, plane, sp->depth);
 			}
 		}
 	return plane;
@@ -597,11 +605,12 @@ static long double cell_edge(int c, const float *size, const float *low)
    answer. 0 when nothing is hit */
 int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32 hit, u32 subs, u32 nsubs)
 {
-	int nz = FIELD(int, space, 0x74), nx = FIELD(int, space, 0x78), ny = FIELD(int, space, 0x7c);
+	Space *sp = (Space *)space;
+	int nz = sp->nx, nx = sp->ny, ny = sp->nz;
 	if (nz <= 0 || nx <= 0 || ny <= 0)
 		return 0;
-	const float *low = (const float *)(space + 0x5c);
-	const float *size_z = (const float *)(space + 0x80), *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	const float *low = sp->min;
+	const float *size_z = sp->cellSize, *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
 	int z0 = cell_of(&p0[2], &low[2], size_z, nz), x0 = cell_of(&p0[0], &low[0], size_x, nx), y0 = cell_of(&p0[1], &low[1], size_y, ny);
 	int z1 = cell_of(&p1[2], &low[2], size_z, nz), x1 = cell_of(&p1[0], &low[0], size_x, nx), y1 = cell_of(&p1[1], &low[1], size_y, ny);
 	int step_y = y0 > y1 ? -1 : 1, step_z = z0 > z1 ? -1 : 1, step_x = x0 > x1 ? -1 : 1;
@@ -654,9 +663,9 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 						q[2] = f32(fadd_m(fmul_m(fld_m(&db[2]), &t), &a2[2]));
 					}
 				}
-				u16 root = FIELD(u16 *, space, 0x54)[(cy * FIELD(int, space, 0x74) + cz) * FIELD(int, space, 0x78) + cx];
+				u16 root = sp->cells[(cy * sp->nx + cz) * sp->ny + cx];
 				if (root != 0xffff) {
-					int r = space_traceUnit(FIELD(u8 *, space, 0x44) + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
+					int r = space_traceUnit(sp->blocks.records + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
 					if (r)
 						return r;
 				}

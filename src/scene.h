@@ -432,6 +432,19 @@ typedef struct SpacePool {
 	i32 used;   /* +0xc: records taken */
 } SpacePool;
 
+/* a block of the collision space (Space.blocks): an octree node over a box */
+typedef struct SpaceBlock {
+	float low[3];   /* +0x0 */
+	float high[3];   /* +0xc */
+	u32 *items;   /* +0x18: (by use) its items' list (nodes: [2] back, [3] on) */
+	i32 itemCount;   /* +0x1c: over Space.splitCount (depth left): it splits */
+	u8 _pad0000020[0x4];
+	i32 split;   /* +0x24: 1: its items are in its children */
+	u8 *children[8];   /* +0x28 */
+	u8 *poolPrev;   /* +0x48: its links in the blocks' pool */
+	u8 *poolNext;   /* +0x4c */
+} SpaceBlock;
+
 /* the collision space (space_pools.c; the size is unknown: only the fields used) */
 typedef struct Space {
 	u8 _pad0000000[0x10];
@@ -440,7 +453,7 @@ typedef struct Space {
 	SpacePool units;   /* +0x30: 0x14-byte units */
 	SpacePool blocks;   /* +0x40: 0x50-byte blocks */
 	i32 cellCapacity;   /* +0x50: cells the cells' table has room for */
-	void *cells;   /* +0x54: the cells' table: two bytes a cell (0xffff: none) */
+	u16 *cells;   /* +0x54: the cells' table: a cell's root block (blocks.records index; 0xffff: none) */
 	i32 cellCount;   /* +0x58: nx * ny * nz */
 	float min[3];   /* +0x5c: its bounds */
 	float max[3];   /* +0x68 */
@@ -448,9 +461,10 @@ typedef struct Space {
 	i32 ny;   /* +0x78 */
 	i32 nz;   /* +0x7c */
 	float cellSize[3];   /* +0x80: a cell's size: (z, x, y) extents over nx, ny, nz, as the original pairs them */
-	u32 a;   /* +0x8c: (unclear) setBy's a */
-	u32 b;   /* +0x90: (unclear) setBy's b */
+	u32 margin;   /* +0x8c: (by use) a float: the items' and spheres' margin about a box (setBy's a) */
+	i32 splitCount;   /* +0x90: (by use) items a block holds before it splits (setBy's b) */
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
+	i32 lastHit;   /* +0x98: (by use) space_collideAt's last result */
 } Space;
 
 /* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
@@ -1469,6 +1483,15 @@ _Static_assert(offsetof(SpacePool, records) == 0x4 && sizeof(((SpacePool *)0)->r
 _Static_assert(offsetof(SpacePool, freeHead) == 0x8 && sizeof(((SpacePool *)0)->freeHead) == 0x4, "scene.fields: SpacePool.freeHead");
 _Static_assert(offsetof(SpacePool, used) == 0xc && sizeof(((SpacePool *)0)->used) == 0x4, "scene.fields: SpacePool.used");
 _Static_assert(sizeof(SpacePool) == 0x10, "scene.fields: size of SpacePool");
+_Static_assert(offsetof(SpaceBlock, low) == 0x0 && sizeof(((SpaceBlock *)0)->low) == 0xc, "scene.fields: SpaceBlock.low");
+_Static_assert(offsetof(SpaceBlock, high) == 0xc && sizeof(((SpaceBlock *)0)->high) == 0xc, "scene.fields: SpaceBlock.high");
+_Static_assert(offsetof(SpaceBlock, items) == 0x18 && sizeof(((SpaceBlock *)0)->items) == 0x4, "scene.fields: SpaceBlock.items");
+_Static_assert(offsetof(SpaceBlock, itemCount) == 0x1c && sizeof(((SpaceBlock *)0)->itemCount) == 0x4, "scene.fields: SpaceBlock.itemCount");
+_Static_assert(offsetof(SpaceBlock, split) == 0x24 && sizeof(((SpaceBlock *)0)->split) == 0x4, "scene.fields: SpaceBlock.split");
+_Static_assert(offsetof(SpaceBlock, children) == 0x28 && sizeof(((SpaceBlock *)0)->children) == 0x20, "scene.fields: SpaceBlock.children");
+_Static_assert(offsetof(SpaceBlock, poolPrev) == 0x48 && sizeof(((SpaceBlock *)0)->poolPrev) == 0x4, "scene.fields: SpaceBlock.poolPrev");
+_Static_assert(offsetof(SpaceBlock, poolNext) == 0x4c && sizeof(((SpaceBlock *)0)->poolNext) == 0x4, "scene.fields: SpaceBlock.poolNext");
+_Static_assert(sizeof(SpaceBlock) == 0x50, "scene.fields: size of SpaceBlock");
 _Static_assert(offsetof(Space, planes) == 0x10 && sizeof(((Space *)0)->planes) == 0x10, "scene.fields: Space.planes");
 _Static_assert(offsetof(Space, nodes) == 0x20 && sizeof(((Space *)0)->nodes) == 0x10, "scene.fields: Space.nodes");
 _Static_assert(offsetof(Space, units) == 0x30 && sizeof(((Space *)0)->units) == 0x10, "scene.fields: Space.units");
@@ -1482,10 +1505,11 @@ _Static_assert(offsetof(Space, nx) == 0x74 && sizeof(((Space *)0)->nx) == 0x4, "
 _Static_assert(offsetof(Space, ny) == 0x78 && sizeof(((Space *)0)->ny) == 0x4, "scene.fields: Space.ny");
 _Static_assert(offsetof(Space, nz) == 0x7c && sizeof(((Space *)0)->nz) == 0x4, "scene.fields: Space.nz");
 _Static_assert(offsetof(Space, cellSize) == 0x80 && sizeof(((Space *)0)->cellSize) == 0xc, "scene.fields: Space.cellSize");
-_Static_assert(offsetof(Space, a) == 0x8c && sizeof(((Space *)0)->a) == 0x4, "scene.fields: Space.a");
-_Static_assert(offsetof(Space, b) == 0x90 && sizeof(((Space *)0)->b) == 0x4, "scene.fields: Space.b");
+_Static_assert(offsetof(Space, margin) == 0x8c && sizeof(((Space *)0)->margin) == 0x4, "scene.fields: Space.margin");
+_Static_assert(offsetof(Space, splitCount) == 0x90 && sizeof(((Space *)0)->splitCount) == 0x4, "scene.fields: Space.splitCount");
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
-_Static_assert(sizeof(Space) == 0x98, "scene.fields: size of Space");
+_Static_assert(offsetof(Space, lastHit) == 0x98 && sizeof(((Space *)0)->lastHit) == 0x4, "scene.fields: Space.lastHit");
+_Static_assert(sizeof(Space) == 0x9c, "scene.fields: size of Space");
 _Static_assert(offsetof(ViewVolume, entryPointsSet) == 0x10 && sizeof(((ViewVolume *)0)->entryPointsSet) == 0x4, "scene.fields: ViewVolume.entryPointsSet");
 _Static_assert(offsetof(ViewVolume, materialOrder) == 0x20 && sizeof(((ViewVolume *)0)->materialOrder) == 0x3000, "scene.fields: ViewVolume.materialOrder");
 _Static_assert(offsetof(ViewVolume, materialCount) == 0x3024 && sizeof(((ViewVolume *)0)->materialCount) == 0x4, "scene.fields: ViewVolume.materialCount");
