@@ -190,7 +190,7 @@ void (arena_drawGameList)(void)
 	if (g_arenaFull)
 		info_box(MSG(48, "INPUT IP-ADDRESS"), 0);
 	if (g_arenaConfirming) {
-		int on = GAME_FN(arenaDialogBox_hitTest, 0x4044e0, int, int, int)(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
+		int on = arenaDialogBox_hitTest(g_mouseX, g_mouseY);   /* arenaDialogBox_hitTest */
 		RECT(0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);

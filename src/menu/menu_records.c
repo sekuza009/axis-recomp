@@ -427,8 +427,8 @@ u32 (menuState900_skirmishSetup)(void)
 	if (g_skirmishDrawBackground)
 		menu_drawBackground();
 	if (g_settingsState != 2)
-		GAME_FN(skirmish_drawTunnel, 0x4445a0, void, void)();   /* skirmish_drawTunnel */
-	GAME_FN(skirmish_camera, 0x444130, void, void)();       /* skirmish_camera: the camera */
+		skirmish_drawTunnel();   /* skirmish_drawTunnel */
+	skirmish_camera();       /* skirmish_camera: the camera */
 	int state = g_settingsState;
 	if (state == 1 || state == 0)
 		return state;
@@ -437,9 +437,9 @@ u32 (menuState900_skirmishSetup)(void)
 		                                                     g_briefingRight, g_briefingBottom);   /* menu_drawFrame */
 	int screen = g_settingsPage;
 	if (screen == 10)
-		return GAME_FN(skirmish_frameScreenA, 0x445bc0, u32, void)();   /* skirmish_drawScreenA */
+		return skirmish_frameScreenA();   /* skirmish_drawScreenA */
 	if (screen == 20)
-		return GAME_FN(skirmish_frameScreenB, 0x445bd0, u32, void)();   /* skirmish_drawScreenB */
+		return skirmish_frameScreenB();   /* skirmish_drawScreenB */
 	return screen;
 }
 
@@ -522,7 +522,7 @@ u32 (chat_closeLine)(int ok)
 	if (ok) {
 		input_resetKeys();
 		input_initKeyboard(g_hWndMain);
-		r = GAME_FN(chat_pushHistory, 0x4315c0, u32, void)();   /* chat_pushHistory: into the history */
+		r = chat_pushHistory();   /* chat_pushHistory: into the history */
 	} else {
 		if (g_typedLength > 0)
 			memset((void *)OBJ(g_chatLine), 0, g_typedLength);
@@ -613,7 +613,7 @@ static int menu_choice(int i, u32 *r)
 	int result;
 	switch (i) {
 	case 0:
-		*r = GAME_FN(menuState500_enter, 0x447750, u32, void)();   /* menuState500_enter */
+		*r = menuState500_enter();   /* menuState500_enter */
 		g_enteringMenus = 0;
 		return 0;
 	case 2:
@@ -648,7 +648,7 @@ u32 (mainmenu_startNetGame)(void)
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
-		return GAME_FN(mapSelect_mouse, 0x441810, u32, void)();   /* mapSelect_mouse: the map-select dialog */
+		return mapSelect_mouse();   /* mapSelect_mouse: the map-select dialog */
 	if (g_mouseClick) {
 		g_cursorBlink = 0.0f;
 		const Outline *buttons = (const Outline *)OBJ(g_mainMenuOutlines);
@@ -677,7 +677,7 @@ u32 (mainmenu_processKeys)(void)
 	if (g_mainMenuFadingIn == 1)
 		return 1;
 	if (g_mainMenuPicked)
-		return GAME_FN(mapSelect_keys, 0x441c00, u32, void)();   /* mapSelect_keys */
+		return mapSelect_keys();   /* mapSelect_keys */
 	for (int i = 0; i < 6; i++)
 		if (input_justPressed(GAME_VAR(int, key[i])) == 1) {
 			u32 r;
@@ -694,7 +694,7 @@ u32 (mainmenu_processKeys)(void)
 	u32 r = (u32)input_justPressed(g_excludedKey);
 	if (r != 1)
 		return r;
-	r = GAME_FN(replayList_open, 0x440d70, u32, void)();
+	r = replayList_open();
 	g_mainMenuPicked = 1;
 	return r;
 }

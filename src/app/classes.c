@@ -243,7 +243,7 @@ u32 THISCALL (actor_destroyPartLists)(u8 *self)
 	static const u32 members[8] = { 0x701c, 0x587c, 0x40dc, 0x34f4, 0x2524, 0x1554, 0xd54, 0x554 };
 	u32 r = 0;
 	for (int k = 0; k < 8; k++)
-		r = GAME_THISFN(UnitPoseInfo_dtor, 0x46f470, u32, void *)(self + members[k]);
+		r = UnitPoseInfo_dtor(self + members[k]);
 	return r;
 }
 
@@ -488,22 +488,22 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	u8 *s = g + 0x1f36c8;
 	GAME_THISFN(TimeSync_ctor, 0x487430, void, void *)(g + 0xc);   /* TimeSync_ctor */
 	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
-	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(g + 0x74);
-	GAME_THISFN(CollisionVolume_ctor, 0x463790, void, void *)(s + 0xa10);   /* CollisionVolume_ctor */
+	ViewVolume_clear(g + 0x74);
+	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
 	VTABLE(s + 0x9ccffc, VT(Light, 0x4aa248));
 	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9ccffc);
 	VECTOR(s + 0x9d8014, 0x2c, 0x400);
 	VTABLE(s + 0x9d8010, VT(Light, 0x4aa248));
 	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9d8010);
-	GAME_THISFN(Light_ctor, 0x462560, void, void *)(s + 0x9e3020);   /* Light_ctor */
+	Light_ctor(s + 0x9e3020);   /* Light_ctor */
 	VECTOR(s + 0x9ee080, 0xc, 0x126);
 	VECTOR(s + 0x9eee54, 0xc, 0x31);
 	VECTOR(s + 0x9ef0cc, 0xc, 0x30);
 	VECTOR(s + 0x9ef350, 0xc, 0x79);
 	VECTOR(s + 0xdc0244, 0x20c, 4);
-	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0a78);   /* Model_ctor */
-	GAME_THISFN(Model_ctor, 0x462cf0, void, void *)(s + 0xdc0cc4);
+	Model_ctor(s + 0xdc0a78);   /* Model_ctor */
+	Model_ctor(s + 0xdc0cc4);
 	VECTOR(s + 0xe36214, 0x14, 0x3e8);
 	VTABLE(s + 0xe3c93c, VT(ShapeManager, 0x4aa244));
 	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0xe3c93c);
@@ -525,7 +525,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VECTOR(s + 0x20fab74, 0x14, 0x20);
 	VECTOR(s + 0x20fadf8, 0x28, 0xc8);
 	VECTOR(s + 0x20fcfe4, 4, 0x2000);
-	GAME_THISFN(Scene_ctor, 0x4637f0, void, void *)(s + 0x2148ed8);   /* Scene_ctor */
+	Scene_ctor(s + 0x2148ed8);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
@@ -534,13 +534,13 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
 	GAME_VAR(int, g + 0x70) = 0;
-	GAME_THISFN(factor_initBy, 0x484050, void, void *, int, int, int, int, int, int, void *, int)(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
+	factor_initBy(g + 0x74, 10000, 1000, 20000, 4000, 400, 10000,
 	                                                                                g + 0x91e4, 2000000);   /* factor_initBy */
-	GAME_THISFN(item_initTextures, 0x4700a0, void, void *, u32, u32, u32, u32, u32, u32, u32, u32, u32)(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
+	item_initTextures(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* item_initTextures */
 	if (!PATCHED_THISCALL(0x460920, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-	if (!GAME_THISFN(map_loadItemInfoFrom, 0x4875d0, int, void *, const char *)(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
+	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
 	GAME_VAR(int, g + 0x233cc10) = 1;
@@ -569,7 +569,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 		char *m = macros + k * 0x40;
 		m[(int)strlen(m) - 1] = 0;
 	}
-	GAME_THISFN(chat_saveMacros, 0x4617f0, void, void *)(g);   /* chat_saveMacros */
+	chat_saveMacros(g);   /* chat_saveMacros */
 	return g;
 #undef CALL
 #undef VECTOR
@@ -611,7 +611,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_resetActors(s);
 	scene_reset(s);
 	if (GAME_VAR(int, g + 8) == 2) {
-		GAME_THISFN(stage_setSilentActor, 0x45dfe0, void, void *, int)(s, 0);   /* stage_setSilentActor */
+		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
 		GAME_VAR(int, g + 0x2221f9c) = 0;
 		for (int k = 0; k < 3; k++) {
 			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;

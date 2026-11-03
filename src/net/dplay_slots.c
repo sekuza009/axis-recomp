@@ -158,7 +158,7 @@ u32 (arena_leaveSession)(void)
 	(*(u32 *)&g_connectionKind) = 4;
 	if (kind <= 3)
 		GAME_CDECL(close[kind], int, void)();
-	u32 r = GAME_FN(net_freeSessionList, 0x454130, u32, void)();   /* net_freeSessionList */
+	u32 r = net_freeSessionList();   /* net_freeSessionList */
 	g_dplaySessionList = 0;
 	g_netQueueOnline = 0;
 	g_arenaSessionOpen = 0;
@@ -172,7 +172,7 @@ int (arena_openSession)(u32 kind, const char *host)
 {
 	static const u32 open[4] = { FN_ADDR(dplaySlot0_open, 0x454940), FN_ADDR(dplaySlot1_open, 0x454a50), FN_ADDR(dplaySlot2_open, 0x454b70), FN_ADDR(dplaySlot3_open, 0x454c80) };
 	char address[16] = { 0 };
-	GAME_FN(net_freeAllSlots, 0x4515a0, void, void)();
+	net_freeAllSlots();
 	g_arenaSessionOpen = 1;
 	if (host) {
 		if (!net_resolveHost(host))   /* net_resolveHost */

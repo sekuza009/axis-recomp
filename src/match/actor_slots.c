@@ -798,7 +798,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(int, 0x140) = -1;
 	A(int, 0x144) = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
-	GAME_THISFN(actor_startingValues, 0x45ebc0, void, void *, int)(s, a);   /* actor_startingValues */
+	actor_startingValues(s, a);   /* actor_startingValues */
 	A(int, 0x14c) = 1;
 	A(int, 0x150) = 0;
 	memcpy(ac + 0x154, pp + 2, 12);
@@ -946,7 +946,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 {
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
+		ResourceSet_trivialCtor(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);

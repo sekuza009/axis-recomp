@@ -195,7 +195,7 @@ u32 (profile_logIn)(void)
 	g_lobbyReply = 0;
 	if (g_startedFromLobby == 1)
 		g_lobbyReply = 0x65;
-	GAME_FN(profile_save, 0x446a10, void, void)();   /* profile_save */
+	profile_save();   /* profile_save */
 	g_menuState = 300;
 	g_nextScreen = 300;
 	g_keysBlocked = 2;
@@ -229,9 +229,9 @@ u32 (profile_frame)(void)
 		return GAME_FN(profile_typeNewName, 0x44b600, u32, void)();
 	}
 	if (g_emblemMoved)
-		GAME_FN(profile_loadCursorColours, 0x44bd20, u32, void)();
+		profile_loadCursorColours();
 	g_profilePage = 1;
-	return GAME_FN(mainmenu_drawScreen, 0x44d720, u32, void)();
+	return mainmenu_drawScreen();
 }
 
 /* 0x44c560: the profile screen's input: while its intro plays (0x9f6838) a click skips it (to state 5, the panel
@@ -254,11 +254,11 @@ u32 (profile_processInput)(void)
 		return (u32)intro;
 	u32 page = (*(u32 *)&g_profilePage) - 1;
 	switch (page) {
-	case 0: return GAME_FN(profileList_mouse, 0x44be00, u32, void)();
-	case 1: return GAME_FN(profile_newNameDialog, 0x44c190, u32, void)();
-	case 2: return GAME_FN(profile_openDeleteQuestion, 0x44c390, u32, void)();   /* profile_openDeleteQuestion */
-	case 4: return GAME_FN(profile_secondDialogClicks, 0x44c400, u32, void)();   /* profile_secondDialogClicks */
-	case 5: return GAME_FN(profileList_clicks, 0x44c480, u32, void)();   /* profileList_clicks */
+	case 0: return profileList_mouse();
+	case 1: return profile_newNameDialog();
+	case 2: return profile_openDeleteQuestion();   /* profile_openDeleteQuestion */
+	case 4: return profile_secondDialogClicks();   /* profile_secondDialogClicks */
+	case 5: return profileList_clicks();   /* profileList_clicks */
 	}
 	return page;
 }
@@ -320,7 +320,7 @@ u32 (profile_selectAndLoad)(void)
 		g_profileListTop = count - 0xd;
 		g_pilotChosen = count - 1;
 	}
-	GAME_FN(profile_load, 0x446590, u32, void)();         /* profile_load (it writes the profile) */
+	profile_load();         /* profile_load (it writes the profile) */
 	return GAME_FN(profile_resetPreview, 0x44b7a0, u32, void)();  /* profile_resetPreview */
 }
 
@@ -339,7 +339,7 @@ static u32 glide_page(const float *rate, const u32 *frame, u32 panel)
 		if (!(t >= k_0f))
 			g_highlightShown = 0;
 	}
-	GAME_FN(mainmenu_drawScreen, 0x44d720, u32, void)();   /* mainmenu_drawScreen */
+	mainmenu_drawScreen();   /* mainmenu_drawScreen */
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(GAME_VAR(int, frame[0]), GAME_VAR(int, frame[1]),
 		                                                     GAME_VAR(int, frame[2]), GAME_VAR(int, frame[3]));   /* menu_drawFrame */
@@ -391,38 +391,38 @@ u32 (profile_nameEntryStep)(void)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_newNameDialogLeft, g_newNameDialogTop,
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);
 	if (g_profileMessage)
-		return GAME_FN(profile_drawMessageWindow, 0x44dc60, u32, void)();
+		return profile_drawMessageWindow();
 	if (g_paused)
-		return GAME_FN(profile_drawNewDialog, 0x44de00, u32, void)();
+		return profile_drawNewDialog();
 	if (!strlen(typed)) {
 		g_dialogOpen = 0;
 		g_profileMessage = 0;
 		g_profilePage = 1;
-		return GAME_FN(profile_drawNewDialog, 0x44de00, u32, void)();
+		return profile_drawNewDialog();
 	}
-	if (GAME_FN(name_isBlank, 0x4343b0, int, const char *)(typed) == 1) {   /* name_isBlank */
+	if (name_isBlank(typed) == 1) {   /* name_isBlank */
 		u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(6);              /* sound_playMenu */
 		g_profilePage = 1;
 		g_dialogOpen = 0;
 		g_profileMessage = 0;
 		return r;
 	}
-	if (GAME_FN(profile_nameHasBadChar, 0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar */
+	if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar */
 		sound_playMenu(6);
 		g_dialogOpen = 0;
 		g_profileMessage = 0;
 		g_profilePage = 1;
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0x81);             /* the message */
 	}
-	if (GAME_FN(profile_nameExists, 0x44b870, int, void)()) {                     /* profile_nameExists */
+	if (profile_nameExists()) {                     /* profile_nameExists */
 		sound_playMenu(6);
 		g_profileMessage = 1;
 		g_dialogOpen = 1;
-		return GAME_FN(profile_drawNewDialog, 0x44de00, u32, void)();
+		return profile_drawNewDialog();
 	}
 	g_profilePage = 6;
-	GAME_FN(profile_resetSelection, 0x44b750, void, void)();
-	return GAME_FN(profile_drawNewDialog, 0x44de00, u32, void)();
+	profile_resetSelection();
+	return profile_drawNewDialog();
 }
 
 /* 0x44ba60: the current profile (0x9f8d74) deleted: its save file ("save\<name>.axs") removed (DeleteFileA, tried
@@ -434,14 +434,14 @@ u32 (profile_deleteFiles)(void)
 {
 	int current = g_pilotChosen;
 	u8 *records = g_profiles;   /* 0x48 bytes each: +0 a word, +4 the name, +0x44 the colour */
-	if (GAME_CDECL(0x49f8a6, int, const char *)((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
+	if (crt_chdir((const char *)STR(0x4b2adc, "save")) == 0) {   /* chdir("save") */
 		char path[0x80];
 		memset(path, 0, sizeof path);
 		strcpy(path, (const char *)(records + current * 0x48 + 4));
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
 		if (!IMPORT(0x4a9104, int, const char *)(path))   /* DeleteFileA */
 			IMPORT(0x4a9104, int, const char *)(path);
-		GAME_CDECL(0x49f8a6, int, const char *)((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
+		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = current;
 	for (; last < count; last++)
@@ -457,7 +457,7 @@ u32 (profile_deleteFiles)(void)
 			g_profileListTop = 0;
 			g_pilotChosen = 0;
 			g_profileCount = 0;
-			return GAME_FN(profile_delete, 0x447320, u32, void)();   /* profile_delete: the list written */
+			return profile_delete();   /* profile_delete: the list written */
 		}
 		if (g_profileListRow > 0)
 			g_profileListRow--;
@@ -465,7 +465,7 @@ u32 (profile_deleteFiles)(void)
 			g_profileListTop--;
 		g_pilotChosen = g_profileListTop + g_profileListRow;
 	}
-	GAME_FN(profile_delete, 0x447320, u32, void)();
+	profile_delete();
 	return GAME_FN(profile_resetPreview, 0x44b7a0, u32, void)();   /* profile_resetPreview */
 }
 
@@ -496,7 +496,7 @@ u32 (profile_newNameDialog)(void)
 	u32 r = 0;
 	if (g_profileMessage) {
 		if (g_mouseClick &&
-		    GAME_FN(profile_inDialogBox, 0x44b2e0, int, int, int)(g_mouseX, g_mouseY)) {   /* profile_inDialogBox */
+		    profile_inDialogBox(g_mouseX, g_mouseY)) {   /* profile_inDialogBox */
 			sound_playMenu(0);
 			g_profileMessage = 0;
 			g_paused = 1;
@@ -513,9 +513,9 @@ u32 (profile_newNameDialog)(void)
 		u32 button = GAME_FN(newNameDialog_hitTest, 0x44b2a0, u32, int, int)(g_mouseX, g_mouseY);   /* newNameDialog_hitTest */
 		r = button - 1;
 		if (button == 0) {
-			if (GAME_FN(name_isBlank, 0x4343b0, int, const char *)(typed) == 1)   /* name_isBlank: blank */
+			if (name_isBlank(typed) == 1)   /* name_isBlank: blank */
 				return GAME_FN(sound_playMenu, 0x41e760, u32, int)(6);
-			if (GAME_FN(profile_nameHasBadChar, 0x44b7e0, int, const char *)(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
+			if (profile_nameHasBadChar(typed) == 1) {   /* profile_nameHasBadChar: a bad character */
 				sound_playMenu(6);
 				g_dialogOpen = 0;
 				g_profileMessage = 0;
@@ -524,7 +524,7 @@ u32 (profile_newNameDialog)(void)
 				g_paused = 0;
 				return keyboard_back();
 			}
-			if (GAME_FN(profile_nameExists, 0x44b870, int, void)()) {   /* profile_nameExists: taken */
+			if (profile_nameExists()) {   /* profile_nameExists: taken */
 				sound_playMenu(6);
 				g_profileMessage = 1;
 				g_dialogOpen = 1;
@@ -605,7 +605,7 @@ void (profileList_keys)(void)
 	}
 	if ((input_justPressed(g_dikD) == 1 || input_justPressed(g_dikDelete) == 1)
 	    && g_profileCount > 0)
-		GAME_FN(profile_askDelete, 0x44b670, void, void)();   /* profile_askDelete */
+		profile_askDelete();   /* profile_askDelete */
 	if (input_justPressed(g_dikI) == 1) {
 		sound_playMenu(0);
 		g_cursorBlink = 0;
@@ -617,7 +617,7 @@ void (profileList_keys)(void)
 		g_profilePage = 4;
 	}
 	if (input_justPressed(g_keyOk) == 1 || input_justPressed(g_keyCancel2))
-		GAME_FN(profile_askSecond, 0x44b6e0, void, void)();   /* profile_askSecond */
+		profile_askSecond();   /* profile_askSecond */
 }
 /* 0x44be00: the profile list's mouse: a click (0x4ded88) on the page's buttons (profilePage_hitTest): 0 takes the profile
    (profile_typeNewName), 1 deletes it (profile_askDelete) when there is one, 2 opens the new-profile dialog (or takes the
@@ -629,14 +629,14 @@ void (profileList_mouse)(void)
 {
 	if (g_mouseClick) {
 		g_cursorBlink = 0;
-		switch (GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */
+		switch (profilePage_hitTest(g_mouseX, g_mouseY)) {   /* profilePage_hitTest */
 		case 0:
 			sound_playMenu(0);
 			profile_typeNewName();
 			break;
 		case 1:
 			if (g_profileCount > 0)
-				GAME_FN(profile_askDelete, 0x44b670, void, void)();   /* profile_askDelete */
+				profile_askDelete();   /* profile_askDelete */
 			break;
 		case 2:
 			sound_playMenu(0);
@@ -649,11 +649,11 @@ void (profileList_mouse)(void)
 			g_profilePage = 4;
 			break;
 		case 3:
-			GAME_FN(profile_askSecond, 0x44b6e0, void, void)();   /* profile_askSecond */
+			profile_askSecond();   /* profile_askSecond */
 			break;
 		case 4: {
 			sound_playMenu(2);
-			int row = GAME_FN(profileList_hitTest, 0x44b3a0, int, int, int)(g_mouseX, g_mouseY);   /* profileList_hitTest */
+			int row = profileList_hitTest(g_mouseX, g_mouseY);   /* profileList_hitTest */
 			if (row == -1 || g_listTop + row >= g_profileCount)
 				return;
 			if (row == g_listRow && g_profileRowClicked) {
@@ -684,7 +684,7 @@ void (profileList_mouse)(void)
 	}
 	if (!g_mouseHeld)
 		return;
-	int held = GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY);   /* profilePage_hitTest */
+	int held = profilePage_hitTest(g_mouseX, g_mouseY);   /* profilePage_hitTest */
 	if (held != 5 && held != 6)
 		return;
 	if (!(g_cursorBlink >= k_5f))   /* 5 */

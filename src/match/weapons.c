@@ -332,7 +332,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	if (B(int, 0xc) == GAME_VAR(int, s + 0x202e8d4))
 		sound_playVolume(sound, 100);
 	else
-		GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
+		sound_play3D(sound, (const float *)(s + 0x20f3970),
 		                                                                                (const float *)(RELOC(b) + 0x78), (const float *)(s + 0x20f397c), 0x47435000);
 }
 #undef K

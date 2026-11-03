@@ -655,31 +655,31 @@ u32 (menuState800_gameRoom)(void)
 	switch (page) {
 	case 0: case 1: case 2: case 4:
 		menu_drawBackground();
-		GAME_FN(room_camera, 0x437a10, u32, void)();   /* the room's camera */
+		room_camera();   /* the room's camera */
 		switch (page) {
-		case 0: return GAME_FN(account_page, 0x43e7b0, u32, void)();
-		case 1: return GAME_FN(gameList_drawPage, 0x43ea10, u32, void)();
-		case 2: return GAME_FN(room_draw, 0x43ed20, u32, void)();
-		default: return GAME_FN(ranking_page, 0x43ede0, u32, void)();
+		case 0: return account_page();
+		case 1: return gameList_drawPage();
+		case 2: return room_draw();
+		default: return ranking_page();
 		}
 	case 66:
-		GAME_FN(createDialog_draw, 0x43df80, u32, void)();
+		createDialog_draw();
 		menu_drawBackground();
-		return GAME_FN(roomLogin_draw, 0x4392c0, u32, void)();
+		return roomLogin_draw();
 	case 77:
-		GAME_FN(loginForm_update, 0x43e290, u32, void)();
+		loginForm_update();
 		menu_drawBackground();
-		return GAME_FN(loginDialog_draw, 0x4399c0, u32, void)();
+		return loginDialog_draw();
 	case 88:
-		GAME_FN(room_networkEvents, 0x43e610, u32, void)();
+		room_networkEvents();
 		menu_drawBackground();
-		return GAME_FN(serverDialog_draw, 0x439e00, u32, void)();
+		return serverDialog_draw();
 	case 99:
-		GAME_FN(room_slideMenu, 0x43e720, u32, void)();
+		room_slideMenu();
 		menu_drawBackground();
 		if (g_quitAsked == 1 && g_roomMode == 2)
-			return GAME_FN(room_drawWhiteFade, 0x43df00, u32, void)();
-		return GAME_FN(room_drawMenu, 0x437e00, u32, void)();
+			return room_drawWhiteFade();
+		return room_drawMenu();
 	}
 #undef CALL
 	return page;
@@ -732,7 +732,7 @@ u32 (game_postMatch)(void)
 		}
 		if (g_gameServerSocket) {
 			room_keepText();   /* the room's text kept */
-			GAME_FN(game_returnToGameRoom, 0x41eb00, void, void)();   /* game_returnToGameRoom: the room */
+			game_returnToGameRoom();   /* game_returnToGameRoom: the room */
 		} else
 			game_returnToMainMenu();
 		break;
@@ -741,14 +741,14 @@ u32 (game_postMatch)(void)
 		if (mission == 15) {
 			g_progress = 16;
 			profile_saveProgress();
-			GAME_FN(reg_writeEndMode, 0x41f880, u32, u32)(1);      /* reg_writeEndMode */
+			reg_writeEndMode(1);      /* reg_writeEndMode */
 			music_shutdown();
 			r = GAME_FN(app_closeWindow, 0x41e7a0, u32, int)(0x63);
 			goto message;
 		}
-		GAME_FN(reg_writeEndMode, 0x41f880, u32, u32)(mission < 15 ? 0 : 1);
+		reg_writeEndMode(mission < 15 ? 0 : 1);
 		profile_saveProgress();
-		GAME_FN(game_returnToScreen500, 0x41ec50, void, void)();         /* game_returnToScreen500 */
+		game_returnToScreen500();         /* game_returnToScreen500 */
 		break;
 	default:
 		game_returnToMainMenu();

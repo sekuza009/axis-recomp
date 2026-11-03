@@ -50,7 +50,7 @@ int THISCALL (chat_macro)(Scene *scene, const char *in, char *out)
 	char *macro = (char *)scene + 0x2340d3d + n * 0x39;
 	if (line[1] == '=') {
 		strcpy(macro, line + 2);
-		GAME_THISFN(chat_loadMacros, 0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros: saves them */
+		chat_loadMacros(scene);   /* chat_loadMacros: saves them */
 		return -1;
 	}
 	strcpy(out, macro);
@@ -109,12 +109,12 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 /* 0x466d60: in Shape.dat */
 void *(shape_findDatEntry)(const char *name)
 {
-	return dat_entry(GAME_FN(shape_findByName, 0x466ce0, int, const char *)(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
+	return dat_entry(shape_findByName(name), name, (OBJ(g_shapeDat) + 0x4), (OBJ(g_shapeDat) + 0x8), OBJ(g_logShapeManager));
 }
 /* 0x46b140: in the skeleton archive */
 void *(skelDat_getItemFileBy)(const char *name)
 {
-	return dat_entry(GAME_FN(skelDat_findByName, 0x46b0c0, int, const char *)(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
+	return dat_entry(skelDat_findByName(name), name, (OBJ(g_skelDat) + 0x4), (OBJ(g_skelDat) + 0x8), OBJ(g_logSkeletonManager));
 }
 
 /* 0x4617f0: the chat macros (100 of 0x39 bytes at +0x2340d3d) read from their file (0x4c45ec); without the file, all
@@ -128,7 +128,7 @@ u32 THISCALL (chat_saveMacros)(Scene *scene)
 	}
 	for (int k = 0; k < 100; k++)
 		((u8 *)scene)[0x2340d3d + k * 0x39] = 0;
-	return GAME_THISFN(chat_loadMacros, 0x4617b0, u32, Scene *)(scene);   /* chat_loadMacros */
+	return chat_loadMacros(scene);   /* chat_loadMacros */
 }
 
 /* 0x46cc30: count records of size bytes written scrambled (each byte rotated right by one, xor 0x59), then put back
@@ -157,7 +157,7 @@ u32 (cfg_parsePlayer)(void *f)
 #define FPUTS(s) GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)RELOC(s), f)
 	FPUTS(STR(0x4b1830, "set_player name "));
 	FPUTS(OBJ(g_cfgPlayerName));
-	GAME_CDECL(0x49f135, u32, void *, const char *)(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf */
+	crt_fprintf(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf */
 	FPUTS(STR(0x4b1818, "set_player color "));
 	int corp = g_playerCorporation;
 	FPUTS(corp == 1 ? STR(0x4b1808, "BLUE\n") : corp == 2 ? STR(0x4b1810, "YELLOW\n") : STR(0x4b1800, "RED\n"));
@@ -238,8 +238,8 @@ u32 (cfg_loadAxisCfg)(void)
 	strcpy(path, g_dataDir);
 	strcat(path, (const char *)STR(0x4b2198, "\\axis.cfg"));   /* the file's name */
 	void *f = crt_fopen(path, (const char *)STR(0x4b21a4, "wt"));
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
-	GAME_CDECL(0x49f167, u32, const char *, void *)((const char *)STR(0x4b182c, "\n"), f);
+	crt_fputs((const char *)STR(0x4b0f50, "AXIS CONFIGURATION FILE Master ver 1...."), f);   /* fputs */
+	crt_fputs((const char *)STR(0x4b182c, "\n"), f);
 	static const u32 sections[5] = { FN_ADDR(cfg_parsePlayer, 0x42c650), FN_ADDR(cfg_parseServer, 0x42c6f0), FN_ADDR(cfg_parseSound, 0x42c910), FN_ADDR(cfg_parseGraphic, 0x42c9f0), FN_ADDR(cfg_keyBindings, 0x42cba0) };   /* player .. key bindings */
 	for (int k = 0; k < 5; k++)
 		GAME_CDECL(sections[k], u32, void *)(f);
@@ -274,7 +274,7 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	if (GAME_VAR(void *, file))
 		return GAME_VAR(u32, file);
 	char path[0x100];
-	GAME_CDECL(0x49e9dd, int, char *, const char *)(path, format);   /* sprintf */
+	crt_sprintf(path, format);   /* sprintf */
 	GAME_VAR(void *, file) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!GAME_VAR(void *, file))
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, const char *)(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
@@ -457,7 +457,7 @@ u32 (mission_loadAxisMis)(void)
 	void *f = mis_open();
 	if (!f)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(0xb);
-	GAME_FN(skirmish_clearPlayerRows, 0x443570, void, void)();   /* skirmish_clearPlayerRows */
+	skirmish_clearPlayerRows();   /* skirmish_clearPlayerRows */
 	for (int k = 0; k < 4; k++)
 		crt_fread((void *)(ADDR(g_missionCount) + k * 4), 4, 1, f);
 	static const struct { int offset, size; } part[8] = {
@@ -618,7 +618,7 @@ u32 (arena_readLaunchFile)(char *line)
 static void data_missing(u32 message)
 {
 	MessageBoxA(NULL, (const char *)RELOC(message), (const char *)STR(0x4b141c, "ERROR"), 0);
-	GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
+	crt_exit(-1);   /* exit */
 }
 
 #define crt_fgets(line, size, f) GAME_CDECL(0x49ecd7, char *, char *, int, void *)(line, size, f)
@@ -677,7 +677,7 @@ static void set_current_name(void)
 static void enter_save_folder(void)
 {
 	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)STR(0x4b2adc, "save"));   /* mkdir */
+		crt_mkdir((const char *)STR(0x4b2adc, "save"));   /* mkdir */
 		crt_chdir((const char *)STR(0x4b2adc, "save"));
 	}
 }
@@ -861,7 +861,7 @@ u32 (profile_create)(void)
 	crt_fread((void *)ADDR(g_profileListRow), 4, 1, f);
 	crt_fread((void *)OBJ(g_profileName), 0x20, 1, f);
 	if (crt_chdir((const char *)STR(0x4b2b04, "save "))) {
-		GAME_CDECL(0x49f94a, int, const char *)((const char *)STR(0x4b2adc, "save"));   /* mkdir("save") */
+		crt_mkdir((const char *)STR(0x4b2adc, "save"));   /* mkdir("save") */
 		crt_chdir((const char *)STR(0x4b2adc, "save"));
 	}
 	crt_chdir((const char *)STR(0x4b2a80, ".."));
@@ -966,9 +966,9 @@ u32 (data_loadMapInfo)(void)
 	for (int i = 0; i < g_arenaMapCount; i++) {
 		char *name = (char *)(OBJ(g_mapNames) + i * 0x20), *about = (char *)(OBJ(g_mapAbouts) + i * 0x50);
 		crt_fread(name, 0x20, 1, f);
-		GAME_FN(str_invert, 0x42b390, int, char *)(name);    /* str_invert: decoded */
+		str_invert(name);    /* str_invert: decoded */
 		crt_fread(about, 0x50, 1, f);
-		GAME_FN(str_invert, 0x42b390, int, char *)(about);
+		str_invert(about);
 	}
 	fclose(f);
 	int count = g_arenaMapCount;

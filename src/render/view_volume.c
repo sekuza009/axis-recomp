@@ -228,13 +228,13 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
 void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 {
 	if (FIELD(int, view, 0xc) == 1) {
-		GAME_CDECL(0x49ef24, void, void *)(FIELD(void *, view, 8));   /* operator delete */
+		operator_delete(FIELD(void *, view, 8));   /* operator delete */
 		FIELD(void *, view, 8) = 0;
 		FIELD(int, view, 0xc) = 0;
 	}
-	GAME_THISFN(ViewVolume_clear, 0x483fc0, void, void *)(view);   /* ViewVolume_clear */
+	ViewVolume_clear(view);   /* ViewVolume_clear */
 	const char *extensions = IMPORT(0x4a9278, const char *, u32)(0x1f03);   /* glGetString(GL_EXTENSIONS) */
-	if (!extensions || !GAME_CDECL(0x4a0090, char *, const char *, const char *)(extensions, (const char *)STR(0x4c7b5c, "GL_EXT_vertex_array")))   /* strstr */
+	if (!extensions || !crt_strstr(extensions, (const char *)STR(0x4c7b5c, "GL_EXT_vertex_array")))   /* strstr */
 		return;
 	FIELD(int, view, 0x10) = 1;
 	static const u32 names[3] = { STR(0x4c7b48, "glVertexPointerEXT"), STR(0x4c7b34, "glColorPointerEXT"), STR(0x4c7b1c, "glTexCoordPointerEXT") };   /* the three entry points' names */

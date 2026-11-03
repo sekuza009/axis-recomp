@@ -213,11 +213,11 @@ int (ptx_crtlError)(int code, const char *format, ...)
 		((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
 		va_list args;
 		va_start(args, format);
-		GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
+		crt_vfprintf(err, format, args);   /* vfprintf */
 		va_end(args);
 	}
 	if (code)
-		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
+		crt_exit(code);   /* exit */
 	return code;
 }
 
@@ -229,10 +229,10 @@ int (ptx_error)(int code, const char *format, ...)
 	((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))(err, (const char *)STR(0x4c6fd0, "ERROR: "));
 	va_list args;
 	va_start(args, format);
-	GAME_CDECL(0x49fec7, int, void *, const char *, va_list)(err, format, args);   /* vfprintf */
+	crt_vfprintf(err, format, args);   /* vfprintf */
 	va_end(args);
 	if (code)
-		GAME_CDECL(0x49edac, void, int)(code);   /* exit */
+		crt_exit(code);   /* exit */
 	return code;
 }
 

@@ -138,7 +138,7 @@ u32 (armc_partScreenClicks)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(armcParts_hitTest, 0x40e490, u32, int, int)(g_mouseX, g_mouseY);   /* armcParts_hitTest */
+	u32 button = armcParts_hitTest(g_mouseX, g_mouseY);   /* armcParts_hitTest */
 	u32 r;
 	int step;
 	switch (button) {

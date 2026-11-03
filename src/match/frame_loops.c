@@ -470,7 +470,7 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	float age = GAME_VAR(float, p + 0x74);
 	GAME_VAR(float, p + 0x6c) = age;
 	if (age > GAME_VAR(float, p + 0x70)) {
-		GAME_THISFN(stage_freeProjectile, 0x4799f0, void, void *, int)(s, slot);
+		stage_freeProjectile(s, slot);
 		return;
 	}
 	float t = GAME_VAR(float, p + 0x70) > 0 ? f32(fdiv_m(fld_m(&age), (const float *)(p + 0x70))) : 0.0f;
@@ -518,7 +518,7 @@ static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_sup
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)
 {
-	GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(sound, (const float *)(s + 0x20f3970),
+	sound_play3D(sound, (const float *)(s + 0x20f3970),
 	                                                                                (const float *)(it + 0xc), (const float *)(s + 0x20f397c), 0x47c35000);   /* (heard to 100000) */
 }
 
@@ -827,7 +827,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 0: case 1: case 8: P(u32, 0x70) = 0x3f000000; break;   /* 0.5 s */
 	case 2:
 	case 3:
-		GAME_FN(sound_play3D, 0x456ed0, void, int, const float *, const float *, const float *, u32)(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
+		sound_play3D(kind == 2 ? 0x2a : 0x28, (const float *)(s + 0x20f3970),
 		                                                                                (const float *)(p + 0x10), (const float *)(s + 0x20f397c),
 		                                                                                kind == 2 ? 0x47435000 : 0x47c35000);
 		break;

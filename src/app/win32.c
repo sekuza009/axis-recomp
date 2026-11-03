@@ -61,8 +61,8 @@ int (glWindow_resize)(int width, int height)
 	g_glHeight = height;
 	IMPORT(0x4a91d4, void, int, int, int, int)(0, 0, width, height);   /* glViewport */
 	if (g_fullScreen == 1 &&
-	    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
+	    !glWindow_setDisplayModeBy(g_glWidth, g_glHeight, 0)) {
+		sys_errorMessageNoName((const char *)STR(0x4c500c, "glWindow screen resolution change fai..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_glCachedState = -1;
@@ -80,7 +80,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
                       void *window, void *other)
 {
 	if (g_glWindowMade == 1) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4fd8, "glWindow duplicate initialization - g..."));   /* sys_errorMessageNoName */
+		sys_errorMessageNoName((const char *)STR(0x4c4fd8, "glWindow duplicate initialization - g..."));   /* sys_errorMessageNoName */
 		return NULL;
 	}
 	strcpy(g_glTitle, title);
@@ -102,19 +102,19 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		wc[8] = (u32)g_glTitle;    /* menu name */
 		wc[9] = (u32)g_glTitle;    /* class name */
 		if (!(IMPORT(0x4a92b8, u16, const u32 *)(wc))) {                                               /* RegisterClassA */
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4fa4, "glWindow RegisterClass() failed - glW..."));
+			sys_errorMessageNoName((const char *)STR(0x4c4fa4, "glWindow RegisterClass() failed - glW..."));
 			return NULL;
 		}
 		if (g_fullScreen == 1 &&
-		    !GAME_FN(glWindow_setDisplayModeBy, 0x467f20, int, int, int, int)(g_glWidth, g_glHeight, g_glColourBits)) {
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4f50, "glWindow full screen mode failed, win..."));   /* glWindow_setDisplayModeBy failed */
+		    !glWindow_setDisplayModeBy(g_glWidth, g_glHeight, g_glColourBits)) {
+			sys_errorMessageNoName((const char *)STR(0x4c4f50, "glWindow full screen mode failed, win..."));   /* glWindow_setDisplayModeBy failed */
 			g_fullScreen = 0;
 		}
 		g_glWindow = IMPORT(0x4a9350, void *, u32, const char *, const char *, u32, int, int, int, int, void *, void *, void *, void *)(
 			0, g_glTitle, g_glTitle, 0x86000000, 0, 0, g_glWidth, g_glHeight, NULL, NULL,
 			GetModuleHandleA(NULL), NULL);                                                             /* CreateWindowExA: WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN */
 		if (g_glWindow == NULL) {
-			GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4f14, "glWindow window handle initializing f..."));
+			sys_errorMessageNoName((const char *)STR(0x4c4f14, "glWindow window handle initializing f..."));
 			return NULL;
 		}
 		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
@@ -126,7 +126,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 		g_hdc = other;   /* the GL window's DC (g_hdc below) */
 		glWindow_resize(width, height);
 	}
-	GAME_FN(gfx_resetState, 0x4684c0, void, void)();   /* gfx_resetState */
+	gfx_resetState();   /* gfx_resetState */
 	g_glCachedState = -1;
 	return g_glWindow;
 }
@@ -155,7 +155,7 @@ int (glWindow_restoreDisplayMode)(void)
 	u8 mode[0x94];
 	display_mode(mode, g_desktopW, g_desktopH, g_desktopBits, 0x1c0000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4ed4, "glWindow ChangeDisplaySettings() fail..."));   /* sys_errorMessageNoName */
+		sys_errorMessageNoName((const char *)STR(0x4c4ed4, "glWindow ChangeDisplaySettings() fail..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	g_modeChanged = 0;
@@ -182,7 +182,7 @@ int (glWindow_setDisplayModeBy)(int width, int height, int bits)
 	u8 mode[0x94];
 	display_mode(mode, width, height, bits, bits ? 0x1c0000 : 0x180000);
 	if (ChangeDisplaySettingsA(mode, 0)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4e94, "glWindow ChangeDisplaySettings() fail..."));
+		sys_errorMessageNoName((const char *)STR(0x4c4e94, "glWindow ChangeDisplaySettings() fail..."));
 		return 0;
 	}
 	g_modeChanged = 1;
@@ -222,12 +222,12 @@ u32 (wnd_setCursor)(void)
 		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 	IMPORT(0x4a9340, void *, void *)(IMPORT(0x4a933c, void *, void *, u32)(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
-	GAME_FN(input_releaseAll, 0x4014c0, void, void)();
+	input_releaseAll();
 	music_shutdown();
 	for (u32 p = OBJ(g_menuSoundBuffers); p < OBJ(g_menuSoundBuffers) + 10 * 4; p += 4)
 		mem_free(GAME_VAR(void *, p));
-	GAME_FN(sound_freeAll, 0x456cd0, void, void)();
-	return GAME_FN(sound_releaseDirectSound, 0x467b70, u32, void)();
+	sound_freeAll();
+	return sound_releaseDirectSound();
 }
 
 #define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
@@ -248,15 +248,15 @@ int (glWindow_setupPixelFormat)(void *dc)
 	pfd[0x17] = g_glDepthBits;  /* cDepthBits */
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4e5c, "glWindow ChoosePixelFormat failed - s..."));   /* sys_errorMessageNoName */
+		sys_errorMessageNoName((const char *)STR(0x4c4e5c, "glWindow ChoosePixelFormat failed - s..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
 	if (pfd[4] & 0x80) {   /* PFD_NEED_PALETTE */
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4e30, "glWindow needs palette - setupPixelFo..."));
+		sys_errorMessageNoName((const char *)STR(0x4c4e30, "glWindow needs palette - setupPixelFo..."));
 		return 0;
 	}
 	if (!SetPixelFormat(dc, format, pfd)) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, int, const char *)((const char *)STR(0x4c4df8, "glWindow SetPixelFormat() failed - se..."));
+		sys_errorMessageNoName((const char *)STR(0x4c4df8, "glWindow SetPixelFormat() failed - se..."));
 		return 0;
 	}
 	return 1;
@@ -470,7 +470,7 @@ static void chat_close(void *edit, int sent)
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-	GAME_FN(chat_closeLine, 0x431600, u32, int)(sent);   /* chat_closeLine */
+	chat_closeLine(sent);   /* chat_closeLine */
 	g_chatLineDone = 1;
 }
 
@@ -496,7 +496,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			if (g_menuState == 0x320) {
 				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 				IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-				GAME_FN(chat_closeLine, 0x431600, u32, int)(1);   /* chat_closeLine */
+				chat_closeLine(1);   /* chat_closeLine */
 				g_fieldTabKey = 0x14;
 				g_chatLineDone = 1;
 				g_fieldTabKey = IMPORT(0x4a9338, short, int)(0x10) < 0 ? 10 : 20;   /* GetKeyState(VK_SHIFT) */
@@ -641,7 +641,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	switch (msg) {
 	case 1:   /* WM_CREATE */
 		g_desktopDC = IMPORT(0x4a9318, void *, void *)(wnd);   /* GetDC */
-		if (!GAME_FN(gfx_setPixelFormat, 0x42f000, int, void *)(g_desktopDC)) {   /* gfx_setPixelFormat */
+		if (!gfx_setPixelFormat(g_desktopDC)) {   /* gfx_setPixelFormat */
 			PostQuitMessage(0);
 			return 1;
 		}
@@ -649,7 +649,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		IMPORT(0x4a9254, int, void *, void *)(g_desktopDC, g_glContext);   /* wglMakeCurrent */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
-		GAME_FN(gfx_initGLState, 0x42f150, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
+		gfx_initGLState(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_initGLState */
 		g_mouseX = 0x140;
 		g_mouseY = 0xf0;
 		g_mouseWheelTurned = 0;
@@ -661,7 +661,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	case 5:   /* WM_SIZE */
 		GetClientRect(wnd, rect);
 		g_projMode = -1;
-		GAME_FN(gfx_setup3DView, 0x42f0f0, u32, int, int)(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
+		gfx_setup3DView(rect[2], GAME_HEIGHT(rect[3]));   /* gfx_setup3DView */
 		return 1;
 	case 0x10:   /* WM_CLOSE */
 		if (g_desktopDC)
@@ -675,7 +675,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		KillTimer(g_hWndMain, 0x115c);
 		KillTimer(g_hWndMain, 0x309);
 		g_lobbyPending = 1;
-		GAME_FN(wnd_setCursor, 0x4314e0, u32, void)();   /* wnd_setCursor */
+		wnd_setCursor();   /* wnd_setCursor */
 		DestroyWindow(wnd);
 		return 1;
 	case 2:   /* WM_DESTROY */
@@ -688,30 +688,30 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		PostQuitMessage(0);
 		switch (g_exitMode) {
 		case 0:
-			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);   /* reg_writeStartMode */
-			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();   /* app_deleteDataFiles */
+			reg_writeStartMode(0);   /* reg_writeStartMode */
+			app_deleteDataFiles();   /* app_deleteDataFiles */
 			g_gameRunning = 0;
 			ExitProcess(0);
 			return 0;
 		case 1:
-			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(1);
+			reg_writeStartMode(1);
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a64, "AxisGL.exe"), NULL, NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 2:
-			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
-			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
+			reg_writeStartMode(0);
+			app_deleteDataFiles();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a44, "axispatch.exe"), (const char *)STR(0x4b2a54, "nstower"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 3:
-			GAME_FN(reg_writeStartMode, 0x43f7f0, u32, u32)(0);
-			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
+			reg_writeStartMode(0);
+			app_deleteDataFiles();
 			ShellExecuteA(NULL, (const char *)STR(0x4b2a5c, "open"), (const char *)STR(0x4b2a38, "DServer.exe"), (const char *)STR(0x4b13ec, "1"), NULL, 10);
 			ExitProcess(0);
 			return 0;
 		case 99:
-			GAME_FN(app_deleteDataFiles, 0x43f8b0, u32, void)();
+			app_deleteDataFiles();
 #ifdef AXIS_DIRECT
 			if (g_wide->playEnding)   /* (AxisRC.exe: the patch layer's player, which replaces movie_playEnding) */
 				g_wide->playEnding(NULL, (const char *)STR(0x4b2a24, "initdata/battle.sra"), g_desktopWidth, g_desktopHeight);
@@ -772,9 +772,9 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 			}
 			KillTimer(wnd, 0x378);
 			if (g_screen == 800)
-				GAME_FN(app_onClose, 0x434e70, u32, void)();   /* app_onClose */
+				app_onClose();   /* app_onClose */
 			else
-				GAME_FN(app_shutdown, 0x4062b0, void, void)();   /* app_shutdown */
+				app_shutdown();   /* app_shutdown */
 		} else if (w == 0x115c) {
 			if (g_roomConnected)
 				net_send(0x18, 0x65);
@@ -782,12 +782,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		return 1;
 	case 0x40a:   /* the game server's socket */
 		if ((u16)l == 0x20) {   /* FD_CLOSE */
-			GAME_FN(net_closeSockets, 0x4520e0, u32, void)();   /* net_closeSockets */
+			net_closeSockets();   /* net_closeSockets */
 			if (g_screen != 0x270f)
-				GAME_FN(menu_returnToMain, 0x41edc0, void, void)();   /* menu_returnToMain */
+				menu_returnToMain();   /* menu_returnToMain */
 			return 0;
 		}
-		GAME_FN(net_recv, 0x452620, void, void)();   /* net_recv */
+		net_recv();   /* net_recv */
 		switch (g_lobbyStatus) {
 		case 0x29: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;
@@ -802,12 +802,12 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		return 1;
 	case 0x40c:   /* the lobby's socket */
 		if ((u16)l == 0x20) {
-			GAME_FN(net_closeSockets, 0x4520e0, u32, void)();
+			net_closeSockets();
 			if (g_screen != 0x270f)
-				GAME_FN(menu_returnToMainFromRoom, 0x41ed70, void, void)();   /* menu_returnToMainFromRoom */
+				menu_returnToMainFromRoom();   /* menu_returnToMainFromRoom */
 			return 0;
 		}
-		GAME_FN(net_recv, 0x452620, void, void)();
+		net_recv();
 		switch (g_gameServerStatus) {
 		case 0x28: g_connectStep = 4; break;
 		case 0x66: g_connectStep = 1; break;

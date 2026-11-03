@@ -43,7 +43,7 @@ int (math_initMathFunction)(void)
 {
 	void *f = crt_fopen(TABLE_FILE, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
-		GAME_FN(math_makeMathFunctionTableFile, 0x46c340, u32, void)();   /* math_makeMathFunctionTableFile */
+		math_makeMathFunctionTableFile();   /* math_makeMathFunctionTableFile */
 	f = crt_fopen(TABLE_FILE, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_errorTerminate((const char *)STR(0x4c5728, "can't open file MATHFUNC.TBL in initM..."));

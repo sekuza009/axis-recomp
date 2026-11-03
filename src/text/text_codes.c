@@ -91,7 +91,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 			s++;
 			x += 16;
 		} else {
-			GAME_FN(text_quad5, 0x428240, void, int, int, int)(x, y, c);   /* text_quad5 */
+			text_quad5(x, y, c);   /* text_quad5 */
 			x += 6;
 		}
 	}
@@ -176,11 +176,11 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 		}
 		u8 hi = c, lo = *s++;
 		if (g_convertHangul == 1) {
-			u32 code = GAME_FN(text_hangulConvert, 0x44aac0, u32, u32)((u32)hi << 8 | lo);
+			u32 code = text_hangulConvert((u32)hi << 8 | lo);
 			hi = (u8)(code >> 8);
 			lo = (u8)code;
 		}
-		GAME_FN(hangul_glyphs, 0x4017d0, int, u32, u32)(hi, lo);   /* hangul_glyphs */
+		hangul_glyphs(hi, lo);   /* hangul_glyphs */
 		if (pass->layered)
 			GAME_CDECL(pass->glyph, void, int, int, int, int)(x, y, g_hangulVowelGlyph, g_hangulTailGlyph);
 		else

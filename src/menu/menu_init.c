@@ -134,8 +134,8 @@ u32 (replayList_open)(void)
 	g_mapSelectBottom = 0x1b8;
 	for (u32 r = OBJ(g_fileList) + 0x40; r < OBJ(g_fileList) + 0x40 + 1024 * 0x44; r += 0x44)
 		memset((void *)(RELOC(r) - 0x40), 0, 0x44);
-	GAME_FN(mapSelect_layout, 0x440a20, void, void)();          /* mapSelect_layout: the layout */
-	return GAME_FN(autoplay_listFiles, 0x440c60, u32, void)();    /* autoplay_listFiles */
+	mapSelect_layout();          /* mapSelect_layout: the layout */
+	return autoplay_listFiles();    /* autoplay_listFiles */
 }
 
 /* 0x430bf0: the front end's start-up: the chat history cleared, then six steps (colours; three table builders, the key
@@ -145,7 +145,7 @@ u32 (frontEnd_startUp)(void)
 {
 	static const u32 steps[5] = { FN_ADDR(menu_initMainButtons, 0x42f2b0), FN_ADDR(menu_initKeyRepeatDefaults, 0x42f500), FN_ADDR(room_initMenuButtons, 0x42f690), FN_ADDR(menu_initKeyRepeat, 0x42f8e0), FN_ADDR(net_clearSlots, 0x430bd0) };
 	memset((void *)OBJ(g_chatHistory), 0, 0x300 * 4);
-	GAME_FN(menu_initColours, 0x430ab0, void, void)();   /* menu_initColours: the colours */
+	menu_initColours();   /* menu_initColours: the colours */
 	u32 r = 0;
 	for (int k = 0; ; k++) {
 		g_loadStep++;

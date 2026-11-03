@@ -217,19 +217,19 @@ u32 (menu_onStateChange)(void)
 	if (g_keysBlocked)
 		return (*(u32 *)&g_keysBlocked);
 	if (g_dialogPending)
-		return GAME_FN(messageBox_clickClose, 0x445e10, u32, void)();   /* the message box */
+		return messageBox_clickClose();   /* the message box */
 	int state = g_menuState;
 	switch (state) {
-	case 200: return GAME_FN(menu_clickStartFade, 0x445de0, u32, void)();
-	case 210: return GAME_FN(profile_processInput, 0x44c560, u32, void)();   /* profile_processInput */
-	case 300: return GAME_FN(mainmenu_startNetGame, 0x4419d0, u32, void)();
-	case 400: return GAME_FN(lobby_onStateChange, 0x4076c0, u32, void)();   /* lobby_onStateChange */
-	case 500: return GAME_FN(mission_unlockCheat, 0x447b10, u32, void)();
-	case 600: return GAME_FN(setup_drawTab, 0x422b30, u32, void)();
-	case 700: return GAME_FN(armc_onStateEnter, 0x410190, u32, void)();   /* armc_onStateEnter */
-	case 800: return GAME_FN(room_processKeys, 0x436800, u32, void)();   /* room_processKeys */
-	case 900: return GAME_FN(settingsPage_draw, 0x443ef0, u32, void)();
-	case 9999: return GAME_FN(armc_mouseLook, 0x42ab70, u32, void)();  /* armc_mouseLook */
+	case 200: return menu_clickStartFade();
+	case 210: return profile_processInput();   /* profile_processInput */
+	case 300: return mainmenu_startNetGame();
+	case 400: return lobby_onStateChange();   /* lobby_onStateChange */
+	case 500: return mission_unlockCheat();
+	case 600: return setup_drawTab();
+	case 700: return armc_onStateEnter();   /* armc_onStateEnter */
+	case 800: return room_processKeys();   /* room_processKeys */
+	case 900: return settingsPage_draw();
+	case 9999: return armc_mouseLook();  /* armc_mouseLook */
 	}
 	/* the original's subtraction chain leaves these */
 	if (state > 900)
@@ -246,17 +246,17 @@ u32 (menu_onStateChange)(void)
 u32 (menu_enterState)(void)
 {
 	switch (g_menuState) {
-	case 210: GAME_FN(menuState210_enter, 0x44b420, u32, void)(); break;   /* menuState210_enter */
+	case 210: menuState210_enter(); break;   /* menuState210_enter */
 	case 300:
 		g_enteringMenus = 1;
-		GAME_FN(menuState300_enter, 0x440bb0, u32, void)();                 /* menuState300_enter */
+		menuState300_enter();                 /* menuState300_enter */
 		break;
 	case 400: GAME_FN(menuState400_enter, 0x404640, u32, void)(); break;   /* menuState400_enter */
-	case 500: GAME_FN(menuState500_enter, 0x447750, u32, void)(); break;   /* menuState500_enter */
-	case 600: GAME_FN(menuState600_enterSetup, 0x420770, u32, void)(); break;   /* menuState600_enterSetup */
-	case 800: GAME_FN(menuState800_enterGameRoom, 0x432ff0, u32, void)(); break;   /* menuState800_enterGameRoom */
-	case 900: GAME_FN(menuState900_enterSkirmish, 0x443950, u32, void)(); break;   /* menuState900_enterSkirmish */
-	case 9999: GAME_FN(console_init, 0x41fd40, u32, void)(); break;  /* console_init */
+	case 500: menuState500_enter(); break;   /* menuState500_enter */
+	case 600: menuState600_enterSetup(); break;   /* menuState600_enterSetup */
+	case 800: menuState800_enterGameRoom(); break;   /* menuState800_enterGameRoom */
+	case 900: menuState900_enterSkirmish(); break;   /* menuState900_enterSkirmish */
+	case 9999: console_init(); break;  /* console_init */
 	}
 	g_lastScreen = g_menuState;
 	return (u32)g_menuState;
@@ -284,12 +284,12 @@ int (menuState900_enterSkirmish)(void)
 	static const u32 cleared[] = { ADDR(g_missionTop), ADDR(g_skirmishRow), ADDR(g_missionPicked), ADDR(g_repeatDown), ADDR(g_repeatUp) };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	GAME_FN(skirmish_layout, 0x4437b0, void, void)();   /* skirmish_layout */
-	GAME_FN(skirmishButtons_layout, 0x443840, void, void)();   /* skirmishButtons_layout */
+	skirmish_layout();   /* skirmish_layout */
+	skirmishButtons_layout();   /* skirmishButtons_layout */
 	g_skirmishDrawBackground = 1;
 	g_settingsPage = 10;
 	sound_playMenu(4);
-	GAME_FN(mission_loadAxisMis, 0x4435f0, void, void)();   /* mission_loadAxisMis */
+	mission_loadAxisMis();   /* mission_loadAxisMis */
 	CLEAR_ALL(cleared);
 	return 0;
 }
@@ -306,7 +306,7 @@ int (menuState500_enter)(void)
 		{ ADDR(g_nextScreen), 500 } };
 	STORE_ALL(briefing_camera);
 	STORE_ALL(setup);
-	GAME_FN(missionsel_layout, 0x447660, void, void)();   /* mission_447660 */
+	missionsel_layout();   /* mission_447660 */
 	g_missionShowBackground = 1;
 	g_missionBusy = 0;
 	int mission = g_progress < 15 ? g_progress : 14;
@@ -369,7 +369,7 @@ static void check_profiles(void)
 	for (int k = 0; k < 5; k++)
 		if (!(k == 0 ? app_checkFile_profeng() : app_checkFile_profkor())) {
 			sys_messageBox((const char *)STR(0x4b04b0, "Run AxisPlay.exe"));
-			GAME_CDECL(0x49edac, void, int)(-1);   /* exit */
+			crt_exit(-1);   /* exit */
 		}
 }
 

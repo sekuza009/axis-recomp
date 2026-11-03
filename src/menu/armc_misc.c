@@ -150,14 +150,14 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */
 	for (int i = 0; i < 0x400; i++)
-		GAME_THISFN(ResourceSet_trivialCtor, 0x45fff0, void *, void *)((u8 *)RELOC(light) + 4 + i * 0x2c);
+		ResourceSet_trivialCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
 	light[0] = VT(Light, 0x4aa248);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
 	u32 x44 = GAME_VAR(u32, s + 0x44);
 	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
-	GAME_THISFN(camera_setupView, 0x4729b0, void, void *, const u32 *, const u32 *, const u32 *, u32, int, int, u32, u32, u32)(stage, eye, forward, up,
+	camera_setupView(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
 	ViewVolume_captureMatrices(vv, 0, s + 0x22e7068);
 	ViewVolume_reset(vv);
@@ -620,7 +620,7 @@ u32 (armc_onStateEnter)(void)
 	case 2:
 		return armc_colourScreenInput();
 	case 3:
-		return GAME_FN(armc_rightClickLeave, 0x410160, u32, void)();   /* armc_rightClickLeave (its eax) */
+		return armc_rightClickLeave();   /* armc_rightClickLeave (its eax) */
 	}
 	return page;
 }
@@ -804,7 +804,7 @@ u32 (armc_colourScreenInput)(void)
 {
 	if (!g_mouseClick)
 		return 0;
-	u32 button = GAME_FN(armcColour_hitTest, 0x40e4d0, u32, int, int)(g_mouseX, g_mouseY);   /* armcColour_hitTest */
+	u32 button = armcColour_hitTest(g_mouseX, g_mouseY);   /* armcColour_hitTest */
 	static const u32 page[3] = { FN_ADDR(armc_showPartsPage, 0x40f200), FN_ADDR(armc_drawPartScreen, 0x40f220), FN_ADDR(armc_showColourPage, 0x40f320) };
 	static const u32 control[6] = { FN_ADDR(armc_dragPrimaryHue, 0x40f5d0), FN_ADDR(armc_dragPrimaryChroma, 0x40f670), FN_ADDR(armc_dragPrimaryValue, 0x40f6b0), FN_ADDR(armc_dragSecondaryHue, 0x40f6f0), FN_ADDR(armc_dragSecondaryChroma, 0x40f790), FN_ADDR(armc_dragSecondaryValue, 0x40f7e0) };
 	u32 r;

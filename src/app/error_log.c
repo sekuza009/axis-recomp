@@ -44,7 +44,7 @@ static void terminate(void)
 	Cleanup cleanup = (*(Cleanup *)&g_errorCleanupHook);
 	if (cleanup)
 		cleanup();
-	GAME_CDECL(0x49edac, void, int)(1);   /* exit */
+	crt_exit(1);   /* exit */
 }
 
 /* 0x46c840 / 0x46c5f0: a message (without / with the object's name) */

@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "globals.h"
 #include "objects.h"   /* the arrays, buffers and records by name (tools/name_objects.py) */
+#include "calls.h"     /* game functions by their plain name (tools/plain_calls.py; game.h has the others) */
 #ifdef AXIS_DIRECT
 #include "data/layout_names.h"   /* (in AxisRC.exe the named globals are members of g_rdata / g_data) */
 #endif
@@ -402,7 +403,7 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define hud_drawRectOutline(x0, y0, x1, y1) GAME_FN(hud_drawRectOutline, 0x46bd00, void, int, int, int, int)(x0, y0, x1, y1)   /* a rectangle's outline */
 /* a team's slot in teamScores (scene_teamSlot) and which side of the box it is on (scene_teamSide) */
 #define scene_teamSlot(scene, team) GAME_THISFN(scene_teamSlot, 0x463780, int, Scene *, int)(scene, team)
-#define scene_teamSide(scene, team) GAME_THISFN(scene_teamSide, 0x463740, int, Scene *, int)(scene, team)   /* the team's slot, given one if new */
+#define scene_teamSide(scene, team) GAME_THISFN(scene_teamSide, 0x463740, int, void *, int)(scene, team)   /* the team's slot, given one if new */
 #define scene_findTeam(scene, team) GAME_THISFN(scene_findTeam, 0x463710, int, Scene *, int)(scene, team)   /* the team's slot or -1 */
 #define hud_drawNameIcon(scene, emblem, x, y) GAME_THISFN(hud_drawNameIcon, 0x4922c0, void, Scene *, int, int, int)(scene, emblem, x, y)
 #define hud_drawLeaderIcon(scene, player, x, y) GAME_THISFN(hud_drawLeaderIcon, 0x4924d0, void, Scene *, int, int, int)(scene, player, x, y)
@@ -642,16 +643,16 @@ typedef struct { float r, g, b, a; } Colour;
 #define dplaySlot3_close() GAME_FN(dplaySlot3_close, 0x454ce0, int, void)()
 
 /* ---- the stage's player records (thiscall on the stage; p: the player) ---- */
-#define player_setName(stage, p, name) GAME_THISFN(player_setName, 0x473940, void, Stage *, int, const char *)(stage, p, name)
-#define player_setValue(stage, p, v) GAME_THISFN(player_setValue, 0x473a10, void, Stage *, int, int)(stage, p, v)   /* player_setValue */
-#define player_setTeam(stage, p, team) GAME_THISFN(player_setTeam, 0x473a80, void, Stage *, int, int)(stage, p, team)
+#define player_setName(stage, p, name) GAME_THISFN(player_setName, 0x473940, void, void *, int, const char *)(stage, p, name)
+#define player_setValue(stage, p, v) GAME_THISFN(player_setValue, 0x473a10, void, void *, int, int)(stage, p, v)   /* player_setValue */
+#define player_setTeam(stage, p, team) GAME_THISFN(player_setTeam, 0x473a80, void, void *, int, int)(stage, p, team)
 #define actor_setActorTypeHeadInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeHeadInfoBy, 0x473b10, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeChestInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeChestInfoBy, 0x473c20, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeArmInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeArmInfoBy, 0x473d30, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeLegInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeLegInfoBy, 0x473e40, int, Stage *, int, int)(stage, p, i)
 #define actor_setActorTypeBoosterInfoBy(stage, p, i) GAME_THISFN(actor_setActorTypeBoosterInfoBy, 0x473f50, int, Stage *, int, int)(stage, p, i)
-#define actor_setActorTypeItemInfoBy(stage, p, slot, item) GAME_THISFN(actor_setActorTypeItemInfoBy, 0x474060, void, Stage *, int, int, int)(stage, p, slot, item)
-#define player_markUsed(stage, p) GAME_THISFN(playerRecord_markUsed, 0x474390, void, Stage *, int)(stage, p)   /* playerRecord_markUsed */
+#define actor_setActorTypeItemInfoBy(stage, p, slot, item) GAME_THISFN(actor_setActorTypeItemInfoBy, 0x474060, void, void *, int, int, int)(stage, p, slot, item)
+#define player_markUsed(stage, p) GAME_THISFN(playerRecord_markUsed, 0x474390, void, void *, int)(stage, p)   /* playerRecord_markUsed */
 /* the ARM CENTER's mech setters (menu/armc_mech.c), thiscall on the scene */
 #define mech_setName(scene, name) GAME_THISFN(mech_setName, 0x461320, void, Scene *, const char *)(scene, name)
 #define mech_setValue(scene, v) GAME_THISFN(mech_setValue, 0x461370, void, Scene *, int)(scene, v)
@@ -867,7 +868,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define text_setBottom(v) GAME_FN(text_setBottom, 0x4017c0, int, int)(v)   /* the text's bottom (0x4ad494) */
 #define timer_now() GAME_FN(timer_now, 0x4301e0, long double, void)()   /* the time in ticks of the shifted performance counter, 80-bit */
 #define QueryPerformanceFrequency(out) IMPORT(0x4a913c, int, u64 *)(out)
-#define msg_newKing(scene) GAME_THISFN(msg_newKing, 0x462150, void, Scene *)(scene)   /* the ranking and its "new king" message */
+#define msg_newKing(scene) GAME_THISFN(msg_newKing, 0x462150, void, void *)(scene)   /* the ranking and its "new king" message */
 #define ResetEvent(event) IMPORT(0x4a9168, int, void *)(event)
 #define SetEvent(event) IMPORT(0x4a9178, int, void *)(event)
 
@@ -941,7 +942,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define input_createMouse(window) GAME_FN(input_createMouse, 0x4013a0, int, void *)(window)   /* the mouse */
 
 #define stage_setupActorSlot(stage, a, x, y, spawn) GAME_THISFN(stage_setupActorSlot, 0x45dc00, int, Stage *, int, int, int, void *)(stage, a, x, y, spawn)   /* claim actor slot a */
-#define actor_setWeaponSlot(stage, actor, slot) GAME_THISFN(actor_setWeaponSlot, 0x45e810, void, Stage *, int, int)(stage, actor, slot)   /* select a weapon slot */
+#define actor_setWeaponSlot(stage, actor, slot) GAME_THISFN(actor_setWeaponSlot, 0x45e810, void, void *, int, int)(stage, actor, slot)   /* select a weapon slot */
 #define profile_checkAndSendRecord() GAME_FN(profile_checkAndSendRecord, 0x4327f0, void, void)()
 
 /* ---- start-up objects (app/statics.c) ---- */
@@ -1039,7 +1040,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define set4ints(a, b, c, d, out) GAME_FN(set4ints, 0x42eeb0, void, int, int, int, int, int *)(a, b, c, d, out)
 #define tunnel_appendRing(head) GAME_FN(tunnel_appendRing, 0x441120, u32, void *)(head)   /* a ring added to the background tunnel */
 #define playerRecord_resetColourGrid(stage, p) GAME_THISFN(playerRecord_resetColourGrid, 0x473470, void, Stage *, int)(stage, p)   /* player p's colour grid cleared */
-#define actor_deactivate(stage, i) GAME_THISFN(actor_deactivate, 0x45dca0, void, Stage *, int)(stage, i)
+#define actor_deactivate(stage, i) GAME_THISFN(actor_deactivate, 0x45dca0, void, void *, int)(stage, i)
 #define Skeleton_clear(self) GAME_THISFN(Skeleton_clear, 0x469980, void, void *)(self)
 #define partList_clear(self) GAME_THISFN(partList_clear, 0x46f480, void, void *)(self)
 #define partList_release(self) GAME_THISFN(partList_release, 0x46f4b0, int, void *)(self)
@@ -1110,7 +1111,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define stage_clearActorRefs(stage) GAME_THISFN(stage_clearActorRefs, 0x45df90, void, Stage *)(stage)
 #define stage_resetPlayerRecords(stage) GAME_THISFN(stage_resetPlayerRecords, 0x474480, void, Stage *)(stage)   /* the 16 player records reset */
 #define stage_clearActorSlots(stage) GAME_THISFN(stage_clearActorSlots, 0x45e070, void, Stage *)(stage)
-#define actor_resetSlot(stage, i) GAME_THISFN(actor_resetSlot, 0x4743e0, void, Stage *, int)(stage, i)
+#define actor_resetSlot(stage, i) GAME_THISFN(actor_resetSlot, 0x4743e0, void, void *, int)(stage, i)
 #define collisionPlane_clear(self) GAME_THISFN(collisionPlane_clear, 0x47db50, int, void *)(self)   /* a collision plane cleared */
 #define spaceNode_clear(self) GAME_THISFN(spaceNode_clear, 0x480430, int, void *)(self)   /* a node */
 #define spaceBlock_clear(self) GAME_THISFN(spaceBlock_clear, 0x4804a0, int, void *)(self)   /* a block */
@@ -1185,7 +1186,7 @@ typedef struct { float r, g, b, a; } Colour;
 #define gameList_open() GAME_FN(gameList_open, 0x434d00, int, void)()    /* the search asked for: 1 sent */
 #define createDialog_hitTest(x, y) GAME_FN(createDialog_hitTest, 0x432200, int, int, int)(x, y)   /* the create-game dialog's button at (x, y) */
 #define room_openDialog4d() GAME_FN(room_openDialog4d, 0x4338c0, void, void)()
-#define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const char *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
+#define dplay_host(name, player, map, a, b, c, d, corp) GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(name, player, map, a, b, c, d, corp)   /* the arena hosted: 0 failed */
 #define net_asyncSelect(hwnd, socket) GAME_FN(net_asyncSelect, 0x452170, int, void *, int)(hwnd, socket)
 #define lobby_keepArenaSettings() GAME_FN(lobby_keepArenaSettings, 0x405140, u32, void)()   /* the arena's settings kept (0x4db528 into 0x4ded20) */
 #define room_keepSettings() GAME_FN(room_keepSettings, 0x433640, u32, void)()    /* the room's settings kept (0x4df9c8 into 0x5b1b30) */

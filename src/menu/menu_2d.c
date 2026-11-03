@@ -329,7 +329,7 @@ u32 (menu_drawInputLine)(int x, int y)
 	if (g_dialogOpen)
 		return (u32)g_dialogOpen;
 	GAME_FN(Color4_set, 0x41f0e0, void, void *, u32, u32, u32, u32)((void *)OBJ(g_textColour), 0, 0x3f800000, 0, 0x3f800000);
-	GAME_FN(menu_drawTextCursor, 0x428890, u32, int, int)(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
+	menu_drawTextCursor(x + g_chatLength * 8, y);   /* menu_drawTextCursor: the cursor */
 	if (!g_chatFieldFlag)
 		return GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(x, y, g_chatLine);   /* text_draw8 */
 	char stars[0x30];   /* the original zeroes 30 bytes of its frame here: a longer password (the fields take 20) would run over */

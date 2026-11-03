@@ -372,7 +372,7 @@ u32 (lobbyPlayer_draw)(void)
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return mode;
 	if (!g_dialogOpen)
-		return GAME_FN(arena_drawNameDialog, 0x409bc0, u32, void)();   /* arena_drawNameDialog */
+		return arena_drawNameDialog();   /* arena_drawNameDialog */
 	return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_arenaNameDialogLeft, g_arenaNameDialogTop,
 	                                                     g_arenaNameDialogRight, g_arenaNameDialogBottom);   /* menu_drawFrame */
 }
@@ -385,21 +385,21 @@ u32 (lobby_processKeys)(void)
 	u32 screen = (*(u32 *)&g_lobbySubState);
 	switch (screen) {
 	case 0:
-		return GAME_FN(lobbyPlayer_keys, 0x407840, u32, void)();   /* lobbyPlayer_keys */
+		return lobbyPlayer_keys();   /* lobbyPlayer_keys */
 	case 1:
 		if (g_arenaLeaving)
-			return GAME_FN(lobbyJoin_keys, 0x407970, u32, void)();   /* lobbyJoin_keys */
-		return GAME_FN(lobbyJoin_keysChat, 0x4079c0, u32, void)();       /* lobbyJoin_keysChat */
+			return lobbyJoin_keys();   /* lobbyJoin_keys */
+		return lobbyJoin_keysChat();       /* lobbyJoin_keysChat */
 	case 2:
 		if (g_arenaLeaving)
-			return GAME_FN(lobby_keysBack, 0x4080c0, u32, void)();   /* lobby_keysBack */
+			return lobby_keysBack();   /* lobby_keysBack */
 		if (g_mapListOpen)
-			return GAME_FN(room_mapListKeys, 0x403870, u32, void)();   /* the map list */
+			return room_mapListKeys();   /* the map list */
 		if (g_createQuitDialog)
-			return GAME_FN(lobby_keysQuit, 0x408110, u32, void)();   /* lobby_keysQuit */
-		return GAME_FN(lobbyTop_connect, 0x407e40, u32, void)();       /* lobbyTop_connect */
+			return lobby_keysQuit();   /* lobby_keysQuit */
+		return lobbyTop_connect();       /* lobbyTop_connect */
 	case 5:
-		return GAME_FN(lobbyTop_keys, 0x407750, u32, void)();       /* lobbyTop_keys */
+		return lobbyTop_keys();       /* lobbyTop_keys */
 	}
 	return screen;
 }
@@ -437,23 +437,23 @@ u32 (menuState400_frame)(void)
 	u32 screen = (*(u32 *)&g_lobbySubState);
 	switch (screen) {
 	case 5:
-		GAME_FN(lobbyTop_draw, 0x40cef0, u32, void)();   /* lobbyTop_draw */
+		lobbyTop_draw();   /* lobbyTop_draw */
 		menu_drawBackground();
 		if (g_quitAsked == 1 && g_arenaLobbyMode == 2)
 			return GAME_FN(menu_drawDimOverlay, 0x40ce70, u32, void)();   /* menu_drawDimOverlay */
-		return GAME_FN(lobbyTop_drawTitle, 0x408680, u32, void)();       /* lobbyTop_drawTitle */
+		return lobbyTop_drawTitle();       /* lobbyTop_drawTitle */
 	case 0:
 		menu_drawBackground();
-		GAME_FN(arena_camera, 0x408270, u32, void)();              /* arena_camera: the lobby's camera */
-		return GAME_FN(lobbyPlayer_draw, 0x40cf80, u32, void)();       /* lobbyPlayer_draw */
+		arena_camera();              /* arena_camera: the lobby's camera */
+		return lobbyPlayer_draw();       /* lobbyPlayer_draw */
 	case 1:
 		menu_drawBackground();
-		GAME_FN(arena_camera, 0x408270, u32, void)();
-		return GAME_FN(lobbyJoin_draw, 0x40cfd0, u32, void)();       /* lobbyJoin_draw */
+		arena_camera();
+		return lobbyJoin_draw();       /* lobbyJoin_draw */
 	case 2:
 		menu_drawBackground();
-		GAME_FN(arena_camera, 0x408270, u32, void)();
-		return GAME_FN(lobbyCreate_draw, 0x40d390, u32, void)();       /* lobbyCreate_draw */
+		arena_camera();
+		return lobbyCreate_draw();       /* lobbyCreate_draw */
 	}
 	return screen;
 }
@@ -466,23 +466,23 @@ u32 (lobby_onStateChange)(void)
 	u32 screen = (*(u32 *)&g_lobbySubState);
 	switch (screen) {
 	case 5:
-		return GAME_FN(lobby_topPageClicks, 0x406950, u32, void)();
+		return lobby_topPageClicks();
 	case 0:
-		return GAME_FN(lobby_playerScreenClicks, 0x406a60, u32, void)();
+		return lobby_playerScreenClicks();
 	case 1:
 		if (g_arenaConfirming)
-			return GAME_FN(lobby_close, 0x406b60, u32, void)();   /* lobby_close */
+			return lobby_close();   /* lobby_close */
 		if (g_arenaLeaving)
-			return GAME_FN(lobby_quitDialogClicks, 0x406bd0, u32, void)();   /* lobby_quitDialogClicks */
-		return GAME_FN(lobby_connect, 0x406c30, u32, void)();       /* lobby_connect */
+			return lobby_quitDialogClicks();   /* lobby_quitDialogClicks */
+		return lobby_connect();       /* lobby_connect */
 	case 2:
 		if (g_arenaLeaving)
-			return GAME_FN(create_quitDialogClicks, 0x407270, u32, void)();   /* create_quitDialogClicks */
+			return create_quitDialogClicks();   /* create_quitDialogClicks */
 		if (g_mapListOpen)
-			return GAME_FN(mapList_mouse, 0x4036c0, u32, void)();   /* mapList_mouse: the map list */
+			return mapList_mouse();   /* mapList_mouse: the map list */
 		if (g_createQuitDialog)
-			GAME_FN(lobby_pageClicks, 0x407300, u32, void)();          /* lobby_pageClicks */
-		return GAME_FN(arena_createClick, 0x407410, u32, void)();       /* arena_createClick */
+			lobby_pageClicks();          /* lobby_pageClicks */
+		return arena_createClick();       /* arena_createClick */
 	}
 	return screen;
 }
@@ -636,12 +636,12 @@ u32 (lobbyCreate_draw)(void)
 	signed char map = (*(signed char *)&g_arenaGameType);
 	if (map < 0 || map > 0xe)
 		g_arenaGameType = 0;
-	GAME_FN(arena_createDraw, 0x40b750, u32, void)();   /* arena_createDraw */
+	arena_createDraw();   /* arena_createDraw */
 	if (g_mapListOpen == 1)
-		GAME_FN(mapList_draw, 0x4038e0, u32, void)();   /* mapList_draw: the map list */
+		mapList_draw();   /* mapList_draw: the map list */
 	if (!g_connectionAwaited)
 		return 0;
-	return GAME_FN(arena_connectionOutcome, 0x405b80, u32, void)();   /* arena_connectionOutcome */
+	return arena_connectionOutcome();   /* arena_connectionOutcome */
 }
 
 /* 0x408110: the create screen's quit dialog keys (no other dialog open): one closes it, the other starts the arena:
@@ -692,14 +692,14 @@ u32 (lobby_playerScreenClicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return GAME_FN(arena_editName, 0x404cd0, u32, void)();   /* arena_editName */
+		return arena_editName();   /* arena_editName */
 	case 2:
 		sound_playMenu(0);
 		g_armcFrom = 2;
 		return menu_enterMenus();   /* menu_enterMenus: the ARM CENTER */
 	case 3:
 		sound_playMenu(0);
-		r = GAME_FN(arena_saveSettings, 0x4050a0, u32, void)();      /* arena_saveSettings */
+		r = arena_saveSettings();      /* arena_saveSettings */
 		g_arenaLobbyMode = 0;
 		return r;
 	case 4:
@@ -708,7 +708,7 @@ u32 (lobby_playerScreenClicks)(void)
 		return r;
 	case 5:
 		sound_playMenu(0);
-		return GAME_FN(cfg_defaultPlayerName, 0x4050f0, u32, void)();   /* cfg_defaultPlayerName */
+		return cfg_defaultPlayerName();   /* cfg_defaultPlayerName */
 	}
 	return button;
 }
@@ -833,9 +833,9 @@ u32 (lobbyTop_keys)(void)
 		return to_main_menu();
 	}
 	if (key_hit(ADDR(g_dikC)))
-		return GAME_FN(lobby_setSubState2, 0x404c20, u32, void)();   /* lobby_setSubState2 */
+		return lobby_setSubState2();   /* lobby_setSubState2 */
 	if (key_hit(ADDR(g_dikP)))
-		return GAME_FN(lobby_setSubState0, 0x404ac0, u32, void)();   /* lobby_setSubState0 */
+		return lobby_setSubState0();   /* lobby_setSubState0 */
 	if (key_hit(ADDR(g_dikJ)))
 		return GAME_FN(lobby_setSubState1, 0x404b30, u32, void)();   /* lobby_setSubState1 */
 	if (key_hit(ADDR(g_dikX)))
@@ -860,7 +860,7 @@ u32 (lobby_topPageClicks)(void)
 			sound_playMenu(0);
 			switch (i) {
 			case 0: GAME_FN(lobby_setSubState0, 0x404ac0, void, void)(); break;   /* lobby_setSubState0 */
-			case 1: GAME_FN(lobby_setSubState1, 0x404b30, void, void)(); break;   /* lobby_setSubState1 */
+			case 1: lobby_setSubState1(); break;   /* lobby_setSubState1 */
 			case 2: GAME_FN(lobby_setSubState2, 0x404c20, void, void)(); break;   /* lobby_setSubState2 */
 			case 3: to_main_menu(); break;
 			}
@@ -909,7 +909,7 @@ u32 (lobbyPlayer_keys)(void)
 	}
 	if (input_justPressed(g_dikD)) {
 		sound_playMenu(0);
-		return GAME_FN(cfg_defaultPlayerName, 0x4050f0, u32, void)();   /* cfg_defaultPlayerName */
+		return cfg_defaultPlayerName();   /* cfg_defaultPlayerName */
 	}
 	if (!input_justPressed(g_keyBack))
 		return 0;
@@ -969,8 +969,8 @@ int (lobby_openConnection)(void)
 u32 (arena_loadAndQuit)(void)
 {
 	if (g_startedByLauncher != 1) {
-		GAME_FN(menuState400_enter, 0x404640, void, void)();   /* menuState400_enter */
-		GAME_FN(lobby_setSubState1, 0x404b30, void, void)();   /* lobby_setSubState1 */
+		menuState400_enter();   /* menuState400_enter */
+		lobby_setSubState1();   /* lobby_setSubState1 */
 		memset((void *)ADDR(g_typedArenaName), 0, 24);
 		strcpy((char *)ADDR(g_typedArenaName), g_serverAddressArg);
 		u32 r = GAME_FN(arena_joinListed, 0x406200, u32, int)(99999);   /* arena_joinListed */
@@ -993,9 +993,9 @@ u32 (arena_loadAndQuit)(void)
 	(*(u8 *)&g_arenaMap) = g_arenaFileMap;
 	g_arenaPlayers = g_arenaFilePlayers;
 	g_arenaTimeLimit = (*(u8 *)&g_cmdTimeLimit);
-	GAME_FN(menuState400_enter, 0x404640, void, void)();
-	GAME_FN(lobby_setSubState1, 0x404b30, void, void)();
-	u32 r = GAME_FN(lobby_checkReservedName, 0x4057a0, u32, void)();   /* lobby_checkReservedName */
+	menuState400_enter();
+	lobby_setSubState1();
+	u32 r = lobby_checkReservedName();   /* lobby_checkReservedName */
 	g_lobbyReply = 0x68;
 	return r;
 }
@@ -1094,7 +1094,7 @@ u32 (lobbyTop_connect)(void)
 	if (g_editingNewArenaName) {   /* the arena's name */
 		if (g_paused)
 			return mode;
-		if (!strlen(line) || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
+		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
 			g_editingNewArenaName = 0;
 			return r;
@@ -1132,12 +1132,12 @@ u32 (lobbyTop_connect)(void)
 	}
 	if (input_justPressed(g_dikI) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return GAME_FN(lobby_roomNameCheck, 0x4052c0, u32, void)();   /* lobby_4052c0: create */
+		return lobby_roomNameCheck();   /* lobby_4052c0: create */
 	}
 	if (input_justPressed(g_dikT) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		u32 r = GAME_FN(lobby_checkReservedName2, 0x405cf0, u32, void)();
-		return r ? r : GAME_FN(lobby_checkReservedName, 0x4057a0, u32, void)();   /* lobby_checkReservedName */
+		u32 r = lobby_checkReservedName2();
+		return r ? r : lobby_checkReservedName();   /* lobby_checkReservedName */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };
@@ -1180,17 +1180,17 @@ u32 (arena_createClick)(void)
 	u32 r;
 	u8 old;
 	switch (button) {
-	case 0: return GAME_FN(arena_editComment, 0x404d70, u32, void)();
-	case 1: return GAME_FN(arena_editPassword, 0x404f90, u32, void)();
-	case 6: return GAME_FN(arena_editFragLimit, 0x404e10, u32, void)();
-	case 7: return GAME_FN(arena_editTimeLimit, 0x404ed0, u32, void)();
+	case 0: return arena_editComment();
+	case 1: return arena_editPassword();
+	case 6: return arena_editFragLimit();
+	case 7: return arena_editTimeLimit();
 	case 2:
 		sound_playMenu(2);
 		/* fall through */
 	case 12: case 14:
-		return GAME_FN(arena_stepMap, 0x4068d0, u32, int)(1);   /* lobby_4068d0: the next map */
+		return arena_stepMap(1);   /* lobby_4068d0: the next map */
 	case 13:
-		return GAME_FN(arena_stepMap, 0x4068d0, u32, int)(0);
+		return arena_stepMap(0);
 	case 3:
 		*players += 2;
 		r = *players;
@@ -1226,13 +1226,13 @@ u32 (arena_createClick)(void)
 		if (g_arenaGameSetUp)
 			return 8;
 		sound_playMenu(0);
-		return GAME_FN(lobby_roomNameCheck, 0x4052c0, u32, void)();   /* lobby_4052c0: create */
+		return lobby_roomNameCheck();   /* lobby_4052c0: create */
 	case 9:
 		if (g_arenaGameSetUp)
 			return 9;
 		sound_playMenu(0);
-		r = GAME_FN(lobby_checkReservedName2, 0x405cf0, u32, void)();
-		return r ? r : GAME_FN(lobby_checkReservedName, 0x4057a0, u32, void)();   /* lobby_checkReservedName */
+		r = lobby_checkReservedName2();
+		return r ? r : lobby_checkReservedName();   /* lobby_checkReservedName */
 	case 11:
 		arena_leaveSession();
 		g_arenaLobbyMode = 0;
@@ -1241,7 +1241,7 @@ u32 (arena_createClick)(void)
 		if (*custom != 1)
 			return 15;
 		sound_playMenu(2);
-		return GAME_FN(mapList_startEdit, 0x403490, u32, int)(1);   /* mapList_startEdit: the map list (the original pushes a 1 it ignores) */
+		return mapList_startEdit(1);   /* mapList_startEdit: the map list (the original pushes a 1 it ignores) */
 	}
 	return button;
 }

@@ -117,9 +117,9 @@ int (skirmish_saveSettings)(void)
 		GAME_FN(skirmishSettings_leave, 0x443c80, int, void)();
 	if (!g_mouseClick)
 		return 0;
-	int row = GAME_FN(skirmishSettings_hitTest, 0x4438d0, int, int, int)(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
+	int row = skirmishSettings_hitTest(g_mouseX, g_mouseY);   /* skirmishSettings_hitTest */
 	if ((u32)row <= 7)
-		return GAME_FN(skirmish_clickRow, 0x443d50, int, int)(row);
+		return skirmish_clickRow(row);
 	if (row == 8)
 		return GAME_FN(mission_saveAxisMis, 0x443af0, int, int)(g_missionPicked);
 	if (row == 9)
@@ -141,21 +141,21 @@ static int key_hit(u32 binding)
 u32 (room_keys)(void)
 {
 	if (key_hit(ADDR(g_dikEscape_2)))
-		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
+		return room_leaveGame();   /* room_leaveGame */
 	if (key_hit(ADDR(g_dikP)))
-		return GAME_FN(room_requestJoin, 0x4334c0, u32, void)();   /* room_requestJoin */
+		return room_requestJoin();   /* room_requestJoin */
 	if (key_hit(ADDR(g_dikJ)))
-		return GAME_FN(room_start, 0x433590, u32, void)();   /* room_start */
+		return room_start();   /* room_start */
 	if (key_hit(ADDR(g_dikC)))
-		return GAME_FN(room_enterGameList, 0x433790, u32, void)();   /* room_enterGameList */
+		return room_enterGameList();   /* room_enterGameList */
 	if (key_hit(ADDR(g_dikR)))
-		return GAME_FN(room_enterRoomList, 0x433800, u32, void)();   /* room_enterRoomList */
+		return room_enterRoomList();   /* room_enterRoomList */
 	if (key_hit(ADDR(g_dikA))) {
 		g_armcFrom = 3;
 		return menu_enterMenus();
 	}
 	if (key_hit(ADDR(g_dikX)))
-		return GAME_FN(room_leaveGame, 0x435a40, u32, void)();
+		return room_leaveGame();
 	return 0;
 }
 
@@ -247,7 +247,7 @@ u32 (room_pageClicks)(void)
 	if (allowed <= 0)
 		return allowed;
 	sound_playMenu(0);
-	return GAME_FN(room_leaveGame, 0x435a40, u32, void)();   /* room_leaveGame */
+	return room_leaveGame();   /* room_leaveGame */
 }
 
 /* ---- the selected map's preview (map `selected`, a signed byte; its name 32 bytes a slot at 0x907b30) loaded as a
@@ -281,7 +281,7 @@ static u32 typing_end(void)
 		return 0;
 	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_mainWindow);   /* SetFocus */
-	return GAME_FN(chat_closeLine, 0x431600, u32, int)(1);   /* chat_closeLine */
+	return chat_closeLine(1);   /* chat_closeLine */
 }
 
 u32 (account_endTyping)(void)
@@ -317,7 +317,7 @@ u32 (room_hostingStep)(void)
 		music_shutdown();
 		g_roomMode = 0;
 		GAME_FN(arena_openSession, 0x452ec0, int, int, int)(0, 0);   /* arena_openSession */
-		GAME_FN(dplay_host, 0x453090, int, const void *, const char *, int, int, int, int, int, int)(
+		dplay_host(
 			room, g_joinedTitleName, (signed char)room[0x23], (signed char)room[0x21], (signed char)room[0x23],
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_missionStage = (signed char)room[0x20];
@@ -401,25 +401,25 @@ u32 (app_onClose)(void)
    their message and reopen the field; all good, the next dialog (0x433980). Returns that call's eax */
 u32 (account_checkForm)(void)
 {
-	GAME_FN(account_endTyping, 0x433d30, void, void)();   /* account_endTyping */
+	account_endTyping();   /* account_endTyping */
 	g_paused = 0;
 	g_fieldTabKey = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
 	int message, reopen;
-	if (strlen(name) == 0 || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(name) == 1)   /* name_isBlank: blank */
+	if (strlen(name) == 0 || name_isBlank(name) == 1)   /* name_isBlank: blank */
 		message = 0x24, reopen = ADDR(g_typingAccountName);
-	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1)                  /* room_nameHasBadChar: a bad character */
+	else if (room_nameHasBadChar(name) == 1)                  /* room_nameHasBadChar: a bad character */
 		message = 0x15a, reopen = ADDR(g_typingAccountName);
 	else if (strlen(password) == 0)
 		message = 0x25, reopen = ADDR(g_typingAccountPassword);
 	else if (strcmp(password, g_accountPasswordRepeat))
 		message = 0x21, reopen = ADDR(g_typingAccountPassword);
-	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1)
+	else if (room_nameHasBadChar(password) == 1)
 		message = 0x15b, reopen = ADDR(g_typingAccountPassword);
-	else if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(g_accountEmail) == 1)
+	else if (room_nameHasBadChar(g_accountEmail) == 1)
 		message = 0x81, reopen = ADDR(g_typingAccountEmail);
 	else
-		return GAME_FN(room_openDialog58, 0x433980, u32, void)();   /* the next dialog */
+		return room_openDialog58();   /* the next dialog */
 	u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(message);
 	GAME_VAR(int, reopen) = 1;
 	return r;
@@ -434,7 +434,7 @@ int (account_sendChange)(void)
 		return 0;
 	static const u32 fields[4] = { OBJ(g_accountOldPassword), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
-		if (GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
+		if (room_nameHasBadChar((const char *)RELOC(fields[i])) == 1) {   /* room_nameHasBadChar */
 			menu_showMessage(0x81);
 			g_roomLoginDue = 0;
 			return 0;
@@ -499,7 +499,7 @@ u32 (ranking_page)(void)
 	}
 	if (g_rankingWaiting) {
 		if (g_roomListWaiting) {
-			GAME_FN(roomList_fillPage, 0x435770, void, void)();   /* roomList_fillPage: the list filled */
+			roomList_fillPage();   /* roomList_fillPage: the list filled */
 			g_rankingWaiting = 0;
 			g_rankingHaveList = 1;
 			g_roomListWaiting = 0;
@@ -526,8 +526,8 @@ u32 (login_send)(void)
 	g_chatFieldFlag = 0;
 	g_paused = 0;
 	const char *name = g_accountName, *password = g_accountPassword;
-	int bad = GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(name) == 1 ? 0x15a
-	        : GAME_FN(room_nameHasBadChar, 0x434400, int, const char *)(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
+	int bad = room_nameHasBadChar(name) == 1 ? 0x15a
+	        : room_nameHasBadChar(password) == 1 ? 0x15b : 0;   /* room_nameHasBadChar */
 	if (bad) {
 		u32 r = GAME_FN(menu_showMessage, 0x41ee40, u32, int)(bad);
 		g_roomLoginDue = 0;
@@ -561,7 +561,7 @@ u32 (ranking_clicks)(void)
 		g_roomMode = 0;
 	if (!g_mouseClick)
 		return mode;
-	u32 button = GAME_FN(ranking_hitTest, 0x4323c0, u32, int, int)(g_mouseX, g_mouseY);   /* ranking_hitTest */
+	u32 button = ranking_hitTest(g_mouseX, g_mouseY);   /* ranking_hitTest */
 	if (button > 8 || button == 6 || (button == 3 ? !g_rankingWaiting : g_rankingWaiting != 0))
 		return button;
 	u32 r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);   /* the click sound */
@@ -618,13 +618,13 @@ u32 (room_settingsClicks)(void)
 	u32 r;
 	switch (button) {
 	case 0:
-		return GAME_FN(field_editComment, 0x4339e0, u32, void)();   /* field_editComment */
+		return field_editComment();   /* field_editComment */
 	case 1:
-		return GAME_FN(field_editPassword, 0x433a80, u32, void)();   /* field_editPassword */
+		return field_editPassword();   /* field_editPassword */
 	case 2: case 10: case 12:
-		return GAME_FN(room_stepMap, 0x4356f0, u32, int)(1);   /* room_stepMap: the next map */
+		return room_stepMap(1);   /* room_stepMap: the next map */
 	case 11:
-		return GAME_FN(room_stepMap, 0x4356f0, u32, int)(0);
+		return room_stepMap(0);
 	case 3:
 		*players += 2;
 		r = *players;
@@ -663,14 +663,14 @@ u32 (room_settingsClicks)(void)
 		if (g_arenaGameSetUp)
 			return (*(u32 *)&g_arenaGameSetUp);
 		sound_playMenu(0);
-		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
+		return lobby_checkReservedName3();   /* room_4351c0: start */
 	case 9:
 		r = GAME_FN(sound_playMenu, 0x41e760, u32, int)(0);
 		g_roomMode = 0;
 		return r;
 	case 13:
 		sound_playMenu(0);
-		return GAME_FN(mapList_startEdit, 0x403490, u32, int)(2);   /* mapList_startEdit: the map list (the original pushes a 2 it ignores) */
+		return mapList_startEdit(2);   /* mapList_startEdit: the map list (the original pushes a 2 it ignores) */
 	}
 	return button;
 }
@@ -688,7 +688,7 @@ u32 (room_settingsAfterTyping)(void)
 		return 0;
 	const char *line = g_chatLine;
 	if (g_editingRoomName) {   /* the room's name */
-		if (!strlen(line) || GAME_FN(name_isBlank, 0x4343b0, int, const char *)(line) == 1) {   /* name_isBlank: blank */
+		if (!strlen(line) || name_isBlank(line) == 1) {   /* name_isBlank: blank */
 			u32 r = strlen(line) ? GAME_FN(sound_playMenu, 0x41e760, u32, int)(6) : 0;
 			g_editingRoomName = 0;
 			return r;
@@ -717,7 +717,7 @@ u32 (room_settingsAfterTyping)(void)
 	}
 	if (input_justPressed(g_dikO) && !g_arenaGameSetUp) {
 		sound_playMenu(0);
-		return GAME_FN(lobby_checkReservedName3, 0x4351c0, u32, void)();   /* room_4351c0: start */
+		return lobby_checkReservedName3();   /* room_4351c0: start */
 	}
 	u32 r = 0;
 	static const u32 close[2] = { ADDR(g_dikC), ADDR(g_dikEscape_2) };
@@ -795,8 +795,8 @@ u32 (account_page)(void)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_accountPanelLeft, g_accountPanelTop,
 		                                                     g_accountPanelRight, g_accountPanelBottom);
 	if (g_accountNotice)
-		GAME_FN(room_selectJoinedSession, 0x433610, void, void)();
-	u32 r = GAME_FN(account_drawPanel, 0x43a420, u32, void)();   /* account_drawPanel: the page */
+		room_selectJoinedSession();
+	u32 r = account_drawPanel();   /* account_drawPanel: the page */
 	if (g_roomAwaitingServer == 1)
 		return r;
 	for (int k = 0; k < 4; k++) {
@@ -843,7 +843,7 @@ static int login_buttons(void)
 {
 	int button = -1;
 	if (input_justPressed(g_dikEnter) == 1)
-		button = GAME_FN(loginForm_hitTest, 0x432240, int, int, int)(g_mouseX, g_mouseY);   /* loginForm_hitTest */
+		button = loginForm_hitTest(g_mouseX, g_mouseY);   /* loginForm_hitTest */
 	if (button != 4 && button != 5) {
 		if (input_justPressed(g_keyOk) == 1)
 			button = 4;
@@ -855,7 +855,7 @@ static int login_buttons(void)
 	if (!g_paused) {
 		sound_playMenu(0);
 		if (button == 4)
-			GAME_FN(account_checkForm, 0x4346c0, void, void)();   /* account_checkForm */
+			account_checkForm();   /* account_checkForm */
 		else
 			GAME_FN(room_openDialog42, 0x434640, void, void)();   /* room_openDialog42 */
 	}

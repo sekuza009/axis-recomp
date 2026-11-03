@@ -150,7 +150,7 @@ u32 (profile_drawNewDialog)(void)
 	const u32 *panel = g_profileColour, *dim = g_profileDim;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_FN(newNameDialog_hitTest, 0x44b2a0, int, int, int)(g_mouseX, g_mouseY);
+	int hovered = newNameDialog_hitTest(g_mouseX, g_mouseY);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_rectColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000);
@@ -201,7 +201,7 @@ void (mainmenu_drawScreen)(void)
 #define PAGE g_profilePage
 	float *panel = (float *)OBJ(g_profileColour);
 	const u32 *bright = g_profileColour, *dim = g_profileDim;
-	int hovered = GAME_FN(profilePage_hitTest, 0x44b260, int, int, int)(g_mouseX, g_mouseY);
+	int hovered = profilePage_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	if (PAGE == 1) {
@@ -247,7 +247,7 @@ void (mainmenu_drawScreen)(void)
 		menu_drawWideButton(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
 		text_drawBox16(x + 0x28, Y1 - 0x28, x + 0x88, (const char *)(MSG(121, "$[0] NEW") + k * 0x80));
 	}
-	GAME_FN(profileList_drawNames, 0x44ce90, void, void)();   /* the pilot list */
+	profileList_drawNames();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -255,7 +255,7 @@ void (mainmenu_drawScreen)(void)
 	menu_drawSmallButton3(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
 	menu_drawSmallButton4(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
 	glDisable(GL_TEXTURE_2D);
-	GAME_FN(profile_drawChosenPilot, 0x44cf70, void, void)();   /* the details */
+	profile_drawChosenPilot();   /* the details */
 	if (PAGE == 1)
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	else
@@ -343,7 +343,7 @@ void (profile_drawPilotSelect)(void)
 	const u32 *panel = g_profileColour, *dim = g_profileDim;
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
-	int hovered = GAME_FN(pilotSelect_hitTest, 0x44b3e0, int, int, int)(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
+	int hovered = pilotSelect_hitTest(g_mouseX, g_mouseY);   /* pilotSelect_hitTest */
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, panel[0], panel[1], panel[2], panel[3]);

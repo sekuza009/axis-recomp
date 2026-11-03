@@ -79,17 +79,17 @@ u32 (room_mouse)(void)
 	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : GAME_FN(room_readyKeys, 0x437240, u32, void)();   /* room_readyKeys */
-	case 1: return dialog ? (u32)dialog : GAME_FN(room_gameListKeys, 0x4372f0, u32, void)();
+	case 0: return dialog ? (u32)dialog : room_readyKeys();   /* room_readyKeys */
+	case 1: return dialog ? (u32)dialog : room_gameListKeys();
 	case 2:
 		if (dialog)
 			return (u32)dialog;
-		return g_mapListOpen ? GAME_FN(room_mapListKeys, 0x403870, u32, void)() : GAME_FN(room_settingsAfterTyping, 0x437630, u32, void)();
-	case 4: return dialog ? (u32)dialog : GAME_FN(roomList_passwordKeys, 0x437810, u32, void)();
-	case 66: return g_roomLeaveDialog == 1 ? GAME_FN(leaveDialog_keys, 0x436940, u32, void)() : GAME_FN(createDialog_keys, 0x436990, u32, void)();
-	case 77: return GAME_FN(loginDialog_keys, 0x436e10, u32, void)();
-	case 88: return g_roomLeaveDialog == 1 ? GAME_FN(leaveDialog_keys, 0x436940, u32, void)() : GAME_FN(room_leaveKeys, 0x4370e0, u32, void)();
-	case 99: return dialog ? (u32)dialog : GAME_FN(room_keys, 0x437140, u32, void)();
+		return g_mapListOpen ? room_mapListKeys() : room_settingsAfterTyping();
+	case 4: return dialog ? (u32)dialog : roomList_passwordKeys();
+	case 66: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : createDialog_keys();
+	case 77: return loginDialog_keys();
+	case 88: return g_roomLeaveDialog == 1 ? leaveDialog_keys() : room_leaveKeys();
+	case 99: return dialog ? (u32)dialog : room_keys();
 	}
 	return state;
 }
@@ -105,7 +105,7 @@ u32 (room_readyKeys)(void)
 		if (!input_justPressed(g_dikEscape_2))
 			return 0;
 	} else if (input_justPressed(g_dikO)) {
-		if (GAME_FN(account_sendChange, 0x434b90, u32, void)() != 1) {   /* not ready */
+		if (account_sendChange() != 1) {   /* not ready */
 			sound(6);
 			return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(5);   /* menu_showMessage: the message */
 		}
@@ -122,7 +122,7 @@ u32 (settingsDialog_clicks)(void)
 {
 	if (g_keyEnter) {
 		sound(0);
-		return GAME_FN(room_openDialog42, 0x434640, u32, void)();   /* closed */
+		return room_openDialog42();   /* closed */
 	}
 	if (!g_mouseClick)
 		return 0;
@@ -137,7 +137,7 @@ u32 (settingsDialog_clicks)(void)
 	}
 	if (button == 5) {
 		sound(0);
-		return GAME_FN(room_openDialog42, 0x434640, u32, void)();
+		return room_openDialog42();
 	}
 	return button;
 }
@@ -223,20 +223,20 @@ u32 (room_processKeys)(void)
 	u32 state = (*(u32 *)&g_roomState);
 	int dialog = g_roomDialogOpen;
 	switch (state) {
-	case 0: return dialog ? (u32)dialog : GAME_FN(room_openClicks, 0x435e70, u32, void)();   /* room_openClicks */
+	case 0: return dialog ? (u32)dialog : room_openClicks();   /* room_openClicks */
 	case 1:
 		if (dialog)
 			return (u32)dialog;
-		return g_arenaConfirming ? GAME_FN(room_stopArenaSetup, 0x435f40, u32, void)() : GAME_FN(gameList_mouse, 0x435fc0, u32, void)();
+		return g_arenaConfirming ? room_stopArenaSetup() : gameList_mouse();
 	case 2:
 		if (dialog)
 			return (u32)dialog;
-		return g_mapListOpen ? GAME_FN(mapList_mouse, 0x4036c0, u32, void)() : GAME_FN(room_settingsClicks, 0x436400, u32, void)();
-	case 4: return dialog ? (u32)dialog : GAME_FN(ranking_clicks, 0x436620, u32, void)();
-	case 66: return g_roomLeaveDialog ? GAME_FN(leaveDialog_clicks, 0x435ab0, u32, void)() : GAME_FN(room_leftClicks, 0x435b00, u32, void)();
-	case 77: return GAME_FN(settingsDialog_clicks, 0x435c20, u32, void)();   /* settingsDialog_clicks */
-	case 88: return g_roomLeaveDialog ? GAME_FN(leaveDialog_clicks, 0x435ab0, u32, void)() : GAME_FN(popup_clicks, 0x435ce0, u32, void)();
-	case 99: return dialog ? (u32)dialog : GAME_FN(room_pageClicks, 0x435d30, u32, void)();
+		return g_mapListOpen ? mapList_mouse() : room_settingsClicks();
+	case 4: return dialog ? (u32)dialog : ranking_clicks();
+	case 66: return g_roomLeaveDialog ? leaveDialog_clicks() : room_leftClicks();
+	case 77: return settingsDialog_clicks();   /* settingsDialog_clicks */
+	case 88: return g_roomLeaveDialog ? leaveDialog_clicks() : popup_clicks();
+	case 99: return dialog ? (u32)dialog : room_pageClicks();
 	}
 	return state;
 }
@@ -256,14 +256,14 @@ u32 (room_openClicks)(void)
 	if (!g_keyEnter) {
 		if (!g_mouseClick)
 			return 0;
-		u32 button = GAME_FN(account_hitTest, 0x4322c0, u32, int, int)(g_mouseX, g_mouseY);   /* the room's hit test */
+		u32 button = account_hitTest(g_mouseX, g_mouseY);   /* the room's hit test */
 		switch (button) {
-		case 0: return GAME_FN(account_editOldPassword, 0x434020, u32, void)();
-		case 1: return GAME_FN(account_editPassword, 0x4340e0, u32, void)();
-		case 2: return GAME_FN(account_editPasswordRepeat, 0x4341a0, u32, void)();
-		case 3: return GAME_FN(account_editEmail, 0x434260, u32, void)();
+		case 0: return account_editOldPassword();
+		case 1: return account_editPassword();
+		case 2: return account_editPasswordRepeat();
+		case 3: return account_editEmail();
 		case 4:
-			if (GAME_FN(account_sendChange, 0x434b90, u32, void)() == 1)
+			if (account_sendChange() == 1)
 				break;
 			menu_showMessage(5);
 			return sound(6);
@@ -301,12 +301,12 @@ u32 (room_draw)(void)
 	signed char map = (*(signed char *)&g_roomRecGameMode);
 	if (map < 0 || map > 0xb)
 		g_roomRecGameMode = 0;
-	GAME_FN(room_drawGameSettings, 0x43bfe0, u32, void)();   /* room_drawGameSettings */
+	room_drawGameSettings();   /* room_drawGameSettings */
 	if (g_mapListOpen == 1)
-		GAME_FN(mapList_draw, 0x4038e0, u32, void)();   /* mapList_draw: the map list */
+		mapList_draw();   /* mapList_draw: the map list */
 	if (!g_connectionAwaited)
 		return 0;
-	return GAME_FN(room_hostingStep, 0x4355b0, u32, void)();   /* room_hostingStep */
+	return room_hostingStep();   /* room_hostingStep */
 }
 
 /* 0x433c70: the chat edit control closed (the window focused again, the line sent): typed into the room's name
@@ -316,7 +316,7 @@ u32 (chat_closeEdit)(void)
 {
 	IMPORT(0x4a9344, u32, void *)(g_hChatEdit);   /* DestroyWindow */
 	IMPORT(0x4a935c, void *, void *)(g_hWndMain);               /* SetFocus */
-	GAME_FN(chat_closeLine, 0x431600, u32, int)(1);                           /* chat_closeLine: the line sent */
+	chat_closeLine(1);                           /* chat_closeLine: the line sent */
 	if (g_typingRoomName == 1) {
 		memset((void *)OBJ(g_accountName), 0, 30);
 		g_typingRoomName = 0;
@@ -490,7 +490,7 @@ u32 (room_networkEvents)(void)
 {
 	u32 r = (*(u32 *)&g_roomPopup) - 2;   /* (what the original's compare chain leaves) */
 	if (g_roomPopup == 1) {
-		r = GAME_FN(room_host, 0x434820, u32, void)();   /* room_host */
+		r = room_host();   /* room_host */
 		g_roomPopup = 0;
 	} else if (g_roomPopup == 2) {
 		r = 0;
@@ -506,7 +506,7 @@ u32 (room_networkEvents)(void)
 	case 33:
 		g_roomState = 0x63;
 		g_roomRequestOut = 0;
-		GAME_FN(lobby_ladderGameName, 0x432620, u32, void)();   /* lobby_ladderGameName */
+		lobby_ladderGameName();   /* lobby_ladderGameName */
 		r = GAME_FN(reg_writeCharacterSettings, 0x432400, u32, void)();   /* reg_writeCharacterSettings */
 		g_gameServerAnswer15 = 0;
 		g_roomConnected = 1;
@@ -609,7 +609,7 @@ u32 (loginDialog_draw)(void)
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(X0, Y0, X1, Y1);   /* the frame */
 	const u32 *bright = g_roomBright, *dim = g_roomDim;
-	int hovered = GAME_FN(loginForm_hitTest, 0x432240, int, int, int)(g_mouseX, g_mouseY);
+	int hovered = loginForm_hitTest(g_mouseX, g_mouseY);
 	gfx_setProjection2D3D(2);
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
