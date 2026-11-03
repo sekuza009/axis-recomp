@@ -281,7 +281,7 @@ int (profileList_clicks)(void)
 			}
 		} else if (row == 9) {
 			sound_playMenu(0);
-			GAME_FN(profile_selectAndLoad, 0x44b990, u32, void)();   /* profile_selectAndLoad */
+			profile_selectAndLoad();   /* profile_selectAndLoad */
 			g_profilePage = 1;
 		} else if (row == 10) {
 			sound_playMenu(0);
@@ -386,7 +386,7 @@ u32 (profileList_drawNames)(void)
 u32 (profile_nameEntryStep)(void)
 {
 	const char *typed = g_chatLine;
-	GAME_FN(mainmenu_drawScreen, 0x44d720, void, void)();
+	mainmenu_drawScreen();
 	if (g_dialogOpen)
 		return GAME_FN(menu_drawFrame, 0x428c30, u32, int, int, int, int)(g_newNameDialogLeft, g_newNameDialogTop,
 		                                                     g_newNameDialogRight, g_newNameDialogBottom);

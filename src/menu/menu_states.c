@@ -588,7 +588,7 @@ u32 (game_returnToScreen500)(void)
 	g_menuState = 500;
 	g_nextScreen = 500;
 	tunnel_rebuild();
-	GAME_FN(tunnel_addRing, 0x441200, void, void)();
+	tunnel_addRing();
 	return reset_menus(FAR_BACK, NEAR_BACK, 0, 0, 0);
 }
 
@@ -613,7 +613,7 @@ u32 (game_returnToScreen400)(void)
 	g_menuState = 300;
 	g_lastScreen = 300;
 	tunnel_rebuild();
-	GAME_FN(tunnel_addRing, 0x441200, void, void)();
+	tunnel_addRing();
 	return reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 }
 
@@ -626,7 +626,7 @@ u32 (game_returnToGameRoom)(void)
 	g_nextScreen = 800;
 	g_lastScreen = 800;
 	tunnel_rebuild();
-	GAME_FN(tunnel_addRing, 0x441200, void, void)();
+	tunnel_addRing();
 	u32 r = reset_menus(FAR_BACK, NEAR_BACK, 2, 0, 0);
 	g_retypePassword = 0;
 	g_arenaGameSetUp = 0;
@@ -728,7 +728,7 @@ u32 (game_postMatch)(void)
 			char *to = (*(char **)&g_roomRecordPacket), *from = (*(char **)&g_arenaPacket);
 			lstrcpyA(to + 0x43, from + 0x43);
 			lstrcpyA(to + 0x33, from + 0x33);
-			GAME_FN(net_send, 0x4521c0, int, int, int)(0x16, 0x65);   /* net_send */
+			net_send(0x16, 0x65);   /* net_send */
 		}
 		if (g_gameServerSocket) {
 			room_keepText();   /* the room's text kept */

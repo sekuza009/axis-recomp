@@ -802,7 +802,7 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	desc[17] = user2;
 	desc[18] = (u32)((int)hi << 8 | (int)lo);
 	if (!g_connectionKind) {
-		GAME_FN(net_getLocalAddress, 0x454220, void, void)();                 /* net_getLocalAddress */
+		net_getLocalAddress();                 /* net_getLocalAddress */
 		desc[19] = net_parseAddress();       /* net_parseAddress */
 		play = g_dplay;
 	}
@@ -930,7 +930,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 		return r;
 	case 2:
 		(*(u32 *)&g_netHostGone) = *(const u32 *)(RELOC(message) + 4);
-		GAME_FN(net_freeSessionList, 0x454130, void, void)();
+		net_freeSessionList();
 		return GAME_FN(net_freeAllSlots, 0x4515a0, u32, void)();
 	case 6:
 		net_takePlayerSlot(slot, (*(int *)&g_localPlayerId));
@@ -1035,7 +1035,7 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	}
 	for (int i = 0; i < 3; i++)
 		lstrcpyA(GAME_VAR(char *, to) + names[i], GAME_VAR(char *, from) + names[i]);
-	GAME_FN(net_send, 0x4521c0, int, int, int)(type, code);   /* net_send */
+	net_send(type, code);   /* net_send */
 	IMPORT(0x4a9110, void, u32)(1000);                 /* Sleep */
 	return 1;
 }

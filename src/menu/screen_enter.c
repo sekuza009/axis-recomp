@@ -213,7 +213,7 @@ void (menuState800_enterGameRoom)(void)
    handler leaves in eax (or the original's leftover of its compares) */
 u32 (menu_onStateChange)(void)
 {
-	GAME_FN(input_updateMenuCursor, 0x445c60, u32, void)();
+	input_updateMenuCursor();
 	if (g_keysBlocked)
 		return (*(u32 *)&g_keysBlocked);
 	if (g_dialogPending)

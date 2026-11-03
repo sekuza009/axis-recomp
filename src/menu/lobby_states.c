@@ -501,7 +501,7 @@ u32 (lobby_close)(void)
 		return hit;
 	g_arenaSearchTicks = 0;
 	g_arenaJoinWaiting = 0;
-	GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();   /* arena_leaveSession */
+	arena_leaveSession();   /* arena_leaveSession */
 	g_arenaConfirming = 0;
 	return IMPORT(0x4a9330, u32, void *, u32)(g_hWndMain, 0x378);   /* KillTimer */
 }
@@ -530,7 +530,7 @@ u32 (room_mapListKeys)(void)
 u32 (room_leaveGame)(void)
 {
 	strcpy(g_netLeaveBuffer, g_joinedTitleName);
-	GAME_FN(net_send, 0x4521c0, int, int, int)(0x19, 0x65);   /* net_send */
+	net_send(0x19, 0x65);   /* net_send */
 	IMPORT(0x4a9110, void, u32)(500);                   /* Sleep */
 	input_setKeysBlocked(4);
 	g_nextScreen = 300;
@@ -619,7 +619,7 @@ u32 (room_keepSettings)(void) { return settings_store((u8 *)OBJ(g_roomSettingsNa
    the original leaves in eax */
 u32 (lobbyCreate_draw)(void)
 {
-	GAME_FN(arena_drawTunnel, 0x4091b0, u32, void)();   /* arena_drawTunnel: the tunnel */
+	arena_drawTunnel();   /* arena_drawTunnel: the tunnel */
 	int mode = g_arenaLobbyMode;
 	if (mode == 1 || mode == 0 || g_lobbySubState == 5)
 		return (u32)mode;
@@ -660,7 +660,7 @@ u32 (lobby_keysQuit)(void)
 		return 0;
 	g_quitAsked = 1;
 	g_netRole = 1;
-	GAME_FN(music_shutdown, 0x457310, u32, void)();   /* music_shutdown */
+	music_shutdown();   /* music_shutdown */
 	u32 limits = (*(u32 *)&g_arenaFragLimit);
 	g_mapRotation = (*(signed char *)&g_arenaCustomize);
 	g_missionStage = g_arenaMap;
@@ -904,7 +904,7 @@ u32 (lobbyPlayer_keys)(void)
 	}
 	if (input_justPressed(g_dikO)) {
 		sound_playMenu(0);
-		GAME_FN(arena_saveSettings, 0x4050a0, void, void)();
+		arena_saveSettings();
 		g_arenaLobbyMode = 0;
 	}
 	if (input_justPressed(g_dikD)) {
@@ -924,7 +924,7 @@ u32 (lobbyPlayer_keys)(void)
 int (lobby_openConnection)(void)
 {
 	if (!g_lobbyConnectionOpen) {
-		GAME_FN(net_disconnect, 0x451e60, void, void)();                   /* net_disconnect */
+		net_disconnect();                   /* net_disconnect */
 		int r = net_connect(100);
 		if (r == 0 || r == 2) {
 			menu_showMessage(r == 0 ? 0x3d : 0x46);   /* the message */

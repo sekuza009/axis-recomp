@@ -16,6 +16,7 @@ import glob, os, re, sys, collections
 
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 DRY = '--dry' in sys.argv
+LOOSE = '--loose' in sys.argv
 CALLS_H = 'src/calls.h'
 
 
@@ -204,7 +205,13 @@ for f in files:
 		if not mac:
 			left.append((f, where, 'no name')); continue
 		if not fits(tuple(types), c):
-			left.append((f, where, 'does not fit ' + ', '.join(c))); continue
+			# --loose: a call whose value is not used (a statement of its own) may go through the macro's return
+			# type; the caller then checks that its object is unchanged (tools/objcmp.py) and keeps only such files
+			statement = re.search(r'(?:[;{}]|\belse)\s*$', t[max(0, start - 200):start]) and \
+				t[balanced(t, close):balanced(t, close) + 1] == ';'
+			loose_ok = LOOSE and statement and fits((c[0],) + tuple(types[1:]), c)
+			if not loose_ok:
+				left.append((f, where, 'does not fit ' + ', '.join(c))); continue
 		if re.search(r'^#(?:define|undef) %s\b' % mac, t, re.M) or re.search(r'\bstatic\b[^;{(]*\b%s\s*\(' % mac, t):
 			left.append((f, where, 'the file has its own ' + mac)); continue
 		out.append(t[pos:start]); out.append(mac); pos = close

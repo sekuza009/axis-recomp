@@ -543,7 +543,7 @@ u32 (cfg_parseServer)(void *f)
 	char number[12];
 	FPUTS(STR(0x4b19f0, "set_server name "));
 	FPUTS(me);
-	GAME_CDECL(0x49f135, int, void *, const char *)(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf "\n" */
+	crt_fprintf(f, (const char *)STR(0x4b182c, "\n"));   /* fprintf "\n" */
 	FPUTS(STR(0x4b19e0, "set_server map "));
 	itoa((signed char)me[0x20], number, 10);
 	FPUTS(number);

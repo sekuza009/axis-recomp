@@ -77,7 +77,7 @@ int (pen_init)(const char *name)
 	static const u32 fixed[4] = { OBJ(g_penFixedTopLeft) - 8, OBJ(g_penFixedTopRight) - 8, OBJ(g_penFixedBottomRight) - 8, OBJ(g_penFixedBottomLeft) - 8 };
 	static const u32 proportional[4] = { OBJ(g_penPropTopLeft) - 8, OBJ(g_penPropTopRight) - 8, OBJ(g_penPropBottomRight) - 8, OBJ(g_penPropBottomLeft) - 8 };
 	if (g_penFontNeverSet == 1) {
-		GAME_FN(sys_errorMessageNoName, 0x46c840, void, const char *)((const char *)STR(0x4c56fc, "pen duplicate initialization - penInit()"));
+		sys_errorMessageNoName((const char *)STR(0x4c56fc, "pen duplicate initialization - penInit()"));
 		return 0;
 	}
 	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);

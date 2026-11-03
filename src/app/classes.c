@@ -273,16 +273,16 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	*(u32 *)self = STR(0x4aa23c, "08F");   /* the vtable */
 	Scene_dtor(self + 0x2148ed8);
 	eh_vector_destructor(self + 0x1cd93a8, 0x8888, 100, FN_ADDR(actor_destroyPartLists, 0x45ff30));
-	GAME_THISFN(SkeletonManager_dtor, 0x46ae60, void, void *)(self + 0x1cbe198);   /* SkeletonManager_dtor */
+	SkeletonManager_dtor(self + 0x1cbe198);   /* SkeletonManager_dtor */
 	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)(self + 0x19e188c);   /* ShapeManager_dtor */
 	eh_vector_destructor(self + 0x1561b68, 0x47fd2, 16, FN_ADDR(ResourceSet_dtor, 0x463960));
-	GAME_THISFN(SkeletonManager_dtor, 0x46ae60, void, void *)(self + 0x13016d0);
-	GAME_THISFN(ShapeManager_dtor, 0x466a10, void, void *)(self + 0xe3c93c);
-	GAME_THISFN(Model_dtor, 0x464ba0, void, void *)(self + 0xdc0cc4);
-	GAME_THISFN(Model_dtor, 0x464ba0, void, void *)(self + 0xdc0a78);
-	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9e3020);
-	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9d8010);
-	GAME_THISFN(Light_dtor, 0x483d50, void, void *)(self + 0x9ccffc);
+	SkeletonManager_dtor(self + 0x13016d0);
+	ShapeManager_dtor(self + 0xe3c93c);
+	Model_dtor(self + 0xdc0cc4);
+	Model_dtor(self + 0xdc0a78);
+	Light_dtor(self + 0x9e3020);
+	Light_dtor(self + 0x9d8010);
+	Light_dtor(self + 0x9ccffc);
 	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)(self + 0xa10);
 }
 
@@ -486,16 +486,16 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = g + 0x1f36c8;
-	GAME_THISFN(TimeSync_ctor, 0x487430, void, void *)(g + 0xc);   /* TimeSync_ctor */
+	TimeSync_ctor(g + 0xc);   /* TimeSync_ctor */
 	VTABLE(g + 0x74, STR(0x4aa24c, "04F"));
 	ViewVolume_clear(g + 0x74);
 	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
 	VTABLE(s + 0x9ccffc, VT(Light, 0x4aa248));
-	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9ccffc);
+	Light_clearCounts(s + 0x9ccffc);
 	VECTOR(s + 0x9d8014, 0x2c, 0x400);
 	VTABLE(s + 0x9d8010, VT(Light, 0x4aa248));
-	GAME_THISFN(Light_clearCounts, 0x483d60, void, void *)(s + 0x9d8010);
+	Light_clearCounts(s + 0x9d8010);
 	Light_ctor(s + 0x9e3020);   /* Light_ctor */
 	VECTOR(s + 0x9ee080, 0xc, 0x126);
 	VECTOR(s + 0x9eee54, 0xc, 0x31);
@@ -506,17 +506,17 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	Model_ctor(s + 0xdc0cc4);
 	VECTOR(s + 0xe36214, 0x14, 0x3e8);
 	VTABLE(s + 0xe3c93c, VT(ShapeManager, 0x4aa244));
-	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0xe3c93c);
+	ShapeManager_clear(s + 0xe3c93c);
 	VECTOR(s + 0xf30dc8, 4, 1000000);
 	VTABLE(s + 0x13016d0, STR(0x4aa240, "\3207F"));
-	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x13016d0);
+	SkeletonManager_clear(s + 0x13016d0);
 	VECTOR(s + 0x131ae44, 0x2cc, 0x3e8);
 	VECTOR(s + 0x14d1ab4, 0x2e18, 0x32);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1561b68, 0x47fd2, 0x10, FN_ADDR(ResourceSet_ctor, 0x463850), FN_ADDR(ResourceSet_dtor, 0x463960));
 	VTABLE(s + 0x19e188c, VT(ShapeManager, 0x4aa244));
-	GAME_THISFN(ShapeManager_clear, 0x466a20, void, void *)(s + 0x19e188c);
+	ShapeManager_clear(s + 0x19e188c);
 	VTABLE(s + 0x1cbe198, STR(0x4aa240, "\3207F"));
-	GAME_THISFN(SkeletonManager_clear, 0x46ae70, void, void *)(s + 0x1cbe198);
+	SkeletonManager_clear(s + 0x1cbe198);
 	VECTOR(s + 0x1cd6fb4, 0x5c, 0x64);
 	((void (STDCALL *)(void *, int, int, u32, u32))IMG(0x49fd2d))(s + 0x1cd93a8, 0x8888, 0x64, FN_ADDR(ResourceSet_initLists, 0x463a40), FN_ADDR(actor_destroyPartLists, 0x45ff30));
 	VECTOR(s + 0x202ef34, 0x4e8, 0x190);
@@ -530,7 +530,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	GAME_VAR(int, s + 4) = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
 	GAME_VAR(int, g + 4) = GAME_VAR(int, g + 8) = -1;
-	GAME_THISFN(TimeSync_clear, 0x487480, void, void *)(g + 0xc);
+	TimeSync_clear(g + 0xc);
 	for (int k = 0; k < 10; k++)
 		GAME_VAR(u32, g + 0x48 + k * 4) = 0x3d088889;
 	GAME_VAR(int, g + 0x70) = 0;

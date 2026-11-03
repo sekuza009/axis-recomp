@@ -128,7 +128,7 @@ u32 (settingsDialog_clicks)(void)
 		return 0;
 	u32 button = GAME_FN(loginForm_hitTest, 0x432240, u32, int, int)(g_mouseX, g_mouseY);   /* the dialog's hit test */
 	if (button <= 3) {
-		GAME_FN(account_endTyping, 0x433d30, u32, void)();
+		account_endTyping();
 		return GAME_FN(loginForm_openField, 0x433e60, u32, int)((int)button);
 	}
 	if (button == 4) {
@@ -183,9 +183,9 @@ int (gameList_open)(void)
 	(*(u32 *)&g_lobbyBlinkClock) = 0x447a0000;   /* 1000 */
 	g_gameListTop = 0;
 	g_lobbyListRow = 0;
-	GAME_FN(arena_clearChatRecord, 0x4045e0, u32, void)();   /* arena_clearChatRecord */
+	arena_clearChatRecord();   /* arena_clearChatRecord */
 	GAME_VAR(u32, g_netRequestWord) = 0x180001;
-	GAME_FN(net_send, 0x4521c0, int, int, int)(0x13, 0x65);   /* net_send */
+	net_send(0x13, 0x65);   /* net_send */
 	g_roomNameSum = 0;
 	g_listRefreshPeriod = 0x1e;
 	return 1;
@@ -206,7 +206,7 @@ u32 (arena_joinListed)(int i)
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
 	}
 	g_arenaJoinRow = i;
-	GAME_FN(dplay_listSessions, 0x453260, u32, void)();
+	dplay_listSessions();
 	g_arenaSearchTicks = 0;
 	g_arenaConfirming = 1;
 	g_arenaJoinWaiting = 0;
@@ -284,7 +284,7 @@ u32 (room_openClicks)(void)
    Returns what the original leaves in eax */
 u32 (room_draw)(void)
 {
-	GAME_FN(room_drawTunnel, 0x4388e0, u32, void)();   /* room_drawTunnel */
+	room_drawTunnel();   /* room_drawTunnel */
 	int mode = g_roomMode;
 	if (mode == 1 || mode == 0 || g_roomState == 0x63)
 		return (u32)mode;

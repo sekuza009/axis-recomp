@@ -198,7 +198,7 @@ u32 (room_leftClicks)(void)
 		if (g_paused) {
 			g_paused = 0;
 			input_resetKeys();
-			GAME_FN(input_initKeyboard, 0x401310, void, void *)(g_mainWindow);   /* input_initKeyboard */
+			input_initKeyboard(g_mainWindow);   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
 		input_setKeysBlocked(4);
@@ -233,7 +233,7 @@ u32 (room_pageClicks)(void)
 			sound_playMenu(0);
 			if (i == 3) {   /* the arm center */
 				g_armcFrom = 3;
-				GAME_FN(menu_enterMenus, 0x40ee20, void, void)();   /* menu_enterMenus */
+				menu_enterMenus();   /* menu_enterMenus */
 				g_enteringMenus = 0;
 			} else
 				GAME_CDECL(actions[i], void, void)();
@@ -443,7 +443,7 @@ int (account_sendChange)(void)
 	strcpy(out, g_accountName);
 	strcpy(out + 0x1e, g_accountPassword);
 	strcpy(out + 0x2a, g_accountEmail);
-	GAME_FN(net_send, 0x4521c0, int, int, int)(0x1c, 0x65);   /* net_send */
+	net_send(0x1c, 0x65);   /* net_send */
 	return 1;
 }
 
@@ -480,7 +480,7 @@ u32 (ranking_page)(void)
 		g_rankingFirst = page * 10 + 1;
 		g_rankingLast = page * 10 + 10;
 		out[1] = page * 10 + 1;
-		GAME_FN(net_send, 0x4521c0, int, int, int)(0x15, 0x65);   /* net_send */
+		net_send(0x15, 0x65);   /* net_send */
 		g_rankingRequestPending = 0;
 		g_lobbyBlinkClock = 1000.0f;
 		g_rankingWaiting = 1;
@@ -857,7 +857,7 @@ static int login_buttons(void)
 		if (button == 4)
 			account_checkForm();   /* account_checkForm */
 		else
-			GAME_FN(room_openDialog42, 0x434640, void, void)();   /* room_openDialog42 */
+			room_openDialog42();   /* room_openDialog42 */
 	}
 	return 1;
 }
