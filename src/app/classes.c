@@ -3,6 +3,7 @@
    that clear a block of members. Most return what the original leaves in eax (usually 0 or the object). */
 #include "../game.h"
 #include <string.h>
+#define GS ((Scene *)g)   /* the scene (g in each function) by its fields (src/scene.fields) */
 
 /* n dwords of an object cleared */
 static int clear(void *p, int dwords)
@@ -543,12 +544,12 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	if (!map_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* map_loadItemInfoFrom */
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 	memcpy(g + 0x233ca30, k_cameraPresets, sizeof k_cameraPresets);
-	GAME_VAR(int, g + 0x233cc10) = 1;
+	GS->cameraMode = 1;
 	stage_selectActor((Stage *)s, -1);
 	GAME_VAR(int, g + 0x23423e5) = 6;
 	GAME_VAR(int, g + 0x23423ed) = 6;
-	GAME_VAR(int, g + 0x2340c64) = -1;
-	GAME_VAR(int, g + 0x2340c68) = GAME_VAR(int, g + 0x2340c6c) = GAME_VAR(int, g + 0x2340c70) = 0;
+	GS->watchedPlayer = -1;
+	GS->watchClear[0] = GS->watchClear[1] = GS->watchClear[2] = 0;
 	GAME_VAR(int, g + 0x23423e9) = 3;
 	GAME_VAR(int, g + 0x23423f1) = 7;
 	GAME_VAR(int, g + 0x23423f5) = 10;
@@ -596,7 +597,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), g_insertCdMessage);
 	GAME_VAR(u32, g + 4) = a;
 	GAME_VAR(int, g + 8) = mode;
-	GAME_VAR(int, g + 0x1f1664) = 0;
+	GS->objectsMode = 0;
 	zero_dwords(g + 0x1f1ca8, 3);
 	zero_dwords(g + 0x233c9e8, 3);
 	GAME_VAR(int, g + 0x1f35bc) = 0;
@@ -612,7 +613,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	scene_reset(s);
 	if (GAME_VAR(int, g + 8) == 2) {
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
-		GAME_VAR(int, g + 0x2221f9c) = 0;
+		GS->soloClear = 0;
 		for (int k = 0; k < 3; k++) {
 			GAME_VAR(u32, g + 0xbe2fcc + k * 4) = 0xc7c35000;
 			GAME_VAR(u32, g + 0xbe2fd8 + k * 4) = 0x47c35000;
@@ -622,14 +623,14 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		GAME_VAR(u32, g + 0xbe2ffc) = 0x3f800000;
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
-	GAME_VAR(int, g + 0x233c9fc) = GAME_VAR(int, g + 0x233ca00) = 0;
+	GS->playing = GAME_VAR(int, g + 0x233ca00) = 0;
 	memcpy(g + 0x233ca04, (const void *)ADDR(g_vecOrigin), 12);
 	for (int k = 0; k < 3; k++)
 		GAME_VAR(float, g + 0x233ca10 + k * 4) = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
 	memcpy(g + 0x233ca1c, (const void *)OBJ(g_vecUnitY), 12);
 	GAME_VAR(int, g + 0x233ca28) = GAME_VAR(int, g + 0x233ca2c) = 0;
-	GAME_VAR(int, g + 0x233cc20) = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;
-	GAME_VAR(int, g + 0x233cc28) = GAME_VAR(int, g + 0x233cc30) = GAME_VAR(int, g + 0x233cc34) = 0;
+	GS->inputState = GAME_VAR(int, g + 8) == 2 ? 3 : GAME_VAR(int, g + 8) == 3 ? 1 : 2;
+	GS->modeStarted = GS->roundClear3 = GAME_VAR(int, g + 0x233cc34) = 0;
 	GAME_VAR(int, g + 0x233cc40) = GAME_VAR(int, g + 0x233cc44) = 0;
 	GAME_VAR(u32, g + 0x233cc50) = 0x43960000;   /* 300, 3, 5, 15 */
 	GAME_VAR(u32, g + 0x233cc54) = 0x40400000;
@@ -641,17 +642,17 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords(g + 0x2340d1d, 7);
 	teams_setup((Scene *)g);
 	zero_dwords(g + 0x2342395, 8);
-	GAME_VAR(int, g + 0x23423b5) = -1;
+	GS->endedByTime = -1;
 	zero_dwords(g + 0x23423c9, 7);
-	GAME_VAR(int, g + 0x23423fd) = GAME_VAR(int, g + 0x2342409) = 0;
+	GS->roundClear2 = GAME_VAR(int, g + 0x2342409) = 0;
 	zero_dwords(g + 0x234325f, 10);
-	GAME_VAR(int, g + 0x2343287) = -1;
+	GS->viewKey = -1;
 	zero_dwords(g + 0x234328b, 31);
 	zero_dwords(g + 0x234330b, 4);
 	notices_clearAll(g);
-	GAME_VAR(int, g + 0x234240d) = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
+	GS->localPlayer = GAME_VAR(int, g + 8) == 1 || GAME_VAR(int, g + 8) == 3 ? -1 : 0;
 	zero_dwords(g + 0x2342411, 3);
-	GAME_VAR(int, g + 0x234241d) = -1;
+	GS->chosenTeam = -1;
 	GAME_VAR(int, g + 0x2342421) = 0;
 	GAME_VAR(int, g + 0x2343253) = 0;
 }

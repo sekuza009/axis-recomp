@@ -2,6 +2,7 @@
    the game is paused (+0x2149308 set with +0x214930c 1). The count is read again after each slot. */
 #include "../game.h"
 #include <string.h>
+#define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
@@ -558,7 +559,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		case 7: timer = &A(u32, 0x400); text = STR(0x4c8188, "GRAVITY ARMOR"); break;   /* GRAVITY ARMOR */
 		case 4: {
 			int warped = 0;
-			if (AC->pilot == GAME_VAR(int, s + 0x202e8d4) && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
+			if (AC->pilot == ST->playerActor && !(A(float, 0x540) > 0) && A(int, 0x538) != i) {
 				u8 *to = s + 0x20fadf8 + I(int, 4) * 0x28;
 				memcpy(ac + 0x180, to + 0xc, 12);
 				A(float, 0x18c) = f32(fmul_m((long double)GAME_VAR(int, to + 8), (const float *)ADDR(k_10f)));
@@ -603,12 +604,12 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
    the eax it leaves */
 void THISCALL (item_update)(u8 *s, float dt)
 {
-	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
 		if (AC->state == 1)
 			A(int, 0x53c) = 0;
 	}
-	for (int i = 0; i < GAME_VAR(int, s + 0x20fcd38); i++) {
+	for (int i = 0; i < ST->itemCount; i++) {
 		u8 *it = s + 0x20fadf8 + i * 0x28;
 		int type = I(int, 0);
 		if (type < 0)
@@ -623,7 +624,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 		} else if (I(int, 0x20) == 0) {
 			if (type != 0x22)
 				I(float, 0x1c) = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
-			int n = GAME_VAR(int, s + 0x202e8c8);
+			int n = ST->actorCount;
 			for (int k = 0; k < n; k++) {
 				u8 *ac = s + 0x1cd93a8 + k * 0x8888;
 				if (AC->state != 1)
@@ -646,7 +647,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 		}
 		I(float, 0x24) = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
 	}
-	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
 		if (A(int, 0x53c) == 0)
 			A(int, 0x538) = -1;

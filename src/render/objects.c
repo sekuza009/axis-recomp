@@ -2,6 +2,7 @@
    per pass. Each list is walked up to its count, read again after every entry. */
 #include "../game.h"
 #include <string.h>
+#define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 /* 0x490b30 (stage_drawObject): object i, unless it is hidden or has no model, when its bounding sphere (the model's radius
    plus stage->cullMargin) touches the box around stage->cameraPos: queued with its matrix and pose, culled per mesh */
@@ -174,7 +175,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 	}
 	if (obj[0xc] & 8) {
 		long double nearest = fld_m(K(0x4aa4a4));
-		for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+		for (int k = 0; k < ST->actorCount; k++) {
 			u8 *a = s + 0x1cd93a8 + k * 0x8888;
 			if (F(int, a, 0x14c) != 1)
 				continue;
@@ -266,12 +267,12 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	glMatrixMode(0x1700);
 	Mat4_multiply((float *)(s + 0x20f3a74), pr, mv);
 	if (!GAME_VAR(int, s + 0x2149308) || !GAME_VAR(int, s + 0x214930c))
-		for (int k = 0; k < GAME_VAR(int, s + 0x13c9b24); k++) {
+		for (int k = 0; k < ST->objectCount; k++) {
 			u8 *obj = s + 0x131ae44 + k * 0x2cc;
 			if (GAME_VAR(int, obj + 4) == 1 && (obj[0xc] & 1))
 				object_glow(s, obj, dt);
 		}
-	for (int k = 0; k < GAME_VAR(int, s + 0x202e8c8); k++) {
+	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = s + 0x1cd93a8 + k * 0x8888;
 		if (AC->state != 1)
 			continue;
@@ -306,7 +307,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
 		A(float, 0x87dc) = f32(fld_m(&e[2]));
 		A(int, 0x484) = tag_narrow(ac, OBJ(k_30f));
-		u8 *me = s + 0x1cd93a8 + GAME_VAR(int, s + 0x202e8d4) * 0x8888;
+		u8 *me = s + 0x1cd93a8 + ST->playerActor * 0x8888;
 		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
 			A(int, 0x87e8) = 0;
 			AC->onScreen = 1;
@@ -321,7 +322,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 			continue;
 		}
 		int weapon = GAME_VAR(int, me + 0x148);
-		if (GAME_VAR(int, s + 0x202e8d4) >= 0 && AC->team != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
+		if (ST->playerActor >= 0 && AC->team != GAME_VAR(int, me + 0x118) && weapon >= 0 &&
 		    GAME_VAR(float, s + 0x14d48c4 + weapon * 0x2e18) > 0)
 			A(float, 0x87e8) = f32(fadd_m(fld_m(&dt), (const float *)(ac + 0x87e8)));
 		else

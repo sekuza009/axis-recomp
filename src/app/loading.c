@@ -316,6 +316,7 @@ int (app_checkCdAndLoad)(void *instance)
 }
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
+#define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define STAGE(g) ((g) + 0x1f36c8)
 
 /* the next stage: its line added to the loading screen (+0x233cc60, 0x100 a line, +0x2340c60 of them) */
@@ -328,15 +329,15 @@ static void next_stage(u8 *g, int stage, u32 line)
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), G(int, 8), G(int, 0x233cc20),
+	GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *, int, int, int)((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->network, GS->inputState,
 	                                                             G(int, 0x233cc24));
 }
 
 /* a network client (mode 1, local player 0) that is online keeps the host told it is still loading */
 static void keep_alive(u8 *g)
 {
-	if (G(int, 8) == 1 && G(int, 0x234240d) == 0 && net_isClient() == 1)
-		net_sendGamePacket(g, G(int, 0x234240d));
+	if (GS->network == 1 && GS->localPlayer == 0 && net_isClient() == 1)
+		net_sendGamePacket(g, GS->localPlayer);
 }
 
 /* the map's file name (+0x1f35c8 with .bfd) */
@@ -357,7 +358,7 @@ static char *bfd_name(u8 *g, char *out)
 u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];
-	if (G(int, 0x233cc28) == 0) {
+	if (GS->modeStarted == 0) {
 		g_loadGame = g;
 		g_statusLine = 0;
 		G(int, 0x2340c60) = 1;
@@ -371,27 +372,27 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 0:
 		keep_alive(g);
 		music_shutdown();
-		if (G(int, 8) == 3) {
+		if (GS->network == 3) {
 			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), (const char *)g + 0x1f1cbc + G(int, 0x1f35c0) * 0x40);
-			void *f = G(void *, 0x2340d08) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+			void *f = GS->replayFile = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 			if (!f)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5278, "can't open file %s - processAutoPlayM..."), (int)path);
-			fread_scrambled(g + 0x1f35c4, 4, 1, G(void *, 0x2340d08));
+			fread_scrambled(g + 0x1f35c4, 4, 1, GS->replayFile);
 			if (G(int, 0x1f35c4) != 0x1201)
 				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
-			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)ADDR(g_missionStage), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, G(void *, 0x2340d08));
-			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, G(void *, 0x2340d08));
-			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, G(void *, 0x2340d08));
+			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_missionStage), 4, 1, GS->replayFile);
+			fread_scrambled((void *)OBJ(g_mapTitle), 1, 0x20, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, GS->replayFile);
+			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, GS->replayFile);
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
 		(*(u32 *)&g_logHook) = FN_ADDR(loading_drawCylinder, 0x469730);
 		log_message((int)STAGE(g), -1, 0, (const char *)STR(0x4c521c, ".start loading process"));
 		scene_reset(STAGE(g));
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode == 3)
 			next_stage(g, 1, STR(0x4c520c, ".LOAD AUTO PLAY"));   /* .LOAD AUTO PLAY */
 		else if (mode >= 0 && mode <= 2)
@@ -409,7 +410,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			return 0;
 		}
 		scene_setTextureFolder((Scene *)g, map);
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode >= 0 && mode <= 3)
 			next_stage(g, mode == 2 ? 6 : 2, STR(0x4c51e4, ".INIT PLAY INFO"));   /* .INIT PLAY INFO */
 		else
@@ -420,9 +421,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 	case 2:
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
 		keep_alive(g);
-		if (G(int, 0x1f1cb0) == 0) {
+		if (GS->rotationOff == 0) {
 			scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
-			mode = G(int, 8);
+			mode = GS->network;
 			if (mode == 0 || mode == 1 || mode == 3)
 				next_stage(g, 3, STR(0x4c51b0, ".LOAD GROUND"));   /* .LOAD GROUND */
 			else
@@ -438,7 +439,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			while ((r = netq_receive(&from, &size, data)) != 0) {
 				if (r == 1)
 					net_processGamePacket(g, from, size, data);
-				G(int, 0x2340c7c)++;
+				GS->firstRoundClear[2]++;
 				netq_poll();
 			}
 		}
@@ -460,7 +461,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
 		if (g_missionStage != G(int, 0xbe3000))
 			GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */
 		else
@@ -471,7 +472,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5164, ".load obstacle information"));
 		keep_alive(g);
 		map_loadObjectInfoFrom(STAGE(g), bfd_name(g, path), 0);
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 5, STR(0x4c514c, ".SET COLLISION VOLUME"));   /* .SET COLLISION VOLUME */
 		else
@@ -482,7 +483,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c512c, ".analyze collision information"));
 		keep_alive(g);
 		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* 20000 cubed, cells of 500 */
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 6, STR(0x4c511c, ".LOAD PLAY INFO"));   /* .LOAD PLAY INFO */
 		else
@@ -493,9 +494,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5104, ".analyze battle field"));
 		keep_alive(g);
 		sprintf(name, (const char *)STR(0x4c50e4, "Texture/Crosshair/Crosshair%d"), g_crosshairSetting);
-		G(int, 0x233c9f8) = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+		GS->crosshairTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode >= 0 && mode <= 3)
 			next_stage(g, mode <= 1 ? 7 : 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
@@ -506,11 +507,11 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c50c4, ".transmit mission objectives"));
 		map_loadMissionInfoFrom(STAGE(g), bfd_name(g, path));
-		if (G(int, 8) == 0) {
+		if (GS->network == 0) {
 			log_message((int)STAGE(g), 0, 0, (const char *)STR(0x4c50b4, "load actor info"));
 			map_loadActorInfoFrom(STAGE(g), bfd_name(g, path));
 		}
-		mode = G(int, 8);
+		mode = GS->network;
 		if (mode >= 0 && mode <= 3)
 			next_stage(g, 8, STR(0x4c50a0, "END LOADING PROCESS"));   /* END LOADING PROCESS */
 		else
@@ -521,29 +522,30 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)STAGE(g), -2, 0, (const char *)STR(0x4c5048, ".end loading process"));
 		keep_alive(g);
 		music_playMatch((Scene *)g);
-		G(int, 0x233c9e8) = 1;
-		mode = G(int, 8);
+		GS->frameFlag = 1;
+		mode = GS->network;
 		if (mode >= 0 && mode <= 3)
-			G(int, 0x233cc20) = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
+			GS->inputState = mode <= 1 ? 2 : mode == 2 ? 3 : 4;
 		else
 			no_next(g);
-		G(int, 0x233cc28) = 0;
+		GS->modeStarted = 0;
 		(*(int *)&g_logHook) = 0;
-		return G(u32, 0x233cc20);
+		return ((u32)GS->inputState);
 	}
-	G(int, 0x233cc28)++;
+	GS->modeStarted++;
 	glClearColor_stored(((const u32[]){ 0, 0, 0 }));
 	glClearDepth(1.0);
 	glClear(0x4100);
 	gfx_setProjectionHud(1, 1.0f);
 	ViewVolume_captureMatrices(g + 0x74, 0, g + 0x22e7068);
 	ViewVolume_reset(g + 0x74);
-	render_drawObjects(g + 0x74, G(int, 0x1f1664), 0.0f);
+	render_drawObjects(g + 0x74, GS->objectsMode, 0.0f);
 	gfx_setProjectionHud(0, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0, y = 8; k < G(int, 0x2340c60); k += 2, y += 16)   /* (every other line from the second, as the original steps) */
 		font_penDraw(0x10, y, 0, (const char *)g + 0x233cc60 + (k + 1) * 0x100);
-	return stop == 1 ? 0 : G(u32, 0x233cc20);
+	return stop == 1 ? 0 : ((u32)GS->inputState);
 }
 #undef G
+#undef GS
 #undef STAGE

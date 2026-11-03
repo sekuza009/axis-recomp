@@ -1786,6 +1786,7 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 PACKET_ENTRY(net_sendGamePacket, 1);
 
 #define G(type, offset) GAME_VAR(type, g + (offset))
+#define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 #define STAGE (g + 0x1f36c8)
 #define ACTOR(i) (g + 0x1ecca70 + (i) * 0x8888)   /* the stage's actors, from the game object */
@@ -1834,7 +1835,7 @@ static void actor_name(u8 *g, int i, const char *name)
 static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 {
 	player_setTeam(STAGE, i, pkt[3]);   /* player_setTeam */
-	if (G(int, 0x22e7184) == 1) {
+	if (GS->teamGame == 1) {
 		int t = scene_teamSide(g, pkt[3]);
 		for (int k = 0; k < 5; k++)
 			GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(STAGE, i, k, GAME_VAR(u32, 0x4a97fc + t * 4),
@@ -1855,18 +1856,18 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
    play (the red team's score +0x2221fb8 against the blue +0x2221fbc: 0 red ahead, 1 blue, -1 level) */
 static void match_limit(u8 *g, int state, u32 notice)
 {
-	if (G(int, 0x22f0408) <= 0x1e || G(int, 0x23423b5) == state)
+	if (GS->elapsed <= 0x1e || GS->endedByTime == state)
 		return;
-	G(int, 0x23423b5) = state;
+	GS->endedByTime = state;
 	GAME_THISCALL(notice, void, void *)(g);
-	if (G(int, 0x2342399))
+	if (GS->matchOver)
 		return;
-	if (G(int, 0x22e7184) == 1) {
-		int red = G(int, 0x2221fb8), blue = G(int, 0x2221fbc);
-		G(int, 0x23423bd) = red > blue ? 0 : red < blue ? 1 : -1;
+	if (GS->teamGame == 1) {
+		int red = GS->teamScores[0], blue = GS->teamScores[1];
+		GS->winnerTeam = red > blue ? 0 : red < blue ? 1 : -1;
 	}
-	G(int, 0x2342399) = 1;
-	G(u32, 0x234239d) = 0x41200000;   /* 10 s */
+	GS->matchOver = 1;
+	(*(u32 *)&GS->roundClear6) = 0x41200000;   /* 10 s */
 }
 
 /* 0x48c830 (thiscall on the game object): a network packet (type 0x40 only) from a player. When recording
@@ -1880,14 +1881,14 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 {
 	if (type != 0x40)
 		return;
-	if (G(int, 0x2340d1d) == 1) {
-		void *f = G(void *, 0x2340d08);
+	if (GS->recording == 1) {
+		void *f = GS->replayFile;
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(g + 0x2340d29, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&from, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&type, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(pkt, 1, type, f);
 	}
-	if (G(int, 0x233cc20) == 1 && pkt[1] != 1)
+	if (GS->inputState == 1 && pkt[1] != 1)
 		return;
 	const u8 *b = (const u8 *)pkt;
 	switch (b[1]) {
@@ -1900,7 +1901,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			yaw = f32(fsub_m(fld_m(&yaw), K(0x4a94c8)));
 		float pitch = f32(fmul_m((long double)b[0xc], K(0x4aa494)));
 		if (GAME_VAR(int, PLAYER(i)) == 0) {
-			G(int, 0x2343006 + G(int, 0x234240d) * 0x10) = 1;
+			G(int, 0x2343006 + GS->localPlayer * 0x10) = 1;
 			G(int, 0x234300e + i * 0x10) = 1;
 			return;
 		}
@@ -1982,26 +1983,26 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		if (b[2] > 0x10 || pkt[3] < -1 || pkt[4] < -1 || pkt[5] < -1 || pkt[6] < -1)
 			break;
 		if (b[2] == 0) {
-			G(u32, 0x22f0408) = *(const u32 *)(pkt + 9);
+			(*(u32 *)&GS->elapsed) = *(const u32 *)(pkt + 9);
 			G(u32, 0x22f040c) = *(const u32 *)(pkt + 0xd);
 			if (pkt[3] >= 0) {
 				int round = g_missionStage;
-				if (round != pkt[3] && (round < 0 || G(int, 0x1f1cb0) == 1 || G(int, 0x22f0408) > 0x1e)) {
+				if (round != pkt[3] && (round < 0 || GS->rotationOff == 1 || GS->elapsed > 0x1e)) {
 					g_missionStage = pkt[3];
-					G(int, 0x1f1cb4) = pkt[4];
-					G(int, 0x1f1cb8) = pkt[6];
+					GS->nextMap = pkt[4];
+					GS->nextMode = pkt[6];
 					scene_setTextureFolder((Scene *)g, g_mapNames + g_missionStage * 0x20);
-					G(int, 0x233cc20) = 1;
-					G(int, 0x233cc28) = 0;
+					GS->inputState = 1;
+					GS->modeStarted = 0;
 					game_setGameTypeFlags((Stage *)STAGE, pkt[5]);
-					G(int, 0x1f1cb0) = 0;
+					GS->rotationOff = 0;
 					return;
 				}
-				G(int, 0x1f1cb4) = pkt[4];
-				G(int, 0x1f1cb8) = pkt[6];
+				GS->nextMap = pkt[4];
+				GS->nextMode = pkt[6];
 				if (g_missionStage == pkt[3] && G(int, 0xbe3000) != *(const short *)(pkt + 7)) {
-					G(int, 0x23423fd) = 1;
-					G(int, 0x2342401) = 1;
+					GS->roundClear2 = 1;
+					GS->dataLossCode = 1;
 				}
 			}
 			static const u32 parts[5][4] = { { 0x15bd1f8, 0x23423e5, 0x15de6c8, 0x2aa }, { 0x15de6cc, 0x23423e9, 0x15fff84, 0x2af },
@@ -2010,18 +2011,18 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			u16 w = *(const u16 *)(pkt + 0x2c);
 			int part = b[0x2b];
 			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, *(const u32 *)(pkt + 0x2e))) {
-				G(int, 0x23423fd) = 1;
-				G(int, 0x2342401) = 2;
+				GS->roundClear2 = 1;
+				GS->dataLossCode = 2;
 			}
 			if (!table_ok(g, 0x16c517c, 0x23423f9, 0x175522c, 0xb86, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
-				G(int, 0x23423fd) = 1;
-				G(int, 0x2342401) = 3;
+				GS->roundClear2 = 1;
+				GS->dataLossCode = 3;
 			}
 		}
 		u8 *ac = ACTOR(b[2]);
 		GAME_VAR(u32, ac + 0xfc) = *(const u32 *)(pkt + 0x11);
 		GAME_VAR(u32, ac + 0x100) = *(const u32 *)(pkt + 0x15);
-		int me = G(int, 0x234240d);
+		int me = GS->localPlayer;
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
 			G(int, 0x234300a + me * 0x10) = 1;
 		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
@@ -2029,15 +2030,15 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		GAME_VAR(int, ACTOR(b[2]) + 0xe4) = *(const short *)(pkt + 0x21);
 		GAME_VAR(int, ACTOR(b[2]) + 0xe8) = *(const short *)(pkt + 0x23);
 		if (b[2] == 0) {
-			G(int, 0x2221fb8) = *(const short *)(pkt + 0x25);
-			G(int, 0x2221fbc) = *(const short *)(pkt + 0x27);
+			GS->teamScores[0] = *(const short *)(pkt + 0x25);
+			GS->teamScores[1] = *(const short *)(pkt + 0x27);
 		}
 		short item = *(const short *)(pkt + 0x29);
-		if ((G(int, 8) != 3 || G(int, 0x1f35c4) > 0x1201) && item >= 0 && G(int, (item + 0xdf8ec) * 0x28) == 0) {
+		if ((GS->network != 3 || G(int, 0x1f35c4) > 0x1201) && item >= 0 && G(int, (item + 0xdf8ec) * 0x28) == 0) {
 			G(int, (item + 0xdf8ec) * 0x28) = 1;
 			G(int, 0x22ee4e4 + item * 0x28) = 0;
 		}
-		if (G(int, 8) == 3 && G(int, 0x1f35c4) >= 0x1202)
+		if (GS->network == 3 && G(int, 0x1f35c4) >= 0x1202)
 			msg_newKing(g);   /* msg_newKing */
 		return;
 	}
@@ -2045,8 +2046,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		const char *name = pkt + 2;
 		const u8 *m = b + 2;   /* the record after the name's 0x11 bytes */
 		int i = m[0x14], lim = G(int, 0x175522c);
-		if (strlen(name) >= 0x11 || (signed char)m[0x11] < 0 || (signed char)m[0x11] > 8 || i >= 0x10 || m[0x15] > G(int, 0x15de6c8) ||
-		    m[0x16] > G(int, 0x15fff84) || m[0x17] > G(int, 0x163b588) || m[0x18] > G(int, 0x1679b34) || m[0x19] > G(int, 0x16c5178))
+		if (strlen(name) >= 0x11 || (signed char)m[0x11] < 0 || (signed char)m[0x11] > 8 || i >= 0x10 || m[0x15] > GS->headCount ||
+		    m[0x16] > GS->chestCount || m[0x17] > GS->armCount || m[0x18] > GS->legCount || m[0x19] > GS->boosterCount)
 			break;
 		int bad = 0;
 		for (int k = 0; k < 6; k++)
@@ -2087,14 +2088,14 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	case 3:
 		if (pkt[2] != 'k')
 			break;
-		if (G(int, 0x23423b5) == 2)
+		if (GS->endedByTime == 2)
 			return;
-		G(int, 0x23423b5) = 2;
+		GS->endedByTime = 2;
 		msg_serverEndsGame(g);
-		if (G(int, 0x23423a1))
+		if (GS->roundOver)
 			return;
-		G(int, 0x23423a1) = 1;
-		G(u32, 0x23423a5) = 0x40400000;
+		GS->roundOver = 1;
+		(*(u32 *)&GS->roundClear7) = 0x40400000;
 		g_matchEndedByServer = 1;
 		return;
 	case 4:
@@ -2124,9 +2125,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		player_setName(STAGE, b[2], pkt + 3);   /* player_setName */
 		actor_resetSlot(STAGE, b[2]);   /* actor_resetSlot */
 		actor_name(g, b[2], pkt + 3);
-		G(int, 0x234300a + G(int, 0x234240d) * 0x10) = 1;
+		G(int, 0x234300a + GS->localPlayer * 0x10) = 1;
 		msg_playerConnected(g, b[2]);
-		if (G(int, 4) == 0)
+		if (GS->client == 0)
 			net_sendPlayerLevels(g);   /* net_sendPlayerLevels */
 		return;
 	case 9:
@@ -2166,7 +2167,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		}
 		if (GAME_VAR(int, p + 0x47fca))
 			return;
-		u8 *mine = PLAYER(G(int, 0x234240d));
+		u8 *mine = PLAYER(GS->localPlayer);
 		if (GAME_VAR(int, p + 0x47fc6) == 0 && (GAME_VAR(int, mine + 0x47fc6) == 1 || GAME_VAR(int, mine + 0x47fca) == 1))
 			GAME_VAR(int, mine + 0x47fce) = 0;
 		G(u32, 0x2342425) = 0x40a00000;
@@ -2178,7 +2179,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	case 13:
 		if (pkt[2] != 'k')
 			break;
-		G(u32, 0x233cc4c) = 0x40a00000;
+		GS->startTimer = 5.0f;
 		return;
 	case 14:
 		if (G(int, 0x2343253) == 1)
@@ -2202,6 +2203,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 	GAME_FN(debug_traceStripped, 0x48b420, void, const char *)(pkt);   /* debug_traceStripped */
 }
 #undef G
+#undef GS
 #undef K
 #undef STAGE
 #undef ACTOR

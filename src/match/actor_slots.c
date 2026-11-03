@@ -2,6 +2,7 @@
    stage's pools of map objects, projectiles and bullets emptied. */
 #include "../game.h"
 #include <string.h>
+#define STS ((Stage *)scene)   /* the stage (named scene in these functions) by its fields */
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
@@ -278,8 +279,8 @@ void THISCALL (actor_deactivate)(Stage *stage, int i)
    including the count, as the original does) kept as the next free (+0x202e8cc). Returns i, or -1 */
 int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
 {
-#define COUNT GAME_VAR(int, scene + 0x202e8c8)
-#define USED(k) GAME_VAR(int, scene + 0x1cd94b0 + (k) * 0x8888)
+#define COUNT STS->actorCount
+#define USED(k) STS->actors[k].active
 	if (i >= 100)
 		return -1;
 	if (COUNT <= i) {
@@ -356,13 +357,13 @@ void THISCALL (actor_updateBooster)(u8 *scene, int a) { part_load(scene, a, &g_p
 void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 {
 #define R(type, offset) GAME_VAR(type, rec + (offset))
-	int player = GAME_VAR(int, scene + 0x202e8d4);
+	int player = STS->playerActor;
 	if (player < 0)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), player);
 	u32 spawn[7] = { R(u32, 0), R(u32, 0x18), R(u32, 4), R(u32, 8), R(u32, 0xc) };
 	((float *)RELOC(spawn))[5] = f32(fld_m(&R(float, 0x10)));
 	((float *)RELOC(spawn))[6] = f32(fld_m(&R(float, 0x14)));
-	stage_setupActorSlot((Stage *)scene, a, -1, GAME_VAR(int, scene + 0x202e8d4), spawn);
+	stage_setupActorSlot((Stage *)scene, a, -1, STS->playerActor, spawn);
 	if (a < 0)
 		return;
 	u8 *actor = scene + 0x1cd93a8 + a * 0x8888;
