@@ -244,28 +244,29 @@ static void identity(u32 *m)
    callers ignore the eax it leaves */
 void THISCALL (scene_reset)(u8 *s)
 {
+	Stage *st = (Stage *)s;
 	stage_resetLights(s);
 	memset(s + 0x202ea80, 0, 0x64 * 4);
-	FIELD(int, s, 0x202ef30) = 0;
+	st->bulletCount = 0;
 	stage_clearMapObjects(s);
 	stage_clearBullets(s);
 	stage_clearProjectiles(s);
 	stage_resetMatrixAndPoints(s);
 	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */
-	memcpy(s + 0x20f3970, camera, sizeof camera);
-	memcpy(s + 0x20f3994, s + 0x20f3970, 12);
+	memcpy(st->cameraPos, camera, sizeof camera);
+	memcpy(s + 0x20f3994, st->cameraPos, 12);
 	identity((u32 *)(s + 0x20f39a0));
 	identity((u32 *)(s + 0x20f39e0));
 	FIELD(int, s, 0x20f3adc) = 0;
-	FIELD(int, s, 0x20fadf4) = 0;
-	FIELD(int, s, 0x20fcd38) = 0;
-	FIELD(int, s, 0x20fcd3c) = -1;
-	FIELD(int, s, 0x20fcd40) = FIELD(int, s, 0x20fcd44) = FIELD(int, s, 0x20fcd48) = 0;
+	st->startCount = 0;
+	st->itemCount = 0;
+	st->lastPickup = -1;
+	st->clockSeconds = (*(int *)&st->clockFraction) = FIELD(int, s, 0x20fcd48) = 0;
 	s[0x20fcd4c] = 0;
-	FIELD(int, s, 0x20fce4c) = -1;
+	st->kingActor = -1;
 	memset(s + 0x20fce50, 0xff, 0x64 * 4);
 	stage_clearMapItemCounts(s);
-	script_reset((Stage *)s);
+	script_reset(st);
 	scene_initLevelGrid(s);
 	memset(s + 0x1cd6968, 0xff, 0x32 * 4);
 }
@@ -292,6 +293,7 @@ static void model_sets(u8 *shapes, const char *dir, int n, int extra, int size, 
 void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4, const char *skel_dir, u32 a6, u32 a7, u32 a8,
                                   u32 a9)
 {
+	Stage *st = (Stage *)s;
 	object_setNames(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
 	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, s + 0xb04, 0x9c95f0);
 	char name[0x100];
@@ -313,7 +315,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	long double inv = fld_m(K(0x4a9424)) / root;
 	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));
 	for (int face = 0; face < 6; face++) {
-		FIELD(int, s, 0x9ee068 + face * 4) = -1;
+		st->skyTextures[face] = -1;
 		float *dst = (float *)(s + 0x9ee080 + face * 49 * 12);
 		for (int row = 3; row >= -3; row--) {
 			float fr = f32(row);
@@ -333,8 +335,8 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			}
 		}
 	}
-	FIELD(int, s, 0x9eee48) = 0;
-	FIELD(int, s, 0x9eee4c) = FIELD(int, s, 0x9eee50) = -1;
+	st->layerMode = 0;
+	st->layerTextures[0] = st->layerTextures[1] = -1;
 	float *dome = (float *)(s + 0x9eee54);
 	for (int i = 0; i <= 6; i++) {
 		int ai = ftol(fmul_m(fsub_m((long double)i, K(0x4a9534)), K(0x4a93f0)));
@@ -348,7 +350,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	}
 	memset(s + 0x9ef0a0, 0, 5 * 4);
 	for (int o = 0, angle = 0; angle < 3600; o++, angle += 600) {
-		FIELD(int, s, 0x9ef0b4 + o * 4) = -1;
+		st->sideTextures[o] = -1;
 		for (int k = 0; k < 4; k++) {
 			u32 v[3] = { 0, 0x3f800000, 0x3f800000 };
 			Vec3_rotateAxis((float *)RELOC(v), 2, angle + k * 200);
@@ -359,7 +361,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			low[2] = f32(fld_m((float *)&v[2]));
 		}
 	}
-	FIELD(int, s, 0x9ef30c) = 0;
+	st->floorOn = 0;
 	memset(s + 0x9ef310, 0xff, 16 * 4);
 	float *grid = (float *)(s + 0x9ef350);
 	for (int i = 0; i <= 10; i++) {
@@ -370,21 +372,21 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 			grid[2] = x;
 		}
 	}
-	FIELD(int, s, 0x9ef8fc) = FIELD(int, s, 0x9ef900) = 0;
+	st->floorFrame = (*(int *)&st->floorClock) = 0;
 	for (int c = 0; c < 3; c++) {
 		FIELD(u32, s, 0x9ef904 + c * 4) = 0xc7c35000;   /* -100000 */
 		FIELD(u32, s, 0x9ef910 + c * 4) = 0x47c35000;   /* 100000 */
 	}
-	memcpy(s + 0x9ef91c, s + 0x9ef904, 12);
+	memcpy(st->worldLow, st->levelLow, 12);
 	FIELD(u32, s, 0x9ef934) = 0x3f800000;
 	FIELD(int, s, 0xdc0240) = 0;
-	memcpy(s + 0x9ef928, s + 0x9ef910, 12);
-	FIELD(int, s, 0xdc0a74) = 0;
-	FIELD(u8 *, s, 0xdc0a8c) = s + 0xdc0ac4;
-	FIELD(u8 *, s, 0xdc0cd8) = s + 0xdc0d10;
+	memcpy(st->worldHigh, st->levelHigh, 12);
+	st->groundLayerCount = 0;
+	st->layerModel.parts = s + 0xdc0ac4;
+	st->layerBoxModel.parts = s + 0xdc0d10;
 	const char *dir = (const char *)s + 0x308;
 	shape_initBy(s + 0xe3c93c, dir, 0x190, 2, 0xe54c0, s + 0xe3cb88, 1000000);
-	FIELD(int, s, 0x13016c8) = 0;
+	st->objectColourCount = 0;
 	skelSet_setup(s + 0x13016d0, (const char *)s + 0x408, 0x64, 2, 0x7080, s + 0x1301800, 0x9c40);
 	static const u32 zero[10] = { offsetof(Stage, objectNameCount), offsetof(Stage, objectCount), offsetof(Stage, objectFreeHint), offsetof(Stage, objectSerial), offsetof(Stage, headTypeCount), offsetof(Stage, chestTypeCount), offsetof(Stage, armTypeCount), offsetof(Stage, legTypeCount),
 	                              offsetof(Stage, boosterTypeCount), offsetof(Stage, playerRecordCount) };
@@ -416,7 +418,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	glGenTextures(1, s + 0x20fcfe0);   /* glGenTextures */
 	for (int k = 0; k < 0x2000; k++)
 		FIELD(u32, s, 0x20fcfe4 + k * 4) = (*(u32 *)&g_defaultColour);
-	FIELD(int, s, 0x20f3ab4) = 0;
+	st->showExp = 0;
 	game_setGameTypeFlags((Stage *)s, 0);
 	scene_resetActors(s);
 	scene_reset(s);
