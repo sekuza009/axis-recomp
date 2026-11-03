@@ -553,9 +553,9 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			tint[0] = tint[1] = tint[2] = (u8)(0xff - ftol(fmul_m(fsub_m(fld_m((const float *)(ac + 0x120)), K(0x4a974c)), K(0x4a9748))));
 			tint[3] = 0xff;
 		}
-	} else if (A(float, 0x4ec) > 0 || AC->hitFlash > 0) {
+	} else if (AC->glow > 0 || AC->hitFlash > 0) {
 		int c[3] = { 0, 0, 0 };
-		if (A(float, 0x4ec) > 0)
+		if (AC->glow > 0)
 			c[0] = c[1] = c[2] = ftol(fmul_m(fld_m((const float *)(ac + 0x4ec)), K(0x4a9744)));
 		if (AC->hitFlash > 0) {
 			int red = ftol(fmul_m(fld_m((const float *)(ac + 0x8854)), K(0x4a9744)));
@@ -594,7 +594,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 		if (lists && g_items3D != 1 && tint && tint[3] <= 0x10)
 			lists = 0;
 		if (lists) {
-			int n = A(int, 0x54c);
+			int n = AC->breakUp;
 			if (n < 0)
 				return;
 			for (int k = 0; k < 8; k++) {
@@ -664,7 +664,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	A(u32, 0x428) = A(u32, 0x42c) = 0x3f800000;
 	A(int, 0x430) = 0;
 	fill_dwords(ac + 0x434, 5, 0x3f800000);
-	A(int, 0x448) = 0;
+	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
 		int it = GAME_VAR(int, p + 0x320 + k * 4);
 		if (it < 0 || GAME_VAR(int, s + 0x14d1ab4 + it * 0x2e18 + 0x2dc0) >= 0)
@@ -694,7 +694,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 			break;
 		case 0x23:
 			A(float, 0x444) = f32(fadd_m(fld_m((const float *)(ac + 0x444)), K(0x4a94fc)));
-			A(int, 0x448) += 4;
+			AC->shieldRegen += 4;
 			break;
 		}
 	}
@@ -808,7 +808,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	actor_setWeaponSlot((Stage *)s, a, 0);
 	actor_startingValues(s, a);   /* actor_startingValues */
 	AC->state = 1;
-	A(int, 0x150) = 0;
+	AC->stateTime = 0.0f;
 	memcpy(ac + 0x154, pp + 2, 12);
 	A(u32, 0x160) = pp[5];
 	A(u32, 0x164) = pp[6];
@@ -823,7 +823,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x194, 6, 0);
 	fill_dwords(ac + 0x1c0, 5, 0);
 	fill_dwords(ac + 0x1e8, 3, 0);
-	A(int, 0x1f4) = 0;
+	AC->burstTime = 0.0f;
 	for (int k = 0; k < 5; k++) {
 		A(int, 0x1f8 + k * 0x20) = 0;
 		A(int, 0x1fc + k * 0x20) = 0;
@@ -848,13 +848,13 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x4bc, 3, (u32)-1);
 	A(int, 0x4d0) = -1;
 	memcpy(ac + 0x4e0, ac + 0x154, 12);
-	A(int, 0x4ec) = 0;
+	AC->glow = 0.0f;
 	A(u8, 0x4f4) = 0;
 	A(u32, 0x534) = 0xc61c4000;   /* -10000 */
 	A(int, 0x538) = -1;
 	fill_dwords(ac + 0x53c, 3, 0);
 	AC->damageFlash = 1.0f;
-	A(int, 0x54c) = 0;
+	AC->breakUp = 0;
 	actor_updateHead(s, a);
 	actor_updateBody(s, a);
 	actor_updateArms(s, a);
@@ -875,7 +875,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + 0x884c, 3, 0);
 	memcpy(ac + 0x885c, (const void *)ADDR(g_vecZero), 12);
-	A(int, 0x8858) = 0;
+	AC->botTargetTime = 0.0f;
 	A(int, 0x8868) = 0;
 	A(u32, 0x886c) = 0x3f800000;
 	A(int, 0x8870) = -1;
@@ -936,11 +936,11 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 			return 0;
 	if (!close_enough((const float *)(ac + 0x68), (const float *)(me + 0x50)))
 		return 0;
-	int d = A(int, 0x448) - GAME_VAR(int, me + 0x448);
+	int d = AC->shieldRegen - GAME_VAR(int, me + 0x448);
 	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))
 		return 0;
 	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
-	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || A(int, 0x448) > 8)
+	    AC->ammo[1] > AC->ammoMax[1] || AC->ammo[2] > AC->ammoMax[2] || AC->ammo[3] > AC->ammoMax[3] || AC->shieldRegen > 8)
 		return 0;
 	const float *heat = K(0x4a940c);
 	if ((AC->markSolo == 0 && AC->timers[0] > *heat) || AC->timers[1] > *heat || (AC->markSolo == 0 && AC->timers[2] > *heat) ||

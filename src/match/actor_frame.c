@@ -171,7 +171,7 @@ static void actor_dies(u8 *s, u8 *a, int i, u32 *fx, float *v28)
 	if (i == local && AC->lastAttacker != i)
 		sound_playVolume(0xd, 0x64);
 	AC->state = 2;
-	AI(0x150) = 0;
+	AC->stateTime = 0.0f;
 	GAME_VAR(int, s + 0x202e8ec) = 1;
 	int k = AC->lastAttacker;
 	if (ST->freeForAll == 1) {   /* every one for themselves */
@@ -361,7 +361,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				int t = ST->bullets[k].owner;
 				if (ST->actors[t].team != AC->team && ST->actors[t].state == 1 && (!(ST->actors[t].timerFlags & 0x200) || OI(t, 0x1cd93b0) < AI(8))) {
 					AC->botTarget = t;
-					AU(0x8858) = 0x41280000;   /* 10.5 */
+					AC->botTargetTime = 10.5f;   /* 10.5 */
 					actor_pickRandomWeapon(s, i);
 				}
 			}
@@ -370,18 +370,18 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->alert = aimed;
 		if (i == ST->playerActor) {   /* the warning beep */
 			if (aimed == 1) {
-				long double v = fsub_m(fld_m(&AF(0x8884)), dt);
-				AF(0x8884) = (float)v;
+				long double v = fsub_m(fld_m(&AC->beepTimer), dt);
+				AC->beepTimer = (float)v;
 				if (!(v >= 0)) {
 					sound_playVolume(0x11, 100);
-					AU(0x8884) = 0x3f000000;
+					AC->beepTimer = 0.5f;
 				}
 			} else
-				AI(0x8884) = 0;
+				AC->beepTimer = 0.0f;
 		}
 		if (AC->botTarget >= 0 && ST->actors[AC->botTarget].state != 1) {
 			AC->botTarget = -1;
-			AI(0x8858) = 0;
+			AC->botTargetTime = 0.0f;
 		}
 		if (AC->bot != 0) {   /* a bot: its target */
 			long double v = fsub_m(fld_m(&AF(0x8824)), dt);
@@ -390,7 +390,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (AC->hitFlash > 0 && k != i && ST->actors[k].team != AC->team && ST->actors[k].state == 1 && AC->botTarget != k
 			    && (!(ST->actors[k].timerFlags & 0x200) || OI(k, 0x1cd93b0) < AI(8))) {   /* the one who hit it */
 				AC->botTarget = k;
-				AU(0x8858) = 0x41280000;
+				AC->botTargetTime = 10.5f;
 				actor_pickRandomWeapon(s, i);
 			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
@@ -415,7 +415,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					int t = AC->botTarget;
 					if (collision_rayTrace(s, &AF(0x154), &ST->actors[t].pos[0], v28) != 0
 					    || ((ST->actors[AC->botTarget].timerFlags & 0x200) && OI(AC->botTarget, 0x1cd93b0) >= AI(8))) {   /* lost from sight */
-						if (!(AF(0x8858) > 0))
+						if (!(AC->botTargetTime > 0))
 							AC->botTarget = -1;
 						else
 							for (int j = 0; j < ST->actorCount; j++) {
@@ -939,7 +939,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					long double r = fsubr_m(fmul_m((long double)n, cycle), dt);
 					int m = ftol(fdiv_m(r, gap)) + 1;
 					if (burst > m) {
-						AF(0x1f4) = f32(r - fmul_m((long double)(m - 1), gap));
+						AC->burstTime = f32(r - fmul_m((long double)(m - 1), gap));
 						AC->burstLeft = burst - m;
 						shots -= AC->burstLeft;
 					} else
@@ -947,18 +947,18 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				} else
 					AC->burstLeft = 0;
 			} else if (AC->burstLeft > 0) {
-				long double v = fadd_m(fld_m(dt), &AF(0x1f4));
-				AF(0x1f4) = (float)v;
+				long double v = fadd_m(fld_m(dt), &AC->burstTime);
+				AC->burstTime = (float)v;
 				if (v >= *gap) {
 					int m = ftol(fdiv_m(v, gap));
 					if (m >= AC->burstLeft) {
 						shots = AC->burstLeft;
 						AC->burstLeft = 0;
-						AI(0x1f4) = 0;
+						AC->burstTime = 0.0f;
 					} else {
 						AC->burstLeft -= m;
 						shots = m;
-						AF(0x1f4) = f32(fsubr_m(fmul_m((long double)m, gap), &AF(0x1f4)));
+						AC->burstTime = f32(fsubr_m(fmul_m((long double)m, gap), &AC->burstTime));
 					}
 				}
 			}
@@ -1126,12 +1126,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->energyUsed = 0.0f;
 			AC->overheat = 1;
 		}
-		AI(0x4b0) = 0;
-	} else if (!(AF(0x4b0) >= 1.0f)) {
-		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x4c)), &AF(0x4b0));
-		AF(0x4b0) = (float)v;
+		AC->staminaRest = 0.0f;
+	} else if (!(AC->staminaRest >= 1.0f)) {
+		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x4c)), &AC->staminaRest);
+		AC->staminaRest = (float)v;
 		if (v > 1.0L)
-			AU(0x4b0) = 0x3f800000;
+			AC->staminaRest = 1.0f;
 	} else if (!(AC->energyUsed >= 1.0f)) {
 		long double v = fadd_m(fdiv_m(fld_m(dt), &AF(0x48)), &AC->energyUsed);
 		AC->energyUsed = (float)v;
@@ -1183,30 +1183,30 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		else if (AC->pilot == ST->playerActor || AC->bot != 0)   /* the armour's timer kept 10 s ahead */
 			AF(0x124) = f32(fadd_m(fadd_m(fld_m(dt), &AF(0x120)), K(0x4a9418)));
 	} else if (AC->state == 2) {   /* dying: out after 2 s */
-		if (AF(0x150) > 2.0f) {
+		if (AC->stateTime > 2.0f) {
 			AC->state = 3;
-			AI(0x150) = 0;
+			AC->stateTime = 0.0f;
 			if (i == ST->playerActor)   /* the patch DLL's cat_wrap */
 				PATCHED_THISCALL(0x45c638, void, void *, u32)(s, g_componentDatPath);
 		}
 	} else if (AC->state == 3)
 		AU(0x120) = AU(0x124);
-	AI(0x4ec) = 0;   /* the glow (+0x4ec): a fresh shot's flash, and speed unless cloaked */
+	AC->glow = 0.0f;   /* the glow (+0x4ec): a fresh shot's flash, and speed unless cloaked */
 	if (AF(0x17c) > 0 && !(AF(0x17c) >= 0.5f)) {
 		long double g = fsub_m(fld_m(K(0x4a942c)), &AF(0x17c));
-		AF(0x4ec) = (float)(g + g);
+		AC->glow = (float)(g + g);
 	}
 	if ((((u32)AC->timerFlags) & 0x200) && AI(8) >= OI(ST->playerActor, 0x1cd93b0)) {
 		if (AF(0x4a4) > 1.0f)
-			AF(0x4ec) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x4a4)), K(0x4a9424)), K(0x4a94f8)), &AF(0x4ec)));
+			AC->glow = f32(fadd_m(fmul_m(fsub_m(fld_m(&AF(0x4a4)), K(0x4a9424)), K(0x4a94f8)), &AC->glow));
 	} else
-		AF(0x4ec) = f32(fadd_m(fmul_m(fld_m(&AF(0x4a4)), K(0x4a94f8)), &AF(0x4ec)));
+		AC->glow = f32(fadd_m(fmul_m(fld_m(&AF(0x4a4)), K(0x4a94f8)), &AC->glow));
 	goto timers;
 tail:   /* 45cdb1: held by the script */
 	AF(0x124) = f32(fadd_m(fadd_m(fld_m(dt), &AF(0x120)), K(0x4a9418)));
 timers:
 	AF(0x120) = f32(fadd_m(fld_m(dt), &AF(0x120)));
-	AF(0x150) = f32(fadd_m(fld_m(dt), &AF(0x150)));
+	AC->stateTime = f32(fadd_m(fld_m(dt), &AC->stateTime));
 	long double sec = fadd_m(fld_m(dt), &AC->timeExtra);   /* whole seconds into +0xfc */
 	AC->timeExtra = (float)sec;
 	if (sec > 1.0L) {
@@ -1215,25 +1215,25 @@ timers:
 	}
 	countdown(&AC->labelFade, dt);
 	countdown(&AC->hitFlash, dt);
-	countdown(&AF(0x8858), dt);
+	countdown(&AC->botTargetTime, dt);
 	countdown(&AC->gauge, dt);
 	AF(0x534) = f32(fsub_m(fld_m(&AF(0x534)), dt));
 	countdown(&AF(0x540), dt);
-	if (AC->shield < AC->shieldMax && AI(0x448) > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
-		long double v = fadd_m(fld_m(dt), &AF(0x544));
-		AF(0x544) = (float)v;
+	if (AC->shield < AC->shieldMax && AC->shieldRegen > 0) {   /* the energy (+0x12c) back by +0x448 a second up to +0x20 */
+		long double v = fadd_m(fld_m(dt), &AC->shieldRegenTime);
+		AC->shieldRegenTime = (float)v;
 		if (v >= 1.0L) {
-			int e = ftol(v) * AI(0x448) + AC->shield;
+			int e = ftol(v) * AC->shieldRegen + AC->shield;
 			if (e >= AC->shieldMax) {
 				AC->shield = AC->shieldMax;
-				AI(0x544) = 0;
+				AC->shieldRegenTime = 0.0f;
 			} else {
 				AC->shield = e;
-				AF(0x544) = f32(fsubr_m((long double)ftol(fld_m(&AF(0x544))), &AF(0x544)));
+				AC->shieldRegenTime = f32(fsubr_m((long double)ftol(fld_m(&AC->shieldRegenTime)), &AC->shieldRegenTime));
 			}
 		}
 	} else
-		AI(0x544) = 0;
+		AC->shieldRegenTime = 0.0f;
 	countdown(&AC->damageFlash, dt);
 	countdown(&AF(0x3f4), dt);
 	countdown(&AC->timers[1], dt);
@@ -1267,9 +1267,9 @@ timers:
 		AC->timerFlags = f;
 	}
 	static const u16 parts[7] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c };
-	if (AI(0x54c) < 7) {   /* the parts' break-up, one a frame */
-		if (AI(0x54c) >= 0)
-			partList_bindTextures(a + parts[AI(0x54c)]);
-		AI(0x54c)++;
+	if (AC->breakUp < 7) {   /* the parts' break-up, one a frame */
+		if (AC->breakUp >= 0)
+			partList_bindTextures(a + parts[AC->breakUp]);
+		AC->breakUp++;
 	}
 }

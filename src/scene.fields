@@ -12,6 +12,16 @@ struct EventLine 0x108                                          # one line of th
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x150      4          float stateTime                            # (by use) seconds in its state (dying: out after 2)
+0x1f4      4          float burstTime                            # (by use) the time to the burst's next round
+0x448      4          i32 shieldRegen                            # (by use) shield regained a second (up to shieldMax)
+0x4b0      4          float staminaRest                          # (by use) the rest after running (back to 1)
+0x4ec      4          float glow                                 # (by use) a fresh shot's flash (and speed unless cloaked)
+0x544      4          float shieldRegenTime                      # (by use) seconds towards the next shield regained
+0x54c      4          i32 breakUp                                # (by use) the parts' break-up step (one a frame, to 7)
+0x87f4     4          i32 botNeeds                               # (by use) bit 0: low armour (under 0.3); bit 1: both weapons empty
+0x8858     4          float botTargetTime                        # (by use) seconds left on the bot's target (10.5)
+0x8884     4          float beepTimer                            # (by use) the warning beep while aimed at (0.5 s)
 0x104      4          i32 id                                     # (by use) its id (the next serial, or the network's)
 0x114      4          i32 level                                  # (by use) its player's level (0 .. 8)
 0x164      4          float yaw                                  # (by use) the heading (with pitch: the look)
