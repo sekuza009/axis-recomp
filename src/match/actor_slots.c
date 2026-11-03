@@ -657,9 +657,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 {
 	PlayerRecord *pr = (PlayerRecord *)p;
 	Stage *st = (Stage *)s;
-	u8 *head = s + 0x13c9b30 + pr->parts[0] * 0xaa8, *chest = s + 0x13eb004 + pr->parts[1] * 0xabc;
-	u8 *arms = s + 0x140c8c0 + pr->parts[2] * 0x1300, *legs = s + 0x1447ec4 + pr->parts[3] * 0x13f4;
-	u8 *boost = s + 0x1486470 + pr->parts[4] * 0x1820;
+	const HeadType *head = &st->headTypes[pr->parts[0]];
+	const ChestType *chest = &st->chestTypes[pr->parts[1]];
+	const ArmType *arms = &st->armTypes[pr->parts[2]];
+	const LegType *legs = &st->legTypes[pr->parts[3]];
+	const BoosterType *boost = &st->boosterTypes[pr->parts[4]];
 	for (int k = 0; k < 4; k++) {
 		A(u32, 0x404 + k * 4) = 0x3f800000;
 		AC->ammoBonus[k] = 0;
@@ -702,15 +704,15 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 			break;
 		}
 	}
-	long double hp = fadd_m(fmul_m(level_factor(p, 3), (const float *)(head + 0xa94)), &AC->rangeBonus);
+	long double hp = fadd_m(fmul_m(level_factor(p, 3), &head->detectionRange), &AC->rangeBonus);
 	AC->radiusSq = f32(hp * hp);
-	AC->detectionAngle = f32(fmul_m(level_factor(p, 3), (const float *)(head + 0xa98)));
-	AC->hackingLevel = GAME_VAR(int, head + 0xa9c) + AC->hackingBonus;
-	AC->lockOnTime = f32(fmul_m(fld_m((const float *)(head + 0xaa0)), &AC->lockOnTimeFactor));
-	AC->targetKeepTime = f32(fmul_m(fld_m((const float *)(head + 0xaa4)), &AC->targetKeepFactor));
-	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), (const float *)(chest + 0xab0)), &AC->loadFactor));
-	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m((const float *)(boost + 0x17f8)), (const float *)(legs + 0x13d8)),
-	                                   (const float *)(arms + 0x12e8)), (const float *)(head + 0xa90)));
+	AC->detectionAngle = f32(fmul_m(level_factor(p, 3), &head->detectionAngle));
+	AC->hackingLevel = head->hackingLevel + AC->hackingBonus;
+	AC->lockOnTime = f32(fmul_m(fld_m(&head->lockOnTime), &AC->lockOnTimeFactor));
+	AC->targetKeepTime = f32(fmul_m(fld_m(&head->targetKeepTime), &AC->targetKeepFactor));
+	AC->loadMax = f32(fmul_m(fmul_m(level_factor(p, 4), &chest->weightLimit), &AC->loadFactor));
+	AC->load = f32(fadd_m(fadd_m(fadd_m(fld_m(&boost->weight), &legs->weight),
+	                                   &arms->weight), &head->weight));
 	int type = st->gameType;
 	if (type < 2 || type > 0xb)
 		for (int k = 0; k < 6; k++) {
@@ -721,42 +723,42 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	long double over = AC->load > AC->loadMax
 		? fmul_m(fdiv_m(fsub_m(fld_m(&AC->load), &AC->loadMax), &AC->loadMax), K(0x4a947c))
 		: fld_m(K(0x4a93e8));
-	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab4), K(0x4a942c)));
-	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)GAME_VAR(int, chest + 0xab8), &AC->shieldFactor), K(0x4a942c)));
-	A(u32, 0x24) = GAME_VAR(u32, arms + 0x12ec);
+	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, K(0x4a942c)));
+	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), K(0x4a942c)));
+	A(u32, 0x24) = arms->stats[0];
 	for (int k = 0; k < 4; k++)
-		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)GAME_VAR(int, arms + 0x12f0 + k * 4), AC->ammoFactor + k), K(0x4a942c))) +
+		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), K(0x4a942c))) +
 		                       AC->ammoBonus[k];
 	long double left = fld_m(K(0x4a9424)) - over;
-	long double v = fmul_m(level_factor(p, 0), (const float *)(legs + 0x13dc)) * left;
+	long double v = fmul_m(level_factor(p, 0), &legs->stat0) * left;
 	AC->mobility = f32(v);
 	if (!(v >= 0))
 		AC->mobility = 0.0f;
 	if (st->rocketArena == 1)
 		AC->mobility = f32(fmul_m(fld_m(&AC->mobility), K(0x4a9704)));
-	BITS(AC->leanPitch) = GAME_VAR(u32, boost + 0x1800);
-	AC->boostTime = f32(fmul_m(fld_m((const float *)(boost + 0x1804)), &AC->boostTimeFactor));
-	AC->rechargeTime = f32(fmul_m(fld_m((const float *)(boost + 0x1808)), &AC->rechargeTimeFactor));
-	AC->restTime = f32(fmul_m(fld_m((const float *)(boost + 0x180c)), &AC->restTimeFactor));
+	BITS(AC->leanPitch) = boost->lean;
+	AC->boostTime = f32(fmul_m(fld_m(&boost->activeTime[0]), &AC->boostTimeFactor));
+	AC->rechargeTime = f32(fmul_m(fld_m(&boost->activeTime[1]), &AC->rechargeTimeFactor));
+	AC->restTime = f32(fmul_m(fld_m(&boost->activeTime[2]), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), (const float *)(legs + (o))), K(0x4a9424))
-	v = fmul_m(LEG(0x13e4), (const float *)(boost + 0x1810)) * left;
+#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), (const float *)((const u8 *)legs + (o))), K(0x4a9424))
+	v = fmul_m(LEG(0x13e4), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))
 		AC->speed = 100.0f;   /* 100 */
-	v = fmul_m(fld_m((const float *)(legs + 0x13e0)), &AC->speed);
+	v = fmul_m(fld_m(&legs->value2), &AC->speed);
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, K(0x4a9704)));
-	v = fdiv_m(fmul_m(LEG(0x13e8), (const float *)(boost + 0x1814)), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(0x13e8), &boost->normalSpeed[1]), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), (const float *)(boost + 0x1818)), &AC->speed) * left, K(0x4a9474));
+	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), &boost->normalSpeed[2]), &AC->speed) * left, K(0x4a9474));
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
-	v = fdiv_m(fmul_m(LEG(0x13f0), (const float *)(boost + 0x181c)), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(0x13f0), &boost->normalSpeed[3]), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
 	if (!((check ? fld_m((const float *)(ac + 0x5c)) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;

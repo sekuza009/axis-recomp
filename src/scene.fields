@@ -627,6 +627,7 @@ struct BoosterType 0x1820                                       # a booster part
 0          0x40       char name[0x40]
 0x17f8     4          float weight
 0x17fc     4          i32 thrustType
+0x1800     4          u32 lean                                   # (by use) a float's bits: the actor's leanPitch
 0x1804     0xc        float activeTime[3]                        # (the actor's boostTime, rechargeTime, restTime by these)
 0x1810     0x10       float normalSpeed[4]
 

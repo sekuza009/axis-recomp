@@ -774,7 +774,7 @@ typedef struct BoosterType {
 	u8 _pad0000040[0x17b8];
 	float weight;   /* +0x17f8 */
 	i32 thrustType;   /* +0x17fc */
-	u8 _pad0001800[0x4];
+	u32 lean;   /* +0x1800: (by use) a float's bits: the actor's leanPitch */
 	float activeTime[3];   /* +0x1804: (the actor's boostTime, rechargeTime, restTime by these) */
 	float normalSpeed[4];   /* +0x1810 */
 } BoosterType;
@@ -1842,6 +1842,7 @@ _Static_assert(sizeof(LegType) == 0x13f4, "scene.fields: size of LegType");
 _Static_assert(offsetof(BoosterType, name) == 0x0 && sizeof(((BoosterType *)0)->name) == 0x40, "scene.fields: BoosterType.name");
 _Static_assert(offsetof(BoosterType, weight) == 0x17f8 && sizeof(((BoosterType *)0)->weight) == 0x4, "scene.fields: BoosterType.weight");
 _Static_assert(offsetof(BoosterType, thrustType) == 0x17fc && sizeof(((BoosterType *)0)->thrustType) == 0x4, "scene.fields: BoosterType.thrustType");
+_Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0)->lean) == 0x4, "scene.fields: BoosterType.lean");
 _Static_assert(offsetof(BoosterType, activeTime) == 0x1804 && sizeof(((BoosterType *)0)->activeTime) == 0xc, "scene.fields: BoosterType.activeTime");
 _Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterType *)0)->normalSpeed) == 0x10, "scene.fields: BoosterType.normalSpeed");
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
