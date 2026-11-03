@@ -47,45 +47,45 @@ void THISCALL (notices_clearAll)(Scene *scene)
 }
 
 /* 0x4634e0, 0x463530, 0x463550, 0x4635b0, 0x463610: one notice raised, with its values and text */
-void THISCALL (notice_raise1)(Scene *scene, int a, const char *text)
+void THISCALL (notice_playerConnected)(Scene *scene, int a, const char *text)
 {
-	FIELD(int, scene, 0x234310a) = a;
-	FIELD(int, scene, 0x234314e) = 1;
-	strcpy((char *)scene + 0x234310e, text);
+	scene->connectPlayer = a;
+	scene->connectPending = 1;
+	strcpy(scene->connectName, text);
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (notice_raise2)(Scene *scene, int a)
+void THISCALL (notice_playerQuit)(Scene *scene, int a)
 {
-	FIELD(int, scene, 0x2343156) = 1;
-	FIELD(int, scene, 0x2343152) = a;
+	scene->quitPending = 1;
+	scene->quitPlayer = a;
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (notice_raise3)(Scene *scene, int a, const char *text, int b)
+void THISCALL (notice_chatLine)(Scene *scene, int a, const char *text, int b)
 {
-	FIELD(int, scene, 0x234315a) = a;
-	FIELD(int, scene, 0x234319b) = 1;
-	strcpy((char *)scene + 0x234315e, text);
-	FIELD(int, scene, 0x2343197) = b;
+	scene->chatPlayer = a;
+	scene->chatPending = 1;
+	strcpy(scene->chatLine, text);
+	scene->chatTeam = b;
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (notice_raise4)(Scene *scene, int a, int b, const char *text)
+void THISCALL (notice_joinedTeam)(Scene *scene, int a, int b, const char *text)
 {
-	FIELD(int, scene, 0x234319f) = a;
-	FIELD(int, scene, 0x23431a3) = b;
-	FIELD(int, scene, 0x23431e7) = 1;
-	strcpy((char *)scene + 0x23431a7, text);
+	scene->joinPlayer = a;
+	scene->joinTeam = b;
+	scene->joinPending = 1;
+	strcpy(scene->joinName, text);
 	scene->noticeChanged = 1;
 }
 
-void THISCALL (notice_raise5)(Scene *scene, int a, int b, const char *text)
+void THISCALL (notice_changedTeam)(Scene *scene, int a, int b, const char *text)
 {
-	FIELD(int, scene, 0x23431eb) = a;
-	FIELD(int, scene, 0x23431ef) = b;
-	FIELD(int, scene, 0x2343233) = 1;
-	strcpy((char *)scene + 0x23431f3, text);
+	scene->changePlayer = a;
+	scene->changeTeam = b;
+	scene->changePending = 1;
+	strcpy(scene->changeName, text);
 	scene->noticeChanged = 1;
 }
 

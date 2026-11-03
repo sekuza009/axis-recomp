@@ -1136,9 +1136,28 @@ typedef struct Scene {
 	u32 eventTime;   /* +0x2342efe: (by use) stamped on each new event line */
 	float readyTimer;   /* +0x2342f02: > 0: "ready" shown */
 	char readyText[0x40];   /* +0x2342f06: shown while no countdown runs */
-	u8 _pad2342f46[0x1c0];
+	u8 _pad2342f46[0xc0];
+	i32 sendFlags[16][4];   /* +0x2343006: (by use) per player: what is to be sent ([0] its state, [1] its team, ...; notices_clearAll clears them) */
 	i32 noticeChanged;   /* +0x2343106: 1: a HUD notice was raised (match/notices.c) */
-	u8 _pad234310a[0x14d];
+	i32 connectPlayer;   /* +0x234310a: kind 8: a player connected (notice_playerConnected) */
+	char connectName[0x40];   /* +0x234310e */
+	i32 connectPending;   /* +0x234314e */
+	i32 quitPlayer;   /* +0x2343152: kind 9: a player ended the match (notice_playerQuit) */
+	i32 quitPending;   /* +0x2343156 */
+	i32 chatPlayer;   /* +0x234315a: kind 7: a chat line (notice_chatLine) */
+	char chatLine[0x39];   /* +0x234315e */
+	i32 chatTeam;   /* +0x2343197: (-1: to all) */
+	i32 chatPending;   /* +0x234319b */
+	i32 joinPlayer;   /* +0x234319f: kind 10: a player joined a team (notice_joinedTeam) */
+	i32 joinTeam;   /* +0x23431a3 */
+	char joinName[0x40];   /* +0x23431a7: its mech's name */
+	i32 joinPending;   /* +0x23431e7 */
+	i32 changePlayer;   /* +0x23431eb: kind 11: a player changed team (notice_changedTeam) */
+	i32 changeTeam;   /* +0x23431ef */
+	char changeName[0x40];   /* +0x23431f3 */
+	i32 changePending;   /* +0x2343233 */
+	i32 endEvents[3];   /* +0x2343237: kinds 3 .. 5: the round's end (event_raise3 .. 5: by the way it ended) */
+	u8 _pad2343243[0x14];
 	i32 mouseX;   /* +0x2343257: (by use) the cursor this frame (g_mouseX), screen pixels */
 	i32 mouseY;   /* +0x234325b */
 	i32 holdAltitude;   /* +0x234325f: (by use) the movement keys held for the local actor (right button / its binding) */
@@ -2050,7 +2069,26 @@ _Static_assert(offsetof(Scene, eventFirst) == 0x2342efa && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, eventTime) == 0x2342efe && sizeof(((Scene *)0)->eventTime) == 0x4, "scene.fields: Scene.eventTime");
 _Static_assert(offsetof(Scene, readyTimer) == 0x2342f02 && sizeof(((Scene *)0)->readyTimer) == 0x4, "scene.fields: Scene.readyTimer");
 _Static_assert(offsetof(Scene, readyText) == 0x2342f06 && sizeof(((Scene *)0)->readyText) == 0x40, "scene.fields: Scene.readyText");
+_Static_assert(offsetof(Scene, sendFlags) == 0x2343006 && sizeof(((Scene *)0)->sendFlags) == 0x100, "scene.fields: Scene.sendFlags");
 _Static_assert(offsetof(Scene, noticeChanged) == 0x2343106 && sizeof(((Scene *)0)->noticeChanged) == 0x4, "scene.fields: Scene.noticeChanged");
+_Static_assert(offsetof(Scene, connectPlayer) == 0x234310a && sizeof(((Scene *)0)->connectPlayer) == 0x4, "scene.fields: Scene.connectPlayer");
+_Static_assert(offsetof(Scene, connectName) == 0x234310e && sizeof(((Scene *)0)->connectName) == 0x40, "scene.fields: Scene.connectName");
+_Static_assert(offsetof(Scene, connectPending) == 0x234314e && sizeof(((Scene *)0)->connectPending) == 0x4, "scene.fields: Scene.connectPending");
+_Static_assert(offsetof(Scene, quitPlayer) == 0x2343152 && sizeof(((Scene *)0)->quitPlayer) == 0x4, "scene.fields: Scene.quitPlayer");
+_Static_assert(offsetof(Scene, quitPending) == 0x2343156 && sizeof(((Scene *)0)->quitPending) == 0x4, "scene.fields: Scene.quitPending");
+_Static_assert(offsetof(Scene, chatPlayer) == 0x234315a && sizeof(((Scene *)0)->chatPlayer) == 0x4, "scene.fields: Scene.chatPlayer");
+_Static_assert(offsetof(Scene, chatLine) == 0x234315e && sizeof(((Scene *)0)->chatLine) == 0x39, "scene.fields: Scene.chatLine");
+_Static_assert(offsetof(Scene, chatTeam) == 0x2343197 && sizeof(((Scene *)0)->chatTeam) == 0x4, "scene.fields: Scene.chatTeam");
+_Static_assert(offsetof(Scene, chatPending) == 0x234319b && sizeof(((Scene *)0)->chatPending) == 0x4, "scene.fields: Scene.chatPending");
+_Static_assert(offsetof(Scene, joinPlayer) == 0x234319f && sizeof(((Scene *)0)->joinPlayer) == 0x4, "scene.fields: Scene.joinPlayer");
+_Static_assert(offsetof(Scene, joinTeam) == 0x23431a3 && sizeof(((Scene *)0)->joinTeam) == 0x4, "scene.fields: Scene.joinTeam");
+_Static_assert(offsetof(Scene, joinName) == 0x23431a7 && sizeof(((Scene *)0)->joinName) == 0x40, "scene.fields: Scene.joinName");
+_Static_assert(offsetof(Scene, joinPending) == 0x23431e7 && sizeof(((Scene *)0)->joinPending) == 0x4, "scene.fields: Scene.joinPending");
+_Static_assert(offsetof(Scene, changePlayer) == 0x23431eb && sizeof(((Scene *)0)->changePlayer) == 0x4, "scene.fields: Scene.changePlayer");
+_Static_assert(offsetof(Scene, changeTeam) == 0x23431ef && sizeof(((Scene *)0)->changeTeam) == 0x4, "scene.fields: Scene.changeTeam");
+_Static_assert(offsetof(Scene, changeName) == 0x23431f3 && sizeof(((Scene *)0)->changeName) == 0x40, "scene.fields: Scene.changeName");
+_Static_assert(offsetof(Scene, changePending) == 0x2343233 && sizeof(((Scene *)0)->changePending) == 0x4, "scene.fields: Scene.changePending");
+_Static_assert(offsetof(Scene, endEvents) == 0x2343237 && sizeof(((Scene *)0)->endEvents) == 0xc, "scene.fields: Scene.endEvents");
 _Static_assert(offsetof(Scene, mouseX) == 0x2343257 && sizeof(((Scene *)0)->mouseX) == 0x4, "scene.fields: Scene.mouseX");
 _Static_assert(offsetof(Scene, mouseY) == 0x234325b && sizeof(((Scene *)0)->mouseY) == 0x4, "scene.fields: Scene.mouseY");
 _Static_assert(offsetof(Scene, holdAltitude) == 0x234325f && sizeof(((Scene *)0)->holdAltitude) == 0x4, "scene.fields: Scene.holdAltitude");

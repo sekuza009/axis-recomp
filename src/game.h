@@ -148,9 +148,9 @@ typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id 
 #define msg_networkUnstable(scene) GAME_THISFN(msg_networkUnstable, 0x4633c0, void, void *)(scene)
 #define msg_dataLoss(scene) GAME_THISFN(msg_dataLoss, 0x4633f0, void, void *)(scene)
 #define notices_clearAll(scene) GAME_THISFN(notices_clearAll, 0x463480, void, void *)(scene)
-#define notice_raise1(scene, p, rec) GAME_THISFN(notice_raise1, 0x4634e0, void, void *, int, void *)(scene, p, rec)
-#define notice_raise2(scene, p) GAME_THISFN(notice_raise2, 0x463530, void, void *, int)(scene, p)
-#define notice_raise3(scene, p, text, team) GAME_THISFN(notice_raise3, 0x463550, void, void *, int, const char *, int)(scene, p, text, team)
+#define notice_playerConnected(scene, p, rec) GAME_THISFN(notice_playerConnected, 0x4634e0, void, void *, int, void *)(scene, p, rec)
+#define notice_playerQuit(scene, p) GAME_THISFN(notice_playerQuit, 0x463530, void, void *, int)(scene, p)
+#define notice_chatLine(scene, p, text, team) GAME_THISFN(notice_chatLine, 0x463550, void, void *, int, const char *, int)(scene, p, text, team)
 #define event_raise3(scene) GAME_THISFN(event_raise3, 0x463670, void, void *)(scene)
 #define event_raise4(scene) GAME_THISFN(event_raise4, 0x463690, void, void *)(scene)
 #define event_raise5(scene) GAME_THISFN(event_raise5, 0x4636b0, void, void *)(scene)
@@ -661,8 +661,8 @@ typedef struct { float r, g, b, a; } Colour;
 #define sound_updateListener(scene) GAME_THISFN(sound_updateListener, 0x49d150, void, Scene *)(scene)
 #define msg_playerChangedTeam(scene, player, team) GAME_THISFN(msg_playerChangedTeam, 0x462e30, void, Scene *, int, int)(scene, player, team)
 #define msg_playerJoinedTeam(scene, player, team) GAME_THISFN(msg_playerJoinedTeam, 0x462d30, void, Scene *, int, int)(scene, player, team)
-#define notice_raise5(scene, a, b, text) GAME_THISFN(notice_raise5, 0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
-#define notice_raise4(scene, a, b, text) GAME_THISFN(notice_raise4, 0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define notice_changedTeam(scene, a, b, text) GAME_THISFN(notice_changedTeam, 0x463610, void, Scene *, int, int, const char *)(scene, a, b, text)
+#define notice_joinedTeam(scene, a, b, text) GAME_THISFN(notice_joinedTeam, 0x4635b0, void, Scene *, int, int, const char *)(scene, a, b, text)
 #define notice_printCentre(scene, ...) GAME_FN(notice_printCentre, 0x463450, int, Scene *, const char *, ...)(scene, __VA_ARGS__)   /* a HUD notice (a format and its arguments) */
 #define chat_textField(x, y, maxLength) GAME_FN(chat_textField, 0x44ac90, void, int, int, int)(x, y, maxLength)   /* the match's text line opened */
 #define chat_keepLastLine() GAME_FN(chat_keepLastLine, 0x44ace0, void, void)()

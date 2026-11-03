@@ -500,15 +500,15 @@ THISCALL void events_age(char *self, float dt);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
 THISCALL void notices_clearAll(char *self);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_raise1(char *self, int a, const char *s);
+THISCALL void notice_playerConnected(char *self, int a, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_raise2(char *self, int a);
+THISCALL void notice_playerQuit(char *self, int a);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_raise3(char *self, int a, const char *s, int b);
+THISCALL void notice_chatLine(char *self, int a, const char *s, int b);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_raise4(char *self, int a, int b, const char *s);
+THISCALL void notice_joinedTeam(char *self, int a, int b, const char *s);
 /* readable rebuild in src/ (its own translation unit, see src/axis.h) */
-THISCALL void notice_raise5(char *self, int a, int b, const char *s);
+THISCALL void notice_changedTeam(char *self, int a, int b, const char *s);
 
 /* ---- comparison harness -------------------------------------------------------------------- */
 
@@ -7106,15 +7106,15 @@ static void notice_setup(void)
 	g_a[0] = irnd(-999, 999); g_a[1] = irnd(-999, 999);
 }
 ST(notices_clearAll, notice_setup();, (TC(void, 0x463480, char *)(BUF), 0), (notices_clearAll(BUF), 0))
-ST(notice_raise1, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
-   (notice_raise1(BUF, g_a[0], BUF + 0x80000), 0))
-ST(notice_raise2, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (notice_raise2(BUF, g_a[0]), 0))
-ST(notice_raise3, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
-   (notice_raise3(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
-ST(notice_raise4, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (notice_raise4(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
-ST(notice_raise5, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
-   (notice_raise5(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(notice_playerConnected, notice_setup();, (TC(void, 0x4634e0, char *, int, char *)(BUF, g_a[0], BUF + 0x80000), 0),
+   (notice_playerConnected(BUF, g_a[0], BUF + 0x80000), 0))
+ST(notice_playerQuit, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (notice_playerQuit(BUF, g_a[0]), 0))
+ST(notice_chatLine, notice_setup();, (TC(void, 0x463550, char *, int, char *, int)(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0),
+   (notice_chatLine(BUF, g_a[0], BUF + 0x80000, g_a[1]), 0))
+ST(notice_joinedTeam, notice_setup();, (TC(void, 0x4635b0, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (notice_joinedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
+ST(notice_changedTeam, notice_setup();, (TC(void, 0x463610, char *, int, int, char *)(BUF, g_a[0], g_a[1], BUF + 0x80000), 0),
+   (notice_changedTeam(BUF, g_a[0], g_a[1], BUF + 0x80000), 0))
 
 /* batch 6: setups fill the memory a function writes, so a missing or wrong store shows */
 #define V0(name, addr, SETUP) ST(name, SETUP, (CD(void, addr, void)(), 0), (name(), 0))
@@ -17200,8 +17200,8 @@ static const STest g_stests[] = {
 	T(actor_deactivate, 0, 4, 600), T(camera_setTarget, 0, 4, 600), T(stage_clearActorSlots, 0, 4, 60),
 	T(actor_setWeaponSlot, 0, 4, 600), T(actor_selectWeapon, 0, 4, 600), T(actor_clearInput, 0, 4, 200), T(actor_setInput, 0, 4, 200),
 	T(scene_saveNames, 0, 4, 100), T(scene_restoreNames, 0, 4, 100), T(scene_followedActor, 1, 4, 1000), T(chat_matchCheatCode, 1, 10, 1000),
-	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(notices_clearAll, 0, 4, 200), T(notice_raise1, 0, 4, 300),
-	T(notice_raise2, 0, 4, 200), T(notice_raise3, 0, 4, 300), T(notice_raise4, 0, 4, 300), T(notice_raise5, 0, 4, 300),
+	T(events_clear, 0, 4, 200), T(events_age, 0, 4, 2000), T(notices_clearAll, 0, 4, 200), T(notice_playerConnected, 0, 4, 300),
+	T(notice_playerQuit, 0, 4, 200), T(notice_chatLine, 0, 4, 300), T(notice_joinedTeam, 0, 4, 300), T(notice_changedTeam, 0, 4, 300),
 	/* batch 6 */
 	T(net_clearServerList, 0, 4, 0), T(net_clearRoomList, 0, 4, 0), T(net_clearPlayerList, 0, 4, 0), T(input_resetKeys, 0, 4, 0),
 	T(input_clearKeyTable2, 0, 4, 0), T(net_clearBuffers, 0, 4, 0), T(mapSelect_allOut, 0, 4, 0), T(armc_showPartsPage, 0, 4, 0),
@@ -17832,7 +17832,7 @@ static const struct { DWORD addr, base, limit; int (__cdecl *fn)(int, int); cons
 
 /* harness self-check: a deliberately wrong rebuild (one extra scratch write far from the inputs, one off-by-one
    in .data) must be caught in fast and full mode; otherwise every result of this run is meaningless */
-static THISCALL void wrong_match_463530(char *self, int a) { notice_raise2(self, a); S32(self, 0x1000000) = 1; }
+static THISCALL void wrong_match_463530(char *self, int a) { notice_playerQuit(self, a); S32(self, 0x1000000) = 1; }
 static void wrong_menu_clearInputBuffer(int mode) { menu_clearInputBuffer(mode + 1); }
 ST(selfcheck_scratch, notice_setup();, (TC(void, 0x463530, char *, int)(BUF, g_a[0]), 0), (wrong_match_463530(BUF, g_a[0]), 0))
 ST(selfcheck_data, g_a[0] = irnd(-5, 5);, (CD(void, 0x431560, int)(g_a[0]), 0), (wrong_menu_clearInputBuffer(g_a[0]), 0))
@@ -18065,9 +18065,9 @@ static const struct { DWORD addr; void *fn; const char *name; } g_hooks3[] = {
 	{ 0x4616e0, (void *)scene_saveNames, "scene_saveNames" }, { 0x461730, (void *)scene_restoreNames, "scene_restoreNames" },
 	{ 0x4625a0, (void *)scene_followedActor, "scene_followedActor" }, { 0x462650, (void *)chat_matchCheatCode, "chat_matchCheatCode" },
 	{ 0x4629c0, (void *)events_clear, "events_clear" }, { 0x462ac0, (void *)events_age, "events_age" },
-	{ 0x463480, (void *)notices_clearAll, "notices_clearAll" }, { 0x4634e0, (void *)notice_raise1, "notice_raise1" },
-	{ 0x463530, (void *)notice_raise2, "notice_raise2" }, { 0x463550, (void *)notice_raise3, "notice_raise3" },
-	{ 0x4635b0, (void *)notice_raise4, "notice_raise4" }, { 0x463610, (void *)notice_raise5, "notice_raise5" },
+	{ 0x463480, (void *)notices_clearAll, "notices_clearAll" }, { 0x4634e0, (void *)notice_playerConnected, "notice_playerConnected" },
+	{ 0x463530, (void *)notice_playerQuit, "notice_playerQuit" }, { 0x463550, (void *)notice_chatLine, "notice_chatLine" },
+	{ 0x4635b0, (void *)notice_joinedTeam, "notice_joinedTeam" }, { 0x463610, (void *)notice_changedTeam, "notice_changedTeam" },
 	/* batch 6 */
 	{ 0x452e60, (void *)net_clearServerList, "net_clearServerList" }, { 0x452e80, (void *)net_clearRoomList, "net_clearRoomList" },
 	{ 0x452ea0, (void *)net_clearPlayerList, "net_clearPlayerList" }, { 0x431590, (void *)input_resetKeys, "input_resetKeys" },

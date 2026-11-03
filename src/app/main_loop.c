@@ -1591,7 +1591,7 @@ static void chat_keys(u8 *s)
 				int team = mode == 1 ? -1 : SC->localTeam;
 				msg_chatLine(s, SC->localPlayer, line, team);
 				team = mode == 1 ? -1 : SC->localTeam;
-				notice_raise3(s, SC->localPlayer, line, team);
+				notice_chatLine(s, SC->localPlayer, line, team);
 			}
 		}
 	}
@@ -1669,7 +1669,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->quitDelay = 0.0f;
 			music_shutdown();
 			if (SC->localPlayer >= 0)
-				notice_raise2(s, SC->localPlayer);
+				notice_playerQuit(s, SC->localPlayer);
 			g_matchEndedByUser = 0;
 		}
 		SC->quitAsked = 0;
@@ -1701,7 +1701,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		strcpy((char *)ACTOR_AT(SC->localPlayer) + 0x98, (const char *)(s + 0x2342429));
 		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
-		notice_raise1(s, SC->localPlayer, s + 0x1755234 + SC->localPlayer * 0x47fd2);
+		notice_playerConnected(s, SC->localPlayer, s + 0x1755234 + SC->localPlayer * 0x47fd2);
 		net_sendMatchEvent(s);
 	}
 	/* a team chosen (or a menu for it), then the spawn */
@@ -1717,7 +1717,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (SC->localTeam < 0) {
 				scene_setLocalTeam((Scene *)s, SC->localPlayer);
 				msg_playerJoinedTeam((Scene *)s, SC->localPlayer, SC->localTeam);
-				notice_raise4((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)(s + 0x2342429));
+				notice_joinedTeam((Scene *)s, SC->localPlayer, SC->localTeam, (const char *)(s + 0x2342429));
 			}
 			SC->teamChanged = 1;
 		}
