@@ -766,11 +766,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->spawn78 = 0;
 	AC->spawn7c = 1000.0f;   /* 1000 */
 	AC->spawn80 = 500.0f;   /* 500 */
-	BITS(AC->spawnTail[0]) = 0x40000000;   /* 2 */
-	BITS(AC->spawnTail[1]) = 0x3f800000;
-	BITS(AC->spawnTail[2]) = 0x457a0000;   /* 4000 */
-	BITS(AC->spawnTail[3]) = 0x40a00000;   /* 5 */
-	BITS(AC->spawnTail[4]) = 0x3f800000;
+	AC->spawnTail[0] = 2.0f;   /* 2 */
+	AC->spawnTail[1] = 1.0f;
+	AC->spawnTail[2] = 4000.0f;   /* 4000 */
+	AC->spawnTail[3] = 5.0f;   /* 5 */
+	AC->spawnTail[4] = 1.0f;
 }
 
 /* 0x457330 (thiscall on the scene): actor a built from player *pp's mech (the player record 0x47fd2 bytes from

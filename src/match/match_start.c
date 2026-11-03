@@ -129,7 +129,7 @@ static void first_round(Scene *s)
 		g_mapRotation = 1;
 		s->rankingShown = 0;
 	}
-	(*(int *)&s->startClear) = 0;
+	(*(int *)&s->lostTime) = 0;
 	s->stageCleared = 0;
 }
 
@@ -191,11 +191,11 @@ static void later_round(Scene *s)
 	s->chatMode = 0;
 	if (g_paused)
 		chat_keepLastLine();
-	(*(int *)&s->roundClear5) = 0;
+	(*(int *)&s->keyGuard) = 0;
 	s->matchOver = 0;
-	(*(int *)&s->roundClear6) = 0;
+	(*(int *)&s->endTime) = 0;
 	s->roundOver = 0;
-	(*(int *)&s->roundClear7) = 0;
+	(*(int *)&s->quitDelay) = 0;
 	teams_setup(s);
 	BITS(s->msgFade) = 0;
 }

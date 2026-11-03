@@ -322,7 +322,7 @@ void THISCALL (match_combatInput)(u8 *s)
 			g_mouseX = gfx_getWidth() / 2;
 			g_mouseY = gfx_getHeight() / 2;
 		}
-		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->roundClear5 > 0))
+		if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->keyGuard > 0))
 			SC->quitAsked = 1;
 		if (pressed2((OBJ(g_controls) + 0x58), (OBJ(g_controls) + 0x5c)))
 			SC->prevWeaponPressed = 1;
@@ -330,9 +330,9 @@ void THISCALL (match_combatInput)(u8 *s)
 			SC->nextWeaponPressed = 1;
 		if (pressed2((OBJ(g_controls) + 0xf0), (OBJ(g_controls) + 0xf4)))
 			SC->startCameraMode = SC->cameraMode == 1 ? 2 : SC->cameraMode == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !(SC->roundClear5 > 0))
+		if (pressed2(ADDR(g_keyWatchChat), (OBJ(g_controls) + 0xac)) && !(SC->keyGuard > 0))
 			SC->talkPressed = 1;
-		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(SC->roundClear5 > 0))
+		else if (pressed2((OBJ(g_controls) + 0xb0), (OBJ(g_controls) + 0xb4)) && !(SC->keyGuard > 0))
 			SC->teamTalkPressed = 1;
 		if (pressed2((OBJ(g_controls) + 0xf8), (OBJ(g_controls) + 0xfc)))
 			SC->helpPressed = 1;
@@ -474,13 +474,13 @@ u32 THISCALL (match_inputState3)(u8 *s)
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca28)), &turn);
 		SC->restartB[0] = f32(v);
 		if (!(v >= k_m890f))
-			BITS(SC->restartB[0]) = 0xc45e8000;   /* -890 */
+			SC->restartB[0] = -890.0f;   /* -890 */
 	}
 	if (SC->arrowDownPlain) {
 		long double v = fadd_m(fld_m(&turn), (const float *)(s + 0x233ca28));
 		SC->restartB[0] = f32(v);
 		if (v > k_890f)
-			BITS(SC->restartB[0]) = 0x445e8000;   /* 890 */
+			SC->restartB[0] = 890.0f;   /* 890 */
 	}
 	if (SC->arrowLeftHeld) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233ca2c)), &turn);
@@ -761,9 +761,9 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
 		SC->restartB[0] = f32(fadd_m(fld_m((const float *)(s + 0x233cb20) + i), (const float *)(RELOC(t) + 0x160)));
 	if (SC->restartB[0] > 890.0f)
-		BITS(SC->restartB[0]) = 0x445e8000;
+		SC->restartB[0] = 890.0f;
 	if (!(SC->restartB[0] >= -890.0f))
-		BITS(SC->restartB[0]) = 0xc45e8000;
+		SC->restartB[0] = -890.0f;
 	i = S(int, preset);
 	SC->restartB[1] = (float)fld_m((const float *)(s + 0x233cb48) + i);
 	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
@@ -940,9 +940,9 @@ static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 	long double v = fsubr_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343293)), (const float *)(s + 0x233ca28));
 	SC->restartB[0] = (float)v;
 	if (v > 890.0f)
-		BITS(SC->restartB[0]) = 0x445e8000;
+		SC->restartB[0] = 890.0f;
 	if (!(SC->restartB[0] >= -890.0f))
-		BITS(SC->restartB[0]) = 0xc45e8000;
+		SC->restartB[0] = -890.0f;
 	v = fadd_m(fmul_m(fld_m(turn), (const float *)(s + 0x2343297)), (const float *)(s + 0x233ca2c));
 	SC->restartB[1] = (float)v;
 	if (v >= 3600.0f)
@@ -1071,7 +1071,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	SC->mouseDx = f32(fmul_m(sens, (const float *)(s + 0x2343297)));
 	g_mouseX = gfx_getWidth() / 2;
 	g_mouseY = gfx_getHeight() / 2;
-	if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->roundClear5 > 0)) {
+	if (pressed2(ADDR(g_keyLoadingSkip), ADDR(g_keyLoadingSkip2)) && !(SC->keyGuard > 0)) {
 		g_mainMenuFadingIn = 0;
 		SC->quitAsked = 1;
 	}
@@ -1542,7 +1542,7 @@ static void round_over(u8 *s, int time_limit)
 {
 	SC->clockExtra = 1;
 	SC->matchOver = 1;
-	BITS(SC->roundClear6) = 0x41200000;   /* 10 */
+	SC->endTime = 10.0f;   /* 10 */
 	SC->playing = 1;
 	music_shutdown();
 	if (time_limit)
@@ -1651,7 +1651,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		if (SC->client == 0) {
 			if (SC->roundOver == 0) {
 				SC->roundOver = 1;
-				BITS(SC->roundClear7) = 0x40400000;
+				SC->quitDelay = 3.0f;
 				music_shutdown();
 				if (SC->network == 0) {
 					msg_userEndsGame(s);
@@ -1666,7 +1666,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			}
 		} else {
 			SC->roundOver = 1;
-			(*(int *)&SC->roundClear7) = 0;
+			SC->quitDelay = 0.0f;
 			music_shutdown();
 			if (SC->localPlayer >= 0)
 				notice_raise2(s, SC->localPlayer);
@@ -1836,7 +1836,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (SC->roundClear2 == 1) {
 				msg_dataLoss(s);
 				SC->roundOver = 1;
-				BITS(SC->roundClear7) = 0x40400000;
+				SC->quitDelay = 3.0f;
 				music_shutdown();
 				SC->roundClear2 = 0;
 			}
@@ -1987,7 +1987,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		(*(float *)&SC->firstRoundClear[0]) = f32(fadd_m(fld_m((const float *)(s + 0x2340c74)), (const float *)(s + 0x44)));
 	}
 	/* the round's end */
-	if (SC->roundClear6 > 0) {
+	if (SC->endTime > 0) {
 		PATCHED_THISCALL(0x49a54f, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 		if (SC->network == 1 && SC->client == 0) {   /* the server's end notices, every half second */
 			if (S(float, 0x23423b9) > 0.5f) {
@@ -2003,7 +2003,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				S(float, 0x23423b9) = f32(fadd_m(fld_m((const float *)(s + 0x44)), (const float *)(s + 0x23423b9)));
 		}
 		long double v = fsub_m(fld_m((const float *)(s + 0x234239d)), (const float *)(s + 0x44));
-		SC->roundClear6 = (float)v;
+		SC->endTime = (float)v;
 		if (!(v >= 0)) {
 			if (g_startedFromLobby != 0) {
 				SC->quitAsked = 1;
@@ -2014,7 +2014,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->playing = 0;
 			SC->escMenuOpen = 0;
 			SC->localAlive = 0;
-			(*(int *)&SC->roundClear6) = 0;
+			SC->endTime = 0.0f;
 			SC->cameraSlot = -1;
 			replay_closeRecording((Scene *)s);
 			stage_deactivateActors(stage);
@@ -2023,7 +2023,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (SC->network == 0 && SC->stageCleared == 1 && g_missionStage == 14) {
 				SC->lastMissionWon = 1;   /* the last mission won */
 				SC->roundOver = 1;
-				(*(int *)&SC->roundClear7) = 0;
+				SC->quitDelay = 0.0f;
 			} else {
 				/* the next round */
 				if (SC->showEmblems == 1) {
@@ -2180,7 +2180,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->localPlayer >= 0)
 		chat_keys(s);
 	if (SC->chatMode != 0)
-		BITS(SC->roundClear5) = 0x3dcccccd;   /* 0.1 */
+		SC->keyGuard = 0.1f;   /* 0.1 */
 	if (SC->showEmblems == 1) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x233cc50)), (const float *)(s + 0x44));
 		SC->emblemTime = (float)v;
@@ -2191,19 +2191,19 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->network == 1) {
 		if (SC->roundOver == 0) {
 			if (net_isClient() == 0) {
-				if (SC->startClear > 5.0f) {
+				if (SC->lostTime > 5.0f) {
 					msg_connectionLost(s);
 					SC->roundOver = 1;
-					BITS(SC->roundClear7) = 0x40400000;
+					SC->quitDelay = 3.0f;
 					music_shutdown();
 				} else
-					SC->startClear = f32(fadd_m(fld_m((const float *)(s + 0x2342395)), (const float *)(s + 0x44)));
+					SC->lostTime = f32(fadd_m(fld_m((const float *)(s + 0x2342395)), (const float *)(s + 0x44)));
 			}
 			if (SC->roundOver == 0 && netq_resends() >= 0x80) {
 				netq_clearResends();
 				msg_networkUnstable(s);
 				SC->roundOver = 1;
-				BITS(SC->roundClear7) = 0x40400000;
+				SC->quitDelay = 3.0f;
 				music_shutdown();
 			}
 		}
@@ -2223,7 +2223,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		} else {
 			if (SC->localPlayer >= 0 && SC->players[SC->localPlayer].team >= 0)
 				SC->teamChanged = 1;
-			(*(int *)&SC->roundClear6) = 0;
+			SC->endTime = 0.0f;
 			SC->matchOver = 0;
 			replay_closeRecording((Scene *)s);
 			if (SC->showEmblems == 1) {
@@ -2253,7 +2253,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	/* the match's end: the log, back to the menu */
 	if (SC->roundOver == 1) {
 		long double v = fsub_m(fld_m((const float *)(s + 0x23423a5)), (const float *)(s + 0x44));
-		SC->roundClear7 = (float)v;
+		SC->quitDelay = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
 				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),

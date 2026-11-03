@@ -786,14 +786,14 @@ typedef struct Scene {
 	float replayTime;   /* +0x2340d2d: (by use) the replay's time it is read up to */
 	u8 _pad2340d31[0x4];
 	i32 chatMode;   /* +0x2340d35: 0 closed, 1 / 2 typing (team / all) */
-	float roundClear5;   /* +0x2340d39: (unclear) */
+	float keyGuard;   /* +0x2340d39: (by use) > 0: the quit / talk keys are ignored (0.1 s) */
 	u8 _pad2340d3d[0x1644];
 	i32 teamIds[5];   /* +0x2342381: the teams by slot (free: < 0; match/teams.c) */
-	float startClear;   /* +0x2342395: (unclear) cleared at each start */
+	float lostTime;   /* +0x2342395: (by use) a client's seconds without the server (over 5: the connection lost) */
 	i32 matchOver;   /* +0x2342399: (by use) 1: the result is shown */
-	float roundClear6;   /* +0x234239d: (unclear) */
+	float endTime;   /* +0x234239d: (by use) seconds left of a round's end (10 from the result) */
 	i32 roundOver;   /* +0x23423a1: (unclear) */
-	float roundClear7;   /* +0x23423a5: (unclear) */
+	float quitDelay;   /* +0x23423a5: (by use) seconds before leaving after the round is over (3) */
 	i32 stageCleared;   /* +0x23423a9: (unclear) 0 with g_missionStage == g_missionProgress: "MISSION FAILED, RETRY" */
 	i32 scoreLimit;   /* +0x23423ad: > 0: the points still needed are shown */
 	i32 timeLimit;   /* +0x23423b1: minutes; > 0: the time left is shown */
@@ -1429,13 +1429,13 @@ _Static_assert(offsetof(Scene, replaySkip) == 0x2340d25 && sizeof(((Scene *)0)->
 _Static_assert(offsetof(Scene, recordTime) == 0x2340d29 && sizeof(((Scene *)0)->recordTime) == 0x4, "scene.fields: Scene.recordTime");
 _Static_assert(offsetof(Scene, replayTime) == 0x2340d2d && sizeof(((Scene *)0)->replayTime) == 0x4, "scene.fields: Scene.replayTime");
 _Static_assert(offsetof(Scene, chatMode) == 0x2340d35 && sizeof(((Scene *)0)->chatMode) == 0x4, "scene.fields: Scene.chatMode");
-_Static_assert(offsetof(Scene, roundClear5) == 0x2340d39 && sizeof(((Scene *)0)->roundClear5) == 0x4, "scene.fields: Scene.roundClear5");
+_Static_assert(offsetof(Scene, keyGuard) == 0x2340d39 && sizeof(((Scene *)0)->keyGuard) == 0x4, "scene.fields: Scene.keyGuard");
 _Static_assert(offsetof(Scene, teamIds) == 0x2342381 && sizeof(((Scene *)0)->teamIds) == 0x14, "scene.fields: Scene.teamIds");
-_Static_assert(offsetof(Scene, startClear) == 0x2342395 && sizeof(((Scene *)0)->startClear) == 0x4, "scene.fields: Scene.startClear");
+_Static_assert(offsetof(Scene, lostTime) == 0x2342395 && sizeof(((Scene *)0)->lostTime) == 0x4, "scene.fields: Scene.lostTime");
 _Static_assert(offsetof(Scene, matchOver) == 0x2342399 && sizeof(((Scene *)0)->matchOver) == 0x4, "scene.fields: Scene.matchOver");
-_Static_assert(offsetof(Scene, roundClear6) == 0x234239d && sizeof(((Scene *)0)->roundClear6) == 0x4, "scene.fields: Scene.roundClear6");
+_Static_assert(offsetof(Scene, endTime) == 0x234239d && sizeof(((Scene *)0)->endTime) == 0x4, "scene.fields: Scene.endTime");
 _Static_assert(offsetof(Scene, roundOver) == 0x23423a1 && sizeof(((Scene *)0)->roundOver) == 0x4, "scene.fields: Scene.roundOver");
-_Static_assert(offsetof(Scene, roundClear7) == 0x23423a5 && sizeof(((Scene *)0)->roundClear7) == 0x4, "scene.fields: Scene.roundClear7");
+_Static_assert(offsetof(Scene, quitDelay) == 0x23423a5 && sizeof(((Scene *)0)->quitDelay) == 0x4, "scene.fields: Scene.quitDelay");
 _Static_assert(offsetof(Scene, stageCleared) == 0x23423a9 && sizeof(((Scene *)0)->stageCleared) == 0x4, "scene.fields: Scene.stageCleared");
 _Static_assert(offsetof(Scene, scoreLimit) == 0x23423ad && sizeof(((Scene *)0)->scoreLimit) == 0x4, "scene.fields: Scene.scoreLimit");
 _Static_assert(offsetof(Scene, timeLimit) == 0x23423b1 && sizeof(((Scene *)0)->timeLimit) == 0x4, "scene.fields: Scene.timeLimit");
