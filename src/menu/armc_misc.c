@@ -173,7 +173,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 		GAME_VAR(float, s + 0x2342409) = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
 	}
 	int a = GAME_VAR(int, s + 0x234240d);
-	u8 *actor = s + 0x1ecca70 + a * 0x8888;
+	u8 *actor = (u8 *)&((Scene *)s)->players[a];
 	GAME_VAR(float, actor + 0x18c) = (float)fmul_m(fld_m((const float *)(s + 0x2343293)) / (long double)(H / 2),
 	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
 	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);

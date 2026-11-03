@@ -301,7 +301,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 	float min_x = f32(fsub_m(fld_m(&cam[0]), range)), min_z = f32(fsub_m(fld_m(&cam[2]), range));
 	float max_x = f32(fadd_m(fld_m(range), &cam[0])), max_z = f32(fadd_m(fld_m(&cam[2]), range));
 	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
-		u8 *layer = s + 0xdc0244 + i * 0x20c;
+		u8 *layer = (u8 *)&((Stage *)s)->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
 		u8 *part = GAME_VAR(u8 *, s + 0xdc0a8c) + i * 0x80, *water = GAME_VAR(u8 *, s + 0xdc0cd8) + i * 0x80;
 		const float *size = (const float *)(layer + 0x24), *origin = (const float *)(layer + 4);

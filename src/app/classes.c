@@ -335,7 +335,7 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
    returned; else 0 */
 int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
 {
-	u8 *type = scene + 0x1561b68 + p * 0x47fd2;
+	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
 	u8 image[0x48];
 	GAME_VAR(u32, image) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
 	GAME_VAR(u32, image + 4) = 0;      /* (no file yet) */
@@ -364,7 +364,7 @@ void THISCALL (tex_upload2)(u8 *scene)
 {
 	int uploaded = 0;
 	for (int p = 0; p < 16; p++) {
-		u8 *emblem = scene + 0x1561b68 + p * 0x47fd2 + 0x479c2;
+		u8 *emblem = (u8 *)&((Stage *)scene)->playerRecords[p] + 0x479c2;
 		if (GAME_VAR(int, emblem + 0x608) != 1)
 			continue;
 		u32 *atlas = (u32 *)(scene + 0x20fcfe4) + (p / 4) * 16 * 128 + (p % 4) * 24;

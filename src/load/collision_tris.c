@@ -664,7 +664,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		ground_triangle(grid, 0x10, va, vb, vd);
 	}
 	for (int l = 0; l < st->groundLayerCount; l++) {
-		u8 *layer = stage + 0xdc0244 + l * 0x20c;
+		u8 *layer = (u8 *)&((Stage *)stage)->groundLayers[l];
 		int kind = FIELD(int, layer, 0);
 		if (kind != 0 && kind != 1)
 			continue;
@@ -685,7 +685,7 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		}
 	}
 	for (int i = 0; i < st->objectCount; i++) {
-		u8 *obj = stage + 0x131ae44 + i * 0x2cc;
+		u8 *obj = (u8 *)&((Stage *)stage)->objects[i];
 		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
 			continue;
 		if (i % 2 == 0)

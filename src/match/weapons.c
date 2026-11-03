@@ -10,7 +10,7 @@
    ammunition cost left */
 static void weapon_cycle(Stage *stage, int i, int step)
 {
-	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
+	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	u8 *player = (u8 *)stage + 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2;
 	int slot = (FIELD(int, actor, 0x140) + step) % 6;
 	for (int k = 0; k < 6; k++, slot = (slot + step) % 6) {
@@ -33,7 +33,7 @@ void THISCALL (actor_prevWeapon)(Stage *stage, int i) { weapon_cycle(stage, i, 5
    weapon its player record holds there */
 void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 {
-	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
+	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	int player = FIELD(int, actor, 0x10c);
 	if (FIELD(int, actor, 0x140) != slot) {
 		FIELD(int, actor, 0x140) = slot;
@@ -47,7 +47,7 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
    holds a weapon there of a known type */
 void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 {
-	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
+	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	if (FIELD(int, actor, 0x140) == slot)
 		return;
 	int weapon = FIELD(int, stage, 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2 + 0x320 + slot * 4);
@@ -62,7 +62,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
    (0xa106f8, 4096 values, position 0xa1efb8), and its aim is set back to its own point */
 void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 {
-	u8 *actor = (u8 *)stage + 0x1cd93a8 + i * 0x8888;
+	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	if (FIELD(int, actor, 0x14c) != 1)
 		return;
 	u32 r = g_randPos;
@@ -86,7 +86,7 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
    callers ignore the eax it leaves */
 void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
 {
-#define ACTOR(i) (scene + 0x1cd93a8 + (i) * 0x8888)
+#define ACTOR(i) ((u8 *)&((Stage *)scene)->actors[i])
 	static const u8 group[10] = { 0, 0, 4, 4, 4, 8, 8, 4, 12, 12 };
 	u8 *t = ACTOR(target), *a = ACTOR(attacker);
 	if (FIELD(int, t, 0x14c) != 1 || FIELD(int, t, 0x880c) == 1)
@@ -158,14 +158,14 @@ static int within(const float *p, const float *from, const float *range)
    grows (x 0x4a974c). Its caller ignores the eax it leaves */
 void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
-	u8 *a = scene + 0x1cd93a8 + p * 0x8888;
+	u8 *a = (u8 *)&((Stage *)scene)->actors[p];
 	const float *from = (const float *)(RELOC(a) + 0x154), *range = (const float *)(RELOC(a) + 0x8848);
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
 	for (int i = 0; i < FIELD(int, scene, 0xe3c938); i++) {
 		if (i == FIELD(int, a, 0x8870))
 			continue;
-		u8 *list = scene + 0xe3b038 + i * 0x1c;
+		u8 *list = (u8 *)&((Stage *)scene)->triggers[i];
 		for (int j = 0; j < FIELD(int, list, 0); j++) {
 			const float *pt = (const float *)(FIELD(u8 *, list, 4) + j * 0x14);
 			if (!within(&pt[0], &from[0], range) || !within(&pt[1], &from[1], range) || !within(&pt[2], &from[2], range))

@@ -1479,7 +1479,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p,
 	int *flag = (int *)(s + 0x234300a + p * 0x10);
 	if (!*flag)
 		return;
-	u8 *r = s + 0x1755230 + p * 0x47fd2;
+	u8 *r = (u8 *)&((Scene *)s)->playerRecords[p];
 	packet[1] = 2;
 	strcpy((char *)packet + 2, (const char *)RELOC(r) + 4);
 	packet[0x14] = r[0x48];
@@ -1633,7 +1633,7 @@ static int angle_byte(const void *v)
    it flies at an object, else +0x84). Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
-	u8 *a = g + 0x1ecca70 + p * 0x8888;
+	u8 *a = (u8 *)&((Scene *)g)->players[p];
 	u16 w;
 	packet[1] = 0;
 	memcpy(packet + 2, a + 0x3f0, 2);
@@ -1789,8 +1789,8 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 #define STAGE (g + 0x1f36c8)
-#define ACTOR(i) (g + 0x1ecca70 + (i) * 0x8888)   /* the stage's actors, from the game object */
-#define PLAYER(i) (g + 0x1755230 + (i) * 0x47fd2)
+#define ACTOR(i) ((u8 *)&((Scene *)g)->players[i])   /* the stage's actors, from the game object */
+#define PLAYER(i) ((u8 *)&((Scene *)g)->playerRecords[i])
 #define CALL1(addr, a) GAME_THISCALL(addr, void, void *, int)(STAGE, a)
 
 /* thiscall fn(self, a1 .. a8), returning what the callee leaves in ecx (the original pushes registers whose upper

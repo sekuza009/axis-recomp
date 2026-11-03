@@ -68,7 +68,7 @@ void THISCALL (shape_relocate)(u8 *shape)
    bullets of weapon type 3 whose box (+0x78) is within the view's distance (+0xa08) of the camera (+0x20f3970) */
 void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 {
-	u8 *bullet = (u8 *)stage + 0x202ef34 + b * 0x4e8;
+	u8 *bullet = (u8 *)(u8 *)&((Stage *)stage)->bullets[b];
 	X r = stage->cullMargin;
 	for (int a = 0; a < 3; a++)
 		if ((X)stage->cameraPos[a] - r > FIELD(float, bullet, 0x78 + a * 4))

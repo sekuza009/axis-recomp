@@ -193,7 +193,7 @@ void THISCALL (tex_clearSetCounters)(void *self)
 /* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
 void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
-	u8 *rec = (u8 *)stage + 0x1561b68 + p * 0x47fd2;
+	u8 *rec = (u8 *)(u8 *)&((Stage *)stage)->playerRecords[p];
 	int colour = g_defaultColour;
 	for (int k = 0; k < 16 * 24; k++)
 		FIELD(int, rec, 0x479c2 + k * 4) = colour;
@@ -795,7 +795,7 @@ static int set_part(u8 *scene, int p, int type, const PartKind *k)
 {
 	if (type < 0)
 		return 0;
-	u8 *pl = scene + 0x1561b68 + p * 0x47fd2;
+	u8 *pl = (u8 *)&((Stage *)scene)->playerRecords[p];
 	if (p > GAME_VAR(int, scene + 0x19e1888) - 1)
 		GAME_VAR(int, scene + 0x19e1888) = p + 1;
 	if (GAME_VAR(int, pl + k->field) == type)
@@ -828,13 +828,13 @@ int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { 
 void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int item)
 {
 	u8 *scene = (u8 *)stage;
-	u8 *type = scene + 0x1561b68 + p * 0x47fd2;
+	u8 *type = (u8 *)&((Stage *)scene)->playerRecords[p];
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
 	unsigned mode = GAME_VAR(int, scene + 0x20f3ab8) - 2;
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)scene + 0x14d1ab4 + item * 0x2e18);
+		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)(u8 *)&((Stage *)scene)->actorInfo[item]);
 	else
 		type[0x18c + slot * 0x40] = 0;
 	if (item >= GAME_VAR(int, scene + 0x1561b64))

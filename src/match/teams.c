@@ -54,12 +54,12 @@ void *THISCALL (scene_followedActor)(Scene *scene)
 		for (int k = 0; k < FIELD(int, s, 0x2342976); k++) {
 			int a = FIELD(int, s, 0x23428f6 + k * 4);
 			if (FIELD(int, s, 0x1eccb88 + a * 0x8888) == behind)
-				return s + 0x1ecca70 + a * 0x8888;
+				return (u8 *)&((Scene *)s)->players[a];
 		}
 		i = FIELD(int, s, 0x234240d);
 	} else
 		i = FIELD(int, s, 0x23428f6);
-	return s + 0x1ecca70 + i * 0x8888;
+	return (u8 *)&((Scene *)s)->players[i];
 }
 
 /* 0x472310: the factor pool (+0x9d8010) refilled: flagged (+0x9d800c), emptied (0x483d60), then a factor (kind

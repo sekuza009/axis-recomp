@@ -871,7 +871,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 {
 	int n = 0;
 	for (int i = 0; i < GAME_VAR(int, s + 0x13c9b24); i++) {
-		u8 *o = s + 0x131ae44 + i * 0x2cc;
+		u8 *o = (u8 *)&((Stage *)s)->objects[i];
 		if (GAME_VAR(int, o + 4) != 1 || GAME_VAR(int, o + 0x290) != 1 || !GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8))
 			continue;
 		const float *m = (const float *)(o + 0x134);

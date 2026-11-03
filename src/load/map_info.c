@@ -446,7 +446,7 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	fread_scrambled(s + 0xdc0a74, 4, 1, f);
 	GAME_VAR(int, s + 0xdc0240) = 0;
 	for (int i = 0; i < st->groundLayerCount; i++) {
-		u8 *l = s + 0xdc0244 + i * 0x20c;
+		u8 *l = (u8 *)&((Stage *)s)->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)l;
 		log_message((int)s, 0, i, (const char *)STR(0x4c7ef4, "load layer %d"), i);
 		fread_scrambled(l, 0x20c, 1, f);
