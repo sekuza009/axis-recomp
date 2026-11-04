@@ -525,6 +525,15 @@ typedef struct PartInfo {
 	float weight;   /* +0x7c */
 } PartInfo;
 
+/* a skirmish map's play settings (g_skirmishInfo, 15 of them: read by files.c) */
+typedef struct SkirmishInfo {
+	u8 _pad0000000[0x4c];
+	i32 gameMode;   /* +0x4c: (by use) taken for the match (menu_records.c) */
+	i32 timeLimit;   /* +0x50 */
+	i32 fragLimit;   /* +0x54 */
+	u8 _pad0000058[0x4];
+} SkirmishInfo;
+
 /* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
 typedef struct ViewQuad {
 	i32 texture;   /* +0x0: (none: negative; then no texture corners) */
@@ -1848,6 +1857,10 @@ _Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tra
 _Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
+_Static_assert(offsetof(SkirmishInfo, gameMode) == 0x4c && sizeof(((SkirmishInfo *)0)->gameMode) == 0x4, "scene.fields: SkirmishInfo.gameMode");
+_Static_assert(offsetof(SkirmishInfo, timeLimit) == 0x50 && sizeof(((SkirmishInfo *)0)->timeLimit) == 0x4, "scene.fields: SkirmishInfo.timeLimit");
+_Static_assert(offsetof(SkirmishInfo, fragLimit) == 0x54 && sizeof(((SkirmishInfo *)0)->fragLimit) == 0x4, "scene.fields: SkirmishInfo.fragLimit");
+_Static_assert(sizeof(SkirmishInfo) == 0x5c, "scene.fields: size of SkirmishInfo");
 _Static_assert(offsetof(ViewQuad, texture) == 0x0 && sizeof(((ViewQuad *)0)->texture) == 0x4, "scene.fields: ViewQuad.texture");
 _Static_assert(offsetof(ViewQuad, uv0) == 0x4 && sizeof(((ViewQuad *)0)->uv0) == 0x8, "scene.fields: ViewQuad.uv0");
 _Static_assert(offsetof(ViewQuad, uv1) == 0xc && sizeof(((ViewQuad *)0)->uv1) == 0x8, "scene.fields: ViewQuad.uv1");

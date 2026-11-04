@@ -470,8 +470,8 @@ u32 (mission_choose)(void)
 	u32 t = (u32)sel * 0x5c;
 	g_missionStage = sel;
 	memcpy((void *)OBJ(g_mapTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
-	u32 rec = OBJ(g_skirmishInfo) + t;
-	int a = GAME_VAR(int, rec + 0x4c), b = GAME_VAR(int, rec + 0x54), c = GAME_VAR(int, rec + 0x50);
+	const SkirmishInfo *rec = (const SkirmishInfo *)(OBJ(g_skirmishInfo) + t);
+	int a = rec->gameMode, b = rec->fragLimit, c = rec->timeLimit;
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
 	g_fragLimit = b;

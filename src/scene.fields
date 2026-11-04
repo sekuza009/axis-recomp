@@ -447,6 +447,11 @@ struct PartInfo 0x80                                            # an ARM CENTER 
 0x78       4          float ringRange                            # x 1000
 0x7c       4          float weight
 
+struct SkirmishInfo 0x5c                                        # a skirmish map's play settings (g_skirmishInfo, 15 of them: read by files.c)
+0x4c       4          i32 gameMode                               # (by use) taken for the match (menu_records.c)
+0x50       4          i32 timeLimit
+0x54       4          i32 fragLimit
+
 struct ViewQuad 0x5c                                            # a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields)
 0          4          i32 texture                                # (none: negative; then no texture corners)
 4          8          u32 uv0[2]
