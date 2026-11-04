@@ -73,10 +73,10 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
 	int n = st->groundLayerCount;
 	st->layerModel.partCount = n;
 	st->layerModel.colourCount = 0;
-	st->layerModel.count1c = 0;
+	st->layerModel.triangleCount = 0;
 	st->layerBoxModel.partCount = st->groundLayerCount;
 	st->layerBoxModel.colourCount = 0;
-	st->layerBoxModel.count1c = 0;
+	st->layerBoxModel.triangleCount = 0;
 	static const short faces[][2] = {   /* (offset in the mesh, value), in the original's order of stores */
 		{ 0x1b4, 6 }, { 0x1a8, 6 }, { 0x1c0, 6 }, { 0x1cc, 6 }, { 0x1ac, 5 }, { 0x1b8, 5 }, { 0x1c4, 5 }, { 0x1d0, 5 },
 		{ 0x158, 4 }, { 0x16c, 6 }, { 0x15c, 5 }, { 0x160, 0 }, { 0x164, 3 }, { 0x168, 0xb }, { 0x170, 7 }, { 0x174, 1 },

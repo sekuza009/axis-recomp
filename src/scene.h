@@ -87,7 +87,7 @@ typedef struct Model {
 	i32 partCount;   /* +0x10 */
 	u8 *parts;   /* +0x14: partCount ShapePart records (0x80 bytes), at the block's start */
 	i32 colourCount;   /* +0x18: (by use) dwords in a shading colour buffer for it */
-	i32 count1c;   /* +0x1c: (unclear) cleared with colourCount (stage_buildMeshDrawRecords) */
+	i32 triangleCount;   /* +0x1c: (by use) its faces as triangles (a quad two: shape_loadObj); cleared with colourCount */
 	float centre[3];   /* +0x20: (by use) a point of the file's header: the box starts from it */
 	float radius;   /* +0x2c: its bounding sphere */
 	u32 version;   /* +0x30: 0x71110300: the current format (older: 0x68-byte parts) */
@@ -659,10 +659,8 @@ typedef struct PosKey {
 typedef struct RotKey {
 	i32 frame;   /* +0x0 */
 	i32 length;   /* +0x4 */
-	float angle;   /* +0x8: its rotation (angle, axis): from the ASE, combined with the ones before */
-	float axis[3];   /* +0xc */
-	float stepAngle;   /* +0x18: the rotation to the next key */
-	float stepAxis[3];   /* +0x1c */
+	float rotation[4];   /* +0x8: its rotation: angle, then axis (from the ASE, combined with the ones before) */
+	float step[4];   /* +0x18: the rotation to the next key (angle, axis) */
 } RotKey;
 
 /* a shape manager (skel_data.c; a skeleton manager is its first 0x130 bytes: SkelManager): items loaded by name into one block, found through a name tree */
@@ -1560,7 +1558,7 @@ _Static_assert(offsetof(Model, ownsBlock) == 0xc && sizeof(((Model *)0)->ownsBlo
 _Static_assert(offsetof(Model, partCount) == 0x10 && sizeof(((Model *)0)->partCount) == 0x4, "scene.fields: Model.partCount");
 _Static_assert(offsetof(Model, parts) == 0x14 && sizeof(((Model *)0)->parts) == 0x4, "scene.fields: Model.parts");
 _Static_assert(offsetof(Model, colourCount) == 0x18 && sizeof(((Model *)0)->colourCount) == 0x4, "scene.fields: Model.colourCount");
-_Static_assert(offsetof(Model, count1c) == 0x1c && sizeof(((Model *)0)->count1c) == 0x4, "scene.fields: Model.count1c");
+_Static_assert(offsetof(Model, triangleCount) == 0x1c && sizeof(((Model *)0)->triangleCount) == 0x4, "scene.fields: Model.triangleCount");
 _Static_assert(offsetof(Model, centre) == 0x20 && sizeof(((Model *)0)->centre) == 0xc, "scene.fields: Model.centre");
 _Static_assert(offsetof(Model, radius) == 0x2c && sizeof(((Model *)0)->radius) == 0x4, "scene.fields: Model.radius");
 _Static_assert(offsetof(Model, version) == 0x30 && sizeof(((Model *)0)->version) == 0x4, "scene.fields: Model.version");
@@ -2029,10 +2027,8 @@ _Static_assert(offsetof(PosKey, delta) == 0x14 && sizeof(((PosKey *)0)->delta) =
 _Static_assert(sizeof(PosKey) == 0x20, "scene.fields: size of PosKey");
 _Static_assert(offsetof(RotKey, frame) == 0x0 && sizeof(((RotKey *)0)->frame) == 0x4, "scene.fields: RotKey.frame");
 _Static_assert(offsetof(RotKey, length) == 0x4 && sizeof(((RotKey *)0)->length) == 0x4, "scene.fields: RotKey.length");
-_Static_assert(offsetof(RotKey, angle) == 0x8 && sizeof(((RotKey *)0)->angle) == 0x4, "scene.fields: RotKey.angle");
-_Static_assert(offsetof(RotKey, axis) == 0xc && sizeof(((RotKey *)0)->axis) == 0xc, "scene.fields: RotKey.axis");
-_Static_assert(offsetof(RotKey, stepAngle) == 0x18 && sizeof(((RotKey *)0)->stepAngle) == 0x4, "scene.fields: RotKey.stepAngle");
-_Static_assert(offsetof(RotKey, stepAxis) == 0x1c && sizeof(((RotKey *)0)->stepAxis) == 0xc, "scene.fields: RotKey.stepAxis");
+_Static_assert(offsetof(RotKey, rotation) == 0x8 && sizeof(((RotKey *)0)->rotation) == 0x10, "scene.fields: RotKey.rotation");
+_Static_assert(offsetof(RotKey, step) == 0x18 && sizeof(((RotKey *)0)->step) == 0x10, "scene.fields: RotKey.step");
 _Static_assert(sizeof(RotKey) == 0x28, "scene.fields: size of RotKey");
 _Static_assert(offsetof(Manager, blockSize) == 0x4 && sizeof(((Manager *)0)->blockSize) == 0x4, "scene.fields: Manager.blockSize");
 _Static_assert(offsetof(Manager, block) == 0x8 && sizeof(((Manager *)0)->block) == 0x4, "scene.fields: Manager.block");

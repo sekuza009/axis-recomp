@@ -57,7 +57,7 @@ void THISCALL (skelSet_setup)(u8 *self, const char *dir, int n, u32 a, int extra
 {
 	Manager *mg = (Manager *)self;
 	SkeletonManager_release(self);
-	strcpy((char *)self + 0x10, dir ? dir : (const char *)STR(0x4b1304, "."));
+	strcpy(mg->dir, dir ? dir : (const char *)STR(0x4b1304, "."));
 	mg->setupArg = a;
 	mg->capacity = n;
 	mg->dataSize = extra;
@@ -83,10 +83,10 @@ void THISCALL (shape_initBy)(u8 *self, const char *dir, int n, u32 a, int extra,
 	Manager *mg = (Manager *)self;
 	ShapeManager_release(self);
 	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
-		strcpy((char *)self + 0x10, dir);
+		strcpy(mg->dir, dir);
 	else
-		self[0x10] = 0;
-	path_normalize((char *)self + 0x10);
+		mg->dir[0] = 0;
+	path_normalize(mg->dir);
 	mg->setupArg = a;
 	mg->capacity = n;
 	mg->dataSize = extra;
@@ -296,13 +296,13 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 	} else
 		glTranslatef_bits(BITS(((Bone *)b)->pos[0]), BITS(((Bone *)b)->pos[1]), BITS(((Bone *)b)->pos[2]));
 	if (bn->rotKeyCount > 0) {
-		float *key = (float *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
-		int length = ((int *)key)[1];
-		float f = length > 0 ? f32((long double)(frame - ((int *)key)[0]) / length) : 0;
-		rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
-		rotate(fmul_m(fmul_m(fld_m(&f), &key[6]), unit), &key[7]);
+		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &frame);
+		int length = key->length;
+		float f = length > 0 ? f32((long double)(frame - key->frame) / length) : 0;
+		rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
+		rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
 	} else
-		rotate(fmul_m(fld_m((const float *)(RELOC(b) + 0x50)), unit), (const float *)(RELOC(b) + 0x54));
+		rotate(fmul_m(fld_m(&bn->angle), unit), bn->axis);
 	glGetFloatv(0xba6, (float *)out);
 	glLoadMatrixf(saved);
 }
@@ -706,10 +706,10 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
 					u8 *k = ((Bone *)b)->rotKeys + ((Bone *)b)->rotKeyCount * 0x28;
 					((RotKey *)k)->frame = ase_time(ticks, ms);
-					((RotKey *)k)->axis[0] = ase_float(SPACE, 0);
-					((RotKey *)k)->axis[2] = ase_float(SPACE, 1);
-					((RotKey *)k)->axis[1] = ase_float(SPACE, 0);
-					((RotKey *)k)->angle = ase_float(SPACE, 1);
+					((RotKey *)k)->rotation[1] = ase_float(SPACE, 0);
+					((RotKey *)k)->rotation[3] = ase_float(SPACE, 1);
+					((RotKey *)k)->rotation[2] = ase_float(SPACE, 0);
+					((RotKey *)k)->rotation[0] = ase_float(SPACE, 1);
 					if (((Bone *)b)->rotKeyCount > 0) {
 						float r[4];
 						axisAngle_combine(r, (const float *)(RELOC(k) + 8), (const float *)(RELOC(k) + 8 - 0x28));
@@ -753,22 +753,22 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		if (((Bone *)bone)->posKeyCount > 0) {
 			u8 *last = ((Bone *)bone)->posKeys + (((Bone *)bone)->posKeyCount - 1) * 0x20;
 			((PosKey *)last)->length = 0;
-			GAME_VAR(int, last + 0x14) = GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = 0;
+			BITS(((PosKey *)last)->delta[0]) = BITS(((PosKey *)last)->delta[1]) = BITS(((PosKey *)last)->delta[2]) = 0;
 		}
 		for (int k = 0; k < ((Bone *)bone)->rotKeyCount - 1; k++) {
 			u8 *key = ((Bone *)bone)->rotKeys + k * 0x28;
 			((RotKey *)key)->length = ((RotKey *)key)[1].frame - ((RotKey *)key)->frame;
 			float r[16], back[16], next[16], step[16];
-			Mat4_fromAxisAngle(r, (const float *)(key + 8));
+			Mat4_fromAxisAngle(r, ((RotKey *)key)->rotation);
 			Mat4_transpose(back, r);
-			Mat4_fromAxisAngle(next, (const float *)(((Bone *)bone)->rotKeys + k * 0x28 + 0x30));
+			Mat4_fromAxisAngle(next, ((RotKey *)key)[1].rotation);
 			Mat4_multiply(step, back, next);
-			axisAngle_fromMatrix((float *)(((Bone *)bone)->rotKeys + k * 0x28 + 0x18), step);
+			axisAngle_fromMatrix(((RotKey *)key)->step, step);
 		}
 		if (((Bone *)bone)->rotKeyCount > 0) {
 			u8 *last = ((Bone *)bone)->rotKeys + (((Bone *)bone)->rotKeyCount - 1) * 0x28;
 			((RotKey *)last)->length = 0;
-			GAME_VAR(int, last + 0x18) = GAME_VAR(int, last + 0x1c) = GAME_VAR(int, last + 0x20) = GAME_VAR(int, last + 0x24) = 0;
+			BITS(((RotKey *)last)->step[0]) = BITS(((RotKey *)last)->step[1]) = BITS(((RotKey *)last)->step[2]) = BITS(((RotKey *)last)->step[3]) = 0;
 		}
 	}
 }
@@ -852,17 +852,17 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 					BAD_OBJ();
 			if (!TOK(NULL, LINE_END)) {
 				md->colourCount += 3;
-				GAME_VAR(int, sh + 0x1c) += 1;
+				md->triangleCount += 1;
 			} else {
 				md->colourCount += 6;
-				GAME_VAR(int, sh + 0x1c) += 2;
+				md->triangleCount += 2;
 			}
 		}
 	}
 	int parts = md->partCount;
 	if (parts <= 0)
 		return;
-	int size = md->blockSize = (md->colourCount * 3 + GAME_VAR(int, sh + 0x1c)) * 0xc + parts * 0x8c;
+	int size = md->blockSize = (md->colourCount * 3 + md->triangleCount) * 0xc + parts * 0x8c;
 	float *vs, *ns, *ts;
 	int allocated;
 	if (!mem) {
@@ -1060,16 +1060,16 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 			operator_delete(ts);
 	}
 	shape_relocate(sh);
-	memcpy(sh + 0x34, sh + 0x20, 12);
-	memcpy(sh + 0x40, sh + 0x20, 12);
+	memcpy(md->low, md->centre, 12);
+	memcpy(md->high, md->centre, 12);
 	for (int k = 0; k < md->partCount; k++) {
 		u8 *pt = md->parts + k * 0x80;
 		for (int a = 0; a < 3; a++)   /* (the values copied as bits: a NaN stays as it is) */
-			if (fld_m((const float *)(sh + 0x34) + a) > *((const float *)(pt + 0x68) + a))
-				memcpy(sh + 0x34 + a * 4, pt + 0x68 + a * 4, 4);
+			if (fld_m(&md->low[a]) > ((ShapePart *)pt)->box[a])
+				memcpy(&md->low[a], &((ShapePart *)pt)->box[a], 4);
 		for (int a = 0; a < 3; a++)
-			if (!(fld_m((const float *)(sh + 0x40) + a) >= *((const float *)(pt + 0x74) + a)))
-				memcpy(sh + 0x40 + a * 4, pt + 0x74 + a * 4, 4);
+			if (!(fld_m(&md->high[a]) >= ((ShapePart *)pt)->box[3 + a]))
+				memcpy(&md->high[a], &((ShapePart *)pt)->box[3 + a], 4);
 	}
 }
 #undef crt_fgets

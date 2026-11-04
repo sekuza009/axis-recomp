@@ -69,7 +69,7 @@ struct Model 0x4c                                               # a shape (skel_
 0x34       0xc        float low[3]                               # the box over its parts
 0x40       0xc        float high[3]
 0x18       4          i32 colourCount                           # (by use) dwords in a shading colour buffer for it
-0x1c       4          i32 count1c                                # (unclear) cleared with colourCount (stage_buildMeshDrawRecords)
+0x1c       4          i32 triangleCount                              # (by use) its faces as triangles (a quad two: shape_loadObj); cleared with colourCount
 0x2c       4          float radius                              # its bounding sphere
 
 struct ShapePart 0x80                                           # a shape's part (Model.parts): one material's vertices and primitives
@@ -560,10 +560,8 @@ struct PosKey 0x20                                              # a bone's posit
 struct RotKey 0x28                                              # a bone's rotation key (Bone.rotKeys)
 0          4          i32 frame
 4          4          i32 length
-8          4          float angle                                # its rotation (angle, axis): from the ASE, combined with the ones before
-0xc        0xc        float axis[3]
-0x18       4          float stepAngle                            # the rotation to the next key
-0x1c       0xc        float stepAxis[3]
+8          0x10       float rotation[4]                          # its rotation: angle, then axis (from the ASE, combined with the ones before)
+0x18       0x10       float step[4]                              # the rotation to the next key (angle, axis)
 
 struct Manager 0x24c                                            # a shape manager (skel_data.c; a skeleton manager is its first 0x130 bytes: SkelManager): items loaded by name into one block, found through a name tree
 4          4          i32 blockSize
