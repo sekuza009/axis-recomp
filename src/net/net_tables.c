@@ -1657,7 +1657,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 	packet[0xf] = (u8)(scaled(a + 0x19c, ADDR(k_clockRate3)) << 4) | (u8)scaled(a + 0x1a4, ADDR(k_clockRate3));
 	packet[0x10] = (u8)angle_byte(a + 0x1a0);
 	packet[0x11] = 0;
-	if (GAME_VAR(int, a + 0x8850) == 1) {
+	if (((Player *)a)->hitPending == 1) {
 		u8 state = GAME_VAR(int, a + 0x128) > 0 ? 0x80 : 0xc0;
 		GAME_VAR(int, a + 0x8850) = 0;
 		packet[0x11] = state | a[0x4c0];
@@ -1947,7 +1947,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		int hurt;
 		if (b[0x11] & 0x80) {
 			((Player *)ac)->lastAttacker = b[0x11] & 0xf;
-			((Player *)ac)->mechType = b[0x12];
+			((Player *)ac)->lastHitWeapon = b[0x12];
 			hurt = 1;
 			if ((b[0x11] & 0x40) && ((Player *)ac)->armor > 0)
 				((Player *)ac)->armor = 0;

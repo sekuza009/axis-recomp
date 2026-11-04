@@ -877,7 +877,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->target1 = AC->target2 = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;
 	AC->botWaitTrigger = -1;
-	A(int, 0x880c) = 0;
+	AC->invulnerable = 0;
 	fill_dwords(ac + 0x8810, 5, (u32)-1);
 	fill_dwords(ac + 0x8824, 5, 0);
 	memcpy(ac + 0x8838, (const void *)ADDR(g_vecZero), 12);

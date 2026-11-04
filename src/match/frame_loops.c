@@ -262,7 +262,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 				(*(int *)&ac->botWait) = 0;
 				ac->botWaitTrigger = -1;
 				BITS(ac->speed) = BITS(ac->topSpeed);
-				FIELD(int, actor, 0x880c) = 0;
+				ac->invulnerable = 0;
 				ac->lookActor = ac->lookPath = ac->lookPoint = ac->followTarget = -1;
 			}
 			break;
@@ -270,7 +270,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			if (actor)
 				ac->speed = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
 			break;
-		case 14: if (actor) FIELD(int, actor, 0x880c) = 1; break;
+		case 14: if (actor) ac->invulnerable = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], s + 0x1cd6fb4 + c[1] * 0x5c); break;
 		case 16: ACTOR(c[1], int, 0x128) = 0; break;
 		case 17: actor_deactivate((Stage *)s, c[1]); break;

@@ -52,7 +52,7 @@ void THISCALL (msg_kill)(Scene *scene, int victim, int killer)
 		msg_print(scene, colour, (const char *)(RELOC(english) ? STR(0x4c4924, "%s killed himself.") : STR(0x4c48f4, "%s\264\324\300\314 \300\332\306\370\307\337\275\300\264\317\264\331.")), v->name);
 	} else {
 		int colour = victim == scene->localPlayer || killer == scene->localPlayer ? 4 : 0;
-		const char *mech = scene->actorInfo[v->mechType].name + 5;
+		const char *mech = scene->actorInfo[v->lastHitWeapon].name + 5;
 		msg_print(scene, colour, (const char *)(RELOC(english) ? STR(0x4c490c, "%s has crushed %s(%s).") : STR(0x4c48d4, "%s\264\324\300\314 %s\264\324\300\273 \306\304\261\253\307\337\275\300\264\317\264\331(%s).")), scene->players[killer].name, v->name, mech);
 	}
 }

@@ -41,7 +41,7 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 		ac->slot = slot;
 		if (slot < 4)
 			ac->lastWeaponSlot = slot;
-		ac->actorType = FIELD(int, stage, 0x1561b68 + player * 0x47fd2 + 0x320 + slot * 4);
+		ac->actorType = ((Stage *)stage)->playerRecords[player].items[slot];
 	}
 }
 
@@ -52,7 +52,7 @@ void THISCALL (actor_selectWeapon)(Stage *stage, int i, int slot)
 	Player *actor = (Player *)((u8 *)(u8 *)&((Stage *)stage)->actors[i]);
 	if (actor->slot == slot)
 		return;
-	int weapon = FIELD(int, stage, 0x1561b68 + actor->player * 0x47fd2 + 0x320 + slot * 4);
+	int weapon = ((Stage *)stage)->playerRecords[actor->player].items[slot];
 	if (weapon > -1 && stage->actorInfo[weapon].ammoSlot > -1) {
 		actor->weaponLowering = 1;
 		actor->slotLoaded = slot;
@@ -92,7 +92,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 	static const u8 group[10] = { 0, 0, 4, 4, 4, 8, 8, 4, 12, 12 };
 	u8 *t = ACTOR(target), *a = ACTOR(attacker);
 	Player *ac = (Player *)t;
-	if (ac->state != 1 || FIELD(int, t, 0x880c) == 1)
+	if (ac->state != 1 || ac->invulnerable == 1)
 		return;
 	int player = ((Player *)a)->active == 1 ? ((Player *)a)->level : -1;
 	if ((unsigned)kind <= 9) {
@@ -124,10 +124,10 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 			ac->armor = 0;
 		if (ac->shield < 0)
 			ac->shield = 0;
-		FIELD(int, t, 0x4bc) = mode;
+		ac->lastHitMode = mode;
 		ac->lastAttacker = attacker;
-		ac->mechType = value;
-		FIELD(int, t, 0x8850) = 1;
+		ac->lastHitWeapon = value;
+		ac->hitPending = 1;
 	}
 	BITS(ac->hitFlash) = 0x3f000000;   /* 0.5 */
 	if (target == FIELD(int, scene, 0x202e8d4))
@@ -246,7 +246,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		memcpy(dir, aim, 12);
 		if (((ActorInfo *)w)->spread > 0) {
 			long double spread = fmul_m(fld_m((const float *)(w + 0x2dec)) -
-			                            fmul_m((long double)GAME_VAR(int, s + 0x1cd93cc + owner * 0x8888), K(0x4a9418)), K(0x4aa448));
+			                            fmul_m((long double)ST->actors[owner].accuracy, K(0x4a9418)), K(0x4aa448));
 			if (!(spread >= 0))
 				spread = 0;
 			for (int k = 0; k < 3; k++)
@@ -429,7 +429,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	long double len = flying ? x87_fsqrt((dx * dx + dz * dz) + dy * dy) : x87_fsqrt((dz * dz + dy * dy) + dx * dx);
 	BU->trailAge[0] = (float)len;
 	float scale = f32(fmul_m(len, K(0x4aa450)));   /* / 800 */
-	u32 colour = GAME_VAR(u32, s + 0x9ccfe4);
+	u32 colour = (u32)ST->effectTextures[4];
 	for (int k = 0; k < 4; k++) {
 		int quarter = BU->id % 4;
 		float v0, u;
@@ -526,7 +526,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	t = BU->hitActor;
 	float dir[3];
 	for (int k = 0; k < 3; k++)
-		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &AF(t, 0x1cd9528 + k * 4)));
+		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &ST->actors[t].nextPos[k]));
 	Vec3_normalize(dir);
 	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
 	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
@@ -538,7 +538,7 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 		long double k = -fld_m(&WI->push);
 		float x = f32(fmul_m(k, &dir[0])), y = f32(fmul_m(k, &dir[1]));
 		long double z = fmul_m(k, &dir[2]);
-		float *push = &AF(BU->hitActor, 0x1ce1c04);
+		float *push = ST->actors[BU->hitActor].push;
 		push[0] = f32(fmul_m(fld_m(&x), K(0x4a9418)));
 		push[1] = f32(fmul_m(fld_m(&y), K(0x4a9418)));
 		push[2] = f32(fmul_m(z, K(0x4a9418)));
@@ -639,7 +639,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			continue;
 		float d[3];
 		for (int k = 0; k < 3; k++)
-			d[k] = f32(fsub_m(fld_m(&AF(j, 0x1cd9528 + k * 4)), (const float *)(RELOC(b) + 0x84) + k));
+			d[k] = f32(fsub_m(fld_m(&ST->actors[j].nextPos[k]), (const float *)(RELOC(b) + 0x84) + k));
 		long double len = Vec3_normalize(d);
 		if (len >= WI->splashRadius)
 			continue;
@@ -652,7 +652,7 @@ static void splash(u8 *s, u8 *b, const u8 *w)
 			long double z = fmul_m(k, &d[2]);
 			float x10 = f32(fmul_m(fld_m(&x), K(0x4a9418))), y10 = f32(fmul_m(fld_m(&y), K(0x4a9418)));
 			long double z10 = fmul_m(z, K(0x4a9418));
-			float *push = &AF(j, 0x1ce1c04);
+			float *push = ST->actors[j].push;
 			push[0] = f32(fmul_m(fld_m(&f), &x10));
 			push[1] = f32(fmul_m(fld_m(&y10), &f));
 			push[2] = f32(fmul_m(z10, &f));

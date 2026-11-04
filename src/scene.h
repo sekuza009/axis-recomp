@@ -41,7 +41,7 @@ typedef struct Player {
 	float load;   /* +0x18: the parts' and items' weight (over loadMax: slower) */
 	i32 armorMax;   /* +0x1c: (by use) the armor it starts with (actor_startingValues) */
 	i32 shieldMax;   /* +0x20: the shield it starts with */
-	u8 _pad0000024[0x4];
+	i32 accuracy;   /* +0x24: (by use) the arms' stats[0]: a shot's spread is the weapon's less a tenth of it (weapons.c) */
 	i32 ammoMax[4];   /* +0x28: (by use) per weapon slot: the full load (ammo starts at half) */
 	float mobility;   /* +0x38: (the ARM CENTER's MOBILITY) how fast the movement keys ramp (a second) */
 	float moveAccel;   /* +0x3c: the velocity's change towards the keys' (a second) */
@@ -169,9 +169,9 @@ typedef struct Player {
 	float staminaRest;   /* +0x4b0: (by use) the rest after running (back to 1) */
 	i32 overheat;   /* +0x4b4: 1: the energy bar is red */
 	i32 warned;   /* +0x4b8: 1: the energy bar blinks red */
-	u8 _pad00004bc[0x4];
+	i32 lastHitMode;   /* +0x4bc: (by use) the last hit's mode (0 armour first, 1 shield first) */
 	i32 lastAttacker;   /* +0x4c0: (by use) the actor that hit it last (credited with the kill) */
-	i32 mechType;   /* +0x4c4: (by use) its mech: the actor type named in kill messages */
+	i32 lastHitWeapon;   /* +0x4c4: (by use) the last hit's weapon (an actorInfo index: the kill message names it, "crushed X(SG-18)"; was named mechType) */
 	u8 _pad00004c8[0x4];
 	i32 weapon;   /* +0x4cc: the selected weapon slot */
 	i32 order;   /* +0x4d0: (by use) an order to carry out this frame (-1 none): 0 refill, 1 ammunition, 2 / 3 orderFlag on / off, 4 a death */
@@ -207,7 +207,7 @@ typedef struct Player {
 	i32 pathReverse;   /* +0x8800: (by use) 1: the path is followed backwards */
 	float botWait;   /* +0x8804: (by use) seconds a bot stays put */
 	i32 botWaitTrigger;   /* +0x8808: (by use) a trigger a bot waits for (-1 none) */
-	u8 _pad000880c[0x4];
+	i32 invulnerable;   /* +0x880c: (by use) 1: hits do nothing (script command 14 sets it) */
 	i32 lookActor;   /* +0x8810: (by use) the actor a bot looks at (-1 none) */
 	i32 lookPath;   /* +0x8814: the path whose point it looks at (-1 none) */
 	i32 lookPoint;   /* +0x8818 */
@@ -222,7 +222,7 @@ typedef struct Player {
 	float lookTime;   /* +0x8844: (by use) seconds to the next random look (2) */
 	u8 _pad0008848[0x4];
 	i32 cameraValue;   /* +0x884c: (by use) the camera's value while it follows this actor (camera_setTarget) */
-	u8 _pad0008850[0x4];
+	i32 hitPending;   /* +0x8850: (by use) 1: a hit to send (net_sendPlayerState, then cleared) */
 	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
 	float botTargetTime;   /* +0x8858: (by use) seconds left on the bot's target (10.5) */
 	float push[3];   /* +0x885c: (by use) a hit's push on the local actor (with hitFlash) */
@@ -1408,6 +1408,7 @@ _Static_assert(offsetof(Player, loadMax) == 0x14 && sizeof(((Player *)0)->loadMa
 _Static_assert(offsetof(Player, load) == 0x18 && sizeof(((Player *)0)->load) == 0x4, "scene.fields: Player.load");
 _Static_assert(offsetof(Player, armorMax) == 0x1c && sizeof(((Player *)0)->armorMax) == 0x4, "scene.fields: Player.armorMax");
 _Static_assert(offsetof(Player, shieldMax) == 0x20 && sizeof(((Player *)0)->shieldMax) == 0x4, "scene.fields: Player.shieldMax");
+_Static_assert(offsetof(Player, accuracy) == 0x24 && sizeof(((Player *)0)->accuracy) == 0x4, "scene.fields: Player.accuracy");
 _Static_assert(offsetof(Player, ammoMax) == 0x28 && sizeof(((Player *)0)->ammoMax) == 0x10, "scene.fields: Player.ammoMax");
 _Static_assert(offsetof(Player, mobility) == 0x38 && sizeof(((Player *)0)->mobility) == 0x4, "scene.fields: Player.mobility");
 _Static_assert(offsetof(Player, moveAccel) == 0x3c && sizeof(((Player *)0)->moveAccel) == 0x4, "scene.fields: Player.moveAccel");
@@ -1532,8 +1533,9 @@ _Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->en
 _Static_assert(offsetof(Player, staminaRest) == 0x4b0 && sizeof(((Player *)0)->staminaRest) == 0x4, "scene.fields: Player.staminaRest");
 _Static_assert(offsetof(Player, overheat) == 0x4b4 && sizeof(((Player *)0)->overheat) == 0x4, "scene.fields: Player.overheat");
 _Static_assert(offsetof(Player, warned) == 0x4b8 && sizeof(((Player *)0)->warned) == 0x4, "scene.fields: Player.warned");
+_Static_assert(offsetof(Player, lastHitMode) == 0x4bc && sizeof(((Player *)0)->lastHitMode) == 0x4, "scene.fields: Player.lastHitMode");
 _Static_assert(offsetof(Player, lastAttacker) == 0x4c0 && sizeof(((Player *)0)->lastAttacker) == 0x4, "scene.fields: Player.lastAttacker");
-_Static_assert(offsetof(Player, mechType) == 0x4c4 && sizeof(((Player *)0)->mechType) == 0x4, "scene.fields: Player.mechType");
+_Static_assert(offsetof(Player, lastHitWeapon) == 0x4c4 && sizeof(((Player *)0)->lastHitWeapon) == 0x4, "scene.fields: Player.lastHitWeapon");
 _Static_assert(offsetof(Player, weapon) == 0x4cc && sizeof(((Player *)0)->weapon) == 0x4, "scene.fields: Player.weapon");
 _Static_assert(offsetof(Player, order) == 0x4d0 && sizeof(((Player *)0)->order) == 0x4, "scene.fields: Player.order");
 _Static_assert(offsetof(Player, orderFlag) == 0x4d4 && sizeof(((Player *)0)->orderFlag) == 0x4, "scene.fields: Player.orderFlag");
@@ -1563,6 +1565,7 @@ _Static_assert(offsetof(Player, target2) == 0x87fc && sizeof(((Player *)0)->targ
 _Static_assert(offsetof(Player, pathReverse) == 0x8800 && sizeof(((Player *)0)->pathReverse) == 0x4, "scene.fields: Player.pathReverse");
 _Static_assert(offsetof(Player, botWait) == 0x8804 && sizeof(((Player *)0)->botWait) == 0x4, "scene.fields: Player.botWait");
 _Static_assert(offsetof(Player, botWaitTrigger) == 0x8808 && sizeof(((Player *)0)->botWaitTrigger) == 0x4, "scene.fields: Player.botWaitTrigger");
+_Static_assert(offsetof(Player, invulnerable) == 0x880c && sizeof(((Player *)0)->invulnerable) == 0x4, "scene.fields: Player.invulnerable");
 _Static_assert(offsetof(Player, lookActor) == 0x8810 && sizeof(((Player *)0)->lookActor) == 0x4, "scene.fields: Player.lookActor");
 _Static_assert(offsetof(Player, lookPath) == 0x8814 && sizeof(((Player *)0)->lookPath) == 0x4, "scene.fields: Player.lookPath");
 _Static_assert(offsetof(Player, lookPoint) == 0x8818 && sizeof(((Player *)0)->lookPoint) == 0x4, "scene.fields: Player.lookPoint");
@@ -1575,6 +1578,7 @@ _Static_assert(offsetof(Player, dodgeTime) == 0x8830 && sizeof(((Player *)0)->do
 _Static_assert(offsetof(Player, heightTime) == 0x8834 && sizeof(((Player *)0)->heightTime) == 0x4, "scene.fields: Player.heightTime");
 _Static_assert(offsetof(Player, lookTime) == 0x8844 && sizeof(((Player *)0)->lookTime) == 0x4, "scene.fields: Player.lookTime");
 _Static_assert(offsetof(Player, cameraValue) == 0x884c && sizeof(((Player *)0)->cameraValue) == 0x4, "scene.fields: Player.cameraValue");
+_Static_assert(offsetof(Player, hitPending) == 0x8850 && sizeof(((Player *)0)->hitPending) == 0x4, "scene.fields: Player.hitPending");
 _Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
 _Static_assert(offsetof(Player, botTargetTime) == 0x8858 && sizeof(((Player *)0)->botTargetTime) == 0x4, "scene.fields: Player.botTargetTime");
 _Static_assert(offsetof(Player, push) == 0x885c && sizeof(((Player *)0)->push) == 0xc, "scene.fields: Player.push");
