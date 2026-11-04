@@ -415,9 +415,9 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	log_message((int)s, 0, 0, (const char *)STR(0x4c801c, "load fog info"));
 	fread_scrambled(&st->fogOn, 4, 1, f);
 	fread_scrambled(st->glFogColour, 0x10, 1, f);
-	static const u32 fog_and_modes[] = { 0x9ee058, 0x9ee05c, 0x9ee060, 0x9ee064, 0x9eee48, 0x9ef0b0, 0x9ef30c };
+	void *fog_and_modes[] = { &st->glFogStart, &st->glFogEnd, &st->glFogDensity, &st->skyMode, &st->layerMode, &st->sideMode, &st->floorOn };
 	for (int k = 0; k < 7; k++)
-		fread_scrambled(s + fog_and_modes[k], 4, 1, f);
+		fread_scrambled(fog_and_modes[k], 4, 1, f);
 	log_message((int)s, 0, 0, (const char *)STR(0x4c8004, "load background sphere"));
 	int mode = st->skyMode;
 	if (mode == 1 || mode == 2) {

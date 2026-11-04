@@ -145,7 +145,7 @@ void (armc_exit)(int confirmed)
 void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *forward, const u32 *up, int part, int angle,
                                       int w, int h)
 {
-	static const u32 lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };   /* (in the actor) */
+	static const u32 lists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };   /* (in the actor) */
 	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */

@@ -199,12 +199,12 @@ void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, int b)
 	return self;
 }
 
-/* 0x463850: a resource set: five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in
+/* 0x463850: a resource set (a PlayerRecord's part caches): five shape managers (vtable 0x4aa244) and five skeleton managers (0x4aa240) built in
    place (the original's exception frame only matters if a constructor throws, and these cannot) */
 void *THISCALL (ResourceSet_ctor)(u8 *self)
 {
-	static const u32 shapes[5] = { 0x338, 0x8284, 0x101d0, 0x1fe1c, 0x2fa68 };
-	static const u32 skels[5] = { 0x43534, 0x43e34, 0x44734, 0x45804, 0x468d4 };
+	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
+	static const u32 skels[5] = { offsetof(PlayerRecord, headSkels), offsetof(PlayerRecord, chestSkels), offsetof(PlayerRecord, armSkels), offsetof(PlayerRecord, legSkels), offsetof(PlayerRecord, boosterSkels) };
 	for (int i = 0; i < 5; i++) {
 		*(u32 *)(self + shapes[i]) = VT(ShapeManager, 0x4aa244);
 		ShapeManager_clear(self + shapes[i]);
@@ -244,7 +244,7 @@ int THISCALL (SkeletonManager_releaseSkeletons)(u8 *self) { return release_all(s
    Returns the last call's eax */
 u32 THISCALL (actor_destroyPartLists)(u8 *self)
 {
-	static const u32 members[8] = { 0x701c, 0x587c, 0x40dc, 0x34f4, 0x2524, 0x1554, 0xd54, 0x554 };
+	static const u32 members[8] = { offsetof(Player, weaponModel5), offsetof(Player, weaponModel4), offsetof(Player, weaponModel), offsetof(Player, boosterModel), offsetof(Player, legsModel), offsetof(Player, armsModel), offsetof(Player, chestModel), offsetof(Player, headModel) };
 	u32 r = 0;
 	for (int k = 0; k < 8; k++)
 		r = UnitPoseInfo_dtor(self + members[k]);
@@ -255,8 +255,8 @@ u32 THISCALL (actor_destroyPartLists)(u8 *self)
    (as ResourceSet_ctor built them). Returns the last destructor's eax */
 u32 THISCALL (ResourceSet_dtor)(u8 *self)
 {
-	static const u32 skeletons[5] = { 0x468d4, 0x45804, 0x44734, 0x43e34, 0x43534 };
-	static const u32 shapes[5] = { 0x2fa68, 0x1fe1c, 0x101d0, 0x8284, 0x338 };
+	static const u32 skeletons[5] = { offsetof(PlayerRecord, boosterSkels), offsetof(PlayerRecord, legSkels), offsetof(PlayerRecord, armSkels), offsetof(PlayerRecord, chestSkels), offsetof(PlayerRecord, headSkels) };
+	static const u32 shapes[5] = { offsetof(PlayerRecord, boosterShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, headShapes) };
 	u32 r = 0;
 	for (int k = 0; k < 5; k++)
 		GAME_THISFN(SkeletonManager_dtor, 0x46ae60, u32, void *)(self + skeletons[k]);   /* SkeletonManager_dtor */

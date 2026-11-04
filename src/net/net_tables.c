@@ -2014,16 +2014,19 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 					GS->dataLossCode = 1;
 				}
 			}
-			static const u32 parts[5][4] = { { 0x15bd1f8, 0x23423e5, 0x15de6c8, 0x2aa }, { 0x15de6cc, 0x23423e9, 0x15fff84, 0x2af },
-			                                 { 0x15fff88, 0x23423ed, 0x163b588, 0x4c0 }, { 0x163b58c, 0x23423f1, 0x1679b34, 0x4fd },
-			                                 { 0x1679b38, 0x23423f5, 0x16c5178, 0x608 } };
+			static const u32 parts[5][4] = {   /* each part kind's type table, its entries a row, its count, its record in dwords */
+				{ SCENE_STAGE_AT + offsetof(Stage, headTypes), offsetof(Scene, geometryPerRow[0]), offsetof(Scene, headCount), sizeof(HeadType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, chestTypes), offsetof(Scene, geometryPerRow[1]), offsetof(Scene, chestCount), sizeof(ChestType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, armTypes), offsetof(Scene, geometryPerRow[2]), offsetof(Scene, armCount), sizeof(ArmType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, legTypes), offsetof(Scene, geometryPerRow[3]), offsetof(Scene, legCount), sizeof(LegType) / 4 },
+				{ SCENE_STAGE_AT + offsetof(Stage, boosterTypes), offsetof(Scene, geometryPerRow[4]), offsetof(Scene, boosterCount), sizeof(BoosterType) / 4 } };
 			u16 w = *(const u16 *)(pkt + 0x2c);
 			int part = b[0x2b];
 			if (part <= 4 && !table_ok(g, parts[part][0], parts[part][1], parts[part][2], parts[part][3], w, *(const u32 *)(pkt + 0x2e))) {
 				GS->roundClear2 = 1;
 				GS->dataLossCode = 2;
 			}
-			if (!table_ok(g, 0x16c517c, 0x23423f9, 0x175522c, 0xb86, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
+			if (!table_ok(g, offsetof(Scene, actorInfo), offsetof(Scene, geometryPerRow[5]), offsetof(Scene, actorInfoCount), sizeof(ActorInfo) / 4, *(const u16 *)(pkt + 0x32), *(const u32 *)(pkt + 0x34))) {
 				GS->roundClear2 = 1;
 				GS->dataLossCode = 3;
 			}

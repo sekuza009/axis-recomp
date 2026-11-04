@@ -364,9 +364,9 @@ void (armc_drawBuildScreen)(void)
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
 	itoa(PART->damage, value, 10);
-	static const u32 skill[5] = { 0x9f9068, 0x9f9068, 0x9f906c, 0x9f9070, 0x9f9074 };   /* by kind; above 3 the last */
+	static const u8 skill[5] = { 0, 0, 1, 2, 3 };   /* the profile's stat by kind; above 3 the last */
 	int kind_of = (unsigned)PART->ammoSlot <= 3 ? PART->ammoSlot : 4;
-	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)ADDR(k_0_01f));
+	long double b = fmul_m((long double)g_profileRecords[g_armcValue].stats[skill[kind_of]], (const float *)ADDR(k_0_01f));
 	b *= (long double)PART->damage;
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));

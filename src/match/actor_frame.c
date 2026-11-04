@@ -1263,7 +1263,7 @@ timers:
 			f |= 0x4000;
 		AC->timerFlags = f;
 	}
-	static const u16 parts[7] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c };
+	static const u16 parts[7] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel), offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5) };
 	if (AC->breakUp < 7) {   /* the parts' break-up, one a frame */
 		if (AC->breakUp >= 0)
 			partList_bindTextures(a + parts[AC->breakUp]);

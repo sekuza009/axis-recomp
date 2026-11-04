@@ -152,7 +152,7 @@ static int random_below(u32 n)
 static void later_round(Scene *s)
 {
 	const int *counts[6] = { &s->headCount, &s->chestCount, &s->armCount, &s->legCount, &s->boosterCount, &s->actorInfoCount };
-	static const u32 rows[6] = { 0x2aa, 0x2af, 0x4c0, 0x4fd, 0x608, 0xb86 };
+	static const u32 rows[6] = { sizeof(HeadType) / 4, sizeof(ChestType) / 4, sizeof(ArmType) / 4, sizeof(LegType) / 4, sizeof(BoosterType) / 4, sizeof(ActorInfo) / 4 };   /* (the records in dwords) */
 	s->geometryCheckTurn = 0;
 	for (int k = 0; k < 6; k++)
 		s->geometryPick[k] = random_below(((u32)*counts[k] * rows[k] * 4) >> 2);

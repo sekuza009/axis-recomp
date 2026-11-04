@@ -481,11 +481,11 @@ static u8 level_byte(float *v)
 
 /* 0x474b50 (thiscall on the scene): player p's part (0 .. 4) coloured: two hue / saturation / value sets kept as
    bytes in the part type record's colour table (+0x479a4 + part x 2: hue, +0xa saturation, +0x14 value; the second
-   set one byte on), then the part's shape (+0x338 .., 0x7f4c apart but the last) given textures from the player's
+   set one byte on), then the part's shape cache (headShapes ..) given textures from the player's
    directory (by 0x4c77f8) tinted with them (shape_setTextureDir). Its callers ignore the eax it leaves */
 void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {
-	static const u32 shapes[5] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984, 0x15915d0 };
+	static const u32 shapes[5] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes), offsetof(PlayerRecord, boosterShapes) };
 	PlayerRecord *pr = &((Stage *)scene)->playerRecords[p];
 	pr->partHue[part][0] = hue_byte(&h1);
 	pr->partSaturation[part][0] = level_byte(&s1);
@@ -496,7 +496,7 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 	char dir[0x100];
 	sprintf(dir, (const char *)STR(0x4c77f8, "_T%d"), p);
 	if ((unsigned)part <= 4)
-		shape_setTextureDir(scene + shapes[part] + p * 0x47fd2, dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
+		shape_setTextureDir((u8 *)pr + shapes[part], dir, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 #undef K
