@@ -264,6 +264,16 @@ typedef struct __attribute__((packed)) {
 	u8 algorithm3D[16];
 } WaveDesc;
 
+/* a .wav file's 44-byte header (RIFF, its "fmt " chunk, the "data" chunk's head) */
+typedef struct {
+	u32 riff, riffSize, wave, fmt, fmtSize;
+	u16 formatTag, channels;
+	u32 samplesPerSec, avgBytesPerSec;
+	u16 blockAlign, bitsPerSample;
+	u32 data, dataSize;
+} WavHeader;
+_Static_assert(sizeof(WavHeader) == 0x2c, "WavHeader");
+
 /* 0x467b90: a sound from a PCM .wav file (its 44-byte header, then the data): a static buffer of the data's size and
    format (DSBCAPS 0xe2), the data copied in, then the 8 buffers all duplicates of it. NULL when the file does not
    open or the buffer is not made ("SoundBuffer create error") */
@@ -272,18 +282,18 @@ Sound *(sound_loadWav)(const char *name)
 	void *file = CreateFileA(name, 0x80000000, 1, NULL, 3, 0x80, NULL);   /* GENERIC_READ, share read, OPEN_EXISTING */
 	if (file == (void *)-1)
 		return NULL;
-	u8 header[0x2c];
+	WavHeader header;
 	u32 done;
-	ReadFile(file, header, 0x2c, &done, NULL);
+	ReadFile(file, &header, sizeof header, &done, NULL);
 	WaveDesc desc;
 	memset(&desc, 0, sizeof desc);
 	desc.formatTag = 1;
-	desc.channels = *(u16 *)(header + 0x16);
-	desc.samplesPerSec = *(u32 *)(header + 0x18);
-	desc.blockAlign = *(u16 *)(header + 0x20);
+	desc.channels = header.channels;
+	desc.samplesPerSec = header.samplesPerSec;
+	desc.blockAlign = header.blockAlign;
 	desc.avgBytesPerSec = desc.blockAlign * desc.samplesPerSec;
-	desc.bitsPerSample = *(u16 *)(header + 0x22);
-	u32 size = *(u32 *)(header + 0x28);
+	desc.bitsPerSample = header.bitsPerSample;
+	u32 size = header.dataSize;
 	desc.size = 0x24;
 	desc.flags = 0xe2;
 	desc.bufferBytes = size;
