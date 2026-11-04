@@ -298,7 +298,7 @@
 #define g_playerSlotFlags ((int *)IMG(0x9f93d8))   /* int[16]; the sixteen player slots' in-use flags (net_claimPlayerSlot) */
 #define g_sessionTable ((SessionSlot *)IMG(0xa0b470))   /* SessionSlot[200] */
 #define g_dottedAddress ((char *)IMG(0xa0b460))   /* char[16]; an address as dotted text (at most 15 characters) */
-#define g_sessionDesc ((u8 *)IMG(0xa0b3b0))   /* u8[80]; the DPSESSIONDESC2 shared by hosting and joining (session_desc: 0x50 bytes) */
+#define g_sessionDesc ((DPSessionDesc2 *)IMG(0xa0b3b0))   /* DPSessionDesc2[1]; the one shared by hosting and joining (session_desc) */
 #define g_tcpProviderGuid ((u8 *)IMG(0xa0b3a0))   /* u8[16]; the TCP service provider's GUID */
 #define g_ipxProviderGuid ((u8 *)IMG(0xa0b450))   /* u8[16]; the IPX service provider's GUID */
 #define g_modemProviderGuid ((u8 *)IMG(0xa0b408))   /* u8[16]; the modem service provider's GUID */

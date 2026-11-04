@@ -2433,7 +2433,7 @@ extern struct GameData g_data;
 #undef g_serviceProviderCount
 #define g_serviceProviderCount (*(int *)g_serviceProviderCount_v)
 #undef g_sessionDesc
-#define g_sessionDesc ((u8 *)g_sessionDesc_v)
+#define g_sessionDesc ((DPSessionDesc2 *)g_sessionDesc_v)
 #undef g_sessionList
 #define g_sessionList ((SessionEntry *)g_sessionList_v)
 #undef g_sessionTable

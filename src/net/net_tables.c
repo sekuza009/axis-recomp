@@ -145,9 +145,10 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	int mode = g_connectionKind;
 	if ((mode == 1 || mode == 0) && !desc)
 		return 0;
+	const DPSessionDesc2 *dd = (const DPSessionDesc2 *)desc;
 	SessionDesc d;
 	memset(&d, 0, sizeof d);
-	const u8 *guid = desc + 8;
+	const u8 *guid = dd->instance;
 	if (!memcmp(guid, (const void *)OBJ(k_GUID_NULL), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
@@ -155,18 +156,18 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 			return 0;
 	u8 *block = GlobalLock(GlobalAlloc(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
 	d.guid = (u32)block;
-	crt_strncpy(d.name, GAME_VAR(const char *, desc + 0x30), 0x46);   /* lpszSessionName */
-	memcpy(&d.players, desc + 0x2c, 4);                               /* dwCurrentPlayers */
+	crt_strncpy(d.name, dd->name, 0x46);
+	memcpy(&d.players, &dd->players, 4);
 	memcpy(block, guid, 16);
 	memcpy(d.instance, guid, 16);
-	memcpy(d.application, desc + 0x18, 16);
-	d.gameMode = desc[0x44];                                          /* dwUser2 */
-	d.maxPlayers = desc[0x28];                                        /* dwMaxPlayers */
-	memcpy(&d.map, desc + 0x40, 2);                                   /* dwUser1: map, rotation */
-	d.fragLimit = desc[0x49];                                         /* dwUser3 */
-	d.timeLimit = desc[0x48];
+	memcpy(d.application, dd->application, 16);
+	d.gameMode = (signed char)dd->user2;
+	d.maxPlayers = (u8)dd->maxPlayers;
+	memcpy(&d.map, &dd->user1, 2);                                    /* map, rotation */
+	d.fragLimit = (u8)(dd->user3 >> 8);
+	d.timeLimit = (u8)dd->user3;
 	if (g_connectionKind == 0) {
-		dplay_formatSessionEntry(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry (dwUser4) */
+		dplay_formatSessionEntry(dd->user4);   /* dplay_formatSessionEntry */
 		crt_strncpy(d.address, g_dottedAddress, 0x10);
 	}
 	net_addSession(d);
@@ -422,18 +423,18 @@ int (dplay_enumSessions)(void)
 	void *play = g_dplay;
 	if (!play)
 		return 0;
-	u32 desc[0x14];
-	memset(desc, 0, sizeof desc);
-	desc[0] = 0x50;                                                  /* dwSize */
-	memcpy(&desc[2], g_instanceGuid, 16);         /* guidInstance */
-	memcpy(&desc[6], (const void *)OBJ(k_axisAppGuid), 16);                    /* guidApplication */
+	DPSessionDesc2 desc;
+	memset(&desc, 0, sizeof desc);
+	desc.size = sizeof desc;
+	memcpy(desc.instance, g_instanceGuid, 16);
+	memcpy(desc.application, (const void *)OBJ(k_axisAppGuid), 16);
 	if (!g_connectionKind) {
-		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
+		if (COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, &desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
 			return 0;
 		play = g_dplay;
 	}
 	if (g_connectionKind == 1 &&
-	    COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
+	    COM(play, 0x34, int, void *, u32, void *, void *, u32)(play, &desc, 0, (void *)FN_ADDR(dplay_enumSessionsCallback, 0x453560), NULL, 0x12) < 0)
 		return 0;
 	return 1;
 }
@@ -767,15 +768,15 @@ u32 (net_receiveAll)(void)
 	return r;
 }
 
-/* the session description shared by hosting and joining (DPSESSIONDESC2 at 0xa0b3b0): cleared, its size, the
+/* the session description shared by hosting and joining (g_sessionDesc at 0xa0b3b0): cleared, its size, the
    session's GUID and the game's application GUID (0x4a96e8) */
-static u32 *session_desc(const void *guid)
+static DPSessionDesc2 *session_desc(const void *guid)
 {
-	u32 *desc = (u32 *)OBJ(g_sessionDesc);
-	memset(desc, 0, 0x50);
-	desc[0] = 0x50;                              /* dwSize */
-	memcpy(&desc[2], guid, 16);                  /* guidInstance */
-	memcpy(&desc[6], (const void *)OBJ(k_axisAppGuid), 16);   /* guidApplication */
+	DPSessionDesc2 *desc = g_sessionDesc;
+	memset(desc, 0, sizeof *desc);
+	desc->size = sizeof *desc;
+	memcpy(desc->instance, guid, 16);
+	memcpy(desc->application, (const void *)OBJ(k_axisAppGuid), 16);
 	return desc;
 }
 
@@ -796,16 +797,16 @@ int (dplay_hostSession)(const char *session, const char *player, u32 user1, u32 
 	void *play = g_dplay;
 	if (!play)
 		return 0;
-	u32 *desc = session_desc(g_instanceGuid);
-	desc[1] = 0x44;                  /* dwFlags */
-	desc[12] = (u32)session;         /* lpszSessionNameA */
-	desc[10] = maxPlayers;
-	desc[16] = user1;
-	desc[17] = user2;
-	desc[18] = (u32)((int)hi << 8 | (int)lo);
+	DPSessionDesc2 *desc = session_desc(g_instanceGuid);
+	desc->flags = 0x44;
+	desc->name = session;
+	desc->maxPlayers = maxPlayers;
+	desc->user1 = user1;
+	desc->user2 = user2;
+	desc->user3 = (u32)((int)hi << 8 | (int)lo);
 	if (!g_connectionKind) {
 		net_getLocalAddress();                 /* net_getLocalAddress */
-		desc[19] = net_parseAddress();       /* net_parseAddress */
+		desc->user4 = net_parseAddress();       /* net_parseAddress */
 		play = g_dplay;
 	}
 	if (COM(play, 0x60, int, void *, u32)(play, desc, 2) < 0)   /* Open(DPOPEN_CREATE) */

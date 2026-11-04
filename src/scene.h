@@ -644,6 +644,24 @@ typedef struct NetSlot {
 	u8 packet[0x400];   /* +0x10: the packet received (64 bytes: its first byte the number, bit 7 a resend request */
 } NetSlot;
 
+/* DirectPlay's DPSESSIONDESC2 (dplay.h; ANSI): hosting, joining and enumerating (net_tables.c) */
+typedef struct DPSessionDesc2 {
+	u32 size;   /* +0x0: dwSize (0x50) */
+	u32 flags;   /* +0x4: dwFlags */
+	u8 instance[16];   /* +0x8: guidInstance */
+	u8 application[16];   /* +0x18: guidApplication (k_axisAppGuid) */
+	u32 maxPlayers;   /* +0x28: dwMaxPlayers */
+	u32 players;   /* +0x2c: dwCurrentPlayers */
+	const char *name;   /* +0x30: lpszSessionNameA */
+	const char *password;   /* +0x34: lpszPasswordA */
+	u32 reserved1;   /* +0x38 */
+	u32 reserved2;   /* +0x3c */
+	u32 user1;   /* +0x40: the game's: map (byte 0), rotation (byte 1) */
+	u32 user2;   /* +0x44: the game mode */
+	u32 user3;   /* +0x48: the time limit (byte 0), frag limit (byte 1) */
+	u32 user4;   /* +0x4c: (TCP) the host's address */
+} DPSessionDesc2;
+
 /* an arena session DirectPlay's enumeration found (dplay_enumSessionsCallback, from its */
 typedef struct SessionDesc {
 	u32 guid;   /* +0x0: a GlobalAlloc'd copy of the instance GUID: the join's argument (dplay_join) */
@@ -2219,6 +2237,21 @@ _Static_assert(offsetof(NetSlot, waiting) == 0x8 && sizeof(((NetSlot *)0)->waiti
 _Static_assert(offsetof(NetSlot, size) == 0xc && sizeof(((NetSlot *)0)->size) == 0x4, "scene.fields: NetSlot.size");
 _Static_assert(offsetof(NetSlot, packet) == 0x10 && sizeof(((NetSlot *)0)->packet) == 0x400, "scene.fields: NetSlot.packet");
 _Static_assert(sizeof(NetSlot) == 0x410, "scene.fields: size of NetSlot");
+_Static_assert(offsetof(DPSessionDesc2, size) == 0x0 && sizeof(((DPSessionDesc2 *)0)->size) == 0x4, "scene.fields: DPSessionDesc2.size");
+_Static_assert(offsetof(DPSessionDesc2, flags) == 0x4 && sizeof(((DPSessionDesc2 *)0)->flags) == 0x4, "scene.fields: DPSessionDesc2.flags");
+_Static_assert(offsetof(DPSessionDesc2, instance) == 0x8 && sizeof(((DPSessionDesc2 *)0)->instance) == 0x10, "scene.fields: DPSessionDesc2.instance");
+_Static_assert(offsetof(DPSessionDesc2, application) == 0x18 && sizeof(((DPSessionDesc2 *)0)->application) == 0x10, "scene.fields: DPSessionDesc2.application");
+_Static_assert(offsetof(DPSessionDesc2, maxPlayers) == 0x28 && sizeof(((DPSessionDesc2 *)0)->maxPlayers) == 0x4, "scene.fields: DPSessionDesc2.maxPlayers");
+_Static_assert(offsetof(DPSessionDesc2, players) == 0x2c && sizeof(((DPSessionDesc2 *)0)->players) == 0x4, "scene.fields: DPSessionDesc2.players");
+_Static_assert(offsetof(DPSessionDesc2, name) == 0x30 && sizeof(((DPSessionDesc2 *)0)->name) == 0x4, "scene.fields: DPSessionDesc2.name");
+_Static_assert(offsetof(DPSessionDesc2, password) == 0x34 && sizeof(((DPSessionDesc2 *)0)->password) == 0x4, "scene.fields: DPSessionDesc2.password");
+_Static_assert(offsetof(DPSessionDesc2, reserved1) == 0x38 && sizeof(((DPSessionDesc2 *)0)->reserved1) == 0x4, "scene.fields: DPSessionDesc2.reserved1");
+_Static_assert(offsetof(DPSessionDesc2, reserved2) == 0x3c && sizeof(((DPSessionDesc2 *)0)->reserved2) == 0x4, "scene.fields: DPSessionDesc2.reserved2");
+_Static_assert(offsetof(DPSessionDesc2, user1) == 0x40 && sizeof(((DPSessionDesc2 *)0)->user1) == 0x4, "scene.fields: DPSessionDesc2.user1");
+_Static_assert(offsetof(DPSessionDesc2, user2) == 0x44 && sizeof(((DPSessionDesc2 *)0)->user2) == 0x4, "scene.fields: DPSessionDesc2.user2");
+_Static_assert(offsetof(DPSessionDesc2, user3) == 0x48 && sizeof(((DPSessionDesc2 *)0)->user3) == 0x4, "scene.fields: DPSessionDesc2.user3");
+_Static_assert(offsetof(DPSessionDesc2, user4) == 0x4c && sizeof(((DPSessionDesc2 *)0)->user4) == 0x4, "scene.fields: DPSessionDesc2.user4");
+_Static_assert(sizeof(DPSessionDesc2) == 0x50, "scene.fields: size of DPSessionDesc2");
 _Static_assert(offsetof(SessionDesc, guid) == 0x0 && sizeof(((SessionDesc *)0)->guid) == 0x4, "scene.fields: SessionDesc.guid");
 _Static_assert(offsetof(SessionDesc, instance) == 0x4 && sizeof(((SessionDesc *)0)->instance) == 0x10, "scene.fields: SessionDesc.instance");
 _Static_assert(offsetof(SessionDesc, application) == 0x14 && sizeof(((SessionDesc *)0)->application) == 0x10, "scene.fields: SessionDesc.application");
