@@ -28,7 +28,7 @@ typedef struct {
 
 #define K(addr) ((const float *)RELOC(addr))
 #define MUL(a, b) fmul_m(fld_m(a), b)
-#define LIGHT_COUNT(factors) (*(const int *)((factors) + 0xb004))
+#define LIGHT_COUNT(factors) (((const LightFactors *)(factors))->count)
 
 static int clamp255(int v) { return v < 0xff ? v : 0xff; }
 
@@ -281,8 +281,8 @@ static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
 static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
 {
 	Vec3_rotateAxis(v, 2, angle);
-	v[0] = f32(fadd_m(fld_m(&v[0]), (const float *)(scene + 0x20f3970)));
-	v[2] = f32(fadd_m(fld_m(&v[2]), (const float *)(scene + 0x20f3978)));
+	v[0] = f32(fadd_m(fld_m(&v[0]), &((Stage *)scene)->cameraPos[0]));
+	v[2] = f32(fadd_m(fld_m(&v[2]), &((Stage *)scene)->cameraPos[2]));
 	memcpy(((ShapePart *)part)->vertices + at, v, 12);
 	float *t = (float *)(((u8 *)((ShapePart *)part)->texCoords) + tex_at);
 	t[0] = f32(fdiv_m(fld_m(&v[0]), &((GroundLayer *)layer)->texScale));

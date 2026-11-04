@@ -41,7 +41,7 @@ void THISCALL (notices_clearAll)(Scene *scene)
 {
 	static const int flags[] = { 0x2343106, 0x234314e, 0x2343156, 0x234319b, 0x23431e7, 0x2343233, 0x2343237,
 	                             0x234323b, 0x234323f, 0x234324f };
-	memset((u8 *)scene + 0x2343006, 0, 0x100);
+	memset(scene->sendFlags, 0, sizeof scene->sendFlags);
 	for (int k = 0; k < 10; k++)
 		FIELD(int, scene, flags[k]) = 0;
 }
@@ -105,7 +105,7 @@ int (stage_printText)(u8 *obj, const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int n = vsprintf((char *)obj + 0x20fcd4c, format, args);
+	int n = vsprintf(((Stage *)obj)->printText, format, args);
 	va_end(args);
 	return n;
 }

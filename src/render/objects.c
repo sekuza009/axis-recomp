@@ -146,7 +146,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			shape_shadeParts((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&((Stage *)s)->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
-		const float *c = (const float *)(((u8 *)MO->model) + 0x20);
+		const float *c = MO->model->centre;
 		float *out = MO->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)

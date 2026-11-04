@@ -313,7 +313,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 	factors_addPoint((u8 *)&((Stage *)s)->actorLights, (const void *)OBJ(g_packedWhite), down);
 	long double root = 1;
 	root = x87_fsqrt(k_27);
-	memset(s + 0x9ee030, 0, 14 * 4);
+	memset((u8 *)s + offsetof(Stage, clearOn), 0, 14 * 4);   /* clearOn and the next 13 dwords */
 	long double inv = fld_m(K(0x4a9424)) / root;
 	float r = f32(inv), out = f32(fmul_m(inv, K(0x4a9534)));
 	for (int face = 0; face < 6; face++) {

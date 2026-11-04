@@ -536,7 +536,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	VECTOR((u8 *)st->emblemAtlas, 4, 0x2000);
 	Scene_ctor((u8 *)&st->scenePath);   /* Scene_ctor */
 	VTABLE(s, STR(0x4aa23c, "08F"));
-	GAME_VAR(int, s + 4) = 0;
+	((Stage *)s)->built = 0;
 	VTABLE(g, VT(Console, 0x4aa238));
 	GS->client = GS->network = -1;
 	TimeSync_clear((u8 *)&GS->timer);

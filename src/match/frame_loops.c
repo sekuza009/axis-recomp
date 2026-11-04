@@ -816,7 +816,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	memcpy(PR->target, pd->target, 12);
 	PR->matrixFrom = pd->matrixFrom;
 	if (PR->matrixFrom)
-		Mat4_copy(p + 0x2c, (*(const void * *)&PR->matrixFrom));
+		Mat4_copy(PR->matrix, (*(const void * *)&PR->matrixFrom));
 	PR->drawAge = 0.0f;
 	PR->life = 1.0f;
 	PR->age = 0.0f;

@@ -75,7 +75,7 @@ void (shape_colourPixels)(u8 *px, int mode, const void *shape, const u8 *colour)
 void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, u32 h1, u32 c1, u32 v1, u32 h2, u32 c2,
                                     u32 v2)
 {
-	strcpy((char *)model + 0x130, folder);
+	strcpy(((Manager *)model)->textureDir, folder);
 	((Manager *)model)->bindFlags = flags;
 	if (flags & 2)
 		shape_setTint(model, h1, c1, v1, h2, c2, v2);

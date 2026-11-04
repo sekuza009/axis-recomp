@@ -53,7 +53,7 @@ void THISCALL (object_setAnimation)(Stage *stage, int i, u32 name, float period,
 		BITS(o->animRate) = 0;
 		return;
 	}
-	o->skeleton = skel_getSkeletonPtrBy((u8 *)stage + 0x13016d0, name);
+	o->skeleton = skel_getSkeletonPtrBy((u8 *)&stage->objectSkeletons, name);
 	if (o->unit)
 		space_disableUnit(o->unit);
 	o->animated = 1;

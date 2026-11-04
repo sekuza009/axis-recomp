@@ -1284,7 +1284,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 		int team = team_game() ? SC->players[e].team : 2;
 		char name[64];
 		memset(name, 0, sizeof name);
-		strcpy(name, (const char *)ACTOR_AT(e) + 0x98);
+		strcpy(name, ((Player *)ACTOR_AT(e))->name);
 		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? SC->players[e].timePlayed : stack_time,
 		            SC->players[e].kills, SC->players[e].deaths);
 	}
@@ -1305,11 +1305,11 @@ static const u8 *spawn_point(u8 *s, int doubled)
 		for (int j = 0; j < SC->playerCount; j++) {
 			if (SC->players[j].state != 1)
 				continue;
-			const float *pos = (const float *)(ACTOR_AT(j) + 0x154), *at = SC->spawnPoints[r].pos;
+			const float *pos = ((Player *)ACTOR_AT(j))->pos, *at = SC->spawnPoints[r].pos;
 			float d[3];
 			for (int k = 0; k < 3; k++)
 				d[k] = f32(fsub_m(fld_m(&pos[k]), &at[k]));
-			long double reach = doubled ? fld_m((const float *)(ACTOR_AT(j) + 0x3e8)) * 2 : fmul_m(fld_m((const float *)(ACTOR_AT(j) + 0x3e8)), K(0x4a93d0));
+			long double reach = doubled ? fld_m(&((Player *)ACTOR_AT(j))->radius) * 2 : fmul_m(fld_m(&((Player *)ACTOR_AT(j))->radius), K(0x4a93d0));
 			long double dist = fmul_m(fld_m(&d[2]), &d[2]) + fmul_m(fld_m(&d[1]), &d[1]);
 			dist = dist + fmul_m(fld_m(&d[0]), &d[0]);
 			if (reach * reach > dist) {
@@ -1358,7 +1358,7 @@ static void local_spawn(u8 *s)
 	rec[1] = 0;
 	if (at) {
 		memcpy(rec + 2, at, 12);
-		float pitch = (float)fld_m((const float *)(at + 0xc)), heading = (float)fld_m((const float *)(at + 0x10));
+		float pitch = (float)fld_m(&((const StartPoint *)at)->angle[0]), heading = (float)fld_m(&((const StartPoint *)at)->angle[1]);
 		rec[5] = BITS(pitch);
 		rec[6] = BITS(heading);
 	} else {
@@ -1407,7 +1407,7 @@ static void killer_view(u8 *s, const u8 *t)
 	float *cam = (float *)SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
-		d[j] = f32(fsub_m(fld_m((const float *)(ACTOR_AT(k) + 0x154) + j), &head[j]));
+		d[j] = f32(fsub_m(fld_m(&((Player *)ACTOR_AT(k))->pos[j]), &head[j]));
 	Vec3_normalize(d);
 	long double r = fmul_m(fld_m(&((const Player *)t)->radius), K(0x4a94a8));   /* -2 heights */
 	for (int j = 0; j < 3; j++)
@@ -1425,7 +1425,7 @@ static void killer_view(u8 *s, const u8 *t)
 		cam[1] = f32(fsub_m(fld_m(&cam[1]), &dy));
 		cam[2] = f32(fsub_m(fld_m(&cam[2]), &dz));
 	}
-	look_toward(s, (const float *)(ACTOR_AT(act->lastAttacker) + 0x154));
+	look_toward(s, ((Player *)ACTOR_AT(act->lastAttacker))->pos);
 	for (int j = 0; j < 3; j++)
 		SC->cameraDir[j] = f32(fsub_m(fld_m(SC->cameraTarget + j), &cam[j]));
 }
@@ -1695,7 +1695,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		SC->localPlayer = net_localSlot();
 		actor_resetSlot((Stage *)stage, SC->localPlayer);
 		player_setName((Stage *)stage, SC->localPlayer, (const char *)SC->mechName);
-		strcpy((char *)ACTOR_AT(SC->localPlayer) + 0x98, (const char *)SC->mechName);
+		strcpy(((Player *)ACTOR_AT(SC->localPlayer))->name, (const char *)SC->mechName);
 		SC->players[SC->localPlayer].player = SC->localPlayer;
 		msg_playerConnected(s, SC->localPlayer);
 		notice_playerConnected(s, SC->localPlayer, (u8 *)&SC->playerRecords[SC->localPlayer] + 4);
@@ -1897,8 +1897,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->rankingKey == 1)
 		SC->msgFade = 5.0f;
 	me = SC->localPlayer;
-	if (me >= 0 && SC->players[me].state == 1 && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) < 0) && !(GAME_VAR(float, ACTOR_AT(me) + 0x534) > 0))
-		notice_printCentre((Scene *)s, (const char *)(ACTOR_AT(me) + 0x4f4));   /* (its own text as the format) */
+	if (me >= 0 && SC->players[me].state == 1 && !(((Player *)ACTOR_AT(me))->messageTime < 0) && !(((Player *)ACTOR_AT(me))->messageTime > 0))
+		notice_printCentre((Scene *)s, ((Player *)ACTOR_AT(me))->message);   /* (its own text as the format) */
 	/* the start count (3, 2, 1, go) */
 	if (SC->startCount > 0) {
 		long double v = fsub_m(fld_m(&SC->startCount), &SC->frameTime);
@@ -2147,7 +2147,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->cameraMode = 9;
 			if (slow_end(s))
 				t = ACTOR_AT(SC->roundWinner);
-			else if (GAME_VAR(int, (u8 *)scene_topPlayer((Scene *)s) + 0x14c) == 1)
+			else if (((Player *)scene_topPlayer((Scene *)s))->state == 1)
 				t = (const u8 *)scene_topPlayer((Scene *)s);
 			else
 				t = ACTOR_AT(SC->localPlayer);

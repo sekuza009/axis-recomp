@@ -20,7 +20,7 @@ static void part_info(u8 *rec, int idx)
 	if (idx == -1) {
 		memset(rec, 0, 64);
 		((PartInfo *)rec)->slotType = -1;
-		memset(rec + 0x44, 0, 0x3c);
+		memset(rec + offsetof(PartInfo, ammoSlot), 0, sizeof(PartInfo) - offsetof(PartInfo, ammoSlot));   /* ammoSlot .. the end */
 		return;
 	}
 	ActorInfo *info = &g_scene->actorInfo[idx];

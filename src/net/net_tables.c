@@ -1827,12 +1827,12 @@ static int table_ok(u8 *g, u32 base, u32 per, u32 count, int stride, u16 w, u32 
 /* a player's name copied into its actor (+0x98) and the slot's own index noted (+0x10c) */
 static void actor_name(u8 *g, int i, const char *name)
 {
-	char *to = (char *)ACTOR(i) + 0x98;
+	char *to = ((Player *)ACTOR(i))->name;
 	if (name)
 		strcpy(to, name);
 	else
 		to[0] = 0;
-	GAME_VAR(int, ACTOR(i) + 0x10c) = i;
+	((Player *)ACTOR(i))->player = i;
 }
 
 /* team change (kinds 10 / 11): the team, team colours when team colours are on, the name, the notice; a player
@@ -1851,10 +1851,10 @@ static void team_change(u8 *g, int i, const char *pkt, u32 notice)
 	player_setName(STAGE, i, pkt + 4);   /* player_setName */
 	actor_name(g, i, pkt + 4);
 	GAME_THISCALL(notice, void, void *, int, int)(g, i, pkt[3]);
-	if (pkt[3] >= 0 || GAME_VAR(int, ACTOR(i) + 0xd8) != 1)
+	if (pkt[3] >= 0 || ((Player *)ACTOR(i))->statD8 != 1)
 		return;
 	actor_deactivate(STAGE, i);   /* actor_deactivate */
-	GAME_VAR(int, ACTOR(i) + 0xe8)++;
+	((Player *)ACTOR(i))->deaths++;
 }
 
 /* the end of a match's limit (kinds 4 / 5, state 0 frags or 1 time): once, its notice, and the result for team
@@ -2031,9 +2031,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;
 		if (*(const u32 *)(pkt + 0x1d) & 1u << (me & 0x1f))
-			GAME_VAR(int, PLAYER(me) + 0x47fce) = 0;
-		GAME_VAR(int, ACTOR(b[2]) + 0xe4) = *(const short *)(pkt + 0x21);
-		GAME_VAR(int, ACTOR(b[2]) + 0xe8) = *(const short *)(pkt + 0x23);
+			((PlayerRecord *)PLAYER(me))->emblemSent = 0;
+		((Player *)ACTOR(b[2]))->kills = *(const short *)(pkt + 0x21);
+		((Player *)ACTOR(b[2]))->deaths = *(const short *)(pkt + 0x23);
 		if (b[2] == 0) {
 			GS->teamScores[0] = *(const short *)(pkt + 0x25);
 			GS->teamScores[1] = *(const short *)(pkt + 0x27);
@@ -2059,7 +2059,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			bad |= m[0x1a + k] > lim;
 		if (bad)
 			break;
-		GAME_VAR(int, ACTOR(i) + 0x10c) = i;
+		((Player *)ACTOR(i))->player = i;
 		player_setName(STAGE, i, name);   /* player_setName */
 		player_setValue(STAGE, i, (signed char)m[0x11]);
 		player_setTeam(STAGE, i, (signed char)m[0x12]);   /* player_setTeam */
@@ -2068,25 +2068,25 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_THISCALL(setters[k], int, void *, int, int)(STAGE, i, m[0x15 + k] - 1);
 		for (int k = 0; k < 6; k++)
 			actor_setActorTypeItemInfoBy(STAGE, i, k, m[0x1a + k] - 1);   /* actor_setActorTypeItemInfoBy */
-		GAME_VAR(int, ACTOR(i) + 0xdc) = (signed char)m[0x13];
-		char *to = (char *)ACTOR(i) + 0x98;
+		((Player *)ACTOR(i))->emblem = (signed char)m[0x13];
+		char *to = ((Player *)ACTOR(i))->name;
 		if (name)
 			strcpy(to, name);
 		else
 			to[0] = 0;
-		GAME_VAR(int, ACTOR(i) + 0xe0) = GAME_VAR(int, ACTOR(i) + 0xdc);
+		((Player *)ACTOR(i))->levelShown = ((Player *)ACTOR(i))->emblem;
 		const u8 *c = m + 0x2b;
 		/* (the original loads each colour byte into al / cl and pushes the whole register: on the first part the
 		   rest of eax is left from the actor's address and of ecx from its +0xdc; later eax holds the player and ecx what
 		   the call left) */
-		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = GAME_VAR(u32, ACTOR(i) + 0xdc) & ~0xffu;
+		u32 hi_a = (u32)(g + i * 0x8888) & ~0xffu, hi_c = *(u32 *)&((Player *)ACTOR(i))->emblem & ~0xffu;
 		for (int k = 0; k < 5; k++, c += 2) {
 			u32 left = thiscall8_ecx(FN_ADDR(actor_applyRemoteColours, 0x474fd0), STAGE, i, k, hi_c | c[-0xb], hi_a | c[-1], hi_c | c[9], hi_a | c[-0xa], hi_c | c[0],
 			                         hi_a | c[0xa]);   /* actor_applyRemoteColours */
 			hi_a = 0;
 			hi_c = left & ~0xffu;
 		}
-		if (GAME_VAR(int, PLAYER(i) + 0x48) >= 0)
+		if (((PlayerRecord *)PLAYER(i))->team >= 0)
 			player_markUsed(STAGE, i);
 		return;
 	}
@@ -2141,8 +2141,8 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		msg_playerLeft(g, b[2]);   /* msg_playerLeft */
 		playerRecord_markFree(STAGE, b[2]);
 		actor_resetSlot(STAGE, b[2]);
-		GAME_VAR(u8, PLAYER(b[2]) + 4) = 0;
-		GAME_VAR(int, PLAYER(b[2]) + 0x48) = -1;
+		((PlayerRecord *)PLAYER(b[2]))->name[0] = 0;
+		((PlayerRecord *)PLAYER(b[2]))->team = -1;
 		actor_deactivate(STAGE, b[2]);   /* actor_deactivate */
 		return;
 	case 10:

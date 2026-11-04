@@ -352,7 +352,7 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 		u8 *rec = (u8 *)&TM->records[i];
 		if (strcmp((const char *)rec, key))
 			continue;
-		const float *c = (const float *)(rec + 0x48);
+		const float *c = ((TexRecord *)rec)->colours;
 #define SAME(a, k) (!((a) < fld_m((const float *)&colour[k])) && !((a) > fld_m((const float *)&colour[k])))
 		if (((TexRecord *)rec)->flags == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
 		    SAME(c[5], 5) && SAME(c[4], 4))

@@ -1376,7 +1376,7 @@ typedef struct Stage {
 	i32 clockSeconds;   /* +0x20fcd40: (by use) the match clock: whole seconds (triggers' times) */
 	float clockFraction;   /* +0x20fcd44: and the part of a second */
 	i32 holdFire;   /* +0x20fcd48: (unclear) not 0: the bots do not fire (cleared with the clock; no setter found in C) */
-	u8 _pad20fcd4c[0x100];
+	char printText[0x100];   /* +0x20fcd4c: (by use) stage_printText's buffer */
 	i32 kingActor;   /* +0x20fce4c: (by use) the king (-1 none; dropped when fragged) */
 	i32 teamCommanders[100];   /* +0x20fce50: (by use) each team's commander actor (-1 none: "YOUR COMMANDER .. HAS BEEN KILLED!") */
 	u32 emblemTexture;   /* +0x20fcfe0: (by use) the emblem atlas's GL texture */
@@ -2840,6 +2840,7 @@ _Static_assert(offsetof(Stage, lastPickup) == 0x20fcd3c && sizeof(((Stage *)0)->
 _Static_assert(offsetof(Stage, clockSeconds) == 0x20fcd40 && sizeof(((Stage *)0)->clockSeconds) == 0x4, "scene.fields: Stage.clockSeconds");
 _Static_assert(offsetof(Stage, clockFraction) == 0x20fcd44 && sizeof(((Stage *)0)->clockFraction) == 0x4, "scene.fields: Stage.clockFraction");
 _Static_assert(offsetof(Stage, holdFire) == 0x20fcd48 && sizeof(((Stage *)0)->holdFire) == 0x4, "scene.fields: Stage.holdFire");
+_Static_assert(offsetof(Stage, printText) == 0x20fcd4c && sizeof(((Stage *)0)->printText) == 0x100, "scene.fields: Stage.printText");
 _Static_assert(offsetof(Stage, kingActor) == 0x20fce4c && sizeof(((Stage *)0)->kingActor) == 0x4, "scene.fields: Stage.kingActor");
 _Static_assert(offsetof(Stage, teamCommanders) == 0x20fce50 && sizeof(((Stage *)0)->teamCommanders) == 0x190, "scene.fields: Stage.teamCommanders");
 _Static_assert(offsetof(Stage, emblemTexture) == 0x20fcfe0 && sizeof(((Stage *)0)->emblemTexture) == 0x4, "scene.fields: Stage.emblemTexture");

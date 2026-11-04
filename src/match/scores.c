@@ -17,7 +17,7 @@ void THISCALL (scene_resetScores)(Scene *scene)
 		p->timeExtra = 0.0f;
 		p->team = -1;
 		if (scene->network == 1)
-			GAME_VAR(int, (u8 *)scene + 0x1755278 + i * 0x47fd2) = -1;
+			scene->playerRecords[i].team = -1;
 	}
 	stage_clearActorRefs(STAGE(scene));
 	msg_newKing(scene);
