@@ -360,17 +360,17 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	mo->id = ST->objectSerial++;
 	mo->active = 1;
 	mo->nameIndex = idx;
-	memcpy(obj + offsetof(MapObject, flags), type + 0x40, 12);   /* flags, trigger, animSpeed */
+	memcpy(obj + offsetof(MapObject, flags), type + offsetof(ObjectType, flags), 12);   /* flags, trigger, animSpeed */
 	if (type[0x4c])
-		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, type + 0x4c);
+		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, ((const ObjectType *)type)->animName);
 	else
 		obj[0x18] = 0;
-	memcpy(mo->place, type + 0x8c, 12);
+	memcpy(mo->place, ((const ObjectType *)type)->place, 12);
 	u32 move[16];
 	identity4(move);
 	for (int c = 0; c < 3; c++)
 		((float *)RELOC(move))[12 + c] = f32(fld_m(mo->place + c));
-	memcpy(mo->rotation, type + 0x98, 16);
+	memcpy(mo->rotation, ((const ObjectType *)type)->rotation, 16);
 	float turn[16];
 	Mat4_fromQuat(turn, mo->rotation);
 	float *m = mo->matrix;
@@ -392,8 +392,8 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 		ST->objectColourCount += FIELD(int, ((u8 *)mo->model), 0x18);
 	}
 	mo->colourSide = 1;
-	mo->typeValue1 = FIELD(u32, type, 0xa8);
-	mo->typeValue2 = FIELD(u32, type, 0xac);
+	mo->typeValue1 = ((const ObjectType *)type)->value1;
+	mo->typeValue2 = ((const ObjectType *)type)->value2;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {
 		const float *c = (const float *)(shape + 0x20);
@@ -574,7 +574,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			}
 			AC->onWarp = 1;
 			if (warped)
-				item_sound(s, GAME_VAR(int, t + 0x44), it);
+				item_sound(s, ((ItemType *)t)->pickSound, it);
 			return;
 		}
 		default:
@@ -591,7 +591,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	AC->messageTime = 0.0f;
 	if (last)
 		ST->lastPickup = i;
-	item_sound(s, GAME_VAR(int, t + 0x44), it);
+	item_sound(s, ((ItemType *)t)->pickSound, it);
 	mi->taken = 1;
 	mi->fade = 0.0f;
 }
@@ -617,8 +617,8 @@ void THISCALL (item_update)(u8 *s, float dt)
 			continue;
 		u8 *t = (u8 *)&ST->itemTypes[type];
 		if (mi->taken == 1) {
-			if (mi->fade > GAME_VAR(float, t + 0x48)) {
-				item_sound(s, GAME_VAR(int, t + 0x40), it);
+			if (mi->fade > ((ItemType *)t)->respawnTime) {
+				item_sound(s, ((ItemType *)t)->respawnSound, it);
 				mi->taken = 0;
 				mi->fade = 0.0f;
 			}

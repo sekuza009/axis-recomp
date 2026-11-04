@@ -362,7 +362,21 @@ struct MapObject 0x2cc                                          # a map object (
 0x2a0      4          i32 animMode
 0x2bc      0xc        float pos[3]                              # the centre of its bounding sphere
 
+struct ObjectType 0xb0                                          # a map object as the map's object file gives it (map_loadObjectInfoFrom; object_initObjectBy)
+0          0x40       char name[0x40]                            # its shape (Stage.objectNames)
+0x40       4          i32 flags                                  # MapObject.flags, trigger, animSpeed
+0x44       4          i32 trigger
+0x48       4          i32 animSpeed
+0x4c       0x40       char animName[0x40]                        # its animation (empty: none)
+0x8c       0xc        float place[3]
+0x98       0x10       float rotation[4]                          # a quaternion
+0xa8       4          u32 value1                                 # (unclear) MapObject.typeValue1 / 2
+0xac       4          u32 value2
+
 struct ItemType 0x90                                            # a kind of map item (Stage.itemTypes)
+0x40       4          i32 respawnSound                           # (by use) played as a taken item comes back (frame_loops: item_sound)
+0x44       4          i32 pickSound                              # played as it is taken (a warp zone: as it warps)
+0x48       4          float respawnTime                          # (by use) a taken item comes back once its fade passes this
 0x8c       4          Model *model                              # its shape when items are drawn in 3D (none: not drawn)
 
 struct MapItem 0x28                                             # an item lying on the map (Stage.items): power-ups, ammo...

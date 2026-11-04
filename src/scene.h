@@ -416,9 +416,26 @@ typedef struct MapObject {
 	float waitTime;   /* +0x2c8: (by use) a timed object's seconds waited */
 } MapObject;
 
+/* a map object as the map's object file gives it (map_loadObjectInfoFrom; object_initObjectBy) */
+typedef struct ObjectType {
+	char name[0x40];   /* +0x0: its shape (Stage.objectNames) */
+	i32 flags;   /* +0x40: MapObject.flags, trigger, animSpeed */
+	i32 trigger;   /* +0x44 */
+	i32 animSpeed;   /* +0x48 */
+	char animName[0x40];   /* +0x4c: its animation (empty: none) */
+	float place[3];   /* +0x8c */
+	float rotation[4];   /* +0x98: a quaternion */
+	u32 value1;   /* +0xa8: (unclear) MapObject.typeValue1 / 2 */
+	u32 value2;   /* +0xac */
+} ObjectType;
+
 /* a kind of map item (Stage.itemTypes) */
 typedef struct ItemType {
-	u8 _pad0000000[0x8c];
+	u8 _pad0000000[0x40];
+	i32 respawnSound;   /* +0x40: (by use) played as a taken item comes back (frame_loops: item_sound) */
+	i32 pickSound;   /* +0x44: played as it is taken (a warp zone: as it warps) */
+	float respawnTime;   /* +0x48: (by use) a taken item comes back once its fade passes this */
+	u8 _pad000004c[0x40];
 	Model *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
 } ItemType;
 
@@ -1866,6 +1883,19 @@ _Static_assert(offsetof(MapObject, clip) == 0x2ac && sizeof(((MapObject *)0)->cl
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
 _Static_assert(offsetof(MapObject, waitTime) == 0x2c8 && sizeof(((MapObject *)0)->waitTime) == 0x4, "scene.fields: MapObject.waitTime");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
+_Static_assert(offsetof(ObjectType, name) == 0x0 && sizeof(((ObjectType *)0)->name) == 0x40, "scene.fields: ObjectType.name");
+_Static_assert(offsetof(ObjectType, flags) == 0x40 && sizeof(((ObjectType *)0)->flags) == 0x4, "scene.fields: ObjectType.flags");
+_Static_assert(offsetof(ObjectType, trigger) == 0x44 && sizeof(((ObjectType *)0)->trigger) == 0x4, "scene.fields: ObjectType.trigger");
+_Static_assert(offsetof(ObjectType, animSpeed) == 0x48 && sizeof(((ObjectType *)0)->animSpeed) == 0x4, "scene.fields: ObjectType.animSpeed");
+_Static_assert(offsetof(ObjectType, animName) == 0x4c && sizeof(((ObjectType *)0)->animName) == 0x40, "scene.fields: ObjectType.animName");
+_Static_assert(offsetof(ObjectType, place) == 0x8c && sizeof(((ObjectType *)0)->place) == 0xc, "scene.fields: ObjectType.place");
+_Static_assert(offsetof(ObjectType, rotation) == 0x98 && sizeof(((ObjectType *)0)->rotation) == 0x10, "scene.fields: ObjectType.rotation");
+_Static_assert(offsetof(ObjectType, value1) == 0xa8 && sizeof(((ObjectType *)0)->value1) == 0x4, "scene.fields: ObjectType.value1");
+_Static_assert(offsetof(ObjectType, value2) == 0xac && sizeof(((ObjectType *)0)->value2) == 0x4, "scene.fields: ObjectType.value2");
+_Static_assert(sizeof(ObjectType) == 0xb0, "scene.fields: size of ObjectType");
+_Static_assert(offsetof(ItemType, respawnSound) == 0x40 && sizeof(((ItemType *)0)->respawnSound) == 0x4, "scene.fields: ItemType.respawnSound");
+_Static_assert(offsetof(ItemType, pickSound) == 0x44 && sizeof(((ItemType *)0)->pickSound) == 0x4, "scene.fields: ItemType.pickSound");
+_Static_assert(offsetof(ItemType, respawnTime) == 0x48 && sizeof(((ItemType *)0)->respawnTime) == 0x4, "scene.fields: ItemType.respawnTime");
 _Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");
 _Static_assert(sizeof(ItemType) == 0x90, "scene.fields: size of ItemType");
 _Static_assert(offsetof(MapItem, type) == 0x0 && sizeof(((MapItem *)0)->type) == 0x4, "scene.fields: MapItem.type");

@@ -116,7 +116,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 	Stage *st = (Stage *)scene;
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	char path[0x100], base[0x100];
-	u8 objects[56][0xb0];
+	ObjectType objects[56];
 	st->objectNameCount = 0;
 	ShapeManager_releaseModels((u8 *)&st->objectShapes);
 	SkeletonManager_releaseSkeletons((u8 *)&st->objectSkeletons);
@@ -152,7 +152,7 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 		unsigned k = (unsigned)i % 56;
 		if (k == 0)
 			fread_scrambled(objects, 0xb0, 56, f);
-		if (object_addObjectBy(scene, objects[k]) < 0)
+		if (object_addObjectBy(scene, (u8 *)&objects[k]) < 0)
 			break;
 	}
 	fclose(f);
