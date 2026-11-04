@@ -6,7 +6,6 @@
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
 #define K(address) ((const float *)RELOC(address))
-#define AI(offset) GAME_VAR(int, a + (offset))   /* the actor's fields */
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
 #define AF(offset) GAME_VAR(float, a + (offset))
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */

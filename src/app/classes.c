@@ -14,7 +14,6 @@ static int clear(void *p, int dwords)
 	return 0;
 }
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* ---- member blocks cleared, each the size of its class ---- */
 int THISCALL (TextureManager_clear)(void *self) { return clear(self, 0x8); }       /* TextureManager */
@@ -485,7 +484,6 @@ static const u32 k_cameraPresets[6][10] = {
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (game_loadAllData)(u8 *g)
 {
-#define CALL(addr, at) GAME_THISCALL(addr, void, void *)(at)
 #define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN_ADDR(crt_arrayConstruct, 0x401290))(at, size, count, FN_ADDR(ResourceSet_trivialCtor, 0x45fff0))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
@@ -574,7 +572,6 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	}
 	chat_loadMacros(g);   /* chat_loadMacros */
 	return g;
-#undef CALL
 #undef VECTOR
 #undef VTABLE
 }

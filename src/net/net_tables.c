@@ -1455,7 +1455,6 @@ static void send_packet(u8 *s, u8 *packet)
    byte cleared at its even player). The frame count (+0x2340c78) goes up; while recording (+0x2340d1d 1) the frame
    (+0x2340d29), the camera's actor (+0x234240d), the packet's size and the packet written to the recording
    (+0x2340d08). Its caller ignores the eax it leaves */
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *packet)
 {
 	packet[1] = 0xe;
@@ -1473,7 +1472,6 @@ static void THISCALL __attribute__((used)) net_sendPlayerLevels_body(u8 *s, u8 *
 	send_packet(s, packet);
 }
 PACKET_ENTRY(net_sendPlayerLevels, 0);
-#undef FIELD
 
 /* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
    2 (64 bytes, its first byte left as it was): from its PlayerRecord the name, then +0x13 its level, +0x14 its
@@ -1800,7 +1798,6 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 #define STAGE ((u8 *)SCENE_STAGE(g))
 #define ACTOR(i) ((u8 *)&((Scene *)g)->players[i])   /* the stage's actors, from the game object */
 #define PLAYER(i) ((u8 *)&((Scene *)g)->playerRecords[i])
-#define CALL1(addr, a) GAME_THISCALL(addr, void, void *, int)(STAGE, a)
 
 /* thiscall fn(self, a1 .. a8), returning what the callee leaves in ecx (the original pushes registers whose upper
    bytes are the callee's leftovers) */
@@ -2220,4 +2217,3 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 #undef STAGE
 #undef ACTOR
 #undef PLAYER
-#undef CALL1

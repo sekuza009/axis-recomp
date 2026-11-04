@@ -4,7 +4,6 @@
    -360 (sic). Floats the original only copies are passed on bit for bit (BITS). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 static void bind(int texture)
 {

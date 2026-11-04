@@ -61,8 +61,6 @@ static inline double f64(long double x)
 	return r;
 }
 
-#define F(addr) GAME_VAR(float, addr)
-#define D(addr) GAME_VAR(double, addr)
 
 /* 0x41fa40: the menus' frame: the cursor blink clock (100 past 1e6), the screen's set-up when it changed, its keys
    (unless 0x9da49c is 0x68 / 0x69); a direct start from the main menu zooms in (aspect down to 0.01, the camera
@@ -151,8 +149,6 @@ void (menu_frame)(void)
 		g_frameTime = 1.0f;
 	g_lastFrameClock = now;
 }
-#undef F
-#undef D
 
 /* a countdown (a float in the scene) taken down by the frame's time while above 0, stopping at 0 */
 static void count_down(u8 *s, u32 offset, const float *dt)

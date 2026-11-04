@@ -70,7 +70,6 @@ void (room_start)(void)
 	g_listRefreshPeriod = 30;
 }
 
-#define CALL(addr) GAME_CDECL(addr, u32, void)()
 #define sound(id) GAME_FN(sound_playMenu, 0x41e760, u32, int)(id)   /* sound_playMenu, its eax */
 
 /* 0x4378e0: the game room's mouse, by state (0x9dd834): 0 .. 2, 4 and 99 while no dialog is open (0x9dd7d8; 2: the map

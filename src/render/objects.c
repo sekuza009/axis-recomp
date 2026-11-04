@@ -210,7 +210,6 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 #undef K
 
 #define K(address) ((const float *)RELOC(address))
-#define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
 
@@ -337,13 +336,11 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	}
 }
 #undef K
-#undef A
 #undef AC
 
 /* ---- 0x476890: a projectile drawn ---- */
 
 #define K(address) ((const float *)RELOC(address))
-#define P(type, offset) GAME_VAR(type, p + (offset))
 #define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
 #define TEX(k) (ST->effectTextures[k])   /* the effect textures */
@@ -714,7 +711,6 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	}
 }
 #undef K
-#undef P
 #undef PR
 #undef ALPHA
 #undef TEX

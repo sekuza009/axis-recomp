@@ -1,7 +1,6 @@
 /* names.c: looking resources up by name in the managers' sorted name tables (0x44-byte entries), and file names. */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 #define TM ((TextureManager *)tm)   /* the texture manager (tm in each function) by its fields (src/scene.fields) */
 #include <string.h>
 

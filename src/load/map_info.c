@@ -3,7 +3,6 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 #define fatal4(format, a, b) sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)RELOC(format), a, b)
 
 /* 0x48b4a0 (thiscall on the scene): the way points: their count (+0xe3b034) and 0x14-byte records (+0xe36214), each

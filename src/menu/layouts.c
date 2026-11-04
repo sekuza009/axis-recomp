@@ -2,9 +2,6 @@
 #include "../game.h"
 
 #define GAME_I32(a) GAME_VAR(int, a)
-#define GAME_U32(a) GAME_VAR(u32, a)
-#define GAME_F32(a) GAME_VAR(float, a)
-#define FIELD_I32(p, o) GAME_VAR(int, (u8 *)RELOC(p) + (o))
 
 /* one rectangle: each corner value = global + constant */
 static void rect1(u32 rec, u32 g0, int c0, u32 g1, int c1, u32 g2, int c2, u32 g3, int c3)

@@ -434,7 +434,6 @@ u32 (lobby_quitDialogClicks)(void)
 
 /* ---- the lobby's per-frame dispatch by sub-screen (0x4db51c): drawing and clicks. Each returns what the handler it
    ends in leaves in eax (or the sub-screen when there is none) ---- */
-#define CALL(addr) GAME_CDECL(addr, u32, void)()
 
 /* 0x40d450: the lobby drawn: the top (5: its title, or the dim overlay while connecting to a ladder game), else the
    background, the camera and the sub-screen (0 the player, 1 the arena list, 2 creating an arena) */

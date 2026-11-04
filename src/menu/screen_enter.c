@@ -205,7 +205,6 @@ void (menuState800_enterGameRoom)(void)
 }
 
 /* ---- the front end's per-frame dispatch ---- */
-#define CALL(addr) GAME_CDECL(addr, u32, void)()
 
 /* 0x445e40: the frame's input (0x445c60), then, unless the game is leaving (0x680370), the message box's keys while
    it is shown, else the current screen's (0x76d3e8): 200 the title, 210 profiles, 300 the main menu, 400 the lobby,

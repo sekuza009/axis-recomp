@@ -4,7 +4,6 @@
 #include "../game.h"
 
 typedef struct { u8 bytes[0x2c]; } FactorRecord;
-#define REC(type, offset) (*(type *)(r.bytes + (offset)))
 
 /* 0x483e90 (thiscall on the pool): a kind 0 factor of the value *a. Its callers ignore the eax it leaves */
 void THISCALL (factors_addConstant)(void *pool, const u32 *a)
@@ -40,7 +39,6 @@ void THISCALL (factors_addDirected)(void *pool, const u32 *a, u32 x, const u32 *
 	r.spread = x;
 	factor_addFactorBy(pool, &r);
 }
-#undef REC
 
 /* 0x4728e0 (thiscall on the scene): the layer's lighting computed into its colours over its rows and
    columns. Its caller ignores the eax it leaves */
@@ -87,7 +85,6 @@ void THISCALL (factor_addFactorBy)(u8 *pool, const u32 *record)
    caller ignores the eax it leaves */
 void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f, void *mem, int size)
 {
-#define FIELD(type, offset) GAME_VAR(type, view + (offset))
 #define VV ((ViewVolume *)view)   /* the same by its fields (src/scene.fields) */
 	gfx_initVertexArrayExt(view);
 	VV->colourLimit = c;
@@ -123,5 +120,4 @@ void THISCALL (factor_initBy)(u8 *view, int a, int b, int c, int d, int e, int f
 	VV->quadOrderB = block + at + count * 0x64;
 	VV->segments = block + at + count * 0x6c;
 	ViewVolume_clearDrawCounts(view);
-#undef FIELD
 }

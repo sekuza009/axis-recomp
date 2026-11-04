@@ -650,7 +650,6 @@ u32 (menuState800_gameRoom)(void)
 		if (!(size >= 0))   /* below 0, or not a number */
 			g_highlightShown = 0;
 	}
-#define CALL(addr) GAME_CDECL(addr, u32, void)()
 	u32 page = (*(u32 *)&g_roomState);
 	switch (page) {
 	case 0: case 1: case 2: case 4:
@@ -681,7 +680,6 @@ u32 (menuState800_gameRoom)(void)
 			return room_drawWhiteFade();
 		return room_drawMenu();
 	}
-#undef CALL
 	return page;
 }
 

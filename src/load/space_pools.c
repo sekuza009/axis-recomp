@@ -82,7 +82,6 @@ void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space,
 void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32 *mx)
 {
 	Space *sp = (Space *)space;
-#define FIELD(type, offset) GAME_VAR(type, space + (offset))
 #define SP sp   /* the same by its fields (src/scene.fields) */
 	u32 *block = (*(u32 * *)&SP->blocks.freeHead);
 	if (!block) {
@@ -103,7 +102,6 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 	for (int i = 0; i < 3; i++)
 		block[3 + i] = mx[i];
 	return block;
-#undef FIELD
 #undef SP
 }
 
@@ -184,7 +182,6 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int nx, int
 void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int blocks, int cells, void *mem, int size)
 {
 	Space *sp = (Space *)space;
-#define FIELD(type, offset) GAME_VAR(type, space + (offset))
 #define SP sp   /* the same by its fields (src/scene.fields) */
 	CollisionVolume_release(space);
 	SP->units.count = units;
@@ -219,7 +216,6 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	space_resetNodes(space);
 	space_resetUnits(space);
 	space_resetBlocks(space);
-#undef FIELD
 #undef SP
 }
 
@@ -256,7 +252,6 @@ int THISCALL (space_testSphere)(void *grid, u32 r, const float *pos, const float
 	return space_collideAt(grid, r, p, rest, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs) == 1;
 }
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* 0x482aa0 (thiscall on the collision space): the leaf of the space's octrees at pos + vel (written to outPos) has its
    triangles tested (space_collideUnit, its answer also kept at +0x98). The end point must be inside the space's box

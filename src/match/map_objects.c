@@ -2,7 +2,6 @@
    linked list, bit 0 of a part's flags: left out of collisions). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* a collision unit's planes (from its last, lastPlane, back through listPrev) flagged or not (flag 1: off) */
 static void unit_parts_flag(void *unit, int set)

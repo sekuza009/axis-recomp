@@ -370,7 +370,6 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 		return;
 	u8 *actor = (u8 *)&STS->actors[a];
 	Player *act = (Player *)actor;
-#define A(type, offset) GAME_VAR(type, actor + (offset))
 #define AC act   /* the same by its fields (src/scene.fields) */
 	AC->spawn64 = SR->spawn64;
 	AC->armorMax = SR->armor;
@@ -391,7 +390,6 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 	AC->target1 = -1;
 	AC->target2 = -1;
 #undef SR
-#undef A
 #undef AC
 }
 
@@ -634,7 +632,6 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 #undef A
 #undef AC
 
-#define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
@@ -898,7 +895,6 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	(*(int *)&st->lockWarnings[a]) = 0;
 	st->teamsChanged = 1;
 }
-#undef A
 #undef AC
 #undef K
 

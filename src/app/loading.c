@@ -313,7 +313,6 @@ int (app_checkCdAndLoad)(void *instance)
 	return 1;
 }
 
-#define G(type, offset) GAME_VAR(type, g + (offset))
 #define GS ((Scene *)g)   /* the same by its fields (src/scene.fields) */
 #define STAGE(g) ((u8 *)SCENE_STAGE(g))
 
@@ -544,6 +543,5 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		font_penDraw(0x10, y, 0, GS->loadLines[k + 1]);
 	return stop == 1 ? 0 : ((u32)GS->inputState);
 }
-#undef G
 #undef GS
 #undef STAGE

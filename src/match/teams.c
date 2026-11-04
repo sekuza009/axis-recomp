@@ -2,7 +2,6 @@
    team's slot picks its name, colour and score. */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* 0x463710: the slot holding team id, or -1 (also for a negative id) */
 int THISCALL (scene_findTeam)(Scene *scene, int id)

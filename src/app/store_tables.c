@@ -1,10 +1,7 @@
 /* store_tables.c: initialisers that set many globals to constants (or copy them from other globals): kept as tables of {address, value} stores, applied in order. Tables made by tools/straightline.py from the original code. */
 #include "../game.h"
 
-#define GAME_I32(a) GAME_VAR(int, a)
 #define GAME_U32(a) GAME_VAR(u32, a)
-#define GAME_F32(a) GAME_VAR(float, a)
-#define FIELD_I32(p, o) GAME_VAR(int, (u8 *)RELOC(p) + (o))
 
 typedef struct { u32 a, v; } Store;                 /* *(u32 *)a = v */
 typedef struct { u32 a, v; u8 copy; } CStore;       /* copy: v is a source address, read when the function starts */

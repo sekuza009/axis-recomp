@@ -500,7 +500,6 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
-#define I(type, offset) GAME_VAR(type, it + (offset))
 
 /* the cells, armour and shield items (kinds 0 .. 5, 10 .. 19): the actor's flag (+0x3f0) that refuses them, the
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
@@ -652,9 +651,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 	}
 }
 #undef A
-#undef I
 
-#define P(type, offset) GAME_VAR(type, p + (offset))
 #define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
 #define K(address) ((const float *)RELOC(address))
 
@@ -874,5 +871,4 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	case 45: particle_trail(p, desc, ADDR(k_400f)); break;
 	}
 }
-#undef P
 #undef K

@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* the player records (stride 0x47fd2 from 0x1755230) keep a name at +4 */
 #define RECORD_NAME(scene, k) (((Scene *)RELOC(scene))->playerRecords[k].name)

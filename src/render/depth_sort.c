@@ -4,7 +4,6 @@
 #define GAME_I32(a) GAME_VAR(int, a)
 #define GAME_U32(a) GAME_VAR(u32, a)
 #define GAME_F32(a) GAME_VAR(float, a)
-#define FIELD_I32(p, o) GAME_VAR(int, (u8 *)RELOC(p) + (o))
 
 /* where a sort keeps its state: the stack depth, then arrays by depth (lo, hi, i, j, pivot) and two dwords of swap space */
 typedef struct { u32 sp, lo, hi, i, j, piv, tmp; } QsGlobals;

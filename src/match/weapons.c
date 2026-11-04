@@ -3,7 +3,6 @@
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
 /* the next usable weapon slot of actor i, going step slots round the six (1 forward, 5 = one back): a slot is
    usable when its player record holds a weapon there, of a known type, and the actor has at least that weapon's
@@ -206,7 +205,6 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 }
 
 #define K(address) ((const float *)RELOC(address))
-#define B(type, offset) GAME_VAR(type, b + (offset))
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 
 
@@ -345,15 +343,12 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		                                                                                BU->prev, ST->viewDir, 0x47435000);
 }
 #undef K
-#undef B
 #undef BU
 
 /* ---- 0x47a2d0: a bullet's frame ---- */
 
 #define K(address) ((const float *)RELOC(address))
-#define B(type, offset) GAME_VAR(type, b + (offset))
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
-#define W(type, offset) GAME_VAR(type, w + (offset))
 #define WI ((ActorInfo *)w)   /* the same by its fields (src/scene.fields) */
 
 /* an effect (particle_spawn's record r, 31 words: kind, flag, a point, a direction, three words, the size, one
@@ -815,7 +810,5 @@ void THISCALL (bullet_update)(u8 *s, int slot, u32 dt_bits)
 	actor_clearTargetRefs(s, slot);
 }
 #undef K
-#undef B
 #undef BU
-#undef W
 #undef WI
