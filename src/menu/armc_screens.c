@@ -209,7 +209,7 @@ void (armc_drawColourEditor)(void)
 
 /* ---- the build screen ---- */
 #define SLOT_NAME(k) ((const char *)OBJ(g_partRecords) + (k) * 0x80)
-#define STAT(type, offset) GAME_VAR(type, OBJ(g_viewedPart) + 0x40 + (offset))
+#define PART ((const PartInfo *)OBJ(g_viewedPart))   /* the part looked at (armc_viewedPartRecord) */
 
 static void bind_texture(int texture)
 {
@@ -332,16 +332,16 @@ void (armc_drawBuildScreen)(void)
 	menu_drawRect(x, y, x + 0xc8, y + 0x10e, 1);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(x + 4, y + 4, x + 0xc4, y + 0x10a, 0);
-	if (STAT(int, 0) == -1) {
+	if (PART->slotType == -1) {
 		TEXT(yellow);
 		text_drawBox16(x, y + 0x40, x + 0xc8, (const char *)MSG(319, "EMPTY SLOT"));
 		return;
 	}
-	if (STAT(int, 4) == -1) {
+	if (PART->ammoSlot == -1) {
 		TEXT(yellow);
 		text_draw8(x + 8, y + 0x10, (const char *)MSG(771, "SPECIAL WEAPON"));
 		TEXT(white);
-		armc_drawText(x + 8, y + 0x28, (const char *)(MSG(745, "GRAVITY CONTROLLER") + STAT(int, 8) * 0x80));
+		armc_drawText(x + 8, y + 0x28, (const char *)(MSG(745, "GRAVITY CONTROLLER") + PART->ammoPerShot * 0x80));
 		return;
 	}
 	TEXT(bright);
@@ -351,39 +351,39 @@ void (armc_drawBuildScreen)(void)
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	int vx = x + 0xc0;
 	char text[50] = { 0 };
-	strcpy(text, (const char *)(MSG(321, "HAND") + STAT(int, 0) * 0x80));
+	strcpy(text, (const char *)(MSG(321, "HAND") + PART->slotType * 0x80));
 	armc_drawStatLabel(vx, y + 8, text);
 	char kind[50] = { 0 };
-	strcpy(kind, (const char *)(MSG(323, "30mm") + STAT(int, 4) * 0x80));
+	strcpy(kind, (const char *)(MSG(323, "30mm") + PART->ammoSlot * 0x80));
 	armc_drawStatLabel(vx, y + 0x18, kind);
-	stat_int(vx, y + 0x28, STAT(int, 8), MSG(756, "cell"));
-	stat_int(vx, y + 0x38, STAT(int, 0xc), MSG(758, "Round"));
+	stat_int(vx, y + 0x28, PART->ammoPerShot, MSG(756, "cell"));
+	stat_int(vx, y + 0x38, PART->burst, MSG(758, "Round"));
 	char name[50] = { 0 };
-	strcpy(name, (const char *)(MSG(327, "IMPACT") + STAT(int, 0x10) * 0x80));
+	strcpy(name, (const char *)(MSG(327, "IMPACT") + PART->damageMode * 0x80));
 	armc_drawStatLabel(vx, y + 0x48, name);
 	/* the sixth with the pilot's skill (of the part's kind) in percent of it as a bonus */
 	char value[50] = { 0 }, bonus[16];
-	itoa(STAT(int, 0x14), value, 10);
+	itoa(PART->damage, value, 10);
 	static const u32 skill[5] = { 0x9f9068, 0x9f9068, 0x9f906c, 0x9f9070, 0x9f9074 };   /* by kind; above 3 the last */
-	int kind_of = (unsigned)STAT(int, 4) <= 3 ? STAT(int, 4) : 4;
+	int kind_of = (unsigned)PART->ammoSlot <= 3 ? PART->ammoSlot : 4;
 	long double b = fmul_m((long double)*(const int *)(RELOC(skill[kind_of]) + g_armcValue * 0x4c), (const float *)ADDR(k_0_01f));
-	b *= (long double)STAT(int, 0x14);
+	b *= (long double)PART->damage;
 	if (b >= k_0f)
 		sprintf(bonus, (const char *)STR(0x4b02f0, " +%d"), ftol(b));
 	else
 		sprintf(bonus, (const char *)STR(0x4b02f8, " %d"), ftol(b));
 	strcat(value, bonus);
 	armc_drawStatLabel(vx, y + 0x58, value);
-	stat_float(vx, y + 0x68, STAT(float, 0x18), STR(0x4b0354, "%.0f"), MSG(751, "m"));
-	stat_float(vx, y + 0x78, STAT(float, 0x1c), STR(0x4b0354, "%.0f"), MSG(759, "m/s"));
-	stat_float(vx, y + 0x88, STAT(float, 0x20), STR(0x4b0334, "%.1f"), MSG(752, "'"));
-	stat_float(vx, y + 0x98, STAT(float, 0x24), STR(0x4b0334, "%.1f"), MSG(751, "m"));
-	stat_float(vx, y + 0xa8, STAT(float, 0x28), STR(0x4b0334, "%.1f"), MSG(751, "m"));
-	stat_int(vx, y + 0xb8, STAT(int, 0x2c), 0);
-	stat_float(vx, y + 0xc8, STAT(float, 0x30), STR(0x4b0354, "%.0f"), MSG(754, "ms"));
-	stat_float(vx, y + 0xd8, STAT(float, 0x34), STR(0x4b0334, "%.1f"), MSG(752, "'"));
-	stat_float(vx, y + 0xe8, STAT(float, 0x38), STR(0x4b0334, "%.1f"), MSG(754, "ms"));
-	stat_float(vx, y + 0xf8, STAT(float, 0x3c), STR(0x4b0334, "%.1f"), MSG(755, "t"));
+	stat_float(vx, y + 0x68, PART->range, STR(0x4b0354, "%.0f"), MSG(751, "m"));
+	stat_float(vx, y + 0x78, PART->speed, STR(0x4b0354, "%.0f"), MSG(759, "m/s"));
+	stat_float(vx, y + 0x88, PART->spread, STR(0x4b0334, "%.1f"), MSG(752, "'"));
+	stat_float(vx, y + 0x98, PART->flashSize, STR(0x4b0334, "%.1f"), MSG(751, "m"));
+	stat_float(vx, y + 0xa8, PART->splashRadius, STR(0x4b0334, "%.1f"), MSG(751, "m"));
+	stat_int(vx, y + 0xb8, PART->value2df8, 0);
+	stat_float(vx, y + 0xc8, PART->cycleTime, STR(0x4b0354, "%.0f"), MSG(754, "ms"));
+	stat_float(vx, y + 0xd8, PART->tracer, STR(0x4b0334, "%.1f"), MSG(752, "'"));
+	stat_float(vx, y + 0xe8, PART->ringRange, STR(0x4b0334, "%.1f"), MSG(754, "ms"));
+	stat_float(vx, y + 0xf8, PART->weight, STR(0x4b0334, "%.1f"), MSG(755, "t"));
 }
 #undef STAT
 #undef SLOT_NAME

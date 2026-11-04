@@ -214,6 +214,9 @@ struct Player 0x8888                                            # a player's rec
 0x4dc      4          i32 markTeam                              # (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games
 
 struct ActorInfo 0x2e18                                         # an actor type's record (Scene.actorInfo)
+0x2db8     4          float weight                               # (by use, an item's) added to the actor's load (mech_stats)
+0x2dbc     4          i32 slotType                               # (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..)
+0x2df8     4          i32 value2df8                              # (unclear) shown by the ARM CENTER as a plain number
 0x2ddc     4          i32 damageMode                             # (by use, a weapon's) 0: its damage off the armour first, 1: off the shield
 0x2de0     4          i32 damage                                 # a hit's damage
 0x2e04     4          i32 hitSound                               # its hit sound (< 0 none)
@@ -424,6 +427,25 @@ struct Space 0x9c                                               # the collision 
 0x90       4          i32 splitCount                             # (by use) items a block holds before it splits (setBy's b)
 0x94       4          i32 depth                                 # the blocks' recursion depth (at most 8)
 0x98       4          i32 lastHit                                # (by use) space_collideAt's last result
+
+struct PartInfo 0x80                                            # an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info)
+0          0x40       char name[0x40]                            # the item's folder path after its last slash
+0x40       4          i32 slotType                               # -1: an empty record; the rest copied from ActorInfo, some scaled for showing
+0x44       4          i32 ammoSlot                               # its ammunition kind (message 323 + this: "30mm" ..)
+0x48       4          i32 ammoPerShot                            # "cell"
+0x4c       4          i32 burst                                  # "Round"
+0x50       4          i32 damageMode                             # message 327 + this: "IMPACT" ..
+0x54       4          i32 damage
+0x58       4          float range                                # stepLength x 0.01: "m"
+0x5c       4          float speed                                # velocity x 0.01: "m/s"
+0x60       4          float spread                               # in degrees
+0x64       4          float flashSize                            # x 0.01: "m"
+0x68       4          float splashRadius                         # x 0.01: "m"
+0x6c       4          i32 value2df8
+0x70       4          float cycleTime                            # x 1000: "ms"
+0x74       4          float tracer                               # in degrees
+0x78       4          float ringRange                            # x 1000
+0x7c       4          float weight
 
 struct ViewQuad 0x5c                                            # a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields)
 0          4          i32 texture                                # (none: negative; then no texture corners)

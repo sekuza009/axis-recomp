@@ -237,7 +237,9 @@ typedef struct Player {
 /* an actor type's record (Scene.actorInfo) */
 typedef struct ActorInfo {
 	char name[0x40];   /* +0x0: the folder under Actor/ */
-	u8 _pad0000040[0x2d80];
+	u8 _pad0000040[0x2d78];
+	float weight;   /* +0x2db8: (by use, an item's) added to the actor's load (mech_stats) */
+	i32 slotType;   /* +0x2dbc: (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..) */
 	i32 ammoSlot;   /* +0x2dc0: (by use, a weapon's) the ammunition slot it uses (Player.ammo) */
 	i32 ammoPerShot;   /* +0x2dc4: ammunition one shot takes */
 	i32 burst;   /* +0x2dc8: rounds a burst */
@@ -250,7 +252,7 @@ typedef struct ActorInfo {
 	float spread;   /* +0x2dec: aimed shots spread by it, less the owner's steadiness */
 	float flashSize;   /* +0x2df0: its muzzle flash's size */
 	float splashRadius;   /* +0x2df4: (unclear) */
-	u8 _pad0002df8[0x4];
+	i32 value2df8;   /* +0x2df8: (unclear) shown by the ARM CENTER as a plain number */
 	i32 shotMode;   /* +0x2dfc: 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10 */
 	i32 sound;   /* +0x2e00: its firing sound (< 0 none) */
 	i32 hitSound;   /* +0x2e04: its hit sound (< 0 none) */
@@ -501,6 +503,27 @@ typedef struct Space {
 	i32 depth;   /* +0x94: the blocks' recursion depth (at most 8) */
 	i32 lastHit;   /* +0x98: (by use) space_collideAt's last result */
 } Space;
+
+/* an ARM CENTER part-info record (g_partRecords, g_viewedPart: armc_parts.c part_info) */
+typedef struct PartInfo {
+	char name[0x40];   /* +0x0: the item's folder path after its last slash */
+	i32 slotType;   /* +0x40: -1: an empty record; the rest copied from ActorInfo, some scaled for showing */
+	i32 ammoSlot;   /* +0x44: its ammunition kind (message 323 + this: "30mm" ..) */
+	i32 ammoPerShot;   /* +0x48: "cell" */
+	i32 burst;   /* +0x4c: "Round" */
+	i32 damageMode;   /* +0x50: message 327 + this: "IMPACT" .. */
+	i32 damage;   /* +0x54 */
+	float range;   /* +0x58: stepLength x 0.01: "m" */
+	float speed;   /* +0x5c: velocity x 0.01: "m/s" */
+	float spread;   /* +0x60: in degrees */
+	float flashSize;   /* +0x64: x 0.01: "m" */
+	float splashRadius;   /* +0x68: x 0.01: "m" */
+	i32 value2df8;   /* +0x6c */
+	float cycleTime;   /* +0x70: x 1000: "ms" */
+	float tracer;   /* +0x74: in degrees */
+	float ringRange;   /* +0x78: x 1000 */
+	float weight;   /* +0x7c */
+} PartInfo;
 
 /* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
 typedef struct ViewQuad {
@@ -1608,6 +1631,8 @@ _Static_assert(offsetof(Player, alert) == 0x8880 && sizeof(((Player *)0)->alert)
 _Static_assert(offsetof(Player, beepTimer) == 0x8884 && sizeof(((Player *)0)->beepTimer) == 0x4, "scene.fields: Player.beepTimer");
 _Static_assert(sizeof(Player) == 0x8888, "scene.fields: size of Player");
 _Static_assert(offsetof(ActorInfo, name) == 0x0 && sizeof(((ActorInfo *)0)->name) == 0x40, "scene.fields: ActorInfo.name");
+_Static_assert(offsetof(ActorInfo, weight) == 0x2db8 && sizeof(((ActorInfo *)0)->weight) == 0x4, "scene.fields: ActorInfo.weight");
+_Static_assert(offsetof(ActorInfo, slotType) == 0x2dbc && sizeof(((ActorInfo *)0)->slotType) == 0x4, "scene.fields: ActorInfo.slotType");
 _Static_assert(offsetof(ActorInfo, ammoSlot) == 0x2dc0 && sizeof(((ActorInfo *)0)->ammoSlot) == 0x4, "scene.fields: ActorInfo.ammoSlot");
 _Static_assert(offsetof(ActorInfo, ammoPerShot) == 0x2dc4 && sizeof(((ActorInfo *)0)->ammoPerShot) == 0x4, "scene.fields: ActorInfo.ammoPerShot");
 _Static_assert(offsetof(ActorInfo, burst) == 0x2dc8 && sizeof(((ActorInfo *)0)->burst) == 0x4, "scene.fields: ActorInfo.burst");
@@ -1619,6 +1644,7 @@ _Static_assert(offsetof(ActorInfo, velocity) == 0x2de8 && sizeof(((ActorInfo *)0
 _Static_assert(offsetof(ActorInfo, spread) == 0x2dec && sizeof(((ActorInfo *)0)->spread) == 0x4, "scene.fields: ActorInfo.spread");
 _Static_assert(offsetof(ActorInfo, flashSize) == 0x2df0 && sizeof(((ActorInfo *)0)->flashSize) == 0x4, "scene.fields: ActorInfo.flashSize");
 _Static_assert(offsetof(ActorInfo, splashRadius) == 0x2df4 && sizeof(((ActorInfo *)0)->splashRadius) == 0x4, "scene.fields: ActorInfo.splashRadius");
+_Static_assert(offsetof(ActorInfo, value2df8) == 0x2df8 && sizeof(((ActorInfo *)0)->value2df8) == 0x4, "scene.fields: ActorInfo.value2df8");
 _Static_assert(offsetof(ActorInfo, shotMode) == 0x2dfc && sizeof(((ActorInfo *)0)->shotMode) == 0x4, "scene.fields: ActorInfo.shotMode");
 _Static_assert(offsetof(ActorInfo, sound) == 0x2e00 && sizeof(((ActorInfo *)0)->sound) == 0x4, "scene.fields: ActorInfo.sound");
 _Static_assert(offsetof(ActorInfo, hitSound) == 0x2e04 && sizeof(((ActorInfo *)0)->hitSound) == 0x4, "scene.fields: ActorInfo.hitSound");
@@ -1803,6 +1829,24 @@ _Static_assert(offsetof(Space, splitCount) == 0x90 && sizeof(((Space *)0)->split
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
 _Static_assert(offsetof(Space, lastHit) == 0x98 && sizeof(((Space *)0)->lastHit) == 0x4, "scene.fields: Space.lastHit");
 _Static_assert(sizeof(Space) == 0x9c, "scene.fields: size of Space");
+_Static_assert(offsetof(PartInfo, name) == 0x0 && sizeof(((PartInfo *)0)->name) == 0x40, "scene.fields: PartInfo.name");
+_Static_assert(offsetof(PartInfo, slotType) == 0x40 && sizeof(((PartInfo *)0)->slotType) == 0x4, "scene.fields: PartInfo.slotType");
+_Static_assert(offsetof(PartInfo, ammoSlot) == 0x44 && sizeof(((PartInfo *)0)->ammoSlot) == 0x4, "scene.fields: PartInfo.ammoSlot");
+_Static_assert(offsetof(PartInfo, ammoPerShot) == 0x48 && sizeof(((PartInfo *)0)->ammoPerShot) == 0x4, "scene.fields: PartInfo.ammoPerShot");
+_Static_assert(offsetof(PartInfo, burst) == 0x4c && sizeof(((PartInfo *)0)->burst) == 0x4, "scene.fields: PartInfo.burst");
+_Static_assert(offsetof(PartInfo, damageMode) == 0x50 && sizeof(((PartInfo *)0)->damageMode) == 0x4, "scene.fields: PartInfo.damageMode");
+_Static_assert(offsetof(PartInfo, damage) == 0x54 && sizeof(((PartInfo *)0)->damage) == 0x4, "scene.fields: PartInfo.damage");
+_Static_assert(offsetof(PartInfo, range) == 0x58 && sizeof(((PartInfo *)0)->range) == 0x4, "scene.fields: PartInfo.range");
+_Static_assert(offsetof(PartInfo, speed) == 0x5c && sizeof(((PartInfo *)0)->speed) == 0x4, "scene.fields: PartInfo.speed");
+_Static_assert(offsetof(PartInfo, spread) == 0x60 && sizeof(((PartInfo *)0)->spread) == 0x4, "scene.fields: PartInfo.spread");
+_Static_assert(offsetof(PartInfo, flashSize) == 0x64 && sizeof(((PartInfo *)0)->flashSize) == 0x4, "scene.fields: PartInfo.flashSize");
+_Static_assert(offsetof(PartInfo, splashRadius) == 0x68 && sizeof(((PartInfo *)0)->splashRadius) == 0x4, "scene.fields: PartInfo.splashRadius");
+_Static_assert(offsetof(PartInfo, value2df8) == 0x6c && sizeof(((PartInfo *)0)->value2df8) == 0x4, "scene.fields: PartInfo.value2df8");
+_Static_assert(offsetof(PartInfo, cycleTime) == 0x70 && sizeof(((PartInfo *)0)->cycleTime) == 0x4, "scene.fields: PartInfo.cycleTime");
+_Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tracer) == 0x4, "scene.fields: PartInfo.tracer");
+_Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
+_Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
+_Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
 _Static_assert(offsetof(ViewQuad, texture) == 0x0 && sizeof(((ViewQuad *)0)->texture) == 0x4, "scene.fields: ViewQuad.texture");
 _Static_assert(offsetof(ViewQuad, uv0) == 0x4 && sizeof(((ViewQuad *)0)->uv0) == 0x8, "scene.fields: ViewQuad.uv0");
 _Static_assert(offsetof(ViewQuad, uv1) == 0xc && sizeof(((ViewQuad *)0)->uv1) == 0x8, "scene.fields: ViewQuad.uv1");
