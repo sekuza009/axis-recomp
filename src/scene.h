@@ -605,6 +605,18 @@ typedef struct PartInfo {
 	float weight;   /* +0x7c */
 } PartInfo;
 
+/* a pilot's standing (g_pilotLevel .., kept as g_pilotLevelKept ..: lobby_states.c take_back) */
+typedef struct PilotStats {
+	i32 level;   /* +0x0 */
+	i32 points;   /* +0x4 */
+	i32 clan;   /* +0x8 */
+	i32 rating;   /* +0xc */
+	i32 score;   /* +0x10 */
+	i32 wins;   /* +0x14 */
+	i32 losses;   /* +0x18 */
+	float winRate;   /* +0x1c */
+} PilotStats;
+
 /* a skirmish map's play settings (g_skirmishInfo, 15 of them: read by files.c) */
 typedef struct SkirmishInfo {
 	u8 _pad0000000[0x4c];
@@ -2072,6 +2084,15 @@ _Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tra
 _Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
+_Static_assert(offsetof(PilotStats, level) == 0x0 && sizeof(((PilotStats *)0)->level) == 0x4, "scene.fields: PilotStats.level");
+_Static_assert(offsetof(PilotStats, points) == 0x4 && sizeof(((PilotStats *)0)->points) == 0x4, "scene.fields: PilotStats.points");
+_Static_assert(offsetof(PilotStats, clan) == 0x8 && sizeof(((PilotStats *)0)->clan) == 0x4, "scene.fields: PilotStats.clan");
+_Static_assert(offsetof(PilotStats, rating) == 0xc && sizeof(((PilotStats *)0)->rating) == 0x4, "scene.fields: PilotStats.rating");
+_Static_assert(offsetof(PilotStats, score) == 0x10 && sizeof(((PilotStats *)0)->score) == 0x4, "scene.fields: PilotStats.score");
+_Static_assert(offsetof(PilotStats, wins) == 0x14 && sizeof(((PilotStats *)0)->wins) == 0x4, "scene.fields: PilotStats.wins");
+_Static_assert(offsetof(PilotStats, losses) == 0x18 && sizeof(((PilotStats *)0)->losses) == 0x4, "scene.fields: PilotStats.losses");
+_Static_assert(offsetof(PilotStats, winRate) == 0x1c && sizeof(((PilotStats *)0)->winRate) == 0x4, "scene.fields: PilotStats.winRate");
+_Static_assert(sizeof(PilotStats) == 0x20, "scene.fields: size of PilotStats");
 _Static_assert(offsetof(SkirmishInfo, gameMode) == 0x4c && sizeof(((SkirmishInfo *)0)->gameMode) == 0x4, "scene.fields: SkirmishInfo.gameMode");
 _Static_assert(offsetof(SkirmishInfo, timeLimit) == 0x50 && sizeof(((SkirmishInfo *)0)->timeLimit) == 0x4, "scene.fields: SkirmishInfo.timeLimit");
 _Static_assert(offsetof(SkirmishInfo, fragLimit) == 0x54 && sizeof(((SkirmishInfo *)0)->fragLimit) == 0x4, "scene.fields: SkirmishInfo.fragLimit");

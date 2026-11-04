@@ -1422,12 +1422,13 @@ static void rate_points(u32 rate)
 /* a kept copy taken back as the record, when the record's wins are more than 300 above it */
 static u32 take_back(u32 kept, u32 rate)
 {
-	if (R_WINS <= GAME_VAR(int, kept + 0x14) + 300)
+	const PilotStats *k = &GAME_VAR(PilotStats, kept);
+	if (R_WINS <= k->wins + 300)
 		return rate;
-	R_POINTS = GAME_VAR(int, kept + 4);
-	R_LOSSES = GAME_VAR(int, kept + 0x18);
-	R_OTHER = GAME_VAR(int, kept + 0x10);
-	R_WINS = GAME_VAR(int, kept + 0x14);
+	R_POINTS = k->points;
+	R_LOSSES = k->losses;
+	R_OTHER = k->score;
+	R_WINS = k->wins;
 	rate = win_rate(R_WINS, R_LOSSES, 0);
 	rate_points(rate);
 	return rate;
