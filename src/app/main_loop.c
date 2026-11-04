@@ -1220,7 +1220,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			}
 		}
 	if (SC->fogInOverlay == 1) {
-		stage_setFog((Stage *)stage, stage + 0x9ee048, GAME_VAR(u32, stage + 0x9ee058), GAME_VAR(u32, stage + 0x9ee05c), GAME_VAR(u32, stage + 0x9ee060));
+		stage_setFog((Stage *)stage, ((Stage *)stage)->glFogColour, ((Stage *)stage)->glFogStart, ((Stage *)stage)->glFogEnd, ((Stage *)stage)->glFogDensity);
 		glEnable(GL_FOG);
 	}
 	render_drawObjects(view, SC->objectsMode, SC->timeFraction);
@@ -1457,24 +1457,24 @@ static float mrow(const float *m, const float *v, int a, int ia, int b, int ib, 
 static void muzzle_camera(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
-	u8 *player = s + act->player * 0x47fd2;
+	const PlayerRecord *pr = &SC->playerRecords[act->player];
 	int slot = act->slot;
-	u8 *parts = s + 0x15fff88 + GAME_VAR(int, player + 0x1755544) * 0x1300;
-	u8 *item = s + 0x16c517c + GAME_VAR(int, player + 0x1755550 + slot * 4) * 0x2e18;
+	const ArmType *arms = &SCENE_STAGE(s)->armTypes[pr->parts[2]];
+	u8 *item = (u8 *)&SCENE_STAGE(s)->actorInfo[pr->items[slot]];
 	float P[3], E[3] = { 0, 0, 0 };
 	const float *v, *m;
 	int bone;
 	if (slot == 4) {
 		v = (const float *)(RELOC(item) + 0x16b4 + act->variantLoaded * 0xc);
-		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12d8);
+		bone = arms->weaponJoints[1][act->detail];
 	} else if (slot == 5) {
 		v = (const float *)(RELOC(item) + 0x2d70 + act->variantLoaded * 0xc);
-		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12e0);
+		bone = arms->weaponJoints[2][act->detail];
 	} else {
 		v = (const float *)(RELOC(item) + 0x16b4 + act->variantLoaded * 0xc);
-		bone = GAME_VAR(int, parts + act->detail * 4 + 0x12d0);
+		bone = arms->weaponJoints[0][act->detail];
 	}
-	m = (const float *)(GAME_VAR(u8 *, t + 0x1568) + bone * 100 + 0xc);
+	m = (const float *)((u8 *)act->armsModel.entries + bone * 100 + 0xc);
 	if (slot == 4) {
 		P[0] = mrow(m, v, 4, 1, 8, 2, 0, 0, 12);
 		P[1] = mrow(m, v, 5, 1, 1, 0, 9, 2, 13);
@@ -1488,13 +1488,13 @@ static void muzzle_camera(u8 *s, const u8 *t)
 		P[1] = mrow(m, v, 1, 0, 5, 1, 9, 2, 13);
 		P[2] = mrow(m, v, 2, 0, 6, 1, 10, 2, 14);
 	}
-	E[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4a94fc)));   /* 0.3 */
+	E[1] = f32(fmul_m(fld_m(&act->radius), K(0x4a94fc)));   /* 0.3 */
 	Vec3_rotateAxis(E, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(E, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		E[k] = f32(fadd_m(fld_m(&E[k]), (const float *)(RELOC(t) + 0x154) + k));
+		E[k] = f32(fadd_m(fld_m(&E[k]), &act->pos[k]));
 	float f;
-	BITS(f) = GAME_VAR(u32, t + 0x490);
+	BITS(f) = BITS(act->weaponLower);
 	long double dx = fsub_m(fld_m(&P[0]), &E[0]);
 	float dy = f32(fsub_m(fld_m(&P[1]), &E[1])), dz = f32(fsub_m(fld_m(&P[2]), &E[2]));
 	long double hx = fmul_m(dx, &f);
@@ -2175,7 +2175,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	float fov = game_clock();
 	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
-	view_setDistance(stage, GAME_VAR(u32, stage + 0xa08));
+	view_setDistance(stage, BITS(((Stage *)stage)->cullMargin));
 	if (SC->localPlayer >= 0)
 		chat_keys(s);
 	if (SC->chatMode != 0)
