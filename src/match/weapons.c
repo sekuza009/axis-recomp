@@ -242,11 +242,11 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->colour = rd->muzzle;
 	memcpy(BU->from, o, 12);
 	float dir[3];
-	const float *w2de8 = (const float *)(w + 0x2de8);
-	if (GAME_VAR(int, shot) == 0) {
+	const float *w2de8 = &((ActorInfo *)w)->velocity;
+	if (rd->received == 0) {
 		memcpy(dir, aim, 12);
 		if (((ActorInfo *)w)->spread > 0) {
-			long double spread = fmul_m(fld_m((const float *)(w + 0x2dec)) -
+			long double spread = fmul_m(fld_m(&((ActorInfo *)w)->spread) -
 			                            fmul_m((long double)ST->actors[owner].accuracy, K(0x4a9418)), K(0x4aa448));
 			if (!(spread >= 0))
 				spread = 0;
@@ -270,8 +270,8 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(fmul_m(fld_m(&v[2]), &inv[8 + r]) + fmul_m(fld_m(&v[1]), &inv[4 + r]) + fmul_m(fld_m(&inv[r]), &v[0]));
 		}
-		const float *speed = (const float *)(w + 0x2de4), *from = (const float *)(RELOC(b) + 0x54);
-		float *end = (float *)(RELOC(b) + 0x60);
+		const float *speed = &((ActorInfo *)w)->stepLength, *from = BU->from;
+		float *end = BU->end;
 		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
 		long double sz = fmul_m(fld_m(speed), &dir[2]);
 		end[0] = f32(fadd_m(fld_m(&sx), &from[0]));
@@ -330,7 +330,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = BU->colour;
-	float size = f32(fld_m((const float *)(w + 0x2df0)));
+	float size = f32(fld_m(&((ActorInfo *)w)->flashSize));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
 	int sound = ((ActorInfo *)w)->sound;

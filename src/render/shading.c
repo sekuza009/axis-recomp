@@ -226,16 +226,18 @@ static int light_level(long double d)
 void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int first, int r0, int c0, int r1, int c1)
 {
 	GroundLayer *gl = (GroundLayer *)layer;
-	if (GAME_VAR(int, layer) == 2) {
+	if (gl->kind == 2) {
 		memset(((void *)((GroundLayer *)layer)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
 		if (gl->lit == 1)
-			memset(layer + 0xfc, 0xff, 12 * 4);
+			memset(gl->boxColours, 0xff, 12 * 4);
 		return;
 	}
-	for (int li = 0; li < GAME_VAR(int, scene + 0x9d8000); li++) {
-		u8 *light = scene + 0x9cd008 + li * 0x2c;
-		const float *dir = (const float *)(light + 0x14);
-		int kind = GAME_VAR(int, light);
+	const LightFactors *lights = &((Stage *)scene)->mapLights;
+	for (int li = 0; li < lights->count; li++) {
+		const Factor *fc = &lights->records[li];
+		const u8 *light = (const u8 *)&fc->kind;   /* (light_mix takes the factor from its kind on) */
+		const float *dir = (const float *)fc->point;   /* (a kind 1 light's direction) */
+		int kind = fc->kind;
 		if (kind == 0 || kind == 2)
 			continue;
 		if (kind != 1) {
@@ -250,12 +252,12 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
 		if (gl->lit == 1) {
-			const float *above = GAME_VAR(int, layer) == 1 ? K(0x4a9474) : K(0x4a9424);
+			const float *above = gl->kind == 1 ? K(0x4a9474) : K(0x4a9424);
 			int i = light_level(MUL(above, &dir[1]));
 			u8 sky[4];
-			light_mix(sky, light, i, first == 1 ? NULL : layer + 0xfc);
+			light_mix(sky, light, i, first == 1 ? NULL : (const u8 *)gl->boxColours);
 			for (int k = 0; k < 12; k++)
-				memcpy(layer + 0xfc + k * 4, sky, 4);
+				memcpy(&gl->boxColours[k], sky, 4);
 		}
 		first = 0;
 	}
@@ -354,7 +356,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 			for (int angle = 0, at = 0, tex_at = 0; angle < 3600; angle += 900, at += 0xc, tex_at += 8) {
 				float v[3];
 				v[0] = f32(-fld_m(range));
-				v[1] = f32(fld_m((const float *)(layer + 8)));
+				v[1] = f32(fld_m(&((GroundLayer *)layer)->origin[1]));
 				v[2] = v[0];
 				water_point(s, layer, water, at, tex_at, v, angle);
 			}
@@ -363,12 +365,12 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		memcpy(&out, &r2, 4);
 		for (int k = 0, angle = 0; k < 8; k++, angle += 450) {
 			float v[3];
-			v[1] = f32(fld_m((const float *)(layer + 8)));
+			v[1] = f32(fld_m(&((GroundLayer *)layer)->origin[1]));
 			GAME_VAR(int, &v[0]) = 0;
 			GAME_VAR(u32, &v[2]) = out;
 			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);
 		}
 	}
-	ViewVolume_projectObject(view, s + 0xdc0cc4, 0, NULL, 0, NULL, 0, -1, 0);
-	ViewVolume_projectObject(view, s + 0xdc0a78, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, (u8 *)&((Stage *)s)->layerBoxModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, (u8 *)&((Stage *)s)->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
 }
