@@ -1914,10 +1914,10 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GS->sendFlags[i][2] = 1;
 			return;
 		}
-		u8 *ac = ACTOR(i);
-		if ((*(const u16 *)&((Player *)ac)->timerFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
+		Player *ac = (Player *)(ACTOR(i));
+		if ((*(const u16 *)&ac->timerFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
-		if (((Player *)ac)->active == 0 && (b[4] & 1)) {
+		if (ac->active == 0 && (b[4] & 1)) {
 			u32 rec[7] = { (u32)i, 0 };
 			memcpy(&rec[2], &x, 4);
 			memcpy(&rec[3], &y, 4);
@@ -1927,48 +1927,48 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			GAME_THISFN(stage_setupActorSlot, 0x45dc00, void, void *, int, int, u32, u32 *)(STAGE, i, -1, from, rec);
 			msg_newKing(g);   /* msg_newKing */
 		}
-		((Player *)ac)->netFired = 1;
-		((Player *)ac)->armorDeadline = f32(fadd_m(fld_m(&((Player *)ac)->blinkTime), K(0x4a9418)));
-		BITS(((Player *)ac)->timerFlags) = *(const u16 *)(pkt + 2);
+		ac->netFired = 1;
+		ac->armorDeadline = f32(fadd_m(fld_m(&ac->blinkTime), K(0x4a9418)));
+		BITS(ac->timerFlags) = *(const u16 *)(pkt + 2);
 		if (weapon == 6)
-			((Player *)ac)->statusIcon = 1;
+			ac->statusIcon = 1;
 		else if (weapon == 7)
-			((Player *)ac)->statusIcon = 2;
+			ac->statusIcon = 2;
 		else {
-			((Player *)ac)->statusIcon = 0;
+			ac->statusIcon = 0;
 			actor_setWeaponSlot(STAGE, i, weapon);   /* actor_setWeaponSlot */
 		}
-		((Player *)ac)->netPos[0] = x;
-		((Player *)ac)->netPos[1] = y;
-		((Player *)ac)->netPos[2] = z;
-		((Player *)ac)->netPitch = yaw;
-		((Player *)ac)->netYaw = pitch;
-		((Player *)ac)->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
-		((Player *)ac)->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
-		((Player *)ac)->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
-		((Player *)ac)->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
+		ac->netPos[0] = x;
+		ac->netPos[1] = y;
+		ac->netPos[2] = z;
+		ac->netPitch = yaw;
+		ac->netYaw = pitch;
+		ac->netMotion[0] = f32(fmul_m((long double)(signed char)b[0xd], K(0x4a955c)));
+		ac->netMotion[1] = f32(fmul_m((long double)(signed char)b[0xe], K(0x4a955c)));
+		ac->netMotion[2] = f32(fmul_m((long double)(b[0xf] >> 4), K(0x4aa490)));
+		ac->netMotion[4] = f32(fmul_m((long double)(b[0xf] & 0xf), K(0x4aa490)));
 		h = fmul_m((long double)b[0x10], K(0x4aa48c));
-		((Player *)ac)->netMotion[3] = f32(h);
+		ac->netMotion[3] = f32(h);
 		if (h > *K(0x4aa288))
-			((Player *)ac)->netMotion[3] = f32(fsub_m(h, K(0x4a94c8)));
+			ac->netMotion[3] = f32(fsub_m(h, K(0x4a94c8)));
 		int hurt;
 		if (b[0x11] & 0x80) {
-			((Player *)ac)->lastAttacker = b[0x11] & 0xf;
-			((Player *)ac)->lastHitWeapon = b[0x12];
+			ac->lastAttacker = b[0x11] & 0xf;
+			ac->lastHitWeapon = b[0x12];
 			hurt = 1;
-			if ((b[0x11] & 0x40) && ((Player *)ac)->armor > 0)
-				((Player *)ac)->armor = 0;
+			if ((b[0x11] & 0x40) && ac->armor > 0)
+				ac->armor = 0;
 		} else {
-			hurt = !(b[4] & 1) && ((Player *)ac)->armor > 0;
+			hurt = !(b[4] & 1) && ac->armor > 0;
 			if (hurt)
-				((Player *)ac)->armor = 0;
+				ac->armor = 0;
 		}
 		if (hurt)
-			BITS(((Player *)ac)->hitFlash) = 0x3f000000;
+			BITS(ac->hitFlash) = 0x3f000000;
 		const u8 *w = b + 0x13;
 		for (int k = 0; k < 5; k++, w += 9) {
-			u32 *slot = (u32 *)&((Player *)ac)->shots[k];
-			if (!(w[0] & 1) || ((Player *)ac)->team < 0) {
+			u32 *slot = (u32 *)&ac->shots[k];
+			if (!(w[0] & 1) || ac->team < 0) {
 				slot[0] = 0;
 				continue;
 			}
@@ -2031,9 +2031,9 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 				GS->dataLossCode = 3;
 			}
 		}
-		u8 *ac = ACTOR(b[2]);
-		((Player *)ac)->timePlayed = *(const u32 *)(pkt + 0x11);
-		BITS(((Player *)ac)->timeExtra) = *(const u32 *)(pkt + 0x15);
+		Player *ac = (Player *)(ACTOR(b[2]));
+		ac->timePlayed = *(const u32 *)(pkt + 0x11);
+		BITS(ac->timeExtra) = *(const u32 *)(pkt + 0x15);
 		int me = GS->localPlayer;
 		if (*(const u32 *)(pkt + 0x19) & 1u << (me & 0x1f))
 			GS->sendFlags[me][1] = 1;

@@ -56,7 +56,14 @@ for path in files:
 					       re.sub(r'(?<![\w\])])\(\(%s \*\)%s\)' % (T, v), alias, body[at:]))
 				total += 1
 				print('  %s: %s aliased as %s *%s' % (path, v, T, alias))
-		for d in re.finditer(r'^(\s*)(const )?u8 \*(\w+) = ([^;]+);', body, re.M):
+		# each declaration judged in its own block (a name declared again in another block is another variable)
+		DECL = re.compile(r'^(\s*)(const )?u8 \*(\w+) = ([^;]+);', re.M)
+		pos = 0
+		while True:
+			d = DECL.search(body, pos)
+			if not d:
+				break
+			pos = d.end()
 			const, v, init = d.group(2) or '', d.group(3), d.group(4)
 			depth = 0   # (a second declarator on the line, ", *w = ...", at the initialiser's top level: skipped)
 			second = False
@@ -65,35 +72,47 @@ for path in files:
 				second = second or (ch == ',' and depth == 0)
 			if second:
 				continue
-			casts =re.findall(r'\(\((?:const )?(\w+) \*\)%s\)' % v, body)
+			depth, end = 0, len(body)
+			for k in range(d.end(), len(body)):
+				if body[k] == '{':
+					depth += 1
+				elif body[k] == '}':
+					if depth == 0:
+						end = k
+						break
+					depth -= 1
+			scope = body[d.start():end]
+			if re.search(r'^\s*(const )?\w[\w ]*\*?\s*\b%s\b\s*[=;\[]' % v, scope[d.end() - d.start():], re.M):
+				continue   # (declared again inside its block: left alone)
+			casts = re.findall(r'\(\((?:const )?(\w+) \*\)%s\)' % v, scope)
 			if not casts or len(set(casts)) != 1:
 				continue
 			T = casts[0]
-			# every use of v: the declaration, the casts, assignments "v = ...;"
+			# every use of v in its block: the declaration, the casts, assignments "v = ...;"
 			ok = True
-			for u in re.finditer(r'(?<![\w.>])%s(?!\w)' % v, body):
+			for u in re.finditer(r'(?<![\w.>])%s(?!\w)' % v, scope):
 				s0 = u.start()
-				if d.start(3) <= s0 < d.end(3):
+				if d.start(3) - d.start() <= s0 < d.end(3) - d.start():
 					continue
-				before = body[max(0, s0 - 30):s0]
-				after = body[u.end():u.end() + 4]
+				before = scope[max(0, s0 - 30):s0]
+				after = scope[u.end():u.end() + 4]
 				if re.search(r'\(\((?:const )?%s \*\)$' % T, before) and after.startswith(')'):
 					continue
-				if re.match(r'\s*=(?!=)', body[u.end():]) and re.search(r'(^|[;{}])\s*$', body[:s0]):
+				if re.match(r'\s*=(?!=)', scope[u.end():]) and re.search(r'(^|[;{}])\s*$', scope[:s0]):
 					continue
 				ok = False
 				break
 			if not ok:
 				continue
-			# rewrite inside the body
-			nb = body
-			nb = re.sub(r'\(\((?:const )?%s \*\)%s\)' % (T, v), v, nb)
-			nb = re.sub(r'(?m)^(\s*)%s(u8) \*%s = ([^;]+);' % (re.escape(const), v),
+			nb = re.sub(r'(?<=[\w\])])\(\((?:const )?%s \*\)%s\)' % (T, v), '(%s)' % v, scope)   # (a call's parenthesis kept)
+			nb = re.sub(r'(?<![\w\])])\(\((?:const )?%s \*\)%s\)' % (T, v), v, nb)
+			nb = re.sub(r'^(\s*)%s(u8) \*%s = ([^;]+);' % (re.escape(const), v),
 			            lambda m: '%s%s%s *%s = %s;' % (m.group(1), const, T, v,
 			                                           'NULL' if m.group(3).strip() == 'NULL' else '(%s%s *)(%s)' % (const, T, m.group(3))), nb, count=1)
 			nb = re.sub(r'(?m)((?:^|[;{}])\s*)%s = (?!\()([^;]+);' % v,
 			            lambda m: '%s%s = %s;' % (m.group(1), v, 'NULL' if m.group(2).strip() == 'NULL' else '(%s%s *)(%s)' % (const, T, m.group(2))), nb)
-			body = nb
+			body = body[:d.start()] + nb + body[end:]
+			pos = d.start() + 1
 			total += 1
 			print('  %s: %s -> %s *' % (path, v, T))
 		if body != t[a:b]:

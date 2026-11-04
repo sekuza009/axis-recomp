@@ -350,8 +350,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		/* a bullet of another team aimed at it */
 		int aimed = 0;
 		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
-			u8 *b = (u8 *)&ST->bullets[k];
-			if (((Bullet *)b)->link != i || ST->actors[((Bullet *)b)->owner].pilot == ST->playerActor)
+			Bullet *b = (Bullet *)((u8 *)&ST->bullets[k]);
+			if (b->link != i || ST->actors[b->owner].pilot == ST->playerActor)
 				continue;
 			aimed = 1;
 			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
@@ -1103,16 +1103,16 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					AC->fireCycle = 0;
 				f[0] = 0;
 			}
-			u8 *b = (u8 *)&ST->bullets[*item];   /* the round's record, brought up to date */
-			if (((Bullet *)b)->active != 1)
+			Bullet *b = (Bullet *)((u8 *)&ST->bullets[*item]);   /* the round's record, brought up to date */
+			if (b->active != 1)
 				continue;
-			((Bullet *)b)->hitActor = f[1];
-			((Bullet *)b)->hit = array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
+			b->hitActor = f[1];
+			b->hit = array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
 			if (f[3] == 1)
-				((Bullet *)b)->life = f32(fsub_m(fld_m(&((Bullet *)b)->age), dt));
-			memcpy(((Bullet *)b)->netPoint, f + 4, 12);
-			memcpy(((Bullet *)b)->end, f + 4, 12);
-			((Bullet *)b)->moved = 1;
+				b->life = f32(fsub_m(fld_m(&b->age), dt));
+			memcpy(b->netPoint, f + 4, 12);
+			memcpy(b->end, f + 4, 12);
+			b->moved = 1;
 		}
 	}
 	/* stamina (+0x4ac): spent running, back after a rest (+0x4b0 the rest) */

@@ -26,22 +26,22 @@ void THISCALL (shape_relocate)(u8 *shape)
 	}
 	u32 min[3] = { 0, 0, (*(u32 *)&k_0f) }, max[3] = { 0, 0, 0 };
 	for (int i = 0; i < md->partCount; i++) {
-		u8 *part = md->parts + i * 0x80;
+		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
 		for (int k = 0; k < 6; k++)
-			(*(int *)&((ShapePart *)part)->box[k]) = 0;
-		const u32 *v = ((const u32 *)((ShapePart *)part)->vertices);
-		for (int n = ((ShapePart *)part)->vertexCount; n > 0; n--, v += 3)
+			(*(int *)&part->box[k]) = 0;
+		const u32 *v = ((const u32 *)(part)->vertices);
+		for (int n = part->vertexCount; n > 0; n--, v += 3)
 			for (int a = 0; a < 3; a++) {
-				if (!(((ShapePart *)part)->box[3 + a] >= as_float(v[a])))
-					BITS(((ShapePart *)part)->box[3 + a]) = v[a];
-				if (((ShapePart *)part)->box[a] > as_float(v[a]))
-					BITS(((ShapePart *)part)->box[a]) = v[a];
+				if (!(part->box[3 + a] >= as_float(v[a])))
+					BITS(part->box[3 + a]) = v[a];
+				if (part->box[a] > as_float(v[a]))
+					BITS(part->box[a]) = v[a];
 			}
 		for (int a = 0; a < 3; a++) {   /* (the original's order: x max, x min, y max, ...) */
-			if (!(as_float(max[a]) >= ((ShapePart *)part)->box[3 + a]))
-				max[a] = BITS(((ShapePart *)part)->box[3 + a]);
-			if (as_float(min[a]) > ((ShapePart *)part)->box[a])
-				min[a] = BITS(((ShapePart *)part)->box[a]);
+			if (!(as_float(max[a]) >= part->box[3 + a]))
+				max[a] = BITS(part->box[3 + a]);
+			if (as_float(min[a]) > part->box[a])
+				min[a] = BITS(part->box[a]);
 		}
 	}
 	X half = HALF;
@@ -50,9 +50,9 @@ void THISCALL (shape_relocate)(u8 *shape)
 		md->centre[a] = centre[a] = f32(((X)as_float(min[a]) + as_float(max[a])) * half);
 	float r2 = 0;
 	for (int i = 0; i < md->partCount; i++) {
-		u8 *part = md->parts + i * 0x80;
-		const float *v = ((const float *)((ShapePart *)part)->vertices);
-		for (int n = ((ShapePart *)part)->vertexCount; n > 0; n--, v += 3) {
+		ShapePart *part = (ShapePart *)(md->parts + i * 0x80);
+		const float *v = ((const float *)(part)->vertices);
+		for (int n = part->vertexCount; n > 0; n--, v += 3) {
 			X dz = (X)v[2] - centre[2], dy = (X)v[1] - centre[1], dx = (X)v[0] - centre[0];
 			X d2 = dx * dx + dy * dy + dz * dz;
 			if (d2 > r2)

@@ -692,11 +692,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			while (crt_fgets(line, 0x100, f)) {
 				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
 				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
-					u8 *k = ((Bone *)b)->posKeys + ((Bone *)b)->posKeyCount * 0x20;
-					((PosKey *)k)->frame = ase_time(ticks, ms);
-					((PosKey *)k)->pos[0] = ase_float(SPACE, 0);
-					((PosKey *)k)->pos[2] = ase_float(SPACE, 1);
-					((PosKey *)k)->pos[1] = ase_float(SPACE, 0);
+					PosKey *k = (PosKey *)(((Bone *)b)->posKeys + ((Bone *)b)->posKeyCount * 0x20);
+					k->frame = ase_time(ticks, ms);
+					k->pos[0] = ase_float(SPACE, 0);
+					k->pos[2] = ase_float(SPACE, 1);
+					k->pos[1] = ase_float(SPACE, 0);
 					((Bone *)b)->posKeyCount++;
 				} else if (t && t[0] == '}')
 					break;
@@ -1029,16 +1029,16 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 		corner = next;
 	}
 	for (int k = 0; k < md->partCount; k++) {
-		u8 *pt = md->parts + k * 0x80;
-		for (int i = 0; i < ((ShapePart *)pt)->vertexCount; i++)
-			GAME_VAR(u32 *, ((ShapePart *)pt)->prims + 8)[i] = i;
+		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		for (int i = 0; i < pt->vertexCount; i++)
+			GAME_VAR(u32 *, pt->prims + 8)[i] = i;
 	}
 	if (flip)
 		for (int k = 0; k < md->partCount; k++) {
-			u8 *pt = md->parts + k * 0x80;
-			while (((ShapePart *)pt)->vertexCount > 0) {   /* (never moves on, as the original) */
+			ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+			while (pt->vertexCount > 0) {   /* (never moves on, as the original) */
 				k++;
-				float *v = (*(float * *)&((ShapePart *)pt)->vertices), *n = (*(float * *)&((ShapePart *)pt)->normals);
+				float *v = (*(float * *)&pt->vertices), *n = (*(float * *)&pt->normals);
 				long double y = fld_m(&v[2]);
 				v[2] = f32(-fld_m(&v[1]));
 				v[1] = f32(y);
@@ -1050,9 +1050,9 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 			}
 		}
 	for (int k = 0; k < md->partCount; k++) {
-		u8 *pt = md->parts + k * 0x80;
-		for (int i = 0; i < ((ShapePart *)pt)->vertexCount; i++)
-			(*(u32 * *)&((ShapePart *)pt)->colours)[i] = g_white;
+		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		for (int i = 0; i < pt->vertexCount; i++)
+			(*(u32 * *)&pt->colours)[i] = g_white;
 	}
 	if (allocated == 1) {
 		if (nv > 0)
@@ -1066,13 +1066,13 @@ void THISCALL (model_loadObjFormatFrom)(u8 *sh, void *f, u8 *mem, int memSize)
 	memcpy(md->low, md->centre, 12);
 	memcpy(md->high, md->centre, 12);
 	for (int k = 0; k < md->partCount; k++) {
-		u8 *pt = md->parts + k * 0x80;
+		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
 		for (int a = 0; a < 3; a++)   /* (the values copied as bits: a NaN stays as it is) */
-			if (fld_m(&md->low[a]) > ((ShapePart *)pt)->box[a])
-				memcpy(&md->low[a], &((ShapePart *)pt)->box[a], 4);
+			if (fld_m(&md->low[a]) > pt->box[a])
+				memcpy(&md->low[a], &pt->box[a], 4);
 		for (int a = 0; a < 3; a++)
-			if (!(fld_m(&md->high[a]) >= ((ShapePart *)pt)->box[3 + a]))
-				memcpy(&md->high[a], &((ShapePart *)pt)->box[3 + a], 4);
+			if (!(fld_m(&md->high[a]) >= pt->box[3 + a]))
+				memcpy(&md->high[a], &pt->box[3 + a], 4);
 	}
 }
 #undef crt_fgets
