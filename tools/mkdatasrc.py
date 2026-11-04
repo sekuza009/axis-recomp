@@ -368,6 +368,16 @@ def rdata_struct(runs):
 	return members, inits, asserts, named
 
 
+def scene_sizes():
+	"""the record types of src/scene.fields with their sizes ("struct Name size" lines): object element types"""
+	sizes = {}
+	for line in open(os.path.join(R, 'src', 'scene.fields'), encoding='latin-1'):
+		w = line.split('#')[0].split()
+		if len(w) == 3 and w[0] == 'struct':
+			sizes[w[1]] = int(w[2], 16)
+	return sizes
+
+
 def data_struct():
 	"""the layout of the game's writable data (0x4ad000 .. 0xb13000) as a struct: each named global a member of its
 	type at its offset (one that overlaps an earlier one left out), the rest padding. Its initial values are
@@ -384,7 +394,7 @@ def data_struct():
 	                  key=lambda an: (an[0], an[1] is not None)):   # (an object before a global at its start)
 		if n is None:   # an object
 			ty, count, name = objects[a]
-			esize = {'Colour': 16}.get(ty) or BASIC.get(ty, 1)
+			esize = dict(scene_sizes(), Colour=16).get(ty) or BASIC.get(ty, 1)
 			if a < cursor or a + esize * count > DATA_HI:
 				continue
 			if name in SPLIT:   # (a variable of its own, src/data/data.c: left as padding here)

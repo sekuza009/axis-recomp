@@ -33,7 +33,17 @@ for m in re.finditer(r'#define (\w+) GAME_VAR\(([\w \*]+), (0x[0-9a-f]+)\)', ope
 starts = {a: n for n, (t, a) in names.items()}
 extent = {n: size_of(t) or 0 for n, (t, a) in names.items()}
 # the arrays, buffers and records of src/objects.h (tools/names/objects.txt), with their extents
-OBJ_SIZES = {'char': 1, 'u8': 1, 'signed_char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'Colour': 16}
+def scene_sizes():
+	"""the record types of src/scene.fields with their sizes ("struct Name size" lines): object element types"""
+	sizes = {}
+	for line in open(os.path.join(R, 'src', 'scene.fields'), encoding='latin-1'):
+		w = line.split('#')[0].split()
+		if len(w) == 3 and w[0] == 'struct':
+			sizes[w[1]] = int(w[2], 16)
+	return sizes
+
+
+OBJ_SIZES = dict(scene_sizes(), **{'char': 1, 'u8': 1, 'signed_char': 1, 'u16': 2, 'short': 2, 'int': 4, 'u32': 4, 'float': 4, 'double': 8, 'u64': 8, 'i64': 8, 'Colour': 16})
 for line in open(os.path.join(R, 'tools', 'names', 'objects.txt')):
 	a, ty, n, name = line.split()
 	names[name] = ('u8', int(a, 16))

@@ -1763,7 +1763,7 @@ extern struct GameData g_data;
 #undef g_netPacketMessageKind
 #define g_netPacketMessageKind (*(int *)((u8 *)g_netSendPacket_v + 0x0))
 #undef g_netPlayerList
-#define g_netPlayerList ((u8 *)g_netPlayerList_v)
+#define g_netPlayerList ((RankedPlayer *)g_netPlayerList_v)
 #undef g_netPlayerRecordPacket
 #define g_netPlayerRecordPacket (*(u8 * *)g_netPlayerRecordPacket_v)
 #undef g_netQueueOnline
