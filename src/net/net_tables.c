@@ -1474,27 +1474,26 @@ PACKET_ENTRY(net_sendPlayerLevels, 0);
 #undef FIELD
 
 /* 0x48e0f0 (thiscall on the scene): player p's info sent once when flagged (+0x234300a + p x 0x10, cleared): packet
-   2 (64 bytes, its first byte left as it was): the name (from the part type record +0x1755230 + p x 0x47fd2, +4),
-   then +0x13 its +0x44, +0x14 its +0x48, the actor's team byte (+0x1eccb4c), p, the five parts and six items (each
-   + 1), the 30 colour bytes (+0x479a4). Sent by send_packet. Its caller ignores the eax it
+   2 (64 bytes, its first byte left as it was): from its PlayerRecord the name, then +0x13 its level, +0x14 its
+   team, its actor's emblem, p, the five parts and six items (each + 1), the 30 colour bytes (hue, saturation, value). Sent by send_packet. Its caller ignores the eax it
    leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p, u8 *packet)
 {
 	int *flag = &((Scene *)s)->sendFlags[p][1];
 	if (!*flag)
 		return;
-	u8 *r = (u8 *)&((Scene *)s)->playerRecords[p];
+	PlayerRecord *r = &((Scene *)s)->playerRecords[p];
 	packet[1] = 2;
-	strcpy((char *)packet + 2, (const char *)RELOC(r) + 4);
-	packet[0x14] = r[0x48];
-	packet[0x13] = r[0x44];
+	strcpy((char *)packet + 2, r->name);
+	packet[0x14] = (u8)r->team;
+	packet[0x13] = (u8)r->level;
 	packet[0x16] = (u8)p;
-	packet[0x15] = s[0x1eccb4c + p * 0x8888];
+	packet[0x15] = (u8)((Scene *)s)->players[p].emblem;
 	for (int k = 0; k < 5; k++)
-		packet[0x17 + k] = r[0x30c + k * 4] + 1;
+		packet[0x17 + k] = (u8)(r->parts[k] + 1);
 	for (int k = 0; k < 6; k++)
-		packet[0x1c + k] = r[0x320 + k * 4] + 1;
-	memcpy(packet + 0x22, r + 0x479a4, 30);
+		packet[0x1c + k] = (u8)(r->items[k] + 1);
+	memcpy(packet + 0x22, (u8 *)r + offsetof(PlayerRecord, partHue), 30);   /* partHue, partSaturation, partValue */
 	*flag = 0;
 	send_packet(s, packet);
 }
@@ -1696,7 +1695,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		int flying = ((Bullet *)shot)->age > ((Bullet *)shot)->life;
 		if (flying)
 			o[0] |= 8;
-		u8 *at = flying && (*(void * *)&((Bullet *)shot)->hit) ? shot + 0x60 : shot + 0x84;
+		u8 *at = (u8 *)(flying && (*(void * *)&((Bullet *)shot)->hit) ? ((Bullet *)shot)->end : ((Bullet *)shot)->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_tenthsToDegrees));
 			memcpy(o + 3 + c * 2, &w, 2);
