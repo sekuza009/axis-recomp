@@ -61,19 +61,19 @@ void THISCALL (ViewVolume_addSegment)(u8 *vv, const u32 *object, const float *p,
 	*(u32 *)RELOC(r) = *object;
 }
 
-/* a quad record's fields after its points: the texture id, two uv pairs (when it has a texture), the colour and a
-   value */
+/* a quad record's fields besides its points: the texture id, two uv pairs (when it has a texture), the colour and its
+   kind */
 static void quad_fields(float *r, int id, const u32 *uv0, const u32 *uv1, const u32 *colour, u32 extra)
 {
-	FIELD(int, r, 0) = id;
+	((ViewQuad *)r)->texture = id;
 	if (id >= 0) {
-		FIELD(u32, r, 4) = uv0[0];
-		FIELD(u32, r, 8) = uv0[1];
-		FIELD(u32, r, 0xc) = uv1[0];
-		FIELD(u32, r, 0x10) = uv1[1];
+		((ViewQuad *)r)->uv0[0] = uv0[0];
+		((ViewQuad *)r)->uv0[1] = uv0[1];
+		((ViewQuad *)r)->uv1[0] = uv1[0];
+		((ViewQuad *)r)->uv1[1] = uv1[1];
 	}
-	FIELD(u32, r, 0x14) = *colour;
-	FIELD(u32, r, 0x58) = extra;
+	((ViewQuad *)r)->colour = *colour;
+	((ViewQuad *)r)->kind = (int)extra;
 }
 
 /* whether the quad's four clip-space points (from r + 6) are all outside one plane */
@@ -722,10 +722,10 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	VV->triangleOrderCount = 0;
 	for (int i = 0; i < VV->triangleCount; i++) {
 		u8 *r = VV->triangles + i * 0x60;
-		if (FIELD(int, r, 0x5c) != 2)
+		if (((ViewTriangle *)r)->kind != 2)
 			continue;
 		((u8 **)VV->triangleOrder)[VV->triangleOrderCount * 2] = r;
-		X z = fadd_m(fadd_m(fld_m(&FIELD(float, r, 0x50)), &FIELD(float, r, 0x40)), &FIELD(float, r, 0x30));
+		X z = fadd_m(fadd_m(fld_m(&((ViewTriangle *)r)->points[2][2]), &((ViewTriangle *)r)->points[1][2]), &((ViewTriangle *)r)->points[0][2]);
 		((float *)VV->triangleOrder)[VV->triangleOrderCount * 2 + 1] = (float)fmul_m(z, &k_third);
 		VV->triangleOrderCount++;
 	}
@@ -733,11 +733,11 @@ void THISCALL (render_drawObjects)(u8 *vv, int mode, float b)
 	VV->quadOrderBCount = 0;
 	for (int i = 0; i < VV->quadCount; i++) {
 		u8 *r = VV->quads + i * 0x5c;
-		int list = FIELD(int, r, 0x58) == 2 ? 0x9074 : FIELD(int, r, 0x58) == 3 ? 0x907c : 0;
+		int list = ((ViewQuad *)r)->kind == 2 ? offsetof(ViewVolume, quadOrderA) : ((ViewQuad *)r)->kind == 3 ? offsetof(ViewVolume, quadOrderB) : 0;
 		if (!list)
 			continue;
 		FIELD(u8 **, vv, list)[FIELD(int, vv, list + 4) * 2] = r;
-		X z = fadd_m(fld_m(&FIELD(float, r, 0x30)), &FIELD(float, r, 0x20));
+		X z = fadd_m(fld_m(&((ViewQuad *)r)->points[1][2]), &((ViewQuad *)r)->points[0][2]);
 		FIELD(float *, vv, list)[FIELD(int, vv, list + 4) * 2 + 1] = (float)fmul_m(z, &k_half);
 		FIELD(int, vv, list + 4)++;
 	}

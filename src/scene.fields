@@ -425,6 +425,19 @@ struct Space 0x9c                                               # the collision 
 0x94       4          i32 depth                                 # the blocks' recursion depth (at most 8)
 0x98       4          i32 lastHit                                # (by use) space_collideAt's last result
 
+struct ViewQuad 0x5c                                            # a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields)
+0          4          i32 texture                                # (none: negative; then no texture corners)
+4          8          u32 uv0[2]
+0xc        8          u32 uv1[2]
+0x14       4          u32 colour
+0x18       0x40       float points[4][4]                         # its corners in clip space
+0x58       4          i32 kind                                   # 2 / 3: depth-sorted into quadOrderA / B
+
+struct ViewTriangle 0x60                                        # a queued clipped triangle (ViewVolume.triangles)
+0x28       0x30       float points[3][4]                         # (by use) its corners in clip space
+0x58       4          u32 matrix                                 # the matrix it is drawn under (kind 1)
+0x5c       4          i32 kind                                   # 2: depth-sorted (triangleOrder)
+
 struct ViewVolume 0x9170                                        # the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used)
 8          4          u8 *block                                  # (by use) its lists' memory
 0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)

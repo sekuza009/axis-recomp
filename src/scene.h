@@ -502,6 +502,24 @@ typedef struct Space {
 	i32 lastHit;   /* +0x98: (by use) space_collideAt's last result */
 } Space;
 
+/* a queued quad or billboard (ViewVolume.quads; view_volume.c quad_fields) */
+typedef struct ViewQuad {
+	i32 texture;   /* +0x0: (none: negative; then no texture corners) */
+	u32 uv0[2];   /* +0x4 */
+	u32 uv1[2];   /* +0xc */
+	u32 colour;   /* +0x14 */
+	float points[4][4];   /* +0x18: its corners in clip space */
+	i32 kind;   /* +0x58: 2 / 3: depth-sorted into quadOrderA / B */
+} ViewQuad;
+
+/* a queued clipped triangle (ViewVolume.triangles) */
+typedef struct ViewTriangle {
+	u8 _pad0000000[0x28];
+	float points[3][4];   /* +0x28: (by use) its corners in clip space */
+	u32 matrix;   /* +0x58: the matrix it is drawn under (kind 1) */
+	i32 kind;   /* +0x5c: 2: depth-sorted (triangleOrder) */
+} ViewTriangle;
+
 /* the view volume: what a frame draws, queued by material and depth (view_volume.c, factors.c; the size is unknown: only the fields used) */
 typedef struct ViewVolume {
 	u8 _pad0000000[0x8];
@@ -1785,6 +1803,17 @@ _Static_assert(offsetof(Space, splitCount) == 0x90 && sizeof(((Space *)0)->split
 _Static_assert(offsetof(Space, depth) == 0x94 && sizeof(((Space *)0)->depth) == 0x4, "scene.fields: Space.depth");
 _Static_assert(offsetof(Space, lastHit) == 0x98 && sizeof(((Space *)0)->lastHit) == 0x4, "scene.fields: Space.lastHit");
 _Static_assert(sizeof(Space) == 0x9c, "scene.fields: size of Space");
+_Static_assert(offsetof(ViewQuad, texture) == 0x0 && sizeof(((ViewQuad *)0)->texture) == 0x4, "scene.fields: ViewQuad.texture");
+_Static_assert(offsetof(ViewQuad, uv0) == 0x4 && sizeof(((ViewQuad *)0)->uv0) == 0x8, "scene.fields: ViewQuad.uv0");
+_Static_assert(offsetof(ViewQuad, uv1) == 0xc && sizeof(((ViewQuad *)0)->uv1) == 0x8, "scene.fields: ViewQuad.uv1");
+_Static_assert(offsetof(ViewQuad, colour) == 0x14 && sizeof(((ViewQuad *)0)->colour) == 0x4, "scene.fields: ViewQuad.colour");
+_Static_assert(offsetof(ViewQuad, points) == 0x18 && sizeof(((ViewQuad *)0)->points) == 0x40, "scene.fields: ViewQuad.points");
+_Static_assert(offsetof(ViewQuad, kind) == 0x58 && sizeof(((ViewQuad *)0)->kind) == 0x4, "scene.fields: ViewQuad.kind");
+_Static_assert(sizeof(ViewQuad) == 0x5c, "scene.fields: size of ViewQuad");
+_Static_assert(offsetof(ViewTriangle, points) == 0x28 && sizeof(((ViewTriangle *)0)->points) == 0x30, "scene.fields: ViewTriangle.points");
+_Static_assert(offsetof(ViewTriangle, matrix) == 0x58 && sizeof(((ViewTriangle *)0)->matrix) == 0x4, "scene.fields: ViewTriangle.matrix");
+_Static_assert(offsetof(ViewTriangle, kind) == 0x5c && sizeof(((ViewTriangle *)0)->kind) == 0x4, "scene.fields: ViewTriangle.kind");
+_Static_assert(sizeof(ViewTriangle) == 0x60, "scene.fields: size of ViewTriangle");
 _Static_assert(offsetof(ViewVolume, block) == 0x8 && sizeof(((ViewVolume *)0)->block) == 0x4, "scene.fields: ViewVolume.block");
 _Static_assert(offsetof(ViewVolume, ownsBlock) == 0xc && sizeof(((ViewVolume *)0)->ownsBlock) == 0x4, "scene.fields: ViewVolume.ownsBlock");
 _Static_assert(offsetof(ViewVolume, entryPointsSet) == 0x10 && sizeof(((ViewVolume *)0)->entryPointsSet) == 0x4, "scene.fields: ViewVolume.entryPointsSet");
