@@ -592,7 +592,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			if (g_items3D == 0)
 				lists = 0;
 			else {
-				float size = f32(fsub_m(fld_m((const float *)(ac + 0x87d4)), (const float *)(ac + 0x87c8)));
+				float size = f32(fsub_m(fld_m(&AC->tagBottomRight[0]), &AC->tagTopLeft[0]));
 				if (fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(0x4a9414)) > size)
 					lists = 0;
 			}
@@ -875,7 +875,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	actor_updateBooster(s, a);
 	for (int k = 5; k >= 0; k--)
 		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
-	fill_dwords(ac + offsetof(Player, screenX), 10, 0);   /* screenX .. onScreen */
+	fill_dwords(ac + offsetof(Player, screenPos), 10, 0);   /* screenPos .. tagBottomRight, onScreen */
 	fill_dwords(ac + offsetof(Player, lockedOn), 4, 0);   /* lockedOn .. botNeeds */
 	AC->target1 = AC->target2 = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;

@@ -1,5 +1,5 @@
 /* hud_markers.c: the marks over the other players in view, placed in screen pixels around each player's projected
-   point (Player.screenX, Player.topY; OpenGL's y runs up, hence height - y). */
+   point (Player.screenPos[0], Player.tagTopLeft[1]; OpenGL's y runs up, hence height - y). */
 #include "../game.h"
 #include <string.h>
 #include "hud.h"
@@ -45,8 +45,8 @@ static void marker_big(Scene *scene, Player *player, int texture, float alpha, f
 {
 	(void)scene;
 	int w = hud_scaleX(64.0f), h = hud_scaleY(64.0f);
-	int x = ftol(player->screenX) - w / 2;
-	int y = ftol(player->topY) - h;
+	int x = ftol(player->screenPos[0]) - w / 2;
+	int y = ftol(player->tagTopLeft[1]) - h;
 	marker_quad(texture, alpha, x, y, w, h, s0, t0, s1, t1);
 }
 
@@ -81,8 +81,8 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 		if (player->team == scene->players[scene->localPlayer].team && scene->network != 3 && scene->markersOff == 0) {
 			/* the team mate arrow: 32 units, standing 16 units above the point */
 			int w = hud_scaleX(32.0f), h = hud_scaleY(32.0f), lift = hud_scaleY(16.0f);
-			int y = ftol(player->topY) - lift - h;
-			int x = ftol(player->screenX) - w / 2;
+			int y = ftol(player->tagTopLeft[1]) - lift - h;
+			int x = ftol(player->screenPos[0]) - w / 2;
 			marker_quad(scene->hudTexture, alpha, x, y, w, h, 0.125f, 0.625f, 0.25f, 0.75f);
 		}
 		if (scene->rank[i] == 1 && scene->markersOff == 0 && scene->leaderMarkOff == 0 && player->kills > 0)
@@ -102,13 +102,13 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 		strcpy(name, player->name);
 		{
 			/* the name centred 16 units above the point, then emblem and flag to the left of where it starts */
-			int right = marker_hudX(player->screenX);
-			int y = marker_hudY(player->topY) - 0x10;
-			int left = marker_hudX(player->screenX);
+			int right = marker_hudX(player->screenPos[0]);
+			int y = marker_hudY(player->tagTopLeft[1]) - 0x10;
+			int left = marker_hudX(player->screenPos[0]);
 			/* through the original call site: the patch DLL retargets it (label_text) to centre the name on the player
 			   and keep its letters 4:3 on wide screens */
 			PATCHED_CALL(0x491c2d, void, int, int, int, const char *, int)(left, y, right, name, 8);   /* text_drawCentred */
-			int centre = marker_hudX(player->screenX), half;
+			int centre = marker_hudX(player->screenPos[0]), half;
 			if (PATCHED_BLOCK(0x491c58, 0x491c52, "52 8d 44 24 3c 50 e8 ?? ?? ?? ?? 59 5a 2b d0 90 90 90 90 90 90"))
 				half = PATCHED_CALL(0x491c58, int, const char *, int)(name, centre);   /* the patch DLL measures the name */
 			else
@@ -117,19 +117,19 @@ void THISCALL (hud_drawPlayerMarkers)(Scene *scene)
 			glColor4f(1.0f, 1.0f, 1.0f, alpha);
 			if (scene->showEmblems == 1) {
 				x -= 0x18;
-				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->topY) - 0x10);
+				hud_drawNameIcon(scene, player->emblem, x, marker_hudY(player->tagTopLeft[1]) - 0x10);
 			}
 			int flagOwner = scene->network == 0 ? player->player : i;
 			if (scene->playerRecords[flagOwner].flagShown == 1)
-				hud_drawLeaderIcon(scene, flagOwner, x - 0x18, marker_hudY(player->topY) - 0x10);
+				hud_drawLeaderIcon(scene, flagOwner, x - 0x18, marker_hudY(player->tagTopLeft[1]) - 0x10);
 		}
 
 	status:
 		if (player->statusIcon != 0) {
 			/* 64 units, standing 16 units above the point; texture rows 128 (status 1) or 160 */
 			int w = hud_scaleX(64.0f), h = hud_scaleY(64.0f), lift = hud_scaleY(16.0f);
-			int y = ftol(player->topY) - lift - h;
-			int x = ftol(player->screenX) - w / 2;
+			int y = ftol(player->tagTopLeft[1]) - lift - h;
+			int x = ftol(player->screenPos[0]) - w / 2;
 			int row = player->statusIcon == 1 ? 0x80 : 0xa0;
 			marker_quad(scene->hudTexture, 1.0f, x, y, w, h, 0.0f, texel256(row), 0.125f, texel256(row + 0x20));
 		}

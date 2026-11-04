@@ -51,31 +51,31 @@ void THISCALL (stage_drawProjectiles)(Stage *stage, void *view)
 }
 
 #define K(address) ((const float *)RELOC(address))
-#define F(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define MO ((MapObject *)obj)   /* a map object (obj in these functions) by its fields */
 
 /* an object's animation stopped at its start: time and speed 0, its collision unit put back (space_enableUnit), the
    unit flag cleared */
 static void anim_reset(u8 *obj)
 {
-	F(int, obj, 0x298) = F(int, obj, 0x29c) = 0;
-	if (F(void *, obj, 0x28c))
-		space_enableUnit(F(void *, obj, 0x28c));
-	F(int, obj, 0x290) = 0;
+	(*(int *)&MO->animTime) = (*(int *)&MO->animRate) = 0;
+	if (MO->unit)
+		space_enableUnit(MO->unit);
+	MO->animated = 0;
 }
 
 /* the animation started (object_setAnimation with its name +0x18 and the speed: +0x14 x k) */
 static void anim_start(u8 *scene, int i, u8 *obj, u32 k)
 {
-	float speed = f32((long double)F(int, obj, 0x14) * *K(k));
-	object_setAnimation(scene, i, (const char *)obj + 0x18, *(u32 *)&speed, 1);
+	float speed = f32((long double)MO->animSpeed * *K(k));
+	object_setAnimation(scene, i, (const char *)MO->animPath, *(u32 *)&speed, 1);
 }
 
 /* a light's glow (+0x2a8) over dt: its position (+0x58) projected (by +0x20f3a74, kept at +0x2ac), it grows while
    that is on screen and nothing lies between it and the camera (collision_rayTrace), up to 1, else fades to 0 */
 static void object_glow(u8 *s, u8 *obj, float dt)
 {
-	const float *p = (const float *)(obj + 0x58), *m = ST->viewProjection;
-	float *clip = (float *)(obj + 0x2ac);
+	const float *p = MO->place, *m = ST->viewProjection;
+	float *clip = MO->clip;
 	clip[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &p[2]) + fmul_m(fld_m(&m[4]), &p[1]) + fmul_m(fld_m(&m[0]), &p[0]), &m[12]));
 	for (int r = 1; r < 4; r++)
 		clip[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &p[2]) + fmul_m(fld_m(&m[r]), &p[0]) + fmul_m(fld_m(&m[4 + r]), &p[1]), &m[12 + r]));
@@ -83,15 +83,15 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 	u8 hit[12];
 	if (clip[0] > nw && clip[1] > nw && clip[2] > nw && !(clip[0] >= clip[3]) && !(clip[1] >= clip[3]) &&
 	    !(clip[2] >= clip[3]) && collision_rayTrace(s, ST->cameraPos, p, hit) == 0) {
-		long double g = fadd_m(fmul_m(fld_m(&dt), K(0x4a947c)), (const float *)(obj + 0x2a8));
-		F(float, obj, 0x2a8) = f32(g);
+		long double g = fadd_m(fmul_m(fld_m(&dt), K(0x4a947c)), &MO->glow);
+		MO->glow = f32(g);
 		if (g > *K(0x4a9424))
-			F(u32, obj, 0x2a8) = 0x3f800000;
+			BITS(MO->glow) = 0x3f800000;
 	} else {
-		long double g = fld_m((const float *)(obj + 0x2a8)) - fmul_m(fld_m(&dt), K(0x4a947c));
-		F(float, obj, 0x2a8) = f32(g);
+		long double g = fld_m(&MO->glow) - fmul_m(fld_m(&dt), K(0x4a947c));
+		MO->glow = f32(g);
 		if (!(g >= *K(0x4a93e8)))
-			F(int, obj, 0x2a8) = 0;
+			(*(int *)&MO->glow) = 0;
 	}
 }
 
@@ -108,23 +108,23 @@ static void object_glow(u8 *s, u8 *obj, float dt)
 void THISCALL (actor_render)(u8 *s, int i, float dt)
 {
 	u8 *obj = (u8 *)&ST->objects[i];
-	if (!(F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c))) {   /* (fcom: a NaN counts as equal) */
-		float t = f32(fadd_m(fmul_m(fld_m(&dt), (const float *)(obj + 0x29c)), (const float *)(obj + 0x298)));
-		F(float, obj, 0x298) = t;
-		switch (F(int, obj, 0x2a0)) {
+	if (!(MO->animRate == 0 || MO->animRate != MO->animRate)) {   /* (fcom: a NaN counts as equal) */
+		float t = f32(fadd_m(fmul_m(fld_m(&dt), &MO->animRate), &MO->animTime));
+		MO->animTime = t;
+		switch (MO->animMode) {
 		case 1:
 			if (!(t >= *K(0x4a93e8)))
 				anim_reset(obj);
 			else if (t > *K(0x4a9424)) {
-				F(u32, obj, 0x298) = 0x3f800000;
-				F(int, obj, 0x29c) = 0;
+				BITS(MO->animTime) = 0x3f800000;
+				(*(int *)&MO->animRate) = 0;
 			}
 			break;
 		case 2: {
-			long double per = fld_m(K(0x4a9424)) / *(const float *)(obj + 0x29c);
-			int now = ftol(fmul_m(fadd_m((long double)F(int, s, 0x20fcd40), &ST->clockFraction), K(0x4a94bc)));
+			long double per = fld_m(K(0x4a9424)) / *&MO->animRate;
+			int now = ftol(fmul_m(fadd_m((long double)ST->clockSeconds, &ST->clockFraction), K(0x4a94bc)));
 			int r = now % ftol(fmul_m(per, K(0x4a94bc)));
-			F(float, obj, 0x298) = f32(fmul_m((long double)r, K(0x4a9480)) / per);
+			MO->animTime = f32(fmul_m((long double)r, K(0x4a9480)) / per);
 			break;
 		}
 		case 3:
@@ -132,42 +132,42 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 				anim_reset(obj);
 			break;
 		}
-		F(int, obj, 0x2a4) = 1;
+		MO->poseStale = 1;
 	}
-	if (F(int, obj, 0x2a4) == 1) {
-		skel_applyPose(F(void *, obj, 0x294), obj + 0x174, 0, F(u32, obj, 0x298));
-		float *m = (float *)(obj + 0xf4);
-		Mat4_multiply(m, (const float *)(obj + 0x74), (const float *)(obj + 0x174));
-		Mat4_invert((float *)(obj + 0x134), m);
-		Mat4_invert((float *)(obj + 0x1b4), (const float *)(obj + 0x174));
-		Mat4_multiply((float *)(obj + 0x1f4), m, (const float *)(obj + 0xb4));
-		Mat4_invert((float *)(obj + 0x234), (const float *)(obj + 0x1f4));
+	if (MO->poseStale == 1) {
+		skel_applyPose(MO->skeleton, MO->animMatrix, 0, BITS(MO->animTime));
+		float *m = MO->matrix;
+		Mat4_multiply(m, MO->placeMatrix, MO->animMatrix);
+		Mat4_invert(MO->matrixInverse, m);
+		Mat4_invert(MO->animInverse, MO->animMatrix);
+		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
+		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadeParts(F(u32 *, obj, 0x280), 1, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)&((Stage *)s)->mapLights,
-			                 (const float *)(obj + 0x134));
-		F(int, obj, 0x2a4) = 0;
-		const float *c = (const float *)(F(u8 *, obj, 0x27c) + 0x20);
-		float *out = (float *)(obj + 0x2bc);
+			shape_shadeParts((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&((Stage *)s)->mapLights,
+			                 MO->matrixInverse);
+		MO->poseStale = 0;
+		const float *c = (const float *)(((u8 *)MO->model) + 0x20);
+		float *out = MO->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
 			out[r] = f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &c[2]) + fmul_m(fld_m(&m[r]), &c[0]) + fmul_m(fld_m(&m[4 + r]), &c[1]), &m[12 + r]));
 	}
-	if (F(int, obj, 0x288) == 1 && !(obj[0xc] & 2)) {
-		memcpy(F(void *, obj, 0x284), F(void *, obj, 0x280), F(int, F(u8 *, obj, 0x27c), 0x18) * 4);
-		shape_shadeParts(F(u32 *, obj, 0x284), 0, (Model *)F(u8 *, obj, 0x27c), (const LightFactors *)&((Stage *)s)->dynamicLights,
-		                 (const float *)(obj + 0x134));
+	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
+		memcpy((*(void * *)&MO->colours[1]), (*(void * *)&MO->colours[0]), MO->model->colourCount * 4);
+		shape_shadeParts((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&((Stage *)s)->dynamicLights,
+		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_items3D == 1) {
 		object_glow(s, obj, dt);
-		if ((obj[0xc] & 1) && g_items3D == 1 && F(float, obj, 0x2a8) > *K(0x4a93e8)) {
+		if ((obj[0xc] & 1) && g_items3D == 1 && MO->glow > *K(0x4a93e8)) {
 			volatile u32 flare[13];   /* (its eighth dword is never set, as in the original) */
 			flare[0] = 4;
-			flare[1] = ftol(fmul_m(fld_m((const float *)(obj + 0x2a8)), K(0x4a9744)));
-			flare[2] = F(u32, obj, 0x58);
-			flare[3] = F(u32, obj, 0x5c);
-			flare[4] = F(u32, obj, 0x60);
-			flare[5] = F(u32, obj, 0x274);
-			flare[6] = F(u32, obj, 0x278);
+			flare[1] = ftol(fmul_m(fld_m(&MO->glow), K(0x4a9744)));
+			flare[2] = BITS(MO->place[0]);
+			flare[3] = BITS(MO->place[1]);
+			flare[4] = BITS(MO->place[2]);
+			flare[5] = MO->typeValue1;
+			flare[6] = MO->typeValue2;
 			for (int k = 8; k < 13; k++)
 				flare[k] = 0;
 			particle_spawn(s, (const void *)RELOC(flare));
@@ -177,36 +177,35 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		long double nearest = fld_m(K(0x4aa4a4));
 		for (int k = 0; k < ST->actorCount; k++) {
 			u8 *a = (u8 *)&ST->actors[k];
-			if (F(int, a, 0x14c) != 1)
+			if (((Player *)a)->state != 1)
 				continue;
-			long double dx = fsub_m(fld_m((const float *)(RELOC(a) + 0x154)), (const float *)(obj + 0x58));
-			long double dy = fsub_m(fld_m((const float *)(RELOC(a) + 0x158)), (const float *)(obj + 0x5c));
-			long double dz = fsub_m(fld_m((const float *)(RELOC(a) + 0x15c)), (const float *)(obj + 0x60));
+			long double dx = fsub_m(fld_m(&((Player *)a)->pos[0]), &MO->place[0]);
+			long double dy = fsub_m(fld_m(&((Player *)a)->pos[1]), &MO->place[1]);
+			long double dz = fsub_m(fld_m(&((Player *)a)->pos[2]), &MO->place[2]);
 			long double d2 = (dz * dz + dy * dy) + dx * dx;
 			float d2f = f32(d2);
 			if (!(d2 >= nearest))
 				nearest = fld_m(&d2f);
 		}
-		long double r = fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4));
-		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
+		long double r = fmul_m((long double)MO->trigger, K(0x4a93f4));
+		if (MO->animRate == 0 || MO->animRate != MO->animRate) {
 			if (!(nearest >= r * r))
 				anim_start(s, i, obj, ADDR(k_0_001f));
-		} else if (F(u32, obj, 0x29c) == 0x3f800000 && nearest > r * r)
+		} else if (BITS(MO->animRate) == 0x3f800000 && nearest > r * r)
 			anim_start(s, i, obj, ADDR(k_m0_001f));
 	} else if (obj[0xc] & 0x10) {
-		if (F(float, obj, 0x29c) == 0 || F(float, obj, 0x29c) != F(float, obj, 0x29c)) {
-			if (fmul_m((long double)F(int, obj, 0x10), K(0x4a93f4)) > F(float, obj, 0x2c8)) {
-				F(float, obj, 0x2c8) = f32(fadd_m(fld_m(&dt), (const float *)(obj + 0x2c8)));
+		if (MO->animRate == 0 || MO->animRate != MO->animRate) {
+			if (fmul_m((long double)MO->trigger, K(0x4a93f4)) > MO->waitTime) {
+				MO->waitTime = f32(fadd_m(fld_m(&dt), &MO->waitTime));
 				return;
 			}
-			F(int, obj, 0x2c8) = 0;
+			(*(int *)&MO->waitTime) = 0;
 			anim_start(s, i, obj, ADDR(k_0_001f));
-		} else if (F(u32, obj, 0x29c) == 0x3f800000)
+		} else if (BITS(MO->animRate) == 0x3f800000)
 			anim_start(s, i, obj, ADDR(k_m0_001f));
 	}
 }
 #undef K
-#undef F
 
 #define K(address) ((const float *)RELOC(address))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
@@ -220,10 +219,10 @@ static void to_screen(u8 *s, long double qx, long double qy, float *out)
 	out[1] = f32(fmul_m((fld_m(K(0x4a9424)) - qy) * (long double)ST->viewHeight, K(0x4a942c)));
 }
 
-/* whether the name tag's width on screen (+0x87c8 .. +0x87d4) is under k (from the width 640 / the screen's) */
+/* whether the name tag's width on screen (tagTopLeft .. tagBottomRight) is under k (from the width 640 / the screen's) */
 static int tag_narrow(u8 *ac, u32 k)
 {
-	float span = f32(fsub_m(fld_m((const float *)(ac + 0x87d4)), (const float *)(ac + 0x87c8)));
+	float span = f32(fsub_m(fld_m(&((Player *)ac)->tagBottomRight[0]), &((Player *)ac)->tagTopLeft[0]));
 	return fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(k)) > span;
 }
 
@@ -283,8 +282,8 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		c[0] = f32(fadd_m(fmul_m(fld_m(&e[1]), &pr[4]) + fmul_m(fld_m(&e[2]), &pr[8]) + fmul_m(fld_m(&e[0]), &pr[0]), &pr[12]));
 		for (int r = 1; r < 4; r++)
 			c[r] = f32(fadd_m(fmul_m(fld_m(&e[0]), &pr[r]) + fmul_m(fld_m(&e[1]), &pr[4 + r]) + fmul_m(fld_m(&e[2]), &pr[8 + r]), &pr[12 + r]));
-		to_screen(s, fdiv_m(fld_m(&c[0]), &c[3]), fdiv_m(fld_m(&c[1]), &c[3]), &AC->screenX);
-		A(float, 0x87c4) = f32(fld_m(&e[2]));
+		to_screen(s, fdiv_m(fld_m(&c[0]), &c[3]), fdiv_m(fld_m(&c[1]), &c[3]), AC->screenPos);
+		AC->screenPos[2] = f32(fld_m(&e[2]));
 		float nw = f32(-fld_m(&c[3]));
 		u8 hit[12];
 		if (k == ST->selectedActor || !(c[0] > nw) || !(c[1] > nw) || !(c[2] > nw) || c[0] >= c[3] || c[1] >= c[3] ||
@@ -298,14 +297,14 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double c0 = fadd_m(fmul_m(fld_m(&q[2]), &pr[8]) + fmul_m(fld_m(&q[1]), &pr[4]) + fmul_m(fld_m(&q[0]), &pr[0]), &pr[12]);
 		long double c1 = fadd_m(fmul_m(fld_m(&q[0]), &pr[1]) + fmul_m(fld_m(&q[2]), &pr[9]) + fmul_m(fld_m(&q[1]), &pr[5]), &pr[13]);
 		float c3 = f32(fadd_m(fmul_m(fld_m(&q[0]), &pr[3]) + fmul_m(fld_m(&q[2]), &pr[11]) + fmul_m(fld_m(&q[1]), &pr[7]), &pr[15]));
-		to_screen(s, fdiv_m(c0, &c3), fdiv_m(c1, &c3), (float *)(ac + 0x87c8));
-		A(float, 0x87d0) = f32(fld_m(&e[2]));
+		to_screen(s, fdiv_m(c0, &c3), fdiv_m(c1, &c3), AC->tagTopLeft);
+		AC->tagTopLeft[2] = f32(fld_m(&e[2]));
 		long double x = fadd_m(fld_m(&e[0]), rad), y = fsub_m(fld_m(&e[1]), rad), z = fld_m(&e[2]);
 		float c0f = f32(fadd_m(fmul_m(z, &pr[8]) + fmul_m(y, &pr[4]) + fmul_m(x, &pr[0]), &pr[12]));
 		float c1f = f32(fadd_m(fmul_m(x, &pr[1]) + fmul_m(z, &pr[9]) + fmul_m(y, &pr[5]), &pr[13]));
 		long double w3 = fadd_m(fmul_m(x, &pr[3]) + fmul_m(z, &pr[11]) + fmul_m(y, &pr[7]), &pr[15]);
-		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, (float *)(ac + 0x87d4));
-		A(float, 0x87dc) = f32(fld_m(&e[2]));
+		to_screen(s, fld_m(&c0f) / w3, fld_m(&c1f) / w3, AC->tagBottomRight);
+		AC->tagBottomRight[2] = f32(fld_m(&e[2]));
 		AC->detail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;

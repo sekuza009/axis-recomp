@@ -29,7 +29,7 @@ void THISCALL (hud_drawLockOn)(Scene *scene)
 			float grow = player->lockSize * 4.0f, timer = scene->lockTimers[i] * 4.0f;
 			float units = ((long double)grow * 5.0f + 1.0f) * 64.0f;
 			int size = ftol(units / ((long double)640.0f / gfx_getWidth())), half = size / 2;
-			int x = ftol(player->screenX) - half, y = ftol(player->screenY) - half;
+			int x = ftol(player->screenPos[0]) - half, y = ftol(player->screenPos[1]) - half;
 			glEnable(GL_TEXTURE_2D);
 			tex_bind(g_textures->managers[scene->hudTexture / 512], scene->hudTexture % 512);
 			long double fade = 1.0L - grow;                       /* compared before it is rounded to a float */
@@ -38,7 +38,7 @@ void THISCALL (hud_drawLockOn)(Scene *scene)
 			lockon_quad(x, y, size, 0.25f, 0.5f, 0.5f, 0.75f);
 		} else if (player->lockedOn > 0.0f) {
 			int size = ftol((long double)64.0f / ((long double)640.0f / gfx_getWidth())), half = size / 2;
-			int x = ftol(player->screenX) - half, y = ftol(player->screenY) - half;
+			int x = ftol(player->screenPos[0]) - half, y = ftol(player->screenPos[1]) - half;
 			glEnable(GL_TEXTURE_2D);
 			tex_bind(g_textures->managers[scene->hudTexture / 512], scene->hudTexture % 512);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

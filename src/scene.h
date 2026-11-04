@@ -319,11 +319,9 @@ typedef struct Player {
 	u8 _pad00058ac[0x1770];
 	ObjectList weaponModel5;   /* +0x701c: the slot-5 weapon */
 	u8 _pad000704c[0x1770];
-	float screenX;   /* +0x87bc: projected position on the screen, pixels */
-	float screenY;   /* +0x87c0 */
-	u8 _pad00087c4[0x8];
-	float topY;   /* +0x87cc: (by use) screen y of the point the marks stand on (above the player) */
-	u8 _pad00087d0[0x10];
+	float screenPos[3];   /* +0x87bc: projected position on the screen: x, y (pixels; to_screen), the depth */
+	float tagTopLeft[3];   /* +0x87c8: (by use) its radius box's top-left corner on the screen (x, y: the marks stand on y), the depth */
+	float tagBottomRight[3];   /* +0x87d4: the box's bottom-right corner (tag_narrow: the width from these) */
 	i32 onScreen;   /* +0x87e0: 1: projected in front of the camera */
 	u8 _pad00087e4[0x4];
 	float lockedOn;   /* +0x87e8: > 0: locked on by the local player */
@@ -377,7 +375,9 @@ typedef struct MapObject {
 	i32 active;   /* +0x4: 1: in use */
 	i32 nameIndex;   /* +0x8: its type's name (Stage.objectNames) */
 	u8 flags;   /* +0xc: bit 1 (2): not drawn */
-	u8 _pad000000d[0xb];
+	u8 _pad000000d[0x3];
+	i32 trigger;   /* +0x10: (by use) a proximity object's radius (x k) / a timed one's seconds */
+	i32 animSpeed;   /* +0x14: its animation's speed (x k: object_setAnimation) */
 	char animPath[0x40];   /* +0x18: its animation ("dir/map/name"; none: empty) */
 	float place[3];   /* +0x58: its position (the type record's) */
 	float rotation[4];   /* +0x64: a quaternion */
@@ -385,8 +385,8 @@ typedef struct MapObject {
 	float placeInverse[16];   /* +0xb4 */
 	float matrix[16];   /* +0xf4: where it is drawn */
 	float matrixInverse[16];   /* +0x134: (matrix: a copy of placeMatrix) */
-	float identity1[16];   /* +0x174 */
-	float identity2[16];   /* +0x1b4 */
+	float animMatrix[16];   /* +0x174: (by use) its skeleton's pose (bone 0, skel_applyPose; an identity without one) */
+	float animInverse[16];   /* +0x1b4 */
 	float relMatrix[16];   /* +0x1f4: matrix x placeInverse */
 	float relInverse[16];   /* +0x234 */
 	u32 typeValue1;   /* +0x274: (unclear) the type record's +0xa8, +0xac */
@@ -397,12 +397,14 @@ typedef struct MapObject {
 	void *unit;   /* +0x28c: its collision unit (none: 0) */
 	i32 animated;   /* +0x290: 1: its skeleton plays */
 	void *skeleton;   /* +0x294 */
-	u8 _pad0000298[0x4];
+	float animTime;   /* +0x298: (by use) the animation's time, 0 .. 1 */
 	float animRate;   /* +0x29c: 1 / the period (0: stopped) */
 	i32 animMode;   /* +0x2a0 */
-	u8 _pad00002a4[0x18];
+	i32 poseStale;   /* +0x2a4: (by use) 1: its matrices to be taken from the pose again */
+	float glow;   /* +0x2a8: (by use) a light's glow, 0 .. 1 (object_glow) */
+	float clip[4];   /* +0x2ac: its position projected (clip space) */
 	float pos[3];   /* +0x2bc: the centre of its bounding sphere */
-	u8 _pad00002c8[0x4];
+	float waitTime;   /* +0x2c8: (by use) a timed object's seconds waited */
 } MapObject;
 
 /* a kind of map item (Stage.itemTypes) */
@@ -1722,9 +1724,9 @@ _Static_assert(offsetof(Player, boosterModel) == 0x34f4 && sizeof(((Player *)0)-
 _Static_assert(offsetof(Player, weaponModel) == 0x40dc && sizeof(((Player *)0)->weaponModel) == 0x30, "scene.fields: Player.weaponModel");
 _Static_assert(offsetof(Player, weaponModel4) == 0x587c && sizeof(((Player *)0)->weaponModel4) == 0x30, "scene.fields: Player.weaponModel4");
 _Static_assert(offsetof(Player, weaponModel5) == 0x701c && sizeof(((Player *)0)->weaponModel5) == 0x30, "scene.fields: Player.weaponModel5");
-_Static_assert(offsetof(Player, screenX) == 0x87bc && sizeof(((Player *)0)->screenX) == 0x4, "scene.fields: Player.screenX");
-_Static_assert(offsetof(Player, screenY) == 0x87c0 && sizeof(((Player *)0)->screenY) == 0x4, "scene.fields: Player.screenY");
-_Static_assert(offsetof(Player, topY) == 0x87cc && sizeof(((Player *)0)->topY) == 0x4, "scene.fields: Player.topY");
+_Static_assert(offsetof(Player, screenPos) == 0x87bc && sizeof(((Player *)0)->screenPos) == 0xc, "scene.fields: Player.screenPos");
+_Static_assert(offsetof(Player, tagTopLeft) == 0x87c8 && sizeof(((Player *)0)->tagTopLeft) == 0xc, "scene.fields: Player.tagTopLeft");
+_Static_assert(offsetof(Player, tagBottomRight) == 0x87d4 && sizeof(((Player *)0)->tagBottomRight) == 0xc, "scene.fields: Player.tagBottomRight");
 _Static_assert(offsetof(Player, onScreen) == 0x87e0 && sizeof(((Player *)0)->onScreen) == 0x4, "scene.fields: Player.onScreen");
 _Static_assert(offsetof(Player, lockedOn) == 0x87e8 && sizeof(((Player *)0)->lockedOn) == 0x4, "scene.fields: Player.lockedOn");
 _Static_assert(offsetof(Player, lockSize) == 0x87ec && sizeof(((Player *)0)->lockSize) == 0x4, "scene.fields: Player.lockSize");
@@ -1768,6 +1770,8 @@ _Static_assert(offsetof(MapObject, id) == 0x0 && sizeof(((MapObject *)0)->id) ==
 _Static_assert(offsetof(MapObject, active) == 0x4 && sizeof(((MapObject *)0)->active) == 0x4, "scene.fields: MapObject.active");
 _Static_assert(offsetof(MapObject, nameIndex) == 0x8 && sizeof(((MapObject *)0)->nameIndex) == 0x4, "scene.fields: MapObject.nameIndex");
 _Static_assert(offsetof(MapObject, flags) == 0xc && sizeof(((MapObject *)0)->flags) == 0x1, "scene.fields: MapObject.flags");
+_Static_assert(offsetof(MapObject, trigger) == 0x10 && sizeof(((MapObject *)0)->trigger) == 0x4, "scene.fields: MapObject.trigger");
+_Static_assert(offsetof(MapObject, animSpeed) == 0x14 && sizeof(((MapObject *)0)->animSpeed) == 0x4, "scene.fields: MapObject.animSpeed");
 _Static_assert(offsetof(MapObject, animPath) == 0x18 && sizeof(((MapObject *)0)->animPath) == 0x40, "scene.fields: MapObject.animPath");
 _Static_assert(offsetof(MapObject, place) == 0x58 && sizeof(((MapObject *)0)->place) == 0xc, "scene.fields: MapObject.place");
 _Static_assert(offsetof(MapObject, rotation) == 0x64 && sizeof(((MapObject *)0)->rotation) == 0x10, "scene.fields: MapObject.rotation");
@@ -1775,8 +1779,8 @@ _Static_assert(offsetof(MapObject, placeMatrix) == 0x74 && sizeof(((MapObject *)
 _Static_assert(offsetof(MapObject, placeInverse) == 0xb4 && sizeof(((MapObject *)0)->placeInverse) == 0x40, "scene.fields: MapObject.placeInverse");
 _Static_assert(offsetof(MapObject, matrix) == 0xf4 && sizeof(((MapObject *)0)->matrix) == 0x40, "scene.fields: MapObject.matrix");
 _Static_assert(offsetof(MapObject, matrixInverse) == 0x134 && sizeof(((MapObject *)0)->matrixInverse) == 0x40, "scene.fields: MapObject.matrixInverse");
-_Static_assert(offsetof(MapObject, identity1) == 0x174 && sizeof(((MapObject *)0)->identity1) == 0x40, "scene.fields: MapObject.identity1");
-_Static_assert(offsetof(MapObject, identity2) == 0x1b4 && sizeof(((MapObject *)0)->identity2) == 0x40, "scene.fields: MapObject.identity2");
+_Static_assert(offsetof(MapObject, animMatrix) == 0x174 && sizeof(((MapObject *)0)->animMatrix) == 0x40, "scene.fields: MapObject.animMatrix");
+_Static_assert(offsetof(MapObject, animInverse) == 0x1b4 && sizeof(((MapObject *)0)->animInverse) == 0x40, "scene.fields: MapObject.animInverse");
 _Static_assert(offsetof(MapObject, relMatrix) == 0x1f4 && sizeof(((MapObject *)0)->relMatrix) == 0x40, "scene.fields: MapObject.relMatrix");
 _Static_assert(offsetof(MapObject, relInverse) == 0x234 && sizeof(((MapObject *)0)->relInverse) == 0x40, "scene.fields: MapObject.relInverse");
 _Static_assert(offsetof(MapObject, typeValue1) == 0x274 && sizeof(((MapObject *)0)->typeValue1) == 0x4, "scene.fields: MapObject.typeValue1");
@@ -1787,9 +1791,14 @@ _Static_assert(offsetof(MapObject, colourSide) == 0x288 && sizeof(((MapObject *)
 _Static_assert(offsetof(MapObject, unit) == 0x28c && sizeof(((MapObject *)0)->unit) == 0x4, "scene.fields: MapObject.unit");
 _Static_assert(offsetof(MapObject, animated) == 0x290 && sizeof(((MapObject *)0)->animated) == 0x4, "scene.fields: MapObject.animated");
 _Static_assert(offsetof(MapObject, skeleton) == 0x294 && sizeof(((MapObject *)0)->skeleton) == 0x4, "scene.fields: MapObject.skeleton");
+_Static_assert(offsetof(MapObject, animTime) == 0x298 && sizeof(((MapObject *)0)->animTime) == 0x4, "scene.fields: MapObject.animTime");
 _Static_assert(offsetof(MapObject, animRate) == 0x29c && sizeof(((MapObject *)0)->animRate) == 0x4, "scene.fields: MapObject.animRate");
 _Static_assert(offsetof(MapObject, animMode) == 0x2a0 && sizeof(((MapObject *)0)->animMode) == 0x4, "scene.fields: MapObject.animMode");
+_Static_assert(offsetof(MapObject, poseStale) == 0x2a4 && sizeof(((MapObject *)0)->poseStale) == 0x4, "scene.fields: MapObject.poseStale");
+_Static_assert(offsetof(MapObject, glow) == 0x2a8 && sizeof(((MapObject *)0)->glow) == 0x4, "scene.fields: MapObject.glow");
+_Static_assert(offsetof(MapObject, clip) == 0x2ac && sizeof(((MapObject *)0)->clip) == 0x10, "scene.fields: MapObject.clip");
 _Static_assert(offsetof(MapObject, pos) == 0x2bc && sizeof(((MapObject *)0)->pos) == 0xc, "scene.fields: MapObject.pos");
+_Static_assert(offsetof(MapObject, waitTime) == 0x2c8 && sizeof(((MapObject *)0)->waitTime) == 0x4, "scene.fields: MapObject.waitTime");
 _Static_assert(sizeof(MapObject) == 0x2cc, "scene.fields: size of MapObject");
 _Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");
 _Static_assert(sizeof(ItemType) == 0x90, "scene.fields: size of ItemType");
