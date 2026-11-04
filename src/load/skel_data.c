@@ -302,7 +302,7 @@ void THISCALL (skel_applyPose)(u8 *sk, u32 *out, int bone, float t)
 		rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
 		rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
 	} else
-		rotate(fmul_m(fld_m(&bn->angle), unit), bn->axis);
+		rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
 	glGetFloatv(0xba6, (float *)out);
 	glLoadMatrixf(saved);
 }
@@ -353,8 +353,8 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
 	else
 		sys_fatalError(out, (const char *)RELOC(bad), format);
-	if (cache[0x10])
-		sprintf(path, (const char *)STR(0x4c4d5c, "%s\\%s.%s"), cache + 0x10, name, ext);
+	if (mg->dir[0])
+		sprintf(path, (const char *)STR(0x4c4d5c, "%s\\%s.%s"), mg->dir, name, ext);
 	else
 		sprintf(path, (const char *)STR(0x4c4d54, "%s.%s"), name, ext);
 }
@@ -423,7 +423,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 		}
 		if (mem)
 			mg->dataUsed += md->blockSize;
-		shape_bindTextureBy(shape, cache + 0x130, mg->bindFlags, mg->tint[0], mg->tint[1],
+		shape_bindTextureBy(shape, mg->textureDir, mg->bindFlags, mg->tint[0], mg->tint[1],
 		                    mg->tint[2], mg->tint[3], mg->tint[4], mg->tint[5]);
 		mg->count++;
 	}
@@ -535,37 +535,37 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			break;
 		int parent = bn->parent;
 		glLoadMatrixf(parent < 0 ? root : (const float *)(((u8 *)ol->entries) + parent * 0x64 + 0xc));
-		const float *scale = (const float *)(out + 4);
+		const float *scale = &((ListedObject *)out)->scale;
 		if (bn->posKeyCount > 0) {
 			int at = frame;
-			float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
-			int length = ((int *)key)[1];
-			long double f = length > 0 ? (long double)(at - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
-			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key[5]), &key[2]), scale), fmul_m(fadd_m(fmul_m(f, &key[6]), &key[3]), scale),
-			             fmul_m(fadd_m(fmul_m(f, &key[7]), &key[4]), scale));
+			PosKey *key = (PosKey *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
+			int length = key->length;
+			long double f = length > 0 ? (long double)(at - key->frame) / length : fld_m((const float *)ADDR(k_0f));
+			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key->delta[0]), &key->pos[0]), scale), fmul_m(fadd_m(fmul_m(f, &key->delta[1]), &key->pos[1]), scale),
+			             fmul_m(fadd_m(fmul_m(f, &key->delta[2]), &key->pos[2]), scale));
 		} else
-			glTranslatef(fmul_m(fld_m((const float *)(RELOC(b) + 0x44)), scale), fmul_m(fld_m((const float *)(RELOC(b) + 0x48)), scale),
-			             fmul_m(fld_m((const float *)(RELOC(b) + 0x4c)), scale));
+			glTranslatef(fmul_m(fld_m(&bn->pos[0]), scale), fmul_m(fld_m(&bn->pos[1]), scale),
+			             fmul_m(fld_m(&bn->pos[2]), scale));
 		if (bn->rotKeyCount > 0) {
 			int at = frame;
-			float *key = (float *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
-			int length = ((int *)key)[1];
-			float f = length > 0 ? f32((long double)(at - ((int *)key)[0]) / length) : 0;
-			rotate(fmul_m(fld_m(&key[2]), unit), &key[3]);
-			rotate(fmul_m(fmul_m(fld_m(&f), &key[6]), unit), &key[7]);
+			RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
+			int length = key->length;
+			float f = length > 0 ? f32((long double)(at - key->frame) / length) : 0;
+			rotate(fmul_m(fld_m(&key->rotation[0]), unit), &key->rotation[1]);
+			rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
 		} else
-			rotate(fmul_m(fld_m((const float *)(RELOC(b) + 0x50)), unit), (const float *)(RELOC(b) + 0x54));
-		float *m = (float *)(out + 0xc);
+			rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
+		float *m = ((ListedObject *)out)->matrix;
 		glGetFloatv(0xba6, m);
-		transform((float *)(out + 0x4c), m, &point[0], &point[1], &point[2]);
+		transform(((ListedObject *)out)->pos, m, &point[0], &point[1], &point[2]);
 		const float *own = AT(const float *, out, 0);
 		if (own) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
-				((float *)(out + 0x58))[r] = r == 0
+				((ListedObject *)out)->centre[r] = r == 0
 					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own[10]) + fmul_m(fld_m(&m[4]), &own[9]) + fmul_m(fld_m(&m[0]), &own[8]), &m[12]))
 					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own[10]) + fmul_m(fld_m(&m[r]), &own[8]) + fmul_m(fld_m(&m[4 + r]), &own[9]), &m[12 + r]));
 		} else
-			memcpy(out + 0x58, out + 0x4c, 12);
+			memcpy(((ListedObject *)out)->centre, ((ListedObject *)out)->pos, 12);
 	}
 	glLoadMatrixf(saved);
 }
@@ -679,11 +679,11 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			((Bone *)b)->pos[2] = ase_float(SPACE, 1);
 			((Bone *)b)->pos[1] = ase_float(LINE_END, 0);
 		} else if (!strcmp(t, (const char *)STR(0x4c53a4, "TM_ROTAXIS"))) {   /* TM_ROTAXIS */
-			((Bone *)b)->axis[0] = ase_float(SPACE, 0);
-			((Bone *)b)->axis[2] = ase_float(SPACE, 1);
-			((Bone *)b)->axis[1] = ase_float(LINE_END, 0);
+			((Bone *)b)->rotation[1] = ase_float(SPACE, 0);
+			((Bone *)b)->rotation[3] = ase_float(SPACE, 1);
+			((Bone *)b)->rotation[2] = ase_float(LINE_END, 0);
 		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
-			((Bone *)b)->angle = ase_float(LINE_END, 1);
+			((Bone *)b)->rotation[0] = ase_float(LINE_END, 1);
 		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
 			((Bone *)b)->posKeys = ((Skeleton *)sk)->block + keys;
 			while (crt_fgets(line, 0x100, f)) {
@@ -729,8 +729,8 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			continue;
 		u8 *up = all + ((Bone *)bone)->parent * 0x70;
 		float t[16], r[16], m[16], inv[16], local[16], rel[16];
-		translation(t, (const float *)(up + 0x44));
-		Mat4_fromAxisAngle(r, (const float *)(up + 0x50));
+		translation(t, ((Bone *)up)->pos);
+		Mat4_fromAxisAngle(r, ((Bone *)up)->rotation);
 		Mat4_multiply(m, t, r);
 		Mat4_invert(inv, m);
 		translation(t, (const float *)(RELOC(bone) + 0x44));

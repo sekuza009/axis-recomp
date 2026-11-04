@@ -121,10 +121,11 @@ typedef struct ShapePrim {
 /* an object list's entry (ObjectList.entries) */
 typedef struct ListedObject {
 	Model *shape;   /* +0x0: none: an empty entry */
-	u8 _pad0000004[0x4];
+	float scale;   /* +0x4: (by use) its bone's scale (the posed translation x this) */
 	u32 *colours;   /* +0x8: its shading colours (Model.colourCount dwords) */
 	float matrix[16];   /* +0xc: where it is placed */
-	u8 _pad000004c[0x18];
+	float pos[3];   /* +0x4c: (by use) its bone's point placed (skel_applyPose) */
+	float centre[3];   /* +0x58: its shape's centre placed (pos without a shape) */
 } ListedObject;
 
 /* shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown) */
@@ -639,8 +640,7 @@ typedef struct Bone {
 	u8 _pad0000000[0x40];
 	i32 parent;   /* +0x40: its parent bone (< 0: the root) */
 	float pos[3];   /* +0x44: its position without keys */
-	float angle;   /* +0x50: its rotation without keys: the angle (0x4aa270 units) about axis */
-	float axis[3];   /* +0x54 */
+	float rotation[4];   /* +0x50: its rotation without keys: angle, then axis */
 	i32 posKeyCount;   /* +0x60: position keys, 0x20 bytes each: frame, length, base, delta */
 	u8 *posKeys;   /* +0x64 */
 	i32 rotKeyCount;   /* +0x68: rotation keys, 0x28 bytes each: frame, length, base angle + axis, delta angle + axis */
@@ -1596,8 +1596,11 @@ _Static_assert(offsetof(ShapePrim, indexCount) == 0x4 && sizeof(((ShapePrim *)0)
 _Static_assert(offsetof(ShapePrim, indices) == 0x8 && sizeof(((ShapePrim *)0)->indices) == 0x4, "scene.fields: ShapePrim.indices");
 _Static_assert(sizeof(ShapePrim) == 0xc, "scene.fields: size of ShapePrim");
 _Static_assert(offsetof(ListedObject, shape) == 0x0 && sizeof(((ListedObject *)0)->shape) == 0x4, "scene.fields: ListedObject.shape");
+_Static_assert(offsetof(ListedObject, scale) == 0x4 && sizeof(((ListedObject *)0)->scale) == 0x4, "scene.fields: ListedObject.scale");
 _Static_assert(offsetof(ListedObject, colours) == 0x8 && sizeof(((ListedObject *)0)->colours) == 0x4, "scene.fields: ListedObject.colours");
 _Static_assert(offsetof(ListedObject, matrix) == 0xc && sizeof(((ListedObject *)0)->matrix) == 0x40, "scene.fields: ListedObject.matrix");
+_Static_assert(offsetof(ListedObject, pos) == 0x4c && sizeof(((ListedObject *)0)->pos) == 0xc, "scene.fields: ListedObject.pos");
+_Static_assert(offsetof(ListedObject, centre) == 0x58 && sizeof(((ListedObject *)0)->centre) == 0xc, "scene.fields: ListedObject.centre");
 _Static_assert(sizeof(ListedObject) == 0x64, "scene.fields: size of ListedObject");
 _Static_assert(offsetof(ObjectList, blockSize) == 0x4 && sizeof(((ObjectList *)0)->blockSize) == 0x4, "scene.fields: ObjectList.blockSize");
 _Static_assert(offsetof(ObjectList, block) == 0x8 && sizeof(((ObjectList *)0)->block) == 0x4, "scene.fields: ObjectList.block");
@@ -2029,8 +2032,7 @@ _Static_assert(offsetof(Skeleton, frames) == 0x20 && sizeof(((Skeleton *)0)->fra
 _Static_assert(sizeof(Skeleton) == 0x24, "scene.fields: size of Skeleton");
 _Static_assert(offsetof(Bone, parent) == 0x40 && sizeof(((Bone *)0)->parent) == 0x4, "scene.fields: Bone.parent");
 _Static_assert(offsetof(Bone, pos) == 0x44 && sizeof(((Bone *)0)->pos) == 0xc, "scene.fields: Bone.pos");
-_Static_assert(offsetof(Bone, angle) == 0x50 && sizeof(((Bone *)0)->angle) == 0x4, "scene.fields: Bone.angle");
-_Static_assert(offsetof(Bone, axis) == 0x54 && sizeof(((Bone *)0)->axis) == 0xc, "scene.fields: Bone.axis");
+_Static_assert(offsetof(Bone, rotation) == 0x50 && sizeof(((Bone *)0)->rotation) == 0x10, "scene.fields: Bone.rotation");
 _Static_assert(offsetof(Bone, posKeyCount) == 0x60 && sizeof(((Bone *)0)->posKeyCount) == 0x4, "scene.fields: Bone.posKeyCount");
 _Static_assert(offsetof(Bone, posKeys) == 0x64 && sizeof(((Bone *)0)->posKeys) == 0x4, "scene.fields: Bone.posKeys");
 _Static_assert(offsetof(Bone, rotKeyCount) == 0x68 && sizeof(((Bone *)0)->rotKeyCount) == 0x4, "scene.fields: Bone.rotKeyCount");
