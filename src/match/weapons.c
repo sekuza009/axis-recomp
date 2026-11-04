@@ -163,7 +163,7 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
 	u8 *a = (u8 *)&((Stage *)scene)->actors[p];
 	Player *ac = (Player *)a;
-	const float *from = (const float *)(RELOC(a) + 0x154), *range = &ac->pathRange;
+	const float *from = ac->pos, *range = &ac->pathRange;
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
 	for (int i = 0; i < ((Stage *)scene)->triggerCount; i++) {

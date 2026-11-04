@@ -758,7 +758,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	int i = S(int, preset);
 	SC->cameraAngle[0] = (float)fld_m((const float *)&SC->cameraSettings[0][i]);
 	if (S(int, 0x233cbc0 + S(int, preset) * 4) == 0)
-		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[0][i]), (const float *)(RELOC(t) + 0x160)));
+		SC->cameraAngle[0] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[0][i]), &((const Player *)t)->pitch));
 	if (SC->cameraAngle[0] > 890.0f)
 		SC->cameraAngle[0] = 890.0f;
 	if (!(SC->cameraAngle[0] >= -890.0f))
@@ -766,7 +766,7 @@ static void preset_angles(u8 *s, const u8 *t, u32 preset)
 	i = S(int, preset);
 	SC->cameraAngle[1] = (float)fld_m((const float *)&SC->cameraSettings[1][i]);
 	if (S(int, 0x233cbe8 + S(int, preset) * 4) == 0)
-		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), (const float *)(RELOC(t) + 0x164)));
+		SC->cameraAngle[1] = f32(fadd_m(fld_m((const float *)&SC->cameraSettings[1][i]), &((const Player *)t)->yaw));
 }
 
 /* the camera pulled back by the preset's zoom (+0x233cb70) from 0.85 of the actor t's height (its position with
@@ -775,7 +775,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 {
 	float *cam = (float *)SC->cameraPos, a[3] = { 0, 0, 0 }, b[3], to[3], d[3];
 	if (eye) {
-		a[1] = f32(fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4aa478)));   /* 0.85 */
+		a[1] = f32(fmul_m(fld_m(&((const Player *)t)->radius), K(0x4aa478)));   /* 0.85 */
 		Vec3_rotateAxis(a, 1, ftol(fld_m(SC->cameraAngle)));
 		Vec3_rotateAxis(a, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	}
@@ -784,7 +784,7 @@ static void orbit_from(u8 *s, const u8 *t, u32 preset, int eye)
 	Vec3_rotateAxis(b, 1, ftol(fld_m(SC->cameraAngle)));
 	Vec3_rotateAxis(b, 2, ftol(fld_m(&SC->cameraAngle[1])));
 	for (int k = 0; k < 3; k++)
-		a[k] = f32(fadd_m(fld_m(&a[k]), (const float *)(RELOC(t) + 0x154) + k));
+		a[k] = f32(fadd_m(fld_m(&a[k]), &((const Player *)t)->pos[k]));
 	to[0] = f32(fadd_m(fld_m(&b[0]), &a[0]));
 	to[1] = f32(fadd_m(fld_m(&a[1]), &b[1]));
 	to[2] = f32(fadd_m(fld_m(&a[2]), &b[2]));
@@ -1406,12 +1406,12 @@ static void bot_spawns(u8 *s)
 static void killer_view(u8 *s, const u8 *t)
 {
 	Player *act = (Player *)t;
-	float *cam = (float *)SC->cameraPos, *head = (float *)(RELOC(t) + 0x4e0), d[3], p[3];
+	float *cam = (float *)SC->cameraPos, *head = (float *)((const Player *)t)->deathPos, d[3], p[3];
 	int k = act->lastAttacker;
 	for (int j = 0; j < 3; j++)
 		d[j] = f32(fsub_m(fld_m((const float *)(ACTOR_AT(k) + 0x154) + j), &head[j]));
 	Vec3_normalize(d);
-	long double r = fmul_m(fld_m((const float *)(RELOC(t) + 0x3e8)), K(0x4a94a8));   /* -2 heights */
+	long double r = fmul_m(fld_m(&((const Player *)t)->radius), K(0x4a94a8));   /* -2 heights */
 	for (int j = 0; j < 3; j++)
 		p[j] = f32(fmul_m(r, &d[j]));
 	for (int j = 0; j < 3; j++)
@@ -2160,7 +2160,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		if (((Player *)t)->state != 1 && ((Player *)t)->lastAttacker >= 0)
 			killer_view(s, t);
 		else if (S(int, 0x233cb98 + SC->cameraMode * 4) != 0)
-			look_at(s, (const float *)(RELOC(t) + 0x154));
+			look_at(s, ((const Player *)t)->pos);
 		else {
 			preset_angles(s, t, 0x233cc10);
 			if (SC->cameraMode == 1)

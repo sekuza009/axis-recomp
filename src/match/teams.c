@@ -72,7 +72,7 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 	for (int i = 0; i < stage->actorCount; i++) {
 		u8 *a = (u8 *)&stage->actors[i];
 		if (stage->actors[i].active == 1) {
-			float value = f32(fmul_m(fadd_m(fld_m((const float *)(RELOC(a) + 0x4ec)), (const float *)ADDR(k_1f)), k_2500f));
+			float value = f32(fmul_m(fadd_m(fld_m(&((const Player *)a)->glow), (const float *)ADDR(k_1f)), k_2500f));
 			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, a + 0x154);   /* factors_addDirected */
 		}
 	}
