@@ -875,7 +875,11 @@ typedef struct HeadType {
 /* a chest part type (Stage.chestTypes) */
 typedef struct ChestType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0xa70];
+	u8 _pad0000040[0xa50];
+	i32 armsJoint[2];   /* +0xa90: (by use) the joints (bone indices of its shape) the other parts hang on, per detail level (actor_draw) */
+	i32 legsJoint[2];   /* +0xa98 */
+	i32 headJoint[2];   /* +0xaa0 */
+	i32 boosterJoint[2];   /* +0xaa8 */
 	float weightLimit;   /* +0xab0: (by level: the actor's loadMax) */
 	i32 maxArmor;   /* +0xab4 */
 	i32 maxShield;   /* +0xab8 */
@@ -884,7 +888,8 @@ typedef struct ChestType {
 /* an arm part type (Stage.armTypes) */
 typedef struct ArmType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x12a8];
+	u8 _pad0000040[0x1290];
+	i32 weaponJoints[3][2];   /* +0x12d0: (by use) the weapon joints per detail level: slots 0 .. 3, slot 4, slot 5 (actor_draw) */
 	float weight;   /* +0x12e8 */
 	i32 stats[5];   /* +0x12ec: (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax) */
 } ArmType;
@@ -892,7 +897,10 @@ typedef struct ArmType {
 /* a leg part type (Stage.legTypes) */
 typedef struct LegType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x1398];
+	u8 _pad0000040[0x1290];
+	i32 emitters[2][0x20];   /* +0x12d0: (by use) its puffs: [0] the joints, [1] 1: only while running (emit) */
+	i32 emitterCount;   /* +0x13d0 */
+	u8 _pad00013d4[0x4];
 	float weight;   /* +0x13d8 */
 	float stat0;   /* +0x13dc: (the ARM CENTER's legs stats [0]) */
 	float value2;   /* +0x13e0 */
@@ -905,7 +913,10 @@ typedef struct LegType {
 /* a booster part type (Stage.boosterTypes) */
 typedef struct BoosterType {
 	char name[0x40];   /* +0x0 */
-	u8 _pad0000040[0x17b8];
+	u8 _pad0000040[0x16b0];
+	i32 emitters[2][0x20];   /* +0x16f0: (by use) its thrust: [0] the joints, [1] 1: only while running (emit) */
+	i32 emitterCount;   /* +0x17f0 */
+	u8 _pad00017f4[0x4];
 	float weight;   /* +0x17f8 */
 	i32 thrustType;   /* +0x17fc */
 	u32 lean;   /* +0x1800: (by use) a float's bits: the actor's leanPitch */
@@ -2190,15 +2201,22 @@ _Static_assert(offsetof(HeadType, lockOnTime) == 0xaa0 && sizeof(((HeadType *)0)
 _Static_assert(offsetof(HeadType, targetKeepTime) == 0xaa4 && sizeof(((HeadType *)0)->targetKeepTime) == 0x4, "scene.fields: HeadType.targetKeepTime");
 _Static_assert(sizeof(HeadType) == 0xaa8, "scene.fields: size of HeadType");
 _Static_assert(offsetof(ChestType, name) == 0x0 && sizeof(((ChestType *)0)->name) == 0x40, "scene.fields: ChestType.name");
+_Static_assert(offsetof(ChestType, armsJoint) == 0xa90 && sizeof(((ChestType *)0)->armsJoint) == 0x8, "scene.fields: ChestType.armsJoint");
+_Static_assert(offsetof(ChestType, legsJoint) == 0xa98 && sizeof(((ChestType *)0)->legsJoint) == 0x8, "scene.fields: ChestType.legsJoint");
+_Static_assert(offsetof(ChestType, headJoint) == 0xaa0 && sizeof(((ChestType *)0)->headJoint) == 0x8, "scene.fields: ChestType.headJoint");
+_Static_assert(offsetof(ChestType, boosterJoint) == 0xaa8 && sizeof(((ChestType *)0)->boosterJoint) == 0x8, "scene.fields: ChestType.boosterJoint");
 _Static_assert(offsetof(ChestType, weightLimit) == 0xab0 && sizeof(((ChestType *)0)->weightLimit) == 0x4, "scene.fields: ChestType.weightLimit");
 _Static_assert(offsetof(ChestType, maxArmor) == 0xab4 && sizeof(((ChestType *)0)->maxArmor) == 0x4, "scene.fields: ChestType.maxArmor");
 _Static_assert(offsetof(ChestType, maxShield) == 0xab8 && sizeof(((ChestType *)0)->maxShield) == 0x4, "scene.fields: ChestType.maxShield");
 _Static_assert(sizeof(ChestType) == 0xabc, "scene.fields: size of ChestType");
 _Static_assert(offsetof(ArmType, name) == 0x0 && sizeof(((ArmType *)0)->name) == 0x40, "scene.fields: ArmType.name");
+_Static_assert(offsetof(ArmType, weaponJoints) == 0x12d0 && sizeof(((ArmType *)0)->weaponJoints) == 0x18, "scene.fields: ArmType.weaponJoints");
 _Static_assert(offsetof(ArmType, weight) == 0x12e8 && sizeof(((ArmType *)0)->weight) == 0x4, "scene.fields: ArmType.weight");
 _Static_assert(offsetof(ArmType, stats) == 0x12ec && sizeof(((ArmType *)0)->stats) == 0x14, "scene.fields: ArmType.stats");
 _Static_assert(sizeof(ArmType) == 0x1300, "scene.fields: size of ArmType");
 _Static_assert(offsetof(LegType, name) == 0x0 && sizeof(((LegType *)0)->name) == 0x40, "scene.fields: LegType.name");
+_Static_assert(offsetof(LegType, emitters) == 0x12d0 && sizeof(((LegType *)0)->emitters) == 0x100, "scene.fields: LegType.emitters");
+_Static_assert(offsetof(LegType, emitterCount) == 0x13d0 && sizeof(((LegType *)0)->emitterCount) == 0x4, "scene.fields: LegType.emitterCount");
 _Static_assert(offsetof(LegType, weight) == 0x13d8 && sizeof(((LegType *)0)->weight) == 0x4, "scene.fields: LegType.weight");
 _Static_assert(offsetof(LegType, stat0) == 0x13dc && sizeof(((LegType *)0)->stat0) == 0x4, "scene.fields: LegType.stat0");
 _Static_assert(offsetof(LegType, value2) == 0x13e0 && sizeof(((LegType *)0)->value2) == 0x4, "scene.fields: LegType.value2");
@@ -2208,6 +2226,8 @@ _Static_assert(offsetof(LegType, bonus3) == 0x13ec && sizeof(((LegType *)0)->bon
 _Static_assert(offsetof(LegType, bonus2) == 0x13f0 && sizeof(((LegType *)0)->bonus2) == 0x4, "scene.fields: LegType.bonus2");
 _Static_assert(sizeof(LegType) == 0x13f4, "scene.fields: size of LegType");
 _Static_assert(offsetof(BoosterType, name) == 0x0 && sizeof(((BoosterType *)0)->name) == 0x40, "scene.fields: BoosterType.name");
+_Static_assert(offsetof(BoosterType, emitters) == 0x16f0 && sizeof(((BoosterType *)0)->emitters) == 0x100, "scene.fields: BoosterType.emitters");
+_Static_assert(offsetof(BoosterType, emitterCount) == 0x17f0 && sizeof(((BoosterType *)0)->emitterCount) == 0x4, "scene.fields: BoosterType.emitterCount");
 _Static_assert(offsetof(BoosterType, weight) == 0x17f8 && sizeof(((BoosterType *)0)->weight) == 0x4, "scene.fields: BoosterType.weight");
 _Static_assert(offsetof(BoosterType, thrustType) == 0x17fc && sizeof(((BoosterType *)0)->thrustType) == 0x4, "scene.fields: BoosterType.thrustType");
 _Static_assert(offsetof(BoosterType, lean) == 0x1800 && sizeof(((BoosterType *)0)->lean) == 0x4, "scene.fields: BoosterType.lean");

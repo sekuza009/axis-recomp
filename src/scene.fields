@@ -735,17 +735,24 @@ struct HeadType 0xaa8                                           # a head part ty
 0xaa4      4          float targetKeepTime
 
 struct ChestType 0xabc                                          # a chest part type (Stage.chestTypes)
+0xa90      8          i32 armsJoint[2]                           # (by use) the joints (bone indices of its shape) the other parts hang on, per detail level (actor_draw)
+0xa98      8          i32 legsJoint[2]
+0xaa0      8          i32 headJoint[2]
+0xaa8      8          i32 boosterJoint[2]
 0          0x40       char name[0x40]
 0xab0      4          float weightLimit                          # (by level: the actor's loadMax)
 0xab4      4          i32 maxArmor
 0xab8      4          i32 maxShield
 
 struct ArmType 0x1300                                           # an arm part type (Stage.armTypes)
+0x12d0     0x18       i32 weaponJoints[3][2]                     # (by use) the weapon joints per detail level: slots 0 .. 3, slot 4, slot 5 (actor_draw)
 0          0x40       char name[0x40]
 0x12e8     4          float weight
 0x12ec     0x14       i32 stats[5]                               # (the ARM CENTER's arm stats) [1 ..] the ammunition per kind (the actor's ammoMax)
 
 struct LegType 0x13f4                                           # a leg part type (Stage.legTypes)
+0x12d0     0x100      i32 emitters[2][0x20]                      # (by use) its puffs: [0] the joints, [1] 1: only while running (emit)
+0x13d0     4          i32 emitterCount
 0          0x40       char name[0x40]
 0x13d8     4          float weight
 0x13dc     4          float stat0                                # (the ARM CENTER's legs stats [0])
@@ -756,6 +763,8 @@ struct LegType 0x13f4                                           # a leg part typ
 0x13f0     4          float bonus2
 
 struct BoosterType 0x1820                                       # a booster part type (Stage.boosterTypes)
+0x16f0     0x100      i32 emitters[2][0x20]                      # (by use) its thrust: [0] the joints, [1] 1: only while running (emit)
+0x17f0     4          i32 emitterCount
 0          0x40       char name[0x40]
 0x17f8     4          float weight
 0x17fc     4          i32 thrustType
