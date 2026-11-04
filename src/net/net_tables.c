@@ -1636,32 +1636,33 @@ static int angle_byte(const void *v)
 static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p, u8 *packet)
 {
 	u8 *a = (u8 *)&((Scene *)g)->players[p];
+	Player *pl = (Player *)a;
 	u16 w;
 	packet[1] = 0;
-	memcpy(packet + 2, a + 0x3f0, 2);
-	switch (GAME_VAR(int, a + 0x3ec)) {
-	case 0: packet[4] = (u8)((((u8)p << 3) | a[0x140]) << 1); break;
+	memcpy(packet + 2, &pl->timerFlags, 2);
+	switch (pl->statusIcon) {
+	case 0: packet[4] = (u8)((((u8)p << 3) | (u8)pl->slot) << 1); break;
 	case 1: packet[4] = (u8)(p << 4 | 0xc); break;
 	case 2: packet[4] = (u8)(p << 4 | 0xe); break;
 	}
-	if (GAME_VAR(int, a + 0x14c) == 1)
+	if (pl->state == 1)
 		packet[4] |= 1;
 	for (int c = 0; c < 3; c++) {
-		w = (u16)scaled(a + 0x180 + c * 4, ADDR(k_tenthsToDegrees));
+		w = (u16)scaled(&pl->nextPos[c], ADDR(k_tenthsToDegrees));
 		memcpy(packet + 5 + c * 2, &w, 2);
 	}
-	packet[0xb] = (u8)angle_byte(a + 0x18c);
-	packet[0xc] = (u8)angle_byte(a + 0x190);
-	packet[0xd] = (u8)scaled(a + 0x194, ADDR(k_10f));
-	packet[0xe] = (u8)scaled(a + 0x198, ADDR(k_10f));
-	packet[0xf] = (u8)(scaled(a + 0x19c, ADDR(k_clockRate3)) << 4) | (u8)scaled(a + 0x1a4, ADDR(k_clockRate3));
-	packet[0x10] = (u8)angle_byte(a + 0x1a0);
+	packet[0xb] = (u8)angle_byte(&pl->nextPitch);
+	packet[0xc] = (u8)angle_byte(&pl->nextYaw);
+	packet[0xd] = (u8)scaled(&pl->nextForward, ADDR(k_10f));
+	packet[0xe] = (u8)scaled(&pl->nextStrafe, ADDR(k_10f));
+	packet[0xf] = (u8)(scaled(&pl->nextClimb, ADDR(k_clockRate3)) << 4) | (u8)scaled(&pl->nextRun, ADDR(k_clockRate3));
+	packet[0x10] = (u8)angle_byte(&pl->nextLean);
 	packet[0x11] = 0;
-	if (((Player *)a)->hitPending == 1) {
-		u8 state = GAME_VAR(int, a + 0x128) > 0 ? 0x80 : 0xc0;
-		GAME_VAR(int, a + 0x8850) = 0;
-		packet[0x11] = state | a[0x4c0];
-		packet[0x12] = a[0x4c4];
+	if (pl->hitPending == 1) {
+		u8 state = pl->armor > 0 ? 0x80 : 0xc0;
+		pl->hitPending = 0;
+		packet[0x11] = state | (u8)pl->lastAttacker;
+		packet[0x12] = (u8)pl->lastHitWeapon;
 	}
 	for (int k = 0; k < 5; k++)
 		packet[0x13 + k * 9] = 0;
