@@ -297,7 +297,6 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define fatal(text) sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
 	if (bmp->file)
 		fclose(bmp->file);
@@ -313,7 +312,6 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 	bmp->width = ((u32)bmp->bmpWidth);
 	bmp->height = ((u32)bmp->bmpHeight);
 	return bmp->file;
-#undef crt_fread
 #undef fatal
 }
 
@@ -322,7 +320,6 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	if (bmp->file)
 		fclose(bmp->file);
 	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -332,7 +329,6 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 	bmp->width = ((u32)bmp->bmpWidth);
 	bmp->height = ((u32)bmp->bmpHeight);
 	return bmp->file;
-#undef crt_fread
 }
 
 /* 0x4734d0 (named gfx_saveScreenshot; by use a part type's emblem loaded): the BMP named after type p (its record at
@@ -404,7 +400,6 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
                              int topDown)
 {
 	BmpFile *bmp = (BmpFile *)image;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = bmp->file;
 	int iw = bmp->width, ih = bmp->height;
 	if (sx < 0) {
@@ -468,7 +463,6 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 		p3 += step * 3;
 		p4 += step * 4;
 	}
-#undef crt_fread
 }
 
 /* the scene's camera presets (+0x233ca30: six tables of ten, as float bits or ints) */

@@ -683,8 +683,6 @@ int (app_screenSizeForMode)(void)
 	return g_texturesOff = g_cfgSimpleMenu;
 }
 
-#define GetSystemTime(st) IMPORT(0x4a910c, void, void *)(st)
-#define timeGetTime() IMPORT(0x4a9364, u32, void)()
 
 /* 0x43f300: a clock set back? The seconds passed by the system clock since the last check (0x9dd878, minutes and
    seconds; an hour change counts 60 more minutes; into 0x9dd860) against the seconds passed by timeGetTime (from

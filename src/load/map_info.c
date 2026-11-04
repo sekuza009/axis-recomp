@@ -52,7 +52,6 @@ void THISCALL (map_loadTriggerInfoFrom)(u8 *scene, void *f)
 int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 {
 	Stage *st = (Stage *)scene;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7bd4, "can not read file %s - loadItemInfoFr..."), path);
@@ -69,7 +68,6 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 		((ItemType *)item)->model = (Model *)(item[0] ? shape_getByName((u8 *)&st->partShapes, ((ItemType *)item)->shapeName, 1) : 0);
 	}
 	return 1;
-#undef crt_fread
 }
 
 /* 0x48b5c0 (thiscall on the scene): the map's mission file (its name from +0x108 and name by 0x4c77f0; none: a fatal
@@ -78,7 +76,6 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
    points and the triggers. Its caller ignores the eax it leaves */
 void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 {
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	char path[0x100];
 	sprintf(path, (const char *)STR(0x4c77f0, "%s/%s"), ((Stage *)scene)->mapDir, name);
 	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
@@ -101,7 +98,6 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 	log_message((int)scene, 0, 0, (const char *)STR(0x4c7dbc, "load trigger"));
 	map_loadTriggerInfoFrom(scene, f);
 	fclose(f);
-#undef crt_fread
 }
 
 /* 0x48b710 (thiscall on the scene): the map's objects. The caches emptied (+0xe3c93c shapes, +0x13016d0 skeletons,
@@ -114,7 +110,6 @@ void THISCALL (map_loadMissionInfoFrom)(u8 *scene, const char *name)
 void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 {
 	Stage *st = (Stage *)scene;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	char path[0x100], base[0x100];
 	ObjectType objects[56];
 	st->objectNameCount = 0;
@@ -167,7 +162,6 @@ void THISCALL (map_loadObjectInfoFrom)(u8 *scene, const char *name, int mode)
 			fclose(f);
 		}
 	}
-#undef crt_fread
 }
 
 /* an item point's kind changed by the game's options (+0x20f3ac0 .. +0x20f3ad0, each on at 1): the kinds 0 .. 9 to 0,
@@ -204,7 +198,6 @@ static void remap_item(u8 *scene, int *kind)
 void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	const float *scale = (const float *)ADDR(k_10f);
 	memcpy(st->startPos, (const void *)ADDR(g_vecOrigin), 12);
 	(*(int *)&st->startAngle[0]) = 0;
@@ -264,7 +257,6 @@ void THISCALL (map_loadPlayInfoFrom)(u8 *scene, const char *name)
 		}
 	}
 	fclose(f);
-#undef crt_fread
 }
 
 /* the ten colour schemes of the map's players: hue, saturation and value of a part's two colours (as float bits) */
@@ -292,7 +284,6 @@ static const u32 k_schemeVal[10][2] = {
 void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 {
 	Stage *st = (Stage *)scene;
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define setPartColor(p, part, s) GAME_THISFN(actor_setPartColor, 0x474b50, void, void *, int, int, u32, u32, u32, u32, u32, u32)(scene, p, part, \
 	k_schemeHue[s][0], k_schemeSat[s][0], k_schemeVal[s][0], k_schemeHue[s][1], k_schemeSat[s][1], k_schemeVal[s][1])
 	static const int fixed[5] = { 3, 5, 0x24, 0x19, 0x16 };
@@ -346,11 +337,9 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 		st->playerRecords[p].flagShown = 1;
 		st->playerRecords[p].emblemSent = 0x180;
 	}
-#undef crt_fread
 #undef setPartColor
 }
 
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define POOL_MAX 4000000
 
 /* the next n bytes of the layers' pool (+0x9ef940, +0xdc0240 used of 4,000,000: past it a fatal message); the
@@ -547,5 +536,4 @@ int THISCALL (map_loadGroundInfoFrom)(u8 *s, const char *name)
 	fclose(f);
 	return 1;
 }
-#undef crt_fread
 #undef POOL_MAX

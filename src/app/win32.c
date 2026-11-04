@@ -117,7 +117,7 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 			sys_errorMessageNoName((const char *)STR(0x4c4f14, "glWindow window handle initializing f..."));
 			return NULL;
 		}
-		IMPORT(0x4a92bc, int, void *, int)(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
+		ShowWindow(g_glWindow, 10);   /* ShowWindow(SW_SHOWDEFAULT) */
 		UpdateWindow(g_glWindow);            /* UpdateWindow */
 		SetFocus(g_glWindow);         /* SetFocus */
 		g_glWindowMade = 1;
@@ -131,7 +131,6 @@ void *(glWindow_init)(const char *title, int width, int height, int colourBits, 
 	return g_glWindow;
 }
 
-#define ChangeDisplaySettingsA(mode, flags) IMPORT(0x4a9314, int, void *, u32)(mode, flags)
 #define GetDeviceCaps(dc, index) IMPORT(0x4a9034, int, void *, int)(dc, index)
 #define g_glDc g_hdc
 
@@ -405,14 +404,14 @@ int (app_init)(void *inst, int show)
 	static const u32 timers[3][2] = { { 0x29a, 60000 }, { 0x115c, 30000 }, { 0x309, 60000 } };
 	for (int k = 0; k < 3; k++)
 		SetTimer(g_hWndMain, timers[k][0], timers[k][1], NULL);   /* SetTimer */
-	IMPORT(0x4a92bc, int, void *, int)(g_hWndMain, show);   /* ShowWindow */
+	ShowWindow(g_hWndMain, show);   /* ShowWindow */
 	UpdateWindow(g_hWndMain);   /* UpdateWindow */
 	if (!app_checkCdAndLoad(inst)) {
 		app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 		return 0;
 	}
 	g_menuState = 100;
-	IMPORT(0x4a92c8, int, int)(0);   /* ShowCursor */
+	ShowCursor(0);   /* ShowCursor */
 	g_clockCheckClosed = 1;
 	sys_checkClockTampering();
 	return 1;
@@ -427,7 +426,6 @@ int (app_init)(void *inst, int show)
 long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_dc g_hdc
-#define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
 	u32 rect[4], paint[0x10];
 	switch (msg) {
@@ -445,7 +443,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		EndPaint(wnd, paint);   /* EndPaint */
 		return 0;
 	case 0x10:   /* WM_CLOSE */
-		IMPORT(0x4a9344, int, void *)(wnd);   /* DestroyWindow */
+		DestroyWindow(wnd);   /* DestroyWindow */
 		return 0;
 	case 5:   /* WM_SIZE */
 		glWindow_resize(l & 0xffff, l >> 16);
@@ -454,7 +452,7 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 		if (g_context)
 			wglDeleteContext(g_context);   /* wglDeleteContext */
 		if (g_dc)
-			IMPORT(0x4a931c, int, void *, void *)(wnd, g_dc);   /* ReleaseDC */
+			ReleaseDC(wnd, g_dc);   /* ReleaseDC */
 		g_context = 0;
 		g_dc = 0;
 		glWindow_restoreDisplayMode();
@@ -465,7 +463,6 @@ long STDCALL (glWindow_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */
 #undef g_dc
 #undef g_context
-#undef ShowCursor
 #undef PostQuitMessage
 }
 
@@ -478,7 +475,7 @@ static void chat_close(void *edit, int sent)
 	if (sent)
 		SendMessageA(edit, 0xd, 0x80, OBJ(g_chatLine));   /* WM_GETTEXT */
 	SendMessageA(edit, 0xc, 0, 0);                 /* WM_SETTEXT "" */
-	IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
+	DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 	SetFocus(g_mainWindow);   /* SetFocus */
 	chat_closeLine(sent);   /* chat_closeLine */
 	g_chatLineDone = 1;
@@ -504,7 +501,7 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 			break;
 		case 9:   /* Tab */
 			if (g_menuState == 0x320) {
-				IMPORT(0x4a9344, int, void *)(g_hChatEdit);   /* DestroyWindow */
+				DestroyWindow(g_hChatEdit);   /* DestroyWindow */
 				SetFocus(g_mainWindow);   /* SetFocus */
 				chat_closeLine(1);   /* chat_closeLine */
 				g_fieldTabKey = 0x14;
@@ -536,7 +533,6 @@ long STDCALL (chat_editSubclass)(void *wnd, u32 msg, u32 w, u32 l)
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 {
 #define FindWindowA(cls, name) IMPORT(0x4a92cc, void *, const char *, const char *)(cls, name)
-#define Sleep(ms) IMPORT(0x4a9110, void, u32)(ms)
 	arena_readLaunchFile(cmd);
 	void *launcher = FindWindowA((const char *)STR(0x4b2834, "#32770"), (const char *)STR(0x4b2854, "\364\270\315\366\361\375\340\362\312\245\341\334\320\357"));
 	if (launcher) {
@@ -598,7 +594,6 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	}
 	return 1;
 #undef FindWindowA
-#undef Sleep
 }
 
 /* 0x440070: the game window's messages (its class's procedure; the patch DLL subclasses it, see axisnet's input_read).
@@ -634,11 +629,7 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 {
 #define g_exitMode g_exitCode
-#define ShowCursor(show) IMPORT(0x4a92c8, int, int)(show)
 #define PostQuitMessage(code) IMPORT(0x4a932c, void, int)(code)
-#define ShowWindow(wnd, how) IMPORT(0x4a92bc, int, void *, int)(wnd, how)
-#define DestroyWindow(wnd) IMPORT(0x4a9344, int, void *)(wnd)
-#define ReleaseDC(wnd, dc) IMPORT(0x4a931c, int, void *, void *)(wnd, dc)
 #define GetClientRect(wnd, rect) IMPORT(0x4a9310, int, void *, int *)(wnd, rect)
 #define ExitProcess(code) IMPORT(0x4a90f8, void, u32)(code)
 #define ShellExecuteA(wnd, verb, file, args, dir, show) \
@@ -749,7 +740,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 				;
 			if (g_displayModeChanged) {
 				ShowWindow(g_hWndMain, 7);   /* SW_SHOWMINNOACTIVE */
-				IMPORT(0x4a9314, int, void *, u32)(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
+				ChangeDisplaySettingsA(NULL, 0);   /* ChangeDisplaySettingsA: the desktop's mode back */
 				g_displayModeChanged = 0;
 				g_displayModeLeft = 1;
 			}
@@ -838,11 +829,7 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 	return DefWindowProcA(wnd, msg, w, l);   /* DefWindowProcA */
 #undef g_glContext
 #undef g_exitMode
-#undef ShowCursor
 #undef PostQuitMessage
-#undef ShowWindow
-#undef DestroyWindow
-#undef ReleaseDC
 #undef GetClientRect
 #undef ExitProcess
 #undef ShellExecuteA

@@ -10,7 +10,6 @@
 #define TAN10_TABLE (g_tan10Table)
 #define TABLE_FILE ((const char *)STR(0x4c575c, "MATHFUNC.TBL"))
 
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
 
 /* 0x46c340: the tables computed and written to the file (missing it is fatal). The tangent is the sine as stored

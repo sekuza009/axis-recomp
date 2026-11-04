@@ -88,7 +88,7 @@ int (file_existsf)(const char *format, ...)
 u32 (file_readScrambled)(u8 *p, u32 size, u32 count, void *f)
 {
 	int n = (int)(size * count);
-	u32 r = GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f);   /* fread */
+	u32 r = crt_fread(p, size, count, f);   /* fread */
 	for (int i = 0; i < n; i++) {
 		u8 c = p[i] ^ 0x59;
 		p[i] = (u8)(c << 1 | c >> 7);
@@ -124,7 +124,7 @@ u32 THISCALL (chat_loadMacros)(Scene *scene)
 {
 	void *f = crt_fopen((const char *)STR(0x4c45ec, "Chat.scp"), (const char *)STR(0x4ad170, "rb"));
 	if (f) {
-		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(scene->chatMacros, 0x39, 100, f);   /* fread */
+		crt_fread(scene->chatMacros, 0x39, 100, f);   /* fread */
 		return fclose(f);
 	}
 	for (int k = 0; k < 100; k++)
@@ -279,11 +279,11 @@ static u32 dat_open(u32 count, const char *format, void *log)
 	GAME_VAR(void *, file) = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!GAME_VAR(void *, file))
 		sys_fatalErrorN(log, (const char *)STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
-	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
+	crt_fread((void *)RELOC(count), 4, 1, GAME_VAR(void *, file));   /* fread */
 	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, count) * 0x44);
 	if (!GAME_VAR(void *, table))
 		sys_fatalErrorN(log, (const char *)STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), GAME_VAR(int, count));
-	return GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
+	return crt_fread(GAME_VAR(void *, table), 0x44, GAME_VAR(int, count),
 	                                                          GAME_VAR(void *, file));
 }
 /* 0x466c00: Shape.dat; 0x46afe0: the skeleton archive */
@@ -331,7 +331,6 @@ int (console_loadFile)(int k)
 	return 1;
 }
 
-#define crt_chdir(path) GAME_CDECL(0x49f8a6, int, const char *)(path)
 #define crt_findfirst(pattern, data) GAME_CDECL(0x49f694, int, const char *, void *)(pattern, data)
 #define crt_findnext(handle, data) GAME_CDECL(0x49f75e, int, int, void *)(handle, data)
 #define crt_findclose(handle) GAME_CDECL(0x49f823, int, int)(handle)
@@ -370,7 +369,7 @@ int (app_checkLauncherRunning)(void)
 		return 0;
 	for (int i = 0; i < 8; i++) {
 		GAME_CDECL(0x49e91e, int, void *, int, int)(f, offsets[i], 0);   /* fseek */
-		GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)((void *)(OBJ(g_launcherCheck) + i), 1, 1, f);   /* fread */
+		crt_fread((void *)(OBJ(g_launcherCheck) + i), 1, 1, f);   /* fread */
 	}
 	fclose(f);
 	return 1;
@@ -438,7 +437,6 @@ u32 (profile_delete)(void)
 }
 
 #define crt_fseek(f, offset, whence) GAME_CDECL(0x49e91e, int, void *, int, int)(f, offset, whence)
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
 /* axis.mis (in the data folder) opened for reading */
 static void *mis_open(void)
@@ -1357,7 +1355,7 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
 	if (!f)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c75bc, "can't open file %s - loadActorCompone..."), (int)path);
 	int version;
-	GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(&version, 4, 1, f);   /* fread */
+	crt_fread(&version, 4, 1, f);   /* fread */
 	if (version != 0x1204)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7570, "incorrect file version, remove the fi..."), (int)path);
 	for (int k = 0; k < 6; k++) {

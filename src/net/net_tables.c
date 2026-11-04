@@ -288,7 +288,7 @@ u32 (net_closeSockets)(void)
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
 		g_netHostGone = 1;
-		IMPORT(WS_CLEANUP, int, void)();                                     /* WSACleanup */
+		WSACleanup();                                     /* WSACleanup */
 		IMPORT(WS_SHUTDOWN, int, u32, int)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		IMPORT(WS_CLOSESOCKET, int, u32)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
@@ -318,7 +318,7 @@ void (net_closeAll)(int kind)
 	for (int k = 0; k < 2; k++) {
 		if (!GAME_VAR(u32, sockets[k]))
 			continue;
-		IMPORT(WS_CLEANUP, int, void)();                                     /* WSACleanup */
+		WSACleanup();                                     /* WSACleanup */
 		IMPORT(WS_SHUTDOWN, int, u32, int)(GAME_VAR(u32, sockets[k]), 1);   /* shutdown(SD_SEND) */
 		IMPORT(WS_CLOSESOCKET, int, u32)(GAME_VAR(u32, sockets[k]));           /* closesocket */
 		GAME_VAR(u32, sockets[k]) = 0;
@@ -409,7 +409,7 @@ int (net_resolveHost)(const char *host)
 	if (!strlen(g_serverAddress))
 		return 0;
 	if (sock) {
-		IMPORT(WS_CLEANUP, int, void)();      /* WSACleanup */
+		WSACleanup();      /* WSACleanup */
 		IMPORT(WS_CLOSESOCKET, int, int)(sock);   /* closesocket */
 	}
 	return 1;
@@ -1016,7 +1016,7 @@ int (dplay_initConnection)(int kind, const char *address)
    0x4519b0. Returns its eax */
 static u32 socket_close(u32 socket)
 {
-	IMPORT(WS_CLEANUP, int, void)();                                  /* WSACleanup */
+	WSACleanup();                                  /* WSACleanup */
 	IMPORT(WS_SHUTDOWN, int, int, int)(GAME_VAR(int, socket), 1);      /* shutdown(SD_SEND) */
 	IMPORT(WS_CLOSESOCKET, int, int)(GAME_VAR(int, socket));              /* closesocket */
 	GAME_VAR(int, socket) = 0;
@@ -1044,7 +1044,6 @@ static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged
 	return 1;
 }
 
-#define WSACleanup() IMPORT(WS_CLEANUP, int, void)()
 
 /* ---- the info sent to the server when a player comes or goes while hosting over TCP/IP: the room's (0xa0b310 into
    the packet 0xa0b314) or the arena's (0xa0b328 into 0xa0b32c), the player count (0x9fd950) included ---- */

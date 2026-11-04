@@ -4,7 +4,6 @@
    the stack, so they stay small, one level deep. */
 #include "../game.h"
 
-#define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
 
 static void glyph_quad(int x, int y, int w, int h, int i, u32 u0, u32 v0, u32 u1, u32 v1)
 {

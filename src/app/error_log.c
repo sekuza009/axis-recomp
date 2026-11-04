@@ -4,7 +4,6 @@
 #include "../game.h"
 #include <stdarg.h>
 
-#define GetLocalTime(st) IMPORT(0x4a90f4, void, u16 *)(st)
 #define sprintf_game ((int (CDECL *)(char *, const char *, ...))IMG(0x49e9dd))
 #define vsprintf_game(out, format, args) GAME_CDECL(0x49ed2e, int, char *, const char *, va_list)(out, format, args)
 #define fprintf_game ((int (CDECL *)(void *, const char *, ...))IMG(0x49f135))

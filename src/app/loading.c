@@ -54,8 +54,6 @@ void (loading_drawCylinder)(int mode, int unused, const char *text)
 	gfx_swapBuffers();
 }
 
-#define glTexCoord2f_bits(s, t) IMPORT(0x4a920c, void, u32, u32)(s, t)
-#define Vec3_rotateAxis(v, axis, angle) GAME_THISFN(Vec3_rotateAxis, 0x4677c0, void, float *, int, int)(v, axis, angle)   /* angle in tenths of a degree */
 
 /* a point of the cylinder: radius 400 about the z axis at angle (tenths of a degree), at depth z */
 static void cylinder_vertex(int angle, u32 z)

@@ -4,7 +4,6 @@
 #include <string.h>
 
 #define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 
 /* the block (BlockOwner: block, its size blockSize): allocated (owned: ownsBlock 1) without memory given, else the
    memory given (owned 0 when own_flag; the caller's size checked) */

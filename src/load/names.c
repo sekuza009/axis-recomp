@@ -210,7 +210,6 @@ void THISCALL (tex_upload)(u8 *tm, u32 id, int mode)
    0, the local image (a BMPRGBFile) closed either way */
 int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 {
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	static const u32 formats[3][2] = { { STR(0x4b3fdc, "%s\\%s"), STR(0x4b3fd8, "%s") }, { STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP") }, { STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW") } };   /* "%s\%s" "%s", .BMP, .RAW */
 	u8 image[0x48];
 	((BmpFile *)image)->vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
@@ -250,7 +249,6 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 	}
 	BMPRGBFile_ctor(image);   /* (by use its destructor) */
 	return ok;
-#undef crt_fread
 }
 
 /* 0x455080 (thiscall on a texture manager): set up (twice is a fatal message): its directory (+8, upper-cased; none or
@@ -262,7 +260,6 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
    it leaves */
 void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w, int h, int linear, int mipmaps)
 {
-#define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 #define fatal(text, ...) sys_fatalErrorN((char *)OBJ(g_logTexture), (const char *)RELOC(text), ##__VA_ARGS__)
 	static const u32 names[6][3] = { { 64, 64, STR(0x4b3f54, "Image0") }, { 128, 64, STR(0x4b3f4c, "Image1") }, { 128, 128, STR(0x4b3f3c, "Image3") },
 	                                 { 256, 64, STR(0x4b3f44, "Image2") }, { 256, 128, STR(0x4b3f34, "Image4") }, { 256, 256, STR(0x4b3f2c, "Image5") } };
@@ -324,7 +321,6 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 	TM->counterC = 0;
 	TM->oldest = TM->slots;
 	TM->ready = 1;
-#undef crt_fread
 #undef fatal
 }
 
