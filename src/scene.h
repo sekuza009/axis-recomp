@@ -1389,19 +1389,20 @@ typedef struct Flare {
 
 /* a ring of the front end's 3D tunnel (menu_tunnel.c) */
 typedef struct TunnelRing {
-	u8 _pad0000000[0x8];
+	i32 cleared0;   /* +0x0: (by use) only cleared (intro_cameraPath) */
+	i32 cleared4;   /* +0x4 */
 	float depth;   /* +0x8: its distance along the tunnel */
 	u8 _pad000000c[0x4];
 	float outer[2][201][4];   /* +0x10: the outer band: near and far circles of points (x, y, z + pad) */
 	float spin;   /* +0x1930 */
 	float spinSpeed;   /* +0x1934 */
-	u8 _pad0001938[0x4];
+	i32 cleared1938;   /* +0x1938: (by use) only cleared (intro_cameraPath) */
 	i32 moveSteps;   /* +0x193c: (by use) armc_enter: steps moved toward the next ring */
 	float turn;   /* +0x1940: (by use) armc_enter: turned on by 1100 / 2200 a ring */
 	float inner[2][201][4];   /* +0x1944: the inner band */
 	float innerSpin;   /* +0x3264 */
 	float innerSpeed;   /* +0x3268 */
-	u8 _pad000326c[0xc];
+	float innerPos[3];   /* +0x326c: (by use) cleared (intro_cameraPath) */
 	float cage[8][4];   /* +0x3278: the cage's corners: one end 0..3, the other 4..7 */
 	float cagePos[3];   /* +0x32f8 */
 	u8 _pad0003304[0x4];
@@ -2822,15 +2823,19 @@ _Static_assert(offsetof(Flare, pos) == 0x40 && sizeof(((Flare *)0)->pos) == 0xc,
 _Static_assert(offsetof(Flare, spin) == 0x50 && sizeof(((Flare *)0)->spin) == 0x4, "scene.fields: Flare.spin");
 _Static_assert(offsetof(Flare, spinSpeed) == 0x54 && sizeof(((Flare *)0)->spinSpeed) == 0x4, "scene.fields: Flare.spinSpeed");
 _Static_assert(sizeof(Flare) == 0x58, "scene.fields: size of Flare");
+_Static_assert(offsetof(TunnelRing, cleared0) == 0x0 && sizeof(((TunnelRing *)0)->cleared0) == 0x4, "scene.fields: TunnelRing.cleared0");
+_Static_assert(offsetof(TunnelRing, cleared4) == 0x4 && sizeof(((TunnelRing *)0)->cleared4) == 0x4, "scene.fields: TunnelRing.cleared4");
 _Static_assert(offsetof(TunnelRing, depth) == 0x8 && sizeof(((TunnelRing *)0)->depth) == 0x4, "scene.fields: TunnelRing.depth");
 _Static_assert(offsetof(TunnelRing, outer) == 0x10 && sizeof(((TunnelRing *)0)->outer) == 0x1920, "scene.fields: TunnelRing.outer");
 _Static_assert(offsetof(TunnelRing, spin) == 0x1930 && sizeof(((TunnelRing *)0)->spin) == 0x4, "scene.fields: TunnelRing.spin");
 _Static_assert(offsetof(TunnelRing, spinSpeed) == 0x1934 && sizeof(((TunnelRing *)0)->spinSpeed) == 0x4, "scene.fields: TunnelRing.spinSpeed");
+_Static_assert(offsetof(TunnelRing, cleared1938) == 0x1938 && sizeof(((TunnelRing *)0)->cleared1938) == 0x4, "scene.fields: TunnelRing.cleared1938");
 _Static_assert(offsetof(TunnelRing, moveSteps) == 0x193c && sizeof(((TunnelRing *)0)->moveSteps) == 0x4, "scene.fields: TunnelRing.moveSteps");
 _Static_assert(offsetof(TunnelRing, turn) == 0x1940 && sizeof(((TunnelRing *)0)->turn) == 0x4, "scene.fields: TunnelRing.turn");
 _Static_assert(offsetof(TunnelRing, inner) == 0x1944 && sizeof(((TunnelRing *)0)->inner) == 0x1920, "scene.fields: TunnelRing.inner");
 _Static_assert(offsetof(TunnelRing, innerSpin) == 0x3264 && sizeof(((TunnelRing *)0)->innerSpin) == 0x4, "scene.fields: TunnelRing.innerSpin");
 _Static_assert(offsetof(TunnelRing, innerSpeed) == 0x3268 && sizeof(((TunnelRing *)0)->innerSpeed) == 0x4, "scene.fields: TunnelRing.innerSpeed");
+_Static_assert(offsetof(TunnelRing, innerPos) == 0x326c && sizeof(((TunnelRing *)0)->innerPos) == 0xc, "scene.fields: TunnelRing.innerPos");
 _Static_assert(offsetof(TunnelRing, cage) == 0x3278 && sizeof(((TunnelRing *)0)->cage) == 0x80, "scene.fields: TunnelRing.cage");
 _Static_assert(offsetof(TunnelRing, cagePos) == 0x32f8 && sizeof(((TunnelRing *)0)->cagePos) == 0xc, "scene.fields: TunnelRing.cagePos");
 _Static_assert(offsetof(TunnelRing, cageSpin) == 0x3308 && sizeof(((TunnelRing *)0)->cageSpin) == 0x4, "scene.fields: TunnelRing.cageSpin");

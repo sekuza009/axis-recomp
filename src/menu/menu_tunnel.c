@@ -272,17 +272,17 @@ TunnelRing *(tunnel_addRing)(void)
 	return ring;
 }
 
-/* ---- 0x440e20: an intro camera path node for screen height h: two circles of 101 points (each stored twice, at
-   heights +500 and -500), the path settings (taken from the linked node, +0x3530, when there is one), the box's
-   corners, and six records whose heights step down ---- */
+/* ---- 0x440e20: an intro camera path node (a tunnel ring) for screen height h: two circles of 101 points (each
+   stored twice, at heights +500 and -500), the spins (taken from the ring before, when there is one), the cage's
+   corners (+-50, +-50, +-49), and six flares whose heights step down, with their speeds ---- */
 
 void (intro_cameraPath)(u8 *o, int h)
 {
 	TunnelRing *tr = (TunnelRing *)o;
 	typedef long double X;
 	X H = h;
-	FIELD(int, o, 0) = 0;
-	FIELD(int, o, 4) = 0;
+	tr->cleared0 = 0;
+	tr->cleared4 = 0;
 	tr->depth = (float)(H * k_m1000f + H * k_m100f);
 	tr->cells = 100;
 	for (int pass = 0; pass < 2; pass++) {
@@ -293,7 +293,7 @@ void (intro_cameraPath)(u8 *o, int h)
 			if (tr->back)
 				BITS(tr->spin) = BITS(tr->back->spin);
 			BITS(tr->spinSpeed) = 0x3e4ccccd;   /* 0.2 */
-			FIELD(int, o, 0x1938) = 0;
+			tr->cleared1938 = 0;
 			(*(int *)&tr->turn) = 0;
 			tr->moveSteps = 0;
 			band = tr->inner;
@@ -316,34 +316,32 @@ void (intro_cameraPath)(u8 *o, int h)
 	BITS(tr->innerSpin) = 0x43b40000;   /* 360 */
 	if (tr->back)
 		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
-	static const struct { short offset; u32 value; } box[] = {
-		{ 0x3268, 0xbf000000 }, { 0x326c, 0 }, { 0x3274, 0 }, { 0x3270, 0 }, { 0x3278, 0xc2480000 }, { 0x327c, 0x42480000 },
-		{ 0x3280, 0x42440000 }, { 0x3288, 0x42480000 }, { 0x328c, 0x42480000 }, { 0x3290, 0x42440000 },
-		{ 0x32a0, 0x42440000 }, { 0x32b0, 0x42440000 }, { 0x32c0, 0xc2440000 }, { 0x32d0, 0xc2440000 },
-		{ 0x32e0, 0xc2440000 }, { 0x32f0, 0xc2440000 }, { 0x3298, 0x42480000 }, { 0x329c, 0xc2480000 },
-		{ 0x32a8, 0xc2480000 }, { 0x32ac, 0xc2480000 }, { 0x32b8, 0xc2480000 }, { 0x32bc, 0x42480000 },
-		{ 0x32c8, 0x42480000 }, { 0x32cc, 0x42480000 }, { 0x32d8, 0x42480000 }, { 0x32dc, 0xc2480000 },
-		{ 0x32e8, 0xc2480000 }, { 0x32ec, 0xc2480000 }, { 0x32f8, 0 }, { 0x32fc, 0 }, { 0x3308, 0 },
-		{ 0x330c, 0xbdcccccd } };   /* (+-50, +-49 ...) */
+	BITS(tr->innerSpeed) = 0xbf000000;   /* -0.5 */
+	BITS(tr->innerPos[0]) = BITS(tr->innerPos[1]) = BITS(tr->innerPos[2]) = 0;
 	X y = H * k_m1100f - k_550f;
 	tr->cagePos[2] = (float)y;
 	y -= k_49f;
-	for (unsigned i = 0; i < sizeof box / sizeof box[0]; i++)
-		FIELD(u32, o, box[i].offset) = box[i].value;
-	static const struct { signed char offset; u8 kind; } corner[] = {   /* 0: 0.0, 1: +50, 2: -50 */
-		{ -4, 2 }, { 0, 1 }, { 4, 0 }, { 0xc, 1 }, { 0x10, 1 }, { 0x14, 0 }, { 0x1c, 1 }, { 0x20, 2 }, { 0x24, 0 },
-		{ 0x2c, 2 }, { 0x30, 2 }, { 0x34, 0 }, { 0x3c, 0 }, { 0x40, 0 }, { 0x4c, 0 } };
-	for (int j = 0; j < 6; j++) {
-		u8 *r = o + 0x3314 + j * 0x58;
-		for (unsigned i = 0; i < sizeof corner / sizeof corner[0]; i++)
-			FIELD(u32, r, corner[i].offset) = corner[i].kind == 1 ? 0x42480000 : corner[i].kind == 2 ? 0xc2480000 : 0;
-		FIELD(float, r, 0x44) = (float)(y - ((X)k_1f - (X)j * k_tenthsToDegrees));
+	static const signed char cx[8] = { -1, 1, 1, -1, -1, 1, 1, -1 }, cy[8] = { 1, 1, -1, -1, 1, 1, -1, -1 };
+	for (int k = 0; k < 8; k++) {   /* (their pads kept) */
+		BITS(tr->cage[k][0]) = cx[k] > 0 ? 0x42480000 : 0xc2480000;   /* +-50 */
+		BITS(tr->cage[k][1]) = cy[k] > 0 ? 0x42480000 : 0xc2480000;
+		BITS(tr->cage[k][2]) = k < 4 ? 0x42440000 : 0xc2440000;        /* +-49 */
 	}
-	static const struct { short offset; u32 value; } rest[] = {
-		{ 0x3364, 0x3e19999a }, { 0x33bc, 0xbeb33333 }, { 0x3414, 0xbfc00000 }, { 0x346c, 0x3fc00000 },
-		{ 0x34c4, 0xbe3851ec }, { 0x351c, 0x3e3851ec }, { 0x3520, 0x3f800000 } };
-	for (unsigned i = 0; i < sizeof rest / sizeof rest[0]; i++)
-		FIELD(u32, o, rest[i].offset) = rest[i].value;
+	BITS(tr->cagePos[0]) = BITS(tr->cagePos[1]) = 0;
+	BITS(tr->cageSpin) = 0;
+	BITS(tr->cageSpeed) = 0xbdcccccd;   /* -0.1 */
+	static const signed char corner[12] = { -1, 1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0 };   /* a flare's four corners' x, y, z: +-50 (pads kept) */
+	static const u32 speed[6] = { 0x3e19999a, 0xbeb33333, 0xbfc00000, 0x3fc00000, 0xbe3851ec, 0x3e3851ec };   /* 0.15, -0.35, -1.5, 1.5, -0.18, 0.18 */
+	for (int j = 0; j < 6; j++) {
+		Flare *f = &tr->flares[j];
+		for (int i = 0; i < 12; i++)
+			BITS(f->corners[i / 3][i % 3]) = corner[i] > 0 ? 0x42480000 : corner[i] < 0 ? 0xc2480000 : 0;
+		BITS(f->pos[0]) = BITS(f->pos[1]) = 0;
+		BITS(f->spin) = 0;
+		f->pos[2] = (float)(y - ((X)k_1f - (X)j * k_tenthsToDegrees));
+		BITS(f->spinSpeed) = speed[j];
+	}
+	BITS(tr->alpha) = 0x3f800000;   /* 1 */
 	tr->screenHeight = h;
 }
 
