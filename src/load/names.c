@@ -123,46 +123,47 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
    (and that one's texture loses its slot), else it moves to just before the oldest. Its callers ignore the eax it leaves */
 void THISCALL (tex_bind)(u8 *tm, int i)
 {
-#define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
-#define OLDEST AT(u8 *, tm, 0xcd134)
-	u8 *texture = tm + i * 0x68;
-	u8 *slot;
-	if (AT(int, texture, 0xc0168) < 0) {
+	TextureManager *mg = (TextureManager *)tm;
+	TexRecord *texture = &mg->records[i];
+	TexSlot *slot;
+#define OLDEST ((TexSlot *)mg->oldest)
+#define SLOT(p) ((TexSlot *)(p))
+	if (texture->slot < 0) {
 		slot = OLDEST;
-		AT(int, slot, 4) = i;
+		slot->record = i;
 		tex_loadColorMask(tm, i);
-		if (AT(u8, texture, 0xc016c) & 2)
+		if (*(u8 *)&texture->flags & 2)
 			tex_applyTintMask(tm, i);
-		tex_upload(tm, AT(u32, slot, 8), AT(u8, texture, 0xc016c) & 1 ? 0 : 1);
-		AT(int, tm, 0xcd138)++;
+		tex_upload(tm, slot->glTexture, *(u8 *)&texture->flags & 1 ? 0 : 1);
+		mg->loadCount++;
 	} else {
-		slot = AT(u8 *, tm, 0xcd12c) + AT(int, texture, 0xc0168) * 0x14;
-		if (AT(int, texture, 0xc018c) == 1) {
+		slot = (TexSlot *)mg->slots + texture->slot;
+		if (texture->changed == 1) {
 			tex_loadColorMask(tm, i);
-			if (AT(u8, texture, 0xc016c) & 2)
+			if (*(u8 *)&texture->flags & 2)
 				tex_applyTintMask(tm, i);
-			tex_upload(tm, AT(u32, slot, 8), AT(u8, texture, 0xc016c) & 1 ? 0 : 1);
-			AT(int, tm, 0xcd138)++;
-			AT(int, texture, 0xc018c) = 0;
+			tex_upload(tm, slot->glTexture, *(u8 *)&texture->flags & 1 ? 0 : 1);
+			mg->loadCount++;
+			texture->changed = 0;
 		} else
-			glBindTexture(0xde1, AT(u32, slot, 8));   /* GL_TEXTURE_2D */
+			glBindTexture(0xde1, slot->glTexture);   /* GL_TEXTURE_2D */
 	}
 	if (slot == OLDEST) {
-		OLDEST = AT(u8 *, slot, 0xc);
-		AT(int, tm + AT(int, OLDEST, 4) * 0x68, 0xc0168) = -1;
+		mg->oldest = slot->next;
+		mg->records[OLDEST->record].slot = -1;
 	} else {
-		AT(u8 *, AT(u8 *, slot, 0xc), 0x10) = AT(u8 *, slot, 0x10);
-		AT(u8 *, AT(u8 *, slot, 0x10), 0xc) = AT(u8 *, slot, 0xc);
-		u8 *oldest = OLDEST;
-		AT(u8 *, slot, 0xc) = oldest;
-		AT(u8 *, slot, 0x10) = AT(u8 *, OLDEST, 0x10);
-		AT(u8 *, oldest, 0x10) = slot;
-		AT(u8 *, AT(u8 *, slot, 0x10), 0xc) = slot;
+		SLOT(slot->next)->prev = slot->prev;
+		SLOT(slot->prev)->next = slot->next;
+		u8 *oldest = mg->oldest;
+		slot->next = oldest;
+		slot->prev = OLDEST->prev;
+		SLOT(oldest)->prev = (u8 *)slot;
+		SLOT(slot->prev)->next = (u8 *)slot;
 	}
-	AT(int, slot, 4) = i;
-	AT(int, texture, 0xc0168) = AT(int, slot, 0);
-#undef AT
+	slot->record = i;
+	texture->slot = slot->index;
 #undef OLDEST
+#undef SLOT
 }
 
 /* 0x4569d0 (thiscall on the texture sets): the six managers kept (+4 .. +0x18), each (when given) checked for its
@@ -318,7 +319,7 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		slot[3] = (u32)(TM->slots + (n + i - 1) % n * 0x14);
 		slot[4] = (u32)(TM->slots + (i + 1) % TM->slotCount * 0x14);
 	}
-	TM->counterA = 0;
+	TM->loadCount = 0;
 	TM->counterB = 0;
 	TM->counterC = 0;
 	TM->oldest = TM->slots;
