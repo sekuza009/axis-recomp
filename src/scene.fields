@@ -808,6 +808,7 @@ struct ParticleDesc 0x7c                                        # what a particl
 0x4c       0x30       float quadPoints[4][3]
 
 struct Stage 0x2150443                                          # the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the
+0x9ca0f4   0x2ee0     u32 nearObjects[1000][3]                   # (by use) the map objects near a moving sphere (collision_moveActor): each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse - space_testSphere's sub-models
 0x8        0x100      char stageDir[0x100]                       # (by use) the data directories (object_setNames; game_loadAllData: "Stage" .. "Scene"): the stage's
 0x108      0x100      char mapDir[0x100]                         # the maps' (a map's files: "<mapDir>/<name>")
 0x208      0x100      char textureDir[0x100]

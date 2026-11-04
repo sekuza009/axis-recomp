@@ -985,7 +985,7 @@ typedef struct Stage {
 	u8 *collisionPlanes;   /* +0xa24: (by use) the collision planes (0xac bytes each; a hit record points into them) */
 	u8 _pad0000a28[0xdc];
 	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
-	u8 _pad09ca0f4[0x2ee0];
+	u32 nearObjects[1000][3];   /* +0x9ca0f4: (by use) the map objects near a moving sphere (collision_moveActor): each its unit's planes (SpaceUnit.lastNode), relMatrix and relInverse - space_testSphere's sub-models */
 	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
 	LightFactors mapLights;   /* +0x9ccffc: (by use) the map's lights (Light_read from the map file): they shade the map objects */
@@ -2265,6 +2265,7 @@ _Static_assert(offsetof(Stage, stageName) == 0x908 && sizeof(((Stage *)0)->stage
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, spaceData) == 0xb04 && sizeof(((Stage *)0)->spaceData) == 0x9c95f0, "scene.fields: Stage.spaceData");
+_Static_assert(offsetof(Stage, nearObjects) == 0x9ca0f4 && sizeof(((Stage *)0)->nearObjects) == 0x2ee0, "scene.fields: Stage.nearObjects");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, mapLights) == 0x9ccffc && sizeof(((Stage *)0)->mapLights) == 0xb010, "scene.fields: Stage.mapLights");

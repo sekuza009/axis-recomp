@@ -242,40 +242,38 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 	else
 		memcpy(d, vel, sizeof d);
 	int count = 0;
-	u32 *sub = (u32 *)(stage + 0x9ca0f4);
 	X reach = 0;
 	for (int i = 0; i < st->objectCount; i++) {
 		if (i == 0) {
 			X y = fld_m(&d[1]), z = fld_m(&d[2]);
 			reach = fadd_m(x87_fsqrt(z * z + y * y + mul(fld_m(&d[0]), &d[0])), &r);
 		}
-		u8 *obj = stage + 0x131ae48 + i * 0x2cc;
-		if (FIELD(int, obj, 0) != 1 || FIELD(int, obj, 0x28c) != 1)
+		const MapObject *obj = &st->objects[i];
+		if (obj->active != 1 || obj->animated != 1)
 			continue;
-		u32 tris = FIELD(u32, FIELD(u8 *, obj, 0x288), 8);
+		u32 tris = (u32)((const SpaceUnit *)obj->unit)->lastNode;
 		if (!tris)
 			continue;
-		const float *m = (const float *)(obj + 0x130);
+		const float *m = obj->matrixInverse;
 		float at[3];
 		at[0] = f32(fadd_m(mul(fld_m(&m[8]), &pos[2]) + mul(fld_m(&m[4]), &pos[1]) + mul(fld_m(&m[0]), &pos[0]), &m[12]));
 		at[1] = f32(fadd_m(mul(fld_m(&m[1]), &pos[0]) + mul(fld_m(&m[9]), &pos[2]) + mul(fld_m(&m[5]), &pos[1]), &m[13]));
 		at[2] = f32(fadd_m(mul(fld_m(&m[2]), &pos[0]) + mul(fld_m(&m[10]), &pos[2]) + mul(fld_m(&m[6]), &pos[1]), &m[14]));
-		const float *box = (const float *)(FIELD(u8 *, obj, 0x278) + 0x34);
+		const Model *md = obj->model;
 		int inside = 1;
 		for (int c = 0; c < 3 && inside; c++)
-			inside = !(fld_m(&box[c]) - reach >= at[c]);
+			inside = !(fld_m(&md->low[c]) - reach >= at[c]);
 		for (int c = 0; c < 3 && inside; c++)
-			inside = fadd_m(reach, &box[3 + c]) > at[c];
+			inside = fadd_m(reach, &md->high[c]) > at[c];
 		if (!inside)
 			continue;
-		sub[0] = tris;
-		sub[1] = (u32)(obj + 0x1f0);
-		sub[2] = (u32)(obj + 0x230);
-		sub += 3;
+		st->nearObjects[count][0] = tris;
+		st->nearObjects[count][1] = (u32)obj->relMatrix;
+		st->nearObjects[count][2] = (u32)obj->relInverse;
 		count++;
 	}
 	return space_testSphere(stage + 0xa10, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
-	                        stage + 0x9ca0f4, count);
+	                        st->nearObjects, count);
 }
 
 /* ---- 0x47dd90: a moving sphere against one triangle ---- */
@@ -399,7 +397,7 @@ static void respond(float *w, const float *v, const float *d, float k, const flo
 int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const float *vel, float k, float *outPos,
                                       float *outVel, float *outDist, float *plane, const float *axis)
 {
-	const float *n = (const float *)(tri + 0x4c), *dist = (const float *)(tri + 0x58);
+	const float *n = ((const CollisionPlane *)tri)->normal, *dist = &((const CollisionPlane *)tri)->dist;
 	float *o = outPos, edge[3], p[3], v[3], c[3], d[3], w[3], u[3], pv[3], r2, a;
 	for (int i = 0; i < 3; i++)
 		o[i] = f32(fadd_m(fld_m(&pos[i]), &vel[i]));
@@ -408,7 +406,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 	if (absx(fsub_m(mul(fld_m(&o[2]), &n[2]) + mul(fld_m(&o[1]), &n[1]) + mul(fld_m(&o[0]), &n[0]), dist)) >= r)
 		return 0;
 	for (int i = 0; i < 3; i++) {
-		const float *e = (const float *)(tri + 0x5c + i * 16);
+		const float *e = ((const CollisionPlane *)tri)->edgePlanes[i];
 		X s = fsub_m(mul(fld_m(&e[0]), &o[0]) + mul(fld_m(&e[1]), &o[1]) + mul(fld_m(&e[2]), &o[2]), &e[3]);
 		edge[i] = (float)s;
 		if (s >= r)
@@ -471,7 +469,7 @@ int THISCALL (collision_sphereVsUnit)(u8 *tri, float r, const float *pos, const 
 	}
 	int j = (i + 1) % 3, corner = 1;
 	const float *vi = (const float *)(tri + 4 + i * 12), *vj = (const float *)(tri + 4 + j * 12);
-	const float *e = (const float *)(tri + 0x28 + i * 12);
+	const float *e = ((const CollisionPlane *)tri)->edges[i];
 	vsub(u, o, vi);
 	if (!(dot_zyx(e, u) >= 0)) {   /* before the edge's start: that corner */
 		r2 = f32(fmul_m(fld_m(&r), &r));
@@ -664,15 +662,15 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		ground_triangle(grid, 0x10, va, vb, vd);
 	}
 	for (int l = 0; l < st->groundLayerCount; l++) {
-		u8 *layer = (u8 *)&((Stage *)stage)->groundLayers[l];
-		int kind = FIELD(int, layer, 0);
+		const GroundLayer *layer = &((Stage *)stage)->groundLayers[l];
+		int kind = layer->kind;
 		if (kind != 0 && kind != 1)
 			continue;
-		for (int r = 0; r < FIELD(int, layer, 0x1c); r++) {
+		for (int r = 0; r < layer->rows; r++) {
 			log_message((int)stage, 0, r, (const char *)(RELOC(kind) ? STR(0x4c7430, "add layer ceiling type planes row %d") : STR(0x4c7458, "add layer floor type planes row %d")), r);
-			for (int c = 0; c < FIELD(int, layer, 0x20); c++) {
-				int w = FIELD(int, layer, 0x20) + 1;
-				const float *v = FIELD(const float *, layer, 0x40);
+			for (int c = 0; c < layer->cols; c++) {
+				int w = layer->cols + 1;
+				const float *v = layer->points;
 				const float *p00 = v + (w * r + c) * 3, *p01 = p00 + 3, *p10 = v + (w * (r + 1) + c) * 3, *p11 = p10 + 3;
 				if (kind == 0) {
 					ground_triangle(grid, 0, p00, p10, p01);
@@ -685,11 +683,11 @@ void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, floa
 		}
 	}
 	for (int i = 0; i < st->objectCount; i++) {
-		u8 *obj = (u8 *)&((Stage *)stage)->objects[i];
-		if (FIELD(int, obj, 4) != 1 || (obj[0xc] & 4))
+		MapObject *obj = &((Stage *)stage)->objects[i];
+		if (obj->active != 1 || (obj->flags & 4))
 			continue;
 		if (i % 2 == 0)
 			log_message((int)stage, 0, i, (const char *)STR(0x4c7418, "add object %d planes"), i);
-		FIELD(u32, obj, 0x28c) = space_buildUnits(grid, i, FIELD(void *, obj, 0x27c), (const float *)(obj + 0xf4));
+		obj->unit = (void *)space_buildUnits(grid, i, obj->model, obj->matrix);
 	}
 }
