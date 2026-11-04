@@ -4,10 +4,10 @@
 
 #define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
 
-/* a part of a collision unit: flags first, the next part at +0xa4; the unit keeps its first part at +4 */
+/* a collision unit's planes (from its last, lastPlane, back through listPrev) flagged or not (flag 1: off) */
 static void unit_parts_flag(void *unit, int set)
 {
-	for (u32 *p = FIELD(u32 *, unit, 4); p; p = FIELD(u32 *, p, 0xa4))
+	for (u32 *p = (u32 *)((SpaceUnit *)unit)->lastPlane; p; p = (u32 *)((CollisionPlane *)p)->listPrev)
 		if (set)
 			*p |= 1;
 		else

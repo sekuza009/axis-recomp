@@ -408,7 +408,7 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 	Player *a = &STS->actors[p];
 	if (a->active != 1)
 		return;
-	unsigned mode = FIELD(int, scene, 0x20f3ab8) - 2;
+	unsigned mode = STS->gameType - 2;
 	if (mode <= 9) {
 		int pair = mode / 2;
 		int energy = pair == 0 ? 10 : 150;

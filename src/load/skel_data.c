@@ -560,12 +560,12 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 		float *m = ((ListedObject *)out)->matrix;
 		glGetFloatv(0xba6, m);
 		transform(((ListedObject *)out)->pos, m, &point[0], &point[1], &point[2]);
-		const float *own = AT(const float *, out, 0);
+		const Model *own = ((ListedObject *)out)->shape;
 		if (own) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
 				((ListedObject *)out)->centre[r] = r == 0
-					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own[10]) + fmul_m(fld_m(&m[4]), &own[9]) + fmul_m(fld_m(&m[0]), &own[8]), &m[12]))
-					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own[10]) + fmul_m(fld_m(&m[r]), &own[8]) + fmul_m(fld_m(&m[4 + r]), &own[9]), &m[12 + r]));
+					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own->centre[2]) + fmul_m(fld_m(&m[4]), &own->centre[1]) + fmul_m(fld_m(&m[0]), &own->centre[0]), &m[12]))
+					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own->centre[2]) + fmul_m(fld_m(&m[r]), &own->centre[0]) + fmul_m(fld_m(&m[4 + r]), &own->centre[1]), &m[12 + r]));
 		} else
 			memcpy(((ListedObject *)out)->centre, ((ListedObject *)out)->pos, 12);
 	}
@@ -735,14 +735,14 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		Mat4_fromAxisAngle(r, ((Bone *)up)->rotation);
 		Mat4_multiply(m, t, r);
 		Mat4_invert(inv, m);
-		translation(t, (const float *)(RELOC(bone) + 0x44));
-		Mat4_fromAxisAngle(r, (const float *)(RELOC(bone) + 0x50));
+		translation(t, ((Bone *)bone)->pos);
+		Mat4_fromAxisAngle(r, ((Bone *)bone)->rotation);
 		Mat4_multiply(local, t, r);
 		Mat4_multiply(rel, inv, local);
 		for (int k = 0; k < 3; k++)
-			GAME_VAR(float, bone + 0x44 + k * 4) = f32(fld_m(&rel[12 + k]));
+			((Bone *)bone)->pos[k] = f32(fld_m(&rel[12 + k]));
 		rel[12] = rel[13] = rel[14] = 0;
-		axisAngle_fromMatrix((float *)(RELOC(bone) + 0x50), rel);
+		axisAngle_fromMatrix(((Bone *)bone)->rotation, rel);
 	}
 	for (int i = 0; i < ((Skeleton *)sk)->boneCount; i++) {
 		u8 *bone = ((Skeleton *)sk)->bones + i * 0x70;
