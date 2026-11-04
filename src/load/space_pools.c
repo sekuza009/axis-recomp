@@ -8,48 +8,50 @@
 
 typedef int (THISCALL *Clear)(void *record);
 
-/* the pool whose count is at +count: records of stride bytes, their links at +link. Returns what the original
-   leaves in eax: (count - 1) * stride when there are at least two records, else the count */
-static int reset_pool(void *space, int count, int stride, Clear clear, int link)
+/* a pool of the space: its records (stride bytes) cleared and chained into the free list (each record's previous
+   at +link, next at +link + 4), none used. Returns what the original leaves in eax: (count - 1) * stride when there
+   are at least two records, else the count */
+static int reset_pool(SpacePool *pool, int stride, Clear clear, int link)
 {
-	for (int i = 0; i < FIELD(int, space, count); i++)
-		clear(FIELD(u8 *, space, count + 4) + i * stride);
-	for (int i = 1; i < FIELD(int, space, count); i++) {
-		u8 *e = FIELD(u8 *, space, count + 4) + i * stride;
+	for (int i = 0; i < pool->count; i++)
+		clear(pool->records + i * stride);
+	for (int i = 1; i < pool->count; i++) {
+		u8 *e = pool->records + i * stride;
 		FIELD(u8 *, e, link) = e - stride;
 	}
-	int r = FIELD(int, space, count);
-	if (FIELD(int, space, count) - 1 > 0) {
+	int r = pool->count;
+	if (pool->count - 1 > 0) {
 		int i;
-		for (i = 0; i < FIELD(int, space, count) - 1; i++) {
-			u8 *a = FIELD(u8 *, space, count + 4);
+		for (i = 0; i < pool->count - 1; i++) {
+			u8 *a = pool->records;
 			FIELD(u8 *, a + i * stride, link + 4) = a + (i + 1) * stride;
 		}
 		r = i * stride;
 	}
-	FIELD(int, space, count + 0xc) = 0;
-	FIELD(u8 *, space, count + 8) = FIELD(u8 *, space, count + 4);
+	pool->used = 0;
+	pool->freeHead = pool->records;
 	return r;
 }
+#define POOL(space, name) (&((Space *)RELOC(space))->name)
 
 static int THISCALL clear_plane(void *r) { return collisionPlane_clear(r); }
 static int THISCALL clear_node(void *r) { return spaceNode_clear(r); }
 static int THISCALL clear_block(void *r) { return spaceBlock_clear(r); }
 
 /* 0x481520: the planes (0xac bytes each) */
-int THISCALL (space_resetPlanes)(void *space) { return reset_pool(space, 0x10, 0xac, clear_plane, 0xa0); }
+int THISCALL (space_resetPlanes)(void *space) { return reset_pool(POOL(space, planes), 0xac, clear_plane, 0xa0); }
 /* 0x481630: the nodes (0x10 bytes) */
-int THISCALL (space_resetNodes)(void *space) { return reset_pool(space, 0x20, 0x10, clear_node, 8); }
+int THISCALL (space_resetNodes)(void *space) { return reset_pool(POOL(space, nodes), 0x10, clear_node, 8); }
 /* 0x481860: the blocks (0x50 bytes) */
-int THISCALL (space_resetBlocks)(void *space) { return reset_pool(space, 0x40, 0x50, clear_block, 0x48); }
+int THISCALL (space_resetBlocks)(void *space) { return reset_pool(POOL(space, blocks), 0x50, clear_block, 0x48); }
 
-/* ---- a record taken from a pool's free list (its head at +head, a record's next and previous at +next / +prev):
-   the head moves on, the pool's used count (+count) goes up, the record is cleared. An empty free list is a fatal
-   error reporting all the pools' sizes (format at format) ---- */
-static void *take_free(u8 *space, int head, int next, int prev, int count, Clear clear, u32 format)
+/* ---- a record taken from a pool's free list (a record's next and previous at +next / +prev): the head moves on,
+   the pool's used count goes up, the record is cleared. An empty free list is a fatal error reporting all the
+   pools' sizes (format at format) ---- */
+static void *take_free(u8 *space, SpacePool *pool, int next, int prev, Clear clear, u32 format)
 {
 	Space *sp = (Space *)space;
-	u8 *r = FIELD(u8 *, space, head);
+	u8 *r = pool->freeHead;
 	if (!r) {
 		GAME_FN(sys_fatalError, 0x46c710, void, void *, const char *, int, int, int, int, int, int, int, int)(   /* sys_fatalError */
 			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), sp->planes.used, sp->planes.count, sp->nodes.used,
@@ -59,20 +61,20 @@ static void *take_free(u8 *space, int head, int next, int prev, int count, Clear
 	}
 	u8 *after = FIELD(u8 *, r, next);
 	if (after) {
-		FIELD(u8 *, space, head) = after;
+		pool->freeHead = after;
 		FIELD(u8 *, after, prev) = 0;
 	} else
-		FIELD(u8 *, space, head) = 0;
-	FIELD(int, space, count)++;
+		pool->freeHead = 0;
+	pool->used++;
 	clear(r);
 	return r;
 }
 static int THISCALL clear_unit(void *r) { spaceSlot_clear(r); return 0; }
 
 /* 0x4815c0, 0x4816c0, 0x4817f0: a free plane, node or unit */
-void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, 0x18, 0xa4, 0xa0, 0x1c, clear_plane, STR(0x4c7818, "not enoush free plane-getNextFreePlan...")); }
-void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, 0x28, 0xc, 8, 0x2c, clear_node, STR(0x4c7874, "not enoush free node-getNextFreeNodeP...")); }
-void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, 0x38, 0x10, 0xc, 0x3c, clear_unit, STR(0x4c78cc, "not enoush free unit-getNextFreeUnitP...")); }
+void *THISCALL (space_getNextFreePlanePtr)(void *space) { return take_free(space, POOL(space, planes), 0xa4, 0xa0, clear_plane, STR(0x4c7818, "not enoush free plane-getNextFreePlan...")); }
+void *THISCALL (space_getNextFreeNodePtr)(void *space) { return take_free(space, POOL(space, nodes), 0xc, 8, clear_node, STR(0x4c7874, "not enoush free node-getNextFreeNodeP...")); }
+void *THISCALL (space_getNextFreeUnitPtr)(void *space) { return take_free(space, POOL(space, units), 0x10, 0xc, clear_unit, STR(0x4c78cc, "not enoush free unit-getNextFreeUnitP...")); }
 
 /* 0x4818e0 (thiscall on the space): a block taken from the free list (+0x48; its next at +0x4c, the new head's back
    link +0x48 cleared), counted (+0x4c), reset (spaceBlock_clear) and given the bounds mn / mx (three dwords each);
@@ -423,7 +425,7 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 		}
 	const float *grid_low = sp->min, *grid_high = sp->max;
 	const float *margin = (const float *)&sp->margin;
-	const float *size_z = sp->cellSize, *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	const float *size_z = sp->cellSize, *size_x = &sp->cellSize[1], *size_y = &sp->cellSize[2];
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&grid_high[c]), margin) > low[c]))
 			return 0;
@@ -611,7 +613,7 @@ int THISCALL (space_traceNodes)(u8 *space, const float *p0, const float *p1, u32
 	if (nz <= 0 || nx <= 0 || ny <= 0)
 		return 0;
 	const float *low = sp->min;
-	const float *size_z = sp->cellSize, *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
+	const float *size_z = sp->cellSize, *size_x = &sp->cellSize[1], *size_y = &sp->cellSize[2];
 	int z0 = cell_of(&p0[2], &low[2], size_z, nz), x0 = cell_of(&p0[0], &low[0], size_x, nx), y0 = cell_of(&p0[1], &low[1], size_y, ny);
 	int z1 = cell_of(&p1[2], &low[2], size_z, nz), x1 = cell_of(&p1[0], &low[0], size_x, nx), y1 = cell_of(&p1[1], &low[1], size_y, ny);
 	int step_y = y0 > y1 ? -1 : 1, step_z = z0 > z1 ? -1 : 1, step_x = x0 > x1 ? -1 : 1;
