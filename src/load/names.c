@@ -75,8 +75,8 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 		sys_fatalError((char *)OBJ(g_logTexture), (const char *)STR(0x4b3f80, "can't find item(%s) - getItemFileBy()"), (int)name);
 		return 0;
 	}
-	crt_fseek(GAME_VAR(void *, manager + 0x110), GAME_VAR(long, GAME_VAR(u8 *, manager + 0x10c) + i * 0x44 + 0x40), 0);
-	return GAME_VAR(void *, manager + 0x110);
+	crt_fseek(((TextureManager *)manager)->file, GAME_VAR(long, ((TextureManager *)manager)->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
+	return ((TextureManager *)manager)->file;
 }
 
 /* 0x456be0 (thiscall on the texture sets): a texture's id by name: each of the six managers (+4 ..) asked in turn
@@ -84,7 +84,7 @@ void *THISCALL (tex_getItemFileBy)(u8 *manager, const char *name)
 int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g)
 {
 	for (int k = 0; k < 6; k++) {
-		void *manager = GAME_VAR(void *, sets + 4 + k * 4);
+		void *manager = ((TextureSets *)sets)->managers[k];
 		if (!manager)
 			continue;
 		int i = tex_allocIdBy(manager, (u32)name, a, b, c, d, e, f, g);
@@ -182,7 +182,7 @@ void THISCALL (texSmall_initBy)(u8 *sets, u8 *a, u8 *b, u8 *c, u8 *d, u8 *e, u8 
 			sys_fatalErrorN((char *)OBJ(g_logTextureManager), (const char *)RELOC(sizes[k][2]), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
-		GAME_VAR(u8 *, sets + 4 + k * 4) = managers[k];
+		((TextureSets *)sets)->managers[k] = managers[k];
 }
 
 /* 0x456520 (thiscall on a texture manager): its pixels (+0x114, +0xc0118 x +0xc011c) uploaded to GL texture id: wrapped
@@ -213,8 +213,8 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 #define crt_fread(p, size, count, f) GAME_CDECL(0x49e836, u32, void *, u32, u32, void *)(p, size, count, f)
 	static const u32 formats[3][2] = { { STR(0x4b3fdc, "%s\\%s"), STR(0x4b3fd8, "%s") }, { STR(0x4b3fec, "%s\\%s.BMP"), STR(0x4b3fe4, "%s.BMP") }, { STR(0x4b4000, "%s\\%s.RAW"), STR(0x4b3ff8, "%s.RAW") } };   /* "%s\%s" "%s", .BMP, .RAW */
 	u8 image[0x48];
-	FIELD(u32, image, 0) = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
-	FIELD(u32, image, 4) = 0;          /* (no file yet) */
+	((BmpFile *)image)->vtable = VT(BMPRGBFile, 0x4a96f8);   /* (its vtable) */
+	BITS(((BmpFile *)image)->file) = 0;          /* (no file yet) */
 	char base[0x100], path[0x100];
 	strcpy(base, name);
 	crt_strtok(base, (const char *)STR(0x4b12f4, "*"));   /* "*" */
@@ -232,7 +232,7 @@ int THISCALL (tex_textureFileExist)(u8 *tm, const char *name)
 		else if (format == 1) {
 			if (file_exists_46ca70(path)) {
 				image_initBy(image, path);
-				int w = FIELD(int, image, 0x3e), h = FIELD(int, image, 0x42);
+				int w = ((BmpFile *)image)->width, h = ((BmpFile *)image)->height;
 				BMPRGBFile_close(image);
 				ok = w == TM->width && h == TM->height;
 			}
@@ -295,14 +295,14 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		TM->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 		if (!TM->file)
 			fatal(STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
-		crt_fread(tm + 0x108, 4, 1, TM->file);
-		FIELD(void *, tm, 0x10c) = operator_new(((u32)TM->indexCount) * 0x44);
-		if (!FIELD(void *, tm, 0x10c))
+		crt_fread(&TM->indexCount, 4, 1, TM->file);
+		(*(void **)&TM->index) = operator_new(((u32)TM->indexCount) * 0x44);
+		if (!(*(void **)&TM->index))
 			fatal(STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), TM->indexCount);
-		crt_fread(FIELD(void *, tm, 0x10c), 0x44, ((u32)TM->indexCount), TM->file);
+		crt_fread((*(void **)&TM->index), 0x44, ((u32)TM->indexCount), TM->file);
 	} else {
 		TM->indexCount = 0;
-		FIELD(void *, tm, 0x10c) = NULL;
+		(*(void **)&TM->index) = NULL;
 		TM->file = NULL;
 	}
 	TM->recordCount = 0;

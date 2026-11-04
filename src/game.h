@@ -102,7 +102,7 @@
 /* the 3D background (menu_tunnel.c) */
 #define g_flareTextures ((const int *)(OBJ(g_spiralTextures) + 0x14))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
-typedef struct { u32 count; void *managers[1]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
+typedef struct { u32 count; void *managers[6]; } TextureSets;   /* a texture id names managers[id / 512], slot id % 512 */
 #define tex_bind(manager, slot) GAME_THISFN(tex_bind, 0x4566c0, void, void *, int)(manager, slot)
 #define gfx_getWidth() GAME_FN(gfx_getWidth, 0x4685b0, int, void)()
 #define gfx_getHeight() GAME_FN(gfx_getHeight, 0x4685c0, int, void)()
