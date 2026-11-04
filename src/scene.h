@@ -652,7 +652,8 @@ typedef struct Manager {
 	u8 *data;   /* +0x128 */
 	i32 dataUsed;   /* +0x12c */
 	char textureDir[0x100];   /* +0x130: (shapes) the textures' place, given with bindArgs to shape_bindTextureBy */
-	u32 bindArgs[7];   /* +0x230: (shapes) cleared at setup */
+	u32 bindFlags;   /* +0x230: (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint) */
+	u32 tint[6];   /* +0x234: two hue / chroma / value triples (floats' bits) */
 } Manager;
 
 /* a manager's name tree node: by strcmp, smaller left */
@@ -1945,7 +1946,8 @@ _Static_assert(offsetof(Manager, dataSize) == 0x124 && sizeof(((Manager *)0)->da
 _Static_assert(offsetof(Manager, data) == 0x128 && sizeof(((Manager *)0)->data) == 0x4, "scene.fields: Manager.data");
 _Static_assert(offsetof(Manager, dataUsed) == 0x12c && sizeof(((Manager *)0)->dataUsed) == 0x4, "scene.fields: Manager.dataUsed");
 _Static_assert(offsetof(Manager, textureDir) == 0x130 && sizeof(((Manager *)0)->textureDir) == 0x100, "scene.fields: Manager.textureDir");
-_Static_assert(offsetof(Manager, bindArgs) == 0x230 && sizeof(((Manager *)0)->bindArgs) == 0x1c, "scene.fields: Manager.bindArgs");
+_Static_assert(offsetof(Manager, bindFlags) == 0x230 && sizeof(((Manager *)0)->bindFlags) == 0x4, "scene.fields: Manager.bindFlags");
+_Static_assert(offsetof(Manager, tint) == 0x234 && sizeof(((Manager *)0)->tint) == 0x18, "scene.fields: Manager.tint");
 _Static_assert(sizeof(Manager) == 0x24c, "scene.fields: size of Manager");
 _Static_assert(offsetof(TreeNode, name) == 0x0 && sizeof(((TreeNode *)0)->name) == 0x40, "scene.fields: TreeNode.name");
 _Static_assert(offsetof(TreeNode, index) == 0x40 && sizeof(((TreeNode *)0)->index) == 0x4, "scene.fields: TreeNode.index");

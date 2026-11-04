@@ -553,7 +553,8 @@ struct Manager 0x24c                                            # a shape or ske
 0x128      4          u8 *data
 0x12c      4          i32 dataUsed
 0x130      0x100      char textureDir[0x100]                    # (shapes) the textures' place, given with bindArgs to shape_bindTextureBy
-0x230      0x1c       u32 bindArgs[7]                           # (shapes) cleared at setup
+0x230      4          u32 bindFlags                              # (shapes) given to shape_bindTextureBy with the tint; bit 1: tinted (shape_setTint)
+0x234      0x18       u32 tint[6]                                # two hue / chroma / value triples (floats' bits)
 
 struct TreeNode 0x4c                                            # a manager's name tree node: by strcmp, smaller left
 0          0x40       char name[0x40]
