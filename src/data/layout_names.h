@@ -1159,7 +1159,7 @@ extern struct GameData g_data;
 #undef g_joinedSessionFlag
 #define g_joinedSessionFlag (*(u8 *)((u8 *)g_netNoticeRecord_v + 0x1))
 #undef g_joinedSessionRec
-#define g_joinedSessionRec ((u8 *)g_joinedSessionRec_v)
+#define g_joinedSessionRec ((SessionEntry *)g_joinedSessionRec_v)
 #undef g_joinedTitleEmail
 #define g_joinedTitleEmail ((char *)g_data.g_joinedTitleEmail_)
 #undef g_joinedTitleLevel
@@ -2435,9 +2435,9 @@ extern struct GameData g_data;
 #undef g_sessionDesc
 #define g_sessionDesc ((u8 *)g_sessionDesc_v)
 #undef g_sessionList
-#define g_sessionList ((u8 *)g_sessionList_v)
+#define g_sessionList ((SessionEntry *)g_sessionList_v)
 #undef g_sessionTable
-#define g_sessionTable ((u32 *)g_sessionTable_v)
+#define g_sessionTable ((SessionSlot *)g_sessionTable_v)
 #undef g_settingsPage
 #define g_settingsPage (*(int *)g_settingsPage_v)
 #undef g_settingsState

@@ -1,5 +1,5 @@
 /* game_lists.c: the lists of games to join, the game room's (window 0x9dd4a8 .. 0x9dd4b4) and the arena lobby's
-   (0x4db8c8 .. 0x4db8d4): the games (0x4a-byte records from 0x9087c4) from row 0x680bb0, the page, and their boxes */
+   (0x4db8c8 .. 0x4db8d4): the games (g_sessionList) from row 0x680bb0, the page, and their boxes */
 #include "../game.h"
 #include <string.h>
 
@@ -29,16 +29,16 @@ static void button(int lit, int x0, int y0, int x1, int y1, float dim_alpha)
 		TEXT(dim);
 }
 
-/* nine rows of games from g_listTop at x0, from y (to end) below y0: a lock (+0x43; when locks), the name (+0, 32
-   characters), the map (+0x21, 13 characters; MSG(455, "ROTATION") when +0x20), the game type (+0x28, a string of kinds, step
-   apart), "players / most" (+0x23 / +0x22) and the ping (+0x24; when pings); the game under the cursor (0x76d41c) in
+/* nine rows of games from g_listTop at x0, from y (to end) below y0: a lock (when locks), the name (32 characters),
+   the map (13 characters; MSG(455, "ROTATION") with the rotation flag), the game mode (a string of kinds, step
+   apart), "players / most" and the ping (when pings); the game under the cursor (0x76d41c) in
    white, the others cyan */
 static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int step, int pings)
 {
 	char text[50], other[12];
 	for (int i = 0; i < g_gameCount && y < end; i++, y += 0x18) {
-		const u8 *game = g_gameList + (g_listTop + i) * 0x4a;
-		if (locks && game[0x43]) {
+		const SessionEntry *game = &g_sessionList[g_listTop + i];
+		if (locks && game->locked) {
 			glEnable(GL_TEXTURE_2D);
 			int texture = g_fontAscii;
 			tex_bind(g_textures->managers[texture / 512], texture % 512);
@@ -59,24 +59,24 @@ static void game_rows(int x0, int y0, int y, int end, int locks, u32 kinds, int 
 		if (g_localPlayer == g_listTop + i)
 			set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
 		memset(text, 0, sizeof text);
-		crt_strncpy(text, (const char *)game, 0x20);
+		crt_strncpy(text, game->name, 0x20);
 		text_draw8(x0 + 0x20, y0 + y, text);
-		if (game[0x20])
+		if (game->rotation)
 			text_draw8(x0 + 0x114, y0 + y, (const char *)MSG(455, "ROTATION"));
 		else {
 			memset(text, 0, sizeof text);
-			crt_strncpy(text, (const char *)(OBJ(g_mapNames) + (signed char)game[0x21] * 0x20), 0xd);
+			crt_strncpy(text, (const char *)(OBJ(g_mapNames) + game->map * 0x20), 0xd);
 			text_draw8(x0 + 0x114, y0 + y, text);
 		}
-		text_draw8(x0 + 0x182, y0 + y, (const char *)(RELOC(kinds) + (signed char)game[0x28] * step));
+		text_draw8(x0 + 0x182, y0 + y, (const char *)(RELOC(kinds) + game->gameMode * step));
 		memset(text, 0, sizeof text);
-		itoa((signed char)game[0x23], text, 10);
-		itoa((signed char)game[0x22], other, 10);
+		itoa(game->players, text, 10);
+		itoa(game->maxPlayers, other, 10);
 		strcat(text, (const char *)STR(0x4ad568, " / "));
 		strcat(text, other);
 		text_draw8(x0 + 0x1bc, y0 + y, text);
 		if (pings) {
-			itoa(*(const int *)(game + 0x24), text, 10);
+			itoa(game->ping, text, 10);
 			text_draw8(x0 + 0x200, y0 + y, text);
 		}
 	}
@@ -421,7 +421,7 @@ void (gameList_drawPage)(void)
 	g_joinPasswordTyped = 0;
 	memset((void *)ADDR(g_roomMessageText), 0, 8);
 	strcpy((char *)ADDR(g_roomMessageText), g_chatLine);
-	if (strcmp((const char *)(OBJ(g_gameList) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_roomMessageText)) != 0) {
+	if (strcmp(g_sessionList[g_localPlayer].password, (const char *)ADDR(g_roomMessageText)) != 0) {
 		menu_showMessage(0x27);
 		g_roomJoined = 0;
 	}
@@ -797,7 +797,7 @@ void (lobbyJoin_draw)(void)
 		memset((void *)ADDR(g_arenaMessageText), 0, 8);
 		g_editingArenaMessage = 0;
 		strcpy((char *)ADDR(g_arenaMessageText), g_chatLine);
-		int wrong = strcmp((const char *)(OBJ(g_gameList) + g_localPlayer * 0x4a + 0x3b), (const char *)ADDR(g_arenaMessageText)) != 0;
+		int wrong = strcmp(g_sessionList[g_localPlayer].password, (const char *)ADDR(g_arenaMessageText)) != 0;
 		if (wrong)
 			g_lobbyJoinStarted = 0;
 		g_arenaJoining = 0;

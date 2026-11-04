@@ -713,40 +713,39 @@ u32 (lobby_playerScreenClicks)(void)
 	return button;
 }
 
-/* a joined session's settings taken from its record (0x4a bytes): the music stopped, the 32-byte rules (+4), +0x24,
-   +0x25, +0x2c and the colours (+0x2d, +0x2e); the lobby left (0x4dbb3c 0) for the game (0x67ef14 1, 0x67ef04 2) */
-static void take_session(const u8 *rec)
+/* a joined session's settings taken from its list entry: the music stopped, its name as the map title, the map,
+   rotation, game mode, frag and time limits; the lobby left (0x4dbb3c 0) for the game (0x67ef14 1, 0x67ef04 2) */
+static void take_session(const SessionEntry *rec)
 {
 	music_shutdown();
-	g_missionStage = (signed char)rec[0x25];
-	memcpy((void *)OBJ(g_mapTitle), rec + 4, 32);
-	g_mapRotation = (signed char)rec[0x24];
+	g_missionStage = rec->map;
+	memcpy((void *)OBJ(g_mapTitle), rec->name, 32);
+	g_mapRotation = rec->rotation;
 	g_arenaLobbyMode = 0;
 	g_quitAsked = 1;
 	g_netRole = 2;
-	g_chosenGameMode = (signed char)rec[0x2c];
-	g_fragLimit = rec[0x2d];
-	g_timeLimit = rec[0x2e];
+	g_chosenGameMode = rec->gameMode;
+	g_fragLimit = rec->fragLimit;
+	g_timeLimit = rec->timeLimit;
 }
 
-/* 0x405690: arena session `session` joined: its record (0x4a bytes from 0x9087c0) gives the colours shown
-   (+0x2d, +0x2e) and the join's argument (+0); a refused join shows message 0x36 (full) or 0x35. Joined, the music
-   stops and the session's settings are taken: the 32-byte rules (+4), +0x24, +0x25, +0x2c, the colours. Returns the
-   message's eax, or the colour +0x2e */
+/* 0x405690: arena session `session` joined: its list entry gives the frag and time limits shown and the join's
+   argument (its guid); a refused join shows message 0x36 (full) or 0x35. Joined, the music stops and the session's
+   settings are taken (take_session). Returns the message's eax, or the time limit */
 u32 (arena_joinSession)(int session)
 {
-	const u8 *rec = (const u8 *)(OBJ(g_sessionList) + session * 0x4a);
+	const SessionEntry *rec = &g_sessionList[session];
 	g_lobbyJoinStarted = 0;
 	g_lobbyJoinRequest = 0;
-	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec[0x2e];
-	g_arenaFragLimit = g_arenaFragLimitTyped = rec[0x2d];
-	int r = dplay_join(session, *(const u32 *)rec, g_cfgPlayerName,
+	g_arenaTimeLimit = g_arenaTimeLimitTyped = rec->timeLimit;
+	g_arenaFragLimit = g_arenaFragLimitTyped = rec->fragLimit;
+	int r = dplay_join(session, rec->guid, g_cfgPlayerName,
 	                                                               g_playerCorporation);   /* dplay_join: join */
 	if (r != 0x1f4)
 		return GAME_FN(menu_showMessage, 0x41ee40, u32, int)(r == 0x1f5 ? 0x36 : 0x35);   /* the message */
 	take_session(rec);
 	g_arenaConfirming = 0;
-	return rec[0x2e];
+	return rec->timeLimit;
 }
 
 /* 0x4062b0 (named app_shutdown; by use the arena join's answer, from WndProc): with the join dialog up (0x4dbb78)
@@ -766,29 +765,29 @@ void (app_shutdown)(void)
 		return;
 	}
 	int pick = g_arenaJoinRow;
-	u8 *rec;
+	SessionEntry *rec;
 	if (pick == 99999) {
 		g_arenaJoinRow = 0;
 		if (!g_arenaJoinPending)
 			return;
-		const u8 *in = g_receivedSession;
+		const SessionDesc *in = (const SessionDesc *)g_receivedSession;
 		rec = g_joinedSessionRec;
-		*(u32 *)rec = *(const u32 *)in;
-		rec[0x2d] = in[0x28];
-		rec[0x2e] = in[0x29];
-		rec[0x2c] = in[0x27];
-		rec[0x25] = in[0x24];
-		rec[0x24] = in[0x25];
-		strcpy((char *)rec + 4, (const char *)in + 0x2e);
+		rec->guid = in->guid;
+		rec->fragLimit = in->fragLimit;
+		rec->timeLimit = in->timeLimit;
+		rec->gameMode = in->gameMode;
+		rec->map = in->map;
+		rec->rotation = in->rotation;
+		strcpy(rec->name, in->name);
 	} else {
 		if (!g_arenaJoinPending)
 			return;
-		rec = (u8 *)(OBJ(g_sessionList) + pick * 0x4a);
-		*(u32 *)rec = *(*(const u32 **)&g_receivedSession);
-		g_arenaFragLimit = rec[0x2d];
-		g_arenaTimeLimit = rec[0x2e];
+		rec = &g_sessionList[pick];
+		rec->guid = ((const SessionDesc *)g_receivedSession)->guid;
+		g_arenaFragLimit = rec->fragLimit;
+		g_arenaTimeLimit = rec->timeLimit;
 	}
-	int r = dplay_join(0, *(const u32 *)rec, g_cfgPlayerName, g_playerCorporation);
+	int r = dplay_join(0, rec->guid, g_cfgPlayerName, g_playerCorporation);
 	if (r == 0x1f4) {
 		take_session(rec);
 		net_disconnect();

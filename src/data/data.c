@@ -1012,7 +1012,7 @@ u8 g_unusedDplayWord4_v[4] __attribute__((aligned(16)));   /* 0xa0b438 */
 char g_localAddress_v[16] __attribute__((aligned(16)));   /* 0xa0b43c */
 u8 g_ipxProviderGuid_v[16] __attribute__((aligned(16)));   /* 0xa0b450 */
 char g_dottedAddress_v[16] __attribute__((aligned(16)));   /* 0xa0b460 */
-u32 g_sessionTable_v[400] __attribute__((aligned(16)));   /* 0xa0b470 */
+u8 g_sessionTable_v[1600] __attribute__((aligned(16)));   /* 0xa0b470 */
 u8 g_connectionCopy_v[4] __attribute__((aligned(16)));   /* 0xa0bab0 */
 u8 g_serialProviderGuid_v[16] __attribute__((aligned(16)));   /* 0xa0bab8 */
 u8 g_serviceProviderCount_v[4] __attribute__((aligned(16)));   /* 0xa0bac8 */

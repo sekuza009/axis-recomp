@@ -1,12 +1,11 @@
 /* net_sessions.c: the network games received (DirectPlay's session enumeration) merged into the session list the
-   arena lobby and the game room show: 0x4a-byte entries from 0x9087c4, their count in 0x67ef30. */
+   arena lobby and the game room show: g_sessionList's SessionEntrys, their count in 0x67ef30. */
 #include "../game.h"
 #include <string.h>
 
-#define SESSION(k) (g_gameList + (k) * 0x4a)
-
 /* one screen's received games: flag says new ones arrived; records of stride bytes from base (s = a record's key
-   byte: its name at s + nameOff, its flags around s, a second string at s + str2Off); total sums the entries'
+   byte, its rotation flag: its map, most players, players, game mode, frag and time limits the six bytes before, its
+   lock after 9 and password after 10; its name at s + nameOff, its address at s + str2Off); total sums the entries'
    player counts; the three words of clear are cleared when nothing more is coming (0xa0d7a0 0) */
 typedef struct {
 	u32 flag, base;
@@ -22,28 +21,27 @@ static void merge(const Received *g)
 			if (GAME_VAR(int, OBJ(g_serverUsed) + i * 4) != 1)   /* not new */
 				continue;
 			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
-			int players = GAME_VAR(int, OBJ(g_serverPing) + i * 4);
-			if (players > 0) {
+			int ping = GAME_VAR(int, OBJ(g_serverPing) + i * 4);
+			if (ping > 0) {
 				int k = g_gameCount;
-				u8 *e = SESSION(k);
-				memset(e, 0, 32);
-				strcpy((char *)e, (const char *)s + g->nameOff);
-				u8 b6 = s[-6];
-				e[0x20] = s[0];
-				e[0x21] = b6;
-				e[0x28] = s[-3];
-				e[0x22] = s[-5];
-				e[0x23] = s[-4];
-				e[0x29] = s[-2];
-				e[0x2a] = s[-1];
-				GAME_VAR(int, e + 0x24) = players;
-				e[0x43] = s[9];
-				GAME_VAR(int, e + 0x3b) = 0;
-				GAME_VAR(int, e + 0x3f) = 0;
-				strcpy((char *)e + 0x3b, (const char *)s + 0xa);
-				memset(e + 0x2b, 0, 16);
-				strcpy((char *)e + 0x2b, (const char *)s + g->str2Off);
-				GAME_VAR(int, g->total) += (signed char)e[0x23];
+				SessionEntry *e = &g_sessionList[k];
+				memset(e->name, 0, 32);
+				strcpy(e->name, (const char *)s + g->nameOff);
+				u8 map = s[-6];
+				e->rotation = s[0];
+				e->map = map;
+				e->gameMode = s[-3];
+				e->maxPlayers = s[-5];
+				e->players = s[-4];
+				e->fragLimit = s[-2];
+				e->timeLimit = s[-1];
+				e->ping = ping;
+				e->locked = s[9];
+				memset(e->password, 0, 8);
+				strcpy(e->password, (const char *)s + 0xa);
+				memset(e->address, 0, 16);
+				strcpy(e->address, (const char *)s + g->str2Off);
+				GAME_VAR(int, g->total) += e->players;
 				g_gameCount = k + 1;
 				sessionList_sort();   /* the list sorted again */
 			}
@@ -71,16 +69,15 @@ void (arena_mergeReceivedSessions)(void)
 	merge(&arena);
 }
 
-/* 0x4065e0: the session list sorted by player count (+0x24, bubble sort). The original swaps 0x4a-byte blocks that
-   start 4 bytes before each record (from 0x9087c0): a record's last 4 bytes travel with the record after it */
+/* 0x4065e0: the session list sorted by ping (bubble sort, whole entries swapped) */
 void (sessionList_sort)(void)
 {
 	for (int pass = 0; g_gameCount - 1 > 0; ) {
 		int swapped = 0;
 		for (int j = 0; j < g_gameCount - 1; j++) {
-			u8 *e = SESSION(j);
-			if (GAME_VAR(int, e + 0x24) > GAME_VAR(int, e + 0x4a + 0x24)) {
-				record_swap(e - 4, e + 0x4a - 4);
+			SessionEntry *e = &g_sessionList[j];
+			if (e[0].ping > e[1].ping) {
+				record_swap(&e[0], &e[1]);
 				swapped = 1;
 			}
 		}
@@ -89,27 +86,26 @@ void (sessionList_sort)(void)
 	}
 }
 
-/* 0x406810: the arena list rebuilt from the session list (0x4a-byte records: name, id before it, settings), then
-   sorted */
+/* 0x406810: the arena list rebuilt from the sessions DirectPlay found (net_sessionValue), then sorted */
 void (arenaList_rebuild)(void)
 {
 	int n = net_sessionCount();
 	g_gameCount = n;
 	g_lobbyListPage = n;
 	for (int i = 0; i < g_gameCount; i++) {
-		const u8 *s = (const u8 *)net_sessionValue(i);
-		u8 *e = SESSION(i);
-		memset(e, 0, 32);
-		strcpy((char *)e, (const char *)s + 0x2e);
-		GAME_VAR(int, e - 4) = GAME_VAR(int, s);
-		e[0x20] = s[0x25];
-		e[0x21] = s[0x24];
-		e[0x28] = s[0x27];
-		e[0x22] = s[0x26];
-		e[0x23] = s[0x2a];
-		e[0x29] = s[0x28];
-		e[0x2a] = s[0x29];
-		GAME_VAR(int, e + 0x24) = 0;
+		const SessionDesc *s = (const SessionDesc *)net_sessionValue(i);
+		SessionEntry *e = &g_sessionList[i];
+		memset(e->name, 0, 32);
+		strcpy(e->name, s->name);
+		e->guid = s->guid;
+		e->rotation = s->rotation;
+		e->map = s->map;
+		e->gameMode = s->gameMode;
+		e->maxPlayers = s->maxPlayers;
+		e->players = (signed char)s->players;
+		e->fragLimit = s->fragLimit;
+		e->timeLimit = s->timeLimit;
+		e->ping = 0;
 	}
 	g_arenaHaveList = 1;
 	g_localPlayer = 0;

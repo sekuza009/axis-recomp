@@ -605,6 +605,47 @@ typedef struct PartInfo {
 	float weight;   /* +0x7c */
 } PartInfo;
 
+/* an arena session DirectPlay's enumeration found (dplay_enumSessionsCallback, from its */
+typedef struct SessionDesc {
+	u32 guid;   /* +0x0: a GlobalAlloc'd copy of the instance GUID: the join's argument (dplay_join) */
+	u8 instance[16];   /* +0x4: guidInstance */
+	u8 application[16];   /* +0x14: guidApplication */
+	signed char map;   /* +0x24: dwUser1's low two bytes: the map .. */
+	signed char rotation;   /* +0x25: .. and the map rotation flag */
+	u8 maxPlayers;   /* +0x26: dwMaxPlayers */
+	signed char gameMode;   /* +0x27: dwUser2 */
+	u8 fragLimit;   /* +0x28: dwUser3's two low bytes, the other way round */
+	u8 timeLimit;   /* +0x29 */
+	i32 players;   /* +0x2a: dwCurrentPlayers */
+	char name[70];   /* +0x2e: lpszSessionName */
+	char address[16];   /* +0x74: (TCP, connection kind 0) the host's address as text */
+	u8 _pad0000084[0x1];
+} SessionDesc;
+
+/* one of the 200 of g_sessionTable */
+typedef struct SessionSlot {
+	i32 used;   /* +0x0 */
+	SessionDesc *desc;   /* +0x4 */
+} SessionSlot;
+
+/* a game of the arena lobby's / game room's list (g_sessionList, 256: arenaList_rebuild */
+typedef struct SessionEntry {
+	u32 guid;   /* +0x0: (SessionDesc.guid) the join's argument */
+	char name[32];   /* +0x4 */
+	signed char rotation;   /* +0x24: the map rotation flag (shown "ROTATION") */
+	signed char map;   /* +0x25 */
+	signed char maxPlayers;   /* +0x26 */
+	signed char players;   /* +0x27 */
+	i32 ping;   /* +0x28: (the list is sorted by it; 0 from DirectPlay) */
+	signed char gameMode;   /* +0x2c */
+	u8 fragLimit;   /* +0x2d */
+	u8 timeLimit;   /* +0x2e */
+	char address[16];   /* +0x2f: what arena_openSession opens */
+	char password[8];   /* +0x3f */
+	u8 locked;   /* +0x47: a password is asked for (the lock shown) */
+	u8 _pad0000048[0x2];
+} SessionEntry;
+
 /* a player of the ranking list as the game server sends it (62 bytes: g_serverReply; */
 typedef struct RankedPlayer {
 	char name[30];   /* +0x0 */
@@ -2112,6 +2153,36 @@ _Static_assert(offsetof(PartInfo, tracer) == 0x74 && sizeof(((PartInfo *)0)->tra
 _Static_assert(offsetof(PartInfo, ringRange) == 0x78 && sizeof(((PartInfo *)0)->ringRange) == 0x4, "scene.fields: PartInfo.ringRange");
 _Static_assert(offsetof(PartInfo, weight) == 0x7c && sizeof(((PartInfo *)0)->weight) == 0x4, "scene.fields: PartInfo.weight");
 _Static_assert(sizeof(PartInfo) == 0x80, "scene.fields: size of PartInfo");
+_Static_assert(offsetof(SessionDesc, guid) == 0x0 && sizeof(((SessionDesc *)0)->guid) == 0x4, "scene.fields: SessionDesc.guid");
+_Static_assert(offsetof(SessionDesc, instance) == 0x4 && sizeof(((SessionDesc *)0)->instance) == 0x10, "scene.fields: SessionDesc.instance");
+_Static_assert(offsetof(SessionDesc, application) == 0x14 && sizeof(((SessionDesc *)0)->application) == 0x10, "scene.fields: SessionDesc.application");
+_Static_assert(offsetof(SessionDesc, map) == 0x24 && sizeof(((SessionDesc *)0)->map) == 0x1, "scene.fields: SessionDesc.map");
+_Static_assert(offsetof(SessionDesc, rotation) == 0x25 && sizeof(((SessionDesc *)0)->rotation) == 0x1, "scene.fields: SessionDesc.rotation");
+_Static_assert(offsetof(SessionDesc, maxPlayers) == 0x26 && sizeof(((SessionDesc *)0)->maxPlayers) == 0x1, "scene.fields: SessionDesc.maxPlayers");
+_Static_assert(offsetof(SessionDesc, gameMode) == 0x27 && sizeof(((SessionDesc *)0)->gameMode) == 0x1, "scene.fields: SessionDesc.gameMode");
+_Static_assert(offsetof(SessionDesc, fragLimit) == 0x28 && sizeof(((SessionDesc *)0)->fragLimit) == 0x1, "scene.fields: SessionDesc.fragLimit");
+_Static_assert(offsetof(SessionDesc, timeLimit) == 0x29 && sizeof(((SessionDesc *)0)->timeLimit) == 0x1, "scene.fields: SessionDesc.timeLimit");
+_Static_assert(offsetof(SessionDesc, players) == 0x2a && sizeof(((SessionDesc *)0)->players) == 0x4, "scene.fields: SessionDesc.players");
+_Static_assert(offsetof(SessionDesc, name) == 0x2e && sizeof(((SessionDesc *)0)->name) == 0x46, "scene.fields: SessionDesc.name");
+_Static_assert(offsetof(SessionDesc, address) == 0x74 && sizeof(((SessionDesc *)0)->address) == 0x10, "scene.fields: SessionDesc.address");
+_Static_assert(sizeof(SessionDesc) == 0x85, "scene.fields: size of SessionDesc");
+_Static_assert(offsetof(SessionSlot, used) == 0x0 && sizeof(((SessionSlot *)0)->used) == 0x4, "scene.fields: SessionSlot.used");
+_Static_assert(offsetof(SessionSlot, desc) == 0x4 && sizeof(((SessionSlot *)0)->desc) == 0x4, "scene.fields: SessionSlot.desc");
+_Static_assert(sizeof(SessionSlot) == 0x8, "scene.fields: size of SessionSlot");
+_Static_assert(offsetof(SessionEntry, guid) == 0x0 && sizeof(((SessionEntry *)0)->guid) == 0x4, "scene.fields: SessionEntry.guid");
+_Static_assert(offsetof(SessionEntry, name) == 0x4 && sizeof(((SessionEntry *)0)->name) == 0x20, "scene.fields: SessionEntry.name");
+_Static_assert(offsetof(SessionEntry, rotation) == 0x24 && sizeof(((SessionEntry *)0)->rotation) == 0x1, "scene.fields: SessionEntry.rotation");
+_Static_assert(offsetof(SessionEntry, map) == 0x25 && sizeof(((SessionEntry *)0)->map) == 0x1, "scene.fields: SessionEntry.map");
+_Static_assert(offsetof(SessionEntry, maxPlayers) == 0x26 && sizeof(((SessionEntry *)0)->maxPlayers) == 0x1, "scene.fields: SessionEntry.maxPlayers");
+_Static_assert(offsetof(SessionEntry, players) == 0x27 && sizeof(((SessionEntry *)0)->players) == 0x1, "scene.fields: SessionEntry.players");
+_Static_assert(offsetof(SessionEntry, ping) == 0x28 && sizeof(((SessionEntry *)0)->ping) == 0x4, "scene.fields: SessionEntry.ping");
+_Static_assert(offsetof(SessionEntry, gameMode) == 0x2c && sizeof(((SessionEntry *)0)->gameMode) == 0x1, "scene.fields: SessionEntry.gameMode");
+_Static_assert(offsetof(SessionEntry, fragLimit) == 0x2d && sizeof(((SessionEntry *)0)->fragLimit) == 0x1, "scene.fields: SessionEntry.fragLimit");
+_Static_assert(offsetof(SessionEntry, timeLimit) == 0x2e && sizeof(((SessionEntry *)0)->timeLimit) == 0x1, "scene.fields: SessionEntry.timeLimit");
+_Static_assert(offsetof(SessionEntry, address) == 0x2f && sizeof(((SessionEntry *)0)->address) == 0x10, "scene.fields: SessionEntry.address");
+_Static_assert(offsetof(SessionEntry, password) == 0x3f && sizeof(((SessionEntry *)0)->password) == 0x8, "scene.fields: SessionEntry.password");
+_Static_assert(offsetof(SessionEntry, locked) == 0x47 && sizeof(((SessionEntry *)0)->locked) == 0x1, "scene.fields: SessionEntry.locked");
+_Static_assert(sizeof(SessionEntry) == 0x4a, "scene.fields: size of SessionEntry");
 _Static_assert(offsetof(RankedPlayer, name) == 0x0 && sizeof(((RankedPlayer *)0)->name) == 0x1e, "scene.fields: RankedPlayer.name");
 _Static_assert(offsetof(RankedPlayer, kind) == 0x1e && sizeof(((RankedPlayer *)0)->kind) == 0x4, "scene.fields: RankedPlayer.kind");
 _Static_assert(offsetof(RankedPlayer, value22) == 0x22 && sizeof(((RankedPlayer *)0)->value22) == 0x4, "scene.fields: RankedPlayer.value22");

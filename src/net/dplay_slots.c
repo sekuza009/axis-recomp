@@ -127,19 +127,19 @@ int (dplay_host)(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 	return dplay_slotHost(kind, a1, a2, a3, a4, a5, a6, a7, a8);
 }
 
-/* 0x453180: session `session` joined through the slot of connection kind 0xa0b418 (with the session record's byte
-   +0x27); 0x1f7 when there is no such session, 0x1f5 when it is full (+0x2a players of +0x26), 0 for an unknown kind */
+/* 0x453180: session `session` joined through the slot of connection kind 0xa0b418 (with its game mode); 0x1f7 when
+   there is no such session, 0x1f5 when it is full (players == maxPlayers), 0 for an unknown kind */
 int (dplay_join)(int session, int a2, int a3, int a4)
 {
-	const u8 *rec = (const u8 *)net_sessionValue(session);
+	const SessionDesc *rec = (const SessionDesc *)net_sessionValue(session);
 	if (!rec)
 		return 0x1f7;
-	if (*(const int *)(rec + 0x2a) == rec[0x26])
+	if (rec->players == rec->maxPlayers)
 		return 0x1f5;
 	u32 kind = (*(u32 *)&g_connectionKind);
 	if (kind > 3)
 		return 0;
-	return dplay_slotJoin(kind, a2, a3, a4, rec[0x27]);
+	return dplay_slotJoin(kind, a2, a3, a4, (u8)rec->gameMode);
 }
 
 /* 0x452fe0: the arena session left (when one is open, 0xa0b390 and 0xa0b384): the host tells everyone first

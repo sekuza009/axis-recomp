@@ -62,28 +62,29 @@ void (menu_showMessage)(int i)
 	strcpy(g_messageBoxLine, (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
 }
 
-/* ---- session records (0x4a bytes) ---- */
-/* 0x4065a0: records a and b swapped */
+/* ---- session list entries (SessionEntry) ---- */
+/* 0x4065a0: entries a and b swapped */
 void (record_swap)(void *a, void *b)
 {
-	u8 t[0x4a];
-	memcpy(t, a, 0x4a);
-	memcpy(a, b, 0x4a);
-	memcpy(b, t, 0x4a);
+	SessionEntry t;
+	memcpy(&t, a, sizeof t);
+	memcpy(a, b, sizeof t);
+	memcpy(b, &t, sizeof t);
 }
 
-/* 0x4045e0: chat record 0x67ef30 (from 0x9087c4) cleared; the original does it 256 times over without moving on */
+/* 0x4045e0: session list entry g_gameCount (0x67ef30) cleared (all but its guid and rotation); the original does it
+   256 times over without moving on */
 void (arena_clearChatRecord)(void)
 {
-	u32 r = OBJ(g_gameList) + g_gameCount * 0x4a;
-	memset((void *)RELOC(r), 0, 32);
-	GAME_VAR(u8, r + 0x21) = 0;
-	GAME_VAR(u8, r + 0x28) = 0;
-	GAME_VAR(u8, r + 0x22) = 0;
-	GAME_VAR(u8, r + 0x23) = 0;
-	GAME_VAR(u8, r + 0x29) = 0;
-	GAME_VAR(u8, r + 0x2a) = 0;
-	GAME_VAR(int, r + 0x24) = 0;
+	SessionEntry *e = &g_sessionList[g_gameCount];
+	memset(e->name, 0, 32);
+	e->map = 0;
+	e->gameMode = 0;
+	e->maxPlayers = 0;
+	e->players = 0;
+	e->fragLimit = 0;
+	e->timeLimit = 0;
+	e->ping = 0;
 }
 
 /* ---- the saved mech (0x4dc878 parts, 0x4dcf18 weapons, 0x4dcfe0 colours) ---- */

@@ -296,7 +296,7 @@
 #define g_profileHeader ((u8 *)IMG(0x9f61d8))   /* u8[260]; a profile file's header (0x104 bytes) checked on the profile scan */
 #define g_pilotNoise ((u8 *)IMG(0x9f3ac4))   /* u8[10000]; the noise blocks around a saved pilot (pilot_write: 10000 random bytes) */
 #define g_playerSlotFlags ((int *)IMG(0x9f93d8))   /* int[16]; the sixteen player slots' in-use flags (net_claimPlayerSlot) */
-#define g_sessionTable ((u32 *)IMG(0xa0b470))   /* u32[400]; the 200 session records: in use */
+#define g_sessionTable ((SessionSlot *)IMG(0xa0b470))   /* SessionSlot[200] */
 #define g_dottedAddress ((char *)IMG(0xa0b460))   /* char[16]; an address as dotted text (at most 15 characters) */
 #define g_sessionDesc ((u8 *)IMG(0xa0b3b0))   /* u8[80]; the DPSESSIONDESC2 shared by hosting and joining (session_desc: 0x50 bytes) */
 #define g_tcpProviderGuid ((u8 *)IMG(0xa0b3a0))   /* u8[16]; the TCP service provider's GUID */
@@ -377,7 +377,7 @@
 #define g_mapInfoDir ((char *)IMG(0x4dedf8))   /* char[261]; the second data path ("initdata/"; app_setDataPaths clears 0x105 bytes; mapinfo.dat's folder) */
 #define g_stageDir ((char *)IMG(0x680bc4))   /* char[261]; the maps' folder ("stage/"; app_setDataPaths clears 0x105 bytes) */
 #define g_mapAbouts ((char *)IMG(0x5ae9d0))   /* char[8000]; a map's 0x50-byte description (100 maps: up to 0x5b0910) */
-#define g_joinedSessionRec ((u8 *)IMG(0x9dae20))   /* u8[74]; the session record the arena join answer builds (0x4a bytes like the list's) */
+#define g_joinedSessionRec ((SessionEntry *)IMG(0x9dae20))   /* SessionEntry[1]; the session record the arena join answer builds */
 #define g_codeColours ((Colour *)IMG(0x9dada0))   /* Colour[7]; the seven "$[n]" text colours (menu_initColours) */
 #define g_serverList ((u8 *)IMG(0xa05748))   /* u8[23296]; 256 servers of 0x5b bytes (net_clearServerList: 0x16c0 dwords; up to 0xa0b248) */
 #define g_lobbyReplyCode ((int *)IMG(0xa055dc))   /* int[1]; the lobby's 4-byte status reply (request 12) */
@@ -417,8 +417,7 @@
 #define g_glTitle ((char *)IMG(0xa0e81c))   /* char[256]; the window's title (also the window class's; icon's and menu's name; up to 0xa0e91c) */
 #define g_musicFile ((char *)IMG(0xa0e674))   /* char[260]; the music file's name (MAX_PATH; up to 0xa0e778) */
 #define g_messageBoxText ((char *)IMG(0x4dd0d0))   /* char[1024]; sys_messageBox's text (vsprintf; 4 more bytes before 0x4dd4d4) */
-#define g_sessionList ((u8 *)IMG(0x9087c0))   /* u8[18944]; 256 records of 0x4a (to 0x90d1c0): +0 the DirectPlay id; +4 the name (g_gameList); +0x24 players; +0x2b the session; +0x3b the title */
-#define g_gameList (g_sessionList + 4)   /* a game's name: +4 in g_sessionList's records (0x4a apart) */
+#define g_sessionList ((SessionEntry *)IMG(0x9087c0))   /* SessionEntry[256] (to 0x90d1c0) */
 #define g_profiles ((u8 *)IMG(0x9f6848))   /* u8[9216]; 128 records of 0x48 (to 0x9f8c48): +0 the number; +4 the name (g_profileList); +0x44 the pilot */
 #define g_profileList ((char *)(g_profiles + 4))   /* a profile's name: +4 in g_profiles' records (0x48 apart) */
 #define g_saveFileNames ((char *)IMG(0x9f1ac4))   /* char[8192]; profile_scanSaves' *.axs names (0x40 apart; strcpy of any count: held) */

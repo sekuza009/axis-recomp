@@ -1,5 +1,5 @@
-/* net_tables.c: the network code's fixed tables: the 200 session values (8-byte records at 0xa0b470: in use,
-   value; the last index in 0xa0b41c) and the sixteen player slot records (0x410 bytes from 0x9f9840). */
+/* net_tables.c: the network code's fixed tables: the 200 sessions found (g_sessionTable at 0xa0b470: SessionSlot;
+   the last index in 0xa0b41c) and the sixteen player slot records (0x410 bytes from 0x9f9840). */
 #include "../game.h"
 #include "winsock.h"
 #include <string.h>
@@ -8,8 +8,8 @@
 int (net_findFreeSession)(void)
 {
 	int i = 0;
-	for (u32 p = OBJ(g_sessionTable); p < OBJ(g_sessionTable) + 200 * 8; p += 8, i++)   /* (200 entries) */
-		if (GAME_VAR(u32, p) == 0)
+	for (const SessionSlot *p = g_sessionTable; p < g_sessionTable + 200; p++, i++)
+		if (p->used == 0)
 			return i;
 	return -1;
 }
@@ -17,8 +17,8 @@ int (net_findFreeSession)(void)
 /* 0x4532b0: session i's value, 0 when out of range or unused */
 int (net_sessionValue)(int i)
 {
-	if (i > -1 && i <= g_dplaySessionCount && GAME_VAR(int, OBJ(g_sessionTable) + i * 8))
-		return GAME_VAR(int, OBJ(g_sessionTable) + 4 + i * 8);
+	if (i > -1 && i <= g_dplaySessionCount && g_sessionTable[i].used)
+		return (int)g_sessionTable[i].desc;
 	return 0;
 }
 
@@ -65,21 +65,21 @@ int (net_claimLocalSlot)(void)
 	return 1;
 }
 
-/* 0x454130: with a session list (0xa0b384), every used session record (8 bytes from 0xa0b470: used, a malloc'd copy)
+/* 0x454130: with a session list (0xa0b384), every used session slot (g_sessionTable)
    freed and the list emptied (count 0xa0b41c). Returns the count, or 0 without a list */
 u32 (net_freeSessionList)(void)
 {
 	if (!g_dplaySessionList)
 		return 0;
 	for (int i = 0; i < g_dplaySessionCount; i++) {
-		u32 *rec = (u32 *)(OBJ(g_sessionTable) + i * 8);
-		if (rec[0] != 1)
+		SessionSlot *rec = &g_sessionTable[i];
+		if (rec->used != 1)
 			continue;
-		rec[0] = 0;
-		if (rec[1])
-			crt_free((void *)RELOC(rec[1]));
-		rec[0] = 0;
-		rec[1] = 0;
+		rec->used = 0;
+		if (rec->desc)
+			crt_free(RELOC(rec->desc));
+		rec->used = 0;
+		rec->desc = 0;
 	}
 	u32 r = (*(u32 *)&g_dplaySessionCount);
 	g_dplaySessionCount = 0;
@@ -117,23 +117,20 @@ int (dplay_formatSessionEntry)(u32 address)
 	return (int)strlen(text) + 1;
 }
 
-/* a DirectPlay session description as the enumeration callback gets it, by value */
-typedef struct { u8 b[0x85]; } SessionDesc;
-
-/* 0x4540b0: a session found: unless its GUID (bytes 4 .. 19) is GUID_NULL (k_GUID_NULL, 0x4aae70), a copy
+/* 0x4540b0: a session found (by value): unless its instance GUID is GUID_NULL (k_GUID_NULL, 0x4aae70), a copy
    (malloc'd) kept in the first free slot of the table at 0xa0b470, the count up. Returns the copy, 0 for a session
    without a GUID, or -1 when the table is full */
 u32 (net_addSession)(SessionDesc d)
 {
-	if (!memcmp(d.b + 4, (const void *)OBJ(k_GUID_NULL), 16))
+	if (!memcmp(d.instance, (const void *)OBJ(k_GUID_NULL), 16))
 		return 0;
 	int i = net_findFreeSession();
 	if (i < 0)
 		return (u32)i;
-	void *copy = crt_malloc(0x85);
-	GAME_VAR(void *, OBJ(g_sessionTable) + 4 + i * 8) = copy;
-	GAME_VAR(int, OBJ(g_sessionTable) + i * 8) = 1;
-	memcpy(GAME_VAR(void *, OBJ(g_sessionTable) + 4 + i * 8), d.b, 0x85);
+	SessionDesc *copy = crt_malloc(sizeof(SessionDesc));
+	g_sessionTable[i].desc = copy;
+	g_sessionTable[i].used = 1;
+	memcpy(g_sessionTable[i].desc, &d, sizeof d);
 	g_dplaySessionCount += 1;
 	return (u32)copy;
 }
@@ -149,28 +146,28 @@ int STDCALL (dplay_enumSessionsCallback)(const u8 *desc, void *timeout, u32 flag
 	if ((mode == 1 || mode == 0) && !desc)
 		return 0;
 	SessionDesc d;
-	memset(d.b, 0, sizeof d.b);
+	memset(&d, 0, sizeof d);
 	const u8 *guid = desc + 8;
 	if (!memcmp(guid, (const void *)OBJ(k_GUID_NULL), 16))
 		return 1;
 	for (int k = 0; k < g_dplaySessionCount; k++)
-		if (!memcmp(guid, GAME_VAR(u8 *, OBJ(g_sessionTable) + 4 + k * 8) + 4, 16))
+		if (!memcmp(guid, g_sessionTable[k].desc->instance, 16))
 			return 0;
 	u8 *block = GlobalLock(GlobalAlloc(0x42, 0x10));   /* GlobalLock(GlobalAlloc(GHND)) */
-	GAME_VAR(u8 *, d.b) = block;
-	crt_strncpy((char *)d.b + 0x2e, GAME_VAR(const char *, desc + 0x30), 0x46);
-	memcpy(d.b + 0x2a, desc + 0x2c, 4);
+	d.guid = (u32)block;
+	crt_strncpy(d.name, GAME_VAR(const char *, desc + 0x30), 0x46);   /* lpszSessionName */
+	memcpy(&d.players, desc + 0x2c, 4);                               /* dwCurrentPlayers */
 	memcpy(block, guid, 16);
-	memcpy(d.b + 4, guid, 16);
-	memcpy(d.b + 0x14, desc + 0x18, 16);
-	d.b[0x27] = desc[0x44];
-	d.b[0x26] = desc[0x28];
-	memcpy(d.b + 0x24, desc + 0x40, 2);
-	d.b[0x28] = desc[0x49];
-	d.b[0x29] = desc[0x48];
+	memcpy(d.instance, guid, 16);
+	memcpy(d.application, desc + 0x18, 16);
+	d.gameMode = desc[0x44];                                          /* dwUser2 */
+	d.maxPlayers = desc[0x28];                                        /* dwMaxPlayers */
+	memcpy(&d.map, desc + 0x40, 2);                                   /* dwUser1: map, rotation */
+	d.fragLimit = desc[0x49];                                         /* dwUser3 */
+	d.timeLimit = desc[0x48];
 	if (g_connectionKind == 0) {
-		dplay_formatSessionEntry(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry */
-		crt_strncpy((char *)d.b + 0x74, g_dottedAddress, 0x10);
+		dplay_formatSessionEntry(GAME_VAR(u32, desc + 0x4c));   /* dplay_formatSessionEntry (dwUser4) */
+		crt_strncpy(d.address, g_dottedAddress, 0x10);
 	}
 	net_addSession(d);
 	return 1;

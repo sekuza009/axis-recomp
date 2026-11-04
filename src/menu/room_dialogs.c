@@ -148,7 +148,7 @@ u32 (settingsDialog_clicks)(void)
 u32 (room_joinSession)(int i)
 {
 	g_roomJoined = 0;
-	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, (void *)((OBJ(g_gameList) + 0x2b) + i * 0x4a))) {
+	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, g_sessionList[i].address)) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();   /* arena_leaveSession */
 	}
@@ -200,7 +200,7 @@ u32 (arena_joinListed)(int i)
 	g_lobbyJoinRequest = 0;
 	if (g_arenaSearchStarted)
 		GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();
-	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)((OBJ(g_gameList) + 0x2b) + i * 0x4a);
+	void *session = i == 99999 ? (void *)ADDR(g_typedArenaName) : (void *)g_sessionList[i].address;
 	if (!GAME_FN(arena_openSession, 0x452ec0, int, int, void *)(0, session)) {
 		menu_showMessage(0x3f);
 		return GAME_FN(arena_leaveSession, 0x452fe0, u32, void)();

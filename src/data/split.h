@@ -5000,9 +5000,9 @@ extern u8 g_ipxProviderGuid_v[16];
 extern char g_dottedAddress_v[16];
 #endif
 #ifdef AXIS_FENCE
-#define g_sessionTable_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xced000 : g_fence + 0xcec9c0))
+#define g_sessionTable_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xced000 : g_fence + 0xcec9c0))
 #else
-extern u32 g_sessionTable_v[400];
+extern u8 g_sessionTable_v[1600];
 #endif
 #ifdef AXIS_FENCE
 #define g_connectionCopy_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xcef000 : g_fence + 0xceeffc))

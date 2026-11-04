@@ -38,11 +38,11 @@ void (popup_clicks)(void)
 	}
 }
 
-/* 0x434da0: start the chat line, if the local player may type (a flag in the player's 0x4a-byte record) */
+/* 0x434da0: start the chat line (the password typed) when the game picked (g_localPlayer) is locked */
 void (room_startChat)(void)
 {
 	g_roomChatting = 0;
-	if (GAME_VAR(u8, OBJ(g_gameList) + 0x43 + g_localPlayer * 0x4a) != 0) {
+	if (g_sessionList[g_localPlayer].locked != 0) {
 		g_roomChatting = 1;
 		field_editMessage();
 	}
@@ -84,7 +84,7 @@ void (room_drawWhiteFade)(void)
 void (arena_chatLine)(void)
 {
 	g_arenaJoining = 0;
-	if (GAME_VAR(u8, OBJ(g_gameList) + 0x43 + g_localPlayer * 0x4a) != 0) {
+	if (g_sessionList[g_localPlayer].locked != 0) {
 		g_arenaJoining = 1;
 		arena_editMessage();
 	}
@@ -348,8 +348,8 @@ u32 (room_hostingStep)(void)
 }
 
 /* 0x434e70: the window closed while connecting. An arena wait (0x4dbb78): it ends, the arena is left and message
-   0x44. Joining a listed game (0x4db708; the record 0x4a bytes a slot at 0x9087c0, row 0x4db710): the record's
-   session from 0x4dbbf8 and its colour bytes (0x5b1b54/55) for the join. Joined (0x1f4): the music stopped and the
+   0x44. Joining a listed game (0x4db708; its g_sessionList entry, row 0x4db710): the entry's
+   guid from the session received (0x4dbbf8) and its frag and time limits (0x5b1b54/55) for the join. Joined (0x1f4): the music stopped and the
    player's settings taken from the record for the game; otherwise a message by the result and the arena left.
    Returns what the original leaves in eax */
 u32 (app_onClose)(void)
@@ -364,12 +364,12 @@ u32 (app_onClose)(void)
 	}
 	if (!g_arenaJoinPending)
 		return 0;
-	u32 row = (*(u32 *)&g_arenaJoinRow) * 0x4a;
-	u8 *game = g_sessionList + row;
-	*(u32 *)game = *(*(u32 **)&g_receivedSession);
-	g_roomRecFragLimit = game[0x2d];
-	g_roomRecTimeLimit = game[0x2e];
-	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, *(int *)game, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
+	u32 row = (*(u32 *)&g_arenaJoinRow);
+	SessionEntry *game = &g_sessionList[row];
+	game->guid = ((const SessionDesc *)g_receivedSession)->guid;
+	g_roomRecFragLimit = game->fragLimit;
+	g_roomRecTimeLimit = game->timeLimit;
+	int r = GAME_FN(dplay_join, 0x453180, int, int, int, void *, int)(0, (int)game->guid, (void *)OBJ(g_joinedTitleName), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -387,13 +387,13 @@ u32 (app_onClose)(void)
 	g_arenaSearchTicks = 0;
 	g_arenaJoinPending = 0;
 	g_arenaConfirming = 0;
-	g_missionStage = (signed char)game[0x25];
-	memcpy((void *)OBJ(g_mapTitle), game + 4, 32);
-	g_mapRotation = (signed char)game[0x24];
-	g_chosenGameMode = (signed char)game[0x2c];
-	g_fragLimit = game[0x2d];
-	g_timeLimit = game[0x2e];
-	return row;
+	g_missionStage = game->map;
+	memcpy((void *)OBJ(g_mapTitle), game->name, 32);
+	g_mapRotation = game->rotation;
+	g_chosenGameMode = game->gameMode;
+	g_fragLimit = game->fragLimit;
+	g_timeLimit = game->timeLimit;
+	return row * sizeof(SessionEntry);   /* (the original's eax: the entry's offset) */
 }
 
 /* 0x4346c0: the account form checked (name 0x9dd1d8, password 0x9dd1f6 and its repeat 0x9dd202, e-mail 0x9dd20e):
