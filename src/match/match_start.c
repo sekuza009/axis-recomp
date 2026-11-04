@@ -25,8 +25,8 @@ static void make_rotation(Scene *s)
 		s->rotationCount = 0;
 		int k;
 		for (k = 0; k < 15; k++) {
-			u32 stage = (OBJ(g_skirmishInfo) + 0x4c) + k * 0x5c;
-			set_round(&s->rotation[s->rotationCount++], k, GAME_VAR(int, stage), GAME_VAR(int, stage + 8), GAME_VAR(int, stage + 4));
+			const SkirmishInfo *si = (const SkirmishInfo *)OBJ(g_skirmishInfo) + k;
+			set_round(&s->rotation[s->rotationCount++], k, si->gameMode, si->fragLimit, si->timeLimit);
 		}
 		s->rotationAt = g_mapIndex;
 		s->nextMap = k + 1;   /* (beyond the 15, as the original has it) */
