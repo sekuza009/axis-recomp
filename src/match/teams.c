@@ -47,19 +47,18 @@ void THISCALL (teams_setup)(Scene *scene)
    behind (else the local player's), otherwise the first listed one */
 void *THISCALL (scene_followedActor)(Scene *scene)
 {
-	u8 *s = (u8 *)scene;
 	int i;
-	if (FIELD(int, s, 0x22e7184) == 1) {
-		int behind = FIELD(int, s, 0x2221fb8) < FIELD(int, s, 0x2221fbc);
-		for (int k = 0; k < FIELD(int, s, 0x2342976); k++) {
-			int a = FIELD(int, s, 0x23428f6 + k * 4);
-			if (FIELD(int, s, 0x1eccb88 + a * 0x8888) == behind)
-				return (u8 *)&((Scene *)s)->players[a];
+	if (scene->teamGame == 1) {
+		int behind = scene->teamScores[0] < scene->teamScores[1];
+		for (int k = 0; k < scene->rankCount; k++) {
+			int a = scene->ranking[k];
+			if (scene->players[a].team == behind)
+				return (u8 *)&scene->players[a];
 		}
-		i = FIELD(int, s, 0x234240d);
+		i = scene->localPlayer;
 	} else
-		i = FIELD(int, s, 0x23428f6);
-	return (u8 *)&((Scene *)s)->players[i];
+		i = scene->ranking[0];
+	return (u8 *)&scene->players[i];
 }
 
 /* 0x472310: the factor pool (+0x9d8010) refilled: flagged (+0x9d800c), emptied (0x483d60), then a factor (kind
