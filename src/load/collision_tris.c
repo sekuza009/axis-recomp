@@ -272,7 +272,7 @@ int THISCALL (collision_moveActor)(u8 *stage, float r, const float *pos, const f
 		st->nearObjects[count][2] = (u32)obj->relInverse;
 		count++;
 	}
-	return space_testSphere(stage + 0xa10, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
+	return space_testSphere((u8 *)&st->space, *(u32 *)&r, pos, d, step, k, (u32)outPos, outVel, outDist, outPlane, axis,
 	                        st->nearObjects, count);
 }
 
@@ -643,7 +643,7 @@ static void ground_triangle(u8 *grid, u32 id, const void *a, const void *b, cons
 void THISCALL (collision_initVolume)(u8 *stage, float size_z, float size_x, float size_y, u32 a, u32 b, u32 depth)
 {
 	Stage *st = (Stage *)stage;
-	u8 *grid = stage + 0xa10;
+	u8 *grid = (u8 *)&((Stage *)stage)->space;
 	const float *low = ((Stage *)stage)->levelLow, *high = ((Stage *)stage)->levelHigh;
 	log_message((int)stage, 0, 0, (const char *)STR(0x4c7490, "init. collision volume"));
 	int ny = ftol(fdiv_m(fsub_m(fld_m(&high[1]), &low[1]), &size_y));

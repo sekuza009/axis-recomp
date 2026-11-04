@@ -471,7 +471,7 @@ void THISCALL (object_setNames)(u8 *self, const char *s1, const char *s2, const 
 /* 0x471010: the scene's level grid (+0xa10) set up as one cell over the level's bounds (+0x9ef904 .. +0x9ef910) */
 void THISCALL (scene_initLevelGrid)(u8 *scene)
 {
-	space_setBy(scene + 0xa10, ((Stage *)scene)->levelLow, ((Stage *)scene)->levelHigh, 1, 1, 1, 0, 0, 0);
+	space_setBy((u8 *)&((Stage *)scene)->space, ((Stage *)scene)->levelLow, ((Stage *)scene)->levelHigh, 1, 1, 1, 0, 0, 0);
 }
 
 /* 0x470fc0: a message formatted and handed to the log hook (0xae2ec8) if one is set, with b and c (a unused) */

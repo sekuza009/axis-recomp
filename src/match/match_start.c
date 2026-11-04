@@ -297,7 +297,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 {
 	Stage *st = (Stage *)s;
 	object_setNames(s, a1, a2, (u32)sky, a4, (u32)skel_dir, a6, a7, a8, a9);
-	space_initBy(s + 0xa10, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
+	space_initBy((u8 *)&st->space, 0x9c40, 0x27100, 0x3e8, 0x2710, 0x3e8, st->spaceData, sizeof st->spaceData);
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
 		sprintf(name, (const char *)STR(0x4c7410, "%s\\%02d"), sky, i);

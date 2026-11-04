@@ -1110,7 +1110,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (((Bullet *)b)->active != 1)
 				continue;
 			((Bullet *)b)->hitActor = f[1];
-			((Bullet *)b)->hit = array_recordAt(f[2], BITS(ST->collisionPlanes), 0xac);
+			((Bullet *)b)->hit = array_recordAt(f[2], (*(int *)&ST->space.planes.records), 0xac);
 			if (f[3] == 1)
 				((Bullet *)b)->life = f32(fsub_m(fld_m(&((Bullet *)b)->age), dt));
 			memcpy(((Bullet *)b)->netPoint, f + 4, 12);

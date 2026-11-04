@@ -934,5 +934,5 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		sub[2] = (u32)((MapObject *)o)->relInverse;
 		n++;
 	}
-	return space_traceNodes(s + 0xa10, p0, p1, hit, ((Stage *)s)->nearObjects, n);
+	return space_traceNodes((u8 *)&((Stage *)s)->space, p0, p1, hit, ((Stage *)s)->nearObjects, n);
 }

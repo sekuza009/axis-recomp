@@ -287,7 +287,7 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 	Light_dtor((u8 *)&((Stage *)self)->actorLights);
 	Light_dtor((u8 *)&((Stage *)self)->dynamicLights);
 	Light_dtor((u8 *)&((Stage *)self)->mapLights);
-	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)(self + 0xa10);
+	return GAME_THISFN(CollisionVolume_dtor, 0x481390, u32, void *)((u8 *)&stage->space);
 }
 
 /* 0x46cd00 (thiscall on an image): a 24-bit BMP opened (the last one closed first): its file header (14 bytes, +8)
@@ -497,7 +497,7 @@ u8 *THISCALL (game_loadAllData)(u8 *g)
 	TimeSync_ctor((u8 *)&GS->timer);   /* TimeSync_ctor */
 	VTABLE((u8 *)GS->view, STR(0x4aa24c, "04F"));
 	ViewVolume_clear((u8 *)GS->view);
-	CollisionVolume_ctor(s + 0xa10);   /* CollisionVolume_ctor */
+	CollisionVolume_ctor((u8 *)&st->space);   /* CollisionVolume_ctor */
 	VECTOR(s + 0x9cd000, 0x2c, 0x400);
 	VTABLE((u8 *)&((Stage *)s)->mapLights, VT(Light, 0x4aa248));
 	Light_clearCounts((u8 *)&((Stage *)s)->mapLights);

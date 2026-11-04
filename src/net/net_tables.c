@@ -1685,7 +1685,7 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			o[0] |= 4;
 			w = (u16)((Bullet *)shot)->hitActor;
 		} else if ((*(void * *)&((Bullet *)shot)->hit))
-			w = (u16)(array_indexOf((*(void * *)&((Bullet *)shot)->hit), (int)SCENE_STAGE(g)->collisionPlanes, 0xac) + 1);
+			w = (u16)(array_indexOf((*(void * *)&((Bullet *)shot)->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
 		else
 			w = 0;
 		memcpy(o + 1, &w, 2);

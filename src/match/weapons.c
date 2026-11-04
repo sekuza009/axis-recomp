@@ -298,7 +298,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			dir[k] = f32(fsub_m(fld_m(&aim[k]), &o[k]));
 		Vec3_normalize(dir);
 		int target = rd->hitPlane;
-		BITS(BU->hit) = target >= 0 ? (u32)ST->collisionPlanes + target * 0xac : 0;
+		BITS(BU->hit) = target >= 0 ? (u32)ST->space.planes.records + target * 0xac : 0;
 		memcpy(BU->end, aim, 12);
 		BU->life = 10.0f;   /* 10 */
 	}
