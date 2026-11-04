@@ -304,9 +304,9 @@ void *THISCALL (image_initBy)(u8 *image, const char *path)
 	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
 	if (!f)
 		return 0;
-	if (crt_fread(image + 8, 0xe, 1, f) < 1)
+	if (crt_fread(&bmp->type, 0xe, 1, f) < 1)   /* (the BITMAPFILEHEADER) */
 		fatal(STR(0x4c5948, "can't read header-initBy()"));
-	if (crt_fread(image + 0x16, 0x28, 1, bmp->file) < 1)
+	if (crt_fread(&bmp->infoSize, 0x28, 1, bmp->file) < 1)   /* (the BITMAPINFOHEADER) */
 		fatal(STR(0x4c592c, "can't read info-initBy()"));
 	if (bmp->bitCount != 24 || bmp->compression != 0)
 		fatal(STR(0x4c5908, "non-RGB format BMP file-initBy()"));
@@ -326,7 +326,7 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 	if (bmp->file)
 		fclose(bmp->file);
 	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
-	if (!f || crt_fread(image + 8, 0xe, 1, f) < 1 || crt_fread(image + 0x16, 0x28, 1, bmp->file) < 1
+	if (!f || crt_fread(&bmp->type, 0xe, 1, f) < 1 || crt_fread(&bmp->infoSize, 0x28, 1, bmp->file) < 1
 	    || bmp->bitCount != 24 || bmp->compression != 0)
 		return 0;
 	bmp->width = ((u32)bmp->bmpWidth);
