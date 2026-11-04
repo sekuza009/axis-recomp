@@ -70,10 +70,10 @@ void THISCALL (stage_refillFactors)(Stage *stage)
 	stage->dynamicLightsSet = 1;
 	Light_clearCounts(pool);
 	for (int i = 0; i < stage->actorCount; i++) {
-		u8 *a = (u8 *)&stage->actors[i];
+		Player *a = (Player *)((u8 *)&stage->actors[i]);
 		if (stage->actors[i].active == 1) {
-			float value = f32(fmul_m(fadd_m(fld_m(&((const Player *)a)->glow), (const float *)ADDR(k_1f)), k_2500f));
-			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, ((Player *)a)->pos);   /* factors_addDirected */
+			float value = f32(fmul_m(fadd_m(fld_m(&a->glow), (const float *)ADDR(k_1f)), k_2500f));
+			GAME_THISFN(factors_addDirected, 0x483f00, int, void *, u32, float, void *)(pool, OBJ(g_packedWhite), value, a->pos);   /* factors_addDirected */
 		}
 	}
 	for (int i = 0; i < stage->projectileCount; i++) {

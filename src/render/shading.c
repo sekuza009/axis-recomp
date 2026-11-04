@@ -305,7 +305,8 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 	for (int i = 0; i < ((Stage *)s)->groundLayerCount; i++) {
 		u8 *layer = (u8 *)&((Stage *)s)->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
-		u8 *part = ((Stage *)s)->layerModel.parts + i * 0x80, *water = ((Stage *)s)->layerBoxModel.parts + i * 0x80;
+		ShapePart *part = (ShapePart *)(((Stage *)s)->layerModel.parts + i * 0x80);
+		u8 *water = ((Stage *)s)->layerBoxModel.parts + i * 0x80;
 		const float *size = &((GroundLayer *)layer)->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
 		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
@@ -314,7 +315,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;
 		e = fadd_m(fmul_m((long double)rows, size), &origin[0]);   /* (the x origin: the original's slip) */
 		int r1 = (e > max_z ? rows - ftol(fdiv_m(fsub_m(e, &max_z), size)) : rows) - 1;
-		BITS(((ShapePart *)part)->colours) = BITS(((GroundLayer *)layer)->colours);
+		BITS(part->colours) = BITS(((GroundLayer *)layer)->colours);
 		int w = gl->cols + 1;
 		gl->indexCount = 0;
 		gl->stripCount = 0;
@@ -346,7 +347,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				prim[1] = n;
 			}
 		}
-		((ShapePart *)part)->primCount = gl->stripCount;
+		part->primCount = gl->stripCount;
 		if (gl->lit != 1) {
 			((ShapePart *)water)->primCount = 0;
 			continue;

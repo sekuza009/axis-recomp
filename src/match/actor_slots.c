@@ -433,8 +433,8 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	u8 *actor = (u8 *)&STS->actors[a];
 	if (!((Player *)actor)->active)
 		return;
-	u8 *type = (u8 *)&STS->playerRecords[((Player *)actor)->player];
-	int item = ((PlayerRecord *)type)->items[slot];
+	PlayerRecord *type = (PlayerRecord *)((u8 *)&STS->playerRecords[((Player *)actor)->player]);
+	int item = type->items[slot];
 	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
 	int self, set = 0;
 	if (slot == 4)

@@ -532,12 +532,12 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 		u32 kind = part[0] & 1 ? 0x10 : 0;
 		const float *verts = (const float *)((ShapePart *)part)->vertices;
 		for (int j = 0; j < ((ShapePart *)part)->primCount; j++) {
-			u8 *prim = ((ShapePart *)part)->prims + j * 0xc;
-			int n = ((ShapePrim *)prim)->indexCount;
-#define IDX(k) ((const u32 *)((ShapePrim *)prim)->indices)[k]
+			ShapePrim *prim = (ShapePrim *)(((ShapePart *)part)->prims + j * 0xc);
+			int n = prim->indexCount;
+#define IDX(k) ((const u32 *)prim->indices)[k]
 #define VERT(k) ((const float *)((ShapePart *)part)->vertices + IDX(k) * 3)
 			float a[3], b[3], c[3];
-			switch (((ShapePrim *)prim)->kind) {
+			switch (prim->kind) {
 			case 6:   /* a fan */
 				for (int k = 2; k < n; k++) {
 					u32 i0 = IDX(0);
@@ -883,11 +883,11 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 {
 	int n = 0;
 	for (int i = 0; i < ((Stage *)s)->objectCount; i++) {
-		u8 *o = (u8 *)&((Stage *)s)->objects[i];
-		if (((MapObject *)o)->active != 1 || ((MapObject *)o)->animated != 1 || !((SpaceUnit *)((MapObject *)o)->unit)->lastNode)
+		MapObject *o = (MapObject *)((u8 *)&((Stage *)s)->objects[i]);
+		if (o->active != 1 || o->animated != 1 || !((SpaceUnit *)o->unit)->lastNode)
 			continue;
-		const float *m = ((MapObject *)o)->matrixInverse;
-		const float *lo = ((MapObject *)o)->model->low, *hi = ((MapObject *)o)->model->high;
+		const float *m = o->matrixInverse;
+		const float *lo = o->model->low, *hi = o->model->high;
 		float a[3], b[3], d[3];
 		for (int r = 0; r < 3; r++)
 			a[r] = f32(fadd_m(fmul_m(fld_m(&p0[2]), &m[8 + r]) + fmul_m(fld_m(&p0[r ? 1 : 0]), &m[r ? 4 + r : 0]) +
@@ -929,9 +929,9 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
 		u32 *sub = ((Stage *)s)->nearObjects[n];
-		sub[0] = (u32)((SpaceUnit *)((MapObject *)o)->unit)->lastNode;
-		sub[1] = (u32)((MapObject *)o)->relMatrix;
-		sub[2] = (u32)((MapObject *)o)->relInverse;
+		sub[0] = (u32)((SpaceUnit *)o->unit)->lastNode;
+		sub[1] = (u32)o->relMatrix;
+		sub[2] = (u32)o->relInverse;
 		n++;
 	}
 	return space_traceNodes((u8 *)&((Stage *)s)->space, p0, p1, hit, ((Stage *)s)->nearObjects, n);

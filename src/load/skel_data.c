@@ -530,7 +530,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 	const float *unit = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
 	for (int i = 0; i < ol->count; i++) {
 		Skeleton *sk = (Skeleton *)(*entry);
-		u8 *out = ((u8 *)ol->entries) + i * 0x64;
+		ListedObject *out = (ListedObject *)(((u8 *)ol->entries) + i * 0x64);
 		u8 *b = sk->bones + i * 0x70;
 		Bone *bn = (Bone *)b;
 		int frame = ol->animTick % (sk->frames + 1);
@@ -538,7 +538,7 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			break;
 		int parent = bn->parent;
 		glLoadMatrixf(parent < 0 ? root : (const float *)(((u8 *)ol->entries) + parent * 0x64 + 0xc));
-		const float *scale = &((ListedObject *)out)->scale;
+		const float *scale = &out->scale;
 		if (bn->posKeyCount > 0) {
 			int at = frame;
 			PosKey *key = (PosKey *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
@@ -558,17 +558,17 @@ void THISCALL (skel_poseBones)(u8 *pose, const float *base)
 			rotate(fmul_m(fmul_m(fld_m(&f), &key->step[0]), unit), &key->step[1]);
 		} else
 			rotate(fmul_m(fld_m(&bn->rotation[0]), unit), &bn->rotation[1]);
-		float *m = ((ListedObject *)out)->matrix;
+		float *m = out->matrix;
 		glGetFloatv(0xba6, m);
-		transform(((ListedObject *)out)->pos, m, &point[0], &point[1], &point[2]);
-		const Model *own = ((ListedObject *)out)->shape;
+		transform(out->pos, m, &point[0], &point[1], &point[2]);
+		const Model *own = out->shape;
 		if (own) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
-				((ListedObject *)out)->centre[r] = r == 0
+				out->centre[r] = r == 0
 					? f32(fadd_m(fmul_m(fld_m(&m[8]), &own->centre[2]) + fmul_m(fld_m(&m[4]), &own->centre[1]) + fmul_m(fld_m(&m[0]), &own->centre[0]), &m[12]))
 					: f32(fadd_m(fmul_m(fld_m(&m[8 + r]), &own->centre[2]) + fmul_m(fld_m(&m[r]), &own->centre[0]) + fmul_m(fld_m(&m[4 + r]), &own->centre[1]), &m[12 + r]));
 		} else
-			memcpy(((ListedObject *)out)->centre, ((ListedObject *)out)->pos, 12);
+			memcpy(out->centre, out->pos, 12);
 	}
 	glLoadMatrixf(saved);
 }

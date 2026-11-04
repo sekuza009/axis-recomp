@@ -1461,18 +1461,18 @@ static void muzzle_camera(u8 *s, const u8 *t)
 	const PlayerRecord *pr = &SC->playerRecords[act->player];
 	int slot = act->slot;
 	const ArmType *arms = &SCENE_STAGE(s)->armTypes[pr->parts[2]];
-	u8 *item = (u8 *)&SCENE_STAGE(s)->actorInfo[pr->items[slot]];
+	ActorInfo *item = (ActorInfo *)((u8 *)&SCENE_STAGE(s)->actorInfo[pr->items[slot]]);
 	float P[3], E[3] = { 0, 0, 0 };
 	const float *v, *m;
 	int bone;
 	if (slot == 4) {
-		v = ((const ActorInfo *)item)->sets[0].muzzle[act->variantLoaded];
+		v = item->sets[0].muzzle[act->variantLoaded];
 		bone = arms->weaponJoints[1][act->detail];
 	} else if (slot == 5) {
-		v = ((const ActorInfo *)item)->sets[1].muzzle[act->variantLoaded];
+		v = item->sets[1].muzzle[act->variantLoaded];
 		bone = arms->weaponJoints[2][act->detail];
 	} else {
-		v = ((const ActorInfo *)item)->sets[0].muzzle[act->variantLoaded];
+		v = item->sets[0].muzzle[act->variantLoaded];
 		bone = arms->weaponJoints[0][act->detail];
 	}
 	m = (const float *)((u8 *)act->armsModel.entries + bone * 100 + 0xc);

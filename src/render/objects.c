@@ -599,8 +599,8 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 9: {   /* debris: one of the owner's part shapes (the part by i % 5) */
 		static const u32 k_parts[4] = { offsetof(PlayerRecord, headShapes), offsetof(PlayerRecord, chestShapes), offsetof(PlayerRecord, armShapes), offsetof(PlayerRecord, legShapes) };
 		int part = i % 5;
-		u8 *cache = (u8 *)&ST->playerRecords[PR->owner] + (part >= 0 && part < 4 ? k_parts[part] : offsetof(PlayerRecord, boosterShapes));
-		shape(vv, p, ((Manager *)cache)->items + i % ((Manager *)cache)->count * 0x4c, 0, 1);
+		Manager *cache = (Manager *)((u8 *)&ST->playerRecords[PR->owner] + (part >= 0 && part < 4 ? k_parts[part] : offsetof(PlayerRecord, boosterShapes)));
+		shape(vv, p, cache->items + i % cache->count * 0x4c, 0, 1);
 		return;
 	}
 	case 10:

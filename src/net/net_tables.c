@@ -1675,8 +1675,8 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		u8 *o = packet + 0x13 + k * 9;
 		if (*slot < 0)
 			continue;
-		u8 *shot = (u8 *)&SCENE_STAGE(g)->bullets[*slot];
-		if (((Bullet *)shot)->active != 1) {
+		Bullet *shot = (Bullet *)((u8 *)&SCENE_STAGE(g)->bullets[*slot]);
+		if (shot->active != 1) {
 			*slot = -1;
 			continue;
 		}
@@ -1685,18 +1685,18 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 			*fresh = 0;
 		} else
 			o[0] |= 1;
-		if (((Bullet *)shot)->hitActor >= 0) {
+		if (shot->hitActor >= 0) {
 			o[0] |= 4;
-			w = (u16)((Bullet *)shot)->hitActor;
-		} else if ((*(void * *)&((Bullet *)shot)->hit))
-			w = (u16)(array_indexOf((*(void * *)&((Bullet *)shot)->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
+			w = (u16)shot->hitActor;
+		} else if ((*(void * *)&shot->hit))
+			w = (u16)(array_indexOf((*(void * *)&shot->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
 		else
 			w = 0;
 		memcpy(o + 1, &w, 2);
-		int flying = ((Bullet *)shot)->age > ((Bullet *)shot)->life;
+		int flying = shot->age > shot->life;
 		if (flying)
 			o[0] |= 8;
-		u8 *at = (u8 *)(flying && (*(void * *)&((Bullet *)shot)->hit) ? ((Bullet *)shot)->end : ((Bullet *)shot)->pos);
+		u8 *at = (u8 *)(flying && (*(void * *)&shot->hit) ? shot->end : shot->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_tenthsToDegrees));
 			memcpy(o + 3 + c * 2, &w, 2);

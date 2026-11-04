@@ -230,7 +230,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
 	const FiredRound *rd = (const FiredRound *)shot;
-	u8 *w = (u8 *)&ST->actorInfo[rd->weapon];
+	ActorInfo *w = (ActorInfo *)((u8 *)&ST->actorInfo[rd->weapon]);
 	const float *o = rd->from, *aim = rd->dir;
 	if (id >= 0)
 		BU->id = id;
@@ -242,11 +242,11 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->colour = rd->muzzle;
 	memcpy(BU->from, o, 12);
 	float dir[3];
-	const float *w2de8 = &((ActorInfo *)w)->velocity;
+	const float *w2de8 = &w->velocity;
 	if (rd->received == 0) {
 		memcpy(dir, aim, 12);
-		if (((ActorInfo *)w)->spread > 0) {
-			long double spread = fmul_m(fld_m(&((ActorInfo *)w)->spread) -
+		if (w->spread > 0) {
+			long double spread = fmul_m(fld_m(&w->spread) -
 			                            fmul_m((long double)ST->actors[owner].accuracy, K(0x4a9418)), K(0x4aa448));
 			if (!(spread >= 0))
 				spread = 0;
@@ -254,7 +254,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 				dir[k] = f32(fadd_m((long double)((int)next_rand(100) - 50) * spread, &dir[k]));
 			Vec3_normalize(dir);
 		}
-		if (((ActorInfo *)w)->shotMode == 3) {
+		if (w->shotMode == 3) {
 			glPushMatrix();
 			glLoadIdentity();
 			for (int k = 0; k < 3; k++)
@@ -270,7 +270,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(fmul_m(fld_m(&v[2]), &inv[8 + r]) + fmul_m(fld_m(&v[1]), &inv[4 + r]) + fmul_m(fld_m(&inv[r]), &v[0]));
 		}
-		const float *speed = &((ActorInfo *)w)->stepLength, *from = BU->from;
+		const float *speed = &w->stepLength, *from = BU->from;
 		float *end = BU->end;
 		float sx = f32(fmul_m(fld_m(speed), &dir[0])), sy = f32(fmul_m(fld_m(speed), &dir[1]));
 		long double sz = fmul_m(fld_m(speed), &dir[2]);
@@ -313,7 +313,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
 	BU->link = a4;
-	if (((ActorInfo *)w)->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
+	if (w->tracer > 0 && a4 < 0 && BU->owner == ST->playerActor) {
 		const float *at = BU->prev;
 		float *tip = BU->tip;
 		long double tx = fmul_m(fld_m(&aim[0]), K(0x4aa444));
@@ -326,14 +326,14 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 	BU->trailCount = 0;
 	if (quiet)
 		return;
-	u32 rec[13] = { ((u32)((ActorInfo *)w)->shotMode) + 10, ((u32)BU->owner) };
+	u32 rec[13] = { ((u32)w->shotMode) + 10, ((u32)BU->owner) };
 	memcpy(&rec[2], BU->prev, 12);
 	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
 	rec[8] = BU->colour;
-	float size = f32(fld_m(&((ActorInfo *)w)->flashSize));
+	float size = f32(fld_m(&w->flashSize));
 	memcpy(&rec[11], &size, 4);
 	particle_spawn(s, rec);
-	int sound = ((ActorInfo *)w)->sound;
+	int sound = w->sound;
 	if (sound < 0)
 		return;
 	if (BU->owner == ST->playerActor)

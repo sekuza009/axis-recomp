@@ -55,7 +55,14 @@ for path in files:
 				print('  %s: %s aliased as %s *%s' % (path, v, T, alias))
 		for d in re.finditer(r'^(\s*)(const )?u8 \*(\w+) = ([^;]+);', body, re.M):
 			const, v, init = d.group(2) or '', d.group(3), d.group(4)
-			casts = re.findall(r'\(\((?:const )?(\w+) \*\)%s\)' % v, body)
+			depth = 0   # (a second declarator on the line, ", *w = ...", at the initialiser's top level: skipped)
+			second = False
+			for ch in init:
+				depth += {'(': 1, ')': -1, '[': 1, ']': -1}.get(ch, 0)
+				second = second or (ch == ',' and depth == 0)
+			if second:
+				continue
+			casts =re.findall(r'\(\((?:const )?(\w+) \*\)%s\)' % v, body)
 			if not casts or len(set(casts)) != 1:
 				continue
 			T = casts[0]
