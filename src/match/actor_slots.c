@@ -181,28 +181,24 @@ void THISCALL (actor_clearTargetRefs)(Stage *stage, int b)
 	} while (n > 0);
 }
 
-/* a player record's per-match state cleared (e = the record + 0x44): its name kept or not by the caller; the
-   weapons, the five items and six part names, the 5 x 2 colour grid's three layers */
+/* a player record's per-match state cleared (e = the record + 0x44, its level): its name kept or not by the caller;
+   the five part names and parts, the six item names and items, the 5 x 2 colour grid's three layers */
 static void player_clear(u8 *e)
 {
-	e[8] = 0;
-	e[0x48] = 0;
-	e[0x88] = 0;
-	e[0xc8] = 0;
-	e[0x108] = 0;
-	PlayerRecord *pr = (PlayerRecord *)(e - 0x44);   /* (e: the record's level) */
+	PlayerRecord *pr = (PlayerRecord *)(e - 0x44);
+	for (int k = 0; k < 5; k++)
+		pr->partNames[k][0] = 0;
 	for (int k = 0; k < 5; k++)
 		pr->parts[k] = -1;
 	for (int k = 0; k < 6; k++) {
-		e[0x148 + k * 0x40] = 0;
+		pr->itemNames[k][0] = 0;
 		pr->items[k] = -1;
 	}
 	for (int r = 0; r < 5; r++)
 		for (int c = 0; c < 2; c++) {
-			u8 *q = e + 0x4796a + r * 2 + c;
-			q[-0xa] = 0;
-			q[0] = 0;
-			q[0xa] = 0;
+			pr->partHue[r][c] = 0;
+			pr->partSaturation[r][c] = 0;
+			pr->partValue[r][c] = 0;
 		}
 }
 

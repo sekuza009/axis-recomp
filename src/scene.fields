@@ -72,6 +72,8 @@ struct PlayerRecord 0x47fd2                                      # a player of t
 4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
 0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
 0x48       4          i32 team
+0x4c       0x140      char partNames[5][0x40]                    # its parts' type names (head, chest, arms, legs, booster: set_part)
+0x18c      0x180      char itemNames[6][0x40]                    # its items' names (actor_setItem: the ActorInfo's name)
 0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
 0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
 0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)

@@ -87,7 +87,8 @@ typedef struct PlayerRecord {
 	char name[0x40];   /* +0x4: (by use) its name (its screenshot: Save\\<name>.BMP) */
 	i32 level;   /* +0x44: (by use) its level (the profile's factors by it) */
 	i32 team;   /* +0x48 */
-	u8 _pad000004c[0x2c0];
+	char partNames[5][0x40];   /* +0x4c: its parts' type names (head, chest, arms, legs, booster: set_part) */
+	char itemNames[6][0x40];   /* +0x18c: its items' names (actor_setItem: the ActorInfo's name) */
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
 	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
 	u8 _pad0000338[0x4766c];
@@ -1796,6 +1797,8 @@ _Static_assert(offsetof(PlayerRecord, used) == 0x0 && sizeof(((PlayerRecord *)0)
 _Static_assert(offsetof(PlayerRecord, name) == 0x4 && sizeof(((PlayerRecord *)0)->name) == 0x40, "scene.fields: PlayerRecord.name");
 _Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)0)->level) == 0x4, "scene.fields: PlayerRecord.level");
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
+_Static_assert(offsetof(PlayerRecord, partNames) == 0x4c && sizeof(((PlayerRecord *)0)->partNames) == 0x140, "scene.fields: PlayerRecord.partNames");
+_Static_assert(offsetof(PlayerRecord, itemNames) == 0x18c && sizeof(((PlayerRecord *)0)->itemNames) == 0x180, "scene.fields: PlayerRecord.itemNames");
 _Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
 _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
 _Static_assert(offsetof(PlayerRecord, partHue) == 0x479a4 && sizeof(((PlayerRecord *)0)->partHue) == 0xa, "scene.fields: PlayerRecord.partHue");

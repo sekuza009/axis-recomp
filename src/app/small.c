@@ -785,11 +785,11 @@ typedef struct {
 	u32 reload;
 } PartKind;
 static const PartKind part_kinds[5] = {
-	{ 0x30c, offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), 0x338, 0x43534, offsetof(Stage, headTypes), 0xaa8, 0x4c, FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
-	{ 0x310, offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), 0x8284, 0x43e34, offsetof(Stage, chestTypes), 0xabc, 0x8c, FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
-	{ 0x314, offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), 0x101d0, 0x44734, offsetof(Stage, armTypes), 0x1300, 0xcc, FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
-	{ 0x318, offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), 0x1fe1c, 0x45804, offsetof(Stage, legTypes), 0x13f4, 0x10c, FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
-	{ 0x31c, offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), 0x2fa68, 0x468d4, offsetof(Stage, boosterTypes), 0x1820, 0x14c, FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
+	{ offsetof(PlayerRecord, parts[0]), offsetof(Stage, headTypeCount), STR(0x4c75f0, "invalid headIndex(%d) - setActorTypeH..."), 0x338, 0x43534, offsetof(Stage, headTypes), 0xaa8, offsetof(PlayerRecord, partNames[0]), FN_ADDR(actor_updateHead, 0x45e1f0) },     /* head */
+	{ offsetof(PlayerRecord, parts[1]), offsetof(Stage, chestTypeCount), STR(0x4c7624, "invalid chestIndex(%d) - setActorType..."), 0x8284, 0x43e34, offsetof(Stage, chestTypes), 0xabc, offsetof(PlayerRecord, partNames[1]), FN_ADDR(actor_updateBody, 0x45e2c0) },    /* chest (actor_updateBody) */
+	{ offsetof(PlayerRecord, parts[2]), offsetof(Stage, armTypeCount), STR(0x4c7658, "invalid armIndex(%d) - setActorTypeAr..."), 0x101d0, 0x44734, offsetof(Stage, armTypes), 0x1300, offsetof(PlayerRecord, partNames[2]), FN_ADDR(actor_updateArms, 0x45e390) },  /* arms */
+	{ offsetof(PlayerRecord, parts[3]), offsetof(Stage, legTypeCount), STR(0x4c7688, "invalid legIndex(%d) - setActorTypeLe..."), 0x1fe1c, 0x45804, offsetof(Stage, legTypes), 0x13f4, offsetof(PlayerRecord, partNames[3]), FN_ADDR(actor_updateLegs, 0x45e460) }, /* legs */
+	{ offsetof(PlayerRecord, parts[4]), offsetof(Stage, boosterTypeCount), STR(0x4c76b8, "invalid boosterIndex(%d) - setActorTy..."), 0x2fa68, 0x468d4, offsetof(Stage, boosterTypes), 0x1820, offsetof(PlayerRecord, partNames[4]), FN_ADDR(actor_updateBooster, 0x45e530) }, /* booster */
 };
 
 /* player p's part of kind k set to type (its record at +0x1561b68, 0x47fd2 bytes each): none for a negative type (0);
@@ -827,7 +827,7 @@ int THISCALL (actor_setActorTypeLegInfoBy)(Stage *stage, int p, int type) { retu
 int THISCALL (actor_setActorTypeBoosterInfoBy)(Stage *stage, int p, int type) { return set_part((u8 *)stage, p, type, &part_kinds[4]); }
 
 /* 0x474060 (thiscall on the stage): player p's item in slot set (its part type record at +0x1561b68, 0x47fd2 bytes
-   each: the item at +0x320 + slot x 4, its name at +0x18c + slot x 0x40). Game types 2 .. 11 (+0x20f3ab8) fix the
+   each: the item (items[slot]) and its name (itemNames[slot])). Game types 2 .. 11 (+0x20f3ab8) fix the
    first slot (3, 5, 0x24, 0x19, 0x16 by pairs; 10 / 11 the second too, 0x17) and leave the others empty (-1); else
    the item given (negative: empty). An item past the catalogue (+0x1561b64) is a fatal message. Each of the player's
    actors then has the slot updated (actor_updatePart, with its +0x49c). The callers ignore the eax it leaves */
@@ -841,9 +841,9 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy((char *)RELOC(type) + 0x18c + slot * 0x40, (const char *)(u8 *)&st->actorInfo[item]);
+		strcpy(((PlayerRecord *)RELOC(type))->itemNames[slot], (const char *)(u8 *)&st->actorInfo[item]);
 	else
-		type[0x18c + slot * 0x40] = 0;
+		((PlayerRecord *)type)->itemNames[slot][0] = 0;
 	if (item >= st->actorInfoCount)
 		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
 	((PlayerRecord *)type)->items[slot] = item;
