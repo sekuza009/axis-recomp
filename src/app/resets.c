@@ -31,11 +31,11 @@ void (net_clearBuffers)(void)
 	g_ladderPort = 0;
 }
 
-/* 0x440df0: every map of the map-select list out (0x44-byte entries from 0x9ddac8) */
+/* 0x440df0: every map of the map-select list out (g_fileList's flags) */
 void (mapSelect_allOut)(void)
 {
-	for (u32 p = OBJ(g_fileList) + 0x40; p < OBJ(g_fileList) + 0x40 + 1024 * 0x44; p += 0x44)
-		GAME_VAR(int, p) = 0;
+	for (FileEntry *p = g_fileList; p < g_fileList + 1024; p++)
+		p->flag = 0;
 	g_replayWrap = 1;
 	g_unusedMainMenuWord = 0;
 	g_replayRandomOrder = 0;

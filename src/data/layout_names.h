@@ -895,7 +895,7 @@ extern struct GameData g_data;
 #undef g_fieldTabKey
 #define g_fieldTabKey (*(int *)g_fieldTabKey_v)
 #undef g_fileList
-#define g_fileList ((u8 *)g_fileList_v)
+#define g_fileList ((FileEntry *)g_fileList_v)
 #undef g_flareSizeA
 #define g_flareSizeA (*(float *)g_flareSizeA_v)
 #undef g_flareSizeB
@@ -1409,7 +1409,7 @@ extern struct GameData g_data;
 #undef g_mapAbouts
 #define g_mapAbouts ((char *)g_mapAbouts_v)
 #undef g_mapChoiceKeptTable
-#define g_mapChoiceKeptTable ((u8 *)g_mapChoiceKeptTable_v)
+#define g_mapChoiceKeptTable ((MapChoice *)g_mapChoiceKeptTable_v)
 #undef g_mapChoiceTable
 #define g_mapChoiceTable ((u8 *)g_mapChoiceTable_v)
 #undef g_mapEntry22On

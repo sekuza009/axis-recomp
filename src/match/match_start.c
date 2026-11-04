@@ -43,12 +43,12 @@ static void make_rotation(Scene *s)
 	if (g_mapRotation == 1) {
 		s->rotationCount = 0;
 		for (int k = 0; k < g_arenaMapCount; k++) {
-			u32 entry = OBJ(g_mapChoiceKeptTable) + k * 8;
-			if (GAME_VAR(int, entry) != 1)
+			const MapChoice *entry = &g_mapChoiceKeptTable[k];
+			if (entry->chosen != 1)
 				continue;
 			int mode = g_chosenGameMode;
 			if (mode >= 14)
-				mode = GAME_VAR(int, entry + 4);
+				mode = entry->type;
 			set_round(&s->rotation[s->rotationCount++], k, mode, g_fragLimit, g_timeLimit);
 		}
 	} else {

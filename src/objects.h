@@ -131,7 +131,7 @@
 #define g_ptxPlanes ((u8 *)IMG(0xa6228c))   /* u8[262144]; the decoded planes: 64 KB each */
 #define g_ptxDequant ((float *)IMG(0xaa2a90))   /* float[128]; the two 64-entry dequantisation tables */
 #define g_ptxQuant ((int *)IMG(0xaa2c94))   /* int[128]; the two 64-entry quantisation tables */
-#define g_fileList ((u8 *)IMG(0x9dda88))   /* u8[69632]; 1024 entries of 0x44 bytes: the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */
+#define g_fileList ((FileEntry *)IMG(0x9dda88))   /* FileEntry[1024]; the file dialog's names (the reset runs 0x9ddac8 .. 0x9eeac8) */
 #define g_introTextures ((int *)IMG(0x9dad6c))   /* int[8]; the intro frames (m_intro1 .. 4 */
 #define g_mainMenuTextures ((int *)IMG(0x76d478))   /* int[2]; mainmenu01 / 02 (the main */
 #define g_arenaMenuTextures ((int *)IMG(0x4df040))   /* int[2]; arenamenu01 / 02 (the arena lobby's tunnel) */
@@ -259,7 +259,7 @@
 #define g_dplaySlots ((int *)IMG(0xa0d7a4))   /* int[4]; four DirectPlay connection slots: 1 while open */
 #define g_panelBoxes ((u8 *)IMG(0x4dc550))   /* u8[528]; ARM CENTER's six part panels' boxes (0x58 bytes each: +-600 corners */
 #define g_mapChoiceTable ((u8 *)IMG(0x4d7358))   /* u8[8192]; the arena's map choices (1024 of 8 bytes: MapChoice) */
-#define g_mapChoiceKeptTable ((u8 *)IMG(0x4d9508))   /* u8[8192]; the map choices kept (1024 of 8: on */
+#define g_mapChoiceKeptTable ((MapChoice *)IMG(0x4d9508))   /* MapChoice[1024]; the map choices kept (1024 of 8: on */
 #define g_packetQueue ((u8 *)IMG(0xaef660))   /* u8[139328]; the packet queue: g_unused16, g_history, g_ahead (one object: netq_receive
    reads g_ahead[-1], the history's last word, while player 0's next number is -1, and when that word is 1 copies the 64
    bytes before g_history, g_unused16) */

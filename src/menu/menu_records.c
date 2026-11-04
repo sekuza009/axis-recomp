@@ -581,7 +581,7 @@ u32 (mapSelect_drawNames)(void)
 	for (int i = 0, dy = 0; i < g_mapSelectCount && dy < 200; i++, dy += 20) {
 		set_colour_bits(g_textColour, 0x3f4ccccd, 0x3f4ccccd, 0x3f800000, 0x3f800000);   /* (0.8, 0.8, 1, 1) */
 		int map = g_mapSelectFirst + i;
-		if (GAME_VAR(int, OBJ(g_fileList) + map * 0x44 + 0x40)) {
+		if (g_fileList[map].flag) {
 			set_colour_bits(g_rectColour, 0x3f800000, 0x3dcccccd, 0x3e99999a, 0x3f000000);   /* (1, 0.1, 0.3, 0.5) */
 			menu_drawRect(g_mapSelectLeft + 0x20, g_mapSelectTop + dy + 0x2b, g_mapSelectRight - 0x50,
 			              g_mapSelectTop + dy + 0x3d, 1);
@@ -589,7 +589,7 @@ u32 (mapSelect_drawNames)(void)
 		}
 		map = g_mapSelectFirst + i;
 		r = GAME_FN(text_draw8, 0x402620, u32, int, int, const char *)(g_mapSelectLeft + 0x28, g_mapSelectTop + dy + 0x2c,
-		                                                      (const char *)(OBJ(g_fileList) + map * 0x44));   /* text_draw8 */
+		                                                      g_fileList[map].name);   /* text_draw8 */
 	}
 	return r;
 }

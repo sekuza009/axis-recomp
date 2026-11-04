@@ -3,7 +3,6 @@
 #include "../game.h"
 #include <string.h>
 
-typedef struct { i32 chosen; i32 type; } MapChoice;
 #define g_mapChoices ((MapChoice *)g_mapChoiceTable)          /* (objects.h: 1024 of them) */
 #define g_mapChoicesKept ((MapChoice *)g_mapChoiceKeptTable)
 

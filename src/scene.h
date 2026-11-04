@@ -741,6 +741,18 @@ typedef struct SessionEntry {
 	u8 _pad0000048[0x2];
 } SessionEntry;
 
+/* a file of the map-select / replay list (g_fileList, 1024) */
+typedef struct FileEntry {
+	char name[0x40];   /* +0x0 */
+	i32 flag;   /* +0x40: 1: picked (in the map rotation / the replays shown) */
+} FileEntry;
+
+/* a map of the arena's map list (g_mapChoiceTable, g_mapChoiceKeptTable: 1024) */
+typedef struct MapChoice {
+	i32 chosen;   /* +0x0: in the rotation */
+	i32 type;   /* +0x4: its game type (0 .. 13) */
+} MapChoice;
+
 /* a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the */
 typedef struct GameSettings {
 	char name[32];   /* +0x0 */
@@ -2383,6 +2395,12 @@ _Static_assert(offsetof(SessionEntry, address) == 0x2f && sizeof(((SessionEntry 
 _Static_assert(offsetof(SessionEntry, password) == 0x3f && sizeof(((SessionEntry *)0)->password) == 0x8, "scene.fields: SessionEntry.password");
 _Static_assert(offsetof(SessionEntry, locked) == 0x47 && sizeof(((SessionEntry *)0)->locked) == 0x1, "scene.fields: SessionEntry.locked");
 _Static_assert(sizeof(SessionEntry) == 0x4a, "scene.fields: size of SessionEntry");
+_Static_assert(offsetof(FileEntry, name) == 0x0 && sizeof(((FileEntry *)0)->name) == 0x40, "scene.fields: FileEntry.name");
+_Static_assert(offsetof(FileEntry, flag) == 0x40 && sizeof(((FileEntry *)0)->flag) == 0x4, "scene.fields: FileEntry.flag");
+_Static_assert(sizeof(FileEntry) == 0x44, "scene.fields: size of FileEntry");
+_Static_assert(offsetof(MapChoice, chosen) == 0x0 && sizeof(((MapChoice *)0)->chosen) == 0x4, "scene.fields: MapChoice.chosen");
+_Static_assert(offsetof(MapChoice, type) == 0x4 && sizeof(((MapChoice *)0)->type) == 0x4, "scene.fields: MapChoice.type");
+_Static_assert(sizeof(MapChoice) == 0x8, "scene.fields: size of MapChoice");
 _Static_assert(offsetof(GameSettings, name) == 0x0 && sizeof(((GameSettings *)0)->name) == 0x20, "scene.fields: GameSettings.name");
 _Static_assert(offsetof(GameSettings, map) == 0x20 && sizeof(((GameSettings *)0)->map) == 0x1, "scene.fields: GameSettings.map");
 _Static_assert(offsetof(GameSettings, players) == 0x21 && sizeof(((GameSettings *)0)->players) == 0x1, "scene.fields: GameSettings.players");

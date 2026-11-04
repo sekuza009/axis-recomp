@@ -152,8 +152,8 @@ void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16;
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
 int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, OBJ(g_dpConnections) + i * 4) ? 1 : 0; }
 /* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
-void (mapSelect_toggle)(int i) { int *f = (int *)((OBJ(g_fileList) + 0x40) + i * 0x44); *f = 1 - *f; }
-void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) GAME_VAR(int, OBJ(g_fileList) + 0x40 + i * 0x44) = 1; }
+void (mapSelect_toggle)(int i) { int *f = &g_fileList[i].flag; *f = 1 - *f; }
+void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) g_fileList[i].flag = 1; }
 /* 0x447af0: a click closes the mission briefing */
 void (briefing_clickClose)(void) { if (g_dialogOpen == 0 && g_mouseClick != 0) g_missionStarted = 0; }
 /* 0x4411e0: the background tunnel's rings made again (tunnel_appendRing) */

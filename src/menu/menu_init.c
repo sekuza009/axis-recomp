@@ -128,8 +128,8 @@ u32 (replayList_open)(void)
 	g_mapSelectTop = 0x28;
 	g_mapSelectRight = 0x230;
 	g_mapSelectBottom = 0x1b8;
-	for (u32 r = OBJ(g_fileList) + 0x40; r < OBJ(g_fileList) + 0x40 + 1024 * 0x44; r += 0x44)
-		memset((void *)(RELOC(r) - 0x40), 0, 0x44);
+	for (FileEntry *r = g_fileList; r < g_fileList + 1024; r++)
+		memset(r, 0, sizeof *r);
 	mapSelect_layout();          /* mapSelect_layout: the layout */
 	return autoplay_listFiles();    /* autoplay_listFiles */
 }
