@@ -569,7 +569,7 @@ int THISCALL (space_collideUnit)(u8 *self, float r, const float *pos, const floa
 	u8 *last = 0;
 	for (int pass = 0;; pass++) {
 		memcpy(at, from, 12);
-		u8 *node = FIELD(u8 *, self, 0x18);
+		u8 *node = (u8 *)((SpaceBlock *)self)->items;
 		int sub = -1, hit = 0;
 		FIELD(u32, &best, 0) = 0xff7fffff;   /* -FLT_MAX */
 		memcpy(move, step, 12);

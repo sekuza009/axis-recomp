@@ -29,16 +29,17 @@ u32 (tunnel_appendRing)(u8 **head)
 	u8 *node = crt_malloc(0x3538);
 	if (!node)
 		return 0;
+	TunnelRing *ring = (TunnelRing *)node;
 	if (!*head) {
 		*head = node;
-		FIELD(u8 *, node, 0x3530) = 0;
+		ring->back = 0;
 	} else {
-		u8 *last = first;
-		while (FIELD(u8 *, last, 0x3534))
-			last = FIELD(u8 *, last, 0x3534);
-		FIELD(u8 *, last, 0x3534) = node;
-		FIELD(u8 *, node, 0x3530) = last;
+		TunnelRing *last = (TunnelRing *)first;
+		while (last->next)
+			last = last->next;
+		last->next = ring;
+		ring->back = last;
 	}
-	FIELD(u8 *, node, 0x3534) = 0;
+	ring->next = 0;
 	return FUN_00440e20(node, g_tunnelRings);
 }
