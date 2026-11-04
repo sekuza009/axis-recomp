@@ -295,7 +295,7 @@ int THISCALL (stage_setupActorSlot)(u8 *scene, int i, u32 x, u32 y, u32 parts)
 	}
 	for (int k = 0; k <= COUNT; k++)
 		if (USED(k) == 0) {
-			GAME_VAR(int, scene + 0x202e8cc) = k;
+			((Stage *)scene)->actorFreeHint = k;
 			break;
 		}
 	actor_setupFromParts(scene, i, x, y, parts);
@@ -437,17 +437,17 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	u8 *actor = (u8 *)&STS->actors[a];
 	if (!FIELD(int, actor, 0x108))
 		return;
-	u8 *type = scene + 0x1561b68 + FIELD(int, actor, 0x10c) * 0x47fd2;
-	int item = FIELD(int, type, 0x320 + slot * 4);
+	u8 *type = (u8 *)&STS->playerRecords[((Player *)actor)->player];
+	int item = ((PlayerRecord *)type)->items[slot];
 	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
 	int self, models = 0x40, bones = 0x94c, counts = 0x12dc, frames = 0x1468;
 	if (slot == 4)
-		self = 0x587c;
+		self = offsetof(Player, weaponModel4);
 	else if (slot == 5) {
-		self = 0x701c;
+		self = offsetof(Player, weaponModel5);
 		models = 0x16fc, bones = 0x2008, counts = 0x2998, frames = 0x2b24;
 	} else if (slot == FIELD(int, actor, 0x140))
-		self = 0x40dc;
+		self = offsetof(Player, weaponModel);
 	else
 		return;
 	if (it)
@@ -490,13 +490,13 @@ static u8 level_byte(float *v)
 void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s1, float v1, float h2, float s2, float v2)
 {
 	static const u32 shapes[5] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984, 0x15915d0 };
-	u8 *colours = scene + 0x15a950c + p * 0x47fd2 + part * 2;
-	colours[0] = hue_byte(&h1);
-	colours[0xa] = level_byte(&s1);
-	colours[0x14] = level_byte(&v1);
-	colours[1] = hue_byte(&h2);
-	colours[0xb] = level_byte(&s2);
-	colours[0x15] = level_byte(&v2);
+	PlayerRecord *pr = &((Stage *)scene)->playerRecords[p];
+	pr->partHue[part][0] = hue_byte(&h1);
+	pr->partSaturation[part][0] = level_byte(&s1);
+	pr->partValue[part][0] = level_byte(&v1);
+	pr->partHue[part][1] = hue_byte(&h2);
+	pr->partSaturation[part][1] = level_byte(&s2);
+	pr->partValue[part][1] = level_byte(&v2);
 	char dir[0x100];
 	sprintf(dir, (const char *)STR(0x4c77f8, "_T%d"), p);
 	if ((unsigned)part <= 4)
@@ -539,15 +539,15 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 	u8 *ac = (u8 *)&st->actors[a];
 	if (AC->state != 1 || AC->cameraValue == 1)
 		return;
-	float r = f32(fadd_m(fld_m((const float *)(s + 0xa08)), &AC->radius));
-	const float *cam = (const float *)(s + 0x20f3970), *at = AC->pos;
+	float r = f32(fadd_m(fld_m(&st->cullMargin), &AC->radius));
+	const float *cam = (const float *)st->cameraPos, *at = AC->pos;
 	for (int k = 0; k < 3; k++)
 		if (fsub_m(fld_m(&cam[k]), &r) > at[k])
 			return;
 	for (int k = 0; k < 3; k++)
 		if (!(fadd_m(fld_m(&r), &cam[k]) >= at[k]))
 			return;
-	u8 *tint = ac + 0x4f0;
+	u8 *tint = AC->tint;
 	int local = st->playerActor;
 	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
 		tint[0] = tint[1] = tint[2] = 0xff;
@@ -674,11 +674,11 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rangeBonus = 0.0f;
 	BITS(AC->lockOnTimeFactor) = BITS(AC->targetKeepFactor) = 0x3f800000;
 	AC->hackingBonus = 0;
-	fill_dwords(ac + 0x434, 5, 0x3f800000);
+	fill_dwords(ac + offsetof(Player, boostTimeFactor), 5, 0x3f800000);   /* boostTimeFactor .. shieldFactor */
 	AC->shieldRegen = 0;
 	for (int k = 0; k < 6; k++) {
-		int it = GAME_VAR(int, p + 0x320 + k * 4);
-		if (it < 0 || GAME_VAR(int, s + 0x14d1ab4 + it * 0x2e18 + 0x2dc0) >= 0)
+		int it = pr->items[k];
+		if (it < 0 || st->actorInfo[it].ammoSlot >= 0)
 			continue;
 		switch (it) {
 		case 0x1b:
@@ -721,7 +721,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	int type = st->gameType;
 	if (type < 2 || type > 0xb)
 		for (int k = 0; k < 6; k++) {
-			int it = GAME_VAR(int, p + 0x320 + k * 4);
+			int it = pr->items[k];
 			if (it >= 0)
 				AC->load = f32(fadd_m(fld_m(&st->actorInfo[it].weight), &AC->load));
 		}
@@ -765,10 +765,10 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		AC->runTop[1] = 0.0f;
 	v = fdiv_m(fmul_m(LEG(0x13f0), &boost->normalSpeed[3]), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
-	if (!((check ? fld_m((const float *)(ac + 0x5c)) : v) >= 0))   /* (the check tests the stored value) */
+	if (!((check ? fld_m(&AC->runTop[2]) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;
 #undef LEG
-	AC->runTop[3] = f32(-fld_m((const float *)(ac + 0x5c)));
+	AC->runTop[3] = f32(-fld_m(&AC->runTop[2]));
 	AC->spawn64 = 100;
 	BITS(AC->topSpeed) = BITS(AC->speed);
 	AC->accel = 900.0f;   /* 900 */
@@ -802,7 +802,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	PlayerRecord *pr = (PlayerRecord *)p;
 	mech_stats(s, ac, p, 0);
 	AC->statD8 = 1;
-	strcpy((char *)ac + 0x98, (const char *)RELOC(p) + 4);
+	strcpy(AC->name, (const char *)RELOC(p) + 4);
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
 	AC->player = pp[0];
@@ -815,7 +815,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->armorDeadline = 1.0f;
 	AC->armor = ((u32)AC->armorMax);
 	AC->shield = ((u32)AC->shieldMax);
-	fill_dwords(ac + 0x130, 4, 0);
+	fill_dwords(ac + offsetof(Player, ammo), 4, 0);   /* ammo */
 	AC->slot = -1;
 	AC->lastWeaponSlot = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
@@ -825,7 +825,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	memcpy(AC->pos, pp + 2, 12);
 	BITS(AC->pitch) = pp[5];
 	BITS(AC->yaw) = pp[6];
-	fill_dwords(ac + 0x168, 6, 0);
+	fill_dwords(ac + offsetof(Player, forward), 6, 0);   /* forward .. fireAnim */
 	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* the next, sent and bot-goal states start at the place and the heading (nextPos, netPos, botGoal) */
 	for (int k = 0; k < 3; k++) {
 		u8 *h = ac + past[k];
@@ -833,9 +833,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 		GAME_VAR(u32, h + 0xc) = BITS(AC->pitch);
 		GAME_VAR(u32, h + 0x10) = BITS(AC->yaw);
 	}
-	fill_dwords(ac + 0x194, 6, 0);
-	fill_dwords(ac + 0x1c0, 5, 0);
-	fill_dwords(ac + 0x1e8, 3, 0);
+	fill_dwords(ac + offsetof(Player, nextForward), 6, 0);   /* nextForward .. fireCycle */
+	fill_dwords(ac + offsetof(Player, netMotion), 5, 0);   /* netMotion */
+	fill_dwords(ac + offsetof(Player, netFired), 3, 0);   /* netFired .. burstLeft */
 	AC->burstTime = 0.0f;
 	for (int k = 0; k < 5; k++) {
 		AC->shots[k].inUse = 0;
@@ -848,24 +848,24 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->radius = 500.0f;   /* 500 */
 	AC->statusIcon = 0;
 	AC->timerFlags = AC->id % 2 == 1 ? 0x4000 : 0;
-	fill_dwords(ac + 0x3f4, 4, 0);
-	fill_dwords(ac + 0x44c, 11, 0);
+	fill_dwords(ac + offsetof(Player, timers), 4, 0);   /* timers */
+	fill_dwords(ac + offsetof(Player, inForward), 11, 0);   /* inForward .. inBooster */
 	AC->inView = -1;
-	fill_dwords(ac + 0x47c, 5, 0);
+	fill_dwords(ac + offsetof(Player, inPrevWeapon), 5, 0);   /* inPrevWeapon .. weaponLowering */
 	AC->weaponLower = 1.0f;
 	(*(int *)&AC->gauge) = AC->slotLoaded = 0;
 	AC->variantLoaded = a == st->selectedActor ? 0 : 1;
-	fill_dwords(ac + 0x4a0, 3, 0);
+	fill_dwords(ac + offsetof(Player, firePrev), 3, 0);   /* firePrev .. footstepTime */
 	BITS(AC->energyUsed) = BITS(AC->staminaRest) = 0x3f800000;
 	AC->overheat = AC->warned = 0;
-	fill_dwords(ac + 0x4bc, 3, (u32)-1);
+	fill_dwords(ac + offsetof(Player, lastHitMode), 3, (u32)-1);   /* lastHitMode .. lastHitWeapon */
 	AC->order = -1;
 	memcpy(AC->deathPos, AC->pos, 12);
 	AC->glow = 0.0f;
 	(*(u8 *)&AC->message[0]) = 0;
 	AC->messageTime = -10000.0f;   /* -10000 */
 	AC->lastWarp = -1;
-	fill_dwords(ac + 0x53c, 3, 0);
+	fill_dwords(ac + offsetof(Player, onWarp), 3, 0);   /* onWarp .. shieldRegenTime */
 	AC->damageFlash = 1.0f;
 	AC->breakUp = 0;
 	actor_updateHead(s, a);
@@ -875,18 +875,18 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	actor_updateBooster(s, a);
 	for (int k = 5; k >= 0; k--)
 		actor_updatePart(s, a, k, ((u32)AC->variantLoaded));
-	fill_dwords(ac + 0x87bc, 10, 0);
-	fill_dwords(ac + 0x87e8, 4, 0);
+	fill_dwords(ac + offsetof(Player, screenX), 10, 0);   /* screenX .. onScreen */
+	fill_dwords(ac + offsetof(Player, lockedOn), 4, 0);   /* lockedOn .. botNeeds */
 	AC->target1 = AC->target2 = -1;
 	AC->pathReverse = (*(int *)&AC->botWait) = 0;
 	AC->botWaitTrigger = -1;
 	AC->invulnerable = 0;
-	fill_dwords(ac + 0x8810, 5, (u32)-1);
-	fill_dwords(ac + 0x8824, 5, 0);
+	fill_dwords(ac + offsetof(Player, lookActor), 5, (u32)-1);   /* lookActor .. botTarget */
+	fill_dwords(ac + offsetof(Player, scanTime), 5, 0);   /* scanTime .. heightTime */
 	memcpy(ac + 0x8838, (const void *)ADDR(g_vecZero), 12);
 	AC->lookTime = 0.0f;
 	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
-	fill_dwords(ac + 0x884c, 3, 0);
+	fill_dwords(ac + offsetof(Player, cameraValue), 3, 0);   /* cameraValue .. hitFlash */
 	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
 	AC->killPending = 0;

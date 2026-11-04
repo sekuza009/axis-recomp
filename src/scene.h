@@ -67,7 +67,10 @@ typedef struct PlayerRecord {
 	u8 _pad000004c[0x2c0];
 	i32 parts[5];   /* +0x30c: its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex") */
 	i32 items[6];   /* +0x320: per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none) */
-	u8 _pad0000338[0x4768a];
+	u8 _pad0000338[0x4766c];
+	u8 partHue[5][2];   /* +0x479a4: (by use) per part its two tints' hue (actor_setPartColor; bytes) */
+	u8 partSaturation[5][2];   /* +0x479ae */
+	u8 partValue[5][2];   /* +0x479b8 */
 	u32 emblem[16][24];   /* +0x479c2: (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP) */
 	u8 _pad0047fc2[0x4];
 	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
@@ -290,7 +293,7 @@ typedef struct Player {
 	i32 markTeam;   /* +0x4dc: (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games */
 	float deathPos[3];   /* +0x4e0: (by use) where it died (its position while not in play) */
 	float glow;   /* +0x4ec: (by use) a fresh shot's flash (and speed unless cloaked) */
-	u8 _pad00004f0[0x4];
+	u8 tint[4];   /* +0x4f0: (by use) its tint (r g b a: a cloaked actor's; alpha <= 0x10 also lights it faintly) */
 	char message[0x40];   /* +0x4f4: (by use) a message for the local player ("OUT OF AMMO!") */
 	float messageTime;   /* +0x534: its time shown (-10000: none) */
 	i32 lastWarp;   /* +0x538: (by use) the warp zone (item) it came through last (-1 none: not kept off it) */
@@ -1494,6 +1497,9 @@ _Static_assert(offsetof(PlayerRecord, level) == 0x44 && sizeof(((PlayerRecord *)
 _Static_assert(offsetof(PlayerRecord, team) == 0x48 && sizeof(((PlayerRecord *)0)->team) == 0x4, "scene.fields: PlayerRecord.team");
 _Static_assert(offsetof(PlayerRecord, parts) == 0x30c && sizeof(((PlayerRecord *)0)->parts) == 0x14, "scene.fields: PlayerRecord.parts");
 _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *)0)->items) == 0x18, "scene.fields: PlayerRecord.items");
+_Static_assert(offsetof(PlayerRecord, partHue) == 0x479a4 && sizeof(((PlayerRecord *)0)->partHue) == 0xa, "scene.fields: PlayerRecord.partHue");
+_Static_assert(offsetof(PlayerRecord, partSaturation) == 0x479ae && sizeof(((PlayerRecord *)0)->partSaturation) == 0xa, "scene.fields: PlayerRecord.partSaturation");
+_Static_assert(offsetof(PlayerRecord, partValue) == 0x479b8 && sizeof(((PlayerRecord *)0)->partValue) == 0xa, "scene.fields: PlayerRecord.partValue");
 _Static_assert(offsetof(PlayerRecord, emblem) == 0x479c2 && sizeof(((PlayerRecord *)0)->emblem) == 0x600, "scene.fields: PlayerRecord.emblem");
 _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
 _Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
@@ -1688,6 +1694,7 @@ _Static_assert(offsetof(Player, markSolo) == 0x4d8 && sizeof(((Player *)0)->mark
 _Static_assert(offsetof(Player, markTeam) == 0x4dc && sizeof(((Player *)0)->markTeam) == 0x4, "scene.fields: Player.markTeam");
 _Static_assert(offsetof(Player, deathPos) == 0x4e0 && sizeof(((Player *)0)->deathPos) == 0xc, "scene.fields: Player.deathPos");
 _Static_assert(offsetof(Player, glow) == 0x4ec && sizeof(((Player *)0)->glow) == 0x4, "scene.fields: Player.glow");
+_Static_assert(offsetof(Player, tint) == 0x4f0 && sizeof(((Player *)0)->tint) == 0x4, "scene.fields: Player.tint");
 _Static_assert(offsetof(Player, message) == 0x4f4 && sizeof(((Player *)0)->message) == 0x40, "scene.fields: Player.message");
 _Static_assert(offsetof(Player, messageTime) == 0x534 && sizeof(((Player *)0)->messageTime) == 0x4, "scene.fields: Player.messageTime");
 _Static_assert(offsetof(Player, lastWarp) == 0x538 && sizeof(((Player *)0)->lastWarp) == 0x4, "scene.fields: Player.lastWarp");

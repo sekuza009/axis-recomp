@@ -45,6 +45,9 @@ struct ActorInfo 0x2e18                                         # an actor type'
 
 struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
 0          4          i32 used                                   # (by use) 1: in use (playerRecord_markUsed / markFree)
+0x479a4    0xa        u8 partHue[5][2]                           # (by use) per part its two tints' hue (actor_setPartColor; bytes)
+0x479ae    0xa        u8 partSaturation[5][2]
+0x479b8    0xa        u8 partValue[5][2]
 0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
 0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
 0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
@@ -146,6 +149,7 @@ struct Player 0x8888                                            # a player's rec
 0x43c      4          float restTimeFactor
 0x440      4          float loadFactor
 0x444      4          float shieldFactor
+0x4f0      4          u8 tint[4]                                 # (by use) its tint (r g b a: a cloaked actor's; alpha <= 0x10 also lights it faintly)
 0x4f4      0x40       char message[0x40]                         # (by use) a message for the local player ("OUT OF AMMO!")
 0x534      4          float messageTime                          # its time shown (-10000: none)
 0x124      4          float armorDeadline                        # (by use) blinkTime + 10 while in play (the local and bots'); past it: the armour is gone
