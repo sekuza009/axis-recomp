@@ -262,7 +262,7 @@ typedef struct PlayerRecord {
 	u8 _pad0047fc2[0x4];
 	i32 flagShown;   /* +0x47fc6: 1: its flag is shown (ranking, markers) */
 	i32 emblemChanged;   /* +0x47fca: 1: to be copied into the emblem atlas (flagShown: it is there) */
-	u8 _pad0047fce[0x4];
+	i32 emblemSent;   /* +0x47fce: (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all) */
 } PlayerRecord;
 
 /* a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...) */
@@ -1549,6 +1549,7 @@ _Static_assert(offsetof(PlayerRecord, items) == 0x320 && sizeof(((PlayerRecord *
 _Static_assert(offsetof(PlayerRecord, emblem) == 0x479c2 && sizeof(((PlayerRecord *)0)->emblem) == 0x600, "scene.fields: PlayerRecord.emblem");
 _Static_assert(offsetof(PlayerRecord, flagShown) == 0x47fc6 && sizeof(((PlayerRecord *)0)->flagShown) == 0x4, "scene.fields: PlayerRecord.flagShown");
 _Static_assert(offsetof(PlayerRecord, emblemChanged) == 0x47fca && sizeof(((PlayerRecord *)0)->emblemChanged) == 0x4, "scene.fields: PlayerRecord.emblemChanged");
+_Static_assert(offsetof(PlayerRecord, emblemSent) == 0x47fce && sizeof(((PlayerRecord *)0)->emblemSent) == 0x4, "scene.fields: PlayerRecord.emblemSent");
 _Static_assert(sizeof(PlayerRecord) == 0x47fd2, "scene.fields: size of PlayerRecord");
 _Static_assert(offsetof(Model, blockSize) == 0x4 && sizeof(((Model *)0)->blockSize) == 0x4, "scene.fields: Model.blockSize");
 _Static_assert(offsetof(Model, block) == 0x8 && sizeof(((Model *)0)->block) == 0x4, "scene.fields: Model.block");

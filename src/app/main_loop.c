@@ -1685,7 +1685,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	if (SC->screenshotTaken == 0 && SC->localPlayer >= 0 && SC->network == 1) {
 		int shot = gfx_saveScreenshot(stage, SC->localPlayer);
 		P_INT(SC->localPlayer, 0x179d1fa) = shot;
-		P_INT(SC->localPlayer, 0x179d1fe) = 0;
+		SC->playerRecords[SC->localPlayer].emblemSent = 0;
 		SC->screenshotUpload = 5.0f;   /* 5 */
 		SC->screenshotTaken = 1;
 	} else if (run_down(s, 0x2342425)) {
@@ -1706,7 +1706,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	}
 	/* a team chosen (or a menu for it), then the spawn */
 	int me = SC->localPlayer;
-	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && P_INT(me, 0x179d1fe) == 0x180
+	if (me >= 0 && SC->players[me].active == 0 && SC->matchOver == 0 && SC->playerRecords[me].emblemSent == 0x180
 	    && (SC->firePressed == 1 || SC->teamAsked == 1)) {
 		if (SC->teamGame == 1 && (SC->localTeam < 0 || scene_findTeam((Scene *)s, SC->localTeam) < 0)) {
 			if (SC->chosenTeam >= 0 && SC->network != 0)
@@ -1972,7 +1972,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				net_sendGamePacket(s, i);
 			if (S(int, 0x234300a + i * 16) == 1)
 				net_sendPlayerInfo(s, i);
-			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && P_INT(SC->localPlayer, 0x179d1fe) < 0x180) {
+			if (net_playerInUse(i) == 1 && SC->sendTimer > 0.05f && SC->playerRecords[SC->localPlayer].emblemSent < 0x180) {
 				net_sendColourRing(s, SC->localPlayer);
 				SC->sendTimer = (float)-fld_m(&SC->frameTime);
 			}

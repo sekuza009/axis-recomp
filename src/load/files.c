@@ -1376,8 +1376,9 @@ u32 THISCALL (catalogue_loadComponents)(u8 *scene, const char *path)
    the eax it leaves */
 void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 {
-	char *kept = (char *)s + 0x2340d0c, path[0x100];
-	if (FIELD(int, s, 0x2340d1d) == 1)
+	Scene *sc = (Scene *)s;
+	char *kept = sc->recordName, path[0x100];
+	if (sc->recording == 1)
 		replay_closeRecording((Scene *)s);
 	if (name) {
 		strcpy(kept, name);
@@ -1393,27 +1394,27 @@ void THISCALL (autoplay_startRecording)(u8 *s, const char *name)
 				return;
 		}
 	}
-	void *f = FIELD(void *, s, 0x2340d08) = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
+	void *f = sc->replayFile = crt_fopen(path, (const char *)STR(0x4b2ab0, "wb"));
 	if (!f)
 		return;
-	FIELD(int, s, 0x2340d1d) = 1;
-	FIELD(int, s, 0x2340d29) = 0;
+	sc->recording = 1;
+	(*(int *)&sc->recordTime) = 0;
 	int value = 0x1201;
-	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)ADDR(g_missionStage), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, FIELD(void *, s, 0x2340d08));
-	value = FIELD(int, s, 0x22e7180);
-	file_writeScrambled(&value, 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)ADDR(g_fragLimit), 4, 1, FIELD(void *, s, 0x2340d08));
-	file_writeScrambled((void *)ADDR(g_timeLimit), 4, 1, FIELD(void *, s, 0x2340d08));
+	file_writeScrambled(&value, 4, 1, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_matchMode), 4, 1, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_missionStage), 4, 1, sc->replayFile);
+	file_writeScrambled((void *)OBJ(g_mapTitle), 1, 0x20, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_mapRotation), 4, 1, sc->replayFile);
+	value = sc->gameMode;
+	file_writeScrambled(&value, 4, 1, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_fragLimit), 4, 1, sc->replayFile);
+	file_writeScrambled((void *)ADDR(g_timeLimit), 4, 1, sc->replayFile);
 	for (int i = 0; i < 16; i++)
 		if (net_playerInUse(i) == 1) {
-			FIELD(int, s, 0x234300e + i * 0x10) = 1;
-			FIELD(int, s, 0x2343012 + i * 0x10) = 1;
+			sc->sendFlags[i][2] = 1;
+			sc->sendFlags[i][3] = 1;
 		}
-	FIELD(int, s, 0x234300a + FIELD(int, s, 0x234240d) * 0x10) = 1;
-	FIELD(int, s, 0x179d1fe + FIELD(int, s, 0x234240d) * 0x47fd2) = 0;
-	FIELD(int, s, 0x2343006 + FIELD(int, s, 0x234240d) * 0x10) = 1;
+	sc->sendFlags[sc->localPlayer][1] = 1;
+	sc->playerRecords[sc->localPlayer].emblemSent = 0;
+	sc->sendFlags[sc->localPlayer][0] = 1;
 }
