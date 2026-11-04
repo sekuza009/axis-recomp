@@ -113,7 +113,7 @@ typedef struct ShapePart {
 
 /* a part's primitive: its index list */
 typedef struct ShapePrim {
-	u8 _pad0000000[0x4];
+	i32 kind;   /* +0x0: (by use) its GL primitive: 6 a fan, 5 a strip, 4 a triangle list */
 	i32 indexCount;   /* +0x4 */
 	u8 *indices;   /* +0x8: 4 bytes each */
 } ShapePrim;
@@ -1591,6 +1591,7 @@ _Static_assert(offsetof(ShapePart, primCount) == 0x60 && sizeof(((ShapePart *)0)
 _Static_assert(offsetof(ShapePart, prims) == 0x64 && sizeof(((ShapePart *)0)->prims) == 0x4, "scene.fields: ShapePart.prims");
 _Static_assert(offsetof(ShapePart, box) == 0x68 && sizeof(((ShapePart *)0)->box) == 0x18, "scene.fields: ShapePart.box");
 _Static_assert(sizeof(ShapePart) == 0x80, "scene.fields: size of ShapePart");
+_Static_assert(offsetof(ShapePrim, kind) == 0x0 && sizeof(((ShapePrim *)0)->kind) == 0x4, "scene.fields: ShapePrim.kind");
 _Static_assert(offsetof(ShapePrim, indexCount) == 0x4 && sizeof(((ShapePrim *)0)->indexCount) == 0x4, "scene.fields: ShapePrim.indexCount");
 _Static_assert(offsetof(ShapePrim, indices) == 0x8 && sizeof(((ShapePrim *)0)->indices) == 0x4, "scene.fields: ShapePrim.indices");
 _Static_assert(sizeof(ShapePrim) == 0xc, "scene.fields: size of ShapePrim");

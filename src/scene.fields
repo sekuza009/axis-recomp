@@ -86,6 +86,7 @@ struct ShapePart 0x80                                           # a shape's part
 0x68       0x18       float box[6]                               # its low and high corners
 
 struct ShapePrim 0xc                                            # a part's primitive: its index list
+0          4          i32 kind                                   # (by use) its GL primitive: 6 a fan, 5 a strip, 4 a triangle list
 4          4          i32 indexCount
 8          4          u8 *indices                                # 4 bytes each
 

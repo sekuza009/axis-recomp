@@ -276,8 +276,8 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 		to[c] = f32(fadd_m(fld_m(&pos[c]), &vel[c]));
 	memcpy(outPos, to, sizeof to);
 	const float *low = sp->min, *high = sp->max;
-	const float *margin = (const float *)(grid + 0x8c);
-	const float *size_z = sp->cellSize, *size_x = (const float *)(grid + 0x84), *size_y = (const float *)(grid + 0x88);
+	const float *margin = (const float *)&sp->margin;
+	const float *size_z = &sp->cellSize[0], *size_x = &sp->cellSize[1], *size_y = &sp->cellSize[2];
 	for (int c = 0; c < 3; c++)
 		if (fsub_m(fld_m(&low[c]), margin) >= outPos[c])
 			return 0;
@@ -308,13 +308,13 @@ int THISCALL (space_collideAt)(u8 *grid, u32 r, const float *pos, const float *v
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
 	const float *half = (const float *)ADDR(k_0_5f);
 	while (node) {
-		if (!FIELD(int, node, 0x24))
+		if (!((SpaceBlock *)node)->split)
 			return ((Space *)grid)->lastHit = space_collideUnit(node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
 		long double mx = fmul_m(fadd_m(fld_m(&box[3]), &box[0]), half);
 		float my = f32(fmul_m(fadd_m(fld_m(&box[4]), &box[1]), half));
 		float mz = f32(fmul_m(fadd_m(fld_m(&box[5]), &box[2]), half));
 		int xu = !(mx > outPos[0]), yu = outPos[1] >= my, zu = outPos[2] >= mz;
-		node = FIELD(u8 *, node, 0x28 + xu * 4 + zu * 8 + yu * 0x10);
+		node = ((SpaceBlock *)node)->children[xu + zu * 2 + yu * 4];
 		box[xu ? 0 : 3] = f32(mx);
 		box[yu ? 1 : 4] = my;
 		box[zu ? 2 : 5] = mz;
@@ -366,7 +366,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	u32 *first = bk->items;
 	if (first && first[0] == (u32)item)
 		return 0;
-	u8 **child = (u8 **)(block + 0x28);
+	u8 **child = bk->children;
 	if (bk->split) {
 		for (int i = 0; i < 8; i++) {
 			if (!child[i])
@@ -424,7 +424,7 @@ u8 *THISCALL (space_buildPlanes)(u8 *space, u32 id, const float *v0, const float
 				((u32 *)low)[c] = ((const u32 *)others[k])[c];
 		}
 	const float *grid_low = sp->min, *grid_high = sp->max;
-	const float *margin = (const float *)(space + 0x8c);
+	const float *margin = (const float *)&sp->margin;
 	const float *size_z = sp->cellSize, *size_x = (const float *)(space + 0x84), *size_y = (const float *)(space + 0x88);
 	for (int c = 0; c < 3; c++)
 		if (!(fadd_m(fld_m(&grid_high[c]), margin) > low[c]))
@@ -525,19 +525,19 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 	}
 	u32 *unit = space_getNextFreeUnitPtr(space);
 	unit[0] = id;
-	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
-		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
+	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
+		u8 *part = ((Model *)shape)->parts + i * 0x80;
 		if (part[0] & 0x20)
 			continue;
 		u32 kind = part[0] & 1 ? 0x10 : 0;
-		const float *verts = FIELD(const float *, part, 0x50);
-		for (int j = 0; j < FIELD(int, part, 0x60); j++) {
-			u8 *prim = FIELD(u8 *, part, 0x64) + j * 0xc;
-			int n = FIELD(int, prim, 4);
-#define IDX(k) FIELD(u32, FIELD(u8 *, prim, 8), (k) * 4)
-#define VERT(k) (FIELD(const float *, part, 0x50) + IDX(k) * 3)
+		const float *verts = (const float *)((ShapePart *)part)->vertices;
+		for (int j = 0; j < ((ShapePart *)part)->primCount; j++) {
+			u8 *prim = ((ShapePart *)part)->prims + j * 0xc;
+			int n = ((ShapePrim *)prim)->indexCount;
+#define IDX(k) ((const u32 *)((ShapePrim *)prim)->indices)[k]
+#define VERT(k) ((const float *)((ShapePart *)part)->vertices + IDX(k) * 3)
 			float a[3], b[3], c[3];
-			switch (FIELD(int, prim, 0)) {
+			switch (((ShapePrim *)prim)->kind) {
 			case 6:   /* a fan */
 				for (int k = 2; k < n; k++) {
 					u32 i0 = IDX(0);
@@ -882,12 +882,12 @@ static void clip_end(const float *a, float *b, float *d, const float *plane, int
 u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void *hit)
 {
 	int n = 0;
-	for (int i = 0; i < GAME_VAR(int, s + 0x13c9b24); i++) {
+	for (int i = 0; i < ((Stage *)s)->objectCount; i++) {
 		u8 *o = (u8 *)&((Stage *)s)->objects[i];
-		if (((MapObject *)o)->active != 1 || ((MapObject *)o)->animated != 1 || !GAME_VAR(u32, ((u8 *)((MapObject *)o)->unit) + 8))
+		if (((MapObject *)o)->active != 1 || ((MapObject *)o)->animated != 1 || !((SpaceUnit *)((MapObject *)o)->unit)->lastNode)
 			continue;
 		const float *m = ((MapObject *)o)->matrixInverse;
-		const float *lo = (const float *)(((u8 *)((MapObject *)o)->model) + 0x34), *hi = lo + 3;
+		const float *lo = ((MapObject *)o)->model->low, *hi = ((MapObject *)o)->model->high;
 		float a[3], b[3], d[3];
 		for (int r = 0; r < 3; r++)
 			a[r] = f32(fadd_m(fmul_m(fld_m(&p0[2]), &m[8 + r]) + fmul_m(fld_m(&p0[r ? 1 : 0]), &m[r ? 4 + r : 0]) +
@@ -928,11 +928,11 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 			clip_end(a, b, d, &hi[1], 1, 0);
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
-		u32 *sub = (u32 *)(RELOC(s) + 0x9ca0f4) + n * 3;
-		sub[0] = GAME_VAR(u32, ((u8 *)((MapObject *)o)->unit) + 8);
-		sub[1] = (u32)(o + 0x1f4);
-		sub[2] = (u32)(o + 0x234);
+		u32 *sub = ((Stage *)s)->nearObjects[n];
+		sub[0] = (u32)((SpaceUnit *)((MapObject *)o)->unit)->lastNode;
+		sub[1] = (u32)((MapObject *)o)->relMatrix;
+		sub[2] = (u32)((MapObject *)o)->relInverse;
 		n++;
 	}
-	return space_traceNodes(s + 0xa10, p0, p1, hit, s + 0x9ca0f4, n);
+	return space_traceNodes(s + 0xa10, p0, p1, hit, ((Stage *)s)->nearObjects, n);
 }
