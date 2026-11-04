@@ -278,25 +278,26 @@ TunnelRing *(tunnel_addRing)(void)
 
 void (intro_cameraPath)(u8 *o, int h)
 {
+	TunnelRing *tr = (TunnelRing *)o;
 	typedef long double X;
 	X H = h;
 	FIELD(int, o, 0) = 0;
 	FIELD(int, o, 4) = 0;
-	FIELD(float, o, 8) = (float)(H * k_m1000f + H * k_m100f);
-	FIELD(int, o, 0x3528) = 100;
+	tr->depth = (float)(H * k_m1000f + H * k_m100f);
+	tr->cells = 100;
 	for (int pass = 0; pass < 2; pass++) {
 		u32 base = 0x10;
 		X radius = pass ? k_23 : k_25;
 		if (pass) {   /* the second circle after the path's four fields */
-			FIELD(int, o, 0x1930) = 0;
-			if (FIELD(int, o, 0x3530))
-				FIELD(int, o, 0x1930) = FIELD(int, FIELD(u8 *, o, 0x3530), 0x1930);
-			FIELD(u32, o, 0x1934) = 0x3e4ccccd;   /* 0.2 */
+			(*(int *)&tr->spin) = 0;
+			if (tr->back)
+				BITS(tr->spin) = BITS(tr->back->spin);
+			BITS(tr->spinSpeed) = 0x3e4ccccd;   /* 0.2 */
 			FIELD(int, o, 0x1938) = 0;
-			FIELD(int, o, 0x1940) = 0;
-			FIELD(int, o, 0x193c) = 0;
+			(*(int *)&tr->turn) = 0;
+			tr->moveSteps = 0;
 			base = 0x1944;
-			if (FIELD(int, o, 0x3528) < 0)
+			if (tr->cells < 0)
 				break;
 		}
 		for (int i = 0; ; ) {
@@ -309,13 +310,13 @@ void (intro_cameraPath)(u8 *o, int h)
 			FIELD(float, r, 4) = c;
 			FIELD(u32, r, 8) = 0x43fa0000;       /* 500 */
 			FIELD(u32, r, 0xc98) = 0xc3fa0000;   /* -500 */
-			if (!(++i <= FIELD(int, o, 0x3528)))
+			if (!(++i <= tr->cells))
 				break;
 		}
 	}
-	FIELD(u32, o, 0x3264) = 0x43b40000;   /* 360 */
-	if (FIELD(int, o, 0x3530))
-		FIELD(int, o, 0x3264) = FIELD(int, FIELD(u8 *, o, 0x3530), 0x3264);
+	BITS(tr->innerSpin) = 0x43b40000;   /* 360 */
+	if (tr->back)
+		BITS(tr->innerSpin) = BITS(tr->back->innerSpin);
 	static const struct { short offset; u32 value; } box[] = {
 		{ 0x3268, 0xbf000000 }, { 0x326c, 0 }, { 0x3274, 0 }, { 0x3270, 0 }, { 0x3278, 0xc2480000 }, { 0x327c, 0x42480000 },
 		{ 0x3280, 0x42440000 }, { 0x3288, 0x42480000 }, { 0x328c, 0x42480000 }, { 0x3290, 0x42440000 },
@@ -326,7 +327,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		{ 0x32e8, 0xc2480000 }, { 0x32ec, 0xc2480000 }, { 0x32f8, 0 }, { 0x32fc, 0 }, { 0x3308, 0 },
 		{ 0x330c, 0xbdcccccd } };   /* (+-50, +-49 ...) */
 	X y = H * k_m1100f - k_550f;
-	FIELD(float, o, 0x3300) = (float)y;
+	tr->cagePos[2] = (float)y;
 	y -= k_49f;
 	for (unsigned i = 0; i < sizeof box / sizeof box[0]; i++)
 		FIELD(u32, o, box[i].offset) = box[i].value;
@@ -344,7 +345,7 @@ void (intro_cameraPath)(u8 *o, int h)
 		{ 0x34c4, 0xbe3851ec }, { 0x351c, 0x3e3851ec }, { 0x3520, 0x3f800000 } };
 	for (unsigned i = 0; i < sizeof rest / sizeof rest[0]; i++)
 		FIELD(u32, o, rest[i].offset) = rest[i].value;
-	FIELD(int, o, 0x3524) = h;
+	tr->screenHeight = h;
 }
 
 /* ---- the menu camera's move along the tunnel: its eye (0x4df024, three floats) and the point it looks at

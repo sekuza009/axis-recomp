@@ -1029,7 +1029,7 @@ typedef struct TunnelRing {
 	float cageSpeed;   /* +0x330c */
 	Flare flares[6];   /* +0x3310 */
 	float alpha;   /* +0x3520: the flares' alpha */
-	u8 _pad0003524[0x4];
+	i32 screenHeight;   /* +0x3524: (by use) the screen height it was made for (intro_cameraPath) */
 	i32 cells;   /* +0x3528: quads around each band (at most 200) */
 	u8 _pad000352c[0x4];
 	struct TunnelRing *back;   /* +0x3530: the ring before */
@@ -2131,6 +2131,7 @@ _Static_assert(offsetof(TunnelRing, cageSpin) == 0x3308 && sizeof(((TunnelRing *
 _Static_assert(offsetof(TunnelRing, cageSpeed) == 0x330c && sizeof(((TunnelRing *)0)->cageSpeed) == 0x4, "scene.fields: TunnelRing.cageSpeed");
 _Static_assert(offsetof(TunnelRing, flares) == 0x3310 && sizeof(((TunnelRing *)0)->flares) == 0x210, "scene.fields: TunnelRing.flares");
 _Static_assert(offsetof(TunnelRing, alpha) == 0x3520 && sizeof(((TunnelRing *)0)->alpha) == 0x4, "scene.fields: TunnelRing.alpha");
+_Static_assert(offsetof(TunnelRing, screenHeight) == 0x3524 && sizeof(((TunnelRing *)0)->screenHeight) == 0x4, "scene.fields: TunnelRing.screenHeight");
 _Static_assert(offsetof(TunnelRing, cells) == 0x3528 && sizeof(((TunnelRing *)0)->cells) == 0x4, "scene.fields: TunnelRing.cells");
 _Static_assert(offsetof(TunnelRing, back) == 0x3530 && sizeof(((TunnelRing *)0)->back) == 0x4, "scene.fields: TunnelRing.back");
 _Static_assert(offsetof(TunnelRing, next) == 0x3534 && sizeof(((TunnelRing *)0)->next) == 0x4, "scene.fields: TunnelRing.next");
