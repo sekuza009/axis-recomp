@@ -193,13 +193,13 @@ void THISCALL (tex_clearSetCounters)(void *self)
 /* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
 void THISCALL (playerRecord_resetColourGrid)(Stage *stage, int p)
 {
-	u8 *rec = (u8 *)(u8 *)&((Stage *)stage)->playerRecords[p];
+	PlayerRecord *pr = &stage->playerRecords[p];
 	int colour = g_defaultColour;
 	for (int k = 0; k < 16 * 24; k++)
-		FIELD(int, rec, 0x479c2 + k * 4) = colour;
-	FIELD(int, rec, 0x47fc6) = 0;
-	FIELD(int, rec, 0x47fca) = 0;
-	FIELD(int, rec, 0x47fce) = 0x180;
+		FIELD(int, pr->emblem, k * 4) = colour;   /* (the 16 x 24 grid as one run) */
+	pr->flagShown = 0;
+	pr->emblemChanged = 0;
+	pr->emblemSent = 0x180;
 }
 /* 0x48fc40: an event (a, b, c, d, d) put in the stage's script ring of 32 (20 bytes each); when full the oldest is
    dropped */
@@ -341,8 +341,8 @@ void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer
 /* 0x470f80: an object's texture folder (+0x908) set, upper-cased with back slashes (returned) */
 char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 {
-	strcpy((char *)self + 0x908, folder);
-	return path_normalize((char *)self + 0x908);
+	strcpy(((Stage *)self)->stageName, folder);
+	return path_normalize(((Stage *)self)->stageName);
 }
 /* 0x461ec0: the scene's texture folder (+0x1f35c8) and its stage's */
 void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)
@@ -741,19 +741,18 @@ void THISCALL (scene_loadPath)(u8 *scene, u32 path)
    ignores the eax it leaves */
 void THISCALL (playerRecord_setFromActorRecord)(Stage *stage, int p, const u8 *rec)
 {
-#define R(offset) GAME_VAR(int, rec + (offset))
-	player_setName(stage, p, (const char *)(rec + 8));
-	player_setValue(stage, p, R(4));
-	player_setTeam(stage, p, R(0x28));
-	actor_setActorTypeHeadInfoBy(stage, p, R(0x2c));
-	actor_setActorTypeChestInfoBy(stage, p, R(0x30));
-	actor_setActorTypeArmInfoBy(stage, p, R(0x34));
-	actor_setActorTypeLegInfoBy(stage, p, R(0x38));
-	actor_setActorTypeBoosterInfoBy(stage, p, R(0x3c));
+	const MapPlayer *mp = (const MapPlayer *)rec;
+	player_setName(stage, p, mp->name);
+	player_setValue(stage, p, mp->value);
+	player_setTeam(stage, p, mp->team);
+	actor_setActorTypeHeadInfoBy(stage, p, mp->parts[0]);
+	actor_setActorTypeChestInfoBy(stage, p, mp->parts[1]);
+	actor_setActorTypeArmInfoBy(stage, p, mp->parts[2]);
+	actor_setActorTypeLegInfoBy(stage, p, mp->parts[3]);
+	actor_setActorTypeBoosterInfoBy(stage, p, mp->parts[4]);
 	for (int k = 0; k < 6; k++)
-		actor_setActorTypeItemInfoBy(stage, p, k, R(0x40 + k * 4));
+		actor_setActorTypeItemInfoBy(stage, p, k, mp->items[k]);
 	player_markUsed(stage, p);
-#undef R
 }
 
 /* 0x474210 (thiscall on the stage): player p set from its pieces: name, value, team, the five parts, the six items,

@@ -319,11 +319,11 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	fread_scrambled(st->mapActors, 0x5c, ((u32)st->mapActorCount), f);
 	fclose(f);
 	for (int p = 1; p < st->mapPlayerCount; p++) {
-		u8 *rec = st->mapPlayers[p];
-		if (--FIELD(int, rec, 4) >= 0)
+		MapPlayer *rec = &st->mapPlayers[p];
+		if (--rec->value >= 0)
 			for (int part = 0; part < 5; part++)
-				setPartColor(p, part, FIELD(int, rec, 4));
-		int *items = (int *)(rec + 0x40);
+				setPartColor(p, part, rec->value);
+		int *items = rec->items;
 		unsigned mode = st->gameType - 2;
 		if (mode <= 9) {
 			items[0] = fixed[mode / 2];

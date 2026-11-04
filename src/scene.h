@@ -811,6 +811,16 @@ typedef struct StartPoint {
 	float angle[2];   /* +0xc */
 } StartPoint;
 
+/* a player as the map's actor file gives it (Stage.mapPlayers; playerRecord_setFromActorRecord) */
+typedef struct MapPlayer {
+	u8 _pad0000000[0x4];
+	i32 value;   /* +0x4: (by use) player_setValue's value; in the map file 1-based, the colour preset for its parts (map_loadActorInfoFrom) */
+	char name[0x20];   /* +0x8 */
+	i32 team;   /* +0x28 */
+	i32 parts[5];   /* +0x2c: head, chest, arms, legs, booster */
+	i32 items[6];   /* +0x40: per item slot (-1: none) */
+} MapPlayer;
+
 /* an actor's spawn record (the map's actors, Stage.mapActors; actor_applySpawnRecord) */
 typedef struct SpawnRecord {
 	i32 player;   /* +0x0: its player record */
@@ -1059,7 +1069,7 @@ typedef struct Stage {
 	SkelManager partSkeletons;   /* +0x1cbe198: their skeletons (SkeletonManager) */
 	u8 partSkeletonData[0x186a0];   /* +0x1cbe2c8: partSkeletons' block */
 	i32 idTable[50];   /* +0x1cd6968: (unclear) an id table set to -1 with the stage (stage_reset) */
-	u8 mapPlayers[16][0x58];   /* +0x1cd6a30: (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
+	MapPlayer mapPlayers[16];   /* +0x1cd6a30: (by use) the map's player records (map_loadActorInfoFrom: colour scheme +4, items +0x40) */
 	i32 mapPlayerCount;   /* +0x1cd6fb0 */
 	SpawnRecord mapActors[100];   /* +0x1cd6fb4: the map's actors (the first: the player's) */
 	i32 mapActorCount;   /* +0x1cd93a4 */
@@ -2135,6 +2145,12 @@ _Static_assert(sizeof(Trigger) == 0x1c, "scene.fields: size of Trigger");
 _Static_assert(offsetof(StartPoint, pos) == 0x0 && sizeof(((StartPoint *)0)->pos) == 0xc, "scene.fields: StartPoint.pos");
 _Static_assert(offsetof(StartPoint, angle) == 0xc && sizeof(((StartPoint *)0)->angle) == 0x8, "scene.fields: StartPoint.angle");
 _Static_assert(sizeof(StartPoint) == 0x14, "scene.fields: size of StartPoint");
+_Static_assert(offsetof(MapPlayer, value) == 0x4 && sizeof(((MapPlayer *)0)->value) == 0x4, "scene.fields: MapPlayer.value");
+_Static_assert(offsetof(MapPlayer, name) == 0x8 && sizeof(((MapPlayer *)0)->name) == 0x20, "scene.fields: MapPlayer.name");
+_Static_assert(offsetof(MapPlayer, team) == 0x28 && sizeof(((MapPlayer *)0)->team) == 0x4, "scene.fields: MapPlayer.team");
+_Static_assert(offsetof(MapPlayer, parts) == 0x2c && sizeof(((MapPlayer *)0)->parts) == 0x14, "scene.fields: MapPlayer.parts");
+_Static_assert(offsetof(MapPlayer, items) == 0x40 && sizeof(((MapPlayer *)0)->items) == 0x18, "scene.fields: MapPlayer.items");
+_Static_assert(sizeof(MapPlayer) == 0x58, "scene.fields: size of MapPlayer");
 _Static_assert(offsetof(SpawnRecord, player) == 0x0 && sizeof(((SpawnRecord *)0)->player) == 0x4, "scene.fields: SpawnRecord.player");
 _Static_assert(offsetof(SpawnRecord, pos) == 0x4 && sizeof(((SpawnRecord *)0)->pos) == 0xc, "scene.fields: SpawnRecord.pos");
 _Static_assert(offsetof(SpawnRecord, pitch) == 0x10 && sizeof(((SpawnRecord *)0)->pitch) == 0x4, "scene.fields: SpawnRecord.pitch");
