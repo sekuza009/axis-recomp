@@ -407,7 +407,12 @@ typedef struct Projectile {
 	float fade;   /* +0x84: (unclear) 0.1 for the fading kinds */
 	u8 _pad0000088[0x4c];
 	u32 cornerColours[3];   /* +0xd4: (unclear) white at the start */
-	u8 _pad00000e0[0x4c];
+	u8 _pad00000e0[0x4];
+	i32 quadTexture;   /* +0xe4: (by use) kind 50, a quad: its texture, two texture corners, colour, points */
+	u32 quadUv0[2];   /* +0xe8 */
+	u32 quadUv1[2];   /* +0xf0 */
+	u32 quadColour;   /* +0xf8 */
+	float quadPoints[4][3];   /* +0xfc */
 } Projectile;
 
 /* a bullet in flight (Stage.bullets: bullet_init, bullet_update) */
@@ -1601,6 +1606,11 @@ _Static_assert(offsetof(Projectile, size) == 0x7c && sizeof(((Projectile *)0)->s
 _Static_assert(offsetof(Projectile, baseSize) == 0x80 && sizeof(((Projectile *)0)->baseSize) == 0x4, "scene.fields: Projectile.baseSize");
 _Static_assert(offsetof(Projectile, fade) == 0x84 && sizeof(((Projectile *)0)->fade) == 0x4, "scene.fields: Projectile.fade");
 _Static_assert(offsetof(Projectile, cornerColours) == 0xd4 && sizeof(((Projectile *)0)->cornerColours) == 0xc, "scene.fields: Projectile.cornerColours");
+_Static_assert(offsetof(Projectile, quadTexture) == 0xe4 && sizeof(((Projectile *)0)->quadTexture) == 0x4, "scene.fields: Projectile.quadTexture");
+_Static_assert(offsetof(Projectile, quadUv0) == 0xe8 && sizeof(((Projectile *)0)->quadUv0) == 0x8, "scene.fields: Projectile.quadUv0");
+_Static_assert(offsetof(Projectile, quadUv1) == 0xf0 && sizeof(((Projectile *)0)->quadUv1) == 0x8, "scene.fields: Projectile.quadUv1");
+_Static_assert(offsetof(Projectile, quadColour) == 0xf8 && sizeof(((Projectile *)0)->quadColour) == 0x4, "scene.fields: Projectile.quadColour");
+_Static_assert(offsetof(Projectile, quadPoints) == 0xfc && sizeof(((Projectile *)0)->quadPoints) == 0x30, "scene.fields: Projectile.quadPoints");
 _Static_assert(sizeof(Projectile) == 0x12c, "scene.fields: size of Projectile");
 _Static_assert(offsetof(Bullet, id) == 0x0 && sizeof(((Bullet *)0)->id) == 0x4, "scene.fields: Bullet.id");
 _Static_assert(offsetof(Bullet, active) == 0x4 && sizeof(((Bullet *)0)->active) == 0x4, "scene.fields: Bullet.active");

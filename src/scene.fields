@@ -335,6 +335,11 @@ struct Projectile 0x12c                                         # a particle or 
 0x80       4          float baseSize                            # the descriptor's size
 0x84       4          float fade                                # (unclear) 0.1 for the fading kinds
 0xd4       0xc        u32 cornerColours[3]                      # (unclear) white at the start
+0xe4       4          i32 quadTexture                            # (by use) kind 50, a quad: its texture, two texture corners, colour, points
+0xe8       8          u32 quadUv0[2]
+0xf0       8          u32 quadUv1[2]
+0xf8       4          u32 quadColour
+0xfc       0x30       float quadPoints[4][3]
 4          4          i32 active                                # 1: in use
 
 struct Bullet 0x4e8                                             # a bullet in flight (Stage.bullets: bullet_init, bullet_update)

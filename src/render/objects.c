@@ -342,6 +342,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 #define K(address) ((const float *)RELOC(address))
 #define P(type, offset) GAME_VAR(type, p + (offset))
 #define PR ((Projectile *)p)   /* the same by its fields (src/scene.fields) */
+#define ALPHA(rgba) (((u8 *)&(rgba))[3])   /* an RGBA dword's alpha byte */
 #define TEX(k) GAME_VAR(int, s + 0x9ccfd4 + (k) * 4)   /* the effect textures */
 
 static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
@@ -371,7 +372,7 @@ static const float k_glowUV[4] = { 0.5f, 0.125f, 0.625f, 0.25f }, k_coreUV[4] = 
 static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 {
 	float ab[4];
-	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));   /* 128 */
 	square(ab, PR->owner == ST->selectedActor ? small : big);
 	quad(vv, TEX(0), k_glowUV, 0, p, ab, PR->pos, 2);
 }
@@ -380,7 +381,7 @@ static void glow(u8 *s, u8 *p, void *vv, long double a, float big, float small)
 static void sized_glow(u8 *s, u8 *p, void *vv, long double a, const float *add)
 {
 	float ab[4];
-	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa264))));
 	long double size = fadd_m(fld_m(&PR->baseSize), add);
 	square(ab, size);
 	if (PR->owner == ST->selectedActor) {
@@ -397,7 +398,7 @@ static void core(u8 *s, u8 *p, void *vv, const float *t, float h, float big, flo
 	float ab[4];
 	long double a = fsub_m(fld_m(K(0x4a9424)), t);
 	float a_rounded = (float)a;
-	P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4a9744))));   /* 255 */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4a9744))));   /* 255 */
 	square(ab, h);
 	quad(vv, TEX(0), k_coreUV, 0, p, ab, PR->pos, 2);
 	glow(s, p, vv, fld_m(&a_rounded), big, small);
@@ -410,7 +411,7 @@ static void flare(u8 *s, u8 *p, void *vv, float *t)
 	long double a = fsub_m(fld_m(K(0x4a9424)), t);
 	float a_rounded = (float)a;
 	long double a2 = a * a;
-	P(u8, 0x7b) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
+	ALPHA(PR->colour) = clamp255(ftol(fmul_m(a2, K(0x4aa260))));   /* 256 */
 	*t = f32(fadd_m(fld_m(&PR->baseSize), K(0x4a93f0)));   /* (the original reuses t's slot) */
 	square(ab, fmul_m(a2, t));
 	quad(vv, TEX(0), k_coreUV, 200.0f, p, ab, PR->pos, 2);
@@ -429,7 +430,7 @@ static void bolt(u8 *s, u8 *p, void *vv, const float *t, int sized)
 	uv[1] = 0.9375f;
 	uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4a958c)));
 	uv[3] = 1.0f;
-	P(u8, 0x7b) = 0xff;
+	ALPHA(PR->colour) = 0xff;
 	memcpy(at, PR->pos, 12);
 	at[1] = f32(fadd_m(fmul_m(fld_m(t), K(0x4a93f4)), &at[1]));
 	if (sized)
@@ -493,7 +494,7 @@ static void smoke(u8 *s, u8 *p, void *vv, int i, float v0, float v1)
 		uv[1] = v0;
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
 		uv[3] = v1;
-		P(u8, 0x7b) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &PR->target[1]), K(0x4a9744)));
+		ALPHA(PR->colour) = (u8)ftol(fmul_m(fmul_m(fsubr_m(fmul_m((long double)k, K(0x4a955c)), K(0x4a9424)), &PR->target[1]), K(0x4a9744)));
 		square(ab, size);
 		quad(vv, tex, uv, 0, p, ab, at, 2);
 		for (int j = 0; j < 3; j++)
@@ -538,7 +539,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		uv[2] = f32(fadd_m(fld_m(&uv[0]), K(0x4aa274)));
 		uv[3] = 0.125f;
 		int a = ftol(fmul_m(fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9744)));
-		P(u8, 0x7b) = (u8)(a > 0xff ? 0xff : a);
+		ALPHA(PR->colour) = (u8)(a > 0xff ? 0xff : a);
 		square(ab, fmul_m(fadd_m(fld_m(&t), K(0x4a9424)), K(0x4a93f4)));
 		quad(vv, TEX(0), uv, 100.0f, p, ab, at, 2);
 		return;
@@ -582,7 +583,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 4:   /* a marker the owner's colour index shows through */
 		ab[0] = ab[1] = (float)-fld_m(&PR->target[0]);
 		ab[2] = ab[3] = (float)fld_m(&PR->target[0]);
-		P(u8, 0x7b) = P(u8, 0xc);
+		ALPHA(PR->colour) = *(u8 *)&PR->owner;
 		uv[0] = uv[1] = 0.75f;
 		uv[2] = uv[3] = 1.0f;
 		quad(vv, TEX(0), uv, 0, p, ab, at, 3);
@@ -650,7 +651,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	case 24: {
 		long double a = fsub_m(fld_m(K(0x4a9424)), &t);
-		P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
+		ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
 		shape(vv, p, (*(void * *)&ST->effectShapes[5]), p + 0x78, 0);
 		return;
 	}
@@ -683,14 +684,14 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		return;
 	case 35:   /* an explosion: 16 frames, the radius + 2000, then the radius glow (+4000) */
 		frame16(uv, &t);
-		P(u8, 0x7b) = 0xff;
+		ALPHA(PR->colour) = 0xff;
 		square(ab, fadd_m(fld_m(&PR->baseSize), K(0x4a9554)));
 		quad(vv, TEX(2), uv, 2000.0f, p, ab, at, 2);
 		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4aa434));
 		return;
 	case 36:
 		frame16_turned(uv, &t, i);
-		P(u8, 0x7b) = 0xff;
+		ALPHA(PR->colour) = 0xff;
 		square(ab, 1000.0f);
 		quad(vv, TEX(0), uv, 1000.0f, p, ab, at, 2);
 		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9554));
@@ -699,17 +700,18 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		/* a trail's triangle (texture 8), its three colours fading over its last second */
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
-			P(u8, 0xd7) = P(u8, 0xdb) = P(u8, 0xdf) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
-		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), (const u32 *)(p + 0xd4), &PR->fade,
+			ALPHA(PR->cornerColours[0]) = ALPHA(PR->cornerColours[1]) = ALPHA(PR->cornerColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
+		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), PR->cornerColours, &PR->fade,
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}
 	case 50:
-		viewVolume_addQuad(vv, P(int, 0xe4), (const u32 *)(p + 0xe8), (const u32 *)(p + 0xf0), (const u32 *)(p + 0xf8), (const float *)(p + 0xfc), 2, 1);
+		viewVolume_addQuad(vv, PR->quadTexture, PR->quadUv0, PR->quadUv1, &PR->quadColour, &PR->quadPoints[0][0], 2, 1);
 		return;
 	}
 }
 #undef K
 #undef P
 #undef PR
+#undef ALPHA
 #undef TEX
