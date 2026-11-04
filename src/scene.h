@@ -1251,7 +1251,9 @@ typedef struct Stage {
 	float levelHigh[3];   /* +0x9ef910 */
 	float worldLow[3];   /* +0x9ef91c: the world box moves are kept inside (collision_tris.c) */
 	float worldHigh[3];   /* +0x9ef928 */
-	float areaExtra[3];   /* +0x9ef934: (by use) three more values of the ground file's area limits (the first 1.0 by */
+	float areaValue;   /* +0x9ef934: (by use) read with the ground file's area limits (1.0 by default: scene_reset); not read */
+	i32 missionNumber;   /* +0x9ef938: read with them too: the mission's number (Scene.missionNumber) */
+	i32 musicKind;   /* +0x9ef93c: read with them too: the match music's kind (Scene.musicKind) */
 	u8 pool[0x3d0900];   /* +0x9ef940: (by use) the ground layers' tables are taken from it (pool_take: map_info.c) */
 	i32 poolUsed;   /* +0xdc0240: its bytes taken */
 	GroundLayer groundLayers[4];   /* +0xdc0244: (groundLayerCount of them) */
@@ -1485,7 +1487,8 @@ typedef struct Scene {
 	u8 _pad0be172c[0x18d0];
 	float unusedBe2ffc;   /* +0xbe2ffc: (by use) only written: 1.0 by app_requireCd (network 2) */
 	i32 missionNumber;   /* +0xbe3000: (by use) the mission loaded (its number sent and compared in the network packets) */
-	u8 _pad0be3004[0x9fb6c4];
+	i32 musicKind;   /* +0xbe3004: (by use) the match music by kind 1 .. 4 (music_playMatch; = Stage.musicKind) */
+	u8 _pad0be3008[0x9fb6c0];
 	i32 headCount;   /* +0x15de6c8: parts of each kind (the pickers wrap around them) */
 	u8 _pad15de6cc[0x218b8];
 	i32 chestCount;   /* +0x15fff84 */
@@ -2715,7 +2718,9 @@ _Static_assert(offsetof(Stage, levelLow) == 0x9ef904 && sizeof(((Stage *)0)->lev
 _Static_assert(offsetof(Stage, levelHigh) == 0x9ef910 && sizeof(((Stage *)0)->levelHigh) == 0xc, "scene.fields: Stage.levelHigh");
 _Static_assert(offsetof(Stage, worldLow) == 0x9ef91c && sizeof(((Stage *)0)->worldLow) == 0xc, "scene.fields: Stage.worldLow");
 _Static_assert(offsetof(Stage, worldHigh) == 0x9ef928 && sizeof(((Stage *)0)->worldHigh) == 0xc, "scene.fields: Stage.worldHigh");
-_Static_assert(offsetof(Stage, areaExtra) == 0x9ef934 && sizeof(((Stage *)0)->areaExtra) == 0xc, "scene.fields: Stage.areaExtra");
+_Static_assert(offsetof(Stage, areaValue) == 0x9ef934 && sizeof(((Stage *)0)->areaValue) == 0x4, "scene.fields: Stage.areaValue");
+_Static_assert(offsetof(Stage, missionNumber) == 0x9ef938 && sizeof(((Stage *)0)->missionNumber) == 0x4, "scene.fields: Stage.missionNumber");
+_Static_assert(offsetof(Stage, musicKind) == 0x9ef93c && sizeof(((Stage *)0)->musicKind) == 0x4, "scene.fields: Stage.musicKind");
 _Static_assert(offsetof(Stage, pool) == 0x9ef940 && sizeof(((Stage *)0)->pool) == 0x3d0900, "scene.fields: Stage.pool");
 _Static_assert(offsetof(Stage, poolUsed) == 0xdc0240 && sizeof(((Stage *)0)->poolUsed) == 0x4, "scene.fields: Stage.poolUsed");
 _Static_assert(offsetof(Stage, groundLayers) == 0xdc0244 && sizeof(((Stage *)0)->groundLayers) == 0x830, "scene.fields: Stage.groundLayers");
@@ -2918,6 +2923,7 @@ _Static_assert(offsetof(Scene, fogVolume) == 0xbe1710 && sizeof(((Scene *)0)->fo
 _Static_assert(offsetof(Scene, fogVolumeArgs) == 0xbe1720 && sizeof(((Scene *)0)->fogVolumeArgs) == 0xc, "scene.fields: Scene.fogVolumeArgs");
 _Static_assert(offsetof(Scene, unusedBe2ffc) == 0xbe2ffc && sizeof(((Scene *)0)->unusedBe2ffc) == 0x4, "scene.fields: Scene.unusedBe2ffc");
 _Static_assert(offsetof(Scene, missionNumber) == 0xbe3000 && sizeof(((Scene *)0)->missionNumber) == 0x4, "scene.fields: Scene.missionNumber");
+_Static_assert(offsetof(Scene, musicKind) == 0xbe3004 && sizeof(((Scene *)0)->musicKind) == 0x4, "scene.fields: Scene.musicKind");
 _Static_assert(offsetof(Scene, headCount) == 0x15de6c8 && sizeof(((Scene *)0)->headCount) == 0x4, "scene.fields: Scene.headCount");
 _Static_assert(offsetof(Scene, chestCount) == 0x15fff84 && sizeof(((Scene *)0)->chestCount) == 0x4, "scene.fields: Scene.chestCount");
 _Static_assert(offsetof(Scene, armCount) == 0x163b588 && sizeof(((Scene *)0)->armCount) == 0x4, "scene.fields: Scene.armCount");

@@ -380,7 +380,7 @@ void THISCALL (item_initTextures)(u8 *s, u32 a1, u32 a2, const char *sky, u32 a4
 		BITS(st->levelHigh[c]) = 0x47c35000;   /* 100000 */
 	}
 	memcpy(st->worldLow, st->levelLow, 12);
-	BITS(st->areaExtra[0]) = 0x3f800000;   /* 1.0 */
+	BITS(st->areaValue) = 0x3f800000;   /* 1.0 */
 	st->poolUsed = 0;
 	memcpy(st->worldHigh, st->levelHigh, 12);
 	st->groundLayerCount = 0;

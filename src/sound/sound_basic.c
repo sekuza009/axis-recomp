@@ -362,7 +362,7 @@ int (sound_init)(void *hwnd)
 	return 1;
 }
 
-/* 0x462850 (thiscall on the stage): the match music by the map's kind (+0xbe3004), picked with the random table
+/* 0x462850 (thiscall on the scene): the match music by the map's kind (musicKind, from the ground file), picked with the random table
    (0xa106f8) at the counter 0xa1efb8: 1 one of four (the counter before it moves on), 2 always "darkness", 3 and 4
    one of three (the counter after). Returns music_play's eax, or kind - 1 for another kind */
 u32 THISCALL (music_playMatch)(u8 *stage)
@@ -371,7 +371,7 @@ u32 THISCALL (music_playMatch)(u8 *stage)
 	static const u32 kind3[3] = { STR(0x4b4d6c, "Music/Forgotten.mp3"), STR(0x4b4e6c, "Music/desert wind.mp3"), STR(0x4b506c, "Music/ashes of past.mp3") };             /* Forgotten, desert wind, ashes of past */
 	static const u32 kind4[3] = { STR(0x4b516c, "Music/Speed of Light.mp3"), STR(0x4b536c, "Music/Fierce battle.mp3"), STR(0x4b546c, "Music/Valhalla.mp3") };             /* Speed of Light, Fierce battle, Valhalla */
 	const u32 *random = (const u32 *)OBJ(g_randTable);
-	u32 kind = *(u32 *)(stage + 0xbe3004) - 1;
+	u32 kind = (u32)((Scene *)stage)->musicKind - 1;
 	u32 n;
 	switch (kind) {
 	case 0:
