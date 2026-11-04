@@ -232,7 +232,7 @@ typedef struct Player {
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
 	ShotRecord shots[5];   /* +0x1f8: (by use) its rounds as sent (another machine's actor: netFired) */
-	u8 _pad0000298[0xc8];
+	u8 rounds[5][0x28];   /* +0x298: (by use) its rounds' records (ResourceSets: armc_computeTotals builds them; actor_processFrame fills one as each round fires) */
 	i32 shotBullets[5];   /* +0x360: the bullets they made (-1 none) */
 	i32 sendFlag;   /* +0x374: (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState) */
 	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
@@ -1696,6 +1696,7 @@ _Static_assert(offsetof(Player, firing) == 0x1ec && sizeof(((Player *)0)->firing
 _Static_assert(offsetof(Player, burstLeft) == 0x1f0 && sizeof(((Player *)0)->burstLeft) == 0x4, "scene.fields: Player.burstLeft");
 _Static_assert(offsetof(Player, burstTime) == 0x1f4 && sizeof(((Player *)0)->burstTime) == 0x4, "scene.fields: Player.burstTime");
 _Static_assert(offsetof(Player, shots) == 0x1f8 && sizeof(((Player *)0)->shots) == 0xa0, "scene.fields: Player.shots");
+_Static_assert(offsetof(Player, rounds) == 0x298 && sizeof(((Player *)0)->rounds) == 0xc8, "scene.fields: Player.rounds");
 _Static_assert(offsetof(Player, shotBullets) == 0x360 && sizeof(((Player *)0)->shotBullets) == 0x14, "scene.fields: Player.shotBullets");
 _Static_assert(offsetof(Player, sendFlag) == 0x374 && sizeof(((Player *)0)->sendFlag) == 0x4, "scene.fields: Player.sendFlag");
 _Static_assert(offsetof(Player, velocity) == 0x378 && sizeof(((Player *)0)->velocity) == 0xc, "scene.fields: Player.velocity");

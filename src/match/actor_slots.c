@@ -435,7 +435,7 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
-	if (!FIELD(int, actor, 0x108))
+	if (!((Player *)actor)->active)
 		return;
 	u8 *type = (u8 *)&STS->playerRecords[((Player *)actor)->player];
 	int item = ((PlayerRecord *)type)->items[slot];
@@ -446,7 +446,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	else if (slot == 5) {
 		self = offsetof(Player, weaponModel5);
 		models = 0x16fc, bones = 0x2008, counts = 0x2998, frames = 0x2b24;
-	} else if (slot == FIELD(int, actor, 0x140))
+	} else if (slot == ((Player *)actor)->slot)
 		self = offsetof(Player, weaponModel);
 	else
 		return;
@@ -457,7 +457,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	else
 		partList_release(actor + self);
 	if (self == 0x40dc)
-		FIELD(int, actor, 0x4cc) = it ? FIELD(int, it, 0x2dc0) : -1;
+		((Player *)actor)->weapon = it ? ((ActorInfo *)it)->ammoSlot : -1;
 }
 
 #define K(address) ((const float *)RELOC(address))
@@ -549,7 +549,7 @@ void THISCALL (actor_updateAllParts)(u8 *s, int a, void *vv, int draw)
 			return;
 	u8 *tint = AC->tint;
 	int local = st->playerActor;
-	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= GAME_VAR(int, s + 0x1cd93b0 + local * 0x8888)) {
+	if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= st->actors[local].hackingLevel) {
 		tint[0] = tint[1] = tint[2] = 0xff;
 		tint[3] = a == local ? 0x40 : 0x10;
 	} else if (!(AC->blinkTime > *K(0x4a9534))) {
@@ -746,8 +746,8 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->rechargeTime = f32(fmul_m(fld_m(&boost->activeTime[1]), &AC->rechargeTimeFactor));
 	AC->restTime = f32(fmul_m(fld_m(&boost->activeTime[2]), &AC->restTimeFactor));
 	/* the legs' factors: the level's second value plus the legs' own, plus 1 */
-#define LEG(o) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), (const float *)((const u8 *)legs + (o))), K(0x4a9424))
-	v = fmul_m(LEG(0x13e4), &boost->normalSpeed[0]) * left;
+#define LEG(f) fadd_m(fadd_m(fmul_m((long double)GAME_VAR(int, OBJ(g_profileRecords) + 0x3c + pr->level * 0x4c), K(0x4a9420)), &legs->f), K(0x4a9424))
+	v = fmul_m(LEG(speedCorrection), &boost->normalSpeed[0]) * left;
 	AC->speed = f32(v);
 	if (!(v >= *K(0x4a93f4)))
 		AC->speed = 100.0f;   /* 100 */
@@ -755,15 +755,15 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	AC->moveAccel = f32(v);
 	if (st->rocketArena == 1)   /* (the check scales the stored value) */
 		AC->moveAccel = f32(fmul_m(check ? fld_m(&AC->moveAccel) : v, K(0x4a9704)));
-	v = fdiv_m(fmul_m(LEG(0x13e8), &boost->normalSpeed[1]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(bonus1), &boost->normalSpeed[1]), &AC->speed) * left;
 	AC->runTop[0] = f32(v);
 	if (!(v >= 0))
 		AC->runTop[0] = 0.0f;
-	v = fmul_m(fdiv_m(fmul_m(LEG(0x13ec), &boost->normalSpeed[2]), &AC->speed) * left, K(0x4a9474));
+	v = fmul_m(fdiv_m(fmul_m(LEG(bonus3), &boost->normalSpeed[2]), &AC->speed) * left, K(0x4a9474));
 	AC->runTop[1] = f32(v);
 	if (v > 0)
 		AC->runTop[1] = 0.0f;
-	v = fdiv_m(fmul_m(LEG(0x13f0), &boost->normalSpeed[3]), &AC->speed) * left;
+	v = fdiv_m(fmul_m(LEG(bonus2), &boost->normalSpeed[3]), &AC->speed) * left;
 	AC->runTop[2] = f32(v);
 	if (!((check ? fld_m(&AC->runTop[2]) : v) >= 0))   /* (the check tests the stored value) */
 		AC->runTop[2] = 0.0f;
@@ -826,7 +826,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	BITS(AC->pitch) = pp[5];
 	BITS(AC->yaw) = pp[6];
 	fill_dwords(ac + offsetof(Player, forward), 6, 0);   /* forward .. fireAnim */
-	static const u16 past[3] = { 0x180, 0x1ac, 0x1d4 };   /* the next, sent and bot-goal states start at the place and the heading (nextPos, netPos, botGoal) */
+	static const u16 past[3] = { offsetof(Player, nextPos), offsetof(Player, netPos), offsetof(Player, botGoal) };   /* the next, sent and bot-goal states start at the place and the heading (nextPos, netPos, botGoal) */
 	for (int k = 0; k < 3; k++) {
 		u8 *h = ac + past[k];
 		memcpy(h, AC->pos, 12);
@@ -937,7 +937,7 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 2; k++)
 		if (!close_enough((const float *)(ac + floats1[k]), (const float *)(me + floats1[k])))
 			return 0;
-	if (AC->hackingLevel != GAME_VAR(int, me + 8))
+	if (AC->hackingLevel != act->hackingLevel)
 		return 0;
 	for (int k = 0; k < 4; k++)
 		if (!close_enough((const float *)(ac + floats2[k]), (const float *)(me + floats2[k])))
@@ -948,9 +948,9 @@ static int totals_agree(u8 *s, u8 *ac, u8 *me)
 	for (int k = 0; k < 10; k++)
 		if (!close_enough((const float *)(ac + floats3[k]), (const float *)(me + floats3[k])))
 			return 0;
-	if (!close_enough(&AC->topSpeed, (const float *)(me + 0x50)))
+	if (!close_enough(&AC->topSpeed, &act->speed))
 		return 0;
-	int d = AC->shieldRegen - GAME_VAR(int, me + 0x448);
+	int d = AC->shieldRegen - act->shieldRegen;
 	if ((long double)(d < 0 ? -d : d) > *K(0x4a93ec))
 		return 0;
 	if (AC->armor > AC->armorMax + 100 || AC->shield > AC->shieldMax + 100 || AC->ammo[0] > AC->ammoMax[0] ||
@@ -972,7 +972,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		ResourceSet_trivialCtor(me + 0x298 + k * 0x28);   /* ResourceSet_trivialCtor: a resource set */
+		ResourceSet_trivialCtor(((Player *)me)->rounds[k]);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);

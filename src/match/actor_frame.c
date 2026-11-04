@@ -1038,7 +1038,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							continue;
 						}
 					}
-					u32 *rec = (u32 *)(a + 0x298 + k * 40);   /* the round */
+					u32 *rec = (u32 *)AC->rounds[k];   /* the round */
 					rec[0] = 0;
 					rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
 					memcpy(rec + 2, shot_at, 12);
@@ -1091,7 +1091,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
-				u32 *rec = (u32 *)(a + 0x298 + k * 40);
+				u32 *rec = (u32 *)AC->rounds[k];
 				rec[0] = 1;
 				rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
 				memcpy(rec + 2, shot_at, 12);
