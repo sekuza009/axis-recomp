@@ -46,10 +46,10 @@ void (path_stripExtension)(const char *src, char *dst)
    index or -1. The upper bound starts at the count, not count - 1, as in the original */
 int THISCALL (tex_findByName)(u8 *self, const u8 *name)
 {
-	int hi = FIELD(int, self, 0x108), lo = 0;
+	int hi = ((TextureManager *)self)->indexCount, lo = 0;
 	if (hi <= 0)
 		return -1;
-	const u8 *records = FIELD(const u8 *, self, 0x10c);
+	const u8 *records = ((TextureManager *)self)->index;
 	while (lo <= hi) {
 		int mid = (lo + hi) / 2;
 		const u8 *a = name, *b = records + mid * 0x44;
@@ -101,8 +101,8 @@ int THISCALL (tex_getIdByName)(u8 *sets, const char *name, u32 a, u32 b, u32 c, 
    first). Its callers ignore the eax it leaves */
 void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, int a, int b, int c, int d, int e, int f)
 {
-	for (int i = 0; i < GAME_VAR(int, shape + 0x10); i++) {
-		u8 *part = GAME_VAR(u8 *, shape + 0x14) + i * 0x80;
+	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
+		u8 *part = ((Model *)shape)->parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)part;
 		char *name = (char *)part + 4;
 		if (*suffix) {
@@ -354,11 +354,11 @@ int THISCALL (tex_allocIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1
 			continue;
 		const float *c = (const float *)(rec + 0x48);
 #define SAME(a, k) (!((a) < fld_m((const float *)&colour[k])) && !((a) > fld_m((const float *)&colour[k])))
-		if (FIELD(u32, rec, 0x44) == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
+		if (((TexRecord *)rec)->flags == flags && SAME(c[0], 0) && SAME(c[2], 2) && SAME(c[1], 1) && SAME(c[3], 3) &&
 		    SAME(c[5], 5) && SAME(c[4], 4))
 			return i;
 #undef SAME
-		FIELD(u32, rec, 0x44) = flags;
+		((TexRecord *)rec)->flags = flags;
 		tex_recolourMaterial(tm, i, colour[0], colour[1], colour[2], colour[3], colour[4], colour[5]);
 		return i;
 	}

@@ -135,8 +135,8 @@ void THISCALL (stage_buildMeshDrawRecords)(u8 *stage)
    shape first) */
 void THISCALL (partList_bindTextures)(u8 *list)
 {
-	for (int i = 0; i < FIELD(int, list, 0x10); i++) {
-		void *shape = FIELD(void *, FIELD(u8 *, list, 0x14) + i * 0x64, 0);
+	for (int i = 0; i < ((ObjectList *)list)->count; i++) {
+		void *shape = ((ObjectList *)list)->entries[i].shape;
 		if (shape)
 			shape_bindPartTextures(shape);
 	}
@@ -147,8 +147,8 @@ void THISCALL (partList_bindTextures)(u8 *list)
 void THISCALL (shape_bindPartTextures)(u8 *shape)
 {
 	glEnable(GL_TEXTURE_2D);
-	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
-		int id = FIELD(int, FIELD(u8 *, shape, 0x14) + i * 0x80, 0x44);
+	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
+		int id = ((ShapePart *)((Model *)shape)->parts + i)->texture;
 		if (id >= 0)
 			tex_bind(g_textures->managers[id / 512], id % 512);
 	}

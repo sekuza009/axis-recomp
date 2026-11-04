@@ -101,9 +101,9 @@ void THISCALL (actor_resetSlot)(Stage *stage, int i)
 	a->level = 0;
 	a->team = -1;
 	for (int k = 0; k < 11; k++)
-		FIELD(int, a, 0xd8 + k * 4) = 0;
+		FIELD(int, a, offsetof(Player, statD8) + k * 4) = 0;   /* statD8 .. */
 	a->state = 0;
-	FIELD(int, a, 0x4d4) = 0;
+	a->orderFlag = 0;
 	a->viewMarked = 0;
 	a->markSolo = 0;
 	a->markTeam = 0;
@@ -510,12 +510,13 @@ void THISCALL (actor_setPartColor)(u8 *scene, int p, int part, float h1, float s
 #define AC ((Player *)ac)   /* the same by its fields (src/scene.fields) */
 
 /* the actor's eight object lists (the body, the parts, the weapons) */
-static const u32 k_partLists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x587c, 0x701c, 0x40dc };
+static const u32 k_partLists[8] = { offsetof(Player, headModel), offsetof(Player, chestModel), offsetof(Player, armsModel), offsetof(Player, legsModel),
+                                     offsetof(Player, boosterModel), offsetof(Player, weaponModel4), offsetof(Player, weaponModel5), offsetof(Player, weaponModel) };
 
-/* the light the actor's flags ask for (0x100: +0x20f2f3c, 0x800: +0x20f2f44, else +0x20f2f40) */
+/* the item texture the actor's flags ask for (0x100: the damage map, 0x800: the shield, else the booster) */
 static u32 flag_light(u8 *s, u32 f)
 {
-	return GAME_VAR(u32, s + (f & 0x100 ? 0x20f2f3c : f & 0x800 ? 0x20f2f44 : 0x20f2f40));
+	return ((Stage *)s)->itemTextures[f & 0x100 ? 0 : f & 0x800 ? 2 : 1];
 }
 
 /* the list of the weapon in hand (+0x140: 4, 5, else the last) */
@@ -668,7 +669,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 	const LegType *legs = &st->legTypes[pr->parts[3]];
 	const BoosterType *boost = &st->boosterTypes[pr->parts[4]];
 	for (int k = 0; k < 4; k++) {
-		A(u32, 0x404 + k * 4) = 0x3f800000;
+		BITS(AC->ammoFactor[k]) = 0x3f800000;
 		AC->ammoBonus[k] = 0;
 	}
 	AC->rangeBonus = 0.0f;
@@ -730,7 +731,7 @@ static void mech_stats(u8 *s, u8 *ac, u8 *p, int check)
 		: fld_m(K(0x4a93e8));
 	AC->armorMax = ftol(fadd_m(level_factor(p, 2) * (long double)chest->maxArmor, K(0x4a942c)));
 	AC->shieldMax = ftol(fadd_m(fmul_m(level_factor(p, 2) * (long double)chest->maxShield, &AC->shieldFactor), K(0x4a942c)));
-	A(u32, 0x24) = arms->stats[0];
+	AC->accuracy = arms->stats[0];
 	for (int k = 0; k < 4; k++)
 		AC->ammoMax[k] = ftol(fadd_m(fmul_m((long double)arms->stats[1 + k], AC->ammoFactor + k), K(0x4a942c))) +
 		                       AC->ammoBonus[k];
