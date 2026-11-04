@@ -542,6 +542,13 @@ struct Mission 0xfc                                              # one of the 30
 0xf0       4          i32 valueF0                                # (-1 when the list is cleared)
 0xf4       4          i32 blockSize                              # its block in axis.mis (read after all the entries)
 
+struct NetPacketMessage 0x40c                                    # a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's
+                                                                 # packets are kind 7, g_netSendPacket)
+0          4          u32 kind
+4          1          u8 slot                                    # the sender's slot
+5          4          i32 size                                   # (0x40)
+9          0x403      u8 data[0x403]                             # the packet: its first byte the number (net_packets.c)
+
 struct NetSlot 0x410                                             # one of the sixteen network player slots (g_netSlots): the packet layer's player table
 0          4          i32 used
 4          4          u32 id                                     # its DirectPlay player id

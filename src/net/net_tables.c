@@ -918,8 +918,9 @@ int (dplay_create)(void)
 u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 {
 	(void)size;
-	u32 type = *(const u32 *)RELOC(message);
-	u32 slot = message[4], length = *(const u32 *)(RELOC(message) + 5);
+	const NetPacketMessage *pm = (const NetPacketMessage *)RELOC(message);   /* (kinds 6 and 7) */
+	u32 type = pm->kind;
+	u32 slot = pm->slot, length = pm->size;
 	NetSlot *player = &g_netSlots[slot];
 	int r;
 	switch (type) {
@@ -951,7 +952,7 @@ u32 (net_handleMessage)(const u8 *message, u32 size, u32 from)
 			return length;
 		player->waiting = 1;
 		player->size = length;
-		memcpy(player->packet, message + 9, length);
+		memcpy(player->packet, pm->data, length);
 		return length;
 	}
 	return type - 1;

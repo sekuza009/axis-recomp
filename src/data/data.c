@@ -929,7 +929,7 @@ u8 g_netChatMessageText_v[4] __attribute__((aligned(16)));   /* 0x9f93d4 */
 int g_playerSlotFlags_v[16] __attribute__((aligned(16)));   /* 0x9f93d8 */
 u32 g_resultMsg_v[2] __attribute__((aligned(16)));   /* 0x9f9418 */
 u32 g_netSlotMsg_v[2] __attribute__((aligned(16)));   /* 0x9f9420 */
-u32 g_netSendPacket_v[259] __attribute__((aligned(16)));   /* 0x9f9428 */
+u8 g_netSendPacket_v[1036] __attribute__((aligned(16)));   /* 0x9f9428 */
 u8 g_slotTakenFlag_v[4] __attribute__((aligned(16)));   /* 0x9f9838 */
 u8 g_netBlockSize_v[4] __attribute__((aligned(16)));   /* 0x9fd940 */
 u8 g_sentChatBlock_v[4] __attribute__((aligned(16)));   /* 0x9fd944 */

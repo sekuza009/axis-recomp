@@ -627,6 +627,14 @@ typedef struct Mission {
 	u8 _pad00000f8[0x4];
 } Mission;
 
+/* a DirectPlay message carrying slot data (kinds 6 and 7: net_handleMessage; the match's */
+typedef struct NetPacketMessage {
+	u32 kind;   /* +0x0 */
+	u8 slot;   /* +0x4: the sender's slot */
+	i32 size;   /* +0x5: (0x40) */
+	u8 data[0x403];   /* +0x9: the packet: its first byte the number (net_packets.c) */
+} NetPacketMessage;
+
 /* one of the sixteen network player slots (g_netSlots): the packet layer's player table */
 typedef struct NetSlot {
 	i32 used;   /* +0x0 */
@@ -2200,6 +2208,11 @@ _Static_assert(offsetof(Mission, result) == 0xec && sizeof(((Mission *)0)->resul
 _Static_assert(offsetof(Mission, valueF0) == 0xf0 && sizeof(((Mission *)0)->valueF0) == 0x4, "scene.fields: Mission.valueF0");
 _Static_assert(offsetof(Mission, blockSize) == 0xf4 && sizeof(((Mission *)0)->blockSize) == 0x4, "scene.fields: Mission.blockSize");
 _Static_assert(sizeof(Mission) == 0xfc, "scene.fields: size of Mission");
+_Static_assert(offsetof(NetPacketMessage, kind) == 0x0 && sizeof(((NetPacketMessage *)0)->kind) == 0x4, "scene.fields: NetPacketMessage.kind");
+_Static_assert(offsetof(NetPacketMessage, slot) == 0x4 && sizeof(((NetPacketMessage *)0)->slot) == 0x1, "scene.fields: NetPacketMessage.slot");
+_Static_assert(offsetof(NetPacketMessage, size) == 0x5 && sizeof(((NetPacketMessage *)0)->size) == 0x4, "scene.fields: NetPacketMessage.size");
+_Static_assert(offsetof(NetPacketMessage, data) == 0x9 && sizeof(((NetPacketMessage *)0)->data) == 0x403, "scene.fields: NetPacketMessage.data");
+_Static_assert(sizeof(NetPacketMessage) == 0x40c, "scene.fields: size of NetPacketMessage");
 _Static_assert(offsetof(NetSlot, used) == 0x0 && sizeof(((NetSlot *)0)->used) == 0x4, "scene.fields: NetSlot.used");
 _Static_assert(offsetof(NetSlot, id) == 0x4 && sizeof(((NetSlot *)0)->id) == 0x4, "scene.fields: NetSlot.id");
 _Static_assert(offsetof(NetSlot, waiting) == 0x8 && sizeof(((NetSlot *)0)->waiting) == 0x4, "scene.fields: NetSlot.waiting");

@@ -8,7 +8,7 @@
 
 #define g_netClient g_slotTakenFlag           /* the packet layer is on (as a client) */
 #define g_localSlot g_watchedSlot            /* the local player's slot */
-#define g_send ((u8 *)ADDR(g_netPacketMessageKind))                       /* the message sent: +4 the slot, +5 the size, +9 the packet */
+#define g_send g_netSendPacket                                            /* the message sent */
 
 /* 0x4a8300: the layer reset; host 1: on as a client. Returns the eax the fills leave (-1) */
 u32 (netq_reset)(int host)
@@ -39,14 +39,14 @@ u32 (net_sendPacketData)(int size, const void *data)
 	if (size != 0x40)
 		sys_errorTerminate((const char *)STR(0x4d1640, "incorrect packet data size(%d/%d) - p..."), size, 0x40);
 	u8 slot = g_localSlot;
-	GAME_VAR(int, g_send + 5) = (short)size;
-	memcpy(g_send + 9, data, (u32)size);
-	g_send[4] = slot;
+	g_send->size = (short)size;
+	memcpy(g_send->data, data, (u32)size);
+	g_send->slot = slot;
 	if (g_nextNumber[slot] < 0)
 		g_nextNumber[slot] = 0;
 	int number = g_nextNumber[slot];
-	g_send[9] = (u8)number;
-	memcpy(g_history + ((slot << 7) + number) * 0x40, g_send + 9, (u32)size);
+	g_send->data[0] = (u8)number;
+	memcpy(g_history + ((slot << 7) + number) * 0x40, g_send->data, (u32)size);
 	g_nextNumber[slot] = (u8)(number + 1) & 0x7f;
 	net_sendMessage(g_send, 0, size + 9);
 	return 1;
@@ -99,9 +99,9 @@ int (netq_receive)(int *from, int *size, void *data)
 	if (head & 0x80) {   /* a resend request */
 		u8 local = g_localSlot;
 		if (g_netSlots[p].packet[1] == local) {
-			g_send[4] = local;
-			GAME_VAR(int, g_send + 5) = 0x40;
-			memcpy(g_send + 9, g_history + ((local << 7) + number) * 0x40, 0x40);
+			g_send->slot = local;
+			g_send->size = 0x40;
+			memcpy(g_send->data, g_history + ((local << 7) + number) * 0x40, 0x40);
 			net_sendMessage(g_send, 0, *size + 9);
 		}
 		return 2;

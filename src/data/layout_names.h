@@ -1785,7 +1785,7 @@ extern struct GameData g_data;
 #undef g_netSendName
 #define g_netSendName (*(char * *)g_netSendName_v)
 #undef g_netSendPacket
-#define g_netSendPacket ((u32 *)g_netSendPacket_v)
+#define g_netSendPacket ((NetPacketMessage *)g_netSendPacket_v)
 #undef g_netSlotMessageKind
 #define g_netSlotMessageKind (*(int *)((u8 *)g_netSlotMsg_v + 0x0))
 #undef g_netSlotMsg

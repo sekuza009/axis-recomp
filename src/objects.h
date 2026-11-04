@@ -183,7 +183,7 @@
 #define g_missionColourLit ((u32 *)IMG(0x9f6318))   /* u32[4]; the mission list's colour */
 #define g_missionColourDim ((u32 *)IMG(0x9f62e8))   /* u32[4]; the mission list's colour */
 #define g_keptChat ((char *)IMG(0x9f63e4))   /* char[1024]; the chat line kept (copied whole from g_chatLine */
-#define g_netSendPacket ((u32 *)IMG(0x9f9428))   /* u32[259]; the message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
+#define g_netSendPacket ((NetPacketMessage *)IMG(0x9f9428))   /* NetPacketMessage[1]; the packet message being sent (cleared as 0x103 words): kind (g_netPacketMessageKind) */
 #define g_campaign ((u8 *)IMG(0x9f1718))   /* u8[940]; the pilot's save record (0x3ac bytes */
 #define g_armcViewPoints ((u32 *)IMG(0x4dca30))   /* u32[24]; ARM CENTER's six view points (16 bytes each */
 #define g_menuFrameTextures ((int *)IMG(0x4deb4c))   /* int[2]; the menu frames' textures: the panel corner ornaments */

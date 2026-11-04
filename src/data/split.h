@@ -4585,9 +4585,9 @@ extern u32 g_resultMsg_v[2];
 extern u32 g_netSlotMsg_v[2];
 #endif
 #ifdef AXIS_FENCE
-#define g_netSendPacket_v ((u32 *)(AXIS_FENCE == 2 ? g_fence + 0xc3b000 : g_fence + 0xc3abf4))
+#define g_netSendPacket_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc3b000 : g_fence + 0xc3abf4))
 #else
-extern u32 g_netSendPacket_v[259];
+extern u8 g_netSendPacket_v[1036];
 #endif
 #ifdef AXIS_FENCE
 #define g_slotTakenFlag_v ((u8 *)(AXIS_FENCE == 2 ? g_fence + 0xc3d000 : g_fence + 0xc3cffc))
