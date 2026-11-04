@@ -64,7 +64,7 @@ void THISCALL (playerRecord_markFree)(Stage *stage, int p)
 	playerRecord_resetColourGrid(stage, p);
 }
 /* 0x45df90: the stage's frag counts cleared (frags[100]) */
-void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage + 0x202e8f0, 100); }
+void THISCALL (stage_clearActorRefs)(Stage *stage) { clear((u8 *)stage->frags, 100); }
 /* 0x45e1c0: every actor in use switched off */
 void THISCALL (stage_deactivateActors)(Stage *stage)
 {
@@ -230,7 +230,6 @@ static void player_seen(Stage *stage, int p)
 	if (p > (int)(*seen - 1))
 		*seen = p + 1;
 }
-#define PLAYER_RECORD(stage, p) ((u8 *)RELOC(stage) + 0x1561b68 + (p) * 0x47fd2)
 
 /* 0x473a10: player record p's value +0x44 set, and that of every actor of player p (+0x114) */
 void THISCALL (player_setValue)(Stage *stage, int p, int v)
@@ -344,10 +343,10 @@ char *THISCALL (object_setTextureFolder)(void *self, const char *folder)
 	strcpy(((Stage *)self)->stageName, folder);
 	return path_normalize(((Stage *)self)->stageName);
 }
-/* 0x461ec0: the scene's texture folder (+0x1f35c8) and its stage's */
+/* 0x461ec0: the scene's texture folder (mapName) and its stage's */
 void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)
 {
-	strcpy((char *)scene + 0x1f35c8, folder);
+	strcpy(scene->mapName, folder);
 	object_setTextureFolder(STAGE(scene), folder);
 }
 
@@ -356,7 +355,7 @@ void THISCALL (scene_setTextureFolder)(Scene *scene, const char *folder)
 int THISCALL (script_runScpFile)(Stage *stage, const char *name, int mode)
 {
 	script_reset(stage);
-	strcpy((char *)stage + 0x2149208, name);
+	strcpy(stage->scriptName, name);
 	stage->scriptMode = mode;
 	if (mode == 0 || mode == 2) {
 		stage->scriptRunning = 0;
@@ -381,33 +380,35 @@ void THISCALL (anim_setFrame)(u8 *anim, int i, float scale)
 	ol->animTick = ftol(fmul_m((long double)frame[8], &scale));
 }
 
-/* 0x4722e0: a view's distance set (+0xa08, the float's bits copied) and its depth -v * a + b from the stage's pair */
+/* 0x4722e0: the stage's view distance set (cullMargin, the float's bits copied) and its depth (viewDepth: -v x
+   viewProjection[10] + viewProjection[14]) */
 void THISCALL (view_setDistance)(u8 *view, u32 vBits)
 {
 	float v;
-	FIELD(u32, view, 0xa08) = vBits;   /* the float's bits copied, never through the FPU (which quiets a signalling NaN) */
+	Stage *st = (Stage *)view;
+	BITS(st->cullMargin) = vBits;   /* the float's bits copied, never through the FPU (which quiets a signalling NaN) */
 	memcpy(&v, &vBits, 4);
 	volatile long double n = -(long double)v;   /* negated first, as the original's fchs */
-	FIELD(float, view, 0xa0c) = (float)(n * FIELD(float, view, 0x20f3a9c) + FIELD(float, view, 0x20f3aac));
+	st->viewDepth = (float)(n * st->viewProjection[10] + st->viewProjection[14]);
 }
 
 /* 0x473940: player p's name set (empty for none), and that of every actor of player p (+0x98) */
 void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 {
 	player_seen(stage, p);
-	char *dst = (char *)PLAYER_RECORD(stage, p) + 4;
+	char *dst = stage->playerRecords[p].name;
 	if (name)
 		strcpy(dst, name);
 	else
 		*dst = 0;
 	for (int i = 0; i < stage->actorCount; i++) {
-		u8 *actor = (u8 *)&stage->actors[i];
-		if (FIELD(int, actor, 0x10c) != p)
+		Player *actor = &stage->actors[i];
+		if (actor->player != p)
 			continue;
 		if (name)
-			strcpy((char *)actor + 0x98, name);
+			strcpy(actor->name, name);
 		else
-			actor[0x98] = 0;
+			actor->name[0] = 0;
 	}
 }
 
@@ -416,13 +417,13 @@ void THISCALL (player_setName)(Stage *stage, int p, const char *name)
 void THISCALL (player_setTeam)(Stage *stage, int p, int team)
 {
 	player_seen(stage, p);
-	FIELD(int, PLAYER_RECORD(stage, p), 0x48) = team;
+	stage->playerRecords[p].team = team;
 	for (int i = 0; i < stage->actorCount; i++) {
-		u8 *actor = (u8 *)&stage->actors[i];
-		if (FIELD(int, actor, 0x10c) == p) {
-			FIELD(int, actor, 0x118) = team;
+		Player *actor = &stage->actors[i];
+		if (actor->player == p) {
+			actor->team = team;
 			if (team < 0)
-				FIELD(int, actor, 0x14c) = 0;
+				actor->state = 0;
 		}
 	}
 	stage->teamsChanged = 1;
@@ -469,7 +470,7 @@ void THISCALL (object_setNames)(u8 *self, const char *s1, const char *s2, const 
 /* 0x471010: the scene's level grid (+0xa10) set up as one cell over the level's bounds (+0x9ef904 .. +0x9ef910) */
 void THISCALL (scene_initLevelGrid)(u8 *scene)
 {
-	space_setBy(scene + 0xa10, scene + 0x9ef904, scene + 0x9ef910, 1, 1, 1, 0, 0, 0);
+	space_setBy(scene + 0xa10, ((Stage *)scene)->levelLow, ((Stage *)scene)->levelHigh, 1, 1, 1, 0, 0, 0);
 }
 
 /* 0x470fc0: a message formatted and handed to the log hook (0xae2ec8) if one is set, with b and c (a unused) */

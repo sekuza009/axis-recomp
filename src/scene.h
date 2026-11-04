@@ -993,7 +993,8 @@ typedef struct Stage {
 	char sceneDir[0x100];   /* +0x808 */
 	char stageName[0x100];   /* +0x908: (by use) the stage's name (its clan texture: Stage\\<name>\\Clan) */
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
-	u8 _pad0000a0c[0x18];
+	float viewDepth;   /* +0xa0c: (by use) the view distance's depth: -cullMargin x viewProjection[10] + viewProjection[14] (view_setDistance) */
+	u8 _pad0000a10[0x14];
 	u8 *collisionPlanes;   /* +0xa24: (by use) the collision planes (0xac bytes each; a hit record points into them) */
 	u8 _pad0000a28[0xdc];
 	u8 spaceData[0x9c95f0];   /* +0xb04: (by use) the collision space's block (space_initBy on +0xa10) */
@@ -2287,6 +2288,7 @@ _Static_assert(offsetof(Stage, effectDir) == 0x708 && sizeof(((Stage *)0)->effec
 _Static_assert(offsetof(Stage, sceneDir) == 0x808 && sizeof(((Stage *)0)->sceneDir) == 0x100, "scene.fields: Stage.sceneDir");
 _Static_assert(offsetof(Stage, stageName) == 0x908 && sizeof(((Stage *)0)->stageName) == 0x100, "scene.fields: Stage.stageName");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
+_Static_assert(offsetof(Stage, viewDepth) == 0xa0c && sizeof(((Stage *)0)->viewDepth) == 0x4, "scene.fields: Stage.viewDepth");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, spaceData) == 0xb04 && sizeof(((Stage *)0)->spaceData) == 0x9c95f0, "scene.fields: Stage.spaceData");
 _Static_assert(offsetof(Stage, nearObjects) == 0x9ca0f4 && sizeof(((Stage *)0)->nearObjects) == 0x2ee0, "scene.fields: Stage.nearObjects");
