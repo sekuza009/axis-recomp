@@ -12,14 +12,14 @@ static void weapon_cycle(Stage *stage, int i, int step)
 {
 	u8 *actor = (u8 *)(u8 *)&((Stage *)stage)->actors[i];
 	Player *ac = (Player *)actor;
-	u8 *player = (u8 *)stage + 0x1561b68 + ac->player * 0x47fd2;
+	const PlayerRecord *player = &stage->playerRecords[ac->player];
 	int slot = (ac->slot + step) % 6;
 	for (int k = 0; k < 6; k++, slot = (slot + step) % 6) {
-		int weapon = FIELD(int, player, 0x320 + slot * 4);
+		int weapon = player->items[slot];
 		if (weapon < 0)
 			continue;
 		int type = stage->actorInfo[weapon].ammoSlot;
-		if (FIELD(int, actor, 0x130 + type * 4) < stage->actorInfo[weapon].ammoPerShot || type < 0)
+		if (ac->ammo[type] < stage->actorInfo[weapon].ammoPerShot || type < 0)
 			continue;
 		actor_selectWeapon(stage, i, slot);
 		return;
@@ -163,7 +163,7 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
 	u8 *a = (u8 *)&((Stage *)scene)->actors[p];
 	Player *ac = (Player *)a;
-	const float *from = (const float *)(RELOC(a) + 0x154), *range = (const float *)(RELOC(a) + 0x8848);
+	const float *from = (const float *)(RELOC(a) + 0x154), *range = &ac->pathRange;
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
 	for (int i = 0; i < ((Stage *)scene)->triggerCount; i++) {
@@ -198,9 +198,9 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 		ac->target2 = points[k];
 		ac->pathReverse = table_rand() & 1;
 		ac->stuckPath = -1;
-		FIELD(u32, a, 0x8848) = 0x44bb8000;   /* 1500.0 */
+		BITS(ac->pathRange) = 0x44bb8000;   /* 1500.0 */
 	} else
-		FIELD(float, a, 0x8848) = f32(fmul_m(fld_m(range), k_1_5f));
+		ac->pathRange = f32(fmul_m(fld_m(range), k_1_5f));
 }
 
 #define K(address) ((const float *)RELOC(address))
@@ -229,16 +229,17 @@ static u32 next_rand(u32 n)
 void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8 *shot, int quiet)
 {
 	u8 *b = (u8 *)&ST->bullets[slot];
-	u8 *w = (u8 *)&ST->actorInfo[GAME_VAR(int, shot + 4)];
-	const float *o = (const float *)(shot + 8), *aim = (const float *)(shot + 0x18);
+	const FiredRound *rd = (const FiredRound *)shot;
+	u8 *w = (u8 *)&ST->actorInfo[rd->weapon];
+	const float *o = rd->from, *aim = rd->dir;
 	if (id >= 0)
 		BU->id = id;
 	else
 		BU->id = ST->bulletSerial++;
 	BU->active = 1;
-	BU->weapon = GAME_VAR(int, shot + 4);
+	BU->weapon = rd->weapon;
 	BU->owner = owner;
-	BU->colour = GAME_VAR(u32, shot + 0x24);
+	BU->colour = rd->muzzle;
 	memcpy(BU->from, o, 12);
 	float dir[3];
 	const float *w2de8 = (const float *)(w + 0x2de8);
@@ -296,7 +297,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int a4, const u8
 		for (int k = 0; k < 3; k++)
 			dir[k] = f32(fsub_m(fld_m(&aim[k]), &o[k]));
 		Vec3_normalize(dir);
-		int target = GAME_VAR(int, shot + 0x14);
+		int target = rd->hitPlane;
 		BITS(BU->hit) = target >= 0 ? (u32)ST->collisionPlanes + target * 0xac : 0;
 		memcpy(BU->end, aim, 12);
 		BU->life = 10.0f;   /* 10 */

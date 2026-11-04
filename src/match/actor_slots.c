@@ -885,7 +885,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + offsetof(Player, scanTime), 5, 0);   /* scanTime .. heightTime */
 	memcpy(ac + 0x8838, (const void *)ADDR(g_vecZero), 12);
 	AC->lookTime = 0.0f;
-	A(u32, 0x8848) = 0x44bb8000;   /* 1500 */
+	BITS(AC->pathRange) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + offsetof(Player, cameraValue), 3, 0);   /* cameraValue .. hitFlash */
 	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
 	AC->botTargetTime = 0.0f;
@@ -972,7 +972,7 @@ u32 THISCALL (armc_computeTotals)(u8 *s, int a)
 	Stage *st = (Stage *)s;
 	u8 me[0x8888];   /* the stack actor (only the fields it computes are read) */
 	for (int k = 0; k < 5; k++)
-		ResourceSet_trivialCtor(((Player *)me)->rounds[k]);   /* ResourceSet_trivialCtor: a resource set */
+		ResourceSet_trivialCtor((u8 *)&((Player *)me)->rounds[k]);   /* ResourceSet_trivialCtor: a resource set */
 	for (int k = 0; k < 8; k++) {
 		GAME_VAR(u32, me + k_listAt[k]) = VT(UnitPoseInfo, 0x4a9754);
 		partList_clear(me + k_listAt[k]);

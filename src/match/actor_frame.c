@@ -1038,13 +1038,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 							continue;
 						}
 					}
-					u32 *rec = (u32 *)AC->rounds[k];   /* the round */
-					rec[0] = 0;
-					rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
-					memcpy(rec + 2, shot_at, 12);
-					rec[5] = 0xffffffff;
-					memcpy(rec + 6, shot_dir, 12);
-					rec[9] = (u32)(uintptr_t)q;
+					FiredRound *rec = &AC->rounds[k];
+					rec->received = 0;
+					rec->weapon = ((PlayerRecord *)player)->items[AC->slot];
+					memcpy(rec->from, shot_at, 12);
+					rec->hitPlane = -1;
+					memcpy(rec->dir, shot_dir, 12);
+					rec->muzzle = (u32)(uintptr_t)q;
 					int target;
 					if (i == ST->playerActor) {
 						int c = ST->lockCount;
@@ -1091,13 +1091,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
-				u32 *rec = (u32 *)AC->rounds[k];
-				rec[0] = 1;
-				rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
-				memcpy(rec + 2, shot_at, 12);
-				rec[5] = f[2];
-				memcpy(rec + 6, f + 4, 12);
-				rec[9] = (u32)(uintptr_t)q;
+				FiredRound *rec = &AC->rounds[k];
+				rec->received = 1;
+				rec->weapon = ((PlayerRecord *)player)->items[AC->slot];
+				memcpy(rec->from, shot_at, 12);
+				rec->hitPlane = f[2];
+				memcpy(rec->dir, f + 4, 12);
+				rec->muzzle = (u32)(uintptr_t)q;
 				*item = bullet_spawn(s, -1, i, -1, rec, 0);
 				AC->fireAnim = 0.0001f;
 				long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);

@@ -20,6 +20,16 @@ typedef struct EventLine {
 	u32 time;   /* +0x104: Scene.eventTime when it was written */
 } EventLine;
 
+/* a round as fired (Player.rounds; bullet_spawn / bullet_init take it) */
+typedef struct FiredRound {
+	i32 received;   /* +0x0: (by use) 0: fired here; 1: another machine's (its hit known) */
+	i32 weapon;   /* +0x4: its item (ActorInfo index) */
+	float from[3];   /* +0x8: where it starts (the muzzle) */
+	i32 hitPlane;   /* +0x14: a received round's collision plane (-1 none) */
+	float dir[3];   /* +0x18 */
+	u32 muzzle;   /* +0x24: (by use) the muzzle's bone matrix (Bullet.colour takes it) */
+} FiredRound;
+
 /* a round an actor fired, as sent (Player.shots) */
 typedef struct ShotRecord {
 	i32 inUse;   /* +0x0 */
@@ -241,7 +251,7 @@ typedef struct Player {
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
 	ShotRecord shots[5];   /* +0x1f8: (by use) its rounds as sent (another machine's actor: netFired) */
-	u8 rounds[5][0x28];   /* +0x298: (by use) its rounds' records (ResourceSets: armc_computeTotals builds them; actor_processFrame fills one as each round fires) */
+	FiredRound rounds[5];   /* +0x298: (by use) its rounds' records (ResourceSets: armc_computeTotals builds them; actor_processFrame fills one as each round fires) */
 	i32 shotBullets[5];   /* +0x360: the bullets they made (-1 none) */
 	i32 sendFlag;   /* +0x374: (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState) */
 	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
@@ -355,7 +365,7 @@ typedef struct Player {
 	float heightTime;   /* +0x8834: seconds to the next height change (botTimes[1]) */
 	u8 _pad0008838[0xc];
 	float lookTime;   /* +0x8844: (by use) seconds to the next random look (2) */
-	u8 _pad0008848[0x4];
+	float pathRange;   /* +0x8848: (by use) how far a bot looks for path points (1500, x1.5 while none is found) */
 	i32 cameraValue;   /* +0x884c: (by use) the camera's value while it follows this actor (camera_setTarget) */
 	i32 hitPending;   /* +0x8850: (by use) 1: a hit to send (net_sendPlayerState, then cleared) */
 	float hitFlash;   /* +0x8854: > 0: a red flash at half this alpha */
@@ -1558,6 +1568,13 @@ _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x100, "scene.fields: EventLine.text");
 _Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->time) == 0x4, "scene.fields: EventLine.time");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
+_Static_assert(offsetof(FiredRound, received) == 0x0 && sizeof(((FiredRound *)0)->received) == 0x4, "scene.fields: FiredRound.received");
+_Static_assert(offsetof(FiredRound, weapon) == 0x4 && sizeof(((FiredRound *)0)->weapon) == 0x4, "scene.fields: FiredRound.weapon");
+_Static_assert(offsetof(FiredRound, from) == 0x8 && sizeof(((FiredRound *)0)->from) == 0xc, "scene.fields: FiredRound.from");
+_Static_assert(offsetof(FiredRound, hitPlane) == 0x14 && sizeof(((FiredRound *)0)->hitPlane) == 0x4, "scene.fields: FiredRound.hitPlane");
+_Static_assert(offsetof(FiredRound, dir) == 0x18 && sizeof(((FiredRound *)0)->dir) == 0xc, "scene.fields: FiredRound.dir");
+_Static_assert(offsetof(FiredRound, muzzle) == 0x24 && sizeof(((FiredRound *)0)->muzzle) == 0x4, "scene.fields: FiredRound.muzzle");
+_Static_assert(sizeof(FiredRound) == 0x28, "scene.fields: size of FiredRound");
 _Static_assert(offsetof(ShotRecord, inUse) == 0x0 && sizeof(((ShotRecord *)0)->inUse) == 0x4, "scene.fields: ShotRecord.inUse");
 _Static_assert(offsetof(ShotRecord, isNew) == 0x4 && sizeof(((ShotRecord *)0)->isNew) == 0x4, "scene.fields: ShotRecord.isNew");
 _Static_assert(offsetof(ShotRecord, kind) == 0x8 && sizeof(((ShotRecord *)0)->kind) == 0x4, "scene.fields: ShotRecord.kind");
@@ -1843,6 +1860,7 @@ _Static_assert(offsetof(Player, burstFire) == 0x882c && sizeof(((Player *)0)->bu
 _Static_assert(offsetof(Player, dodgeTime) == 0x8830 && sizeof(((Player *)0)->dodgeTime) == 0x4, "scene.fields: Player.dodgeTime");
 _Static_assert(offsetof(Player, heightTime) == 0x8834 && sizeof(((Player *)0)->heightTime) == 0x4, "scene.fields: Player.heightTime");
 _Static_assert(offsetof(Player, lookTime) == 0x8844 && sizeof(((Player *)0)->lookTime) == 0x4, "scene.fields: Player.lookTime");
+_Static_assert(offsetof(Player, pathRange) == 0x8848 && sizeof(((Player *)0)->pathRange) == 0x4, "scene.fields: Player.pathRange");
 _Static_assert(offsetof(Player, cameraValue) == 0x884c && sizeof(((Player *)0)->cameraValue) == 0x4, "scene.fields: Player.cameraValue");
 _Static_assert(offsetof(Player, hitPending) == 0x8850 && sizeof(((Player *)0)->hitPending) == 0x4, "scene.fields: Player.hitPending");
 _Static_assert(offsetof(Player, hitFlash) == 0x8854 && sizeof(((Player *)0)->hitFlash) == 0x4, "scene.fields: Player.hitFlash");
