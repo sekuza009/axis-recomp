@@ -227,7 +227,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 {
 	GroundLayer *gl = (GroundLayer *)layer;
 	if (GAME_VAR(int, layer) == 2) {
-		memset(GAME_VAR(void *, layer + 0x48), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
+		memset(((void *)((GroundLayer *)layer)->colours), 0xff, (gl->cols + 1) * (gl->rows + 1) * 4);
 		if (gl->lit == 1)
 			memset(layer + 0xfc, 0xff, 12 * 4);
 		return;
@@ -245,7 +245,7 @@ void THISCALL (light_computeLayerLightBy)(u8 *scene, u8 *layer, u8 *cols, int fi
 		for (int row = r0; row <= r1; row++)
 			for (int col = c0; col <= c1; col++) {
 				int v = (gl->cols + 1) * row + col;
-				const float *n = GAME_VAR(const float *, layer + 0x44) + v * 3;
+				const float *n = ((const float *)((GroundLayer *)layer)->normals) + v * 3;
 				int i = light_level(MUL(&n[1], &dir[1]) + MUL(&n[2], &dir[2]) + MUL(&dir[0], &n[0]));
 				light_mix(cols + v * 4, light, i, first == 1 ? NULL : cols + v * 4);
 			}
@@ -281,10 +281,10 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
 	Vec3_rotateAxis(v, 2, angle);
 	v[0] = f32(fadd_m(fld_m(&v[0]), (const float *)(scene + 0x20f3970)));
 	v[2] = f32(fadd_m(fld_m(&v[2]), (const float *)(scene + 0x20f3978)));
-	memcpy(GAME_VAR(u8 *, part + 0x50) + at, v, 12);
-	float *t = (float *)(GAME_VAR(u8 *, part + 0x5c) + tex_at);
-	t[0] = f32(fdiv_m(fld_m(&v[0]), (const float *)(layer + 0x2c)));
-	t[1] = f32(fdiv_m(fld_m(&v[2]), (const float *)(layer + 0x2c)));
+	memcpy(((ShapePart *)part)->vertices + at, v, 12);
+	float *t = (float *)(((u8 *)((ShapePart *)part)->texCoords) + tex_at);
+	t[0] = f32(fdiv_m(fld_m(&v[0]), &((GroundLayer *)layer)->texScale));
+	t[1] = f32(fdiv_m(fld_m(&v[2]), &((GroundLayer *)layer)->texScale));
 }
 
 /* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
@@ -297,14 +297,14 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
 void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 {
-	const float *range = (const float *)(s + 0xa08), *cam = (const float *)(s + 0x20f3970);
+	const float *range = &((Stage *)s)->cullMargin, *cam = ((Stage *)s)->cameraPos;
 	float min_x = f32(fsub_m(fld_m(&cam[0]), range)), min_z = f32(fsub_m(fld_m(&cam[2]), range));
 	float max_x = f32(fadd_m(fld_m(range), &cam[0])), max_z = f32(fadd_m(fld_m(&cam[2]), range));
-	for (int i = 0; i < GAME_VAR(int, s + 0xdc0a74); i++) {
+	for (int i = 0; i < ((Stage *)s)->groundLayerCount; i++) {
 		u8 *layer = (u8 *)&((Stage *)s)->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
-		u8 *part = GAME_VAR(u8 *, s + 0xdc0a8c) + i * 0x80, *water = GAME_VAR(u8 *, s + 0xdc0cd8) + i * 0x80;
-		const float *size = (const float *)(layer + 0x24), *origin = (const float *)(layer + 4);
+		u8 *part = ((Stage *)s)->layerModel.parts + i * 0x80, *water = ((Stage *)s)->layerBoxModel.parts + i * 0x80;
+		const float *size = &((GroundLayer *)layer)->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
 		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
 		int cols = gl->cols, rows = gl->rows;
@@ -312,7 +312,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		int c1 = (e > max_x ? cols - ftol(fdiv_m(fsub_m(e, &max_x), size)) : cols) - 1;
 		e = fadd_m(fmul_m((long double)rows, size), &origin[0]);   /* (the x origin: the original's slip) */
 		int r1 = (e > max_z ? rows - ftol(fdiv_m(fsub_m(e, &max_z), size)) : rows) - 1;
-		GAME_VAR(u32, part + 0x58) = GAME_VAR(u32, layer + 0x48);
+		BITS(((ShapePart *)part)->colours) = BITS(((GroundLayer *)layer)->colours);
 		int w = gl->cols + 1;
 		gl->indexCount = 0;
 		gl->stripCount = 0;
@@ -330,7 +330,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 						n = 0;
 						prim[0] = 5;
 						prim[1] = 0;
-						prim[2] = (u32)(GAME_VAR(u8 *, layer + 0x58) + gl->indexCount * 4);
+						prim[2] = (u32)(((u8 *)((GroundLayer *)layer)->indices) + gl->indexCount * 4);
 					}
 					strip_pair(layer, (u32 *)RELOC(prim[2]), &n, r, c, w);
 				} else if (open) {
@@ -344,7 +344,7 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 				prim[1] = n;
 			}
 		}
-		GAME_VAR(int, part + 0x60) = gl->stripCount;
+		((ShapePart *)part)->primCount = gl->stripCount;
 		if (gl->lit != 1) {
 			GAME_VAR(int, water + 0x60) = 0;
 			continue;
