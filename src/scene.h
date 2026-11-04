@@ -807,7 +807,8 @@ typedef struct Stage {
 	float cullMargin;   /* +0xa08: (by use) added to an object's radius when testing it against the camera box */
 	u8 _pad0000a0c[0x18];
 	u8 *collisionPlanes;   /* +0xa24: (by use) the collision planes (0xac bytes each; a hit record points into them) */
-	u8 _pad0000a28[0x9cc5d0];
+	u8 _pad0000a28[0x9cc5ac];
+	i32 effectTextures[9];   /* +0x9ccfd4: (by use) the effects' textures "<dir>\00" .. "08" (item_initTextures; objects.c TEX(k)); "09" is billboards */
 	i32 billboards;   /* +0x9ccff8: (by use) the billboard list map items are drawn with (hud_484ca0's id) */
 	u8 _pad09ccffc[0x2104c];
 	u32 glFogColour[4];   /* +0x9ee048: the fog OpenGL draws with (hud_472900): r, g, b, a (floats, kept as bits) */
@@ -1913,6 +1914,7 @@ _Static_assert(offsetof(BoosterType, normalSpeed) == 0x1810 && sizeof(((BoosterT
 _Static_assert(sizeof(BoosterType) == 0x1820, "scene.fields: size of BoosterType");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
+_Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
 _Static_assert(offsetof(Stage, billboards) == 0x9ccff8 && sizeof(((Stage *)0)->billboards) == 0x4, "scene.fields: Stage.billboards");
 _Static_assert(offsetof(Stage, glFogColour) == 0x9ee048 && sizeof(((Stage *)0)->glFogColour) == 0x10, "scene.fields: Stage.glFogColour");
 _Static_assert(offsetof(Stage, glFogStart) == 0x9ee058 && sizeof(((Stage *)0)->glFogStart) == 0x4, "scene.fields: Stage.glFogStart");
