@@ -213,10 +213,10 @@ void THISCALL (effect_initTextures)(u8 *s)
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
 			sprintf(name, (const char *)RELOC(sets[set][0]), k);
-			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName(s + 0x19e188c, name, 1);
+			FIELD(u32, s, sets[set][1] + k * 4) = shape_getByName((u8 *)&ST->partShapes, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
-		ST->effectShapes[k] = shape_getByName(s + 0x19e188c, (const char *)RELOC(singles[k]), 1);
+		ST->effectShapes[k] = shape_getByName((u8 *)&ST->partShapes, (const char *)RELOC(singles[k]), 1);
 }
 
 /* 0x483770 (thiscall on the scene): entry `entry` of trigger trig's script (the triggers' 0x1c-byte records from
@@ -312,11 +312,11 @@ void THISCALL (script_processCommandBy)(u8 *s, int a, int trig, int entry)
 			script_runScpFile(s, name, c[9]);
 			break;
 		case 28:
-			sprintf(name, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, s + 0x908, (const char *)&c[2]);
+			sprintf(name, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, ST->stageName, (const char *)&c[2]);
 			object_setAnimation(s, c[1], name, c[10], c[11]);
 			break;
 		case 29:
-			sprintf(name, (const char *)STR(0x4c7a20, "%s/Sound/%s.wav"), s + 0x908, (const char *)&c[1]);
+			sprintf(name, (const char *)STR(0x4c7a20, "%s/Sound/%s.wav"), ST->stageName, (const char *)&c[1]);
 			sound_playFile(name, 100);
 			break;
 		case 30: object_activate(s, c[1]); break;
@@ -362,7 +362,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	mo->nameIndex = idx;
 	memcpy(obj + 0xc, type + 0x40, 12);
 	if (type[0x4c])
-		sprintf((char *)obj + 0x18, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, s + 0x908, type + 0x4c);
+		sprintf((char *)obj + 0x18, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, ST->stageName, type + 0x4c);
 	else
 		obj[0x18] = 0;
 	memcpy(mo->place, type + 0x8c, 12);
@@ -382,7 +382,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	identity4((u32 *)(obj + 0x1b4));
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
-	u8 *shape = (u8 *)shape_getByName(s + 0xe3c93c, (const char *)RELOC(type), 1);
+	u8 *shape = (u8 *)shape_getByName((u8 *)&ST->objectShapes, (const char *)RELOC(type), 1);
 	FIELD(u8 *, obj, 0x27c) = shape;
 	for (int r = 0; r < 2; r++) {
 		int need = ST->objectColourCount + FIELD(int, shape, 0x18);

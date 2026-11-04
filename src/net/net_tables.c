@@ -1886,7 +1886,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 		return;
 	if (GS->recording == 1) {
 		void *f = GS->replayFile;
-		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(g + 0x2340d29, 4, 1, f);
+		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)((u8 *)&GS->recordTime, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&from, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(&type, 4, 1, f);
 		GAME_FN(file_writeScrambled, 0x46cc30, void, const void *, int, int, void *)(pkt, 1, type, f);

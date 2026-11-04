@@ -509,7 +509,7 @@ static void draw_shot(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 		beam(s, b, w, r, flying);
 	else {
 		u32 flag = BU->owner == ST->selectedActor && !(BU->age >= *K(0x4a9568)) ? 1 : 0;
-		effect(s, r, kind + 0x14, flag, b + 0x78, b + 0x84, 0, 0, 0, effect_size(w), 0);
+		effect(s, r, kind + 0x14, flag, (u8 *)BU->prev, (u8 *)BU->pos, 0, 0, 0, effect_size(w), 0);
 	}
 }
 
@@ -526,10 +526,10 @@ static void hit_actor(u8 *s, u8 *b, const u8 *w, u32 *r, int weapon)
 	for (int k = 0; k < 3; k++)
 		dir[k] = f32(fsub_m(fld_m((const float *)(RELOC(b) + 0x84) + k), &ST->actors[t].nextPos[k]));
 	Vec3_normalize(dir);
-	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, dir, 0, 0, 0, effect_size(w), 0);
-	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, b + 0x60, dir, 0, 0, 0, 0, 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, dir, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, 8, ST->actors[BU->hitActor].timerFlags & 0x2000, (u8 *)BU->end, dir, 0, 0, 0, 0, 0);
 	if (WI->hitSound >= 0)
-		sound_play3D(WI->hitSound, ST->cameraPos, b + 0x84, ST->viewDir, 0x47435000);
+		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->pos, ST->viewDir, 0x47435000);
 	if (BU->owner == ST->playerActor)
 		sound_playVolume(0xb, 100);
 	if (WI->push > 0) {
@@ -616,11 +616,11 @@ static void hit_surface(u8 *s, u8 *b, const u8 *w, u32 *r)
 			N[k] = (float)fld_m(&n[k]);
 		memcpy(P, p, 36);
 	}
-	effect(s, r, WI->shotMode + 0x1e, 0, b + 0x60, N, 0, 0, 0, effect_size(w), 0);
+	effect(s, r, WI->shotMode + 0x1e, 0, (u8 *)BU->end, N, 0, 0, 0, effect_size(w), 0);
 	if (!(*(*(const u8 * *)&BU->hit) & 0x10) && g_items3D == 1)
 		decal(s, b, w, r, (*(const u8 * *)&BU->hit), N, P);
 	if (WI->hitSound >= 0)
-		sound_play3D(WI->hitSound, ST->cameraPos, b + 0x60, ST->viewDir, 0x47435000);
+		sound_play3D(WI->hitSound, ST->cameraPos, (u8 *)BU->end, ST->viewDir, 0x47435000);
 	BU->hitWorld = 1;
 }
 

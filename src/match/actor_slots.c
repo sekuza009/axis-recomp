@@ -451,7 +451,7 @@ void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, scene + 0x19e188c, scene + 0x1cbe198, FIELD(u32, it, models + variant * 4),
+		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, FIELD(u32, it, models + variant * 4),
 		                     it + bones + variant * 0x330, FIELD(u32, it, counts + variant * 4), it + frames + variant * 0x80,
 		                     0, 0, 0, actor + self + 0x30, 0x1770);
 	else

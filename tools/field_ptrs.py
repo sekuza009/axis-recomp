@@ -29,6 +29,13 @@ for l in open('src/scene.fields', encoding='latin-1'):
 	fields[int(off, 16)] = (m.group(2), bool(m.group(3)))
 t = open(path, encoding='latin-1', newline='').read()
 spans = [(0, len(t))]
+# a file that defines PTR as a macro: only from each #define PTR to its #undef (or the file's end)
+defs = [m.start() for m in re.finditer(r'^#define %s\b' % re.escape(PTR), t, re.M)] if re.match(r'^\w+$', PTR) else []
+if defs:
+	spans = []
+	for d in defs:
+		u = re.compile(r'^#undef %s\b' % re.escape(PTR), re.M).search(t, d)
+		spans.append((d, u.start() if u else len(t)))
 if IN:
 	spans = []
 	for f in IN:
@@ -48,8 +55,14 @@ def rep(m):
 	name, arr = fields[o]
 	n += 1
 	return '(u8 *)%s%s->%s%s' % ('' if arr else '&', PTR, name, m.group(2))
+merged = []
+for b, e in sorted(spans):   # (overlapping spans - a macro defined twice before its #undef - taken once)
+	if merged and b <= merged[-1][1]:
+		merged[-1] = (merged[-1][0], max(merged[-1][1], e))
+	else:
+		merged.append((b, e))
 out, last = [], 0
-for b, e in sorted(spans):
+for b, e in merged:
 	out.append(t[last:b])
 	out.append(re.sub(r'(?<![\w>.])%s \+ (0x[0-9a-f]+)\b(\s*[,)])' % re.escape(var), rep, t[b:e]))
 	last = e
