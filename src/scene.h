@@ -909,10 +909,16 @@ typedef struct Stage {
 	float cameraPos[3];   /* +0x20f3970: (by use) the centre of the camera box objects are tested against */
 	float viewDir[3];   /* +0x20f397c: (by use) the camera's direction (the sky's look-at) */
 	float viewUp[3];   /* +0x20f3988: (by use) the camera's up */
-	u8 _pad20f3994[0x90];
+	float lastCameraPos[3];   /* +0x20f3994: (by use) the camera's position the frame before (camera_setupView) */
+	float modelview[16];   /* +0x20f39a0: gluLookAt's matrix */
+	float lastModelview[16];   /* +0x20f39e0: the frame before's */
+	float fov;   /* +0x20f3a20: the view's angle, near and far planes */
 	i32 viewWidth;   /* +0x20f3a24: (by use) the view's size in pixels (screen points) */
 	i32 viewHeight;   /* +0x20f3a28 */
-	u8 _pad20f3a2c[0x88];
+	float nearPlane;   /* +0x20f3a2c */
+	float farPlane;   /* +0x20f3a30 */
+	float projection[16];   /* +0x20f3a34: gluPerspective's matrix */
+	float viewProjection[16];   /* +0x20f3a74: projection x modelview (points to the screen) */
 	i32 showExp;   /* +0x20f3ab4: (by use) 1: kills report the experience points too */
 	i32 gameType;   /* +0x20f3ab8: 0 death match, 2 sudden death, 4 shotgun / 6 ion cannon / 8 rocket arena, 10 gladiator (odd: the team game), 12 king of the hill, 13 platoon */
 	i32 teamGame;   /* +0x20f3abc: the odd types */
@@ -1981,8 +1987,16 @@ _Static_assert(offsetof(Stage, defaultColour) == 0x20f396c && sizeof(((Stage *)0
 _Static_assert(offsetof(Stage, cameraPos) == 0x20f3970 && sizeof(((Stage *)0)->cameraPos) == 0xc, "scene.fields: Stage.cameraPos");
 _Static_assert(offsetof(Stage, viewDir) == 0x20f397c && sizeof(((Stage *)0)->viewDir) == 0xc, "scene.fields: Stage.viewDir");
 _Static_assert(offsetof(Stage, viewUp) == 0x20f3988 && sizeof(((Stage *)0)->viewUp) == 0xc, "scene.fields: Stage.viewUp");
+_Static_assert(offsetof(Stage, lastCameraPos) == 0x20f3994 && sizeof(((Stage *)0)->lastCameraPos) == 0xc, "scene.fields: Stage.lastCameraPos");
+_Static_assert(offsetof(Stage, modelview) == 0x20f39a0 && sizeof(((Stage *)0)->modelview) == 0x40, "scene.fields: Stage.modelview");
+_Static_assert(offsetof(Stage, lastModelview) == 0x20f39e0 && sizeof(((Stage *)0)->lastModelview) == 0x40, "scene.fields: Stage.lastModelview");
+_Static_assert(offsetof(Stage, fov) == 0x20f3a20 && sizeof(((Stage *)0)->fov) == 0x4, "scene.fields: Stage.fov");
 _Static_assert(offsetof(Stage, viewWidth) == 0x20f3a24 && sizeof(((Stage *)0)->viewWidth) == 0x4, "scene.fields: Stage.viewWidth");
 _Static_assert(offsetof(Stage, viewHeight) == 0x20f3a28 && sizeof(((Stage *)0)->viewHeight) == 0x4, "scene.fields: Stage.viewHeight");
+_Static_assert(offsetof(Stage, nearPlane) == 0x20f3a2c && sizeof(((Stage *)0)->nearPlane) == 0x4, "scene.fields: Stage.nearPlane");
+_Static_assert(offsetof(Stage, farPlane) == 0x20f3a30 && sizeof(((Stage *)0)->farPlane) == 0x4, "scene.fields: Stage.farPlane");
+_Static_assert(offsetof(Stage, projection) == 0x20f3a34 && sizeof(((Stage *)0)->projection) == 0x40, "scene.fields: Stage.projection");
+_Static_assert(offsetof(Stage, viewProjection) == 0x20f3a74 && sizeof(((Stage *)0)->viewProjection) == 0x40, "scene.fields: Stage.viewProjection");
 _Static_assert(offsetof(Stage, showExp) == 0x20f3ab4 && sizeof(((Stage *)0)->showExp) == 0x4, "scene.fields: Stage.showExp");
 _Static_assert(offsetof(Stage, gameType) == 0x20f3ab8 && sizeof(((Stage *)0)->gameType) == 0x4, "scene.fields: Stage.gameType");
 _Static_assert(offsetof(Stage, teamGame) == 0x20f3abc && sizeof(((Stage *)0)->teamGame) == 0x4, "scene.fields: Stage.teamGame");

@@ -74,7 +74,7 @@ static void anim_start(u8 *scene, int i, u8 *obj, u32 k)
    that is on screen and nothing lies between it and the camera (collision_rayTrace), up to 1, else fades to 0 */
 static void object_glow(u8 *s, u8 *obj, float dt)
 {
-	const float *p = (const float *)(obj + 0x58), *m = (const float *)(s + 0x20f3a74);
+	const float *p = (const float *)(obj + 0x58), *m = ST->viewProjection;
 	float *clip = (float *)(obj + 0x2ac);
 	clip[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &p[2]) + fmul_m(fld_m(&m[4]), &p[1]) + fmul_m(fld_m(&m[0]), &p[0]), &m[12]));
 	for (int r = 1; r < 4; r++)
@@ -122,7 +122,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 			break;
 		case 2: {
 			long double per = fld_m(K(0x4a9424)) / *(const float *)(obj + 0x29c);
-			int now = ftol(fmul_m(fadd_m((long double)F(int, s, 0x20fcd40), (const float *)(s + 0x20fcd44)), K(0x4a94bc)));
+			int now = ftol(fmul_m(fadd_m((long double)F(int, s, 0x20fcd40), &ST->clockFraction), K(0x4a94bc)));
 			int r = now % ftol(fmul_m(per, K(0x4a94bc)));
 			F(float, obj, 0x298) = f32(fmul_m((long double)r, K(0x4a9480)) / per);
 			break;
@@ -239,9 +239,9 @@ static int tag_narrow(u8 *ac, u32 k)
 void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, const float *up, float fov, int w, int h, float nr,
                                  float fr, float dt)
 {
-	float *cam = ST->cameraPos, *mv = (float *)(s + 0x20f39a0), *pr = (float *)(s + 0x20f3a34);
-	memcpy(s + 0x20f3994, cam, 12);
-	Mat4_copy(s + 0x20f39e0, mv);
+	float *cam = ST->cameraPos, *mv = ST->modelview, *pr = ST->projection;
+	memcpy(ST->lastCameraPos, cam, 12);
+	Mat4_copy(ST->lastModelview, mv);
 	memcpy(cam, pos, 12);
 	memcpy(ST->viewDir, dir, 12);
 	memcpy(ST->viewUp, up, 12);
@@ -252,21 +252,21 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	          (double)fadd_m(fld_m(&d[2]), &cam[2]), u[0], u[1], u[2]);
 	glGetFloatv(0xba6, mv);
 	glPopMatrix();
-	GAME_VAR(float, s + 0x20f3a20) = fov;
+	ST->fov = fov;
 	ST->viewWidth = w;
 	ST->viewHeight = h;
-	GAME_VAR(float, s + 0x20f3a2c) = nr;
-	GAME_VAR(float, s + 0x20f3a30) = fr;
+	ST->nearPlane = nr;
+	ST->farPlane = fr;
 	glMatrixMode(0x1701);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(GAME_VAR(float, s + 0x20f3a20), (double)((long double)ST->viewWidth / ST->viewHeight),
-	               GAME_VAR(float, s + 0x20f3a2c), GAME_VAR(float, s + 0x20f3a30));
+	gluPerspective(ST->fov, (double)((long double)ST->viewWidth / ST->viewHeight),
+	               ST->nearPlane, ST->farPlane);
 	glGetFloatv(0xba7, pr);
 	glPopMatrix();
 	glMatrixMode(0x1700);
-	Mat4_multiply((float *)(s + 0x20f3a74), pr, mv);
-	if (!GAME_VAR(int, s + 0x2149308) || !GAME_VAR(int, s + 0x214930c))
+	Mat4_multiply(ST->viewProjection, pr, mv);
+	if (!ST->scriptMode || !ST->scriptRunning)
 		for (int k = 0; k < ST->objectCount; k++) {
 			u8 *obj = (u8 *)&ST->objects[k];
 			if (GAME_VAR(int, obj + 4) == 1 && (obj[0xc] & 1))
@@ -651,20 +651,20 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 24: {
 		long double a = fsub_m(fld_m(K(0x4a9424)), &t);
 		P(u8, 0x7b) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
-		shape(vv, p, GAME_VAR(void *, s + 0x20f2e88), p + 0x78, 0);
+		shape(vv, p, (*(void * *)&ST->effectShapes[5]), p + 0x78, 0);
 		return;
 	}
 	case 25:
 		if (PR->owner == 1)
 			return;
-		shape(vv, p, GAME_VAR(void *, s + 0x20f2e8c), 0, 1);
+		shape(vv, p, (*(void * *)&ST->effectShapes[6]), 0, 1);
 		square(ab, 500.0f);
 		quad(vv, TEX(0), k_glowUV, 0, p, ab, at, 2);
 		return;
 	case 26:
 		if (PR->owner == 1)
 			return;
-		shape(vv, p, GAME_VAR(void *, s + 0x20f2e90), 0, 1);
+		shape(vv, p, (*(void * *)&ST->effectShapes[7]), 0, 1);
 		sized_glow(s, p, vv, fsub_m(fld_m(K(0x4a9424)), &t), K(0x4a9450));
 		return;
 	case 30:

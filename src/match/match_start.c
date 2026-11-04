@@ -254,9 +254,9 @@ void THISCALL (scene_reset)(u8 *s)
 	stage_resetMatrixAndPoints(s);
 	static const u32 camera[9] = { 0, 0, 0, 0, 0, 0xbf800000, 0, 0x3f800000, 0 };   /* position, forward -z, up y */
 	memcpy(st->cameraPos, camera, sizeof camera);
-	memcpy(s + 0x20f3994, st->cameraPos, 12);
-	identity((u32 *)(s + 0x20f39a0));
-	identity((u32 *)(s + 0x20f39e0));
+	memcpy(st->lastCameraPos, st->cameraPos, 12);
+	identity((u32 *)st->modelview);
+	identity((u32 *)st->lastModelview);
 	FIELD(int, s, 0x20f3adc) = 0;
 	st->startCount = 0;
 	st->itemCount = 0;
