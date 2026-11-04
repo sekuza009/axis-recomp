@@ -735,6 +735,24 @@ typedef struct MapChoice {
 	i32 type;   /* +0x4: its game type (0 .. 13) */
 } MapChoice;
 
+/* the game server's account record (g_accountPacket: sent as the room's host, 0x10b bytes) */
+typedef struct AccountPacket {
+	i32 kind;   /* +0x0: 0x18 */
+	char name[30];   /* +0x4 */
+	char password[12];   /* +0x22 */
+	char email[0x32];   /* +0x2e */
+	char address[16];   /* +0x60: this machine's (net_tables: request 26) */
+	u8 mech[11];   /* +0x70: the default mech settings (lobby_states default_mech) */
+	u8 colours[6][0x18];   /* +0x7b: six colour pairs (hue, chroma, value twice) */
+} AccountPacket;
+
+/* the account form's fields as sent (g_netAccountBuffer: message 0x1c) */
+typedef struct AccountForm {
+	char name[30];   /* +0x0 */
+	char password[12];   /* +0x1e */
+	char email[0x32];   /* +0x2a */
+} AccountForm;
+
 /* a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the */
 typedef struct GameSettings {
 	char name[32];   /* +0x0 */
@@ -2448,6 +2466,18 @@ _Static_assert(sizeof(FileEntry) == 0x44, "scene.fields: size of FileEntry");
 _Static_assert(offsetof(MapChoice, chosen) == 0x0 && sizeof(((MapChoice *)0)->chosen) == 0x4, "scene.fields: MapChoice.chosen");
 _Static_assert(offsetof(MapChoice, type) == 0x4 && sizeof(((MapChoice *)0)->type) == 0x4, "scene.fields: MapChoice.type");
 _Static_assert(sizeof(MapChoice) == 0x8, "scene.fields: size of MapChoice");
+_Static_assert(offsetof(AccountPacket, kind) == 0x0 && sizeof(((AccountPacket *)0)->kind) == 0x4, "scene.fields: AccountPacket.kind");
+_Static_assert(offsetof(AccountPacket, name) == 0x4 && sizeof(((AccountPacket *)0)->name) == 0x1e, "scene.fields: AccountPacket.name");
+_Static_assert(offsetof(AccountPacket, password) == 0x22 && sizeof(((AccountPacket *)0)->password) == 0xc, "scene.fields: AccountPacket.password");
+_Static_assert(offsetof(AccountPacket, email) == 0x2e && sizeof(((AccountPacket *)0)->email) == 0x32, "scene.fields: AccountPacket.email");
+_Static_assert(offsetof(AccountPacket, address) == 0x60 && sizeof(((AccountPacket *)0)->address) == 0x10, "scene.fields: AccountPacket.address");
+_Static_assert(offsetof(AccountPacket, mech) == 0x70 && sizeof(((AccountPacket *)0)->mech) == 0xb, "scene.fields: AccountPacket.mech");
+_Static_assert(offsetof(AccountPacket, colours) == 0x7b && sizeof(((AccountPacket *)0)->colours) == 0x90, "scene.fields: AccountPacket.colours");
+_Static_assert(sizeof(AccountPacket) == 0x10b, "scene.fields: size of AccountPacket");
+_Static_assert(offsetof(AccountForm, name) == 0x0 && sizeof(((AccountForm *)0)->name) == 0x1e, "scene.fields: AccountForm.name");
+_Static_assert(offsetof(AccountForm, password) == 0x1e && sizeof(((AccountForm *)0)->password) == 0xc, "scene.fields: AccountForm.password");
+_Static_assert(offsetof(AccountForm, email) == 0x2a && sizeof(((AccountForm *)0)->email) == 0x32, "scene.fields: AccountForm.email");
+_Static_assert(sizeof(AccountForm) == 0x5c, "scene.fields: size of AccountForm");
 _Static_assert(offsetof(GameSettings, name) == 0x0 && sizeof(((GameSettings *)0)->name) == 0x20, "scene.fields: GameSettings.name");
 _Static_assert(offsetof(GameSettings, map) == 0x20 && sizeof(((GameSettings *)0)->map) == 0x1, "scene.fields: GameSettings.map");
 _Static_assert(offsetof(GameSettings, players) == 0x21 && sizeof(((GameSettings *)0)->players) == 0x1, "scene.fields: GameSettings.players");

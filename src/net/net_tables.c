@@ -1284,7 +1284,7 @@ void (net_send)(int kind, int to)
 		if (!(*(void **)&g_accountPacket))
 			return;
 		jmp_net_getLocalAddress();
-		lstrcpyA(g_accountPacket + 0x60, g_localAddress);
+		lstrcpyA((*(AccountPacket **)&g_accountPacket)->address, g_localAddress);
 		send_buffer(ADDR(g_gameServerSocket), ADDR(g_accountPacket), 0x10b);
 		return;
 	case 19:

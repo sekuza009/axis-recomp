@@ -332,11 +332,11 @@ u32 (room_host)(void)
 	static const u32 zero2[] = { ADDR(g_titlePoints), ADDR(g_titleWins), ADDR(g_titleLosses), ADDR(g_titleScore) };
 	for (int k = 0; k < 4; k++)
 		GAME_VAR(int, zero2[k]) = 0;
-	strcpy(g_accountPacket + 4, g_accountName);
-	strcpy(g_accountPacket + 0x22, g_accountPassword);
-	strcpy(g_accountPacket + 0x2e, g_accountEmail);
-	u8 *record = (*(u8 **)&g_accountPacket);
-	default_mech(record + 0x70, record + 0x7b);
+	AccountPacket *record = (*(AccountPacket **)&g_accountPacket);
+	strcpy(record->name, g_accountName);
+	strcpy(record->password, g_accountPassword);
+	strcpy(record->email, g_accountEmail);
+	default_mech(record->mech, record->colours[0]);
 	g_bestLevelNet = g_pilotLevel;
 	*(int *)record = 0x18;
 	u32 r = net_send(0xf, 0x65);

@@ -12,12 +12,9 @@
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
 #define AU(offset) GAME_VAR(u32, a + (offset))
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
-#define AU8(offset) GAME_VAR(u8, a + (offset))
 #define AC ((Player *)a)   /* the same by its fields (src/scene.fields) */
-#define OI(j, offset) GAME_VAR(int, s + (offset) + (j) * 0x8888)   /* actor j's, by their stage offsets */
-#define OF(j, offset) GAME_VAR(float, s + (offset) + (j) * 0x8888)
-/* point k (20 bytes) of path r: the paths' records (28 bytes at +0xe3b03c) start with their points' address */
-#define PATH_POINT(r, k) ((const float *)(uintptr_t)(GAME_VAR(u32, s + ((r) + 0x821b9) * 0x1c) + (k) * 20))
+/* point k of path r: trigger r's way point k */
+#define PATH_POINT(r, k) (((const WayPoint *)ST->triggers[r].wayPoints)[k].pos)
 
 
 
@@ -122,12 +119,12 @@ static void emit(u8 *s, u8 *a, const int (*joint)[0x20], const int *count, const
 			continue;
 		u32 r = GAME_VAR(u32, OBJ(g_randTable) + (g_randPos & 0xfff) * 4) & 7;
 		g_randPos++;
-		u8 *m = (u8 *)(uintptr_t)GAME_VAR(u32, mx) + joint[0][k] * 100;
+		const ListedObject *m = (const ListedObject *)(uintptr_t)GAME_VAR(u32, mx) + joint[0][k];
 		fx[0] = booster->thrustType + 5;
 		fx[1] = r;
-		memcpy(fx + 2, m + 0x58, 12);
+		memcpy(fx + 2, m->centre, 12);
 		memcpy(fx + 5, v28, 12);   /* scale, alpha, and whatever the third word last held */
-		fx[8] = (u32)(uintptr_t)(m + 0xc);
+		fx[8] = (u32)(uintptr_t)m->matrix;
 		fx[9] = fx[10] = fx[11] = fx[12] = 0;
 		particle_spawn(s, fx);
 	}
@@ -521,7 +518,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					int t = AC->botTarget;
 					float d[3], tmp[3];
 					for (int c = 0; c < 3; c++)
-						tmp[c] = f32(fsub_m(fld_m(&AC->pos[c]), &OF(t, 0x1cd94fc + c * 4)));
+						tmp[c] = f32(fsub_m(fld_m(&AC->pos[c]), &ST->actors[t].pos[c]));
 					memcpy(d, tmp, 12);
 					Vec3_normalize(d);
 					d[0] = f32(fmul_m(fld_m(&d[0]), &AC->botTimes[2]));

@@ -648,6 +648,20 @@ struct MapChoice 8                                               # a map of the 
 0          4          i32 chosen                                 # in the rotation
 4          4          i32 type                                   # its game type (0 .. 13)
 
+struct AccountPacket 0x10b                                       # the game server's account record (g_accountPacket: sent as the room's host, 0x10b bytes)
+0          4          i32 kind                                   # 0x18
+4          0x1e       char name[30]
+0x22       0xc        char password[12]
+0x2e       0x32       char email[0x32]
+0x60       0x10       char address[16]                           # this machine's (net_tables: request 26)
+0x70       0xb        u8 mech[11]                                # the default mech settings (lobby_states default_mech)
+0x7b       0x90       u8 colours[6][0x18]                        # six colour pairs (hue, chroma, value twice)
+
+struct AccountForm 0x5c                                          # the account form's fields as sent (g_netAccountBuffer: message 0x1c)
+0          0x1e       char name[30]
+0x1e       0xc        char password[12]
+0x2a       0x32       char email[0x32]
+
 struct GameSettings 0x30                                         # a game's settings record (g_playerName: the arena's / axis.cfg's, g_roomRecName: the
                                                                  # registry's, g_roomSettingsName: the room form's, g_newArenaName: the new arena form's)
 0          0x20       char name[32]

@@ -439,10 +439,10 @@ int (account_sendChange)(void)
 			g_roomLoginDue = 0;
 			return 0;
 		}
-	char *out = g_netAccountBuffer;
-	strcpy(out, g_accountName);
-	strcpy(out + 0x1e, g_accountPassword);
-	strcpy(out + 0x2a, g_accountEmail);
+	AccountForm *out = (AccountForm *)g_netAccountBuffer;
+	strcpy(out->name, g_accountName);
+	strcpy(out->password, g_accountPassword);
+	strcpy(out->email, g_accountEmail);
 	net_send(0x1c, 0x65);   /* net_send */
 	return 1;
 }
@@ -536,11 +536,12 @@ u32 (login_send)(void)
 	memset((void *)OBJ(g_joinedTitleName), 0, 30 + 12);
 	strcpy(g_joinedTitleName, name);
 	strcpy((char *)ADDR(g_joinedTitleLevel), password);
-	memset((*(u8 **)&g_accountPacket) + 4, 0, 30);
-	memset((*(u8 **)&g_accountPacket) + 0x22, 0, 12);
-	strcpy(g_accountPacket + 4, name);
-	strcpy(g_accountPacket + 0x22, password);
-	(*(int **)&g_accountPacket)[0] = 0x18;
+	AccountPacket *account = (*(AccountPacket **)&g_accountPacket);
+	memset(account->name, 0, 30);
+	memset(account->password, 0, 12);
+	strcpy(account->name, name);
+	strcpy(account->password, password);
+	account->kind = 0x18;
 	u32 r = net_send(0xe, 0x65);
 	g_roomRequestOut = 1;
 	return r;
