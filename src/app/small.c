@@ -74,7 +74,7 @@ void THISCALL (stage_deactivateActors)(Stage *stage)
 /* 0x4723e0: the stage's lights reset */
 int THISCALL (stage_resetLights)(Stage *stage)
 {
-	FIELD(int, stage, 0x9d800c) = 0;
+	stage->dynamicLightsSet = 0;
 	return Light_clearCounts((u8 *)&((Stage *)stage)->dynamicLights);
 }
 
@@ -180,14 +180,14 @@ void THISCALL (tex_markMaterialChanged)(void *self, int m)
 		r->changed = 1;
 	}
 }
-/* 0x456b50: three fields cleared in each of the six objects the object points to (+4 .. +0x18) */
+/* 0x456b50: the three counters of each of the six texture managers cleared */
 void THISCALL (tex_clearSetCounters)(void *self)
 {
 	for (int k = 1; k <= 6; k++) {
-		u8 *o = FIELD(u8 *, self, k * 4);
-		FIELD(int, o, 0xcd138) = 0;
-		FIELD(int, o, 0xcd13c) = 0;
-		FIELD(int, o, 0xcd140) = 0;
+		TextureManager *o = (TextureManager *)((TextureSets *)self)->managers[k - 1];
+		o->loadCount = 0;
+		o->counterB = 0;
+		o->counterC = 0;
 	}
 }
 /* 0x473470: player record p's 16 x 24 colour grid filled with the colour at 0xa1f220, its three counters reset */
@@ -220,7 +220,7 @@ int THISCALL (script_reset)(Stage *stage)
 {
 	debug_traceStripped((Scene *)stage);   /* an empty method of the stage */
 	for (int i = 0; i < 6; i++)
-		FIELD(int, stage, 0x2149308 + i * 4) = 0;
+		FIELD(int, stage, offsetof(Stage, scriptMode) + i * 4) = 0;   /* scriptMode, scriptRunning and four more */
 	return 0;
 }
 /* player p counted among the players seen so far (the highest + 1) */
