@@ -354,7 +354,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		int aimed = 0;
 		for (int k = 0; k < ST->bulletSlotsUsed; k++) {
 			u8 *b = (u8 *)&ST->bullets[k];
-			if (GAME_VAR(int, b + 0xbc) != i || ST->actors[GAME_VAR(int, b + 0xc)].pilot == ST->playerActor)
+			if (((Bullet *)b)->link != i || ST->actors[((Bullet *)b)->owner].pilot == ST->playerActor)
 				continue;
 			aimed = 1;
 			if (AC->alert == 0 && AC->bot != 0 && AC->botTarget < 0) {
@@ -984,7 +984,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				}
 				if (w >= 0) {
 					const int *muzzle = (const int *)(weapon + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-					skel_applyPose(GAME_VAR(void *, GAME_VAR(u8 *, model + 0x20)), m1e0, muzzle[0], 0);
+					skel_applyPose(*(void **)((ObjectList *)model)->frames, m1e0, muzzle[0], 0);
 					Mat4_invert(m270, m1e0);
 					memset(m0d0, 0, 64);   /* the grip undone */
 					BITS(m0d0[0]) = BITS(m0d0[5]) = BITS(m0d0[10]) = BITS(m0d0[15]) = 0x3f800000;
@@ -1000,7 +1000,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					long double x = ((fmul_m(fld_m(&m18c[8]), &v28[2]) + fmul_m(fld_m(&m18c[4]), &v28[1])) + fmul_m(fld_m(&m18c[0]), &v28[0])) + m18c[12];
 					long double y = ((fmul_m(fld_m(&m18c[9]), &v28[2]) + fmul_m(fld_m(&m18c[5]), &v28[1])) + fmul_m(fld_m(&m18c[1]), &v28[0])) + m18c[13];
 					long double z = ((fmul_m(fld_m(&m18c[10]), &v28[2]) + fmul_m(fld_m(&m18c[6]), &v28[1])) + fmul_m(fld_m(&m18c[2]), &v28[0])) + m18c[14];
-					const float *q = (const float *)(uintptr_t)(GAME_VAR(u32, model + 0x14) + muzzle[0] * 100 + 0xc);
+					const float *q = (const float *)(uintptr_t)((u32)((ObjectList *)model)->entries + muzzle[0] * 100 + 0xc);
 					shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 					shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 					shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
@@ -1040,7 +1040,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					}
 					u32 *rec = (u32 *)(a + 0x298 + k * 40);   /* the round */
 					rec[0] = 0;
-					rec[1] = GAME_VAR(u32, player + 0x320 + AC->slot * 4);
+					rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
 					memcpy(rec + 2, shot_at, 12);
 					rec[5] = 0xffffffff;
 					memcpy(rec + 6, shot_dir, 12);
@@ -1074,7 +1074,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (*item >= 0)
 					actor_clearTargetRefs(s, *item);
 				const int *muzzle = (const int *)(weapon + (AC->slot == 5 ? 0x2ca4 : 0x15e8) + AC->variantLoaded * 64);
-				skel_applyPose(GAME_VAR(void *, GAME_VAR(u8 *, model + 0x20)), m1e0, muzzle[0], 0);
+				skel_applyPose(*(void **)((ObjectList *)model)->frames, m1e0, muzzle[0], 0);
 				Mat4_invert(m270, m1e0);
 				memset(m0d0, 0, 64);
 				BITS(m0d0[0]) = BITS(m0d0[5]) = BITS(m0d0[10]) = BITS(m0d0[15]) = 0x3f800000;
@@ -1087,13 +1087,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				long double x = ((fmul_m(fld_m(&m18c[8]), &o[2]) + fmul_m(fld_m(&m18c[4]), &o[1])) + fmul_m(fld_m(&m18c[0]), &o[0])) + m18c[12];
 				long double y = ((fmul_m(fld_m(&m18c[9]), &o[2]) + fmul_m(fld_m(&m18c[5]), &o[1])) + fmul_m(fld_m(&m18c[1]), &o[0])) + m18c[13];
 				long double z = ((fmul_m(fld_m(&m18c[10]), &o[2]) + fmul_m(fld_m(&m18c[6]), &o[1])) + fmul_m(fld_m(&m18c[2]), &o[0])) + m18c[14];
-				const float *q = (const float *)(uintptr_t)(GAME_VAR(u32, model + 0x14) + muzzle[0] * 100 + 0xc);
+				const float *q = (const float *)(uintptr_t)((u32)((ObjectList *)model)->entries + muzzle[0] * 100 + 0xc);
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
 				u32 *rec = (u32 *)(a + 0x298 + k * 40);
 				rec[0] = 1;
-				rec[1] = GAME_VAR(u32, player + 0x320 + AC->slot * 4);
+				rec[1] = (u32)((PlayerRecord *)player)->items[AC->slot];
 				memcpy(rec + 2, shot_at, 12);
 				rec[5] = f[2];
 				memcpy(rec + 6, f + 4, 12);
@@ -1107,15 +1107,15 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				f[0] = 0;
 			}
 			u8 *b = s + 0x202ef34 + *item * 0x4e8;   /* the round's record, brought up to date */
-			if (GAME_VAR(int, b + 4) != 1)
+			if (((Bullet *)b)->active != 1)
 				continue;
-			GAME_VAR(u32, b + 0xb8) = f[1];
-			GAME_VAR(int, b + 0x6c) = array_recordAt(f[2], BITS(ST->collisionPlanes), 0xac);
+			((Bullet *)b)->hitActor = f[1];
+			((Bullet *)b)->hit = array_recordAt(f[2], BITS(ST->collisionPlanes), 0xac);
 			if (f[3] == 1)
-				GAME_VAR(float, b + 0x74) = f32(fsub_m(fld_m(&GAME_VAR(float, b + 0x70)), dt));
-			memcpy(b + 0x90, f + 4, 12);
-			memcpy(b + 0x60, f + 4, 12);
-			GAME_VAR(int, b + 0x9c) = 1;
+				((Bullet *)b)->life = f32(fsub_m(fld_m(&((Bullet *)b)->age), dt));
+			memcpy(((Bullet *)b)->netPoint, f + 4, 12);
+			memcpy(((Bullet *)b)->end, f + 4, 12);
+			((Bullet *)b)->moved = 1;
 		}
 	}
 	/* stamina (+0x4ac): spent running, back after a rest (+0x4b0 the rest) */
