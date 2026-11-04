@@ -230,6 +230,16 @@ u32 (wnd_setCursor)(void)
 	return sound_releaseDirectSound();
 }
 
+/* Windows' PIXELFORMATDESCRIPTOR */
+typedef struct {
+	u16 size, version;
+	u32 flags;                  /* 0x21: PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL; 0x80 PFD_NEED_PALETTE */
+	u8 pixelType, colorBits;
+	u8 colorAndAccum[13];       /* cRedBits .. cAccumAlphaBits */
+	u8 depthBits, stencilBits, auxBuffers, layerType, reserved;
+	u32 layerMask, visibleMask, damageMask;
+} PixelFormat;
+_Static_assert(sizeof(PixelFormat) == 0x28, "PixelFormat");
 #define ChoosePixelFormat(dc, pfd) IMPORT(0x4a902c, int, void *, const void *)(dc, pfd)
 #define SetPixelFormat(dc, format, pfd) IMPORT(0x4a9030, int, void *, int, const void *)(dc, format, pfd)
 
@@ -239,19 +249,19 @@ u32 (wnd_setCursor)(void)
    zeroed.) */
 int (glWindow_setupPixelFormat)(void *dc)
 {
-	u8 pfd[0x28];   /* PIXELFORMATDESCRIPTOR */
-	memset(pfd, 0, sizeof pfd);
-	*(u16 *)pfd = 0x28;                  /* nSize */
-	*(u16 *)(pfd + 2) = 1;               /* nVersion */
-	*(u32 *)(pfd + 4) = 0x21;            /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
-	pfd[9] = (*(u8 *)&g_glColourBits);     /* cColorBits */
-	pfd[0x17] = g_glDepthBits;  /* cDepthBits */
+	PixelFormat pfd_, *pfd = &pfd_;
+	memset(pfd, 0, sizeof *pfd);
+	pfd->size = sizeof *pfd;
+	pfd->version = 1;
+	pfd->flags = 0x21;   /* PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL */
+	pfd->colorBits = (*(u8 *)&g_glColourBits);
+	pfd->depthBits = g_glDepthBits;
 	int format = ChoosePixelFormat(dc, pfd);
 	if (!format) {
 		sys_errorMessageNoName((const char *)STR(0x4c4e5c, "glWindow ChoosePixelFormat failed - s..."));   /* sys_errorMessageNoName */
 		return 0;
 	}
-	if (pfd[4] & 0x80) {   /* PFD_NEED_PALETTE */
+	if (pfd->flags & 0x80) {   /* PFD_NEED_PALETTE */
 		sys_errorMessageNoName((const char *)STR(0x4c4e30, "glWindow needs palette - setupPixelFo..."));
 		return 0;
 	}
@@ -267,16 +277,16 @@ int (glWindow_setupPixelFormat)(void *dc)
    is none, it needs a palette, or it cannot be set */
 int (gfx_setPixelFormat)(void *dc)
 {
-	u8 *pfd = (u8 *)STR(0x4b1020, "(");
+	PixelFormat *pfd = (PixelFormat *)STR(0x4b1020, "(");
 	if (!(g_pixelFormatFilled & 1)) {
 		g_pixelFormatFilled |= 1;
-		pfd[9] = (u8)(((*(u8 *)&g_videoDepth) + 1) << 4);   /* cColorBits */
-		memset(pfd + 0xa, 0, 0x17 - 0xa);
-		pfd[0x17] = 0x10;                                    /* cDepthBits */
-		memset(pfd + 0x18, 0, 0x28 - 0x18);
+		pfd->colorBits = (u8)(((*(u8 *)&g_videoDepth) + 1) << 4);
+		memset(pfd->colorAndAccum, 0, sizeof pfd->colorAndAccum);
+		pfd->depthBits = 0x10;
+		memset((u8 *)pfd + offsetof(PixelFormat, stencilBits), 0, sizeof *pfd - offsetof(PixelFormat, stencilBits));
 	}
 	int format = ChoosePixelFormat(dc, pfd);
-	if (!format || (pfd[4] & 0x80))
+	if (!format || (pfd->flags & 0x80))
 		return 0;
 	return SetPixelFormat(dc, format, pfd) != 0;
 }

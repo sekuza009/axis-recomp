@@ -11,8 +11,8 @@
 typedef struct {
 	void *buffers[8];
 	i32 next;            /* the buffer to play next */
-	i32 slotA[8];        /* (unclear) per buffer, cleared when loaded */
-	i32 slotB[8];
+	i32 panModes[8];     /* per buffer: the last play's mode (1 / 2: with a pan; sound_playNextBuffer) */
+	i32 pans[8];         /* and its pan (SetPan) */
 } Sound;                 /* 100 bytes */
 
 #define g_menuSounds ((Sound *const *)OBJ(g_menuSoundBuffers))
@@ -101,8 +101,8 @@ u32 (music_loopIfEnded)(void)
 	return COM(segment, 0x1c, u32, u32)(segment, 1);
 }
 
-/* 0x467dd0: the sound's next buffer (of eight, the turn at +0x20) played with a setting (mode 1 or 2: value, within
-   +-10000, kept per buffer at +0x44; the mode at +0x24): the value applied (method 0x40), then played. Returns what
+/* 0x467dd0: the sound's next buffer (of eight, next) played with a pan (mode 1 or 2: value, within
+   +-10000, kept per buffer in pans; the mode in panModes): the pan applied (SetPan), then played. Returns what
    the original leaves in eax: 0 without a sound, 1 for a value out of range, else the next turn (7 when wrapping) */
 u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
 {
@@ -110,20 +110,20 @@ u32 (sound_playNextBuffer)(u32 *sound, int mode, int value)
 		return 0;
 	if (value > 10000 || value < -10000)
 		return 1;
-	u32 *modes = sound + 9, *values = sound + 0x11;
-	modes[sound[8]] = (u32)mode;
+	Sound *sd = (Sound *)sound;
+	sd->panModes[sd->next] = mode;
 	if (mode == 1 || mode == 2)
-		values[sound[8]] = (u32)value;
-	void *buffer = (void *)RELOC(sound[sound[8]]);
-	COM(buffer, 0x40, u32, u32)(buffer, values[sound[8]]);
-	buffer = (void *)RELOC(sound[sound[8]]);
+		sd->pans[sd->next] = value;
+	void *buffer = RELOC(sd->buffers[sd->next]);
+	COM(buffer, 0x40, u32, u32)(buffer, (u32)sd->pans[sd->next]);   /* SetPan */
+	buffer = RELOC(sd->buffers[sd->next]);
 	COM(buffer, 0x30, u32, u32, u32, u32)(buffer, 0, 0, 0);   /* Play */
-	u32 turn = sound[8];
+	u32 turn = (u32)sd->next;
 	if ((int)turn < 7) {
-		sound[8] = turn + 1;
+		sd->next = turn + 1;
 		return turn + 1;
 	}
-	sound[8] = 0;
+	sd->next = 0;
 	return turn;
 }
 
@@ -313,8 +313,8 @@ Sound *(sound_loadWav)(const char *name)
 	COM(buffer, DSB_UNLOCK, long, void *, u32, void *, u32)(buffer, locked, size, NULL, 0);
 	sound->next = 0;
 	for (int i = 0; i < 8; i++) {
-		sound->slotA[i] = 0;
-		sound->slotB[i] = 0;
+		sound->panModes[i] = 0;
+		sound->pans[i] = 0;
 	}
 	for (int i = 0; i < 8; i++) {
 		ds = g_directSound;
