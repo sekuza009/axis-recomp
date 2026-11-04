@@ -19,7 +19,7 @@ static void part_info(u8 *rec, int idx)
 {
 	if (idx == -1) {
 		memset(rec, 0, 64);
-		FIELD(int, rec, 0x40) = -1;
+		((PartInfo *)rec)->slotType = -1;
 		memset(rec + 0x44, 0, 0x3c);
 		return;
 	}
@@ -39,11 +39,11 @@ static void part_info(u8 *rec, int idx)
 		FIELD(int, rec, copied[k][0]) = FIELD(int, info, copied[k][1]);
 	for (int k = 0; k < 8; k++) {
 		if (k == 5)
-			FIELD(int, rec, 0x6c) = FIELD(int, info, 0x2df8);
+			((PartInfo *)rec)->value2df8 = ((ActorInfo *)info)->value2df8;
 		FIELD(float, rec, scaled[k].dst) =
 			(float)((long double)FIELD(float, info, scaled[k].src) * GAME_VAR(float, scaled[k].scale));
 	}
-	FIELD(int, rec, 0x7c) = FIELD(int, info, 0x2db8);
+	BITS(((PartInfo *)rec)->weight) = BITS(((ActorInfo *)info)->weight);
 }
 
 /* 0x41ca50: the record of weapon slot slot (0x4dbe50, 0x80 apart) */

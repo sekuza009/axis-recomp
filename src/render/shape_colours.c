@@ -76,7 +76,7 @@ void THISCALL (shape_setTextureDir)(void *model, const char *folder, int flags, 
                                     u32 v2)
 {
 	strcpy((char *)model + 0x130, folder);
-	FIELD(int, model, 0x230) = flags;
+	((Manager *)model)->bindFlags = flags;
 	if (flags & 2)
 		shape_setTint(model, h1, c1, v1, h2, c2, v2);
 	else
@@ -103,10 +103,10 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
    with the factors and the matrix. Returns the part count */
 int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
 {
-	for (int i = 0; i < FIELD(int, shape, 0x10); i++) {
-		u8 *part = FIELD(u8 *, shape, 0x14) + i * 0x80;
-		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + FIELD(int, part, 0x48), first, part, factors,
+	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
+		u8 *part = ((Model *)shape)->parts + i * 0x80;
+		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + ((ShapePart *)part)->colourBase, first, part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
-	return FIELD(int, shape, 0x10);
+	return ((Model *)shape)->partCount;
 }

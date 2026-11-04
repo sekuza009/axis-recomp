@@ -66,7 +66,7 @@ int THISCALL (map_loadItemInfoFrom)(u8 *scene, const char *path)
 	fclose(f);
 	for (int i = 0; i < *count; i++) {
 		u8 *item = (u8 *)&st->itemTypes[i];
-		FIELD(u32, item, 0x8c) = item[0] ? shape_getByName((u8 *)&st->partShapes, (const char *)(item + 0x4c), 1) : 0;
+		((ItemType *)item)->model = (Model *)(item[0] ? shape_getByName((u8 *)&st->partShapes, ((ItemType *)item)->shapeName, 1) : 0);
 	}
 	return 1;
 #undef crt_fread
@@ -339,12 +339,12 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	}
 	st->playerRecordCount = st->mapPlayerCount;
 	for (int i = 1; i < st->mapActorCount; i++)
-		FIELD(int, scene, 0x1cd6fb4 + i * 0x5c + 0x18) = 1;
+		st->mapActors[i].bot = 1;
 	sprintf(path, (const char *)STR(0x4c7724, "Stage\\%s\\Clan"), st->stageName);
 	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
-		FIELD(int, scene, 0x15a9b36 + p * 0x47fd2) = 0x180;
+		st->playerRecords[p].emblemSent = 0x180;
 	}
 #undef crt_fread
 #undef setPartColor

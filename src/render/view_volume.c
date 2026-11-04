@@ -264,7 +264,7 @@ static void corner(float *out, const float *m, const float *px, long double y, l
 void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 a4, u32 colour, int cull,
                                          int material, u32 a8)
 {
-	if (GAME_VAR(int, model + 0x10) <= 0)
+	if (((Model *)model)->partCount <= 0)
 		return;
 	float *m = (float *)matrix;
 	if (!m) {
@@ -279,8 +279,8 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 	}
 	float clip_m[16];
 	Mat4_multiply(clip_m, (const float *)(view + 0x9130), m);
-	for (int i = 0; i < GAME_VAR(int, model + 0x10); i++) {
-		u8 *part = GAME_VAR(u8 *, model + 0x14) + i * 0x80;
+	for (int i = 0; i < ((Model *)model)->partCount; i++) {
+		u8 *part = ((Model *)model)->parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)part;
 		if (sp->primCount <= 0)
 			continue;

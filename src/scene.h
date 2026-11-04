@@ -465,11 +465,11 @@ typedef struct ObjectType {
 
 /* a kind of map item (Stage.itemTypes) */
 typedef struct ItemType {
-	u8 _pad0000000[0x40];
+	char name[0x40];   /* +0x0: (by use) its name (empty: an unused kind) */
 	i32 respawnSound;   /* +0x40: (by use) played as a taken item comes back (frame_loops: item_sound) */
 	i32 pickSound;   /* +0x44: played as it is taken (a warp zone: as it warps) */
 	float respawnTime;   /* +0x48: (by use) a taken item comes back once its fade passes this */
-	u8 _pad000004c[0x40];
+	char shapeName[0x40];   /* +0x4c: its shape (map_loadItemInfoFrom: shape_getByName into model) */
 	Model *model;   /* +0x8c: its shape when items are drawn in 3D (none: not drawn) */
 } ItemType;
 
@@ -1959,9 +1959,11 @@ _Static_assert(offsetof(ObjectType, rotation) == 0x98 && sizeof(((ObjectType *)0
 _Static_assert(offsetof(ObjectType, value1) == 0xa8 && sizeof(((ObjectType *)0)->value1) == 0x4, "scene.fields: ObjectType.value1");
 _Static_assert(offsetof(ObjectType, value2) == 0xac && sizeof(((ObjectType *)0)->value2) == 0x4, "scene.fields: ObjectType.value2");
 _Static_assert(sizeof(ObjectType) == 0xb0, "scene.fields: size of ObjectType");
+_Static_assert(offsetof(ItemType, name) == 0x0 && sizeof(((ItemType *)0)->name) == 0x40, "scene.fields: ItemType.name");
 _Static_assert(offsetof(ItemType, respawnSound) == 0x40 && sizeof(((ItemType *)0)->respawnSound) == 0x4, "scene.fields: ItemType.respawnSound");
 _Static_assert(offsetof(ItemType, pickSound) == 0x44 && sizeof(((ItemType *)0)->pickSound) == 0x4, "scene.fields: ItemType.pickSound");
 _Static_assert(offsetof(ItemType, respawnTime) == 0x48 && sizeof(((ItemType *)0)->respawnTime) == 0x4, "scene.fields: ItemType.respawnTime");
+_Static_assert(offsetof(ItemType, shapeName) == 0x4c && sizeof(((ItemType *)0)->shapeName) == 0x40, "scene.fields: ItemType.shapeName");
 _Static_assert(offsetof(ItemType, model) == 0x8c && sizeof(((ItemType *)0)->model) == 0x4, "scene.fields: ItemType.model");
 _Static_assert(sizeof(ItemType) == 0x90, "scene.fields: size of ItemType");
 _Static_assert(offsetof(MapItem, type) == 0x0 && sizeof(((MapItem *)0)->type) == 0x4, "scene.fields: MapItem.type");

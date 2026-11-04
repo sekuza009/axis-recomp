@@ -268,7 +268,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	if (!ST->scriptMode || !ST->scriptRunning)
 		for (int k = 0; k < ST->objectCount; k++) {
 			u8 *obj = (u8 *)&ST->objects[k];
-			if (GAME_VAR(int, obj + 4) == 1 && (obj[0xc] & 1))
+			if (((MapObject *)obj)->active == 1 && (((MapObject *)obj)->flags & 1))
 				object_glow(s, obj, dt);
 		}
 	for (int k = 0; k < ST->actorCount; k++) {
@@ -308,7 +308,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		AC->detail = tag_narrow(ac, OBJ(k_30f));
 		u8 *me = (u8 *)&ST->actors[ST->playerActor];
 		Player *act = (Player *)me;
-		if ((((u32)AC->timerFlags) & 0x200) && A(int, 8) >= GAME_VAR(int, me + 8)) {
+		if ((((u32)AC->timerFlags) & 0x200) && AC->hackingLevel >= ((Player *)me)->hackingLevel) {
 			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
 			continue;
@@ -600,7 +600,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		static const u32 k_parts[4] = { 0x1561ea0, 0x1569dec, 0x1571d38, 0x1581984 };
 		int part = i % 5;
 		u8 *cache = s + (part >= 0 && part < 4 ? k_parts[part] : 0x15915d0) + PR->owner * 0x47fd2;
-		shape(vv, p, GAME_VAR(u8 *, cache + 0x11c) + i % GAME_VAR(int, cache + 0x120) * 0x4c, 0, 1);
+		shape(vv, p, ((Manager *)cache)->items + i % ((Manager *)cache)->count * 0x4c, 0, 1);
 		return;
 	}
 	case 10:

@@ -402,6 +402,8 @@ struct ObjectType 0xb0                                          # a map object a
 0xac       4          u32 value2
 
 struct ItemType 0x90                                            # a kind of map item (Stage.itemTypes)
+0          0x40       char name[0x40]                            # (by use) its name (empty: an unused kind)
+0x4c       0x40       char shapeName[0x40]                       # its shape (map_loadItemInfoFrom: shape_getByName into model)
 0x40       4          i32 respawnSound                           # (by use) played as a taken item comes back (frame_loops: item_sound)
 0x44       4          i32 pickSound                              # played as it is taken (a warp zone: as it warps)
 0x48       4          float respawnTime                          # (by use) a taken item comes back once its fade passes this
