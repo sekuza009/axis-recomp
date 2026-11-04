@@ -813,8 +813,8 @@ typedef struct CollisionPlane {
 	i32 *object;   /* +0x8c: its map object's index (none: 0) */
 	i32 part;   /* +0x90: the object's shape part */
 	i32 cornerIndices[3];   /* +0x94: the corners' vertex indices in the part */
-	u8 *poolPrev;   /* +0xa0: its links in the planes' pool */
-	u8 *poolNext;   /* +0xa4 */
+	u8 *listNext;   /* +0xa0: its unit's list (space_addUnitPlanes: the next plane; the free pool walks +0xa4 as its next) */
+	u8 *listPrev;   /* +0xa4 */
 	u8 _pad00000a8[0x4];
 } CollisionPlane;
 
@@ -831,6 +831,15 @@ typedef struct TimeSync {
 	float frameTime;   /* +0x30: the last frame's seconds, at most maxFrame */
 	float maxFrame;   /* +0x34: 1/15 s unless set */
 } TimeSync;
+
+/* a unit of the collision space (Space.units; spaceSlot_clear): a map object's part */
+typedef struct SpaceUnit {
+	i32 index;   /* +0x0: (-1 when cleared) */
+	u8 *lastPlane;   /* +0x4: its planes' list (CollisionPlane.listNext / listPrev): the last */
+	u8 **lastNode;   /* +0x8: its nodes' list: the last (a node: [0] its planes, [2] next, [3] previous) */
+	u8 *poolPrev;   /* +0xc: its links in the units' pool */
+	u8 *poolNext;   /* +0x10 */
+} SpaceUnit;
 
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
@@ -1957,8 +1966,8 @@ _Static_assert(offsetof(CollisionPlane, normal) == 0x4c && sizeof(((CollisionPla
 _Static_assert(offsetof(CollisionPlane, object) == 0x8c && sizeof(((CollisionPlane *)0)->object) == 0x4, "scene.fields: CollisionPlane.object");
 _Static_assert(offsetof(CollisionPlane, part) == 0x90 && sizeof(((CollisionPlane *)0)->part) == 0x4, "scene.fields: CollisionPlane.part");
 _Static_assert(offsetof(CollisionPlane, cornerIndices) == 0x94 && sizeof(((CollisionPlane *)0)->cornerIndices) == 0xc, "scene.fields: CollisionPlane.cornerIndices");
-_Static_assert(offsetof(CollisionPlane, poolPrev) == 0xa0 && sizeof(((CollisionPlane *)0)->poolPrev) == 0x4, "scene.fields: CollisionPlane.poolPrev");
-_Static_assert(offsetof(CollisionPlane, poolNext) == 0xa4 && sizeof(((CollisionPlane *)0)->poolNext) == 0x4, "scene.fields: CollisionPlane.poolNext");
+_Static_assert(offsetof(CollisionPlane, listNext) == 0xa0 && sizeof(((CollisionPlane *)0)->listNext) == 0x4, "scene.fields: CollisionPlane.listNext");
+_Static_assert(offsetof(CollisionPlane, listPrev) == 0xa4 && sizeof(((CollisionPlane *)0)->listPrev) == 0x4, "scene.fields: CollisionPlane.listPrev");
 _Static_assert(sizeof(CollisionPlane) == 0xac, "scene.fields: size of CollisionPlane");
 _Static_assert(offsetof(TimeSync, started) == 0x4 && sizeof(((TimeSync *)0)->started) == 0x4, "scene.fields: TimeSync.started");
 _Static_assert(offsetof(TimeSync, frames) == 0x8 && sizeof(((TimeSync *)0)->frames) == 0x4, "scene.fields: TimeSync.frames");
@@ -1970,6 +1979,12 @@ _Static_assert(offsetof(TimeSync, fps) == 0x2c && sizeof(((TimeSync *)0)->fps) =
 _Static_assert(offsetof(TimeSync, frameTime) == 0x30 && sizeof(((TimeSync *)0)->frameTime) == 0x4, "scene.fields: TimeSync.frameTime");
 _Static_assert(offsetof(TimeSync, maxFrame) == 0x34 && sizeof(((TimeSync *)0)->maxFrame) == 0x4, "scene.fields: TimeSync.maxFrame");
 _Static_assert(sizeof(TimeSync) == 0x38, "scene.fields: size of TimeSync");
+_Static_assert(offsetof(SpaceUnit, index) == 0x0 && sizeof(((SpaceUnit *)0)->index) == 0x4, "scene.fields: SpaceUnit.index");
+_Static_assert(offsetof(SpaceUnit, lastPlane) == 0x4 && sizeof(((SpaceUnit *)0)->lastPlane) == 0x4, "scene.fields: SpaceUnit.lastPlane");
+_Static_assert(offsetof(SpaceUnit, lastNode) == 0x8 && sizeof(((SpaceUnit *)0)->lastNode) == 0x4, "scene.fields: SpaceUnit.lastNode");
+_Static_assert(offsetof(SpaceUnit, poolPrev) == 0xc && sizeof(((SpaceUnit *)0)->poolPrev) == 0x4, "scene.fields: SpaceUnit.poolPrev");
+_Static_assert(offsetof(SpaceUnit, poolNext) == 0x10 && sizeof(((SpaceUnit *)0)->poolNext) == 0x4, "scene.fields: SpaceUnit.poolNext");
+_Static_assert(sizeof(SpaceUnit) == 0x14, "scene.fields: size of SpaceUnit");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");

@@ -111,25 +111,28 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 void THISCALL (space_addUnitPlanes)(void *space, u32 id, u8 *owner, u32 part, u32 i0, u32 i1, u32 i2, u32 v0, u32 v1, u32 v2)
 {
 #define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
+#define PL(p) ((CollisionPlane *)(p))
+	SpaceUnit *un = (SpaceUnit *)owner;
 	u8 *planes = space_buildPlanes(space, id, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!planes)
 		return;
-	u8 *last = AT(u8 *, owner, 4);
+	u8 *last = un->lastPlane;
 	if (last) {
-		AT(u8 *, last, 0xa0) = planes;
-		AT(u8 *, planes, 0xa4) = AT(u8 *, owner, 4);
+		PL(last)->listNext = planes;
+		PL(planes)->listPrev = un->lastPlane;
 	}
-	AT(u8 *, owner, 4) = planes;
+	un->lastPlane = planes;
 	u8 **node = space_getNextFreeNodePtr(space);
 	node[0] = planes;
-	u8 **last_node = AT(u8 **, owner, 8);
+	u8 **last_node = un->lastNode;
 	if (last_node) {
-		AT(u8 *, last_node[0], 0xa0) = planes;
-		AT(u8 *, node[0], 0xa4) = AT(u8 **, owner, 8)[0];
-		AT(u8 **, AT(u8 **, owner, 8), 8) = node;
-		AT(u8 **, node, 0xc) = AT(u8 **, owner, 8);
+		PL(last_node[0])->listNext = planes;
+		PL(node[0])->listPrev = un->lastNode[0];
+		AT(u8 **, un->lastNode, 8) = node;
+		AT(u8 **, node, 0xc) = un->lastNode;
 	}
-	AT(u8 **, owner, 8) = node;
+	un->lastNode = node;
+#undef PL
 #undef AT
 }
 
@@ -720,7 +723,7 @@ static void through_m(float *out, const float *m, const float *p, int yx)
 u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
 	const float *low = (const float *)RELOC(unit), *k = (const float *)ADDR(k_0_5f);
-	if (GAME_VAR(int, unit + 0x24) == 1) {
+	if (((SpaceBlock *)unit)->split == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {
 			float ext = f32(fsub_m(fld_m(&low[3 + a]), &low[a]));
@@ -765,7 +768,7 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 						memcpy(r1, q1, 12);
 					else
 						cut_at(r1, q0, dq, sx > 0 ? x + 1 : x, &half[2], &low[0], 0, 1);
-					u8 *child = GAME_VAR(u8 *, unit + 0x28 + (x + 2 * z + 4 * y) * 4);
+					u8 *child = ((SpaceBlock *)unit)->children[x + 2 * z + 4 * y];
 					if (child) {
 						u32 r = space_traceUnit(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
 						if (r)
@@ -781,7 +784,7 @@ u32 THISCALL (space_traceUnit)(u8 *unit, const float *from, const float *to, flo
 				return 0;
 		}
 	}
-	u32 *node = GAME_VAR(u32 *, unit + 0x18);
+	u32 *node = ((SpaceBlock *)unit)->items;
 	if (!node)
 		return 0;
 	GAME_VAR(u32, dist) = 0xff7fffff;
@@ -881,10 +884,10 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 	int n = 0;
 	for (int i = 0; i < GAME_VAR(int, s + 0x13c9b24); i++) {
 		u8 *o = (u8 *)&((Stage *)s)->objects[i];
-		if (GAME_VAR(int, o + 4) != 1 || GAME_VAR(int, o + 0x290) != 1 || !GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8))
+		if (((MapObject *)o)->active != 1 || ((MapObject *)o)->animated != 1 || !GAME_VAR(u32, ((u8 *)((MapObject *)o)->unit) + 8))
 			continue;
-		const float *m = (const float *)(o + 0x134);
-		const float *lo = (const float *)(GAME_VAR(u8 *, o + 0x27c) + 0x34), *hi = lo + 3;
+		const float *m = ((MapObject *)o)->matrixInverse;
+		const float *lo = (const float *)(((u8 *)((MapObject *)o)->model) + 0x34), *hi = lo + 3;
 		float a[3], b[3], d[3];
 		for (int r = 0; r < 3; r++)
 			a[r] = f32(fadd_m(fmul_m(fld_m(&p0[2]), &m[8 + r]) + fmul_m(fld_m(&p0[r ? 1 : 0]), &m[r ? 4 + r : 0]) +
@@ -926,7 +929,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
 		u32 *sub = (u32 *)(RELOC(s) + 0x9ca0f4) + n * 3;
-		sub[0] = GAME_VAR(u32, GAME_VAR(u8 *, o + 0x28c) + 8);
+		sub[0] = GAME_VAR(u32, ((u8 *)((MapObject *)o)->unit) + 8);
 		sub[1] = (u32)(o + 0x1f4);
 		sub[2] = (u32)(o + 0x234);
 		n++;
