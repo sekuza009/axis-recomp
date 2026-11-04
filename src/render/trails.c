@@ -85,7 +85,7 @@ void THISCALL (bullet_drawTrail)(Stage *stage, int b, void *view)
 	int n = bu->trailCount;
 	if (n <= 0)
 		return;
-	const float *ring = &bu->trail[0][0];
+	const float *ring = &bu->trail[0][0][0];
 	for (int i = n, j = n + 0x13; ; ) {
 		int prev = j % 20, cur = i % 20;
 		u32 colour = 0xffffffff;

@@ -443,7 +443,7 @@ struct Projectile 0x12c                                         # a particle or 
 struct Bullet 0x4e8                                             # a bullet in flight (Stage.bullets: bullet_init, bullet_update)
 0xc0       4          float homeTimer                            # (by use) a homing bullet turns again every 1/15 s
 0xd0       4          i32 hitWorld                               # 1: it hit the world (splash damage then; weapons.c)
-0xd4       0x3c0      float trail[20][12]                        # (by use) a trail's ring of cross-sections (4 points each: weapons.c trail)
+0xd4       0x3c0      float trail[20][4][3]                        # (by use) a trail's ring of cross-sections (4 points each: weapons.c trail)
 0x494      0x50       float trailAge[20]                         # each one's age when made
 0x4e4      4          i32 trailCount                             # the cross-sections made (the ring's next: % 20)
 0          4          i32 id                                    # its id (the next serial, or the network's)

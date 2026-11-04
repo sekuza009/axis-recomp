@@ -396,7 +396,7 @@ void THISCALL (object_initObjectBy)(u8 *s, int i, const u8 *type)
 	mo->typeValue2 = ((const ObjectType *)type)->value2;
 	memset(obj + offsetof(MapObject, unit), 0, 7 * 4);   /* unit .. poseStale */
 	if (shape) {
-		const float *c = (const float *)(shape + 0x20);
+		const float *c = ((const Model *)shape)->centre;
 		float *out = mo->pos;
 		out[0] = f32(fadd_m(fmul_m(fld_m(&m[8]), &c[2]) + fmul_m(fld_m(&m[4]), &c[1]) + fmul_m(fld_m(&m[0]), &c[0]), &m[12]));
 		for (int r = 1; r < 3; r++)
@@ -520,7 +520,7 @@ static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_sup
 static void item_sound(u8 *s, int sound, u8 *it)
 {
 	sound_play3D(sound, ST->cameraPos,
-	                                                                                (const float *)(it + 0xc), ST->viewDir, 0x47c35000);   /* (heard to 100000) */
+	                                                                                ((const MapItem *)it)->pos, ST->viewDir, 0x47c35000);   /* (heard to 100000) */
 }
 
 /* actor ac touching item i (of kind type, its type record t): what it gives. Supplies the actor can use are taken;
@@ -624,7 +624,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 			}
 		} else if (mi->taken == 0) {
 			if (type != 0x22)
-				mi->angle = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), (const float *)(it + 0x1c)));
+				mi->angle = f32(fadd_m(fmul_m(fld_m(&dt), k_600f), &mi->angle));
 			int n = ST->actorCount;
 			for (int k = 0; k < n; k++) {
 				u8 *ac = (u8 *)&ST->actors[k];
@@ -633,7 +633,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 				float reach = 0;
 				int near = 1;
 				for (int a = 0; a < 3 && near; a++) {
-					long double d = fsub_m(fld_m(AC->pos + a), (const float *)(it + 0xc) + a);
+					long double d = fsub_m(fld_m(AC->pos + a), &mi->pos[a]);
 					if (!(d >= 0))
 						d = -d;
 					if (a == 0)
@@ -646,7 +646,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 				}
 			}
 		}
-		mi->fade = f32(fadd_m(fld_m(&dt), (const float *)(it + 0x24)));
+		mi->fade = f32(fadd_m(fld_m(&dt), &mi->fade));
 	}
 	for (int k = 0; k < ST->actorCount; k++) {
 		u8 *ac = (u8 *)&ST->actors[k];

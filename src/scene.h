@@ -536,7 +536,7 @@ typedef struct Bullet {
 	float homeTimer;   /* +0xc0: (by use) a homing bullet turns again every 1/15 s */
 	float tip[3];   /* +0xc4: the local player's tracer end */
 	i32 hitWorld;   /* +0xd0: 1: it hit the world (splash damage then; weapons.c) */
-	float trail[20][12];   /* +0xd4: (by use) a trail's ring of cross-sections (4 points each: weapons.c trail) */
+	float trail[20][4][3];   /* +0xd4: (by use) a trail's ring of cross-sections (4 points each: weapons.c trail) */
 	float trailAge[20];   /* +0x494: each one's age when made */
 	i32 trailCount;   /* +0x4e4: the cross-sections made (the ring's next: % 20) */
 } Bullet;

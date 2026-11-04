@@ -404,26 +404,26 @@ static void offset_point(float *out, const float *off, const float *p)
    quarter of the texture (+0); the length kept (+0x494). The flying copy sums the length's squares in another order */
 static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 {
-	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
+	float *prev = BU->prev, *cur = BU->pos, inv[16], a[3];
 	look_inverse(b, inv, 0);
 	float half = f32(fld_m(&WI->flashSize)), minus;
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&half), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
-	offset_point((float *)(RELOC(b) + 0xd4), a, prev);
-	offset_point((float *)(RELOC(b) + 0x104), a, cur);
+	offset_point(BU->trail[0][0], a, prev);
+	offset_point(BU->trail[1][0], a, cur);
 	minus = f32(-fld_m(&WI->flashSize));
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fadd_m(fmul_m(fld_m(&minus), &inv[4 + k]), K(0x4a93e8)), K(0x4a93e8)));
-	offset_point((float *)(RELOC(b) + 0xe0), a, prev);
-	offset_point((float *)(RELOC(b) + 0x110), a, cur);
+	offset_point(BU->trail[0][1], a, prev);
+	offset_point(BU->trail[1][1], a, cur);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fmul_m(fld_m(&half), &inv[k]), K(0x4a93e8)));
-	offset_point((float *)(RELOC(b) + 0xec), a, prev);
-	offset_point((float *)(RELOC(b) + 0x11c), a, cur);
+	offset_point(BU->trail[0][2], a, prev);
+	offset_point(BU->trail[1][2], a, cur);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fadd_m(fmul_m(fld_m(&minus), &inv[k]), K(0x4a93e8)));
-	offset_point((float *)(RELOC(b) + 0xf8), a, prev);
-	offset_point((float *)(RELOC(b) + 0x128), a, cur);
+	offset_point(BU->trail[0][3], a, prev);
+	offset_point(BU->trail[1][3], a, cur);
 	long double dx = fsub_m(fld_m(&cur[0]), &prev[0]), dy = fsub_m(fld_m(&cur[1]), &prev[1]), dz = fsub_m(fld_m(&cur[2]), &prev[2]);
 	long double len = flying ? x87_fsqrt((dx * dx + dz * dz) + dy * dy) : x87_fsqrt((dz * dz + dy * dy) + dx * dx);
 	BU->trailAge[0] = (float)len;
@@ -441,7 +441,7 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 			v0 = f32(fsub_m(t, K(0x4a958c)));
 			u = f32(fsub_m(t, K(0x4a9420)));
 		}
-		const u8 *side = b + 0xd4 + k * 0xc;
+		const u8 *side = (const u8 *)BU->trail + k * 0xc;   /* (corner k % 4 of section k / 4: the ring as one run) */
 		r[0] = (u32)-1;
 		r[12] = 1;
 		r[13] = colour;
@@ -458,29 +458,29 @@ static void beam(u8 *s, u8 *b, const u8 *w, u32 *r, int flying)
 	}
 }
 
-/* a trail (kind 3): the ring of 20 cross-sections (+0x4e4 counts them; 0x30 bytes each from +0xd4, the age of each
-   at +0x494): this one half the size about the last point along the view's y and x (up is x for a vertical
+/* a trail (kind 3): the ring of 20 cross-sections (trail: four corners each; trailCount counts them, trailAge their
+   ages): this one half the size about the last point along the view's y and x (up is x for a vertical
    line), the next one collapsed onto the point. The flying copy keeps one product unrounded */
 static void trail(u8 *b, const u8 *w, int flying)
 {
-	float *prev = (float *)(RELOC(b) + 0x78), *cur = (float *)(RELOC(b) + 0x84), inv[16], a[3];
+	float *prev = BU->prev, *cur = BU->pos, inv[16], a[3];
 	look_inverse(b, inv, !(prev[0] < cur[0]) && !(prev[0] > cur[0]) && !(prev[2] < cur[2]) && !(prev[2] > cur[2]));
 	int i = BU->trailCount % 20;
-	u8 *ring = b + i * 0x30;
+	float (*ring)[3] = BU->trail[i];
 	long double half = fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
-	offset_point((float *)(ring + 0xd4), a, prev);
+	offset_point(ring[0], a, prev);
 	half = fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
-	offset_point((float *)(ring + 0xe0), a, prev);
+	offset_point(ring[1], a, prev);
 	half = -fld_m(&WI->flashSize);
 	for (int k = 0; k < 3; k++)
 		a[k] = f32(fmul_m(half, &inv[4 + k]));
-	offset_point((float *)(ring + 0xec), a, prev);
+	offset_point(ring[2], a, prev);
 	half = -fld_m(&WI->flashSize);
-	float *last = (float *)(ring + 0xf8);
+	float *last = ring[3];
 	for (int k = 0; k < 2; k++)
 		a[k] = f32(fmul_m(half, &inv[k]));
 	last[0] = f32(fadd_m(fld_m(&a[0]), &prev[0]));
@@ -493,9 +493,9 @@ static void trail(u8 *b, const u8 *w, int flying)
 	}
 	BITS(BU->trailAge[i]) = BITS(BU->age);
 	i = ++BU->trailCount % 20;
-	ring = b + i * 0x30;
+	ring = BU->trail[i];
 	for (int c = 0; c < 4; c++)
-		memcpy(ring + 0xd4 + c * 0xc, cur, 12);
+		memcpy(ring[c], cur, 12);
 	BITS(BU->trailAge[i]) = BITS(BU->age);
 }
 
