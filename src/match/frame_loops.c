@@ -504,12 +504,12 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
    count raised, its limit (and how far an extended one may go past it), the message; an extended one is noted as the
    last big pickup (+0x20fcd3c) */
 static const struct { u8 flag; u16 count, limit; u8 add, over; u32 text; } k_supplies[16] = {
-	{ 0x10, 0x130, 0x28, 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, 0x130, 0x28, 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, 0x134, 0x2c, 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
-	{ 0x40, 0x138, 0x30, 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, 0x13c, 0x34, 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, 0x13c, 0x34, 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
-	{ 1, 0x128, 0x1c, 10, 0, STR(0x4c828c, "+10 ARMOR") }, { 1, 0x128, 0x1c, 25, 0, STR(0x4c8280, "+25 ARMOR") }, { 1, 0x128, 0x1c, 50, 0, STR(0x4c8274, "+50 ARMOR") },
-	{ 1, 0x128, 0x1c, 100, 0, STR(0x4c8268, "+100 ARMOR") }, { 2, 0x128, 0x1c, 100, 100, STR(0x4c8254, "+100 EXTENDED ARMOR") }, { 4, 0x12c, 0x20, 10, 0, STR(0x4c8248, "+10 SHIELD") },
-	{ 4, 0x12c, 0x20, 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, 0x12c, 0x20, 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, 0x12c, 0x20, 100, 0, STR(0x4c8224, "+100 SHIELD") },
-	{ 8, 0x12c, 0x20, 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
+	{ 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 1, 0, STR(0x4c82f4, "+1 30MM CELL") }, { 0x10, offsetof(Player, ammo[0]), offsetof(Player, ammoMax[0]), 40, 0, STR(0x4c82e4, "+40 30MM CELLS") }, { 0x20, offsetof(Player, ammo[1]), offsetof(Player, ammoMax[1]), 40, 0, STR(0x4c82d4, "+40 60MM CELLS") },
+	{ 0x40, offsetof(Player, ammo[2]), offsetof(Player, ammoMax[2]), 40, 0, STR(0x4c82c0, "+40 E-PACK CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 15, 0, STR(0x4c82ac, "+15 MISSILE CELLS") }, { 0x80, offsetof(Player, ammo[3]), offsetof(Player, ammoMax[3]), 5, 0, STR(0x4c8298, "+5 MISSILE CELLS") },
+	{ 1, offsetof(Player, armor), offsetof(Player, armorMax), 10, 0, STR(0x4c828c, "+10 ARMOR") }, { 1, offsetof(Player, armor), offsetof(Player, armorMax), 25, 0, STR(0x4c8280, "+25 ARMOR") }, { 1, offsetof(Player, armor), offsetof(Player, armorMax), 50, 0, STR(0x4c8274, "+50 ARMOR") },
+	{ 1, offsetof(Player, armor), offsetof(Player, armorMax), 100, 0, STR(0x4c8268, "+100 ARMOR") }, { 2, offsetof(Player, armor), offsetof(Player, armorMax), 100, 100, STR(0x4c8254, "+100 EXTENDED ARMOR") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 10, 0, STR(0x4c8248, "+10 SHIELD") },
+	{ 4, offsetof(Player, shield), offsetof(Player, shieldMax), 25, 0, STR(0x4c823c, "+25 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 50, 0, STR(0x4c8230, "+50 SHIELD") }, { 4, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 0, STR(0x4c8224, "+100 SHIELD") },
+	{ 8, offsetof(Player, shield), offsetof(Player, shieldMax), 100, 100, STR(0x4c820c, "+100 EXTENDED SHIELD") } };
 
 /* the item's sound (its type's +0x40 or +0x44) at its position, heard from the camera */
 static void item_sound(u8 *s, int sound, u8 *it)

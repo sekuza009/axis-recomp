@@ -34,11 +34,11 @@ void THISCALL (camera_setTarget)(Stage *stage, int i, int mode, int value)
 {
 	int *target = &stage->cameraTarget;
 	if (*target > -1)
-		FIELD(int, &stage->actors[*target], 0x884c) = 0;
+		stage->actors[*target].cameraValue = 0;
 	if (i < 0 || stage->actors[i].state == 1) {
 		*target = i;
 		stage->cameraTargetMode = mode;
-		FIELD(int, &stage->actors[i], 0x884c) = value;
+		stage->actors[i].cameraValue = value;
 	}
 }
 

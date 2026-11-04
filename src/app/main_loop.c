@@ -246,10 +246,10 @@ static const u32 k_slotKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { ADDR(g_dikNu
 /* the radio message keys (+0x2343307 one less than the message; the first six 10 more with the modifier 0x67ef24) */
 static const u32 k_radioKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), 0x234325f }, { ADDR(g_keyFreeCam2), 0x234326b }, { ADDR(g_keyFreeCam3), 0x234326f },
-                                       { ADDR(g_keyFreeCam0), 0x2343263 }, { ADDR(g_keyFreeCam1), 0x2343267 }, { (OBJ(g_controls) + 0x40), 0x2343273 },
-                                       { (OBJ(g_controls) + 0x48), 0x2343277 }, { (OBJ(g_controls) + 0x98), 0x234328b }, { (OBJ(g_controls) + 0xe0), 0x234328f },
-                                       { (OBJ(g_controls) + 0x38), 0x2343283 } };
+static const u32 k_heldKeys[10][2] = { { (OBJ(g_controls) + 0x30), offsetof(Scene, holdAltitude) }, { ADDR(g_keyFreeCam2), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyFreeCam3), offsetof(Scene, holdStepRight) },
+                                       { ADDR(g_keyFreeCam0), offsetof(Scene, holdForward) }, { ADDR(g_keyFreeCam1), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), offsetof(Scene, holdUp) },
+                                       { (OBJ(g_controls) + 0x48), offsetof(Scene, holdDown) }, { (OBJ(g_controls) + 0x98), offsetof(Scene, holdZoom) }, { (OBJ(g_controls) + 0xe0), offsetof(Scene, rankingKey) },
+                                       { (OBJ(g_controls) + 0x38), offsetof(Scene, holdBooster) } };
 /* the view keys (+0x2343287: the last held wins, else -1) */
 static const u32 k_viewKeys[6] = { (OBJ(g_controls) + 0x78), (OBJ(g_controls) + 0x80), (OBJ(g_controls) + 0x88), (OBJ(g_controls) + 0x90), (OBJ(g_controls) + 0x68), (OBJ(g_controls) + 0x70) };
 
@@ -406,8 +406,8 @@ static const u32 k_partSteps[5][4] = {   /* the F key, the part in the player re
 	{ offsetof(Scene, fKeys[3]), offsetof(PlayerRecord, parts[3]), FN_ADDR(actor_setActorTypeLegInfoBy, 0x473e40), offsetof(Scene, legCount) },
 	{ offsetof(Scene, fKeys[4]), offsetof(PlayerRecord, parts[4]), FN_ADDR(actor_setActorTypeBoosterInfoBy, 0x473f50), offsetof(Scene, boosterCount) } };
 /* the held keys and their flags: right button, A, D, W, S, Q, E, left button, shift */
-static const u32 k_freeKeys[9][2] = { { 2, 0x234325f }, { 0x41, 0x234326b }, { 0x44, 0x234326f }, { 0x57, 0x2343263 }, { 0x53, 0x2343267 },
-                                      { 0x51, 0x2343273 }, { 0x45, 0x2343277 }, { 1, 0x234327b }, { 0x10, 0x2343283 } };
+static const u32 k_freeKeys[9][2] = { { 2, offsetof(Scene, holdAltitude) }, { 0x41, offsetof(Scene, holdStepLeft) }, { 0x44, offsetof(Scene, holdStepRight) }, { 0x57, offsetof(Scene, holdForward) }, { 0x53, offsetof(Scene, holdBackward) },
+                                      { 0x51, offsetof(Scene, holdUp) }, { 0x45, offsetof(Scene, holdDown) }, { 1, offsetof(Scene, holdFire) }, { 0x10, offsetof(Scene, holdBooster) } };
 
 /* 0x48a370 (thiscall on the game object): the free camera / test mode's frame. On its first frame the camera
    presets (+0x233ca30, ten of six fields) copied to the working set (+0x233cb20), the game clock read and the
@@ -963,9 +963,9 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the free camera / follow keys: held pairs and the flag each sets */
-static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), 0x234325f }, { ADDR(g_keyFreeCam2), (OBJ(g_controls) + 0x14), 0x234326b }, { ADDR(g_keyFreeCam3), (OBJ(g_controls) + 0x1c), 0x234326f },
-                                        { ADDR(g_keyFreeCam0), (OBJ(g_controls) + 0x4), 0x2343263 }, { ADDR(g_keyFreeCam1), (OBJ(g_controls) + 0xc), 0x2343267 }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), 0x2343273 },
-                                        { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), 0x2343277 } };
+static const u32 k_replayHeld[7][3] = { { (OBJ(g_controls) + 0x30), (OBJ(g_controls) + 0x34), offsetof(Scene, holdAltitude) }, { ADDR(g_keyFreeCam2), (OBJ(g_controls) + 0x14), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyFreeCam3), (OBJ(g_controls) + 0x1c), offsetof(Scene, holdStepRight) },
+                                        { ADDR(g_keyFreeCam0), (OBJ(g_controls) + 0x4), offsetof(Scene, holdForward) }, { ADDR(g_keyFreeCam1), (OBJ(g_controls) + 0xc), offsetof(Scene, holdBackward) }, { (OBJ(g_controls) + 0x40), (OBJ(g_controls) + 0x44), offsetof(Scene, holdUp) },
+                                        { (OBJ(g_controls) + 0x48), (OBJ(g_controls) + 0x4c), offsetof(Scene, holdDown) } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
 /* the eight lines of a debug marker's star: the far corner's signs */

@@ -215,7 +215,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		entry[1] = AT(u32, names, i * 0x44 + 0x40);
 		if (ol->preLit == 1 && entry[0]) {
 			entry[2] = (u32)(ol->block + colours);
-			colours += AT(int, entry[0], 0x18) * 4;
+			colours += ((const Model *)RELOC(entry[0]))->colourCount * 4;
 		} else
 			entry[2] = 0;
 	}
