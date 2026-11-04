@@ -1219,7 +1219,7 @@ typedef struct Scene {
 	i32 leaderMarkOff;   /* +0x22e71a0: (unclear) the team mark replaces the leader mark / rank */
 	u8 _pad22e71a4[0x7084];
 	u32 cameraSaved[5];   /* +0x22ee228: (by use) the camera a retry restarts from: position into cameraPos, pitch / heading into cameraAngle */
-	u8 _pad22ee23c[0x280];
+	StartPoint spawnPoints[32];   /* +0x22ee23c: (by use) the spawn points (scene_pickSpawnPoint: the first one no actor stands near) */
 	i32 spawnPointCount;   /* +0x22ee4bc: (by use) spawn points from 0x22ee23c, 0x14 bytes each */
 	u8 _pad22ee4c0[0x1f48];
 	i32 elapsed;   /* +0x22f0408: the match's time in seconds */
@@ -1255,7 +1255,7 @@ typedef struct Scene {
 	u32 cameraPresets[6][10];   /* +0x233ca30: (by use) the camera presets: six fields by ten camera modes (classes.c k_cameraPresets), copied into cameraSettings */
 	u32 cameraSettings[6][10];   /* +0x233cb20: the working set (the free camera, each later round) */
 	i32 cameraMode;   /* +0x233cc10 */
-	u8 _pad233cc14[0xc];
+	float cameraTarget[3];   /* +0x233cc14: (by use) the point the camera looks at (the camera path's mid point; cameraDir = it - cameraPos) */
 	i32 inputState;   /* +0x233cc20: the match's state: 1 loading, 2 playing, 3 free camera, 4 replay */
 	i32 loadStage;   /* +0x233cc24: (by use) game_processLoadingMode's stage (0 .. 8) */
 	i32 modeStarted;   /* +0x233cc28: (by use) 0 until game_processGameModeInit has run */
@@ -2386,6 +2386,7 @@ _Static_assert(offsetof(Scene, teamGame) == 0x22e7184 && sizeof(((Scene *)0)->te
 _Static_assert(offsetof(Scene, markersOff) == 0x22e719c && sizeof(((Scene *)0)->markersOff) == 0x4, "scene.fields: Scene.markersOff");
 _Static_assert(offsetof(Scene, leaderMarkOff) == 0x22e71a0 && sizeof(((Scene *)0)->leaderMarkOff) == 0x4, "scene.fields: Scene.leaderMarkOff");
 _Static_assert(offsetof(Scene, cameraSaved) == 0x22ee228 && sizeof(((Scene *)0)->cameraSaved) == 0x14, "scene.fields: Scene.cameraSaved");
+_Static_assert(offsetof(Scene, spawnPoints) == 0x22ee23c && sizeof(((Scene *)0)->spawnPoints) == 0x280, "scene.fields: Scene.spawnPoints");
 _Static_assert(offsetof(Scene, spawnPointCount) == 0x22ee4bc && sizeof(((Scene *)0)->spawnPointCount) == 0x4, "scene.fields: Scene.spawnPointCount");
 _Static_assert(offsetof(Scene, elapsed) == 0x22f0408 && sizeof(((Scene *)0)->elapsed) == 0x4, "scene.fields: Scene.elapsed");
 _Static_assert(offsetof(Scene, timeFraction) == 0x22f040c && sizeof(((Scene *)0)->timeFraction) == 0x4, "scene.fields: Scene.timeFraction");
@@ -2412,6 +2413,7 @@ _Static_assert(offsetof(Scene, cameraAngle) == 0x233ca28 && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, cameraPresets) == 0x233ca30 && sizeof(((Scene *)0)->cameraPresets) == 0xf0, "scene.fields: Scene.cameraPresets");
 _Static_assert(offsetof(Scene, cameraSettings) == 0x233cb20 && sizeof(((Scene *)0)->cameraSettings) == 0xf0, "scene.fields: Scene.cameraSettings");
 _Static_assert(offsetof(Scene, cameraMode) == 0x233cc10 && sizeof(((Scene *)0)->cameraMode) == 0x4, "scene.fields: Scene.cameraMode");
+_Static_assert(offsetof(Scene, cameraTarget) == 0x233cc14 && sizeof(((Scene *)0)->cameraTarget) == 0xc, "scene.fields: Scene.cameraTarget");
 _Static_assert(offsetof(Scene, inputState) == 0x233cc20 && sizeof(((Scene *)0)->inputState) == 0x4, "scene.fields: Scene.inputState");
 _Static_assert(offsetof(Scene, loadStage) == 0x233cc24 && sizeof(((Scene *)0)->loadStage) == 0x4, "scene.fields: Scene.loadStage");
 _Static_assert(offsetof(Scene, modeStarted) == 0x233cc28 && sizeof(((Scene *)0)->modeStarted) == 0x4, "scene.fields: Scene.modeStarted");
