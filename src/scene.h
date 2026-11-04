@@ -1281,7 +1281,7 @@ typedef struct Scene {
 	i32 roundClear2;   /* +0x23423fd: (unclear) */
 	i32 dataLossCode;   /* +0x2342401: shown when a game ends for lost data */
 	float partsCheckTime;   /* +0x2342405: (by use) the local player's parts checked every 20 s (network) */
-	u8 _pad2342409[0x4];
+	float previewTurn;   /* +0x2342409: (by use) the ARM CENTER preview's turn by the cursor (armc_rotateFromCursor) */
 	i32 localPlayer;   /* +0x234240d: the player at this machine (index into players) */
 	i32 roundClear4;   /* +0x2342411: (unclear) */
 	i32 teamAsked;   /* +0x2342415: (by use) 1: the local player asked to play (START), the team to be given */
@@ -2392,6 +2392,7 @@ _Static_assert(offsetof(Scene, geometryPick) == 0x23423cd && sizeof(((Scene *)0)
 _Static_assert(offsetof(Scene, roundClear2) == 0x23423fd && sizeof(((Scene *)0)->roundClear2) == 0x4, "scene.fields: Scene.roundClear2");
 _Static_assert(offsetof(Scene, dataLossCode) == 0x2342401 && sizeof(((Scene *)0)->dataLossCode) == 0x4, "scene.fields: Scene.dataLossCode");
 _Static_assert(offsetof(Scene, partsCheckTime) == 0x2342405 && sizeof(((Scene *)0)->partsCheckTime) == 0x4, "scene.fields: Scene.partsCheckTime");
+_Static_assert(offsetof(Scene, previewTurn) == 0x2342409 && sizeof(((Scene *)0)->previewTurn) == 0x4, "scene.fields: Scene.previewTurn");
 _Static_assert(offsetof(Scene, localPlayer) == 0x234240d && sizeof(((Scene *)0)->localPlayer) == 0x4, "scene.fields: Scene.localPlayer");
 _Static_assert(offsetof(Scene, roundClear4) == 0x2342411 && sizeof(((Scene *)0)->roundClear4) == 0x4, "scene.fields: Scene.roundClear4");
 _Static_assert(offsetof(Scene, teamAsked) == 0x2342415 && sizeof(((Scene *)0)->teamAsked) == 0x4, "scene.fields: Scene.teamAsked");

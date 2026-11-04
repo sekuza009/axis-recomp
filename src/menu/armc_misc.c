@@ -155,7 +155,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
 	frameTimer_average(scene);
-	u32 x44 = GAME_VAR(u32, s + 0x44);
+	u32 x44 = BITS(scene->frameTime);
 	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
 	camera_setupView(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
@@ -163,27 +163,27 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	ViewVolume_reset(vv);
 	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
 	if (g_mouse2Down) {   /* the right button held */
-		GAME_VAR(int, s + 0x234325b) = g_mouseY;
-		GAME_VAR(int, s + 0x2343257) = g_mouseX;
-		int dy = GAME_VAR(int, s + 0x234325b) - H / 2, dx = GAME_VAR(int, s + 0x2343257) - W / 2;
-		GAME_VAR(float, s + 0x2343293) = (float)dy;
+		scene->mouseY = g_mouseY;
+		scene->mouseX = g_mouseX;
+		int dy = scene->mouseY - H / 2, dx = scene->mouseX - W / 2;
+		scene->mouseDy = (float)dy;
 		long double x = (long double)dx;
-		GAME_VAR(float, s + 0x2343297) = (float)x;
+		scene->mouseDx = (float)x;
 		long double turn = x / W * k_3600f;   /* 3600 */
-		GAME_VAR(float, s + 0x2342409) = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
+		scene->previewTurn = (float)(turn - (long double)((angle % 3600 + 3600) % 3600));
 	}
-	int a = GAME_VAR(int, s + 0x234240d);
+	int a = scene->localPlayer;
 	u8 *actor = (u8 *)&((Scene *)s)->players[a];
-	GAME_VAR(float, actor + 0x18c) = (float)fmul_m(fld_m((const float *)(s + 0x2343293)) / (long double)(H / 2),
+	((Player *)actor)->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
 	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
-	GAME_VAR(u32, actor + 0x190) = GAME_VAR(u32, s + 0x2342409);
-	actor_processFrame(stage, GAME_VAR(int, s + 0x234240d), GAME_VAR(float, s + 0x3c));
+	BITS(((Player *)actor)->nextYaw) = BITS(scene->previewTurn);
+	actor_processFrame(stage, scene->localPlayer, scene->timer.frameTime);
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
 	Vec3_normalize((float *)RELOC(dir));
 	factors_addPoint(light, (const void *)OBJ(g_packedWhite), dir);
 	for (int k = 0; k < 8; k++) {
-		u8 *list = s + 0x1ecca70 + GAME_VAR(int, s + 0x234240d) * 0x8888 + lists[k];
+		u8 *list = s + 0x1ecca70 + scene->localPlayer * 0x8888 + lists[k];
 		if (part < 0)
 			partList_queue(list, vv, light, NULL, 1, (u32)-1, 0);
 		else

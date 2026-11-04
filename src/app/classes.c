@@ -647,7 +647,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 	zero_dwords(g + 0x2342395, 8);
 	GS->endedByTime = -1;
 	zero_dwords(g + 0x23423c9, 7);
-	GS->roundClear2 = GAME_VAR(int, g + 0x2342409) = 0;
+	GS->roundClear2 = (*(int *)&GS->previewTurn) = 0;
 	zero_dwords(g + 0x234325f, 10);
 	GS->viewKey = -1;
 	zero_dwords(g + 0x234328b, 31);

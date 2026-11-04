@@ -916,6 +916,7 @@ struct Round 0x10                                               # one entry of t
 
 struct Scene 0x2343b0b                                          # the scene: the one large object of a match, built by game_loadAllData
 # the match events a machine sends (net_sendMatchEvent: one a packet, kinds 3 .. 13), raised by match/notices.c
+0x2342409  4          float previewTurn                          # (by use) the ARM CENTER preview's turn by the cursor (armc_rotateFromCursor)
 0x1f35c4   4          i32 replayVersion                          # (by use) the replay file's version (0x1201)
 0x1f35c8   0x100      char mapName[0x100]                        # the map's file name (bfd_name: name.bfd)
 0xbe3000   4          i32 missionNumber                          # (by use) the mission loaded (its number sent and compared in the network packets)
