@@ -82,7 +82,7 @@ int (pen_init)(const char *name)
 	}
 	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
-		GAME_VAR(int, OBJ(g_penFixedWidths) + i * 4) = 8;
+		g_penFixedWidths[i] = 8;
 	int g = 1;
 	for (int y = 0x48; g <= 105; y += 8)
 		for (int c = 0; c < 21; c++, g++)

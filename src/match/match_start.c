@@ -93,7 +93,7 @@ static void first_round(Scene *s)
 		s->level = 1;
 	}
 	for (int k = 0; k < 5; k++)
-		s->mechParts[k] = GAME_VAR(int, OBJ(g_savedMechPartIds) + k * 4);
+		s->mechParts[k] = g_savedMechPartIds[k];
 	static const u32 items[6] = { ADDR(g_savedMechItem2), ADDR(g_savedMechItem3), ADDR(g_savedMechItem4), ADDR(g_savedMechItem5), ADDR(g_savedMechWeapons), ADDR(g_savedMechItem1) };
 	for (int k = 0; k < 6; k++)
 		s->mechItems[k] = GAME_VAR(int, items[k]);
@@ -139,7 +139,7 @@ static int random_below(u32 n)
 	if ((int)n <= 0)
 		return 0;
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
+	u32 r = (*(u32 *)&g_randTable[at & 0xfff]);
 	g_randPos = at + 1;
 	return (int)(r % n);
 }

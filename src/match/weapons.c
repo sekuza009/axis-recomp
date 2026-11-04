@@ -68,7 +68,7 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
 	if (actor->state != 1)
 		return;
 	u32 r = g_randPos;
-	u32 v = GAME_VAR(u32, OBJ(g_randTable) + (r & 0xfff) * 4);
+	u32 v = (*(u32 *)&g_randTable[r & 0xfff]);
 	g_randPos = r + 1;
 	actor_selectWeapon(stage, i, v % 100 < 80 ? 0 : 4);
 	(*(int *)&actor->dodgeTime) = 0;
@@ -141,7 +141,7 @@ static u32 table_rand(void)
 {
 	u32 at = g_randPos;
 	g_randPos = at + 1;
-	return GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
+	return (*(u32 *)&g_randTable[at & 0xfff]);
 }
 
 /* is |p - from| within range (as fcom has it: a NaN is) */
@@ -214,7 +214,7 @@ void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 static u32 next_rand(u32 n)
 {
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % n;
+	u32 r = (*(u32 *)&g_randTable[at & 0xfff]) % n;
 	g_randPos = at + 1;
 	return r;
 }

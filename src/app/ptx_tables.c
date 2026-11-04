@@ -15,7 +15,7 @@ void (ptx_initClampTable)(void)
 	memset((void *)OBJ(g_ptxClampTable), 0, 0x100);
 	g_ptxClamp = (u8 *)(OBJ(g_ptxClampTable) + 0x100);
 	for (int i = 0; i < 256; i++)
-		GAME_VAR(u8, OBJ(g_ptxClampTable) + 0x100 + i) = (u8)i;
+		g_ptxClampTable[0x100 + i] = (u8)i;
 	memset((void *)(OBJ(g_ptxClampTable) + 0x200), 0xff, 0x180);
 	memset((void *)(OBJ(g_ptxClampTable) + 0x380), 0, 0x180);
 	memcpy((void *)(OBJ(g_ptxClampTable) + 0x500), g_ptxClamp, 0x80);

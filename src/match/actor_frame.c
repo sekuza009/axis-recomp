@@ -20,7 +20,7 @@
 
 static u32 rand_below(u32 n)
 {
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (g_randPos & 0xfff) * 4) % n;
+	u32 r = (*(u32 *)&g_randTable[g_randPos & 0xfff]) % n;
 	g_randPos++;
 	return r;
 }
@@ -117,7 +117,7 @@ static void emit(u8 *s, u8 *a, const int (*joint)[0x20], const int *count, const
 	for (int k = 0; k < *count; k++) {
 		if (joint[1][k] == 1 && !(AC->run > 0))
 			continue;
-		u32 r = GAME_VAR(u32, OBJ(g_randTable) + (g_randPos & 0xfff) * 4) & 7;
+		u32 r = (*(u32 *)&g_randTable[g_randPos & 0xfff]) & 7;
 		g_randPos++;
 		const ListedObject *m = (const ListedObject *)(uintptr_t)GAME_VAR(u32, mx) + joint[0][k];
 		fx[0] = booster->thrustType + 5;

@@ -448,7 +448,7 @@ static void spark(u8 *s, u8 *p, float dt)
 	if (wait > 0)
 		return;
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % 10;
+	u32 r = (*(u32 *)&g_randTable[at & 0xfff]) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
 	BITS(pr->fade) = 0x3dcccccd;
@@ -662,7 +662,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 static u32 table_rand_below(u32 n)
 {
 	u32 at = g_randPos;
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % n;
+	u32 r = (*(u32 *)&g_randTable[at & 0xfff]) % n;
 	g_randPos = at + 1;
 	return r;
 }

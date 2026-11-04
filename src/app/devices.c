@@ -182,7 +182,7 @@ void (input_updateMenuCursor)(void)
 	for (int i = 0; i < 3; i++) {
 		int held = buttons[i] & 0x80;
 		int *pulse = (int *)(OBJ(g_mouseClicked) + i * 4), *was = (int *)(OBJ(g_mouseWasDown) + i * 4);
-		GAME_VAR(int, OBJ(g_mouseButtonsHeld) + i * 4) = held;
+		g_mouseButtonsHeld[i] = held;
 		if (!held) {
 			*pulse = 0;
 			*was = 0;
@@ -280,7 +280,7 @@ int (input_justPressed)(int key)
 			return 0;
 		}
 		*flag = 1;
-		return GAME_VAR(int, OBJ(g_mouseClicked) + (key - 0xfa) * 4);
+		return g_mouseClicked[key - 0xfa];
 	}
 	if (key == 0xfd) {
 		int *latch = (int *)(OBJ(g_keySeen) + 0x3f4);

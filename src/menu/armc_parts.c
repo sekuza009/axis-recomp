@@ -78,7 +78,7 @@ u8 *(armc_readMechStats)(void)
 	mulf(ADDR(g_mechLockOnTime), &A->lockOnTime, (const float *)ADDR(k_100f));
 	mulf(ADDR(g_mechTargetKeepTime), &A->targetKeepTime, k_1000f);
 	for (int i = 0; i < 7; i++)
-		GAME_VAR(int, OBJ(g_mechPartStats) + i * 4) = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
+		g_mechPartStats[i] = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
 	copyf(ADDR(g_mechMobility), &A->mobility);
 	const PlayerRecord *player = &sc->playerRecords[A->player];
 	const LegType *leg = &st->legTypes[player->parts[3]];
@@ -144,7 +144,7 @@ int (armc_drawPartPanels)(void)
 	const ArmType *arm = &st->armTypes[player->parts[2]];   /* arm */
 	panel_name(OBJ(g_armPanelName), arm->name);
 	for (int i = 0; i < 5; i++)
-		GAME_VAR(int, OBJ(g_armsStats) + i * 4) = arm->stats[i];
+		g_armsStats[i] = arm->stats[i];
 	copyf(ADDR(g_armsWeight), &arm->weight);
 	const LegType *leg = &st->legTypes[player->parts[3]];   /* leg */
 	panel_name(OBJ(g_legPanelName), leg->name);
@@ -187,7 +187,7 @@ u32 (armc_stepPart)(u32 part, int dir)
 	} else if (++*cursor >= count)
 		*cursor = 0;
 	u32 chosen = ((const u32 *)RELOC(parts[part].list))[*cursor];
-	GAME_VAR(u32, OBJ(g_armcParts) + part * 4) = chosen;
+	(*(u32 *)&g_armcParts[part]) = chosen;
 	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
 }
 

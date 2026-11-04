@@ -138,7 +138,7 @@ u8 (net_freeSlotsOf)(int id)
 		if (r->id != (u32)id)
 			continue;
 		r->used = r->id = r->waiting = r->size = 0;
-		GAME_VAR(int, OBJ(g_playerSlotFlags) + s * 4) = 0;
+		g_playerSlotFlags[s] = 0;
 		if (s == 0)
 			g_netHostGone = 1;
 	}
@@ -150,7 +150,7 @@ void (net_clearSlots)(void) { for (NetSlot *p = g_netSlots; p < g_netSlots + 16;
 
 /* ---- front end ---- */
 /* 0x453a30: 1 if connection kind i (0 .. 3) is available */
-int (net_connectionAvailable)(u32 i) { return i < 4 && GAME_VAR(int, OBJ(g_dpConnections) + i * 4) ? 1 : 0; }
+int (net_connectionAvailable)(u32 i) { return i < 4 && g_dpConnections[i] ? 1 : 0; }
 /* 0x4417c0: map i of the map-select dialog in or out; 0x4417f0: all in (0x44-byte entries from 0x9ddac8) */
 void (mapSelect_toggle)(int i) { int *f = &g_fileList[i].flag; *f = 1 - *f; }
 void (mapSelect_allIn)(void) { for (int i = 0; i < g_mapSelectCount; i++) g_fileList[i].flag = 1; }
@@ -248,7 +248,7 @@ void THISCALL (stage_resetMatrixAndPoints)(Stage *stage)
 		BITS(stage->baseMatrix[k]) = k % 5 ? 0 : 0x3f800000;
 	for (int k = 0; k < 200; k++)
 		for (int j = 0; j < 3; j++)
-			(*(int *)&stage->points[k][j]) = GAME_VAR(int, OBJ(g_vecOriginXyz) + j * 4);
+			(*(int *)&stage->points[k][j]) = (*(int *)&g_vecOriginXyz[j]);
 	stage->pointCount = 0;
 	stage->defaultColour = g_defaultColour;
 }

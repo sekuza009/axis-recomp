@@ -370,8 +370,8 @@ u32 (menu_enterMenus)(void)
 	g_armcStatsPanelBottom = 0x1d6;
 	static const u32 colourA[4] = { 0, 0x3f800000, 0x3f800000, 0x3f800000 }, colourB[4] = { 0, 0x3f19999a, 0x3f19999a, 0x3f800000 };
 	for (int i = 0; i < 4; i++) {
-		GAME_VAR(u32, OBJ(g_armcTabColour) + i * 4) = colourA[i];
-		GAME_VAR(u32, OBJ(g_armcTabColourDim) + i * 4) = colourB[i];
+		g_armcTabColour[i] = colourA[i];
+		g_armcTabColourDim[i] = colourB[i];
 	}
 	g_progressWentUp = 0;
 	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
@@ -639,7 +639,7 @@ void (armc_snapshot)(int i)
 	strcat(path, (const char *)STR(0x4ad564, "/"));
 	strcat(path, (const char *)STR(0x4b0360, "snapshot"));
 	strcpy(copy, path);
-	GAME_VAR(int, OBJ(g_slotTextures) + i * 4) = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
+	g_slotTextures[i] = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcChanged = 0;
 }
 

@@ -135,7 +135,7 @@ u32 (sound_loadMenuSounds)(void)
 	                               STR(0x4b1580, "sound/if_arm_equip.wav"), STR(0x4b1564, "sound/if_arm_equipslide.wav") };
 	u32 r = 0;
 	for (int k = 0; k < 10; k++)
-		GAME_VAR(u32, OBJ(g_menuSoundBuffers) + k * 4) = r = sound_loadWav((const char *)RELOC(names[k]));
+		g_menuSoundBuffers[k] = r = sound_loadWav((const char *)RELOC(names[k]));
 	return r;
 }
 
@@ -181,7 +181,7 @@ int (sound_initSoundTable)(const char *file, int volume)
 	while (index >= 0) {
 		fread_scrambled(name, 1, 0x100, f);
 		u32 sound = sound_loadWav(name);
-		GAME_VAR(u32, OBJ(g_soundTable) + index * 4) = sound;
+		g_soundTable[index] = sound;
 		fread_scrambled(&index, 4, 1, f);
 	}
 	fclose(f);

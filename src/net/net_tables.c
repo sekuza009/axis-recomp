@@ -46,8 +46,8 @@ void (net_freeAllSlots)(void)
 u8 (net_claimPlayerSlot)(void)
 {
 	for (u8 i = 0; i < 0x10; i++)
-		if (GAME_VAR(int, OBJ(g_playerSlotFlags) + i * 4) == 0) {
-			GAME_VAR(int, OBJ(g_playerSlotFlags) + i * 4) = 1;
+		if (g_playerSlotFlags[i] == 0) {
+			g_playerSlotFlags[i] = 1;
 			return i;
 		}
 	return 0xff;
@@ -646,10 +646,10 @@ u32 (net_pingAllServers)(void)
 				int time = (*(int *)&g_pingTime);
 				if (time > 1000)
 					(*(int *)&g_pingTime) = time -= 400;
-				GAME_VAR(int, OBJ(g_serverPing) + i * 4) = time;
+				g_serverPing[i] = time;
 			} else
-				GAME_VAR(int, OBJ(g_serverPing) + i * 4) = 0;
-			GAME_VAR(int, OBJ(g_serverUsed) + i * 4) = 1;
+				g_serverPing[i] = 0;
+			(*(int *)&g_serverUsed[i]) = 1;
 		}
 	}
 	g_netListDone = 1;
@@ -972,7 +972,7 @@ int (dplay_initConnection)(int kind, const char *address)
 	static const u32 provider[4] = { OBJ(g_tcpProviderGuid), OBJ(g_ipxProviderGuid), OBJ(g_modemProviderGuid), OBJ(g_serialProviderGuid) };   /* (the GUIDs: TCP, IPX, modem, serial) */
 	if ((u32)kind <= 3) {
 		(*(u32 *)&g_instanceGuid) = provider[kind];
-		(*(u32 *)&g_storedConnection) = GAME_VAR(u32, OBJ(g_dpConnections) + kind * 4);
+		(*(u32 *)&g_storedConnection) = (*(u32 *)&g_dpConnections[kind]);
 	}
 	if (kind == 0) {
 		struct { u32 guid[4], size; const void *data; } element[2];   /* DPCOMPOUNDADDRESSELEMENT */
@@ -1713,7 +1713,7 @@ static u32 table_rand(void)
 {
 	u32 at = g_randPos;
 	g_randPos = at + 1;
-	return GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4);
+	return (*(u32 *)&g_randTable[at & 0xfff]);
 }
 
 /* a random entry of one of the level's geometry tables (rows of row_len dwords from base, rows of them at +rows,

@@ -320,7 +320,7 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 		long double cosv = -fld_m(&e[2]) / x87_fsqrt(fmul_m(fld_m(&e[2]), &e[2]) + fmul_m(fld_m(&e[1]), &e[1]) + fmul_m(fld_m(&e[0]), &e[0]));
 		AC->facingCos = f32(cosv);
 		int heading = ftol(fld_m((const float *)(me + 4)));
-		if (!(cosv > GAME_VAR(float, OBJ(g_cosTable) + ((heading % 3600 + 3600) % 3600) * 4))) {
+		if (!(cosv > g_cosTable[(heading % 3600 + 3600) % 3600])) {
 			AC->lockedOn = 0.0f;
 			AC->onScreen = 1;
 			continue;

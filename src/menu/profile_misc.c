@@ -46,7 +46,7 @@ static void load_colour(int i)
 	g_profileFrameStep = 0xbf800000;   /* -1.0 */
 	g_emblemMoved = 0;
 	for (int k = 0; k < 9; k++)
-		GAME_VAR(float, OBJ(g_statBarTargets) + k * 4) =
+		g_statBarTargets[k] =
 			(float)((long double)g_profileRecords[i].stats[k] + k_50f);
 }
 

@@ -286,7 +286,7 @@ void (armc_drawBuildScreen)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++)
 		if (strlen(SLOT_NAME(k)) > 1) {
-			bind_texture(GAME_VAR(int, OBJ(g_slotTextures) + k * 4));
+			bind_texture(g_slotTextures[k]);
 			picture(X0 + 0x40, Y0 + k * 0x3f + 0x2a, X0 + 0x9c, Y0 + k * 0x3f + 0x4e);
 		}
 	for (int k = 0; k < 6; k++) {

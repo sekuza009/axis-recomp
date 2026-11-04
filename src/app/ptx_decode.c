@@ -91,9 +91,9 @@ int (ptx_readBlock)(int *block)
 }
 
 /* the RGB of a pixel from its Y, Cb and Cr (16.16 tables for green) */
-#define RED(Y, Cr) g_clamp[GAME_VAR(int, OBJ(g_ptxCrRed) + (Cr) * 4) + (Y)]
-#define GREEN(Y, Cb, Cr) g_clamp[((GAME_VAR(int, OBJ(g_ptxCbGreen) + (Cb) * 4) + GAME_VAR(int, OBJ(g_ptxCrGreen) + (Cr) * 4)) >> 16) + (Y)]
-#define BLUE(Y, Cb) g_clamp[GAME_VAR(int, OBJ(g_ptxCbBlue) + (Cb) * 4) + (Y)]
+#define RED(Y, Cr) g_clamp[g_ptxCrRed[Cr] + (Y)]
+#define GREEN(Y, Cb, Cr) g_clamp[((g_ptxCbGreen[Cb] + g_ptxCrGreen[Cr]) >> 16) + (Y)]
+#define BLUE(Y, Cb) g_clamp[g_ptxCbBlue[Cb] + (Y)]
 
 /* 0x46e830: n pixels to RGB */
 void (ptx_toRgb)(const u8 *y, u8 *dst, unsigned n)

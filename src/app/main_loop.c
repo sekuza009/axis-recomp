@@ -631,7 +631,7 @@ static void unfollow(u8 *s)
 /* the game's next random number below n (its table 0xa106f8 by the counter 0xa1efb8) */
 static u32 rand_below(u32 n)
 {
-	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (g_randPos & 0xfff) * 4) % n;
+	u32 r = (*(u32 *)&g_randTable[g_randPos & 0xfff]) % n;
 	g_randPos++;
 	return r;
 }
