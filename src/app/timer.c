@@ -85,41 +85,40 @@ long double (timer_now)(void)
    The frame time (+0x30) is the rise over the frequency, at most +0x34; returned as stored */
 long double THISCALL (timer_getGameTime)(u8 *t)
 {
-#define FIELD(type, offset) GAME_VAR(type, t + (offset))
+	TimeSync *ts = (TimeSync *)t;
 #define QueryPerformanceCounter(out) IMPORT(0x4a9140, int, u64 *)(out)
 #define fatal() GAME_FN(sys_fatalError, 0x46c710, void, char *, const char *)((char *)OBJ(g_logTimeSync), (const char *)STR(0x4c7b80, "invalid system time"))
-	if (FIELD(int, 4) == 0) {
-		if (!QueryPerformanceFrequency(&FIELD(u64, 0xc)))
+	if (ts->started == 0) {
+		if (!QueryPerformanceFrequency(&ts->frequency))
 			fatal();
-		if (!QueryPerformanceCounter(&FIELD(u64, 0x14)))
+		if (!QueryPerformanceCounter(&ts->lastCount))
 			fatal();
-		if (!(FIELD(float, 0x34) > 0))
-			FIELD(u32, 0x34) = 0x3d888889;   /* 1/15 */
-		FIELD(int, 4) = 1;
+		if (!(ts->maxFrame > 0))
+			BITS(ts->maxFrame) = 0x3d888889;   /* 1/15 */
+		ts->started = 1;
 	}
-	FIELD(int, 8)++;
+	ts->frames++;
 	u64 now;
 	QueryPerformanceCounter(&now);
-	int64_t rise = (int64_t)(now - FIELD(u64, 0x14));
-	FIELD(int64_t, 0x1c) = rise;
-	FIELD(u64, 0x14) = now;
-	FIELD(int64_t, 0x24) += rise;
-	int64_t sum = FIELD(int64_t, 0x24), freq = FIELD(int64_t, 0xc);
+	int64_t rise = (int64_t)(now - ts->lastCount);
+	ts->rise = rise;
+	ts->lastCount = now;
+	ts->riseSum += rise;
+	int64_t sum = ts->riseSum, freq = (int64_t)ts->frequency;
 	if (sum > freq) {
 		if (sum > 0)
-			FIELD(float, 0x2c) = (float)((long double)freq * FIELD(int, 8) / (long double)sum);
+			ts->fps = (float)((long double)freq * ts->frames / (long double)sum);
 		else
-			FIELD(int, 0x2c) = 0;
-		FIELD(u32, 0x24) = 0;   /* (the low half only, then the high half below) */
-		FIELD(int, 8) = 0;
-		FIELD(u32, 0x28) = 0;
+			(*(int *)&ts->fps) = 0;
+		((u32 *)&ts->riseSum)[0] = 0;   /* (the low half only, then the high half below) */
+		ts->frames = 0;
+		((u32 *)&ts->riseSum)[1] = 0;
 	}
 	long double dt = (long double)rise / (long double)freq;
-	FIELD(float, 0x30) = (float)dt;
-	if (dt > FIELD(float, 0x34))
-		FIELD(u32, 0x30) = FIELD(u32, 0x34);
-	return FIELD(float, 0x30);
-#undef FIELD
+	ts->frameTime = (float)dt;
+	if (dt > ts->maxFrame)
+		BITS(ts->frameTime) = BITS(ts->maxFrame);
+	return ts->frameTime;
 #undef QueryPerformanceCounter
 #undef fatal
 }
@@ -129,15 +128,14 @@ long double THISCALL (timer_getGameTime)(u8 *t)
    FPU stack, as the original leaves it (its callers pop it) */
 long double THISCALL (frameTimer_average)(u8 *t)
 {
-#define FIELD(type, offset) GAME_VAR(type, t + (offset))
+	Scene *sc = (Scene *)t;
 	long double now = timer_getGameTime(t + 0xc);
-	FIELD(float, 0x48 + FIELD(int, 0x70) * 4) = (float)now;
-	FIELD(int, 0x70) = (FIELD(int, 0x70) + 1) % 10;
+	sc->frameTimes[sc->frameTimeNext] = (float)now;
+	sc->frameTimeNext = (sc->frameTimeNext + 1) % 10;
 	long double sum = k_0f;   /* 0 */
 	for (int i = 0; i < 10; i++)
-		sum += FIELD(float, 0x48 + i * 4);
+		sum += sc->frameTimes[i];
 	sum *= k_tenth;
-	FIELD(float, 0x44) = (float)sum;
+	sc->frameTime = (float)sum;
 	return sum;
-#undef FIELD
 }

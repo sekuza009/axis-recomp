@@ -817,6 +817,20 @@ typedef struct CollisionPlane {
 	u8 _pad00000a8[0x4];
 } CollisionPlane;
 
+/* a frame timer on the performance counter (timer.c; class TimeSync) */
+typedef struct TimeSync {
+	u8 _pad0000000[0x4];
+	i32 started;   /* +0x4: (by use) 1: its frequency and start read */
+	i32 frames;   /* +0x8: frames counted towards the next second */
+	u64 frequency;   /* +0xc: the counter's */
+	u64 lastCount;   /* +0x14: its reading at the last frame */
+	int64_t rise;   /* +0x1c: the last frame's rise */
+	int64_t riseSum;   /* +0x24: the rises summed (past a second: fps, then cleared) */
+	float fps;   /* +0x2c: frames per second (0 for a sum not positive) */
+	float frameTime;   /* +0x30: the last frame's seconds, at most maxFrame */
+	float maxFrame;   /* +0x34: 1/15 s unless set */
+} TimeSync;
+
 /* the stage: the scene's own object at Scene + 0x1f36c8 (STAGE()), "this" of the */
 typedef struct Stage {
 	u8 _pad0000000[0xa08];
@@ -1035,11 +1049,10 @@ typedef struct Scene {
 	u8 _pad0000000[0x4];
 	i32 client;   /* +0x4: (by use) in a network game: 1 on a machine that joined, 0 the host */
 	i32 network;   /* +0x8: (by use) 1: a network game (3: (unclear) another mode, no team marks) (JOIN, RECORD and TEAM in the menu; the ranking shows each player's own flag, from flagGlTexture) */
-	u8 _pad000000c[0x2c];
-	float fps;   /* +0x38: frames per second, shown by hud_drawFps */
-	u8 _pad000003c[0x8];
+	TimeSync timer;   /* +0xc: (by use) its frame timer (timer_getGameTime; timer.fps is shown by hud_drawFps) */
 	float frameTime;   /* +0x44: (by use) the last frame's time, seconds (the Esc menu fades in by it) */
-	u8 _pad0000048[0x2c];
+	float frameTimes[10];   /* +0x48: the last ten frames' times (frameTimer_average: frameTime is their mean) */
+	i32 frameTimeNext;   /* +0x70: the ring's next */
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
 	u8 _pad0000078[0x1f15ec];
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
@@ -1942,6 +1955,16 @@ _Static_assert(offsetof(CollisionPlane, cornerIndices) == 0x94 && sizeof(((Colli
 _Static_assert(offsetof(CollisionPlane, poolPrev) == 0xa0 && sizeof(((CollisionPlane *)0)->poolPrev) == 0x4, "scene.fields: CollisionPlane.poolPrev");
 _Static_assert(offsetof(CollisionPlane, poolNext) == 0xa4 && sizeof(((CollisionPlane *)0)->poolNext) == 0x4, "scene.fields: CollisionPlane.poolNext");
 _Static_assert(sizeof(CollisionPlane) == 0xac, "scene.fields: size of CollisionPlane");
+_Static_assert(offsetof(TimeSync, started) == 0x4 && sizeof(((TimeSync *)0)->started) == 0x4, "scene.fields: TimeSync.started");
+_Static_assert(offsetof(TimeSync, frames) == 0x8 && sizeof(((TimeSync *)0)->frames) == 0x4, "scene.fields: TimeSync.frames");
+_Static_assert(offsetof(TimeSync, frequency) == 0xc && sizeof(((TimeSync *)0)->frequency) == 0x8, "scene.fields: TimeSync.frequency");
+_Static_assert(offsetof(TimeSync, lastCount) == 0x14 && sizeof(((TimeSync *)0)->lastCount) == 0x8, "scene.fields: TimeSync.lastCount");
+_Static_assert(offsetof(TimeSync, rise) == 0x1c && sizeof(((TimeSync *)0)->rise) == 0x8, "scene.fields: TimeSync.rise");
+_Static_assert(offsetof(TimeSync, riseSum) == 0x24 && sizeof(((TimeSync *)0)->riseSum) == 0x8, "scene.fields: TimeSync.riseSum");
+_Static_assert(offsetof(TimeSync, fps) == 0x2c && sizeof(((TimeSync *)0)->fps) == 0x4, "scene.fields: TimeSync.fps");
+_Static_assert(offsetof(TimeSync, frameTime) == 0x30 && sizeof(((TimeSync *)0)->frameTime) == 0x4, "scene.fields: TimeSync.frameTime");
+_Static_assert(offsetof(TimeSync, maxFrame) == 0x34 && sizeof(((TimeSync *)0)->maxFrame) == 0x4, "scene.fields: TimeSync.maxFrame");
+_Static_assert(sizeof(TimeSync) == 0x38, "scene.fields: size of TimeSync");
 _Static_assert(offsetof(Stage, cullMargin) == 0xa08 && sizeof(((Stage *)0)->cullMargin) == 0x4, "scene.fields: Stage.cullMargin");
 _Static_assert(offsetof(Stage, collisionPlanes) == 0xa24 && sizeof(((Stage *)0)->collisionPlanes) == 0x4, "scene.fields: Stage.collisionPlanes");
 _Static_assert(offsetof(Stage, effectTextures) == 0x9ccfd4 && sizeof(((Stage *)0)->effectTextures) == 0x24, "scene.fields: Stage.effectTextures");
@@ -2118,8 +2141,10 @@ _Static_assert(offsetof(Round, timeLimit) == 0xc && sizeof(((Round *)0)->timeLim
 _Static_assert(sizeof(Round) == 0x10, "scene.fields: size of Round");
 _Static_assert(offsetof(Scene, client) == 0x4 && sizeof(((Scene *)0)->client) == 0x4, "scene.fields: Scene.client");
 _Static_assert(offsetof(Scene, network) == 0x8 && sizeof(((Scene *)0)->network) == 0x4, "scene.fields: Scene.network");
-_Static_assert(offsetof(Scene, fps) == 0x38 && sizeof(((Scene *)0)->fps) == 0x4, "scene.fields: Scene.fps");
+_Static_assert(offsetof(Scene, timer) == 0xc && sizeof(((Scene *)0)->timer) == 0x38, "scene.fields: Scene.timer");
 _Static_assert(offsetof(Scene, frameTime) == 0x44 && sizeof(((Scene *)0)->frameTime) == 0x4, "scene.fields: Scene.frameTime");
+_Static_assert(offsetof(Scene, frameTimes) == 0x48 && sizeof(((Scene *)0)->frameTimes) == 0x28, "scene.fields: Scene.frameTimes");
+_Static_assert(offsetof(Scene, frameTimeNext) == 0x70 && sizeof(((Scene *)0)->frameTimeNext) == 0x4, "scene.fields: Scene.frameTimeNext");
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, rotation) == 0x1f1668 && sizeof(((Scene *)0)->rotation) == 0x640, "scene.fields: Scene.rotation");
