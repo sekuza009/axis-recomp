@@ -9,6 +9,7 @@ import re, sys, glob, os
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 DRY = '--dry' in sys.argv
 files = [f for f in sys.argv[1:] if not f.startswith('--')]
+MIN = int(next((x[6:] for x in sys.argv if x.startswith('--min=')), '1'))   # (--alias: at least this many casts)
 
 
 def bodies(t):
@@ -44,13 +45,15 @@ for path in files:
 				else:
 					continue
 				uses = re.findall(r'\(\(%s \*\)%s\)' % (T, v), body[at:])
-				if not uses or re.search(r'\b%s\b' % alias, body):
+				if len(uses) < MIN or re.search(r'\b%s\b' % alias, body):
 					continue
 				# (a variable assigned again after the alias would leave the alias on the old record)
 				if re.search(r'(?<![\w.>])%s\s*(?:[-+*/|&^]?=(?!=)|\+\+|--)|(?:\+\+|--)%s\b' % (v, v), body[at:]):
 					continue
+				# (after a name or a closing bracket the first parenthesis is a call's: kept, "f((T *)v)" -> "f(alias)")
 				body = body[:at] + '%s%s *%s = (%s *)%s;\n' % (indent, T, alias, T, v) + \
-					re.sub(r'\(\(%s \*\)%s\)' % (T, v), alias, body[at:])
+					re.sub(r'(?<=[\w\])])\(\(%s \*\)%s\)' % (T, v), '(%s)' % alias,
+					       re.sub(r'(?<![\w\])])\(\(%s \*\)%s\)' % (T, v), alias, body[at:]))
 				total += 1
 				print('  %s: %s aliased as %s *%s' % (path, v, T, alias))
 		for d in re.finditer(r'^(\s*)(const )?u8 \*(\w+) = ([^;]+);', body, re.M):

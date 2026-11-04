@@ -518,6 +518,7 @@ static void through(float *out, const float *m, const float *v, Rows rows)
    modelview when none is given), each added with space_addUnitPlanes. Returns the unit */
 u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matrix)
 {
+	Model *md = (Model *)shape;
 	float own[16];
 	if (!matrix) {
 		glGetFloatv(0xba6, own);   /* GL_MODELVIEW_MATRIX */
@@ -525,17 +526,18 @@ u32 *THISCALL (space_buildUnits)(u8 *space, u32 id, u8 *shape, const float *matr
 	}
 	u32 *unit = space_getNextFreeUnitPtr(space);
 	unit[0] = id;
-	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
-		u8 *part = ((Model *)shape)->parts + i * 0x80;
+	for (int i = 0; i < md->partCount; i++) {
+		u8 *part = md->parts + i * 0x80;
+		ShapePart *sp = (ShapePart *)part;
 		if (part[0] & 0x20)
 			continue;
 		u32 kind = part[0] & 1 ? 0x10 : 0;
-		const float *verts = (const float *)((ShapePart *)part)->vertices;
-		for (int j = 0; j < ((ShapePart *)part)->primCount; j++) {
-			ShapePrim *prim = (ShapePrim *)(((ShapePart *)part)->prims + j * 0xc);
+		const float *verts = (const float *)(sp)->vertices;
+		for (int j = 0; j < sp->primCount; j++) {
+			ShapePrim *prim = (ShapePrim *)(sp->prims + j * 0xc);
 			int n = prim->indexCount;
 #define IDX(k) ((const u32 *)prim->indices)[k]
-#define VERT(k) ((const float *)((ShapePart *)part)->vertices + IDX(k) * 3)
+#define VERT(k) ((const float *)(sp)->vertices + IDX(k) * 3)
 			float a[3], b[3], c[3];
 			switch (prim->kind) {
 			case 6:   /* a fan */
@@ -881,9 +883,10 @@ static void clip_end(const float *a, float *b, float *d, const float *plane, int
    (space_traceNodes). Returns its hit record or 0 */
 u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void *hit)
 {
+	Stage *st = (Stage *)s;
 	int n = 0;
-	for (int i = 0; i < ((Stage *)s)->objectCount; i++) {
-		MapObject *o = (MapObject *)((u8 *)&((Stage *)s)->objects[i]);
+	for (int i = 0; i < st->objectCount; i++) {
+		MapObject *o = (MapObject *)((u8 *)&st->objects[i]);
 		if (o->active != 1 || o->animated != 1 || !((SpaceUnit *)o->unit)->lastNode)
 			continue;
 		const float *m = o->matrixInverse;
@@ -928,11 +931,11 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 			clip_end(a, b, d, &hi[1], 1, 0);
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
-		u32 *sub = ((Stage *)s)->nearObjects[n];
+		u32 *sub = st->nearObjects[n];
 		sub[0] = (u32)((SpaceUnit *)o->unit)->lastNode;
 		sub[1] = (u32)o->relMatrix;
 		sub[2] = (u32)o->relInverse;
 		n++;
 	}
-	return space_traceNodes((u8 *)&((Stage *)s)->space, p0, p1, hit, ((Stage *)s)->nearObjects, n);
+	return space_traceNodes((u8 *)&st->space, p0, p1, hit, st->nearObjects, n);
 }

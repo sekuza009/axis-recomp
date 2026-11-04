@@ -280,13 +280,16 @@ static void strip_pair(u8 *layer, u32 *idx, int *n, int r, int c, int w)
    x and z over the layer's texture size +0x2c) */
 static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, float *v, int angle)
 {
+	GroundLayer *gl = (GroundLayer *)layer;
+	ShapePart *sp = (ShapePart *)part;
+	Stage *st = (Stage *)scene;
 	Vec3_rotateAxis(v, 2, angle);
-	v[0] = f32(fadd_m(fld_m(&v[0]), &((Stage *)scene)->cameraPos[0]));
-	v[2] = f32(fadd_m(fld_m(&v[2]), &((Stage *)scene)->cameraPos[2]));
-	memcpy(((ShapePart *)part)->vertices + at, v, 12);
-	float *t = (float *)(((u8 *)((ShapePart *)part)->texCoords) + tex_at);
-	t[0] = f32(fdiv_m(fld_m(&v[0]), &((GroundLayer *)layer)->texScale));
-	t[1] = f32(fdiv_m(fld_m(&v[2]), &((GroundLayer *)layer)->texScale));
+	v[0] = f32(fadd_m(fld_m(&v[0]), &st->cameraPos[0]));
+	v[2] = f32(fadd_m(fld_m(&v[2]), &st->cameraPos[2]));
+	memcpy(sp->vertices + at, v, 12);
+	float *t = (float *)(((u8 *)(sp)->texCoords) + tex_at);
+	t[0] = f32(fdiv_m(fld_m(&v[0]), &gl->texScale));
+	t[1] = f32(fdiv_m(fld_m(&v[2]), &gl->texScale));
 }
 
 /* 0x497d20 (thiscall on the scene): the ground's drawing lists for this frame. For each layer (0x20c bytes from
@@ -299,14 +302,16 @@ static void water_point(u8 *scene, u8 *layer, u8 *part, int at, int tex_at, floa
    queue (ViewVolume_projectObject). Its callers ignore the eax it leaves */
 void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 {
-	const float *range = &((Stage *)s)->cullMargin, *cam = ((Stage *)s)->cameraPos;
+	Stage *st = (Stage *)s;
+	const float *range = &st->cullMargin, *cam = st->cameraPos;
 	float min_x = f32(fsub_m(fld_m(&cam[0]), range)), min_z = f32(fsub_m(fld_m(&cam[2]), range));
 	float max_x = f32(fadd_m(fld_m(range), &cam[0])), max_z = f32(fadd_m(fld_m(&cam[2]), range));
-	for (int i = 0; i < ((Stage *)s)->groundLayerCount; i++) {
-		u8 *layer = (u8 *)&((Stage *)s)->groundLayers[i];
+	for (int i = 0; i < st->groundLayerCount; i++) {
+		u8 *layer = (u8 *)&st->groundLayers[i];
 		GroundLayer *gl = (GroundLayer *)layer;
-		ShapePart *part = (ShapePart *)(((Stage *)s)->layerModel.parts + i * 0x80);
-		u8 *water = ((Stage *)s)->layerBoxModel.parts + i * 0x80;
+		ShapePart *part = (ShapePart *)(st->layerModel.parts + i * 0x80);
+		u8 *water = st->layerBoxModel.parts + i * 0x80;
+		ShapePart *sp = (ShapePart *)water;
 		const float *size = &((GroundLayer *)layer)->cellSize, *origin = (const float *)(layer + 4);
 		int c0 = !(origin[0] >= min_x) ? ftol(fdiv_m(fsub_m(fld_m(&min_x), &origin[0]), size)) : 0;
 		int r0 = !(origin[2] >= min_z) ? ftol(fdiv_m(fsub_m(fld_m(&min_z), &origin[2]), size)) : 0;
@@ -349,10 +354,10 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 		}
 		part->primCount = gl->stripCount;
 		if (gl->lit != 1) {
-			((ShapePart *)water)->primCount = 0;
+			sp->primCount = 0;
 			continue;
 		}
-		((ShapePart *)water)->primCount = 4;
+		sp->primCount = 4;
 		for (int ring = 0; ring < 2; ring++)   /* (the original makes the same ring twice) */
 			for (int angle = 0, at = 0, tex_at = 0; angle < 3600; angle += 900, at += 0xc, tex_at += 8) {
 				float v[3];
@@ -372,6 +377,6 @@ void THISCALL (render_processRenderingBy)(u8 *s, void *view, float h)
 			water_point(s, layer, water, 0x30 + k * 0xc, 0x20 + k * 8, v, angle);
 		}
 	}
-	ViewVolume_projectObject(view, (u8 *)&((Stage *)s)->layerBoxModel, 0, NULL, 0, NULL, 0, -1, 0);
-	ViewVolume_projectObject(view, (u8 *)&((Stage *)s)->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, (u8 *)&st->layerBoxModel, 0, NULL, 0, NULL, 0, -1, 0);
+	ViewVolume_projectObject(view, (u8 *)&st->layerModel, 0, NULL, 0, NULL, 0, -1, 0);
 }

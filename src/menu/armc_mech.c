@@ -108,15 +108,16 @@ void THISCALL (mech_setAll)(Scene *scene, const char *name, int v, int team, int
    its +0x1eccbb4 one. Its callers ignore the eax it leaves */
 void THISCALL (armc_giveShownActorWeapon)(u8 *game, int slot)
 {
-#define I (((Scene *)game)->localPlayer)
-#define ACTOR (((Scene *)game)->players[I])   /* the shown actor */
+	Scene *sc = (Scene *)game;
+#define I (sc->localPlayer)
+#define ACTOR (sc->players[I])   /* the shown actor */
 	if (I < 0)
 		return;
 	u32 at[3] = { BITS(ACTOR.nextPos[0]), BITS(ACTOR.nextPos[1]), BITS(ACTOR.nextPos[2]) };
 	u32 angle0 = BITS(ACTOR.nextPitch), angle1 = BITS(ACTOR.nextYaw);   /* (copied as dwords, put back through the FPU) */
 	int other = ACTOR.lastWeaponSlot;
 	int chosen = slot >= 0 ? slot : ACTOR.slot;
-	ACTOR.variantLoaded = I != ((Scene *)game)->cockpitPlayer;
+	ACTOR.variantLoaded = I != sc->cockpitPlayer;
 	Stage *stage = SCENE_STAGE(game);
 	stage_remakePlayerActor(stage);
 	for (int k = 0; k < 3; k++)

@@ -984,6 +984,7 @@ static const signed char k_star[8][3] = { { 1, 1, 1 }, { -1, -1, -1 }, { 1, -1, 
 u32 THISCALL (replay_frame)(u8 *s)
 {
 	u8 *stage = (u8 *)SCENE_STAGE(s);
+	Stage *st = (Stage *)stage;
 	float mv[3];   /* the free camera's move: set by its keys, which a camera now following no one may not have read
 	                  this frame (the original then moves by whatever its stack held) */
 	Move move;
@@ -1222,7 +1223,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			}
 		}
 	if (SC->fogInOverlay == 1) {
-		stage_setFog((Stage *)stage, ((Stage *)stage)->glFogColour, ((Stage *)stage)->glFogStart, ((Stage *)stage)->glFogEnd, ((Stage *)stage)->glFogDensity);
+		stage_setFog((Stage *)stage, st->glFogColour, st->glFogStart, st->glFogEnd, st->glFogDensity);
 		glEnable(GL_FOG);
 	}
 	render_drawObjects(view, SC->objectsMode, SC->timeFraction);
@@ -1608,7 +1609,9 @@ static void chat_keys(u8 *s)
    keys, the connection checks and the match's end (the log, back to the menu) */
 void THISCALL (game_processGameMode)(u8 *s)
 {
+	Scene *sc = (Scene *)s;
 	u8 *stage = (u8 *)SCENE_STAGE(s);
+	Stage *st = (Stage *)stage;
 	float mv[3];        /* the free camera's move (its keys may not have run: the original's stack then) */
 	Move move;          /* (the stubbed move may leave these as the stack had them) */
 	int from, size;     /* the network packet's sender and size, as the reader leaves them; the opening log's play
@@ -1938,7 +1941,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		(*(u8 *)&SC->centreNotice[0]) = 0;
 	}
 	if (SC->kingChanged == 1 || !(SC->kingTimer > 0)) {
-		msg_newKing((Scene *)s);
+		msg_newKing(sc);
 		if (net_playerInUse(SC->localPlayer) == 1 && SC->rank[SC->localPlayer] == 1
 		    && (SC->rankShown > 1 || (SC->markersOff == 1 && SC->rankShown != 1)))
 			sound_playVolume(0xf, 100);
@@ -2016,7 +2019,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->localAlive = 0;
 			SC->endTime = 0.0f;
 			SC->cameraSlot = -1;
-			replay_closeRecording((Scene *)s);
+			replay_closeRecording(sc);
 			stage_deactivateActors(stage);
 			SC->cameraSettings[0][SC->cameraMode] = 0;
 			SC->cameraSettings[1][SC->cameraMode] = 0;
@@ -2028,14 +2031,14 @@ void THISCALL (game_processGameMode)(u8 *s)
 				/* the next round */
 				if (SC->showEmblems == 1) {
 					g_titleScore++;
-					sound_updateListener((Scene *)s);
+					sound_updateListener(sc);
 				}
-				scene_resetScores((Scene *)s);
+				scene_resetScores(sc);
 				SC->rankShown = -1;
 				events_clear((Scene *)s, 60.0f);
 				notices_clearAll(s);
 				if (SC->network == 0) {
-					teams_setup((Scene *)s);
+					teams_setup(sc);
 					scene_setLocalTeam((Scene *)s, -1);
 					if (SC->stageCleared == 0)
 						escMenu_open((Scene *)s, 3, 0);
@@ -2047,7 +2050,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 				if (g_mapRotation == 0) {
 					SC->elapsed = (*(int *)&SC->timeFraction) = 0;
 					start_view(s);
-					music_playMatch((Scene *)s);
+					music_playMatch(sc);
 				} else {
 					if (SC->rotationCount > 0) {   /* the server's map rotation (+0x1f1668: map, mode) */
 						SC->rotationAt = (SC->rotationAt + 1) % SC->rotationCount;
@@ -2150,8 +2153,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 			SC->cameraMode = 9;
 			if (slow_end(s))
 				t = ACTOR_AT(SC->roundWinner);
-			else if (((Player *)scene_topPlayer((Scene *)s))->state == 1)
-				t = (const u8 *)scene_topPlayer((Scene *)s);
+			else if (((Player *)scene_topPlayer(sc))->state == 1)
+				t = (const u8 *)scene_topPlayer(sc);
 			else
 				t = ACTOR_AT(SC->localPlayer);
 		} else {
@@ -2176,7 +2179,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 	float fov = game_clock();
 	camera_setupView(stage, (float *)SC->cameraPos, SC->cameraDir,
 	              SC->cameraUp, BITS(fov), w, h, BITS(near), BITS(far), BITS(SC->frameTime));   /* camera_setupView */
-	view_setDistance(stage, BITS(((Stage *)stage)->cullMargin));
+	view_setDistance(stage, BITS(st->cullMargin));
 	if (SC->localPlayer >= 0)
 		chat_keys(s);
 	if (SC->chatMode != 0)
@@ -2185,7 +2188,7 @@ void THISCALL (game_processGameMode)(u8 *s)
 		long double v = fsub_m(fld_m(&SC->emblemTime), &SC->frameTime);
 		SC->emblemTime = (float)v;
 		if (!(v >= 0))
-			sound_updateListener((Scene *)s);
+			sound_updateListener(sc);
 	}
 	/* the connection (a client's) */
 	if (SC->network == 1) {
@@ -2225,10 +2228,10 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->teamChanged = 1;
 			SC->endTime = 0.0f;
 			SC->matchOver = 0;
-			replay_closeRecording((Scene *)s);
+			replay_closeRecording(sc);
 			if (SC->showEmblems == 1) {
 				g_titleScore++;
-				sound_updateListener((Scene *)s);
+				sound_updateListener(sc);
 			}
 			for (int i = 0; i < SCENE_STAGE(s)->itemCount; i++)
 				SCENE_STAGE(s)->items[i].taken = BITS(SCENE_STAGE(s)->items[i].fade) = 0;
@@ -2236,8 +2239,8 @@ void THISCALL (game_processGameMode)(u8 *s)
 				SC->players[i].kills = SC->players[i].deaths = SC->players[i].killsCounted = 0;
 				SC->players[i].deathsCounted = SC->players[i].timePlayed = BITS(SC->players[i].timeExtra) = 0;
 			}
-			stage_clearActorRefs((Stage *)stage);
-			msg_newKing((Scene *)s);
+			stage_clearActorRefs(st);
+			msg_newKing(sc);
 			SC->rankShown = -1;
 			events_clear((Scene *)s, 60.0f);
 			notices_clearAll(s);
@@ -2258,14 +2261,14 @@ void THISCALL (game_processGameMode)(u8 *s)
 			if (g_matchLogWritten == 0 && g_startedFromLobby != 0)
 				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),
 				          1, 0);
-			replay_closeRecording((Scene *)s);
+			replay_closeRecording(sc);
 			music_shutdown();
 			if (SC->chatMode != 0 && g_paused == 0) {
 				SC->chatMode = 0;
 				chat_keepLastLine();
 			}
 			if (SC->showEmblems == 1)
-				sound_updateListener((Scene *)s);
+				sound_updateListener(sc);
 			SC->quitAsked = 1;
 		}
 	}

@@ -346,10 +346,11 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
    caller adds n once the block is filled */
 static u8 *pool_take(u8 *s, int n)
 {
-	int used = ((Stage *)s)->poolUsed;
+	Stage *st = (Stage *)s;
+	int used = st->poolUsed;
 	if (used + n > POOL_MAX)
 		sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c7eb4, "layer data heap overflow(%d/%d)-loadD..."), used + n, POOL_MAX);
-	return ((Stage *)s)->pool + ((Stage *)s)->poolUsed;
+	return st->pool + st->poolUsed;
 }
 
 /* texture id of "<dir>/<what>" (with an optional number) */

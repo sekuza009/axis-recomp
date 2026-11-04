@@ -107,6 +107,7 @@ static void object_glow(u8 *s, u8 *obj, float dt)
    Its caller ignores the eax it leaves */
 void THISCALL (actor_render)(u8 *s, int i, float dt)
 {
+	Stage *st = (Stage *)s;
 	u8 *obj = (u8 *)&ST->objects[i];
 	if (!(MO->animRate == 0 || MO->animRate != MO->animRate)) {   /* (fcom: a NaN counts as equal) */
 		float t = f32(fadd_m(fmul_m(fld_m(&dt), &MO->animRate), &MO->animTime));
@@ -143,7 +144,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		Mat4_multiply(MO->relMatrix, m, MO->placeInverse);
 		Mat4_invert(MO->relInverse, MO->relMatrix);
 		if (!(obj[0xc] & 2))
-			shape_shadeParts((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&((Stage *)s)->mapLights,
+			shape_shadeParts((*(u32 * *)&MO->colours[0]), 1, (Model *)((u8 *)MO->model), (const LightFactors *)&st->mapLights,
 			                 MO->matrixInverse);
 		MO->poseStale = 0;
 		const float *c = MO->model->centre;
@@ -154,7 +155,7 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 	}
 	if (MO->colourSide == 1 && !(obj[0xc] & 2)) {
 		memcpy((*(void * *)&MO->colours[1]), (*(void * *)&MO->colours[0]), MO->model->colourCount * 4);
-		shape_shadeParts((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&((Stage *)s)->dynamicLights,
+		shape_shadeParts((*(u32 * *)&MO->colours[1]), 0, (Model *)((u8 *)MO->model), (const LightFactors *)&st->dynamicLights,
 		                 MO->matrixInverse);
 	}
 	if ((obj[0xc] & 1) && g_items3D == 1) {
@@ -177,11 +178,12 @@ void THISCALL (actor_render)(u8 *s, int i, float dt)
 		long double nearest = fld_m(K(0x4aa4a4));
 		for (int k = 0; k < ST->actorCount; k++) {
 			u8 *a = (u8 *)&ST->actors[k];
-			if (((Player *)a)->state != 1)
+			Player *pl = (Player *)a;
+			if (pl->state != 1)
 				continue;
-			long double dx = fsub_m(fld_m(&((Player *)a)->pos[0]), &MO->place[0]);
-			long double dy = fsub_m(fld_m(&((Player *)a)->pos[1]), &MO->place[1]);
-			long double dz = fsub_m(fld_m(&((Player *)a)->pos[2]), &MO->place[2]);
+			long double dx = fsub_m(fld_m(&pl->pos[0]), &MO->place[0]);
+			long double dy = fsub_m(fld_m(&pl->pos[1]), &MO->place[1]);
+			long double dz = fsub_m(fld_m(&pl->pos[2]), &MO->place[2]);
 			long double d2 = (dz * dz + dy * dy) + dx * dx;
 			float d2f = f32(d2);
 			if (!(d2 >= nearest))
@@ -222,7 +224,8 @@ static void to_screen(u8 *s, long double qx, long double qy, float *out)
 /* whether the name tag's width on screen (tagTopLeft .. tagBottomRight) is under k (from the width 640 / the screen's) */
 static int tag_narrow(u8 *ac, u32 k)
 {
-	float span = f32(fsub_m(fld_m(&((Player *)ac)->tagBottomRight[0]), &((Player *)ac)->tagTopLeft[0]));
+	Player *pl = (Player *)ac;
+	float span = f32(fsub_m(fld_m(&pl->tagBottomRight[0]), &pl->tagTopLeft[0]));
 	return fmul_m(fld_m(K(0x4a9510)) / (long double)gfx_getWidth(), K(k)) > span;
 }
 
@@ -268,7 +271,8 @@ void THISCALL (camera_setupView)(u8 *s, const float *pos, const float *dir, cons
 	if (!ST->scriptMode || !ST->scriptRunning)
 		for (int k = 0; k < ST->objectCount; k++) {
 			u8 *obj = (u8 *)&ST->objects[k];
-			if (((MapObject *)obj)->active == 1 && (((MapObject *)obj)->flags & 1))
+			MapObject *mo = (MapObject *)obj;
+			if (mo->active == 1 && (mo->flags & 1))
 				object_glow(s, obj, dt);
 		}
 	for (int k = 0; k < ST->actorCount; k++) {

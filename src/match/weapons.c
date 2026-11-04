@@ -88,7 +88,8 @@ void THISCALL (actor_pickRandomWeapon)(Stage *stage, int i)
    callers ignore the eax it leaves */
 void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int mode, int damage, int kind, u32 value)
 {
-#define ACTOR(i) ((u8 *)&((Stage *)scene)->actors[i])
+	Stage *st = (Stage *)scene;
+#define ACTOR(i) ((u8 *)&st->actors[i])
 	static const u8 group[10] = { 0, 0, 1, 1, 1, 2, 2, 1, 3, 3 };   /* (the stat by weapon kind) */
 	u8 *t = ACTOR(target), *a = ACTOR(attacker);
 	Player *ac = (Player *)t;
@@ -130,7 +131,7 @@ void THISCALL (bullet_playImpactSound)(u8 *scene, int attacker, int target, int 
 		ac->hitPending = 1;
 	}
 	BITS(ac->hitFlash) = 0x3f000000;   /* 0.5 */
-	if (target == ((Stage *)scene)->playerActor)
+	if (target == st->playerActor)
 		sound_playVolume(0xc, 100);
 #undef ACTOR
 }
@@ -161,15 +162,16 @@ static int within(const float *p, const float *from, const float *range)
    grows (x 0x4a974c). Its caller ignores the eax it leaves */
 void THISCALL (actor_checkLineOfSight)(u8 *scene, int p)
 {
-	u8 *a = (u8 *)&((Stage *)scene)->actors[p];
+	Stage *st = (Stage *)scene;
+	u8 *a = (u8 *)&st->actors[p];
 	Player *ac = (Player *)a;
 	const float *from = ac->pos, *range = &ac->pathRange;
 	int lists[5], points[5], clear[5], n = 0;
 	u8 out[12];
-	for (int i = 0; i < ((Stage *)scene)->triggerCount; i++) {
+	for (int i = 0; i < st->triggerCount; i++) {
 		if (i == ac->stuckPath)
 			continue;
-		const Trigger *list = &((Stage *)scene)->triggers[i];
+		const Trigger *list = &st->triggers[i];
 		for (int j = 0; j < list->wayPointCount; j++) {
 			const float *pt = ((const WayPoint *)list->wayPoints)[j].pos;
 			if (!within(&pt[0], &from[0], range) || !within(&pt[1], &from[1], range) || !within(&pt[2], &from[2], range))

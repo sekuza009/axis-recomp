@@ -174,9 +174,10 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	}
 	int a = scene->localPlayer;
 	u8 *actor = (u8 *)&((Scene *)s)->players[a];
-	((Player *)actor)->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
+	Player *pl = (Player *)actor;
+	pl->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
 	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
-	BITS(((Player *)actor)->nextYaw) = BITS(scene->previewTurn);
+	BITS(pl->nextYaw) = BITS(scene->previewTurn);
 	actor_processFrame(stage, scene->localPlayer, scene->timer.frameTime);
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };

@@ -1437,14 +1437,15 @@ void (net_recv)(void)
    the camera's actor (+0x234240d), the packet's size and the packet written to the recording (+0x2340d08) */
 static void send_packet(u8 *s, u8 *packet)
 {
+	Scene *sc = (Scene *)s;
 	net_sendPacketData(0x40, packet);
-	((Scene *)s)->packetsSent++;
-	if (((Scene *)s)->recording == 1) {
+	sc->packetsSent++;
+	if (sc->recording == 1) {
 		int size = 0x40;
-		file_writeScrambled(&((Scene *)s)->recordTime, 4, 1, ((Scene *)s)->replayFile);
-		file_writeScrambled(&((Scene *)s)->localPlayer, 4, 1, ((Scene *)s)->replayFile);
-		file_writeScrambled(&size, 4, 1, ((Scene *)s)->replayFile);
-		file_writeScrambled(packet, 1, size, ((Scene *)s)->replayFile);
+		file_writeScrambled(&sc->recordTime, 4, 1, sc->replayFile);
+		file_writeScrambled(&sc->localPlayer, 4, 1, sc->replayFile);
+		file_writeScrambled(&size, 4, 1, sc->replayFile);
+		file_writeScrambled(packet, 1, size, sc->replayFile);
 	}
 }
 
@@ -1480,16 +1481,17 @@ PACKET_ENTRY(net_sendPlayerLevels, 0);
    leaves */
 static void THISCALL __attribute__((used)) net_sendPlayerInfo_body(u8 *s, int p, u8 *packet)
 {
-	int *flag = &((Scene *)s)->sendFlags[p][1];
+	Scene *sc = (Scene *)s;
+	int *flag = &sc->sendFlags[p][1];
 	if (!*flag)
 		return;
-	PlayerRecord *r = &((Scene *)s)->playerRecords[p];
+	PlayerRecord *r = &sc->playerRecords[p];
 	packet[1] = 2;
 	strcpy((char *)packet + 2, r->name);
 	packet[0x14] = (u8)r->team;
 	packet[0x13] = (u8)r->level;
 	packet[0x16] = (u8)p;
-	packet[0x15] = (u8)((Scene *)s)->players[p].emblem;
+	packet[0x15] = (u8)(sc)->players[p].emblem;
 	for (int k = 0; k < 5; k++)
 		packet[0x17 + k] = (u8)(r->parts[k] + 1);
 	for (int k = 0; k < 6; k++)
@@ -1736,43 +1738,44 @@ static u32 sample(u8 *s, u32 per_row, u32 rows, int row_len, u32 base, u8 *at)
    Sent by send_packet. Its caller ignores the eax it leaves */
 static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p, u8 *packet)
 {
+	Scene *sc = (Scene *)s;
 	static const struct { u32 per_row, rows; int row_len; u32 base; } tables[5] = {
 		{ 0x23423e5, 0x15de6c8, 682, 0x15bd1f8 }, { 0x23423e9, 0x15fff84, 687, 0x15de6cc },
 		{ 0x23423ed, 0x163b588, 0x4c0, 0x15fff88 }, { 0x23423f1, 0x1679b34, 1277, 0x163b58c },
 		{ 0x23423f5, 0x16c5178, 1544, 0x1679b38 } };
-	int *flag = &((Scene *)s)->sendFlags[p][0];
+	int *flag = &sc->sendFlags[p][0];
 	if (!*flag)
 		return;
 	packet[1] = 1;
 	packet[2] = (u8)p;
-	if (((Scene *)s)->rotationCount > 0 && !(((Scene *)s)->endTime > k_0f)) {
-		int k = ((Scene *)s)->rotationAt * 16;
+	if (sc->rotationCount > 0 && !(sc->endTime > k_0f)) {
+		int k = sc->rotationAt * 16;
 		packet[3] = s[0x1f1668 + k];
 		packet[4] = s[0x1f1cb4];
 		packet[5] = s[0x1f166c + k];
 		packet[6] = s[0x1f1cb8];
-		memcpy(packet + 7, &((Scene *)s)->missionNumber, 2);
+		memcpy(packet + 7, &sc->missionNumber, 2);
 	} else
 		memset(packet + 3, 0xff, 6);
-	memcpy(packet + 9, &((Scene *)s)->elapsed, 4);
-	float clock = f32(fld_m(&((Scene *)s)->timeFraction));
+	memcpy(packet + 9, &sc->elapsed, 4);
+	float clock = f32(fld_m(&sc->timeFraction));
 	memcpy(packet + 0xd, &clock, 4);
-	u32 turn = ((u32)((Scene *)s)->geometryCheckTurn);
+	u32 turn = ((u32)(sc)->geometryCheckTurn);
 	packet[0x2b] = (u8)(turn % 5);
-	((Scene *)s)->geometryCheckTurn = turn + 1;
+	sc->geometryCheckTurn = turn + 1;
 	u32 v = sample(s, tables[packet[0x2b]].per_row, tables[packet[0x2b]].rows, tables[packet[0x2b]].row_len, tables[packet[0x2b]].base,
 	               packet + 0x2c);
 	memcpy(packet + 0x2e, &v, 4);
 	v = sample(s, 0x23423f9, 0x175522c, 2950, 0x16c517c, packet + 0x32);
 	memcpy(packet + 0x34, &v, 4);
-	memcpy(packet + 0x11, &((Scene *)s)->players[p].timePlayed, 4);
-	memcpy(packet + 0x15, &((Scene *)s)->players[p].timeExtra, 4);
+	memcpy(packet + 0x11, &sc->players[p].timePlayed, 4);
+	memcpy(packet + 0x15, &sc->players[p].timeExtra, 4);
 	u32 twice[2] = { 0, 0 };
 	for (int i = 0; i < 16; i++) {
 		if (net_playerInUse(i) != 1)
 			continue;
 		for (int k = 0; k < 2; k++) {
-			int *f = &((Scene *)s)->sendFlags[i][2 + k];
+			int *f = &sc->sendFlags[i][2 + k];
 			if (*f == 1) {
 				*f = 0;
 				twice[k] |= 1u << i;
@@ -1780,10 +1783,10 @@ static void THISCALL __attribute__((used)) net_sendGamePacket_body(u8 *s, int p,
 		}
 	}
 	memcpy(packet + 0x19, twice, 8);
-	memcpy(packet + 0x21, &((Scene *)s)->players[p].kills, 2);
-	memcpy(packet + 0x23, &((Scene *)s)->players[p].deaths, 2);
-	memcpy(packet + 0x25, &((Scene *)s)->teamScores[0], 2);
-	memcpy(packet + 0x27, &((Scene *)s)->teamScores[1], 2);
+	memcpy(packet + 0x21, &sc->players[p].kills, 2);
+	memcpy(packet + 0x23, &sc->players[p].deaths, 2);
+	memcpy(packet + 0x25, &sc->teamScores[0], 2);
+	memcpy(packet + 0x27, &sc->teamScores[1], 2);
 	memcpy(packet + 0x29, &SCENE_STAGE(s)->lastPickup, 2);
 	SCENE_STAGE(s)->lastPickup = -1;
 	*flag = 0;

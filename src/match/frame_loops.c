@@ -419,8 +419,9 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
    its age; every tenth of a second a trail particle (kind 2 one time in ten, which also ends it, else kind 0) */
 static void spark(u8 *s, u8 *p, float dt)
 {
-	float *pos = ((Projectile *)p)->pos;
-	const float *v = ((Projectile *)p)->target, *k = (const float *)ADDR(k_2000f);
+	Projectile *pr = (Projectile *)p;
+	float *pos = pr->pos;
+	const float *v = pr->target, *k = (const float *)ADDR(k_2000f);
 	float dy = f32(fmul_m(fld_m(&dt), &v[1])), dz = f32(fmul_m(fld_m(&dt), &v[2]));
 	float hit[3], below[3];
 	hit[0] = f32(fadd_m(fmul_m(fld_m(&dt), &v[0]), &pos[0]));
@@ -431,28 +432,28 @@ static void spark(u8 *s, u8 *p, float dt)
 	below[2] = hit[2];
 	if (collision_rayTrace(s, pos, below, hit)) {
 		memcpy(pos, hit, 12);
-		BITS(((Projectile *)p)->life) = BITS(((Projectile *)p)->drawAge);
+		BITS(pr->life) = BITS(pr->drawAge);
 		spawn_at(s, 2, hit);
 	} else
 		memcpy(pos, below, 12);
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef_stored(pos);
-	glRotatef(f32(fmul_m(fld_m(&((Projectile *)p)->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
-	glRotatef(f32(fmul_m(fld_m(&((Projectile *)p)->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
-	glGetFloatv(0xba6, ((Projectile *)p)->matrix);
+	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
+	glGetFloatv(0xba6, pr->matrix);
 	glPopMatrix();
-	long double wait = fsub_m(fld_m(&((Projectile *)p)->fade), &dt);
-	((Projectile *)p)->fade = f32(wait);
+	long double wait = fsub_m(fld_m(&pr->fade), &dt);
+	pr->fade = f32(wait);
 	if (wait > 0)
 		return;
 	u32 at = g_randPos;
 	u32 r = GAME_VAR(u32, OBJ(g_randTable) + (at & 0xfff) * 4) % 10;
 	g_randPos = at + 1;
 	spawn_at(s, r ? 0 : 2, pos);
-	BITS(((Projectile *)p)->fade) = 0x3dcccccd;
+	BITS(pr->fade) = 0x3dcccccd;
 	if (!r)
-		BITS(((Projectile *)p)->life) = BITS(((Projectile *)p)->drawAge);
+		BITS(pr->life) = BITS(pr->drawAge);
 }
 
 /* 0x476410 (thiscall on the scene): particle slot's frame (0x12c bytes from +0x20a99c0). Its age (+0x74, kept at +0x6c)
@@ -462,14 +463,15 @@ static void spark(u8 *s, u8 *p, float dt)
 void THISCALL (particle_update)(u8 *s, int slot, float dt)
 {
 	u8 *p = (u8 *)&ST->projectiles[slot];
-	float age = ((Projectile *)p)->age;
-	((Projectile *)p)->drawAge = age;
-	if (age > ((Projectile *)p)->life) {
+	Projectile *pr = (Projectile *)p;
+	float age = pr->age;
+	pr->drawAge = age;
+	if (age > pr->life) {
 		stage_freeProjectile(s, slot);
 		return;
 	}
-	float t = ((Projectile *)p)->life > 0 ? f32(fdiv_m(fld_m(&age), &((Projectile *)p)->life)) : 0.0f;
-	int k = ((Projectile *)p)->kind;
+	float t = pr->life > 0 ? f32(fdiv_m(fld_m(&age), &pr->life)) : 0.0f;
+	int k = pr->kind;
 	u32 size = 0;   /* where the size constant is */
 	switch (k / 5) {
 	case 0:
@@ -491,9 +493,9 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 	}
 	if (size) {
 		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
-		((Projectile *)p)->size = f32(fmul_m(u * u, (const float *)RELOC(size)));
+		pr->size = f32(fmul_m(u * u, (const float *)RELOC(size)));
 	}
-	((Projectile *)p)->age = f32(fadd_m(fld_m(&dt), &((Projectile *)p)->age));
+	pr->age = f32(fadd_m(fld_m(&dt), &pr->age));
 }
 
 #define A(type, offset) GAME_VAR(type, ac + (offset))

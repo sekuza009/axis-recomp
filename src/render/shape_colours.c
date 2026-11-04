@@ -103,10 +103,11 @@ int THISCALL (tex_tintRgba)(u8 *rgba, u32 dh, u32 ds, u32 dv)
    with the factors and the matrix. Returns the part count */
 int (shape_shadingColours)(float *out, int first, u8 *shape, void *factors, int matrix)
 {
-	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
-		u8 *part = ((Model *)shape)->parts + i * 0x80;
+	Model *md = (Model *)shape;
+	for (int i = 0; i < md->partCount; i++) {
+		u8 *part = md->parts + i * 0x80;
 		GAME_FN(shape_getShadingColorBufferBy, 0x463b80, void, float *, int, void *, void *, int)(out + ((ShapePart *)part)->colourBase, first, part, factors,
 		                                                                matrix);   /* shape_getShadingColorBufferBy */
 	}
-	return ((Model *)shape)->partCount;
+	return md->partCount;
 }

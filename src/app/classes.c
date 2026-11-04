@@ -364,12 +364,13 @@ int THISCALL (gfx_saveScreenshot)(u8 *scene, int p)
    it leaves */
 void THISCALL (tex_upload2)(u8 *scene)
 {
+	Stage *st = (Stage *)scene;
 	int uploaded = 0;
 	for (int p = 0; p < 16; p++) {
-		PlayerRecord *pr = &((Stage *)scene)->playerRecords[p];
+		PlayerRecord *pr = &st->playerRecords[p];
 		if (pr->emblemChanged != 1)
 			continue;
-		u32 *atlas = &((Stage *)scene)->emblemAtlas[(p / 4) * 16][(p % 4) * 24];
+		u32 *atlas = &st->emblemAtlas[(p / 4) * 16][(p % 4) * 24];
 		const u32 *pixel = &pr->emblem[0][0];
 		for (int y = 0; y < 16; y++, atlas += 128)
 			for (int x = 0; x < 24; x++)
@@ -383,12 +384,12 @@ void THISCALL (tex_upload2)(u8 *scene)
 	if (uploaded != 1)
 		return;
 	glPixelStorei(0xcf5, 1);   /* GL_UNPACK_ALIGNMENT */
-	glBindTexture(0xde1, ((Stage *)scene)->emblemTexture);
+	glBindTexture(0xde1, st->emblemTexture);
 	glTexParameterf_bits(0xde1, 0x2802, 0x46240000);   /* wrap S: GL_CLAMP */
 	glTexParameterf_bits(0xde1, 0x2803, 0x46240000);   /* wrap T */
 	glTexParameterf_bits(0xde1, 0x2800, 0x46180400);   /* mag filter: GL_LINEAR */
 	glTexParameterf_bits(0xde1, 0x2801, 0x46180400);   /* min filter */
-	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)((Stage *)scene)->emblemAtlas);   /* RGBA, unsigned bytes */
+	glTexImage2D(0xde1, 0, 4, 0x80, 0x40, 0, 0x1908, 0x1401, (u8 *)(st)->emblemAtlas);   /* RGBA, unsigned bytes */
 }
 
 /* 0x46ce80 (thiscall on an image): a w x h block of the open 24-bit BMP (its file +4, pixel data at +0x12, size +0x3e
@@ -609,6 +610,7 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 				strcpy(GS->replayFiles[GS->replayCount++], e);
 		}
 	u8 *s = (u8 *)SCENE_STAGE(g);
+	Stage *st = (Stage *)s;
 	GS->replayIndex = GS->replayVersion = 0;
 	scene_resetActors(s);
 	scene_reset(s);
@@ -616,11 +618,11 @@ void THISCALL (app_requireCd)(u8 *g, u32 a, int mode)
 		stage_setSilentActor(s, 0);   /* stage_setSilentActor */
 		GS->soloClear = 0;
 		for (int k = 0; k < 3; k++) {
-			((Stage *)s)->levelLow[k] = -100000.0f;
-			((Stage *)s)->levelHigh[k] = 100000.0f;
+			st->levelLow[k] = -100000.0f;
+			st->levelHigh[k] = 100000.0f;
 		}
-		memcpy(((Stage *)s)->worldLow, ((Stage *)s)->levelLow, 12);
-		memcpy(((Stage *)s)->worldHigh, ((Stage *)s)->levelHigh, 12);
+		memcpy(st->worldLow, st->levelLow, 12);
+		memcpy(st->worldHigh, st->levelHigh, 12);
 		BITS(GS->unusedBe2ffc) = 0x3f800000;
 		game_setGameTypeFlags((Stage *)s, 0);
 	}

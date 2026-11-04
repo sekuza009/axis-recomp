@@ -431,29 +431,31 @@ void THISCALL (actor_startingValues)(u8 *scene, int p)
 void THISCALL (actor_updatePart)(u8 *scene, int a, int slot, int variant)
 {
 	u8 *actor = (u8 *)&STS->actors[a];
-	if (!((Player *)actor)->active)
+	Player *pl = (Player *)actor;
+	if (!pl->active)
 		return;
-	PlayerRecord *type = (PlayerRecord *)((u8 *)&STS->playerRecords[((Player *)actor)->player]);
+	PlayerRecord *type = (PlayerRecord *)((u8 *)&STS->playerRecords[pl->player]);
 	int item = type->items[slot];
 	u8 *it = item >= 0 ? (u8 *)&STS->actorInfo[item] : NULL;
+	ActorInfo *info = (ActorInfo *)it;
 	int self, set = 0;
 	if (slot == 4)
 		self = offsetof(Player, weaponModel4);
 	else if (slot == 5) {
 		self = offsetof(Player, weaponModel5);
 		set = 1;
-	} else if (slot == ((Player *)actor)->slot)
+	} else if (slot == pl->slot)
 		self = offsetof(Player, weaponModel);
 	else
 		return;
 	if (it)
-		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, ((ActorInfo *)it)->sets[set].models[variant],
-		                     ((ActorInfo *)it)->sets[set].bones[variant], ((ActorInfo *)it)->sets[set].counts[variant], ((ActorInfo *)it)->sets[set].frames[variant],
+		ObjectList_load(actor + self, (u8 *)&STS->partShapes, (u8 *)&STS->partSkeletons, info->sets[set].models[variant],
+		                     info->sets[set].bones[variant], info->sets[set].counts[variant], info->sets[set].frames[variant],
 		                     0, 0, 0, actor + self + sizeof(ObjectList), 0x1770);   /* (its memory right after it) */
 	else
 		partList_release(actor + self);
 	if (self == offsetof(Player, weaponModel))
-		((Player *)actor)->weapon = it ? ((ActorInfo *)it)->ammoSlot : -1;
+		pl->weapon = it ? info->ammoSlot : -1;
 }
 
 #define K(address) ((const float *)RELOC(address))

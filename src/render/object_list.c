@@ -138,9 +138,10 @@ void THISCALL (partList_bindTextures)(u8 *list)
    texturing on during it */
 void THISCALL (shape_bindPartTextures)(u8 *shape)
 {
+	Model *md = (Model *)shape;
 	glEnable(GL_TEXTURE_2D);
-	for (int i = 0; i < ((Model *)shape)->partCount; i++) {
-		int id = ((ShapePart *)((Model *)shape)->parts + i)->texture;
+	for (int i = 0; i < md->partCount; i++) {
+		int id = ((ShapePart *)(md)->parts + i)->texture;
 		if (id >= 0)
 			tex_bind(g_textures->managers[id / 512], id % 512);
 	}

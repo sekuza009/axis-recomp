@@ -228,19 +228,20 @@ int THISCALL (ViewVolume_transformObject)(u8 *vv, int id, const u32 *info6, cons
    its three entry points looked up (+0x14 .. +0x1c) and the flag (+0x10) set */
 void THISCALL (gfx_initVertexArrayExt)(u8 *view)
 {
-	if (((ViewVolume *)view)->ownsBlock == 1) {
-		operator_delete(((ViewVolume *)view)->block);   /* operator delete */
-		((ViewVolume *)view)->block = 0;
-		((ViewVolume *)view)->ownsBlock = 0;
+	ViewVolume *vw = (ViewVolume *)view;
+	if (vw->ownsBlock == 1) {
+		operator_delete(vw->block);   /* operator delete */
+		vw->block = 0;
+		vw->ownsBlock = 0;
 	}
 	ViewVolume_clear(view);   /* ViewVolume_clear */
 	const char *extensions = glGetString(0x1f03);   /* glGetString(GL_EXTENSIONS) */
 	if (!extensions || !crt_strstr(extensions, (const char *)STR(0x4c7b5c, "GL_EXT_vertex_array")))   /* strstr */
 		return;
-	((ViewVolume *)view)->entryPointsSet = 1;
+	vw->entryPointsSet = 1;
 	static const u32 names[3] = { STR(0x4c7b48, "glVertexPointerEXT"), STR(0x4c7b34, "glColorPointerEXT"), STR(0x4c7b1c, "glTexCoordPointerEXT") };   /* the three entry points' names */
 	for (int k = 0; k < 3; k++)
-		((ViewVolume *)view)->glArrays[k] = wglGetProcAddress((const char *)RELOC(names[k]));   /* wglGetProcAddress */
+		vw->glArrays[k] = wglGetProcAddress((const char *)RELOC(names[k]));   /* wglGetProcAddress */
 }
 
 /* a box corner (x stored as a float, y and z kept on the FPU) through the 4 x 4 matrix m into clip space: each row
@@ -264,23 +265,25 @@ static void corner(float *out, const float *m, const float *px, long double y, l
 void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const float *matrix, u32 a4, u32 colour, int cull,
                                          int material, u32 a8)
 {
-	if (((Model *)model)->partCount <= 0)
+	Model *md = (Model *)model;
+	ViewVolume *vw = (ViewVolume *)view;
+	if (md->partCount <= 0)
 		return;
 	float *m = (float *)matrix;
 	if (!m) {
-		if (((ViewVolume *)view)->matrixCount >= ((ViewVolume *)view)->matrixLimit) {
-			((ViewVolume *)view)->matricesFull = 1;
+		if (vw->matrixCount >= vw->matrixLimit) {
+			vw->matricesFull = 1;
 			return;
 		}
-		m = (float *)(((ViewVolume *)view)->matrices + ((ViewVolume *)view)->matrixCount++ * 0x40);
+		m = (float *)(vw->matrices + vw->matrixCount++ * 0x40);
 		if (!m)
 			return;
 		glGetFloatv(0xba6, m);
 	}
 	float clip_m[16];
-	Mat4_multiply(clip_m, ((ViewVolume *)view)->clip, m);
-	for (int i = 0; i < ((Model *)model)->partCount; i++) {
-		u8 *part = ((Model *)model)->parts + i * 0x80;
+	Mat4_multiply(clip_m, vw->clip, m);
+	for (int i = 0; i < md->partCount; i++) {
+		u8 *part = md->parts + i * 0x80;
 		ShapePart *sp = (ShapePart *)part;
 		if (sp->primCount <= 0)
 			continue;
@@ -313,22 +316,22 @@ void THISCALL (ViewVolume_projectObject)(u8 *view, u8 *model, u32 *extra, const 
 				continue;
 		}
 		int list = (material >= 0 ? material : sp->texture) + 1;
-		if (((ViewVolume *)view)->entryCount >= ((ViewVolume *)view)->entryLimit) {
-			((ViewVolume *)view)->entriesFull = 1;
+		if (vw->entryCount >= vw->entryLimit) {
+			vw->entriesFull = 1;
 			return;
 		}
-		u32 *e = (u32 *)(((ViewVolume *)view)->entries + ((ViewVolume *)view)->entryCount++ * 0x1c);
+		u32 *e = (u32 *)(vw->entries + vw->entryCount++ * 0x1c);
 		if (!e)
 			return;
-		if (((ViewVolume *)view)->materialHeads[list] == 0) {
-			((ViewVolume *)view)->materialOrder[((ViewVolume *)view)->materialCount] = list;
-			((ViewVolume *)view)->materialCount++;
-			((ViewVolume *)view)->materialHeads[list] = (u8 *)e;
+		if (vw->materialHeads[list] == 0) {
+			vw->materialOrder[vw->materialCount] = list;
+			vw->materialCount++;
+			vw->materialHeads[list] = (u8 *)e;
 		}
-		u32 *tail = (u32 *)((ViewVolume *)view)->materialTails[list];
+		u32 *tail = (u32 *)(vw)->materialTails[list];
 		if (tail)
 			tail[6] = (u32)e;
-		((ViewVolume *)view)->materialTails[list] = (u8 *)e;
+		vw->materialTails[list] = (u8 *)e;
 		e[0] = (u32)part;
 		e[1] = extra ? (u32)(extra + sp->colourBase) : 0;
 		e[2] = a4;

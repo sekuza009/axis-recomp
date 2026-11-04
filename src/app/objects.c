@@ -48,17 +48,19 @@ void STDCALL (crt_arrayConstruct)(u8 *first, int size, int count, void (THISCALL
    leaves */
 void THISCALL (Console_ctor)(u8 *self)
 {
+	Scene *sc = (Scene *)self;
 	GAME_VAR(u32, self) = VT(Console, 0x4aa238);
 	Stage_dtor(SCENE_STAGE(self));
-	ViewVolume_dtor(((Scene *)self)->view);
-	TimeSync_dtor((u8 *)&((Scene *)self)->timer);
+	ViewVolume_dtor(sc->view);
+	TimeSync_dtor((u8 *)&sc->timer);
 }
 
 /* 0x4841f0 (thiscall on a view volume): its projection (+0x90b0) and view (+0x90f0) matrices copied from those
    given, or each read from OpenGL when none is given, and their product kept (+0x9130) */
 void THISCALL (ViewVolume_captureMatrices)(u8 *view, const float *projection, const float *modelview)
 {
-	float *p = ((ViewVolume *)view)->projection, *m = ((ViewVolume *)view)->modelview;
+	ViewVolume *vw = (ViewVolume *)view;
+	float *p = vw->projection, *m = vw->modelview;
 	if (projection)
 		Mat4_copy(p, projection);
 	else
@@ -67,5 +69,5 @@ void THISCALL (ViewVolume_captureMatrices)(u8 *view, const float *projection, co
 		Mat4_copy(m, modelview);
 	else
 		glGetFloatv(0xba6, m);   /* GL_MODELVIEW_MATRIX */
-	Mat4_multiply(((ViewVolume *)view)->clip, p, m);
+	Mat4_multiply(vw->clip, p, m);
 }
