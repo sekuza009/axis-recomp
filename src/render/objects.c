@@ -700,7 +700,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 		int tex = TEX(8);
 		if (PR->drawAge > 1.0f)
 			ALPHA(PR->cornerColours[0]) = ALPHA(PR->cornerColours[1]) = ALPHA(PR->cornerColours[2]) = clamp255(ftol(fmul_m(fsub_m(fld_m(K(0x4a93fc)), &PR->drawAge), K(0x4aa260))));
-		ViewVolume_transformObject(vv, tex, (const u32 *)(p + 0xb4), PR->cornerColours, &PR->fade,
+		ViewVolume_transformObject(vv, tex, (const u32 *)PR->trailUv, PR->cornerColours, &PR->trailPoints[0][0],
 		                           (*(const float * *)&PR->matrixFrom), 1, 1);
 		return;
 	}

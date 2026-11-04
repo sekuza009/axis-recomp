@@ -501,8 +501,10 @@ typedef struct Projectile {
 	u32 colour;   /* +0x78: (its byte 0x7b: the alpha, set as it fades) */
 	float size;   /* +0x7c: shrinks with age for puffs and flashes */
 	float baseSize;   /* +0x80: the descriptor's size */
-	float fade;   /* +0x84: (unclear) 0.1 for the fading kinds */
-	u8 _pad0000088[0x4c];
+	union { float fade; float trailPoints[3][3]; };   /* +0x84: fade: (kind 9, a falling spark) the wait to its next puff (0.1 s); */
+	u8 _pad00000a8[0xc];
+	float trailUv[6];   /* +0xb4: (trails) the three points' texture coordinates (u, v) */
+	u8 _pad00000cc[0x8];
 	u32 cornerColours[3];   /* +0xd4: (unclear) white at the start */
 	u8 _pad00000e0[0x4];
 	i32 quadTexture;   /* +0xe4: (by use) kind 50, a quad: its texture, two texture corners, colour, points */
@@ -2128,7 +2130,9 @@ _Static_assert(offsetof(Projectile, age) == 0x74 && sizeof(((Projectile *)0)->ag
 _Static_assert(offsetof(Projectile, colour) == 0x78 && sizeof(((Projectile *)0)->colour) == 0x4, "scene.fields: Projectile.colour");
 _Static_assert(offsetof(Projectile, size) == 0x7c && sizeof(((Projectile *)0)->size) == 0x4, "scene.fields: Projectile.size");
 _Static_assert(offsetof(Projectile, baseSize) == 0x80 && sizeof(((Projectile *)0)->baseSize) == 0x4, "scene.fields: Projectile.baseSize");
-_Static_assert(offsetof(Projectile, fade) == 0x84 && sizeof(((Projectile *)0)->fade) == 0x4, "scene.fields: Projectile.fade");
+_Static_assert(offsetof(Projectile, fade) == 0x84 && sizeof(((Projectile *)0)->fade) <= 0x24, "scene.fields: Projectile.fade");
+_Static_assert(offsetof(Projectile, trailPoints) == 0x84 && sizeof(((Projectile *)0)->trailPoints) <= 0x24, "scene.fields: Projectile.trailPoints");
+_Static_assert(offsetof(Projectile, trailUv) == 0xb4 && sizeof(((Projectile *)0)->trailUv) == 0x18, "scene.fields: Projectile.trailUv");
 _Static_assert(offsetof(Projectile, cornerColours) == 0xd4 && sizeof(((Projectile *)0)->cornerColours) == 0xc, "scene.fields: Projectile.cornerColours");
 _Static_assert(offsetof(Projectile, quadTexture) == 0xe4 && sizeof(((Projectile *)0)->quadTexture) == 0x4, "scene.fields: Projectile.quadTexture");
 _Static_assert(offsetof(Projectile, quadUv0) == 0xe8 && sizeof(((Projectile *)0)->quadUv0) == 0x8, "scene.fields: Projectile.quadUv0");

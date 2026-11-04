@@ -434,7 +434,9 @@ struct Projectile 0x12c                                         # a particle or 
 0x78       4          u32 colour                                # (its byte 0x7b: the alpha, set as it fades)
 0x7c       4          float size                                # shrinks with age for puffs and flashes
 0x80       4          float baseSize                            # the descriptor's size
-0x84       4          float fade                                # (unclear) 0.1 for the fading kinds
+0x84       0x24       union { float fade; float trailPoints[3][3]; }   # fade: (kind 9, a falling spark) the wait to its next puff (0.1 s);
+                                                                 # trailPoints: (trails, kinds 40 .. 49) their triangle's three points
+0xb4       0x18       float trailUv[6]                           # (trails) the three points' texture coordinates (u, v)
 0xd4       0xc        u32 cornerColours[3]                      # (unclear) white at the start
 0xe4       4          i32 quadTexture                            # (by use) kind 50, a quad: its texture, two texture corners, colour, points
 0xe8       8          u32 quadUv0[2]

@@ -759,30 +759,30 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	}
 }
 
-/* a trail particle (kinds 40 .. 49): its three points (from the descriptor's +0x24), and its two ends' widths and
-   lengths (+0xb4 ..) from the descriptor's +0x28 sizes, either as size x 0.005 + 0.5 or (by d, the particle's size
-   plus a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
+/* a trail particle (kinds 40 .. 49): its three points (the descriptor's trailPoints), and their texture coordinates
+   (the first v 0.5) from the descriptor's trailSizes, either as size x 0.005 + 0.5 or (by d, the particle's size plus
+   a margin) as (size / d + 1) / 2; its colours the shared one (0xa1f23c) */
 static void particle_trail(u8 *p, const u8 *desc, u32 margin)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	PR->life = 2.0f;   /* 2 s */
-	memcpy(p + 0x84, pd->trailPoints, 12);
-	memcpy(p + 0x90, pd->trailPoints + 3, 12);
-	memcpy(p + 0x9c, pd->trailPoints + 6, 12);
+	memcpy(PR->trailPoints[0], pd->trailPoints, 12);
+	memcpy(PR->trailPoints[1], pd->trailPoints + 3, 12);
+	memcpy(PR->trailPoints[2], pd->trailPoints + 6, 12);
 	const float *q = pd->trailSizes;
-	static const u8 from[5] = { 0, 2, 3, 4, 5 }, to[5] = { 0xb4, 0xbc, 0xc0, 0xc4, 0xc8 };
+	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives trailUv[k]; q[1] is not used) */
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {
-			P(float, to[k]) = f32(fadd_m(fmul_m(fld_m(&q[from[k]]), K(0x4aa428)), K(0x4a942c)));
+			PR->trailUv[uv[k]] = f32(fadd_m(fmul_m(fld_m(&q[uv[k]]), K(0x4aa428)), K(0x4a942c)));
 			if (k == 0)
-				P(u32, 0xb8) = 0x3f000000;
+				BITS(PR->trailUv[1]) = 0x3f000000;   /* 0.5 */
 		}
 	} else {
 		long double d = fadd_m(fld_m(&PR->baseSize), K(margin));
 		for (int k = 0; k < 5; k++) {
-			P(float, to[k]) = f32(fmul_m(fadd_m(fld_m(&q[from[k]]) / d, K(0x4a9424)), K(0x4a942c)));
+			PR->trailUv[uv[k]] = f32(fmul_m(fadd_m(fld_m(&q[uv[k]]) / d, K(0x4a9424)), K(0x4a942c)));
 			if (k == 0)
-				P(u32, 0xb8) = 0x3f000000;
+				BITS(PR->trailUv[1]) = 0x3f000000;
 		}
 	}
 	PR->cornerColours[0] = PR->cornerColours[1] = PR->cornerColours[2] = g_white;
