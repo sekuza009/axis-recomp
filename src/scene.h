@@ -1452,7 +1452,8 @@ typedef struct Scene {
 	float frameTimes[10];   /* +0x48: the last ten frames' times (frameTimer_average: frameTime is their mean) */
 	i32 frameTimeNext;   /* +0x70: the ring's next */
 	u8 view[4];   /* +0x74: the camera's view volume object starts here (passed by address) */
-	u8 _pad0000078[0x1f15ec];
+	u8 _pad0000078[0x916c];
+	u8 viewMemory[2000000];   /* +0x91e4: the view volume's buffers (game_loadAllData: factor_initBy's memory), right after it */
 	i32 objectsMode;   /* +0x1f1664: (unclear) render_drawObjects' mode */
 	Round rotation[100];   /* +0x1f1668: the maps played in turn (solo: the 15 stages) */
 	i32 rotationCount;   /* +0x1f1ca8 */
@@ -1591,7 +1592,8 @@ typedef struct Scene {
 	float resendWarning;   /* +0x2340c94: 1 when packets had to be sent again, running down */
 	u8 _pad2340c98[0x4];
 	float escTimer;   /* +0x2340c9c: time the in-match menu has been open (fades in over 0.25 s) */
-	u8 _pad2340ca0[0x30];
+	u8 _pad2340ca0[0x4];
+	i32 cleared2340ca4[11];   /* +0x2340ca4: (by use) only zeroed (game_loadAllData); nothing else uses them */
 	i32 debugGrid;   /* +0x2340cd0: (by use) 1: a 100 x 150 grid of lines about the actor */
 	i32 debugPoints;   /* +0x2340cd4: (by use) 1: the map's points marked */
 	u8 _pad2340cd8[0x8];
@@ -2890,6 +2892,7 @@ _Static_assert(offsetof(Scene, frameTime) == 0x44 && sizeof(((Scene *)0)->frameT
 _Static_assert(offsetof(Scene, frameTimes) == 0x48 && sizeof(((Scene *)0)->frameTimes) == 0x28, "scene.fields: Scene.frameTimes");
 _Static_assert(offsetof(Scene, frameTimeNext) == 0x70 && sizeof(((Scene *)0)->frameTimeNext) == 0x4, "scene.fields: Scene.frameTimeNext");
 _Static_assert(offsetof(Scene, view) == 0x74 && sizeof(((Scene *)0)->view) == 0x4, "scene.fields: Scene.view");
+_Static_assert(offsetof(Scene, viewMemory) == 0x91e4 && sizeof(((Scene *)0)->viewMemory) == 0x1e8480, "scene.fields: Scene.viewMemory");
 _Static_assert(offsetof(Scene, objectsMode) == 0x1f1664 && sizeof(((Scene *)0)->objectsMode) == 0x4, "scene.fields: Scene.objectsMode");
 _Static_assert(offsetof(Scene, rotation) == 0x1f1668 && sizeof(((Scene *)0)->rotation) == 0x640, "scene.fields: Scene.rotation");
 _Static_assert(offsetof(Scene, rotationCount) == 0x1f1ca8 && sizeof(((Scene *)0)->rotationCount) == 0x4, "scene.fields: Scene.rotationCount");
@@ -2999,6 +3002,7 @@ _Static_assert(offsetof(Scene, receiveRate) == 0x2340c8c && sizeof(((Scene *)0)-
 _Static_assert(offsetof(Scene, windowTime) == 0x2340c90 && sizeof(((Scene *)0)->windowTime) == 0x4, "scene.fields: Scene.windowTime");
 _Static_assert(offsetof(Scene, resendWarning) == 0x2340c94 && sizeof(((Scene *)0)->resendWarning) == 0x4, "scene.fields: Scene.resendWarning");
 _Static_assert(offsetof(Scene, escTimer) == 0x2340c9c && sizeof(((Scene *)0)->escTimer) == 0x4, "scene.fields: Scene.escTimer");
+_Static_assert(offsetof(Scene, cleared2340ca4) == 0x2340ca4 && sizeof(((Scene *)0)->cleared2340ca4) == 0x2c, "scene.fields: Scene.cleared2340ca4");
 _Static_assert(offsetof(Scene, debugGrid) == 0x2340cd0 && sizeof(((Scene *)0)->debugGrid) == 0x4, "scene.fields: Scene.debugGrid");
 _Static_assert(offsetof(Scene, debugPoints) == 0x2340cd4 && sizeof(((Scene *)0)->debugPoints) == 0x4, "scene.fields: Scene.debugPoints");
 _Static_assert(offsetof(Scene, replaying) == 0x2340ce0 && sizeof(((Scene *)0)->replaying) == 0x4, "scene.fields: Scene.replaying");
