@@ -19,7 +19,101 @@ struct ShotRecord 0x20                                          # a round an act
 0x10       4          i32 flag
 0x14       0xc        float dir[3]
 
+struct ActorInfo 0x2e18                                         # an actor type's record (Scene.actorInfo)
+0x2db8     4          float weight                               # (by use, an item's) added to the actor's load (mech_stats)
+0x2dbc     4          i32 slotType                               # (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..)
+0x2df8     4          i32 value2df8                              # (unclear) shown by the ARM CENTER as a plain number
+0x2ddc     4          i32 damageMode                             # (by use, a weapon's) 0: its damage off the armour first, 1: off the shield
+0x2de0     4          i32 damage                                 # a hit's damage
+0x2e04     4          i32 hitSound                               # its hit sound (< 0 none)
+0x2e14     4          float push                                 # > 0: a hit pushes the actor (x 10, away from the bullet)
+0x2dc0     4          i32 ammoSlot                              # (by use, a weapon's) the ammunition slot it uses (Player.ammo)
+0x2dc4     4          i32 ammoPerShot                           # ammunition one shot takes
+0x2dc8     4          i32 burst                                 # rounds a burst
+0x2dcc     4          float burstGap                            # (unclear) the time between bursts
+0x2de4     4          float stepLength                          # a shot's first step (traced)
+0x2de8     4          float velocity                            # its speed (0: it arrives at once)
+0x2dec     4          float spread                              # aimed shots spread by it, less the owner's steadiness
+0x2df0     4          float flashSize                           # its muzzle flash's size
+0x2df4     4          float splashRadius                        # (unclear)
+0x2dfc     4          i32 shotMode                              # 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10
+0x2e00     4          i32 sound                                 # its firing sound (< 0 none)
+0x2e08     4          float cycleTime                           # seconds a firing cycle
+0x2e0c     4          float tracer                              # > 0: the local player's tracer
+0          0x40       char name[0x40]                           # the folder under Actor/
+0x2e10     4          float ringRange                           # (unclear) > 0: the alert ring is shown
+
+struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
+0          4          i32 used                                   # (by use) 1: in use (playerRecord_markUsed / markFree)
+0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
+0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
+0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
+4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
+0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
+0x48       4          i32 team
+0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
+0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
+0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
+
+struct Model 0x4c                                               # a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...)
+4          4          i32 blockSize                              # its data block (take_block): the parts and their tables
+8          4          u8 *block
+0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
+0x10       4          i32 partCount
+0x14       4          u8 *parts                                  # partCount ShapePart records (0x80 bytes), at the block's start
+0x20       0xc        float centre[3]                            # (by use) a point of the file's header: the box starts from it
+0x30       4          u32 version                                # 0x71110300: the current format (older: 0x68-byte parts)
+0x34       0xc        float low[3]                               # the box over its parts
+0x40       0xc        float high[3]
+0x18       4          i32 colourCount                           # (by use) dwords in a shading colour buffer for it
+0x1c       4          i32 count1c                                # (unclear) cleared with colourCount (stage_buildMeshDrawRecords)
+0x2c       4          float radius                              # its bounding sphere
+
+struct ShapePart 0x80                                           # a shape's part (Model.parts): one material's vertices and primitives
+0          0x40       char name[0x40]                            # (by use) its material's name (the texture looked up by it: names.c)
+0x44       4          i32 texture                                # its texture's id (-1 / 0 none)
+0x48       4          i32 colourBase                             # its first vertex in the shape's colour buffer
+0x4c       4          i32 vertexCount
+0x50       4          u8 *vertices                               # 12 bytes each
+0x54       4          u8 *normals                                # 12 bytes each
+0x58       4          u8 *colours                                # 4 bytes each
+0x5c       4          float *texCoords                           # 2 floats each
+0x60       4          i32 primCount
+0x64       4          u8 *prims                                  # ShapePrim records (0xc bytes)
+0x68       0x18       float box[6]                               # its low and high corners
+
+struct ShapePrim 0xc                                            # a part's primitive: its index list
+4          4          i32 indexCount
+8          4          u8 *indices                                # 4 bytes each
+
+struct ListedObject 0x64                                        # an object list's entry (ObjectList.entries)
+0          4          Model *shape                              # none: an empty entry
+8          4          u32 *colours                              # its shading colours (Model.colourCount dwords)
+0xc        0x40       float matrix[16]                          # where it is placed
+
+struct ObjectList 0x30                                          # shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown)
+4          4          i32 blockSize                              # (by use) its block: the entries (100 bytes each), their colours when preLit, the skeletons
+8          4          u8 *block
+0xc        4          i32 ownsBlock                              # 1: allocated here
+0x10       4          i32 count
+0x14       4          ListedObject *entries
+0x18       4          i32 colourCount                            # the entries' shapes' colours summed
+0x1c       4          i32 frameCount                            # 0: nothing to draw (ObjectList_load: the skeletons named, one a frame)
+0x20       4          i32 *frames                               # frames[frame] == 0: nothing to draw
+0x24       4          i32 frame
+0x28       4          i32 animTick                               # (by use) the animation's tick (its frame: this % the skeleton's frames + 1)
+0x2c       4          i32 preLit                                # 1: lit here, drawn with its own colours
+
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x3a8      0x40       float bodyMatrix[16]                       # (by use) the body's matrix (GL modelview at the actor, turned and leant: the chest's bones posed from it)
+0x554      0x30       ObjectList headModel                       # (by use) the posed part models (ObjectList each, their entries following inside): the head (on the chest's neck joint; x5 with timerFlags 0x1000)
+0xd54      0x30       ObjectList chestModel                      # the chest: posed at bodyMatrix, carries the head, arms and legs
+0x1554     0x30       ObjectList armsModel                       # the arms: carry the weapon models
+0x2524     0x30       ObjectList legsModel                       # the legs (their frame from pose[4])
+0x34f4     0x30       ObjectList boosterModel                    # the booster (pose[5]: run)
+0x40dc     0x30       ObjectList weaponModel                     # the weapon in hand (slots 0 .. 3)
+0x587c     0x30       ObjectList weaponModel4                    # the slot-4 weapon
+0x701c     0x30       ObjectList weaponModel5                    # the slot-5 weapon
 0x4bc      4          i32 lastHitMode                                # (by use) the last hit's mode (0 armour first, 1 shield first)
 0x880c     4          i32 invulnerable                           # (by use) 1: hits do nothing (script command 14 sets it)
 0x8850     4          i32 hitPending                             # (by use) 1: a hit to send (net_sendPlayerState, then cleared)
@@ -212,91 +306,6 @@ struct Player 0x8888                                            # a player's rec
 0x4d8      4          i32 markSolo                              # (unclear) 1: a mark (icon 8) after the player's ranking row and over the player, games without teams
 0x550      4          i32 viewMarked                            # set by hud_pass for the player the view follows
 0x4dc      4          i32 markTeam                              # (unclear) 1: a mark (the team's icon) after the player's ranking row and over the player, team games
-
-struct ActorInfo 0x2e18                                         # an actor type's record (Scene.actorInfo)
-0x2db8     4          float weight                               # (by use, an item's) added to the actor's load (mech_stats)
-0x2dbc     4          i32 slotType                               # (the ARM CENTER's SLOT TYPE: message 321 + this, "HAND" ..)
-0x2df8     4          i32 value2df8                              # (unclear) shown by the ARM CENTER as a plain number
-0x2ddc     4          i32 damageMode                             # (by use, a weapon's) 0: its damage off the armour first, 1: off the shield
-0x2de0     4          i32 damage                                 # a hit's damage
-0x2e04     4          i32 hitSound                               # its hit sound (< 0 none)
-0x2e14     4          float push                                 # > 0: a hit pushes the actor (x 10, away from the bullet)
-0x2dc0     4          i32 ammoSlot                              # (by use, a weapon's) the ammunition slot it uses (Player.ammo)
-0x2dc4     4          i32 ammoPerShot                           # ammunition one shot takes
-0x2dc8     4          i32 burst                                 # rounds a burst
-0x2dcc     4          float burstGap                            # (unclear) the time between bursts
-0x2de4     4          float stepLength                          # a shot's first step (traced)
-0x2de8     4          float velocity                            # its speed (0: it arrives at once)
-0x2dec     4          float spread                              # aimed shots spread by it, less the owner's steadiness
-0x2df0     4          float flashSize                           # its muzzle flash's size
-0x2df4     4          float splashRadius                        # (unclear)
-0x2dfc     4          i32 shotMode                              # 3: fired into a random cone; its muzzle flash is particle kind shotMode + 10
-0x2e00     4          i32 sound                                 # its firing sound (< 0 none)
-0x2e08     4          float cycleTime                           # seconds a firing cycle
-0x2e0c     4          float tracer                              # > 0: the local player's tracer
-0          0x40       char name[0x40]                           # the folder under Actor/
-0x2e10     4          float ringRange                           # (unclear) > 0: the alert ring is shown
-
-struct PlayerRecord 0x47fd2                                      # a player of the match (Scene / Stage playerRecords): its team, mech parts and items; its actor points back (Player.player)
-0          4          i32 used                                   # (by use) 1: in use (playerRecord_markUsed / markFree)
-0x479c2    0x600      u32 emblem[16][24]                         # (by use) its emblem: 24 x 16 RGBA (its screenshot, Save\<name>.BMP)
-0x47fca    4          i32 emblemChanged                          # 1: to be copied into the emblem atlas (flagShown: it is there)
-0x47fce    4          i32 emblemSent                             # (by use) its emblem's pixels sent so far (0x180 = 24 x 16: all; the map's players start with all)
-4          0x40       char name[0x40]                            # (by use) its name (its screenshot: Save\\<name>.BMP)
-0x44       4          i32 level                                  # (by use) its level (the profile's factors by it)
-0x48       4          i32 team
-0x30c      0x14       i32 parts[5]                               # its mech's parts: head, chest, arms, legs, booster (records of the stage's part tables; "invalid headIndex")
-0x320      0x18       i32 items[6]                              # per item slot (Player.slot): its weapon's record (index into Scene.actorInfo; < 0 none)
-0x47fc6    4          i32 flagShown                             # 1: its flag is shown (ranking, markers)
-
-struct Model 0x4c                                               # a shape (skel_data.c: its 0x34-byte file header, then its box; a map object's model, an object list's entries...)
-4          4          i32 blockSize                              # its data block (take_block): the parts and their tables
-8          4          u8 *block
-0xc        4          i32 ownsBlock                              # 1: allocated here (freed with it)
-0x10       4          i32 partCount
-0x14       4          u8 *parts                                  # partCount ShapePart records (0x80 bytes), at the block's start
-0x20       0xc        float centre[3]                            # (by use) a point of the file's header: the box starts from it
-0x30       4          u32 version                                # 0x71110300: the current format (older: 0x68-byte parts)
-0x34       0xc        float low[3]                               # the box over its parts
-0x40       0xc        float high[3]
-0x18       4          i32 colourCount                           # (by use) dwords in a shading colour buffer for it
-0x1c       4          i32 count1c                                # (unclear) cleared with colourCount (stage_buildMeshDrawRecords)
-0x2c       4          float radius                              # its bounding sphere
-
-struct ShapePart 0x80                                           # a shape's part (Model.parts): one material's vertices and primitives
-0          0x40       char name[0x40]                            # (by use) its material's name (the texture looked up by it: names.c)
-0x44       4          i32 texture                                # its texture's id (-1 / 0 none)
-0x48       4          i32 colourBase                             # its first vertex in the shape's colour buffer
-0x4c       4          i32 vertexCount
-0x50       4          u8 *vertices                               # 12 bytes each
-0x54       4          u8 *normals                                # 12 bytes each
-0x58       4          u8 *colours                                # 4 bytes each
-0x5c       4          float *texCoords                           # 2 floats each
-0x60       4          i32 primCount
-0x64       4          u8 *prims                                  # ShapePrim records (0xc bytes)
-0x68       0x18       float box[6]                               # its low and high corners
-
-struct ShapePrim 0xc                                            # a part's primitive: its index list
-4          4          i32 indexCount
-8          4          u8 *indices                                # 4 bytes each
-
-struct ListedObject 0x64                                        # an object list's entry (ObjectList.entries)
-0          4          Model *shape                              # none: an empty entry
-8          4          u32 *colours                              # its shading colours (Model.colourCount dwords)
-0xc        0x40       float matrix[16]                          # where it is placed
-
-struct ObjectList 0x30                                          # shapes placed by their own matrices (data_46f7a0, hud_46fd20; the size is unknown)
-4          4          i32 blockSize                              # (by use) its block: the entries (100 bytes each), their colours when preLit, the skeletons
-8          4          u8 *block
-0xc        4          i32 ownsBlock                              # 1: allocated here
-0x10       4          i32 count
-0x14       4          ListedObject *entries
-0x18       4          i32 colourCount                            # the entries' shapes' colours summed
-0x1c       4          i32 frameCount                            # 0: nothing to draw (ObjectList_load: the skeletons named, one a frame)
-0x20       4          i32 *frames                               # frames[frame] == 0: nothing to draw
-0x24       4          i32 frame
-0x28       4          i32 animTick                               # (by use) the animation's tick (its frame: this % the skeleton's frames + 1)
-0x2c       4          i32 preLit                                # 1: lit here, drawn with its own colours
 
 struct LightFactors 0xb010                                      # (by use) the light factors shape_shadeParts takes (the size is unknown)
 4          0xb000     u8 records[0x400][0x2c]                    # (by use) its factors (factors.c: an index, then the factor)
