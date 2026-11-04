@@ -814,7 +814,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	AC->shield = ((u32)AC->shieldMax);
 	fill_dwords(ac + 0x130, 4, 0);
 	AC->slot = -1;
-	A(int, 0x144) = 0;
+	AC->lastWeaponSlot = 0;
 	actor_setWeaponSlot((Stage *)s, a, 0);
 	actor_startingValues(s, a);   /* actor_startingValues */
 	AC->state = 1;
@@ -835,9 +835,9 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 a3, const u32 *pp
 	fill_dwords(ac + 0x1e8, 3, 0);
 	AC->burstTime = 0.0f;
 	for (int k = 0; k < 5; k++) {
-		A(int, 0x1f8 + k * 0x20) = 0;
-		A(int, 0x1fc + k * 0x20) = 0;
-		A(int, 0x360 + k * 4) = -1;
+		AC->shots[k].inUse = 0;
+		AC->shots[k].isNew = 0;
+		AC->shotBullets[k] = -1;
 	}
 	AC->sendFlag = 0;
 	memcpy(AC->velocity, (const void *)ADDR(g_vecZero), 12);

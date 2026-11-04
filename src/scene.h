@@ -20,6 +20,16 @@ typedef struct EventLine {
 	u32 time;   /* +0x104: Scene.eventTime when it was written */
 } EventLine;
 
+/* a round an actor fired, as sent (Player.shots) */
+typedef struct ShotRecord {
+	i32 inUse;   /* +0x0 */
+	i32 isNew;   /* +0x4: 1: a new round (its bullet made) */
+	i32 kind;   /* +0x8 */
+	i32 owner;   /* +0xc */
+	i32 flag;   /* +0x10 */
+	float dir[3];   /* +0x14 */
+} ShotRecord;
+
 /* a player's record (Scene.players) */
 typedef struct Player {
 	float radiusSq;   /* +0x0: (by use) the spawn record's radius squared, x 10000 */
@@ -75,7 +85,7 @@ typedef struct Player {
 	i32 shield;   /* +0x12c: shown bottom left (SHIELD) */
 	i32 ammo[4];   /* +0x130: per weapon slot */
 	i32 slot;   /* +0x140: (by use) the selected item slot (the player record\'s items); its icon is the gauge\'s cell (3 x 3) */
-	u8 _pad0000144[0x4];
+	i32 lastWeaponSlot;   /* +0x144: (by use) the last of slots 0 .. 3 selected (its part shown again: actor_setWeaponSlot) */
 	i32 actorType;   /* +0x148: index into Scene.actorInfo / snapshotTex */
 	i32 state;   /* +0x14c: 1: in play */
 	float stateTime;   /* +0x150: (by use) seconds in its state (dying: out after 2) */
@@ -108,7 +118,9 @@ typedef struct Player {
 	i32 firing;   /* +0x1ec: (by use) 1: firing this frame */
 	i32 burstLeft;   /* +0x1f0: (by use) rounds of the current burst still to fire */
 	float burstTime;   /* +0x1f4: (by use) the time to the burst's next round */
-	u8 _pad00001f8[0x17c];
+	ShotRecord shots[5];   /* +0x1f8: (by use) its rounds as sent (another machine's actor: netFired) */
+	u8 _pad0000298[0xc8];
+	i32 shotBullets[5];   /* +0x360: the bullets they made (-1 none) */
 	i32 sendFlag;   /* +0x374: (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState) */
 	float velocity[3];   /* +0x378: (by use) moves towards the keys' (moveAccel) */
 	float move[3];   /* +0x384: (by use) this frame's move (nextPos - pos) */
@@ -150,7 +162,7 @@ typedef struct Player {
 	float gauge;   /* +0x494: > 0: the gauge is shown (its alpha, at most 1) */
 	i32 slotLoaded;   /* +0x498: (by use) the slot whose item was loaded last (another player's actor) */
 	i32 variantLoaded;   /* +0x49c: (by use) the parts' variant loaded (0 for the selected actor, else detail + 1) */
-	u8 _pad00004a0[0x4];
+	i32 firePrev;   /* +0x4a0: (by use) the fire key the frame before (a held key fires one round) */
 	float effectScale;   /* +0x4a4: (by use) the emitters' scale by the speed (0.5 .. 3) */
 	float footstepTime;   /* +0x4a8: (by use) a footstep every third of a second */
 	float energyUsed;   /* +0x4ac: 0..1 */
@@ -1353,6 +1365,13 @@ _Static_assert(offsetof(EventLine, type) == 0x0 && sizeof(((EventLine *)0)->type
 _Static_assert(offsetof(EventLine, text) == 0x4 && sizeof(((EventLine *)0)->text) == 0x100, "scene.fields: EventLine.text");
 _Static_assert(offsetof(EventLine, time) == 0x104 && sizeof(((EventLine *)0)->time) == 0x4, "scene.fields: EventLine.time");
 _Static_assert(sizeof(EventLine) == 0x108, "scene.fields: size of EventLine");
+_Static_assert(offsetof(ShotRecord, inUse) == 0x0 && sizeof(((ShotRecord *)0)->inUse) == 0x4, "scene.fields: ShotRecord.inUse");
+_Static_assert(offsetof(ShotRecord, isNew) == 0x4 && sizeof(((ShotRecord *)0)->isNew) == 0x4, "scene.fields: ShotRecord.isNew");
+_Static_assert(offsetof(ShotRecord, kind) == 0x8 && sizeof(((ShotRecord *)0)->kind) == 0x4, "scene.fields: ShotRecord.kind");
+_Static_assert(offsetof(ShotRecord, owner) == 0xc && sizeof(((ShotRecord *)0)->owner) == 0x4, "scene.fields: ShotRecord.owner");
+_Static_assert(offsetof(ShotRecord, flag) == 0x10 && sizeof(((ShotRecord *)0)->flag) == 0x4, "scene.fields: ShotRecord.flag");
+_Static_assert(offsetof(ShotRecord, dir) == 0x14 && sizeof(((ShotRecord *)0)->dir) == 0xc, "scene.fields: ShotRecord.dir");
+_Static_assert(sizeof(ShotRecord) == 0x20, "scene.fields: size of ShotRecord");
 _Static_assert(offsetof(Player, radiusSq) == 0x0 && sizeof(((Player *)0)->radiusSq) == 0x4, "scene.fields: Player.radiusSq");
 _Static_assert(offsetof(Player, detectionAngle) == 0x4 && sizeof(((Player *)0)->detectionAngle) == 0x4, "scene.fields: Player.detectionAngle");
 _Static_assert(offsetof(Player, hackingLevel) == 0x8 && sizeof(((Player *)0)->hackingLevel) == 0x4, "scene.fields: Player.hackingLevel");
@@ -1405,6 +1424,7 @@ _Static_assert(offsetof(Player, armor) == 0x128 && sizeof(((Player *)0)->armor) 
 _Static_assert(offsetof(Player, shield) == 0x12c && sizeof(((Player *)0)->shield) == 0x4, "scene.fields: Player.shield");
 _Static_assert(offsetof(Player, ammo) == 0x130 && sizeof(((Player *)0)->ammo) == 0x10, "scene.fields: Player.ammo");
 _Static_assert(offsetof(Player, slot) == 0x140 && sizeof(((Player *)0)->slot) == 0x4, "scene.fields: Player.slot");
+_Static_assert(offsetof(Player, lastWeaponSlot) == 0x144 && sizeof(((Player *)0)->lastWeaponSlot) == 0x4, "scene.fields: Player.lastWeaponSlot");
 _Static_assert(offsetof(Player, actorType) == 0x148 && sizeof(((Player *)0)->actorType) == 0x4, "scene.fields: Player.actorType");
 _Static_assert(offsetof(Player, state) == 0x14c && sizeof(((Player *)0)->state) == 0x4, "scene.fields: Player.state");
 _Static_assert(offsetof(Player, stateTime) == 0x150 && sizeof(((Player *)0)->stateTime) == 0x4, "scene.fields: Player.stateTime");
@@ -1437,6 +1457,8 @@ _Static_assert(offsetof(Player, netFired) == 0x1e8 && sizeof(((Player *)0)->netF
 _Static_assert(offsetof(Player, firing) == 0x1ec && sizeof(((Player *)0)->firing) == 0x4, "scene.fields: Player.firing");
 _Static_assert(offsetof(Player, burstLeft) == 0x1f0 && sizeof(((Player *)0)->burstLeft) == 0x4, "scene.fields: Player.burstLeft");
 _Static_assert(offsetof(Player, burstTime) == 0x1f4 && sizeof(((Player *)0)->burstTime) == 0x4, "scene.fields: Player.burstTime");
+_Static_assert(offsetof(Player, shots) == 0x1f8 && sizeof(((Player *)0)->shots) == 0xa0, "scene.fields: Player.shots");
+_Static_assert(offsetof(Player, shotBullets) == 0x360 && sizeof(((Player *)0)->shotBullets) == 0x14, "scene.fields: Player.shotBullets");
 _Static_assert(offsetof(Player, sendFlag) == 0x374 && sizeof(((Player *)0)->sendFlag) == 0x4, "scene.fields: Player.sendFlag");
 _Static_assert(offsetof(Player, velocity) == 0x378 && sizeof(((Player *)0)->velocity) == 0xc, "scene.fields: Player.velocity");
 _Static_assert(offsetof(Player, move) == 0x384 && sizeof(((Player *)0)->move) == 0xc, "scene.fields: Player.move");
@@ -1476,6 +1498,7 @@ _Static_assert(offsetof(Player, weaponLower) == 0x490 && sizeof(((Player *)0)->w
 _Static_assert(offsetof(Player, gauge) == 0x494 && sizeof(((Player *)0)->gauge) == 0x4, "scene.fields: Player.gauge");
 _Static_assert(offsetof(Player, slotLoaded) == 0x498 && sizeof(((Player *)0)->slotLoaded) == 0x4, "scene.fields: Player.slotLoaded");
 _Static_assert(offsetof(Player, variantLoaded) == 0x49c && sizeof(((Player *)0)->variantLoaded) == 0x4, "scene.fields: Player.variantLoaded");
+_Static_assert(offsetof(Player, firePrev) == 0x4a0 && sizeof(((Player *)0)->firePrev) == 0x4, "scene.fields: Player.firePrev");
 _Static_assert(offsetof(Player, effectScale) == 0x4a4 && sizeof(((Player *)0)->effectScale) == 0x4, "scene.fields: Player.effectScale");
 _Static_assert(offsetof(Player, footstepTime) == 0x4a8 && sizeof(((Player *)0)->footstepTime) == 0x4, "scene.fields: Player.footstepTime");
 _Static_assert(offsetof(Player, energyUsed) == 0x4ac && sizeof(((Player *)0)->energyUsed) == 0x4, "scene.fields: Player.energyUsed");

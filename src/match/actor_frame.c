@@ -317,7 +317,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		}
 	} else if (AC->variantLoaded != AC->detail + 1) {
 		AC->variantLoaded = AC->detail + 1;
-		actor_updatePart(s, i, AI(0x144), AC->variantLoaded);
+		actor_updatePart(s, i, AC->lastWeaponSlot, AC->variantLoaded);
 		actor_updatePart(s, i, 4, AC->variantLoaded);
 		actor_updatePart(s, i, 5, AC->variantLoaded);
 	}
@@ -347,7 +347,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			if (AC->ammo[w0->ammoSlot] < w0->ammoPerShot && pr->items[4] >= 0) {
 				ActorInfo *w1 = &ST->actorInfo[pr->items[4]];
 				if (AC->ammo[w1->ammoSlot] < w1->ammoPerShot)
-					AU8(0x87f4) |= 2;   /* both weapons empty */
+					(*(u8 *)&AC->botNeeds) |= 2;   /* both weapons empty */
 			}
 		}
 		/* a bullet of another team aimed at it */
@@ -392,7 +392,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				AC->botTarget = k;
 				AC->botTargetTime = 10.5f;
 				actor_pickRandomWeapon(s, i);
-			} else if (!(v > 0) && !(AU8(0x87f4) & 2)) {
+			} else if (!(v > 0) && !((*(u8 *)&AC->botNeeds) & 2)) {
 				if (AC->botTarget < 0) {   /* the first other team's actor in sight within its range (+0) */
 					for (int j = 0; j < ST->actorCount; j++) {
 						if (j == i || ST->actors[j].state != 1 || ST->actors[j].team == AC->team || ((ST->actors[j].timerFlags & 0x200) && ST->actors[j].hackingLevel >= AC->hackingLevel))
@@ -461,9 +461,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			AC->stuckTime = 1.0f;
 			memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
 		}
-		if (AC->bot == 1 && AC->target1 < 0 && (AC->botTarget < 0 || (AU8(0x87f4) & 3))) {
+		if (AC->bot == 1 && AC->target1 < 0 && (AC->botTarget < 0 || ((*(u8 *)&AC->botNeeds) & 3))) {
 			actor_checkLineOfSight(s, i);
-			if (AU8(0x87f4) & 2)
+			if ((*(u8 *)&AC->botNeeds) & 2)
 				AC->botTarget = -1;
 		}
 		if (AC->lookActor >= 0 && ST->actors[AC->lookActor].state != 1)
@@ -491,7 +491,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					AC->target1 = AC->target2 = -1;
 			}
 		}
-		if (AC->bot == 1 && AC->target1 >= 0 && AC->botTarget >= 0 && !(AU8(0x87f4) & 1))
+		if (AC->bot == 1 && AC->target1 >= 0 && AC->botTarget >= 0 && !((*(u8 *)&AC->botNeeds) & 1))
 			AC->target1 = -1;
 		if (AC->botWait > 0)
 			AC->botWait = f32(fsub_m(fld_m(&AC->botWait), dt));
@@ -610,13 +610,13 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			/* the turns towards the view, at most the turn rate (+0x6c) a second */
 			float rate = f32(fmul_m(fld_m(dt), &AC->accel));
 			for (int c = 0; c < 2; c++) {
-				long double r = angle_turn(AU(0x160 + c * 4), AU(0x1e0 + c * 4));
+				long double r = angle_turn(BITS((&AC->pitch)[c]), BITS((&AC->botLookPitch)[c]));
 				float rr = (float)r;
-				AF(0x464 + c * 4) = rr;
+				(&AC->inPitch)[c] = rr;
 				if (r > rate)
-					AU(0x464 + c * 4) = BITS(rate);
+					BITS((&AC->inPitch)[c]) = BITS(rate);
 				else if (!(rr >= -fld_m(&rate)))
-					AF(0x464 + c * 4) = (float)-fld_m(&rate);
+					(&AC->inPitch)[c] = (float)-fld_m(&rate);
 			}
 		}
 		if (AC->bot == 1)
@@ -660,7 +660,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		else if (v > accel)
 			AC->velocity[c] = f32(fsub_m(fld_m(&AC->velocity[c]), &accel));
 		else
-			AU(0x378 + c * 4) = BITS(want[c]);
+			BITS(AC->velocity[c]) = BITS(want[c]);
 	}
 	float step = !(*dt >= 0.05f) ? *dt : 0.05f;   /* at most 0.05 s */
 	for (int c = 0; c < 3; c++)   /* the move this frame */
@@ -724,9 +724,9 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		for (int c = 0; c < 3; c++) {   /* inside the world box */
 			const float *lo = &ST->levelLow[c], *hi = &ST->levelHigh[c];
 			if (!(AC->nextPos[c] >= *lo))
-				AU(0x180 + c * 4) = BITS(*lo);
+				BITS(AC->nextPos[c]) = BITS(*lo);
 			else if (AC->nextPos[c] > *hi)
-				AU(0x180 + c * 4) = BITS(*hi);
+				BITS(AC->nextPos[c]) = BITS(*hi);
 		}
 		long double v = fadd_m(fld_m(&AC->inPitch), &AC->pitch);   /* the pitch, within +-89 degrees */
 		AC->nextPitch = (float)v;
@@ -786,7 +786,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 		AC->nextPitch = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netPitch), &AC->pitch), &k), &AC->pitch));
 		AC->nextYaw = f32(angle_stepTowards(BITS(AC->nextYaw), BITS(AC->netYaw), BITS(k)));
 		for (int c = 0; c < 5; c++)   /* +0x194..+0x1a4 */
-			AF(0x194 + c * 4) = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &AF(0x168 + c * 4)), &k), &AF(0x168 + c * 4)));
+			(&AC->nextForward)[c] = f32(fadd_m(fmul_m(fsub_m(fld_m(&AC->netMotion[c]), &(&AC->forward)[c]), &k), &(&AC->forward)[c]));
 	}
 	if (AC->fireAnim > 0 && weapon) {   /* the firing cycle, wrapping at 1 */
 		long double v = fadd_m(fdiv_m(fld_m(dt), &((ActorInfo *)weapon)->cycleTime), &AC->fireCycle);
@@ -965,20 +965,20 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 			int quit = 0;
 			for (int n = 0; n < shots && !quit; n++) {
 				int k = 0;
-				while (k < 5 && AI(0x360 + k * 4) >= 0)
+				while (k < 5 && AC->shotBullets[k] >= 0)
 					k++;
 				if (k == 5)
 					break;
 				int w = ((ActorInfo *)weapon)->ammoSlot;
 				if (AC->ammo[w] < ((ActorInfo *)weapon)->ammoPerShot && AC->bot != 2) {   /* out of ammunition */
 					if (i == ST->playerActor) {
-						if (AI(0x4a0) != 0)
+						if (AC->firePrev != 0)
 							break;
 						strcpy((char *)(a + 0x4f4), (const char *)STR(0x4b4528, "OUT OF AMMO!"));
 						BITS(AC->messageTime) = BITS(*dt);
 						sound_playVolume(0xa5, 0x64);
 					}
-					if (AI(0x4a0) == 0)
+					if (AC->firePrev == 0)
 						actor_nextWeapon(s, i);
 					break;
 				}
@@ -1016,7 +1016,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						Vec3_rotateAxis(shot_dir, 2, ftol(fld_m(&AC->yaw)) - AC->spawn74 + r2);
 					}
 					if (collision_rayTrace(s, AC->pos, shot_at, v28) != 0) {   /* the muzzle inside a wall */
-						if (i == ST->playerActor && AI(0x4a0) == 0)
+						if (i == ST->playerActor && AC->firePrev == 0)
 							sound_playVolume(0xa5, 0x64);
 						break;
 					}
@@ -1051,8 +1051,8 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 						target = c > 0 ? ST->lockIds[n % c] : -1;
 					} else
 						target = AC->botTarget;
-					AI(0x360 + k * 4) = bullet_spawn(s, -1, i, target, rec, n);
-					AI(0x1fc + k * 32) = 1;
+					AC->shotBullets[k] = bullet_spawn(s, -1, i, target, rec, n);
+					AC->shots[k].isNew = 1;
 					if (AC->bot != 2)
 						AC->ammo[((ActorInfo *)weapon)->ammoSlot] -= ((ActorInfo *)weapon)->ammoPerShot;
 				}
@@ -1062,12 +1062,12 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				if (v >= 1.0L)
 					AC->fireCycle = 0;
 			}
-			AI(0x4a0) = AC->inFire;
+			AC->firePrev = AC->inFire;
 		}
 	} else if (weapon && AC->netFired == 1) {   /* the others' rounds, as sent */
-		for (int k = 0; k < 5; k++) {   /* per slot: +0x1f8 in use, +0x1fc a new round (+0x200 kind, +0x204 owner, +0x208 flag, +0x20c dir) */
-			int *item = &AI(0x360 + k * 4);
-			u32 *f = &AU(0x1fc + k * 32);
+		for (int k = 0; k < 5; k++) {   /* per slot (shots[k]): in use, a new round (its kind, owner, flag, direction) */
+			int *item = &AC->shotBullets[k];
+			u32 *f = (u32 *)&AC->shots[k].isNew;
 			if (f[-1] != 1)
 				continue;
 			if (f[0] == 1) {

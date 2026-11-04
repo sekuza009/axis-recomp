@@ -11,7 +11,19 @@ struct EventLine 0x108                                          # one line of th
 4          0x100      char text[0x100]
 0x104      4          u32 time                                  # Scene.eventTime when it was written
 
+struct ShotRecord 0x20                                          # a round an actor fired, as sent (Player.shots)
+0          4          i32 inUse
+4          4          i32 isNew                                  # 1: a new round (its bullet made)
+8          4          i32 kind
+0xc        4          i32 owner
+0x10       4          i32 flag
+0x14       0xc        float dir[3]
+
 struct Player 0x8888                                            # a player's record (Scene.players)
+0x144      4          i32 lastWeaponSlot                         # (by use) the last of slots 0 .. 3 selected (its part shown again: actor_setWeaponSlot)
+0x1f8      0xa0       ShotRecord shots[5]                        # (by use) its rounds as sent (another machine's actor: netFired)
+0x360      0x14       i32 shotBullets[5]                         # the bullets they made (-1 none)
+0x4a0      4          i32 firePrev                               # (by use) the fire key the frame before (a held key fires one round)
 0xe0       4          i32 levelShown                             # (by use) the level last announced ("LEVEL UP!" when the emblem's passes it)
 0xf8       4          i32 startPoints                            # the level points it started the match with
 0x374      4          i32 sendFlag                               # (unclear) cleared each frame; 1: its state is sent (net_sendPlayerState)

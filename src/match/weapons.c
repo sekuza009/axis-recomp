@@ -40,7 +40,7 @@ void THISCALL (actor_setWeaponSlot)(Stage *stage, int i, int slot)
 	if (ac->slot != slot) {
 		ac->slot = slot;
 		if (slot < 4)
-			FIELD(int, actor, 0x144) = slot;
+			ac->lastWeaponSlot = slot;
 		ac->actorType = FIELD(int, stage, 0x1561b68 + player * 0x47fd2 + 0x320 + slot * 4);
 	}
 }
