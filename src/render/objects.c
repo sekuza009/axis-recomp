@@ -349,7 +349,7 @@ static u8 clamp255(int a) { return a < 0 ? 0 : a > 255 ? 255 : (u8)a; }
 /* a camera-facing quad (viewVolume_addBillboard): texture corners uv (two pairs), offsets ab (two pairs), its colour +0x78 */
 static void quad(void *vv, int tex, const float *uv, float dz, u8 *p, const float *ab, const float *at, int kind)
 {
-	viewVolume_addBillboard(vv, tex, uv, uv + 2, dz, p + 0x78, ab, ab + 2, at, kind, 1);
+	viewVolume_addBillboard(vv, tex, uv, uv + 2, dz, (u8 *)&PR->colour, ab, ab + 2, at, kind, 1);
 }
 
 /* offsets +-h, each corner rounded */
@@ -636,7 +636,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 20:
 	case 21:
 		if (PR->owner != ST->selectedActor)
-			shape(vv, p, (void *)ST->effectShapes[type == 20 ? 1 : 4], p + 0x78, 0);   /* shell / rail bullet */
+			shape(vv, p, (void *)ST->effectShapes[type == 20 ? 1 : 4], (u8 *)&PR->colour, 0);   /* shell / rail bullet */
 		return;
 	case 22:
 		if (PR->owner == 1)
@@ -651,7 +651,7 @@ void THISCALL (projectile_draw)(u8 *s, int i, void *vv)
 	case 24: {
 		long double a = fsub_m(fld_m(K(0x4a9424)), &t);
 		ALPHA(PR->colour) = clamp255(ftol(fmul_m(a * a, K(0x4aa260))));
-		shape(vv, p, (*(void * *)&ST->effectShapes[5]), p + 0x78, 0);
+		shape(vv, p, (*(void * *)&ST->effectShapes[5]), (u8 *)&PR->colour, 0);
 		return;
 	}
 	case 25:

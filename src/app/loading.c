@@ -111,16 +111,16 @@ void (loading_draw)(u32 progress)
 		info_line(row, line);
 		row = 4;
 	}
-	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
+	if (((Scene *)g_loadGame)->rotationOff == 1)
 		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
 	else
 		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_missionStage * 32));
 	info_line(row, line);
 	row += 2;
-	if (*(int *)(g_loadGame + 0x1f1cb0) == 1)
+	if (((Scene *)g_loadGame)->rotationOff == 1)
 		sprintf(line, (const char *)STR(0x4c52f8, "PLAY TYPE: ON RECEIVING"));
 	else
-		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + *(int *)(g_loadGame + 0x22e7180) * 64));
+		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + ((Scene *)g_loadGame)->gameMode * 64));
 	info_line(row, line);
 	row += 2;
 	sprintf(line, (const char *)STR(0x4c52d8, "FRAG LIMIT: %d"), g_fragLimit);

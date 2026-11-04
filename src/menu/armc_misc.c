@@ -146,7 +146,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
                                       int w, int h)
 {
 	static const u32 lists[8] = { 0x554, 0xd54, 0x1554, 0x2524, 0x34f4, 0x40dc, 0x587c, 0x701c };   /* (in the actor) */
-	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = s + 0x74;
+	u8 *s = (u8 *)scene, *stage = (u8 *)SCENE_STAGE(s), *vv = scene->view;
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it; one word short, it landed on the white tint) */
 	for (int i = 0; i < 0x400; i++)
@@ -159,7 +159,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	float far = view_farPlane(), near = view_nearPlane(), fov = game_clock();
 	camera_setupView(stage, eye, forward, up,
 	                                                                                                       BITS(fov), w, h, BITS(near), BITS(far), x44);   /* camera_setupView */
-	ViewVolume_captureMatrices(vv, 0, s + 0x22e7068);
+	ViewVolume_captureMatrices(vv, 0, scene->modelview);
 	ViewVolume_reset(vv);
 	int fix = *g_wide->rotFix, W = fix ? 640 : w, H = fix ? 480 : h;
 	if (g_mouse2Down) {   /* the right button held */
@@ -183,7 +183,7 @@ void THISCALL (armc_rotateFromCursor)(Scene *scene, const u32 *eye, const u32 *f
 	Vec3_normalize((float *)RELOC(dir));
 	factors_addPoint(light, (const void *)OBJ(g_packedWhite), dir);
 	for (int k = 0; k < 8; k++) {
-		u8 *list = s + 0x1ecca70 + scene->localPlayer * 0x8888 + lists[k];
+		u8 *list = (u8 *)&scene->players[scene->localPlayer] + lists[k];
 		if (part < 0)
 			partList_queue(list, vv, light, NULL, 1, (u32)-1, 0);
 		else

@@ -1911,7 +1911,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			return;
 		}
 		u8 *ac = ACTOR(i);
-		if ((GAME_VAR(u16, ac + 0x3f0) ^ *(const u16 *)(pkt + 2)) & 0x4000)
+		if ((*(const u16 *)&((Player *)ac)->timerFlags ^ *(const u16 *)(pkt + 2)) & 0x4000)
 			actor_deactivate(STAGE, i);   /* actor_deactivate */
 		if (((Player *)ac)->active == 0 && (b[4] & 1)) {
 			u32 rec[7] = { (u32)i, 0 };
@@ -1963,7 +1963,7 @@ void THISCALL (net_processGamePacket)(u8 *g, u32 from, int type, const char *pkt
 			BITS(((Player *)ac)->hitFlash) = 0x3f000000;
 		const u8 *w = b + 0x13;
 		for (int k = 0; k < 5; k++, w += 9) {
-			u32 *slot = (u32 *)(ac + 0x1f8 + k * 0x20);
+			u32 *slot = (u32 *)&((Player *)ac)->shots[k];
 			if (!(w[0] & 1) || ((Player *)ac)->team < 0) {
 				slot[0] = 0;
 				continue;
