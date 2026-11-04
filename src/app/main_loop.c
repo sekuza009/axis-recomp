@@ -741,10 +741,10 @@ static void free_camera(u8 *s, const float *mv, u32 filter, Move *m)
 		cam[1] = f32(fadd_m(fld_m(&delta[1]), &cam[1]));
 	}
 	for (int k = 0; k < 3; k++) {
-		if (!(cam[k] >= S(float, 0xbe2fcc + k * 4)))
-			BITS(cam[k]) = S(u32, 0xbe2fcc + k * 4);
-		else if (cam[k] > S(float, 0xbe2fd8 + k * 4))
-			BITS(cam[k]) = S(u32, 0xbe2fd8 + k * 4);
+		if (!(cam[k] >= SCENE_STAGE(s)->levelLow[k]))
+			BITS(cam[k]) = BITS(SCENE_STAGE(s)->levelLow[k]);
+		else if (cam[k] > SCENE_STAGE(s)->levelHigh[k])
+			BITS(cam[k]) = BITS(SCENE_STAGE(s)->levelHigh[k]);
 	}
 	float *dir = SC->cameraDir;
 	dir[0] = dir[1] = 0;
